@@ -50,6 +50,7 @@ import java.util.Map;
  * @author kenton@google.com (Kenton Varda)
  */
 public class UnknownFieldSetTest extends TestCase {
+  @Override
   public void setUp() throws Exception {
     descriptor = TestAllTypes.getDescriptor();
     allFields = TestUtil.getAllSet();

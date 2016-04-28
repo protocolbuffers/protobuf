@@ -34,7 +34,6 @@ import com.google.protobuf.Internal.IntList;
 
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.List;
 import java.util.RandomAccess;
 
 /**
@@ -43,8 +42,6 @@ import java.util.RandomAccess;
  * @author dweis@google.com (Daniel Weis)
  */
 final class IntArrayList extends AbstractProtobufList<Integer> implements IntList, RandomAccess {
-  
-  private static final int DEFAULT_CAPACITY = 10;
   
   private static final IntArrayList EMPTY_LIST = new IntArrayList();
   static {
@@ -70,32 +67,55 @@ final class IntArrayList extends AbstractProtobufList<Integer> implements IntLis
    * Constructs a new mutable {@code IntArrayList} with default capacity.
    */
   IntArrayList() {
-    this(DEFAULT_CAPACITY);
-  }
-
-  /**
-   * Constructs a new mutable {@code IntArrayList} with the provided capacity.
-   */
-  IntArrayList(int capacity) {
-    array = new int[capacity];
-    size = 0;
+    this(new int[DEFAULT_CAPACITY], 0);
   }
 
   /**
    * Constructs a new mutable {@code IntArrayList} containing the same elements as {@code other}.
    */
-  IntArrayList(List<Integer> other) {
-    if (other instanceof IntArrayList) {
-      IntArrayList list = (IntArrayList) other;
-      array = list.array.clone();
-      size = list.size;
-    } else {
-      size = other.size();
-      array = new int[size];
-      for (int i = 0; i < size; i++) {
-        array[i] = other.get(i);
+  private IntArrayList(int[] array, int size) {
+    this.array = array;
+    this.size = size;
+  }
+  
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (!(o instanceof IntArrayList)) {
+      return super.equals(o);
+    }
+    IntArrayList other = (IntArrayList) o;
+    if (size != other.size) {
+      return false;
+    }
+    
+    final int[] arr = other.array;
+    for (int i = 0; i < size; i++) {
+      if (array[i] != arr[i]) {
+        return false;
       }
     }
+    
+    return true;
+  }
+
+  @Override
+  public int hashCode() {
+    int result = 1;
+    for (int i = 0; i < size; i++) {
+      result = (31 * result) + array[i];
+    }
+    return result;
+  }
+
+  @Override
+  public IntList mutableCopyWithCapacity(int capacity) {
+    if (capacity < size) {
+      throw new IllegalArgumentException();
+    }
+    return new IntArrayList(Arrays.copyOf(array, capacity), size);
   }
   
   @Override

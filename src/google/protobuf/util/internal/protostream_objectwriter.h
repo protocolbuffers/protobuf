@@ -167,9 +167,14 @@ class LIBPROTOBUF_EXPORT ProtoStreamObjectWriter : public ProtoWriter {
     // The depth within the Any, so we can track when we're done.
     int depth_;
 
-    // True if the message type contained in Any has a special "value" message
-    // injected. This is true for well-known message types like Any or Struct.
-    bool has_injected_value_message_;
+    // True if the type is a well-known type. Well-known types in Any
+    // has a special formating:
+    // {
+    //   "@type": "type.googleapis.com/google.protobuf.XXX",
+    //   "value": <JSON representation of the type>,
+    // }
+    bool is_well_known_type_;
+    TypeRenderer* well_known_type_render_;
   };
 
   // Represents an item in a stack of items used to keep state between

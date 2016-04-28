@@ -412,6 +412,15 @@ void GeneratedMessageReflection::SwapField(
 #undef SWAP_ARRAYS
 
       case FieldDescriptor::CPPTYPE_STRING:
+        switch (field->options().ctype()) {
+          default:  // TODO(kenton):  Support other string reps.
+          case FieldOptions::STRING:
+            MutableRaw<RepeatedPtrFieldBase>(message1, field)->
+                Swap<GenericTypeHandler<string> >(
+                    MutableRaw<RepeatedPtrFieldBase>(message2, field));
+            break;
+        }
+        break;
       case FieldDescriptor::CPPTYPE_MESSAGE:
         if (IsMapFieldInApi(field)) {
           MutableRaw<MapFieldBase>(message1, field)->
@@ -447,16 +456,50 @@ void GeneratedMessageReflection::SwapField(
       SWAP_VALUES(ENUM  , int   );
 #undef SWAP_VALUES
       case FieldDescriptor::CPPTYPE_MESSAGE:
-        std::swap(*MutableRaw<Message*>(message1, field),
-                  *MutableRaw<Message*>(message2, field));
+        if (GetArena(message1) == GetArena(message2)) {
+          std::swap(*MutableRaw<Message*>(message1, field),
+                    *MutableRaw<Message*>(message2, field));
+        } else {
+          Message** sub_msg1 = MutableRaw<Message*>(message1, field);
+          Message** sub_msg2 = MutableRaw<Message*>(message2, field);
+          if (*sub_msg1 == NULL && *sub_msg2 == NULL) break;
+          if (*sub_msg1 && *sub_msg2) {
+            (*sub_msg1)->GetReflection()->Swap(*sub_msg1, *sub_msg2);
+            break;
+          }
+          if (*sub_msg1 == NULL) {
+            *sub_msg1 = (*sub_msg2)->New(message1->GetArena());
+            (*sub_msg1)->CopyFrom(**sub_msg2);
+            ClearField(message2, field);
+          } else {
+            *sub_msg2 = (*sub_msg1)->New(message2->GetArena());
+            (*sub_msg2)->CopyFrom(**sub_msg1);
+            ClearField(message1, field);
+          }
+        }
         break;
 
       case FieldDescriptor::CPPTYPE_STRING:
         switch (field->options().ctype()) {
           default:  // TODO(kenton):  Support other string reps.
           case FieldOptions::STRING:
-            MutableRaw<ArenaStringPtr>(message1, field)->Swap(
-                MutableRaw<ArenaStringPtr>(message2, field));
+            {
+              Arena* arena1 = GetArena(message1);
+              Arena* arena2 = GetArena(message2);
+              ArenaStringPtr* string1 =
+                  MutableRaw<ArenaStringPtr>(message1, field);
+              ArenaStringPtr* string2 =
+                  MutableRaw<ArenaStringPtr>(message2, field);
+              if (arena1 == arena2) {
+                string1->Swap(string2);
+              } else {
+                const string* default_ptr =
+                    &DefaultRaw<ArenaStringPtr>(field).Get(NULL);
+                const string temp = string1->Get(default_ptr);
+                string1->Set(default_ptr, string2->Get(default_ptr), arena1);
+                string2->Set(default_ptr, temp, arena2);
+              }
+            }
             break;
         }
         break;
@@ -1752,7 +1795,8 @@ bool GeneratedMessageReflection::InsertOrLookupMapValue(
               "InsertOrLookupMapValue",
               "Field is not a map field.");
   val->SetType(field->message_type()->FindFieldByName("value")->cpp_type());
-  return MutableRaw<MapFieldBase>(message, field)->InsertMapValue(key, val);
+  return MutableRaw<MapFieldBase>(message, field)->InsertOrLookupMapValue(
+      key, val);
 }
 
 bool GeneratedMessageReflection::DeleteMapValue(

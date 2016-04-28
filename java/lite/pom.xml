@@ -50,7 +50,7 @@
             <phase>generate-sources</phase>
             <configuration>
               <target>
-                <ant antfile="${core.root}/generate-sources-build.xml"/>
+                <ant antfile="generate-sources-build.xml"/>
               </target>
             </configuration>
             <goals>
@@ -64,7 +64,7 @@
             <phase>generate-test-sources</phase>
             <configuration>
               <target>
-                <ant antfile="${core.root}/generate-test-sources-build.xml"/>
+                <ant antfile="generate-test-sources-build.xml"/>
               </target>
             </configuration>
             <goals>
@@ -78,8 +78,8 @@
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
         <configuration>
-          <generatedSourcesDirectory>${generated.sources.dir}</generatedSourcesDirectory>
-          <generatedTestSourcesDirectory>${generated.testsources.dir}</generatedTestSourcesDirectory>
+          <generatedSourcesDirectory>${generated.sources.lite.dir}</generatedSourcesDirectory>
+          <generatedTestSourcesDirectory>${generated.testsources.lite.dir}</generatedTestSourcesDirectory>
           <includes>
             <include>**/AbstractMessageLite.java</include>
             <include>**/AbstractParser.java</include>

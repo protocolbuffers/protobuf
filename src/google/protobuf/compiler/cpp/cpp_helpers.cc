@@ -68,14 +68,15 @@ const char* const kKeywordList[] = {
   "alignas", "alignof", "and", "and_eq", "asm", "auto", "bitand", "bitor",
   "bool", "break", "case", "catch", "char", "class", "compl", "const",
   "constexpr", "const_cast", "continue", "decltype", "default", "delete", "do",
-  "double", "dynamic_cast", "else", "enum", "explicit", "extern", "false",
-  "float", "for", "friend", "goto", "if", "inline", "int", "long", "mutable",
-  "namespace", "new", "noexcept", "not", "not_eq", "NULL", "operator", "or",
-  "or_eq", "private", "protected", "public", "register", "reinterpret_cast",
-  "return", "short", "signed", "sizeof", "static", "static_assert",
-  "static_cast", "struct", "switch", "template", "this", "thread_local",
-  "throw", "true", "try", "typedef", "typeid", "typename", "union", "unsigned",
-  "using", "virtual", "void", "volatile", "wchar_t", "while", "xor", "xor_eq"
+  "double", "dynamic_cast", "else", "enum", "explicit", "export", "extern",
+  "false", "float", "for", "friend", "goto", "if", "inline", "int", "long",
+  "mutable", "namespace", "new", "noexcept", "not", "not_eq", "NULL",
+  "operator", "or", "or_eq", "private", "protected", "public", "register",
+  "reinterpret_cast", "return", "short", "signed", "sizeof", "static",
+  "static_assert", "static_cast", "struct", "switch", "template", "this",
+  "thread_local", "throw", "true", "try", "typedef", "typeid", "typename",
+  "union", "unsigned", "using", "virtual", "void", "volatile", "wchar_t",
+  "while", "xor", "xor_eq"
 };
 
 hash_set<string> MakeKeywordsMap() {
@@ -171,9 +172,10 @@ string DependentBaseClassTemplateName(const Descriptor* descriptor) {
   return ClassName(descriptor, false) + "_InternalBase";
 }
 
-string SuperClassName(const Descriptor* descriptor) {
-  return HasDescriptorMethods(descriptor->file()) ?
-      "::google::protobuf::Message" : "::google::protobuf::MessageLite";
+string SuperClassName(const Descriptor* descriptor, const Options& options) {
+  return HasDescriptorMethods(descriptor->file(), options)
+             ? "::google::protobuf::Message"
+             : "::google::protobuf::MessageLite";
 }
 
 string DependentBaseDownCast() {
@@ -485,8 +487,9 @@ string SafeFunctionName(const Descriptor* descriptor,
   return function_name;
 }
 
-bool StaticInitializersForced(const FileDescriptor* file) {
-  if (HasDescriptorMethods(file) || file->extension_count() > 0) {
+bool StaticInitializersForced(const FileDescriptor* file,
+                              const Options& options) {
+  if (HasDescriptorMethods(file, options) || file->extension_count() > 0) {
     return true;
   }
   for (int i = 0; i < file->message_type_count(); ++i) {
@@ -498,10 +501,10 @@ bool StaticInitializersForced(const FileDescriptor* file) {
 }
 
 void PrintHandlingOptionalStaticInitializers(
-    const FileDescriptor* file, io::Printer* printer,
+    const FileDescriptor* file, const Options& options, io::Printer* printer,
     const char* with_static_init, const char* without_static_init,
-    const char* var1, const string& val1,
-    const char* var2, const string& val2) {
+    const char* var1, const string& val1, const char* var2,
+    const string& val2) {
   map<string, string> vars;
   if (var1) {
     vars[var1] = val1;
@@ -510,14 +513,16 @@ void PrintHandlingOptionalStaticInitializers(
     vars[var2] = val2;
   }
   PrintHandlingOptionalStaticInitializers(
-      vars, file, printer, with_static_init, without_static_init);
+      vars, file, options, printer, with_static_init, without_static_init);
 }
 
-void PrintHandlingOptionalStaticInitializers(
-    const map<string, string>& vars, const FileDescriptor* file,
-    io::Printer* printer, const char* with_static_init,
-    const char* without_static_init) {
-  if (StaticInitializersForced(file)) {
+void PrintHandlingOptionalStaticInitializers(const map<string, string>& vars,
+                                             const FileDescriptor* file,
+                                             const Options& options,
+                                             io::Printer* printer,
+                                             const char* with_static_init,
+                                             const char* without_static_init) {
+  if (StaticInitializersForced(file, options)) {
     printer->Print(vars, with_static_init);
   } else {
     printer->Print(vars, (string(
@@ -612,10 +617,11 @@ enum Utf8CheckMode {
 };
 
 // Which level of UTF-8 enforcemant is placed on this file.
-static Utf8CheckMode GetUtf8CheckMode(const FieldDescriptor* field) {
+static Utf8CheckMode GetUtf8CheckMode(const FieldDescriptor* field,
+                                      const Options& options) {
   if (field->file()->syntax() == FileDescriptor::SYNTAX_PROTO3) {
     return STRICT;
-  } else if (field->file()->options().optimize_for() !=
+  } else if (GetOptimizeFor(field->file(), options) !=
              FileOptions::LITE_RUNTIME) {
     return VERIFY;
   } else {
@@ -624,13 +630,13 @@ static Utf8CheckMode GetUtf8CheckMode(const FieldDescriptor* field) {
 }
 
 static void GenerateUtf8CheckCode(const FieldDescriptor* field,
-                                  bool for_parse,
+                                  const Options& options, bool for_parse,
                                   const map<string, string>& variables,
                                   const char* parameters,
                                   const char* strict_function,
                                   const char* verify_function,
                                   io::Printer* printer) {
-  switch (GetUtf8CheckMode(field)) {
+  switch (GetUtf8CheckMode(field, options)) {
     case STRICT: {
       if (for_parse) {
         printer->Print("DO_(");
@@ -674,23 +680,22 @@ static void GenerateUtf8CheckCode(const FieldDescriptor* field,
 }
 
 void GenerateUtf8CheckCodeForString(const FieldDescriptor* field,
-                                    bool for_parse,
+                                    const Options& options, bool for_parse,
                                     const map<string, string>& variables,
                                     const char* parameters,
                                     io::Printer* printer) {
-  GenerateUtf8CheckCode(field, for_parse, variables, parameters,
+  GenerateUtf8CheckCode(field, options, for_parse, variables, parameters,
                         "VerifyUtf8String", "VerifyUTF8StringNamedField",
                         printer);
 }
 
 void GenerateUtf8CheckCodeForCord(const FieldDescriptor* field,
-                                  bool for_parse,
+                                  const Options& options, bool for_parse,
                                   const map<string, string>& variables,
                                   const char* parameters,
                                   io::Printer* printer) {
-  GenerateUtf8CheckCode(field, for_parse, variables, parameters,
-                        "VerifyUtf8Cord", "VerifyUTF8CordNamedField",
-                        printer);
+  GenerateUtf8CheckCode(field, options, for_parse, variables, parameters,
+                        "VerifyUtf8Cord", "VerifyUTF8CordNamedField", printer);
 }
 
 }  // namespace cpp

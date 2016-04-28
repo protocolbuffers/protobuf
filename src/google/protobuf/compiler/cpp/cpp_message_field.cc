@@ -53,10 +53,11 @@ void SetMessageVariables(const FieldDescriptor* descriptor,
     (*variables)["non_null_ptr_to_name"] =
         StrCat("this->", (*variables)["name"], "_");
   }
-  (*variables)["stream_writer"] = (*variables)["declared_type"] +
-      (HasFastArraySerialization(descriptor->message_type()->file()) ?
-       "MaybeToArray" :
-       "");
+  (*variables)["stream_writer"] =
+      (*variables)["declared_type"] +
+      (HasFastArraySerialization(descriptor->message_type()->file(), options)
+           ? "MaybeToArray"
+           : "");
   // NOTE: Escaped here to unblock proto1->proto2 migration.
   // TODO(liujisi): Extend this to apply for other conflicting methods.
   (*variables)["release_name"] =
@@ -77,11 +78,11 @@ void SetMessageVariables(const FieldDescriptor* descriptor,
 
 // ===================================================================
 
-MessageFieldGenerator::
-MessageFieldGenerator(const FieldDescriptor* descriptor,
-                      const Options& options)
-  : descriptor_(descriptor),
-    dependent_field_(options.proto_h && IsFieldDependent(descriptor)) {
+MessageFieldGenerator::MessageFieldGenerator(const FieldDescriptor* descriptor,
+                                             const Options& options)
+    : FieldGenerator(options),
+      descriptor_(descriptor),
+      dependent_field_(options.proto_h && IsFieldDependent(descriptor)) {
   SetMessageVariables(descriptor, &variables_, options);
 }
 
@@ -95,7 +96,7 @@ GeneratePrivateMembers(io::Printer* printer) const {
 void MessageFieldGenerator::
 GenerateGetterDeclaration(io::Printer* printer) const {
   printer->Print(variables_,
-      "const $type$& $name$() const$deprecation$;\n");
+      "$deprecated_attr$const $type$& $name$() const;\n");
 }
 
 void MessageFieldGenerator::
@@ -105,9 +106,9 @@ GenerateDependentAccessorDeclarations(io::Printer* printer) const {
   }
   // Arena manipulation code is out-of-line in the derived message class.
   printer->Print(variables_,
-    "$type$* mutable_$name$()$deprecation$;\n"
-    "$type$* $release_name$()$deprecation$;\n"
-    "void set_allocated_$name$($type$* $name$)$deprecation$;\n");
+    "$deprecated_attr$$type$* mutable_$name$();\n"
+    "$deprecated_attr$$type$* $release_name$();\n"
+    "$deprecated_attr$void set_allocated_$name$($type$* $name$);\n");
 }
 
 void MessageFieldGenerator::
@@ -115,28 +116,28 @@ GenerateAccessorDeclarations(io::Printer* printer) const {
   if (SupportsArenas(descriptor_)) {
     printer->Print(variables_,
        "private:\n"
-       "void _slow_mutable_$name$()$deprecation$;\n");
+       "void _slow_mutable_$name$();\n");
     if (SupportsArenas(descriptor_->message_type())) {
       printer->Print(variables_,
        "void _slow_set_allocated_$name$(\n"
-       "    ::google::protobuf::Arena* message_arena, $type$** $name$)$deprecation$;\n");
+       "    ::google::protobuf::Arena* message_arena, $type$** $name$);\n");
     }
     printer->Print(variables_,
-       "$type$* _slow_$release_name$()$deprecation$;\n"
+       "$type$* _slow_$release_name$();\n"
        "public:\n");
   }
   GenerateGetterDeclaration(printer);
   if (!dependent_field_) {
     printer->Print(variables_,
-      "$type$* mutable_$name$()$deprecation$;\n"
-      "$type$* $release_name$()$deprecation$;\n"
-      "void set_allocated_$name$($type$* $name$)$deprecation$;\n");
+      "$deprecated_attr$$type$* mutable_$name$();\n"
+      "$deprecated_attr$$type$* $release_name$();\n"
+      "$deprecated_attr$void set_allocated_$name$($type$* $name$);\n");
   }
   if (SupportsArenas(descriptor_)) {
     printer->Print(variables_,
-      "$type$* unsafe_arena_release_$name$()$deprecation$;\n"
-      "void unsafe_arena_set_allocated_$name$(\n"
-      "    $type$* $name$)$deprecation$;\n");
+      "$deprecated_attr$$type$* unsafe_arena_release_$name$();\n"
+      "$deprecated_attr$void unsafe_arena_set_allocated_$name$(\n"
+      "    $type$* $name$);\n");
   }
 }
 
@@ -167,6 +168,7 @@ void MessageFieldGenerator::GenerateNonInlineAccessorDefinitions(
       "  }\n"
       "}\n"
       "$type$* $classname$::unsafe_arena_release_$name$() {\n"
+      "  // @@protoc_insertion_point(field_unsafe_arena_release:$full_name$)\n"
       "  $clear_hasbit$\n"
       "  $type$* temp = $name$_;\n"
       "  $name$_ = NULL;\n"
@@ -246,6 +248,7 @@ GenerateDependentInlineAccessorDefinitions(io::Printer* printer) const {
       "}\n"
       "template <class T>\n"
       "inline $type$* $dependent_classname$::$release_name$() {\n"
+      "  // @@protoc_insertion_point(field_release:$full_name$)\n"
       "  $dependent_typename$*& $name$_ = $this_message$$name$_;\n"
       "  $clear_hasbit$\n"
       "  if ($this_message$GetArenaNoVirtual() != NULL) {\n"
@@ -305,6 +308,7 @@ GenerateDependentInlineAccessorDefinitions(io::Printer* printer) const {
       "}\n"
       "template <class T>\n"
       "inline $type$* $dependent_classname$::$release_name$() {\n"
+      "  // @@protoc_insertion_point(field_release:$full_name$)\n"
       "  $clear_hasbit$\n"
       "  $dependent_typename$*& $name$_ = $this_message$$name$_;\n"
       "  $dependent_typename$* temp = $name$_;\n"
@@ -349,11 +353,11 @@ GenerateInlineAccessorDefinitions(io::Printer* printer,
     "  // @@protoc_insertion_point(field_get:$full_name$)\n");
 
   PrintHandlingOptionalStaticInitializers(
-    variables, descriptor_->file(), printer,
-    // With static initializers.
-    "  return $name$_ != NULL ? *$name$_ : *default_instance_->$name$_;\n",
-    // Without.
-    "  return $name$_ != NULL ? *$name$_ : *default_instance().$name$_;\n");
+      variables, descriptor_->file(), options_, printer,
+      // With static initializers.
+      "  return $name$_ != NULL ? *$name$_ : *default_instance_->$name$_;\n",
+      // Without.
+      "  return $name$_ != NULL ? *$name$_ : *default_instance().$name$_;\n");
   printer->Print(variables, "}\n");
 
   if (dependent_field_) {
@@ -373,6 +377,7 @@ GenerateInlineAccessorDefinitions(io::Printer* printer,
       "}\n"
       "$inline$"
       "$type$* $classname$::$release_name$() {\n"
+      "  // @@protoc_insertion_point(field_release:$full_name$)\n"
       "  $clear_hasbit$\n"
       "  if (GetArenaNoVirtual() != NULL) {\n"
       "    return _slow_$release_name$();\n"
@@ -426,6 +431,7 @@ GenerateInlineAccessorDefinitions(io::Printer* printer,
       "}\n"
       "$inline$"
       "$type$* $classname$::$release_name$() {\n"
+      "  // @@protoc_insertion_point(field_release:$full_name$)\n"
       "  $clear_hasbit$\n"
       "  $type$* temp = $name$_;\n"
       "  $name$_ = NULL;\n"
@@ -547,7 +553,7 @@ GenerateDependentAccessorDeclarations(io::Printer* printer) const {
     return;
   }
   printer->Print(variables_,
-      "const $type$& $name$() const$deprecation$;\n");
+      "$deprecated_attr$const $type$& $name$() const;\n");
   MessageFieldGenerator::GenerateDependentAccessorDeclarations(printer);
 }
 
@@ -560,7 +566,7 @@ GenerateGetterDeclaration(io::Printer* printer) const {
     return;
   }
   printer->Print(variables_,
-      "const $type$& $name$() const$deprecation$;\n");
+      "$deprecated_attr$const $type$& $name$() const;\n");
 }
 
 void MessageOneofFieldGenerator::
@@ -651,6 +657,7 @@ InternalGenerateInlineAccessorDefinitions(const map<string, string>& variables,
       "$tmpl$"
       "$inline$"
       "$type$* $dependent_classname$::$release_name$() {\n"
+      "  // @@protoc_insertion_point(field_release:$full_name$)\n"
       "  if ($this_message$has_$name$()) {\n"
       "    $this_message$clear_has_$oneof_name$();\n"
       "    if ($this_message$GetArenaNoVirtual() != NULL) {\n"
@@ -706,6 +713,8 @@ InternalGenerateInlineAccessorDefinitions(const map<string, string>& variables,
       "  // @@protoc_insertion_point(field_set_allocated:$full_name$)\n"
       "}\n"
       "$inline$ $type$* $classname$::unsafe_arena_release_$name$() {\n"
+      "  // @@protoc_insertion_point(field_unsafe_arena_release"
+      ":$full_name$)\n"
       "  if (has_$name$()) {\n"
       "    clear_has_$oneof_name$();\n"
       "    $type$* temp = $oneof_prefix$$name$_;\n"
@@ -744,6 +753,7 @@ InternalGenerateInlineAccessorDefinitions(const map<string, string>& variables,
       "$tmpl$"
       "$inline$"
       "$type$* $dependent_classname$::$release_name$() {\n"
+      "  // @@protoc_insertion_point(field_release:$full_name$)\n"
       "  if ($this_message$has_$name$()) {\n"
       "    $this_message$clear_has_$oneof_name$();\n"
       "    $dependent_typename$* temp = $field_member$;\n"
@@ -805,12 +815,12 @@ GenerateConstructorCode(io::Printer* printer) const {
 
 // ===================================================================
 
-RepeatedMessageFieldGenerator::
-RepeatedMessageFieldGenerator(const FieldDescriptor* descriptor,
-                              const Options& options)
-  : descriptor_(descriptor),
-    dependent_field_(options.proto_h && IsFieldDependent(descriptor)),
-    dependent_getter_(dependent_field_ && options.safe_boundary_check) {
+RepeatedMessageFieldGenerator::RepeatedMessageFieldGenerator(
+    const FieldDescriptor* descriptor, const Options& options)
+    : FieldGenerator(options),
+      descriptor_(descriptor),
+      dependent_field_(options.proto_h && IsFieldDependent(descriptor)),
+      dependent_getter_(dependent_field_ && options.safe_boundary_check) {
   SetMessageVariables(descriptor, &variables_, options);
 }
 
@@ -825,23 +835,23 @@ GeneratePrivateMembers(io::Printer* printer) const {
 void RepeatedMessageFieldGenerator::
 InternalGenerateTypeDependentAccessorDeclarations(io::Printer* printer) const {
   printer->Print(variables_,
-    "$type$* mutable_$name$(int index)$deprecation$;\n"
-    "$type$* add_$name$()$deprecation$;\n");
+    "$deprecated_attr$$type$* mutable_$name$(int index);\n"
+    "$deprecated_attr$$type$* add_$name$();\n");
   if (dependent_getter_) {
     printer->Print(variables_,
-      "const ::google::protobuf::RepeatedPtrField< $type$ >&\n"
-      "    $name$() const$deprecation$;\n");
+      "$deprecated_attr$const ::google::protobuf::RepeatedPtrField< $type$ >&\n"
+      "    $name$() const;\n");
   }
   printer->Print(variables_,
-    "::google::protobuf::RepeatedPtrField< $type$ >*\n"
-    "    mutable_$name$()$deprecation$;\n");
+    "$deprecated_attr$::google::protobuf::RepeatedPtrField< $type$ >*\n"
+    "    mutable_$name$();\n");
 }
 
 void RepeatedMessageFieldGenerator::
 GenerateDependentAccessorDeclarations(io::Printer* printer) const {
   if (dependent_getter_) {
     printer->Print(variables_,
-      "const $type$& $name$(int index) const$deprecation$;\n");
+      "$deprecated_attr$const $type$& $name$(int index) const;\n");
   }
   if (dependent_field_) {
     InternalGenerateTypeDependentAccessorDeclarations(printer);
@@ -852,15 +862,15 @@ void RepeatedMessageFieldGenerator::
 GenerateAccessorDeclarations(io::Printer* printer) const {
   if (!dependent_getter_) {
     printer->Print(variables_,
-      "const $type$& $name$(int index) const$deprecation$;\n");
+      "$deprecated_attr$const $type$& $name$(int index) const;\n");
   }
   if (!dependent_field_) {
     InternalGenerateTypeDependentAccessorDeclarations(printer);
   }
   if (!dependent_getter_) {
     printer->Print(variables_,
-      "const ::google::protobuf::RepeatedPtrField< $type$ >&\n"
-      "    $name$() const$deprecation$;\n");
+      "$deprecated_attr$const ::google::protobuf::RepeatedPtrField< $type$ >&\n"
+      "    $name$() const;\n");
   }
 }
 

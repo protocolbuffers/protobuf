@@ -197,6 +197,41 @@ describe('binaryUtilsTest', function() {
     assertEquals('123456789123456789', result[2]);
   });
 
+  /*
+   * Going from decimal strings to hash strings should be lossless.
+   */
+  it('testDecimalToHashConversion', function() {
+    var result;
+    var convert = jspb.utils.decimalStringToHash64;
+
+    result = convert('0');
+    assertEquals(String.fromCharCode.apply(null,
+      [0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]), result);
+
+    result = convert('-1');
+    assertEquals(String.fromCharCode.apply(null,
+      [0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF]), result);
+
+    result = convert('18446744073709551615');
+    assertEquals(String.fromCharCode.apply(null,
+      [0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF]), result);
+
+    result = convert('9223372036854775808');
+    assertEquals(String.fromCharCode.apply(null,
+      [0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x80]), result);
+
+    result = convert('-9223372036854775808');
+    assertEquals(String.fromCharCode.apply(null,
+      [0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x80]), result);
+
+    result = convert('123456789123456789');
+    assertEquals(String.fromCharCode.apply(null,
+      [0x15, 0x5F, 0xD0, 0xAC, 0x4B, 0x9B, 0xB6, 0x01]), result);
+
+    result = convert('-123456789123456789');
+    assertEquals(String.fromCharCode.apply(null,
+      [0xEB, 0xA0, 0x2F, 0x53, 0xB4, 0x64, 0x49, 0xFE]), result);
+  });
 
   /**
    * Going from hash strings to hex strings should be lossless.

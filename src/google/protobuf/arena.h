@@ -211,7 +211,12 @@ struct ArenaOptions {
 //
 // This protocol is implemented by all arena-enabled proto2 message classes as
 // well as RepeatedPtrField.
+
+#if __cplusplus >= 201103L
+class Arena final {
+#else
 class LIBPROTOBUF_EXPORT Arena {
+#endif
  public:
   // Arena constructor taking custom options. See ArenaOptions below for
   // descriptions of the options available.
@@ -230,7 +235,6 @@ class LIBPROTOBUF_EXPORT Arena {
   // destructors can be skipped. Also, frees all blocks except the initial block
   // if it was passed in.
   ~Arena();
-
 
   // API to create proto2 message objects on the arena. If the arena passed in
   // is NULL, then a heap allocated object is returned. Type T must be a message
@@ -447,6 +451,10 @@ class LIBPROTOBUF_EXPORT Arena {
   GOOGLE_ATTRIBUTE_NOINLINE uint64 SpaceAllocated() const;
   // As above, but does not include any free space in underlying blocks.
   GOOGLE_ATTRIBUTE_NOINLINE uint64 SpaceUsed() const;
+
+  // Combines SpaceAllocated and SpaceUsed. Returns a pair of
+  // <space_allocated, space_used>.
+  GOOGLE_ATTRIBUTE_NOINLINE pair<uint64, uint64> SpaceAllocatedAndUsed() const;
 
   // Frees all storage allocated by this arena after calling destructors
   // registered with OwnDestructor() and freeing objects registered with Own().

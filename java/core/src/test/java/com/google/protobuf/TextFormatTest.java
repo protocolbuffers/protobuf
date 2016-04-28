@@ -775,10 +775,13 @@ public class TextFormatTest extends TestCase {
   public void testParseBoolean() throws Exception {
     String goodText =
         "repeated_bool: t  repeated_bool : 0\n" +
-        "repeated_bool :f repeated_bool:1";
+        "repeated_bool :f repeated_bool:1\n" +
+        "repeated_bool: False repeated_bool: True";
     String goodTextCanonical =
         "repeated_bool: true\n" +
         "repeated_bool: false\n" +
+        "repeated_bool: false\n" +
+        "repeated_bool: true\n" +
         "repeated_bool: false\n" +
         "repeated_bool: true\n";
     TestAllTypes.Builder builder = TestAllTypes.newBuilder();

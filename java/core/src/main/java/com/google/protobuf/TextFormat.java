@@ -965,11 +965,13 @@ public final class TextFormat {
      */
     public boolean consumeBoolean() throws ParseException {
       if (currentToken.equals("true")
+          || currentToken.equals("True")
           || currentToken.equals("t")
           || currentToken.equals("1")) {
         nextToken();
         return true;
       } else if (currentToken.equals("false")
+          || currentToken.equals("False")
           || currentToken.equals("f")
           || currentToken.equals("0")) {
         nextToken();

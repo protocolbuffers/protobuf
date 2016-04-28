@@ -211,14 +211,19 @@ public class FieldMaskUtil {
   public static FieldMask normalize(FieldMask mask) {
     return new FieldMaskTree(mask).toFieldMask();
   }
-  
+
   /**
-   * Creates an union of two FieldMasks.
+   * Creates a union of two or more FieldMasks.
    */
-  public static FieldMask union(FieldMask mask1, FieldMask mask2) {
-    return new FieldMaskTree(mask1).mergeFromFieldMask(mask2).toFieldMask();
+  public static FieldMask union(
+      FieldMask firstMask, FieldMask secondMask, FieldMask... otherMasks) {
+    FieldMaskTree maskTree = new FieldMaskTree(firstMask).mergeFromFieldMask(secondMask);
+    for (FieldMask mask : otherMasks) {
+      maskTree.mergeFromFieldMask(mask);
+    }
+    return maskTree.toFieldMask();
   }
-  
+
   /**
    * Calculates the intersection of two FieldMasks.
    */
@@ -237,6 +242,9 @@ public class FieldMaskUtil {
   public static final class MergeOptions {
     private boolean replaceMessageFields = false;
     private boolean replaceRepeatedFields = false;
+    // TODO(b/28277137): change the default behavior to always replace primitive fields after
+    // fixing all failing TAP tests.
+    private boolean replacePrimitiveFields = false;
 
     /**
      * Whether to replace message fields (i.e., discard existing content in
@@ -257,7 +265,23 @@ public class FieldMaskUtil {
     public boolean replaceRepeatedFields() {
       return replaceRepeatedFields;
     }
-    
+
+    /**
+     * Whether to replace primitive (non-repeated and non-message) fields in
+     * destination message fields with the source primitive fields (i.e., if the
+     * field is set in the source, the value is copied to the
+     * destination; if the field is unset in the source, the field is cleared
+     * from the destination) when merging.
+     *
+     * <p>Default behavior is to always set the value of the source primitive
+     * field to the destination primitive field, and if the source field is
+     * unset, the default value of the source field is copied to the
+     * destination.
+     */
+    public boolean replacePrimitiveFields() {
+      return replacePrimitiveFields;
+    }
+
     public void setReplaceMessageFields(boolean value) {
       replaceMessageFields = value;
     }
@@ -265,10 +289,15 @@ public class FieldMaskUtil {
     public void setReplaceRepeatedFields(boolean value) {
       replaceRepeatedFields = value;
     }
+
+    public void setReplacePrimitiveFields(boolean value) {
+      replacePrimitiveFields = value;
+    }
   }
-  
+
   /**
-   * Merges fields specified by a FieldMask from one message to another.
+   * Merges fields specified by a FieldMask from one message to another with the
+   * specified merge options.
    */
   public static void merge(FieldMask mask, Message source,
       Message.Builder destination, MergeOptions options) {

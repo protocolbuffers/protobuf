@@ -456,7 +456,9 @@ bool MessageDifferencer::Compare(
   const Descriptor* descriptor2 = message2.GetDescriptor();
   if (descriptor1 != descriptor2) {
     GOOGLE_LOG(DFATAL) << "Comparison between two messages with different "
-                << "descriptors.";
+                << "descriptors. "
+                << descriptor1->full_name() << " vs "
+                << descriptor2->full_name();
     return false;
   }
   // Expand google.protobuf.Any payload if possible.
@@ -1385,7 +1387,7 @@ bool MessageDifferencer::MatchRepeatedFieldIndices(
       // algorithm will fail to find a maximum matching.
       // Here we use the argumenting path algorithm.
       MaximumMatcher::NodeMatchCallback* callback =
-          google::protobuf::internal::NewPermanentCallback(
+          ::google::protobuf::internal::NewPermanentCallback(
               this, &MessageDifferencer::IsMatch,
               repeated_field, key_comparator,
               &message1, &message2, parent_fields);

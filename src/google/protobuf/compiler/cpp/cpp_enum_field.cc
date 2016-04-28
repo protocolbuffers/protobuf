@@ -58,10 +58,9 @@ void SetEnumVariables(const FieldDescriptor* descriptor,
 
 // ===================================================================
 
-EnumFieldGenerator::
-EnumFieldGenerator(const FieldDescriptor* descriptor,
-                   const Options& options)
-  : descriptor_(descriptor) {
+EnumFieldGenerator::EnumFieldGenerator(const FieldDescriptor* descriptor,
+                                       const Options& options)
+    : FieldGenerator(options), descriptor_(descriptor) {
   SetEnumVariables(descriptor, &variables_, options);
 }
 
@@ -75,8 +74,8 @@ GeneratePrivateMembers(io::Printer* printer) const {
 void EnumFieldGenerator::
 GenerateAccessorDeclarations(io::Printer* printer) const {
   printer->Print(variables_,
-    "$type$ $name$() const$deprecation$;\n"
-    "void set_$name$($type$ value)$deprecation$;\n");
+    "$deprecated_attr$$type$ $name$() const;\n"
+    "$deprecated_attr$void set_$name$($type$ value);\n");
 }
 
 void EnumFieldGenerator::
@@ -135,7 +134,7 @@ GenerateMergeFromCodedStream(io::Printer* printer) const {
     printer->Print(variables_,
       "if ($type$_IsValid(value)) {\n"
       "  set_$name$(static_cast< $type$ >(value));\n");
-    if (UseUnknownFieldSet(descriptor_->file())) {
+    if (UseUnknownFieldSet(descriptor_->file(), options_)) {
       printer->Print(variables_,
         "} else {\n"
         "  mutable_unknown_fields()->AddVarint($number$, value);\n");
@@ -228,10 +227,9 @@ GenerateConstructorCode(io::Printer* printer) const {
 
 // ===================================================================
 
-RepeatedEnumFieldGenerator::
-RepeatedEnumFieldGenerator(const FieldDescriptor* descriptor,
-                           const Options& options)
-  : descriptor_(descriptor) {
+RepeatedEnumFieldGenerator::RepeatedEnumFieldGenerator(
+    const FieldDescriptor* descriptor, const Options& options)
+    : FieldGenerator(options), descriptor_(descriptor) {
   SetEnumVariables(descriptor, &variables_, options);
 }
 
@@ -241,8 +239,8 @@ void RepeatedEnumFieldGenerator::
 GeneratePrivateMembers(io::Printer* printer) const {
   printer->Print(variables_,
     "::google::protobuf::RepeatedField<int> $name$_;\n");
-  if (descriptor_->is_packed()
-      && HasGeneratedMethods(descriptor_->file())) {
+  if (descriptor_->is_packed() &&
+      HasGeneratedMethods(descriptor_->file(), options_)) {
     printer->Print(variables_,
       "mutable int _$name$_cached_byte_size_;\n");
   }
@@ -251,12 +249,12 @@ GeneratePrivateMembers(io::Printer* printer) const {
 void RepeatedEnumFieldGenerator::
 GenerateAccessorDeclarations(io::Printer* printer) const {
   printer->Print(variables_,
-    "$type$ $name$(int index) const$deprecation$;\n"
-    "void set_$name$(int index, $type$ value)$deprecation$;\n"
-    "void add_$name$($type$ value)$deprecation$;\n");
+    "$deprecated_attr$$type$ $name$(int index) const;\n"
+    "$deprecated_attr$void set_$name$(int index, $type$ value);\n"
+    "$deprecated_attr$void add_$name$($type$ value);\n");
   printer->Print(variables_,
-    "const ::google::protobuf::RepeatedField<int>& $name$() const$deprecation$;\n"
-    "::google::protobuf::RepeatedField<int>* mutable_$name$()$deprecation$;\n");
+    "$deprecated_attr$const ::google::protobuf::RepeatedField<int>& $name$() const;\n"
+    "$deprecated_attr$::google::protobuf::RepeatedField<int>* mutable_$name$();\n");
 }
 
 void RepeatedEnumFieldGenerator::
@@ -335,7 +333,7 @@ GenerateMergeFromCodedStream(io::Printer* printer) const {
     printer->Print(variables_,
       "if ($type$_IsValid(value)) {\n"
       "  add_$name$(static_cast< $type$ >(value));\n");
-    if (UseUnknownFieldSet(descriptor_->file())) {
+    if (UseUnknownFieldSet(descriptor_->file(), options_)) {
       printer->Print(variables_,
         "} else {\n"
         "  mutable_unknown_fields()->AddVarint($number$, value);\n");
@@ -362,7 +360,7 @@ GenerateMergeFromCodedStreamWithPacking(io::Printer* printer) const {
         "       NULL,\n"
         "       NULL,\n"
         "       this->mutable_$name$())));\n");
-    } else if (UseUnknownFieldSet(descriptor_->file())) {
+    } else if (UseUnknownFieldSet(descriptor_->file(), options_)) {
       printer->Print(variables_,
         "DO_((::google::protobuf::internal::WireFormat::ReadPackedEnumPreserveUnknowns(\n"
         "       input,\n"
@@ -399,7 +397,7 @@ GenerateMergeFromCodedStreamWithPacking(io::Printer* printer) const {
       "  if ($type$_IsValid(value)) {\n"
       "    add_$name$(static_cast< $type$ >(value));\n"
       "  } else {\n");
-      if (UseUnknownFieldSet(descriptor_->file())) {
+      if (UseUnknownFieldSet(descriptor_->file(), options_)) {
         printer->Print(variables_,
         "    mutable_unknown_fields()->AddVarint($number$, value);\n");
       } else {

@@ -610,6 +610,14 @@ class AnyTest(unittest.TestCase):
       raise AttributeError('%s should not have Pack method.' %
                            msg_descriptor.full_name)
 
+  def testMessageName(self):
+    # Creates and sets message.
+    submessage = any_test_pb2.TestAny()
+    submessage.int_value = 12345
+    msg = any_pb2.Any()
+    msg.Pack(submessage)
+    self.assertEqual(msg.TypeName(), 'google.protobuf.internal.TestAny')
+
   def testPackWithCustomTypeUrl(self):
     submessage = any_test_pb2.TestAny()
     submessage.int_value = 12345

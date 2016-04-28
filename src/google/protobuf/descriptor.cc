@@ -357,13 +357,20 @@ void DeleteAllowedProto3Extendee() {
 
 void InitAllowedProto3Extendee() {
   allowed_proto3_extendees_ = new set<string>;
-  allowed_proto3_extendees_->insert("google.protobuf.FileOptions");
-  allowed_proto3_extendees_->insert("google.protobuf.MessageOptions");
-  allowed_proto3_extendees_->insert("google.protobuf.FieldOptions");
-  allowed_proto3_extendees_->insert("google.protobuf.EnumOptions");
-  allowed_proto3_extendees_->insert("google.protobuf.EnumValueOptions");
-  allowed_proto3_extendees_->insert("google.protobuf.ServiceOptions");
-  allowed_proto3_extendees_->insert("google.protobuf.MethodOptions");
+  const char* kOptionNames[] = {
+      "FileOptions",      "MessageOptions", "FieldOptions", "EnumOptions",
+      "EnumValueOptions", "ServiceOptions", "MethodOptions"};
+  for (int i = 0; i < GOOGLE_ARRAYSIZE(kOptionNames); ++i) {
+    // descriptor.proto has a different package name in opensource. We allow
+    // both so the opensource protocol compiler can also compile internal
+    // proto3 files with custom options. See: b/27567912
+    allowed_proto3_extendees_->insert(string("google.protobuf.") +
+                                      kOptionNames[i]);
+    // Split the word to trick the opensource processing scripts so they
+    // will keep the origial package name.
+    allowed_proto3_extendees_->insert(string("proto") + "2." + kOptionNames[i]);
+  }
+
   google::protobuf::internal::OnShutdown(&DeleteAllowedProto3Extendee);
 }
 
@@ -2766,6 +2773,9 @@ class DescriptorBuilder {
  private:
   friend class OptionInterpreter;
 
+  // Non-recursive part of BuildFile functionality.
+  const FileDescriptor* BuildFileImpl(const FileDescriptorProto& proto);
+
   const DescriptorPool* pool_;
   DescriptorPool::Tables* tables_;  // for convenience
   DescriptorPool::ErrorCollector* error_collector_;
@@ -3834,7 +3844,11 @@ const FileDescriptor* DescriptorBuilder::BuildFile(
     }
     tables_->pending_files_.pop_back();
   }
+  return BuildFileImpl(proto);
+}
 
+const FileDescriptor* DescriptorBuilder::BuildFileImpl(
+    const FileDescriptorProto& proto) {
   // Checkpoint the tables so that we can roll back if something goes wrong.
   tables_->AddCheckpoint();
 
@@ -5112,11 +5126,6 @@ void DescriptorBuilder::ValidateProto3(
   }
   for (int i = 0; i < file->enum_type_count(); ++i) {
     ValidateProto3Enum(file->enum_types_ + i, proto.enum_type(i));
-  }
-  if (IsLite(file)) {
-    AddError(file->name(), proto,
-             DescriptorPool::ErrorCollector::OTHER,
-             "Lite runtime is not supported in proto3.");
   }
 }
 

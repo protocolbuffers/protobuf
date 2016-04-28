@@ -78,7 +78,7 @@ class MapFieldBaseStub : public MapFieldBase {
   bool ContainsMapKey(const MapKey& map_key) const {
     return false;
   }
-  bool InsertMapValue(const MapKey& map_key, MapValueRef* val) {
+  bool InsertOrLookupMapValue(const MapKey& map_key, MapValueRef* val) {
     return false;
   }
   bool DeleteMapValue(const MapKey& map_key) {

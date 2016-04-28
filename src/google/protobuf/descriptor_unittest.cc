@@ -5740,18 +5740,6 @@ TEST_F(ValidationErrorTest, ValidateProto3Enum) {
       "}");
 }
 
-TEST_F(ValidationErrorTest, ValidateProto3LiteRuntime) {
-  // Lite runtime is not supported in proto3.
-  BuildFileWithErrors(
-      "name: 'foo.proto' "
-      "syntax: 'proto3' "
-      "options { "
-      "  optimize_for: LITE_RUNTIME "
-      "} ",
-      "foo.proto: foo.proto: OTHER: Lite runtime is not supported "
-      "in proto3.\n");
-}
-
 TEST_F(ValidationErrorTest, ValidateProto3Group) {
   BuildFileWithErrors(
       "name: 'foo.proto' "

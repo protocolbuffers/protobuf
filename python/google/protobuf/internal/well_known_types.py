@@ -82,10 +82,14 @@ class Any(object):
     msg.ParseFromString(self.value)
     return True
 
+  def TypeName(self):
+    """Returns the protobuf type name of the inner message."""
+    # Only last part is to be used: b/25630112
+    return self.type_url.split('/')[-1]
+
   def Is(self, descriptor):
     """Checks if this Any represents the given protobuf type."""
-    # Only last part is to be used: b/25630112
-    return self.type_url.split('/')[-1] == descriptor.full_name
+    return self.TypeName() == descriptor.full_name
 
 
 class Timestamp(object):

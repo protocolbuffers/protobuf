@@ -614,11 +614,12 @@ class Map {
     !defined(GOOGLE_PROTOBUF_OS_EMSCRIPTEN)
     template<class NodeType, class... Args>
     void construct(NodeType* p, Args&&... args) {
-      // Clang 3.6 doesn't compile static casting to void* directly. (Issue #1266)
-      // According C++ standard 5.2.9/1: "The static_cast operator shall not cast
-      // away constness". So first the maybe const pointer is casted to const void* and
-      // after the const void* is const casted.
-      new (const_cast<void*>(static_cast<const void*>(p))) NodeType(std::forward<Args>(args)...);
+      // Clang 3.6 doesn't compile static casting to void* directly. (Issue
+      // #1266) According C++ standard 5.2.9/1: "The static_cast operator shall
+      // not cast away constness". So first the maybe const pointer is casted to
+      // const void* and after the const void* is const casted.
+      new (const_cast<void*>(static_cast<const void*>(p)))
+          NodeType(std::forward<Args>(args)...);
     }
 
     template<class NodeType>
@@ -804,6 +805,8 @@ class Map {
       // Advance through buckets, looking for the first that isn't empty.
       // If nothing non-empty is found then leave node_ == NULL.
       void SearchFrom(size_type start_bucket) {
+        GOOGLE_DCHECK(m_->index_of_first_non_null_ == m_->num_buckets_ ||
+               m_->table_[m_->index_of_first_non_null_] != NULL);
         node_ = NULL;
         for (bucket_index_ = start_bucket; bucket_index_ < m_->num_buckets_;
              bucket_index_++) {
@@ -989,7 +992,7 @@ class Map {
     void erase(iterator it) {
       GOOGLE_DCHECK_EQ(it.m_, this);
       const bool is_list = it.revalidate_if_necessary();
-      const size_type b = it.bucket_index_;
+      size_type b = it.bucket_index_;
       Node* const item = it.node_;
       if (is_list) {
         GOOGLE_DCHECK(TableEntryIsNonEmptyList(b));
@@ -1001,15 +1004,18 @@ class Map {
         Tree* tree = static_cast<Tree*>(table_[b]);
         tree->erase(it.tree_it_);
         if (tree->empty()) {
+          // Force b to be the minimum of b and b ^ 1.  This is important
+          // only because we want index_of_first_non_null_ to be correct.
+          b &= ~static_cast<size_type>(1);
           DestroyTree(tree);
-          table_[b] = table_[b ^ 1] = NULL;
+          table_[b] = table_[b + 1] = NULL;
         }
       }
       DestroyNode(item);
       --num_elements_;
       if (GOOGLE_PREDICT_FALSE(b == index_of_first_non_null_)) {
         while (index_of_first_non_null_ < num_buckets_ &&
-               table_[index_of_first_non_null_] == 0) {
+               table_[index_of_first_non_null_] == NULL) {
           ++index_of_first_non_null_;
         }
       }
@@ -1045,6 +1051,8 @@ class Map {
     // Requires count(*KeyPtrFromNodePtr(node)) == 0 and that b is the correct
     // bucket.  num_elements_ is not modified.
     iterator InsertUnique(size_type b, Node* node) {
+      GOOGLE_DCHECK(index_of_first_non_null_ == num_buckets_ ||
+             table_[index_of_first_non_null_] != NULL);
       // In practice, the code that led to this point may have already
       // determined whether we are inserting into an empty list, a short list,
       // or whatever.  But it's probably cheap enough to recompute that here;
@@ -1057,11 +1065,16 @@ class Map {
         if (GOOGLE_PREDICT_FALSE(TableEntryIsTooLong(b))) {
           TreeConvert(b);
           result = InsertUniqueInTree(b, node);
+          GOOGLE_DCHECK_EQ(result.bucket_index_, b & ~static_cast<size_type>(1));
         } else {
-          result = InsertUniqueInList(b, node);
+          // Insert into a pre-existing list.  This case cannot modify
+          // index_of_first_non_null_, so we skip the code to update it.
+          return InsertUniqueInList(b, node);
         }
       } else {
-        result = InsertUniqueInTree(b, node);
+        // Insert into a pre-existing tree.  This case cannot modify
+        // index_of_first_non_null_, so we skip the code to update it.
+        return InsertUniqueInTree(b, node);
       }
       index_of_first_non_null_ =
           std::min(index_of_first_non_null_, result.bucket_index_);
@@ -1137,7 +1150,7 @@ class Map {
       num_buckets_ = new_num_buckets;
       table_ = CreateEmptyTable(num_buckets_);
       const size_type start = index_of_first_non_null_;
-      index_of_first_non_null_ = 0;
+      index_of_first_non_null_ = num_buckets_;
       for (size_type i = start; i < old_table_size; i++) {
         if (TableEntryIsNonEmptyList(old_table, i)) {
           TransferList(old_table, i);
@@ -1189,10 +1202,10 @@ class Map {
       return TableEntryIsList(table_, b);
     }
     static bool TableEntryIsEmpty(void* const* table, size_type b) {
-      return table[b] == 0;
+      return table[b] == NULL;
     }
     static bool TableEntryIsNonEmptyList(void* const* table, size_type b) {
-      return table[b] != 0 && table[b] != table[b ^ 1];
+      return table[b] != NULL && table[b] != table[b ^ 1];
     }
     static bool TableEntryIsTree(void* const* table, size_type b) {
       return !TableEntryIsEmpty(table, b) &&
@@ -1250,7 +1263,7 @@ class Map {
 
     size_type BucketNumber(const Key& k) const {
       // We inherit from hasher, so one-arg operator() provides a hash function.
-      size_type h = (*this)(k);
+      size_type h = (*const_cast<InnerMap*>(this))(k);
       // To help prevent people from making assumptions about the hash function,
       // we use the seed differently depending on NDEBUG.  The default hash
       // function, the seeding, etc., are all likely to change in the future.

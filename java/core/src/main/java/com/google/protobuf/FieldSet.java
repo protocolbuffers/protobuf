@@ -120,6 +120,25 @@ final class FieldSet<FieldDescriptorType extends
   public boolean isImmutable() {
     return isImmutable;
   }
+  
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    
+    if (!(o instanceof FieldSet)) {
+      return false;
+    }
+    
+    FieldSet<?> other = (FieldSet<?>) o;
+    return other.fields.equals(other.fields);
+  }
+  
+  @Override
+  public int hashCode() {
+    return fields.hashCode();
+  }
 
   /**
    * Clones the FieldSet. The returned FieldSet will be mutable even if the

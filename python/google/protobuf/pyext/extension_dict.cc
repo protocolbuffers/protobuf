@@ -130,7 +130,7 @@ PyObject* subscript(ExtensionDict* self, PyObject* key) {
 
   if (descriptor->label() == FieldDescriptor::LABEL_REPEATED) {
     if (descriptor->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
-      PyObject *message_class = cdescriptor_pool::GetMessageClass(
+      CMessageClass* message_class = cdescriptor_pool::GetMessageClass(
           cmessage::GetDescriptorPoolForMessage(self->parent),
           descriptor->message_type());
       if (message_class == NULL) {
@@ -239,6 +239,21 @@ PyObject* _FindExtensionByName(ExtensionDict* self, PyObject* name) {
   }
 }
 
+PyObject* _FindExtensionByNumber(ExtensionDict* self, PyObject* number) {
+  ScopedPyObjectPtr extensions_by_number(PyObject_GetAttrString(
+      reinterpret_cast<PyObject*>(self->parent), "_extensions_by_number"));
+  if (extensions_by_number == NULL) {
+    return NULL;
+  }
+  PyObject* result = PyDict_GetItem(extensions_by_number.get(), number);
+  if (result == NULL) {
+    Py_RETURN_NONE;
+  } else {
+    Py_INCREF(result);
+    return result;
+  }
+}
+
 ExtensionDict* NewExtensionDict(CMessage *parent) {
   ExtensionDict* self = reinterpret_cast<ExtensionDict*>(
       PyType_GenericAlloc(&ExtensionDict_Type, 0));
@@ -271,6 +286,8 @@ static PyMethodDef Methods[] = {
   EDMETHOD(HasExtension, METH_O, "Checks if the object has an extension."),
   EDMETHOD(_FindExtensionByName, METH_O,
            "Finds an extension by name."),
+  EDMETHOD(_FindExtensionByNumber, METH_O,
+           "Finds an extension by field number."),
   { NULL, NULL }
 };
 

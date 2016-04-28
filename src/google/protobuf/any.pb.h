@@ -184,6 +184,7 @@ inline ::std::string* Any::mutable_type_url() {
   return type_url_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
 inline ::std::string* Any::release_type_url() {
+  // @@protoc_insertion_point(field_release:google.protobuf.Any.type_url)
   
   return type_url_.ReleaseNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
@@ -227,6 +228,7 @@ inline ::std::string* Any::mutable_value() {
   return value_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
 inline ::std::string* Any::release_value() {
+  // @@protoc_insertion_point(field_release:google.protobuf.Any.value)
   
   return value_.ReleaseNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }

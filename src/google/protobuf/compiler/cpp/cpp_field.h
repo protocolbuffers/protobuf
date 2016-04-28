@@ -69,7 +69,7 @@ void SetCommonOneofFieldVariables(const FieldDescriptor* descriptor,
 
 class FieldGenerator {
  public:
-  FieldGenerator() {}
+  explicit FieldGenerator(const Options& options) : options_(options) {}
   virtual ~FieldGenerator();
 
   // Generate lines of code declaring members fields of the message class
@@ -194,6 +194,9 @@ class FieldGenerator {
   // are placed in the message's ByteSize() method.
   virtual void GenerateByteSize(io::Printer* printer) const = 0;
 
+ protected:
+  const Options& options_;
+
  private:
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(FieldGenerator);
 };
@@ -201,13 +204,14 @@ class FieldGenerator {
 // Convenience class which constructs FieldGenerators for a Descriptor.
 class FieldGeneratorMap {
  public:
-  explicit FieldGeneratorMap(const Descriptor* descriptor, const Options& options);
+  FieldGeneratorMap(const Descriptor* descriptor, const Options& options);
   ~FieldGeneratorMap();
 
   const FieldGenerator& get(const FieldDescriptor* field) const;
 
  private:
   const Descriptor* descriptor_;
+  const Options& options_;
   google::protobuf::scoped_array<google::protobuf::scoped_ptr<FieldGenerator> > field_generators_;
 
   static FieldGenerator* MakeGenerator(const FieldDescriptor* field,

@@ -262,16 +262,22 @@ template <typename Key, typename T,
           WireFormatLite::FieldType kValueFieldType,
           int default_enum_value>
 bool MapField<Key, T, kKeyFieldType, kValueFieldType,
-              default_enum_value>::InsertMapValue(const MapKey& map_key,
-                                                  MapValueRef* val) {
+              default_enum_value>::InsertOrLookupMapValue(
+                  const MapKey& map_key,
+                  MapValueRef* val) {
+  // Always use mutable map because users may change the map value by
+  // MapValueRef.
   Map<Key, T>* map = MutableMap();
-  bool result = false;
   const Key& key = UnwrapMapKey<Key>(map_key);
-  if (map->end() == map->find(key)) {
-    result = true;
+  typename Map<Key, T>::iterator iter = map->find(key);
+  if (map->end() == iter) {
+    val->SetValue(&((*map)[key]));
+    return true;
   }
-  val->SetValue(&((*map)[key]));
-  return result;
+  // Key is already in the map. Make sure (*map)[key] is not called.
+  // [] may reorder the map and iterators.
+  val->SetValue(&(iter->second));
+  return false;
 }
 
 template <typename Key, typename T,

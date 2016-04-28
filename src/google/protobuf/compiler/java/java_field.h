@@ -105,7 +105,7 @@ class ImmutableFieldLiteGenerator {
   virtual void GenerateMembers(io::Printer* printer) const = 0;
   virtual void GenerateBuilderMembers(io::Printer* printer) const = 0;
   virtual void GenerateInitializationCode(io::Printer* printer) const = 0;
-  virtual void GenerateMergingCode(io::Printer* printer) const = 0;
+  virtual void GenerateVisitCode(io::Printer* printer) const = 0;
   virtual void GenerateDynamicMethodMakeImmutableCode(io::Printer* printer)
       const = 0;
   virtual void GenerateParsingCode(io::Printer* printer) const = 0;

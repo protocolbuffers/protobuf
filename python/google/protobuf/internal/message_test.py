@@ -57,18 +57,18 @@ try:
 except ImportError:
   import unittest
 
-from google.protobuf.internal import _parameterized
-from google.protobuf import descriptor_pb2
-from google.protobuf import descriptor_pool
 from google.protobuf import map_unittest_pb2
-from google.protobuf import message_factory
-from google.protobuf import text_format
 from google.protobuf import unittest_pb2
 from google.protobuf import unittest_proto3_arena_pb2
+from google.protobuf import descriptor_pb2
+from google.protobuf import descriptor_pool
+from google.protobuf import message_factory
+from google.protobuf import text_format
 from google.protobuf.internal import api_implementation
 from google.protobuf.internal import packed_field_test_pb2
 from google.protobuf.internal import test_util
 from google.protobuf import message
+from google.protobuf.internal import _parameterized
 
 if six.PY3:
   long = int
@@ -1265,7 +1265,10 @@ class Proto3Test(unittest.TestCase):
     self.assertFalse(-2**33 in msg.map_int64_int64)
     self.assertFalse(123 in msg.map_uint32_uint32)
     self.assertFalse(2**33 in msg.map_uint64_uint64)
+    self.assertFalse(123 in msg.map_int32_double)
+    self.assertFalse(False in msg.map_bool_bool)
     self.assertFalse('abc' in msg.map_string_string)
+    self.assertFalse(111 in msg.map_int32_bytes)
     self.assertFalse(888 in msg.map_int32_enum)
 
     # Accessing an unset key returns the default.
@@ -1273,7 +1276,12 @@ class Proto3Test(unittest.TestCase):
     self.assertEqual(0, msg.map_int64_int64[-2**33])
     self.assertEqual(0, msg.map_uint32_uint32[123])
     self.assertEqual(0, msg.map_uint64_uint64[2**33])
+    self.assertEqual(0.0, msg.map_int32_double[123])
+    self.assertTrue(isinstance(msg.map_int32_double[123], float))
+    self.assertEqual(False, msg.map_bool_bool[False])
+    self.assertTrue(isinstance(msg.map_bool_bool[False], bool))
     self.assertEqual('', msg.map_string_string['abc'])
+    self.assertEqual(b'', msg.map_int32_bytes[111])
     self.assertEqual(0, msg.map_int32_enum[888])
 
     # It also sets the value in the map
@@ -1281,7 +1289,10 @@ class Proto3Test(unittest.TestCase):
     self.assertTrue(-2**33 in msg.map_int64_int64)
     self.assertTrue(123 in msg.map_uint32_uint32)
     self.assertTrue(2**33 in msg.map_uint64_uint64)
+    self.assertTrue(123 in msg.map_int32_double)
+    self.assertTrue(False in msg.map_bool_bool)
     self.assertTrue('abc' in msg.map_string_string)
+    self.assertTrue(111 in msg.map_int32_bytes)
     self.assertTrue(888 in msg.map_int32_enum)
 
     self.assertIsInstance(msg.map_string_string['abc'], six.text_type)
@@ -1586,6 +1597,21 @@ class Proto3Test(unittest.TestCase):
 
     matching_dict = {2: 4, 3: 6, 4: 8}
     self.assertMapIterEquals(msg.map_int32_int32.items(), matching_dict)
+
+  def testMapItems(self):
+    # Map items used to have strange behaviors when use c extension. Because
+    # [] may reorder the map and invalidate any exsting iterators.
+    # TODO(jieluo): Check if [] reordering the map is a bug or intended
+    # behavior.
+    msg = map_unittest_pb2.TestMap()
+    msg.map_string_string['local_init_op'] = ''
+    msg.map_string_string['trainable_variables'] = ''
+    msg.map_string_string['variables'] = ''
+    msg.map_string_string['init_op'] = ''
+    msg.map_string_string['summaries'] = ''
+    items1 = msg.map_string_string.items()
+    items2 = msg.map_string_string.items()
+    self.assertEqual(items1, items2)
 
   def testMapIterationClearMessage(self):
     # Iterator needs to work even if message and map are deleted.

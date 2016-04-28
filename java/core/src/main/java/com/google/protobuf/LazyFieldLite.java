@@ -135,6 +135,43 @@ public class LazyFieldLite {
     return lf;
   }
 
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    
+    if (!(o instanceof LazyFieldLite)) {
+      return false;
+    }
+
+    LazyFieldLite other = (LazyFieldLite) o;
+    
+    // Lazy fields do not work well with equals... If both are delayedBytes, we do not have a
+    // mechanism to deserialize them so we rely on bytes equality. Otherwise we coerce into an
+    // actual message (if necessary) and call equals on the message itself. This implies that two
+    // messages can by unequal but then be turned equal simply be invoking a getter on a lazy field.
+    MessageLite value1 = value;
+    MessageLite value2 = other.value;
+    if (value1 == null && value2 == null) {
+      return toByteString().equals(other.toByteString());
+    } else if (value1 != null && value2 != null) {
+      return value1.equals(value2);
+    } else if (value1 != null) {
+      return value1.equals(other.getValue(value1.getDefaultInstanceForType()));
+    } else {
+      return getValue(value2.getDefaultInstanceForType()).equals(value2);
+    }
+  }
+  
+  @Override
+  public int hashCode() {
+    // We can't provide a memoizable hash code for lazy fields. The byte strings may have different
+    // hash codes but evaluate to equivalent messages. And we have no facility for constructing
+    // a message here if we were not already holding a value.
+    return 1;
+  }
+  
   /**
    * Determines whether this LazyFieldLite instance represents the default instance of this type.
    */
@@ -340,6 +377,8 @@ public class LazyFieldLite {
    * parsed. Be careful when using this method.
    */
   public int getSerializedSize() {
+    // We *must* return delayed bytes size if it was ever set because the dependent messages may
+    // have memoized serialized size based off of it.
     if (memoizedBytes != null) {
       return memoizedBytes.size();
     } else if (delayedBytes != null) {
@@ -358,6 +397,8 @@ public class LazyFieldLite {
     if (memoizedBytes != null) {
       return memoizedBytes;
     }
+    // We *must* return delayed bytes if it was set because the dependent messages may have
+    // memoized serialized size based off of it.
     if (delayedBytes != null) {
       return delayedBytes;
     }

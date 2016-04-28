@@ -468,6 +468,7 @@ inline ::std::string* Api::mutable_name() {
   return name_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
 inline ::std::string* Api::release_name() {
+  // @@protoc_insertion_point(field_release:google.protobuf.Api.name)
   
   return name_.ReleaseNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
@@ -571,6 +572,7 @@ inline ::std::string* Api::mutable_version() {
   return version_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
 inline ::std::string* Api::release_version() {
+  // @@protoc_insertion_point(field_release:google.protobuf.Api.version)
   
   return version_.ReleaseNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
@@ -605,6 +607,7 @@ inline ::google::protobuf::SourceContext* Api::mutable_source_context() {
   return source_context_;
 }
 inline ::google::protobuf::SourceContext* Api::release_source_context() {
+  // @@protoc_insertion_point(field_release:google.protobuf.Api.source_context)
   
   ::google::protobuf::SourceContext* temp = source_context_;
   source_context_ = NULL;
@@ -699,6 +702,7 @@ inline ::std::string* Method::mutable_name() {
   return name_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
 inline ::std::string* Method::release_name() {
+  // @@protoc_insertion_point(field_release:google.protobuf.Method.name)
   
   return name_.ReleaseNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
@@ -742,6 +746,7 @@ inline ::std::string* Method::mutable_request_type_url() {
   return request_type_url_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
 inline ::std::string* Method::release_request_type_url() {
+  // @@protoc_insertion_point(field_release:google.protobuf.Method.request_type_url)
   
   return request_type_url_.ReleaseNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
@@ -799,6 +804,7 @@ inline ::std::string* Method::mutable_response_type_url() {
   return response_type_url_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
 inline ::std::string* Method::release_response_type_url() {
+  // @@protoc_insertion_point(field_release:google.protobuf.Method.response_type_url)
   
   return response_type_url_.ReleaseNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
@@ -904,6 +910,7 @@ inline ::std::string* Mixin::mutable_name() {
   return name_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
 inline ::std::string* Mixin::release_name() {
+  // @@protoc_insertion_point(field_release:google.protobuf.Mixin.name)
   
   return name_.ReleaseNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
@@ -947,6 +954,7 @@ inline ::std::string* Mixin::mutable_root() {
   return root_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
 inline ::std::string* Mixin::release_root() {
+  // @@protoc_insertion_point(field_release:google.protobuf.Mixin.root)
   
   return root_.ReleaseNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }

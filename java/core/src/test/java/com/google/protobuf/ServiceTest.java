@@ -175,12 +175,14 @@ public class ServiceTest extends TestCase {
     MethodDescriptor fooMethod =
         ServiceWithNoOuter.getDescriptor().findMethodByName("Foo");
     MessageWithNoOuter request = MessageWithNoOuter.getDefaultInstance();
-    RpcCallback<Message> callback = new RpcCallback<Message>() {
-      public void run(Message parameter) {
-        // No reason this should be run.
-        fail();
-      }
-    };
+    RpcCallback<Message> callback =
+        new RpcCallback<Message>() {
+          @Override
+          public void run(Message parameter) {
+            // No reason this should be run.
+            fail();
+          }
+        };
     RpcCallback<TestAllTypes> specializedCallback =
         RpcUtil.specializeCallback(callback);
 
@@ -290,7 +292,9 @@ public class ServiceTest extends TestCase {
     public boolean isCalled() { return called; }
 
     public void reset() { called = false; }
-    public void run(Type message) { called = true; }
+    @Override
+    public void run(Type message) {
+      called = true; }
   }
 
   /** Implementation of the wrapsCallback() argument matcher. */
@@ -301,6 +305,7 @@ public class ServiceTest extends TestCase {
       this.callback = callback;
     }
 
+    @Override
     @SuppressWarnings("unchecked")
     public boolean matches(Object actual) {
       if (!(actual instanceof RpcCallback)) {
@@ -313,6 +318,7 @@ public class ServiceTest extends TestCase {
       return callback.isCalled();
     }
 
+    @Override
     public void appendTo(StringBuffer buffer) {
       buffer.append("wrapsCallback(mockCallback)");
     }

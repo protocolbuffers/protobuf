@@ -93,15 +93,18 @@ public class MapField<K, V> implements MutabilityOracle {
       this.defaultEntry = defaultEntry;
     }
     
+    @Override
     public Message convertKeyAndValueToMessage(K key, V value) {
       return defaultEntry.newBuilderForType().setKey(key).setValue(value).buildPartial();
     }
     
+    @Override
     public void convertMessageToKeyAndValue(Message message, Map<K, V> map) {
       MapEntry<K, V> entry = (MapEntry<K, V>) message;
       map.put(entry.getKey(), entry.getValue());
     }
 
+    @Override
     public Message getMessageDefaultInstance() {
       return defaultEntry;
     }

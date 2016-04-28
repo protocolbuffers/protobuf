@@ -579,7 +579,7 @@ public class RepeatedFieldBuilder
     }
   }
 
-  //@Override (Java 1.6 override semantics, but we must support 1.5)
+  @Override
   public void markDirty() {
     onChanged();
   }
@@ -621,10 +621,12 @@ public class RepeatedFieldBuilder
       this.builder = builder;
     }
 
+    @Override
     public int size() {
       return this.builder.getCount();
     }
 
+    @Override
     public MType get(int index) {
       return builder.getMessage(index);
     }
@@ -654,10 +656,12 @@ public class RepeatedFieldBuilder
       this.builder = builder;
     }
 
+    @Override
     public int size() {
       return this.builder.getCount();
     }
 
+    @Override
     public BType get(int index) {
       return builder.getBuilder(index);
     }
@@ -687,10 +691,12 @@ public class RepeatedFieldBuilder
       this.builder = builder;
     }
 
+    @Override
     public int size() {
       return this.builder.getCount();
     }
 
+    @Override
     public IType get(int index) {
       return builder.getMessageOrBuilder(index);
     }

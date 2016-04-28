@@ -152,6 +152,15 @@ public class FieldMaskUtilTest extends TestCase {
     FieldMask result = FieldMaskUtil.union(mask1, mask2);
     assertEquals("bar,foo", FieldMaskUtil.toString(result));
   }
+
+  public void testUnion_usingVarArgs() throws Exception {
+    FieldMask mask1 = FieldMaskUtil.fromString("foo");
+    FieldMask mask2 = FieldMaskUtil.fromString("foo.bar,bar.quz");
+    FieldMask mask3 = FieldMaskUtil.fromString("bar.quz");
+    FieldMask mask4 = FieldMaskUtil.fromString("bar");
+    FieldMask result = FieldMaskUtil.union(mask1, mask2, mask3, mask4);
+    assertEquals("bar,foo", FieldMaskUtil.toString(result));
+  }
   
   public void testIntersection() throws Exception {
     // Only test a simple case here and expect
