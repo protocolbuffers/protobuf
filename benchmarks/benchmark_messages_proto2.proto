@@ -1,11 +1,14 @@
+// Benchmark messages for proto2.
+
 syntax = "proto2";
 
-package benchmarks;
+package benchmarks.p2;
+option java_package = "com.google.protobuf.benchmarks";
 
-option java_outer_classname = "GoogleSpeed";
+// This is the default, but we specify it here explicitly.
 option optimize_for = SPEED;
 
-message SpeedMessage1 {
+message GoogleMessage1 {
   required string field1 = 1;
   optional string field9 = 9;
   optional string field18 = 18;
@@ -40,7 +43,7 @@ message SpeedMessage1 {
   optional int32 field23 = 23 [default=0];
   optional bool field24 = 24 [default=false];
   optional int32 field25 = 25 [default=0];
-  optional SpeedMessage1SubMessage field15 = 15;
+  optional GoogleMessage1SubMessage field15 = 15;
   optional bool field78 = 78;
   optional int32 field67 = 67 [default=0];
   optional int32 field68 = 68;
@@ -49,7 +52,7 @@ message SpeedMessage1 {
   optional int32 field131 = 131 [default=0];
 }
 
-message SpeedMessage1SubMessage {
+message GoogleMessage1SubMessage {
   optional int32 field1 = 1 [default=0];
   optional int32 field2 = 2 [default=0];
   optional int32 field3 = 3 [default=0];
@@ -72,7 +75,7 @@ message SpeedMessage1SubMessage {
   optional uint64 field300 = 300;
 }
 
-message SpeedMessage2 {
+message GoogleMessage2 {
   optional string field1 = 1;
   optional int64 field3 = 3;
   optional int64 field4 = 4;
@@ -112,7 +115,7 @@ message SpeedMessage2 {
     repeated int32 field73 = 73;
     optional int32 field20 = 20 [default=0];
     optional string field24 = 24;
-    optional SpeedMessage2GroupedMessage field31 = 31;
+    optional GoogleMessage2GroupedMessage field31 = 31;
   }
   repeated string field128 = 128;
   optional int64 field131 = 131;
@@ -123,7 +126,7 @@ message SpeedMessage2 {
   optional bool field206 = 206 [default=false];
 }
 
-message SpeedMessage2GroupedMessage {
+message GoogleMessage2GroupedMessage {
   optional float field1 = 1;
   optional float field2 = 2;
   optional float field3 = 3 [default=0.0];
