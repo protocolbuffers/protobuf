@@ -291,7 +291,7 @@ internal_build_ruby() {
   # to a version-specific directory and test from there.
   VERSIONDIR=ruby$VERSION
   cp -r ruby $VERSIONDIR
-  cd $VERSIONDIR && bash travis-test.sh ruby-$VERSION && cd ..
+  cd $VERSIONDIR && bash travis-test.sh $VERSION && cd ..
 }
 
 build_ruby19() {
