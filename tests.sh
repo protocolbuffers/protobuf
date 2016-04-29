@@ -280,29 +280,34 @@ build_python_cpp() {
   cd ..
 }
 
+internal_build_ruby() {
+  VERSION=$1
+
+  # For conformance tests.
+  internal_build_cpp
+  cd conformance && make && cd ..
+
+  # To make tests of different Ruby versions able to run in parallel, copy
+  # to a version-specific directory and test from there.
+  VERSIONDIR=ruby$VERSION
+  cp -r ruby $VERSIONDIR
+  cd $VERSIONDIR && bash travis-test.sh ruby-$VERSION && cd ..
+}
+
 build_ruby19() {
-  internal_build_cpp  # For conformance tests.
-  cp -r ruby ruby1.9
-  cd ruby1.9 && bash travis-test.sh ruby-1.9 && cd ..
+  internal_build_ruby 1.9
 }
 build_ruby20() {
-  internal_build_cpp  # For conformance tests.
-  cp -r ruby ruby2.0
-  cd ruby2.0 && bash travis-test.sh ruby-2.0 && cd ..
+  internal_build_ruby 2.0
 }
 build_ruby21() {
-  internal_build_cpp  # For conformance tests.
-  cp -r ruby ruby2.1
-  cd ruby2.1 && bash travis-test.sh ruby-2.1 && cd ..
+  internal_build_ruby 2.1
 }
 build_ruby22() {
-  internal_build_cpp  # For conformance tests.
-  cp -r ruby ruby2.2
-  cd ruby2.2 && bash travis-test.sh ruby-2.2 && cd ..
+  internal_build_ruby 2.2
 }
 build_jruby() {
-  internal_build_cpp  # For conformance tests.
-  cd ruby && bash travis-test.sh jruby && cd ..
+  internal_build_ruby jruby
 }
 
 build_javascript() {
