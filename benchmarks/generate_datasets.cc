@@ -86,7 +86,7 @@ void WriteFileWithPayloads(const std::string& name,
 
   std::ofstream writer;
   std::string fname = file_prefix + name + file_suffix;
-  writer.open(fname);
+  writer.open(fname.c_str());
   writer << serialized;
   writer.close();
 
@@ -101,7 +101,7 @@ void WriteFile(const std::string& name, const std::string& message_name,
 }
 
 std::string ReadFile(const std::string& name) {
-  std::ifstream file(name);
+  std::ifstream file(name.c_str());
   GOOGLE_CHECK(file.is_open()) << "Couldn't find file '" << name <<
                                   "', please make sure you are running "
                                   "this command from the benchmarks/ "
