@@ -38,7 +38,7 @@ build_cpp() {
   cd conformance && make test_cpp && cd ..
 
   # Verify benchmarking code can build successfully.
-  cd benchmarks && make && cd ..
+  cd benchmarks && make && ./generate-datasets && cd ..
 }
 
 build_cpp_distcheck() {

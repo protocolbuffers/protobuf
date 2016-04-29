@@ -22,30 +22,20 @@ generate_datasets_LDADD = $(top_srcdir)/src/libprotobuf.la
 generate_datasets_SOURCES = generate_datasets.cc
 generate_datasets_CPPFLAGS = -I$(top_srcdir)/src -I$(srcdir)
 nodist_generate_datasets_SOURCES =                             \
-  google_message1.h                                            \
-  google_message2.h                                            \
   $(benchmarks_protoc_outputs)                                 \
   $(benchmarks_protoc_outputs_proto2)
 
 # Explicit deps because BUILT_SOURCES are only done before a "make all/check"
 # so a direct "make test_cpp" could fail if parallel enough.
 # See: https://www.gnu.org/software/automake/manual/html_node/Built-Sources-Example.html#Recording-Dependencies-manually
-generate_datasets-generate_datasets.$(OBJEXT): benchmarks.pb.h google_message1.h google_message2.h
+generate_datasets-generate_datasets.$(OBJEXT): benchmarks.pb.h
 
 $(benchmarks_protoc_outputs): protoc_middleman
 $(benchmarks_protoc_outputs_proto2): protoc_middleman2
 
-google_message1.h: google_message1.dat
-	xxd -i $< $@
-
-google_message2.h: google_message2.dat
-	xxd -i $< $@
-
 CLEANFILES =                                                   \
   $(benchmarks_protoc_outputs)                                 \
   $(benchmarks_protoc_outputs_proto2)                          \
-  google_message1.h                                            \
-  google_message2.h                                            \
   protoc_middleman                                             \
   protoc_middleman2                                            \
   dataset.*

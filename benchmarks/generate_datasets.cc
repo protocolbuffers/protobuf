@@ -34,8 +34,6 @@ const char *file_suffix = ".pb";
 #include <fstream>
 #include <iostream>
 #include "benchmarks.pb.h"
-#include "google_message1.h"
-#include "google_message2.h"
 
 using benchmarks::BenchmarkDataset;
 using google::protobuf::Descriptor;
@@ -102,13 +100,23 @@ void WriteFile(const std::string& name, const std::string& message_name,
   WriteFileWithPayloads(name, message_name, payloads);
 }
 
+std::string ReadFile(const std::string& name) {
+  std::ifstream file(name);
+  GOOGLE_CHECK(file.is_open()) << "Couldn't find file '" << name <<
+                                  "', please make sure you are running "
+                                  "this command from the benchmarks/ "
+                                  "directory.\n";
+  return std::string((std::istreambuf_iterator<char>(file)),
+                     std::istreambuf_iterator<char>());
+}
+
 int main() {
   WriteFile("google_message1_proto3", "benchmarks.p3.GoogleMessage1",
-            ARRAY_TO_STRING(google_message1_dat));
+            ReadFile("google_message1.dat"));
   WriteFile("google_message1_proto2", "benchmarks.p2.GoogleMessage1",
-            ARRAY_TO_STRING(google_message1_dat));
+            ReadFile("google_message1.dat"));
 
   // Not in proto3 because it has a group, which is not supported.
   WriteFile("google_message2", "benchmarks.p2.GoogleMessage2",
-            ARRAY_TO_STRING(google_message2_dat));
+            ReadFile("google_message2.dat"));
 }
