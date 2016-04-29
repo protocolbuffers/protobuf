@@ -68,16 +68,16 @@ message Metric {
   // A unique ID for these results.  Used for de-duping.
   string guid = 1;
 
-  // The tags specify exactly what benchmark was run against the dataset.
+  // The labels specify exactly what benchmark was run against the dataset.
   // The specific benchmark suite can decide what these mean, but here are
-  // some common tags that have a predefined meaning:
+  // some common labels that have a predefined meaning:
   //
   //   - "dataset": for tests that pertain to a specific dataset.
   //
   // For example:
   //
   //   # Tests parsing from binary proto string using arenas.
-  //   tags={
+  //   labels={
   //     dataset: "testalltypes",
   //     op: "parse",
   //     format: "binaryproto",
@@ -86,7 +86,7 @@ message Metric {
   //   }
   //
   //   # Tests serializing to JSON string.
-  //   tags={
+  //   labels={
   //     dataset: "testalltypes",
   //     op: "serialize",
   //     format: "json",

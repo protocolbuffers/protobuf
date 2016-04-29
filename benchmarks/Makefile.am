@@ -27,8 +27,9 @@ nodist_generate_datasets_SOURCES =                             \
   $(benchmarks_protoc_outputs)                                 \
   $(benchmarks_protoc_outputs_proto2)
 
-# Explicit deps beacuse BUILT_SOURCES are only done before a "make all/check"
+# Explicit deps because BUILT_SOURCES are only done before a "make all/check"
 # so a direct "make test_cpp" could fail if parallel enough.
+# See: https://www.gnu.org/software/automake/manual/html_node/Built-Sources-Example.html#Recording-Dependencies-manually
 generate_datasets-generate_datasets.$(OBJEXT): benchmarks.pb.h google_message1.h google_message2.h
 
 $(benchmarks_protoc_outputs): protoc_middleman
