@@ -282,19 +282,23 @@ build_python_cpp() {
 
 build_ruby19() {
   internal_build_cpp  # For conformance tests.
-  cd ruby && bash travis-test.sh ruby-1.9 && cd ..
+  cp -r ruby ruby1.9
+  cd ruby1.9 && bash travis-test.sh ruby-1.9 && cd ..
 }
 build_ruby20() {
   internal_build_cpp  # For conformance tests.
-  cd ruby && bash travis-test.sh ruby-2.0 && cd ..
+  cp -r ruby ruby2.0
+  cd ruby2.0 && bash travis-test.sh ruby-2.0 && cd ..
 }
 build_ruby21() {
   internal_build_cpp  # For conformance tests.
-  cd ruby && bash travis-test.sh ruby-2.1 && cd ..
+  cp -r ruby ruby2.1
+  cd ruby2.1 && bash travis-test.sh ruby-2.1 && cd ..
 }
 build_ruby22() {
   internal_build_cpp  # For conformance tests.
-  cd ruby && bash travis-test.sh ruby-2.2 && cd ..
+  cp -r ruby ruby2.2
+  cd ruby2.2 && bash travis-test.sh ruby-2.2 && cd ..
 }
 build_jruby() {
   internal_build_cpp  # For conformance tests.
