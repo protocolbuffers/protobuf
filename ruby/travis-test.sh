@@ -21,7 +21,7 @@ test_version() {
        which ruby && \
        gem install bundler && bundle && \
        rake test &&
-       cd ../conformance && make test_ruby"
+       RUBYLIB=lib:../conformance ../conformance/conformance-test-runner --failure_list ../conformance/failure_list_ruby.txt ../conformance/conformance_ruby.rb"
   fi
 }
 
