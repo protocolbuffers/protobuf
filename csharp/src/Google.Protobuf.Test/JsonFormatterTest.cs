@@ -481,6 +481,15 @@ namespace Google.Protobuf
         }
 
         [Test]
+        public void AnyMessageType_CustomPrefix()
+        {
+            var formatter = new JsonFormatter(new JsonFormatter.Settings(false, TypeRegistry.FromMessages(TestAllTypes.Descriptor)));
+            var message = new TestAllTypes { SingleInt32 = 10 };
+            var any = Any.Pack(message, "foo.bar/baz");
+            AssertJson("{ '@type': 'foo.bar/baz/protobuf_unittest.TestAllTypes', 'singleInt32': 10 }", formatter.Format(any));
+        }
+
+        [Test]
         public void AnyNested()
         {
             var registry = TypeRegistry.FromMessages(TestWellKnownTypes.Descriptor, TestAllTypes.Descriptor);

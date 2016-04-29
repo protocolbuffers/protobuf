@@ -811,6 +811,17 @@ namespace Google.Protobuf
         }
 
         [Test]
+        public void Any_CustomPrefix()
+        {
+            var registry = TypeRegistry.FromMessages(TestAllTypes.Descriptor);
+            var message = new TestAllTypes { SingleInt32 = 10 };
+            var original = Any.Pack(message, "custom.prefix/middle-part");
+            var parser = new JsonParser(new JsonParser.Settings(10, registry));
+            string json = "{ \"@type\": \"custom.prefix/middle-part/protobuf_unittest.TestAllTypes\", \"singleInt32\": 10 }";
+            Assert.AreEqual(original, parser.Parse<Any>(json));
+        }
+
+        [Test]
         public void Any_UnknownType()
         {
             string json = "{ \"@type\": \"type.googleapis.com/bogus\" }";

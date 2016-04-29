@@ -567,7 +567,7 @@ namespace Google.Protobuf
 
             string typeUrl = (string) value.Descriptor.Fields[Any.TypeUrlFieldNumber].Accessor.GetValue(value);
             ByteString data = (ByteString) value.Descriptor.Fields[Any.ValueFieldNumber].Accessor.GetValue(value);
-            string typeName = GetTypeName(typeUrl);
+            string typeName = Any.GetTypeName(typeUrl);
             MessageDescriptor descriptor = settings.TypeRegistry.Find(typeName);
             if (descriptor == null)
             {
@@ -608,17 +608,7 @@ namespace Google.Protobuf
             writer.Write(data.ToBase64());
             writer.Write('"');
             writer.Write(" }");
-        }
-
-        internal static string GetTypeName(String typeUrl)
-        {
-            string[] parts = typeUrl.Split('/');
-            if (parts.Length != 2 || parts[0] != TypeUrlPrefix)
-            {
-                throw new InvalidProtocolBufferException($"Invalid type url: {typeUrl}");
-            }
-            return parts[1];
-        }
+        }        
 
         private void WriteStruct(TextWriter writer, IMessage message)
         {
