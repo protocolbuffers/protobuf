@@ -8,6 +8,7 @@ test_version() {
   which ruby
   ruby --version
   version=$1
+  cwd=`pwd`
   if [ "$version" == "jruby" ] ; then
     # No conformance tests yet -- JRuby is too broken to run them.
     bash --login -c \
@@ -21,7 +22,7 @@ test_version() {
        which ruby && \
        gem install bundler && bundle && \
        rake test &&
-       RUBYLIB=lib:../conformance ../conformance/conformance-test-runner --failure_list ../conformance/failure_list_ruby.txt ../conformance/conformance_ruby.rb"
+       cd ../conformance && make test_ruby RUBYBASE=$cwd"
   fi
 }
 
