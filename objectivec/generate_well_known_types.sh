@@ -73,4 +73,4 @@ fi
 
 # Copy them over.
 echo "Copying over updated WellKnownType sources."
-cp -r "${TMP_DIR}/google/" "${ProtoRootDir}/objectivec/google/"
+cp -r "${TMP_DIR}/google/." "${ProtoRootDir}/objectivec/google/"
