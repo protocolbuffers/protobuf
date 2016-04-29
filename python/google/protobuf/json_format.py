@@ -77,7 +77,8 @@ class ParseError(Error):
   """Thrown in case of parsing error."""
 
 
-def MessageToJson(message, including_default_value_fields=False):
+def MessageToJson(message, including_default_value_fields=False,
+                  preserve_field_names=False):
   """Converts protobuf message to JSON format.
 
   Args:
@@ -86,26 +87,32 @@ def MessageToJson(message, including_default_value_fields=False):
         repeated fields, and map fields will always be serialized.  If
         False, only serialize non-empty fields.  Singular message fields
         and oneof fields are not affected by this option.
+    preserve_field_names: If False will modify field names to camel
+        case when converting the protobuf message to JSON.
 
   Returns:
     A string containing the JSON formatted protocol buffer message.
   """
-  js = _MessageToJsonObject(message, including_default_value_fields)
+  js = _MessageToJsonObject(message, including_default_value_fields,
+                            preserve_field_names)
   return json.dumps(js, indent=2)
 
 
-def _MessageToJsonObject(message, including_default_value_fields):
+def _MessageToJsonObject(message, including_default_value_fields,
+                         preserve_field_names):
   """Converts message to an object according to Proto3 JSON Specification."""
   message_descriptor = message.DESCRIPTOR
   full_name = message_descriptor.full_name
   if _IsWrapperMessage(message_descriptor):
-    return _WrapperMessageToJsonObject(message)
+    return _WrapperMessageToJsonObject(
+            message, preserve_field_names=preserve_field_names)
   if full_name in _WKTJSONMETHODS:
     return _WKTJSONMETHODS[full_name][0](
-        message, including_default_value_fields)
+        message, including_default_value_fields, preserve_field_names)
   js = {}
   return _RegularMessageToJsonObject(
-      message, js, including_default_value_fields)
+          message, js, including_default_value_fields,
+          preserve_field_names)
 
 
 def _IsMapEntry(field):
@@ -114,14 +121,15 @@ def _IsMapEntry(field):
           field.message_type.GetOptions().map_entry)
 
 
-def _RegularMessageToJsonObject(message, js, including_default_value_fields):
+def _RegularMessageToJsonObject(message, js, including_default_value_fields,
+                                preserve_field_names):
   """Converts normal message according to Proto3 JSON Specification."""
   fields = message.ListFields()
   include_default = including_default_value_fields
 
   try:
     for field, value in fields:
-      name = field.camelcase_name
+      name = field.name if preserve_field_names else field.camelcase_name
       if _IsMapEntry(field):
         # Convert a map field.
         v_field = field.message_type.fields_by_name['value']
@@ -135,14 +143,17 @@ def _RegularMessageToJsonObject(message, js, including_default_value_fields):
           else:
             recorded_key = key
           js_map[recorded_key] = _FieldToJsonObject(
-              v_field, value[key], including_default_value_fields)
+              v_field, value[key], including_default_value_fields,
+          preserve_field_names)
         js[name] = js_map
       elif field.label == descriptor.FieldDescriptor.LABEL_REPEATED:
         # Convert a repeated field.
-        js[name] = [_FieldToJsonObject(field, k, include_default)
+        js[name] = [_FieldToJsonObject(field, k, include_default,
+                                       preserve_field_names)
                     for k in value]
       else:
-        js[name] = _FieldToJsonObject(field, value, include_default)
+        js[name] = _FieldToJsonObject(field, value, include_default,
+                                      preserve_field_names)
 
     # Serialize default value if including_default_value_fields is True.
     if including_default_value_fields:
@@ -153,7 +164,7 @@ def _RegularMessageToJsonObject(message, js, including_default_value_fields):
              field.cpp_type == descriptor.FieldDescriptor.CPPTYPE_MESSAGE) or
             field.containing_oneof):
           continue
-        name = field.camelcase_name
+        name = field.name if preserve_field_names else field.camelcase_name
         if name in js:
           # Skip the field which has been serailized already.
           continue
@@ -172,10 +183,12 @@ def _RegularMessageToJsonObject(message, js, including_default_value_fields):
 
 
 def _FieldToJsonObject(
-    field, value, including_default_value_fields=False):
+    field, value, including_default_value_fields=False,
+        preserve_field_names=False):
   """Converts field value according to Proto3 JSON Specification."""
   if field.cpp_type == descriptor.FieldDescriptor.CPPTYPE_MESSAGE:
-    return _MessageToJsonObject(value, including_default_value_fields)
+    return _MessageToJsonObject(value, including_default_value_fields,
+                                preserve_field_names)
   elif field.cpp_type == descriptor.FieldDescriptor.CPPTYPE_ENUM:
     enum_value = field.enum_type.values_by_number.get(value, None)
     if enum_value is not None:
@@ -204,7 +217,8 @@ def _FieldToJsonObject(
   return value
 
 
-def _AnyMessageToJsonObject(message, including_default):
+def _AnyMessageToJsonObject(message, including_default,
+                            preserve_field_names):
   """Converts Any message according to Proto3 JSON Specification."""
   if not message.ListFields():
     return {}
@@ -216,12 +230,15 @@ def _AnyMessageToJsonObject(message, including_default):
   message_descriptor = sub_message.DESCRIPTOR
   full_name = message_descriptor.full_name
   if _IsWrapperMessage(message_descriptor):
-    js['value'] = _WrapperMessageToJsonObject(sub_message)
+    js['value'] = _WrapperMessageToJsonObject(
+            sub_message, preserve_field_names=preserve_field_names)
     return js
   if full_name in _WKTJSONMETHODS:
-    js['value'] = _WKTJSONMETHODS[full_name][0](sub_message, including_default)
+    js['value'] = _WKTJSONMETHODS[full_name][0](sub_message, including_default,
+                                                preserve_field_names)
     return js
-  return _RegularMessageToJsonObject(sub_message, js, including_default)
+  return _RegularMessageToJsonObject(sub_message, js, including_default,
+                                     preserve_field_names)
 
 
 def _CreateMessageFromTypeUrl(type_url):
@@ -238,14 +255,16 @@ def _CreateMessageFromTypeUrl(type_url):
   return message_class()
 
 
-def _GenericMessageToJsonObject(message, unused_including_default):
+def _GenericMessageToJsonObject(message, unused_including_default,
+                                unused_preserve_field_names):
   """Converts message by ToJsonString according to Proto3 JSON Specification."""
   # Duration, Timestamp and FieldMask have ToJsonString method to do the
   # convert. Users can also call the method directly.
   return message.ToJsonString()
 
 
-def _ValueMessageToJsonObject(message, unused_including_default=False):
+def _ValueMessageToJsonObject(message, unused_including_default=False,
+                              preserve_field_names=False):
   """Converts Value message according to Proto3 JSON Specification."""
   which = message.WhichOneof('kind')
   # If the Value message is not set treat as null_value when serialize
@@ -259,21 +278,23 @@ def _ValueMessageToJsonObject(message, unused_including_default=False):
   else:
     value = getattr(message, which)
   oneof_descriptor = message.DESCRIPTOR.fields_by_name[which]
-  return _FieldToJsonObject(oneof_descriptor, value)
+  return _FieldToJsonObject(oneof_descriptor, value, preserve_field_names)
 
 
-def _ListValueMessageToJsonObject(message, unused_including_default=False):
+def _ListValueMessageToJsonObject(message, unused_including_default=False,
+                                  preserve_field_names=False):
   """Converts ListValue message according to Proto3 JSON Specification."""
-  return [_ValueMessageToJsonObject(value)
+  return [_ValueMessageToJsonObject(value, preserve_field_names)
           for value in message.values]
 
 
-def _StructMessageToJsonObject(message, unused_including_default=False):
+def _StructMessageToJsonObject(message, unused_including_default=False,
+                               preserve_field_names=False):
   """Converts Struct message according to Proto3 JSON Specification."""
   fields = message.fields
   ret = {}
   for key in fields:
-    ret[key] = _ValueMessageToJsonObject(fields[key])
+    ret[key] = _ValueMessageToJsonObject(fields[key], preserve_field_names)
   return ret
 
 
@@ -281,9 +302,10 @@ def _IsWrapperMessage(message_descriptor):
   return message_descriptor.file.name == 'google/protobuf/wrappers.proto'
 
 
-def _WrapperMessageToJsonObject(message):
+def _WrapperMessageToJsonObject(message, preserve_field_names=False):
   return _FieldToJsonObject(
-      message.DESCRIPTOR.fields_by_name['value'], message.value)
+      message.DESCRIPTOR.fields_by_name['value'], message.value,
+      preserve_field_names=preserve_field_names)
 
 
 def _DuplicateChecker(js):
@@ -295,10 +317,11 @@ def _DuplicateChecker(js):
   return result
 
 
-def Parse(text, message):
+def Parse(text, message, preserve_field_names=False):
   """Parses a JSON representation of a protocol message into a message.
 
   Args:
+    preserve_field_names:
     text: Message JSON representation.
     message: A protocol beffer message to merge into.
 
@@ -317,16 +340,18 @@ def Parse(text, message):
       js = json.loads(text, object_pairs_hook=_DuplicateChecker)
   except ValueError as e:
     raise ParseError('Failed to load JSON: {0}.'.format(str(e)))
-  _ConvertMessage(js, message)
+  _ConvertMessage(js, message, preserve_field_names)
   return message
 
 
-def _ConvertFieldValuePair(js, message):
+def _ConvertFieldValuePair(js, message, preserve_field_names=False):
   """Convert field value pairs into regular message.
 
   Args:
     js: A JSON object to convert the field value pairs.
     message: A regular protocol message to record the data.
+    preserve_field_names: If True, passes the case of the field unchanged
+    in the conversion. If False, changes field names to snake_case.
 
   Raises:
     ParseError: In case of problems converting.
@@ -335,7 +360,9 @@ def _ConvertFieldValuePair(js, message):
   message_descriptor = message.DESCRIPTOR
   for name in js:
     try:
-      field = message_descriptor.fields_by_camelcase_name.get(name, None)
+      field = (message_descriptor.fields_by_name.get(name, None) if
+               preserve_field_names else
+               message_descriptor.fields_by_camelcase_name.get(name, None))
       if not field:
         raise ParseError(
             'Message type "{0}" has no field named "{1}".'.format(
@@ -402,7 +429,7 @@ def _ConvertFieldValuePair(js, message):
       raise ParseError('Failed to parse {0} field: {1}.'.format(name, e))
 
 
-def _ConvertMessage(value, message):
+def _ConvertMessage(value, message, preserve_field_names=False):
   """Convert a JSON object into a message.
 
   Args:
@@ -417,12 +444,12 @@ def _ConvertMessage(value, message):
   if _IsWrapperMessage(message_descriptor):
     _ConvertWrapperMessage(value, message)
   elif full_name in _WKTJSONMETHODS:
-    _WKTJSONMETHODS[full_name][1](value, message)
+    _WKTJSONMETHODS[full_name][1](value, message, preserve_field_names)
   else:
-    _ConvertFieldValuePair(value, message)
+    _ConvertFieldValuePair(value, message, preserve_field_names)
 
 
-def _ConvertAnyMessage(value, message):
+def _ConvertAnyMessage(value, message, preserve_field_names=False):
   """Convert a JSON representation into Any message."""
   if isinstance(value, dict) and not value:
     return
@@ -437,16 +464,18 @@ def _ConvertAnyMessage(value, message):
   if _IsWrapperMessage(message_descriptor):
     _ConvertWrapperMessage(value['value'], sub_message)
   elif full_name in _WKTJSONMETHODS:
-    _WKTJSONMETHODS[full_name][1](value['value'], sub_message)
+    _WKTJSONMETHODS[full_name][1](value['value'], sub_message,
+                                  preserve_field_names)
   else:
     del value['@type']
-    _ConvertFieldValuePair(value, sub_message)
+    _ConvertFieldValuePair(value, sub_message, preserve_field_names)
   # Sets Any message
   message.value = sub_message.SerializeToString()
   message.type_url = type_url
 
 
-def _ConvertGenericMessage(value, message):
+def _ConvertGenericMessage(value, message,
+                           unused_preserve_field_names=False):
   """Convert a JSON representation into message with FromJsonString."""
   # Durantion, Timestamp, FieldMask have FromJsonString method to do the
   # convert. Users can also call the method directly.
@@ -456,7 +485,7 @@ def _ConvertGenericMessage(value, message):
 _INT_OR_FLOAT = six.integer_types + (float,)
 
 
-def _ConvertValueMessage(value, message):
+def _ConvertValueMessage(value, message, unused_preserve_field_names=False):
   """Convert a JSON representation into Value message."""
   if isinstance(value, dict):
     _ConvertStructMessage(value, message.struct_value)
@@ -474,7 +503,8 @@ def _ConvertValueMessage(value, message):
     raise ParseError('Unexpected type for Value message.')
 
 
-def _ConvertListValueMessage(value, message):
+def _ConvertListValueMessage(value, message,
+                             unused_preserve_field_names=False):
   """Convert a JSON representation into ListValue message."""
   if not isinstance(value, list):
     raise ParseError(
@@ -484,7 +514,8 @@ def _ConvertListValueMessage(value, message):
     _ConvertValueMessage(item, message.values.add())
 
 
-def _ConvertStructMessage(value, message):
+def _ConvertStructMessage(value, message,
+                          unused_preserve_field_names=False):
   """Convert a JSON representation into Struct message."""
   if not isinstance(value, dict):
     raise ParseError(

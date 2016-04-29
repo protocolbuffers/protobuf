@@ -125,6 +125,21 @@ class JsonFormatTest(JsonFormatBase):
     parsed_message = json_format_proto3_pb2.TestMessage()
     self.CheckParseBack(message, parsed_message)
 
+  def testPreserveCaseMessageToJson(self):
+    message = json_format_proto3_pb2.TestMessage(
+        string_value='test',
+        repeated_int32_value=[89, 4])
+    self.assertEqual(json.loads(json_format.MessageToJson(
+            message, preserve_field_names=True)),
+                     json.loads('{"string_value": "test", '
+                                '"repeated_int32_value": [89, 4]}'))
+    parsed_message = json_format_proto3_pb2.TestMessage()
+    json_format.Parse(json_format.MessageToJson(message,
+                                                preserve_field_names=True),
+                      parsed_message,
+                      preserve_field_names=True)
+    self.assertEqual(message, parsed_message)
+
   def testAllFieldsToJson(self):
     message = json_format_proto3_pb2.TestMessage()
     text = ('{"int32Value": 20, '
