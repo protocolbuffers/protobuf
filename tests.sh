@@ -36,6 +36,9 @@ build_cpp() {
   internal_build_cpp
   make check -j2
   cd conformance && make test_cpp && cd ..
+
+  # Verify benchmarking code can build successfully.
+  cd benchmarks && make && cd ..
 }
 
 build_cpp_distcheck() {
