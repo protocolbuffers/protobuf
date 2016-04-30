@@ -26,6 +26,8 @@ proto2_protos = %w[
 
 genproto_output = []
 
+# We won't have access to .. from within docker, but the proto files
+# will be there, thanks to the :genproto rule dependency for gem:native.
 unless ENV['IN_DOCKER'] == 'true'
   well_known_protos.each do |proto_file|
     input_file = "../src/" + proto_file
@@ -65,7 +67,13 @@ else
     RakeCompilerDock.sh "bundle && IN_DOCKER=true rake cross native gem RUBY_CC_VERSION=2.3.0:2.2.2:2.1.5:2.0.0"
   end
 
-  task 'gem:native' => [:genproto, 'gem:windows']
+  if RUBY_PLATFORM =~ /darwin/
+    task 'gem:native' do
+      system "rake cross native gem RUBY_CC_VERSION=2.3.0:2.2.2:2.1.5:2.0.0"
+    end
+  else
+    task 'gem:native' => [:genproto, 'gem:windows']
+  end
 end
 
 
