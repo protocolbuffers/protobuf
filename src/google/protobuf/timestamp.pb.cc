@@ -193,8 +193,17 @@ Timestamp* Timestamp::New(::google::protobuf::Arena* arena) const {
 }
 
 void Timestamp::Clear() {
+// @@protoc_insertion_point(message_clear_start:google.protobuf.Timestamp)
+#if defined(__clang__)
+#define ZR_HELPER_(f) \
+  _Pragma("clang diagnostic push") \
+  _Pragma("clang diagnostic ignored \"-Winvalid-offsetof\"") \
+  __builtin_offsetof(Timestamp, f) \
+  _Pragma("clang diagnostic pop")
+#else
 #define ZR_HELPER_(f) reinterpret_cast<char*>(\
   &reinterpret_cast<Timestamp*>(16)->f)
+#endif
 
 #define ZR_(first, last) do {\
   ::memset(&first, 0,\
@@ -210,7 +219,7 @@ void Timestamp::Clear() {
 
 bool Timestamp::MergePartialFromCodedStream(
     ::google::protobuf::io::CodedInputStream* input) {
-#define DO_(EXPRESSION) if (!(EXPRESSION)) goto failure
+#define DO_(EXPRESSION) if (!GOOGLE_PREDICT_TRUE(EXPRESSION)) goto failure
   ::google::protobuf::uint32 tag;
   // @@protoc_insertion_point(parse_start:google.protobuf.Timestamp)
   for (;;) {
@@ -302,6 +311,7 @@ void Timestamp::SerializeWithCachedSizes(
 }
 
 int Timestamp::ByteSize() const {
+// @@protoc_insertion_point(message_byte_size_start:google.protobuf.Timestamp)
   int total_size = 0;
 
   // optional int64 seconds = 1;
@@ -325,18 +335,22 @@ int Timestamp::ByteSize() const {
 }
 
 void Timestamp::MergeFrom(const ::google::protobuf::Message& from) {
+// @@protoc_insertion_point(generalized_merge_from_start:google.protobuf.Timestamp)
   if (GOOGLE_PREDICT_FALSE(&from == this)) MergeFromFail(__LINE__);
   const Timestamp* source = 
       ::google::protobuf::internal::DynamicCastToGenerated<const Timestamp>(
           &from);
   if (source == NULL) {
+  // @@protoc_insertion_point(generalized_merge_from_cast_fail:google.protobuf.Timestamp)
     ::google::protobuf::internal::ReflectionOps::Merge(from, this);
   } else {
+  // @@protoc_insertion_point(generalized_merge_from_cast_success:google.protobuf.Timestamp)
     MergeFrom(*source);
   }
 }
 
 void Timestamp::MergeFrom(const Timestamp& from) {
+// @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.Timestamp)
   if (GOOGLE_PREDICT_FALSE(&from == this)) MergeFromFail(__LINE__);
   if (from.seconds() != 0) {
     set_seconds(from.seconds());
@@ -347,12 +361,14 @@ void Timestamp::MergeFrom(const Timestamp& from) {
 }
 
 void Timestamp::CopyFrom(const ::google::protobuf::Message& from) {
+// @@protoc_insertion_point(generalized_copy_from_start:google.protobuf.Timestamp)
   if (&from == this) return;
   Clear();
   MergeFrom(from);
 }
 
 void Timestamp::CopyFrom(const Timestamp& from) {
+// @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.Timestamp)
   if (&from == this) return;
   Clear();
   MergeFrom(from);

@@ -86,7 +86,7 @@ namespace Google.Protobuf.WellKnownTypes {
   ///  operation applies to all fields (as if a FieldMask of all fields
   ///  had been specified).
   ///
-  ///  Note that a field mask does not necessarily applies to the
+  ///  Note that a field mask does not necessarily apply to the
   ///  top-level response message. In case of a REST get operation, the
   ///  field mask applies directly to the response, but in case of a REST
   ///  list operation, the mask instead applies to each individual message

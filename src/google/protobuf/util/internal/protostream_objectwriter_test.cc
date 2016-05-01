@@ -1413,6 +1413,8 @@ class ProtoStreamObjectWriterAnyTest : public BaseProtoStreamObjectWriterTest {
     descriptors.push_back(google::protobuf::DoubleValue::descriptor());
     descriptors.push_back(google::protobuf::Timestamp::descriptor());
     descriptors.push_back(google::protobuf::Any::descriptor());
+    descriptors.push_back(google::protobuf::Value::descriptor());
+    descriptors.push_back(google::protobuf::Struct::descriptor());
     ResetTypeInfo(descriptors);
   }
 };
@@ -1615,6 +1617,222 @@ TEST_P(ProtoStreamObjectWriterAnyTest, AnyWellKnownTypeErrorTest) {
   ow_->StartObject("")
       ->StartObject("any")
       ->RenderString("@type", "type.googleapis.com/google.protobuf.Timestamp")
+      ->RenderString("value", "")
+      ->EndObject()
+      ->EndObject();
+  CheckOutput(any);
+}
+
+// Test the following case:
+//
+// {
+//   "any": {
+//     "@type": "type.googleapis.com/google.protobuf.Value",
+//     "value": "abc"
+//   }
+// }
+TEST_P(ProtoStreamObjectWriterAnyTest, AnyWithNestedPrimitiveValue) {
+  AnyOut out;
+  ::google::protobuf::Any* any = out.mutable_any();
+
+  ::google::protobuf::Value value;
+  value.set_string_value("abc");
+  any->PackFrom(value);
+
+  ow_->StartObject("")
+      ->StartObject("any")
+      ->RenderString("@type", "type.googleapis.com/google.protobuf.Value")
+      ->RenderString("value", "abc")
+      ->EndObject()
+      ->EndObject();
+  CheckOutput(out);
+}
+
+// Test the following case:
+//
+// {
+//   "any": {
+//     "@type": "type.googleapis.com/google.protobuf.Value",
+//     "value": {
+//       "foo": "abc"
+//     }
+//   }
+// }
+TEST_P(ProtoStreamObjectWriterAnyTest, AnyWithNestedObjectValue) {
+  AnyOut out;
+  ::google::protobuf::Any* any = out.mutable_any();
+
+  ::google::protobuf::Value value;
+  (*value.mutable_struct_value()->mutable_fields())["foo"].set_string_value(
+      "abc");
+  any->PackFrom(value);
+
+  ow_->StartObject("")
+      ->StartObject("any")
+      ->RenderString("@type", "type.googleapis.com/google.protobuf.Value")
+      ->StartObject("value")
+      ->RenderString("foo", "abc")
+      ->EndObject()
+      ->EndObject()
+      ->EndObject();
+  CheckOutput(out);
+}
+
+// Test the following case:
+//
+// {
+//   "any": {
+//     "@type": "type.googleapis.com/google.protobuf.Value",
+//     "value": ["hello"],
+//   }
+// }
+TEST_P(ProtoStreamObjectWriterAnyTest, AnyWithNestedArrayValue) {
+  AnyOut out;
+  ::google::protobuf::Any* any = out.mutable_any();
+
+  ::google::protobuf::Value value;
+  value.mutable_list_value()->add_values()->set_string_value("hello");
+  any->PackFrom(value);
+
+  ow_->StartObject("")
+      ->StartObject("any")
+      ->RenderString("@type", "type.googleapis.com/google.protobuf.Value")
+      ->StartList("value")
+      ->RenderString("", "hello")
+      ->EndList()
+      ->EndObject()
+      ->EndObject()
+      ->EndObject();
+  CheckOutput(out);
+}
+
+// Test the following case:
+//
+// {
+//   "any": {
+//     "@type": "type.googleapis.com/google.protobuf.Value",
+//     "not_value": ""
+//   }
+// }
+TEST_P(ProtoStreamObjectWriterAnyTest,
+       AnyWellKnownTypesNoValueFieldForPrimitive) {
+  EXPECT_CALL(
+      listener_,
+      InvalidValue(
+          _, StringPiece("Any"),
+          StringPiece("Expect a \"value\" field for well-known types.")));
+  AnyOut any;
+  google::protobuf::Any* any_type = any.mutable_any();
+  any_type->set_type_url("type.googleapis.com/google.protobuf.Value");
+
+  ow_->StartObject("")
+      ->StartObject("any")
+      ->RenderString("@type", "type.googleapis.com/google.protobuf.Value")
+      ->RenderString("not_value", "")
+      ->EndObject()
+      ->EndObject();
+  CheckOutput(any);
+}
+
+// Test the following case:
+//
+// {
+//   "any": {
+//     "@type": "type.googleapis.com/google.protobuf.Value",
+//     "not_value": {}
+//   }
+// }
+TEST_P(ProtoStreamObjectWriterAnyTest, AnyWellKnownTypesNoValueFieldForObject) {
+  EXPECT_CALL(
+      listener_,
+      InvalidValue(
+          _, StringPiece("Any"),
+          StringPiece("Expect a \"value\" field for well-known types.")));
+  AnyOut any;
+  google::protobuf::Any* any_type = any.mutable_any();
+  any_type->set_type_url("type.googleapis.com/google.protobuf.Value");
+
+  ow_->StartObject("")
+      ->StartObject("any")
+      ->RenderString("@type", "type.googleapis.com/google.protobuf.Value")
+      ->StartObject("not_value")
+      ->EndObject()
+      ->EndObject()
+      ->EndObject();
+  CheckOutput(any);
+}
+
+// Test the following case:
+//
+// {
+//   "any": {
+//     "@type": "type.googleapis.com/google.protobuf.Value",
+//     "not_value": [],
+//   }
+// }
+TEST_P(ProtoStreamObjectWriterAnyTest, AnyWellKnownTypesNoValueFieldForArray) {
+  EXPECT_CALL(
+      listener_,
+      InvalidValue(
+          _, StringPiece("Any"),
+          StringPiece("Expect a \"value\" field for well-known types.")));
+  AnyOut any;
+  google::protobuf::Any* any_type = any.mutable_any();
+  any_type->set_type_url("type.googleapis.com/google.protobuf.Value");
+
+  ow_->StartObject("")
+      ->StartObject("any")
+      ->RenderString("@type", "type.googleapis.com/google.protobuf.Value")
+      ->StartList("not_value")
+      ->EndList()
+      ->EndObject()
+      ->EndObject()
+      ->EndObject();
+  CheckOutput(any);
+}
+
+// Test the following case:
+//
+// {
+//   "any": {
+//     "@type": "type.googleapis.com/google.protobuf.Struct",
+//     "value": "",
+//   }
+// }
+TEST_P(ProtoStreamObjectWriterAnyTest, AnyWellKnownTypesExpectObjectForStruct) {
+  EXPECT_CALL(listener_, InvalidValue(_, StringPiece("Any"),
+                                      StringPiece("Expect a JSON object.")));
+  AnyOut any;
+  google::protobuf::Any* any_type = any.mutable_any();
+  any_type->set_type_url("type.googleapis.com/google.protobuf.Struct");
+
+  ow_->StartObject("")
+      ->StartObject("any")
+      ->RenderString("@type", "type.googleapis.com/google.protobuf.Struct")
+      ->RenderString("value", "")
+      ->EndObject()
+      ->EndObject();
+  CheckOutput(any);
+}
+
+// Test the following case:
+//
+// {
+//   "any": {
+//     "@type": "type.googleapis.com/google.protobuf.Any",
+//     "value": "",
+//   }
+// }
+TEST_P(ProtoStreamObjectWriterAnyTest, AnyWellKnownTypesExpectObjectForAny) {
+  EXPECT_CALL(listener_, InvalidValue(_, StringPiece("Any"),
+                                      StringPiece("Expect a JSON object.")));
+  AnyOut any;
+  google::protobuf::Any* any_type = any.mutable_any();
+  any_type->set_type_url("type.googleapis.com/google.protobuf.Any");
+
+  ow_->StartObject("")
+      ->StartObject("any")
+      ->RenderString("@type", "type.googleapis.com/google.protobuf.Any")
       ->RenderString("value", "")
       ->EndObject()
       ->EndObject();

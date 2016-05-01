@@ -37,8 +37,9 @@
 
 #include <map>
 #include <string>
-#include <google/protobuf/descriptor.h>
+#include <google/protobuf/compiler/cpp/cpp_options.h>
 #include <google/protobuf/descriptor.pb.h>
+#include <google/protobuf/descriptor.h>
 
 namespace google {
 namespace protobuf {
@@ -72,7 +73,7 @@ string DependentBaseClassTemplateName(const Descriptor* descriptor);
 
 // Name of the base class: either the dependent base class (for use with
 // proto_h) or google::protobuf::Message.
-string SuperClassName(const Descriptor* descriptor);
+string SuperClassName(const Descriptor* descriptor, const Options& options);
 
 // Returns a string that down-casts from the dependent base class to the
 // derived class.
@@ -118,7 +119,7 @@ string DependentTypeName(const FieldDescriptor* field);
 string FieldMessageTypeName(const FieldDescriptor* field);
 
 // Strips ".proto" or ".protodevel" from the end of a filename.
-string StripProto(const string& filename);
+LIBPROTOC_EXPORT string StripProto(const string& filename);
 
 // Get the C++ type name for a primitive type (e.g. "double", "::google::protobuf::int32", etc.).
 // Note:  non-built-in type names will be qualified, meaning they will start
@@ -168,12 +169,17 @@ inline bool PreserveUnknownFields(const Descriptor* message) {
   return message->file()->syntax() != FileDescriptor::SYNTAX_PROTO3;
 }
 
+// Returns the optimize mode for <file>, respecting <options.enforce_lite>.
+::google::protobuf::FileOptions_OptimizeMode GetOptimizeFor(
+    const FileDescriptor* file, const Options& options);
+
 // If PreserveUnknownFields() is true, determines whether unknown
 // fields will be stored in an UnknownFieldSet or a string.
 // If PreserveUnknownFields() is false, this method will not be
 // used.
-inline bool UseUnknownFieldSet(const FileDescriptor* file) {
-  return file->options().optimize_for() != FileOptions::LITE_RUNTIME;
+inline bool UseUnknownFieldSet(const FileDescriptor* file,
+                               const Options& options) {
+  return GetOptimizeFor(file, options) != FileOptions::LITE_RUNTIME;
 }
 
 
@@ -186,45 +192,52 @@ bool HasEnumDefinitions(const FileDescriptor* file);
 
 // Does this file have generated parsing, serialization, and other
 // standard methods for which reflection-based fallback implementations exist?
-inline bool HasGeneratedMethods(const FileDescriptor* file) {
-  return file->options().optimize_for() != FileOptions::CODE_SIZE;
+inline bool HasGeneratedMethods(const FileDescriptor* file,
+                                const Options& options) {
+  return GetOptimizeFor(file, options) != FileOptions::CODE_SIZE;
 }
 
 // Do message classes in this file have descriptor and reflection methods?
-inline bool HasDescriptorMethods(const FileDescriptor* file) {
-  return file->options().optimize_for() != FileOptions::LITE_RUNTIME;
+inline bool HasDescriptorMethods(const FileDescriptor* file,
+                                 const Options& options) {
+  return GetOptimizeFor(file, options) != FileOptions::LITE_RUNTIME;
 }
 
 // Should we generate generic services for this file?
-inline bool HasGenericServices(const FileDescriptor* file) {
+inline bool HasGenericServices(const FileDescriptor* file,
+                               const Options& options) {
   return file->service_count() > 0 &&
-         file->options().optimize_for() != FileOptions::LITE_RUNTIME &&
+         GetOptimizeFor(file, options) != FileOptions::LITE_RUNTIME &&
          file->options().cc_generic_services();
 }
 
 // Should we generate a separate, super-optimized code path for serializing to
 // flat arrays?  We don't do this in Lite mode because we'd rather reduce code
 // size.
-inline bool HasFastArraySerialization(const FileDescriptor* file) {
-  return file->options().optimize_for() == FileOptions::SPEED;
+inline bool HasFastArraySerialization(const FileDescriptor* file,
+                                      const Options& options) {
+  return GetOptimizeFor(file, options) == FileOptions::SPEED;
 }
 
 // Returns whether we have to generate code with static initializers.
-bool StaticInitializersForced(const FileDescriptor* file);
+bool StaticInitializersForced(const FileDescriptor* file,
+                              const Options& options);
 
 // Prints 'with_static_init' if static initializers have to be used for the
 // provided file. Otherwise emits both 'with_static_init' and
 // 'without_static_init' using #ifdef.
 void PrintHandlingOptionalStaticInitializers(
-    const FileDescriptor* file, io::Printer* printer,
+    const FileDescriptor* file, const Options& options, io::Printer* printer,
     const char* with_static_init, const char* without_static_init,
-    const char* var1 = NULL, const string& val1 = "",
-    const char* var2 = NULL, const string& val2 = "");
+    const char* var1 = NULL, const string& val1 = "", const char* var2 = NULL,
+    const string& val2 = "");
 
-void PrintHandlingOptionalStaticInitializers(
-    const map<string, string>& vars, const FileDescriptor* file,
-    io::Printer* printer, const char* with_static_init,
-    const char* without_static_init);
+void PrintHandlingOptionalStaticInitializers(const map<string, string>& vars,
+                                             const FileDescriptor* file,
+                                             const Options& options,
+                                             io::Printer* printer,
+                                             const char* with_static_init,
+                                             const char* without_static_init);
 
 
 inline bool IsMapEntryMessage(const Descriptor* descriptor) {
@@ -267,19 +280,23 @@ bool IsAnyMessage(const Descriptor* descriptor);
 
 bool IsWellKnownMessage(const FileDescriptor* descriptor);
 
-void GenerateUtf8CheckCodeForString(
-    const FieldDescriptor* field,
-    bool for_parse,
-    const map<string, string>& variables,
-    const char* parameters,
-    io::Printer* printer);
+void GenerateUtf8CheckCodeForString(const FieldDescriptor* field,
+                                    const Options& options, bool for_parse,
+                                    const map<string, string>& variables,
+                                    const char* parameters,
+                                    io::Printer* printer);
 
-void GenerateUtf8CheckCodeForCord(
-    const FieldDescriptor* field,
-    bool for_parse,
-    const map<string, string>& variables,
-    const char* parameters,
-    io::Printer* printer);
+void GenerateUtf8CheckCodeForCord(const FieldDescriptor* field,
+                                  const Options& options, bool for_parse,
+                                  const map<string, string>& variables,
+                                  const char* parameters, io::Printer* printer);
+
+inline ::google::protobuf::FileOptions_OptimizeMode GetOptimizeFor(
+    const FileDescriptor* file, const Options& options) {
+  return options.enforce_lite
+      ? FileOptions::LITE_RUNTIME
+      : file->options().optimize_for();
+}
 
 }  // namespace cpp
 }  // namespace compiler

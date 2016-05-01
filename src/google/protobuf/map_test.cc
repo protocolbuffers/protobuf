@@ -307,6 +307,11 @@ static int64 Now() {
       google::protobuf::util::TimeUtil::GetCurrentTime());
 }
 
+// Arbitrary odd integers for creating test data.
+static int k0 = 812398771;
+static int k1 = 1312938717;
+static int k2 = 1321555333;
+
 // A naive begin() implementation will cause begin() to get slower and slower
 // if one erases elements at the "front" of the hash map, and we'd like to
 // avoid that, as std::unordered_map does.
@@ -315,8 +320,18 @@ TEST_P(MapImplTest, BeginIsFast) {
   if (/*GetParam()*/true) return;
   Map<int32, int32> map(false);  // This test uses new-style maps only.
   const int kTestSize = 250000;
-  for (int i = 0; i < kTestSize; i++) {
-    map[i] = i;
+  // Create a random-looking map of size n.  Use non-negative integer keys.
+  uint32 frog = 123983;
+  int last_key = 0;
+  int counter = 0;
+  while (map.size() < kTestSize) {
+    frog *= static_cast<uint32>(k0);
+    frog ^= frog >> 17;
+    frog += counter++;
+    last_key =
+        static_cast<int>(frog) >= 0 ? static_cast<int>(frog) : last_key ^ 1;
+    GOOGLE_DCHECK_GE(last_key, 0);
+    map[last_key] = last_key ^ 1;
   }
   vector<int64> times;
   // We're going to do map.erase(map.begin()) over and over again.  But,
@@ -383,11 +398,6 @@ TEST_P(MapImplTest, HashFlood) {
   // But we want to allow O(n log n).  A factor of 20 should be generous enough.
   EXPECT_LE(x1, x0 * 20);
 }
-
-// Arbitrary odd integers for creating test data.
-static int k0 = 812398771;
-static int k1 = 1312938717;
-static int k2 = 1321555333;
 
 template <typename T, typename U>
 static void TestValidityForAllKeysExcept(int key_to_avoid,

@@ -41,9 +41,10 @@
 #include <google/protobuf/io/printer.h>
 #include <google/protobuf/descriptor.pb.h>
 
+#include <google/protobuf/testing/file.h>
+#include <google/protobuf/testing/file.h>
 #include <google/protobuf/testing/googletest.h>
 #include <gtest/gtest.h>
-#include <google/protobuf/testing/file.h>
 
 namespace google {
 namespace protobuf {

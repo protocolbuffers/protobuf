@@ -160,6 +160,7 @@ inline ::std::string* SourceContext::mutable_file_name() {
   return file_name_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
 inline ::std::string* SourceContext::release_file_name() {
+  // @@protoc_insertion_point(field_release:google.protobuf.SourceContext.file_name)
   
   return file_name_.ReleaseNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }

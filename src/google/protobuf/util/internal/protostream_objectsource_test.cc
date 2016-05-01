@@ -70,6 +70,7 @@ using google::protobuf::testing::Author;
 using google::protobuf::testing::BadAuthor;
 using google::protobuf::testing::BadNestedBook;
 using google::protobuf::testing::Book;
+using google::protobuf::testing::Cyclic;
 using google::protobuf::testing::Book_Label;
 using google::protobuf::testing::NestedBook;
 using google::protobuf::testing::PackedPrimitive;
@@ -120,6 +121,7 @@ class ProtostreamObjectSourceTest
     google::protobuf::scoped_ptr<ProtoStreamObjectSource> os(
         helper_.NewProtoSource(&in_stream, GetTypeUrl(descriptor)));
     if (use_lower_camel_for_enums_) os->set_use_lower_camel_for_enums(true);
+    os->set_max_recursion_depth(64);
     return os->WriteTo(&mock_);
   }
 
@@ -489,6 +491,33 @@ TEST_P(ProtostreamObjectSourceTest, EnumCaseIsUnchangedByDefault) {
       ->RenderString("type", "ACTION_AND_ADVENTURE")
       ->EndObject();
   DoTest(book, Book::descriptor());
+}
+
+TEST_P(ProtostreamObjectSourceTest, CyclicMessageDepthTest) {
+  Cyclic cyclic;
+  cyclic.set_m_int(123);
+
+  Book* book = cyclic.mutable_m_book();
+  book->set_title("book title");
+  Cyclic* current = cyclic.mutable_m_cyclic();
+  Author* current_author = cyclic.add_m_author();
+  for (int i = 0; i < 63; ++i) {
+    Author* next = current_author->add_friend_();
+    next->set_id(i);
+    next->set_name(StrCat("author_name_", i));
+    next->set_alive(true);
+    current_author = next;
+  }
+
+  // Recursive message with depth (65) > max (max is 64).
+  for (int i = 0; i < 64; ++i) {
+    Cyclic* next = current->mutable_m_cyclic();
+    next->set_m_str(StrCat("count_", i));
+    current = next;
+  }
+
+  Status status = ExecuteTest(cyclic, Cyclic::descriptor());
+  EXPECT_EQ(util::error::INVALID_ARGUMENT, status.error_code());
 }
 
 class ProtostreamObjectSourceMapsTest : public ProtostreamObjectSourceTest {

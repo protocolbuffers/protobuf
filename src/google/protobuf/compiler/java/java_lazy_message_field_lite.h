@@ -63,7 +63,7 @@ class ImmutableLazyMessageFieldLiteGenerator
   void GenerateMembers(io::Printer* printer) const;
   void GenerateBuilderMembers(io::Printer* printer) const;
   void GenerateInitializationCode(io::Printer* printer) const;
-  void GenerateMergingCode(io::Printer* printer) const;
+  void GenerateVisitCode(io::Printer* printer) const;
   void GenerateParsingCode(io::Printer* printer) const;
   void GenerateSerializationCode(io::Printer* printer) const;
   void GenerateSerializedSizeCode(io::Printer* printer) const;
@@ -82,7 +82,7 @@ class ImmutableLazyMessageOneofFieldLiteGenerator
 
   void GenerateMembers(io::Printer* printer) const;
   void GenerateBuilderMembers(io::Printer* printer) const;
-  void GenerateMergingCode(io::Printer* printer) const;
+  void GenerateVisitCode(io::Printer* printer) const;
   void GenerateParsingCode(io::Printer* printer) const;
   void GenerateSerializationCode(io::Printer* printer) const;
   void GenerateSerializedSizeCode(io::Printer* printer) const;

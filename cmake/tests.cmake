@@ -52,6 +52,8 @@ set(tests_protos
   google/protobuf/unittest_preserve_unknown_enum.proto
   google/protobuf/unittest_preserve_unknown_enum2.proto
   google/protobuf/unittest_proto3_arena.proto
+  google/protobuf/unittest_proto3_arena_lite.proto
+  google/protobuf/unittest_proto3_lite.proto
   google/protobuf/unittest_well_known_types.proto
   google/protobuf/util/internal/testdata/anys.proto
   google/protobuf/util/internal/testdata/books.proto
@@ -116,6 +118,7 @@ set(tests_files
   ${protobuf_source_dir}/src/google/protobuf/compiler/cpp/cpp_bootstrap_unittest.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/cpp/cpp_plugin_unittest.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/cpp/cpp_unittest.cc
+  ${protobuf_source_dir}/src/google/protobuf/compiler/cpp/metadata_test.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/csharp/csharp_generator_unittest.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/importer_unittest.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/java/java_doc_comment_unittest.cc
@@ -140,7 +143,9 @@ set(tests_files
   ${protobuf_source_dir}/src/google/protobuf/message_unittest.cc
   ${protobuf_source_dir}/src/google/protobuf/no_field_presence_test.cc
   ${protobuf_source_dir}/src/google/protobuf/preserve_unknown_enum_test.cc
+  ${protobuf_source_dir}/src/google/protobuf/proto3_arena_lite_unittest.cc
   ${protobuf_source_dir}/src/google/protobuf/proto3_arena_unittest.cc
+  ${protobuf_source_dir}/src/google/protobuf/proto3_lite_unittest.cc
   ${protobuf_source_dir}/src/google/protobuf/reflection_ops_unittest.cc
   ${protobuf_source_dir}/src/google/protobuf/repeated_field_reflection_unittest.cc
   ${protobuf_source_dir}/src/google/protobuf/repeated_field_unittest.cc

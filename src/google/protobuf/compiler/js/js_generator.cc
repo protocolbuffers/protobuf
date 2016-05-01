@@ -1909,7 +1909,7 @@ void Generator::GenerateClassToObject(const GeneratorOptions& options,
 
   printer->Print(
       "  if (includeInstance) {\n"
-      "    obj.$$jspbMessageInstance = msg\n"
+      "    obj.$$jspbMessageInstance = msg;\n"
       "  }\n"
       "  return obj;\n"
       "};\n"
@@ -3032,8 +3032,7 @@ bool Generator::GenerateAll(const vector<const FileDescriptor*>& files,
       const google::protobuf::FileDescriptor* file = files[i];
 
       string filename = options.output_dir + "/" + GetJSFilename(file->name());
-      scoped_ptr<io::ZeroCopyOutputStream> output(
-          context->Open(filename));
+      google::protobuf::scoped_ptr<io::ZeroCopyOutputStream> output(context->Open(filename));
       GOOGLE_CHECK(output.get());
       io::Printer printer(output.get(), '$');
 

@@ -77,6 +77,8 @@ void SetCommonFieldVariables(const FieldDescriptor* descriptor,
     WireFormat::TagSize(descriptor->number(), descriptor->type()));
   (*variables)["deprecation"] = descriptor->options().deprecated()
       ? " PROTOBUF_DEPRECATED" : "";
+  (*variables)["deprecated_attr"] = descriptor->options().deprecated()
+      ? "PROTOBUF_DEPRECATED_ATTR " : "";
 
   (*variables)["cppget"] = "Get";
 
@@ -121,6 +123,7 @@ GenerateMergeFromCodedStreamWithPacking(io::Printer* printer) const {
 FieldGeneratorMap::FieldGeneratorMap(const Descriptor* descriptor,
                                      const Options& options)
     : descriptor_(descriptor),
+      options_(options),
       field_generators_(
           new google::protobuf::scoped_ptr<FieldGenerator>[descriptor->field_count()]) {
   // Construct all the FieldGenerators.

@@ -1048,10 +1048,12 @@ inline ::std::string* StringValue::mutable_value() {
   return value_.Mutable(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), GetArenaNoVirtual());
 }
 inline ::std::string* StringValue::release_value() {
+  // @@protoc_insertion_point(field_release:google.protobuf.StringValue.value)
   
   return value_.Release(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), GetArenaNoVirtual());
 }
 inline ::std::string* StringValue::unsafe_arena_release_value() {
+  // @@protoc_insertion_point(field_unsafe_arena_release:google.protobuf.StringValue.value)
   GOOGLE_DCHECK(GetArenaNoVirtual() != NULL);
   
   return value_.UnsafeArenaRelease(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
@@ -1077,7 +1079,7 @@ inline void StringValue::unsafe_arena_set_allocated_value(
   }
   value_.UnsafeArenaSetAllocated(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
       value, GetArenaNoVirtual());
-  // @@protoc_insertion_point(field_set_allocated:google.protobuf.StringValue.value)
+  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:google.protobuf.StringValue.value)
 }
 
 // -------------------------------------------------------------------
@@ -1116,10 +1118,12 @@ inline ::std::string* BytesValue::mutable_value() {
   return value_.Mutable(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), GetArenaNoVirtual());
 }
 inline ::std::string* BytesValue::release_value() {
+  // @@protoc_insertion_point(field_release:google.protobuf.BytesValue.value)
   
   return value_.Release(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), GetArenaNoVirtual());
 }
 inline ::std::string* BytesValue::unsafe_arena_release_value() {
+  // @@protoc_insertion_point(field_unsafe_arena_release:google.protobuf.BytesValue.value)
   GOOGLE_DCHECK(GetArenaNoVirtual() != NULL);
   
   return value_.UnsafeArenaRelease(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
@@ -1145,7 +1149,7 @@ inline void BytesValue::unsafe_arena_set_allocated_value(
   }
   value_.UnsafeArenaSetAllocated(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
       value, GetArenaNoVirtual());
-  // @@protoc_insertion_point(field_set_allocated:google.protobuf.BytesValue.value)
+  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:google.protobuf.BytesValue.value)
 }
 
 #endif  // !PROTOBUF_INLINE_NOT_IN_HEADERS

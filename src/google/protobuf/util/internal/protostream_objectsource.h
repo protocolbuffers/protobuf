@@ -110,6 +110,13 @@ class LIBPROTOBUF_EXPORT ProtoStreamObjectSource : public ObjectSource {
     use_lower_camel_for_enums_ = value;
   }
 
+  // Sets the max recursion depth of proto message to be deserialized. Proto
+  // messages over this depth will fail to be deserialized.
+  // Default value is 64.
+  void set_max_recursion_depth(int max_depth) {
+    max_recursion_depth_ = max_depth;
+  }
+
  protected:
   // Writes a proto2 Message to the ObjectWriter. When the given end_tag is
   // found this method will complete, allowing it to be used for parsing both
@@ -251,6 +258,12 @@ class LIBPROTOBUF_EXPORT ProtoStreamObjectSource : public ObjectSource {
   std::pair<int64, int32> ReadSecondsAndNanos(
       const google::protobuf::Type& type) const;
 
+  // Helper function to check recursion depth and increment it. It will return
+  // Status::OK if the current depth is allowed. Otherwise an error is returned.
+  // type_name and field_name are used for error reporting.
+  util::Status IncrementRecursionDepth(StringPiece type_name,
+                                         StringPiece field_name) const;
+
   // Input stream to read from. Ownership rests with the caller.
   google::protobuf::io::CodedInputStream* stream_;
 
@@ -267,6 +280,12 @@ class LIBPROTOBUF_EXPORT ProtoStreamObjectSource : public ObjectSource {
 
   // Whether to render enums using lowerCamelCase. Defaults to false.
   bool use_lower_camel_for_enums_;
+
+  // Tracks current recursion depth.
+  mutable int recursion_depth_;
+
+  // Maximum allowed recursion depth.
+  int max_recursion_depth_;
 
   GOOGLE_DISALLOW_IMPLICIT_CONSTRUCTORS(ProtoStreamObjectSource);
 };

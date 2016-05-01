@@ -63,20 +63,6 @@ public class ProtobufArrayListTest extends TestCase {
     assertImmutable(ProtobufArrayList.<Integer>emptyList());
   }
   
-  public void testCopyConstructor() {
-    ProtobufArrayList<Integer> copy = new ProtobufArrayList<Integer>(TERTIARY_LIST);
-    assertEquals(TERTIARY_LIST, copy);
-
-    copy = new ProtobufArrayList<Integer>(IntArrayList.emptyList());
-    assertEquals(ProtobufArrayList.emptyList(), copy);
-    
-    copy = new ProtobufArrayList<Integer>(asList(1, 2, 3));
-    assertEquals(asList(1, 2, 3), copy);
-
-    copy = new ProtobufArrayList<Integer>(Collections.<Integer>emptyList());
-    assertEquals(ProtobufArrayList.emptyList(), copy);
-  }
-  
   public void testModificationWithIteration() {
     list.addAll(asList(1, 2, 3, 4));
     Iterator<Integer> iterator = list.iterator();

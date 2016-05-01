@@ -70,6 +70,9 @@ using util::Status;
 using util::StatusOr;
 
 namespace {
+
+static int kDefaultMaxRecursionDepth = 64;
+
 // Finds a field with the given number. NULL if none found.
 const google::protobuf::Field* FindFieldByNumber(
     const google::protobuf::Type& type, int number);
@@ -116,7 +119,9 @@ ProtoStreamObjectSource::ProtoStreamObjectSource(
       typeinfo_(TypeInfo::NewTypeInfo(type_resolver)),
       own_typeinfo_(true),
       type_(type),
-      use_lower_camel_for_enums_(false) {
+      use_lower_camel_for_enums_(false),
+      recursion_depth_(0),
+      max_recursion_depth_(kDefaultMaxRecursionDepth) {
   GOOGLE_LOG_IF(DFATAL, stream == NULL) << "Input stream is NULL.";
 }
 
@@ -127,7 +132,9 @@ ProtoStreamObjectSource::ProtoStreamObjectSource(
       typeinfo_(typeinfo),
       own_typeinfo_(false),
       type_(type),
-      use_lower_camel_for_enums_(false) {
+      use_lower_camel_for_enums_(false),
+      recursion_depth_(0),
+      max_recursion_depth_(kDefaultMaxRecursionDepth) {
   GOOGLE_LOG_IF(DFATAL, stream == NULL) << "Input stream is NULL.";
 }
 
@@ -741,7 +748,9 @@ Status ProtoStreamObjectSource::RenderField(
     if (use_type_renderer) {
       RETURN_IF_ERROR((*type_renderer)(this, *type, field_name, ow));
     } else {
+      RETURN_IF_ERROR(IncrementRecursionDepth(type->name(), field_name));
       RETURN_IF_ERROR(WriteMessage(*type, field_name, 0, true, ow));
+      --recursion_depth_;
     }
     if (!stream_->ConsumedEntireMessage()) {
       return Status(util::error::INVALID_ARGUMENT,
@@ -1035,6 +1044,17 @@ std::pair<int64, int32> ProtoStreamObjectSource::ReadSecondsAndNanos(
     }
   }
   return std::pair<int64, int32>(signed_seconds, signed_nanos);
+}
+
+Status ProtoStreamObjectSource::IncrementRecursionDepth(
+    StringPiece type_name, StringPiece field_name) const {
+  if (++recursion_depth_ > max_recursion_depth_) {
+    return Status(
+        util::error::INVALID_ARGUMENT,
+        StrCat("Message too deep. Max recursion depth reached for type '",
+               type_name, "', field '", field_name, "'"));
+  }
+  return Status::OK;
 }
 
 namespace {

@@ -100,10 +100,9 @@ void SetPrimitiveVariables(const FieldDescriptor* descriptor,
 
 // ===================================================================
 
-PrimitiveFieldGenerator::
-PrimitiveFieldGenerator(const FieldDescriptor* descriptor,
-                        const Options& options)
-  : descriptor_(descriptor) {
+PrimitiveFieldGenerator::PrimitiveFieldGenerator(
+    const FieldDescriptor* descriptor, const Options& options)
+    : FieldGenerator(options), descriptor_(descriptor) {
   SetPrimitiveVariables(descriptor, &variables_, options);
 }
 
@@ -117,8 +116,8 @@ GeneratePrivateMembers(io::Printer* printer) const {
 void PrimitiveFieldGenerator::
 GenerateAccessorDeclarations(io::Printer* printer) const {
   printer->Print(variables_,
-    "$type$ $name$() const$deprecation$;\n"
-    "void set_$name$($type$ value)$deprecation$;\n");
+    "$deprecated_attr$$type$ $name$() const;\n"
+    "$deprecated_attr$void set_$name$($type$ value);\n");
 }
 
 void PrimitiveFieldGenerator::
@@ -256,10 +255,9 @@ GenerateMergeFromCodedStream(io::Printer* printer) const {
 
 // ===================================================================
 
-RepeatedPrimitiveFieldGenerator::
-RepeatedPrimitiveFieldGenerator(const FieldDescriptor* descriptor,
-                                const Options& options)
-  : descriptor_(descriptor) {
+RepeatedPrimitiveFieldGenerator::RepeatedPrimitiveFieldGenerator(
+    const FieldDescriptor* descriptor, const Options& options)
+    : FieldGenerator(options), descriptor_(descriptor) {
   SetPrimitiveVariables(descriptor, &variables_, options);
 
   if (descriptor->is_packed()) {
@@ -277,7 +275,8 @@ void RepeatedPrimitiveFieldGenerator::
 GeneratePrivateMembers(io::Printer* printer) const {
   printer->Print(variables_,
     "::google::protobuf::RepeatedField< $type$ > $name$_;\n");
-  if (descriptor_->is_packed() && HasGeneratedMethods(descriptor_->file())) {
+  if (descriptor_->is_packed() &&
+      HasGeneratedMethods(descriptor_->file(), options_)) {
     printer->Print(variables_,
       "mutable int _$name$_cached_byte_size_;\n");
   }
@@ -286,14 +285,14 @@ GeneratePrivateMembers(io::Printer* printer) const {
 void RepeatedPrimitiveFieldGenerator::
 GenerateAccessorDeclarations(io::Printer* printer) const {
   printer->Print(variables_,
-    "$type$ $name$(int index) const$deprecation$;\n"
-    "void set_$name$(int index, $type$ value)$deprecation$;\n"
-    "void add_$name$($type$ value)$deprecation$;\n");
+    "$deprecated_attr$$type$ $name$(int index) const;\n"
+    "$deprecated_attr$void set_$name$(int index, $type$ value);\n"
+    "$deprecated_attr$void add_$name$($type$ value);\n");
   printer->Print(variables_,
-    "const ::google::protobuf::RepeatedField< $type$ >&\n"
-    "    $name$() const$deprecation$;\n"
-    "::google::protobuf::RepeatedField< $type$ >*\n"
-    "    mutable_$name$()$deprecation$;\n");
+    "$deprecated_attr$const ::google::protobuf::RepeatedField< $type$ >&\n"
+    "    $name$() const;\n"
+    "$deprecated_attr$::google::protobuf::RepeatedField< $type$ >*\n"
+    "    mutable_$name$();\n");
 }
 
 void RepeatedPrimitiveFieldGenerator::

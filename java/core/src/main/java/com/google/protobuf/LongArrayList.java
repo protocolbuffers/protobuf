@@ -34,7 +34,6 @@ import com.google.protobuf.Internal.LongList;
 
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.List;
 import java.util.RandomAccess;
 
 /**
@@ -43,8 +42,6 @@ import java.util.RandomAccess;
  * @author dweis@google.com (Daniel Weis)
  */
 final class LongArrayList extends AbstractProtobufList<Long> implements LongList, RandomAccess {
-  
-  private static final int DEFAULT_CAPACITY = 10;
   
   private static final LongArrayList EMPTY_LIST = new LongArrayList();
   static {
@@ -70,32 +67,55 @@ final class LongArrayList extends AbstractProtobufList<Long> implements LongList
    * Constructs a new mutable {@code LongArrayList} with default capacity.
    */
   LongArrayList() {
-    this(DEFAULT_CAPACITY);
-  }
-
-  /**
-   * Constructs a new mutable {@code LongArrayList} with the provided capacity.
-   */
-  LongArrayList(int capacity) {
-    array = new long[capacity];
-    size = 0;
+    this(new long[DEFAULT_CAPACITY], 0);
   }
 
   /**
    * Constructs a new mutable {@code LongArrayList} containing the same elements as {@code other}.
    */
-  LongArrayList(List<Long> other) {
-    if (other instanceof LongArrayList) {
-      LongArrayList list = (LongArrayList) other;
-      array = list.array.clone();
-      size = list.size;
-    } else {
-      size = other.size();
-      array = new long[size];
-      for (int i = 0; i < size; i++) {
-        array[i] = other.get(i);
+  private LongArrayList(long[] array, int size) {
+    this.array = array;
+    this.size = size;
+  }
+  
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (!(o instanceof IntArrayList)) {
+      return super.equals(o);
+    }
+    LongArrayList other = (LongArrayList) o;
+    if (size != other.size) {
+      return false;
+    }
+    
+    final long[] arr = other.array;
+    for (int i = 0; i < size; i++) {
+      if (array[i] != arr[i]) {
+        return false;
       }
     }
+    
+    return true;
+  }
+
+  @Override
+  public int hashCode() {
+    int result = 1;
+    for (int i = 0; i < size; i++) {
+      result = (31 * result) + Internal.hashLong(array[i]);
+    }
+    return result;
+  }
+
+  @Override
+  public LongList mutableCopyWithCapacity(int capacity) {
+    if (capacity < size) {
+      throw new IllegalArgumentException();
+    }
+    return new LongArrayList(Arrays.copyOf(array, capacity), size);
   }
   
   @Override

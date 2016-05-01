@@ -73,20 +73,6 @@ public class BooleanArrayListTest extends TestCase {
     assertImmutable(list);
   }
   
-  public void testCopyConstructor() {
-    BooleanArrayList copy = new BooleanArrayList(TERTIARY_LIST);
-    assertEquals(TERTIARY_LIST, copy);
-
-    copy = new BooleanArrayList(BooleanArrayList.emptyList());
-    assertEquals(BooleanArrayList.emptyList(), copy);
-    
-    copy = new BooleanArrayList(asList(false, false, true));
-    assertEquals(asList(false, false, true), copy);
-
-    copy = new BooleanArrayList(Collections.<Boolean>emptyList());
-    assertEquals(BooleanArrayList.emptyList(), copy);
-  }
-  
   public void testModificationWithIteration() {
     list.addAll(asList(true, false, false, true));
     Iterator<Boolean> iterator = list.iterator();

@@ -190,8 +190,8 @@ PyObject* FindMessageByName(PyDescriptorPool* self, PyObject* arg) {
 
 // Add a message class to our database.
 int RegisterMessageClass(PyDescriptorPool* self,
-                         const Descriptor *message_descriptor,
-                         PyObject *message_class) {
+                         const Descriptor* message_descriptor,
+                         CMessageClass* message_class) {
   Py_INCREF(message_class);
   typedef PyDescriptorPool::ClassesByMessageMap::iterator iterator;
   std::pair<iterator, bool> ret = self->classes_by_descriptor->insert(
@@ -205,8 +205,8 @@ int RegisterMessageClass(PyDescriptorPool* self,
 }
 
 // Retrieve the message class added to our database.
-PyObject *GetMessageClass(PyDescriptorPool* self,
-                          const Descriptor *message_descriptor) {
+CMessageClass* GetMessageClass(PyDescriptorPool* self,
+                               const Descriptor* message_descriptor) {
   typedef PyDescriptorPool::ClassesByMessageMap::iterator iterator;
   iterator ret = self->classes_by_descriptor->find(message_descriptor);
   if (ret == self->classes_by_descriptor->end()) {

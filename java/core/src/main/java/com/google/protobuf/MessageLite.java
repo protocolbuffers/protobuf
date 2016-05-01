@@ -295,6 +295,27 @@ public interface MessageLite extends MessageLiteOrBuilder {
     Builder mergeFrom(InputStream input,
                       ExtensionRegistryLite extensionRegistry)
                       throws IOException;
+    
+    /**
+     * Merge {@code other} into the message being built.  {@code other} must
+     * have the exact same type as {@code this} (i.e.
+     * {@code getClass().equals(getDefaultInstanceForType().getClass())}).
+     *
+     * Merging occurs as follows.  For each field:<br>
+     * * For singular primitive fields, if the field is set in {@code other},
+     *   then {@code other}'s value overwrites the value in this message.<br>
+     * * For singular message fields, if the field is set in {@code other},
+     *   it is merged into the corresponding sub-message of this message
+     *   using the same merging rules.<br>
+     * * For repeated fields, the elements in {@code other} are concatenated
+     *   with the elements in this message.
+     * * For oneof groups, if the other message has one of the fields set,
+     *   the group of this message is cleared and replaced by the field
+     *   of the other message, so that the oneof constraint is preserved.
+     *
+     * This is equivalent to the {@code Message::MergeFrom} method in C++.
+     */
+    Builder mergeFrom(MessageLite other);
 
     /**
      * Like {@link #mergeFrom(InputStream)}, but does not read until EOF.

@@ -139,6 +139,8 @@ namespace Google.Protobuf.WellKnownTypes {
     ///  * If no schema is provided, `https` is assumed.
     ///  * The last segment of the URL's path must represent the fully
     ///    qualified name of the type (as in `path/google.protobuf.Duration`).
+    ///    The name should be in a canonical form (e.g., leading "." is
+    ///    not accepted).
     ///  * An HTTP GET on the URL must yield a [google.protobuf.Type][]
     ///    value in binary format, or produce an error.
     ///  * Applications are allowed to cache lookup results based on the

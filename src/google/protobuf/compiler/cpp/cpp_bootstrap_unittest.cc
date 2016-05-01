@@ -54,6 +54,7 @@
 #include <google/protobuf/stubs/substitute.h>
 
 #include <google/protobuf/testing/file.h>
+#include <google/protobuf/testing/file.h>
 #include <google/protobuf/testing/googletest.h>
 #include <gtest/gtest.h>
 

@@ -73,20 +73,6 @@ public class DoubleArrayListTest extends TestCase {
     assertImmutable(list);
   }
   
-  public void testCopyConstructor() {
-    DoubleArrayList copy = new DoubleArrayList(TERTIARY_LIST);
-    assertEquals(TERTIARY_LIST, copy);
-
-    copy = new DoubleArrayList(DoubleArrayList.emptyList());
-    assertEquals(DoubleArrayList.emptyList(), copy);
-    
-    copy = new DoubleArrayList(asList(1D, 2D, 3D));
-    assertEquals(asList(1D, 2D, 3D), copy);
-
-    copy = new DoubleArrayList(Collections.<Double>emptyList());
-    assertEquals(DoubleArrayList.emptyList(), copy);
-  }
-  
   public void testModificationWithIteration() {
     list.addAll(asList(1D, 2D, 3D, 4D));
     Iterator<Double> iterator = list.iterator();

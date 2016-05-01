@@ -41,6 +41,7 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.RandomAccess;
 import java.util.Set;
 
 /**
@@ -457,10 +458,13 @@ public final class Internal {
     public static <T extends EnumLite> Converter<Integer, T> newEnumConverter(
         final EnumLiteMap<T> enumMap, final T unrecognizedValue) {
       return new Converter<Integer, T>() {
+        @Override
         public T doForward(Integer value) {
           T result = enumMap.findValueByNumber(value);
           return result == null ? unrecognizedValue : result;
         }
+
+        @Override
         public Integer doBackward(T value) {
           return value.getNumber();
         }
@@ -573,8 +577,10 @@ public final class Internal {
   /**
    * Extends {@link List} to add the capability to make the list immutable and inspect if it is
    * modifiable.
+   * <p>
+   * All implementations must support efficient random access.
    */
-  public static interface ProtobufList<E> extends List<E> {
+  public static interface ProtobufList<E> extends List<E>, RandomAccess {
 
     /**
      * Makes this list immutable. All subsequent modifications will throw an
@@ -586,6 +592,11 @@ public final class Internal {
      * Returns whether this list can be modified via the publicly accessible {@link List} methods.
      */
     boolean isModifiable();
+
+    /**
+     * Returns a mutable clone of this list with the specified capacity.
+     */
+    ProtobufList<E> mutableCopyWithCapacity(int capacity);
   }
 
   /**
@@ -600,14 +611,20 @@ public final class Internal {
     int getInt(int index);
 
     /**
-     * Like {@link #add(Object)} but more efficient in that it doesn't box the element.
+     * Like {@link #add(Integer)} but more efficient in that it doesn't box the element.
      */
     void addInt(int element);
 
     /**
-     * Like {@link #set(int, Object)} but more efficient in that it doesn't box the element.
+     * Like {@link #set(int, Integer)} but more efficient in that it doesn't box the element.
      */
     int setInt(int index, int element);
+
+    /**
+     * Returns a mutable clone of this list with the specified capacity.
+     */
+    @Override
+    IntList mutableCopyWithCapacity(int capacity);
   }
 
   /**
@@ -622,14 +639,20 @@ public final class Internal {
     boolean getBoolean(int index);
 
     /**
-     * Like {@link #add(Object)} but more efficient in that it doesn't box the element.
+     * Like {@link #add(Boolean)} but more efficient in that it doesn't box the element.
      */
     void addBoolean(boolean element);
 
     /**
-     * Like {@link #set(int, Object)} but more efficient in that it doesn't box the element.
+     * Like {@link #set(int, Boolean)} but more efficient in that it doesn't box the element.
      */
     boolean setBoolean(int index, boolean element);
+
+    /**
+     * Returns a mutable clone of this list with the specified capacity.
+     */
+    @Override
+    BooleanList mutableCopyWithCapacity(int capacity);
   }
 
   /**
@@ -644,14 +667,20 @@ public final class Internal {
     long getLong(int index);
 
     /**
-     * Like {@link #add(Object)} but more efficient in that it doesn't box the element.
+     * Like {@link #add(Long)} but more efficient in that it doesn't box the element.
      */
     void addLong(long element);
 
     /**
-     * Like {@link #set(int, Object)} but more efficient in that it doesn't box the element.
+     * Like {@link #set(int, Long)} but more efficient in that it doesn't box the element.
      */
     long setLong(int index, long element);
+
+    /**
+     * Returns a mutable clone of this list with the specified capacity.
+     */
+    @Override
+    LongList mutableCopyWithCapacity(int capacity);
   }
 
   /**
@@ -666,14 +695,20 @@ public final class Internal {
     double getDouble(int index);
 
     /**
-     * Like {@link #add(Object)} but more efficient in that it doesn't box the element.
+     * Like {@link #add(Double)} but more efficient in that it doesn't box the element.
      */
     void addDouble(double element);
 
     /**
-     * Like {@link #set(int, Object)} but more efficient in that it doesn't box the element.
+     * Like {@link #set(int, Double)} but more efficient in that it doesn't box the element.
      */
     double setDouble(int index, double element);
+
+    /**
+     * Returns a mutable clone of this list with the specified capacity.
+     */
+    @Override
+    DoubleList mutableCopyWithCapacity(int capacity);
   }
 
   /**
@@ -688,13 +723,19 @@ public final class Internal {
     float getFloat(int index);
 
     /**
-     * Like {@link #add(Object)} but more efficient in that it doesn't box the element.
+     * Like {@link #add(Float)} but more efficient in that it doesn't box the element.
      */
     void addFloat(float element);
 
     /**
-     * Like {@link #set(int, Object)} but more efficient in that it doesn't box the element.
+     * Like {@link #set(int, Float)} but more efficient in that it doesn't box the element.
      */
     float setFloat(int index, float element);
+
+    /**
+     * Returns a mutable clone of this list with the specified capacity.
+     */
+    @Override
+    FloatList mutableCopyWithCapacity(int capacity);
   }
 }

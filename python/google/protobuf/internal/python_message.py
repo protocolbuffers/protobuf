@@ -56,7 +56,14 @@ import struct
 import weakref
 
 import six
-import six.moves.copyreg as copyreg
+try:
+  import six.moves.copyreg as copyreg
+except ImportError:
+  # On some platforms, for example gMac, we run native Python because there is
+  # nothing like hermetic Python. This means lesser control on the system and
+  # the six.moves package may be missing (is missing on 20150321 on gMac). Be
+  # extra conservative and try to load the old replacement if it fails.
+  import copy_reg as copyreg
 
 # We use "as" to avoid name collisions with variables.
 from google.protobuf.internal import containers
@@ -490,6 +497,9 @@ def _AddInitMethod(message_descriptor, cls):
       if field is None:
         raise TypeError("%s() got an unexpected keyword argument '%s'" %
                         (message_descriptor.name, field_name))
+      if field_value is None:
+        # field=None is the same as no field at all.
+        continue
       if field.label == _FieldDescriptor.LABEL_REPEATED:
         copy = field._default_constructor(self)
         if field.cpp_type == _FieldDescriptor.CPPTYPE_MESSAGE:  # Composite
@@ -889,17 +899,6 @@ def _AddClearExtensionMethod(cls):
   cls.ClearExtension = ClearExtension
 
 
-def _AddClearMethod(message_descriptor, cls):
-  """Helper for _AddMessageMethods()."""
-  def Clear(self):
-    # Clear fields.
-    self._fields = {}
-    self._unknown_fields = ()
-    self._oneofs = {}
-    self._Modified()
-  cls.Clear = Clear
-
-
 def _AddHasExtensionMethod(cls):
   """Helper for _AddMessageMethods()."""
   def HasExtension(self, extension_handle):
@@ -997,16 +996,6 @@ def _AddUnicodeMethod(unused_message_descriptor, cls):
   def __unicode__(self):
     return text_format.MessageToString(self, as_utf8=True).decode('utf-8')
   cls.__unicode__ = __unicode__
-
-
-def _AddSetListenerMethod(cls):
-  """Helper for _AddMessageMethods()."""
-  def SetListener(self, listener):
-    if listener is None:
-      self._listener = message_listener_mod.NullMessageListener()
-    else:
-      self._listener = listener
-  cls._SetListener = SetListener
 
 
 def _BytesForNonRepeatedElement(value, field_number, field_type):
@@ -1288,6 +1277,32 @@ def _AddWhichOneofMethod(message_descriptor, cls):
   cls.WhichOneof = WhichOneof
 
 
+def _Clear(self):
+  # Clear fields.
+  self._fields = {}
+  self._unknown_fields = ()
+  self._oneofs = {}
+  self._Modified()
+
+
+def _DiscardUnknownFields(self):
+  self._unknown_fields = []
+  for field, value in self.ListFields():
+    if field.cpp_type == _FieldDescriptor.CPPTYPE_MESSAGE:
+      if field.label == _FieldDescriptor.LABEL_REPEATED:
+        for sub_message in value:
+          sub_message.DiscardUnknownFields()
+      else:
+        value.DiscardUnknownFields()
+
+
+def _SetListener(self, listener):
+  if listener is None:
+    self._listener = message_listener_mod.NullMessageListener()
+  else:
+    self._listener = listener
+
+
 def _AddMessageMethods(message_descriptor, cls):
   """Adds implementations of all Message methods to cls."""
   _AddListFieldsMethod(message_descriptor, cls)
@@ -1296,12 +1311,10 @@ def _AddMessageMethods(message_descriptor, cls):
   if message_descriptor.is_extendable:
     _AddClearExtensionMethod(cls)
     _AddHasExtensionMethod(cls)
-  _AddClearMethod(message_descriptor, cls)
   _AddEqualsMethod(message_descriptor, cls)
   _AddStrMethod(message_descriptor, cls)
   _AddReprMethod(message_descriptor, cls)
   _AddUnicodeMethod(message_descriptor, cls)
-  _AddSetListenerMethod(cls)
   _AddByteSizeMethod(message_descriptor, cls)
   _AddSerializeToStringMethod(message_descriptor, cls)
   _AddSerializePartialToStringMethod(message_descriptor, cls)
@@ -1309,6 +1322,10 @@ def _AddMessageMethods(message_descriptor, cls):
   _AddIsInitializedMethod(message_descriptor, cls)
   _AddMergeFromMethod(cls)
   _AddWhichOneofMethod(message_descriptor, cls)
+  # Adds methods which do not depend on cls.
+  cls.Clear = _Clear
+  cls.DiscardUnknownFields = _DiscardUnknownFields
+  cls._SetListener = _SetListener
 
 
 def _AddPrivateHelperMethods(message_descriptor, cls):
@@ -1518,3 +1535,14 @@ class _ExtensionDict(object):
       Extension field descriptor.
     """
     return self._extended_message._extensions_by_name.get(name, None)
+
+  def _FindExtensionByNumber(self, number):
+    """Tries to find a known extension with the field number.
+
+    Args:
+      number: Extension field number.
+
+    Returns:
+      Extension field descriptor.
+    """
+    return self._extended_message._extensions_by_number.get(number, None)

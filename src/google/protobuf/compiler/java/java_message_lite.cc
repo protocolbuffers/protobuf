@@ -199,7 +199,7 @@ void ImmutableMessageLiteGenerator::Generate(io::Printer* printer) {
   printer->Indent();
 
 
-  GenerateParsingConstructor(printer);
+  GenerateConstructor(printer);
 
   // Nested types
   for (int i = 0; i < descriptor_->enum_type_count(); i++) {
@@ -322,10 +322,6 @@ void ImmutableMessageLiteGenerator::Generate(io::Printer* printer) {
 
   GenerateMessageSerializationMethods(printer);
 
-  if (HasEqualsAndHashCode(descriptor_)) {
-    GenerateEqualsAndHashCode(printer);
-  }
-
   GenerateParseFromMethods(printer);
   GenerateBuilder(printer);
 
@@ -342,16 +338,8 @@ void ImmutableMessageLiteGenerator::Generate(io::Printer* printer) {
     "    com.google.protobuf.GeneratedMessageLite.MethodToInvoke method,\n"
     "    Object arg0, Object arg1) {\n"
     "  switch (method) {\n"
-    "    case PARSE_PARTIAL_FROM: {\n"
-    "      return new $classname$("
-    "          (com.google.protobuf.CodedInputStream) arg0,\n"
-    "          (com.google.protobuf.ExtensionRegistryLite) arg1);\n"
-    "    }\n"
-    "    case NEW_INSTANCE: {\n"
-    "      return new $classname$(\n"
-    "          com.google.protobuf.Internal.EMPTY_CODED_INPUT_STREAM,\n"
-    "          com.google.protobuf.ExtensionRegistryLite\n"
-    "              .getEmptyRegistry());\n"
+    "    case NEW_MUTABLE_INSTANCE: {\n"
+    "      return new $classname$();\n"
     "    }\n",
     "classname", name_resolver_->GetImmutableClassName(descriptor_));
 
@@ -382,10 +370,18 @@ void ImmutableMessageLiteGenerator::Generate(io::Printer* printer) {
 
   printer->Print(
     "}\n"
-    "case MERGE_FROM: {\n");
+    "case VISIT: {\n");
 
   printer->Indent();
-  GenerateDynamicMethodMergeFrom(printer);
+  GenerateDynamicMethodVisit(printer);
+  printer->Outdent();
+
+  printer->Print(
+    "}\n"
+    "case MERGE_FROM_STREAM: {\n");
+
+  printer->Indent();
+  GenerateDynamicMethodMergeFromStream(printer);
   printer->Outdent();
 
   printer->Print(
@@ -433,11 +429,8 @@ void ImmutableMessageLiteGenerator::Generate(io::Printer* printer) {
 
   printer->Print(
     "static {\n"
-    "  DEFAULT_INSTANCE = new $classname$(\n"
-    "      com.google.protobuf.Internal\n"
-    "          .EMPTY_CODED_INPUT_STREAM,\n"
-    "      com.google.protobuf.ExtensionRegistryLite\n"
-    "          .getEmptyRegistry());\n"
+    "  DEFAULT_INSTANCE = new $classname$();\n"
+    "  DEFAULT_INSTANCE.makeImmutable();\n"
     "}\n"
     "\n",
     "classname", descriptor_->name());
@@ -802,11 +795,13 @@ void ImmutableMessageLiteGenerator::GenerateDynamicMethodIsInitialized(
 
 void ImmutableMessageLiteGenerator::GenerateDynamicMethodMakeImmutable(
     io::Printer* printer) {
+
   // Output generation code for each field.
   for (int i = 0; i < descriptor_->field_count(); i++) {
     field_generators_.get(descriptor_->field(i))
         .GenerateDynamicMethodMakeImmutableCode(printer);
   }
+
   printer->Print(
     "return null;\n");
 }
@@ -821,19 +816,17 @@ void ImmutableMessageLiteGenerator::GenerateDynamicMethodNewBuilder(
 
 // ===================================================================
 
-void ImmutableMessageLiteGenerator::GenerateDynamicMethodMergeFrom(
+void ImmutableMessageLiteGenerator::GenerateDynamicMethodVisit(
     io::Printer* printer) {
   printer->Print(
-    // Optimization:  If other is the default instance, we know none of its
-    //   fields are set so we can skip the merge.
-    "if (arg0 == $classname$.getDefaultInstance()) return this;\n"
-    "$classname$ other = ($classname$) arg0;\n",
+    "Visitor visitor = (Visitor) arg0;\n"
+    "$classname$ other = ($classname$) arg1;\n",
     "classname", name_resolver_->GetImmutableClassName(descriptor_));
 
   for (int i = 0; i < descriptor_->field_count(); i++) {
     if (!descriptor_->field(i)->containing_oneof()) {
       field_generators_.get(
-          descriptor_->field(i)).GenerateMergingCode(printer);
+          descriptor_->field(i)).GenerateVisitCode(printer);
     }
   }
 
@@ -852,7 +845,7 @@ void ImmutableMessageLiteGenerator::GenerateDynamicMethodMergeFrom(
         "field_name",
         ToUpper(field->name()));
       printer->Indent();
-      field_generators_.get(field).GenerateMergingCode(printer);
+      field_generators_.get(field).GenerateVisitCode(printer);
       printer->Print(
           "break;\n");
       printer->Outdent();
@@ -861,26 +854,52 @@ void ImmutableMessageLiteGenerator::GenerateDynamicMethodMergeFrom(
     }
     printer->Print(
       "case $cap_oneof_name$_NOT_SET: {\n"
+      "  visitor.visitOneofNotSet($oneof_name$Case_ != 0);\n"
       "  break;\n"
       "}\n",
       "cap_oneof_name",
       ToUpper(context_->GetOneofGeneratorInfo(
-          descriptor_->oneof_decl(i))->name));
+          descriptor_->oneof_decl(i))->name),
+      "oneof_name",
+      context_->GetOneofGeneratorInfo(
+          descriptor_->oneof_decl(i))->name);
     printer->Outdent();
     printer->Print(
       "}\n");
   }
 
-  // if message type has extensions
-  if (descriptor_->extension_range_count() > 0) {
+  printer->Print(
+    "if (visitor == com.google.protobuf.GeneratedMessageLite.MergeFromVisitor\n"
+    "    .INSTANCE) {\n");
+  printer->Indent();
+  for (int i = 0; i < descriptor_->oneof_decl_count(); ++i) {
+    const OneofDescriptor* field = descriptor_->oneof_decl(i);
     printer->Print(
-      "this.mergeExtensionFields(other);\n");
+      "if (other.$oneof_name$Case_ != 0) {\n"
+      "  $oneof_name$Case_ = other.$oneof_name$Case_;\n"
+      "}\n",
+      "oneof_name", context_->GetOneofGeneratorInfo(field)->name);
   }
 
-  if (PreserveUnknownFields(descriptor_)) {
-    printer->Print(
-      "this.mergeUnknownFields(other.unknownFields);\n");
+  if (GenerateHasBits(descriptor_)) {
+    // Integers for bit fields.
+    int totalBits = 0;
+    for (int i = 0; i < descriptor_->field_count(); i++) {
+      totalBits += field_generators_.get(descriptor_->field(i))
+          .GetNumBitsForMessage();
+    }
+    int totalInts = (totalBits + 31) / 32;
+
+    for (int i = 0; i < totalInts; i++) {
+      printer->Print(
+        "$bit_field_name$ |= other.$bit_field_name$;\n",
+        "bit_field_name", GetBitFieldName(i));
+    }
   }
+  printer->Outdent();
+  printer->Print(
+    "}\n");
+
 
   printer->Print(
     "return this;\n");
@@ -888,227 +907,13 @@ void ImmutableMessageLiteGenerator::GenerateDynamicMethodMergeFrom(
 
 // ===================================================================
 
-namespace {
-bool CheckHasBitsForEqualsAndHashCode(const FieldDescriptor* field) {
-  if (field->is_repeated()) {
-    return false;
-  }
-  if (SupportFieldPresence(field->file())) {
-    return true;
-  }
-  return GetJavaType(field) == JAVATYPE_MESSAGE &&
-      field->containing_oneof() == NULL;
-}
-}  // namespace
-
-void ImmutableMessageLiteGenerator::
-GenerateEqualsAndHashCode(io::Printer* printer) {
+void ImmutableMessageLiteGenerator::GenerateDynamicMethodMergeFromStream(
+    io::Printer* printer) {
   printer->Print(
-    "@java.lang.Override\n"
-    "public boolean equals(final java.lang.Object obj) {\n");
-  printer->Indent();
-  printer->Print(
-    "if (obj == this) {\n"
-    " return true;\n"
-    "}\n"
-    "if (!(obj instanceof $classname$)) {\n"
-    "  return super.equals(obj);\n"
-    "}\n"
-    "$classname$ other = ($classname$) obj;\n"
-    "\n",
-    "classname", name_resolver_->GetImmutableClassName(descriptor_));
-
-  printer->Print("boolean result = true;\n");
-  // Compare non-oneofs.
-  for (int i = 0; i < descriptor_->field_count(); i++) {
-    const FieldDescriptor* field = descriptor_->field(i);
-    if (field->containing_oneof() == NULL) {
-      const FieldGeneratorInfo* info = context_->GetFieldGeneratorInfo(field);
-      bool check_has_bits = CheckHasBitsForEqualsAndHashCode(field);
-      if (check_has_bits) {
-        printer->Print(
-          "result = result && (has$name$() == other.has$name$());\n"
-          "if (has$name$()) {\n",
-          "name", info->capitalized_name);
-        printer->Indent();
-      }
-      field_generators_.get(field).GenerateEqualsCode(printer);
-      if (check_has_bits) {
-        printer->Outdent();
-        printer->Print(
-          "}\n");
-      }
-    }
-  }
-
-  // Compare oneofs.
-  for (int i = 0; i < descriptor_->oneof_decl_count(); i++) {
-    printer->Print(
-      "result = result && get$oneof_capitalized_name$Case().equals(\n"
-      "    other.get$oneof_capitalized_name$Case());\n",
-      "oneof_capitalized_name",
-      context_->GetOneofGeneratorInfo(
-          descriptor_->oneof_decl(i))->capitalized_name);
-    printer->Print(
-      "if (!result) return false;\n"
-      "switch ($oneof_name$Case_) {\n",
-      "oneof_name",
-      context_->GetOneofGeneratorInfo(
-          descriptor_->oneof_decl(i))->name);
-    printer->Indent();
-    for (int j = 0; j < descriptor_->oneof_decl(i)->field_count(); j++) {
-      const FieldDescriptor* field = descriptor_->oneof_decl(i)->field(j);
-      printer->Print(
-        "case $field_number$:\n",
-        "field_number",
-        SimpleItoa(field->number()));
-      printer->Indent();
-      field_generators_.get(field).GenerateEqualsCode(printer);
-      printer->Print("break;\n");
-      printer->Outdent();
-    }
-    printer->Print(
-      "case 0:\n"
-      "default:\n");
-    printer->Outdent();
-    printer->Print("}\n");
-  }
-
-  if (PreserveUnknownFields(descriptor_)) {
-    // Always consider unknown fields for equality. This will sometimes return
-    // false for non-canonical ordering when running in LITE_RUNTIME but it's
-    // the best we can do.
-    printer->Print(
-      "result = result && unknownFields.equals(other.unknownFields);\n");
-  }
-  printer->Print(
-    "return result;\n");
-  printer->Outdent();
-  printer->Print(
-    "}\n"
-    "\n");
-
-  printer->Print(
-    "@java.lang.Override\n"
-    "public int hashCode() {\n");
-  printer->Indent();
-  printer->Print(
-    "if (memoizedHashCode != 0) {\n");
-  printer->Indent();
-  printer->Print(
-    "return memoizedHashCode;\n");
-  printer->Outdent();
-  printer->Print(
-    "}\n"
-    "int hash = 41;\n");
-
-  // Include the hash of the class so that two objects with different types
-  // but the same field values will probably have different hashes.
-  printer->Print("hash = (19 * hash) + $classname$.class.hashCode();\n",
-    "classname", name_resolver_->GetImmutableClassName(descriptor_));
-
-  // hashCode non-oneofs.
-  for (int i = 0; i < descriptor_->field_count(); i++) {
-    const FieldDescriptor* field = descriptor_->field(i);
-    if (field->containing_oneof() == NULL) {
-      const FieldGeneratorInfo* info = context_->GetFieldGeneratorInfo(field);
-      bool check_has_bits = CheckHasBitsForEqualsAndHashCode(field);
-      if (check_has_bits) {
-        printer->Print(
-          "if (has$name$()) {\n",
-          "name", info->capitalized_name);
-        printer->Indent();
-      }
-      field_generators_.get(field).GenerateHashCode(printer);
-      if (check_has_bits) {
-        printer->Outdent();
-        printer->Print("}\n");
-      }
-    }
-  }
-
-  // hashCode oneofs.
-  for (int i = 0; i < descriptor_->oneof_decl_count(); i++) {
-    printer->Print(
-      "switch ($oneof_name$Case_) {\n",
-      "oneof_name",
-      context_->GetOneofGeneratorInfo(
-          descriptor_->oneof_decl(i))->name);
-    printer->Indent();
-    for (int j = 0; j < descriptor_->oneof_decl(i)->field_count(); j++) {
-      const FieldDescriptor* field = descriptor_->oneof_decl(i)->field(j);
-      printer->Print(
-        "case $field_number$:\n",
-        "field_number",
-        SimpleItoa(field->number()));
-      printer->Indent();
-      field_generators_.get(field).GenerateHashCode(printer);
-      printer->Print("break;\n");
-      printer->Outdent();
-    }
-    printer->Print(
-      "case 0:\n"
-      "default:\n");
-    printer->Outdent();
-    printer->Print("}\n");
-  }
-
-  printer->Print(
-    "hash = (29 * hash) + unknownFields.hashCode();\n");
-  printer->Print(
-    "memoizedHashCode = hash;\n"
-    "return hash;\n");
-  printer->Outdent();
-  printer->Print(
-    "}\n"
-    "\n");
-}
-
-// ===================================================================
-
-void ImmutableMessageLiteGenerator::
-GenerateExtensionRegistrationCode(io::Printer* printer) {
-  for (int i = 0; i < descriptor_->extension_count(); i++) {
-    ImmutableExtensionLiteGenerator(descriptor_->extension(i), context_)
-      .GenerateRegistrationCode(printer);
-  }
-
-  for (int i = 0; i < descriptor_->nested_type_count(); i++) {
-    ImmutableMessageLiteGenerator(descriptor_->nested_type(i), context_)
-      .GenerateExtensionRegistrationCode(printer);
-  }
-}
-
-// ===================================================================
-void ImmutableMessageLiteGenerator::
-GenerateParsingConstructor(io::Printer* printer) {
-  google::protobuf::scoped_array<const FieldDescriptor * > sorted_fields(
-      SortFieldsByNumber(descriptor_));
-
-  printer->Print(
-      "private $classname$(\n"
-      "    com.google.protobuf.CodedInputStream input,\n"
-      "    com.google.protobuf.ExtensionRegistryLite extensionRegistry) {\n",
-      "classname", descriptor_->name());
-  printer->Indent();
-
-  // Initialize all fields to default.
-  GenerateInitializers(printer);
-
-  // Use builder bits to track mutable repeated fields.
-  int totalBuilderBits = 0;
-  for (int i = 0; i < descriptor_->field_count(); i++) {
-    const ImmutableFieldLiteGenerator& field =
-        field_generators_.get(descriptor_->field(i));
-    totalBuilderBits += field.GetNumBitsForBuilder();
-  }
-  int totalBuilderInts = (totalBuilderBits + 31) / 32;
-  for (int i = 0; i < totalBuilderInts; i++) {
-    printer->Print("int mutable_$bit_field_name$ = 0;\n",
-      "bit_field_name", GetBitFieldName(i));
-  }
-
-  printer->Print(
+      "com.google.protobuf.CodedInputStream input =\n"
+      "    (com.google.protobuf.CodedInputStream) arg0;\n"
+      "com.google.protobuf.ExtensionRegistryLite extensionRegistry =\n"
+      "    (com.google.protobuf.ExtensionRegistryLite) arg1;\n"
       "try {\n");
   printer->Indent();
 
@@ -1156,6 +961,8 @@ GenerateParsingConstructor(io::Printer* printer) {
       "}\n");
   }
 
+  google::protobuf::scoped_array<const FieldDescriptor * > sorted_fields(
+      SortFieldsByNumber(descriptor_));
   for (int i = 0; i < descriptor_->field_count(); i++) {
     const FieldDescriptor* field = sorted_fields[i];
     uint32 tag = WireFormatLite::MakeTag(field->number(),
@@ -1209,19 +1016,54 @@ GenerateParsingConstructor(io::Printer* printer) {
       "} finally {\n");
   printer->Indent();
 
-  // Make repeated field list immutable.
-  for (int i = 0; i < descriptor_->field_count(); i++) {
-    const FieldDescriptor* field = sorted_fields[i];
-    field_generators_.get(field).GenerateParsingDoneCode(printer);
+  printer->Outdent();
+  printer->Print(
+      "}\n");     // finally
+}
+
+// ===================================================================
+
+namespace {
+bool CheckHasBitsForEqualsAndHashCode(const FieldDescriptor* field) {
+  if (field->is_repeated()) {
+    return false;
+  }
+  if (SupportFieldPresence(field->file())) {
+    return true;
+  }
+  return GetJavaType(field) == JAVATYPE_MESSAGE &&
+      field->containing_oneof() == NULL;
+}
+}  // namespace
+
+// ===================================================================
+
+void ImmutableMessageLiteGenerator::
+GenerateExtensionRegistrationCode(io::Printer* printer) {
+  for (int i = 0; i < descriptor_->extension_count(); i++) {
+    ImmutableExtensionLiteGenerator(descriptor_->extension(i), context_)
+      .GenerateRegistrationCode(printer);
   }
 
+  for (int i = 0; i < descriptor_->nested_type_count(); i++) {
+    ImmutableMessageLiteGenerator(descriptor_->nested_type(i), context_)
+      .GenerateExtensionRegistrationCode(printer);
+  }
+}
+
+// ===================================================================
+void ImmutableMessageLiteGenerator::
+GenerateConstructor(io::Printer* printer) {
   printer->Print(
-      "doneParsing();\n");
+      "private $classname$() {\n",
+      "classname", descriptor_->name());
+  printer->Indent();
+
+  // Initialize all fields to default.
+  GenerateInitializers(printer);
 
   printer->Outdent();
-  printer->Outdent();
   printer->Print(
-      "  }\n"     // finally
       "}\n");
 }
 

@@ -34,7 +34,6 @@ import com.google.protobuf.Internal.DoubleList;
 
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.List;
 import java.util.RandomAccess;
 
 /**
@@ -44,8 +43,6 @@ import java.util.RandomAccess;
  */
 final class DoubleArrayList
     extends AbstractProtobufList<Double> implements DoubleList, RandomAccess {
-  
-  private static final int DEFAULT_CAPACITY = 10;
   
   private static final DoubleArrayList EMPTY_LIST = new DoubleArrayList();
   static {
@@ -71,32 +68,56 @@ final class DoubleArrayList
    * Constructs a new mutable {@code DoubleArrayList} with default capacity.
    */
   DoubleArrayList() {
-    this(DEFAULT_CAPACITY);
-  }
-
-  /**
-   * Constructs a new mutable {@code DoubleArrayList} with the provided capacity.
-   */
-  DoubleArrayList(int capacity) {
-    array = new double[capacity];
-    size = 0;
+    this(new double[DEFAULT_CAPACITY], 0);
   }
 
   /**
    * Constructs a new mutable {@code DoubleArrayList} containing the same elements as {@code other}.
    */
-  DoubleArrayList(List<Double> other) {
-    if (other instanceof DoubleArrayList) {
-      DoubleArrayList list = (DoubleArrayList) other;
-      array = list.array.clone();
-      size = list.size;
-    } else {
-      size = other.size();
-      array = new double[size];
-      for (int i = 0; i < size; i++) {
-        array[i] = other.get(i);
+  private DoubleArrayList(double[] array, int size) {
+    this.array = array;
+    this.size = size;
+  }
+  
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (!(o instanceof DoubleArrayList)) {
+      return super.equals(o);
+    }
+    DoubleArrayList other = (DoubleArrayList) o;
+    if (size != other.size) {
+      return false;
+    }
+    
+    final double[] arr = other.array;
+    for (int i = 0; i < size; i++) {
+      if (array[i] != arr[i]) {
+        return false;
       }
     }
+    
+    return true;
+  }
+
+  @Override
+  public int hashCode() {
+    int result = 1;
+    for (int i = 0; i < size; i++) {
+      long bits = Double.doubleToLongBits(array[i]);
+      result = (31 * result) + Internal.hashLong(bits);
+    }
+    return result;
+  }
+
+  @Override
+  public DoubleList mutableCopyWithCapacity(int capacity) {
+    if (capacity < size) {
+      throw new IllegalArgumentException();
+    }
+    return new DoubleArrayList(Arrays.copyOf(array, capacity), size);
   }
   
   @Override

@@ -30,23 +30,24 @@
 
 package com.google.protobuf;
 
-import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 
 /**
  * Helps generate {@link String} representations of {@link MessageLite} protos.
  */
+// TODO(dweis): Fix map fields.
 final class MessageLiteToString {
-  /**
-   * Suffix for *_FIELD_NUMBER fields. This is used to reflectively detect proto fields that should
-   * be toString()ed.
-   */
-  private static final String FIELD_NUMBER_NAME_SUFFIX = "_FIELD_NUMBER";
 
+  private static final String LIST_SUFFIX = "List";
+  private static final String BUILDER_LIST_SUFFIX = "OrBuilderList";
+  private static final String BYTES_SUFFIX = "Bytes";
+  
   /**
    * Returns a {@link String} representation of the {@link MessageLite} object.  The first line of
    * the {@code String} representation representation includes a comment string to uniquely identify
@@ -73,50 +74,68 @@ final class MessageLiteToString {
     // Build a map of method name to method. We're looking for methods like getFoo(), hasFoo(), and
     // getFooList() which might be useful for building an object's string representation.
     Map<String, Method> nameToNoArgMethod = new HashMap<String, Method>();
+    Map<String, Method> nameToMethod = new HashMap<String, Method>();
+    Set<String> getters = new TreeSet<String>();
     for (Method method : messageLite.getClass().getDeclaredMethods()) {
+      nameToMethod.put(method.getName(), method);
       if (method.getParameterTypes().length == 0) {
         nameToNoArgMethod.put(method.getName(), method);
+
+        if (method.getName().startsWith("get")) {
+          getters.add(method.getName());
+        }
       }
     }
 
-    for (Field field : messageLite.getClass().getDeclaredFields()) {
-      String fieldName = field.getName();
-      // Skip all fields that aren't in a format like "FOO_BAR_FIELD_NUMBER"
-      if (!fieldName.endsWith(FIELD_NUMBER_NAME_SUFFIX)) {
-        continue;
-      }
-
-      // For "FOO_BAR_FIELD_NUMBER" his would be "FOO_BAR"
-      String upperUnderscore =
-          fieldName.substring(0, fieldName.length() - FIELD_NUMBER_NAME_SUFFIX.length());
-
-      // For "FOO_BAR_FIELD_NUMBER" his would be "FooBar"
-      String upperCamelCaseName = upperUnderscoreToUpperCamel(upperUnderscore);
-
-      // Try to reflectively get the value and toString() the field as if it were optional. This
-      // only works if the method names have not be proguarded out or renamed.
-      Method getMethod = nameToNoArgMethod.get("get" + upperCamelCaseName);
-      Method hasMethod = nameToNoArgMethod.get("has" + upperCamelCaseName);
-      if (getMethod != null && hasMethod != null) {
-        if ((Boolean) GeneratedMessageLite.invokeOrDie(hasMethod, messageLite)) {
+    for (String getter : getters) {
+      String suffix = getter.replaceFirst("get", "");
+      if (suffix.endsWith(LIST_SUFFIX) && !suffix.endsWith(BUILDER_LIST_SUFFIX)) {
+        String camelCase = suffix.substring(0, 1).toLowerCase()
+            + suffix.substring(1, suffix.length() - LIST_SUFFIX.length());
+        // Try to reflectively get the value and toString() the field as if it were repeated. This
+        // only works if the method names have not be proguarded out or renamed.
+        Method listMethod = nameToNoArgMethod.get("get" + suffix);
+        if (listMethod != null) {
           printField(
               buffer,
               indent,
-              upperUnderscore.toLowerCase(),
-              GeneratedMessageLite.invokeOrDie(getMethod, messageLite));
+              camelCaseToSnakeCase(camelCase),
+              GeneratedMessageLite.invokeOrDie(listMethod, messageLite));
+          continue;
         }
-        continue;
       }
 
-      // Try to reflectively get the value and toString() the field as if it were repeated. This
+      Method setter = nameToMethod.get("set" + suffix);
+      if (setter == null) {
+        continue;
+      }
+      if (suffix.endsWith(BYTES_SUFFIX)
+          && nameToNoArgMethod.containsKey(
+              "get" + suffix.substring(0, suffix.length() - "Bytes".length()))) {
+        // Heuristic to skip bytes based accessors for string fields.
+        continue;
+      }
+      
+      String camelCase = suffix.substring(0, 1).toLowerCase() + suffix.substring(1);
+
+      // Try to reflectively get the value and toString() the field as if it were optional. This
       // only works if the method names have not be proguarded out or renamed.
-      Method listMethod = nameToNoArgMethod.get("get" + upperCamelCaseName + "List");
-      if (listMethod != null) {
-        printField(
-            buffer,
-            indent,
-            upperUnderscore.toLowerCase(),
-            GeneratedMessageLite.invokeOrDie(listMethod, messageLite));
+      Method getMethod = nameToNoArgMethod.get("get" + suffix);
+      Method hasMethod = nameToNoArgMethod.get("has" + suffix);
+      // TODO(dweis): Fix proto3 semantics.
+      if (getMethod != null) {
+        Object value = GeneratedMessageLite.invokeOrDie(getMethod, messageLite);
+        final boolean hasValue = hasMethod == null
+            ? !isDefaultValue(value)
+            : (Boolean) GeneratedMessageLite.invokeOrDie(hasMethod, messageLite);
+         // TODO(dweis): This doesn't stop printing oneof case twice: value and enum style.
+        if (hasValue) {
+          printField(
+              buffer,
+              indent,
+              camelCaseToSnakeCase(camelCase),
+              value);
+        }
         continue;
       }
     }
@@ -130,9 +149,38 @@ final class MessageLiteToString {
       }
     }
 
-    if (((GeneratedMessageLite) messageLite).unknownFields != null) {
-      ((GeneratedMessageLite) messageLite).unknownFields.printWithIndent(buffer, indent);
+    if (((GeneratedMessageLite<?, ?>) messageLite).unknownFields != null) {
+      ((GeneratedMessageLite<?, ?>) messageLite).unknownFields.printWithIndent(buffer, indent);
     }
+  }
+  
+  private static boolean isDefaultValue(Object o) {
+    if (o instanceof Boolean) {
+      return !((Boolean) o);
+    }
+    if (o instanceof Integer) {
+      return ((Integer) o) == 0;
+    }
+    if (o instanceof Float) {
+      return ((Float) o) == 0f;
+    }
+    if (o instanceof Double) {
+      return ((Double) o) == 0d;
+    }
+    if (o instanceof String) {
+      return o.equals("");
+    }
+    if (o instanceof ByteString) {
+      return o.equals(ByteString.EMPTY);
+    }
+    if (o instanceof MessageLite) { // Can happen in oneofs.
+      return o == ((MessageLite) o).getDefaultInstanceForType();
+    }
+    if (o instanceof java.lang.Enum<?>) { // Catches oneof enums.
+      return ((java.lang.Enum<?>) o).ordinal() == 0;
+    }
+    
+    return false;
   }
 
   /**
@@ -166,7 +214,7 @@ final class MessageLiteToString {
       buffer.append(": \"").append(TextFormatEscaper.escapeBytes((ByteString) object)).append('"');
     } else if (object instanceof GeneratedMessageLite) {
       buffer.append(" {");
-      reflectivePrintWithIndent((GeneratedMessageLite) object, buffer, indent + 2);
+      reflectivePrintWithIndent((GeneratedMessageLite<?, ?>) object, buffer, indent + 2);
       buffer.append("\n");
       for (int i = 0; i < indent; i++) {
         buffer.append(' ');
@@ -176,25 +224,16 @@ final class MessageLiteToString {
       buffer.append(": ").append(object.toString());
     }
   }
-
-  /**
-   * A Guava-less implementation of:
-   * {@code CaseFormat.UPPER_UNDERSCORE.to(CaseFormat.UPPER_CAMEL, upperUnderscore)}
-   */
-  private static String upperUnderscoreToUpperCamel(String upperUnderscore) {
-    String upperCamelCaseName = "";
-    boolean nextCharacterShouldBeUpper = true;
-    for (int i = 0; i < upperUnderscore.length(); i++) {
-      char ch = upperUnderscore.charAt(i);
-      if (ch == '_') {
-        nextCharacterShouldBeUpper = true;
-      } else if (nextCharacterShouldBeUpper){
-        upperCamelCaseName += Character.toUpperCase(ch);
-        nextCharacterShouldBeUpper = false;
-      } else {
-        upperCamelCaseName += Character.toLowerCase(ch);
+  
+  private static final String camelCaseToSnakeCase(String camelCase) {
+    StringBuilder builder = new StringBuilder();
+    for (int i = 0; i < camelCase.length(); i++) {
+      char ch = camelCase.charAt(i);
+      if (Character.isUpperCase(ch)) {
+        builder.append("_");
       }
+      builder.append(Character.toLowerCase(ch));
     }
-    return upperCamelCaseName;
+    return builder.toString();
   }
 }

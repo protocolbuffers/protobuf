@@ -175,7 +175,7 @@ class LIBPROTOBUF_EXPORT LazyStringOutputStream : public StringOutputStream {
   int64 ByteCount() const;
 
  private:
-  const scoped_ptr<ResultCallback<string*> > callback_;
+  const google::protobuf::scoped_ptr<ResultCallback<string*> > callback_;
   bool string_is_set_;
 
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(LazyStringOutputStream);

@@ -286,11 +286,9 @@ void ImmutableMessageFieldLiteGenerator::
 GenerateInitializationCode(io::Printer* printer) const {}
 
 void ImmutableMessageFieldLiteGenerator::
-GenerateMergingCode(io::Printer* printer) const {
+GenerateVisitCode(io::Printer* printer) const {
   printer->Print(variables_,
-    "if (other.has$capitalized_name$()) {\n"
-    "  merge$capitalized_name$(other.get$capitalized_name$());\n"
-    "}\n");
+    "$name$_ = visitor.visitMessage($name$_, other.$name$_);\n");
 }
 
 void ImmutableMessageFieldLiteGenerator::
@@ -300,11 +298,18 @@ GenerateDynamicMethodMakeImmutableCode(io::Printer* printer) const {
 
 void ImmutableMessageFieldLiteGenerator::
 GenerateParsingCode(io::Printer* printer) const {
+  // TODO(dweis): Update this code to avoid the builder allocation and instead
+  // only allocate a submessage that isn't made immutable. Rely on the top
+  // message calling makeImmutable once done to actually traverse the tree and
+  // finalize state. This will avoid:
+  // - transitive builder allocations
+  // - the extra transitive iteration for streamed fields
+  // - reallocations for copying repeated fields
   printer->Print(variables_,
-    "$type$.Builder subBuilder = null;\n"
-    "if ($is_field_present_message$) {\n"
-    "  subBuilder = $name$_.toBuilder();\n"
-    "}\n");
+      "$type$.Builder subBuilder = null;\n"
+      "if ($is_field_present_message$) {\n"
+      "  subBuilder = $name$_.toBuilder();\n"
+      "}\n");
 
     if (GetType(descriptor_) == FieldDescriptor::TYPE_GROUP) {
       printer->Print(variables_,
@@ -504,9 +509,12 @@ GenerateBuilderMembers(io::Printer* printer) const {
 }
 
 void ImmutableMessageOneofFieldLiteGenerator::
-GenerateMergingCode(io::Printer* printer) const {
+GenerateVisitCode(io::Printer* printer) const {
   printer->Print(variables_,
-    "merge$capitalized_name$(other.get$capitalized_name$());\n");
+    "$oneof_name$_ = visitor.visitOneofMessage(\n"
+    "    $has_oneof_case_message$,\n"
+    "    $oneof_name$_,\n"
+    "    other.$oneof_name$_);\n");
 }
 
 void ImmutableMessageOneofFieldLiteGenerator::
@@ -633,7 +641,8 @@ GenerateMembers(io::Printer* printer) const {
   printer->Print(variables_,
     "private void ensure$capitalized_name$IsMutable() {\n"
     "  if (!$is_mutable$) {\n"
-    "    $name$_ = newProtobufList($name$_);\n"
+    "    $name$_ =\n"
+    "        com.google.protobuf.GeneratedMessageLite.mutableCopy($name$_);\n"
     "   }\n"
     "}\n"
     "\n");
@@ -851,21 +860,9 @@ GenerateInitializationCode(io::Printer* printer) const {
 }
 
 void RepeatedImmutableMessageFieldLiteGenerator::
-GenerateMergingCode(io::Printer* printer) const {
-  // The code below does two optimizations (non-nested builder case):
-  //   1. If the other list is empty, there's nothing to do. This ensures we
-  //      don't allocate a new array if we already have an immutable one.
-  //   2. If the other list is non-empty and our current list is empty, we can
-  //      reuse the other list which is guaranteed to be immutable.
+GenerateVisitCode(io::Printer* printer) const {
   printer->Print(variables_,
-    "if (!other.$name$_.isEmpty()) {\n"
-    "  if ($name$_.isEmpty()) {\n"
-    "    $name$_ = other.$name$_;\n"
-    "  } else {\n"
-    "    ensure$capitalized_name$IsMutable();\n"
-    "    $name$_.addAll(other.$name$_);\n"
-    "  }\n"
-    "}\n");
+      "$name$_= visitor.visitList($name$_, other.$name$_);\n");
 }
 
 void RepeatedImmutableMessageFieldLiteGenerator::
@@ -878,7 +875,8 @@ void RepeatedImmutableMessageFieldLiteGenerator::
 GenerateParsingCode(io::Printer* printer) const {
   printer->Print(variables_,
     "if (!$is_mutable$) {\n"
-    "  $name$_ = newProtobufList();\n"
+    "  $name$_ =\n"
+    "      com.google.protobuf.GeneratedMessageLite.mutableCopy($name$_);\n"
     "}\n");
 
     if (GetType(descriptor_) == FieldDescriptor::TYPE_GROUP) {

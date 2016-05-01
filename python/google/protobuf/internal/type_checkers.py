@@ -109,6 +109,16 @@ class TypeChecker(object):
     return proposed_value
 
 
+class TypeCheckerWithDefault(TypeChecker):
+
+  def __init__(self, default_value, *acceptable_types):
+    TypeChecker.__init__(self, acceptable_types)
+    self._default_value = default_value
+
+  def DefaultValue(self):
+    return self._default_value
+
+
 # IntValueChecker and its subclasses perform integer type-checks
 # and bounds-checks.
 class IntValueChecker(object):
@@ -212,12 +222,13 @@ _VALUE_CHECKERS = {
     _FieldDescriptor.CPPTYPE_INT64: Int64ValueChecker(),
     _FieldDescriptor.CPPTYPE_UINT32: Uint32ValueChecker(),
     _FieldDescriptor.CPPTYPE_UINT64: Uint64ValueChecker(),
-    _FieldDescriptor.CPPTYPE_DOUBLE: TypeChecker(
-        float, int, long),
-    _FieldDescriptor.CPPTYPE_FLOAT: TypeChecker(
-        float, int, long),
-    _FieldDescriptor.CPPTYPE_BOOL: TypeChecker(bool, int),
-    _FieldDescriptor.CPPTYPE_STRING: TypeChecker(bytes),
+    _FieldDescriptor.CPPTYPE_DOUBLE: TypeCheckerWithDefault(
+        0.0, float, int, long),
+    _FieldDescriptor.CPPTYPE_FLOAT: TypeCheckerWithDefault(
+        0.0, float, int, long),
+    _FieldDescriptor.CPPTYPE_BOOL: TypeCheckerWithDefault(
+        False, bool, int),
+    _FieldDescriptor.CPPTYPE_STRING: TypeCheckerWithDefault(b'', bytes),
     }
 
 

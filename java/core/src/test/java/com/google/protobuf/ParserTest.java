@@ -179,16 +179,16 @@ public class ParserTest extends TestCase {
   public void testParseExtensions() throws Exception {
     assertRoundTripEquals(TestUtil.getAllExtensionsSet(),
                           TestUtil.getExtensionRegistry());
-    assertRoundTripEquals(TestUtil.getAllLiteExtensionsSet(),
-                          TestUtil.getExtensionRegistryLite());
+    assertRoundTripEquals(
+        TestUtilLite.getAllLiteExtensionsSet(), TestUtilLite.getExtensionRegistryLite());
   }
 
   public void testParsePacked() throws Exception {
     assertRoundTripEquals(TestUtil.getPackedSet());
     assertRoundTripEquals(TestUtil.getPackedExtensionsSet(),
                           TestUtil.getExtensionRegistry());
-    assertRoundTripEquals(TestUtil.getLitePackedExtensionsSet(),
-                          TestUtil.getExtensionRegistryLite());
+    assertRoundTripEquals(
+        TestUtilLite.getLitePackedExtensionsSet(), TestUtilLite.getExtensionRegistryLite());
   }
 
   public void testParseDelimitedTo() throws Exception {
@@ -198,8 +198,7 @@ public class ParserTest extends TestCase {
     normalMessage.writeDelimitedTo(output);
 
     // Write MessageLite with packed extension fields.
-    TestPackedExtensionsLite packedMessage =
-        TestUtil.getLitePackedExtensionsSet();
+    TestPackedExtensionsLite packedMessage = TestUtilLite.getLitePackedExtensionsSet();
     packedMessage.writeDelimitedTo(output);
 
     InputStream input = new ByteArrayInputStream(output.toByteArray());
@@ -208,8 +207,9 @@ public class ParserTest extends TestCase {
         normalMessage.getParserForType().parseDelimitedFrom(input));
     assertMessageEquals(
         packedMessage,
-        packedMessage.getParserForType().parseDelimitedFrom(
-            input, TestUtil.getExtensionRegistryLite()));
+        packedMessage
+            .getParserForType()
+            .parseDelimitedFrom(input, TestUtilLite.getExtensionRegistryLite()));
   }
 
   public void testParseUnknownFields() throws Exception {

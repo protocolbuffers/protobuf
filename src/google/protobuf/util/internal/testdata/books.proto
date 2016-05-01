@@ -176,3 +176,12 @@ message NestedBook {
 message BadNestedBook {
   repeated uint32 book = 1 [packed=true];  // Packed to optional message.
 }
+
+// A recursively defined message.
+message Cyclic {
+  optional int32 m_int = 1;
+  optional string m_str = 2;
+  optional Book m_book = 3;
+  repeated Author m_author = 5;
+  optional Cyclic m_cyclic = 4;
+}

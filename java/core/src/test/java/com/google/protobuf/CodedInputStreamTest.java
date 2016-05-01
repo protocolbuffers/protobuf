@@ -81,10 +81,12 @@ public class CodedInputStreamTest extends TestCase {
       this.blockSize = blockSize;
     }
 
+    @Override
     public int read(byte[] b) throws IOException {
       return super.read(b, 0, Math.min(b.length, blockSize));
     }
 
+    @Override
     public int read(byte[] b, int off, int len) throws IOException {
       return super.read(b, off, Math.min(len, blockSize));
     }
