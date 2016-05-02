@@ -191,6 +191,7 @@ internal_install_python_deps() {
     sudo apt-get install -y python2.6 python2.6-dev
     sudo apt-get install -y python3.3 python3.3-dev
     sudo apt-get install -y python3.4 python3.4-dev
+    sudo apt-get install -y python3.5 python3.5-dev
   fi
 }
 
@@ -255,7 +256,7 @@ build_python() {
   cd python
   # Only test Python 2.6/3.x on Linux
   if [ $(uname -s) == "Linux" ]; then
-    envlist=py\{26,27,33,34\}-python
+    envlist=py\{26,27,33,34,35\}-python
   else
     envlist=py27-python
   fi
@@ -272,7 +273,7 @@ build_python_cpp() {
   # Only test Python 2.6/3.x on Linux
   if [ $(uname -s) == "Linux" ]; then
     # py26 is currently disabled due to json_format
-    envlist=py\{27,33,34\}-cpp
+    envlist=py\{27,33,34,35\}-cpp
   else
     envlist=py27-cpp
   fi
