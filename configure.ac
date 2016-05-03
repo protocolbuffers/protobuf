@@ -180,5 +180,5 @@ export CFLAGS
 export CXXFLAGS
 AC_CONFIG_SUBDIRS([gmock])
 
-AC_CONFIG_FILES([Makefile src/Makefile conformance/Makefile protobuf.pc protobuf-lite.pc])
+AC_CONFIG_FILES([Makefile src/Makefile benchmarks/Makefile conformance/Makefile protobuf.pc protobuf-lite.pc])
 AC_OUTPUT
