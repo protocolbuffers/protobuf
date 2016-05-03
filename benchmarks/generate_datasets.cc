@@ -28,9 +28,6 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-const char *file_prefix = "dataset.";
-const char *file_suffix = ".pb";
-
 #include <fstream>
 #include <iostream>
 #include "benchmarks.pb.h"
@@ -41,9 +38,10 @@ using google::protobuf::DescriptorPool;
 using google::protobuf::Message;
 using google::protobuf::MessageFactory;
 
-#define ARRAY_TO_STRING(arr) std::string(arr, arr + sizeof(arr))
-
 std::set<std::string> names;
+
+const char *file_prefix = "dataset.";
+const char *file_suffix = ".pb";
 
 void WriteFileWithPayloads(const std::string& name,
                            const std::string& message_name,
@@ -81,13 +79,10 @@ void WriteFileWithPayloads(const std::string& name,
     dataset.add_payload()->assign(payload[i]);
   }
 
-  std::string serialized;
-  dataset.SerializeToString(&serialized);
-
   std::ofstream writer;
   std::string fname = file_prefix + name + file_suffix;
   writer.open(fname.c_str());
-  writer << serialized;
+  dataset.SerializeToOstream(&writer);
   writer.close();
 
   std::cerr << "Wrote dataset: " << fname << "\n";
@@ -111,12 +106,12 @@ std::string ReadFile(const std::string& name) {
 }
 
 int main() {
-  WriteFile("google_message1_proto3", "benchmarks.p3.GoogleMessage1",
+  WriteFile("google_message1_proto3", "benchmarks.proto3.GoogleMessage1",
             ReadFile("google_message1.dat"));
-  WriteFile("google_message1_proto2", "benchmarks.p2.GoogleMessage1",
+  WriteFile("google_message1_proto2", "benchmarks.proto2.GoogleMessage1",
             ReadFile("google_message1.dat"));
 
   // Not in proto3 because it has a group, which is not supported.
-  WriteFile("google_message2", "benchmarks.p2.GoogleMessage2",
+  WriteFile("google_message2", "benchmarks.proto2.GoogleMessage2",
             ReadFile("google_message2.dat"));
 }
