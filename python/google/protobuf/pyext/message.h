@@ -53,7 +53,7 @@ class DescriptorPool;
 class MessageFactory;
 
 #ifdef _SHARED_PTR_H
-using shared_ptr;
+using std::shared_ptr;
 using ::std::string;
 #else
 using internal::shared_ptr;
