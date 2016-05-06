@@ -16,10 +16,13 @@ To build protobuf from source, the following tools are needed:
   * automake
   * libtool
   * curl (used to download gmock)
+  * make
+  * g++
+  * unzip
 
 On Ubuntu, you can install them with:
 
-  $ sudo apt-get install autoconf automake libtool curl
+  $ sudo apt-get install autoconf automake libtool curl make g++ unzip
 
 On other platforms, please use the corresponding package managing tool to
 install them before proceeding.
