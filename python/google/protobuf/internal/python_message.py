@@ -66,7 +66,7 @@ except ImportError:
   import copy_reg as copyreg
 
 # We use "as" to avoid name collisions with variables.
-from google.protobuf.internal import containers
+from google.protobuf.python.google.protobuf.internal import containers
 from google.protobuf.internal import decoder
 from google.protobuf.internal import encoder
 from google.protobuf.internal import enum_type_wrapper

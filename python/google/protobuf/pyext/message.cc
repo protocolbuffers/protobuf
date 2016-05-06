@@ -255,7 +255,7 @@ static PyObject* New(PyTypeObject* type,
 
   if (WKT_classes == NULL) {
     ScopedPyObjectPtr well_known_types(PyImport_ImportModule(
-        "google.protobuf.internal.well_known_types"));
+        "google.protobuf.python.google.protobuf.internal.well_known_types"));
     GOOGLE_DCHECK(well_known_types != NULL);
 
     WKT_classes = PyObject_GetAttrString(well_known_types.get(), "WKTBASES");
@@ -2950,7 +2950,7 @@ bool InitProto2MessageModule(PyObject *m) {
   {
     // ScalarMapContainer_Type derives from our MutableMapping type.
     ScopedPyObjectPtr containers(PyImport_ImportModule(
-        "google.protobuf.internal.containers"));
+        "google.protobuf.python.google.protobuf.internal.containers"));
     if (containers == NULL) {
       return false;
     }
@@ -3046,7 +3046,7 @@ bool InitProto2MessageModule(PyObject *m) {
       &PyOneofDescriptor_Type));
 
   PyObject* enum_type_wrapper = PyImport_ImportModule(
-      "google.protobuf.internal.enum_type_wrapper");
+      "google.protobuf.python.google.protobuf.internal.enum_type_wrapper");
   if (enum_type_wrapper == NULL) {
     return false;
   }
