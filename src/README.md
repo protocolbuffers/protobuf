@@ -181,7 +181,7 @@ In the downloads section, download the zip file protoc-$VERSION-win32.zip.
 It contains the protoc binary as well as public proto files of protobuf
 library.
 
-To build from source using Microsoft Visual C++, see cmake/README.md.
+To build from source using Microsoft Visual C++, see [cmake/README.md](../cmake/README.md).
 
 To build from source using Cygwin or MinGW, follow the Unix installation
 instructions, above.
