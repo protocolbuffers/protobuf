@@ -17,13 +17,13 @@ void add_def_obj(const void* def, zval* value) {
   zval* pDest = NULL;
   Z_ADDREF_P(value);
   zend_hash_index_update(&PROTOBUF_G(upb_def_to_php_obj_map), (zend_ulong)def,
-                         &value, sizeof(zval*), &pDest);
+                         &value, sizeof(zval*), (void**)&pDest);
 }
 
 zval* get_def_obj(const void* def) {
   zval** value;
   if (zend_hash_index_find(&PROTOBUF_G(upb_def_to_php_obj_map), (zend_ulong)def,
-                           &value) == FAILURE) {
+                           (void**)&value) == FAILURE) {
     zend_error(E_ERROR, "PHP object not found for given definition.\n");
     return NULL;
   }
