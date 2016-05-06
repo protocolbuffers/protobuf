@@ -172,7 +172,8 @@ void PrintTopBoilerplate(
       "filename", file->name());
   if (HasTopLevelEnums(file)) {
     printer->Print(
-        "from google.protobuf.internal import enum_type_wrapper\n");
+        "from google.protobuf.python.google.protobuf.internal import"
+        " enum_type_wrapper\n");
   }
   printer->Print(
       "from google.protobuf import descriptor as _descriptor\n"

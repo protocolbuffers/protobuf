@@ -50,7 +50,7 @@ import six
 if six.PY3:
   long = int
 
-from google.protobuf.internal import type_checkers
+from google.protobuf.python.google.protobuf.internal import type_checkers
 from google.protobuf import descriptor
 from google.protobuf import text_encoding
 

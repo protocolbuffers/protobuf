@@ -36,7 +36,7 @@ __author__ = 'robinson@google.com (Will Robinson)'
 
 import six
 
-from google.protobuf.internal import api_implementation
+from google.protobuf.python.google.protobuf.internal import api_implementation
 
 _USE_C_DESCRIPTORS = False
 if api_implementation.Type() == 'cpp':

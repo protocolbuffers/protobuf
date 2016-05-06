@@ -70,7 +70,7 @@ import struct
 
 import six
 
-from google.protobuf.internal import wire_format
+from google.protobuf.python.google.protobuf.internal import wire_format
 
 
 # This will overflow and thus become IEEE-754 "infinity".  We would use
