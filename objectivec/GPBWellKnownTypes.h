@@ -30,8 +30,19 @@
 
 #import <Foundation/Foundation.h>
 
-#import "google/protobuf/Duration.pbobjc.h"
-#import "google/protobuf/Timestamp.pbobjc.h"
+// This CPP symbol can be defined to use imports that match up to the framework
+// imports needed when using CocoaPods.
+#if !defined(GPB_USE_PROTOBUF_FRAMEWORK_IMPORTS)
+ #define GPB_USE_PROTOBUF_FRAMEWORK_IMPORTS 0
+#endif
+
+#if GPB_USE_PROTOBUF_FRAMEWORK_IMPORTS
+ #import <Protobuf/Duration.pbobjc.h>
+ #import <Protobuf/Timestamp.pbobjc.h>
+#else
+ #import "google/protobuf/Duration.pbobjc.h"
+ #import "google/protobuf/Timestamp.pbobjc.h"
+#endif
 
 NS_ASSUME_NONNULL_BEGIN
 

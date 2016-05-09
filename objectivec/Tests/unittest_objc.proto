@@ -29,6 +29,7 @@
 
 syntax = "proto2";
 
+import "google/protobuf/any.proto";
 import "google/protobuf/unittest.proto";
 
 package protobuf_unittest;
@@ -446,4 +447,12 @@ message BoolOnlyMessage {
   optional bool bool_field_30 = 30;
   optional bool bool_field_31 = 31;
   optional bool bool_field_32 = 32;
+}
+
+// Reference to a WKT to test (via generated code inspection), the handling
+// of #imports.  Within the WKTs, references to each other are just path
+// based imports, but when reference from another proto file, they should be
+// conditional to support the framework import style.
+message WKTRefereceMessage {
+  optional google.protobuf.Any an_any = 1;
 }
