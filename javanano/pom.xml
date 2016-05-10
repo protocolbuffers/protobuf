@@ -10,7 +10,7 @@
   </parent>
   <groupId>com.google.protobuf.nano</groupId>
   <artifactId>protobuf-javanano</artifactId>
-  <version>3.0.0-alpha-5</version>
+  <version>3.0.0-alpha-6</version>
   <packaging>bundle</packaging>
   <name>Protocol Buffer JavaNano API</name>
   <description>
