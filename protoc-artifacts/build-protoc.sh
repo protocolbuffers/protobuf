@@ -212,7 +212,7 @@ export CXXFLAGS LDFLAGS
 TARGET_FILE=target/protoc.exe
 
 cd "$WORKING_DIR"/.. && ./configure $CONFIGURE_ARGS &&
-  cd src && make clean && make google/protobuf/stubs/pbconfig.h $MAKE_TARGET &&
+  cd src && make clean && make $MAKE_TARGET &&
   cd "$WORKING_DIR" && mkdir -p target &&
   (cp ../src/protoc $TARGET_FILE || cp ../src/protoc.exe $TARGET_FILE) ||
   exit 1
