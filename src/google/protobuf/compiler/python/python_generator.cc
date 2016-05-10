@@ -116,7 +116,7 @@ string ModuleImportStatement(const string& filename) {
   if (last_dot_pos == string::npos) {
     // NOTE(petya): this is not tested as it would require a protocol buffer
     // outside of any package, and I don't think that is easily achievable.
-    return "import " + module_name;
+    return "from . import " + module_name;
   } else {
     return "from " + module_name.substr(0, last_dot_pos) + " import " +
         module_name.substr(last_dot_pos + 1);
