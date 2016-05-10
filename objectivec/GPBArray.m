@@ -75,7 +75,7 @@ static BOOL ArrayDefault_IsValidValue(int32_t value) {
 //%@synthesize count = _count;
 //%
 //%+ (instancetype)array {
-//%  return [[[self alloc] initWithValues:NULL count:0] autorelease];
+//%  return [[[self alloc] init] autorelease];
 //%}
 //%
 //%+ (instancetype)arrayWithValue:(TYPE)value {
@@ -93,7 +93,9 @@ static BOOL ArrayDefault_IsValidValue(int32_t value) {
 //%}
 //%
 //%- (instancetype)init {
-//%  return [self initWithValues:NULL count:0];
+//%  self = [super init];
+//%  // No work needed;
+//%  return self;
 //%}
 //%
 //%- (instancetype)initWithValueArray:(GPB##NAME##Array *)array {
@@ -101,11 +103,11 @@ static BOOL ArrayDefault_IsValidValue(int32_t value) {
 //%}
 //%
 //%- (instancetype)initWithValues:(const TYPE [])values count:(NSUInteger)count {
-//%  self = [super init];
+//%  self = [self init];
 //%  if (self) {
 //%    if (count && values) {
-//%      _values = malloc(count * sizeof(TYPE));
-//%      if (values != NULL) {
+//%      _values = reallocf(_values, count * sizeof(TYPE));
+//%      if (_values != NULL) {
 //%        _capacity = count;
 //%        memcpy(_values, values, count * sizeof(TYPE));
 //%        _count = count;
@@ -299,7 +301,7 @@ static BOOL ArrayDefault_IsValidValue(int32_t value) {
 @synthesize count = _count;
 
 + (instancetype)array {
-  return [[[self alloc] initWithValues:NULL count:0] autorelease];
+  return [[[self alloc] init] autorelease];
 }
 
 + (instancetype)arrayWithValue:(int32_t)value {
@@ -317,7 +319,9 @@ static BOOL ArrayDefault_IsValidValue(int32_t value) {
 }
 
 - (instancetype)init {
-  return [self initWithValues:NULL count:0];
+  self = [super init];
+  // No work needed;
+  return self;
 }
 
 - (instancetype)initWithValueArray:(GPBInt32Array *)array {
@@ -325,11 +329,11 @@ static BOOL ArrayDefault_IsValidValue(int32_t value) {
 }
 
 - (instancetype)initWithValues:(const int32_t [])values count:(NSUInteger)count {
-  self = [super init];
+  self = [self init];
   if (self) {
     if (count && values) {
-      _values = malloc(count * sizeof(int32_t));
-      if (values != NULL) {
+      _values = reallocf(_values, count * sizeof(int32_t));
+      if (_values != NULL) {
         _capacity = count;
         memcpy(_values, values, count * sizeof(int32_t));
         _count = count;
@@ -544,7 +548,7 @@ static BOOL ArrayDefault_IsValidValue(int32_t value) {
 @synthesize count = _count;
 
 + (instancetype)array {
-  return [[[self alloc] initWithValues:NULL count:0] autorelease];
+  return [[[self alloc] init] autorelease];
 }
 
 + (instancetype)arrayWithValue:(uint32_t)value {
@@ -562,7 +566,9 @@ static BOOL ArrayDefault_IsValidValue(int32_t value) {
 }
 
 - (instancetype)init {
-  return [self initWithValues:NULL count:0];
+  self = [super init];
+  // No work needed;
+  return self;
 }
 
 - (instancetype)initWithValueArray:(GPBUInt32Array *)array {
@@ -570,11 +576,11 @@ static BOOL ArrayDefault_IsValidValue(int32_t value) {
 }
 
 - (instancetype)initWithValues:(const uint32_t [])values count:(NSUInteger)count {
-  self = [super init];
+  self = [self init];
   if (self) {
     if (count && values) {
-      _values = malloc(count * sizeof(uint32_t));
-      if (values != NULL) {
+      _values = reallocf(_values, count * sizeof(uint32_t));
+      if (_values != NULL) {
         _capacity = count;
         memcpy(_values, values, count * sizeof(uint32_t));
         _count = count;
@@ -789,7 +795,7 @@ static BOOL ArrayDefault_IsValidValue(int32_t value) {
 @synthesize count = _count;
 
 + (instancetype)array {
-  return [[[self alloc] initWithValues:NULL count:0] autorelease];
+  return [[[self alloc] init] autorelease];
 }
 
 + (instancetype)arrayWithValue:(int64_t)value {
@@ -807,7 +813,9 @@ static BOOL ArrayDefault_IsValidValue(int32_t value) {
 }
 
 - (instancetype)init {
-  return [self initWithValues:NULL count:0];
+  self = [super init];
+  // No work needed;
+  return self;
 }
 
 - (instancetype)initWithValueArray:(GPBInt64Array *)array {
@@ -815,11 +823,11 @@ static BOOL ArrayDefault_IsValidValue(int32_t value) {
 }
 
 - (instancetype)initWithValues:(const int64_t [])values count:(NSUInteger)count {
-  self = [super init];
+  self = [self init];
   if (self) {
     if (count && values) {
-      _values = malloc(count * sizeof(int64_t));
-      if (values != NULL) {
+      _values = reallocf(_values, count * sizeof(int64_t));
+      if (_values != NULL) {
         _capacity = count;
         memcpy(_values, values, count * sizeof(int64_t));
         _count = count;
@@ -1034,7 +1042,7 @@ static BOOL ArrayDefault_IsValidValue(int32_t value) {
 @synthesize count = _count;
 
 + (instancetype)array {
-  return [[[self alloc] initWithValues:NULL count:0] autorelease];
+  return [[[self alloc] init] autorelease];
 }
 
 + (instancetype)arrayWithValue:(uint64_t)value {
@@ -1052,7 +1060,9 @@ static BOOL ArrayDefault_IsValidValue(int32_t value) {
 }
 
 - (instancetype)init {
-  return [self initWithValues:NULL count:0];
+  self = [super init];
+  // No work needed;
+  return self;
 }
 
 - (instancetype)initWithValueArray:(GPBUInt64Array *)array {
@@ -1060,11 +1070,11 @@ static BOOL ArrayDefault_IsValidValue(int32_t value) {
 }
 
 - (instancetype)initWithValues:(const uint64_t [])values count:(NSUInteger)count {
-  self = [super init];
+  self = [self init];
   if (self) {
     if (count && values) {
-      _values = malloc(count * sizeof(uint64_t));
-      if (values != NULL) {
+      _values = reallocf(_values, count * sizeof(uint64_t));
+      if (_values != NULL) {
         _capacity = count;
         memcpy(_values, values, count * sizeof(uint64_t));
         _count = count;
@@ -1279,7 +1289,7 @@ static BOOL ArrayDefault_IsValidValue(int32_t value) {
 @synthesize count = _count;
 
 + (instancetype)array {
-  return [[[self alloc] initWithValues:NULL count:0] autorelease];
+  return [[[self alloc] init] autorelease];
 }
 
 + (instancetype)arrayWithValue:(float)value {
@@ -1297,7 +1307,9 @@ static BOOL ArrayDefault_IsValidValue(int32_t value) {
 }
 
 - (instancetype)init {
-  return [self initWithValues:NULL count:0];
+  self = [super init];
+  // No work needed;
+  return self;
 }
 
 - (instancetype)initWithValueArray:(GPBFloatArray *)array {
@@ -1305,11 +1317,11 @@ static BOOL ArrayDefault_IsValidValue(int32_t value) {
 }
 
 - (instancetype)initWithValues:(const float [])values count:(NSUInteger)count {
-  self = [super init];
+  self = [self init];
   if (self) {
     if (count && values) {
-      _values = malloc(count * sizeof(float));
-      if (values != NULL) {
+      _values = reallocf(_values, count * sizeof(float));
+      if (_values != NULL) {
         _capacity = count;
         memcpy(_values, values, count * sizeof(float));
         _count = count;
@@ -1524,7 +1536,7 @@ static BOOL ArrayDefault_IsValidValue(int32_t value) {
 @synthesize count = _count;
 
 + (instancetype)array {
-  return [[[self alloc] initWithValues:NULL count:0] autorelease];
+  return [[[self alloc] init] autorelease];
 }
 
 + (instancetype)arrayWithValue:(double)value {
@@ -1542,7 +1554,9 @@ static BOOL ArrayDefault_IsValidValue(int32_t value) {
 }
 
 - (instancetype)init {
-  return [self initWithValues:NULL count:0];
+  self = [super init];
+  // No work needed;
+  return self;
 }
 
 - (instancetype)initWithValueArray:(GPBDoubleArray *)array {
@@ -1550,11 +1564,11 @@ static BOOL ArrayDefault_IsValidValue(int32_t value) {
 }
 
 - (instancetype)initWithValues:(const double [])values count:(NSUInteger)count {
-  self = [super init];
+  self = [self init];
   if (self) {
     if (count && values) {
-      _values = malloc(count * sizeof(double));
-      if (values != NULL) {
+      _values = reallocf(_values, count * sizeof(double));
+      if (_values != NULL) {
         _capacity = count;
         memcpy(_values, values, count * sizeof(double));
         _count = count;
@@ -1769,7 +1783,7 @@ static BOOL ArrayDefault_IsValidValue(int32_t value) {
 @synthesize count = _count;
 
 + (instancetype)array {
-  return [[[self alloc] initWithValues:NULL count:0] autorelease];
+  return [[[self alloc] init] autorelease];
 }
 
 + (instancetype)arrayWithValue:(BOOL)value {
@@ -1787,7 +1801,9 @@ static BOOL ArrayDefault_IsValidValue(int32_t value) {
 }
 
 - (instancetype)init {
-  return [self initWithValues:NULL count:0];
+  self = [super init];
+  // No work needed;
+  return self;
 }
 
 - (instancetype)initWithValueArray:(GPBBoolArray *)array {
@@ -1795,11 +1811,11 @@ static BOOL ArrayDefault_IsValidValue(int32_t value) {
 }
 
 - (instancetype)initWithValues:(const BOOL [])values count:(NSUInteger)count {
-  self = [super init];
+  self = [self init];
   if (self) {
     if (count && values) {
-      _values = malloc(count * sizeof(BOOL));
-      if (values != NULL) {
+      _values = reallocf(_values, count * sizeof(BOOL));
+      if (_values != NULL) {
         _capacity = count;
         memcpy(_values, values, count * sizeof(BOOL));
         _count = count;
@@ -2015,15 +2031,11 @@ static BOOL ArrayDefault_IsValidValue(int32_t value) {
 @synthesize validationFunc = _validationFunc;
 
 + (instancetype)array {
-  return [[[self alloc] initWithValidationFunction:NULL
-                                         rawValues:NULL
-                                             count:0] autorelease];
+  return [[[self alloc] initWithValidationFunction:NULL] autorelease];
 }
 
 + (instancetype)arrayWithValidationFunction:(GPBEnumValidationFunc)func {
-  return [[[self alloc] initWithValidationFunction:func
-                                         rawValues:NULL
-                                             count:0] autorelease];
+  return [[[self alloc] initWithValidationFunction:func] autorelease];
 }
 
 + (instancetype)arrayWithValidationFunction:(GPBEnumValidationFunc)func
@@ -2043,7 +2055,7 @@ static BOOL ArrayDefault_IsValidValue(int32_t value) {
 }
 
 - (instancetype)init {
-  return [self initWithValidationFunction:NULL rawValues:NULL count:0];
+  return [self initWithValidationFunction:NULL];
 }
 
 - (instancetype)initWithValueArray:(GPBEnumArray *)array {
@@ -2053,18 +2065,21 @@ static BOOL ArrayDefault_IsValidValue(int32_t value) {
 }
 
 - (instancetype)initWithValidationFunction:(GPBEnumValidationFunc)func {
-  return [self initWithValidationFunction:func rawValues:NULL count:0];
+  self = [super init];
+  if (self) {
+    _validationFunc = (func != NULL ? func : ArrayDefault_IsValidValue);
+  }
+  return self;
 }
 
 - (instancetype)initWithValidationFunction:(GPBEnumValidationFunc)func
                                  rawValues:(const int32_t [])values
                                      count:(NSUInteger)count {
-  self = [super init];
+  self = [self initWithValidationFunction:func];
   if (self) {
-    _validationFunc = (func != NULL ? func : ArrayDefault_IsValidValue);
     if (count && values) {
-      _values = malloc(count * sizeof(int32_t));
-      if (values != NULL) {
+      _values = reallocf(_values, count * sizeof(int32_t));
+      if (_values != NULL) {
         _capacity = count;
         memcpy(_values, values, count * sizeof(int32_t));
         _count = count;
@@ -2081,7 +2096,7 @@ static BOOL ArrayDefault_IsValidValue(int32_t value) {
 
 - (instancetype)initWithValidationFunction:(GPBEnumValidationFunc)func
                                   capacity:(NSUInteger)count {
-  self = [self initWithValidationFunction:func rawValues:NULL count:0];
+  self = [self initWithValidationFunction:func];
   if (self && count) {
     [self internalResizeToCapacity:count];
   }
