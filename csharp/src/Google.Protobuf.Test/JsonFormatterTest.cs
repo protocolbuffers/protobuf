@@ -512,6 +512,22 @@ namespace Google.Protobuf
             Assert.Throws<InvalidOperationException>(() => JsonFormatter.Default.Format(any));
         }
 
+        [Test]
+        [TestCase(typeof(BoolValue), true, "true")]
+        [TestCase(typeof(Int32Value), 32, "32")]
+        [TestCase(typeof(Int64Value), 32L, "\"32\"")]
+        [TestCase(typeof(UInt32Value), 32U, "32")]
+        [TestCase(typeof(UInt64Value), 32UL, "\"32\"")]
+        [TestCase(typeof(StringValue), "foo", "\"foo\"")]
+        [TestCase(typeof(FloatValue), 1.5f, "1.5")]
+        [TestCase(typeof(DoubleValue), 1.5d, "1.5")]
+        public void Wrappers_Standalone(System.Type wrapperType, object value, string expectedJson)
+        {
+            IMessage populated = (IMessage)Activator.CreateInstance(wrapperType);
+            populated.Descriptor.Fields[WrappersReflection.WrapperValueFieldNumber].Accessor.SetValue(populated, value);
+            Assert.AreEqual(expectedJson, JsonFormatter.Default.Format(populated));
+        }
+
         /// <summary>
         /// Checks that the actual JSON is the same as the expected JSON - but after replacing
         /// all apostrophes in the expected JSON with double quotes. This basically makes the tests easier
