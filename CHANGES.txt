@@ -39,7 +39,7 @@
 
   C++/Java Lite (Alpha)
     A new "lite" generator parameter was introduced in the protoc for C++ and
-    Java to for Proto3 syntax messages. Example usage:
+    Java for Proto3 syntax messages. Example usage:
 
      ./protoc --cpp_out=lite:$OUTPUT_PATH foo.proto
 
