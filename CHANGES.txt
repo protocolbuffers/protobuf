@@ -12,13 +12,33 @@
       - Added SpaceAllocatedAndUsed() to report both space used and allocated
       - Added convenient class UnsafeArenaAllocatedRepeatedPtrFieldBackInserter
   * Any
+      - Allow custom type URL prefixes in Any packing.
       - TextFormat now expand the Any type rather than printing bytes.
   * Performance optimizations and various bug fixes.
 
   Java (Beta)
   * Introduced an ExperimentalApi annotation. Annotated APIs are experimental
     and are subject to change in a backward incompatible way in future releases.
-  * Introduced zero-copy serialization as an ExperimentalApi. TODO(nathanmittler)
+  * Introduced zero-copy serialization as an ExperimentalApi
+      - Introduction of the `ByteOutput` interface. This is similar to
+        `OutputStream` but provides semantics for lazy writing (i.e. no
+        immediate copy required) of fields that are considered to be immutable.
+      - `ByteString` now supports writing to a `ByteOutput`, which will directly
+        expose the internals of the `ByteString` (i.e. `byte[]` or `ByteBuffer`)
+        to the `ByteOutput` without copying.
+      - `CodedOutputStream` now supports writing to a `ByteOutput`. `ByteString`
+        instances that are too large to fit in the internal buffer will be
+        (lazily) written to the `ByteOutput` directly.
+      - This allows applications using large `ByteString` fields to avoid
+        duplication of these fields entirely. Such an application can supply a
+        `ByteOutput` that chains together the chunks received from
+        `CodedOutputStream` before forwarding them onto the IO system.
+  * Other related changes to `CodedOutputStream`
+      - Additional use of `sun.misc.Unsafe` where possible to perform fast
+        access to `byte[]` and `ByteBuffer` values and avoiding unnecessary
+        range checking.
+      - `ByteBuffer`-backed `CodedOutputStream` now writes directly to the
+        `ByteBuffer` rather than to an intermediate array.
   * Improved the performance for lite-runtime. TODO(dweis)
   * Various bug fixes and small feature enhancement.
       - Fixed stack overflow when in hashCode() for infinite recursive oneofs.
@@ -29,10 +49,42 @@
   * TODO(jieluo)
 
   Objective-C (Beta)
-  * TODO(thomasvl)
+  * Proto comments now come over as HeaderDoc comments in the generated sources
+    so Xcode can pick them up and display them.
+  * The library headers have been updated to use HeaderDoc comments so Xcode can
+    pick them up and display them.
+  * The per message and per field overhead in both generated code and runtime
+    object sizes was reduced.
+  * Generated code now include deprecated annotations when the proto file
+    included them.
 
   C# (Beta)
-  * TODO(jonskeet)
+  In general: some changes are breaking, which require regenerating messages.
+  Most user-written code will not be impacted *except* for the renaming of enum
+  values.
+
+  * Allow custom type URL prefixes in `Any` packing, and ignore them when
+    unpacking
+  * `protoc` is now in a separate NuGet package (Google.Protobuf.Tools)
+  * New option: `internal_access` to generate internal classes
+  * Enum values are now PascalCased, and if there's a prefix which matches the
+    name of the enum, that is removed (so an enum `COLOR` with a value
+    `COLOR_BLUE` would generate a value of just `Blue`). An option
+    (`legacy_enum_values`) is temporarily available to disable this, but the
+    option will be removed for GA.
+  * `json_name` option is now honored
+  * If group tags are encountered when parsing, they are validated more
+    thoroughly (although we don't support actual groups)
+  * NuGet dependencies are better specified
+  * Breaking: `Preconditions` is renamed to `ProtoPreconditions`
+  * Breaking: `GeneratedCodeInfo` is renamed to `GeneratedClrTypeInfo`
+  * `JsonFormatter` now allows writing to a `TextWriter`
+  * New interface, `ICustomDiagnosticMessage` to allow more compact
+    representations from `ToString`
+  * `CodedInputStream` and `CodedOutputStream` now implement `IDisposable`,
+    which simply disposes of the streams they were constructed with
+  * Map fields no longer support null values (in line with other languages)
+  * Improvements in JSON formatting and parsing
 
   Javascript (Alpha)
   * TODO(haberman)
