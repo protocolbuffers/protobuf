@@ -55,7 +55,6 @@
   [message setOptionalInt32:1];
   [message setOptionalString:@"foo"];
   [message setOptionalForeignMessage:[ForeignMessage message]];
-  message.repeatedStringArray = [NSMutableArray array];
   [message.repeatedStringArray addObject:@"bar"];
   return message;
 }
@@ -67,7 +66,6 @@
   ForeignMessage *foreignMessage = [ForeignMessage message];
   [foreignMessage setC:3];
   [message setOptionalForeignMessage:foreignMessage];
-  message.repeatedStringArray = [NSMutableArray array];
   [message.repeatedStringArray addObject:@"qux"];
   return message;
 }
@@ -76,7 +74,6 @@
   TestAllTypes *message = [TestAllTypes message];
   [message setOptionalInt64:2];
   [message setOptionalString:@"baz"];
-  message.repeatedStringArray = [NSMutableArray array];
   [message.repeatedStringArray addObject:@"qux"];
   return message;
 }
@@ -89,7 +86,6 @@
   ForeignMessage *foreignMessage = [ForeignMessage message];
   [foreignMessage setC:3];
   [message setOptionalForeignMessage:foreignMessage];
-  message.repeatedStringArray = [NSMutableArray array];
   [message.repeatedStringArray addObject:@"qux"];
   [message.repeatedStringArray addObject:@"bar"];
   return message;
@@ -102,7 +98,6 @@
   [message setOptionalString:@"foo"];
   ForeignMessage *foreignMessage = [ForeignMessage message];
   [message setOptionalForeignMessage:foreignMessage];
-  message.repeatedStringArray = [NSMutableArray array];
   [message.repeatedStringArray addObject:@"qux"];
   [message.repeatedStringArray addObject:@"bar"];
   return message;
@@ -195,7 +190,9 @@
 
   // Test merging from data.
   result = [self mergeExtensionsDestination];
-  [result mergeFromData:[[self mergeExtensionsSource] data]
+  NSData *data = [[self mergeExtensionsSource] data];
+  XCTAssertNotNil(data);
+  [result mergeFromData:data
       extensionRegistry:[UnittestRoot extensionRegistry]];
   resultData = [result data];
   XCTAssertEqualObjects(resultData, mergeResultData);
@@ -246,7 +243,6 @@
   [message setOptionalMessage:self.testRequiredInitialized];
   XCTAssertTrue(message.initialized);
 
-  message.repeatedMessageArray = [NSMutableArray array];
   [message.repeatedMessageArray addObject:[TestRequired message]];
   XCTAssertFalse(message.initialized);
 
@@ -298,7 +294,6 @@
 - (void)testDataFromNestedUninitialized {
   TestRequiredForeign *message = [TestRequiredForeign message];
   [message setOptionalMessage:[TestRequired message]];
-  message.repeatedMessageArray = [NSMutableArray array];
   [message.repeatedMessageArray addObject:[TestRequired message]];
   [message.repeatedMessageArray addObject:[TestRequired message]];
   NSData *data = [message data];
@@ -317,7 +312,6 @@
 
   TestRequiredForeign *message = [TestRequiredForeign message];
   [message setOptionalMessage:[TestRequired message]];
-  message.repeatedMessageArray = [NSMutableArray array];
   [message.repeatedMessageArray addObject:[TestRequired message]];
   [message.repeatedMessageArray addObject:[TestRequired message]];
 
@@ -1826,6 +1820,24 @@
   XCTAssertEqualObjects(enumDescriptor, expectedDescriptor);
 }
 
+- (void)testPropertyNaming {
+  // objectivec_helpers.cc has some special handing to get proper all caps
+  // for a few cases to meet objc developer expectations.
+  //
+  // This "test" confirms that the expected names are generated, otherwise the
+  // test itself will fail to compile.
+  ObjCPropertyNaming *msg = [ObjCPropertyNaming message];
+  // On their own, at the end, in the middle.
+  msg.URL = @"good";
+  msg.thumbnailURL = @"good";
+  msg.URLFoo = @"good";
+  msg.someURLBlah = @"good";
+  msg.HTTP = @"good";
+  msg.HTTPS = @"good";
+  // No caps since it was "urls".
+  [msg.urlsArray addObject:@"good"];
+}
+
 - (void)testEnumNaming {
   // objectivec_helpers.cc has some interesting cases to deal with in
   // EnumValueName/EnumValueShortName.  Confirm that things generated as
@@ -1884,7 +1896,9 @@
   XCTAssertEqual(msg.bar, EnumTestMsg_MyEnum_One);
   XCTAssertEqual(msg.baz, EnumTestMsg_MyEnum_NegOne);
   // Bounce to wire and back.
-  EnumTestMsg *msgPrime = [EnumTestMsg parseFromData:[msg data] error:NULL];
+  NSData *data = [msg data];
+  XCTAssertNotNil(data);
+  EnumTestMsg *msgPrime = [EnumTestMsg parseFromData:data error:NULL];
   XCTAssertEqualObjects(msgPrime, msg);
   XCTAssertEqual(msgPrime.foo, EnumTestMsg_MyEnum_Zero);
   XCTAssertEqual(msgPrime.bar, EnumTestMsg_MyEnum_One);
@@ -1896,7 +1910,9 @@
   XCTAssertEqual(msg.bar, EnumTestMsg_MyEnum_Two);
   XCTAssertEqual(msg.baz, EnumTestMsg_MyEnum_NegTwo);
   // Bounce to wire and back.
-  msgPrime = [EnumTestMsg parseFromData:[msg data] error:NULL];
+  data = [msg data];
+  XCTAssertNotNil(data);
+  msgPrime = [EnumTestMsg parseFromData:data error:NULL];
   XCTAssertEqualObjects(msgPrime, msg);
   XCTAssertEqual(msgPrime.foo, EnumTestMsg_MyEnum_Zero);
   XCTAssertEqual(msgPrime.bar, EnumTestMsg_MyEnum_Two);
@@ -1917,7 +1933,9 @@
   XCTAssertEqual([msg.mumbleArray valueAtIndex:3], EnumTestMsg_MyEnum_NegOne);
   XCTAssertEqual([msg.mumbleArray valueAtIndex:4], EnumTestMsg_MyEnum_NegTwo);
   // Bounce to wire and back.
-  msgPrime = [EnumTestMsg parseFromData:[msg data] error:NULL];
+  data = [msg data];
+  XCTAssertNotNil(data);
+  msgPrime = [EnumTestMsg parseFromData:data error:NULL];
   XCTAssertEqualObjects(msgPrime, msg);
   XCTAssertEqual([msgPrime.mumbleArray valueAtIndex:0],
                  EnumTestMsg_MyEnum_Zero);
@@ -1927,6 +1945,78 @@
                  EnumTestMsg_MyEnum_NegOne);
   XCTAssertEqual([msgPrime.mumbleArray valueAtIndex:4],
                  EnumTestMsg_MyEnum_NegTwo);
+}
+
+- (void)testOneBasedEnumHolder {
+  // Test case for https://github.com/google/protobuf/issues/1453
+  // Message with no explicit defaults, but a non zero default for an enum.
+  MessageWithOneBasedEnum *enumMsg = [MessageWithOneBasedEnum message];
+  XCTAssertEqual(enumMsg.enumField, MessageWithOneBasedEnum_OneBasedEnum_One);
+}
+
+- (void)testBoolOffsetUsage {
+  // Bools use storage within has_bits; this test ensures that this is honored
+  // in all places where things should crash or fail based on reading out of
+  // field storage instead.
+  BoolOnlyMessage *msg1 = [BoolOnlyMessage message];
+  BoolOnlyMessage *msg2 = [BoolOnlyMessage message];
+
+  msg1.boolField1 = YES;
+  msg2.boolField1 = YES;
+  msg1.boolField3 = YES;
+  msg2.boolField3 = YES;
+  msg1.boolField5 = YES;
+  msg2.boolField5 = YES;
+  msg1.boolField7 = YES;
+  msg2.boolField7 = YES;
+  msg1.boolField9 = YES;
+  msg2.boolField9 = YES;
+  msg1.boolField11 = YES;
+  msg2.boolField11 = YES;
+  msg1.boolField13 = YES;
+  msg2.boolField13 = YES;
+  msg1.boolField15 = YES;
+  msg2.boolField15 = YES;
+  msg1.boolField17 = YES;
+  msg2.boolField17 = YES;
+  msg1.boolField19 = YES;
+  msg2.boolField19 = YES;
+  msg1.boolField21 = YES;
+  msg2.boolField21 = YES;
+  msg1.boolField23 = YES;
+  msg2.boolField23 = YES;
+  msg1.boolField25 = YES;
+  msg2.boolField25 = YES;
+  msg1.boolField27 = YES;
+  msg2.boolField27 = YES;
+  msg1.boolField29 = YES;
+  msg2.boolField29 = YES;
+  msg1.boolField31 = YES;
+  msg2.boolField31 = YES;
+
+  msg1.boolField32 = YES;
+  msg2.boolField32 = YES;
+
+  XCTAssertTrue(msg1 != msg2); // Different pointers.
+  XCTAssertEqual([msg1 hash], [msg2 hash]);
+  XCTAssertEqualObjects(msg1, msg2);
+
+  BoolOnlyMessage *msg1Prime = [[msg1 copy] autorelease];
+  XCTAssertTrue(msg1Prime != msg1); // Different pointers.
+  XCTAssertEqual([msg1 hash], [msg1Prime hash]);
+  XCTAssertEqualObjects(msg1, msg1Prime);
+
+  // Field set in one, but not the other means they don't match (even if
+  // set to default value).
+  msg1Prime.boolField2 = NO;
+  XCTAssertNotEqualObjects(msg1Prime, msg1);
+  // And when set to different values.
+  msg1.boolField2 = YES;
+  XCTAssertNotEqualObjects(msg1Prime, msg1);
+  // And then they match again.
+  msg1.boolField2 = NO;
+  XCTAssertEqualObjects(msg1Prime, msg1);
+  XCTAssertEqual([msg1 hash], [msg1Prime hash]);
 }
 
 @end

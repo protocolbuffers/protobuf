@@ -1,0 +1,37 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package>
+  <metadata>
+    <id>Google.Protobuf.Tools</id>
+    <title>Google Protocol Buffers tools</title>
+    <summary>Tools for Protocol Buffers - Google's data interchange format.</summary>
+    <description>See project site for more info.</description>
+    <version>3.0.0-beta3</version>
+    <authors>Google Inc.</authors>
+    <owners>protobuf-packages</owners>
+    <licenseUrl>https://github.com/google/protobuf/blob/master/LICENSE</licenseUrl>
+    <projectUrl>https://github.com/google/protobuf</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <releaseNotes>Tools for Protocol Buffers</releaseNotes>
+    <copyright>Copyright 2015, Google Inc.</copyright>
+    <tags>Protocol Buffers Binary Serialization Format Google proto proto3</tags>
+  </metadata>
+  <files>
+    <file src="protoc\windows_x86\protoc.exe" target="tools\windows_x86\protoc.exe" />
+    <file src="protoc\windows_x64\protoc.exe" target="tools\windows_x64\protoc.exe" />
+    <file src="protoc\linux_x86\protoc" target="tools\linux_x86\protoc" />
+    <file src="protoc\linux_x64\protoc" target="tools\linux_x64\protoc" />
+    <file src="protoc\macosx_x86\protoc" target="tools\macosx_x86\protoc" />
+    <file src="protoc\macosx_x64\protoc" target="tools\macosx_x64\protoc" />
+    <file src="..\src\google\protobuf\any.proto" target="tools\google\protobuf" />
+    <file src="..\src\google\protobuf\api.proto" target="tools\google\protobuf" />
+    <file src="..\src\google\protobuf\descriptor.proto" target="tools\google\protobuf" />
+    <file src="..\src\google\protobuf\duration.proto" target="tools\google\protobuf" />
+    <file src="..\src\google\protobuf\empty.proto" target="tools\google\protobuf" />
+    <file src="..\src\google\protobuf\field_mask.proto" target="tools\google\protobuf" />
+    <file src="..\src\google\protobuf\source_context.proto" target="tools\google\protobuf" />
+    <file src="..\src\google\protobuf\struct.proto" target="tools\google\protobuf" />
+    <file src="..\src\google\protobuf\timestamp.proto" target="tools\google\protobuf" />
+    <file src="..\src\google\protobuf\type.proto" target="tools\google\protobuf" />
+    <file src="..\src\google\protobuf\wrappers.proto" target="tools\google\protobuf" />
+  </files>
+</package>

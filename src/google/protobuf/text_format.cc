@@ -46,6 +46,7 @@
 #include <google/protobuf/dynamic_message.h>
 #include <google/protobuf/repeated_field.h>
 #include <google/protobuf/wire_format_lite.h>
+#include <google/protobuf/io/strtod.h>
 #include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/io/zero_copy_stream.h>
 #include <google/protobuf/io/zero_copy_stream_impl.h>
@@ -90,7 +91,10 @@ inline bool GetAnyFieldDescriptors(const Message& message,
 string Message::DebugString() const {
   string debug_string;
 
-  TextFormat::PrintToString(*this, &debug_string);
+  TextFormat::Printer printer;
+  printer.SetExpandAny(true);
+
+  printer.PrintToString(*this, &debug_string);
 
   return debug_string;
 }
@@ -100,6 +104,7 @@ string Message::ShortDebugString() const {
 
   TextFormat::Printer printer;
   printer.SetSingleLineMode(true);
+  printer.SetExpandAny(true);
 
   printer.PrintToString(*this, &debug_string);
   // Single line mode currently might have an extra space at the end.
@@ -116,6 +121,7 @@ string Message::Utf8DebugString() const {
 
   TextFormat::Printer printer;
   printer.SetUseUtf8StringEscaping(true);
+  printer.SetExpandAny(true);
 
   printer.PrintToString(*this, &debug_string);
 
@@ -380,6 +386,7 @@ class TextFormat::Parser::ParserImpl {
       string full_type_name, prefix;
       DO(ConsumeAnyTypeUrl(&full_type_name, &prefix));
       DO(Consume("]"));
+      TryConsume(":");  // ':' is optional between message labels and values.
       string serialized_value;
       DO(ConsumeAnyValue(full_type_name,
                          message->GetDescriptor()->file()->pool(),
@@ -389,7 +396,6 @@ class TextFormat::Parser::ParserImpl {
           string(prefix + full_type_name));
       reflection->SetString(message, any_value_field, serialized_value);
       return true;
-      // Fall through.
     }
     if (TryConsume("[")) {
       // Extension.
@@ -656,7 +662,7 @@ class TextFormat::Parser::ParserImpl {
       case FieldDescriptor::CPPTYPE_FLOAT: {
         double value;
         DO(ConsumeDouble(&value));
-        SET_FIELD(Float, static_cast<float>(value));
+        SET_FIELD(Float, io::SafeDoubleToFloat(value));
         break;
       }
 
@@ -1152,10 +1158,10 @@ class TextFormat::Printer::TextGenerator {
   }
 
   // Print text to the output stream.
-  void Print(const char* text, int size) {
-    int pos = 0;  // The number of bytes we've written so far.
+  void Print(const char* text, size_t size) {
+    size_t pos = 0;  // The number of bytes we've written so far.
 
-    for (int i = 0; i < size; i++) {
+    for (size_t i = 0; i < size; i++) {
       if (text[i] == '\n') {
         // Saw newline.  If there is more text, we may need to insert an indent
         // here.  So, write what we have so far, including the '\n'.
@@ -1180,7 +1186,7 @@ class TextFormat::Printer::TextGenerator {
  private:
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(TextGenerator);
 
-  void Write(const char* data, int size) {
+  void Write(const char* data, size_t size) {
     if (failed_) return;
     if (size == 0) return;
 
@@ -1357,7 +1363,10 @@ string TextFormat::FieldValuePrinter::PrintDouble(double val) const {
   return SimpleDtoa(val);
 }
 string TextFormat::FieldValuePrinter::PrintString(const string& val) const {
-  return StrCat("\"", CEscape(val), "\"");
+  string printed("\"");
+  CEscapeAndAppend(val, &printed);
+  printed.push_back('\"');
+  return printed;
 }
 string TextFormat::FieldValuePrinter::PrintBytes(const string& val) const {
   return PrintString(val);
@@ -1423,7 +1432,8 @@ TextFormat::Printer::Printer()
     use_short_repeated_primitives_(false),
     hide_unknown_fields_(false),
     print_message_fields_in_index_order_(false),
-    expand_any_(false) {
+    expand_any_(false),
+    truncate_string_field_longer_than_(0LL) {
   SetUseUtf8StringEscaping(false);
 }
 
@@ -1775,11 +1785,19 @@ void TextFormat::Printer::PrintFieldValue(
           ? reflection->GetRepeatedStringReference(
               message, field, index, &scratch)
           : reflection->GetStringReference(message, field, &scratch);
+      const string* value_to_print = &value;
+      string truncated_value;
+      if (truncate_string_field_longer_than_ > 0 &&
+          truncate_string_field_longer_than_ < value.size()) {
+        truncated_value = value.substr(0, truncate_string_field_longer_than_) +
+                          "...<truncated>...";
+        value_to_print = &truncated_value;
+      }
       if (field->type() == FieldDescriptor::TYPE_STRING) {
-        generator.Print(printer->PrintString(value));
+        generator.Print(printer->PrintString(*value_to_print));
       } else {
         GOOGLE_DCHECK_EQ(field->type(), FieldDescriptor::TYPE_BYTES);
-        generator.Print(printer->PrintBytes(value));
+        generator.Print(printer->PrintBytes(*value_to_print));
       }
       break;
     }
@@ -1926,14 +1944,10 @@ void TextFormat::Printer::PrintUnknownFields(
         } else {
           // This field is not parseable as a Message.
           // So it is probably just a plain string.
-          generator.Print(": \"");
-          generator.Print(CEscape(value));
-          generator.Print("\"");
-          if (single_line_mode_) {
-            generator.Print(" ");
-          } else {
-            generator.Print("\n");
-          }
+          string printed(": \"");
+          CEscapeAndAppend(value, &printed);
+          printed.append(single_line_mode_ ? "\" " : "\"\n");
+          generator.Print(printed);
         }
         break;
       }

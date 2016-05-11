@@ -58,7 +58,7 @@ MAINTAINERCLEANFILES =   \
 nobase_include_HEADERS =                                        \
   google/protobuf/stubs/atomic_sequence_num.h                   \
   google/protobuf/stubs/atomicops.h                             \
-  google/protobuf/stubs/atomicops_internals_aix.h               \
+  google/protobuf/stubs/atomicops_internals_power.h             \
   google/protobuf/stubs/atomicops_internals_arm64_gcc.h         \
   google/protobuf/stubs/atomicops_internals_arm_gcc.h           \
   google/protobuf/stubs/atomicops_internals_arm_qnx.h           \
@@ -148,15 +148,16 @@ nobase_include_HEADERS =                                        \
   google/protobuf/compiler/plugin.h                             \
   google/protobuf/compiler/plugin.pb.h                          \
   google/protobuf/compiler/cpp/cpp_generator.h                  \
+  google/protobuf/compiler/csharp/csharp_generator.h            \
+  google/protobuf/compiler/csharp/csharp_names.h                \
   google/protobuf/compiler/java/java_generator.h                \
   google/protobuf/compiler/java/java_names.h                    \
   google/protobuf/compiler/javanano/javanano_generator.h        \
+  google/protobuf/compiler/js/js_generator.h                    \
   google/protobuf/compiler/objectivec/objectivec_generator.h    \
   google/protobuf/compiler/objectivec/objectivec_helpers.h      \
   google/protobuf/compiler/python/python_generator.h            \
   google/protobuf/compiler/ruby/ruby_generator.h                \
-  google/protobuf/compiler/csharp/csharp_generator.h            \
-  google/protobuf/compiler/csharp/csharp_names.h                \
   google/protobuf/util/type_resolver.h                          \
   google/protobuf/util/field_comparator.h                       \
   google/protobuf/util/field_mask_util.h                        \
@@ -276,9 +277,9 @@ libprotobuf_la_SOURCES =                                       \
   google/protobuf/util/internal/protostream_objectsource.h     \
   google/protobuf/util/internal/protostream_objectwriter.cc    \
   google/protobuf/util/internal/protostream_objectwriter.h     \
-  google/protobuf/util/internal/snake2camel_objectwriter.h     \
+  google/protobuf/util/internal/proto_writer.cc                \
+  google/protobuf/util/internal/proto_writer.h                 \
   google/protobuf/util/internal/structured_objectwriter.h      \
-  google/protobuf/util/internal/testdata                       \
   google/protobuf/util/internal/type_info.cc                   \
   google/protobuf/util/internal/type_info.h                    \
   google/protobuf/util/internal/type_info_test_helper.cc       \
@@ -341,6 +342,8 @@ libprotoc_la_SOURCES =                                         \
   google/protobuf/compiler/java/java_enum_lite.h               \
   google/protobuf/compiler/java/java_extension.cc              \
   google/protobuf/compiler/java/java_extension.h               \
+  google/protobuf/compiler/java/java_extension_lite.cc         \
+  google/protobuf/compiler/java/java_extension_lite.h          \
   google/protobuf/compiler/java/java_field.cc                  \
   google/protobuf/compiler/java/java_field.h                   \
   google/protobuf/compiler/java/java_file.cc                   \
@@ -386,6 +389,7 @@ libprotoc_la_SOURCES =                                         \
   google/protobuf/compiler/java/java_string_field_lite.h       \
   google/protobuf/compiler/java/java_doc_comment.cc            \
   google/protobuf/compiler/java/java_doc_comment.h             \
+  google/protobuf/compiler/js/js_generator.cc                  \
   google/protobuf/compiler/javanano/javanano_enum.cc           \
   google/protobuf/compiler/javanano/javanano_enum.h            \
   google/protobuf/compiler/javanano/javanano_enum_field.cc     \
@@ -451,8 +455,11 @@ libprotoc_la_SOURCES =                                         \
   google/protobuf/compiler/csharp/csharp_message.h             \
   google/protobuf/compiler/csharp/csharp_message_field.cc      \
   google/protobuf/compiler/csharp/csharp_message_field.h       \
+  google/protobuf/compiler/csharp/csharp_options.h             \
   google/protobuf/compiler/csharp/csharp_primitive_field.cc    \
   google/protobuf/compiler/csharp/csharp_primitive_field.h     \
+  google/protobuf/compiler/csharp/csharp_reflection_class.cc     \
+  google/protobuf/compiler/csharp/csharp_reflection_class.h      \
   google/protobuf/compiler/csharp/csharp_repeated_enum_field.cc \
   google/protobuf/compiler/csharp/csharp_repeated_enum_field.h \
   google/protobuf/compiler/csharp/csharp_repeated_message_field.cc \
@@ -461,8 +468,6 @@ libprotoc_la_SOURCES =                                         \
   google/protobuf/compiler/csharp/csharp_repeated_primitive_field.h \
   google/protobuf/compiler/csharp/csharp_source_generator_base.cc \
   google/protobuf/compiler/csharp/csharp_source_generator_base.h \
-  google/protobuf/compiler/csharp/csharp_umbrella_class.cc     \
-  google/protobuf/compiler/csharp/csharp_umbrella_class.h      \
   google/protobuf/compiler/csharp/csharp_wrapper_field.cc      \
   google/protobuf/compiler/csharp/csharp_wrapper_field.h
 
@@ -502,6 +507,8 @@ protoc_inputs =                                                   \
   google/protobuf/unittest_preserve_unknown_enum.proto            \
   google/protobuf/unittest.proto                                  \
   google/protobuf/unittest_proto3_arena.proto                     \
+  google/protobuf/unittest_proto3_arena_lite.proto                     \
+  google/protobuf/unittest_proto3_lite.proto                     \
   google/protobuf/unittest_well_known_types.proto                 \
   google/protobuf/util/internal/testdata/anys.proto               \
   google/protobuf/util/internal/testdata/books.proto              \
@@ -513,6 +520,7 @@ protoc_inputs =                                                   \
   google/protobuf/util/internal/testdata/struct.proto             \
   google/protobuf/util/internal/testdata/timestamp_duration.proto \
   google/protobuf/util/json_format_proto3.proto                   \
+  google/protobuf/util/message_differencer_unittest.proto         \
   google/protobuf/compiler/cpp/cpp_test_large_enum_value.proto
 
 EXTRA_DIST =                                                   \
@@ -603,6 +611,10 @@ protoc_outputs =                                                  \
   google/protobuf/unittest_preserve_unknown_enum.pb.h             \
   google/protobuf/unittest_proto3_arena.pb.cc                     \
   google/protobuf/unittest_proto3_arena.pb.h                      \
+  google/protobuf/unittest_proto3_arena_lite.pb.cc                     \
+  google/protobuf/unittest_proto3_arena_lite.pb.h                      \
+  google/protobuf/unittest_proto3_lite.pb.cc                     \
+  google/protobuf/unittest_proto3_lite.pb.h                      \
   google/protobuf/unittest_well_known_types.pb.cc                 \
   google/protobuf/unittest_well_known_types.pb.h                  \
   google/protobuf/util/internal/testdata/anys.pb.cc               \
@@ -624,7 +636,9 @@ protoc_outputs =                                                  \
   google/protobuf/util/internal/testdata/timestamp_duration.pb.cc \
   google/protobuf/util/internal/testdata/timestamp_duration.pb.h  \
   google/protobuf/util/json_format_proto3.pb.cc                   \
-  google/protobuf/util/json_format_proto3.pb.h
+  google/protobuf/util/json_format_proto3.pb.h                    \
+  google/protobuf/util/message_differencer_unittest.pb.cc         \
+  google/protobuf/util/message_differencer_unittest.pb.h
 
 BUILT_SOURCES = $(protoc_outputs)
 
@@ -702,6 +716,8 @@ protobuf_test_SOURCES =                                        \
   google/protobuf/no_field_presence_test.cc                    \
   google/protobuf/preserve_unknown_enum_test.cc                \
   google/protobuf/proto3_arena_unittest.cc                     \
+  google/protobuf/proto3_arena_lite_unittest.cc                     \
+  google/protobuf/proto3_lite_unittest.cc                     \
   google/protobuf/reflection_ops_unittest.cc                   \
   google/protobuf/repeated_field_reflection_unittest.cc        \
   google/protobuf/repeated_field_unittest.cc                   \
@@ -722,6 +738,7 @@ protobuf_test_SOURCES =                                        \
   google/protobuf/compiler/cpp/cpp_unittest.h                  \
   google/protobuf/compiler/cpp/cpp_unittest.cc                 \
   google/protobuf/compiler/cpp/cpp_plugin_unittest.cc          \
+  google/protobuf/compiler/cpp/metadata_test.cc                \
   google/protobuf/compiler/java/java_plugin_unittest.cc        \
   google/protobuf/compiler/java/java_doc_comment_unittest.cc   \
   google/protobuf/compiler/objectivec/objectivec_helpers_unittest.cc \
@@ -737,6 +754,7 @@ protobuf_test_SOURCES =                                        \
   google/protobuf/util/internal/protostream_objectwriter_test.cc \
   google/protobuf/util/internal/type_info_test_helper.cc       \
   google/protobuf/util/json_util_test.cc                       \
+  google/protobuf/util/message_differencer_unittest.cc         \
   google/protobuf/util/time_util_test.cc                       \
   google/protobuf/util/type_resolver_util_test.cc              \
   $(COMMON_TEST_SOURCES)

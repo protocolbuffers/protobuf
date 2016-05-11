@@ -40,6 +40,7 @@
 
 #include <google/protobuf/compiler/csharp/csharp_doc_comment.h>
 #include <google/protobuf/compiler/csharp/csharp_helpers.h>
+#include <google/protobuf/compiler/csharp/csharp_options.h>
 #include <google/protobuf/compiler/csharp/csharp_primitive_field.h>
 
 namespace google {
@@ -48,8 +49,8 @@ namespace compiler {
 namespace csharp {
 
 PrimitiveFieldGenerator::PrimitiveFieldGenerator(
-    const FieldDescriptor* descriptor, int fieldOrdinal)
-    : FieldGeneratorBase(descriptor, fieldOrdinal) {
+    const FieldDescriptor* descriptor, int fieldOrdinal, const Options *options)
+    : FieldGeneratorBase(descriptor, fieldOrdinal, options) {
   // TODO(jonskeet): Make this cleaner...
   is_value_type = descriptor->type() != FieldDescriptor::TYPE_STRING
       && descriptor->type() != FieldDescriptor::TYPE_BYTES;
@@ -83,7 +84,7 @@ void PrimitiveFieldGenerator::GenerateMembers(io::Printer* printer) {
   } else {
     printer->Print(
       variables_,
-      "    $name$_ = pb::Preconditions.CheckNotNull(value, \"value\");\n");
+      "    $name$_ = pb::ProtoPreconditions.CheckNotNull(value, \"value\");\n");
   }
   printer->Print(
     "  }\n"
@@ -163,8 +164,8 @@ void PrimitiveFieldGenerator::GenerateCodecCode(io::Printer* printer) {
 }
 
 PrimitiveOneofFieldGenerator::PrimitiveOneofFieldGenerator(
-    const FieldDescriptor* descriptor, int fieldOrdinal)
-    : PrimitiveFieldGenerator(descriptor, fieldOrdinal) {
+    const FieldDescriptor* descriptor, int fieldOrdinal, const Options *options)
+    : PrimitiveFieldGenerator(descriptor, fieldOrdinal, options) {
   SetCommonOneofFieldVariables(&variables_);
 }
 
@@ -186,7 +187,7 @@ void PrimitiveOneofFieldGenerator::GenerateMembers(io::Printer* printer) {
     } else {
       printer->Print(
         variables_,
-        "    $oneof_name$_ = pb::Preconditions.CheckNotNull(value, \"value\");\n");
+        "    $oneof_name$_ = pb::ProtoPreconditions.CheckNotNull(value, \"value\");\n");
     }
     printer->Print(
       variables_,

@@ -201,12 +201,10 @@ string FileJavaPackage(const Params& params, const FileDescriptor* file) {
       result += file->package();
     }
 
-    if (!file->options().javanano_use_deprecated_package()) {
-      if (!result.empty()) {
-        result += ".";
-      }
-      result += "nano";
+    if (!result.empty()) {
+      result += ".";
     }
+    result += "nano";
 
     return result;
   }

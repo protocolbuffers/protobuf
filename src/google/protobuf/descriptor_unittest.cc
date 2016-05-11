@@ -54,6 +54,7 @@
 
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/stubs/logging.h>
+#include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/scoped_ptr.h>
 #include <google/protobuf/testing/googletest.h>
 #include <gtest/gtest.h>
@@ -177,6 +178,61 @@ MethodDescriptorProto* AddMethod(ServiceDescriptorProto* service,
 void AddEmptyEnum(FileDescriptorProto* file, const string& name) {
   AddEnumValue(AddEnum(file, name), name + "_DUMMY", 1);
 }
+
+class MockErrorCollector : public DescriptorPool::ErrorCollector {
+ public:
+  MockErrorCollector() {}
+  ~MockErrorCollector() {}
+
+  string text_;
+  string warning_text_;
+
+  // implements ErrorCollector ---------------------------------------
+  void AddError(const string& filename,
+                const string& element_name, const Message* descriptor,
+                ErrorLocation location, const string& message) {
+    const char* location_name = NULL;
+    switch (location) {
+      case NAME         : location_name = "NAME"         ; break;
+      case NUMBER       : location_name = "NUMBER"       ; break;
+      case TYPE         : location_name = "TYPE"         ; break;
+      case EXTENDEE     : location_name = "EXTENDEE"     ; break;
+      case DEFAULT_VALUE: location_name = "DEFAULT_VALUE"; break;
+      case OPTION_NAME  : location_name = "OPTION_NAME"  ; break;
+      case OPTION_VALUE : location_name = "OPTION_VALUE" ; break;
+      case INPUT_TYPE   : location_name = "INPUT_TYPE"   ; break;
+      case OUTPUT_TYPE  : location_name = "OUTPUT_TYPE"  ; break;
+      case OTHER        : location_name = "OTHER"        ; break;
+    }
+
+    strings::SubstituteAndAppend(
+      &text_, "$0: $1: $2: $3\n",
+      filename, element_name, location_name, message);
+  }
+
+  // implements ErrorCollector ---------------------------------------
+  void AddWarning(const string& filename, const string& element_name,
+                  const Message* descriptor, ErrorLocation location,
+                  const string& message) {
+    const char* location_name = NULL;
+    switch (location) {
+      case NAME         : location_name = "NAME"         ; break;
+      case NUMBER       : location_name = "NUMBER"       ; break;
+      case TYPE         : location_name = "TYPE"         ; break;
+      case EXTENDEE     : location_name = "EXTENDEE"     ; break;
+      case DEFAULT_VALUE: location_name = "DEFAULT_VALUE"; break;
+      case OPTION_NAME  : location_name = "OPTION_NAME"  ; break;
+      case OPTION_VALUE : location_name = "OPTION_VALUE" ; break;
+      case INPUT_TYPE   : location_name = "INPUT_TYPE"   ; break;
+      case OUTPUT_TYPE  : location_name = "OUTPUT_TYPE"  ; break;
+      case OTHER        : location_name = "OTHER"        ; break;
+    }
+
+    strings::SubstituteAndAppend(
+      &warning_text_, "$0: $1: $2: $3\n",
+      filename, element_name, location_name, message);
+  }
+};
 
 // ===================================================================
 
@@ -3120,77 +3176,95 @@ TEST(CustomOptions, UnusedImportWarning) {
       ->file()->CopyTo(&file_proto);
   ASSERT_TRUE(pool.BuildFile(file_proto) != NULL);
 
-
   pool.AddUnusedImportTrackFile("custom_options_import.proto");
   ASSERT_TRUE(TextFormat::ParseFromString(
     "name: \"custom_options_import.proto\" "
     "package: \"protobuf_unittest\" "
     "dependency: \"google/protobuf/unittest_custom_options.proto\" ",
     &file_proto));
-  pool.BuildFile(file_proto);
+
+  MockErrorCollector error_collector;
+  EXPECT_TRUE(pool.BuildFileCollectingErrors(file_proto, &error_collector));
+  EXPECT_EQ("", error_collector.warning_text_);
+}
+
+// Verifies that proto files can correctly be parsed, even if the
+// custom options defined in the file are incompatible with those
+// compiled in the binary. See http://b/19276250.
+TEST(CustomOptions, OptionsWithRequiredEnums) {
+  DescriptorPool pool;
+
+  FileDescriptorProto file_proto;
+  MessageOptions::descriptor()->file()->CopyTo(&file_proto);
+  ASSERT_TRUE(pool.BuildFile(file_proto) != NULL);
+
+  // Create a new file descriptor proto containing a subset of the
+  // messages defined in google/protobuf/unittest_custom_options.proto.
+  file_proto.Clear();
+  file_proto.set_name("unittest_custom_options.proto");
+  file_proto.set_package("protobuf_unittest");
+  file_proto.add_dependency("google/protobuf/descriptor.proto");
+
+  // Add the "required_enum_opt" extension.
+  FieldDescriptorProto* extension = file_proto.add_extension();
+  protobuf_unittest::OldOptionType::descriptor()->file()
+      ->FindExtensionByName("required_enum_opt")->CopyTo(extension);
+
+  // Add a test message that uses the "required_enum_opt" option.
+  DescriptorProto* test_message_type = file_proto.add_message_type();
+  protobuf_unittest::TestMessageWithRequiredEnumOption::descriptor()
+      ->CopyTo(test_message_type);
+
+  // Instruct the extension to use NewOptionType instead of
+  // OldOptionType, and add the descriptor of NewOptionType.
+  extension->set_type_name(".protobuf_unittest.NewOptionType");
+  DescriptorProto* new_option_type = file_proto.add_message_type();
+  protobuf_unittest::NewOptionType::descriptor()
+      ->CopyTo(new_option_type);
+
+  // Replace the value of the "required_enum_opt" option used in the
+  // test message with an enum value that only exists in NewOptionType.
+  ASSERT_TRUE(TextFormat::ParseFromString(
+      "uninterpreted_option { "
+      "  name { "
+      "    name_part: 'required_enum_opt' "
+      "    is_extension: true "
+      "  } "
+      "  aggregate_value: 'value: NEW_VALUE' "
+      "}",
+      test_message_type->mutable_options()));
+
+  // Add the file descriptor to the pool.
+  ASSERT_TRUE(pool.BuildFile(file_proto) != NULL);
+
+  // Find the test message.
+  const Descriptor* test_message = pool.FindMessageTypeByName(
+      "protobuf_unittest.TestMessageWithRequiredEnumOption");
+  ASSERT_TRUE(test_message != NULL);
+
+  const MessageOptions& options = test_message->options();
+  // Extract the "required_enum_opt" option. Since the binary does not
+  // know that the extension was updated, this will still return an
+  // OldOptionType message.
+  ASSERT_TRUE(
+      options.HasExtension(protobuf_unittest::required_enum_opt));
+  const protobuf_unittest::OldOptionType& old_enum_opt =
+      options.GetExtension(protobuf_unittest::required_enum_opt);
+
+  // Confirm that the required enum field is missing.
+  EXPECT_FALSE(old_enum_opt.IsInitialized());
+  EXPECT_FALSE(old_enum_opt.has_value());
+
+  string buf;
+  // Verify that the required enum field does show up when the option
+  // is re-parsed as a NewOptionType message;
+  protobuf_unittest::NewOptionType new_enum_opt;
+  EXPECT_TRUE(old_enum_opt.AppendPartialToString(&buf));
+  EXPECT_TRUE(new_enum_opt.ParseFromString(buf));
+  EXPECT_EQ(protobuf_unittest::NewOptionType::NEW_VALUE, new_enum_opt.value());
 }
 
 // ===================================================================
-
-// The tests below trigger every unique call to AddError() in descriptor.cc,
-// in the order in which they appear in that file.  I'm using TextFormat here
-// to specify the input descriptors because building them using code would
-// be too bulky.
-
-class MockErrorCollector : public DescriptorPool::ErrorCollector {
- public:
-  MockErrorCollector() {}
-  ~MockErrorCollector() {}
-
-  string text_;
-  string warning_text_;
-
-  // implements ErrorCollector ---------------------------------------
-  void AddError(const string& filename,
-                const string& element_name, const Message* descriptor,
-                ErrorLocation location, const string& message) {
-    const char* location_name = NULL;
-    switch (location) {
-      case NAME         : location_name = "NAME"         ; break;
-      case NUMBER       : location_name = "NUMBER"       ; break;
-      case TYPE         : location_name = "TYPE"         ; break;
-      case EXTENDEE     : location_name = "EXTENDEE"     ; break;
-      case DEFAULT_VALUE: location_name = "DEFAULT_VALUE"; break;
-      case OPTION_NAME  : location_name = "OPTION_NAME"  ; break;
-      case OPTION_VALUE : location_name = "OPTION_VALUE" ; break;
-      case INPUT_TYPE   : location_name = "INPUT_TYPE"   ; break;
-      case OUTPUT_TYPE  : location_name = "OUTPUT_TYPE"  ; break;
-      case OTHER        : location_name = "OTHER"        ; break;
-    }
-
-    strings::SubstituteAndAppend(
-      &text_, "$0: $1: $2: $3\n",
-      filename, element_name, location_name, message);
-  }
-
-  // implements ErrorCollector ---------------------------------------
-  void AddWarning(const string& filename, const string& element_name,
-                  const Message* descriptor, ErrorLocation location,
-                  const string& message) {
-    const char* location_name = NULL;
-    switch (location) {
-      case NAME         : location_name = "NAME"         ; break;
-      case NUMBER       : location_name = "NUMBER"       ; break;
-      case TYPE         : location_name = "TYPE"         ; break;
-      case EXTENDEE     : location_name = "EXTENDEE"     ; break;
-      case DEFAULT_VALUE: location_name = "DEFAULT_VALUE"; break;
-      case OPTION_NAME  : location_name = "OPTION_NAME"  ; break;
-      case OPTION_VALUE : location_name = "OPTION_VALUE" ; break;
-      case INPUT_TYPE   : location_name = "INPUT_TYPE"   ; break;
-      case OUTPUT_TYPE  : location_name = "OUTPUT_TYPE"  ; break;
-      case OTHER        : location_name = "OTHER"        ; break;
-    }
-
-    strings::SubstituteAndAppend(
-      &warning_text_, "$0: $1: $2: $3\n",
-      filename, element_name, location_name, message);
-  }
-};
 
 class ValidationErrorTest : public testing::Test {
  protected:
@@ -5123,7 +5197,6 @@ TEST_F(ValidationErrorTest, AllowEnumAlias) {
 }
 
 TEST_F(ValidationErrorTest, UnusedImportWarning) {
-
   pool_.AddUnusedImportTrackFile("bar.proto");
   BuildFile(
     "name: \"bar.proto\" "
@@ -5155,7 +5228,7 @@ TEST_F(ValidationErrorTest, UnusedImportWarning) {
   // }
   //
   pool_.AddUnusedImportTrackFile("forward.proto");
-  BuildFile(
+  BuildFileWithWarnings(
     "name: \"forward.proto\""
     "dependency: \"base.proto\""
     "dependency: \"bar.proto\""
@@ -5165,7 +5238,8 @@ TEST_F(ValidationErrorTest, UnusedImportWarning) {
     "message_type {"
     "  name: \"Forward\""
     "  field { name:\"base\" number:1 label:LABEL_OPTIONAL type_name:\"Base\" }"
-    "}");
+    "}",
+    "forward.proto: bar.proto: OTHER: Import bar.proto but not used.\n");
 }
 
 namespace {
@@ -5664,18 +5738,6 @@ TEST_F(ValidationErrorTest, ValidateProto3Enum) {
       "  name: 'FooEnum' "
       "  value { name: 'FOO_FOO' number:0 } "
       "}");
-}
-
-TEST_F(ValidationErrorTest, ValidateProto3LiteRuntime) {
-  // Lite runtime is not supported in proto3.
-  BuildFileWithErrors(
-      "name: 'foo.proto' "
-      "syntax: 'proto3' "
-      "options { "
-      "  optimize_for: LITE_RUNTIME "
-      "} ",
-      "foo.proto: foo.proto: OTHER: Lite runtime is not supported "
-      "in proto3.\n");
 }
 
 TEST_F(ValidationErrorTest, ValidateProto3Group) {

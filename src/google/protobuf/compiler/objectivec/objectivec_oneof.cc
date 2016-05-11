@@ -104,6 +104,7 @@ void OneofGenerator::GeneratePublicCasePropertyDeclaration(
 void OneofGenerator::GenerateClearFunctionDeclaration(io::Printer* printer) {
   printer->Print(
       variables_,
+      "/// Clears whatever value was set for the oneof '$name$'.\n"
       "void $owning_message_class$_Clear$capitalized_name$OneOfCase($owning_message_class$ *message);\n");
 }
 
@@ -119,17 +120,16 @@ void OneofGenerator::GenerateClearFunctionImplementation(io::Printer* printer) {
       "void $owning_message_class$_Clear$capitalized_name$OneOfCase($owning_message_class$ *message) {\n"
       "  GPBDescriptor *descriptor = [message descriptor];\n"
       "  GPBOneofDescriptor *oneof = descriptor->oneofs_[$raw_index$];\n"
-      "  GPBMaybeClearOneof(message, oneof, 0);\n"
+      "  GPBMaybeClearOneof(message, oneof, $index$, 0);\n"
       "}\n");
 }
 
-void OneofGenerator::GenerateDescription(io::Printer* printer) {
-  printer->Print(
-      variables_,
-      "{\n"
-      "  .name = \"$name$\",\n"
-      "  .index = $index$,\n"
-      "},\n");
+string OneofGenerator::DescriptorName(void) const {
+  return variables_.find("name")->second;
+}
+
+string OneofGenerator::HasIndexAsString(void) const {
+  return variables_.find("index")->second;
 }
 
 }  // namespace objectivec

@@ -92,11 +92,10 @@ PyObject* PyString_FromCppString(const string& str) {
 // TODO(amauryfa): Change the proto2 compiler to remove the assignments, and
 // remove this hack.
 bool _CalledFromGeneratedFile(int stacklevel) {
-  PyThreadState *state = PyThreadState_GET();
-  if (state == NULL) {
-    return false;
-  }
-  PyFrameObject* frame = state->frame;
+#ifndef PYPY_VERSION
+  // This check is not critical and is somewhat difficult to implement correctly
+  // in PyPy.
+  PyFrameObject* frame = PyEval_GetFrame();
   if (frame == NULL) {
     return false;
   }
@@ -130,6 +129,7 @@ bool _CalledFromGeneratedFile(int stacklevel) {
     // Filename is not ending with _pb2.
     return false;
   }
+#endif
   return true;
 }
 
@@ -200,16 +200,31 @@ static PyObject* GetOrBuildOptions(const DescriptorClass *descriptor) {
   // read-only instance.
   const Message& options(descriptor->options());
   const Descriptor *message_type = options.GetDescriptor();
-  PyObject* message_class(cdescriptor_pool::GetMessageClass(
-      pool, message_type));
+  CMessageClass* message_class(
+      cdescriptor_pool::GetMessageClass(pool, message_type));
+  if (message_class == NULL) {
+    // The Options message was not found in the current DescriptorPool.
+    // In this case, there cannot be extensions to these options, and we can
+    // try to use the basic pool instead.
+    PyErr_Clear();
+    message_class = cdescriptor_pool::GetMessageClass(
+      GetDefaultDescriptorPool(), message_type);
+  }
   if (message_class == NULL) {
     PyErr_Format(PyExc_TypeError, "Could not retrieve class for Options: %s",
                  message_type->full_name().c_str());
     return NULL;
   }
-  ScopedPyObjectPtr value(PyEval_CallObject(message_class, NULL));
+  ScopedPyObjectPtr value(
+      PyEval_CallObject(message_class->AsPyObject(), NULL));
   if (value == NULL) {
     return NULL;
+  }
+  if (!PyObject_TypeCheck(value.get(), &CMessage_Type)) {
+      PyErr_Format(PyExc_TypeError, "Invalid class for %s: %s",
+                   message_type->full_name().c_str(),
+                   Py_TYPE(value.get())->tp_name);
+      return NULL;
   }
   CMessage* cmsg = reinterpret_cast<CMessage*>(value.get());
 
@@ -232,7 +247,7 @@ static PyObject* GetOrBuildOptions(const DescriptorClass *descriptor) {
   }
 
   // Cache the result.
-  Py_INCREF(value);
+  Py_INCREF(value.get());
   (*pool->descriptor_options)[descriptor] = value.get();
 
   return value.release();
@@ -327,7 +342,8 @@ PyObject* NewInternedDescriptor(PyTypeObject* type,
   PyDescriptorPool* pool = GetDescriptorPool_FromPool(
       GetFileDescriptor(descriptor)->pool());
   if (pool == NULL) {
-    Py_DECREF(py_descriptor);
+    // Don't DECREF, the object is not fully initialized.
+    PyObject_Del(py_descriptor);
     return NULL;
   }
   Py_INCREF(pool);
@@ -418,11 +434,11 @@ static PyObject* GetConcreteClass(PyBaseDescriptor* self, void *closure) {
   // which contains this descriptor.
   // This might not be the one you expect! For example the returned object does
   // not know about extensions defined in a custom pool.
-  PyObject* concrete_class(cdescriptor_pool::GetMessageClass(
+  CMessageClass* concrete_class(cdescriptor_pool::GetMessageClass(
       GetDescriptorPool_FromPool(_GetDescriptor(self)->file()->pool()),
       _GetDescriptor(self)));
   Py_XINCREF(concrete_class);
-  return concrete_class;
+  return concrete_class->AsPyObject();
 }
 
 static PyObject* GetFieldsByName(PyBaseDescriptor* self, void *closure) {
@@ -1213,6 +1229,13 @@ static void Dealloc(PyFileDescriptor* self) {
   descriptor::Dealloc(&self->base);
 }
 
+static PyObject* GetPool(PyFileDescriptor *self, void *closure) {
+  PyObject* pool = reinterpret_cast<PyObject*>(
+      GetDescriptorPool_FromPool(_GetDescriptor(self)->pool()));
+  Py_XINCREF(pool);
+  return pool;
+}
+
 static PyObject* GetName(PyFileDescriptor *self, void *closure) {
   return PyString_FromCppString(_GetDescriptor(self)->name());
 }
@@ -1292,6 +1315,7 @@ static PyObject* CopyToProto(PyFileDescriptor *self, PyObject *target) {
 }
 
 static PyGetSetDef Getters[] = {
+  { "pool", (getter)GetPool, NULL, "pool"},
   { "name", (getter)GetName, NULL, "name"},
   { "package", (getter)GetPackage, NULL, "package"},
   { "serialized_pb", (getter)GetSerializedPb},
@@ -1354,8 +1378,8 @@ PyTypeObject PyFileDescriptor_Type = {
   0,                                    // tp_descr_set
   0,                                    // tp_dictoffset
   0,                                    // tp_init
-  PyType_GenericAlloc,                  // tp_alloc
-  PyType_GenericNew,                    // tp_new
+  0,                                    // tp_alloc
+  0,                                    // tp_new
   PyObject_Del,                         // tp_free
 };
 
@@ -1489,7 +1513,8 @@ static bool AddEnumValues(PyTypeObject *type,
     if (obj == NULL) {
       return false;
     }
-    if (PyDict_SetItemString(type->tp_dict, value->name().c_str(), obj) < 0) {
+    if (PyDict_SetItemString(type->tp_dict, value->name().c_str(), obj.get()) <
+        0) {
       return false;
     }
   }
@@ -1498,7 +1523,7 @@ static bool AddEnumValues(PyTypeObject *type,
 
 static bool AddIntConstant(PyTypeObject *type, const char* name, int value) {
   ScopedPyObjectPtr obj(PyInt_FromLong(value));
-  if (PyDict_SetItemString(type->tp_dict, name, obj) < 0) {
+  if (PyDict_SetItemString(type->tp_dict, name, obj.get()) < 0) {
     return false;
   }
   return true;

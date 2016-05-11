@@ -33,7 +33,7 @@
 #import <objc/runtime.h>
 
 #import "GPBCodedInputStream_PackagePrivate.h"
-#import "GPBCodedOutputStream.h"
+#import "GPBCodedOutputStream_PackagePrivate.h"
 #import "GPBDescriptor_PackagePrivate.h"
 #import "GPBMessage_PackagePrivate.h"
 #import "GPBUtilities_PackagePrivate.h"

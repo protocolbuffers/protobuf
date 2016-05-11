@@ -55,7 +55,7 @@
     <GenerateSerializationAssemblies>Off</GenerateSerializationAssemblies>
     <Prefer32Bit>false</Prefer32Bit>
     <SignAssembly>True</SignAssembly>
-    <AssemblyOriginatorKeyFile>C:\keys\Google.Protobuf.snk</AssemblyOriginatorKeyFile>
+    <AssemblyOriginatorKeyFile>..\..\keys\Google.Protobuf.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="mscorlib" />
@@ -95,10 +95,14 @@
     <Compile Include="Collections\MapFieldTest.cs" />
     <Compile Include="Collections\RepeatedFieldTest.cs" />
     <Compile Include="JsonFormatterTest.cs" />
+    <Compile Include="JsonParserTest.cs" />
+    <Compile Include="JsonTokenizerTest.cs" />
     <Compile Include="Reflection\DescriptorsTest.cs" />
     <Compile Include="Reflection\FieldAccessTest.cs" />
+    <Compile Include="Reflection\TypeRegistryTest.cs" />
     <Compile Include="SampleEnum.cs" />
     <Compile Include="SampleMessages.cs" />
+    <Compile Include="TestProtos\ForeignMessagePartial.cs" />
     <Compile Include="TestProtos\MapUnittestProto3.cs" />
     <Compile Include="TestProtos\UnittestImportProto3.cs" />
     <Compile Include="TestProtos\UnittestImportPublicProto3.cs" />
@@ -111,6 +115,7 @@
     <Compile Include="TestProtos\UnittestWellKnownTypes.cs" />
     <Compile Include="WellKnownTypes\AnyTest.cs" />
     <Compile Include="WellKnownTypes\DurationTest.cs" />
+    <Compile Include="WellKnownTypes\FieldMaskTest.cs" />
     <Compile Include="WellKnownTypes\TimestampTest.cs" />
     <Compile Include="WellKnownTypes\WrappersTest.cs" />
   </ItemGroup>

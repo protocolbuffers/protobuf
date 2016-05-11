@@ -43,8 +43,10 @@ option java_package = "com.google.protobuf";
 
 // Same as TestAllTypes but with the lite runtime.
 message TestAllTypesLite {
+
   message NestedMessage {
     optional int32 bb = 1;
+    optional int64 cc = 2;
   }
 
   enum NestedEnum {
@@ -159,6 +161,7 @@ message TestAllTypesLite {
     NestedMessage oneof_nested_message = 112;
     string oneof_string = 113;
     bytes oneof_bytes = 114;
+    NestedMessage oneof_lazy_nested_message = 115 [lazy = true];
   }
 }
 
@@ -382,4 +385,23 @@ message TestEmptyMessageLite{
 // actual extensions should ever be defined for this type.
 message TestEmptyMessageWithExtensionsLite {
   extensions 1 to max;
+}
+
+enum V1EnumLite {
+    V1_FIRST = 1;
+}
+
+enum V2EnumLite {
+    V2_FIRST = 1;
+    V2_SECOND = 2;
+}
+
+message V1MessageLite {
+    required int32 int_field = 1;
+    optional V1EnumLite enum_field = 2 [ default = V1_FIRST ];
+}
+
+message V2MessageLite {
+    required int32 int_field = 1;
+    optional V2EnumLite enum_field = 2 [ default = V2_FIRST ];
 }

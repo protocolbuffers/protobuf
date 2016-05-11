@@ -2147,7 +2147,7 @@
 
 @end
 
-//%PDDM-EXPAND TESTS_FOR_BOOL_KEY_OBJECT_VALUE(Object, id, @"abc", @"def")
+//%PDDM-EXPAND TESTS_FOR_BOOL_KEY_OBJECT_VALUE(Object, NSString*, @"abc", @"def")
 // This block of code is generated, do not edit it directly.
 
 #pragma mark - Bool -> Object
@@ -2158,11 +2158,11 @@
 @implementation GPBBoolObjectDictionaryTests
 
 - (void)testEmpty {
-  GPBBoolObjectDictionary *dict = [[GPBBoolObjectDictionary alloc] init];
+  GPBBoolObjectDictionary<NSString*> *dict = [[GPBBoolObjectDictionary alloc] init];
   XCTAssertNotNil(dict);
   XCTAssertEqual(dict.count, 0U);
   XCTAssertNil([dict objectForKey:YES]);
-  [dict enumerateKeysAndObjectsUsingBlock:^(BOOL aKey, id aObject, BOOL *stop) {
+  [dict enumerateKeysAndObjectsUsingBlock:^(BOOL aKey, NSString* aObject, BOOL *stop) {
     #pragma unused(aKey, aObject, stop)
     XCTFail(@"Shouldn't get here!");
   }];
@@ -2170,12 +2170,12 @@
 }
 
 - (void)testOne {
-  GPBBoolObjectDictionary *dict = [GPBBoolObjectDictionary dictionaryWithObject:@"abc" forKey:YES];
+  GPBBoolObjectDictionary<NSString*> *dict = [GPBBoolObjectDictionary dictionaryWithObject:@"abc" forKey:YES];
   XCTAssertNotNil(dict);
   XCTAssertEqual(dict.count, 1U);
   XCTAssertEqualObjects([dict objectForKey:YES], @"abc");
   XCTAssertNil([dict objectForKey:NO]);
-  [dict enumerateKeysAndObjectsUsingBlock:^(BOOL aKey, id aObject, BOOL *stop) {
+  [dict enumerateKeysAndObjectsUsingBlock:^(BOOL aKey, NSString* aObject, BOOL *stop) {
     XCTAssertEqual(aKey, YES);
     XCTAssertEqualObjects(aObject, @"abc");
     XCTAssertNotEqual(stop, NULL);
@@ -2184,8 +2184,8 @@
 
 - (void)testBasics {
   const BOOL kKeys[] = { YES, NO };
-  const id kObjects[] = { @"abc", @"def" };
-  GPBBoolObjectDictionary *dict =
+  const NSString* kObjects[] = { @"abc", @"def" };
+  GPBBoolObjectDictionary<NSString*> *dict =
       [[GPBBoolObjectDictionary alloc] initWithObjects:kObjects
                                                forKeys:kKeys
                                                  count:GPBARRAYSIZE(kObjects)];
@@ -2196,8 +2196,8 @@
 
   __block NSUInteger idx = 0;
   BOOL *seenKeys = malloc(2 * sizeof(BOOL));
-  id *seenObjects = malloc(2 * sizeof(id));
-  [dict enumerateKeysAndObjectsUsingBlock:^(BOOL aKey, id aObject, BOOL *stop) {
+  NSString* *seenObjects = malloc(2 * sizeof(NSString*));
+  [dict enumerateKeysAndObjectsUsingBlock:^(BOOL aKey, NSString* aObject, BOOL *stop) {
     XCTAssertLessThan(idx, 2U);
     seenKeys[idx] = aKey;
     seenObjects[idx] = aObject;
@@ -2219,7 +2219,7 @@
 
   // Stopping the enumeration.
   idx = 0;
-  [dict enumerateKeysAndObjectsUsingBlock:^(BOOL aKey, id aObject, BOOL *stop) {
+  [dict enumerateKeysAndObjectsUsingBlock:^(BOOL aKey, NSString* aObject, BOOL *stop) {
     #pragma unused(aKey, aObject)
     if (idx == 0) *stop = YES;
     XCTAssertNotEqual(idx, 2U);
@@ -2231,30 +2231,30 @@
 - (void)testEquality {
   const BOOL kKeys1[] = { YES, NO };
   const BOOL kKeys2[] = { NO, YES };
-  const id kObjects1[] = { @"abc", @"def" };
-  const id kObjects2[] = { @"def", @"abc" };
-  const id kObjects3[] = { @"def" };
-  GPBBoolObjectDictionary *dict1 =
+  const NSString* kObjects1[] = { @"abc", @"def" };
+  const NSString* kObjects2[] = { @"def", @"abc" };
+  const NSString* kObjects3[] = { @"def" };
+  GPBBoolObjectDictionary<NSString*> *dict1 =
       [[GPBBoolObjectDictionary alloc] initWithObjects:kObjects1
                                                forKeys:kKeys1
                                                  count:GPBARRAYSIZE(kObjects1)];
   XCTAssertNotNil(dict1);
-  GPBBoolObjectDictionary *dict1prime =
+  GPBBoolObjectDictionary<NSString*> *dict1prime =
       [[GPBBoolObjectDictionary alloc] initWithObjects:kObjects1
                                                forKeys:kKeys1
                                                  count:GPBARRAYSIZE(kObjects1)];
   XCTAssertNotNil(dict1prime);
-  GPBBoolObjectDictionary *dict2 =
+  GPBBoolObjectDictionary<NSString*> *dict2 =
       [[GPBBoolObjectDictionary alloc] initWithObjects:kObjects2
                                                forKeys:kKeys1
                                                  count:GPBARRAYSIZE(kObjects2)];
   XCTAssertNotNil(dict2);
-  GPBBoolObjectDictionary *dict3 =
+  GPBBoolObjectDictionary<NSString*> *dict3 =
       [[GPBBoolObjectDictionary alloc] initWithObjects:kObjects1
                                                forKeys:kKeys2
                                                  count:GPBARRAYSIZE(kObjects1)];
   XCTAssertNotNil(dict3);
-  GPBBoolObjectDictionary *dict4 =
+  GPBBoolObjectDictionary<NSString*> *dict4 =
       [[GPBBoolObjectDictionary alloc] initWithObjects:kObjects3
                                                forKeys:kKeys1
                                                  count:GPBARRAYSIZE(kObjects3)];
@@ -2284,14 +2284,14 @@
 
 - (void)testCopy {
   const BOOL kKeys[] = { YES, NO };
-  const id kObjects[] = { @"abc", @"def" };
-  GPBBoolObjectDictionary *dict =
+  const NSString* kObjects[] = { @"abc", @"def" };
+  GPBBoolObjectDictionary<NSString*> *dict =
       [[GPBBoolObjectDictionary alloc] initWithObjects:kObjects
                                                forKeys:kKeys
                                                  count:GPBARRAYSIZE(kObjects)];
   XCTAssertNotNil(dict);
 
-  GPBBoolObjectDictionary *dict2 = [dict copy];
+  GPBBoolObjectDictionary<NSString*> *dict2 = [dict copy];
   XCTAssertNotNil(dict2);
 
   // Should be new object but equal.
@@ -2305,14 +2305,14 @@
 
 - (void)testDictionaryFromDictionary {
   const BOOL kKeys[] = { YES, NO };
-  const id kObjects[] = { @"abc", @"def" };
-  GPBBoolObjectDictionary *dict =
+  const NSString* kObjects[] = { @"abc", @"def" };
+  GPBBoolObjectDictionary<NSString*> *dict =
       [[GPBBoolObjectDictionary alloc] initWithObjects:kObjects
                                                forKeys:kKeys
                                                  count:GPBARRAYSIZE(kObjects)];
   XCTAssertNotNil(dict);
 
-  GPBBoolObjectDictionary *dict2 =
+  GPBBoolObjectDictionary<NSString*> *dict2 =
       [GPBBoolObjectDictionary dictionaryWithDictionary:dict];
   XCTAssertNotNil(dict2);
 
@@ -2323,7 +2323,7 @@
 }
 
 - (void)testAdds {
-  GPBBoolObjectDictionary *dict = [GPBBoolObjectDictionary dictionary];
+  GPBBoolObjectDictionary<NSString*> *dict = [GPBBoolObjectDictionary dictionary];
   XCTAssertNotNil(dict);
 
   XCTAssertEqual(dict.count, 0U);
@@ -2331,8 +2331,8 @@
   XCTAssertEqual(dict.count, 1U);
 
   const BOOL kKeys[] = { NO };
-  const id kObjects[] = { @"def" };
-  GPBBoolObjectDictionary *dict2 =
+  const NSString* kObjects[] = { @"def" };
+  GPBBoolObjectDictionary<NSString*> *dict2 =
       [[GPBBoolObjectDictionary alloc] initWithObjects:kObjects
                                                forKeys:kKeys
                                                  count:GPBARRAYSIZE(kObjects)];
@@ -2347,8 +2347,8 @@
 
 - (void)testRemove {
   const BOOL kKeys[] = { YES, NO};
-  const id kObjects[] = { @"abc", @"def" };
-  GPBBoolObjectDictionary *dict =
+  const NSString* kObjects[] = { @"abc", @"def" };
+  GPBBoolObjectDictionary<NSString*> *dict =
       [[GPBBoolObjectDictionary alloc] initWithObjects:kObjects
                                         forKeys:kKeys
                                           count:GPBARRAYSIZE(kObjects)];
@@ -2375,8 +2375,8 @@
 
 - (void)testInplaceMutation {
   const BOOL kKeys[] = { YES, NO };
-  const id kObjects[] = { @"abc", @"def" };
-  GPBBoolObjectDictionary *dict =
+  const NSString* kObjects[] = { @"abc", @"def" };
+  GPBBoolObjectDictionary<NSString*> *dict =
       [[GPBBoolObjectDictionary alloc] initWithObjects:kObjects
                                         forKeys:kKeys
                                           count:GPBARRAYSIZE(kObjects)];
@@ -2396,8 +2396,8 @@
   XCTAssertEqualObjects([dict objectForKey:NO], @"abc");
 
   const BOOL kKeys2[] = { NO, YES };
-  const id kObjects2[] = { @"def", @"abc" };
-  GPBBoolObjectDictionary *dict2 =
+  const NSString* kObjects2[] = { @"def", @"abc" };
+  GPBBoolObjectDictionary<NSString*> *dict2 =
       [[GPBBoolObjectDictionary alloc] initWithObjects:kObjects2
                                                forKeys:kKeys2
                                                  count:GPBARRAYSIZE(kObjects2)];

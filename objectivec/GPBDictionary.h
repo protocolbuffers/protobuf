@@ -355,33 +355,33 @@ NS_ASSUME_NONNULL_BEGIN
 
 #pragma mark - UInt32 -> Object
 
-@interface GPBUInt32ObjectDictionary : NSObject <NSCopying>
+@interface GPBUInt32ObjectDictionary<__covariant ObjectType> : NSObject <NSCopying>
 
 @property(nonatomic, readonly) NSUInteger count;
 
 + (instancetype)dictionary;
-+ (instancetype)dictionaryWithObject:(id)object
++ (instancetype)dictionaryWithObject:(ObjectType)object
                               forKey:(uint32_t)key;
-+ (instancetype)dictionaryWithObjects:(const id GPB_UNSAFE_UNRETAINED [])objects
++ (instancetype)dictionaryWithObjects:(const ObjectType GPB_UNSAFE_UNRETAINED [])objects
                               forKeys:(const uint32_t [])keys
                                 count:(NSUInteger)count;
 + (instancetype)dictionaryWithDictionary:(GPBUInt32ObjectDictionary *)dictionary;
 + (instancetype)dictionaryWithCapacity:(NSUInteger)numItems;
 
-- (instancetype)initWithObjects:(const id GPB_UNSAFE_UNRETAINED [])objects
+- (instancetype)initWithObjects:(const ObjectType GPB_UNSAFE_UNRETAINED [])objects
                         forKeys:(const uint32_t [])keys
                           count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
 - (instancetype)initWithDictionary:(GPBUInt32ObjectDictionary *)dictionary;
 - (instancetype)initWithCapacity:(NSUInteger)numItems;
 
-- (id)objectForKey:(uint32_t)key;
+- (ObjectType)objectForKey:(uint32_t)key;
 
 - (void)enumerateKeysAndObjectsUsingBlock:
-    (void (^)(uint32_t key, id object, BOOL *stop))block;
+    (void (^)(uint32_t key, ObjectType object, BOOL *stop))block;
 
 - (void)addEntriesFromDictionary:(GPBUInt32ObjectDictionary *)otherDictionary;
 
-- (void)setObject:(id)object forKey:(uint32_t)key;
+- (void)setObject:(ObjectType)object forKey:(uint32_t)key;
 
 - (void)removeObjectForKey:(uint32_t)aKey;
 - (void)removeAll;
@@ -701,33 +701,33 @@ NS_ASSUME_NONNULL_BEGIN
 
 #pragma mark - Int32 -> Object
 
-@interface GPBInt32ObjectDictionary : NSObject <NSCopying>
+@interface GPBInt32ObjectDictionary<__covariant ObjectType> : NSObject <NSCopying>
 
 @property(nonatomic, readonly) NSUInteger count;
 
 + (instancetype)dictionary;
-+ (instancetype)dictionaryWithObject:(id)object
++ (instancetype)dictionaryWithObject:(ObjectType)object
                               forKey:(int32_t)key;
-+ (instancetype)dictionaryWithObjects:(const id GPB_UNSAFE_UNRETAINED [])objects
++ (instancetype)dictionaryWithObjects:(const ObjectType GPB_UNSAFE_UNRETAINED [])objects
                               forKeys:(const int32_t [])keys
                                 count:(NSUInteger)count;
 + (instancetype)dictionaryWithDictionary:(GPBInt32ObjectDictionary *)dictionary;
 + (instancetype)dictionaryWithCapacity:(NSUInteger)numItems;
 
-- (instancetype)initWithObjects:(const id GPB_UNSAFE_UNRETAINED [])objects
+- (instancetype)initWithObjects:(const ObjectType GPB_UNSAFE_UNRETAINED [])objects
                         forKeys:(const int32_t [])keys
                           count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
 - (instancetype)initWithDictionary:(GPBInt32ObjectDictionary *)dictionary;
 - (instancetype)initWithCapacity:(NSUInteger)numItems;
 
-- (id)objectForKey:(int32_t)key;
+- (ObjectType)objectForKey:(int32_t)key;
 
 - (void)enumerateKeysAndObjectsUsingBlock:
-    (void (^)(int32_t key, id object, BOOL *stop))block;
+    (void (^)(int32_t key, ObjectType object, BOOL *stop))block;
 
 - (void)addEntriesFromDictionary:(GPBInt32ObjectDictionary *)otherDictionary;
 
-- (void)setObject:(id)object forKey:(int32_t)key;
+- (void)setObject:(ObjectType)object forKey:(int32_t)key;
 
 - (void)removeObjectForKey:(int32_t)aKey;
 - (void)removeAll;
@@ -1047,33 +1047,33 @@ NS_ASSUME_NONNULL_BEGIN
 
 #pragma mark - UInt64 -> Object
 
-@interface GPBUInt64ObjectDictionary : NSObject <NSCopying>
+@interface GPBUInt64ObjectDictionary<__covariant ObjectType> : NSObject <NSCopying>
 
 @property(nonatomic, readonly) NSUInteger count;
 
 + (instancetype)dictionary;
-+ (instancetype)dictionaryWithObject:(id)object
++ (instancetype)dictionaryWithObject:(ObjectType)object
                               forKey:(uint64_t)key;
-+ (instancetype)dictionaryWithObjects:(const id GPB_UNSAFE_UNRETAINED [])objects
++ (instancetype)dictionaryWithObjects:(const ObjectType GPB_UNSAFE_UNRETAINED [])objects
                               forKeys:(const uint64_t [])keys
                                 count:(NSUInteger)count;
 + (instancetype)dictionaryWithDictionary:(GPBUInt64ObjectDictionary *)dictionary;
 + (instancetype)dictionaryWithCapacity:(NSUInteger)numItems;
 
-- (instancetype)initWithObjects:(const id GPB_UNSAFE_UNRETAINED [])objects
+- (instancetype)initWithObjects:(const ObjectType GPB_UNSAFE_UNRETAINED [])objects
                         forKeys:(const uint64_t [])keys
                           count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
 - (instancetype)initWithDictionary:(GPBUInt64ObjectDictionary *)dictionary;
 - (instancetype)initWithCapacity:(NSUInteger)numItems;
 
-- (id)objectForKey:(uint64_t)key;
+- (ObjectType)objectForKey:(uint64_t)key;
 
 - (void)enumerateKeysAndObjectsUsingBlock:
-    (void (^)(uint64_t key, id object, BOOL *stop))block;
+    (void (^)(uint64_t key, ObjectType object, BOOL *stop))block;
 
 - (void)addEntriesFromDictionary:(GPBUInt64ObjectDictionary *)otherDictionary;
 
-- (void)setObject:(id)object forKey:(uint64_t)key;
+- (void)setObject:(ObjectType)object forKey:(uint64_t)key;
 
 - (void)removeObjectForKey:(uint64_t)aKey;
 - (void)removeAll;
@@ -1393,33 +1393,33 @@ NS_ASSUME_NONNULL_BEGIN
 
 #pragma mark - Int64 -> Object
 
-@interface GPBInt64ObjectDictionary : NSObject <NSCopying>
+@interface GPBInt64ObjectDictionary<__covariant ObjectType> : NSObject <NSCopying>
 
 @property(nonatomic, readonly) NSUInteger count;
 
 + (instancetype)dictionary;
-+ (instancetype)dictionaryWithObject:(id)object
++ (instancetype)dictionaryWithObject:(ObjectType)object
                               forKey:(int64_t)key;
-+ (instancetype)dictionaryWithObjects:(const id GPB_UNSAFE_UNRETAINED [])objects
++ (instancetype)dictionaryWithObjects:(const ObjectType GPB_UNSAFE_UNRETAINED [])objects
                               forKeys:(const int64_t [])keys
                                 count:(NSUInteger)count;
 + (instancetype)dictionaryWithDictionary:(GPBInt64ObjectDictionary *)dictionary;
 + (instancetype)dictionaryWithCapacity:(NSUInteger)numItems;
 
-- (instancetype)initWithObjects:(const id GPB_UNSAFE_UNRETAINED [])objects
+- (instancetype)initWithObjects:(const ObjectType GPB_UNSAFE_UNRETAINED [])objects
                         forKeys:(const int64_t [])keys
                           count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
 - (instancetype)initWithDictionary:(GPBInt64ObjectDictionary *)dictionary;
 - (instancetype)initWithCapacity:(NSUInteger)numItems;
 
-- (id)objectForKey:(int64_t)key;
+- (ObjectType)objectForKey:(int64_t)key;
 
 - (void)enumerateKeysAndObjectsUsingBlock:
-    (void (^)(int64_t key, id object, BOOL *stop))block;
+    (void (^)(int64_t key, ObjectType object, BOOL *stop))block;
 
 - (void)addEntriesFromDictionary:(GPBInt64ObjectDictionary *)otherDictionary;
 
-- (void)setObject:(id)object forKey:(int64_t)key;
+- (void)setObject:(ObjectType)object forKey:(int64_t)key;
 
 - (void)removeObjectForKey:(int64_t)aKey;
 - (void)removeAll;
@@ -1739,33 +1739,33 @@ NS_ASSUME_NONNULL_BEGIN
 
 #pragma mark - Bool -> Object
 
-@interface GPBBoolObjectDictionary : NSObject <NSCopying>
+@interface GPBBoolObjectDictionary<__covariant ObjectType> : NSObject <NSCopying>
 
 @property(nonatomic, readonly) NSUInteger count;
 
 + (instancetype)dictionary;
-+ (instancetype)dictionaryWithObject:(id)object
++ (instancetype)dictionaryWithObject:(ObjectType)object
                               forKey:(BOOL)key;
-+ (instancetype)dictionaryWithObjects:(const id GPB_UNSAFE_UNRETAINED [])objects
++ (instancetype)dictionaryWithObjects:(const ObjectType GPB_UNSAFE_UNRETAINED [])objects
                               forKeys:(const BOOL [])keys
                                 count:(NSUInteger)count;
 + (instancetype)dictionaryWithDictionary:(GPBBoolObjectDictionary *)dictionary;
 + (instancetype)dictionaryWithCapacity:(NSUInteger)numItems;
 
-- (instancetype)initWithObjects:(const id GPB_UNSAFE_UNRETAINED [])objects
+- (instancetype)initWithObjects:(const ObjectType GPB_UNSAFE_UNRETAINED [])objects
                         forKeys:(const BOOL [])keys
                           count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
 - (instancetype)initWithDictionary:(GPBBoolObjectDictionary *)dictionary;
 - (instancetype)initWithCapacity:(NSUInteger)numItems;
 
-- (id)objectForKey:(BOOL)key;
+- (ObjectType)objectForKey:(BOOL)key;
 
 - (void)enumerateKeysAndObjectsUsingBlock:
-    (void (^)(BOOL key, id object, BOOL *stop))block;
+    (void (^)(BOOL key, ObjectType object, BOOL *stop))block;
 
 - (void)addEntriesFromDictionary:(GPBBoolObjectDictionary *)otherDictionary;
 
-- (void)setObject:(id)object forKey:(BOOL)key;
+- (void)setObject:(ObjectType)object forKey:(BOOL)key;
 
 - (void)removeObjectForKey:(BOOL)aKey;
 - (void)removeAll;
@@ -2096,7 +2096,7 @@ NS_ASSUME_NONNULL_END
 //%DICTIONARY_POD_INTERFACES_FOR_KEY(String, NSString, *, OBJECT)
 //%PDDM-DEFINE DICTIONARY_INTERFACES_FOR_POD_KEY(KEY_NAME, KEY_TYPE)
 //%DICTIONARY_POD_INTERFACES_FOR_KEY(KEY_NAME, KEY_TYPE, , POD)
-//%DICTIONARY_POD_KEY_TO_OBJECT_INTERFACE(KEY_NAME, KEY_TYPE, Object, id)
+//%DICTIONARY_POD_KEY_TO_OBJECT_INTERFACE(KEY_NAME, KEY_TYPE, Object, ObjectType)
 //%PDDM-DEFINE DICTIONARY_POD_INTERFACES_FOR_KEY(KEY_NAME, KEY_TYPE, KisP, KHELPER)
 //%DICTIONARY_KEY_TO_POD_INTERFACE(KEY_NAME, KEY_TYPE, KisP, KHELPER, UInt32, uint32_t)
 //%DICTIONARY_KEY_TO_POD_INTERFACE(KEY_NAME, KEY_TYPE, KisP, KHELPER, Int32, int32_t)
@@ -2122,10 +2122,16 @@ NS_ASSUME_NONNULL_END
 // Nothing
 //%PDDM-DEFINE ARRAY_ARG_MODIFIEROBJECT()
 //%GPB_UNSAFE_UNRETAINED ##
+//%PDDM-DEFINE DICTIONARY_CLASS_DECLPOD(KEY_NAME, VALUE_NAME, VALUE_TYPE)
+//%GPB##KEY_NAME##VALUE_NAME##Dictionary
+//%PDDM-DEFINE DICTIONARY_CLASS_DECLEnum(KEY_NAME, VALUE_NAME, VALUE_TYPE)
+//%GPB##KEY_NAME##VALUE_NAME##Dictionary
+//%PDDM-DEFINE DICTIONARY_CLASS_DECLOBJECT(KEY_NAME, VALUE_NAME, VALUE_TYPE)
+//%GPB##KEY_NAME##VALUE_NAME##Dictionary<__covariant VALUE_TYPE>
 //%PDDM-DEFINE DICTIONARY_COMMON_INTERFACE(KEY_NAME, KEY_TYPE, KisP, KHELPER, VALUE_NAME, VALUE_TYPE, VHELPER, VNAME)
 //%#pragma mark - KEY_NAME -> VALUE_NAME
 //%
-//%@interface GPB##KEY_NAME##VALUE_NAME##Dictionary : NSObject <NSCopying>
+//%@interface DICTIONARY_CLASS_DECL##VHELPER(KEY_NAME, VALUE_NAME, VALUE_TYPE) : NSObject <NSCopying>
 //%
 //%@property(nonatomic, readonly) NSUInteger count;
 //%

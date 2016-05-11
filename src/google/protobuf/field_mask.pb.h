@@ -164,6 +164,7 @@ inline void FieldMask::set_paths(int index, const char* value, size_t size) {
   // @@protoc_insertion_point(field_set_pointer:google.protobuf.FieldMask.paths)
 }
 inline ::std::string* FieldMask::add_paths() {
+  // @@protoc_insertion_point(field_add_mutable:google.protobuf.FieldMask.paths)
   return paths_.Add();
 }
 inline void FieldMask::add_paths(const ::std::string& value) {

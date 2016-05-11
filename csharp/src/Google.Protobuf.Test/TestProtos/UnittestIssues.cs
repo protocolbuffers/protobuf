@@ -11,7 +11,7 @@ namespace UnitTest.Issues.TestProtos {
 
   /// <summary>Holder for reflection information generated from unittest_issues.proto</summary>
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  public static partial class UnittestIssues {
+  public static partial class UnittestIssuesReflection {
 
     #region Descriptor
     /// <summary>File descriptor for unittest_issues.proto</summary>
@@ -20,7 +20,7 @@ namespace UnitTest.Issues.TestProtos {
     }
     private static pbr::FileDescriptor descriptor;
 
-    static UnittestIssues() {
+    static UnittestIssuesReflection() {
       byte[] descriptorData = global::System.Convert.FromBase64String(
           string.Concat(
             "ChV1bml0dGVzdF9pc3N1ZXMucHJvdG8SD3VuaXR0ZXN0X2lzc3VlcyInCghJ",
@@ -42,20 +42,23 @@ namespace UnitTest.Issues.TestProtos {
             "CgtwbGFpbl9pbnQzMhgEIAEoBRITCglvMV9zdHJpbmcYAiABKAlIABISCghv",
             "MV9pbnQzMhgFIAEoBUgAEhQKDHBsYWluX3N0cmluZxgBIAEoCRISCghvMl9p",
             "bnQzMhgGIAEoBUgBEhMKCW8yX3N0cmluZxgDIAEoCUgBQgQKAm8xQgQKAm8y",
-            "KlUKDE5lZ2F0aXZlRW51bRIWChJORUdBVElWRV9FTlVNX1pFUk8QABIWCglG",
-            "aXZlQmVsb3cQ+///////////ARIVCghNaW51c09uZRD///////////8BKi4K",
-            "DkRlcHJlY2F0ZWRFbnVtEhMKD0RFUFJFQ0FURURfWkVSTxAAEgcKA29uZRAB",
-            "Qh9IAaoCGlVuaXRUZXN0Lklzc3Vlcy5UZXN0UHJvdG9zYgZwcm90bzM="));
-      descriptor = pbr::FileDescriptor.InternalBuildGeneratedFileFrom(descriptorData,
+            "IksKDFRlc3RKc29uTmFtZRIMCgRuYW1lGAEgASgJEhkKC2Rlc2NyaXB0aW9u",
+            "GAIgASgJUgRkZXNjEhIKBGd1aWQYAyABKAlSBGV4aWQqVQoMTmVnYXRpdmVF",
+            "bnVtEhYKEk5FR0FUSVZFX0VOVU1fWkVSTxAAEhYKCUZpdmVCZWxvdxD7////",
+            "//////8BEhUKCE1pbnVzT25lEP///////////wEqLgoORGVwcmVjYXRlZEVu",
+            "dW0SEwoPREVQUkVDQVRFRF9aRVJPEAASBwoDb25lEAFCH0gBqgIaVW5pdFRl",
+            "c3QuSXNzdWVzLlRlc3RQcm90b3NiBnByb3RvMw=="));
+      descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { },
-          new pbr::GeneratedCodeInfo(new[] {typeof(global::UnitTest.Issues.TestProtos.NegativeEnum), typeof(global::UnitTest.Issues.TestProtos.DeprecatedEnum), }, new pbr::GeneratedCodeInfo[] {
-            new pbr::GeneratedCodeInfo(typeof(global::UnitTest.Issues.TestProtos.Issue307), null, null, null, new pbr::GeneratedCodeInfo[] { new pbr::GeneratedCodeInfo(typeof(global::UnitTest.Issues.TestProtos.Issue307.Types.NestedOnce), null, null, null, new pbr::GeneratedCodeInfo[] { new pbr::GeneratedCodeInfo(typeof(global::UnitTest.Issues.TestProtos.Issue307.Types.NestedOnce.Types.NestedTwice), null, null, null, null)})}),
-            new pbr::GeneratedCodeInfo(typeof(global::UnitTest.Issues.TestProtos.NegativeEnumMessage), new[]{ "Value", "Values", "PackedValues" }, null, null, null),
-            new pbr::GeneratedCodeInfo(typeof(global::UnitTest.Issues.TestProtos.DeprecatedChild), null, null, null, null),
-            new pbr::GeneratedCodeInfo(typeof(global::UnitTest.Issues.TestProtos.DeprecatedFieldsMessage), new[]{ "PrimitiveValue", "PrimitiveArray", "MessageValue", "MessageArray", "EnumValue", "EnumArray" }, null, null, null),
-            new pbr::GeneratedCodeInfo(typeof(global::UnitTest.Issues.TestProtos.ItemField), new[]{ "Item" }, null, null, null),
-            new pbr::GeneratedCodeInfo(typeof(global::UnitTest.Issues.TestProtos.ReservedNames), new[]{ "Types_", "Descriptor_" }, null, null, new pbr::GeneratedCodeInfo[] { new pbr::GeneratedCodeInfo(typeof(global::UnitTest.Issues.TestProtos.ReservedNames.Types.SomeNestedType), null, null, null, null)}),
-            new pbr::GeneratedCodeInfo(typeof(global::UnitTest.Issues.TestProtos.TestJsonFieldOrdering), new[]{ "PlainInt32", "O1String", "O1Int32", "PlainString", "O2Int32", "O2String" }, new[]{ "O1", "O2" }, null, null)
+          new pbr::GeneratedClrTypeInfo(new[] {typeof(global::UnitTest.Issues.TestProtos.NegativeEnum), typeof(global::UnitTest.Issues.TestProtos.DeprecatedEnum), }, new pbr::GeneratedClrTypeInfo[] {
+            new pbr::GeneratedClrTypeInfo(typeof(global::UnitTest.Issues.TestProtos.Issue307), global::UnitTest.Issues.TestProtos.Issue307.Parser, null, null, null, new pbr::GeneratedClrTypeInfo[] { new pbr::GeneratedClrTypeInfo(typeof(global::UnitTest.Issues.TestProtos.Issue307.Types.NestedOnce), global::UnitTest.Issues.TestProtos.Issue307.Types.NestedOnce.Parser, null, null, null, new pbr::GeneratedClrTypeInfo[] { new pbr::GeneratedClrTypeInfo(typeof(global::UnitTest.Issues.TestProtos.Issue307.Types.NestedOnce.Types.NestedTwice), global::UnitTest.Issues.TestProtos.Issue307.Types.NestedOnce.Types.NestedTwice.Parser, null, null, null, null)})}),
+            new pbr::GeneratedClrTypeInfo(typeof(global::UnitTest.Issues.TestProtos.NegativeEnumMessage), global::UnitTest.Issues.TestProtos.NegativeEnumMessage.Parser, new[]{ "Value", "Values", "PackedValues" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::UnitTest.Issues.TestProtos.DeprecatedChild), global::UnitTest.Issues.TestProtos.DeprecatedChild.Parser, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::UnitTest.Issues.TestProtos.DeprecatedFieldsMessage), global::UnitTest.Issues.TestProtos.DeprecatedFieldsMessage.Parser, new[]{ "PrimitiveValue", "PrimitiveArray", "MessageValue", "MessageArray", "EnumValue", "EnumArray" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::UnitTest.Issues.TestProtos.ItemField), global::UnitTest.Issues.TestProtos.ItemField.Parser, new[]{ "Item" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::UnitTest.Issues.TestProtos.ReservedNames), global::UnitTest.Issues.TestProtos.ReservedNames.Parser, new[]{ "Types_", "Descriptor_" }, null, null, new pbr::GeneratedClrTypeInfo[] { new pbr::GeneratedClrTypeInfo(typeof(global::UnitTest.Issues.TestProtos.ReservedNames.Types.SomeNestedType), global::UnitTest.Issues.TestProtos.ReservedNames.Types.SomeNestedType.Parser, null, null, null, null)}),
+            new pbr::GeneratedClrTypeInfo(typeof(global::UnitTest.Issues.TestProtos.TestJsonFieldOrdering), global::UnitTest.Issues.TestProtos.TestJsonFieldOrdering.Parser, new[]{ "PlainInt32", "O1String", "O1Int32", "PlainString", "O2Int32", "O2String" }, new[]{ "O1", "O2" }, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::UnitTest.Issues.TestProtos.TestJsonName), global::UnitTest.Issues.TestProtos.TestJsonName.Parser, new[]{ "Name", "Description", "Guid" }, null, null, null)
           }));
     }
     #endregion
@@ -63,14 +66,14 @@ namespace UnitTest.Issues.TestProtos {
   }
   #region Enums
   public enum NegativeEnum {
-    NEGATIVE_ENUM_ZERO = 0,
-    FiveBelow = -5,
-    MinusOne = -1,
+    [pbr::OriginalName("NEGATIVE_ENUM_ZERO")] Zero = 0,
+    [pbr::OriginalName("FiveBelow")] FiveBelow = -5,
+    [pbr::OriginalName("MinusOne")] MinusOne = -1,
   }
 
   public enum DeprecatedEnum {
-    DEPRECATED_ZERO = 0,
-    one = 1,
+    [pbr::OriginalName("DEPRECATED_ZERO")] DeprecatedZero = 0,
+    [pbr::OriginalName("one")] One = 1,
   }
 
   #endregion
@@ -86,7 +89,7 @@ namespace UnitTest.Issues.TestProtos {
     public static pb::MessageParser<Issue307> Parser { get { return _parser; } }
 
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::UnitTest.Issues.TestProtos.UnittestIssues.Descriptor.MessageTypes[0]; }
+      get { return global::UnitTest.Issues.TestProtos.UnittestIssuesReflection.Descriptor.MessageTypes[0]; }
     }
 
     pbr::MessageDescriptor pb::IMessage.Descriptor {
@@ -126,7 +129,7 @@ namespace UnitTest.Issues.TestProtos {
     }
 
     public override string ToString() {
-      return pb::JsonFormatter.Default.Format(this);
+      return pb::JsonFormatter.ToDiagnosticString(this);
     }
 
     public void WriteTo(pb::CodedOutputStream output) {
@@ -204,7 +207,7 @@ namespace UnitTest.Issues.TestProtos {
         }
 
         public override string ToString() {
-          return pb::JsonFormatter.Default.Format(this);
+          return pb::JsonFormatter.ToDiagnosticString(this);
         }
 
         public void WriteTo(pb::CodedOutputStream output) {
@@ -282,7 +285,7 @@ namespace UnitTest.Issues.TestProtos {
             }
 
             public override string ToString() {
-              return pb::JsonFormatter.Default.Format(this);
+              return pb::JsonFormatter.ToDiagnosticString(this);
             }
 
             public void WriteTo(pb::CodedOutputStream output) {
@@ -328,7 +331,7 @@ namespace UnitTest.Issues.TestProtos {
     public static pb::MessageParser<NegativeEnumMessage> Parser { get { return _parser; } }
 
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::UnitTest.Issues.TestProtos.UnittestIssues.Descriptor.MessageTypes[1]; }
+      get { return global::UnitTest.Issues.TestProtos.UnittestIssuesReflection.Descriptor.MessageTypes[1]; }
     }
 
     pbr::MessageDescriptor pb::IMessage.Descriptor {
@@ -353,7 +356,7 @@ namespace UnitTest.Issues.TestProtos {
 
     /// <summary>Field number for the "value" field.</summary>
     public const int ValueFieldNumber = 1;
-    private global::UnitTest.Issues.TestProtos.NegativeEnum value_ = global::UnitTest.Issues.TestProtos.NegativeEnum.NEGATIVE_ENUM_ZERO;
+    private global::UnitTest.Issues.TestProtos.NegativeEnum value_ = 0;
     public global::UnitTest.Issues.TestProtos.NegativeEnum Value {
       get { return value_; }
       set {
@@ -398,18 +401,18 @@ namespace UnitTest.Issues.TestProtos {
 
     public override int GetHashCode() {
       int hash = 1;
-      if (Value != global::UnitTest.Issues.TestProtos.NegativeEnum.NEGATIVE_ENUM_ZERO) hash ^= Value.GetHashCode();
+      if (Value != 0) hash ^= Value.GetHashCode();
       hash ^= values_.GetHashCode();
       hash ^= packedValues_.GetHashCode();
       return hash;
     }
 
     public override string ToString() {
-      return pb::JsonFormatter.Default.Format(this);
+      return pb::JsonFormatter.ToDiagnosticString(this);
     }
 
     public void WriteTo(pb::CodedOutputStream output) {
-      if (Value != global::UnitTest.Issues.TestProtos.NegativeEnum.NEGATIVE_ENUM_ZERO) {
+      if (Value != 0) {
         output.WriteRawTag(8);
         output.WriteEnum((int) Value);
       }
@@ -419,7 +422,7 @@ namespace UnitTest.Issues.TestProtos {
 
     public int CalculateSize() {
       int size = 0;
-      if (Value != global::UnitTest.Issues.TestProtos.NegativeEnum.NEGATIVE_ENUM_ZERO) {
+      if (Value != 0) {
         size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) Value);
       }
       size += values_.CalculateSize(_repeated_values_codec);
@@ -431,7 +434,7 @@ namespace UnitTest.Issues.TestProtos {
       if (other == null) {
         return;
       }
-      if (other.Value != global::UnitTest.Issues.TestProtos.NegativeEnum.NEGATIVE_ENUM_ZERO) {
+      if (other.Value != 0) {
         Value = other.Value;
       }
       values_.Add(other.values_);
@@ -471,7 +474,7 @@ namespace UnitTest.Issues.TestProtos {
     public static pb::MessageParser<DeprecatedChild> Parser { get { return _parser; } }
 
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::UnitTest.Issues.TestProtos.UnittestIssues.Descriptor.MessageTypes[2]; }
+      get { return global::UnitTest.Issues.TestProtos.UnittestIssuesReflection.Descriptor.MessageTypes[2]; }
     }
 
     pbr::MessageDescriptor pb::IMessage.Descriptor {
@@ -511,7 +514,7 @@ namespace UnitTest.Issues.TestProtos {
     }
 
     public override string ToString() {
-      return pb::JsonFormatter.Default.Format(this);
+      return pb::JsonFormatter.ToDiagnosticString(this);
     }
 
     public void WriteTo(pb::CodedOutputStream output) {
@@ -547,7 +550,7 @@ namespace UnitTest.Issues.TestProtos {
     public static pb::MessageParser<DeprecatedFieldsMessage> Parser { get { return _parser; } }
 
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::UnitTest.Issues.TestProtos.UnittestIssues.Descriptor.MessageTypes[3]; }
+      get { return global::UnitTest.Issues.TestProtos.UnittestIssuesReflection.Descriptor.MessageTypes[3]; }
     }
 
     pbr::MessageDescriptor pb::IMessage.Descriptor {
@@ -617,7 +620,7 @@ namespace UnitTest.Issues.TestProtos {
 
     /// <summary>Field number for the "EnumValue" field.</summary>
     public const int EnumValueFieldNumber = 5;
-    private global::UnitTest.Issues.TestProtos.DeprecatedEnum enumValue_ = global::UnitTest.Issues.TestProtos.DeprecatedEnum.DEPRECATED_ZERO;
+    private global::UnitTest.Issues.TestProtos.DeprecatedEnum enumValue_ = 0;
     [global::System.ObsoleteAttribute()]
     public global::UnitTest.Issues.TestProtos.DeprecatedEnum EnumValue {
       get { return enumValue_; }
@@ -662,13 +665,13 @@ namespace UnitTest.Issues.TestProtos {
       hash ^= primitiveArray_.GetHashCode();
       if (messageValue_ != null) hash ^= MessageValue.GetHashCode();
       hash ^= messageArray_.GetHashCode();
-      if (EnumValue != global::UnitTest.Issues.TestProtos.DeprecatedEnum.DEPRECATED_ZERO) hash ^= EnumValue.GetHashCode();
+      if (EnumValue != 0) hash ^= EnumValue.GetHashCode();
       hash ^= enumArray_.GetHashCode();
       return hash;
     }
 
     public override string ToString() {
-      return pb::JsonFormatter.Default.Format(this);
+      return pb::JsonFormatter.ToDiagnosticString(this);
     }
 
     public void WriteTo(pb::CodedOutputStream output) {
@@ -682,7 +685,7 @@ namespace UnitTest.Issues.TestProtos {
         output.WriteMessage(MessageValue);
       }
       messageArray_.WriteTo(output, _repeated_messageArray_codec);
-      if (EnumValue != global::UnitTest.Issues.TestProtos.DeprecatedEnum.DEPRECATED_ZERO) {
+      if (EnumValue != 0) {
         output.WriteRawTag(40);
         output.WriteEnum((int) EnumValue);
       }
@@ -699,7 +702,7 @@ namespace UnitTest.Issues.TestProtos {
         size += 1 + pb::CodedOutputStream.ComputeMessageSize(MessageValue);
       }
       size += messageArray_.CalculateSize(_repeated_messageArray_codec);
-      if (EnumValue != global::UnitTest.Issues.TestProtos.DeprecatedEnum.DEPRECATED_ZERO) {
+      if (EnumValue != 0) {
         size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) EnumValue);
       }
       size += enumArray_.CalculateSize(_repeated_enumArray_codec);
@@ -721,7 +724,7 @@ namespace UnitTest.Issues.TestProtos {
         MessageValue.MergeFrom(other.MessageValue);
       }
       messageArray_.Add(other.messageArray_);
-      if (other.EnumValue != global::UnitTest.Issues.TestProtos.DeprecatedEnum.DEPRECATED_ZERO) {
+      if (other.EnumValue != 0) {
         EnumValue = other.EnumValue;
       }
       enumArray_.Add(other.enumArray_);
@@ -778,7 +781,7 @@ namespace UnitTest.Issues.TestProtos {
     public static pb::MessageParser<ItemField> Parser { get { return _parser; } }
 
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::UnitTest.Issues.TestProtos.UnittestIssues.Descriptor.MessageTypes[4]; }
+      get { return global::UnitTest.Issues.TestProtos.UnittestIssuesReflection.Descriptor.MessageTypes[4]; }
     }
 
     pbr::MessageDescriptor pb::IMessage.Descriptor {
@@ -831,7 +834,7 @@ namespace UnitTest.Issues.TestProtos {
     }
 
     public override string ToString() {
-      return pb::JsonFormatter.Default.Format(this);
+      return pb::JsonFormatter.ToDiagnosticString(this);
     }
 
     public void WriteTo(pb::CodedOutputStream output) {
@@ -881,7 +884,7 @@ namespace UnitTest.Issues.TestProtos {
     public static pb::MessageParser<ReservedNames> Parser { get { return _parser; } }
 
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::UnitTest.Issues.TestProtos.UnittestIssues.Descriptor.MessageTypes[5]; }
+      get { return global::UnitTest.Issues.TestProtos.UnittestIssuesReflection.Descriptor.MessageTypes[5]; }
     }
 
     pbr::MessageDescriptor pb::IMessage.Descriptor {
@@ -947,7 +950,7 @@ namespace UnitTest.Issues.TestProtos {
     }
 
     public override string ToString() {
-      return pb::JsonFormatter.Default.Format(this);
+      return pb::JsonFormatter.ToDiagnosticString(this);
     }
 
     public void WriteTo(pb::CodedOutputStream output) {
@@ -1056,7 +1059,7 @@ namespace UnitTest.Issues.TestProtos {
         }
 
         public override string ToString() {
-          return pb::JsonFormatter.Default.Format(this);
+          return pb::JsonFormatter.ToDiagnosticString(this);
         }
 
         public void WriteTo(pb::CodedOutputStream output) {
@@ -1109,7 +1112,7 @@ namespace UnitTest.Issues.TestProtos {
     public static pb::MessageParser<TestJsonFieldOrdering> Parser { get { return _parser; } }
 
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::UnitTest.Issues.TestProtos.UnittestIssues.Descriptor.MessageTypes[6]; }
+      get { return global::UnitTest.Issues.TestProtos.UnittestIssuesReflection.Descriptor.MessageTypes[6]; }
     }
 
     pbr::MessageDescriptor pb::IMessage.Descriptor {
@@ -1164,7 +1167,7 @@ namespace UnitTest.Issues.TestProtos {
     public string O1String {
       get { return o1Case_ == O1OneofCase.O1String ? (string) o1_ : ""; }
       set {
-        o1_ = pb::Preconditions.CheckNotNull(value, "value");
+        o1_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
         o1Case_ = O1OneofCase.O1String;
       }
     }
@@ -1185,7 +1188,7 @@ namespace UnitTest.Issues.TestProtos {
     public string PlainString {
       get { return plainString_; }
       set {
-        plainString_ = pb::Preconditions.CheckNotNull(value, "value");
+        plainString_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
       }
     }
 
@@ -1204,7 +1207,7 @@ namespace UnitTest.Issues.TestProtos {
     public string O2String {
       get { return o2Case_ == O2OneofCase.O2String ? (string) o2_ : ""; }
       set {
-        o2_ = pb::Preconditions.CheckNotNull(value, "value");
+        o2_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
         o2Case_ = O2OneofCase.O2String;
       }
     }
@@ -1260,6 +1263,8 @@ namespace UnitTest.Issues.TestProtos {
       if (PlainString != other.PlainString) return false;
       if (O2Int32 != other.O2Int32) return false;
       if (O2String != other.O2String) return false;
+      if (O1Case != other.O1Case) return false;
+      if (O2Case != other.O2Case) return false;
       return true;
     }
 
@@ -1271,11 +1276,13 @@ namespace UnitTest.Issues.TestProtos {
       if (PlainString.Length != 0) hash ^= PlainString.GetHashCode();
       if (o2Case_ == O2OneofCase.O2Int32) hash ^= O2Int32.GetHashCode();
       if (o2Case_ == O2OneofCase.O2String) hash ^= O2String.GetHashCode();
+      hash ^= (int) o1Case_;
+      hash ^= (int) o2Case_;
       return hash;
     }
 
     public override string ToString() {
-      return pb::JsonFormatter.Default.Format(this);
+      return pb::JsonFormatter.ToDiagnosticString(this);
     }
 
     public void WriteTo(pb::CodedOutputStream output) {
@@ -1387,6 +1394,166 @@ namespace UnitTest.Issues.TestProtos {
           }
           case 48: {
             O2Int32 = input.ReadInt32();
+            break;
+          }
+        }
+      }
+    }
+
+  }
+
+  [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+  public sealed partial class TestJsonName : pb::IMessage<TestJsonName> {
+    private static readonly pb::MessageParser<TestJsonName> _parser = new pb::MessageParser<TestJsonName>(() => new TestJsonName());
+    public static pb::MessageParser<TestJsonName> Parser { get { return _parser; } }
+
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::UnitTest.Issues.TestProtos.UnittestIssuesReflection.Descriptor.MessageTypes[7]; }
+    }
+
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    public TestJsonName() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    public TestJsonName(TestJsonName other) : this() {
+      name_ = other.name_;
+      description_ = other.description_;
+      guid_ = other.guid_;
+    }
+
+    public TestJsonName Clone() {
+      return new TestJsonName(this);
+    }
+
+    /// <summary>Field number for the "name" field.</summary>
+    public const int NameFieldNumber = 1;
+    private string name_ = "";
+    /// <summary>
+    ///  Message for testing the effects for of the json_name option
+    /// </summary>
+    public string Name {
+      get { return name_; }
+      set {
+        name_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+      }
+    }
+
+    /// <summary>Field number for the "description" field.</summary>
+    public const int DescriptionFieldNumber = 2;
+    private string description_ = "";
+    public string Description {
+      get { return description_; }
+      set {
+        description_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+      }
+    }
+
+    /// <summary>Field number for the "guid" field.</summary>
+    public const int GuidFieldNumber = 3;
+    private string guid_ = "";
+    public string Guid {
+      get { return guid_; }
+      set {
+        guid_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+      }
+    }
+
+    public override bool Equals(object other) {
+      return Equals(other as TestJsonName);
+    }
+
+    public bool Equals(TestJsonName other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      if (Name != other.Name) return false;
+      if (Description != other.Description) return false;
+      if (Guid != other.Guid) return false;
+      return true;
+    }
+
+    public override int GetHashCode() {
+      int hash = 1;
+      if (Name.Length != 0) hash ^= Name.GetHashCode();
+      if (Description.Length != 0) hash ^= Description.GetHashCode();
+      if (Guid.Length != 0) hash ^= Guid.GetHashCode();
+      return hash;
+    }
+
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    public void WriteTo(pb::CodedOutputStream output) {
+      if (Name.Length != 0) {
+        output.WriteRawTag(10);
+        output.WriteString(Name);
+      }
+      if (Description.Length != 0) {
+        output.WriteRawTag(18);
+        output.WriteString(Description);
+      }
+      if (Guid.Length != 0) {
+        output.WriteRawTag(26);
+        output.WriteString(Guid);
+      }
+    }
+
+    public int CalculateSize() {
+      int size = 0;
+      if (Name.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(Name);
+      }
+      if (Description.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(Description);
+      }
+      if (Guid.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(Guid);
+      }
+      return size;
+    }
+
+    public void MergeFrom(TestJsonName other) {
+      if (other == null) {
+        return;
+      }
+      if (other.Name.Length != 0) {
+        Name = other.Name;
+      }
+      if (other.Description.Length != 0) {
+        Description = other.Description;
+      }
+      if (other.Guid.Length != 0) {
+        Guid = other.Guid;
+      }
+    }
+
+    public void MergeFrom(pb::CodedInputStream input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            input.SkipLastField();
+            break;
+          case 10: {
+            Name = input.ReadString();
+            break;
+          }
+          case 18: {
+            Description = input.ReadString();
+            break;
+          }
+          case 26: {
+            Guid = input.ReadString();
             break;
           }
         }

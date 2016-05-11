@@ -35,8 +35,8 @@
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/util/internal/utility.h>
 #include <google/protobuf/stubs/strutil.h>
-#include <google/protobuf/stubs/mathutil.h>
 #include <google/protobuf/stubs/mathlimits.h>
+#include <google/protobuf/stubs/mathutil.h>
 
 namespace google {
 namespace protobuf {
@@ -45,6 +45,7 @@ namespace converter {
 
 using google::protobuf::EnumDescriptor;
 using google::protobuf::EnumValueDescriptor;
+;
 ;
 ;
 using util::error::Code;
@@ -57,13 +58,8 @@ inline Status InvalidArgument(StringPiece value_str) {
   return Status(util::error::INVALID_ARGUMENT, value_str);
 }
 
-// For general conversion between
-//     int32, int64, uint32, uint64, double and float
-// except conversion between double and float.
 template <typename To, typename From>
-StatusOr<To> NumberConvertAndCheck(From before) {
-  if (::google::protobuf::internal::is_same<From, To>::value) return before;
-  To after = static_cast<To>(before);
+StatusOr<To> ValidateNumberConversion(To after, From before) {
   if (after == before &&
       MathUtil::Sign<From>(before) == MathUtil::Sign<To>(after)) {
     return after;
@@ -74,6 +70,27 @@ StatusOr<To> NumberConvertAndCheck(From before) {
                                      ? DoubleAsString(before)
                                      : FloatAsString(before));
   }
+}
+
+// For general conversion between
+//     int32, int64, uint32, uint64, double and float
+// except conversion between double and float.
+template <typename To, typename From>
+StatusOr<To> NumberConvertAndCheck(From before) {
+  if (::google::protobuf::internal::is_same<From, To>::value) return before;
+
+  To after = static_cast<To>(before);
+  return ValidateNumberConversion(after, before);
+}
+
+// For conversion to integer types (int32, int64, uint32, uint64) from floating
+// point types (double, float) only.
+template <typename To, typename From>
+StatusOr<To> FloatingPointToIntConvertAndCheck(From before) {
+  if (::google::protobuf::internal::is_same<From, To>::value) return before;
+
+  To after = static_cast<To>(before);
+  return ValidateNumberConversion(after, before);
 }
 
 // For conversion between double and float only.
@@ -96,30 +113,50 @@ StatusOr<To> FloatingPointConvertAndCheck(From before) {
 }  // namespace
 
 StatusOr<int32> DataPiece::ToInt32() const {
-  if (type_ == TYPE_STRING) {
-    return StringToNumber<int32>(safe_strto32);
-  }
+  if (type_ == TYPE_STRING) return StringToNumber<int32>(safe_strto32);
+
+  if (type_ == TYPE_DOUBLE)
+    return FloatingPointToIntConvertAndCheck<int32, double>(double_);
+
+  if (type_ == TYPE_FLOAT)
+    return FloatingPointToIntConvertAndCheck<int32, float>(float_);
+
   return GenericConvert<int32>();
 }
 
 StatusOr<uint32> DataPiece::ToUint32() const {
-  if (type_ == TYPE_STRING) {
-    return StringToNumber<uint32>(safe_strtou32);
-  }
+  if (type_ == TYPE_STRING) return StringToNumber<uint32>(safe_strtou32);
+
+  if (type_ == TYPE_DOUBLE)
+    return FloatingPointToIntConvertAndCheck<uint32, double>(double_);
+
+  if (type_ == TYPE_FLOAT)
+    return FloatingPointToIntConvertAndCheck<uint32, float>(float_);
+
   return GenericConvert<uint32>();
 }
 
 StatusOr<int64> DataPiece::ToInt64() const {
-  if (type_ == TYPE_STRING) {
-    return StringToNumber<int64>(safe_strto64);
-  }
+  if (type_ == TYPE_STRING) return StringToNumber<int64>(safe_strto64);
+
+  if (type_ == TYPE_DOUBLE)
+    return FloatingPointToIntConvertAndCheck<int64, double>(double_);
+
+  if (type_ == TYPE_FLOAT)
+    return FloatingPointToIntConvertAndCheck<int64, float>(float_);
+
   return GenericConvert<int64>();
 }
 
 StatusOr<uint64> DataPiece::ToUint64() const {
-  if (type_ == TYPE_STRING) {
-    return StringToNumber<uint64>(safe_strtou64);
-  }
+  if (type_ == TYPE_STRING) return StringToNumber<uint64>(safe_strtou64);
+
+  if (type_ == TYPE_DOUBLE)
+    return FloatingPointToIntConvertAndCheck<uint64, double>(double_);
+
+  if (type_ == TYPE_FLOAT)
+    return FloatingPointToIntConvertAndCheck<uint64, float>(float_);
+
   return GenericConvert<uint64>();
 }
 
@@ -212,11 +249,8 @@ StatusOr<string> DataPiece::ToBytes() const {
   if (type_ == TYPE_BYTES) return str_.ToString();
   if (type_ == TYPE_STRING) {
     string decoded;
-    if (!WebSafeBase64Unescape(str_, &decoded)) {
-      if (!Base64Unescape(str_, &decoded)) {
-        return InvalidArgument(
-            ValueAsStringOrDefault("Invalid data in input."));
-      }
+    if (!DecodeBase64(str_, &decoded)) {
+      return InvalidArgument(ValueAsStringOrDefault("Invalid data in input."));
     }
     return decoded;
   } else {
@@ -277,9 +311,47 @@ StatusOr<To> DataPiece::GenericConvert() const {
 
 template <typename To>
 StatusOr<To> DataPiece::StringToNumber(bool (*func)(StringPiece, To*)) const {
+  if (str_.size() > 0 && (str_[0] == ' ' || str_[str_.size() - 1] == ' ')) {
+    return InvalidArgument(StrCat("\"", str_, "\""));
+  }
   To result;
   if (func(str_, &result)) return result;
   return InvalidArgument(StrCat("\"", str_.ToString(), "\""));
+}
+
+bool DataPiece::DecodeBase64(StringPiece src, string* dest) const {
+  // Try web-safe decode first, if it fails, try the non-web-safe decode.
+  if (WebSafeBase64Unescape(src, dest)) {
+    if (use_strict_base64_decoding_) {
+      // In strict mode, check if the escaped version gives us the same value as
+      // unescaped.
+      string encoded;
+      // WebSafeBase64Escape does no padding by default.
+      WebSafeBase64Escape(*dest, &encoded);
+      // Remove trailing padding '=' characters before comparison.
+      StringPiece src_no_padding(src, 0, src.ends_with("=")
+                                             ? src.find_last_not_of('=') + 1
+                                             : src.length());
+      return encoded == src_no_padding;
+    }
+    return true;
+  }
+
+  if (Base64Unescape(src, dest)) {
+    if (use_strict_base64_decoding_) {
+      string encoded;
+      Base64Escape(
+          reinterpret_cast<const unsigned char*>(dest->data()), dest->length(),
+          &encoded, false);
+      StringPiece src_no_padding(src, 0, src.ends_with("=")
+                                             ? src.find_last_not_of('=') + 1
+                                             : src.length());
+      return encoded == src_no_padding;
+    }
+    return true;
+  }
+
+  return false;
 }
 
 }  // namespace converter

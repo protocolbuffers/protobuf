@@ -27,6 +27,7 @@
 // THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
 syntax = "proto3";
 
 package google.protobuf;
@@ -34,11 +35,11 @@ package google.protobuf;
 import "google/protobuf/source_context.proto";
 import "google/protobuf/type.proto";
 
+option csharp_namespace = "Google.Protobuf.WellKnownTypes";
 option java_package = "com.google.protobuf";
 option java_outer_classname = "ApiProto";
 option java_multiple_files = true;
 option java_generate_equals_and_hash = true;
-option csharp_namespace = "Google.Protobuf.WellKnownTypes";
 option objc_class_prefix = "GPB";
 
 // Api is a light-weight descriptor for a protocol buffer service.
@@ -74,6 +75,7 @@ message Api {
   // `google.feature.v1`. For major versions 0 and 1, the suffix can
   // be omitted. Zero major versions must only be used for
   // experimental, none-GA apis.
+  //
   //
   string version = 4;
 
@@ -141,7 +143,6 @@ message Method {
 //
 //     package google.storage.v2;
 //     service Storage {
-//       // (-- see AccessControl.GetAcl --)
 //       rpc GetAcl(GetAclRequest) returns (Acl);
 //
 //       // Get a data record.

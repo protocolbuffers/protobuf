@@ -186,7 +186,7 @@ bool ReadCodePoint(StringPiece str, int index,
                    uint32 *cp, int* num_left, int *num_read) {
   if (*num_left == 0) {
     // Last read was complete. Start reading a new unicode code point.
-    *cp = str[index++];
+    *cp = static_cast<uint8>(str[index++]);
     *num_read = 1;
     // The length of the code point is determined from reading the first byte.
     //
@@ -235,7 +235,7 @@ bool ReadCodePoint(StringPiece str, int index,
     *num_read = 0;
   }
   while (*num_left > 0 && index < str.size()) {
-    uint32 ch = str[index++];
+    uint32 ch = static_cast<uint8>(str[index++]);
     --(*num_left);
     ++(*num_read);
     *cp = (*cp << 6) | (ch & 0x3f);

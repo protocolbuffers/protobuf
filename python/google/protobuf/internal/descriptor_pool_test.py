@@ -35,11 +35,15 @@
 __author__ = 'matthewtoia@google.com (Matt Toia)'
 
 import os
+import sys
 
 try:
-  import unittest2 as unittest
+  import unittest2 as unittest  #PY26
 except ImportError:
   import unittest
+
+from google.protobuf import unittest_import_pb2
+from google.protobuf import unittest_import_public_pb2
 from google.protobuf import unittest_pb2
 from google.protobuf import descriptor_pb2
 from google.protobuf.internal import api_implementation
@@ -47,10 +51,11 @@ from google.protobuf.internal import descriptor_pool_test1_pb2
 from google.protobuf.internal import descriptor_pool_test2_pb2
 from google.protobuf.internal import factory_test1_pb2
 from google.protobuf.internal import factory_test2_pb2
-from google.protobuf.internal import test_util
+from google.protobuf.internal import more_messages_pb2
 from google.protobuf import descriptor
 from google.protobuf import descriptor_database
 from google.protobuf import descriptor_pool
+from google.protobuf import message_factory
 from google.protobuf import symbol_database
 
 
@@ -89,7 +94,7 @@ class DescriptorPoolTest(unittest.TestCase):
         'google.protobuf.python.internal.Factory1Message')
     self.assertIsInstance(file_desc1, descriptor.FileDescriptor)
     self.assertEqual('google/protobuf/internal/factory_test1.proto',
-                      file_desc1.name)
+                     file_desc1.name)
     self.assertEqual('google.protobuf.python.internal', file_desc1.package)
     self.assertIn('Factory1Message', file_desc1.message_types_by_name)
 
@@ -97,7 +102,7 @@ class DescriptorPoolTest(unittest.TestCase):
         'google.protobuf.python.internal.Factory2Message')
     self.assertIsInstance(file_desc2, descriptor.FileDescriptor)
     self.assertEqual('google/protobuf/internal/factory_test2.proto',
-                      file_desc2.name)
+                     file_desc2.name)
     self.assertEqual('google.protobuf.python.internal', file_desc2.package)
     self.assertIn('Factory2Message', file_desc2.message_types_by_name)
 
@@ -111,7 +116,7 @@ class DescriptorPoolTest(unittest.TestCase):
     self.assertIsInstance(msg1, descriptor.Descriptor)
     self.assertEqual('Factory1Message', msg1.name)
     self.assertEqual('google.protobuf.python.internal.Factory1Message',
-                      msg1.full_name)
+                     msg1.full_name)
     self.assertEqual(None, msg1.containing_type)
 
     nested_msg1 = msg1.nested_types[0]
@@ -132,7 +137,7 @@ class DescriptorPoolTest(unittest.TestCase):
     self.assertIsInstance(msg2, descriptor.Descriptor)
     self.assertEqual('Factory2Message', msg2.name)
     self.assertEqual('google.protobuf.python.internal.Factory2Message',
-                      msg2.full_name)
+                     msg2.full_name)
     self.assertIsNone(msg2.containing_type)
 
     nested_msg2 = msg2.nested_types[0]
@@ -223,6 +228,37 @@ class DescriptorPoolTest(unittest.TestCase):
     with self.assertRaises(KeyError):
       self.pool.FindEnumTypeByName('Does not exist')
 
+  def testFindFieldByName(self):
+    field = self.pool.FindFieldByName(
+        'google.protobuf.python.internal.Factory1Message.list_value')
+    self.assertEqual(field.name, 'list_value')
+    self.assertEqual(field.label, field.LABEL_REPEATED)
+    with self.assertRaises(KeyError):
+      self.pool.FindFieldByName('Does not exist')
+
+  def testFindExtensionByName(self):
+    # An extension defined in a message.
+    extension = self.pool.FindExtensionByName(
+        'google.protobuf.python.internal.Factory2Message.one_more_field')
+    self.assertEqual(extension.name, 'one_more_field')
+    # An extension defined at file scope.
+    extension = self.pool.FindExtensionByName(
+        'google.protobuf.python.internal.another_field')
+    self.assertEqual(extension.name, 'another_field')
+    self.assertEqual(extension.number, 1002)
+    with self.assertRaises(KeyError):
+      self.pool.FindFieldByName('Does not exist')
+
+  def testExtensionsAreNotFields(self):
+    with self.assertRaises(KeyError):
+      self.pool.FindFieldByName('google.protobuf.python.internal.another_field')
+    with self.assertRaises(KeyError):
+      self.pool.FindFieldByName(
+          'google.protobuf.python.internal.Factory2Message.one_more_field')
+    with self.assertRaises(KeyError):
+      self.pool.FindExtensionByName(
+          'google.protobuf.python.internal.Factory1Message.list_value')
+
   def testUserDefinedDB(self):
     db = descriptor_database.DescriptorDatabase()
     self.pool = descriptor_pool.DescriptorPool(db)
@@ -231,17 +267,19 @@ class DescriptorPoolTest(unittest.TestCase):
     self.testFindMessageTypeByName()
 
   def testAddSerializedFile(self):
-    db = descriptor_database.DescriptorDatabase()
-    self.pool = descriptor_pool.DescriptorPool(db)
+    self.pool = descriptor_pool.DescriptorPool()
     self.pool.AddSerializedFile(self.factory_test1_fd.SerializeToString())
     self.pool.AddSerializedFile(self.factory_test2_fd.SerializeToString())
     self.testFindMessageTypeByName()
 
   def testComplexNesting(self):
+    more_messages_desc = descriptor_pb2.FileDescriptorProto.FromString(
+        more_messages_pb2.DESCRIPTOR.serialized_pb)
     test1_desc = descriptor_pb2.FileDescriptorProto.FromString(
         descriptor_pool_test1_pb2.DESCRIPTOR.serialized_pb)
     test2_desc = descriptor_pb2.FileDescriptorProto.FromString(
         descriptor_pool_test2_pb2.DESCRIPTOR.serialized_pb)
+    self.pool.Add(more_messages_desc)
     self.pool.Add(test1_desc)
     self.pool.Add(test2_desc)
     TEST1_FILE.CheckFile(self, self.pool)
@@ -274,14 +312,54 @@ class DescriptorPoolTest(unittest.TestCase):
         'google/protobuf/internal/descriptor_pool_test1.proto')
     _CheckDefaultValue(file_descriptor)
 
+  def testDefaultValueForCustomMessages(self):
+    """Check the value returned by non-existent fields."""
+    def _CheckValueAndType(value, expected_value, expected_type):
+      self.assertEqual(value, expected_value)
+      self.assertIsInstance(value, expected_type)
+
+    def _CheckDefaultValues(msg):
+      try:
+        int64 = long
+      except NameError:  # Python3
+        int64 = int
+      try:
+        unicode_type = unicode
+      except NameError:  # Python3
+        unicode_type = str
+      _CheckValueAndType(msg.optional_int32, 0, int)
+      _CheckValueAndType(msg.optional_uint64, 0, (int64, int))
+      _CheckValueAndType(msg.optional_float, 0, (float, int))
+      _CheckValueAndType(msg.optional_double, 0, (float, int))
+      _CheckValueAndType(msg.optional_bool, False, bool)
+      _CheckValueAndType(msg.optional_string, u'', unicode_type)
+      _CheckValueAndType(msg.optional_bytes, b'', bytes)
+      _CheckValueAndType(msg.optional_nested_enum, msg.FOO, int)
+    # First for the generated message
+    _CheckDefaultValues(unittest_pb2.TestAllTypes())
+    # Then for a message built with from the DescriptorPool.
+    pool = descriptor_pool.DescriptorPool()
+    pool.Add(descriptor_pb2.FileDescriptorProto.FromString(
+        unittest_import_public_pb2.DESCRIPTOR.serialized_pb))
+    pool.Add(descriptor_pb2.FileDescriptorProto.FromString(
+        unittest_import_pb2.DESCRIPTOR.serialized_pb))
+    pool.Add(descriptor_pb2.FileDescriptorProto.FromString(
+        unittest_pb2.DESCRIPTOR.serialized_pb))
+    message_class = message_factory.MessageFactory(pool).GetPrototype(
+        pool.FindMessageTypeByName(
+            unittest_pb2.TestAllTypes.DESCRIPTOR.full_name))
+    _CheckDefaultValues(message_class())
+
 
 class ProtoFile(object):
 
-  def __init__(self, name, package, messages, dependencies=None):
+  def __init__(self, name, package, messages, dependencies=None,
+               public_dependencies=None):
     self.name = name
     self.package = package
     self.messages = messages
     self.dependencies = dependencies or []
+    self.public_dependencies = public_dependencies or []
 
   def CheckFile(self, test, pool):
     file_desc = pool.FindFileByName(self.name)
@@ -289,6 +367,8 @@ class ProtoFile(object):
     test.assertEqual(self.package, file_desc.package)
     dependencies_names = [f.name for f in file_desc.dependencies]
     test.assertEqual(self.dependencies, dependencies_names)
+    public_dependencies_names = [f.name for f in file_desc.public_dependencies]
+    test.assertEqual(self.public_dependencies, public_dependencies_names)
     for name, msg_type in self.messages.items():
       msg_type.CheckType(test, None, name, file_desc)
 
@@ -468,6 +548,8 @@ class AddDescriptorTest(unittest.TestCase):
         pool.FindFileContainingSymbol(
             prefix + 'protobuf_unittest.TestAllTypes.NestedMessage').name)
 
+  @unittest.skipIf(api_implementation.Type() == 'cpp',
+                   'With the cpp implementation, Add() must be called first')
   def testMessage(self):
     self._TestMessage('')
     self._TestMessage('.')
@@ -502,10 +584,14 @@ class AddDescriptorTest(unittest.TestCase):
         pool.FindFileContainingSymbol(
             prefix + 'protobuf_unittest.TestAllTypes.NestedEnum').name)
 
+  @unittest.skipIf(api_implementation.Type() == 'cpp',
+                   'With the cpp implementation, Add() must be called first')
   def testEnum(self):
     self._TestEnum('')
     self._TestEnum('.')
 
+  @unittest.skipIf(api_implementation.Type() == 'cpp',
+                   'With the cpp implementation, Add() must be called first')
   def testFile(self):
     pool = descriptor_pool.DescriptorPool()
     pool.AddFileDescriptor(unittest_pb2.DESCRIPTOR)
@@ -519,6 +605,67 @@ class AddDescriptorTest(unittest.TestCase):
     with self.assertRaises(KeyError):
       pool.FindFileContainingSymbol(
           'protobuf_unittest.TestAllTypes')
+
+  def testEmptyDescriptorPool(self):
+    # Check that an empty DescriptorPool() contains no messages.
+    pool = descriptor_pool.DescriptorPool()
+    proto_file_name = descriptor_pb2.DESCRIPTOR.name
+    self.assertRaises(KeyError, pool.FindFileByName, proto_file_name)
+    # Add the above file to the pool
+    file_descriptor = descriptor_pb2.FileDescriptorProto()
+    descriptor_pb2.DESCRIPTOR.CopyToProto(file_descriptor)
+    pool.Add(file_descriptor)
+    # Now it exists.
+    self.assertTrue(pool.FindFileByName(proto_file_name))
+
+  def testCustomDescriptorPool(self):
+    # Create a new pool, and add a file descriptor.
+    pool = descriptor_pool.DescriptorPool()
+    file_desc = descriptor_pb2.FileDescriptorProto(
+        name='some/file.proto', package='package')
+    file_desc.message_type.add(name='Message')
+    pool.Add(file_desc)
+    self.assertEqual(pool.FindFileByName('some/file.proto').name,
+                     'some/file.proto')
+    self.assertEqual(pool.FindMessageTypeByName('package.Message').name,
+                     'Message')
+
+
+@unittest.skipIf(
+    api_implementation.Type() != 'cpp',
+    'default_pool is only supported by the C++ implementation')
+class DefaultPoolTest(unittest.TestCase):
+
+  def testFindMethods(self):
+    # pylint: disable=g-import-not-at-top
+    from google.protobuf.pyext import _message
+    pool = _message.default_pool
+    self.assertIs(
+        pool.FindFileByName('google/protobuf/unittest.proto'),
+        unittest_pb2.DESCRIPTOR)
+    self.assertIs(
+        pool.FindMessageTypeByName('protobuf_unittest.TestAllTypes'),
+        unittest_pb2.TestAllTypes.DESCRIPTOR)
+    self.assertIs(
+        pool.FindFieldByName('protobuf_unittest.TestAllTypes.optional_int32'),
+        unittest_pb2.TestAllTypes.DESCRIPTOR.fields_by_name['optional_int32'])
+    self.assertIs(
+        pool.FindExtensionByName('protobuf_unittest.optional_int32_extension'),
+        unittest_pb2.DESCRIPTOR.extensions_by_name['optional_int32_extension'])
+    self.assertIs(
+        pool.FindEnumTypeByName('protobuf_unittest.ForeignEnum'),
+        unittest_pb2.ForeignEnum.DESCRIPTOR)
+    self.assertIs(
+        pool.FindOneofByName('protobuf_unittest.TestAllTypes.oneof_field'),
+        unittest_pb2.TestAllTypes.DESCRIPTOR.oneofs_by_name['oneof_field'])
+
+  def testAddFileDescriptor(self):
+    # pylint: disable=g-import-not-at-top
+    from google.protobuf.pyext import _message
+    pool = _message.default_pool
+    file_desc = descriptor_pb2.FileDescriptorProto(name='some/file.proto')
+    pool.Add(file_desc)
+    pool.AddSerializedFile(file_desc.SerializeToString())
 
 
 TEST1_FILE = ProtoFile(
@@ -594,7 +741,9 @@ TEST2_FILE = ProtoFile(
              ExtensionField(1001, 'DescriptorPoolTest1')),
         ]),
     },
-    dependencies=['google/protobuf/internal/descriptor_pool_test1.proto'])
+    dependencies=['google/protobuf/internal/descriptor_pool_test1.proto',
+                  'google/protobuf/internal/more_messages.proto'],
+    public_dependencies=['google/protobuf/internal/more_messages.proto'])
 
 
 if __name__ == '__main__':

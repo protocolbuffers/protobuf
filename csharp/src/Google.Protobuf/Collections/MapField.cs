@@ -34,6 +34,7 @@ using Google.Protobuf.Reflection;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using Google.Protobuf.Compatibility;
@@ -53,6 +54,13 @@ namespace Google.Protobuf.Collections
     /// For string keys, the equality comparison is provided by <see cref="StringComparer.Ordinal" />.
     /// </para>
     /// <para>
+    /// Null values are not permitted in the map, either for wrapper types or regular messages.
+    /// If a map is deserialized from a data stream and the value is missing from an entry, a default value
+    /// is created instead. For primitive types, that is the regular default value (0, the empty string and so
+    /// on); for message types, an empty instance of the message is created, as if the map entry contained a 0-length
+    /// encoded value for the field.
+    /// </para>
+    /// <para>
     /// This implementation does not generally prohibit the use of key/value types which are not
     /// supported by Protocol Buffers (e.g. using a key type of <code>byte</code>) but nor does it guarantee
     /// that all operations will work in such cases.
@@ -61,33 +69,9 @@ namespace Google.Protobuf.Collections
     public sealed class MapField<TKey, TValue> : IDeepCloneable<MapField<TKey, TValue>>, IDictionary<TKey, TValue>, IEquatable<MapField<TKey, TValue>>, IDictionary
     {
         // TODO: Don't create the map/list until we have an entry. (Assume many maps will be empty.)
-        private readonly bool allowNullValues;
         private readonly Dictionary<TKey, LinkedListNode<KeyValuePair<TKey, TValue>>> map =
             new Dictionary<TKey, LinkedListNode<KeyValuePair<TKey, TValue>>>();
         private readonly LinkedList<KeyValuePair<TKey, TValue>> list = new LinkedList<KeyValuePair<TKey, TValue>>();
-
-        /// <summary>
-        /// Constructs a new map field, defaulting the value nullability to only allow null values for message types
-        /// and non-nullable value types.
-        /// </summary>
-        public MapField() : this(typeof(IMessage).IsAssignableFrom(typeof(TValue)) || Nullable.GetUnderlyingType(typeof(TValue)) != null)
-        {
-        }
-
-        /// <summary>
-        /// Constructs a new map field, overriding the choice of whether null values are permitted in the map.
-        /// This is used by wrapper types, where maps with string and bytes wrappers as the value types
-        /// support null values.
-        /// </summary>
-        /// <param name="allowNullValues">Whether null values are permitted in the map or not.</param>
-        public MapField(bool allowNullValues)
-        {
-            if (allowNullValues && typeof(TValue).IsValueType() && Nullable.GetUnderlyingType(typeof(TValue)) == null)
-            {
-                throw new ArgumentException("allowNullValues", "Non-nullable value types do not support null values");
-            }
-            this.allowNullValues = allowNullValues;
-        }
 
         /// <summary>
         /// Creates a deep clone of this object.
@@ -97,13 +81,13 @@ namespace Google.Protobuf.Collections
         /// </returns>
         public MapField<TKey, TValue> Clone()
         {
-            var clone = new MapField<TKey, TValue>(allowNullValues);
+            var clone = new MapField<TKey, TValue>();
             // Keys are never cloneable. Values might be.
             if (typeof(IDeepCloneable<TValue>).IsAssignableFrom(typeof(TValue)))
             {
                 foreach (var pair in list)
                 {
-                    clone.Add(pair.Key, pair.Value == null ? pair.Value : ((IDeepCloneable<TValue>)pair.Value).Clone());
+                    clone.Add(pair.Key, ((IDeepCloneable<TValue>)pair.Value).Clone());
                 }
             }
             else
@@ -140,7 +124,7 @@ namespace Google.Protobuf.Collections
         /// <returns><c>true</c> if the map contains the given key; <c>false</c> otherwise.</returns>
         public bool ContainsKey(TKey key)
         {
-            Preconditions.CheckNotNullUnconstrained(key, "key");
+            ProtoPreconditions.CheckNotNullUnconstrained(key, "key");
             return map.ContainsKey(key);
         }
 
@@ -157,7 +141,7 @@ namespace Google.Protobuf.Collections
         /// <returns><c>true</c> if the map contained the given key before the entry was removed; <c>false</c> otherwise.</returns>
         public bool Remove(TKey key)
         {
-            Preconditions.CheckNotNullUnconstrained(key, "key");
+            ProtoPreconditions.CheckNotNullUnconstrained(key, "key");
             LinkedListNode<KeyValuePair<TKey, TValue>> node;
             if (map.TryGetValue(key, out node))
             {
@@ -205,7 +189,7 @@ namespace Google.Protobuf.Collections
         {
             get
             {
-                Preconditions.CheckNotNullUnconstrained(key, "key");
+                ProtoPreconditions.CheckNotNullUnconstrained(key, "key");
                 TValue value;
                 if (TryGetValue(key, out value))
                 {
@@ -215,11 +199,11 @@ namespace Google.Protobuf.Collections
             }
             set
             {
-                Preconditions.CheckNotNullUnconstrained(key, "key");
+                ProtoPreconditions.CheckNotNullUnconstrained(key, "key");
                 // value == null check here is redundant, but avoids boxing.
-                if (value == null && !allowNullValues)
+                if (value == null)
                 {
-                    Preconditions.CheckNotNullUnconstrained(value, "value");
+                    ProtoPreconditions.CheckNotNullUnconstrained(value, "value");
                 }
                 LinkedListNode<KeyValuePair<TKey, TValue>> node;
                 var pair = new KeyValuePair<TKey, TValue>(key, value);
@@ -246,12 +230,12 @@ namespace Google.Protobuf.Collections
         public ICollection<TValue> Values { get { return new MapView<TValue>(this, pair => pair.Value, ContainsValue); } }
 
         /// <summary>
-        /// Adds the specified entries to the map.
+        /// Adds the specified entries to the map. The keys and values are not automatically cloned.
         /// </summary>
         /// <param name="entries">The entries to add to the map.</param>
         public void Add(IDictionary<TKey, TValue> entries)
         {
-            Preconditions.CheckNotNull(entries, "entries");
+            ProtoPreconditions.CheckNotNull(entries, "entries");
             foreach (var pair in entries)
             {
                 Add(pair.Key, pair.Value);
@@ -345,11 +329,6 @@ namespace Google.Protobuf.Collections
                 return false;
             }
         }
-
-        /// <summary>
-        /// Returns whether or not this map allows values to be null.
-        /// </summary>
-        public bool AllowsNullValues { get { return allowNullValues; } }
 
         /// <summary>
         /// Gets the number of elements contained in the map.
@@ -496,9 +475,9 @@ namespace Google.Protobuf.Collections
         /// </summary>
         public override string ToString()
         {
-            var builder = new StringBuilder();
-            JsonFormatter.Default.WriteDictionary(builder, this);
-            return builder.ToString();
+            var writer = new StringWriter();
+            JsonFormatter.Default.WriteDictionary(writer, this);
+            return writer.ToString();
         }
 
         #region IDictionary explicit interface implementation
@@ -523,7 +502,7 @@ namespace Google.Protobuf.Collections
 
         void IDictionary.Remove(object key)
         {
-            Preconditions.CheckNotNull(key, "key");
+            ProtoPreconditions.CheckNotNull(key, "key");
             if (!(key is TKey))
             {
                 return;
@@ -552,7 +531,7 @@ namespace Google.Protobuf.Collections
         {
             get
             {
-                Preconditions.CheckNotNull(key, "key");
+                ProtoPreconditions.CheckNotNull(key, "key");
                 if (!(key is TKey))
                 {
                     return null;
@@ -632,6 +611,8 @@ namespace Google.Protobuf.Collections
             /// </summary>
             internal class MessageAdapter : IMessage
             {
+                private static readonly byte[] ZeroLengthMessageStreamData = new byte[] { 0 };
+
                 private readonly Codec codec;
                 internal TKey Key { get; set; }
                 internal TValue Value { get; set; }
@@ -664,6 +645,13 @@ namespace Google.Protobuf.Collections
                         {
                             input.SkipLastField();
                         }
+                    }
+
+                    // Corner case: a map entry with a key but no value, where the value type is a message.
+                    // Read it as if we'd seen an input stream with no data (i.e. create a "default" message).
+                    if (Value == null)
+                    {
+                        Value = codec.valueCodec.Read(new CodedInputStream(ZeroLengthMessageStreamData));
                     }
                 }
 

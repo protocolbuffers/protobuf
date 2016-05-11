@@ -241,9 +241,7 @@ void GzipOutputStream::Init(ZeroCopyOutputStream* sub_stream,
 
 GzipOutputStream::~GzipOutputStream() {
   Close();
-  if (input_buffer_ != NULL) {
-    operator delete(input_buffer_);
-  }
+  operator delete(input_buffer_);
 }
 
 // private

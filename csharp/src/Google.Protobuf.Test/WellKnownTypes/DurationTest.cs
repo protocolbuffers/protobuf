@@ -50,11 +50,6 @@ namespace Google.Protobuf.WellKnownTypes
             // Rounding is towards 0
             Assert.AreEqual(TimeSpan.FromTicks(2), new Duration { Nanos = 250 }.ToTimeSpan());
             Assert.AreEqual(TimeSpan.FromTicks(-2), new Duration { Nanos = -250 }.ToTimeSpan());
-
-            // Non-normalized durations
-            Assert.AreEqual(TimeSpan.FromSeconds(3), new Duration { Seconds = 1, Nanos = 2 * Duration.NanosecondsPerSecond }.ToTimeSpan());
-            Assert.AreEqual(TimeSpan.FromSeconds(1), new Duration { Seconds = 3, Nanos = -2 * Duration.NanosecondsPerSecond }.ToTimeSpan());
-            Assert.AreEqual(TimeSpan.FromSeconds(-1), new Duration { Seconds = 1, Nanos = -2 * Duration.NanosecondsPerSecond }.ToTimeSpan());
         }
 
         [Test]
@@ -99,6 +94,39 @@ namespace Google.Protobuf.WellKnownTypes
         {
             Assert.AreEqual(new Duration { Seconds = 1 }, Duration.FromTimeSpan(TimeSpan.FromSeconds(1)));
             Assert.AreEqual(new Duration { Nanos = Duration.NanosecondsPerTick }, Duration.FromTimeSpan(TimeSpan.FromTicks(1)));
+        }
+
+        [Test]
+        [TestCase(0, Duration.MaxNanoseconds + 1)]
+        [TestCase(0, Duration.MinNanoseconds - 1)]
+        [TestCase(Duration.MinSeconds - 1, 0)]
+        [TestCase(Duration.MaxSeconds + 1, 0)]
+        [TestCase(1, -1)]
+        [TestCase(-1, 1)]
+        public void ToTimeSpan_Invalid(long seconds, int nanoseconds)
+        {
+            var duration = new Duration { Seconds = seconds, Nanos = nanoseconds };
+            Assert.Throws<InvalidOperationException>(() => duration.ToTimeSpan());
+        }
+
+        [Test]
+        [TestCase(0, Duration.MaxNanoseconds)]
+        [TestCase(0, Duration.MinNanoseconds)]
+        [TestCase(Duration.MinSeconds, Duration.MinNanoseconds)]
+        [TestCase(Duration.MaxSeconds, Duration.MaxNanoseconds)]
+        public void ToTimeSpan_Valid(long seconds, int nanoseconds)
+        {
+            // Only testing that these values don't throw, unlike their similar tests in ToTimeSpan_Invalid
+            var duration = new Duration { Seconds = seconds, Nanos = nanoseconds };
+            duration.ToTimeSpan();
+        }
+
+        [Test]
+        public void ToString_NonNormalized()
+        {
+            // Just a single example should be sufficient...
+            var duration = new Duration { Seconds = 1, Nanos = -1 };
+            Assert.AreEqual("{ \"@warning\": \"Invalid Duration\", \"seconds\": \"1\", \"nanos\": -1 }", duration.ToString());
         }
     }
 }

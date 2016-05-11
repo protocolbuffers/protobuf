@@ -355,7 +355,7 @@ static int DescriptorSequence_Equal(PyContainer* self, PyObject* other) {
       if (value2 == NULL) {
         return -1;
       }
-      int cmp = PyObject_RichCompareBool(value1, value2, Py_EQ);
+      int cmp = PyObject_RichCompareBool(value1.get(), value2, Py_EQ);
       if (cmp != 1)  // error or not equal
           return cmp;
     }
@@ -399,12 +399,12 @@ static int DescriptorMapping_Equal(PyContainer* self, PyObject* other) {
       if (value1 == NULL) {
         return -1;
       }
-      PyObject* value2 = PyDict_GetItem(other, key);
+      PyObject* value2 = PyDict_GetItem(other, key.get());
       if (value2 == NULL) {
         // Not found in the other dictionary
         return 0;
       }
-      int cmp = PyObject_RichCompareBool(value1, value2, Py_EQ);
+      int cmp = PyObject_RichCompareBool(value1.get(), value2, Py_EQ);
       if (cmp != 1)  // error or not equal
           return cmp;
     }

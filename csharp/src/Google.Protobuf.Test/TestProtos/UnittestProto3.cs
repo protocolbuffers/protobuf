@@ -11,7 +11,7 @@ namespace Google.Protobuf.TestProtos {
 
   /// <summary>Holder for reflection information generated from google/protobuf/unittest_proto3.proto</summary>
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  public static partial class UnittestProto3 {
+  public static partial class UnittestProto3Reflection {
 
     #region Descriptor
     /// <summary>File descriptor for google/protobuf/unittest_proto3.proto</summary>
@@ -20,7 +20,7 @@ namespace Google.Protobuf.TestProtos {
     }
     private static pbr::FileDescriptor descriptor;
 
-    static UnittestProto3() {
+    static UnittestProto3Reflection() {
       byte[] descriptorData = global::System.Convert.FromBase64String(
           string.Concat(
             "CiVnb29nbGUvcHJvdG9idWYvdW5pdHRlc3RfcHJvdG8zLnByb3RvEhFwcm90",
@@ -150,42 +150,42 @@ namespace Google.Protobuf.TestProtos {
             "HS5wcm90b2J1Zl91bml0dGVzdC5CYXJSZXF1ZXN0Gh4ucHJvdG9idWZfdW5p",
             "dHRlc3QuQmFyUmVzcG9uc2VCOkINVW5pdHRlc3RQcm90b0gBgAEBiAEBkAEB",
             "+AEBqgIaR29vZ2xlLlByb3RvYnVmLlRlc3RQcm90b3NiBnByb3RvMw=="));
-      descriptor = pbr::FileDescriptor.InternalBuildGeneratedFileFrom(descriptorData,
-          new pbr::FileDescriptor[] { global::Google.Protobuf.TestProtos.UnittestImportProto3.Descriptor, },
-          new pbr::GeneratedCodeInfo(new[] {typeof(global::Google.Protobuf.TestProtos.ForeignEnum), typeof(global::Google.Protobuf.TestProtos.TestEnumWithDupValue), typeof(global::Google.Protobuf.TestProtos.TestSparseEnum), }, new pbr::GeneratedCodeInfo[] {
-            new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.TestProtos.TestAllTypes), new[]{ "SingleInt32", "SingleInt64", "SingleUint32", "SingleUint64", "SingleSint32", "SingleSint64", "SingleFixed32", "SingleFixed64", "SingleSfixed32", "SingleSfixed64", "SingleFloat", "SingleDouble", "SingleBool", "SingleString", "SingleBytes", "SingleNestedMessage", "SingleForeignMessage", "SingleImportMessage", "SingleNestedEnum", "SingleForeignEnum", "SingleImportEnum", "SinglePublicImportMessage", "RepeatedInt32", "RepeatedInt64", "RepeatedUint32", "RepeatedUint64", "RepeatedSint32", "RepeatedSint64", "RepeatedFixed32", "RepeatedFixed64", "RepeatedSfixed32", "RepeatedSfixed64", "RepeatedFloat", "RepeatedDouble", "RepeatedBool", "RepeatedString", "RepeatedBytes", "RepeatedNestedMessage", "RepeatedForeignMessage", "RepeatedImportMessage", "RepeatedNestedEnum", "RepeatedForeignEnum", "RepeatedImportEnum", "RepeatedPublicImportMessage", "OneofUint32", "OneofNestedMessage", "OneofString", "OneofBytes" }, new[]{ "OneofField" }, new[]{ typeof(global::Google.Protobuf.TestProtos.TestAllTypes.Types.NestedEnum) }, new pbr::GeneratedCodeInfo[] { new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.TestProtos.TestAllTypes.Types.NestedMessage), new[]{ "Bb" }, null, null, null)}),
-            new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.TestProtos.NestedTestAllTypes), new[]{ "Child", "Payload", "RepeatedChild" }, null, null, null),
-            new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.TestProtos.TestDeprecatedFields), new[]{ "DeprecatedInt32" }, null, null, null),
-            new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.TestProtos.ForeignMessage), new[]{ "C" }, null, null, null),
-            new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.TestProtos.TestReservedFields), null, null, null, null),
-            new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.TestProtos.TestForeignNested), new[]{ "ForeignNested" }, null, null, null),
-            new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.TestProtos.TestReallyLargeTagNumber), new[]{ "A", "Bb" }, null, null, null),
-            new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.TestProtos.TestRecursiveMessage), new[]{ "A", "I" }, null, null, null),
-            new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.TestProtos.TestMutualRecursionA), new[]{ "Bb" }, null, null, null),
-            new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.TestProtos.TestMutualRecursionB), new[]{ "A", "OptionalInt32" }, null, null, null),
-            new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.TestProtos.TestCamelCaseFieldNames), new[]{ "PrimitiveField", "StringField", "EnumField", "MessageField", "RepeatedPrimitiveField", "RepeatedStringField", "RepeatedEnumField", "RepeatedMessageField" }, null, null, null),
-            new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.TestProtos.TestFieldOrderings), new[]{ "MyString", "MyInt", "MyFloat", "SingleNestedMessage" }, null, null, new pbr::GeneratedCodeInfo[] { new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.TestProtos.TestFieldOrderings.Types.NestedMessage), new[]{ "Oo", "Bb" }, null, null, null)}),
-            new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.TestProtos.SparseEnumMessage), new[]{ "SparseEnum" }, null, null, null),
-            new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.TestProtos.OneString), new[]{ "Data" }, null, null, null),
-            new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.TestProtos.MoreString), new[]{ "Data" }, null, null, null),
-            new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.TestProtos.OneBytes), new[]{ "Data" }, null, null, null),
-            new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.TestProtos.MoreBytes), new[]{ "Data" }, null, null, null),
-            new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.TestProtos.Int32Message), new[]{ "Data" }, null, null, null),
-            new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.TestProtos.Uint32Message), new[]{ "Data" }, null, null, null),
-            new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.TestProtos.Int64Message), new[]{ "Data" }, null, null, null),
-            new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.TestProtos.Uint64Message), new[]{ "Data" }, null, null, null),
-            new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.TestProtos.BoolMessage), new[]{ "Data" }, null, null, null),
-            new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.TestProtos.TestOneof), new[]{ "FooInt", "FooString", "FooMessage" }, new[]{ "Foo" }, null, null),
-            new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.TestProtos.TestPackedTypes), new[]{ "PackedInt32", "PackedInt64", "PackedUint32", "PackedUint64", "PackedSint32", "PackedSint64", "PackedFixed32", "PackedFixed64", "PackedSfixed32", "PackedSfixed64", "PackedFloat", "PackedDouble", "PackedBool", "PackedEnum" }, null, null, null),
-            new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.TestProtos.TestUnpackedTypes), new[]{ "UnpackedInt32", "UnpackedInt64", "UnpackedUint32", "UnpackedUint64", "UnpackedSint32", "UnpackedSint64", "UnpackedFixed32", "UnpackedFixed64", "UnpackedSfixed32", "UnpackedSfixed64", "UnpackedFloat", "UnpackedDouble", "UnpackedBool", "UnpackedEnum" }, null, null, null),
-            new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.TestProtos.TestRepeatedScalarDifferentTagSizes), new[]{ "RepeatedFixed32", "RepeatedInt32", "RepeatedFixed64", "RepeatedInt64", "RepeatedFloat", "RepeatedUint64" }, null, null, null),
-            new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.TestProtos.TestCommentInjectionMessage), new[]{ "A" }, null, null, null),
-            new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.TestProtos.FooRequest), null, null, null, null),
-            new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.TestProtos.FooResponse), null, null, null, null),
-            new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.TestProtos.FooClientMessage), null, null, null, null),
-            new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.TestProtos.FooServerMessage), null, null, null, null),
-            new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.TestProtos.BarRequest), null, null, null, null),
-            new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.TestProtos.BarResponse), null, null, null, null)
+      descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
+          new pbr::FileDescriptor[] { global::Google.Protobuf.TestProtos.UnittestImportProto3Reflection.Descriptor, },
+          new pbr::GeneratedClrTypeInfo(new[] {typeof(global::Google.Protobuf.TestProtos.ForeignEnum), typeof(global::Google.Protobuf.TestProtos.TestEnumWithDupValue), typeof(global::Google.Protobuf.TestProtos.TestSparseEnum), }, new pbr::GeneratedClrTypeInfo[] {
+            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.TestProtos.TestAllTypes), global::Google.Protobuf.TestProtos.TestAllTypes.Parser, new[]{ "SingleInt32", "SingleInt64", "SingleUint32", "SingleUint64", "SingleSint32", "SingleSint64", "SingleFixed32", "SingleFixed64", "SingleSfixed32", "SingleSfixed64", "SingleFloat", "SingleDouble", "SingleBool", "SingleString", "SingleBytes", "SingleNestedMessage", "SingleForeignMessage", "SingleImportMessage", "SingleNestedEnum", "SingleForeignEnum", "SingleImportEnum", "SinglePublicImportMessage", "RepeatedInt32", "RepeatedInt64", "RepeatedUint32", "RepeatedUint64", "RepeatedSint32", "RepeatedSint64", "RepeatedFixed32", "RepeatedFixed64", "RepeatedSfixed32", "RepeatedSfixed64", "RepeatedFloat", "RepeatedDouble", "RepeatedBool", "RepeatedString", "RepeatedBytes", "RepeatedNestedMessage", "RepeatedForeignMessage", "RepeatedImportMessage", "RepeatedNestedEnum", "RepeatedForeignEnum", "RepeatedImportEnum", "RepeatedPublicImportMessage", "OneofUint32", "OneofNestedMessage", "OneofString", "OneofBytes" }, new[]{ "OneofField" }, new[]{ typeof(global::Google.Protobuf.TestProtos.TestAllTypes.Types.NestedEnum) }, new pbr::GeneratedClrTypeInfo[] { new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.TestProtos.TestAllTypes.Types.NestedMessage), global::Google.Protobuf.TestProtos.TestAllTypes.Types.NestedMessage.Parser, new[]{ "Bb" }, null, null, null)}),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.TestProtos.NestedTestAllTypes), global::Google.Protobuf.TestProtos.NestedTestAllTypes.Parser, new[]{ "Child", "Payload", "RepeatedChild" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.TestProtos.TestDeprecatedFields), global::Google.Protobuf.TestProtos.TestDeprecatedFields.Parser, new[]{ "DeprecatedInt32" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.TestProtos.ForeignMessage), global::Google.Protobuf.TestProtos.ForeignMessage.Parser, new[]{ "C" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.TestProtos.TestReservedFields), global::Google.Protobuf.TestProtos.TestReservedFields.Parser, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.TestProtos.TestForeignNested), global::Google.Protobuf.TestProtos.TestForeignNested.Parser, new[]{ "ForeignNested" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.TestProtos.TestReallyLargeTagNumber), global::Google.Protobuf.TestProtos.TestReallyLargeTagNumber.Parser, new[]{ "A", "Bb" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.TestProtos.TestRecursiveMessage), global::Google.Protobuf.TestProtos.TestRecursiveMessage.Parser, new[]{ "A", "I" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.TestProtos.TestMutualRecursionA), global::Google.Protobuf.TestProtos.TestMutualRecursionA.Parser, new[]{ "Bb" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.TestProtos.TestMutualRecursionB), global::Google.Protobuf.TestProtos.TestMutualRecursionB.Parser, new[]{ "A", "OptionalInt32" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.TestProtos.TestCamelCaseFieldNames), global::Google.Protobuf.TestProtos.TestCamelCaseFieldNames.Parser, new[]{ "PrimitiveField", "StringField", "EnumField", "MessageField", "RepeatedPrimitiveField", "RepeatedStringField", "RepeatedEnumField", "RepeatedMessageField" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.TestProtos.TestFieldOrderings), global::Google.Protobuf.TestProtos.TestFieldOrderings.Parser, new[]{ "MyString", "MyInt", "MyFloat", "SingleNestedMessage" }, null, null, new pbr::GeneratedClrTypeInfo[] { new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.TestProtos.TestFieldOrderings.Types.NestedMessage), global::Google.Protobuf.TestProtos.TestFieldOrderings.Types.NestedMessage.Parser, new[]{ "Oo", "Bb" }, null, null, null)}),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.TestProtos.SparseEnumMessage), global::Google.Protobuf.TestProtos.SparseEnumMessage.Parser, new[]{ "SparseEnum" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.TestProtos.OneString), global::Google.Protobuf.TestProtos.OneString.Parser, new[]{ "Data" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.TestProtos.MoreString), global::Google.Protobuf.TestProtos.MoreString.Parser, new[]{ "Data" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.TestProtos.OneBytes), global::Google.Protobuf.TestProtos.OneBytes.Parser, new[]{ "Data" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.TestProtos.MoreBytes), global::Google.Protobuf.TestProtos.MoreBytes.Parser, new[]{ "Data" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.TestProtos.Int32Message), global::Google.Protobuf.TestProtos.Int32Message.Parser, new[]{ "Data" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.TestProtos.Uint32Message), global::Google.Protobuf.TestProtos.Uint32Message.Parser, new[]{ "Data" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.TestProtos.Int64Message), global::Google.Protobuf.TestProtos.Int64Message.Parser, new[]{ "Data" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.TestProtos.Uint64Message), global::Google.Protobuf.TestProtos.Uint64Message.Parser, new[]{ "Data" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.TestProtos.BoolMessage), global::Google.Protobuf.TestProtos.BoolMessage.Parser, new[]{ "Data" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.TestProtos.TestOneof), global::Google.Protobuf.TestProtos.TestOneof.Parser, new[]{ "FooInt", "FooString", "FooMessage" }, new[]{ "Foo" }, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.TestProtos.TestPackedTypes), global::Google.Protobuf.TestProtos.TestPackedTypes.Parser, new[]{ "PackedInt32", "PackedInt64", "PackedUint32", "PackedUint64", "PackedSint32", "PackedSint64", "PackedFixed32", "PackedFixed64", "PackedSfixed32", "PackedSfixed64", "PackedFloat", "PackedDouble", "PackedBool", "PackedEnum" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.TestProtos.TestUnpackedTypes), global::Google.Protobuf.TestProtos.TestUnpackedTypes.Parser, new[]{ "UnpackedInt32", "UnpackedInt64", "UnpackedUint32", "UnpackedUint64", "UnpackedSint32", "UnpackedSint64", "UnpackedFixed32", "UnpackedFixed64", "UnpackedSfixed32", "UnpackedSfixed64", "UnpackedFloat", "UnpackedDouble", "UnpackedBool", "UnpackedEnum" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.TestProtos.TestRepeatedScalarDifferentTagSizes), global::Google.Protobuf.TestProtos.TestRepeatedScalarDifferentTagSizes.Parser, new[]{ "RepeatedFixed32", "RepeatedInt32", "RepeatedFixed64", "RepeatedInt64", "RepeatedFloat", "RepeatedUint64" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.TestProtos.TestCommentInjectionMessage), global::Google.Protobuf.TestProtos.TestCommentInjectionMessage.Parser, new[]{ "A" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.TestProtos.FooRequest), global::Google.Protobuf.TestProtos.FooRequest.Parser, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.TestProtos.FooResponse), global::Google.Protobuf.TestProtos.FooResponse.Parser, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.TestProtos.FooClientMessage), global::Google.Protobuf.TestProtos.FooClientMessage.Parser, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.TestProtos.FooServerMessage), global::Google.Protobuf.TestProtos.FooServerMessage.Parser, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.TestProtos.BarRequest), global::Google.Protobuf.TestProtos.BarRequest.Parser, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.TestProtos.BarResponse), global::Google.Protobuf.TestProtos.BarResponse.Parser, null, null, null, null)
           }));
     }
     #endregion
@@ -193,39 +193,39 @@ namespace Google.Protobuf.TestProtos {
   }
   #region Enums
   public enum ForeignEnum {
-    FOREIGN_UNSPECIFIED = 0,
-    FOREIGN_FOO = 4,
-    FOREIGN_BAR = 5,
-    FOREIGN_BAZ = 6,
+    [pbr::OriginalName("FOREIGN_UNSPECIFIED")] ForeignUnspecified = 0,
+    [pbr::OriginalName("FOREIGN_FOO")] ForeignFoo = 4,
+    [pbr::OriginalName("FOREIGN_BAR")] ForeignBar = 5,
+    [pbr::OriginalName("FOREIGN_BAZ")] ForeignBaz = 6,
   }
 
   /// <summary>
   ///  Test an enum that has multiple values with the same number.
   /// </summary>
   public enum TestEnumWithDupValue {
-    TEST_ENUM_WITH_DUP_VALUE_UNSPECIFIED = 0,
-    FOO1 = 1,
-    BAR1 = 2,
-    BAZ = 3,
-    FOO2 = 1,
-    BAR2 = 2,
+    [pbr::OriginalName("TEST_ENUM_WITH_DUP_VALUE_UNSPECIFIED")] Unspecified = 0,
+    [pbr::OriginalName("FOO1")] Foo1 = 1,
+    [pbr::OriginalName("BAR1")] Bar1 = 2,
+    [pbr::OriginalName("BAZ")] Baz = 3,
+    [pbr::OriginalName("FOO2")] Foo2 = 1,
+    [pbr::OriginalName("BAR2")] Bar2 = 2,
   }
 
   /// <summary>
   ///  Test an enum with large, unordered values.
   /// </summary>
   public enum TestSparseEnum {
-    TEST_SPARSE_ENUM_UNSPECIFIED = 0,
-    SPARSE_A = 123,
-    SPARSE_B = 62374,
-    SPARSE_C = 12589234,
-    SPARSE_D = -15,
-    SPARSE_E = -53452,
+    [pbr::OriginalName("TEST_SPARSE_ENUM_UNSPECIFIED")] Unspecified = 0,
+    [pbr::OriginalName("SPARSE_A")] SparseA = 123,
+    [pbr::OriginalName("SPARSE_B")] SparseB = 62374,
+    [pbr::OriginalName("SPARSE_C")] SparseC = 12589234,
+    [pbr::OriginalName("SPARSE_D")] SparseD = -15,
+    [pbr::OriginalName("SPARSE_E")] SparseE = -53452,
     /// <summary>
     ///  In proto3, value 0 must be the first one specified
     ///  SPARSE_F = 0;
     /// </summary>
-    SPARSE_G = 2,
+    [pbr::OriginalName("SPARSE_G")] SparseG = 2,
   }
 
   #endregion
@@ -241,7 +241,7 @@ namespace Google.Protobuf.TestProtos {
     public static pb::MessageParser<TestAllTypes> Parser { get { return _parser; } }
 
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Google.Protobuf.TestProtos.UnittestProto3.Descriptor.MessageTypes[0]; }
+      get { return global::Google.Protobuf.TestProtos.UnittestProto3Reflection.Descriptor.MessageTypes[0]; }
     }
 
     pbr::MessageDescriptor pb::IMessage.Descriptor {
@@ -459,7 +459,7 @@ namespace Google.Protobuf.TestProtos {
     public string SingleString {
       get { return singleString_; }
       set {
-        singleString_ = pb::Preconditions.CheckNotNull(value, "value");
+        singleString_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
       }
     }
 
@@ -469,7 +469,7 @@ namespace Google.Protobuf.TestProtos {
     public pb::ByteString SingleBytes {
       get { return singleBytes_; }
       set {
-        singleBytes_ = pb::Preconditions.CheckNotNull(value, "value");
+        singleBytes_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
       }
     }
 
@@ -505,7 +505,7 @@ namespace Google.Protobuf.TestProtos {
 
     /// <summary>Field number for the "single_nested_enum" field.</summary>
     public const int SingleNestedEnumFieldNumber = 21;
-    private global::Google.Protobuf.TestProtos.TestAllTypes.Types.NestedEnum singleNestedEnum_ = global::Google.Protobuf.TestProtos.TestAllTypes.Types.NestedEnum.NESTED_ENUM_UNSPECIFIED;
+    private global::Google.Protobuf.TestProtos.TestAllTypes.Types.NestedEnum singleNestedEnum_ = 0;
     public global::Google.Protobuf.TestProtos.TestAllTypes.Types.NestedEnum SingleNestedEnum {
       get { return singleNestedEnum_; }
       set {
@@ -515,7 +515,7 @@ namespace Google.Protobuf.TestProtos {
 
     /// <summary>Field number for the "single_foreign_enum" field.</summary>
     public const int SingleForeignEnumFieldNumber = 22;
-    private global::Google.Protobuf.TestProtos.ForeignEnum singleForeignEnum_ = global::Google.Protobuf.TestProtos.ForeignEnum.FOREIGN_UNSPECIFIED;
+    private global::Google.Protobuf.TestProtos.ForeignEnum singleForeignEnum_ = 0;
     public global::Google.Protobuf.TestProtos.ForeignEnum SingleForeignEnum {
       get { return singleForeignEnum_; }
       set {
@@ -525,7 +525,7 @@ namespace Google.Protobuf.TestProtos {
 
     /// <summary>Field number for the "single_import_enum" field.</summary>
     public const int SingleImportEnumFieldNumber = 23;
-    private global::Google.Protobuf.TestProtos.ImportEnum singleImportEnum_ = global::Google.Protobuf.TestProtos.ImportEnum.IMPORT_ENUM_UNSPECIFIED;
+    private global::Google.Protobuf.TestProtos.ImportEnum singleImportEnum_ = 0;
     public global::Google.Protobuf.TestProtos.ImportEnum SingleImportEnum {
       get { return singleImportEnum_; }
       set {
@@ -775,7 +775,7 @@ namespace Google.Protobuf.TestProtos {
     public string OneofString {
       get { return oneofFieldCase_ == OneofFieldOneofCase.OneofString ? (string) oneofField_ : ""; }
       set {
-        oneofField_ = pb::Preconditions.CheckNotNull(value, "value");
+        oneofField_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
         oneofFieldCase_ = OneofFieldOneofCase.OneofString;
       }
     }
@@ -785,7 +785,7 @@ namespace Google.Protobuf.TestProtos {
     public pb::ByteString OneofBytes {
       get { return oneofFieldCase_ == OneofFieldOneofCase.OneofBytes ? (pb::ByteString) oneofField_ : pb::ByteString.Empty; }
       set {
-        oneofField_ = pb::Preconditions.CheckNotNull(value, "value");
+        oneofField_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
         oneofFieldCase_ = OneofFieldOneofCase.OneofBytes;
       }
     }
@@ -868,6 +868,7 @@ namespace Google.Protobuf.TestProtos {
       if (!object.Equals(OneofNestedMessage, other.OneofNestedMessage)) return false;
       if (OneofString != other.OneofString) return false;
       if (OneofBytes != other.OneofBytes) return false;
+      if (OneofFieldCase != other.OneofFieldCase) return false;
       return true;
     }
 
@@ -891,9 +892,9 @@ namespace Google.Protobuf.TestProtos {
       if (singleNestedMessage_ != null) hash ^= SingleNestedMessage.GetHashCode();
       if (singleForeignMessage_ != null) hash ^= SingleForeignMessage.GetHashCode();
       if (singleImportMessage_ != null) hash ^= SingleImportMessage.GetHashCode();
-      if (SingleNestedEnum != global::Google.Protobuf.TestProtos.TestAllTypes.Types.NestedEnum.NESTED_ENUM_UNSPECIFIED) hash ^= SingleNestedEnum.GetHashCode();
-      if (SingleForeignEnum != global::Google.Protobuf.TestProtos.ForeignEnum.FOREIGN_UNSPECIFIED) hash ^= SingleForeignEnum.GetHashCode();
-      if (SingleImportEnum != global::Google.Protobuf.TestProtos.ImportEnum.IMPORT_ENUM_UNSPECIFIED) hash ^= SingleImportEnum.GetHashCode();
+      if (SingleNestedEnum != 0) hash ^= SingleNestedEnum.GetHashCode();
+      if (SingleForeignEnum != 0) hash ^= SingleForeignEnum.GetHashCode();
+      if (SingleImportEnum != 0) hash ^= SingleImportEnum.GetHashCode();
       if (singlePublicImportMessage_ != null) hash ^= SinglePublicImportMessage.GetHashCode();
       hash ^= repeatedInt32_.GetHashCode();
       hash ^= repeatedInt64_.GetHashCode();
@@ -921,11 +922,12 @@ namespace Google.Protobuf.TestProtos {
       if (oneofFieldCase_ == OneofFieldOneofCase.OneofNestedMessage) hash ^= OneofNestedMessage.GetHashCode();
       if (oneofFieldCase_ == OneofFieldOneofCase.OneofString) hash ^= OneofString.GetHashCode();
       if (oneofFieldCase_ == OneofFieldOneofCase.OneofBytes) hash ^= OneofBytes.GetHashCode();
+      hash ^= (int) oneofFieldCase_;
       return hash;
     }
 
     public override string ToString() {
-      return pb::JsonFormatter.Default.Format(this);
+      return pb::JsonFormatter.ToDiagnosticString(this);
     }
 
     public void WriteTo(pb::CodedOutputStream output) {
@@ -1001,15 +1003,15 @@ namespace Google.Protobuf.TestProtos {
         output.WriteRawTag(162, 1);
         output.WriteMessage(SingleImportMessage);
       }
-      if (SingleNestedEnum != global::Google.Protobuf.TestProtos.TestAllTypes.Types.NestedEnum.NESTED_ENUM_UNSPECIFIED) {
+      if (SingleNestedEnum != 0) {
         output.WriteRawTag(168, 1);
         output.WriteEnum((int) SingleNestedEnum);
       }
-      if (SingleForeignEnum != global::Google.Protobuf.TestProtos.ForeignEnum.FOREIGN_UNSPECIFIED) {
+      if (SingleForeignEnum != 0) {
         output.WriteRawTag(176, 1);
         output.WriteEnum((int) SingleForeignEnum);
       }
-      if (SingleImportEnum != global::Google.Protobuf.TestProtos.ImportEnum.IMPORT_ENUM_UNSPECIFIED) {
+      if (SingleImportEnum != 0) {
         output.WriteRawTag(184, 1);
         output.WriteEnum((int) SingleImportEnum);
       }
@@ -1113,13 +1115,13 @@ namespace Google.Protobuf.TestProtos {
       if (singleImportMessage_ != null) {
         size += 2 + pb::CodedOutputStream.ComputeMessageSize(SingleImportMessage);
       }
-      if (SingleNestedEnum != global::Google.Protobuf.TestProtos.TestAllTypes.Types.NestedEnum.NESTED_ENUM_UNSPECIFIED) {
+      if (SingleNestedEnum != 0) {
         size += 2 + pb::CodedOutputStream.ComputeEnumSize((int) SingleNestedEnum);
       }
-      if (SingleForeignEnum != global::Google.Protobuf.TestProtos.ForeignEnum.FOREIGN_UNSPECIFIED) {
+      if (SingleForeignEnum != 0) {
         size += 2 + pb::CodedOutputStream.ComputeEnumSize((int) SingleForeignEnum);
       }
-      if (SingleImportEnum != global::Google.Protobuf.TestProtos.ImportEnum.IMPORT_ENUM_UNSPECIFIED) {
+      if (SingleImportEnum != 0) {
         size += 2 + pb::CodedOutputStream.ComputeEnumSize((int) SingleImportEnum);
       }
       if (singlePublicImportMessage_ != null) {
@@ -1229,13 +1231,13 @@ namespace Google.Protobuf.TestProtos {
         }
         SingleImportMessage.MergeFrom(other.SingleImportMessage);
       }
-      if (other.SingleNestedEnum != global::Google.Protobuf.TestProtos.TestAllTypes.Types.NestedEnum.NESTED_ENUM_UNSPECIFIED) {
+      if (other.SingleNestedEnum != 0) {
         SingleNestedEnum = other.SingleNestedEnum;
       }
-      if (other.SingleForeignEnum != global::Google.Protobuf.TestProtos.ForeignEnum.FOREIGN_UNSPECIFIED) {
+      if (other.SingleForeignEnum != 0) {
         SingleForeignEnum = other.SingleForeignEnum;
       }
-      if (other.SingleImportEnum != global::Google.Protobuf.TestProtos.ImportEnum.IMPORT_ENUM_UNSPECIFIED) {
+      if (other.SingleImportEnum != 0) {
         SingleImportEnum = other.SingleImportEnum;
       }
       if (other.singlePublicImportMessage_ != null) {
@@ -1524,14 +1526,14 @@ namespace Google.Protobuf.TestProtos {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     public static partial class Types {
       public enum NestedEnum {
-        NESTED_ENUM_UNSPECIFIED = 0,
-        FOO = 1,
-        BAR = 2,
-        BAZ = 3,
+        [pbr::OriginalName("NESTED_ENUM_UNSPECIFIED")] Unspecified = 0,
+        [pbr::OriginalName("FOO")] Foo = 1,
+        [pbr::OriginalName("BAR")] Bar = 2,
+        [pbr::OriginalName("BAZ")] Baz = 3,
         /// <summary>
         ///  Intentionally negative.
         /// </summary>
-        NEG = -1,
+        [pbr::OriginalName("NEG")] Neg = -1,
       }
 
       [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
@@ -1598,7 +1600,7 @@ namespace Google.Protobuf.TestProtos {
         }
 
         public override string ToString() {
-          return pb::JsonFormatter.Default.Format(this);
+          return pb::JsonFormatter.ToDiagnosticString(this);
         }
 
         public void WriteTo(pb::CodedOutputStream output) {
@@ -1656,7 +1658,7 @@ namespace Google.Protobuf.TestProtos {
     public static pb::MessageParser<NestedTestAllTypes> Parser { get { return _parser; } }
 
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Google.Protobuf.TestProtos.UnittestProto3.Descriptor.MessageTypes[1]; }
+      get { return global::Google.Protobuf.TestProtos.UnittestProto3Reflection.Descriptor.MessageTypes[1]; }
     }
 
     pbr::MessageDescriptor pb::IMessage.Descriptor {
@@ -1734,7 +1736,7 @@ namespace Google.Protobuf.TestProtos {
     }
 
     public override string ToString() {
-      return pb::JsonFormatter.Default.Format(this);
+      return pb::JsonFormatter.ToDiagnosticString(this);
     }
 
     public void WriteTo(pb::CodedOutputStream output) {
@@ -1817,7 +1819,7 @@ namespace Google.Protobuf.TestProtos {
     public static pb::MessageParser<TestDeprecatedFields> Parser { get { return _parser; } }
 
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Google.Protobuf.TestProtos.UnittestProto3.Descriptor.MessageTypes[2]; }
+      get { return global::Google.Protobuf.TestProtos.UnittestProto3Reflection.Descriptor.MessageTypes[2]; }
     }
 
     pbr::MessageDescriptor pb::IMessage.Descriptor {
@@ -1871,7 +1873,7 @@ namespace Google.Protobuf.TestProtos {
     }
 
     public override string ToString() {
-      return pb::JsonFormatter.Default.Format(this);
+      return pb::JsonFormatter.ToDiagnosticString(this);
     }
 
     public void WriteTo(pb::CodedOutputStream output) {
@@ -1925,7 +1927,7 @@ namespace Google.Protobuf.TestProtos {
     public static pb::MessageParser<ForeignMessage> Parser { get { return _parser; } }
 
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Google.Protobuf.TestProtos.UnittestProto3.Descriptor.MessageTypes[3]; }
+      get { return global::Google.Protobuf.TestProtos.UnittestProto3Reflection.Descriptor.MessageTypes[3]; }
     }
 
     pbr::MessageDescriptor pb::IMessage.Descriptor {
@@ -1978,7 +1980,7 @@ namespace Google.Protobuf.TestProtos {
     }
 
     public override string ToString() {
-      return pb::JsonFormatter.Default.Format(this);
+      return pb::JsonFormatter.ToDiagnosticString(this);
     }
 
     public void WriteTo(pb::CodedOutputStream output) {
@@ -2028,7 +2030,7 @@ namespace Google.Protobuf.TestProtos {
     public static pb::MessageParser<TestReservedFields> Parser { get { return _parser; } }
 
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Google.Protobuf.TestProtos.UnittestProto3.Descriptor.MessageTypes[4]; }
+      get { return global::Google.Protobuf.TestProtos.UnittestProto3Reflection.Descriptor.MessageTypes[4]; }
     }
 
     pbr::MessageDescriptor pb::IMessage.Descriptor {
@@ -2068,7 +2070,7 @@ namespace Google.Protobuf.TestProtos {
     }
 
     public override string ToString() {
-      return pb::JsonFormatter.Default.Format(this);
+      return pb::JsonFormatter.ToDiagnosticString(this);
     }
 
     public void WriteTo(pb::CodedOutputStream output) {
@@ -2107,7 +2109,7 @@ namespace Google.Protobuf.TestProtos {
     public static pb::MessageParser<TestForeignNested> Parser { get { return _parser; } }
 
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Google.Protobuf.TestProtos.UnittestProto3.Descriptor.MessageTypes[5]; }
+      get { return global::Google.Protobuf.TestProtos.UnittestProto3Reflection.Descriptor.MessageTypes[5]; }
     }
 
     pbr::MessageDescriptor pb::IMessage.Descriptor {
@@ -2160,7 +2162,7 @@ namespace Google.Protobuf.TestProtos {
     }
 
     public override string ToString() {
-      return pb::JsonFormatter.Default.Format(this);
+      return pb::JsonFormatter.ToDiagnosticString(this);
     }
 
     public void WriteTo(pb::CodedOutputStream output) {
@@ -2219,7 +2221,7 @@ namespace Google.Protobuf.TestProtos {
     public static pb::MessageParser<TestReallyLargeTagNumber> Parser { get { return _parser; } }
 
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Google.Protobuf.TestProtos.UnittestProto3.Descriptor.MessageTypes[6]; }
+      get { return global::Google.Protobuf.TestProtos.UnittestProto3Reflection.Descriptor.MessageTypes[6]; }
     }
 
     pbr::MessageDescriptor pb::IMessage.Descriptor {
@@ -2289,7 +2291,7 @@ namespace Google.Protobuf.TestProtos {
     }
 
     public override string ToString() {
-      return pb::JsonFormatter.Default.Format(this);
+      return pb::JsonFormatter.ToDiagnosticString(this);
     }
 
     public void WriteTo(pb::CodedOutputStream output) {
@@ -2353,7 +2355,7 @@ namespace Google.Protobuf.TestProtos {
     public static pb::MessageParser<TestRecursiveMessage> Parser { get { return _parser; } }
 
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Google.Protobuf.TestProtos.UnittestProto3.Descriptor.MessageTypes[7]; }
+      get { return global::Google.Protobuf.TestProtos.UnittestProto3Reflection.Descriptor.MessageTypes[7]; }
     }
 
     pbr::MessageDescriptor pb::IMessage.Descriptor {
@@ -2419,7 +2421,7 @@ namespace Google.Protobuf.TestProtos {
     }
 
     public override string ToString() {
-      return pb::JsonFormatter.Default.Format(this);
+      return pb::JsonFormatter.ToDiagnosticString(this);
     }
 
     public void WriteTo(pb::CodedOutputStream output) {
@@ -2492,7 +2494,7 @@ namespace Google.Protobuf.TestProtos {
     public static pb::MessageParser<TestMutualRecursionA> Parser { get { return _parser; } }
 
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Google.Protobuf.TestProtos.UnittestProto3.Descriptor.MessageTypes[8]; }
+      get { return global::Google.Protobuf.TestProtos.UnittestProto3Reflection.Descriptor.MessageTypes[8]; }
     }
 
     pbr::MessageDescriptor pb::IMessage.Descriptor {
@@ -2545,7 +2547,7 @@ namespace Google.Protobuf.TestProtos {
     }
 
     public override string ToString() {
-      return pb::JsonFormatter.Default.Format(this);
+      return pb::JsonFormatter.ToDiagnosticString(this);
     }
 
     public void WriteTo(pb::CodedOutputStream output) {
@@ -2601,7 +2603,7 @@ namespace Google.Protobuf.TestProtos {
     public static pb::MessageParser<TestMutualRecursionB> Parser { get { return _parser; } }
 
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Google.Protobuf.TestProtos.UnittestProto3.Descriptor.MessageTypes[9]; }
+      get { return global::Google.Protobuf.TestProtos.UnittestProto3Reflection.Descriptor.MessageTypes[9]; }
     }
 
     pbr::MessageDescriptor pb::IMessage.Descriptor {
@@ -2667,7 +2669,7 @@ namespace Google.Protobuf.TestProtos {
     }
 
     public override string ToString() {
-      return pb::JsonFormatter.Default.Format(this);
+      return pb::JsonFormatter.ToDiagnosticString(this);
     }
 
     public void WriteTo(pb::CodedOutputStream output) {
@@ -2741,7 +2743,7 @@ namespace Google.Protobuf.TestProtos {
     public static pb::MessageParser<TestCamelCaseFieldNames> Parser { get { return _parser; } }
 
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Google.Protobuf.TestProtos.UnittestProto3.Descriptor.MessageTypes[10]; }
+      get { return global::Google.Protobuf.TestProtos.UnittestProto3Reflection.Descriptor.MessageTypes[10]; }
     }
 
     pbr::MessageDescriptor pb::IMessage.Descriptor {
@@ -2785,13 +2787,13 @@ namespace Google.Protobuf.TestProtos {
     public string StringField {
       get { return stringField_; }
       set {
-        stringField_ = pb::Preconditions.CheckNotNull(value, "value");
+        stringField_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
       }
     }
 
     /// <summary>Field number for the "EnumField" field.</summary>
     public const int EnumFieldFieldNumber = 3;
-    private global::Google.Protobuf.TestProtos.ForeignEnum enumField_ = global::Google.Protobuf.TestProtos.ForeignEnum.FOREIGN_UNSPECIFIED;
+    private global::Google.Protobuf.TestProtos.ForeignEnum enumField_ = 0;
     public global::Google.Protobuf.TestProtos.ForeignEnum EnumField {
       get { return enumField_; }
       set {
@@ -2871,7 +2873,7 @@ namespace Google.Protobuf.TestProtos {
       int hash = 1;
       if (PrimitiveField != 0) hash ^= PrimitiveField.GetHashCode();
       if (StringField.Length != 0) hash ^= StringField.GetHashCode();
-      if (EnumField != global::Google.Protobuf.TestProtos.ForeignEnum.FOREIGN_UNSPECIFIED) hash ^= EnumField.GetHashCode();
+      if (EnumField != 0) hash ^= EnumField.GetHashCode();
       if (messageField_ != null) hash ^= MessageField.GetHashCode();
       hash ^= repeatedPrimitiveField_.GetHashCode();
       hash ^= repeatedStringField_.GetHashCode();
@@ -2881,7 +2883,7 @@ namespace Google.Protobuf.TestProtos {
     }
 
     public override string ToString() {
-      return pb::JsonFormatter.Default.Format(this);
+      return pb::JsonFormatter.ToDiagnosticString(this);
     }
 
     public void WriteTo(pb::CodedOutputStream output) {
@@ -2893,7 +2895,7 @@ namespace Google.Protobuf.TestProtos {
         output.WriteRawTag(18);
         output.WriteString(StringField);
       }
-      if (EnumField != global::Google.Protobuf.TestProtos.ForeignEnum.FOREIGN_UNSPECIFIED) {
+      if (EnumField != 0) {
         output.WriteRawTag(24);
         output.WriteEnum((int) EnumField);
       }
@@ -2915,7 +2917,7 @@ namespace Google.Protobuf.TestProtos {
       if (StringField.Length != 0) {
         size += 1 + pb::CodedOutputStream.ComputeStringSize(StringField);
       }
-      if (EnumField != global::Google.Protobuf.TestProtos.ForeignEnum.FOREIGN_UNSPECIFIED) {
+      if (EnumField != 0) {
         size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) EnumField);
       }
       if (messageField_ != null) {
@@ -2938,7 +2940,7 @@ namespace Google.Protobuf.TestProtos {
       if (other.StringField.Length != 0) {
         StringField = other.StringField;
       }
-      if (other.EnumField != global::Google.Protobuf.TestProtos.ForeignEnum.FOREIGN_UNSPECIFIED) {
+      if (other.EnumField != 0) {
         EnumField = other.EnumField;
       }
       if (other.messageField_ != null) {
@@ -3013,7 +3015,7 @@ namespace Google.Protobuf.TestProtos {
     public static pb::MessageParser<TestFieldOrderings> Parser { get { return _parser; } }
 
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Google.Protobuf.TestProtos.UnittestProto3.Descriptor.MessageTypes[11]; }
+      get { return global::Google.Protobuf.TestProtos.UnittestProto3Reflection.Descriptor.MessageTypes[11]; }
     }
 
     pbr::MessageDescriptor pb::IMessage.Descriptor {
@@ -3043,7 +3045,7 @@ namespace Google.Protobuf.TestProtos {
     public string MyString {
       get { return myString_; }
       set {
-        myString_ = pb::Preconditions.CheckNotNull(value, "value");
+        myString_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
       }
     }
 
@@ -3105,7 +3107,7 @@ namespace Google.Protobuf.TestProtos {
     }
 
     public override string ToString() {
-      return pb::JsonFormatter.Default.Format(this);
+      return pb::JsonFormatter.ToDiagnosticString(this);
     }
 
     public void WriteTo(pb::CodedOutputStream output) {
@@ -3276,7 +3278,7 @@ namespace Google.Protobuf.TestProtos {
         }
 
         public override string ToString() {
-          return pb::JsonFormatter.Default.Format(this);
+          return pb::JsonFormatter.ToDiagnosticString(this);
         }
 
         public void WriteTo(pb::CodedOutputStream output) {
@@ -3345,7 +3347,7 @@ namespace Google.Protobuf.TestProtos {
     public static pb::MessageParser<SparseEnumMessage> Parser { get { return _parser; } }
 
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Google.Protobuf.TestProtos.UnittestProto3.Descriptor.MessageTypes[12]; }
+      get { return global::Google.Protobuf.TestProtos.UnittestProto3Reflection.Descriptor.MessageTypes[12]; }
     }
 
     pbr::MessageDescriptor pb::IMessage.Descriptor {
@@ -3368,7 +3370,7 @@ namespace Google.Protobuf.TestProtos {
 
     /// <summary>Field number for the "sparse_enum" field.</summary>
     public const int SparseEnumFieldNumber = 1;
-    private global::Google.Protobuf.TestProtos.TestSparseEnum sparseEnum_ = global::Google.Protobuf.TestProtos.TestSparseEnum.TEST_SPARSE_ENUM_UNSPECIFIED;
+    private global::Google.Protobuf.TestProtos.TestSparseEnum sparseEnum_ = 0;
     public global::Google.Protobuf.TestProtos.TestSparseEnum SparseEnum {
       get { return sparseEnum_; }
       set {
@@ -3393,16 +3395,16 @@ namespace Google.Protobuf.TestProtos {
 
     public override int GetHashCode() {
       int hash = 1;
-      if (SparseEnum != global::Google.Protobuf.TestProtos.TestSparseEnum.TEST_SPARSE_ENUM_UNSPECIFIED) hash ^= SparseEnum.GetHashCode();
+      if (SparseEnum != 0) hash ^= SparseEnum.GetHashCode();
       return hash;
     }
 
     public override string ToString() {
-      return pb::JsonFormatter.Default.Format(this);
+      return pb::JsonFormatter.ToDiagnosticString(this);
     }
 
     public void WriteTo(pb::CodedOutputStream output) {
-      if (SparseEnum != global::Google.Protobuf.TestProtos.TestSparseEnum.TEST_SPARSE_ENUM_UNSPECIFIED) {
+      if (SparseEnum != 0) {
         output.WriteRawTag(8);
         output.WriteEnum((int) SparseEnum);
       }
@@ -3410,7 +3412,7 @@ namespace Google.Protobuf.TestProtos {
 
     public int CalculateSize() {
       int size = 0;
-      if (SparseEnum != global::Google.Protobuf.TestProtos.TestSparseEnum.TEST_SPARSE_ENUM_UNSPECIFIED) {
+      if (SparseEnum != 0) {
         size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) SparseEnum);
       }
       return size;
@@ -3420,7 +3422,7 @@ namespace Google.Protobuf.TestProtos {
       if (other == null) {
         return;
       }
-      if (other.SparseEnum != global::Google.Protobuf.TestProtos.TestSparseEnum.TEST_SPARSE_ENUM_UNSPECIFIED) {
+      if (other.SparseEnum != 0) {
         SparseEnum = other.SparseEnum;
       }
     }
@@ -3451,7 +3453,7 @@ namespace Google.Protobuf.TestProtos {
     public static pb::MessageParser<OneString> Parser { get { return _parser; } }
 
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Google.Protobuf.TestProtos.UnittestProto3.Descriptor.MessageTypes[13]; }
+      get { return global::Google.Protobuf.TestProtos.UnittestProto3Reflection.Descriptor.MessageTypes[13]; }
     }
 
     pbr::MessageDescriptor pb::IMessage.Descriptor {
@@ -3478,7 +3480,7 @@ namespace Google.Protobuf.TestProtos {
     public string Data {
       get { return data_; }
       set {
-        data_ = pb::Preconditions.CheckNotNull(value, "value");
+        data_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
       }
     }
 
@@ -3504,7 +3506,7 @@ namespace Google.Protobuf.TestProtos {
     }
 
     public override string ToString() {
-      return pb::JsonFormatter.Default.Format(this);
+      return pb::JsonFormatter.ToDiagnosticString(this);
     }
 
     public void WriteTo(pb::CodedOutputStream output) {
@@ -3554,7 +3556,7 @@ namespace Google.Protobuf.TestProtos {
     public static pb::MessageParser<MoreString> Parser { get { return _parser; } }
 
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Google.Protobuf.TestProtos.UnittestProto3.Descriptor.MessageTypes[14]; }
+      get { return global::Google.Protobuf.TestProtos.UnittestProto3Reflection.Descriptor.MessageTypes[14]; }
     }
 
     pbr::MessageDescriptor pb::IMessage.Descriptor {
@@ -3606,7 +3608,7 @@ namespace Google.Protobuf.TestProtos {
     }
 
     public override string ToString() {
-      return pb::JsonFormatter.Default.Format(this);
+      return pb::JsonFormatter.ToDiagnosticString(this);
     }
 
     public void WriteTo(pb::CodedOutputStream output) {
@@ -3649,7 +3651,7 @@ namespace Google.Protobuf.TestProtos {
     public static pb::MessageParser<OneBytes> Parser { get { return _parser; } }
 
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Google.Protobuf.TestProtos.UnittestProto3.Descriptor.MessageTypes[15]; }
+      get { return global::Google.Protobuf.TestProtos.UnittestProto3Reflection.Descriptor.MessageTypes[15]; }
     }
 
     pbr::MessageDescriptor pb::IMessage.Descriptor {
@@ -3676,7 +3678,7 @@ namespace Google.Protobuf.TestProtos {
     public pb::ByteString Data {
       get { return data_; }
       set {
-        data_ = pb::Preconditions.CheckNotNull(value, "value");
+        data_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
       }
     }
 
@@ -3702,7 +3704,7 @@ namespace Google.Protobuf.TestProtos {
     }
 
     public override string ToString() {
-      return pb::JsonFormatter.Default.Format(this);
+      return pb::JsonFormatter.ToDiagnosticString(this);
     }
 
     public void WriteTo(pb::CodedOutputStream output) {
@@ -3752,7 +3754,7 @@ namespace Google.Protobuf.TestProtos {
     public static pb::MessageParser<MoreBytes> Parser { get { return _parser; } }
 
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Google.Protobuf.TestProtos.UnittestProto3.Descriptor.MessageTypes[16]; }
+      get { return global::Google.Protobuf.TestProtos.UnittestProto3Reflection.Descriptor.MessageTypes[16]; }
     }
 
     pbr::MessageDescriptor pb::IMessage.Descriptor {
@@ -3779,7 +3781,7 @@ namespace Google.Protobuf.TestProtos {
     public pb::ByteString Data {
       get { return data_; }
       set {
-        data_ = pb::Preconditions.CheckNotNull(value, "value");
+        data_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
       }
     }
 
@@ -3805,7 +3807,7 @@ namespace Google.Protobuf.TestProtos {
     }
 
     public override string ToString() {
-      return pb::JsonFormatter.Default.Format(this);
+      return pb::JsonFormatter.ToDiagnosticString(this);
     }
 
     public void WriteTo(pb::CodedOutputStream output) {
@@ -3858,7 +3860,7 @@ namespace Google.Protobuf.TestProtos {
     public static pb::MessageParser<Int32Message> Parser { get { return _parser; } }
 
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Google.Protobuf.TestProtos.UnittestProto3.Descriptor.MessageTypes[17]; }
+      get { return global::Google.Protobuf.TestProtos.UnittestProto3Reflection.Descriptor.MessageTypes[17]; }
     }
 
     pbr::MessageDescriptor pb::IMessage.Descriptor {
@@ -3911,7 +3913,7 @@ namespace Google.Protobuf.TestProtos {
     }
 
     public override string ToString() {
-      return pb::JsonFormatter.Default.Format(this);
+      return pb::JsonFormatter.ToDiagnosticString(this);
     }
 
     public void WriteTo(pb::CodedOutputStream output) {
@@ -3961,7 +3963,7 @@ namespace Google.Protobuf.TestProtos {
     public static pb::MessageParser<Uint32Message> Parser { get { return _parser; } }
 
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Google.Protobuf.TestProtos.UnittestProto3.Descriptor.MessageTypes[18]; }
+      get { return global::Google.Protobuf.TestProtos.UnittestProto3Reflection.Descriptor.MessageTypes[18]; }
     }
 
     pbr::MessageDescriptor pb::IMessage.Descriptor {
@@ -4014,7 +4016,7 @@ namespace Google.Protobuf.TestProtos {
     }
 
     public override string ToString() {
-      return pb::JsonFormatter.Default.Format(this);
+      return pb::JsonFormatter.ToDiagnosticString(this);
     }
 
     public void WriteTo(pb::CodedOutputStream output) {
@@ -4064,7 +4066,7 @@ namespace Google.Protobuf.TestProtos {
     public static pb::MessageParser<Int64Message> Parser { get { return _parser; } }
 
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Google.Protobuf.TestProtos.UnittestProto3.Descriptor.MessageTypes[19]; }
+      get { return global::Google.Protobuf.TestProtos.UnittestProto3Reflection.Descriptor.MessageTypes[19]; }
     }
 
     pbr::MessageDescriptor pb::IMessage.Descriptor {
@@ -4117,7 +4119,7 @@ namespace Google.Protobuf.TestProtos {
     }
 
     public override string ToString() {
-      return pb::JsonFormatter.Default.Format(this);
+      return pb::JsonFormatter.ToDiagnosticString(this);
     }
 
     public void WriteTo(pb::CodedOutputStream output) {
@@ -4167,7 +4169,7 @@ namespace Google.Protobuf.TestProtos {
     public static pb::MessageParser<Uint64Message> Parser { get { return _parser; } }
 
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Google.Protobuf.TestProtos.UnittestProto3.Descriptor.MessageTypes[20]; }
+      get { return global::Google.Protobuf.TestProtos.UnittestProto3Reflection.Descriptor.MessageTypes[20]; }
     }
 
     pbr::MessageDescriptor pb::IMessage.Descriptor {
@@ -4220,7 +4222,7 @@ namespace Google.Protobuf.TestProtos {
     }
 
     public override string ToString() {
-      return pb::JsonFormatter.Default.Format(this);
+      return pb::JsonFormatter.ToDiagnosticString(this);
     }
 
     public void WriteTo(pb::CodedOutputStream output) {
@@ -4270,7 +4272,7 @@ namespace Google.Protobuf.TestProtos {
     public static pb::MessageParser<BoolMessage> Parser { get { return _parser; } }
 
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Google.Protobuf.TestProtos.UnittestProto3.Descriptor.MessageTypes[21]; }
+      get { return global::Google.Protobuf.TestProtos.UnittestProto3Reflection.Descriptor.MessageTypes[21]; }
     }
 
     pbr::MessageDescriptor pb::IMessage.Descriptor {
@@ -4323,7 +4325,7 @@ namespace Google.Protobuf.TestProtos {
     }
 
     public override string ToString() {
-      return pb::JsonFormatter.Default.Format(this);
+      return pb::JsonFormatter.ToDiagnosticString(this);
     }
 
     public void WriteTo(pb::CodedOutputStream output) {
@@ -4376,7 +4378,7 @@ namespace Google.Protobuf.TestProtos {
     public static pb::MessageParser<TestOneof> Parser { get { return _parser; } }
 
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Google.Protobuf.TestProtos.UnittestProto3.Descriptor.MessageTypes[22]; }
+      get { return global::Google.Protobuf.TestProtos.UnittestProto3Reflection.Descriptor.MessageTypes[22]; }
     }
 
     pbr::MessageDescriptor pb::IMessage.Descriptor {
@@ -4423,7 +4425,7 @@ namespace Google.Protobuf.TestProtos {
     public string FooString {
       get { return fooCase_ == FooOneofCase.FooString ? (string) foo_ : ""; }
       set {
-        foo_ = pb::Preconditions.CheckNotNull(value, "value");
+        foo_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
         fooCase_ = FooOneofCase.FooString;
       }
     }
@@ -4470,6 +4472,7 @@ namespace Google.Protobuf.TestProtos {
       if (FooInt != other.FooInt) return false;
       if (FooString != other.FooString) return false;
       if (!object.Equals(FooMessage, other.FooMessage)) return false;
+      if (FooCase != other.FooCase) return false;
       return true;
     }
 
@@ -4478,11 +4481,12 @@ namespace Google.Protobuf.TestProtos {
       if (fooCase_ == FooOneofCase.FooInt) hash ^= FooInt.GetHashCode();
       if (fooCase_ == FooOneofCase.FooString) hash ^= FooString.GetHashCode();
       if (fooCase_ == FooOneofCase.FooMessage) hash ^= FooMessage.GetHashCode();
+      hash ^= (int) fooCase_;
       return hash;
     }
 
     public override string ToString() {
-      return pb::JsonFormatter.Default.Format(this);
+      return pb::JsonFormatter.ToDiagnosticString(this);
     }
 
     public void WriteTo(pb::CodedOutputStream output) {
@@ -4568,7 +4572,7 @@ namespace Google.Protobuf.TestProtos {
     public static pb::MessageParser<TestPackedTypes> Parser { get { return _parser; } }
 
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Google.Protobuf.TestProtos.UnittestProto3.Descriptor.MessageTypes[23]; }
+      get { return global::Google.Protobuf.TestProtos.UnittestProto3Reflection.Descriptor.MessageTypes[23]; }
     }
 
     pbr::MessageDescriptor pb::IMessage.Descriptor {
@@ -4776,7 +4780,7 @@ namespace Google.Protobuf.TestProtos {
     }
 
     public override string ToString() {
-      return pb::JsonFormatter.Default.Format(this);
+      return pb::JsonFormatter.ToDiagnosticString(this);
     }
 
     public void WriteTo(pb::CodedOutputStream output) {
@@ -4928,7 +4932,7 @@ namespace Google.Protobuf.TestProtos {
     public static pb::MessageParser<TestUnpackedTypes> Parser { get { return _parser; } }
 
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Google.Protobuf.TestProtos.UnittestProto3.Descriptor.MessageTypes[24]; }
+      get { return global::Google.Protobuf.TestProtos.UnittestProto3Reflection.Descriptor.MessageTypes[24]; }
     }
 
     pbr::MessageDescriptor pb::IMessage.Descriptor {
@@ -5136,7 +5140,7 @@ namespace Google.Protobuf.TestProtos {
     }
 
     public override string ToString() {
-      return pb::JsonFormatter.Default.Format(this);
+      return pb::JsonFormatter.ToDiagnosticString(this);
     }
 
     public void WriteTo(pb::CodedOutputStream output) {
@@ -5284,7 +5288,7 @@ namespace Google.Protobuf.TestProtos {
     public static pb::MessageParser<TestRepeatedScalarDifferentTagSizes> Parser { get { return _parser; } }
 
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Google.Protobuf.TestProtos.UnittestProto3.Descriptor.MessageTypes[25]; }
+      get { return global::Google.Protobuf.TestProtos.UnittestProto3Reflection.Descriptor.MessageTypes[25]; }
     }
 
     pbr::MessageDescriptor pb::IMessage.Descriptor {
@@ -5410,7 +5414,7 @@ namespace Google.Protobuf.TestProtos {
     }
 
     public override string ToString() {
-      return pb::JsonFormatter.Default.Format(this);
+      return pb::JsonFormatter.ToDiagnosticString(this);
     }
 
     public void WriteTo(pb::CodedOutputStream output) {
@@ -5494,7 +5498,7 @@ namespace Google.Protobuf.TestProtos {
     public static pb::MessageParser<TestCommentInjectionMessage> Parser { get { return _parser; } }
 
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Google.Protobuf.TestProtos.UnittestProto3.Descriptor.MessageTypes[26]; }
+      get { return global::Google.Protobuf.TestProtos.UnittestProto3Reflection.Descriptor.MessageTypes[26]; }
     }
 
     pbr::MessageDescriptor pb::IMessage.Descriptor {
@@ -5524,7 +5528,7 @@ namespace Google.Protobuf.TestProtos {
     public string A {
       get { return a_; }
       set {
-        a_ = pb::Preconditions.CheckNotNull(value, "value");
+        a_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
       }
     }
 
@@ -5550,7 +5554,7 @@ namespace Google.Protobuf.TestProtos {
     }
 
     public override string ToString() {
-      return pb::JsonFormatter.Default.Format(this);
+      return pb::JsonFormatter.ToDiagnosticString(this);
     }
 
     public void WriteTo(pb::CodedOutputStream output) {
@@ -5603,7 +5607,7 @@ namespace Google.Protobuf.TestProtos {
     public static pb::MessageParser<FooRequest> Parser { get { return _parser; } }
 
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Google.Protobuf.TestProtos.UnittestProto3.Descriptor.MessageTypes[27]; }
+      get { return global::Google.Protobuf.TestProtos.UnittestProto3Reflection.Descriptor.MessageTypes[27]; }
     }
 
     pbr::MessageDescriptor pb::IMessage.Descriptor {
@@ -5643,7 +5647,7 @@ namespace Google.Protobuf.TestProtos {
     }
 
     public override string ToString() {
-      return pb::JsonFormatter.Default.Format(this);
+      return pb::JsonFormatter.ToDiagnosticString(this);
     }
 
     public void WriteTo(pb::CodedOutputStream output) {
@@ -5679,7 +5683,7 @@ namespace Google.Protobuf.TestProtos {
     public static pb::MessageParser<FooResponse> Parser { get { return _parser; } }
 
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Google.Protobuf.TestProtos.UnittestProto3.Descriptor.MessageTypes[28]; }
+      get { return global::Google.Protobuf.TestProtos.UnittestProto3Reflection.Descriptor.MessageTypes[28]; }
     }
 
     pbr::MessageDescriptor pb::IMessage.Descriptor {
@@ -5719,7 +5723,7 @@ namespace Google.Protobuf.TestProtos {
     }
 
     public override string ToString() {
-      return pb::JsonFormatter.Default.Format(this);
+      return pb::JsonFormatter.ToDiagnosticString(this);
     }
 
     public void WriteTo(pb::CodedOutputStream output) {
@@ -5755,7 +5759,7 @@ namespace Google.Protobuf.TestProtos {
     public static pb::MessageParser<FooClientMessage> Parser { get { return _parser; } }
 
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Google.Protobuf.TestProtos.UnittestProto3.Descriptor.MessageTypes[29]; }
+      get { return global::Google.Protobuf.TestProtos.UnittestProto3Reflection.Descriptor.MessageTypes[29]; }
     }
 
     pbr::MessageDescriptor pb::IMessage.Descriptor {
@@ -5795,7 +5799,7 @@ namespace Google.Protobuf.TestProtos {
     }
 
     public override string ToString() {
-      return pb::JsonFormatter.Default.Format(this);
+      return pb::JsonFormatter.ToDiagnosticString(this);
     }
 
     public void WriteTo(pb::CodedOutputStream output) {
@@ -5831,7 +5835,7 @@ namespace Google.Protobuf.TestProtos {
     public static pb::MessageParser<FooServerMessage> Parser { get { return _parser; } }
 
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Google.Protobuf.TestProtos.UnittestProto3.Descriptor.MessageTypes[30]; }
+      get { return global::Google.Protobuf.TestProtos.UnittestProto3Reflection.Descriptor.MessageTypes[30]; }
     }
 
     pbr::MessageDescriptor pb::IMessage.Descriptor {
@@ -5871,7 +5875,7 @@ namespace Google.Protobuf.TestProtos {
     }
 
     public override string ToString() {
-      return pb::JsonFormatter.Default.Format(this);
+      return pb::JsonFormatter.ToDiagnosticString(this);
     }
 
     public void WriteTo(pb::CodedOutputStream output) {
@@ -5907,7 +5911,7 @@ namespace Google.Protobuf.TestProtos {
     public static pb::MessageParser<BarRequest> Parser { get { return _parser; } }
 
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Google.Protobuf.TestProtos.UnittestProto3.Descriptor.MessageTypes[31]; }
+      get { return global::Google.Protobuf.TestProtos.UnittestProto3Reflection.Descriptor.MessageTypes[31]; }
     }
 
     pbr::MessageDescriptor pb::IMessage.Descriptor {
@@ -5947,7 +5951,7 @@ namespace Google.Protobuf.TestProtos {
     }
 
     public override string ToString() {
-      return pb::JsonFormatter.Default.Format(this);
+      return pb::JsonFormatter.ToDiagnosticString(this);
     }
 
     public void WriteTo(pb::CodedOutputStream output) {
@@ -5983,7 +5987,7 @@ namespace Google.Protobuf.TestProtos {
     public static pb::MessageParser<BarResponse> Parser { get { return _parser; } }
 
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Google.Protobuf.TestProtos.UnittestProto3.Descriptor.MessageTypes[32]; }
+      get { return global::Google.Protobuf.TestProtos.UnittestProto3Reflection.Descriptor.MessageTypes[32]; }
     }
 
     pbr::MessageDescriptor pb::IMessage.Descriptor {
@@ -6023,7 +6027,7 @@ namespace Google.Protobuf.TestProtos {
     }
 
     public override string ToString() {
-      return pb::JsonFormatter.Default.Format(this);
+      return pb::JsonFormatter.ToDiagnosticString(this);
     }
 
     public void WriteTo(pb::CodedOutputStream output) {

@@ -32,20 +32,26 @@
 
 #include <google/protobuf/compiler/mock_code_generator.h>
 
+#include <stdlib.h>
+#include <iostream>
 #include <memory>
 #ifndef _SHARED_PTR_H
 #include <google/protobuf/stubs/shared_ptr.h>
 #endif
+#include <vector>
 
+#include <google/protobuf/stubs/logging.h>
+#include <google/protobuf/stubs/common.h>
 #include <google/protobuf/testing/file.h>
+#include <google/protobuf/testing/file.h>
+#include <google/protobuf/testing/file.h>
+#include <google/protobuf/io/printer.h>
+#include <google/protobuf/io/zero_copy_stream.h>
 #include <google/protobuf/descriptor.pb.h>
 #include <google/protobuf/descriptor.h>
-#include <google/protobuf/io/zero_copy_stream.h>
-#include <google/protobuf/io/printer.h>
 #include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/stubs/substitute.h>
 #include <gtest/gtest.h>
-#include <google/protobuf/stubs/stl_util.h>
 
 namespace google {
 namespace protobuf {
@@ -146,6 +152,12 @@ bool MockCodeGenerator::Generate(
             file_descriptor_proto.source_code_info().location_size() > 0;
         std::cerr << "Saw message type MockCodeGenerator_HasSourceCodeInfo: "
                   << has_source_code_info << "." << std::endl;
+        abort();
+      } else if (command == "HasJsonName") {
+        FieldDescriptorProto field_descriptor_proto;
+        file->message_type(i)->field(0)->CopyTo(&field_descriptor_proto);
+        std::cerr << "Saw json_name: "
+                  << field_descriptor_proto.has_json_name() << std::endl;
         abort();
       } else {
         GOOGLE_LOG(FATAL) << "Unknown MockCodeGenerator command: " << command;

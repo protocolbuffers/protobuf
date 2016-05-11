@@ -274,8 +274,8 @@ inline bool WireFormatLite::ReadRepeatedFixedSizePrimitive(
     // The number of bytes each type occupies on the wire.
     const int per_value_size = tag_size + sizeof(value);
 
-    int elements_available = min(values->Capacity() - values->size(),
-                                 size / per_value_size);
+    int elements_available =
+        std::min(values->Capacity() - values->size(), size / per_value_size);
     int num_read = 0;
     while (num_read < elements_available &&
            (buffer = io::CodedInputStream::ExpectTagFromArray(
@@ -367,7 +367,7 @@ inline bool WireFormatLite::ReadPackedFixedSizePrimitive(
     bytes_limit = input->BytesUntilLimit();
   } else {
     bytes_limit =
-        min(bytes_limit, static_cast<int64>(input->BytesUntilLimit()));
+        std::min(bytes_limit, static_cast<int64>(input->BytesUntilLimit()));
   }
   if (bytes_limit >= new_bytes) {
     // Fast-path that pre-allocates *values to the final size.
@@ -412,12 +412,12 @@ inline bool WireFormatLite::ReadPackedPrimitive<                               \
       CPPTYPE, WireFormatLite::DECLARED_TYPE>(input, values);                  \
 }
 
-READ_REPEATED_PACKED_FIXED_SIZE_PRIMITIVE(uint32, TYPE_FIXED32);
-READ_REPEATED_PACKED_FIXED_SIZE_PRIMITIVE(uint64, TYPE_FIXED64);
-READ_REPEATED_PACKED_FIXED_SIZE_PRIMITIVE(int32, TYPE_SFIXED32);
-READ_REPEATED_PACKED_FIXED_SIZE_PRIMITIVE(int64, TYPE_SFIXED64);
-READ_REPEATED_PACKED_FIXED_SIZE_PRIMITIVE(float, TYPE_FLOAT);
-READ_REPEATED_PACKED_FIXED_SIZE_PRIMITIVE(double, TYPE_DOUBLE);
+READ_REPEATED_PACKED_FIXED_SIZE_PRIMITIVE(uint32, TYPE_FIXED32)
+READ_REPEATED_PACKED_FIXED_SIZE_PRIMITIVE(uint64, TYPE_FIXED64)
+READ_REPEATED_PACKED_FIXED_SIZE_PRIMITIVE(int32, TYPE_SFIXED32)
+READ_REPEATED_PACKED_FIXED_SIZE_PRIMITIVE(int64, TYPE_SFIXED64)
+READ_REPEATED_PACKED_FIXED_SIZE_PRIMITIVE(float, TYPE_FLOAT)
+READ_REPEATED_PACKED_FIXED_SIZE_PRIMITIVE(double, TYPE_DOUBLE)
 
 #undef READ_REPEATED_PACKED_FIXED_SIZE_PRIMITIVE
 
@@ -835,12 +835,14 @@ inline int WireFormatLite::EnumSize(int value) {
 }
 
 inline int WireFormatLite::StringSize(const string& value) {
-  return io::CodedOutputStream::VarintSize32(value.size()) +
-         value.size();
+  return static_cast<int>(
+      io::CodedOutputStream::VarintSize32(static_cast<uint32>(value.size())) +
+      value.size());
 }
 inline int WireFormatLite::BytesSize(const string& value) {
-  return io::CodedOutputStream::VarintSize32(value.size()) +
-         value.size();
+  return static_cast<int>(
+      io::CodedOutputStream::VarintSize32(static_cast<uint32>(value.size())) +
+      value.size());
 }
 
 

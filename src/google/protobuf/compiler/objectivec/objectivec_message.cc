@@ -66,11 +66,12 @@ int OrderGroupForFieldDescriptor(const FieldDescriptor* descriptor) {
   // The first item in the object structure is our uint32[] for has bits.
   // We then want to order things to make the instances as small as
   // possible. So we follow the has bits with:
-  //   1. Bools (1 byte)
-  //   2. Anything always 4 bytes - float, *32, enums
-  //   3. Anything that is always a pointer (they will be 8 bytes on 64 bit
+  //   1. Anything always 4 bytes - float, *32, enums
+  //   2. Anything that is always a pointer (they will be 8 bytes on 64 bit
   //      builds and 4 bytes on 32bit builds.
-  //   4. Anything always 8 bytes - double, *64
+  //   3. Anything always 8 bytes - double, *64
+  //
+  // NOTE: Bools aren't listed, they were stored in the has bits.
   //
   // Why? Using 64bit builds as an example, this means worse case, we have
   // enough bools that we overflow 1 byte from 4 byte alignment, so 3 bytes
@@ -115,9 +116,9 @@ int OrderGroupForFieldDescriptor(const FieldDescriptor* descriptor) {
     case FieldDescriptor::TYPE_ENUM:
       return 2;
 
-    // 1 byte.
+    // 0 bytes. Stored in the has bits.
     case FieldDescriptor::TYPE_BOOL:
-      return 1;
+      return 99;  // End of the list (doesn't really matter).
   }
 
   // Some compilers report reaching end of function even though all cases of
@@ -174,10 +175,11 @@ const FieldDescriptor** SortFieldsByStorageSize(const Descriptor* descriptor) {
 }  // namespace
 
 MessageGenerator::MessageGenerator(const string& root_classname,
-                                   const Descriptor* descriptor)
+                                   const Descriptor* descriptor,
+                                   const Options& options)
     : root_classname_(root_classname),
       descriptor_(descriptor),
-      field_generators_(descriptor),
+      field_generators_(descriptor, options),
       class_name_(ClassName(descriptor_)) {
   for (int i = 0; i < descriptor_->extension_count(); i++) {
     extension_generators_.push_back(
@@ -196,7 +198,9 @@ MessageGenerator::MessageGenerator(const string& root_classname,
 
   for (int i = 0; i < descriptor_->nested_type_count(); i++) {
     MessageGenerator* generator =
-        new MessageGenerator(root_classname_, descriptor_->nested_type(i));
+        new MessageGenerator(root_classname_,
+                             descriptor_->nested_type(i),
+                             options);
     nested_message_generators_.push_back(generator);
   }
 }
@@ -230,11 +234,6 @@ void MessageGenerator::DetermineForwardDeclarations(set<string>* fwd_decls) {
   if (!IsMapEntryMessage(descriptor_)) {
     for (int i = 0; i < descriptor_->field_count(); i++) {
       const FieldDescriptor* fieldDescriptor = descriptor_->field(i);
-      // If it is a the field is repeated, the type will be and *Array, and we
-      // don't need any forward decl.
-      if (fieldDescriptor->is_repeated()) {
-        continue;
-      }
       field_generators_.get(fieldDescriptor)
           .DetermineForwardDeclarations(fwd_decls);
     }
@@ -322,8 +321,9 @@ void MessageGenerator::GenerateMessageHeader(io::Printer* printer) {
   }
 
   printer->Print(
-      "$comments$@interface $classname$ : GPBMessage\n\n",
+      "$comments$$deprecated_attribute$@interface $classname$ : GPBMessage\n\n",
       "classname", class_name_,
+      "deprecated_attribute", GetOptionalDeprecatedAttribute(descriptor_, false, true),
       "comments", message_comments);
 
   vector<char> seen_oneofs(descriptor_->oneof_decl_count(), 0);
@@ -406,32 +406,28 @@ void MessageGenerator::GenerateSource(io::Printer* printer) {
     sort(sorted_extensions.begin(), sorted_extensions.end(),
          ExtensionRangeOrdering());
 
-    // TODO(thomasvl): Finish optimizing has bit. The current behavior is as
-    // follows:
-    // 1. objectivec_field.cc's SetCommonFieldVariables() defaults the has_index
-    //    to the field's index in the list of fields.
-    // 2. RepeatedFieldGenerator::RepeatedFieldGenerator() sets has_index to
-    //    GPBNoHasBit because repeated fields & map<> fields don't use the has
-    //    bit.
-    // 3. FieldGenerator::SetOneofIndexBase() overrides has_bit with a negative
-    //    index that groups all the elements on of the oneof.
-    // So in has_storage, we need enough bits for the single fields that aren't
-    // in any oneof, and then one int32 for each oneof (to store the field
-    // number).  So we could save a little space by not using the field's index
-    // and instead make a second pass only assigning indexes for the fields
-    // that would need it.  The only savings would come when messages have over
-    // a multiple of 32 fields with some number being repeated or in oneofs to
-    // drop the count below that 32 multiple; so it hasn't seemed worth doing
-    // at the moment.
-    size_t num_has_bits = descriptor_->field_count();
+    // Assign has bits:
+    // 1. FieldGeneratorMap::CalculateHasBits() loops through the fields seeing
+    //    who needs has bits and assigning them.
+    // 2. FieldGenerator::SetOneofIndexBase() overrides has_bit with a negative
+    //    index that groups all the elements in the oneof.
+    size_t num_has_bits = field_generators_.CalculateHasBits();
     size_t sizeof_has_storage = (num_has_bits + 31) / 32;
+    if (sizeof_has_storage == 0) {
+      // In the case where no field needs has bits, don't let the _has_storage_
+      // end up as zero length (zero length arrays are sort of a grey area
+      // since it has to be at the start of the struct). This also ensures a
+      // field with only oneofs keeps the required negative indices they need.
+      sizeof_has_storage = 1;
+    }
     // Tell all the fields the oneof base.
     for (vector<OneofGenerator*>::iterator iter = oneof_generators_.begin();
          iter != oneof_generators_.end(); ++iter) {
       (*iter)->SetOneofIndexBase(sizeof_has_storage);
     }
     field_generators_.SetOneofIndexBase(sizeof_has_storage);
-    // Add an int32 for each oneof to store which is set.
+    // sizeof_has_storage needs enough bits for the single fields that aren't in
+    // any oneof, and then one int32 for each oneof (to store the field number).
     sizeof_has_storage += descriptor_->oneof_decl_count();
 
     printer->Print(
@@ -458,47 +454,26 @@ void MessageGenerator::GenerateSource(io::Printer* printer) {
         "  static GPBDescriptor *descriptor = nil;\n"
         "  if (!descriptor) {\n");
 
-    bool has_oneofs = oneof_generators_.size();
-    if (has_oneofs) {
-      printer->Print(
-          "    static GPBMessageOneofDescription oneofs[] = {\n");
-      printer->Indent();
-      printer->Indent();
-      printer->Indent();
-      for (vector<OneofGenerator*>::iterator iter = oneof_generators_.begin();
-           iter != oneof_generators_.end(); ++iter) {
-        (*iter)->GenerateDescription(printer);
-      }
-      printer->Outdent();
-      printer->Outdent();
-      printer->Outdent();
-      printer->Print(
-          "    };\n");
-    }
-
     TextFormatDecodeData text_format_decode_data;
     bool has_fields = descriptor_->field_count() > 0;
+    bool need_defaults = field_generators_.DoesAnyFieldHaveNonZeroDefault();
+    string field_description_type;
+    if (need_defaults) {
+      field_description_type = "GPBMessageFieldDescriptionWithDefault";
+    } else {
+      field_description_type = "GPBMessageFieldDescription";
+    }
     if (has_fields) {
-      // TODO(thomasvl): The plugin's FieldGenerator::GenerateFieldDescription()
-      // wraps the fieldOptions's value of this structure in an CPP gate so
-      // they can be compiled away; but that still results in a const char* in
-      // the structure for a NULL pointer for every message field.  If the
-      // fieldOptions are moved to a separate payload like the TextFormat extra
-      // data is, then it would shrink that static data shrinking the binaries
-      // a little more.
-      // TODO(thomasvl): proto3 syntax doens't need a defaultValue in the
-      // structure because primitive types are always zero.  If we add a second
-      // structure and a different initializer, we can avoid the wasted static
-      // storage for every field in a proto3 message.
       printer->Print(
-          "    static GPBMessageFieldDescription fields[] = {\n");
+          "    static $field_description_type$ fields[] = {\n",
+          "field_description_type", field_description_type);
       printer->Indent();
       printer->Indent();
       printer->Indent();
       for (int i = 0; i < descriptor_->field_count(); ++i) {
         const FieldGenerator& field_generator =
             field_generators_.get(sorted_fields[i]);
-        field_generator.GenerateFieldDescription(printer);
+        field_generator.GenerateFieldDescription(printer, need_defaults);
         if (field_generator.needs_textformat_name_support()) {
           text_format_decode_data.AddString(sorted_fields[i]->number(),
                                             field_generator.generated_objc_name(),
@@ -512,111 +487,89 @@ void MessageGenerator::GenerateSource(io::Printer* printer) {
           "    };\n");
     }
 
-    bool has_enums = enum_generators_.size();
-    if (has_enums) {
-      printer->Print(
-          "    static GPBMessageEnumDescription enums[] = {\n");
-      printer->Indent();
-      printer->Indent();
-      printer->Indent();
-      for (vector<EnumGenerator*>::iterator iter = enum_generators_.begin();
-           iter != enum_generators_.end(); ++iter) {
-        printer->Print("{ .enumDescriptorFunc = $name$_EnumDescriptor },\n",
-                       "name", (*iter)->name());
-      }
-      printer->Outdent();
-      printer->Outdent();
-      printer->Outdent();
-      printer->Print(
-          "    };\n");
-    }
-
-    bool has_extensions = sorted_extensions.size();
-    if (has_extensions) {
-      printer->Print(
-          "    static GPBExtensionRange ranges[] = {\n");
-      printer->Indent();
-      printer->Indent();
-      printer->Indent();
-      for (int i = 0; i < sorted_extensions.size(); i++) {
-        printer->Print("{ .start = $start$, .end = $end$ },\n",
-                       "start", SimpleItoa(sorted_extensions[i]->start),
-                       "end", SimpleItoa(sorted_extensions[i]->end));
-      }
-      printer->Outdent();
-      printer->Outdent();
-      printer->Outdent();
-      printer->Print(
-          "    };\n");
-    }
-
     map<string, string> vars;
     vars["classname"] = class_name_;
     vars["rootclassname"] = root_classname_;
     vars["fields"] = has_fields ? "fields" : "NULL";
-    vars["fields_count"] =
-        has_fields ? "sizeof(fields) / sizeof(GPBMessageFieldDescription)" : "0";
-    vars["oneofs"] = has_oneofs ? "oneofs" : "NULL";
-    vars["oneof_count"] =
-        has_oneofs ? "sizeof(oneofs) / sizeof(GPBMessageOneofDescription)" : "0";
-    vars["enums"] = has_enums ? "enums" : "NULL";
-    vars["enum_count"] =
-        has_enums ? "sizeof(enums) / sizeof(GPBMessageEnumDescription)" : "0";
-    vars["ranges"] = has_extensions ? "ranges" : "NULL";
-    vars["range_count"] =
-        has_extensions ? "sizeof(ranges) / sizeof(GPBExtensionRange)" : "0";
-    vars["wireformat"] =
-        descriptor_->options().message_set_wire_format() ? "YES" : "NO";
-
-    if (text_format_decode_data.num_entries() == 0) {
-      printer->Print(
-          vars,
-          "    GPBDescriptor *localDescriptor =\n"
-          "        [GPBDescriptor allocDescriptorForClass:[$classname$ class]\n"
-          "                                     rootClass:[$rootclassname$ class]\n"
-          "                                          file:$rootclassname$_FileDescriptor()\n"
-          "                                        fields:$fields$\n"
-          "                                    fieldCount:$fields_count$\n"
-          "                                        oneofs:$oneofs$\n"
-          "                                    oneofCount:$oneof_count$\n"
-          "                                         enums:$enums$\n"
-          "                                     enumCount:$enum_count$\n"
-          "                                        ranges:$ranges$\n"
-          "                                    rangeCount:$range_count$\n"
-          "                                   storageSize:sizeof($classname$__storage_)\n"
-          "                                    wireFormat:$wireformat$];\n");
+    if (has_fields) {
+      vars["fields_count"] =
+          "(uint32_t)(sizeof(fields) / sizeof(" + field_description_type + "))";
     } else {
-      vars["extraTextFormatInfo"] = CEscape(text_format_decode_data.Data());
+      vars["fields_count"] = "0";
+    }
+
+    std::vector<string> init_flags;
+    if (need_defaults) {
+      init_flags.push_back("GPBDescriptorInitializationFlag_FieldsWithDefault");
+    }
+    if (descriptor_->options().message_set_wire_format()) {
+      init_flags.push_back("GPBDescriptorInitializationFlag_WireFormat");
+    }
+    vars["init_flags"] = BuildFlagsString(init_flags);
+
+    printer->Print(
+        vars,
+        "    GPBDescriptor *localDescriptor =\n"
+        "        [GPBDescriptor allocDescriptorForClass:[$classname$ class]\n"
+        "                                     rootClass:[$rootclassname$ class]\n"
+        "                                          file:$rootclassname$_FileDescriptor()\n"
+        "                                        fields:$fields$\n"
+        "                                    fieldCount:$fields_count$\n"
+        "                                   storageSize:sizeof($classname$__storage_)\n"
+        "                                         flags:$init_flags$];\n");
+    if (oneof_generators_.size() != 0) {
       printer->Print(
-          vars,
-          "#if GPBOBJC_SKIP_MESSAGE_TEXTFORMAT_EXTRAS\n"
-          "    const char *extraTextFormatInfo = NULL;\n"
-          "#else\n"
-          "    static const char *extraTextFormatInfo = \"$extraTextFormatInfo$\";\n"
-          "#endif  // GPBOBJC_SKIP_MESSAGE_TEXTFORMAT_EXTRAS\n"
-          "    GPBDescriptor *localDescriptor =\n"
-          "        [GPBDescriptor allocDescriptorForClass:[$classname$ class]\n"
-          "                                     rootClass:[$rootclassname$ class]\n"
-          "                                          file:$rootclassname$_FileDescriptor()\n"
-          "                                        fields:$fields$\n"
-          "                                    fieldCount:$fields_count$\n"
-          "                                        oneofs:$oneofs$\n"
-          "                                    oneofCount:$oneof_count$\n"
-          "                                         enums:$enums$\n"
-          "                                     enumCount:$enum_count$\n"
-          "                                        ranges:$ranges$\n"
-          "                                    rangeCount:$range_count$\n"
-          "                                   storageSize:sizeof($classname$__storage_)\n"
-          "                                    wireFormat:$wireformat$\n"
-          "                           extraTextFormatInfo:extraTextFormatInfo];\n");
+          "    static const char *oneofs[] = {\n");
+      for (vector<OneofGenerator*>::iterator iter = oneof_generators_.begin();
+           iter != oneof_generators_.end(); ++iter) {
+        printer->Print(
+            "      \"$name$\",\n",
+            "name", (*iter)->DescriptorName());
       }
       printer->Print(
-          "    NSAssert(descriptor == nil, @\"Startup recursed!\");\n"
-          "    descriptor = localDescriptor;\n"
-          "  }\n"
-          "  return descriptor;\n"
-          "}\n\n"
-          "@end\n\n");
+          "    };\n"
+          "    [localDescriptor setupOneofs:oneofs\n"
+          "                           count:(uint32_t)(sizeof(oneofs) / sizeof(char*))\n"
+          "                   firstHasIndex:$first_has_index$];\n",
+          "first_has_index", oneof_generators_[0]->HasIndexAsString());
+    }
+    if (text_format_decode_data.num_entries() != 0) {
+      const string text_format_data_str(text_format_decode_data.Data());
+      printer->Print(
+          "#if !GPBOBJC_SKIP_MESSAGE_TEXTFORMAT_EXTRAS\n"
+          "    static const char *extraTextFormatInfo =");
+      static const int kBytesPerLine = 40;  // allow for escaping
+      for (int i = 0; i < text_format_data_str.size(); i += kBytesPerLine) {
+        printer->Print(
+            "\n        \"$data$\"",
+            "data", EscapeTrigraphs(
+                CEscape(text_format_data_str.substr(i, kBytesPerLine))));
+      }
+      printer->Print(
+          ";\n"
+          "    [localDescriptor setupExtraTextInfo:extraTextFormatInfo];\n"
+          "#endif  // !GPBOBJC_SKIP_MESSAGE_TEXTFORMAT_EXTRAS\n");
+    }
+    if (sorted_extensions.size() != 0) {
+      printer->Print(
+          "    static const GPBExtensionRange ranges[] = {\n");
+      for (int i = 0; i < sorted_extensions.size(); i++) {
+        printer->Print("      { .start = $start$, .end = $end$ },\n",
+                       "start", SimpleItoa(sorted_extensions[i]->start),
+                       "end", SimpleItoa(sorted_extensions[i]->end));
+      }
+      printer->Print(
+          "    };\n"
+          "    [localDescriptor setupExtensionRanges:ranges\n"
+          "                                    count:(uint32_t)(sizeof(ranges) / sizeof(GPBExtensionRange))];\n");
+    }
+    printer->Print(
+        "    NSAssert(descriptor == nil, @\"Startup recursed!\");\n"
+        "    descriptor = localDescriptor;\n"
+        "  }\n"
+        "  return descriptor;\n"
+        "}\n\n"
+        "@end\n\n");
 
     for (int i = 0; i < descriptor_->field_count(); i++) {
       field_generators_.get(descriptor_->field(i))

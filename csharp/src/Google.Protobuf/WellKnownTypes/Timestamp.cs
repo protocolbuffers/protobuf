@@ -9,36 +9,34 @@ using pbr = global::Google.Protobuf.Reflection;
 using scg = global::System.Collections.Generic;
 namespace Google.Protobuf.WellKnownTypes {
 
-  namespace Proto {
+  /// <summary>Holder for reflection information generated from google/protobuf/timestamp.proto</summary>
+  [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+  public static partial class TimestampReflection {
 
-    /// <summary>Holder for reflection information generated from google/protobuf/timestamp.proto</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-    public static partial class Timestamp {
-
-      #region Descriptor
-      /// <summary>File descriptor for google/protobuf/timestamp.proto</summary>
-      public static pbr::FileDescriptor Descriptor {
-        get { return descriptor; }
-      }
-      private static pbr::FileDescriptor descriptor;
-
-      static Timestamp() {
-        byte[] descriptorData = global::System.Convert.FromBase64String(
-            string.Concat(
-              "Ch9nb29nbGUvcHJvdG9idWYvdGltZXN0YW1wLnByb3RvEg9nb29nbGUucHJv",
-              "dG9idWYiKwoJVGltZXN0YW1wEg8KB3NlY29uZHMYASABKAMSDQoFbmFub3MY",
-              "AiABKAVCUQoTY29tLmdvb2dsZS5wcm90b2J1ZkIOVGltZXN0YW1wUHJvdG9Q",
-              "AaABAaICA0dQQqoCHkdvb2dsZS5Qcm90b2J1Zi5XZWxsS25vd25UeXBlc2IG",
-              "cHJvdG8z"));
-        descriptor = pbr::FileDescriptor.InternalBuildGeneratedFileFrom(descriptorData,
-            new pbr::FileDescriptor[] { },
-            new pbr::GeneratedCodeInfo(null, new pbr::GeneratedCodeInfo[] {
-              new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.WellKnownTypes.Timestamp), new[]{ "Seconds", "Nanos" }, null, null, null)
-            }));
-      }
-      #endregion
-
+    #region Descriptor
+    /// <summary>File descriptor for google/protobuf/timestamp.proto</summary>
+    public static pbr::FileDescriptor Descriptor {
+      get { return descriptor; }
     }
+    private static pbr::FileDescriptor descriptor;
+
+    static TimestampReflection() {
+      byte[] descriptorData = global::System.Convert.FromBase64String(
+          string.Concat(
+            "Ch9nb29nbGUvcHJvdG9idWYvdGltZXN0YW1wLnByb3RvEg9nb29nbGUucHJv",
+            "dG9idWYiKwoJVGltZXN0YW1wEg8KB3NlY29uZHMYASABKAMSDQoFbmFub3MY",
+            "AiABKAVCgQEKE2NvbS5nb29nbGUucHJvdG9idWZCDlRpbWVzdGFtcFByb3Rv",
+            "UAFaK2dpdGh1Yi5jb20vZ29sYW5nL3Byb3RvYnVmL3B0eXBlcy90aW1lc3Rh",
+            "bXCgAQH4AQGiAgNHUEKqAh5Hb29nbGUuUHJvdG9idWYuV2VsbEtub3duVHlw",
+            "ZXNiBnByb3RvMw=="));
+      descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
+          new pbr::FileDescriptor[] { },
+          new pbr::GeneratedClrTypeInfo(null, new pbr::GeneratedClrTypeInfo[] {
+            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.WellKnownTypes.Timestamp), global::Google.Protobuf.WellKnownTypes.Timestamp.Parser, new[]{ "Seconds", "Nanos" }, null, null, null)
+          }));
+    }
+    #endregion
+
   }
   #region Messages
   /// <summary>
@@ -53,30 +51,43 @@ namespace Google.Protobuf.WellKnownTypes {
   ///  By restricting to that range, we ensure that we can convert to
   ///  and from  RFC 3339 date strings.
   ///  See [https://www.ietf.org/rfc/rfc3339.txt](https://www.ietf.org/rfc/rfc3339.txt).
+  ///
   ///  Example 1: Compute Timestamp from POSIX `time()`.
+  ///
   ///      Timestamp timestamp;
   ///      timestamp.set_seconds(time(NULL));
   ///      timestamp.set_nanos(0);
+  ///
   ///  Example 2: Compute Timestamp from POSIX `gettimeofday()`.
+  ///
   ///      struct timeval tv;
   ///      gettimeofday(&amp;tv, NULL);
+  ///
   ///      Timestamp timestamp;
   ///      timestamp.set_seconds(tv.tv_sec);
   ///      timestamp.set_nanos(tv.tv_usec * 1000);
+  ///
   ///  Example 3: Compute Timestamp from Win32 `GetSystemTimeAsFileTime()`.
+  ///
   ///      FILETIME ft;
   ///      GetSystemTimeAsFileTime(&amp;ft);
   ///      UINT64 ticks = (((UINT64)ft.dwHighDateTime) &lt;&lt; 32) | ft.dwLowDateTime;
+  ///
   ///      // A Windows tick is 100 nanoseconds. Windows epoch 1601-01-01T00:00:00Z
   ///      // is 11644473600 seconds before Unix epoch 1970-01-01T00:00:00Z.
   ///      Timestamp timestamp;
   ///      timestamp.set_seconds((INT64) ((ticks / 10000000) - 11644473600LL));
   ///      timestamp.set_nanos((INT32) ((ticks % 10000000) * 100));
+  ///
   ///  Example 4: Compute Timestamp from Java `System.currentTimeMillis()`.
+  ///
   ///      long millis = System.currentTimeMillis();
+  ///
   ///      Timestamp timestamp = Timestamp.newBuilder().setSeconds(millis / 1000)
   ///          .setNanos((int) ((millis % 1000) * 1000000)).build();
+  ///
   ///  Example 5: Compute Timestamp from current time in Python.
+  ///
   ///      now = time.time()
   ///      seconds = int(now)
   ///      nanos = int((now - seconds) * 10**9)
@@ -88,7 +99,7 @@ namespace Google.Protobuf.WellKnownTypes {
     public static pb::MessageParser<Timestamp> Parser { get { return _parser; } }
 
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Google.Protobuf.WellKnownTypes.Proto.Timestamp.Descriptor.MessageTypes[0]; }
+      get { return global::Google.Protobuf.WellKnownTypes.TimestampReflection.Descriptor.MessageTypes[0]; }
     }
 
     pbr::MessageDescriptor pb::IMessage.Descriptor {
@@ -165,7 +176,7 @@ namespace Google.Protobuf.WellKnownTypes {
     }
 
     public override string ToString() {
-      return pb::JsonFormatter.Default.Format(this);
+      return pb::JsonFormatter.ToDiagnosticString(this);
     }
 
     public void WriteTo(pb::CodedOutputStream output) {

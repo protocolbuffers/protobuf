@@ -640,6 +640,14 @@ static const upb_pbdecodermethod *msgdef_decodermethod(Descriptor* desc) {
   return desc->fill_method;
 }
 
+static const upb_json_parsermethod *msgdef_jsonparsermethod(Descriptor* desc) {
+  if (desc->json_fill_method == NULL) {
+    desc->json_fill_method =
+        upb_json_parsermethod_new(desc->msgdef, &desc->json_fill_method);
+  }
+  return desc->json_fill_method;
+}
+
 
 // Stack-allocated context during an encode/decode operation. Contains the upb
 // environment and its stack-based allocator, an initial buffer for allocations
@@ -648,7 +656,6 @@ static const upb_pbdecodermethod *msgdef_decodermethod(Descriptor* desc) {
 #define STACK_ENV_STACKBYTES 4096
 typedef struct {
   upb_env env;
-  upb_seededalloc alloc;
   const char* ruby_error_template;
   char allocbuf[STACK_ENV_STACKBYTES];
 } stackenv;
@@ -673,16 +680,12 @@ static bool env_error_func(void* ud, const upb_status* status) {
 
 static void stackenv_init(stackenv* se, const char* errmsg) {
   se->ruby_error_template = errmsg;
-  upb_env_init(&se->env);
-  upb_seededalloc_init(&se->alloc, &se->allocbuf, STACK_ENV_STACKBYTES);
-  upb_env_setallocfunc(
-      &se->env, upb_seededalloc_getallocfunc(&se->alloc), &se->alloc);
+  upb_env_init2(&se->env, se->allocbuf, sizeof(se->allocbuf), NULL);
   upb_env_seterrorfunc(&se->env, env_error_func, se);
 }
 
 static void stackenv_uninit(stackenv* se) {
   upb_env_uninit(&se->env);
-  upb_seededalloc_uninit(&se->alloc);
 }
 
 /*
@@ -752,13 +755,14 @@ VALUE Message_decode_json(VALUE klass, VALUE data) {
   TypedData_Get_Struct(msg_rb, MessageHeader, &Message_type, msg);
 
   {
+    const upb_json_parsermethod* method = msgdef_jsonparsermethod(desc);
     stackenv se;
     upb_sink sink;
     upb_json_parser* parser;
     stackenv_init(&se, "Error occurred during parsing: %s");
 
     upb_sink_reset(&sink, get_fill_handlers(desc), msg);
-    parser = upb_json_parser_create(&se.env, &sink);
+    parser = upb_json_parser_create(&se.env, method, &sink);
     upb_bufsrc_putbuf(RSTRING_PTR(data), RSTRING_LEN(data),
                       upb_json_parser_input(parser));
 
@@ -1041,6 +1045,7 @@ static void putmsg(VALUE msg_rb, const Descriptor* desc,
        !upb_msg_field_done(&i);
        upb_msg_field_next(&i)) {
     upb_fielddef *f = upb_msg_iter_field(&i);
+    bool is_matching_oneof = false;
     uint32_t offset =
         desc->layout->fields[upb_fielddef_index(f)].offset +
         sizeof(MessageHeader);
@@ -1057,6 +1062,7 @@ static void putmsg(VALUE msg_rb, const Descriptor* desc,
       }
       // Otherwise, fall through to the appropriate singular-field handler
       // below.
+      is_matching_oneof = true;
     }
 
     if (is_map_field(f)) {
@@ -1071,7 +1077,7 @@ static void putmsg(VALUE msg_rb, const Descriptor* desc,
       }
     } else if (upb_fielddef_isstring(f)) {
       VALUE str = DEREF(msg, offset, VALUE);
-      if (RSTRING_LEN(str) > 0) {
+      if (is_matching_oneof || RSTRING_LEN(str) > 0) {
         putstr(str, f, sink);
       }
     } else if (upb_fielddef_issubmsg(f)) {
@@ -1082,7 +1088,7 @@ static void putmsg(VALUE msg_rb, const Descriptor* desc,
 #define T(upbtypeconst, upbtype, ctype, default_value)                \
   case upbtypeconst: {                                                \
       ctype value = DEREF(msg, offset, ctype);                        \
-      if (value != default_value) {                                   \
+      if (is_matching_oneof || value != default_value) {              \
         upb_sink_put##upbtype(sink, sel, value);                      \
       }                                                               \
     }                                                                 \
@@ -1119,13 +1125,23 @@ static const upb_handlers* msgdef_pb_serialize_handlers(Descriptor* desc) {
   return desc->pb_serialize_handlers;
 }
 
-static const upb_handlers* msgdef_json_serialize_handlers(Descriptor* desc) {
-  if (desc->json_serialize_handlers == NULL) {
-    desc->json_serialize_handlers =
-        upb_json_printer_newhandlers(
-            desc->msgdef, &desc->json_serialize_handlers);
+static const upb_handlers* msgdef_json_serialize_handlers(
+    Descriptor* desc, bool preserve_proto_fieldnames) {
+  if (preserve_proto_fieldnames) {
+    if (desc->json_serialize_handlers == NULL) {
+      desc->json_serialize_handlers =
+          upb_json_printer_newhandlers(
+              desc->msgdef, true, &desc->json_serialize_handlers);
+    }
+    return desc->json_serialize_handlers;
+  } else {
+    if (desc->json_serialize_handlers_preserve == NULL) {
+      desc->json_serialize_handlers_preserve =
+          upb_json_printer_newhandlers(
+              desc->msgdef, false, &desc->json_serialize_handlers_preserve);
+    }
+    return desc->json_serialize_handlers_preserve;
   }
-  return desc->json_serialize_handlers;
 }
 
 /*
@@ -1170,16 +1186,33 @@ VALUE Message_encode(VALUE klass, VALUE msg_rb) {
  *
  * Encodes the given message object into its serialized JSON representation.
  */
-VALUE Message_encode_json(VALUE klass, VALUE msg_rb) {
+VALUE Message_encode_json(int argc, VALUE* argv, VALUE klass) {
   VALUE descriptor = rb_ivar_get(klass, descriptor_instancevar_interned);
   Descriptor* desc = ruby_to_Descriptor(descriptor);
-
+  VALUE msg_rb;
+  VALUE preserve_proto_fieldnames = Qfalse;
   stringsink sink;
+
+  if (argc < 1 || argc > 2) {
+    rb_raise(rb_eArgError, "Expected 1 or 2 arguments.");
+  }
+
+  msg_rb = argv[0];
+
+  if (argc == 2) {
+    VALUE hash_args = argv[1];
+    if (TYPE(hash_args) != T_HASH) {
+      rb_raise(rb_eArgError, "Expected hash arguments.");
+    }
+    preserve_proto_fieldnames = rb_hash_lookup2(
+        hash_args, ID2SYM(rb_intern("preserve_proto_fieldnames")), Qfalse);
+  }
+
   stringsink_init(&sink);
 
   {
     const upb_handlers* serialize_handlers =
-        msgdef_json_serialize_handlers(desc);
+        msgdef_json_serialize_handlers(desc, RTEST(preserve_proto_fieldnames));
     upb_json_printer* printer;
     stackenv se;
     VALUE ret;
@@ -1189,7 +1222,7 @@ VALUE Message_encode_json(VALUE klass, VALUE msg_rb) {
 
     putmsg(msg_rb, desc, upb_json_printer_input(printer), 0);
 
-    ret = rb_str_new(sink.ptr, sink.len);
+    ret = rb_enc_str_new(sink.ptr, sink.len, rb_utf8_encoding());
 
     stackenv_uninit(&se);
     stringsink_uninit(&sink);

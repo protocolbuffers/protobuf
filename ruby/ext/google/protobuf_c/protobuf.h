@@ -112,8 +112,10 @@ struct Descriptor {
   VALUE klass;  // begins as nil
   const upb_handlers* fill_handlers;
   const upb_pbdecodermethod* fill_method;
+  const upb_json_parsermethod* json_fill_method;
   const upb_handlers* pb_serialize_handlers;
   const upb_handlers* json_serialize_handlers;
+  const upb_handlers* json_serialize_handlers_preserve;
   // Handlers hold type class references for sub-message fields directly in some
   // cases. We need to keep these rooted because they might otherwise be
   // collected.
@@ -497,7 +499,7 @@ VALUE Message_descriptor(VALUE klass);
 VALUE Message_decode(VALUE klass, VALUE data);
 VALUE Message_encode(VALUE klass, VALUE msg_rb);
 VALUE Message_decode_json(VALUE klass, VALUE data);
-VALUE Message_encode_json(VALUE klass, VALUE msg_rb);
+VALUE Message_encode_json(int argc, VALUE* argv, VALUE klass);
 
 VALUE Google_Protobuf_deep_copy(VALUE self, VALUE obj);
 

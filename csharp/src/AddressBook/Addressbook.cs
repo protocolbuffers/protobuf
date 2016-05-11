@@ -11,7 +11,7 @@ namespace Google.Protobuf.Examples.AddressBook {
 
   /// <summary>Holder for reflection information generated from addressbook.proto</summary>
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  public static partial class Addressbook {
+  public static partial class AddressbookReflection {
 
     #region Descriptor
     /// <summary>File descriptor for addressbook.proto</summary>
@@ -20,7 +20,7 @@ namespace Google.Protobuf.Examples.AddressBook {
     }
     private static pbr::FileDescriptor descriptor;
 
-    static Addressbook() {
+    static AddressbookReflection() {
       byte[] descriptorData = global::System.Convert.FromBase64String(
           string.Concat(
             "ChFhZGRyZXNzYm9vay5wcm90bxIIdHV0b3JpYWwi1QEKBlBlcnNvbhIMCgRu",
@@ -32,24 +32,27 @@ namespace Google.Protobuf.Examples.AddressBook {
             "GAEgAygLMhAudHV0b3JpYWwuUGVyc29uQlAKFGNvbS5leGFtcGxlLnR1dG9y",
             "aWFsQhFBZGRyZXNzQm9va1Byb3Rvc6oCJEdvb2dsZS5Qcm90b2J1Zi5FeGFt",
             "cGxlcy5BZGRyZXNzQm9va2IGcHJvdG8z"));
-      descriptor = pbr::FileDescriptor.InternalBuildGeneratedFileFrom(descriptorData,
+      descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { },
-          new pbr::GeneratedCodeInfo(null, new pbr::GeneratedCodeInfo[] {
-            new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.Examples.AddressBook.Person), new[]{ "Name", "Id", "Email", "Phones" }, null, new[]{ typeof(global::Google.Protobuf.Examples.AddressBook.Person.Types.PhoneType) }, new pbr::GeneratedCodeInfo[] { new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.Examples.AddressBook.Person.Types.PhoneNumber), new[]{ "Number", "Type" }, null, null, null)}),
-            new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.Examples.AddressBook.AddressBook), new[]{ "People" }, null, null, null)
+          new pbr::GeneratedClrTypeInfo(null, new pbr::GeneratedClrTypeInfo[] {
+            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Examples.AddressBook.Person), global::Google.Protobuf.Examples.AddressBook.Person.Parser, new[]{ "Name", "Id", "Email", "Phones" }, null, new[]{ typeof(global::Google.Protobuf.Examples.AddressBook.Person.Types.PhoneType) }, new pbr::GeneratedClrTypeInfo[] { new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Examples.AddressBook.Person.Types.PhoneNumber), global::Google.Protobuf.Examples.AddressBook.Person.Types.PhoneNumber.Parser, new[]{ "Number", "Type" }, null, null, null)}),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Examples.AddressBook.AddressBook), global::Google.Protobuf.Examples.AddressBook.AddressBook.Parser, new[]{ "People" }, null, null, null)
           }));
     }
     #endregion
 
   }
   #region Messages
+  /// <summary>
+  ///  [START messages]
+  /// </summary>
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
   public sealed partial class Person : pb::IMessage<Person> {
     private static readonly pb::MessageParser<Person> _parser = new pb::MessageParser<Person>(() => new Person());
     public static pb::MessageParser<Person> Parser { get { return _parser; } }
 
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Google.Protobuf.Examples.AddressBook.Addressbook.Descriptor.MessageTypes[0]; }
+      get { return global::Google.Protobuf.Examples.AddressBook.AddressbookReflection.Descriptor.MessageTypes[0]; }
     }
 
     pbr::MessageDescriptor pb::IMessage.Descriptor {
@@ -79,7 +82,7 @@ namespace Google.Protobuf.Examples.AddressBook {
     public string Name {
       get { return name_; }
       set {
-        name_ = pb::Preconditions.CheckNotNull(value, "value");
+        name_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
       }
     }
 
@@ -102,7 +105,7 @@ namespace Google.Protobuf.Examples.AddressBook {
     public string Email {
       get { return email_; }
       set {
-        email_ = pb::Preconditions.CheckNotNull(value, "value");
+        email_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
       }
     }
 
@@ -143,7 +146,7 @@ namespace Google.Protobuf.Examples.AddressBook {
     }
 
     public override string ToString() {
-      return pb::JsonFormatter.Default.Format(this);
+      return pb::JsonFormatter.ToDiagnosticString(this);
     }
 
     public void WriteTo(pb::CodedOutputStream output) {
@@ -225,9 +228,9 @@ namespace Google.Protobuf.Examples.AddressBook {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     public static partial class Types {
       public enum PhoneType {
-        MOBILE = 0,
-        HOME = 1,
-        WORK = 2,
+        [pbr::OriginalName("MOBILE")] Mobile = 0,
+        [pbr::OriginalName("HOME")] Home = 1,
+        [pbr::OriginalName("WORK")] Work = 2,
       }
 
       [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
@@ -264,13 +267,13 @@ namespace Google.Protobuf.Examples.AddressBook {
         public string Number {
           get { return number_; }
           set {
-            number_ = pb::Preconditions.CheckNotNull(value, "value");
+            number_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
           }
         }
 
         /// <summary>Field number for the "type" field.</summary>
         public const int TypeFieldNumber = 2;
-        private global::Google.Protobuf.Examples.AddressBook.Person.Types.PhoneType type_ = global::Google.Protobuf.Examples.AddressBook.Person.Types.PhoneType.MOBILE;
+        private global::Google.Protobuf.Examples.AddressBook.Person.Types.PhoneType type_ = 0;
         public global::Google.Protobuf.Examples.AddressBook.Person.Types.PhoneType Type {
           get { return type_; }
           set {
@@ -297,12 +300,12 @@ namespace Google.Protobuf.Examples.AddressBook {
         public override int GetHashCode() {
           int hash = 1;
           if (Number.Length != 0) hash ^= Number.GetHashCode();
-          if (Type != global::Google.Protobuf.Examples.AddressBook.Person.Types.PhoneType.MOBILE) hash ^= Type.GetHashCode();
+          if (Type != 0) hash ^= Type.GetHashCode();
           return hash;
         }
 
         public override string ToString() {
-          return pb::JsonFormatter.Default.Format(this);
+          return pb::JsonFormatter.ToDiagnosticString(this);
         }
 
         public void WriteTo(pb::CodedOutputStream output) {
@@ -310,7 +313,7 @@ namespace Google.Protobuf.Examples.AddressBook {
             output.WriteRawTag(10);
             output.WriteString(Number);
           }
-          if (Type != global::Google.Protobuf.Examples.AddressBook.Person.Types.PhoneType.MOBILE) {
+          if (Type != 0) {
             output.WriteRawTag(16);
             output.WriteEnum((int) Type);
           }
@@ -321,7 +324,7 @@ namespace Google.Protobuf.Examples.AddressBook {
           if (Number.Length != 0) {
             size += 1 + pb::CodedOutputStream.ComputeStringSize(Number);
           }
-          if (Type != global::Google.Protobuf.Examples.AddressBook.Person.Types.PhoneType.MOBILE) {
+          if (Type != 0) {
             size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) Type);
           }
           return size;
@@ -334,7 +337,7 @@ namespace Google.Protobuf.Examples.AddressBook {
           if (other.Number.Length != 0) {
             Number = other.Number;
           }
-          if (other.Type != global::Google.Protobuf.Examples.AddressBook.Person.Types.PhoneType.MOBILE) {
+          if (other.Type != 0) {
             Type = other.Type;
           }
         }
@@ -374,7 +377,7 @@ namespace Google.Protobuf.Examples.AddressBook {
     public static pb::MessageParser<AddressBook> Parser { get { return _parser; } }
 
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Google.Protobuf.Examples.AddressBook.Addressbook.Descriptor.MessageTypes[1]; }
+      get { return global::Google.Protobuf.Examples.AddressBook.AddressbookReflection.Descriptor.MessageTypes[1]; }
     }
 
     pbr::MessageDescriptor pb::IMessage.Descriptor {
@@ -426,7 +429,7 @@ namespace Google.Protobuf.Examples.AddressBook {
     }
 
     public override string ToString() {
-      return pb::JsonFormatter.Default.Format(this);
+      return pb::JsonFormatter.ToDiagnosticString(this);
     }
 
     public void WriteTo(pb::CodedOutputStream output) {

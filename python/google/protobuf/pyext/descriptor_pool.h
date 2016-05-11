@@ -42,6 +42,9 @@ class MessageFactory;
 
 namespace python {
 
+// The (meta) type of all Messages classes.
+struct CMessageClass;
+
 // Wraps operations to the global DescriptorPool which contains information
 // about all messages and fields.
 //
@@ -55,7 +58,16 @@ namespace python {
 typedef struct PyDescriptorPool {
   PyObject_HEAD
 
+  // The C++ pool containing Descriptors.
   DescriptorPool* pool;
+
+  // The C++ pool acting as an underlay. Can be NULL.
+  // This pointer is not owned and must stay alive.
+  const DescriptorPool* underlay;
+
+  // The C++ descriptor database used to fetch unknown protos. Can be NULL.
+  // This pointer is owned.
+  const DescriptorDatabase* database;
 
   // DynamicMessageFactory used to create C++ instances of messages.
   // This object cache the descriptors that were used, so the DescriptorPool
@@ -69,7 +81,7 @@ typedef struct PyDescriptorPool {
   //
   // Descriptor pointers stored here are owned by the DescriptorPool above.
   // Python references to classes are owned by this PyDescriptorPool.
-  typedef hash_map<const Descriptor*, PyObject*> ClassesByMessageMap;
+  typedef hash_map<const Descriptor*, CMessageClass*> ClassesByMessageMap;
   ClassesByMessageMap* classes_by_descriptor;
 
   // Cache the options for any kind of descriptor.
@@ -92,14 +104,14 @@ const Descriptor* FindMessageTypeByName(PyDescriptorPool* self,
 // On error, returns -1 with a Python exception set.
 int RegisterMessageClass(PyDescriptorPool* self,
                          const Descriptor* message_descriptor,
-                         PyObject* message_class);
+                         CMessageClass* message_class);
 
 // Retrieves the Python class registered with the given message descriptor.
 //
 // Returns a *borrowed* reference if found, otherwise returns NULL with an
 // exception set.
-PyObject* GetMessageClass(PyDescriptorPool* self,
-                          const Descriptor* message_descriptor);
+CMessageClass* GetMessageClass(PyDescriptorPool* self,
+                               const Descriptor* message_descriptor);
 
 // The functions below are also exposed as methods of the DescriptorPool type.
 
@@ -138,6 +150,7 @@ PyObject* FindOneofByName(PyDescriptorPool* self, PyObject* arg);
 // Retrieve the global descriptor pool owned by the _message module.
 // This is the one used by pb2.py generated modules.
 // Returns a *borrowed* reference.
+// "Default" pool used to register messages from _pb2.py modules.
 PyDescriptorPool* GetDefaultDescriptorPool();
 
 // Retrieve the python descriptor pool owning a C++ descriptor pool.

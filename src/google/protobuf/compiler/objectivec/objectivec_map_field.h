@@ -41,18 +41,21 @@ namespace compiler {
 namespace objectivec {
 
 class MapFieldGenerator : public RepeatedFieldGenerator {
-  friend FieldGenerator* FieldGenerator::Make(const FieldDescriptor* field);
+  friend FieldGenerator* FieldGenerator::Make(const FieldDescriptor* field,
+                                              const Options& options);
 
  public:
   virtual void FinishInitialization(void);
-  virtual void GenerateFieldDescriptionTypeSpecific(io::Printer* printer) const;
 
  protected:
-  explicit MapFieldGenerator(const FieldDescriptor* descriptor);
+  MapFieldGenerator(const FieldDescriptor* descriptor, const Options& options);
   virtual ~MapFieldGenerator();
+
+  virtual void DetermineForwardDeclarations(set<string>* fwd_decls) const;
 
  private:
   scoped_ptr<FieldGenerator> value_field_generator_;
+
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(MapFieldGenerator);
 };
 

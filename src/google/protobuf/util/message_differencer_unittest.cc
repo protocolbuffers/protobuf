@@ -1103,12 +1103,19 @@ TEST(MessageDifferencerTest, RepeatedFieldSetTest_Combination) {
   msg1.add_rw("change"); msg2.add_rw("change");
 
   // Compare
-  util::MessageDifferencer differencer;
-  differencer.TreatAsMap(msg1.GetDescriptor()->FindFieldByName("item"),
-                         item->GetDescriptor()->FindFieldByName("a"));
-  differencer.TreatAsSet(msg1.GetDescriptor()->FindFieldByName("rv"));
-  differencer.TreatAsSet(item->GetDescriptor()->FindFieldByName("ra"));
-  EXPECT_TRUE(differencer.Compare(msg1, msg2));
+  util::MessageDifferencer differencer1;
+  differencer1.TreatAsMap(msg1.GetDescriptor()->FindFieldByName("item"),
+                          item->GetDescriptor()->FindFieldByName("a"));
+  differencer1.TreatAsSet(msg1.GetDescriptor()->FindFieldByName("rv"));
+  differencer1.TreatAsSet(item->GetDescriptor()->FindFieldByName("ra"));
+  EXPECT_TRUE(differencer1.Compare(msg1, msg2));
+
+  util::MessageDifferencer differencer2;
+  differencer2.TreatAsMap(msg1.GetDescriptor()->FindFieldByName("item"),
+                          item->GetDescriptor()->FindFieldByName("a"));
+  differencer2.set_repeated_field_comparison(util::MessageDifferencer::AS_SET);
+  differencer2.TreatAsList(msg1.GetDescriptor()->FindFieldByName("rw"));
+  EXPECT_TRUE(differencer2.Compare(msg1, msg2));
 }
 
 TEST(MessageDifferencerTest, RepeatedFieldMapTest_Partial) {
@@ -1168,6 +1175,11 @@ TEST(MessageDifferencerTest, RepeatedFieldSetTest_Duplicates) {
   differencer.TreatAsSet(GetFieldDescriptor(a, "rv"));
   EXPECT_TRUE(differencer.Compare(b, a));
   EXPECT_FALSE(differencer.Compare(c, a));
+
+  util::MessageDifferencer differencer1;
+  differencer1.set_repeated_field_comparison(util::MessageDifferencer::AS_SET);
+  EXPECT_TRUE(differencer1.Compare(b, a));
+  EXPECT_FALSE(differencer1.Compare(c, a));
 }
 
 TEST(MessageDifferencerTest, RepeatedFieldSetTest_PartialSimple) {
@@ -1442,11 +1454,10 @@ static const char* const kIgnoredFields[] = {"rm.b", "rm.m.b"};
 
 class TestIgnorer : public util::MessageDifferencer::IgnoreCriteria {
  public:
-  bool IsIgnored(
+  virtual bool IsIgnored(
       const Message& message1, const Message& message2,
       const FieldDescriptor* field,
-      const vector<util::MessageDifferencer::SpecificField>& parent_fields)
-      override {
+      const vector<util::MessageDifferencer::SpecificField>& parent_fields) {
     string name = "";
     for (int i = 0; i < parent_fields.size(); ++i) {
       name += parent_fields[i].field->name() + ".";
@@ -1488,8 +1499,10 @@ TEST(MessageDifferencerTest, TreatRepeatedFieldAsMapWithIgnoredKeyFields) {
 class ValueProductMapKeyComparator
     : public util::MessageDifferencer::MapKeyComparator {
  public:
-  virtual bool IsMatch(const Message &message1,
-                       const Message &message2) const {
+  typedef util::MessageDifferencer::SpecificField SpecificField;
+  virtual bool IsMatch(
+      const Message &message1, const Message &message2,
+      const vector<SpecificField>& parent_fields) const {
     const Reflection* reflection1 = message1.GetReflection();
     const Reflection* reflection2 = message2.GetReflection();
     // FieldDescriptor for item.ra
@@ -2803,15 +2816,20 @@ class MatchingTest : public testing::Test {
                               const Message& msg1, const Message& msg2,
                               bool result) {
     string output;
-    io::StringOutputStream output_stream(&output);
-    MessageDifferencer::StreamReporter reporter(&output_stream);
-    reporter.set_report_modified_aggregates(true);
-    differencer->set_report_matches(true);
-    differencer->ReportDifferencesTo(&reporter);
-    if (result) {
-      EXPECT_TRUE(differencer->Compare(msg1, msg2));
-    } else {
-      EXPECT_FALSE(differencer->Compare(msg1, msg2));
+    {
+      // Before we return the "output" string, we must make sure the
+      // StreamReporter is destructored because its destructor will
+      // flush the stream.
+      io::StringOutputStream output_stream(&output);
+      MessageDifferencer::StreamReporter reporter(&output_stream);
+      reporter.set_report_modified_aggregates(true);
+      differencer->set_report_matches(true);
+      differencer->ReportDifferencesTo(&reporter);
+      if (result) {
+        EXPECT_TRUE(differencer->Compare(msg1, msg2));
+      } else {
+        EXPECT_FALSE(differencer->Compare(msg1, msg2));
+      }
     }
     return output;
   }

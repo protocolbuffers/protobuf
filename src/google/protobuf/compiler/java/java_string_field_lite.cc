@@ -84,8 +84,6 @@ void SetPrimitiveVariables(const FieldDescriptor* descriptor,
   // by the proto compiler
   (*variables)["deprecation"] = descriptor->options().deprecated()
       ? "@java.lang.Deprecated " : "";
-  (*variables)["on_changed"] =
-      HasDescriptorMethods(descriptor->containing_type()) ? "onChanged();" : "";
 
   if (SupportFieldPresence(descriptor->file())) {
     // For singular messages and builders, one bit is used for the hasField bit.
@@ -103,7 +101,7 @@ void SetPrimitiveVariables(const FieldDescriptor* descriptor,
     (*variables)["clear_has_field_bit_message"] = "";
 
     (*variables)["is_field_present_message"] =
-        "!get" + (*variables)["capitalized_name"] + ".isEmpty()";
+        "!" + (*variables)["name"] + "_.isEmpty()";
   }
 
   // For repeated builders, the underlying list tracks mutability state.
@@ -301,22 +299,16 @@ GenerateInitializationCode(io::Printer* printer) const {
 }
 
 void ImmutableStringFieldLiteGenerator::
-GenerateMergingCode(io::Printer* printer) const {
+GenerateVisitCode(io::Printer* printer) const {
   if (SupportFieldPresence(descriptor_->file())) {
-    // Allow a slight breach of abstraction here in order to avoid forcing
-    // all string fields to Strings when copying fields from a Message.
     printer->Print(variables_,
-      "if (other.has$capitalized_name$()) {\n"
-      "  $set_has_field_bit_message$\n"
-      "  $name$_ = other.$name$_;\n"
-      "  $on_changed$\n"
-      "}\n");
+      "$name$_ = visitor.visitString(\n"
+      "    has$capitalized_name$(), $name$_,\n"
+      "    other.has$capitalized_name$(), other.$name$_);\n");
   } else {
     printer->Print(variables_,
-      "if (!other.get$capitalized_name$().isEmpty()) {\n"
-      "  $name$_ = other.$name$_;\n"
-      "  $on_changed$\n"
-      "}\n");
+      "$name$_ = visitor.visitString(!$name$_.isEmpty(), $name$_,\n"
+      "    !other.$name$_.isEmpty(), other.$name$_);\n");
   }
 }
 
@@ -523,13 +515,10 @@ GenerateBuilderMembers(io::Printer* printer) const {
 }
 
 void ImmutableStringOneofFieldLiteGenerator::
-GenerateMergingCode(io::Printer* printer) const {
-  // Allow a slight breach of abstraction here in order to avoid forcing
-  // all string fields to Strings when copying fields from a Message.
+GenerateVisitCode(io::Printer* printer) const {
   printer->Print(variables_,
-    "$set_oneof_case_message$;\n"
-    "$oneof_name$_ = other.$oneof_name$_;\n"
-    "$on_changed$\n");
+    "$oneof_name$_ = visitor.visitOneofString(\n"
+    "   $has_oneof_case_message$, $oneof_name$_, other.$oneof_name$_);\n");
 }
 
 void ImmutableStringOneofFieldLiteGenerator::
@@ -647,17 +636,11 @@ GenerateMembers(io::Printer* printer) const {
     "      $name$_.get(index));\n"
     "}\n");
 
-  if (descriptor_->options().packed() &&
-      HasGeneratedMethods(descriptor_->containing_type())) {
-    printer->Print(variables_,
-      "private int $name$MemoizedSerializedSize = -1;\n");
-  }
-
   printer->Print(variables_,
     "private void ensure$capitalized_name$IsMutable() {\n"
     "  if (!$is_mutable$) {\n"
-    "    $name$_ = com.google.protobuf.GeneratedMessageLite.newProtobufList(\n"
-    "        $name$_);\n"
+    "    $name$_ =\n"
+    "        com.google.protobuf.GeneratedMessageLite.mutableCopy($name$_);\n"
     "   }\n"
     "}\n");
 
@@ -784,22 +767,9 @@ GenerateInitializationCode(io::Printer* printer) const {
 }
 
 void RepeatedImmutableStringFieldLiteGenerator::
-GenerateMergingCode(io::Printer* printer) const {
-  // The code below does two optimizations:
-  //   1. If the other list is empty, there's nothing to do. This ensures we
-  //      don't allocate a new array if we already have an immutable one.
-  //   2. If the other list is non-empty and our current list is empty, we can
-  //      reuse the other list which is guaranteed to be immutable.
+GenerateVisitCode(io::Printer* printer) const {
   printer->Print(variables_,
-    "if (!other.$name$_.isEmpty()) {\n"
-    "  if ($name$_.isEmpty()) {\n"
-    "    $name$_ = other.$name$_;\n"
-    "  } else {\n"
-    "    ensure$capitalized_name$IsMutable();\n"
-    "    $name$_.addAll(other.$name$_);\n"
-    "  }\n"
-    "  $on_changed$\n"
-    "}\n");
+      "$name$_= visitor.visitList($name$_, other.$name$_);\n");
 }
 
 void RepeatedImmutableStringFieldLiteGenerator::
@@ -823,38 +793,11 @@ GenerateParsingCode(io::Printer* printer) const {
   }
   printer->Print(variables_,
     "if (!$is_mutable$) {\n"
-    "  $name$_ = com.google.protobuf.GeneratedMessageLite.newProtobufList();\n"
+    "  $name$_ =\n"
+    "      com.google.protobuf.GeneratedMessageLite.mutableCopy($name$_);\n"
     "}\n");
-  if (CheckUtf8(descriptor_) || !HasDescriptorMethods(descriptor_->file())) {
-    printer->Print(variables_,
-      "$name$_.add(s);\n");
-  } else {
-    printer->Print(variables_,
-      "$name$_.add(bs);\n");
-  }
-}
-
-void RepeatedImmutableStringFieldLiteGenerator::
-GenerateParsingCodeFromPacked(io::Printer* printer) const {
   printer->Print(variables_,
-    "int length = input.readRawVarint32();\n"
-    "int limit = input.pushLimit(length);\n"
-    "if (!$is_mutable$ && input.getBytesUntilLimit() > 0) {\n"
-    "  $name$_ = com.google.protobuf.GeneratedMessageLite.newProtobufList();\n"
-    "}\n"
-    "while (input.getBytesUntilLimit() > 0) {\n");
-  if (CheckUtf8(descriptor_)) {
-    printer->Print(variables_,
-      "  String s = input.readStringRequireUtf8();\n");
-  } else {
-    printer->Print(variables_,
-      "  String s = input.readString();\n");
-  }
-  printer->Print(variables_,
-    "  $name$.add(s);\n");
-  printer->Print(variables_,
-    "}\n"
-    "input.popLimit(limit);\n");
+    "$name$_.add(s);\n");
 }
 
 void RepeatedImmutableStringFieldLiteGenerator::
@@ -870,21 +813,10 @@ GenerateSerializationCode(io::Printer* printer) const {
   // Lite runtime should reduce allocations by serializing the string directly.
   // This avoids spurious intermediary ByteString allocations, cutting overall
   // allocations in half.
-  if (descriptor_->options().packed()) {
-    printer->Print(variables_,
-      "if (get$capitalized_name$List().size() > 0) {\n"
-      "  output.writeRawVarint32($tag$);\n"
-      "  output.writeRawVarint32($name$MemoizedSerializedSize);\n"
-      "}\n"
-      "for (int i = 0; i < $name$_.size(); i++) {\n"
-      "  output.writeStringNoTag($name$_.get(i));\n"
-      "}\n");
-  } else {
-    printer->Print(variables_,
-      "for (int i = 0; i < $name$_.size(); i++) {\n"
-      "  output.writeString($number$, $name$_.get(i));\n"
-      "}\n");
-  }
+  printer->Print(variables_,
+    "for (int i = 0; i < $name$_.size(); i++) {\n"
+    "  output.writeString($number$, $name$_.get(i));\n"
+    "}\n");
 }
 
 void RepeatedImmutableStringFieldLiteGenerator::
@@ -906,23 +838,9 @@ GenerateSerializedSizeCode(io::Printer* printer) const {
   printer->Print(
       "size += dataSize;\n");
 
-  if (descriptor_->options().packed()) {
-    printer->Print(variables_,
-      "if (!get$capitalized_name$List().isEmpty()) {\n"
-      "  size += $tag_size$;\n"
-      "  size += com.google.protobuf.CodedOutputStream\n"
-      "      .computeInt32SizeNoTag(dataSize);\n"
-      "}\n");
-  } else {
-    printer->Print(variables_,
-      "size += $tag_size$ * get$capitalized_name$List().size();\n");
-  }
 
-  // cache the data size for packed fields.
-  if (descriptor_->options().packed()) {
-    printer->Print(variables_,
-      "$name$MemoizedSerializedSize = dataSize;\n");
-  }
+  printer->Print(variables_,
+    "size += $tag_size$ * get$capitalized_name$List().size();\n");
 
   printer->Outdent();
   printer->Print("}\n");

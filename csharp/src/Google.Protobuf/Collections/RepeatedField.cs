@@ -33,8 +33,8 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using System.Text;
-using Google.Protobuf.Compatibility;
 
 namespace Google.Protobuf.Collections
 {
@@ -96,8 +96,8 @@ namespace Google.Protobuf.Collections
             // iteration.
             uint tag = input.LastTag;
             var reader = codec.ValueReader;
-            // Value types can be packed or not.
-            if (typeof(T).IsValueType() && WireFormat.GetTagWireType(tag) == WireFormat.WireType.LengthDelimited)
+            // Non-nullable value types can be packed or not.
+            if (FieldCodec<T>.IsPackedRepeatedField(tag))
             {
                 int length = input.ReadLength();
                 if (length > 0)
@@ -134,7 +134,7 @@ namespace Google.Protobuf.Collections
                 return 0;
             }
             uint tag = codec.Tag;
-            if (typeof(T).IsValueType() && WireFormat.GetTagWireType(tag) == WireFormat.WireType.LengthDelimited)
+            if (codec.PackedRepeatedField)
             {
                 int dataSize = CalculatePackedDataSize(codec);
                 return CodedOutputStream.ComputeRawVarint32Size(tag) +
@@ -186,7 +186,7 @@ namespace Google.Protobuf.Collections
             }
             var writer = codec.ValueWriter;
             var tag = codec.Tag;
-            if (typeof(T).IsValueType() && WireFormat.GetTagWireType(tag) == WireFormat.WireType.LengthDelimited)
+            if (codec.PackedRepeatedField)
             {
                 // Packed primitive type
                 uint size = (uint)CalculatePackedDataSize(codec);
@@ -475,9 +475,9 @@ namespace Google.Protobuf.Collections
         /// </summary>
         public override string ToString()
         {
-            var builder = new StringBuilder();
-            JsonFormatter.Default.WriteList(builder, this);
-            return builder.ToString();
+            var writer = new StringWriter();
+            JsonFormatter.Default.WriteList(writer, this);
+            return writer.ToString();
         }
 
         /// <summary>

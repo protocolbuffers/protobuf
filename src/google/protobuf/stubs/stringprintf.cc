@@ -37,7 +37,6 @@
 #include <stdio.h> // MSVC requires this for _vsnprintf
 #include <vector>
 #include <google/protobuf/stubs/common.h>
-#include <google/protobuf/testing/googletest.h>
 
 namespace google {
 namespace protobuf {

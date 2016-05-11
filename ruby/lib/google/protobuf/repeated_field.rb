@@ -69,8 +69,8 @@ module Google
       #        relationship explicit instead of implicit
       def_delegators :to_ary,
         :&, :*, :-, :'<=>',
-        :assoc, :bsearch, :combination, :compact, :count, :cycle,
-        :drop, :drop_while, :eql?, :fetch, :find_index, :flatten,
+        :assoc, :bsearch, :bsearch_index, :combination, :compact, :count,
+        :cycle, :dig, :drop, :drop_while, :eql?, :fetch, :find_index, :flatten,
         :include?, :index, :inspect, :join,
         :pack, :permutation, :product, :pretty_print, :pretty_print_cycle,
         :rassoc, :repeated_combination, :repeated_permutation, :reverse,

@@ -55,7 +55,7 @@ read [this page](http://central.sonatype.org/pages/apache-maven.html) on how to
 configure GPG and Sonatype account.
 
 You need to perform the deployment for every platform that you want to
-suppport. DO NOT close the staging repository until you have done the
+support. DO NOT close the staging repository until you have done the
 deployment for all platforms. Currently the following platforms are supported:
 - Linux (x86_32 and x86_64)
 - Windows (x86_32 and x86_64) with
@@ -134,7 +134,7 @@ stored:
 ```
 
 ### Tested build environments
-We have succesfully built artifacts on the following environments:
+We have successfully built artifacts on the following environments:
 - Linux x86_32 and x86_64:
  - Centos 6.6 (within Docker 1.6.1)
  - Ubuntu 14.04.2 64-bit

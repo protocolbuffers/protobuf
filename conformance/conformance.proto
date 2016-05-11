@@ -32,6 +32,13 @@ syntax = "proto3";
 package conformance;
 option java_package = "com.google.protobuf.conformance";
 
+import "google/protobuf/any.proto";
+import "google/protobuf/duration.proto";
+import "google/protobuf/field_mask.proto";
+import "google/protobuf/struct.proto";
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/wrappers.proto";
+
 // This defines the conformance testing protocol.  This protocol exists between
 // the conformance test suite itself and the code being tested.  For each test,
 // the suite will send a ConformanceRequest message and expect a
@@ -83,6 +90,11 @@ message ConformanceResponse {
     // Setting this string does not necessarily mean the testee failed the
     // test.  Some of the test cases are intentionally invalid input.
     string parse_error = 1;
+
+    // If the input was successfully parsed but errors occurred when
+    // serializing it to the requested output format, set the error message in
+    // this field.
+    string serialize_error = 6;
 
     // This should be set if some other error occurred.  This will always
     // indicate that the test failed.  The string can provide more information
@@ -199,6 +211,55 @@ message TestAllTypes {
     string oneof_string = 113;
     bytes oneof_bytes = 114;
   }
+
+  // Well-known types
+  google.protobuf.BoolValue optional_bool_wrapper = 201;
+  google.protobuf.Int32Value optional_int32_wrapper = 202;
+  google.protobuf.Int64Value optional_int64_wrapper = 203;
+  google.protobuf.UInt32Value optional_uint32_wrapper = 204;
+  google.protobuf.UInt64Value optional_uint64_wrapper = 205;
+  google.protobuf.FloatValue optional_float_wrapper = 206;
+  google.protobuf.DoubleValue optional_double_wrapper = 207;
+  google.protobuf.StringValue optional_string_wrapper = 208;
+  google.protobuf.BytesValue optional_bytes_wrapper = 209;
+
+  repeated google.protobuf.BoolValue repeated_bool_wrapper = 211;
+  repeated google.protobuf.Int32Value repeated_int32_wrapper = 212;
+  repeated google.protobuf.Int64Value repeated_int64_wrapper = 213;
+  repeated google.protobuf.UInt32Value repeated_uint32_wrapper = 214;
+  repeated google.protobuf.UInt64Value repeated_uint64_wrapper = 215;
+  repeated google.protobuf.FloatValue repeated_float_wrapper = 216;
+  repeated google.protobuf.DoubleValue repeated_double_wrapper = 217;
+  repeated google.protobuf.StringValue repeated_string_wrapper = 218;
+  repeated google.protobuf.BytesValue repeated_bytes_wrapper = 219;
+
+  google.protobuf.Duration optional_duration = 301;
+  google.protobuf.Timestamp optional_timestamp = 302;
+  google.protobuf.FieldMask optional_field_mask = 303;
+  google.protobuf.Struct optional_struct = 304;
+  google.protobuf.Any optional_any = 305;
+  google.protobuf.Value optional_value = 306;
+
+  repeated google.protobuf.Duration repeated_duration = 311;
+  repeated google.protobuf.Timestamp repeated_timestamp = 312;
+  repeated google.protobuf.FieldMask repeated_fieldmask = 313;
+  repeated google.protobuf.Struct repeated_struct = 324;
+  repeated google.protobuf.Any repeated_any = 315;
+  repeated google.protobuf.Value repeated_value = 316;
+
+  // Test field-name-to-JSON-name convention.
+  int32 fieldname1 = 401;
+  int32 field_name2 = 402;
+  int32 _field_name3 = 403;
+  int32 field__name4_ = 404;
+  int32 field0name5 = 405;
+  int32 field_0_name6 = 406;
+  int32 fieldName7 = 407;
+  int32 FieldName8 = 408;
+  int32 field_Name9 = 409;
+  int32 Field_Name10 = 410;
+  int32 FIELD_NAME11 = 411;
+  int32 FIELD_name12 = 412;
 }
 
 message ForeignMessage {

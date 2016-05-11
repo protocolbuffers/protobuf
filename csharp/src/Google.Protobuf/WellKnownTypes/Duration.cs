@@ -9,36 +9,34 @@ using pbr = global::Google.Protobuf.Reflection;
 using scg = global::System.Collections.Generic;
 namespace Google.Protobuf.WellKnownTypes {
 
-  namespace Proto {
+  /// <summary>Holder for reflection information generated from google/protobuf/duration.proto</summary>
+  [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+  public static partial class DurationReflection {
 
-    /// <summary>Holder for reflection information generated from google/protobuf/duration.proto</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-    public static partial class Duration {
-
-      #region Descriptor
-      /// <summary>File descriptor for google/protobuf/duration.proto</summary>
-      public static pbr::FileDescriptor Descriptor {
-        get { return descriptor; }
-      }
-      private static pbr::FileDescriptor descriptor;
-
-      static Duration() {
-        byte[] descriptorData = global::System.Convert.FromBase64String(
-            string.Concat(
-              "Ch5nb29nbGUvcHJvdG9idWYvZHVyYXRpb24ucHJvdG8SD2dvb2dsZS5wcm90",
-              "b2J1ZiIqCghEdXJhdGlvbhIPCgdzZWNvbmRzGAEgASgDEg0KBW5hbm9zGAIg",
-              "ASgFQlAKE2NvbS5nb29nbGUucHJvdG9idWZCDUR1cmF0aW9uUHJvdG9QAaAB",
-              "AaICA0dQQqoCHkdvb2dsZS5Qcm90b2J1Zi5XZWxsS25vd25UeXBlc2IGcHJv",
-              "dG8z"));
-        descriptor = pbr::FileDescriptor.InternalBuildGeneratedFileFrom(descriptorData,
-            new pbr::FileDescriptor[] { },
-            new pbr::GeneratedCodeInfo(null, new pbr::GeneratedCodeInfo[] {
-              new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.WellKnownTypes.Duration), new[]{ "Seconds", "Nanos" }, null, null, null)
-            }));
-      }
-      #endregion
-
+    #region Descriptor
+    /// <summary>File descriptor for google/protobuf/duration.proto</summary>
+    public static pbr::FileDescriptor Descriptor {
+      get { return descriptor; }
     }
+    private static pbr::FileDescriptor descriptor;
+
+    static DurationReflection() {
+      byte[] descriptorData = global::System.Convert.FromBase64String(
+          string.Concat(
+            "Ch5nb29nbGUvcHJvdG9idWYvZHVyYXRpb24ucHJvdG8SD2dvb2dsZS5wcm90",
+            "b2J1ZiIqCghEdXJhdGlvbhIPCgdzZWNvbmRzGAEgASgDEg0KBW5hbm9zGAIg",
+            "ASgFQnwKE2NvbS5nb29nbGUucHJvdG9idWZCDUR1cmF0aW9uUHJvdG9QAVoq",
+            "Z2l0aHViLmNvbS9nb2xhbmcvcHJvdG9idWYvcHR5cGVzL2R1cmF0aW9uoAEB",
+            "ogIDR1BCqgIeR29vZ2xlLlByb3RvYnVmLldlbGxLbm93blR5cGVzYgZwcm90",
+            "bzM="));
+      descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
+          new pbr::FileDescriptor[] { },
+          new pbr::GeneratedClrTypeInfo(null, new pbr::GeneratedClrTypeInfo[] {
+            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.WellKnownTypes.Duration), global::Google.Protobuf.WellKnownTypes.Duration.Parser, new[]{ "Seconds", "Nanos" }, null, null, null)
+          }));
+    }
+    #endregion
+
   }
   #region Messages
   /// <summary>
@@ -48,12 +46,16 @@ namespace Google.Protobuf.WellKnownTypes {
   ///  or "month". It is related to Timestamp in that the difference between
   ///  two Timestamp values is a Duration and it can be added or subtracted
   ///  from a Timestamp. Range is approximately +-10,000 years.
+  ///
   ///  Example 1: Compute Duration from two Timestamps in pseudo code.
+  ///
   ///      Timestamp start = ...;
   ///      Timestamp end = ...;
   ///      Duration duration = ...;
+  ///
   ///      duration.seconds = end.seconds - start.seconds;
   ///      duration.nanos = end.nanos - start.nanos;
+  ///
   ///      if (duration.seconds &lt; 0 &amp;&amp; duration.nanos > 0) {
   ///        duration.seconds += 1;
   ///        duration.nanos -= 1000000000;
@@ -61,12 +63,16 @@ namespace Google.Protobuf.WellKnownTypes {
   ///        duration.seconds -= 1;
   ///        duration.nanos += 1000000000;
   ///      }
+  ///
   ///  Example 2: Compute Timestamp from Timestamp + Duration in pseudo code.
+  ///
   ///      Timestamp start = ...;
   ///      Duration duration = ...;
   ///      Timestamp end = ...;
+  ///
   ///      end.seconds = start.seconds + duration.seconds;
   ///      end.nanos = start.nanos + duration.nanos;
+  ///
   ///      if (end.nanos &lt; 0) {
   ///        end.seconds -= 1;
   ///        end.nanos += 1000000000;
@@ -81,7 +87,7 @@ namespace Google.Protobuf.WellKnownTypes {
     public static pb::MessageParser<Duration> Parser { get { return _parser; } }
 
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Google.Protobuf.WellKnownTypes.Proto.Duration.Descriptor.MessageTypes[0]; }
+      get { return global::Google.Protobuf.WellKnownTypes.DurationReflection.Descriptor.MessageTypes[0]; }
     }
 
     pbr::MessageDescriptor pb::IMessage.Descriptor {
@@ -159,7 +165,7 @@ namespace Google.Protobuf.WellKnownTypes {
     }
 
     public override string ToString() {
-      return pb::JsonFormatter.Default.Format(this);
+      return pb::JsonFormatter.ToDiagnosticString(this);
     }
 
     public void WriteTo(pb::CodedOutputStream output) {

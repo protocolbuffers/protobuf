@@ -27,15 +27,18 @@
 // THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
 syntax = "proto3";
 
 package google.protobuf;
 
-option java_generate_equals_and_hash = true;
-option java_multiple_files = true;
-option java_outer_classname = "TimestampProto";
-option java_package = "com.google.protobuf";
 option csharp_namespace = "Google.Protobuf.WellKnownTypes";
+option cc_enable_arenas = true;
+option go_package = "github.com/golang/protobuf/ptypes/timestamp";
+option java_package = "com.google.protobuf";
+option java_outer_classname = "TimestampProto";
+option java_multiple_files = true;
+option java_generate_equals_and_hash = true;
 option objc_class_prefix = "GPB";
 
 // A Timestamp represents a point in time independent of any time zone
@@ -91,6 +94,7 @@ option objc_class_prefix = "GPB";
 //     seconds = int(now)
 //     nanos = int((now - seconds) * 10**9)
 //     timestamp = Timestamp(seconds=seconds, nanos=nanos)
+//
 //
 message Timestamp {
 

@@ -2,11 +2,12 @@
 // source: google/protobuf/type.proto
 
 #define INTERNAL_SUPPRESS_PROTOBUF_FIELD_DEPRECATION
-#include "google/protobuf/type.pb.h"
+#include <google/protobuf/type.pb.h>
 
 #include <algorithm>
 
 #include <google/protobuf/stubs/common.h>
+#include <google/protobuf/stubs/port.h>
 #include <google/protobuf/stubs/once.h>
 #include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/wire_format_lite_inl.h>
@@ -70,7 +71,7 @@ void protobuf_AssignDesc_google_2fprotobuf_2ftype_2eproto() {
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Type, _internal_metadata_),
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Type, _is_default_instance_));
   Field_descriptor_ = file->message_type(1);
-  static const int Field_offsets_[9] = {
+  static const int Field_offsets_[10] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Field, kind_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Field, cardinality_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Field, number_),
@@ -80,6 +81,7 @@ void protobuf_AssignDesc_google_2fprotobuf_2ftype_2eproto() {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Field, packed_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Field, options_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Field, json_name_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Field, default_value_),
   };
   Field_reflection_ =
     ::google::protobuf::internal::GeneratedMessageReflection::NewGeneratedMessageReflection(
@@ -203,37 +205,37 @@ void protobuf_AddDesc_google_2fprotobuf_2ftype_2eproto() {
     "\030\004 \003(\0132\027.google.protobuf.Option\0226\n\016sourc"
     "e_context\030\005 \001(\0132\036.google.protobuf.Source"
     "Context\022\'\n\006syntax\030\006 \001(\0162\027.google.protobu"
-    "f.Syntax\"\276\005\n\005Field\022)\n\004kind\030\001 \001(\0162\033.googl"
+    "f.Syntax\"\325\005\n\005Field\022)\n\004kind\030\001 \001(\0162\033.googl"
     "e.protobuf.Field.Kind\0227\n\013cardinality\030\002 \001"
     "(\0162\".google.protobuf.Field.Cardinality\022\016"
     "\n\006number\030\003 \001(\005\022\014\n\004name\030\004 \001(\t\022\020\n\010type_url"
     "\030\006 \001(\t\022\023\n\013oneof_index\030\007 \001(\005\022\016\n\006packed\030\010 "
     "\001(\010\022(\n\007options\030\t \003(\0132\027.google.protobuf.O"
-    "ption\022\021\n\tjson_name\030\n \001(\t\"\310\002\n\004Kind\022\020\n\014TYP"
-    "E_UNKNOWN\020\000\022\017\n\013TYPE_DOUBLE\020\001\022\016\n\nTYPE_FLO"
-    "AT\020\002\022\016\n\nTYPE_INT64\020\003\022\017\n\013TYPE_UINT64\020\004\022\016\n"
-    "\nTYPE_INT32\020\005\022\020\n\014TYPE_FIXED64\020\006\022\020\n\014TYPE_"
-    "FIXED32\020\007\022\r\n\tTYPE_BOOL\020\010\022\017\n\013TYPE_STRING\020"
-    "\t\022\016\n\nTYPE_GROUP\020\n\022\020\n\014TYPE_MESSAGE\020\013\022\016\n\nT"
-    "YPE_BYTES\020\014\022\017\n\013TYPE_UINT32\020\r\022\r\n\tTYPE_ENU"
-    "M\020\016\022\021\n\rTYPE_SFIXED32\020\017\022\021\n\rTYPE_SFIXED64\020"
-    "\020\022\017\n\013TYPE_SINT32\020\021\022\017\n\013TYPE_SINT64\020\022\"t\n\013C"
-    "ardinality\022\027\n\023CARDINALITY_UNKNOWN\020\000\022\030\n\024C"
-    "ARDINALITY_OPTIONAL\020\001\022\030\n\024CARDINALITY_REQ"
-    "UIRED\020\002\022\030\n\024CARDINALITY_REPEATED\020\003\"\316\001\n\004En"
-    "um\022\014\n\004name\030\001 \001(\t\022-\n\tenumvalue\030\002 \003(\0132\032.go"
-    "ogle.protobuf.EnumValue\022(\n\007options\030\003 \003(\013"
-    "2\027.google.protobuf.Option\0226\n\016source_cont"
-    "ext\030\004 \001(\0132\036.google.protobuf.SourceContex"
-    "t\022\'\n\006syntax\030\005 \001(\0162\027.google.protobuf.Synt"
-    "ax\"S\n\tEnumValue\022\014\n\004name\030\001 \001(\t\022\016\n\006number\030"
-    "\002 \001(\005\022(\n\007options\030\003 \003(\0132\027.google.protobuf"
-    ".Option\";\n\006Option\022\014\n\004name\030\001 \001(\t\022#\n\005value"
-    "\030\002 \001(\0132\024.google.protobuf.Any*.\n\006Syntax\022\021"
-    "\n\rSYNTAX_PROTO2\020\000\022\021\n\rSYNTAX_PROTO3\020\001BL\n\023"
-    "com.google.protobufB\tTypeProtoP\001\240\001\001\242\002\003GP"
-    "B\252\002\036Google.Protobuf.WellKnownTypesb\006prot"
-    "o3", 1522);
+    "ption\022\021\n\tjson_name\030\n \001(\t\022\025\n\rdefault_valu"
+    "e\030\013 \001(\t\"\310\002\n\004Kind\022\020\n\014TYPE_UNKNOWN\020\000\022\017\n\013TY"
+    "PE_DOUBLE\020\001\022\016\n\nTYPE_FLOAT\020\002\022\016\n\nTYPE_INT6"
+    "4\020\003\022\017\n\013TYPE_UINT64\020\004\022\016\n\nTYPE_INT32\020\005\022\020\n\014"
+    "TYPE_FIXED64\020\006\022\020\n\014TYPE_FIXED32\020\007\022\r\n\tTYPE"
+    "_BOOL\020\010\022\017\n\013TYPE_STRING\020\t\022\016\n\nTYPE_GROUP\020\n"
+    "\022\020\n\014TYPE_MESSAGE\020\013\022\016\n\nTYPE_BYTES\020\014\022\017\n\013TY"
+    "PE_UINT32\020\r\022\r\n\tTYPE_ENUM\020\016\022\021\n\rTYPE_SFIXE"
+    "D32\020\017\022\021\n\rTYPE_SFIXED64\020\020\022\017\n\013TYPE_SINT32\020"
+    "\021\022\017\n\013TYPE_SINT64\020\022\"t\n\013Cardinality\022\027\n\023CAR"
+    "DINALITY_UNKNOWN\020\000\022\030\n\024CARDINALITY_OPTION"
+    "AL\020\001\022\030\n\024CARDINALITY_REQUIRED\020\002\022\030\n\024CARDIN"
+    "ALITY_REPEATED\020\003\"\316\001\n\004Enum\022\014\n\004name\030\001 \001(\t\022"
+    "-\n\tenumvalue\030\002 \003(\0132\032.google.protobuf.Enu"
+    "mValue\022(\n\007options\030\003 \003(\0132\027.google.protobu"
+    "f.Option\0226\n\016source_context\030\004 \001(\0132\036.googl"
+    "e.protobuf.SourceContext\022\'\n\006syntax\030\005 \001(\016"
+    "2\027.google.protobuf.Syntax\"S\n\tEnumValue\022\014"
+    "\n\004name\030\001 \001(\t\022\016\n\006number\030\002 \001(\005\022(\n\007options\030"
+    "\003 \003(\0132\027.google.protobuf.Option\";\n\006Option"
+    "\022\014\n\004name\030\001 \001(\t\022#\n\005value\030\002 \001(\0132\024.google.p"
+    "rotobuf.Any*.\n\006Syntax\022\021\n\rSYNTAX_PROTO2\020\000"
+    "\022\021\n\rSYNTAX_PROTO3\020\001BL\n\023com.google.protob"
+    "ufB\tTypeProtoP\001\240\001\001\242\002\003GPB\252\002\036Google.Protob"
+    "uf.WellKnownTypesb\006proto3", 1545);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "google/protobuf/type.proto", &protobuf_RegisterTypes);
   Type::default_instance_ = new Type();
@@ -282,14 +284,14 @@ static void MergeFromFail(int line) {
 
 // ===================================================================
 
-#ifndef _MSC_VER
+#if !defined(_MSC_VER) || _MSC_VER >= 1900
 const int Type::kNameFieldNumber;
 const int Type::kFieldsFieldNumber;
 const int Type::kOneofsFieldNumber;
 const int Type::kOptionsFieldNumber;
 const int Type::kSourceContextFieldNumber;
 const int Type::kSyntaxFieldNumber;
-#endif  // !_MSC_VER
+#endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
 Type::Type()
   : ::google::protobuf::Message(), _internal_metadata_(NULL) {
@@ -357,6 +359,7 @@ Type* Type::New(::google::protobuf::Arena* arena) const {
 }
 
 void Type::Clear() {
+// @@protoc_insertion_point(message_clear_start:google.protobuf.Type)
   name_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   if (GetArenaNoVirtual() == NULL && source_context_ != NULL) delete source_context_;
   source_context_ = NULL;
@@ -368,7 +371,7 @@ void Type::Clear() {
 
 bool Type::MergePartialFromCodedStream(
     ::google::protobuf::io::CodedInputStream* input) {
-#define DO_(EXPRESSION) if (!(EXPRESSION)) goto failure
+#define DO_(EXPRESSION) if (!GOOGLE_PREDICT_TRUE(EXPRESSION)) goto failure
   ::google::protobuf::uint32 tag;
   // @@protoc_insertion_point(parse_start:google.protobuf.Type)
   for (;;) {
@@ -601,6 +604,7 @@ void Type::SerializeWithCachedSizes(
 }
 
 int Type::ByteSize() const {
+// @@protoc_insertion_point(message_byte_size_start:google.protobuf.Type)
   int total_size = 0;
 
   // optional string name = 1;
@@ -653,18 +657,22 @@ int Type::ByteSize() const {
 }
 
 void Type::MergeFrom(const ::google::protobuf::Message& from) {
+// @@protoc_insertion_point(generalized_merge_from_start:google.protobuf.Type)
   if (GOOGLE_PREDICT_FALSE(&from == this)) MergeFromFail(__LINE__);
   const Type* source = 
       ::google::protobuf::internal::DynamicCastToGenerated<const Type>(
           &from);
   if (source == NULL) {
+  // @@protoc_insertion_point(generalized_merge_from_cast_fail:google.protobuf.Type)
     ::google::protobuf::internal::ReflectionOps::Merge(from, this);
   } else {
+  // @@protoc_insertion_point(generalized_merge_from_cast_success:google.protobuf.Type)
     MergeFrom(*source);
   }
 }
 
 void Type::MergeFrom(const Type& from) {
+// @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.Type)
   if (GOOGLE_PREDICT_FALSE(&from == this)) MergeFromFail(__LINE__);
   fields_.MergeFrom(from.fields_);
   oneofs_.MergeFrom(from.oneofs_);
@@ -682,12 +690,14 @@ void Type::MergeFrom(const Type& from) {
 }
 
 void Type::CopyFrom(const ::google::protobuf::Message& from) {
+// @@protoc_insertion_point(generalized_copy_from_start:google.protobuf.Type)
   if (&from == this) return;
   Clear();
   MergeFrom(from);
 }
 
 void Type::CopyFrom(const Type& from) {
+// @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.Type)
   if (&from == this) return;
   Clear();
   MergeFrom(from);
@@ -754,6 +764,7 @@ void Type::clear_name() {
   return name_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
  ::std::string* Type::release_name() {
+  // @@protoc_insertion_point(field_release:google.protobuf.Type.name)
   
   return name_.ReleaseNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
@@ -826,6 +837,7 @@ void Type::clear_oneofs() {
   // @@protoc_insertion_point(field_set_pointer:google.protobuf.Type.oneofs)
 }
  ::std::string* Type::add_oneofs() {
+  // @@protoc_insertion_point(field_add_mutable:google.protobuf.Type.oneofs)
   return oneofs_.Add();
 }
  void Type::add_oneofs(const ::std::string& value) {
@@ -902,6 +914,7 @@ const ::google::protobuf::SourceContext& Type::source_context() const {
   return source_context_;
 }
 ::google::protobuf::SourceContext* Type::release_source_context() {
+  // @@protoc_insertion_point(field_release:google.protobuf.Type.source_context)
   
   ::google::protobuf::SourceContext* temp = source_context_;
   source_context_ = NULL;
@@ -967,7 +980,7 @@ bool Field_Kind_IsValid(int value) {
   }
 }
 
-#ifndef _MSC_VER
+#if !defined(_MSC_VER) || _MSC_VER >= 1900
 const Field_Kind Field::TYPE_UNKNOWN;
 const Field_Kind Field::TYPE_DOUBLE;
 const Field_Kind Field::TYPE_FLOAT;
@@ -990,7 +1003,7 @@ const Field_Kind Field::TYPE_SINT64;
 const Field_Kind Field::Kind_MIN;
 const Field_Kind Field::Kind_MAX;
 const int Field::Kind_ARRAYSIZE;
-#endif  // _MSC_VER
+#endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 const ::google::protobuf::EnumDescriptor* Field_Cardinality_descriptor() {
   protobuf_AssignDescriptorsOnce();
   return Field_Cardinality_descriptor_;
@@ -1007,7 +1020,7 @@ bool Field_Cardinality_IsValid(int value) {
   }
 }
 
-#ifndef _MSC_VER
+#if !defined(_MSC_VER) || _MSC_VER >= 1900
 const Field_Cardinality Field::CARDINALITY_UNKNOWN;
 const Field_Cardinality Field::CARDINALITY_OPTIONAL;
 const Field_Cardinality Field::CARDINALITY_REQUIRED;
@@ -1015,8 +1028,8 @@ const Field_Cardinality Field::CARDINALITY_REPEATED;
 const Field_Cardinality Field::Cardinality_MIN;
 const Field_Cardinality Field::Cardinality_MAX;
 const int Field::Cardinality_ARRAYSIZE;
-#endif  // _MSC_VER
-#ifndef _MSC_VER
+#endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
+#if !defined(_MSC_VER) || _MSC_VER >= 1900
 const int Field::kKindFieldNumber;
 const int Field::kCardinalityFieldNumber;
 const int Field::kNumberFieldNumber;
@@ -1026,7 +1039,8 @@ const int Field::kOneofIndexFieldNumber;
 const int Field::kPackedFieldNumber;
 const int Field::kOptionsFieldNumber;
 const int Field::kJsonNameFieldNumber;
-#endif  // !_MSC_VER
+const int Field::kDefaultValueFieldNumber;
+#endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
 Field::Field()
   : ::google::protobuf::Message(), _internal_metadata_(NULL) {
@@ -1058,6 +1072,7 @@ void Field::SharedCtor() {
   oneof_index_ = 0;
   packed_ = false;
   json_name_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  default_value_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
 
 Field::~Field() {
@@ -1069,6 +1084,7 @@ void Field::SharedDtor() {
   name_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   type_url_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   json_name_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  default_value_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   if (this != default_instance_) {
   }
 }
@@ -1099,8 +1115,17 @@ Field* Field::New(::google::protobuf::Arena* arena) const {
 }
 
 void Field::Clear() {
+// @@protoc_insertion_point(message_clear_start:google.protobuf.Field)
+#if defined(__clang__)
+#define ZR_HELPER_(f) \
+  _Pragma("clang diagnostic push") \
+  _Pragma("clang diagnostic ignored \"-Winvalid-offsetof\"") \
+  __builtin_offsetof(Field, f) \
+  _Pragma("clang diagnostic pop")
+#else
 #define ZR_HELPER_(f) reinterpret_cast<char*>(\
   &reinterpret_cast<Field*>(16)->f)
+#endif
 
 #define ZR_(first, last) do {\
   ::memset(&first, 0,\
@@ -1113,6 +1138,7 @@ void Field::Clear() {
   type_url_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   packed_ = false;
   json_name_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  default_value_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 
 #undef ZR_HELPER_
 #undef ZR_
@@ -1122,7 +1148,7 @@ void Field::Clear() {
 
 bool Field::MergePartialFromCodedStream(
     ::google::protobuf::io::CodedInputStream* input) {
-#define DO_(EXPRESSION) if (!(EXPRESSION)) goto failure
+#define DO_(EXPRESSION) if (!GOOGLE_PREDICT_TRUE(EXPRESSION)) goto failure
   ::google::protobuf::uint32 tag;
   // @@protoc_insertion_point(parse_start:google.protobuf.Field)
   for (;;) {
@@ -1270,6 +1296,23 @@ bool Field::MergePartialFromCodedStream(
         } else {
           goto handle_unusual;
         }
+        if (input->ExpectTag(90)) goto parse_default_value;
+        break;
+      }
+
+      // optional string default_value = 11;
+      case 11: {
+        if (tag == 90) {
+         parse_default_value:
+          DO_(::google::protobuf::internal::WireFormatLite::ReadString(
+                input, this->mutable_default_value()));
+          DO_(::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
+            this->default_value().data(), this->default_value().length(),
+            ::google::protobuf::internal::WireFormatLite::PARSE,
+            "google.protobuf.Field.default_value"));
+        } else {
+          goto handle_unusual;
+        }
         if (input->ExpectAtEnd()) goto success;
         break;
       }
@@ -1361,6 +1404,16 @@ void Field::SerializeWithCachedSizes(
       10, this->json_name(), output);
   }
 
+  // optional string default_value = 11;
+  if (this->default_value().size() > 0) {
+    ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
+      this->default_value().data(), this->default_value().length(),
+      ::google::protobuf::internal::WireFormatLite::SERIALIZE,
+      "google.protobuf.Field.default_value");
+    ::google::protobuf::internal::WireFormatLite::WriteStringMaybeAliased(
+      11, this->default_value(), output);
+  }
+
   // @@protoc_insertion_point(serialize_end:google.protobuf.Field)
 }
 
@@ -1434,11 +1487,23 @@ void Field::SerializeWithCachedSizes(
         10, this->json_name(), target);
   }
 
+  // optional string default_value = 11;
+  if (this->default_value().size() > 0) {
+    ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
+      this->default_value().data(), this->default_value().length(),
+      ::google::protobuf::internal::WireFormatLite::SERIALIZE,
+      "google.protobuf.Field.default_value");
+    target =
+      ::google::protobuf::internal::WireFormatLite::WriteStringToArray(
+        11, this->default_value(), target);
+  }
+
   // @@protoc_insertion_point(serialize_to_array_end:google.protobuf.Field)
   return target;
 }
 
 int Field::ByteSize() const {
+// @@protoc_insertion_point(message_byte_size_start:google.protobuf.Field)
   int total_size = 0;
 
   // optional .google.protobuf.Field.Kind kind = 1;
@@ -1493,6 +1558,13 @@ int Field::ByteSize() const {
         this->json_name());
   }
 
+  // optional string default_value = 11;
+  if (this->default_value().size() > 0) {
+    total_size += 1 +
+      ::google::protobuf::internal::WireFormatLite::StringSize(
+        this->default_value());
+  }
+
   // repeated .google.protobuf.Option options = 9;
   total_size += 1 * this->options_size();
   for (int i = 0; i < this->options_size(); i++) {
@@ -1508,18 +1580,22 @@ int Field::ByteSize() const {
 }
 
 void Field::MergeFrom(const ::google::protobuf::Message& from) {
+// @@protoc_insertion_point(generalized_merge_from_start:google.protobuf.Field)
   if (GOOGLE_PREDICT_FALSE(&from == this)) MergeFromFail(__LINE__);
   const Field* source = 
       ::google::protobuf::internal::DynamicCastToGenerated<const Field>(
           &from);
   if (source == NULL) {
+  // @@protoc_insertion_point(generalized_merge_from_cast_fail:google.protobuf.Field)
     ::google::protobuf::internal::ReflectionOps::Merge(from, this);
   } else {
+  // @@protoc_insertion_point(generalized_merge_from_cast_success:google.protobuf.Field)
     MergeFrom(*source);
   }
 }
 
 void Field::MergeFrom(const Field& from) {
+// @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.Field)
   if (GOOGLE_PREDICT_FALSE(&from == this)) MergeFromFail(__LINE__);
   options_.MergeFrom(from.options_);
   if (from.kind() != 0) {
@@ -1549,15 +1625,21 @@ void Field::MergeFrom(const Field& from) {
 
     json_name_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.json_name_);
   }
+  if (from.default_value().size() > 0) {
+
+    default_value_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.default_value_);
+  }
 }
 
 void Field::CopyFrom(const ::google::protobuf::Message& from) {
+// @@protoc_insertion_point(generalized_copy_from_start:google.protobuf.Field)
   if (&from == this) return;
   Clear();
   MergeFrom(from);
 }
 
 void Field::CopyFrom(const Field& from) {
+// @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.Field)
   if (&from == this) return;
   Clear();
   MergeFrom(from);
@@ -1582,6 +1664,7 @@ void Field::InternalSwap(Field* other) {
   std::swap(packed_, other->packed_);
   options_.UnsafeArenaSwap(&other->options_);
   json_name_.Swap(&other->json_name_);
+  default_value_.Swap(&other->default_value_);
   _internal_metadata_.Swap(&other->_internal_metadata_);
   std::swap(_cached_size_, other->_cached_size_);
 }
@@ -1669,6 +1752,7 @@ void Field::clear_name() {
   return name_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
  ::std::string* Field::release_name() {
+  // @@protoc_insertion_point(field_release:google.protobuf.Field.name)
   
   return name_.ReleaseNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
@@ -1712,6 +1796,7 @@ void Field::clear_type_url() {
   return type_url_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
  ::std::string* Field::release_type_url() {
+  // @@protoc_insertion_point(field_release:google.protobuf.Field.type_url)
   
   return type_url_.ReleaseNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
@@ -1813,6 +1898,7 @@ void Field::clear_json_name() {
   return json_name_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
  ::std::string* Field::release_json_name() {
+  // @@protoc_insertion_point(field_release:google.protobuf.Field.json_name)
   
   return json_name_.ReleaseNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
@@ -1826,17 +1912,61 @@ void Field::clear_json_name() {
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.Field.json_name)
 }
 
+// optional string default_value = 11;
+void Field::clear_default_value() {
+  default_value_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+ const ::std::string& Field::default_value() const {
+  // @@protoc_insertion_point(field_get:google.protobuf.Field.default_value)
+  return default_value_.GetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+ void Field::set_default_value(const ::std::string& value) {
+  
+  default_value_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
+  // @@protoc_insertion_point(field_set:google.protobuf.Field.default_value)
+}
+ void Field::set_default_value(const char* value) {
+  
+  default_value_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
+  // @@protoc_insertion_point(field_set_char:google.protobuf.Field.default_value)
+}
+ void Field::set_default_value(const char* value, size_t size) {
+  
+  default_value_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+      ::std::string(reinterpret_cast<const char*>(value), size));
+  // @@protoc_insertion_point(field_set_pointer:google.protobuf.Field.default_value)
+}
+ ::std::string* Field::mutable_default_value() {
+  
+  // @@protoc_insertion_point(field_mutable:google.protobuf.Field.default_value)
+  return default_value_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+ ::std::string* Field::release_default_value() {
+  // @@protoc_insertion_point(field_release:google.protobuf.Field.default_value)
+  
+  return default_value_.ReleaseNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+ void Field::set_allocated_default_value(::std::string* default_value) {
+  if (default_value != NULL) {
+    
+  } else {
+    
+  }
+  default_value_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), default_value);
+  // @@protoc_insertion_point(field_set_allocated:google.protobuf.Field.default_value)
+}
+
 #endif  // PROTOBUF_INLINE_NOT_IN_HEADERS
 
 // ===================================================================
 
-#ifndef _MSC_VER
+#if !defined(_MSC_VER) || _MSC_VER >= 1900
 const int Enum::kNameFieldNumber;
 const int Enum::kEnumvalueFieldNumber;
 const int Enum::kOptionsFieldNumber;
 const int Enum::kSourceContextFieldNumber;
 const int Enum::kSyntaxFieldNumber;
-#endif  // !_MSC_VER
+#endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
 Enum::Enum()
   : ::google::protobuf::Message(), _internal_metadata_(NULL) {
@@ -1904,6 +2034,7 @@ Enum* Enum::New(::google::protobuf::Arena* arena) const {
 }
 
 void Enum::Clear() {
+// @@protoc_insertion_point(message_clear_start:google.protobuf.Enum)
   name_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   if (GetArenaNoVirtual() == NULL && source_context_ != NULL) delete source_context_;
   source_context_ = NULL;
@@ -1914,7 +2045,7 @@ void Enum::Clear() {
 
 bool Enum::MergePartialFromCodedStream(
     ::google::protobuf::io::CodedInputStream* input) {
-#define DO_(EXPRESSION) if (!(EXPRESSION)) goto failure
+#define DO_(EXPRESSION) if (!GOOGLE_PREDICT_TRUE(EXPRESSION)) goto failure
   ::google::protobuf::uint32 tag;
   // @@protoc_insertion_point(parse_start:google.protobuf.Enum)
   for (;;) {
@@ -2107,6 +2238,7 @@ void Enum::SerializeWithCachedSizes(
 }
 
 int Enum::ByteSize() const {
+// @@protoc_insertion_point(message_byte_size_start:google.protobuf.Enum)
   int total_size = 0;
 
   // optional string name = 1;
@@ -2152,18 +2284,22 @@ int Enum::ByteSize() const {
 }
 
 void Enum::MergeFrom(const ::google::protobuf::Message& from) {
+// @@protoc_insertion_point(generalized_merge_from_start:google.protobuf.Enum)
   if (GOOGLE_PREDICT_FALSE(&from == this)) MergeFromFail(__LINE__);
   const Enum* source = 
       ::google::protobuf::internal::DynamicCastToGenerated<const Enum>(
           &from);
   if (source == NULL) {
+  // @@protoc_insertion_point(generalized_merge_from_cast_fail:google.protobuf.Enum)
     ::google::protobuf::internal::ReflectionOps::Merge(from, this);
   } else {
+  // @@protoc_insertion_point(generalized_merge_from_cast_success:google.protobuf.Enum)
     MergeFrom(*source);
   }
 }
 
 void Enum::MergeFrom(const Enum& from) {
+// @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.Enum)
   if (GOOGLE_PREDICT_FALSE(&from == this)) MergeFromFail(__LINE__);
   enumvalue_.MergeFrom(from.enumvalue_);
   options_.MergeFrom(from.options_);
@@ -2180,12 +2316,14 @@ void Enum::MergeFrom(const Enum& from) {
 }
 
 void Enum::CopyFrom(const ::google::protobuf::Message& from) {
+// @@protoc_insertion_point(generalized_copy_from_start:google.protobuf.Enum)
   if (&from == this) return;
   Clear();
   MergeFrom(from);
 }
 
 void Enum::CopyFrom(const Enum& from) {
+// @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.Enum)
   if (&from == this) return;
   Clear();
   MergeFrom(from);
@@ -2251,6 +2389,7 @@ void Enum::clear_name() {
   return name_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
  ::std::string* Enum::release_name() {
+  // @@protoc_insertion_point(field_release:google.protobuf.Enum.name)
   
   return name_.ReleaseNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
@@ -2345,6 +2484,7 @@ const ::google::protobuf::SourceContext& Enum::source_context() const {
   return source_context_;
 }
 ::google::protobuf::SourceContext* Enum::release_source_context() {
+  // @@protoc_insertion_point(field_release:google.protobuf.Enum.source_context)
   
   ::google::protobuf::SourceContext* temp = source_context_;
   source_context_ = NULL;
@@ -2379,11 +2519,11 @@ void Enum::clear_syntax() {
 
 // ===================================================================
 
-#ifndef _MSC_VER
+#if !defined(_MSC_VER) || _MSC_VER >= 1900
 const int EnumValue::kNameFieldNumber;
 const int EnumValue::kNumberFieldNumber;
 const int EnumValue::kOptionsFieldNumber;
-#endif  // !_MSC_VER
+#endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
 EnumValue::EnumValue()
   : ::google::protobuf::Message(), _internal_metadata_(NULL) {
@@ -2448,6 +2588,7 @@ EnumValue* EnumValue::New(::google::protobuf::Arena* arena) const {
 }
 
 void EnumValue::Clear() {
+// @@protoc_insertion_point(message_clear_start:google.protobuf.EnumValue)
   name_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   number_ = 0;
   options_.Clear();
@@ -2455,7 +2596,7 @@ void EnumValue::Clear() {
 
 bool EnumValue::MergePartialFromCodedStream(
     ::google::protobuf::io::CodedInputStream* input) {
-#define DO_(EXPRESSION) if (!(EXPRESSION)) goto failure
+#define DO_(EXPRESSION) if (!GOOGLE_PREDICT_TRUE(EXPRESSION)) goto failure
   ::google::protobuf::uint32 tag;
   // @@protoc_insertion_point(parse_start:google.protobuf.EnumValue)
   for (;;) {
@@ -2590,6 +2731,7 @@ void EnumValue::SerializeWithCachedSizes(
 }
 
 int EnumValue::ByteSize() const {
+// @@protoc_insertion_point(message_byte_size_start:google.protobuf.EnumValue)
   int total_size = 0;
 
   // optional string name = 1;
@@ -2621,18 +2763,22 @@ int EnumValue::ByteSize() const {
 }
 
 void EnumValue::MergeFrom(const ::google::protobuf::Message& from) {
+// @@protoc_insertion_point(generalized_merge_from_start:google.protobuf.EnumValue)
   if (GOOGLE_PREDICT_FALSE(&from == this)) MergeFromFail(__LINE__);
   const EnumValue* source = 
       ::google::protobuf::internal::DynamicCastToGenerated<const EnumValue>(
           &from);
   if (source == NULL) {
+  // @@protoc_insertion_point(generalized_merge_from_cast_fail:google.protobuf.EnumValue)
     ::google::protobuf::internal::ReflectionOps::Merge(from, this);
   } else {
+  // @@protoc_insertion_point(generalized_merge_from_cast_success:google.protobuf.EnumValue)
     MergeFrom(*source);
   }
 }
 
 void EnumValue::MergeFrom(const EnumValue& from) {
+// @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.EnumValue)
   if (GOOGLE_PREDICT_FALSE(&from == this)) MergeFromFail(__LINE__);
   options_.MergeFrom(from.options_);
   if (from.name().size() > 0) {
@@ -2645,12 +2791,14 @@ void EnumValue::MergeFrom(const EnumValue& from) {
 }
 
 void EnumValue::CopyFrom(const ::google::protobuf::Message& from) {
+// @@protoc_insertion_point(generalized_copy_from_start:google.protobuf.EnumValue)
   if (&from == this) return;
   Clear();
   MergeFrom(from);
 }
 
 void EnumValue::CopyFrom(const EnumValue& from) {
+// @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.EnumValue)
   if (&from == this) return;
   Clear();
   MergeFrom(from);
@@ -2714,6 +2862,7 @@ void EnumValue::clear_name() {
   return name_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
  ::std::string* EnumValue::release_name() {
+  // @@protoc_insertion_point(field_release:google.protobuf.EnumValue.name)
   
   return name_.ReleaseNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
@@ -2775,10 +2924,10 @@ EnumValue::options() const {
 
 // ===================================================================
 
-#ifndef _MSC_VER
+#if !defined(_MSC_VER) || _MSC_VER >= 1900
 const int Option::kNameFieldNumber;
 const int Option::kValueFieldNumber;
-#endif  // !_MSC_VER
+#endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
 Option::Option()
   : ::google::protobuf::Message(), _internal_metadata_(NULL) {
@@ -2845,6 +2994,7 @@ Option* Option::New(::google::protobuf::Arena* arena) const {
 }
 
 void Option::Clear() {
+// @@protoc_insertion_point(message_clear_start:google.protobuf.Option)
   name_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   if (GetArenaNoVirtual() == NULL && value_ != NULL) delete value_;
   value_ = NULL;
@@ -2852,7 +3002,7 @@ void Option::Clear() {
 
 bool Option::MergePartialFromCodedStream(
     ::google::protobuf::io::CodedInputStream* input) {
-#define DO_(EXPRESSION) if (!(EXPRESSION)) goto failure
+#define DO_(EXPRESSION) if (!GOOGLE_PREDICT_TRUE(EXPRESSION)) goto failure
   ::google::protobuf::uint32 tag;
   // @@protoc_insertion_point(parse_start:google.protobuf.Option)
   for (;;) {
@@ -2958,6 +3108,7 @@ void Option::SerializeWithCachedSizes(
 }
 
 int Option::ByteSize() const {
+// @@protoc_insertion_point(message_byte_size_start:google.protobuf.Option)
   int total_size = 0;
 
   // optional string name = 1;
@@ -2981,18 +3132,22 @@ int Option::ByteSize() const {
 }
 
 void Option::MergeFrom(const ::google::protobuf::Message& from) {
+// @@protoc_insertion_point(generalized_merge_from_start:google.protobuf.Option)
   if (GOOGLE_PREDICT_FALSE(&from == this)) MergeFromFail(__LINE__);
   const Option* source = 
       ::google::protobuf::internal::DynamicCastToGenerated<const Option>(
           &from);
   if (source == NULL) {
+  // @@protoc_insertion_point(generalized_merge_from_cast_fail:google.protobuf.Option)
     ::google::protobuf::internal::ReflectionOps::Merge(from, this);
   } else {
+  // @@protoc_insertion_point(generalized_merge_from_cast_success:google.protobuf.Option)
     MergeFrom(*source);
   }
 }
 
 void Option::MergeFrom(const Option& from) {
+// @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.Option)
   if (GOOGLE_PREDICT_FALSE(&from == this)) MergeFromFail(__LINE__);
   if (from.name().size() > 0) {
 
@@ -3004,12 +3159,14 @@ void Option::MergeFrom(const Option& from) {
 }
 
 void Option::CopyFrom(const ::google::protobuf::Message& from) {
+// @@protoc_insertion_point(generalized_copy_from_start:google.protobuf.Option)
   if (&from == this) return;
   Clear();
   MergeFrom(from);
 }
 
 void Option::CopyFrom(const Option& from) {
+// @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.Option)
   if (&from == this) return;
   Clear();
   MergeFrom(from);
@@ -3072,6 +3229,7 @@ void Option::clear_name() {
   return name_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
  ::std::string* Option::release_name() {
+  // @@protoc_insertion_point(field_release:google.protobuf.Option.name)
   
   return name_.ReleaseNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
@@ -3106,6 +3264,7 @@ const ::google::protobuf::Any& Option::value() const {
   return value_;
 }
 ::google::protobuf::Any* Option::release_value() {
+  // @@protoc_insertion_point(field_release:google.protobuf.Option.value)
   
   ::google::protobuf::Any* temp = value_;
   value_ = NULL;

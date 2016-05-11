@@ -35,52 +35,95 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-// Reads and decodes protocol message fields.
-// Subclassing of GPBCodedInputStream is NOT supported.
+/// Reads and decodes protocol message fields.
+///
+/// The common uses of protocol buffers shouldn't need to use this class.
+/// @c GPBMessage's provide a @c +parseFromData:error: and @c
+/// +parseFromData:extensionRegistry:error: method that will decode a
+/// message for you.
+///
+/// @note Subclassing of GPBCodedInputStream is NOT supported.
 @interface GPBCodedInputStream : NSObject
 
+/// Creates a new stream wrapping some data.
 + (instancetype)streamWithData:(NSData *)data;
+
+/// Initializes a stream wrapping some data.
 - (instancetype)initWithData:(NSData *)data;
 
-// Attempt to read a field tag, returning zero if we have reached EOF.
-// Protocol message parsers use this to read tags, since a protocol message
-// may legally end wherever a tag occurs, and zero is not a valid tag number.
+/// Attempt to read a field tag, returning zero if we have reached EOF.
+/// Protocol message parsers use this to read tags, since a protocol message
+/// may legally end wherever a tag occurs, and zero is not a valid tag number.
 - (int32_t)readTag;
 
+/// Read and return a double.
 - (double)readDouble;
+/// Read and return a float.
 - (float)readFloat;
+/// Read and return a uint64.
 - (uint64_t)readUInt64;
+/// Read and return a uint32.
 - (uint32_t)readUInt32;
+/// Read and return an int64.
 - (int64_t)readInt64;
+/// Read and return an int32.
 - (int32_t)readInt32;
+/// Read and return a fixed64.
 - (uint64_t)readFixed64;
+/// Read and return a fixed32.
 - (uint32_t)readFixed32;
+/// Read and return an enum (int).
 - (int32_t)readEnum;
+/// Read and return a sfixed32.
 - (int32_t)readSFixed32;
+/// Read and return a sfixed64.
 - (int64_t)readSFixed64;
+/// Read and return a sint32.
 - (int32_t)readSInt32;
+/// Read and return a sint64.
 - (int64_t)readSInt64;
+/// Read and return a boolean.
 - (BOOL)readBool;
+/// Read and return a string.
 - (NSString *)readString;
+/// Read and return length delimited data.
 - (NSData *)readBytes;
 
-// Read an embedded message field value from the stream.
+/// Read an embedded message field value from the stream.
+///
+/// @param message           The message to set fields on as they are read.
+/// @param extensionRegistry An optional extension registry to use to lookup
+///                          extensions for @message.
 - (void)readMessage:(GPBMessage *)message
-    extensionRegistry:(nullable GPBExtensionRegistry *)extensionRegistry;
+  extensionRegistry:(nullable GPBExtensionRegistry *)extensionRegistry;
 
-// Reads and discards a single field, given its tag value. Returns NO if the
-// tag is an endgroup tag, in which case nothing is skipped.  Otherwise,
-// returns YES.
+/// Reads and discards a single field, given its tag value.
+///
+/// @param tag The tag number of the field to skip.
+///
+/// @return NO if the tag is an endgroup tag (in which case nothing is skipped),
+///         YES in all other cases.
 - (BOOL)skipField:(int32_t)tag;
 
-// Reads and discards an entire message.  This will read either until EOF
-// or until an endgroup tag, whichever comes first.
+/// Reads and discards an entire message.  This will read either until EOF
+/// or until an endgroup tag, whichever comes first.
 - (void)skipMessage;
 
-// Verifies that the last call to readTag() returned the given tag value.
-// This is used to verify that a nested group ended with the correct end tag.
-// Throws NSParseErrorException if value does not match the last tag.
-- (void)checkLastTagWas:(int32_t)value;
+/// Check to see if the logical end of the stream has been reached.
+///
+/// This can return NO when there is no more data, but the current parsing
+/// expected more data.
+- (BOOL)isAtEnd;
+
+/// The offset into the stream.
+- (size_t)position;
+
+/// Verifies that the last call to @c -readTag returned the given tag value.
+/// This is used to verify that a nested group ended with the correct end tag.
+/// Throws @c NSParseErrorException if value does not match the last tag.
+///
+/// @param expected The tag that was expected.
+- (void)checkLastTagWas:(int32_t)expected;
 
 @end
 

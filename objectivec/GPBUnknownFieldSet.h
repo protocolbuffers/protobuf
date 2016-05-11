@@ -34,16 +34,31 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+/// A collection of unknown fields.
 @interface GPBUnknownFieldSet : NSObject<NSCopying>
 
+/// Tests to see if the given field number has a value.
+///
+/// @param number The field number to check.
+///
+/// @return YES if there is an unknown field for the given field number.
 - (BOOL)hasField:(int32_t)number;
+
+/// Fetches the @c GPBUnknownField for the given field number.
+///
+/// @param number The field number to look up.
+///
+/// @return The @c GPBUnknownField or nil.
 - (nullable GPBUnknownField *)getField:(int32_t)number;
+
+/// Returns the number of fields in this set.
 - (NSUInteger)countOfFields;
 
+/// Adds the given field to the set.
 - (void)addField:(GPBUnknownField *)field;
 
-// Returns an NSArray of the GPBFields sorted by the field numbers.
-- (NSArray *)sortedFields;
+/// Returns an NSArray of the @c GPBUnknownFields sorted by the field numbers.
+- (NSArray<GPBUnknownField*> *)sortedFields;
 
 @end
 

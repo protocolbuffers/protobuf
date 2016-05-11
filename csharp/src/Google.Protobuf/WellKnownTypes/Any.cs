@@ -9,59 +9,90 @@ using pbr = global::Google.Protobuf.Reflection;
 using scg = global::System.Collections.Generic;
 namespace Google.Protobuf.WellKnownTypes {
 
-  namespace Proto {
+  /// <summary>Holder for reflection information generated from google/protobuf/any.proto</summary>
+  [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+  public static partial class AnyReflection {
 
-    /// <summary>Holder for reflection information generated from google/protobuf/any.proto</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-    public static partial class Any {
-
-      #region Descriptor
-      /// <summary>File descriptor for google/protobuf/any.proto</summary>
-      public static pbr::FileDescriptor Descriptor {
-        get { return descriptor; }
-      }
-      private static pbr::FileDescriptor descriptor;
-
-      static Any() {
-        byte[] descriptorData = global::System.Convert.FromBase64String(
-            string.Concat(
-              "Chlnb29nbGUvcHJvdG9idWYvYW55LnByb3RvEg9nb29nbGUucHJvdG9idWYi",
-              "JgoDQW55EhAKCHR5cGVfdXJsGAEgASgJEg0KBXZhbHVlGAIgASgMQksKE2Nv",
-              "bS5nb29nbGUucHJvdG9idWZCCEFueVByb3RvUAGgAQGiAgNHUEKqAh5Hb29n",
-              "bGUuUHJvdG9idWYuV2VsbEtub3duVHlwZXNiBnByb3RvMw=="));
-        descriptor = pbr::FileDescriptor.InternalBuildGeneratedFileFrom(descriptorData,
-            new pbr::FileDescriptor[] { },
-            new pbr::GeneratedCodeInfo(null, new pbr::GeneratedCodeInfo[] {
-              new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.WellKnownTypes.Any), new[]{ "TypeUrl", "Value" }, null, null, null)
-            }));
-      }
-      #endregion
-
+    #region Descriptor
+    /// <summary>File descriptor for google/protobuf/any.proto</summary>
+    public static pbr::FileDescriptor Descriptor {
+      get { return descriptor; }
     }
+    private static pbr::FileDescriptor descriptor;
+
+    static AnyReflection() {
+      byte[] descriptorData = global::System.Convert.FromBase64String(
+          string.Concat(
+            "Chlnb29nbGUvcHJvdG9idWYvYW55LnByb3RvEg9nb29nbGUucHJvdG9idWYi",
+            "JgoDQW55EhAKCHR5cGVfdXJsGAEgASgJEg0KBXZhbHVlGAIgASgMQnIKE2Nv",
+            "bS5nb29nbGUucHJvdG9idWZCCEFueVByb3RvUAFaJWdpdGh1Yi5jb20vZ29s",
+            "YW5nL3Byb3RvYnVmL3B0eXBlcy9hbnmgAQGiAgNHUEKqAh5Hb29nbGUuUHJv",
+            "dG9idWYuV2VsbEtub3duVHlwZXNiBnByb3RvMw=="));
+      descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
+          new pbr::FileDescriptor[] { },
+          new pbr::GeneratedClrTypeInfo(null, new pbr::GeneratedClrTypeInfo[] {
+            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.WellKnownTypes.Any), global::Google.Protobuf.WellKnownTypes.Any.Parser, new[]{ "TypeUrl", "Value" }, null, null, null)
+          }));
+    }
+    #endregion
+
   }
   #region Messages
   /// <summary>
-  ///  `Any` contains an arbitrary serialized message along with a URL
-  ///  that describes the type of the serialized message.
+  ///  `Any` contains an arbitrary serialized protocol buffer message along with a
+  ///  URL that describes the type of the serialized message.
+  ///
+  ///  Protobuf library provides support to pack/unpack Any values in the form
+  ///  of utility functions or additional generated methods of the Any type.
+  ///
+  ///  Example 1: Pack and unpack a message in C++.
+  ///
+  ///      Foo foo = ...;
+  ///      Any any;
+  ///      any.PackFrom(foo);
+  ///      ...
+  ///      if (any.UnpackTo(&amp;foo)) {
+  ///        ...
+  ///      }
+  ///
+  ///  Example 2: Pack and unpack a message in Java.
+  ///
+  ///      Foo foo = ...;
+  ///      Any any = Any.pack(foo);
+  ///      ...
+  ///      if (any.is(Foo.class)) {
+  ///        foo = any.unpack(Foo.class);
+  ///      }
+  ///
+  ///  The pack methods provided by protobuf library will by default use
+  ///  'type.googleapis.com/full.type.name' as the type URL and the unpack
+  ///  methods only use the fully qualified type name after the last '/'
+  ///  in the type URL, for example "foo.bar.com/x/y.z" will yield type
+  ///  name "y.z".
+  ///
   ///  JSON
   ///  ====
   ///  The JSON representation of an `Any` value uses the regular
   ///  representation of the deserialized, embedded message, with an
   ///  additional field `@type` which contains the type URL. Example:
+  ///
   ///      package google.profile;
   ///      message Person {
   ///        string first_name = 1;
   ///        string last_name = 2;
   ///      }
+  ///
   ///      {
   ///        "@type": "type.googleapis.com/google.profile.Person",
   ///        "firstName": &lt;string>,
   ///        "lastName": &lt;string>
   ///      }
+  ///
   ///  If the embedded message type is well-known and has a custom JSON
   ///  representation, that representation will be embedded adding a field
-  ///  `value` which holds the custom JSON in addition to the the `@type`
-  ///  field. Example (for message [google.protobuf.Duration][google.protobuf.Duration]):
+  ///  `value` which holds the custom JSON in addition to the `@type`
+  ///  field. Example (for message [google.protobuf.Duration][]):
+  ///
   ///      {
   ///        "@type": "type.googleapis.com/google.protobuf.Duration",
   ///        "value": "1.212s"
@@ -73,7 +104,7 @@ namespace Google.Protobuf.WellKnownTypes {
     public static pb::MessageParser<Any> Parser { get { return _parser; } }
 
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Google.Protobuf.WellKnownTypes.Proto.Any.Descriptor.MessageTypes[0]; }
+      get { return global::Google.Protobuf.WellKnownTypes.AnyReflection.Descriptor.MessageTypes[0]; }
     }
 
     pbr::MessageDescriptor pb::IMessage.Descriptor {
@@ -100,26 +131,31 @@ namespace Google.Protobuf.WellKnownTypes {
     private string typeUrl_ = "";
     /// <summary>
     ///  A URL/resource name whose content describes the type of the
-    ///  serialized message.
+    ///  serialized protocol buffer message.
+    ///
     ///  For URLs which use the schema `http`, `https`, or no schema, the
     ///  following restrictions and interpretations apply:
+    ///
     ///  * If no schema is provided, `https` is assumed.
     ///  * The last segment of the URL's path must represent the fully
     ///    qualified name of the type (as in `path/google.protobuf.Duration`).
-    ///  * An HTTP GET on the URL must yield a [google.protobuf.Type][google.protobuf.Type]
+    ///    The name should be in a canonical form (e.g., leading "." is
+    ///    not accepted).
+    ///  * An HTTP GET on the URL must yield a [google.protobuf.Type][]
     ///    value in binary format, or produce an error.
     ///  * Applications are allowed to cache lookup results based on the
     ///    URL, or have them precompiled into a binary to avoid any
     ///    lookup. Therefore, binary compatibility needs to be preserved
     ///    on changes to types. (Use versioned type names to manage
     ///    breaking changes.)
+    ///
     ///  Schemas other than `http`, `https` (or the empty schema) might be
     ///  used with implementation specific semantics.
     /// </summary>
     public string TypeUrl {
       get { return typeUrl_; }
       set {
-        typeUrl_ = pb::Preconditions.CheckNotNull(value, "value");
+        typeUrl_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
       }
     }
 
@@ -127,12 +163,12 @@ namespace Google.Protobuf.WellKnownTypes {
     public const int ValueFieldNumber = 2;
     private pb::ByteString value_ = pb::ByteString.Empty;
     /// <summary>
-    ///  Must be valid serialized data of the above specified type.
+    ///  Must be a valid serialized protocol buffer of the above specified type.
     /// </summary>
     public pb::ByteString Value {
       get { return value_; }
       set {
-        value_ = pb::Preconditions.CheckNotNull(value, "value");
+        value_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
       }
     }
 
@@ -160,7 +196,7 @@ namespace Google.Protobuf.WellKnownTypes {
     }
 
     public override string ToString() {
-      return pb::JsonFormatter.Default.Format(this);
+      return pb::JsonFormatter.ToDiagnosticString(this);
     }
 
     public void WriteTo(pb::CodedOutputStream output) {

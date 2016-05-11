@@ -27,16 +27,17 @@
 // THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
 syntax = "proto3";
 
 package google.protobuf;
 
-option java_generate_equals_and_hash = true;
-option java_multiple_files = true;
-option java_outer_classname = "FieldMaskProto";
-option java_package = "com.google.protobuf";
 option csharp_namespace = "Google.Protobuf.WellKnownTypes";
+option java_package = "com.google.protobuf";
+option java_outer_classname = "FieldMaskProto";
+option java_multiple_files = true;
 option objc_class_prefix = "GPB";
+option java_generate_equals_and_hash = true;
 
 // `FieldMask` represents a set of symbolic field paths, for example:
 //
@@ -69,7 +70,7 @@ option objc_class_prefix = "GPB";
 //     z: 8
 //
 // The result will not contain specific values for fields x,y and z
-// (there value will be set to the default, and omitted in proto text
+// (their value will be set to the default, and omitted in proto text
 // output):
 //
 //
@@ -87,7 +88,7 @@ option objc_class_prefix = "GPB";
 // operation applies to all fields (as if a FieldMask of all fields
 // had been specified).
 //
-// Note that a field mask does not necessarily applies to the
+// Note that a field mask does not necessarily apply to the
 // top-level response message. In case of a REST get operation, the
 // field mask applies directly to the response, but in case of a REST
 // list operation, the mask instead applies to each individual message
@@ -161,6 +162,32 @@ option objc_class_prefix = "GPB";
 //       mask: "user.displayName,photo"
 //     }
 //
+// # Field Masks and Oneof Fields
+//
+// Field masks treat fields in oneofs just as regular fields. Consider the
+// following message:
+//
+//     message SampleMessage {
+//       oneof test_oneof {
+//         string name = 4;
+//         SubMessage sub_message = 9;
+//       }
+//     }
+//
+// The field mask can be:
+//
+//     mask {
+//       paths: "name"
+//     }
+//
+// Or:
+//
+//     mask {
+//       paths: "sub_message"
+//     }
+//
+// Note that oneof type names ("test_oneof" in this case) cannot be used in
+// paths.
 message FieldMask {
   // The set of field mask paths.
   repeated string paths = 1;

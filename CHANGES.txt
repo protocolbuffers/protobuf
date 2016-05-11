@@ -1,3 +1,172 @@
+2016-05-10 version 3.0.0-beta-3 (C++/Java/Python/Ruby/Nano/Objective-C/C#/JavaScript)
+  General
+  * Supported Proto3 lite-runtime in C++/Java for mobile platforms.
+  * Any type now supports APIs to specify prefixes other than
+    type.googleapis.com
+
+  C++ (Beta)
+  * Improved hash maps. TODO(gpike)
+  * Arenas
+      - Several inlined methods in Arena were moved to out-of-line to improve
+        build performance and code size.
+      - Added SpaceAllocatedAndUsed() to report both space used and allocated
+      - Added convenient class UnsafeArenaAllocatedRepeatedPtrFieldBackInserter
+  * Any
+      - Allow custom type URL prefixes in Any packing.
+      - TextFormat now expand the Any type rather than printing bytes.
+  * Performance optimizations and various bug fixes.
+
+  Java (Beta)
+  * Introduced an ExperimentalApi annotation. Annotated APIs are experimental
+    and are subject to change in a backward incompatible way in future releases.
+  * Introduced zero-copy serialization as an ExperimentalApi
+      - Introduction of the `ByteOutput` interface. This is similar to
+        `OutputStream` but provides semantics for lazy writing (i.e. no
+        immediate copy required) of fields that are considered to be immutable.
+      - `ByteString` now supports writing to a `ByteOutput`, which will directly
+        expose the internals of the `ByteString` (i.e. `byte[]` or `ByteBuffer`)
+        to the `ByteOutput` without copying.
+      - `CodedOutputStream` now supports writing to a `ByteOutput`. `ByteString`
+        instances that are too large to fit in the internal buffer will be
+        (lazily) written to the `ByteOutput` directly.
+      - This allows applications using large `ByteString` fields to avoid
+        duplication of these fields entirely. Such an application can supply a
+        `ByteOutput` that chains together the chunks received from
+        `CodedOutputStream` before forwarding them onto the IO system.
+  * Other related changes to `CodedOutputStream`
+      - Additional use of `sun.misc.Unsafe` where possible to perform fast
+        access to `byte[]` and `ByteBuffer` values and avoiding unnecessary
+        range checking.
+      - `ByteBuffer`-backed `CodedOutputStream` now writes directly to the
+        `ByteBuffer` rather than to an intermediate array.
+  * Improved the performance for lite-runtime. TODO(dweis)
+  * Various bug fixes and small feature enhancement.
+      - Fixed stack overflow when in hashCode() for infinite recursive oneofs.
+      - Fixed the lazy field parsing in lite to merge rather than overwrite.
+      - TextFormat now supports reporting line/column numbers on errors.
+
+  Python (Beta)
+  * TODO(jieluo)
+
+  Objective-C (Beta)
+  * Proto comments now come over as HeaderDoc comments in the generated sources
+    so Xcode can pick them up and display them.
+  * The library headers have been updated to use HeaderDoc comments so Xcode can
+    pick them up and display them.
+  * The per message and per field overhead in both generated code and runtime
+    object sizes was reduced.
+  * Generated code now include deprecated annotations when the proto file
+    included them.
+
+  C# (Beta)
+  In general: some changes are breaking, which require regenerating messages.
+  Most user-written code will not be impacted *except* for the renaming of enum
+  values.
+
+  * Allow custom type URL prefixes in `Any` packing, and ignore them when
+    unpacking
+  * `protoc` is now in a separate NuGet package (Google.Protobuf.Tools)
+  * New option: `internal_access` to generate internal classes
+  * Enum values are now PascalCased, and if there's a prefix which matches the
+    name of the enum, that is removed (so an enum `COLOR` with a value
+    `COLOR_BLUE` would generate a value of just `Blue`). An option
+    (`legacy_enum_values`) is temporarily available to disable this, but the
+    option will be removed for GA.
+  * `json_name` option is now honored
+  * If group tags are encountered when parsing, they are validated more
+    thoroughly (although we don't support actual groups)
+  * NuGet dependencies are better specified
+  * Breaking: `Preconditions` is renamed to `ProtoPreconditions`
+  * Breaking: `GeneratedCodeInfo` is renamed to `GeneratedClrTypeInfo`
+  * `JsonFormatter` now allows writing to a `TextWriter`
+  * New interface, `ICustomDiagnosticMessage` to allow more compact
+    representations from `ToString`
+  * `CodedInputStream` and `CodedOutputStream` now implement `IDisposable`,
+    which simply disposes of the streams they were constructed with
+  * Map fields no longer support null values (in line with other languages)
+  * Improvements in JSON formatting and parsing
+
+  Javascript (Alpha)
+  * TODO(haberman)
+
+  C++/Java Lite (Alpha)
+    A new "lite" generator parameter was introduced in the protoc for C++ and
+    Java for Proto3 syntax messages. Example usage:
+
+     ./protoc --cpp_out=lite:$OUTPUT_PATH foo.proto
+
+    The protoc will treat the current input and all the transitive dependencies
+    as LITE. The same generator parameter must be used to generate the
+    dependencies.
+
+    In Proto3 syntax files, "optimized_for=LITE_RUNTIME" is no longer supported.
+
+
+2015-12-30 version 3.0.0-beta-2 (C++/Java/Python/Ruby/Nano/Objective-C/C#/JavaScript)
+  General
+  * Introduced a new language implementation: JavaScript.
+  * Added a new field option "json_name". By default proto field names are
+    converted to "lowerCamelCase" in proto3 JSON format. This option can be
+    used to override this behavior and specify a different JSON name for the
+    field.
+  * Added conformance tests to ensure implementations are following proto3 JSON
+    specification.
+
+  C++ (Beta)
+  * Various bug fixes and improvements to the JSON support utility:
+      - Duplicate map keys in JSON are now rejected (i.e., translation will
+        fail).
+      - Fixed wire-format for google.protobuf.Value/ListValue.
+      - Fixed precision loss when converting google.protobuf.Timestamp.
+      - Fixed a bug when parsing invalid UTF-8 code points.
+      - Fixed a memory leak.
+      - Reduced call stack usage.
+
+  Java (Beta)
+  * Cleaned up some unused methods on CodedOutputStream.
+  * Presized lists for packed fields during parsing in the lite runtime to
+    reduce allocations and improve performance.
+  * Improved the performance of unknown fields in the lite runtime.
+  * Introduced UnsafeByteStrings to support zero-copy ByteString creation.
+  * Various bug fixes and improvements to the JSON support utility:
+      - Fixed a thread-safety bug.
+      - Added a new option “preservingProtoFieldNames” to JsonFormat.
+      - Added a new option “includingDefaultValueFields” to JsonFormat.
+      - Updated the JSON utility to comply with proto3 JSON specification.
+
+  Python (Beta)
+  * Added proto3 JSON format utility. It includes support for all field types
+    and a few well-known types except for Any and Struct.
+  * Added runtime support for Any, Timestamp, Duration and FieldMask.
+  * [ ] is now accepted for repeated scalar fields in text format parser.
+  * Map fields now have proper O(1) performance for lookup/insert/delete
+    when using the Python/C++ implementation. They were previously using O(n)
+    search-based algorithms because the C++ reflection interface didn't
+    support true map operations.
+
+  Objective-C (Beta)
+  * Various bug-fixes and code tweaks to pass more strict compiler warnings.
+  * Now has conformance test coverage and is passing all tests.
+
+  C# (Beta)
+  * Various bug-fixes.
+  * Code generation: Files generated in directories based on namespace.
+  * Code generation: Include comments from .proto files in XML doc
+    comments (naively)
+  * Code generation: Change organization/naming of "reflection class" (access
+    to file descriptor)
+  * Code generation and library: Add Parser property to MessageDescriptor,
+    and introduce a non-generic parser type.
+  * Library: Added TypeRegistry to support JSON parsing/formatting of Any.
+  * Library: Added Any.Pack/Unpack support.
+  * Library: Implemented JSON parsing.
+
+  Javascript (Alpha)
+  * Added proto3 support for JavaScript. The runtime is written in pure
+    JavaScript and works in browsers and in Node.js. To generate JavaScript
+    code for your proto, invoke protoc with "--js_out". See js/README.md
+    for more build instructions.
+
 2015-08-26 version 3.0.0-beta-1 (C++/Java/Python/Ruby/Nano/Objective-C/C#)
   About Beta
   * This is the first beta release of protobuf v3.0.0. Not all languages
@@ -115,7 +284,7 @@
     still disable packed serialization by setting packed to false for now.
   * Added well-known type protos (any.proto, empty.proto, timestamp.proto,
     duration.proto, etc.). Users can import and use these protos just like
-    regular proto files. Addtional runtime support will be added for them in
+    regular proto files. Additional runtime support will be added for them in
     future releases (in the form of utility helper functions, or having them
     replaced by language specific types in generated code).
   * Added a "reserved" keyword in both proto2 and proto3 syntax. User can use
@@ -157,7 +326,7 @@
       https://github.com/jskeet/protobuf-csharp-port. The original project was
       frozen and all the new development will happen here.
     * Codegen plugin for C# was completely rewritten to C++ and is now an
-      intergral part of protoc.
+      integral part of protoc.
     * Some refactorings and cleanup has been applied to the C# runtime library.
     * Only proto2 is supported in C# at the moment, proto3 support is in
       progress and will likely bring significant breaking changes to the API.
@@ -321,7 +490,7 @@
 
     This release (v3.0.0-alpha-1) includes partial proto3 support for C++ and
     Java. Items 6 (well-known types) and 7 (JSON format) in the above feature
-    list are not impelmented.
+    list are not implemented.
 
     A new notion "syntax" is introduced to specify whether a .proto file
     uses proto2 or proto3:
@@ -422,7 +591,7 @@
       }
   * Files, services, enums, messages, methods and enum values can be marked
     as deprecated now.
-  * Added Support for list values, including lists of mesaages, when
+  * Added Support for list values, including lists of messages, when
     parsing text-formatted protos in C++ and Java.
       For example:  foo: [1, 2, 3]
 
@@ -502,7 +671,7 @@
 
   Python
   * Added support for dynamic message creation. DescriptorDatabase,
-    DescriptorPool, and MessageFactory work like their C++ couterparts to
+    DescriptorPool, and MessageFactory work like their C++ counterparts to
     simplify Descriptor construction from *DescriptorProtos, and MessageFactory
     provides a message instance from a Descriptor.
   * Added pickle support for protobuf messages.
@@ -516,7 +685,7 @@
 2011-05-01 version 2.4.1:
 
   C++
-  * Fixed the frendship problem for old compilers to make the library now gcc 3
+  * Fixed the friendship problem for old compilers to make the library now gcc 3
     compatible again.
   * Fixed vcprojects/extract_includes.bat to extract compiler/plugin.h.
 
@@ -783,7 +952,7 @@
   * Fixed tendency for TextFormat's parsing to overflow the stack when
     parsing large string values.  The underlying problem is with Java's
     regex implementation (which unfortunately uses recursive backtracking
-    rather than building an NFA).  Worked around by making use of possesive
+    rather than building an NFA).  Worked around by making use of possessive
     quantifiers.
   * Generated service classes now also generate pure interfaces.  For a service
     Foo, Foo.Interface is a pure interface containing all of the service's
@@ -797,7 +966,7 @@
     RPC implementations will have to implement the new interfaces in order to
     support blocking mode.
   * New I/O methods parseDelimitedFrom(), mergeDelimitedFrom(), and
-    writeDelimitedTo() read and write "delemited" messages from/to a stream,
+    writeDelimitedTo() read and write "delimited" messages from/to a stream,
     meaning that the message size precedes the data.  This way, you can write
     multiple messages to a stream without having to worry about delimiting
     them yourself.

@@ -60,11 +60,6 @@ class ScopedPyObjectPtr {
     return ptr_;
   }
 
-  // ScopedPyObjectPtr should not be copied.
-  // We explicitly list and delete this overload to avoid automatic conversion
-  // to PyObject*, which is wrong in this case.
-  PyObject* reset(const ScopedPyObjectPtr& other) = delete;
-
   // Releases ownership of the object.
   // The caller now owns the returned reference.
   PyObject* release() {
@@ -72,8 +67,6 @@ class ScopedPyObjectPtr {
     ptr_ = NULL;
     return p;
   }
-
-  operator PyObject*() { return ptr_; }
 
   PyObject* operator->() const  {
     assert(ptr_ != NULL);

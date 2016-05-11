@@ -10,7 +10,7 @@ goto :error
 echo Building C++
 mkdir build_msvc
 cd build_msvc
-cmake -G "%generator%" -DBUILD_SHARED_LIBS=%BUILD_DLL% ../cmake
+cmake -G "%generator%" -Dprotobuf_BUILD_SHARED_LIBS=%BUILD_DLL% ../cmake
 msbuild protobuf.sln /p:Platform=%vcplatform% /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll" || goto error
 cd %configuration%
 tests.exe || goto error

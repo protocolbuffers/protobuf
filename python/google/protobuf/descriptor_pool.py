@@ -83,6 +83,12 @@ def _NormalizeFullyQualifiedName(name):
 class DescriptorPool(object):
   """A collection of protobufs dynamically constructed by descriptor protos."""
 
+  if _USE_C_DESCRIPTORS:
+
+    def __new__(cls, descriptor_db=None):
+      # pylint: disable=protected-access
+      return descriptor._message.DescriptorPool(descriptor_db)
+
   def __init__(self, descriptor_db=None):
     """Initializes a Pool of proto buffs.
 
@@ -264,6 +270,39 @@ class DescriptorPool(object):
       self.FindFileContainingSymbol(full_name)
     return self._enum_descriptors[full_name]
 
+  def FindFieldByName(self, full_name):
+    """Loads the named field descriptor from the pool.
+
+    Args:
+      full_name: The full name of the field descriptor to load.
+
+    Returns:
+      The field descriptor for the named field.
+    """
+    full_name = _NormalizeFullyQualifiedName(full_name)
+    message_name, _, field_name = full_name.rpartition('.')
+    message_descriptor = self.FindMessageTypeByName(message_name)
+    return message_descriptor.fields_by_name[field_name]
+
+  def FindExtensionByName(self, full_name):
+    """Loads the named extension descriptor from the pool.
+
+    Args:
+      full_name: The full name of the extension descriptor to load.
+
+    Returns:
+      A FieldDescriptor, describing the named extension.
+    """
+    full_name = _NormalizeFullyQualifiedName(full_name)
+    message_name, _, extension_name = full_name.rpartition('.')
+    try:
+      # Most extensions are nested inside a message.
+      scope = self.FindMessageTypeByName(message_name)
+    except KeyError:
+      # Some extensions are defined at file scope.
+      scope = self.FindFileContainingSymbol(full_name)
+    return scope.extensions_by_name[extension_name]
+
   def _ConvertFileProtoToFileDescriptor(self, file_proto):
     """Creates a FileDescriptor from a proto or returns a cached copy.
 
@@ -280,14 +319,17 @@ class DescriptorPool(object):
     if file_proto.name not in self._file_descriptors:
       built_deps = list(self._GetDeps(file_proto.dependency))
       direct_deps = [self.FindFileByName(n) for n in file_proto.dependency]
+      public_deps = [direct_deps[i] for i in file_proto.public_dependency]
 
       file_descriptor = descriptor.FileDescriptor(
+          pool=self,
           name=file_proto.name,
           package=file_proto.package,
           syntax=file_proto.syntax,
           options=file_proto.options,
           serialized_pb=file_proto.SerializeToString(),
-          dependencies=direct_deps)
+          dependencies=direct_deps,
+          public_dependencies=public_deps)
       if _USE_C_DESCRIPTORS:
         # When using C++ descriptors, all objects defined in the file were added
         # to the C++ database when the FileDescriptor was built above.
@@ -598,10 +640,24 @@ class DescriptorPool(object):
         field_desc.default_value = text_encoding.CUnescape(
             field_proto.default_value)
       else:
+        # All other types are of the "int" type.
         field_desc.default_value = int(field_proto.default_value)
     else:
       field_desc.has_default_value = False
-      field_desc.default_value = None
+      if (field_proto.type == descriptor.FieldDescriptor.TYPE_DOUBLE or
+          field_proto.type == descriptor.FieldDescriptor.TYPE_FLOAT):
+        field_desc.default_value = 0.0
+      elif field_proto.type == descriptor.FieldDescriptor.TYPE_STRING:
+        field_desc.default_value = u''
+      elif field_proto.type == descriptor.FieldDescriptor.TYPE_BOOL:
+        field_desc.default_value = False
+      elif field_proto.type == descriptor.FieldDescriptor.TYPE_ENUM:
+        field_desc.default_value = field_desc.enum_type.values[0].number
+      elif field_proto.type == descriptor.FieldDescriptor.TYPE_BYTES:
+        field_desc.default_value = b''
+      else:
+        # All other types are of the "int" type.
+        field_desc.default_value = 0
 
     field_desc.type = field_proto.type
 
@@ -680,3 +736,16 @@ class DescriptorPool(object):
 
 def _PrefixWithDot(name):
   return name if name.startswith('.') else '.%s' % name
+
+
+if _USE_C_DESCRIPTORS:
+  # TODO(amauryfa): This pool could be constructed from Python code, when we
+  # support a flag like 'use_cpp_generated_pool=True'.
+  # pylint: disable=protected-access
+  _DEFAULT = descriptor._message.default_pool
+else:
+  _DEFAULT = DescriptorPool()
+
+
+def Default():
+  return _DEFAULT

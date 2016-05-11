@@ -11,7 +11,7 @@ namespace Google.Protobuf.TestProtos {
 
   /// <summary>Holder for reflection information generated from google/protobuf/unittest_import_public_proto3.proto</summary>
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  public static partial class UnittestImportPublicProto3 {
+  public static partial class UnittestImportPublicProto3Reflection {
 
     #region Descriptor
     /// <summary>File descriptor for google/protobuf/unittest_import_public_proto3.proto</summary>
@@ -20,17 +20,17 @@ namespace Google.Protobuf.TestProtos {
     }
     private static pbr::FileDescriptor descriptor;
 
-    static UnittestImportPublicProto3() {
+    static UnittestImportPublicProto3Reflection() {
       byte[] descriptorData = global::System.Convert.FromBase64String(
           string.Concat(
             "CjNnb29nbGUvcHJvdG9idWYvdW5pdHRlc3RfaW1wb3J0X3B1YmxpY19wcm90",
             "bzMucHJvdG8SGHByb3RvYnVmX3VuaXR0ZXN0X2ltcG9ydCIgChNQdWJsaWNJ",
             "bXBvcnRNZXNzYWdlEgkKAWUYASABKAVCNwoYY29tLmdvb2dsZS5wcm90b2J1",
             "Zi50ZXN0qgIaR29vZ2xlLlByb3RvYnVmLlRlc3RQcm90b3NiBnByb3RvMw=="));
-      descriptor = pbr::FileDescriptor.InternalBuildGeneratedFileFrom(descriptorData,
+      descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { },
-          new pbr::GeneratedCodeInfo(null, new pbr::GeneratedCodeInfo[] {
-            new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.TestProtos.PublicImportMessage), new[]{ "E" }, null, null, null)
+          new pbr::GeneratedClrTypeInfo(null, new pbr::GeneratedClrTypeInfo[] {
+            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.TestProtos.PublicImportMessage), global::Google.Protobuf.TestProtos.PublicImportMessage.Parser, new[]{ "E" }, null, null, null)
           }));
     }
     #endregion
@@ -43,7 +43,7 @@ namespace Google.Protobuf.TestProtos {
     public static pb::MessageParser<PublicImportMessage> Parser { get { return _parser; } }
 
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Google.Protobuf.TestProtos.UnittestImportPublicProto3.Descriptor.MessageTypes[0]; }
+      get { return global::Google.Protobuf.TestProtos.UnittestImportPublicProto3Reflection.Descriptor.MessageTypes[0]; }
     }
 
     pbr::MessageDescriptor pb::IMessage.Descriptor {
@@ -96,7 +96,7 @@ namespace Google.Protobuf.TestProtos {
     }
 
     public override string ToString() {
-      return pb::JsonFormatter.Default.Format(this);
+      return pb::JsonFormatter.ToDiagnosticString(this);
     }
 
     public void WriteTo(pb::CodedOutputStream output) {

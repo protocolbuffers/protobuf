@@ -43,57 +43,64 @@ declare -a RUNTIME_PROTO_FILES=(\
 
 CORE_PROTO_IS_CORRECT=0
 PROCESS_ROUND=1
+TMP=$(mktemp -d)
 echo "Updating descriptor protos..."
 while [ $CORE_PROTO_IS_CORRECT -ne 1 ]
 do
   echo "Round $PROCESS_ROUND"
   CORE_PROTO_IS_CORRECT=1
-  for PROTO_FILE in ${RUNTIME_PROTO_FILES[@]}; do
-    BASE_NAME=${PROTO_FILE%.*}
-    cp ${BASE_NAME}.pb.h ${BASE_NAME}.pb.h.tmp
-    cp ${BASE_NAME}.pb.cc ${BASE_NAME}.pb.cc.tmp
-  done
-  cp google/protobuf/compiler/plugin.pb.h google/protobuf/compiler/plugin.pb.h.tmp
-  cp google/protobuf/compiler/plugin.pb.cc google/protobuf/compiler/plugin.pb.cc.tmp
 
-  make $@ protoc &&
-    ./protoc --cpp_out=dllexport_decl=LIBPROTOBUF_EXPORT:. ${RUNTIME_PROTO_FILES[@]} && \
-    ./protoc --cpp_out=dllexport_decl=LIBPROTOC_EXPORT:. google/protobuf/compiler/plugin.proto
+  make $@ protoc
+  if test $? -ne 0; then
+    echo "Failed to build protoc."
+    exit 1
+  fi
+
+  ./protoc --cpp_out=dllexport_decl=LIBPROTOBUF_EXPORT:$TMP ${RUNTIME_PROTO_FILES[@]} && \
+  ./protoc --cpp_out=dllexport_decl=LIBPROTOC_EXPORT:$TMP google/protobuf/compiler/plugin.proto
 
   for PROTO_FILE in ${RUNTIME_PROTO_FILES[@]}; do
     BASE_NAME=${PROTO_FILE%.*}
-    diff ${BASE_NAME}.pb.h ${BASE_NAME}.pb.h.tmp > /dev/null
+    diff ${BASE_NAME}.pb.h $TMP/${BASE_NAME}.pb.h > /dev/null
     if test $? -ne 0; then
       CORE_PROTO_IS_CORRECT=0
     fi
-    diff ${BASE_NAME}.pb.cc ${BASE_NAME}.pb.cc.tmp > /dev/null
+    diff ${BASE_NAME}.pb.cc $TMP/${BASE_NAME}.pb.cc > /dev/null
     if test $? -ne 0; then
       CORE_PROTO_IS_CORRECT=0
     fi
   done
 
-  diff google/protobuf/compiler/plugin.pb.h google/protobuf/compiler/plugin.pb.h.tmp > /dev/null
+  diff google/protobuf/compiler/plugin.pb.h $TMP/google/protobuf/compiler/plugin.pb.h > /dev/null
   if test $? -ne 0; then
     CORE_PROTO_IS_CORRECT=0
   fi
-  diff google/protobuf/compiler/plugin.pb.cc google/protobuf/compiler/plugin.pb.cc.tmp > /dev/null
+  diff google/protobuf/compiler/plugin.pb.cc $TMP/google/protobuf/compiler/plugin.pb.cc > /dev/null
   if test $? -ne 0; then
     CORE_PROTO_IS_CORRECT=0
   fi
 
-  for PROTO_FILE in ${RUNTIME_PROTO_FILES[@]}; do
-    BASE_NAME=${PROTO_FILE%.*}
-    rm ${BASE_NAME}.pb.h.tmp
-    rm ${BASE_NAME}.pb.cc.tmp
-  done
-  rm google/protobuf/compiler/plugin.pb.h.tmp
-  rm google/protobuf/compiler/plugin.pb.cc.tmp
+  # Only override the output if the files are different to avoid re-compilation
+  # of the protoc.
+  if [ $CORE_PROTO_IS_CORRECT -ne 1 ]; then
+    for PROTO_FILE in ${RUNTIME_PROTO_FILES[@]}; do
+      BASE_NAME=${PROTO_FILE%.*}
+      mv $TMP/${BASE_NAME}.pb.h ${BASE_NAME}.pb.h
+      mv $TMP/${BASE_NAME}.pb.cc ${BASE_NAME}.pb.cc
+    done
+    mv $TMP/google/protobuf/compiler/plugin.pb.* google/protobuf/compiler/
+  fi
 
   PROCESS_ROUND=$((PROCESS_ROUND + 1))
 done
 cd ..
 
-if test -x objectivec/generate_descriptors_proto.sh; then
+if test -x objectivec/generate_well_known_types.sh; then
   echo "Generating messages for objc."
-  objectivec/generate_descriptors_proto.sh $@
+  objectivec/generate_well_known_types.sh $@
+fi
+
+if test -x csharp/generate_protos.sh; then
+  echo "Generating messages for C#."
+  csharp/generate_protos.sh $@
 fi

@@ -11,7 +11,7 @@ namespace Google.Protobuf.TestProtos {
 
   /// <summary>Holder for reflection information generated from google/protobuf/unittest_well_known_types.proto</summary>
   [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-  public static partial class UnittestWellKnownTypes {
+  public static partial class UnittestWellKnownTypesReflection {
 
     #region Descriptor
     /// <summary>File descriptor for google/protobuf/unittest_well_known_types.proto</summary>
@@ -20,7 +20,7 @@ namespace Google.Protobuf.TestProtos {
     }
     private static pbr::FileDescriptor descriptor;
 
-    static UnittestWellKnownTypes() {
+    static UnittestWellKnownTypesReflection() {
       byte[] descriptorData = global::System.Convert.FromBase64String(
           string.Concat(
             "Ci9nb29nbGUvcHJvdG9idWYvdW5pdHRlc3Rfd2VsbF9rbm93bl90eXBlcy5w",
@@ -31,7 +31,7 @@ namespace Google.Protobuf.TestProtos {
             "L3Byb3RvYnVmL3NvdXJjZV9jb250ZXh0LnByb3RvGhxnb29nbGUvcHJvdG9i",
             "dWYvc3RydWN0LnByb3RvGh9nb29nbGUvcHJvdG9idWYvdGltZXN0YW1wLnBy",
             "b3RvGhpnb29nbGUvcHJvdG9idWYvdHlwZS5wcm90bxoeZ29vZ2xlL3Byb3Rv",
-            "YnVmL3dyYXBwZXJzLnByb3RvIpEHChJUZXN0V2VsbEtub3duVHlwZXMSJwoJ",
+            "YnVmL3dyYXBwZXJzLnByb3RvIr4HChJUZXN0V2VsbEtub3duVHlwZXMSJwoJ",
             "YW55X2ZpZWxkGAEgASgLMhQuZ29vZ2xlLnByb3RvYnVmLkFueRInCglhcGlf",
             "ZmllbGQYAiABKAsyFC5nb29nbGUucHJvdG9idWYuQXBpEjEKDmR1cmF0aW9u",
             "X2ZpZWxkGAMgASgLMhkuZ29vZ2xlLnByb3RvYnVmLkR1cmF0aW9uEisKC2Vt",
@@ -51,7 +51,8 @@ namespace Google.Protobuf.TestProtos {
             "cm90b2J1Zi5VSW50MzJWYWx1ZRIuCgpib29sX2ZpZWxkGBAgASgLMhouZ29v",
             "Z2xlLnByb3RvYnVmLkJvb2xWYWx1ZRIyCgxzdHJpbmdfZmllbGQYESABKAsy",
             "HC5nb29nbGUucHJvdG9idWYuU3RyaW5nVmFsdWUSMAoLYnl0ZXNfZmllbGQY",
-            "EiABKAsyGy5nb29nbGUucHJvdG9idWYuQnl0ZXNWYWx1ZSKVBwoWUmVwZWF0",
+            "EiABKAsyGy5nb29nbGUucHJvdG9idWYuQnl0ZXNWYWx1ZRIrCgt2YWx1ZV9m",
+            "aWVsZBgTIAEoCzIWLmdvb2dsZS5wcm90b2J1Zi5WYWx1ZSKVBwoWUmVwZWF0",
             "ZWRXZWxsS25vd25UeXBlcxInCglhbnlfZmllbGQYASADKAsyFC5nb29nbGUu",
             "cHJvdG9idWYuQW55EicKCWFwaV9maWVsZBgCIAMoCzIULmdvb2dsZS5wcm90",
             "b2J1Zi5BcGkSMQoOZHVyYXRpb25fZmllbGQYAyADKAsyGS5nb29nbGUucHJv",
@@ -159,13 +160,13 @@ namespace Google.Protobuf.TestProtos {
             "AiABKAsyGy5nb29nbGUucHJvdG9idWYuQnl0ZXNWYWx1ZToCOAFCOQoYY29t",
             "Lmdvb2dsZS5wcm90b2J1Zi50ZXN0UAGqAhpHb29nbGUuUHJvdG9idWYuVGVz",
             "dFByb3Rvc2IGcHJvdG8z"));
-      descriptor = pbr::FileDescriptor.InternalBuildGeneratedFileFrom(descriptorData,
-          new pbr::FileDescriptor[] { global::Google.Protobuf.WellKnownTypes.Proto.Any.Descriptor, global::Google.Protobuf.WellKnownTypes.Proto.Api.Descriptor, global::Google.Protobuf.WellKnownTypes.Proto.Duration.Descriptor, global::Google.Protobuf.WellKnownTypes.Proto.Empty.Descriptor, global::Google.Protobuf.WellKnownTypes.Proto.FieldMask.Descriptor, global::Google.Protobuf.WellKnownTypes.Proto.SourceContext.Descriptor, global::Google.Protobuf.WellKnownTypes.Proto.Struct.Descriptor, global::Google.Protobuf.WellKnownTypes.Proto.Timestamp.Descriptor, global::Google.Protobuf.WellKnownTypes.Proto.Type.Descriptor, global::Google.Protobuf.WellKnownTypes.Wrappers.Descriptor, },
-          new pbr::GeneratedCodeInfo(null, new pbr::GeneratedCodeInfo[] {
-            new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.TestProtos.TestWellKnownTypes), new[]{ "AnyField", "ApiField", "DurationField", "EmptyField", "FieldMaskField", "SourceContextField", "StructField", "TimestampField", "TypeField", "DoubleField", "FloatField", "Int64Field", "Uint64Field", "Int32Field", "Uint32Field", "BoolField", "StringField", "BytesField" }, null, null, null),
-            new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.TestProtos.RepeatedWellKnownTypes), new[]{ "AnyField", "ApiField", "DurationField", "EmptyField", "FieldMaskField", "SourceContextField", "StructField", "TimestampField", "TypeField", "DoubleField", "FloatField", "Int64Field", "Uint64Field", "Int32Field", "Uint32Field", "BoolField", "StringField", "BytesField" }, null, null, null),
-            new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.TestProtos.OneofWellKnownTypes), new[]{ "AnyField", "ApiField", "DurationField", "EmptyField", "FieldMaskField", "SourceContextField", "StructField", "TimestampField", "TypeField", "DoubleField", "FloatField", "Int64Field", "Uint64Field", "Int32Field", "Uint32Field", "BoolField", "StringField", "BytesField" }, new[]{ "OneofField" }, null, null),
-            new pbr::GeneratedCodeInfo(typeof(global::Google.Protobuf.TestProtos.MapWellKnownTypes), new[]{ "AnyField", "ApiField", "DurationField", "EmptyField", "FieldMaskField", "SourceContextField", "StructField", "TimestampField", "TypeField", "DoubleField", "FloatField", "Int64Field", "Uint64Field", "Int32Field", "Uint32Field", "BoolField", "StringField", "BytesField" }, null, null, new pbr::GeneratedCodeInfo[] { null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, })
+      descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
+          new pbr::FileDescriptor[] { global::Google.Protobuf.WellKnownTypes.AnyReflection.Descriptor, global::Google.Protobuf.WellKnownTypes.ApiReflection.Descriptor, global::Google.Protobuf.WellKnownTypes.DurationReflection.Descriptor, global::Google.Protobuf.WellKnownTypes.EmptyReflection.Descriptor, global::Google.Protobuf.WellKnownTypes.FieldMaskReflection.Descriptor, global::Google.Protobuf.WellKnownTypes.SourceContextReflection.Descriptor, global::Google.Protobuf.WellKnownTypes.StructReflection.Descriptor, global::Google.Protobuf.WellKnownTypes.TimestampReflection.Descriptor, global::Google.Protobuf.WellKnownTypes.TypeReflection.Descriptor, global::Google.Protobuf.WellKnownTypes.WrappersReflection.Descriptor, },
+          new pbr::GeneratedClrTypeInfo(null, new pbr::GeneratedClrTypeInfo[] {
+            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.TestProtos.TestWellKnownTypes), global::Google.Protobuf.TestProtos.TestWellKnownTypes.Parser, new[]{ "AnyField", "ApiField", "DurationField", "EmptyField", "FieldMaskField", "SourceContextField", "StructField", "TimestampField", "TypeField", "DoubleField", "FloatField", "Int64Field", "Uint64Field", "Int32Field", "Uint32Field", "BoolField", "StringField", "BytesField", "ValueField" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.TestProtos.RepeatedWellKnownTypes), global::Google.Protobuf.TestProtos.RepeatedWellKnownTypes.Parser, new[]{ "AnyField", "ApiField", "DurationField", "EmptyField", "FieldMaskField", "SourceContextField", "StructField", "TimestampField", "TypeField", "DoubleField", "FloatField", "Int64Field", "Uint64Field", "Int32Field", "Uint32Field", "BoolField", "StringField", "BytesField" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.TestProtos.OneofWellKnownTypes), global::Google.Protobuf.TestProtos.OneofWellKnownTypes.Parser, new[]{ "AnyField", "ApiField", "DurationField", "EmptyField", "FieldMaskField", "SourceContextField", "StructField", "TimestampField", "TypeField", "DoubleField", "FloatField", "Int64Field", "Uint64Field", "Int32Field", "Uint32Field", "BoolField", "StringField", "BytesField" }, new[]{ "OneofField" }, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.TestProtos.MapWellKnownTypes), global::Google.Protobuf.TestProtos.MapWellKnownTypes.Parser, new[]{ "AnyField", "ApiField", "DurationField", "EmptyField", "FieldMaskField", "SourceContextField", "StructField", "TimestampField", "TypeField", "DoubleField", "FloatField", "Int64Field", "Uint64Field", "Int32Field", "Uint32Field", "BoolField", "StringField", "BytesField" }, null, null, new pbr::GeneratedClrTypeInfo[] { null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, })
           }));
     }
     #endregion
@@ -183,7 +184,7 @@ namespace Google.Protobuf.TestProtos {
     public static pb::MessageParser<TestWellKnownTypes> Parser { get { return _parser; } }
 
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Google.Protobuf.TestProtos.UnittestWellKnownTypes.Descriptor.MessageTypes[0]; }
+      get { return global::Google.Protobuf.TestProtos.UnittestWellKnownTypesReflection.Descriptor.MessageTypes[0]; }
     }
 
     pbr::MessageDescriptor pb::IMessage.Descriptor {
@@ -215,6 +216,7 @@ namespace Google.Protobuf.TestProtos {
       BoolField = other.BoolField;
       StringField = other.StringField;
       BytesField = other.BytesField;
+      ValueField = other.valueField_ != null ? other.ValueField.Clone() : null;
     }
 
     public TestWellKnownTypes Clone() {
@@ -410,6 +412,19 @@ namespace Google.Protobuf.TestProtos {
       }
     }
 
+    /// <summary>Field number for the "value_field" field.</summary>
+    public const int ValueFieldFieldNumber = 19;
+    private global::Google.Protobuf.WellKnownTypes.Value valueField_;
+    /// <summary>
+    ///  Part of struct, but useful to be able to test separately
+    /// </summary>
+    public global::Google.Protobuf.WellKnownTypes.Value ValueField {
+      get { return valueField_; }
+      set {
+        valueField_ = value;
+      }
+    }
+
     public override bool Equals(object other) {
       return Equals(other as TestWellKnownTypes);
     }
@@ -439,6 +454,7 @@ namespace Google.Protobuf.TestProtos {
       if (BoolField != other.BoolField) return false;
       if (StringField != other.StringField) return false;
       if (BytesField != other.BytesField) return false;
+      if (!object.Equals(ValueField, other.ValueField)) return false;
       return true;
     }
 
@@ -462,11 +478,12 @@ namespace Google.Protobuf.TestProtos {
       if (boolField_ != null) hash ^= BoolField.GetHashCode();
       if (stringField_ != null) hash ^= StringField.GetHashCode();
       if (bytesField_ != null) hash ^= BytesField.GetHashCode();
+      if (valueField_ != null) hash ^= ValueField.GetHashCode();
       return hash;
     }
 
     public override string ToString() {
-      return pb::JsonFormatter.Default.Format(this);
+      return pb::JsonFormatter.ToDiagnosticString(this);
     }
 
     public void WriteTo(pb::CodedOutputStream output) {
@@ -533,6 +550,10 @@ namespace Google.Protobuf.TestProtos {
       if (bytesField_ != null) {
         _single_bytesField_codec.WriteTagAndValue(output, BytesField);
       }
+      if (valueField_ != null) {
+        output.WriteRawTag(154, 1);
+        output.WriteMessage(ValueField);
+      }
     }
 
     public int CalculateSize() {
@@ -590,6 +611,9 @@ namespace Google.Protobuf.TestProtos {
       }
       if (bytesField_ != null) {
         size += _single_bytesField_codec.CalculateSizeWithTag(BytesField);
+      }
+      if (valueField_ != null) {
+        size += 2 + pb::CodedOutputStream.ComputeMessageSize(ValueField);
       }
       return size;
     }
@@ -696,6 +720,12 @@ namespace Google.Protobuf.TestProtos {
         if (bytesField_ == null || other.BytesField != pb::ByteString.Empty) {
           BytesField = other.BytesField;
         }
+      }
+      if (other.valueField_ != null) {
+        if (valueField_ == null) {
+          valueField_ = new global::Google.Protobuf.WellKnownTypes.Value();
+        }
+        ValueField.MergeFrom(other.ValueField);
       }
     }
 
@@ -832,6 +862,13 @@ namespace Google.Protobuf.TestProtos {
             }
             break;
           }
+          case 154: {
+            if (valueField_ == null) {
+              valueField_ = new global::Google.Protobuf.WellKnownTypes.Value();
+            }
+            input.ReadMessage(valueField_);
+            break;
+          }
         }
       }
     }
@@ -847,7 +884,7 @@ namespace Google.Protobuf.TestProtos {
     public static pb::MessageParser<RepeatedWellKnownTypes> Parser { get { return _parser; } }
 
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Google.Protobuf.TestProtos.UnittestWellKnownTypes.Descriptor.MessageTypes[1]; }
+      get { return global::Google.Protobuf.TestProtos.UnittestWellKnownTypesReflection.Descriptor.MessageTypes[1]; }
     }
 
     pbr::MessageDescriptor pb::IMessage.Descriptor {
@@ -1106,7 +1143,7 @@ namespace Google.Protobuf.TestProtos {
     }
 
     public override string ToString() {
-      return pb::JsonFormatter.Default.Format(this);
+      return pb::JsonFormatter.ToDiagnosticString(this);
     }
 
     public void WriteTo(pb::CodedOutputStream output) {
@@ -1268,7 +1305,7 @@ namespace Google.Protobuf.TestProtos {
     public static pb::MessageParser<OneofWellKnownTypes> Parser { get { return _parser; } }
 
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Google.Protobuf.TestProtos.UnittestWellKnownTypes.Descriptor.MessageTypes[2]; }
+      get { return global::Google.Protobuf.TestProtos.UnittestWellKnownTypesReflection.Descriptor.MessageTypes[2]; }
     }
 
     pbr::MessageDescriptor pb::IMessage.Descriptor {
@@ -1596,6 +1633,7 @@ namespace Google.Protobuf.TestProtos {
       if (BoolField != other.BoolField) return false;
       if (StringField != other.StringField) return false;
       if (BytesField != other.BytesField) return false;
+      if (OneofFieldCase != other.OneofFieldCase) return false;
       return true;
     }
 
@@ -1619,11 +1657,12 @@ namespace Google.Protobuf.TestProtos {
       if (oneofFieldCase_ == OneofFieldOneofCase.BoolField) hash ^= BoolField.GetHashCode();
       if (oneofFieldCase_ == OneofFieldOneofCase.StringField) hash ^= StringField.GetHashCode();
       if (oneofFieldCase_ == OneofFieldOneofCase.BytesField) hash ^= BytesField.GetHashCode();
+      hash ^= (int) oneofFieldCase_;
       return hash;
     }
 
     public override string ToString() {
-      return pb::JsonFormatter.Default.Format(this);
+      return pb::JsonFormatter.ToDiagnosticString(this);
     }
 
     public void WriteTo(pb::CodedOutputStream output) {
@@ -1955,7 +1994,7 @@ namespace Google.Protobuf.TestProtos {
     public static pb::MessageParser<MapWellKnownTypes> Parser { get { return _parser; } }
 
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Google.Protobuf.TestProtos.UnittestWellKnownTypes.Descriptor.MessageTypes[3]; }
+      get { return global::Google.Protobuf.TestProtos.UnittestWellKnownTypesReflection.Descriptor.MessageTypes[3]; }
     }
 
     pbr::MessageDescriptor pb::IMessage.Descriptor {
@@ -2078,7 +2117,7 @@ namespace Google.Protobuf.TestProtos {
     public const int DoubleFieldFieldNumber = 10;
     private static readonly pbc::MapField<int, double?>.Codec _map_doubleField_codec
         = new pbc::MapField<int, double?>.Codec(pb::FieldCodec.ForInt32(8), pb::FieldCodec.ForStructWrapper<double>(18), 82);
-    private readonly pbc::MapField<int, double?> doubleField_ = new pbc::MapField<int, double?>(true);
+    private readonly pbc::MapField<int, double?> doubleField_ = new pbc::MapField<int, double?>();
     public pbc::MapField<int, double?> DoubleField {
       get { return doubleField_; }
     }
@@ -2087,7 +2126,7 @@ namespace Google.Protobuf.TestProtos {
     public const int FloatFieldFieldNumber = 11;
     private static readonly pbc::MapField<int, float?>.Codec _map_floatField_codec
         = new pbc::MapField<int, float?>.Codec(pb::FieldCodec.ForInt32(8), pb::FieldCodec.ForStructWrapper<float>(18), 90);
-    private readonly pbc::MapField<int, float?> floatField_ = new pbc::MapField<int, float?>(true);
+    private readonly pbc::MapField<int, float?> floatField_ = new pbc::MapField<int, float?>();
     public pbc::MapField<int, float?> FloatField {
       get { return floatField_; }
     }
@@ -2096,7 +2135,7 @@ namespace Google.Protobuf.TestProtos {
     public const int Int64FieldFieldNumber = 12;
     private static readonly pbc::MapField<int, long?>.Codec _map_int64Field_codec
         = new pbc::MapField<int, long?>.Codec(pb::FieldCodec.ForInt32(8), pb::FieldCodec.ForStructWrapper<long>(18), 98);
-    private readonly pbc::MapField<int, long?> int64Field_ = new pbc::MapField<int, long?>(true);
+    private readonly pbc::MapField<int, long?> int64Field_ = new pbc::MapField<int, long?>();
     public pbc::MapField<int, long?> Int64Field {
       get { return int64Field_; }
     }
@@ -2105,7 +2144,7 @@ namespace Google.Protobuf.TestProtos {
     public const int Uint64FieldFieldNumber = 13;
     private static readonly pbc::MapField<int, ulong?>.Codec _map_uint64Field_codec
         = new pbc::MapField<int, ulong?>.Codec(pb::FieldCodec.ForInt32(8), pb::FieldCodec.ForStructWrapper<ulong>(18), 106);
-    private readonly pbc::MapField<int, ulong?> uint64Field_ = new pbc::MapField<int, ulong?>(true);
+    private readonly pbc::MapField<int, ulong?> uint64Field_ = new pbc::MapField<int, ulong?>();
     public pbc::MapField<int, ulong?> Uint64Field {
       get { return uint64Field_; }
     }
@@ -2114,7 +2153,7 @@ namespace Google.Protobuf.TestProtos {
     public const int Int32FieldFieldNumber = 14;
     private static readonly pbc::MapField<int, int?>.Codec _map_int32Field_codec
         = new pbc::MapField<int, int?>.Codec(pb::FieldCodec.ForInt32(8), pb::FieldCodec.ForStructWrapper<int>(18), 114);
-    private readonly pbc::MapField<int, int?> int32Field_ = new pbc::MapField<int, int?>(true);
+    private readonly pbc::MapField<int, int?> int32Field_ = new pbc::MapField<int, int?>();
     public pbc::MapField<int, int?> Int32Field {
       get { return int32Field_; }
     }
@@ -2123,7 +2162,7 @@ namespace Google.Protobuf.TestProtos {
     public const int Uint32FieldFieldNumber = 15;
     private static readonly pbc::MapField<int, uint?>.Codec _map_uint32Field_codec
         = new pbc::MapField<int, uint?>.Codec(pb::FieldCodec.ForInt32(8), pb::FieldCodec.ForStructWrapper<uint>(18), 122);
-    private readonly pbc::MapField<int, uint?> uint32Field_ = new pbc::MapField<int, uint?>(true);
+    private readonly pbc::MapField<int, uint?> uint32Field_ = new pbc::MapField<int, uint?>();
     public pbc::MapField<int, uint?> Uint32Field {
       get { return uint32Field_; }
     }
@@ -2132,7 +2171,7 @@ namespace Google.Protobuf.TestProtos {
     public const int BoolFieldFieldNumber = 16;
     private static readonly pbc::MapField<int, bool?>.Codec _map_boolField_codec
         = new pbc::MapField<int, bool?>.Codec(pb::FieldCodec.ForInt32(8), pb::FieldCodec.ForStructWrapper<bool>(18), 130);
-    private readonly pbc::MapField<int, bool?> boolField_ = new pbc::MapField<int, bool?>(true);
+    private readonly pbc::MapField<int, bool?> boolField_ = new pbc::MapField<int, bool?>();
     public pbc::MapField<int, bool?> BoolField {
       get { return boolField_; }
     }
@@ -2141,7 +2180,7 @@ namespace Google.Protobuf.TestProtos {
     public const int StringFieldFieldNumber = 17;
     private static readonly pbc::MapField<int, string>.Codec _map_stringField_codec
         = new pbc::MapField<int, string>.Codec(pb::FieldCodec.ForInt32(8), pb::FieldCodec.ForClassWrapper<string>(18), 138);
-    private readonly pbc::MapField<int, string> stringField_ = new pbc::MapField<int, string>(true);
+    private readonly pbc::MapField<int, string> stringField_ = new pbc::MapField<int, string>();
     public pbc::MapField<int, string> StringField {
       get { return stringField_; }
     }
@@ -2150,7 +2189,7 @@ namespace Google.Protobuf.TestProtos {
     public const int BytesFieldFieldNumber = 18;
     private static readonly pbc::MapField<int, pb::ByteString>.Codec _map_bytesField_codec
         = new pbc::MapField<int, pb::ByteString>.Codec(pb::FieldCodec.ForInt32(8), pb::FieldCodec.ForClassWrapper<pb::ByteString>(18), 146);
-    private readonly pbc::MapField<int, pb::ByteString> bytesField_ = new pbc::MapField<int, pb::ByteString>(true);
+    private readonly pbc::MapField<int, pb::ByteString> bytesField_ = new pbc::MapField<int, pb::ByteString>();
     public pbc::MapField<int, pb::ByteString> BytesField {
       get { return bytesField_; }
     }
@@ -2211,7 +2250,7 @@ namespace Google.Protobuf.TestProtos {
     }
 
     public override string ToString() {
-      return pb::JsonFormatter.Default.Format(this);
+      return pb::JsonFormatter.ToDiagnosticString(this);
     }
 
     public void WriteTo(pb::CodedOutputStream output) {

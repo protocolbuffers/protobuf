@@ -30,6 +30,8 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #endregion
 
+using Google.Protobuf.Compatibility;
+using Google.Protobuf.WellKnownTypes;
 using System;
 using System.Collections.Generic;
 
@@ -261,20 +263,17 @@ namespace Google.Protobuf
         /// </remarks>
         private static class WrapperCodecs
         {
-            // All the field numbers are the same (1).
-            private const int WrapperValueFieldNumber = Google.Protobuf.WellKnownTypes.Int32Value.ValueFieldNumber;
-
-            private static readonly Dictionary<Type, object> Codecs = new Dictionary<Type, object>
+            private static readonly Dictionary<System.Type, object> Codecs = new Dictionary<System.Type, object>
             {
-                { typeof(bool), ForBool(WireFormat.MakeTag(WrapperValueFieldNumber, WireFormat.WireType.Varint)) },
-                { typeof(int), ForInt32(WireFormat.MakeTag(WrapperValueFieldNumber, WireFormat.WireType.Varint)) },
-                { typeof(long), ForInt64(WireFormat.MakeTag(WrapperValueFieldNumber, WireFormat.WireType.Varint)) },
-                { typeof(uint), ForUInt32(WireFormat.MakeTag(WrapperValueFieldNumber, WireFormat.WireType.Varint)) },
-                { typeof(ulong), ForUInt64(WireFormat.MakeTag(WrapperValueFieldNumber, WireFormat.WireType.Varint)) },
-                { typeof(float), ForFloat(WireFormat.MakeTag(WrapperValueFieldNumber, WireFormat.WireType.Fixed32)) },
-                { typeof(double), ForDouble(WireFormat.MakeTag(WrapperValueFieldNumber, WireFormat.WireType.Fixed64)) },
-                { typeof(string), ForString(WireFormat.MakeTag(WrapperValueFieldNumber, WireFormat.WireType.LengthDelimited)) },
-                { typeof(ByteString), ForBytes(WireFormat.MakeTag(WrapperValueFieldNumber, WireFormat.WireType.LengthDelimited)) }
+                { typeof(bool), ForBool(WireFormat.MakeTag(WrappersReflection.WrapperValueFieldNumber, WireFormat.WireType.Varint)) },
+                { typeof(int), ForInt32(WireFormat.MakeTag(WrappersReflection.WrapperValueFieldNumber, WireFormat.WireType.Varint)) },
+                { typeof(long), ForInt64(WireFormat.MakeTag(WrappersReflection.WrapperValueFieldNumber, WireFormat.WireType.Varint)) },
+                { typeof(uint), ForUInt32(WireFormat.MakeTag(WrappersReflection.WrapperValueFieldNumber, WireFormat.WireType.Varint)) },
+                { typeof(ulong), ForUInt64(WireFormat.MakeTag(WrappersReflection.WrapperValueFieldNumber, WireFormat.WireType.Varint)) },
+                { typeof(float), ForFloat(WireFormat.MakeTag(WrappersReflection.WrapperValueFieldNumber, WireFormat.WireType.Fixed32)) },
+                { typeof(double), ForDouble(WireFormat.MakeTag(WrappersReflection.WrapperValueFieldNumber, WireFormat.WireType.Fixed64)) },
+                { typeof(string), ForString(WireFormat.MakeTag(WrappersReflection.WrapperValueFieldNumber, WireFormat.WireType.LengthDelimited)) },
+                { typeof(ByteString), ForBytes(WireFormat.MakeTag(WrappersReflection.WrapperValueFieldNumber, WireFormat.WireType.LengthDelimited)) }
             };
 
             /// <summary>
@@ -331,17 +330,24 @@ namespace Google.Protobuf
     }
 
     /// <summary>
+    /// <para>
     /// An encode/decode pair for a single field. This effectively encapsulates
     /// all the information needed to read or write the field value from/to a coded
     /// stream.
+    /// </para>
+    /// <para>
+    /// This class is public and has to be as it is used by generated code, but its public
+    /// API is very limited - just what the generated code needs to call directly.
+    /// </para>
     /// </summary>
     /// <remarks>
-    /// This never writes default values to the stream, and is not currently designed
-    /// to play well with packed arrays.
+    /// This never writes default values to the stream, and does not address "packedness"
+    /// in repeated fields itself, other than to know whether or not the field *should* be packed.
     /// </remarks>
     public sealed class FieldCodec<T>
     {
         private static readonly T DefaultDefault;
+        private static readonly bool TypeSupportsPacking = typeof(T).IsValueType() && Nullable.GetUnderlyingType(typeof(T)) == null;
 
         static FieldCodec()
         {
@@ -356,21 +362,60 @@ namespace Google.Protobuf
             // Otherwise it's the default value of the CLR type
         }
 
-        private static Func<T, bool> CreateDefaultValueCheck<TTmp>(Func<TTmp, bool> check)
-        {
-            return (Func<T, bool>)(object)check;
-        }
+        internal static bool IsPackedRepeatedField(uint tag) =>
+            TypeSupportsPacking && WireFormat.GetTagWireType(tag) == WireFormat.WireType.LengthDelimited;
 
-        private readonly Func<CodedInputStream, T> reader;
-        private readonly Action<CodedOutputStream, T> writer;
-        private readonly Func<T, int> sizeCalculator;
-        private readonly uint tag;
+        internal bool PackedRepeatedField { get; }
+
+        /// <summary>
+        /// Returns a delegate to write a value (unconditionally) to a coded output stream.
+        /// </summary>
+        internal Action<CodedOutputStream, T> ValueWriter { get; }
+
+        /// <summary>
+        /// Returns the size calculator for just a value.
+        /// </summary>
+        internal Func<T, int> ValueSizeCalculator { get; }
+
+        /// <summary>
+        /// Returns a delegate to read a value from a coded input stream. It is assumed that
+        /// the stream is already positioned on the appropriate tag.
+        /// </summary>
+        internal Func<CodedInputStream, T> ValueReader { get; }
+
+        /// <summary>
+        /// Returns the fixed size for an entry, or 0 if sizes vary.
+        /// </summary>
+        internal int FixedSize { get; }
+
+        /// <summary>
+        /// Gets the tag of the codec.
+        /// </summary>
+        /// <value>
+        /// The tag of the codec.
+        /// </value>
+        internal uint Tag { get; }
+
+        /// <summary>
+        /// Default value for this codec. Usually the same for every instance of the same type, but
+        /// for string/ByteString wrapper fields the codec's default value is null, whereas for
+        /// other string/ByteString fields it's "" or ByteString.Empty.
+        /// </summary>
+        /// <value>
+        /// The default value of the codec's type.
+        /// </value>
+        internal T DefaultValue { get; }
+
         private readonly int tagSize;
-        private readonly int fixedSize;
-        // Default value for this codec. Usually the same for every instance of the same type, but
-        // for string/ByteString wrapper fields the codec's default value is null, whereas for
-        // other string/ByteString fields it's "" or ByteString.Empty.
-        private readonly T defaultValue;
+        
+        internal FieldCodec(
+                Func<CodedInputStream, T> reader,
+                Action<CodedOutputStream, T> writer,
+                int fixedSize,
+                uint tag) : this(reader, writer, _ => fixedSize, tag)
+        {
+            FixedSize = fixedSize;
+        }
 
         internal FieldCodec(
             Func<CodedInputStream, T> reader,
@@ -387,65 +432,16 @@ namespace Google.Protobuf
             uint tag,
             T defaultValue)
         {
-            this.reader = reader;
-            this.writer = writer;
-            this.sizeCalculator = sizeCalculator;
-            this.fixedSize = 0;
-            this.tag = tag;
-            this.defaultValue = defaultValue;
+            ValueReader = reader;
+            ValueWriter = writer;
+            ValueSizeCalculator = sizeCalculator;
+            FixedSize = 0;
+            Tag = tag;
+            DefaultValue = defaultValue;
             tagSize = CodedOutputStream.ComputeRawVarint32Size(tag);
+            // Detect packed-ness once, so we can check for it within RepeatedField<T>.
+            PackedRepeatedField = IsPackedRepeatedField(tag);
         }
-
-        internal FieldCodec(
-            Func<CodedInputStream, T> reader,
-            Action<CodedOutputStream, T> writer,
-            int fixedSize,
-            uint tag)
-        {
-            this.reader = reader;
-            this.writer = writer;
-            this.sizeCalculator = _ => fixedSize;
-            this.fixedSize = fixedSize;
-            this.tag = tag;
-            tagSize = CodedOutputStream.ComputeRawVarint32Size(tag);
-        }
-
-        /// <summary>
-        /// Returns the size calculator for just a value.
-        /// </summary>
-        internal Func<T, int> ValueSizeCalculator { get { return sizeCalculator; } }
-
-        /// <summary>
-        /// Returns a delegate to write a value (unconditionally) to a coded output stream.
-        /// </summary>
-        internal Action<CodedOutputStream, T> ValueWriter { get { return writer; } }
-
-        /// <summary>
-        /// Returns a delegate to read a value from a coded input stream. It is assumed that
-        /// the stream is already positioned on the appropriate tag.
-        /// </summary>
-        internal Func<CodedInputStream, T> ValueReader { get { return reader; } }
-
-        /// <summary>
-        /// Returns the fixed size for an entry, or 0 if sizes vary.
-        /// </summary>
-        internal int FixedSize { get { return fixedSize; } }
-
-        /// <summary>
-        /// Gets the tag of the codec.
-        /// </summary>
-        /// <value>
-        /// The tag of the codec.
-        /// </value>
-        public uint Tag { get { return tag; } }
-
-        /// <summary>
-        /// Gets the default value of the codec's type.
-        /// </summary>
-        /// <value>
-        /// The default value of the codec's type.
-        /// </value>
-        public T DefaultValue { get { return defaultValue; } }
 
         /// <summary>
         /// Write a tag and the given value, *if* the value is not the default.
@@ -454,8 +450,8 @@ namespace Google.Protobuf
         {
             if (!IsDefault(value))
             {
-                output.WriteTag(tag);
-                writer(output, value);
+                output.WriteTag(Tag);
+                ValueWriter(output, value);
             }
         }
 
@@ -464,23 +460,14 @@ namespace Google.Protobuf
         /// </summary>
         /// <param name="input">The input stream to read from.</param>
         /// <returns>The value read from the stream.</returns>
-        public T Read(CodedInputStream input)
-        {
-            return reader(input);
-        }
+        public T Read(CodedInputStream input) => ValueReader(input);
 
         /// <summary>
         /// Calculates the size required to write the given value, with a tag,
         /// if the value is not the default.
         /// </summary>
-        public int CalculateSizeWithTag(T value)
-        {
-            return IsDefault(value) ? 0 : sizeCalculator(value) + tagSize;
-        }
+        public int CalculateSizeWithTag(T value) => IsDefault(value) ? 0 : ValueSizeCalculator(value) + tagSize;
 
-        private bool IsDefault(T value)
-        {
-            return EqualityComparer<T>.Default.Equals(value, defaultValue);
-        }
+        private bool IsDefault(T value) => EqualityComparer<T>.Default.Equals(value, DefaultValue);
     }
 }

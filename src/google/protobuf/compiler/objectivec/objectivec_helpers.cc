@@ -58,6 +58,14 @@ namespace protobuf {
 namespace compiler {
 namespace objectivec {
 
+Options::Options() {
+  // Default is the value of the env for the package prefixes.
+  const char* file_path = getenv("GPB_OBJC_EXPECTED_PACKAGE_PREFIXES");
+  if (file_path) {
+    expected_prefixes_path = file_path;
+  }
+}
+
 namespace {
 
 hash_set<string> MakeWordsMap(const char* const words[], size_t num_words) {
@@ -116,9 +124,14 @@ string UnderscoresToCamelCase(const string& input, bool first_capitalized) {
   }
   values.push_back(current);
 
+  string result;
+  bool first_segment_forces_upper = false;
   for (vector<string>::iterator i = values.begin(); i != values.end(); ++i) {
     string value = *i;
     bool all_upper = (kUpperSegments.count(value) > 0);
+    if (all_upper && (result.length() == 0)) {
+      first_segment_forces_upper = true;
+    }
     for (int j = 0; j < value.length(); j++) {
       if (j == 0 || all_upper) {
         value[j] = ascii_toupper(value[j]);
@@ -126,13 +139,11 @@ string UnderscoresToCamelCase(const string& input, bool first_capitalized) {
         // Nothing, already in lower.
       }
     }
-    *i = value;
+    result += value;
   }
-  string result;
-  for (vector<string>::iterator i = values.begin(); i != values.end(); ++i) {
-    result += *i;
-  }
-  if ((result.length() != 0) && !first_capitalized) {
+  if ((result.length() != 0) &&
+      !first_capitalized &&
+      !first_segment_forces_upper) {
     result[0] = ascii_tolower(result[0]);
   }
   return result;
@@ -209,11 +220,6 @@ string NameFromFieldDescriptor(const FieldDescriptor* field) {
   }
 }
 
-// Escape C++ trigraphs by escaping question marks to \?
-string EscapeTrigraphs(const string& to_escape) {
-  return StringReplace(to_escape, "?", "\\?", true);
-}
-
 void PathSplit(const string& path, string* directory, string* basename) {
   string::size_type last_slash = path.rfind('/');
   if (last_slash == string::npos) {
@@ -252,6 +258,11 @@ bool IsSpecialName(const string& name, const string* special_names,
 }
 
 }  // namespace
+
+// Escape C++ trigraphs by escaping question marks to \?
+string EscapeTrigraphs(const string& to_escape) {
+  return StringReplace(to_escape, "?", "\\?", true);
+}
 
 string StripProto(const string& filename) {
   if (HasSuffixString(filename, ".protodevel")) {
@@ -723,7 +734,7 @@ string DefaultValue(const FieldDescriptor* field) {
         uint32 length = ghtonl(default_string.length());
         string bytes((const char*)&length, sizeof(length));
         bytes.append(default_string);
-        return "(NSData*)\"" + CEscape(bytes) + "\"";
+        return "(NSData*)\"" + EscapeTrigraphs(CEscape(bytes)) + "\"";
       } else {
         return "@\"" + EscapeTrigraphs(CEscape(default_string)) + "\"";
       }
@@ -738,6 +749,51 @@ string DefaultValue(const FieldDescriptor* field) {
   // the enum are handed in the switch.
   GOOGLE_LOG(FATAL) << "Can't get here.";
   return NULL;
+}
+
+bool HasNonZeroDefaultValue(const FieldDescriptor* field) {
+  // Repeated fields don't have defaults.
+  if (field->is_repeated()) {
+    return false;
+  }
+
+  // As much as checking field->has_default_value() seems useful, it isn't
+  // because of enums. proto2 syntax allows the first item in an enum (the
+  // default) to be non zero. So checking field->has_default_value() would
+  // result in missing this non zero default.  See MessageWithOneBasedEnum in
+  // objectivec/Tests/unittest_objc.proto for a test Message to confirm this.
+
+  // Some proto file set the default to the zero value, so make sure the value
+  // isn't the zero case.
+  switch (field->cpp_type()) {
+    case FieldDescriptor::CPPTYPE_INT32:
+      return field->default_value_int32() != 0;
+    case FieldDescriptor::CPPTYPE_UINT32:
+      return field->default_value_uint32() != 0U;
+    case FieldDescriptor::CPPTYPE_INT64:
+      return field->default_value_int64() != 0LL;
+    case FieldDescriptor::CPPTYPE_UINT64:
+      return field->default_value_uint64() != 0ULL;
+    case FieldDescriptor::CPPTYPE_DOUBLE:
+      return field->default_value_double() != 0.0;
+    case FieldDescriptor::CPPTYPE_FLOAT:
+      return field->default_value_float() != 0.0f;
+    case FieldDescriptor::CPPTYPE_BOOL:
+      return field->default_value_bool();
+    case FieldDescriptor::CPPTYPE_STRING: {
+      const string& default_string = field->default_value_string();
+      return default_string.length() != 0;
+    }
+    case FieldDescriptor::CPPTYPE_ENUM:
+      return field->default_value_enum()->number() != 0;
+    case FieldDescriptor::CPPTYPE_MESSAGE:
+      return false;
+  }
+
+  // Some compilers report reaching end of function even though all cases of
+  // the enum are handed in the switch.
+  GOOGLE_LOG(FATAL) << "Can't get here.";
+  return false;
 }
 
 string BuildFlagsString(const vector<string>& strings) {
@@ -763,16 +819,14 @@ string BuildCommentsString(const SourceLocation& location) {
   while (!lines.empty() && lines.back().empty()) {
     lines.pop_back();
   }
-  string prefix("//");
+  string prefix("///");
   string suffix("\n");
   string final_comments;
   for (int i = 0; i < lines.size(); i++) {
-    // We use $ for delimiters, so replace comments with dollars with
-    // html escaped version.
-    // None of the other compilers handle this (as of this writing) but we
-    // ran into it once, so just to be safe.
+    // HeaderDoc uses '\' and '@' for markers; escape them.
+    const string line = StringReplace(lines[i], "\\", "\\\\", true);
     final_comments +=
-        prefix + StringReplace(lines[i], "$", "&#36;", true) + suffix;
+        prefix + StringReplace(line, "@", "\\@", true) + suffix;
   }
   return final_comments;
 }
@@ -883,33 +937,33 @@ bool Parser::ParseLoop() {
     StringPiece prefix(line, offset + 1, line.length() - offset - 1);
     TrimWhitespace(&package);
     TrimWhitespace(&prefix);
-    // Don't really worry about error checking the the package/prefix for
+    // Don't really worry about error checking the package/prefix for
     // being valid.  Assume the file is validated when it is created/edited.
     (*prefix_map_)[package.ToString()] = prefix.ToString();
   }
   return true;
 }
 
-bool LoadExpectedPackagePrefixes(map<string, string>* prefix_map,
-                                 string* out_expect_file_path,
+bool LoadExpectedPackagePrefixes(const Options &generation_options,
+                                 map<string, string>* prefix_map,
                                  string* out_error) {
-  const char* file_path = getenv("GPB_OBJC_EXPECTED_PACKAGE_PREFIXES");
-  if (file_path == NULL) {
+  if (generation_options.expected_prefixes_path.empty()) {
     return true;
   }
 
   int fd;
   do {
-    fd = open(file_path, O_RDONLY);
+    fd = open(generation_options.expected_prefixes_path.c_str(), O_RDONLY);
   } while (fd < 0 && errno == EINTR);
   if (fd < 0) {
     *out_error =
-        string(file_path) + ":0:0: error: Unable to open." + strerror(errno);
+        string("error: Unable to open \"") +
+        generation_options.expected_prefixes_path +
+        "\", " + strerror(errno);
     return false;
   }
   io::FileInputStream file_stream(fd);
   file_stream.SetCloseOnDelete(true);
-  *out_expect_file_path = file_path;
 
   Parser parser(prefix_map);
   const void* buf;
@@ -920,8 +974,9 @@ bool LoadExpectedPackagePrefixes(map<string, string>* prefix_map,
     }
 
     if (!parser.ParseChunk(StringPiece(static_cast<const char*>(buf), buf_len))) {
-      *out_error = string(file_path) + ":" + SimpleItoa(parser.last_line()) +
-                   ":0: error: " + parser.error_str();
+      *out_error =
+          string("error: ") + generation_options.expected_prefixes_path +
+          " Line " + SimpleItoa(parser.last_line()) + ", " + parser.error_str();
       return false;
     }
   }
@@ -930,48 +985,25 @@ bool LoadExpectedPackagePrefixes(map<string, string>* prefix_map,
 
 }  // namespace
 
-bool ValidateObjCClassPrefix(const FileDescriptor* file, string* out_error) {
+bool ValidateObjCClassPrefix(const FileDescriptor* file,
+                             const Options& generation_options,
+                             string* out_error) {
   const string prefix = file->options().objc_class_prefix();
   const string package = file->package();
 
   // NOTE: src/google/protobuf/compiler/plugin.cc makes use of cerr for some
   // error cases, so it seems to be ok to use as a back door for warnings.
 
-  // First Check: Warning - if there is a prefix, ensure it is is a reasonable
-  // value according to Apple's rules.
-  if (prefix.length()) {
-    if (!ascii_isupper(prefix[0])) {
-      cerr << endl
-           << "protoc:0: warning: Invalid 'option objc_class_prefix = \""
-           << prefix << "\";' in '" << file->name() << "';"
-           << " it should start with a capital letter." << endl;
-      cerr.flush();
-    }
-    if (prefix.length() < 3) {
-      cerr << endl
-           << "protoc:0: warning: Invalid 'option objc_class_prefix = \""
-           << prefix << "\";' in '" << file->name() << "';"
-           << " Apple recommends they should be at least 3 characters long."
-           << endl;
-      cerr.flush();
-    }
-  }
-
   // Load any expected package prefixes to validate against those.
   map<string, string> expected_package_prefixes;
-  string expect_file_path;
-  if (!LoadExpectedPackagePrefixes(&expected_package_prefixes,
-                                   &expect_file_path, out_error)) {
+  if (!LoadExpectedPackagePrefixes(generation_options,
+                                   &expected_package_prefixes,
+                                   out_error)) {
     return false;
   }
 
-  // If there are no expected prefixes, out of here.
-  if (expected_package_prefixes.size() == 0) {
-    return true;
-  }
-
-  // Second Check: Error - See if there was an expected prefix for the package
-  // and report if it doesn't match.
+  // Check: Error - See if there was an expected prefix for the package and
+  // report if it doesn't match (wrong or missing).
   map<string, string>::iterator package_match =
       expected_package_prefixes.find(package);
   if (package_match != expected_package_prefixes.end()) {
@@ -981,8 +1013,9 @@ bool ValidateObjCClassPrefix(const FileDescriptor* file, string* out_error) {
       return true;
     } else {
       // ...it didn't match!
-      *out_error = "protoc:0: error: Expected 'option objc_class_prefix = \"" +
-                   package_match->second + "\";' in '" + file->name() + "'";
+      *out_error = "error: Expected 'option objc_class_prefix = \"" +
+                   package_match->second + "\";' for package '" + package +
+                   "' in '" + file->name() + "'";
       if (prefix.length()) {
         *out_error += "; but found '" + prefix + "' instead";
       }
@@ -991,32 +1024,57 @@ bool ValidateObjCClassPrefix(const FileDescriptor* file, string* out_error) {
     }
   }
 
-  // Third Check: Error - If there was a prefix make sure it wasn't expected
-  // for a different package instead (overlap is allowed, but it has to be
-  // listed as an expected overlap).
-  if (prefix.length()) {
-    for (map<string, string>::iterator i = expected_package_prefixes.begin();
-         i != expected_package_prefixes.end(); ++i) {
-      if (i->second == prefix) {
-        *out_error =
-            "protoc:0: error: Found 'option objc_class_prefix = \"" + prefix +
-            "\";' in '" + file->name() +
-            "'; that prefix is already used for 'package " + i->first +
-            ";'. It can only be reused by listing it in the expected file (" +
-            expect_file_path + ").";
-        return false;  // Only report first usage of the prefix.
-      }
+  // If there was no prefix option, we're done at this point.
+  if (prefix.length() == 0) {
+    // No prefix, nothing left to check.
+    return true;
+  }
+
+  // Check: Error - Make sure the prefix wasn't expected for a different
+  // package (overlap is allowed, but it has to be listed as an expected
+  // overlap).
+  for (map<string, string>::iterator i = expected_package_prefixes.begin();
+       i != expected_package_prefixes.end(); ++i) {
+    if (i->second == prefix) {
+      *out_error =
+          "error: Found 'option objc_class_prefix = \"" + prefix +
+          "\";' in '" + file->name() +
+          "'; that prefix is already used for 'package " + i->first +
+          ";'. It can only be reused by listing it in the expected file (" +
+          generation_options.expected_prefixes_path + ").";
+      return false;  // Only report first usage of the prefix.
     }
   }
 
-  // Fourth Check: Warning - If there was a prefix, and it wasn't expected,
-  // issue a warning suggesting it gets added to the file.
-  if (prefix.length()) {
+  // Check: Warning - Make sure the prefix is is a reasonable value according
+  // to Apple's rules (the checks above implicitly whitelist anything that
+  // doesn't meet these rules).
+  if (!ascii_isupper(prefix[0])) {
     cerr << endl
-         << "protoc:0: warning: Found 'option objc_class_prefix = \"" << prefix
-         << "\";' in '" << file->name() << "';"
-         << " should you add it to the expected prefixes file ("
-         << expect_file_path << ")?" << endl;
+         << "protoc:0: warning: Invalid 'option objc_class_prefix = \""
+         << prefix << "\";' in '" << file->name() << "';"
+         << " it should start with a capital letter." << endl;
+    cerr.flush();
+  }
+  if (prefix.length() < 3) {
+    // Apple reserves 2 character prefixes for themselves. They do use some
+    // 3 character prefixes, but they haven't updated the rules/docs.
+    cerr << endl
+         << "protoc:0: warning: Invalid 'option objc_class_prefix = \""
+         << prefix << "\";' in '" << file->name() << "';"
+         << " Apple recommends they should be at least 3 characters long."
+         << endl;
+    cerr.flush();
+  }
+
+  // Check: Warning - If the given package/prefix pair wasn't expected, issue a
+  // warning issue a warning suggesting it gets added to the file.
+  if (!expected_package_prefixes.empty()) {
+    cerr << endl
+         << "protoc:0: warning: Found unexpected 'option objc_class_prefix = \""
+         << prefix << "\";' in '" << file->name() << "';"
+         << " consider adding it to the expected prefixes file ("
+         << generation_options.expected_prefixes_path << ")." << endl;
     cerr.flush();
   }
 

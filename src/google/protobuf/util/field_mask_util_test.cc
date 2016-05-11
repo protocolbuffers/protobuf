@@ -30,6 +30,10 @@
 
 #include <google/protobuf/util/field_mask_util.h>
 
+#include <algorithm>
+
+#include <google/protobuf/stubs/logging.h>
+#include <google/protobuf/stubs/common.h>
 #include <google/protobuf/field_mask.pb.h>
 #include <google/protobuf/unittest.pb.h>
 #include <google/protobuf/test_util.h>
@@ -38,7 +42,76 @@
 namespace google {
 namespace protobuf {
 namespace util {
+
+class SnakeCaseCamelCaseTest : public ::testing::Test {
+ protected:
+  string SnakeCaseToCamelCase(const string& input) {
+    string output;
+    if (FieldMaskUtil::SnakeCaseToCamelCase(input, &output)) {
+      return output;
+    } else {
+      return "#FAIL#";
+    }
+  }
+
+  string CamelCaseToSnakeCase(const string& input) {
+    string output;
+    if (FieldMaskUtil::CamelCaseToSnakeCase(input, &output)) {
+      return output;
+    } else {
+      return "#FAIL#";
+    }
+  }
+};
+
 namespace {
+
+TEST_F(SnakeCaseCamelCaseTest, SnakeToCamel) {
+  EXPECT_EQ("fooBar", SnakeCaseToCamelCase("foo_bar"));
+  EXPECT_EQ("FooBar", SnakeCaseToCamelCase("_foo_bar"));
+  EXPECT_EQ("foo3Bar", SnakeCaseToCamelCase("foo3_bar"));
+  // No uppercase letter is allowed.
+  EXPECT_EQ("#FAIL#", SnakeCaseToCamelCase("Foo"));
+  // Any character after a "_" must be a lowercase letter.
+  //   1. "_" cannot be followed by another "_".
+  //   2. "_" cannot be followed by a digit.
+  //   3. "_" cannot appear as the last character.
+  EXPECT_EQ("#FAIL#", SnakeCaseToCamelCase("foo__bar"));
+  EXPECT_EQ("#FAIL#", SnakeCaseToCamelCase("foo_3bar"));
+  EXPECT_EQ("#FAIL#", SnakeCaseToCamelCase("foo_bar_"));
+}
+
+TEST_F(SnakeCaseCamelCaseTest, CamelToSnake) {
+  EXPECT_EQ("foo_bar", CamelCaseToSnakeCase("fooBar"));
+  EXPECT_EQ("_foo_bar", CamelCaseToSnakeCase("FooBar"));
+  EXPECT_EQ("foo3_bar", CamelCaseToSnakeCase("foo3Bar"));
+  // "_"s are not allowed.
+  EXPECT_EQ("#FAIL#", CamelCaseToSnakeCase("foo_bar"));
+}
+
+TEST_F(SnakeCaseCamelCaseTest, RoundTripTest) {
+  // Enumerates all possible snake_case names and test that converting it to
+  // camelCase and then to snake_case again will yield the original name.
+  string name = "___abc123";
+  std::sort(name.begin(), name.end());
+  do {
+    string camelName = SnakeCaseToCamelCase(name);
+    if (camelName != "#FAIL#") {
+      EXPECT_EQ(name, CamelCaseToSnakeCase(camelName));
+    }
+  } while (std::next_permutation(name.begin(), name.end()));
+
+  // Enumerates all possible camelCase names and test that converting it to
+  // snake_case and then to camelCase again will yield the original name.
+  name = "abcABC123";
+  std::sort(name.begin(), name.end());
+  do {
+    string camelName = CamelCaseToSnakeCase(name);
+    if (camelName != "#FAIL#") {
+      EXPECT_EQ(name, SnakeCaseToCamelCase(camelName));
+    }
+  } while (std::next_permutation(name.begin(), name.end()));
+}
 
 using protobuf_unittest::TestAllTypes;
 using protobuf_unittest::NestedTestAllTypes;
@@ -47,20 +120,43 @@ using google::protobuf::FieldMask;
 TEST(FieldMaskUtilTest, StringFormat) {
   FieldMask mask;
   EXPECT_EQ("", FieldMaskUtil::ToString(mask));
-  mask.add_paths("foo");
-  EXPECT_EQ("foo", FieldMaskUtil::ToString(mask));
-  mask.add_paths("bar");
-  EXPECT_EQ("foo,bar", FieldMaskUtil::ToString(mask));
+  mask.add_paths("foo_bar");
+  EXPECT_EQ("foo_bar", FieldMaskUtil::ToString(mask));
+  mask.add_paths("baz_quz");
+  EXPECT_EQ("foo_bar,baz_quz", FieldMaskUtil::ToString(mask));
 
   FieldMaskUtil::FromString("", &mask);
   EXPECT_EQ(0, mask.paths_size());
-  FieldMaskUtil::FromString("foo", &mask);
+  FieldMaskUtil::FromString("fooBar", &mask);
   EXPECT_EQ(1, mask.paths_size());
-  EXPECT_EQ("foo", mask.paths(0));
-  FieldMaskUtil::FromString("foo,bar", &mask);
+  EXPECT_EQ("fooBar", mask.paths(0));
+  FieldMaskUtil::FromString("fooBar,bazQuz", &mask);
   EXPECT_EQ(2, mask.paths_size());
-  EXPECT_EQ("foo", mask.paths(0));
-  EXPECT_EQ("bar", mask.paths(1));
+  EXPECT_EQ("fooBar", mask.paths(0));
+  EXPECT_EQ("bazQuz", mask.paths(1));
+}
+
+TEST(FieldMaskUtilTest, JsonStringFormat) {
+  FieldMask mask;
+  string value;
+  EXPECT_TRUE(FieldMaskUtil::ToJsonString(mask, &value));
+  EXPECT_EQ("", value);
+  mask.add_paths("foo_bar");
+  EXPECT_TRUE(FieldMaskUtil::ToJsonString(mask, &value));
+  EXPECT_EQ("fooBar", value);
+  mask.add_paths("bar_quz");
+  EXPECT_TRUE(FieldMaskUtil::ToJsonString(mask, &value));
+  EXPECT_EQ("fooBar,barQuz", value);
+
+  FieldMaskUtil::FromJsonString("", &mask);
+  EXPECT_EQ(0, mask.paths_size());
+  FieldMaskUtil::FromJsonString("fooBar", &mask);
+  EXPECT_EQ(1, mask.paths_size());
+  EXPECT_EQ("foo_bar", mask.paths(0));
+  FieldMaskUtil::FromJsonString("fooBar,bazQuz", &mask);
+  EXPECT_EQ(2, mask.paths_size());
+  EXPECT_EQ("foo_bar", mask.paths(0));
+  EXPECT_EQ("baz_quz", mask.paths(1));
 }
 
 TEST(FieldMaskUtilTest, TestIsVaildPath) {

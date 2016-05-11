@@ -49,8 +49,10 @@ namespace google {
 namespace protobuf {
 namespace internal {
 
-#ifndef _MSC_VER    // MSVC doesn't like definitions of inline constants, GCC
-                    // requires them.
+
+#if !defined(_MSC_VER) || _MSC_VER >= 1900
+// Old version of MSVC doesn't like definitions of inline constants, GCC
+// requires them.
 const int WireFormatLite::kMessageSetItemStartTag;
 const int WireFormatLite::kMessageSetItemEndTag;
 const int WireFormatLite::kMessageSetTypeIdTag;
@@ -410,7 +412,7 @@ void WireFormatLite::WriteString(int field_number, const string& value,
                                  io::CodedOutputStream* output) {
   // String is for UTF-8 text only
   WriteTag(field_number, WIRETYPE_LENGTH_DELIMITED, output);
-  GOOGLE_CHECK(value.size() <= kint32max);
+  GOOGLE_CHECK_LE(value.size(), kint32max);
   output->WriteVarint32(value.size());
   output->WriteString(value);
 }
@@ -419,14 +421,14 @@ void WireFormatLite::WriteStringMaybeAliased(
     io::CodedOutputStream* output) {
   // String is for UTF-8 text only
   WriteTag(field_number, WIRETYPE_LENGTH_DELIMITED, output);
-  GOOGLE_CHECK(value.size() <= kint32max);
+  GOOGLE_CHECK_LE(value.size(), kint32max);
   output->WriteVarint32(value.size());
   output->WriteRawMaybeAliased(value.data(), value.size());
 }
 void WireFormatLite::WriteBytes(int field_number, const string& value,
                                 io::CodedOutputStream* output) {
   WriteTag(field_number, WIRETYPE_LENGTH_DELIMITED, output);
-  GOOGLE_CHECK(value.size() <= kint32max);
+  GOOGLE_CHECK_LE(value.size(), kint32max);
   output->WriteVarint32(value.size());
   output->WriteString(value);
 }
@@ -434,7 +436,7 @@ void WireFormatLite::WriteBytesMaybeAliased(
     int field_number, const string& value,
     io::CodedOutputStream* output) {
   WriteTag(field_number, WIRETYPE_LENGTH_DELIMITED, output);
-  GOOGLE_CHECK(value.size() <= kint32max);
+  GOOGLE_CHECK_LE(value.size(), kint32max);
   output->WriteVarint32(value.size());
   output->WriteRawMaybeAliased(value.data(), value.size());
 }

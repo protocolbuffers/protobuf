@@ -61,6 +61,29 @@ namespace Google.Protobuf.WellKnownTypes
             Assert.AreEqual(new DateTime(1969, 12, 31, 23, 59, 59).AddMilliseconds(1), t2.ToDateTime());
         }
 
+        [Test]
+        [TestCase(Timestamp.UnixSecondsAtBclMinValue - 1, Timestamp.MaxNanos)]
+        [TestCase(Timestamp.UnixSecondsAtBclMaxValue + 1, 0)]
+        [TestCase(0, -1)]
+        [TestCase(0, Timestamp.MaxNanos + 1)]
+        public void ToDateTime_OutOfRange(long seconds, int nanoseconds)
+        {
+            var value = new Timestamp { Seconds = seconds, Nanos = nanoseconds };
+            Assert.Throws<InvalidOperationException>(() => value.ToDateTime());
+        }
+
+        // 1ns larger or smaller than the above values
+        [Test]
+        [TestCase(Timestamp.UnixSecondsAtBclMinValue, 0)]
+        [TestCase(Timestamp.UnixSecondsAtBclMaxValue, Timestamp.MaxNanos)]
+        [TestCase(0, 0)]
+        [TestCase(0, Timestamp.MaxNanos)]
+        public void ToDateTime_ValidBoundaries(long seconds, int nanoseconds)
+        {
+            var value = new Timestamp { Seconds = seconds, Nanos = nanoseconds };
+            value.ToDateTime();
+        }
+
         private static void AssertRoundtrip(Timestamp timestamp, DateTime dateTime)
         {
             Assert.AreEqual(timestamp, Timestamp.FromDateTime(dateTime));
@@ -79,6 +102,14 @@ namespace Google.Protobuf.WellKnownTypes
             
             Assert.AreEqual(t1, t2 + difference);
             Assert.AreEqual(t2, t1 - difference);
+        }
+
+        [Test]
+        public void ToString_NonNormalized()
+        {
+            // Just a single example should be sufficient...
+            var duration = new Timestamp { Seconds = 1, Nanos = -1 };
+            Assert.AreEqual("{ \"@warning\": \"Invalid Timestamp\", \"seconds\": \"1\", \"nanos\": -1 }", duration.ToString());
         }
     }
 }

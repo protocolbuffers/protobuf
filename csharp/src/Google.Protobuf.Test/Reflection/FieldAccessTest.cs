@@ -128,7 +128,7 @@ namespace Google.Protobuf.Reflection
             fields[TestAllTypes.SingleInt32FieldNumber].Accessor.SetValue(message, 500);
             fields[TestAllTypes.SingleStringFieldNumber].Accessor.SetValue(message, "It's a string");
             fields[TestAllTypes.SingleBytesFieldNumber].Accessor.SetValue(message, ByteString.CopyFrom(99, 98, 97));
-            fields[TestAllTypes.SingleForeignEnumFieldNumber].Accessor.SetValue(message, ForeignEnum.FOREIGN_FOO);
+            fields[TestAllTypes.SingleForeignEnumFieldNumber].Accessor.SetValue(message, ForeignEnum.ForeignFoo);
             fields[TestAllTypes.SingleForeignMessageFieldNumber].Accessor.SetValue(message, new ForeignMessage { C = 12345 });
             fields[TestAllTypes.SingleDoubleFieldNumber].Accessor.SetValue(message, 20150701.5);
 
@@ -138,7 +138,7 @@ namespace Google.Protobuf.Reflection
                 SingleInt32 = 500,
                 SingleString = "It's a string",
                 SingleBytes = ByteString.CopyFrom(99, 98, 97),
-                SingleForeignEnum = ForeignEnum.FOREIGN_FOO,
+                SingleForeignEnum = ForeignEnum.ForeignFoo,
                 SingleForeignMessage = new ForeignMessage { C = 12345 },
                 SingleDouble = 20150701.5
             };

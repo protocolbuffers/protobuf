@@ -60,10 +60,9 @@ import java.util.logging.Logger;
  * FieldMask in a message tree.
  */
 class FieldMaskTree {
-  private static final Logger logger =
-      Logger.getLogger(FieldMaskTree.class.getName());
-  
-  private static final String FIELD_PATH_SEPARATOR_REGEX = "\\."; 
+  private static final Logger logger = Logger.getLogger(FieldMaskTree.class.getName());
+
+  private static final String FIELD_PATH_SEPARATOR_REGEX = "\\.";
 
   private static class Node {
     public TreeMap<String, Node> children = new TreeMap<String, Node>();
@@ -73,12 +72,12 @@ class FieldMaskTree {
 
   /** Creates an empty FieldMaskTree. */
   public FieldMaskTree() {}
-  
+
   /** Creates a FieldMaskTree for a given FieldMask. */
   public FieldMaskTree(FieldMask mask) {
     mergeFromFieldMask(mask);
   }
-  
+
   @Override
   public String toString() {
     return FieldMaskUtil.toString(toFieldMask());
@@ -121,7 +120,7 @@ class FieldMaskTree {
     node.children.clear();
     return this;
   }
-  
+
   /**
    * Merges all field paths in a FieldMask into this tree.
    */
@@ -149,8 +148,7 @@ class FieldMaskTree {
       return;
     }
     for (Entry<String, Node> entry : node.children.entrySet()) {
-      String childPath = path.isEmpty()
-          ? entry.getKey() : path + "." + entry.getKey();
+      String childPath = path.isEmpty() ? entry.getKey() : path + "." + entry.getKey();
       getFieldPaths(entry.getValue(), childPath, paths);
     }
   }
@@ -193,11 +191,10 @@ class FieldMaskTree {
    * Merges all fields specified by this FieldMaskTree from {@code source} to
    * {@code destination}.
    */
-  public void merge(Message source, Message.Builder destination,
-      FieldMaskUtil.MergeOptions options) {
+  public void merge(
+      Message source, Message.Builder destination, FieldMaskUtil.MergeOptions options) {
     if (source.getDescriptorForType() != destination.getDescriptorForType()) {
-      throw new IllegalArgumentException(
-          "Cannot merge messages of different types.");
+      throw new IllegalArgumentException("Cannot merge messages of different types.");
     }
     if (root.children.isEmpty()) {
       return;
@@ -208,30 +205,41 @@ class FieldMaskTree {
   /** Merges all fields specified by a sub-tree from {@code source} to
    * {@code destination}.
    */
-  private void merge(Node node, String path, Message source,
-      Message.Builder destination, FieldMaskUtil.MergeOptions options) {
+  private void merge(
+      Node node,
+      String path,
+      Message source,
+      Message.Builder destination,
+      FieldMaskUtil.MergeOptions options) {
     assert source.getDescriptorForType() == destination.getDescriptorForType();
-    
+
     Descriptor descriptor = source.getDescriptorForType();
     for (Entry<String, Node> entry : node.children.entrySet()) {
-      FieldDescriptor field =
-          descriptor.findFieldByName(entry.getKey());
+      FieldDescriptor field = descriptor.findFieldByName(entry.getKey());
       if (field == null) {
-        logger.warning("Cannot find field \"" + entry.getKey()
-            + "\" in message type " + descriptor.getFullName());
+        logger.warning(
+            "Cannot find field \""
+                + entry.getKey()
+                + "\" in message type "
+                + descriptor.getFullName());
         continue;
       }
       if (!entry.getValue().children.isEmpty()) {
-        if (field.isRepeated()
-            || field.getJavaType() != FieldDescriptor.JavaType.MESSAGE) {
-          logger.warning("Field \"" + field.getFullName() + "\" is not a "
-              + "singluar message field and cannot have sub-fields.");
+        if (field.isRepeated() || field.getJavaType() != FieldDescriptor.JavaType.MESSAGE) {
+          logger.warning(
+              "Field \""
+                  + field.getFullName()
+                  + "\" is not a "
+                  + "singluar message field and cannot have sub-fields.");
           continue;
         }
-        String childPath = path.isEmpty()
-            ? entry.getKey() : path + "." + entry.getKey();
-        merge(entry.getValue(), childPath, (Message) source.getField(field),
-            destination.getFieldBuilder(field), options);
+        String childPath = path.isEmpty() ? entry.getKey() : path + "." + entry.getKey();
+        merge(
+            entry.getValue(),
+            childPath,
+            (Message) source.getField(field),
+            destination.getFieldBuilder(field),
+            options);
         continue;
       }
       if (field.isRepeated()) {
@@ -245,13 +253,22 @@ class FieldMaskTree {
       } else {
         if (field.getJavaType() == FieldDescriptor.JavaType.MESSAGE) {
           if (options.replaceMessageFields()) {
-            destination.setField(field, source.getField(field));
+            if (!source.hasField(field)) {
+              destination.clearField(field);
+            } else {
+              destination.setField(field, source.getField(field));
+            }
           } else {
-            destination.getFieldBuilder(field).mergeFrom(
-                (Message) source.getField(field));
+            if (source.hasField(field)) {
+              destination.getFieldBuilder(field).mergeFrom((Message) source.getField(field));
+            }
           }
         } else {
-          destination.setField(field, source.getField(field));
+          if (source.hasField(field) || !options.replacePrimitiveFields()) {
+            destination.setField(field, source.getField(field));
+          } else {
+            destination.clearField(field);
+          }
         }
       }
     }

@@ -30,6 +30,9 @@
 
 package com.google.protobuf.util;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
+import com.google.common.primitives.Ints;
 import com.google.protobuf.Descriptors.Descriptor;
 import com.google.protobuf.Descriptors.FieldDescriptor;
 import com.google.protobuf.FieldMask;
@@ -37,7 +40,6 @@ import com.google.protobuf.Internal;
 import com.google.protobuf.Message;
 
 import java.util.Arrays;
-import java.util.List;
 
 /**
  * Utility helper functions to work with {@link com.google.protobuf.FieldMask}.
@@ -53,6 +55,7 @@ public class FieldMaskUtil {
    * Converts a FieldMask to a string.
    */
   public static String toString(FieldMask fieldMask) {
+    // TODO(xiaofeng): Consider using com.google.common.base.Joiner here instead.
     StringBuilder result = new StringBuilder();
     boolean first = true;
     for (String value : fieldMask.getPathsList()) {
@@ -74,6 +77,7 @@ public class FieldMaskUtil {
    * Parses from a string to a FieldMask.
    */
   public static FieldMask fromString(String value) {
+    // TODO(xiaofeng): Consider using com.google.common.base.Splitter here instead.
     return fromStringList(
         null, Arrays.asList(value.split(FIELD_PATH_SEPARATOR_REGEX)));
   }
@@ -83,8 +87,8 @@ public class FieldMaskUtil {
    * 
    * @throws IllegalArgumentException if any of the field path is invalid.
    */
-  public static FieldMask fromString(Class<? extends Message> type, String value)
-      throws IllegalArgumentException {
+  public static FieldMask fromString(Class<? extends Message> type, String value) {
+    // TODO(xiaofeng): Consider using com.google.common.base.Splitter here instead.
     return fromStringList(
         type, Arrays.asList(value.split(FIELD_PATH_SEPARATOR_REGEX)));
   }
@@ -94,9 +98,9 @@ public class FieldMaskUtil {
    *
    * @throws IllegalArgumentException if any of the field path is not valid.
    */
+  // TODO(xiaofeng): Consider renaming fromStrings()
   public static FieldMask fromStringList(
-      Class<? extends Message> type, List<String> paths)
-      throws IllegalArgumentException {
+      Class<? extends Message> type, Iterable<String> paths) {
     FieldMask.Builder builder = FieldMask.newBuilder();
     for (String path : paths) {
       if (path.isEmpty()) {
@@ -113,15 +117,74 @@ public class FieldMaskUtil {
   }
 
   /**
+   * Constructs a FieldMask from the passed field numbers.
+   *
+   * @throws IllegalArgumentException if any of the fields are invalid for the message.
+   */
+  public static FieldMask fromFieldNumbers(Class<? extends Message> type, int... fieldNumbers) {
+    return fromFieldNumbers(type, Ints.asList(fieldNumbers));
+  }
+
+  /**
+   * Constructs a FieldMask from the passed field numbers.
+   *
+   * @throws IllegalArgumentException if any of the fields are invalid for the message.
+   */
+  public static FieldMask fromFieldNumbers(
+      Class<? extends Message> type, Iterable<Integer> fieldNumbers) {
+    Descriptor descriptor = Internal.getDefaultInstance(type).getDescriptorForType();
+
+    FieldMask.Builder builder = FieldMask.newBuilder();
+    for (Integer fieldNumber : fieldNumbers) {
+      FieldDescriptor field = descriptor.findFieldByNumber(fieldNumber);
+      checkArgument(
+          field != null,
+          String.format("%s is not a valid field number for %s.", fieldNumber, type));
+      builder.addPaths(field.getName());
+    }
+    return builder.build();
+  }
+
+  /**
+   * Checks whether paths in a given fields mask are valid.
+   */
+  public static boolean isValid(Class<? extends Message> type, FieldMask fieldMask) {
+    Descriptor descriptor =
+        Internal.getDefaultInstance(type).getDescriptorForType();
+    
+    return isValid(descriptor, fieldMask);
+  }
+  
+  /**
+   * Checks whether paths in a given fields mask are valid.
+   */
+  public static boolean isValid(Descriptor descriptor, FieldMask fieldMask) {
+    for (String path : fieldMask.getPathsList()) {
+      if (!isValid(descriptor, path)) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  /**
    * Checks whether a given field path is valid.
    */
   public static boolean isValid(Class<? extends Message> type, String path) {
+    Descriptor descriptor =
+        Internal.getDefaultInstance(type).getDescriptorForType();
+    
+    return isValid(descriptor, path);
+  }
+
+  /**
+   * Checks whether paths in a given fields mask are valid.
+   */
+  public static boolean isValid(Descriptor descriptor, String path) {
     String[] parts = path.split(FIELD_SEPARATOR_REGEX);
     if (parts.length == 0) {
       return false;
     }
-    Descriptor descriptor =
-        Internal.getDefaultInstance(type).getDescriptorForType();
     for (String name : parts) {
       if (descriptor == null) {
         return false;
@@ -148,14 +211,19 @@ public class FieldMaskUtil {
   public static FieldMask normalize(FieldMask mask) {
     return new FieldMaskTree(mask).toFieldMask();
   }
-  
+
   /**
-   * Creates an union of two FieldMasks.
+   * Creates a union of two or more FieldMasks.
    */
-  public static FieldMask union(FieldMask mask1, FieldMask mask2) {
-    return new FieldMaskTree(mask1).mergeFromFieldMask(mask2).toFieldMask();
+  public static FieldMask union(
+      FieldMask firstMask, FieldMask secondMask, FieldMask... otherMasks) {
+    FieldMaskTree maskTree = new FieldMaskTree(firstMask).mergeFromFieldMask(secondMask);
+    for (FieldMask mask : otherMasks) {
+      maskTree.mergeFromFieldMask(mask);
+    }
+    return maskTree.toFieldMask();
   }
-  
+
   /**
    * Calculates the intersection of two FieldMasks.
    */
@@ -171,9 +239,12 @@ public class FieldMaskUtil {
   /**
    * Options to customize merging behavior.
    */
-  public static class MergeOptions {
+  public static final class MergeOptions {
     private boolean replaceMessageFields = false;
     private boolean replaceRepeatedFields = false;
+    // TODO(b/28277137): change the default behavior to always replace primitive fields after
+    // fixing all failing TAP tests.
+    private boolean replacePrimitiveFields = false;
 
     /**
      * Whether to replace message fields (i.e., discard existing content in
@@ -194,7 +265,23 @@ public class FieldMaskUtil {
     public boolean replaceRepeatedFields() {
       return replaceRepeatedFields;
     }
-    
+
+    /**
+     * Whether to replace primitive (non-repeated and non-message) fields in
+     * destination message fields with the source primitive fields (i.e., if the
+     * field is set in the source, the value is copied to the
+     * destination; if the field is unset in the source, the field is cleared
+     * from the destination) when merging.
+     *
+     * <p>Default behavior is to always set the value of the source primitive
+     * field to the destination primitive field, and if the source field is
+     * unset, the default value of the source field is copied to the
+     * destination.
+     */
+    public boolean replacePrimitiveFields() {
+      return replacePrimitiveFields;
+    }
+
     public void setReplaceMessageFields(boolean value) {
       replaceMessageFields = value;
     }
@@ -202,10 +289,15 @@ public class FieldMaskUtil {
     public void setReplaceRepeatedFields(boolean value) {
       replaceRepeatedFields = value;
     }
+
+    public void setReplacePrimitiveFields(boolean value) {
+      replacePrimitiveFields = value;
+    }
   }
-  
+
   /**
-   * Merges fields specified by a FieldMask from one message to another.
+   * Merges fields specified by a FieldMask from one message to another with the
+   * specified merge options.
    */
   public static void merge(FieldMask mask, Message source,
       Message.Builder destination, MergeOptions options) {

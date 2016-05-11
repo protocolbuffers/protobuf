@@ -191,6 +191,35 @@ module BasicTest
       assert m1.hash != m2.hash
     end
 
+    def test_unknown_field_errors
+      e = assert_raise NoMethodError do
+        TestMessage.new.hello
+      end
+      assert_match(/hello/, e.message)
+
+      e = assert_raise NoMethodError do
+        TestMessage.new.hello = "world"
+      end
+      assert_match(/hello/, e.message)
+    end
+
+    def test_initialization_map_errors
+      e = assert_raise ArgumentError do
+        TestMessage.new(:hello => "world")
+      end
+      assert_match(/hello/, e.message)
+
+      e = assert_raise ArgumentError do
+        MapMessage.new(:map_string_int32 => "hello")
+      end
+      assert_equal e.message, "Expected Hash object as initializer value for map field 'map_string_int32'."
+
+      e = assert_raise ArgumentError do
+        TestMessage.new(:repeated_uint32 => "hello")
+      end
+      assert_equal e.message, "Expected array as initializer value for repeated field 'repeated_uint32'."
+    end
+
     def test_type_errors
       m = TestMessage.new
       assert_raise TypeError do
@@ -1131,8 +1160,13 @@ module BasicTest
       # TODO: Fix JSON in JRuby version.
       return if RUBY_PLATFORM == "java"
       m = MapMessage.new(:map_string_int32 => {"a" => 1})
-      expected = '{"map_string_int32":{"a":1},"map_string_msg":{}}'
+      expected = '{"mapStringInt32":{"a":1},"mapStringMsg":{}}'
+      expected_preserve = '{"map_string_int32":{"a":1},"map_string_msg":{}}'
       assert MapMessage.encode_json(m) == expected
+
+      json = MapMessage.encode_json(m, :preserve_proto_fieldnames => true)
+      assert json == expected_preserve
+
       m2 = MapMessage.decode_json(MapMessage.encode_json(m))
       assert m == m2
     end

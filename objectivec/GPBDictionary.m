@@ -31,7 +31,7 @@
 #import "GPBDictionary_PackagePrivate.h"
 
 #import "GPBCodedInputStream_PackagePrivate.h"
-#import "GPBCodedOutputStream.h"
+#import "GPBCodedOutputStream_PackagePrivate.h"
 #import "GPBDescriptor_PackagePrivate.h"
 #import "GPBMessage_PackagePrivate.h"
 #import "GPBUtilities_PackagePrivate.h"
@@ -44,6 +44,18 @@
 // it would be pretty simple to store all this data in CFDictionaries
 // directly.
 // ------------------------------------------------------------------
+
+// Used to include code only visible to specific versions of the static
+// analyzer. Useful for wrapping code that only exists to silence the analyzer.
+// Determine the values you want to use for BEGIN_APPLE_BUILD_VERSION,
+// END_APPLE_BUILD_VERSION using:
+//   xcrun clang -dM -E -x c /dev/null | grep __apple_build_version__
+// Example usage:
+//  #if GPB_STATIC_ANALYZER_ONLY(5621, 5623) ... #endif
+#define GPB_STATIC_ANALYZER_ONLY(BEGIN_APPLE_BUILD_VERSION, END_APPLE_BUILD_VERSION) \
+    (defined(__clang_analyzer__) && \
+     (__apple_build_version__ >= BEGIN_APPLE_BUILD_VERSION && \
+      __apple_build_version__ <= END_APPLE_BUILD_VERSION))
 
 enum {
   kMapKeyFieldNumber = 1,
@@ -496,6 +508,19 @@ void GPBDictionaryReadEntry(id mapDictionary,
     }
 
     if ((keyDataType == GPBDataTypeString) && GPBDataTypeIsObject(valueDataType)) {
+#if GPB_STATIC_ANALYZER_ONLY(6020053, 7000181)
+     // Limited to Xcode 6.4 - 7.2, are known to fail here. The upper end can
+     // be raised as needed for new Xcodes.
+     //
+     // This is only needed on a "shallow" analyze; on a "deep" analyze, the
+     // existing code path gets this correct. In shallow, the analyzer decides
+     // GPBDataTypeIsObject(valueDataType) is both false and true on a single
+     // path through this function, allowing nil to be used for the
+     // setObject:forKey:.
+     if (value.valueString == nil) {
+       value.valueString = [@"" retain];
+     }
+#endif
       // mapDictionary is an NSMutableDictionary
       [(NSMutableDictionary *)mapDictionary setObject:value.valueString
                                                forKey:key.valueString];
@@ -601,7 +626,7 @@ void GPBDictionaryReadEntry(id mapDictionary,
 //%    _dictionary = [[NSMutableDictionary alloc] init];
 //%    if (count && VNAME##s && keys) {
 //%      for (NSUInteger i = 0; i < count; ++i) {
-//%        [_dictionary setObject:WRAPPED##VHELPER(VNAME##s[i]) forKey:WRAPPED##KHELPER(keys[i])];
+//%DICTIONARY_VALIDATE_VALUE_##VHELPER(VNAME##s[i], ______)##DICTIONARY_VALIDATE_KEY_##KHELPER(keys[i], ______)        [_dictionary setObject:WRAPPED##VHELPER(VNAME##s[i]) forKey:WRAPPED##KHELPER(keys[i])];
 //%      }
 //%    }
 //%  }
@@ -711,7 +736,7 @@ void GPBDictionaryReadEntry(id mapDictionary,
 //%    _validationFunc = (func != NULL ? func : DictDefault_IsValidValue);
 //%    if (count && rawValues && keys) {
 //%      for (NSUInteger i = 0; i < count; ++i) {
-//%        [_dictionary setObject:WRAPPED##VHELPER(rawValues[i]) forKey:WRAPPED##KHELPER(keys[i])];
+//%DICTIONARY_VALIDATE_KEY_##KHELPER(keys[i], ______)        [_dictionary setObject:WRAPPED##VHELPER(rawValues[i]) forKey:WRAPPED##KHELPER(keys[i])];
 //%      }
 //%    }
 //%  }
@@ -776,7 +801,7 @@ void GPBDictionaryReadEntry(id mapDictionary,
 //%DICTIONARY_MUTABLE_CORE(KEY_NAME, KEY_TYPE, KisP, VALUE_NAME, VALUE_TYPE, KHELPER, VHELPER, value, Raw)
 //%
 //%- (void)setValue:(VALUE_TYPE)value forKey:(KEY_TYPE##KisP$S##KisP)key {
-//%  if (!_validationFunc(value)) {
+//%DICTIONARY_VALIDATE_KEY_##KHELPER(key, )  if (!_validationFunc(value)) {
 //%    [NSException raise:NSInvalidArgumentException
 //%                format:@"GPB##KEY_NAME##VALUE_NAME##Dictionary: Attempt to set an unknown enum value (%d)",
 //%                       value];
@@ -900,7 +925,7 @@ void GPBDictionaryReadEntry(id mapDictionary,
 //%}
 //%
 //%- (void)set##ACCESSOR_NAME##VNAME$u##:(VALUE_TYPE)VNAME forKey:(KEY_TYPE##KisP$S##KisP)key {
-//%  [_dictionary setObject:WRAPPED##VHELPER(VNAME) forKey:WRAPPED##KHELPER(key)];
+//%DICTIONARY_VALIDATE_VALUE_##VHELPER(VNAME, )##DICTIONARY_VALIDATE_KEY_##KHELPER(key, )  [_dictionary setObject:WRAPPED##VHELPER(VNAME) forKey:WRAPPED##KHELPER(key)];
 //%  if (_autocreator) {
 //%    GPBAutocreatedDictionaryModified(_autocreator, self);
 //%  }
@@ -1171,6 +1196,10 @@ void GPBDictionaryReadEntry(id mapDictionary,
 //%
 //%PDDM-DEFINE GPBVALUE_POD(VALUE_NAME)
 //%value##VALUE_NAME
+//%PDDM-DEFINE DICTIONARY_VALIDATE_VALUE_POD(VALUE_NAME, EXTRA_INDENT)
+// Empty
+//%PDDM-DEFINE DICTIONARY_VALIDATE_KEY_POD(KEY_NAME, EXTRA_INDENT)
+// Empty
 
 //%PDDM-DEFINE BOOL_DICT_HAS_STORAGE_POD()
 //%  BOOL _valueSet[2];
@@ -1363,7 +1392,18 @@ void GPBDictionaryReadEntry(id mapDictionary,
 // Empty
 //%PDDM-DEFINE GPBVALUE_OBJECT(VALUE_NAME)
 //%valueString
-
+//%PDDM-DEFINE DICTIONARY_VALIDATE_VALUE_OBJECT(VALUE_NAME, EXTRA_INDENT)
+//%##EXTRA_INDENT$S##  if (!##VALUE_NAME) {
+//%##EXTRA_INDENT$S##    [NSException raise:NSInvalidArgumentException
+//%##EXTRA_INDENT$S##                format:@"Attempting to add nil object to a Dictionary"];
+//%##EXTRA_INDENT$S##  }
+//%
+//%PDDM-DEFINE DICTIONARY_VALIDATE_KEY_OBJECT(KEY_NAME, EXTRA_INDENT)
+//%##EXTRA_INDENT$S##  if (!##KEY_NAME) {
+//%##EXTRA_INDENT$S##    [NSException raise:NSInvalidArgumentException
+//%##EXTRA_INDENT$S##                format:@"Attempting to add nil key to a Dictionary"];
+//%##EXTRA_INDENT$S##  }
+//%
 
 //%PDDM-DEFINE BOOL_DICT_HAS_STORAGE_OBJECT()
 // Empty
@@ -1374,6 +1414,10 @@ void GPBDictionaryReadEntry(id mapDictionary,
 //%  self = [super init];
 //%  if (self) {
 //%    for (NSUInteger i = 0; i < count; ++i) {
+//%      if (!objects[i]) {
+//%        [NSException raise:NSInvalidArgumentException
+//%                    format:@"Attempting to add nil object to a Dictionary"];
+//%      }
 //%      int idx = keys[i] ? 1 : 0;
 //%      [_values[idx] release];
 //%      _values[idx] = (VALUE_TYPE)[objects[i] retain];
@@ -1433,6 +1477,10 @@ void GPBDictionaryReadEntry(id mapDictionary,
 //%}
 //%
 //%- (void)setObject:(VALUE_TYPE)object forKey:(BOOL)key {
+//%  if (!object) {
+//%    [NSException raise:NSInvalidArgumentException
+//%                format:@"Attempting to add nil object to a Dictionary"];
+//%  }
 //%  int idx = (key ? 1 : 0);
 //%  [_values[idx] release];
 //%  _values[idx] = [object retain];
@@ -3239,6 +3287,10 @@ void GPBDictionaryReadEntry(id mapDictionary,
     _dictionary = [[NSMutableDictionary alloc] init];
     if (count && objects && keys) {
       for (NSUInteger i = 0; i < count; ++i) {
+        if (!objects[i]) {
+          [NSException raise:NSInvalidArgumentException
+                      format:@"Attempting to add nil object to a Dictionary"];
+        }
         [_dictionary setObject:objects[i] forKey:@(keys[i])];
       }
     }
@@ -3397,6 +3449,10 @@ void GPBDictionaryReadEntry(id mapDictionary,
 }
 
 - (void)setObject:(id)object forKey:(uint32_t)key {
+  if (!object) {
+    [NSException raise:NSInvalidArgumentException
+                format:@"Attempting to add nil object to a Dictionary"];
+  }
   [_dictionary setObject:object forKey:@(key)];
   if (_autocreator) {
     GPBAutocreatedDictionaryModified(_autocreator, self);
@@ -5195,6 +5251,10 @@ void GPBDictionaryReadEntry(id mapDictionary,
     _dictionary = [[NSMutableDictionary alloc] init];
     if (count && objects && keys) {
       for (NSUInteger i = 0; i < count; ++i) {
+        if (!objects[i]) {
+          [NSException raise:NSInvalidArgumentException
+                      format:@"Attempting to add nil object to a Dictionary"];
+        }
         [_dictionary setObject:objects[i] forKey:@(keys[i])];
       }
     }
@@ -5353,6 +5413,10 @@ void GPBDictionaryReadEntry(id mapDictionary,
 }
 
 - (void)setObject:(id)object forKey:(int32_t)key {
+  if (!object) {
+    [NSException raise:NSInvalidArgumentException
+                format:@"Attempting to add nil object to a Dictionary"];
+  }
   [_dictionary setObject:object forKey:@(key)];
   if (_autocreator) {
     GPBAutocreatedDictionaryModified(_autocreator, self);
@@ -7151,6 +7215,10 @@ void GPBDictionaryReadEntry(id mapDictionary,
     _dictionary = [[NSMutableDictionary alloc] init];
     if (count && objects && keys) {
       for (NSUInteger i = 0; i < count; ++i) {
+        if (!objects[i]) {
+          [NSException raise:NSInvalidArgumentException
+                      format:@"Attempting to add nil object to a Dictionary"];
+        }
         [_dictionary setObject:objects[i] forKey:@(keys[i])];
       }
     }
@@ -7309,6 +7377,10 @@ void GPBDictionaryReadEntry(id mapDictionary,
 }
 
 - (void)setObject:(id)object forKey:(uint64_t)key {
+  if (!object) {
+    [NSException raise:NSInvalidArgumentException
+                format:@"Attempting to add nil object to a Dictionary"];
+  }
   [_dictionary setObject:object forKey:@(key)];
   if (_autocreator) {
     GPBAutocreatedDictionaryModified(_autocreator, self);
@@ -9107,6 +9179,10 @@ void GPBDictionaryReadEntry(id mapDictionary,
     _dictionary = [[NSMutableDictionary alloc] init];
     if (count && objects && keys) {
       for (NSUInteger i = 0; i < count; ++i) {
+        if (!objects[i]) {
+          [NSException raise:NSInvalidArgumentException
+                      format:@"Attempting to add nil object to a Dictionary"];
+        }
         [_dictionary setObject:objects[i] forKey:@(keys[i])];
       }
     }
@@ -9265,6 +9341,10 @@ void GPBDictionaryReadEntry(id mapDictionary,
 }
 
 - (void)setObject:(id)object forKey:(int64_t)key {
+  if (!object) {
+    [NSException raise:NSInvalidArgumentException
+                format:@"Attempting to add nil object to a Dictionary"];
+  }
   [_dictionary setObject:object forKey:@(key)];
   if (_autocreator) {
     GPBAutocreatedDictionaryModified(_autocreator, self);
@@ -9336,6 +9416,10 @@ void GPBDictionaryReadEntry(id mapDictionary,
     _dictionary = [[NSMutableDictionary alloc] init];
     if (count && values && keys) {
       for (NSUInteger i = 0; i < count; ++i) {
+        if (!keys[i]) {
+          [NSException raise:NSInvalidArgumentException
+                      format:@"Attempting to add nil key to a Dictionary"];
+        }
         [_dictionary setObject:@(values[i]) forKey:keys[i]];
       }
     }
@@ -9474,6 +9558,10 @@ void GPBDictionaryReadEntry(id mapDictionary,
 }
 
 - (void)setValue:(uint32_t)value forKey:(NSString *)key {
+  if (!key) {
+    [NSException raise:NSInvalidArgumentException
+                format:@"Attempting to add nil key to a Dictionary"];
+  }
   [_dictionary setObject:@(value) forKey:key];
   if (_autocreator) {
     GPBAutocreatedDictionaryModified(_autocreator, self);
@@ -9542,6 +9630,10 @@ void GPBDictionaryReadEntry(id mapDictionary,
     _dictionary = [[NSMutableDictionary alloc] init];
     if (count && values && keys) {
       for (NSUInteger i = 0; i < count; ++i) {
+        if (!keys[i]) {
+          [NSException raise:NSInvalidArgumentException
+                      format:@"Attempting to add nil key to a Dictionary"];
+        }
         [_dictionary setObject:@(values[i]) forKey:keys[i]];
       }
     }
@@ -9680,6 +9772,10 @@ void GPBDictionaryReadEntry(id mapDictionary,
 }
 
 - (void)setValue:(int32_t)value forKey:(NSString *)key {
+  if (!key) {
+    [NSException raise:NSInvalidArgumentException
+                format:@"Attempting to add nil key to a Dictionary"];
+  }
   [_dictionary setObject:@(value) forKey:key];
   if (_autocreator) {
     GPBAutocreatedDictionaryModified(_autocreator, self);
@@ -9748,6 +9844,10 @@ void GPBDictionaryReadEntry(id mapDictionary,
     _dictionary = [[NSMutableDictionary alloc] init];
     if (count && values && keys) {
       for (NSUInteger i = 0; i < count; ++i) {
+        if (!keys[i]) {
+          [NSException raise:NSInvalidArgumentException
+                      format:@"Attempting to add nil key to a Dictionary"];
+        }
         [_dictionary setObject:@(values[i]) forKey:keys[i]];
       }
     }
@@ -9886,6 +9986,10 @@ void GPBDictionaryReadEntry(id mapDictionary,
 }
 
 - (void)setValue:(uint64_t)value forKey:(NSString *)key {
+  if (!key) {
+    [NSException raise:NSInvalidArgumentException
+                format:@"Attempting to add nil key to a Dictionary"];
+  }
   [_dictionary setObject:@(value) forKey:key];
   if (_autocreator) {
     GPBAutocreatedDictionaryModified(_autocreator, self);
@@ -9954,6 +10058,10 @@ void GPBDictionaryReadEntry(id mapDictionary,
     _dictionary = [[NSMutableDictionary alloc] init];
     if (count && values && keys) {
       for (NSUInteger i = 0; i < count; ++i) {
+        if (!keys[i]) {
+          [NSException raise:NSInvalidArgumentException
+                      format:@"Attempting to add nil key to a Dictionary"];
+        }
         [_dictionary setObject:@(values[i]) forKey:keys[i]];
       }
     }
@@ -10092,6 +10200,10 @@ void GPBDictionaryReadEntry(id mapDictionary,
 }
 
 - (void)setValue:(int64_t)value forKey:(NSString *)key {
+  if (!key) {
+    [NSException raise:NSInvalidArgumentException
+                format:@"Attempting to add nil key to a Dictionary"];
+  }
   [_dictionary setObject:@(value) forKey:key];
   if (_autocreator) {
     GPBAutocreatedDictionaryModified(_autocreator, self);
@@ -10160,6 +10272,10 @@ void GPBDictionaryReadEntry(id mapDictionary,
     _dictionary = [[NSMutableDictionary alloc] init];
     if (count && values && keys) {
       for (NSUInteger i = 0; i < count; ++i) {
+        if (!keys[i]) {
+          [NSException raise:NSInvalidArgumentException
+                      format:@"Attempting to add nil key to a Dictionary"];
+        }
         [_dictionary setObject:@(values[i]) forKey:keys[i]];
       }
     }
@@ -10298,6 +10414,10 @@ void GPBDictionaryReadEntry(id mapDictionary,
 }
 
 - (void)setValue:(BOOL)value forKey:(NSString *)key {
+  if (!key) {
+    [NSException raise:NSInvalidArgumentException
+                format:@"Attempting to add nil key to a Dictionary"];
+  }
   [_dictionary setObject:@(value) forKey:key];
   if (_autocreator) {
     GPBAutocreatedDictionaryModified(_autocreator, self);
@@ -10366,6 +10486,10 @@ void GPBDictionaryReadEntry(id mapDictionary,
     _dictionary = [[NSMutableDictionary alloc] init];
     if (count && values && keys) {
       for (NSUInteger i = 0; i < count; ++i) {
+        if (!keys[i]) {
+          [NSException raise:NSInvalidArgumentException
+                      format:@"Attempting to add nil key to a Dictionary"];
+        }
         [_dictionary setObject:@(values[i]) forKey:keys[i]];
       }
     }
@@ -10504,6 +10628,10 @@ void GPBDictionaryReadEntry(id mapDictionary,
 }
 
 - (void)setValue:(float)value forKey:(NSString *)key {
+  if (!key) {
+    [NSException raise:NSInvalidArgumentException
+                format:@"Attempting to add nil key to a Dictionary"];
+  }
   [_dictionary setObject:@(value) forKey:key];
   if (_autocreator) {
     GPBAutocreatedDictionaryModified(_autocreator, self);
@@ -10572,6 +10700,10 @@ void GPBDictionaryReadEntry(id mapDictionary,
     _dictionary = [[NSMutableDictionary alloc] init];
     if (count && values && keys) {
       for (NSUInteger i = 0; i < count; ++i) {
+        if (!keys[i]) {
+          [NSException raise:NSInvalidArgumentException
+                      format:@"Attempting to add nil key to a Dictionary"];
+        }
         [_dictionary setObject:@(values[i]) forKey:keys[i]];
       }
     }
@@ -10710,6 +10842,10 @@ void GPBDictionaryReadEntry(id mapDictionary,
 }
 
 - (void)setValue:(double)value forKey:(NSString *)key {
+  if (!key) {
+    [NSException raise:NSInvalidArgumentException
+                format:@"Attempting to add nil key to a Dictionary"];
+  }
   [_dictionary setObject:@(value) forKey:key];
   if (_autocreator) {
     GPBAutocreatedDictionaryModified(_autocreator, self);
@@ -10802,6 +10938,10 @@ void GPBDictionaryReadEntry(id mapDictionary,
     _validationFunc = (func != NULL ? func : DictDefault_IsValidValue);
     if (count && rawValues && keys) {
       for (NSUInteger i = 0; i < count; ++i) {
+        if (!keys[i]) {
+          [NSException raise:NSInvalidArgumentException
+                      format:@"Attempting to add nil key to a Dictionary"];
+        }
         [_dictionary setObject:@(rawValues[i]) forKey:keys[i]];
       }
     }
@@ -10982,6 +11122,10 @@ void GPBDictionaryReadEntry(id mapDictionary,
 }
 
 - (void)setRawValue:(int32_t)value forKey:(NSString *)key {
+  if (!key) {
+    [NSException raise:NSInvalidArgumentException
+                format:@"Attempting to add nil key to a Dictionary"];
+  }
   [_dictionary setObject:@(value) forKey:key];
   if (_autocreator) {
     GPBAutocreatedDictionaryModified(_autocreator, self);
@@ -10997,6 +11141,10 @@ void GPBDictionaryReadEntry(id mapDictionary,
 }
 
 - (void)setValue:(int32_t)value forKey:(NSString *)key {
+  if (!key) {
+    [NSException raise:NSInvalidArgumentException
+                format:@"Attempting to add nil key to a Dictionary"];
+  }
   if (!_validationFunc(value)) {
     [NSException raise:NSInvalidArgumentException
                 format:@"GPBStringEnumDictionary: Attempt to set an unknown enum value (%d)",
@@ -12754,6 +12902,10 @@ void GPBDictionaryReadEntry(id mapDictionary,
   self = [super init];
   if (self) {
     for (NSUInteger i = 0; i < count; ++i) {
+      if (!objects[i]) {
+        [NSException raise:NSInvalidArgumentException
+                    format:@"Attempting to add nil object to a Dictionary"];
+      }
       int idx = keys[i] ? 1 : 0;
       [_values[idx] release];
       _values[idx] = (id)[objects[i] retain];
@@ -12932,6 +13084,10 @@ void GPBDictionaryReadEntry(id mapDictionary,
 }
 
 - (void)setObject:(id)object forKey:(BOOL)key {
+  if (!object) {
+    [NSException raise:NSInvalidArgumentException
+                format:@"Attempting to add nil object to a Dictionary"];
+  }
   int idx = (key ? 1 : 0);
   [_values[idx] release];
   _values[idx] = [object retain];

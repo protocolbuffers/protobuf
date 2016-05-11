@@ -1,0 +1,49 @@
+# This is the list of conformance tests that are known to fail for the Java
+# implementation right now.  These should be fixed.
+#
+# By listing them here we can keep tabs on which ones are failing and be sure
+# that we don't introduce regressions in other tests.
+
+FieldMaskNumbersDontRoundTrip.JsonOutput
+FieldMaskPathsDontRoundTrip.JsonOutput
+FieldMaskTooManyUnderscore.JsonOutput
+JsonInput.AnyWithFieldMask.ProtobufOutput
+JsonInput.AnyWithValueForInteger.JsonOutput
+JsonInput.AnyWithValueForJsonObject.JsonOutput
+JsonInput.BoolFieldAllCapitalFalse
+JsonInput.BoolFieldAllCapitalTrue
+JsonInput.BoolFieldCamelCaseFalse
+JsonInput.BoolFieldCamelCaseTrue
+JsonInput.BoolFieldDoubleQuotedFalse
+JsonInput.BoolFieldDoubleQuotedTrue
+JsonInput.BoolMapFieldKeyNotQuoted
+JsonInput.DoubleFieldInfinityNotQuoted
+JsonInput.DoubleFieldNanNotQuoted
+JsonInput.DoubleFieldNegativeInfinityNotQuoted
+JsonInput.EnumFieldNotQuoted
+JsonInput.FieldMask.ProtobufOutput
+JsonInput.FieldMaskInvalidCharacter
+JsonInput.FieldNameDuplicate
+JsonInput.FieldNameInSnakeCase.JsonOutput
+JsonInput.FieldNameNotQuoted
+JsonInput.FloatFieldInfinityNotQuoted
+JsonInput.FloatFieldNanNotQuoted
+JsonInput.FloatFieldNegativeInfinityNotQuoted
+JsonInput.Int32FieldLeadingZero
+JsonInput.Int32FieldMinFloatValue.JsonOutput
+JsonInput.Int32FieldMinValue.JsonOutput
+JsonInput.Int32FieldNegativeWithLeadingZero
+JsonInput.Int32FieldPlusSign
+JsonInput.Int32MapFieldKeyNotQuoted
+JsonInput.Int64MapFieldKeyNotQuoted
+JsonInput.JsonWithComments
+JsonInput.OriginalProtoFieldName.JsonOutput
+JsonInput.RepeatedFieldWrongElementTypeExpectingStringsGotBool
+JsonInput.RepeatedFieldWrongElementTypeExpectingStringsGotInt
+JsonInput.StringFieldNotAString
+JsonInput.StringFieldSurrogateInWrongOrder
+JsonInput.StringFieldUnpairedHighSurrogate
+JsonInput.StringFieldUnpairedLowSurrogate
+JsonInput.StringFieldUppercaseEscapeLetter
+JsonInput.Uint32MapFieldKeyNotQuoted
+JsonInput.Uint64MapFieldKeyNotQuoted

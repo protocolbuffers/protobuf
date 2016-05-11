@@ -53,10 +53,15 @@
 //   3. testee sends 4-byte length M (little endian)
 //   4. testee sends M bytes representing a ConformanceResponse proto
 
+#include <algorithm>
 #include <errno.h>
-#include <unistd.h>
 #include <fstream>
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <unistd.h>
 #include <vector>
+
+#include <google/protobuf/stubs/stringprintf.h>
 
 #include "conformance.pb.h"
 #include "conformance_test.h"
@@ -64,6 +69,7 @@
 using conformance::ConformanceRequest;
 using conformance::ConformanceResponse;
 using google::protobuf::internal::scoped_array;
+using google::protobuf::StringAppendF;
 using std::string;
 using std::vector;
 
@@ -80,17 +86,47 @@ using std::vector;
 class ForkPipeRunner : public google::protobuf::ConformanceTestRunner {
  public:
   ForkPipeRunner(const std::string &executable)
-      : executable_(executable), running_(false) {}
+      : child_pid_(-1), executable_(executable) {}
 
-  void RunTest(const std::string& request, std::string* response) {
-    if (!running_) {
+  virtual ~ForkPipeRunner() {}
+
+  void RunTest(const std::string& test_name,
+               const std::string& request,
+               std::string* response) {
+    if (child_pid_ < 0) {
       SpawnTestProgram();
     }
+
+    current_test_name_ = test_name;
 
     uint32_t len = request.size();
     CheckedWrite(write_fd_, &len, sizeof(uint32_t));
     CheckedWrite(write_fd_, request.c_str(), request.size());
-    CheckedRead(read_fd_, &len, sizeof(uint32_t));
+
+    if (!TryRead(read_fd_, &len, sizeof(uint32_t))) {
+      // We failed to read from the child, assume a crash and try to reap.
+      GOOGLE_LOG(INFO) << "Trying to reap child, pid=" << child_pid_;
+
+      int status;
+      waitpid(child_pid_, &status, WEXITED);
+
+      string error_msg;
+      if (WIFEXITED(status)) {
+        StringAppendF(&error_msg,
+                      "child exited, status=%d", WEXITSTATUS(status));
+      } else if (WIFSIGNALED(status)) {
+        StringAppendF(&error_msg,
+                      "child killed by signal %d", WTERMSIG(status));
+      }
+      GOOGLE_LOG(INFO) << error_msg;
+      child_pid_ = -1;
+
+      conformance::ConformanceResponse response_obj;
+      response_obj.set_runtime_error(error_msg);
+      response_obj.SerializeToString(response);
+      return;
+    }
+
     response->resize(len);
     CheckedRead(read_fd_, (void*)response->c_str(), len);
   }
@@ -134,7 +170,7 @@ class ForkPipeRunner : public google::protobuf::ConformanceTestRunner {
       CHECK_SYSCALL(close(fromproc_pipe_fd[1]));
       write_fd_ = toproc_pipe_fd[1];
       read_fd_ = fromproc_pipe_fd[0];
-      running_ = true;
+      child_pid_ = pid;
     } else {
       // Child.
       CHECK_SYSCALL(close(STDIN_FILENO));
@@ -158,30 +194,48 @@ class ForkPipeRunner : public google::protobuf::ConformanceTestRunner {
 
   void CheckedWrite(int fd, const void *buf, size_t len) {
     if (write(fd, buf, len) != len) {
-      GOOGLE_LOG(FATAL) << "Error writing to test program: " << strerror(errno);
+      GOOGLE_LOG(FATAL) << current_test_name_
+                        << ": error writing to test program: "
+                        << strerror(errno);
     }
   }
 
-  void CheckedRead(int fd, void *buf, size_t len) {
+  bool TryRead(int fd, void *buf, size_t len) {
     size_t ofs = 0;
     while (len > 0) {
       ssize_t bytes_read = read(fd, (char*)buf + ofs, len);
 
       if (bytes_read == 0) {
-        GOOGLE_LOG(FATAL) << "Unexpected EOF from test program";
+        GOOGLE_LOG(ERROR) << current_test_name_
+                          << ": unexpected EOF from test program";
+        return false;
       } else if (bytes_read < 0) {
-        GOOGLE_LOG(FATAL) << "Error reading from test program: " << strerror(errno);
+        GOOGLE_LOG(ERROR) << current_test_name_
+                          << ": error reading from test program: "
+                          << strerror(errno);
+        return false;
       }
 
       len -= bytes_read;
       ofs += bytes_read;
     }
+
+    return true;
+  }
+
+  void CheckedRead(int fd, void *buf, size_t len) {
+    if (!TryRead(fd, buf, len)) {
+      GOOGLE_LOG(FATAL) << current_test_name_
+                        << ": error reading from test program: "
+                        << strerror(errno);
+    }
   }
 
   int write_fd_;
   int read_fd_;
-  bool running_;
+  pid_t child_pid_;
   std::string executable_;
+  std::string current_test_name_;
 };
 
 void UsageError() {
@@ -202,6 +256,12 @@ void UsageError() {
 
 void ParseFailureList(const char *filename, vector<string>* failure_list) {
   std::ifstream infile(filename);
+
+  if (!infile.is_open()) {
+    fprintf(stderr, "Couldn't open failure list file: %s\n", filename);
+    exit(1);
+  }
+
   for (string line; getline(infile, line);) {
     // Remove whitespace.
     line.erase(std::remove_if(line.begin(), line.end(), ::isspace),
@@ -217,16 +277,15 @@ void ParseFailureList(const char *filename, vector<string>* failure_list) {
 }
 
 int main(int argc, char *argv[]) {
-  int arg = 1;
   char *program;
   google::protobuf::ConformanceTestSuite suite;
+
+  vector<string> failure_list;
 
   for (int arg = 1; arg < argc; ++arg) {
     if (strcmp(argv[arg], "--failure_list") == 0) {
       if (++arg == argc) UsageError();
-      vector<string> failure_list;
       ParseFailureList(argv[arg], &failure_list);
-      suite.SetFailureList(failure_list);
     } else if (strcmp(argv[arg], "--verbose") == 0) {
       suite.SetVerbose(true);
     } else if (argv[arg][0] == '-') {
@@ -241,6 +300,7 @@ int main(int argc, char *argv[]) {
     }
   }
 
+  suite.SetFailureList(failure_list);
   ForkPipeRunner runner(program);
 
   std::string output;

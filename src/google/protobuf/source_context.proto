@@ -27,15 +27,16 @@
 // THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
 syntax = "proto3";
 
 package google.protobuf;
 
-option java_multiple_files = true;
-option java_outer_classname = "SourceContextProto";
-option java_package = "com.google.protobuf";
-option java_generate_equals_and_hash = true;
 option csharp_namespace = "Google.Protobuf.WellKnownTypes";
+option java_package = "com.google.protobuf";
+option java_outer_classname = "SourceContextProto";
+option java_multiple_files = true;
+option java_generate_equals_and_hash = true;
 option objc_class_prefix = "GPB";
 
 // `SourceContext` represents information about the source of a

@@ -114,14 +114,14 @@ void ExtensionGenerator::GenerateStaticVariablesInitialization(
 
   printer->Print(vars,
                  "{\n"
-                 "  .singletonName = GPBStringifySymbol($root_class_and_method_name$),\n"
-                 "  .dataType = $extension_type$,\n"
-                 "  .extendedClass = GPBStringifySymbol($extended_type$),\n"
-                 "  .fieldNumber = $number$,\n"
                  "  .defaultValue.$default_name$ = $default$,\n"
+                 "  .singletonName = GPBStringifySymbol($root_class_and_method_name$),\n"
+                 "  .extendedClass = GPBStringifySymbol($extended_type$),\n"
                  "  .messageOrGroupClassName = $type$,\n"
-                 "  .options = $options$,\n"
                  "  .enumDescriptorFunc = $enum_desc_func_name$,\n"
+                 "  .fieldNumber = $number$,\n"
+                 "  .dataType = $extension_type$,\n"
+                 "  .options = $options$,\n"
                  "},\n");
 }
 

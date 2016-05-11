@@ -44,7 +44,11 @@ if RUBY_PLATFORM == "java"
   require 'json'
   require 'google/protobuf_java'
 else
-  require 'google/protobuf_c'
+  begin
+    require "google/#{RUBY_VERSION.sub(/\.\d$/, '')}/protobuf_c"
+  rescue LoadError
+    require 'google/protobuf_c'
+  end
 end
 
 require 'google/protobuf/repeated_field'

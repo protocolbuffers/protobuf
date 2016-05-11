@@ -736,19 +736,13 @@ TEST_F(TokenizerTest, ParseInteger) {
   EXPECT_EQ(0, ParseInteger("0x"));
 
   uint64 i;
-#ifdef PROTOBUF_HAS_DEATH_TEST  // death tests do not work on Windows yet
+
   // Test invalid integers that will never be tokenized as integers.
-  EXPECT_DEBUG_DEATH(Tokenizer::ParseInteger("zxy", kuint64max, &i),
-    "passed text that could not have been tokenized as an integer");
-  EXPECT_DEBUG_DEATH(Tokenizer::ParseInteger("1.2", kuint64max, &i),
-    "passed text that could not have been tokenized as an integer");
-  EXPECT_DEBUG_DEATH(Tokenizer::ParseInteger("08", kuint64max, &i),
-    "passed text that could not have been tokenized as an integer");
-  EXPECT_DEBUG_DEATH(Tokenizer::ParseInteger("0xg", kuint64max, &i),
-    "passed text that could not have been tokenized as an integer");
-  EXPECT_DEBUG_DEATH(Tokenizer::ParseInteger("-1", kuint64max, &i),
-    "passed text that could not have been tokenized as an integer");
-#endif  // PROTOBUF_HAS_DEATH_TEST
+  EXPECT_FALSE(Tokenizer::ParseInteger("zxy", kuint64max, &i));
+  EXPECT_FALSE(Tokenizer::ParseInteger("1.2", kuint64max, &i));
+  EXPECT_FALSE(Tokenizer::ParseInteger("08", kuint64max, &i));
+  EXPECT_FALSE(Tokenizer::ParseInteger("0xg", kuint64max, &i));
+  EXPECT_FALSE(Tokenizer::ParseInteger("-1", kuint64max, &i));
 
   // Test overflows.
   EXPECT_TRUE (Tokenizer::ParseInteger("0", 0, &i));
@@ -874,6 +868,8 @@ inline ostream& operator<<(ostream& out,
 ErrorCase kErrorCases[] = {
   // String errors.
   { "'\\l' foo", true,
+    "0:2: Invalid escape sequence in string literal.\n" },
+  { "'\\X' foo", true,
     "0:2: Invalid escape sequence in string literal.\n" },
   { "'\\x' foo", true,
     "0:3: Expected hex digits for escape sequence.\n" },

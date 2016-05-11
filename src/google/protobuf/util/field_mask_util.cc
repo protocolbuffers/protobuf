@@ -52,6 +52,82 @@ void FieldMaskUtil::FromString(StringPiece str, FieldMask* out) {
   }
 }
 
+bool FieldMaskUtil::SnakeCaseToCamelCase(StringPiece input, string* output) {
+  output->clear();
+  bool after_underscore = false;
+  for (int i = 0; i < input.size(); ++i) {
+    if (input[i] >= 'A' && input[i] <= 'Z') {
+      // The field name must not contain uppercase letters.
+      return false;
+    }
+    if (after_underscore) {
+      if (input[i] >= 'a' && input[i] <= 'z') {
+        output->push_back(input[i] + 'A' - 'a');
+        after_underscore = false;
+      } else {
+        // The character after a "_" must be a lowercase letter.
+        return false;
+      }
+    } else if (input[i] == '_') {
+      after_underscore = true;
+    } else {
+      output->push_back(input[i]);
+    }
+  }
+  if (after_underscore) {
+    // Trailing "_".
+    return false;
+  }
+  return true;
+}
+
+bool FieldMaskUtil::CamelCaseToSnakeCase(StringPiece input, string* output) {
+  output->clear();
+  for (int i = 0; i < input.size(); ++i) {
+    if (input[i] == '_') {
+      // The field name must not contain "_"s.
+      return false;
+    }
+    if (input[i] >= 'A' && input[i] <= 'Z') {
+      output->push_back('_');
+      output->push_back(input[i] + 'a' - 'A');
+    } else {
+      output->push_back(input[i]);
+    }
+  }
+  return true;
+}
+
+bool FieldMaskUtil::ToJsonString(const FieldMask& mask, string* out) {
+  out->clear();
+  for (int i = 0; i < mask.paths_size(); ++i) {
+    const string& path = mask.paths(i);
+    string camelcase_path;
+    if (!SnakeCaseToCamelCase(path, &camelcase_path)) {
+      return false;
+    }
+    if (i > 0) {
+      out->push_back(',');
+    }
+    out->append(camelcase_path);
+  }
+  return true;
+}
+
+bool FieldMaskUtil::FromJsonString(StringPiece str, FieldMask* out) {
+  out->Clear();
+  vector<string> paths = Split(str, ",");
+  for (int i = 0; i < paths.size(); ++i) {
+    if (paths[i].empty()) continue;
+    string snakecase_path;
+    if (!CamelCaseToSnakeCase(paths[i], &snakecase_path)) {
+      return false;
+    }
+    out->add_paths(snakecase_path);
+  }
+  return true;
+}
+
 bool FieldMaskUtil::InternalIsValidPath(const Descriptor* descriptor,
                                         StringPiece path) {
   vector<string> parts = Split(path, ".");
@@ -103,7 +179,7 @@ class FieldMaskTree {
   // Add a field path into the tree. In a FieldMask, each field path matches
   // the specified field and also all its sub-fields. If the field path to
   // add is a sub-path of an existing field path in the tree (i.e., a leaf
-  // node), it means the tree already matchesthe the given path so nothing will
+  // node), it means the tree already matches the given path so nothing will
   // be added to the tree. If the path matches an existing non-leaf node in the
   // tree, that non-leaf node will be turned into a leaf node with all its
   // children removed because the path matches all the node's children.

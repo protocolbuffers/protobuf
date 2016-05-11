@@ -43,8 +43,8 @@ namespace Google.Protobuf
             NegativeEnumMessage msg = new NegativeEnumMessage
             {
                 Value = NegativeEnum.MinusOne,
-                Values = { NegativeEnum.NEGATIVE_ENUM_ZERO, NegativeEnum.MinusOne, NegativeEnum.FiveBelow },
-                PackedValues = { NegativeEnum.NEGATIVE_ENUM_ZERO, NegativeEnum.MinusOne, NegativeEnum.FiveBelow }
+                Values = { NegativeEnum.Zero, NegativeEnum.MinusOne, NegativeEnum.FiveBelow },
+                PackedValues = { NegativeEnum.Zero, NegativeEnum.MinusOne, NegativeEnum.FiveBelow }
             };
 
             Assert.AreEqual(58, msg.CalculateSize());

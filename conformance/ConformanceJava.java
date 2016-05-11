@@ -1,9 +1,12 @@
 
 import com.google.protobuf.conformance.Conformance;
+import com.google.protobuf.util.JsonFormat;
+import com.google.protobuf.util.JsonFormat.TypeRegistry;
 import com.google.protobuf.InvalidProtocolBufferException;
 
 class ConformanceJava {
   private int testCount = 0;
+  private TypeRegistry typeRegistry;
 
   private boolean readFromStdin(byte[] buf, int len) throws Exception {
     int ofs = 0;
@@ -29,7 +32,10 @@ class ConformanceJava {
     if (!readFromStdin(buf, 4)) {
       return -1;
     }
-    return buf[0] | (buf[1] << 1) | (buf[2] << 2) | (buf[3] << 3);
+    return (buf[0] & 0xff)
+        | ((buf[1] & 0xff) << 8)
+        | ((buf[2] & 0xff) << 16)
+        | ((buf[3] & 0xff) << 24);
   }
 
   private void writeLittleEndianIntToStdout(int val) throws Exception {
@@ -54,7 +60,15 @@ class ConformanceJava {
         break;
       }
       case JSON_PAYLOAD: {
-        return Conformance.ConformanceResponse.newBuilder().setSkipped("JSON not yet supported.").build();
+        try {
+          Conformance.TestAllTypes.Builder builder = Conformance.TestAllTypes.newBuilder();
+          JsonFormat.parser().usingTypeRegistry(typeRegistry)
+              .merge(request.getJsonPayload(), builder);
+          testMessage = builder.build();
+        } catch (InvalidProtocolBufferException e) {
+          return Conformance.ConformanceResponse.newBuilder().setParseError(e.getMessage()).build();
+        }
+        break;
       }
       case PAYLOAD_NOT_SET: {
         throw new RuntimeException("Request didn't have payload.");
@@ -73,7 +87,13 @@ class ConformanceJava {
         return Conformance.ConformanceResponse.newBuilder().setProtobufPayload(testMessage.toByteString()).build();
 
       case JSON:
-        return Conformance.ConformanceResponse.newBuilder().setSkipped("JSON not yet supported.").build();
+        try {
+          return Conformance.ConformanceResponse.newBuilder().setJsonPayload(
+              JsonFormat.printer().usingTypeRegistry(typeRegistry).print(testMessage)).build();
+        } catch (InvalidProtocolBufferException | IllegalArgumentException e) {
+          return Conformance.ConformanceResponse.newBuilder().setSerializeError(
+              e.getMessage()).build();
+        }
 
       default: {
         throw new RuntimeException("Unexpected request output.");
@@ -106,8 +126,10 @@ class ConformanceJava {
   }
 
   public void run() throws Exception {
+    typeRegistry = TypeRegistry.newBuilder().add(
+        Conformance.TestAllTypes.getDescriptor()).build();
     while (doTestIo()) {
-      // Empty.
+      this.testCount++;
     }
 
     System.err.println("ConformanceJava: received EOF from test runner after " +

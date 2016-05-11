@@ -58,8 +58,12 @@ public class TimeUtil {
   private static final long MILLIS_PER_SECOND = 1000;
   private static final long MICROS_PER_SECOND = 1000000;
 
-  private static final SimpleDateFormat timestampFormat =
-    createTimestampFormat();
+  private static final ThreadLocal<SimpleDateFormat> timestampFormat =
+      new ThreadLocal<SimpleDateFormat>() {
+        protected SimpleDateFormat initialValue() {
+          return createTimestampFormat();
+        }
+      };
 
   private static SimpleDateFormat createTimestampFormat() {
     SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
@@ -96,7 +100,7 @@ public class TimeUtil {
       throw new IllegalArgumentException("Timestamp is out of range.");
     }
     Date date = new Date(timestamp.getSeconds() * MILLIS_PER_SECOND);
-    result.append(timestampFormat.format(date));
+    result.append(timestampFormat.get().format(date));
     // Format the nanos part.
     if (timestamp.getNanos() < 0 || timestamp.getNanos() >= NANOS_PER_SECOND) {
       throw new IllegalArgumentException("Timestamp has invalid nanos value.");
@@ -147,7 +151,7 @@ public class TimeUtil {
       secondValue = timeValue.substring(0, pointPosition);
       nanoValue = timeValue.substring(pointPosition + 1);
     }
-    Date date = timestampFormat.parse(secondValue);
+    Date date = timestampFormat.get().parse(secondValue);
     long seconds = date.getTime() / MILLIS_PER_SECOND;
     int nanos = nanoValue.isEmpty() ? 0 : parseNanos(nanoValue);
     // Parse timezone offsets.

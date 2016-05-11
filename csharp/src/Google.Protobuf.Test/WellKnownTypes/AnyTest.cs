@@ -47,6 +47,24 @@ namespace Google.Protobuf.WellKnownTypes
         }
 
         [Test]
+        public void Pack_WithCustomPrefix()
+        {
+            var message = SampleMessages.CreateFullTestAllTypes();
+            var any = Any.Pack(message, "foo.bar/baz");
+            Assert.AreEqual("foo.bar/baz/protobuf_unittest.TestAllTypes", any.TypeUrl);
+            Assert.AreEqual(message.CalculateSize(), any.Value.Length);
+        }
+
+        [Test]
+        public void Pack_WithCustomPrefixTrailingSlash()
+        {
+            var message = SampleMessages.CreateFullTestAllTypes();
+            var any = Any.Pack(message, "foo.bar/baz/");
+            Assert.AreEqual("foo.bar/baz/protobuf_unittest.TestAllTypes", any.TypeUrl);
+            Assert.AreEqual(message.CalculateSize(), any.Value.Length);
+        }
+
+        [Test]
         public void Unpack_WrongType()
         {
             var message = SampleMessages.CreateFullTestAllTypes();
@@ -61,6 +79,38 @@ namespace Google.Protobuf.WellKnownTypes
             var any = Any.Pack(message);
             var unpacked = any.Unpack<TestAllTypes>();
             Assert.AreEqual(message, unpacked);
+        }
+
+        [Test]
+        public void Unpack_CustomPrefix_Success()
+        {
+            var message = SampleMessages.CreateFullTestAllTypes();
+            var any = Any.Pack(message, "foo.bar/baz");
+            var unpacked = any.Unpack<TestAllTypes>();
+            Assert.AreEqual(message, unpacked);
+        }
+
+        [Test]
+        public void ToString_WithValues()
+        {
+            var message = SampleMessages.CreateFullTestAllTypes();
+            var any = Any.Pack(message);
+            var text = any.ToString();
+            Assert.That(text, Is.StringContaining("\"@value\": \"" + message.ToByteString().ToBase64() + "\""));
+        }
+
+        [Test]
+        public void ToString_Empty()
+        {
+            var any = new Any();
+            Assert.AreEqual("{ \"@type\": \"\", \"@value\": \"\" }", any.ToString());
+        }
+
+        [Test]
+        public void ToString_MessageContainingAny()
+        {
+            var message = new TestWellKnownTypes { AnyField = new Any() };
+            Assert.AreEqual("{ \"anyField\": { \"@type\": \"\", \"@value\": \"\" } }", message.ToString());
         }
     }
 }

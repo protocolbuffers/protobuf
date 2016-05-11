@@ -190,7 +190,6 @@ const int kUnknownTypeId = 1550055;
     TestMessageSetExtension1* message = [TestMessageSetExtension1 message];
     message.i = 123;
     item.message = [message data];
-    raw.itemArray = [NSMutableArray array];
     [raw.itemArray addObject:item];
   }
 

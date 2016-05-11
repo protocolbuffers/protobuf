@@ -31,7 +31,7 @@
 #import "GPBUnknownField_PackagePrivate.h"
 
 #import "GPBArray.h"
-#import "GPBCodedOutputStream.h"
+#import "GPBCodedOutputStream_PackagePrivate.h"
 
 @implementation GPBUnknownField {
  @protected
@@ -39,8 +39,8 @@
   GPBUInt64Array *mutableVarintList_;
   GPBUInt32Array *mutableFixed32List_;
   GPBUInt64Array *mutableFixed64List_;
-  NSMutableArray *mutableLengthDelimitedList_;
-  NSMutableArray *mutableGroupList_;
+  NSMutableArray<NSData*> *mutableLengthDelimitedList_;
+  NSMutableArray<GPBUnknownFieldSet*> *mutableGroupList_;
 }
 
 @synthesize number = number_;

@@ -42,9 +42,10 @@ import six
 import struct
 
 try:
-  import unittest2 as unittest
+  import unittest2 as unittest  #PY26
 except ImportError:
   import unittest
+
 from google.protobuf import unittest_import_pb2
 from google.protobuf import unittest_mset_pb2
 from google.protobuf import unittest_pb2
@@ -119,11 +120,13 @@ class ReflectionTest(unittest.TestCase):
     proto = unittest_pb2.TestAllTypes(
         optional_int32=24,
         optional_double=54.321,
-        optional_string='optional_string')
+        optional_string='optional_string',
+        optional_float=None)
 
     self.assertEqual(24, proto.optional_int32)
     self.assertEqual(54.321, proto.optional_double)
     self.assertEqual('optional_string', proto.optional_string)
+    self.assertFalse(proto.HasField("optional_float"))
 
   def testRepeatedScalarConstructor(self):
     # Constructor with only repeated scalar types should succeed.
@@ -131,12 +134,14 @@ class ReflectionTest(unittest.TestCase):
         repeated_int32=[1, 2, 3, 4],
         repeated_double=[1.23, 54.321],
         repeated_bool=[True, False, False],
-        repeated_string=["optional_string"])
+        repeated_string=["optional_string"],
+        repeated_float=None)
 
     self.assertEqual([1, 2, 3, 4], list(proto.repeated_int32))
     self.assertEqual([1.23, 54.321], list(proto.repeated_double))
     self.assertEqual([True, False, False], list(proto.repeated_bool))
     self.assertEqual(["optional_string"], list(proto.repeated_string))
+    self.assertEqual([], list(proto.repeated_float))
 
   def testRepeatedCompositeConstructor(self):
     # Constructor with only repeated composite types should succeed.
@@ -187,7 +192,8 @@ class ReflectionTest(unittest.TestCase):
         repeated_foreign_message=[
             unittest_pb2.ForeignMessage(c=-43),
             unittest_pb2.ForeignMessage(c=45324),
-            unittest_pb2.ForeignMessage(c=12)])
+            unittest_pb2.ForeignMessage(c=12)],
+        optional_nested_message=None)
 
     self.assertEqual(24, proto.optional_int32)
     self.assertEqual('optional_string', proto.optional_string)
@@ -204,6 +210,7 @@ class ReflectionTest(unittest.TestCase):
          unittest_pb2.ForeignMessage(c=45324),
          unittest_pb2.ForeignMessage(c=12)],
         list(proto.repeated_foreign_message))
+    self.assertFalse(proto.HasField("optional_nested_message"))
 
   def testConstructorTypeError(self):
     self.assertRaises(
@@ -2394,8 +2401,10 @@ class SerializationTest(unittest.TestCase):
     extension_message2 = message_set_extensions_pb2.TestMessageSetExtension2
     extension1 = extension_message1.message_set_extension
     extension2 = extension_message2.message_set_extension
+    extension3 = message_set_extensions_pb2.message_set_extension3
     proto.Extensions[extension1].i = 123
     proto.Extensions[extension2].str = 'foo'
+    proto.Extensions[extension3].text = 'bar'
 
     # Serialize using the MessageSet wire format (this is specified in the
     # .proto file).
@@ -2407,7 +2416,7 @@ class SerializationTest(unittest.TestCase):
     self.assertEqual(
         len(serialized),
         raw.MergeFromString(serialized))
-    self.assertEqual(2, len(raw.item))
+    self.assertEqual(3, len(raw.item))
 
     message1 = message_set_extensions_pb2.TestMessageSetExtension1()
     self.assertEqual(
@@ -2421,6 +2430,12 @@ class SerializationTest(unittest.TestCase):
         message2.MergeFromString(raw.item[1].message))
     self.assertEqual('foo', message2.str)
 
+    message3 = message_set_extensions_pb2.TestMessageSetExtension3()
+    self.assertEqual(
+        len(raw.item[2].message),
+        message3.MergeFromString(raw.item[2].message))
+    self.assertEqual('bar', message3.text)
+
     # Deserialize using the MessageSet wire format.
     proto2 = message_set_extensions_pb2.TestMessageSet()
     self.assertEqual(
@@ -2428,6 +2443,7 @@ class SerializationTest(unittest.TestCase):
         proto2.MergeFromString(serialized))
     self.assertEqual(123, proto2.Extensions[extension1].i)
     self.assertEqual('foo', proto2.Extensions[extension2].str)
+    self.assertEqual('bar', proto2.Extensions[extension3].text)
 
     # Check byte size.
     self.assertEqual(proto2.ByteSize(), len(serialized))
@@ -2757,9 +2773,10 @@ class SerializationTest(unittest.TestCase):
   def testInitArgsUnknownFieldName(self):
     def InitalizeEmptyMessageWithExtraKeywordArg():
       unused_proto = unittest_pb2.TestEmptyMessage(unknown='unknown')
-    self._CheckRaises(ValueError,
-                      InitalizeEmptyMessageWithExtraKeywordArg,
-                      'Protocol message has no "unknown" field.')
+    self._CheckRaises(
+        ValueError,
+        InitalizeEmptyMessageWithExtraKeywordArg,
+        'Protocol message TestEmptyMessage has no "unknown" field.')
 
   def testInitRequiredKwargs(self):
     proto = unittest_pb2.TestRequired(a=1, b=1, c=1)

@@ -60,7 +60,6 @@ Example usage:
 """
 
 
-from google.protobuf import descriptor as _descriptor
 from google.protobuf import descriptor_pool
 
 
@@ -73,37 +72,12 @@ class SymbolDatabase(object):
   buffer types used within a program.
   """
 
-  # pylint: disable=protected-access
-  if _descriptor._USE_C_DESCRIPTORS:
-
-    def __new__(cls):
-      raise TypeError("Instances of SymbolDatabase cannot be created")
-
-    @classmethod
-    def _CreateDefaultDatabase(cls):
-      self = object.__new__(cls)  # Bypass the __new__ above.
-      # Don't call __init__() and initialize here.
-      self._symbols = {}
-      self._symbols_by_file = {}
-      # As of today all descriptors are registered and retrieved from
-      # _message.default_pool (see FileDescriptor.__new__), so it's not
-      # necessary to use another pool.
-      self.pool = _descriptor._message.default_pool
-      return self
-  # pylint: enable=protected-access
-
-  else:
-
-    @classmethod
-    def _CreateDefaultDatabase(cls):
-      return cls()
-
-  def __init__(self):
+  def __init__(self, pool=None):
     """Constructor."""
 
     self._symbols = {}
     self._symbols_by_file = {}
-    self.pool = descriptor_pool.DescriptorPool()
+    self.pool = pool or descriptor_pool.Default()
 
   def RegisterMessage(self, message):
     """Registers the given message type in the local database.
@@ -203,7 +177,7 @@ class SymbolDatabase(object):
       result.update(self._symbols_by_file[f])
     return result
 
-_DEFAULT = SymbolDatabase._CreateDefaultDatabase()
+_DEFAULT = SymbolDatabase(pool=descriptor_pool.Default())
 
 
 def Default():

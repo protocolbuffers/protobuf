@@ -458,6 +458,61 @@ void Parser::SkipRestOfBlock() {
 
 // ===================================================================
 
+bool Parser::ValidateEnum(const EnumDescriptorProto* proto) {
+  bool has_allow_alias = false;
+  bool allow_alias = false;
+
+  for (int i = 0; i < proto->options().uninterpreted_option_size(); i++) {
+    const UninterpretedOption option = proto->options().uninterpreted_option(i);
+    if (option.name_size() > 1) {
+      continue;
+    }
+    if (!option.name(0).is_extension() &&
+        option.name(0).name_part() == "allow_alias") {
+      has_allow_alias = true;
+      if (option.identifier_value() == "true") {
+        allow_alias = true;
+      }
+      break;
+    }
+  }
+
+  if (has_allow_alias && !allow_alias) {
+    string error =
+        "\"" + proto->name() +
+        "\" declares 'option allow_alias = false;' which has no effect. "
+        "Please remove the declaration.";
+    // This needlessly clutters declarations with nops.
+    AddError(error);
+    return false;
+  }
+
+  set<int> used_values;
+  bool has_duplicates = false;
+  for (int i = 0; i < proto->value_size(); ++i) {
+    const EnumValueDescriptorProto enum_value = proto->value(i);
+    if (used_values.find(enum_value.number()) != used_values.end()) {
+      has_duplicates = true;
+      break;
+    } else {
+      used_values.insert(enum_value.number());
+    }
+  }
+  if (allow_alias && !has_duplicates) {
+    string error =
+        "\"" + proto->name() +
+        "\" declares support for enum aliases but no enum values share field "
+        "numbers. Please remove the unnecessary 'option allow_alias = true;' "
+        "declaration.";
+    // Generate an error if an enum declares support for duplicate enum values
+    // and does not use it protect future authors.
+    AddError(error);
+    return false;
+  }
+
+  return true;
+}
+
 bool Parser::Parse(io::Tokenizer* input, FileDescriptorProto* file) {
   input_ = input;
   had_errors_ = false;
@@ -489,9 +544,9 @@ bool Parser::Parse(io::Tokenizer* input, FileDescriptorProto* file) {
       // Store the syntax into the file.
       if (file != NULL) file->set_syntax(syntax_identifier_);
     } else if (!stop_after_syntax_identifier_) {
-      GOOGLE_LOG(WARNING) << "No syntax specified for the proto file. "
-                   << "Please use 'syntax = \"proto2\";' or "
-                   << "'syntax = \"proto3\";' to specify a syntax "
+      GOOGLE_LOG(WARNING) << "No syntax specified for the proto file: "
+                   << file->name() << ". Please use 'syntax = \"proto2\";' "
+                   << "or 'syntax = \"proto3\";' to specify a syntax "
                    << "version. (Defaulted to proto2 syntax.)";
       syntax_identifier_ = "proto2";
     }
@@ -1627,6 +1682,9 @@ bool Parser::ParseEnumDefinition(EnumDescriptorProto* enum_type,
   }
 
   DO(ParseEnumBlock(enum_type, enum_location, containing_file));
+
+  DO(ValidateEnum(enum_type));
+
   return true;
 }
 

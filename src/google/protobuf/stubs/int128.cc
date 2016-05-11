@@ -31,7 +31,7 @@
 #include <google/protobuf/stubs/int128.h>
 
 #include <iomanip>
-#include <iostream>  // NOLINT(readability/streams)
+#include <ostream>  // NOLINT(readability/streams)
 #include <sstream>
 
 namespace google {

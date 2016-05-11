@@ -82,6 +82,41 @@ class LIBPROTOBUF_EXPORT ProtoStreamObjectSource : public ObjectSource {
 
   virtual util::Status NamedWriteTo(StringPiece name, ObjectWriter* ow) const;
 
+  // Sets whether or not to use lowerCamelCase casing for enum values. If set to
+  // false, enum values are output without any case conversions.
+  //
+  // For example, if we have an enum:
+  // enum Type {
+  //   ACTION_AND_ADVENTURE = 1;
+  // }
+  // Type type = 20;
+  //
+  // And this option is set to true. Then the rendered "type" field will have
+  // the string "actionAndAdventure".
+  // {
+  //   ...
+  //   "type": "actionAndAdventure",
+  //   ...
+  // }
+  //
+  // If set to false, the rendered "type" field will have the string
+  // "ACTION_AND_ADVENTURE".
+  // {
+  //   ...
+  //   "type": "ACTION_AND_ADVENTURE",
+  //   ...
+  // }
+  void set_use_lower_camel_for_enums(bool value) {
+    use_lower_camel_for_enums_ = value;
+  }
+
+  // Sets the max recursion depth of proto message to be deserialized. Proto
+  // messages over this depth will fail to be deserialized.
+  // Default value is 64.
+  void set_max_recursion_depth(int max_depth) {
+    max_recursion_depth_ = max_depth;
+  }
+
  protected:
   // Writes a proto2 Message to the ObjectWriter. When the given end_tag is
   // found this method will complete, allowing it to be used for parsing both
@@ -122,19 +157,11 @@ class LIBPROTOBUF_EXPORT ProtoStreamObjectSource : public ObjectSource {
                                      StringPiece name, uint32 list_tag,
                                      ObjectWriter* ow) const;
 
-  // Renders an entry in a map, advancing stream pointers appropriately.
-  util::Status RenderMapEntry(const google::protobuf::Type* type,
-                                ObjectWriter* ow) const;
-
   // Renders a packed repeating field. A packed field is stored as:
   // {tag length item1 item2 item3} instead of the less efficient
   // {tag item1 tag item2 tag item3}.
   util::Status RenderPacked(const google::protobuf::Field* field,
                               ObjectWriter* ow) const;
-
-  // Equivalent of RenderPacked, but for map entries.
-  util::Status RenderPackedMapEntry(const google::protobuf::Type* type,
-                                      ObjectWriter* ow) const;
 
   // Renders a google.protobuf.Timestamp value to ObjectWriter
   static util::Status RenderTimestamp(const ProtoStreamObjectSource* os,
@@ -210,6 +237,12 @@ class LIBPROTOBUF_EXPORT ProtoStreamObjectSource : public ObjectSource {
   util::Status RenderField(const google::protobuf::Field* field,
                              StringPiece field_name, ObjectWriter* ow) const;
 
+  // Same as above but renders all non-message field types. Callers don't call
+  // this function directly. They just use RenderField.
+  util::Status RenderNonMessageField(const google::protobuf::Field* field,
+                                       StringPiece field_name,
+                                       ObjectWriter* ow) const;
+
 
   // Reads field value according to Field spec in 'field' and returns the read
   // value as string. This only works for primitive datatypes (no message
@@ -225,6 +258,12 @@ class LIBPROTOBUF_EXPORT ProtoStreamObjectSource : public ObjectSource {
   std::pair<int64, int32> ReadSecondsAndNanos(
       const google::protobuf::Type& type) const;
 
+  // Helper function to check recursion depth and increment it. It will return
+  // Status::OK if the current depth is allowed. Otherwise an error is returned.
+  // type_name and field_name are used for error reporting.
+  util::Status IncrementRecursionDepth(StringPiece type_name,
+                                         StringPiece field_name) const;
+
   // Input stream to read from. Ownership rests with the caller.
   google::protobuf::io::CodedInputStream* stream_;
 
@@ -237,6 +276,16 @@ class LIBPROTOBUF_EXPORT ProtoStreamObjectSource : public ObjectSource {
 
   // google::protobuf::Type of the message source.
   const google::protobuf::Type& type_;
+
+
+  // Whether to render enums using lowerCamelCase. Defaults to false.
+  bool use_lower_camel_for_enums_;
+
+  // Tracks current recursion depth.
+  mutable int recursion_depth_;
+
+  // Maximum allowed recursion depth.
+  int max_recursion_depth_;
 
   GOOGLE_DISALLOW_IMPLICIT_CONSTRUCTORS(ProtoStreamObjectSource);
 };

@@ -10,10 +10,10 @@ This directory contains the Objective C Protocol Buffers runtime library.
 Requirements
 ------------
 
-The Objective C implemention requires:
+The Objective C implementation requires:
 
 - Objective C 2.0 Runtime (32bit & 64bit iOS, 64bit OS X).
-- Xcode 6.3 (or later).
+- Xcode 7.0 (or later).
 - The library code does *not* use ARC (for performance reasons), but it all can
   be called from ARC code.
 

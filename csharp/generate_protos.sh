@@ -3,20 +3,10 @@
 # You first need to make sure protoc has been built (see instructions on
 # building protoc in root of this repository)
 
-# This script performs a few fix-ups as part of generation. These are:
-# - descriptor.proto is renamed to descriptor_proto_file.proto before
-#   generation, to avoid the naming collision between the class for the file
-#   descriptor and its Descriptor property
-# - This change also impacts UnittestCustomOptions, which expects to
-#   use a class of Descriptor when it's actually been renamed to
-#   DescriptorProtoFile.
-# - Issue 307 (codegen for double-nested types) breaks Unittest.proto and
-#   its lite equivalents.
-
 set -ex
 
 # cd to repository root
-cd $(dirname $0)/..
+pushd $(dirname $0)/..
 
 # Protocol buffer compiler to use. If the PROTOC variable is set,
 # use that. Otherwise, probe for expected locations under both
@@ -68,5 +58,5 @@ $PROTOC -Icsharp/protos --csharp_out=csharp/src/Google.Protobuf.Test \
 $PROTOC -Iexamples --csharp_out=csharp/src/AddressBook \
     examples/addressbook.proto
 
-$PROTOC -Iconformance --csharp_out=csharp/src/Google.Protobuf.Conformance \
+$PROTOC -Iconformance -Isrc --csharp_out=csharp/src/Google.Protobuf.Conformance \
     conformance/conformance.proto

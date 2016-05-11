@@ -24,11 +24,11 @@ set(libprotoc_files
   ${protobuf_source_dir}/src/google/protobuf/compiler/csharp/csharp_message.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/csharp/csharp_message_field.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/csharp/csharp_primitive_field.cc
+  ${protobuf_source_dir}/src/google/protobuf/compiler/csharp/csharp_reflection_class.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/csharp/csharp_repeated_enum_field.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/csharp/csharp_repeated_message_field.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/csharp/csharp_repeated_primitive_field.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/csharp/csharp_source_generator_base.cc
-  ${protobuf_source_dir}/src/google/protobuf/compiler/csharp/csharp_umbrella_class.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/csharp/csharp_wrapper_field.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/java/java_context.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/java/java_doc_comment.cc
@@ -37,6 +37,7 @@ set(libprotoc_files
   ${protobuf_source_dir}/src/google/protobuf/compiler/java/java_enum_field_lite.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/java/java_enum_lite.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/java/java_extension.cc
+  ${protobuf_source_dir}/src/google/protobuf/compiler/java/java_extension_lite.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/java/java_field.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/java/java_file.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/java/java_generator.cc
@@ -70,6 +71,7 @@ set(libprotoc_files
   ${protobuf_source_dir}/src/google/protobuf/compiler/javanano/javanano_message.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/javanano/javanano_message_field.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/javanano/javanano_primitive_field.cc
+  ${protobuf_source_dir}/src/google/protobuf/compiler/js/js_generator.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/objectivec/objectivec_enum.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/objectivec/objectivec_enum_field.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/objectivec/objectivec_extension.cc
@@ -90,8 +92,15 @@ set(libprotoc_files
   ${protobuf_source_dir}/src/google/protobuf/compiler/zip_writer.cc
 )
 
-add_library(libprotoc ${libprotoc_files})
+add_library(libprotoc ${protobuf_SHARED_OR_STATIC}
+  ${libprotoc_files})
 target_link_libraries(libprotoc libprotobuf)
+if(MSVC AND protobuf_BUILD_SHARED_LIBS)
+  target_compile_definitions(libprotoc
+    PUBLIC  PROTOBUF_USE_DLLS
+    PRIVATE LIBPROTOC_EXPORTS)
+endif()
 set_target_properties(libprotoc PROPERTIES
     COMPILE_DEFINITIONS LIBPROTOC_EXPORTS
-    OUTPUT_NAME ${LIB_PREFIX}protoc)
+    OUTPUT_NAME ${LIB_PREFIX}protoc
+    DEBUG_POSTFIX "${protobuf_DEBUG_POSTFIX}")

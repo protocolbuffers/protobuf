@@ -2074,7 +2074,6 @@
 
   // Add an uninitialized message.
   TestRequired *subMsg = [[TestRequired alloc] init];
-  msg.mapField = [GPBInt32ObjectDictionary dictionary];
   [msg.mapField setObject:subMsg forKey:0];
   XCTAssertFalse(msg.initialized);
 

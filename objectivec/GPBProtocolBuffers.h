@@ -41,6 +41,7 @@
 #import "GPBUnknownField.h"
 #import "GPBUnknownFieldSet.h"
 #import "GPBUtilities.h"
+#import "GPBWellKnownTypes.h"
 #import "GPBWireFormat.h"
 
 // Well-known proto types

@@ -10,7 +10,7 @@
   </parent>
   <groupId>com.google.protobuf.nano</groupId>
   <artifactId>protobuf-javanano</artifactId>
-  <version>3.0.0-alpha-4</version>
+  <version>3.0.0-alpha-6</version>
   <packaging>bundle</packaging>
   <name>Protocol Buffer JavaNano API</name>
   <description>
@@ -165,7 +165,7 @@
           <instructions>
             <Bundle-DocURL>https://developers.google.com/protocol-buffers/</Bundle-DocURL>
             <Bundle-SymbolicName>com.google.protobuf</Bundle-SymbolicName>
-            <Export-Package>com.google.protobuf;version=3.0.0-alpha-4</Export-Package>
+            <Export-Package>com.google.protobuf;version=3.0.0-alpha-5</Export-Package>
           </instructions>
         </configuration>
       </plugin>
