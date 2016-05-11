@@ -83,12 +83,15 @@ class LIBPROTOBUF_EXPORT DataPiece {
   explicit DataPiece(const double value) : type_(TYPE_DOUBLE), double_(value) {}
   explicit DataPiece(const float value) : type_(TYPE_FLOAT), float_(value) {}
   explicit DataPiece(const bool value) : type_(TYPE_BOOL), bool_(value) {}
-  explicit DataPiece(StringPiece value)
+  DataPiece(StringPiece value, bool use_strict_base64_decoding)
       : type_(TYPE_STRING),
-        str_(StringPiecePod::CreateFromStringPiece(value)) {}
+        str_(StringPiecePod::CreateFromStringPiece(value)),
+        use_strict_base64_decoding_(use_strict_base64_decoding) {}
   // Constructor for bytes. The second parameter is not used.
-  explicit DataPiece(StringPiece value, bool dummy)
-      : type_(TYPE_BYTES), str_(StringPiecePod::CreateFromStringPiece(value)) {}
+  DataPiece(StringPiece value, bool dummy, bool use_strict_base64_decoding)
+      : type_(TYPE_BYTES),
+        str_(StringPiecePod::CreateFromStringPiece(value)),
+        use_strict_base64_decoding_(use_strict_base64_decoding) {}
   DataPiece(const DataPiece& r) : type_(r.type_), str_(r.str_) {}
   DataPiece& operator=(const DataPiece& x) {
     type_ = x.type_;
@@ -165,32 +168,13 @@ class LIBPROTOBUF_EXPORT DataPiece {
   template <typename To>
   util::StatusOr<To> StringToNumber(bool (*func)(StringPiece, To*)) const;
 
+  // Decodes a base64 string. Returns true on success.
+  bool DecodeBase64(StringPiece src, string* dest) const;
+
   // Data type for this piece of data.
   Type type_;
 
-  // StringPiece is not a POD and can not be used in an union (pre C++11). We
-  // need a POD version of it.
-  struct StringPiecePod {
-    const char* data;
-    int size;
-
-    // Create from a StringPiece.
-    static StringPiecePod CreateFromStringPiece(StringPiece str) {
-      StringPiecePod pod;
-      pod.data = str.data();
-      pod.size = str.size();
-      return pod;
-    }
-
-    // Cast to StringPiece.
-    operator StringPiece() const { return StringPiece(data, size); }
-
-    bool operator==(const char* value) const {
-      return StringPiece(data, size) == StringPiece(value);
-    }
-
-    string ToString() const { return string(data, size); }
-  };
+  typedef ::google::protobuf::internal::StringPiecePod StringPiecePod;
 
   // Stored piece of data.
   union {
@@ -203,6 +187,9 @@ class LIBPROTOBUF_EXPORT DataPiece {
     bool bool_;
     StringPiecePod str_;
   };
+
+  // Uses a stricter version of base64 decoding for byte fields.
+  bool use_strict_base64_decoding_;
 };
 
 }  // namespace converter

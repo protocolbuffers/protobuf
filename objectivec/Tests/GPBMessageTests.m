@@ -1947,4 +1947,76 @@
                  EnumTestMsg_MyEnum_NegTwo);
 }
 
+- (void)testOneBasedEnumHolder {
+  // Test case for https://github.com/google/protobuf/issues/1453
+  // Message with no explicit defaults, but a non zero default for an enum.
+  MessageWithOneBasedEnum *enumMsg = [MessageWithOneBasedEnum message];
+  XCTAssertEqual(enumMsg.enumField, MessageWithOneBasedEnum_OneBasedEnum_One);
+}
+
+- (void)testBoolOffsetUsage {
+  // Bools use storage within has_bits; this test ensures that this is honored
+  // in all places where things should crash or fail based on reading out of
+  // field storage instead.
+  BoolOnlyMessage *msg1 = [BoolOnlyMessage message];
+  BoolOnlyMessage *msg2 = [BoolOnlyMessage message];
+
+  msg1.boolField1 = YES;
+  msg2.boolField1 = YES;
+  msg1.boolField3 = YES;
+  msg2.boolField3 = YES;
+  msg1.boolField5 = YES;
+  msg2.boolField5 = YES;
+  msg1.boolField7 = YES;
+  msg2.boolField7 = YES;
+  msg1.boolField9 = YES;
+  msg2.boolField9 = YES;
+  msg1.boolField11 = YES;
+  msg2.boolField11 = YES;
+  msg1.boolField13 = YES;
+  msg2.boolField13 = YES;
+  msg1.boolField15 = YES;
+  msg2.boolField15 = YES;
+  msg1.boolField17 = YES;
+  msg2.boolField17 = YES;
+  msg1.boolField19 = YES;
+  msg2.boolField19 = YES;
+  msg1.boolField21 = YES;
+  msg2.boolField21 = YES;
+  msg1.boolField23 = YES;
+  msg2.boolField23 = YES;
+  msg1.boolField25 = YES;
+  msg2.boolField25 = YES;
+  msg1.boolField27 = YES;
+  msg2.boolField27 = YES;
+  msg1.boolField29 = YES;
+  msg2.boolField29 = YES;
+  msg1.boolField31 = YES;
+  msg2.boolField31 = YES;
+
+  msg1.boolField32 = YES;
+  msg2.boolField32 = YES;
+
+  XCTAssertTrue(msg1 != msg2); // Different pointers.
+  XCTAssertEqual([msg1 hash], [msg2 hash]);
+  XCTAssertEqualObjects(msg1, msg2);
+
+  BoolOnlyMessage *msg1Prime = [[msg1 copy] autorelease];
+  XCTAssertTrue(msg1Prime != msg1); // Different pointers.
+  XCTAssertEqual([msg1 hash], [msg1Prime hash]);
+  XCTAssertEqualObjects(msg1, msg1Prime);
+
+  // Field set in one, but not the other means they don't match (even if
+  // set to default value).
+  msg1Prime.boolField2 = NO;
+  XCTAssertNotEqualObjects(msg1Prime, msg1);
+  // And when set to different values.
+  msg1.boolField2 = YES;
+  XCTAssertNotEqualObjects(msg1Prime, msg1);
+  // And then they match again.
+  msg1.boolField2 = NO;
+  XCTAssertEqualObjects(msg1Prime, msg1);
+  XCTAssertEqual([msg1 hash], [msg1Prime hash]);
+}
+
 @end

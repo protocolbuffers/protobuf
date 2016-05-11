@@ -61,15 +61,6 @@ public final class UnknownFieldSetLite {
   public static UnknownFieldSetLite getDefaultInstance() {
     return DEFAULT_INSTANCE;
   }
-
-  /**
-   * Returns an empty {@code UnknownFieldSetLite.Builder}.
-   *
-   * <p>For use by generated code only.
-   */
-  public static Builder newBuilder() {
-    return new Builder();
-  }
   
   /**
    * Returns a new mutable instance.
@@ -262,6 +253,21 @@ public final class UnknownFieldSetLite {
     return hashCode;
   }
 
+  /**
+   * Prints a String representation of the unknown field set.
+   *
+   * <p>For use by generated code only.
+   *
+   * @param buffer the buffer to write to
+   * @param indent the number of spaces the fields should be indented by
+   */
+  final void printWithIndent(StringBuilder buffer, int indent) {
+    for (int i = 0; i < count; i++) {
+      int fieldNumber = WireFormat.getTagFieldNumber(tags[i]);
+      MessageLiteToString.printField(buffer, indent, String.valueOf(fieldNumber), objects[i]);
+    }
+  }
+
   private void storeField(int tag, Object value) {
     ensureCapacity();
     
@@ -368,91 +374,5 @@ public final class UnknownFieldSetLite {
       }
     }
     return this;
-  }
-  
-  /**
-   * Builder for {@link UnknownFieldSetLite}s.
-   *
-   * <p>Use {@link UnknownFieldSet#newBuilder()} to construct a {@code Builder}.
-   *
-   * <p>For use by generated code only.
-   */
-  // TODO(dweis): Update the mutable API to no longer need this builder and delete.
-  public static final class Builder {
-
-    private UnknownFieldSetLite set;
-    
-    private Builder() {
-      this.set = null;
-    }
-
-    /**
-     * Ensures internal state is initialized for use.
-     */
-    private void ensureNotBuilt() {
-      if (set == null) {
-        set = new UnknownFieldSetLite();
-      }
-      
-      set.checkMutable();
-    }
-    
-    /**
-     * Parse a single field from {@code input} and merge it into this set.
-     *
-     * <p>For use by generated code only.
-     *
-     * @param tag The field's tag number, which was already parsed.
-     * @return {@code false} if the tag is an end group tag.
-     */
-    boolean mergeFieldFrom(final int tag, final CodedInputStream input) throws IOException {
-      ensureNotBuilt();
-      return set.mergeFieldFrom(tag, input);
-    }
-
-    /**
-     * Convenience method for merging a new field containing a single varint
-     * value. This is used in particular when an unknown enum value is
-     * encountered.
-     *
-     * <p>For use by generated code only.
-     */
-    Builder mergeVarintField(int fieldNumber, int value) {
-      ensureNotBuilt();
-      set.mergeVarintField(fieldNumber, value);
-      return this;
-    }
-    
-    /**
-     * Convenience method for merging a length-delimited field.
-     *
-     * <p>For use by generated code only.
-     */
-    public Builder mergeLengthDelimitedField(final int fieldNumber, final ByteString value) {
-      ensureNotBuilt();  
-      set.mergeLengthDelimitedField(fieldNumber, value);
-      return this;
-    }
-    
-    /**
-     * Build the {@link UnknownFieldSetLite} and return it.
-     *
-     * <p>Once {@code build()} has been called, the {@code Builder} will no
-     * longer be usable.  Calling any method after {@code build()} will result
-     * in undefined behavior and can cause an
-     * {@code UnsupportedOperationException} to be thrown.
-     *
-     * <p>For use by generated code only.
-     */
-    public UnknownFieldSetLite build() {
-      if (set == null) {
-        return DEFAULT_INSTANCE;
-      }
-      
-      set.checkMutable();
-      set.makeImmutable();
-
-      return set;
-    }
   }
 }

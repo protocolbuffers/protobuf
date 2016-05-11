@@ -244,7 +244,7 @@ class RepeatedField {
   int total_size_;
   struct Rep {
     Arena* arena;
-    Element  elements[1];
+    Element elements[1];
   };
   // We can not use sizeof(Rep) - sizeof(Element) due to the trailing padding on
   // the struct. We can not use sizeof(Arena*) as well because there might be
@@ -271,6 +271,22 @@ class RepeatedField {
   // Internal helper expected by Arena methods.
   inline Arena* GetArenaNoVirtual() const {
     return (rep_ == NULL) ? NULL : rep_->arena;
+  }
+
+  // Internal helper to delete all elements and deallocate the storage.
+  // If Element has a trivial destructor (for example, if it's a fundamental
+  // type, like int32), the loop will be removed by the optimizer.
+  void InternalDeallocate(Rep* rep, int size) {
+    if (rep != NULL) {
+      Element* e = &rep->elements[0];
+      Element* limit = &rep->elements[size];
+      for (; e < limit; e++) {
+        e->Element::~Element();
+      }
+      if (rep->arena == NULL) {
+        delete[] reinterpret_cast<char*>(rep);
+      }
+    }
   }
 };
 
@@ -610,6 +626,13 @@ inline void* GenericTypeHandler<MessageLite>::GetMaybeArenaPointer(
 template <>
 void GenericTypeHandler<MessageLite>::Merge(const MessageLite& from,
                                             MessageLite* to);
+template<>
+inline void GenericTypeHandler<string>::Clear(string* value) {
+  value->clear();
+}
+template<>
+void GenericTypeHandler<string>::Merge(const string& from,
+                                       string* to);
 
 // Declarations of the specialization as we cannot define them here, as the
 // header that defines ProtocolMessage depends on types defined in this header.
@@ -836,6 +859,15 @@ class RepeatedPtrField : public internal::RepeatedPtrFieldBase {
   // Add an already-allocated object, skipping arena-ownership checks. The user
   // must guarantee that the given object is in the same arena as this
   // RepeatedPtrField.
+  // It is also useful in legacy code that uses temporary ownership to avoid
+  // copies. Example:
+  // RepeatedPtrField<T> temp_field;
+  // temp_field.AddAllocated(new T);
+  // ... // Do something with temp_field
+  // temp_field.ExtractSubrange(0, temp_field.size(), NULL);
+  // If you put temp_field on the arena this fails, because the ownership
+  // transfers to the arena at the "AddAllocated" call and is not released
+  // anymore causing a double delete. UnsafeArenaAddAllocated prevents this.
   void UnsafeArenaAddAllocated(Element* value);
 
   // Remove the last element and return it.  Works only when operating on an
@@ -992,19 +1024,8 @@ RepeatedField<Element>::RepeatedField(Iter begin, const Iter& end)
 template <typename Element>
 RepeatedField<Element>::~RepeatedField() {
   // See explanation in Reserve(): we need to invoke destructors here for the
-  // case that Element has a non-trivial destructor. If Element has a trivial
-  // destructor (for example, if it's a primitive type, like int32), this entire
-  // loop will be removed by the optimizer.
-  if (rep_ != NULL) {
-    Element* e = &rep_->elements[0];
-    Element* limit = &rep_->elements[total_size_];
-    for (; e < limit; e++) {
-      e->Element::~Element();
-    }
-    if (rep_->arena == NULL) {
-      delete[] reinterpret_cast<char*>(rep_);
-    }
-  }
+  // case that Element has a non-trivial destructor.
+  InternalDeallocate(rep_, total_size_);
 }
 
 template <typename Element>
@@ -1240,8 +1261,8 @@ void RepeatedField<Element>::Reserve(int new_size) {
   if (total_size_ >= new_size) return;
   Rep* old_rep = rep_;
   Arena* arena = GetArenaNoVirtual();
-  new_size = max(google::protobuf::internal::kMinRepeatedFieldAllocationSize,
-                 max(total_size_ * 2, new_size));
+  new_size = std::max(google::protobuf::internal::kMinRepeatedFieldAllocationSize,
+                      std::max(total_size_ * 2, new_size));
   GOOGLE_CHECK_LE(static_cast<size_t>(new_size),
            (std::numeric_limits<size_t>::max() - kRepHeaderSize) /
            sizeof(Element))
@@ -1274,18 +1295,10 @@ void RepeatedField<Element>::Reserve(int new_size) {
   if (current_size_ > 0) {
     MoveArray(rep_->elements, old_rep->elements, current_size_);
   }
-  if (old_rep) {
-    // Likewise, we need to invoke destructors on the old array. If Element has
-    // no destructor, this loop will disappear.
-    e = &old_rep->elements[0];
-    limit = &old_rep->elements[old_total_size];
-    for (; e < limit; e++) {
-      e->Element::~Element();
-    }
-    if (arena == NULL) {
-      delete[] reinterpret_cast<char*>(old_rep);
-    }
-  }
+
+  // Likewise, we need to invoke destructors on the old array.
+  InternalDeallocate(old_rep, old_total_size);
+
 }
 
 template <typename Element>
@@ -2380,6 +2393,37 @@ template<typename T> class AllocatedRepeatedPtrFieldBackInsertIterator
  private:
   RepeatedPtrField<T>* field_;
 };
+
+// Almost identical to AllocatedRepeatedPtrFieldBackInsertIterator. This one
+// uses the UnsafeArenaAddAllocated instead.
+template<typename T>
+class UnsafeArenaAllocatedRepeatedPtrFieldBackInsertIterator
+    : public std::iterator<std::output_iterator_tag, T> {
+ public:
+  explicit UnsafeArenaAllocatedRepeatedPtrFieldBackInsertIterator(
+    ::google::protobuf::RepeatedPtrField<T>* const mutable_field)
+  : field_(mutable_field) {
+  }
+  UnsafeArenaAllocatedRepeatedPtrFieldBackInsertIterator<T>& operator=(
+    T const* const ptr_to_value) {
+    field_->UnsafeArenaAddAllocated(const_cast<T*>(ptr_to_value));
+    return *this;
+  }
+  UnsafeArenaAllocatedRepeatedPtrFieldBackInsertIterator<T>& operator*() {
+    return *this;
+  }
+  UnsafeArenaAllocatedRepeatedPtrFieldBackInsertIterator<T>& operator++() {
+    return *this;
+  }
+  UnsafeArenaAllocatedRepeatedPtrFieldBackInsertIterator<T>& operator++(
+      int /* unused */) {
+    return *this;
+  }
+
+ private:
+  ::google::protobuf::RepeatedPtrField<T>* field_;
+};
+
 }  // namespace internal
 
 // Provides a back insert iterator for RepeatedField instances,
@@ -2411,6 +2455,25 @@ template<typename T> internal::AllocatedRepeatedPtrFieldBackInsertIterator<T>
 AllocatedRepeatedPtrFieldBackInserter(
     RepeatedPtrField<T>* const mutable_field) {
   return internal::AllocatedRepeatedPtrFieldBackInsertIterator<T>(
+      mutable_field);
+}
+
+// Similar to AllocatedRepeatedPtrFieldBackInserter, using
+// UnsafeArenaAddAllocated instead of AddAllocated.
+// This is slightly faster if that matters. It is also useful in legacy code
+// that uses temporary ownership to avoid copies. Example:
+// RepeatedPtrField<T> temp_field;
+// temp_field.AddAllocated(new T);
+// ... // Do something with temp_field
+// temp_field.ExtractSubrange(0, temp_field.size(), NULL);
+// If you put temp_field on the arena this fails, because the ownership
+// transfers to the arena at the "AddAllocated" call and is not released anymore
+// causing a double delete. Using UnsafeArenaAddAllocated prevents this.
+template<typename T>
+internal::UnsafeArenaAllocatedRepeatedPtrFieldBackInsertIterator<T>
+UnsafeArenaAllocatedRepeatedPtrFieldBackInserter(
+    ::google::protobuf::RepeatedPtrField<T>* const mutable_field) {
+  return internal::UnsafeArenaAllocatedRepeatedPtrFieldBackInsertIterator<T>(
       mutable_field);
 }
 

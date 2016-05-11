@@ -10,8 +10,6 @@
 #   to make when building protoc.  This is particularly useful for passing
 #   -j4 to run 4 jobs simultaneously.
 
-set -e
-
 if test ! -e src/google/protobuf/stubs/common.h; then
   cat >&2 << __EOF__
 Could not find source code.  Make sure you are running this script from the
@@ -52,9 +50,14 @@ do
   echo "Round $PROCESS_ROUND"
   CORE_PROTO_IS_CORRECT=1
 
-  make $@ protoc &&
-    ./protoc --cpp_out=dllexport_decl=LIBPROTOBUF_EXPORT:$TMP ${RUNTIME_PROTO_FILES[@]} && \
-    ./protoc --cpp_out=dllexport_decl=LIBPROTOC_EXPORT:$TMP google/protobuf/compiler/plugin.proto
+  make $@ protoc
+  if test $? -ne 0; then
+    echo "Failed to build protoc."
+    exit 1
+  fi
+
+  ./protoc --cpp_out=dllexport_decl=LIBPROTOBUF_EXPORT:$TMP ${RUNTIME_PROTO_FILES[@]} && \
+  ./protoc --cpp_out=dllexport_decl=LIBPROTOC_EXPORT:$TMP google/protobuf/compiler/plugin.proto
 
   for PROTO_FILE in ${RUNTIME_PROTO_FILES[@]}; do
     BASE_NAME=${PROTO_FILE%.*}
@@ -92,9 +95,9 @@ do
 done
 cd ..
 
-if test -x objectivec/generate_descriptors_proto.sh; then
+if test -x objectivec/generate_well_known_types.sh; then
   echo "Generating messages for objc."
-  objectivec/generate_descriptors_proto.sh $@
+  objectivec/generate_well_known_types.sh $@
 fi
 
 if test -x csharp/generate_protos.sh; then

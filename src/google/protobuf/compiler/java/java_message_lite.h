@@ -54,7 +54,8 @@ class ImmutableMessageLiteGenerator : public MessageGenerator {
   virtual void Generate(io::Printer* printer);
   virtual void GenerateInterface(io::Printer* printer);
   virtual void GenerateExtensionRegistrationCode(io::Printer* printer);
-  virtual void GenerateStaticVariables(io::Printer* printer);
+  virtual void GenerateStaticVariables(
+      io::Printer* printer, int* bytecode_estimate);
   virtual int GenerateStaticVariableInitializers(io::Printer* printer);
 
  private:
@@ -69,12 +70,13 @@ class ImmutableMessageLiteGenerator : public MessageGenerator {
   void GenerateBuilder(io::Printer* printer);
   void GenerateDynamicMethodIsInitialized(io::Printer* printer);
   void GenerateDynamicMethodMakeImmutable(io::Printer* printer);
-  void GenerateDynamicMethodMergeFrom(io::Printer* printer);
+  void GenerateDynamicMethodVisit(io::Printer* printer);
+  void GenerateDynamicMethodMergeFromStream(io::Printer* printer);
   void GenerateDynamicMethodNewBuilder(io::Printer* printer);
   void GenerateInitializers(io::Printer* printer);
   void GenerateEqualsAndHashCode(io::Printer* printer);
   void GenerateParser(io::Printer* printer);
-  void GenerateParsingConstructor(io::Printer* printer);
+  void GenerateConstructor(io::Printer* printer);
 
   Context* context_;
   ClassNameResolver* name_resolver_;

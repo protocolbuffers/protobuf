@@ -180,7 +180,7 @@ jspb.BinaryReader.prototype.getCursor = function() {
 
 /**
  * Returns the raw buffer.
- * @return {Uint8Array} The raw buffer.
+ * @return {?Uint8Array} The raw buffer.
  */
 jspb.BinaryReader.prototype.getBuffer = function() {
   return this.decoder_.getBuffer();
@@ -592,8 +592,8 @@ jspb.BinaryReader.prototype.getFieldDecoder = function() {
   var start = this.decoder_.getCursor();
   var end = start + length;
 
-  var innerDecoder = jspb.BinaryDecoder.alloc(this.decoder_.getBuffer(),
-                                                 start, length);
+  var innerDecoder =
+      jspb.BinaryDecoder.alloc(this.decoder_.getBuffer(), start, length);
   this.decoder_.setCursor(end);
   return innerDecoder;
 };
@@ -869,7 +869,7 @@ jspb.BinaryReader.prototype.readString = function() {
  * Reads a length-prefixed block of bytes from the binary stream, or returns
  * null if the next field in the stream has an invalid length value.
  *
- * @return {Uint8Array} The block of bytes.
+ * @return {!Uint8Array} The block of bytes.
  */
 jspb.BinaryReader.prototype.readBytes = function() {
   goog.asserts.assert(

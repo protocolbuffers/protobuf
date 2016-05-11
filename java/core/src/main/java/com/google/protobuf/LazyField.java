@@ -39,14 +39,14 @@ import java.util.Map.Entry;
  *
  * Most of key methods are implemented in {@link LazyFieldLite} but this class
  * can contain default instance of the message to provide {@code hashCode()},
- * {@code equals()} and {@code toString()}.
+ * {@code euqals()} and {@code toString()}.
  *
  * @author xiangl@google.com (Xiang Li)
  */
 public class LazyField extends LazyFieldLite {
 
   /**
-   * Carry a message's default instance which is used by {@code hashCode()}, {@code equals()} and
+   * Carry a message's default instance which is used by {@code hashCode()}, {@code euqals()} and
    * {@code toString()}.
    */
   private final MessageLite defaultInstance;
@@ -95,12 +95,12 @@ public class LazyField extends LazyFieldLite {
       this.entry = entry;
     }
 
-    // @Override
+    @Override
     public K getKey() {
       return entry.getKey();
     }
 
-    // @Override
+    @Override
     public Object getValue() {
       LazyField field = entry.getValue();
       if (field == null) {
@@ -113,7 +113,7 @@ public class LazyField extends LazyFieldLite {
       return entry.getValue();
     }
 
-    // @Override
+    @Override
     public Object setValue(Object value) {
       if (!(value instanceof MessageLite)) {
         throw new IllegalArgumentException(
@@ -131,13 +131,13 @@ public class LazyField extends LazyFieldLite {
       this.iterator = iterator;
     }
 
-    // @Override
+    @Override
     public boolean hasNext() {
       return iterator.hasNext();
     }
 
+    @Override
     @SuppressWarnings("unchecked")
-    // @Override
     public Entry<K, Object> next() {
       Entry<K, ?> entry = iterator.next();
       if (entry.getValue() instanceof LazyField) {
@@ -146,7 +146,7 @@ public class LazyField extends LazyFieldLite {
       return (Entry<K, Object>) entry;
     }
 
-    // @Override
+    @Override
     public void remove() {
       iterator.remove();
     }

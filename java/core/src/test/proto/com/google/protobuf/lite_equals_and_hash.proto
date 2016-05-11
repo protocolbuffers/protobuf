@@ -34,10 +34,14 @@ syntax = "proto2";
 
 package protobuf_unittest.lite_equals_and_hash;
 
-// This proto definition is used to test that java_generate_equals_and_hash
-// works correctly with the LITE_RUNTIME.
-option java_generate_equals_and_hash = true;
 option optimize_for = LITE_RUNTIME;
+
+message TestOneofEquals {
+  oneof oneof_field {
+    string name = 1;
+    int32 value = 2;
+  }
+}
 
 message Foo {
   optional int32 value = 1;
@@ -70,3 +74,8 @@ extend Foo {
   }
 }
 
+message TestRecursiveOneof {
+  oneof Foo {
+    TestRecursiveOneof r = 1;
+  }
+}

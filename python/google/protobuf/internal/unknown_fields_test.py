@@ -36,7 +36,7 @@
 __author__ = 'bohdank@google.com (Bohdan Koval)'
 
 try:
-  import unittest2 as unittest
+  import unittest2 as unittest  #PY26
 except ImportError:
   import unittest
 from google.protobuf import unittest_mset_pb2
@@ -118,6 +118,26 @@ class UnknownFieldsTest(unittest.TestCase):
     self.all_fields.ClearField('optional_string')
     message.ParseFromString(self.all_fields.SerializeToString())
     self.assertNotEqual(self.empty_message, message)
+
+  def testDiscardUnknownFields(self):
+    self.empty_message.DiscardUnknownFields()
+    self.assertEqual(b'', self.empty_message.SerializeToString())
+    # Test message field and repeated message field.
+    message = unittest_pb2.TestAllTypes()
+    other_message = unittest_pb2.TestAllTypes()
+    other_message.optional_string = 'discard'
+    message.optional_nested_message.ParseFromString(
+        other_message.SerializeToString())
+    message.repeated_nested_message.add().ParseFromString(
+        other_message.SerializeToString())
+    self.assertNotEqual(
+        b'', message.optional_nested_message.SerializeToString())
+    self.assertNotEqual(
+        b'', message.repeated_nested_message[0].SerializeToString())
+    message.DiscardUnknownFields()
+    self.assertEqual(b'', message.optional_nested_message.SerializeToString())
+    self.assertEqual(
+        b'', message.repeated_nested_message[0].SerializeToString())
 
 
 class UnknownFieldsAccessorsTest(unittest.TestCase):

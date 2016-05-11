@@ -92,11 +92,10 @@ PyObject* PyString_FromCppString(const string& str) {
 // TODO(amauryfa): Change the proto2 compiler to remove the assignments, and
 // remove this hack.
 bool _CalledFromGeneratedFile(int stacklevel) {
-  PyThreadState *state = PyThreadState_GET();
-  if (state == NULL) {
-    return false;
-  }
-  PyFrameObject* frame = state->frame;
+#ifndef PYPY_VERSION
+  // This check is not critical and is somewhat difficult to implement correctly
+  // in PyPy.
+  PyFrameObject* frame = PyEval_GetFrame();
   if (frame == NULL) {
     return false;
   }
@@ -130,6 +129,7 @@ bool _CalledFromGeneratedFile(int stacklevel) {
     // Filename is not ending with _pb2.
     return false;
   }
+#endif
   return true;
 }
 
@@ -200,8 +200,8 @@ static PyObject* GetOrBuildOptions(const DescriptorClass *descriptor) {
   // read-only instance.
   const Message& options(descriptor->options());
   const Descriptor *message_type = options.GetDescriptor();
-  PyObject* message_class(cdescriptor_pool::GetMessageClass(
-      pool, message_type));
+  CMessageClass* message_class(
+      cdescriptor_pool::GetMessageClass(pool, message_type));
   if (message_class == NULL) {
     // The Options message was not found in the current DescriptorPool.
     // In this case, there cannot be extensions to these options, and we can
@@ -215,7 +215,8 @@ static PyObject* GetOrBuildOptions(const DescriptorClass *descriptor) {
                  message_type->full_name().c_str());
     return NULL;
   }
-  ScopedPyObjectPtr value(PyEval_CallObject(message_class, NULL));
+  ScopedPyObjectPtr value(
+      PyEval_CallObject(message_class->AsPyObject(), NULL));
   if (value == NULL) {
     return NULL;
   }
@@ -433,11 +434,11 @@ static PyObject* GetConcreteClass(PyBaseDescriptor* self, void *closure) {
   // which contains this descriptor.
   // This might not be the one you expect! For example the returned object does
   // not know about extensions defined in a custom pool.
-  PyObject* concrete_class(cdescriptor_pool::GetMessageClass(
+  CMessageClass* concrete_class(cdescriptor_pool::GetMessageClass(
       GetDescriptorPool_FromPool(_GetDescriptor(self)->file()->pool()),
       _GetDescriptor(self)));
   Py_XINCREF(concrete_class);
-  return concrete_class;
+  return concrete_class->AsPyObject();
 }
 
 static PyObject* GetFieldsByName(PyBaseDescriptor* self, void *closure) {

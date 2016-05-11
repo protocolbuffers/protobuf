@@ -42,9 +42,10 @@ import six
 import struct
 
 try:
-  import unittest2 as unittest
+  import unittest2 as unittest  #PY26
 except ImportError:
   import unittest
+
 from google.protobuf import unittest_import_pb2
 from google.protobuf import unittest_mset_pb2
 from google.protobuf import unittest_pb2
@@ -119,11 +120,13 @@ class ReflectionTest(unittest.TestCase):
     proto = unittest_pb2.TestAllTypes(
         optional_int32=24,
         optional_double=54.321,
-        optional_string='optional_string')
+        optional_string='optional_string',
+        optional_float=None)
 
     self.assertEqual(24, proto.optional_int32)
     self.assertEqual(54.321, proto.optional_double)
     self.assertEqual('optional_string', proto.optional_string)
+    self.assertFalse(proto.HasField("optional_float"))
 
   def testRepeatedScalarConstructor(self):
     # Constructor with only repeated scalar types should succeed.
@@ -131,12 +134,14 @@ class ReflectionTest(unittest.TestCase):
         repeated_int32=[1, 2, 3, 4],
         repeated_double=[1.23, 54.321],
         repeated_bool=[True, False, False],
-        repeated_string=["optional_string"])
+        repeated_string=["optional_string"],
+        repeated_float=None)
 
     self.assertEqual([1, 2, 3, 4], list(proto.repeated_int32))
     self.assertEqual([1.23, 54.321], list(proto.repeated_double))
     self.assertEqual([True, False, False], list(proto.repeated_bool))
     self.assertEqual(["optional_string"], list(proto.repeated_string))
+    self.assertEqual([], list(proto.repeated_float))
 
   def testRepeatedCompositeConstructor(self):
     # Constructor with only repeated composite types should succeed.
@@ -187,7 +192,8 @@ class ReflectionTest(unittest.TestCase):
         repeated_foreign_message=[
             unittest_pb2.ForeignMessage(c=-43),
             unittest_pb2.ForeignMessage(c=45324),
-            unittest_pb2.ForeignMessage(c=12)])
+            unittest_pb2.ForeignMessage(c=12)],
+        optional_nested_message=None)
 
     self.assertEqual(24, proto.optional_int32)
     self.assertEqual('optional_string', proto.optional_string)
@@ -204,6 +210,7 @@ class ReflectionTest(unittest.TestCase):
          unittest_pb2.ForeignMessage(c=45324),
          unittest_pb2.ForeignMessage(c=12)],
         list(proto.repeated_foreign_message))
+    self.assertFalse(proto.HasField("optional_nested_message"))
 
   def testConstructorTypeError(self):
     self.assertRaises(

@@ -182,18 +182,17 @@ GenerateInitializationCode(io::Printer* printer) const {
 }
 
 void ImmutableLazyMessageFieldLiteGenerator::
-GenerateMergingCode(io::Printer* printer) const {
+GenerateVisitCode(io::Printer* printer) const {
   printer->Print(variables_,
-    "if (other.has$capitalized_name$()) {\n"
-    "  $name$_.merge(other.$name$_);\n"
-    "  $set_has_field_bit_message$;\n"
-    "}\n");
+    "$name$_ = visitor.visitLazyMessage(\n"
+    "    has$capitalized_name$(), $name$_,\n"
+    "    other.has$capitalized_name$(), other.$name$_);\n");
 }
 
 void ImmutableLazyMessageFieldLiteGenerator::
 GenerateParsingCode(io::Printer* printer) const {
   printer->Print(variables_,
-    "$name$_.setByteString(input.readBytes(), extensionRegistry);\n");
+    "$name$_.mergeFrom(input, extensionRegistry);\n");
   printer->Print(variables_,
     "$set_has_field_bit_message$;\n");
 }
@@ -362,14 +361,12 @@ GenerateBuilderMembers(io::Printer* printer) const {
 }
 
 void ImmutableLazyMessageOneofFieldLiteGenerator::
-GenerateMergingCode(io::Printer* printer) const {
+GenerateVisitCode(io::Printer* printer) const {
   printer->Print(variables_,
-    "if (!($has_oneof_case_message$)) {\n"
-    "  $oneof_name$_ = new $lazy_type$();\n"
-    "}\n"
-    "(($lazy_type$) $oneof_name$_).merge(\n"
-    "    ($lazy_type$) other.$oneof_name$_);\n"
-    "$set_oneof_case_message$;\n");
+    "$oneof_name$_ = visitor.visitOneofLazyMessage(\n"
+    "    $has_oneof_case_message$,\n"
+    "    ($lazy_type$) $oneof_name$_,\n"
+    "    ($lazy_type$) other.$oneof_name$_);\n");
 }
 
 void ImmutableLazyMessageOneofFieldLiteGenerator::
@@ -378,8 +375,7 @@ GenerateParsingCode(io::Printer* printer) const {
     "if (!($has_oneof_case_message$)) {\n"
     "  $oneof_name$_ = new $lazy_type$();\n"
     "}\n"
-    "(($lazy_type$) $oneof_name$_).setByteString(\n"
-    "    input.readBytes(), extensionRegistry);\n"
+    "(($lazy_type$) $oneof_name$_).mergeFrom(input, extensionRegistry);\n"
     "$set_oneof_case_message$;\n");
 }
 
@@ -464,7 +460,8 @@ GenerateMembers(io::Printer* printer) const {
   printer->Print(variables_,
     "private void ensure$capitalized_name$IsMutable() {\n"
     "  if (!$is_mutable$) {\n"
-    "    $name$_ = newProtobufList($name$_);\n"
+    "    $name$_ =\n"
+    "        com.google.protobuf.GeneratedMessageLite.mutableCopy($name$_);\n"
     "   }\n"
     "}\n"
     "\n");
@@ -679,7 +676,8 @@ void RepeatedImmutableLazyMessageFieldLiteGenerator::
 GenerateParsingCode(io::Printer* printer) const {
   printer->Print(variables_,
     "if (!$is_mutable$) {\n"
-    "  $name$_ = newProtobufList();\n"
+    "  $name$_ =\n"
+    "      com.google.protobuf.GeneratedMessageLite.mutableCopy($name$_);\n"
     "}\n"
     "$name$_.add(new com.google.protobuf.LazyFieldLite(\n"
     "    extensionRegistry, input.readBytes()));\n");

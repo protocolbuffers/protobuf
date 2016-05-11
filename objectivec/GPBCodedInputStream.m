@@ -219,15 +219,16 @@ NSString *GPBCodedInputStreamReadRetainedString(
     result = [[NSString alloc] initWithBytes:&state->bytes[state->bufferPos]
                                       length:size
                                     encoding:NSUTF8StringEncoding];
+    state->bufferPos += size;
     if (!result) {
-      result = @"";
 #ifdef DEBUG
       // https://developers.google.com/protocol-buffers/docs/proto#scalar
-      NSLog(@"UTF8 failure, is some field type 'string' when it should be "
+      NSLog(@"UTF-8 failure, is some field type 'string' when it should be "
             @"'bytes'?");
 #endif
+      [NSException raise:NSParseErrorException
+                  format:@"Invalid UTF-8 for a 'string'"];
     }
-    state->bufferPos += size;
   }
   return result;
 }
@@ -357,6 +358,14 @@ void GPBCodedInputStreamCheckLastTagWas(GPBCodedInputStreamState *state,
       return;
     }
   }
+}
+
+- (BOOL)isAtEnd {
+  return GPBCodedInputStreamIsAtEnd(&state_);
+}
+
+- (size_t)position {
+  return state_.bufferPos;
 }
 
 - (double)readDouble {

@@ -83,9 +83,10 @@ void protobuf_AddDesc_google_2fprotobuf_2ftimestamp_2eproto() {
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
     "\n\037google/protobuf/timestamp.proto\022\017googl"
     "e.protobuf\"+\n\tTimestamp\022\017\n\007seconds\030\001 \001(\003"
-    "\022\r\n\005nanos\030\002 \001(\005BT\n\023com.google.protobufB\016"
-    "TimestampProtoP\001\240\001\001\370\001\001\242\002\003GPB\252\002\036Google.Pr"
-    "otobuf.WellKnownTypesb\006proto3", 189);
+    "\022\r\n\005nanos\030\002 \001(\005B\201\001\n\023com.google.protobufB"
+    "\016TimestampProtoP\001Z+github.com/golang/pro"
+    "tobuf/ptypes/timestamp\240\001\001\370\001\001\242\002\003GPB\252\002\036Goo"
+    "gle.Protobuf.WellKnownTypesb\006proto3", 235);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "google/protobuf/timestamp.proto", &protobuf_RegisterTypes);
   Timestamp::default_instance_ = new Timestamp();
@@ -192,8 +193,17 @@ Timestamp* Timestamp::New(::google::protobuf::Arena* arena) const {
 }
 
 void Timestamp::Clear() {
+// @@protoc_insertion_point(message_clear_start:google.protobuf.Timestamp)
+#if defined(__clang__)
+#define ZR_HELPER_(f) \
+  _Pragma("clang diagnostic push") \
+  _Pragma("clang diagnostic ignored \"-Winvalid-offsetof\"") \
+  __builtin_offsetof(Timestamp, f) \
+  _Pragma("clang diagnostic pop")
+#else
 #define ZR_HELPER_(f) reinterpret_cast<char*>(\
   &reinterpret_cast<Timestamp*>(16)->f)
+#endif
 
 #define ZR_(first, last) do {\
   ::memset(&first, 0,\
@@ -209,7 +219,7 @@ void Timestamp::Clear() {
 
 bool Timestamp::MergePartialFromCodedStream(
     ::google::protobuf::io::CodedInputStream* input) {
-#define DO_(EXPRESSION) if (!(EXPRESSION)) goto failure
+#define DO_(EXPRESSION) if (!GOOGLE_PREDICT_TRUE(EXPRESSION)) goto failure
   ::google::protobuf::uint32 tag;
   // @@protoc_insertion_point(parse_start:google.protobuf.Timestamp)
   for (;;) {
@@ -301,6 +311,7 @@ void Timestamp::SerializeWithCachedSizes(
 }
 
 int Timestamp::ByteSize() const {
+// @@protoc_insertion_point(message_byte_size_start:google.protobuf.Timestamp)
   int total_size = 0;
 
   // optional int64 seconds = 1;
@@ -324,18 +335,22 @@ int Timestamp::ByteSize() const {
 }
 
 void Timestamp::MergeFrom(const ::google::protobuf::Message& from) {
+// @@protoc_insertion_point(generalized_merge_from_start:google.protobuf.Timestamp)
   if (GOOGLE_PREDICT_FALSE(&from == this)) MergeFromFail(__LINE__);
   const Timestamp* source = 
       ::google::protobuf::internal::DynamicCastToGenerated<const Timestamp>(
           &from);
   if (source == NULL) {
+  // @@protoc_insertion_point(generalized_merge_from_cast_fail:google.protobuf.Timestamp)
     ::google::protobuf::internal::ReflectionOps::Merge(from, this);
   } else {
+  // @@protoc_insertion_point(generalized_merge_from_cast_success:google.protobuf.Timestamp)
     MergeFrom(*source);
   }
 }
 
 void Timestamp::MergeFrom(const Timestamp& from) {
+// @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.Timestamp)
   if (GOOGLE_PREDICT_FALSE(&from == this)) MergeFromFail(__LINE__);
   if (from.seconds() != 0) {
     set_seconds(from.seconds());
@@ -346,12 +361,14 @@ void Timestamp::MergeFrom(const Timestamp& from) {
 }
 
 void Timestamp::CopyFrom(const ::google::protobuf::Message& from) {
+// @@protoc_insertion_point(generalized_copy_from_start:google.protobuf.Timestamp)
   if (&from == this) return;
   Clear();
   MergeFrom(from);
 }
 
 void Timestamp::CopyFrom(const Timestamp& from) {
+// @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.Timestamp)
   if (&from == this) return;
   Clear();
   MergeFrom(from);

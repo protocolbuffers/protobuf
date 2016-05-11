@@ -37,7 +37,7 @@ __author__ = 'jieluo@google.com (Jie Luo)'
 from datetime import datetime
 
 try:
-  import unittest2 as unittest
+  import unittest2 as unittest  #PY26
 except ImportError:
   import unittest
 
@@ -609,6 +609,14 @@ class AnyTest(unittest.TestCase):
     else:
       raise AttributeError('%s should not have Pack method.' %
                            msg_descriptor.full_name)
+
+  def testMessageName(self):
+    # Creates and sets message.
+    submessage = any_test_pb2.TestAny()
+    submessage.int_value = 12345
+    msg = any_pb2.Any()
+    msg.Pack(submessage)
+    self.assertEqual(msg.TypeName(), 'google.protobuf.internal.TestAny')
 
   def testPackWithCustomTypeUrl(self):
     submessage = any_test_pb2.TestAny()

@@ -263,10 +263,11 @@ void protobuf_AddDesc_google_2fprotobuf_2fwrappers_2eproto() {
     "e\030\001 \001(\004\"\033\n\nInt32Value\022\r\n\005value\030\001 \001(\005\"\034\n\013"
     "UInt32Value\022\r\n\005value\030\001 \001(\r\"\032\n\tBoolValue\022"
     "\r\n\005value\030\001 \001(\010\"\034\n\013StringValue\022\r\n\005value\030\001"
-    " \001(\t\"\033\n\nBytesValue\022\r\n\005value\030\001 \001(\014BS\n\023com"
-    ".google.protobufB\rWrappersProtoP\001\240\001\001\370\001\001\242"
-    "\002\003GPB\252\002\036Google.Protobuf.WellKnownTypesb\006"
-    "proto3", 406);
+    " \001(\t\"\033\n\nBytesValue\022\r\n\005value\030\001 \001(\014B\177\n\023com"
+    ".google.protobufB\rWrappersProtoP\001Z*githu"
+    "b.com/golang/protobuf/ptypes/wrappers\240\001\001"
+    "\370\001\001\242\002\003GPB\252\002\036Google.Protobuf.WellKnownTyp"
+    "esb\006proto3", 450);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "google/protobuf/wrappers.proto", &protobuf_RegisterTypes);
   DoubleValue::default_instance_ = new DoubleValue();
@@ -387,12 +388,13 @@ DoubleValue* DoubleValue::New(::google::protobuf::Arena* arena) const {
 }
 
 void DoubleValue::Clear() {
+// @@protoc_insertion_point(message_clear_start:google.protobuf.DoubleValue)
   value_ = 0;
 }
 
 bool DoubleValue::MergePartialFromCodedStream(
     ::google::protobuf::io::CodedInputStream* input) {
-#define DO_(EXPRESSION) if (!(EXPRESSION)) goto failure
+#define DO_(EXPRESSION) if (!GOOGLE_PREDICT_TRUE(EXPRESSION)) goto failure
   ::google::protobuf::uint32 tag;
   // @@protoc_insertion_point(parse_start:google.protobuf.DoubleValue)
   for (;;) {
@@ -459,6 +461,7 @@ void DoubleValue::SerializeWithCachedSizes(
 }
 
 int DoubleValue::ByteSize() const {
+// @@protoc_insertion_point(message_byte_size_start:google.protobuf.DoubleValue)
   int total_size = 0;
 
   // optional double value = 1;
@@ -473,18 +476,22 @@ int DoubleValue::ByteSize() const {
 }
 
 void DoubleValue::MergeFrom(const ::google::protobuf::Message& from) {
+// @@protoc_insertion_point(generalized_merge_from_start:google.protobuf.DoubleValue)
   if (GOOGLE_PREDICT_FALSE(&from == this)) MergeFromFail(__LINE__);
   const DoubleValue* source = 
       ::google::protobuf::internal::DynamicCastToGenerated<const DoubleValue>(
           &from);
   if (source == NULL) {
+  // @@protoc_insertion_point(generalized_merge_from_cast_fail:google.protobuf.DoubleValue)
     ::google::protobuf::internal::ReflectionOps::Merge(from, this);
   } else {
+  // @@protoc_insertion_point(generalized_merge_from_cast_success:google.protobuf.DoubleValue)
     MergeFrom(*source);
   }
 }
 
 void DoubleValue::MergeFrom(const DoubleValue& from) {
+// @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.DoubleValue)
   if (GOOGLE_PREDICT_FALSE(&from == this)) MergeFromFail(__LINE__);
   if (from.value() != 0) {
     set_value(from.value());
@@ -492,12 +499,14 @@ void DoubleValue::MergeFrom(const DoubleValue& from) {
 }
 
 void DoubleValue::CopyFrom(const ::google::protobuf::Message& from) {
+// @@protoc_insertion_point(generalized_copy_from_start:google.protobuf.DoubleValue)
   if (&from == this) return;
   Clear();
   MergeFrom(from);
 }
 
 void DoubleValue::CopyFrom(const DoubleValue& from) {
+// @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.DoubleValue)
   if (&from == this) return;
   Clear();
   MergeFrom(from);
@@ -637,12 +646,13 @@ FloatValue* FloatValue::New(::google::protobuf::Arena* arena) const {
 }
 
 void FloatValue::Clear() {
+// @@protoc_insertion_point(message_clear_start:google.protobuf.FloatValue)
   value_ = 0;
 }
 
 bool FloatValue::MergePartialFromCodedStream(
     ::google::protobuf::io::CodedInputStream* input) {
-#define DO_(EXPRESSION) if (!(EXPRESSION)) goto failure
+#define DO_(EXPRESSION) if (!GOOGLE_PREDICT_TRUE(EXPRESSION)) goto failure
   ::google::protobuf::uint32 tag;
   // @@protoc_insertion_point(parse_start:google.protobuf.FloatValue)
   for (;;) {
@@ -709,6 +719,7 @@ void FloatValue::SerializeWithCachedSizes(
 }
 
 int FloatValue::ByteSize() const {
+// @@protoc_insertion_point(message_byte_size_start:google.protobuf.FloatValue)
   int total_size = 0;
 
   // optional float value = 1;
@@ -723,18 +734,22 @@ int FloatValue::ByteSize() const {
 }
 
 void FloatValue::MergeFrom(const ::google::protobuf::Message& from) {
+// @@protoc_insertion_point(generalized_merge_from_start:google.protobuf.FloatValue)
   if (GOOGLE_PREDICT_FALSE(&from == this)) MergeFromFail(__LINE__);
   const FloatValue* source = 
       ::google::protobuf::internal::DynamicCastToGenerated<const FloatValue>(
           &from);
   if (source == NULL) {
+  // @@protoc_insertion_point(generalized_merge_from_cast_fail:google.protobuf.FloatValue)
     ::google::protobuf::internal::ReflectionOps::Merge(from, this);
   } else {
+  // @@protoc_insertion_point(generalized_merge_from_cast_success:google.protobuf.FloatValue)
     MergeFrom(*source);
   }
 }
 
 void FloatValue::MergeFrom(const FloatValue& from) {
+// @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.FloatValue)
   if (GOOGLE_PREDICT_FALSE(&from == this)) MergeFromFail(__LINE__);
   if (from.value() != 0) {
     set_value(from.value());
@@ -742,12 +757,14 @@ void FloatValue::MergeFrom(const FloatValue& from) {
 }
 
 void FloatValue::CopyFrom(const ::google::protobuf::Message& from) {
+// @@protoc_insertion_point(generalized_copy_from_start:google.protobuf.FloatValue)
   if (&from == this) return;
   Clear();
   MergeFrom(from);
 }
 
 void FloatValue::CopyFrom(const FloatValue& from) {
+// @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.FloatValue)
   if (&from == this) return;
   Clear();
   MergeFrom(from);
@@ -887,12 +904,13 @@ Int64Value* Int64Value::New(::google::protobuf::Arena* arena) const {
 }
 
 void Int64Value::Clear() {
+// @@protoc_insertion_point(message_clear_start:google.protobuf.Int64Value)
   value_ = GOOGLE_LONGLONG(0);
 }
 
 bool Int64Value::MergePartialFromCodedStream(
     ::google::protobuf::io::CodedInputStream* input) {
-#define DO_(EXPRESSION) if (!(EXPRESSION)) goto failure
+#define DO_(EXPRESSION) if (!GOOGLE_PREDICT_TRUE(EXPRESSION)) goto failure
   ::google::protobuf::uint32 tag;
   // @@protoc_insertion_point(parse_start:google.protobuf.Int64Value)
   for (;;) {
@@ -959,6 +977,7 @@ void Int64Value::SerializeWithCachedSizes(
 }
 
 int Int64Value::ByteSize() const {
+// @@protoc_insertion_point(message_byte_size_start:google.protobuf.Int64Value)
   int total_size = 0;
 
   // optional int64 value = 1;
@@ -975,18 +994,22 @@ int Int64Value::ByteSize() const {
 }
 
 void Int64Value::MergeFrom(const ::google::protobuf::Message& from) {
+// @@protoc_insertion_point(generalized_merge_from_start:google.protobuf.Int64Value)
   if (GOOGLE_PREDICT_FALSE(&from == this)) MergeFromFail(__LINE__);
   const Int64Value* source = 
       ::google::protobuf::internal::DynamicCastToGenerated<const Int64Value>(
           &from);
   if (source == NULL) {
+  // @@protoc_insertion_point(generalized_merge_from_cast_fail:google.protobuf.Int64Value)
     ::google::protobuf::internal::ReflectionOps::Merge(from, this);
   } else {
+  // @@protoc_insertion_point(generalized_merge_from_cast_success:google.protobuf.Int64Value)
     MergeFrom(*source);
   }
 }
 
 void Int64Value::MergeFrom(const Int64Value& from) {
+// @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.Int64Value)
   if (GOOGLE_PREDICT_FALSE(&from == this)) MergeFromFail(__LINE__);
   if (from.value() != 0) {
     set_value(from.value());
@@ -994,12 +1017,14 @@ void Int64Value::MergeFrom(const Int64Value& from) {
 }
 
 void Int64Value::CopyFrom(const ::google::protobuf::Message& from) {
+// @@protoc_insertion_point(generalized_copy_from_start:google.protobuf.Int64Value)
   if (&from == this) return;
   Clear();
   MergeFrom(from);
 }
 
 void Int64Value::CopyFrom(const Int64Value& from) {
+// @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.Int64Value)
   if (&from == this) return;
   Clear();
   MergeFrom(from);
@@ -1139,12 +1164,13 @@ UInt64Value* UInt64Value::New(::google::protobuf::Arena* arena) const {
 }
 
 void UInt64Value::Clear() {
+// @@protoc_insertion_point(message_clear_start:google.protobuf.UInt64Value)
   value_ = GOOGLE_ULONGLONG(0);
 }
 
 bool UInt64Value::MergePartialFromCodedStream(
     ::google::protobuf::io::CodedInputStream* input) {
-#define DO_(EXPRESSION) if (!(EXPRESSION)) goto failure
+#define DO_(EXPRESSION) if (!GOOGLE_PREDICT_TRUE(EXPRESSION)) goto failure
   ::google::protobuf::uint32 tag;
   // @@protoc_insertion_point(parse_start:google.protobuf.UInt64Value)
   for (;;) {
@@ -1211,6 +1237,7 @@ void UInt64Value::SerializeWithCachedSizes(
 }
 
 int UInt64Value::ByteSize() const {
+// @@protoc_insertion_point(message_byte_size_start:google.protobuf.UInt64Value)
   int total_size = 0;
 
   // optional uint64 value = 1;
@@ -1227,18 +1254,22 @@ int UInt64Value::ByteSize() const {
 }
 
 void UInt64Value::MergeFrom(const ::google::protobuf::Message& from) {
+// @@protoc_insertion_point(generalized_merge_from_start:google.protobuf.UInt64Value)
   if (GOOGLE_PREDICT_FALSE(&from == this)) MergeFromFail(__LINE__);
   const UInt64Value* source = 
       ::google::protobuf::internal::DynamicCastToGenerated<const UInt64Value>(
           &from);
   if (source == NULL) {
+  // @@protoc_insertion_point(generalized_merge_from_cast_fail:google.protobuf.UInt64Value)
     ::google::protobuf::internal::ReflectionOps::Merge(from, this);
   } else {
+  // @@protoc_insertion_point(generalized_merge_from_cast_success:google.protobuf.UInt64Value)
     MergeFrom(*source);
   }
 }
 
 void UInt64Value::MergeFrom(const UInt64Value& from) {
+// @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.UInt64Value)
   if (GOOGLE_PREDICT_FALSE(&from == this)) MergeFromFail(__LINE__);
   if (from.value() != 0) {
     set_value(from.value());
@@ -1246,12 +1277,14 @@ void UInt64Value::MergeFrom(const UInt64Value& from) {
 }
 
 void UInt64Value::CopyFrom(const ::google::protobuf::Message& from) {
+// @@protoc_insertion_point(generalized_copy_from_start:google.protobuf.UInt64Value)
   if (&from == this) return;
   Clear();
   MergeFrom(from);
 }
 
 void UInt64Value::CopyFrom(const UInt64Value& from) {
+// @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.UInt64Value)
   if (&from == this) return;
   Clear();
   MergeFrom(from);
@@ -1391,12 +1424,13 @@ Int32Value* Int32Value::New(::google::protobuf::Arena* arena) const {
 }
 
 void Int32Value::Clear() {
+// @@protoc_insertion_point(message_clear_start:google.protobuf.Int32Value)
   value_ = 0;
 }
 
 bool Int32Value::MergePartialFromCodedStream(
     ::google::protobuf::io::CodedInputStream* input) {
-#define DO_(EXPRESSION) if (!(EXPRESSION)) goto failure
+#define DO_(EXPRESSION) if (!GOOGLE_PREDICT_TRUE(EXPRESSION)) goto failure
   ::google::protobuf::uint32 tag;
   // @@protoc_insertion_point(parse_start:google.protobuf.Int32Value)
   for (;;) {
@@ -1463,6 +1497,7 @@ void Int32Value::SerializeWithCachedSizes(
 }
 
 int Int32Value::ByteSize() const {
+// @@protoc_insertion_point(message_byte_size_start:google.protobuf.Int32Value)
   int total_size = 0;
 
   // optional int32 value = 1;
@@ -1479,18 +1514,22 @@ int Int32Value::ByteSize() const {
 }
 
 void Int32Value::MergeFrom(const ::google::protobuf::Message& from) {
+// @@protoc_insertion_point(generalized_merge_from_start:google.protobuf.Int32Value)
   if (GOOGLE_PREDICT_FALSE(&from == this)) MergeFromFail(__LINE__);
   const Int32Value* source = 
       ::google::protobuf::internal::DynamicCastToGenerated<const Int32Value>(
           &from);
   if (source == NULL) {
+  // @@protoc_insertion_point(generalized_merge_from_cast_fail:google.protobuf.Int32Value)
     ::google::protobuf::internal::ReflectionOps::Merge(from, this);
   } else {
+  // @@protoc_insertion_point(generalized_merge_from_cast_success:google.protobuf.Int32Value)
     MergeFrom(*source);
   }
 }
 
 void Int32Value::MergeFrom(const Int32Value& from) {
+// @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.Int32Value)
   if (GOOGLE_PREDICT_FALSE(&from == this)) MergeFromFail(__LINE__);
   if (from.value() != 0) {
     set_value(from.value());
@@ -1498,12 +1537,14 @@ void Int32Value::MergeFrom(const Int32Value& from) {
 }
 
 void Int32Value::CopyFrom(const ::google::protobuf::Message& from) {
+// @@protoc_insertion_point(generalized_copy_from_start:google.protobuf.Int32Value)
   if (&from == this) return;
   Clear();
   MergeFrom(from);
 }
 
 void Int32Value::CopyFrom(const Int32Value& from) {
+// @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.Int32Value)
   if (&from == this) return;
   Clear();
   MergeFrom(from);
@@ -1643,12 +1684,13 @@ UInt32Value* UInt32Value::New(::google::protobuf::Arena* arena) const {
 }
 
 void UInt32Value::Clear() {
+// @@protoc_insertion_point(message_clear_start:google.protobuf.UInt32Value)
   value_ = 0u;
 }
 
 bool UInt32Value::MergePartialFromCodedStream(
     ::google::protobuf::io::CodedInputStream* input) {
-#define DO_(EXPRESSION) if (!(EXPRESSION)) goto failure
+#define DO_(EXPRESSION) if (!GOOGLE_PREDICT_TRUE(EXPRESSION)) goto failure
   ::google::protobuf::uint32 tag;
   // @@protoc_insertion_point(parse_start:google.protobuf.UInt32Value)
   for (;;) {
@@ -1715,6 +1757,7 @@ void UInt32Value::SerializeWithCachedSizes(
 }
 
 int UInt32Value::ByteSize() const {
+// @@protoc_insertion_point(message_byte_size_start:google.protobuf.UInt32Value)
   int total_size = 0;
 
   // optional uint32 value = 1;
@@ -1731,18 +1774,22 @@ int UInt32Value::ByteSize() const {
 }
 
 void UInt32Value::MergeFrom(const ::google::protobuf::Message& from) {
+// @@protoc_insertion_point(generalized_merge_from_start:google.protobuf.UInt32Value)
   if (GOOGLE_PREDICT_FALSE(&from == this)) MergeFromFail(__LINE__);
   const UInt32Value* source = 
       ::google::protobuf::internal::DynamicCastToGenerated<const UInt32Value>(
           &from);
   if (source == NULL) {
+  // @@protoc_insertion_point(generalized_merge_from_cast_fail:google.protobuf.UInt32Value)
     ::google::protobuf::internal::ReflectionOps::Merge(from, this);
   } else {
+  // @@protoc_insertion_point(generalized_merge_from_cast_success:google.protobuf.UInt32Value)
     MergeFrom(*source);
   }
 }
 
 void UInt32Value::MergeFrom(const UInt32Value& from) {
+// @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.UInt32Value)
   if (GOOGLE_PREDICT_FALSE(&from == this)) MergeFromFail(__LINE__);
   if (from.value() != 0) {
     set_value(from.value());
@@ -1750,12 +1797,14 @@ void UInt32Value::MergeFrom(const UInt32Value& from) {
 }
 
 void UInt32Value::CopyFrom(const ::google::protobuf::Message& from) {
+// @@protoc_insertion_point(generalized_copy_from_start:google.protobuf.UInt32Value)
   if (&from == this) return;
   Clear();
   MergeFrom(from);
 }
 
 void UInt32Value::CopyFrom(const UInt32Value& from) {
+// @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.UInt32Value)
   if (&from == this) return;
   Clear();
   MergeFrom(from);
@@ -1895,12 +1944,13 @@ BoolValue* BoolValue::New(::google::protobuf::Arena* arena) const {
 }
 
 void BoolValue::Clear() {
+// @@protoc_insertion_point(message_clear_start:google.protobuf.BoolValue)
   value_ = false;
 }
 
 bool BoolValue::MergePartialFromCodedStream(
     ::google::protobuf::io::CodedInputStream* input) {
-#define DO_(EXPRESSION) if (!(EXPRESSION)) goto failure
+#define DO_(EXPRESSION) if (!GOOGLE_PREDICT_TRUE(EXPRESSION)) goto failure
   ::google::protobuf::uint32 tag;
   // @@protoc_insertion_point(parse_start:google.protobuf.BoolValue)
   for (;;) {
@@ -1967,6 +2017,7 @@ void BoolValue::SerializeWithCachedSizes(
 }
 
 int BoolValue::ByteSize() const {
+// @@protoc_insertion_point(message_byte_size_start:google.protobuf.BoolValue)
   int total_size = 0;
 
   // optional bool value = 1;
@@ -1981,18 +2032,22 @@ int BoolValue::ByteSize() const {
 }
 
 void BoolValue::MergeFrom(const ::google::protobuf::Message& from) {
+// @@protoc_insertion_point(generalized_merge_from_start:google.protobuf.BoolValue)
   if (GOOGLE_PREDICT_FALSE(&from == this)) MergeFromFail(__LINE__);
   const BoolValue* source = 
       ::google::protobuf::internal::DynamicCastToGenerated<const BoolValue>(
           &from);
   if (source == NULL) {
+  // @@protoc_insertion_point(generalized_merge_from_cast_fail:google.protobuf.BoolValue)
     ::google::protobuf::internal::ReflectionOps::Merge(from, this);
   } else {
+  // @@protoc_insertion_point(generalized_merge_from_cast_success:google.protobuf.BoolValue)
     MergeFrom(*source);
   }
 }
 
 void BoolValue::MergeFrom(const BoolValue& from) {
+// @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.BoolValue)
   if (GOOGLE_PREDICT_FALSE(&from == this)) MergeFromFail(__LINE__);
   if (from.value() != 0) {
     set_value(from.value());
@@ -2000,12 +2055,14 @@ void BoolValue::MergeFrom(const BoolValue& from) {
 }
 
 void BoolValue::CopyFrom(const ::google::protobuf::Message& from) {
+// @@protoc_insertion_point(generalized_copy_from_start:google.protobuf.BoolValue)
   if (&from == this) return;
   Clear();
   MergeFrom(from);
 }
 
 void BoolValue::CopyFrom(const BoolValue& from) {
+// @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.BoolValue)
   if (&from == this) return;
   Clear();
   MergeFrom(from);
@@ -2147,12 +2204,13 @@ StringValue* StringValue::New(::google::protobuf::Arena* arena) const {
 }
 
 void StringValue::Clear() {
+// @@protoc_insertion_point(message_clear_start:google.protobuf.StringValue)
   value_.ClearToEmpty(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), GetArenaNoVirtual());
 }
 
 bool StringValue::MergePartialFromCodedStream(
     ::google::protobuf::io::CodedInputStream* input) {
-#define DO_(EXPRESSION) if (!(EXPRESSION)) goto failure
+#define DO_(EXPRESSION) if (!GOOGLE_PREDICT_TRUE(EXPRESSION)) goto failure
   ::google::protobuf::uint32 tag;
   // @@protoc_insertion_point(parse_start:google.protobuf.StringValue)
   for (;;) {
@@ -2232,6 +2290,7 @@ void StringValue::SerializeWithCachedSizes(
 }
 
 int StringValue::ByteSize() const {
+// @@protoc_insertion_point(message_byte_size_start:google.protobuf.StringValue)
   int total_size = 0;
 
   // optional string value = 1;
@@ -2248,18 +2307,22 @@ int StringValue::ByteSize() const {
 }
 
 void StringValue::MergeFrom(const ::google::protobuf::Message& from) {
+// @@protoc_insertion_point(generalized_merge_from_start:google.protobuf.StringValue)
   if (GOOGLE_PREDICT_FALSE(&from == this)) MergeFromFail(__LINE__);
   const StringValue* source = 
       ::google::protobuf::internal::DynamicCastToGenerated<const StringValue>(
           &from);
   if (source == NULL) {
+  // @@protoc_insertion_point(generalized_merge_from_cast_fail:google.protobuf.StringValue)
     ::google::protobuf::internal::ReflectionOps::Merge(from, this);
   } else {
+  // @@protoc_insertion_point(generalized_merge_from_cast_success:google.protobuf.StringValue)
     MergeFrom(*source);
   }
 }
 
 void StringValue::MergeFrom(const StringValue& from) {
+// @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.StringValue)
   if (GOOGLE_PREDICT_FALSE(&from == this)) MergeFromFail(__LINE__);
   if (from.value().size() > 0) {
     set_value(from.value());
@@ -2267,12 +2330,14 @@ void StringValue::MergeFrom(const StringValue& from) {
 }
 
 void StringValue::CopyFrom(const ::google::protobuf::Message& from) {
+// @@protoc_insertion_point(generalized_copy_from_start:google.protobuf.StringValue)
   if (&from == this) return;
   Clear();
   MergeFrom(from);
 }
 
 void StringValue::CopyFrom(const StringValue& from) {
+// @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.StringValue)
   if (&from == this) return;
   Clear();
   MergeFrom(from);
@@ -2348,10 +2413,12 @@ void StringValue::clear_value() {
   return value_.Mutable(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), GetArenaNoVirtual());
 }
  ::std::string* StringValue::release_value() {
+  // @@protoc_insertion_point(field_release:google.protobuf.StringValue.value)
   
   return value_.Release(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), GetArenaNoVirtual());
 }
  ::std::string* StringValue::unsafe_arena_release_value() {
+  // @@protoc_insertion_point(field_unsafe_arena_release:google.protobuf.StringValue.value)
   GOOGLE_DCHECK(GetArenaNoVirtual() != NULL);
   
   return value_.UnsafeArenaRelease(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
@@ -2377,7 +2444,7 @@ void StringValue::clear_value() {
   }
   value_.UnsafeArenaSetAllocated(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
       value, GetArenaNoVirtual());
-  // @@protoc_insertion_point(field_set_allocated:google.protobuf.StringValue.value)
+  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:google.protobuf.StringValue.value)
 }
 
 #endif  // PROTOBUF_INLINE_NOT_IN_HEADERS
@@ -2464,12 +2531,13 @@ BytesValue* BytesValue::New(::google::protobuf::Arena* arena) const {
 }
 
 void BytesValue::Clear() {
+// @@protoc_insertion_point(message_clear_start:google.protobuf.BytesValue)
   value_.ClearToEmpty(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), GetArenaNoVirtual());
 }
 
 bool BytesValue::MergePartialFromCodedStream(
     ::google::protobuf::io::CodedInputStream* input) {
-#define DO_(EXPRESSION) if (!(EXPRESSION)) goto failure
+#define DO_(EXPRESSION) if (!GOOGLE_PREDICT_TRUE(EXPRESSION)) goto failure
   ::google::protobuf::uint32 tag;
   // @@protoc_insertion_point(parse_start:google.protobuf.BytesValue)
   for (;;) {
@@ -2537,6 +2605,7 @@ void BytesValue::SerializeWithCachedSizes(
 }
 
 int BytesValue::ByteSize() const {
+// @@protoc_insertion_point(message_byte_size_start:google.protobuf.BytesValue)
   int total_size = 0;
 
   // optional bytes value = 1;
@@ -2553,18 +2622,22 @@ int BytesValue::ByteSize() const {
 }
 
 void BytesValue::MergeFrom(const ::google::protobuf::Message& from) {
+// @@protoc_insertion_point(generalized_merge_from_start:google.protobuf.BytesValue)
   if (GOOGLE_PREDICT_FALSE(&from == this)) MergeFromFail(__LINE__);
   const BytesValue* source = 
       ::google::protobuf::internal::DynamicCastToGenerated<const BytesValue>(
           &from);
   if (source == NULL) {
+  // @@protoc_insertion_point(generalized_merge_from_cast_fail:google.protobuf.BytesValue)
     ::google::protobuf::internal::ReflectionOps::Merge(from, this);
   } else {
+  // @@protoc_insertion_point(generalized_merge_from_cast_success:google.protobuf.BytesValue)
     MergeFrom(*source);
   }
 }
 
 void BytesValue::MergeFrom(const BytesValue& from) {
+// @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.BytesValue)
   if (GOOGLE_PREDICT_FALSE(&from == this)) MergeFromFail(__LINE__);
   if (from.value().size() > 0) {
     set_value(from.value());
@@ -2572,12 +2645,14 @@ void BytesValue::MergeFrom(const BytesValue& from) {
 }
 
 void BytesValue::CopyFrom(const ::google::protobuf::Message& from) {
+// @@protoc_insertion_point(generalized_copy_from_start:google.protobuf.BytesValue)
   if (&from == this) return;
   Clear();
   MergeFrom(from);
 }
 
 void BytesValue::CopyFrom(const BytesValue& from) {
+// @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.BytesValue)
   if (&from == this) return;
   Clear();
   MergeFrom(from);
@@ -2653,10 +2728,12 @@ void BytesValue::clear_value() {
   return value_.Mutable(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), GetArenaNoVirtual());
 }
  ::std::string* BytesValue::release_value() {
+  // @@protoc_insertion_point(field_release:google.protobuf.BytesValue.value)
   
   return value_.Release(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), GetArenaNoVirtual());
 }
  ::std::string* BytesValue::unsafe_arena_release_value() {
+  // @@protoc_insertion_point(field_unsafe_arena_release:google.protobuf.BytesValue.value)
   GOOGLE_DCHECK(GetArenaNoVirtual() != NULL);
   
   return value_.UnsafeArenaRelease(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
@@ -2682,7 +2759,7 @@ void BytesValue::clear_value() {
   }
   value_.UnsafeArenaSetAllocated(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
       value, GetArenaNoVirtual());
-  // @@protoc_insertion_point(field_set_allocated:google.protobuf.BytesValue.value)
+  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:google.protobuf.BytesValue.value)
 }
 
 #endif  // PROTOBUF_INLINE_NOT_IN_HEADERS

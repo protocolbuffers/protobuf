@@ -15,15 +15,57 @@ COPTS = [
     "-Wno-error=unused-function",
 ]
 
-# Bazel should provide portable link_opts for pthread.
-LINK_OPTS = ["-lpthread"]
+config_setting(
+    name = "android",
+    values = {
+        "crosstool_top": "//external:android/crosstool",
+    },
+)
+
+# Android builds do not need to link in a separate pthread library.
+LINK_OPTS = select({
+    ":android": [],
+    "//conditions:default": ["-lpthread"],
+})
 
 load(
     "protobuf",
     "cc_proto_library",
     "py_proto_library",
+    "internal_gen_well_known_protos_java",
     "internal_protobuf_py_tests",
 )
+
+config_setting(
+    name = "ios_armv7",
+    values = {
+        "ios_cpu": "armv7",
+    },
+)
+
+config_setting(
+    name = "ios_armv7s",
+    values = {
+        "ios_cpu": "armv7s",
+    },
+)
+
+config_setting(
+    name = "ios_arm64",
+    values = {
+        "ios_cpu": "arm64",
+    },
+)
+
+IOS_ARM_COPTS = COPTS + [
+    "-DOS_IOS",
+    "-miphoneos-version-min=7.0",
+    "-arch armv7",
+    "-arch armv7s",
+    "-arch arm64",
+    "-D__thread=",
+    "-isysroot /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS9.2.sdk/",
+]
 
 cc_library(
     name = "protobuf_lite",
@@ -54,7 +96,12 @@ cc_library(
         "src/google/protobuf/wire_format_lite.cc",
     ],
     hdrs = glob(["src/google/protobuf/**/*.h"]),
-    copts = COPTS,
+    copts = select({
+        ":ios_armv7": IOS_ARM_COPTS,
+        ":ios_armv7s": IOS_ARM_COPTS,
+        ":ios_arm64": IOS_ARM_COPTS,
+        "//conditions:default": COPTS,
+    }),
     includes = ["src/"],
     linkopts = LINK_OPTS,
     visibility = ["//visibility:public"],
@@ -119,7 +166,12 @@ cc_library(
         "src/google/protobuf/wrappers.pb.cc",
     ],
     hdrs = glob(["src/**/*.h"]),
-    copts = COPTS,
+    copts = select({
+        ":ios_armv7": IOS_ARM_COPTS,
+        ":ios_armv7s": IOS_ARM_COPTS,
+        ":ios_arm64": IOS_ARM_COPTS,
+        "//conditions:default": COPTS,
+    }),
     includes = ["src/"],
     linkopts = LINK_OPTS,
     visibility = ["//visibility:public"],
@@ -151,6 +203,12 @@ RELATIVE_WELL_KNOWN_PROTOS = [
 ]
 
 WELL_KNOWN_PROTOS = ["src/" + s for s in RELATIVE_WELL_KNOWN_PROTOS]
+
+filegroup(
+    name = "well_known_protos",
+    srcs = WELL_KNOWN_PROTOS,
+    visibility = ["//visibility:public"],
+)
 
 cc_proto_library(
     name = "cc_wkt_protos",
@@ -208,6 +266,7 @@ cc_library(
         "src/google/protobuf/compiler/java/java_enum_field_lite.cc",
         "src/google/protobuf/compiler/java/java_enum_lite.cc",
         "src/google/protobuf/compiler/java/java_extension.cc",
+        "src/google/protobuf/compiler/java/java_extension_lite.cc",
         "src/google/protobuf/compiler/java/java_field.cc",
         "src/google/protobuf/compiler/java/java_file.cc",
         "src/google/protobuf/compiler/java/java_generator.cc",
@@ -318,6 +377,8 @@ RELATIVE_TEST_PROTOS = [
     "google/protobuf/unittest_preserve_unknown_enum.proto",
     "google/protobuf/unittest_preserve_unknown_enum2.proto",
     "google/protobuf/unittest_proto3_arena.proto",
+    "google/protobuf/unittest_proto3_arena_lite.proto",
+    "google/protobuf/unittest_proto3_lite.proto",
     "google/protobuf/unittest_well_known_types.proto",
     "google/protobuf/util/internal/testdata/anys.proto",
     "google/protobuf/util/internal/testdata/books.proto",
@@ -378,6 +439,7 @@ cc_test(
         "src/google/protobuf/compiler/cpp/cpp_bootstrap_unittest.cc",
         "src/google/protobuf/compiler/cpp/cpp_plugin_unittest.cc",
         "src/google/protobuf/compiler/cpp/cpp_unittest.cc",
+        "src/google/protobuf/compiler/cpp/metadata_test.cc",
         "src/google/protobuf/compiler/csharp/csharp_generator_unittest.cc",
         "src/google/protobuf/compiler/importer_unittest.cc",
         "src/google/protobuf/compiler/java/java_doc_comment_unittest.cc",
@@ -402,7 +464,9 @@ cc_test(
         "src/google/protobuf/message_unittest.cc",
         "src/google/protobuf/no_field_presence_test.cc",
         "src/google/protobuf/preserve_unknown_enum_test.cc",
+        "src/google/protobuf/proto3_arena_lite_unittest.cc",
         "src/google/protobuf/proto3_arena_unittest.cc",
+        "src/google/protobuf/proto3_lite_unittest.cc",
         "src/google/protobuf/reflection_ops_unittest.cc",
         "src/google/protobuf/repeated_field_reflection_unittest.cc",
         "src/google/protobuf/repeated_field_unittest.cc",
@@ -457,16 +521,8 @@ cc_test(
 ################################################################################
 # Java support
 ################################################################################
-genrule(
-    name = "gen_well_known_protos_java",
+internal_gen_well_known_protos_java(
     srcs = WELL_KNOWN_PROTOS,
-    outs = [
-        "wellknown.srcjar",
-    ],
-    cmd = "$(location :protoc) --java_out=$(@D)/wellknown.jar" +
-          " -Isrc $(SRCS) " +
-          " && mv $(@D)/wellknown.jar $(@D)/wellknown.srcjar",
-    tools = [":protoc"],
 )
 
 java_library(
@@ -475,6 +531,19 @@ java_library(
         "java/core/src/main/java/com/google/protobuf/*.java",
     ]) + [
         ":gen_well_known_protos_java",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+java_library(
+    name = "protobuf_java_util",
+    srcs = glob([
+        "java/util/src/main/java/com/google/protobuf/util/*.java",
+    ]),
+    deps = [
+        "protobuf_java",
+        "//external:gson",
+        "//external:guava",
     ],
     visibility = ["//visibility:public"],
 )
@@ -495,6 +564,7 @@ py_library(
             "python/google/protobuf/internal/test_util.py",
         ],
     ),
+    srcs_version = "PY2AND3",
     imports = ["python"],
 )
 
@@ -579,6 +649,7 @@ py_proto_library(
     include = "src",
     default_runtime = "",
     protoc = ":protoc",
+    srcs_version = "PY2AND3",
     deps = [":protobuf_python"],
 )
 
@@ -591,6 +662,7 @@ py_proto_library(
     include = "python",
     default_runtime = ":protobuf_python",
     protoc = ":protoc",
+    srcs_version = "PY2AND3",
     deps = [":python_common_test_protos"],
 )
 

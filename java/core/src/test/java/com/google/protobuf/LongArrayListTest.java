@@ -73,20 +73,6 @@ public class LongArrayListTest extends TestCase {
     assertImmutable(list);
   }
   
-  public void testCopyConstructor() {
-    LongArrayList copy = new LongArrayList(TERTIARY_LIST);
-    assertEquals(TERTIARY_LIST, copy);
-
-    copy = new LongArrayList(LongArrayList.emptyList());
-    assertEquals(LongArrayList.emptyList(), copy);
-    
-    copy = new LongArrayList(asList(1L, 2L, 3L));
-    assertEquals(asList(1L, 2L, 3L), copy);
-
-    copy = new LongArrayList(Collections.<Long>emptyList());
-    assertEquals(LongArrayList.emptyList(), copy);
-  }
-  
   public void testModificationWithIteration() {
     list.addAll(asList(1L, 2L, 3L, 4L));
     Iterator<Long> iterator = list.iterator();

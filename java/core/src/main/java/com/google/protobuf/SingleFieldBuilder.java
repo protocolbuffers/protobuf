@@ -234,7 +234,7 @@ public class SingleFieldBuilder
     }
   }
 
-  //@Override (Java 1.6 override semantics, but we must support 1.5)
+  @Override
   public void markDirty() {
     onChanged();
   }

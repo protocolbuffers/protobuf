@@ -342,6 +342,64 @@ TEST(ArenaTest, Swap) {
   EXPECT_EQ(42, arena2_message->unknown_fields().field(0).varint());
 }
 
+TEST(ArenaTest, ReflectionSwapFields) {
+  Arena arena1;
+  Arena arena2;
+  TestAllTypes* arena1_message;
+  TestAllTypes* arena2_message;
+
+  // Case 1: messages on different arenas, only one message is set.
+  arena1_message = Arena::CreateMessage<TestAllTypes>(&arena1);
+  arena2_message = Arena::CreateMessage<TestAllTypes>(&arena2);
+  TestUtil::SetAllFields(arena1_message);
+  const Reflection* reflection = arena1_message->GetReflection();
+  std::vector<const FieldDescriptor*> fields;
+  reflection->ListFields(*arena1_message, &fields);
+  reflection->SwapFields(arena1_message, arena2_message, fields);
+  EXPECT_EQ(&arena1, arena1_message->GetArena());
+  EXPECT_EQ(&arena2, arena2_message->GetArena());
+  string output;
+  arena1_message->SerializeToString(&output);
+  EXPECT_EQ(0, output.size());
+  TestUtil::ExpectAllFieldsSet(*arena2_message);
+  reflection->SwapFields(arena1_message, arena2_message, fields);
+  arena2_message->SerializeToString(&output);
+  EXPECT_EQ(0, output.size());
+  TestUtil::ExpectAllFieldsSet(*arena1_message);
+
+  // Case 2: messages on different arenas, both messages are set.
+  arena1_message = Arena::CreateMessage<TestAllTypes>(&arena1);
+  arena2_message = Arena::CreateMessage<TestAllTypes>(&arena2);
+  TestUtil::SetAllFields(arena1_message);
+  TestUtil::SetAllFields(arena2_message);
+  reflection->SwapFields(arena1_message, arena2_message, fields);
+  EXPECT_EQ(&arena1, arena1_message->GetArena());
+  EXPECT_EQ(&arena2, arena2_message->GetArena());
+  TestUtil::ExpectAllFieldsSet(*arena1_message);
+  TestUtil::ExpectAllFieldsSet(*arena2_message);
+
+  // Case 3: messages on different arenas with different lifetimes.
+  arena1_message = Arena::CreateMessage<TestAllTypes>(&arena1);
+  {
+    Arena arena3;
+    TestAllTypes* arena3_message = Arena::CreateMessage<TestAllTypes>(&arena3);
+    TestUtil::SetAllFields(arena3_message);
+    reflection->SwapFields(arena1_message, arena3_message, fields);
+  }
+  TestUtil::ExpectAllFieldsSet(*arena1_message);
+
+  // Case 4: one message on arena, the other on heap.
+  arena1_message = Arena::CreateMessage<TestAllTypes>(&arena1);
+  TestAllTypes message;
+  TestUtil::SetAllFields(arena1_message);
+  reflection->SwapFields(arena1_message, &message, fields);
+  EXPECT_EQ(&arena1, arena1_message->GetArena());
+  EXPECT_EQ(NULL, message.GetArena());
+  arena1_message->SerializeToString(&output);
+  EXPECT_EQ(0, output.size());
+  TestUtil::ExpectAllFieldsSet(message);
+}
+
 TEST(ArenaTest, SetAllocatedMessage) {
   Arena arena;
   TestAllTypes *arena_message = Arena::CreateMessage<TestAllTypes>(&arena);

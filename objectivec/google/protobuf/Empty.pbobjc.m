@@ -5,6 +5,9 @@
 #import "google/protobuf/Empty.pbobjc.h"
 // @@protoc_insertion_point(imports)
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+
 #pragma mark - GPBEmptyRoot
 
 @implementation GPBEmptyRoot
@@ -31,7 +34,7 @@ static GPBFileDescriptor *GPBEmptyRoot_FileDescriptor(void) {
 
 
 typedef struct GPBEmpty__storage_ {
-  uint32_t _has_storage_[0];
+  uint32_t _has_storage_[1];
 } GPBEmpty__storage_;
 
 // This method is threadsafe because it is initially called
@@ -45,14 +48,8 @@ typedef struct GPBEmpty__storage_ {
                                           file:GPBEmptyRoot_FileDescriptor()
                                         fields:NULL
                                     fieldCount:0
-                                        oneofs:NULL
-                                    oneofCount:0
-                                         enums:NULL
-                                     enumCount:0
-                                        ranges:NULL
-                                    rangeCount:0
                                    storageSize:sizeof(GPBEmpty__storage_)
-                                    wireFormat:NO];
+                                         flags:0];
     NSAssert(descriptor == nil, @"Startup recursed!");
     descriptor = localDescriptor;
   }
@@ -61,5 +58,7 @@ typedef struct GPBEmpty__storage_ {
 
 @end
 
+
+#pragma clang diagnostic pop
 
 // @@protoc_insertion_point(global_scope)

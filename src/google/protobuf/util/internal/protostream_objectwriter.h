@@ -74,10 +74,30 @@ class ObjectLocationTracker;
 // It also supports streaming.
 class LIBPROTOBUF_EXPORT ProtoStreamObjectWriter : public ProtoWriter {
  public:
+  // Options that control ProtoStreamObjectWriter class's behavior.
+  struct Options {
+    // Treats integer inputs in google.protobuf.Struct as strings. Normally,
+    // integer values are returned in double field "number_value" of
+    // google.protobuf.Struct. However, this can cause precision loss for
+    // int64/uint64 inputs. This option is provided for cases that want to
+    // preserve integer precision.
+    bool struct_integers_as_strings;
+
+    Options() : struct_integers_as_strings(false) {}
+
+    // Default instance of Options with all options set to defaults.
+    static const Options& Defaults() {
+      static Options defaults;
+      return defaults;
+    }
+  };
+
 // Constructor. Does not take ownership of any parameter passed in.
   ProtoStreamObjectWriter(TypeResolver* type_resolver,
                           const google::protobuf::Type& type,
-                          strings::ByteSink* output, ErrorListener* listener);
+                          strings::ByteSink* output, ErrorListener* listener,
+                          const ProtoStreamObjectWriter::Options& options =
+                              ProtoStreamObjectWriter::Options::Defaults());
   virtual ~ProtoStreamObjectWriter();
 
   // ObjectWriter methods.
@@ -147,9 +167,14 @@ class LIBPROTOBUF_EXPORT ProtoStreamObjectWriter : public ProtoWriter {
     // The depth within the Any, so we can track when we're done.
     int depth_;
 
-    // True if the message type contained in Any has a special "value" message
-    // injected. This is true for well-known message types like Any or Struct.
-    bool has_injected_value_message_;
+    // True if the type is a well-known type. Well-known types in Any
+    // has a special formating:
+    // {
+    //   "@type": "type.googleapis.com/google.protobuf.XXX",
+    //   "value": <JSON representation of the type>,
+    // }
+    bool is_well_known_type_;
+    TypeRenderer* well_known_type_render_;
   };
 
   // Represents an item in a stack of items used to keep state between
@@ -300,6 +325,9 @@ class LIBPROTOBUF_EXPORT ProtoStreamObjectWriter : public ProtoWriter {
 
   // The current element, variable for internal state processing.
   google::protobuf::scoped_ptr<Item> current_;
+
+  // Reference to the options that control this class's behavior.
+  const ProtoStreamObjectWriter::Options options_;
 
   GOOGLE_DISALLOW_IMPLICIT_CONSTRUCTORS(ProtoStreamObjectWriter);
 };

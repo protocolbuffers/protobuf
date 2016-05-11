@@ -54,7 +54,7 @@ class MessageFactory;
 
 #ifdef _SHARED_PTR_H
 using std::shared_ptr;
-using std::string;
+using ::std::string;
 #else
 using internal::shared_ptr;
 #endif
@@ -116,12 +116,43 @@ typedef struct CMessage {
 
 extern PyTypeObject CMessage_Type;
 
+
+// The (meta) type of all Messages classes.
+// It allows us to cache some C++ pointers in the class object itself, they are
+// faster to extract than from the type's dictionary.
+
+struct CMessageClass {
+  // This is how CPython subclasses C structures: the base structure must be
+  // the first member of the object.
+  PyHeapTypeObject super;
+
+  // C++ descriptor of this message.
+  const Descriptor* message_descriptor;
+
+  // Owned reference, used to keep the pointer above alive.
+  PyObject* py_message_descriptor;
+
+  // The Python DescriptorPool used to create the class. It is needed to resolve
+  // fields descriptors, including extensions fields; its C++ MessageFactory is
+  // used to instantiate submessages.
+  // This can be different from DESCRIPTOR.file.pool, in the case of a custom
+  // DescriptorPool which defines new extensions.
+  // We own the reference, because it's important to keep the descriptors and
+  // factory alive.
+  PyDescriptorPool* py_descriptor_pool;
+
+  PyObject* AsPyObject() {
+    return reinterpret_cast<PyObject*>(this);
+  }
+};
+
+
 namespace cmessage {
 
 // Internal function to create a new empty Message Python object, but with empty
 // pointers to the C++ objects.
 // The caller must fill self->message, self->owner and eventually self->parent.
-CMessage* NewEmptyMessage(PyObject* type, const Descriptor* descriptor);
+CMessage* NewEmptyMessage(CMessageClass* type);
 
 // Release a submessage from its proto tree, making it a new top-level messgae.
 // A new message will be created if this is a read-only default instance.

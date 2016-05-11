@@ -72,8 +72,9 @@ void EnumGenerator::GenerateHeader(io::Printer* printer) {
       "\n",
       "name", name_);
 
-  printer->Print("$comments$typedef GPB_ENUM($name$) {\n",
+  printer->Print("$comments$typedef$deprecated_attribute$ GPB_ENUM($name$) {\n",
                  "comments", enum_comments,
+                 "deprecated_attribute", GetOptionalDeprecatedAttribute(descriptor_),
                  "name", name_);
   printer->Indent();
 
@@ -99,8 +100,9 @@ void EnumGenerator::GenerateHeader(io::Printer* printer) {
     }
 
     printer->Print(
-        "$name$ = $value$,\n",
+        "$name$$deprecated_attribute$ = $value$,\n",
         "name", EnumValueName(all_values_[i]),
+        "deprecated_attribute", GetOptionalDeprecatedAttribute(all_values_[i]),
         "value", SimpleItoa(all_values_[i]->number()));
   }
   printer->Outdent();
@@ -122,16 +124,6 @@ void EnumGenerator::GenerateSource(io::Printer* printer) {
       "\n",
       "name", name_);
 
-  printer->Print(
-      "GPBEnumDescriptor *$name$_EnumDescriptor(void) {\n"
-      "  static GPBEnumDescriptor *descriptor = NULL;\n"
-      "  if (!descriptor) {\n"
-      "    static GPBMessageEnumValueDescription values[] = {\n",
-      "name", name_);
-  printer->Indent();
-  printer->Indent();
-  printer->Indent();
-
   // Note: For the TextFormat decode info, we can't use the enum value as
   // the key because protocol buffer enums have 'allow_alias', which lets
   // a value be used more than once. Instead, the index into the list of
@@ -139,41 +131,66 @@ void EnumGenerator::GenerateSource(io::Printer* printer) {
   // will be zero.
   TextFormatDecodeData text_format_decode_data;
   int enum_value_description_key = -1;
+  string text_blob;
 
   for (int i = 0; i < all_values_.size(); i++) {
     ++enum_value_description_key;
     string short_name(EnumValueShortName(all_values_[i]));
-    printer->Print("{ .name = \"$short_name$\", .number = $name$ },\n",
-                   "short_name", short_name,
-                   "name", EnumValueName(all_values_[i]));
+    text_blob += short_name + '\0';
     if (UnCamelCaseEnumShortName(short_name) != all_values_[i]->name()) {
       text_format_decode_data.AddString(enum_value_description_key, short_name,
                                         all_values_[i]->name());
     }
   }
-  printer->Outdent();
-  printer->Outdent();
-  printer->Outdent();
+
+  printer->Print(
+      "GPBEnumDescriptor *$name$_EnumDescriptor(void) {\n"
+      "  static GPBEnumDescriptor *descriptor = NULL;\n"
+      "  if (!descriptor) {\n",
+      "name", name_);
+
+  static const int kBytesPerLine = 40;  // allow for escaping
+  printer->Print(
+      "    static const char *valueNames =");
+  for (int i = 0; i < text_blob.size(); i += kBytesPerLine) {
+    printer->Print(
+        "\n        \"$data$\"",
+        "data", EscapeTrigraphs(CEscape(text_blob.substr(i, kBytesPerLine))));
+  }
+  printer->Print(
+      ";\n"
+      "    static const int32_t values[] = {\n");
+  for (int i = 0; i < all_values_.size(); i++) {
+    printer->Print("        $name$,\n",  "name", EnumValueName(all_values_[i]));
+  }
   printer->Print("    };\n");
+
   if (text_format_decode_data.num_entries() == 0) {
     printer->Print(
-        "    descriptor = [GPBEnumDescriptor allocDescriptorForName:GPBNSStringifySymbol($name$)\n"
-        "                                                   values:values\n"
-        "                                               valueCount:sizeof(values) / sizeof(GPBMessageEnumValueDescription)\n"
-        "                                             enumVerifier:$name$_IsValidValue];\n",
+        "    GPBEnumDescriptor *worker =\n"
+        "        [GPBEnumDescriptor allocDescriptorForName:GPBNSStringifySymbol($name$)\n"
+        "                                       valueNames:valueNames\n"
+        "                                           values:values\n"
+        "                                            count:(uint32_t)(sizeof(values) / sizeof(int32_t))\n"
+        "                                     enumVerifier:$name$_IsValidValue];\n",
         "name", name_);
     } else {
       printer->Print(
         "    static const char *extraTextFormatInfo = \"$extraTextFormatInfo$\";\n"
-        "    descriptor = [GPBEnumDescriptor allocDescriptorForName:GPBNSStringifySymbol($name$)\n"
-        "                                                   values:values\n"
-        "                                               valueCount:sizeof(values) / sizeof(GPBMessageEnumValueDescription)\n"
-        "                                             enumVerifier:$name$_IsValidValue\n"
-        "                                      extraTextFormatInfo:extraTextFormatInfo];\n",
+        "    GPBEnumDescriptor *worker =\n"
+        "        [GPBEnumDescriptor allocDescriptorForName:GPBNSStringifySymbol($name$)\n"
+        "                                       valueNames:valueNames\n"
+        "                                           values:values\n"
+        "                                            count:(uint32_t)(sizeof(values) / sizeof(int32_t))\n"
+        "                                     enumVerifier:$name$_IsValidValue\n"
+        "                              extraTextFormatInfo:extraTextFormatInfo];\n",
         "name", name_,
         "extraTextFormatInfo", CEscape(text_format_decode_data.Data()));
     }
     printer->Print(
+      "    if (!OSAtomicCompareAndSwapPtrBarrier(nil, worker, (void * volatile *)&descriptor)) {\n"
+      "      [worker release];\n"
+      "    }\n"
       "  }\n"
       "  return descriptor;\n"
       "}\n\n");

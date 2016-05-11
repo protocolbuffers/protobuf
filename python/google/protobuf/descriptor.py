@@ -783,6 +783,8 @@ class FileDescriptor(DescriptorBase):
   serialized_pb: (str) Byte string of serialized
     descriptor_pb2.FileDescriptorProto.
   dependencies: List of other FileDescriptors this FileDescriptor depends on.
+  public_dependencies: A list of FileDescriptors, subset of the dependencies
+    above, which were declared as "public".
   message_types_by_name: Dict of message names of their descriptors.
   enum_types_by_name: Dict of enum names and their descriptors.
   extensions_by_name: Dict of extension names and their descriptors.
@@ -794,7 +796,8 @@ class FileDescriptor(DescriptorBase):
     _C_DESCRIPTOR_CLASS = _message.FileDescriptor
 
     def __new__(cls, name, package, options=None, serialized_pb=None,
-                dependencies=None, syntax=None, pool=None):
+                dependencies=None, public_dependencies=None,
+                syntax=None, pool=None):
       # FileDescriptor() is called from various places, not only from generated
       # files, to register dynamic proto files and messages.
       if serialized_pb:
@@ -805,7 +808,8 @@ class FileDescriptor(DescriptorBase):
         return super(FileDescriptor, cls).__new__(cls)
 
   def __init__(self, name, package, options=None, serialized_pb=None,
-               dependencies=None, syntax=None, pool=None):
+               dependencies=None, public_dependencies=None,
+               syntax=None, pool=None):
     """Constructor."""
     super(FileDescriptor, self).__init__(options, 'FileOptions')
 
@@ -822,6 +826,7 @@ class FileDescriptor(DescriptorBase):
     self.enum_types_by_name = {}
     self.extensions_by_name = {}
     self.dependencies = (dependencies or [])
+    self.public_dependencies = (public_dependencies or [])
 
     if (api_implementation.Type() == 'cpp' and
         self.serialized_pb is not None):

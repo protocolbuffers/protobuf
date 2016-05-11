@@ -80,7 +80,6 @@ JsonInput.Int32FieldMaxFloatValue.JsonOutput
 JsonInput.Int32FieldMaxFloatValue.ProtobufOutput
 JsonInput.Int32FieldMinFloatValue.JsonOutput
 JsonInput.Int32FieldMinFloatValue.ProtobufOutput
-JsonInput.Int32FieldMinValue.JsonOutput
 JsonInput.Int32FieldStringValue.JsonOutput
 JsonInput.Int32FieldStringValue.ProtobufOutput
 JsonInput.Int32FieldStringValueEscaped.JsonOutput
@@ -125,7 +124,6 @@ JsonInput.OptionalUint64Wrapper.ProtobufOutput
 JsonInput.OptionalWrapperTypesWithNonDefaultValue.JsonOutput
 JsonInput.OptionalWrapperTypesWithNonDefaultValue.ProtobufOutput
 JsonInput.OriginalProtoFieldName.JsonOutput
-JsonInput.OriginalProtoFieldName.ProtobufOutput
 JsonInput.PrimitiveRepeatedField.JsonOutput
 JsonInput.PrimitiveRepeatedField.ProtobufOutput
 JsonInput.RepeatedBoolWrapper.JsonOutput

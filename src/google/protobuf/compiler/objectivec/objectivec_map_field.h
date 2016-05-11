@@ -46,7 +46,6 @@ class MapFieldGenerator : public RepeatedFieldGenerator {
 
  public:
   virtual void FinishInitialization(void);
-  virtual void GenerateFieldDescriptionTypeSpecific(io::Printer* printer) const;
 
  protected:
   MapFieldGenerator(const FieldDescriptor* descriptor, const Options& options);

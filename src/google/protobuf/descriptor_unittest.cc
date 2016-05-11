@@ -54,6 +54,7 @@
 
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/stubs/logging.h>
+#include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/scoped_ptr.h>
 #include <google/protobuf/testing/googletest.h>
 #include <gtest/gtest.h>
@@ -5737,18 +5738,6 @@ TEST_F(ValidationErrorTest, ValidateProto3Enum) {
       "  name: 'FooEnum' "
       "  value { name: 'FOO_FOO' number:0 } "
       "}");
-}
-
-TEST_F(ValidationErrorTest, ValidateProto3LiteRuntime) {
-  // Lite runtime is not supported in proto3.
-  BuildFileWithErrors(
-      "name: 'foo.proto' "
-      "syntax: 'proto3' "
-      "options { "
-      "  optimize_for: LITE_RUNTIME "
-      "} ",
-      "foo.proto: foo.proto: OTHER: Lite runtime is not supported "
-      "in proto3.\n");
 }
 
 TEST_F(ValidationErrorTest, ValidateProto3Group) {

@@ -134,7 +134,8 @@ struct LIBPROTOBUF_EXPORT ArenaStringPtr {
   // UnsafeArenaRelease() on another field of a message in the same arena. Used
   // to implement unsafe_arena_set_allocated_<field> in generated classes.
   inline void UnsafeArenaSetAllocated(const ::std::string* default_value,
-                                      ::std::string* value, ::google::protobuf::Arena* /* arena */) {
+                                      ::std::string* value,
+                                      ::google::protobuf::Arena* /* arena */) {
     if (value != NULL) {
       ptr_ = value;
     } else {

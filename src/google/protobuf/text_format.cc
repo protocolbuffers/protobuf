@@ -91,7 +91,10 @@ inline bool GetAnyFieldDescriptors(const Message& message,
 string Message::DebugString() const {
   string debug_string;
 
-  TextFormat::PrintToString(*this, &debug_string);
+  TextFormat::Printer printer;
+  printer.SetExpandAny(true);
+
+  printer.PrintToString(*this, &debug_string);
 
   return debug_string;
 }
@@ -101,6 +104,7 @@ string Message::ShortDebugString() const {
 
   TextFormat::Printer printer;
   printer.SetSingleLineMode(true);
+  printer.SetExpandAny(true);
 
   printer.PrintToString(*this, &debug_string);
   // Single line mode currently might have an extra space at the end.
@@ -117,6 +121,7 @@ string Message::Utf8DebugString() const {
 
   TextFormat::Printer printer;
   printer.SetUseUtf8StringEscaping(true);
+  printer.SetExpandAny(true);
 
   printer.PrintToString(*this, &debug_string);
 
@@ -1153,10 +1158,10 @@ class TextFormat::Printer::TextGenerator {
   }
 
   // Print text to the output stream.
-  void Print(const char* text, int size) {
-    int pos = 0;  // The number of bytes we've written so far.
+  void Print(const char* text, size_t size) {
+    size_t pos = 0;  // The number of bytes we've written so far.
 
-    for (int i = 0; i < size; i++) {
+    for (size_t i = 0; i < size; i++) {
       if (text[i] == '\n') {
         // Saw newline.  If there is more text, we may need to insert an indent
         // here.  So, write what we have so far, including the '\n'.
@@ -1181,7 +1186,7 @@ class TextFormat::Printer::TextGenerator {
  private:
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(TextGenerator);
 
-  void Write(const char* data, int size) {
+  void Write(const char* data, size_t size) {
     if (failed_) return;
     if (size == 0) return;
 
@@ -1780,14 +1785,12 @@ void TextFormat::Printer::PrintFieldValue(
           ? reflection->GetRepeatedStringReference(
               message, field, index, &scratch)
           : reflection->GetStringReference(message, field, &scratch);
-      int64 size = value.size();
-      if (truncate_string_field_longer_than_ > 0) {
-        size = std::min(truncate_string_field_longer_than_,
-                        static_cast<int64>(value.size()));
-      }
-      string truncated_value(value.substr(0, size) + "...<truncated>...");
       const string* value_to_print = &value;
-      if (size < value.size()) {
+      string truncated_value;
+      if (truncate_string_field_longer_than_ > 0 &&
+          truncate_string_field_longer_than_ < value.size()) {
+        truncated_value = value.substr(0, truncate_string_field_longer_than_) +
+                          "...<truncated>...";
         value_to_print = &truncated_value;
       }
       if (field->type() == FieldDescriptor::TYPE_STRING) {

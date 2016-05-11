@@ -35,12 +35,12 @@ import java.util.AbstractSet;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
-import java.util.TreeMap;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.SortedMap;
+import java.util.TreeMap;
 
 /**
  * A custom map implementation from FieldDescriptor to Object optimized to
@@ -411,22 +411,22 @@ class SmallSortedMap<K extends Comparable<K>, V> extends AbstractMap<K, V> {
       this.value = value;
     }
 
-    //@Override (Java 1.6 override semantics, but we must support 1.5)
+    @Override
     public K getKey() {
       return key;
     }
 
-    //@Override (Java 1.6 override semantics, but we must support 1.5)
+    @Override
     public V getValue() {
       return value;
     }
 
-    //@Override (Java 1.6 override semantics, but we must support 1.5)
+    @Override
     public int compareTo(Entry other) {
       return getKey().compareTo(other.getKey());
     }
 
-    //@Override (Java 1.6 override semantics, but we must support 1.5)
+    @Override
     public V setValue(V newValue) {
       checkMutable();
       final V oldValue = this.value;
@@ -535,13 +535,13 @@ class SmallSortedMap<K extends Comparable<K>, V> extends AbstractMap<K, V> {
     private boolean nextCalledBeforeRemove;
     private Iterator<Map.Entry<K, V>> lazyOverflowIterator;
 
-    //@Override (Java 1.6 override semantics, but we must support 1.5)
+    @Override
     public boolean hasNext() {
       return (pos + 1) < entryList.size() ||
           getOverflowIterator().hasNext();
     }
 
-    //@Override (Java 1.6 override semantics, but we must support 1.5)
+    @Override
     public Map.Entry<K, V> next() {
       nextCalledBeforeRemove = true;
       // Always increment pos so that we know whether the last returned value
@@ -552,7 +552,7 @@ class SmallSortedMap<K extends Comparable<K>, V> extends AbstractMap<K, V> {
       return getOverflowIterator().next();
     }
 
-    //@Override (Java 1.6 override semantics, but we must support 1.5)
+    @Override
     public void remove() {
       if (!nextCalledBeforeRemove) {
         throw new IllegalStateException("remove() was called before next()");
@@ -588,31 +588,83 @@ class SmallSortedMap<K extends Comparable<K>, V> extends AbstractMap<K, V> {
    */
   private static class EmptySet {
 
-    private static final Iterator<Object> ITERATOR = new Iterator<Object>() {
-      //@Override (Java 1.6 override semantics, but we must support 1.5)
-      public boolean hasNext() {
-        return false;
-      }
-      //@Override (Java 1.6 override semantics, but we must support 1.5)
-      public Object next() {
-        throw new NoSuchElementException();
-      }
-      //@Override (Java 1.6 override semantics, but we must support 1.5)
-      public void remove() {
-        throw new UnsupportedOperationException();
-      }
-    };
+    private static final Iterator<Object> ITERATOR =
+        new Iterator<Object>() {
+          @Override
+          public boolean hasNext() {
+            return false;
+          }
+          @Override
+          public Object next() {
+            throw new NoSuchElementException();
+          }
+          @Override
+          public void remove() {
+            throw new UnsupportedOperationException();
+          }
+        };
 
-    private static final Iterable<Object> ITERABLE = new Iterable<Object>() {
-      //@Override (Java 1.6 override semantics, but we must support 1.5)
-      public Iterator<Object> iterator() {
-        return ITERATOR;
-      }
-    };
+    private static final Iterable<Object> ITERABLE =
+        new Iterable<Object>() {
+          @Override
+          public Iterator<Object> iterator() {
+            return ITERATOR;
+          }
+        };
 
     @SuppressWarnings("unchecked")
     static <T> Iterable<T> iterable() {
       return (Iterable<T>) ITERABLE;
     }
+  }
+  
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    
+    if (!(o instanceof SmallSortedMap)) {
+      return super.equals(o);
+    }
+    
+    SmallSortedMap<?, ?> other = (SmallSortedMap<?, ?>) o;
+    final int size = size();
+    if (size != other.size()) {
+      return false;
+    }
+    
+    // Best effort try to avoid allocating an entry set.
+    final int numArrayEntries = getNumArrayEntries();
+    if (numArrayEntries != other.getNumArrayEntries()) {
+      return entrySet().equals(other.entrySet());
+    }
+    
+    for (int i = 0; i < numArrayEntries; i++) {
+      if (!getArrayEntryAt(i).equals(other.getArrayEntryAt(i))) {
+        return false;
+      }
+    }
+    
+    if (numArrayEntries != size) {
+      return overflowEntries.equals(other.overflowEntries);
+    }
+    
+    
+    return true;
+  }
+  
+  @Override
+  public int hashCode() {
+    int h = 0;
+    final int listSize = getNumArrayEntries();
+    for (int i = 0; i < listSize; i++) {
+      h += entryList.get(i).hashCode();
+    }
+    // Avoid the iterator allocation if possible.
+    if (getNumOverflowEntries() > 0) {
+      h += overflowEntries.hashCode();
+    }
+    return h;
   }
 }

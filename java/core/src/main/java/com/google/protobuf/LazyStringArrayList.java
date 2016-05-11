@@ -30,12 +30,12 @@
 
 package com.google.protobuf;
 
-import java.util.Arrays;
-import java.util.List;
 import java.util.AbstractList;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.RandomAccess;
 
 /**
@@ -64,7 +64,7 @@ import java.util.RandomAccess;
  */
 public class LazyStringArrayList extends AbstractProtobufList<String>
     implements LazyStringList, RandomAccess {
-  
+
   private static final LazyStringArrayList EMPTY_LIST = new LazyStringArrayList();
   static {
     EMPTY_LIST.makeImmutable();
@@ -80,11 +80,11 @@ public class LazyStringArrayList extends AbstractProtobufList<String>
   private final List<Object> list;
 
   public LazyStringArrayList() {
-    list = new ArrayList<Object>();
+    this(DEFAULT_CAPACITY);
   }
 
   public LazyStringArrayList(int intialCapacity) {
-    list = new ArrayList<Object>(intialCapacity);
+    this(new ArrayList<Object>(intialCapacity));
   }
 
   public LazyStringArrayList(LazyStringList from) {
@@ -93,7 +93,21 @@ public class LazyStringArrayList extends AbstractProtobufList<String>
   }
 
   public LazyStringArrayList(List<String> from) {
-    list = new ArrayList<Object>(from);
+    this(new ArrayList<Object>(from));
+  }
+  
+  private LazyStringArrayList(ArrayList<Object> list) {
+    this.list = list;
+  }
+
+  @Override
+  public LazyStringArrayList mutableCopyWithCapacity(int capacity) {
+    if (capacity < size()) {
+      throw new IllegalArgumentException();
+    }
+    ArrayList<Object> newList = new ArrayList<Object>(capacity);
+    newList.addAll(list);
+    return new LazyStringArrayList(newList);
   }
 
   @Override
@@ -170,7 +184,7 @@ public class LazyStringArrayList extends AbstractProtobufList<String>
     return ret;
   }
 
-  // @Override
+  @Override
   public boolean addAllByteString(Collection<? extends ByteString> values) {
     ensureIsMutable();
     boolean ret = list.addAll(values);
@@ -178,7 +192,7 @@ public class LazyStringArrayList extends AbstractProtobufList<String>
     return ret;
   }
 
-  // @Override
+  @Override
   public boolean addAllByteArray(Collection<byte[]> c) {
     ensureIsMutable();
     boolean ret = list.addAll(c);
@@ -201,14 +215,14 @@ public class LazyStringArrayList extends AbstractProtobufList<String>
     modCount++;
   }
 
-  // @Override
+  @Override
   public void add(ByteString element) {
     ensureIsMutable();
     list.add(element);
     modCount++;
   }
   
-  // @Override
+  @Override
   public void add(byte[] element) {
     ensureIsMutable();
     list.add(element);
@@ -220,7 +234,7 @@ public class LazyStringArrayList extends AbstractProtobufList<String>
     return list.get(index);
   }
   
-  // @Override
+  @Override
   public ByteString getByteString(int index) {
     Object o = list.get(index);
     ByteString b = asByteString(o);
@@ -230,7 +244,7 @@ public class LazyStringArrayList extends AbstractProtobufList<String>
     return b;
   }
   
-  // @Override
+  @Override
   public byte[] getByteArray(int index) {
     Object o = list.get(index);
     byte[] b = asByteArray(o);
@@ -240,7 +254,7 @@ public class LazyStringArrayList extends AbstractProtobufList<String>
     return b;
   }
 
-  // @Override
+  @Override
   public void set(int index, ByteString s) {
     setAndReturn(index, s);
   }
@@ -250,7 +264,7 @@ public class LazyStringArrayList extends AbstractProtobufList<String>
     return list.set(index, s);
   }
 
-  // @Override
+  @Override
   public void set(int index, byte[] s) {
     setAndReturn(index, s);
   }
@@ -290,12 +304,12 @@ public class LazyStringArrayList extends AbstractProtobufList<String>
     }
   }
 
-  // @Override
+  @Override
   public List<?> getUnderlyingElements() {
     return Collections.unmodifiableList(list);
   }
 
-  // @Override
+  @Override
   public void mergeFrom(LazyStringList other) {
     ensureIsMutable();
     for (Object o : other.getUnderlyingElements()) {
@@ -349,7 +363,7 @@ public class LazyStringArrayList extends AbstractProtobufList<String>
     }
   }
   
-  // @Override
+  @Override
   public List<byte[]> asByteArrayList() {
     return new ByteArrayListView(this);
   }
@@ -393,12 +407,12 @@ public class LazyStringArrayList extends AbstractProtobufList<String>
     }
   }
 
-  // @Override
+  @Override
   public List<ByteString> asByteStringList() {
     return new ByteStringListView(this);
   }
 
-  // @Override
+  @Override
   public LazyStringList getUnmodifiableView() {
     if (isModifiable()) {
       return new UnmodifiableLazyStringList(this);

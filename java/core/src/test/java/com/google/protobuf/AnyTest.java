@@ -75,6 +75,51 @@ public class AnyTest extends TestCase {
     }
   }
 
+  public void testCustomTypeUrls() throws Exception {
+    TestAllTypes.Builder builder = TestAllTypes.newBuilder();
+    TestUtil.setAllFields(builder);
+    TestAllTypes message = builder.build();
+
+    TestAny container = TestAny.newBuilder()
+        .setValue(Any.pack(message, "xxx.com")).build();
+
+    assertEquals(
+        "xxx.com/" + TestAllTypes.getDescriptor().getFullName(),
+        container.getValue().getTypeUrl());
+
+    assertTrue(container.getValue().is(TestAllTypes.class));
+    assertFalse(container.getValue().is(TestAny.class));
+
+    TestAllTypes result = container.getValue().unpack(TestAllTypes.class);
+    TestUtil.assertAllFieldsSet(result);
+
+    container = TestAny.newBuilder()
+        .setValue(Any.pack(message, "yyy.com/")).build();
+
+    assertEquals(
+        "yyy.com/" + TestAllTypes.getDescriptor().getFullName(),
+        container.getValue().getTypeUrl());
+
+    assertTrue(container.getValue().is(TestAllTypes.class));
+    assertFalse(container.getValue().is(TestAny.class));
+
+    result = container.getValue().unpack(TestAllTypes.class);
+    TestUtil.assertAllFieldsSet(result);
+
+    container = TestAny.newBuilder()
+        .setValue(Any.pack(message, "")).build();
+
+    assertEquals(
+        "/" + TestAllTypes.getDescriptor().getFullName(),
+        container.getValue().getTypeUrl());
+
+    assertTrue(container.getValue().is(TestAllTypes.class));
+    assertFalse(container.getValue().is(TestAny.class));
+
+    result = container.getValue().unpack(TestAllTypes.class);
+    TestUtil.assertAllFieldsSet(result);
+  }
+
   public void testCachedUnpackResult() throws Exception {
     TestAllTypes.Builder builder = TestAllTypes.newBuilder();
     TestUtil.setAllFields(builder);

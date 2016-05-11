@@ -319,6 +319,7 @@ class DescriptorPool(object):
     if file_proto.name not in self._file_descriptors:
       built_deps = list(self._GetDeps(file_proto.dependency))
       direct_deps = [self.FindFileByName(n) for n in file_proto.dependency]
+      public_deps = [direct_deps[i] for i in file_proto.public_dependency]
 
       file_descriptor = descriptor.FileDescriptor(
           pool=self,
@@ -327,7 +328,8 @@ class DescriptorPool(object):
           syntax=file_proto.syntax,
           options=file_proto.options,
           serialized_pb=file_proto.SerializeToString(),
-          dependencies=direct_deps)
+          dependencies=direct_deps,
+          public_dependencies=public_deps)
       if _USE_C_DESCRIPTORS:
         # When using C++ descriptors, all objects defined in the file were added
         # to the C++ database when the FileDescriptor was built above.

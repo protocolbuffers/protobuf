@@ -33,6 +33,8 @@ package com.google.protobuf;
 import protobuf_unittest.lite_equals_and_hash.LiteEqualsAndHash.Bar;
 import protobuf_unittest.lite_equals_and_hash.LiteEqualsAndHash.BarPrime;
 import protobuf_unittest.lite_equals_and_hash.LiteEqualsAndHash.Foo;
+import protobuf_unittest.lite_equals_and_hash.LiteEqualsAndHash.TestOneofEquals;
+import protobuf_unittest.lite_equals_and_hash.LiteEqualsAndHash.TestRecursiveOneof;
 
 import junit.framework.TestCase;
 
@@ -83,6 +85,16 @@ public class LiteEqualsAndHashTest extends TestCase {
     assertFalse(bar.equals(barPrime));
   }
 
+  public void testOneofEquals() throws Exception {
+    TestOneofEquals.Builder builder = TestOneofEquals.newBuilder();
+    TestOneofEquals message1 = builder.build();
+    // Set message2's name field to default value. The two messages should be different when we
+    // check with the oneof case.
+    builder.setName("");
+    TestOneofEquals message2 = builder.build();
+    assertFalse(message1.equals(message2));
+  }
+
   public void testEqualsAndHashCodeWithUnknownFields() throws InvalidProtocolBufferException {
     Foo fooWithOnlyValue = Foo.newBuilder()
         .setValue(1)
@@ -104,5 +116,10 @@ public class LiteEqualsAndHashTest extends TestCase {
   private void assertEqualsAndHashCodeAreFalse(Object o1, Object o2) {
     assertFalse(o1.equals(o2));
     assertFalse(o1.hashCode() == o2.hashCode());
+  }
+
+  public void testRecursiveHashcode() {
+    // This tests that we don't infinite loop.
+    TestRecursiveOneof.getDefaultInstance().hashCode();
   }
 }

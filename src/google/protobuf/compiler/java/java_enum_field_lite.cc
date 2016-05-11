@@ -75,8 +75,6 @@ void SetEnumVariables(const FieldDescriptor* descriptor,
   // by the proto compiler
   (*variables)["deprecation"] = descriptor->options().deprecated()
       ? "@java.lang.Deprecated " : "";
-  (*variables)["on_changed"] =
-      HasDescriptorMethods(descriptor->containing_type()) ? "onChanged();" : "";
 
   if (SupportFieldPresence(descriptor->file())) {
     // For singular messages and builders, one bit is used for the hasField bit.
@@ -179,7 +177,7 @@ GenerateMembers(io::Printer* printer) const {
   WriteFieldDocComment(printer, descriptor_);
   printer->Print(variables_,
     "$deprecation$public $type$ get$capitalized_name$() {\n"
-    "  $type$ result = $type$.valueOf($name$_);\n"
+    "  $type$ result = $type$.forNumber($name$_);\n"
     "  return result == null ? $unknown$ : result;\n"
     "}\n");
 
@@ -228,7 +226,7 @@ GenerateBuilderMembers(io::Printer* printer) const {
     printer->Print(variables_,
       "$deprecation$public Builder set$capitalized_name$Value(int value) {\n"
       "  copyOnWrite();\n"
-      "  instance.set$capitalized_name$Value(int value);\n"
+      "  instance.set$capitalized_name$Value(value);\n"
       "  return this;\n"
       "}\n");
   }
@@ -264,17 +262,15 @@ GenerateInitializationCode(io::Printer* printer) const {
 }
 
 void ImmutableEnumFieldLiteGenerator::
-GenerateMergingCode(io::Printer* printer) const {
+GenerateVisitCode(io::Printer* printer) const {
   if (SupportFieldPresence(descriptor_->file())) {
     printer->Print(variables_,
-      "if (other.has$capitalized_name$()) {\n"
-      "  set$capitalized_name$(other.get$capitalized_name$());\n"
-      "}\n");
+      "$name$_ = visitor.visitInt(has$capitalized_name$(), $name$_,\n"
+      "    other.has$capitalized_name$(), other.$name$_);\n");
   } else if (SupportUnknownEnumValue(descriptor_->file())) {
     printer->Print(variables_,
-      "if (other.$name$_ != $default_number$) {\n"
-      "  set$capitalized_name$Value(other.get$capitalized_name$Value());\n"
-      "}\n");
+      "$name$_ = visitor.visitInt($name$_ != $default_number$, $name$_,"
+      "    other.$name$_ != $default_number$, other.$name$_);\n");
   } else {
     GOOGLE_LOG(FATAL) << "Can't reach here.";
   }
@@ -295,7 +291,7 @@ GenerateParsingCode(io::Printer* printer) const {
   } else {
     printer->Print(variables_,
       "int rawValue = input.readEnum();\n"
-      "$type$ value = $type$.valueOf(rawValue);\n"
+      "$type$ value = $type$.forNumber(rawValue);\n"
       "if (value == null) {\n");
     if (PreserveUnknownFields(descriptor_->containing_type())) {
       printer->Print(variables_,
@@ -389,7 +385,7 @@ GenerateMembers(io::Printer* printer) const {
   printer->Print(variables_,
     "$deprecation$public $type$ get$capitalized_name$() {\n"
     "  if ($has_oneof_case_message$) {\n"
-    "    $type$ result =  $type$.valueOf((java.lang.Integer) $oneof_name$_);\n"
+    "    $type$ result = $type$.forNumber((java.lang.Integer) $oneof_name$_);\n"
     "    return result == null ? $unknown$ : result;\n"
     "  }\n"
     "  return $default$;\n"
@@ -468,14 +464,10 @@ GenerateBuilderMembers(io::Printer* printer) const {
 }
 
 void ImmutableEnumOneofFieldLiteGenerator::
-GenerateMergingCode(io::Printer* printer) const {
-  if (SupportUnknownEnumValue(descriptor_->file())) {
-    printer->Print(variables_,
-      "set$capitalized_name$Value(other.get$capitalized_name$Value());\n");
-  } else {
-    printer->Print(variables_,
-      "set$capitalized_name$(other.get$capitalized_name$());\n");
-  }
+GenerateVisitCode(io::Printer* printer) const {
+  printer->Print(variables_,
+    "$oneof_name$_ = visitor.visitOneofInt(\n"
+    "   $has_oneof_case_message$, $oneof_name$_, other.$oneof_name$_);\n");
 }
 
 void ImmutableEnumOneofFieldLiteGenerator::
@@ -488,7 +480,7 @@ GenerateParsingCode(io::Printer* printer) const {
   } else {
     printer->Print(variables_,
       "int rawValue = input.readEnum();\n"
-      "$type$ value = $type$.valueOf(rawValue);\n"
+      "$type$ value = $type$.forNumber(rawValue);\n"
       "if (value == null) {\n");
     if (PreserveUnknownFields(descriptor_->containing_type())) {
       printer->Print(variables_,
@@ -602,7 +594,7 @@ GenerateMembers(io::Printer* printer) const {
     "        new com.google.protobuf.Internal.ListAdapter.Converter<\n"
     "            java.lang.Integer, $type$>() {\n"
     "          public $type$ convert(java.lang.Integer from) {\n"
-    "            $type$ result = $type$.valueOf(from);\n"
+    "            $type$ result = $type$.forNumber(from);\n"
     "            return result == null ? $unknown$ : result;\n"
     "          }\n"
     "        };\n");
@@ -638,7 +630,7 @@ GenerateMembers(io::Printer* printer) const {
   }
 
   if (descriptor_->options().packed() &&
-      HasGeneratedMethods(descriptor_->containing_type())) {
+      context_->HasGeneratedMethods(descriptor_->containing_type())) {
     printer->Print(variables_,
       "private int $name$MemoizedSerializedSize;\n");
   }
@@ -647,7 +639,8 @@ GenerateMembers(io::Printer* printer) const {
   printer->Print(variables_,
     "private void ensure$capitalized_name$IsMutable() {\n"
     "  if (!$is_mutable$) {\n"
-    "    $name$_ = newIntList($name$_);\n"
+    "    $name$_ =\n"
+    "        com.google.protobuf.GeneratedMessageLite.mutableCopy($name$_);\n"
     "  }\n"
     "}\n");
   WriteFieldDocComment(printer, descriptor_);
@@ -807,22 +800,9 @@ GenerateInitializationCode(io::Printer* printer) const {
 }
 
 void RepeatedImmutableEnumFieldLiteGenerator::
-GenerateMergingCode(io::Printer* printer) const {
-  // The code below does two optimizations:
-  //   1. If the other list is empty, there's nothing to do. This ensures we
-  //      don't allocate a new array if we already have an immutable one.
-  //   2. If the other list is non-empty and our current list is empty, we can
-  //      reuse the other list which is guaranteed to be immutable.
+GenerateVisitCode(io::Printer* printer) const {
   printer->Print(variables_,
-    "if (!other.$name$_.isEmpty()) {\n"
-    "  if ($name$_.isEmpty()) {\n"
-    "    $name$_ = other.$name$_;\n"
-    "  } else {\n"
-    "    ensure$capitalized_name$IsMutable();\n"
-    "    $name$_.addAll(other.$name$_);\n"
-    "  }\n"
-    "  $on_changed$\n"
-    "}\n");
+    "$name$_= visitor.visitIntList($name$_, other.$name$_);\n");
 }
 
 void RepeatedImmutableEnumFieldLiteGenerator::
@@ -834,27 +814,23 @@ GenerateDynamicMethodMakeImmutableCode(io::Printer* printer) const {
 void RepeatedImmutableEnumFieldLiteGenerator::
 GenerateParsingCode(io::Printer* printer) const {
   // Read and store the enum
+  printer->Print(variables_,
+    "if (!$is_mutable$) {\n"
+    "  $name$_ =\n"
+    "      com.google.protobuf.GeneratedMessageLite.mutableCopy($name$_);\n"
+    "}\n");
+
   if (SupportUnknownEnumValue(descriptor_->file())) {
     printer->Print(variables_,
-      "int rawValue = input.readEnum();\n"
-      "if (!$is_mutable$) {\n"
-      "  $name$_ = newIntList();\n"
-      "}\n"
-      "$name$_.addInt(rawValue);\n");
+      "$name$_.addInt(input.readEnum());\n");
   } else {
     printer->Print(variables_,
       "int rawValue = input.readEnum();\n"
-      "$type$ value = $type$.valueOf(rawValue);\n"
-        "if (value == null) {\n");
-    if (PreserveUnknownFields(descriptor_->containing_type())) {
-      printer->Print(variables_,
-        "  super.mergeVarintField($number$, rawValue);\n");
-    }
-    printer->Print(variables_,
+      "$type$ value = $type$.forNumber(rawValue);\n"
+      "if (value == null) {\n"
+      // We store the unknown value in unknown fields.
+      "  super.mergeVarintField($number$, rawValue);\n"
       "} else {\n"
-      "  if (!$is_mutable$) {\n"
-      "    $name$_ = newIntList();\n"
-      "  }\n"
       "  $name$_.addInt(rawValue);\n"
       "}\n");
   }
@@ -862,7 +838,11 @@ GenerateParsingCode(io::Printer* printer) const {
 
 void RepeatedImmutableEnumFieldLiteGenerator::
 GenerateParsingCodeFromPacked(io::Printer* printer) const {
-  // Wrap GenerateParsingCode's contents with a while loop.
+  printer->Print(variables_,
+    "if (!$is_mutable$) {\n"
+    "  $name$_ =\n"
+    "      com.google.protobuf.GeneratedMessageLite.mutableCopy($name$_);\n"
+    "}\n");
 
   printer->Print(variables_,
     "int length = input.readRawVarint32();\n"
@@ -870,7 +850,21 @@ GenerateParsingCodeFromPacked(io::Printer* printer) const {
     "while(input.getBytesUntilLimit() > 0) {\n");
   printer->Indent();
 
-  GenerateParsingCode(printer);
+  // Read and store the enum
+  if (SupportUnknownEnumValue(descriptor_->file())) {
+    printer->Print(variables_,
+      "$name$_.addInt(input.readEnum());\n");
+  } else {
+    printer->Print(variables_,
+      "int rawValue = input.readEnum();\n"
+      "$type$ value = $type$.forNumber(rawValue);\n"
+      "if (value == null) {\n"
+      // We store the unknown value in unknown fields.
+      "  super.mergeVarintField($number$, rawValue);\n"
+      "} else {\n"
+      "  $name$_.addInt(rawValue);\n"
+      "}\n");
+  }
 
   printer->Outdent();
   printer->Print(variables_,

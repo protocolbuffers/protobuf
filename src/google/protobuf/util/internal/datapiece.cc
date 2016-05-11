@@ -47,6 +47,7 @@ using google::protobuf::EnumDescriptor;
 using google::protobuf::EnumValueDescriptor;
 ;
 ;
+;
 using util::error::Code;
 using util::Status;
 using util::StatusOr;
@@ -248,11 +249,8 @@ StatusOr<string> DataPiece::ToBytes() const {
   if (type_ == TYPE_BYTES) return str_.ToString();
   if (type_ == TYPE_STRING) {
     string decoded;
-    if (!WebSafeBase64Unescape(str_, &decoded)) {
-      if (!Base64Unescape(str_, &decoded)) {
-        return InvalidArgument(
-            ValueAsStringOrDefault("Invalid data in input."));
-      }
+    if (!DecodeBase64(str_, &decoded)) {
+      return InvalidArgument(ValueAsStringOrDefault("Invalid data in input."));
     }
     return decoded;
   } else {
@@ -313,9 +311,47 @@ StatusOr<To> DataPiece::GenericConvert() const {
 
 template <typename To>
 StatusOr<To> DataPiece::StringToNumber(bool (*func)(StringPiece, To*)) const {
+  if (str_.size() > 0 && (str_[0] == ' ' || str_[str_.size() - 1] == ' ')) {
+    return InvalidArgument(StrCat("\"", str_, "\""));
+  }
   To result;
   if (func(str_, &result)) return result;
   return InvalidArgument(StrCat("\"", str_.ToString(), "\""));
+}
+
+bool DataPiece::DecodeBase64(StringPiece src, string* dest) const {
+  // Try web-safe decode first, if it fails, try the non-web-safe decode.
+  if (WebSafeBase64Unescape(src, dest)) {
+    if (use_strict_base64_decoding_) {
+      // In strict mode, check if the escaped version gives us the same value as
+      // unescaped.
+      string encoded;
+      // WebSafeBase64Escape does no padding by default.
+      WebSafeBase64Escape(*dest, &encoded);
+      // Remove trailing padding '=' characters before comparison.
+      StringPiece src_no_padding(src, 0, src.ends_with("=")
+                                             ? src.find_last_not_of('=') + 1
+                                             : src.length());
+      return encoded == src_no_padding;
+    }
+    return true;
+  }
+
+  if (Base64Unescape(src, dest)) {
+    if (use_strict_base64_decoding_) {
+      string encoded;
+      Base64Escape(
+          reinterpret_cast<const unsigned char*>(dest->data()), dest->length(),
+          &encoded, false);
+      StringPiece src_no_padding(src, 0, src.ends_with("=")
+                                             ? src.find_last_not_of('=') + 1
+                                             : src.length());
+      return encoded == src_no_padding;
+    }
+    return true;
+  }
+
+  return false;
 }
 
 }  // namespace converter

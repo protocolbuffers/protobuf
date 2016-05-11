@@ -123,6 +123,12 @@ PyObject* ClearExtension(ExtensionDict* self,
 // Returns a new reference.
 PyObject* _FindExtensionByName(ExtensionDict* self, PyObject* name);
 
+// Gets an extension from the dict given the extension field number as
+// opposed to descriptor.
+//
+// Returns a new reference.
+PyObject* _FindExtensionByNumber(ExtensionDict* self, PyObject* number);
+
 }  // namespace extension_dict
 }  // namespace python
 }  // namespace protobuf

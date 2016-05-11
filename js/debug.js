@@ -68,7 +68,7 @@ jspb.debug.dump = function(message) {
  * Recursively introspects a message and the values its getters return to
  * make a best effort in creating a human readable representation of the
  * message.
- * @param {*} thing A jspb.Message, Array or primitive type to dump.
+ * @param {?} thing A jspb.Message, Array or primitive type to dump.
  * @return {*}
  * @private
  */

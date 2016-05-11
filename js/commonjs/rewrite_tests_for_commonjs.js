@@ -61,6 +61,18 @@ function camelCase(str) {
 
 var module = null;
 var pkg = null;
+
+// Header: goes in every file at the top.
+console.log("var global = Function('return this')();");
+console.log("var googleProtobuf = require('google-protobuf');");
+console.log("var testdeps = require('testdeps_commonjs');");
+console.log("global.goog = testdeps.goog;");
+console.log("global.jspb = testdeps.jspb;");
+console.log("var asserts = require('closure_asserts_commonjs');");
+console.log("");
+console.log("// Bring asserts into the global namespace.");
+console.log("googleProtobuf.object.extend(global, asserts);");
+
 lineReader.on('line', function(line) {
   var isRequire = line.match(/goog\.require\('([^']*)'\)/);
   var isLoadFromFile = line.match(/CommonJS-LoadFromFile: (\S*) (.*)/);
@@ -72,14 +84,6 @@ lineReader.on('line', function(line) {
       console.log("googleProtobuf.exportSymbol('" + fullSym + "', " + module + sym + ', global);');
     }
   } else if (isLoadFromFile) {
-    if (!module) {
-      console.log("var googleProtobuf = require('google-protobuf');");
-      console.log("var asserts = require('closure_asserts_commonjs');");
-      console.log("var global = Function('return this')();");
-      console.log("");
-      console.log("// Bring asserts into the global namespace.");
-      console.log("googleProtobuf.object.extend(global, asserts);");
-    }
     var module_path = isLoadFromFile[1].split('/');
     module = camelCase(module_path[module_path.length - 1]);
     pkg = isLoadFromFile[2];

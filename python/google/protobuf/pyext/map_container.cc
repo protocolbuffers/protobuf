@@ -32,6 +32,11 @@
 
 #include <google/protobuf/pyext/map_container.h>
 
+#include <memory>
+#ifndef _SHARED_PTR_H
+#include <google/protobuf/stubs/shared_ptr.h>
+#endif
+
 #include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/stubs/scoped_ptr.h>
@@ -70,7 +75,7 @@ class MapReflectionFriend {
 struct MapIterator {
   PyObject_HEAD;
 
-  scoped_ptr< ::google::protobuf::MapIterator> iter;
+  google::protobuf::scoped_ptr< ::google::protobuf::MapIterator> iter;
 
   // A pointer back to the container, so we can notice changes to the version.
   // We own a ref on this.
@@ -610,8 +615,7 @@ static PyObject* GetCMessage(MessageMapContainer* self, Message* message) {
   PyObject* ret = PyDict_GetItem(self->message_dict, key.get());
 
   if (ret == NULL) {
-    CMessage* cmsg = cmessage::NewEmptyMessage(self->subclass_init,
-                                               message->GetDescriptor());
+    CMessage* cmsg = cmessage::NewEmptyMessage(self->message_class);
     ret = reinterpret_cast<PyObject*>(cmsg);
 
     if (cmsg == NULL) {
@@ -634,7 +638,7 @@ static PyObject* GetCMessage(MessageMapContainer* self, Message* message) {
 
 PyObject* NewMessageMapContainer(
     CMessage* parent, const google::protobuf::FieldDescriptor* parent_field_descriptor,
-    PyObject* concrete_class) {
+    CMessageClass* message_class) {
   if (!CheckFieldBelongsToMessage(parent_field_descriptor, parent->message)) {
     return NULL;
   }
@@ -669,8 +673,8 @@ PyObject* NewMessageMapContainer(
                         "Could not allocate message dict.");
   }
 
-  Py_INCREF(concrete_class);
-  self->subclass_init = concrete_class;
+  Py_INCREF(message_class);
+  self->message_class = message_class;
 
   if (self->key_field_descriptor == NULL ||
       self->value_field_descriptor == NULL) {
@@ -763,6 +767,7 @@ static void MessageMapDealloc(PyObject* _self) {
   MessageMapContainer* self = GetMessageMap(_self);
   self->owner.reset();
   Py_DECREF(self->message_dict);
+  Py_DECREF(self->message_class);
   Py_TYPE(_self)->tp_free(_self);
 }
 

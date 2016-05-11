@@ -30,12 +30,14 @@
 
 #include <google/protobuf/arena.h>
 
+
 #ifdef ADDRESS_SANITIZER
 #include <sanitizer/asan_interface.h>
 #endif
 
 namespace google {
 namespace protobuf {
+
 
 google::protobuf::internal::SequenceNumber Arena::lifecycle_id_generator_;
 #if defined(GOOGLE_PROTOBUF_NO_THREADLOCAL)
@@ -245,6 +247,19 @@ uint64 Arena::SpaceUsed() const {
     b = b->next;
   }
   return space_used;
+}
+
+pair<uint64, uint64> Arena::SpaceAllocatedAndUsed() const {
+  uint64 allocated = 0;
+  uint64 used = 0;
+
+  Block* b = reinterpret_cast<Block*>(google::protobuf::internal::NoBarrier_Load(&blocks_));
+  while (b != NULL) {
+    allocated += b->size;
+    used += (b->pos - kHeaderSize);
+    b = b->next;
+  }
+  return std::make_pair(allocated, used);
 }
 
 uint64 Arena::FreeBlocks() {

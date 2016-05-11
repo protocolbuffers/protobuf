@@ -39,6 +39,7 @@
 
 #include <google/protobuf/compiler/csharp/csharp_doc_comment.h>
 #include <google/protobuf/compiler/csharp/csharp_helpers.h>
+#include <google/protobuf/compiler/csharp/csharp_options.h>
 #include <google/protobuf/compiler/csharp/csharp_wrapper_field.h>
 
 namespace google {
@@ -47,8 +48,8 @@ namespace compiler {
 namespace csharp {
 
 WrapperFieldGenerator::WrapperFieldGenerator(const FieldDescriptor* descriptor,
-                                       int fieldOrdinal)
-    : FieldGeneratorBase(descriptor, fieldOrdinal) {
+                                       int fieldOrdinal, const Options *options)
+    : FieldGeneratorBase(descriptor, fieldOrdinal, options) {
   variables_["has_property_check"] = name() + "_ != null";
   variables_["has_not_property_check"] = name() + "_ == null";
   const FieldDescriptor* wrapped_field = descriptor->message_type()->field(0);
@@ -151,9 +152,9 @@ void WrapperFieldGenerator::GenerateCodecCode(io::Printer* printer) {
   }
 }
 
-WrapperOneofFieldGenerator::WrapperOneofFieldGenerator(const FieldDescriptor* descriptor,
-    int fieldOrdinal)
-    : WrapperFieldGenerator(descriptor, fieldOrdinal) {
+WrapperOneofFieldGenerator::WrapperOneofFieldGenerator(
+    const FieldDescriptor* descriptor, int fieldOrdinal, const Options *options)
+    : WrapperFieldGenerator(descriptor, fieldOrdinal, options) {
     SetCommonOneofFieldVariables(&variables_);
 }
 

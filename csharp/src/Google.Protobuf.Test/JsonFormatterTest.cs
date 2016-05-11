@@ -75,13 +75,13 @@ namespace Google.Protobuf
                 SingleFixed32 = 23,
                 SingleFixed64 = 1234567890123,
                 SingleFloat = 12.25f,
-                SingleForeignEnum = ForeignEnum.FOREIGN_BAR,
+                SingleForeignEnum = ForeignEnum.ForeignBar,
                 SingleForeignMessage = new ForeignMessage { C = 10 },
-                SingleImportEnum = ImportEnum.IMPORT_BAZ,
+                SingleImportEnum = ImportEnum.ImportBaz,
                 SingleImportMessage = new ImportMessage { D = 20 },
                 SingleInt32 = 100,
                 SingleInt64 = 3210987654321,
-                SingleNestedEnum = TestAllTypes.Types.NestedEnum.FOO,
+                SingleNestedEnum = TestAllTypes.Types.NestedEnum.Foo,
                 SingleNestedMessage = new TestAllTypes.Types.NestedMessage { Bb = 35 },
                 SinglePublicImportMessage = new PublicImportMessage { E = 54 },
                 SingleSfixed32 = -123,
@@ -174,14 +174,14 @@ namespace Google.Protobuf
         [Test]
         public void UnknownEnumValueNumeric_RepeatedField()
         {
-            var message = new TestAllTypes { RepeatedForeignEnum = { ForeignEnum.FOREIGN_BAZ, (ForeignEnum) 100, ForeignEnum.FOREIGN_FOO } };
+            var message = new TestAllTypes { RepeatedForeignEnum = { ForeignEnum.ForeignBaz, (ForeignEnum) 100, ForeignEnum.ForeignFoo } };
             AssertJson("{ 'repeatedForeignEnum': [ 'FOREIGN_BAZ', 100, 'FOREIGN_FOO' ] }", JsonFormatter.Default.Format(message));
         }
 
         [Test]
         public void UnknownEnumValueNumeric_MapField()
         {
-            var message = new TestMap { MapInt32Enum = { { 1, MapEnum.MAP_ENUM_FOO }, { 2, (MapEnum) 100 }, { 3, MapEnum.MAP_ENUM_BAR } } };
+            var message = new TestMap { MapInt32Enum = { { 1, MapEnum.Foo }, { 2, (MapEnum) 100 }, { 3, MapEnum.Bar } } };
             AssertJson("{ 'mapInt32Enum': { '1': 'MAP_ENUM_FOO', '2': 100, '3': 'MAP_ENUM_BAR' } }", JsonFormatter.Default.Format(message));
         }
 
@@ -320,7 +320,6 @@ namespace Google.Protobuf
         [TestCase("1970-01-01T00:00:00.000100Z", 100000)]
         [TestCase("1970-01-01T00:00:00.001Z", 1000000)]
         [TestCase("1970-01-01T00:00:00.010Z", 10000000)]
-        [TestCase("1970-01-01T00:00:00.100Z", 100000000)]
         [TestCase("1970-01-01T00:00:00.100Z", 100000000)]
         [TestCase("1970-01-01T00:00:00.120Z", 120000000)]
         [TestCase("1970-01-01T00:00:00.123Z", 123000000)]
@@ -479,6 +478,15 @@ namespace Google.Protobuf
             var message = new TestAllTypes { SingleInt32 = 10, SingleNestedMessage = new TestAllTypes.Types.NestedMessage { Bb = 20 } };
             var any = Any.Pack(message);
             AssertJson("{ '@type': 'type.googleapis.com/protobuf_unittest.TestAllTypes', 'singleInt32': 10, 'singleNestedMessage': { 'bb': 20 } }", formatter.Format(any));
+        }
+
+        [Test]
+        public void AnyMessageType_CustomPrefix()
+        {
+            var formatter = new JsonFormatter(new JsonFormatter.Settings(false, TypeRegistry.FromMessages(TestAllTypes.Descriptor)));
+            var message = new TestAllTypes { SingleInt32 = 10 };
+            var any = Any.Pack(message, "foo.bar/baz");
+            AssertJson("{ '@type': 'foo.bar/baz/protobuf_unittest.TestAllTypes', 'singleInt32': 10 }", formatter.Format(any));
         }
 
         [Test]

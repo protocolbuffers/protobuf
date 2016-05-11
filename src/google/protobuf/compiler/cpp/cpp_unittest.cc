@@ -82,7 +82,6 @@
 
 namespace google {
 namespace protobuf {
-using internal::NewPermanentCallback;
 namespace compiler {
 namespace cpp {
 
@@ -1253,7 +1252,7 @@ class GeneratedServiceTest : public testing::Test {
       foo_(descriptor_->FindMethodByName("Foo")),
       bar_(descriptor_->FindMethodByName("Bar")),
       stub_(&mock_channel_),
-      done_(NewPermanentCallback(&DoNothing)) {}
+      done_(::google::protobuf::internal::NewPermanentCallback(&DoNothing)) {}
 
   virtual void SetUp() {
     ASSERT_TRUE(foo_ != NULL);

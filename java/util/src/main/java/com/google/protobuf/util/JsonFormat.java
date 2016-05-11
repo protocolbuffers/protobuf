@@ -32,6 +32,7 @@ package com.google.protobuf.util;
 
 import com.google.common.io.BaseEncoding;
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonNull;
@@ -433,7 +434,7 @@ public class JsonFormat {
     private final Gson gson;
 
     private static class GsonHolder {
-      private static final Gson DEFAULT_GSON = new Gson();
+      private static final Gson DEFAULT_GSON = new GsonBuilder().disableHtmlEscaping().create();
     }
 
     PrinterImpl(
@@ -951,16 +952,15 @@ public class JsonFormat {
     }
   }
   
-  private static final String TYPE_URL_PREFIX = "type.googleapis.com";
-  
+
   private static String getTypeName(String typeUrl)
       throws InvalidProtocolBufferException {
     String[] parts = typeUrl.split("/");
-    if (parts.length != 2 || !parts[0].equals(TYPE_URL_PREFIX)) {
+    if (parts.length == 1) {
       throw new InvalidProtocolBufferException(
           "Invalid type url found: " + typeUrl);
     }
-    return parts[1];
+    return parts[parts.length - 1];
   }
   
   private static class ParserImpl {
@@ -1064,6 +1064,15 @@ public class JsonFormat {
         public void merge(ParserImpl parser, JsonElement json,
             Message.Builder builder) throws InvalidProtocolBufferException {
           parser.mergeStruct(json, builder);
+        }
+      });
+      // Special-case ListValue.
+      parsers.put(ListValue.getDescriptor().getFullName(),
+          new WellKnownTypeParser() {
+        @Override
+        public void merge(ParserImpl parser, JsonElement json,
+            Message.Builder builder) throws InvalidProtocolBufferException {
+          parser.mergeListValue(json, builder);
         }
       });
       // Special-case Value.
@@ -1213,6 +1222,16 @@ public class JsonFormat {
       }
       mergeMapField(field, json, builder);
     }
+
+    private void mergeListValue(JsonElement json, Message.Builder builder)
+        throws InvalidProtocolBufferException {
+      Descriptor descriptor = builder.getDescriptorForType();
+      FieldDescriptor field = descriptor.findFieldByName("values");
+      if (field == null) {
+        throw new InvalidProtocolBufferException("Invalid ListValue type.");
+      }
+      mergeRepeatedField(field, json, builder);
+    }
     
     private void mergeValue(JsonElement json, Message.Builder builder)
         throws InvalidProtocolBufferException {
@@ -1237,9 +1256,7 @@ public class JsonFormat {
       } else if (json instanceof JsonArray) {
         FieldDescriptor field = type.findFieldByName("list_value");
         Message.Builder listBuilder = builder.newBuilderForField(field);
-        FieldDescriptor listField =
-            listBuilder.getDescriptorForType().findFieldByName("values");
-        mergeRepeatedField(listField, json, listBuilder);
+        merge(json, listBuilder);
         builder.setField(field, listBuilder.build());
       } else {
         throw new IllegalStateException("Unexpected json data: " + json);

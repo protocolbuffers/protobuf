@@ -65,12 +65,17 @@ class ExtensionGenerator;      // extension.h
 class FileGenerator {
  public:
   // See generator.cc for the meaning of dllexport_decl.
-  explicit FileGenerator(const FileDescriptor* file,
-                         const Options& options);
+  FileGenerator(const FileDescriptor* file, const Options& options);
   ~FileGenerator();
 
-  void GenerateProtoHeader(io::Printer* printer);
-  void GeneratePBHeader(io::Printer* printer);
+  // info_path, if non-empty, should be the path (relative to printer's output)
+  // to the metadata file describing this proto header.
+  void GenerateProtoHeader(io::Printer* printer,
+                           const string& info_path);
+  // info_path, if non-empty, should be the path (relative to printer's output)
+  // to the metadata file describing this PB header.
+  void GeneratePBHeader(io::Printer* printer,
+                        const string& info_path);
   void GenerateSource(io::Printer* printer);
 
  private:
@@ -101,6 +106,10 @@ class FileGenerator {
   // Generates #include directives.
   void GenerateLibraryIncludes(io::Printer* printer);
   void GenerateDependencyIncludes(io::Printer* printer);
+
+  // Generate a pragma to pull in metadata using the given info_path (if
+  // non-empty). info_path should be relative to printer's output.
+  void GenerateMetadataPragma(io::Printer* printer, const string& info_path);
 
   // Generates a couple of different pieces before definitions:
   void GenerateGlobalStateFunctionDeclarations(io::Printer* printer);
@@ -134,6 +143,7 @@ class FileGenerator {
   void GenerateProto2NamespaceEnumSpecializations(io::Printer* printer);
 
   const FileDescriptor* file_;
+  const Options options_;
 
   google::protobuf::scoped_array<google::protobuf::scoped_ptr<MessageGenerator> > message_generators_;
   google::protobuf::scoped_array<google::protobuf::scoped_ptr<EnumGenerator> > enum_generators_;
@@ -142,7 +152,6 @@ class FileGenerator {
 
   // E.g. if the package is foo.bar, package_parts_ is {"foo", "bar"}.
   vector<string> package_parts_;
-  const Options options_;
 
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(FileGenerator);
 };

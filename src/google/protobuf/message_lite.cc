@@ -62,13 +62,15 @@ namespace {
 // provide a useful error message.
 void ByteSizeConsistencyError(int byte_size_before_serialization,
                               int byte_size_after_serialization,
-                              int bytes_produced_by_serialization) {
+                              int bytes_produced_by_serialization,
+                              const MessageLite& message) {
   GOOGLE_CHECK_EQ(byte_size_before_serialization, byte_size_after_serialization)
-      << "Protocol message was modified concurrently during serialization.";
+      << message.GetTypeName()
+      << " was modified concurrently during serialization.";
   GOOGLE_CHECK_EQ(bytes_produced_by_serialization, byte_size_before_serialization)
       << "Byte size calculation and serialization were inconsistent.  This "
          "may indicate a bug in protocol buffers or it may be caused by "
-         "concurrent modification of the message.";
+         "concurrent modification of " << message.GetTypeName() << ".";
   GOOGLE_LOG(FATAL) << "This shouldn't be called if all the sizes are equal.";
 }
 
@@ -248,7 +250,7 @@ bool MessageLite::SerializePartialToCodedStream(
   if (buffer != NULL) {
     uint8* end = SerializeWithCachedSizesToArray(buffer);
     if (end - buffer != size) {
-      ByteSizeConsistencyError(size, ByteSize(), end - buffer);
+      ByteSizeConsistencyError(size, ByteSize(), end - buffer, *this);
     }
     return true;
   } else {
@@ -261,7 +263,7 @@ bool MessageLite::SerializePartialToCodedStream(
 
     if (final_byte_count - original_byte_count != size) {
       ByteSizeConsistencyError(size, ByteSize(),
-                               final_byte_count - original_byte_count);
+                               final_byte_count - original_byte_count, *this);
     }
 
     return true;
@@ -299,7 +301,7 @@ bool MessageLite::AppendPartialToString(string* output) const {
       reinterpret_cast<uint8*>(io::mutable_string_data(output) + old_size);
   uint8* end = SerializeWithCachedSizesToArray(start);
   if (end - start != byte_size) {
-    ByteSizeConsistencyError(byte_size, ByteSize(), end - start);
+    ByteSizeConsistencyError(byte_size, ByteSize(), end - start, *this);
   }
   return true;
 }
@@ -325,7 +327,7 @@ bool MessageLite::SerializePartialToArray(void* data, int size) const {
   uint8* start = reinterpret_cast<uint8*>(data);
   uint8* end = SerializeWithCachedSizesToArray(start);
   if (end - start != byte_size) {
-    ByteSizeConsistencyError(byte_size, ByteSize(), end - start);
+    ByteSizeConsistencyError(byte_size, ByteSize(), end - start, *this);
   }
   return true;
 }
@@ -358,6 +360,11 @@ template <>
 void GenericTypeHandler<MessageLite>::Merge(const MessageLite& from,
                                             MessageLite* to) {
   to->CheckTypeAndMergeFrom(from);
+}
+template<>
+void GenericTypeHandler<string>::Merge(const string& from,
+                                              string* to) {
+  *to = from;
 }
 }  // namespace internal
 

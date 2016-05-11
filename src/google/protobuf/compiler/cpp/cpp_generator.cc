@@ -90,6 +90,14 @@ bool CppGenerator::Generate(const FileDescriptor* file,
       file_options.dllexport_decl = options[i].second;
     } else if (options[i].first == "safe_boundary_check") {
       file_options.safe_boundary_check = true;
+    } else if (options[i].first == "annotate_headers") {
+      file_options.annotate_headers = true;
+    } else if (options[i].first == "annotation_pragma_name") {
+      file_options.annotation_pragma_name = options[i].second;
+    } else if (options[i].first == "annotation_guard_name") {
+      file_options.annotation_guard_name = options[i].second;
+    } else if (options[i].first == "lite") {
+      file_options.enforce_lite = true;
     } else {
       *error = "Unknown generator option: " + options[i].first;
       return false;
@@ -107,16 +115,40 @@ bool CppGenerator::Generate(const FileDescriptor* file,
   if (file_options.proto_h) {
     google::protobuf::scoped_ptr<io::ZeroCopyOutputStream> output(
         generator_context->Open(basename + ".proto.h"));
-    io::Printer printer(output.get(), '$');
-    file_generator.GenerateProtoHeader(&printer);
+    GeneratedCodeInfo annotations;
+    io::AnnotationProtoCollector<GeneratedCodeInfo> annotation_collector(
+        &annotations);
+    string info_path = basename + ".proto.h.meta";
+    io::Printer printer(output.get(), '$', file_options.annotate_headers
+                                               ? &annotation_collector
+                                               : NULL);
+    file_generator.GenerateProtoHeader(
+        &printer, file_options.annotate_headers ? info_path : "");
+    if (file_options.annotate_headers) {
+      google::protobuf::scoped_ptr<io::ZeroCopyOutputStream> info_output(
+          generator_context->Open(info_path));
+      annotations.SerializeToZeroCopyStream(info_output.get());
+    }
   }
 
   basename.append(".pb");
   {
     google::protobuf::scoped_ptr<io::ZeroCopyOutputStream> output(
         generator_context->Open(basename + ".h"));
-    io::Printer printer(output.get(), '$');
-    file_generator.GeneratePBHeader(&printer);
+    GeneratedCodeInfo annotations;
+    io::AnnotationProtoCollector<GeneratedCodeInfo> annotation_collector(
+        &annotations);
+    string info_path = basename + ".h.meta";
+    io::Printer printer(output.get(), '$', file_options.annotate_headers
+                                               ? &annotation_collector
+                                               : NULL);
+    file_generator.GeneratePBHeader(
+        &printer, file_options.annotate_headers ? info_path : "");
+    if (file_options.annotate_headers) {
+      google::protobuf::scoped_ptr<io::ZeroCopyOutputStream> info_output(
+          generator_context->Open(info_path));
+      annotations.SerializeToZeroCopyStream(info_output.get());
+    }
   }
 
   // Generate cc file.

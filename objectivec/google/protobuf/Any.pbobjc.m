@@ -5,6 +5,9 @@
 #import "google/protobuf/Any.pbobjc.h"
 // @@protoc_insertion_point(imports)
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+
 #pragma mark - GPBAnyRoot
 
 @implementation GPBAnyRoot
@@ -46,47 +49,36 @@ typedef struct GPBAny__storage_ {
     static GPBMessageFieldDescription fields[] = {
       {
         .name = "typeURL",
+        .dataTypeSpecific.className = NULL,
         .number = GPBAny_FieldNumber_TypeURL,
         .hasIndex = 0,
+        .offset = (uint32_t)offsetof(GPBAny__storage_, typeURL),
         .flags = GPBFieldOptional | GPBFieldTextFormatNameCustom,
         .dataType = GPBDataTypeString,
-        .offset = offsetof(GPBAny__storage_, typeURL),
-        .defaultValue.valueString = nil,
-        .dataTypeSpecific.className = NULL,
-        .fieldOptions = NULL,
       },
       {
         .name = "value",
+        .dataTypeSpecific.className = NULL,
         .number = GPBAny_FieldNumber_Value,
         .hasIndex = 1,
+        .offset = (uint32_t)offsetof(GPBAny__storage_, value),
         .flags = GPBFieldOptional,
         .dataType = GPBDataTypeBytes,
-        .offset = offsetof(GPBAny__storage_, value),
-        .defaultValue.valueData = nil,
-        .dataTypeSpecific.className = NULL,
-        .fieldOptions = NULL,
       },
     };
-#if GPBOBJC_SKIP_MESSAGE_TEXTFORMAT_EXTRAS
-    const char *extraTextFormatInfo = NULL;
-#else
-    static const char *extraTextFormatInfo = "\001\001\004\241!!\000";
-#endif  // GPBOBJC_SKIP_MESSAGE_TEXTFORMAT_EXTRAS
     GPBDescriptor *localDescriptor =
         [GPBDescriptor allocDescriptorForClass:[GPBAny class]
                                      rootClass:[GPBAnyRoot class]
                                           file:GPBAnyRoot_FileDescriptor()
                                         fields:fields
-                                    fieldCount:sizeof(fields) / sizeof(GPBMessageFieldDescription)
-                                        oneofs:NULL
-                                    oneofCount:0
-                                         enums:NULL
-                                     enumCount:0
-                                        ranges:NULL
-                                    rangeCount:0
+                                    fieldCount:(uint32_t)(sizeof(fields) / sizeof(GPBMessageFieldDescription))
                                    storageSize:sizeof(GPBAny__storage_)
-                                    wireFormat:NO
-                           extraTextFormatInfo:extraTextFormatInfo];
+                                         flags:0];
+#if !GPBOBJC_SKIP_MESSAGE_TEXTFORMAT_EXTRAS
+    static const char *extraTextFormatInfo =
+        "\001\001\004\241!!\000";
+    [localDescriptor setupExtraTextInfo:extraTextFormatInfo];
+#endif  // !GPBOBJC_SKIP_MESSAGE_TEXTFORMAT_EXTRAS
     NSAssert(descriptor == nil, @"Startup recursed!");
     descriptor = localDescriptor;
   }
@@ -95,5 +87,7 @@ typedef struct GPBAny__storage_ {
 
 @end
 
+
+#pragma clang diagnostic pop
 
 // @@protoc_insertion_point(global_scope)

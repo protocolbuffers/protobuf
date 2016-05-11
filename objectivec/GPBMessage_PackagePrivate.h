@@ -67,6 +67,10 @@ typedef struct GPBMessage_Storage *GPBMessage_StoragePtr;
   // priority inversion:
   //   http://mjtsai.com/blog/2015/12/16/osspinlock-is-unsafe/
   //   https://lists.swift.org/pipermail/swift-dev/Week-of-Mon-20151214/000372.html
+  // Use of readOnlySemaphore_ must be prefaced by a call to
+  // GPBPrepareReadOnlySemaphore to ensure it has been created. This allows
+  // readOnlySemaphore_ to be only created when actually needed.
+  dispatch_once_t readOnlySemaphoreCreationOnce_;
   dispatch_semaphore_t readOnlySemaphore_;
 }
 
@@ -102,6 +106,14 @@ typedef struct GPBMessage_Storage *GPBMessage_StoragePtr;
 @end
 
 CF_EXTERN_C_BEGIN
+
+
+// Call this before using the readOnlySemaphore_. This ensures it is created only once.
+NS_INLINE void GPBPrepareReadOnlySemaphore(GPBMessage *self) {
+  dispatch_once(&self->readOnlySemaphoreCreationOnce_, ^{
+    self->readOnlySemaphore_ = dispatch_semaphore_create(1);
+  });
+}
 
 // Returns a new instance that was automatically created by |autocreator| for
 // its field |field|.

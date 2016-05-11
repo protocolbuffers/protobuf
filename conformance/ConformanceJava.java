@@ -129,7 +129,7 @@ class ConformanceJava {
     typeRegistry = TypeRegistry.newBuilder().add(
         Conformance.TestAllTypes.getDescriptor()).build();
     while (doTestIo()) {
-      // Empty.
+      this.testCount++;
     }
 
     System.err.println("ConformanceJava: received EOF from test runner after " +

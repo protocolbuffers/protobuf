@@ -35,11 +35,13 @@
 __author__ = 'matthewtoia@google.com (Matt Toia)'
 
 import os
+import sys
 
 try:
-  import unittest2 as unittest
+  import unittest2 as unittest  #PY26
 except ImportError:
   import unittest
+
 from google.protobuf import unittest_import_pb2
 from google.protobuf import unittest_import_public_pb2
 from google.protobuf import unittest_pb2
@@ -49,7 +51,7 @@ from google.protobuf.internal import descriptor_pool_test1_pb2
 from google.protobuf.internal import descriptor_pool_test2_pb2
 from google.protobuf.internal import factory_test1_pb2
 from google.protobuf.internal import factory_test2_pb2
-from google.protobuf.internal import test_util
+from google.protobuf.internal import more_messages_pb2
 from google.protobuf import descriptor
 from google.protobuf import descriptor_database
 from google.protobuf import descriptor_pool
@@ -59,11 +61,8 @@ from google.protobuf import symbol_database
 
 class DescriptorPoolTest(unittest.TestCase):
 
-  def CreatePool(self):
-    return descriptor_pool.DescriptorPool()
-
   def setUp(self):
-    self.pool = self.CreatePool()
+    self.pool = descriptor_pool.DescriptorPool()
     self.factory_test1_fd = descriptor_pb2.FileDescriptorProto.FromString(
         factory_test1_pb2.DESCRIPTOR.serialized_pb)
     self.factory_test2_fd = descriptor_pb2.FileDescriptorProto.FromString(
@@ -274,10 +273,13 @@ class DescriptorPoolTest(unittest.TestCase):
     self.testFindMessageTypeByName()
 
   def testComplexNesting(self):
+    more_messages_desc = descriptor_pb2.FileDescriptorProto.FromString(
+        more_messages_pb2.DESCRIPTOR.serialized_pb)
     test1_desc = descriptor_pb2.FileDescriptorProto.FromString(
         descriptor_pool_test1_pb2.DESCRIPTOR.serialized_pb)
     test2_desc = descriptor_pb2.FileDescriptorProto.FromString(
         descriptor_pool_test2_pb2.DESCRIPTOR.serialized_pb)
+    self.pool.Add(more_messages_desc)
     self.pool.Add(test1_desc)
     self.pool.Add(test2_desc)
     TEST1_FILE.CheckFile(self, self.pool)
@@ -349,25 +351,15 @@ class DescriptorPoolTest(unittest.TestCase):
     _CheckDefaultValues(message_class())
 
 
-@unittest.skipIf(api_implementation.Type() != 'cpp',
-                            'explicit tests of the C++ implementation')
-class CppDescriptorPoolTest(DescriptorPoolTest):
-  # TODO(amauryfa): remove when descriptor_pool.DescriptorPool() creates true
-  # C++ descriptor pool object for C++ implementation.
-
-  def CreatePool(self):
-    # pylint: disable=g-import-not-at-top
-    from google.protobuf.pyext import _message
-    return _message.DescriptorPool()
-
-
 class ProtoFile(object):
 
-  def __init__(self, name, package, messages, dependencies=None):
+  def __init__(self, name, package, messages, dependencies=None,
+               public_dependencies=None):
     self.name = name
     self.package = package
     self.messages = messages
     self.dependencies = dependencies or []
+    self.public_dependencies = public_dependencies or []
 
   def CheckFile(self, test, pool):
     file_desc = pool.FindFileByName(self.name)
@@ -375,6 +367,8 @@ class ProtoFile(object):
     test.assertEqual(self.package, file_desc.package)
     dependencies_names = [f.name for f in file_desc.dependencies]
     test.assertEqual(self.dependencies, dependencies_names)
+    public_dependencies_names = [f.name for f in file_desc.public_dependencies]
+    test.assertEqual(self.public_dependencies, public_dependencies_names)
     for name, msg_type in self.messages.items():
       msg_type.CheckType(test, None, name, file_desc)
 
@@ -555,7 +549,7 @@ class AddDescriptorTest(unittest.TestCase):
             prefix + 'protobuf_unittest.TestAllTypes.NestedMessage').name)
 
   @unittest.skipIf(api_implementation.Type() == 'cpp',
-                    'With the cpp implementation, Add() must be called first')
+                   'With the cpp implementation, Add() must be called first')
   def testMessage(self):
     self._TestMessage('')
     self._TestMessage('.')
@@ -591,13 +585,13 @@ class AddDescriptorTest(unittest.TestCase):
             prefix + 'protobuf_unittest.TestAllTypes.NestedEnum').name)
 
   @unittest.skipIf(api_implementation.Type() == 'cpp',
-                    'With the cpp implementation, Add() must be called first')
+                   'With the cpp implementation, Add() must be called first')
   def testEnum(self):
     self._TestEnum('')
     self._TestEnum('.')
 
   @unittest.skipIf(api_implementation.Type() == 'cpp',
-                    'With the cpp implementation, Add() must be called first')
+                   'With the cpp implementation, Add() must be called first')
   def testFile(self):
     pool = descriptor_pool.DescriptorPool()
     pool.AddFileDescriptor(unittest_pb2.DESCRIPTOR)
@@ -612,18 +606,9 @@ class AddDescriptorTest(unittest.TestCase):
       pool.FindFileContainingSymbol(
           'protobuf_unittest.TestAllTypes')
 
-  def _GetDescriptorPoolClass(self):
-    # Test with both implementations of descriptor pools.
-    if api_implementation.Type() == 'cpp':
-      # pylint: disable=g-import-not-at-top
-      from google.protobuf.pyext import _message
-      return _message.DescriptorPool
-    else:
-      return descriptor_pool.DescriptorPool
-
   def testEmptyDescriptorPool(self):
-    # Check that an empty DescriptorPool() contains no message.
-    pool = self._GetDescriptorPoolClass()()
+    # Check that an empty DescriptorPool() contains no messages.
+    pool = descriptor_pool.DescriptorPool()
     proto_file_name = descriptor_pb2.DESCRIPTOR.name
     self.assertRaises(KeyError, pool.FindFileByName, proto_file_name)
     # Add the above file to the pool
@@ -635,7 +620,7 @@ class AddDescriptorTest(unittest.TestCase):
 
   def testCustomDescriptorPool(self):
     # Create a new pool, and add a file descriptor.
-    pool = self._GetDescriptorPoolClass()()
+    pool = descriptor_pool.DescriptorPool()
     file_desc = descriptor_pb2.FileDescriptorProto(
         name='some/file.proto', package='package')
     file_desc.message_type.add(name='Message')
@@ -756,7 +741,9 @@ TEST2_FILE = ProtoFile(
              ExtensionField(1001, 'DescriptorPoolTest1')),
         ]),
     },
-    dependencies=['google/protobuf/internal/descriptor_pool_test1.proto'])
+    dependencies=['google/protobuf/internal/descriptor_pool_test1.proto',
+                  'google/protobuf/internal/more_messages.proto'],
+    public_dependencies=['google/protobuf/internal/more_messages.proto'])
 
 
 if __name__ == '__main__':

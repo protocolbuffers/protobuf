@@ -28,12 +28,24 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+// A hack to include windows.h first, which ensures the GetMessage macro can
+// be undefined when we include <google/protobuf/stubs/common.h>
+#if defined(_WIN32)
+#define _WINSOCKAPI_  // to avoid re-definition in WinSock2.h
+#define NOMINMAX      // to avoid defining min/max macros
+#include <windows.h>
+#endif  // _WIN32
+
+#include <algorithm>
+#include <google/protobuf/stubs/hash.h>
 #include <map>
 #include <memory>
 #ifndef _SHARED_PTR_H
 #include <google/protobuf/stubs/shared_ptr.h>
 #endif
+#include <set>
 #include <sstream>
+#include <vector>
 
 #include <google/protobuf/stubs/casts.h>
 #include <google/protobuf/stubs/logging.h>
@@ -62,6 +74,7 @@
 #include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/io/tokenizer.h>
 #include <google/protobuf/io/zero_copy_stream_impl.h>
+#include <google/protobuf/util/time_util.h>
 #include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/stubs/substitute.h>
 #include <google/protobuf/testing/googletest.h>
@@ -79,10 +92,11 @@ namespace internal {
 
 // Map API Test =====================================================
 
-class MapImplTest : public ::testing::Test {
+// Parameterized tests on whether to use old style maps.
+class MapImplTest : public testing::TestWithParam<bool> {
  protected:
   MapImplTest()
-      : map_ptr_(new Map<int32, int32>),
+      : map_ptr_(new Map<int32, int32>(GetParam())),
         map_(*map_ptr_),
         const_map_(*map_ptr_) {
     EXPECT_TRUE(map_.empty());
@@ -159,7 +173,7 @@ class MapImplTest : public ::testing::Test {
   const Map<int32, int32>& const_map_;
 };
 
-TEST_F(MapImplTest, OperatorBracket) {
+TEST_P(MapImplTest, OperatorBracket) {
   int32 key = 0;
   int32 value1 = 100;
   int32 value2 = 101;
@@ -173,7 +187,7 @@ TEST_F(MapImplTest, OperatorBracket) {
   ExpectSingleElement(key, value2);
 }
 
-TEST_F(MapImplTest, OperatorBracketNonExist) {
+TEST_P(MapImplTest, OperatorBracketNonExist) {
   int32 key = 0;
   int32 default_value = 0;
 
@@ -181,7 +195,7 @@ TEST_F(MapImplTest, OperatorBracketNonExist) {
   ExpectSingleElement(key, default_value);
 }
 
-TEST_F(MapImplTest, MutableAt) {
+TEST_P(MapImplTest, MutableAt) {
   int32 key = 0;
   int32 value1 = 100;
   int32 value2 = 101;
@@ -195,15 +209,15 @@ TEST_F(MapImplTest, MutableAt) {
 
 #ifdef PROTOBUF_HAS_DEATH_TEST
 
-TEST_F(MapImplTest, MutableAtNonExistDeathTest) {
+TEST_P(MapImplTest, MutableAtNonExistDeathTest) {
   EXPECT_DEATH(map_.at(0), "");
 }
 
-TEST_F(MapImplTest, ImmutableAtNonExistDeathTest) {
+TEST_P(MapImplTest, ImmutableAtNonExistDeathTest) {
   EXPECT_DEATH(const_map_.at(0), "");
 }
 
-TEST_F(MapImplTest, UsageErrors) {
+TEST_P(MapImplTest, UsageErrors) {
   MapKey key;
   key.SetInt64Value(1);
   EXPECT_DEATH(key.GetUInt64Value(),
@@ -220,23 +234,23 @@ TEST_F(MapImplTest, UsageErrors) {
 
 #endif  // PROTOBUF_HAS_DEATH_TEST
 
-TEST_F(MapImplTest, CountNonExist) {
+TEST_P(MapImplTest, CountNonExist) {
   EXPECT_EQ(0, map_.count(0));
 }
 
-TEST_F(MapImplTest, MutableFindNonExist) {
+TEST_P(MapImplTest, MutableFindNonExist) {
   EXPECT_TRUE(map_.end() == map_.find(0));
 }
 
-TEST_F(MapImplTest, ImmutableFindNonExist) {
+TEST_P(MapImplTest, ImmutableFindNonExist) {
   EXPECT_TRUE(const_map_.end() == const_map_.find(0));
 }
 
-TEST_F(MapImplTest, ConstEnd) {
+TEST_P(MapImplTest, ConstEnd) {
   EXPECT_TRUE(const_map_.end() == const_map_.cend());
 }
 
-TEST_F(MapImplTest, GetReferenceFromIterator) {
+TEST_P(MapImplTest, GetReferenceFromIterator) {
   for (int i = 0; i < 10; i++) {
     map_[i] = i;
   }
@@ -259,7 +273,7 @@ TEST_F(MapImplTest, GetReferenceFromIterator) {
   }
 }
 
-TEST_F(MapImplTest, IteratorBasic) {
+TEST_P(MapImplTest, IteratorBasic) {
   map_[0] = 0;
 
   // Default constructible (per forward iterator requirements).
@@ -281,6 +295,292 @@ TEST_F(MapImplTest, IteratorBasic) {
   EXPECT_TRUE(it == cit);
 }
 
+template <typename Iterator>
+static int64 median(Iterator i0, Iterator i1) {
+  vector<int64> v(i0, i1);
+  std::nth_element(v.begin(), v.begin() + v.size() / 2, v.end());
+  return v[v.size() / 2];
+}
+
+static int64 Now() {
+  return google::protobuf::util::TimeUtil::TimestampToNanoseconds(
+      google::protobuf::util::TimeUtil::GetCurrentTime());
+}
+
+// Arbitrary odd integers for creating test data.
+static int k0 = 812398771;
+static int k1 = 1312938717;
+static int k2 = 1321555333;
+
+// A naive begin() implementation will cause begin() to get slower and slower
+// if one erases elements at the "front" of the hash map, and we'd like to
+// avoid that, as std::unordered_map does.
+TEST_P(MapImplTest, BeginIsFast) {
+  // Disable this test for both new and old implementations.
+  if (/*GetParam()*/true) return;
+  Map<int32, int32> map(false);  // This test uses new-style maps only.
+  const int kTestSize = 250000;
+  // Create a random-looking map of size n.  Use non-negative integer keys.
+  uint32 frog = 123983;
+  int last_key = 0;
+  int counter = 0;
+  while (map.size() < kTestSize) {
+    frog *= static_cast<uint32>(k0);
+    frog ^= frog >> 17;
+    frog += counter++;
+    last_key =
+        static_cast<int>(frog) >= 0 ? static_cast<int>(frog) : last_key ^ 1;
+    GOOGLE_DCHECK_GE(last_key, 0);
+    map[last_key] = last_key ^ 1;
+  }
+  vector<int64> times;
+  // We're going to do map.erase(map.begin()) over and over again.  But,
+  // just in case one iteration is fast compared to the granularity of
+  // our time keeping, we measure kChunkSize iterations per outer-loop iter.
+  const int kChunkSize = 1000;
+  GOOGLE_CHECK_EQ(kTestSize % kChunkSize, 0);
+  do {
+    const int64 start = Now();
+    for (int i = 0; i < kChunkSize; i++) {
+      map.erase(map.begin());
+    }
+    const int64 end = Now();
+    if (end > start) {
+      times.push_back(end - start);
+    }
+  } while (!map.empty());
+  if (times.size() < .99 * kTestSize / kChunkSize) {
+    GOOGLE_LOG(WARNING) << "Now() isn't helping us measure time";
+    return;
+  }
+  int64 x0 = median(times.begin(), times.begin() + 9);
+  int64 x1 = median(times.begin() + times.size() - 9, times.end());
+  GOOGLE_LOG(INFO) << "x0=" << x0 << ", x1=" << x1;
+  // x1 will greatly exceed x0 if the code we just executed took O(n^2) time.
+  // And we'll probably time out and never get here.  So, this test is
+  // intentionally loose: we check that x0 and x1 are within a factor of 8.
+  EXPECT_GE(x1, x0 / 8);
+  EXPECT_GE(x0, x1 / 8);
+}
+
+// Try to create kTestSize keys that will land in just a few buckets, and
+// time the insertions, to get a rough estimate of whether an O(n^2) worst case
+// was triggered.  This test is a hacky, but probably better than nothing.
+TEST_P(MapImplTest, HashFlood) {
+  const int kTestSize = 1024;  // must be a power of 2
+  std::set<int> s;
+  for (int i = 0; s.size() < kTestSize; i++) {
+    if ((map_.hash_function()(i) & (kTestSize - 1)) < 3) {
+      s.insert(i);
+    }
+  }
+  // Create hash table with kTestSize entries that hash flood a table with
+  // 1024 (or 512 or 2048 or ...) entries.  This assumes that map_ uses powers
+  // of 2 for table sizes, and that it's sufficient to "flood" with respect to
+  // the low bits of the output of map_.hash_function().
+  vector<int64> times;
+  std::set<int>::iterator it = s.begin();
+  int count = 0;
+  do {
+    const int64 start = Now();
+    map_[*it] = 0;
+    const int64 end = Now();
+    if (end > start) {
+      times.push_back(end - start);
+    }
+    ++count;
+    ++it;
+  } while (it != s.end());
+  if (times.size() < .99 * count) return;
+  int64 x0 = median(times.begin(), times.begin() + 9);
+  int64 x1 = median(times.begin() + times.size() - 9, times.end());
+  // x1 will greatly exceed x0 if the code we just executed took O(n^2) time.
+  // But we want to allow O(n log n).  A factor of 20 should be generous enough.
+  EXPECT_LE(x1, x0 * 20);
+}
+
+template <typename T, typename U>
+static void TestValidityForAllKeysExcept(int key_to_avoid,
+                                         const T& check_map,
+                                         const U& map) {
+  typedef typename U::value_type value_type;  // a key-value pair
+  for (typename U::const_iterator it = map.begin(); it != map.end(); ++it) {
+    const int key = it->first;
+    if (key == key_to_avoid) continue;
+    // All iterators relevant to this key, whether old (from check_map) or new,
+    // must point to the same memory.  So, test pointer equality here.
+    const value_type* check_val = &*check_map.find(key)->second;
+    EXPECT_EQ(check_val, &*it);
+    EXPECT_EQ(check_val, &*map.find(key));
+  }
+}
+
+// EXPECT i0 and i1 to be the same.  Advancing them should have the same effect,
+// too.
+template <typename Iter>
+static void TestEqualIterators(Iter i0, Iter i1, Iter end) {
+  const int kMaxAdvance = 10;
+  for (int i = 0; i < kMaxAdvance; i++) {
+    EXPECT_EQ(i0 == end, i1 == end);
+    if (i0 == end) return;
+    EXPECT_EQ(&*i0, &*i1) << "iter " << i;
+    ++i0;
+    ++i1;
+  }
+}
+
+template <typename IteratorType>
+static void TestOldVersusNewIterator(int skip, Map<int, int>* m) {
+  const int initial_size = m->size();
+  IteratorType it = m->begin();
+  for (int i = 0; i < skip && it != m->end(); it++, i++) {}
+  if (it == m->end()) return;
+  const IteratorType old = it;
+  GOOGLE_LOG(INFO) << "skip=" << skip << ", old->first=" << old->first;
+  const int target_size =
+      initial_size < 100 ? initial_size * 5 : initial_size * 5 / 4;
+  for (int i = 0; m->size() <= target_size; i++) {
+    (*m)[i] = 0;
+  }
+  // Iterator 'old' should still work just fine despite the growth of *m.
+  const IteratorType after_growth = m->find(old->first);
+  TestEqualIterators<IteratorType>(old, after_growth, m->end());
+
+  // Now shrink the number of elements.  Do this with a mix of erases and
+  // inserts to increase the chance that the hashtable will resize to a lower
+  // number of buckets.  (But, in any case, the test is still useful.)
+  for (int i = 0; i < 2 * (target_size - initial_size); i++) {
+    if (i != old->first) {
+      m->erase(i);
+    }
+    if (((i ^ m->begin()->first) & 15) == 0) {
+      (*m)[i * 342] = i;
+    }
+  }
+  // Now, the table has grown and shrunk; test again.
+  TestEqualIterators<IteratorType>(old, m->find(old->first), m->end());
+  TestEqualIterators<IteratorType>(old, after_growth, m->end());
+}
+
+// Create and test an n-element Map, with emphasis on iterator correctness.
+static void StressTestIterators(int n, bool test_old_style_proto2_maps) {
+  GOOGLE_LOG(INFO) << "StressTestIterators " << n;
+  GOOGLE_CHECK_GT(n, 0);
+  // Create a random-looking map of size n.  Use non-negative integer keys.
+  Map<int, int> m(test_old_style_proto2_maps);
+  uint32 frog = 123987 + n;
+  int last_key = 0;
+  int counter = 0;
+  while (m.size() < n) {
+    frog *= static_cast<uint32>(k0);
+    frog ^= frog >> 17;
+    frog += counter++;
+    last_key =
+        static_cast<int>(frog) >= 0 ? static_cast<int>(frog) : last_key ^ 1;
+    GOOGLE_DCHECK_GE(last_key, 0);
+    m[last_key] = last_key ^ 1;
+  }
+  // Test it.
+  ASSERT_EQ(n, m.size());
+  // Create maps of pointers and iterators.
+  // These should remain valid even if we modify m.
+  hash_map<int, Map<int, int>::value_type*> mp(n);
+  hash_map<int, Map<int, int>::iterator> mi(n);
+  for (Map<int, int>::iterator it = m.begin(); it != m.end(); ++it) {
+    mp[it->first] = &*it;
+    mi[it->first] = it;
+  }
+  ASSERT_EQ(m.size(), mi.size());
+  ASSERT_EQ(m.size(), mp.size());
+  m.erase(last_key);
+  ASSERT_EQ(n - 1, m.size());
+  TestValidityForAllKeysExcept(last_key, mp, m);
+  TestValidityForAllKeysExcept(last_key, mi, m);
+
+  m[last_key] = 0;
+  ASSERT_EQ(n, m.size());
+  // Test old iterator vs new iterator, with table modification in between.
+  TestOldVersusNewIterator<Map<int, int>::const_iterator>(n % 3, &m);
+  TestOldVersusNewIterator<Map<int, int>::iterator>(n % (1 + (n / 40)), &m);
+  // Finally, ensure erase(iterator) doesn't reorder anything, becuase that is
+  // what its documentation says.
+  m[last_key] = m[last_key ^ 999] = 0;
+  vector<Map<int, int>::iterator> v;
+  v.reserve(m.size());
+  int position_of_last_key = 0;
+  for (Map<int, int>::iterator it = m.begin(); it != m.end(); ++it) {
+    if (it->first == last_key) {
+      position_of_last_key = v.size();
+    }
+    v.push_back(it);
+  }
+  ASSERT_EQ(m.size(), v.size());
+  const Map<int, int>::iterator erase_result = m.erase(m.find(last_key));
+  int index = 0;
+  for (Map<int, int>::iterator it = m.begin(); it != m.end(); ++it, ++index) {
+    if (index == position_of_last_key) {
+      EXPECT_EQ(&*erase_result, &*v[++index]);
+    }
+    ASSERT_EQ(&*it, &*v[index]);
+  }
+}
+
+TEST_P(MapImplTest, IteratorInvalidation) {
+  // As multiple underlying hash_map implementations do not follow the
+  // validation requirement, the test is disabled for old-style maps.
+  if (GetParam()) return;
+  // Create a set of pseudo-random sizes to test.
+#ifndef NDEBUG
+  const int kMaxSizeToTest = 100 * 1000;
+#else
+  const int kMaxSizeToTest = 1000 * 1000;
+#endif
+  std::set<int> s;
+  int n = kMaxSizeToTest;
+  int frog = k1 + n;
+  while (n > 1 && s.size() < 25) {
+    s.insert(n);
+    n = static_cast<int>(n * 100 / (101.0 + (frog & 63)));
+    frog *= k2;
+    frog ^= frog >> 17;
+  }
+  // Ensure we test a few small sizes.
+  s.insert(1);
+  s.insert(2);
+  s.insert(3);
+  // Now, the real work.
+  for (std::set<int>::iterator i = s.begin(); i != s.end(); ++i) {
+    StressTestIterators(*i, GetParam());
+  }
+}
+
+// Test that erase() revalidates iterators.
+TEST_P(MapImplTest, EraseRevalidates) {
+  // As multiple underlying hash_map implementations do not follow the
+  // validation requirement, the test is disabled for old-style maps.
+  if (GetParam()) return;
+  map_[3] = map_[13] = map_[20] = 0;
+  const int initial_size = map_.size();
+  EXPECT_EQ(3, initial_size);
+  vector<Map<int, int>::iterator> v;
+  for (Map<int, int>::iterator it = map_.begin(); it != map_.end(); ++it) {
+    v.push_back(it);
+  }
+  EXPECT_EQ(initial_size, v.size());
+  for (int i = 0; map_.size() <= initial_size * 20; i++) {
+    map_[i] = 0;
+  }
+  const int larger_size = map_.size();
+  // We've greatly increased the size of the map, so it is highly likely that
+  // the following will corrupt m if erase() doesn't properly revalidate
+  // iterators passed to it.  Finishing this routine without crashing indicates
+  // success.
+  for (int i = 0; i < v.size(); i++) {
+    map_.erase(v[i]);
+  }
+  EXPECT_EQ(larger_size - v.size(), map_.size());
+}
+
 template <typename T>
 bool IsConstHelper(T& /*t*/) {  // NOLINT. We want to catch non-const refs here.
   return false;
@@ -290,7 +590,7 @@ bool IsConstHelper(const T& /*t*/) {
   return true;
 }
 
-TEST_F(MapImplTest, IteratorConstness) {
+TEST_P(MapImplTest, IteratorConstness) {
   map_[0] = 0;
   EXPECT_TRUE(IsConstHelper(*map_.cbegin()));
   EXPECT_TRUE(IsConstHelper(*const_map_.begin()));
@@ -303,14 +603,14 @@ bool IsForwardIteratorHelper(T /*t*/) {
   return false;
 }
 
-TEST_F(MapImplTest, IteratorCategory) {
+TEST_P(MapImplTest, IteratorCategory) {
   EXPECT_TRUE(IsForwardIteratorHelper(
       std::iterator_traits<Map<int, int>::iterator>::iterator_category()));
   EXPECT_TRUE(IsForwardIteratorHelper(std::iterator_traits<
       Map<int, int>::const_iterator>::iterator_category()));
 }
 
-TEST_F(MapImplTest, InsertSingle) {
+TEST_P(MapImplTest, InsertSingle) {
   int32 key = 0;
   int32 value1 = 100;
   int32 value2 = 101;
@@ -335,7 +635,7 @@ TEST_F(MapImplTest, InsertSingle) {
   EXPECT_FALSE(result2.second);
 }
 
-TEST_F(MapImplTest, InsertByIterator) {
+TEST_P(MapImplTest, InsertByIterator) {
   int32 key1 = 0;
   int32 key2 = 1;
   int32 value1a = 100;
@@ -358,7 +658,7 @@ TEST_F(MapImplTest, InsertByIterator) {
   ExpectElements(map1);
 }
 
-TEST_F(MapImplTest, EraseSingleByKey) {
+TEST_P(MapImplTest, EraseSingleByKey) {
   int32 key = 0;
   int32 value = 100;
 
@@ -376,7 +676,7 @@ TEST_F(MapImplTest, EraseSingleByKey) {
   EXPECT_EQ(0, map_.erase(key));
 }
 
-TEST_F(MapImplTest, EraseMutipleByKey) {
+TEST_P(MapImplTest, EraseMutipleByKey) {
   // erase in one specific order to trigger corner cases
   for (int i = 0; i < 5; i++) {
     map_[i] = i;
@@ -403,7 +703,7 @@ TEST_F(MapImplTest, EraseMutipleByKey) {
   EXPECT_TRUE(map_.end() == map_.find(2));
 }
 
-TEST_F(MapImplTest, EraseSingleByIterator) {
+TEST_P(MapImplTest, EraseSingleByIterator) {
   int32 key = 0;
   int32 value = 100;
 
@@ -418,7 +718,7 @@ TEST_F(MapImplTest, EraseSingleByIterator) {
   EXPECT_TRUE(map_.begin() == map_.end());
 }
 
-TEST_F(MapImplTest, ValidIteratorAfterErase) {
+TEST_P(MapImplTest, ValidIteratorAfterErase) {
   for (int i = 0; i < 10; i++) {
     map_[i] = i;
   }
@@ -438,7 +738,7 @@ TEST_F(MapImplTest, ValidIteratorAfterErase) {
   EXPECT_EQ(5, map_.size());
 }
 
-TEST_F(MapImplTest, EraseByIterator) {
+TEST_P(MapImplTest, EraseByIterator) {
   int32 key1 = 0;
   int32 key2 = 1;
   int32 value1 = 100;
@@ -459,7 +759,7 @@ TEST_F(MapImplTest, EraseByIterator) {
   EXPECT_TRUE(map_.begin() == map_.end());
 }
 
-TEST_F(MapImplTest, Clear) {
+TEST_P(MapImplTest, Clear) {
   int32 key = 0;
   int32 value = 100;
 
@@ -474,7 +774,7 @@ TEST_F(MapImplTest, Clear) {
   EXPECT_TRUE(map_.begin() == map_.end());
 }
 
-TEST_F(MapImplTest, CopyConstructor) {
+static void CopyConstructorHelper(Arena* arena, Map<int32, int32>* m) {
   int32 key1 = 0;
   int32 key2 = 1;
   int32 value1 = 100;
@@ -484,16 +784,25 @@ TEST_F(MapImplTest, CopyConstructor) {
   map[key1] = value1;
   map[key2] = value2;
 
-  map_.insert(map.begin(), map.end());
+  m->insert(map.begin(), map.end());
 
-  Map<int32, int32> other(map_);
+  Map<int32, int32> other(*m);
 
   EXPECT_EQ(2, other.size());
   EXPECT_EQ(value1, other.at(key1));
   EXPECT_EQ(value2, other.at(key2));
 }
 
-TEST_F(MapImplTest, IterConstructor) {
+TEST_P(MapImplTest, CopyConstructorWithArena) {
+  Arena a;
+  CopyConstructorHelper(&a, &map_);
+}
+
+TEST_P(MapImplTest, CopyConstructorWithoutArena) {
+  CopyConstructorHelper(NULL, &map_);
+}
+
+TEST_P(MapImplTest, IterConstructor) {
   int32 key1 = 0;
   int32 key2 = 1;
   int32 value1 = 100;
@@ -503,14 +812,15 @@ TEST_F(MapImplTest, IterConstructor) {
   map[key1] = value1;
   map[key2] = value2;
 
-  Map<int32, int32> new_map(map.begin(), map.end());
+  Map<int32, int32> new_map(map.begin(), map.end(),
+                            GetParam());
 
   EXPECT_EQ(2, new_map.size());
   EXPECT_EQ(value1, new_map.at(key1));
   EXPECT_EQ(value2, new_map.at(key2));
 }
 
-TEST_F(MapImplTest, Assigner) {
+TEST_P(MapImplTest, Assigner) {
   int32 key1 = 0;
   int32 key2 = 1;
   int32 value1 = 100;
@@ -522,7 +832,7 @@ TEST_F(MapImplTest, Assigner) {
 
   map_.insert(map.begin(), map.end());
 
-  Map<int32, int32> other;
+  Map<int32, int32> other(GetParam());
   int32 key_other = 123;
   int32 value_other = 321;
   other[key_other] = value_other;
@@ -540,9 +850,16 @@ TEST_F(MapImplTest, Assigner) {
   EXPECT_EQ(2, other.size());
   EXPECT_EQ(value1, other.at(key1));
   EXPECT_EQ(value2, other.at(key2));
+
+  // Try assignment to a map with a different choice of "style."
+  Map<int32, int32> m(!GetParam());
+  m = other;
+  EXPECT_EQ(2, m.size());
+  EXPECT_EQ(value1, m.at(key1));
+  EXPECT_EQ(value2, m.at(key2));
 }
 
-TEST_F(MapImplTest, Rehash) {
+TEST_P(MapImplTest, Rehash) {
   const int test_size = 50;
   std::map<int32, int32> reference_map;
   for (int i = 0; i < test_size; i++) {
@@ -559,7 +876,7 @@ TEST_F(MapImplTest, Rehash) {
   EXPECT_TRUE(map_.empty());
 }
 
-TEST_F(MapImplTest, EqualRange) {
+TEST_P(MapImplTest, EqualRange) {
   int key = 100, key_missing = 101;
   map_[key] = 100;
 
@@ -583,20 +900,22 @@ TEST_F(MapImplTest, EqualRange) {
   EXPECT_TRUE(const_map_.end() == const_range.second);
 }
 
-TEST_F(MapImplTest, ConvertToStdMap) {
+TEST_P(MapImplTest, ConvertToStdMap) {
   map_[100] = 101;
   std::map<int32, int32> std_map(map_.begin(), map_.end());
   EXPECT_EQ(1, std_map.size());
   EXPECT_EQ(101, std_map[100]);
 }
 
-TEST_F(MapImplTest, ConvertToStdVectorOfPairs) {
+TEST_P(MapImplTest, ConvertToStdVectorOfPairs) {
   map_[100] = 101;
   std::vector<std::pair<int32, int32> > std_vec(map_.begin(), map_.end());
   EXPECT_EQ(1, std_vec.size());
   EXPECT_EQ(100, std_vec[0].first);
   EXPECT_EQ(101, std_vec[0].second);
 }
+
+INSTANTIATE_TEST_CASE_P(BoolSequence, MapImplTest, testing::Bool());
 
 // Map Field Reflection Test ========================================
 

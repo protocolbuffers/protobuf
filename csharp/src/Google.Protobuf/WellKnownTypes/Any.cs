@@ -24,9 +24,10 @@ namespace Google.Protobuf.WellKnownTypes {
       byte[] descriptorData = global::System.Convert.FromBase64String(
           string.Concat(
             "Chlnb29nbGUvcHJvdG9idWYvYW55LnByb3RvEg9nb29nbGUucHJvdG9idWYi",
-            "JgoDQW55EhAKCHR5cGVfdXJsGAEgASgJEg0KBXZhbHVlGAIgASgMQksKE2Nv",
-            "bS5nb29nbGUucHJvdG9idWZCCEFueVByb3RvUAGgAQGiAgNHUEKqAh5Hb29n",
-            "bGUuUHJvdG9idWYuV2VsbEtub3duVHlwZXNiBnByb3RvMw=="));
+            "JgoDQW55EhAKCHR5cGVfdXJsGAEgASgJEg0KBXZhbHVlGAIgASgMQnIKE2Nv",
+            "bS5nb29nbGUucHJvdG9idWZCCEFueVByb3RvUAFaJWdpdGh1Yi5jb20vZ29s",
+            "YW5nL3Byb3RvYnVmL3B0eXBlcy9hbnmgAQGiAgNHUEKqAh5Hb29nbGUuUHJv",
+            "dG9idWYuV2VsbEtub3duVHlwZXNiBnByb3RvMw=="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { },
           new pbr::GeneratedClrTypeInfo(null, new pbr::GeneratedClrTypeInfo[] {
@@ -38,8 +39,36 @@ namespace Google.Protobuf.WellKnownTypes {
   }
   #region Messages
   /// <summary>
-  ///  `Any` contains an arbitrary serialized message along with a URL
-  ///  that describes the type of the serialized message.
+  ///  `Any` contains an arbitrary serialized protocol buffer message along with a
+  ///  URL that describes the type of the serialized message.
+  ///
+  ///  Protobuf library provides support to pack/unpack Any values in the form
+  ///  of utility functions or additional generated methods of the Any type.
+  ///
+  ///  Example 1: Pack and unpack a message in C++.
+  ///
+  ///      Foo foo = ...;
+  ///      Any any;
+  ///      any.PackFrom(foo);
+  ///      ...
+  ///      if (any.UnpackTo(&amp;foo)) {
+  ///        ...
+  ///      }
+  ///
+  ///  Example 2: Pack and unpack a message in Java.
+  ///
+  ///      Foo foo = ...;
+  ///      Any any = Any.pack(foo);
+  ///      ...
+  ///      if (any.is(Foo.class)) {
+  ///        foo = any.unpack(Foo.class);
+  ///      }
+  ///
+  ///  The pack methods provided by protobuf library will by default use
+  ///  'type.googleapis.com/full.type.name' as the type URL and the unpack
+  ///  methods only use the fully qualified type name after the last '/'
+  ///  in the type URL, for example "foo.bar.com/x/y.z" will yield type
+  ///  name "y.z".
   ///
   ///  JSON
   ///  ====
@@ -102,7 +131,7 @@ namespace Google.Protobuf.WellKnownTypes {
     private string typeUrl_ = "";
     /// <summary>
     ///  A URL/resource name whose content describes the type of the
-    ///  serialized message.
+    ///  serialized protocol buffer message.
     ///
     ///  For URLs which use the schema `http`, `https`, or no schema, the
     ///  following restrictions and interpretations apply:
@@ -110,6 +139,8 @@ namespace Google.Protobuf.WellKnownTypes {
     ///  * If no schema is provided, `https` is assumed.
     ///  * The last segment of the URL's path must represent the fully
     ///    qualified name of the type (as in `path/google.protobuf.Duration`).
+    ///    The name should be in a canonical form (e.g., leading "." is
+    ///    not accepted).
     ///  * An HTTP GET on the URL must yield a [google.protobuf.Type][]
     ///    value in binary format, or produce an error.
     ///  * Applications are allowed to cache lookup results based on the
@@ -132,7 +163,7 @@ namespace Google.Protobuf.WellKnownTypes {
     public const int ValueFieldNumber = 2;
     private pb::ByteString value_ = pb::ByteString.Empty;
     /// <summary>
-    ///  Must be valid serialized data of the above specified type.
+    ///  Must be a valid serialized protocol buffer of the above specified type.
     /// </summary>
     public pb::ByteString Value {
       get { return value_; }

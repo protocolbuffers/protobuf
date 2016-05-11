@@ -42,13 +42,25 @@ namespace protobuf {
 namespace io {
 
 Printer::Printer(ZeroCopyOutputStream* output, char variable_delimiter)
-  : variable_delimiter_(variable_delimiter),
-    output_(output),
-    buffer_(NULL),
-    buffer_size_(0),
-    at_start_of_line_(true),
-    failed_(false) {
-}
+    : variable_delimiter_(variable_delimiter),
+      output_(output),
+      buffer_(NULL),
+      buffer_size_(0),
+      offset_(0),
+      at_start_of_line_(true),
+      failed_(false),
+      annotation_collector_(NULL) {}
+
+Printer::Printer(ZeroCopyOutputStream* output, char variable_delimiter,
+                 AnnotationCollector* annotation_collector)
+    : variable_delimiter_(variable_delimiter),
+      output_(output),
+      buffer_(NULL),
+      buffer_size_(0),
+      offset_(0),
+      at_start_of_line_(true),
+      failed_(false),
+      annotation_collector_(annotation_collector) {}
 
 Printer::~Printer() {
   // Only BackUp() if we have called Next() at least once and never failed.
@@ -57,9 +69,47 @@ Printer::~Printer() {
   }
 }
 
+bool Printer::GetSubstitutionRange(const char* varname,
+                                   pair<size_t, size_t>* range) {
+  map<string, pair<size_t, size_t> >::const_iterator iter =
+      substitutions_.find(varname);
+  if (iter == substitutions_.end()) {
+    GOOGLE_LOG(DFATAL) << " Undefined variable in annotation: " << varname;
+    return false;
+  }
+  if (iter->second.first > iter->second.second) {
+    GOOGLE_LOG(DFATAL) << " Variable used for annotation used multiple times: "
+                << varname;
+    return false;
+  }
+  *range = iter->second;
+  return true;
+}
+
+void Printer::Annotate(const char* begin_varname, const char* end_varname,
+                       const string& file_path, const vector<int>& path) {
+  if (annotation_collector_ == NULL) {
+    // Can't generate signatures with this Printer.
+    return;
+  }
+  pair<size_t, size_t> begin, end;
+  if (!GetSubstitutionRange(begin_varname, &begin) ||
+      !GetSubstitutionRange(end_varname, &end)) {
+    return;
+  }
+  if (begin.first > end.second) {
+    GOOGLE_LOG(DFATAL) << "  Annotation has negative length from " << begin_varname
+                << " to " << end_varname;
+  } else {
+    annotation_collector_->AddAnnotation(begin.first, end.second, file_path,
+                                         path);
+  }
+}
+
 void Printer::Print(const map<string, string>& variables, const char* text) {
   int size = strlen(text);
   int pos = 0;  // The number of bytes we've written so far.
+  substitutions_.clear();
 
   for (int i = 0; i < size; i++) {
     if (text[i] == '\n') {
@@ -97,7 +147,17 @@ void Printer::Print(const map<string, string>& variables, const char* text) {
         if (iter == variables.end()) {
           GOOGLE_LOG(DFATAL) << " Undefined variable: " << varname;
         } else {
+          size_t begin = offset_;
           WriteRaw(iter->second.data(), iter->second.size());
+          pair<map<string, pair<size_t, size_t> >::iterator, bool> inserted =
+              substitutions_.insert(
+                  std::make_pair(varname, std::make_pair(begin, offset_)));
+          if (!inserted.second) {
+            // This variable was used multiple times.  Make its span have
+            // negative length so we can detect it if it gets used in an
+            // annotation.
+            inserted.first->second = std::make_pair(1, 0);
+          }
         }
       }
 
@@ -265,6 +325,7 @@ void Printer::WriteRaw(const char* data, int size) {
     // Data exceeds space in the buffer.  Copy what we can and request a
     // new buffer.
     memcpy(buffer_, data, buffer_size_);
+    offset_ += buffer_size_;
     data += buffer_size_;
     size -= buffer_size_;
     void* void_buffer;
@@ -277,6 +338,7 @@ void Printer::WriteRaw(const char* data, int size) {
   memcpy(buffer_, data, size);
   buffer_ += size;
   buffer_size_ -= size;
+  offset_ += size;
 }
 
 }  // namespace io

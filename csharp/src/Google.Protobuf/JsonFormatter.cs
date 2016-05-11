@@ -39,6 +39,7 @@ using Google.Protobuf.WellKnownTypes;
 using System.IO;
 using System.Linq;
 using System.Collections.Generic;
+using System.Reflection;
 
 namespace Google.Protobuf
 {
@@ -237,11 +238,13 @@ namespace Google.Protobuf
                 {
                     writer.Write(PropertySeparator);
                 }
-                WriteString(writer, ToCamelCase(accessor.Descriptor.Name));
+
+                WriteString(writer, accessor.Descriptor.JsonName);
                 writer.Write(NameValueSeparator);
                 WriteValue(writer, value);
+
                 first = false;
-            }            
+            }
             return !first;
         }
 
@@ -418,9 +421,10 @@ namespace Google.Protobuf
             }
             else if (value is System.Enum)
             {
-                if (System.Enum.IsDefined(value.GetType(), value))
+                string name = OriginalEnumValueHelper.GetOriginalName(value);
+                if (name != null)
                 {
-                    WriteString(writer, value.ToString());
+                    WriteString(writer, name);
                 }
                 else
                 {
@@ -563,7 +567,7 @@ namespace Google.Protobuf
 
             string typeUrl = (string) value.Descriptor.Fields[Any.TypeUrlFieldNumber].Accessor.GetValue(value);
             ByteString data = (ByteString) value.Descriptor.Fields[Any.ValueFieldNumber].Accessor.GetValue(value);
-            string typeName = GetTypeName(typeUrl);
+            string typeName = Any.GetTypeName(typeUrl);
             MessageDescriptor descriptor = settings.TypeRegistry.Find(typeName);
             if (descriptor == null)
             {
@@ -604,17 +608,7 @@ namespace Google.Protobuf
             writer.Write(data.ToBase64());
             writer.Write('"');
             writer.Write(" }");
-        }
-
-        internal static string GetTypeName(String typeUrl)
-        {
-            string[] parts = typeUrl.Split('/');
-            if (parts.Length != 2 || parts[0] != TypeUrlPrefix)
-            {
-                throw new InvalidProtocolBufferException($"Invalid type url: {typeUrl}");
-            }
-            return parts[1];
-        }
+        }        
 
         private void WriteStruct(TextWriter writer, IMessage message)
         {
@@ -874,6 +868,45 @@ namespace Google.Protobuf
                 FormatDefaultValues = formatDefaultValues;
                 TypeRegistry = ProtoPreconditions.CheckNotNull(typeRegistry, nameof(typeRegistry));
             }
+        }
+
+        // Effectively a cache of mapping from enum values to the original name as specified in the proto file,
+        // fetched by reflection.
+        // The need for this is unfortunate, as is its unbounded size, but realistically it shouldn't cause issues.
+        private static class OriginalEnumValueHelper
+        {
+            // TODO: In the future we might want to use ConcurrentDictionary, at the point where all
+            // the platforms we target have it.
+            private static readonly Dictionary<System.Type, Dictionary<object, string>> dictionaries
+                = new Dictionary<System.Type, Dictionary<object, string>>();
+            
+            internal static string GetOriginalName(object value)
+            {
+                var enumType = value.GetType();
+                Dictionary<object, string> nameMapping;
+                lock (dictionaries)
+                {
+                    if (!dictionaries.TryGetValue(enumType, out nameMapping))
+                    {
+                        nameMapping = GetNameMapping(enumType);
+                        dictionaries[enumType] = nameMapping;
+                    }
+                }
+
+                string originalName;
+                // If this returns false, originalName will be null, which is what we want.
+                nameMapping.TryGetValue(value, out originalName);
+                return originalName;
+            }
+
+            private static Dictionary<object, string> GetNameMapping(System.Type enumType) =>
+                enumType.GetTypeInfo().DeclaredFields
+                    .Where(f => f.IsStatic)
+                    .ToDictionary(f => f.GetValue(null),
+                                  f => f.GetCustomAttributes<OriginalNameAttribute>()
+                                        .FirstOrDefault()
+                                        // If the attribute hasn't been applied, fall back to the name of the field.
+                                        ?.Name ?? f.Name);
         }
     }
 }

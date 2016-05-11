@@ -86,9 +86,6 @@ void SetPrimitiveVariables(const FieldDescriptor* descriptor,
     case JAVATYPE_BOOLEAN:
       (*variables)["field_list_type"] =
           "com.google.protobuf.Internal." + capitalized_type + "List";
-      (*variables)["new_list"] = "new" + capitalized_type + "List";
-      (*variables)["new_list_with_capacity"] =
-          "new" + capitalized_type + "ListWithCapacity";
       (*variables)["empty_list"] = "empty" + capitalized_type + "List()";
       (*variables)["make_name_unmodifiable"] =
           (*variables)["name"] + "_.makeImmutable()";
@@ -98,19 +95,21 @@ void SetPrimitiveVariables(const FieldDescriptor* descriptor,
           (*variables)["name"] + "_.add" + capitalized_type;
       (*variables)["repeated_set"] =
           (*variables)["name"] + "_.set" + capitalized_type;
+      (*variables)["visit_type"] = capitalized_type;
+      (*variables)["visit_type_list"] = "visit" + capitalized_type + "List";
       break;
     default:
       (*variables)["field_list_type"] =
           "com.google.protobuf.Internal.ProtobufList<" +
           (*variables)["boxed_type"] + ">";
-      (*variables)["new_list"] = "newProtobufList";
-      (*variables)["new_list_with_capacity"] = "newProtobufListWithCapacity";
       (*variables)["empty_list"] = "emptyProtobufList()";
       (*variables)["make_name_unmodifiable"] =
           (*variables)["name"] + "_.makeImmutable()";
       (*variables)["repeated_get"] = (*variables)["name"] + "_.get";
       (*variables)["repeated_add"] = (*variables)["name"] + "_.add";
       (*variables)["repeated_set"] = (*variables)["name"] + "_.set";
+      (*variables)["visit_type"] = "ByteString";
+      (*variables)["visit_type_list"] = "visitList";
   }
 
   if (IsReferenceType(GetJavaType(descriptor))) {
@@ -129,8 +128,6 @@ void SetPrimitiveVariables(const FieldDescriptor* descriptor,
   if (fixed_size != -1) {
     (*variables)["fixed_size"] = SimpleItoa(fixed_size);
   }
-  (*variables)["on_changed"] =
-      HasDescriptorMethods(descriptor->containing_type()) ? "onChanged();" : "";
 
   if (SupportFieldPresence(descriptor->file())) {
     // For singular messages and builders, one bit is used for the hasField bit.
@@ -299,17 +296,16 @@ GenerateBuilderClearCode(io::Printer* printer) const {
 }
 
 void ImmutablePrimitiveFieldLiteGenerator::
-GenerateMergingCode(io::Printer* printer) const {
+GenerateVisitCode(io::Printer* printer) const {
   if (SupportFieldPresence(descriptor_->file())) {
     printer->Print(variables_,
-      "if (other.has$capitalized_name$()) {\n"
-      "  set$capitalized_name$(other.get$capitalized_name$());\n"
-      "}\n");
+      "$name$_ = visitor.visit$visit_type$(\n"
+      "    has$capitalized_name$(), $name$_,\n"
+      "    other.has$capitalized_name$(), other.$name$_);\n");
   } else {
     printer->Print(variables_,
-      "if (other.get$capitalized_name$() != $default$) {\n"
-      "  set$capitalized_name$(other.get$capitalized_name$());\n"
-      "}\n");
+      "$name$_ = visitor.visit$visit_type$($name$_ != $default$, $name$_,\n"
+      "    other.$name$_ != $default$, other.$name$_);\n");
   }
 }
 
@@ -541,9 +537,10 @@ GenerateBuildingCode(io::Printer* printer) const {
 }
 
 void ImmutablePrimitiveOneofFieldLiteGenerator::
-GenerateMergingCode(io::Printer* printer) const {
+GenerateVisitCode(io::Printer* printer) const {
   printer->Print(variables_,
-    "set$capitalized_name$(other.get$capitalized_name$());\n");
+      "$oneof_name$_ = visitor.visitOneof$visit_type$(\n"
+      "    $has_oneof_case_message$, $oneof_name$_, other.$oneof_name$_);\n");
 }
 
 void ImmutablePrimitiveOneofFieldLiteGenerator::
@@ -635,7 +632,7 @@ GenerateMembers(io::Printer* printer) const {
     "}\n");
 
   if (descriptor_->options().packed() &&
-      HasGeneratedMethods(descriptor_->containing_type())) {
+      context_->HasGeneratedMethods(descriptor_->containing_type())) {
     printer->Print(variables_,
       "private int $name$MemoizedSerializedSize = -1;\n");
   }
@@ -643,7 +640,8 @@ GenerateMembers(io::Printer* printer) const {
   printer->Print(variables_,
     "private void ensure$capitalized_name$IsMutable() {\n"
     "  if (!$is_mutable$) {\n"
-    "    $name$_ = $new_list$($name$_);\n"
+    "    $name$_ =\n"
+    "        com.google.protobuf.GeneratedMessageLite.mutableCopy($name$_);\n"
     "   }\n"
     "}\n");
 
@@ -744,22 +742,9 @@ GenerateBuilderClearCode(io::Printer* printer) const {
 }
 
 void RepeatedImmutablePrimitiveFieldLiteGenerator::
-GenerateMergingCode(io::Printer* printer) const {
-  // The code below does two optimizations:
-  //   1. If the other list is empty, there's nothing to do. This ensures we
-  //      don't allocate a new array if we already have an immutable one.
-  //   2. If the other list is non-empty and our current list is empty, we can
-  //      reuse the other list which is guaranteed to be immutable.
+GenerateVisitCode(io::Printer* printer) const {
   printer->Print(variables_,
-    "if (!other.$name$_.isEmpty()) {\n"
-    "  if ($name$_.isEmpty()) {\n"
-    "    $name$_ = other.$name$_;\n"
-    "  } else {\n"
-    "    ensure$capitalized_name$IsMutable();\n"
-    "    $name$_.addAll(other.$name$_);\n"
-    "  }\n"
-    "  $on_changed$\n"
-    "}\n");
+      "$name$_= visitor.$visit_type_list$($name$_, other.$name$_);\n");
 }
 
 void RepeatedImmutablePrimitiveFieldLiteGenerator::
@@ -780,7 +765,8 @@ GenerateParsingCode(io::Printer* printer) const {
   // TODO(dweis): Scan the input buffer to count and ensure capacity.
   printer->Print(variables_,
     "if (!$is_mutable$) {\n"
-    "  $name$_ = $new_list$();\n"
+    "  $name$_ =\n"
+    "      com.google.protobuf.GeneratedMessageLite.mutableCopy($name$_);\n"
     "}\n"
     "$repeated_add$(input.read$capitalized_type$());\n");
 }
@@ -797,10 +783,13 @@ GenerateParsingCodeFromPacked(io::Printer* printer) const {
     // TODO(dweis): Scan the input buffer to count, then initialize
     // appropriately.
     printer->Print(variables_,
-      "  $name$_ = $new_list$();\n");
+      "  $name$_ =\n"
+      "      com.google.protobuf.GeneratedMessageLite.mutableCopy($name$_);\n");
   } else {
     printer->Print(variables_,
-      "  $name$_ = $new_list_with_capacity$(length/$fixed_size$);\n");
+      "  final int currentSize = $name$_.size();\n"
+      "  $name$_ = $name$_.mutableCopyWithCapacity(\n"
+      "      currentSize + (length/$fixed_size$));\n");
   }
 
   // TODO(dweis): Scan the input buffer to count and ensure capacity.

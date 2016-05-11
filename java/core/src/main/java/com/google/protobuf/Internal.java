@@ -41,6 +41,7 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.RandomAccess;
 import java.util.Set;
 
 /**
@@ -51,10 +52,12 @@ import java.util.Set;
  *
  * @author kenton@google.com (Kenton Varda)
  */
-public class Internal {
+public final class Internal {
 
-  protected static final Charset UTF_8 = Charset.forName("UTF-8");
-  protected static final Charset ISO_8859_1 = Charset.forName("ISO-8859-1");
+  private Internal() {}
+
+  static final Charset UTF_8 = Charset.forName("UTF-8");
+  static final Charset ISO_8859_1 = Charset.forName("ISO-8859-1");
 
   /**
    * Helper called by generated code to construct default values for string
@@ -406,6 +409,7 @@ public class Internal {
   public static final CodedInputStream EMPTY_CODED_INPUT_STREAM =
       CodedInputStream.newInstance(EMPTY_BYTE_ARRAY);
 
+
   /**
    * Provides an immutable view of {@code List<T>} around a {@code List<F>}.
    *
@@ -454,10 +458,13 @@ public class Internal {
     public static <T extends EnumLite> Converter<Integer, T> newEnumConverter(
         final EnumLiteMap<T> enumMap, final T unrecognizedValue) {
       return new Converter<Integer, T>() {
+        @Override
         public T doForward(Integer value) {
           T result = enumMap.findValueByNumber(value);
           return result == null ? unrecognizedValue : result;
         }
+
+        @Override
         public Integer doBackward(T value) {
           return value.getNumber();
         }
@@ -570,8 +577,10 @@ public class Internal {
   /**
    * Extends {@link List} to add the capability to make the list immutable and inspect if it is
    * modifiable.
+   * <p>
+   * All implementations must support efficient random access.
    */
-  public static interface ProtobufList<E> extends List<E> {
+  public static interface ProtobufList<E> extends List<E>, RandomAccess {
 
     /**
      * Makes this list immutable. All subsequent modifications will throw an
@@ -583,6 +592,11 @@ public class Internal {
      * Returns whether this list can be modified via the publicly accessible {@link List} methods.
      */
     boolean isModifiable();
+
+    /**
+     * Returns a mutable clone of this list with the specified capacity.
+     */
+    ProtobufList<E> mutableCopyWithCapacity(int capacity);
   }
 
   /**
@@ -597,14 +611,20 @@ public class Internal {
     int getInt(int index);
 
     /**
-     * Like {@link #add(Object)} but more efficient in that it doesn't box the element.
+     * Like {@link #add(Integer)} but more efficient in that it doesn't box the element.
      */
     void addInt(int element);
 
     /**
-     * Like {@link #set(int, Object)} but more efficient in that it doesn't box the element.
+     * Like {@link #set(int, Integer)} but more efficient in that it doesn't box the element.
      */
     int setInt(int index, int element);
+
+    /**
+     * Returns a mutable clone of this list with the specified capacity.
+     */
+    @Override
+    IntList mutableCopyWithCapacity(int capacity);
   }
 
   /**
@@ -619,14 +639,20 @@ public class Internal {
     boolean getBoolean(int index);
 
     /**
-     * Like {@link #add(Object)} but more efficient in that it doesn't box the element.
+     * Like {@link #add(Boolean)} but more efficient in that it doesn't box the element.
      */
     void addBoolean(boolean element);
 
     /**
-     * Like {@link #set(int, Object)} but more efficient in that it doesn't box the element.
+     * Like {@link #set(int, Boolean)} but more efficient in that it doesn't box the element.
      */
     boolean setBoolean(int index, boolean element);
+
+    /**
+     * Returns a mutable clone of this list with the specified capacity.
+     */
+    @Override
+    BooleanList mutableCopyWithCapacity(int capacity);
   }
 
   /**
@@ -641,14 +667,20 @@ public class Internal {
     long getLong(int index);
 
     /**
-     * Like {@link #add(Object)} but more efficient in that it doesn't box the element.
+     * Like {@link #add(Long)} but more efficient in that it doesn't box the element.
      */
     void addLong(long element);
 
     /**
-     * Like {@link #set(int, Object)} but more efficient in that it doesn't box the element.
+     * Like {@link #set(int, Long)} but more efficient in that it doesn't box the element.
      */
     long setLong(int index, long element);
+
+    /**
+     * Returns a mutable clone of this list with the specified capacity.
+     */
+    @Override
+    LongList mutableCopyWithCapacity(int capacity);
   }
 
   /**
@@ -663,14 +695,20 @@ public class Internal {
     double getDouble(int index);
 
     /**
-     * Like {@link #add(Object)} but more efficient in that it doesn't box the element.
+     * Like {@link #add(Double)} but more efficient in that it doesn't box the element.
      */
     void addDouble(double element);
 
     /**
-     * Like {@link #set(int, Object)} but more efficient in that it doesn't box the element.
+     * Like {@link #set(int, Double)} but more efficient in that it doesn't box the element.
      */
     double setDouble(int index, double element);
+
+    /**
+     * Returns a mutable clone of this list with the specified capacity.
+     */
+    @Override
+    DoubleList mutableCopyWithCapacity(int capacity);
   }
 
   /**
@@ -685,13 +723,19 @@ public class Internal {
     float getFloat(int index);
 
     /**
-     * Like {@link #add(Object)} but more efficient in that it doesn't box the element.
+     * Like {@link #add(Float)} but more efficient in that it doesn't box the element.
      */
     void addFloat(float element);
 
     /**
-     * Like {@link #set(int, Object)} but more efficient in that it doesn't box the element.
+     * Like {@link #set(int, Float)} but more efficient in that it doesn't box the element.
      */
     float setFloat(int index, float element);
+
+    /**
+     * Returns a mutable clone of this list with the specified capacity.
+     */
+    @Override
+    FloatList mutableCopyWithCapacity(int capacity);
   }
 }

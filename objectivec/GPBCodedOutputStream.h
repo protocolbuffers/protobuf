@@ -112,7 +112,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 /// Write a double for the given field number.
 - (void)writeDouble:(int32_t)fieldNumber value:(double)value;
-/// Write a packaged array of double for the given field number.
+/// Write a packed array of double for the given field number.
 - (void)writeDoubleArray:(int32_t)fieldNumber
                   values:(GPBDoubleArray *)values
                      tag:(uint32_t)tag;
@@ -121,7 +121,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 /// Write a float for the given field number.
 - (void)writeFloat:(int32_t)fieldNumber value:(float)value;
-/// Write a packaged array of float for the given field number.
+/// Write a packed array of float for the given field number.
 - (void)writeFloatArray:(int32_t)fieldNumber
                  values:(GPBFloatArray *)values
                     tag:(uint32_t)tag;
@@ -130,7 +130,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 /// Write a uint64_t for the given field number.
 - (void)writeUInt64:(int32_t)fieldNumber value:(uint64_t)value;
-/// Write a packaged array of uint64_t for the given field number.
+/// Write a packed array of uint64_t for the given field number.
 - (void)writeUInt64Array:(int32_t)fieldNumber
                   values:(GPBUInt64Array *)values
                      tag:(uint32_t)tag;
@@ -139,7 +139,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 /// Write a int64_t for the given field number.
 - (void)writeInt64:(int32_t)fieldNumber value:(int64_t)value;
-/// Write a packaged array of int64_t for the given field number.
+/// Write a packed array of int64_t for the given field number.
 - (void)writeInt64Array:(int32_t)fieldNumber
                  values:(GPBInt64Array *)values
                     tag:(uint32_t)tag;
@@ -148,7 +148,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 /// Write a int32_t for the given field number.
 - (void)writeInt32:(int32_t)fieldNumber value:(int32_t)value;
-/// Write a packaged array of int32_t for the given field number.
+/// Write a packed array of int32_t for the given field number.
 - (void)writeInt32Array:(int32_t)fieldNumber
                  values:(GPBInt32Array *)values
                     tag:(uint32_t)tag;
@@ -157,7 +157,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 /// Write a uint32_t for the given field number.
 - (void)writeUInt32:(int32_t)fieldNumber value:(uint32_t)value;
-/// Write a packaged array of uint32_t for the given field number.
+/// Write a packed array of uint32_t for the given field number.
 - (void)writeUInt32Array:(int32_t)fieldNumber
                   values:(GPBUInt32Array *)values
                      tag:(uint32_t)tag;
@@ -166,7 +166,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 /// Write a uint64_t for the given field number.
 - (void)writeFixed64:(int32_t)fieldNumber value:(uint64_t)value;
-/// Write a packaged array of uint64_t for the given field number.
+/// Write a packed array of uint64_t for the given field number.
 - (void)writeFixed64Array:(int32_t)fieldNumber
                    values:(GPBUInt64Array *)values
                       tag:(uint32_t)tag;
@@ -175,7 +175,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 /// Write a uint32_t for the given field number.
 - (void)writeFixed32:(int32_t)fieldNumber value:(uint32_t)value;
-/// Write a packaged array of uint32_t for the given field number.
+/// Write a packed array of uint32_t for the given field number.
 - (void)writeFixed32Array:(int32_t)fieldNumber
                    values:(GPBUInt32Array *)values
                       tag:(uint32_t)tag;
@@ -184,7 +184,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 /// Write a int32_t for the given field number.
 - (void)writeSInt32:(int32_t)fieldNumber value:(int32_t)value;
-/// Write a packaged array of int32_t for the given field number.
+/// Write a packed array of int32_t for the given field number.
 - (void)writeSInt32Array:(int32_t)fieldNumber
                   values:(GPBInt32Array *)values
                      tag:(uint32_t)tag;
@@ -193,7 +193,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 /// Write a int64_t for the given field number.
 - (void)writeSInt64:(int32_t)fieldNumber value:(int64_t)value;
-/// Write a packaged array of int64_t for the given field number.
+/// Write a packed array of int64_t for the given field number.
 - (void)writeSInt64Array:(int32_t)fieldNumber
                   values:(GPBInt64Array *)values
                      tag:(uint32_t)tag;
@@ -202,7 +202,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 /// Write a int64_t for the given field number.
 - (void)writeSFixed64:(int32_t)fieldNumber value:(int64_t)value;
-/// Write a packaged array of int64_t for the given field number.
+/// Write a packed array of int64_t for the given field number.
 - (void)writeSFixed64Array:(int32_t)fieldNumber
                     values:(GPBInt64Array *)values
                        tag:(uint32_t)tag;
@@ -211,7 +211,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 /// Write a int32_t for the given field number.
 - (void)writeSFixed32:(int32_t)fieldNumber value:(int32_t)value;
-/// Write a packaged array of int32_t for the given field number.
+/// Write a packed array of int32_t for the given field number.
 - (void)writeSFixed32Array:(int32_t)fieldNumber
                     values:(GPBInt32Array *)values
                        tag:(uint32_t)tag;
@@ -220,7 +220,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 /// Write a BOOL for the given field number.
 - (void)writeBool:(int32_t)fieldNumber value:(BOOL)value;
-/// Write a packaged array of BOOL for the given field number.
+/// Write a packed array of BOOL for the given field number.
 - (void)writeBoolArray:(int32_t)fieldNumber
                 values:(GPBBoolArray *)values
                    tag:(uint32_t)tag;
@@ -229,7 +229,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 /// Write a int32_t for the given field number.
 - (void)writeEnum:(int32_t)fieldNumber value:(int32_t)value;
-/// Write a packaged array of int32_t for the given field number.
+/// Write a packed array of int32_t for the given field number.
 - (void)writeEnumArray:(int32_t)fieldNumber
                 values:(GPBEnumArray *)values
                    tag:(uint32_t)tag;
@@ -293,7 +293,7 @@ NS_ASSUME_NONNULL_END
 //%PDDM-DEFINE _WRITE_PACKABLE_DECLS(NAME, ARRAY_TYPE, TYPE)
 //%/// Write a TYPE for the given field number.
 //%- (void)write##NAME:(int32_t)fieldNumber value:(TYPE)value;
-//%/// Write a packaged array of TYPE for the given field number.
+//%/// Write a packed array of TYPE for the given field number.
 //%- (void)write##NAME##Array:(int32_t)fieldNumber
 //%       NAME$S     values:(GPB##ARRAY_TYPE##Array *)values
 //%       NAME$S        tag:(uint32_t)tag;

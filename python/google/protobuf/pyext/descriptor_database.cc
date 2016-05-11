@@ -64,6 +64,9 @@ static bool GetFileDescriptorProto(PyObject* py_descriptor,
     }
     return false;
   }
+  if (py_descriptor == Py_None) {
+    return false;
+  }
   const Descriptor* filedescriptor_descriptor =
       FileDescriptorProto::default_instance().GetDescriptor();
   CMessage* message = reinterpret_cast<CMessage*>(py_descriptor);

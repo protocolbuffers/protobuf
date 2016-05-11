@@ -177,12 +177,13 @@ SourceContext* SourceContext::New(::google::protobuf::Arena* arena) const {
 }
 
 void SourceContext::Clear() {
+// @@protoc_insertion_point(message_clear_start:google.protobuf.SourceContext)
   file_name_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
 
 bool SourceContext::MergePartialFromCodedStream(
     ::google::protobuf::io::CodedInputStream* input) {
-#define DO_(EXPRESSION) if (!(EXPRESSION)) goto failure
+#define DO_(EXPRESSION) if (!GOOGLE_PREDICT_TRUE(EXPRESSION)) goto failure
   ::google::protobuf::uint32 tag;
   // @@protoc_insertion_point(parse_start:google.protobuf.SourceContext)
   for (;;) {
@@ -262,6 +263,7 @@ void SourceContext::SerializeWithCachedSizes(
 }
 
 int SourceContext::ByteSize() const {
+// @@protoc_insertion_point(message_byte_size_start:google.protobuf.SourceContext)
   int total_size = 0;
 
   // optional string file_name = 1;
@@ -278,18 +280,22 @@ int SourceContext::ByteSize() const {
 }
 
 void SourceContext::MergeFrom(const ::google::protobuf::Message& from) {
+// @@protoc_insertion_point(generalized_merge_from_start:google.protobuf.SourceContext)
   if (GOOGLE_PREDICT_FALSE(&from == this)) MergeFromFail(__LINE__);
   const SourceContext* source = 
       ::google::protobuf::internal::DynamicCastToGenerated<const SourceContext>(
           &from);
   if (source == NULL) {
+  // @@protoc_insertion_point(generalized_merge_from_cast_fail:google.protobuf.SourceContext)
     ::google::protobuf::internal::ReflectionOps::Merge(from, this);
   } else {
+  // @@protoc_insertion_point(generalized_merge_from_cast_success:google.protobuf.SourceContext)
     MergeFrom(*source);
   }
 }
 
 void SourceContext::MergeFrom(const SourceContext& from) {
+// @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.SourceContext)
   if (GOOGLE_PREDICT_FALSE(&from == this)) MergeFromFail(__LINE__);
   if (from.file_name().size() > 0) {
 
@@ -298,12 +304,14 @@ void SourceContext::MergeFrom(const SourceContext& from) {
 }
 
 void SourceContext::CopyFrom(const ::google::protobuf::Message& from) {
+// @@protoc_insertion_point(generalized_copy_from_start:google.protobuf.SourceContext)
   if (&from == this) return;
   Clear();
   MergeFrom(from);
 }
 
 void SourceContext::CopyFrom(const SourceContext& from) {
+// @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.SourceContext)
   if (&from == this) return;
   Clear();
   MergeFrom(from);
@@ -365,6 +373,7 @@ void SourceContext::clear_file_name() {
   return file_name_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
  ::std::string* SourceContext::release_file_name() {
+  // @@protoc_insertion_point(field_release:google.protobuf.SourceContext.file_name)
   
   return file_name_.ReleaseNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }

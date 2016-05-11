@@ -40,7 +40,6 @@ import protobuf_unittest.UnittestProto.TestPackedTypes;
 import protobuf_unittest.UnittestProto.TestRequired;
 import protobuf_unittest.UnittestProto.TestRequiredForeign;
 import protobuf_unittest.UnittestProto.TestUnpackedTypes;
-
 import junit.framework.TestCase;
 
 import java.util.Map;
@@ -65,35 +64,44 @@ public class AbstractMessageTest extends TestCase {
       this.wrappedMessage = wrappedMessage;
     }
 
+    @Override
     public Descriptors.Descriptor getDescriptorForType() {
       return wrappedMessage.getDescriptorForType();
     }
+    @Override
     public AbstractMessageWrapper getDefaultInstanceForType() {
       return new AbstractMessageWrapper(
         wrappedMessage.getDefaultInstanceForType());
     }
+    @Override
     public Map<Descriptors.FieldDescriptor, Object> getAllFields() {
       return wrappedMessage.getAllFields();
     }
+    @Override
     public boolean hasField(Descriptors.FieldDescriptor field) {
       return wrappedMessage.hasField(field);
     }
+    @Override
     public Object getField(Descriptors.FieldDescriptor field) {
       return wrappedMessage.getField(field);
     }
+    @Override
     public int getRepeatedFieldCount(Descriptors.FieldDescriptor field) {
       return wrappedMessage.getRepeatedFieldCount(field);
     }
-    public Object getRepeatedField(
-        Descriptors.FieldDescriptor field, int index) {
+    @Override
+    public Object getRepeatedField(Descriptors.FieldDescriptor field, int index) {
       return wrappedMessage.getRepeatedField(field, index);
     }
+    @Override
     public UnknownFieldSet getUnknownFields() {
       return wrappedMessage.getUnknownFields();
     }
+    @Override
     public Builder newBuilderForType() {
       return new Builder(wrappedMessage.newBuilderForType());
     }
+    @Override
     public Builder toBuilder() {
       return new Builder(wrappedMessage.toBuilder());
     }
@@ -105,65 +113,80 @@ public class AbstractMessageTest extends TestCase {
         this.wrappedBuilder = wrappedBuilder;
       }
 
+      @Override
       public AbstractMessageWrapper build() {
         return new AbstractMessageWrapper(wrappedBuilder.build());
       }
+      @Override
       public AbstractMessageWrapper buildPartial() {
         return new AbstractMessageWrapper(wrappedBuilder.buildPartial());
       }
+      @Override
       public Builder clone() {
         return new Builder(wrappedBuilder.clone());
       }
+      @Override
       public boolean isInitialized() {
         return clone().buildPartial().isInitialized();
       }
+      @Override
       public Descriptors.Descriptor getDescriptorForType() {
         return wrappedBuilder.getDescriptorForType();
       }
+      @Override
       public AbstractMessageWrapper getDefaultInstanceForType() {
         return new AbstractMessageWrapper(
           wrappedBuilder.getDefaultInstanceForType());
       }
+      @Override
       public Map<Descriptors.FieldDescriptor, Object> getAllFields() {
         return wrappedBuilder.getAllFields();
       }
+      @Override
       public Builder newBuilderForField(Descriptors.FieldDescriptor field) {
         return new Builder(wrappedBuilder.newBuilderForField(field));
       }
+      @Override
       public boolean hasField(Descriptors.FieldDescriptor field) {
         return wrappedBuilder.hasField(field);
       }
+      @Override
       public Object getField(Descriptors.FieldDescriptor field) {
         return wrappedBuilder.getField(field);
       }
+      @Override
       public Builder setField(Descriptors.FieldDescriptor field, Object value) {
         wrappedBuilder.setField(field, value);
         return this;
       }
+      @Override
       public Builder clearField(Descriptors.FieldDescriptor field) {
         wrappedBuilder.clearField(field);
         return this;
       }
+      @Override
       public int getRepeatedFieldCount(Descriptors.FieldDescriptor field) {
         return wrappedBuilder.getRepeatedFieldCount(field);
       }
-      public Object getRepeatedField(
-          Descriptors.FieldDescriptor field, int index) {
+      @Override
+      public Object getRepeatedField(Descriptors.FieldDescriptor field, int index) {
         return wrappedBuilder.getRepeatedField(field, index);
       }
-      public Builder setRepeatedField(Descriptors.FieldDescriptor field,
-                                      int index, Object value) {
+      @Override
+      public Builder setRepeatedField(Descriptors.FieldDescriptor field, int index, Object value) {
         wrappedBuilder.setRepeatedField(field, index, value);
         return this;
       }
-      public Builder addRepeatedField(
-          Descriptors.FieldDescriptor field, Object value) {
+      @Override
+      public Builder addRepeatedField(Descriptors.FieldDescriptor field, Object value) {
         wrappedBuilder.addRepeatedField(field, value);
         return this;
       }
+      @Override
       public UnknownFieldSet getUnknownFields() {
         return wrappedBuilder.getUnknownFields();
       }
+      @Override
       public Builder setUnknownFields(UnknownFieldSet unknownFields) {
         wrappedBuilder.setUnknownFields(unknownFields);
         return this;
@@ -173,6 +196,7 @@ public class AbstractMessageTest extends TestCase {
         return wrappedBuilder.getFieldBuilder(field);
       }
     }
+    @Override
     public Parser<? extends Message> getParserForType() {
       return wrappedMessage.getParserForType();
     }

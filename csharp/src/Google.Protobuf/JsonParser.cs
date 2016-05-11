@@ -513,7 +513,7 @@ namespace Google.Protobuf
                 throw new InvalidProtocolBufferException("Expected string value for Any.@type");
             }
             string typeUrl = token.StringValue;
-            string typeName = JsonFormatter.GetTypeName(typeUrl);
+            string typeName = Any.GetTypeName(typeUrl);
 
             MessageDescriptor descriptor = settings.TypeRegistry.Find(typeName);
             if (descriptor == null)

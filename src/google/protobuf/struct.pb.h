@@ -550,6 +550,7 @@ inline ::std::string* Value::mutable_string_value() {
   return kind_.string_value_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
 inline ::std::string* Value::release_string_value() {
+  // @@protoc_insertion_point(field_release:google.protobuf.Value.string_value)
   if (has_string_value()) {
     clear_has_kind();
     return kind_.string_value_.ReleaseNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
@@ -628,6 +629,7 @@ inline ::google::protobuf::Struct* Value::mutable_struct_value() {
   return kind_.struct_value_;
 }
 inline ::google::protobuf::Struct* Value::release_struct_value() {
+  // @@protoc_insertion_point(field_release:google.protobuf.Value.struct_value)
   if (has_struct_value()) {
     clear_has_kind();
     ::google::protobuf::Struct* temp = kind_.struct_value_;
@@ -675,6 +677,7 @@ inline ::google::protobuf::ListValue* Value::mutable_list_value() {
   return kind_.list_value_;
 }
 inline ::google::protobuf::ListValue* Value::release_list_value() {
+  // @@protoc_insertion_point(field_release:google.protobuf.Value.list_value)
   if (has_list_value()) {
     clear_has_kind();
     ::google::protobuf::ListValue* temp = kind_.list_value_;

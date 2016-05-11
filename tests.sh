@@ -1,17 +1,24 @@
-#!/usr/bin/env bash
+#!/bin/bash
+#
+# Build and runs tests for the protobuf project.  The tests as written here are
+# used by both Jenkins and Travis, though some specialized logic is required to
+# handle the differences between them.
 
-# Note: travis currently does not support testing more than one language so the
-# .travis.yml cheats and claims to only be cpp.  If they add multiple language
-# support, this should probably get updated to install steps and/or
-# rvm/gemfile/jdk/etc. entries rather than manually doing the work.
-
-# .travis.yml uses matrix.exclude to block the cases where app-get can't be
-# use to install things.
+on_travis() {
+  if [ "$TRAVIS" == "true" ]; then
+    "$@"
+  fi
+}
 
 # For when some other test needs the C++ main build, including protoc and
 # libprotobuf.
 internal_build_cpp() {
-  if [ $(uname -s) == "Linux" ]; then
+  if [ -f src/protoc ]; then
+    # Already built.
+    return
+  fi
+
+  if [[ $(uname -s) == "Linux" && "$TRAVIS" == "true" ]]; then
     # Install GCC 4.8 to replace the default GCC 4.6. We need 4.8 for more
     # decent C++ 11 support in order to compile conformance tests.
     sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
@@ -29,6 +36,9 @@ build_cpp() {
   internal_build_cpp
   make check -j2
   cd conformance && make test_cpp && cd ..
+
+  # Verify benchmarking code can build successfully.
+  cd benchmarks && make && ./generate-datasets && cd ..
 }
 
 build_cpp_distcheck() {
@@ -42,16 +52,20 @@ build_csharp() {
   # need to really build protoc, but it's simplest to keep with the
   # conventions of the other builds.
   internal_build_cpp
+  NUGET=/usr/local/bin/nuget.exe
 
-  # Install latest version of Mono
-  sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF
-  echo "deb http://download.mono-project.com/repo/debian wheezy main" | sudo tee /etc/apt/sources.list.d/mono-xamarin.list
-  echo "deb http://download.mono-project.com/repo/debian wheezy-libtiff-compat main" | sudo tee -a /etc/apt/sources.list.d/mono-xamarin.list
-  sudo apt-get update -qq
-  sudo apt-get install -qq mono-devel referenceassemblies-pcl nunit
-  wget www.nuget.org/NuGet.exe -O nuget.exe
+  if [ "$TRAVIS" == "true" ]; then
+    # Install latest version of Mono
+    sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF
+    echo "deb http://download.mono-project.com/repo/debian wheezy main" | sudo tee /etc/apt/sources.list.d/mono-xamarin.list
+    echo "deb http://download.mono-project.com/repo/debian wheezy-libtiff-compat main" | sudo tee -a /etc/apt/sources.list.d/mono-xamarin.list
+    sudo apt-get update -qq
+    sudo apt-get install -qq mono-devel referenceassemblies-pcl nunit
+    wget www.nuget.org/NuGet.exe -O nuget.exe
+    NUGET=../../nuget.exe
+  fi
 
-  (cd csharp/src; mono ../../nuget.exe restore)
+  (cd csharp/src; mono $NUGET restore)
   csharp/buildall.sh
   cd conformance && make test_csharp && cd ..
 }
@@ -78,40 +92,54 @@ use_java() {
   version=$1
   case "$version" in
     jdk6)
-      sudo apt-get install openjdk-6-jdk
+      on_travis sudo apt-get install openjdk-6-jdk
       export PATH=/usr/lib/jvm/java-6-openjdk-amd64/bin:$PATH
       ;;
     jdk7)
-      sudo apt-get install openjdk-7-jdk
+      on_travis sudo apt-get install openjdk-7-jdk
       export PATH=/usr/lib/jvm/java-7-openjdk-amd64/bin:$PATH
       ;;
     oracle7)
-      sudo apt-get install python-software-properties # for apt-add-repository
-      echo "oracle-java7-installer shared/accepted-oracle-license-v1-1 select true" | \
-        sudo debconf-set-selections
-      yes | sudo apt-add-repository ppa:webupd8team/java
-      yes | sudo apt-get install oracle-java7-installer
+      if [ "$TRAVIS" == "true" ]; then
+        sudo apt-get install python-software-properties # for apt-add-repository
+        echo "oracle-java7-installer shared/accepted-oracle-license-v1-1 select true" | \
+          sudo debconf-set-selections
+        yes | sudo apt-add-repository ppa:webupd8team/java
+        yes | sudo apt-get install oracle-java7-installer
+      fi;
       export PATH=/usr/lib/jvm/java-7-oracle/bin:$PATH
       ;;
   esac
+
+  if [ "$TRAVIS" != "true" ]; then
+    MAVEN_LOCAL_REPOSITORY=/var/maven_local_repository
+    MVN="$MVN -e -X --offline -Dmaven.repo.local=$MAVEN_LOCAL_REPOSITORY"
+  fi;
 
   which java
   java -version
 }
 
+# --batch-mode supresses download progress output that spams the logs.
+MVN="mvn --batch-mode"
+
 build_java() {
+  version=$1
+  dir=java_$version
   # Java build needs `protoc`.
   internal_build_cpp
-  cd java && mvn test && mvn install
-  cd util && mvn test
+  cp -r java $dir
+  cd $dir && $MVN clean && $MVN test
   cd ../..
 }
 
+# The conformance tests are hard-coded to work with the $ROOT/java directory.
+# So this can't run in parallel with two different sets of tests.
 build_java_with_conformance_tests() {
   # Java build needs `protoc`.
   internal_build_cpp
-  cd java && mvn test && mvn install
-  cd util && mvn test && mvn assembly:single
+  cd java && $MVN test && $MVN install
+  cd util && $MVN package assembly:single
   cd ../..
   cd conformance && make test_java && cd ..
 }
@@ -119,12 +147,12 @@ build_java_with_conformance_tests() {
 build_javanano() {
   # Java build needs `protoc`.
   internal_build_cpp
-  cd javanano && mvn test && cd ..
+  cd javanano && $MVN test && cd ..
 }
 
 build_java_jdk6() {
   use_java jdk6
-  build_java
+  build_java jdk6
 }
 build_java_jdk7() {
   use_java jdk7
@@ -132,7 +160,7 @@ build_java_jdk7() {
 }
 build_java_oracle7() {
   use_java oracle7
-  build_java
+  build_java oracle7
 }
 
 build_javanano_jdk6() {
@@ -149,6 +177,9 @@ build_javanano_oracle7() {
 }
 
 internal_install_python_deps() {
+  if [ "$TRAVIS" != "true" ]; then
+    return;
+  fi
   # Install tox (OS X doesn't have pip).
   if [ $(uname -s) == "Darwin" ]; then
     sudo easy_install tox
@@ -171,13 +202,7 @@ internal_objectivec_common () {
   #  http://docs.travis-ci.com/user/osx-ci-environment/
   # We don't use a before_install because we test multiple OSes.
   brew update
-  # xctool 0.2.8 seems to have a bug where it randomly kills tests saying
-  # they failed. Disabling the updates, but letting it report about being
-  # updates as a hint that this needs to eventually get re-enabled.
-  #   https://github.com/facebook/xctool/issues/619
-  #   https://github.com/google/protobuf/issues/1232
-  brew outdated xctool || true
-  #brew outdated xctool || brew upgrade xctool
+  brew outdated xctool || brew upgrade xctool
   # Reused the build script that takes care of configuring and ensuring things
   # are up to date. Xcode and conformance tests will be directly invoked.
   objectivec/DevTools/full_mac_build.sh \
@@ -284,6 +309,14 @@ build_javascript() {
   cd js && npm install && npm test && cd ..
 }
 
+# Note: travis currently does not support testing more than one language so the
+# .travis.yml cheats and claims to only be cpp.  If they add multiple language
+# support, this should probably get updated to install steps and/or
+# rvm/gemfile/jdk/etc. entries rather than manually doing the work.
+
+# .travis.yml uses matrix.exclude to block the cases where app-get can't be
+# use to install things.
+
 # -------- main --------
 
 if [ "$#" -ne 1 ]; then
@@ -300,10 +333,10 @@ Usage: $0 { cpp |
             objectivec_osx |
             python |
             python_cpp |
-            ruby_19 |
-            ruby_20 |
-            ruby_21 |
-            ruby_22 |
+            ruby19 |
+            ruby20 |
+            ruby21 |
+            ruby22 |
             jruby }
 "
   exit 1

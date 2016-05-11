@@ -69,7 +69,7 @@ void Message::MergeFrom(const Message& from) {
   GOOGLE_CHECK_EQ(from.GetDescriptor(), descriptor)
     << ": Tried to merge from a message with a different type.  "
        "to: " << descriptor->full_name() << ", "
-       "from:" << from.GetDescriptor()->full_name();
+       "from: " << from.GetDescriptor()->full_name();
   ReflectionOps::Merge(from, this);
 }
 
@@ -82,7 +82,7 @@ void Message::CopyFrom(const Message& from) {
   GOOGLE_CHECK_EQ(from.GetDescriptor(), descriptor)
     << ": Tried to copy from a message with a different type. "
        "to: " << descriptor->full_name() << ", "
-       "from:" << from.GetDescriptor()->full_name();
+       "from: " << from.GetDescriptor()->full_name();
   ReflectionOps::Copy(from, this);
 }
 

@@ -656,7 +656,6 @@ static const upb_json_parsermethod *msgdef_jsonparsermethod(Descriptor* desc) {
 #define STACK_ENV_STACKBYTES 4096
 typedef struct {
   upb_env env;
-  upb_seededalloc alloc;
   const char* ruby_error_template;
   char allocbuf[STACK_ENV_STACKBYTES];
 } stackenv;
@@ -681,16 +680,12 @@ static bool env_error_func(void* ud, const upb_status* status) {
 
 static void stackenv_init(stackenv* se, const char* errmsg) {
   se->ruby_error_template = errmsg;
-  upb_env_init(&se->env);
-  upb_seededalloc_init(&se->alloc, &se->allocbuf, STACK_ENV_STACKBYTES);
-  upb_env_setallocfunc(
-      &se->env, upb_seededalloc_getallocfunc(&se->alloc), &se->alloc);
+  upb_env_init2(&se->env, se->allocbuf, sizeof(se->allocbuf), NULL);
   upb_env_seterrorfunc(&se->env, env_error_func, se);
 }
 
 static void stackenv_uninit(stackenv* se) {
   upb_env_uninit(&se->env);
-  upb_seededalloc_uninit(&se->alloc);
 }
 
 /*
@@ -1130,13 +1125,23 @@ static const upb_handlers* msgdef_pb_serialize_handlers(Descriptor* desc) {
   return desc->pb_serialize_handlers;
 }
 
-static const upb_handlers* msgdef_json_serialize_handlers(Descriptor* desc) {
-  if (desc->json_serialize_handlers == NULL) {
-    desc->json_serialize_handlers =
-        upb_json_printer_newhandlers(
-            desc->msgdef, &desc->json_serialize_handlers);
+static const upb_handlers* msgdef_json_serialize_handlers(
+    Descriptor* desc, bool preserve_proto_fieldnames) {
+  if (preserve_proto_fieldnames) {
+    if (desc->json_serialize_handlers == NULL) {
+      desc->json_serialize_handlers =
+          upb_json_printer_newhandlers(
+              desc->msgdef, true, &desc->json_serialize_handlers);
+    }
+    return desc->json_serialize_handlers;
+  } else {
+    if (desc->json_serialize_handlers_preserve == NULL) {
+      desc->json_serialize_handlers_preserve =
+          upb_json_printer_newhandlers(
+              desc->msgdef, false, &desc->json_serialize_handlers_preserve);
+    }
+    return desc->json_serialize_handlers_preserve;
   }
-  return desc->json_serialize_handlers;
 }
 
 /*
@@ -1181,16 +1186,33 @@ VALUE Message_encode(VALUE klass, VALUE msg_rb) {
  *
  * Encodes the given message object into its serialized JSON representation.
  */
-VALUE Message_encode_json(VALUE klass, VALUE msg_rb) {
+VALUE Message_encode_json(int argc, VALUE* argv, VALUE klass) {
   VALUE descriptor = rb_ivar_get(klass, descriptor_instancevar_interned);
   Descriptor* desc = ruby_to_Descriptor(descriptor);
-
+  VALUE msg_rb;
+  VALUE preserve_proto_fieldnames = Qfalse;
   stringsink sink;
+
+  if (argc < 1 || argc > 2) {
+    rb_raise(rb_eArgError, "Expected 1 or 2 arguments.");
+  }
+
+  msg_rb = argv[0];
+
+  if (argc == 2) {
+    VALUE hash_args = argv[1];
+    if (TYPE(hash_args) != T_HASH) {
+      rb_raise(rb_eArgError, "Expected hash arguments.");
+    }
+    preserve_proto_fieldnames = rb_hash_lookup2(
+        hash_args, ID2SYM(rb_intern("preserve_proto_fieldnames")), Qfalse);
+  }
+
   stringsink_init(&sink);
 
   {
     const upb_handlers* serialize_handlers =
-        msgdef_json_serialize_handlers(desc);
+        msgdef_json_serialize_handlers(desc, RTEST(preserve_proto_fieldnames));
     upb_json_printer* printer;
     stackenv se;
     VALUE ret;

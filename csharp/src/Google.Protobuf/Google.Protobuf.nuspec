@@ -23,7 +23,6 @@
       <group targetFramework="xamarin.ios" />
       <group targetFramework="monotouch" />
       <group targetFramework="monoandroid" />
-
       <!-- Dependencies for newer, more granular platforms (.NET Core etc) -->
       <group targetFramework="dotnet">
         <dependency id="System.Collections" version="4.0.0" />
@@ -34,10 +33,12 @@
         <dependency id="System.Linq.Expressions" version="4.0.0" />
         <dependency id="System.ObjectModel" version="4.0.0" />
         <dependency id="System.Reflection" version="4.0.0" />
+        <dependency id="System.Reflection.Extensions" version="4.0.0" />
         <dependency id="System.Runtime" version="4.0.0" />
         <dependency id="System.Runtime.Extensions" version="4.0.0" />
         <dependency id="System.Text.Encoding" version="4.0.0" />
         <dependency id="System.Text.RegularExpressions" version="4.0.0" />
+        <dependency id="System.Threading" version="4.0.0" />
       </group>
     </dependencies>
   </metadata>
@@ -49,18 +50,5 @@
     <file src="bin/ReleaseSigned/Google.Protobuf.pdb" target="lib/dotnet" />
     <file src="bin/ReleaseSigned/Google.Protobuf.xml" target="lib/dotnet" />
     <file src="**\*.cs" target="src" />
-    <file src="..\..\..\cmake\Release\protoc.exe" target="tools" />
-    <file src="..\..\..\src\google\protobuf\any.proto" target="tools\google\protobuf" />
-    <file src="..\..\..\src\google\protobuf\api.proto" target="tools\google\protobuf" />
-    <file src="..\..\..\src\google\protobuf\descriptor.proto" target="tools\google\protobuf" />
-    <file src="..\..\..\src\google\protobuf\duration.proto" target="tools\google\protobuf" />
-    <file src="..\..\..\src\google\protobuf\empty.proto" target="tools\google\protobuf" />
-    <file src="..\..\..\src\google\protobuf\field_mask.proto" target="tools\google\protobuf" />
-    <file src="..\..\..\src\google\protobuf\source_context.proto" target="tools\google\protobuf" />
-    <file src="..\..\..\src\google\protobuf\struct.proto" target="tools\google\protobuf" />
-    <file src="..\..\..\src\google\protobuf\timestamp.proto" target="tools\google\protobuf" />
-    <file src="..\..\..\src\google\protobuf\any.proto" target="tools\google\protobuf" />
-    <file src="..\..\..\src\google\protobuf\type.proto" target="tools\google\protobuf" />
-    <file src="..\..\..\src\google\protobuf\wrappers.proto" target="tools\google\protobuf" />
   </files>
 </package>

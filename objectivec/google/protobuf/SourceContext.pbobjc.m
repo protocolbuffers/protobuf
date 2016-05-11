@@ -5,6 +5,9 @@
 #import "google/protobuf/SourceContext.pbobjc.h"
 // @@protoc_insertion_point(imports)
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+
 #pragma mark - GPBSourceContextRoot
 
 @implementation GPBSourceContextRoot
@@ -44,14 +47,12 @@ typedef struct GPBSourceContext__storage_ {
     static GPBMessageFieldDescription fields[] = {
       {
         .name = "fileName",
+        .dataTypeSpecific.className = NULL,
         .number = GPBSourceContext_FieldNumber_FileName,
         .hasIndex = 0,
+        .offset = (uint32_t)offsetof(GPBSourceContext__storage_, fileName),
         .flags = GPBFieldOptional,
         .dataType = GPBDataTypeString,
-        .offset = offsetof(GPBSourceContext__storage_, fileName),
-        .defaultValue.valueString = nil,
-        .dataTypeSpecific.className = NULL,
-        .fieldOptions = NULL,
       },
     };
     GPBDescriptor *localDescriptor =
@@ -59,15 +60,9 @@ typedef struct GPBSourceContext__storage_ {
                                      rootClass:[GPBSourceContextRoot class]
                                           file:GPBSourceContextRoot_FileDescriptor()
                                         fields:fields
-                                    fieldCount:sizeof(fields) / sizeof(GPBMessageFieldDescription)
-                                        oneofs:NULL
-                                    oneofCount:0
-                                         enums:NULL
-                                     enumCount:0
-                                        ranges:NULL
-                                    rangeCount:0
+                                    fieldCount:(uint32_t)(sizeof(fields) / sizeof(GPBMessageFieldDescription))
                                    storageSize:sizeof(GPBSourceContext__storage_)
-                                    wireFormat:NO];
+                                         flags:0];
     NSAssert(descriptor == nil, @"Startup recursed!");
     descriptor = localDescriptor;
   }
@@ -76,5 +71,7 @@ typedef struct GPBSourceContext__storage_ {
 
 @end
 
+
+#pragma clang diagnostic pop
 
 // @@protoc_insertion_point(global_scope)
