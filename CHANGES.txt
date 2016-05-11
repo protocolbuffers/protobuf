@@ -1,3 +1,55 @@
+2016-05-10 version 3.0.0-beta-3 (C++/Java/Python/Ruby/Nano/Objective-C/C#/JavaScript)
+  General
+  * Supported Proto3 lite-runtime in C++/Java for mobile platforms.
+  * Any type now supports APIs to specify prefixes other than
+    type.googleapis.com
+
+  C++ (Beta)
+  * Improved hash maps. TODO(gpike)
+  * Arenas
+      - Several inlined methods in Arena were moved to out-of-line to improve
+        build performance and code size.
+      - Added SpaceAllocatedAndUsed() to report both space used and allocated
+      - Added convenient class UnsafeArenaAllocatedRepeatedPtrFieldBackInserter
+  * Any
+      - TextFormat now expand the Any type rather than printing bytes.
+  * Performance optimizations and various bug fixes.
+
+  Java (Beta)
+  * Introduced an ExperimentalApi annotation. Annotated APIs are experimental
+    and are subject to change in a backward incompatible way in future releases.
+  * Introduced zero-copy serialization as an ExperimentalApi. TODO(nathanmittler)
+  * Improved the performance for lite-runtime. TODO(dweis)
+  * Various bug fixes and small feature enhancement.
+      - Fixed stack overflow when in hashCode() for infinite recursive oneofs.
+      - Fixed the lazy field parsing in lite to merge rather than overwrite.
+      - TextFormat now supports reporting line/column numbers on errors.
+
+  Python (Beta)
+  * TODO(jieluo)
+
+  Objective-C (Beta)
+  * TODO(thomasvl)
+
+  C# (Beta)
+  * TODO(jonskeet)
+
+  Javascript (Alpha)
+  * TODO(haberman)
+
+  C++/Java Lite (Alpha)
+    A new "lite" generator parameter was introduced in the protoc for C++ and
+    Java to for Proto3 syntax messages. Example usage:
+
+     ./protoc --cpp_out=lite:$OUTPUT_PATH foo.proto
+
+    The protoc will treat the current input and all the transitive dependencies
+    as LITE. The same generator parameter must be used to generate the
+    dependencies.
+
+    In Proto3 syntax files, "optimized_for=LITE_RUNTIME" is no longer supported.
+
+
 2015-12-30 version 3.0.0-beta-2 (C++/Java/Python/Ruby/Nano/Objective-C/C#/JavaScript)
   General
   * Introduced a new language implementation: JavaScript.
