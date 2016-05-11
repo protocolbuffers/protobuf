@@ -86,7 +86,8 @@ namespace Google.Protobuf
             { FloatValue.Descriptor.FullName, MergeWrapperField },
             { DoubleValue.Descriptor.FullName, MergeWrapperField },
             { BytesValue.Descriptor.FullName, MergeWrapperField },
-            { StringValue.Descriptor.FullName, MergeWrapperField }
+            { StringValue.Descriptor.FullName, MergeWrapperField },
+            { BoolValue.Descriptor.FullName, MergeWrapperField }
         };
 
         // Convenience method to avoid having to repeat the same code multiple times in the above
