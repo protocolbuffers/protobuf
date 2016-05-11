@@ -417,5 +417,12 @@ namespace Google.Protobuf.WellKnownTypes
             TestWellKnownTypes.Descriptor.Fields[TestWellKnownTypes.StringFieldFieldNumber].Accessor.Clear(message);
             Assert.IsNull(message.StringField);
         }
+
+        [Test]
+        public void GivenBoolValueWhenPerformingRoundTripEncodingViaJsonThenShouldNotExpectObjectAtTopLevel()
+        {
+            var value = new BoolValue { Value = true };
+            Assert.AreEqual(value, JsonParser.Default.Parse<BoolValue>(JsonFormatter.Default.Format(value)));
+        }
     }
 }
