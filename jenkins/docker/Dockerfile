@@ -71,6 +71,8 @@ RUN apt-get update && apt-get install -y \
   python3.4-dev \
   # -- For Ruby --
   ruby \
+  # -- For C++ benchmarks --
+  cmake \
   && apt-get clean
 
 ##################
