@@ -46,7 +46,11 @@
       - TextFormat now supports reporting line/column numbers on errors.
 
   Python (Beta)
-  * TODO(jieluo)
+  * Added JSON format for Any, Struct, Value and ListValue
+  * [ ] is now accepted for both repeated scalar fields and repeated message
+    fields in text format parser.
+  * Numerical field name is now supported in text format.
+  * Added DiscardUnknownFields API for python protobuf message.
 
   Objective-C (Beta)
   * Proto comments now come over as HeaderDoc comments in the generated sources
