@@ -54,7 +54,7 @@ strpc *newstrpc(upb_handlers *h, const upb_fielddef *f,
     ret->len = upb_fielddef_getjsonname(f, NULL, 0);
     ret->ptr = upb_gmalloc(ret->len);
     len = upb_fielddef_getjsonname(f, ret->ptr, ret->len);
-    UPB_ASSERT_VAR(len, len == ret->len);
+    UPB_ASSERT(len == ret->len);
     ret->len--;  /* NULL */
   }
 
@@ -68,7 +68,7 @@ static void print_data(
     upb_json_printer *p, const char *buf, unsigned int len) {
   /* TODO: Will need to change if we support pushback from the sink. */
   size_t n = upb_bytessink_putbuf(p->output_, p->subc_, buf, len, NULL);
-  UPB_ASSERT_VAR(n, n == len);
+  UPB_ASSERT(n == len);
 }
 
 static void print_comma(upb_json_printer *p) {
@@ -418,7 +418,7 @@ static size_t putbytes(void *closure, const void *handler_data, const char *str,
 
   while (remaining > 2) {
     /* TODO(haberman): handle encoded lengths > sizeof(data) */
-    UPB_ASSERT_VAR(limit, (limit - to) >= 4);
+    UPB_ASSERT((limit - to) >= 4);
 
     to[0] = base64[from[0] >> 2];
     to[1] = base64[((from[0] & 0x3) << 4) | (from[1] >> 4)];
@@ -622,7 +622,7 @@ void printer_sethandlers_mapentry(const void *closure, bool preserve_fieldnames,
       upb_handlers_setstring(h, key_field, mapkey_bytes, &empty_attr);
       break;
     default:
-      assert(false);
+      UPB_ASSERT(false);
       break;
   }
 
@@ -796,7 +796,8 @@ upb_json_printer *upb_json_printer_create(upb_env *e, const upb_handlers *h,
   upb_sink_reset(&p->input_, h, p);
 
   /* If this fails, increase the value in printer.h. */
-  assert(upb_env_bytesallocated(e) - size_before <= UPB_JSON_PRINTER_SIZE);
+  UPB_ASSERT_DEBUGVAR(upb_env_bytesallocated(e) - size_before <=
+                      UPB_JSON_PRINTER_SIZE);
   return p;
 }
 

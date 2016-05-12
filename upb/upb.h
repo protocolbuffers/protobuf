@@ -196,10 +196,17 @@ template <int N> class InlinedEnvironment;
 
 #define UPB_UNUSED(var) (void)var
 
-/* For asserting something about a variable when the variable is not used for
- * anything else.  This prevents "unused variable" warnings when compiling in
- * debug mode. */
-#define UPB_ASSERT_VAR(var, predicate) UPB_UNUSED(var); assert(predicate)
+/* UPB_ASSERT(): in release mode, we use the expression without letting it be
+ * evaluated.  This prevents "unused variable" warnings. */
+#ifdef NDEBUG
+#define UPB_ASSERT(expr) do {} while (false && (expr))
+#else
+#define UPB_ASSERT(expr) assert(expr)
+#endif
+
+/* UPB_ASSERT_DEBUGVAR(): assert that uses functions or variables that only
+ * exist in debug mode.  This turns into regular assert. */
+#define UPB_ASSERT_DEBUGVAR(expr) assert(expr)
 
 /* Generic function type. */
 typedef void upb_func();
@@ -434,13 +441,13 @@ struct upb_alloc {
 };
 
 UPB_INLINE void *upb_malloc(upb_alloc *alloc, size_t size) {
-  assert(size > 0);
+  UPB_ASSERT(size > 0);
   return alloc->func(alloc, NULL, 0, size);
 }
 
 UPB_INLINE void *upb_realloc(upb_alloc *alloc, void *ptr, size_t oldsize,
                              size_t size) {
-  assert(size > 0);
+  UPB_ASSERT(size > 0);
   return alloc->func(alloc, ptr, oldsize, size);
 }
 

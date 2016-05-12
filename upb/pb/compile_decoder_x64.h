@@ -338,7 +338,7 @@ static upb_func *gethandler(const upb_handlers *h, upb_selector_t sel) {
 static void asmlabel(jitcompiler *jc, const char *fmt, ...) {
 #ifndef NDEBUG
   int ofs = jc->dynasm->section->ofs;
-  assert(ofs != jc->lastlabelofs);
+  UPB_ASSERT(ofs != jc->lastlabelofs);
   jc->lastlabelofs = ofs;
 #endif
 
@@ -370,7 +370,7 @@ static bool alwaysok(const upb_handlers *h, upb_selector_t sel) {
   bool ok = upb_handlers_getattr(h, sel, &attr);
   bool ret;
 
-  UPB_ASSERT_VAR(ok, ok);
+  UPB_ASSERT(ok);
   ret = upb_handlerattr_alwaysok(&attr);
   upb_handlerattr_uninit(&attr);
   return ret;
@@ -964,7 +964,7 @@ static void jitprimitive(jitcompiler *jc, opcode op,
         case UPB_TYPE_STRING:
         case UPB_TYPE_BYTES:
         case UPB_TYPE_MESSAGE:
-          assert(false); break;
+          UPB_ASSERT(false); break;
       }
       /*|  sethas CLOSURE, data->hasbit */
        if (data->hasbit >= 0) {
@@ -1188,7 +1188,7 @@ static void jitdispatch(jitcompiler *jc,
     /*|  // This key will never be in the array part, so do a hash lookup. */
     dasm_put(Dst, 2035, UPB_MAX_FIELDNUMBER);
 # 793 "upb/pb/compile_decoder_x64.dasc"
-    assert(has_hash_entries);
+    UPB_ASSERT(has_hash_entries);
     /*|  ld64  dispatch */
      {
      uintptr_t v = (uintptr_t)dispatch;
@@ -1240,7 +1240,7 @@ static void jittag(jitcompiler *jc, uint64_t tag, int n, int ofs,
   uint32_t *delimend = (jc->pc - 1) + last_arg;
   const size_t ptr_words = sizeof(void*) / sizeof(uint32_t);
 
-  assert((last_instruction & 0xff) == OP_CHECKDELIM);
+  UPB_ASSERT((last_instruction & 0xff) == OP_CHECKDELIM);
 
   if (getop(*(jc->pc - 1)) == OP_TAGN) {
     jc->pc += ptr_words;
@@ -1715,7 +1715,7 @@ static void jitbytecode(jitcompiler *jc) {
 # 1132 "upb/pb/compile_decoder_x64.dasc"
       break;
     case OP_HALT:
-      assert(false);
+      UPB_ASSERT(false);
     }
   }
 

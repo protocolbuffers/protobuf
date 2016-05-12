@@ -21,14 +21,14 @@
 namespace {
 
 template<typename To, typename From> To CheckDownCast(From* f) {
-  assert(f == NULL || dynamic_cast<To>(f) != NULL);
+  UPB_ASSERT(f == NULL || dynamic_cast<To>(f) != NULL);
   return static_cast<To>(f);
 }
 
 }
 
 // Unconditionally evaluate, but also assert in debug mode.
-#define CHKRET(x) do { bool ok = (x); UPB_UNUSED(ok); assert(ok); } while (0)
+#define CHKRET(x) do { bool ok = (x); UPB_ASSERT(ok); } while (0)
 
 namespace upb {
 namespace google_google3 { class GMR_Handlers; }
@@ -222,7 +222,7 @@ case goog::FieldDescriptor::cpptype:                                           \
                                     upb::Handlers::Type type) {
     upb::Handlers::Selector selector;
     bool ok = upb::Handlers::GetSelector(f, type, &selector);
-    UPB_ASSERT_VAR(ok, ok);
+    UPB_ASSERT(ok);
     return selector;
   }
 
@@ -230,7 +230,7 @@ case goog::FieldDescriptor::cpptype:                                           \
       const goog::FieldDescriptor* f,
       const goog::internal::GeneratedMessageReflection* r) {
     // proto2 does not store hasbits for repeated fields.
-    assert(!f->is_repeated());
+    UPB_ASSERT(!f->is_repeated());
     return (r->has_bits_offset_ * 8) + f->index();
   }
 
@@ -238,7 +238,7 @@ case goog::FieldDescriptor::cpptype:                                           \
   static size_t GetOneofDiscriminantOffset(
       const goog::FieldDescriptor* f,
       const goog::internal::GeneratedMessageReflection* r) {
-    assert(f->containing_oneof());
+    UPB_ASSERT(f->containing_oneof());
     return r->oneof_case_offset_ + f->containing_oneof()->index();
   }
 #endif
@@ -326,7 +326,7 @@ case goog::FieldDescriptor::cpptype:                                           \
     }
 
     void SetHasbit(void* m) const {
-      assert(!is_repeated_);
+      UPB_ASSERT(!is_repeated_);
       uint8_t* byte = GetPointer<uint8_t>(m, hasbyte_);
       *byte |= mask_;
     }
@@ -470,7 +470,7 @@ case goog::FieldDescriptor::cpptype:                                           \
           return ONEOF_TYPE_STRINGPIECE;
 #endif
         default:
-          assert(false);
+          UPB_ASSERT(false);
           return ONEOF_TYPE_NONE;
       }
     }
@@ -582,7 +582,7 @@ case goog::FieldDescriptor::cpptype:                                           \
     }
 #ifdef GOOGLE_PROTOBUF_HAS_ONEOF
       else if (proto2_f->containing_oneof()) {
-      assert(!proto2_f->is_repeated());
+      UPB_ASSERT(!proto2_f->is_repeated());
       CHKRET(h->SetValueHandler<T>(
           f, UpbBindT(SetOneofPrimitive<T>,
                       new OneofFieldHandlerData(proto2_f, r))));
@@ -656,7 +656,7 @@ case goog::FieldDescriptor::cpptype:                                           \
       const goog::FieldDescriptor* proto2_f,
       const goog::internal::GeneratedMessageReflection* r,
       const upb::FieldDef* f, upb::Handlers* h) {
-    assert(!proto2_f->is_extension());
+    UPB_ASSERT(!proto2_f->is_extension());
     scoped_ptr<EnumHandlerData> data(new EnumHandlerData(proto2_f, r, f));
     if (f->IsSequence()) {
       CHKRET(h->SetInt32Handler(f, UpbBind(AppendEnum, data.release())));
@@ -696,7 +696,7 @@ case goog::FieldDescriptor::cpptype:                                           \
       const goog::FieldDescriptor* proto2_f,
       const goog::internal::GeneratedMessageReflection* r,
       const upb::FieldDef* f, upb::Handlers* h) {
-    assert(proto2_f->is_extension());
+    UPB_ASSERT(proto2_f->is_extension());
     scoped_ptr<ExtensionFieldData> data(new ExtensionFieldData(proto2_f, r));
     if (f->IsSequence()) {
       CHKRET(
@@ -745,11 +745,11 @@ case goog::FieldDescriptor::cpptype:                                           \
       const goog::internal::GeneratedMessageReflection* r,
       const upb::FieldDef* f,
       upb::Handlers* h) {
-    assert(!proto2_f->is_extension());
+    UPB_ASSERT(!proto2_f->is_extension());
     CHKRET(h->SetStringHandler(f, UpbMakeHandlerT(&OnStringBuf<T>)));
 #ifdef GOOGLE_PROTOBUF_HAS_ONEOF
     if (proto2_f->containing_oneof()) {
-      assert(!f->IsSequence());
+      UPB_ASSERT(!f->IsSequence());
       CHKRET(h->SetStartStringHandler(
           f, UpbBindT(&StartOneofString<T>,
                       new OneofFieldHandlerData(proto2_f, r))));
@@ -835,7 +835,7 @@ case goog::FieldDescriptor::cpptype:                                           \
       const goog::FieldDescriptor* proto2_f,
       const goog::internal::GeneratedMessageReflection* r,
       const upb::FieldDef* f, upb::Handlers* h) {
-    assert(proto2_f->is_extension());
+    UPB_ASSERT(proto2_f->is_extension());
     CHKRET(h->SetStringHandler(f, UpbMakeHandlerT(OnStringBuf<T>)));
     scoped_ptr<ExtensionFieldData> data(new ExtensionFieldData(proto2_f, r));
     if (f->IsSequence()) {
@@ -908,7 +908,7 @@ case goog::FieldDescriptor::cpptype:                                           \
         new SubMessageHandlerData(proto2_f, r, field_prototype));
 #ifdef GOOGLE_PROTOBUF_HAS_ONEOF
     if (proto2_f->containing_oneof()) {
-      assert(!f->IsSequence());
+      UPB_ASSERT(!f->IsSequence());
       CHKRET(h->SetStartSubMessageHandler(
           f, UpbBind(StartOneofSubMessage, new OneofSubMessageHandlerData(
                                                proto2_f, r, field_prototype))));
@@ -965,7 +965,7 @@ case goog::FieldDescriptor::cpptype:                                           \
     // around waiting for reuse, which we will not do.
     static void Delete(Type* t) {
       UPB_UNUSED(t);
-      assert(false);
+      UPB_ASSERT(false);
     }
 #endif  // ifdef GOOGLE_PROTOBUF_HAS_ARENAS
 
@@ -1089,7 +1089,7 @@ case goog::FieldDescriptor::cpptype:                                           \
       // "We could speed this up by using CordReader internals."
       Cord piece(*source_cord);
       piece.RemovePrefix(handle->object_offset() + (buf - handle->buffer()));
-      assert(piece.size() >= n);
+      UPB_ASSERT(piece.size() >= n);
       piece.RemoveSuffix(piece.size() - n);
 
       c->Append(piece);
@@ -1102,7 +1102,7 @@ case goog::FieldDescriptor::cpptype:                                           \
       const proto2::FieldDescriptor* proto2_f,
       const proto2::internal::GeneratedMessageReflection* r,
       const upb::FieldDef* f, upb::Handlers* h) {
-    assert(!proto2_f->is_extension());
+    UPB_ASSERT(!proto2_f->is_extension());
     CHKRET(h->SetStringHandler(f, UpbMakeHandler(&OnCordBuf)));
     if (f->IsSequence()) {
       SetStartRepeatedField<Cord>(proto2_f, r, f, h);
@@ -1139,7 +1139,7 @@ case goog::FieldDescriptor::cpptype:                                           \
       const proto2::FieldDescriptor* proto2_f,
       const proto2::internal::GeneratedMessageReflection* r,
       const upb::FieldDef* f, upb::Handlers* h) {
-    assert(!proto2_f->is_extension());
+    UPB_ASSERT(!proto2_f->is_extension());
     CHKRET(h->SetStringHandler(f, UpbMakeHandler(OnStringPieceBuf)));
     if (f->IsSequence()) {
       SetStartRepeatedPtrField<proto2::internal::StringPieceField>(proto2_f, r,
@@ -1194,7 +1194,7 @@ case goog::FieldDescriptor::cpptype:                                           \
       const proto2::Message& m,
       const proto2::internal::GeneratedMessageReflection* r,
       const upb::FieldDef* f, upb::Handlers* h) {
-    assert(!proto2_f->is_repeated());
+    UPB_ASSERT(!proto2_f->is_repeated());
     const goog::Message* field_prototype = GetFieldPrototype(m, proto2_f);
     CHKRET(h->SetStringHandler(f, UpbMakeHandler(OnLazyFieldBuf)));
     if (proto2_f->is_extension()) {

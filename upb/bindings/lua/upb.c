@@ -141,7 +141,7 @@ static void *newudata_with_userval(lua_State *L, size_t size,
 
   /* Set metatable. */
   luaL_getmetatable(L, type);
-  assert(!lua_isnil(L, -1));  /* Should have been created by luaopen_upb. */
+  UPB_ASSERT(!lua_isnil(L, -1));  /* Should have been created by luaopen_upb. */
   lua_setmetatable(L, -2);
 
   lua_newtable(L);
@@ -322,7 +322,7 @@ bool lupb_refcounted_pushwrapper(lua_State *L, const upb_refcounted *obj,
   /* Lookup our cache in the registry (we don't put our objects in the registry
    * directly because we need our cache to be a weak table). */
   lua_getfield(L, LUA_REGISTRYINDEX, LUPB_OBJCACHE);
-  assert(!lua_isnil(L, -1));  /* Should have been created by luaopen_upb. */
+  UPB_ASSERT(!lua_isnil(L, -1));  /* Should have been created by luaopen_upb. */
   lua_pushlightuserdata(L, (void*)obj);
   lua_rawget(L, -2);
   /* Stack is now: objcache, cached value. */
@@ -382,7 +382,7 @@ void lupb_refcounted_pushnewrapper(lua_State *L, const upb_refcounted *obj,
                                    const char *type, const void *ref_donor) {
   bool created =
       lupb_refcounted_pushwrapper(L, obj, type, ref_donor, sizeof(void *));
-  UPB_ASSERT_VAR(created, created == true);
+  UPB_ASSERT(created == true);
 }
 
 static int lupb_refcounted_gc(lua_State *L) {
@@ -461,7 +461,7 @@ bool lupb_def_pushwrapper(lua_State *L, const upb_def *def,
 void lupb_def_pushnewrapper(lua_State *L, const upb_def *def,
                             const void *ref_donor) {
   bool created = lupb_def_pushwrapper(L, def, ref_donor);
-  UPB_ASSERT_VAR(created, created == true);
+  UPB_ASSERT(created == true);
 }
 
 static int lupb_def_type(lua_State *L) {
@@ -1310,7 +1310,7 @@ static int lupb_filedefiter_next(lua_State *L) {
     const upb_def *def;
 
     def = upb_filedef_def(f, i);
-    assert(def);
+    UPB_ASSERT(def);
 
     if (type == UPB_DEF_ANY || upb_def_type(def) == type) {
       lua_pushinteger(L, i + 1);
@@ -1738,7 +1738,7 @@ static lupb_msgdef *lupb_msg_assignoffsets(lua_State *L, int narg) {
     upb_fielddef *f = upb_msg_iter_field(&i);
     if (upb_fielddef_type(f) == UPB_TYPE_MESSAGE) {
       bool created = lupb_def_pushwrapper(L, upb_fielddef_subdef(f), NULL);
-      UPB_ASSERT_VAR(created, !created);
+      UPB_ASSERT(!created);
       lupb_msg_assignoffsets(L, -1);
       lua_rawseti(L, -2, idx++);  /* Append to uservalue. */
     }

@@ -123,7 +123,7 @@ class VerboseParserEnvironment {
       skipped_with_null_ = true;
     } else {
       buf2 = (char*)malloc(bytes);
-      assert(buf2);
+      UPB_ASSERT(buf2);
       memcpy(buf2, buf_ + ofs_, bytes);
     }
 

@@ -63,7 +63,7 @@ static PyObject *weakref_callback = NULL;
 
 static PyObject *PyUpb_StringForPointer(const void *ptr) {
   PyObject *o = PyString_FromStringAndSize((const char *)&ptr, sizeof(void*));
-  assert(o);
+  UPB_ASSERT(o);
   return o;
 }
 
@@ -73,11 +73,11 @@ static PyObject *PyUpb_ObjCacheDeleteCallback(PyObject *self, PyObject *ref) {
   // remove from the cache.  As a result we are forced to keep a second map
   // mapping weakref->C pointer.
   PyObject *ptr_str = PyDict_GetItem(reverse_cache, ref);
-  assert(ptr_str);
+  UPB_ASSERT(ptr_str);
   int err = PyDict_DelItem(obj_cache, ptr_str);
-  assert(!err);
+  UPB_ASSERT(!err);
   err = PyDict_DelItem(reverse_cache, ref);
-  assert(!err);
+  UPB_ASSERT(!err);
   return Py_None;
 }
 
@@ -87,7 +87,7 @@ static PyObject *PyUpb_ObjCacheGet(const void *obj, PyTypeObject *type) {
   PyObject *ret;
   if (ref) {
     ret = PyWeakref_GetObject(ref);
-    assert(ret != Py_None);
+    UPB_ASSERT(ret != Py_None);
     Py_INCREF(ret);
   } else {
     PyUpb_ObjWrapper *wrapper = (PyUpb_ObjWrapper*)type->tp_alloc(type, 0);
@@ -95,12 +95,12 @@ static PyObject *PyUpb_ObjCacheGet(const void *obj, PyTypeObject *type) {
     wrapper->weakreflist = NULL;
     ret = (PyObject*)wrapper;
     ref = PyWeakref_NewRef(ret, weakref_callback);
-    assert(PyWeakref_GetObject(ref) == ret);
-    assert(ref);
+    UPB_ASSERT(PyWeakref_GetObject(ref) == ret);
+    UPB_ASSERT(ref);
     PyDict_SetItem(obj_cache, kv, ref);
     PyDict_SetItem(reverse_cache, ref, kv);
   }
-  assert(ret);
+  UPB_ASSERT(ret);
   Py_DECREF(kv);
   return ret;
 }

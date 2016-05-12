@@ -119,7 +119,7 @@ static upb_selector_t getsel_for_handlertype(upb_json_parser *p,
                                              upb_handlertype_t type) {
   upb_selector_t sel;
   bool ok = upb_handlers_getselector(p->top->f, type, &sel);
-  UPB_ASSERT_VAR(ok, ok);
+  UPB_ASSERT(ok);
   return sel;
 }
 
@@ -141,7 +141,7 @@ static bool check_stack(upb_json_parser *p) {
 static void set_name_table(upb_json_parser *p, upb_jsonparser_frame *frame) {
   upb_value v;
   bool ok = upb_inttable_lookupptr(&p->method->name_tables, frame->m, &v);
-  UPB_ASSERT_VAR(ok, ok);
+  UPB_ASSERT(ok);
   frame->name_table = upb_value_getptr(v);
 }
 
@@ -264,7 +264,7 @@ otherchar:
     val = b64lookup(ptr[0]) << 18 |
           b64lookup(ptr[1]) << 12;
 
-    assert(!(val & 0x80000000));
+    UPB_ASSERT(!(val & 0x80000000));
     output = val >> 16;
     upb_sink_putstring(&p->top->sink, sel, &output, 1, NULL);
     return true;
@@ -319,8 +319,8 @@ badpadding:
 
 static void assert_accumulate_empty(upb_json_parser *p) {
   UPB_UNUSED(p);
-  assert(p->accumulated == NULL);
-  assert(p->accumulated_len == 0);
+  UPB_ASSERT(p->accumulated == NULL);
+  UPB_ASSERT(p->accumulated_len == 0);
 }
 
 static void accumulate_clear(upb_json_parser *p) {
@@ -386,7 +386,7 @@ static bool accumulate_append(upb_json_parser *p, const char *buf, size_t len,
  * call, and writes the length to *len.  This with point either to the input
  * buffer or a temporary accumulate buffer. */
 static const char *accumulate_getptr(upb_json_parser *p, size_t *len) {
-  assert(p->accumulated);
+  UPB_ASSERT(p->accumulated);
   *len = p->accumulated_len;
   return p->accumulated;
 }
@@ -424,7 +424,7 @@ enum {
  * the end. */
 static void multipart_startaccum(upb_json_parser *p) {
   assert_accumulate_empty(p);
-  assert(p->multipart_state == MULTIPART_INACTIVE);
+  UPB_ASSERT(p->multipart_state == MULTIPART_INACTIVE);
   p->multipart_state = MULTIPART_ACCUMULATE;
 }
 
@@ -432,7 +432,7 @@ static void multipart_startaccum(upb_json_parser *p) {
  * value with the given selector. */
 static void multipart_start(upb_json_parser *p, upb_selector_t sel) {
   assert_accumulate_empty(p);
-  assert(p->multipart_state == MULTIPART_INACTIVE);
+  UPB_ASSERT(p->multipart_state == MULTIPART_INACTIVE);
   p->multipart_state = MULTIPART_PUSHEAGERLY;
   p->string_selector = sel;
 }
@@ -465,7 +465,7 @@ static bool multipart_text(upb_json_parser *p, const char *buf, size_t len,
 /* Note: this invalidates the accumulate buffer!  Call only after reading its
  * contents. */
 static void multipart_end(upb_json_parser *p) {
-  assert(p->multipart_state != MULTIPART_INACTIVE);
+  UPB_ASSERT(p->multipart_state != MULTIPART_INACTIVE);
   p->multipart_state = MULTIPART_INACTIVE;
   accumulate_clear(p);
 }
@@ -478,13 +478,13 @@ static void multipart_end(upb_json_parser *p) {
  * region. */
 
 static void capture_begin(upb_json_parser *p, const char *ptr) {
-  assert(p->multipart_state != MULTIPART_INACTIVE);
-  assert(p->capture == NULL);
+  UPB_ASSERT(p->multipart_state != MULTIPART_INACTIVE);
+  UPB_ASSERT(p->capture == NULL);
   p->capture = ptr;
 }
 
 static bool capture_end(upb_json_parser *p, const char *ptr) {
-  assert(p->capture);
+  UPB_ASSERT(p->capture);
   if (multipart_text(p, p->capture, ptr - p->capture, true)) {
     p->capture = NULL;
     return true;
@@ -517,7 +517,7 @@ static void capture_suspend(upb_json_parser *p, const char **ptr) {
 
 static void capture_resume(upb_json_parser *p, const char *ptr) {
   if (p->capture) {
-    assert(p->capture == &suspend_capture);
+    UPB_ASSERT(p->capture == &suspend_capture);
     p->capture = ptr;
   }
 }
@@ -539,7 +539,7 @@ static char escape_char(char in) {
     case '"': return '"';
     case '\\': return '\\';
     default:
-      assert(0);
+      UPB_ASSERT(0);
       return 'x';
   }
 }
@@ -563,7 +563,7 @@ static void hexdigit(upb_json_parser *p, const char *ptr) {
   } else if (ch >= 'a' && ch <= 'f') {
     p->digit += ((ch - 'a') + 10);
   } else {
-    assert(ch >= 'A' && ch <= 'F');
+    UPB_ASSERT(ch >= 'A' && ch <= 'F');
     p->digit += ((ch - 'A') + 10);
   }
 }
@@ -694,7 +694,7 @@ static bool parse_number(upb_json_parser *p) {
       break;
     }
     default:
-      assert(false);
+      UPB_ASSERT(false);
   }
 
   multipart_end(p);
@@ -720,13 +720,13 @@ static bool parser_putbool(upb_json_parser *p, bool val) {
   }
 
   ok = upb_sink_putbool(&p->top->sink, parser_getsel(p), val);
-  UPB_ASSERT_VAR(ok, ok);
+  UPB_ASSERT(ok);
 
   return true;
 }
 
 static bool start_stringval(upb_json_parser *p) {
-  assert(p->top->f);
+  UPB_ASSERT(p->top->f);
 
   if (upb_fielddef_isstring(p->top->f)) {
     upb_jsonparser_frame *inner;
@@ -816,7 +816,7 @@ static bool end_stringval(upb_json_parser *p) {
     }
 
     default:
-      assert(false);
+      UPB_ASSERT(false);
       upb_status_seterrmsg(&p->status, "Internal error in JSON decoder");
       upb_env_reporterror(p->env, &p->status);
       ok = false;
@@ -829,7 +829,7 @@ static bool end_stringval(upb_json_parser *p) {
 }
 
 static void start_member(upb_json_parser *p) {
-  assert(!p->top->f);
+  UPB_ASSERT(!p->top->f);
   multipart_startaccum(p);
 }
 
@@ -958,7 +958,7 @@ static bool handle_mapentry(upb_json_parser *p) {
 }
 
 static bool end_membername(upb_json_parser *p) {
-  assert(!p->top->f);
+  UPB_ASSERT(!p->top->f);
 
   if (p->top->is_map) {
     return handle_mapentry(p);
@@ -990,7 +990,7 @@ static void end_member(upb_json_parser *p) {
     bool ok;
     const upb_fielddef *mapfield;
 
-    assert(p->top > p->stack);
+    UPB_ASSERT(p->top > p->stack);
     /* send ENDMSG on submsg. */
     upb_sink_endmsg(&p->top->sink, &s);
     mapfield = p->top->mapfield;
@@ -998,7 +998,7 @@ static void end_member(upb_json_parser *p) {
     /* send ENDSUBMSG in repeated-field-of-mapentries frame. */
     p->top--;
     ok = upb_handlers_getselector(mapfield, UPB_HANDLER_ENDSUBMSG, &sel);
-    UPB_ASSERT_VAR(ok, ok);
+    UPB_ASSERT(ok);
     upb_sink_endsubmsg(&p->top->sink, sel);
   }
 
@@ -1006,7 +1006,7 @@ static void end_member(upb_json_parser *p) {
 }
 
 static bool start_subobject(upb_json_parser *p) {
-  assert(p->top->f);
+  UPB_ASSERT(p->top->f);
 
   if (upb_fielddef_ismap(p->top->f)) {
     upb_jsonparser_frame *inner;
@@ -1075,7 +1075,7 @@ static bool start_array(upb_json_parser *p) {
   upb_jsonparser_frame *inner;
   upb_selector_t sel;
 
-  assert(p->top->f);
+  UPB_ASSERT(p->top->f);
 
   if (!upb_fielddef_isseq(p->top->f)) {
     upb_status_seterrf(&p->status,
@@ -1103,7 +1103,7 @@ static bool start_array(upb_json_parser *p) {
 static void end_array(upb_json_parser *p) {
   upb_selector_t sel;
 
-  assert(p->top > p->stack);
+  UPB_ASSERT(p->top > p->stack);
 
   p->top--;
   sel = getsel_for_handlertype(p, UPB_HANDLER_ENDSEQ);
@@ -1634,7 +1634,7 @@ static void add_jsonname_table(upb_json_parsermethod *m, const upb_msgdef* md) {
       buf = upb_grealloc(buf, 0, field_len);
       len = field_len;
       len2 = upb_fielddef_getjsonname(f, buf, len);
-      UPB_ASSERT_VAR(len2, len == len2);
+      UPB_ASSERT(len == len2);
     }
     upb_strtable_insert(t, buf, upb_value_constptr(f));
 
@@ -1678,7 +1678,8 @@ upb_json_parser *upb_json_parser_create(upb_env *env,
 
   /* If this fails, uncomment and increase the value in parser.h. */
   /* fprintf(stderr, "%zd\n", upb_env_bytesallocated(env) - size_before); */
-  assert(upb_env_bytesallocated(env) - size_before <= UPB_JSON_PARSER_SIZE);
+  UPB_ASSERT_DEBUGVAR(upb_env_bytesallocated(env) - size_before <=
+                      UPB_JSON_PARSER_SIZE);
   return p;
 }
 

@@ -258,7 +258,7 @@ template <class T> class upb::reffed_ptr {
   reffed_ptr(U* val, const void* ref_donor = NULL)
       : ptr_(upb::upcast(val)) {
     if (ref_donor) {
-      assert(ptr_);
+      UPB_ASSERT(ptr_);
       ptr_->DonateRef(ref_donor, this);
     } else if (ptr_) {
       ptr_->Ref(this);
@@ -303,12 +303,12 @@ template <class T> class upb::reffed_ptr {
   }
 
   T& operator*() const {
-    assert(ptr_);
+    UPB_ASSERT(ptr_);
     return *ptr_;
   }
 
   T* operator->() const {
-    assert(ptr_);
+    UPB_ASSERT(ptr_);
     return ptr_;
   }
 

@@ -407,7 +407,6 @@ local function dump_defs_c(filedef, append)
 
   -- Emit forward declarations.
   emit_file_warning(filedef, append)
-  append('#include <assert.h>\n\n')
   append('#include "upb/def.h"\n')
   append('#include "upb/structdefs.int.h"\n\n')
   append("static const upb_msgdef %s;\n", linktab:cdecl(upb.DEF_MSG))
@@ -639,7 +638,7 @@ local function print_message(def, map, indent, append)
   append("%s  %s(const ::upb::MessageDef* m, const void *ref_donor = NULL)\n",
          indent, def:name())
   append("%s      : reffed_ptr(m, ref_donor) {\n", indent)
-  append("%s    assert(upbdefs_%s_is(m));\n", indent, to_cident(def:full_name()))
+  append("%s    UPB_ASSERT(upbdefs_%s_is(m));\n", indent, to_cident(def:full_name()))
   append("%s  }\n", indent)
   append("\n")
   append("%s  static %s get() {\n", indent, def:name())
@@ -659,7 +658,7 @@ local function print_enum(def, indent, append)
   append("%s  %s(const ::upb::EnumDef* e, const void *ref_donor = NULL)\n",
          indent, def:name())
   append("%s      : reffed_ptr(e, ref_donor) {\n", indent)
-  append("%s    assert(upbdefs_%s_is(e));\n", indent, to_cident(def:full_name()))
+  append("%s    UPB_ASSERT(upbdefs_%s_is(e));\n", indent, to_cident(def:full_name()))
   append("%s  }\n", indent)
   append("%s  static %s get() {\n", indent, def:name())
   append("%s    const ::upb::EnumDef* e = upbdefs_%s_get(&e);\n", indent, to_cident(def:full_name()))
@@ -748,7 +747,7 @@ local function dump_defs_h(file, append, linktab)
     local msg_cident = to_cident(f:containing_type():full_name())
     local field_cident = to_cident(f:name())
     append("UPB_INLINE const upb_fielddef *upbdefs_%s_f_%s(const upb_msgdef *m) {" ..
-           " assert(upbdefs_%s_is(m));" ..
+           " UPB_ASSERT(upbdefs_%s_is(m));" ..
            " return upb_msgdef_itof(m, %d); }\n",
            msg_cident, field_cident, msg_cident, f:number())
   end

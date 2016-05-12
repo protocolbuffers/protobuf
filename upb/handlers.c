@@ -1,6 +1,6 @@
 /*
 ** TODO(haberman): it's unclear whether a lot of the consistency checks should
-** assert() or return false.
+** UPB_ASSERT() or return false.
 */
 
 #include "upb/handlers.h"
@@ -113,7 +113,7 @@ oom:
 static int32_t trygetsel(upb_handlers *h, const upb_fielddef *f,
                          upb_handlertype_t type) {
   upb_selector_t sel;
-  assert(!upb_handlers_isfrozen(h));
+  UPB_ASSERT(!upb_handlers_isfrozen(h));
   if (upb_handlers_msgdef(h) != upb_fielddef_containingtype(f)) {
     upb_status_seterrf(
         &h->status_, "type mismatch: field %s does not belong to message %s",
@@ -133,7 +133,7 @@ static int32_t trygetsel(upb_handlers *h, const upb_fielddef *f,
 static upb_selector_t handlers_getsel(upb_handlers *h, const upb_fielddef *f,
                              upb_handlertype_t type) {
   int32_t sel = trygetsel(h, f, type);
-  assert(sel >= 0);
+  UPB_ASSERT(sel >= 0);
   return sel;
 }
 
@@ -149,7 +149,7 @@ static bool doset(upb_handlers *h, int32_t sel, const upb_fielddef *f,
   const void *closure_type;
   const void **context_closure_type;
 
-  assert(!upb_handlers_isfrozen(h));
+  UPB_ASSERT(!upb_handlers_isfrozen(h));
 
   if (sel < 0) {
     upb_status_seterrmsg(&h->status_,
@@ -229,7 +229,7 @@ const void *effective_closure_type(upb_handlers *h, const upb_fielddef *f,
   const void *ret;
   upb_selector_t sel;
 
-  assert(type != UPB_HANDLER_STRING);
+  UPB_ASSERT(type != UPB_HANDLER_STRING);
   ret = h->top_closure_type;
 
   if (upb_fielddef_isseq(f) &&
@@ -284,7 +284,7 @@ upb_handlers *upb_handlers_new(const upb_msgdef *md, const void *owner) {
   int extra;
   upb_handlers *h;
 
-  assert(upb_msgdef_isfrozen(md));
+  UPB_ASSERT(upb_msgdef_isfrozen(md));
 
   extra = sizeof(upb_handlers_tabent) * (md->selector_count - 1);
   h = upb_calloc(sizeof(*h) + extra);
@@ -333,18 +333,18 @@ const upb_handlers *upb_handlers_newfrozen(const upb_msgdef *m,
 
   r = upb_handlers_upcast_mutable(ret);
   ok = upb_refcounted_freeze(&r, 1, NULL, UPB_MAX_HANDLER_DEPTH);
-  UPB_ASSERT_VAR(ok, ok);
+  UPB_ASSERT(ok);
 
   return ret;
 }
 
 const upb_status *upb_handlers_status(upb_handlers *h) {
-  assert(!upb_handlers_isfrozen(h));
+  UPB_ASSERT(!upb_handlers_isfrozen(h));
   return &h->status_;
 }
 
 void upb_handlers_clearerr(upb_handlers *h) {
-  assert(!upb_handlers_isfrozen(h));
+  UPB_ASSERT(!upb_handlers_isfrozen(h));
   upb_status_clear(&h->status_);
 }
 
@@ -380,16 +380,16 @@ bool upb_handlers_setstartmsg(upb_handlers *h, upb_startmsg_handlerfunc *func,
 
 bool upb_handlers_setendmsg(upb_handlers *h, upb_endmsg_handlerfunc *func,
                             upb_handlerattr *attr) {
-  assert(!upb_handlers_isfrozen(h));
+  UPB_ASSERT(!upb_handlers_isfrozen(h));
   return doset(h, UPB_ENDMSG_SELECTOR, NULL, UPB_HANDLER_INT32,
                (upb_func *)func, attr);
 }
 
 bool upb_handlers_setsubhandlers(upb_handlers *h, const upb_fielddef *f,
                                  const upb_handlers *sub) {
-  assert(sub);
-  assert(!upb_handlers_isfrozen(h));
-  assert(upb_fielddef_issubmsg(f));
+  UPB_ASSERT(sub);
+  UPB_ASSERT(!upb_handlers_isfrozen(h));
+  UPB_ASSERT(upb_fielddef_issubmsg(f));
   if (SUBH_F(h, f)) return false;  /* Can't reset. */
   if (upb_msgdef_upcast(upb_handlers_msgdef(sub)) != upb_fielddef_subdef(f)) {
     return false;
@@ -401,7 +401,7 @@ bool upb_handlers_setsubhandlers(upb_handlers *h, const upb_fielddef *f,
 
 const upb_handlers *upb_handlers_getsubhandlers(const upb_handlers *h,
                                                 const upb_fielddef *f) {
-  assert(upb_fielddef_issubmsg(f));
+  UPB_ASSERT(upb_fielddef_issubmsg(f));
   return SUBH_F(h, f);
 }
 
@@ -427,7 +427,7 @@ bool upb_handlers_addcleanup(upb_handlers *h, void *p, upb_handlerfree *func) {
     return false;
   }
   ok = upb_inttable_insertptr(&h->cleanup_, p, upb_value_fptr(func));
-  UPB_ASSERT_VAR(ok, ok);
+  UPB_ASSERT(ok);
   return true;
 }
 
@@ -528,7 +528,7 @@ upb_handlertype_t upb_handlers_getprimitivehandlertype(const upb_fielddef *f) {
     case UPB_TYPE_FLOAT: return UPB_HANDLER_FLOAT;
     case UPB_TYPE_DOUBLE: return UPB_HANDLER_DOUBLE;
     case UPB_TYPE_BOOL: return UPB_HANDLER_BOOL;
-    default: assert(false); return -1;  /* Invalid input. */
+    default: UPB_ASSERT(false); return -1;  /* Invalid input. */
   }
 }
 
@@ -591,7 +591,7 @@ bool upb_handlers_getselector(const upb_fielddef *f, upb_handlertype_t type,
       *s = f->selector_base;
       break;
   }
-  assert((size_t)*s < upb_fielddef_containingtype(f)->selector_count);
+  UPB_ASSERT((size_t)*s < upb_fielddef_containingtype(f)->selector_count);
   return true;
 }
 

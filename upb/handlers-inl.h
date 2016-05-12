@@ -833,7 +833,7 @@ struct ConvertParams<BoundFunc5<R, P1, P2, P3, P4, P5, F, I>, T> {
   inline bool Handlers::SetValueHandler<vtype>(                                \
       const FieldDef *f,                                                       \
       const Handlers::utype ## Handler& handler) {                             \
-    assert(!handler.registered_);                                              \
+    UPB_ASSERT(!handler.registered_);                                              \
     handler.AddCleanup(this);                                                  \
     handler.registered_ = true;                                                \
     return upb_handlers_set##ltype(this, f, handler.handler_, &handler.attr_); \
@@ -945,7 +945,7 @@ inline Handler<T>::Handler(F func)
 
 template <class T>
 inline Handler<T>::~Handler() {
-  assert(registered_);
+  UPB_ASSERT(registered_);
 }
 
 inline HandlerAttributes::HandlerAttributes() { upb_handlerattr_init(this); }
@@ -1031,63 +1031,63 @@ inline bool Handlers::AddCleanup(void *p, upb_handlerfree *func) {
 }
 inline bool Handlers::SetStartMessageHandler(
     const Handlers::StartMessageHandler &handler) {
-  assert(!handler.registered_);
+  UPB_ASSERT(!handler.registered_);
   handler.registered_ = true;
   handler.AddCleanup(this);
   return upb_handlers_setstartmsg(this, handler.handler_, &handler.attr_);
 }
 inline bool Handlers::SetEndMessageHandler(
     const Handlers::EndMessageHandler &handler) {
-  assert(!handler.registered_);
+  UPB_ASSERT(!handler.registered_);
   handler.registered_ = true;
   handler.AddCleanup(this);
   return upb_handlers_setendmsg(this, handler.handler_, &handler.attr_);
 }
 inline bool Handlers::SetStartStringHandler(const FieldDef *f,
                                             const StartStringHandler &handler) {
-  assert(!handler.registered_);
+  UPB_ASSERT(!handler.registered_);
   handler.registered_ = true;
   handler.AddCleanup(this);
   return upb_handlers_setstartstr(this, f, handler.handler_, &handler.attr_);
 }
 inline bool Handlers::SetEndStringHandler(const FieldDef *f,
                                           const EndFieldHandler &handler) {
-  assert(!handler.registered_);
+  UPB_ASSERT(!handler.registered_);
   handler.registered_ = true;
   handler.AddCleanup(this);
   return upb_handlers_setendstr(this, f, handler.handler_, &handler.attr_);
 }
 inline bool Handlers::SetStringHandler(const FieldDef *f,
                                        const StringHandler& handler) {
-  assert(!handler.registered_);
+  UPB_ASSERT(!handler.registered_);
   handler.registered_ = true;
   handler.AddCleanup(this);
   return upb_handlers_setstring(this, f, handler.handler_, &handler.attr_);
 }
 inline bool Handlers::SetStartSequenceHandler(
     const FieldDef *f, const StartFieldHandler &handler) {
-  assert(!handler.registered_);
+  UPB_ASSERT(!handler.registered_);
   handler.registered_ = true;
   handler.AddCleanup(this);
   return upb_handlers_setstartseq(this, f, handler.handler_, &handler.attr_);
 }
 inline bool Handlers::SetStartSubMessageHandler(
     const FieldDef *f, const StartFieldHandler &handler) {
-  assert(!handler.registered_);
+  UPB_ASSERT(!handler.registered_);
   handler.registered_ = true;
   handler.AddCleanup(this);
   return upb_handlers_setstartsubmsg(this, f, handler.handler_, &handler.attr_);
 }
 inline bool Handlers::SetEndSubMessageHandler(const FieldDef *f,
                                               const EndFieldHandler &handler) {
-  assert(!handler.registered_);
+  UPB_ASSERT(!handler.registered_);
   handler.registered_ = true;
   handler.AddCleanup(this);
   return upb_handlers_setendsubmsg(this, f, handler.handler_, &handler.attr_);
 }
 inline bool Handlers::SetEndSequenceHandler(const FieldDef *f,
                                             const EndFieldHandler &handler) {
-  assert(!handler.registered_);
+  UPB_ASSERT(!handler.registered_);
   handler.registered_ = true;
   handler.AddCleanup(this);
   return upb_handlers_setendseq(this, f, handler.handler_, &handler.attr_);

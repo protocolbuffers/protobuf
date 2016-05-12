@@ -134,7 +134,7 @@ static trackedref *trackedref_new(bool is_ref2) {
 static void track(const upb_refcounted *r, const void *owner, bool ref2) {
   upb_value v;
 
-  assert(owner);
+  UPB_ASSERT(owner);
   if (owner == UPB_UNTRACKED_REF) return;
 
   upb_lock();
@@ -145,8 +145,8 @@ static void track(const upb_refcounted *r, const void *owner, bool ref2) {
      * tracking behavior we get with regular refs.  Since ref2s only happen
      * inside upb, we'll accept this limitation until/unless there is a really
      * difficult upb-internal bug that can't be figured out without it. */
-    assert(ref2);
-    assert(ref->is_ref2);
+    UPB_ASSERT(ref2);
+    UPB_ASSERT(ref->is_ref2);
     ref->count++;
   } else {
     trackedref *ref = trackedref_new(ref2);
@@ -156,7 +156,7 @@ static void track(const upb_refcounted *r, const void *owner, bool ref2) {
       /* We know this cast is safe when it is a ref2, because it's coming from
        * another refcounted object. */
       const upb_refcounted *from = owner;
-      assert(!upb_inttable_lookupptr(from->ref2s, r, NULL));
+      UPB_ASSERT(!upb_inttable_lookupptr(from->ref2s, r, NULL));
       upb_inttable_insertptr2(from->ref2s, r, upb_value_ptr(NULL),
                               &upb_alloc_debugrefs);
     }
@@ -169,15 +169,15 @@ static void untrack(const upb_refcounted *r, const void *owner, bool ref2) {
   bool found;
   trackedref *ref;
 
-  assert(owner);
+  UPB_ASSERT(owner);
   if (owner == UPB_UNTRACKED_REF) return;
 
   upb_lock();
   found = upb_inttable_lookupptr(r->refs, owner, &v);
   /* This assert will fail if an owner attempts to release a ref it didn't have. */
-  UPB_ASSERT_VAR(found, found);
+  UPB_ASSERT(found);
   ref = upb_value_getptr(v);
-  assert(ref->is_ref2 == ref2);
+  UPB_ASSERT(ref->is_ref2 == ref2);
   if (--ref->count == 0) {
     free(ref);
     upb_inttable_removeptr(r->refs, owner, NULL);
@@ -186,7 +186,7 @@ static void untrack(const upb_refcounted *r, const void *owner, bool ref2) {
        * another refcounted object. */
       const upb_refcounted *from = owner;
       bool removed = upb_inttable_removeptr(from->ref2s, r, NULL);
-      assert(removed);
+      UPB_ASSERT(removed);
     }
   }
   upb_unlock();
@@ -199,9 +199,9 @@ static void checkref(const upb_refcounted *r, const void *owner, bool ref2) {
 
   upb_lock();
   found = upb_inttable_lookupptr(r->refs, owner, &v);
-  UPB_ASSERT_VAR(found, found);
+  UPB_ASSERT(found);
   ref = upb_value_getptr(v);
-  assert(ref->is_ref2 == ref2);
+  UPB_ASSERT(ref->is_ref2 == ref2);
   upb_unlock();
 }
 
@@ -222,7 +222,7 @@ static void getref2s(const upb_refcounted *owner, upb_inttable *tab) {
 
     /* To get the count we need to look in the target's table. */
     found = upb_inttable_lookupptr(to->refs, owner, &v);
-    assert(found);
+    UPB_ASSERT(found);
     ref = upb_value_getptr(v);
     count = upb_value_int32(ref->count);
 
@@ -244,12 +244,12 @@ static void visit_check(const upb_refcounted *obj, const upb_refcounted *subobj,
   bool removed;
   int32_t newcount;
 
-  assert(obj == s->obj);
-  assert(subobj);
+  UPB_ASSERT(obj == s->obj);
+  UPB_ASSERT(subobj);
   removed = upb_inttable_removeptr(ref2, subobj, &v);
   /* The following assertion will fail if the visit() function visits a subobj
    * that it did not have a ref2 on, or visits the same subobj too many times. */
-  assert(removed);
+  UPB_ASSERT(removed);
   newcount = upb_value_getint32(v) - 1;
   if (newcount > 0) {
     upb_inttable_insert2(ref2, (uintptr_t)subobj, upb_value_int32(newcount),
@@ -271,7 +271,7 @@ static void visit(const upb_refcounted *r, upb_refcounted_visit *v,
   if (r->vtbl->visit) r->vtbl->visit(r, visit_check, &state);
 
   /* This assertion will fail if the visit() function missed any children. */
-  assert(upb_inttable_count(&state.ref2) == 0);
+  UPB_ASSERT(upb_inttable_count(&state.ref2) == 0);
   upb_inttable_uninit2(&state.ref2, &upb_alloc_debugrefs);
   if (r->vtbl->visit) r->vtbl->visit(r, v, closure);
 }
@@ -378,7 +378,7 @@ static uint64_t trygetattr(const tarjan *t, const upb_refcounted *r) {
 static uint64_t getattr(const tarjan *t, const upb_refcounted *r) {
   upb_value v;
   bool found = upb_inttable_lookupptr(&t->objattr, r, &v);
-  UPB_ASSERT_VAR(found, found);
+  UPB_ASSERT(found);
   return upb_value_getuint64(v);
 }
 
@@ -392,13 +392,13 @@ static color_t color(tarjan *t, const upb_refcounted *r) {
 }
 
 static void set_gray(tarjan *t, const upb_refcounted *r) {
-  assert(color(t, r) == BLACK);
+  UPB_ASSERT(color(t, r) == BLACK);
   setattr(t, r, GRAY);
 }
 
 /* Pushes an obj onto the Tarjan stack and sets it to GREEN. */
 static void push(tarjan *t, const upb_refcounted *r) {
-  assert(color(t, r) == BLACK || color(t, r) == GRAY);
+  UPB_ASSERT(color(t, r) == BLACK || color(t, r) == GRAY);
   /* This defines the attr layout for the GREEN state.  "index" and "lowlink"
    * get 31 bits, which is plenty (limit of 2B objects frozen at a time). */
   setattr(t, r, GREEN | (t->index << 2) | (t->index << 33));
@@ -413,7 +413,7 @@ static void push(tarjan *t, const upb_refcounted *r) {
  * SCC group. */
 static upb_refcounted *pop(tarjan *t) {
   upb_refcounted *r = upb_value_getptr(upb_inttable_pop(&t->stack));
-  assert(color(t, r) == GREEN);
+  UPB_ASSERT(color(t, r) == GREEN);
   /* This defines the attr layout for nodes in the WHITE state.
    * Top of group stack is [group, NULL]; we point at group. */
   setattr(t, r, WHITE | (upb_inttable_count(&t->groups) - 2) << 8);
@@ -433,7 +433,7 @@ static void tarjan_newgroup(tarjan *t) {
 }
 
 static uint32_t idx(tarjan *t, const upb_refcounted *r) {
-  assert(color(t, r) == GREEN);
+  UPB_ASSERT(color(t, r) == GREEN);
   return (getattr(t, r) >> 2) & 0x7FFFFFFF;
 }
 
@@ -446,7 +446,7 @@ static uint32_t lowlink(tarjan *t, const upb_refcounted *r) {
 }
 
 static void set_lowlink(tarjan *t, const upb_refcounted *r, uint32_t lowlink) {
-  assert(color(t, r) == GREEN);
+  UPB_ASSERT(color(t, r) == GREEN);
   setattr(t, r, ((uint64_t)lowlink << 33) | (getattr(t, r) & 0x1FFFFFFFF));
 }
 
@@ -455,10 +455,10 @@ static uint32_t *group(tarjan *t, upb_refcounted *r) {
   upb_value v;
   bool found;
 
-  assert(color(t, r) == WHITE);
+  UPB_ASSERT(color(t, r) == WHITE);
   groupnum = getattr(t, r) >> 8;
   found = upb_inttable_lookup(&t->groups, groupnum, &v);
-  UPB_ASSERT_VAR(found, found);
+  UPB_ASSERT(found);
   return upb_value_getptr(v);
 }
 
@@ -469,10 +469,10 @@ static upb_refcounted *groupleader(tarjan *t, upb_refcounted *r) {
   upb_value v;
   bool found;
 
-  assert(color(t, r) == WHITE);
+  UPB_ASSERT(color(t, r) == WHITE);
   leader_slot = (getattr(t, r) >> 8) + 1;
   found = upb_inttable_lookup(&t->groups, leader_slot, &v);
-  UPB_ASSERT_VAR(found, found);
+  UPB_ASSERT(found);
   if (upb_value_getptr(v)) {
     return upb_value_getptr(v);
   } else {
@@ -532,7 +532,7 @@ static void do_tarjan(const upb_refcounted *obj, tarjan *t) {
 static void crossref(const upb_refcounted *r, const upb_refcounted *subobj,
                      void *_t) {
   tarjan *t = _t;
-  assert(color(t, r) > BLACK);
+  UPB_ASSERT(color(t, r) > BLACK);
   if (color(t, subobj) > BLACK && r->group != subobj->group) {
     /* Previously this ref was not reflected in subobj->group because they
      * were in the same group; now that they are split a ref must be taken. */
@@ -600,13 +600,13 @@ static bool freeze(upb_refcounted *const*roots, int n, upb_status *s,
       upb_refcounted *move = obj->next;
       if (obj == move) {
         /* Removing the last object from a group. */
-        assert(*obj->group == obj->individual_count);
+        UPB_ASSERT(*obj->group == obj->individual_count);
         upb_gfree(obj->group);
       } else {
         obj->next = move->next;
         /* This may decrease to zero; we'll collect GRAY objects (if any) that
          * remain in the group in the third pass. */
-        assert(*move->group >= move->individual_count);
+        UPB_ASSERT(*move->group >= move->individual_count);
         *move->group -= move->individual_count;
       }
 
@@ -619,7 +619,7 @@ static bool freeze(upb_refcounted *const*roots, int n, upb_status *s,
         *move->group = move->individual_count;
       } else {
         /* Group already has at least one object in it. */
-        assert(leader->group == group(&t, move));
+        UPB_ASSERT(leader->group == group(&t, move));
         move->group = group(&t, move);
         move->next = leader->next;
         leader->next = move;
@@ -726,7 +726,7 @@ static void release_ref2(const upb_refcounted *obj,
   UPB_UNUSED(closure);
   untrack(subobj, obj, true);
   if (!merged(obj, subobj)) {
-    assert(subobj->is_frozen);
+    UPB_ASSERT(subobj->is_frozen);
     unref(subobj);
   }
 }
@@ -745,7 +745,7 @@ static void unref(const upb_refcounted *r) {
     o = r;
     do {
       const upb_refcounted *next = o->next;
-      assert(o->is_frozen || o->individual_count == 0);
+      UPB_ASSERT(o->is_frozen || o->individual_count == 0);
       freeobj((upb_refcounted*)o);
       o = next;
     } while(o != r);
@@ -769,9 +769,9 @@ bool upb_refcounted_init(upb_refcounted *r,
    * basically every program using upb. */
   const int x = 1;
 #ifdef UPB_BIG_ENDIAN
-  assert(*(char*)&x != 1);
+  UPB_ASSERT(*(char*)&x != 1);
 #else
-  assert(*(char*)&x == 1);
+  UPB_ASSERT(*(char*)&x == 1);
 #endif
 #endif
 
@@ -806,7 +806,7 @@ void upb_refcounted_unref(const upb_refcounted *r, const void *owner) {
 }
 
 void upb_refcounted_ref2(const upb_refcounted *r, upb_refcounted *from) {
-  assert(!from->is_frozen);  /* Non-const pointer implies this. */
+  UPB_ASSERT(!from->is_frozen);  /* Non-const pointer implies this. */
   track(r, from, true);
   if (r->is_frozen) {
     refgroup(r->group);
@@ -816,18 +816,18 @@ void upb_refcounted_ref2(const upb_refcounted *r, upb_refcounted *from) {
 }
 
 void upb_refcounted_unref2(const upb_refcounted *r, upb_refcounted *from) {
-  assert(!from->is_frozen);  /* Non-const pointer implies this. */
+  UPB_ASSERT(!from->is_frozen);  /* Non-const pointer implies this. */
   untrack(r, from, true);
   if (r->is_frozen) {
     unref(r);
   } else {
-    assert(merged(r, from));
+    UPB_ASSERT(merged(r, from));
   }
 }
 
 void upb_refcounted_donateref(
     const upb_refcounted *r, const void *from, const void *to) {
-  assert(from != to);
+  UPB_ASSERT(from != to);
   if (to != NULL)
     upb_refcounted_ref(r, to);
   if (from != NULL)
@@ -843,9 +843,9 @@ bool upb_refcounted_freeze(upb_refcounted *const*roots, int n, upb_status *s,
   int i;
   bool ret;
   for (i = 0; i < n; i++) {
-    assert(!roots[i]->is_frozen);
+    UPB_ASSERT(!roots[i]->is_frozen);
   }
   ret = freeze(roots, n, s, maxdepth);
-  assert(!s || ret == upb_ok(s));
+  UPB_ASSERT(!s || ret == upb_ok(s));
   return ret;
 }

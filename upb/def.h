@@ -186,7 +186,7 @@ UPB_END_EXTERN_C
     return (upb_##lower *)def;                                             \
   }                                                                        \
   UPB_INLINE const upb_##lower *upb_downcast_##lower(const upb_def *def) { \
-    assert(upb_def_type(def) == UPB_DEF_##upper);                          \
+    UPB_ASSERT(upb_def_type(def) == UPB_DEF_##upper);                          \
     return (const upb_##lower *)def;                                       \
   }                                                                        \
   UPB_INLINE upb_##lower *upb_dyncast_##lower##_mutable(upb_def *def) {    \
@@ -1420,7 +1420,7 @@ UPB_END_EXTERN_C
 #ifdef __cplusplus
 
 UPB_INLINE const char* upb_safecstr(const std::string& str) {
-  assert(str.size() == std::strlen(str.c_str()));
+  UPB_ASSERT(str.size() == std::strlen(str.c_str()));
   return str.c_str();
 }
 
@@ -1459,19 +1459,19 @@ inline bool FieldDef::CheckIntegerFormat(int32_t val) {
   return upb_fielddef_checkintfmt(val);
 }
 inline FieldDef::Type FieldDef::ConvertType(int32_t val) {
-  assert(CheckType(val));
+  UPB_ASSERT(CheckType(val));
   return static_cast<FieldDef::Type>(val);
 }
 inline FieldDef::Label FieldDef::ConvertLabel(int32_t val) {
-  assert(CheckLabel(val));
+  UPB_ASSERT(CheckLabel(val));
   return static_cast<FieldDef::Label>(val);
 }
 inline FieldDef::DescriptorType FieldDef::ConvertDescriptorType(int32_t val) {
-  assert(CheckDescriptorType(val));
+  UPB_ASSERT(CheckDescriptorType(val));
   return static_cast<FieldDef::DescriptorType>(val);
 }
 inline FieldDef::IntegerFormat FieldDef::ConvertIntegerFormat(int32_t val) {
-  assert(CheckIntegerFormat(val));
+  UPB_ASSERT(CheckIntegerFormat(val));
   return static_cast<FieldDef::IntegerFormat>(val);
 }
 

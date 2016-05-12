@@ -73,43 +73,43 @@ UPB_INLINE bool upbdefs_upb_test_json_MyEnum_is(const upb_enumdef *e) {
 
 
 /* Functions to get a fielddef from a msgdef reference. */
-UPB_INLINE const upb_fielddef *upbdefs_upb_test_json_SubMessage_f_foo(const upb_msgdef *m) { assert(upbdefs_upb_test_json_SubMessage_is(m)); return upb_msgdef_itof(m, 1); }
-UPB_INLINE const upb_fielddef *upbdefs_upb_test_json_TestMessage_MapBoolStringEntry_f_key(const upb_msgdef *m) { assert(upbdefs_upb_test_json_TestMessage_MapBoolStringEntry_is(m)); return upb_msgdef_itof(m, 1); }
-UPB_INLINE const upb_fielddef *upbdefs_upb_test_json_TestMessage_MapBoolStringEntry_f_value(const upb_msgdef *m) { assert(upbdefs_upb_test_json_TestMessage_MapBoolStringEntry_is(m)); return upb_msgdef_itof(m, 2); }
-UPB_INLINE const upb_fielddef *upbdefs_upb_test_json_TestMessage_MapInt32StringEntry_f_key(const upb_msgdef *m) { assert(upbdefs_upb_test_json_TestMessage_MapInt32StringEntry_is(m)); return upb_msgdef_itof(m, 1); }
-UPB_INLINE const upb_fielddef *upbdefs_upb_test_json_TestMessage_MapInt32StringEntry_f_value(const upb_msgdef *m) { assert(upbdefs_upb_test_json_TestMessage_MapInt32StringEntry_is(m)); return upb_msgdef_itof(m, 2); }
-UPB_INLINE const upb_fielddef *upbdefs_upb_test_json_TestMessage_MapStringBoolEntry_f_key(const upb_msgdef *m) { assert(upbdefs_upb_test_json_TestMessage_MapStringBoolEntry_is(m)); return upb_msgdef_itof(m, 1); }
-UPB_INLINE const upb_fielddef *upbdefs_upb_test_json_TestMessage_MapStringBoolEntry_f_value(const upb_msgdef *m) { assert(upbdefs_upb_test_json_TestMessage_MapStringBoolEntry_is(m)); return upb_msgdef_itof(m, 2); }
-UPB_INLINE const upb_fielddef *upbdefs_upb_test_json_TestMessage_MapStringInt32Entry_f_key(const upb_msgdef *m) { assert(upbdefs_upb_test_json_TestMessage_MapStringInt32Entry_is(m)); return upb_msgdef_itof(m, 1); }
-UPB_INLINE const upb_fielddef *upbdefs_upb_test_json_TestMessage_MapStringInt32Entry_f_value(const upb_msgdef *m) { assert(upbdefs_upb_test_json_TestMessage_MapStringInt32Entry_is(m)); return upb_msgdef_itof(m, 2); }
-UPB_INLINE const upb_fielddef *upbdefs_upb_test_json_TestMessage_MapStringMsgEntry_f_key(const upb_msgdef *m) { assert(upbdefs_upb_test_json_TestMessage_MapStringMsgEntry_is(m)); return upb_msgdef_itof(m, 1); }
-UPB_INLINE const upb_fielddef *upbdefs_upb_test_json_TestMessage_MapStringMsgEntry_f_value(const upb_msgdef *m) { assert(upbdefs_upb_test_json_TestMessage_MapStringMsgEntry_is(m)); return upb_msgdef_itof(m, 2); }
-UPB_INLINE const upb_fielddef *upbdefs_upb_test_json_TestMessage_MapStringStringEntry_f_key(const upb_msgdef *m) { assert(upbdefs_upb_test_json_TestMessage_MapStringStringEntry_is(m)); return upb_msgdef_itof(m, 1); }
-UPB_INLINE const upb_fielddef *upbdefs_upb_test_json_TestMessage_MapStringStringEntry_f_value(const upb_msgdef *m) { assert(upbdefs_upb_test_json_TestMessage_MapStringStringEntry_is(m)); return upb_msgdef_itof(m, 2); }
-UPB_INLINE const upb_fielddef *upbdefs_upb_test_json_TestMessage_f_map_bool_string(const upb_msgdef *m) { assert(upbdefs_upb_test_json_TestMessage_is(m)); return upb_msgdef_itof(m, 22); }
-UPB_INLINE const upb_fielddef *upbdefs_upb_test_json_TestMessage_f_map_int32_string(const upb_msgdef *m) { assert(upbdefs_upb_test_json_TestMessage_is(m)); return upb_msgdef_itof(m, 21); }
-UPB_INLINE const upb_fielddef *upbdefs_upb_test_json_TestMessage_f_map_string_bool(const upb_msgdef *m) { assert(upbdefs_upb_test_json_TestMessage_is(m)); return upb_msgdef_itof(m, 24); }
-UPB_INLINE const upb_fielddef *upbdefs_upb_test_json_TestMessage_f_map_string_int32(const upb_msgdef *m) { assert(upbdefs_upb_test_json_TestMessage_is(m)); return upb_msgdef_itof(m, 23); }
-UPB_INLINE const upb_fielddef *upbdefs_upb_test_json_TestMessage_f_map_string_msg(const upb_msgdef *m) { assert(upbdefs_upb_test_json_TestMessage_is(m)); return upb_msgdef_itof(m, 25); }
-UPB_INLINE const upb_fielddef *upbdefs_upb_test_json_TestMessage_f_map_string_string(const upb_msgdef *m) { assert(upbdefs_upb_test_json_TestMessage_is(m)); return upb_msgdef_itof(m, 20); }
-UPB_INLINE const upb_fielddef *upbdefs_upb_test_json_TestMessage_f_optional_bool(const upb_msgdef *m) { assert(upbdefs_upb_test_json_TestMessage_is(m)); return upb_msgdef_itof(m, 7); }
-UPB_INLINE const upb_fielddef *upbdefs_upb_test_json_TestMessage_f_optional_bytes(const upb_msgdef *m) { assert(upbdefs_upb_test_json_TestMessage_is(m)); return upb_msgdef_itof(m, 6); }
-UPB_INLINE const upb_fielddef *upbdefs_upb_test_json_TestMessage_f_optional_enum(const upb_msgdef *m) { assert(upbdefs_upb_test_json_TestMessage_is(m)); return upb_msgdef_itof(m, 9); }
-UPB_INLINE const upb_fielddef *upbdefs_upb_test_json_TestMessage_f_optional_int32(const upb_msgdef *m) { assert(upbdefs_upb_test_json_TestMessage_is(m)); return upb_msgdef_itof(m, 1); }
-UPB_INLINE const upb_fielddef *upbdefs_upb_test_json_TestMessage_f_optional_int64(const upb_msgdef *m) { assert(upbdefs_upb_test_json_TestMessage_is(m)); return upb_msgdef_itof(m, 2); }
-UPB_INLINE const upb_fielddef *upbdefs_upb_test_json_TestMessage_f_optional_msg(const upb_msgdef *m) { assert(upbdefs_upb_test_json_TestMessage_is(m)); return upb_msgdef_itof(m, 8); }
-UPB_INLINE const upb_fielddef *upbdefs_upb_test_json_TestMessage_f_optional_string(const upb_msgdef *m) { assert(upbdefs_upb_test_json_TestMessage_is(m)); return upb_msgdef_itof(m, 5); }
-UPB_INLINE const upb_fielddef *upbdefs_upb_test_json_TestMessage_f_optional_uint32(const upb_msgdef *m) { assert(upbdefs_upb_test_json_TestMessage_is(m)); return upb_msgdef_itof(m, 3); }
-UPB_INLINE const upb_fielddef *upbdefs_upb_test_json_TestMessage_f_optional_uint64(const upb_msgdef *m) { assert(upbdefs_upb_test_json_TestMessage_is(m)); return upb_msgdef_itof(m, 4); }
-UPB_INLINE const upb_fielddef *upbdefs_upb_test_json_TestMessage_f_repeated_bool(const upb_msgdef *m) { assert(upbdefs_upb_test_json_TestMessage_is(m)); return upb_msgdef_itof(m, 17); }
-UPB_INLINE const upb_fielddef *upbdefs_upb_test_json_TestMessage_f_repeated_bytes(const upb_msgdef *m) { assert(upbdefs_upb_test_json_TestMessage_is(m)); return upb_msgdef_itof(m, 16); }
-UPB_INLINE const upb_fielddef *upbdefs_upb_test_json_TestMessage_f_repeated_enum(const upb_msgdef *m) { assert(upbdefs_upb_test_json_TestMessage_is(m)); return upb_msgdef_itof(m, 19); }
-UPB_INLINE const upb_fielddef *upbdefs_upb_test_json_TestMessage_f_repeated_int32(const upb_msgdef *m) { assert(upbdefs_upb_test_json_TestMessage_is(m)); return upb_msgdef_itof(m, 11); }
-UPB_INLINE const upb_fielddef *upbdefs_upb_test_json_TestMessage_f_repeated_int64(const upb_msgdef *m) { assert(upbdefs_upb_test_json_TestMessage_is(m)); return upb_msgdef_itof(m, 12); }
-UPB_INLINE const upb_fielddef *upbdefs_upb_test_json_TestMessage_f_repeated_msg(const upb_msgdef *m) { assert(upbdefs_upb_test_json_TestMessage_is(m)); return upb_msgdef_itof(m, 18); }
-UPB_INLINE const upb_fielddef *upbdefs_upb_test_json_TestMessage_f_repeated_string(const upb_msgdef *m) { assert(upbdefs_upb_test_json_TestMessage_is(m)); return upb_msgdef_itof(m, 15); }
-UPB_INLINE const upb_fielddef *upbdefs_upb_test_json_TestMessage_f_repeated_uint32(const upb_msgdef *m) { assert(upbdefs_upb_test_json_TestMessage_is(m)); return upb_msgdef_itof(m, 13); }
-UPB_INLINE const upb_fielddef *upbdefs_upb_test_json_TestMessage_f_repeated_uint64(const upb_msgdef *m) { assert(upbdefs_upb_test_json_TestMessage_is(m)); return upb_msgdef_itof(m, 14); }
+UPB_INLINE const upb_fielddef *upbdefs_upb_test_json_SubMessage_f_foo(const upb_msgdef *m) { UPB_ASSERT(upbdefs_upb_test_json_SubMessage_is(m)); return upb_msgdef_itof(m, 1); }
+UPB_INLINE const upb_fielddef *upbdefs_upb_test_json_TestMessage_MapBoolStringEntry_f_key(const upb_msgdef *m) { UPB_ASSERT(upbdefs_upb_test_json_TestMessage_MapBoolStringEntry_is(m)); return upb_msgdef_itof(m, 1); }
+UPB_INLINE const upb_fielddef *upbdefs_upb_test_json_TestMessage_MapBoolStringEntry_f_value(const upb_msgdef *m) { UPB_ASSERT(upbdefs_upb_test_json_TestMessage_MapBoolStringEntry_is(m)); return upb_msgdef_itof(m, 2); }
+UPB_INLINE const upb_fielddef *upbdefs_upb_test_json_TestMessage_MapInt32StringEntry_f_key(const upb_msgdef *m) { UPB_ASSERT(upbdefs_upb_test_json_TestMessage_MapInt32StringEntry_is(m)); return upb_msgdef_itof(m, 1); }
+UPB_INLINE const upb_fielddef *upbdefs_upb_test_json_TestMessage_MapInt32StringEntry_f_value(const upb_msgdef *m) { UPB_ASSERT(upbdefs_upb_test_json_TestMessage_MapInt32StringEntry_is(m)); return upb_msgdef_itof(m, 2); }
+UPB_INLINE const upb_fielddef *upbdefs_upb_test_json_TestMessage_MapStringBoolEntry_f_key(const upb_msgdef *m) { UPB_ASSERT(upbdefs_upb_test_json_TestMessage_MapStringBoolEntry_is(m)); return upb_msgdef_itof(m, 1); }
+UPB_INLINE const upb_fielddef *upbdefs_upb_test_json_TestMessage_MapStringBoolEntry_f_value(const upb_msgdef *m) { UPB_ASSERT(upbdefs_upb_test_json_TestMessage_MapStringBoolEntry_is(m)); return upb_msgdef_itof(m, 2); }
+UPB_INLINE const upb_fielddef *upbdefs_upb_test_json_TestMessage_MapStringInt32Entry_f_key(const upb_msgdef *m) { UPB_ASSERT(upbdefs_upb_test_json_TestMessage_MapStringInt32Entry_is(m)); return upb_msgdef_itof(m, 1); }
+UPB_INLINE const upb_fielddef *upbdefs_upb_test_json_TestMessage_MapStringInt32Entry_f_value(const upb_msgdef *m) { UPB_ASSERT(upbdefs_upb_test_json_TestMessage_MapStringInt32Entry_is(m)); return upb_msgdef_itof(m, 2); }
+UPB_INLINE const upb_fielddef *upbdefs_upb_test_json_TestMessage_MapStringMsgEntry_f_key(const upb_msgdef *m) { UPB_ASSERT(upbdefs_upb_test_json_TestMessage_MapStringMsgEntry_is(m)); return upb_msgdef_itof(m, 1); }
+UPB_INLINE const upb_fielddef *upbdefs_upb_test_json_TestMessage_MapStringMsgEntry_f_value(const upb_msgdef *m) { UPB_ASSERT(upbdefs_upb_test_json_TestMessage_MapStringMsgEntry_is(m)); return upb_msgdef_itof(m, 2); }
+UPB_INLINE const upb_fielddef *upbdefs_upb_test_json_TestMessage_MapStringStringEntry_f_key(const upb_msgdef *m) { UPB_ASSERT(upbdefs_upb_test_json_TestMessage_MapStringStringEntry_is(m)); return upb_msgdef_itof(m, 1); }
+UPB_INLINE const upb_fielddef *upbdefs_upb_test_json_TestMessage_MapStringStringEntry_f_value(const upb_msgdef *m) { UPB_ASSERT(upbdefs_upb_test_json_TestMessage_MapStringStringEntry_is(m)); return upb_msgdef_itof(m, 2); }
+UPB_INLINE const upb_fielddef *upbdefs_upb_test_json_TestMessage_f_map_bool_string(const upb_msgdef *m) { UPB_ASSERT(upbdefs_upb_test_json_TestMessage_is(m)); return upb_msgdef_itof(m, 22); }
+UPB_INLINE const upb_fielddef *upbdefs_upb_test_json_TestMessage_f_map_int32_string(const upb_msgdef *m) { UPB_ASSERT(upbdefs_upb_test_json_TestMessage_is(m)); return upb_msgdef_itof(m, 21); }
+UPB_INLINE const upb_fielddef *upbdefs_upb_test_json_TestMessage_f_map_string_bool(const upb_msgdef *m) { UPB_ASSERT(upbdefs_upb_test_json_TestMessage_is(m)); return upb_msgdef_itof(m, 24); }
+UPB_INLINE const upb_fielddef *upbdefs_upb_test_json_TestMessage_f_map_string_int32(const upb_msgdef *m) { UPB_ASSERT(upbdefs_upb_test_json_TestMessage_is(m)); return upb_msgdef_itof(m, 23); }
+UPB_INLINE const upb_fielddef *upbdefs_upb_test_json_TestMessage_f_map_string_msg(const upb_msgdef *m) { UPB_ASSERT(upbdefs_upb_test_json_TestMessage_is(m)); return upb_msgdef_itof(m, 25); }
+UPB_INLINE const upb_fielddef *upbdefs_upb_test_json_TestMessage_f_map_string_string(const upb_msgdef *m) { UPB_ASSERT(upbdefs_upb_test_json_TestMessage_is(m)); return upb_msgdef_itof(m, 20); }
+UPB_INLINE const upb_fielddef *upbdefs_upb_test_json_TestMessage_f_optional_bool(const upb_msgdef *m) { UPB_ASSERT(upbdefs_upb_test_json_TestMessage_is(m)); return upb_msgdef_itof(m, 7); }
+UPB_INLINE const upb_fielddef *upbdefs_upb_test_json_TestMessage_f_optional_bytes(const upb_msgdef *m) { UPB_ASSERT(upbdefs_upb_test_json_TestMessage_is(m)); return upb_msgdef_itof(m, 6); }
+UPB_INLINE const upb_fielddef *upbdefs_upb_test_json_TestMessage_f_optional_enum(const upb_msgdef *m) { UPB_ASSERT(upbdefs_upb_test_json_TestMessage_is(m)); return upb_msgdef_itof(m, 9); }
+UPB_INLINE const upb_fielddef *upbdefs_upb_test_json_TestMessage_f_optional_int32(const upb_msgdef *m) { UPB_ASSERT(upbdefs_upb_test_json_TestMessage_is(m)); return upb_msgdef_itof(m, 1); }
+UPB_INLINE const upb_fielddef *upbdefs_upb_test_json_TestMessage_f_optional_int64(const upb_msgdef *m) { UPB_ASSERT(upbdefs_upb_test_json_TestMessage_is(m)); return upb_msgdef_itof(m, 2); }
+UPB_INLINE const upb_fielddef *upbdefs_upb_test_json_TestMessage_f_optional_msg(const upb_msgdef *m) { UPB_ASSERT(upbdefs_upb_test_json_TestMessage_is(m)); return upb_msgdef_itof(m, 8); }
+UPB_INLINE const upb_fielddef *upbdefs_upb_test_json_TestMessage_f_optional_string(const upb_msgdef *m) { UPB_ASSERT(upbdefs_upb_test_json_TestMessage_is(m)); return upb_msgdef_itof(m, 5); }
+UPB_INLINE const upb_fielddef *upbdefs_upb_test_json_TestMessage_f_optional_uint32(const upb_msgdef *m) { UPB_ASSERT(upbdefs_upb_test_json_TestMessage_is(m)); return upb_msgdef_itof(m, 3); }
+UPB_INLINE const upb_fielddef *upbdefs_upb_test_json_TestMessage_f_optional_uint64(const upb_msgdef *m) { UPB_ASSERT(upbdefs_upb_test_json_TestMessage_is(m)); return upb_msgdef_itof(m, 4); }
+UPB_INLINE const upb_fielddef *upbdefs_upb_test_json_TestMessage_f_repeated_bool(const upb_msgdef *m) { UPB_ASSERT(upbdefs_upb_test_json_TestMessage_is(m)); return upb_msgdef_itof(m, 17); }
+UPB_INLINE const upb_fielddef *upbdefs_upb_test_json_TestMessage_f_repeated_bytes(const upb_msgdef *m) { UPB_ASSERT(upbdefs_upb_test_json_TestMessage_is(m)); return upb_msgdef_itof(m, 16); }
+UPB_INLINE const upb_fielddef *upbdefs_upb_test_json_TestMessage_f_repeated_enum(const upb_msgdef *m) { UPB_ASSERT(upbdefs_upb_test_json_TestMessage_is(m)); return upb_msgdef_itof(m, 19); }
+UPB_INLINE const upb_fielddef *upbdefs_upb_test_json_TestMessage_f_repeated_int32(const upb_msgdef *m) { UPB_ASSERT(upbdefs_upb_test_json_TestMessage_is(m)); return upb_msgdef_itof(m, 11); }
+UPB_INLINE const upb_fielddef *upbdefs_upb_test_json_TestMessage_f_repeated_int64(const upb_msgdef *m) { UPB_ASSERT(upbdefs_upb_test_json_TestMessage_is(m)); return upb_msgdef_itof(m, 12); }
+UPB_INLINE const upb_fielddef *upbdefs_upb_test_json_TestMessage_f_repeated_msg(const upb_msgdef *m) { UPB_ASSERT(upbdefs_upb_test_json_TestMessage_is(m)); return upb_msgdef_itof(m, 18); }
+UPB_INLINE const upb_fielddef *upbdefs_upb_test_json_TestMessage_f_repeated_string(const upb_msgdef *m) { UPB_ASSERT(upbdefs_upb_test_json_TestMessage_is(m)); return upb_msgdef_itof(m, 15); }
+UPB_INLINE const upb_fielddef *upbdefs_upb_test_json_TestMessage_f_repeated_uint32(const upb_msgdef *m) { UPB_ASSERT(upbdefs_upb_test_json_TestMessage_is(m)); return upb_msgdef_itof(m, 13); }
+UPB_INLINE const upb_fielddef *upbdefs_upb_test_json_TestMessage_f_repeated_uint64(const upb_msgdef *m) { UPB_ASSERT(upbdefs_upb_test_json_TestMessage_is(m)); return upb_msgdef_itof(m, 14); }
 
 UPB_END_EXTERN_C
 
@@ -124,7 +124,7 @@ class MyEnum : public ::upb::reffed_ptr<const ::upb::EnumDef> {
  public:
   MyEnum(const ::upb::EnumDef* e, const void *ref_donor = NULL)
       : reffed_ptr(e, ref_donor) {
-    assert(upbdefs_upb_test_json_MyEnum_is(e));
+    UPB_ASSERT(upbdefs_upb_test_json_MyEnum_is(e));
   }
   static MyEnum get() {
     const ::upb::EnumDef* e = upbdefs_upb_test_json_MyEnum_get(&e);
@@ -136,7 +136,7 @@ class SubMessage : public ::upb::reffed_ptr<const ::upb::MessageDef> {
  public:
   SubMessage(const ::upb::MessageDef* m, const void *ref_donor = NULL)
       : reffed_ptr(m, ref_donor) {
-    assert(upbdefs_upb_test_json_SubMessage_is(m));
+    UPB_ASSERT(upbdefs_upb_test_json_SubMessage_is(m));
   }
 
   static SubMessage get() {
@@ -149,7 +149,7 @@ class TestMessage : public ::upb::reffed_ptr<const ::upb::MessageDef> {
  public:
   TestMessage(const ::upb::MessageDef* m, const void *ref_donor = NULL)
       : reffed_ptr(m, ref_donor) {
-    assert(upbdefs_upb_test_json_TestMessage_is(m));
+    UPB_ASSERT(upbdefs_upb_test_json_TestMessage_is(m));
   }
 
   static TestMessage get() {
@@ -161,7 +161,7 @@ class TestMessage : public ::upb::reffed_ptr<const ::upb::MessageDef> {
    public:
     MapBoolStringEntry(const ::upb::MessageDef* m, const void *ref_donor = NULL)
         : reffed_ptr(m, ref_donor) {
-      assert(upbdefs_upb_test_json_TestMessage_MapBoolStringEntry_is(m));
+      UPB_ASSERT(upbdefs_upb_test_json_TestMessage_MapBoolStringEntry_is(m));
     }
 
     static MapBoolStringEntry get() {
@@ -174,7 +174,7 @@ class TestMessage : public ::upb::reffed_ptr<const ::upb::MessageDef> {
    public:
     MapInt32StringEntry(const ::upb::MessageDef* m, const void *ref_donor = NULL)
         : reffed_ptr(m, ref_donor) {
-      assert(upbdefs_upb_test_json_TestMessage_MapInt32StringEntry_is(m));
+      UPB_ASSERT(upbdefs_upb_test_json_TestMessage_MapInt32StringEntry_is(m));
     }
 
     static MapInt32StringEntry get() {
@@ -187,7 +187,7 @@ class TestMessage : public ::upb::reffed_ptr<const ::upb::MessageDef> {
    public:
     MapStringBoolEntry(const ::upb::MessageDef* m, const void *ref_donor = NULL)
         : reffed_ptr(m, ref_donor) {
-      assert(upbdefs_upb_test_json_TestMessage_MapStringBoolEntry_is(m));
+      UPB_ASSERT(upbdefs_upb_test_json_TestMessage_MapStringBoolEntry_is(m));
     }
 
     static MapStringBoolEntry get() {
@@ -200,7 +200,7 @@ class TestMessage : public ::upb::reffed_ptr<const ::upb::MessageDef> {
    public:
     MapStringInt32Entry(const ::upb::MessageDef* m, const void *ref_donor = NULL)
         : reffed_ptr(m, ref_donor) {
-      assert(upbdefs_upb_test_json_TestMessage_MapStringInt32Entry_is(m));
+      UPB_ASSERT(upbdefs_upb_test_json_TestMessage_MapStringInt32Entry_is(m));
     }
 
     static MapStringInt32Entry get() {
@@ -213,7 +213,7 @@ class TestMessage : public ::upb::reffed_ptr<const ::upb::MessageDef> {
    public:
     MapStringMsgEntry(const ::upb::MessageDef* m, const void *ref_donor = NULL)
         : reffed_ptr(m, ref_donor) {
-      assert(upbdefs_upb_test_json_TestMessage_MapStringMsgEntry_is(m));
+      UPB_ASSERT(upbdefs_upb_test_json_TestMessage_MapStringMsgEntry_is(m));
     }
 
     static MapStringMsgEntry get() {
@@ -226,7 +226,7 @@ class TestMessage : public ::upb::reffed_ptr<const ::upb::MessageDef> {
    public:
     MapStringStringEntry(const ::upb::MessageDef* m, const void *ref_donor = NULL)
         : reffed_ptr(m, ref_donor) {
-      assert(upbdefs_upb_test_json_TestMessage_MapStringStringEntry_is(m));
+      UPB_ASSERT(upbdefs_upb_test_json_TestMessage_MapStringStringEntry_is(m));
     }
 
     static MapStringStringEntry get() {

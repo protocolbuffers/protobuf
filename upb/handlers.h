@@ -611,7 +611,7 @@ template <class T> class Handler {
   void AddCleanup(Handlers* h) const {
     if (cleanup_func_) {
       bool ok = h->AddCleanup(cleanup_data_, cleanup_func_);
-      UPB_ASSERT_VAR(ok, ok);
+      UPB_ASSERT(ok);
     }
   }
 

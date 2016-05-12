@@ -184,7 +184,7 @@ static char *upb_vasprintf(const char *fmt, va_list args) {
   char *ret = malloc(len + 1);  /* + 1 for NULL terminator. */
   if (!ret) abort();
   int written = _upb_vsnprintf(ret, len + 1, fmt, args);
-  UPB_ASSERT_VAR(written, written == len);
+  UPB_ASSERT(written == len);
 
   return ret;
 }
@@ -221,9 +221,9 @@ static int getjmptarget(jitcompiler *jc, const void *key) {
   int pclabel = 0;
   bool ok;
 
-  assert(upb_inttable_lookupptr(&jc->jmpdefined, key, NULL));
+  UPB_ASSERT_DEBUGVAR(upb_inttable_lookupptr(&jc->jmpdefined, key, NULL));
   ok = try_getjmptarget(jc, key, &pclabel);
-  UPB_ASSERT_VAR(ok, ok);
+  UPB_ASSERT(ok);
   return pclabel;
 }
 
@@ -289,10 +289,10 @@ uint32_t dispatchofs(jitcompiler *jc, const upb_pbdecodermethod *method,
   int mc_target = machine_code_ofs2(jc, method, pcofs);
   int ret;
 
-  assert(mc_base > 0);
-  assert(mc_target > 0);
+  UPB_ASSERT(mc_base > 0);
+  UPB_ASSERT(mc_target > 0);
   ret = mc_target - mc_base;
-  assert(ret > 0);
+  UPB_ASSERT(ret > 0);
   return ret;
 }
 
@@ -327,7 +327,7 @@ static void patchdispatch(jitcompiler *jc) {
         /* Update offset and repack. */
         ofs = dispatchofs(jc, method, ofs);
         newval = upb_pbdecoder_packdispatch(ofs, wt1, wt2);
-        assert((int64_t)newval > 0);
+        UPB_ASSERT((int64_t)newval > 0);
       } else {
         /* Secondary slot.  Since we have 64 bits for the value, we use an
          * absolute offset. */
@@ -335,7 +335,7 @@ static void patchdispatch(jitcompiler *jc) {
         newval = (uint64_t)((char*)jc->group->jit_code + mcofs);
       }
       ok = upb_inttable_replace(dispatch, key, upb_value_uint64(newval));
-      UPB_ASSERT_VAR(ok, ok);
+      UPB_ASSERT(ok);
     }
 
     /* Update entry point for this method to point at mc base instead of bc
@@ -467,7 +467,7 @@ void upb_pbdecoder_jit(mgroup *group) {
   group->debug_info = NULL;
   group->dl = NULL;
 
-  assert(group->bytecode);
+  UPB_ASSERT(group->bytecode);
   jc = newjitcompiler(group);
   emit_static_asm(jc);
   jitbytecode(jc);

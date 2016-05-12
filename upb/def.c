@@ -104,7 +104,7 @@ const char *upb_def_name(const upb_def *d) {
 }
 
 bool upb_def_setfullname(upb_def *def, const char *fullname, upb_status *s) {
-  assert(!upb_def_isfrozen(def));
+  UPB_ASSERT(!upb_def_isfrozen(def));
   if (!upb_isident(fullname, strlen(fullname), true, s)) {
     return false;
   }
@@ -133,7 +133,7 @@ upb_def *upb_def_dup(const upb_def *def, const void *o) {
     case UPB_DEF_ENUM:
       return upb_enumdef_upcast_mutable(
           upb_enumdef_dup(upb_downcast_enumdef(def), o));
-    default: assert(false); return NULL;
+    default: UPB_ASSERT(false); return NULL;
   }
 }
 
@@ -204,14 +204,14 @@ static bool upb_validate_field(upb_fielddef *f, upb_status *s) {
     bool has_default_number = upb_fielddef_enumhasdefaultint32(f);
 
     /* Previously verified by upb_validate_enumdef(). */
-    assert(upb_enumdef_numvals(upb_fielddef_enumsubdef(f)) > 0);
+    UPB_ASSERT(upb_enumdef_numvals(upb_fielddef_enumsubdef(f)) > 0);
 
     /* We've already validated that we have an associated enumdef and that it
      * has at least one member, so at least one of these should be true.
      * Because if the user didn't set anything, we'll pick up the enum's
      * default, but if the user *did* set something we should at least pick up
      * the one they set (int32 or string). */
-    assert(has_default_name || has_default_number);
+    UPB_ASSERT(has_default_name || has_default_number);
 
     if (!has_default_name) {
       upb_status_seterrf(s,
@@ -267,7 +267,7 @@ static bool upb_validate_enumdef(const upb_enumdef *e, upb_status *s) {
 uint32_t field_rank(const upb_fielddef *f) {
   uint32_t ret = upb_fielddef_number(f);
   const uint32_t high_bit = 1 << 30;
-  assert(ret < high_bit);
+  UPB_ASSERT(ret < high_bit);
   if (!upb_fielddef_issubmsg(f))
     ret |= high_bit;
   return ret;
@@ -305,7 +305,7 @@ static bool assign_msg_indices(upb_msgdef *m, upb_status *s) {
       !upb_msg_field_done(&j);
       upb_msg_field_next(&j), i++) {
     upb_fielddef *f = upb_msg_iter_field(&j);
-    assert(f->msg.def == m);
+    UPB_ASSERT(f->msg.def == m);
     if (!upb_validate_field(f, s)) {
       upb_gfree(fields);
       return false;
@@ -418,7 +418,7 @@ err:
     upb_def *def = defs[i];
     def->came_from_user = false;
   }
-  assert(!(s && upb_ok(s)));
+  UPB_ASSERT(!(s && upb_ok(s)));
   return false;
 }
 
@@ -537,19 +537,19 @@ bool upb_enumdef_addval(upb_enumdef *e, const char *name, int32_t num,
 
   if (upb_enumdef_numvals(e) == 1) {
     bool ok = upb_enumdef_setdefault(e, num, NULL);
-    UPB_ASSERT_VAR(ok, ok);
+    UPB_ASSERT(ok);
   }
 
   return true;
 }
 
 int32_t upb_enumdef_default(const upb_enumdef *e) {
-  assert(upb_enumdef_iton(e, e->defaultval));
+  UPB_ASSERT(upb_enumdef_iton(e, e->defaultval));
   return e->defaultval;
 }
 
 bool upb_enumdef_setdefault(upb_enumdef *e, int32_t val, upb_status *s) {
-  assert(!upb_enumdef_isfrozen(e));
+  UPB_ASSERT(!upb_enumdef_isfrozen(e));
   if (!upb_enumdef_iton(e, val)) {
     upb_status_seterrf(s, "number '%d' is not in the enum.", val);
     return false;
@@ -633,7 +633,7 @@ static void freefield(upb_refcounted *r) {
 
 static const char *enumdefaultstr(const upb_fielddef *f) {
   const upb_enumdef *e;
-  assert(f->type_is_set_ && f->type_ == UPB_TYPE_ENUM);
+  UPB_ASSERT(f->type_is_set_ && f->type_ == UPB_TYPE_ENUM);
   e = upb_fielddef_enumsubdef(f);
   if (f->default_is_string && f->defaultval.bytes) {
     /* Default was explicitly set as a string. */
@@ -650,7 +650,7 @@ static const char *enumdefaultstr(const upb_fielddef *f) {
       /* Default is completely unset; pull enumdef default. */
       if (upb_enumdef_numvals(e) > 0) {
         const char *name = upb_enumdef_iton(e, upb_enumdef_default(e));
-        assert(name);
+        UPB_ASSERT(name);
         return name;
       }
     }
@@ -660,7 +660,7 @@ static const char *enumdefaultstr(const upb_fielddef *f) {
 
 static bool enumdefaultint32(const upb_fielddef *f, int32_t *val) {
   const upb_enumdef *e;
-  assert(f->type_is_set_ && f->type_ == UPB_TYPE_ENUM);
+  UPB_ASSERT(f->type_is_set_ && f->type_ == UPB_TYPE_ENUM);
   e = upb_fielddef_enumsubdef(f);
   if (!f->default_is_string) {
     /* Default was explicitly set as an integer. */
@@ -761,7 +761,7 @@ bool upb_fielddef_typeisset(const upb_fielddef *f) {
 }
 
 upb_fieldtype_t upb_fielddef_type(const upb_fielddef *f) {
-  assert(f->type_is_set_);
+  UPB_ASSERT(f->type_is_set_);
   return f->type_;
 }
 
@@ -863,7 +863,7 @@ static void release_containingtype(upb_fielddef *f) {
 bool upb_fielddef_setcontainingtypename(upb_fielddef *f, const char *name,
                                         upb_status *s) {
   char *name_copy;
-  assert(!upb_fielddef_isfrozen(f));
+  UPB_ASSERT(!upb_fielddef_isfrozen(f));
   if (upb_fielddef_containingtype(f)) {
     upb_status_seterrmsg(s, "field has already been added to a message.");
     return false;
@@ -894,7 +894,7 @@ bool upb_fielddef_setname(upb_fielddef *f, const char *name, upb_status *s) {
 static void chkdefaulttype(const upb_fielddef *f, upb_fieldtype_t type) {
   UPB_UNUSED(f);
   UPB_UNUSED(type);
-  assert(f->type_is_set_ && upb_fielddef_type(f) == type);
+  UPB_ASSERT(f->type_is_set_ && upb_fielddef_type(f) == type);
 }
 
 int64_t upb_fielddef_defaultint64(const upb_fielddef *f) {
@@ -906,7 +906,7 @@ int32_t upb_fielddef_defaultint32(const upb_fielddef *f) {
   if (f->type_is_set_ && upb_fielddef_type(f) == UPB_TYPE_ENUM) {
     int32_t val;
     bool ok = enumdefaultint32(f, &val);
-    UPB_ASSERT_VAR(ok, ok);
+    UPB_ASSERT(ok);
     return val;
   } else {
     chkdefaulttype(f, UPB_TYPE_INT32);
@@ -940,14 +940,14 @@ double upb_fielddef_defaultdouble(const upb_fielddef *f) {
 }
 
 const char *upb_fielddef_defaultstr(const upb_fielddef *f, size_t *len) {
-  assert(f->type_is_set_);
-  assert(upb_fielddef_type(f) == UPB_TYPE_STRING ||
+  UPB_ASSERT(f->type_is_set_);
+  UPB_ASSERT(upb_fielddef_type(f) == UPB_TYPE_STRING ||
          upb_fielddef_type(f) == UPB_TYPE_BYTES ||
          upb_fielddef_type(f) == UPB_TYPE_ENUM);
 
   if (upb_fielddef_type(f) == UPB_TYPE_ENUM) {
     const char *ret = enumdefaultstr(f);
-    assert(ret);
+    UPB_ASSERT(ret);
     /* Enum defaults can't have embedded NULLs. */
     if (len) *len = strlen(ret);
     return ret;
@@ -1029,8 +1029,8 @@ bool upb_fielddef_setnumber(upb_fielddef *f, uint32_t number, upb_status *s) {
 }
 
 void upb_fielddef_settype(upb_fielddef *f, upb_fieldtype_t type) {
-  assert(!upb_fielddef_isfrozen(f));
-  assert(upb_fielddef_checktype(type));
+  UPB_ASSERT(!upb_fielddef_isfrozen(f));
+  UPB_ASSERT(upb_fielddef_checktype(type));
   upb_fielddef_uninit_default(f);
   f->type_ = type;
   f->type_is_set_ = true;
@@ -1038,7 +1038,7 @@ void upb_fielddef_settype(upb_fielddef *f, upb_fieldtype_t type) {
 }
 
 void upb_fielddef_setdescriptortype(upb_fielddef *f, int type) {
-  assert(!upb_fielddef_isfrozen(f));
+  UPB_ASSERT(!upb_fielddef_isfrozen(f));
   switch (type) {
     case UPB_DESCRIPTOR_TYPE_DOUBLE:
       upb_fielddef_settype(f, UPB_TYPE_DOUBLE);
@@ -1080,7 +1080,7 @@ void upb_fielddef_setdescriptortype(upb_fielddef *f, int type) {
     case UPB_DESCRIPTOR_TYPE_ENUM:
       upb_fielddef_settype(f, UPB_TYPE_ENUM);
       break;
-    default: assert(false);
+    default: UPB_ASSERT(false);
   }
 
   if (type == UPB_DESCRIPTOR_TYPE_FIXED64 ||
@@ -1138,34 +1138,34 @@ upb_descriptortype_t upb_fielddef_descriptortype(const upb_fielddef *f) {
 }
 
 void upb_fielddef_setisextension(upb_fielddef *f, bool is_extension) {
-  assert(!upb_fielddef_isfrozen(f));
+  UPB_ASSERT(!upb_fielddef_isfrozen(f));
   f->is_extension_ = is_extension;
 }
 
 void upb_fielddef_setlazy(upb_fielddef *f, bool lazy) {
-  assert(!upb_fielddef_isfrozen(f));
+  UPB_ASSERT(!upb_fielddef_isfrozen(f));
   f->lazy_ = lazy;
 }
 
 void upb_fielddef_setpacked(upb_fielddef *f, bool packed) {
-  assert(!upb_fielddef_isfrozen(f));
+  UPB_ASSERT(!upb_fielddef_isfrozen(f));
   f->packed_ = packed;
 }
 
 void upb_fielddef_setlabel(upb_fielddef *f, upb_label_t label) {
-  assert(!upb_fielddef_isfrozen(f));
-  assert(upb_fielddef_checklabel(label));
+  UPB_ASSERT(!upb_fielddef_isfrozen(f));
+  UPB_ASSERT(upb_fielddef_checklabel(label));
   f->label_ = label;
 }
 
 void upb_fielddef_setintfmt(upb_fielddef *f, upb_intfmt_t fmt) {
-  assert(!upb_fielddef_isfrozen(f));
-  assert(upb_fielddef_checkintfmt(fmt));
+  UPB_ASSERT(!upb_fielddef_isfrozen(f));
+  UPB_ASSERT(upb_fielddef_checkintfmt(fmt));
   f->intfmt = fmt;
 }
 
 void upb_fielddef_settagdelim(upb_fielddef *f, bool tag_delim) {
-  assert(!upb_fielddef_isfrozen(f));
+  UPB_ASSERT(!upb_fielddef_isfrozen(f));
   f->tagdelim = tag_delim;
   f->tagdelim = tag_delim;
 }
@@ -1173,12 +1173,12 @@ void upb_fielddef_settagdelim(upb_fielddef *f, bool tag_delim) {
 static bool checksetdefault(upb_fielddef *f, upb_fieldtype_t type) {
   if (!f->type_is_set_ || upb_fielddef_isfrozen(f) ||
       upb_fielddef_type(f) != type) {
-    assert(false);
+    UPB_ASSERT(false);
     return false;
   }
   if (f->default_is_string) {
     str_t *s = f->defaultval.bytes;
-    assert(s || type == UPB_TYPE_ENUM);
+    UPB_ASSERT(s || type == UPB_TYPE_ENUM);
     if (s) freestr(s);
   }
   f->default_is_string = false;
@@ -1226,16 +1226,16 @@ void upb_fielddef_setdefaultdouble(upb_fielddef *f, double value) {
 bool upb_fielddef_setdefaultstr(upb_fielddef *f, const void *str, size_t len,
                                 upb_status *s) {
   str_t *str2;
-  assert(upb_fielddef_isstring(f) || f->type_ == UPB_TYPE_ENUM);
+  UPB_ASSERT(upb_fielddef_isstring(f) || f->type_ == UPB_TYPE_ENUM);
   if (f->type_ == UPB_TYPE_ENUM && !upb_isident(str, len, false, s))
     return false;
 
   if (f->default_is_string) {
     str_t *s = f->defaultval.bytes;
-    assert(s || f->type_ == UPB_TYPE_ENUM);
+    UPB_ASSERT(s || f->type_ == UPB_TYPE_ENUM);
     if (s) freestr(s);
   } else {
-    assert(f->type_ == UPB_TYPE_ENUM);
+    UPB_ASSERT(f->type_ == UPB_TYPE_ENUM);
   }
 
   str2 = newstr(str, len);
@@ -1246,18 +1246,18 @@ bool upb_fielddef_setdefaultstr(upb_fielddef *f, const void *str, size_t len,
 
 void upb_fielddef_setdefaultcstr(upb_fielddef *f, const char *str,
                                  upb_status *s) {
-  assert(f->type_is_set_);
+  UPB_ASSERT(f->type_is_set_);
   upb_fielddef_setdefaultstr(f, str, str ? strlen(str) : 0, s);
 }
 
 bool upb_fielddef_enumhasdefaultint32(const upb_fielddef *f) {
   int32_t val;
-  assert(f->type_is_set_ && f->type_ == UPB_TYPE_ENUM);
+  UPB_ASSERT(f->type_is_set_ && f->type_ == UPB_TYPE_ENUM);
   return enumdefaultint32(f, &val);
 }
 
 bool upb_fielddef_enumhasdefaultstr(const upb_fielddef *f) {
-  assert(f->type_is_set_ && f->type_ == UPB_TYPE_ENUM);
+  UPB_ASSERT(f->type_is_set_ && f->type_ == UPB_TYPE_ENUM);
   return enumdefaultstr(f) != NULL;
 }
 
@@ -1287,8 +1287,8 @@ static void release_subdef(upb_fielddef *f) {
 
 bool upb_fielddef_setsubdef(upb_fielddef *f, const upb_def *subdef,
                             upb_status *s) {
-  assert(!upb_fielddef_isfrozen(f));
-  assert(upb_fielddef_hassubdef(f));
+  UPB_ASSERT(!upb_fielddef_isfrozen(f));
+  UPB_ASSERT(upb_fielddef_hassubdef(f));
   if (subdef && !upb_subdef_typecheck(f, subdef, s)) return false;
   release_subdef(f);
   f->sub.def = subdef;
@@ -1310,7 +1310,7 @@ bool upb_fielddef_setenumsubdef(upb_fielddef *f, const upb_enumdef *subdef,
 bool upb_fielddef_setsubdefname(upb_fielddef *f, const char *name,
                                 upb_status *s) {
   char *name_copy;
-  assert(!upb_fielddef_isfrozen(f));
+  UPB_ASSERT(!upb_fielddef_isfrozen(f));
   if (!upb_fielddef_hassubdef(f)) {
     upb_status_seterrmsg(s, "field type does not accept a subdef");
     return false;
@@ -1443,7 +1443,7 @@ upb_msgdef *upb_msgdef_dup(const upb_msgdef *m, const void *owner) {
                            NULL);
   newm->map_entry = m->map_entry;
   newm->syntax = m->syntax;
-  UPB_ASSERT_VAR(ok, ok);
+  UPB_ASSERT(ok);
   for(upb_msg_field_begin(&i, m);
       !upb_msg_field_done(&i);
       upb_msg_field_next(&i)) {
@@ -1644,7 +1644,7 @@ bool upb_msgdef_lookupname(const upb_msgdef *m, const char *name, size_t len,
 
   *o = upb_trygetoneof(upb_value_getptr(val));
   *f = upb_trygetfield(upb_value_getptr(val));
-  assert((*o != NULL) ^ (*f != NULL));  /* Exactly one of the two should be set. */
+  UPB_ASSERT((*o != NULL) ^ (*f != NULL));  /* Exactly one of the two should be set. */
   return true;
 }
 
@@ -1659,7 +1659,7 @@ int upb_msgdef_numoneofs(const upb_msgdef *m) {
 }
 
 void upb_msgdef_setmapentry(upb_msgdef *m, bool map_entry) {
-  assert(!upb_msgdef_isfrozen(m));
+  UPB_ASSERT(!upb_msgdef_isfrozen(m));
   m->map_entry = map_entry;
 }
 
@@ -1772,7 +1772,7 @@ upb_oneofdef *upb_oneofdef_dup(const upb_oneofdef *o, const void *owner) {
   upb_oneofdef *newo = upb_oneofdef_new(owner);
   if (!newo) return NULL;
   ok = upb_oneofdef_setname(newo, upb_oneofdef_name(o), NULL);
-  UPB_ASSERT_VAR(ok, ok);
+  UPB_ASSERT(ok);
   for (upb_oneof_begin(&i, o); !upb_oneof_done(&i); upb_oneof_next(&i)) {
     upb_fielddef *f = upb_fielddef_dup(upb_oneof_iter_field(&i), &f);
     if (!f || !upb_oneofdef_addfield(newo, f, &f, NULL)) {
@@ -1786,7 +1786,7 @@ upb_oneofdef *upb_oneofdef_dup(const upb_oneofdef *o, const void *owner) {
 const char *upb_oneofdef_name(const upb_oneofdef *o) { return o->name; }
 
 bool upb_oneofdef_setname(upb_oneofdef *o, const char *name, upb_status *s) {
-  assert(!upb_oneofdef_isfrozen(o));
+  UPB_ASSERT(!upb_oneofdef_isfrozen(o));
   if (upb_oneofdef_containingtype(o)) {
     upb_status_seterrmsg(s, "oneof already added to a message");
     return false;
@@ -1818,8 +1818,8 @@ int upb_oneofdef_numfields(const upb_oneofdef *o) {
 bool upb_oneofdef_addfield(upb_oneofdef *o, upb_fielddef *f,
                            const void *ref_donor,
                            upb_status *s) {
-  assert(!upb_oneofdef_isfrozen(o));
-  assert(!o->parent || !upb_msgdef_isfrozen(o->parent));
+  UPB_ASSERT(!upb_oneofdef_isfrozen(o));
+  UPB_ASSERT(!o->parent || !upb_msgdef_isfrozen(o->parent));
 
   /* This method is idempotent. Check if |f| is already part of this oneofdef
    * and return immediately if so. */

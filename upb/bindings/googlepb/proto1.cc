@@ -35,7 +35,7 @@ namespace proto2 { class Arena; }
 #include "upb/sink.h"
 
 // Unconditionally evaluate, but also assert in debug mode.
-#define CHKRET(x) do { bool ok = (x); UPB_UNUSED(ok); assert(ok); } while (0)
+#define CHKRET(x) do { bool ok = (x); UPB_ASSERT(ok); } while (0)
 
 template <class T> static T* GetPointer(void* message, size_t offset) {
   return reinterpret_cast<T*>(static_cast<char*>(message) + offset);
@@ -58,7 +58,7 @@ class P2R_Handlers {
         dynamic_cast<const _pi::Proto2Reflection*>(base_r);
     if (!r) return false;
     // Extensions don't exist in proto1.
-    assert(!proto2_f->is_extension());
+    UPB_ASSERT(!proto2_f->is_extension());
 
 #define PRIMITIVE(name, type_name)                                             \
   case _pi::CREP_REQUIRED_##name:                                              \
@@ -107,7 +107,7 @@ class P2R_Handlers {
         SetWeakMessageHandlers(proto2_f, m, r, upb_f, h);
         return true;
       default:
-        assert(false);
+        UPB_ASSERT(false);
         return false;
     }
   }
@@ -147,10 +147,10 @@ class P2R_Handlers {
     } else if (dynamic_cast<const _pi::Proto2Reflection*>(m.GetReflection())) {
       // Since proto1 has no dynamic message, it must be from the generated
       // factory.
-      assert(f->cpp_type() == proto2::FieldDescriptor::CPPTYPE_MESSAGE);
+      UPB_ASSERT(f->cpp_type() == proto2::FieldDescriptor::CPPTYPE_MESSAGE);
       ret = proto2::MessageFactory::generated_factory()->GetPrototype(
                 f->message_type());
-      assert(ret);
+      UPB_ASSERT(ret);
       return ret;
     } else {
       return NULL;
@@ -175,7 +175,7 @@ class P2R_Handlers {
     }
 
     void SetHasbit(void* message) const {
-      assert(!is_repeated_);
+      UPB_ASSERT(!is_repeated_);
       uint8_t* byte = GetPointer<uint8_t>(message, hasbyte_);
       *byte |= mask_;
     }
@@ -193,13 +193,13 @@ class P2R_Handlers {
                                     upb::Handlers::Type type) {
     upb::Handlers::Selector selector;
     bool ok = upb::Handlers::GetSelector(f, type, &selector);
-    UPB_ASSERT_VAR(ok, ok);
+    UPB_ASSERT(ok);
     return selector;
   }
 
   static int16_t GetHasbit(const proto2::FieldDescriptor* f,
                            const _pi::Proto2Reflection* r) {
-    assert(!f->is_repeated());
+    UPB_ASSERT(!f->is_repeated());
     return (r->layout_->has_bit_offset * 8) + r->GetFieldLayout(f)->has_index;
   }
 
@@ -303,7 +303,7 @@ class P2R_Handlers {
       const proto2::FieldDescriptor* proto2_f, const _pi::Proto2Reflection* r,
       const upb::FieldDef* f, upb::Handlers* h) {
     // This type is only used for non-repeated string fields.
-    assert(!f->IsSequence());
+    UPB_ASSERT(!f->IsSequence());
     CHKRET(h->SetStartStringHandler(
         f, UpbBind(StartOutOfLineString, new FieldOffset(proto2_f, r))));
     CHKRET(h->SetStringHandler(f, UpbMakeHandler(OnStringBuf)));
@@ -452,7 +452,7 @@ class P2R_Handlers {
     // around waiting for reuse, which we will not do.
     static void Delete(Type* t) {
       UPB_UNUSED(t);
-      assert(false);
+      UPB_ASSERT(false);
     }
 #else
     static ::proto2::Arena* GetArena(Type* t) {
@@ -470,7 +470,7 @@ class P2R_Handlers {
     static void Delete(Type* t, ::proto2::Arena* arena) {
       UPB_UNUSED(t);
       UPB_UNUSED(arena);
-      assert(false);
+      UPB_ASSERT(false);
     }
     static void Merge(const Type& from, Type* to) {
       to->MergeFrom(from);

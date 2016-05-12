@@ -6,8 +6,6 @@
  * Do not edit -- your changes will be discarded when the file is
  * regenerated. */
 
-#include <assert.h>
-
 #include "upb/def.h"
 #include "upb/structdefs.int.h"
 

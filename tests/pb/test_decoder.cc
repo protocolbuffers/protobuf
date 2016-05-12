@@ -116,11 +116,11 @@ void vappendf(string* str, const char *format, va_list args) {
   int count = vsnprintf(NULL, 0, format, args);
   if (count >= 0)
   {
-    assert(count < 32768);
+    UPB_ASSERT(count < 32768);
     char *buffer = new char[count + 1];
-    assert(buffer);
+    UPB_ASSERT(buffer);
     count = vsnprintf(buffer, count + 1, format, copy);
-    assert(count >= 0);
+    UPB_ASSERT(count >= 0);
     str->append(buffer, count);
     delete [] buffer;
   }

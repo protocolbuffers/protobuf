@@ -117,7 +117,7 @@ void upb_pbdecoder_seterr(upb_pbdecoder *d, const char *msg) {
 /* How many bytes can be safely read from d->ptr without reading past end-of-buf
  * or past the current delimited end. */
 static size_t curbufleft(const upb_pbdecoder *d) {
-  assert(d->data_end >= d->ptr);
+  UPB_ASSERT(d->data_end >= d->ptr);
   return d->data_end - d->ptr;
 }
 
@@ -138,7 +138,7 @@ size_t delim_remaining(const upb_pbdecoder *d) {
 
 /* Advances d->ptr. */
 static void advance(upb_pbdecoder *d, size_t len) {
-  assert(curbufleft(d) >= len);
+  UPB_ASSERT(curbufleft(d) >= len);
   d->ptr += len;
 }
 
@@ -171,7 +171,7 @@ static void switchtobuf(upb_pbdecoder *d, const char *buf, const char *end) {
 }
 
 static void advancetobuf(upb_pbdecoder *d, const char *buf, size_t len) {
-  assert(curbufleft(d) == 0);
+  UPB_ASSERT(curbufleft(d) == 0);
   d->bufstart_ofs += (d->end - d->buf);
   switchtobuf(d, buf, buf + len);
 }
@@ -180,7 +180,7 @@ static void checkpoint(upb_pbdecoder *d) {
   /* The assertion here is in the interests of efficiency, not correctness.
    * We are trying to ensure that we don't checkpoint() more often than
    * necessary. */
-  assert(d->checkpoint != d->ptr);
+  UPB_ASSERT(d->checkpoint != d->ptr);
   d->checkpoint = d->ptr;
 }
 
@@ -191,8 +191,8 @@ static void checkpoint(upb_pbdecoder *d) {
  * won't actually be read.
  */
 static int32_t skip(upb_pbdecoder *d, size_t bytes) {
-  assert(!in_residual_buf(d, d->ptr) || d->size_param == 0);
-  assert(d->skip == 0);
+  UPB_ASSERT(!in_residual_buf(d, d->ptr) || d->size_param == 0);
+  UPB_ASSERT(d->skip == 0);
   if (bytes > delim_remaining(d)) {
     seterr(d, "Skipped value extended beyond enclosing submessage.");
     return upb_pbdecoder_suspend(d);
@@ -220,7 +220,7 @@ int32_t upb_pbdecoder_resume(upb_pbdecoder *d, void *p, const char *buf,
 
   /* d->skip and d->residual_end could probably elegantly be represented
    * as a single variable, to more easily represent this invariant. */
-  assert(!(d->skip && d->residual_end > d->residual));
+  UPB_ASSERT(!(d->skip && d->residual_end > d->residual));
 
   /* We need to remember the original size_param, so that the value we return
    * is relative to it, even if we do some skipping first. */
@@ -253,7 +253,7 @@ int32_t upb_pbdecoder_resume(upb_pbdecoder *d, void *p, const char *buf,
 
   if (d->residual_end > d->residual) {
     /* We have residual bytes from the last buffer. */
-    assert(d->ptr == d->residual);
+    UPB_ASSERT(d->ptr == d->residual);
   } else {
     switchtobuf(d, buf, buf + size);
   }
@@ -287,8 +287,8 @@ size_t upb_pbdecoder_suspend(upb_pbdecoder *d) {
     return 0;
   } else {
     size_t ret = d->size_param - (d->end - d->checkpoint);
-    assert(!in_residual_buf(d, d->checkpoint));
-    assert(d->buf == d->buf_param || d->buf == &dummy_char);
+    UPB_ASSERT(!in_residual_buf(d, d->checkpoint));
+    UPB_ASSERT(d->buf == d->buf_param || d->buf == &dummy_char);
 
     d->bufstart_ofs += (d->checkpoint - d->buf);
     d->residual_end = d->residual;
@@ -308,7 +308,7 @@ static size_t suspend_save(upb_pbdecoder *d) {
 
   if (d->checkpoint == d->residual) {
     /* Checkpoint was in residual buf; append user byte(s) to residual buf. */
-    assert((d->residual_end - d->residual) + d->size_param <=
+    UPB_ASSERT((d->residual_end - d->residual) + d->size_param <=
            sizeof(d->residual));
     if (!in_residual_buf(d, d->ptr)) {
       d->bufstart_ofs -= (d->residual_end - d->residual);
@@ -318,11 +318,11 @@ static size_t suspend_save(upb_pbdecoder *d) {
   } else {
     /* Checkpoint was in user buf; old residual bytes not needed. */
     size_t save;
-    assert(!in_residual_buf(d, d->checkpoint));
+    UPB_ASSERT(!in_residual_buf(d, d->checkpoint));
 
     d->ptr = d->checkpoint;
     save = curbufleft(d);
-    assert(save <= sizeof(d->residual));
+    UPB_ASSERT(save <= sizeof(d->residual));
     memcpy(d->residual, d->ptr, save);
     d->residual_end = d->residual + save;
     d->bufstart_ofs = offset(d);
@@ -336,7 +336,7 @@ static size_t suspend_save(upb_pbdecoder *d) {
  * Requires that this many bytes are available in the current buffer. */
 UPB_FORCEINLINE static void consumebytes(upb_pbdecoder *d, void *buf,
                                          size_t bytes) {
-  assert(bytes <= curbufleft(d));
+  UPB_ASSERT(bytes <= curbufleft(d));
   memcpy(buf, d->ptr, bytes);
   advance(d, bytes);
 }
@@ -349,7 +349,7 @@ UPB_NOINLINE static int32_t getbytes_slow(upb_pbdecoder *d, void *buf,
   const size_t avail = curbufleft(d);
   consumebytes(d, buf, avail);
   bytes -= avail;
-  assert(bytes > 0);
+  UPB_ASSERT(bytes > 0);
   if (in_residual_buf(d, d->ptr)) {
     advancetobuf(d, d->buf_param, d->size_param);
   }
@@ -532,7 +532,7 @@ UPB_NOINLINE int32_t upb_pbdecoder_checktag_slow(upb_pbdecoder *d,
   if (read == bytes && data == expected) {
     /* Advance past matched bytes. */
     int32_t ok = getbytes(d, &data, read);
-    UPB_ASSERT_VAR(ok, ok < 0);
+    UPB_ASSERT(ok < 0);
     return DECODE_OK;
   } else if (read < bytes && memcmp(&data, &expected, read) == 0) {
     return suspend_save(d);
@@ -607,7 +607,7 @@ have_tag:
 static void goto_endmsg(upb_pbdecoder *d) {
   upb_value v;
   bool found = upb_inttable_lookup32(d->top->dispatch, DISPATCH_ENDMSG, &v);
-  UPB_ASSERT_VAR(found, found);
+  UPB_ASSERT(found);
   d->pc = d->top->base + upb_value_getuint64(v);
 }
 
@@ -641,7 +641,7 @@ static int32_t dispatch(upb_pbdecoder *d) {
     } else if (wire_type == ((v >> 8) & 0xff)) {
       bool found =
           upb_inttable_lookup(dispatch, fieldnum + UPB_MAX_FIELDNUMBER, &val);
-      UPB_ASSERT_VAR(found, found);
+      UPB_ASSERT(found);
       d->pc = d->top->base + upb_value_getuint64(val);
       return DECODE_OK;
     }
@@ -653,7 +653,7 @@ static int32_t dispatch(upb_pbdecoder *d) {
    * can re-check the delimited end. */
   d->last--;  /* Necessary if we get suspended */
   d->pc = d->last;
-  assert(getop(*d->last) == OP_CHECKDELIM);
+  UPB_ASSERT(getop(*d->last) == OP_CHECKDELIM);
 
   /* Unknown field or ENDGROUP. */
   retval = upb_pbdecoder_skipunknown(d, fieldnum, wire_type);
@@ -671,7 +671,7 @@ static int32_t dispatch(upb_pbdecoder *d) {
 /* Callers know that the stack is more than one deep because the opcodes that
  * call this only occur after PUSH operations. */
 upb_pbdecoder_frame *outer_frame(upb_pbdecoder *d) {
-  assert(d->top != d->stack);
+  UPB_ASSERT(d->top != d->stack);
   return d->top - 1;
 }
 
@@ -703,7 +703,7 @@ size_t run_decoder_vm(upb_pbdecoder *d, const mgroup *group,
     op = getop(instruction);
     arg = instruction >> 8;
     longofs = arg;
-    assert(d->ptr != d->residual_end);
+    UPB_ASSERT(d->ptr != d->residual_end);
     UPB_UNUSED(group);
 #ifdef UPB_DUMP_BYTECODE
     fprintf(stderr, "s_ofs=%d buf_ofs=%d data_rem=%d buf_rem=%d delim_rem=%d "
@@ -778,7 +778,7 @@ size_t run_decoder_vm(upb_pbdecoder *d, const mgroup *group,
           } else {
             int32_t ret = skip(d, n);
             /* This shouldn't return DECODE_OK, because n > len. */
-            assert(ret >= 0);
+            UPB_ASSERT(ret >= 0);
             return ret;
           }
         }
@@ -800,7 +800,7 @@ size_t run_decoder_vm(upb_pbdecoder *d, const mgroup *group,
         d->top->groupnum = *d->pc++;
       )
       VMCASE(OP_POP,
-        assert(d->top > d->stack);
+        UPB_ASSERT(d->top > d->stack);
         decoder_pop(d);
       )
       VMCASE(OP_PUSHLENDELIM,
@@ -816,7 +816,7 @@ size_t run_decoder_vm(upb_pbdecoder *d, const mgroup *group,
         /* We are guaranteed of this assert because we never allow ourselves to
          * consume bytes beyond data_end, which covers delim_end when non-NULL.
          */
-        assert(!(d->delim_end && d->ptr > d->delim_end));
+        UPB_ASSERT(!(d->delim_end && d->ptr > d->delim_end));
         if (d->ptr == d->delim_end)
           d->pc += longofs;
       )
@@ -825,7 +825,7 @@ size_t run_decoder_vm(upb_pbdecoder *d, const mgroup *group,
         d->pc += longofs;
       )
       VMCASE(OP_RET,
-        assert(d->call_len > 0);
+        UPB_ASSERT(d->call_len > 0);
         d->pc = d->callstack[--d->call_len];
       )
       VMCASE(OP_BRANCH,
@@ -952,7 +952,7 @@ bool upb_pbdecoder_end(void *closure, const void *handler_data) {
     if (p != method->code_base.ptr) p--;
     if (getop(*p) == OP_CHECKDELIM) {
       /* Rewind from OP_TAG* to OP_CHECKDELIM. */
-      assert(getop(*d->pc) == OP_TAG1 ||
+      UPB_ASSERT(getop(*d->pc) == OP_TAG1 ||
              getop(*d->pc) == OP_TAG2 ||
              getop(*d->pc) == OP_TAGN ||
              getop(*d->pc) == OP_DISPATCH);
@@ -1016,7 +1016,7 @@ upb_pbdecoder *upb_pbdecoder_create(upb_env *e, const upb_pbdecodermethod *m,
   upb_pbdecoder_reset(d);
   upb_bytessink_reset(&d->input_, &m->input_handler_, d);
 
-  assert(sink);
+  UPB_ASSERT(sink);
   if (d->method_->dest_handlers_) {
     if (sink->handlers != d->method_->dest_handlers_)
       return NULL;
@@ -1024,7 +1024,8 @@ upb_pbdecoder *upb_pbdecoder_create(upb_env *e, const upb_pbdecodermethod *m,
   upb_sink_reset(&d->top->sink, sink->handlers, sink->closure);
 
   /* If this fails, increase the value in decoder.h. */
-  assert(upb_env_bytesallocated(e) - size_before <= UPB_PB_DECODER_SIZE);
+  UPB_ASSERT_DEBUGVAR(upb_env_bytesallocated(e) - size_before <=
+                      UPB_PB_DECODER_SIZE);
   return d;
 }
 
@@ -1045,7 +1046,7 @@ size_t upb_pbdecoder_maxnesting(const upb_pbdecoder *d) {
 }
 
 bool upb_pbdecoder_setmaxnesting(upb_pbdecoder *d, size_t max) {
-  assert(d->top >= d->stack);
+  UPB_ASSERT(d->top >= d->stack);
 
   if (max < (size_t)(d->top - d->stack)) {
     /* Can't set a limit smaller than what we are currently at. */

@@ -111,9 +111,9 @@ static bool upb_descreader_qualify(upb_filedef *f, char *str, int32_t start) {
 
 static upb_msgdef *upb_descreader_top(upb_descreader *r) {
   int index;
-  assert(r->stack_len > 1);
+  UPB_ASSERT(r->stack_len > 1);
   index = r->stack[r->stack_len-1].start - 1;
-  assert(index >= 0);
+  UPB_ASSERT(index >= 0);
   return upb_downcast_msgdef_mutable(upb_filedef_mutabledef(r->file, index));
 }
 
@@ -183,7 +183,7 @@ static size_t file_onname(void *closure, const void *hd, const char *buf,
   /* XXX: see comment at the top of the file. */
   ok = upb_filedef_setname(r->file, name, NULL);
   upb_gfree(name);
-  UPB_ASSERT_VAR(ok, ok);
+  UPB_ASSERT(ok);
   return n;
 }
 
@@ -199,7 +199,7 @@ static size_t file_onpackage(void *closure, const void *hd, const char *buf,
   /* XXX: see comment at the top of the file. */
   upb_descreader_setscopename(r, package);
   ok = upb_filedef_setpackage(r->file, package, NULL);
-  UPB_ASSERT_VAR(ok, ok);
+  UPB_ASSERT(ok);
   return n;
 }
 
@@ -218,7 +218,7 @@ static size_t file_onsyntax(void *closure, const void *hd, const char *buf,
     ok = false;
   }
 
-  UPB_ASSERT_VAR(ok, ok);
+  UPB_ASSERT(ok);
   return n;
 }
 
@@ -227,7 +227,7 @@ static void *file_startmsg(void *closure, const void *hd) {
   upb_msgdef *m = upb_msgdef_new(&m);
   bool ok = upb_filedef_addmsg(r->file, m, &m, NULL);
   UPB_UNUSED(hd);
-  UPB_ASSERT_VAR(ok, ok);
+  UPB_ASSERT(ok);
   return r;
 }
 
@@ -236,7 +236,7 @@ static void *file_startenum(void *closure, const void *hd) {
   upb_enumdef *e = upb_enumdef_new(&e);
   bool ok = upb_filedef_addenum(r->file, e, &e, NULL);
   UPB_UNUSED(hd);
-  UPB_ASSERT_VAR(ok, ok);
+  UPB_ASSERT(ok);
   return r;
 }
 
@@ -246,7 +246,7 @@ static void *file_startext(void *closure, const void *hd) {
   r->f = upb_fielddef_new(r);
   ok = upb_filedef_addext(r->file, r->f, r, NULL);
   UPB_UNUSED(hd);
-  UPB_ASSERT_VAR(ok, ok);
+  UPB_ASSERT(ok);
   return r;
 }
 
@@ -332,7 +332,7 @@ static size_t enum_onname(void *closure, const void *hd, const char *buf,
 static bool field_startmsg(void *closure, const void *hd) {
   upb_descreader *r = closure;
   UPB_UNUSED(hd);
-  assert(r->f);
+  UPB_ASSERT(r->f);
   upb_gfree(r->default_string);
   r->default_string = NULL;
 
@@ -418,9 +418,9 @@ static bool field_endmsg(void *closure, const void *hd, upb_status *status) {
   UPB_UNUSED(hd);
 
   /* TODO: verify that all required fields were present. */
-  assert(upb_fielddef_number(f) != 0);
-  assert(upb_fielddef_name(f) != NULL);
-  assert((upb_fielddef_subdefname(f) != NULL) == upb_fielddef_hassubdef(f));
+  UPB_ASSERT(upb_fielddef_number(f) != 0);
+  UPB_ASSERT(upb_fielddef_name(f) != NULL);
+  UPB_ASSERT((upb_fielddef_subdefname(f) != NULL) == upb_fielddef_hassubdef(f));
 
   if (r->default_string) {
     if (upb_fielddef_issubmsg(f)) {
@@ -479,7 +479,7 @@ static bool field_onnumber(void *closure, const void *hd, int32_t val) {
   UPB_UNUSED(hd);
 
   ok = upb_fielddef_setnumber(r->f, val, NULL);
-  UPB_ASSERT_VAR(ok, ok);
+  UPB_ASSERT(ok);
   return true;
 }
 
@@ -577,7 +577,7 @@ static void *msg_startmsg(void *closure, const void *hd) {
   upb_msgdef *m = upb_msgdef_new(&m);
   bool ok = upb_filedef_addmsg(r->file, m, &m, NULL);
   UPB_UNUSED(hd);
-  UPB_ASSERT_VAR(ok, ok);
+  UPB_ASSERT(ok);
   return r;
 }
 
@@ -586,7 +586,7 @@ static void *msg_startext(void *closure, const void *hd) {
   upb_fielddef *f = upb_fielddef_new(&f);
   bool ok = upb_filedef_addext(r->file, f, &f, NULL);
   UPB_UNUSED(hd);
-  UPB_ASSERT_VAR(ok, ok);
+  UPB_ASSERT(ok);
   return r;
 }
 
@@ -694,7 +694,7 @@ static void reghandlers(const void *closure, upb_handlers *h) {
     upb_handlers_setbool(h, F(MessageOptions, map_entry), &msg_onmapentry, NULL);
   }
 
-  assert(upb_ok(upb_handlers_status(h)));
+  UPB_ASSERT(upb_ok(upb_handlers_status(h)));
 }
 
 #undef F

@@ -50,7 +50,7 @@ bool upb_shim_set(upb_handlers *h, const upb_fielddef *f, size_t offset,
     TYPE(DOUBLE, double);
     TYPE(FLOAT,  float);
     TYPE(BOOL,   bool);
-    default: assert(false); break;
+    default: UPB_ASSERT(false); break;
   }
 #undef TYPE
 

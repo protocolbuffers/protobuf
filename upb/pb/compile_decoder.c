@@ -183,7 +183,7 @@ bool op_has_longofs(int32_t instruction) {
     case OP_TAGN:
       return false;
     default:
-      assert(false);
+      UPB_ASSERT(false);
       return false;
   }
 }
@@ -202,7 +202,7 @@ static void setofs(uint32_t *instruction, int32_t ofs) {
   } else {
     *instruction = (*instruction & ~0xff00) | ((ofs & 0xff) << 8);
   }
-  assert(getofs(*instruction) == ofs);  /* Would fail in cases of overflow. */
+  UPB_ASSERT(getofs(*instruction) == ofs);  /* Would fail in cases of overflow. */
 }
 
 static uint32_t pcofs(compiler *c) { return c->pc - c->group->bytecode; }
@@ -214,7 +214,7 @@ static void label(compiler *c, unsigned int label) {
   int val;
   uint32_t *codep;
 
-  assert(label < MAXLABEL);
+  UPB_ASSERT(label < MAXLABEL);
   val = c->fwd_labels[label];
   codep = (val == EMPTYLABEL) ? NULL : c->group->bytecode + val;
   while (codep) {
@@ -235,7 +235,7 @@ static void label(compiler *c, unsigned int label) {
  * The returned value is the offset that should be written into the instruction.
  */
 static int32_t labelref(compiler *c, int label) {
-  assert(label < MAXLABEL);
+  UPB_ASSERT(label < MAXLABEL);
   if (label == LABEL_DISPATCH) {
     /* No resolving required. */
     return 0;
@@ -335,7 +335,7 @@ static void putop(compiler *c, opcode op, ...) {
       int label = va_arg(ap, int);
       uint64_t tag = va_arg(ap, uint64_t);
       uint32_t instruction = op | (tag << 16);
-      assert(tag <= 0xffff);
+      UPB_ASSERT(tag <= 0xffff);
       setofs(&instruction, labelref(c, label));
       put32(c, instruction);
       break;
@@ -472,7 +472,7 @@ static uint64_t get_encoded_tag(const upb_fielddef *f, int wire_type) {
   uint32_t tag = (upb_fielddef_number(f) << 3) | wire_type;
   uint64_t encoded_tag = upb_vencode32(tag);
   /* No tag should be greater than 5 bytes. */
-  assert(encoded_tag <= 0xffffffffff);
+  UPB_ASSERT(encoded_tag <= 0xffffffffff);
   return encoded_tag;
 }
 
@@ -495,7 +495,7 @@ static void putchecktag(compiler *c, const upb_fielddef *f,
 static upb_selector_t getsel(const upb_fielddef *f, upb_handlertype_t type) {
   upb_selector_t selector;
   bool ok = upb_handlers_getselector(f, type, &selector);
-  UPB_ASSERT_VAR(ok, ok);
+  UPB_ASSERT(ok);
   return selector;
 }
 
@@ -507,7 +507,7 @@ static uint64_t repack(uint64_t dispatch, int new_wt2) {
   uint8_t wt1;
   uint8_t old_wt2;
   upb_pbdecoder_unpackdispatch(dispatch, &ofs, &wt1, &old_wt2);
-  assert(old_wt2 == NO_WIRE_TYPE);  /* wt2 should not be set yet. */
+  UPB_ASSERT(old_wt2 == NO_WIRE_TYPE);  /* wt2 should not be set yet. */
   return upb_pbdecoder_packdispatch(ofs, wt1, new_wt2);
 }
 
@@ -709,7 +709,7 @@ static void generate_primitivefield(compiler *c, const upb_fielddef *f,
    * setting in the fielddef.  This will favor (in speed) whichever was
    * specified. */
 
-  assert((int)parse_type >= 0 && parse_type <= OP_MAX);
+  UPB_ASSERT((int)parse_type >= 0 && parse_type <= OP_MAX);
   sel = getsel(f, upb_handlers_getprimitivehandlertype(f));
   wire_type = upb_pb_native_wire_types[upb_fielddef_descriptortype(f)];
   if (upb_fielddef_isseq(f)) {
@@ -751,7 +751,7 @@ static void compile_method(compiler *c, upb_pbdecodermethod *method) {
   upb_msg_field_iter i;
   upb_value val;
 
-  assert(method);
+  UPB_ASSERT(method);
 
   /* Clear all entries in the dispatch table. */
   upb_inttable_uninit(&method->dispatch);
@@ -899,7 +899,7 @@ const mgroup *mgroup_new(const upb_handlers *dest, bool allowjit, bool lazy,
   compiler *c;
 
   UPB_UNUSED(allowjit);
-  assert(upb_handlers_isfrozen(dest));
+  UPB_ASSERT(upb_handlers_isfrozen(dest));
 
   g = newgroup(owner);
   c = newcompiler(g, lazy);
@@ -920,13 +920,13 @@ const mgroup *mgroup_new(const upb_handlers *dest, bool allowjit, bool lazy,
 #ifdef UPB_DUMP_BYTECODE
   {
     FILE *f = fopen("/tmp/upb-bytecode", "w");
-    assert(f);
+    UPB_ASSERT(f);
     dumpbc(g->bytecode, g->bytecode_end, stderr);
     dumpbc(g->bytecode, g->bytecode_end, f);
     fclose(f);
 
     f = fopen("/tmp/upb-bytecode.bin", "wb");
-    assert(f);
+    UPB_ASSERT(f);
     fwrite(g->bytecode, 1, g->bytecode_end - g->bytecode, f);
     fclose(f);
   }
@@ -976,7 +976,7 @@ const upb_pbdecodermethod *upb_pbcodecache_getdecodermethod(
   upb_inttable_push(&c->groups, upb_value_constptr(g));
 
   ok = upb_inttable_lookupptr(&g->methods, opts->handlers, &v);
-  UPB_ASSERT_VAR(ok, ok);
+  UPB_ASSERT(ok);
   return upb_value_getptr(v);
 }
 

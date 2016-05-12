@@ -128,7 +128,7 @@ class DefBuilder {
 
   template <class T>
   T* AddToCache(const void *proto2_descriptor, reffed_ptr<T> def) {
-    assert(def_cache_.find(proto2_descriptor) == def_cache_.end());
+    UPB_ASSERT(def_cache_.find(proto2_descriptor) == def_cache_.end());
     def_cache_[proto2_descriptor] = def;
     return def.get();  // Continued lifetime is guaranteed by cache.
   }
@@ -207,7 +207,7 @@ class CodeCache {
       const MessageDef* md, const ::google::protobuf::Message& m);
 
   Handlers* AddToCache(const MessageDef* md, reffed_ptr<Handlers> handlers) {
-    assert(handlers_cache_.find(md) == handlers_cache_.end());
+    UPB_ASSERT(handlers_cache_.find(md) == handlers_cache_.end());
     handlers_cache_[md] = handlers;
     return handlers.get();  // Continue lifetime is guaranteed by the cache.
   }

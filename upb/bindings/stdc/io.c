@@ -36,7 +36,7 @@ static upb_stdio_buf *upb_stdio_rotatebufs(upb_stdio *s) {
       reuse[num_reused++] = buf;
     }
   }
-  assert(num_reused + num_inuse == s->nbuf);
+  UPB_ASSERT(num_reused + num_inuse == s->nbuf);
   memcpy(s->bufs + num_inuse, reuse, num_reused * sizeof(upb_stdio_buf*));
   if (num_reused == 0) {
     ++s->nbuf;
@@ -78,7 +78,7 @@ retry:
       return upb_errno_is_wouldblock(errno) ?
           UPB_BYTE_WOULDBLOCK : UPB_BYTE_ERROR;
     }
-    assert(false);
+    UPB_ASSERT(false);
   }
   return UPB_BYTE_OK;
 }

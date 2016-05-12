@@ -154,9 +154,9 @@ UPB_INLINE uint64_t upb_vencode32(uint32_t val) {
   char buf[UPB_PB_VARINT_MAX_LEN];
   size_t bytes = upb_vencode64(val, buf);
   uint64_t ret = 0;
-  assert(bytes <= 5);
+  UPB_ASSERT(bytes <= 5);
   memcpy(&ret, buf, bytes);
-  assert(ret <= 0xffffffffffU);
+  UPB_ASSERT(ret <= 0xffffffffffU);
   return ret;
 }
 

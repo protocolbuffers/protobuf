@@ -18,7 +18,7 @@
 #define ASSERT_STATUS(status) do { \
   if (!upb_ok(status)) { \
     fprintf(stderr, "upb status failure: %s\n", upb_status_errmsg(status)); \
-    assert(upb_ok(status)); \
+    UPB_ASSERT(upb_ok(status)); \
   } \
   } while (0)
 
@@ -49,7 +49,7 @@ const goog::Message* TryGetFieldPrototype(const goog::Message& m,
 const goog::Message* GetFieldPrototype(const goog::Message& m,
                                        const goog::FieldDescriptor* f) {
   const goog::Message* ret = TryGetFieldPrototype(m, f);
-  assert(ret);
+  UPB_ASSERT(ret);
   return ret;
 }
 
@@ -66,7 +66,7 @@ const EnumDef* DefBuilder::GetEnumDef(const goog::EnumDescriptor* ed) {
   for (int i = 0; i < ed->value_count(); i++) {
     const goog::EnumValueDescriptor* val = ed->value(i);
     bool success = e->AddValue(val->name(), val->number(), &status);
-    UPB_ASSERT_VAR(success, success);
+    UPB_ASSERT(success);
   }
 
   e->Freeze(&status);
@@ -96,7 +96,7 @@ const MessageDef* DefBuilder::GetMaybeUnfrozenMessageDef(
 
   for (size_t i = 0; i < fields.size(); i++) {
     const goog::FieldDescriptor* proto2_f = fields[i];
-    assert(proto2_f);
+    UPB_ASSERT(proto2_f);
     md->AddField(NewFieldDef(proto2_f, m), &status);
   }
   ASSERT_STATUS(&status);
@@ -128,7 +128,7 @@ reffed_ptr<FieldDef> DefBuilder::NewFieldDef(const goog::FieldDescriptor* f,
     subm = TryGetFieldPrototype(*m, f);
 
     if (upb_f->type() == UPB_TYPE_MESSAGE) {
-      assert(subm);
+      UPB_ASSERT(subm);
     } else if (subm) {
       // Weak field: subm will be weak prototype even though the proto2
       // descriptor does not indicate a submessage field.
@@ -250,14 +250,14 @@ const Handlers* CodeCache::GetMaybeUnfrozenWriteHandlers(
     if (!proto2_f) {
       proto2_f = d->file()->pool()->FindExtensionByNumber(d, upb_f->number());
     }
-    assert(proto2_f);
+    UPB_ASSERT(proto2_f);
 
     bool ok = WriteHandlers::AddFieldHandler(m, proto2_f, h);
-    UPB_ASSERT_VAR(ok, ok);
+    UPB_ASSERT(ok);
 
     if (upb_f->type() == UPB_TYPE_MESSAGE) {
       const goog::Message* prototype = GetFieldPrototype(m, proto2_f);
-      assert(prototype);
+      UPB_ASSERT(prototype);
       const upb::Handlers* sub_handlers =
           GetMaybeUnfrozenWriteHandlers(upb_f->message_subdef(), *prototype);
       h->SetSubHandlers(upb_f, sub_handlers);

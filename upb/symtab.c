@@ -33,13 +33,13 @@ void upb_symtab_freeze(upb_symtab *s) {
   upb_refcounted *r;
   bool ok;
 
-  assert(!upb_symtab_isfrozen(s));
+  UPB_ASSERT(!upb_symtab_isfrozen(s));
   r = upb_symtab_upcast_mutable(s);
   /* The symtab does not take ref2's (see refcounted.h) on the defs, because
    * defs cannot refer back to the table and therefore cannot create cycles.  So
    * 0 will suffice for maxdepth here. */
   ok = upb_refcounted_freeze(&r, 1, NULL, 0);
-  UPB_ASSERT_VAR(ok, ok);
+  UPB_ASSERT(ok);
 }
 
 const upb_def *upb_symtab_lookup(const upb_symtab *s, const char *sym) {
@@ -77,7 +77,7 @@ static upb_def *upb_resolvename(const upb_strtable *t,
     /* Remove components from base until we find an entry or run out.
      * TODO: This branch is totally broken, but currently not used. */
     (void)base;
-    assert(false);
+    UPB_ASSERT(false);
     return NULL;
   }
 }
@@ -139,7 +139,7 @@ static bool upb_resolve_dfs(const upb_def *def, upb_strtable *addtab,
     upb_value v;
     const upb_msgdef *m;
 
-    assert(upb_def_isfrozen(def));
+    UPB_ASSERT(upb_def_isfrozen(def));
     if (def->type == UPB_DEF_FIELD) continue;
     if (upb_strtable_lookup(addtab, upb_def_fullname(def), &v)) {
       need_dup = true;
@@ -214,7 +214,7 @@ static bool symtab_add(upb_symtab *s, upb_def *const*defs, size_t n,
     return true;
   }
 
-  assert(!upb_symtab_isfrozen(s));
+  UPB_ASSERT(!upb_symtab_isfrozen(s));
   if (!upb_strtable_init(&addtab, UPB_CTYPE_PTR)) {
     upb_status_seterrmsg(status, "out of memory");
     return false;
@@ -230,7 +230,7 @@ static bool symtab_add(upb_symtab *s, upb_def *const*defs, size_t n,
       upb_status_seterrmsg(status, "added defs must be mutable");
       goto err;
     }
-    assert(!upb_def_isfrozen(def));
+    UPB_ASSERT(!upb_def_isfrozen(def));
     fullname = upb_def_fullname(def);
     if (!fullname) {
       upb_status_seterrmsg(
@@ -274,7 +274,7 @@ static bool symtab_add(upb_symtab *s, upb_def *const*defs, size_t n,
     if (!f) continue;
     msgname = upb_fielddef_containingtypename(f);
     /* We validated this earlier in this function. */
-    assert(msgname);
+    UPB_ASSERT(msgname);
 
     /* If the extendee name is absolutely qualified, move past the initial ".".
      * TODO(haberman): it is not obvious what it would mean if this was not
@@ -405,7 +405,7 @@ static bool symtab_add(upb_symtab *s, upb_def *const*defs, size_t n,
       upb_def_unref(def, s);
     }
     success = upb_strtable_insert(&s->symtab, name, upb_value_ptr(def));
-    UPB_ASSERT_VAR(success, success == true);
+    UPB_ASSERT(success == true);
   }
   upb_gfree(add_defs);
   return true;
@@ -429,7 +429,7 @@ err: {
   }
   upb_strtable_uninit(&addtab);
   upb_gfree(add_defs);
-  assert(!upb_ok(status));
+  UPB_ASSERT(!upb_ok(status));
   return false;
 }
 

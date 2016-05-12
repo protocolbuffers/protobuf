@@ -14,16 +14,11 @@
 #define ARRAY_SIZE(x) \
     ((sizeof(x)/sizeof(0[x])) / ((size_t)(!(sizeof(x) % sizeof(0[x])))))
 
-#ifdef NDEBUG
 static void upb_check_alloc(upb_table *t, upb_alloc *a) {
   UPB_UNUSED(t);
   UPB_UNUSED(a);
+  UPB_ASSERT_DEBUGVAR(t->alloc == a);
 }
-#else
-static void upb_check_alloc(upb_table *t, upb_alloc *a) {
-  assert(t->alloc == a);
-}
-#endif
 
 static const double MAX_LOAD = 0.85;
 
@@ -132,7 +127,7 @@ static void uninit(upb_table *t, upb_alloc *a) {
 
 static upb_tabent *emptyent(upb_table *t) {
   upb_tabent *e = mutable_entries(t) + upb_table_size(t);
-  while (1) { if (upb_tabent_isempty(--e)) return e; assert(e > t->entries); }
+  while (1) { if (upb_tabent_isempty(--e)) return e; UPB_ASSERT(e > t->entries); }
 }
 
 static upb_tabent *getentry_mutable(upb_table *t, uint32_t hash) {
@@ -177,10 +172,8 @@ static void insert(upb_table *t, lookupkey_t key, upb_tabkey tabkey,
   upb_tabent *mainpos_e;
   upb_tabent *our_e;
 
-  UPB_UNUSED(eql);
-  UPB_UNUSED(key);
-  assert(findentry(t, key, hash, eql) == NULL);
-  assert(val.ctype == t->ctype);
+  UPB_ASSERT(findentry(t, key, hash, eql) == NULL);
+  UPB_ASSERT_DEBUGVAR(val.ctype == t->ctype);
 
   t->count++;
   mainpos_e = getentry_mutable(t, hash);
@@ -207,7 +200,7 @@ static void insert(upb_table *t, lookupkey_t key, upb_tabkey tabkey,
       *new_e = *mainpos_e;  /* copies next. */
       while (chain->next != mainpos_e) {
         chain = (upb_tabent*)chain->next;
-        assert(chain);
+        UPB_ASSERT(chain);
       }
       chain->next = new_e;
       our_e = mainpos_e;
@@ -216,7 +209,7 @@ static void insert(upb_table *t, lookupkey_t key, upb_tabkey tabkey,
   }
   our_e->key = tabkey;
   our_e->val.val = val.val;
-  assert(findentry(t, key, hash, eql) == our_e);
+  UPB_ASSERT(findentry(t, key, hash, eql) == our_e);
 }
 
 static bool rm(upb_table *t, lookupkey_t key, upb_value *val,
@@ -397,19 +390,19 @@ bool upb_strtable_done(const upb_strtable_iter *i) {
 }
 
 const char *upb_strtable_iter_key(const upb_strtable_iter *i) {
-  assert(!upb_strtable_done(i));
+  UPB_ASSERT(!upb_strtable_done(i));
   return upb_tabstr(str_tabent(i)->key, NULL);
 }
 
 size_t upb_strtable_iter_keylength(const upb_strtable_iter *i) {
   uint32_t len;
-  assert(!upb_strtable_done(i));
+  UPB_ASSERT(!upb_strtable_done(i));
   upb_tabstr(str_tabent(i)->key, &len);
   return len;
 }
 
 upb_value upb_strtable_iter_value(const upb_strtable_iter *i) {
-  assert(!upb_strtable_done(i));
+  UPB_ASSERT(!upb_strtable_done(i));
   return _upb_value_val(str_tabent(i)->val.val, i->t->t.ctype);
 }
 
@@ -468,9 +461,9 @@ static void check(upb_inttable *t) {
     upb_inttable_iter i;
     upb_inttable_begin(&i, t);
     for(; !upb_inttable_done(&i); upb_inttable_next(&i), count++) {
-      assert(upb_inttable_lookup(t, upb_inttable_iter_key(&i), NULL));
+      UPB_ASSERT(upb_inttable_lookup(t, upb_inttable_iter_key(&i), NULL));
     }
-    assert(count == upb_inttable_count(t));
+    UPB_ASSERT(count == upb_inttable_count(t));
   }
 #endif
 }
@@ -508,13 +501,12 @@ bool upb_inttable_insert2(upb_inttable *t, uintptr_t key, upb_value val,
                           upb_alloc *a) {
   upb_tabval tabval;
   tabval.val = val.val;
-  UPB_UNUSED(tabval);
-  assert(upb_arrhas(tabval));  /* This will reject (uint64_t)-1.  Fix this. */
+  UPB_ASSERT(upb_arrhas(tabval));  /* This will reject (uint64_t)-1.  Fix this. */
 
   upb_check_alloc(&t->t, a);
 
   if (key < t->array_size) {
-    assert(!upb_arrhas(t->array[key]));
+    UPB_ASSERT(!upb_arrhas(t->array[key]));
     t->array_count++;
     mutable_array(t)[key].val = val.val;
   } else {
@@ -537,7 +529,7 @@ bool upb_inttable_insert2(upb_inttable *t, uintptr_t key, upb_value val,
         insert(&new_table, intkey(e->key), e->key, v, hash, &inthash, &inteql);
       }
 
-      assert(t->t.count == new_table.count);
+      UPB_ASSERT(t->t.count == new_table.count);
 
       uninit(&t->t, a);
       t->t = new_table;
@@ -593,7 +585,7 @@ bool upb_inttable_push2(upb_inttable *t, upb_value val, upb_alloc *a) {
 upb_value upb_inttable_pop(upb_inttable *t) {
   upb_value val;
   bool ok = upb_inttable_remove(t, upb_inttable_count(t) - 1, &val);
-  UPB_ASSERT_VAR(ok, ok);
+  UPB_ASSERT(ok);
   return val;
 }
 
@@ -649,7 +641,7 @@ void upb_inttable_compact2(upb_inttable *t, upb_alloc *a) {
     arr_count -= counts[size_lg2];
   }
 
-  assert(arr_count <= upb_inttable_count(t));
+  UPB_ASSERT(arr_count <= upb_inttable_count(t));
 
   {
     /* Insert all elements into new, perfectly-sized table. */
@@ -664,8 +656,8 @@ void upb_inttable_compact2(upb_inttable *t, upb_alloc *a) {
       uintptr_t k = upb_inttable_iter_key(&i);
       upb_inttable_insert2(&new_t, k, upb_inttable_iter_value(&i), a);
     }
-    assert(new_t.array_size == arr_size);
-    assert(new_t.t.size_lg2 == hashsize_lg2);
+    UPB_ASSERT(new_t.array_size == arr_size);
+    UPB_ASSERT(new_t.t.size_lg2 == hashsize_lg2);
   }
   upb_inttable_uninit2(t, a);
   *t = new_t;
@@ -674,12 +666,12 @@ void upb_inttable_compact2(upb_inttable *t, upb_alloc *a) {
 /* Iteration. */
 
 static const upb_tabent *int_tabent(const upb_inttable_iter *i) {
-  assert(!i->array_part);
+  UPB_ASSERT(!i->array_part);
   return &i->t->t.entries[i->index];
 }
 
 static upb_tabval int_arrent(const upb_inttable_iter *i) {
-  assert(i->array_part);
+  UPB_ASSERT(i->array_part);
   return i->t->array[i->index];
 }
 
@@ -716,12 +708,12 @@ bool upb_inttable_done(const upb_inttable_iter *i) {
 }
 
 uintptr_t upb_inttable_iter_key(const upb_inttable_iter *i) {
-  assert(!upb_inttable_done(i));
+  UPB_ASSERT(!upb_inttable_done(i));
   return i->array_part ? i->index : int_tabent(i)->key;
 }
 
 upb_value upb_inttable_iter_value(const upb_inttable_iter *i) {
-  assert(!upb_inttable_done(i));
+  UPB_ASSERT(!upb_inttable_done(i));
   return _upb_value_val(
       i->array_part ? i->t->array[i->index].val : int_tabent(i)->val.val,
       i->t->t.ctype);

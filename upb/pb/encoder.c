@@ -128,7 +128,7 @@ struct upb_pb_encoder {
 /* TODO(haberman): handle pushback */
 static void putbuf(upb_pb_encoder *e, const char *buf, size_t len) {
   size_t n = upb_bytessink_putbuf(e->output_, e->subc, buf, len, NULL);
-  UPB_ASSERT_VAR(n, n == len);
+  UPB_ASSERT(n == len);
 }
 
 static upb_pb_encoder_segment *top(upb_pb_encoder *e) {
@@ -168,7 +168,7 @@ static bool reserve(upb_pb_encoder *e, size_t bytes) {
 /* Call when "bytes" bytes have been writte at e->ptr.  The caller *must* have
  * previously called reserve() with at least this many bytes. */
 static void encoder_advance(upb_pb_encoder *e, size_t bytes) {
-  assert((size_t)(e->limit - e->ptr) >= bytes);
+  UPB_ASSERT((size_t)(e->limit - e->ptr) >= bytes);
   e->ptr += bytes;
 }
 
@@ -203,7 +203,7 @@ static bool encode_bytes(upb_pb_encoder *e, const void *data, size_t len) {
  * length. */
 static void accumulate(upb_pb_encoder *e) {
   size_t run_len;
-  assert(e->ptr >= e->runbegin);
+  UPB_ASSERT(e->ptr >= e->runbegin);
   run_len = e->ptr - e->runbegin;
   e->segptr->seglen += run_len;
   top(e)->msglen += run_len;
@@ -558,7 +558,8 @@ upb_pb_encoder *upb_pb_encoder_create(upb_env *env, const upb_handlers *h,
   e->ptr = e->buf;
 
   /* If this fails, increase the value in encoder.h. */
-  assert(upb_env_bytesallocated(env) - size_before <= UPB_PB_ENCODER_SIZE);
+  UPB_ASSERT_DEBUGVAR(upb_env_bytesallocated(env) - size_before <=
+                      UPB_PB_ENCODER_SIZE);
   return e;
 }
 

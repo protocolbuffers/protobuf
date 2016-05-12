@@ -112,7 +112,7 @@ bool putf(upb_textprinter *p, const char *fmt, ...) {
   if (!str) return false;
   written = vsprintf(str, fmt, args);
   va_end(args);
-  UPB_ASSERT_VAR(written, written == len);
+  UPB_ASSERT(written == len);
 
   ok = upb_bytessink_putbuf(p->output_, p->subc, str, len, NULL);
   upb_gfree(str);

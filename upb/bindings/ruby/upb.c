@@ -161,8 +161,8 @@ static void objcache_init() {
 
 // Call to uninitialize the cache.  Should be done once on process shutdown.
 static void objcache_uninit(ruby_vm_t *vm) {
-  assert(objcache_initialized);
-  assert(upb_inttable_count(&objcache) == 0);
+  UPB_ASSERT(objcache_initialized);
+  UPB_ASSERT(upb_inttable_count(&objcache) == 0);
 
   objcache_initialized = false;
   upb_inttable_uninit(&objcache);
@@ -171,7 +171,7 @@ static void objcache_uninit(ruby_vm_t *vm) {
 // Looks up the given object in the cache.  If the corresponding Ruby wrapper
 // object is found, returns it, otherwise creates the wrapper and returns that.
 static VALUE objcache_getorcreate(const void *obj, createfunc *func) {
-  assert(objcache_initialized);
+  UPB_ASSERT(objcache_initialized);
 
   upb_value v;
   if (!upb_inttable_lookupptr(&objcache, obj, &v)) {
@@ -184,10 +184,10 @@ static VALUE objcache_getorcreate(const void *obj, createfunc *func) {
 // Removes the given object from the cache.  Should only be called by the code
 // that is freeing the wrapper object.
 static void objcache_remove(const void *obj) {
-  assert(objcache_initialized);
+  UPB_ASSERT(objcache_initialized);
 
   bool removed = upb_inttable_removeptr(&objcache, obj, NULL);
-  UPB_ASSERT_VAR(removed, removed);
+  UPB_ASSERT(removed);
 }
 
 /* message layout *************************************************************/
@@ -256,7 +256,7 @@ static size_t rupb_sizeof(const upb_fielddef *f) {
     default:
       break;
   }
-  assert(false);
+  UPB_ASSERT(false);
   return 0;
 }
 
@@ -656,7 +656,7 @@ static VALUE msg_accessor(int argc, VALUE *argv, VALUE obj) {
   rupb_Message *msg = msg_get(obj);
 
   // method_missing protocol: (method [, arg1, arg2, ...])
-  assert(argc >= 1 && SYMBOL_P(argv[0]));
+  UPB_ASSERT(argc >= 1 && SYMBOL_P(argv[0]));
   // OPT(haberman): find a better way to get the method name.
   // This is allocating a new string each time, which should not be necessary.
   VALUE method = rb_id2str(SYM2ID(argv[0]));
@@ -668,7 +668,7 @@ static VALUE msg_accessor(int argc, VALUE *argv, VALUE obj) {
     //   foo.bar = x
     //
     // Ruby should guarantee that we have exactly one more argument (x)
-    assert(argc == 2);
+    UPB_ASSERT(argc == 2);
     return msg_setter(msg, method, argv[1]);
   } else {
     // Call was:
@@ -1011,14 +1011,14 @@ static const upb_handlers *new_fill_handlers(const rupb_MessageDef *rmd,
 static upb_selector_t getsel(const upb_fielddef *f, upb_handlertype_t type) {
   upb_selector_t ret;
   bool ok = upb_handlers_getselector(f, type, &ret);
-  UPB_ASSERT_VAR(ok, ok);
+  UPB_ASSERT(ok);
   return ret;
 }
 
 static void putstr(VALUE str, const upb_fielddef *f, upb_sink *sink) {
   if (str == Qnil) return;
 
-  assert(BUILTIN_TYPE(str) == RUBY_T_STRING);
+  UPB_ASSERT(BUILTIN_TYPE(str) == RUBY_T_STRING);
   upb_sink subsink;
 
   upb_sink_startstr(sink, getsel(f, UPB_HANDLER_STARTSTR), RSTRING_LEN(str),
@@ -1042,7 +1042,7 @@ static void putsubmsg(VALUE submsg, const upb_fielddef *f, upb_sink *sink) {
 static void putary(VALUE ary, const upb_fielddef *f, upb_sink *sink) {
   if (ary == Qnil) return;
 
-  assert(BUILTIN_TYPE(ary) == RUBY_T_ARRAY);
+  UPB_ASSERT(BUILTIN_TYPE(ary) == RUBY_T_ARRAY);
   upb_sink subsink;
 
   upb_sink_startseq(sink, getsel(f, UPB_HANDLER_STARTSEQ), &subsink);

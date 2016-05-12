@@ -20,7 +20,6 @@
 #ifndef UPB_TABLE_H_
 #define UPB_TABLE_H_
 
-#include <assert.h>
 #include <stdint.h>
 #include <string.h>
 #include "upb/upb.h"
@@ -103,7 +102,7 @@ UPB_INLINE upb_value _upb_value_val(uint64_t val, upb_ctype_t ctype) {
     return ret; \
   } \
   UPB_INLINE type_t upb_value_get ## name(upb_value val) { \
-    assert(val.ctype == proto_type); \
+    UPB_ASSERT_DEBUGVAR(val.ctype == proto_type); \
     return (type_t)(converter)val.val; \
   }
 
