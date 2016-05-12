@@ -276,10 +276,8 @@ inline void GOOGLE_UNALIGNED_STORE64(void *p, uint64 v) {
 #define GOOGLE_THREAD_LOCAL __thread
 #endif
 
-// The following guarantees declaration of the byte swap functions, and
-// defines __BYTE_ORDER for MSVC
+// The following guarantees declaration of the byte swap functions.
 #ifdef _MSC_VER
-#define __BYTE_ORDER __LITTLE_ENDIAN
 #define bswap_16(x) _byteswap_ushort(x)
 #define bswap_32(x) _byteswap_ulong(x)
 #define bswap_64(x) _byteswap_uint64(x)
