@@ -280,25 +280,25 @@ PyDescriptorPool* GetDescriptorPoolForMessage(CMessage* message);
 
 #define GOOGLE_CHECK_GET_INT32(arg, value, err)                        \
     int32 value;                                            \
-    if (!CheckAndGetInteger(arg, &value, kint32min_py, kint32max_py)) { \
+    if (!CheckAndGetInteger(arg, &value, kint32min, kint32max)) { \
       return err;                                          \
     }
 
 #define GOOGLE_CHECK_GET_INT64(arg, value, err)                        \
     int64 value;                                            \
-    if (!CheckAndGetInteger(arg, &value, kint64min_py, kint64max_py)) { \
+    if (!CheckAndGetInteger(arg, &value, kint64min, kint64max)) { \
       return err;                                          \
     }
 
 #define GOOGLE_CHECK_GET_UINT32(arg, value, err)                       \
     uint32 value;                                           \
-    if (!CheckAndGetInteger(arg, &value, kPythonZero, kuint32max_py)) { \
+    if (!CheckAndGetInteger(arg, &value, static_cast<uint32>(0), kuint32max)) { \
       return err;                                          \
     }
 
 #define GOOGLE_CHECK_GET_UINT64(arg, value, err)                       \
     uint64 value;                                           \
-    if (!CheckAndGetInteger(arg, &value, kPythonZero, kuint64max_py)) { \
+    if (!CheckAndGetInteger(arg, &value, static_cast<uint64>(0), kuint64max)) { \
       return err;                                          \
     }
 
@@ -321,20 +321,12 @@ PyDescriptorPool* GetDescriptorPoolForMessage(CMessage* message);
     }
 
 
-extern PyObject* kPythonZero;
-extern PyObject* kint32min_py;
-extern PyObject* kint32max_py;
-extern PyObject* kuint32max_py;
-extern PyObject* kint64min_py;
-extern PyObject* kint64max_py;
-extern PyObject* kuint64max_py;
-
 #define FULL_MODULE_NAME "google.protobuf.pyext._message"
 
 void FormatTypeError(PyObject* arg, char* expected_types);
 template<class T>
 bool CheckAndGetInteger(
-    PyObject* arg, T* value, PyObject* min, PyObject* max);
+    PyObject* arg, T* value, T min, T max);
 bool CheckAndGetDouble(PyObject* arg, double* value);
 bool CheckAndGetFloat(PyObject* arg, float* value);
 bool CheckAndGetBool(PyObject* arg, bool* value);

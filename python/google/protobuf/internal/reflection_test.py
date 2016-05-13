@@ -659,6 +659,10 @@ class ReflectionTest(unittest.TestCase):
     TestMinAndMaxIntegers('optional_uint32', 0, 0xffffffff)
     TestMinAndMaxIntegers('optional_int64', -(1 << 63), (1 << 63) - 1)
     TestMinAndMaxIntegers('optional_uint64', 0, 0xffffffffffffffff)
+    # A bit of white-box testing since -1 is an int and not a long in C++ and
+    # so goes down a different path.
+    with self.assertRaises(ValueError):
+      unittest_pb2.TestAllTypes().optional_uint64 = -(1 << 63)
 
     pb = unittest_pb2.TestAllTypes()
     pb.optional_nested_enum = 1

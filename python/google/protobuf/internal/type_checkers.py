@@ -45,6 +45,7 @@ TYPE_TO_DESERIALIZE_METHOD: A dictionary with field types and deserialization
 
 __author__ = 'robinson@google.com (Will Robinson)'
 
+import numbers
 import six
 
 if six.PY3:
@@ -126,9 +127,9 @@ class IntValueChecker(object):
   """Checker used for integer fields.  Performs type-check and range check."""
 
   def CheckValue(self, proposed_value):
-    if not isinstance(proposed_value, six.integer_types):
+    if not isinstance(proposed_value, numbers.Integral):
       message = ('%.1024r has type %s, but expected one of: %s' %
-                 (proposed_value, type(proposed_value), six.integer_types))
+                 (proposed_value, type(proposed_value), numbers.Integral))
       raise TypeError(message)
     if not self._MIN <= proposed_value <= self._MAX:
       raise ValueError('Value out of range: %d' % proposed_value)
@@ -150,9 +151,9 @@ class EnumValueChecker(object):
     self._enum_type = enum_type
 
   def CheckValue(self, proposed_value):
-    if not isinstance(proposed_value, six.integer_types):
+    if not isinstance(proposed_value, numbers.Integral):
       message = ('%.1024r has type %s, but expected one of: %s' %
-                 (proposed_value, type(proposed_value), six.integer_types))
+                 (proposed_value, type(proposed_value), numbers.Integral))
       raise TypeError(message)
     if proposed_value not in self._enum_type.values_by_number:
       raise ValueError('Unknown enum value: %d' % proposed_value)
@@ -223,11 +224,11 @@ _VALUE_CHECKERS = {
     _FieldDescriptor.CPPTYPE_UINT32: Uint32ValueChecker(),
     _FieldDescriptor.CPPTYPE_UINT64: Uint64ValueChecker(),
     _FieldDescriptor.CPPTYPE_DOUBLE: TypeCheckerWithDefault(
-        0.0, float, int, long),
+        0.0, numbers.Real),
     _FieldDescriptor.CPPTYPE_FLOAT: TypeCheckerWithDefault(
-        0.0, float, int, long),
+        0.0, numbers.Real),
     _FieldDescriptor.CPPTYPE_BOOL: TypeCheckerWithDefault(
-        False, bool, int),
+        False, bool, numbers.Integral),
     _FieldDescriptor.CPPTYPE_STRING: TypeCheckerWithDefault(b'', bytes),
     }
 
