@@ -25,10 +25,7 @@ for how to set up the build environment.
 ## Building from a freshly checked-out source
 
 If you just checked out the Protobuf source from github, you need to
-generate the configure script. You also need to build the full project
-first to generate `pbconfig.h` which would otherwise be reported
-missing when you build protoc in the later steps. This needs to be
-done only once.
+generate the configure script.
 
 Under the protobuf project directory:
 
