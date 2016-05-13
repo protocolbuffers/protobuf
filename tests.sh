@@ -40,7 +40,7 @@ build_cpp() {
   # Verify benchmarking code can build successfully.
   git submodule init
   git submodule update
-  cd third_party/benchmark/src && cmake -DCMAKE_BUILD_TYPE=Release && make && cd ../../..
+  cd third_party/benchmark && cmake -DCMAKE_BUILD_TYPE=Release && make && cd ../..
   cd benchmarks && make && ./generate-datasets && cd ..
 }
 
