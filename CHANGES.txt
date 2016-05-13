@@ -91,7 +91,20 @@
   * Improvements in JSON formatting and parsing
 
   Javascript (Alpha)
-  * TODO(haberman)
+  * Better support for "bytes" fields: bytes fields can be read as either a
+    base64 string or UInt8Array (in environments where TypedArray is supported).
+  * New support for CommonJS imports.  This should make it easier to use the
+    JavaScript support in Node.js and tools like WebPack.  See js/README.md for
+    more information.
+  * Some significant internal refactoring to simplify and modularize the code.
+
+  Ruby (Alpha)
+  * JSON serialization now properly uses camelCased names, with a runtime option
+    that will preserve original names from .proto files instead.
+  * Well-known types are now included in the distribution.
+  * Release now includes binary gems for Windows, Mac, and Linux instead of just
+    source gems.
+  * Bugfix for serializing oneofs.
 
   C++/Java Lite (Alpha)
     A new "lite" generator parameter was introduced in the protoc for C++ and
