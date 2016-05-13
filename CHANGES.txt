@@ -5,7 +5,12 @@
     type.googleapis.com
 
   C++ (Beta)
-  * Improved hash maps. TODO(gpike)
+  * Improved hash maps.
+      - Improved hash maps comments. In particular, please note that equal hash
+        maps will not necessarily have the same iteration order and
+        serialization.
+      - Added a new hash maps implementation that will become the default in a
+        later release.
   * Arenas
       - Several inlined methods in Arena were moved to out-of-line to improve
         build performance and code size.
