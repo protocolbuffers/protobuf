@@ -22,6 +22,20 @@ The scripts only work under Unix-like environments, e.g., Linux, MacOSX, and
 Cygwin or MinGW for Windows. Please see ``README.md`` of the Protobuf project
 for how to set up the build environment.
 
+## Building from a freshly checked-out source
+
+If you just checked out the Protobuf source from github, you need to
+generate the configure script. You also need to build the full project
+first to generate `pbconfig.h` which would otherwise be reported
+missing when you build protoc in the later steps. This needs to be
+done only once.
+
+Under the protobuf project directory:
+
+```
+$ ./autogen.sh && ./configure && make
+```
+
 ## To install artifacts locally
 The following command will install the ``protoc`` artifact to your local Maven repository.
 ```
@@ -43,7 +57,7 @@ Frequently used values are:
 - ``os.detected.name``: ``linux``, ``osx``, ``windows``.
 - ``os.detected.arch``: ``x86_32``, ``x86_64``
 
-For example, MingGW32 only ships with 32-bit compilers, but you can still build
+For example, MinGW32 only ships with 32-bit compilers, but you can still build
 32-bit protoc under 64-bit Windows, with the following command:
 ```
 $ mvn install -Dos.detected.arch=x86_32
@@ -59,9 +73,13 @@ support. DO NOT close the staging repository until you have done the
 deployment for all platforms. Currently the following platforms are supported:
 - Linux (x86_32 and x86_64)
 - Windows (x86_32 and x86_64) with
- - Cygwin with MinGW compilers (both x86_32 and x86_64)
- - MSYS with MinGW32 (x86_32 only)
+ - Cygwin64 with MinGW compilers (x86_64)
+ - MSYS with MinGW32 (x86_32)
 - MacOSX (x86_32 and x86_64)
+
+As for MSYS2/MinGW64 for Windows: protoc will build, but it insists on
+adding a dependency of `libwinpthread-1.dll`, which isn't shipped with
+Windows.
 
 Use the following command to deploy artifacts for the host platform to a
 staging repository.
@@ -113,7 +131,7 @@ stored:
 <settings>
   <servers>
     <server>
-      <id>ossrh</id>
+      <id>sonatype-nexus-staging</id>
       <username>[username]</username>
       <password>[password]</password>
     </server>
