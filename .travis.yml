@@ -1,4 +1,5 @@
 sudo: required
+dist: trusty
 # Note: travis currently does not support listing more than one language so
 # this cheats and claims to only be cpp.  If they add multiple language
 # support, this should probably get updated to install steps and/or
