@@ -280,11 +280,13 @@ int main(int argc, char *argv[]) {
   char *program;
   google::protobuf::ConformanceTestSuite suite;
 
+  string failure_list_filename;
   vector<string> failure_list;
 
   for (int arg = 1; arg < argc; ++arg) {
     if (strcmp(argv[arg], "--failure_list") == 0) {
       if (++arg == argc) UsageError();
+      failure_list_filename = argv[arg];
       ParseFailureList(argv[arg], &failure_list);
     } else if (strcmp(argv[arg], "--verbose") == 0) {
       suite.SetVerbose(true);
@@ -300,7 +302,7 @@ int main(int argc, char *argv[]) {
     }
   }
 
-  suite.SetFailureList(failure_list);
+  suite.SetFailureList(failure_list_filename, failure_list);
   ForkPipeRunner runner(program);
 
   std::string output;
