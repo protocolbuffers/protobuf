@@ -1,8 +1,10 @@
-2016-05-10 version 3.0.0-beta-3 (C++/Java/Python/Ruby/Nano/Objective-C/C#/JavaScript)
+2016-05-16 version 3.0.0-beta-3 (C++/Java/Python/Ruby/Nano/Objective-C/C#/JavaScript)
   General
   * Supported Proto3 lite-runtime in C++/Java for mobile platforms.
   * Any type now supports APIs to specify prefixes other than
     type.googleapis.com
+  * Removed javanano_use_deprecated_package option; Nano will always has its own
+    ".nano" package.
 
   C++ (Beta)
   * Improved hash maps.
@@ -44,11 +46,15 @@
         range checking.
       - `ByteBuffer`-backed `CodedOutputStream` now writes directly to the
         `ByteBuffer` rather than to an intermediate array.
-  * Improved the performance for lite-runtime. TODO(dweis)
+  * Improved lite-runtime.
+      - Lite protos now implement deep equals/hashCode/toString
+      - Significantly improved the performance of Builder#mergeFrom() and
+        Builder#mergeDelimitedFrom()
   * Various bug fixes and small feature enhancement.
       - Fixed stack overflow when in hashCode() for infinite recursive oneofs.
       - Fixed the lazy field parsing in lite to merge rather than overwrite.
       - TextFormat now supports reporting line/column numbers on errors.
+      - Updated to add appropriate @Override for better compiler errors.
 
   Python (Beta)
   * Added JSON format for Any, Struct, Value and ListValue
