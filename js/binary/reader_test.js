@@ -360,6 +360,58 @@ describe('binaryReaderTest', function() {
 
 
   /**
+   * Tests reading a field from hexadecimal string (format: '08 BE EF').
+   * @param {Function} readField
+   * @param {number} expected
+   * @param {string} hexString
+   */
+  function doTestHexStringVarint_(readField, expected, hexString) {
+    var bytesCount = (hexString.length + 1) / 3;
+    var bytes = new Uint8Array(bytesCount);
+    for (var i = 0; i < bytesCount; i++) {
+      byte = parseInt(hexString.substring(i * 3, i * 3 + 2), 16);
+      bytes[i] = byte;
+    }
+    var reader = jspb.BinaryReader.alloc(bytes);
+    reader.nextField();
+    assertEquals(expected, readField.call(reader));
+  }
+
+
+  /**
+   * Tests non-canonical redundant varint decoding.
+   */
+  it('testRedundantVarintFields', function() {
+    assertNotNull(jspb.BinaryReader.prototype.readUint32);
+    assertNotNull(jspb.BinaryReader.prototype.readUint64);
+    assertNotNull(jspb.BinaryReader.prototype.readSint32);
+    assertNotNull(jspb.BinaryReader.prototype.readSint64);
+
+    // uint32 and sint32 take no more than 5 bytes
+    // 08 - field prefix (type = 0 means varint)
+    doTestHexStringVarint_(
+      jspb.BinaryReader.prototype.readUint32,
+      12, '08 8C 80 80 80 00');
+
+    // 11 stands for -6 in zigzag encoding
+    doTestHexStringVarint_(
+      jspb.BinaryReader.prototype.readSint32,
+      -6, '08 8B 80 80 80 00');
+
+    // uint64 and sint64 take no more than 10 bytes
+    // 08 - field prefix (type = 0 means varint)
+    doTestHexStringVarint_(
+      jspb.BinaryReader.prototype.readUint64,
+      12, '08 8C 80 80 80 80 80 80 80 80 00');
+
+    // 11 stands for -6 in zigzag encoding
+    doTestHexStringVarint_(
+      jspb.BinaryReader.prototype.readSint64,
+      -6, '08 8B 80 80 80 80 80 80 80 80 00');
+  });
+
+
+  /**
    * Tests 64-bit fields that are handled as strings.
    */
   it('testStringInt64Fields', function() {
