@@ -51,6 +51,7 @@
 #include <google/protobuf/descriptor.pb.h>
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/stubs/logging.h>
+#include <google/protobuf/stubs/port.h>
 #include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/util/message_differencer.h>
 #include <google/protobuf/descriptor.h>
@@ -557,10 +558,11 @@ bool CheckAndGetInteger(PyObject* arg, T* value, T min, T max) {
   PY_LONG_LONG result;
   bool min_check;
 #if PY_MAJOR_VERSION < 3
-  if PREDICT_TRUE(PyInt_CheckExact(arg)) {
+  if GOOGLE_PREDICT_TRUE(PyInt_CheckExact(arg)) {
     int64 int_result =  PyInt_AS_LONG(arg);
     // Make sure we do a signed comparison.
-    if PREDICT_FALSE(int_result < static_cast<int64>(min) || int_result > max) {
+    if GOOGLE_PREDICT_FALSE(int_result < static_cast<int64>(min)
+                            || int_result > max) {
       OutOfRangeError(arg);
       return false;
     } else {
@@ -581,7 +583,7 @@ bool CheckAndGetInteger(PyObject* arg, T* value, T min, T max) {
     }
   }
 
-  if PREDICT_FALSE(
+  if GOOGLE_PREDICT_FALSE(
         (result == -1 && PyErr_Occurred()) ||
         (!PyLong_Check(arg) && !PyObject_HasAttr(arg, kPythonIntField))) {
     if (PyErr_ExceptionMatches(PyExc_OverflowError)) {
@@ -594,7 +596,7 @@ bool CheckAndGetInteger(PyObject* arg, T* value, T min, T max) {
     }
     return false;
   }
-  if PREDICT_FALSE(result > max || min_check) {
+  if GOOGLE_PREDICT_FALSE(result > max || min_check) {
     OutOfRangeError(arg);
     return false;
   }
@@ -615,7 +617,7 @@ template bool CheckAndGetInteger<uint64>(
 
 bool CheckAndGetDouble(PyObject* arg, double* value) {
   *value = PyFloat_AsDouble(arg);
-  if PREDICT_FALSE(*value == -1 && PyErr_Occurred()) {
+  if GOOGLE_PREDICT_FALSE(*value == -1 && PyErr_Occurred()) {
     FormatTypeError(arg, "int, long, float");
     return false;
   }
