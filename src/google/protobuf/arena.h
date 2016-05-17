@@ -213,7 +213,7 @@ struct ArenaOptions {
 // well as RepeatedPtrField.
 
 #if __cplusplus >= 201103L
-class Arena final {
+class LIBPROTOBUF_EXPORT Arena final {
 #else
 class LIBPROTOBUF_EXPORT Arena {
 #endif
