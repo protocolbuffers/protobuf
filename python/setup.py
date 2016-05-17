@@ -219,6 +219,7 @@ if __name__ == '__main__':
       name='protobuf',
       version=GetVersion(),
       description='Protocol Buffers',
+      download_url='https://github.com/google/protobuf/releases',
       long_description="Protocol Buffers are Google's data interchange format",
       url='https://developers.google.com/protocol-buffers/',
       maintainer='protobuf@googlegroups.com',
