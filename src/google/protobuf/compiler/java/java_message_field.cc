@@ -71,6 +71,9 @@ void SetMessageVariables(const FieldDescriptor* descriptor,
   (*variables)["deprecation"] = descriptor->options().deprecated()
       ? "@java.lang.Deprecated " : "";
   (*variables)["on_changed"] = "onChanged();";
+  (*variables)["get_parser"] =
+      ExposePublicParser(descriptor->message_type()->file())
+          ? "PARSER" : "parser()";
 
   if (SupportFieldPresence(descriptor->file())) {
     // For singular messages and builders, one bit is used for the hasField bit.
@@ -451,11 +454,11 @@ GenerateParsingCode(io::Printer* printer) const {
 
   if (GetType(descriptor_) == FieldDescriptor::TYPE_GROUP) {
     printer->Print(variables_,
-      "$name$_ = input.readGroup($number$, $type$.parser(),\n"
+      "$name$_ = input.readGroup($number$, $type$.$get_parser$,\n"
       "    extensionRegistry);\n");
   } else {
     printer->Print(variables_,
-      "$name$_ = input.readMessage($type$.parser(), extensionRegistry);\n");
+      "$name$_ = input.readMessage($type$.$get_parser$, extensionRegistry);\n");
   }
 
   printer->Print(variables_,
@@ -735,12 +738,12 @@ GenerateParsingCode(io::Printer* printer) const {
 
   if (GetType(descriptor_) == FieldDescriptor::TYPE_GROUP) {
     printer->Print(variables_,
-      "$oneof_name$_ = input.readGroup($number$, $type$.parser(),\n"
+      "$oneof_name$_ = input.readGroup($number$, $type$.$get_parser$,\n"
       "    extensionRegistry);\n");
   } else {
     printer->Print(variables_,
       "$oneof_name$_ =\n"
-      "    input.readMessage($type$.parser(), extensionRegistry);\n");
+      "    input.readMessage($type$.$get_parser$, extensionRegistry);\n");
   }
 
   printer->Print(variables_,
@@ -1232,11 +1235,11 @@ GenerateParsingCode(io::Printer* printer) const {
 
   if (GetType(descriptor_) == FieldDescriptor::TYPE_GROUP) {
     printer->Print(variables_,
-      "$name$_.add(input.readGroup($number$, $type$.parser(),\n"
+      "$name$_.add(input.readGroup($number$, $type$.$get_parser$,\n"
       "    extensionRegistry));\n");
   } else {
     printer->Print(variables_,
-      "$name$_.add(input.readMessage($type$.parser(), extensionRegistry));\n");
+      "$name$_.add(input.readMessage($type$.$get_parser$, extensionRegistry));\n");
   }
 }
 

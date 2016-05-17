@@ -243,6 +243,11 @@ public class ExtensionRegistry extends ExtensionRegistryLite {
     add(newExtensionInfo(extension), extension.getExtensionType());
   }
 
+  /** Add an extension from a generated file to the registry. */
+  public void add(final GeneratedMessage.GeneratedExtension<?, ?> extension) {
+    add((Extension<?, ?>) extension);
+  }
+
   static ExtensionInfo newExtensionInfo(final Extension<?, ?> extension) {
     if (extension.getDescriptor().getJavaType() ==
         FieldDescriptor.JavaType.MESSAGE) {

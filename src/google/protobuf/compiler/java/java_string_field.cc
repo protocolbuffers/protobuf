@@ -712,7 +712,7 @@ void RepeatedImmutableStringFieldGenerator::
 GenerateInterfaceMembers(io::Printer* printer) const {
   WriteFieldDocComment(printer, descriptor_);
   printer->Print(variables_,
-    "$deprecation$com.google.protobuf.ProtocolStringList\n"
+    "$deprecation$java.util.List<java.lang.String>\n"
     "    get$capitalized_name$List();\n");
   WriteFieldDocComment(printer, descriptor_);
   printer->Print(variables_,

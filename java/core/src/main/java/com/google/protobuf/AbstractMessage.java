@@ -550,4 +550,41 @@ public abstract class AbstractMessage
       return super.mergeDelimitedFrom(input, extensionRegistry);
     }
   }
+
+
+  /**
+   * @deprecated from v3.0.0-beta-3+, for compatiblity with v2.5.0 and v2.6.1
+   * generated code.
+   */
+  protected static int hashLong(long n) {
+    return (int) (n ^ (n >>> 32));
+  }
+
+  /**
+   * @deprecated from v3.0.0-beta-3+, for compatiblity with v2.5.0 and v2.6.1
+   * generated code.
+   */
+  protected static int hashBoolean(boolean b) {
+    return b ? 1231 : 1237;
+  }
+
+  /**
+   * @deprecated from v3.0.0-beta-3+, for compatiblity with v2.5.0 and v2.6.1
+   * generated code.
+   */
+  protected static int hashEnum(EnumLite e) {
+    return e.getNumber();
+  }
+
+  /**
+   * @deprecated from v3.0.0-beta-3+, for compatiblity with v2.5.0 and v2.6.1
+   * generated code.
+   */
+  protected static int hashEnumList(List<? extends EnumLite> list) {
+    int hash = 1;
+    for (EnumLite e : list) {
+      hash = 31 * hash + hashEnum(e);
+    }
+    return hash;
+  }
 }

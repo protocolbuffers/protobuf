@@ -743,17 +743,51 @@ public abstract class GeneratedMessage extends AbstractMessage
     <Type> boolean hasExtension(
         ExtensionLite<MessageType, Type> extension);
 
+    /** Check if a singular extension is present. */
+    <Type> boolean hasExtension(
+        Extension<MessageType, Type> extension);
+
+    /** Check if a singular extension is present. */
+    <Type> boolean hasExtension(
+        GeneratedExtension<MessageType, Type> extension);
+
     /** Get the number of elements in a repeated extension. */
     <Type> int getExtensionCount(
         ExtensionLite<MessageType, List<Type>> extension);
+
+    /** Get the number of elements in a repeated extension. */
+    <Type> int getExtensionCount(
+        Extension<MessageType, List<Type>> extension);
+
+    /** Get the number of elements in a repeated extension. */
+    <Type> int getExtensionCount(
+        GeneratedExtension<MessageType, List<Type>> extension);
 
     /** Get the value of an extension. */
     <Type> Type getExtension(
         ExtensionLite<MessageType, Type> extension);
 
+    /** Get the value of an extension. */
+    <Type> Type getExtension(
+        Extension<MessageType, Type> extension);
+
+    /** Get the value of an extension. */
+    <Type> Type getExtension(
+        GeneratedExtension<MessageType, Type> extension);
+
     /** Get one element of a repeated extension. */
     <Type> Type getExtension(
         ExtensionLite<MessageType, List<Type>> extension,
+        int index);
+
+    /** Get one element of a repeated extension. */
+    <Type> Type getExtension(
+        Extension<MessageType, List<Type>> extension,
+        int index);
+
+    /** Get one element of a repeated extension. */
+    <Type> Type getExtension(
+        GeneratedExtension<MessageType, List<Type>> extension,
         int index);
   }
 
@@ -833,6 +867,18 @@ public abstract class GeneratedMessage extends AbstractMessage
       return extensions.hasField(extension.getDescriptor());
     }
 
+    /** Check if a singular extension is present. */
+    @Override
+    public final <Type> boolean hasExtension(final Extension<MessageType, Type> extension) {
+      return hasExtension((ExtensionLite<MessageType, Type>) extension);
+    }
+
+    /** Check if a singular extension is present. */
+    @Override
+    public final <Type> boolean hasExtension(final GeneratedExtension<MessageType, Type> extension) {
+      return hasExtension((ExtensionLite<MessageType, Type>) extension);
+    }
+
     /** Get the number of elements in a repeated extension. */
     @Override
     public final <Type> int getExtensionCount(
@@ -842,6 +888,18 @@ public abstract class GeneratedMessage extends AbstractMessage
       verifyExtensionContainingType(extension);
       final FieldDescriptor descriptor = extension.getDescriptor();
       return extensions.getRepeatedFieldCount(descriptor);
+    }
+
+    /** Get the number of elements in a repeated extension. */
+    @Override
+    public final <Type> int getExtensionCount(final Extension<MessageType, List<Type>> extension) {
+      return getExtensionCount((ExtensionLite<MessageType, List<Type>>) extension);
+    }
+
+    /** Get the number of elements in a repeated extension. */
+    @Override
+    public final <Type> int getExtensionCount(final GeneratedExtension<MessageType, List<Type>> extension) {
+      return getExtensionCount((ExtensionLite<MessageType, List<Type>>) extension);
     }
 
     /** Get the value of an extension. */
@@ -868,6 +926,18 @@ public abstract class GeneratedMessage extends AbstractMessage
       }
     }
 
+    /** Get the value of an extension. */
+    @Override
+    public final <Type> Type getExtension(final Extension<MessageType, Type> extension) {
+      return getExtension((ExtensionLite<MessageType, Type>) extension);
+    }
+
+    /** Get the value of an extension. */
+    @Override
+    public final <Type> Type getExtension(final GeneratedExtension<MessageType, Type> extension) {
+      return getExtension((ExtensionLite<MessageType, Type>) extension);
+    }
+
     /** Get one element of a repeated extension. */
     @Override
     @SuppressWarnings("unchecked")
@@ -879,6 +949,20 @@ public abstract class GeneratedMessage extends AbstractMessage
       FieldDescriptor descriptor = extension.getDescriptor();
       return (Type) extension.singularFromReflectionType(
           extensions.getRepeatedField(descriptor, index));
+    }
+
+    /** Get one element of a repeated extension. */
+    @Override
+    public final <Type> Type getExtension(
+        final Extension<MessageType, List<Type>> extension, final int index) {
+      return getExtension((ExtensionLite<MessageType, List<Type>>) extension, index);
+    }
+
+    /** Get one element of a repeated extension. */
+    @Override
+    public final <Type> Type getExtension(
+        final GeneratedExtension<MessageType, List<Type>> extension, final int index) {
+      return getExtension((ExtensionLite<MessageType, List<Type>>) extension, index);
     }
 
     /** Called by subclasses to check if all extensions are initialized. */
@@ -1166,6 +1250,19 @@ public abstract class GeneratedMessage extends AbstractMessage
       return extensions.hasField(extension.getDescriptor());
     }
 
+    /** Check if a singular extension is present. */
+    @Override
+    public final <Type> boolean hasExtension(final Extension<MessageType, Type> extension) {
+      return hasExtension((ExtensionLite<MessageType, Type>) extension);
+    }
+
+    /** Check if a singular extension is present. */
+    @Override
+    public final <Type> boolean hasExtension(
+        final GeneratedExtension<MessageType, Type> extension) {
+      return hasExtension((ExtensionLite<MessageType, Type>) extension);
+    }
+
     /** Get the number of elements in a repeated extension. */
     @Override
     public final <Type> int getExtensionCount(
@@ -1175,6 +1272,20 @@ public abstract class GeneratedMessage extends AbstractMessage
       verifyExtensionContainingType(extension);
       final FieldDescriptor descriptor = extension.getDescriptor();
       return extensions.getRepeatedFieldCount(descriptor);
+    }
+
+    /** Get the number of elements in a repeated extension. */
+    @Override
+    public final <Type> int getExtensionCount(
+        final Extension<MessageType, List<Type>> extension) {
+      return getExtensionCount((ExtensionLite<MessageType, List<Type>>) extension);
+    }
+
+    /** Get the number of elements in a repeated extension. */
+    @Override
+    public final <Type> int getExtensionCount(
+        final GeneratedExtension<MessageType, List<Type>> extension) {
+      return getExtensionCount((ExtensionLite<MessageType, List<Type>>) extension);
     }
 
     /** Get the value of an extension. */
@@ -1200,6 +1311,18 @@ public abstract class GeneratedMessage extends AbstractMessage
       }
     }
 
+    /** Get the value of an extension. */
+    @Override
+    public final <Type> Type getExtension(final Extension<MessageType, Type> extension) {
+      return getExtension((ExtensionLite<MessageType, Type>) extension);
+    }
+
+    /** Get the value of an extension. */
+    @Override
+    public final <Type> Type getExtension(final GeneratedExtension<MessageType, Type> extension) {
+      return getExtension((ExtensionLite<MessageType, Type>) extension);
+    }
+
     /** Get one element of a repeated extension. */
     @Override
     public final <Type> Type getExtension(
@@ -1210,6 +1333,20 @@ public abstract class GeneratedMessage extends AbstractMessage
       FieldDescriptor descriptor = extension.getDescriptor();
       return (Type) extension.singularFromReflectionType(
           extensions.getRepeatedField(descriptor, index));
+    }
+
+    /** Get the value of an extension. */
+    @Override
+    public final <Type> Type getExtension(
+        final Extension<MessageType, List<Type>> extension, final int index) {
+      return getExtension((ExtensionLite<MessageType, List<Type>>) extension, index);
+    }
+
+    /** Get the value of an extension. */
+    @Override
+    public final <Type> Type getExtension(
+        final GeneratedExtension<MessageType, List<Type>> extension, final int index) {
+      return getExtension((ExtensionLite<MessageType, List<Type>>) extension, index);
     }
 
     /** Set the value of an extension. */
@@ -1224,6 +1361,18 @@ public abstract class GeneratedMessage extends AbstractMessage
       extensions.setField(descriptor, extension.toReflectionType(value));
       onChanged();
       return (BuilderType) this;
+    }
+
+    /** Set the value of an extension. */
+    public final <Type> BuilderType setExtension(
+        final Extension<MessageType, Type> extension, final Type value) {
+      return setExtension((ExtensionLite<MessageType, Type>) extension, value);
+    }
+
+    /** Set the value of an extension. */
+    public final <Type> BuilderType setExtension(
+        final GeneratedExtension<MessageType, Type> extension, final Type value) {
+      return setExtension((ExtensionLite<MessageType, Type>) extension, value);
     }
 
     /** Set the value of one element of a repeated extension. */
@@ -1242,6 +1391,20 @@ public abstract class GeneratedMessage extends AbstractMessage
       return (BuilderType) this;
     }
 
+    /** Set the value of one element of a repeated extension. */
+    public final <Type> BuilderType setExtension(
+        final Extension<MessageType, List<Type>> extension,
+        final int index, final Type value) {
+      return setExtension((ExtensionLite<MessageType, List<Type>>) extension, index, value);
+    }
+
+    /** Set the value of one element of a repeated extension. */
+    public final <Type> BuilderType setExtension(
+        final GeneratedExtension<MessageType, List<Type>> extension,
+        final int index, final Type value) {
+      return setExtension((ExtensionLite<MessageType, List<Type>>) extension, index, value);
+    }
+
     /** Append a value to a repeated extension. */
     public final <Type> BuilderType addExtension(
         final ExtensionLite<MessageType, List<Type>> extensionLite,
@@ -1257,6 +1420,18 @@ public abstract class GeneratedMessage extends AbstractMessage
       return (BuilderType) this;
     }
 
+    /** Append a value to a repeated extension. */
+    public final <Type> BuilderType addExtension(
+        final Extension<MessageType, List<Type>> extension, final Type value) {
+      return addExtension((ExtensionLite<MessageType, List<Type>>) extension, value);
+    }
+
+    /** Append a value to a repeated extension. */
+    public final <Type> BuilderType addExtension(
+        final GeneratedExtension<MessageType, List<Type>> extension, final Type value) {
+      return addExtension((ExtensionLite<MessageType, List<Type>>) extension, value);
+    }
+
     /** Clear an extension. */
     public final <Type> BuilderType clearExtension(
         final ExtensionLite<MessageType, ?> extensionLite) {
@@ -1267,6 +1442,18 @@ public abstract class GeneratedMessage extends AbstractMessage
       extensions.clearField(extension.getDescriptor());
       onChanged();
       return (BuilderType) this;
+    }
+
+    /** Clear an extension. */
+    public final <Type> BuilderType clearExtension(
+        final Extension<MessageType, ?> extension) {
+      return clearExtension((ExtensionLite<MessageType, ?>) extension);
+    }
+
+    /** Clear an extension. */
+    public final <Type> BuilderType clearExtension(
+        final GeneratedExtension<MessageType, ?> extension) {
+      return clearExtension((ExtensionLite<MessageType, ?>) extension);
     }
 
     /** Called by subclasses to check if all extensions are initialized. */
