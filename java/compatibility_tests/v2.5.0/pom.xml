@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>com.google.protobuf.compatibility</groupId>
+  <artifactId>compatibility-test-suite</artifactId>
+  <version>2.5.0</version>
+  <name>Protocol Buffer Java API compatibility tests</name>
+  <packaging>pom</packaging>
+  <modules>
+    <module>protos</module>
+    <module>more_protos</module>
+    <module>tests</module>
+  </modules>
+  <properties>
+    <protoc.path>protoc</protoc.path>
+    <protobuf.version>2.5.0</protobuf.version>
+
+    <protos.protoc.path>${protoc.path}</protos.protoc.path>
+    <protos.protobuf.version>${protobuf.version}</protos.protobuf.version>
+
+    <more_protos.protoc.path>${protoc.path}</more_protos.protoc.path>
+    <more_protos.protobuf.version>${protobuf.version}</more_protos.protobuf.version>
+
+    <tests.protobuf.version>${protobuf.version}</tests.protobuf.version>
+
+    <protobuf.test.source.path>.</protobuf.test.source.path>
+  </properties>
+</project>
