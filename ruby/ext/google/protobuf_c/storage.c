@@ -57,14 +57,23 @@ size_t native_slot_size(upb_fieldtype_t type) {
   }
 }
 
-VALUE value_from_default(const upb_fielddef *field) {
+static VALUE value_from_default(const upb_fielddef *field) {
   switch (upb_fielddef_type(field)) {
     case UPB_TYPE_FLOAT:   return DBL2NUM(upb_fielddef_defaultfloat(field));
     case UPB_TYPE_DOUBLE:  return DBL2NUM(upb_fielddef_defaultdouble(field));
     case UPB_TYPE_BOOL:
       return upb_fielddef_defaultbool(field) ? Qtrue : Qfalse;
     case UPB_TYPE_MESSAGE: return Qnil;
-    case UPB_TYPE_ENUM:    return INT2NUM(upb_fielddef_defaultint32(field));
+    case UPB_TYPE_ENUM: {
+      const upb_enumdef *enumdef = upb_fielddef_enumsubdef(field);
+      int32_t num = upb_fielddef_defaultint32(field);
+      const char *label = upb_enumdef_iton(enumdef, num);
+      if (label) {
+        return ID2SYM(rb_intern(label));
+      } else {
+        return INT2NUM(num);
+      }
+    }
     case UPB_TYPE_INT32:   return INT2NUM(upb_fielddef_defaultint32(field));
     case UPB_TYPE_INT64:   return LL2NUM(upb_fielddef_defaultint64(field));;
     case UPB_TYPE_UINT32:  return UINT2NUM(upb_fielddef_defaultuint32(field));

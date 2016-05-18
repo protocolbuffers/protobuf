@@ -706,28 +706,28 @@ module BasicTest
       assert d.a == ""
       assert d.b == 0
       assert d.c == nil
-      assert d.d == 0
+      assert d.d == :Default
       assert d.my_oneof == nil
 
       d.a = "hi"
       assert d.a == "hi"
       assert d.b == 0
       assert d.c == nil
-      assert d.d == 0
+      assert d.d == :Default
       assert d.my_oneof == :a
 
       d.b = 42
       assert d.a == ""
       assert d.b == 42
       assert d.c == nil
-      assert d.d == 0
+      assert d.d == :Default
       assert d.my_oneof == :b
 
       d.c = TestMessage2.new(:foo => 100)
       assert d.a == ""
       assert d.b == 0
       assert d.c.foo == 100
-      assert d.d == 0
+      assert d.d == :Default
       assert d.my_oneof == :c
 
       d.d = :C
@@ -759,7 +759,7 @@ module BasicTest
       assert d4.a == ""
       assert d4.b == 0
       assert d4.c.foo == 1
-      assert d4.d == 0
+      assert d4.d == :Default
 
       d5 = OneofMessage.new(:a => "hello")
       assert d5.a == "hello"
