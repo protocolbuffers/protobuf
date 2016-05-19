@@ -703,36 +703,36 @@ module BasicTest
 
     def test_oneof
       d = OneofMessage.new
-      assert d.a == nil
-      assert d.b == nil
+      assert d.a == ""
+      assert d.b == 0
       assert d.c == nil
-      assert d.d == nil
+      assert d.d == :Default
       assert d.my_oneof == nil
 
       d.a = "hi"
       assert d.a == "hi"
-      assert d.b == nil
+      assert d.b == 0
       assert d.c == nil
-      assert d.d == nil
+      assert d.d == :Default
       assert d.my_oneof == :a
 
       d.b = 42
-      assert d.a == nil
+      assert d.a == ""
       assert d.b == 42
       assert d.c == nil
-      assert d.d == nil
+      assert d.d == :Default
       assert d.my_oneof == :b
 
       d.c = TestMessage2.new(:foo => 100)
-      assert d.a == nil
-      assert d.b == nil
+      assert d.a == ""
+      assert d.b == 0
       assert d.c.foo == 100
-      assert d.d == nil
+      assert d.d == :Default
       assert d.my_oneof == :c
 
       d.d = :C
-      assert d.a == nil
-      assert d.b == nil
+      assert d.a == ""
+      assert d.b == 0
       assert d.c == nil
       assert d.d == :C
       assert d.my_oneof == :d
@@ -748,23 +748,23 @@ module BasicTest
 
       d3 = OneofMessage.decode(
         encoded_field_c + encoded_field_a + encoded_field_d)
-      assert d3.a == nil
-      assert d3.b == nil
+      assert d3.a == ""
+      assert d3.b == 0
       assert d3.c == nil
       assert d3.d == :B
 
       d4 = OneofMessage.decode(
         encoded_field_c + encoded_field_a + encoded_field_d +
         encoded_field_c)
-      assert d4.a == nil
-      assert d4.b == nil
+      assert d4.a == ""
+      assert d4.b == 0
       assert d4.c.foo == 1
-      assert d4.d == nil
+      assert d4.d == :Default
 
       d5 = OneofMessage.new(:a => "hello")
-      assert d5.a != nil
+      assert d5.a == "hello"
       d5.a = nil
-      assert d5.a == nil
+      assert d5.a == ""
       assert OneofMessage.encode(d5) == ''
       assert d5.my_oneof == nil
     end
