@@ -133,9 +133,12 @@ namespace Google.Protobuf
         }
 
         [Test]
+        [TestCase(typeof(BoolValue), "true", true)]
         [TestCase(typeof(Int32Value), "32", 32)]
         [TestCase(typeof(Int64Value), "32", 32L)]
+        [TestCase(typeof(Int64Value), "\"32\"", 32L)]
         [TestCase(typeof(UInt32Value), "32", 32U)]
+        [TestCase(typeof(UInt64Value), "\"32\"", 32UL)]
         [TestCase(typeof(UInt64Value), "32", 32UL)]
         [TestCase(typeof(StringValue), "\"foo\"", "foo")]
         [TestCase(typeof(FloatValue), "1.5", 1.5f)]

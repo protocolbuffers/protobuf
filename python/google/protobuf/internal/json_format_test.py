@@ -458,6 +458,22 @@ class JsonFormatTest(JsonFormatBase):
             '}\n'))
     parsed_message = json_format_proto3_pb2.TestAny()
     self.CheckParseBack(message, parsed_message)
+    # Must print @type first
+    test_message = json_format_proto3_pb2.TestMessage(
+        bool_value=True,
+        int32_value=20,
+        int64_value=-20,
+        uint32_value=20,
+        uint64_value=20,
+        double_value=3.14,
+        string_value='foo')
+    message.Clear()
+    message.value.Pack(test_message)
+    self.assertEqual(
+        json_format.MessageToJson(message, False)[0:68],
+        '{\n'
+        '  "value": {\n'
+        '    "@type": "type.googleapis.com/proto3.TestMessage"')
 
   def testWellKnownInAnyMessage(self):
     message = any_pb2.Any()

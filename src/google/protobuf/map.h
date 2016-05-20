@@ -504,9 +504,7 @@ class MapPair {
 //  assert(m0.begin()->first == m1.begin()->first);  // Bug!
 //
 // Map's interface is similar to std::unordered_map, except that Map is not
-// designed to play well with exceptions.  Mutations to a Map do not invalidate
-// a Map's iterators, pointers to elements, or references to elements.  Except
-// for erase(iterator), any non-const method can reorder iterators.
+// designed to play well with exceptions.
 template <typename Key, typename T>
 class Map {
  public:
