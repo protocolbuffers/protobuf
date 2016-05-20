@@ -3,9 +3,7 @@ platform :osx, '10.9'
 
 install! 'cocoapods', :deterministic_uuids => false
 
-if ENV['USE_FRAMEWORKS'] == 'YES' then
-  use_frameworks!
-end
+use_frameworks!
 
 target 'OSXCocoaPodsTester' do
   pod 'Protobuf', :path => '../../../..'

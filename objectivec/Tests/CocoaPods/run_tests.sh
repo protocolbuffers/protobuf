@@ -31,7 +31,7 @@ OPTIONS:
 EOF
 }
 
-TEST_MODES=( "yes" "no" )
+TEST_MODES=( "static" "framework" )
 TEST_NAMES=( "iOSCocoaPodsTester" "OSXCocoaPodsTester" )
 while [[ $# != 0 ]]; do
   case "${1}" in
@@ -40,10 +40,10 @@ while [[ $# != 0 ]]; do
       exit 0
       ;;
     --skip-static )
-      TEST_MODES=(${TEST_MODES[@]/no})
+      TEST_MODES=(${TEST_MODES[@]/static})
       ;;
     --skip-framework )
-      TEST_MODES=(${TEST_MODES[@]/yes})
+      TEST_MODES=(${TEST_MODES[@]/framework})
       ;;
     --skip-ios )
       TEST_NAMES=(${TEST_NAMES[@]/iOSCocoaPodsTester})
@@ -93,24 +93,34 @@ cleanup() {
   # incase something does hiccup.
   xcodebuild -workspace "${TEST_NAME}.xcworkspace" -scheme "${TEST_NAME}" clean > /dev/null || true
   pod deintegrate > /dev/null || true
-  # Delete the files left after pod deintegrate
+  # Flush the cache so nothing is left behind.
+  pod cache clean --all || true
+  # Delete the files left after pod deintegrate.
   rm -f Podfile.lock || true
   rm -rf "${TEST_NAME}.xcworkspace" || true
   git checkout -- "${TEST_NAME}.xcodeproj" || true
+  # Remove the Podfile that was put in place.
+  rm -f Podfile || true
 }
 
 do_test() {
   local TEST_NAME="$1"
-  local USE_FRAMEWORKS_VALUE="$2"
+  local TEST_MODE="$2"
 
-  header "${TEST_NAME}" - USE_FRAMEWORKS: "${USE_FRAMEWORKS_VALUE}"
+  header "${TEST_NAME}" - Mode: "${TEST_MODE}"
   cd "${ScriptDir}/${TEST_NAME}"
 
   # Hook in cleanup for any failures.
   trap "cleanup ${TEST_NAME}" EXIT
 
-  # Invoke pod and then xcodebuild, but catch the results so we can cleanup.
-  USE_FRAMEWORKS="${USE_FRAMEWORKS_VALUE}" pod install
+  # Ensure nothing is cached by pods to start with that could throw things off.
+  pod cache clean --all
+
+  # Put the right Podfile in place.
+  cp -f "Podfile-${TEST_MODE}" "Podfile"
+
+  # Do the work!
+  pod install --verbose
   xcodebuild -workspace "${TEST_NAME}.xcworkspace" -scheme "${TEST_NAME}" build
 
   # Clear the hook and manually run cleanup.
