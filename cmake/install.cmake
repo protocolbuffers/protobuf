@@ -83,9 +83,15 @@ foreach(_file ${nobase_dist_proto_DATA})
 endforeach()
 
 # Export configuration
+set(_cmakedir_desc "Directory relative to CMAKE_INSTALL to install the cmake configuration files")
+if(NOT MSVC)
+  set(CMAKE_INSTALL_CMAKEDIR "${CMAKE_INSTALL_LIBDIR}/cmake/protobuf" CACHE STRING "${_cmakedir_desc")
+else()
+  set(CMAKE_INSTALL_CMAKEDIR "cmake" CACHE STRING "${_cmakedir_desc}")
+endif()
 
 install(EXPORT protobuf-targets
-  DESTINATION "lib/cmake/protobuf"
+  DESTINATION "${CMAKE_INSTALL_CMAKEDIR}"
   COMPONENT protobuf-export)
 
 configure_file(protobuf-config.cmake.in
@@ -99,5 +105,5 @@ install(FILES
   "${protobuf_BINARY_DIR}/protobuf-config.cmake"
   "${protobuf_BINARY_DIR}/protobuf-config-version.cmake"
   "${protobuf_BINARY_DIR}/protobuf-module.cmake"
-  DESTINATION "lib/cmake/protobuf"
+  DESTINATION "${CMAKE_INSTALL_CMAKEDIR}"
   COMPONENT protobuf-export)
