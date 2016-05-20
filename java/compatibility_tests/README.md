@@ -28,6 +28,10 @@ of the dependency is upgraded to the new version.
 
 ## How to Run The Tests
 
+We use a shell script to drive the test of different scenarios so the test
+will only run on unix-like environments. The script expects a few command
+line tools to be available on PATH: git, mvn, wget, grep, sed, java.
+
 Before running the tests, make sure you have already built the protoc binary
 following [the C++ installation instructions](../../src/README.md). The test
 scripts will use the built binary located at ${protobuf}/src/protoc.
