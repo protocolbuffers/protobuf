@@ -1,12 +1,8 @@
 source 'https://github.com/CocoaPods/Specs.git'
-platform :ios, '8.0'
+platform :osx, '10.9'
 
 install! 'cocoapods', :deterministic_uuids => false
 
-if ENV['USE_FRAMEWORKS'] == 'YES' then
-  use_frameworks!
-end
-
-target 'iOSCocoaPodsTester' do
+target 'OSXCocoaPodsTester' do
   pod 'Protobuf', :path => '../../../..'
 end
