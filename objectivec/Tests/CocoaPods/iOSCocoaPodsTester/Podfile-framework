@@ -1,0 +1,10 @@
+source 'https://github.com/CocoaPods/Specs.git'
+platform :ios, '8.0'
+
+install! 'cocoapods', :deterministic_uuids => false
+
+use_frameworks!
+
+target 'iOSCocoaPodsTester' do
+  pod 'Protobuf', :path => '../../../..'
+end
