@@ -92,6 +92,7 @@ endif()
 
 install(EXPORT protobuf-targets
   DESTINATION "${CMAKE_INSTALL_CMAKEDIR}"
+  NAMESPACE protobuf::
   COMPONENT protobuf-export)
 
 configure_file(protobuf-config.cmake.in
