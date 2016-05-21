@@ -85,7 +85,7 @@ endforeach()
 # Export configuration
 set(_cmakedir_desc "Directory relative to CMAKE_INSTALL to install the cmake configuration files")
 if(NOT MSVC)
-  set(CMAKE_INSTALL_CMAKEDIR "${CMAKE_INSTALL_LIBDIR}/cmake/protobuf" CACHE STRING "${_cmakedir_desc")
+  set(CMAKE_INSTALL_CMAKEDIR "${CMAKE_INSTALL_LIBDIR}/cmake/protobuf" CACHE STRING "${_cmakedir_desc}")
 else()
   set(CMAKE_INSTALL_CMAKEDIR "cmake" CACHE STRING "${_cmakedir_desc}")
 endif()
