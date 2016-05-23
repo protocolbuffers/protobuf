@@ -211,9 +211,9 @@ if __name__ == '__main__':
 
   # Keep this list of dependencies in sync with tox.ini.
   install_requires = ['six>=1.9', 'setuptools']
-  if sys.version_info <= (2,7):
-    install_requires.append('ordereddict')
+  if sys.version_info <= (2,6):
     install_requires.append('unittest2')
+    install_requires.append('ordereddict')
 
   setup(
       name='protobuf',
