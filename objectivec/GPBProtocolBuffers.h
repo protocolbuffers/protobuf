@@ -44,14 +44,33 @@
 #import "GPBWellKnownTypes.h"
 #import "GPBWireFormat.h"
 
+// This CPP symbol can be defined to use imports that match up to the framework
+// imports needed when using CocoaPods.
+#if !defined(GPB_USE_PROTOBUF_FRAMEWORK_IMPORTS)
+ #define GPB_USE_PROTOBUF_FRAMEWORK_IMPORTS 0
+#endif
+
 // Well-known proto types
-#import "google/protobuf/Any.pbobjc.h"
-#import "google/protobuf/Api.pbobjc.h"
-#import "google/protobuf/Duration.pbobjc.h"
-#import "google/protobuf/Empty.pbobjc.h"
-#import "google/protobuf/FieldMask.pbobjc.h"
-#import "google/protobuf/SourceContext.pbobjc.h"
-#import "google/protobuf/Struct.pbobjc.h"
-#import "google/protobuf/Timestamp.pbobjc.h"
-#import "google/protobuf/Type.pbobjc.h"
-#import "google/protobuf/Wrappers.pbobjc.h"
+#if GPB_USE_PROTOBUF_FRAMEWORK_IMPORTS
+ #import <Protobuf/Any.pbobjc.h>
+ #import <Protobuf/Api.pbobjc.h>
+ #import <Protobuf/Duration.pbobjc.h>
+ #import <Protobuf/Empty.pbobjc.h>
+ #import <Protobuf/FieldMask.pbobjc.h>
+ #import <Protobuf/SourceContext.pbobjc.h>
+ #import <Protobuf/Struct.pbobjc.h>
+ #import <Protobuf/Timestamp.pbobjc.h>
+ #import <Protobuf/Type.pbobjc.h>
+ #import <Protobuf/Wrappers.pbobjc.h>
+#else
+ #import "google/protobuf/Any.pbobjc.h"
+ #import "google/protobuf/Api.pbobjc.h"
+ #import "google/protobuf/Duration.pbobjc.h"
+ #import "google/protobuf/Empty.pbobjc.h"
+ #import "google/protobuf/FieldMask.pbobjc.h"
+ #import "google/protobuf/SourceContext.pbobjc.h"
+ #import "google/protobuf/Struct.pbobjc.h"
+ #import "google/protobuf/Timestamp.pbobjc.h"
+ #import "google/protobuf/Type.pbobjc.h"
+ #import "google/protobuf/Wrappers.pbobjc.h"
+#endif
