@@ -675,6 +675,7 @@ js_EXTRA_DIST=              \
   js/binary/constants.js    \
   js/binary/decoder.js      \
   js/binary/decoder_test.js \
+  js/binary/encoder.js      \
   js/binary/proto_test.js   \
   js/binary/reader.js       \
   js/binary/reader_test.js  \
