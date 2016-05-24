@@ -69,10 +69,9 @@ _INFINITY = 'Infinity'
 _NEG_INFINITY = '-Infinity'
 _NAN = 'NaN'
 
-if sys.version_info < (3, 0):
-  _UNPAIRED_SURROGATE_PATTERN = re.compile(six.u(
-      r'[\ud800-\udbff](?![\udc00-\udfff])|(?<![\ud800-\udbff])[\udc00-\udfff]'
-  ))
+_UNPAIRED_SURROGATE_PATTERN = re.compile(six.u(
+    r'[\ud800-\udbff](?![\udc00-\udfff])|(?<![\ud800-\udbff])[\udc00-\udfff]'
+))
 
 class Error(Exception):
   """Top-level module error for json_format."""
@@ -559,12 +558,11 @@ def _ConvertScalarFieldValue(value, field, require_str=False):
   elif field.cpp_type == descriptor.FieldDescriptor.CPPTYPE_STRING:
     if field.type == descriptor.FieldDescriptor.TYPE_BYTES:
       return base64.b64decode(value)
-    elif sys.version_info < (3, 0):
-      # Python 2.x does not detect unpaired surrogates when JSON parsing.
+    else:
+      # Checking for unpaired surrogates appears to be unreliable,
+      # depending on the specific Python version, so we check manually.
       if _UNPAIRED_SURROGATE_PATTERN.search(value):
         raise ParseError('Unpaired surrogate')
-      return value
-    else:
       return value
   elif field.cpp_type == descriptor.FieldDescriptor.CPPTYPE_ENUM:
     # Convert an enum value.
