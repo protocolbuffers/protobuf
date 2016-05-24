@@ -8,7 +8,7 @@ os:
   - linux
   - osx
 # The Objective C build needs Xcode 7.0 or later.
-osx_image: xcode7.2
+osx_image: xcode7.3
 script:
   - ./tests.sh $CONFIG
 env:
@@ -23,6 +23,11 @@ env:
   - CONFIG=javanano_jdk7
   - CONFIG=javanano_oracle7
   - CONFIG=javascript
+  # iOS build log was starting to choke travis UI, so split to cover the
+  # Xcode Debug and Release Configurations independently.
+  - CONFIG=objectivec_ios_debug
+  - CONFIG=objectivec_ios_release
+  - CONFIG=objectivec_osx
   - CONFIG=python
   - CONFIG=python_cpp
   - CONFIG=ruby19
@@ -54,12 +59,13 @@ matrix:
     # which doesn't work on OS X.
     - os: osx
       env: CONFIG=golang
-  # Add into the matrix OS X tests of Objective C (needs Xcode, so it won't
-  # work on other platforms). These are split so it doesn't take as long to run.
-  include:
-    - os: osx
-      env: CONFIG=objectivec_ios
-    - os: osx
+    # OS X/iOS tests of Objective C (needs Xcode, so it won't work on other
+    # platforms).
+    - os: linux
+      env: CONFIG=objectivec_ios_debug
+    - os: linux
+      env: CONFIG=objectivec_ios_release
+    - os: linux
       env: CONFIG=objectivec_osx
   allow_failures:
     # These currently do not work on OS X but are being worked on by @haberman.
@@ -71,14 +77,11 @@ matrix:
     # we moved to an OS X image that is 10.11.
     - os: osx
       env: CONFIG=python_cpp
-    # xctool 0.2.8 seems to have a bug where it randomly kills tests saying
-    # they failed.
-    #   https://github.com/facebook/xctool/issues/619
-    #   https://github.com/google/protobuf/issues/1232
-    # travis updated their images to include 0.2.8:
-    #   https://blog.travis-ci.com/2016-03-23-xcode-image-updates
-    # Mark the iOS test as flakey so these failures don't turn things red.
+    # Mark the iOS test as flakey as xcodebuild some times fails to start the
+    # iOS Simulator.
     - os: osx
-      env: CONFIG=objectivec_ios
+      env: CONFIG=objectivec_ios_debug
+    - os: osx
+      env: CONFIG=objectivec_ios_release
 notifications:
   email: false
