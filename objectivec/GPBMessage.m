@@ -44,6 +44,12 @@
 #import "GPBUnknownFieldSet_PackagePrivate.h"
 #import "GPBUtilities_PackagePrivate.h"
 
+// Direct access is use for speed, to avoid even internally declaring things
+// read/write, etc. The warning is enabled in the project to ensure code calling
+// protos can turn on -Wdirect-ivar-access without issues.
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdirect-ivar-access"
+
 NSString *const GPBMessageErrorDomain =
     GPBNSStringifySymbol(GPBMessageErrorDomain);
 
@@ -694,7 +700,7 @@ void GPBClearMessageAutocreator(GPBMessage *self) {
     return;
   }
 
-#if DEBUG && !defined(NS_BLOCK_ASSERTIONS)
+#if defined(DEBUG) && DEBUG && !defined(NS_BLOCK_ASSERTIONS)
   // Either the autocreator must have its "has" flag set to YES, or it must be
   // NO and not equal to ourselves.
   BOOL autocreatorHas =
@@ -1736,7 +1742,7 @@ static GPBUnknownFieldSet *GetOrMakeUnknownFields(GPBMessage *self) {
 }
 
 - (BOOL)hasExtension:(GPBExtensionDescriptor *)extension {
-#if DEBUG
+#if defined(DEBUG) && DEBUG
   CheckExtension(self, extension);
 #endif  // DEBUG
   return nil != [extensionMap_ objectForKey:extension];
@@ -2621,7 +2627,7 @@ static void MergeRepeatedNotPackedFieldFromCodedInputStream(
         case GPBDataTypeFixed32:
         case GPBDataTypeUInt32:
         case GPBDataTypeFloat: {
-          _GPBCompileAssert(sizeof(float) == sizeof(uint32_t), float_not_32_bits);
+          GPBInternalCompileAssert(sizeof(float) == sizeof(uint32_t), float_not_32_bits);
           // These are all 32bit, signed/unsigned doesn't matter for equality.
           uint32_t *selfValPtr = (uint32_t *)&selfStorage[fieldOffset];
           uint32_t *otherValPtr = (uint32_t *)&otherStorage[fieldOffset];
@@ -2636,7 +2642,7 @@ static void MergeRepeatedNotPackedFieldFromCodedInputStream(
         case GPBDataTypeFixed64:
         case GPBDataTypeUInt64:
         case GPBDataTypeDouble: {
-          _GPBCompileAssert(sizeof(double) == sizeof(uint64_t), double_not_64_bits);
+          GPBInternalCompileAssert(sizeof(double) == sizeof(uint64_t), double_not_64_bits);
           // These are all 64bit, signed/unsigned doesn't matter for equality.
           uint64_t *selfValPtr = (uint64_t *)&selfStorage[fieldOffset];
           uint64_t *otherValPtr = (uint64_t *)&otherStorage[fieldOffset];
@@ -2733,7 +2739,7 @@ static void MergeRepeatedNotPackedFieldFromCodedInputStream(
         case GPBDataTypeFixed32:
         case GPBDataTypeUInt32:
         case GPBDataTypeFloat: {
-          _GPBCompileAssert(sizeof(float) == sizeof(uint32_t), float_not_32_bits);
+          GPBInternalCompileAssert(sizeof(float) == sizeof(uint32_t), float_not_32_bits);
           // These are all 32bit, just mix it in.
           uint32_t *valPtr = (uint32_t *)&storage[fieldOffset];
           result = prime * result + *valPtr;
@@ -2745,7 +2751,7 @@ static void MergeRepeatedNotPackedFieldFromCodedInputStream(
         case GPBDataTypeFixed64:
         case GPBDataTypeUInt64:
         case GPBDataTypeDouble: {
-          _GPBCompileAssert(sizeof(double) == sizeof(uint64_t), double_not_64_bits);
+          GPBInternalCompileAssert(sizeof(double) == sizeof(uint64_t), double_not_64_bits);
           // These are all 64bit, just mix what fits into an NSUInteger in.
           uint64_t *valPtr = (uint64_t *)&storage[fieldOffset];
           result = prime * result + (NSUInteger)(*valPtr);
@@ -2792,7 +2798,7 @@ static void MergeRepeatedNotPackedFieldFromCodedInputStream(
   return description;
 }
 
-#if DEBUG
+#if defined(DEBUG) && DEBUG
 
 // Xcode 5.1 added support for custom quick look info.
 // https://developer.apple.com/library/ios/documentation/IDEs/Conceptual/CustomClassDisplay_in_QuickLook/CH01-quick_look_for_custom_objects/CH01-quick_look_for_custom_objects.html#//apple_ref/doc/uid/TP40014001-CH2-SW1
@@ -3182,3 +3188,5 @@ static void ResolveIvarSet(GPBFieldDescriptor *field,
 }
 
 @end
+
+#pragma clang diagnostic pop

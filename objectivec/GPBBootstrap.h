@@ -48,7 +48,7 @@
 // doesn't allow us to forward declare. We work around this one case by
 // providing a local definition. The default case has to use NS_ENUM for the
 // magic that is Swift bridging of enums.
-#if (__cplusplus && __cplusplus < 201103L)
+#if (defined(__cplusplus) && __cplusplus && __cplusplus < 201103L)
  #define GPB_ENUM(X) enum X : int32_t X; enum X : int32_t
 #else
  #define GPB_ENUM(X) NS_ENUM(int32_t, X)

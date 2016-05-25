@@ -45,6 +45,8 @@ static id NewSingleValueFromInputStream(GPBExtensionDescriptor *extension,
     __attribute__((ns_returns_retained));
 
 GPB_INLINE size_t DataTypeSize(GPBDataType dataType) {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wswitch-enum"
   switch (dataType) {
     case GPBDataTypeBool:
       return 1;
@@ -59,6 +61,7 @@ GPB_INLINE size_t DataTypeSize(GPBDataType dataType) {
     default:
       return 0;
   }
+#pragma clang diagnostic pop
 }
 
 static size_t ComputePBSerializedSizeNoTagOfObject(GPBDataType dataType, id object) {
@@ -261,6 +264,12 @@ static void WriteArrayIncludingTagsToCodedOutputStream(
   }
 }
 
+// Direct access is use for speed, to avoid even internally declaring things
+// read/write, etc. The warning is enabled in the project to ensure code calling
+// protos can turn on -Wdirect-ivar-access without issues.
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdirect-ivar-access"
+
 void GPBExtensionMergeFromInputStream(GPBExtensionDescriptor *extension,
                                       BOOL isPackedOnStream,
                                       GPBCodedInputStream *input,
@@ -378,3 +387,5 @@ static id NewSingleValueFromInputStream(GPBExtensionDescriptor *extension,
 
   return nil;
 }
+
+#pragma clang diagnostic pop

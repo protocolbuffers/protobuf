@@ -66,6 +66,9 @@ class MessageGenerator {
   void GenerateExtensionRegistrationSource(io::Printer* printer);
   void DetermineForwardDeclarations(set<string>* fwd_decls);
 
+  // Checks if the message or a nested message includes a oneof definition.
+  bool IncludesOneOfDefinition() const;
+
  private:
   void GenerateParseFromMethodsHeader(io::Printer* printer);
 

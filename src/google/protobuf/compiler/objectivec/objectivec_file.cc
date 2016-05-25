@@ -182,6 +182,10 @@ void FileGenerator::GenerateHeader(io::Printer *printer) {
     import_writer.Print(printer);
   }
 
+  // Note:
+  //  deprecated-declarations suppression is only needed if some place in this
+  //    proto file is something deprecated or if it references something from
+  //    another file that is deprecated.
   printer->Print(
       "// @@protoc_insertion_point(imports)\n"
       "\n"
@@ -292,14 +296,34 @@ void FileGenerator::GenerateSource(io::Printer *printer) {
     import_writer.Print(printer);
   }
 
+  bool includes_oneof = false;
+  for (vector<MessageGenerator *>::iterator iter = message_generators_.begin();
+       iter != message_generators_.end(); ++iter) {
+    if ((*iter)->IncludesOneOfDefinition()) {
+      includes_oneof = true;
+      break;
+    }
+  }
+
+  // Note:
+  //  deprecated-declarations suppression is only needed if some place in this
+  //    proto file is something deprecated or if it references something from
+  //    another file that is deprecated.
   printer->Print(
       "// @@protoc_insertion_point(imports)\n"
       "\n"
       "#pragma clang diagnostic push\n"
-      "#pragma clang diagnostic ignored \"-Wdeprecated-declarations\"\n"
-      "\n");
+      "#pragma clang diagnostic ignored \"-Wdeprecated-declarations\"\n");
+  if (includes_oneof) {
+    // The generated code for oneof's uses direct ivar access, suppress the
+    // warning incase developer turn that on in the context they compile the
+    // generated code.
+    printer->Print(
+        "#pragma clang diagnostic ignored \"-Wdirect-ivar-access\"\n");
+  }
 
   printer->Print(
+      "\n"
       "#pragma mark - $root_class_name$\n"
       "\n"
       "@implementation $root_class_name$\n\n",
