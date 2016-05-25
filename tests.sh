@@ -197,59 +197,30 @@ internal_install_python_deps() {
   fi
 }
 
-internal_objectivec_common () {
-  # Make sure xctool is up to date. Adapted from
-  #  http://docs.travis-ci.com/user/osx-ci-environment/
-  # We don't use a before_install because we test multiple OSes.
-  brew update
-  brew outdated xctool || brew upgrade xctool
-  # Reused the build script that takes care of configuring and ensuring things
-  # are up to date. Xcode and conformance tests will be directly invoked.
-  objectivec/DevTools/full_mac_build.sh \
-      --core-only --skip-xcode --skip-objc-conformance
-}
-
-internal_xctool_debug_and_release() {
-  # Always use -reporter plain to avoid escape codes in output (makes travis
-  # logs easier to read).
-  xctool -reporter plain -configuration Debug "$@"
-  xctool -reporter plain -configuration Release "$@"
-}
-
 build_objectivec_ios() {
-  internal_objectivec_common
-  # https://github.com/facebook/xctool/issues/509 - unlike xcodebuild, xctool
-  # doesn't support >1 destination, so we have to build first and then run the
-  # tests one destination at a time.
-  internal_xctool_debug_and_release \
-    -project objectivec/ProtocolBuffers_iOS.xcodeproj \
-    -scheme ProtocolBuffers \
-    -sdk iphonesimulator \
-    build-tests
-  IOS_DESTINATIONS=(
-    "platform=iOS Simulator,name=iPhone 4s,OS=8.1" # 32bit
-    "platform=iOS Simulator,name=iPhone 6,OS=9.2" # 64bit
-    "platform=iOS Simulator,name=iPad 2,OS=8.1" # 32bit
-    "platform=iOS Simulator,name=iPad Air,OS=9.2" # 64bit
-  )
-  for i in "${IOS_DESTINATIONS[@]}" ; do
-    internal_xctool_debug_and_release \
-      -project objectivec/ProtocolBuffers_iOS.xcodeproj \
-      -scheme ProtocolBuffers \
-      -sdk iphonesimulator \
-      -destination "${i}" \
-      run-tests
-  done
+  # Reused the build script that takes care of configuring and ensuring things
+  # are up to date.  The OS X test runs the objc conformance test, so skip it
+  # here.
+  # Note: travis has xctool installed, and we've looked at using it in the past
+  # but it has ended up proving unreliable (bugs), an they are removing build
+  # support in favor of xcbuild (or just xcodebuild).
+  objectivec/DevTools/full_mac_build.sh \
+      --core-only --skip-xcode-osx --skip-objc-conformance "$@"
+}
+
+build_objectivec_ios_debug() {
+  build_objectivec_ios --skip-xcode-release
+}
+
+build_objectivec_ios_release() {
+  build_objectivec_ios --skip-xcode-debug
 }
 
 build_objectivec_osx() {
-  internal_objectivec_common
-  internal_xctool_debug_and_release \
-    -project objectivec/ProtocolBuffers_OSX.xcodeproj \
-    -scheme ProtocolBuffers \
-    -destination "platform=OS X,arch=x86_64" \
-    test
-  cd conformance && make test_objc && cd ..
+  # Reused the build script that takes care of configuring and ensuring things
+  # are up to date.
+  objectivec/DevTools/full_mac_build.sh \
+      --core-only --skip-xcode-ios
 }
 
 build_python() {
@@ -330,6 +301,8 @@ Usage: $0 { cpp |
             javanano_jdk7 |
             javanano_oracle7 |
             objectivec_ios |
+            objectivec_ios_debug |
+            objectivec_ios_release |
             objectivec_osx |
             python |
             python_cpp |
