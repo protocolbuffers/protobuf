@@ -170,4 +170,31 @@
 
 // TODO(thomasvl): add test with extensions once those format with correct names.
 
+- (void)testSetRepeatedFields {
+  TestAllTypes *message = [TestAllTypes message];
+
+  NSDictionary *repeatedFieldValues = @{
+    @"repeatedStringArray" : [@[@"foo", @"bar"] mutableCopy],
+    @"repeatedBoolArray" : [GPBBoolArray arrayWithValue:YES],
+    @"repeatedInt32Array" : [GPBInt32Array arrayWithValue:14],
+    @"repeatedInt64Array" : [GPBInt64Array arrayWithValue:15],
+    @"repeatedUint32Array" : [GPBUInt32Array arrayWithValue:16],
+    @"repeatedUint64Array" : [GPBUInt64Array arrayWithValue:16],
+    @"repeatedFloatArray" : [GPBFloatArray arrayWithValue:16],
+    @"repeatedDoubleArray" : [GPBDoubleArray arrayWithValue:16],
+    @"repeatedNestedEnumArray" :
+        [GPBEnumArray arrayWithValidationFunction:TestAllTypes_NestedEnum_IsValidValue
+                                         rawValue:TestAllTypes_NestedEnum_Foo],
+  };
+  for (NSString *fieldName in repeatedFieldValues) {
+    GPBFieldDescriptor *field =
+        [message.descriptor fieldWithName:fieldName];
+    XCTAssertNotNil(field, @"No field with name: %@", fieldName);
+    id expectedValues = repeatedFieldValues[fieldName];
+    GPBSetMessageRepeatedField(message, field, expectedValues);
+    XCTAssertEqualObjects(expectedValues,
+                          [message valueForKeyPath:fieldName]);
+  }
+}
+
 @end

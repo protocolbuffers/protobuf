@@ -948,10 +948,10 @@ void GPBSetMessageRepeatedField(GPBMessage *self, GPBFieldDescriptor *field, id 
     case GPBDataTypeString:
     case GPBDataTypeMessage:
     case GPBDataTypeGroup:
-      expectedClass = [NSMutableDictionary class];
+      expectedClass = [NSMutableArray class];
       break;
     case GPBDataTypeEnum:
-      expectedClass = [GPBBoolArray class];
+      expectedClass = [GPBEnumArray class];
       break;
   }
   if (array && ![array isKindOfClass:expectedClass]) {
