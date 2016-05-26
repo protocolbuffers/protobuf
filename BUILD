@@ -32,6 +32,7 @@ load(
     "protobuf",
     "cc_proto_library",
     "py_proto_library",
+    "internal_copied_filegroup",
     "internal_gen_well_known_protos_java",
     "internal_protobuf_py_tests",
 )
@@ -560,6 +561,8 @@ py_library(
             "python/google/protobuf/**/*.py",
         ],
         exclude = [
+            "python/google/protobuf/__init__.py",
+            "python/google/protobuf/**/__init__.py",
             "python/google/protobuf/internal/*_test.py",
             "python/google/protobuf/internal/test_util.py",
         ],
@@ -622,10 +625,26 @@ config_setting(
     },
 )
 
+# Copy the builtin proto files from src/google/protobuf to
+# python/google/protobuf. This way, the generated Python sources will be in the
+# same directory as the Python runtime sources. This is necessary for the
+# modules to be imported correctly since they are all part of the same Python
+# package.
+internal_copied_filegroup(
+    name = "protos_python",
+    srcs = WELL_KNOWN_PROTOS,
+    strip_prefix = "src",
+    dest = "python",
+)
+
+# TODO(dzc): Remove this once py_proto_library can have labels in srcs, in
+# which case we can simply add :protos_python in srcs.
+COPIED_WELL_KNOWN_PROTOS = ["python/" + s for s in RELATIVE_WELL_KNOWN_PROTOS]
+
 py_proto_library(
     name = "protobuf_python",
-    srcs = WELL_KNOWN_PROTOS,
-    include = "src",
+    srcs = COPIED_WELL_KNOWN_PROTOS,
+    include = "python",
     data = select({
         "//conditions:default": [],
         ":use_fast_cpp_protos": [
@@ -643,10 +662,27 @@ py_proto_library(
     visibility = ["//visibility:public"],
 )
 
+# Copy the test proto files from src/google/protobuf to
+# python/google/protobuf. This way, the generated Python sources will be in the
+# same directory as the Python runtime sources. This is necessary for the
+# modules to be imported correctly by the tests since they are all part of the
+# same Python package.
+internal_copied_filegroup(
+    name = "protos_python_test",
+    srcs = LITE_TEST_PROTOS + TEST_PROTOS,
+    strip_prefix = "src",
+    dest = "python",
+)
+
+# TODO(dzc): Remove this once py_proto_library can have labels in srcs, in
+# which case we can simply add :protos_python_test in srcs.
+COPIED_LITE_TEST_PROTOS = ["python/" + s for s in RELATIVE_LITE_TEST_PROTOS]
+COPIED_TEST_PROTOS = ["python/" + s for s in RELATIVE_TEST_PROTOS]
+
 py_proto_library(
     name = "python_common_test_protos",
-    srcs = LITE_TEST_PROTOS + TEST_PROTOS,
-    include = "src",
+    srcs = COPIED_LITE_TEST_PROTOS + COPIED_TEST_PROTOS,
+    include = "python",
     default_runtime = "",
     protoc = ":protoc",
     srcs_version = "PY2AND3",
@@ -672,6 +708,7 @@ py_library(
         [
             "python/google/protobuf/internal/*_test.py",
             "python/google/protobuf/internal/test_util.py",
+            "python/google/protobuf/internal/import_test_package/__init__.py",
         ],
     ),
     imports = ["python"],

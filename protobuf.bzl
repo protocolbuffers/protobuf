@@ -26,7 +26,7 @@ def _CcOuts(srcs, use_grpc_plugin=False):
 def _PyOuts(srcs):
   return [s[:-len(".proto")] + "_pb2.py" for s in srcs]
 
-def _RelativeOutputPath(path, include):
+def _RelativeOutputPath(path, include, dest=""):
   if include == None:
     return path
 
@@ -35,16 +35,11 @@ def _RelativeOutputPath(path, include):
 
   if include and include[-1] != '/':
     include = include + '/'
+  if dest and dest[-1] != '/':
+    dest = dest + '/'
 
   path = path[len(include):]
-
-  if not path.startswith(PACKAGE_NAME):
-    fail("The package %s is not within the path %s" % (PACKAGE_NAME, path))
-
-  if not PACKAGE_NAME:
-    return path
-
-  return path[len(PACKAGE_NAME)+1:]
+  return dest + path
 
 def _proto_gen_impl(ctx):
   """General implementation for generating protos"""
@@ -53,7 +48,7 @@ def _proto_gen_impl(ctx):
   deps += ctx.files.srcs
   gen_dir = _GenDir(ctx)
   if gen_dir:
-    import_flags = ["-I" + gen_dir]
+    import_flags = ["-I" + gen_dir, "-I" + ctx.var["GENDIR"] + "/" + gen_dir]
   else:
     import_flags = ["-I."]
 
@@ -222,6 +217,36 @@ def internal_gen_well_known_protos_java(srcs):
           " && mv $(@D)/wellknown.jar $(@D)/wellknown.srcjar",
     tools = [":protoc"],
   )
+
+
+def internal_copied_filegroup(name, srcs, strip_prefix, dest, **kwargs):
+  """Macro to copy files to a different directory and then create a filegroup.
+
+  This is used by the //:protobuf_python py_proto_library target to work around
+  an issue caused by Python source files that are part of the same Python
+  package being in separate directories.
+
+  Args:
+    srcs: The source files to copy and add to the filegroup.
+    strip_prefix: Path to the root of the files to copy.
+    dest: The directory to copy the source files into.
+    **kwargs: extra arguments that will be passesd to the filegroup.
+  """
+  outs = [_RelativeOutputPath(s, strip_prefix, dest) for s in srcs]
+
+  native.genrule(
+      name = name + "_genrule",
+      srcs = srcs,
+      outs = outs,
+      cmd = " && ".join(
+          ["cp $(location %s) $(location %s)" %
+           (s, _RelativeOutputPath(s, strip_prefix, dest)) for s in srcs]),
+  )
+
+  native.filegroup(
+      name = name,
+      srcs = outs,
+      **kwargs)
 
 
 def py_proto_library(
