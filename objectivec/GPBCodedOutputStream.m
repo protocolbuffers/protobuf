@@ -144,7 +144,7 @@ static void GPBWriteRawLittleEndian64(GPBOutputBufferState *state,
   GPBWriteRawByte(state, (int32_t)(value >> 56) & 0xFF);
 }
 
-#if DEBUG && !defined(NS_BLOCK_ASSERTIONS)
+#if defined(DEBUG) && DEBUG && !defined(NS_BLOCK_ASSERTIONS)
 + (void)load {
   // This test exists to verify that CFStrings with embedded NULLs will work
   // for us. If this Assert fails, all code below that depends on
@@ -202,6 +202,12 @@ static void GPBWriteRawLittleEndian64(GPBOutputBufferState *state,
 + (instancetype)streamWithData:(NSMutableData *)data {
   return [[[self alloc] initWithData:data] autorelease];
 }
+
+// Direct access is use for speed, to avoid even internally declaring things
+// read/write, etc. The warning is enabled in the project to ensure code calling
+// protos can turn on -Wdirect-ivar-access without issues.
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdirect-ivar-access"
 
 - (void)writeDoubleNoTag:(double)value {
   GPBWriteRawLittleEndian64(&state_, GPBConvertDoubleToInt64(value));
@@ -980,6 +986,8 @@ static void GPBWriteRawLittleEndian64(GPBOutputBufferState *state,
 - (void)writeRawLittleEndian64:(int64_t)value {
   GPBWriteRawLittleEndian64(&state_, value);
 }
+
+#pragma clang diagnostic pop
 
 @end
 

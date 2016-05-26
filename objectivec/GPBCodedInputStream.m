@@ -316,6 +316,12 @@ void GPBCodedInputStreamCheckLastTagWas(GPBCodedInputStreamState *state,
   [super dealloc];
 }
 
+// Direct access is use for speed, to avoid even internally declaring things
+// read/write, etc. The warning is enabled in the project to ensure code calling
+// protos can turn on -Wdirect-ivar-access without issues.
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdirect-ivar-access"
+
 - (int32_t)readTag {
   return GPBCodedInputStreamReadTag(&state_);
 }
@@ -495,5 +501,7 @@ void GPBCodedInputStreamCheckLastTagWas(GPBCodedInputStreamState *state,
 - (int64_t)readSInt64 {
   return GPBCodedInputStreamReadSInt64(&state_);
 }
+
+#pragma clang diagnostic pop
 
 @end

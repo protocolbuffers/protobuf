@@ -36,6 +36,12 @@
 #import "GPBWireFormat.h"
 #import "GPBMessage_PackagePrivate.h"
 
+// Direct access is use for speed, to avoid even internally declaring things
+// read/write, etc. The warning is enabled in the project to ensure code calling
+// protos can turn on -Wdirect-ivar-access without issues.
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdirect-ivar-access"
+
 // The address of this variable is used as a key for obj_getAssociatedObject.
 static const char kTextFormatExtraValueKey = 0;
 
@@ -803,7 +809,7 @@ uint32_t GPBFieldAlternateTag(GPBFieldDescriptor *self) {
   if ((self = [super init])) {
     description_ = description;
 
-#if DEBUG
+#if defined(DEBUG) && DEBUG
     const char *className = description->messageOrGroupClassName;
     if (className) {
       NSAssert(objc_lookUpClass(className) != Nil,
@@ -961,3 +967,5 @@ uint32_t GPBFieldAlternateTag(GPBFieldDescriptor *self) {
 }
 
 @end
+
+#pragma clang diagnostic pop

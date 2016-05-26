@@ -45,6 +45,12 @@
 // directly.
 // ------------------------------------------------------------------
 
+// Direct access is use for speed, to avoid even internally declaring things
+// read/write, etc. The warning is enabled in the project to ensure code calling
+// protos can turn on -Wdirect-ivar-access without issues.
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdirect-ivar-access"
+
 // Used to include code only visible to specific versions of the static
 // analyzer. Useful for wrapping code that only exists to silence the analyzer.
 // Determine the values you want to use for BEGIN_APPLE_BUILD_VERSION,
@@ -484,6 +490,8 @@ void GPBDictionaryReadEntry(id mapDictionary,
       key.valueString = [@"" retain];
     }
     if (GPBDataTypeIsObject(valueDataType) && value.valueString == nil) {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wswitch-enum"
       switch (valueDataType) {
         case GPBDataTypeString:
           value.valueString = [@"" retain];
@@ -505,6 +513,7 @@ void GPBDictionaryReadEntry(id mapDictionary,
           // Nothing
           break;
       }
+#pragma clang diagnostic pop
     }
 
     if ((keyDataType == GPBDataTypeString) && GPBDataTypeIsObject(valueDataType)) {
@@ -13553,3 +13562,5 @@ void GPBDictionaryReadEntry(id mapDictionary,
 }
 
 @end
+
+#pragma clang diagnostic pop

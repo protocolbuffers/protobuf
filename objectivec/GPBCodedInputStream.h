@@ -93,7 +93,7 @@ NS_ASSUME_NONNULL_BEGIN
 ///
 /// @param message           The message to set fields on as they are read.
 /// @param extensionRegistry An optional extension registry to use to lookup
-///                          extensions for @message.
+///                          extensions for @c message.
 - (void)readMessage:(GPBMessage *)message
   extensionRegistry:(nullable GPBExtensionRegistry *)extensionRegistry;
 
