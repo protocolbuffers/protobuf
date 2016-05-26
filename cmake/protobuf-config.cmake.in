@@ -1,10 +1,41 @@
 # User options
 include("${CMAKE_CURRENT_LIST_DIR}/protobuf-options.cmake")
 
+function(check_required_components)
+  set(protobuf_FOUND TRUE PARENT_SCOPE)
+  foreach(comp ${protobuf_FIND_COMPONENTS})
+    if(NOT protobuf_${comp}_FOUND)
+      if(protobuf_FIND_REQUIRED_${comp})
+        set(protobuf_FOUND FALSE PARENT_SCOPE)
+      endif()
+    endif()
+  endforeach()
+endfunction()
+
 # Imported targets
-include("${CMAKE_CURRENT_LIST_DIR}/protobuf-targets.cmake")
+set(_supported_components libprotobuf-lite libprotobuf libprotoc protoc)
+if(NOT protobuf_FIND_COMPONENTS)
+  set(protobuf_FIND_COMPONENTS ${_supported_components})
+endif()
+
+if(protobuf_VERBOSE)
+  message(STATUS "Locating Components: ${protobuf_FIND_COMPONENTS}")
+endif()
+
+foreach(component ${protobuf_FIND_COMPONENTS})
+  if(NOT ";${_supported_components};" MATCHES "${component}")
+    set(protobuf_FOUND FALSE)
+    set(protobuf_${component}_FOUND FALSE)
+    message(WARNING "Unsupported protobuf component: ${component}")
+  else()
+    include("${CMAKE_CURRENT_LIST_DIR}/${component}/protobuf-${component}.cmake")
+    set(protobuf_${component}_FOUND TRUE)
+  endif()
+endforeach()
 
 # CMake FindProtobuf module compatible file
 if(protobuf_MODULE_COMPATIBLE)
   include("${CMAKE_CURRENT_LIST_DIR}/protobuf-module.cmake")
 endif()
+
+check_required_components(protobuf)
