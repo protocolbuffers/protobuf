@@ -44,16 +44,59 @@ string(REGEX REPLACE        "${protobuf_AC_INIT_REGEX}" "\\2"
 string(REGEX REPLACE        "${protobuf_AC_INIT_REGEX}" "\\3"
     protobuf_CONTACT        "${protobuf_AC_INIT_LINE}")
 # Parse version tweaks
-set(protobuf_VERSION_REGEX "^([0-9]+)\\.([0-9]+)\\.([0-9]+).*$")
+set(protobuf_VERSION_REGEX "^([0-9]+)\\.([0-9]+)\\.([0-9]+)-?(.*)$")
 string(REGEX REPLACE     "${protobuf_VERSION_REGEX}" "\\1"
   protobuf_VERSION_MAJOR "${protobuf_VERSION_STRING}")
 string(REGEX REPLACE     "${protobuf_VERSION_REGEX}" "\\2"
   protobuf_VERSION_MINOR "${protobuf_VERSION_STRING}")
 string(REGEX REPLACE     "${protobuf_VERSION_REGEX}" "\\3"
   protobuf_VERSION_PATCH "${protobuf_VERSION_STRING}")
+string(REGEX REPLACE     "${protobuf_VERSION_REGEX}" "\\4"
+  protobuf_VERSION_PRERELEASE_STRING "${protobuf_VERSION_STRING}")
+
 # Package version
 set(protobuf_VERSION
   "${protobuf_VERSION_MAJOR}.${protobuf_VERSION_MINOR}.${protobuf_VERSION_PATCH}")
+
+# Form an encoded number based on the prerelease string that enables simple comparison.
+# First digit: 1 = alpha, 2 = beta, 3 = rc.
+# Second digit: The number of the release.
+# Third digit: 0 = prerelease, 1 = release.
+# Ex: alpha-3-pre = 103, beta-2 = 212
+# This will allow users to pick between different prerelease versions using find_package.
+if(protobuf_VERSION_PRERELEASE_STRING)
+  set(protobuf_PRERELEASE_TYPES alpha beta rc) #protobuf_PRERELEASE_TYPE uses indexes in this list to determine value
+
+  string(REPLACE ";" "|" protobuf_PRERELEASE_TYPES_REGEX "${protobuf_PRERELEASE_TYPES}")
+  set(protobuf_PRERELEASE_REGEX "^(${protobuf_PRERELEASE_TYPES_REGEX})[-\\.]([0-9]+).*")
+  string(REGEX REPLACE "${protobuf_PRERELEASE_REGEX}" "\\1"
+    protobuf_PRERELEASE_TYPE "${protobuf_VERSION_PRERELEASE_STRING}")
+  string(REGEX REPLACE "${protobuf_PRERELEASE_REGEX}" "\\2"
+    protobuf_PRERELEASE_NUM "${protobuf_VERSION_PRERELEASE_STRING}")
+  string(REGEX MATCH ".*(pre|SNAPSHOT).*"
+    protobuf_PRERELEASE_SNAPSHOT "${protobuf_VERSION_PRERELEASE_STRING}")
+
+  list(FIND protobuf_PRERELEASE_TYPES "${protobuf_PRERELEASE_TYPE}" protobuf_PRERELEASE_TYPE)
+  math(EXPR protobuf_PRERELEASE_TYPE "(0${protobuf_PRERELEASE_TYPE})+1")
+
+  if("${protobuf_PRERELEASE_NUM}" STREQUAL "${protobuf_VERSION_PRERELEASE_STRING}")
+    set(protobuf_PRERELEASE_NUM 0)
+  endif()
+
+  if(protobuf_PRERELEASE_SNAPSHOT)
+    set(protobuf_PRERELEASE_SNAPSHOT 1)
+  else()
+    set(protobuf_PRERELEASE_SNAPSHOT 0)
+  endif()
+
+  if("${protobuf_PRERELEASE_TYPE}" STREQUAL "${protobuf_VERSION_PRERELEASE_STRING}" AND NOT protobuf_PRERELEASE_SNAPSHOT)
+    message(FATAL_ERROR "Detected a prerelease version with an unknown format (${protobuf_VERSION_PRERELEASE_STRING}).
+     Please update the prerelease version string parser.")
+  endif()
+
+  set(protobuf_VERSION_TWEAK "${protobuf_PRERELEASE_TYPE}${protobuf_PRERELEASE_NUM}${protobuf_PRERELEASE_SNAPSHOT}")
+  set(protobuf_VERSION "${protobuf_VERSION}.${protobuf_VERSION_TWEAK}")
+endif()
 
 if(protobuf_VERBOSE)
   message(STATUS "Configuration script parsing status [")
