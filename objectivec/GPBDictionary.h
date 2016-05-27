@@ -39,6 +39,12 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+// Disable -Woverriding-method-mismatch until resolving the accidental conflict
+// with NSObject's KVC category.
+// https://github.com/google/protobuf/issues/1616 opened to resolve this.
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Woverriding-method-mismatch"
+
 //%PDDM-EXPAND DECLARE_DICTIONARIES()
 // This block of code is generated, do not edit it directly.
 
@@ -2084,6 +2090,8 @@ NS_ASSUME_NONNULL_BEGIN
 @end
 
 //%PDDM-EXPAND-END DECLARE_DICTIONARIES()
+
+#pragma clang diagnostic pop
 
 NS_ASSUME_NONNULL_END
 
