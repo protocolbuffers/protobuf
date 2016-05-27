@@ -55,13 +55,6 @@ typedef NS_ENUM(NSInteger, GPBMessageErrorCode) {
   GPBMessageErrorCodeMissingRequiredField = -101,
 };
 
-#ifdef DEBUG
-/// In DEBUG ONLY, an NSException is thrown when a parsed message doesn't
-/// contain required fields. This key allows you to retrieve the parsed message
-/// from the exception's @c userInfo dictionary.
-extern NSString *const GPBExceptionMessageKey;
-#endif  // DEBUG
-
 CF_EXTERN_C_END
 
 /// Base class for all of the generated message classes.
