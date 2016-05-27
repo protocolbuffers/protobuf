@@ -1,27 +1,25 @@
-# This is a basic version file for the Config-mode of find_package().
-# It is derived from the format suggested in the CMake module
-# CMakePackageConfigHelpers. introduced in CMake 2.8.8.
-# If the cmake_minimum_required version is ever bumped to 2.8.8 or
-# above, this file may be deleted and replaced with a call to
-# write_basic_package_version_file(...)
-
 set(PACKAGE_VERSION @protobuf_VERSION@)
 
-if(PACKAGE_VERSION VERSION_LESS PACKAGE_FIND_VERSION)
+# Implement rough Sematic Versioning rules - Major versions must match, minor, patch and tweak
+# versionsmust be greater, and a version with no tweak(prerelease) beats equal versions with one.
+
+# To allow matching of prerelease versions in find_package, users must specify a tweak version
+# greater than 0
+
+set(PACKAGE_VERSION_COMPATIBLE TRUE) #Assume true until shown otherwise
+
+if(PACKAGE_FIND_VERSION STREQUAL PACKAGE_VERSION)
+  set(PACKAGE_VERSION_EXACT TRUE)
+elseif(NOT PACKAGE_FIND_VERSION_MAJOR EQUAL "@protobuf_VERSION_MAJOR@")
   set(PACKAGE_VERSION_COMPATIBLE FALSE)
-else()
-
-  if(PACKAGE_FIND_VERSION_MAJOR STREQUAL @protobuf_VERSION_MAJOR@)
-    set(PACKAGE_VERSION_COMPATIBLE TRUE)
-  else()
-    set(PACKAGE_VERSION_COMPATIBLE FALSE)
-  endif()
-
-  if(PACKAGE_FIND_VERSION STREQUAL PACKAGE_VERSION)
-      set(PACKAGE_VERSION_EXACT TRUE)
-  endif()
+elseif(PACKAGE_FIND_VERSION_MINOR GREATER "@protobuf_VERSION_MINOR@")
+  set(PACKAGE_VERSION_COMPATIBLE FALSE)
+elseif(PACKAGE_FIND_VERSION_PATCH GREATER "@protobuf_VERSION_PATCH@")
+  set(PACKAGE_VERSION_COMPATIBLE FALSE)
+elseif(("@protobuf_VERSION_TWEAK@" AND NOT PACKAGE_FIND_VERSION_TWEAK) OR
+       (PACKAGE_FIND_VERSION_TWEAK GREATER "@protobuf_VERSION_TWEAK@"))
+  set(PACKAGE_VERSION_COMPATIBLE FALSE)
 endif()
-
 
 # if the installed or the using project don't have CMAKE_SIZEOF_VOID_P set, ignore it:
 if("${CMAKE_SIZEOF_VOID_P}" STREQUAL "" OR "@CMAKE_SIZEOF_VOID_P@" STREQUAL "")
