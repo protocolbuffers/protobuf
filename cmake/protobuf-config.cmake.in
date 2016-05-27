@@ -21,7 +21,3 @@ get_filename_component(_PROTOBUF_IMPORT_PREFIX
 if(NOT DEFINED PROTOBUF_MODULE_COMPATIBLE OR "${PROTOBUF_MODULE_COMPATIBLE}")
   include("${_PROTOBUF_PACKAGE_PREFIX}/protobuf-module.cmake")
 endif()
-
-# Cleanup temporary variables.
-set(_PROTOBUF_PACKAGE_PREFIX)
-set(_PROTOBUF_IMPORT_PREFIX)
