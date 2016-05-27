@@ -10,12 +10,8 @@ get_filename_component(_PROTOBUF_PACKAGE_PREFIX
 include("${_PROTOBUF_PACKAGE_PREFIX}/protobuf-targets.cmake")
 
 # Compute the installation prefix relative to this file.
-get_filename_component(_PROTOBUF_IMPORT_PREFIX
-  "${_PROTOBUF_PACKAGE_PREFIX}" PATH)
-get_filename_component(_PROTOBUF_IMPORT_PREFIX
-  "${_PROTOBUF_IMPORT_PREFIX}" PATH)
-get_filename_component(_PROTOBUF_IMPORT_PREFIX
-  "${_PROTOBUF_IMPORT_PREFIX}" PATH)
+file(RELATIVE_PATH _PROTOBUF_RELATIVE_PATH "@CMAKE_INSTALL_PREFIX@/@CMAKE_INSTALL_CMAKEDIR@" "@CMAKE_INSTALL_PREFIX@")
+get_filename_component(_PROTOBUF_IMPORT_PREFIX  "${_PROTOBUF_PACKAGE_PREFIX}/${_PROTOBUF_RELATIVE_PATH}" ABSOLUTE)
 
 # CMake FindProtobuf module compatible file
 if(NOT DEFINED PROTOBUF_MODULE_COMPATIBLE OR "${PROTOBUF_MODULE_COMPATIBLE}")
