@@ -4,8 +4,13 @@
 AC_PREREQ(2.59)
 
 # Note:  If you change the version, you must also update it in:
-# * java/pom.xml
-# * python/setup.py
+# * Protobuf.podspec
+# * csharp/Google.Protobuf.Tools.nuspec
+# * csharp/src/*/AssemblyInfo.cs
+# * csharp/src/Google.Protobuf/Google.Protobuf.nuspec
+# * java/*/pom.xml
+# * python/google/protobuf/__init__.py
+# * protoc-artifacts/pom.xml
 # * src/google/protobuf/stubs/common.h
 # * src/Makefile.am (Update -version-info for LDFLAGS if needed)
 #
