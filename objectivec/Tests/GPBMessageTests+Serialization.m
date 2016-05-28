@@ -989,8 +989,8 @@ static NSData *DataFromCStr(const char *str) {
   TestMap *msg = [TestMap parseFromData:data error:&error];
   XCTAssertNil(msg);
   XCTAssertNotNil(error);
-  XCTAssertEqualObjects(error.domain, GPBMessageErrorDomain);
-  XCTAssertEqual(error.code, GPBMessageErrorCodeMalformedData);
+  XCTAssertEqualObjects(error.domain, GPBCodedInputStreamErrorDomain);
+  XCTAssertEqual(error.code, GPBCodedInputStreamErrorInvalidSubsectionLimit);
 }
 
 // TEST(GeneratedMapFieldTest, Proto2UnknownEnum)

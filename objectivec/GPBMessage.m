@@ -102,14 +102,28 @@ static NSError *MessageError(NSInteger code, NSDictionary *userInfo) {
                          userInfo:userInfo];
 }
 
-static NSError *MessageErrorWithReason(NSInteger code, NSString *reason) {
+static NSError *ErrorFromException(NSException *exception) {
+  NSString *errorDomain = nil;
+  NSInteger errorCode;
+
+  NSString *reason = exception.reason;
   NSDictionary *userInfo = nil;
   if ([reason length]) {
     userInfo = @{ @"Reason" : reason };
   }
-  return MessageError(code, userInfo);
-}
 
+  if ([exception.name isEqual:GPBCodedInputStreamException]) {
+    NSDictionary *exceptionInfo = exception.userInfo;
+
+    errorDomain = exceptionInfo[@"ErrorDomain"];
+    NSNumber *errorCodeNumber = exceptionInfo[@"ErrorCode"];
+    errorCode = errorCodeNumber.integerValue;
+  } else {
+    errorDomain = GPBMessageErrorDomain;
+    errorCode = GPBMessageErrorCodeMalformedData;
+  }
+  return [NSError errorWithDomain:errorDomain code:errorCode userInfo:userInfo];
+}
 
 static void CheckExtension(GPBMessage *self,
                            GPBExtensionDescriptor *extension) {
@@ -817,8 +831,7 @@ static GPBUnknownFieldSet *GetOrMakeUnknownFields(GPBMessage *self) {
       [self release];
       self = nil;
       if (errorPtr) {
-        *errorPtr = MessageErrorWithReason(GPBMessageErrorCodeMalformedData,
-                                           exception.reason);
+        *errorPtr = ErrorFromException(exception);
       }
     }
 #ifdef DEBUG
@@ -849,8 +862,7 @@ static GPBUnknownFieldSet *GetOrMakeUnknownFields(GPBMessage *self) {
       [self release];
       self = nil;
       if (errorPtr) {
-        *errorPtr = MessageErrorWithReason(GPBMessageErrorCodeMalformedData,
-                                           exception.reason);
+        *errorPtr = ErrorFromException(exception);
       }
     }
 #ifdef DEBUG
@@ -1923,8 +1935,7 @@ static GPBUnknownFieldSet *GetOrMakeUnknownFields(GPBMessage *self) {
   @catch (NSException *exception) {
     message = nil;
     if (errorPtr) {
-      *errorPtr = MessageErrorWithReason(GPBMessageErrorCodeMalformedData,
-                                         exception.reason);
+      *errorPtr = ErrorFromException(exception);
     }
   }
 #ifdef DEBUG
