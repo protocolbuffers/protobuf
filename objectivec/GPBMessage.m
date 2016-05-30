@@ -53,11 +53,6 @@
 NSString *const GPBMessageErrorDomain =
     GPBNSStringifySymbol(GPBMessageErrorDomain);
 
-#ifdef DEBUG
-NSString *const GPBExceptionMessageKey =
-    GPBNSStringifySymbol(GPBExceptionMessage);
-#endif  // DEBUG
-
 static NSString *const kGPBDataCoderKey = @"GPBData";
 
 //
