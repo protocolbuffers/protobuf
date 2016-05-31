@@ -10,6 +10,7 @@ These are projects we know about implementing Protocol Buffers for other program
 * Action Script: http://code.google.com/p/protobuf-actionscript3/
 * Action Script: https://code.google.com/p/protoc-gen-as3/
 * Action Script: https://github.com/matrix3d/JProtoc
+* Action Script: https://github.com/zhongfq/protobuf-as3/
 * C: https://github.com/protobuf-c/protobuf-c
 * C: http://koti.kapsi.fi/jpa/nanopb/
 * C: https://github.com/cloudwu/pbc/
