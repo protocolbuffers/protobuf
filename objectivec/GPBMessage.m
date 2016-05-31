@@ -96,33 +96,34 @@ static NSMutableDictionary *CloneExtensionMap(NSDictionary *extensionMap,
                                               NSZone *zone)
     __attribute__((ns_returns_retained));
 
+#ifdef DEBUG
 static NSError *MessageError(NSInteger code, NSDictionary *userInfo) {
   return [NSError errorWithDomain:GPBMessageErrorDomain
                              code:code
                          userInfo:userInfo];
 }
+#endif
 
 static NSError *ErrorFromException(NSException *exception) {
-  NSString *errorDomain = nil;
-  NSInteger errorCode;
-
-  NSString *reason = exception.reason;
-  NSDictionary *userInfo = nil;
-  if ([reason length]) {
-    userInfo = @{ @"Reason" : reason };
-  }
+  NSError *error = nil;
 
   if ([exception.name isEqual:GPBCodedInputStreamException]) {
     NSDictionary *exceptionInfo = exception.userInfo;
-
-    errorDomain = exceptionInfo[@"ErrorDomain"];
-    NSNumber *errorCodeNumber = exceptionInfo[@"ErrorCode"];
-    errorCode = errorCodeNumber.integerValue;
-  } else {
-    errorDomain = GPBMessageErrorDomain;
-    errorCode = GPBMessageErrorCodeMalformedData;
+    error = exceptionInfo[GPBCodedInputStreamUnderlyingErrorKey];
   }
-  return [NSError errorWithDomain:errorDomain code:errorCode userInfo:userInfo];
+
+  if (!error) {
+    NSString *reason = exception.reason;
+    NSDictionary *userInfo = nil;
+    if ([reason length]) {
+      userInfo = @{ @"Reason" : reason };
+    }
+
+    error = [NSError errorWithDomain:GPBMessageErrorDomain
+                                code:GPBMessageErrorCodeMalformedData
+                            userInfo:userInfo];
+  }
+  return error;
 }
 
 static void CheckExtension(GPBMessage *self,

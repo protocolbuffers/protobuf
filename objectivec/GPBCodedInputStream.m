@@ -42,16 +42,25 @@ NSString *const GPBCodedInputStreamException =
 NSString *const GPBCodedInputStreamErrorDomain =
     GPBNSStringifySymbol(GPBCodedInputStreamErrorDomain);
 
+NSString *const GPBCodedInputStreamUnderlyingErrorKey =
+    GPBNSStringifySymbol(GPBCodedInputStreamUnderlyingErrorKey);
+
 static const NSUInteger kDefaultRecursionLimit = 64;
 
 static void RaiseException(NSInteger code, NSString *message) {
-  NSDictionary *userInfo = @{
-    @"ErrorCode": @(code),
-    @"ErrorDomain": GPBCodedInputStreamErrorDomain
-  };
+  NSDictionary *errorInfo = nil;
+  if ([message length]) {
+    errorInfo = @{ @"Reason": message };
+  }
+  NSError *error = [NSError errorWithDomain:GPBCodedInputStreamErrorDomain
+                                       code:code
+                                   userInfo:errorInfo];
+
+  NSDictionary *exceptionInfo =
+      @{ GPBCodedInputStreamUnderlyingErrorKey: error };
   [[[NSException alloc] initWithName:GPBCodedInputStreamException
                               reason:message
-                            userInfo:userInfo] raise];
+                            userInfo:exceptionInfo] raise];
 }
 
 static void CheckSize(GPBCodedInputStreamState *state, size_t size) {

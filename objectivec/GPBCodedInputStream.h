@@ -37,11 +37,16 @@ NS_ASSUME_NONNULL_BEGIN
 
 CF_EXTERN_C_BEGIN
 
-/// GPBCodedInputStream exception name.
+/// GPBCodedInputStream exception name. Exceptions raised from
+/// GPBCodedInputStream contain an underlying error in the userInfo dictionary
+/// under the GPBCodedInputStreamUnderlyingErrorKey key.
 extern NSString *const GPBCodedInputStreamException;
 
 /// NSError domain used for GPBCodedInputStream errors.
 extern NSString *const GPBCodedInputStreamErrorDomain;
+
+/// The key under which the underlying error from the exception is stored.
+extern NSString *const GPBCodedInputStreamUnderlyingErrorKey;
 
 /// Error code for NSError with GPBCodedInputStreamErrorDomain.
 typedef NS_ENUM(NSInteger, GPBCodedInputStreamErrorCode) {
