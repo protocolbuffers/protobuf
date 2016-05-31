@@ -42,11 +42,11 @@ CF_EXTERN_C_BEGIN
 /// under the GPBCodedInputStreamUnderlyingErrorKey key.
 extern NSString *const GPBCodedInputStreamException;
 
+/// The key under which the underlying NSError from the exception is stored.
+extern NSString *const GPBCodedInputStreamUnderlyingErrorKey;
+
 /// NSError domain used for GPBCodedInputStream errors.
 extern NSString *const GPBCodedInputStreamErrorDomain;
-
-/// The key under which the underlying error from the exception is stored.
-extern NSString *const GPBCodedInputStreamUnderlyingErrorKey;
 
 /// Error code for NSError with GPBCodedInputStreamErrorDomain.
 typedef NS_ENUM(NSInteger, GPBCodedInputStreamErrorCode) {

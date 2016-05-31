@@ -39,11 +39,11 @@
 NSString *const GPBCodedInputStreamException =
     GPBNSStringifySymbol(GPBCodedInputStreamException);
 
-NSString *const GPBCodedInputStreamErrorDomain =
-    GPBNSStringifySymbol(GPBCodedInputStreamErrorDomain);
-
 NSString *const GPBCodedInputStreamUnderlyingErrorKey =
     GPBNSStringifySymbol(GPBCodedInputStreamUnderlyingErrorKey);
+
+NSString *const GPBCodedInputStreamErrorDomain =
+    GPBNSStringifySymbol(GPBCodedInputStreamErrorDomain);
 
 static const NSUInteger kDefaultRecursionLimit = 64;
 
