@@ -935,7 +935,18 @@ static NSData *DataFromCStr(const char *str) {
   XCTAssertEqual(error.code, GPBCodedInputStreamErrorInvalidSize);
 }
 
-- (void)testErrorRecursionLimitReached {
+- (void)testErrorInvalidTag {
+  NSData *data = DataFromCStr("\x0F");
+  NSError *error = nil;
+  NestedTestAllTypes *msg = [NestedTestAllTypes parseFromData:data
+                                                        error:&error];
+  XCTAssertNil(msg);
+  XCTAssertNotNil(error);
+  XCTAssertEqualObjects(error.domain, GPBCodedInputStreamErrorDomain);
+  XCTAssertEqual(error.code, GPBCodedInputStreamErrorInvalidTag);
+}
+
+- (void)testErrorRecursionDepthReached {
   NSData *data = DataFromCStr(
       "\x0A\x86\x01\x0A\x83\x01\x0A\x80\x01\x0A\x7E\x0A\x7C\x0A\x7A\x0A\x78"
       "\x0A\x76\x0A\x74\x0A\x72\x0A\x70\x0A\x6E\x0A\x6C\x0A\x6A\x0A\x68"
@@ -953,6 +964,16 @@ static NSData *DataFromCStr(const char *str) {
   XCTAssertNotNil(error);
   XCTAssertEqualObjects(error.domain, GPBCodedInputStreamErrorDomain);
   XCTAssertEqual(error.code, GPBCodedInputStreamErrorRecursionDepthExceeded);
+}
+
+- (void)testErrorMissingRequiredField {
+  NSData *data = DataFromCStr("");
+  NSError *error = nil;
+  TestRequired *msg = [TestRequired parseFromData:data error:&error];
+  XCTAssertNil(msg);
+  XCTAssertNotNil(error);
+  XCTAssertEqualObjects(error.domain, GPBMessageErrorDomain);
+  XCTAssertEqual(error.code, GPBMessageErrorCodeMissingRequiredField);
 }
 
 #pragma mark - Subset from from map_tests.cc
