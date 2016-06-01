@@ -47,10 +47,10 @@ NSString *const GPBCodedInputStreamErrorDomain =
 
 static const NSUInteger kDefaultRecursionLimit = 64;
 
-static void RaiseException(NSInteger code, NSString *message) {
+static void RaiseException(NSInteger code, NSString *reason) {
   NSDictionary *errorInfo = nil;
-  if ([message length]) {
-    errorInfo = @{ @"Reason": message };
+  if ([reason length]) {
+    errorInfo = @{ GPBErrorReasonKey: reason };
   }
   NSError *error = [NSError errorWithDomain:GPBCodedInputStreamErrorDomain
                                        code:code
@@ -59,7 +59,7 @@ static void RaiseException(NSInteger code, NSString *message) {
   NSDictionary *exceptionInfo =
       @{ GPBCodedInputStreamUnderlyingErrorKey: error };
   [[[NSException alloc] initWithName:GPBCodedInputStreamException
-                              reason:message
+                              reason:reason
                             userInfo:exceptionInfo] raise];
 }
 

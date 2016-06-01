@@ -49,11 +49,14 @@ extern NSString *const GPBMessageErrorDomain;
 
 /// Error code for NSError with GPBMessageErrorDomain.
 typedef NS_ENUM(NSInteger, GPBMessageErrorCode) {
-  /// The data being parsed is bad and a message can not be created from it.
-  GPBMessageErrorCodeMalformedData = -100,
+  /// Uncategorized error.
+  GPBMessageErrorCodeOther = -100,
   /// A message can't be serialized because it is missing required fields.
   GPBMessageErrorCodeMissingRequiredField = -101,
 };
+
+/// Key under which the error's reason is stored inside the userInfo dictionary.
+extern NSString *const GPBErrorReasonKey;
 
 CF_EXTERN_C_END
 

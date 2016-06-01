@@ -53,6 +53,8 @@
 NSString *const GPBMessageErrorDomain =
     GPBNSStringifySymbol(GPBMessageErrorDomain);
 
+NSString *const GPBErrorReasonKey = @"Reason";
+
 static NSString *const kGPBDataCoderKey = @"GPBData";
 
 //
@@ -116,11 +118,11 @@ static NSError *ErrorFromException(NSException *exception) {
     NSString *reason = exception.reason;
     NSDictionary *userInfo = nil;
     if ([reason length]) {
-      userInfo = @{ @"Reason" : reason };
+      userInfo = @{ GPBErrorReasonKey : reason };
     }
 
     error = [NSError errorWithDomain:GPBMessageErrorDomain
-                                code:GPBMessageErrorCodeMalformedData
+                                code:GPBMessageErrorCodeOther
                             userInfo:userInfo];
   }
   return error;
