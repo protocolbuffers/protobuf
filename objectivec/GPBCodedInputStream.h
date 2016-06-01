@@ -52,18 +52,18 @@ extern NSString *const GPBCodedInputStreamErrorDomain;
 typedef NS_ENUM(NSInteger, GPBCodedInputStreamErrorCode) {
   /// The size does not fit in the remaining bytes to be read.
   GPBCodedInputStreamErrorInvalidSize = -100,
-  /// The requested subsection limit is invalid.
-  GPBCodedInputStreamErrorInvalidSubsectionLimit = -101,
-  /// Invalid tag read.
-  GPBCodedInputStreamErrorInvalidTag = -102,
-  /// Invalid UTF-8 character in a string.
-  GPBCodedInputStreamErrorInvalidUTF8 = -103,
-  /// Invalid VarInt read.
-  GPBCodedInputStreamErrorInvalidVarInt = -104,
-  /// The maximum recursion depth of messages was exceeded.
-  GPBCodedInputStreamErrorRecursionDepthExceeded = -105,
   /// Attempted to read beyond the subsection limit.
-  GPBCodedInputStreamErrorSubsectionLimitReached = -106,
+  GPBCodedInputStreamErrorSubsectionLimitReached = -101,
+  /// The requested subsection limit is invalid.
+  GPBCodedInputStreamErrorInvalidSubsectionLimit = -102,
+  /// Invalid tag read.
+  GPBCodedInputStreamErrorInvalidTag = -103,
+  /// Invalid UTF-8 character in a string.
+  GPBCodedInputStreamErrorInvalidUTF8 = -104,
+  /// Invalid VarInt read.
+  GPBCodedInputStreamErrorInvalidVarInt = -105,
+  /// The maximum recursion depth of messages was exceeded.
+  GPBCodedInputStreamErrorRecursionDepthExceeded = -106,
 };
 
 CF_EXTERN_C_END
