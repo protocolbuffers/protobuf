@@ -87,22 +87,35 @@ if(NOT MSVC)
 else()
   set(CMAKE_INSTALL_CMAKEDIR "cmake" CACHE STRING "${_cmakedir_desc}")
 endif()
+mark_as_advanced(CMAKE_INSTALL_CMAKEDIR)
 
+# Import configuration
 install(EXPORT protobuf-targets
   DESTINATION "${CMAKE_INSTALL_CMAKEDIR}"
   NAMESPACE protobuf::
   COMPONENT protobuf-export)
 
 configure_file(protobuf-config.cmake.in
-  protobuf-config.cmake @ONLY)
+  ${CMAKE_INSTALL_CMAKEDIR}/protobuf-config.cmake @ONLY)
 configure_file(protobuf-config-version.cmake.in
-  protobuf-config-version.cmake @ONLY)
+  ${CMAKE_INSTALL_CMAKEDIR}/protobuf-config-version.cmake @ONLY)
 configure_file(protobuf-module.cmake.in
-  protobuf-module.cmake @ONLY)
+  ${CMAKE_INSTALL_CMAKEDIR}/protobuf-module.cmake @ONLY)
+
+# Build tree import configuration (for import from subprojects)
+if(NOT EXISTS "${protobuf_DIR}")
+  set(protobuf_DIR "${protobuf_BINARY_DIR}/${CMAKE_INSTALL_CMAKEDIR}")
+  set(Protobuf_DIR "${protobuf_DIR}")
+  file(COPY
+    "${CMAKE_CURRENT_LIST_DIR}/protobuf-options.cmake"
+    "${CMAKE_CURRENT_LIST_DIR}/protobuf-targets.cmake"
+    DESTINATION "${protobuf_DIR}")
+endif()
 
 install(FILES
-  "${protobuf_BINARY_DIR}/protobuf-config.cmake"
-  "${protobuf_BINARY_DIR}/protobuf-config-version.cmake"
-  "${protobuf_BINARY_DIR}/protobuf-module.cmake"
+  "${CMAKE_CURRENT_LIST_DIR}/protobuf-options.cmake"
+  "${protobuf_BINARY_DIR}/${CMAKE_INSTALL_CMAKEDIR}/protobuf-config.cmake"
+  "${protobuf_BINARY_DIR}/${CMAKE_INSTALL_CMAKEDIR}/protobuf-config-version.cmake"
+  "${protobuf_BINARY_DIR}/${CMAKE_INSTALL_CMAKEDIR}/protobuf-module.cmake"
   DESTINATION "${CMAKE_INSTALL_CMAKEDIR}"
   COMPONENT protobuf-export)
