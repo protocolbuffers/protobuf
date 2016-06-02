@@ -49,11 +49,14 @@ extern NSString *const GPBMessageErrorDomain;
 
 /// Error code for NSError with GPBMessageErrorDomain.
 typedef NS_ENUM(NSInteger, GPBMessageErrorCode) {
-  /// The data being parsed is bad and a message can not be created from it.
-  GPBMessageErrorCodeMalformedData = -100,
+  /// Uncategorized error.
+  GPBMessageErrorCodeOther = -100,
   /// A message can't be serialized because it is missing required fields.
   GPBMessageErrorCodeMissingRequiredField = -101,
 };
+
+/// Key under which the error's reason is stored inside the userInfo dictionary.
+extern NSString *const GPBErrorReasonKey;
 
 CF_EXTERN_C_END
 
@@ -86,6 +89,9 @@ CF_EXTERN_C_END
 /// @note In DEBUG builds, the parsed message is checked to be sure all required
 ///       fields were provided, and the parse will fail if some are missing.
 ///
+/// @note The errors returned are likely coming from the domain and codes listed
+///       at the top of this file and GPBCodedInputStream.h.
+///
 /// @param data     The data to parse.
 /// @param errorPtr An optional error pointer to fill in with a failure reason if
 ///                 the data can not be parsed.
@@ -100,6 +106,9 @@ CF_EXTERN_C_END
 ///
 /// @note In DEBUG builds, the parsed message is checked to be sure all required
 ///       fields were provided, and the parse will fail if some are missing.
+///
+/// @note The errors returned are likely coming from the domain and codes listed
+///       at the top of this file and GPBCodedInputStream.h.
 ///
 /// @param data              The data to parse.
 /// @param extensionRegistry The extension registry to use to look up extensions.
@@ -118,6 +127,9 @@ CF_EXTERN_C_END
 ///
 /// @note In DEBUG builds, the parsed message is checked to be sure all required
 ///       fields were provided, and the parse will fail if some are missing.
+///
+/// @note The errors returned are likely coming from the domain and codes listed
+///       at the top of this file and GPBCodedInputStream.h.
 ///
 /// @param input             The stream to read data from.
 /// @param extensionRegistry The extension registry to use to look up extensions.
@@ -139,6 +151,9 @@ CF_EXTERN_C_END
 ///       the required fields are set. So this method can be used to reload
 ///       messages that may not be complete.
 ///
+/// @note The errors returned are likely coming from the domain and codes listed
+///       at the top of this file and GPBCodedInputStream.h.
+///
 /// @param input             The stream to read data from.
 /// @param extensionRegistry The extension registry to use to look up extensions.
 /// @param errorPtr          An optional error pointer to fill in with a failure
@@ -158,6 +173,9 @@ CF_EXTERN_C_END
 /// @note In DEBUG builds, the parsed message is checked to be sure all required
 ///       fields were provided, and the parse will fail if some are missing.
 ///
+/// @note The errors returned are likely coming from the domain and codes listed
+///       at the top of this file and GPBCodedInputStream.h.
+///
 /// @param data     The data to parse.
 /// @param errorPtr An optional error pointer to fill in with a failure reason if
 ///                 the data can not be parsed.
@@ -170,6 +188,9 @@ CF_EXTERN_C_END
 ///
 /// @note In DEBUG builds, the parsed message is checked to be sure all required
 ///       fields were provided, and the parse will fail if some are missing.
+///
+/// @note The errors returned are likely coming from the domain and codes listed
+///       at the top of this file and GPBCodedInputStream.h.
 ///
 /// @param data              The data to parse.
 /// @param extensionRegistry The extension registry to use to look up extensions.
@@ -187,6 +208,9 @@ CF_EXTERN_C_END
 /// @note Unlike the parseFrom... methods, this never checks to see if all of
 ///       the required fields are set. So this method can be used to reload
 ///       messages that may not be complete.
+///
+/// @note The errors returned are likely coming from the domain and codes listed
+///       at the top of this file and GPBCodedInputStream.h.
 ///
 /// @param input             The stream to read data from.
 /// @param extensionRegistry The extension registry to use to look up extensions.

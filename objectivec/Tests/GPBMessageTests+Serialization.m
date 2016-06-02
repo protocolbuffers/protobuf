@@ -881,6 +881,103 @@ static NSData *DataFromCStr(const char *str) {
   XCTAssertEqualObjects(extsParse, extsOrig);
 }
 
+- (void)testErrorSubsectionInvalidLimit {
+  NSData *data = DataFromCStr(
+      "\x0A\x08\x0A\x07\x12\x04\x72\x02\x4B\x50\x12\x04\x72\x02\x4B\x50");
+  NSError *error = nil;
+  NestedTestAllTypes *msg = [NestedTestAllTypes parseFromData:data
+                                                        error:&error];
+  XCTAssertNil(msg);
+  XCTAssertNotNil(error);
+  XCTAssertEqualObjects(error.domain, GPBCodedInputStreamErrorDomain);
+  XCTAssertEqual(error.code, GPBCodedInputStreamErrorInvalidSubsectionLimit);
+}
+
+- (void)testErrorSubsectionLimitReached {
+  NSData *data = DataFromCStr("\x0A\x06\x12\x03\x72\x02\x4B\x50");
+  NSError *error = nil;
+  NestedTestAllTypes *msg = [NestedTestAllTypes parseFromData:data
+                                                        error:&error];
+  XCTAssertNil(msg);
+  XCTAssertNotNil(error);
+  XCTAssertEqualObjects(error.domain, GPBCodedInputStreamErrorDomain);
+  XCTAssertEqual(error.code, GPBCodedInputStreamErrorSubsectionLimitReached);
+}
+
+- (void)testErrorInvalidVarint {
+  NSData *data = DataFromCStr("\x72\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF");
+  NSError *error = nil;
+  TestAllTypes *msg = [TestAllTypes parseFromData:data error:&error];
+  XCTAssertNil(msg);
+  XCTAssertNotNil(error);
+  XCTAssertEqualObjects(error.domain, GPBCodedInputStreamErrorDomain);
+  XCTAssertEqual(error.code, GPBCodedInputStreamErrorInvalidVarInt);
+}
+
+- (void)testErrorInvalidUTF8 {
+  NSData *data = DataFromCStr("\x72\x04\xF4\xFF\xFF\xFF");
+  NSError *error = nil;
+  TestAllTypes *msg = [TestAllTypes parseFromData:data error:&error];
+  XCTAssertNil(msg);
+  XCTAssertNotNil(error);
+  XCTAssertEqualObjects(error.domain, GPBCodedInputStreamErrorDomain);
+  XCTAssertEqual(error.code, GPBCodedInputStreamErrorInvalidUTF8);
+}
+
+- (void)testErrorInvalidSize {
+  NSData *data = DataFromCStr("\x72\x03\x4B\x50");
+  NSError *error = nil;
+  NestedTestAllTypes *msg = [NestedTestAllTypes parseFromData:data
+                                                        error:&error];
+  XCTAssertNil(msg);
+  XCTAssertNotNil(error);
+  XCTAssertEqualObjects(error.domain, GPBCodedInputStreamErrorDomain);
+  XCTAssertEqual(error.code, GPBCodedInputStreamErrorInvalidSize);
+}
+
+- (void)testErrorInvalidTag {
+  NSData *data = DataFromCStr("\x0F");
+  NSError *error = nil;
+  NestedTestAllTypes *msg = [NestedTestAllTypes parseFromData:data
+                                                        error:&error];
+  XCTAssertNil(msg);
+  XCTAssertNotNil(error);
+  XCTAssertEqualObjects(error.domain, GPBCodedInputStreamErrorDomain);
+  XCTAssertEqual(error.code, GPBCodedInputStreamErrorInvalidTag);
+}
+
+- (void)testErrorRecursionDepthReached {
+  NSData *data = DataFromCStr(
+      "\x0A\x86\x01\x0A\x83\x01\x0A\x80\x01\x0A\x7E\x0A\x7C\x0A\x7A\x0A\x78"
+      "\x0A\x76\x0A\x74\x0A\x72\x0A\x70\x0A\x6E\x0A\x6C\x0A\x6A\x0A\x68"
+      "\x0A\x66\x0A\x64\x0A\x62\x0A\x60\x0A\x5E\x0A\x5C\x0A\x5A\x0A\x58"
+      "\x0A\x56\x0A\x54\x0A\x52\x0A\x50\x0A\x4E\x0A\x4C\x0A\x4A\x0A\x48"
+      "\x0A\x46\x0A\x44\x0A\x42\x0A\x40\x0A\x3E\x0A\x3C\x0A\x3A\x0A\x38"
+      "\x0A\x36\x0A\x34\x0A\x32\x0A\x30\x0A\x2E\x0A\x2C\x0A\x2A\x0A\x28"
+      "\x0A\x26\x0A\x24\x0A\x22\x0A\x20\x0A\x1E\x0A\x1C\x0A\x1A\x0A\x18"
+      "\x0A\x16\x0A\x14\x0A\x12\x0A\x10\x0A\x0E\x0A\x0C\x0A\x0A\x0A\x08"
+      "\x0A\x06\x12\x04\x72\x02\x4B\x50");
+  NSError *error = nil;
+  NestedTestAllTypes *msg = [NestedTestAllTypes parseFromData:data
+                                                        error:&error];
+  XCTAssertNil(msg);
+  XCTAssertNotNil(error);
+  XCTAssertEqualObjects(error.domain, GPBCodedInputStreamErrorDomain);
+  XCTAssertEqual(error.code, GPBCodedInputStreamErrorRecursionDepthExceeded);
+}
+
+#ifdef DEBUG
+- (void)testErrorMissingRequiredField {
+  NSData *data = DataFromCStr("");
+  NSError *error = nil;
+  TestRequired *msg = [TestRequired parseFromData:data error:&error];
+  XCTAssertNil(msg);
+  XCTAssertNotNil(error);
+  XCTAssertEqualObjects(error.domain, GPBMessageErrorDomain);
+  XCTAssertEqual(error.code, GPBMessageErrorCodeMissingRequiredField);
+}
+#endif
+
 #pragma mark - Subset from from map_tests.cc
 
 // TEST(GeneratedMapFieldTest, StandardWireFormat)
@@ -989,8 +1086,8 @@ static NSData *DataFromCStr(const char *str) {
   TestMap *msg = [TestMap parseFromData:data error:&error];
   XCTAssertNil(msg);
   XCTAssertNotNil(error);
-  XCTAssertEqualObjects(error.domain, GPBMessageErrorDomain);
-  XCTAssertEqual(error.code, GPBMessageErrorCodeMalformedData);
+  XCTAssertEqualObjects(error.domain, GPBCodedInputStreamErrorDomain);
+  XCTAssertEqual(error.code, GPBCodedInputStreamErrorInvalidSubsectionLimit);
 }
 
 // TEST(GeneratedMapFieldTest, Proto2UnknownEnum)

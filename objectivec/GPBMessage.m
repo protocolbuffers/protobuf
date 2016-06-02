@@ -53,6 +53,8 @@
 NSString *const GPBMessageErrorDomain =
     GPBNSStringifySymbol(GPBMessageErrorDomain);
 
+NSString *const GPBErrorReasonKey = @"Reason";
+
 static NSString *const kGPBDataCoderKey = @"GPBData";
 
 //
@@ -96,20 +98,35 @@ static NSMutableDictionary *CloneExtensionMap(NSDictionary *extensionMap,
                                               NSZone *zone)
     __attribute__((ns_returns_retained));
 
+#ifdef DEBUG
 static NSError *MessageError(NSInteger code, NSDictionary *userInfo) {
   return [NSError errorWithDomain:GPBMessageErrorDomain
                              code:code
                          userInfo:userInfo];
 }
+#endif
 
-static NSError *MessageErrorWithReason(NSInteger code, NSString *reason) {
-  NSDictionary *userInfo = nil;
-  if ([reason length]) {
-    userInfo = @{ @"Reason" : reason };
+static NSError *ErrorFromException(NSException *exception) {
+  NSError *error = nil;
+
+  if ([exception.name isEqual:GPBCodedInputStreamException]) {
+    NSDictionary *exceptionInfo = exception.userInfo;
+    error = exceptionInfo[GPBCodedInputStreamUnderlyingErrorKey];
   }
-  return MessageError(code, userInfo);
-}
 
+  if (!error) {
+    NSString *reason = exception.reason;
+    NSDictionary *userInfo = nil;
+    if ([reason length]) {
+      userInfo = @{ GPBErrorReasonKey : reason };
+    }
+
+    error = [NSError errorWithDomain:GPBMessageErrorDomain
+                                code:GPBMessageErrorCodeOther
+                            userInfo:userInfo];
+  }
+  return error;
+}
 
 static void CheckExtension(GPBMessage *self,
                            GPBExtensionDescriptor *extension) {
@@ -817,8 +834,7 @@ static GPBUnknownFieldSet *GetOrMakeUnknownFields(GPBMessage *self) {
       [self release];
       self = nil;
       if (errorPtr) {
-        *errorPtr = MessageErrorWithReason(GPBMessageErrorCodeMalformedData,
-                                           exception.reason);
+        *errorPtr = ErrorFromException(exception);
       }
     }
 #ifdef DEBUG
@@ -849,8 +865,7 @@ static GPBUnknownFieldSet *GetOrMakeUnknownFields(GPBMessage *self) {
       [self release];
       self = nil;
       if (errorPtr) {
-        *errorPtr = MessageErrorWithReason(GPBMessageErrorCodeMalformedData,
-                                           exception.reason);
+        *errorPtr = ErrorFromException(exception);
       }
     }
 #ifdef DEBUG
@@ -1923,8 +1938,7 @@ static GPBUnknownFieldSet *GetOrMakeUnknownFields(GPBMessage *self) {
   @catch (NSException *exception) {
     message = nil;
     if (errorPtr) {
-      *errorPtr = MessageErrorWithReason(GPBMessageErrorCodeMalformedData,
-                                         exception.reason);
+      *errorPtr = ErrorFromException(exception);
     }
   }
 #ifdef DEBUG

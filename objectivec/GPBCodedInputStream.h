@@ -35,6 +35,39 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+CF_EXTERN_C_BEGIN
+
+/// GPBCodedInputStream exception name. Exceptions raised from
+/// GPBCodedInputStream contain an underlying error in the userInfo dictionary
+/// under the GPBCodedInputStreamUnderlyingErrorKey key.
+extern NSString *const GPBCodedInputStreamException;
+
+/// The key under which the underlying NSError from the exception is stored.
+extern NSString *const GPBCodedInputStreamUnderlyingErrorKey;
+
+/// NSError domain used for GPBCodedInputStream errors.
+extern NSString *const GPBCodedInputStreamErrorDomain;
+
+/// Error code for NSError with GPBCodedInputStreamErrorDomain.
+typedef NS_ENUM(NSInteger, GPBCodedInputStreamErrorCode) {
+  /// The size does not fit in the remaining bytes to be read.
+  GPBCodedInputStreamErrorInvalidSize = -100,
+  /// Attempted to read beyond the subsection limit.
+  GPBCodedInputStreamErrorSubsectionLimitReached = -101,
+  /// The requested subsection limit is invalid.
+  GPBCodedInputStreamErrorInvalidSubsectionLimit = -102,
+  /// Invalid tag read.
+  GPBCodedInputStreamErrorInvalidTag = -103,
+  /// Invalid UTF-8 character in a string.
+  GPBCodedInputStreamErrorInvalidUTF8 = -104,
+  /// Invalid VarInt read.
+  GPBCodedInputStreamErrorInvalidVarInt = -105,
+  /// The maximum recursion depth of messages was exceeded.
+  GPBCodedInputStreamErrorRecursionDepthExceeded = -106,
+};
+
+CF_EXTERN_C_END
+
 /// Reads and decodes protocol message fields.
 ///
 /// The common uses of protocol buffers shouldn't need to use this class.
