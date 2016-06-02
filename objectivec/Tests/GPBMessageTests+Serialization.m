@@ -966,6 +966,7 @@ static NSData *DataFromCStr(const char *str) {
   XCTAssertEqual(error.code, GPBCodedInputStreamErrorRecursionDepthExceeded);
 }
 
+#ifdef DEBUG
 - (void)testErrorMissingRequiredField {
   NSData *data = DataFromCStr("");
   NSError *error = nil;
@@ -975,6 +976,7 @@ static NSData *DataFromCStr(const char *str) {
   XCTAssertEqualObjects(error.domain, GPBMessageErrorDomain);
   XCTAssertEqual(error.code, GPBMessageErrorCodeMissingRequiredField);
 }
+#endif
 
 #pragma mark - Subset from from map_tests.cc
 
