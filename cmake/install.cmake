@@ -98,6 +98,8 @@ configure_file(protobuf-module.cmake.in
   ${CMAKE_INSTALL_CMAKEDIR}/protobuf-module.cmake @ONLY)
 configure_file(protobuf-options.cmake
   ${CMAKE_INSTALL_CMAKEDIR}/protobuf-options.cmake @ONLY)
+configure_file(protobuf-generators.cmake
+  ${CMAKE_INSTALL_CMAKEDIR}/protobuf-generators.cmake @ONLY)
 
 # Allows the build directory to be used as a find directory.
 export(TARGETS libprotobuf-lite libprotobuf libprotoc protoc
