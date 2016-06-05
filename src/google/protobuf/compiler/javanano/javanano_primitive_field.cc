@@ -893,8 +893,8 @@ GenerateSerializationCode(io::Printer* printer) const {
   if (descriptor_->is_packable() && descriptor_->options().packed()) {
     GenerateRepeatedDataSizeCode(printer);
     printer->Print(variables_,
-      "output.writeRawVarint32($tag$);\n"
-      "output.writeRawVarint32(dataSize);\n"
+      "output.writeUInt32NoTag($tag$);\n"
+      "output.writeUInt32NoTag(dataSize);\n"
       "for (int i = 0; i < this.$name$.length; i++) {\n"
       "  output.write$capitalized_type$NoTag(this.$name$[i]);\n"
       "}\n");
@@ -931,7 +931,7 @@ GenerateSerializedSizeCode(io::Printer* printer) const {
     printer->Print(variables_,
       "size += $tag_size$;\n"
       "size += com.google.protobuf.nano.CodedOutputByteBufferNano\n"
-      "    .computeRawVarint32Size(dataSize);\n");
+      "    .computeUInt32SizeNoTag(dataSize);\n");
   } else if (IsReferenceType(GetJavaType(descriptor_))) {
     printer->Print(variables_,
       "size += $tag_size$ * dataCount;\n");
