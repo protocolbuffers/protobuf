@@ -31,7 +31,7 @@ set(protobuf_DEBUG_POSTFIX "d"
   CACHE STRING "Default debug postfix")
 mark_as_advanced(protobuf_DEBUG_POSTFIX)
 # User options
-include("${CMAKE_CURRENT_LIST_DIR}/protobuf-options.cmake")
+include(protobuf-options.cmake)
 
 # Path to main configure script
 set(protobuf_CONFIGURE_SCRIPT "../configure.ac")
