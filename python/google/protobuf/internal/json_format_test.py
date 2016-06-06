@@ -260,12 +260,12 @@ class JsonFormatTest(JsonFormatBase):
     # Error case: unpaired high surrogate.
     self.CheckError(
         '{"stringValue": "\\uD83D"}',
-        r'Invalid \\uXXXX escape|Unpaired surrogate')
+        r'Invalid \\uXXXX escape|Unpaired (high )?surrogate')
 
     # Unpaired low surrogate.
     self.CheckError(
         '{"stringValue": "\\uDE01"}',
-        r'Invalid \\uXXXX escape|Unpaired surrogate')
+        r'Invalid \\uXXXX escape|Unpaired (high )?surrogate')
 
 
   def testTimestampMessage(self):
