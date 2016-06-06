@@ -32,7 +32,7 @@ EOF
 }
 
 TEST_MODES=( "static" "framework" )
-TEST_NAMES=( "iOSCocoaPodsTester" "OSXCocoaPodsTester" )
+TEST_NAMES=( "iOSCocoaPodsTester_iphonesimulator" "OSXCocoaPodsTester_macosx")
 while [[ $# != 0 ]]; do
   case "${1}" in
     -h | --help )
@@ -46,10 +46,10 @@ while [[ $# != 0 ]]; do
       TEST_MODES=(${TEST_MODES[@]/framework})
       ;;
     --skip-ios )
-      TEST_NAMES=(${TEST_NAMES[@]/iOSCocoaPodsTester})
+      TEST_NAMES=(${TEST_NAMES[@]/iOSCocoaPodsTester_iphonesimulator})
       ;;
     --skip-osx )
-      TEST_NAMES=(${TEST_NAMES[@]/OSXCocoaPodsTester})
+      TEST_NAMES=(${TEST_NAMES[@]/OSXCocoaPodsTester_macosx})
       ;;
     -*)
       echo "ERROR: Unknown option: ${1}" 1>&2
@@ -85,7 +85,7 @@ header() {
 
 # Cleanup hook for do_test, assumes directory is correct.
 cleanup() {
-  local TEST_NAME="$1"
+  local TEST_NAME=$(echo "$1" | cut -f1 -d_)
 
   echo "Cleaning up..."
 
@@ -104,7 +104,8 @@ cleanup() {
 }
 
 do_test() {
-  local TEST_NAME="$1"
+  local TEST_NAME=$(echo "$1" | cut -f1 -d_)
+  local TEST_SDK=$(echo "$1" | cut -f2 -d_)
   local TEST_MODE="$2"
 
   header "${TEST_NAME}" - Mode: "${TEST_MODE}"
@@ -121,7 +122,9 @@ do_test() {
 
   # Do the work!
   pod install --verbose
-  xcodebuild -workspace "${TEST_NAME}.xcworkspace" -scheme "${TEST_NAME}" build
+  # If the SDK is not provided, for iOS it tries to use iphoneos, and the test
+  # fail on Travis since it doesn't have a Code Signing identity.
+  xcodebuild -workspace "${TEST_NAME}.xcworkspace" -scheme "${TEST_NAME}" -sdk "${TEST_SDK}" ONLY_ACTIVE_ARCH=NO build
 
   # Clear the hook and manually run cleanup.
   trap - EXIT

@@ -223,6 +223,10 @@ build_objectivec_osx() {
       --core-only --skip-xcode-ios
 }
 
+build_objectivec_cocoapods_integration() {
+  objectivec/Tests/CocoaPods/run_tests.sh
+}
+
 build_python() {
   internal_build_cpp
   internal_install_python_deps
@@ -304,6 +308,7 @@ Usage: $0 { cpp |
             objectivec_ios_debug |
             objectivec_ios_release |
             objectivec_osx |
+            objectivec_cocoapods_integration |
             python |
             python_cpp |
             ruby19 |
