@@ -1,21 +1,20 @@
 include(GNUInstallDirs)
 
-foreach(_library
-  libprotobuf-lite
-  libprotobuf
-  libprotoc)
+set(_protobuf_libraries libprotobuf-lite libprotobuf libprotoc)
+set(_protobuf_targets ${_protobuf_libraries} protoc)
+foreach(_library ${_protobuf_libraries})
   set_property(TARGET ${_library}
     PROPERTY INTERFACE_INCLUDE_DIRECTORIES
     $<BUILD_INTERFACE:${protobuf_source_dir}/src>
     $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
-  install(TARGETS ${_library} EXPORT protobuf-targets
-    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT ${_library}
-    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR} COMPONENT ${_library}
-    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR} COMPONENT ${_library})
-endforeach()
+ endforeach()
 
-install(TARGETS protoc EXPORT protobuf-targets
-  RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT protoc)
+ foreach(_target ${_protobuf_targets})
+  install(TARGETS ${_target} EXPORT protobuf-${_target}
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT protobuf-${_target}
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR} COMPONENT protobuf-${_target}
+    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR} COMPONENT protobuf-${_target})
+endforeach()
 
 file(STRINGS extract_includes.bat.in _extract_strings
   REGEX "^copy")
@@ -90,6 +89,7 @@ else()
 endif()
 mark_as_advanced(CMAKE_INSTALL_CMAKEDIR)
 
+
 configure_file(protobuf-config.cmake.in
   ${CMAKE_INSTALL_CMAKEDIR}/protobuf-config.cmake @ONLY)
 configure_file(protobuf-config-version.cmake.in
@@ -99,21 +99,24 @@ configure_file(protobuf-module.cmake.in
 configure_file(protobuf-options.cmake
   ${CMAKE_INSTALL_CMAKEDIR}/protobuf-options.cmake @ONLY)
 
-# Allows the build directory to be used as a find directory.
-export(TARGETS libprotobuf-lite libprotobuf libprotoc protoc
-  NAMESPACE protobuf::
-  FILE ${CMAKE_INSTALL_CMAKEDIR}/protobuf-targets.cmake
-)
 
-install(EXPORT protobuf-targets
-  DESTINATION "${CMAKE_INSTALL_CMAKEDIR}"
-  NAMESPACE protobuf::
-  COMPONENT protobuf-export)
+foreach(_target ${_protobuf_targets})
+  export(TARGETS ${_target}
+    NAMESPACE protobuf::
+    FILE ${CMAKE_INSTALL_CMAKEDIR}/${_target}/protobuf-${_target}.cmake
+  )
+
+  install(EXPORT protobuf-${_target}
+    DESTINATION "${CMAKE_INSTALL_CMAKEDIR}/${_target}"
+    NAMESPACE protobuf::
+    COMPONENT protobuf-${_target})
+endforeach()
 
 install(DIRECTORY ${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_CMAKEDIR}/
   DESTINATION "${CMAKE_INSTALL_CMAKEDIR}"
   COMPONENT protobuf-export
-  PATTERN protobuf-targets.cmake EXCLUDE
+  FILES_MATCHING PATTERN "${CMAKE_INSTALL_CMAKEDIR}/*.cmake"
+  PATTERN "protobuf-targets.cmake" EXCLUDE
 )
 
 option(protobuf_INSTALL_EXAMPLES "Install the examples folder" OFF)
