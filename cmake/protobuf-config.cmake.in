@@ -4,6 +4,65 @@ include("${CMAKE_CURRENT_LIST_DIR}/protobuf-options.cmake")
 # Imported targets
 include("${CMAKE_CURRENT_LIST_DIR}/protobuf-targets.cmake")
 
+# Allow override of protoc for cross-compiling environments
+set(protobuf_PROTOC_HOST_LOCATION "" CACHE FILEPATH "Specify a protobuf::protoc executable. Useful for cross-compiling.")
+if(NOT CMAKE_CROSSCOMPILING)
+  mark_as_advanced(protobuf_PROTOC_HOST_LOCATION)
+endif()
+
+# Utility function for creating copies of imported targets since they cannot be aliased.
+function(_protobuf_duplicate_imported OUTPUT INPUT)
+  add_executable(${OUTPUT} IMPORTED)
+  get_target_property(_prop ${INPUT} IMPORTED_LOCATION)
+  set_property(TARGET ${OUTPUT} PROPERTY IMPORTED_LOCATION "${_prop}")
+
+  foreach(_config ${CMAKE_CONFIGURATION_TYPES})
+    get_target_property(_prop ${INPUT} IMPORTED_LOCATION_${_config})
+    set_property(TARGET ${OUTPUT} PROPERTY IMPORTED_LOCATION_${_config} "${_prop}")
+  endforeach()
+endfunction()
+
+# Copy the protobuf::protoc target to protobuf::protoc-target
+_protobuf_duplicate_imported(protobuf::protoc-target protobuf::protoc)
+
+# Modify protobuf::protoc to point at the requested location, if any
+if(protobuf_PROTOC_HOST_LOCATION)
+  # Verify protobuf_PROTOC_HOST_LOCATION points to an exe
+  find_program(protobuf_PROTOC_HOST_LOCATION protoc
+    HINTS "${protobuf_PROTOC_HOST_LOCATION}" NO_DEFAULT_PATH)
+
+  # Verify protobuf_PROTOC_HOST_LOCATION is a compatible version of protobuf
+  execute_process(COMMAND "${protobuf_PROTOC_HOST_LOCATION}" --version
+    RESULT_VARIABLE _protoc_result
+    OUTPUT_VARIABLE _protoc_out)
+
+  if(NOT _protoc_result EQUAL 0)
+    message(FATAL_ERROR "${protobuf_PROTOC_HOST_LOCATION} returned an error: ${_protoc_result}")
+  endif()
+
+  string(REGEX REPLACE "^libprotoc ([0-9]+\\.[0-9]+\\.[0-9]+)"
+    "\\1" _protoc_version "${_protoc_out}")
+
+  if(${_protoc_version} STREQUAL "")
+    message(FATAL_ERROR "${protobuf_PROTOC_HOST_LOCATION} returned an invalid version string '${_protoc_out}")
+  endif()
+
+  set(_protoc_min_version 3.0.0)
+  if(_protoc_version VERSION_LESS _protoc_min_version)
+    message(FATAL_ERROR "${protobuf_PROTOC_HOST_LOCATION} version '${_protoc_version}' is less than the minimum '${_protoc_min_version}'")
+  endif()
+
+  # Set the protobuf::protoc location to the user-provided location
+  set_property(TARGET protobuf::protoc PROPERTY IMPORTED_LOCATION "${protobuf_PROTOC_HOST_LOCATION}")
+  foreach(_config ${CMAKE_CONFIGURATION_TYPES})
+    set_property(TARGET ${OUTPUT} PROPERTY IMPORTED_LOCATION_${_config} "NOTFOUND")
+  endforeach()
+
+endif()
+
+# Copy the new protobuf::protoc target to protobuf::protoc-host
+_protobuf_duplicate_imported(protobuf::protoc-host protobuf::protoc)
+
 # CMake FindProtobuf module compatible file
 if(protobuf_MODULE_COMPATIBLE)
   include("${CMAKE_CURRENT_LIST_DIR}/protobuf-module.cmake")
