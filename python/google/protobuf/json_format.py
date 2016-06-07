@@ -49,6 +49,7 @@ except ImportError:
 import base64
 import json
 import math
+import re
 import six
 import sys
 
@@ -68,6 +69,9 @@ _INFINITY = 'Infinity'
 _NEG_INFINITY = '-Infinity'
 _NAN = 'NaN'
 
+_UNPAIRED_SURROGATE_PATTERN = re.compile(six.u(
+    r'[\ud800-\udbff](?![\udc00-\udfff])|(?<![\ud800-\udbff])[\udc00-\udfff]'
+))
 
 class Error(Exception):
   """Top-level module error for json_format."""
@@ -555,6 +559,10 @@ def _ConvertScalarFieldValue(value, field, require_str=False):
     if field.type == descriptor.FieldDescriptor.TYPE_BYTES:
       return base64.b64decode(value)
     else:
+      # Checking for unpaired surrogates appears to be unreliable,
+      # depending on the specific Python version, so we check manually.
+      if _UNPAIRED_SURROGATE_PATTERN.search(value):
+        raise ParseError('Unpaired surrogate')
       return value
   elif field.cpp_type == descriptor.FieldDescriptor.CPPTYPE_ENUM:
     # Convert an enum value.

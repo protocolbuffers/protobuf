@@ -98,7 +98,11 @@ class ConformanceTestSuite {
   // Sets the list of tests that are expected to fail when RunSuite() is called.
   // RunSuite() will fail unless the set of failing tests is exactly the same
   // as this list.
-  void SetFailureList(const std::vector<std::string>& failure_list);
+  //
+  // The filename here is *only* used to create/format useful error messages for
+  // how to update the failure list.  We do NOT read this file at all.
+  void SetFailureList(const std::string& filename,
+                      const std::vector<std::string>& failure_list);
 
   // Run all the conformance tests against the given test runner.
   // Test output will be stored in "output".
@@ -143,12 +147,14 @@ class ConformanceTestSuite {
   void ExpectHardParseFailureForProto(const std::string& proto,
                                       const std::string& test_name);
   void TestPrematureEOFForType(google::protobuf::FieldDescriptor::Type type);
-  bool CheckSetEmpty(const set<string>& set_to_check, const char* msg);
+  bool CheckSetEmpty(const set<string>& set_to_check,
+                     const std::string& write_to_file, const std::string& msg);
   ConformanceTestRunner* runner_;
   int successes_;
   int expected_failures_;
   bool verbose_;
   std::string output_;
+  std::string failure_list_filename_;
 
   // The set of test names that are expected to fail in this run, but haven't
   // failed yet.

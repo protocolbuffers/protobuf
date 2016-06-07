@@ -247,6 +247,27 @@ class JsonFormatTest(JsonFormatBase):
     parsed_message = json_format_proto3_pb2.TestOneof()
     self.CheckParseBack(message, parsed_message)
 
+  def testSurrogates(self):
+    # Test correct surrogate handling.
+    message = json_format_proto3_pb2.TestMessage()
+    json_format.Parse('{"stringValue": "\\uD83D\\uDE01"}', message)
+    self.assertEqual(message.string_value,
+                     b'\xF0\x9F\x98\x81'.decode("utf-8", "strict"))
+
+    # TODO: add test that UTF-8 encoded surrogate code points are rejected.
+    # UTF-8 does not allow them.
+
+    # Error case: unpaired high surrogate.
+    self.CheckError(
+        '{"stringValue": "\\uD83D"}',
+        r'Invalid \\uXXXX escape|Unpaired.*surrogate')
+
+    # Unpaired low surrogate.
+    self.CheckError(
+        '{"stringValue": "\\uDE01"}',
+        r'Invalid \\uXXXX escape|Unpaired.*surrogate')
+
+
   def testTimestampMessage(self):
     message = json_format_proto3_pb2.TestTimestamp()
     message.value.seconds = 0
