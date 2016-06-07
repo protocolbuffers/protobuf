@@ -1,15 +1,19 @@
 # Minimum CMake required
 cmake_minimum_required(VERSION 2.8.12)
 
-# Project
-project(protobuf C CXX)
+if(protobuf_VERBOSE)
+  message(STATUS "Protocol Buffers Configuring...")
+endif()
 
 # CMake policies
 cmake_policy(SET CMP0022 NEW)
 
+# Project
+project(protobuf C CXX)
+
 # Options
-option(protobuf_VERBOSE "Enable for verbose output" OFF)
 option(protobuf_BUILD_TESTS "Build tests" ON)
+option(protobuf_BUILD_EXAMPLES "Build examples" OFF)
 if (BUILD_SHARED_LIBS)
   set(protobuf_BUILD_SHARED_LIBS_DEFAULT ON)
 else (BUILD_SHARED_LIBS)
@@ -25,6 +29,9 @@ endif (MSVC)
 option(protobuf_WITH_ZLIB "Build with zlib support" ${protobuf_WITH_ZLIB_DEFAULT})
 set(protobuf_DEBUG_POSTFIX "d"
   CACHE STRING "Default debug postfix")
+mark_as_advanced(protobuf_DEBUG_POSTFIX)
+# User options
+include(protobuf-options.cmake)
 
 # Path to main configure script
 set(protobuf_CONFIGURE_SCRIPT "../configure.ac")
@@ -151,3 +158,11 @@ if (protobuf_BUILD_TESTS)
 endif (protobuf_BUILD_TESTS)
 
 include(install.cmake)
+
+if (protobuf_BUILD_EXAMPLES)
+  include(examples.cmake)
+endif (protobuf_BUILD_EXAMPLES)
+
+if(protobuf_VERBOSE)
+    message(STATUS "Protocol Buffers Configuring done")
+endif()
