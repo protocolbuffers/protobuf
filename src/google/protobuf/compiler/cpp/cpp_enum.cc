@@ -189,7 +189,7 @@ void EnumGenerator::GenerateSymbolImports(io::Printer* printer) {
   for (int j = 0; j < descriptor_->value_count(); j++) {
     vars["tag"] = EnumValueName(descriptor_->value(j));
     vars["deprecated_attr"] = descriptor_->value(j)->options().deprecated() ?
-      "PROTOBUF_DEPRECATED_ATTR " : "";
+      "GOOGLE_PROTOBUF_DEPRECATED_ATTR " : "";
     printer->Print(vars,
       "$deprecated_attr$static $constexpr$const $nested_name$ $tag$ =\n"
       "  $classname$_$tag$;\n");

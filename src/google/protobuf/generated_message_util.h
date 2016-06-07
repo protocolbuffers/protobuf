@@ -63,7 +63,7 @@ namespace internal {
 #undef DEPRECATED_PROTOBUF_FIELD
 #define PROTOBUF_DEPRECATED
 
-#define PROTOBUF_DEPRECATED_ATTR
+#define GOOGLE_PROTOBUF_DEPRECATED_ATTR
 
 
 // Constants for special floating point values.
