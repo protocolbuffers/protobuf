@@ -1136,8 +1136,13 @@ CommandLineInterface::InterpretArgument(const string& name,
 
       // Make sure disk path exists, warn otherwise.
       if (access(disk_path.c_str(), F_OK) < 0) {
-        std::cerr << disk_path << ": warning: directory does not exist."
-                  << std::endl;
+        // Try the original path; it may have just happed to have a '=' in it.
+        if (access(parts[i].c_str(), F_OK) < 0) {
+          cerr << disk_path << ": warning: directory does not exist." << endl;
+        } else {
+          virtual_path = "";
+          disk_path = parts[i];
+        }
       }
 
       // Don't use make_pair as the old/default standard library on Solaris
