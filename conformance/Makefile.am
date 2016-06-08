@@ -335,6 +335,9 @@ test_python: protoc_middleman conformance-test-runner
 test_python_cpp: protoc_middleman conformance-test-runner
 	./conformance-test-runner --enforce_recommended --failure_list failure_list_python_cpp.txt ./conformance_python.py
 
+test_nodejs: protoc_middleman conformance-test-runner
+	NODE_PATH=../js:. ./conformance-test-runner ./conformance_nodejs.js
+
 if OBJC_CONFORMANCE_TEST
 
 test_objc: protoc_middleman conformance-test-runner conformance-objc
