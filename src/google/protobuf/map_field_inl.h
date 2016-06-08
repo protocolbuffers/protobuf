@@ -288,7 +288,7 @@ bool MapField<Key, T, kKeyFieldType, kValueFieldType,
               default_enum_value>::DeleteMapValue(
                   const MapKey& map_key) {
   const Key& key = UnwrapMapKey<Key>(map_key);
-  return MutableMap()->erase(key);
+  return MutableMap()->erase(key) == 1 ? true : false;
 }
 
 template <typename Key, typename T,
