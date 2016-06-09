@@ -11,6 +11,7 @@ include(ExternalProject)
 
 # Internal utility function: Create a custom target representing a build of examples with custom options.
 function(add_examples_build NAME)
+
   ExternalProject_Add(${NAME}
     PREFIX ${NAME}
     SOURCE_DIR "${examples_dir}"
