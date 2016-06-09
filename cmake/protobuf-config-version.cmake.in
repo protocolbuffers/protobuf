@@ -27,16 +27,26 @@ else()
   endif()
 endif()
 
-# if the installed or the using project don't have CMAKE_SIZEOF_VOID_P set, ignore it:
-if("${CMAKE_SIZEOF_VOID_P}" STREQUAL "" OR "@CMAKE_SIZEOF_VOID_P@" STREQUAL "")
-   return()
-endif()
+# Check and save build options used to create this package
+macro(_check_and_save_build_option OPTION VALUE)
+  if(DEFINED ${PACKAGE_FIND_NAME}_${OPTION} AND
+    NOT ${PACKAGE_FIND_NAME}_${OPTION} EQUAL VALUE)
+    set(PACKAGE_VERSION_UNSUITABLE TRUE)
+  endif()
+  set(${PACKAGE_FIND_NAME}_${OPTION} ${VALUE})
+endmacro()
+_check_and_save_build_option(WITH_ZLIB @protobuf_WITH_ZLIB@)
+_check_and_save_build_option(MSVC_STATIC_RUNTIME @protobuf_MSVC_STATIC_RUNTIME@)
+_check_and_save_build_option(BUILD_SHARED_LIBS @protobuf_BUILD_SHARED_LIBS@)
 
-# check that the installed version has the same 32/64bit-ness as the one which is currently searching:
-if(NOT CMAKE_SIZEOF_VOID_P STREQUAL "@CMAKE_SIZEOF_VOID_P@")
-  math(EXPR installedBits "@CMAKE_SIZEOF_VOID_P@ * 8")
-  set(PACKAGE_VERSION "${PACKAGE_VERSION} (${installedBits}bit)")
-  set(PACKAGE_VERSION_UNSUITABLE TRUE)
+# if the installed or the using project don't have CMAKE_SIZEOF_VOID_P set, ignore it:
+if(NOT "${CMAKE_SIZEOF_VOID_P}" STREQUAL "" AND NOT "@CMAKE_SIZEOF_VOID_P@" STREQUAL "")
+  # check that the installed version has the same 32/64bit-ness as the one which is currently searching:
+  if(NOT CMAKE_SIZEOF_VOID_P STREQUAL "@CMAKE_SIZEOF_VOID_P@")
+    math(EXPR installedBits "@CMAKE_SIZEOF_VOID_P@ * 8")
+    set(PACKAGE_VERSION "${PACKAGE_VERSION} (${installedBits}bit)")
+    set(PACKAGE_VERSION_UNSUITABLE TRUE)
+  endif()
 endif()
 
 set(${PACKAGE_FIND_NAME}_VERSION_PRERELEASE "@protobuf_VERSION_PRERELEASE@" PARENT_SCOPE)

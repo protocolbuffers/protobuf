@@ -18,8 +18,7 @@ function(add_examples_build NAME)
     STAMP_DIR ${NAME}/logs
     INSTALL_COMMAND "" #Skip
     LOG_CONFIGURE 1
-    CMAKE_CACHE_ARGS "-Dprotobuf_MSVC_STATIC_RUNTIME:BOOL=${protobuf_MSVC_STATIC_RUNTIME}"
-                     "-DCMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}"
+    CMAKE_CACHE_ARGS "-DCMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}"
                      "-Dprotobuf_VERBOSE:BOOL=${protobuf_VERBOSE}"
                      ${ARGN}
   )
