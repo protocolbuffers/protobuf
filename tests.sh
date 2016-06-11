@@ -224,6 +224,7 @@ build_objectivec_osx() {
 }
 
 build_objectivec_cocoapods_integration() {
+  gem install cocoapods -v '1.0.1' --no-ri --no-rdoc
   objectivec/Tests/CocoaPods/run_tests.sh
 }
 

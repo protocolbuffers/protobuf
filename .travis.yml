@@ -9,9 +9,6 @@ language: ruby
 os:
   - linux
   - osx
-before_install:
-  # Need to install CocoaPods for ObjC pod tests.
-  - gem install cocoapods -v '1.0.1' --no-ri --no-rdoc
 # The Objective C build needs Xcode 7.0 or later.
 osx_image: xcode7.3
 script:
