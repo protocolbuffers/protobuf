@@ -1,11 +1,9 @@
 sudo: required
 # Note: travis currently does not support listing more than one language so
-# this cheats and claims to only be ruby, which is needed to set an rvm
-# environment that works with CocoaPods (for ObjC tests). If they add multiple
-# language support, this should probably get updated to install steps and/or
+# this cheats and claims to only be cpp.  If they add multiple language
+# support, this should probably get updated to install steps and/or
 # rvm/gemfile/jdk/etc. entries rather than manually doing the work.
-language: ruby
-
+language: cpp
 os:
   - linux
   - osx
@@ -13,10 +11,6 @@ os:
 osx_image: xcode7.3
 script:
   - ./tests.sh $CONFIG
-# Only this version of Ruby seems to allow CocoaPods to function correctly.
-# rvm is only available when language = ruby.
-rvm: 2.2.3
-
 env:
   - CONFIG=cpp
   - CONFIG=cpp_distcheck

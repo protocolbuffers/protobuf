@@ -32,7 +32,7 @@ EOF
 }
 
 TEST_MODES=( "static" "framework" )
-TEST_NAMES=( "iOSCocoaPodsTester" "OSXCocoaPodsTester")
+TEST_NAMES=( "iOSCocoaPodsTester" "OSXCocoaPodsTester" )
 while [[ $# != 0 ]]; do
   case "${1}" in
     -h | --help )
@@ -123,8 +123,7 @@ do_test() {
 
   # For iOS, if the SDK is not provided it tries to use iphoneos, and the test
   # fail on Travis since those machines don't have a Code Signing identity.
-  if  [[ "${TEST_NAME}" == iOS* ]] ;
-  then
+  if  [[ "${TEST_NAME}" == iOS* ]] ; then
     xcodebuild_args+=( "-sdk" "iphonesimulator" "ONLY_ACTIVE_ARCH=NO" )
   fi
 
