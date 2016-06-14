@@ -119,9 +119,18 @@ do_test() {
   # Put the right Podfile in place.
   cp -f "Podfile-${TEST_MODE}" "Podfile"
 
+  xcodebuild_args=( "-workspace" "${TEST_NAME}.xcworkspace" "-scheme" "${TEST_NAME}" )
+
+  # For iOS, if the SDK is not provided it tries to use iphoneos, and the test
+  # fail on Travis since those machines don't have a Code Signing identity.
+  if  [[ "${TEST_NAME}" == iOS* ]] ; then
+    xcodebuild_args+=( "-sdk" "iphonesimulator" "ONLY_ACTIVE_ARCH=NO" )
+  fi
+
   # Do the work!
   pod install --verbose
-  xcodebuild -workspace "${TEST_NAME}.xcworkspace" -scheme "${TEST_NAME}" build
+
+  xcodebuild "${xcodebuild_args[@]}" build
 
   # Clear the hook and manually run cleanup.
   trap - EXIT

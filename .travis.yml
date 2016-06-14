@@ -28,6 +28,7 @@ env:
   - CONFIG=objectivec_ios_debug
   - CONFIG=objectivec_ios_release
   - CONFIG=objectivec_osx
+  - CONFIG=objectivec_cocoapods_integration
   - CONFIG=python
   - CONFIG=python_cpp
   - CONFIG=ruby19
@@ -67,6 +68,8 @@ matrix:
       env: CONFIG=objectivec_ios_release
     - os: linux
       env: CONFIG=objectivec_osx
+    - os: linux
+      env: CONFIG=objectivec_cocoapods_integration
   allow_failures:
     # These currently do not work on OS X but are being worked on by @haberman.
     - os: osx

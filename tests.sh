@@ -223,6 +223,17 @@ build_objectivec_osx() {
       --core-only --skip-xcode-ios
 }
 
+build_objectivec_cocoapods_integration() {
+  # First, load the RVM environment in bash, needed to update ruby.
+  source ~/.rvm/scripts/rvm
+  # Update ruby to 2.2.3 as the default one crashes with segmentation faults
+  # when using pod.
+  rvm use 2.2.3 --install --binary --fuzzy
+  # Update pod to the latest version.
+  gem install cocoapods --no-ri --no-rdoc
+  objectivec/Tests/CocoaPods/run_tests.sh
+}
+
 build_python() {
   internal_build_cpp
   internal_install_python_deps
@@ -304,6 +315,7 @@ Usage: $0 { cpp |
             objectivec_ios_debug |
             objectivec_ios_release |
             objectivec_osx |
+            objectivec_cocoapods_integration |
             python |
             python_cpp |
             ruby19 |
