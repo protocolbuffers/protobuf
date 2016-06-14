@@ -46,6 +46,7 @@ namespace objectivec {
 struct Options {
   Options();
   string expected_prefixes_path;
+  string generate_for_named_framework;
 };
 
 // Escape C++ trigraphs by escaping question marks to "\?".

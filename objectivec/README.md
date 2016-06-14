@@ -123,8 +123,8 @@ never included when the message is encoded.
 
 The Objective C classes/enums can be used from Swift code.
 
-Objective C Generator Options
------------------------------
+Objective C Generator Proto File Options
+----------------------------------------
 
 **objc_class_prefix=\<prefix\>** (no default)
 
@@ -132,6 +132,19 @@ Since Objective C uses a global namespace for all of its classes, there can
 be collisions. This option provides a prefix that will be added to the Enums
 and Objects (for messages) generated from the proto. Convention is to base
 the prefix on the package the proto is in.
+
+Objective C Generator `protoc` Options
+--------------------------------------
+
+When generating Objective C code, `protoc` supports a `--objc_opt` argument; the
+argument is comma-delimited name/value pairs (_key=value,key2=value2_). The
+_keys_ are used to change the behavior during generation. The currently
+supported keys are:
+
+  * `generate_for_framework_named`: The `value` used for this key will be used
+    when generating the `#import` statements in the generated code.  Instead
+    of being plain `#import "some/path/file.pbobjc.h"` lines, they will be
+    framework based, i.e. - `#import <VALUE/file.pbobjc.h>`.
 
 Contributing
 ------------

@@ -59,6 +59,8 @@ bool ObjectiveCGenerator::Generate(const FileDescriptor* file,
   for (int i = 0; i < options.size(); i++) {
     if (options[i].first == "expected_prefixes_path") {
       generation_options.expected_prefixes_path = options[i].second;
+    } else if (options[i].first == "generate_for_named_framework") {
+      generation_options.generate_for_named_framework = options[i].second;
     } else {
       *error = "error: Unknown generator option: " + options[i].first;
       return false;
