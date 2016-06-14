@@ -271,6 +271,11 @@ static NSArray *NewFieldsArrayForHasIndex(int hasIndex,
   return self;
 }
 
+- (void)dealloc {
+  [package_ release];
+  [super dealloc];
+}
+
 @end
 
 @implementation GPBOneofDescriptor
