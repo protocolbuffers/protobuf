@@ -45,10 +45,10 @@
 
 // To let the testing macros work, add some extra methods to simplify things.
 @interface GPBStringEnumDictionary (TestingTweak)
-+ (instancetype)dictionaryWithValue:(int32_t)value forKey:(NSString *)key;
-- (instancetype)initWithValues:(const int32_t [])values
-                       forKeys:(const NSString * [])keys
-                         count:(NSUInteger)count;
++ (instancetype)dictionaryWithEnum:(int32_t)value forKey:(NSString *)key;
+- (instancetype)initWithEnums:(const int32_t [])values
+                      forKeys:(const NSString * [])keys
+                        count:(NSUInteger)count;
 @end
 
 static BOOL TestingEnum_IsValidValue(int32_t value) {
@@ -64,7 +64,7 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
 }
 
 @implementation GPBStringEnumDictionary (TestingTweak)
-+ (instancetype)dictionaryWithValue:(int32_t)value forKey:(NSString *)key {
++ (instancetype)dictionaryWithEnum:(int32_t)value forKey:(NSString *)key {
   // Cast is needed to compiler knows what class we are invoking initWithValues: on to get the
   // type correct.
   return [[(GPBStringEnumDictionary*)[self alloc] initWithValidationFunction:TestingEnum_IsValidValue
@@ -72,9 +72,9 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
                                                                      forKeys:&key
                                                                        count:1] autorelease];
 }
-- (instancetype)initWithValues:(const int32_t [])values
-                       forKeys:(const NSString * [])keys
-                         count:(NSUInteger)count {
+- (instancetype)initWithEnums:(const int32_t [])values
+                      forKeys:(const NSString * [])keys
+                        count:(NSUInteger)count {
   return [self initWithValidationFunction:TestingEnum_IsValidValue
                                 rawValues:values
                                   forKeys:keys
@@ -94,8 +94,8 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
   GPBStringUInt32Dictionary *dict = [[GPBStringUInt32Dictionary alloc] init];
   XCTAssertNotNil(dict);
   XCTAssertEqual(dict.count, 0U);
-  XCTAssertFalse([dict valueForKey:@"foo" value:NULL]);
-  [dict enumerateKeysAndValuesUsingBlock:^(NSString *aKey, uint32_t aValue, BOOL *stop) {
+  XCTAssertFalse([dict getUInt32:NULL forKey:@"foo"]);
+  [dict enumerateKeysAndUInt32sUsingBlock:^(NSString *aKey, uint32_t aValue, BOOL *stop) {
     #pragma unused(aKey, aValue, stop)
     XCTFail(@"Shouldn't get here!");
   }];
@@ -103,15 +103,15 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
 }
 
 - (void)testOne {
-  GPBStringUInt32Dictionary *dict = [GPBStringUInt32Dictionary dictionaryWithValue:100U forKey:@"foo"];
+  GPBStringUInt32Dictionary *dict = [GPBStringUInt32Dictionary dictionaryWithUInt32:100U forKey:@"foo"];
   XCTAssertNotNil(dict);
   XCTAssertEqual(dict.count, 1U);
   uint32_t value;
-  XCTAssertTrue([dict valueForKey:@"foo" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"foo" value:&value]);
+  XCTAssertTrue([dict getUInt32:NULL forKey:@"foo"]);
+  XCTAssertTrue([dict getUInt32:&value forKey:@"foo"]);
   XCTAssertEqual(value, 100U);
-  XCTAssertFalse([dict valueForKey:@"bar" value:NULL]);
-  [dict enumerateKeysAndValuesUsingBlock:^(NSString *aKey, uint32_t aValue, BOOL *stop) {
+  XCTAssertFalse([dict getUInt32:NULL forKey:@"bar"]);
+  [dict enumerateKeysAndUInt32sUsingBlock:^(NSString *aKey, uint32_t aValue, BOOL *stop) {
     XCTAssertEqualObjects(aKey, @"foo");
     XCTAssertEqual(aValue, 100U);
     XCTAssertNotEqual(stop, NULL);
@@ -122,27 +122,27 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
   const NSString *kKeys[] = { @"foo", @"bar", @"baz" };
   const uint32_t kValues[] = { 100U, 101U, 102U };
   GPBStringUInt32Dictionary *dict =
-      [[GPBStringUInt32Dictionary alloc] initWithValues:kValues
-                                                forKeys:kKeys
-                                                  count:GPBARRAYSIZE(kValues)];
+      [[GPBStringUInt32Dictionary alloc] initWithUInt32s:kValues
+                                                 forKeys:kKeys
+                                                   count:GPBARRAYSIZE(kValues)];
   XCTAssertNotNil(dict);
   XCTAssertEqual(dict.count, 3U);
   uint32_t value;
-  XCTAssertTrue([dict valueForKey:@"foo" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"foo" value:&value]);
+  XCTAssertTrue([dict getUInt32:NULL forKey:@"foo"]);
+  XCTAssertTrue([dict getUInt32:&value forKey:@"foo"]);
   XCTAssertEqual(value, 100U);
-  XCTAssertTrue([dict valueForKey:@"bar" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"bar" value:&value]);
+  XCTAssertTrue([dict getUInt32:NULL forKey:@"bar"]);
+  XCTAssertTrue([dict getUInt32:&value forKey:@"bar"]);
   XCTAssertEqual(value, 101U);
-  XCTAssertTrue([dict valueForKey:@"baz" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"baz" value:&value]);
+  XCTAssertTrue([dict getUInt32:NULL forKey:@"baz"]);
+  XCTAssertTrue([dict getUInt32:&value forKey:@"baz"]);
   XCTAssertEqual(value, 102U);
-  XCTAssertFalse([dict valueForKey:@"mumble" value:NULL]);
+  XCTAssertFalse([dict getUInt32:NULL forKey:@"mumble"]);
 
   __block NSUInteger idx = 0;
   NSString **seenKeys = malloc(3 * sizeof(NSString*));
   uint32_t *seenValues = malloc(3 * sizeof(uint32_t));
-  [dict enumerateKeysAndValuesUsingBlock:^(NSString *aKey, uint32_t aValue, BOOL *stop) {
+  [dict enumerateKeysAndUInt32sUsingBlock:^(NSString *aKey, uint32_t aValue, BOOL *stop) {
     XCTAssertLessThan(idx, 3U);
     seenKeys[idx] = aKey;
     seenValues[idx] = aValue;
@@ -164,7 +164,7 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
 
   // Stopping the enumeration.
   idx = 0;
-  [dict enumerateKeysAndValuesUsingBlock:^(NSString *aKey, uint32_t aValue, BOOL *stop) {
+  [dict enumerateKeysAndUInt32sUsingBlock:^(NSString *aKey, uint32_t aValue, BOOL *stop) {
     #pragma unused(aKey, aValue)
     if (idx == 1) *stop = YES;
     XCTAssertNotEqual(idx, 2U);
@@ -180,29 +180,29 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
   const uint32_t kValues2[] = { 100U, 103U, 102U };
   const uint32_t kValues3[] = { 100U, 101U, 102U, 103U };
   GPBStringUInt32Dictionary *dict1 =
-      [[GPBStringUInt32Dictionary alloc] initWithValues:kValues1
-                                                forKeys:kKeys1
-                                                  count:GPBARRAYSIZE(kValues1)];
+      [[GPBStringUInt32Dictionary alloc] initWithUInt32s:kValues1
+                                                 forKeys:kKeys1
+                                                   count:GPBARRAYSIZE(kValues1)];
   XCTAssertNotNil(dict1);
   GPBStringUInt32Dictionary *dict1prime =
-      [[GPBStringUInt32Dictionary alloc] initWithValues:kValues1
-                                                forKeys:kKeys1
-                                                  count:GPBARRAYSIZE(kValues1)];
+      [[GPBStringUInt32Dictionary alloc] initWithUInt32s:kValues1
+                                                 forKeys:kKeys1
+                                                   count:GPBARRAYSIZE(kValues1)];
   XCTAssertNotNil(dict1prime);
   GPBStringUInt32Dictionary *dict2 =
-      [[GPBStringUInt32Dictionary alloc] initWithValues:kValues2
-                                                forKeys:kKeys1
-                                                  count:GPBARRAYSIZE(kValues2)];
+      [[GPBStringUInt32Dictionary alloc] initWithUInt32s:kValues2
+                                                 forKeys:kKeys1
+                                                   count:GPBARRAYSIZE(kValues2)];
   XCTAssertNotNil(dict2);
   GPBStringUInt32Dictionary *dict3 =
-      [[GPBStringUInt32Dictionary alloc] initWithValues:kValues1
-                                                forKeys:kKeys2
-                                                  count:GPBARRAYSIZE(kValues1)];
+      [[GPBStringUInt32Dictionary alloc] initWithUInt32s:kValues1
+                                                 forKeys:kKeys2
+                                                   count:GPBARRAYSIZE(kValues1)];
   XCTAssertNotNil(dict3);
   GPBStringUInt32Dictionary *dict4 =
-      [[GPBStringUInt32Dictionary alloc] initWithValues:kValues3
-                                                forKeys:kKeys1
-                                                  count:GPBARRAYSIZE(kValues3)];
+      [[GPBStringUInt32Dictionary alloc] initWithUInt32s:kValues3
+                                                 forKeys:kKeys1
+                                                   count:GPBARRAYSIZE(kValues3)];
   XCTAssertNotNil(dict4);
 
   // 1/1Prime should be different objects, but equal.
@@ -231,9 +231,9 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
   const NSString *kKeys[] = { @"foo", @"bar", @"baz", @"mumble" };
   const uint32_t kValues[] = { 100U, 101U, 102U, 103U };
   GPBStringUInt32Dictionary *dict =
-      [[GPBStringUInt32Dictionary alloc] initWithValues:kValues
-                                                forKeys:kKeys
-                                                  count:GPBARRAYSIZE(kValues)];
+      [[GPBStringUInt32Dictionary alloc] initWithUInt32s:kValues
+                                                 forKeys:kKeys
+                                                   count:GPBARRAYSIZE(kValues)];
   XCTAssertNotNil(dict);
 
   GPBStringUInt32Dictionary *dict2 = [dict copy];
@@ -252,9 +252,9 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
   const NSString *kKeys[] = { @"foo", @"bar", @"baz", @"mumble" };
   const uint32_t kValues[] = { 100U, 101U, 102U, 103U };
   GPBStringUInt32Dictionary *dict =
-      [[GPBStringUInt32Dictionary alloc] initWithValues:kValues
-                                                forKeys:kKeys
-                                                  count:GPBARRAYSIZE(kValues)];
+      [[GPBStringUInt32Dictionary alloc] initWithUInt32s:kValues
+                                                 forKeys:kKeys
+                                                   count:GPBARRAYSIZE(kValues)];
   XCTAssertNotNil(dict);
 
   GPBStringUInt32Dictionary *dict2 =
@@ -272,31 +272,31 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
   XCTAssertNotNil(dict);
 
   XCTAssertEqual(dict.count, 0U);
-  [dict setValue:100U forKey:@"foo"];
+  [dict setUInt32:100U forKey:@"foo"];
   XCTAssertEqual(dict.count, 1U);
 
   const NSString *kKeys[] = { @"bar", @"baz", @"mumble" };
   const uint32_t kValues[] = { 101U, 102U, 103U };
   GPBStringUInt32Dictionary *dict2 =
-      [[GPBStringUInt32Dictionary alloc] initWithValues:kValues
-                                                forKeys:kKeys
-                                                  count:GPBARRAYSIZE(kValues)];
+      [[GPBStringUInt32Dictionary alloc] initWithUInt32s:kValues
+                                                 forKeys:kKeys
+                                                   count:GPBARRAYSIZE(kValues)];
   XCTAssertNotNil(dict2);
   [dict addEntriesFromDictionary:dict2];
   XCTAssertEqual(dict.count, 4U);
 
   uint32_t value;
-  XCTAssertTrue([dict valueForKey:@"foo" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"foo" value:&value]);
+  XCTAssertTrue([dict getUInt32:NULL forKey:@"foo"]);
+  XCTAssertTrue([dict getUInt32:&value forKey:@"foo"]);
   XCTAssertEqual(value, 100U);
-  XCTAssertTrue([dict valueForKey:@"bar" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"bar" value:&value]);
+  XCTAssertTrue([dict getUInt32:NULL forKey:@"bar"]);
+  XCTAssertTrue([dict getUInt32:&value forKey:@"bar"]);
   XCTAssertEqual(value, 101U);
-  XCTAssertTrue([dict valueForKey:@"baz" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"baz" value:&value]);
+  XCTAssertTrue([dict getUInt32:NULL forKey:@"baz"]);
+  XCTAssertTrue([dict getUInt32:&value forKey:@"baz"]);
   XCTAssertEqual(value, 102U);
-  XCTAssertTrue([dict valueForKey:@"mumble" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"mumble" value:&value]);
+  XCTAssertTrue([dict getUInt32:NULL forKey:@"mumble"]);
+  XCTAssertTrue([dict getUInt32:&value forKey:@"mumble"]);
   XCTAssertEqual(value, 103U);
   [dict2 release];
 }
@@ -305,57 +305,57 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
   const NSString *kKeys[] = { @"foo", @"bar", @"baz", @"mumble" };
   const uint32_t kValues[] = { 100U, 101U, 102U, 103U };
   GPBStringUInt32Dictionary *dict =
-      [[GPBStringUInt32Dictionary alloc] initWithValues:kValues
-                                         forKeys:kKeys
-                                           count:GPBARRAYSIZE(kValues)];
+      [[GPBStringUInt32Dictionary alloc] initWithUInt32s:kValues
+                                                 forKeys:kKeys
+                                                   count:GPBARRAYSIZE(kValues)];
   XCTAssertNotNil(dict);
   XCTAssertEqual(dict.count, 4U);
 
-  [dict removeValueForKey:@"bar"];
+  [dict removeUInt32ForKey:@"bar"];
   XCTAssertEqual(dict.count, 3U);
   uint32_t value;
-  XCTAssertTrue([dict valueForKey:@"foo" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"foo" value:&value]);
+  XCTAssertTrue([dict getUInt32:NULL forKey:@"foo"]);
+  XCTAssertTrue([dict getUInt32:&value forKey:@"foo"]);
   XCTAssertEqual(value, 100U);
-  XCTAssertFalse([dict valueForKey:@"bar" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"baz" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"baz" value:&value]);
+  XCTAssertFalse([dict getUInt32:NULL forKey:@"bar"]);
+  XCTAssertTrue([dict getUInt32:NULL forKey:@"baz"]);
+  XCTAssertTrue([dict getUInt32:&value forKey:@"baz"]);
   XCTAssertEqual(value, 102U);
-  XCTAssertTrue([dict valueForKey:@"mumble" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"mumble" value:&value]);
+  XCTAssertTrue([dict getUInt32:NULL forKey:@"mumble"]);
+  XCTAssertTrue([dict getUInt32:&value forKey:@"mumble"]);
   XCTAssertEqual(value, 103U);
 
   // Remove again does nothing.
-  [dict removeValueForKey:@"bar"];
+  [dict removeUInt32ForKey:@"bar"];
   XCTAssertEqual(dict.count, 3U);
-  XCTAssertTrue([dict valueForKey:@"foo" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"foo" value:&value]);
+  XCTAssertTrue([dict getUInt32:NULL forKey:@"foo"]);
+  XCTAssertTrue([dict getUInt32:&value forKey:@"foo"]);
   XCTAssertEqual(value, 100U);
-  XCTAssertFalse([dict valueForKey:@"bar" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"baz" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"baz" value:&value]);
+  XCTAssertFalse([dict getUInt32:NULL forKey:@"bar"]);
+  XCTAssertTrue([dict getUInt32:NULL forKey:@"baz"]);
+  XCTAssertTrue([dict getUInt32:&value forKey:@"baz"]);
   XCTAssertEqual(value, 102U);
-  XCTAssertTrue([dict valueForKey:@"mumble" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"mumble" value:&value]);
+  XCTAssertTrue([dict getUInt32:NULL forKey:@"mumble"]);
+  XCTAssertTrue([dict getUInt32:&value forKey:@"mumble"]);
   XCTAssertEqual(value, 103U);
 
-  [dict removeValueForKey:@"mumble"];
+  [dict removeUInt32ForKey:@"mumble"];
   XCTAssertEqual(dict.count, 2U);
-  XCTAssertTrue([dict valueForKey:@"foo" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"foo" value:&value]);
+  XCTAssertTrue([dict getUInt32:NULL forKey:@"foo"]);
+  XCTAssertTrue([dict getUInt32:&value forKey:@"foo"]);
   XCTAssertEqual(value, 100U);
-  XCTAssertFalse([dict valueForKey:@"bar" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"baz" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"baz" value:&value]);
+  XCTAssertFalse([dict getUInt32:NULL forKey:@"bar"]);
+  XCTAssertTrue([dict getUInt32:NULL forKey:@"baz"]);
+  XCTAssertTrue([dict getUInt32:&value forKey:@"baz"]);
   XCTAssertEqual(value, 102U);
-  XCTAssertFalse([dict valueForKey:@"mumble" value:NULL]);
+  XCTAssertFalse([dict getUInt32:NULL forKey:@"mumble"]);
 
   [dict removeAll];
   XCTAssertEqual(dict.count, 0U);
-  XCTAssertFalse([dict valueForKey:@"foo" value:NULL]);
-  XCTAssertFalse([dict valueForKey:@"bar" value:NULL]);
-  XCTAssertFalse([dict valueForKey:@"baz" value:NULL]);
-  XCTAssertFalse([dict valueForKey:@"mumble" value:NULL]);
+  XCTAssertFalse([dict getUInt32:NULL forKey:@"foo"]);
+  XCTAssertFalse([dict getUInt32:NULL forKey:@"bar"]);
+  XCTAssertFalse([dict getUInt32:NULL forKey:@"baz"]);
+  XCTAssertFalse([dict getUInt32:NULL forKey:@"mumble"]);
   [dict release];
 }
 
@@ -363,75 +363,75 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
   const NSString *kKeys[] = { @"foo", @"bar", @"baz", @"mumble" };
   const uint32_t kValues[] = { 100U, 101U, 102U, 103U };
   GPBStringUInt32Dictionary *dict =
-      [[GPBStringUInt32Dictionary alloc] initWithValues:kValues
-                                         forKeys:kKeys
-                                           count:GPBARRAYSIZE(kValues)];
+      [[GPBStringUInt32Dictionary alloc] initWithUInt32s:kValues
+                                                 forKeys:kKeys
+                                                   count:GPBARRAYSIZE(kValues)];
   XCTAssertNotNil(dict);
   XCTAssertEqual(dict.count, 4U);
   uint32_t value;
-  XCTAssertTrue([dict valueForKey:@"foo" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"foo" value:&value]);
+  XCTAssertTrue([dict getUInt32:NULL forKey:@"foo"]);
+  XCTAssertTrue([dict getUInt32:&value forKey:@"foo"]);
   XCTAssertEqual(value, 100U);
-  XCTAssertTrue([dict valueForKey:@"bar" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"bar" value:&value]);
+  XCTAssertTrue([dict getUInt32:NULL forKey:@"bar"]);
+  XCTAssertTrue([dict getUInt32:&value forKey:@"bar"]);
   XCTAssertEqual(value, 101U);
-  XCTAssertTrue([dict valueForKey:@"baz" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"baz" value:&value]);
+  XCTAssertTrue([dict getUInt32:NULL forKey:@"baz"]);
+  XCTAssertTrue([dict getUInt32:&value forKey:@"baz"]);
   XCTAssertEqual(value, 102U);
-  XCTAssertTrue([dict valueForKey:@"mumble" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"mumble" value:&value]);
+  XCTAssertTrue([dict getUInt32:NULL forKey:@"mumble"]);
+  XCTAssertTrue([dict getUInt32:&value forKey:@"mumble"]);
   XCTAssertEqual(value, 103U);
 
-  [dict setValue:103U forKey:@"foo"];
+  [dict setUInt32:103U forKey:@"foo"];
   XCTAssertEqual(dict.count, 4U);
-  XCTAssertTrue([dict valueForKey:@"foo" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"foo" value:&value]);
+  XCTAssertTrue([dict getUInt32:NULL forKey:@"foo"]);
+  XCTAssertTrue([dict getUInt32:&value forKey:@"foo"]);
   XCTAssertEqual(value, 103U);
-  XCTAssertTrue([dict valueForKey:@"bar" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"bar" value:&value]);
+  XCTAssertTrue([dict getUInt32:NULL forKey:@"bar"]);
+  XCTAssertTrue([dict getUInt32:&value forKey:@"bar"]);
   XCTAssertEqual(value, 101U);
-  XCTAssertTrue([dict valueForKey:@"baz" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"baz" value:&value]);
+  XCTAssertTrue([dict getUInt32:NULL forKey:@"baz"]);
+  XCTAssertTrue([dict getUInt32:&value forKey:@"baz"]);
   XCTAssertEqual(value, 102U);
-  XCTAssertTrue([dict valueForKey:@"mumble" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"mumble" value:&value]);
+  XCTAssertTrue([dict getUInt32:NULL forKey:@"mumble"]);
+  XCTAssertTrue([dict getUInt32:&value forKey:@"mumble"]);
   XCTAssertEqual(value, 103U);
 
-  [dict setValue:101U forKey:@"mumble"];
+  [dict setUInt32:101U forKey:@"mumble"];
   XCTAssertEqual(dict.count, 4U);
-  XCTAssertTrue([dict valueForKey:@"foo" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"foo" value:&value]);
+  XCTAssertTrue([dict getUInt32:NULL forKey:@"foo"]);
+  XCTAssertTrue([dict getUInt32:&value forKey:@"foo"]);
   XCTAssertEqual(value, 103U);
-  XCTAssertTrue([dict valueForKey:@"bar" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"bar" value:&value]);
+  XCTAssertTrue([dict getUInt32:NULL forKey:@"bar"]);
+  XCTAssertTrue([dict getUInt32:&value forKey:@"bar"]);
   XCTAssertEqual(value, 101U);
-  XCTAssertTrue([dict valueForKey:@"baz" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"baz" value:&value]);
+  XCTAssertTrue([dict getUInt32:NULL forKey:@"baz"]);
+  XCTAssertTrue([dict getUInt32:&value forKey:@"baz"]);
   XCTAssertEqual(value, 102U);
-  XCTAssertTrue([dict valueForKey:@"mumble" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"mumble" value:&value]);
+  XCTAssertTrue([dict getUInt32:NULL forKey:@"mumble"]);
+  XCTAssertTrue([dict getUInt32:&value forKey:@"mumble"]);
   XCTAssertEqual(value, 101U);
 
   const NSString *kKeys2[] = { @"bar", @"baz" };
   const uint32_t kValues2[] = { 102U, 100U };
   GPBStringUInt32Dictionary *dict2 =
-      [[GPBStringUInt32Dictionary alloc] initWithValues:kValues2
-                                                forKeys:kKeys2
-                                                  count:GPBARRAYSIZE(kValues2)];
+      [[GPBStringUInt32Dictionary alloc] initWithUInt32s:kValues2
+                                                 forKeys:kKeys2
+                                                   count:GPBARRAYSIZE(kValues2)];
   XCTAssertNotNil(dict2);
   [dict addEntriesFromDictionary:dict2];
   XCTAssertEqual(dict.count, 4U);
-  XCTAssertTrue([dict valueForKey:@"foo" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"foo" value:&value]);
+  XCTAssertTrue([dict getUInt32:NULL forKey:@"foo"]);
+  XCTAssertTrue([dict getUInt32:&value forKey:@"foo"]);
   XCTAssertEqual(value, 103U);
-  XCTAssertTrue([dict valueForKey:@"bar" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"bar" value:&value]);
+  XCTAssertTrue([dict getUInt32:NULL forKey:@"bar"]);
+  XCTAssertTrue([dict getUInt32:&value forKey:@"bar"]);
   XCTAssertEqual(value, 102U);
-  XCTAssertTrue([dict valueForKey:@"baz" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"baz" value:&value]);
+  XCTAssertTrue([dict getUInt32:NULL forKey:@"baz"]);
+  XCTAssertTrue([dict getUInt32:&value forKey:@"baz"]);
   XCTAssertEqual(value, 100U);
-  XCTAssertTrue([dict valueForKey:@"mumble" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"mumble" value:&value]);
+  XCTAssertTrue([dict getUInt32:NULL forKey:@"mumble"]);
+  XCTAssertTrue([dict getUInt32:&value forKey:@"mumble"]);
   XCTAssertEqual(value, 101U);
 
   [dict2 release];
@@ -451,8 +451,8 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
   GPBStringInt32Dictionary *dict = [[GPBStringInt32Dictionary alloc] init];
   XCTAssertNotNil(dict);
   XCTAssertEqual(dict.count, 0U);
-  XCTAssertFalse([dict valueForKey:@"foo" value:NULL]);
-  [dict enumerateKeysAndValuesUsingBlock:^(NSString *aKey, int32_t aValue, BOOL *stop) {
+  XCTAssertFalse([dict getInt32:NULL forKey:@"foo"]);
+  [dict enumerateKeysAndInt32sUsingBlock:^(NSString *aKey, int32_t aValue, BOOL *stop) {
     #pragma unused(aKey, aValue, stop)
     XCTFail(@"Shouldn't get here!");
   }];
@@ -460,15 +460,15 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
 }
 
 - (void)testOne {
-  GPBStringInt32Dictionary *dict = [GPBStringInt32Dictionary dictionaryWithValue:200 forKey:@"foo"];
+  GPBStringInt32Dictionary *dict = [GPBStringInt32Dictionary dictionaryWithInt32:200 forKey:@"foo"];
   XCTAssertNotNil(dict);
   XCTAssertEqual(dict.count, 1U);
   int32_t value;
-  XCTAssertTrue([dict valueForKey:@"foo" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"foo" value:&value]);
+  XCTAssertTrue([dict getInt32:NULL forKey:@"foo"]);
+  XCTAssertTrue([dict getInt32:&value forKey:@"foo"]);
   XCTAssertEqual(value, 200);
-  XCTAssertFalse([dict valueForKey:@"bar" value:NULL]);
-  [dict enumerateKeysAndValuesUsingBlock:^(NSString *aKey, int32_t aValue, BOOL *stop) {
+  XCTAssertFalse([dict getInt32:NULL forKey:@"bar"]);
+  [dict enumerateKeysAndInt32sUsingBlock:^(NSString *aKey, int32_t aValue, BOOL *stop) {
     XCTAssertEqualObjects(aKey, @"foo");
     XCTAssertEqual(aValue, 200);
     XCTAssertNotEqual(stop, NULL);
@@ -479,27 +479,27 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
   const NSString *kKeys[] = { @"foo", @"bar", @"baz" };
   const int32_t kValues[] = { 200, 201, 202 };
   GPBStringInt32Dictionary *dict =
-      [[GPBStringInt32Dictionary alloc] initWithValues:kValues
+      [[GPBStringInt32Dictionary alloc] initWithInt32s:kValues
                                                forKeys:kKeys
                                                  count:GPBARRAYSIZE(kValues)];
   XCTAssertNotNil(dict);
   XCTAssertEqual(dict.count, 3U);
   int32_t value;
-  XCTAssertTrue([dict valueForKey:@"foo" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"foo" value:&value]);
+  XCTAssertTrue([dict getInt32:NULL forKey:@"foo"]);
+  XCTAssertTrue([dict getInt32:&value forKey:@"foo"]);
   XCTAssertEqual(value, 200);
-  XCTAssertTrue([dict valueForKey:@"bar" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"bar" value:&value]);
+  XCTAssertTrue([dict getInt32:NULL forKey:@"bar"]);
+  XCTAssertTrue([dict getInt32:&value forKey:@"bar"]);
   XCTAssertEqual(value, 201);
-  XCTAssertTrue([dict valueForKey:@"baz" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"baz" value:&value]);
+  XCTAssertTrue([dict getInt32:NULL forKey:@"baz"]);
+  XCTAssertTrue([dict getInt32:&value forKey:@"baz"]);
   XCTAssertEqual(value, 202);
-  XCTAssertFalse([dict valueForKey:@"mumble" value:NULL]);
+  XCTAssertFalse([dict getInt32:NULL forKey:@"mumble"]);
 
   __block NSUInteger idx = 0;
   NSString **seenKeys = malloc(3 * sizeof(NSString*));
   int32_t *seenValues = malloc(3 * sizeof(int32_t));
-  [dict enumerateKeysAndValuesUsingBlock:^(NSString *aKey, int32_t aValue, BOOL *stop) {
+  [dict enumerateKeysAndInt32sUsingBlock:^(NSString *aKey, int32_t aValue, BOOL *stop) {
     XCTAssertLessThan(idx, 3U);
     seenKeys[idx] = aKey;
     seenValues[idx] = aValue;
@@ -521,7 +521,7 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
 
   // Stopping the enumeration.
   idx = 0;
-  [dict enumerateKeysAndValuesUsingBlock:^(NSString *aKey, int32_t aValue, BOOL *stop) {
+  [dict enumerateKeysAndInt32sUsingBlock:^(NSString *aKey, int32_t aValue, BOOL *stop) {
     #pragma unused(aKey, aValue)
     if (idx == 1) *stop = YES;
     XCTAssertNotEqual(idx, 2U);
@@ -537,27 +537,27 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
   const int32_t kValues2[] = { 200, 203, 202 };
   const int32_t kValues3[] = { 200, 201, 202, 203 };
   GPBStringInt32Dictionary *dict1 =
-      [[GPBStringInt32Dictionary alloc] initWithValues:kValues1
+      [[GPBStringInt32Dictionary alloc] initWithInt32s:kValues1
                                                forKeys:kKeys1
                                                  count:GPBARRAYSIZE(kValues1)];
   XCTAssertNotNil(dict1);
   GPBStringInt32Dictionary *dict1prime =
-      [[GPBStringInt32Dictionary alloc] initWithValues:kValues1
+      [[GPBStringInt32Dictionary alloc] initWithInt32s:kValues1
                                                forKeys:kKeys1
                                                  count:GPBARRAYSIZE(kValues1)];
   XCTAssertNotNil(dict1prime);
   GPBStringInt32Dictionary *dict2 =
-      [[GPBStringInt32Dictionary alloc] initWithValues:kValues2
+      [[GPBStringInt32Dictionary alloc] initWithInt32s:kValues2
                                                forKeys:kKeys1
                                                  count:GPBARRAYSIZE(kValues2)];
   XCTAssertNotNil(dict2);
   GPBStringInt32Dictionary *dict3 =
-      [[GPBStringInt32Dictionary alloc] initWithValues:kValues1
+      [[GPBStringInt32Dictionary alloc] initWithInt32s:kValues1
                                                forKeys:kKeys2
                                                  count:GPBARRAYSIZE(kValues1)];
   XCTAssertNotNil(dict3);
   GPBStringInt32Dictionary *dict4 =
-      [[GPBStringInt32Dictionary alloc] initWithValues:kValues3
+      [[GPBStringInt32Dictionary alloc] initWithInt32s:kValues3
                                                forKeys:kKeys1
                                                  count:GPBARRAYSIZE(kValues3)];
   XCTAssertNotNil(dict4);
@@ -588,7 +588,7 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
   const NSString *kKeys[] = { @"foo", @"bar", @"baz", @"mumble" };
   const int32_t kValues[] = { 200, 201, 202, 203 };
   GPBStringInt32Dictionary *dict =
-      [[GPBStringInt32Dictionary alloc] initWithValues:kValues
+      [[GPBStringInt32Dictionary alloc] initWithInt32s:kValues
                                                forKeys:kKeys
                                                  count:GPBARRAYSIZE(kValues)];
   XCTAssertNotNil(dict);
@@ -609,7 +609,7 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
   const NSString *kKeys[] = { @"foo", @"bar", @"baz", @"mumble" };
   const int32_t kValues[] = { 200, 201, 202, 203 };
   GPBStringInt32Dictionary *dict =
-      [[GPBStringInt32Dictionary alloc] initWithValues:kValues
+      [[GPBStringInt32Dictionary alloc] initWithInt32s:kValues
                                                forKeys:kKeys
                                                  count:GPBARRAYSIZE(kValues)];
   XCTAssertNotNil(dict);
@@ -629,13 +629,13 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
   XCTAssertNotNil(dict);
 
   XCTAssertEqual(dict.count, 0U);
-  [dict setValue:200 forKey:@"foo"];
+  [dict setInt32:200 forKey:@"foo"];
   XCTAssertEqual(dict.count, 1U);
 
   const NSString *kKeys[] = { @"bar", @"baz", @"mumble" };
   const int32_t kValues[] = { 201, 202, 203 };
   GPBStringInt32Dictionary *dict2 =
-      [[GPBStringInt32Dictionary alloc] initWithValues:kValues
+      [[GPBStringInt32Dictionary alloc] initWithInt32s:kValues
                                                forKeys:kKeys
                                                  count:GPBARRAYSIZE(kValues)];
   XCTAssertNotNil(dict2);
@@ -643,17 +643,17 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
   XCTAssertEqual(dict.count, 4U);
 
   int32_t value;
-  XCTAssertTrue([dict valueForKey:@"foo" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"foo" value:&value]);
+  XCTAssertTrue([dict getInt32:NULL forKey:@"foo"]);
+  XCTAssertTrue([dict getInt32:&value forKey:@"foo"]);
   XCTAssertEqual(value, 200);
-  XCTAssertTrue([dict valueForKey:@"bar" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"bar" value:&value]);
+  XCTAssertTrue([dict getInt32:NULL forKey:@"bar"]);
+  XCTAssertTrue([dict getInt32:&value forKey:@"bar"]);
   XCTAssertEqual(value, 201);
-  XCTAssertTrue([dict valueForKey:@"baz" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"baz" value:&value]);
+  XCTAssertTrue([dict getInt32:NULL forKey:@"baz"]);
+  XCTAssertTrue([dict getInt32:&value forKey:@"baz"]);
   XCTAssertEqual(value, 202);
-  XCTAssertTrue([dict valueForKey:@"mumble" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"mumble" value:&value]);
+  XCTAssertTrue([dict getInt32:NULL forKey:@"mumble"]);
+  XCTAssertTrue([dict getInt32:&value forKey:@"mumble"]);
   XCTAssertEqual(value, 203);
   [dict2 release];
 }
@@ -662,57 +662,57 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
   const NSString *kKeys[] = { @"foo", @"bar", @"baz", @"mumble" };
   const int32_t kValues[] = { 200, 201, 202, 203 };
   GPBStringInt32Dictionary *dict =
-      [[GPBStringInt32Dictionary alloc] initWithValues:kValues
-                                        forKeys:kKeys
-                                          count:GPBARRAYSIZE(kValues)];
+      [[GPBStringInt32Dictionary alloc] initWithInt32s:kValues
+                                               forKeys:kKeys
+                                                 count:GPBARRAYSIZE(kValues)];
   XCTAssertNotNil(dict);
   XCTAssertEqual(dict.count, 4U);
 
-  [dict removeValueForKey:@"bar"];
+  [dict removeInt32ForKey:@"bar"];
   XCTAssertEqual(dict.count, 3U);
   int32_t value;
-  XCTAssertTrue([dict valueForKey:@"foo" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"foo" value:&value]);
+  XCTAssertTrue([dict getInt32:NULL forKey:@"foo"]);
+  XCTAssertTrue([dict getInt32:&value forKey:@"foo"]);
   XCTAssertEqual(value, 200);
-  XCTAssertFalse([dict valueForKey:@"bar" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"baz" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"baz" value:&value]);
+  XCTAssertFalse([dict getInt32:NULL forKey:@"bar"]);
+  XCTAssertTrue([dict getInt32:NULL forKey:@"baz"]);
+  XCTAssertTrue([dict getInt32:&value forKey:@"baz"]);
   XCTAssertEqual(value, 202);
-  XCTAssertTrue([dict valueForKey:@"mumble" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"mumble" value:&value]);
+  XCTAssertTrue([dict getInt32:NULL forKey:@"mumble"]);
+  XCTAssertTrue([dict getInt32:&value forKey:@"mumble"]);
   XCTAssertEqual(value, 203);
 
   // Remove again does nothing.
-  [dict removeValueForKey:@"bar"];
+  [dict removeInt32ForKey:@"bar"];
   XCTAssertEqual(dict.count, 3U);
-  XCTAssertTrue([dict valueForKey:@"foo" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"foo" value:&value]);
+  XCTAssertTrue([dict getInt32:NULL forKey:@"foo"]);
+  XCTAssertTrue([dict getInt32:&value forKey:@"foo"]);
   XCTAssertEqual(value, 200);
-  XCTAssertFalse([dict valueForKey:@"bar" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"baz" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"baz" value:&value]);
+  XCTAssertFalse([dict getInt32:NULL forKey:@"bar"]);
+  XCTAssertTrue([dict getInt32:NULL forKey:@"baz"]);
+  XCTAssertTrue([dict getInt32:&value forKey:@"baz"]);
   XCTAssertEqual(value, 202);
-  XCTAssertTrue([dict valueForKey:@"mumble" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"mumble" value:&value]);
+  XCTAssertTrue([dict getInt32:NULL forKey:@"mumble"]);
+  XCTAssertTrue([dict getInt32:&value forKey:@"mumble"]);
   XCTAssertEqual(value, 203);
 
-  [dict removeValueForKey:@"mumble"];
+  [dict removeInt32ForKey:@"mumble"];
   XCTAssertEqual(dict.count, 2U);
-  XCTAssertTrue([dict valueForKey:@"foo" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"foo" value:&value]);
+  XCTAssertTrue([dict getInt32:NULL forKey:@"foo"]);
+  XCTAssertTrue([dict getInt32:&value forKey:@"foo"]);
   XCTAssertEqual(value, 200);
-  XCTAssertFalse([dict valueForKey:@"bar" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"baz" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"baz" value:&value]);
+  XCTAssertFalse([dict getInt32:NULL forKey:@"bar"]);
+  XCTAssertTrue([dict getInt32:NULL forKey:@"baz"]);
+  XCTAssertTrue([dict getInt32:&value forKey:@"baz"]);
   XCTAssertEqual(value, 202);
-  XCTAssertFalse([dict valueForKey:@"mumble" value:NULL]);
+  XCTAssertFalse([dict getInt32:NULL forKey:@"mumble"]);
 
   [dict removeAll];
   XCTAssertEqual(dict.count, 0U);
-  XCTAssertFalse([dict valueForKey:@"foo" value:NULL]);
-  XCTAssertFalse([dict valueForKey:@"bar" value:NULL]);
-  XCTAssertFalse([dict valueForKey:@"baz" value:NULL]);
-  XCTAssertFalse([dict valueForKey:@"mumble" value:NULL]);
+  XCTAssertFalse([dict getInt32:NULL forKey:@"foo"]);
+  XCTAssertFalse([dict getInt32:NULL forKey:@"bar"]);
+  XCTAssertFalse([dict getInt32:NULL forKey:@"baz"]);
+  XCTAssertFalse([dict getInt32:NULL forKey:@"mumble"]);
   [dict release];
 }
 
@@ -720,75 +720,75 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
   const NSString *kKeys[] = { @"foo", @"bar", @"baz", @"mumble" };
   const int32_t kValues[] = { 200, 201, 202, 203 };
   GPBStringInt32Dictionary *dict =
-      [[GPBStringInt32Dictionary alloc] initWithValues:kValues
-                                        forKeys:kKeys
-                                          count:GPBARRAYSIZE(kValues)];
+      [[GPBStringInt32Dictionary alloc] initWithInt32s:kValues
+                                               forKeys:kKeys
+                                                 count:GPBARRAYSIZE(kValues)];
   XCTAssertNotNil(dict);
   XCTAssertEqual(dict.count, 4U);
   int32_t value;
-  XCTAssertTrue([dict valueForKey:@"foo" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"foo" value:&value]);
+  XCTAssertTrue([dict getInt32:NULL forKey:@"foo"]);
+  XCTAssertTrue([dict getInt32:&value forKey:@"foo"]);
   XCTAssertEqual(value, 200);
-  XCTAssertTrue([dict valueForKey:@"bar" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"bar" value:&value]);
+  XCTAssertTrue([dict getInt32:NULL forKey:@"bar"]);
+  XCTAssertTrue([dict getInt32:&value forKey:@"bar"]);
   XCTAssertEqual(value, 201);
-  XCTAssertTrue([dict valueForKey:@"baz" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"baz" value:&value]);
+  XCTAssertTrue([dict getInt32:NULL forKey:@"baz"]);
+  XCTAssertTrue([dict getInt32:&value forKey:@"baz"]);
   XCTAssertEqual(value, 202);
-  XCTAssertTrue([dict valueForKey:@"mumble" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"mumble" value:&value]);
+  XCTAssertTrue([dict getInt32:NULL forKey:@"mumble"]);
+  XCTAssertTrue([dict getInt32:&value forKey:@"mumble"]);
   XCTAssertEqual(value, 203);
 
-  [dict setValue:203 forKey:@"foo"];
+  [dict setInt32:203 forKey:@"foo"];
   XCTAssertEqual(dict.count, 4U);
-  XCTAssertTrue([dict valueForKey:@"foo" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"foo" value:&value]);
+  XCTAssertTrue([dict getInt32:NULL forKey:@"foo"]);
+  XCTAssertTrue([dict getInt32:&value forKey:@"foo"]);
   XCTAssertEqual(value, 203);
-  XCTAssertTrue([dict valueForKey:@"bar" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"bar" value:&value]);
+  XCTAssertTrue([dict getInt32:NULL forKey:@"bar"]);
+  XCTAssertTrue([dict getInt32:&value forKey:@"bar"]);
   XCTAssertEqual(value, 201);
-  XCTAssertTrue([dict valueForKey:@"baz" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"baz" value:&value]);
+  XCTAssertTrue([dict getInt32:NULL forKey:@"baz"]);
+  XCTAssertTrue([dict getInt32:&value forKey:@"baz"]);
   XCTAssertEqual(value, 202);
-  XCTAssertTrue([dict valueForKey:@"mumble" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"mumble" value:&value]);
+  XCTAssertTrue([dict getInt32:NULL forKey:@"mumble"]);
+  XCTAssertTrue([dict getInt32:&value forKey:@"mumble"]);
   XCTAssertEqual(value, 203);
 
-  [dict setValue:201 forKey:@"mumble"];
+  [dict setInt32:201 forKey:@"mumble"];
   XCTAssertEqual(dict.count, 4U);
-  XCTAssertTrue([dict valueForKey:@"foo" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"foo" value:&value]);
+  XCTAssertTrue([dict getInt32:NULL forKey:@"foo"]);
+  XCTAssertTrue([dict getInt32:&value forKey:@"foo"]);
   XCTAssertEqual(value, 203);
-  XCTAssertTrue([dict valueForKey:@"bar" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"bar" value:&value]);
+  XCTAssertTrue([dict getInt32:NULL forKey:@"bar"]);
+  XCTAssertTrue([dict getInt32:&value forKey:@"bar"]);
   XCTAssertEqual(value, 201);
-  XCTAssertTrue([dict valueForKey:@"baz" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"baz" value:&value]);
+  XCTAssertTrue([dict getInt32:NULL forKey:@"baz"]);
+  XCTAssertTrue([dict getInt32:&value forKey:@"baz"]);
   XCTAssertEqual(value, 202);
-  XCTAssertTrue([dict valueForKey:@"mumble" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"mumble" value:&value]);
+  XCTAssertTrue([dict getInt32:NULL forKey:@"mumble"]);
+  XCTAssertTrue([dict getInt32:&value forKey:@"mumble"]);
   XCTAssertEqual(value, 201);
 
   const NSString *kKeys2[] = { @"bar", @"baz" };
   const int32_t kValues2[] = { 202, 200 };
   GPBStringInt32Dictionary *dict2 =
-      [[GPBStringInt32Dictionary alloc] initWithValues:kValues2
+      [[GPBStringInt32Dictionary alloc] initWithInt32s:kValues2
                                                forKeys:kKeys2
                                                  count:GPBARRAYSIZE(kValues2)];
   XCTAssertNotNil(dict2);
   [dict addEntriesFromDictionary:dict2];
   XCTAssertEqual(dict.count, 4U);
-  XCTAssertTrue([dict valueForKey:@"foo" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"foo" value:&value]);
+  XCTAssertTrue([dict getInt32:NULL forKey:@"foo"]);
+  XCTAssertTrue([dict getInt32:&value forKey:@"foo"]);
   XCTAssertEqual(value, 203);
-  XCTAssertTrue([dict valueForKey:@"bar" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"bar" value:&value]);
+  XCTAssertTrue([dict getInt32:NULL forKey:@"bar"]);
+  XCTAssertTrue([dict getInt32:&value forKey:@"bar"]);
   XCTAssertEqual(value, 202);
-  XCTAssertTrue([dict valueForKey:@"baz" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"baz" value:&value]);
+  XCTAssertTrue([dict getInt32:NULL forKey:@"baz"]);
+  XCTAssertTrue([dict getInt32:&value forKey:@"baz"]);
   XCTAssertEqual(value, 200);
-  XCTAssertTrue([dict valueForKey:@"mumble" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"mumble" value:&value]);
+  XCTAssertTrue([dict getInt32:NULL forKey:@"mumble"]);
+  XCTAssertTrue([dict getInt32:&value forKey:@"mumble"]);
   XCTAssertEqual(value, 201);
 
   [dict2 release];
@@ -808,8 +808,8 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
   GPBStringUInt64Dictionary *dict = [[GPBStringUInt64Dictionary alloc] init];
   XCTAssertNotNil(dict);
   XCTAssertEqual(dict.count, 0U);
-  XCTAssertFalse([dict valueForKey:@"foo" value:NULL]);
-  [dict enumerateKeysAndValuesUsingBlock:^(NSString *aKey, uint64_t aValue, BOOL *stop) {
+  XCTAssertFalse([dict getUInt64:NULL forKey:@"foo"]);
+  [dict enumerateKeysAndUInt64sUsingBlock:^(NSString *aKey, uint64_t aValue, BOOL *stop) {
     #pragma unused(aKey, aValue, stop)
     XCTFail(@"Shouldn't get here!");
   }];
@@ -817,15 +817,15 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
 }
 
 - (void)testOne {
-  GPBStringUInt64Dictionary *dict = [GPBStringUInt64Dictionary dictionaryWithValue:300U forKey:@"foo"];
+  GPBStringUInt64Dictionary *dict = [GPBStringUInt64Dictionary dictionaryWithUInt64:300U forKey:@"foo"];
   XCTAssertNotNil(dict);
   XCTAssertEqual(dict.count, 1U);
   uint64_t value;
-  XCTAssertTrue([dict valueForKey:@"foo" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"foo" value:&value]);
+  XCTAssertTrue([dict getUInt64:NULL forKey:@"foo"]);
+  XCTAssertTrue([dict getUInt64:&value forKey:@"foo"]);
   XCTAssertEqual(value, 300U);
-  XCTAssertFalse([dict valueForKey:@"bar" value:NULL]);
-  [dict enumerateKeysAndValuesUsingBlock:^(NSString *aKey, uint64_t aValue, BOOL *stop) {
+  XCTAssertFalse([dict getUInt64:NULL forKey:@"bar"]);
+  [dict enumerateKeysAndUInt64sUsingBlock:^(NSString *aKey, uint64_t aValue, BOOL *stop) {
     XCTAssertEqualObjects(aKey, @"foo");
     XCTAssertEqual(aValue, 300U);
     XCTAssertNotEqual(stop, NULL);
@@ -836,27 +836,27 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
   const NSString *kKeys[] = { @"foo", @"bar", @"baz" };
   const uint64_t kValues[] = { 300U, 301U, 302U };
   GPBStringUInt64Dictionary *dict =
-      [[GPBStringUInt64Dictionary alloc] initWithValues:kValues
-                                                forKeys:kKeys
-                                                  count:GPBARRAYSIZE(kValues)];
+      [[GPBStringUInt64Dictionary alloc] initWithUInt64s:kValues
+                                                 forKeys:kKeys
+                                                   count:GPBARRAYSIZE(kValues)];
   XCTAssertNotNil(dict);
   XCTAssertEqual(dict.count, 3U);
   uint64_t value;
-  XCTAssertTrue([dict valueForKey:@"foo" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"foo" value:&value]);
+  XCTAssertTrue([dict getUInt64:NULL forKey:@"foo"]);
+  XCTAssertTrue([dict getUInt64:&value forKey:@"foo"]);
   XCTAssertEqual(value, 300U);
-  XCTAssertTrue([dict valueForKey:@"bar" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"bar" value:&value]);
+  XCTAssertTrue([dict getUInt64:NULL forKey:@"bar"]);
+  XCTAssertTrue([dict getUInt64:&value forKey:@"bar"]);
   XCTAssertEqual(value, 301U);
-  XCTAssertTrue([dict valueForKey:@"baz" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"baz" value:&value]);
+  XCTAssertTrue([dict getUInt64:NULL forKey:@"baz"]);
+  XCTAssertTrue([dict getUInt64:&value forKey:@"baz"]);
   XCTAssertEqual(value, 302U);
-  XCTAssertFalse([dict valueForKey:@"mumble" value:NULL]);
+  XCTAssertFalse([dict getUInt64:NULL forKey:@"mumble"]);
 
   __block NSUInteger idx = 0;
   NSString **seenKeys = malloc(3 * sizeof(NSString*));
   uint64_t *seenValues = malloc(3 * sizeof(uint64_t));
-  [dict enumerateKeysAndValuesUsingBlock:^(NSString *aKey, uint64_t aValue, BOOL *stop) {
+  [dict enumerateKeysAndUInt64sUsingBlock:^(NSString *aKey, uint64_t aValue, BOOL *stop) {
     XCTAssertLessThan(idx, 3U);
     seenKeys[idx] = aKey;
     seenValues[idx] = aValue;
@@ -878,7 +878,7 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
 
   // Stopping the enumeration.
   idx = 0;
-  [dict enumerateKeysAndValuesUsingBlock:^(NSString *aKey, uint64_t aValue, BOOL *stop) {
+  [dict enumerateKeysAndUInt64sUsingBlock:^(NSString *aKey, uint64_t aValue, BOOL *stop) {
     #pragma unused(aKey, aValue)
     if (idx == 1) *stop = YES;
     XCTAssertNotEqual(idx, 2U);
@@ -894,29 +894,29 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
   const uint64_t kValues2[] = { 300U, 303U, 302U };
   const uint64_t kValues3[] = { 300U, 301U, 302U, 303U };
   GPBStringUInt64Dictionary *dict1 =
-      [[GPBStringUInt64Dictionary alloc] initWithValues:kValues1
-                                                forKeys:kKeys1
-                                                  count:GPBARRAYSIZE(kValues1)];
+      [[GPBStringUInt64Dictionary alloc] initWithUInt64s:kValues1
+                                                 forKeys:kKeys1
+                                                   count:GPBARRAYSIZE(kValues1)];
   XCTAssertNotNil(dict1);
   GPBStringUInt64Dictionary *dict1prime =
-      [[GPBStringUInt64Dictionary alloc] initWithValues:kValues1
-                                                forKeys:kKeys1
-                                                  count:GPBARRAYSIZE(kValues1)];
+      [[GPBStringUInt64Dictionary alloc] initWithUInt64s:kValues1
+                                                 forKeys:kKeys1
+                                                   count:GPBARRAYSIZE(kValues1)];
   XCTAssertNotNil(dict1prime);
   GPBStringUInt64Dictionary *dict2 =
-      [[GPBStringUInt64Dictionary alloc] initWithValues:kValues2
-                                                forKeys:kKeys1
-                                                  count:GPBARRAYSIZE(kValues2)];
+      [[GPBStringUInt64Dictionary alloc] initWithUInt64s:kValues2
+                                                 forKeys:kKeys1
+                                                   count:GPBARRAYSIZE(kValues2)];
   XCTAssertNotNil(dict2);
   GPBStringUInt64Dictionary *dict3 =
-      [[GPBStringUInt64Dictionary alloc] initWithValues:kValues1
-                                                forKeys:kKeys2
-                                                  count:GPBARRAYSIZE(kValues1)];
+      [[GPBStringUInt64Dictionary alloc] initWithUInt64s:kValues1
+                                                 forKeys:kKeys2
+                                                   count:GPBARRAYSIZE(kValues1)];
   XCTAssertNotNil(dict3);
   GPBStringUInt64Dictionary *dict4 =
-      [[GPBStringUInt64Dictionary alloc] initWithValues:kValues3
-                                                forKeys:kKeys1
-                                                  count:GPBARRAYSIZE(kValues3)];
+      [[GPBStringUInt64Dictionary alloc] initWithUInt64s:kValues3
+                                                 forKeys:kKeys1
+                                                   count:GPBARRAYSIZE(kValues3)];
   XCTAssertNotNil(dict4);
 
   // 1/1Prime should be different objects, but equal.
@@ -945,9 +945,9 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
   const NSString *kKeys[] = { @"foo", @"bar", @"baz", @"mumble" };
   const uint64_t kValues[] = { 300U, 301U, 302U, 303U };
   GPBStringUInt64Dictionary *dict =
-      [[GPBStringUInt64Dictionary alloc] initWithValues:kValues
-                                                forKeys:kKeys
-                                                  count:GPBARRAYSIZE(kValues)];
+      [[GPBStringUInt64Dictionary alloc] initWithUInt64s:kValues
+                                                 forKeys:kKeys
+                                                   count:GPBARRAYSIZE(kValues)];
   XCTAssertNotNil(dict);
 
   GPBStringUInt64Dictionary *dict2 = [dict copy];
@@ -966,9 +966,9 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
   const NSString *kKeys[] = { @"foo", @"bar", @"baz", @"mumble" };
   const uint64_t kValues[] = { 300U, 301U, 302U, 303U };
   GPBStringUInt64Dictionary *dict =
-      [[GPBStringUInt64Dictionary alloc] initWithValues:kValues
-                                                forKeys:kKeys
-                                                  count:GPBARRAYSIZE(kValues)];
+      [[GPBStringUInt64Dictionary alloc] initWithUInt64s:kValues
+                                                 forKeys:kKeys
+                                                   count:GPBARRAYSIZE(kValues)];
   XCTAssertNotNil(dict);
 
   GPBStringUInt64Dictionary *dict2 =
@@ -986,31 +986,31 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
   XCTAssertNotNil(dict);
 
   XCTAssertEqual(dict.count, 0U);
-  [dict setValue:300U forKey:@"foo"];
+  [dict setUInt64:300U forKey:@"foo"];
   XCTAssertEqual(dict.count, 1U);
 
   const NSString *kKeys[] = { @"bar", @"baz", @"mumble" };
   const uint64_t kValues[] = { 301U, 302U, 303U };
   GPBStringUInt64Dictionary *dict2 =
-      [[GPBStringUInt64Dictionary alloc] initWithValues:kValues
-                                                forKeys:kKeys
-                                                  count:GPBARRAYSIZE(kValues)];
+      [[GPBStringUInt64Dictionary alloc] initWithUInt64s:kValues
+                                                 forKeys:kKeys
+                                                   count:GPBARRAYSIZE(kValues)];
   XCTAssertNotNil(dict2);
   [dict addEntriesFromDictionary:dict2];
   XCTAssertEqual(dict.count, 4U);
 
   uint64_t value;
-  XCTAssertTrue([dict valueForKey:@"foo" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"foo" value:&value]);
+  XCTAssertTrue([dict getUInt64:NULL forKey:@"foo"]);
+  XCTAssertTrue([dict getUInt64:&value forKey:@"foo"]);
   XCTAssertEqual(value, 300U);
-  XCTAssertTrue([dict valueForKey:@"bar" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"bar" value:&value]);
+  XCTAssertTrue([dict getUInt64:NULL forKey:@"bar"]);
+  XCTAssertTrue([dict getUInt64:&value forKey:@"bar"]);
   XCTAssertEqual(value, 301U);
-  XCTAssertTrue([dict valueForKey:@"baz" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"baz" value:&value]);
+  XCTAssertTrue([dict getUInt64:NULL forKey:@"baz"]);
+  XCTAssertTrue([dict getUInt64:&value forKey:@"baz"]);
   XCTAssertEqual(value, 302U);
-  XCTAssertTrue([dict valueForKey:@"mumble" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"mumble" value:&value]);
+  XCTAssertTrue([dict getUInt64:NULL forKey:@"mumble"]);
+  XCTAssertTrue([dict getUInt64:&value forKey:@"mumble"]);
   XCTAssertEqual(value, 303U);
   [dict2 release];
 }
@@ -1019,57 +1019,57 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
   const NSString *kKeys[] = { @"foo", @"bar", @"baz", @"mumble" };
   const uint64_t kValues[] = { 300U, 301U, 302U, 303U };
   GPBStringUInt64Dictionary *dict =
-      [[GPBStringUInt64Dictionary alloc] initWithValues:kValues
-                                         forKeys:kKeys
-                                           count:GPBARRAYSIZE(kValues)];
+      [[GPBStringUInt64Dictionary alloc] initWithUInt64s:kValues
+                                                 forKeys:kKeys
+                                                   count:GPBARRAYSIZE(kValues)];
   XCTAssertNotNil(dict);
   XCTAssertEqual(dict.count, 4U);
 
-  [dict removeValueForKey:@"bar"];
+  [dict removeUInt64ForKey:@"bar"];
   XCTAssertEqual(dict.count, 3U);
   uint64_t value;
-  XCTAssertTrue([dict valueForKey:@"foo" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"foo" value:&value]);
+  XCTAssertTrue([dict getUInt64:NULL forKey:@"foo"]);
+  XCTAssertTrue([dict getUInt64:&value forKey:@"foo"]);
   XCTAssertEqual(value, 300U);
-  XCTAssertFalse([dict valueForKey:@"bar" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"baz" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"baz" value:&value]);
+  XCTAssertFalse([dict getUInt64:NULL forKey:@"bar"]);
+  XCTAssertTrue([dict getUInt64:NULL forKey:@"baz"]);
+  XCTAssertTrue([dict getUInt64:&value forKey:@"baz"]);
   XCTAssertEqual(value, 302U);
-  XCTAssertTrue([dict valueForKey:@"mumble" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"mumble" value:&value]);
+  XCTAssertTrue([dict getUInt64:NULL forKey:@"mumble"]);
+  XCTAssertTrue([dict getUInt64:&value forKey:@"mumble"]);
   XCTAssertEqual(value, 303U);
 
   // Remove again does nothing.
-  [dict removeValueForKey:@"bar"];
+  [dict removeUInt64ForKey:@"bar"];
   XCTAssertEqual(dict.count, 3U);
-  XCTAssertTrue([dict valueForKey:@"foo" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"foo" value:&value]);
+  XCTAssertTrue([dict getUInt64:NULL forKey:@"foo"]);
+  XCTAssertTrue([dict getUInt64:&value forKey:@"foo"]);
   XCTAssertEqual(value, 300U);
-  XCTAssertFalse([dict valueForKey:@"bar" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"baz" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"baz" value:&value]);
+  XCTAssertFalse([dict getUInt64:NULL forKey:@"bar"]);
+  XCTAssertTrue([dict getUInt64:NULL forKey:@"baz"]);
+  XCTAssertTrue([dict getUInt64:&value forKey:@"baz"]);
   XCTAssertEqual(value, 302U);
-  XCTAssertTrue([dict valueForKey:@"mumble" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"mumble" value:&value]);
+  XCTAssertTrue([dict getUInt64:NULL forKey:@"mumble"]);
+  XCTAssertTrue([dict getUInt64:&value forKey:@"mumble"]);
   XCTAssertEqual(value, 303U);
 
-  [dict removeValueForKey:@"mumble"];
+  [dict removeUInt64ForKey:@"mumble"];
   XCTAssertEqual(dict.count, 2U);
-  XCTAssertTrue([dict valueForKey:@"foo" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"foo" value:&value]);
+  XCTAssertTrue([dict getUInt64:NULL forKey:@"foo"]);
+  XCTAssertTrue([dict getUInt64:&value forKey:@"foo"]);
   XCTAssertEqual(value, 300U);
-  XCTAssertFalse([dict valueForKey:@"bar" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"baz" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"baz" value:&value]);
+  XCTAssertFalse([dict getUInt64:NULL forKey:@"bar"]);
+  XCTAssertTrue([dict getUInt64:NULL forKey:@"baz"]);
+  XCTAssertTrue([dict getUInt64:&value forKey:@"baz"]);
   XCTAssertEqual(value, 302U);
-  XCTAssertFalse([dict valueForKey:@"mumble" value:NULL]);
+  XCTAssertFalse([dict getUInt64:NULL forKey:@"mumble"]);
 
   [dict removeAll];
   XCTAssertEqual(dict.count, 0U);
-  XCTAssertFalse([dict valueForKey:@"foo" value:NULL]);
-  XCTAssertFalse([dict valueForKey:@"bar" value:NULL]);
-  XCTAssertFalse([dict valueForKey:@"baz" value:NULL]);
-  XCTAssertFalse([dict valueForKey:@"mumble" value:NULL]);
+  XCTAssertFalse([dict getUInt64:NULL forKey:@"foo"]);
+  XCTAssertFalse([dict getUInt64:NULL forKey:@"bar"]);
+  XCTAssertFalse([dict getUInt64:NULL forKey:@"baz"]);
+  XCTAssertFalse([dict getUInt64:NULL forKey:@"mumble"]);
   [dict release];
 }
 
@@ -1077,75 +1077,75 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
   const NSString *kKeys[] = { @"foo", @"bar", @"baz", @"mumble" };
   const uint64_t kValues[] = { 300U, 301U, 302U, 303U };
   GPBStringUInt64Dictionary *dict =
-      [[GPBStringUInt64Dictionary alloc] initWithValues:kValues
-                                         forKeys:kKeys
-                                           count:GPBARRAYSIZE(kValues)];
+      [[GPBStringUInt64Dictionary alloc] initWithUInt64s:kValues
+                                                 forKeys:kKeys
+                                                   count:GPBARRAYSIZE(kValues)];
   XCTAssertNotNil(dict);
   XCTAssertEqual(dict.count, 4U);
   uint64_t value;
-  XCTAssertTrue([dict valueForKey:@"foo" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"foo" value:&value]);
+  XCTAssertTrue([dict getUInt64:NULL forKey:@"foo"]);
+  XCTAssertTrue([dict getUInt64:&value forKey:@"foo"]);
   XCTAssertEqual(value, 300U);
-  XCTAssertTrue([dict valueForKey:@"bar" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"bar" value:&value]);
+  XCTAssertTrue([dict getUInt64:NULL forKey:@"bar"]);
+  XCTAssertTrue([dict getUInt64:&value forKey:@"bar"]);
   XCTAssertEqual(value, 301U);
-  XCTAssertTrue([dict valueForKey:@"baz" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"baz" value:&value]);
+  XCTAssertTrue([dict getUInt64:NULL forKey:@"baz"]);
+  XCTAssertTrue([dict getUInt64:&value forKey:@"baz"]);
   XCTAssertEqual(value, 302U);
-  XCTAssertTrue([dict valueForKey:@"mumble" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"mumble" value:&value]);
+  XCTAssertTrue([dict getUInt64:NULL forKey:@"mumble"]);
+  XCTAssertTrue([dict getUInt64:&value forKey:@"mumble"]);
   XCTAssertEqual(value, 303U);
 
-  [dict setValue:303U forKey:@"foo"];
+  [dict setUInt64:303U forKey:@"foo"];
   XCTAssertEqual(dict.count, 4U);
-  XCTAssertTrue([dict valueForKey:@"foo" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"foo" value:&value]);
+  XCTAssertTrue([dict getUInt64:NULL forKey:@"foo"]);
+  XCTAssertTrue([dict getUInt64:&value forKey:@"foo"]);
   XCTAssertEqual(value, 303U);
-  XCTAssertTrue([dict valueForKey:@"bar" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"bar" value:&value]);
+  XCTAssertTrue([dict getUInt64:NULL forKey:@"bar"]);
+  XCTAssertTrue([dict getUInt64:&value forKey:@"bar"]);
   XCTAssertEqual(value, 301U);
-  XCTAssertTrue([dict valueForKey:@"baz" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"baz" value:&value]);
+  XCTAssertTrue([dict getUInt64:NULL forKey:@"baz"]);
+  XCTAssertTrue([dict getUInt64:&value forKey:@"baz"]);
   XCTAssertEqual(value, 302U);
-  XCTAssertTrue([dict valueForKey:@"mumble" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"mumble" value:&value]);
+  XCTAssertTrue([dict getUInt64:NULL forKey:@"mumble"]);
+  XCTAssertTrue([dict getUInt64:&value forKey:@"mumble"]);
   XCTAssertEqual(value, 303U);
 
-  [dict setValue:301U forKey:@"mumble"];
+  [dict setUInt64:301U forKey:@"mumble"];
   XCTAssertEqual(dict.count, 4U);
-  XCTAssertTrue([dict valueForKey:@"foo" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"foo" value:&value]);
+  XCTAssertTrue([dict getUInt64:NULL forKey:@"foo"]);
+  XCTAssertTrue([dict getUInt64:&value forKey:@"foo"]);
   XCTAssertEqual(value, 303U);
-  XCTAssertTrue([dict valueForKey:@"bar" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"bar" value:&value]);
+  XCTAssertTrue([dict getUInt64:NULL forKey:@"bar"]);
+  XCTAssertTrue([dict getUInt64:&value forKey:@"bar"]);
   XCTAssertEqual(value, 301U);
-  XCTAssertTrue([dict valueForKey:@"baz" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"baz" value:&value]);
+  XCTAssertTrue([dict getUInt64:NULL forKey:@"baz"]);
+  XCTAssertTrue([dict getUInt64:&value forKey:@"baz"]);
   XCTAssertEqual(value, 302U);
-  XCTAssertTrue([dict valueForKey:@"mumble" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"mumble" value:&value]);
+  XCTAssertTrue([dict getUInt64:NULL forKey:@"mumble"]);
+  XCTAssertTrue([dict getUInt64:&value forKey:@"mumble"]);
   XCTAssertEqual(value, 301U);
 
   const NSString *kKeys2[] = { @"bar", @"baz" };
   const uint64_t kValues2[] = { 302U, 300U };
   GPBStringUInt64Dictionary *dict2 =
-      [[GPBStringUInt64Dictionary alloc] initWithValues:kValues2
-                                                forKeys:kKeys2
-                                                  count:GPBARRAYSIZE(kValues2)];
+      [[GPBStringUInt64Dictionary alloc] initWithUInt64s:kValues2
+                                                 forKeys:kKeys2
+                                                   count:GPBARRAYSIZE(kValues2)];
   XCTAssertNotNil(dict2);
   [dict addEntriesFromDictionary:dict2];
   XCTAssertEqual(dict.count, 4U);
-  XCTAssertTrue([dict valueForKey:@"foo" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"foo" value:&value]);
+  XCTAssertTrue([dict getUInt64:NULL forKey:@"foo"]);
+  XCTAssertTrue([dict getUInt64:&value forKey:@"foo"]);
   XCTAssertEqual(value, 303U);
-  XCTAssertTrue([dict valueForKey:@"bar" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"bar" value:&value]);
+  XCTAssertTrue([dict getUInt64:NULL forKey:@"bar"]);
+  XCTAssertTrue([dict getUInt64:&value forKey:@"bar"]);
   XCTAssertEqual(value, 302U);
-  XCTAssertTrue([dict valueForKey:@"baz" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"baz" value:&value]);
+  XCTAssertTrue([dict getUInt64:NULL forKey:@"baz"]);
+  XCTAssertTrue([dict getUInt64:&value forKey:@"baz"]);
   XCTAssertEqual(value, 300U);
-  XCTAssertTrue([dict valueForKey:@"mumble" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"mumble" value:&value]);
+  XCTAssertTrue([dict getUInt64:NULL forKey:@"mumble"]);
+  XCTAssertTrue([dict getUInt64:&value forKey:@"mumble"]);
   XCTAssertEqual(value, 301U);
 
   [dict2 release];
@@ -1165,8 +1165,8 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
   GPBStringInt64Dictionary *dict = [[GPBStringInt64Dictionary alloc] init];
   XCTAssertNotNil(dict);
   XCTAssertEqual(dict.count, 0U);
-  XCTAssertFalse([dict valueForKey:@"foo" value:NULL]);
-  [dict enumerateKeysAndValuesUsingBlock:^(NSString *aKey, int64_t aValue, BOOL *stop) {
+  XCTAssertFalse([dict getInt64:NULL forKey:@"foo"]);
+  [dict enumerateKeysAndInt64sUsingBlock:^(NSString *aKey, int64_t aValue, BOOL *stop) {
     #pragma unused(aKey, aValue, stop)
     XCTFail(@"Shouldn't get here!");
   }];
@@ -1174,15 +1174,15 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
 }
 
 - (void)testOne {
-  GPBStringInt64Dictionary *dict = [GPBStringInt64Dictionary dictionaryWithValue:400 forKey:@"foo"];
+  GPBStringInt64Dictionary *dict = [GPBStringInt64Dictionary dictionaryWithInt64:400 forKey:@"foo"];
   XCTAssertNotNil(dict);
   XCTAssertEqual(dict.count, 1U);
   int64_t value;
-  XCTAssertTrue([dict valueForKey:@"foo" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"foo" value:&value]);
+  XCTAssertTrue([dict getInt64:NULL forKey:@"foo"]);
+  XCTAssertTrue([dict getInt64:&value forKey:@"foo"]);
   XCTAssertEqual(value, 400);
-  XCTAssertFalse([dict valueForKey:@"bar" value:NULL]);
-  [dict enumerateKeysAndValuesUsingBlock:^(NSString *aKey, int64_t aValue, BOOL *stop) {
+  XCTAssertFalse([dict getInt64:NULL forKey:@"bar"]);
+  [dict enumerateKeysAndInt64sUsingBlock:^(NSString *aKey, int64_t aValue, BOOL *stop) {
     XCTAssertEqualObjects(aKey, @"foo");
     XCTAssertEqual(aValue, 400);
     XCTAssertNotEqual(stop, NULL);
@@ -1193,27 +1193,27 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
   const NSString *kKeys[] = { @"foo", @"bar", @"baz" };
   const int64_t kValues[] = { 400, 401, 402 };
   GPBStringInt64Dictionary *dict =
-      [[GPBStringInt64Dictionary alloc] initWithValues:kValues
+      [[GPBStringInt64Dictionary alloc] initWithInt64s:kValues
                                                forKeys:kKeys
                                                  count:GPBARRAYSIZE(kValues)];
   XCTAssertNotNil(dict);
   XCTAssertEqual(dict.count, 3U);
   int64_t value;
-  XCTAssertTrue([dict valueForKey:@"foo" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"foo" value:&value]);
+  XCTAssertTrue([dict getInt64:NULL forKey:@"foo"]);
+  XCTAssertTrue([dict getInt64:&value forKey:@"foo"]);
   XCTAssertEqual(value, 400);
-  XCTAssertTrue([dict valueForKey:@"bar" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"bar" value:&value]);
+  XCTAssertTrue([dict getInt64:NULL forKey:@"bar"]);
+  XCTAssertTrue([dict getInt64:&value forKey:@"bar"]);
   XCTAssertEqual(value, 401);
-  XCTAssertTrue([dict valueForKey:@"baz" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"baz" value:&value]);
+  XCTAssertTrue([dict getInt64:NULL forKey:@"baz"]);
+  XCTAssertTrue([dict getInt64:&value forKey:@"baz"]);
   XCTAssertEqual(value, 402);
-  XCTAssertFalse([dict valueForKey:@"mumble" value:NULL]);
+  XCTAssertFalse([dict getInt64:NULL forKey:@"mumble"]);
 
   __block NSUInteger idx = 0;
   NSString **seenKeys = malloc(3 * sizeof(NSString*));
   int64_t *seenValues = malloc(3 * sizeof(int64_t));
-  [dict enumerateKeysAndValuesUsingBlock:^(NSString *aKey, int64_t aValue, BOOL *stop) {
+  [dict enumerateKeysAndInt64sUsingBlock:^(NSString *aKey, int64_t aValue, BOOL *stop) {
     XCTAssertLessThan(idx, 3U);
     seenKeys[idx] = aKey;
     seenValues[idx] = aValue;
@@ -1235,7 +1235,7 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
 
   // Stopping the enumeration.
   idx = 0;
-  [dict enumerateKeysAndValuesUsingBlock:^(NSString *aKey, int64_t aValue, BOOL *stop) {
+  [dict enumerateKeysAndInt64sUsingBlock:^(NSString *aKey, int64_t aValue, BOOL *stop) {
     #pragma unused(aKey, aValue)
     if (idx == 1) *stop = YES;
     XCTAssertNotEqual(idx, 2U);
@@ -1251,27 +1251,27 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
   const int64_t kValues2[] = { 400, 403, 402 };
   const int64_t kValues3[] = { 400, 401, 402, 403 };
   GPBStringInt64Dictionary *dict1 =
-      [[GPBStringInt64Dictionary alloc] initWithValues:kValues1
+      [[GPBStringInt64Dictionary alloc] initWithInt64s:kValues1
                                                forKeys:kKeys1
                                                  count:GPBARRAYSIZE(kValues1)];
   XCTAssertNotNil(dict1);
   GPBStringInt64Dictionary *dict1prime =
-      [[GPBStringInt64Dictionary alloc] initWithValues:kValues1
+      [[GPBStringInt64Dictionary alloc] initWithInt64s:kValues1
                                                forKeys:kKeys1
                                                  count:GPBARRAYSIZE(kValues1)];
   XCTAssertNotNil(dict1prime);
   GPBStringInt64Dictionary *dict2 =
-      [[GPBStringInt64Dictionary alloc] initWithValues:kValues2
+      [[GPBStringInt64Dictionary alloc] initWithInt64s:kValues2
                                                forKeys:kKeys1
                                                  count:GPBARRAYSIZE(kValues2)];
   XCTAssertNotNil(dict2);
   GPBStringInt64Dictionary *dict3 =
-      [[GPBStringInt64Dictionary alloc] initWithValues:kValues1
+      [[GPBStringInt64Dictionary alloc] initWithInt64s:kValues1
                                                forKeys:kKeys2
                                                  count:GPBARRAYSIZE(kValues1)];
   XCTAssertNotNil(dict3);
   GPBStringInt64Dictionary *dict4 =
-      [[GPBStringInt64Dictionary alloc] initWithValues:kValues3
+      [[GPBStringInt64Dictionary alloc] initWithInt64s:kValues3
                                                forKeys:kKeys1
                                                  count:GPBARRAYSIZE(kValues3)];
   XCTAssertNotNil(dict4);
@@ -1302,7 +1302,7 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
   const NSString *kKeys[] = { @"foo", @"bar", @"baz", @"mumble" };
   const int64_t kValues[] = { 400, 401, 402, 403 };
   GPBStringInt64Dictionary *dict =
-      [[GPBStringInt64Dictionary alloc] initWithValues:kValues
+      [[GPBStringInt64Dictionary alloc] initWithInt64s:kValues
                                                forKeys:kKeys
                                                  count:GPBARRAYSIZE(kValues)];
   XCTAssertNotNil(dict);
@@ -1323,7 +1323,7 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
   const NSString *kKeys[] = { @"foo", @"bar", @"baz", @"mumble" };
   const int64_t kValues[] = { 400, 401, 402, 403 };
   GPBStringInt64Dictionary *dict =
-      [[GPBStringInt64Dictionary alloc] initWithValues:kValues
+      [[GPBStringInt64Dictionary alloc] initWithInt64s:kValues
                                                forKeys:kKeys
                                                  count:GPBARRAYSIZE(kValues)];
   XCTAssertNotNil(dict);
@@ -1343,13 +1343,13 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
   XCTAssertNotNil(dict);
 
   XCTAssertEqual(dict.count, 0U);
-  [dict setValue:400 forKey:@"foo"];
+  [dict setInt64:400 forKey:@"foo"];
   XCTAssertEqual(dict.count, 1U);
 
   const NSString *kKeys[] = { @"bar", @"baz", @"mumble" };
   const int64_t kValues[] = { 401, 402, 403 };
   GPBStringInt64Dictionary *dict2 =
-      [[GPBStringInt64Dictionary alloc] initWithValues:kValues
+      [[GPBStringInt64Dictionary alloc] initWithInt64s:kValues
                                                forKeys:kKeys
                                                  count:GPBARRAYSIZE(kValues)];
   XCTAssertNotNil(dict2);
@@ -1357,17 +1357,17 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
   XCTAssertEqual(dict.count, 4U);
 
   int64_t value;
-  XCTAssertTrue([dict valueForKey:@"foo" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"foo" value:&value]);
+  XCTAssertTrue([dict getInt64:NULL forKey:@"foo"]);
+  XCTAssertTrue([dict getInt64:&value forKey:@"foo"]);
   XCTAssertEqual(value, 400);
-  XCTAssertTrue([dict valueForKey:@"bar" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"bar" value:&value]);
+  XCTAssertTrue([dict getInt64:NULL forKey:@"bar"]);
+  XCTAssertTrue([dict getInt64:&value forKey:@"bar"]);
   XCTAssertEqual(value, 401);
-  XCTAssertTrue([dict valueForKey:@"baz" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"baz" value:&value]);
+  XCTAssertTrue([dict getInt64:NULL forKey:@"baz"]);
+  XCTAssertTrue([dict getInt64:&value forKey:@"baz"]);
   XCTAssertEqual(value, 402);
-  XCTAssertTrue([dict valueForKey:@"mumble" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"mumble" value:&value]);
+  XCTAssertTrue([dict getInt64:NULL forKey:@"mumble"]);
+  XCTAssertTrue([dict getInt64:&value forKey:@"mumble"]);
   XCTAssertEqual(value, 403);
   [dict2 release];
 }
@@ -1376,57 +1376,57 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
   const NSString *kKeys[] = { @"foo", @"bar", @"baz", @"mumble" };
   const int64_t kValues[] = { 400, 401, 402, 403 };
   GPBStringInt64Dictionary *dict =
-      [[GPBStringInt64Dictionary alloc] initWithValues:kValues
-                                        forKeys:kKeys
-                                          count:GPBARRAYSIZE(kValues)];
+      [[GPBStringInt64Dictionary alloc] initWithInt64s:kValues
+                                               forKeys:kKeys
+                                                 count:GPBARRAYSIZE(kValues)];
   XCTAssertNotNil(dict);
   XCTAssertEqual(dict.count, 4U);
 
-  [dict removeValueForKey:@"bar"];
+  [dict removeInt64ForKey:@"bar"];
   XCTAssertEqual(dict.count, 3U);
   int64_t value;
-  XCTAssertTrue([dict valueForKey:@"foo" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"foo" value:&value]);
+  XCTAssertTrue([dict getInt64:NULL forKey:@"foo"]);
+  XCTAssertTrue([dict getInt64:&value forKey:@"foo"]);
   XCTAssertEqual(value, 400);
-  XCTAssertFalse([dict valueForKey:@"bar" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"baz" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"baz" value:&value]);
+  XCTAssertFalse([dict getInt64:NULL forKey:@"bar"]);
+  XCTAssertTrue([dict getInt64:NULL forKey:@"baz"]);
+  XCTAssertTrue([dict getInt64:&value forKey:@"baz"]);
   XCTAssertEqual(value, 402);
-  XCTAssertTrue([dict valueForKey:@"mumble" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"mumble" value:&value]);
+  XCTAssertTrue([dict getInt64:NULL forKey:@"mumble"]);
+  XCTAssertTrue([dict getInt64:&value forKey:@"mumble"]);
   XCTAssertEqual(value, 403);
 
   // Remove again does nothing.
-  [dict removeValueForKey:@"bar"];
+  [dict removeInt64ForKey:@"bar"];
   XCTAssertEqual(dict.count, 3U);
-  XCTAssertTrue([dict valueForKey:@"foo" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"foo" value:&value]);
+  XCTAssertTrue([dict getInt64:NULL forKey:@"foo"]);
+  XCTAssertTrue([dict getInt64:&value forKey:@"foo"]);
   XCTAssertEqual(value, 400);
-  XCTAssertFalse([dict valueForKey:@"bar" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"baz" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"baz" value:&value]);
+  XCTAssertFalse([dict getInt64:NULL forKey:@"bar"]);
+  XCTAssertTrue([dict getInt64:NULL forKey:@"baz"]);
+  XCTAssertTrue([dict getInt64:&value forKey:@"baz"]);
   XCTAssertEqual(value, 402);
-  XCTAssertTrue([dict valueForKey:@"mumble" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"mumble" value:&value]);
+  XCTAssertTrue([dict getInt64:NULL forKey:@"mumble"]);
+  XCTAssertTrue([dict getInt64:&value forKey:@"mumble"]);
   XCTAssertEqual(value, 403);
 
-  [dict removeValueForKey:@"mumble"];
+  [dict removeInt64ForKey:@"mumble"];
   XCTAssertEqual(dict.count, 2U);
-  XCTAssertTrue([dict valueForKey:@"foo" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"foo" value:&value]);
+  XCTAssertTrue([dict getInt64:NULL forKey:@"foo"]);
+  XCTAssertTrue([dict getInt64:&value forKey:@"foo"]);
   XCTAssertEqual(value, 400);
-  XCTAssertFalse([dict valueForKey:@"bar" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"baz" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"baz" value:&value]);
+  XCTAssertFalse([dict getInt64:NULL forKey:@"bar"]);
+  XCTAssertTrue([dict getInt64:NULL forKey:@"baz"]);
+  XCTAssertTrue([dict getInt64:&value forKey:@"baz"]);
   XCTAssertEqual(value, 402);
-  XCTAssertFalse([dict valueForKey:@"mumble" value:NULL]);
+  XCTAssertFalse([dict getInt64:NULL forKey:@"mumble"]);
 
   [dict removeAll];
   XCTAssertEqual(dict.count, 0U);
-  XCTAssertFalse([dict valueForKey:@"foo" value:NULL]);
-  XCTAssertFalse([dict valueForKey:@"bar" value:NULL]);
-  XCTAssertFalse([dict valueForKey:@"baz" value:NULL]);
-  XCTAssertFalse([dict valueForKey:@"mumble" value:NULL]);
+  XCTAssertFalse([dict getInt64:NULL forKey:@"foo"]);
+  XCTAssertFalse([dict getInt64:NULL forKey:@"bar"]);
+  XCTAssertFalse([dict getInt64:NULL forKey:@"baz"]);
+  XCTAssertFalse([dict getInt64:NULL forKey:@"mumble"]);
   [dict release];
 }
 
@@ -1434,75 +1434,75 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
   const NSString *kKeys[] = { @"foo", @"bar", @"baz", @"mumble" };
   const int64_t kValues[] = { 400, 401, 402, 403 };
   GPBStringInt64Dictionary *dict =
-      [[GPBStringInt64Dictionary alloc] initWithValues:kValues
-                                        forKeys:kKeys
-                                          count:GPBARRAYSIZE(kValues)];
+      [[GPBStringInt64Dictionary alloc] initWithInt64s:kValues
+                                               forKeys:kKeys
+                                                 count:GPBARRAYSIZE(kValues)];
   XCTAssertNotNil(dict);
   XCTAssertEqual(dict.count, 4U);
   int64_t value;
-  XCTAssertTrue([dict valueForKey:@"foo" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"foo" value:&value]);
+  XCTAssertTrue([dict getInt64:NULL forKey:@"foo"]);
+  XCTAssertTrue([dict getInt64:&value forKey:@"foo"]);
   XCTAssertEqual(value, 400);
-  XCTAssertTrue([dict valueForKey:@"bar" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"bar" value:&value]);
+  XCTAssertTrue([dict getInt64:NULL forKey:@"bar"]);
+  XCTAssertTrue([dict getInt64:&value forKey:@"bar"]);
   XCTAssertEqual(value, 401);
-  XCTAssertTrue([dict valueForKey:@"baz" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"baz" value:&value]);
+  XCTAssertTrue([dict getInt64:NULL forKey:@"baz"]);
+  XCTAssertTrue([dict getInt64:&value forKey:@"baz"]);
   XCTAssertEqual(value, 402);
-  XCTAssertTrue([dict valueForKey:@"mumble" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"mumble" value:&value]);
+  XCTAssertTrue([dict getInt64:NULL forKey:@"mumble"]);
+  XCTAssertTrue([dict getInt64:&value forKey:@"mumble"]);
   XCTAssertEqual(value, 403);
 
-  [dict setValue:403 forKey:@"foo"];
+  [dict setInt64:403 forKey:@"foo"];
   XCTAssertEqual(dict.count, 4U);
-  XCTAssertTrue([dict valueForKey:@"foo" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"foo" value:&value]);
+  XCTAssertTrue([dict getInt64:NULL forKey:@"foo"]);
+  XCTAssertTrue([dict getInt64:&value forKey:@"foo"]);
   XCTAssertEqual(value, 403);
-  XCTAssertTrue([dict valueForKey:@"bar" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"bar" value:&value]);
+  XCTAssertTrue([dict getInt64:NULL forKey:@"bar"]);
+  XCTAssertTrue([dict getInt64:&value forKey:@"bar"]);
   XCTAssertEqual(value, 401);
-  XCTAssertTrue([dict valueForKey:@"baz" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"baz" value:&value]);
+  XCTAssertTrue([dict getInt64:NULL forKey:@"baz"]);
+  XCTAssertTrue([dict getInt64:&value forKey:@"baz"]);
   XCTAssertEqual(value, 402);
-  XCTAssertTrue([dict valueForKey:@"mumble" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"mumble" value:&value]);
+  XCTAssertTrue([dict getInt64:NULL forKey:@"mumble"]);
+  XCTAssertTrue([dict getInt64:&value forKey:@"mumble"]);
   XCTAssertEqual(value, 403);
 
-  [dict setValue:401 forKey:@"mumble"];
+  [dict setInt64:401 forKey:@"mumble"];
   XCTAssertEqual(dict.count, 4U);
-  XCTAssertTrue([dict valueForKey:@"foo" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"foo" value:&value]);
+  XCTAssertTrue([dict getInt64:NULL forKey:@"foo"]);
+  XCTAssertTrue([dict getInt64:&value forKey:@"foo"]);
   XCTAssertEqual(value, 403);
-  XCTAssertTrue([dict valueForKey:@"bar" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"bar" value:&value]);
+  XCTAssertTrue([dict getInt64:NULL forKey:@"bar"]);
+  XCTAssertTrue([dict getInt64:&value forKey:@"bar"]);
   XCTAssertEqual(value, 401);
-  XCTAssertTrue([dict valueForKey:@"baz" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"baz" value:&value]);
+  XCTAssertTrue([dict getInt64:NULL forKey:@"baz"]);
+  XCTAssertTrue([dict getInt64:&value forKey:@"baz"]);
   XCTAssertEqual(value, 402);
-  XCTAssertTrue([dict valueForKey:@"mumble" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"mumble" value:&value]);
+  XCTAssertTrue([dict getInt64:NULL forKey:@"mumble"]);
+  XCTAssertTrue([dict getInt64:&value forKey:@"mumble"]);
   XCTAssertEqual(value, 401);
 
   const NSString *kKeys2[] = { @"bar", @"baz" };
   const int64_t kValues2[] = { 402, 400 };
   GPBStringInt64Dictionary *dict2 =
-      [[GPBStringInt64Dictionary alloc] initWithValues:kValues2
+      [[GPBStringInt64Dictionary alloc] initWithInt64s:kValues2
                                                forKeys:kKeys2
                                                  count:GPBARRAYSIZE(kValues2)];
   XCTAssertNotNil(dict2);
   [dict addEntriesFromDictionary:dict2];
   XCTAssertEqual(dict.count, 4U);
-  XCTAssertTrue([dict valueForKey:@"foo" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"foo" value:&value]);
+  XCTAssertTrue([dict getInt64:NULL forKey:@"foo"]);
+  XCTAssertTrue([dict getInt64:&value forKey:@"foo"]);
   XCTAssertEqual(value, 403);
-  XCTAssertTrue([dict valueForKey:@"bar" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"bar" value:&value]);
+  XCTAssertTrue([dict getInt64:NULL forKey:@"bar"]);
+  XCTAssertTrue([dict getInt64:&value forKey:@"bar"]);
   XCTAssertEqual(value, 402);
-  XCTAssertTrue([dict valueForKey:@"baz" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"baz" value:&value]);
+  XCTAssertTrue([dict getInt64:NULL forKey:@"baz"]);
+  XCTAssertTrue([dict getInt64:&value forKey:@"baz"]);
   XCTAssertEqual(value, 400);
-  XCTAssertTrue([dict valueForKey:@"mumble" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"mumble" value:&value]);
+  XCTAssertTrue([dict getInt64:NULL forKey:@"mumble"]);
+  XCTAssertTrue([dict getInt64:&value forKey:@"mumble"]);
   XCTAssertEqual(value, 401);
 
   [dict2 release];
@@ -1522,8 +1522,8 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
   GPBStringBoolDictionary *dict = [[GPBStringBoolDictionary alloc] init];
   XCTAssertNotNil(dict);
   XCTAssertEqual(dict.count, 0U);
-  XCTAssertFalse([dict valueForKey:@"foo" value:NULL]);
-  [dict enumerateKeysAndValuesUsingBlock:^(NSString *aKey, BOOL aValue, BOOL *stop) {
+  XCTAssertFalse([dict getBool:NULL forKey:@"foo"]);
+  [dict enumerateKeysAndBoolsUsingBlock:^(NSString *aKey, BOOL aValue, BOOL *stop) {
     #pragma unused(aKey, aValue, stop)
     XCTFail(@"Shouldn't get here!");
   }];
@@ -1531,15 +1531,15 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
 }
 
 - (void)testOne {
-  GPBStringBoolDictionary *dict = [GPBStringBoolDictionary dictionaryWithValue:YES forKey:@"foo"];
+  GPBStringBoolDictionary *dict = [GPBStringBoolDictionary dictionaryWithBool:YES forKey:@"foo"];
   XCTAssertNotNil(dict);
   XCTAssertEqual(dict.count, 1U);
   BOOL value;
-  XCTAssertTrue([dict valueForKey:@"foo" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"foo" value:&value]);
+  XCTAssertTrue([dict getBool:NULL forKey:@"foo"]);
+  XCTAssertTrue([dict getBool:&value forKey:@"foo"]);
   XCTAssertEqual(value, YES);
-  XCTAssertFalse([dict valueForKey:@"bar" value:NULL]);
-  [dict enumerateKeysAndValuesUsingBlock:^(NSString *aKey, BOOL aValue, BOOL *stop) {
+  XCTAssertFalse([dict getBool:NULL forKey:@"bar"]);
+  [dict enumerateKeysAndBoolsUsingBlock:^(NSString *aKey, BOOL aValue, BOOL *stop) {
     XCTAssertEqualObjects(aKey, @"foo");
     XCTAssertEqual(aValue, YES);
     XCTAssertNotEqual(stop, NULL);
@@ -1550,27 +1550,27 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
   const NSString *kKeys[] = { @"foo", @"bar", @"baz" };
   const BOOL kValues[] = { YES, YES, NO };
   GPBStringBoolDictionary *dict =
-      [[GPBStringBoolDictionary alloc] initWithValues:kValues
-                                              forKeys:kKeys
-                                                count:GPBARRAYSIZE(kValues)];
+      [[GPBStringBoolDictionary alloc] initWithBools:kValues
+                                             forKeys:kKeys
+                                               count:GPBARRAYSIZE(kValues)];
   XCTAssertNotNil(dict);
   XCTAssertEqual(dict.count, 3U);
   BOOL value;
-  XCTAssertTrue([dict valueForKey:@"foo" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"foo" value:&value]);
+  XCTAssertTrue([dict getBool:NULL forKey:@"foo"]);
+  XCTAssertTrue([dict getBool:&value forKey:@"foo"]);
   XCTAssertEqual(value, YES);
-  XCTAssertTrue([dict valueForKey:@"bar" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"bar" value:&value]);
+  XCTAssertTrue([dict getBool:NULL forKey:@"bar"]);
+  XCTAssertTrue([dict getBool:&value forKey:@"bar"]);
   XCTAssertEqual(value, YES);
-  XCTAssertTrue([dict valueForKey:@"baz" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"baz" value:&value]);
+  XCTAssertTrue([dict getBool:NULL forKey:@"baz"]);
+  XCTAssertTrue([dict getBool:&value forKey:@"baz"]);
   XCTAssertEqual(value, NO);
-  XCTAssertFalse([dict valueForKey:@"mumble" value:NULL]);
+  XCTAssertFalse([dict getBool:NULL forKey:@"mumble"]);
 
   __block NSUInteger idx = 0;
   NSString **seenKeys = malloc(3 * sizeof(NSString*));
   BOOL *seenValues = malloc(3 * sizeof(BOOL));
-  [dict enumerateKeysAndValuesUsingBlock:^(NSString *aKey, BOOL aValue, BOOL *stop) {
+  [dict enumerateKeysAndBoolsUsingBlock:^(NSString *aKey, BOOL aValue, BOOL *stop) {
     XCTAssertLessThan(idx, 3U);
     seenKeys[idx] = aKey;
     seenValues[idx] = aValue;
@@ -1592,7 +1592,7 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
 
   // Stopping the enumeration.
   idx = 0;
-  [dict enumerateKeysAndValuesUsingBlock:^(NSString *aKey, BOOL aValue, BOOL *stop) {
+  [dict enumerateKeysAndBoolsUsingBlock:^(NSString *aKey, BOOL aValue, BOOL *stop) {
     #pragma unused(aKey, aValue)
     if (idx == 1) *stop = YES;
     XCTAssertNotEqual(idx, 2U);
@@ -1608,29 +1608,29 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
   const BOOL kValues2[] = { YES, NO, NO };
   const BOOL kValues3[] = { YES, YES, NO, NO };
   GPBStringBoolDictionary *dict1 =
-      [[GPBStringBoolDictionary alloc] initWithValues:kValues1
-                                              forKeys:kKeys1
-                                                count:GPBARRAYSIZE(kValues1)];
+      [[GPBStringBoolDictionary alloc] initWithBools:kValues1
+                                             forKeys:kKeys1
+                                               count:GPBARRAYSIZE(kValues1)];
   XCTAssertNotNil(dict1);
   GPBStringBoolDictionary *dict1prime =
-      [[GPBStringBoolDictionary alloc] initWithValues:kValues1
-                                              forKeys:kKeys1
-                                                count:GPBARRAYSIZE(kValues1)];
+      [[GPBStringBoolDictionary alloc] initWithBools:kValues1
+                                             forKeys:kKeys1
+                                               count:GPBARRAYSIZE(kValues1)];
   XCTAssertNotNil(dict1prime);
   GPBStringBoolDictionary *dict2 =
-      [[GPBStringBoolDictionary alloc] initWithValues:kValues2
-                                              forKeys:kKeys1
-                                                count:GPBARRAYSIZE(kValues2)];
+      [[GPBStringBoolDictionary alloc] initWithBools:kValues2
+                                             forKeys:kKeys1
+                                               count:GPBARRAYSIZE(kValues2)];
   XCTAssertNotNil(dict2);
   GPBStringBoolDictionary *dict3 =
-      [[GPBStringBoolDictionary alloc] initWithValues:kValues1
-                                              forKeys:kKeys2
-                                                count:GPBARRAYSIZE(kValues1)];
+      [[GPBStringBoolDictionary alloc] initWithBools:kValues1
+                                             forKeys:kKeys2
+                                               count:GPBARRAYSIZE(kValues1)];
   XCTAssertNotNil(dict3);
   GPBStringBoolDictionary *dict4 =
-      [[GPBStringBoolDictionary alloc] initWithValues:kValues3
-                                              forKeys:kKeys1
-                                                count:GPBARRAYSIZE(kValues3)];
+      [[GPBStringBoolDictionary alloc] initWithBools:kValues3
+                                             forKeys:kKeys1
+                                               count:GPBARRAYSIZE(kValues3)];
   XCTAssertNotNil(dict4);
 
   // 1/1Prime should be different objects, but equal.
@@ -1659,9 +1659,9 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
   const NSString *kKeys[] = { @"foo", @"bar", @"baz", @"mumble" };
   const BOOL kValues[] = { YES, YES, NO, NO };
   GPBStringBoolDictionary *dict =
-      [[GPBStringBoolDictionary alloc] initWithValues:kValues
-                                              forKeys:kKeys
-                                                count:GPBARRAYSIZE(kValues)];
+      [[GPBStringBoolDictionary alloc] initWithBools:kValues
+                                             forKeys:kKeys
+                                               count:GPBARRAYSIZE(kValues)];
   XCTAssertNotNil(dict);
 
   GPBStringBoolDictionary *dict2 = [dict copy];
@@ -1680,9 +1680,9 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
   const NSString *kKeys[] = { @"foo", @"bar", @"baz", @"mumble" };
   const BOOL kValues[] = { YES, YES, NO, NO };
   GPBStringBoolDictionary *dict =
-      [[GPBStringBoolDictionary alloc] initWithValues:kValues
-                                              forKeys:kKeys
-                                                count:GPBARRAYSIZE(kValues)];
+      [[GPBStringBoolDictionary alloc] initWithBools:kValues
+                                             forKeys:kKeys
+                                               count:GPBARRAYSIZE(kValues)];
   XCTAssertNotNil(dict);
 
   GPBStringBoolDictionary *dict2 =
@@ -1700,31 +1700,31 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
   XCTAssertNotNil(dict);
 
   XCTAssertEqual(dict.count, 0U);
-  [dict setValue:YES forKey:@"foo"];
+  [dict setBool:YES forKey:@"foo"];
   XCTAssertEqual(dict.count, 1U);
 
   const NSString *kKeys[] = { @"bar", @"baz", @"mumble" };
   const BOOL kValues[] = { YES, NO, NO };
   GPBStringBoolDictionary *dict2 =
-      [[GPBStringBoolDictionary alloc] initWithValues:kValues
-                                              forKeys:kKeys
-                                                count:GPBARRAYSIZE(kValues)];
+      [[GPBStringBoolDictionary alloc] initWithBools:kValues
+                                             forKeys:kKeys
+                                               count:GPBARRAYSIZE(kValues)];
   XCTAssertNotNil(dict2);
   [dict addEntriesFromDictionary:dict2];
   XCTAssertEqual(dict.count, 4U);
 
   BOOL value;
-  XCTAssertTrue([dict valueForKey:@"foo" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"foo" value:&value]);
+  XCTAssertTrue([dict getBool:NULL forKey:@"foo"]);
+  XCTAssertTrue([dict getBool:&value forKey:@"foo"]);
   XCTAssertEqual(value, YES);
-  XCTAssertTrue([dict valueForKey:@"bar" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"bar" value:&value]);
+  XCTAssertTrue([dict getBool:NULL forKey:@"bar"]);
+  XCTAssertTrue([dict getBool:&value forKey:@"bar"]);
   XCTAssertEqual(value, YES);
-  XCTAssertTrue([dict valueForKey:@"baz" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"baz" value:&value]);
+  XCTAssertTrue([dict getBool:NULL forKey:@"baz"]);
+  XCTAssertTrue([dict getBool:&value forKey:@"baz"]);
   XCTAssertEqual(value, NO);
-  XCTAssertTrue([dict valueForKey:@"mumble" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"mumble" value:&value]);
+  XCTAssertTrue([dict getBool:NULL forKey:@"mumble"]);
+  XCTAssertTrue([dict getBool:&value forKey:@"mumble"]);
   XCTAssertEqual(value, NO);
   [dict2 release];
 }
@@ -1733,57 +1733,57 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
   const NSString *kKeys[] = { @"foo", @"bar", @"baz", @"mumble" };
   const BOOL kValues[] = { YES, YES, NO, NO };
   GPBStringBoolDictionary *dict =
-      [[GPBStringBoolDictionary alloc] initWithValues:kValues
-                                       forKeys:kKeys
-                                         count:GPBARRAYSIZE(kValues)];
+      [[GPBStringBoolDictionary alloc] initWithBools:kValues
+                                             forKeys:kKeys
+                                               count:GPBARRAYSIZE(kValues)];
   XCTAssertNotNil(dict);
   XCTAssertEqual(dict.count, 4U);
 
-  [dict removeValueForKey:@"bar"];
+  [dict removeBoolForKey:@"bar"];
   XCTAssertEqual(dict.count, 3U);
   BOOL value;
-  XCTAssertTrue([dict valueForKey:@"foo" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"foo" value:&value]);
+  XCTAssertTrue([dict getBool:NULL forKey:@"foo"]);
+  XCTAssertTrue([dict getBool:&value forKey:@"foo"]);
   XCTAssertEqual(value, YES);
-  XCTAssertFalse([dict valueForKey:@"bar" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"baz" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"baz" value:&value]);
+  XCTAssertFalse([dict getBool:NULL forKey:@"bar"]);
+  XCTAssertTrue([dict getBool:NULL forKey:@"baz"]);
+  XCTAssertTrue([dict getBool:&value forKey:@"baz"]);
   XCTAssertEqual(value, NO);
-  XCTAssertTrue([dict valueForKey:@"mumble" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"mumble" value:&value]);
+  XCTAssertTrue([dict getBool:NULL forKey:@"mumble"]);
+  XCTAssertTrue([dict getBool:&value forKey:@"mumble"]);
   XCTAssertEqual(value, NO);
 
   // Remove again does nothing.
-  [dict removeValueForKey:@"bar"];
+  [dict removeBoolForKey:@"bar"];
   XCTAssertEqual(dict.count, 3U);
-  XCTAssertTrue([dict valueForKey:@"foo" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"foo" value:&value]);
+  XCTAssertTrue([dict getBool:NULL forKey:@"foo"]);
+  XCTAssertTrue([dict getBool:&value forKey:@"foo"]);
   XCTAssertEqual(value, YES);
-  XCTAssertFalse([dict valueForKey:@"bar" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"baz" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"baz" value:&value]);
+  XCTAssertFalse([dict getBool:NULL forKey:@"bar"]);
+  XCTAssertTrue([dict getBool:NULL forKey:@"baz"]);
+  XCTAssertTrue([dict getBool:&value forKey:@"baz"]);
   XCTAssertEqual(value, NO);
-  XCTAssertTrue([dict valueForKey:@"mumble" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"mumble" value:&value]);
+  XCTAssertTrue([dict getBool:NULL forKey:@"mumble"]);
+  XCTAssertTrue([dict getBool:&value forKey:@"mumble"]);
   XCTAssertEqual(value, NO);
 
-  [dict removeValueForKey:@"mumble"];
+  [dict removeBoolForKey:@"mumble"];
   XCTAssertEqual(dict.count, 2U);
-  XCTAssertTrue([dict valueForKey:@"foo" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"foo" value:&value]);
+  XCTAssertTrue([dict getBool:NULL forKey:@"foo"]);
+  XCTAssertTrue([dict getBool:&value forKey:@"foo"]);
   XCTAssertEqual(value, YES);
-  XCTAssertFalse([dict valueForKey:@"bar" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"baz" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"baz" value:&value]);
+  XCTAssertFalse([dict getBool:NULL forKey:@"bar"]);
+  XCTAssertTrue([dict getBool:NULL forKey:@"baz"]);
+  XCTAssertTrue([dict getBool:&value forKey:@"baz"]);
   XCTAssertEqual(value, NO);
-  XCTAssertFalse([dict valueForKey:@"mumble" value:NULL]);
+  XCTAssertFalse([dict getBool:NULL forKey:@"mumble"]);
 
   [dict removeAll];
   XCTAssertEqual(dict.count, 0U);
-  XCTAssertFalse([dict valueForKey:@"foo" value:NULL]);
-  XCTAssertFalse([dict valueForKey:@"bar" value:NULL]);
-  XCTAssertFalse([dict valueForKey:@"baz" value:NULL]);
-  XCTAssertFalse([dict valueForKey:@"mumble" value:NULL]);
+  XCTAssertFalse([dict getBool:NULL forKey:@"foo"]);
+  XCTAssertFalse([dict getBool:NULL forKey:@"bar"]);
+  XCTAssertFalse([dict getBool:NULL forKey:@"baz"]);
+  XCTAssertFalse([dict getBool:NULL forKey:@"mumble"]);
   [dict release];
 }
 
@@ -1791,75 +1791,75 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
   const NSString *kKeys[] = { @"foo", @"bar", @"baz", @"mumble" };
   const BOOL kValues[] = { YES, YES, NO, NO };
   GPBStringBoolDictionary *dict =
-      [[GPBStringBoolDictionary alloc] initWithValues:kValues
-                                       forKeys:kKeys
-                                         count:GPBARRAYSIZE(kValues)];
+      [[GPBStringBoolDictionary alloc] initWithBools:kValues
+                                             forKeys:kKeys
+                                               count:GPBARRAYSIZE(kValues)];
   XCTAssertNotNil(dict);
   XCTAssertEqual(dict.count, 4U);
   BOOL value;
-  XCTAssertTrue([dict valueForKey:@"foo" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"foo" value:&value]);
+  XCTAssertTrue([dict getBool:NULL forKey:@"foo"]);
+  XCTAssertTrue([dict getBool:&value forKey:@"foo"]);
   XCTAssertEqual(value, YES);
-  XCTAssertTrue([dict valueForKey:@"bar" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"bar" value:&value]);
+  XCTAssertTrue([dict getBool:NULL forKey:@"bar"]);
+  XCTAssertTrue([dict getBool:&value forKey:@"bar"]);
   XCTAssertEqual(value, YES);
-  XCTAssertTrue([dict valueForKey:@"baz" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"baz" value:&value]);
+  XCTAssertTrue([dict getBool:NULL forKey:@"baz"]);
+  XCTAssertTrue([dict getBool:&value forKey:@"baz"]);
   XCTAssertEqual(value, NO);
-  XCTAssertTrue([dict valueForKey:@"mumble" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"mumble" value:&value]);
+  XCTAssertTrue([dict getBool:NULL forKey:@"mumble"]);
+  XCTAssertTrue([dict getBool:&value forKey:@"mumble"]);
   XCTAssertEqual(value, NO);
 
-  [dict setValue:NO forKey:@"foo"];
+  [dict setBool:NO forKey:@"foo"];
   XCTAssertEqual(dict.count, 4U);
-  XCTAssertTrue([dict valueForKey:@"foo" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"foo" value:&value]);
+  XCTAssertTrue([dict getBool:NULL forKey:@"foo"]);
+  XCTAssertTrue([dict getBool:&value forKey:@"foo"]);
   XCTAssertEqual(value, NO);
-  XCTAssertTrue([dict valueForKey:@"bar" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"bar" value:&value]);
+  XCTAssertTrue([dict getBool:NULL forKey:@"bar"]);
+  XCTAssertTrue([dict getBool:&value forKey:@"bar"]);
   XCTAssertEqual(value, YES);
-  XCTAssertTrue([dict valueForKey:@"baz" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"baz" value:&value]);
+  XCTAssertTrue([dict getBool:NULL forKey:@"baz"]);
+  XCTAssertTrue([dict getBool:&value forKey:@"baz"]);
   XCTAssertEqual(value, NO);
-  XCTAssertTrue([dict valueForKey:@"mumble" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"mumble" value:&value]);
+  XCTAssertTrue([dict getBool:NULL forKey:@"mumble"]);
+  XCTAssertTrue([dict getBool:&value forKey:@"mumble"]);
   XCTAssertEqual(value, NO);
 
-  [dict setValue:YES forKey:@"mumble"];
+  [dict setBool:YES forKey:@"mumble"];
   XCTAssertEqual(dict.count, 4U);
-  XCTAssertTrue([dict valueForKey:@"foo" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"foo" value:&value]);
+  XCTAssertTrue([dict getBool:NULL forKey:@"foo"]);
+  XCTAssertTrue([dict getBool:&value forKey:@"foo"]);
   XCTAssertEqual(value, NO);
-  XCTAssertTrue([dict valueForKey:@"bar" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"bar" value:&value]);
+  XCTAssertTrue([dict getBool:NULL forKey:@"bar"]);
+  XCTAssertTrue([dict getBool:&value forKey:@"bar"]);
   XCTAssertEqual(value, YES);
-  XCTAssertTrue([dict valueForKey:@"baz" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"baz" value:&value]);
+  XCTAssertTrue([dict getBool:NULL forKey:@"baz"]);
+  XCTAssertTrue([dict getBool:&value forKey:@"baz"]);
   XCTAssertEqual(value, NO);
-  XCTAssertTrue([dict valueForKey:@"mumble" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"mumble" value:&value]);
+  XCTAssertTrue([dict getBool:NULL forKey:@"mumble"]);
+  XCTAssertTrue([dict getBool:&value forKey:@"mumble"]);
   XCTAssertEqual(value, YES);
 
   const NSString *kKeys2[] = { @"bar", @"baz" };
   const BOOL kValues2[] = { NO, YES };
   GPBStringBoolDictionary *dict2 =
-      [[GPBStringBoolDictionary alloc] initWithValues:kValues2
-                                              forKeys:kKeys2
-                                                count:GPBARRAYSIZE(kValues2)];
+      [[GPBStringBoolDictionary alloc] initWithBools:kValues2
+                                             forKeys:kKeys2
+                                               count:GPBARRAYSIZE(kValues2)];
   XCTAssertNotNil(dict2);
   [dict addEntriesFromDictionary:dict2];
   XCTAssertEqual(dict.count, 4U);
-  XCTAssertTrue([dict valueForKey:@"foo" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"foo" value:&value]);
+  XCTAssertTrue([dict getBool:NULL forKey:@"foo"]);
+  XCTAssertTrue([dict getBool:&value forKey:@"foo"]);
   XCTAssertEqual(value, NO);
-  XCTAssertTrue([dict valueForKey:@"bar" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"bar" value:&value]);
+  XCTAssertTrue([dict getBool:NULL forKey:@"bar"]);
+  XCTAssertTrue([dict getBool:&value forKey:@"bar"]);
   XCTAssertEqual(value, NO);
-  XCTAssertTrue([dict valueForKey:@"baz" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"baz" value:&value]);
+  XCTAssertTrue([dict getBool:NULL forKey:@"baz"]);
+  XCTAssertTrue([dict getBool:&value forKey:@"baz"]);
   XCTAssertEqual(value, YES);
-  XCTAssertTrue([dict valueForKey:@"mumble" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"mumble" value:&value]);
+  XCTAssertTrue([dict getBool:NULL forKey:@"mumble"]);
+  XCTAssertTrue([dict getBool:&value forKey:@"mumble"]);
   XCTAssertEqual(value, YES);
 
   [dict2 release];
@@ -1879,8 +1879,8 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
   GPBStringFloatDictionary *dict = [[GPBStringFloatDictionary alloc] init];
   XCTAssertNotNil(dict);
   XCTAssertEqual(dict.count, 0U);
-  XCTAssertFalse([dict valueForKey:@"foo" value:NULL]);
-  [dict enumerateKeysAndValuesUsingBlock:^(NSString *aKey, float aValue, BOOL *stop) {
+  XCTAssertFalse([dict getFloat:NULL forKey:@"foo"]);
+  [dict enumerateKeysAndFloatsUsingBlock:^(NSString *aKey, float aValue, BOOL *stop) {
     #pragma unused(aKey, aValue, stop)
     XCTFail(@"Shouldn't get here!");
   }];
@@ -1888,15 +1888,15 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
 }
 
 - (void)testOne {
-  GPBStringFloatDictionary *dict = [GPBStringFloatDictionary dictionaryWithValue:500.f forKey:@"foo"];
+  GPBStringFloatDictionary *dict = [GPBStringFloatDictionary dictionaryWithFloat:500.f forKey:@"foo"];
   XCTAssertNotNil(dict);
   XCTAssertEqual(dict.count, 1U);
   float value;
-  XCTAssertTrue([dict valueForKey:@"foo" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"foo" value:&value]);
+  XCTAssertTrue([dict getFloat:NULL forKey:@"foo"]);
+  XCTAssertTrue([dict getFloat:&value forKey:@"foo"]);
   XCTAssertEqual(value, 500.f);
-  XCTAssertFalse([dict valueForKey:@"bar" value:NULL]);
-  [dict enumerateKeysAndValuesUsingBlock:^(NSString *aKey, float aValue, BOOL *stop) {
+  XCTAssertFalse([dict getFloat:NULL forKey:@"bar"]);
+  [dict enumerateKeysAndFloatsUsingBlock:^(NSString *aKey, float aValue, BOOL *stop) {
     XCTAssertEqualObjects(aKey, @"foo");
     XCTAssertEqual(aValue, 500.f);
     XCTAssertNotEqual(stop, NULL);
@@ -1907,27 +1907,27 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
   const NSString *kKeys[] = { @"foo", @"bar", @"baz" };
   const float kValues[] = { 500.f, 501.f, 502.f };
   GPBStringFloatDictionary *dict =
-      [[GPBStringFloatDictionary alloc] initWithValues:kValues
+      [[GPBStringFloatDictionary alloc] initWithFloats:kValues
                                                forKeys:kKeys
                                                  count:GPBARRAYSIZE(kValues)];
   XCTAssertNotNil(dict);
   XCTAssertEqual(dict.count, 3U);
   float value;
-  XCTAssertTrue([dict valueForKey:@"foo" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"foo" value:&value]);
+  XCTAssertTrue([dict getFloat:NULL forKey:@"foo"]);
+  XCTAssertTrue([dict getFloat:&value forKey:@"foo"]);
   XCTAssertEqual(value, 500.f);
-  XCTAssertTrue([dict valueForKey:@"bar" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"bar" value:&value]);
+  XCTAssertTrue([dict getFloat:NULL forKey:@"bar"]);
+  XCTAssertTrue([dict getFloat:&value forKey:@"bar"]);
   XCTAssertEqual(value, 501.f);
-  XCTAssertTrue([dict valueForKey:@"baz" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"baz" value:&value]);
+  XCTAssertTrue([dict getFloat:NULL forKey:@"baz"]);
+  XCTAssertTrue([dict getFloat:&value forKey:@"baz"]);
   XCTAssertEqual(value, 502.f);
-  XCTAssertFalse([dict valueForKey:@"mumble" value:NULL]);
+  XCTAssertFalse([dict getFloat:NULL forKey:@"mumble"]);
 
   __block NSUInteger idx = 0;
   NSString **seenKeys = malloc(3 * sizeof(NSString*));
   float *seenValues = malloc(3 * sizeof(float));
-  [dict enumerateKeysAndValuesUsingBlock:^(NSString *aKey, float aValue, BOOL *stop) {
+  [dict enumerateKeysAndFloatsUsingBlock:^(NSString *aKey, float aValue, BOOL *stop) {
     XCTAssertLessThan(idx, 3U);
     seenKeys[idx] = aKey;
     seenValues[idx] = aValue;
@@ -1949,7 +1949,7 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
 
   // Stopping the enumeration.
   idx = 0;
-  [dict enumerateKeysAndValuesUsingBlock:^(NSString *aKey, float aValue, BOOL *stop) {
+  [dict enumerateKeysAndFloatsUsingBlock:^(NSString *aKey, float aValue, BOOL *stop) {
     #pragma unused(aKey, aValue)
     if (idx == 1) *stop = YES;
     XCTAssertNotEqual(idx, 2U);
@@ -1965,27 +1965,27 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
   const float kValues2[] = { 500.f, 503.f, 502.f };
   const float kValues3[] = { 500.f, 501.f, 502.f, 503.f };
   GPBStringFloatDictionary *dict1 =
-      [[GPBStringFloatDictionary alloc] initWithValues:kValues1
+      [[GPBStringFloatDictionary alloc] initWithFloats:kValues1
                                                forKeys:kKeys1
                                                  count:GPBARRAYSIZE(kValues1)];
   XCTAssertNotNil(dict1);
   GPBStringFloatDictionary *dict1prime =
-      [[GPBStringFloatDictionary alloc] initWithValues:kValues1
+      [[GPBStringFloatDictionary alloc] initWithFloats:kValues1
                                                forKeys:kKeys1
                                                  count:GPBARRAYSIZE(kValues1)];
   XCTAssertNotNil(dict1prime);
   GPBStringFloatDictionary *dict2 =
-      [[GPBStringFloatDictionary alloc] initWithValues:kValues2
+      [[GPBStringFloatDictionary alloc] initWithFloats:kValues2
                                                forKeys:kKeys1
                                                  count:GPBARRAYSIZE(kValues2)];
   XCTAssertNotNil(dict2);
   GPBStringFloatDictionary *dict3 =
-      [[GPBStringFloatDictionary alloc] initWithValues:kValues1
+      [[GPBStringFloatDictionary alloc] initWithFloats:kValues1
                                                forKeys:kKeys2
                                                  count:GPBARRAYSIZE(kValues1)];
   XCTAssertNotNil(dict3);
   GPBStringFloatDictionary *dict4 =
-      [[GPBStringFloatDictionary alloc] initWithValues:kValues3
+      [[GPBStringFloatDictionary alloc] initWithFloats:kValues3
                                                forKeys:kKeys1
                                                  count:GPBARRAYSIZE(kValues3)];
   XCTAssertNotNil(dict4);
@@ -2016,7 +2016,7 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
   const NSString *kKeys[] = { @"foo", @"bar", @"baz", @"mumble" };
   const float kValues[] = { 500.f, 501.f, 502.f, 503.f };
   GPBStringFloatDictionary *dict =
-      [[GPBStringFloatDictionary alloc] initWithValues:kValues
+      [[GPBStringFloatDictionary alloc] initWithFloats:kValues
                                                forKeys:kKeys
                                                  count:GPBARRAYSIZE(kValues)];
   XCTAssertNotNil(dict);
@@ -2037,7 +2037,7 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
   const NSString *kKeys[] = { @"foo", @"bar", @"baz", @"mumble" };
   const float kValues[] = { 500.f, 501.f, 502.f, 503.f };
   GPBStringFloatDictionary *dict =
-      [[GPBStringFloatDictionary alloc] initWithValues:kValues
+      [[GPBStringFloatDictionary alloc] initWithFloats:kValues
                                                forKeys:kKeys
                                                  count:GPBARRAYSIZE(kValues)];
   XCTAssertNotNil(dict);
@@ -2057,13 +2057,13 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
   XCTAssertNotNil(dict);
 
   XCTAssertEqual(dict.count, 0U);
-  [dict setValue:500.f forKey:@"foo"];
+  [dict setFloat:500.f forKey:@"foo"];
   XCTAssertEqual(dict.count, 1U);
 
   const NSString *kKeys[] = { @"bar", @"baz", @"mumble" };
   const float kValues[] = { 501.f, 502.f, 503.f };
   GPBStringFloatDictionary *dict2 =
-      [[GPBStringFloatDictionary alloc] initWithValues:kValues
+      [[GPBStringFloatDictionary alloc] initWithFloats:kValues
                                                forKeys:kKeys
                                                  count:GPBARRAYSIZE(kValues)];
   XCTAssertNotNil(dict2);
@@ -2071,17 +2071,17 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
   XCTAssertEqual(dict.count, 4U);
 
   float value;
-  XCTAssertTrue([dict valueForKey:@"foo" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"foo" value:&value]);
+  XCTAssertTrue([dict getFloat:NULL forKey:@"foo"]);
+  XCTAssertTrue([dict getFloat:&value forKey:@"foo"]);
   XCTAssertEqual(value, 500.f);
-  XCTAssertTrue([dict valueForKey:@"bar" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"bar" value:&value]);
+  XCTAssertTrue([dict getFloat:NULL forKey:@"bar"]);
+  XCTAssertTrue([dict getFloat:&value forKey:@"bar"]);
   XCTAssertEqual(value, 501.f);
-  XCTAssertTrue([dict valueForKey:@"baz" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"baz" value:&value]);
+  XCTAssertTrue([dict getFloat:NULL forKey:@"baz"]);
+  XCTAssertTrue([dict getFloat:&value forKey:@"baz"]);
   XCTAssertEqual(value, 502.f);
-  XCTAssertTrue([dict valueForKey:@"mumble" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"mumble" value:&value]);
+  XCTAssertTrue([dict getFloat:NULL forKey:@"mumble"]);
+  XCTAssertTrue([dict getFloat:&value forKey:@"mumble"]);
   XCTAssertEqual(value, 503.f);
   [dict2 release];
 }
@@ -2090,57 +2090,57 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
   const NSString *kKeys[] = { @"foo", @"bar", @"baz", @"mumble" };
   const float kValues[] = { 500.f, 501.f, 502.f, 503.f };
   GPBStringFloatDictionary *dict =
-      [[GPBStringFloatDictionary alloc] initWithValues:kValues
-                                        forKeys:kKeys
-                                          count:GPBARRAYSIZE(kValues)];
+      [[GPBStringFloatDictionary alloc] initWithFloats:kValues
+                                               forKeys:kKeys
+                                                 count:GPBARRAYSIZE(kValues)];
   XCTAssertNotNil(dict);
   XCTAssertEqual(dict.count, 4U);
 
-  [dict removeValueForKey:@"bar"];
+  [dict removeFloatForKey:@"bar"];
   XCTAssertEqual(dict.count, 3U);
   float value;
-  XCTAssertTrue([dict valueForKey:@"foo" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"foo" value:&value]);
+  XCTAssertTrue([dict getFloat:NULL forKey:@"foo"]);
+  XCTAssertTrue([dict getFloat:&value forKey:@"foo"]);
   XCTAssertEqual(value, 500.f);
-  XCTAssertFalse([dict valueForKey:@"bar" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"baz" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"baz" value:&value]);
+  XCTAssertFalse([dict getFloat:NULL forKey:@"bar"]);
+  XCTAssertTrue([dict getFloat:NULL forKey:@"baz"]);
+  XCTAssertTrue([dict getFloat:&value forKey:@"baz"]);
   XCTAssertEqual(value, 502.f);
-  XCTAssertTrue([dict valueForKey:@"mumble" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"mumble" value:&value]);
+  XCTAssertTrue([dict getFloat:NULL forKey:@"mumble"]);
+  XCTAssertTrue([dict getFloat:&value forKey:@"mumble"]);
   XCTAssertEqual(value, 503.f);
 
   // Remove again does nothing.
-  [dict removeValueForKey:@"bar"];
+  [dict removeFloatForKey:@"bar"];
   XCTAssertEqual(dict.count, 3U);
-  XCTAssertTrue([dict valueForKey:@"foo" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"foo" value:&value]);
+  XCTAssertTrue([dict getFloat:NULL forKey:@"foo"]);
+  XCTAssertTrue([dict getFloat:&value forKey:@"foo"]);
   XCTAssertEqual(value, 500.f);
-  XCTAssertFalse([dict valueForKey:@"bar" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"baz" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"baz" value:&value]);
+  XCTAssertFalse([dict getFloat:NULL forKey:@"bar"]);
+  XCTAssertTrue([dict getFloat:NULL forKey:@"baz"]);
+  XCTAssertTrue([dict getFloat:&value forKey:@"baz"]);
   XCTAssertEqual(value, 502.f);
-  XCTAssertTrue([dict valueForKey:@"mumble" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"mumble" value:&value]);
+  XCTAssertTrue([dict getFloat:NULL forKey:@"mumble"]);
+  XCTAssertTrue([dict getFloat:&value forKey:@"mumble"]);
   XCTAssertEqual(value, 503.f);
 
-  [dict removeValueForKey:@"mumble"];
+  [dict removeFloatForKey:@"mumble"];
   XCTAssertEqual(dict.count, 2U);
-  XCTAssertTrue([dict valueForKey:@"foo" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"foo" value:&value]);
+  XCTAssertTrue([dict getFloat:NULL forKey:@"foo"]);
+  XCTAssertTrue([dict getFloat:&value forKey:@"foo"]);
   XCTAssertEqual(value, 500.f);
-  XCTAssertFalse([dict valueForKey:@"bar" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"baz" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"baz" value:&value]);
+  XCTAssertFalse([dict getFloat:NULL forKey:@"bar"]);
+  XCTAssertTrue([dict getFloat:NULL forKey:@"baz"]);
+  XCTAssertTrue([dict getFloat:&value forKey:@"baz"]);
   XCTAssertEqual(value, 502.f);
-  XCTAssertFalse([dict valueForKey:@"mumble" value:NULL]);
+  XCTAssertFalse([dict getFloat:NULL forKey:@"mumble"]);
 
   [dict removeAll];
   XCTAssertEqual(dict.count, 0U);
-  XCTAssertFalse([dict valueForKey:@"foo" value:NULL]);
-  XCTAssertFalse([dict valueForKey:@"bar" value:NULL]);
-  XCTAssertFalse([dict valueForKey:@"baz" value:NULL]);
-  XCTAssertFalse([dict valueForKey:@"mumble" value:NULL]);
+  XCTAssertFalse([dict getFloat:NULL forKey:@"foo"]);
+  XCTAssertFalse([dict getFloat:NULL forKey:@"bar"]);
+  XCTAssertFalse([dict getFloat:NULL forKey:@"baz"]);
+  XCTAssertFalse([dict getFloat:NULL forKey:@"mumble"]);
   [dict release];
 }
 
@@ -2148,75 +2148,75 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
   const NSString *kKeys[] = { @"foo", @"bar", @"baz", @"mumble" };
   const float kValues[] = { 500.f, 501.f, 502.f, 503.f };
   GPBStringFloatDictionary *dict =
-      [[GPBStringFloatDictionary alloc] initWithValues:kValues
-                                        forKeys:kKeys
-                                          count:GPBARRAYSIZE(kValues)];
+      [[GPBStringFloatDictionary alloc] initWithFloats:kValues
+                                               forKeys:kKeys
+                                                 count:GPBARRAYSIZE(kValues)];
   XCTAssertNotNil(dict);
   XCTAssertEqual(dict.count, 4U);
   float value;
-  XCTAssertTrue([dict valueForKey:@"foo" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"foo" value:&value]);
+  XCTAssertTrue([dict getFloat:NULL forKey:@"foo"]);
+  XCTAssertTrue([dict getFloat:&value forKey:@"foo"]);
   XCTAssertEqual(value, 500.f);
-  XCTAssertTrue([dict valueForKey:@"bar" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"bar" value:&value]);
+  XCTAssertTrue([dict getFloat:NULL forKey:@"bar"]);
+  XCTAssertTrue([dict getFloat:&value forKey:@"bar"]);
   XCTAssertEqual(value, 501.f);
-  XCTAssertTrue([dict valueForKey:@"baz" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"baz" value:&value]);
+  XCTAssertTrue([dict getFloat:NULL forKey:@"baz"]);
+  XCTAssertTrue([dict getFloat:&value forKey:@"baz"]);
   XCTAssertEqual(value, 502.f);
-  XCTAssertTrue([dict valueForKey:@"mumble" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"mumble" value:&value]);
+  XCTAssertTrue([dict getFloat:NULL forKey:@"mumble"]);
+  XCTAssertTrue([dict getFloat:&value forKey:@"mumble"]);
   XCTAssertEqual(value, 503.f);
 
-  [dict setValue:503.f forKey:@"foo"];
+  [dict setFloat:503.f forKey:@"foo"];
   XCTAssertEqual(dict.count, 4U);
-  XCTAssertTrue([dict valueForKey:@"foo" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"foo" value:&value]);
+  XCTAssertTrue([dict getFloat:NULL forKey:@"foo"]);
+  XCTAssertTrue([dict getFloat:&value forKey:@"foo"]);
   XCTAssertEqual(value, 503.f);
-  XCTAssertTrue([dict valueForKey:@"bar" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"bar" value:&value]);
+  XCTAssertTrue([dict getFloat:NULL forKey:@"bar"]);
+  XCTAssertTrue([dict getFloat:&value forKey:@"bar"]);
   XCTAssertEqual(value, 501.f);
-  XCTAssertTrue([dict valueForKey:@"baz" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"baz" value:&value]);
+  XCTAssertTrue([dict getFloat:NULL forKey:@"baz"]);
+  XCTAssertTrue([dict getFloat:&value forKey:@"baz"]);
   XCTAssertEqual(value, 502.f);
-  XCTAssertTrue([dict valueForKey:@"mumble" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"mumble" value:&value]);
+  XCTAssertTrue([dict getFloat:NULL forKey:@"mumble"]);
+  XCTAssertTrue([dict getFloat:&value forKey:@"mumble"]);
   XCTAssertEqual(value, 503.f);
 
-  [dict setValue:501.f forKey:@"mumble"];
+  [dict setFloat:501.f forKey:@"mumble"];
   XCTAssertEqual(dict.count, 4U);
-  XCTAssertTrue([dict valueForKey:@"foo" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"foo" value:&value]);
+  XCTAssertTrue([dict getFloat:NULL forKey:@"foo"]);
+  XCTAssertTrue([dict getFloat:&value forKey:@"foo"]);
   XCTAssertEqual(value, 503.f);
-  XCTAssertTrue([dict valueForKey:@"bar" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"bar" value:&value]);
+  XCTAssertTrue([dict getFloat:NULL forKey:@"bar"]);
+  XCTAssertTrue([dict getFloat:&value forKey:@"bar"]);
   XCTAssertEqual(value, 501.f);
-  XCTAssertTrue([dict valueForKey:@"baz" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"baz" value:&value]);
+  XCTAssertTrue([dict getFloat:NULL forKey:@"baz"]);
+  XCTAssertTrue([dict getFloat:&value forKey:@"baz"]);
   XCTAssertEqual(value, 502.f);
-  XCTAssertTrue([dict valueForKey:@"mumble" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"mumble" value:&value]);
+  XCTAssertTrue([dict getFloat:NULL forKey:@"mumble"]);
+  XCTAssertTrue([dict getFloat:&value forKey:@"mumble"]);
   XCTAssertEqual(value, 501.f);
 
   const NSString *kKeys2[] = { @"bar", @"baz" };
   const float kValues2[] = { 502.f, 500.f };
   GPBStringFloatDictionary *dict2 =
-      [[GPBStringFloatDictionary alloc] initWithValues:kValues2
+      [[GPBStringFloatDictionary alloc] initWithFloats:kValues2
                                                forKeys:kKeys2
                                                  count:GPBARRAYSIZE(kValues2)];
   XCTAssertNotNil(dict2);
   [dict addEntriesFromDictionary:dict2];
   XCTAssertEqual(dict.count, 4U);
-  XCTAssertTrue([dict valueForKey:@"foo" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"foo" value:&value]);
+  XCTAssertTrue([dict getFloat:NULL forKey:@"foo"]);
+  XCTAssertTrue([dict getFloat:&value forKey:@"foo"]);
   XCTAssertEqual(value, 503.f);
-  XCTAssertTrue([dict valueForKey:@"bar" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"bar" value:&value]);
+  XCTAssertTrue([dict getFloat:NULL forKey:@"bar"]);
+  XCTAssertTrue([dict getFloat:&value forKey:@"bar"]);
   XCTAssertEqual(value, 502.f);
-  XCTAssertTrue([dict valueForKey:@"baz" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"baz" value:&value]);
+  XCTAssertTrue([dict getFloat:NULL forKey:@"baz"]);
+  XCTAssertTrue([dict getFloat:&value forKey:@"baz"]);
   XCTAssertEqual(value, 500.f);
-  XCTAssertTrue([dict valueForKey:@"mumble" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"mumble" value:&value]);
+  XCTAssertTrue([dict getFloat:NULL forKey:@"mumble"]);
+  XCTAssertTrue([dict getFloat:&value forKey:@"mumble"]);
   XCTAssertEqual(value, 501.f);
 
   [dict2 release];
@@ -2236,8 +2236,8 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
   GPBStringDoubleDictionary *dict = [[GPBStringDoubleDictionary alloc] init];
   XCTAssertNotNil(dict);
   XCTAssertEqual(dict.count, 0U);
-  XCTAssertFalse([dict valueForKey:@"foo" value:NULL]);
-  [dict enumerateKeysAndValuesUsingBlock:^(NSString *aKey, double aValue, BOOL *stop) {
+  XCTAssertFalse([dict getDouble:NULL forKey:@"foo"]);
+  [dict enumerateKeysAndDoublesUsingBlock:^(NSString *aKey, double aValue, BOOL *stop) {
     #pragma unused(aKey, aValue, stop)
     XCTFail(@"Shouldn't get here!");
   }];
@@ -2245,15 +2245,15 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
 }
 
 - (void)testOne {
-  GPBStringDoubleDictionary *dict = [GPBStringDoubleDictionary dictionaryWithValue:600. forKey:@"foo"];
+  GPBStringDoubleDictionary *dict = [GPBStringDoubleDictionary dictionaryWithDouble:600. forKey:@"foo"];
   XCTAssertNotNil(dict);
   XCTAssertEqual(dict.count, 1U);
   double value;
-  XCTAssertTrue([dict valueForKey:@"foo" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"foo" value:&value]);
+  XCTAssertTrue([dict getDouble:NULL forKey:@"foo"]);
+  XCTAssertTrue([dict getDouble:&value forKey:@"foo"]);
   XCTAssertEqual(value, 600.);
-  XCTAssertFalse([dict valueForKey:@"bar" value:NULL]);
-  [dict enumerateKeysAndValuesUsingBlock:^(NSString *aKey, double aValue, BOOL *stop) {
+  XCTAssertFalse([dict getDouble:NULL forKey:@"bar"]);
+  [dict enumerateKeysAndDoublesUsingBlock:^(NSString *aKey, double aValue, BOOL *stop) {
     XCTAssertEqualObjects(aKey, @"foo");
     XCTAssertEqual(aValue, 600.);
     XCTAssertNotEqual(stop, NULL);
@@ -2264,27 +2264,27 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
   const NSString *kKeys[] = { @"foo", @"bar", @"baz" };
   const double kValues[] = { 600., 601., 602. };
   GPBStringDoubleDictionary *dict =
-      [[GPBStringDoubleDictionary alloc] initWithValues:kValues
-                                                forKeys:kKeys
-                                                  count:GPBARRAYSIZE(kValues)];
+      [[GPBStringDoubleDictionary alloc] initWithDoubles:kValues
+                                                 forKeys:kKeys
+                                                   count:GPBARRAYSIZE(kValues)];
   XCTAssertNotNil(dict);
   XCTAssertEqual(dict.count, 3U);
   double value;
-  XCTAssertTrue([dict valueForKey:@"foo" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"foo" value:&value]);
+  XCTAssertTrue([dict getDouble:NULL forKey:@"foo"]);
+  XCTAssertTrue([dict getDouble:&value forKey:@"foo"]);
   XCTAssertEqual(value, 600.);
-  XCTAssertTrue([dict valueForKey:@"bar" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"bar" value:&value]);
+  XCTAssertTrue([dict getDouble:NULL forKey:@"bar"]);
+  XCTAssertTrue([dict getDouble:&value forKey:@"bar"]);
   XCTAssertEqual(value, 601.);
-  XCTAssertTrue([dict valueForKey:@"baz" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"baz" value:&value]);
+  XCTAssertTrue([dict getDouble:NULL forKey:@"baz"]);
+  XCTAssertTrue([dict getDouble:&value forKey:@"baz"]);
   XCTAssertEqual(value, 602.);
-  XCTAssertFalse([dict valueForKey:@"mumble" value:NULL]);
+  XCTAssertFalse([dict getDouble:NULL forKey:@"mumble"]);
 
   __block NSUInteger idx = 0;
   NSString **seenKeys = malloc(3 * sizeof(NSString*));
   double *seenValues = malloc(3 * sizeof(double));
-  [dict enumerateKeysAndValuesUsingBlock:^(NSString *aKey, double aValue, BOOL *stop) {
+  [dict enumerateKeysAndDoublesUsingBlock:^(NSString *aKey, double aValue, BOOL *stop) {
     XCTAssertLessThan(idx, 3U);
     seenKeys[idx] = aKey;
     seenValues[idx] = aValue;
@@ -2306,7 +2306,7 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
 
   // Stopping the enumeration.
   idx = 0;
-  [dict enumerateKeysAndValuesUsingBlock:^(NSString *aKey, double aValue, BOOL *stop) {
+  [dict enumerateKeysAndDoublesUsingBlock:^(NSString *aKey, double aValue, BOOL *stop) {
     #pragma unused(aKey, aValue)
     if (idx == 1) *stop = YES;
     XCTAssertNotEqual(idx, 2U);
@@ -2322,29 +2322,29 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
   const double kValues2[] = { 600., 603., 602. };
   const double kValues3[] = { 600., 601., 602., 603. };
   GPBStringDoubleDictionary *dict1 =
-      [[GPBStringDoubleDictionary alloc] initWithValues:kValues1
-                                                forKeys:kKeys1
-                                                  count:GPBARRAYSIZE(kValues1)];
+      [[GPBStringDoubleDictionary alloc] initWithDoubles:kValues1
+                                                 forKeys:kKeys1
+                                                   count:GPBARRAYSIZE(kValues1)];
   XCTAssertNotNil(dict1);
   GPBStringDoubleDictionary *dict1prime =
-      [[GPBStringDoubleDictionary alloc] initWithValues:kValues1
-                                                forKeys:kKeys1
-                                                  count:GPBARRAYSIZE(kValues1)];
+      [[GPBStringDoubleDictionary alloc] initWithDoubles:kValues1
+                                                 forKeys:kKeys1
+                                                   count:GPBARRAYSIZE(kValues1)];
   XCTAssertNotNil(dict1prime);
   GPBStringDoubleDictionary *dict2 =
-      [[GPBStringDoubleDictionary alloc] initWithValues:kValues2
-                                                forKeys:kKeys1
-                                                  count:GPBARRAYSIZE(kValues2)];
+      [[GPBStringDoubleDictionary alloc] initWithDoubles:kValues2
+                                                 forKeys:kKeys1
+                                                   count:GPBARRAYSIZE(kValues2)];
   XCTAssertNotNil(dict2);
   GPBStringDoubleDictionary *dict3 =
-      [[GPBStringDoubleDictionary alloc] initWithValues:kValues1
-                                                forKeys:kKeys2
-                                                  count:GPBARRAYSIZE(kValues1)];
+      [[GPBStringDoubleDictionary alloc] initWithDoubles:kValues1
+                                                 forKeys:kKeys2
+                                                   count:GPBARRAYSIZE(kValues1)];
   XCTAssertNotNil(dict3);
   GPBStringDoubleDictionary *dict4 =
-      [[GPBStringDoubleDictionary alloc] initWithValues:kValues3
-                                                forKeys:kKeys1
-                                                  count:GPBARRAYSIZE(kValues3)];
+      [[GPBStringDoubleDictionary alloc] initWithDoubles:kValues3
+                                                 forKeys:kKeys1
+                                                   count:GPBARRAYSIZE(kValues3)];
   XCTAssertNotNil(dict4);
 
   // 1/1Prime should be different objects, but equal.
@@ -2373,9 +2373,9 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
   const NSString *kKeys[] = { @"foo", @"bar", @"baz", @"mumble" };
   const double kValues[] = { 600., 601., 602., 603. };
   GPBStringDoubleDictionary *dict =
-      [[GPBStringDoubleDictionary alloc] initWithValues:kValues
-                                                forKeys:kKeys
-                                                  count:GPBARRAYSIZE(kValues)];
+      [[GPBStringDoubleDictionary alloc] initWithDoubles:kValues
+                                                 forKeys:kKeys
+                                                   count:GPBARRAYSIZE(kValues)];
   XCTAssertNotNil(dict);
 
   GPBStringDoubleDictionary *dict2 = [dict copy];
@@ -2394,9 +2394,9 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
   const NSString *kKeys[] = { @"foo", @"bar", @"baz", @"mumble" };
   const double kValues[] = { 600., 601., 602., 603. };
   GPBStringDoubleDictionary *dict =
-      [[GPBStringDoubleDictionary alloc] initWithValues:kValues
-                                                forKeys:kKeys
-                                                  count:GPBARRAYSIZE(kValues)];
+      [[GPBStringDoubleDictionary alloc] initWithDoubles:kValues
+                                                 forKeys:kKeys
+                                                   count:GPBARRAYSIZE(kValues)];
   XCTAssertNotNil(dict);
 
   GPBStringDoubleDictionary *dict2 =
@@ -2414,31 +2414,31 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
   XCTAssertNotNil(dict);
 
   XCTAssertEqual(dict.count, 0U);
-  [dict setValue:600. forKey:@"foo"];
+  [dict setDouble:600. forKey:@"foo"];
   XCTAssertEqual(dict.count, 1U);
 
   const NSString *kKeys[] = { @"bar", @"baz", @"mumble" };
   const double kValues[] = { 601., 602., 603. };
   GPBStringDoubleDictionary *dict2 =
-      [[GPBStringDoubleDictionary alloc] initWithValues:kValues
-                                                forKeys:kKeys
-                                                  count:GPBARRAYSIZE(kValues)];
+      [[GPBStringDoubleDictionary alloc] initWithDoubles:kValues
+                                                 forKeys:kKeys
+                                                   count:GPBARRAYSIZE(kValues)];
   XCTAssertNotNil(dict2);
   [dict addEntriesFromDictionary:dict2];
   XCTAssertEqual(dict.count, 4U);
 
   double value;
-  XCTAssertTrue([dict valueForKey:@"foo" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"foo" value:&value]);
+  XCTAssertTrue([dict getDouble:NULL forKey:@"foo"]);
+  XCTAssertTrue([dict getDouble:&value forKey:@"foo"]);
   XCTAssertEqual(value, 600.);
-  XCTAssertTrue([dict valueForKey:@"bar" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"bar" value:&value]);
+  XCTAssertTrue([dict getDouble:NULL forKey:@"bar"]);
+  XCTAssertTrue([dict getDouble:&value forKey:@"bar"]);
   XCTAssertEqual(value, 601.);
-  XCTAssertTrue([dict valueForKey:@"baz" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"baz" value:&value]);
+  XCTAssertTrue([dict getDouble:NULL forKey:@"baz"]);
+  XCTAssertTrue([dict getDouble:&value forKey:@"baz"]);
   XCTAssertEqual(value, 602.);
-  XCTAssertTrue([dict valueForKey:@"mumble" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"mumble" value:&value]);
+  XCTAssertTrue([dict getDouble:NULL forKey:@"mumble"]);
+  XCTAssertTrue([dict getDouble:&value forKey:@"mumble"]);
   XCTAssertEqual(value, 603.);
   [dict2 release];
 }
@@ -2447,57 +2447,57 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
   const NSString *kKeys[] = { @"foo", @"bar", @"baz", @"mumble" };
   const double kValues[] = { 600., 601., 602., 603. };
   GPBStringDoubleDictionary *dict =
-      [[GPBStringDoubleDictionary alloc] initWithValues:kValues
-                                         forKeys:kKeys
-                                           count:GPBARRAYSIZE(kValues)];
+      [[GPBStringDoubleDictionary alloc] initWithDoubles:kValues
+                                                 forKeys:kKeys
+                                                   count:GPBARRAYSIZE(kValues)];
   XCTAssertNotNil(dict);
   XCTAssertEqual(dict.count, 4U);
 
-  [dict removeValueForKey:@"bar"];
+  [dict removeDoubleForKey:@"bar"];
   XCTAssertEqual(dict.count, 3U);
   double value;
-  XCTAssertTrue([dict valueForKey:@"foo" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"foo" value:&value]);
+  XCTAssertTrue([dict getDouble:NULL forKey:@"foo"]);
+  XCTAssertTrue([dict getDouble:&value forKey:@"foo"]);
   XCTAssertEqual(value, 600.);
-  XCTAssertFalse([dict valueForKey:@"bar" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"baz" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"baz" value:&value]);
+  XCTAssertFalse([dict getDouble:NULL forKey:@"bar"]);
+  XCTAssertTrue([dict getDouble:NULL forKey:@"baz"]);
+  XCTAssertTrue([dict getDouble:&value forKey:@"baz"]);
   XCTAssertEqual(value, 602.);
-  XCTAssertTrue([dict valueForKey:@"mumble" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"mumble" value:&value]);
+  XCTAssertTrue([dict getDouble:NULL forKey:@"mumble"]);
+  XCTAssertTrue([dict getDouble:&value forKey:@"mumble"]);
   XCTAssertEqual(value, 603.);
 
   // Remove again does nothing.
-  [dict removeValueForKey:@"bar"];
+  [dict removeDoubleForKey:@"bar"];
   XCTAssertEqual(dict.count, 3U);
-  XCTAssertTrue([dict valueForKey:@"foo" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"foo" value:&value]);
+  XCTAssertTrue([dict getDouble:NULL forKey:@"foo"]);
+  XCTAssertTrue([dict getDouble:&value forKey:@"foo"]);
   XCTAssertEqual(value, 600.);
-  XCTAssertFalse([dict valueForKey:@"bar" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"baz" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"baz" value:&value]);
+  XCTAssertFalse([dict getDouble:NULL forKey:@"bar"]);
+  XCTAssertTrue([dict getDouble:NULL forKey:@"baz"]);
+  XCTAssertTrue([dict getDouble:&value forKey:@"baz"]);
   XCTAssertEqual(value, 602.);
-  XCTAssertTrue([dict valueForKey:@"mumble" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"mumble" value:&value]);
+  XCTAssertTrue([dict getDouble:NULL forKey:@"mumble"]);
+  XCTAssertTrue([dict getDouble:&value forKey:@"mumble"]);
   XCTAssertEqual(value, 603.);
 
-  [dict removeValueForKey:@"mumble"];
+  [dict removeDoubleForKey:@"mumble"];
   XCTAssertEqual(dict.count, 2U);
-  XCTAssertTrue([dict valueForKey:@"foo" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"foo" value:&value]);
+  XCTAssertTrue([dict getDouble:NULL forKey:@"foo"]);
+  XCTAssertTrue([dict getDouble:&value forKey:@"foo"]);
   XCTAssertEqual(value, 600.);
-  XCTAssertFalse([dict valueForKey:@"bar" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"baz" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"baz" value:&value]);
+  XCTAssertFalse([dict getDouble:NULL forKey:@"bar"]);
+  XCTAssertTrue([dict getDouble:NULL forKey:@"baz"]);
+  XCTAssertTrue([dict getDouble:&value forKey:@"baz"]);
   XCTAssertEqual(value, 602.);
-  XCTAssertFalse([dict valueForKey:@"mumble" value:NULL]);
+  XCTAssertFalse([dict getDouble:NULL forKey:@"mumble"]);
 
   [dict removeAll];
   XCTAssertEqual(dict.count, 0U);
-  XCTAssertFalse([dict valueForKey:@"foo" value:NULL]);
-  XCTAssertFalse([dict valueForKey:@"bar" value:NULL]);
-  XCTAssertFalse([dict valueForKey:@"baz" value:NULL]);
-  XCTAssertFalse([dict valueForKey:@"mumble" value:NULL]);
+  XCTAssertFalse([dict getDouble:NULL forKey:@"foo"]);
+  XCTAssertFalse([dict getDouble:NULL forKey:@"bar"]);
+  XCTAssertFalse([dict getDouble:NULL forKey:@"baz"]);
+  XCTAssertFalse([dict getDouble:NULL forKey:@"mumble"]);
   [dict release];
 }
 
@@ -2505,75 +2505,75 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
   const NSString *kKeys[] = { @"foo", @"bar", @"baz", @"mumble" };
   const double kValues[] = { 600., 601., 602., 603. };
   GPBStringDoubleDictionary *dict =
-      [[GPBStringDoubleDictionary alloc] initWithValues:kValues
-                                         forKeys:kKeys
-                                           count:GPBARRAYSIZE(kValues)];
+      [[GPBStringDoubleDictionary alloc] initWithDoubles:kValues
+                                                 forKeys:kKeys
+                                                   count:GPBARRAYSIZE(kValues)];
   XCTAssertNotNil(dict);
   XCTAssertEqual(dict.count, 4U);
   double value;
-  XCTAssertTrue([dict valueForKey:@"foo" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"foo" value:&value]);
+  XCTAssertTrue([dict getDouble:NULL forKey:@"foo"]);
+  XCTAssertTrue([dict getDouble:&value forKey:@"foo"]);
   XCTAssertEqual(value, 600.);
-  XCTAssertTrue([dict valueForKey:@"bar" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"bar" value:&value]);
+  XCTAssertTrue([dict getDouble:NULL forKey:@"bar"]);
+  XCTAssertTrue([dict getDouble:&value forKey:@"bar"]);
   XCTAssertEqual(value, 601.);
-  XCTAssertTrue([dict valueForKey:@"baz" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"baz" value:&value]);
+  XCTAssertTrue([dict getDouble:NULL forKey:@"baz"]);
+  XCTAssertTrue([dict getDouble:&value forKey:@"baz"]);
   XCTAssertEqual(value, 602.);
-  XCTAssertTrue([dict valueForKey:@"mumble" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"mumble" value:&value]);
+  XCTAssertTrue([dict getDouble:NULL forKey:@"mumble"]);
+  XCTAssertTrue([dict getDouble:&value forKey:@"mumble"]);
   XCTAssertEqual(value, 603.);
 
-  [dict setValue:603. forKey:@"foo"];
+  [dict setDouble:603. forKey:@"foo"];
   XCTAssertEqual(dict.count, 4U);
-  XCTAssertTrue([dict valueForKey:@"foo" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"foo" value:&value]);
+  XCTAssertTrue([dict getDouble:NULL forKey:@"foo"]);
+  XCTAssertTrue([dict getDouble:&value forKey:@"foo"]);
   XCTAssertEqual(value, 603.);
-  XCTAssertTrue([dict valueForKey:@"bar" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"bar" value:&value]);
+  XCTAssertTrue([dict getDouble:NULL forKey:@"bar"]);
+  XCTAssertTrue([dict getDouble:&value forKey:@"bar"]);
   XCTAssertEqual(value, 601.);
-  XCTAssertTrue([dict valueForKey:@"baz" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"baz" value:&value]);
+  XCTAssertTrue([dict getDouble:NULL forKey:@"baz"]);
+  XCTAssertTrue([dict getDouble:&value forKey:@"baz"]);
   XCTAssertEqual(value, 602.);
-  XCTAssertTrue([dict valueForKey:@"mumble" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"mumble" value:&value]);
+  XCTAssertTrue([dict getDouble:NULL forKey:@"mumble"]);
+  XCTAssertTrue([dict getDouble:&value forKey:@"mumble"]);
   XCTAssertEqual(value, 603.);
 
-  [dict setValue:601. forKey:@"mumble"];
+  [dict setDouble:601. forKey:@"mumble"];
   XCTAssertEqual(dict.count, 4U);
-  XCTAssertTrue([dict valueForKey:@"foo" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"foo" value:&value]);
+  XCTAssertTrue([dict getDouble:NULL forKey:@"foo"]);
+  XCTAssertTrue([dict getDouble:&value forKey:@"foo"]);
   XCTAssertEqual(value, 603.);
-  XCTAssertTrue([dict valueForKey:@"bar" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"bar" value:&value]);
+  XCTAssertTrue([dict getDouble:NULL forKey:@"bar"]);
+  XCTAssertTrue([dict getDouble:&value forKey:@"bar"]);
   XCTAssertEqual(value, 601.);
-  XCTAssertTrue([dict valueForKey:@"baz" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"baz" value:&value]);
+  XCTAssertTrue([dict getDouble:NULL forKey:@"baz"]);
+  XCTAssertTrue([dict getDouble:&value forKey:@"baz"]);
   XCTAssertEqual(value, 602.);
-  XCTAssertTrue([dict valueForKey:@"mumble" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"mumble" value:&value]);
+  XCTAssertTrue([dict getDouble:NULL forKey:@"mumble"]);
+  XCTAssertTrue([dict getDouble:&value forKey:@"mumble"]);
   XCTAssertEqual(value, 601.);
 
   const NSString *kKeys2[] = { @"bar", @"baz" };
   const double kValues2[] = { 602., 600. };
   GPBStringDoubleDictionary *dict2 =
-      [[GPBStringDoubleDictionary alloc] initWithValues:kValues2
-                                                forKeys:kKeys2
-                                                  count:GPBARRAYSIZE(kValues2)];
+      [[GPBStringDoubleDictionary alloc] initWithDoubles:kValues2
+                                                 forKeys:kKeys2
+                                                   count:GPBARRAYSIZE(kValues2)];
   XCTAssertNotNil(dict2);
   [dict addEntriesFromDictionary:dict2];
   XCTAssertEqual(dict.count, 4U);
-  XCTAssertTrue([dict valueForKey:@"foo" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"foo" value:&value]);
+  XCTAssertTrue([dict getDouble:NULL forKey:@"foo"]);
+  XCTAssertTrue([dict getDouble:&value forKey:@"foo"]);
   XCTAssertEqual(value, 603.);
-  XCTAssertTrue([dict valueForKey:@"bar" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"bar" value:&value]);
+  XCTAssertTrue([dict getDouble:NULL forKey:@"bar"]);
+  XCTAssertTrue([dict getDouble:&value forKey:@"bar"]);
   XCTAssertEqual(value, 602.);
-  XCTAssertTrue([dict valueForKey:@"baz" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"baz" value:&value]);
+  XCTAssertTrue([dict getDouble:NULL forKey:@"baz"]);
+  XCTAssertTrue([dict getDouble:&value forKey:@"baz"]);
   XCTAssertEqual(value, 600.);
-  XCTAssertTrue([dict valueForKey:@"mumble" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"mumble" value:&value]);
+  XCTAssertTrue([dict getDouble:NULL forKey:@"mumble"]);
+  XCTAssertTrue([dict getDouble:&value forKey:@"mumble"]);
   XCTAssertEqual(value, 601.);
 
   [dict2 release];
@@ -2593,8 +2593,8 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
   GPBStringEnumDictionary *dict = [[GPBStringEnumDictionary alloc] init];
   XCTAssertNotNil(dict);
   XCTAssertEqual(dict.count, 0U);
-  XCTAssertFalse([dict valueForKey:@"foo" value:NULL]);
-  [dict enumerateKeysAndValuesUsingBlock:^(NSString *aKey, int32_t aValue, BOOL *stop) {
+  XCTAssertFalse([dict getEnum:NULL forKey:@"foo"]);
+  [dict enumerateKeysAndEnumsUsingBlock:^(NSString *aKey, int32_t aValue, BOOL *stop) {
     #pragma unused(aKey, aValue, stop)
     XCTFail(@"Shouldn't get here!");
   }];
@@ -2602,15 +2602,15 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
 }
 
 - (void)testOne {
-  GPBStringEnumDictionary *dict = [GPBStringEnumDictionary dictionaryWithValue:700 forKey:@"foo"];
+  GPBStringEnumDictionary *dict = [GPBStringEnumDictionary dictionaryWithEnum:700 forKey:@"foo"];
   XCTAssertNotNil(dict);
   XCTAssertEqual(dict.count, 1U);
   int32_t value;
-  XCTAssertTrue([dict valueForKey:@"foo" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"foo" value:&value]);
+  XCTAssertTrue([dict getEnum:NULL forKey:@"foo"]);
+  XCTAssertTrue([dict getEnum:&value forKey:@"foo"]);
   XCTAssertEqual(value, 700);
-  XCTAssertFalse([dict valueForKey:@"bar" value:NULL]);
-  [dict enumerateKeysAndValuesUsingBlock:^(NSString *aKey, int32_t aValue, BOOL *stop) {
+  XCTAssertFalse([dict getEnum:NULL forKey:@"bar"]);
+  [dict enumerateKeysAndEnumsUsingBlock:^(NSString *aKey, int32_t aValue, BOOL *stop) {
     XCTAssertEqualObjects(aKey, @"foo");
     XCTAssertEqual(aValue, 700);
     XCTAssertNotEqual(stop, NULL);
@@ -2621,27 +2621,27 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
   const NSString *kKeys[] = { @"foo", @"bar", @"baz" };
   const int32_t kValues[] = { 700, 701, 702 };
   GPBStringEnumDictionary *dict =
-      [[GPBStringEnumDictionary alloc] initWithValues:kValues
-                                              forKeys:kKeys
-                                                count:GPBARRAYSIZE(kValues)];
+      [[GPBStringEnumDictionary alloc] initWithEnums:kValues
+                                             forKeys:kKeys
+                                               count:GPBARRAYSIZE(kValues)];
   XCTAssertNotNil(dict);
   XCTAssertEqual(dict.count, 3U);
   int32_t value;
-  XCTAssertTrue([dict valueForKey:@"foo" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"foo" value:&value]);
+  XCTAssertTrue([dict getEnum:NULL forKey:@"foo"]);
+  XCTAssertTrue([dict getEnum:&value forKey:@"foo"]);
   XCTAssertEqual(value, 700);
-  XCTAssertTrue([dict valueForKey:@"bar" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"bar" value:&value]);
+  XCTAssertTrue([dict getEnum:NULL forKey:@"bar"]);
+  XCTAssertTrue([dict getEnum:&value forKey:@"bar"]);
   XCTAssertEqual(value, 701);
-  XCTAssertTrue([dict valueForKey:@"baz" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"baz" value:&value]);
+  XCTAssertTrue([dict getEnum:NULL forKey:@"baz"]);
+  XCTAssertTrue([dict getEnum:&value forKey:@"baz"]);
   XCTAssertEqual(value, 702);
-  XCTAssertFalse([dict valueForKey:@"mumble" value:NULL]);
+  XCTAssertFalse([dict getEnum:NULL forKey:@"mumble"]);
 
   __block NSUInteger idx = 0;
   NSString **seenKeys = malloc(3 * sizeof(NSString*));
   int32_t *seenValues = malloc(3 * sizeof(int32_t));
-  [dict enumerateKeysAndValuesUsingBlock:^(NSString *aKey, int32_t aValue, BOOL *stop) {
+  [dict enumerateKeysAndEnumsUsingBlock:^(NSString *aKey, int32_t aValue, BOOL *stop) {
     XCTAssertLessThan(idx, 3U);
     seenKeys[idx] = aKey;
     seenValues[idx] = aValue;
@@ -2663,7 +2663,7 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
 
   // Stopping the enumeration.
   idx = 0;
-  [dict enumerateKeysAndValuesUsingBlock:^(NSString *aKey, int32_t aValue, BOOL *stop) {
+  [dict enumerateKeysAndEnumsUsingBlock:^(NSString *aKey, int32_t aValue, BOOL *stop) {
     #pragma unused(aKey, aValue)
     if (idx == 1) *stop = YES;
     XCTAssertNotEqual(idx, 2U);
@@ -2679,29 +2679,29 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
   const int32_t kValues2[] = { 700, 703, 702 };
   const int32_t kValues3[] = { 700, 701, 702, 703 };
   GPBStringEnumDictionary *dict1 =
-      [[GPBStringEnumDictionary alloc] initWithValues:kValues1
-                                              forKeys:kKeys1
-                                                count:GPBARRAYSIZE(kValues1)];
+      [[GPBStringEnumDictionary alloc] initWithEnums:kValues1
+                                             forKeys:kKeys1
+                                               count:GPBARRAYSIZE(kValues1)];
   XCTAssertNotNil(dict1);
   GPBStringEnumDictionary *dict1prime =
-      [[GPBStringEnumDictionary alloc] initWithValues:kValues1
-                                              forKeys:kKeys1
-                                                count:GPBARRAYSIZE(kValues1)];
+      [[GPBStringEnumDictionary alloc] initWithEnums:kValues1
+                                             forKeys:kKeys1
+                                               count:GPBARRAYSIZE(kValues1)];
   XCTAssertNotNil(dict1prime);
   GPBStringEnumDictionary *dict2 =
-      [[GPBStringEnumDictionary alloc] initWithValues:kValues2
-                                              forKeys:kKeys1
-                                                count:GPBARRAYSIZE(kValues2)];
+      [[GPBStringEnumDictionary alloc] initWithEnums:kValues2
+                                             forKeys:kKeys1
+                                               count:GPBARRAYSIZE(kValues2)];
   XCTAssertNotNil(dict2);
   GPBStringEnumDictionary *dict3 =
-      [[GPBStringEnumDictionary alloc] initWithValues:kValues1
-                                              forKeys:kKeys2
-                                                count:GPBARRAYSIZE(kValues1)];
+      [[GPBStringEnumDictionary alloc] initWithEnums:kValues1
+                                             forKeys:kKeys2
+                                               count:GPBARRAYSIZE(kValues1)];
   XCTAssertNotNil(dict3);
   GPBStringEnumDictionary *dict4 =
-      [[GPBStringEnumDictionary alloc] initWithValues:kValues3
-                                              forKeys:kKeys1
-                                                count:GPBARRAYSIZE(kValues3)];
+      [[GPBStringEnumDictionary alloc] initWithEnums:kValues3
+                                             forKeys:kKeys1
+                                               count:GPBARRAYSIZE(kValues3)];
   XCTAssertNotNil(dict4);
 
   // 1/1Prime should be different objects, but equal.
@@ -2730,9 +2730,9 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
   const NSString *kKeys[] = { @"foo", @"bar", @"baz", @"mumble" };
   const int32_t kValues[] = { 700, 701, 702, 703 };
   GPBStringEnumDictionary *dict =
-      [[GPBStringEnumDictionary alloc] initWithValues:kValues
-                                              forKeys:kKeys
-                                                count:GPBARRAYSIZE(kValues)];
+      [[GPBStringEnumDictionary alloc] initWithEnums:kValues
+                                             forKeys:kKeys
+                                               count:GPBARRAYSIZE(kValues)];
   XCTAssertNotNil(dict);
 
   GPBStringEnumDictionary *dict2 = [dict copy];
@@ -2751,9 +2751,9 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
   const NSString *kKeys[] = { @"foo", @"bar", @"baz", @"mumble" };
   const int32_t kValues[] = { 700, 701, 702, 703 };
   GPBStringEnumDictionary *dict =
-      [[GPBStringEnumDictionary alloc] initWithValues:kValues
-                                              forKeys:kKeys
-                                                count:GPBARRAYSIZE(kValues)];
+      [[GPBStringEnumDictionary alloc] initWithEnums:kValues
+                                             forKeys:kKeys
+                                               count:GPBARRAYSIZE(kValues)];
   XCTAssertNotNil(dict);
 
   GPBStringEnumDictionary *dict2 =
@@ -2771,31 +2771,31 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
   XCTAssertNotNil(dict);
 
   XCTAssertEqual(dict.count, 0U);
-  [dict setValue:700 forKey:@"foo"];
+  [dict setEnum:700 forKey:@"foo"];
   XCTAssertEqual(dict.count, 1U);
 
   const NSString *kKeys[] = { @"bar", @"baz", @"mumble" };
   const int32_t kValues[] = { 701, 702, 703 };
   GPBStringEnumDictionary *dict2 =
-      [[GPBStringEnumDictionary alloc] initWithValues:kValues
-                                              forKeys:kKeys
-                                                count:GPBARRAYSIZE(kValues)];
+      [[GPBStringEnumDictionary alloc] initWithEnums:kValues
+                                             forKeys:kKeys
+                                               count:GPBARRAYSIZE(kValues)];
   XCTAssertNotNil(dict2);
   [dict addRawEntriesFromDictionary:dict2];
   XCTAssertEqual(dict.count, 4U);
 
   int32_t value;
-  XCTAssertTrue([dict valueForKey:@"foo" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"foo" value:&value]);
+  XCTAssertTrue([dict getEnum:NULL forKey:@"foo"]);
+  XCTAssertTrue([dict getEnum:&value forKey:@"foo"]);
   XCTAssertEqual(value, 700);
-  XCTAssertTrue([dict valueForKey:@"bar" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"bar" value:&value]);
+  XCTAssertTrue([dict getEnum:NULL forKey:@"bar"]);
+  XCTAssertTrue([dict getEnum:&value forKey:@"bar"]);
   XCTAssertEqual(value, 701);
-  XCTAssertTrue([dict valueForKey:@"baz" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"baz" value:&value]);
+  XCTAssertTrue([dict getEnum:NULL forKey:@"baz"]);
+  XCTAssertTrue([dict getEnum:&value forKey:@"baz"]);
   XCTAssertEqual(value, 702);
-  XCTAssertTrue([dict valueForKey:@"mumble" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"mumble" value:&value]);
+  XCTAssertTrue([dict getEnum:NULL forKey:@"mumble"]);
+  XCTAssertTrue([dict getEnum:&value forKey:@"mumble"]);
   XCTAssertEqual(value, 703);
   [dict2 release];
 }
@@ -2804,57 +2804,57 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
   const NSString *kKeys[] = { @"foo", @"bar", @"baz", @"mumble" };
   const int32_t kValues[] = { 700, 701, 702, 703 };
   GPBStringEnumDictionary *dict =
-      [[GPBStringEnumDictionary alloc] initWithValues:kValues
-                                       forKeys:kKeys
-                                         count:GPBARRAYSIZE(kValues)];
+      [[GPBStringEnumDictionary alloc] initWithEnums:kValues
+                                             forKeys:kKeys
+                                               count:GPBARRAYSIZE(kValues)];
   XCTAssertNotNil(dict);
   XCTAssertEqual(dict.count, 4U);
 
-  [dict removeValueForKey:@"bar"];
+  [dict removeEnumForKey:@"bar"];
   XCTAssertEqual(dict.count, 3U);
   int32_t value;
-  XCTAssertTrue([dict valueForKey:@"foo" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"foo" value:&value]);
+  XCTAssertTrue([dict getEnum:NULL forKey:@"foo"]);
+  XCTAssertTrue([dict getEnum:&value forKey:@"foo"]);
   XCTAssertEqual(value, 700);
-  XCTAssertFalse([dict valueForKey:@"bar" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"baz" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"baz" value:&value]);
+  XCTAssertFalse([dict getEnum:NULL forKey:@"bar"]);
+  XCTAssertTrue([dict getEnum:NULL forKey:@"baz"]);
+  XCTAssertTrue([dict getEnum:&value forKey:@"baz"]);
   XCTAssertEqual(value, 702);
-  XCTAssertTrue([dict valueForKey:@"mumble" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"mumble" value:&value]);
+  XCTAssertTrue([dict getEnum:NULL forKey:@"mumble"]);
+  XCTAssertTrue([dict getEnum:&value forKey:@"mumble"]);
   XCTAssertEqual(value, 703);
 
   // Remove again does nothing.
-  [dict removeValueForKey:@"bar"];
+  [dict removeEnumForKey:@"bar"];
   XCTAssertEqual(dict.count, 3U);
-  XCTAssertTrue([dict valueForKey:@"foo" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"foo" value:&value]);
+  XCTAssertTrue([dict getEnum:NULL forKey:@"foo"]);
+  XCTAssertTrue([dict getEnum:&value forKey:@"foo"]);
   XCTAssertEqual(value, 700);
-  XCTAssertFalse([dict valueForKey:@"bar" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"baz" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"baz" value:&value]);
+  XCTAssertFalse([dict getEnum:NULL forKey:@"bar"]);
+  XCTAssertTrue([dict getEnum:NULL forKey:@"baz"]);
+  XCTAssertTrue([dict getEnum:&value forKey:@"baz"]);
   XCTAssertEqual(value, 702);
-  XCTAssertTrue([dict valueForKey:@"mumble" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"mumble" value:&value]);
+  XCTAssertTrue([dict getEnum:NULL forKey:@"mumble"]);
+  XCTAssertTrue([dict getEnum:&value forKey:@"mumble"]);
   XCTAssertEqual(value, 703);
 
-  [dict removeValueForKey:@"mumble"];
+  [dict removeEnumForKey:@"mumble"];
   XCTAssertEqual(dict.count, 2U);
-  XCTAssertTrue([dict valueForKey:@"foo" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"foo" value:&value]);
+  XCTAssertTrue([dict getEnum:NULL forKey:@"foo"]);
+  XCTAssertTrue([dict getEnum:&value forKey:@"foo"]);
   XCTAssertEqual(value, 700);
-  XCTAssertFalse([dict valueForKey:@"bar" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"baz" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"baz" value:&value]);
+  XCTAssertFalse([dict getEnum:NULL forKey:@"bar"]);
+  XCTAssertTrue([dict getEnum:NULL forKey:@"baz"]);
+  XCTAssertTrue([dict getEnum:&value forKey:@"baz"]);
   XCTAssertEqual(value, 702);
-  XCTAssertFalse([dict valueForKey:@"mumble" value:NULL]);
+  XCTAssertFalse([dict getEnum:NULL forKey:@"mumble"]);
 
   [dict removeAll];
   XCTAssertEqual(dict.count, 0U);
-  XCTAssertFalse([dict valueForKey:@"foo" value:NULL]);
-  XCTAssertFalse([dict valueForKey:@"bar" value:NULL]);
-  XCTAssertFalse([dict valueForKey:@"baz" value:NULL]);
-  XCTAssertFalse([dict valueForKey:@"mumble" value:NULL]);
+  XCTAssertFalse([dict getEnum:NULL forKey:@"foo"]);
+  XCTAssertFalse([dict getEnum:NULL forKey:@"bar"]);
+  XCTAssertFalse([dict getEnum:NULL forKey:@"baz"]);
+  XCTAssertFalse([dict getEnum:NULL forKey:@"mumble"]);
   [dict release];
 }
 
@@ -2862,75 +2862,75 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
   const NSString *kKeys[] = { @"foo", @"bar", @"baz", @"mumble" };
   const int32_t kValues[] = { 700, 701, 702, 703 };
   GPBStringEnumDictionary *dict =
-      [[GPBStringEnumDictionary alloc] initWithValues:kValues
-                                       forKeys:kKeys
-                                         count:GPBARRAYSIZE(kValues)];
+      [[GPBStringEnumDictionary alloc] initWithEnums:kValues
+                                             forKeys:kKeys
+                                               count:GPBARRAYSIZE(kValues)];
   XCTAssertNotNil(dict);
   XCTAssertEqual(dict.count, 4U);
   int32_t value;
-  XCTAssertTrue([dict valueForKey:@"foo" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"foo" value:&value]);
+  XCTAssertTrue([dict getEnum:NULL forKey:@"foo"]);
+  XCTAssertTrue([dict getEnum:&value forKey:@"foo"]);
   XCTAssertEqual(value, 700);
-  XCTAssertTrue([dict valueForKey:@"bar" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"bar" value:&value]);
+  XCTAssertTrue([dict getEnum:NULL forKey:@"bar"]);
+  XCTAssertTrue([dict getEnum:&value forKey:@"bar"]);
   XCTAssertEqual(value, 701);
-  XCTAssertTrue([dict valueForKey:@"baz" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"baz" value:&value]);
+  XCTAssertTrue([dict getEnum:NULL forKey:@"baz"]);
+  XCTAssertTrue([dict getEnum:&value forKey:@"baz"]);
   XCTAssertEqual(value, 702);
-  XCTAssertTrue([dict valueForKey:@"mumble" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"mumble" value:&value]);
+  XCTAssertTrue([dict getEnum:NULL forKey:@"mumble"]);
+  XCTAssertTrue([dict getEnum:&value forKey:@"mumble"]);
   XCTAssertEqual(value, 703);
 
-  [dict setValue:703 forKey:@"foo"];
+  [dict setEnum:703 forKey:@"foo"];
   XCTAssertEqual(dict.count, 4U);
-  XCTAssertTrue([dict valueForKey:@"foo" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"foo" value:&value]);
+  XCTAssertTrue([dict getEnum:NULL forKey:@"foo"]);
+  XCTAssertTrue([dict getEnum:&value forKey:@"foo"]);
   XCTAssertEqual(value, 703);
-  XCTAssertTrue([dict valueForKey:@"bar" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"bar" value:&value]);
+  XCTAssertTrue([dict getEnum:NULL forKey:@"bar"]);
+  XCTAssertTrue([dict getEnum:&value forKey:@"bar"]);
   XCTAssertEqual(value, 701);
-  XCTAssertTrue([dict valueForKey:@"baz" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"baz" value:&value]);
+  XCTAssertTrue([dict getEnum:NULL forKey:@"baz"]);
+  XCTAssertTrue([dict getEnum:&value forKey:@"baz"]);
   XCTAssertEqual(value, 702);
-  XCTAssertTrue([dict valueForKey:@"mumble" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"mumble" value:&value]);
+  XCTAssertTrue([dict getEnum:NULL forKey:@"mumble"]);
+  XCTAssertTrue([dict getEnum:&value forKey:@"mumble"]);
   XCTAssertEqual(value, 703);
 
-  [dict setValue:701 forKey:@"mumble"];
+  [dict setEnum:701 forKey:@"mumble"];
   XCTAssertEqual(dict.count, 4U);
-  XCTAssertTrue([dict valueForKey:@"foo" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"foo" value:&value]);
+  XCTAssertTrue([dict getEnum:NULL forKey:@"foo"]);
+  XCTAssertTrue([dict getEnum:&value forKey:@"foo"]);
   XCTAssertEqual(value, 703);
-  XCTAssertTrue([dict valueForKey:@"bar" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"bar" value:&value]);
+  XCTAssertTrue([dict getEnum:NULL forKey:@"bar"]);
+  XCTAssertTrue([dict getEnum:&value forKey:@"bar"]);
   XCTAssertEqual(value, 701);
-  XCTAssertTrue([dict valueForKey:@"baz" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"baz" value:&value]);
+  XCTAssertTrue([dict getEnum:NULL forKey:@"baz"]);
+  XCTAssertTrue([dict getEnum:&value forKey:@"baz"]);
   XCTAssertEqual(value, 702);
-  XCTAssertTrue([dict valueForKey:@"mumble" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"mumble" value:&value]);
+  XCTAssertTrue([dict getEnum:NULL forKey:@"mumble"]);
+  XCTAssertTrue([dict getEnum:&value forKey:@"mumble"]);
   XCTAssertEqual(value, 701);
 
   const NSString *kKeys2[] = { @"bar", @"baz" };
   const int32_t kValues2[] = { 702, 700 };
   GPBStringEnumDictionary *dict2 =
-      [[GPBStringEnumDictionary alloc] initWithValues:kValues2
-                                              forKeys:kKeys2
-                                                count:GPBARRAYSIZE(kValues2)];
+      [[GPBStringEnumDictionary alloc] initWithEnums:kValues2
+                                             forKeys:kKeys2
+                                               count:GPBARRAYSIZE(kValues2)];
   XCTAssertNotNil(dict2);
   [dict addRawEntriesFromDictionary:dict2];
   XCTAssertEqual(dict.count, 4U);
-  XCTAssertTrue([dict valueForKey:@"foo" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"foo" value:&value]);
+  XCTAssertTrue([dict getEnum:NULL forKey:@"foo"]);
+  XCTAssertTrue([dict getEnum:&value forKey:@"foo"]);
   XCTAssertEqual(value, 703);
-  XCTAssertTrue([dict valueForKey:@"bar" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"bar" value:&value]);
+  XCTAssertTrue([dict getEnum:NULL forKey:@"bar"]);
+  XCTAssertTrue([dict getEnum:&value forKey:@"bar"]);
   XCTAssertEqual(value, 702);
-  XCTAssertTrue([dict valueForKey:@"baz" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"baz" value:&value]);
+  XCTAssertTrue([dict getEnum:NULL forKey:@"baz"]);
+  XCTAssertTrue([dict getEnum:&value forKey:@"baz"]);
   XCTAssertEqual(value, 700);
-  XCTAssertTrue([dict valueForKey:@"mumble" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"mumble" value:&value]);
+  XCTAssertTrue([dict getEnum:NULL forKey:@"mumble"]);
+  XCTAssertTrue([dict getEnum:&value forKey:@"mumble"]);
   XCTAssertEqual(value, 701);
 
   [dict2 release];
@@ -2958,24 +2958,24 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
   XCTAssertEqual(dict.count, 3U);
   XCTAssertTrue(dict.validationFunc == TestingEnum_IsValidValue);  // Pointer comparison
   int32_t value;
-  XCTAssertTrue([dict valueForKey:@"foo" rawValue:NULL]);
-  XCTAssertTrue([dict valueForKey:@"foo" rawValue:&value]);
+  XCTAssertTrue([dict getRawValue:NULL forKey:@"foo"]);
+  XCTAssertTrue([dict getRawValue:&value forKey:@"foo"]);
   XCTAssertEqual(value, 700);
-  XCTAssertTrue([dict valueForKey:@"bar" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"bar" value:&value]);
+  XCTAssertTrue([dict getEnum:NULL forKey:@"bar"]);
+  XCTAssertTrue([dict getEnum:&value forKey:@"bar"]);
   XCTAssertEqual(value, kGPBUnrecognizedEnumeratorValue);
-  XCTAssertTrue([dict valueForKey:@"bar" rawValue:NULL]);
-  XCTAssertTrue([dict valueForKey:@"bar" rawValue:&value]);
+  XCTAssertTrue([dict getRawValue:NULL forKey:@"bar"]);
+  XCTAssertTrue([dict getRawValue:&value forKey:@"bar"]);
   XCTAssertEqual(value, 801);
-  XCTAssertTrue([dict valueForKey:@"baz" rawValue:NULL]);
-  XCTAssertTrue([dict valueForKey:@"baz" rawValue:&value]);
+  XCTAssertTrue([dict getRawValue:NULL forKey:@"baz"]);
+  XCTAssertTrue([dict getRawValue:&value forKey:@"baz"]);
   XCTAssertEqual(value, 702);
-  XCTAssertFalse([dict valueForKey:@"mumble" rawValue:NULL]);
+  XCTAssertFalse([dict getRawValue:NULL forKey:@"mumble"]);
 
   __block NSUInteger idx = 0;
   NSString **seenKeys = malloc(3 * sizeof(NSString*));
   int32_t *seenValues = malloc(3 * sizeof(int32_t));
-  [dict enumerateKeysAndValuesUsingBlock:^(NSString *aKey, int32_t aValue, BOOL *stop) {
+  [dict enumerateKeysAndEnumsUsingBlock:^(NSString *aKey, int32_t aValue, BOOL *stop) {
     XCTAssertLessThan(idx, 3U);
     seenKeys[idx] = aKey;
     seenValues[idx] = aValue;
@@ -3136,7 +3136,7 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
   XCTAssertNotNil(dict);
 
   XCTAssertEqual(dict.count, 0U);
-  XCTAssertThrowsSpecificNamed([dict setValue:801 forKey:@"bar"],  // Unknown
+  XCTAssertThrowsSpecificNamed([dict setEnum:801 forKey:@"bar"],  // Unknown
                                NSException, NSInvalidArgumentException);
   XCTAssertEqual(dict.count, 0U);
   [dict setRawValue:801 forKey:@"bar"];  // Unknown
@@ -3145,31 +3145,31 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
   const NSString *kKeys[] = { @"foo", @"baz", @"mumble" };
   const int32_t kValues[] = { 700, 702, 803 };  // Unknown
   GPBStringEnumDictionary *dict2 =
-      [[GPBStringEnumDictionary alloc] initWithValues:kValues
-                                              forKeys:kKeys
-                                                count:GPBARRAYSIZE(kValues)];
+      [[GPBStringEnumDictionary alloc] initWithEnums:kValues
+                                               forKeys:kKeys
+                                                 count:GPBARRAYSIZE(kValues)];
   XCTAssertNotNil(dict2);
   [dict addRawEntriesFromDictionary:dict2];
   XCTAssertEqual(dict.count, 4U);
 
   int32_t value;
-  XCTAssertTrue([dict valueForKey:@"foo" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"foo" value:&value]);
+  XCTAssertTrue([dict getEnum:NULL forKey:@"foo"]);
+  XCTAssertTrue([dict getEnum:&value forKey:@"foo"]);
   XCTAssertEqual(value, 700);
-  XCTAssertTrue([dict valueForKey:@"bar" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"bar" value:&value]);
+  XCTAssertTrue([dict getEnum:NULL forKey:@"bar"]);
+  XCTAssertTrue([dict getEnum:&value forKey:@"bar"]);
   XCTAssertEqual(value, kGPBUnrecognizedEnumeratorValue);
-  XCTAssertTrue([dict valueForKey:@"bar" rawValue:NULL]);
-  XCTAssertTrue([dict valueForKey:@"bar" rawValue:&value]);
+  XCTAssertTrue([dict getRawValue:NULL forKey:@"bar"]);
+  XCTAssertTrue([dict getRawValue:&value forKey:@"bar"]);
   XCTAssertEqual(value, 801);
-  XCTAssertTrue([dict valueForKey:@"baz" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"baz" value:&value]);
+  XCTAssertTrue([dict getEnum:NULL forKey:@"baz"]);
+  XCTAssertTrue([dict getEnum:&value forKey:@"baz"]);
   XCTAssertEqual(value, 702);
-  XCTAssertTrue([dict valueForKey:@"mumble" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"mumble" value:&value]);
+  XCTAssertTrue([dict getEnum:NULL forKey:@"mumble"]);
+  XCTAssertTrue([dict getEnum:&value forKey:@"mumble"]);
   XCTAssertEqual(value, kGPBUnrecognizedEnumeratorValue);
-  XCTAssertTrue([dict valueForKey:@"mumble" rawValue:NULL]);
-  XCTAssertTrue([dict valueForKey:@"mumble" rawValue:&value]);
+  XCTAssertTrue([dict getRawValue:NULL forKey:@"mumble"]);
+  XCTAssertTrue([dict getRawValue:&value forKey:@"mumble"]);
   XCTAssertEqual(value, 803);
   [dict2 release];
 }
@@ -3185,51 +3185,51 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
   XCTAssertNotNil(dict);
   XCTAssertEqual(dict.count, 4U);
 
-  [dict removeValueForKey:@"bar"];
+  [dict removeEnumForKey:@"bar"];
   XCTAssertEqual(dict.count, 3U);
   int32_t value;
-  XCTAssertTrue([dict valueForKey:@"foo" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"foo" value:&value]);
+  XCTAssertTrue([dict getEnum:NULL forKey:@"foo"]);
+  XCTAssertTrue([dict getEnum:&value forKey:@"foo"]);
   XCTAssertEqual(value, 700);
-  XCTAssertFalse([dict valueForKey:@"bar" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"baz" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"baz" value:&value]);
+  XCTAssertFalse([dict getEnum:NULL forKey:@"bar"]);
+  XCTAssertTrue([dict getEnum:NULL forKey:@"baz"]);
+  XCTAssertTrue([dict getEnum:&value forKey:@"baz"]);
   XCTAssertEqual(value, 702);
-  XCTAssertTrue([dict valueForKey:@"mumble" rawValue:NULL]);
-  XCTAssertTrue([dict valueForKey:@"mumble" rawValue:&value]);
+  XCTAssertTrue([dict getRawValue:NULL forKey:@"mumble"]);
+  XCTAssertTrue([dict getRawValue:&value forKey:@"mumble"]);
   XCTAssertEqual(value, 803);
 
   // Remove again does nothing.
-  [dict removeValueForKey:@"bar"];
+  [dict removeEnumForKey:@"bar"];
   XCTAssertEqual(dict.count, 3U);
-  XCTAssertTrue([dict valueForKey:@"foo" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"foo" value:&value]);
+  XCTAssertTrue([dict getEnum:NULL forKey:@"foo"]);
+  XCTAssertTrue([dict getEnum:&value forKey:@"foo"]);
   XCTAssertEqual(value, 700);
-  XCTAssertFalse([dict valueForKey:@"bar" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"baz" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"baz" value:&value]);
+  XCTAssertFalse([dict getEnum:NULL forKey:@"bar"]);
+  XCTAssertTrue([dict getEnum:NULL forKey:@"baz"]);
+  XCTAssertTrue([dict getEnum:&value forKey:@"baz"]);
   XCTAssertEqual(value, 702);
-  XCTAssertTrue([dict valueForKey:@"mumble" rawValue:NULL]);
-  XCTAssertTrue([dict valueForKey:@"mumble" rawValue:&value]);
+  XCTAssertTrue([dict getRawValue:NULL forKey:@"mumble"]);
+  XCTAssertTrue([dict getRawValue:&value forKey:@"mumble"]);
   XCTAssertEqual(value, 803);
 
-  [dict removeValueForKey:@"mumble"];
+  [dict removeEnumForKey:@"mumble"];
   XCTAssertEqual(dict.count, 2U);
-  XCTAssertTrue([dict valueForKey:@"foo" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"foo" value:&value]);
+  XCTAssertTrue([dict getEnum:NULL forKey:@"foo"]);
+  XCTAssertTrue([dict getEnum:&value forKey:@"foo"]);
   XCTAssertEqual(value, 700);
-  XCTAssertFalse([dict valueForKey:@"bar" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"baz" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"baz" value:&value]);
+  XCTAssertFalse([dict getEnum:NULL forKey:@"bar"]);
+  XCTAssertTrue([dict getEnum:NULL forKey:@"baz"]);
+  XCTAssertTrue([dict getEnum:&value forKey:@"baz"]);
   XCTAssertEqual(value, 702);
-  XCTAssertFalse([dict valueForKey:@"mumble" value:NULL]);
+  XCTAssertFalse([dict getEnum:NULL forKey:@"mumble"]);
 
   [dict removeAll];
   XCTAssertEqual(dict.count, 0U);
-  XCTAssertFalse([dict valueForKey:@"foo" value:NULL]);
-  XCTAssertFalse([dict valueForKey:@"bar" value:NULL]);
-  XCTAssertFalse([dict valueForKey:@"baz" value:NULL]);
-  XCTAssertFalse([dict valueForKey:@"mumble" value:NULL]);
+  XCTAssertFalse([dict getEnum:NULL forKey:@"foo"]);
+  XCTAssertFalse([dict getEnum:NULL forKey:@"bar"]);
+  XCTAssertFalse([dict getEnum:NULL forKey:@"baz"]);
+  XCTAssertFalse([dict getEnum:NULL forKey:@"mumble"]);
   [dict release];
 }
 
@@ -3244,63 +3244,63 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
   XCTAssertNotNil(dict);
   XCTAssertEqual(dict.count, 4U);
   int32_t value;
-  XCTAssertTrue([dict valueForKey:@"foo" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"foo" value:&value]);
+  XCTAssertTrue([dict getEnum:NULL forKey:@"foo"]);
+  XCTAssertTrue([dict getEnum:&value forKey:@"foo"]);
   XCTAssertEqual(value, 700);
-  XCTAssertTrue([dict valueForKey:@"bar" rawValue:NULL]);
-  XCTAssertTrue([dict valueForKey:@"bar" rawValue:&value]);
+  XCTAssertTrue([dict getRawValue:NULL forKey:@"bar"]);
+  XCTAssertTrue([dict getRawValue:&value forKey:@"bar"]);
   XCTAssertEqual(value, 801);
-  XCTAssertTrue([dict valueForKey:@"baz" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"baz" value:&value]);
+  XCTAssertTrue([dict getEnum:NULL forKey:@"baz"]);
+  XCTAssertTrue([dict getEnum:&value forKey:@"baz"]);
   XCTAssertEqual(value, 702);
-  XCTAssertTrue([dict valueForKey:@"mumble" rawValue:NULL]);
-  XCTAssertTrue([dict valueForKey:@"mumble" rawValue:&value]);
+  XCTAssertTrue([dict getRawValue:NULL forKey:@"mumble"]);
+  XCTAssertTrue([dict getRawValue:&value forKey:@"mumble"]);
   XCTAssertEqual(value, 803);
 
-  XCTAssertThrowsSpecificNamed([dict setValue:803 forKey:@"foo"],  // Unknown
+  XCTAssertThrowsSpecificNamed([dict setEnum:803 forKey:@"foo"],  // Unknown
                                NSException, NSInvalidArgumentException);
   XCTAssertEqual(dict.count, 4U);
-  XCTAssertTrue([dict valueForKey:@"foo" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"foo" value:&value]);
+  XCTAssertTrue([dict getEnum:NULL forKey:@"foo"]);
+  XCTAssertTrue([dict getEnum:&value forKey:@"foo"]);
   XCTAssertEqual(value, 700);
-  XCTAssertTrue([dict valueForKey:@"bar" rawValue:NULL]);
-  XCTAssertTrue([dict valueForKey:@"bar" rawValue:&value]);
+  XCTAssertTrue([dict getRawValue:NULL forKey:@"bar"]);
+  XCTAssertTrue([dict getRawValue:&value forKey:@"bar"]);
   XCTAssertEqual(value, 801);
-  XCTAssertTrue([dict valueForKey:@"baz" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"baz" value:&value]);
+  XCTAssertTrue([dict getEnum:NULL forKey:@"baz"]);
+  XCTAssertTrue([dict getEnum:&value forKey:@"baz"]);
   XCTAssertEqual(value, 702);
-  XCTAssertTrue([dict valueForKey:@"mumble" rawValue:NULL]);
-  XCTAssertTrue([dict valueForKey:@"mumble" rawValue:&value]);
+  XCTAssertTrue([dict getRawValue:NULL forKey:@"mumble"]);
+  XCTAssertTrue([dict getRawValue:&value forKey:@"mumble"]);
   XCTAssertEqual(value, 803);
 
   [dict setRawValue:803 forKey:@"foo"];  // Unknown
   XCTAssertEqual(dict.count, 4U);
-  XCTAssertTrue([dict valueForKey:@"foo" rawValue:NULL]);
-  XCTAssertTrue([dict valueForKey:@"foo" rawValue:&value]);
+  XCTAssertTrue([dict getRawValue:NULL forKey:@"foo"]);
+  XCTAssertTrue([dict getRawValue:&value forKey:@"foo"]);
   XCTAssertEqual(value, 803);
-  XCTAssertTrue([dict valueForKey:@"bar" rawValue:NULL]);
-  XCTAssertTrue([dict valueForKey:@"bar" rawValue:&value]);
+  XCTAssertTrue([dict getRawValue:NULL forKey:@"bar"]);
+  XCTAssertTrue([dict getRawValue:&value forKey:@"bar"]);
   XCTAssertEqual(value, 801);
-  XCTAssertTrue([dict valueForKey:@"baz" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"baz" value:&value]);
+  XCTAssertTrue([dict getEnum:NULL forKey:@"baz"]);
+  XCTAssertTrue([dict getEnum:&value forKey:@"baz"]);
   XCTAssertEqual(value, 702);
-  XCTAssertTrue([dict valueForKey:@"mumble" rawValue:NULL]);
-  XCTAssertTrue([dict valueForKey:@"mumble" rawValue:&value]);
+  XCTAssertTrue([dict getRawValue:NULL forKey:@"mumble"]);
+  XCTAssertTrue([dict getRawValue:&value forKey:@"mumble"]);
   XCTAssertEqual(value, 803);
 
   [dict setRawValue:700 forKey:@"mumble"];
   XCTAssertEqual(dict.count, 4U);
-  XCTAssertTrue([dict valueForKey:@"foo" rawValue:NULL]);
-  XCTAssertTrue([dict valueForKey:@"foo" rawValue:&value]);
+  XCTAssertTrue([dict getRawValue:NULL forKey:@"foo"]);
+  XCTAssertTrue([dict getRawValue:&value forKey:@"foo"]);
   XCTAssertEqual(value, 803);
-  XCTAssertTrue([dict valueForKey:@"bar" rawValue:NULL]);
-  XCTAssertTrue([dict valueForKey:@"bar" rawValue:&value]);
+  XCTAssertTrue([dict getRawValue:NULL forKey:@"bar"]);
+  XCTAssertTrue([dict getRawValue:&value forKey:@"bar"]);
   XCTAssertEqual(value, 801);
-  XCTAssertTrue([dict valueForKey:@"baz" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"baz" value:&value]);
+  XCTAssertTrue([dict getEnum:NULL forKey:@"baz"]);
+  XCTAssertTrue([dict getEnum:&value forKey:@"baz"]);
   XCTAssertEqual(value, 702);
-  XCTAssertTrue([dict valueForKey:@"mumble" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"mumble" value:&value]);
+  XCTAssertTrue([dict getEnum:NULL forKey:@"mumble"]);
+  XCTAssertTrue([dict getEnum:&value forKey:@"mumble"]);
   XCTAssertEqual(value, 700);
 
   const NSString *kKeys2[] = { @"bar", @"baz" };
@@ -3313,17 +3313,17 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
   XCTAssertNotNil(dict2);
   [dict addRawEntriesFromDictionary:dict2];
   XCTAssertEqual(dict.count, 4U);
-  XCTAssertTrue([dict valueForKey:@"foo" rawValue:NULL]);
-  XCTAssertTrue([dict valueForKey:@"foo" rawValue:&value]);
+  XCTAssertTrue([dict getRawValue:NULL forKey:@"foo"]);
+  XCTAssertTrue([dict getRawValue:&value forKey:@"foo"]);
   XCTAssertEqual(value, 803);
-  XCTAssertTrue([dict valueForKey:@"bar" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"bar" value:&value]);
+  XCTAssertTrue([dict getEnum:NULL forKey:@"bar"]);
+  XCTAssertTrue([dict getEnum:&value forKey:@"bar"]);
   XCTAssertEqual(value, 702);
-  XCTAssertTrue([dict valueForKey:@"baz" rawValue:NULL]);
-  XCTAssertTrue([dict valueForKey:@"baz" rawValue:&value]);
+  XCTAssertTrue([dict getRawValue:NULL forKey:@"baz"]);
+  XCTAssertTrue([dict getRawValue:&value forKey:@"baz"]);
   XCTAssertEqual(value, 801);
-  XCTAssertTrue([dict valueForKey:@"mumble" value:NULL]);
-  XCTAssertTrue([dict valueForKey:@"mumble" value:&value]);
+  XCTAssertTrue([dict getEnum:NULL forKey:@"mumble"]);
+  XCTAssertTrue([dict getEnum:&value forKey:@"mumble"]);
   XCTAssertEqual(value, 700);
 
   [dict2 release];

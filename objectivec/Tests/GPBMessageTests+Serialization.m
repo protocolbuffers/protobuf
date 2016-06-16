@@ -987,7 +987,7 @@ static NSData *DataFromCStr(const char *str) {
   TestMap *msg = [[TestMap alloc] initWithData:data error:NULL];
   XCTAssertEqual(msg.mapInt32Int32.count, 1U);
   int32_t val = 666;
-  XCTAssertTrue([msg.mapInt32Int32 valueForKey:1 value:&val]);
+  XCTAssertTrue([msg.mapInt32Int32 getInt32:&val forKey:1]);
   XCTAssertEqual(val, 1);
 
   [msg release];
@@ -1001,7 +1001,7 @@ static NSData *DataFromCStr(const char *str) {
   TestMap *msg = [[TestMap alloc] initWithData:data error:NULL];
   XCTAssertEqual(msg.mapInt32Int32.count, 1U);
   int32_t val = 666;
-  XCTAssertTrue([msg.mapInt32Int32 valueForKey:2 value:&val]);
+  XCTAssertTrue([msg.mapInt32Int32 getInt32:&val forKey:2]);
   XCTAssertEqual(val, 1);
 
   [msg release];
@@ -1015,7 +1015,7 @@ static NSData *DataFromCStr(const char *str) {
   TestMap *msg = [[TestMap alloc] initWithData:data error:NULL];
   XCTAssertEqual(msg.mapInt32Int32.count, 1U);
   int32_t val = 666;
-  XCTAssertTrue([msg.mapInt32Int32 valueForKey:2 value:&val]);
+  XCTAssertTrue([msg.mapInt32Int32 getInt32:&val forKey:2]);
   XCTAssertEqual(val, 1);
 
   [msg release];
@@ -1029,7 +1029,7 @@ static NSData *DataFromCStr(const char *str) {
   TestMap *msg = [[TestMap alloc] initWithData:data error:NULL];
   XCTAssertEqual(msg.mapInt32Int32.count, 1U);
   int32_t val = 666;
-  XCTAssertTrue([msg.mapInt32Int32 valueForKey:1 value:&val]);
+  XCTAssertTrue([msg.mapInt32Int32 getInt32:&val forKey:1]);
   XCTAssertEqual(val, 2);
 
   [msg release];
@@ -1043,7 +1043,7 @@ static NSData *DataFromCStr(const char *str) {
   TestMap *msg = [[TestMap alloc] initWithData:data error:NULL];
   XCTAssertEqual(msg.mapInt32Int32.count, 1U);
   int32_t val = 666;
-  XCTAssertTrue([msg.mapInt32Int32 valueForKey:0 value:&val]);
+  XCTAssertTrue([msg.mapInt32Int32 getInt32:&val forKey:0]);
   XCTAssertEqual(val, 1);
 
   [msg release];
@@ -1057,7 +1057,7 @@ static NSData *DataFromCStr(const char *str) {
   TestMap *msg = [[TestMap alloc] initWithData:data error:NULL];
   XCTAssertEqual(msg.mapInt32Int32.count, 1U);
   int32_t val = 666;
-  XCTAssertTrue([msg.mapInt32Int32 valueForKey:1 value:&val]);
+  XCTAssertTrue([msg.mapInt32Int32 getInt32:&val forKey:1]);
   XCTAssertEqual(val, 0);
 
   [msg release];
@@ -1071,7 +1071,7 @@ static NSData *DataFromCStr(const char *str) {
   TestMap *msg = [[TestMap alloc] initWithData:data error:NULL];
   XCTAssertEqual(msg.mapInt32Int32.count, 1U);
   int32_t val = 666;
-  XCTAssertTrue([msg.mapInt32Int32 valueForKey:2 value:&val]);
+  XCTAssertTrue([msg.mapInt32Int32 getInt32:&val forKey:2]);
   XCTAssertEqual(val, 3);
 
   [msg release];
@@ -1098,17 +1098,17 @@ static NSData *DataFromCStr(const char *str) {
       dictionaryWithValidationFunction:Proto2MapEnumPlusExtra_IsValidValue];
   orig.unknownMapField = [GPBInt32EnumDictionary
       dictionaryWithValidationFunction:Proto2MapEnumPlusExtra_IsValidValue];
-  [orig.knownMapField setValue:Proto2MapEnumPlusExtra_EProto2MapEnumFoo
-                        forKey:0];
-  [orig.unknownMapField setValue:Proto2MapEnumPlusExtra_EProto2MapEnumExtra
-                          forKey:0];
+  [orig.knownMapField setEnum:Proto2MapEnumPlusExtra_EProto2MapEnumFoo
+                       forKey:0];
+  [orig.unknownMapField setEnum:Proto2MapEnumPlusExtra_EProto2MapEnumExtra
+                         forKey:0];
 
   NSData *data = [orig data];
   XCTAssertNotNil(data);
   TestEnumMap *msg1 = [TestEnumMap parseFromData:data error:NULL];
   XCTAssertEqual(msg1.knownMapField.count, 1U);
   int32_t val = -1;
-  XCTAssertTrue([msg1.knownMapField valueForKey:0 value:&val]);
+  XCTAssertTrue([msg1.knownMapField getEnum:&val forKey:0]);
   XCTAssertEqual(val, Proto2MapEnum_Proto2MapEnumFoo);
   XCTAssertEqual(msg1.unknownFields.countOfFields, 1U);
 
@@ -1117,11 +1117,11 @@ static NSData *DataFromCStr(const char *str) {
       [TestEnumMapPlusExtra parseFromData:data error:NULL];
   val = -1;
   XCTAssertEqual(msg2.knownMapField.count, 1U);
-  XCTAssertTrue([msg2.knownMapField valueForKey:0 value:&val]);
+  XCTAssertTrue([msg2.knownMapField getEnum:&val forKey:0]);
   XCTAssertEqual(val, Proto2MapEnumPlusExtra_EProto2MapEnumFoo);
   val = -1;
   XCTAssertEqual(msg2.unknownMapField.count, 1U);
-  XCTAssertTrue([msg2.unknownMapField valueForKey:0 value:&val]);
+  XCTAssertTrue([msg2.unknownMapField getEnum:&val forKey:0]);
   XCTAssertEqual(val, Proto2MapEnumPlusExtra_EProto2MapEnumExtra);
   XCTAssertEqual(msg2.unknownFields.countOfFields, 0U);
 
@@ -1137,32 +1137,32 @@ static NSData *DataFromCStr(const char *str) {
 
   // Key/Value data should result in different byte lengths on wire to ensure
   // everything is right.
-  [msg.mapInt32Int32 setValue:1000 forKey:200];
-  [msg.mapInt32Int32 setValue:101 forKey:2001];
-  [msg.mapInt64Int64 setValue:1002 forKey:202];
-  [msg.mapInt64Int64 setValue:103 forKey:2003];
-  [msg.mapUint32Uint32 setValue:1004 forKey:204];
-  [msg.mapUint32Uint32 setValue:105 forKey:2005];
-  [msg.mapUint64Uint64 setValue:1006 forKey:206];
-  [msg.mapUint64Uint64 setValue:107 forKey:2007];
-  [msg.mapSint32Sint32 setValue:1008 forKey:208];
-  [msg.mapSint32Sint32 setValue:109 forKey:2009];
-  [msg.mapSint64Sint64 setValue:1010 forKey:210];
-  [msg.mapSint64Sint64 setValue:111 forKey:2011];
-  [msg.mapFixed32Fixed32 setValue:1012 forKey:212];
-  [msg.mapFixed32Fixed32 setValue:113 forKey:2013];
-  [msg.mapFixed64Fixed64 setValue:1014 forKey:214];
-  [msg.mapFixed64Fixed64 setValue:115 forKey:2015];
-  [msg.mapSfixed32Sfixed32 setValue:1016 forKey:216];
-  [msg.mapSfixed32Sfixed32 setValue:117 forKey:2017];
-  [msg.mapSfixed64Sfixed64 setValue:1018 forKey:218];
-  [msg.mapSfixed64Sfixed64 setValue:119 forKey:2019];
-  [msg.mapInt32Float setValue:1020.f forKey:220];
-  [msg.mapInt32Float setValue:121.f forKey:2021];
-  [msg.mapInt32Double setValue:1022. forKey:222];
-  [msg.mapInt32Double setValue:123. forKey:2023];
-  [msg.mapBoolBool setValue:false forKey:true];
-  [msg.mapBoolBool setValue:true forKey:false];
+  [msg.mapInt32Int32 setInt32:1000 forKey:200];
+  [msg.mapInt32Int32 setInt32:101 forKey:2001];
+  [msg.mapInt64Int64 setInt64:1002 forKey:202];
+  [msg.mapInt64Int64 setInt64:103 forKey:2003];
+  [msg.mapUint32Uint32 setUInt32:1004 forKey:204];
+  [msg.mapUint32Uint32 setUInt32:105 forKey:2005];
+  [msg.mapUint64Uint64 setUInt64:1006 forKey:206];
+  [msg.mapUint64Uint64 setUInt64:107 forKey:2007];
+  [msg.mapSint32Sint32 setInt32:1008 forKey:208];
+  [msg.mapSint32Sint32 setInt32:109 forKey:2009];
+  [msg.mapSint64Sint64 setInt64:1010 forKey:210];
+  [msg.mapSint64Sint64 setInt64:111 forKey:2011];
+  [msg.mapFixed32Fixed32 setUInt32:1012 forKey:212];
+  [msg.mapFixed32Fixed32 setUInt32:113 forKey:2013];
+  [msg.mapFixed64Fixed64 setUInt64:1014 forKey:214];
+  [msg.mapFixed64Fixed64 setUInt64:115 forKey:2015];
+  [msg.mapSfixed32Sfixed32 setInt32:1016 forKey:216];
+  [msg.mapSfixed32Sfixed32 setInt32:117 forKey:2017];
+  [msg.mapSfixed64Sfixed64 setInt64:1018 forKey:218];
+  [msg.mapSfixed64Sfixed64 setInt64:119 forKey:2019];
+  [msg.mapInt32Float setFloat:1020.f forKey:220];
+  [msg.mapInt32Float setFloat:121.f forKey:2021];
+  [msg.mapInt32Double setDouble:1022. forKey:222];
+  [msg.mapInt32Double setDouble:123. forKey:2023];
+  [msg.mapBoolBool setBool:false forKey:true];
+  [msg.mapBoolBool setBool:true forKey:false];
   msg.mapStringString[@"224"] = @"1024";
   msg.mapStringString[@"2025"] = @"125";
   msg.mapStringBytes[@"226"] = DataFromCStr("1026");
@@ -1171,12 +1171,12 @@ static NSData *DataFromCStr(const char *str) {
   val1.optionalInt32 = 1028;
   Message2 *val2 = [[Message2 alloc] init];
   val2.optionalInt32 = 129;
-  [msg.mapStringMessage setValue:val1 forKey:@"228"];
-  [msg.mapStringMessage setValue:val2 forKey:@"2029"];
+  [msg.mapStringMessage setObject:val1 forKey:@"228"];
+  [msg.mapStringMessage setObject:val2 forKey:@"2029"];
   [msg.mapInt32Bytes setObject:DataFromCStr("1030 bytes") forKey:230];
   [msg.mapInt32Bytes setObject:DataFromCStr("131") forKey:2031];
-  [msg.mapInt32Enum setValue:Message2_Enum_Bar forKey:232];
-  [msg.mapInt32Enum setValue:Message2_Enum_Baz forKey:2033];
+  [msg.mapInt32Enum setEnum:Message2_Enum_Bar forKey:232];
+  [msg.mapInt32Enum setEnum:Message2_Enum_Baz forKey:2033];
   Message2 *val3 = [[Message2 alloc] init];
   val3.optionalInt32 = 1034;
   Message2 *val4 = [[Message2 alloc] init];
