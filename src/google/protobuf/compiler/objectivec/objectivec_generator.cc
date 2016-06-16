@@ -83,7 +83,7 @@ bool ObjectiveCGenerator::Generate(const FileDescriptor* file,
       generation_options.named_framework_to_proto_path_mappings_path = options[i].second;
     } else if (options[i].first == "named_framework_to_proto_path_mappings_path") {
       // Path to find a file containing the listing of framework names and
-      // proto files. The generator use this to decide if another proto file
+      // proto files. The generator uses this to decide if another proto file
       // referenced should use a framework style import vs. a user level import
       // (#import <FRAMEWORK/file.pbobjc.h> vs #import "dir/file.pbobjc.h").
       //
