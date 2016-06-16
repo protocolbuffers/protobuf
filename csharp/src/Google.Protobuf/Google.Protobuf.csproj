@@ -146,7 +146,7 @@
     <Compile Include="WireFormat.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Google.Protobuf.nuspec" />
+    <NuSpecFile Include="Google.Protobuf.nuspec" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup />
