@@ -656,5 +656,97 @@ namespace Google.Protobuf.Collections
             var text = list.ToString();
             Assert.AreEqual(text, "[ { \"foo\": 20 } ]", message.ToString());
         }
+
+        [Test]
+        public void Snapshot_Equal()
+        {
+            var original = new RepeatedField<string> { "foo" };
+            var snapshot = original.Snapshot();
+            Assert.AreEqual(snapshot, original);
+        }
+
+        [Test]
+        public void Snapshot_Insert()
+        {
+            var original = new RepeatedField<string> { "foo", "bar" };
+            var snapshot = original.Snapshot();
+            snapshot.Insert(1, "baz");
+            Assert.AreEqual(new RepeatedField<string> { "foo", "baz", "bar" }, snapshot);
+            Assert.AreNotEqual(original, snapshot);
+
+            snapshot = original.Snapshot();
+            original.Insert(1, "baz");
+            Assert.AreNotEqual(original, snapshot);
+        }
+
+        [Test]
+        public void Snapshot_Remove()
+        {
+            var original = new RepeatedField<string> { "foo" };
+            var snapshot = original.Snapshot();
+            snapshot.Remove("foo");
+            Assert.AreEqual(new RepeatedField<string> { }, snapshot);
+            Assert.AreNotEqual(original, snapshot);
+
+            snapshot = original.Snapshot();
+            original.Remove("foo");
+            Assert.AreNotEqual(original, snapshot);
+        }
+
+        [Test]
+        public void Snapshot_RemoveAt()
+        {
+            var original = new RepeatedField<string> { "foo" };
+            var snapshot = original.Snapshot();
+            snapshot.RemoveAt(0);
+            Assert.AreEqual(new RepeatedField<string> { }, snapshot);
+            Assert.AreNotEqual(original, snapshot);
+
+            snapshot = original.Snapshot();
+            original.RemoveAt(0);
+            Assert.AreNotEqual(original, snapshot);
+        }
+
+        [Test]
+        public void Snapshot_SetAt()
+        {
+            var original = new RepeatedField<string> { "foo" };
+            var snapshot = original.Snapshot();
+            snapshot[0] = "bar";
+            Assert.AreEqual(new RepeatedField<string> { "bar" }, snapshot);
+            Assert.AreNotEqual(original, snapshot);
+
+            snapshot = original.Snapshot();
+            original[0] = "bar";
+            Assert.AreNotEqual(original, snapshot);
+        }
+
+        [Test]
+        public void Snapshot_Add()
+        {
+            var original = new RepeatedField<string> { "foo" };
+            var snapshot = original.Snapshot();
+            snapshot.Add("bar");
+            Assert.AreEqual(new RepeatedField<string> { "foo", "bar" }, snapshot);
+            Assert.AreNotEqual(original, snapshot);
+
+            snapshot = original.Snapshot();
+            original.Add("bar");
+            Assert.AreNotEqual(original, snapshot);
+        }
+
+        [Test]
+        public void Snapshot_Add_Repeated()
+        {
+            var original = new RepeatedField<string> { "foo" };
+            var snapshot = original.Snapshot();
+            snapshot.Add(new RepeatedField<string> { "bar" });
+            Assert.AreEqual(new RepeatedField<string> { "foo", "bar" }, snapshot);
+            Assert.AreNotEqual(original, snapshot);
+
+            snapshot = original.Snapshot();
+            original.Add(new RepeatedField<string> { "bar" });
+            Assert.AreNotEqual(original, snapshot);
+        }
     }
 }

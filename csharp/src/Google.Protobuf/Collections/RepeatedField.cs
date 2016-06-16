@@ -54,6 +54,7 @@ namespace Google.Protobuf.Collections
 
         private T[] array = EmptyArray;
         private int count = 0;
+        private bool mustCopyOnNextWrite = false; // true when we are not the owner of the array
 
         /// <summary>
         /// Creates a deep clone of this repeated field.
@@ -83,6 +84,25 @@ namespace Google.Protobuf.Collections
             }
             clone.count = count;
             return clone;
+        }
+
+        /// <summary>
+        /// Creates a shallow snapshot of this repeated field
+        /// </summary>
+        /// <remarks>
+        /// This will return a new instance which points to the same
+        /// underlying array as the original, with a flag on both instances
+        /// to force them to copy the array before making any modifications
+        /// </remarks>
+        /// <returns></returns>
+        public RepeatedField<T> Snapshot()
+        {
+            return new RepeatedField<T>
+            {
+                array = this.array,
+                count = this.count,
+                mustCopyOnNextWrite = mustCopyOnNextWrite = true,
+            };
         }
 
         /// <summary>
@@ -231,7 +251,21 @@ namespace Google.Protobuf.Collections
             {
                 throw new ArgumentNullException("item");
             }
-            EnsureSize(count + 1);
+            if (mustCopyOnNextWrite)
+            {
+                // if mustCopyOnNextWrite is specified then we are not 
+                // permitted to change the existing array in place
+                // so just always allocate a new one, then clear 
+                // mustCopyOnNextWrite since we own the new array
+                var tmp = new T[count + 1];
+                Array.Copy(array, 0, tmp, 0, count);
+                array = tmp;
+                mustCopyOnNextWrite = false;
+            }
+            else
+            {
+                EnsureSize(count + 1);
+            }
             array[count++] = item;
         }
 
@@ -275,10 +309,8 @@ namespace Google.Protobuf.Collections
             if (index == -1)
             {
                 return false;
-            }            
-            Array.Copy(array, index + 1, array, index, count - index - 1);
-            count--;
-            array[count] = default(T);
+            }
+            RemoveAt(index);
             return true;
         }
 
@@ -304,7 +336,25 @@ namespace Google.Protobuf.Collections
             {
                 throw new ArgumentNullException("values");
             }
-            EnsureSize(count + values.count);
+            if (values.Count == 0)
+            {
+                return;
+            }
+            if (mustCopyOnNextWrite)
+            {
+                // if mustCopyOnNextWrite is specified then we are not 
+                // permitted to change the existing array in place
+                // so just always allocate a new one, then clear 
+                // mustCopyOnNextWrite since we own the new array
+                var tmp = new T[count + values.Count];
+                Array.Copy(array, 0, tmp, 0, count);
+                array = tmp;
+                mustCopyOnNextWrite = false;
+            }
+            else
+            {
+                EnsureSize(count + values.count);
+            }
             // We know that all the values will be valid, because it's a RepeatedField.
             Array.Copy(values.array, 0, array, count, values.count);
             count += values.count;
@@ -448,8 +498,26 @@ namespace Google.Protobuf.Collections
             {
                 throw new ArgumentOutOfRangeException("index");
             }
-            EnsureSize(count + 1);
-            Array.Copy(array, index, array, index + 1, count - index);
+            if (mustCopyOnNextWrite)
+            {
+                // if mustCopyOnNextWrite is specified then we are not 
+                // permitted to change the existing array in place
+                // so just always allocate a new one, then clear 
+                // mustCopyOnNextWrite since we own the new array
+                T[] tmp = new T[count + 1];
+                if (index > 0)
+                    Array.Copy(array, 0, tmp, 0, index);
+                int length = count - index;
+                if (length > 0)
+                    Array.Copy(array, index, tmp, index + 1, length);
+                array = tmp;
+                mustCopyOnNextWrite = false;
+            }
+            else
+            {
+                EnsureSize(count + 1);
+                Array.Copy(array, index, array, index + 1, count - index);
+            }
             array[index] = item;
             count++;
         }
@@ -464,9 +532,27 @@ namespace Google.Protobuf.Collections
             {
                 throw new ArgumentOutOfRangeException("index");
             }
-            Array.Copy(array, index + 1, array, index, count - index - 1);
-            count--;
-            array[count] = default(T);
+            if (mustCopyOnNextWrite)
+            {
+                // if mustCopyOnNextWrite is specified then we are not 
+                // permitted to change the existing array in place
+                // so just always allocate a new one, then clear 
+                // mustCopyOnNextWrite since we own the new array
+                count--;
+                T[] tmp = new T[count];
+                if (index > 0)
+                    Array.Copy(array, 0, tmp, 0, index);
+                int length = count - index;
+                if (length > 0)
+                    Array.Copy(array, index + 1, tmp, index, length);
+                mustCopyOnNextWrite = false;
+            }
+            else
+            {
+                Array.Copy(array, index + 1, array, index, count - index - 1);
+                count--;
+                array[count] = default(T);
+            }
         }
 
         /// <summary>
@@ -507,6 +593,17 @@ namespace Google.Protobuf.Collections
                 if (value == null)
                 {
                     throw new ArgumentNullException("value");
+                }
+                if (mustCopyOnNextWrite)
+                {
+                    // if mustCopyOnNextWrite is specified then we are not 
+                    // permitted to change the existing array in place
+                    // so just always allocate a new one, then clear 
+                    // mustCopyOnNextWrite since we own the new array
+                    T[] tmp = new T[count];
+                    Array.Copy(array, 0, tmp, 0, count);
+                    array = tmp;
+                    mustCopyOnNextWrite = false;
                 }
                 array[index] = value;
             }
