@@ -587,7 +587,7 @@ class Map {
     explicit MapAllocator(Arena* arena) : arena_(arena) {}
     template <typename X>
     MapAllocator(const MapAllocator<X>& allocator)
-        : arena_(allocator.arena_) {}
+        : arena_(allocator.arena()) {}
 
     pointer allocate(size_type n, const_pointer hint = 0) {
       // If arena is not given, malloc needs to be called which doesn't
@@ -650,12 +650,15 @@ class Map {
       return std::numeric_limits<size_type>::max();
     }
 
+    // To support gcc-4.4, which does not properly
+    // support templated friend classes
+    Arena* arena() const {
+      return arena_;
+    }
+
    private:
     typedef void DestructorSkippable_;
     Arena* const arena_;
-
-    template <typename X>
-    friend class MapAllocator;
   };
 
   // InnerMap's key type is Key and its value type is value_type*.  We use a
