@@ -11,6 +11,7 @@ var protoc = process.env.PROTOC || '../src/protoc';
 var wellKnownTypes = [
   '../src/google/protobuf/any.proto',
   '../src/google/protobuf/api.proto',
+  '../src/google/protobuf/compiler/plugin.proto',
   '../src/google/protobuf/descriptor.proto',
   '../src/google/protobuf/duration.proto',
   '../src/google/protobuf/empty.proto',
