@@ -230,14 +230,14 @@ bool ImportWriter::ProtoFrameworkCollector::ConsumeLine(
           map_->find(proto_file.ToString());
       if (existing_entry != map_->end()) {
         cerr << "warning: duplicate proto file reference, replacing framework entry for '"
-             << proto_file << "' with '" << framework_name << "' (was '"
-             << existing_entry->second << "')." << endl;
+             << proto_file.ToString() << "' with '" << framework_name.ToString()
+             << "' (was '" << existing_entry->second << "')." << endl;
         cerr.flush();
       }
 
       if (proto_file.find(' ') != StringPiece::npos) {
         cerr << "note: framework mapping file had a proto file with a space in, hopefully that isn't a missing comma: '"
-             << proto_file << "'" << endl;
+             << proto_file.ToString() << "'" << endl;
         cerr.flush();
       }
 
