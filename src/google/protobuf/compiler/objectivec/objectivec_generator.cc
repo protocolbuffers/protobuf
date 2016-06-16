@@ -88,7 +88,7 @@ bool ObjectiveCGenerator::Generate(const FileDescriptor* file,
       // (#import <FRAMEWORK/file.pbobjc.h> vs #import "dir/file.pbobjc.h").
       //
       // The format of the file is:
-      //   - An entry is line of "frameworkName=file.proto, dir/file2.proto".
+      //   - An entry is line of "frameworkName: file.proto, dir/file2.proto".
       //   - Comments start with "#".
       //   - A comment can go on a line after a expected package/prefix pair.
       //     (i.e. - "frameworkName=file.proto # comment")

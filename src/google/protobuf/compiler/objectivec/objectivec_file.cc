@@ -60,7 +60,7 @@ class ImportWriter {
  public:
   ImportWriter(const Options& options)
       : options_(options),
-        need_to_parsed_mapping_file_(true) {}
+        need_to_parse_mapping_file_(true) {}
 
   void AddFile(const FileGenerator* file);
   void Print(io::Printer *printer) const;
@@ -81,7 +81,7 @@ class ImportWriter {
 
   const Options options_;
   map<string, string> proto_file_to_framework_name_;
-  bool need_to_parsed_mapping_file_;
+  bool need_to_parse_mapping_file_;
 
   vector<string> protobuf_framework_imports_;
   vector<string> protobuf_non_framework_imports_;
@@ -101,7 +101,7 @@ void ImportWriter::AddFile(const FileGenerator* file) {
   }
 
   // Lazy parse any mappings.
-  if (need_to_parsed_mapping_file_) {
+  if (need_to_parse_mapping_file_) {
     ParseFrameworkMappings();
   }
 
@@ -188,7 +188,7 @@ void ImportWriter::Print(io::Printer* printer) const {
 }
 
 void ImportWriter::ParseFrameworkMappings() {
-  need_to_parsed_mapping_file_ = false;
+  need_to_parse_mapping_file_ = false;
   if (options_.named_framework_to_proto_path_mappings_path.empty()) {
     return;  // Nothing to do.
   }

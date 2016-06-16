@@ -152,12 +152,12 @@ supported keys are:
 
   * `named_framework_to_proto_path_mappings_path`: The `value` used for this key
     is a path to a file containing the listing of framework names and proto
-    files. The generator use this to decide if another proto file referenced
+    files. The generator uses this to decide if another proto file referenced
     should use a framework style import vs. a user level import
     (`#import <FRAMEWORK/file.pbobjc.h>` vs `#import "dir/file.pbobjc.h"`).
 
     The format of the file is:
-      * An entry is line of `frameworkName=file.proto, dir/file2.proto`.
+      * An entry is line of `frameworkName: file.proto, dir/file2.proto`.
       * Comments start with `#`.
       * A comment can go on a line after an entry.
         (i.e. - `frameworkName=file.proto # comment`)
