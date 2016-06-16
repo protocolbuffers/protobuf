@@ -143,15 +143,10 @@ function(_protobuf_find_libraries name filename)
     # Honor cache entry used by CMake 3.5 and lower.
     set(${name}_LIBRARIES "${${name}_LIBRARY}" PARENT_SCOPE)
   else()
-    get_target_property(_aliased protobuf::lib${filename} ALIASED_TARGET)
-    if(_aliased)
-        set(${name}_LIBRARY_RELEASE $<TARGET_FILE:protobuf::lib${filename}>)
-        set(${name}_LIBRARY_DEBUG $<TARGET_FILE:protobuf::lib${filename}>)
-    else()
-      get_target_property(${name}_LIBRARY_RELEASE protobuf::lib${filename}
-        LOCATION_RELEASE)
-      get_target_property(${name}_LIBRARY_DEBUG protobuf::lib${filename}
-        LOCATION_DEBUG)
+    get_target_property(${name}_LIBRARY_RELEASE protobuf::lib${filename}
+      LOCATION_RELEASE)
+    get_target_property(${name}_LIBRARY_DEBUG protobuf::lib${filename}
+      LOCATION_DEBUG)
     endif()
 
     select_library_configurations(${name})
@@ -198,21 +193,11 @@ get_target_property(Protobuf_INCLUDE_DIRS protobuf::libprotobuf
   INTERFACE_INCLUDE_DIRECTORIES)
 
 # Set the protoc Executable
-get_target_property(_aliased protobuf::protoc ALIASED_TARGET)
-if(_aliased)
-  if(POLICY CMP0026)
-    set(Protobuf_PROTOC_EXECUTABLE $<TARGET_FILE:protobuf::protoc>)
-  else()
-    get_target_property(Protobuf_PROTOC_EXECUTABLE protobuf::protoc
-      LOCATION)
-  endif()
-else()
+get_target_property(Protobuf_PROTOC_EXECUTABLE protobuf::protoc
+  IMPORTED_LOCATION_RELEASE)
+if(NOT EXISTS "${Protobuf_PROTOC_EXECUTABLE}")
   get_target_property(Protobuf_PROTOC_EXECUTABLE protobuf::protoc
-    IMPORTED_LOCATION_RELEASE)
-  if(NOT EXISTS "${Protobuf_PROTOC_EXECUTABLE}")
-    get_target_property(Protobuf_PROTOC_EXECUTABLE protobuf::protoc
-      IMPORTED_LOCATION_DEBUG)
-  endif()
+    IMPORTED_LOCATION_DEBUG)
 endif()
 
 # Version info variable
@@ -220,7 +205,7 @@ set(Protobuf_VERSION "@protobuf_VERSION@")
 
 include(FindPackageHandleStandardArgs)
 FIND_PACKAGE_HANDLE_STANDARD_ARGS(Protobuf
-    REQUIRED_VARS Protobuf_LIBRARIES Protobuf_INCLUDE_DIRS
+    REQUIRED_VARS Protobuf_PROTOC_EXECUTABLE Protobuf_LIBRARIES Protobuf_INCLUDE_DIRS
     VERSION_VAR Protobuf_VERSION
 )
 
