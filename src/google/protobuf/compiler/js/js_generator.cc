@@ -160,6 +160,14 @@ string GetJSFilename(const string& filename) {
 // Given a filename like foo/bar/baz.proto, returns the root directory
 // path ../../
 string GetRootPath(const string& filename) {
+  if (filename.find("google/protobuf") == 0) {
+    // Well-known types (.proto files in the google/protobuf directory) are
+    // assumed to come from the 'google-protobuf' npm package.  We may want to
+    // generalize this exception later by letting others put generated code in
+    // their own npm packages.
+    return "google-protobuf/";
+  }
+
   size_t slashes = std::count(filename.begin(), filename.end(), '/');
   if (slashes == 0) {
     return "./";
