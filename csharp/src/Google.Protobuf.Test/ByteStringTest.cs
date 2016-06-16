@@ -167,5 +167,27 @@ namespace Google.Protobuf
             // Optimization which also fixes issue 61.
             Assert.AreSame(ByteString.Empty, ByteString.FromBase64(""));
         }
+
+        [Test]
+        public void CopyTo()
+        {
+            var data = new byte[] { 0, 1, 2, 3, 4, 5, 6 };
+            var bs = ByteString.CopyFrom(data);
+            var buffer = new byte[data.Length];
+            bs.CopyTo(buffer, 0);
+            Assert.AreEqual(data, buffer);
+        }
+
+        [Test]
+        public void CopyTo_Subset()
+        {
+            var data = new byte[] { 0, 1, 2, 3, 4, 5, 6 };
+            var bs = ByteString.CopyFrom(data);
+            var buffer = new byte[data.Length];
+            bs.CopyTo(buffer, 3, 1, 3);
+            Assert.AreEqual(new byte[] { 0, 0, 0, 1, 2, 3, 0 }, buffer);
+        }
+
+
     }
 }
