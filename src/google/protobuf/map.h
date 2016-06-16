@@ -587,7 +587,7 @@ class Map {
     explicit MapAllocator(Arena* arena) : arena_(arena) {}
     template <typename X>
     MapAllocator(const MapAllocator<X>& allocator)
-        : arena_(allocator.arena_internal_only()) {}
+        : arena_(allocator.arena()) {}
 
     pointer allocate(size_type n, const_pointer hint = 0) {
       // If arena is not given, malloc needs to be called which doesn't
@@ -652,7 +652,7 @@ class Map {
 
     // To support gcc-4.4, which does not properly
     // support templated friend classes
-    Arena* arena_internal_only() const {
+    Arena* arena() const {
       return arena_;
     }
 
