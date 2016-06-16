@@ -60,8 +60,8 @@ bool ObjectiveCGenerator::Generate(const FileDescriptor* file,
     if (options[i].first == "expected_prefixes_path") {
       // Path to find a file containing the expected prefixes
       // (objc_class_prefix "PREFIX") for proto packages (package NAME). The
-      // generator will then issue warnings/errors if the in the proto files
-      // being generated is not listed in the file.
+      // generator will then issue warnings/errors if in the proto files being
+      // generated the option is not listed/wrong/etc in the file.
       //
       // The format of the file is:
       //   - An entry is a line of "package=prefix".
@@ -88,7 +88,7 @@ bool ObjectiveCGenerator::Generate(const FileDescriptor* file,
       // (#import <FRAMEWORK/file.pbobjc.h> vs #import "dir/file.pbobjc.h").
       //
       // The format of the file is:
-      //   - An entry is line of "frameworkName: file.proto, dir/file2.proto".
+      //   - An entry is a line of "frameworkName: file.proto, dir/file2.proto".
       //   - Comments start with "#".
       //   - A comment can go on a line after a expected package/prefix pair.
       //     (i.e. - "frameworkName=file.proto # comment")
