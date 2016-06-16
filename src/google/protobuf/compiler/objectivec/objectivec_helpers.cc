@@ -81,6 +81,10 @@ const char* const kUpperSegmentsList[] = {"url", "http", "https"};
 hash_set<string> kUpperSegments =
     MakeWordsMap(kUpperSegmentsList, GOOGLE_ARRAYSIZE(kUpperSegmentsList));
 
+bool ascii_isnewline(char c) {
+  return c == '\n' || c == '\r';
+}
+
 // Internal helper for name handing.
 // Do not expose this outside of helpers, stick to having functions for specific
 // cases (ClassName(), FieldName()), so there is always consistent suffix rules.
@@ -271,6 +275,16 @@ string StripProto(const string& filename) {
     return StripSuffixString(filename, ".proto");
   }
 }
+
+void StringPieceTrimWhitespace(StringPiece* input) {
+  while (!input->empty() && ascii_isspace(*input->data())) {
+    input->remove_prefix(1);
+  }
+  while (!input->empty() && ascii_isspace((*input)[input->length() - 1])) {
+    input->remove_suffix(1);
+  }
+}
+
 
 bool IsRetainedName(const string& name) {
   // List of prefixes from
@@ -871,65 +885,6 @@ bool IsProtobufLibraryBundledProtoFile(const FileDescriptor* file) {
   return false;
 }
 
-namespace {
-
-// Internal helper class that parses the expected package to prefix mappings
-// file.
-class Parser {
- public:
-  Parser(map<string, string>* inout_package_to_prefix_map)
-      : prefix_map_(inout_package_to_prefix_map), line_(0) {}
-
-  // Parses a check of input, returning success/failure.
-  bool ParseChunk(StringPiece chunk);
-
-  // Should be called to finish parsing (after all input has been provided via
-  // ParseChunk()).  Returns success/failure.
-  bool Finish();
-
-  int last_line() const { return line_; }
-  string error_str() const { return error_str_; }
-
- private:
-  bool ParseLoop();
-
-  map<string, string>* prefix_map_;
-  int line_;
-  string error_str_;
-  StringPiece p_;
-  string leftover_;
-};
-
-bool Parser::ParseChunk(StringPiece chunk) {
-  if (!leftover_.empty()) {
-    chunk.AppendToString(&leftover_);
-    p_ = StringPiece(leftover_);
-  } else {
-    p_ = chunk;
-  }
-  bool result = ParseLoop();
-  if (p_.empty()) {
-    leftover_.clear();
-  } else {
-    leftover_ = p_.ToString();
-  }
-  return result;
-}
-
-bool Parser::Finish() {
-  if (leftover_.empty()) {
-    return true;
-  }
-  // Force a newline onto the end to finish parsing.
-  p_ = StringPiece(leftover_ + "\n");
-  if (!ParseLoop()) {
-    return false;
-  }
-  return p_.empty();  // Everything used?
-}
-
-static bool ascii_isnewline(char c) { return c == '\n' || c == '\r'; }
-
 bool ReadLine(StringPiece* input, StringPiece* line) {
   for (int len = 0; len < input->size(); ++len) {
     if (ascii_isnewline((*input)[len])) {
@@ -942,15 +897,6 @@ bool ReadLine(StringPiece* input, StringPiece* line) {
   return false;  // Ran out of input with no newline.
 }
 
-void TrimWhitespace(StringPiece* input) {
-  while (!input->empty() && ascii_isspace(*input->data())) {
-    input->remove_prefix(1);
-  }
-  while (!input->empty() && ascii_isspace((*input)[input->length() - 1])) {
-    input->remove_suffix(1);
-  }
-}
-
 void RemoveComment(StringPiece* input) {
   int offset = input->find('#');
   if (offset != StringPiece::npos) {
@@ -958,29 +904,35 @@ void RemoveComment(StringPiece* input) {
   }
 }
 
-bool Parser::ParseLoop() {
-  StringPiece line;
-  while (ReadLine(&p_, &line)) {
-    ++line_;
-    RemoveComment(&line);
-    TrimWhitespace(&line);
-    if (line.size() == 0) {
-      continue;  // Blank line.
-    }
-    int offset = line.find('=');
-    if (offset == StringPiece::npos) {
-      error_str_ =
-          string("Line without equal sign: '") + line.ToString() + "'.";
-      return false;
-    }
-    StringPiece package(line, 0, offset);
-    StringPiece prefix(line, offset + 1, line.length() - offset - 1);
-    TrimWhitespace(&package);
-    TrimWhitespace(&prefix);
-    // Don't really worry about error checking the package/prefix for
-    // being valid.  Assume the file is validated when it is created/edited.
-    (*prefix_map_)[package.ToString()] = prefix.ToString();
+namespace {
+
+class ExpectedPrefixesCollector : public LineConsumer {
+ public:
+  ExpectedPrefixesCollector(map<string, string>* inout_package_to_prefix_map)
+      : prefix_map_(inout_package_to_prefix_map) {}
+
+  virtual bool ConsumeLine(const StringPiece& line, string* out_error);
+
+ private:
+  map<string, string>* prefix_map_;
+};
+
+bool ExpectedPrefixesCollector::ConsumeLine(
+    const StringPiece& line, string* out_error) {
+  int offset = line.find('=');
+  if (offset == StringPiece::npos) {
+    *out_error =
+        string("Expected prefixes file line without equal sign: '") +
+        line.ToString() + "'.";
+    return false;
   }
+  StringPiece package(line, 0, offset);
+  StringPiece prefix(line, offset + 1, line.length() - offset - 1);
+  StringPieceTrimWhitespace(&package);
+  StringPieceTrimWhitespace(&prefix);
+  // Don't really worry about error checking the package/prefix for
+  // being valid.  Assume the file is validated when it is created/edited.
+  (*prefix_map_)[package.ToString()] = prefix.ToString();
   return true;
 }
 
@@ -991,36 +943,9 @@ bool LoadExpectedPackagePrefixes(const Options &generation_options,
     return true;
   }
 
-  int fd;
-  do {
-    fd = open(generation_options.expected_prefixes_path.c_str(), O_RDONLY);
-  } while (fd < 0 && errno == EINTR);
-  if (fd < 0) {
-    *out_error =
-        string("error: Unable to open \"") +
-        generation_options.expected_prefixes_path +
-        "\", " + strerror(errno);
-    return false;
-  }
-  io::FileInputStream file_stream(fd);
-  file_stream.SetCloseOnDelete(true);
-
-  Parser parser(prefix_map);
-  const void* buf;
-  int buf_len;
-  while (file_stream.Next(&buf, &buf_len)) {
-    if (buf_len == 0) {
-      continue;
-    }
-
-    if (!parser.ParseChunk(StringPiece(static_cast<const char*>(buf), buf_len))) {
-      *out_error =
-          string("error: ") + generation_options.expected_prefixes_path +
-          " Line " + SimpleItoa(parser.last_line()) + ", " + parser.error_str();
-      return false;
-    }
-  }
-  return parser.Finish();
+  ExpectedPrefixesCollector collector(prefix_map);
+  return ParseSimpleFile(
+      generation_options.expected_prefixes_path, &collector, out_error);
 }
 
 }  // namespace
@@ -1120,6 +1045,10 @@ bool ValidateObjCClassPrefix(const FileDescriptor* file,
 
   return true;
 }
+
+TextFormatDecodeData::TextFormatDecodeData() { }
+
+TextFormatDecodeData::~TextFormatDecodeData() { }
 
 void TextFormatDecodeData::AddString(int32 key,
                                      const string& input_for_decode,
@@ -1328,6 +1257,116 @@ string TextFormatDecodeData::DecodeDataForString(const string& input_for_decode,
   // Add the end marker.
   return builder.Finish() + (char)'\0';
 }
+
+namespace {
+
+class Parser {
+ public:
+  Parser(LineConsumer* line_consumer)
+      : line_consumer_(line_consumer), line_(0) {}
+
+  // Parses a check of input, returning success/failure.
+  bool ParseChunk(StringPiece chunk);
+
+  // Should be called to finish parsing (after all input has been provided via
+  // ParseChunk()).  Returns success/failure.
+  bool Finish();
+
+  int last_line() const { return line_; }
+  string error_str() const { return error_str_; }
+
+ private:
+  bool ParseLoop();
+
+  LineConsumer* line_consumer_;
+  int line_;
+  string error_str_;
+  StringPiece p_;
+  string leftover_;
+};
+
+bool Parser::ParseChunk(StringPiece chunk) {
+  if (!leftover_.empty()) {
+    chunk.AppendToString(&leftover_);
+    p_ = StringPiece(leftover_);
+  } else {
+    p_ = chunk;
+  }
+  bool result = ParseLoop();
+  if (p_.empty()) {
+    leftover_.clear();
+  } else {
+    leftover_ = p_.ToString();
+  }
+  return result;
+}
+
+bool Parser::Finish() {
+  if (leftover_.empty()) {
+    return true;
+  }
+  // Force a newline onto the end to finish parsing.
+  p_ = StringPiece(leftover_ + "\n");
+  if (!ParseLoop()) {
+    return false;
+  }
+  return p_.empty();  // Everything used?
+}
+
+bool Parser::ParseLoop() {
+  StringPiece line;
+  while (ReadLine(&p_, &line)) {
+    ++line_;
+    RemoveComment(&line);
+    StringPieceTrimWhitespace(&line);
+    if (line.size() == 0) {
+      continue;  // Blank line.
+    }
+    if (!line_consumer_->ConsumeLine(line, &error_str_)) {
+      return false;
+    }
+  }
+  return true;
+}
+
+}  // namespace
+
+LineConsumer::LineConsumer() {}
+
+LineConsumer::~LineConsumer() {}
+
+bool ParseSimpleFile(
+    const string& path, LineConsumer* line_consumer, string* out_error) {
+  int fd;
+  do {
+    fd = open(path.c_str(), O_RDONLY);
+  } while (fd < 0 && errno == EINTR);
+  if (fd < 0) {
+    *out_error =
+        string("error: Unable to open \"") + path + "\", " + strerror(errno);
+    return false;
+  }
+  io::FileInputStream file_stream(fd);
+  file_stream.SetCloseOnDelete(true);
+
+  Parser parser(line_consumer);
+  const void* buf;
+  int buf_len;
+  while (file_stream.Next(&buf, &buf_len)) {
+    if (buf_len == 0) {
+      continue;
+    }
+
+    if (!parser.ParseChunk(StringPiece(static_cast<const char*>(buf), buf_len))) {
+      *out_error =
+          string("error: ") + path +
+          " Line " + SimpleItoa(parser.last_line()) + ", " + parser.error_str();
+      return false;
+    }
+  }
+  return parser.Finish();
+}
+
 
 }  // namespace objectivec
 }  // namespace compiler
