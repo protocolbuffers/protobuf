@@ -33,7 +33,16 @@ gulp.task('genproto_closure', function (cb) {
 });
 
 gulp.task('genproto_commonjs', function (cb) {
-  exec('mkdir -p commonjs_out && ' + protoc + ' --js_out=import_style=commonjs,binary:commonjs_out -I ../src -I commonjs -I . *.proto commonjs/test*/*.proto ../src/google/protobuf/descriptor.proto' + wellKnownTypes.join(' '),
+  exec('mkdir -p commonjs_out && ' + protoc + ' --js_out=import_style=commonjs,binary:commonjs_out -I ../src -I commonjs -I . *.proto commonjs/test*/*.proto ../src/google/protobuf/descriptor.proto',
+       function (err, stdout, stderr) {
+    console.log(stdout);
+    console.log(stderr);
+    cb(err);
+  });
+});
+
+gulp.task('genproto_commonjs_wellknowntypes', function (cb) {
+  exec('mkdir -p commonjs_out/node_modules/google-protobuf && ' + protoc + ' --js_out=import_style=commonjs,binary:commonjs_out/node_modules/google-protobuf -I ../src ../src/google/protobuf/descriptor.proto',
        function (err, stdout, stderr) {
     console.log(stdout);
     console.log(stderr);
@@ -79,7 +88,7 @@ gulp.task('commonjs_testdeps', function (cb) {
   });
 });
 
-gulp.task('make_commonjs_out', ['dist', 'genproto_commonjs', 'commonjs_asserts', 'commonjs_testdeps'], function (cb) {
+gulp.task('make_commonjs_out', ['dist', 'genproto_commonjs', 'genproto_commonjs_wellknowntypes', 'commonjs_asserts', 'commonjs_testdeps'], function (cb) {
   // TODO(haberman): minify this more aggressively.
   // Will require proper externs/exports.
   var cmd = "mkdir -p commonjs_out/binary && mkdir -p commonjs_out/test_node_modules && ";
