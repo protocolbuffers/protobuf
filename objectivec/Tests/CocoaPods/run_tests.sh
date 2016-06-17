@@ -125,6 +125,10 @@ do_test() {
   # fail on Travis since those machines don't have a Code Signing identity.
   if  [[ "${TEST_NAME}" == iOS* ]] ; then
     xcodebuild_args+=( "-sdk" "iphonesimulator" "ONLY_ACTIVE_ARCH=NO" )
+    # Apparently the destination flag is required to avoid "Unsupported architecture"
+    # errors.
+    xcodebuild_args+=( "-destination" )
+    xcodebuild_args+=( "platform=iOS Simulator,name=iPad 2,OS=9.3" )
   fi
 
   # Do the work!
