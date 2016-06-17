@@ -91,7 +91,7 @@ bool ObjectiveCGenerator::Generate(const FileDescriptor* file,
       //   - An entry is a line of "frameworkName: file.proto, dir/file2.proto".
       //   - Comments start with "#".
       //   - A comment can go on a line after a expected package/prefix pair.
-      //     (i.e. - "frameworkName=file.proto # comment")
+      //     (i.e. - "frameworkName: file.proto # comment")
       //
       // Any number of files can be listed for a framework, just separate them
       // with commas.

@@ -160,7 +160,7 @@ supported keys are:
       * An entry is a line of `frameworkName: file.proto, dir/file2.proto`.
       * Comments start with `#`.
       * A comment can go on a line after an entry.
-        (i.e. - `frameworkName=file.proto # comment`)
+        (i.e. - `frameworkName: file.proto # comment`)
 
     Any number of files can be listed for a framework, just separate them with
     commas.
