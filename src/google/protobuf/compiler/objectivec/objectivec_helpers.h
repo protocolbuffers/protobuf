@@ -47,6 +47,7 @@ struct Options {
   Options();
   string expected_prefixes_path;
   string generate_for_named_framework;
+  string named_framework_to_proto_path_mappings_path;
 };
 
 // Escape C++ trigraphs by escaping question marks to "\?".
@@ -54,6 +55,9 @@ string EscapeTrigraphs(const string& to_escape);
 
 // Strips ".proto" or ".protodevel" from the end of a filename.
 string StripProto(const string& filename);
+
+// Remove white space from either end of a StringPiece.
+void StringPieceTrimWhitespace(StringPiece* input);
 
 // Returns true if the name requires a ns_returns_not_retained attribute applied
 // to it.
@@ -190,7 +194,8 @@ bool ValidateObjCClassPrefix(const FileDescriptor* file,
 // the input into the expected output.
 class LIBPROTOC_EXPORT TextFormatDecodeData {
  public:
-  TextFormatDecodeData() {}
+  TextFormatDecodeData();
+  ~TextFormatDecodeData();
 
   void AddString(int32 key, const string& input_for_decode,
                  const string& desired_output);
@@ -206,6 +211,17 @@ class LIBPROTOC_EXPORT TextFormatDecodeData {
   typedef std::pair<int32, string> DataEntry;
   vector<DataEntry> entries_;
 };
+
+// Helper for parsing simple files.
+class LIBPROTOC_EXPORT LineConsumer {
+ public:
+  LineConsumer();
+  virtual ~LineConsumer();
+  virtual bool ConsumeLine(const StringPiece& line, string* out_error) = 0;
+};
+
+bool ParseSimpleFile(
+    const string& path, LineConsumer* line_consumer, string* out_error);
 
 }  // namespace objectivec
 }  // namespace compiler

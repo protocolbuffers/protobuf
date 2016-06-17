@@ -37,7 +37,11 @@
 #include <google/protobuf/io/zero_copy_stream_impl.h>
 #include <google/protobuf/stubs/stl_util.h>
 #include <google/protobuf/stubs/strutil.h>
+#include <iostream>
 #include <sstream>
+
+// NOTE: src/google/protobuf/compiler/plugin.cc makes use of cerr for some
+// error cases, so it seems to be ok to use as a back door for errors.
 
 namespace google {
 namespace protobuf {
@@ -54,13 +58,31 @@ namespace {
 
 class ImportWriter {
  public:
-  ImportWriter(const Options& options) : options_(options) {}
+  ImportWriter(const Options& options)
+      : options_(options),
+        need_to_parse_mapping_file_(true) {}
 
   void AddFile(const FileGenerator* file);
   void Print(io::Printer *printer) const;
 
  private:
+  class ProtoFrameworkCollector : public LineConsumer {
+   public:
+    ProtoFrameworkCollector(map<string, string>* inout_proto_file_to_framework_name)
+        : map_(inout_proto_file_to_framework_name) {}
+
+    virtual bool ConsumeLine(const StringPiece& line, string* out_error);
+
+   private:
+    map<string, string>* map_;
+  };
+
+  void ParseFrameworkMappings();
+
   const Options options_;
+  map<string, string> proto_file_to_framework_name_;
+  bool need_to_parse_mapping_file_;
+
   vector<string> protobuf_framework_imports_;
   vector<string> protobuf_non_framework_imports_;
   vector<string> other_framework_imports_;
@@ -70,20 +92,39 @@ class ImportWriter {
 void ImportWriter::AddFile(const FileGenerator* file) {
   const FileDescriptor* file_descriptor = file->Descriptor();
   const string extension(".pbobjc.h");
+
   if (IsProtobufLibraryBundledProtoFile(file_descriptor)) {
     protobuf_framework_imports_.push_back(
         FilePathBasename(file_descriptor) + extension);
     protobuf_non_framework_imports_.push_back(file->Path() + extension);
-  } else if (!options_.generate_for_named_framework.empty()) {
+    return;
+  }
+
+  // Lazy parse any mappings.
+  if (need_to_parse_mapping_file_) {
+    ParseFrameworkMappings();
+  }
+
+  map<string, string>::iterator proto_lookup =
+      proto_file_to_framework_name_.find(file_descriptor->name());
+  if (proto_lookup != proto_file_to_framework_name_.end()) {
+    other_framework_imports_.push_back(
+        proto_lookup->second + "/" +
+        FilePathBasename(file_descriptor) + extension);
+    return;
+  }
+
+  if (!options_.generate_for_named_framework.empty()) {
     other_framework_imports_.push_back(
         options_.generate_for_named_framework + "/" +
         FilePathBasename(file_descriptor) + extension);
-  } else {
-    other_imports_.push_back(file->Path() + extension);
+    return;
   }
+
+  other_imports_.push_back(file->Path() + extension);
 }
 
-void ImportWriter::Print(io::Printer *printer) const {
+void ImportWriter::Print(io::Printer* printer) const {
   assert(protobuf_non_framework_imports_.size() ==
          protobuf_framework_imports_.size());
 
@@ -144,6 +185,69 @@ void ImportWriter::Print(io::Printer *printer) const {
           "header", *iter);
     }
   }
+}
+
+void ImportWriter::ParseFrameworkMappings() {
+  need_to_parse_mapping_file_ = false;
+  if (options_.named_framework_to_proto_path_mappings_path.empty()) {
+    return;  // Nothing to do.
+  }
+
+  ProtoFrameworkCollector collector(&proto_file_to_framework_name_);
+  string parse_error;
+  if (!ParseSimpleFile(options_.named_framework_to_proto_path_mappings_path,
+                       &collector, &parse_error)) {
+    cerr << "error parsing " << options_.named_framework_to_proto_path_mappings_path
+         << " : " << parse_error << endl;
+    cerr.flush();
+  }
+}
+
+bool ImportWriter::ProtoFrameworkCollector::ConsumeLine(
+    const StringPiece& line, string* out_error) {
+  int offset = line.find(':');
+  if (offset == StringPiece::npos) {
+    *out_error =
+        string("Framework/proto file mapping line without colon sign: '") +
+        line.ToString() + "'.";
+    return false;
+  }
+  StringPiece framework_name(line, 0, offset);
+  StringPiece proto_file_list(line, offset + 1, line.length() - offset - 1);
+  StringPieceTrimWhitespace(&framework_name);
+
+  int start = 0;
+  while (start < proto_file_list.length()) {
+    offset = proto_file_list.find(',', start);
+    if (offset == StringPiece::npos) {
+      offset = proto_file_list.length();
+    }
+
+    StringPiece proto_file(proto_file_list, start, offset);
+    StringPieceTrimWhitespace(&proto_file);
+    if (proto_file.size() != 0) {
+      map<string, string>::iterator existing_entry =
+          map_->find(proto_file.ToString());
+      if (existing_entry != map_->end()) {
+        cerr << "warning: duplicate proto file reference, replacing framework entry for '"
+             << proto_file.ToString() << "' with '" << framework_name.ToString()
+             << "' (was '" << existing_entry->second << "')." << endl;
+        cerr.flush();
+      }
+
+      if (proto_file.find(' ') != StringPiece::npos) {
+        cerr << "note: framework mapping file had a proto file with a space in, hopefully that isn't a missing comma: '"
+             << proto_file.ToString() << "'" << endl;
+        cerr.flush();
+      }
+
+      (*map_)[proto_file.ToString()] = framework_name.ToString();
+    }
+
+    start = offset + 1;
+  }
+
+  return true;
 }
 
 }  // namespace

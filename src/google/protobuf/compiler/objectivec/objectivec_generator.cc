@@ -58,9 +58,48 @@ bool ObjectiveCGenerator::Generate(const FileDescriptor* file,
   ParseGeneratorParameter(parameter, &options);
   for (int i = 0; i < options.size(); i++) {
     if (options[i].first == "expected_prefixes_path") {
+      // Path to find a file containing the expected prefixes
+      // (objc_class_prefix "PREFIX") for proto packages (package NAME). The
+      // generator will then issue warnings/errors if in the proto files being
+      // generated the option is not listed/wrong/etc in the file.
+      //
+      // The format of the file is:
+      //   - An entry is a line of "package=prefix".
+      //   - Comments start with "#".
+      //   - A comment can go on a line after a expected package/prefix pair.
+      //     (i.e. - "package=prefix # comment")
+      //
+      // There is no validation that the prefixes are good prefixes, it is
+      // assume they are when you create the file.
       generation_options.expected_prefixes_path = options[i].second;
     } else if (options[i].first == "generate_for_named_framework") {
-      generation_options.generate_for_named_framework = options[i].second;
+      // The name of the framework that protos are being generated for. This
+      // will cause the #import statements to be framework based using this
+      // name (i.e. - "#import <NAME/proto.pbobjc.h>).
+      //
+      // NOTE: If this option is used with
+      // named_framework_to_proto_path_mappings_path, then this is effectively
+      // the "default" to use for everything that wasn't mapped by the other.
+      generation_options.named_framework_to_proto_path_mappings_path = options[i].second;
+    } else if (options[i].first == "named_framework_to_proto_path_mappings_path") {
+      // Path to find a file containing the listing of framework names and
+      // proto files. The generator uses this to decide if another proto file
+      // referenced should use a framework style import vs. a user level import
+      // (#import <FRAMEWORK/file.pbobjc.h> vs #import "dir/file.pbobjc.h").
+      //
+      // The format of the file is:
+      //   - An entry is a line of "frameworkName: file.proto, dir/file2.proto".
+      //   - Comments start with "#".
+      //   - A comment can go on a line after a expected package/prefix pair.
+      //     (i.e. - "frameworkName: file.proto # comment")
+      //
+      // Any number of files can be listed for a framework, just separate them
+      // with commas.
+      //
+      // There can be multiple lines listing the same frameworkName incase it
+      // has a lot of proto files included in it; and having multiple lines
+      // makes things easier to read.
+      generation_options.named_framework_to_proto_path_mappings_path = options[i].second;
     } else {
       *error = "error: Unknown generator option: " + options[i].first;
       return false;
