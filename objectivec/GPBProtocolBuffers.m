@@ -32,7 +32,7 @@
 // project dependency, you can just add this file.
 
 
-// This warning seems to treat code differently when it is #imported then when
+// This warning seems to treat code differently when it is #imported than when
 // it is inline in the file.  GPBDictionary.m compiles cleanly in other targets,
 // but when #imported here it triggers a bunch of warnings that don't make
 // much sense, and don't trigger when compiled directly.  So we shut off the

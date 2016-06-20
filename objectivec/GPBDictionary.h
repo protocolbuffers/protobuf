@@ -38,12 +38,12 @@
 // Note: These are not meant to be subclassed.
 
 // Note on naming: for the classes holding numeric values, a more natural
-// natural naming of the method might be things like "-valueForKey:",
-// "-setValue:forKey:"; etc. But those selectors are also define by Key Value
+// naming of the method might be things like "-valueForKey:",
+// "-setValue:forKey:"; etc. But those selectors are also defined by Key Value
 // Coding (KVC) as categories on NSObject. So "overloading" the selectors with
 // other meanings can cause warnings (based on compiler settings), but more
 // importantly, some of those selector get called as KVC breaks up keypaths.
-// So if those selectors are used, using KVC will compiling cleanly, but could
+// So if those selectors are used, using KVC will compile cleanly, but could
 // crash as it invokes those selectors with the wrong types of arguments.
 
 NS_ASSUME_NONNULL_BEGIN
@@ -72,7 +72,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype)initWithDictionary:(GPBUInt32UInt32Dictionary *)dictionary;
 - (instancetype)initWithCapacity:(NSUInteger)numItems;
 
-// Returns YES/NO indicate if the key was found or not, filling in the value
+// Returns YES/NO to indicate if the key was found or not, filling in the value
 // only when the key was found.
 - (BOOL)getUInt32:(nullable uint32_t *)value forKey:(uint32_t)key;
 
@@ -109,7 +109,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype)initWithDictionary:(GPBUInt32Int32Dictionary *)dictionary;
 - (instancetype)initWithCapacity:(NSUInteger)numItems;
 
-// Returns YES/NO indicate if the key was found or not, filling in the value
+// Returns YES/NO to indicate if the key was found or not, filling in the value
 // only when the key was found.
 - (BOOL)getInt32:(nullable int32_t *)value forKey:(uint32_t)key;
 
@@ -146,7 +146,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype)initWithDictionary:(GPBUInt32UInt64Dictionary *)dictionary;
 - (instancetype)initWithCapacity:(NSUInteger)numItems;
 
-// Returns YES/NO indicate if the key was found or not, filling in the value
+// Returns YES/NO to indicate if the key was found or not, filling in the value
 // only when the key was found.
 - (BOOL)getUInt64:(nullable uint64_t *)value forKey:(uint32_t)key;
 
@@ -183,7 +183,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype)initWithDictionary:(GPBUInt32Int64Dictionary *)dictionary;
 - (instancetype)initWithCapacity:(NSUInteger)numItems;
 
-// Returns YES/NO indicate if the key was found or not, filling in the value
+// Returns YES/NO to indicate if the key was found or not, filling in the value
 // only when the key was found.
 - (BOOL)getInt64:(nullable int64_t *)value forKey:(uint32_t)key;
 
@@ -220,7 +220,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype)initWithDictionary:(GPBUInt32BoolDictionary *)dictionary;
 - (instancetype)initWithCapacity:(NSUInteger)numItems;
 
-// Returns YES/NO indicate if the key was found or not, filling in the value
+// Returns YES/NO to indicate if the key was found or not, filling in the value
 // only when the key was found.
 - (BOOL)getBool:(nullable BOOL *)value forKey:(uint32_t)key;
 
@@ -257,7 +257,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype)initWithDictionary:(GPBUInt32FloatDictionary *)dictionary;
 - (instancetype)initWithCapacity:(NSUInteger)numItems;
 
-// Returns YES/NO indicate if the key was found or not, filling in the value
+// Returns YES/NO to indicate if the key was found or not, filling in the value
 // only when the key was found.
 - (BOOL)getFloat:(nullable float *)value forKey:(uint32_t)key;
 
@@ -294,7 +294,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype)initWithDictionary:(GPBUInt32DoubleDictionary *)dictionary;
 - (instancetype)initWithCapacity:(NSUInteger)numItems;
 
-// Returns YES/NO indicate if the key was found or not, filling in the value
+// Returns YES/NO to indicate if the key was found or not, filling in the value
 // only when the key was found.
 - (BOOL)getDouble:(nullable double *)value forKey:(uint32_t)key;
 
@@ -343,7 +343,7 @@ NS_ASSUME_NONNULL_BEGIN
 // is not a valid enumerator as defined by validationFunc. If the actual value is
 // desired, use "raw" version of the method.
 
-// Returns YES/NO indicate if the key was found or not, filling in the value
+// Returns YES/NO to indicate if the key was found or not, filling in the value
 // only when the key was found.
 - (BOOL)getEnum:(nullable int32_t *)value forKey:(uint32_t)key;
 
@@ -353,7 +353,7 @@ NS_ASSUME_NONNULL_BEGIN
 // These methods bypass the validationFunc to provide access to values that were not
 // known at the time the binary was compiled.
 
-// Returns YES/NO indicate if the key was found or not, filling in the value
+// Returns YES/NO to indicate if the key was found or not, filling in the value
 // only when the key was found.
 - (BOOL)getRawValue:(nullable int32_t *)rawValue forKey:(uint32_t)key;
 
@@ -436,7 +436,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype)initWithDictionary:(GPBInt32UInt32Dictionary *)dictionary;
 - (instancetype)initWithCapacity:(NSUInteger)numItems;
 
-// Returns YES/NO indicate if the key was found or not, filling in the value
+// Returns YES/NO to indicate if the key was found or not, filling in the value
 // only when the key was found.
 - (BOOL)getUInt32:(nullable uint32_t *)value forKey:(int32_t)key;
 
@@ -473,7 +473,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype)initWithDictionary:(GPBInt32Int32Dictionary *)dictionary;
 - (instancetype)initWithCapacity:(NSUInteger)numItems;
 
-// Returns YES/NO indicate if the key was found or not, filling in the value
+// Returns YES/NO to indicate if the key was found or not, filling in the value
 // only when the key was found.
 - (BOOL)getInt32:(nullable int32_t *)value forKey:(int32_t)key;
 
@@ -510,7 +510,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype)initWithDictionary:(GPBInt32UInt64Dictionary *)dictionary;
 - (instancetype)initWithCapacity:(NSUInteger)numItems;
 
-// Returns YES/NO indicate if the key was found or not, filling in the value
+// Returns YES/NO to indicate if the key was found or not, filling in the value
 // only when the key was found.
 - (BOOL)getUInt64:(nullable uint64_t *)value forKey:(int32_t)key;
 
@@ -547,7 +547,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype)initWithDictionary:(GPBInt32Int64Dictionary *)dictionary;
 - (instancetype)initWithCapacity:(NSUInteger)numItems;
 
-// Returns YES/NO indicate if the key was found or not, filling in the value
+// Returns YES/NO to indicate if the key was found or not, filling in the value
 // only when the key was found.
 - (BOOL)getInt64:(nullable int64_t *)value forKey:(int32_t)key;
 
@@ -584,7 +584,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype)initWithDictionary:(GPBInt32BoolDictionary *)dictionary;
 - (instancetype)initWithCapacity:(NSUInteger)numItems;
 
-// Returns YES/NO indicate if the key was found or not, filling in the value
+// Returns YES/NO to indicate if the key was found or not, filling in the value
 // only when the key was found.
 - (BOOL)getBool:(nullable BOOL *)value forKey:(int32_t)key;
 
@@ -621,7 +621,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype)initWithDictionary:(GPBInt32FloatDictionary *)dictionary;
 - (instancetype)initWithCapacity:(NSUInteger)numItems;
 
-// Returns YES/NO indicate if the key was found or not, filling in the value
+// Returns YES/NO to indicate if the key was found or not, filling in the value
 // only when the key was found.
 - (BOOL)getFloat:(nullable float *)value forKey:(int32_t)key;
 
@@ -658,7 +658,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype)initWithDictionary:(GPBInt32DoubleDictionary *)dictionary;
 - (instancetype)initWithCapacity:(NSUInteger)numItems;
 
-// Returns YES/NO indicate if the key was found or not, filling in the value
+// Returns YES/NO to indicate if the key was found or not, filling in the value
 // only when the key was found.
 - (BOOL)getDouble:(nullable double *)value forKey:(int32_t)key;
 
@@ -707,7 +707,7 @@ NS_ASSUME_NONNULL_BEGIN
 // is not a valid enumerator as defined by validationFunc. If the actual value is
 // desired, use "raw" version of the method.
 
-// Returns YES/NO indicate if the key was found or not, filling in the value
+// Returns YES/NO to indicate if the key was found or not, filling in the value
 // only when the key was found.
 - (BOOL)getEnum:(nullable int32_t *)value forKey:(int32_t)key;
 
@@ -717,7 +717,7 @@ NS_ASSUME_NONNULL_BEGIN
 // These methods bypass the validationFunc to provide access to values that were not
 // known at the time the binary was compiled.
 
-// Returns YES/NO indicate if the key was found or not, filling in the value
+// Returns YES/NO to indicate if the key was found or not, filling in the value
 // only when the key was found.
 - (BOOL)getRawValue:(nullable int32_t *)rawValue forKey:(int32_t)key;
 
@@ -800,7 +800,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype)initWithDictionary:(GPBUInt64UInt32Dictionary *)dictionary;
 - (instancetype)initWithCapacity:(NSUInteger)numItems;
 
-// Returns YES/NO indicate if the key was found or not, filling in the value
+// Returns YES/NO to indicate if the key was found or not, filling in the value
 // only when the key was found.
 - (BOOL)getUInt32:(nullable uint32_t *)value forKey:(uint64_t)key;
 
@@ -837,7 +837,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype)initWithDictionary:(GPBUInt64Int32Dictionary *)dictionary;
 - (instancetype)initWithCapacity:(NSUInteger)numItems;
 
-// Returns YES/NO indicate if the key was found or not, filling in the value
+// Returns YES/NO to indicate if the key was found or not, filling in the value
 // only when the key was found.
 - (BOOL)getInt32:(nullable int32_t *)value forKey:(uint64_t)key;
 
@@ -874,7 +874,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype)initWithDictionary:(GPBUInt64UInt64Dictionary *)dictionary;
 - (instancetype)initWithCapacity:(NSUInteger)numItems;
 
-// Returns YES/NO indicate if the key was found or not, filling in the value
+// Returns YES/NO to indicate if the key was found or not, filling in the value
 // only when the key was found.
 - (BOOL)getUInt64:(nullable uint64_t *)value forKey:(uint64_t)key;
 
@@ -911,7 +911,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype)initWithDictionary:(GPBUInt64Int64Dictionary *)dictionary;
 - (instancetype)initWithCapacity:(NSUInteger)numItems;
 
-// Returns YES/NO indicate if the key was found or not, filling in the value
+// Returns YES/NO to indicate if the key was found or not, filling in the value
 // only when the key was found.
 - (BOOL)getInt64:(nullable int64_t *)value forKey:(uint64_t)key;
 
@@ -948,7 +948,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype)initWithDictionary:(GPBUInt64BoolDictionary *)dictionary;
 - (instancetype)initWithCapacity:(NSUInteger)numItems;
 
-// Returns YES/NO indicate if the key was found or not, filling in the value
+// Returns YES/NO to indicate if the key was found or not, filling in the value
 // only when the key was found.
 - (BOOL)getBool:(nullable BOOL *)value forKey:(uint64_t)key;
 
@@ -985,7 +985,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype)initWithDictionary:(GPBUInt64FloatDictionary *)dictionary;
 - (instancetype)initWithCapacity:(NSUInteger)numItems;
 
-// Returns YES/NO indicate if the key was found or not, filling in the value
+// Returns YES/NO to indicate if the key was found or not, filling in the value
 // only when the key was found.
 - (BOOL)getFloat:(nullable float *)value forKey:(uint64_t)key;
 
@@ -1022,7 +1022,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype)initWithDictionary:(GPBUInt64DoubleDictionary *)dictionary;
 - (instancetype)initWithCapacity:(NSUInteger)numItems;
 
-// Returns YES/NO indicate if the key was found or not, filling in the value
+// Returns YES/NO to indicate if the key was found or not, filling in the value
 // only when the key was found.
 - (BOOL)getDouble:(nullable double *)value forKey:(uint64_t)key;
 
@@ -1071,7 +1071,7 @@ NS_ASSUME_NONNULL_BEGIN
 // is not a valid enumerator as defined by validationFunc. If the actual value is
 // desired, use "raw" version of the method.
 
-// Returns YES/NO indicate if the key was found or not, filling in the value
+// Returns YES/NO to indicate if the key was found or not, filling in the value
 // only when the key was found.
 - (BOOL)getEnum:(nullable int32_t *)value forKey:(uint64_t)key;
 
@@ -1081,7 +1081,7 @@ NS_ASSUME_NONNULL_BEGIN
 // These methods bypass the validationFunc to provide access to values that were not
 // known at the time the binary was compiled.
 
-// Returns YES/NO indicate if the key was found or not, filling in the value
+// Returns YES/NO to indicate if the key was found or not, filling in the value
 // only when the key was found.
 - (BOOL)getRawValue:(nullable int32_t *)rawValue forKey:(uint64_t)key;
 
@@ -1164,7 +1164,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype)initWithDictionary:(GPBInt64UInt32Dictionary *)dictionary;
 - (instancetype)initWithCapacity:(NSUInteger)numItems;
 
-// Returns YES/NO indicate if the key was found or not, filling in the value
+// Returns YES/NO to indicate if the key was found or not, filling in the value
 // only when the key was found.
 - (BOOL)getUInt32:(nullable uint32_t *)value forKey:(int64_t)key;
 
@@ -1201,7 +1201,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype)initWithDictionary:(GPBInt64Int32Dictionary *)dictionary;
 - (instancetype)initWithCapacity:(NSUInteger)numItems;
 
-// Returns YES/NO indicate if the key was found or not, filling in the value
+// Returns YES/NO to indicate if the key was found or not, filling in the value
 // only when the key was found.
 - (BOOL)getInt32:(nullable int32_t *)value forKey:(int64_t)key;
 
@@ -1238,7 +1238,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype)initWithDictionary:(GPBInt64UInt64Dictionary *)dictionary;
 - (instancetype)initWithCapacity:(NSUInteger)numItems;
 
-// Returns YES/NO indicate if the key was found or not, filling in the value
+// Returns YES/NO to indicate if the key was found or not, filling in the value
 // only when the key was found.
 - (BOOL)getUInt64:(nullable uint64_t *)value forKey:(int64_t)key;
 
@@ -1275,7 +1275,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype)initWithDictionary:(GPBInt64Int64Dictionary *)dictionary;
 - (instancetype)initWithCapacity:(NSUInteger)numItems;
 
-// Returns YES/NO indicate if the key was found or not, filling in the value
+// Returns YES/NO to indicate if the key was found or not, filling in the value
 // only when the key was found.
 - (BOOL)getInt64:(nullable int64_t *)value forKey:(int64_t)key;
 
@@ -1312,7 +1312,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype)initWithDictionary:(GPBInt64BoolDictionary *)dictionary;
 - (instancetype)initWithCapacity:(NSUInteger)numItems;
 
-// Returns YES/NO indicate if the key was found or not, filling in the value
+// Returns YES/NO to indicate if the key was found or not, filling in the value
 // only when the key was found.
 - (BOOL)getBool:(nullable BOOL *)value forKey:(int64_t)key;
 
@@ -1349,7 +1349,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype)initWithDictionary:(GPBInt64FloatDictionary *)dictionary;
 - (instancetype)initWithCapacity:(NSUInteger)numItems;
 
-// Returns YES/NO indicate if the key was found or not, filling in the value
+// Returns YES/NO to indicate if the key was found or not, filling in the value
 // only when the key was found.
 - (BOOL)getFloat:(nullable float *)value forKey:(int64_t)key;
 
@@ -1386,7 +1386,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype)initWithDictionary:(GPBInt64DoubleDictionary *)dictionary;
 - (instancetype)initWithCapacity:(NSUInteger)numItems;
 
-// Returns YES/NO indicate if the key was found or not, filling in the value
+// Returns YES/NO to indicate if the key was found or not, filling in the value
 // only when the key was found.
 - (BOOL)getDouble:(nullable double *)value forKey:(int64_t)key;
 
@@ -1435,7 +1435,7 @@ NS_ASSUME_NONNULL_BEGIN
 // is not a valid enumerator as defined by validationFunc. If the actual value is
 // desired, use "raw" version of the method.
 
-// Returns YES/NO indicate if the key was found or not, filling in the value
+// Returns YES/NO to indicate if the key was found or not, filling in the value
 // only when the key was found.
 - (BOOL)getEnum:(nullable int32_t *)value forKey:(int64_t)key;
 
@@ -1445,7 +1445,7 @@ NS_ASSUME_NONNULL_BEGIN
 // These methods bypass the validationFunc to provide access to values that were not
 // known at the time the binary was compiled.
 
-// Returns YES/NO indicate if the key was found or not, filling in the value
+// Returns YES/NO to indicate if the key was found or not, filling in the value
 // only when the key was found.
 - (BOOL)getRawValue:(nullable int32_t *)rawValue forKey:(int64_t)key;
 
@@ -1528,7 +1528,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype)initWithDictionary:(GPBBoolUInt32Dictionary *)dictionary;
 - (instancetype)initWithCapacity:(NSUInteger)numItems;
 
-// Returns YES/NO indicate if the key was found or not, filling in the value
+// Returns YES/NO to indicate if the key was found or not, filling in the value
 // only when the key was found.
 - (BOOL)getUInt32:(nullable uint32_t *)value forKey:(BOOL)key;
 
@@ -1565,7 +1565,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype)initWithDictionary:(GPBBoolInt32Dictionary *)dictionary;
 - (instancetype)initWithCapacity:(NSUInteger)numItems;
 
-// Returns YES/NO indicate if the key was found or not, filling in the value
+// Returns YES/NO to indicate if the key was found or not, filling in the value
 // only when the key was found.
 - (BOOL)getInt32:(nullable int32_t *)value forKey:(BOOL)key;
 
@@ -1602,7 +1602,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype)initWithDictionary:(GPBBoolUInt64Dictionary *)dictionary;
 - (instancetype)initWithCapacity:(NSUInteger)numItems;
 
-// Returns YES/NO indicate if the key was found or not, filling in the value
+// Returns YES/NO to indicate if the key was found or not, filling in the value
 // only when the key was found.
 - (BOOL)getUInt64:(nullable uint64_t *)value forKey:(BOOL)key;
 
@@ -1639,7 +1639,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype)initWithDictionary:(GPBBoolInt64Dictionary *)dictionary;
 - (instancetype)initWithCapacity:(NSUInteger)numItems;
 
-// Returns YES/NO indicate if the key was found or not, filling in the value
+// Returns YES/NO to indicate if the key was found or not, filling in the value
 // only when the key was found.
 - (BOOL)getInt64:(nullable int64_t *)value forKey:(BOOL)key;
 
@@ -1676,7 +1676,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype)initWithDictionary:(GPBBoolBoolDictionary *)dictionary;
 - (instancetype)initWithCapacity:(NSUInteger)numItems;
 
-// Returns YES/NO indicate if the key was found or not, filling in the value
+// Returns YES/NO to indicate if the key was found or not, filling in the value
 // only when the key was found.
 - (BOOL)getBool:(nullable BOOL *)value forKey:(BOOL)key;
 
@@ -1713,7 +1713,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype)initWithDictionary:(GPBBoolFloatDictionary *)dictionary;
 - (instancetype)initWithCapacity:(NSUInteger)numItems;
 
-// Returns YES/NO indicate if the key was found or not, filling in the value
+// Returns YES/NO to indicate if the key was found or not, filling in the value
 // only when the key was found.
 - (BOOL)getFloat:(nullable float *)value forKey:(BOOL)key;
 
@@ -1750,7 +1750,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype)initWithDictionary:(GPBBoolDoubleDictionary *)dictionary;
 - (instancetype)initWithCapacity:(NSUInteger)numItems;
 
-// Returns YES/NO indicate if the key was found or not, filling in the value
+// Returns YES/NO to indicate if the key was found or not, filling in the value
 // only when the key was found.
 - (BOOL)getDouble:(nullable double *)value forKey:(BOOL)key;
 
@@ -1799,7 +1799,7 @@ NS_ASSUME_NONNULL_BEGIN
 // is not a valid enumerator as defined by validationFunc. If the actual value is
 // desired, use "raw" version of the method.
 
-// Returns YES/NO indicate if the key was found or not, filling in the value
+// Returns YES/NO to indicate if the key was found or not, filling in the value
 // only when the key was found.
 - (BOOL)getEnum:(nullable int32_t *)value forKey:(BOOL)key;
 
@@ -1809,7 +1809,7 @@ NS_ASSUME_NONNULL_BEGIN
 // These methods bypass the validationFunc to provide access to values that were not
 // known at the time the binary was compiled.
 
-// Returns YES/NO indicate if the key was found or not, filling in the value
+// Returns YES/NO to indicate if the key was found or not, filling in the value
 // only when the key was found.
 - (BOOL)getRawValue:(nullable int32_t *)rawValue forKey:(BOOL)key;
 
@@ -1892,7 +1892,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype)initWithDictionary:(GPBStringUInt32Dictionary *)dictionary;
 - (instancetype)initWithCapacity:(NSUInteger)numItems;
 
-// Returns YES/NO indicate if the key was found or not, filling in the value
+// Returns YES/NO to indicate if the key was found or not, filling in the value
 // only when the key was found.
 - (BOOL)getUInt32:(nullable uint32_t *)value forKey:(NSString *)key;
 
@@ -1929,7 +1929,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype)initWithDictionary:(GPBStringInt32Dictionary *)dictionary;
 - (instancetype)initWithCapacity:(NSUInteger)numItems;
 
-// Returns YES/NO indicate if the key was found or not, filling in the value
+// Returns YES/NO to indicate if the key was found or not, filling in the value
 // only when the key was found.
 - (BOOL)getInt32:(nullable int32_t *)value forKey:(NSString *)key;
 
@@ -1966,7 +1966,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype)initWithDictionary:(GPBStringUInt64Dictionary *)dictionary;
 - (instancetype)initWithCapacity:(NSUInteger)numItems;
 
-// Returns YES/NO indicate if the key was found or not, filling in the value
+// Returns YES/NO to indicate if the key was found or not, filling in the value
 // only when the key was found.
 - (BOOL)getUInt64:(nullable uint64_t *)value forKey:(NSString *)key;
 
@@ -2003,7 +2003,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype)initWithDictionary:(GPBStringInt64Dictionary *)dictionary;
 - (instancetype)initWithCapacity:(NSUInteger)numItems;
 
-// Returns YES/NO indicate if the key was found or not, filling in the value
+// Returns YES/NO to indicate if the key was found or not, filling in the value
 // only when the key was found.
 - (BOOL)getInt64:(nullable int64_t *)value forKey:(NSString *)key;
 
@@ -2040,7 +2040,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype)initWithDictionary:(GPBStringBoolDictionary *)dictionary;
 - (instancetype)initWithCapacity:(NSUInteger)numItems;
 
-// Returns YES/NO indicate if the key was found or not, filling in the value
+// Returns YES/NO to indicate if the key was found or not, filling in the value
 // only when the key was found.
 - (BOOL)getBool:(nullable BOOL *)value forKey:(NSString *)key;
 
@@ -2077,7 +2077,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype)initWithDictionary:(GPBStringFloatDictionary *)dictionary;
 - (instancetype)initWithCapacity:(NSUInteger)numItems;
 
-// Returns YES/NO indicate if the key was found or not, filling in the value
+// Returns YES/NO to indicate if the key was found or not, filling in the value
 // only when the key was found.
 - (BOOL)getFloat:(nullable float *)value forKey:(NSString *)key;
 
@@ -2114,7 +2114,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype)initWithDictionary:(GPBStringDoubleDictionary *)dictionary;
 - (instancetype)initWithCapacity:(NSUInteger)numItems;
 
-// Returns YES/NO indicate if the key was found or not, filling in the value
+// Returns YES/NO to indicate if the key was found or not, filling in the value
 // only when the key was found.
 - (BOOL)getDouble:(nullable double *)value forKey:(NSString *)key;
 
@@ -2163,7 +2163,7 @@ NS_ASSUME_NONNULL_BEGIN
 // is not a valid enumerator as defined by validationFunc. If the actual value is
 // desired, use "raw" version of the method.
 
-// Returns YES/NO indicate if the key was found or not, filling in the value
+// Returns YES/NO to indicate if the key was found or not, filling in the value
 // only when the key was found.
 - (BOOL)getEnum:(nullable int32_t *)value forKey:(NSString *)key;
 
@@ -2173,7 +2173,7 @@ NS_ASSUME_NONNULL_BEGIN
 // These methods bypass the validationFunc to provide access to values that were not
 // known at the time the binary was compiled.
 
-// Returns YES/NO indicate if the key was found or not, filling in the value
+// Returns YES/NO to indicate if the key was found or not, filling in the value
 // only when the key was found.
 - (BOOL)getRawValue:(nullable int32_t *)rawValue forKey:(NSString *)key;
 
@@ -2228,7 +2228,7 @@ NS_ASSUME_NONNULL_END
 //%PDDM-DEFINE DICTIONARY_POD_KEY_TO_OBJECT_INTERFACE(KEY_NAME, KEY_TYPE, VALUE_NAME, VALUE_TYPE)
 //%DICTIONARY_COMMON_INTERFACE(KEY_NAME, KEY_TYPE, , POD, VALUE_NAME, VALUE_TYPE, OBJECT, Object, object)
 //%PDDM-DEFINE VALUE_FOR_KEY_POD(KEY_TYPE, VALUE_TYPE, VNAME)
-//%// Returns YES/NO indicate if the key was found or not, filling in the value
+//%// Returns YES/NO to indicate if the key was found or not, filling in the value
 //%// only when the key was found.
 //%- (BOOL)get##VNAME##:(nullable VALUE_TYPE *)value forKey:(KEY_TYPE)key;
 //%PDDM-DEFINE VALUE_FOR_KEY_OBJECT(KEY_TYPE, VALUE_TYPE, VNAME)
@@ -2319,7 +2319,7 @@ NS_ASSUME_NONNULL_END
 //%// These methods bypass the validationFunc to provide access to values that were not
 //%// known at the time the binary was compiled.
 //%
-//%// Returns YES/NO indicate if the key was found or not, filling in the value
+//%// Returns YES/NO to indicate if the key was found or not, filling in the value
 //%// only when the key was found.
 //%- (BOOL)getRawValue:(nullable VALUE_TYPE *)rawValue forKey:(KEY_TYPE##KisP$S##KisP)key;
 //%
