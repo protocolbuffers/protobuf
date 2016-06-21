@@ -37,13 +37,16 @@
 
 // Note: These are not meant to be subclassed.
 
-NS_ASSUME_NONNULL_BEGIN
+// Note on naming: for the classes holding numeric values, a more natural
+// naming of the method might be things like "-valueForKey:",
+// "-setValue:forKey:"; etc. But those selectors are also defined by Key Value
+// Coding (KVC) as categories on NSObject. So "overloading" the selectors with
+// other meanings can cause warnings (based on compiler settings), but more
+// importantly, some of those selector get called as KVC breaks up keypaths.
+// So if those selectors are used, using KVC will compile cleanly, but could
+// crash as it invokes those selectors with the wrong types of arguments.
 
-// Disable -Woverriding-method-mismatch until resolving the accidental conflict
-// with NSObject's KVC category.
-// https://github.com/google/protobuf/issues/1616 opened to resolve this.
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Woverriding-method-mismatch"
+NS_ASSUME_NONNULL_BEGIN
 
 //%PDDM-EXPAND DECLARE_DICTIONARIES()
 // This block of code is generated, do not edit it directly.
@@ -55,30 +58,32 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic, readonly) NSUInteger count;
 
 + (instancetype)dictionary;
-+ (instancetype)dictionaryWithValue:(uint32_t)value
-                             forKey:(uint32_t)key;
-+ (instancetype)dictionaryWithValues:(const uint32_t [])values
-                             forKeys:(const uint32_t [])keys
-                               count:(NSUInteger)count;
++ (instancetype)dictionaryWithUInt32:(uint32_t)value
+                              forKey:(uint32_t)key;
++ (instancetype)dictionaryWithUInt32s:(const uint32_t [])values
+                              forKeys:(const uint32_t [])keys
+                                count:(NSUInteger)count;
 + (instancetype)dictionaryWithDictionary:(GPBUInt32UInt32Dictionary *)dictionary;
 + (instancetype)dictionaryWithCapacity:(NSUInteger)numItems;
 
-- (instancetype)initWithValues:(const uint32_t [])values
-                       forKeys:(const uint32_t [])keys
-                         count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
+- (instancetype)initWithUInt32s:(const uint32_t [])values
+                        forKeys:(const uint32_t [])keys
+                          count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
 - (instancetype)initWithDictionary:(GPBUInt32UInt32Dictionary *)dictionary;
 - (instancetype)initWithCapacity:(NSUInteger)numItems;
 
-- (BOOL)valueForKey:(uint32_t)key value:(nullable uint32_t *)value;
+// Returns YES/NO to indicate if the key was found or not, filling in the value
+// only when the key was found.
+- (BOOL)getUInt32:(nullable uint32_t *)value forKey:(uint32_t)key;
 
-- (void)enumerateKeysAndValuesUsingBlock:
+- (void)enumerateKeysAndUInt32sUsingBlock:
     (void (^)(uint32_t key, uint32_t value, BOOL *stop))block;
 
 - (void)addEntriesFromDictionary:(GPBUInt32UInt32Dictionary *)otherDictionary;
 
-- (void)setValue:(uint32_t)value forKey:(uint32_t)key;
+- (void)setUInt32:(uint32_t)value forKey:(uint32_t)key;
 
-- (void)removeValueForKey:(uint32_t)aKey;
+- (void)removeUInt32ForKey:(uint32_t)aKey;
 - (void)removeAll;
 
 @end
@@ -90,30 +95,32 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic, readonly) NSUInteger count;
 
 + (instancetype)dictionary;
-+ (instancetype)dictionaryWithValue:(int32_t)value
++ (instancetype)dictionaryWithInt32:(int32_t)value
                              forKey:(uint32_t)key;
-+ (instancetype)dictionaryWithValues:(const int32_t [])values
++ (instancetype)dictionaryWithInt32s:(const int32_t [])values
                              forKeys:(const uint32_t [])keys
                                count:(NSUInteger)count;
 + (instancetype)dictionaryWithDictionary:(GPBUInt32Int32Dictionary *)dictionary;
 + (instancetype)dictionaryWithCapacity:(NSUInteger)numItems;
 
-- (instancetype)initWithValues:(const int32_t [])values
+- (instancetype)initWithInt32s:(const int32_t [])values
                        forKeys:(const uint32_t [])keys
                          count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
 - (instancetype)initWithDictionary:(GPBUInt32Int32Dictionary *)dictionary;
 - (instancetype)initWithCapacity:(NSUInteger)numItems;
 
-- (BOOL)valueForKey:(uint32_t)key value:(nullable int32_t *)value;
+// Returns YES/NO to indicate if the key was found or not, filling in the value
+// only when the key was found.
+- (BOOL)getInt32:(nullable int32_t *)value forKey:(uint32_t)key;
 
-- (void)enumerateKeysAndValuesUsingBlock:
+- (void)enumerateKeysAndInt32sUsingBlock:
     (void (^)(uint32_t key, int32_t value, BOOL *stop))block;
 
 - (void)addEntriesFromDictionary:(GPBUInt32Int32Dictionary *)otherDictionary;
 
-- (void)setValue:(int32_t)value forKey:(uint32_t)key;
+- (void)setInt32:(int32_t)value forKey:(uint32_t)key;
 
-- (void)removeValueForKey:(uint32_t)aKey;
+- (void)removeInt32ForKey:(uint32_t)aKey;
 - (void)removeAll;
 
 @end
@@ -125,30 +132,32 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic, readonly) NSUInteger count;
 
 + (instancetype)dictionary;
-+ (instancetype)dictionaryWithValue:(uint64_t)value
-                             forKey:(uint32_t)key;
-+ (instancetype)dictionaryWithValues:(const uint64_t [])values
-                             forKeys:(const uint32_t [])keys
-                               count:(NSUInteger)count;
++ (instancetype)dictionaryWithUInt64:(uint64_t)value
+                              forKey:(uint32_t)key;
++ (instancetype)dictionaryWithUInt64s:(const uint64_t [])values
+                              forKeys:(const uint32_t [])keys
+                                count:(NSUInteger)count;
 + (instancetype)dictionaryWithDictionary:(GPBUInt32UInt64Dictionary *)dictionary;
 + (instancetype)dictionaryWithCapacity:(NSUInteger)numItems;
 
-- (instancetype)initWithValues:(const uint64_t [])values
-                       forKeys:(const uint32_t [])keys
-                         count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
+- (instancetype)initWithUInt64s:(const uint64_t [])values
+                        forKeys:(const uint32_t [])keys
+                          count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
 - (instancetype)initWithDictionary:(GPBUInt32UInt64Dictionary *)dictionary;
 - (instancetype)initWithCapacity:(NSUInteger)numItems;
 
-- (BOOL)valueForKey:(uint32_t)key value:(nullable uint64_t *)value;
+// Returns YES/NO to indicate if the key was found or not, filling in the value
+// only when the key was found.
+- (BOOL)getUInt64:(nullable uint64_t *)value forKey:(uint32_t)key;
 
-- (void)enumerateKeysAndValuesUsingBlock:
+- (void)enumerateKeysAndUInt64sUsingBlock:
     (void (^)(uint32_t key, uint64_t value, BOOL *stop))block;
 
 - (void)addEntriesFromDictionary:(GPBUInt32UInt64Dictionary *)otherDictionary;
 
-- (void)setValue:(uint64_t)value forKey:(uint32_t)key;
+- (void)setUInt64:(uint64_t)value forKey:(uint32_t)key;
 
-- (void)removeValueForKey:(uint32_t)aKey;
+- (void)removeUInt64ForKey:(uint32_t)aKey;
 - (void)removeAll;
 
 @end
@@ -160,30 +169,32 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic, readonly) NSUInteger count;
 
 + (instancetype)dictionary;
-+ (instancetype)dictionaryWithValue:(int64_t)value
++ (instancetype)dictionaryWithInt64:(int64_t)value
                              forKey:(uint32_t)key;
-+ (instancetype)dictionaryWithValues:(const int64_t [])values
++ (instancetype)dictionaryWithInt64s:(const int64_t [])values
                              forKeys:(const uint32_t [])keys
                                count:(NSUInteger)count;
 + (instancetype)dictionaryWithDictionary:(GPBUInt32Int64Dictionary *)dictionary;
 + (instancetype)dictionaryWithCapacity:(NSUInteger)numItems;
 
-- (instancetype)initWithValues:(const int64_t [])values
+- (instancetype)initWithInt64s:(const int64_t [])values
                        forKeys:(const uint32_t [])keys
                          count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
 - (instancetype)initWithDictionary:(GPBUInt32Int64Dictionary *)dictionary;
 - (instancetype)initWithCapacity:(NSUInteger)numItems;
 
-- (BOOL)valueForKey:(uint32_t)key value:(nullable int64_t *)value;
+// Returns YES/NO to indicate if the key was found or not, filling in the value
+// only when the key was found.
+- (BOOL)getInt64:(nullable int64_t *)value forKey:(uint32_t)key;
 
-- (void)enumerateKeysAndValuesUsingBlock:
+- (void)enumerateKeysAndInt64sUsingBlock:
     (void (^)(uint32_t key, int64_t value, BOOL *stop))block;
 
 - (void)addEntriesFromDictionary:(GPBUInt32Int64Dictionary *)otherDictionary;
 
-- (void)setValue:(int64_t)value forKey:(uint32_t)key;
+- (void)setInt64:(int64_t)value forKey:(uint32_t)key;
 
-- (void)removeValueForKey:(uint32_t)aKey;
+- (void)removeInt64ForKey:(uint32_t)aKey;
 - (void)removeAll;
 
 @end
@@ -195,30 +206,32 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic, readonly) NSUInteger count;
 
 + (instancetype)dictionary;
-+ (instancetype)dictionaryWithValue:(BOOL)value
-                             forKey:(uint32_t)key;
-+ (instancetype)dictionaryWithValues:(const BOOL [])values
-                             forKeys:(const uint32_t [])keys
-                               count:(NSUInteger)count;
++ (instancetype)dictionaryWithBool:(BOOL)value
+                            forKey:(uint32_t)key;
++ (instancetype)dictionaryWithBools:(const BOOL [])values
+                            forKeys:(const uint32_t [])keys
+                              count:(NSUInteger)count;
 + (instancetype)dictionaryWithDictionary:(GPBUInt32BoolDictionary *)dictionary;
 + (instancetype)dictionaryWithCapacity:(NSUInteger)numItems;
 
-- (instancetype)initWithValues:(const BOOL [])values
-                       forKeys:(const uint32_t [])keys
-                         count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
+- (instancetype)initWithBools:(const BOOL [])values
+                      forKeys:(const uint32_t [])keys
+                        count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
 - (instancetype)initWithDictionary:(GPBUInt32BoolDictionary *)dictionary;
 - (instancetype)initWithCapacity:(NSUInteger)numItems;
 
-- (BOOL)valueForKey:(uint32_t)key value:(nullable BOOL *)value;
+// Returns YES/NO to indicate if the key was found or not, filling in the value
+// only when the key was found.
+- (BOOL)getBool:(nullable BOOL *)value forKey:(uint32_t)key;
 
-- (void)enumerateKeysAndValuesUsingBlock:
+- (void)enumerateKeysAndBoolsUsingBlock:
     (void (^)(uint32_t key, BOOL value, BOOL *stop))block;
 
 - (void)addEntriesFromDictionary:(GPBUInt32BoolDictionary *)otherDictionary;
 
-- (void)setValue:(BOOL)value forKey:(uint32_t)key;
+- (void)setBool:(BOOL)value forKey:(uint32_t)key;
 
-- (void)removeValueForKey:(uint32_t)aKey;
+- (void)removeBoolForKey:(uint32_t)aKey;
 - (void)removeAll;
 
 @end
@@ -230,30 +243,32 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic, readonly) NSUInteger count;
 
 + (instancetype)dictionary;
-+ (instancetype)dictionaryWithValue:(float)value
++ (instancetype)dictionaryWithFloat:(float)value
                              forKey:(uint32_t)key;
-+ (instancetype)dictionaryWithValues:(const float [])values
++ (instancetype)dictionaryWithFloats:(const float [])values
                              forKeys:(const uint32_t [])keys
                                count:(NSUInteger)count;
 + (instancetype)dictionaryWithDictionary:(GPBUInt32FloatDictionary *)dictionary;
 + (instancetype)dictionaryWithCapacity:(NSUInteger)numItems;
 
-- (instancetype)initWithValues:(const float [])values
+- (instancetype)initWithFloats:(const float [])values
                        forKeys:(const uint32_t [])keys
                          count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
 - (instancetype)initWithDictionary:(GPBUInt32FloatDictionary *)dictionary;
 - (instancetype)initWithCapacity:(NSUInteger)numItems;
 
-- (BOOL)valueForKey:(uint32_t)key value:(nullable float *)value;
+// Returns YES/NO to indicate if the key was found or not, filling in the value
+// only when the key was found.
+- (BOOL)getFloat:(nullable float *)value forKey:(uint32_t)key;
 
-- (void)enumerateKeysAndValuesUsingBlock:
+- (void)enumerateKeysAndFloatsUsingBlock:
     (void (^)(uint32_t key, float value, BOOL *stop))block;
 
 - (void)addEntriesFromDictionary:(GPBUInt32FloatDictionary *)otherDictionary;
 
-- (void)setValue:(float)value forKey:(uint32_t)key;
+- (void)setFloat:(float)value forKey:(uint32_t)key;
 
-- (void)removeValueForKey:(uint32_t)aKey;
+- (void)removeFloatForKey:(uint32_t)aKey;
 - (void)removeAll;
 
 @end
@@ -265,30 +280,32 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic, readonly) NSUInteger count;
 
 + (instancetype)dictionary;
-+ (instancetype)dictionaryWithValue:(double)value
-                             forKey:(uint32_t)key;
-+ (instancetype)dictionaryWithValues:(const double [])values
-                             forKeys:(const uint32_t [])keys
-                               count:(NSUInteger)count;
++ (instancetype)dictionaryWithDouble:(double)value
+                              forKey:(uint32_t)key;
++ (instancetype)dictionaryWithDoubles:(const double [])values
+                              forKeys:(const uint32_t [])keys
+                                count:(NSUInteger)count;
 + (instancetype)dictionaryWithDictionary:(GPBUInt32DoubleDictionary *)dictionary;
 + (instancetype)dictionaryWithCapacity:(NSUInteger)numItems;
 
-- (instancetype)initWithValues:(const double [])values
-                       forKeys:(const uint32_t [])keys
-                         count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
+- (instancetype)initWithDoubles:(const double [])values
+                        forKeys:(const uint32_t [])keys
+                          count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
 - (instancetype)initWithDictionary:(GPBUInt32DoubleDictionary *)dictionary;
 - (instancetype)initWithCapacity:(NSUInteger)numItems;
 
-- (BOOL)valueForKey:(uint32_t)key value:(nullable double *)value;
+// Returns YES/NO to indicate if the key was found or not, filling in the value
+// only when the key was found.
+- (BOOL)getDouble:(nullable double *)value forKey:(uint32_t)key;
 
-- (void)enumerateKeysAndValuesUsingBlock:
+- (void)enumerateKeysAndDoublesUsingBlock:
     (void (^)(uint32_t key, double value, BOOL *stop))block;
 
 - (void)addEntriesFromDictionary:(GPBUInt32DoubleDictionary *)otherDictionary;
 
-- (void)setValue:(double)value forKey:(uint32_t)key;
+- (void)setDouble:(double)value forKey:(uint32_t)key;
 
-- (void)removeValueForKey:(uint32_t)aKey;
+- (void)removeDoubleForKey:(uint32_t)aKey;
 - (void)removeAll;
 
 @end
@@ -326,15 +343,19 @@ NS_ASSUME_NONNULL_BEGIN
 // is not a valid enumerator as defined by validationFunc. If the actual value is
 // desired, use "raw" version of the method.
 
-- (BOOL)valueForKey:(uint32_t)key value:(nullable int32_t *)value;
+// Returns YES/NO to indicate if the key was found or not, filling in the value
+// only when the key was found.
+- (BOOL)getEnum:(nullable int32_t *)value forKey:(uint32_t)key;
 
-- (void)enumerateKeysAndValuesUsingBlock:
+- (void)enumerateKeysAndEnumsUsingBlock:
     (void (^)(uint32_t key, int32_t value, BOOL *stop))block;
 
 // These methods bypass the validationFunc to provide access to values that were not
 // known at the time the binary was compiled.
 
-- (BOOL)valueForKey:(uint32_t)key rawValue:(nullable int32_t *)rawValue;
+// Returns YES/NO to indicate if the key was found or not, filling in the value
+// only when the key was found.
+- (BOOL)getRawValue:(nullable int32_t *)rawValue forKey:(uint32_t)key;
 
 - (void)enumerateKeysAndRawValuesUsingBlock:
     (void (^)(uint32_t key, int32_t rawValue, BOOL *stop))block;
@@ -346,7 +367,7 @@ NS_ASSUME_NONNULL_BEGIN
 // to the default value. Use the rawValue methods below to assign non enumerator
 // values.
 
-- (void)setValue:(int32_t)value forKey:(uint32_t)key;
+- (void)setEnum:(int32_t)value forKey:(uint32_t)key;
 
 // This method bypass the validationFunc to provide setting of values that were not
 // known at the time the binary was compiled.
@@ -354,7 +375,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 // No validation applies to these methods.
 
-- (void)removeValueForKey:(uint32_t)aKey;
+- (void)removeEnumForKey:(uint32_t)aKey;
 - (void)removeAll;
 
 @end
@@ -401,30 +422,32 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic, readonly) NSUInteger count;
 
 + (instancetype)dictionary;
-+ (instancetype)dictionaryWithValue:(uint32_t)value
-                             forKey:(int32_t)key;
-+ (instancetype)dictionaryWithValues:(const uint32_t [])values
-                             forKeys:(const int32_t [])keys
-                               count:(NSUInteger)count;
++ (instancetype)dictionaryWithUInt32:(uint32_t)value
+                              forKey:(int32_t)key;
++ (instancetype)dictionaryWithUInt32s:(const uint32_t [])values
+                              forKeys:(const int32_t [])keys
+                                count:(NSUInteger)count;
 + (instancetype)dictionaryWithDictionary:(GPBInt32UInt32Dictionary *)dictionary;
 + (instancetype)dictionaryWithCapacity:(NSUInteger)numItems;
 
-- (instancetype)initWithValues:(const uint32_t [])values
-                       forKeys:(const int32_t [])keys
-                         count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
+- (instancetype)initWithUInt32s:(const uint32_t [])values
+                        forKeys:(const int32_t [])keys
+                          count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
 - (instancetype)initWithDictionary:(GPBInt32UInt32Dictionary *)dictionary;
 - (instancetype)initWithCapacity:(NSUInteger)numItems;
 
-- (BOOL)valueForKey:(int32_t)key value:(nullable uint32_t *)value;
+// Returns YES/NO to indicate if the key was found or not, filling in the value
+// only when the key was found.
+- (BOOL)getUInt32:(nullable uint32_t *)value forKey:(int32_t)key;
 
-- (void)enumerateKeysAndValuesUsingBlock:
+- (void)enumerateKeysAndUInt32sUsingBlock:
     (void (^)(int32_t key, uint32_t value, BOOL *stop))block;
 
 - (void)addEntriesFromDictionary:(GPBInt32UInt32Dictionary *)otherDictionary;
 
-- (void)setValue:(uint32_t)value forKey:(int32_t)key;
+- (void)setUInt32:(uint32_t)value forKey:(int32_t)key;
 
-- (void)removeValueForKey:(int32_t)aKey;
+- (void)removeUInt32ForKey:(int32_t)aKey;
 - (void)removeAll;
 
 @end
@@ -436,30 +459,32 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic, readonly) NSUInteger count;
 
 + (instancetype)dictionary;
-+ (instancetype)dictionaryWithValue:(int32_t)value
++ (instancetype)dictionaryWithInt32:(int32_t)value
                              forKey:(int32_t)key;
-+ (instancetype)dictionaryWithValues:(const int32_t [])values
++ (instancetype)dictionaryWithInt32s:(const int32_t [])values
                              forKeys:(const int32_t [])keys
                                count:(NSUInteger)count;
 + (instancetype)dictionaryWithDictionary:(GPBInt32Int32Dictionary *)dictionary;
 + (instancetype)dictionaryWithCapacity:(NSUInteger)numItems;
 
-- (instancetype)initWithValues:(const int32_t [])values
+- (instancetype)initWithInt32s:(const int32_t [])values
                        forKeys:(const int32_t [])keys
                          count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
 - (instancetype)initWithDictionary:(GPBInt32Int32Dictionary *)dictionary;
 - (instancetype)initWithCapacity:(NSUInteger)numItems;
 
-- (BOOL)valueForKey:(int32_t)key value:(nullable int32_t *)value;
+// Returns YES/NO to indicate if the key was found or not, filling in the value
+// only when the key was found.
+- (BOOL)getInt32:(nullable int32_t *)value forKey:(int32_t)key;
 
-- (void)enumerateKeysAndValuesUsingBlock:
+- (void)enumerateKeysAndInt32sUsingBlock:
     (void (^)(int32_t key, int32_t value, BOOL *stop))block;
 
 - (void)addEntriesFromDictionary:(GPBInt32Int32Dictionary *)otherDictionary;
 
-- (void)setValue:(int32_t)value forKey:(int32_t)key;
+- (void)setInt32:(int32_t)value forKey:(int32_t)key;
 
-- (void)removeValueForKey:(int32_t)aKey;
+- (void)removeInt32ForKey:(int32_t)aKey;
 - (void)removeAll;
 
 @end
@@ -471,30 +496,32 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic, readonly) NSUInteger count;
 
 + (instancetype)dictionary;
-+ (instancetype)dictionaryWithValue:(uint64_t)value
-                             forKey:(int32_t)key;
-+ (instancetype)dictionaryWithValues:(const uint64_t [])values
-                             forKeys:(const int32_t [])keys
-                               count:(NSUInteger)count;
++ (instancetype)dictionaryWithUInt64:(uint64_t)value
+                              forKey:(int32_t)key;
++ (instancetype)dictionaryWithUInt64s:(const uint64_t [])values
+                              forKeys:(const int32_t [])keys
+                                count:(NSUInteger)count;
 + (instancetype)dictionaryWithDictionary:(GPBInt32UInt64Dictionary *)dictionary;
 + (instancetype)dictionaryWithCapacity:(NSUInteger)numItems;
 
-- (instancetype)initWithValues:(const uint64_t [])values
-                       forKeys:(const int32_t [])keys
-                         count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
+- (instancetype)initWithUInt64s:(const uint64_t [])values
+                        forKeys:(const int32_t [])keys
+                          count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
 - (instancetype)initWithDictionary:(GPBInt32UInt64Dictionary *)dictionary;
 - (instancetype)initWithCapacity:(NSUInteger)numItems;
 
-- (BOOL)valueForKey:(int32_t)key value:(nullable uint64_t *)value;
+// Returns YES/NO to indicate if the key was found or not, filling in the value
+// only when the key was found.
+- (BOOL)getUInt64:(nullable uint64_t *)value forKey:(int32_t)key;
 
-- (void)enumerateKeysAndValuesUsingBlock:
+- (void)enumerateKeysAndUInt64sUsingBlock:
     (void (^)(int32_t key, uint64_t value, BOOL *stop))block;
 
 - (void)addEntriesFromDictionary:(GPBInt32UInt64Dictionary *)otherDictionary;
 
-- (void)setValue:(uint64_t)value forKey:(int32_t)key;
+- (void)setUInt64:(uint64_t)value forKey:(int32_t)key;
 
-- (void)removeValueForKey:(int32_t)aKey;
+- (void)removeUInt64ForKey:(int32_t)aKey;
 - (void)removeAll;
 
 @end
@@ -506,30 +533,32 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic, readonly) NSUInteger count;
 
 + (instancetype)dictionary;
-+ (instancetype)dictionaryWithValue:(int64_t)value
++ (instancetype)dictionaryWithInt64:(int64_t)value
                              forKey:(int32_t)key;
-+ (instancetype)dictionaryWithValues:(const int64_t [])values
++ (instancetype)dictionaryWithInt64s:(const int64_t [])values
                              forKeys:(const int32_t [])keys
                                count:(NSUInteger)count;
 + (instancetype)dictionaryWithDictionary:(GPBInt32Int64Dictionary *)dictionary;
 + (instancetype)dictionaryWithCapacity:(NSUInteger)numItems;
 
-- (instancetype)initWithValues:(const int64_t [])values
+- (instancetype)initWithInt64s:(const int64_t [])values
                        forKeys:(const int32_t [])keys
                          count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
 - (instancetype)initWithDictionary:(GPBInt32Int64Dictionary *)dictionary;
 - (instancetype)initWithCapacity:(NSUInteger)numItems;
 
-- (BOOL)valueForKey:(int32_t)key value:(nullable int64_t *)value;
+// Returns YES/NO to indicate if the key was found or not, filling in the value
+// only when the key was found.
+- (BOOL)getInt64:(nullable int64_t *)value forKey:(int32_t)key;
 
-- (void)enumerateKeysAndValuesUsingBlock:
+- (void)enumerateKeysAndInt64sUsingBlock:
     (void (^)(int32_t key, int64_t value, BOOL *stop))block;
 
 - (void)addEntriesFromDictionary:(GPBInt32Int64Dictionary *)otherDictionary;
 
-- (void)setValue:(int64_t)value forKey:(int32_t)key;
+- (void)setInt64:(int64_t)value forKey:(int32_t)key;
 
-- (void)removeValueForKey:(int32_t)aKey;
+- (void)removeInt64ForKey:(int32_t)aKey;
 - (void)removeAll;
 
 @end
@@ -541,30 +570,32 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic, readonly) NSUInteger count;
 
 + (instancetype)dictionary;
-+ (instancetype)dictionaryWithValue:(BOOL)value
-                             forKey:(int32_t)key;
-+ (instancetype)dictionaryWithValues:(const BOOL [])values
-                             forKeys:(const int32_t [])keys
-                               count:(NSUInteger)count;
++ (instancetype)dictionaryWithBool:(BOOL)value
+                            forKey:(int32_t)key;
++ (instancetype)dictionaryWithBools:(const BOOL [])values
+                            forKeys:(const int32_t [])keys
+                              count:(NSUInteger)count;
 + (instancetype)dictionaryWithDictionary:(GPBInt32BoolDictionary *)dictionary;
 + (instancetype)dictionaryWithCapacity:(NSUInteger)numItems;
 
-- (instancetype)initWithValues:(const BOOL [])values
-                       forKeys:(const int32_t [])keys
-                         count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
+- (instancetype)initWithBools:(const BOOL [])values
+                      forKeys:(const int32_t [])keys
+                        count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
 - (instancetype)initWithDictionary:(GPBInt32BoolDictionary *)dictionary;
 - (instancetype)initWithCapacity:(NSUInteger)numItems;
 
-- (BOOL)valueForKey:(int32_t)key value:(nullable BOOL *)value;
+// Returns YES/NO to indicate if the key was found or not, filling in the value
+// only when the key was found.
+- (BOOL)getBool:(nullable BOOL *)value forKey:(int32_t)key;
 
-- (void)enumerateKeysAndValuesUsingBlock:
+- (void)enumerateKeysAndBoolsUsingBlock:
     (void (^)(int32_t key, BOOL value, BOOL *stop))block;
 
 - (void)addEntriesFromDictionary:(GPBInt32BoolDictionary *)otherDictionary;
 
-- (void)setValue:(BOOL)value forKey:(int32_t)key;
+- (void)setBool:(BOOL)value forKey:(int32_t)key;
 
-- (void)removeValueForKey:(int32_t)aKey;
+- (void)removeBoolForKey:(int32_t)aKey;
 - (void)removeAll;
 
 @end
@@ -576,30 +607,32 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic, readonly) NSUInteger count;
 
 + (instancetype)dictionary;
-+ (instancetype)dictionaryWithValue:(float)value
++ (instancetype)dictionaryWithFloat:(float)value
                              forKey:(int32_t)key;
-+ (instancetype)dictionaryWithValues:(const float [])values
++ (instancetype)dictionaryWithFloats:(const float [])values
                              forKeys:(const int32_t [])keys
                                count:(NSUInteger)count;
 + (instancetype)dictionaryWithDictionary:(GPBInt32FloatDictionary *)dictionary;
 + (instancetype)dictionaryWithCapacity:(NSUInteger)numItems;
 
-- (instancetype)initWithValues:(const float [])values
+- (instancetype)initWithFloats:(const float [])values
                        forKeys:(const int32_t [])keys
                          count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
 - (instancetype)initWithDictionary:(GPBInt32FloatDictionary *)dictionary;
 - (instancetype)initWithCapacity:(NSUInteger)numItems;
 
-- (BOOL)valueForKey:(int32_t)key value:(nullable float *)value;
+// Returns YES/NO to indicate if the key was found or not, filling in the value
+// only when the key was found.
+- (BOOL)getFloat:(nullable float *)value forKey:(int32_t)key;
 
-- (void)enumerateKeysAndValuesUsingBlock:
+- (void)enumerateKeysAndFloatsUsingBlock:
     (void (^)(int32_t key, float value, BOOL *stop))block;
 
 - (void)addEntriesFromDictionary:(GPBInt32FloatDictionary *)otherDictionary;
 
-- (void)setValue:(float)value forKey:(int32_t)key;
+- (void)setFloat:(float)value forKey:(int32_t)key;
 
-- (void)removeValueForKey:(int32_t)aKey;
+- (void)removeFloatForKey:(int32_t)aKey;
 - (void)removeAll;
 
 @end
@@ -611,30 +644,32 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic, readonly) NSUInteger count;
 
 + (instancetype)dictionary;
-+ (instancetype)dictionaryWithValue:(double)value
-                             forKey:(int32_t)key;
-+ (instancetype)dictionaryWithValues:(const double [])values
-                             forKeys:(const int32_t [])keys
-                               count:(NSUInteger)count;
++ (instancetype)dictionaryWithDouble:(double)value
+                              forKey:(int32_t)key;
++ (instancetype)dictionaryWithDoubles:(const double [])values
+                              forKeys:(const int32_t [])keys
+                                count:(NSUInteger)count;
 + (instancetype)dictionaryWithDictionary:(GPBInt32DoubleDictionary *)dictionary;
 + (instancetype)dictionaryWithCapacity:(NSUInteger)numItems;
 
-- (instancetype)initWithValues:(const double [])values
-                       forKeys:(const int32_t [])keys
-                         count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
+- (instancetype)initWithDoubles:(const double [])values
+                        forKeys:(const int32_t [])keys
+                          count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
 - (instancetype)initWithDictionary:(GPBInt32DoubleDictionary *)dictionary;
 - (instancetype)initWithCapacity:(NSUInteger)numItems;
 
-- (BOOL)valueForKey:(int32_t)key value:(nullable double *)value;
+// Returns YES/NO to indicate if the key was found or not, filling in the value
+// only when the key was found.
+- (BOOL)getDouble:(nullable double *)value forKey:(int32_t)key;
 
-- (void)enumerateKeysAndValuesUsingBlock:
+- (void)enumerateKeysAndDoublesUsingBlock:
     (void (^)(int32_t key, double value, BOOL *stop))block;
 
 - (void)addEntriesFromDictionary:(GPBInt32DoubleDictionary *)otherDictionary;
 
-- (void)setValue:(double)value forKey:(int32_t)key;
+- (void)setDouble:(double)value forKey:(int32_t)key;
 
-- (void)removeValueForKey:(int32_t)aKey;
+- (void)removeDoubleForKey:(int32_t)aKey;
 - (void)removeAll;
 
 @end
@@ -672,15 +707,19 @@ NS_ASSUME_NONNULL_BEGIN
 // is not a valid enumerator as defined by validationFunc. If the actual value is
 // desired, use "raw" version of the method.
 
-- (BOOL)valueForKey:(int32_t)key value:(nullable int32_t *)value;
+// Returns YES/NO to indicate if the key was found or not, filling in the value
+// only when the key was found.
+- (BOOL)getEnum:(nullable int32_t *)value forKey:(int32_t)key;
 
-- (void)enumerateKeysAndValuesUsingBlock:
+- (void)enumerateKeysAndEnumsUsingBlock:
     (void (^)(int32_t key, int32_t value, BOOL *stop))block;
 
 // These methods bypass the validationFunc to provide access to values that were not
 // known at the time the binary was compiled.
 
-- (BOOL)valueForKey:(int32_t)key rawValue:(nullable int32_t *)rawValue;
+// Returns YES/NO to indicate if the key was found or not, filling in the value
+// only when the key was found.
+- (BOOL)getRawValue:(nullable int32_t *)rawValue forKey:(int32_t)key;
 
 - (void)enumerateKeysAndRawValuesUsingBlock:
     (void (^)(int32_t key, int32_t rawValue, BOOL *stop))block;
@@ -692,7 +731,7 @@ NS_ASSUME_NONNULL_BEGIN
 // to the default value. Use the rawValue methods below to assign non enumerator
 // values.
 
-- (void)setValue:(int32_t)value forKey:(int32_t)key;
+- (void)setEnum:(int32_t)value forKey:(int32_t)key;
 
 // This method bypass the validationFunc to provide setting of values that were not
 // known at the time the binary was compiled.
@@ -700,7 +739,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 // No validation applies to these methods.
 
-- (void)removeValueForKey:(int32_t)aKey;
+- (void)removeEnumForKey:(int32_t)aKey;
 - (void)removeAll;
 
 @end
@@ -747,30 +786,32 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic, readonly) NSUInteger count;
 
 + (instancetype)dictionary;
-+ (instancetype)dictionaryWithValue:(uint32_t)value
-                             forKey:(uint64_t)key;
-+ (instancetype)dictionaryWithValues:(const uint32_t [])values
-                             forKeys:(const uint64_t [])keys
-                               count:(NSUInteger)count;
++ (instancetype)dictionaryWithUInt32:(uint32_t)value
+                              forKey:(uint64_t)key;
++ (instancetype)dictionaryWithUInt32s:(const uint32_t [])values
+                              forKeys:(const uint64_t [])keys
+                                count:(NSUInteger)count;
 + (instancetype)dictionaryWithDictionary:(GPBUInt64UInt32Dictionary *)dictionary;
 + (instancetype)dictionaryWithCapacity:(NSUInteger)numItems;
 
-- (instancetype)initWithValues:(const uint32_t [])values
-                       forKeys:(const uint64_t [])keys
-                         count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
+- (instancetype)initWithUInt32s:(const uint32_t [])values
+                        forKeys:(const uint64_t [])keys
+                          count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
 - (instancetype)initWithDictionary:(GPBUInt64UInt32Dictionary *)dictionary;
 - (instancetype)initWithCapacity:(NSUInteger)numItems;
 
-- (BOOL)valueForKey:(uint64_t)key value:(nullable uint32_t *)value;
+// Returns YES/NO to indicate if the key was found or not, filling in the value
+// only when the key was found.
+- (BOOL)getUInt32:(nullable uint32_t *)value forKey:(uint64_t)key;
 
-- (void)enumerateKeysAndValuesUsingBlock:
+- (void)enumerateKeysAndUInt32sUsingBlock:
     (void (^)(uint64_t key, uint32_t value, BOOL *stop))block;
 
 - (void)addEntriesFromDictionary:(GPBUInt64UInt32Dictionary *)otherDictionary;
 
-- (void)setValue:(uint32_t)value forKey:(uint64_t)key;
+- (void)setUInt32:(uint32_t)value forKey:(uint64_t)key;
 
-- (void)removeValueForKey:(uint64_t)aKey;
+- (void)removeUInt32ForKey:(uint64_t)aKey;
 - (void)removeAll;
 
 @end
@@ -782,30 +823,32 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic, readonly) NSUInteger count;
 
 + (instancetype)dictionary;
-+ (instancetype)dictionaryWithValue:(int32_t)value
++ (instancetype)dictionaryWithInt32:(int32_t)value
                              forKey:(uint64_t)key;
-+ (instancetype)dictionaryWithValues:(const int32_t [])values
++ (instancetype)dictionaryWithInt32s:(const int32_t [])values
                              forKeys:(const uint64_t [])keys
                                count:(NSUInteger)count;
 + (instancetype)dictionaryWithDictionary:(GPBUInt64Int32Dictionary *)dictionary;
 + (instancetype)dictionaryWithCapacity:(NSUInteger)numItems;
 
-- (instancetype)initWithValues:(const int32_t [])values
+- (instancetype)initWithInt32s:(const int32_t [])values
                        forKeys:(const uint64_t [])keys
                          count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
 - (instancetype)initWithDictionary:(GPBUInt64Int32Dictionary *)dictionary;
 - (instancetype)initWithCapacity:(NSUInteger)numItems;
 
-- (BOOL)valueForKey:(uint64_t)key value:(nullable int32_t *)value;
+// Returns YES/NO to indicate if the key was found or not, filling in the value
+// only when the key was found.
+- (BOOL)getInt32:(nullable int32_t *)value forKey:(uint64_t)key;
 
-- (void)enumerateKeysAndValuesUsingBlock:
+- (void)enumerateKeysAndInt32sUsingBlock:
     (void (^)(uint64_t key, int32_t value, BOOL *stop))block;
 
 - (void)addEntriesFromDictionary:(GPBUInt64Int32Dictionary *)otherDictionary;
 
-- (void)setValue:(int32_t)value forKey:(uint64_t)key;
+- (void)setInt32:(int32_t)value forKey:(uint64_t)key;
 
-- (void)removeValueForKey:(uint64_t)aKey;
+- (void)removeInt32ForKey:(uint64_t)aKey;
 - (void)removeAll;
 
 @end
@@ -817,30 +860,32 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic, readonly) NSUInteger count;
 
 + (instancetype)dictionary;
-+ (instancetype)dictionaryWithValue:(uint64_t)value
-                             forKey:(uint64_t)key;
-+ (instancetype)dictionaryWithValues:(const uint64_t [])values
-                             forKeys:(const uint64_t [])keys
-                               count:(NSUInteger)count;
++ (instancetype)dictionaryWithUInt64:(uint64_t)value
+                              forKey:(uint64_t)key;
++ (instancetype)dictionaryWithUInt64s:(const uint64_t [])values
+                              forKeys:(const uint64_t [])keys
+                                count:(NSUInteger)count;
 + (instancetype)dictionaryWithDictionary:(GPBUInt64UInt64Dictionary *)dictionary;
 + (instancetype)dictionaryWithCapacity:(NSUInteger)numItems;
 
-- (instancetype)initWithValues:(const uint64_t [])values
-                       forKeys:(const uint64_t [])keys
-                         count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
+- (instancetype)initWithUInt64s:(const uint64_t [])values
+                        forKeys:(const uint64_t [])keys
+                          count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
 - (instancetype)initWithDictionary:(GPBUInt64UInt64Dictionary *)dictionary;
 - (instancetype)initWithCapacity:(NSUInteger)numItems;
 
-- (BOOL)valueForKey:(uint64_t)key value:(nullable uint64_t *)value;
+// Returns YES/NO to indicate if the key was found or not, filling in the value
+// only when the key was found.
+- (BOOL)getUInt64:(nullable uint64_t *)value forKey:(uint64_t)key;
 
-- (void)enumerateKeysAndValuesUsingBlock:
+- (void)enumerateKeysAndUInt64sUsingBlock:
     (void (^)(uint64_t key, uint64_t value, BOOL *stop))block;
 
 - (void)addEntriesFromDictionary:(GPBUInt64UInt64Dictionary *)otherDictionary;
 
-- (void)setValue:(uint64_t)value forKey:(uint64_t)key;
+- (void)setUInt64:(uint64_t)value forKey:(uint64_t)key;
 
-- (void)removeValueForKey:(uint64_t)aKey;
+- (void)removeUInt64ForKey:(uint64_t)aKey;
 - (void)removeAll;
 
 @end
@@ -852,30 +897,32 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic, readonly) NSUInteger count;
 
 + (instancetype)dictionary;
-+ (instancetype)dictionaryWithValue:(int64_t)value
++ (instancetype)dictionaryWithInt64:(int64_t)value
                              forKey:(uint64_t)key;
-+ (instancetype)dictionaryWithValues:(const int64_t [])values
++ (instancetype)dictionaryWithInt64s:(const int64_t [])values
                              forKeys:(const uint64_t [])keys
                                count:(NSUInteger)count;
 + (instancetype)dictionaryWithDictionary:(GPBUInt64Int64Dictionary *)dictionary;
 + (instancetype)dictionaryWithCapacity:(NSUInteger)numItems;
 
-- (instancetype)initWithValues:(const int64_t [])values
+- (instancetype)initWithInt64s:(const int64_t [])values
                        forKeys:(const uint64_t [])keys
                          count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
 - (instancetype)initWithDictionary:(GPBUInt64Int64Dictionary *)dictionary;
 - (instancetype)initWithCapacity:(NSUInteger)numItems;
 
-- (BOOL)valueForKey:(uint64_t)key value:(nullable int64_t *)value;
+// Returns YES/NO to indicate if the key was found or not, filling in the value
+// only when the key was found.
+- (BOOL)getInt64:(nullable int64_t *)value forKey:(uint64_t)key;
 
-- (void)enumerateKeysAndValuesUsingBlock:
+- (void)enumerateKeysAndInt64sUsingBlock:
     (void (^)(uint64_t key, int64_t value, BOOL *stop))block;
 
 - (void)addEntriesFromDictionary:(GPBUInt64Int64Dictionary *)otherDictionary;
 
-- (void)setValue:(int64_t)value forKey:(uint64_t)key;
+- (void)setInt64:(int64_t)value forKey:(uint64_t)key;
 
-- (void)removeValueForKey:(uint64_t)aKey;
+- (void)removeInt64ForKey:(uint64_t)aKey;
 - (void)removeAll;
 
 @end
@@ -887,30 +934,32 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic, readonly) NSUInteger count;
 
 + (instancetype)dictionary;
-+ (instancetype)dictionaryWithValue:(BOOL)value
-                             forKey:(uint64_t)key;
-+ (instancetype)dictionaryWithValues:(const BOOL [])values
-                             forKeys:(const uint64_t [])keys
-                               count:(NSUInteger)count;
++ (instancetype)dictionaryWithBool:(BOOL)value
+                            forKey:(uint64_t)key;
++ (instancetype)dictionaryWithBools:(const BOOL [])values
+                            forKeys:(const uint64_t [])keys
+                              count:(NSUInteger)count;
 + (instancetype)dictionaryWithDictionary:(GPBUInt64BoolDictionary *)dictionary;
 + (instancetype)dictionaryWithCapacity:(NSUInteger)numItems;
 
-- (instancetype)initWithValues:(const BOOL [])values
-                       forKeys:(const uint64_t [])keys
-                         count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
+- (instancetype)initWithBools:(const BOOL [])values
+                      forKeys:(const uint64_t [])keys
+                        count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
 - (instancetype)initWithDictionary:(GPBUInt64BoolDictionary *)dictionary;
 - (instancetype)initWithCapacity:(NSUInteger)numItems;
 
-- (BOOL)valueForKey:(uint64_t)key value:(nullable BOOL *)value;
+// Returns YES/NO to indicate if the key was found or not, filling in the value
+// only when the key was found.
+- (BOOL)getBool:(nullable BOOL *)value forKey:(uint64_t)key;
 
-- (void)enumerateKeysAndValuesUsingBlock:
+- (void)enumerateKeysAndBoolsUsingBlock:
     (void (^)(uint64_t key, BOOL value, BOOL *stop))block;
 
 - (void)addEntriesFromDictionary:(GPBUInt64BoolDictionary *)otherDictionary;
 
-- (void)setValue:(BOOL)value forKey:(uint64_t)key;
+- (void)setBool:(BOOL)value forKey:(uint64_t)key;
 
-- (void)removeValueForKey:(uint64_t)aKey;
+- (void)removeBoolForKey:(uint64_t)aKey;
 - (void)removeAll;
 
 @end
@@ -922,30 +971,32 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic, readonly) NSUInteger count;
 
 + (instancetype)dictionary;
-+ (instancetype)dictionaryWithValue:(float)value
++ (instancetype)dictionaryWithFloat:(float)value
                              forKey:(uint64_t)key;
-+ (instancetype)dictionaryWithValues:(const float [])values
++ (instancetype)dictionaryWithFloats:(const float [])values
                              forKeys:(const uint64_t [])keys
                                count:(NSUInteger)count;
 + (instancetype)dictionaryWithDictionary:(GPBUInt64FloatDictionary *)dictionary;
 + (instancetype)dictionaryWithCapacity:(NSUInteger)numItems;
 
-- (instancetype)initWithValues:(const float [])values
+- (instancetype)initWithFloats:(const float [])values
                        forKeys:(const uint64_t [])keys
                          count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
 - (instancetype)initWithDictionary:(GPBUInt64FloatDictionary *)dictionary;
 - (instancetype)initWithCapacity:(NSUInteger)numItems;
 
-- (BOOL)valueForKey:(uint64_t)key value:(nullable float *)value;
+// Returns YES/NO to indicate if the key was found or not, filling in the value
+// only when the key was found.
+- (BOOL)getFloat:(nullable float *)value forKey:(uint64_t)key;
 
-- (void)enumerateKeysAndValuesUsingBlock:
+- (void)enumerateKeysAndFloatsUsingBlock:
     (void (^)(uint64_t key, float value, BOOL *stop))block;
 
 - (void)addEntriesFromDictionary:(GPBUInt64FloatDictionary *)otherDictionary;
 
-- (void)setValue:(float)value forKey:(uint64_t)key;
+- (void)setFloat:(float)value forKey:(uint64_t)key;
 
-- (void)removeValueForKey:(uint64_t)aKey;
+- (void)removeFloatForKey:(uint64_t)aKey;
 - (void)removeAll;
 
 @end
@@ -957,30 +1008,32 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic, readonly) NSUInteger count;
 
 + (instancetype)dictionary;
-+ (instancetype)dictionaryWithValue:(double)value
-                             forKey:(uint64_t)key;
-+ (instancetype)dictionaryWithValues:(const double [])values
-                             forKeys:(const uint64_t [])keys
-                               count:(NSUInteger)count;
++ (instancetype)dictionaryWithDouble:(double)value
+                              forKey:(uint64_t)key;
++ (instancetype)dictionaryWithDoubles:(const double [])values
+                              forKeys:(const uint64_t [])keys
+                                count:(NSUInteger)count;
 + (instancetype)dictionaryWithDictionary:(GPBUInt64DoubleDictionary *)dictionary;
 + (instancetype)dictionaryWithCapacity:(NSUInteger)numItems;
 
-- (instancetype)initWithValues:(const double [])values
-                       forKeys:(const uint64_t [])keys
-                         count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
+- (instancetype)initWithDoubles:(const double [])values
+                        forKeys:(const uint64_t [])keys
+                          count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
 - (instancetype)initWithDictionary:(GPBUInt64DoubleDictionary *)dictionary;
 - (instancetype)initWithCapacity:(NSUInteger)numItems;
 
-- (BOOL)valueForKey:(uint64_t)key value:(nullable double *)value;
+// Returns YES/NO to indicate if the key was found or not, filling in the value
+// only when the key was found.
+- (BOOL)getDouble:(nullable double *)value forKey:(uint64_t)key;
 
-- (void)enumerateKeysAndValuesUsingBlock:
+- (void)enumerateKeysAndDoublesUsingBlock:
     (void (^)(uint64_t key, double value, BOOL *stop))block;
 
 - (void)addEntriesFromDictionary:(GPBUInt64DoubleDictionary *)otherDictionary;
 
-- (void)setValue:(double)value forKey:(uint64_t)key;
+- (void)setDouble:(double)value forKey:(uint64_t)key;
 
-- (void)removeValueForKey:(uint64_t)aKey;
+- (void)removeDoubleForKey:(uint64_t)aKey;
 - (void)removeAll;
 
 @end
@@ -1018,15 +1071,19 @@ NS_ASSUME_NONNULL_BEGIN
 // is not a valid enumerator as defined by validationFunc. If the actual value is
 // desired, use "raw" version of the method.
 
-- (BOOL)valueForKey:(uint64_t)key value:(nullable int32_t *)value;
+// Returns YES/NO to indicate if the key was found or not, filling in the value
+// only when the key was found.
+- (BOOL)getEnum:(nullable int32_t *)value forKey:(uint64_t)key;
 
-- (void)enumerateKeysAndValuesUsingBlock:
+- (void)enumerateKeysAndEnumsUsingBlock:
     (void (^)(uint64_t key, int32_t value, BOOL *stop))block;
 
 // These methods bypass the validationFunc to provide access to values that were not
 // known at the time the binary was compiled.
 
-- (BOOL)valueForKey:(uint64_t)key rawValue:(nullable int32_t *)rawValue;
+// Returns YES/NO to indicate if the key was found or not, filling in the value
+// only when the key was found.
+- (BOOL)getRawValue:(nullable int32_t *)rawValue forKey:(uint64_t)key;
 
 - (void)enumerateKeysAndRawValuesUsingBlock:
     (void (^)(uint64_t key, int32_t rawValue, BOOL *stop))block;
@@ -1038,7 +1095,7 @@ NS_ASSUME_NONNULL_BEGIN
 // to the default value. Use the rawValue methods below to assign non enumerator
 // values.
 
-- (void)setValue:(int32_t)value forKey:(uint64_t)key;
+- (void)setEnum:(int32_t)value forKey:(uint64_t)key;
 
 // This method bypass the validationFunc to provide setting of values that were not
 // known at the time the binary was compiled.
@@ -1046,7 +1103,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 // No validation applies to these methods.
 
-- (void)removeValueForKey:(uint64_t)aKey;
+- (void)removeEnumForKey:(uint64_t)aKey;
 - (void)removeAll;
 
 @end
@@ -1093,30 +1150,32 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic, readonly) NSUInteger count;
 
 + (instancetype)dictionary;
-+ (instancetype)dictionaryWithValue:(uint32_t)value
-                             forKey:(int64_t)key;
-+ (instancetype)dictionaryWithValues:(const uint32_t [])values
-                             forKeys:(const int64_t [])keys
-                               count:(NSUInteger)count;
++ (instancetype)dictionaryWithUInt32:(uint32_t)value
+                              forKey:(int64_t)key;
++ (instancetype)dictionaryWithUInt32s:(const uint32_t [])values
+                              forKeys:(const int64_t [])keys
+                                count:(NSUInteger)count;
 + (instancetype)dictionaryWithDictionary:(GPBInt64UInt32Dictionary *)dictionary;
 + (instancetype)dictionaryWithCapacity:(NSUInteger)numItems;
 
-- (instancetype)initWithValues:(const uint32_t [])values
-                       forKeys:(const int64_t [])keys
-                         count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
+- (instancetype)initWithUInt32s:(const uint32_t [])values
+                        forKeys:(const int64_t [])keys
+                          count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
 - (instancetype)initWithDictionary:(GPBInt64UInt32Dictionary *)dictionary;
 - (instancetype)initWithCapacity:(NSUInteger)numItems;
 
-- (BOOL)valueForKey:(int64_t)key value:(nullable uint32_t *)value;
+// Returns YES/NO to indicate if the key was found or not, filling in the value
+// only when the key was found.
+- (BOOL)getUInt32:(nullable uint32_t *)value forKey:(int64_t)key;
 
-- (void)enumerateKeysAndValuesUsingBlock:
+- (void)enumerateKeysAndUInt32sUsingBlock:
     (void (^)(int64_t key, uint32_t value, BOOL *stop))block;
 
 - (void)addEntriesFromDictionary:(GPBInt64UInt32Dictionary *)otherDictionary;
 
-- (void)setValue:(uint32_t)value forKey:(int64_t)key;
+- (void)setUInt32:(uint32_t)value forKey:(int64_t)key;
 
-- (void)removeValueForKey:(int64_t)aKey;
+- (void)removeUInt32ForKey:(int64_t)aKey;
 - (void)removeAll;
 
 @end
@@ -1128,30 +1187,32 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic, readonly) NSUInteger count;
 
 + (instancetype)dictionary;
-+ (instancetype)dictionaryWithValue:(int32_t)value
++ (instancetype)dictionaryWithInt32:(int32_t)value
                              forKey:(int64_t)key;
-+ (instancetype)dictionaryWithValues:(const int32_t [])values
++ (instancetype)dictionaryWithInt32s:(const int32_t [])values
                              forKeys:(const int64_t [])keys
                                count:(NSUInteger)count;
 + (instancetype)dictionaryWithDictionary:(GPBInt64Int32Dictionary *)dictionary;
 + (instancetype)dictionaryWithCapacity:(NSUInteger)numItems;
 
-- (instancetype)initWithValues:(const int32_t [])values
+- (instancetype)initWithInt32s:(const int32_t [])values
                        forKeys:(const int64_t [])keys
                          count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
 - (instancetype)initWithDictionary:(GPBInt64Int32Dictionary *)dictionary;
 - (instancetype)initWithCapacity:(NSUInteger)numItems;
 
-- (BOOL)valueForKey:(int64_t)key value:(nullable int32_t *)value;
+// Returns YES/NO to indicate if the key was found or not, filling in the value
+// only when the key was found.
+- (BOOL)getInt32:(nullable int32_t *)value forKey:(int64_t)key;
 
-- (void)enumerateKeysAndValuesUsingBlock:
+- (void)enumerateKeysAndInt32sUsingBlock:
     (void (^)(int64_t key, int32_t value, BOOL *stop))block;
 
 - (void)addEntriesFromDictionary:(GPBInt64Int32Dictionary *)otherDictionary;
 
-- (void)setValue:(int32_t)value forKey:(int64_t)key;
+- (void)setInt32:(int32_t)value forKey:(int64_t)key;
 
-- (void)removeValueForKey:(int64_t)aKey;
+- (void)removeInt32ForKey:(int64_t)aKey;
 - (void)removeAll;
 
 @end
@@ -1163,30 +1224,32 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic, readonly) NSUInteger count;
 
 + (instancetype)dictionary;
-+ (instancetype)dictionaryWithValue:(uint64_t)value
-                             forKey:(int64_t)key;
-+ (instancetype)dictionaryWithValues:(const uint64_t [])values
-                             forKeys:(const int64_t [])keys
-                               count:(NSUInteger)count;
++ (instancetype)dictionaryWithUInt64:(uint64_t)value
+                              forKey:(int64_t)key;
++ (instancetype)dictionaryWithUInt64s:(const uint64_t [])values
+                              forKeys:(const int64_t [])keys
+                                count:(NSUInteger)count;
 + (instancetype)dictionaryWithDictionary:(GPBInt64UInt64Dictionary *)dictionary;
 + (instancetype)dictionaryWithCapacity:(NSUInteger)numItems;
 
-- (instancetype)initWithValues:(const uint64_t [])values
-                       forKeys:(const int64_t [])keys
-                         count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
+- (instancetype)initWithUInt64s:(const uint64_t [])values
+                        forKeys:(const int64_t [])keys
+                          count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
 - (instancetype)initWithDictionary:(GPBInt64UInt64Dictionary *)dictionary;
 - (instancetype)initWithCapacity:(NSUInteger)numItems;
 
-- (BOOL)valueForKey:(int64_t)key value:(nullable uint64_t *)value;
+// Returns YES/NO to indicate if the key was found or not, filling in the value
+// only when the key was found.
+- (BOOL)getUInt64:(nullable uint64_t *)value forKey:(int64_t)key;
 
-- (void)enumerateKeysAndValuesUsingBlock:
+- (void)enumerateKeysAndUInt64sUsingBlock:
     (void (^)(int64_t key, uint64_t value, BOOL *stop))block;
 
 - (void)addEntriesFromDictionary:(GPBInt64UInt64Dictionary *)otherDictionary;
 
-- (void)setValue:(uint64_t)value forKey:(int64_t)key;
+- (void)setUInt64:(uint64_t)value forKey:(int64_t)key;
 
-- (void)removeValueForKey:(int64_t)aKey;
+- (void)removeUInt64ForKey:(int64_t)aKey;
 - (void)removeAll;
 
 @end
@@ -1198,30 +1261,32 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic, readonly) NSUInteger count;
 
 + (instancetype)dictionary;
-+ (instancetype)dictionaryWithValue:(int64_t)value
++ (instancetype)dictionaryWithInt64:(int64_t)value
                              forKey:(int64_t)key;
-+ (instancetype)dictionaryWithValues:(const int64_t [])values
++ (instancetype)dictionaryWithInt64s:(const int64_t [])values
                              forKeys:(const int64_t [])keys
                                count:(NSUInteger)count;
 + (instancetype)dictionaryWithDictionary:(GPBInt64Int64Dictionary *)dictionary;
 + (instancetype)dictionaryWithCapacity:(NSUInteger)numItems;
 
-- (instancetype)initWithValues:(const int64_t [])values
+- (instancetype)initWithInt64s:(const int64_t [])values
                        forKeys:(const int64_t [])keys
                          count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
 - (instancetype)initWithDictionary:(GPBInt64Int64Dictionary *)dictionary;
 - (instancetype)initWithCapacity:(NSUInteger)numItems;
 
-- (BOOL)valueForKey:(int64_t)key value:(nullable int64_t *)value;
+// Returns YES/NO to indicate if the key was found or not, filling in the value
+// only when the key was found.
+- (BOOL)getInt64:(nullable int64_t *)value forKey:(int64_t)key;
 
-- (void)enumerateKeysAndValuesUsingBlock:
+- (void)enumerateKeysAndInt64sUsingBlock:
     (void (^)(int64_t key, int64_t value, BOOL *stop))block;
 
 - (void)addEntriesFromDictionary:(GPBInt64Int64Dictionary *)otherDictionary;
 
-- (void)setValue:(int64_t)value forKey:(int64_t)key;
+- (void)setInt64:(int64_t)value forKey:(int64_t)key;
 
-- (void)removeValueForKey:(int64_t)aKey;
+- (void)removeInt64ForKey:(int64_t)aKey;
 - (void)removeAll;
 
 @end
@@ -1233,30 +1298,32 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic, readonly) NSUInteger count;
 
 + (instancetype)dictionary;
-+ (instancetype)dictionaryWithValue:(BOOL)value
-                             forKey:(int64_t)key;
-+ (instancetype)dictionaryWithValues:(const BOOL [])values
-                             forKeys:(const int64_t [])keys
-                               count:(NSUInteger)count;
++ (instancetype)dictionaryWithBool:(BOOL)value
+                            forKey:(int64_t)key;
++ (instancetype)dictionaryWithBools:(const BOOL [])values
+                            forKeys:(const int64_t [])keys
+                              count:(NSUInteger)count;
 + (instancetype)dictionaryWithDictionary:(GPBInt64BoolDictionary *)dictionary;
 + (instancetype)dictionaryWithCapacity:(NSUInteger)numItems;
 
-- (instancetype)initWithValues:(const BOOL [])values
-                       forKeys:(const int64_t [])keys
-                         count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
+- (instancetype)initWithBools:(const BOOL [])values
+                      forKeys:(const int64_t [])keys
+                        count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
 - (instancetype)initWithDictionary:(GPBInt64BoolDictionary *)dictionary;
 - (instancetype)initWithCapacity:(NSUInteger)numItems;
 
-- (BOOL)valueForKey:(int64_t)key value:(nullable BOOL *)value;
+// Returns YES/NO to indicate if the key was found or not, filling in the value
+// only when the key was found.
+- (BOOL)getBool:(nullable BOOL *)value forKey:(int64_t)key;
 
-- (void)enumerateKeysAndValuesUsingBlock:
+- (void)enumerateKeysAndBoolsUsingBlock:
     (void (^)(int64_t key, BOOL value, BOOL *stop))block;
 
 - (void)addEntriesFromDictionary:(GPBInt64BoolDictionary *)otherDictionary;
 
-- (void)setValue:(BOOL)value forKey:(int64_t)key;
+- (void)setBool:(BOOL)value forKey:(int64_t)key;
 
-- (void)removeValueForKey:(int64_t)aKey;
+- (void)removeBoolForKey:(int64_t)aKey;
 - (void)removeAll;
 
 @end
@@ -1268,30 +1335,32 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic, readonly) NSUInteger count;
 
 + (instancetype)dictionary;
-+ (instancetype)dictionaryWithValue:(float)value
++ (instancetype)dictionaryWithFloat:(float)value
                              forKey:(int64_t)key;
-+ (instancetype)dictionaryWithValues:(const float [])values
++ (instancetype)dictionaryWithFloats:(const float [])values
                              forKeys:(const int64_t [])keys
                                count:(NSUInteger)count;
 + (instancetype)dictionaryWithDictionary:(GPBInt64FloatDictionary *)dictionary;
 + (instancetype)dictionaryWithCapacity:(NSUInteger)numItems;
 
-- (instancetype)initWithValues:(const float [])values
+- (instancetype)initWithFloats:(const float [])values
                        forKeys:(const int64_t [])keys
                          count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
 - (instancetype)initWithDictionary:(GPBInt64FloatDictionary *)dictionary;
 - (instancetype)initWithCapacity:(NSUInteger)numItems;
 
-- (BOOL)valueForKey:(int64_t)key value:(nullable float *)value;
+// Returns YES/NO to indicate if the key was found or not, filling in the value
+// only when the key was found.
+- (BOOL)getFloat:(nullable float *)value forKey:(int64_t)key;
 
-- (void)enumerateKeysAndValuesUsingBlock:
+- (void)enumerateKeysAndFloatsUsingBlock:
     (void (^)(int64_t key, float value, BOOL *stop))block;
 
 - (void)addEntriesFromDictionary:(GPBInt64FloatDictionary *)otherDictionary;
 
-- (void)setValue:(float)value forKey:(int64_t)key;
+- (void)setFloat:(float)value forKey:(int64_t)key;
 
-- (void)removeValueForKey:(int64_t)aKey;
+- (void)removeFloatForKey:(int64_t)aKey;
 - (void)removeAll;
 
 @end
@@ -1303,30 +1372,32 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic, readonly) NSUInteger count;
 
 + (instancetype)dictionary;
-+ (instancetype)dictionaryWithValue:(double)value
-                             forKey:(int64_t)key;
-+ (instancetype)dictionaryWithValues:(const double [])values
-                             forKeys:(const int64_t [])keys
-                               count:(NSUInteger)count;
++ (instancetype)dictionaryWithDouble:(double)value
+                              forKey:(int64_t)key;
++ (instancetype)dictionaryWithDoubles:(const double [])values
+                              forKeys:(const int64_t [])keys
+                                count:(NSUInteger)count;
 + (instancetype)dictionaryWithDictionary:(GPBInt64DoubleDictionary *)dictionary;
 + (instancetype)dictionaryWithCapacity:(NSUInteger)numItems;
 
-- (instancetype)initWithValues:(const double [])values
-                       forKeys:(const int64_t [])keys
-                         count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
+- (instancetype)initWithDoubles:(const double [])values
+                        forKeys:(const int64_t [])keys
+                          count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
 - (instancetype)initWithDictionary:(GPBInt64DoubleDictionary *)dictionary;
 - (instancetype)initWithCapacity:(NSUInteger)numItems;
 
-- (BOOL)valueForKey:(int64_t)key value:(nullable double *)value;
+// Returns YES/NO to indicate if the key was found or not, filling in the value
+// only when the key was found.
+- (BOOL)getDouble:(nullable double *)value forKey:(int64_t)key;
 
-- (void)enumerateKeysAndValuesUsingBlock:
+- (void)enumerateKeysAndDoublesUsingBlock:
     (void (^)(int64_t key, double value, BOOL *stop))block;
 
 - (void)addEntriesFromDictionary:(GPBInt64DoubleDictionary *)otherDictionary;
 
-- (void)setValue:(double)value forKey:(int64_t)key;
+- (void)setDouble:(double)value forKey:(int64_t)key;
 
-- (void)removeValueForKey:(int64_t)aKey;
+- (void)removeDoubleForKey:(int64_t)aKey;
 - (void)removeAll;
 
 @end
@@ -1364,15 +1435,19 @@ NS_ASSUME_NONNULL_BEGIN
 // is not a valid enumerator as defined by validationFunc. If the actual value is
 // desired, use "raw" version of the method.
 
-- (BOOL)valueForKey:(int64_t)key value:(nullable int32_t *)value;
+// Returns YES/NO to indicate if the key was found or not, filling in the value
+// only when the key was found.
+- (BOOL)getEnum:(nullable int32_t *)value forKey:(int64_t)key;
 
-- (void)enumerateKeysAndValuesUsingBlock:
+- (void)enumerateKeysAndEnumsUsingBlock:
     (void (^)(int64_t key, int32_t value, BOOL *stop))block;
 
 // These methods bypass the validationFunc to provide access to values that were not
 // known at the time the binary was compiled.
 
-- (BOOL)valueForKey:(int64_t)key rawValue:(nullable int32_t *)rawValue;
+// Returns YES/NO to indicate if the key was found or not, filling in the value
+// only when the key was found.
+- (BOOL)getRawValue:(nullable int32_t *)rawValue forKey:(int64_t)key;
 
 - (void)enumerateKeysAndRawValuesUsingBlock:
     (void (^)(int64_t key, int32_t rawValue, BOOL *stop))block;
@@ -1384,7 +1459,7 @@ NS_ASSUME_NONNULL_BEGIN
 // to the default value. Use the rawValue methods below to assign non enumerator
 // values.
 
-- (void)setValue:(int32_t)value forKey:(int64_t)key;
+- (void)setEnum:(int32_t)value forKey:(int64_t)key;
 
 // This method bypass the validationFunc to provide setting of values that were not
 // known at the time the binary was compiled.
@@ -1392,7 +1467,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 // No validation applies to these methods.
 
-- (void)removeValueForKey:(int64_t)aKey;
+- (void)removeEnumForKey:(int64_t)aKey;
 - (void)removeAll;
 
 @end
@@ -1439,30 +1514,32 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic, readonly) NSUInteger count;
 
 + (instancetype)dictionary;
-+ (instancetype)dictionaryWithValue:(uint32_t)value
-                             forKey:(BOOL)key;
-+ (instancetype)dictionaryWithValues:(const uint32_t [])values
-                             forKeys:(const BOOL [])keys
-                               count:(NSUInteger)count;
++ (instancetype)dictionaryWithUInt32:(uint32_t)value
+                              forKey:(BOOL)key;
++ (instancetype)dictionaryWithUInt32s:(const uint32_t [])values
+                              forKeys:(const BOOL [])keys
+                                count:(NSUInteger)count;
 + (instancetype)dictionaryWithDictionary:(GPBBoolUInt32Dictionary *)dictionary;
 + (instancetype)dictionaryWithCapacity:(NSUInteger)numItems;
 
-- (instancetype)initWithValues:(const uint32_t [])values
-                       forKeys:(const BOOL [])keys
-                         count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
+- (instancetype)initWithUInt32s:(const uint32_t [])values
+                        forKeys:(const BOOL [])keys
+                          count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
 - (instancetype)initWithDictionary:(GPBBoolUInt32Dictionary *)dictionary;
 - (instancetype)initWithCapacity:(NSUInteger)numItems;
 
-- (BOOL)valueForKey:(BOOL)key value:(nullable uint32_t *)value;
+// Returns YES/NO to indicate if the key was found or not, filling in the value
+// only when the key was found.
+- (BOOL)getUInt32:(nullable uint32_t *)value forKey:(BOOL)key;
 
-- (void)enumerateKeysAndValuesUsingBlock:
+- (void)enumerateKeysAndUInt32sUsingBlock:
     (void (^)(BOOL key, uint32_t value, BOOL *stop))block;
 
 - (void)addEntriesFromDictionary:(GPBBoolUInt32Dictionary *)otherDictionary;
 
-- (void)setValue:(uint32_t)value forKey:(BOOL)key;
+- (void)setUInt32:(uint32_t)value forKey:(BOOL)key;
 
-- (void)removeValueForKey:(BOOL)aKey;
+- (void)removeUInt32ForKey:(BOOL)aKey;
 - (void)removeAll;
 
 @end
@@ -1474,30 +1551,32 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic, readonly) NSUInteger count;
 
 + (instancetype)dictionary;
-+ (instancetype)dictionaryWithValue:(int32_t)value
++ (instancetype)dictionaryWithInt32:(int32_t)value
                              forKey:(BOOL)key;
-+ (instancetype)dictionaryWithValues:(const int32_t [])values
++ (instancetype)dictionaryWithInt32s:(const int32_t [])values
                              forKeys:(const BOOL [])keys
                                count:(NSUInteger)count;
 + (instancetype)dictionaryWithDictionary:(GPBBoolInt32Dictionary *)dictionary;
 + (instancetype)dictionaryWithCapacity:(NSUInteger)numItems;
 
-- (instancetype)initWithValues:(const int32_t [])values
+- (instancetype)initWithInt32s:(const int32_t [])values
                        forKeys:(const BOOL [])keys
                          count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
 - (instancetype)initWithDictionary:(GPBBoolInt32Dictionary *)dictionary;
 - (instancetype)initWithCapacity:(NSUInteger)numItems;
 
-- (BOOL)valueForKey:(BOOL)key value:(nullable int32_t *)value;
+// Returns YES/NO to indicate if the key was found or not, filling in the value
+// only when the key was found.
+- (BOOL)getInt32:(nullable int32_t *)value forKey:(BOOL)key;
 
-- (void)enumerateKeysAndValuesUsingBlock:
+- (void)enumerateKeysAndInt32sUsingBlock:
     (void (^)(BOOL key, int32_t value, BOOL *stop))block;
 
 - (void)addEntriesFromDictionary:(GPBBoolInt32Dictionary *)otherDictionary;
 
-- (void)setValue:(int32_t)value forKey:(BOOL)key;
+- (void)setInt32:(int32_t)value forKey:(BOOL)key;
 
-- (void)removeValueForKey:(BOOL)aKey;
+- (void)removeInt32ForKey:(BOOL)aKey;
 - (void)removeAll;
 
 @end
@@ -1509,30 +1588,32 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic, readonly) NSUInteger count;
 
 + (instancetype)dictionary;
-+ (instancetype)dictionaryWithValue:(uint64_t)value
-                             forKey:(BOOL)key;
-+ (instancetype)dictionaryWithValues:(const uint64_t [])values
-                             forKeys:(const BOOL [])keys
-                               count:(NSUInteger)count;
++ (instancetype)dictionaryWithUInt64:(uint64_t)value
+                              forKey:(BOOL)key;
++ (instancetype)dictionaryWithUInt64s:(const uint64_t [])values
+                              forKeys:(const BOOL [])keys
+                                count:(NSUInteger)count;
 + (instancetype)dictionaryWithDictionary:(GPBBoolUInt64Dictionary *)dictionary;
 + (instancetype)dictionaryWithCapacity:(NSUInteger)numItems;
 
-- (instancetype)initWithValues:(const uint64_t [])values
-                       forKeys:(const BOOL [])keys
-                         count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
+- (instancetype)initWithUInt64s:(const uint64_t [])values
+                        forKeys:(const BOOL [])keys
+                          count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
 - (instancetype)initWithDictionary:(GPBBoolUInt64Dictionary *)dictionary;
 - (instancetype)initWithCapacity:(NSUInteger)numItems;
 
-- (BOOL)valueForKey:(BOOL)key value:(nullable uint64_t *)value;
+// Returns YES/NO to indicate if the key was found or not, filling in the value
+// only when the key was found.
+- (BOOL)getUInt64:(nullable uint64_t *)value forKey:(BOOL)key;
 
-- (void)enumerateKeysAndValuesUsingBlock:
+- (void)enumerateKeysAndUInt64sUsingBlock:
     (void (^)(BOOL key, uint64_t value, BOOL *stop))block;
 
 - (void)addEntriesFromDictionary:(GPBBoolUInt64Dictionary *)otherDictionary;
 
-- (void)setValue:(uint64_t)value forKey:(BOOL)key;
+- (void)setUInt64:(uint64_t)value forKey:(BOOL)key;
 
-- (void)removeValueForKey:(BOOL)aKey;
+- (void)removeUInt64ForKey:(BOOL)aKey;
 - (void)removeAll;
 
 @end
@@ -1544,30 +1625,32 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic, readonly) NSUInteger count;
 
 + (instancetype)dictionary;
-+ (instancetype)dictionaryWithValue:(int64_t)value
++ (instancetype)dictionaryWithInt64:(int64_t)value
                              forKey:(BOOL)key;
-+ (instancetype)dictionaryWithValues:(const int64_t [])values
++ (instancetype)dictionaryWithInt64s:(const int64_t [])values
                              forKeys:(const BOOL [])keys
                                count:(NSUInteger)count;
 + (instancetype)dictionaryWithDictionary:(GPBBoolInt64Dictionary *)dictionary;
 + (instancetype)dictionaryWithCapacity:(NSUInteger)numItems;
 
-- (instancetype)initWithValues:(const int64_t [])values
+- (instancetype)initWithInt64s:(const int64_t [])values
                        forKeys:(const BOOL [])keys
                          count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
 - (instancetype)initWithDictionary:(GPBBoolInt64Dictionary *)dictionary;
 - (instancetype)initWithCapacity:(NSUInteger)numItems;
 
-- (BOOL)valueForKey:(BOOL)key value:(nullable int64_t *)value;
+// Returns YES/NO to indicate if the key was found or not, filling in the value
+// only when the key was found.
+- (BOOL)getInt64:(nullable int64_t *)value forKey:(BOOL)key;
 
-- (void)enumerateKeysAndValuesUsingBlock:
+- (void)enumerateKeysAndInt64sUsingBlock:
     (void (^)(BOOL key, int64_t value, BOOL *stop))block;
 
 - (void)addEntriesFromDictionary:(GPBBoolInt64Dictionary *)otherDictionary;
 
-- (void)setValue:(int64_t)value forKey:(BOOL)key;
+- (void)setInt64:(int64_t)value forKey:(BOOL)key;
 
-- (void)removeValueForKey:(BOOL)aKey;
+- (void)removeInt64ForKey:(BOOL)aKey;
 - (void)removeAll;
 
 @end
@@ -1579,30 +1662,32 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic, readonly) NSUInteger count;
 
 + (instancetype)dictionary;
-+ (instancetype)dictionaryWithValue:(BOOL)value
-                             forKey:(BOOL)key;
-+ (instancetype)dictionaryWithValues:(const BOOL [])values
-                             forKeys:(const BOOL [])keys
-                               count:(NSUInteger)count;
++ (instancetype)dictionaryWithBool:(BOOL)value
+                            forKey:(BOOL)key;
++ (instancetype)dictionaryWithBools:(const BOOL [])values
+                            forKeys:(const BOOL [])keys
+                              count:(NSUInteger)count;
 + (instancetype)dictionaryWithDictionary:(GPBBoolBoolDictionary *)dictionary;
 + (instancetype)dictionaryWithCapacity:(NSUInteger)numItems;
 
-- (instancetype)initWithValues:(const BOOL [])values
-                       forKeys:(const BOOL [])keys
-                         count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
+- (instancetype)initWithBools:(const BOOL [])values
+                      forKeys:(const BOOL [])keys
+                        count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
 - (instancetype)initWithDictionary:(GPBBoolBoolDictionary *)dictionary;
 - (instancetype)initWithCapacity:(NSUInteger)numItems;
 
-- (BOOL)valueForKey:(BOOL)key value:(nullable BOOL *)value;
+// Returns YES/NO to indicate if the key was found or not, filling in the value
+// only when the key was found.
+- (BOOL)getBool:(nullable BOOL *)value forKey:(BOOL)key;
 
-- (void)enumerateKeysAndValuesUsingBlock:
+- (void)enumerateKeysAndBoolsUsingBlock:
     (void (^)(BOOL key, BOOL value, BOOL *stop))block;
 
 - (void)addEntriesFromDictionary:(GPBBoolBoolDictionary *)otherDictionary;
 
-- (void)setValue:(BOOL)value forKey:(BOOL)key;
+- (void)setBool:(BOOL)value forKey:(BOOL)key;
 
-- (void)removeValueForKey:(BOOL)aKey;
+- (void)removeBoolForKey:(BOOL)aKey;
 - (void)removeAll;
 
 @end
@@ -1614,30 +1699,32 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic, readonly) NSUInteger count;
 
 + (instancetype)dictionary;
-+ (instancetype)dictionaryWithValue:(float)value
++ (instancetype)dictionaryWithFloat:(float)value
                              forKey:(BOOL)key;
-+ (instancetype)dictionaryWithValues:(const float [])values
++ (instancetype)dictionaryWithFloats:(const float [])values
                              forKeys:(const BOOL [])keys
                                count:(NSUInteger)count;
 + (instancetype)dictionaryWithDictionary:(GPBBoolFloatDictionary *)dictionary;
 + (instancetype)dictionaryWithCapacity:(NSUInteger)numItems;
 
-- (instancetype)initWithValues:(const float [])values
+- (instancetype)initWithFloats:(const float [])values
                        forKeys:(const BOOL [])keys
                          count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
 - (instancetype)initWithDictionary:(GPBBoolFloatDictionary *)dictionary;
 - (instancetype)initWithCapacity:(NSUInteger)numItems;
 
-- (BOOL)valueForKey:(BOOL)key value:(nullable float *)value;
+// Returns YES/NO to indicate if the key was found or not, filling in the value
+// only when the key was found.
+- (BOOL)getFloat:(nullable float *)value forKey:(BOOL)key;
 
-- (void)enumerateKeysAndValuesUsingBlock:
+- (void)enumerateKeysAndFloatsUsingBlock:
     (void (^)(BOOL key, float value, BOOL *stop))block;
 
 - (void)addEntriesFromDictionary:(GPBBoolFloatDictionary *)otherDictionary;
 
-- (void)setValue:(float)value forKey:(BOOL)key;
+- (void)setFloat:(float)value forKey:(BOOL)key;
 
-- (void)removeValueForKey:(BOOL)aKey;
+- (void)removeFloatForKey:(BOOL)aKey;
 - (void)removeAll;
 
 @end
@@ -1649,30 +1736,32 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic, readonly) NSUInteger count;
 
 + (instancetype)dictionary;
-+ (instancetype)dictionaryWithValue:(double)value
-                             forKey:(BOOL)key;
-+ (instancetype)dictionaryWithValues:(const double [])values
-                             forKeys:(const BOOL [])keys
-                               count:(NSUInteger)count;
++ (instancetype)dictionaryWithDouble:(double)value
+                              forKey:(BOOL)key;
++ (instancetype)dictionaryWithDoubles:(const double [])values
+                              forKeys:(const BOOL [])keys
+                                count:(NSUInteger)count;
 + (instancetype)dictionaryWithDictionary:(GPBBoolDoubleDictionary *)dictionary;
 + (instancetype)dictionaryWithCapacity:(NSUInteger)numItems;
 
-- (instancetype)initWithValues:(const double [])values
-                       forKeys:(const BOOL [])keys
-                         count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
+- (instancetype)initWithDoubles:(const double [])values
+                        forKeys:(const BOOL [])keys
+                          count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
 - (instancetype)initWithDictionary:(GPBBoolDoubleDictionary *)dictionary;
 - (instancetype)initWithCapacity:(NSUInteger)numItems;
 
-- (BOOL)valueForKey:(BOOL)key value:(nullable double *)value;
+// Returns YES/NO to indicate if the key was found or not, filling in the value
+// only when the key was found.
+- (BOOL)getDouble:(nullable double *)value forKey:(BOOL)key;
 
-- (void)enumerateKeysAndValuesUsingBlock:
+- (void)enumerateKeysAndDoublesUsingBlock:
     (void (^)(BOOL key, double value, BOOL *stop))block;
 
 - (void)addEntriesFromDictionary:(GPBBoolDoubleDictionary *)otherDictionary;
 
-- (void)setValue:(double)value forKey:(BOOL)key;
+- (void)setDouble:(double)value forKey:(BOOL)key;
 
-- (void)removeValueForKey:(BOOL)aKey;
+- (void)removeDoubleForKey:(BOOL)aKey;
 - (void)removeAll;
 
 @end
@@ -1710,15 +1799,19 @@ NS_ASSUME_NONNULL_BEGIN
 // is not a valid enumerator as defined by validationFunc. If the actual value is
 // desired, use "raw" version of the method.
 
-- (BOOL)valueForKey:(BOOL)key value:(nullable int32_t *)value;
+// Returns YES/NO to indicate if the key was found or not, filling in the value
+// only when the key was found.
+- (BOOL)getEnum:(nullable int32_t *)value forKey:(BOOL)key;
 
-- (void)enumerateKeysAndValuesUsingBlock:
+- (void)enumerateKeysAndEnumsUsingBlock:
     (void (^)(BOOL key, int32_t value, BOOL *stop))block;
 
 // These methods bypass the validationFunc to provide access to values that were not
 // known at the time the binary was compiled.
 
-- (BOOL)valueForKey:(BOOL)key rawValue:(nullable int32_t *)rawValue;
+// Returns YES/NO to indicate if the key was found or not, filling in the value
+// only when the key was found.
+- (BOOL)getRawValue:(nullable int32_t *)rawValue forKey:(BOOL)key;
 
 - (void)enumerateKeysAndRawValuesUsingBlock:
     (void (^)(BOOL key, int32_t rawValue, BOOL *stop))block;
@@ -1730,7 +1823,7 @@ NS_ASSUME_NONNULL_BEGIN
 // to the default value. Use the rawValue methods below to assign non enumerator
 // values.
 
-- (void)setValue:(int32_t)value forKey:(BOOL)key;
+- (void)setEnum:(int32_t)value forKey:(BOOL)key;
 
 // This method bypass the validationFunc to provide setting of values that were not
 // known at the time the binary was compiled.
@@ -1738,7 +1831,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 // No validation applies to these methods.
 
-- (void)removeValueForKey:(BOOL)aKey;
+- (void)removeEnumForKey:(BOOL)aKey;
 - (void)removeAll;
 
 @end
@@ -1785,30 +1878,32 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic, readonly) NSUInteger count;
 
 + (instancetype)dictionary;
-+ (instancetype)dictionaryWithValue:(uint32_t)value
-                             forKey:(NSString *)key;
-+ (instancetype)dictionaryWithValues:(const uint32_t [])values
-                             forKeys:(const NSString * GPB_UNSAFE_UNRETAINED [])keys
-                               count:(NSUInteger)count;
++ (instancetype)dictionaryWithUInt32:(uint32_t)value
+                              forKey:(NSString *)key;
++ (instancetype)dictionaryWithUInt32s:(const uint32_t [])values
+                              forKeys:(const NSString * GPB_UNSAFE_UNRETAINED [])keys
+                                count:(NSUInteger)count;
 + (instancetype)dictionaryWithDictionary:(GPBStringUInt32Dictionary *)dictionary;
 + (instancetype)dictionaryWithCapacity:(NSUInteger)numItems;
 
-- (instancetype)initWithValues:(const uint32_t [])values
-                       forKeys:(const NSString * GPB_UNSAFE_UNRETAINED [])keys
-                         count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
+- (instancetype)initWithUInt32s:(const uint32_t [])values
+                        forKeys:(const NSString * GPB_UNSAFE_UNRETAINED [])keys
+                          count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
 - (instancetype)initWithDictionary:(GPBStringUInt32Dictionary *)dictionary;
 - (instancetype)initWithCapacity:(NSUInteger)numItems;
 
-- (BOOL)valueForKey:(NSString *)key value:(nullable uint32_t *)value;
+// Returns YES/NO to indicate if the key was found or not, filling in the value
+// only when the key was found.
+- (BOOL)getUInt32:(nullable uint32_t *)value forKey:(NSString *)key;
 
-- (void)enumerateKeysAndValuesUsingBlock:
+- (void)enumerateKeysAndUInt32sUsingBlock:
     (void (^)(NSString *key, uint32_t value, BOOL *stop))block;
 
 - (void)addEntriesFromDictionary:(GPBStringUInt32Dictionary *)otherDictionary;
 
-- (void)setValue:(uint32_t)value forKey:(NSString *)key;
+- (void)setUInt32:(uint32_t)value forKey:(NSString *)key;
 
-- (void)removeValueForKey:(NSString *)aKey;
+- (void)removeUInt32ForKey:(NSString *)aKey;
 - (void)removeAll;
 
 @end
@@ -1820,30 +1915,32 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic, readonly) NSUInteger count;
 
 + (instancetype)dictionary;
-+ (instancetype)dictionaryWithValue:(int32_t)value
++ (instancetype)dictionaryWithInt32:(int32_t)value
                              forKey:(NSString *)key;
-+ (instancetype)dictionaryWithValues:(const int32_t [])values
++ (instancetype)dictionaryWithInt32s:(const int32_t [])values
                              forKeys:(const NSString * GPB_UNSAFE_UNRETAINED [])keys
                                count:(NSUInteger)count;
 + (instancetype)dictionaryWithDictionary:(GPBStringInt32Dictionary *)dictionary;
 + (instancetype)dictionaryWithCapacity:(NSUInteger)numItems;
 
-- (instancetype)initWithValues:(const int32_t [])values
+- (instancetype)initWithInt32s:(const int32_t [])values
                        forKeys:(const NSString * GPB_UNSAFE_UNRETAINED [])keys
                          count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
 - (instancetype)initWithDictionary:(GPBStringInt32Dictionary *)dictionary;
 - (instancetype)initWithCapacity:(NSUInteger)numItems;
 
-- (BOOL)valueForKey:(NSString *)key value:(nullable int32_t *)value;
+// Returns YES/NO to indicate if the key was found or not, filling in the value
+// only when the key was found.
+- (BOOL)getInt32:(nullable int32_t *)value forKey:(NSString *)key;
 
-- (void)enumerateKeysAndValuesUsingBlock:
+- (void)enumerateKeysAndInt32sUsingBlock:
     (void (^)(NSString *key, int32_t value, BOOL *stop))block;
 
 - (void)addEntriesFromDictionary:(GPBStringInt32Dictionary *)otherDictionary;
 
-- (void)setValue:(int32_t)value forKey:(NSString *)key;
+- (void)setInt32:(int32_t)value forKey:(NSString *)key;
 
-- (void)removeValueForKey:(NSString *)aKey;
+- (void)removeInt32ForKey:(NSString *)aKey;
 - (void)removeAll;
 
 @end
@@ -1855,30 +1952,32 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic, readonly) NSUInteger count;
 
 + (instancetype)dictionary;
-+ (instancetype)dictionaryWithValue:(uint64_t)value
-                             forKey:(NSString *)key;
-+ (instancetype)dictionaryWithValues:(const uint64_t [])values
-                             forKeys:(const NSString * GPB_UNSAFE_UNRETAINED [])keys
-                               count:(NSUInteger)count;
++ (instancetype)dictionaryWithUInt64:(uint64_t)value
+                              forKey:(NSString *)key;
++ (instancetype)dictionaryWithUInt64s:(const uint64_t [])values
+                              forKeys:(const NSString * GPB_UNSAFE_UNRETAINED [])keys
+                                count:(NSUInteger)count;
 + (instancetype)dictionaryWithDictionary:(GPBStringUInt64Dictionary *)dictionary;
 + (instancetype)dictionaryWithCapacity:(NSUInteger)numItems;
 
-- (instancetype)initWithValues:(const uint64_t [])values
-                       forKeys:(const NSString * GPB_UNSAFE_UNRETAINED [])keys
-                         count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
+- (instancetype)initWithUInt64s:(const uint64_t [])values
+                        forKeys:(const NSString * GPB_UNSAFE_UNRETAINED [])keys
+                          count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
 - (instancetype)initWithDictionary:(GPBStringUInt64Dictionary *)dictionary;
 - (instancetype)initWithCapacity:(NSUInteger)numItems;
 
-- (BOOL)valueForKey:(NSString *)key value:(nullable uint64_t *)value;
+// Returns YES/NO to indicate if the key was found or not, filling in the value
+// only when the key was found.
+- (BOOL)getUInt64:(nullable uint64_t *)value forKey:(NSString *)key;
 
-- (void)enumerateKeysAndValuesUsingBlock:
+- (void)enumerateKeysAndUInt64sUsingBlock:
     (void (^)(NSString *key, uint64_t value, BOOL *stop))block;
 
 - (void)addEntriesFromDictionary:(GPBStringUInt64Dictionary *)otherDictionary;
 
-- (void)setValue:(uint64_t)value forKey:(NSString *)key;
+- (void)setUInt64:(uint64_t)value forKey:(NSString *)key;
 
-- (void)removeValueForKey:(NSString *)aKey;
+- (void)removeUInt64ForKey:(NSString *)aKey;
 - (void)removeAll;
 
 @end
@@ -1890,30 +1989,32 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic, readonly) NSUInteger count;
 
 + (instancetype)dictionary;
-+ (instancetype)dictionaryWithValue:(int64_t)value
++ (instancetype)dictionaryWithInt64:(int64_t)value
                              forKey:(NSString *)key;
-+ (instancetype)dictionaryWithValues:(const int64_t [])values
++ (instancetype)dictionaryWithInt64s:(const int64_t [])values
                              forKeys:(const NSString * GPB_UNSAFE_UNRETAINED [])keys
                                count:(NSUInteger)count;
 + (instancetype)dictionaryWithDictionary:(GPBStringInt64Dictionary *)dictionary;
 + (instancetype)dictionaryWithCapacity:(NSUInteger)numItems;
 
-- (instancetype)initWithValues:(const int64_t [])values
+- (instancetype)initWithInt64s:(const int64_t [])values
                        forKeys:(const NSString * GPB_UNSAFE_UNRETAINED [])keys
                          count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
 - (instancetype)initWithDictionary:(GPBStringInt64Dictionary *)dictionary;
 - (instancetype)initWithCapacity:(NSUInteger)numItems;
 
-- (BOOL)valueForKey:(NSString *)key value:(nullable int64_t *)value;
+// Returns YES/NO to indicate if the key was found or not, filling in the value
+// only when the key was found.
+- (BOOL)getInt64:(nullable int64_t *)value forKey:(NSString *)key;
 
-- (void)enumerateKeysAndValuesUsingBlock:
+- (void)enumerateKeysAndInt64sUsingBlock:
     (void (^)(NSString *key, int64_t value, BOOL *stop))block;
 
 - (void)addEntriesFromDictionary:(GPBStringInt64Dictionary *)otherDictionary;
 
-- (void)setValue:(int64_t)value forKey:(NSString *)key;
+- (void)setInt64:(int64_t)value forKey:(NSString *)key;
 
-- (void)removeValueForKey:(NSString *)aKey;
+- (void)removeInt64ForKey:(NSString *)aKey;
 - (void)removeAll;
 
 @end
@@ -1925,30 +2026,32 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic, readonly) NSUInteger count;
 
 + (instancetype)dictionary;
-+ (instancetype)dictionaryWithValue:(BOOL)value
-                             forKey:(NSString *)key;
-+ (instancetype)dictionaryWithValues:(const BOOL [])values
-                             forKeys:(const NSString * GPB_UNSAFE_UNRETAINED [])keys
-                               count:(NSUInteger)count;
++ (instancetype)dictionaryWithBool:(BOOL)value
+                            forKey:(NSString *)key;
++ (instancetype)dictionaryWithBools:(const BOOL [])values
+                            forKeys:(const NSString * GPB_UNSAFE_UNRETAINED [])keys
+                              count:(NSUInteger)count;
 + (instancetype)dictionaryWithDictionary:(GPBStringBoolDictionary *)dictionary;
 + (instancetype)dictionaryWithCapacity:(NSUInteger)numItems;
 
-- (instancetype)initWithValues:(const BOOL [])values
-                       forKeys:(const NSString * GPB_UNSAFE_UNRETAINED [])keys
-                         count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
+- (instancetype)initWithBools:(const BOOL [])values
+                      forKeys:(const NSString * GPB_UNSAFE_UNRETAINED [])keys
+                        count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
 - (instancetype)initWithDictionary:(GPBStringBoolDictionary *)dictionary;
 - (instancetype)initWithCapacity:(NSUInteger)numItems;
 
-- (BOOL)valueForKey:(NSString *)key value:(nullable BOOL *)value;
+// Returns YES/NO to indicate if the key was found or not, filling in the value
+// only when the key was found.
+- (BOOL)getBool:(nullable BOOL *)value forKey:(NSString *)key;
 
-- (void)enumerateKeysAndValuesUsingBlock:
+- (void)enumerateKeysAndBoolsUsingBlock:
     (void (^)(NSString *key, BOOL value, BOOL *stop))block;
 
 - (void)addEntriesFromDictionary:(GPBStringBoolDictionary *)otherDictionary;
 
-- (void)setValue:(BOOL)value forKey:(NSString *)key;
+- (void)setBool:(BOOL)value forKey:(NSString *)key;
 
-- (void)removeValueForKey:(NSString *)aKey;
+- (void)removeBoolForKey:(NSString *)aKey;
 - (void)removeAll;
 
 @end
@@ -1960,30 +2063,32 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic, readonly) NSUInteger count;
 
 + (instancetype)dictionary;
-+ (instancetype)dictionaryWithValue:(float)value
++ (instancetype)dictionaryWithFloat:(float)value
                              forKey:(NSString *)key;
-+ (instancetype)dictionaryWithValues:(const float [])values
++ (instancetype)dictionaryWithFloats:(const float [])values
                              forKeys:(const NSString * GPB_UNSAFE_UNRETAINED [])keys
                                count:(NSUInteger)count;
 + (instancetype)dictionaryWithDictionary:(GPBStringFloatDictionary *)dictionary;
 + (instancetype)dictionaryWithCapacity:(NSUInteger)numItems;
 
-- (instancetype)initWithValues:(const float [])values
+- (instancetype)initWithFloats:(const float [])values
                        forKeys:(const NSString * GPB_UNSAFE_UNRETAINED [])keys
                          count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
 - (instancetype)initWithDictionary:(GPBStringFloatDictionary *)dictionary;
 - (instancetype)initWithCapacity:(NSUInteger)numItems;
 
-- (BOOL)valueForKey:(NSString *)key value:(nullable float *)value;
+// Returns YES/NO to indicate if the key was found or not, filling in the value
+// only when the key was found.
+- (BOOL)getFloat:(nullable float *)value forKey:(NSString *)key;
 
-- (void)enumerateKeysAndValuesUsingBlock:
+- (void)enumerateKeysAndFloatsUsingBlock:
     (void (^)(NSString *key, float value, BOOL *stop))block;
 
 - (void)addEntriesFromDictionary:(GPBStringFloatDictionary *)otherDictionary;
 
-- (void)setValue:(float)value forKey:(NSString *)key;
+- (void)setFloat:(float)value forKey:(NSString *)key;
 
-- (void)removeValueForKey:(NSString *)aKey;
+- (void)removeFloatForKey:(NSString *)aKey;
 - (void)removeAll;
 
 @end
@@ -1995,30 +2100,32 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic, readonly) NSUInteger count;
 
 + (instancetype)dictionary;
-+ (instancetype)dictionaryWithValue:(double)value
-                             forKey:(NSString *)key;
-+ (instancetype)dictionaryWithValues:(const double [])values
-                             forKeys:(const NSString * GPB_UNSAFE_UNRETAINED [])keys
-                               count:(NSUInteger)count;
++ (instancetype)dictionaryWithDouble:(double)value
+                              forKey:(NSString *)key;
++ (instancetype)dictionaryWithDoubles:(const double [])values
+                              forKeys:(const NSString * GPB_UNSAFE_UNRETAINED [])keys
+                                count:(NSUInteger)count;
 + (instancetype)dictionaryWithDictionary:(GPBStringDoubleDictionary *)dictionary;
 + (instancetype)dictionaryWithCapacity:(NSUInteger)numItems;
 
-- (instancetype)initWithValues:(const double [])values
-                       forKeys:(const NSString * GPB_UNSAFE_UNRETAINED [])keys
-                         count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
+- (instancetype)initWithDoubles:(const double [])values
+                        forKeys:(const NSString * GPB_UNSAFE_UNRETAINED [])keys
+                          count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
 - (instancetype)initWithDictionary:(GPBStringDoubleDictionary *)dictionary;
 - (instancetype)initWithCapacity:(NSUInteger)numItems;
 
-- (BOOL)valueForKey:(NSString *)key value:(nullable double *)value;
+// Returns YES/NO to indicate if the key was found or not, filling in the value
+// only when the key was found.
+- (BOOL)getDouble:(nullable double *)value forKey:(NSString *)key;
 
-- (void)enumerateKeysAndValuesUsingBlock:
+- (void)enumerateKeysAndDoublesUsingBlock:
     (void (^)(NSString *key, double value, BOOL *stop))block;
 
 - (void)addEntriesFromDictionary:(GPBStringDoubleDictionary *)otherDictionary;
 
-- (void)setValue:(double)value forKey:(NSString *)key;
+- (void)setDouble:(double)value forKey:(NSString *)key;
 
-- (void)removeValueForKey:(NSString *)aKey;
+- (void)removeDoubleForKey:(NSString *)aKey;
 - (void)removeAll;
 
 @end
@@ -2056,15 +2163,19 @@ NS_ASSUME_NONNULL_BEGIN
 // is not a valid enumerator as defined by validationFunc. If the actual value is
 // desired, use "raw" version of the method.
 
-- (BOOL)valueForKey:(NSString *)key value:(nullable int32_t *)value;
+// Returns YES/NO to indicate if the key was found or not, filling in the value
+// only when the key was found.
+- (BOOL)getEnum:(nullable int32_t *)value forKey:(NSString *)key;
 
-- (void)enumerateKeysAndValuesUsingBlock:
+- (void)enumerateKeysAndEnumsUsingBlock:
     (void (^)(NSString *key, int32_t value, BOOL *stop))block;
 
 // These methods bypass the validationFunc to provide access to values that were not
 // known at the time the binary was compiled.
 
-- (BOOL)valueForKey:(NSString *)key rawValue:(nullable int32_t *)rawValue;
+// Returns YES/NO to indicate if the key was found or not, filling in the value
+// only when the key was found.
+- (BOOL)getRawValue:(nullable int32_t *)rawValue forKey:(NSString *)key;
 
 - (void)enumerateKeysAndRawValuesUsingBlock:
     (void (^)(NSString *key, int32_t rawValue, BOOL *stop))block;
@@ -2076,7 +2187,7 @@ NS_ASSUME_NONNULL_BEGIN
 // to the default value. Use the rawValue methods below to assign non enumerator
 // values.
 
-- (void)setValue:(int32_t)value forKey:(NSString *)key;
+- (void)setEnum:(int32_t)value forKey:(NSString *)key;
 
 // This method bypass the validationFunc to provide setting of values that were not
 // known at the time the binary was compiled.
@@ -2084,14 +2195,12 @@ NS_ASSUME_NONNULL_BEGIN
 
 // No validation applies to these methods.
 
-- (void)removeValueForKey:(NSString *)aKey;
+- (void)removeEnumForKey:(NSString *)aKey;
 - (void)removeAll;
 
 @end
 
 //%PDDM-EXPAND-END DECLARE_DICTIONARIES()
-
-#pragma clang diagnostic pop
 
 NS_ASSUME_NONNULL_END
 
@@ -2115,15 +2224,17 @@ NS_ASSUME_NONNULL_END
 //%DICTIONARY_KEY_TO_POD_INTERFACE(KEY_NAME, KEY_TYPE, KisP, KHELPER, Double, double)
 //%DICTIONARY_KEY_TO_ENUM_INTERFACE(KEY_NAME, KEY_TYPE, KisP, KHELPER, Enum, int32_t)
 //%PDDM-DEFINE DICTIONARY_KEY_TO_POD_INTERFACE(KEY_NAME, KEY_TYPE, KisP, KHELPER, VALUE_NAME, VALUE_TYPE)
-//%DICTIONARY_COMMON_INTERFACE(KEY_NAME, KEY_TYPE, KisP, KHELPER, VALUE_NAME, VALUE_TYPE, POD, value)
+//%DICTIONARY_COMMON_INTERFACE(KEY_NAME, KEY_TYPE, KisP, KHELPER, VALUE_NAME, VALUE_TYPE, POD, VALUE_NAME, value)
 //%PDDM-DEFINE DICTIONARY_POD_KEY_TO_OBJECT_INTERFACE(KEY_NAME, KEY_TYPE, VALUE_NAME, VALUE_TYPE)
-//%DICTIONARY_COMMON_INTERFACE(KEY_NAME, KEY_TYPE, , POD, VALUE_NAME, VALUE_TYPE, OBJECT, object)
-//%PDDM-DEFINE VALUE_FOR_KEY_POD(KEY_TYPE, VALUE_TYPE)
-//%- (BOOL)valueForKey:(KEY_TYPE)key value:(nullable VALUE_TYPE *)value;
-//%PDDM-DEFINE VALUE_FOR_KEY_OBJECT(KEY_TYPE, VALUE_TYPE)
+//%DICTIONARY_COMMON_INTERFACE(KEY_NAME, KEY_TYPE, , POD, VALUE_NAME, VALUE_TYPE, OBJECT, Object, object)
+//%PDDM-DEFINE VALUE_FOR_KEY_POD(KEY_TYPE, VALUE_TYPE, VNAME)
+//%// Returns YES/NO to indicate if the key was found or not, filling in the value
+//%// only when the key was found.
+//%- (BOOL)get##VNAME##:(nullable VALUE_TYPE *)value forKey:(KEY_TYPE)key;
+//%PDDM-DEFINE VALUE_FOR_KEY_OBJECT(KEY_TYPE, VALUE_TYPE, VNAME)
 //%- (VALUE_TYPE)objectForKey:(KEY_TYPE)key;
-//%PDDM-DEFINE VALUE_FOR_KEY_Enum(KEY_TYPE, VALUE_TYPE)
-//%VALUE_FOR_KEY_POD(KEY_TYPE, VALUE_TYPE)
+//%PDDM-DEFINE VALUE_FOR_KEY_Enum(KEY_TYPE, VALUE_TYPE, VNAME)
+//%VALUE_FOR_KEY_POD(KEY_TYPE, VALUE_TYPE, VNAME)
 //%PDDM-DEFINE ARRAY_ARG_MODIFIERPOD()
 // Nothing
 //%PDDM-DEFINE ARRAY_ARG_MODIFIEREnum()
@@ -2136,7 +2247,7 @@ NS_ASSUME_NONNULL_END
 //%GPB##KEY_NAME##VALUE_NAME##Dictionary
 //%PDDM-DEFINE DICTIONARY_CLASS_DECLOBJECT(KEY_NAME, VALUE_NAME, VALUE_TYPE)
 //%GPB##KEY_NAME##VALUE_NAME##Dictionary<__covariant VALUE_TYPE>
-//%PDDM-DEFINE DICTIONARY_COMMON_INTERFACE(KEY_NAME, KEY_TYPE, KisP, KHELPER, VALUE_NAME, VALUE_TYPE, VHELPER, VNAME)
+//%PDDM-DEFINE DICTIONARY_COMMON_INTERFACE(KEY_NAME, KEY_TYPE, KisP, KHELPER, VALUE_NAME, VALUE_TYPE, VHELPER, VNAME, VNAME_VAR)
 //%#pragma mark - KEY_NAME -> VALUE_NAME
 //%
 //%@interface DICTIONARY_CLASS_DECL##VHELPER(KEY_NAME, VALUE_NAME, VALUE_TYPE) : NSObject <NSCopying>
@@ -2144,25 +2255,25 @@ NS_ASSUME_NONNULL_END
 //%@property(nonatomic, readonly) NSUInteger count;
 //%
 //%+ (instancetype)dictionary;
-//%+ (instancetype)dictionaryWith##VNAME$u##:(VALUE_TYPE)##VNAME
+//%+ (instancetype)dictionaryWith##VNAME##:(VALUE_TYPE)##VNAME_VAR
 //%                       ##VNAME$S## forKey:(KEY_TYPE##KisP$S##KisP)key;
-//%+ (instancetype)dictionaryWith##VNAME$u##s:(const VALUE_TYPE ARRAY_ARG_MODIFIER##VHELPER()[])##VNAME##s
+//%+ (instancetype)dictionaryWith##VNAME##s:(const VALUE_TYPE ARRAY_ARG_MODIFIER##VHELPER()[])##VNAME_VAR##s
 //%                      ##VNAME$S##  forKeys:(const KEY_TYPE##KisP$S##KisP ARRAY_ARG_MODIFIER##KHELPER()[])keys
 //%                      ##VNAME$S##    count:(NSUInteger)count;
 //%+ (instancetype)dictionaryWithDictionary:(GPB##KEY_NAME##VALUE_NAME##Dictionary *)dictionary;
 //%+ (instancetype)dictionaryWithCapacity:(NSUInteger)numItems;
 //%
-//%- (instancetype)initWith##VNAME$u##s:(const VALUE_TYPE ARRAY_ARG_MODIFIER##VHELPER()[])##VNAME##s
+//%- (instancetype)initWith##VNAME##s:(const VALUE_TYPE ARRAY_ARG_MODIFIER##VHELPER()[])##VNAME_VAR##s
 //%                ##VNAME$S##  forKeys:(const KEY_TYPE##KisP$S##KisP ARRAY_ARG_MODIFIER##KHELPER()[])keys
 //%                ##VNAME$S##    count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
 //%- (instancetype)initWithDictionary:(GPB##KEY_NAME##VALUE_NAME##Dictionary *)dictionary;
 //%- (instancetype)initWithCapacity:(NSUInteger)numItems;
 //%
-//%DICTIONARY_IMMUTABLE_INTERFACE(KEY_NAME, KEY_TYPE, KisP, VALUE_NAME, VALUE_TYPE, VHELPER, VNAME)
+//%DICTIONARY_IMMUTABLE_INTERFACE(KEY_NAME, KEY_TYPE, KisP, VALUE_NAME, VALUE_TYPE, VHELPER, VNAME, VNAME_VAR)
 //%
 //%- (void)addEntriesFromDictionary:(GPB##KEY_NAME##VALUE_NAME##Dictionary *)otherDictionary;
 //%
-//%DICTIONARY_MUTABLE_INTERFACE(KEY_NAME, KEY_TYPE, KisP, VALUE_NAME, VALUE_TYPE, VHELPER, VNAME)
+//%DICTIONARY_MUTABLE_INTERFACE(KEY_NAME, KEY_TYPE, KisP, VALUE_NAME, VALUE_TYPE, VHELPER, VNAME, VNAME_VAR)
 //%
 //%@end
 //%
@@ -2203,12 +2314,14 @@ NS_ASSUME_NONNULL_END
 //%// is not a valid enumerator as defined by validationFunc. If the actual value is
 //%// desired, use "raw" version of the method.
 //%
-//%DICTIONARY_IMMUTABLE_INTERFACE(KEY_NAME, KEY_TYPE, KisP, VALUE_NAME, VALUE_TYPE, VHELPER, value)
+//%DICTIONARY_IMMUTABLE_INTERFACE(KEY_NAME, KEY_TYPE, KisP, VALUE_NAME, VALUE_TYPE, VHELPER, Enum, value)
 //%
 //%// These methods bypass the validationFunc to provide access to values that were not
 //%// known at the time the binary was compiled.
 //%
-//%- (BOOL)valueForKey:(KEY_TYPE##KisP$S##KisP)key rawValue:(nullable VALUE_TYPE *)rawValue;
+//%// Returns YES/NO to indicate if the key was found or not, filling in the value
+//%// only when the key was found.
+//%- (BOOL)getRawValue:(nullable VALUE_TYPE *)rawValue forKey:(KEY_TYPE##KisP$S##KisP)key;
 //%
 //%- (void)enumerateKeysAndRawValuesUsingBlock:
 //%    (void (^)(KEY_TYPE KisP##key, VALUE_TYPE rawValue, BOOL *stop))block;
@@ -2220,21 +2333,21 @@ NS_ASSUME_NONNULL_END
 //%// to the default value. Use the rawValue methods below to assign non enumerator
 //%// values.
 //%
-//%DICTIONARY_MUTABLE_INTERFACE(KEY_NAME, KEY_TYPE, KisP, VALUE_NAME, VALUE_TYPE, VHELPER, value)
+//%DICTIONARY_MUTABLE_INTERFACE(KEY_NAME, KEY_TYPE, KisP, VALUE_NAME, VALUE_TYPE, VHELPER, Enum, value)
 //%
 //%@end
 //%
 
-//%PDDM-DEFINE DICTIONARY_IMMUTABLE_INTERFACE(KEY_NAME, KEY_TYPE, KisP, VALUE_NAME, VALUE_TYPE, VHELPER, VNAME)
-//%VALUE_FOR_KEY_##VHELPER(KEY_TYPE##KisP$S##KisP, VALUE_TYPE)
+//%PDDM-DEFINE DICTIONARY_IMMUTABLE_INTERFACE(KEY_NAME, KEY_TYPE, KisP, VALUE_NAME, VALUE_TYPE, VHELPER, VNAME, VNAME_VAR)
+//%VALUE_FOR_KEY_##VHELPER(KEY_TYPE##KisP$S##KisP, VALUE_TYPE, VNAME)
 //%
-//%- (void)enumerateKeysAnd##VNAME$u##sUsingBlock:
-//%    (void (^)(KEY_TYPE KisP##key, VALUE_TYPE VNAME, BOOL *stop))block;
+//%- (void)enumerateKeysAnd##VNAME##sUsingBlock:
+//%    (void (^)(KEY_TYPE KisP##key, VALUE_TYPE VNAME_VAR, BOOL *stop))block;
 
-//%PDDM-DEFINE DICTIONARY_MUTABLE_INTERFACE(KEY_NAME, KEY_TYPE, KisP, VALUE_NAME, VALUE_TYPE, VHELPER, VNAME)
-//%- (void)set##VNAME$u##:(VALUE_TYPE)##VNAME forKey:(KEY_TYPE##KisP$S##KisP)key;
+//%PDDM-DEFINE DICTIONARY_MUTABLE_INTERFACE(KEY_NAME, KEY_TYPE, KisP, VALUE_NAME, VALUE_TYPE, VHELPER, VNAME, VNAME_VAR)
+//%- (void)set##VNAME##:(VALUE_TYPE)##VNAME_VAR forKey:(KEY_TYPE##KisP$S##KisP)key;
 //%DICTIONARY_EXTRA_MUTABLE_METHODS_##VHELPER(KEY_NAME, KEY_TYPE, KisP, VALUE_NAME, VALUE_TYPE)
-//%- (void)remove##VNAME$u##ForKey:(KEY_TYPE##KisP$S##KisP)aKey;
+//%- (void)remove##VNAME##ForKey:(KEY_TYPE##KisP$S##KisP)aKey;
 //%- (void)removeAll;
 
 //%PDDM-DEFINE DICTIONARY_EXTRA_MUTABLE_METHODS_POD(KEY_NAME, KEY_TYPE, KisP, VALUE_NAME, VALUE_TYPE)

@@ -54,8 +54,8 @@
   GPBBoolUInt32Dictionary *dict = [[GPBBoolUInt32Dictionary alloc] init];
   XCTAssertNotNil(dict);
   XCTAssertEqual(dict.count, 0U);
-  XCTAssertFalse([dict valueForKey:YES value:NULL]);
-  [dict enumerateKeysAndValuesUsingBlock:^(BOOL aKey, uint32_t aValue, BOOL *stop) {
+  XCTAssertFalse([dict getUInt32:NULL forKey:YES]);
+  [dict enumerateKeysAndUInt32sUsingBlock:^(BOOL aKey, uint32_t aValue, BOOL *stop) {
     #pragma unused(aKey, aValue, stop)
     XCTFail(@"Shouldn't get here!");
   }];
@@ -63,15 +63,15 @@
 }
 
 - (void)testOne {
-  GPBBoolUInt32Dictionary *dict = [GPBBoolUInt32Dictionary dictionaryWithValue:100U forKey:YES];
+  GPBBoolUInt32Dictionary *dict = [GPBBoolUInt32Dictionary dictionaryWithUInt32:100U forKey:YES];
   XCTAssertNotNil(dict);
   XCTAssertEqual(dict.count, 1U);
   uint32_t value;
-  XCTAssertTrue([dict valueForKey:YES value:NULL]);
-  XCTAssertTrue([dict valueForKey:YES value:&value]);
+  XCTAssertTrue([dict getUInt32:NULL forKey:YES]);
+  XCTAssertTrue([dict getUInt32:&value forKey:YES]);
   XCTAssertEqual(value, 100U);
-  XCTAssertFalse([dict valueForKey:NO value:NULL]);
-  [dict enumerateKeysAndValuesUsingBlock:^(BOOL aKey, uint32_t aValue, BOOL *stop) {
+  XCTAssertFalse([dict getUInt32:NULL forKey:NO]);
+  [dict enumerateKeysAndUInt32sUsingBlock:^(BOOL aKey, uint32_t aValue, BOOL *stop) {
     XCTAssertEqual(aKey, YES);
     XCTAssertEqual(aValue, 100U);
     XCTAssertNotEqual(stop, NULL);
@@ -82,23 +82,23 @@
   const BOOL kKeys[] = { YES, NO };
   const uint32_t kValues[] = { 100U, 101U };
   GPBBoolUInt32Dictionary *dict =
-      [[GPBBoolUInt32Dictionary alloc] initWithValues:kValues
-                                              forKeys:kKeys
-                                                count:GPBARRAYSIZE(kValues)];
+      [[GPBBoolUInt32Dictionary alloc] initWithUInt32s:kValues
+                                               forKeys:kKeys
+                                                 count:GPBARRAYSIZE(kValues)];
   XCTAssertNotNil(dict);
   XCTAssertEqual(dict.count, 2U);
   uint32_t value;
-  XCTAssertTrue([dict valueForKey:YES value:NULL]);
-  XCTAssertTrue([dict valueForKey:YES value:&value]);
+  XCTAssertTrue([dict getUInt32:NULL forKey:YES]);
+  XCTAssertTrue([dict getUInt32:&value forKey:YES]);
   XCTAssertEqual(value, 100U);
-  XCTAssertTrue([dict valueForKey:NO value:NULL]);
-  XCTAssertTrue([dict valueForKey:NO value:&value]);
+  XCTAssertTrue([dict getUInt32:NULL forKey:NO]);
+  XCTAssertTrue([dict getUInt32:&value forKey:NO]);
   XCTAssertEqual(value, 101U);
 
   __block NSUInteger idx = 0;
   BOOL *seenKeys = malloc(2 * sizeof(BOOL));
   uint32_t *seenValues = malloc(2 * sizeof(uint32_t));
-  [dict enumerateKeysAndValuesUsingBlock:^(BOOL aKey, uint32_t aValue, BOOL *stop) {
+  [dict enumerateKeysAndUInt32sUsingBlock:^(BOOL aKey, uint32_t aValue, BOOL *stop) {
     XCTAssertLessThan(idx, 2U);
     seenKeys[idx] = aKey;
     seenValues[idx] = aValue;
@@ -120,7 +120,7 @@
 
   // Stopping the enumeration.
   idx = 0;
-  [dict enumerateKeysAndValuesUsingBlock:^(BOOL aKey, uint32_t aValue, BOOL *stop) {
+  [dict enumerateKeysAndUInt32sUsingBlock:^(BOOL aKey, uint32_t aValue, BOOL *stop) {
     #pragma unused(aKey, aValue)
     if (idx == 0) *stop = YES;
     XCTAssertNotEqual(idx, 2U);
@@ -136,29 +136,29 @@
   const uint32_t kValues2[] = { 101U, 100U };
   const uint32_t kValues3[] = { 101U };
   GPBBoolUInt32Dictionary *dict1 =
-      [[GPBBoolUInt32Dictionary alloc] initWithValues:kValues1
-                                              forKeys:kKeys1
-                                                count:GPBARRAYSIZE(kValues1)];
+      [[GPBBoolUInt32Dictionary alloc] initWithUInt32s:kValues1
+                                               forKeys:kKeys1
+                                                 count:GPBARRAYSIZE(kValues1)];
   XCTAssertNotNil(dict1);
   GPBBoolUInt32Dictionary *dict1prime =
-      [[GPBBoolUInt32Dictionary alloc] initWithValues:kValues1
-                                              forKeys:kKeys1
-                                                count:GPBARRAYSIZE(kValues1)];
+      [[GPBBoolUInt32Dictionary alloc] initWithUInt32s:kValues1
+                                               forKeys:kKeys1
+                                                 count:GPBARRAYSIZE(kValues1)];
   XCTAssertNotNil(dict1prime);
   GPBBoolUInt32Dictionary *dict2 =
-      [[GPBBoolUInt32Dictionary alloc] initWithValues:kValues2
-                                              forKeys:kKeys1
-                                                count:GPBARRAYSIZE(kValues2)];
+      [[GPBBoolUInt32Dictionary alloc] initWithUInt32s:kValues2
+                                               forKeys:kKeys1
+                                                 count:GPBARRAYSIZE(kValues2)];
   XCTAssertNotNil(dict2);
   GPBBoolUInt32Dictionary *dict3 =
-      [[GPBBoolUInt32Dictionary alloc] initWithValues:kValues1
-                                              forKeys:kKeys2
-                                                count:GPBARRAYSIZE(kValues1)];
+      [[GPBBoolUInt32Dictionary alloc] initWithUInt32s:kValues1
+                                               forKeys:kKeys2
+                                                 count:GPBARRAYSIZE(kValues1)];
   XCTAssertNotNil(dict3);
   GPBBoolUInt32Dictionary *dict4 =
-      [[GPBBoolUInt32Dictionary alloc] initWithValues:kValues3
-                                              forKeys:kKeys1
-                                                count:GPBARRAYSIZE(kValues3)];
+      [[GPBBoolUInt32Dictionary alloc] initWithUInt32s:kValues3
+                                               forKeys:kKeys1
+                                                 count:GPBARRAYSIZE(kValues3)];
   XCTAssertNotNil(dict4);
 
   // 1/1Prime should be different objects, but equal.
@@ -187,9 +187,9 @@
   const BOOL kKeys[] = { YES, NO };
   const uint32_t kValues[] = { 100U, 101U };
   GPBBoolUInt32Dictionary *dict =
-      [[GPBBoolUInt32Dictionary alloc] initWithValues:kValues
-                                              forKeys:kKeys
-                                                count:GPBARRAYSIZE(kValues)];
+      [[GPBBoolUInt32Dictionary alloc] initWithUInt32s:kValues
+                                               forKeys:kKeys
+                                                 count:GPBARRAYSIZE(kValues)];
   XCTAssertNotNil(dict);
 
   GPBBoolUInt32Dictionary *dict2 = [dict copy];
@@ -208,9 +208,9 @@
   const BOOL kKeys[] = { YES, NO };
   const uint32_t kValues[] = { 100U, 101U };
   GPBBoolUInt32Dictionary *dict =
-      [[GPBBoolUInt32Dictionary alloc] initWithValues:kValues
-                                              forKeys:kKeys
-                                                count:GPBARRAYSIZE(kValues)];
+      [[GPBBoolUInt32Dictionary alloc] initWithUInt32s:kValues
+                                               forKeys:kKeys
+                                                 count:GPBARRAYSIZE(kValues)];
   XCTAssertNotNil(dict);
 
   GPBBoolUInt32Dictionary *dict2 =
@@ -228,25 +228,25 @@
   XCTAssertNotNil(dict);
 
   XCTAssertEqual(dict.count, 0U);
-  [dict setValue:100U forKey:YES];
+  [dict setUInt32:100U forKey:YES];
   XCTAssertEqual(dict.count, 1U);
 
   const BOOL kKeys[] = { NO };
   const uint32_t kValues[] = { 101U };
   GPBBoolUInt32Dictionary *dict2 =
-      [[GPBBoolUInt32Dictionary alloc] initWithValues:kValues
-                                              forKeys:kKeys
-                                                count:GPBARRAYSIZE(kValues)];
+      [[GPBBoolUInt32Dictionary alloc] initWithUInt32s:kValues
+                                               forKeys:kKeys
+                                                 count:GPBARRAYSIZE(kValues)];
   XCTAssertNotNil(dict2);
   [dict addEntriesFromDictionary:dict2];
   XCTAssertEqual(dict.count, 2U);
 
   uint32_t value;
-  XCTAssertTrue([dict valueForKey:YES value:NULL]);
-  XCTAssertTrue([dict valueForKey:YES value:&value]);
+  XCTAssertTrue([dict getUInt32:NULL forKey:YES]);
+  XCTAssertTrue([dict getUInt32:&value forKey:YES]);
   XCTAssertEqual(value, 100U);
-  XCTAssertTrue([dict valueForKey:NO value:NULL]);
-  XCTAssertTrue([dict valueForKey:NO value:&value]);
+  XCTAssertTrue([dict getUInt32:NULL forKey:NO]);
+  XCTAssertTrue([dict getUInt32:&value forKey:NO]);
   XCTAssertEqual(value, 101U);
   [dict2 release];
 }
@@ -255,32 +255,32 @@
   const BOOL kKeys[] = { YES, NO};
   const uint32_t kValues[] = { 100U, 101U };
   GPBBoolUInt32Dictionary *dict =
-      [[GPBBoolUInt32Dictionary alloc] initWithValues:kValues
-                                       forKeys:kKeys
-                                         count:GPBARRAYSIZE(kValues)];
+      [[GPBBoolUInt32Dictionary alloc] initWithUInt32s:kValues
+                                        forKeys:kKeys
+                                          count:GPBARRAYSIZE(kValues)];
   XCTAssertNotNil(dict);
   XCTAssertEqual(dict.count, 2U);
 
-  [dict removeValueForKey:NO];
+  [dict removeUInt32ForKey:NO];
   XCTAssertEqual(dict.count, 1U);
   uint32_t value;
-  XCTAssertTrue([dict valueForKey:YES value:NULL]);
-  XCTAssertTrue([dict valueForKey:YES value:&value]);
+  XCTAssertTrue([dict getUInt32:NULL forKey:YES]);
+  XCTAssertTrue([dict getUInt32:&value forKey:YES]);
   XCTAssertEqual(value, 100U);
-  XCTAssertFalse([dict valueForKey:NO value:NULL]);
+  XCTAssertFalse([dict getUInt32:NULL forKey:NO]);
 
   // Remove again does nothing.
-  [dict removeValueForKey:NO];
+  [dict removeUInt32ForKey:NO];
   XCTAssertEqual(dict.count, 1U);
-  XCTAssertTrue([dict valueForKey:YES value:NULL]);
-  XCTAssertTrue([dict valueForKey:YES value:&value]);
+  XCTAssertTrue([dict getUInt32:NULL forKey:YES]);
+  XCTAssertTrue([dict getUInt32:&value forKey:YES]);
   XCTAssertEqual(value, 100U);
-  XCTAssertFalse([dict valueForKey:NO value:NULL]);
+  XCTAssertFalse([dict getUInt32:NULL forKey:NO]);
 
   [dict removeAll];
   XCTAssertEqual(dict.count, 0U);
-  XCTAssertFalse([dict valueForKey:YES value:NULL]);
-  XCTAssertFalse([dict valueForKey:NO value:NULL]);
+  XCTAssertFalse([dict getUInt32:NULL forKey:YES]);
+  XCTAssertFalse([dict getUInt32:NULL forKey:NO]);
   [dict release];
 }
 
@@ -288,51 +288,51 @@
   const BOOL kKeys[] = { YES, NO };
   const uint32_t kValues[] = { 100U, 101U };
   GPBBoolUInt32Dictionary *dict =
-      [[GPBBoolUInt32Dictionary alloc] initWithValues:kValues
-                                       forKeys:kKeys
-                                         count:GPBARRAYSIZE(kValues)];
+      [[GPBBoolUInt32Dictionary alloc] initWithUInt32s:kValues
+                                               forKeys:kKeys
+                                                 count:GPBARRAYSIZE(kValues)];
   XCTAssertNotNil(dict);
   XCTAssertEqual(dict.count, 2U);
   uint32_t value;
-  XCTAssertTrue([dict valueForKey:YES value:NULL]);
-  XCTAssertTrue([dict valueForKey:YES value:&value]);
+  XCTAssertTrue([dict getUInt32:NULL forKey:YES]);
+  XCTAssertTrue([dict getUInt32:&value forKey:YES]);
   XCTAssertEqual(value, 100U);
-  XCTAssertTrue([dict valueForKey:NO value:NULL]);
-  XCTAssertTrue([dict valueForKey:NO value:&value]);
+  XCTAssertTrue([dict getUInt32:NULL forKey:NO]);
+  XCTAssertTrue([dict getUInt32:&value forKey:NO]);
   XCTAssertEqual(value, 101U);
 
-  [dict setValue:101U forKey:YES];
+  [dict setUInt32:101U forKey:YES];
   XCTAssertEqual(dict.count, 2U);
-  XCTAssertTrue([dict valueForKey:YES value:NULL]);
-  XCTAssertTrue([dict valueForKey:YES value:&value]);
+  XCTAssertTrue([dict getUInt32:NULL forKey:YES]);
+  XCTAssertTrue([dict getUInt32:&value forKey:YES]);
   XCTAssertEqual(value, 101U);
-  XCTAssertTrue([dict valueForKey:NO value:NULL]);
-  XCTAssertTrue([dict valueForKey:NO value:&value]);
+  XCTAssertTrue([dict getUInt32:NULL forKey:NO]);
+  XCTAssertTrue([dict getUInt32:&value forKey:NO]);
   XCTAssertEqual(value, 101U);
 
-  [dict setValue:100U forKey:NO];
+  [dict setUInt32:100U forKey:NO];
   XCTAssertEqual(dict.count, 2U);
-  XCTAssertTrue([dict valueForKey:YES value:NULL]);
-  XCTAssertTrue([dict valueForKey:YES value:&value]);
+  XCTAssertTrue([dict getUInt32:NULL forKey:YES]);
+  XCTAssertTrue([dict getUInt32:&value forKey:YES]);
   XCTAssertEqual(value, 101U);
-  XCTAssertTrue([dict valueForKey:NO value:NULL]);
-  XCTAssertTrue([dict valueForKey:NO value:&value]);
+  XCTAssertTrue([dict getUInt32:NULL forKey:NO]);
+  XCTAssertTrue([dict getUInt32:&value forKey:NO]);
   XCTAssertEqual(value, 100U);
 
   const BOOL kKeys2[] = { NO, YES };
   const uint32_t kValues2[] = { 101U, 100U };
   GPBBoolUInt32Dictionary *dict2 =
-      [[GPBBoolUInt32Dictionary alloc] initWithValues:kValues2
-                                              forKeys:kKeys2
-                                                count:GPBARRAYSIZE(kValues2)];
+      [[GPBBoolUInt32Dictionary alloc] initWithUInt32s:kValues2
+                                               forKeys:kKeys2
+                                                 count:GPBARRAYSIZE(kValues2)];
   XCTAssertNotNil(dict2);
   [dict addEntriesFromDictionary:dict2];
   XCTAssertEqual(dict.count, 2U);
-  XCTAssertTrue([dict valueForKey:YES value:NULL]);
-  XCTAssertTrue([dict valueForKey:YES value:&value]);
+  XCTAssertTrue([dict getUInt32:NULL forKey:YES]);
+  XCTAssertTrue([dict getUInt32:&value forKey:YES]);
   XCTAssertEqual(value, 100U);
-  XCTAssertTrue([dict valueForKey:NO value:NULL]);
-  XCTAssertTrue([dict valueForKey:NO value:&value]);
+  XCTAssertTrue([dict getUInt32:NULL forKey:NO]);
+  XCTAssertTrue([dict getUInt32:&value forKey:NO]);
   XCTAssertEqual(value, 101U);
 
   [dict2 release];
@@ -355,8 +355,8 @@
   GPBBoolInt32Dictionary *dict = [[GPBBoolInt32Dictionary alloc] init];
   XCTAssertNotNil(dict);
   XCTAssertEqual(dict.count, 0U);
-  XCTAssertFalse([dict valueForKey:YES value:NULL]);
-  [dict enumerateKeysAndValuesUsingBlock:^(BOOL aKey, int32_t aValue, BOOL *stop) {
+  XCTAssertFalse([dict getInt32:NULL forKey:YES]);
+  [dict enumerateKeysAndInt32sUsingBlock:^(BOOL aKey, int32_t aValue, BOOL *stop) {
     #pragma unused(aKey, aValue, stop)
     XCTFail(@"Shouldn't get here!");
   }];
@@ -364,15 +364,15 @@
 }
 
 - (void)testOne {
-  GPBBoolInt32Dictionary *dict = [GPBBoolInt32Dictionary dictionaryWithValue:200 forKey:YES];
+  GPBBoolInt32Dictionary *dict = [GPBBoolInt32Dictionary dictionaryWithInt32:200 forKey:YES];
   XCTAssertNotNil(dict);
   XCTAssertEqual(dict.count, 1U);
   int32_t value;
-  XCTAssertTrue([dict valueForKey:YES value:NULL]);
-  XCTAssertTrue([dict valueForKey:YES value:&value]);
+  XCTAssertTrue([dict getInt32:NULL forKey:YES]);
+  XCTAssertTrue([dict getInt32:&value forKey:YES]);
   XCTAssertEqual(value, 200);
-  XCTAssertFalse([dict valueForKey:NO value:NULL]);
-  [dict enumerateKeysAndValuesUsingBlock:^(BOOL aKey, int32_t aValue, BOOL *stop) {
+  XCTAssertFalse([dict getInt32:NULL forKey:NO]);
+  [dict enumerateKeysAndInt32sUsingBlock:^(BOOL aKey, int32_t aValue, BOOL *stop) {
     XCTAssertEqual(aKey, YES);
     XCTAssertEqual(aValue, 200);
     XCTAssertNotEqual(stop, NULL);
@@ -383,23 +383,23 @@
   const BOOL kKeys[] = { YES, NO };
   const int32_t kValues[] = { 200, 201 };
   GPBBoolInt32Dictionary *dict =
-      [[GPBBoolInt32Dictionary alloc] initWithValues:kValues
+      [[GPBBoolInt32Dictionary alloc] initWithInt32s:kValues
                                              forKeys:kKeys
                                                count:GPBARRAYSIZE(kValues)];
   XCTAssertNotNil(dict);
   XCTAssertEqual(dict.count, 2U);
   int32_t value;
-  XCTAssertTrue([dict valueForKey:YES value:NULL]);
-  XCTAssertTrue([dict valueForKey:YES value:&value]);
+  XCTAssertTrue([dict getInt32:NULL forKey:YES]);
+  XCTAssertTrue([dict getInt32:&value forKey:YES]);
   XCTAssertEqual(value, 200);
-  XCTAssertTrue([dict valueForKey:NO value:NULL]);
-  XCTAssertTrue([dict valueForKey:NO value:&value]);
+  XCTAssertTrue([dict getInt32:NULL forKey:NO]);
+  XCTAssertTrue([dict getInt32:&value forKey:NO]);
   XCTAssertEqual(value, 201);
 
   __block NSUInteger idx = 0;
   BOOL *seenKeys = malloc(2 * sizeof(BOOL));
   int32_t *seenValues = malloc(2 * sizeof(int32_t));
-  [dict enumerateKeysAndValuesUsingBlock:^(BOOL aKey, int32_t aValue, BOOL *stop) {
+  [dict enumerateKeysAndInt32sUsingBlock:^(BOOL aKey, int32_t aValue, BOOL *stop) {
     XCTAssertLessThan(idx, 2U);
     seenKeys[idx] = aKey;
     seenValues[idx] = aValue;
@@ -421,7 +421,7 @@
 
   // Stopping the enumeration.
   idx = 0;
-  [dict enumerateKeysAndValuesUsingBlock:^(BOOL aKey, int32_t aValue, BOOL *stop) {
+  [dict enumerateKeysAndInt32sUsingBlock:^(BOOL aKey, int32_t aValue, BOOL *stop) {
     #pragma unused(aKey, aValue)
     if (idx == 0) *stop = YES;
     XCTAssertNotEqual(idx, 2U);
@@ -437,27 +437,27 @@
   const int32_t kValues2[] = { 201, 200 };
   const int32_t kValues3[] = { 201 };
   GPBBoolInt32Dictionary *dict1 =
-      [[GPBBoolInt32Dictionary alloc] initWithValues:kValues1
+      [[GPBBoolInt32Dictionary alloc] initWithInt32s:kValues1
                                              forKeys:kKeys1
                                                count:GPBARRAYSIZE(kValues1)];
   XCTAssertNotNil(dict1);
   GPBBoolInt32Dictionary *dict1prime =
-      [[GPBBoolInt32Dictionary alloc] initWithValues:kValues1
+      [[GPBBoolInt32Dictionary alloc] initWithInt32s:kValues1
                                              forKeys:kKeys1
                                                count:GPBARRAYSIZE(kValues1)];
   XCTAssertNotNil(dict1prime);
   GPBBoolInt32Dictionary *dict2 =
-      [[GPBBoolInt32Dictionary alloc] initWithValues:kValues2
+      [[GPBBoolInt32Dictionary alloc] initWithInt32s:kValues2
                                              forKeys:kKeys1
                                                count:GPBARRAYSIZE(kValues2)];
   XCTAssertNotNil(dict2);
   GPBBoolInt32Dictionary *dict3 =
-      [[GPBBoolInt32Dictionary alloc] initWithValues:kValues1
+      [[GPBBoolInt32Dictionary alloc] initWithInt32s:kValues1
                                              forKeys:kKeys2
                                                count:GPBARRAYSIZE(kValues1)];
   XCTAssertNotNil(dict3);
   GPBBoolInt32Dictionary *dict4 =
-      [[GPBBoolInt32Dictionary alloc] initWithValues:kValues3
+      [[GPBBoolInt32Dictionary alloc] initWithInt32s:kValues3
                                              forKeys:kKeys1
                                                count:GPBARRAYSIZE(kValues3)];
   XCTAssertNotNil(dict4);
@@ -488,7 +488,7 @@
   const BOOL kKeys[] = { YES, NO };
   const int32_t kValues[] = { 200, 201 };
   GPBBoolInt32Dictionary *dict =
-      [[GPBBoolInt32Dictionary alloc] initWithValues:kValues
+      [[GPBBoolInt32Dictionary alloc] initWithInt32s:kValues
                                              forKeys:kKeys
                                                count:GPBARRAYSIZE(kValues)];
   XCTAssertNotNil(dict);
@@ -509,7 +509,7 @@
   const BOOL kKeys[] = { YES, NO };
   const int32_t kValues[] = { 200, 201 };
   GPBBoolInt32Dictionary *dict =
-      [[GPBBoolInt32Dictionary alloc] initWithValues:kValues
+      [[GPBBoolInt32Dictionary alloc] initWithInt32s:kValues
                                              forKeys:kKeys
                                                count:GPBARRAYSIZE(kValues)];
   XCTAssertNotNil(dict);
@@ -529,13 +529,13 @@
   XCTAssertNotNil(dict);
 
   XCTAssertEqual(dict.count, 0U);
-  [dict setValue:200 forKey:YES];
+  [dict setInt32:200 forKey:YES];
   XCTAssertEqual(dict.count, 1U);
 
   const BOOL kKeys[] = { NO };
   const int32_t kValues[] = { 201 };
   GPBBoolInt32Dictionary *dict2 =
-      [[GPBBoolInt32Dictionary alloc] initWithValues:kValues
+      [[GPBBoolInt32Dictionary alloc] initWithInt32s:kValues
                                              forKeys:kKeys
                                                count:GPBARRAYSIZE(kValues)];
   XCTAssertNotNil(dict2);
@@ -543,11 +543,11 @@
   XCTAssertEqual(dict.count, 2U);
 
   int32_t value;
-  XCTAssertTrue([dict valueForKey:YES value:NULL]);
-  XCTAssertTrue([dict valueForKey:YES value:&value]);
+  XCTAssertTrue([dict getInt32:NULL forKey:YES]);
+  XCTAssertTrue([dict getInt32:&value forKey:YES]);
   XCTAssertEqual(value, 200);
-  XCTAssertTrue([dict valueForKey:NO value:NULL]);
-  XCTAssertTrue([dict valueForKey:NO value:&value]);
+  XCTAssertTrue([dict getInt32:NULL forKey:NO]);
+  XCTAssertTrue([dict getInt32:&value forKey:NO]);
   XCTAssertEqual(value, 201);
   [dict2 release];
 }
@@ -556,32 +556,32 @@
   const BOOL kKeys[] = { YES, NO};
   const int32_t kValues[] = { 200, 201 };
   GPBBoolInt32Dictionary *dict =
-      [[GPBBoolInt32Dictionary alloc] initWithValues:kValues
+      [[GPBBoolInt32Dictionary alloc] initWithInt32s:kValues
                                       forKeys:kKeys
                                         count:GPBARRAYSIZE(kValues)];
   XCTAssertNotNil(dict);
   XCTAssertEqual(dict.count, 2U);
 
-  [dict removeValueForKey:NO];
+  [dict removeInt32ForKey:NO];
   XCTAssertEqual(dict.count, 1U);
   int32_t value;
-  XCTAssertTrue([dict valueForKey:YES value:NULL]);
-  XCTAssertTrue([dict valueForKey:YES value:&value]);
+  XCTAssertTrue([dict getInt32:NULL forKey:YES]);
+  XCTAssertTrue([dict getInt32:&value forKey:YES]);
   XCTAssertEqual(value, 200);
-  XCTAssertFalse([dict valueForKey:NO value:NULL]);
+  XCTAssertFalse([dict getInt32:NULL forKey:NO]);
 
   // Remove again does nothing.
-  [dict removeValueForKey:NO];
+  [dict removeInt32ForKey:NO];
   XCTAssertEqual(dict.count, 1U);
-  XCTAssertTrue([dict valueForKey:YES value:NULL]);
-  XCTAssertTrue([dict valueForKey:YES value:&value]);
+  XCTAssertTrue([dict getInt32:NULL forKey:YES]);
+  XCTAssertTrue([dict getInt32:&value forKey:YES]);
   XCTAssertEqual(value, 200);
-  XCTAssertFalse([dict valueForKey:NO value:NULL]);
+  XCTAssertFalse([dict getInt32:NULL forKey:NO]);
 
   [dict removeAll];
   XCTAssertEqual(dict.count, 0U);
-  XCTAssertFalse([dict valueForKey:YES value:NULL]);
-  XCTAssertFalse([dict valueForKey:NO value:NULL]);
+  XCTAssertFalse([dict getInt32:NULL forKey:YES]);
+  XCTAssertFalse([dict getInt32:NULL forKey:NO]);
   [dict release];
 }
 
@@ -589,51 +589,51 @@
   const BOOL kKeys[] = { YES, NO };
   const int32_t kValues[] = { 200, 201 };
   GPBBoolInt32Dictionary *dict =
-      [[GPBBoolInt32Dictionary alloc] initWithValues:kValues
-                                      forKeys:kKeys
-                                        count:GPBARRAYSIZE(kValues)];
+      [[GPBBoolInt32Dictionary alloc] initWithInt32s:kValues
+                                             forKeys:kKeys
+                                               count:GPBARRAYSIZE(kValues)];
   XCTAssertNotNil(dict);
   XCTAssertEqual(dict.count, 2U);
   int32_t value;
-  XCTAssertTrue([dict valueForKey:YES value:NULL]);
-  XCTAssertTrue([dict valueForKey:YES value:&value]);
+  XCTAssertTrue([dict getInt32:NULL forKey:YES]);
+  XCTAssertTrue([dict getInt32:&value forKey:YES]);
   XCTAssertEqual(value, 200);
-  XCTAssertTrue([dict valueForKey:NO value:NULL]);
-  XCTAssertTrue([dict valueForKey:NO value:&value]);
+  XCTAssertTrue([dict getInt32:NULL forKey:NO]);
+  XCTAssertTrue([dict getInt32:&value forKey:NO]);
   XCTAssertEqual(value, 201);
 
-  [dict setValue:201 forKey:YES];
+  [dict setInt32:201 forKey:YES];
   XCTAssertEqual(dict.count, 2U);
-  XCTAssertTrue([dict valueForKey:YES value:NULL]);
-  XCTAssertTrue([dict valueForKey:YES value:&value]);
+  XCTAssertTrue([dict getInt32:NULL forKey:YES]);
+  XCTAssertTrue([dict getInt32:&value forKey:YES]);
   XCTAssertEqual(value, 201);
-  XCTAssertTrue([dict valueForKey:NO value:NULL]);
-  XCTAssertTrue([dict valueForKey:NO value:&value]);
+  XCTAssertTrue([dict getInt32:NULL forKey:NO]);
+  XCTAssertTrue([dict getInt32:&value forKey:NO]);
   XCTAssertEqual(value, 201);
 
-  [dict setValue:200 forKey:NO];
+  [dict setInt32:200 forKey:NO];
   XCTAssertEqual(dict.count, 2U);
-  XCTAssertTrue([dict valueForKey:YES value:NULL]);
-  XCTAssertTrue([dict valueForKey:YES value:&value]);
+  XCTAssertTrue([dict getInt32:NULL forKey:YES]);
+  XCTAssertTrue([dict getInt32:&value forKey:YES]);
   XCTAssertEqual(value, 201);
-  XCTAssertTrue([dict valueForKey:NO value:NULL]);
-  XCTAssertTrue([dict valueForKey:NO value:&value]);
+  XCTAssertTrue([dict getInt32:NULL forKey:NO]);
+  XCTAssertTrue([dict getInt32:&value forKey:NO]);
   XCTAssertEqual(value, 200);
 
   const BOOL kKeys2[] = { NO, YES };
   const int32_t kValues2[] = { 201, 200 };
   GPBBoolInt32Dictionary *dict2 =
-      [[GPBBoolInt32Dictionary alloc] initWithValues:kValues2
+      [[GPBBoolInt32Dictionary alloc] initWithInt32s:kValues2
                                              forKeys:kKeys2
                                                count:GPBARRAYSIZE(kValues2)];
   XCTAssertNotNil(dict2);
   [dict addEntriesFromDictionary:dict2];
   XCTAssertEqual(dict.count, 2U);
-  XCTAssertTrue([dict valueForKey:YES value:NULL]);
-  XCTAssertTrue([dict valueForKey:YES value:&value]);
+  XCTAssertTrue([dict getInt32:NULL forKey:YES]);
+  XCTAssertTrue([dict getInt32:&value forKey:YES]);
   XCTAssertEqual(value, 200);
-  XCTAssertTrue([dict valueForKey:NO value:NULL]);
-  XCTAssertTrue([dict valueForKey:NO value:&value]);
+  XCTAssertTrue([dict getInt32:NULL forKey:NO]);
+  XCTAssertTrue([dict getInt32:&value forKey:NO]);
   XCTAssertEqual(value, 201);
 
   [dict2 release];
@@ -656,8 +656,8 @@
   GPBBoolUInt64Dictionary *dict = [[GPBBoolUInt64Dictionary alloc] init];
   XCTAssertNotNil(dict);
   XCTAssertEqual(dict.count, 0U);
-  XCTAssertFalse([dict valueForKey:YES value:NULL]);
-  [dict enumerateKeysAndValuesUsingBlock:^(BOOL aKey, uint64_t aValue, BOOL *stop) {
+  XCTAssertFalse([dict getUInt64:NULL forKey:YES]);
+  [dict enumerateKeysAndUInt64sUsingBlock:^(BOOL aKey, uint64_t aValue, BOOL *stop) {
     #pragma unused(aKey, aValue, stop)
     XCTFail(@"Shouldn't get here!");
   }];
@@ -665,15 +665,15 @@
 }
 
 - (void)testOne {
-  GPBBoolUInt64Dictionary *dict = [GPBBoolUInt64Dictionary dictionaryWithValue:300U forKey:YES];
+  GPBBoolUInt64Dictionary *dict = [GPBBoolUInt64Dictionary dictionaryWithUInt64:300U forKey:YES];
   XCTAssertNotNil(dict);
   XCTAssertEqual(dict.count, 1U);
   uint64_t value;
-  XCTAssertTrue([dict valueForKey:YES value:NULL]);
-  XCTAssertTrue([dict valueForKey:YES value:&value]);
+  XCTAssertTrue([dict getUInt64:NULL forKey:YES]);
+  XCTAssertTrue([dict getUInt64:&value forKey:YES]);
   XCTAssertEqual(value, 300U);
-  XCTAssertFalse([dict valueForKey:NO value:NULL]);
-  [dict enumerateKeysAndValuesUsingBlock:^(BOOL aKey, uint64_t aValue, BOOL *stop) {
+  XCTAssertFalse([dict getUInt64:NULL forKey:NO]);
+  [dict enumerateKeysAndUInt64sUsingBlock:^(BOOL aKey, uint64_t aValue, BOOL *stop) {
     XCTAssertEqual(aKey, YES);
     XCTAssertEqual(aValue, 300U);
     XCTAssertNotEqual(stop, NULL);
@@ -684,23 +684,23 @@
   const BOOL kKeys[] = { YES, NO };
   const uint64_t kValues[] = { 300U, 301U };
   GPBBoolUInt64Dictionary *dict =
-      [[GPBBoolUInt64Dictionary alloc] initWithValues:kValues
-                                              forKeys:kKeys
-                                                count:GPBARRAYSIZE(kValues)];
+      [[GPBBoolUInt64Dictionary alloc] initWithUInt64s:kValues
+                                               forKeys:kKeys
+                                                 count:GPBARRAYSIZE(kValues)];
   XCTAssertNotNil(dict);
   XCTAssertEqual(dict.count, 2U);
   uint64_t value;
-  XCTAssertTrue([dict valueForKey:YES value:NULL]);
-  XCTAssertTrue([dict valueForKey:YES value:&value]);
+  XCTAssertTrue([dict getUInt64:NULL forKey:YES]);
+  XCTAssertTrue([dict getUInt64:&value forKey:YES]);
   XCTAssertEqual(value, 300U);
-  XCTAssertTrue([dict valueForKey:NO value:NULL]);
-  XCTAssertTrue([dict valueForKey:NO value:&value]);
+  XCTAssertTrue([dict getUInt64:NULL forKey:NO]);
+  XCTAssertTrue([dict getUInt64:&value forKey:NO]);
   XCTAssertEqual(value, 301U);
 
   __block NSUInteger idx = 0;
   BOOL *seenKeys = malloc(2 * sizeof(BOOL));
   uint64_t *seenValues = malloc(2 * sizeof(uint64_t));
-  [dict enumerateKeysAndValuesUsingBlock:^(BOOL aKey, uint64_t aValue, BOOL *stop) {
+  [dict enumerateKeysAndUInt64sUsingBlock:^(BOOL aKey, uint64_t aValue, BOOL *stop) {
     XCTAssertLessThan(idx, 2U);
     seenKeys[idx] = aKey;
     seenValues[idx] = aValue;
@@ -722,7 +722,7 @@
 
   // Stopping the enumeration.
   idx = 0;
-  [dict enumerateKeysAndValuesUsingBlock:^(BOOL aKey, uint64_t aValue, BOOL *stop) {
+  [dict enumerateKeysAndUInt64sUsingBlock:^(BOOL aKey, uint64_t aValue, BOOL *stop) {
     #pragma unused(aKey, aValue)
     if (idx == 0) *stop = YES;
     XCTAssertNotEqual(idx, 2U);
@@ -738,29 +738,29 @@
   const uint64_t kValues2[] = { 301U, 300U };
   const uint64_t kValues3[] = { 301U };
   GPBBoolUInt64Dictionary *dict1 =
-      [[GPBBoolUInt64Dictionary alloc] initWithValues:kValues1
-                                              forKeys:kKeys1
-                                                count:GPBARRAYSIZE(kValues1)];
+      [[GPBBoolUInt64Dictionary alloc] initWithUInt64s:kValues1
+                                               forKeys:kKeys1
+                                                 count:GPBARRAYSIZE(kValues1)];
   XCTAssertNotNil(dict1);
   GPBBoolUInt64Dictionary *dict1prime =
-      [[GPBBoolUInt64Dictionary alloc] initWithValues:kValues1
-                                              forKeys:kKeys1
-                                                count:GPBARRAYSIZE(kValues1)];
+      [[GPBBoolUInt64Dictionary alloc] initWithUInt64s:kValues1
+                                               forKeys:kKeys1
+                                                 count:GPBARRAYSIZE(kValues1)];
   XCTAssertNotNil(dict1prime);
   GPBBoolUInt64Dictionary *dict2 =
-      [[GPBBoolUInt64Dictionary alloc] initWithValues:kValues2
-                                              forKeys:kKeys1
-                                                count:GPBARRAYSIZE(kValues2)];
+      [[GPBBoolUInt64Dictionary alloc] initWithUInt64s:kValues2
+                                               forKeys:kKeys1
+                                                 count:GPBARRAYSIZE(kValues2)];
   XCTAssertNotNil(dict2);
   GPBBoolUInt64Dictionary *dict3 =
-      [[GPBBoolUInt64Dictionary alloc] initWithValues:kValues1
-                                              forKeys:kKeys2
-                                                count:GPBARRAYSIZE(kValues1)];
+      [[GPBBoolUInt64Dictionary alloc] initWithUInt64s:kValues1
+                                               forKeys:kKeys2
+                                                 count:GPBARRAYSIZE(kValues1)];
   XCTAssertNotNil(dict3);
   GPBBoolUInt64Dictionary *dict4 =
-      [[GPBBoolUInt64Dictionary alloc] initWithValues:kValues3
-                                              forKeys:kKeys1
-                                                count:GPBARRAYSIZE(kValues3)];
+      [[GPBBoolUInt64Dictionary alloc] initWithUInt64s:kValues3
+                                               forKeys:kKeys1
+                                                 count:GPBARRAYSIZE(kValues3)];
   XCTAssertNotNil(dict4);
 
   // 1/1Prime should be different objects, but equal.
@@ -789,9 +789,9 @@
   const BOOL kKeys[] = { YES, NO };
   const uint64_t kValues[] = { 300U, 301U };
   GPBBoolUInt64Dictionary *dict =
-      [[GPBBoolUInt64Dictionary alloc] initWithValues:kValues
-                                              forKeys:kKeys
-                                                count:GPBARRAYSIZE(kValues)];
+      [[GPBBoolUInt64Dictionary alloc] initWithUInt64s:kValues
+                                               forKeys:kKeys
+                                                 count:GPBARRAYSIZE(kValues)];
   XCTAssertNotNil(dict);
 
   GPBBoolUInt64Dictionary *dict2 = [dict copy];
@@ -810,9 +810,9 @@
   const BOOL kKeys[] = { YES, NO };
   const uint64_t kValues[] = { 300U, 301U };
   GPBBoolUInt64Dictionary *dict =
-      [[GPBBoolUInt64Dictionary alloc] initWithValues:kValues
-                                              forKeys:kKeys
-                                                count:GPBARRAYSIZE(kValues)];
+      [[GPBBoolUInt64Dictionary alloc] initWithUInt64s:kValues
+                                               forKeys:kKeys
+                                                 count:GPBARRAYSIZE(kValues)];
   XCTAssertNotNil(dict);
 
   GPBBoolUInt64Dictionary *dict2 =
@@ -830,25 +830,25 @@
   XCTAssertNotNil(dict);
 
   XCTAssertEqual(dict.count, 0U);
-  [dict setValue:300U forKey:YES];
+  [dict setUInt64:300U forKey:YES];
   XCTAssertEqual(dict.count, 1U);
 
   const BOOL kKeys[] = { NO };
   const uint64_t kValues[] = { 301U };
   GPBBoolUInt64Dictionary *dict2 =
-      [[GPBBoolUInt64Dictionary alloc] initWithValues:kValues
-                                              forKeys:kKeys
-                                                count:GPBARRAYSIZE(kValues)];
+      [[GPBBoolUInt64Dictionary alloc] initWithUInt64s:kValues
+                                               forKeys:kKeys
+                                                 count:GPBARRAYSIZE(kValues)];
   XCTAssertNotNil(dict2);
   [dict addEntriesFromDictionary:dict2];
   XCTAssertEqual(dict.count, 2U);
 
   uint64_t value;
-  XCTAssertTrue([dict valueForKey:YES value:NULL]);
-  XCTAssertTrue([dict valueForKey:YES value:&value]);
+  XCTAssertTrue([dict getUInt64:NULL forKey:YES]);
+  XCTAssertTrue([dict getUInt64:&value forKey:YES]);
   XCTAssertEqual(value, 300U);
-  XCTAssertTrue([dict valueForKey:NO value:NULL]);
-  XCTAssertTrue([dict valueForKey:NO value:&value]);
+  XCTAssertTrue([dict getUInt64:NULL forKey:NO]);
+  XCTAssertTrue([dict getUInt64:&value forKey:NO]);
   XCTAssertEqual(value, 301U);
   [dict2 release];
 }
@@ -857,32 +857,32 @@
   const BOOL kKeys[] = { YES, NO};
   const uint64_t kValues[] = { 300U, 301U };
   GPBBoolUInt64Dictionary *dict =
-      [[GPBBoolUInt64Dictionary alloc] initWithValues:kValues
-                                       forKeys:kKeys
-                                         count:GPBARRAYSIZE(kValues)];
+      [[GPBBoolUInt64Dictionary alloc] initWithUInt64s:kValues
+                                        forKeys:kKeys
+                                          count:GPBARRAYSIZE(kValues)];
   XCTAssertNotNil(dict);
   XCTAssertEqual(dict.count, 2U);
 
-  [dict removeValueForKey:NO];
+  [dict removeUInt64ForKey:NO];
   XCTAssertEqual(dict.count, 1U);
   uint64_t value;
-  XCTAssertTrue([dict valueForKey:YES value:NULL]);
-  XCTAssertTrue([dict valueForKey:YES value:&value]);
+  XCTAssertTrue([dict getUInt64:NULL forKey:YES]);
+  XCTAssertTrue([dict getUInt64:&value forKey:YES]);
   XCTAssertEqual(value, 300U);
-  XCTAssertFalse([dict valueForKey:NO value:NULL]);
+  XCTAssertFalse([dict getUInt64:NULL forKey:NO]);
 
   // Remove again does nothing.
-  [dict removeValueForKey:NO];
+  [dict removeUInt64ForKey:NO];
   XCTAssertEqual(dict.count, 1U);
-  XCTAssertTrue([dict valueForKey:YES value:NULL]);
-  XCTAssertTrue([dict valueForKey:YES value:&value]);
+  XCTAssertTrue([dict getUInt64:NULL forKey:YES]);
+  XCTAssertTrue([dict getUInt64:&value forKey:YES]);
   XCTAssertEqual(value, 300U);
-  XCTAssertFalse([dict valueForKey:NO value:NULL]);
+  XCTAssertFalse([dict getUInt64:NULL forKey:NO]);
 
   [dict removeAll];
   XCTAssertEqual(dict.count, 0U);
-  XCTAssertFalse([dict valueForKey:YES value:NULL]);
-  XCTAssertFalse([dict valueForKey:NO value:NULL]);
+  XCTAssertFalse([dict getUInt64:NULL forKey:YES]);
+  XCTAssertFalse([dict getUInt64:NULL forKey:NO]);
   [dict release];
 }
 
@@ -890,51 +890,51 @@
   const BOOL kKeys[] = { YES, NO };
   const uint64_t kValues[] = { 300U, 301U };
   GPBBoolUInt64Dictionary *dict =
-      [[GPBBoolUInt64Dictionary alloc] initWithValues:kValues
-                                       forKeys:kKeys
-                                         count:GPBARRAYSIZE(kValues)];
+      [[GPBBoolUInt64Dictionary alloc] initWithUInt64s:kValues
+                                               forKeys:kKeys
+                                                 count:GPBARRAYSIZE(kValues)];
   XCTAssertNotNil(dict);
   XCTAssertEqual(dict.count, 2U);
   uint64_t value;
-  XCTAssertTrue([dict valueForKey:YES value:NULL]);
-  XCTAssertTrue([dict valueForKey:YES value:&value]);
+  XCTAssertTrue([dict getUInt64:NULL forKey:YES]);
+  XCTAssertTrue([dict getUInt64:&value forKey:YES]);
   XCTAssertEqual(value, 300U);
-  XCTAssertTrue([dict valueForKey:NO value:NULL]);
-  XCTAssertTrue([dict valueForKey:NO value:&value]);
+  XCTAssertTrue([dict getUInt64:NULL forKey:NO]);
+  XCTAssertTrue([dict getUInt64:&value forKey:NO]);
   XCTAssertEqual(value, 301U);
 
-  [dict setValue:301U forKey:YES];
+  [dict setUInt64:301U forKey:YES];
   XCTAssertEqual(dict.count, 2U);
-  XCTAssertTrue([dict valueForKey:YES value:NULL]);
-  XCTAssertTrue([dict valueForKey:YES value:&value]);
+  XCTAssertTrue([dict getUInt64:NULL forKey:YES]);
+  XCTAssertTrue([dict getUInt64:&value forKey:YES]);
   XCTAssertEqual(value, 301U);
-  XCTAssertTrue([dict valueForKey:NO value:NULL]);
-  XCTAssertTrue([dict valueForKey:NO value:&value]);
+  XCTAssertTrue([dict getUInt64:NULL forKey:NO]);
+  XCTAssertTrue([dict getUInt64:&value forKey:NO]);
   XCTAssertEqual(value, 301U);
 
-  [dict setValue:300U forKey:NO];
+  [dict setUInt64:300U forKey:NO];
   XCTAssertEqual(dict.count, 2U);
-  XCTAssertTrue([dict valueForKey:YES value:NULL]);
-  XCTAssertTrue([dict valueForKey:YES value:&value]);
+  XCTAssertTrue([dict getUInt64:NULL forKey:YES]);
+  XCTAssertTrue([dict getUInt64:&value forKey:YES]);
   XCTAssertEqual(value, 301U);
-  XCTAssertTrue([dict valueForKey:NO value:NULL]);
-  XCTAssertTrue([dict valueForKey:NO value:&value]);
+  XCTAssertTrue([dict getUInt64:NULL forKey:NO]);
+  XCTAssertTrue([dict getUInt64:&value forKey:NO]);
   XCTAssertEqual(value, 300U);
 
   const BOOL kKeys2[] = { NO, YES };
   const uint64_t kValues2[] = { 301U, 300U };
   GPBBoolUInt64Dictionary *dict2 =
-      [[GPBBoolUInt64Dictionary alloc] initWithValues:kValues2
-                                              forKeys:kKeys2
-                                                count:GPBARRAYSIZE(kValues2)];
+      [[GPBBoolUInt64Dictionary alloc] initWithUInt64s:kValues2
+                                               forKeys:kKeys2
+                                                 count:GPBARRAYSIZE(kValues2)];
   XCTAssertNotNil(dict2);
   [dict addEntriesFromDictionary:dict2];
   XCTAssertEqual(dict.count, 2U);
-  XCTAssertTrue([dict valueForKey:YES value:NULL]);
-  XCTAssertTrue([dict valueForKey:YES value:&value]);
+  XCTAssertTrue([dict getUInt64:NULL forKey:YES]);
+  XCTAssertTrue([dict getUInt64:&value forKey:YES]);
   XCTAssertEqual(value, 300U);
-  XCTAssertTrue([dict valueForKey:NO value:NULL]);
-  XCTAssertTrue([dict valueForKey:NO value:&value]);
+  XCTAssertTrue([dict getUInt64:NULL forKey:NO]);
+  XCTAssertTrue([dict getUInt64:&value forKey:NO]);
   XCTAssertEqual(value, 301U);
 
   [dict2 release];
@@ -957,8 +957,8 @@
   GPBBoolInt64Dictionary *dict = [[GPBBoolInt64Dictionary alloc] init];
   XCTAssertNotNil(dict);
   XCTAssertEqual(dict.count, 0U);
-  XCTAssertFalse([dict valueForKey:YES value:NULL]);
-  [dict enumerateKeysAndValuesUsingBlock:^(BOOL aKey, int64_t aValue, BOOL *stop) {
+  XCTAssertFalse([dict getInt64:NULL forKey:YES]);
+  [dict enumerateKeysAndInt64sUsingBlock:^(BOOL aKey, int64_t aValue, BOOL *stop) {
     #pragma unused(aKey, aValue, stop)
     XCTFail(@"Shouldn't get here!");
   }];
@@ -966,15 +966,15 @@
 }
 
 - (void)testOne {
-  GPBBoolInt64Dictionary *dict = [GPBBoolInt64Dictionary dictionaryWithValue:400 forKey:YES];
+  GPBBoolInt64Dictionary *dict = [GPBBoolInt64Dictionary dictionaryWithInt64:400 forKey:YES];
   XCTAssertNotNil(dict);
   XCTAssertEqual(dict.count, 1U);
   int64_t value;
-  XCTAssertTrue([dict valueForKey:YES value:NULL]);
-  XCTAssertTrue([dict valueForKey:YES value:&value]);
+  XCTAssertTrue([dict getInt64:NULL forKey:YES]);
+  XCTAssertTrue([dict getInt64:&value forKey:YES]);
   XCTAssertEqual(value, 400);
-  XCTAssertFalse([dict valueForKey:NO value:NULL]);
-  [dict enumerateKeysAndValuesUsingBlock:^(BOOL aKey, int64_t aValue, BOOL *stop) {
+  XCTAssertFalse([dict getInt64:NULL forKey:NO]);
+  [dict enumerateKeysAndInt64sUsingBlock:^(BOOL aKey, int64_t aValue, BOOL *stop) {
     XCTAssertEqual(aKey, YES);
     XCTAssertEqual(aValue, 400);
     XCTAssertNotEqual(stop, NULL);
@@ -985,23 +985,23 @@
   const BOOL kKeys[] = { YES, NO };
   const int64_t kValues[] = { 400, 401 };
   GPBBoolInt64Dictionary *dict =
-      [[GPBBoolInt64Dictionary alloc] initWithValues:kValues
+      [[GPBBoolInt64Dictionary alloc] initWithInt64s:kValues
                                              forKeys:kKeys
                                                count:GPBARRAYSIZE(kValues)];
   XCTAssertNotNil(dict);
   XCTAssertEqual(dict.count, 2U);
   int64_t value;
-  XCTAssertTrue([dict valueForKey:YES value:NULL]);
-  XCTAssertTrue([dict valueForKey:YES value:&value]);
+  XCTAssertTrue([dict getInt64:NULL forKey:YES]);
+  XCTAssertTrue([dict getInt64:&value forKey:YES]);
   XCTAssertEqual(value, 400);
-  XCTAssertTrue([dict valueForKey:NO value:NULL]);
-  XCTAssertTrue([dict valueForKey:NO value:&value]);
+  XCTAssertTrue([dict getInt64:NULL forKey:NO]);
+  XCTAssertTrue([dict getInt64:&value forKey:NO]);
   XCTAssertEqual(value, 401);
 
   __block NSUInteger idx = 0;
   BOOL *seenKeys = malloc(2 * sizeof(BOOL));
   int64_t *seenValues = malloc(2 * sizeof(int64_t));
-  [dict enumerateKeysAndValuesUsingBlock:^(BOOL aKey, int64_t aValue, BOOL *stop) {
+  [dict enumerateKeysAndInt64sUsingBlock:^(BOOL aKey, int64_t aValue, BOOL *stop) {
     XCTAssertLessThan(idx, 2U);
     seenKeys[idx] = aKey;
     seenValues[idx] = aValue;
@@ -1023,7 +1023,7 @@
 
   // Stopping the enumeration.
   idx = 0;
-  [dict enumerateKeysAndValuesUsingBlock:^(BOOL aKey, int64_t aValue, BOOL *stop) {
+  [dict enumerateKeysAndInt64sUsingBlock:^(BOOL aKey, int64_t aValue, BOOL *stop) {
     #pragma unused(aKey, aValue)
     if (idx == 0) *stop = YES;
     XCTAssertNotEqual(idx, 2U);
@@ -1039,27 +1039,27 @@
   const int64_t kValues2[] = { 401, 400 };
   const int64_t kValues3[] = { 401 };
   GPBBoolInt64Dictionary *dict1 =
-      [[GPBBoolInt64Dictionary alloc] initWithValues:kValues1
+      [[GPBBoolInt64Dictionary alloc] initWithInt64s:kValues1
                                              forKeys:kKeys1
                                                count:GPBARRAYSIZE(kValues1)];
   XCTAssertNotNil(dict1);
   GPBBoolInt64Dictionary *dict1prime =
-      [[GPBBoolInt64Dictionary alloc] initWithValues:kValues1
+      [[GPBBoolInt64Dictionary alloc] initWithInt64s:kValues1
                                              forKeys:kKeys1
                                                count:GPBARRAYSIZE(kValues1)];
   XCTAssertNotNil(dict1prime);
   GPBBoolInt64Dictionary *dict2 =
-      [[GPBBoolInt64Dictionary alloc] initWithValues:kValues2
+      [[GPBBoolInt64Dictionary alloc] initWithInt64s:kValues2
                                              forKeys:kKeys1
                                                count:GPBARRAYSIZE(kValues2)];
   XCTAssertNotNil(dict2);
   GPBBoolInt64Dictionary *dict3 =
-      [[GPBBoolInt64Dictionary alloc] initWithValues:kValues1
+      [[GPBBoolInt64Dictionary alloc] initWithInt64s:kValues1
                                              forKeys:kKeys2
                                                count:GPBARRAYSIZE(kValues1)];
   XCTAssertNotNil(dict3);
   GPBBoolInt64Dictionary *dict4 =
-      [[GPBBoolInt64Dictionary alloc] initWithValues:kValues3
+      [[GPBBoolInt64Dictionary alloc] initWithInt64s:kValues3
                                              forKeys:kKeys1
                                                count:GPBARRAYSIZE(kValues3)];
   XCTAssertNotNil(dict4);
@@ -1090,7 +1090,7 @@
   const BOOL kKeys[] = { YES, NO };
   const int64_t kValues[] = { 400, 401 };
   GPBBoolInt64Dictionary *dict =
-      [[GPBBoolInt64Dictionary alloc] initWithValues:kValues
+      [[GPBBoolInt64Dictionary alloc] initWithInt64s:kValues
                                              forKeys:kKeys
                                                count:GPBARRAYSIZE(kValues)];
   XCTAssertNotNil(dict);
@@ -1111,7 +1111,7 @@
   const BOOL kKeys[] = { YES, NO };
   const int64_t kValues[] = { 400, 401 };
   GPBBoolInt64Dictionary *dict =
-      [[GPBBoolInt64Dictionary alloc] initWithValues:kValues
+      [[GPBBoolInt64Dictionary alloc] initWithInt64s:kValues
                                              forKeys:kKeys
                                                count:GPBARRAYSIZE(kValues)];
   XCTAssertNotNil(dict);
@@ -1131,13 +1131,13 @@
   XCTAssertNotNil(dict);
 
   XCTAssertEqual(dict.count, 0U);
-  [dict setValue:400 forKey:YES];
+  [dict setInt64:400 forKey:YES];
   XCTAssertEqual(dict.count, 1U);
 
   const BOOL kKeys[] = { NO };
   const int64_t kValues[] = { 401 };
   GPBBoolInt64Dictionary *dict2 =
-      [[GPBBoolInt64Dictionary alloc] initWithValues:kValues
+      [[GPBBoolInt64Dictionary alloc] initWithInt64s:kValues
                                              forKeys:kKeys
                                                count:GPBARRAYSIZE(kValues)];
   XCTAssertNotNil(dict2);
@@ -1145,11 +1145,11 @@
   XCTAssertEqual(dict.count, 2U);
 
   int64_t value;
-  XCTAssertTrue([dict valueForKey:YES value:NULL]);
-  XCTAssertTrue([dict valueForKey:YES value:&value]);
+  XCTAssertTrue([dict getInt64:NULL forKey:YES]);
+  XCTAssertTrue([dict getInt64:&value forKey:YES]);
   XCTAssertEqual(value, 400);
-  XCTAssertTrue([dict valueForKey:NO value:NULL]);
-  XCTAssertTrue([dict valueForKey:NO value:&value]);
+  XCTAssertTrue([dict getInt64:NULL forKey:NO]);
+  XCTAssertTrue([dict getInt64:&value forKey:NO]);
   XCTAssertEqual(value, 401);
   [dict2 release];
 }
@@ -1158,32 +1158,32 @@
   const BOOL kKeys[] = { YES, NO};
   const int64_t kValues[] = { 400, 401 };
   GPBBoolInt64Dictionary *dict =
-      [[GPBBoolInt64Dictionary alloc] initWithValues:kValues
+      [[GPBBoolInt64Dictionary alloc] initWithInt64s:kValues
                                       forKeys:kKeys
                                         count:GPBARRAYSIZE(kValues)];
   XCTAssertNotNil(dict);
   XCTAssertEqual(dict.count, 2U);
 
-  [dict removeValueForKey:NO];
+  [dict removeInt64ForKey:NO];
   XCTAssertEqual(dict.count, 1U);
   int64_t value;
-  XCTAssertTrue([dict valueForKey:YES value:NULL]);
-  XCTAssertTrue([dict valueForKey:YES value:&value]);
+  XCTAssertTrue([dict getInt64:NULL forKey:YES]);
+  XCTAssertTrue([dict getInt64:&value forKey:YES]);
   XCTAssertEqual(value, 400);
-  XCTAssertFalse([dict valueForKey:NO value:NULL]);
+  XCTAssertFalse([dict getInt64:NULL forKey:NO]);
 
   // Remove again does nothing.
-  [dict removeValueForKey:NO];
+  [dict removeInt64ForKey:NO];
   XCTAssertEqual(dict.count, 1U);
-  XCTAssertTrue([dict valueForKey:YES value:NULL]);
-  XCTAssertTrue([dict valueForKey:YES value:&value]);
+  XCTAssertTrue([dict getInt64:NULL forKey:YES]);
+  XCTAssertTrue([dict getInt64:&value forKey:YES]);
   XCTAssertEqual(value, 400);
-  XCTAssertFalse([dict valueForKey:NO value:NULL]);
+  XCTAssertFalse([dict getInt64:NULL forKey:NO]);
 
   [dict removeAll];
   XCTAssertEqual(dict.count, 0U);
-  XCTAssertFalse([dict valueForKey:YES value:NULL]);
-  XCTAssertFalse([dict valueForKey:NO value:NULL]);
+  XCTAssertFalse([dict getInt64:NULL forKey:YES]);
+  XCTAssertFalse([dict getInt64:NULL forKey:NO]);
   [dict release];
 }
 
@@ -1191,51 +1191,51 @@
   const BOOL kKeys[] = { YES, NO };
   const int64_t kValues[] = { 400, 401 };
   GPBBoolInt64Dictionary *dict =
-      [[GPBBoolInt64Dictionary alloc] initWithValues:kValues
-                                      forKeys:kKeys
-                                        count:GPBARRAYSIZE(kValues)];
+      [[GPBBoolInt64Dictionary alloc] initWithInt64s:kValues
+                                             forKeys:kKeys
+                                               count:GPBARRAYSIZE(kValues)];
   XCTAssertNotNil(dict);
   XCTAssertEqual(dict.count, 2U);
   int64_t value;
-  XCTAssertTrue([dict valueForKey:YES value:NULL]);
-  XCTAssertTrue([dict valueForKey:YES value:&value]);
+  XCTAssertTrue([dict getInt64:NULL forKey:YES]);
+  XCTAssertTrue([dict getInt64:&value forKey:YES]);
   XCTAssertEqual(value, 400);
-  XCTAssertTrue([dict valueForKey:NO value:NULL]);
-  XCTAssertTrue([dict valueForKey:NO value:&value]);
+  XCTAssertTrue([dict getInt64:NULL forKey:NO]);
+  XCTAssertTrue([dict getInt64:&value forKey:NO]);
   XCTAssertEqual(value, 401);
 
-  [dict setValue:401 forKey:YES];
+  [dict setInt64:401 forKey:YES];
   XCTAssertEqual(dict.count, 2U);
-  XCTAssertTrue([dict valueForKey:YES value:NULL]);
-  XCTAssertTrue([dict valueForKey:YES value:&value]);
+  XCTAssertTrue([dict getInt64:NULL forKey:YES]);
+  XCTAssertTrue([dict getInt64:&value forKey:YES]);
   XCTAssertEqual(value, 401);
-  XCTAssertTrue([dict valueForKey:NO value:NULL]);
-  XCTAssertTrue([dict valueForKey:NO value:&value]);
+  XCTAssertTrue([dict getInt64:NULL forKey:NO]);
+  XCTAssertTrue([dict getInt64:&value forKey:NO]);
   XCTAssertEqual(value, 401);
 
-  [dict setValue:400 forKey:NO];
+  [dict setInt64:400 forKey:NO];
   XCTAssertEqual(dict.count, 2U);
-  XCTAssertTrue([dict valueForKey:YES value:NULL]);
-  XCTAssertTrue([dict valueForKey:YES value:&value]);
+  XCTAssertTrue([dict getInt64:NULL forKey:YES]);
+  XCTAssertTrue([dict getInt64:&value forKey:YES]);
   XCTAssertEqual(value, 401);
-  XCTAssertTrue([dict valueForKey:NO value:NULL]);
-  XCTAssertTrue([dict valueForKey:NO value:&value]);
+  XCTAssertTrue([dict getInt64:NULL forKey:NO]);
+  XCTAssertTrue([dict getInt64:&value forKey:NO]);
   XCTAssertEqual(value, 400);
 
   const BOOL kKeys2[] = { NO, YES };
   const int64_t kValues2[] = { 401, 400 };
   GPBBoolInt64Dictionary *dict2 =
-      [[GPBBoolInt64Dictionary alloc] initWithValues:kValues2
+      [[GPBBoolInt64Dictionary alloc] initWithInt64s:kValues2
                                              forKeys:kKeys2
                                                count:GPBARRAYSIZE(kValues2)];
   XCTAssertNotNil(dict2);
   [dict addEntriesFromDictionary:dict2];
   XCTAssertEqual(dict.count, 2U);
-  XCTAssertTrue([dict valueForKey:YES value:NULL]);
-  XCTAssertTrue([dict valueForKey:YES value:&value]);
+  XCTAssertTrue([dict getInt64:NULL forKey:YES]);
+  XCTAssertTrue([dict getInt64:&value forKey:YES]);
   XCTAssertEqual(value, 400);
-  XCTAssertTrue([dict valueForKey:NO value:NULL]);
-  XCTAssertTrue([dict valueForKey:NO value:&value]);
+  XCTAssertTrue([dict getInt64:NULL forKey:NO]);
+  XCTAssertTrue([dict getInt64:&value forKey:NO]);
   XCTAssertEqual(value, 401);
 
   [dict2 release];
@@ -1258,8 +1258,8 @@
   GPBBoolBoolDictionary *dict = [[GPBBoolBoolDictionary alloc] init];
   XCTAssertNotNil(dict);
   XCTAssertEqual(dict.count, 0U);
-  XCTAssertFalse([dict valueForKey:YES value:NULL]);
-  [dict enumerateKeysAndValuesUsingBlock:^(BOOL aKey, BOOL aValue, BOOL *stop) {
+  XCTAssertFalse([dict getBool:NULL forKey:YES]);
+  [dict enumerateKeysAndBoolsUsingBlock:^(BOOL aKey, BOOL aValue, BOOL *stop) {
     #pragma unused(aKey, aValue, stop)
     XCTFail(@"Shouldn't get here!");
   }];
@@ -1267,15 +1267,15 @@
 }
 
 - (void)testOne {
-  GPBBoolBoolDictionary *dict = [GPBBoolBoolDictionary dictionaryWithValue:NO forKey:YES];
+  GPBBoolBoolDictionary *dict = [GPBBoolBoolDictionary dictionaryWithBool:NO forKey:YES];
   XCTAssertNotNil(dict);
   XCTAssertEqual(dict.count, 1U);
   BOOL value;
-  XCTAssertTrue([dict valueForKey:YES value:NULL]);
-  XCTAssertTrue([dict valueForKey:YES value:&value]);
+  XCTAssertTrue([dict getBool:NULL forKey:YES]);
+  XCTAssertTrue([dict getBool:&value forKey:YES]);
   XCTAssertEqual(value, NO);
-  XCTAssertFalse([dict valueForKey:NO value:NULL]);
-  [dict enumerateKeysAndValuesUsingBlock:^(BOOL aKey, BOOL aValue, BOOL *stop) {
+  XCTAssertFalse([dict getBool:NULL forKey:NO]);
+  [dict enumerateKeysAndBoolsUsingBlock:^(BOOL aKey, BOOL aValue, BOOL *stop) {
     XCTAssertEqual(aKey, YES);
     XCTAssertEqual(aValue, NO);
     XCTAssertNotEqual(stop, NULL);
@@ -1286,23 +1286,23 @@
   const BOOL kKeys[] = { YES, NO };
   const BOOL kValues[] = { NO, YES };
   GPBBoolBoolDictionary *dict =
-      [[GPBBoolBoolDictionary alloc] initWithValues:kValues
-                                            forKeys:kKeys
-                                              count:GPBARRAYSIZE(kValues)];
+      [[GPBBoolBoolDictionary alloc] initWithBools:kValues
+                                           forKeys:kKeys
+                                             count:GPBARRAYSIZE(kValues)];
   XCTAssertNotNil(dict);
   XCTAssertEqual(dict.count, 2U);
   BOOL value;
-  XCTAssertTrue([dict valueForKey:YES value:NULL]);
-  XCTAssertTrue([dict valueForKey:YES value:&value]);
+  XCTAssertTrue([dict getBool:NULL forKey:YES]);
+  XCTAssertTrue([dict getBool:&value forKey:YES]);
   XCTAssertEqual(value, NO);
-  XCTAssertTrue([dict valueForKey:NO value:NULL]);
-  XCTAssertTrue([dict valueForKey:NO value:&value]);
+  XCTAssertTrue([dict getBool:NULL forKey:NO]);
+  XCTAssertTrue([dict getBool:&value forKey:NO]);
   XCTAssertEqual(value, YES);
 
   __block NSUInteger idx = 0;
   BOOL *seenKeys = malloc(2 * sizeof(BOOL));
   BOOL *seenValues = malloc(2 * sizeof(BOOL));
-  [dict enumerateKeysAndValuesUsingBlock:^(BOOL aKey, BOOL aValue, BOOL *stop) {
+  [dict enumerateKeysAndBoolsUsingBlock:^(BOOL aKey, BOOL aValue, BOOL *stop) {
     XCTAssertLessThan(idx, 2U);
     seenKeys[idx] = aKey;
     seenValues[idx] = aValue;
@@ -1324,7 +1324,7 @@
 
   // Stopping the enumeration.
   idx = 0;
-  [dict enumerateKeysAndValuesUsingBlock:^(BOOL aKey, BOOL aValue, BOOL *stop) {
+  [dict enumerateKeysAndBoolsUsingBlock:^(BOOL aKey, BOOL aValue, BOOL *stop) {
     #pragma unused(aKey, aValue)
     if (idx == 0) *stop = YES;
     XCTAssertNotEqual(idx, 2U);
@@ -1340,29 +1340,29 @@
   const BOOL kValues2[] = { YES, NO };
   const BOOL kValues3[] = { YES };
   GPBBoolBoolDictionary *dict1 =
-      [[GPBBoolBoolDictionary alloc] initWithValues:kValues1
-                                            forKeys:kKeys1
-                                              count:GPBARRAYSIZE(kValues1)];
+      [[GPBBoolBoolDictionary alloc] initWithBools:kValues1
+                                           forKeys:kKeys1
+                                             count:GPBARRAYSIZE(kValues1)];
   XCTAssertNotNil(dict1);
   GPBBoolBoolDictionary *dict1prime =
-      [[GPBBoolBoolDictionary alloc] initWithValues:kValues1
-                                            forKeys:kKeys1
-                                              count:GPBARRAYSIZE(kValues1)];
+      [[GPBBoolBoolDictionary alloc] initWithBools:kValues1
+                                           forKeys:kKeys1
+                                             count:GPBARRAYSIZE(kValues1)];
   XCTAssertNotNil(dict1prime);
   GPBBoolBoolDictionary *dict2 =
-      [[GPBBoolBoolDictionary alloc] initWithValues:kValues2
-                                            forKeys:kKeys1
-                                              count:GPBARRAYSIZE(kValues2)];
+      [[GPBBoolBoolDictionary alloc] initWithBools:kValues2
+                                           forKeys:kKeys1
+                                             count:GPBARRAYSIZE(kValues2)];
   XCTAssertNotNil(dict2);
   GPBBoolBoolDictionary *dict3 =
-      [[GPBBoolBoolDictionary alloc] initWithValues:kValues1
-                                            forKeys:kKeys2
-                                              count:GPBARRAYSIZE(kValues1)];
+      [[GPBBoolBoolDictionary alloc] initWithBools:kValues1
+                                           forKeys:kKeys2
+                                             count:GPBARRAYSIZE(kValues1)];
   XCTAssertNotNil(dict3);
   GPBBoolBoolDictionary *dict4 =
-      [[GPBBoolBoolDictionary alloc] initWithValues:kValues3
-                                            forKeys:kKeys1
-                                              count:GPBARRAYSIZE(kValues3)];
+      [[GPBBoolBoolDictionary alloc] initWithBools:kValues3
+                                           forKeys:kKeys1
+                                             count:GPBARRAYSIZE(kValues3)];
   XCTAssertNotNil(dict4);
 
   // 1/1Prime should be different objects, but equal.
@@ -1391,9 +1391,9 @@
   const BOOL kKeys[] = { YES, NO };
   const BOOL kValues[] = { NO, YES };
   GPBBoolBoolDictionary *dict =
-      [[GPBBoolBoolDictionary alloc] initWithValues:kValues
-                                            forKeys:kKeys
-                                              count:GPBARRAYSIZE(kValues)];
+      [[GPBBoolBoolDictionary alloc] initWithBools:kValues
+                                           forKeys:kKeys
+                                             count:GPBARRAYSIZE(kValues)];
   XCTAssertNotNil(dict);
 
   GPBBoolBoolDictionary *dict2 = [dict copy];
@@ -1412,9 +1412,9 @@
   const BOOL kKeys[] = { YES, NO };
   const BOOL kValues[] = { NO, YES };
   GPBBoolBoolDictionary *dict =
-      [[GPBBoolBoolDictionary alloc] initWithValues:kValues
-                                            forKeys:kKeys
-                                              count:GPBARRAYSIZE(kValues)];
+      [[GPBBoolBoolDictionary alloc] initWithBools:kValues
+                                           forKeys:kKeys
+                                             count:GPBARRAYSIZE(kValues)];
   XCTAssertNotNil(dict);
 
   GPBBoolBoolDictionary *dict2 =
@@ -1432,25 +1432,25 @@
   XCTAssertNotNil(dict);
 
   XCTAssertEqual(dict.count, 0U);
-  [dict setValue:NO forKey:YES];
+  [dict setBool:NO forKey:YES];
   XCTAssertEqual(dict.count, 1U);
 
   const BOOL kKeys[] = { NO };
   const BOOL kValues[] = { YES };
   GPBBoolBoolDictionary *dict2 =
-      [[GPBBoolBoolDictionary alloc] initWithValues:kValues
-                                            forKeys:kKeys
-                                              count:GPBARRAYSIZE(kValues)];
+      [[GPBBoolBoolDictionary alloc] initWithBools:kValues
+                                           forKeys:kKeys
+                                             count:GPBARRAYSIZE(kValues)];
   XCTAssertNotNil(dict2);
   [dict addEntriesFromDictionary:dict2];
   XCTAssertEqual(dict.count, 2U);
 
   BOOL value;
-  XCTAssertTrue([dict valueForKey:YES value:NULL]);
-  XCTAssertTrue([dict valueForKey:YES value:&value]);
+  XCTAssertTrue([dict getBool:NULL forKey:YES]);
+  XCTAssertTrue([dict getBool:&value forKey:YES]);
   XCTAssertEqual(value, NO);
-  XCTAssertTrue([dict valueForKey:NO value:NULL]);
-  XCTAssertTrue([dict valueForKey:NO value:&value]);
+  XCTAssertTrue([dict getBool:NULL forKey:NO]);
+  XCTAssertTrue([dict getBool:&value forKey:NO]);
   XCTAssertEqual(value, YES);
   [dict2 release];
 }
@@ -1459,32 +1459,32 @@
   const BOOL kKeys[] = { YES, NO};
   const BOOL kValues[] = { NO, YES };
   GPBBoolBoolDictionary *dict =
-      [[GPBBoolBoolDictionary alloc] initWithValues:kValues
-                                     forKeys:kKeys
-                                       count:GPBARRAYSIZE(kValues)];
+      [[GPBBoolBoolDictionary alloc] initWithBools:kValues
+                                    forKeys:kKeys
+                                      count:GPBARRAYSIZE(kValues)];
   XCTAssertNotNil(dict);
   XCTAssertEqual(dict.count, 2U);
 
-  [dict removeValueForKey:NO];
+  [dict removeBoolForKey:NO];
   XCTAssertEqual(dict.count, 1U);
   BOOL value;
-  XCTAssertTrue([dict valueForKey:YES value:NULL]);
-  XCTAssertTrue([dict valueForKey:YES value:&value]);
+  XCTAssertTrue([dict getBool:NULL forKey:YES]);
+  XCTAssertTrue([dict getBool:&value forKey:YES]);
   XCTAssertEqual(value, NO);
-  XCTAssertFalse([dict valueForKey:NO value:NULL]);
+  XCTAssertFalse([dict getBool:NULL forKey:NO]);
 
   // Remove again does nothing.
-  [dict removeValueForKey:NO];
+  [dict removeBoolForKey:NO];
   XCTAssertEqual(dict.count, 1U);
-  XCTAssertTrue([dict valueForKey:YES value:NULL]);
-  XCTAssertTrue([dict valueForKey:YES value:&value]);
+  XCTAssertTrue([dict getBool:NULL forKey:YES]);
+  XCTAssertTrue([dict getBool:&value forKey:YES]);
   XCTAssertEqual(value, NO);
-  XCTAssertFalse([dict valueForKey:NO value:NULL]);
+  XCTAssertFalse([dict getBool:NULL forKey:NO]);
 
   [dict removeAll];
   XCTAssertEqual(dict.count, 0U);
-  XCTAssertFalse([dict valueForKey:YES value:NULL]);
-  XCTAssertFalse([dict valueForKey:NO value:NULL]);
+  XCTAssertFalse([dict getBool:NULL forKey:YES]);
+  XCTAssertFalse([dict getBool:NULL forKey:NO]);
   [dict release];
 }
 
@@ -1492,51 +1492,51 @@
   const BOOL kKeys[] = { YES, NO };
   const BOOL kValues[] = { NO, YES };
   GPBBoolBoolDictionary *dict =
-      [[GPBBoolBoolDictionary alloc] initWithValues:kValues
-                                     forKeys:kKeys
-                                       count:GPBARRAYSIZE(kValues)];
+      [[GPBBoolBoolDictionary alloc] initWithBools:kValues
+                                           forKeys:kKeys
+                                             count:GPBARRAYSIZE(kValues)];
   XCTAssertNotNil(dict);
   XCTAssertEqual(dict.count, 2U);
   BOOL value;
-  XCTAssertTrue([dict valueForKey:YES value:NULL]);
-  XCTAssertTrue([dict valueForKey:YES value:&value]);
+  XCTAssertTrue([dict getBool:NULL forKey:YES]);
+  XCTAssertTrue([dict getBool:&value forKey:YES]);
   XCTAssertEqual(value, NO);
-  XCTAssertTrue([dict valueForKey:NO value:NULL]);
-  XCTAssertTrue([dict valueForKey:NO value:&value]);
+  XCTAssertTrue([dict getBool:NULL forKey:NO]);
+  XCTAssertTrue([dict getBool:&value forKey:NO]);
   XCTAssertEqual(value, YES);
 
-  [dict setValue:YES forKey:YES];
+  [dict setBool:YES forKey:YES];
   XCTAssertEqual(dict.count, 2U);
-  XCTAssertTrue([dict valueForKey:YES value:NULL]);
-  XCTAssertTrue([dict valueForKey:YES value:&value]);
+  XCTAssertTrue([dict getBool:NULL forKey:YES]);
+  XCTAssertTrue([dict getBool:&value forKey:YES]);
   XCTAssertEqual(value, YES);
-  XCTAssertTrue([dict valueForKey:NO value:NULL]);
-  XCTAssertTrue([dict valueForKey:NO value:&value]);
+  XCTAssertTrue([dict getBool:NULL forKey:NO]);
+  XCTAssertTrue([dict getBool:&value forKey:NO]);
   XCTAssertEqual(value, YES);
 
-  [dict setValue:NO forKey:NO];
+  [dict setBool:NO forKey:NO];
   XCTAssertEqual(dict.count, 2U);
-  XCTAssertTrue([dict valueForKey:YES value:NULL]);
-  XCTAssertTrue([dict valueForKey:YES value:&value]);
+  XCTAssertTrue([dict getBool:NULL forKey:YES]);
+  XCTAssertTrue([dict getBool:&value forKey:YES]);
   XCTAssertEqual(value, YES);
-  XCTAssertTrue([dict valueForKey:NO value:NULL]);
-  XCTAssertTrue([dict valueForKey:NO value:&value]);
+  XCTAssertTrue([dict getBool:NULL forKey:NO]);
+  XCTAssertTrue([dict getBool:&value forKey:NO]);
   XCTAssertEqual(value, NO);
 
   const BOOL kKeys2[] = { NO, YES };
   const BOOL kValues2[] = { YES, NO };
   GPBBoolBoolDictionary *dict2 =
-      [[GPBBoolBoolDictionary alloc] initWithValues:kValues2
-                                            forKeys:kKeys2
-                                              count:GPBARRAYSIZE(kValues2)];
+      [[GPBBoolBoolDictionary alloc] initWithBools:kValues2
+                                           forKeys:kKeys2
+                                             count:GPBARRAYSIZE(kValues2)];
   XCTAssertNotNil(dict2);
   [dict addEntriesFromDictionary:dict2];
   XCTAssertEqual(dict.count, 2U);
-  XCTAssertTrue([dict valueForKey:YES value:NULL]);
-  XCTAssertTrue([dict valueForKey:YES value:&value]);
+  XCTAssertTrue([dict getBool:NULL forKey:YES]);
+  XCTAssertTrue([dict getBool:&value forKey:YES]);
   XCTAssertEqual(value, NO);
-  XCTAssertTrue([dict valueForKey:NO value:NULL]);
-  XCTAssertTrue([dict valueForKey:NO value:&value]);
+  XCTAssertTrue([dict getBool:NULL forKey:NO]);
+  XCTAssertTrue([dict getBool:&value forKey:NO]);
   XCTAssertEqual(value, YES);
 
   [dict2 release];
@@ -1559,8 +1559,8 @@
   GPBBoolFloatDictionary *dict = [[GPBBoolFloatDictionary alloc] init];
   XCTAssertNotNil(dict);
   XCTAssertEqual(dict.count, 0U);
-  XCTAssertFalse([dict valueForKey:YES value:NULL]);
-  [dict enumerateKeysAndValuesUsingBlock:^(BOOL aKey, float aValue, BOOL *stop) {
+  XCTAssertFalse([dict getFloat:NULL forKey:YES]);
+  [dict enumerateKeysAndFloatsUsingBlock:^(BOOL aKey, float aValue, BOOL *stop) {
     #pragma unused(aKey, aValue, stop)
     XCTFail(@"Shouldn't get here!");
   }];
@@ -1568,15 +1568,15 @@
 }
 
 - (void)testOne {
-  GPBBoolFloatDictionary *dict = [GPBBoolFloatDictionary dictionaryWithValue:500.f forKey:YES];
+  GPBBoolFloatDictionary *dict = [GPBBoolFloatDictionary dictionaryWithFloat:500.f forKey:YES];
   XCTAssertNotNil(dict);
   XCTAssertEqual(dict.count, 1U);
   float value;
-  XCTAssertTrue([dict valueForKey:YES value:NULL]);
-  XCTAssertTrue([dict valueForKey:YES value:&value]);
+  XCTAssertTrue([dict getFloat:NULL forKey:YES]);
+  XCTAssertTrue([dict getFloat:&value forKey:YES]);
   XCTAssertEqual(value, 500.f);
-  XCTAssertFalse([dict valueForKey:NO value:NULL]);
-  [dict enumerateKeysAndValuesUsingBlock:^(BOOL aKey, float aValue, BOOL *stop) {
+  XCTAssertFalse([dict getFloat:NULL forKey:NO]);
+  [dict enumerateKeysAndFloatsUsingBlock:^(BOOL aKey, float aValue, BOOL *stop) {
     XCTAssertEqual(aKey, YES);
     XCTAssertEqual(aValue, 500.f);
     XCTAssertNotEqual(stop, NULL);
@@ -1587,23 +1587,23 @@
   const BOOL kKeys[] = { YES, NO };
   const float kValues[] = { 500.f, 501.f };
   GPBBoolFloatDictionary *dict =
-      [[GPBBoolFloatDictionary alloc] initWithValues:kValues
+      [[GPBBoolFloatDictionary alloc] initWithFloats:kValues
                                              forKeys:kKeys
                                                count:GPBARRAYSIZE(kValues)];
   XCTAssertNotNil(dict);
   XCTAssertEqual(dict.count, 2U);
   float value;
-  XCTAssertTrue([dict valueForKey:YES value:NULL]);
-  XCTAssertTrue([dict valueForKey:YES value:&value]);
+  XCTAssertTrue([dict getFloat:NULL forKey:YES]);
+  XCTAssertTrue([dict getFloat:&value forKey:YES]);
   XCTAssertEqual(value, 500.f);
-  XCTAssertTrue([dict valueForKey:NO value:NULL]);
-  XCTAssertTrue([dict valueForKey:NO value:&value]);
+  XCTAssertTrue([dict getFloat:NULL forKey:NO]);
+  XCTAssertTrue([dict getFloat:&value forKey:NO]);
   XCTAssertEqual(value, 501.f);
 
   __block NSUInteger idx = 0;
   BOOL *seenKeys = malloc(2 * sizeof(BOOL));
   float *seenValues = malloc(2 * sizeof(float));
-  [dict enumerateKeysAndValuesUsingBlock:^(BOOL aKey, float aValue, BOOL *stop) {
+  [dict enumerateKeysAndFloatsUsingBlock:^(BOOL aKey, float aValue, BOOL *stop) {
     XCTAssertLessThan(idx, 2U);
     seenKeys[idx] = aKey;
     seenValues[idx] = aValue;
@@ -1625,7 +1625,7 @@
 
   // Stopping the enumeration.
   idx = 0;
-  [dict enumerateKeysAndValuesUsingBlock:^(BOOL aKey, float aValue, BOOL *stop) {
+  [dict enumerateKeysAndFloatsUsingBlock:^(BOOL aKey, float aValue, BOOL *stop) {
     #pragma unused(aKey, aValue)
     if (idx == 0) *stop = YES;
     XCTAssertNotEqual(idx, 2U);
@@ -1641,27 +1641,27 @@
   const float kValues2[] = { 501.f, 500.f };
   const float kValues3[] = { 501.f };
   GPBBoolFloatDictionary *dict1 =
-      [[GPBBoolFloatDictionary alloc] initWithValues:kValues1
+      [[GPBBoolFloatDictionary alloc] initWithFloats:kValues1
                                              forKeys:kKeys1
                                                count:GPBARRAYSIZE(kValues1)];
   XCTAssertNotNil(dict1);
   GPBBoolFloatDictionary *dict1prime =
-      [[GPBBoolFloatDictionary alloc] initWithValues:kValues1
+      [[GPBBoolFloatDictionary alloc] initWithFloats:kValues1
                                              forKeys:kKeys1
                                                count:GPBARRAYSIZE(kValues1)];
   XCTAssertNotNil(dict1prime);
   GPBBoolFloatDictionary *dict2 =
-      [[GPBBoolFloatDictionary alloc] initWithValues:kValues2
+      [[GPBBoolFloatDictionary alloc] initWithFloats:kValues2
                                              forKeys:kKeys1
                                                count:GPBARRAYSIZE(kValues2)];
   XCTAssertNotNil(dict2);
   GPBBoolFloatDictionary *dict3 =
-      [[GPBBoolFloatDictionary alloc] initWithValues:kValues1
+      [[GPBBoolFloatDictionary alloc] initWithFloats:kValues1
                                              forKeys:kKeys2
                                                count:GPBARRAYSIZE(kValues1)];
   XCTAssertNotNil(dict3);
   GPBBoolFloatDictionary *dict4 =
-      [[GPBBoolFloatDictionary alloc] initWithValues:kValues3
+      [[GPBBoolFloatDictionary alloc] initWithFloats:kValues3
                                              forKeys:kKeys1
                                                count:GPBARRAYSIZE(kValues3)];
   XCTAssertNotNil(dict4);
@@ -1692,7 +1692,7 @@
   const BOOL kKeys[] = { YES, NO };
   const float kValues[] = { 500.f, 501.f };
   GPBBoolFloatDictionary *dict =
-      [[GPBBoolFloatDictionary alloc] initWithValues:kValues
+      [[GPBBoolFloatDictionary alloc] initWithFloats:kValues
                                              forKeys:kKeys
                                                count:GPBARRAYSIZE(kValues)];
   XCTAssertNotNil(dict);
@@ -1713,7 +1713,7 @@
   const BOOL kKeys[] = { YES, NO };
   const float kValues[] = { 500.f, 501.f };
   GPBBoolFloatDictionary *dict =
-      [[GPBBoolFloatDictionary alloc] initWithValues:kValues
+      [[GPBBoolFloatDictionary alloc] initWithFloats:kValues
                                              forKeys:kKeys
                                                count:GPBARRAYSIZE(kValues)];
   XCTAssertNotNil(dict);
@@ -1733,13 +1733,13 @@
   XCTAssertNotNil(dict);
 
   XCTAssertEqual(dict.count, 0U);
-  [dict setValue:500.f forKey:YES];
+  [dict setFloat:500.f forKey:YES];
   XCTAssertEqual(dict.count, 1U);
 
   const BOOL kKeys[] = { NO };
   const float kValues[] = { 501.f };
   GPBBoolFloatDictionary *dict2 =
-      [[GPBBoolFloatDictionary alloc] initWithValues:kValues
+      [[GPBBoolFloatDictionary alloc] initWithFloats:kValues
                                              forKeys:kKeys
                                                count:GPBARRAYSIZE(kValues)];
   XCTAssertNotNil(dict2);
@@ -1747,11 +1747,11 @@
   XCTAssertEqual(dict.count, 2U);
 
   float value;
-  XCTAssertTrue([dict valueForKey:YES value:NULL]);
-  XCTAssertTrue([dict valueForKey:YES value:&value]);
+  XCTAssertTrue([dict getFloat:NULL forKey:YES]);
+  XCTAssertTrue([dict getFloat:&value forKey:YES]);
   XCTAssertEqual(value, 500.f);
-  XCTAssertTrue([dict valueForKey:NO value:NULL]);
-  XCTAssertTrue([dict valueForKey:NO value:&value]);
+  XCTAssertTrue([dict getFloat:NULL forKey:NO]);
+  XCTAssertTrue([dict getFloat:&value forKey:NO]);
   XCTAssertEqual(value, 501.f);
   [dict2 release];
 }
@@ -1760,32 +1760,32 @@
   const BOOL kKeys[] = { YES, NO};
   const float kValues[] = { 500.f, 501.f };
   GPBBoolFloatDictionary *dict =
-      [[GPBBoolFloatDictionary alloc] initWithValues:kValues
+      [[GPBBoolFloatDictionary alloc] initWithFloats:kValues
                                       forKeys:kKeys
                                         count:GPBARRAYSIZE(kValues)];
   XCTAssertNotNil(dict);
   XCTAssertEqual(dict.count, 2U);
 
-  [dict removeValueForKey:NO];
+  [dict removeFloatForKey:NO];
   XCTAssertEqual(dict.count, 1U);
   float value;
-  XCTAssertTrue([dict valueForKey:YES value:NULL]);
-  XCTAssertTrue([dict valueForKey:YES value:&value]);
+  XCTAssertTrue([dict getFloat:NULL forKey:YES]);
+  XCTAssertTrue([dict getFloat:&value forKey:YES]);
   XCTAssertEqual(value, 500.f);
-  XCTAssertFalse([dict valueForKey:NO value:NULL]);
+  XCTAssertFalse([dict getFloat:NULL forKey:NO]);
 
   // Remove again does nothing.
-  [dict removeValueForKey:NO];
+  [dict removeFloatForKey:NO];
   XCTAssertEqual(dict.count, 1U);
-  XCTAssertTrue([dict valueForKey:YES value:NULL]);
-  XCTAssertTrue([dict valueForKey:YES value:&value]);
+  XCTAssertTrue([dict getFloat:NULL forKey:YES]);
+  XCTAssertTrue([dict getFloat:&value forKey:YES]);
   XCTAssertEqual(value, 500.f);
-  XCTAssertFalse([dict valueForKey:NO value:NULL]);
+  XCTAssertFalse([dict getFloat:NULL forKey:NO]);
 
   [dict removeAll];
   XCTAssertEqual(dict.count, 0U);
-  XCTAssertFalse([dict valueForKey:YES value:NULL]);
-  XCTAssertFalse([dict valueForKey:NO value:NULL]);
+  XCTAssertFalse([dict getFloat:NULL forKey:YES]);
+  XCTAssertFalse([dict getFloat:NULL forKey:NO]);
   [dict release];
 }
 
@@ -1793,51 +1793,51 @@
   const BOOL kKeys[] = { YES, NO };
   const float kValues[] = { 500.f, 501.f };
   GPBBoolFloatDictionary *dict =
-      [[GPBBoolFloatDictionary alloc] initWithValues:kValues
-                                      forKeys:kKeys
-                                        count:GPBARRAYSIZE(kValues)];
+      [[GPBBoolFloatDictionary alloc] initWithFloats:kValues
+                                             forKeys:kKeys
+                                               count:GPBARRAYSIZE(kValues)];
   XCTAssertNotNil(dict);
   XCTAssertEqual(dict.count, 2U);
   float value;
-  XCTAssertTrue([dict valueForKey:YES value:NULL]);
-  XCTAssertTrue([dict valueForKey:YES value:&value]);
+  XCTAssertTrue([dict getFloat:NULL forKey:YES]);
+  XCTAssertTrue([dict getFloat:&value forKey:YES]);
   XCTAssertEqual(value, 500.f);
-  XCTAssertTrue([dict valueForKey:NO value:NULL]);
-  XCTAssertTrue([dict valueForKey:NO value:&value]);
+  XCTAssertTrue([dict getFloat:NULL forKey:NO]);
+  XCTAssertTrue([dict getFloat:&value forKey:NO]);
   XCTAssertEqual(value, 501.f);
 
-  [dict setValue:501.f forKey:YES];
+  [dict setFloat:501.f forKey:YES];
   XCTAssertEqual(dict.count, 2U);
-  XCTAssertTrue([dict valueForKey:YES value:NULL]);
-  XCTAssertTrue([dict valueForKey:YES value:&value]);
+  XCTAssertTrue([dict getFloat:NULL forKey:YES]);
+  XCTAssertTrue([dict getFloat:&value forKey:YES]);
   XCTAssertEqual(value, 501.f);
-  XCTAssertTrue([dict valueForKey:NO value:NULL]);
-  XCTAssertTrue([dict valueForKey:NO value:&value]);
+  XCTAssertTrue([dict getFloat:NULL forKey:NO]);
+  XCTAssertTrue([dict getFloat:&value forKey:NO]);
   XCTAssertEqual(value, 501.f);
 
-  [dict setValue:500.f forKey:NO];
+  [dict setFloat:500.f forKey:NO];
   XCTAssertEqual(dict.count, 2U);
-  XCTAssertTrue([dict valueForKey:YES value:NULL]);
-  XCTAssertTrue([dict valueForKey:YES value:&value]);
+  XCTAssertTrue([dict getFloat:NULL forKey:YES]);
+  XCTAssertTrue([dict getFloat:&value forKey:YES]);
   XCTAssertEqual(value, 501.f);
-  XCTAssertTrue([dict valueForKey:NO value:NULL]);
-  XCTAssertTrue([dict valueForKey:NO value:&value]);
+  XCTAssertTrue([dict getFloat:NULL forKey:NO]);
+  XCTAssertTrue([dict getFloat:&value forKey:NO]);
   XCTAssertEqual(value, 500.f);
 
   const BOOL kKeys2[] = { NO, YES };
   const float kValues2[] = { 501.f, 500.f };
   GPBBoolFloatDictionary *dict2 =
-      [[GPBBoolFloatDictionary alloc] initWithValues:kValues2
+      [[GPBBoolFloatDictionary alloc] initWithFloats:kValues2
                                              forKeys:kKeys2
                                                count:GPBARRAYSIZE(kValues2)];
   XCTAssertNotNil(dict2);
   [dict addEntriesFromDictionary:dict2];
   XCTAssertEqual(dict.count, 2U);
-  XCTAssertTrue([dict valueForKey:YES value:NULL]);
-  XCTAssertTrue([dict valueForKey:YES value:&value]);
+  XCTAssertTrue([dict getFloat:NULL forKey:YES]);
+  XCTAssertTrue([dict getFloat:&value forKey:YES]);
   XCTAssertEqual(value, 500.f);
-  XCTAssertTrue([dict valueForKey:NO value:NULL]);
-  XCTAssertTrue([dict valueForKey:NO value:&value]);
+  XCTAssertTrue([dict getFloat:NULL forKey:NO]);
+  XCTAssertTrue([dict getFloat:&value forKey:NO]);
   XCTAssertEqual(value, 501.f);
 
   [dict2 release];
@@ -1860,8 +1860,8 @@
   GPBBoolDoubleDictionary *dict = [[GPBBoolDoubleDictionary alloc] init];
   XCTAssertNotNil(dict);
   XCTAssertEqual(dict.count, 0U);
-  XCTAssertFalse([dict valueForKey:YES value:NULL]);
-  [dict enumerateKeysAndValuesUsingBlock:^(BOOL aKey, double aValue, BOOL *stop) {
+  XCTAssertFalse([dict getDouble:NULL forKey:YES]);
+  [dict enumerateKeysAndDoublesUsingBlock:^(BOOL aKey, double aValue, BOOL *stop) {
     #pragma unused(aKey, aValue, stop)
     XCTFail(@"Shouldn't get here!");
   }];
@@ -1869,15 +1869,15 @@
 }
 
 - (void)testOne {
-  GPBBoolDoubleDictionary *dict = [GPBBoolDoubleDictionary dictionaryWithValue:600. forKey:YES];
+  GPBBoolDoubleDictionary *dict = [GPBBoolDoubleDictionary dictionaryWithDouble:600. forKey:YES];
   XCTAssertNotNil(dict);
   XCTAssertEqual(dict.count, 1U);
   double value;
-  XCTAssertTrue([dict valueForKey:YES value:NULL]);
-  XCTAssertTrue([dict valueForKey:YES value:&value]);
+  XCTAssertTrue([dict getDouble:NULL forKey:YES]);
+  XCTAssertTrue([dict getDouble:&value forKey:YES]);
   XCTAssertEqual(value, 600.);
-  XCTAssertFalse([dict valueForKey:NO value:NULL]);
-  [dict enumerateKeysAndValuesUsingBlock:^(BOOL aKey, double aValue, BOOL *stop) {
+  XCTAssertFalse([dict getDouble:NULL forKey:NO]);
+  [dict enumerateKeysAndDoublesUsingBlock:^(BOOL aKey, double aValue, BOOL *stop) {
     XCTAssertEqual(aKey, YES);
     XCTAssertEqual(aValue, 600.);
     XCTAssertNotEqual(stop, NULL);
@@ -1888,23 +1888,23 @@
   const BOOL kKeys[] = { YES, NO };
   const double kValues[] = { 600., 601. };
   GPBBoolDoubleDictionary *dict =
-      [[GPBBoolDoubleDictionary alloc] initWithValues:kValues
-                                              forKeys:kKeys
-                                                count:GPBARRAYSIZE(kValues)];
+      [[GPBBoolDoubleDictionary alloc] initWithDoubles:kValues
+                                               forKeys:kKeys
+                                                 count:GPBARRAYSIZE(kValues)];
   XCTAssertNotNil(dict);
   XCTAssertEqual(dict.count, 2U);
   double value;
-  XCTAssertTrue([dict valueForKey:YES value:NULL]);
-  XCTAssertTrue([dict valueForKey:YES value:&value]);
+  XCTAssertTrue([dict getDouble:NULL forKey:YES]);
+  XCTAssertTrue([dict getDouble:&value forKey:YES]);
   XCTAssertEqual(value, 600.);
-  XCTAssertTrue([dict valueForKey:NO value:NULL]);
-  XCTAssertTrue([dict valueForKey:NO value:&value]);
+  XCTAssertTrue([dict getDouble:NULL forKey:NO]);
+  XCTAssertTrue([dict getDouble:&value forKey:NO]);
   XCTAssertEqual(value, 601.);
 
   __block NSUInteger idx = 0;
   BOOL *seenKeys = malloc(2 * sizeof(BOOL));
   double *seenValues = malloc(2 * sizeof(double));
-  [dict enumerateKeysAndValuesUsingBlock:^(BOOL aKey, double aValue, BOOL *stop) {
+  [dict enumerateKeysAndDoublesUsingBlock:^(BOOL aKey, double aValue, BOOL *stop) {
     XCTAssertLessThan(idx, 2U);
     seenKeys[idx] = aKey;
     seenValues[idx] = aValue;
@@ -1926,7 +1926,7 @@
 
   // Stopping the enumeration.
   idx = 0;
-  [dict enumerateKeysAndValuesUsingBlock:^(BOOL aKey, double aValue, BOOL *stop) {
+  [dict enumerateKeysAndDoublesUsingBlock:^(BOOL aKey, double aValue, BOOL *stop) {
     #pragma unused(aKey, aValue)
     if (idx == 0) *stop = YES;
     XCTAssertNotEqual(idx, 2U);
@@ -1942,29 +1942,29 @@
   const double kValues2[] = { 601., 600. };
   const double kValues3[] = { 601. };
   GPBBoolDoubleDictionary *dict1 =
-      [[GPBBoolDoubleDictionary alloc] initWithValues:kValues1
-                                              forKeys:kKeys1
-                                                count:GPBARRAYSIZE(kValues1)];
+      [[GPBBoolDoubleDictionary alloc] initWithDoubles:kValues1
+                                               forKeys:kKeys1
+                                                 count:GPBARRAYSIZE(kValues1)];
   XCTAssertNotNil(dict1);
   GPBBoolDoubleDictionary *dict1prime =
-      [[GPBBoolDoubleDictionary alloc] initWithValues:kValues1
-                                              forKeys:kKeys1
-                                                count:GPBARRAYSIZE(kValues1)];
+      [[GPBBoolDoubleDictionary alloc] initWithDoubles:kValues1
+                                               forKeys:kKeys1
+                                                 count:GPBARRAYSIZE(kValues1)];
   XCTAssertNotNil(dict1prime);
   GPBBoolDoubleDictionary *dict2 =
-      [[GPBBoolDoubleDictionary alloc] initWithValues:kValues2
-                                              forKeys:kKeys1
-                                                count:GPBARRAYSIZE(kValues2)];
+      [[GPBBoolDoubleDictionary alloc] initWithDoubles:kValues2
+                                               forKeys:kKeys1
+                                                 count:GPBARRAYSIZE(kValues2)];
   XCTAssertNotNil(dict2);
   GPBBoolDoubleDictionary *dict3 =
-      [[GPBBoolDoubleDictionary alloc] initWithValues:kValues1
-                                              forKeys:kKeys2
-                                                count:GPBARRAYSIZE(kValues1)];
+      [[GPBBoolDoubleDictionary alloc] initWithDoubles:kValues1
+                                               forKeys:kKeys2
+                                                 count:GPBARRAYSIZE(kValues1)];
   XCTAssertNotNil(dict3);
   GPBBoolDoubleDictionary *dict4 =
-      [[GPBBoolDoubleDictionary alloc] initWithValues:kValues3
-                                              forKeys:kKeys1
-                                                count:GPBARRAYSIZE(kValues3)];
+      [[GPBBoolDoubleDictionary alloc] initWithDoubles:kValues3
+                                               forKeys:kKeys1
+                                                 count:GPBARRAYSIZE(kValues3)];
   XCTAssertNotNil(dict4);
 
   // 1/1Prime should be different objects, but equal.
@@ -1993,9 +1993,9 @@
   const BOOL kKeys[] = { YES, NO };
   const double kValues[] = { 600., 601. };
   GPBBoolDoubleDictionary *dict =
-      [[GPBBoolDoubleDictionary alloc] initWithValues:kValues
-                                              forKeys:kKeys
-                                                count:GPBARRAYSIZE(kValues)];
+      [[GPBBoolDoubleDictionary alloc] initWithDoubles:kValues
+                                               forKeys:kKeys
+                                                 count:GPBARRAYSIZE(kValues)];
   XCTAssertNotNil(dict);
 
   GPBBoolDoubleDictionary *dict2 = [dict copy];
@@ -2014,9 +2014,9 @@
   const BOOL kKeys[] = { YES, NO };
   const double kValues[] = { 600., 601. };
   GPBBoolDoubleDictionary *dict =
-      [[GPBBoolDoubleDictionary alloc] initWithValues:kValues
-                                              forKeys:kKeys
-                                                count:GPBARRAYSIZE(kValues)];
+      [[GPBBoolDoubleDictionary alloc] initWithDoubles:kValues
+                                               forKeys:kKeys
+                                                 count:GPBARRAYSIZE(kValues)];
   XCTAssertNotNil(dict);
 
   GPBBoolDoubleDictionary *dict2 =
@@ -2034,25 +2034,25 @@
   XCTAssertNotNil(dict);
 
   XCTAssertEqual(dict.count, 0U);
-  [dict setValue:600. forKey:YES];
+  [dict setDouble:600. forKey:YES];
   XCTAssertEqual(dict.count, 1U);
 
   const BOOL kKeys[] = { NO };
   const double kValues[] = { 601. };
   GPBBoolDoubleDictionary *dict2 =
-      [[GPBBoolDoubleDictionary alloc] initWithValues:kValues
-                                              forKeys:kKeys
-                                                count:GPBARRAYSIZE(kValues)];
+      [[GPBBoolDoubleDictionary alloc] initWithDoubles:kValues
+                                               forKeys:kKeys
+                                                 count:GPBARRAYSIZE(kValues)];
   XCTAssertNotNil(dict2);
   [dict addEntriesFromDictionary:dict2];
   XCTAssertEqual(dict.count, 2U);
 
   double value;
-  XCTAssertTrue([dict valueForKey:YES value:NULL]);
-  XCTAssertTrue([dict valueForKey:YES value:&value]);
+  XCTAssertTrue([dict getDouble:NULL forKey:YES]);
+  XCTAssertTrue([dict getDouble:&value forKey:YES]);
   XCTAssertEqual(value, 600.);
-  XCTAssertTrue([dict valueForKey:NO value:NULL]);
-  XCTAssertTrue([dict valueForKey:NO value:&value]);
+  XCTAssertTrue([dict getDouble:NULL forKey:NO]);
+  XCTAssertTrue([dict getDouble:&value forKey:NO]);
   XCTAssertEqual(value, 601.);
   [dict2 release];
 }
@@ -2061,32 +2061,32 @@
   const BOOL kKeys[] = { YES, NO};
   const double kValues[] = { 600., 601. };
   GPBBoolDoubleDictionary *dict =
-      [[GPBBoolDoubleDictionary alloc] initWithValues:kValues
-                                       forKeys:kKeys
-                                         count:GPBARRAYSIZE(kValues)];
+      [[GPBBoolDoubleDictionary alloc] initWithDoubles:kValues
+                                        forKeys:kKeys
+                                          count:GPBARRAYSIZE(kValues)];
   XCTAssertNotNil(dict);
   XCTAssertEqual(dict.count, 2U);
 
-  [dict removeValueForKey:NO];
+  [dict removeDoubleForKey:NO];
   XCTAssertEqual(dict.count, 1U);
   double value;
-  XCTAssertTrue([dict valueForKey:YES value:NULL]);
-  XCTAssertTrue([dict valueForKey:YES value:&value]);
+  XCTAssertTrue([dict getDouble:NULL forKey:YES]);
+  XCTAssertTrue([dict getDouble:&value forKey:YES]);
   XCTAssertEqual(value, 600.);
-  XCTAssertFalse([dict valueForKey:NO value:NULL]);
+  XCTAssertFalse([dict getDouble:NULL forKey:NO]);
 
   // Remove again does nothing.
-  [dict removeValueForKey:NO];
+  [dict removeDoubleForKey:NO];
   XCTAssertEqual(dict.count, 1U);
-  XCTAssertTrue([dict valueForKey:YES value:NULL]);
-  XCTAssertTrue([dict valueForKey:YES value:&value]);
+  XCTAssertTrue([dict getDouble:NULL forKey:YES]);
+  XCTAssertTrue([dict getDouble:&value forKey:YES]);
   XCTAssertEqual(value, 600.);
-  XCTAssertFalse([dict valueForKey:NO value:NULL]);
+  XCTAssertFalse([dict getDouble:NULL forKey:NO]);
 
   [dict removeAll];
   XCTAssertEqual(dict.count, 0U);
-  XCTAssertFalse([dict valueForKey:YES value:NULL]);
-  XCTAssertFalse([dict valueForKey:NO value:NULL]);
+  XCTAssertFalse([dict getDouble:NULL forKey:YES]);
+  XCTAssertFalse([dict getDouble:NULL forKey:NO]);
   [dict release];
 }
 
@@ -2094,51 +2094,51 @@
   const BOOL kKeys[] = { YES, NO };
   const double kValues[] = { 600., 601. };
   GPBBoolDoubleDictionary *dict =
-      [[GPBBoolDoubleDictionary alloc] initWithValues:kValues
-                                       forKeys:kKeys
-                                         count:GPBARRAYSIZE(kValues)];
+      [[GPBBoolDoubleDictionary alloc] initWithDoubles:kValues
+                                               forKeys:kKeys
+                                                 count:GPBARRAYSIZE(kValues)];
   XCTAssertNotNil(dict);
   XCTAssertEqual(dict.count, 2U);
   double value;
-  XCTAssertTrue([dict valueForKey:YES value:NULL]);
-  XCTAssertTrue([dict valueForKey:YES value:&value]);
+  XCTAssertTrue([dict getDouble:NULL forKey:YES]);
+  XCTAssertTrue([dict getDouble:&value forKey:YES]);
   XCTAssertEqual(value, 600.);
-  XCTAssertTrue([dict valueForKey:NO value:NULL]);
-  XCTAssertTrue([dict valueForKey:NO value:&value]);
+  XCTAssertTrue([dict getDouble:NULL forKey:NO]);
+  XCTAssertTrue([dict getDouble:&value forKey:NO]);
   XCTAssertEqual(value, 601.);
 
-  [dict setValue:601. forKey:YES];
+  [dict setDouble:601. forKey:YES];
   XCTAssertEqual(dict.count, 2U);
-  XCTAssertTrue([dict valueForKey:YES value:NULL]);
-  XCTAssertTrue([dict valueForKey:YES value:&value]);
+  XCTAssertTrue([dict getDouble:NULL forKey:YES]);
+  XCTAssertTrue([dict getDouble:&value forKey:YES]);
   XCTAssertEqual(value, 601.);
-  XCTAssertTrue([dict valueForKey:NO value:NULL]);
-  XCTAssertTrue([dict valueForKey:NO value:&value]);
+  XCTAssertTrue([dict getDouble:NULL forKey:NO]);
+  XCTAssertTrue([dict getDouble:&value forKey:NO]);
   XCTAssertEqual(value, 601.);
 
-  [dict setValue:600. forKey:NO];
+  [dict setDouble:600. forKey:NO];
   XCTAssertEqual(dict.count, 2U);
-  XCTAssertTrue([dict valueForKey:YES value:NULL]);
-  XCTAssertTrue([dict valueForKey:YES value:&value]);
+  XCTAssertTrue([dict getDouble:NULL forKey:YES]);
+  XCTAssertTrue([dict getDouble:&value forKey:YES]);
   XCTAssertEqual(value, 601.);
-  XCTAssertTrue([dict valueForKey:NO value:NULL]);
-  XCTAssertTrue([dict valueForKey:NO value:&value]);
+  XCTAssertTrue([dict getDouble:NULL forKey:NO]);
+  XCTAssertTrue([dict getDouble:&value forKey:NO]);
   XCTAssertEqual(value, 600.);
 
   const BOOL kKeys2[] = { NO, YES };
   const double kValues2[] = { 601., 600. };
   GPBBoolDoubleDictionary *dict2 =
-      [[GPBBoolDoubleDictionary alloc] initWithValues:kValues2
-                                              forKeys:kKeys2
-                                                count:GPBARRAYSIZE(kValues2)];
+      [[GPBBoolDoubleDictionary alloc] initWithDoubles:kValues2
+                                               forKeys:kKeys2
+                                                 count:GPBARRAYSIZE(kValues2)];
   XCTAssertNotNil(dict2);
   [dict addEntriesFromDictionary:dict2];
   XCTAssertEqual(dict.count, 2U);
-  XCTAssertTrue([dict valueForKey:YES value:NULL]);
-  XCTAssertTrue([dict valueForKey:YES value:&value]);
+  XCTAssertTrue([dict getDouble:NULL forKey:YES]);
+  XCTAssertTrue([dict getDouble:&value forKey:YES]);
   XCTAssertEqual(value, 600.);
-  XCTAssertTrue([dict valueForKey:NO value:NULL]);
-  XCTAssertTrue([dict valueForKey:NO value:&value]);
+  XCTAssertTrue([dict getDouble:NULL forKey:NO]);
+  XCTAssertTrue([dict getDouble:&value forKey:NO]);
   XCTAssertEqual(value, 601.);
 
   [dict2 release];
@@ -2378,8 +2378,8 @@
   const NSString* kObjects[] = { @"abc", @"def" };
   GPBBoolObjectDictionary<NSString*> *dict =
       [[GPBBoolObjectDictionary alloc] initWithObjects:kObjects
-                                        forKeys:kKeys
-                                          count:GPBARRAYSIZE(kObjects)];
+                                               forKeys:kKeys
+                                                 count:GPBARRAYSIZE(kObjects)];
   XCTAssertNotNil(dict);
   XCTAssertEqual(dict.count, 2U);
   XCTAssertEqualObjects([dict objectForKey:YES], @"abc");
