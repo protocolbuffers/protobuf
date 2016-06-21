@@ -48,9 +48,6 @@ namespace Google.Protobuf.Collections
     /// <typeparam name="TValue">Value type in the map. Must be a type supported by Protocol Buffers.</typeparam>
     /// <remarks>
     /// <para>
-    /// This implementation preserves insertion order for simplicity of testing
-    /// code using maps fields. Overwriting an existing entry does not change the
-    /// position of that entry within the map. Equality is not order-sensitive.
     /// For string keys, the equality comparison is provided by <see cref="StringComparer.Ordinal" />.
     /// </para>
     /// <para>
@@ -64,6 +61,10 @@ namespace Google.Protobuf.Collections
     /// This implementation does not generally prohibit the use of key/value types which are not
     /// supported by Protocol Buffers (e.g. using a key type of <code>byte</code>) but nor does it guarantee
     /// that all operations will work in such cases.
+    /// </para>
+    /// <para>
+    /// The order in which entries are returned when iterating over this object is undefined, and may change
+    /// in future versions.
     /// </para>
     /// </remarks>
     public sealed class MapField<TKey, TValue> : IDeepCloneable<MapField<TKey, TValue>>, IDictionary<TKey, TValue>, IEquatable<MapField<TKey, TValue>>, IDictionary
