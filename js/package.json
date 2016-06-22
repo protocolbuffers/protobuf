@@ -3,6 +3,7 @@
   "version": "3.0.0-alpha.6.1",
   "description": "Protocol Buffers for JavaScript",
   "main": "google-protobuf.js",
+  "files": "google",
   "dependencies": {
     "google-closure-library": "~20160125.0.0",
     "gulp": "~3.9.0",
