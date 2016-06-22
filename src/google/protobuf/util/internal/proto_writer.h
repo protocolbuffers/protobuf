@@ -142,6 +142,10 @@ class LIBPROTOBUF_EXPORT ProtoWriter : public StructuredObjectWriter {
 
   const TypeInfo* typeinfo() { return typeinfo_; }
 
+  void set_ignore_unknown_fields(bool ignore_unknown_fields) {
+    ignore_unknown_fields_ = ignore_unknown_fields;
+  }
+
  protected:
   class LIBPROTOBUF_EXPORT ProtoElement : public BaseElement, public LocationTrackerInterface {
    public:
@@ -240,7 +244,8 @@ class LIBPROTOBUF_EXPORT ProtoWriter : public StructuredObjectWriter {
 
   // Lookup the field in the current element. Looks in the base descriptor
   // and in any extension. This will report an error if the field cannot be
-  // found or if multiple matching extensions are found.
+  // found when ignore_unknown_names_ is false or if multiple matching
+  // extensions are found.
   const google::protobuf::Field* Lookup(StringPiece name);
 
   // Lookup the field type in the type descriptor. Returns NULL if the type
@@ -292,6 +297,9 @@ class LIBPROTOBUF_EXPORT ProtoWriter : public StructuredObjectWriter {
 
   // Indicates whether we finished writing root message completely.
   bool done_;
+
+  // If true, don't report unknown field names to the listener.
+  bool ignore_unknown_fields_;
 
   // Variable for internal state processing:
   // element_    : the current element.
