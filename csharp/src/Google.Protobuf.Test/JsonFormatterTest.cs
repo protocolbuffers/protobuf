@@ -38,6 +38,8 @@ using Google.Protobuf.WellKnownTypes;
 using Google.Protobuf.Reflection;
 
 using static Google.Protobuf.JsonParserTest; // For WrapInQuotes
+using System.IO;
+using Google.Protobuf.Collections;
 
 namespace Google.Protobuf
 {
@@ -526,6 +528,51 @@ namespace Google.Protobuf
             IMessage populated = (IMessage)Activator.CreateInstance(wrapperType);
             populated.Descriptor.Fields[WrappersReflection.WrapperValueFieldNumber].Accessor.SetValue(populated, value);
             Assert.AreEqual(expectedJson, JsonFormatter.Default.Format(populated));
+        }
+
+        // Sanity tests for WriteValue. Not particularly comprehensive, as it's all covered above already,
+        // as FormatMessage uses WriteValue.
+
+        [TestCase(null, "null")]
+        [TestCase(1, "1")]
+        [TestCase(1L, "'1'")]
+        [TestCase(0.5f, "0.5")]
+        [TestCase(0.5d, "0.5")]
+        [TestCase("text", "'text'")]
+        [TestCase("x\ny", @"'x\ny'")]
+        [TestCase(ForeignEnum.ForeignBar, "'FOREIGN_BAR'")]
+        public void WriteValue_Constant(object value, string expectedJson)
+        {
+            AssertWriteValue(value, expectedJson);
+        }
+
+        [Test]
+        public void WriteValue_Timestamp()
+        {
+            var value = new DateTime(1673, 6, 19, 12, 34, 56, DateTimeKind.Utc).ToTimestamp();
+            AssertWriteValue(value, "'1673-06-19T12:34:56Z'");
+        }
+
+        [Test]
+        public void WriteValue_Message()
+        {
+            var value = new TestAllTypes { SingleInt32 = 100, SingleInt64 = 3210987654321L };
+            AssertWriteValue(value, "{ 'singleInt32': 100, 'singleInt64': '3210987654321' }");
+        }
+
+        [Test]
+        public void WriteValue_List()
+        {
+            var value = new RepeatedField<int> { 1, 2, 3 };
+            AssertWriteValue(value, "[ 1, 2, 3 ]");
+        }
+
+        private static void AssertWriteValue(object value, string expectedJson)
+        {
+            var writer = new StringWriter();
+            JsonFormatter.Default.WriteValue(writer, value);
+            string actual = writer.ToString();
+            AssertJson(expectedJson, actual);
         }
 
         /// <summary>
