@@ -377,8 +377,16 @@ namespace Google.Protobuf
                     throw new ArgumentException("Invalid field type");
             }
         }
-        
-        private void WriteValue(TextWriter writer, object value)
+
+        /// <summary>
+        /// Writes a single value to the given writer as JSON. Only types understood by
+        /// Protocol Buffers can be written in this way. This method is only exposed for
+        /// advanced use cases; most users should be using <see cref="Format(IMessage)"/>
+        /// or <see cref="Format(IMessage, TextWriter)"/>.
+        /// </summary>
+        /// <param name="writer">The writer to write the value to. Must not be null.</param>
+        /// <param name="value">The value to write. May be null.</param>
+        public void WriteValue(TextWriter writer, object value)
         {
             if (value == null)
             {
@@ -447,15 +455,7 @@ namespace Google.Protobuf
             }
             else if (value is IMessage)
             {
-                IMessage message = (IMessage) value;
-                if (message.Descriptor.IsWellKnownType)
-                {
-                    WriteWellKnownTypeValue(writer, message.Descriptor, value);
-                }
-                else
-                {
-                    WriteMessage(writer, (IMessage)value);
-                }
+                Format((IMessage)value, writer);
             }
             else
             {
@@ -721,20 +721,6 @@ namespace Google.Protobuf
                 first = false;
             }
             writer.Write(first ? "}" : " }");
-        }
-
-        /// <summary>
-        /// Returns whether or not a singular value can be represented in JSON.
-        /// Currently only relevant for enums, where unknown values can't be represented.
-        /// For repeated/map fields, this always returns true.
-        /// </summary>
-        private bool CanWriteSingleValue(object value)
-        {
-            if (value is System.Enum)
-            {
-                return System.Enum.IsDefined(value.GetType(), value);
-            }
-            return true;
         }
 
         /// <summary>
