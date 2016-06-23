@@ -320,10 +320,20 @@ namespace Google.Protobuf.Collections
             {
                 throw new ArgumentNullException("values");
             }
-            // TODO: Check for ICollection and get the Count, to optimize?
-            foreach (T item in values)
+
+            ICollection collection = values as ICollection;
+            if (collection != null)
             {
-                Add(item);
+                this.EnsureSize(this.count + collection.Count);
+                collection.CopyTo(this.array, this.count);
+                this.count += collection.Count;
+            }
+            else
+            {
+                foreach (T item in values)
+                {
+                    Add(item);
+                }
             }
         }
 
