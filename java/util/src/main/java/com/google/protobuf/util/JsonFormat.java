@@ -101,7 +101,7 @@ public class JsonFormat {
    * Creates a {@link Printer} with default configurations.
    */
   public static Printer printer() {
-    return new Printer(TypeRegistry.getEmptyTypeRegistry(), false, false);
+    return new Printer(TypeRegistry.getEmptyTypeRegistry(), false, false, false);
   }
 
   /**
@@ -111,14 +111,16 @@ public class JsonFormat {
     private final TypeRegistry registry;
     private final boolean includingDefaultValueFields;
     private final boolean preservingProtoFieldNames;
+    private final boolean omittingInsignificantWhitespace;
 
     private Printer(
         TypeRegistry registry,
         boolean includingDefaultValueFields,
-        boolean preservingProtoFieldNames) {
+        boolean preservingProtoFieldNames, boolean omittingInsignificantWhitespace) {
       this.registry = registry;
       this.includingDefaultValueFields = includingDefaultValueFields;
       this.preservingProtoFieldNames = preservingProtoFieldNames;
+      this.omittingInsignificantWhitespace = omittingInsignificantWhitespace;
     }
 
     /**
@@ -131,7 +133,7 @@ public class JsonFormat {
       if (this.registry != TypeRegistry.getEmptyTypeRegistry()) {
         throw new IllegalArgumentException("Only one registry is allowed.");
       }
-      return new Printer(registry, includingDefaultValueFields, preservingProtoFieldNames);
+      return new Printer(registry, includingDefaultValueFields, preservingProtoFieldNames, omittingInsignificantWhitespace);
     }
 
     /**
@@ -141,7 +143,7 @@ public class JsonFormat {
      * {@link Printer}.
      */
     public Printer includingDefaultValueFields() {
-      return new Printer(registry, true, preservingProtoFieldNames);
+      return new Printer(registry, true, preservingProtoFieldNames, omittingInsignificantWhitespace);
     }
 
     /**
@@ -151,7 +153,27 @@ public class JsonFormat {
      * current {@link Printer}.
      */
     public Printer preservingProtoFieldNames() {
-      return new Printer(registry, includingDefaultValueFields, true);
+      return new Printer(registry, includingDefaultValueFields, true, omittingInsignificantWhitespace);
+    }
+
+
+    /**
+     * Create a new  {@link Printer}  that will omit all insignificant whitespace
+     * in the JSON output. This new Printer clones all other configurations from the
+     * current Printer. Insignificant whitespace is defined by the JSON spec as whitespace
+     * that appear between JSON structural elements:
+     * <pre>
+     * ws = *(
+     * %x20 /              ; Space
+     * %x09 /              ; Horizontal tab
+     * %x0A /              ; Line feed or New line
+     * %x0D )              ; Carriage return
+     * </pre>
+     * See <a href="https://tools.ietf.org/html/rfc7159">https://tools.ietf.org/html/rfc7159</a>
+     * current {@link Printer}.
+     */
+    public Printer omittingInsignificantWhitespace(){
+      return new Printer(registry, includingDefaultValueFields, preservingProtoFieldNames, true);
     }
 
     /**
@@ -164,7 +186,7 @@ public class JsonFormat {
     public void appendTo(MessageOrBuilder message, Appendable output) throws IOException {
       // TODO(xiaofeng): Investigate the allocation overhead and optimize for
       // mobile.
-      new PrinterImpl(registry, includingDefaultValueFields, preservingProtoFieldNames, output)
+      new PrinterImpl(registry, includingDefaultValueFields, preservingProtoFieldNames, output, omittingInsignificantWhitespace)
           .print(message);
     }
 
@@ -352,14 +374,54 @@ public class JsonFormat {
   }
 
   /**
+   * An interface for json formatting that can be used in
+   * combination with the omittingInsignificantWhitespace() method
+   */
+  interface TextGenerator {
+    void indent();
+    void outdent();
+    void print(final CharSequence text) throws IOException;
+  }
+
+
+  /**
+   * Format the json without indentation
+   */
+  private static final class CompactTextGenerator implements TextGenerator{
+    private final Appendable output;
+
+
+    private CompactTextGenerator(final Appendable output) {
+      this.output = output;
+    }
+
+    /**
+     * ignored by compact printer
+     */
+    public void indent() {}
+
+    /**
+     * ignored by compact printer
+     */
+    public void outdent() {}
+
+    /**
+     * Print text to the output stream.
+     */
+    public void print(final CharSequence text) throws IOException {
+      output.append(text);
+    }
+
+  }
+  /**
    * A TextGenerator adds indentation when writing formatted text.
    */
-  private static final class TextGenerator {
+  private static final class PrettyTextGenerator implements TextGenerator{
     private final Appendable output;
     private final StringBuilder indent = new StringBuilder();
     private boolean atStartOfLine = true;
 
-    private TextGenerator(final Appendable output) {
+    private PrettyTextGenerator(final Appendable output) {
       this.output = output;
     }
 
@@ -423,6 +485,8 @@ public class JsonFormat {
     private final TextGenerator generator;
     // We use Gson to help handle string escapes.
     private final Gson gson;
+    private final CharSequence blankOrSpace;
+    private final CharSequence blankOrNewLine;
 
     private static class GsonHolder {
       private static final Gson DEFAULT_GSON = new GsonBuilder().disableHtmlEscaping().create();
@@ -432,12 +496,21 @@ public class JsonFormat {
         TypeRegistry registry,
         boolean includingDefaultValueFields,
         boolean preservingProtoFieldNames,
-        Appendable jsonOutput) {
+        Appendable jsonOutput, boolean omittingInsignificantWhitespace) {
       this.registry = registry;
       this.includingDefaultValueFields = includingDefaultValueFields;
       this.preservingProtoFieldNames = preservingProtoFieldNames;
-      this.generator = new TextGenerator(jsonOutput);
       this.gson = GsonHolder.DEFAULT_GSON;
+      // json format related properties, determined by printerType
+      if (omittingInsignificantWhitespace) {
+        this.generator = new CompactTextGenerator(jsonOutput);
+        this.blankOrSpace = "";
+        this.blankOrNewLine = "";
+      } else {
+        this.generator = new PrettyTextGenerator(jsonOutput);
+        this.blankOrSpace = " ";
+        this.blankOrNewLine = "\n";
+      }
     }
 
     void print(MessageOrBuilder message) throws IOException {
@@ -568,12 +641,12 @@ public class JsonFormat {
       if (printer != null) {
         // If the type is one of the well-known types, we use a special
         // formatting.
-        generator.print("{\n");
+        generator.print("{" + blankOrNewLine);
         generator.indent();
-        generator.print("\"@type\": " + gson.toJson(typeUrl) + ",\n");
-        generator.print("\"value\": ");
+        generator.print("\"@type\":" + blankOrSpace + gson.toJson(typeUrl) + "," + blankOrNewLine);
+        generator.print("\"value\":" + blankOrSpace);
         printer.print(this, contentMessage);
-        generator.print("\n");
+        generator.print(blankOrNewLine);
         generator.outdent();
         generator.print("}");
       } else {
@@ -661,13 +734,15 @@ public class JsonFormat {
     }
 
     /** Prints a regular message with an optional type URL. */
-    private void print(MessageOrBuilder message, String typeUrl) throws IOException {
-      generator.print("{\n");
+
+    private void print(MessageOrBuilder message, String typeUrl)
+        throws IOException {
+      generator.print("{" + blankOrNewLine);
       generator.indent();
 
       boolean printedField = false;
       if (typeUrl != null) {
-        generator.print("\"@type\": " + gson.toJson(typeUrl));
+        generator.print("\"@type\":" + blankOrSpace + gson.toJson(typeUrl));
         printedField = true;
       }
       Map<FieldDescriptor, Object> fieldsToPrint = null;
@@ -689,7 +764,7 @@ public class JsonFormat {
       for (Map.Entry<FieldDescriptor, Object> field : fieldsToPrint.entrySet()) {
         if (printedField) {
           // Add line-endings for the previous field.
-          generator.print(",\n");
+          generator.print("," + blankOrNewLine);
         } else {
           printedField = true;
         }
@@ -698,7 +773,7 @@ public class JsonFormat {
 
       // Add line-endings for the last field.
       if (printedField) {
-        generator.print("\n");
+        generator.print(blankOrNewLine);
       }
       generator.outdent();
       generator.print("}");
@@ -706,9 +781,9 @@ public class JsonFormat {
 
     private void printField(FieldDescriptor field, Object value) throws IOException {
       if (preservingProtoFieldNames) {
-        generator.print("\"" + field.getName() + "\": ");
+        generator.print("\"" + field.getName() + "\":" + blankOrSpace);
       } else {
-        generator.print("\"" + field.getJsonName() + "\": ");
+        generator.print("\"" + field.getJsonName() + "\":" + blankOrSpace);
       }
       if (field.isMapField()) {
         printMapFieldValue(field, value);
@@ -725,7 +800,7 @@ public class JsonFormat {
       boolean printedElement = false;
       for (Object element : (List) value) {
         if (printedElement) {
-          generator.print(", ");
+          generator.print("," + blankOrSpace);
         } else {
           printedElement = true;
         }
@@ -742,7 +817,7 @@ public class JsonFormat {
       if (keyField == null || valueField == null) {
         throw new InvalidProtocolBufferException("Invalid map field.");
       }
-      generator.print("{\n");
+      generator.print("{" + blankOrNewLine);
       generator.indent();
       boolean printedElement = false;
       for (Object element : (List) value) {
@@ -750,17 +825,17 @@ public class JsonFormat {
         Object entryKey = entry.getField(keyField);
         Object entryValue = entry.getField(valueField);
         if (printedElement) {
-          generator.print(",\n");
+          generator.print("," + blankOrNewLine);
         } else {
           printedElement = true;
         }
         // Key fields are always double-quoted.
         printSingleFieldValue(keyField, entryKey, true);
-        generator.print(": ");
+        generator.print(":" + blankOrSpace);
         printSingleFieldValue(valueField, entryValue);
       }
       if (printedElement) {
-        generator.print("\n");
+        generator.print(blankOrNewLine);
       }
       generator.outdent();
       generator.print("}");
