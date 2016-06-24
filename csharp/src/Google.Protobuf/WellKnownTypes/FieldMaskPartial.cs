@@ -59,7 +59,12 @@ namespace Google.Protobuf.WellKnownTypes
             if (firstInvalid == null)
             {
                 var writer = new StringWriter();
+#if DOTNET35
+                var query = paths.Select(JsonFormatter.ToCamelCase);
+                JsonFormatter.WriteString(writer, string.Join(",", query.Cast<string>().ToArray()));
+#else
                 JsonFormatter.WriteString(writer, string.Join(",", paths.Select(JsonFormatter.ToCamelCase)));
+#endif
                 return writer.ToString();
             }
             else

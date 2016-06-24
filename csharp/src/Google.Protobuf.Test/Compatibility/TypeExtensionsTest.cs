@@ -67,7 +67,7 @@ namespace Google.Protobuf.Compatibility
         {
             Assert.AreEqual(expected, TypeExtensions.IsValueType(type));
         }
-
+#if !DOTNET35
         [Test]
         [TestCase(typeof(object), typeof(string), true)]
         [TestCase(typeof(object), typeof(int), true)]
@@ -129,5 +129,6 @@ namespace Google.Protobuf.Compatibility
         {
             Assert.Throws<AmbiguousMatchException>(() => TypeExtensions.GetMethod(type, name));
         }
+#endif
     }
 }
