@@ -886,8 +886,8 @@ namespace Google.Protobuf
             }
 
 #if DOTNET35
-          // TODO: Consider adding functionality to TypeExtensions to avoid this difference.
-          private static Dictionary<object, string> GetNameMapping(System.Type enumType) =>
+            // TODO: Consider adding functionality to TypeExtensions to avoid this difference.
+            private static Dictionary<object, string> GetNameMapping(System.Type enumType) =>
                 enumType.GetFields(BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Static)
                     .ToDictionary(f => f.GetValue(null),
                                   f => (f.GetCustomAttributes(typeof(OriginalNameAttribute), false)
