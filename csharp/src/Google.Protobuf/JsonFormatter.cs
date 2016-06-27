@@ -886,9 +886,9 @@ namespace Google.Protobuf
             }
 
 #if DOTNET35
-            private static Dictionary<object, string> GetNameMapping(System.Type enumType) =>
-                enumType.GetFields(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Static)
-                    .Where(f => f.IsStatic)
+          // TODO: Consider adding functionality to TypeExtensions to avoid this difference.
+          private static Dictionary<object, string> GetNameMapping(System.Type enumType) =>
+                enumType.GetFields(BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Static)
                     .ToDictionary(f => f.GetValue(null),
                                   f => (f.GetCustomAttributes(typeof(OriginalNameAttribute), false)
                                         .FirstOrDefault() as OriginalNameAttribute)

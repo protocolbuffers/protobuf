@@ -61,7 +61,7 @@ namespace Google.Protobuf.WellKnownTypes
                 var writer = new StringWriter();
 #if DOTNET35
                 var query = paths.Select(JsonFormatter.ToCamelCase);
-                JsonFormatter.WriteString(writer, string.Join(",", query.Cast<string>().ToArray()));
+                JsonFormatter.WriteString(writer, string.Join(",", query.ToArray()));
 #else
                 JsonFormatter.WriteString(writer, string.Join(",", paths.Select(JsonFormatter.ToCamelCase)));
 #endif
