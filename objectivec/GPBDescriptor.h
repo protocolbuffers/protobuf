@@ -123,6 +123,7 @@ typedef NS_ENUM(uint8_t, GPBFieldType) {
 - (BOOL)getValue:(nullable int32_t *)outValue forEnumName:(NSString *)name;
 
 - (nullable NSString *)textFormatNameForValue:(int32_t)number;
+- (BOOL)getValue:(nullable int32_t *)outValue forEnumTextFormatName:(NSString *)textFormatName;
 
 @end
 

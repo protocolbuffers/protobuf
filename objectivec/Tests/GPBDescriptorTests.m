@@ -125,6 +125,12 @@
       [descriptor getValue:&value forEnumName:@"TestAllTypes_NestedEnum_Baz"]);
   XCTAssertEqual(value, TestAllTypes_NestedEnum_Baz);
 
+  // TextFormat
+  enumName = [descriptor textFormatNameForValue:1];
+  XCTAssertNotNil(enumName);
+  XCTAssertTrue([descriptor getValue:&value forEnumTextFormatName:@"FOO"]);
+  XCTAssertEqual(value, TestAllTypes_NestedEnum_Foo);
+
   // Bad values
   enumName = [descriptor enumNameForValue:0];
   XCTAssertNil(enumName);
@@ -134,6 +140,8 @@
                           forEnumName:@"TestAllTypes_NestedEnum_Unknown"]);
   XCTAssertFalse([descriptor getValue:NULL
                           forEnumName:@"TestAllTypes_NestedEnum_Unknown"]);
+  XCTAssertFalse([descriptor getValue:NULL forEnumTextFormatName:@"Unknown"]);
+  XCTAssertFalse([descriptor getValue:&value forEnumTextFormatName:@"Unknown"]);
 }
 
 - (void)testEnumValueValidator {
