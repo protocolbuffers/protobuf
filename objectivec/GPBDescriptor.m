@@ -756,8 +756,7 @@ uint32_t GPBFieldAlternateTag(GPBFieldDescriptor *self) {
   return NO;
 }
 
-- (BOOL)getValue:(int32_t *)outValue forEnumTextFormatName:(NSString *)textFormatName;
-{
+- (BOOL)getValue:(int32_t *)outValue forEnumTextFormatName:(NSString *)textFormatName {
     if (nameOffsets_ == NULL) [self calcValueNameOffsets];
 
     for (uint32_t i = 0; i < valueCount_; ++i) {

@@ -54,6 +54,8 @@
 		F4487C831AAF6AB300531423 /* GPBMessageTests+Merge.m in Sources */ = {isa = PBXBuildFile; fileRef = F4487C821AAF6AB300531423 /* GPBMessageTests+Merge.m */; };
 		F45C69CC16DFD08D0081955B /* GPBExtensionInternals.m in Sources */ = {isa = PBXBuildFile; fileRef = F45C69CB16DFD08D0081955B /* GPBExtensionInternals.m */; };
 		F45E57C71AE6DC6A000B7D99 /* text_format_map_unittest_data.txt in Resources */ = {isa = PBXBuildFile; fileRef = F45E57C61AE6DC6A000B7D99 /* text_format_map_unittest_data.txt */; };
+		F47476E51D21A524007C7B1A /* Duration.pbobjc.m in Sources */ = {isa = PBXBuildFile; fileRef = 8B4248D41A92826400BC1EC6 /* Duration.pbobjc.m */; };
+		F47476E61D21A524007C7B1A /* Timestamp.pbobjc.m in Sources */ = {isa = PBXBuildFile; fileRef = 8B4248D61A92826400BC1EC6 /* Timestamp.pbobjc.m */; };
 		F4B51B1E1BBC610700744318 /* GPBObjectiveCPlusPlusTest.mm in Sources */ = {isa = PBXBuildFile; fileRef = F4B51B1D1BBC610700744318 /* GPBObjectiveCPlusPlusTest.mm */; };
 		F4E675971B21D0000054530B /* Any.pbobjc.m in Sources */ = {isa = PBXBuildFile; fileRef = F4E675871B21D0000054530B /* Any.pbobjc.m */; };
 		F4E675991B21D0000054530B /* Api.pbobjc.m in Sources */ = {isa = PBXBuildFile; fileRef = F4E675891B21D0000054530B /* Api.pbobjc.m */; };
@@ -625,6 +627,7 @@
 				F4E6759D1B21D0000054530B /* FieldMask.pbobjc.m in Sources */,
 				7461B54C0F94FB4E00A0C422 /* GPBUnknownField.m in Sources */,
 				7461B5530F94FB4E00A0C422 /* GPBMessage.m in Sources */,
+				F47476E51D21A524007C7B1A /* Duration.pbobjc.m in Sources */,
 				7461B5610F94FB4E00A0C422 /* GPBUnknownFieldSet.m in Sources */,
 				7461B5630F94FB4E00A0C422 /* GPBUtilities.m in Sources */,
 				7461B5640F94FB4E00A0C422 /* GPBWireFormat.m in Sources */,
@@ -639,6 +642,7 @@
 				F4E675A31B21D0000054530B /* Type.pbobjc.m in Sources */,
 				F4E675A11B21D0000054530B /* Struct.pbobjc.m in Sources */,
 				F4E675A51B21D0000054530B /* Wrappers.pbobjc.m in Sources */,
+				F47476E61D21A524007C7B1A /* Timestamp.pbobjc.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -727,6 +731,7 @@
 				);
 				INFOPLIST_FILE = "Tests/UnitTests-Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
+				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.yourcompany.${PRODUCT_NAME:identifier}";
 				PRODUCT_NAME = UnitTests;
 				SWIFT_OBJC_BRIDGING_HEADER = "Tests/UnitTests-Bridging-Header.h";
@@ -751,6 +756,7 @@
 				);
 				INFOPLIST_FILE = "Tests/UnitTests-Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
+				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.yourcompany.${PRODUCT_NAME:identifier}";
 				PRODUCT_NAME = UnitTests;
 				SWIFT_OBJC_BRIDGING_HEADER = "Tests/UnitTests-Bridging-Header.h";
