@@ -1,6 +1,9 @@
 # Package management
 project.lock.json
 .vs
+*.nuget.targets
+*.nuget.props
+
 
 # Output directories
 bin

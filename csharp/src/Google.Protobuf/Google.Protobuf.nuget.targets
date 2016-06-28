@@ -1,9 +1,0 @@
-﻿<?xml version="1.0" encoding="utf-8" standalone="no"?>
-<Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <PropertyGroup Condition="'$(NuGetPackageRoot)' == ''">
-    <NuGetPackageRoot>$(UserProfile)\.nuget\packages\</NuGetPackageRoot>
-  </PropertyGroup>
-  <ImportGroup>
-    <Import Project="$(NuGetPackageRoot)\NuSpec.ReferenceGenerator\2.0.0-beta-bld14\build\netstandard1.0\NuSpec.ReferenceGenerator.targets" Condition="Exists('$(NuGetPackageRoot)\NuSpec.ReferenceGenerator\2.0.0-beta-bld14\build\netstandard1.0\NuSpec.ReferenceGenerator.targets')" />
-  </ImportGroup>
-</Project>
