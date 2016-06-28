@@ -885,6 +885,16 @@ namespace Google.Protobuf
                 return originalName;
             }
 
+#if DOTNET35
+            // TODO: Consider adding functionality to TypeExtensions to avoid this difference.
+            private static Dictionary<object, string> GetNameMapping(System.Type enumType) =>
+                enumType.GetFields(BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Static)
+                    .ToDictionary(f => f.GetValue(null),
+                                  f => (f.GetCustomAttributes(typeof(OriginalNameAttribute), false)
+                                        .FirstOrDefault() as OriginalNameAttribute)
+                                        // If the attribute hasn't been applied, fall back to the name of the field.
+                                        ?.Name ?? f.Name);
+#else
             private static Dictionary<object, string> GetNameMapping(System.Type enumType) =>
                 enumType.GetTypeInfo().DeclaredFields
                     .Where(f => f.IsStatic)
@@ -893,6 +903,7 @@ namespace Google.Protobuf
                                         .FirstOrDefault()
                                         // If the attribute hasn't been applied, fall back to the name of the field.
                                         ?.Name ?? f.Name);
+#endif
         }
     }
 }

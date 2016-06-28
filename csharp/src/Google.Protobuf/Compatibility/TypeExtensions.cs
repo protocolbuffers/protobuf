@@ -49,6 +49,11 @@ namespace Google.Protobuf.Compatibility
         /// Returns true if the target type is a value type, including a nullable value type or an enum, or false
         /// if it's a reference type (class, delegate, interface - including System.ValueType and System.Enum).
         /// </summary>
+#if DOTNET35
+        internal static bool IsValueType(this Type target) {
+            return target.IsValueType;
+        }
+#else
         internal static bool IsValueType(this Type target)
         {
             return target.GetTypeInfo().IsValueType;
@@ -109,5 +114,6 @@ namespace Google.Protobuf.Compatibility
             }
             return null;
         }
+#endif
     }
 }
