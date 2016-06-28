@@ -141,7 +141,7 @@ argument is comma-delimited name/value pairs (_key=value,key2=value2_). The
 _keys_ are used to change the behavior during generation. The currently
 supported keys are:
 
-  * `generate_for_framework_named`: The `value` used for this key will be used
+  * `generate_for_named_framework`: The `value` used for this key will be used
     when generating the `#import` statements in the generated code.  Instead
     of being plain `#import "some/path/file.pbobjc.h"` lines, they will be
     framework based, i.e. - `#import <VALUE/file.pbobjc.h>`.
