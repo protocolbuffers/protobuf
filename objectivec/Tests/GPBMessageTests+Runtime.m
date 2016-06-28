@@ -2066,6 +2066,46 @@
       }];
 }
 
+- (void)test_GPBGetMessageRepeatedField {
+  TestAllTypes *message = [TestAllTypes message];
+  GPBFieldDescriptor *fieldDescriptor = [[message descriptor] fieldWithName:@"repeatedStringArray"];
+  XCTAssertNotNil(fieldDescriptor);
+  NSMutableArray *fieldArray = GPBGetMessageRepeatedField(message, fieldDescriptor);
+  XCTAssertNotNil(fieldArray);  // Should have autocreated.
+  XCTAssertTrue(fieldArray == message.repeatedStringArray);  // Same pointer
+}
+
+- (void)test_GPBSetMessageRepeatedField {
+  TestAllTypes *message = [TestAllTypes message];
+  GPBFieldDescriptor *fieldDescriptor = [[message descriptor] fieldWithName:@"repeatedStringArray"];
+  XCTAssertNotNil(fieldDescriptor);
+
+  NSMutableArray *fieldArray = [NSMutableArray arrayWithObject:@"foo"];
+  GPBSetMessageRepeatedField(message, fieldDescriptor, fieldArray);
+  XCTAssertTrue(fieldArray == message.repeatedStringArray);  // Same pointer
+  XCTAssertEqualObjects(@"foo", message.repeatedStringArray.firstObject);
+}
+
+- (void)test_GPBGetMessageMapField {
+  TestMap *message = [TestMap message];
+  GPBFieldDescriptor *fieldDescriptor = [[message descriptor] fieldWithName:@"mapStringString"];
+  XCTAssertNotNil(fieldDescriptor);
+  NSMutableDictionary *fieldMap = GPBGetMessageMapField(message, fieldDescriptor);
+  XCTAssertNotNil(fieldMap);  // Should have autocreated.
+  XCTAssertTrue(fieldMap == message.mapStringString);  // Same pointer
+}
+
+- (void)test_GPBSetMessageMapField {
+  TestMap *message = [TestMap message];
+  GPBFieldDescriptor *fieldDescriptor = [[message descriptor] fieldWithName:@"mapStringString"];
+  XCTAssertNotNil(fieldDescriptor);
+
+  NSMutableDictionary *fieldMap = [NSMutableDictionary dictionaryWithObject:@"bar" forKey:@"foo"];
+  GPBSetMessageMapField(message, fieldDescriptor, fieldMap);
+  XCTAssertTrue(fieldMap == message.mapStringString);  // Same pointer
+  XCTAssertEqualObjects(@"bar", message.mapStringString[@"foo"]);
+}
+
 #pragma mark - Subset from from map_tests.cc
 
 // TEST(GeneratedMapFieldTest, IsInitialized)

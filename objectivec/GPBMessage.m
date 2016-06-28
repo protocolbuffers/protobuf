@@ -3199,4 +3199,34 @@ static void ResolveIvarSet(GPBFieldDescriptor *field,
 
 @end
 
+#pragma mark - Messages from GPBUtilities.h but defined here for access to helpers.
+
+// Only exists for public api, no core code should use this.
+id GPBGetMessageRepeatedField(GPBMessage *self, GPBFieldDescriptor *field) {
+#if defined(DEBUG) && DEBUG
+  if (field.fieldType != GPBFieldTypeRepeated) {
+    [NSException raise:NSInvalidArgumentException
+                format:@"%@.%@ is not a repeated field.",
+     [self class], field.name];
+  }
+#endif
+  GPBDescriptor *descriptor = [[self class] descriptor];
+  GPBFileSyntax syntax = descriptor.file.syntax;
+  return GetOrCreateArrayIvarWithField(self, field, syntax);
+}
+
+// Only exists for public api, no core code should use this.
+id GPBGetMessageMapField(GPBMessage *self, GPBFieldDescriptor *field) {
+#if defined(DEBUG) && DEBUG
+  if (field.fieldType != GPBFieldTypeMap) {
+    [NSException raise:NSInvalidArgumentException
+                format:@"%@.%@ is not a map<> field.",
+     [self class], field.name];
+  }
+#endif
+  GPBDescriptor *descriptor = [[self class] descriptor];
+  GPBFileSyntax syntax = descriptor.file.syntax;
+  return GetOrCreateMapIvarWithField(self, field, syntax);
+}
+
 #pragma clang diagnostic pop

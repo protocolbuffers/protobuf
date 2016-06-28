@@ -895,17 +895,7 @@ void GPBSetMessageGroupField(GPBMessage *self,
 
 //%PDDM-EXPAND-END (4 expansions)
 
-// Only exists for public api, no core code should use this.
-id GPBGetMessageRepeatedField(GPBMessage *self, GPBFieldDescriptor *field) {
-#if defined(DEBUG) && DEBUG
-  if (field.fieldType != GPBFieldTypeRepeated) {
-    [NSException raise:NSInvalidArgumentException
-                format:@"%@.%@ is not a repeated field.",
-                       [self class], field.name];
-  }
-#endif
-  return GPBGetObjectIvarWithField(self, field);
-}
+// GPBGetMessageRepeatedField is defined in GPBMessage.m
 
 // Only exists for public api, no core code should use this.
 void GPBSetMessageRepeatedField(GPBMessage *self, GPBFieldDescriptor *field, id array) {
@@ -997,17 +987,7 @@ static NSString *TypeToStr(GPBDataType dataType) {
 }
 #endif
 
-// Only exists for public api, no core code should use this.
-id GPBGetMessageMapField(GPBMessage *self, GPBFieldDescriptor *field) {
-#if defined(DEBUG) && DEBUG
-  if (field.fieldType != GPBFieldTypeMap) {
-    [NSException raise:NSInvalidArgumentException
-                format:@"%@.%@ is not a map<> field.",
-                       [self class], field.name];
-  }
-#endif
-  return GPBGetObjectIvarWithField(self, field);
-}
+// GPBGetMessageMapField is defined in GPBMessage.m
 
 // Only exists for public api, no core code should use this.
 void GPBSetMessageMapField(GPBMessage *self, GPBFieldDescriptor *field,
