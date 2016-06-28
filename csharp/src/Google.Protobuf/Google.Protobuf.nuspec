@@ -24,7 +24,7 @@
       <group targetFramework="monotouch" />
       <group targetFramework="monoandroid" />
       <!-- Dependencies for newer, more granular platforms (.NET Core etc) -->
-      <group targetFramework="dotnet">
+      <group targetFramework="netstandard1.0">
         <dependency id="System.Collections" version="4.0.0" />
         <dependency id="System.Diagnostics.Debug" version="4.0.0" />
         <dependency id="System.Globalization" version="4.0.0" />
@@ -43,12 +43,9 @@
     </dependencies>
   </metadata>
   <files>
-    <file src="bin/ReleaseSigned/Google.Protobuf.dll" target="lib/portable-net45+netcore45+wpa81+wp8" />
-    <file src="bin/ReleaseSigned/Google.Protobuf.pdb" target="lib/portable-net45+netcore45+wpa81+wp8" />
-    <file src="bin/ReleaseSigned/Google.Protobuf.xml" target="lib/portable-net45+netcore45+wpa81+wp8" />
-    <file src="bin/ReleaseSigned/Google.Protobuf.dll" target="lib/dotnet" />
-    <file src="bin/ReleaseSigned/Google.Protobuf.pdb" target="lib/dotnet" />
-    <file src="bin/ReleaseSigned/Google.Protobuf.xml" target="lib/dotnet" />
+    <file src="bin/ReleaseSigned/Google.Protobuf.dll" target="lib/netstandard1.0" />
+    <file src="bin/ReleaseSigned/Google.Protobuf.pdb" target="lib/netstandard1.0" />
+    <file src="bin/ReleaseSigned/Google.Protobuf.xml" target="lib/netstandard1.0" />
     <file src="**\*.cs" target="src" />
   </files>
 </package>

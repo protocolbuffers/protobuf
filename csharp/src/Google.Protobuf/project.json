@@ -1,0 +1,11 @@
+﻿{
+  "supports": {},
+  "dependencies": {
+    "Microsoft.NETCore.Portable.Compatibility": "1.0.1",
+    "NETStandard.Library": "1.6.0",
+    "NuSpec.ReferenceGenerator": { "type": "build", "version": "1.4.2" }
+  },
+  "frameworks": {
+    "netstandard1.0": {}
+  }
+}
