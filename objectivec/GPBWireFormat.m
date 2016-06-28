@@ -51,8 +51,7 @@ uint32_t GPBWireFormatGetTagFieldNumber(uint32_t tag) {
 
 BOOL GPBWireFormatIsValidTag(uint32_t tag) {
   uint32_t formatBits = (tag & GPBWireFormatTagTypeMask);
-  // The valid GPBWireFormat* values are 0-5, anything else and it wasn't
-  // a valid tag.
+  // The valid GPBWireFormat* values are 0-5, anything else is not a valid tag.
   BOOL result = (formatBits <= 5);
   return result;
 }

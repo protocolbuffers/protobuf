@@ -358,7 +358,7 @@ void GPBCodedInputStreamCheckLastTagWas(GPBCodedInputStreamState *state,
 }
 
 - (BOOL)skipField:(int32_t)tag {
-  NSAssert(GPBWireFormatIsValidTag(tag), @"Invalid tag?");
+  NSAssert(GPBWireFormatIsValidTag(tag), @"Invalid tag");
   switch (GPBWireFormatGetTagWireType(tag)) {
     case GPBWireFormatVarint:
       GPBCodedInputStreamReadInt32(&state_);
