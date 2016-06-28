@@ -49,6 +49,14 @@ uint32_t GPBWireFormatGetTagFieldNumber(uint32_t tag) {
   return GPBLogicalRightShift32(tag, GPBWireFormatTagTypeBits);
 }
 
+BOOL GPBWireFormatIsValidTag(uint32_t tag) {
+  uint32_t formatBits = (tag & GPBWireFormatTagTypeMask);
+  // The valid GPBWireFormat* values are 0-5, anything else and it wasn't
+  // a valid tag.
+  BOOL result = (formatBits <= 5);
+  return result;
+}
+
 GPBWireFormat GPBWireFormatForType(GPBDataType type, BOOL isPacked) {
   if (isPacked) {
     return GPBWireFormatLengthDelimited;

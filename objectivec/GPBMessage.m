@@ -2279,6 +2279,9 @@ static void MergeRepeatedNotPackedFieldFromCodedInputStream(
   while (YES) {
     BOOL merged = NO;
     tag = GPBCodedInputStreamReadTag(state);
+    if (tag == 0) {
+      break;  // Reached end.
+    }
     for (NSUInteger i = 0; i < numFields; ++i) {
       if (startingIndex >= numFields) startingIndex = 0;
       GPBFieldDescriptor *fieldDescriptor = fields[startingIndex];
@@ -2317,7 +2320,7 @@ static void MergeRepeatedNotPackedFieldFromCodedInputStream(
       }
     }  // for(i < numFields)
 
-    if (!merged) {
+    if (!merged && (tag != 0)) {
       // Primitive, repeated types can be packed on unpacked on the wire, and
       // are parsed either way.  The above loop covered tag in the preferred
       // for, so this need to check the alternate form.
