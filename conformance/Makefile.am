@@ -246,7 +246,7 @@ conformance-java-lite: javac_middleman_lite
 conformance-csharp: $(other_language_protoc_outputs)
 	@echo "Writing shortcut script conformance-csharp..."
 	@echo '#! /bin/sh' > conformance-csharp
-	@echo 'mono ../csharp/src/Google.Protobuf.Conformance/bin/Release/Google.Protobuf.Conformance.exe "$$@"' >> conformance-csharp
+	@echo 'dotnet ../csharp/src/Google.Protobuf.Conformance/bin/Release/netcoreapp1.0/Google.Protobuf.Conformance.dll "$$@"' >> conformance-csharp
 	@chmod +x conformance-csharp
 
 # Targets for actually running tests.
