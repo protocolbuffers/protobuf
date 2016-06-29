@@ -52,7 +52,7 @@ const StringPiece SkipWhiteSpace(StringPiece str) {
   for (i = 0; i < str.size() && isspace(str[i]); ++i) {
   }
   GOOGLE_DCHECK(i == str.size() || !isspace(str[i]));
-  return StringPiece(str, i);
+  return str.substr(i);
 }
 }  // namespace
 
@@ -128,8 +128,12 @@ string GetStringFromAny(const google::protobuf::Any& any) {
 }
 
 const StringPiece GetTypeWithoutUrl(StringPiece type_url) {
-  size_t idx = type_url.rfind('/');
-  return type_url.substr(idx + 1);
+  if (type_url.size() > kTypeUrlSize && type_url[kTypeUrlSize] == '/') {
+    return type_url.substr(kTypeUrlSize + 1);
+  } else {
+    size_t idx = type_url.rfind('/');
+    return type_url.substr(idx + 1);
+  }
 }
 
 const string GetFullTypeWithUrl(StringPiece simple_type) {

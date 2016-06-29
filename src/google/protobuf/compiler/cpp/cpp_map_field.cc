@@ -182,33 +182,33 @@ GenerateConstructorCode(io::Printer* printer) const {
 
 void MapFieldGenerator::
 GenerateMergeFromCodedStream(io::Printer* printer) const {
+    const FieldDescriptor* key_field =
+        descriptor_->message_type()->FindFieldByName("key");
   const FieldDescriptor* value_field =
       descriptor_->message_type()->FindFieldByName("value");
-  printer->Print(variables_,
-      "::google::protobuf::scoped_ptr<$map_classname$> entry($name$_.NewEntry());\n");
-
+  bool using_entry = false;
+  string key;
+  string value;
   if (IsProto3Field(descriptor_) ||
       value_field->type() != FieldDescriptor::TYPE_ENUM) {
     printer->Print(variables_,
+        "$map_classname$::Parser< ::google::protobuf::internal::MapField$lite$<\n"
+                   "    $key_cpp$, $val_cpp$,\n"
+                   "    $key_wire_type$,\n"
+                   "    $val_wire_type$,\n"
+                   "    $default_enum_value$ >,\n"
+                   "  ::google::protobuf::Map< $key_cpp$, $val_cpp$ > >"
+        " parser(&$name$_);\n"
         "DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtual(\n"
-        "    input, entry.get()));\n");
-    switch (value_field->cpp_type()) {
-      case FieldDescriptor::CPPTYPE_MESSAGE:
-        printer->Print(variables_,
-            "(*mutable_$name$())[entry->key()].Swap("
-            "entry->mutable_value());\n");
-        break;
-      case FieldDescriptor::CPPTYPE_ENUM:
-        printer->Print(variables_,
-            "(*mutable_$name$())[entry->key()] =\n"
-            "    static_cast< $val_cpp$ >(*entry->mutable_value());\n");
-        break;
-      default:
-        printer->Print(variables_,
-            "(*mutable_$name$())[entry->key()] = *entry->mutable_value();\n");
-        break;
-    }
+        "    input, &parser));\n");
+    key = "parser.key()";
+    value = "parser.value()";
   } else {
+    using_entry = true;
+    key = "entry->key()";
+    value = "entry->value()";
+    printer->Print(variables_,
+        "::google::protobuf::scoped_ptr<$map_classname$> entry($name$_.NewEntry());\n");
     printer->Print(variables_,
         "{\n"
         "  ::std::string data;\n"
@@ -229,28 +229,23 @@ GenerateMergeFromCodedStream(io::Printer* printer) const {
           "    unknown_fields_stream.WriteString(data);\n");
     }
 
-
     printer->Print(variables_,
         "  }\n"
         "}\n");
   }
 
-  const FieldDescriptor* key_field =
-      descriptor_->message_type()->FindFieldByName("key");
   if (key_field->type() == FieldDescriptor::TYPE_STRING) {
     GenerateUtf8CheckCodeForString(
-        key_field, options_, true, variables_,
-        "entry->key().data(), entry->key().length(),\n", printer);
+    key_field, options_, true, variables_,
+        StrCat(key, ".data(), ", key, ".length(),\n").data(), printer);
   }
   if (value_field->type() == FieldDescriptor::TYPE_STRING) {
     GenerateUtf8CheckCodeForString(value_field, options_, true, variables_,
-                                   "entry->mutable_value()->data(),\n"
-                                   "entry->mutable_value()->length(),\n",
-                                   printer);
+        StrCat(value, ".data(), ", value, ".length(),\n").data(), printer);
   }
 
   // If entry is allocated by arena, its desctructor should be avoided.
-  if (SupportsArenas(descriptor_)) {
+  if (using_entry && SupportsArenas(descriptor_)) {
     printer->Print(variables_,
         "if (entry->GetArena() != NULL) entry.release();\n");
   }
@@ -333,8 +328,8 @@ GenerateSerializeWithCachedSizesToArray(io::Printer* printer) const {
   printer->Print(variables_,
       "    entry.reset($name$_.New$wrapper$(it->first, it->second));\n"
       "    target = ::google::protobuf::internal::WireFormatLite::\n"
-      "        Write$declared_type$NoVirtualToArray(\n"
-      "            $number$, *entry, target);\n");
+      "        InternalWrite$declared_type$NoVirtualToArray(\n"
+      "            $number$, *entry, false, target);\n");
 
   printer->Indent();
   printer->Indent();

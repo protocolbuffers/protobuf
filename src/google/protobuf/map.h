@@ -520,7 +520,7 @@ class Map {
   typedef size_t size_type;
   typedef hash<Key> hasher;
 
-  Map(bool old_style = true)
+  explicit Map(bool old_style = true)
       : arena_(NULL),
         default_enum_value_(0),
         old_style_(old_style) {
@@ -1619,6 +1619,24 @@ class Map {
       insert(other.begin(), other.end());
     }
     return *this;
+  }
+
+  void swap(Map& other) {
+    if (arena_ == other.arena_ && old_style_ == other.old_style_) {
+      std::swap(default_enum_value_, other.default_enum_value_);
+      if (old_style_) {
+        std::swap(deprecated_elements_, other.deprecated_elements_);
+      } else {
+        std::swap(elements_, other.elements_);
+      }
+    } else {
+      // TODO(zuguang): optimize this. The temporary copy can be allocated
+      // in the same arena as the other message, and the "other = copy" can
+      // be replaced with the fast-path swap above.
+      Map copy = *this;
+      *this = other;
+      other = copy;
+    }
   }
 
   // Access to hasher.  Currently this returns a copy, but it may

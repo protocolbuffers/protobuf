@@ -231,7 +231,7 @@ class LIBPROTOBUF_EXPORT ProtoStreamObjectWriter : public ProtoWriter {
 
     // Set of map keys already seen for the type_. Used to validate incoming
     // messages so no map key appears more than once.
-    hash_set<string> map_keys_;
+    google::protobuf::scoped_ptr<hash_set<string> > map_keys_;
 
     // Conveys whether this Item is a placeholder or not. Placeholder items are
     // pushed to stack to account for special types.
@@ -249,19 +249,19 @@ class LIBPROTOBUF_EXPORT ProtoStreamObjectWriter : public ProtoWriter {
                           strings::ByteSink* output, ErrorListener* listener);
 
   // Returns true if the field is a map.
-  bool IsMap(const google::protobuf::Field& field);
+  inline bool IsMap(const google::protobuf::Field& field);
 
   // Returns true if the field is an any.
-  bool IsAny(const google::protobuf::Field& field);
+  inline bool IsAny(const google::protobuf::Field& field);
 
   // Returns true if the field is google.protobuf.Struct.
-  bool IsStruct(const google::protobuf::Field& field);
+  inline bool IsStruct(const google::protobuf::Field& field);
 
   // Returns true if the field is google.protobuf.Value.
-  bool IsStructValue(const google::protobuf::Field& field);
+  inline bool IsStructValue(const google::protobuf::Field& field);
 
   // Returns true if the field is google.protobuf.ListValue.
-  bool IsStructListValue(const google::protobuf::Field& field);
+  inline bool IsStructListValue(const google::protobuf::Field& field);
 
   // Renders google.protobuf.Value in struct.proto. It picks the right oneof
   // type based on value's type.

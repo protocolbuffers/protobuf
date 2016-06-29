@@ -55,7 +55,6 @@
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/logging.h>
-#include <google/protobuf/stubs/scoped_ptr.h>
 #include <google/protobuf/testing/googletest.h>
 #include <gtest/gtest.h>
 
@@ -2705,6 +2704,7 @@ TEST(CustomOptions, OptionLocations) {
       protobuf_unittest::TestMessageWithCustomOptions::descriptor();
   const FileDescriptor* file = message->file();
   const FieldDescriptor* field = message->FindFieldByName("field1");
+  const OneofDescriptor* oneof = message->FindOneofByName("AnOneof");
   const EnumDescriptor* enm = message->FindEnumTypeByName("AnEnum");
   // TODO(benjy): Support EnumValue options, once the compiler does.
   const ServiceDescriptor* service =
@@ -2719,6 +2719,8 @@ TEST(CustomOptions, OptionLocations) {
             field->options().GetExtension(protobuf_unittest::field_opt1));
   EXPECT_EQ(42,  // Check that we get the default for an option we don't set.
             field->options().GetExtension(protobuf_unittest::field_opt2));
+  EXPECT_EQ(-99,
+            oneof->options().GetExtension(protobuf_unittest::oneof_opt1));
   EXPECT_EQ(-789,
             enm->options().GetExtension(protobuf_unittest::enum_opt1));
   EXPECT_EQ(123,
@@ -5027,7 +5029,7 @@ TEST_F(ValidationErrorTest, AggregateValueParseError) {
   BuildFileWithErrors(
       EmbedAggregateValue("aggregate_value: \"1+2\""),
       "foo.proto: foo.proto: OPTION_VALUE: Error while parsing option "
-      "value for \"foo\": Expected identifier.\n");
+      "value for \"foo\": Expected identifier, got: 1\n");
 }
 
 TEST_F(ValidationErrorTest, AggregateValueUnknownFields) {
@@ -5834,7 +5836,7 @@ TEST_F(ValidationErrorTest, ValidateProto3JsonName) {
       "  field { name:'name' number:1 label:LABEL_OPTIONAL type:TYPE_INT32 }"
       "  field { name:'Name' number:2 label:LABEL_OPTIONAL type:TYPE_INT32 }"
       "}",
-      "foo.proto: Foo: OTHER: The JSON camcel-case name of field \"Name\" "
+      "foo.proto: Foo: OTHER: The JSON camel-case name of field \"Name\" "
       "conflicts with field \"name\". This is not allowed in proto3.\n");
   // Underscores are ignored.
   BuildFileWithErrors(
@@ -5845,7 +5847,7 @@ TEST_F(ValidationErrorTest, ValidateProto3JsonName) {
       "  field { name:'ab' number:1 label:LABEL_OPTIONAL type:TYPE_INT32 }"
       "  field { name:'_a__b_' number:2 label:LABEL_OPTIONAL type:TYPE_INT32 }"
       "}",
-      "foo.proto: Foo: OTHER: The JSON camcel-case name of field \"_a__b_\" "
+      "foo.proto: Foo: OTHER: The JSON camel-case name of field \"_a__b_\" "
       "conflicts with field \"ab\". This is not allowed in proto3.\n");
 }
 

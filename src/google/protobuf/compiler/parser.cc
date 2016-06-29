@@ -1630,6 +1630,16 @@ bool Parser::ParseOneof(OneofDescriptorProto* oneof_decl,
       return false;
     }
 
+    if (LookingAt("option")) {
+      LocationRecorder option_location(
+          oneof_location, OneofDescriptorProto::kOptionsFieldNumber);
+      if (!ParseOption(oneof_decl->mutable_options(), option_location,
+                       containing_file, OPTION_STATEMENT)) {
+        return false;
+      }
+      continue;
+    }
+
     // Print a nice error if the user accidentally tries to place a label
     // on an individual member of a oneof.
     if (LookingAt("required") ||

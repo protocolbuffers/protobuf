@@ -871,6 +871,10 @@ public final class Descriptors {
         nestedTypes[i].setProto(proto.getNestedType(i));
       }
 
+      for (int i = 0; i < oneofs.length; i++) {
+        oneofs[i].setProto(proto.getOneofDecl(i));
+      }
+
       for (int i = 0; i < enumTypes.length; i++) {
         enumTypes[i].setProto(proto.getEnumType(i));
       }
@@ -2513,6 +2517,10 @@ public final class Descriptors {
 
     public int getFieldCount() { return fieldCount; }
 
+    public OneofOptions getOptions() {
+      return proto.getOptions();
+    }
+
     /** Get a list of this message type's fields. */
     public List<FieldDescriptor> getFields() {
       return Collections.unmodifiableList(Arrays.asList(fields));
@@ -2520,6 +2528,10 @@ public final class Descriptors {
 
     public FieldDescriptor getField(int index) {
       return fields[index];
+    }
+
+    private void setProto(final OneofDescriptorProto proto) {
+      this.proto = proto;
     }
 
     private OneofDescriptor(final OneofDescriptorProto proto,

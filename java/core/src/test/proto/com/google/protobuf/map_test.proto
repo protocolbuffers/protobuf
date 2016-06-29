@@ -55,9 +55,19 @@ message TestMap {
   map<string, int32>       string_to_int32_field = 6;
 }
 
-// Used to test that a nested bulider containing map fields will properly
+// Used to test that a nested builder containing map fields will properly
 // propagate the onChange event and mark its parent dirty when a change
 // is made to a map field.
 message TestOnChangeEventPropagation {
   TestMap optional_message = 1;
+}
+
+// a decoy of TestMap for testing parsing errors
+message BizarroTestMap {
+  map<int32, bytes> int32_to_int32_field = 1; // same key type, different value
+  map<string, int32> int32_to_string_field = 2; // different key and value types
+  map<string, int32> int32_to_bytes_field = 3; // different key types, same value
+  map<string, bytes> int32_to_enum_field = 4; // different key and value types
+  map<string, bytes> int32_to_message_field = 5; // different key and value types
+  map<string, bytes> string_to_int32_field = 6;  // same key type, different value
 }

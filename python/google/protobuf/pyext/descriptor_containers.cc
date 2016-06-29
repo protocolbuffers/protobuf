@@ -608,6 +608,24 @@ static PyObject* GetItem(PyContainer* self, Py_ssize_t index) {
   return _NewObj_ByIndex(self, index);
 }
 
+static PyObject *
+SeqSubscript(PyContainer* self, PyObject* item) {
+  if (PyIndex_Check(item)) {
+      Py_ssize_t index;
+      index = PyNumber_AsSsize_t(item, PyExc_IndexError);
+      if (index == -1 && PyErr_Occurred())
+          return NULL;
+      return GetItem(self, index);
+  }
+  // Materialize the list and delegate the operation to it.
+  ScopedPyObjectPtr list(PyObject_CallFunctionObjArgs(
+      reinterpret_cast<PyObject*>(&PyList_Type), self, NULL));
+  if (list == NULL) {
+    return NULL;
+  }
+  return Py_TYPE(list.get())->tp_as_mapping->mp_subscript(list.get(), item);
+}
+
 // Returns the position of the item in the sequence, of -1 if not found.
 // This function never fails.
 int Find(PyContainer* self, PyObject* item) {
@@ -703,14 +721,20 @@ static PyMethodDef SeqMethods[] = {
 };
 
 static PySequenceMethods SeqSequenceMethods = {
-    (lenfunc)Length,          // sq_length
-    0,                        // sq_concat
-    0,                        // sq_repeat
-    (ssizeargfunc)GetItem,    // sq_item
-    0,                        // sq_slice
-    0,                        // sq_ass_item
-    0,                        // sq_ass_slice
-    (objobjproc)SeqContains,  // sq_contains
+  (lenfunc)Length,          // sq_length
+  0,                        // sq_concat
+  0,                        // sq_repeat
+  (ssizeargfunc)GetItem,    // sq_item
+  0,                        // sq_slice
+  0,                        // sq_ass_item
+  0,                        // sq_ass_slice
+  (objobjproc)SeqContains,  // sq_contains
+};
+
+static PyMappingMethods SeqMappingMethods = {
+  (lenfunc)Length,           // mp_length
+  (binaryfunc)SeqSubscript,  // mp_subscript
+  0,                         // mp_ass_subscript
 };
 
 PyTypeObject DescriptorSequence_Type = {
@@ -726,7 +750,7 @@ PyTypeObject DescriptorSequence_Type = {
   (reprfunc)ContainerRepr,              // tp_repr
   0,                                    // tp_as_number
   &SeqSequenceMethods,                  // tp_as_sequence
-  0,                                    // tp_as_mapping
+  &SeqMappingMethods,                   // tp_as_mapping
   0,                                    // tp_hash
   0,                                    // tp_call
   0,                                    // tp_str
@@ -1407,6 +1431,68 @@ PyObject* NewOneofFieldsSeq(ParentDescriptor descriptor) {
 
 }  // namespace oneof_descriptor
 
+namespace service_descriptor {
+
+typedef const ServiceDescriptor* ParentDescriptor;
+
+static ParentDescriptor GetDescriptor(PyContainer* self) {
+  return reinterpret_cast<ParentDescriptor>(self->descriptor);
+}
+
+namespace methods {
+
+typedef const MethodDescriptor* ItemDescriptor;
+
+static int Count(PyContainer* self) {
+  return GetDescriptor(self)->method_count();
+}
+
+static ItemDescriptor GetByName(PyContainer* self, const string& name) {
+  return GetDescriptor(self)->FindMethodByName(name);
+}
+
+static ItemDescriptor GetByIndex(PyContainer* self, int index) {
+  return GetDescriptor(self)->method(index);
+}
+
+static PyObject* NewObjectFromItem(ItemDescriptor item) {
+  return PyMethodDescriptor_FromDescriptor(item);
+}
+
+static const string& GetItemName(ItemDescriptor item) {
+  return item->name();
+}
+
+static int GetItemIndex(ItemDescriptor item) {
+  return item->index();
+}
+
+static DescriptorContainerDef ContainerDef = {
+  "ServiceMethods",
+  (CountMethod)Count,
+  (GetByIndexMethod)GetByIndex,
+  (GetByNameMethod)GetByName,
+  (GetByCamelcaseNameMethod)NULL,
+  (GetByNumberMethod)NULL,
+  (NewObjectFromItemMethod)NewObjectFromItem,
+  (GetItemNameMethod)GetItemName,
+  (GetItemCamelcaseNameMethod)NULL,
+  (GetItemNumberMethod)NULL,
+  (GetItemIndexMethod)GetItemIndex,
+};
+
+}  // namespace methods
+
+PyObject* NewServiceMethodsSeq(ParentDescriptor descriptor) {
+  return descriptor::NewSequence(&methods::ContainerDef, descriptor);
+}
+
+PyObject* NewServiceMethodsByName(ParentDescriptor descriptor) {
+  return descriptor::NewMappingByName(&methods::ContainerDef, descriptor);
+}
+
+}  // namespace service_descriptor
+
 namespace file_descriptor {
 
 typedef const FileDescriptor* ParentDescriptor;
@@ -1459,7 +1545,7 @@ static DescriptorContainerDef ContainerDef = {
 
 }  // namespace messages
 
-PyObject* NewFileMessageTypesByName(const FileDescriptor* descriptor) {
+PyObject* NewFileMessageTypesByName(ParentDescriptor descriptor) {
   return descriptor::NewMappingByName(&messages::ContainerDef, descriptor);
 }
 
@@ -1507,7 +1593,7 @@ static DescriptorContainerDef ContainerDef = {
 
 }  // namespace enums
 
-PyObject* NewFileEnumTypesByName(const FileDescriptor* descriptor) {
+PyObject* NewFileEnumTypesByName(ParentDescriptor descriptor) {
   return descriptor::NewMappingByName(&enums::ContainerDef, descriptor);
 }
 
@@ -1555,8 +1641,56 @@ static DescriptorContainerDef ContainerDef = {
 
 }  // namespace extensions
 
-PyObject* NewFileExtensionsByName(const FileDescriptor* descriptor) {
+PyObject* NewFileExtensionsByName(ParentDescriptor descriptor) {
   return descriptor::NewMappingByName(&extensions::ContainerDef, descriptor);
+}
+
+namespace services {
+
+typedef const ServiceDescriptor* ItemDescriptor;
+
+static int Count(PyContainer* self) {
+  return GetDescriptor(self)->service_count();
+}
+
+static ItemDescriptor GetByName(PyContainer* self, const string& name) {
+  return GetDescriptor(self)->FindServiceByName(name);
+}
+
+static ItemDescriptor GetByIndex(PyContainer* self, int index) {
+  return GetDescriptor(self)->service(index);
+}
+
+static PyObject* NewObjectFromItem(ItemDescriptor item) {
+  return PyServiceDescriptor_FromDescriptor(item);
+}
+
+static const string& GetItemName(ItemDescriptor item) {
+  return item->name();
+}
+
+static int GetItemIndex(ItemDescriptor item) {
+  return item->index();
+}
+
+static DescriptorContainerDef ContainerDef = {
+  "FileServices",
+  (CountMethod)Count,
+  (GetByIndexMethod)GetByIndex,
+  (GetByNameMethod)GetByName,
+  (GetByCamelcaseNameMethod)NULL,
+  (GetByNumberMethod)NULL,
+  (NewObjectFromItemMethod)NewObjectFromItem,
+  (GetItemNameMethod)GetItemName,
+  (GetItemCamelcaseNameMethod)NULL,
+  (GetItemNumberMethod)NULL,
+  (GetItemIndexMethod)GetItemIndex,
+};
+
+}  // namespace services
+
+PyObject* NewFileServicesByName(const FileDescriptor* descriptor) {
+  return descriptor::NewMappingByName(&services::ContainerDef, descriptor);
 }
 
 namespace dependencies {

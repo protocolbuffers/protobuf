@@ -3764,7 +3764,8 @@ public final class TestUtil {
 
   private static File getTestDataDir() {
     // Search each parent directory looking for "src/google/protobuf".
-    File ancestor = new File(".");
+    File ancestor = new File(System.getProperty("protobuf.dir", "."));
+    String initialPath = ancestor.getAbsolutePath();
     try {
       ancestor = ancestor.getCanonicalFile();
     } catch (IOException e) {
@@ -3781,7 +3782,7 @@ public final class TestUtil {
     throw new RuntimeException(
       "Could not find golden files.  This test must be run from within the " +
       "protobuf source package so that it can read test data files from the " +
-      "C++ source tree.");
+      "C++ source tree: " + initialPath);
   }
 
   /**

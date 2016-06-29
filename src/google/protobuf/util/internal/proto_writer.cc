@@ -293,10 +293,14 @@ ProtoWriter::ProtoElement::ProtoElement(const TypeInfo* typeinfo,
       ow_(enclosing),
       parent_field_(NULL),
       typeinfo_(typeinfo),
+      proto3_(type.syntax() == google::protobuf::SYNTAX_PROTO3),
       type_(type),
-      required_fields_(GetRequiredFields(type)),
       size_index_(-1),
-      array_index_(-1) {}
+      array_index_(-1) {
+  if (!proto3_) {
+    required_fields_ = GetRequiredFields(type_);
+  }
+}
 
 ProtoWriter::ProtoElement::ProtoElement(ProtoWriter::ProtoElement* parent,
                                         const google::protobuf::Field* field,
@@ -306,6 +310,7 @@ ProtoWriter::ProtoElement::ProtoElement(ProtoWriter::ProtoElement* parent,
       ow_(this->parent()->ow_),
       parent_field_(field),
       typeinfo_(this->parent()->typeinfo_),
+      proto3_(this->parent()->proto3_),
       type_(type),
       size_index_(
           !is_list && field->kind() == google::protobuf::Field_Kind_TYPE_MESSAGE
@@ -316,12 +321,15 @@ ProtoWriter::ProtoElement::ProtoElement(ProtoWriter::ProtoElement* parent,
     if (ow_->IsRepeated(*field)) {
       // Update array_index_ if it is an explicit list.
       if (this->parent()->array_index_ >= 0) this->parent()->array_index_++;
-    } else {
+    } else if (!proto3_) {
+      // For required fields tracking.
       this->parent()->RegisterField(field);
     }
 
     if (field->kind() == google::protobuf::Field_Kind_TYPE_MESSAGE) {
-      required_fields_ = GetRequiredFields(type_);
+      if (!proto3_) {
+        required_fields_ = GetRequiredFields(type_);
+      }
       int start_pos = ow_->stream_->ByteCount();
       // length of serialized message is the final buffer position minus
       // starting buffer position, plus length adjustments for size fields
@@ -334,12 +342,14 @@ ProtoWriter::ProtoElement::ProtoElement(ProtoWriter::ProtoElement* parent,
 }
 
 ProtoWriter::ProtoElement* ProtoWriter::ProtoElement::pop() {
-  // Calls the registered error listener for any required field(s) not yet
-  // seen.
-  for (set<const google::protobuf::Field*>::iterator it =
-           required_fields_.begin();
-       it != required_fields_.end(); ++it) {
-    ow_->MissingField((*it)->name());
+  if (!proto3_) {
+    // Calls the registered error listener for any required field(s) not yet
+    // seen.
+    for (set<const google::protobuf::Field*>::iterator it =
+             required_fields_.begin();
+         it != required_fields_.end(); ++it) {
+      ow_->MissingField((*it)->name());
+    }
   }
   // Computes the total number of proto bytes used by a message, also adjusts
   // the size of all parent messages by the length of this size field.

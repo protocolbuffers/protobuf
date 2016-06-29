@@ -244,8 +244,8 @@ void SourceContext::SerializeWithCachedSizes(
   // @@protoc_insertion_point(serialize_end:google.protobuf.SourceContext)
 }
 
-::google::protobuf::uint8* SourceContext::SerializeWithCachedSizesToArray(
-    ::google::protobuf::uint8* target) const {
+::google::protobuf::uint8* SourceContext::InternalSerializeWithCachedSizesToArray(
+    bool deterministic, ::google::protobuf::uint8* target) const {
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.SourceContext)
   // optional string file_name = 1;
   if (this->file_name().size() > 0) {

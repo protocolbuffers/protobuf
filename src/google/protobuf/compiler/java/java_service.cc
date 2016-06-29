@@ -60,9 +60,10 @@ ImmutableServiceGenerator::ImmutableServiceGenerator(
 ImmutableServiceGenerator::~ImmutableServiceGenerator() {}
 
 void ImmutableServiceGenerator::Generate(io::Printer* printer) {
-  bool is_own_file =
-    MultipleJavaFiles(descriptor_->file(), /* immutable = */ true);
+  bool is_own_file = IsOwnFile(descriptor_, /* immutable = */ true);
   WriteServiceDocComment(printer, descriptor_);
+  MaybePrintGeneratedAnnotation(context_, printer, descriptor_,
+                                /* immutable = */ true);
   printer->Print(
     "public $static$ abstract class $classname$\n"
     "    implements com.google.protobuf.Service {\n",

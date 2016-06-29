@@ -107,9 +107,15 @@ class LIBPROTOBUF_EXPORT FieldMaskUtil {
   static bool IsPathInFieldMask(StringPiece path, const FieldMask& mask);
 
   class MergeOptions;
-  // Merges fields specified in a FieldMask into another message.
+  // Merges fields specified in a FieldMask into another message. See the
+  // comments in MergeOptions regarding compatibility with
+  // google/protobuf/field_mask.proto
   static void MergeMessageTo(const Message& source, const FieldMask& mask,
                              const MergeOptions& options, Message* destination);
+
+  // Removes from 'message' any field that is not represented in the given
+  // FieldMask. If the FieldMask is empty, does nothing.
+  static void TrimMessage(const FieldMask& mask, Message* message);
 
  private:
   friend class SnakeCaseCamelCaseTest;
@@ -148,6 +154,10 @@ class LIBPROTOBUF_EXPORT FieldMaskUtil {
                                                FieldMask* out);
 };
 
+// Note that for compatibility with the defined behaviour for FieldMask in
+// google/protobuf/field_mask.proto, set replace_message_fields and
+// replace_repeated_fields to 'true'. The default options are not compatible
+// with google/protobuf/field_mask.proto.
 class LIBPROTOBUF_EXPORT FieldMaskUtil::MergeOptions {
  public:
   MergeOptions()

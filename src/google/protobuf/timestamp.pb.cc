@@ -293,8 +293,8 @@ void Timestamp::SerializeWithCachedSizes(
   // @@protoc_insertion_point(serialize_end:google.protobuf.Timestamp)
 }
 
-::google::protobuf::uint8* Timestamp::SerializeWithCachedSizesToArray(
-    ::google::protobuf::uint8* target) const {
+::google::protobuf::uint8* Timestamp::InternalSerializeWithCachedSizesToArray(
+    bool deterministic, ::google::protobuf::uint8* target) const {
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.Timestamp)
   // optional int64 seconds = 1;
   if (this->seconds() != 0) {

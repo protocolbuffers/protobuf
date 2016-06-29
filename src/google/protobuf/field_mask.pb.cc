@@ -245,8 +245,8 @@ void FieldMask::SerializeWithCachedSizes(
   // @@protoc_insertion_point(serialize_end:google.protobuf.FieldMask)
 }
 
-::google::protobuf::uint8* FieldMask::SerializeWithCachedSizesToArray(
-    ::google::protobuf::uint8* target) const {
+::google::protobuf::uint8* FieldMask::InternalSerializeWithCachedSizesToArray(
+    bool deterministic, ::google::protobuf::uint8* target) const {
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.FieldMask)
   // repeated string paths = 1;
   for (int i = 0; i < this->paths_size(); i++) {

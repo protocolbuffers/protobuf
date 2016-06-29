@@ -373,8 +373,8 @@ void CodeGeneratorRequest::SerializeWithCachedSizes(
   // @@protoc_insertion_point(serialize_end:google.protobuf.compiler.CodeGeneratorRequest)
 }
 
-::google::protobuf::uint8* CodeGeneratorRequest::SerializeWithCachedSizesToArray(
-    ::google::protobuf::uint8* target) const {
+::google::protobuf::uint8* CodeGeneratorRequest::InternalSerializeWithCachedSizesToArray(
+    bool deterministic, ::google::protobuf::uint8* target) const {
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.compiler.CodeGeneratorRequest)
   // repeated string file_to_generate = 1;
   for (int i = 0; i < this->file_to_generate_size(); i++) {
@@ -400,8 +400,8 @@ void CodeGeneratorRequest::SerializeWithCachedSizes(
   // repeated .google.protobuf.FileDescriptorProto proto_file = 15;
   for (unsigned int i = 0, n = this->proto_file_size(); i < n; i++) {
     target = ::google::protobuf::internal::WireFormatLite::
-      WriteMessageNoVirtualToArray(
-        15, this->proto_file(i), target);
+      InternalWriteMessageNoVirtualToArray(
+        15, this->proto_file(i), false, target);
   }
 
   if (_internal_metadata_.have_unknown_fields()) {
@@ -878,8 +878,8 @@ void CodeGeneratorResponse_File::SerializeWithCachedSizes(
   // @@protoc_insertion_point(serialize_end:google.protobuf.compiler.CodeGeneratorResponse.File)
 }
 
-::google::protobuf::uint8* CodeGeneratorResponse_File::SerializeWithCachedSizesToArray(
-    ::google::protobuf::uint8* target) const {
+::google::protobuf::uint8* CodeGeneratorResponse_File::InternalSerializeWithCachedSizesToArray(
+    bool deterministic, ::google::protobuf::uint8* target) const {
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.compiler.CodeGeneratorResponse.File)
   // optional string name = 1;
   if (has_name()) {
@@ -1208,8 +1208,8 @@ void CodeGeneratorResponse::SerializeWithCachedSizes(
   // @@protoc_insertion_point(serialize_end:google.protobuf.compiler.CodeGeneratorResponse)
 }
 
-::google::protobuf::uint8* CodeGeneratorResponse::SerializeWithCachedSizesToArray(
-    ::google::protobuf::uint8* target) const {
+::google::protobuf::uint8* CodeGeneratorResponse::InternalSerializeWithCachedSizesToArray(
+    bool deterministic, ::google::protobuf::uint8* target) const {
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.compiler.CodeGeneratorResponse)
   // optional string error = 1;
   if (has_error()) {
@@ -1225,8 +1225,8 @@ void CodeGeneratorResponse::SerializeWithCachedSizes(
   // repeated .google.protobuf.compiler.CodeGeneratorResponse.File file = 15;
   for (unsigned int i = 0, n = this->file_size(); i < n; i++) {
     target = ::google::protobuf::internal::WireFormatLite::
-      WriteMessageNoVirtualToArray(
-        15, this->file(i), target);
+      InternalWriteMessageNoVirtualToArray(
+        15, this->file(i), false, target);
   }
 
   if (_internal_metadata_.have_unknown_fields()) {

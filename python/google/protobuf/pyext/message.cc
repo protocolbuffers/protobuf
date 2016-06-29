@@ -1593,23 +1593,20 @@ struct ReleaseChild : public ChildVisitor {
       parent_(parent) {}
 
   int VisitRepeatedCompositeContainer(RepeatedCompositeContainer* container) {
-    return repeated_composite_container::Release(
-        reinterpret_cast<RepeatedCompositeContainer*>(container));
+    return repeated_composite_container::Release(container);
   }
 
   int VisitRepeatedScalarContainer(RepeatedScalarContainer* container) {
-    return repeated_scalar_container::Release(
-        reinterpret_cast<RepeatedScalarContainer*>(container));
+    return repeated_scalar_container::Release(container);
   }
 
   int VisitMapContainer(MapContainer* container) {
-    return reinterpret_cast<MapContainer*>(container)->Release();
+    return container->Release();
   }
 
   int VisitCMessage(CMessage* cmessage,
                     const FieldDescriptor* field_descriptor) {
-    return ReleaseSubMessage(parent_, field_descriptor,
-        reinterpret_cast<CMessage*>(cmessage));
+    return ReleaseSubMessage(parent_, field_descriptor, cmessage);
   }
 
   CMessage* parent_;
@@ -1903,7 +1900,7 @@ static bool allow_oversize_protos = false;
 
 // Provide a method in the module to set allow_oversize_protos to a boolean
 // value. This method returns the newly value of allow_oversize_protos.
-static PyObject* SetAllowOversizeProtos(PyObject* m, PyObject* arg) {
+PyObject* SetAllowOversizeProtos(PyObject* m, PyObject* arg) {
   if (!arg || !PyBool_Check(arg)) {
     PyErr_SetString(PyExc_TypeError,
                     "Argument to SetAllowOversizeProtos must be boolean");
@@ -3044,6 +3041,10 @@ bool InitProto2MessageModule(PyObject *m) {
       &PyFileDescriptor_Type));
   PyModule_AddObject(m, "OneofDescriptor", reinterpret_cast<PyObject*>(
       &PyOneofDescriptor_Type));
+  PyModule_AddObject(m, "ServiceDescriptor", reinterpret_cast<PyObject*>(
+      &PyServiceDescriptor_Type));
+  PyModule_AddObject(m, "MethodDescriptor", reinterpret_cast<PyObject*>(
+      &PyMethodDescriptor_Type));
 
   PyObject* enum_type_wrapper = PyImport_ImportModule(
       "google.protobuf.internal.enum_type_wrapper");
@@ -3081,53 +3082,4 @@ bool InitProto2MessageModule(PyObject *m) {
 }  // namespace python
 }  // namespace protobuf
 
-static PyMethodDef ModuleMethods[] = {
-  {"SetAllowOversizeProtos",
-    (PyCFunction)google::protobuf::python::cmessage::SetAllowOversizeProtos,
-    METH_O, "Enable/disable oversize proto parsing."},
-  { NULL, NULL}
-};
-
-#if PY_MAJOR_VERSION >= 3
-static struct PyModuleDef _module = {
-  PyModuleDef_HEAD_INIT,
-  "_message",
-  google::protobuf::python::module_docstring,
-  -1,
-  ModuleMethods,  /* m_methods */
-  NULL,
-  NULL,
-  NULL,
-  NULL
-};
-#define INITFUNC PyInit__message
-#define INITFUNC_ERRORVAL NULL
-#else  // Python 2
-#define INITFUNC init_message
-#define INITFUNC_ERRORVAL
-#endif
-
-extern "C" {
-  PyMODINIT_FUNC INITFUNC(void) {
-    PyObject* m;
-#if PY_MAJOR_VERSION >= 3
-    m = PyModule_Create(&_module);
-#else
-    m = Py_InitModule3("_message", ModuleMethods,
-                       google::protobuf::python::module_docstring);
-#endif
-    if (m == NULL) {
-      return INITFUNC_ERRORVAL;
-    }
-
-    if (!google::protobuf::python::InitProto2MessageModule(m)) {
-      Py_DECREF(m);
-      return INITFUNC_ERRORVAL;
-    }
-
-#if PY_MAJOR_VERSION >= 3
-    return m;
-#endif
-  }
-}
 }  // namespace google

@@ -712,7 +712,13 @@ void RepeatedImmutableStringFieldGenerator::
 GenerateInterfaceMembers(io::Printer* printer) const {
   WriteFieldDocComment(printer, descriptor_);
   printer->Print(variables_,
-    "$deprecation$com.google.protobuf.ProtocolStringList\n"
+    // NOTE: the same method in the implementation class actually returns
+    // com.google.protobuf.ProtocolStringList (a subclass of List). It's
+    // changed between protobuf 2.5.0 release and protobuf 2.6.1 release.
+    // To retain binary compatibilty with both 2.5.0 and 2.6.1 generated
+    // code, we make this interface method return List so both methods
+    // with different return types exist in the compiled byte code.
+    "$deprecation$java.util.List<java.lang.String>\n"
     "    get$capitalized_name$List();\n");
   WriteFieldDocComment(printer, descriptor_);
   printer->Print(variables_,

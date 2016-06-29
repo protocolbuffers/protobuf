@@ -474,7 +474,10 @@ bool MessageDifferencer::Compare(
 
   // Retrieve all the set fields, including extensions.
   vector<const FieldDescriptor*> message1_fields;
+  message1_fields.reserve(1 + message1.GetDescriptor()->field_count());
+
   vector<const FieldDescriptor*> message2_fields;
+  message2_fields.reserve(1 + message2.GetDescriptor()->field_count());
 
   reflection1->ListFields(message1, &message1_fields);
   reflection2->ListFields(message2, &message2_fields);

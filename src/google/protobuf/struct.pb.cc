@@ -239,6 +239,7 @@ Struct::Struct(const Struct& from)
 
 void Struct::SharedCtor() {
     _is_default_instance_ = false;
+  ::google::protobuf::internal::GetEmptyString();
   _cached_size_ = 0;
   fields_.SetAssignDescriptorCallback(
       protobuf_AssignDescriptorsOnce);
@@ -301,12 +302,16 @@ bool Struct::MergePartialFromCodedStream(
         if (tag == 10) {
           DO_(input->IncrementRecursionDepth());
          parse_loop_fields:
-          ::google::protobuf::scoped_ptr<Struct_FieldsEntry> entry(fields_.NewEntry());
+          Struct_FieldsEntry::Parser< ::google::protobuf::internal::MapField<
+              ::std::string, ::google::protobuf::Value,
+              ::google::protobuf::internal::WireFormatLite::TYPE_STRING,
+              ::google::protobuf::internal::WireFormatLite::TYPE_MESSAGE,
+              0 >,
+            ::google::protobuf::Map< ::std::string, ::google::protobuf::Value > > parser(&fields_);
           DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtual(
-              input, entry.get()));
-          (*mutable_fields())[entry->key()].Swap(entry->mutable_value());
+              input, &parser));
           DO_(::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
-            entry->key().data(), entry->key().length(),
+            parser.key().data(), parser.key().length(),
             ::google::protobuf::internal::WireFormatLite::PARSE,
             "google.protobuf.Struct.FieldsEntry.key"));
         } else {
@@ -361,8 +366,8 @@ void Struct::SerializeWithCachedSizes(
   // @@protoc_insertion_point(serialize_end:google.protobuf.Struct)
 }
 
-::google::protobuf::uint8* Struct::SerializeWithCachedSizesToArray(
-    ::google::protobuf::uint8* target) const {
+::google::protobuf::uint8* Struct::InternalSerializeWithCachedSizesToArray(
+    bool deterministic, ::google::protobuf::uint8* target) const {
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.Struct)
   // map<string, .google.protobuf.Value> fields = 1;
   {
@@ -372,8 +377,8 @@ void Struct::SerializeWithCachedSizes(
         it != this->fields().end(); ++it) {
       entry.reset(fields_.NewEntryWrapper(it->first, it->second));
       target = ::google::protobuf::internal::WireFormatLite::
-          WriteMessageNoVirtualToArray(
-              1, *entry, target);
+          InternalWriteMessageNoVirtualToArray(
+              1, *entry, false, target);
       ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
         it->first.data(), it->first.length(),
         ::google::protobuf::internal::WireFormatLite::SERIALIZE,
@@ -774,8 +779,8 @@ void Value::SerializeWithCachedSizes(
   // @@protoc_insertion_point(serialize_end:google.protobuf.Value)
 }
 
-::google::protobuf::uint8* Value::SerializeWithCachedSizesToArray(
-    ::google::protobuf::uint8* target) const {
+::google::protobuf::uint8* Value::InternalSerializeWithCachedSizesToArray(
+    bool deterministic, ::google::protobuf::uint8* target) const {
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.Value)
   // optional .google.protobuf.NullValue null_value = 1;
   if (has_null_value()) {
@@ -807,15 +812,15 @@ void Value::SerializeWithCachedSizes(
   // optional .google.protobuf.Struct struct_value = 5;
   if (has_struct_value()) {
     target = ::google::protobuf::internal::WireFormatLite::
-      WriteMessageNoVirtualToArray(
-        5, *kind_.struct_value_, target);
+      InternalWriteMessageNoVirtualToArray(
+        5, *kind_.struct_value_, false, target);
   }
 
   // optional .google.protobuf.ListValue list_value = 6;
   if (has_list_value()) {
     target = ::google::protobuf::internal::WireFormatLite::
-      WriteMessageNoVirtualToArray(
-        6, *kind_.list_value_, target);
+      InternalWriteMessageNoVirtualToArray(
+        6, *kind_.list_value_, false, target);
   }
 
   // @@protoc_insertion_point(serialize_to_array_end:google.protobuf.Value)
@@ -1367,14 +1372,14 @@ void ListValue::SerializeWithCachedSizes(
   // @@protoc_insertion_point(serialize_end:google.protobuf.ListValue)
 }
 
-::google::protobuf::uint8* ListValue::SerializeWithCachedSizesToArray(
-    ::google::protobuf::uint8* target) const {
+::google::protobuf::uint8* ListValue::InternalSerializeWithCachedSizesToArray(
+    bool deterministic, ::google::protobuf::uint8* target) const {
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.ListValue)
   // repeated .google.protobuf.Value values = 1;
   for (unsigned int i = 0, n = this->values_size(); i < n; i++) {
     target = ::google::protobuf::internal::WireFormatLite::
-      WriteMessageNoVirtualToArray(
-        1, this->values(i), target);
+      InternalWriteMessageNoVirtualToArray(
+        1, this->values(i), false, target);
   }
 
   // @@protoc_insertion_point(serialize_to_array_end:google.protobuf.ListValue)

@@ -221,7 +221,8 @@ bool MessageLite::ParsePartialFromArray(const void* data, int size) {
 
 // ===================================================================
 
-uint8* MessageLite::SerializeWithCachedSizesToArray(uint8* target) const {
+uint8* MessageLite::InternalSerializeWithCachedSizesToArray(
+    bool deterministic, uint8* target) const {
   // We only optimize this when using optimize_for = SPEED.  In other cases
   // we just use the CodedOutputStream path.
   int size = GetCachedSize();

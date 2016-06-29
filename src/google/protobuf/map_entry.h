@@ -166,8 +166,10 @@ class MapEntry : public MapEntryBase {
     entry_lite_.SerializeWithCachedSizes(output);
   }
 
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const {
-    return entry_lite_.SerializeWithCachedSizesToArray(output);
+  ::google::protobuf::uint8* InternalSerializeWithCachedSizesToArray(bool deterministic,
+                                                   ::google::protobuf::uint8* output) const {
+    return entry_lite_.InternalSerializeWithCachedSizesToArray(deterministic,
+                                                               output);
   }
 
   int GetCachedSize() const {

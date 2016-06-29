@@ -221,8 +221,8 @@ void Empty::SerializeWithCachedSizes(
   // @@protoc_insertion_point(serialize_end:google.protobuf.Empty)
 }
 
-::google::protobuf::uint8* Empty::SerializeWithCachedSizesToArray(
-    ::google::protobuf::uint8* target) const {
+::google::protobuf::uint8* Empty::InternalSerializeWithCachedSizesToArray(
+    bool deterministic, ::google::protobuf::uint8* target) const {
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.Empty)
   // @@protoc_insertion_point(serialize_to_array_end:google.protobuf.Empty)
   return target;

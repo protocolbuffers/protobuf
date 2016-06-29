@@ -195,6 +195,7 @@ message TestDeprecatedFields {
 // that.
 message ForeignMessage {
   optional int32 c = 1;
+  optional int32 d = 2;
 }
 
 enum ForeignEnum {

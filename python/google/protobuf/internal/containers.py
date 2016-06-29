@@ -594,7 +594,11 @@ class MessageMap(MutableMapping):
 
   def MergeFrom(self, other):
     for key in other:
-      self[key].MergeFrom(other[key])
+      # According to documentation: "When parsing from the wire or when merging,
+      # if there are duplicate map keys the last key seen is used".
+      if key in self:
+        del self[key]
+      self[key].CopyFrom(other[key])
     # self._message_listener.Modified() not required here, because
     # mutations to submessages already propagate.
 

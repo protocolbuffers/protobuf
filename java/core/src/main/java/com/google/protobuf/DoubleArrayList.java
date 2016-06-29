@@ -38,26 +38,27 @@ import java.util.RandomAccess;
 
 /**
  * An implementation of {@link DoubleList} on top of a primitive array.
- * 
+ *
  * @author dweis@google.com (Daniel Weis)
  */
 final class DoubleArrayList
-    extends AbstractProtobufList<Double> implements DoubleList, RandomAccess {
-  
+    extends AbstractProtobufList<Double>
+    implements DoubleList, RandomAccess {
+
   private static final DoubleArrayList EMPTY_LIST = new DoubleArrayList();
   static {
     EMPTY_LIST.makeImmutable();
   }
-  
+
   public static DoubleArrayList emptyList() {
     return EMPTY_LIST;
   }
-  
+
   /**
    * The backing store for the list.
    */
   private double[] array;
-  
+
   /**
    * The size of the list distinct from the length of the array. That is, it is the number of
    * elements set in the list.
@@ -72,13 +73,14 @@ final class DoubleArrayList
   }
 
   /**
-   * Constructs a new mutable {@code DoubleArrayList} containing the same elements as {@code other}.
+   * Constructs a new mutable {@code DoubleArrayList}
+   * containing the same elements as {@code other}.
    */
-  private DoubleArrayList(double[] array, int size) {
-    this.array = array;
+  private DoubleArrayList(double[] other, int size) {
+    array = other;
     this.size = size;
   }
-  
+
   @Override
   public boolean equals(Object o) {
     if (this == o) {
@@ -91,14 +93,14 @@ final class DoubleArrayList
     if (size != other.size) {
       return false;
     }
-    
+
     final double[] arr = other.array;
     for (int i = 0; i < size; i++) {
       if (array[i] != arr[i]) {
         return false;
       }
     }
-    
+
     return true;
   }
 
@@ -119,7 +121,7 @@ final class DoubleArrayList
     }
     return new DoubleArrayList(Arrays.copyOf(array, capacity), size);
   }
-  
+
   @Override
   public Double get(int index) {
     return getDouble(index);
@@ -171,7 +173,7 @@ final class DoubleArrayList
     if (index < 0 || index > size) {
       throw new IndexOutOfBoundsException(makeOutOfBoundsExceptionMessage(index));
     }
-    
+
     if (size < array.length) {
       // Shift everything over to make room
       System.arraycopy(array, index, array, index + 1, size - index);
@@ -179,10 +181,10 @@ final class DoubleArrayList
       // Resize to 1.5x the size
       int length = ((size * 3) / 2) + 1;
       double[] newArray = new double[length];
-      
+
       // Copy the first part directly
       System.arraycopy(array, 0, newArray, 0, index);
-      
+
       // Copy the rest shifted over by one to make room
       System.arraycopy(array, index, newArray, index + 1, size - index);
       array = newArray;
@@ -196,38 +198,38 @@ final class DoubleArrayList
   @Override
   public boolean addAll(Collection<? extends Double> collection) {
     ensureIsMutable();
-    
+
     if (collection == null) {
       throw new NullPointerException();
     }
-    
+
     // We specialize when adding another DoubleArrayList to avoid boxing elements.
     if (!(collection instanceof DoubleArrayList)) {
       return super.addAll(collection);
     }
-    
+
     DoubleArrayList list = (DoubleArrayList) collection;
     if (list.size == 0) {
       return false;
     }
-    
+
     int overflow = Integer.MAX_VALUE - size;
     if (overflow < list.size) {
       // We can't actually represent a list this large.
       throw new OutOfMemoryError();
     }
-    
+
     int newSize = size + list.size;
     if (newSize > array.length) {
       array = Arrays.copyOf(array, newSize);
     }
-    
+
     System.arraycopy(list.array, 0, array, size, list.size);
     size = newSize;
     modCount++;
     return true;
   }
-  
+
   @Override
   public boolean remove(Object o) {
     ensureIsMutable();
@@ -256,7 +258,7 @@ final class DoubleArrayList
   /**
    * Ensures that the provided {@code index} is within the range of {@code [0, size]}. Throws an
    * {@link IndexOutOfBoundsException} if it is not.
-   * 
+   *
    * @param index the index to verify is in range
    */
   private void ensureIndexInRange(int index) {

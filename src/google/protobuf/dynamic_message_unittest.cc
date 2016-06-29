@@ -45,8 +45,6 @@
 #include <google/protobuf/stubs/shared_ptr.h>
 #endif
 
-#include <google/protobuf/stubs/scoped_ptr.h>
-#include <google/protobuf/stubs/common.h>
 #include <google/protobuf/dynamic_message.h>
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/descriptor.pb.h>
@@ -55,6 +53,7 @@
 #include <google/protobuf/unittest_no_field_presence.pb.h>
 
 #include <google/protobuf/stubs/logging.h>
+#include <google/protobuf/stubs/common.h>
 #include <google/protobuf/testing/googletest.h>
 #include <gtest/gtest.h>
 

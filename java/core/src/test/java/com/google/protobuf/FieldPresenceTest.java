@@ -152,6 +152,26 @@ public class FieldPresenceTest extends TestCase {
     assertFalse(message1.equals(message2));
   }
 
+  public void testLazyField() throws Exception {
+    // Test default constructed message.
+    TestAllTypes.Builder builder = TestAllTypes.newBuilder();
+    TestAllTypes message = builder.build();
+    assertFalse(message.hasOptionalLazyMessage());
+    assertEquals(0, message.getSerializedSize());
+    assertEquals(ByteString.EMPTY, message.toByteString());
+
+    // Set default instance to the field.
+    builder.setOptionalLazyMessage(TestAllTypes.NestedMessage.getDefaultInstance());
+    message = builder.build();
+    assertTrue(message.hasOptionalLazyMessage());
+    assertEquals(2, message.getSerializedSize());
+
+    // Test parse zero-length from wire sets the presence.
+    TestAllTypes parsed = TestAllTypes.parseFrom(message.toByteString());
+    assertTrue(parsed.hasOptionalLazyMessage());
+    assertEquals(message.getOptionalLazyMessage(), parsed.getOptionalLazyMessage());
+  }
+
   public void testFieldPresence() {
     // Optional non-message fields set to their default value are treated the
     // same way as not set.

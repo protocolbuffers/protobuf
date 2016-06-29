@@ -1896,6 +1896,9 @@ void FieldDescriptor::CopyJsonNameTo(FieldDescriptorProto* proto) const {
 
 void OneofDescriptor::CopyTo(OneofDescriptorProto* proto) const {
   proto->set_name(name());
+  if (&options() != &OneofOptions::default_instance()) {
+    proto->mutable_options()->CopyFrom(options());
+  }
 }
 
 void EnumDescriptor::CopyTo(EnumDescriptorProto* proto) const {
@@ -2435,6 +2438,9 @@ void OneofDescriptor::DebugString(int depth, string* contents,
   comment_printer.AddPreComment(contents);
   strings::SubstituteAndAppend(
       contents, "$0 oneof $1 {", prefix, name());
+
+  FormatLineOptions(depth, options(), contents);
+
   if (debug_string_options.elide_oneof_body) {
     contents->append(" ... }\n");
   } else {
@@ -4523,6 +4529,13 @@ void DescriptorBuilder::BuildOneof(const OneofDescriptorProto& proto,
   result->field_count_ = 0;
   result->fields_ = NULL;
 
+  // Copy options.
+  if (!proto.has_options()) {
+    result->options_ = NULL;  // Will set to default_instance later.
+  } else {
+    AllocateOptions(proto.options(), result);
+  }
+
   AddSymbol(result->full_name(), parent, result->name(),
             proto, Symbol(result));
 }
@@ -4783,6 +4796,10 @@ void DescriptorBuilder::CrossLinkMessage(
     oneof_decl->fields_ =
       tables_->AllocateArray<const FieldDescriptor*>(oneof_decl->field_count_);
     oneof_decl->field_count_ = 0;
+
+    if (oneof_decl->options_ == NULL) {
+      oneof_decl->options_ = &OneofOptions::default_instance();
+    }
   }
 
   // Then fill them in.
@@ -5181,7 +5198,7 @@ void DescriptorBuilder::ValidateProto3Message(
     if (name_to_field.find(lowercase_name) != name_to_field.end()) {
       AddError(message->full_name(), proto,
                DescriptorPool::ErrorCollector::OTHER,
-               "The JSON camcel-case name of field \"" +
+               "The JSON camel-case name of field \"" +
                message->field(i)->name() + "\" conflicts with field \"" +
                name_to_field[lowercase_name]->name() + "\". This is not " +
                "allowed in proto3.");
@@ -5237,6 +5254,7 @@ void DescriptorBuilder::ValidateProto3Enum(
   }
 }
 
+
 void DescriptorBuilder::ValidateMessageOptions(Descriptor* message,
                                                const DescriptorProto& proto) {
   VALIDATE_OPTIONS_FROM_ARRAY(message, field, Field);
@@ -5257,6 +5275,7 @@ void DescriptorBuilder::ValidateMessageOptions(Descriptor* message,
                               max_extension_range));
     }
   }
+
 }
 
 void DescriptorBuilder::ValidateFieldOptions(FieldDescriptor* field,

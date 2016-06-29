@@ -101,6 +101,7 @@ class LIBPROTOBUF_EXPORT ObjectWriter {
   // Renders a Null value.
   virtual ObjectWriter* RenderNull(StringPiece name) = 0;
 
+
   // Renders a DataPiece object to a ObjectWriter.
   static void RenderDataPieceTo(const DataPiece& data, StringPiece name,
                                 ObjectWriter* ow);

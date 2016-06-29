@@ -41,6 +41,7 @@ goog.require('goog.array');
 goog.require('goog.asserts');
 goog.require('goog.crypt.base64');
 goog.require('goog.json');
+goog.require('jspb.Map');
 
 // Not needed in compilation units that have no protos with xids.
 goog.forwardDeclare('xid.String');
@@ -371,7 +372,8 @@ jspb.Message.materializeExtensionObject_ = function(msg, suggestedPivot) {
     // the object is not an array, since arrays are valid field values.
     // NOTE(lukestebbing): We avoid looking at .length to avoid a JIT bug
     // in Safari on iOS 8. See the description of CL/86511464 for details.
-    if (obj && typeof obj == 'object' && !goog.isArray(obj)) {
+    if (obj && typeof obj == 'object' && !goog.isArray(obj) &&
+       !(jspb.Message.SUPPORTS_UINT8ARRAY_ && obj instanceof Uint8Array)) {
       msg.pivot_ = foundIndex - msg.arrayIndexOffset_;
       msg.extensionObject_ = obj;
       return;
@@ -738,6 +740,62 @@ jspb.Message.getFieldProto3 = function(msg, fieldNumber, defaultValue) {
 
 
 /**
+ * Gets the value of a map field, lazily creating the map container if
+ * necessary.
+ *
+ * This should only be called from generated code, because it requires knowledge
+ * of serialization/parsing callbacks (which are required by the map at
+ * construction time, and the map may be constructed here).
+ *
+ * The below callbacks are used to allow the map to serialize and parse its
+ * binary wire format data. Their purposes are described in more detail in
+ * `jspb.Map`'s constructor documentation.
+ *
+ * @template K, V
+ * @param {!jspb.Message} msg
+ * @param {number} fieldNumber
+ * @param {boolean|undefined} noLazyCreate
+ * @param {?=} opt_valueCtor
+ * @param {function(number,K)=} opt_keyWriterFn
+ * @param {function():K=} opt_keyReaderFn
+ * @param {function(number,V)|function(number,V,?)|
+ *         function(number,V,?,?,?,?)=} opt_valueWriterFn
+ * @param {function():V|
+ *         function(V,function(?,?))=} opt_valueReaderFn
+ * @param {function(?,?)|function(?,?,?,?,?)=} opt_valueWriterCallback
+ * @param {function(?,?)=} opt_valueReaderCallback
+ * @return {!jspb.Map<K, V>|undefined}
+ * @protected
+ */
+jspb.Message.getMapField = function(msg, fieldNumber, noLazyCreate,
+    opt_valueCtor, opt_keyWriterFn, opt_keyReaderFn, opt_valueWriterFn,
+    opt_valueReaderFn, opt_valueWriterCallback, opt_valueReaderCallback) {
+  if (!msg.wrappers_) {
+    msg.wrappers_ = {};
+  }
+  // If we already have a map in the map wrappers, return that.
+  if (fieldNumber in msg.wrappers_) {
+    return msg.wrappers_[fieldNumber];
+  } else if (noLazyCreate) {
+    return undefined;
+  } else {
+    // Wrap the underlying elements array with a Map.
+    var arr = jspb.Message.getField(msg, fieldNumber);
+    if (!arr) {
+      arr = [];
+      jspb.Message.setField(msg, fieldNumber, arr);
+    }
+    return msg.wrappers_[fieldNumber] =
+        new jspb.Map(
+            /** @type {!Array<!Array<!Object>>} */ (arr),
+            opt_keyWriterFn, opt_keyReaderFn, opt_valueWriterFn,
+            opt_valueReaderFn, opt_valueCtor, opt_valueWriterCallback,
+            opt_valueReaderCallback);
+  }
+};
+
+
+/**
  * Sets the value of a non-extension field.
  * @param {!jspb.Message} msg A jspb proto.
  * @param {number} fieldNumber The field number.
@@ -953,12 +1011,45 @@ jspb.Message.toMap = function(
 
 
 /**
+ * Syncs all map fields' contents back to their underlying arrays.
+ * @private
+ */
+jspb.Message.prototype.syncMapFields_ = function() {
+  // This iterates over submessage, map, and repeated fields, which is intended.
+  // Submessages can contain maps which also need to be synced.
+  //
+  // There is a lot of opportunity for optimization here.  For example we could
+  // statically determine that some messages have no submessages with maps and
+  // optimize this method away for those just by generating one extra static
+  // boolean per message type.
+  if (this.wrappers_) {
+    for (var fieldNumber in this.wrappers_) {
+      var val = this.wrappers_[fieldNumber];
+      if (goog.isArray(val)) {
+        for (var i = 0; i < val.length; i++) {
+          if (val[i]) {
+            val[i].toArray();
+          }
+        }
+      } else {
+        // Works for submessages and maps.
+        if (val) {
+          val.toArray();
+        }
+      }
+    }
+  }
+};
+
+
+/**
  * Returns the internal array of this proto.
  * <p>Note: If you use this array to construct a second proto, the content
  * would then be partially shared between the two protos.
  * @return {!Array} The proto represented as an array.
  */
 jspb.Message.prototype.toArray = function() {
+  this.syncMapFields_();
   return this.array;
 };
 
@@ -972,6 +1063,7 @@ jspb.Message.prototype.toArray = function() {
  * @override
  */
 jspb.Message.prototype.toString = function() {
+  this.syncMapFields_();
   return this.array.toString();
 };
 
@@ -1292,6 +1384,9 @@ jspb.Message.clone_ = function(obj) {
       }
     }
     return clonedArray;
+  }
+  if (jspb.Message.SUPPORTS_UINT8ARRAY_ && obj instanceof Uint8Array) {
+    return new Uint8Array(obj);
   }
   var clone = {};
   for (var key in obj) {

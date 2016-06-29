@@ -174,6 +174,15 @@ static const uint64 kuint64max = GOOGLE_ULONGLONG(0xFFFFFFFFFFFFFFFF);
 #endif
 #endif
 
+#ifndef GOOGLE_ATTRIBUTE_NORETURN
+#ifdef __GNUC__
+// Tell the compiler that a given function never returns.
+#define GOOGLE_ATTRIBUTE_NORETURN __attribute__((noreturn))
+#else
+#define GOOGLE_ATTRIBUTE_NORETURN
+#endif
+#endif
+
 #ifndef GOOGLE_ATTRIBUTE_DEPRECATED
 #ifdef __GNUC__
 // If the method/variable/type is used anywhere, produce a warning.

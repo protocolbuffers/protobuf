@@ -57,6 +57,7 @@ import java.util.TreeMap;
  * @author kenton@google.com Kenton Varda
  */
 public final class UnknownFieldSet implements MessageLite {
+
   private UnknownFieldSet() {}
 
   /** Create a new {@link Builder}. */
@@ -130,7 +131,8 @@ public final class UnknownFieldSet implements MessageLite {
   @Override
   public void writeTo(final CodedOutputStream output) throws IOException {
     for (final Map.Entry<Integer, Field> entry : fields.entrySet()) {
-      entry.getValue().writeTo(entry.getKey(), output);
+      Field field = entry.getValue();
+      field.writeTo(entry.getKey(), output);
     }
   }
 

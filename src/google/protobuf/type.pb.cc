@@ -548,8 +548,8 @@ void Type::SerializeWithCachedSizes(
   // @@protoc_insertion_point(serialize_end:google.protobuf.Type)
 }
 
-::google::protobuf::uint8* Type::SerializeWithCachedSizesToArray(
-    ::google::protobuf::uint8* target) const {
+::google::protobuf::uint8* Type::InternalSerializeWithCachedSizesToArray(
+    bool deterministic, ::google::protobuf::uint8* target) const {
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.Type)
   // optional string name = 1;
   if (this->name().size() > 0) {
@@ -565,8 +565,8 @@ void Type::SerializeWithCachedSizes(
   // repeated .google.protobuf.Field fields = 2;
   for (unsigned int i = 0, n = this->fields_size(); i < n; i++) {
     target = ::google::protobuf::internal::WireFormatLite::
-      WriteMessageNoVirtualToArray(
-        2, this->fields(i), target);
+      InternalWriteMessageNoVirtualToArray(
+        2, this->fields(i), false, target);
   }
 
   // repeated string oneofs = 3;
@@ -582,15 +582,15 @@ void Type::SerializeWithCachedSizes(
   // repeated .google.protobuf.Option options = 4;
   for (unsigned int i = 0, n = this->options_size(); i < n; i++) {
     target = ::google::protobuf::internal::WireFormatLite::
-      WriteMessageNoVirtualToArray(
-        4, this->options(i), target);
+      InternalWriteMessageNoVirtualToArray(
+        4, this->options(i), false, target);
   }
 
   // optional .google.protobuf.SourceContext source_context = 5;
   if (this->has_source_context()) {
     target = ::google::protobuf::internal::WireFormatLite::
-      WriteMessageNoVirtualToArray(
-        5, *this->source_context_, target);
+      InternalWriteMessageNoVirtualToArray(
+        5, *this->source_context_, false, target);
   }
 
   // optional .google.protobuf.Syntax syntax = 6;
@@ -1417,8 +1417,8 @@ void Field::SerializeWithCachedSizes(
   // @@protoc_insertion_point(serialize_end:google.protobuf.Field)
 }
 
-::google::protobuf::uint8* Field::SerializeWithCachedSizesToArray(
-    ::google::protobuf::uint8* target) const {
+::google::protobuf::uint8* Field::InternalSerializeWithCachedSizesToArray(
+    bool deterministic, ::google::protobuf::uint8* target) const {
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.Field)
   // optional .google.protobuf.Field.Kind kind = 1;
   if (this->kind() != 0) {
@@ -1472,8 +1472,8 @@ void Field::SerializeWithCachedSizes(
   // repeated .google.protobuf.Option options = 9;
   for (unsigned int i = 0, n = this->options_size(); i < n; i++) {
     target = ::google::protobuf::internal::WireFormatLite::
-      WriteMessageNoVirtualToArray(
-        9, this->options(i), target);
+      InternalWriteMessageNoVirtualToArray(
+        9, this->options(i), false, target);
   }
 
   // optional string json_name = 10;
@@ -2192,8 +2192,8 @@ void Enum::SerializeWithCachedSizes(
   // @@protoc_insertion_point(serialize_end:google.protobuf.Enum)
 }
 
-::google::protobuf::uint8* Enum::SerializeWithCachedSizesToArray(
-    ::google::protobuf::uint8* target) const {
+::google::protobuf::uint8* Enum::InternalSerializeWithCachedSizesToArray(
+    bool deterministic, ::google::protobuf::uint8* target) const {
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.Enum)
   // optional string name = 1;
   if (this->name().size() > 0) {
@@ -2209,22 +2209,22 @@ void Enum::SerializeWithCachedSizes(
   // repeated .google.protobuf.EnumValue enumvalue = 2;
   for (unsigned int i = 0, n = this->enumvalue_size(); i < n; i++) {
     target = ::google::protobuf::internal::WireFormatLite::
-      WriteMessageNoVirtualToArray(
-        2, this->enumvalue(i), target);
+      InternalWriteMessageNoVirtualToArray(
+        2, this->enumvalue(i), false, target);
   }
 
   // repeated .google.protobuf.Option options = 3;
   for (unsigned int i = 0, n = this->options_size(); i < n; i++) {
     target = ::google::protobuf::internal::WireFormatLite::
-      WriteMessageNoVirtualToArray(
-        3, this->options(i), target);
+      InternalWriteMessageNoVirtualToArray(
+        3, this->options(i), false, target);
   }
 
   // optional .google.protobuf.SourceContext source_context = 4;
   if (this->has_source_context()) {
     target = ::google::protobuf::internal::WireFormatLite::
-      WriteMessageNoVirtualToArray(
-        4, *this->source_context_, target);
+      InternalWriteMessageNoVirtualToArray(
+        4, *this->source_context_, false, target);
   }
 
   // optional .google.protobuf.Syntax syntax = 5;
@@ -2700,8 +2700,8 @@ void EnumValue::SerializeWithCachedSizes(
   // @@protoc_insertion_point(serialize_end:google.protobuf.EnumValue)
 }
 
-::google::protobuf::uint8* EnumValue::SerializeWithCachedSizesToArray(
-    ::google::protobuf::uint8* target) const {
+::google::protobuf::uint8* EnumValue::InternalSerializeWithCachedSizesToArray(
+    bool deterministic, ::google::protobuf::uint8* target) const {
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.EnumValue)
   // optional string name = 1;
   if (this->name().size() > 0) {
@@ -2722,8 +2722,8 @@ void EnumValue::SerializeWithCachedSizes(
   // repeated .google.protobuf.Option options = 3;
   for (unsigned int i = 0, n = this->options_size(); i < n; i++) {
     target = ::google::protobuf::internal::WireFormatLite::
-      WriteMessageNoVirtualToArray(
-        3, this->options(i), target);
+      InternalWriteMessageNoVirtualToArray(
+        3, this->options(i), false, target);
   }
 
   // @@protoc_insertion_point(serialize_to_array_end:google.protobuf.EnumValue)
@@ -3082,8 +3082,8 @@ void Option::SerializeWithCachedSizes(
   // @@protoc_insertion_point(serialize_end:google.protobuf.Option)
 }
 
-::google::protobuf::uint8* Option::SerializeWithCachedSizesToArray(
-    ::google::protobuf::uint8* target) const {
+::google::protobuf::uint8* Option::InternalSerializeWithCachedSizesToArray(
+    bool deterministic, ::google::protobuf::uint8* target) const {
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.Option)
   // optional string name = 1;
   if (this->name().size() > 0) {
@@ -3099,8 +3099,8 @@ void Option::SerializeWithCachedSizes(
   // optional .google.protobuf.Any value = 2;
   if (this->has_value()) {
     target = ::google::protobuf::internal::WireFormatLite::
-      WriteMessageNoVirtualToArray(
-        2, *this->value_, target);
+      InternalWriteMessageNoVirtualToArray(
+        2, *this->value_, false, target);
   }
 
   // @@protoc_insertion_point(serialize_to_array_end:google.protobuf.Option)

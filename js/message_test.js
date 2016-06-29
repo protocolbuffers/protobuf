@@ -34,6 +34,7 @@ goog.setTestOnly();
 
 goog.require('goog.json');
 goog.require('goog.testing.asserts');
+goog.require('goog.userAgent');
 
 // CommonJS-LoadFromFile: google-protobuf jspb
 goog.require('jspb.Message');
@@ -66,6 +67,7 @@ goog.require('proto.jspb.test.Simple1');
 goog.require('proto.jspb.test.Simple2');
 goog.require('proto.jspb.test.SpecialCases');
 goog.require('proto.jspb.test.TestClone');
+goog.require('proto.jspb.test.TestEndsWithBytes');
 goog.require('proto.jspb.test.TestGroup');
 goog.require('proto.jspb.test.TestGroup1');
 goog.require('proto.jspb.test.TestMessageWithOneof');
@@ -438,6 +440,8 @@ describe('Message test suite', function() {
   });
 
   it('testClone', function() {
+    var supportsUint8Array =
+        !goog.userAgent.IE || goog.userAgent.isVersionOrHigher('10');
     var original = new proto.jspb.test.TestClone();
     original.setStr('v1');
     var simple1 = new proto.jspb.test.Simple1(['x1', ['y1', 'z1']]);
@@ -445,12 +449,14 @@ describe('Message test suite', function() {
     var simple3 = new proto.jspb.test.Simple1(['x3', ['y3', 'z3']]);
     original.setSimple1(simple1);
     original.setSimple2List([simple2, simple3]);
+    var bytes1 = supportsUint8Array ? new Uint8Array([1, 2, 3]) : '123';
+    original.setBytesField(bytes1);
     var extension = new proto.jspb.test.CloneExtension();
     extension.setExt('e1');
     original.setExtension(proto.jspb.test.IsExtension.extField, extension);
     var clone = original.cloneMessage();
     assertArrayEquals(['v1',, ['x1', ['y1', 'z1']],,
-      [['x2', ['y2', 'z2']], ['x3', ['y3', 'z3']]],,, { 100: [, 'e1'] }],
+      [['x2', ['y2', 'z2']], ['x3', ['y3', 'z3']]], bytes1,, { 100: [, 'e1'] }],
         clone.toArray());
     clone.setStr('v2');
     var simple4 = new proto.jspb.test.Simple1(['a1', ['b1', 'c1']]);
@@ -458,18 +464,26 @@ describe('Message test suite', function() {
     var simple6 = new proto.jspb.test.Simple1(['a3', ['b3', 'c3']]);
     clone.setSimple1(simple4);
     clone.setSimple2List([simple5, simple6]);
+    if (supportsUint8Array) {
+      clone.getBytesField()[0] = 4;
+      assertObjectEquals(bytes1, original.getBytesField());
+    }
+    var bytes2 = supportsUint8Array ? new Uint8Array([4, 5, 6]) : '456';
+    clone.setBytesField(bytes2);
     var newExtension = new proto.jspb.test.CloneExtension();
     newExtension.setExt('e2');
     clone.setExtension(proto.jspb.test.CloneExtension.extField, newExtension);
     assertArrayEquals(['v2',, ['a1', ['b1', 'c1']],,
-      [['a2', ['b2', 'c2']], ['a3', ['b3', 'c3']]],,, { 100: [, 'e2'] }],
+      [['a2', ['b2', 'c2']], ['a3', ['b3', 'c3']]], bytes2,, { 100: [, 'e2'] }],
         clone.toArray());
     assertArrayEquals(['v1',, ['x1', ['y1', 'z1']],,
-      [['x2', ['y2', 'z2']], ['x3', ['y3', 'z3']]],,, { 100: [, 'e1'] }],
+      [['x2', ['y2', 'z2']], ['x3', ['y3', 'z3']]], bytes1,, { 100: [, 'e1'] }],
         original.toArray());
   });
 
   it('testCopyInto', function() {
+    var supportsUint8Array =
+        !goog.userAgent.IE || goog.userAgent.isVersionOrHigher('10');
     var original = new proto.jspb.test.TestClone();
     original.setStr('v1');
     var dest = new proto.jspb.test.TestClone();
@@ -484,6 +498,10 @@ describe('Message test suite', function() {
     original.setSimple2List([simple2, simple3]);
     dest.setSimple1(destSimple1);
     dest.setSimple2List([destSimple2, destSimple3]);
+    var bytes1 = supportsUint8Array ? new Uint8Array([1, 2, 3]) : '123';
+    var bytes2 = supportsUint8Array ? new Uint8Array([4, 5, 6]) : '456';
+    original.setBytesField(bytes1);
+    dest.setBytesField(bytes2);
     var extension = new proto.jspb.test.CloneExtension();
     extension.setExt('e1');
     original.setExtension(proto.jspb.test.CloneExtension.extField, extension);
@@ -496,6 +514,15 @@ describe('Message test suite', function() {
     dest.getSimple1().setAString('new value');
     assertNotEquals(dest.getSimple1().getAString(),
         original.getSimple1().getAString());
+    if (supportsUint8Array) {
+      dest.getBytesField()[0] = 7;
+      assertObjectEquals(bytes1, original.getBytesField());
+      assertObjectEquals(new Uint8Array([7, 2, 3]), dest.getBytesField());
+    } else {
+      dest.setBytesField('789');
+      assertObjectEquals(bytes1, original.getBytesField());
+      assertObjectEquals('789', dest.getBytesField());
+    }
     dest.getExtension(proto.jspb.test.CloneExtension.extField).
         setExt('new value');
     assertNotEquals(

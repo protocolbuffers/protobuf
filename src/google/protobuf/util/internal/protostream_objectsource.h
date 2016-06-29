@@ -117,6 +117,7 @@ class LIBPROTOBUF_EXPORT ProtoStreamObjectSource : public ObjectSource {
     max_recursion_depth_ = max_depth;
   }
 
+
  protected:
   // Writes a proto2 Message to the ObjectWriter. When the given end_tag is
   // found this method will complete, allowing it to be used for parsing both
@@ -286,6 +287,9 @@ class LIBPROTOBUF_EXPORT ProtoStreamObjectSource : public ObjectSource {
 
   // Maximum allowed recursion depth.
   int max_recursion_depth_;
+
+  // Whether to render unknown fields.
+  bool render_unknown_fields_;
 
   GOOGLE_DISALLOW_IMPLICIT_CONSTRUCTORS(ProtoStreamObjectSource);
 };

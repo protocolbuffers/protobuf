@@ -248,22 +248,27 @@ GenerateFieldAccessorTableInitializer(io::Printer* printer) {
 // ===================================================================
 
 void ImmutableMessageGenerator::GenerateInterface(io::Printer* printer) {
+  MaybePrintGeneratedAnnotation(context_, printer, descriptor_,
+                                /* immutable = */ true, "OrBuilder");
   if (descriptor_->extension_range_count() > 0) {
     printer->Print(
-      "public interface $classname$OrBuilder extends\n"
-      "    $extra_interfaces$\n"
-      "    com.google.protobuf.GeneratedMessage.\n"
-      "        ExtendableMessageOrBuilder<$classname$> {\n",
-      "extra_interfaces", ExtraMessageOrBuilderInterfaces(descriptor_),
-      "classname", descriptor_->name());
+        "public interface $classname$OrBuilder$idend$ extends\n"
+        "    $extra_interfaces$\n"
+        "    com.google.protobuf.GeneratedMessage.\n"
+        "        ExtendableMessageOrBuilder<$classname$> {\n",
+        "extra_interfaces", ExtraMessageOrBuilderInterfaces(descriptor_),
+        "classname", descriptor_->name(),
+        "idend", "");
   } else {
     printer->Print(
-      "public interface $classname$OrBuilder extends\n"
-      "    $extra_interfaces$\n"
-      "    com.google.protobuf.MessageOrBuilder {\n",
-      "extra_interfaces", ExtraMessageOrBuilderInterfaces(descriptor_),
-      "classname", descriptor_->name());
+        "public interface $classname$OrBuilder$idend$ extends\n"
+        "    $extra_interfaces$\n"
+        "    com.google.protobuf.MessageOrBuilder {\n",
+        "extra_interfaces", ExtraMessageOrBuilderInterfaces(descriptor_),
+        "classname", descriptor_->name(),
+        "idend", "");
   }
+  printer->Annotate("classname", "idend", descriptor_);
 
   printer->Indent();
     for (int i = 0; i < descriptor_->field_count(); i++) {
@@ -291,9 +296,7 @@ void ImmutableMessageGenerator::GenerateInterface(io::Printer* printer) {
 // ===================================================================
 
 void ImmutableMessageGenerator::Generate(io::Printer* printer) {
-  bool is_own_file =
-    descriptor_->containing_type() == NULL &&
-    MultipleJavaFiles(descriptor_->file(), /* immutable = */ true);
+  bool is_own_file = IsOwnFile(descriptor_, /* immutable = */ true);
 
   map<string, string> variables;
   variables["static"] = is_own_file ? " " : " static ";
@@ -301,22 +304,29 @@ void ImmutableMessageGenerator::Generate(io::Printer* printer) {
   variables["extra_interfaces"] = ExtraMessageInterfaces(descriptor_);
 
   WriteMessageDocComment(printer, descriptor_);
+  MaybePrintGeneratedAnnotation(context_, printer, descriptor_,
+                                /* immutable = */ true);
 
   // The builder_type stores the super type name of the nested Builder class.
   string builder_type;
   if (descriptor_->extension_range_count() > 0) {
     printer->Print(variables,
-      "public $static$final class $classname$ extends\n"
-      "    com.google.protobuf.GeneratedMessage.ExtendableMessage<\n"
-      "      $classname$> implements\n"
-      "    $extra_interfaces$\n"
-      "    $classname$OrBuilder {\n");
+                   "public $static$final class $classname$ extends\n");
+    printer->Annotate("classname", descriptor_);
+    printer->Print(
+        variables,
+        "    com.google.protobuf.GeneratedMessage.ExtendableMessage<\n"
+        "      $classname$> implements\n"
+        "    $extra_interfaces$\n"
+        "    $classname$OrBuilder {\n");
     builder_type = strings::Substitute(
              "com.google.protobuf.GeneratedMessage.ExtendableBuilder<$0, ?>",
              name_resolver_->GetImmutableClassName(descriptor_));
   } else {
     printer->Print(variables,
-      "public $static$final class $classname$ extends\n"
+                   "public $static$final class $classname$ extends\n");
+    printer->Annotate("classname", descriptor_);
+    printer->Print(variables,
       "    com.google.protobuf.GeneratedMessage implements\n"
       "    $extra_interfaces$\n"
       "    $classname$OrBuilder {\n");
@@ -485,9 +495,6 @@ void ImmutableMessageGenerator::Generate(io::Printer* printer) {
   if (context_->HasGeneratedMethods(descriptor_)) {
     GenerateIsInitialized(printer);
     GenerateMessageSerializationMethods(printer);
-  }
-
-  if (HasEqualsAndHashCode(descriptor_)) {
     GenerateEqualsAndHashCode(printer);
   }
 
@@ -1225,8 +1232,7 @@ GenerateParsingConstructor(io::Printer* printer) {
       "default: {\n"
       "  if (!input.skipField(tag)) {\n"
       "    done = true;\n"  // it's an endgroup tag
-      "  }\n");
-    printer->Print(
+      "  }\n"
       "  break;\n"
       "}\n");
   }

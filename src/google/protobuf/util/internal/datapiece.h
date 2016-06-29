@@ -92,10 +92,11 @@ class LIBPROTOBUF_EXPORT DataPiece {
       : type_(TYPE_BYTES),
         str_(StringPiecePod::CreateFromStringPiece(value)),
         use_strict_base64_decoding_(use_strict_base64_decoding) {}
-  DataPiece(const DataPiece& r) : type_(r.type_), str_(r.str_) {}
+
+  DataPiece(const DataPiece& r) : type_(r.type_) { InternalCopy(r); }
+
   DataPiece& operator=(const DataPiece& x) {
-    type_ = x.type_;
-    str_ = x.str_;
+    InternalCopy(x);
     return *this;
   }
 
@@ -170,6 +171,9 @@ class LIBPROTOBUF_EXPORT DataPiece {
 
   // Decodes a base64 string. Returns true on success.
   bool DecodeBase64(StringPiece src, string* dest) const;
+
+  // Helper function to initialize this DataPiece with 'other'.
+  void InternalCopy(const DataPiece& other);
 
   // Data type for this piece of data.
   Type type_;

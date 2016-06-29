@@ -124,6 +124,7 @@ message TestOneof {
   oneof oneof_field {
     int32 oneof_int32 = 1;
     TestAllTypes.NestedMessage oneof_nested_message = 2;
+    google.protobuf.NullValue oneof_null_value = 3;
   }
 }
 

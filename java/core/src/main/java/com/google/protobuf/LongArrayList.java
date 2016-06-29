@@ -38,25 +38,27 @@ import java.util.RandomAccess;
 
 /**
  * An implementation of {@link LongList} on top of a primitive array.
- * 
+ *
  * @author dweis@google.com (Daniel Weis)
  */
-final class LongArrayList extends AbstractProtobufList<Long> implements LongList, RandomAccess {
-  
+final class LongArrayList
+    extends AbstractProtobufList<Long>
+    implements LongList, RandomAccess {
+
   private static final LongArrayList EMPTY_LIST = new LongArrayList();
   static {
     EMPTY_LIST.makeImmutable();
   }
-  
+
   public static LongArrayList emptyList() {
     return EMPTY_LIST;
   }
-  
+
   /**
    * The backing store for the list.
    */
   private long[] array;
-  
+
   /**
    * The size of the list distinct from the length of the array. That is, it is the number of
    * elements set in the list.
@@ -71,33 +73,34 @@ final class LongArrayList extends AbstractProtobufList<Long> implements LongList
   }
 
   /**
-   * Constructs a new mutable {@code LongArrayList} containing the same elements as {@code other}.
+   * Constructs a new mutable {@code LongArrayList}
+   * containing the same elements as {@code other}.
    */
-  private LongArrayList(long[] array, int size) {
-    this.array = array;
+  private LongArrayList(long[] other, int size) {
+    array = other;
     this.size = size;
   }
-  
+
   @Override
   public boolean equals(Object o) {
     if (this == o) {
       return true;
     }
-    if (!(o instanceof IntArrayList)) {
+    if (!(o instanceof LongArrayList)) {
       return super.equals(o);
     }
     LongArrayList other = (LongArrayList) o;
     if (size != other.size) {
       return false;
     }
-    
+
     final long[] arr = other.array;
     for (int i = 0; i < size; i++) {
       if (array[i] != arr[i]) {
         return false;
       }
     }
-    
+
     return true;
   }
 
@@ -117,7 +120,7 @@ final class LongArrayList extends AbstractProtobufList<Long> implements LongList
     }
     return new LongArrayList(Arrays.copyOf(array, capacity), size);
   }
-  
+
   @Override
   public Long get(int index) {
     return getLong(index);
@@ -169,7 +172,7 @@ final class LongArrayList extends AbstractProtobufList<Long> implements LongList
     if (index < 0 || index > size) {
       throw new IndexOutOfBoundsException(makeOutOfBoundsExceptionMessage(index));
     }
-    
+
     if (size < array.length) {
       // Shift everything over to make room
       System.arraycopy(array, index, array, index + 1, size - index);
@@ -177,10 +180,10 @@ final class LongArrayList extends AbstractProtobufList<Long> implements LongList
       // Resize to 1.5x the size
       int length = ((size * 3) / 2) + 1;
       long[] newArray = new long[length];
-      
+
       // Copy the first part directly
       System.arraycopy(array, 0, newArray, 0, index);
-      
+
       // Copy the rest shifted over by one to make room
       System.arraycopy(array, index, newArray, index + 1, size - index);
       array = newArray;
@@ -194,38 +197,38 @@ final class LongArrayList extends AbstractProtobufList<Long> implements LongList
   @Override
   public boolean addAll(Collection<? extends Long> collection) {
     ensureIsMutable();
-    
+
     if (collection == null) {
       throw new NullPointerException();
     }
-    
+
     // We specialize when adding another LongArrayList to avoid boxing elements.
     if (!(collection instanceof LongArrayList)) {
       return super.addAll(collection);
     }
-    
+
     LongArrayList list = (LongArrayList) collection;
     if (list.size == 0) {
       return false;
     }
-    
+
     int overflow = Integer.MAX_VALUE - size;
     if (overflow < list.size) {
       // We can't actually represent a list this large.
       throw new OutOfMemoryError();
     }
-    
+
     int newSize = size + list.size;
     if (newSize > array.length) {
       array = Arrays.copyOf(array, newSize);
     }
-    
+
     System.arraycopy(list.array, 0, array, size, list.size);
     size = newSize;
     modCount++;
     return true;
   }
-  
+
   @Override
   public boolean remove(Object o) {
     ensureIsMutable();
@@ -254,7 +257,7 @@ final class LongArrayList extends AbstractProtobufList<Long> implements LongList
   /**
    * Ensures that the provided {@code index} is within the range of {@code [0, size]}. Throws an
    * {@link IndexOutOfBoundsException} if it is not.
-   * 
+   *
    * @param index the index to verify is in range
    */
   private void ensureIndexInRange(int index) {

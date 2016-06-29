@@ -53,7 +53,6 @@
 #include <google/protobuf/io/zero_copy_stream.h>
 #include <google/protobuf/stubs/callback.h>
 #include <google/protobuf/stubs/common.h>
-#include <google/protobuf/stubs/scoped_ptr.h>
 #include <google/protobuf/stubs/stl_util.h>
 
 

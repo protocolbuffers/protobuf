@@ -237,6 +237,17 @@ class LIBPROTOBUF_EXPORT CodedInputStream {
   // Read an unsigned integer with Varint encoding.
   bool ReadVarint64(uint64* value);
 
+  // Reads a varint off the wire into an "int". This should be used for reading
+  // sizes off the wire (sizes of strings, submessages, bytes fields, etc).
+  //
+  // The value from the wire is interpreted as unsigned.  If its value exceeds
+  // the representable value of an integer on this platform, instead of
+  // truncating we return false. Truncating (as performed by ReadVarint32()
+  // above) is an acceptable approach for fields representing an integer, but
+  // when we are parsing a size from the wire, truncating the value would result
+  // in us misparsing the payload.
+  bool ReadVarintSizeAsInt(int* value);
+
   // Read a tag.  This calls ReadVarint32() and returns the result, or returns
   // zero (which is not a valid tag) if ReadVarint32() fails.  Also, it updates
   // the last tag value, which can be checked with LastTagWas().
@@ -594,9 +605,11 @@ class LIBPROTOBUF_EXPORT CodedInputStream {
   // if it fails and the uint32 it read otherwise.  The latter has a bool
   // indicating success or failure as part of its return type.
   int64 ReadVarint32Fallback(uint32 first_byte_or_zero);
+  int ReadVarintSizeAsIntFallback();
   std::pair<uint64, bool> ReadVarint64Fallback();
   bool ReadVarint32Slow(uint32* value);
   bool ReadVarint64Slow(uint64* value);
+  int ReadVarintSizeAsIntSlow();
   bool ReadLittleEndian32Fallback(uint32* value);
   bool ReadLittleEndian64Fallback(uint64* value);
   // Fallback/slow methods for reading tags. These do not update last_tag_,
@@ -866,6 +879,19 @@ inline bool CodedInputStream::ReadVarint64(uint64* value) {
   std::pair<uint64, bool> p = ReadVarint64Fallback();
   *value = p.first;
   return p.second;
+}
+
+inline bool CodedInputStream::ReadVarintSizeAsInt(int* value) {
+  if (GOOGLE_PREDICT_TRUE(buffer_ < buffer_end_)) {
+    int v = *buffer_;
+    if (v < 0x80) {
+      *value = v;
+      Advance(1);
+      return true;
+    }
+  }
+  *value = ReadVarintSizeAsIntFallback();
+  return *value >= 0;
 }
 
 // static

@@ -475,8 +475,8 @@ void Api::SerializeWithCachedSizes(
   // @@protoc_insertion_point(serialize_end:google.protobuf.Api)
 }
 
-::google::protobuf::uint8* Api::SerializeWithCachedSizesToArray(
-    ::google::protobuf::uint8* target) const {
+::google::protobuf::uint8* Api::InternalSerializeWithCachedSizesToArray(
+    bool deterministic, ::google::protobuf::uint8* target) const {
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.Api)
   // optional string name = 1;
   if (this->name().size() > 0) {
@@ -492,15 +492,15 @@ void Api::SerializeWithCachedSizes(
   // repeated .google.protobuf.Method methods = 2;
   for (unsigned int i = 0, n = this->methods_size(); i < n; i++) {
     target = ::google::protobuf::internal::WireFormatLite::
-      WriteMessageNoVirtualToArray(
-        2, this->methods(i), target);
+      InternalWriteMessageNoVirtualToArray(
+        2, this->methods(i), false, target);
   }
 
   // repeated .google.protobuf.Option options = 3;
   for (unsigned int i = 0, n = this->options_size(); i < n; i++) {
     target = ::google::protobuf::internal::WireFormatLite::
-      WriteMessageNoVirtualToArray(
-        3, this->options(i), target);
+      InternalWriteMessageNoVirtualToArray(
+        3, this->options(i), false, target);
   }
 
   // optional string version = 4;
@@ -517,15 +517,15 @@ void Api::SerializeWithCachedSizes(
   // optional .google.protobuf.SourceContext source_context = 5;
   if (this->has_source_context()) {
     target = ::google::protobuf::internal::WireFormatLite::
-      WriteMessageNoVirtualToArray(
-        5, *this->source_context_, target);
+      InternalWriteMessageNoVirtualToArray(
+        5, *this->source_context_, false, target);
   }
 
   // repeated .google.protobuf.Mixin mixins = 6;
   for (unsigned int i = 0, n = this->mixins_size(); i < n; i++) {
     target = ::google::protobuf::internal::WireFormatLite::
-      WriteMessageNoVirtualToArray(
-        6, this->mixins(i), target);
+      InternalWriteMessageNoVirtualToArray(
+        6, this->mixins(i), false, target);
   }
 
   // optional .google.protobuf.Syntax syntax = 7;
@@ -1225,8 +1225,8 @@ void Method::SerializeWithCachedSizes(
   // @@protoc_insertion_point(serialize_end:google.protobuf.Method)
 }
 
-::google::protobuf::uint8* Method::SerializeWithCachedSizesToArray(
-    ::google::protobuf::uint8* target) const {
+::google::protobuf::uint8* Method::InternalSerializeWithCachedSizesToArray(
+    bool deterministic, ::google::protobuf::uint8* target) const {
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.Method)
   // optional string name = 1;
   if (this->name().size() > 0) {
@@ -1274,8 +1274,8 @@ void Method::SerializeWithCachedSizes(
   // repeated .google.protobuf.Option options = 6;
   for (unsigned int i = 0, n = this->options_size(); i < n; i++) {
     target = ::google::protobuf::internal::WireFormatLite::
-      WriteMessageNoVirtualToArray(
-        6, this->options(i), target);
+      InternalWriteMessageNoVirtualToArray(
+        6, this->options(i), false, target);
   }
 
   // optional .google.protobuf.Syntax syntax = 7;
@@ -1803,8 +1803,8 @@ void Mixin::SerializeWithCachedSizes(
   // @@protoc_insertion_point(serialize_end:google.protobuf.Mixin)
 }
 
-::google::protobuf::uint8* Mixin::SerializeWithCachedSizesToArray(
-    ::google::protobuf::uint8* target) const {
+::google::protobuf::uint8* Mixin::InternalSerializeWithCachedSizesToArray(
+    bool deterministic, ::google::protobuf::uint8* target) const {
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.Mixin)
   // optional string name = 1;
   if (this->name().size() > 0) {

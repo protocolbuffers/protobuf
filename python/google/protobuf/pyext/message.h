@@ -54,7 +54,7 @@ class MessageFactory;
 
 #ifdef _SHARED_PTR_H
 using std::shared_ptr;
-using ::std::string;
+using std::string;
 #else
 using internal::shared_ptr;
 #endif
@@ -269,6 +269,8 @@ int AssureWritable(CMessage* self);
 // even in the case of extensions.
 PyDescriptorPool* GetDescriptorPoolForMessage(CMessage* message);
 
+PyObject* SetAllowOversizeProtos(PyObject* m, PyObject* arg);
+
 }  // namespace cmessage
 
 
@@ -353,6 +355,8 @@ bool CheckFieldBelongsToMessage(const FieldDescriptor* field_descriptor,
                                 const Message* message);
 
 extern PyObject* PickleError_class;
+
+bool InitProto2MessageModule(PyObject *m);
 
 }  // namespace python
 }  // namespace protobuf

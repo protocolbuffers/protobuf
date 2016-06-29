@@ -76,6 +76,7 @@ def generate_proto(source, require = True):
       sys.exit(-1)
 
 def GenerateUnittestProtos():
+  generate_proto("../src/google/protobuf/any_test.proto", False)
   generate_proto("../src/google/protobuf/map_unittest.proto", False)
   generate_proto("../src/google/protobuf/unittest_arena.proto", False)
   generate_proto("../src/google/protobuf/unittest_no_arena.proto", False)
@@ -94,6 +95,7 @@ def GenerateUnittestProtos():
   generate_proto("google/protobuf/internal/descriptor_pool_test2.proto", False)
   generate_proto("google/protobuf/internal/factory_test1.proto", False)
   generate_proto("google/protobuf/internal/factory_test2.proto", False)
+  generate_proto("google/protobuf/internal/file_options_test.proto", False)
   generate_proto("google/protobuf/internal/import_test_package/inner.proto", False)
   generate_proto("google/protobuf/internal/import_test_package/outer.proto", False)
   generate_proto("google/protobuf/internal/missing_enum_values.proto", False)

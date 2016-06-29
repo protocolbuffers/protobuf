@@ -1579,7 +1579,8 @@ Message* GeneratedMessageReflection::UnsafeArenaReleaseMessage(
 
   if (field->is_extension()) {
     return static_cast<Message*>(
-        MutableExtensionSet(message)->ReleaseMessage(field, factory));
+        MutableExtensionSet(message)->UnsafeArenaReleaseMessage(field,
+                                                                factory));
   } else {
     ClearBit(message, field);
     if (field->containing_oneof()) {

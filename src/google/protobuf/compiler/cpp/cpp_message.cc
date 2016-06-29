@@ -838,11 +838,13 @@ GenerateDependentBaseClassDefinition(io::Printer* printer) {
 
   map<string, string> vars;
   vars["classname"] = DependentBaseClassTemplateName(descriptor_);
+  vars["full_name"] = descriptor_->full_name();
   vars["superclass"] = SuperClassName(descriptor_, options_);
 
   printer->Print(vars,
     "template <class T>\n"
-    "class $classname$ : public $superclass$ {\n"
+    "class $classname$ : public $superclass$ "
+    "/* @@protoc_insertion_point(dep_base_class_definition:$full_name$) */ {\n"
     " public:\n");
   printer->Indent();
 
@@ -878,6 +880,7 @@ GenerateClassDefinition(io::Printer* printer) {
 
   map<string, string> vars;
   vars["classname"] = classname_;
+  vars["full_name"] = descriptor_->full_name();
   vars["field_count"] = SimpleItoa(descriptor_->field_count());
   vars["oneof_decl_count"] = SimpleItoa(descriptor_->oneof_decl_count());
   if (options_.dllexport_decl.empty()) {
@@ -892,7 +895,9 @@ GenerateClassDefinition(io::Printer* printer) {
     vars["superclass"] = SuperClassName(descriptor_, options_);
   }
   printer->Print(vars,
-    "class $dllexport$$classname$ : public $superclass$ {\n");
+    "class $dllexport$$classname$ : public $superclass$ "
+    "/* @@protoc_insertion_point(class_definition:$full_name$) */ "
+    "{\n");
   printer->Annotate("classname", descriptor_);
   if (use_dependent_base_) {
     printer->Print(vars, "  friend class $superclass$;\n");
@@ -1076,7 +1081,11 @@ GenerateClassDefinition(io::Printer* printer) {
     }
     if (HasFastArraySerialization(descriptor_->file(), options_)) {
       printer->Print(
-        "::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;\n");
+        "::google::protobuf::uint8* InternalSerializeWithCachedSizesToArray(\n"
+        "    bool deterministic, ::google::protobuf::uint8* output) const;\n"
+        "::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const {\n"
+        "  return InternalSerializeWithCachedSizesToArray(false, output);\n"
+        "}\n");
     }
   }
 
@@ -1093,6 +1102,13 @@ GenerateClassDefinition(io::Printer* printer) {
   for (int i = 0; i < descriptor_->oneof_decl_count(); i++) {
     for (int j = 0; j < descriptor_->oneof_decl(i)->field_count(); j++) {
       descriptors.push_back(descriptor_->oneof_decl(i)->field(j));
+    }
+  }
+  for (int i = 0; i < descriptor_->nested_type_count(); i++) {
+    const Descriptor* nested_type = descriptor_->nested_type(i);
+    if (IsMapEntryMessage(nested_type)) {
+      descriptors.push_back(nested_type->FindFieldByName("key"));
+      descriptors.push_back(nested_type->FindFieldByName("value"));
     }
   }
   uses_string_ = false;
@@ -3267,8 +3283,8 @@ void MessageGenerator::GenerateSerializeOneExtensionRange(
     "// Extension range [$start$, $end$)\n");
   if (to_array) {
     printer->Print(vars,
-      "target = _extensions_.SerializeWithCachedSizesToArray(\n"
-      "    $start$, $end$, target);\n\n");
+      "target = _extensions_.InternalSerializeWithCachedSizesToArray(\n"
+      "    $start$, $end$, false, target);\n\n");
   } else {
     printer->Print(vars,
       "_extensions_.SerializeWithCachedSizes(\n"
@@ -3320,10 +3336,11 @@ GenerateSerializeWithCachedSizesToArray(io::Printer* printer) {
   if (descriptor_->options().message_set_wire_format()) {
     // Special-case MessageSet.
     printer->Print(
-      "::google::protobuf::uint8* $classname$::SerializeWithCachedSizesToArray(\n"
-      "    ::google::protobuf::uint8* target) const {\n"
-      "  target =\n"
-      "      _extensions_.SerializeMessageSetWithCachedSizesToArray(target);\n",
+      "::google::protobuf::uint8* $classname$::InternalSerializeWithCachedSizesToArray(\n"
+      "    bool deterministic, ::google::protobuf::uint8* target) const {\n"
+      "  target = _extensions_."
+      "InternalSerializeMessageSetWithCachedSizesToArray(\n"
+      "               deterministic, target);\n",
       "classname", classname_);
     GOOGLE_CHECK(UseUnknownFieldSet(descriptor_->file(), options_));
     printer->Print(
@@ -3337,8 +3354,8 @@ GenerateSerializeWithCachedSizesToArray(io::Printer* printer) {
   }
 
   printer->Print(
-    "::google::protobuf::uint8* $classname$::SerializeWithCachedSizesToArray(\n"
-    "    ::google::protobuf::uint8* target) const {\n",
+    "::google::protobuf::uint8* $classname$::InternalSerializeWithCachedSizesToArray(\n"
+    "    bool deterministic, ::google::protobuf::uint8* target) const {\n",
     "classname", classname_);
   printer->Indent();
 

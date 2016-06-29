@@ -329,8 +329,8 @@ bool WireFormatLite::ReadRepeatedPrimitiveNoInline(
 template <typename CType, enum WireFormatLite::FieldType DeclaredType>
 inline bool WireFormatLite::ReadPackedPrimitive(io::CodedInputStream* input,
                                                 RepeatedField<CType>* values) {
-  uint32 length;
-  if (!input->ReadVarint32(&length)) return false;
+  int length;
+  if (!input->ReadVarintSizeAsInt(&length)) return false;
   io::CodedInputStream::Limit limit = input->PushLimit(length);
   while (input->BytesUntilLimit() > 0) {
     CType value;
@@ -344,8 +344,8 @@ inline bool WireFormatLite::ReadPackedPrimitive(io::CodedInputStream* input,
 template <typename CType, enum WireFormatLite::FieldType DeclaredType>
 inline bool WireFormatLite::ReadPackedFixedSizePrimitive(
     io::CodedInputStream* input, RepeatedField<CType>* values) {
-  uint32 length;
-  if (!input->ReadVarint32(&length)) return false;
+  int length;
+  if (!input->ReadVarintSizeAsInt(&length)) return false;
   const uint32 old_entries = values->size();
   const uint32 new_entries = length / sizeof(CType);
   const uint32 new_bytes = new_entries * sizeof(CType);
@@ -443,8 +443,8 @@ inline bool WireFormatLite::ReadGroup(int field_number,
 }
 inline bool WireFormatLite::ReadMessage(io::CodedInputStream* input,
                                         MessageLite* value) {
-  uint32 length;
-  if (!input->ReadVarint32(&length)) return false;
+  int length;
+  if (!input->ReadVarintSizeAsInt(&length)) return false;
   std::pair<io::CodedInputStream::Limit, int> p =
       input->IncrementRecursionDepthAndPushLimit(length);
   if (p.second < 0 || !value->MergePartialFromCodedStream(input)) return false;
@@ -489,8 +489,8 @@ inline bool WireFormatLite::ReadGroupNoVirtualNoRecursionDepth(
 template<typename MessageType_WorkAroundCppLookupDefect>
 inline bool WireFormatLite::ReadMessageNoVirtual(
     io::CodedInputStream* input, MessageType_WorkAroundCppLookupDefect* value) {
-  uint32 length;
-  if (!input->ReadVarint32(&length)) return false;
+  int length;
+  if (!input->ReadVarintSizeAsInt(&length)) return false;
   std::pair<io::CodedInputStream::Limit, int> p =
       input->IncrementRecursionDepthAndPushLimit(length);
   if (p.second < 0 || !value->
@@ -772,42 +772,40 @@ inline uint8* WireFormatLite::WriteBytesToArray(int field_number,
 }
 
 
-inline uint8* WireFormatLite::WriteGroupToArray(int field_number,
-                                                const MessageLite& value,
-                                                uint8* target) {
+inline uint8* WireFormatLite::InternalWriteGroupToArray(
+    int field_number, const MessageLite& value, bool deterministic,
+    uint8* target) {
   target = WriteTagToArray(field_number, WIRETYPE_START_GROUP, target);
-  target = value.SerializeWithCachedSizesToArray(target);
+  target = value.InternalSerializeWithCachedSizesToArray(deterministic, target);
   return WriteTagToArray(field_number, WIRETYPE_END_GROUP, target);
 }
-inline uint8* WireFormatLite::WriteMessageToArray(int field_number,
-                                                  const MessageLite& value,
-                                                  uint8* target) {
+inline uint8* WireFormatLite::InternalWriteMessageToArray(
+    int field_number, const MessageLite& value, bool deterministic,
+    uint8* target) {
   target = WriteTagToArray(field_number, WIRETYPE_LENGTH_DELIMITED, target);
   target = io::CodedOutputStream::WriteVarint32ToArray(
     value.GetCachedSize(), target);
-  return value.SerializeWithCachedSizesToArray(target);
+  return value.InternalSerializeWithCachedSizesToArray(deterministic, target);
 }
 
 // See comment on ReadGroupNoVirtual to understand the need for this template
 // parameter name.
 template<typename MessageType_WorkAroundCppLookupDefect>
-inline uint8* WireFormatLite::WriteGroupNoVirtualToArray(
+inline uint8* WireFormatLite::InternalWriteGroupNoVirtualToArray(
     int field_number, const MessageType_WorkAroundCppLookupDefect& value,
-    uint8* target) {
+    bool deterministic, uint8* target) {
   target = WriteTagToArray(field_number, WIRETYPE_START_GROUP, target);
-  target = value.MessageType_WorkAroundCppLookupDefect
-      ::SerializeWithCachedSizesToArray(target);
+  target = value.InternalSerializeWithCachedSizesToArray(deterministic, target);
   return WriteTagToArray(field_number, WIRETYPE_END_GROUP, target);
 }
 template<typename MessageType_WorkAroundCppLookupDefect>
-inline uint8* WireFormatLite::WriteMessageNoVirtualToArray(
+inline uint8* WireFormatLite::InternalWriteMessageNoVirtualToArray(
     int field_number, const MessageType_WorkAroundCppLookupDefect& value,
-    uint8* target) {
+    bool deterministic, uint8* target) {
   target = WriteTagToArray(field_number, WIRETYPE_LENGTH_DELIMITED, target);
   target = io::CodedOutputStream::WriteVarint32ToArray(
     value.MessageType_WorkAroundCppLookupDefect::GetCachedSize(), target);
-  return value.MessageType_WorkAroundCppLookupDefect
-      ::SerializeWithCachedSizesToArray(target);
+  return value.InternalSerializeWithCachedSizesToArray(deterministic, target);
 }
 
 // ===================================================================

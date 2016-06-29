@@ -382,6 +382,14 @@ public class DescriptorsTest extends TestCase {
     assertEquals(Long.valueOf(8765432109L),
       field.getOptions().getExtension(UnittestCustomOptions.fieldOpt1));
 
+    OneofDescriptor oneof = descriptor.getOneofs().get(0);
+    assertNotNull(oneof);
+
+    assertTrue(
+      oneof.getOptions().hasExtension(UnittestCustomOptions.oneofOpt1));
+    assertEquals(Integer.valueOf(-99),
+      oneof.getOptions().getExtension(UnittestCustomOptions.oneofOpt1));
+
     EnumDescriptor enumType =
       UnittestCustomOptions.TestMessageWithCustomOptions.AnEnum.getDescriptor();
 

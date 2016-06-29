@@ -160,6 +160,7 @@ message TestClone {
   optional string str = 1;
   optional Simple1 simple1 = 3;
   repeated Simple1 simple2 = 5;
+  optional bytes bytes_field = 6;
   optional string unused = 7;
   extensions 10 to max;
 }

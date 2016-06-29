@@ -1196,11 +1196,13 @@ TEST_F(TextFormatParserTest, ParseFieldValueFromString) {
 
 
 TEST_F(TextFormatParserTest, InvalidToken) {
-  ExpectFailure("optional_bool: true\n-5\n", "Expected identifier.",
+  ExpectFailure("optional_bool: true\n-5\n", "Expected identifier, got: -",
                 2, 1);
 
-  ExpectFailure("optional_bool: true!\n", "Expected identifier.", 1, 20);
-  ExpectFailure("\"some string\"", "Expected identifier.", 1, 1);
+  ExpectFailure("optional_bool: true!\n", "Expected identifier, got: !", 1,
+                20);
+  ExpectFailure("\"some string\"",
+                "Expected identifier, got: \"some string\"", 1, 1);
 }
 
 TEST_F(TextFormatParserTest, InvalidFieldName) {
@@ -1248,46 +1250,52 @@ TEST_F(TextFormatParserTest, AllowIgnoreCapitalizationError) {
 
 TEST_F(TextFormatParserTest, InvalidFieldValues) {
   // Invalid values for a double/float field.
-  ExpectFailure("optional_double: \"hello\"\n", "Expected double.", 1, 18);
-  ExpectFailure("optional_double: true\n", "Expected double.", 1, 18);
-  ExpectFailure("optional_double: !\n", "Expected double.", 1, 18);
+  ExpectFailure("optional_double: \"hello\"\n",
+                "Expected double, got: \"hello\"", 1, 18);
+  ExpectFailure("optional_double: true\n", "Expected double, got: true", 1,
+                18);
+  ExpectFailure("optional_double: !\n", "Expected double, got: !", 1, 18);
   ExpectFailure("optional_double {\n  \n}\n", "Expected \":\", found \"{\".",
                 1, 17);
 
   // Invalid values for a signed integer field.
-  ExpectFailure("optional_int32: \"hello\"\n", "Expected integer.", 1, 17);
-  ExpectFailure("optional_int32: true\n", "Expected integer.", 1, 17);
-  ExpectFailure("optional_int32: 4.5\n", "Expected integer.", 1, 17);
-  ExpectFailure("optional_int32: !\n", "Expected integer.", 1, 17);
+  ExpectFailure("optional_int32: \"hello\"\n",
+                "Expected integer, got: \"hello\"", 1, 17);
+  ExpectFailure("optional_int32: true\n", "Expected integer, got: true", 1, 17);
+  ExpectFailure("optional_int32: 4.5\n", "Expected integer, got: 4.5", 1, 17);
+  ExpectFailure("optional_int32: !\n", "Expected integer, got: !", 1, 17);
   ExpectFailure("optional_int32 {\n \n}\n", "Expected \":\", found \"{\".",
                 1, 16);
   ExpectFailure("optional_int32: 0x80000000\n",
-                "Integer out of range.", 1, 17);
+                "Integer out of range (0x80000000)", 1, 17);
   ExpectFailure("optional_int64: 0x8000000000000000\n",
-                "Integer out of range.", 1, 17);
+                "Integer out of range (0x8000000000000000)", 1, 17);
   ExpectFailure("optional_int32: -0x80000001\n",
-                "Integer out of range.", 1, 18);
+                "Integer out of range (0x80000001)", 1, 18);
   ExpectFailure("optional_int64: -0x8000000000000001\n",
-                "Integer out of range.", 1, 18);
+                "Integer out of range (0x8000000000000001)", 1, 18);
 
   // Invalid values for an unsigned integer field.
-  ExpectFailure("optional_uint64: \"hello\"\n", "Expected integer.", 1, 18);
-  ExpectFailure("optional_uint64: true\n", "Expected integer.", 1, 18);
-  ExpectFailure("optional_uint64: 4.5\n", "Expected integer.", 1, 18);
-  ExpectFailure("optional_uint64: -5\n", "Expected integer.", 1, 18);
-  ExpectFailure("optional_uint64: !\n", "Expected integer.", 1, 18);
+  ExpectFailure("optional_uint64: \"hello\"\n",
+                "Expected integer, got: \"hello\"", 1, 18);
+  ExpectFailure("optional_uint64: true\n",
+                "Expected integer, got: true", 1, 18);
+  ExpectFailure("optional_uint64: 4.5\n", "Expected integer, got: 4.5", 1, 18);
+  ExpectFailure("optional_uint64: -5\n", "Expected integer, got: -", 1, 18);
+  ExpectFailure("optional_uint64: !\n", "Expected integer, got: !", 1, 18);
   ExpectFailure("optional_uint64 {\n \n}\n", "Expected \":\", found \"{\".",
                 1, 17);
   ExpectFailure("optional_uint32: 0x100000000\n",
-                "Integer out of range.", 1, 18);
+                "Integer out of range (0x100000000)", 1, 18);
   ExpectFailure("optional_uint64: 0x10000000000000000\n",
-                "Integer out of range.", 1, 18);
+                "Integer out of range (0x10000000000000000)", 1, 18);
 
   // Invalid values for a boolean field.
-  ExpectFailure("optional_bool: \"hello\"\n", "Expected identifier.", 1, 16);
-  ExpectFailure("optional_bool: 5\n", "Integer out of range.", 1, 16);
-  ExpectFailure("optional_bool: -7.5\n", "Expected identifier.", 1, 16);
-  ExpectFailure("optional_bool: !\n", "Expected identifier.", 1, 16);
+  ExpectFailure("optional_bool: \"hello\"\n",
+                "Expected identifier, got: \"hello\"", 1, 16);
+  ExpectFailure("optional_bool: 5\n", "Integer out of range (5)", 1, 16);
+  ExpectFailure("optional_bool: -7.5\n", "Expected identifier, got: -", 1, 16);
+  ExpectFailure("optional_bool: !\n", "Expected identifier, got: !", 1, 16);
 
   ExpectFailure(
       "optional_bool: meh\n",
@@ -1298,16 +1306,16 @@ TEST_F(TextFormatParserTest, InvalidFieldValues) {
                 1, 15);
 
   // Invalid values for a string field.
-  ExpectFailure("optional_string: true\n", "Expected string.", 1, 18);
-  ExpectFailure("optional_string: 5\n", "Expected string.", 1, 18);
-  ExpectFailure("optional_string: -7.5\n", "Expected string.", 1, 18);
-  ExpectFailure("optional_string: !\n", "Expected string.", 1, 18);
+  ExpectFailure("optional_string: true\n", "Expected string, got: true", 1, 18);
+  ExpectFailure("optional_string: 5\n", "Expected string, got: 5", 1, 18);
+  ExpectFailure("optional_string: -7.5\n", "Expected string, got: -", 1, 18);
+  ExpectFailure("optional_string: !\n", "Expected string, got: !", 1, 18);
   ExpectFailure("optional_string {\n \n}\n", "Expected \":\", found \"{\".",
                 1, 17);
 
   // Invalid values for an enumeration field.
   ExpectFailure("optional_nested_enum: \"hello\"\n",
-                "Expected integer or identifier.", 1, 23);
+                "Expected integer or identifier, got: \"hello\"", 1, 23);
 
   // Valid token, but enum value is not defined.
   ExpectFailure("optional_nested_enum: 5\n",
@@ -1315,9 +1323,10 @@ TEST_F(TextFormatParserTest, InvalidFieldValues) {
                 "\"optional_nested_enum\".", 2, 1);
   // We consume the negative sign, so the error position starts one character
   // later.
-  ExpectFailure("optional_nested_enum: -7.5\n", "Expected integer.", 1, 24);
+  ExpectFailure("optional_nested_enum: -7.5\n", "Expected integer, got: 7.5", 1,
+                24);
   ExpectFailure("optional_nested_enum: !\n",
-                "Expected integer or identifier.", 1, 23);
+                "Expected integer or identifier, got: !", 1, 23);
 
   ExpectFailure(
       "optional_nested_enum: grah\n",
@@ -1340,7 +1349,7 @@ TEST_F(TextFormatParserTest, MessageDelimiters) {
 
   // Unending message.
   ExpectFailure("optional_nested_message {\n \nbb: 118\n",
-                "Expected identifier.",
+                "Expected identifier, got: ",
                 4, 1);
 }
 

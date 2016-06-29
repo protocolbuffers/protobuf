@@ -50,7 +50,6 @@
 #include <google/protobuf/stubs/casts.h>
 #include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
-#include <google/protobuf/stubs/scoped_ptr.h>
 #include <google/protobuf/stubs/stringprintf.h>
 #include <google/protobuf/testing/file.h>
 #include <google/protobuf/arena_test_util.h>
@@ -77,6 +76,7 @@
 #include <google/protobuf/util/time_util.h>
 #include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/stubs/substitute.h>
+#include <gmock/gmock.h>
 #include <google/protobuf/testing/googletest.h>
 #include <gtest/gtest.h>
 
@@ -913,6 +913,55 @@ TEST_P(MapImplTest, ConvertToStdVectorOfPairs) {
   EXPECT_EQ(1, std_vec.size());
   EXPECT_EQ(100, std_vec[0].first);
   EXPECT_EQ(101, std_vec[0].second);
+}
+
+TEST_P(MapImplTest, SwapSameStyle) {
+  Map<int32, int32> another(GetParam());  // same old_style_ value
+  map_[9398] = 41999;
+  another[9398] = 41999;
+  another[8070] = 42056;
+  another.swap(map_);
+  EXPECT_THAT(another, testing::UnorderedElementsAre(
+      testing::Pair(9398, 41999)));
+  EXPECT_THAT(map_, testing::UnorderedElementsAre(
+      testing::Pair(8070, 42056),
+      testing::Pair(9398, 41999)));
+}
+
+TEST_P(MapImplTest, SwapDifferentStyle) {
+  Map<int32, int32> another(!GetParam());  // different old_style_ value
+  map_[9398] = 41999;
+  another[9398] = 41999;
+  another[8070] = 42056;
+  another.swap(map_);
+  EXPECT_THAT(another, testing::UnorderedElementsAre(
+      testing::Pair(9398, 41999)));
+  EXPECT_THAT(map_, testing::UnorderedElementsAre(
+      testing::Pair(8070, 42056),
+      testing::Pair(9398, 41999)));
+}
+
+TEST_P(MapImplTest, SwapArena) {
+  Arena arena1, arena2;
+  Map<int32, int32> m1(&arena1, false);
+  Map<int32, int32> m2(&arena2, false);
+  map_[9398] = 41999;
+  m1[9398] = 41999;
+  m1[8070] = 42056;
+  m2[10244] = 10247;
+  m2[8070] = 42056;
+  m1.swap(map_);
+  EXPECT_THAT(m1, testing::UnorderedElementsAre(
+      testing::Pair(9398, 41999)));
+  EXPECT_THAT(map_, testing::UnorderedElementsAre(
+      testing::Pair(8070, 42056),
+      testing::Pair(9398, 41999)));
+  m2.swap(m1);
+  EXPECT_THAT(m1, testing::UnorderedElementsAre(
+      testing::Pair(8070, 42056),
+      testing::Pair(10244, 10247)));
+  EXPECT_THAT(m2, testing::UnorderedElementsAre(
+      testing::Pair(9398, 41999)));
 }
 
 INSTANTIATE_TEST_CASE_P(BoolSequence, MapImplTest, testing::Bool());
@@ -2106,6 +2155,76 @@ TEST(GeneratedMapFieldTest, DuplicatedKeyWireFormat) {
   EXPECT_TRUE(message.ParseFromString(data));
   EXPECT_EQ(1, message.map_int32_int32().size());
   EXPECT_EQ(1, message.map_int32_int32().at(2));
+
+  // A similar test, but with a map from int to a message type.
+  // Again, we want to be sure that the "second one wins" when
+  // there are two separate entries with the same key.
+  const int key = 99;
+  unittest::TestRequiredMessageMap map_message;
+  unittest::TestRequired with_dummy4;
+  with_dummy4.set_a(0);
+  with_dummy4.set_b(0);
+  with_dummy4.set_c(0);
+  with_dummy4.set_dummy4(11);
+  (*map_message.mutable_map_field())[key] = with_dummy4;
+  string s = map_message.SerializeAsString();
+  unittest::TestRequired with_dummy5;
+  with_dummy5.set_a(0);
+  with_dummy5.set_b(0);
+  with_dummy5.set_c(0);
+  with_dummy5.set_dummy5(12);
+  (*map_message.mutable_map_field())[key] = with_dummy5;
+  string both = s + map_message.SerializeAsString();
+  // We don't expect a merge now.  The "second one wins."
+  ASSERT_TRUE(map_message.ParseFromString(both));
+  ASSERT_EQ(1, map_message.map_field().size());
+  ASSERT_EQ(1, map_message.map_field().count(key));
+  EXPECT_EQ(0, map_message.map_field().find(key)->second.a());
+  EXPECT_EQ(0, map_message.map_field().find(key)->second.b());
+  EXPECT_EQ(0, map_message.map_field().find(key)->second.c());
+  EXPECT_FALSE(map_message.map_field().find(key)->second.has_dummy4());
+  ASSERT_TRUE(map_message.map_field().find(key)->second.has_dummy5());
+  EXPECT_EQ(12, map_message.map_field().find(key)->second.dummy5());
+}
+
+// Exhaustive combinations of keys, values, and junk in any order.
+// This re-tests some of the things tested above, but if it fails
+// it's more work to determine what went wrong, so it isn't necessarily
+// bad that we have the simpler tests too.
+TEST(GeneratedMapFieldTest, KeysValuesUnknownsWireFormat) {
+  unittest::TestMap message;
+  const int kMaxNumKeysAndValuesAndJunk = 4;
+  const char kKeyTag = 0x08;
+  const char kValueTag = 0x10;
+  const char kJunkTag = 0x20;
+  for (int items = 0; items <= kMaxNumKeysAndValuesAndJunk; items++) {
+    string data = "\x0A";
+    // Encode length of what will follow.
+    data.push_back(items * 2);
+    static const int kBitsOfIPerItem = 4;
+    static const int mask = (1 << kBitsOfIPerItem) - 1;
+    // Each iteration of the following is a test.  It uses i as bit vector
+    // encoding the keys and values to put in the wire format.
+    for (int i = 0; i < (1 << (items * kBitsOfIPerItem)); i++) {
+      string wire_format = data;
+      int expected_key = 0;
+      int expected_value = 0;
+      for (int k = i, j = 0; j < items; j++, k >>= kBitsOfIPerItem) {
+        bool is_key = k & 0x1;
+        bool is_value = !is_key && (k & 0x2);
+        wire_format.push_back(is_key ? kKeyTag :
+                              is_value ? kValueTag : kJunkTag);
+        char c = static_cast<char>(k & mask) >> 2;  // One char after the tag.
+        wire_format.push_back(c);
+        if (is_key) expected_key = static_cast<int>(c);
+        if (is_value) expected_value = static_cast<int>(c);
+        ASSERT_TRUE(message.ParseFromString(wire_format));
+        ASSERT_EQ(1, message.map_int32_int32().size());
+        ASSERT_EQ(expected_key, message.map_int32_int32().begin()->first);
+        ASSERT_EQ(expected_value, message.map_int32_int32().begin()->second);
+      }
+    }
+  }
 }
 
 TEST(GeneratedMapFieldTest, DuplicatedValueWireFormat) {
@@ -2187,6 +2306,74 @@ TEST(GeneratedMapFieldTest, IsInitialized) {
   (*map_message.mutable_map_field())[0].set_b(0);
   (*map_message.mutable_map_field())[0].set_c(0);
   EXPECT_TRUE(map_message.IsInitialized());
+}
+
+TEST(GeneratedMapFieldTest, MessagesMustMerge) {
+  unittest::TestRequiredMessageMap map_message;
+  unittest::TestRequired with_dummy4;
+  with_dummy4.set_a(97);
+  with_dummy4.set_b(0);
+  with_dummy4.set_c(0);
+  with_dummy4.set_dummy4(98);
+
+  EXPECT_TRUE(with_dummy4.IsInitialized());
+  (*map_message.mutable_map_field())[0] = with_dummy4;
+  EXPECT_TRUE(map_message.IsInitialized());
+  string s = map_message.SerializeAsString();
+
+  // Modify s so that there are two values in the entry for key 0.
+  // The first will have no value for c.  The second will have no value for a.
+  // Those are required fields.  Also, make some other little changes, to
+  // ensure we are merging the two values (because they're messages).
+  ASSERT_EQ(s.size() - 2, s[1]);  // encoding of the length of what follows
+  string encoded_val(s.data() + 4, s.data() + s.size());
+  // In s, change the encoding of c to an encoding of dummy32.
+  s[s.size() - 3] -= 8;
+  // Make encoded_val slightly different from what's in s.
+  encoded_val[encoded_val.size() - 1] += 33;  // Encode c = 33.
+  for (int i = 0; i < encoded_val.size(); i++) {
+    if (encoded_val[i] == 97) {
+      // Encode b = 91 instead of a = 97.  But this won't matter, because
+      // we also encode b = 0 right after this.  The point is to leave out
+      // a required field, and make sure the parser doesn't complain, because
+      // every required field is set after the merge of the two values.
+      encoded_val[i - 1] += 16;
+      encoded_val[i] = 91;
+    } else if (encoded_val[i] == 98) {
+      // Encode dummy5 = 99 instead of dummy4 = 98.
+      encoded_val[i - 1] += 8;  // The tag for dummy5 is 8 more.
+      encoded_val[i]++;
+      break;
+    }
+  }
+
+  s += encoded_val;            // Add the second message.
+  s[1] += encoded_val.size();  // Adjust encoded size.
+
+  // Test key then value then value.
+  int key = 0;
+  ASSERT_TRUE(map_message.ParseFromString(s));
+  ASSERT_EQ(1, map_message.map_field().size());
+  ASSERT_EQ(1, map_message.map_field().count(key));
+  EXPECT_EQ(97, map_message.map_field().find(key)->second.a());
+  EXPECT_EQ(0, map_message.map_field().find(key)->second.b());
+  EXPECT_EQ(33, map_message.map_field().find(key)->second.c());
+  EXPECT_EQ(98, map_message.map_field().find(key)->second.dummy4());
+  EXPECT_EQ(99, map_message.map_field().find(key)->second.dummy5());
+
+  // Test key then value then value then key.
+  s.push_back(s[2]);       // Copy the key's tag.
+  key = 19;
+  s.push_back(key);        // Second key is 19 instead of 0.
+  s[1] += 2;               // Adjust encoded size.
+  ASSERT_TRUE(map_message.ParseFromString(s));
+  ASSERT_EQ(1, map_message.map_field().size());
+  ASSERT_EQ(1, map_message.map_field().count(key));
+  EXPECT_EQ(97, map_message.map_field().find(key)->second.a());
+  EXPECT_EQ(0, map_message.map_field().find(key)->second.b());
+  EXPECT_EQ(33, map_message.map_field().find(key)->second.c());
+  EXPECT_EQ(98, map_message.map_field().find(key)->second.dummy4());
+  EXPECT_EQ(99, map_message.map_field().find(key)->second.dummy5());
 }
 
 // Generated Message Reflection Test ================================
@@ -2781,6 +2968,21 @@ TEST(ArenaTest, StringMapNoLeak) {
   (*message->mutable_map_string_string())[data] = data;
   // We rely on heap checkers to detect memory leak for us.
   ASSERT_FALSE(message == NULL);
+}
+
+TEST(ArenaTest, IsInitialized) {
+  // Allocate a large initial polluted block.
+  std::vector<char> arena_block(128 * 1024);
+  std::fill(arena_block.begin(), arena_block.end(), '\xff');
+
+  ArenaOptions options;
+  options.initial_block = &arena_block[0];
+  options.initial_block_size = arena_block.size();
+  Arena arena(options);
+
+  unittest::TestArenaMap* message =
+      Arena::CreateMessage<unittest::TestArenaMap>(&arena);
+  EXPECT_EQ(0, (*message->mutable_map_int32_int32())[0]);
 }
 
 }  // namespace internal

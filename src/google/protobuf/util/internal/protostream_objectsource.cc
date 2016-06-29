@@ -121,7 +121,8 @@ ProtoStreamObjectSource::ProtoStreamObjectSource(
       type_(type),
       use_lower_camel_for_enums_(false),
       recursion_depth_(0),
-      max_recursion_depth_(kDefaultMaxRecursionDepth) {
+      max_recursion_depth_(kDefaultMaxRecursionDepth),
+      render_unknown_fields_(false) {
   GOOGLE_LOG_IF(DFATAL, stream == NULL) << "Input stream is NULL.";
 }
 
@@ -134,7 +135,8 @@ ProtoStreamObjectSource::ProtoStreamObjectSource(
       type_(type),
       use_lower_camel_for_enums_(false),
       recursion_depth_(0),
-      max_recursion_depth_(kDefaultMaxRecursionDepth) {
+      max_recursion_depth_(kDefaultMaxRecursionDepth),
+      render_unknown_fields_(false) {
   GOOGLE_LOG_IF(DFATAL, stream == NULL) << "Input stream is NULL.";
 }
 
@@ -184,6 +186,7 @@ Status ProtoStreamObjectSource::WriteMessage(const google::protobuf::Type& type,
   string field_name;
   // last_tag set to dummy value that is different from tag.
   uint32 tag = stream_->ReadTag(), last_tag = tag + 1;
+  google::protobuf::UnknownFieldSet unknown_fields;
 
   if (include_start_and_end) {
     ow->StartObject(name);
@@ -199,7 +202,8 @@ Status ProtoStreamObjectSource::WriteMessage(const google::protobuf::Type& type,
     if (field == NULL) {
       // If we didn't find a field, skip this unknown tag.
       // TODO(wpoon): Check return boolean value.
-      WireFormat::SkipField(stream_, tag, NULL);
+      WireFormat::SkipField(stream_, tag,
+                            render_unknown_fields_ ? &unknown_fields : NULL);
       tag = stream_->ReadTag();
       continue;
     }
@@ -221,6 +225,8 @@ Status ProtoStreamObjectSource::WriteMessage(const google::protobuf::Type& type,
       tag = stream_->ReadTag();
     }
   }
+
+
   if (include_start_and_end) {
     ow->EndObject();
   }

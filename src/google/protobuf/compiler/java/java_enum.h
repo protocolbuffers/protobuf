@@ -58,9 +58,8 @@ namespace java {
 
 class EnumGenerator {
  public:
-  explicit EnumGenerator(const EnumDescriptor* descriptor,
-                         bool immutable_api,
-                         Context* context);
+  EnumGenerator(const EnumDescriptor* descriptor, bool immutable_api,
+                Context* context);
   ~EnumGenerator();
 
   void Generate(io::Printer* printer);

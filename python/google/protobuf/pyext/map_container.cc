@@ -39,7 +39,6 @@
 
 #include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
-#include <google/protobuf/stubs/scoped_ptr.h>
 #include <google/protobuf/map_field.h>
 #include <google/protobuf/map.h>
 #include <google/protobuf/message.h>

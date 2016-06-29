@@ -641,18 +641,23 @@ CommandLineInterface::MemoryOutputStream::~MemoryOutputStream() {
       return;
     }
 
-    // Seek backwards to the beginning of the line, which is where we will
-    // insert the data.  Note that this has the effect of pushing the insertion
-    // point down, so the data is inserted before it.  This is intentional
-    // because it means that multiple insertions at the same point will end
-    // up in the expected order in the final output.
-    pos = target->find_last_of('\n', pos);
-    if (pos == string::npos) {
-      // Insertion point is on the first line.
-      pos = 0;
+    if ((pos > 3) && (target->substr(pos - 3, 2) == "/*")) {
+      // Support for inline "/* @@protoc_insertion_point() */"
+      pos = pos - 3;
     } else {
-      // Advance to character after '\n'.
-      ++pos;
+      // Seek backwards to the beginning of the line, which is where we will
+      // insert the data.  Note that this has the effect of pushing the
+      // insertion point down, so the data is inserted before it.  This is
+      // intentional because it means that multiple insertions at the same point
+      // will end up in the expected order in the final output.
+      pos = target->find_last_of('\n', pos);
+      if (pos == string::npos) {
+        // Insertion point is on the first line.
+        pos = 0;
+      } else {
+        // Advance to character after '\n'.
+        ++pos;
+      }
     }
 
     // Extract indent.

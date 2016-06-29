@@ -564,12 +564,16 @@ class GenericTypeHandler {
     return ::google::protobuf::Arena::CreateMaybeMessage<Type>(
         arena, static_cast<GenericType*>(0));
   }
-  // We force NewFromPrototype() and Delete() to be non-inline to reduce code
-  // size: else, several other methods get inlined copies of message types'
-  // constructors and destructors.
+  // We force NewFromPrototype() to be non-inline to reduce code size:
+  // else, several other methods get inlined copies of message types'
+  // constructors.
   GOOGLE_ATTRIBUTE_NOINLINE static GenericType* NewFromPrototype(
       const GenericType* prototype, ::google::protobuf::Arena* arena = NULL);
-  GOOGLE_ATTRIBUTE_NOINLINE static void Delete(GenericType* value, Arena* arena);
+  static inline void Delete(GenericType* value, Arena* arena) {
+    if (arena == NULL) {
+      delete value;
+    }
+  }
   static inline ::google::protobuf::Arena* GetArena(GenericType* value) {
     return ::google::protobuf::Arena::GetArena<Type>(value);
   }
@@ -592,12 +596,6 @@ template <typename GenericType>
 GenericType* GenericTypeHandler<GenericType>::NewFromPrototype(
     const GenericType* /* prototype */, ::google::protobuf::Arena* arena) {
   return New(arena);
-}
-template <typename GenericType>
-void GenericTypeHandler<GenericType>::Delete(GenericType* value, Arena* arena) {
-  if (arena == NULL) {
-    delete value;
-  }
 }
 template <typename GenericType>
 void GenericTypeHandler<GenericType>::Merge(const GenericType& from,
@@ -1359,13 +1357,13 @@ inline RepeatedPtrFieldBase::RepeatedPtrFieldBase(::google::protobuf::Arena* are
 
 template <typename TypeHandler>
 void RepeatedPtrFieldBase::Destroy() {
-  if (rep_ != NULL) {
-    for (int i = 0; i < rep_->allocated_size; i++) {
-      TypeHandler::Delete(cast<TypeHandler>(rep_->elements[i]), arena_);
+  if (rep_ != NULL && arena_ == NULL) {
+    int n = rep_->allocated_size;
+    void* const* elements = rep_->elements;
+    for (int i = 0; i < n; i++) {
+      TypeHandler::Delete(cast<TypeHandler>(elements[i]), NULL);
     }
-    if (arena_ == NULL) {
-      delete [] reinterpret_cast<char*>(rep_);
-    }
+    delete[] reinterpret_cast<char*>(rep_);
   }
   rep_ = NULL;
 }

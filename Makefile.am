@@ -209,6 +209,7 @@ java_EXTRA_DIST=                                                                
   java/core/src/main/java/com/google/protobuf/Extension.java                       \
   java/core/src/main/java/com/google/protobuf/ExtensionLite.java                   \
   java/core/src/main/java/com/google/protobuf/ExtensionRegistry.java               \
+  java/core/src/main/java/com/google/protobuf/ExtensionRegistryFactory.java        \
   java/core/src/main/java/com/google/protobuf/ExtensionRegistryLite.java           \
   java/core/src/main/java/com/google/protobuf/FieldSet.java                        \
   java/core/src/main/java/com/google/protobuf/FloatArrayList.java                  \
@@ -273,6 +274,7 @@ java_EXTRA_DIST=                                                                
   java/core/src/test/java/com/google/protobuf/DoubleArrayListTest.java             \
   java/core/src/test/java/com/google/protobuf/DynamicMessageTest.java              \
   java/core/src/test/java/com/google/protobuf/EnumTest.java                        \
+  java/core/src/test/java/com/google/protobuf/ExtensionRegistryFactoryTest.java    \
   java/core/src/test/java/com/google/protobuf/FieldPresenceTest.java               \
   java/core/src/test/java/com/google/protobuf/FloatArrayListTest.java              \
   java/core/src/test/java/com/google/protobuf/ForceFieldBuildersPreRun.java        \

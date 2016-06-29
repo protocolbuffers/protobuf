@@ -448,8 +448,8 @@ void DoubleValue::SerializeWithCachedSizes(
   // @@protoc_insertion_point(serialize_end:google.protobuf.DoubleValue)
 }
 
-::google::protobuf::uint8* DoubleValue::SerializeWithCachedSizesToArray(
-    ::google::protobuf::uint8* target) const {
+::google::protobuf::uint8* DoubleValue::InternalSerializeWithCachedSizesToArray(
+    bool deterministic, ::google::protobuf::uint8* target) const {
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.DoubleValue)
   // optional double value = 1;
   if (this->value() != 0) {
@@ -706,8 +706,8 @@ void FloatValue::SerializeWithCachedSizes(
   // @@protoc_insertion_point(serialize_end:google.protobuf.FloatValue)
 }
 
-::google::protobuf::uint8* FloatValue::SerializeWithCachedSizesToArray(
-    ::google::protobuf::uint8* target) const {
+::google::protobuf::uint8* FloatValue::InternalSerializeWithCachedSizesToArray(
+    bool deterministic, ::google::protobuf::uint8* target) const {
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.FloatValue)
   // optional float value = 1;
   if (this->value() != 0) {
@@ -964,8 +964,8 @@ void Int64Value::SerializeWithCachedSizes(
   // @@protoc_insertion_point(serialize_end:google.protobuf.Int64Value)
 }
 
-::google::protobuf::uint8* Int64Value::SerializeWithCachedSizesToArray(
-    ::google::protobuf::uint8* target) const {
+::google::protobuf::uint8* Int64Value::InternalSerializeWithCachedSizesToArray(
+    bool deterministic, ::google::protobuf::uint8* target) const {
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.Int64Value)
   // optional int64 value = 1;
   if (this->value() != 0) {
@@ -1224,8 +1224,8 @@ void UInt64Value::SerializeWithCachedSizes(
   // @@protoc_insertion_point(serialize_end:google.protobuf.UInt64Value)
 }
 
-::google::protobuf::uint8* UInt64Value::SerializeWithCachedSizesToArray(
-    ::google::protobuf::uint8* target) const {
+::google::protobuf::uint8* UInt64Value::InternalSerializeWithCachedSizesToArray(
+    bool deterministic, ::google::protobuf::uint8* target) const {
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.UInt64Value)
   // optional uint64 value = 1;
   if (this->value() != 0) {
@@ -1484,8 +1484,8 @@ void Int32Value::SerializeWithCachedSizes(
   // @@protoc_insertion_point(serialize_end:google.protobuf.Int32Value)
 }
 
-::google::protobuf::uint8* Int32Value::SerializeWithCachedSizesToArray(
-    ::google::protobuf::uint8* target) const {
+::google::protobuf::uint8* Int32Value::InternalSerializeWithCachedSizesToArray(
+    bool deterministic, ::google::protobuf::uint8* target) const {
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.Int32Value)
   // optional int32 value = 1;
   if (this->value() != 0) {
@@ -1744,8 +1744,8 @@ void UInt32Value::SerializeWithCachedSizes(
   // @@protoc_insertion_point(serialize_end:google.protobuf.UInt32Value)
 }
 
-::google::protobuf::uint8* UInt32Value::SerializeWithCachedSizesToArray(
-    ::google::protobuf::uint8* target) const {
+::google::protobuf::uint8* UInt32Value::InternalSerializeWithCachedSizesToArray(
+    bool deterministic, ::google::protobuf::uint8* target) const {
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.UInt32Value)
   // optional uint32 value = 1;
   if (this->value() != 0) {
@@ -2004,8 +2004,8 @@ void BoolValue::SerializeWithCachedSizes(
   // @@protoc_insertion_point(serialize_end:google.protobuf.BoolValue)
 }
 
-::google::protobuf::uint8* BoolValue::SerializeWithCachedSizesToArray(
-    ::google::protobuf::uint8* target) const {
+::google::protobuf::uint8* BoolValue::InternalSerializeWithCachedSizesToArray(
+    bool deterministic, ::google::protobuf::uint8* target) const {
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.BoolValue)
   // optional bool value = 1;
   if (this->value() != 0) {
@@ -2271,8 +2271,8 @@ void StringValue::SerializeWithCachedSizes(
   // @@protoc_insertion_point(serialize_end:google.protobuf.StringValue)
 }
 
-::google::protobuf::uint8* StringValue::SerializeWithCachedSizesToArray(
-    ::google::protobuf::uint8* target) const {
+::google::protobuf::uint8* StringValue::InternalSerializeWithCachedSizesToArray(
+    bool deterministic, ::google::protobuf::uint8* target) const {
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.StringValue)
   // optional string value = 1;
   if (this->value().size() > 0) {
@@ -2590,8 +2590,8 @@ void BytesValue::SerializeWithCachedSizes(
   // @@protoc_insertion_point(serialize_end:google.protobuf.BytesValue)
 }
 
-::google::protobuf::uint8* BytesValue::SerializeWithCachedSizesToArray(
-    ::google::protobuf::uint8* target) const {
+::google::protobuf::uint8* BytesValue::InternalSerializeWithCachedSizesToArray(
+    bool deterministic, ::google::protobuf::uint8* target) const {
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.BytesValue)
   // optional bytes value = 1;
   if (this->value().size() > 0) {

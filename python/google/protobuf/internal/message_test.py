@@ -1435,6 +1435,8 @@ class Proto3Test(unittest.TestCase):
     msg2.map_int32_int32[12] = 55
     msg2.map_int64_int64[88] = 99
     msg2.map_int32_foreign_message[222].c = 15
+    msg2.map_int32_foreign_message[222].d = 20
+    old_map_value = msg2.map_int32_foreign_message[222]
 
     msg2.MergeFrom(msg)
 
@@ -1444,6 +1446,8 @@ class Proto3Test(unittest.TestCase):
     self.assertEqual(99, msg2.map_int64_int64[88])
     self.assertEqual(5, msg2.map_int32_foreign_message[111].c)
     self.assertEqual(10, msg2.map_int32_foreign_message[222].c)
+    self.assertFalse(msg2.map_int32_foreign_message[222].HasField('d'))
+    self.assertEqual(15, old_map_value.c)
 
     # Verify that there is only one entry per key, even though the MergeFrom
     # may have internally created multiple entries for a single key in the

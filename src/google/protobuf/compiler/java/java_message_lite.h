@@ -47,8 +47,7 @@ namespace java {
 
 class ImmutableMessageLiteGenerator : public MessageGenerator {
  public:
-  explicit ImmutableMessageLiteGenerator(const Descriptor* descriptor,
-                                     Context* context);
+  ImmutableMessageLiteGenerator(const Descriptor* descriptor, Context* context);
   virtual ~ImmutableMessageLiteGenerator();
 
   virtual void Generate(io::Printer* printer);

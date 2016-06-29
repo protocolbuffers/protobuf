@@ -69,6 +69,7 @@ class ImmutableMapFieldGenerator : public ImmutableFieldGenerator {
   const FieldDescriptor* descriptor_;
   map<string, string> variables_;
   ClassNameResolver* name_resolver_;
+  void GenerateMapGetters(io::Printer* printer) const;
 };
 
 }  // namespace java

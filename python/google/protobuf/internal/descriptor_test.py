@@ -77,27 +77,24 @@ class DescriptorTest(unittest.TestCase):
     enum_proto.value.add(name='FOREIGN_BAR', number=5)
     enum_proto.value.add(name='FOREIGN_BAZ', number=6)
 
+    file_proto.message_type.add(name='ResponseMessage')
+    service_proto = file_proto.service.add(
+        name='Service')
+    method_proto = service_proto.method.add(
+        name='CallMethod',
+        input_type='.protobuf_unittest.NestedMessage',
+        output_type='.protobuf_unittest.ResponseMessage')
+
+    # Note: Calling DescriptorPool.Add() multiple times with the same file only
+    # works if the input is canonical; in particular, all type names must be
+    # fully qualified.
     self.pool = self.GetDescriptorPool()
     self.pool.Add(file_proto)
     self.my_file = self.pool.FindFileByName(file_proto.name)
     self.my_message = self.my_file.message_types_by_name[message_proto.name]
     self.my_enum = self.my_message.enum_types_by_name[enum_proto.name]
-
-    self.my_method = descriptor.MethodDescriptor(
-        name='Bar',
-        full_name='protobuf_unittest.TestService.Bar',
-        index=0,
-        containing_service=None,
-        input_type=None,
-        output_type=None)
-    self.my_service = descriptor.ServiceDescriptor(
-        name='TestServiceWithOptions',
-        full_name='protobuf_unittest.TestServiceWithOptions',
-        file=self.my_file,
-        index=0,
-        methods=[
-            self.my_method
-        ])
+    self.my_service = self.my_file.services_by_name[service_proto.name]
+    self.my_method = self.my_service.methods_by_name[method_proto.name]
 
   def GetDescriptorPool(self):
     return symbol_database.Default().pool
@@ -139,13 +136,14 @@ class DescriptorTest(unittest.TestCase):
     file_descriptor = unittest_custom_options_pb2.DESCRIPTOR
     message_descriptor =\
         unittest_custom_options_pb2.TestMessageWithCustomOptions.DESCRIPTOR
-    field_descriptor = message_descriptor.fields_by_name["field1"]
-    enum_descriptor = message_descriptor.enum_types_by_name["AnEnum"]
+    field_descriptor = message_descriptor.fields_by_name['field1']
+    oneof_descriptor = message_descriptor.oneofs_by_name['AnOneof']
+    enum_descriptor = message_descriptor.enum_types_by_name['AnEnum']
     enum_value_descriptor =\
-        message_descriptor.enum_values_by_name["ANENUM_VAL2"]
+        message_descriptor.enum_values_by_name['ANENUM_VAL2']
     service_descriptor =\
         unittest_custom_options_pb2.TestServiceWithCustomOptions.DESCRIPTOR
-    method_descriptor = service_descriptor.FindMethodByName("Foo")
+    method_descriptor = service_descriptor.FindMethodByName('Foo')
 
     file_options = file_descriptor.GetOptions()
     file_opt1 = unittest_custom_options_pb2.file_opt1
@@ -158,6 +156,9 @@ class DescriptorTest(unittest.TestCase):
     self.assertEqual(8765432109, field_options.Extensions[field_opt1])
     field_opt2 = unittest_custom_options_pb2.field_opt2
     self.assertEqual(42, field_options.Extensions[field_opt2])
+    oneof_options = oneof_descriptor.GetOptions()
+    oneof_opt1 = unittest_custom_options_pb2.oneof_opt1
+    self.assertEqual(-99, oneof_options.Extensions[oneof_opt1])
     enum_options = enum_descriptor.GetOptions()
     enum_opt1 = unittest_custom_options_pb2.enum_opt1
     self.assertEqual(-789, enum_options.Extensions[enum_opt1])

@@ -801,7 +801,7 @@ class LIBPROTOBUF_EXPORT Arena {
   template <typename T>
   static void CreateInArenaStorageInternal(
       T* ptr, Arena* arena, google::protobuf::internal::false_type) {
-    new (ptr) T;
+    new (ptr) T();
   }
 
   template <typename T>

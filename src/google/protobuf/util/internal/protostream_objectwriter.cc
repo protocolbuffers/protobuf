@@ -384,6 +384,9 @@ ProtoStreamObjectWriter::Item::Item(ProtoStreamObjectWriter* enclosing,
   if (item_type_ == ANY) {
     any_.reset(new AnyWriter(ow_));
   }
+  if (item_type == MAP) {
+    map_keys_.reset(new hash_set<string>);
+  }
 }
 
 ProtoStreamObjectWriter::Item::Item(ProtoStreamObjectWriter::Item* parent,
@@ -398,11 +401,14 @@ ProtoStreamObjectWriter::Item::Item(ProtoStreamObjectWriter::Item* parent,
   if (item_type == ANY) {
     any_.reset(new AnyWriter(ow_));
   }
+  if (item_type == MAP) {
+    map_keys_.reset(new hash_set<string>);
+  }
 }
 
 bool ProtoStreamObjectWriter::Item::InsertMapKeyIfNotPresent(
     StringPiece map_key) {
-  return InsertIfNotPresent(&map_keys_, map_key.ToString());
+  return InsertIfNotPresent(map_keys_.get(), map_key.ToString());
 }
 
 ProtoStreamObjectWriter* ProtoStreamObjectWriter::StartObject(
@@ -1000,6 +1006,7 @@ ProtoStreamObjectWriter* ProtoStreamObjectWriter::RenderDataPiece(
                                  DataPiece(name, use_strict_base64_decoding()));
     field = Lookup("value");
     if (field == NULL) {
+      Pop();
       GOOGLE_LOG(DFATAL) << "Map does not have a value field.";
       return this;
     }

@@ -46,12 +46,14 @@ struct Options {
   Options()
       : safe_boundary_check(false),
         proto_h(false),
+        allow_import_public(true),
         annotate_headers(false),
         enforce_lite(false) {}
 
   string dllexport_decl;
   bool safe_boundary_check;
   bool proto_h;
+  bool allow_import_public;
   bool annotate_headers;
   bool enforce_lite;
   string annotation_pragma_name;

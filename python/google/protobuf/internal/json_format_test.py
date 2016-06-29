@@ -643,6 +643,19 @@ class JsonFormatTest(JsonFormatBase):
                     'Message type "proto3.TestMessage" has no field named '
                     '"unknownName".')
 
+  def testIgnoreUnknownField(self):
+    text = '{"unknownName": 1}'
+    parsed_message = json_format_proto3_pb2.TestMessage()
+    json_format.Parse(text, parsed_message, ignore_unknown_fields=True)
+    text = ('{\n'
+            '  "repeatedValue": [ {\n'
+            '    "@type": "type.googleapis.com/proto3.MessageType",\n'
+            '    "unknownName": 1\n'
+            '  }]\n'
+            '}\n')
+    parsed_message = json_format_proto3_pb2.TestAny()
+    json_format.Parse(text, parsed_message, ignore_unknown_fields=True)
+
   def testDuplicateField(self):
     # Duplicate key check is not supported for python2.6
     if sys.version_info < (2, 7):

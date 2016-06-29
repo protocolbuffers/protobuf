@@ -1630,7 +1630,7 @@ public class LiteTest extends TestCase {
       fail();
     } catch (InvalidProtocolBufferException expected) {}
   }
-  
+
   public void testMergeFrom_sanity() throws Exception {
     TestAllTypesLite one = TestUtilLite.getAllLiteSetBuilder().build();
     byte[] bytes = one.toByteArray();
@@ -1642,7 +1642,19 @@ public class LiteTest extends TestCase {
     assertEquals(two, one);
     assertEquals(one.hashCode(), two.hashCode());
   }
-  
+
+  public void testMergeFromNoLazyFieldSharing() throws Exception {
+    TestAllTypesLite.Builder sourceBuilder = TestAllTypesLite.newBuilder().setOptionalLazyMessage(
+        TestAllTypesLite.NestedMessage.newBuilder().setBb(1));
+    TestAllTypesLite.Builder targetBuilder =
+        TestAllTypesLite.newBuilder().mergeFrom(sourceBuilder.build());
+    assertEquals(1, sourceBuilder.getOptionalLazyMessage().getBb());
+    // now change the sourceBuilder, and target value shouldn't be affected.
+    sourceBuilder.setOptionalLazyMessage(
+        TestAllTypesLite.NestedMessage.newBuilder().setBb(2));
+    assertEquals(1, targetBuilder.getOptionalLazyMessage().getBb());
+  }
+
   public void testEquals_notEqual() throws Exception {
     TestAllTypesLite one = TestUtilLite.getAllLiteSetBuilder().build();
     byte[] bytes = one.toByteArray();
@@ -2201,6 +2213,21 @@ public class LiteTest extends TestCase {
 
     assertEqualsAndHashCodeAreFalse(fooWithOnlyValue, fooWithValueAndUnknownFields);
     assertEqualsAndHashCodeAreFalse(fooWithValueAndExtension, fooWithValueAndUnknownFields);
+  }
+
+  public void testEqualsAndHashCodeWithExtensions() throws InvalidProtocolBufferException {
+    Foo fooWithOnlyValue = Foo.newBuilder()
+        .setValue(1)
+        .build();
+
+    Foo fooWithValueAndExtension = fooWithOnlyValue.toBuilder()
+        .setValue(1)
+        .setExtension(Bar.fooExt, Bar.newBuilder()
+            .setName("name")
+            .build())
+        .build();
+
+    assertEqualsAndHashCodeAreFalse(fooWithOnlyValue, fooWithValueAndExtension);
   }
   
   // Test to ensure we avoid a class cast exception with oneofs.

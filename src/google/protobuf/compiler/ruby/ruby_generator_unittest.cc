@@ -45,22 +45,8 @@ namespace compiler {
 namespace ruby {
 namespace {
 
-string FindRubyTestDir(const string& file) {
-  // Inspired by TestSourceDir() in src/google/protobuf/testing/googletest.cc.
-#ifndef GOOGLE_THIRD_PARTY_PROTOBUF
-  string prefix = ".";
-  while (!File::Exists(prefix + "/src/google/protobuf/compiler/ruby" + file)) {
-    if (!File::Exists(prefix)) {
-      GOOGLE_LOG(FATAL)
-          << "Could not find Ruby test directory. Please run tests from "
-             "somewhere within the protobuf source package.";
-    }
-    prefix += "/..";
-  }
-  return prefix + "/src/google/protobuf/compiler/ruby";
-#else
-  return "third_party/protobuf/src/google/protobuf/compiler/ruby";
-#endif  // GOOGLE_THIRD_PARTY_PROTOBUF
+string FindRubyTestDir() {
+  return TestSourceDir() + "/google/protobuf/compiler/ruby";
 }
 
 // This test is a simple golden-file test over the output of the Ruby code
@@ -71,7 +57,7 @@ string FindRubyTestDir(const string& file) {
 // extensions to the point where we can do this test in a more automated way.
 
 TEST(RubyGeneratorTest, GeneratorTest) {
-  string ruby_tests = FindRubyTestDir("/ruby_generated_code.proto");
+  string ruby_tests = FindRubyTestDir();
 
   google::protobuf::compiler::CommandLineInterface cli;
   cli.SetInputsAreProtoPathRelative(true);

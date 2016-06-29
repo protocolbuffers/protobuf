@@ -32,6 +32,9 @@ package com.google.protobuf.util;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
+import com.google.common.base.CaseFormat;
+import com.google.common.base.Joiner;
+import com.google.common.base.Splitter;
 import com.google.common.primitives.Ints;
 import com.google.protobuf.Descriptors.Descriptor;
 import com.google.protobuf.Descriptors.FieldDescriptor;
@@ -39,7 +42,9 @@ import com.google.protobuf.FieldMask;
 import com.google.protobuf.Internal;
 import com.google.protobuf.Message;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 /**
  * Utility helper functions to work with {@link com.google.protobuf.FieldMask}.
@@ -48,7 +53,7 @@ public class FieldMaskUtil {
   private static final String FIELD_PATH_SEPARATOR = ",";
   private static final String FIELD_PATH_SEPARATOR_REGEX = ",";
   private static final String FIELD_SEPARATOR_REGEX = "\\.";
-  
+
   private FieldMaskUtil() {}
 
   /**
@@ -78,19 +83,17 @@ public class FieldMaskUtil {
    */
   public static FieldMask fromString(String value) {
     // TODO(xiaofeng): Consider using com.google.common.base.Splitter here instead.
-    return fromStringList(
-        null, Arrays.asList(value.split(FIELD_PATH_SEPARATOR_REGEX)));
+    return fromStringList(null, Arrays.asList(value.split(FIELD_PATH_SEPARATOR_REGEX)));
   }
 
   /**
    * Parses from a string to a FieldMask and validates all field paths.
-   * 
+   *
    * @throws IllegalArgumentException if any of the field path is invalid.
    */
   public static FieldMask fromString(Class<? extends Message> type, String value) {
     // TODO(xiaofeng): Consider using com.google.common.base.Splitter here instead.
-    return fromStringList(
-        type, Arrays.asList(value.split(FIELD_PATH_SEPARATOR_REGEX)));
+    return fromStringList(type, Arrays.asList(value.split(FIELD_PATH_SEPARATOR_REGEX)));
   }
 
   /**
@@ -99,8 +102,7 @@ public class FieldMaskUtil {
    * @throws IllegalArgumentException if any of the field path is not valid.
    */
   // TODO(xiaofeng): Consider renaming fromStrings()
-  public static FieldMask fromStringList(
-      Class<? extends Message> type, Iterable<String> paths) {
+  public static FieldMask fromStringList(Class<? extends Message> type, Iterable<String> paths) {
     FieldMask.Builder builder = FieldMask.newBuilder();
     for (String path : paths) {
       if (path.isEmpty()) {
@@ -108,8 +110,7 @@ public class FieldMaskUtil {
         continue;
       }
       if (type != null && !isValid(type, path)) {
-        throw new IllegalArgumentException(
-            path + " is not a valid path for " + type);
+        throw new IllegalArgumentException(path + " is not a valid path for " + type);
       }
       builder.addPaths(path);
     }
@@ -146,15 +147,45 @@ public class FieldMaskUtil {
   }
 
   /**
+   * Converts a field mask to a Proto3 JSON string, that is converting from snake case to camel
+   * case and joining all paths into one string with commas.
+   */
+  public static String toJsonString(FieldMask fieldMask) {
+    List<String> paths = new ArrayList<String>(fieldMask.getPathsCount());
+    for (String path : fieldMask.getPathsList()) {
+      if (path.isEmpty()) {
+        continue;
+      }
+      paths.add(CaseFormat.LOWER_UNDERSCORE.to(CaseFormat.LOWER_CAMEL, path));
+    }
+    return Joiner.on(FIELD_PATH_SEPARATOR).join(paths);
+  }
+
+  /**
+   * Converts a field mask from a Proto3 JSON string, that is splitting the paths along commas and
+   * converting from camel case to snake case.
+   */
+  public static FieldMask fromJsonString(String value) {
+    Iterable<String> paths = Splitter.on(FIELD_PATH_SEPARATOR).split(value);
+    FieldMask.Builder builder = FieldMask.newBuilder();
+    for (String path : paths) {
+      if (path.isEmpty()) {
+        continue;
+      }
+      builder.addPaths(CaseFormat.LOWER_CAMEL.to(CaseFormat.LOWER_UNDERSCORE, path));
+    }
+    return builder.build();
+  }
+
+  /**
    * Checks whether paths in a given fields mask are valid.
    */
   public static boolean isValid(Class<? extends Message> type, FieldMask fieldMask) {
-    Descriptor descriptor =
-        Internal.getDefaultInstance(type).getDescriptorForType();
-    
+    Descriptor descriptor = Internal.getDefaultInstance(type).getDescriptorForType();
+
     return isValid(descriptor, fieldMask);
   }
-  
+
   /**
    * Checks whether paths in a given fields mask are valid.
    */
@@ -171,9 +202,8 @@ public class FieldMaskUtil {
    * Checks whether a given field path is valid.
    */
   public static boolean isValid(Class<? extends Message> type, String path) {
-    Descriptor descriptor =
-        Internal.getDefaultInstance(type).getDescriptorForType();
-    
+    Descriptor descriptor = Internal.getDefaultInstance(type).getDescriptorForType();
+
     return isValid(descriptor, path);
   }
 
@@ -193,8 +223,7 @@ public class FieldMaskUtil {
       if (field == null) {
         return false;
       }
-      if (!field.isRepeated()
-          && field.getJavaType() == FieldDescriptor.JavaType.MESSAGE) {
+      if (!field.isRepeated() && field.getJavaType() == FieldDescriptor.JavaType.MESSAGE) {
         descriptor = field.getMessageType();
       } else {
         descriptor = null;
@@ -202,7 +231,7 @@ public class FieldMaskUtil {
     }
     return true;
   }
-  
+
   /**
    * Converts a FieldMask to its canonical form. In the canonical form of a
    * FieldMask, all field paths are sorted alphabetically and redundant field
@@ -251,7 +280,7 @@ public class FieldMaskUtil {
      * destination message fields) when merging.
      * Default behavior is to merge the source message field into the
      * destination message field.
-     */ 
+     */
     public boolean replaceMessageFields() {
       return replaceMessageFields;
     }
@@ -299,16 +328,15 @@ public class FieldMaskUtil {
    * Merges fields specified by a FieldMask from one message to another with the
    * specified merge options.
    */
-  public static void merge(FieldMask mask, Message source,
-      Message.Builder destination, MergeOptions options) {
+  public static void merge(
+      FieldMask mask, Message source, Message.Builder destination, MergeOptions options) {
     new FieldMaskTree(mask).merge(source, destination, options);
   }
 
   /**
    * Merges fields specified by a FieldMask from one message to another.
    */
-  public static void merge(FieldMask mask, Message source,
-      Message.Builder destination) {
+  public static void merge(FieldMask mask, Message source, Message.Builder destination) {
     merge(mask, source, destination, new MergeOptions());
   }
 }

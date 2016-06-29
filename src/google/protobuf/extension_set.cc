@@ -177,7 +177,8 @@ void ExtensionSet::RegisterMessageExtension(const MessageLite* containing_type,
 // ===================================================================
 // Constructors and basic methods.
 
-ExtensionSet::ExtensionSet(::google::protobuf::Arena* arena) : arena_(arena) {
+ExtensionSet::ExtensionSet(::google::protobuf::Arena* arena)
+    : arena_(arena) {
   if (arena_ != NULL) {
     arena_->OwnDestructor(&extensions_);
   }
@@ -188,7 +189,7 @@ ExtensionSet::ExtensionSet() : arena_(NULL) {}
 ExtensionSet::~ExtensionSet() {
   // Deletes all allocated extensions.
   if (arena_ == NULL) {
-    for (map<int, Extension>::iterator iter = extensions_.begin();
+    for (ExtensionMap::iterator iter = extensions_.begin();
          iter != extensions_.end(); ++iter) {
       iter->second.Free();
     }
@@ -201,7 +202,7 @@ ExtensionSet::~ExtensionSet() {
 //                                 vector<const FieldDescriptor*>* output) const
 
 bool ExtensionSet::Has(int number) const {
-  map<int, Extension>::const_iterator iter = extensions_.find(number);
+  ExtensionMap::const_iterator iter = extensions_.find(number);
   if (iter == extensions_.end()) return false;
   GOOGLE_DCHECK(!iter->second.is_repeated);
   return !iter->second.is_cleared;
@@ -209,7 +210,7 @@ bool ExtensionSet::Has(int number) const {
 
 int ExtensionSet::NumExtensions() const {
   int result = 0;
-  for (map<int, Extension>::const_iterator iter = extensions_.begin();
+  for (ExtensionMap::const_iterator iter = extensions_.begin();
        iter != extensions_.end(); ++iter) {
     if (!iter->second.is_cleared) {
       ++result;
@@ -219,13 +220,13 @@ int ExtensionSet::NumExtensions() const {
 }
 
 int ExtensionSet::ExtensionSize(int number) const {
-  map<int, Extension>::const_iterator iter = extensions_.find(number);
+  ExtensionMap::const_iterator iter = extensions_.find(number);
   if (iter == extensions_.end()) return false;
   return iter->second.GetSize();
 }
 
 FieldType ExtensionSet::ExtensionType(int number) const {
-  map<int, Extension>::const_iterator iter = extensions_.find(number);
+  ExtensionMap::const_iterator iter = extensions_.find(number);
   if (iter == extensions_.end()) {
     GOOGLE_LOG(DFATAL) << "Don't lookup extension types if they aren't present (1). ";
     return 0;
@@ -237,7 +238,7 @@ FieldType ExtensionSet::ExtensionType(int number) const {
 }
 
 void ExtensionSet::ClearExtension(int number) {
-  map<int, Extension>::iterator iter = extensions_.find(number);
+  ExtensionMap::iterator iter = extensions_.find(number);
   if (iter == extensions_.end()) return;
   iter->second.Clear();
 }
@@ -265,7 +266,7 @@ enum Cardinality {
                                                                                \
 LOWERCASE ExtensionSet::Get##CAMELCASE(int number,                             \
                                        LOWERCASE default_value) const {        \
-  map<int, Extension>::const_iterator iter = extensions_.find(number);         \
+  ExtensionMap::const_iterator iter = extensions_.find(number);                \
   if (iter == extensions_.end() || iter->second.is_cleared) {                  \
     return default_value;                                                      \
   } else {                                                                     \
@@ -290,7 +291,7 @@ void ExtensionSet::Set##CAMELCASE(int number, FieldType type,                  \
 }                                                                              \
                                                                                \
 LOWERCASE ExtensionSet::GetRepeated##CAMELCASE(int number, int index) const {  \
-  map<int, Extension>::const_iterator iter = extensions_.find(number);         \
+  ExtensionMap::const_iterator iter = extensions_.find(number);                \
   GOOGLE_CHECK(iter != extensions_.end()) << "Index out-of-bounds (field is empty)."; \
   GOOGLE_DCHECK_TYPE(iter->second, REPEATED, UPPERCASE);                              \
   return iter->second.repeated_##LOWERCASE##_value->Get(index);                \
@@ -298,7 +299,7 @@ LOWERCASE ExtensionSet::GetRepeated##CAMELCASE(int number, int index) const {  \
                                                                                \
 void ExtensionSet::SetRepeated##CAMELCASE(                                     \
     int number, int index, LOWERCASE value) {                                  \
-  map<int, Extension>::iterator iter = extensions_.find(number);               \
+  ExtensionMap::iterator iter = extensions_.find(number);                      \
   GOOGLE_CHECK(iter != extensions_.end()) << "Index out-of-bounds (field is empty)."; \
   GOOGLE_DCHECK_TYPE(iter->second, REPEATED, UPPERCASE);                              \
   iter->second.repeated_##LOWERCASE##_value->Set(index, value);                \
@@ -334,7 +335,7 @@ PRIMITIVE_ACCESSORS(  BOOL,   bool,   Bool)
 
 const void* ExtensionSet::GetRawRepeatedField(int number,
                                               const void* default_value) const {
-  map<int, Extension>::const_iterator iter = extensions_.find(number);
+  ExtensionMap::const_iterator iter = extensions_.find(number);
   if (iter == extensions_.end()) {
     return default_value;
   }
@@ -408,7 +409,7 @@ void* ExtensionSet::MutableRawRepeatedField(int number, FieldType field_type,
 // Compatible version using old call signature. Does not create extensions when
 // the don't already exist; instead, just GOOGLE_CHECK-fails.
 void* ExtensionSet::MutableRawRepeatedField(int number) {
-  map<int, Extension>::iterator iter = extensions_.find(number);
+  ExtensionMap::iterator iter = extensions_.find(number);
   GOOGLE_CHECK(iter == extensions_.end()) << "Extension not found.";
   // We assume that all the RepeatedField<>* pointers have the same
   // size and alignment within the anonymous union in Extension.
@@ -420,7 +421,7 @@ void* ExtensionSet::MutableRawRepeatedField(int number) {
 // Enums
 
 int ExtensionSet::GetEnum(int number, int default_value) const {
-  map<int, Extension>::const_iterator iter = extensions_.find(number);
+  ExtensionMap::const_iterator iter = extensions_.find(number);
   if (iter == extensions_.end() || iter->second.is_cleared) {
     // Not present.  Return the default value.
     return default_value;
@@ -445,14 +446,14 @@ void ExtensionSet::SetEnum(int number, FieldType type, int value,
 }
 
 int ExtensionSet::GetRepeatedEnum(int number, int index) const {
-  map<int, Extension>::const_iterator iter = extensions_.find(number);
+  ExtensionMap::const_iterator iter = extensions_.find(number);
   GOOGLE_CHECK(iter != extensions_.end()) << "Index out-of-bounds (field is empty).";
   GOOGLE_DCHECK_TYPE(iter->second, REPEATED, ENUM);
   return iter->second.repeated_enum_value->Get(index);
 }
 
 void ExtensionSet::SetRepeatedEnum(int number, int index, int value) {
-  map<int, Extension>::iterator iter = extensions_.find(number);
+  ExtensionMap::iterator iter = extensions_.find(number);
   GOOGLE_CHECK(iter != extensions_.end()) << "Index out-of-bounds (field is empty).";
   GOOGLE_DCHECK_TYPE(iter->second, REPEATED, ENUM);
   iter->second.repeated_enum_value->Set(index, value);
@@ -481,7 +482,7 @@ void ExtensionSet::AddEnum(int number, FieldType type,
 
 const string& ExtensionSet::GetString(int number,
                                       const string& default_value) const {
-  map<int, Extension>::const_iterator iter = extensions_.find(number);
+  ExtensionMap::const_iterator iter = extensions_.find(number);
   if (iter == extensions_.end() || iter->second.is_cleared) {
     // Not present.  Return the default value.
     return default_value;
@@ -507,14 +508,14 @@ string* ExtensionSet::MutableString(int number, FieldType type,
 }
 
 const string& ExtensionSet::GetRepeatedString(int number, int index) const {
-  map<int, Extension>::const_iterator iter = extensions_.find(number);
+  ExtensionMap::const_iterator iter = extensions_.find(number);
   GOOGLE_CHECK(iter != extensions_.end()) << "Index out-of-bounds (field is empty).";
   GOOGLE_DCHECK_TYPE(iter->second, REPEATED, STRING);
   return iter->second.repeated_string_value->Get(index);
 }
 
 string* ExtensionSet::MutableRepeatedString(int number, int index) {
-  map<int, Extension>::iterator iter = extensions_.find(number);
+  ExtensionMap::iterator iter = extensions_.find(number);
   GOOGLE_CHECK(iter != extensions_.end()) << "Index out-of-bounds (field is empty).";
   GOOGLE_DCHECK_TYPE(iter->second, REPEATED, STRING);
   return iter->second.repeated_string_value->Mutable(index);
@@ -541,7 +542,7 @@ string* ExtensionSet::AddString(int number, FieldType type,
 
 const MessageLite& ExtensionSet::GetMessage(
     int number, const MessageLite& default_value) const {
-  map<int, Extension>::const_iterator iter = extensions_.find(number);
+  ExtensionMap::const_iterator iter = extensions_.find(number);
   if (iter == extensions_.end()) {
     // Not present.  Return the default value.
     return default_value;
@@ -664,7 +665,7 @@ void ExtensionSet::UnsafeArenaSetAllocatedMessage(
 
 MessageLite* ExtensionSet::ReleaseMessage(int number,
                                           const MessageLite& prototype) {
-  map<int, Extension>::iterator iter = extensions_.find(number);
+  ExtensionMap::iterator iter = extensions_.find(number);
   if (iter == extensions_.end()) {
     // Not present.  Return NULL.
     return NULL;
@@ -693,7 +694,7 @@ MessageLite* ExtensionSet::ReleaseMessage(int number,
 
 MessageLite* ExtensionSet::UnsafeArenaReleaseMessage(
     int number, const MessageLite& prototype) {
-  map<int, Extension>::iterator iter = extensions_.find(number);
+  ExtensionMap::iterator iter = extensions_.find(number);
   if (iter == extensions_.end()) {
     // Not present.  Return NULL.
     return NULL;
@@ -720,14 +721,14 @@ MessageLite* ExtensionSet::UnsafeArenaReleaseMessage(
 
 const MessageLite& ExtensionSet::GetRepeatedMessage(
     int number, int index) const {
-  map<int, Extension>::const_iterator iter = extensions_.find(number);
+  ExtensionMap::const_iterator iter = extensions_.find(number);
   GOOGLE_CHECK(iter != extensions_.end()) << "Index out-of-bounds (field is empty).";
   GOOGLE_DCHECK_TYPE(iter->second, REPEATED, MESSAGE);
   return iter->second.repeated_message_value->Get(index);
 }
 
 MessageLite* ExtensionSet::MutableRepeatedMessage(int number, int index) {
-  map<int, Extension>::iterator iter = extensions_.find(number);
+  ExtensionMap::iterator iter = extensions_.find(number);
   GOOGLE_CHECK(iter != extensions_.end()) << "Index out-of-bounds (field is empty).";
   GOOGLE_DCHECK_TYPE(iter->second, REPEATED, MESSAGE);
   return iter->second.repeated_message_value->Mutable(index);
@@ -766,7 +767,7 @@ MessageLite* ExtensionSet::AddMessage(int number, FieldType type,
 #undef GOOGLE_DCHECK_TYPE
 
 void ExtensionSet::RemoveLast(int number) {
-  map<int, Extension>::iterator iter = extensions_.find(number);
+  ExtensionMap::iterator iter = extensions_.find(number);
   GOOGLE_CHECK(iter != extensions_.end()) << "Index out-of-bounds (field is empty).";
 
   Extension* extension = &iter->second;
@@ -807,7 +808,7 @@ void ExtensionSet::RemoveLast(int number) {
 }
 
 MessageLite* ExtensionSet::ReleaseLast(int number) {
-  map<int, Extension>::iterator iter = extensions_.find(number);
+  ExtensionMap::iterator iter = extensions_.find(number);
   GOOGLE_CHECK(iter != extensions_.end()) << "Index out-of-bounds (field is empty).";
 
   Extension* extension = &iter->second;
@@ -817,7 +818,7 @@ MessageLite* ExtensionSet::ReleaseLast(int number) {
 }
 
 void ExtensionSet::SwapElements(int number, int index1, int index2) {
-  map<int, Extension>::iterator iter = extensions_.find(number);
+  ExtensionMap::iterator iter = extensions_.find(number);
   GOOGLE_CHECK(iter != extensions_.end()) << "Index out-of-bounds (field is empty).";
 
   Extension* extension = &iter->second;
@@ -860,14 +861,14 @@ void ExtensionSet::SwapElements(int number, int index1, int index2) {
 // ===================================================================
 
 void ExtensionSet::Clear() {
-  for (map<int, Extension>::iterator iter = extensions_.begin();
+  for (ExtensionMap::iterator iter = extensions_.begin();
        iter != extensions_.end(); ++iter) {
     iter->second.Clear();
   }
 }
 
 void ExtensionSet::MergeFrom(const ExtensionSet& other) {
-  for (map<int, Extension>::const_iterator iter = other.extensions_.begin();
+  for (ExtensionMap::const_iterator iter = other.extensions_.begin();
        iter != other.extensions_.end(); ++iter) {
     const Extension& other_extension = iter->second;
     InternalExtensionMergeFrom(iter->first, other_extension);
@@ -1031,8 +1032,8 @@ void ExtensionSet::Swap(ExtensionSet* x) {
 void ExtensionSet::SwapExtension(ExtensionSet* other,
                                  int number) {
   if (this == other) return;
-  map<int, Extension>::iterator this_iter = extensions_.find(number);
-  map<int, Extension>::iterator other_iter = other->extensions_.find(number);
+  ExtensionMap::iterator this_iter = extensions_.find(number);
+  ExtensionMap::iterator other_iter = other->extensions_.find(number);
 
   if (this_iter == extensions_.end() &&
       other_iter == other->extensions_.end()) {
@@ -1052,7 +1053,7 @@ void ExtensionSet::SwapExtension(ExtensionSet* other,
       // implemented in ExtensionSet's MergeFrom.
       ExtensionSet temp;
       temp.InternalExtensionMergeFrom(number, other_iter->second);
-      map<int, Extension>::iterator temp_iter = temp.extensions_.find(number);
+      ExtensionMap::iterator temp_iter = temp.extensions_.find(number);
       other_iter->second.Clear();
       other->InternalExtensionMergeFrom(number, this_iter->second);
       this_iter->second.Clear();
@@ -1085,7 +1086,7 @@ void ExtensionSet::SwapExtension(ExtensionSet* other,
 bool ExtensionSet::IsInitialized() const {
   // Extensions are never required.  However, we need to check that all
   // embedded messages are initialized.
-  for (map<int, Extension>::const_iterator iter = extensions_.begin();
+  for (ExtensionMap::const_iterator iter = extensions_.begin();
        iter != extensions_.end(); ++iter) {
     const Extension& extension = iter->second;
     if (cpp_type(extension.type) == WireFormatLite::CPPTYPE_MESSAGE) {
@@ -1345,7 +1346,7 @@ bool ExtensionSet::ParseField(uint32 tag, io::CodedInputStream* input,
 void ExtensionSet::SerializeWithCachedSizes(
     int start_field_number, int end_field_number,
     io::CodedOutputStream* output) const {
-  map<int, Extension>::const_iterator iter;
+  ExtensionMap::const_iterator iter;
   for (iter = extensions_.lower_bound(start_field_number);
        iter != extensions_.end() && iter->first < end_field_number;
        ++iter) {
@@ -1356,7 +1357,7 @@ void ExtensionSet::SerializeWithCachedSizes(
 int ExtensionSet::ByteSize() const {
   int total_size = 0;
 
-  for (map<int, Extension>::const_iterator iter = extensions_.begin();
+  for (ExtensionMap::const_iterator iter = extensions_.begin();
        iter != extensions_.end(); ++iter) {
     total_size += iter->second.ByteSize(iter->first);
   }
@@ -1370,7 +1371,7 @@ int ExtensionSet::ByteSize() const {
 bool ExtensionSet::MaybeNewExtension(int number,
                                      const FieldDescriptor* descriptor,
                                      Extension** result) {
-  pair<map<int, Extension>::iterator, bool> insert_result =
+  pair<ExtensionMap::iterator, bool> insert_result =
       extensions_.insert(std::make_pair(number, Extension()));
   *result = &insert_result.first->second;
   (*result)->descriptor = descriptor;

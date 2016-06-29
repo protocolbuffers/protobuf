@@ -43,6 +43,7 @@
 #include <vector>
 
 #include <google/protobuf/stubs/common.h>
+#include <google/protobuf/compiler/java/java_options.h>
 
 namespace google {
 namespace protobuf {
@@ -66,15 +67,11 @@ namespace java {
 // and mutable API. Currently only descriptors are shared.
 class SharedCodeGenerator {
  public:
-  explicit SharedCodeGenerator(const FileDescriptor* file);
+  SharedCodeGenerator(const FileDescriptor* file, const Options& options);
   ~SharedCodeGenerator();
 
-  void Generate(GeneratorContext* generator_context,
-                vector<string>* file_list);
-
-  void SetEnforceLite(bool value) {
-    enforce_lite_ = value;
-  }
+  void Generate(GeneratorContext* generator_context, vector<string>* file_list,
+                vector<string>* annotation_file_list);
 
   void GenerateDescriptors(io::Printer* printer);
 
@@ -85,8 +82,8 @@ class SharedCodeGenerator {
   bool ShouldIncludeDependency(const FileDescriptor* descriptor);
 
   google::protobuf::scoped_ptr<ClassNameResolver> name_resolver_;
-  bool enforce_lite_;
   const FileDescriptor* file_;
+  const Options options_;
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(SharedCodeGenerator);
 };
 

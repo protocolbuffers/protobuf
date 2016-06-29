@@ -147,9 +147,8 @@ function doTestSignedValue(readValue,
 describe('binaryDecoderTest', function() {
   /**
    * Tests the decoder instance cache.
-   * @suppress {visibility}
    */
-  it('testInstanceCache', function() {
+  it('testInstanceCache', /** @suppress {visibility} */ function() {
     // Empty the instance caches.
     jspb.BinaryDecoder.instanceCache_ = [];
 

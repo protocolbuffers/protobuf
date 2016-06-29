@@ -92,8 +92,7 @@ class MessageGenerator {
 
 class ImmutableMessageGenerator : public MessageGenerator {
  public:
-  explicit ImmutableMessageGenerator(const Descriptor* descriptor,
-                                     Context* context);
+  ImmutableMessageGenerator(const Descriptor* descriptor, Context* context);
   virtual ~ImmutableMessageGenerator();
 
   virtual void Generate(io::Printer* printer);

@@ -86,10 +86,12 @@ EnumGenerator::~EnumGenerator() {}
 
 void EnumGenerator::Generate(io::Printer* printer) {
   WriteEnumDocComment(printer, descriptor_);
+  MaybePrintGeneratedAnnotation(context_, printer, descriptor_, immutable_api_);
   printer->Print(
-    "public enum $classname$\n"
-    "    implements com.google.protobuf.ProtocolMessageEnum {\n",
-    "classname", descriptor_->name());
+      "public enum $classname$\n"
+      "    implements com.google.protobuf.ProtocolMessageEnum {\n",
+      "classname", descriptor_->name());
+  printer->Annotate("classname", descriptor_);
   printer->Indent();
 
   bool ordinal_is_index = true;

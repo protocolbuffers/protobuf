@@ -376,6 +376,49 @@ inline ::std::pair<bool, const uint8*> ReadVarint32FromArray(
   return std::make_pair(true, ptr);
 }
 
+GOOGLE_ATTRIBUTE_ALWAYS_INLINE::std::pair<bool, const uint8*> ReadVarint64FromArray(
+    const uint8* buffer, uint64* value);
+inline ::std::pair<bool, const uint8*> ReadVarint64FromArray(
+    const uint8* buffer, uint64* value) {
+  const uint8* ptr = buffer;
+  uint32 b;
+
+  // Splitting into 32-bit pieces gives better performance on 32-bit
+  // processors.
+  uint32 part0 = 0, part1 = 0, part2 = 0;
+
+  b = *(ptr++); part0  = b      ; if (!(b & 0x80)) goto done;
+  part0 -= 0x80;
+  b = *(ptr++); part0 += b <<  7; if (!(b & 0x80)) goto done;
+  part0 -= 0x80 << 7;
+  b = *(ptr++); part0 += b << 14; if (!(b & 0x80)) goto done;
+  part0 -= 0x80 << 14;
+  b = *(ptr++); part0 += b << 21; if (!(b & 0x80)) goto done;
+  part0 -= 0x80 << 21;
+  b = *(ptr++); part1  = b      ; if (!(b & 0x80)) goto done;
+  part1 -= 0x80;
+  b = *(ptr++); part1 += b <<  7; if (!(b & 0x80)) goto done;
+  part1 -= 0x80 << 7;
+  b = *(ptr++); part1 += b << 14; if (!(b & 0x80)) goto done;
+  part1 -= 0x80 << 14;
+  b = *(ptr++); part1 += b << 21; if (!(b & 0x80)) goto done;
+  part1 -= 0x80 << 21;
+  b = *(ptr++); part2  = b      ; if (!(b & 0x80)) goto done;
+  part2 -= 0x80;
+  b = *(ptr++); part2 += b <<  7; if (!(b & 0x80)) goto done;
+  // "part2 -= 0x80 << 7" is irrelevant because (0x80 << 7) << 56 is 0.
+
+  // We have overrun the maximum size of a varint (10 bytes).  Assume
+  // the data is corrupt.
+  return std::make_pair(false, ptr);
+
+ done:
+  *value = (static_cast<uint64>(part0)) |
+           (static_cast<uint64>(part1) << 28) |
+           (static_cast<uint64>(part2) << 56);
+  return std::make_pair(true, ptr);
+}
+
 }  // namespace
 
 bool CodedInputStream::ReadVarint32Slow(uint32* value) {
@@ -405,6 +448,32 @@ int64 CodedInputStream::ReadVarint32Fallback(uint32 first_byte_or_zero) {
     // improves the common case. In micro benchmarks, this is worth about 10-15%
     uint32 temp;
     return ReadVarint32Slow(&temp) ? static_cast<int64>(temp) : -1;
+  }
+}
+
+int CodedInputStream::ReadVarintSizeAsIntSlow() {
+  // Directly invoke ReadVarint64Fallback, since we already tried to optimize
+  // for one-byte varints.
+  std::pair<uint64, bool> p = ReadVarint64Fallback();
+  if (!p.second || p.first > static_cast<uint64>(INT_MAX)) return -1;
+  return p.first;
+}
+
+int CodedInputStream::ReadVarintSizeAsIntFallback() {
+  if (BufferSize() >= kMaxVarintBytes ||
+      // Optimization:  We're also safe if the buffer is non-empty and it ends
+      // with a byte that would terminate a varint.
+      (buffer_end_ > buffer_ && !(buffer_end_[-1] & 0x80))) {
+    uint64 temp;
+    ::std::pair<bool, const uint8*> p = ReadVarint64FromArray(buffer_, &temp);
+    if (!p.first || temp > static_cast<uint64>(INT_MAX)) return -1;
+    buffer_ = p.second;
+    return temp;
+  } else {
+    // Really slow case: we will incur the cost of an extra function call here,
+    // but moving this out of line reduces the size of this function, which
+    // improves the common case. In micro benchmarks, this is worth about 10-15%
+    return ReadVarintSizeAsIntSlow();
   }
 }
 
@@ -499,47 +568,13 @@ std::pair<uint64, bool> CodedInputStream::ReadVarint64Fallback() {
       // Optimization:  We're also safe if the buffer is non-empty and it ends
       // with a byte that would terminate a varint.
       (buffer_end_ > buffer_ && !(buffer_end_[-1] & 0x80))) {
-    // Fast path:  We have enough bytes left in the buffer to guarantee that
-    // this read won't cross the end, so we can skip the checks.
-
-    const uint8* ptr = buffer_;
-    uint32 b;
-
-    // Splitting into 32-bit pieces gives better performance on 32-bit
-    // processors.
-    uint32 part0 = 0, part1 = 0, part2 = 0;
-
-    b = *(ptr++); part0  = b      ; if (!(b & 0x80)) goto done;
-    part0 -= 0x80;
-    b = *(ptr++); part0 += b <<  7; if (!(b & 0x80)) goto done;
-    part0 -= 0x80 << 7;
-    b = *(ptr++); part0 += b << 14; if (!(b & 0x80)) goto done;
-    part0 -= 0x80 << 14;
-    b = *(ptr++); part0 += b << 21; if (!(b & 0x80)) goto done;
-    part0 -= 0x80 << 21;
-    b = *(ptr++); part1  = b      ; if (!(b & 0x80)) goto done;
-    part1 -= 0x80;
-    b = *(ptr++); part1 += b <<  7; if (!(b & 0x80)) goto done;
-    part1 -= 0x80 << 7;
-    b = *(ptr++); part1 += b << 14; if (!(b & 0x80)) goto done;
-    part1 -= 0x80 << 14;
-    b = *(ptr++); part1 += b << 21; if (!(b & 0x80)) goto done;
-    part1 -= 0x80 << 21;
-    b = *(ptr++); part2  = b      ; if (!(b & 0x80)) goto done;
-    part2 -= 0x80;
-    b = *(ptr++); part2 += b <<  7; if (!(b & 0x80)) goto done;
-    // "part2 -= 0x80 << 7" is irrelevant because (0x80 << 7) << 56 is 0.
-
-    // We have overrun the maximum size of a varint (10 bytes).  The data
-    // must be corrupt.
-    return std::make_pair(0, false);
-
-   done:
-    Advance(ptr - buffer_);
-    return std::make_pair((static_cast<uint64>(part0)) |
-                              (static_cast<uint64>(part1) << 28) |
-                              (static_cast<uint64>(part2) << 56),
-                          true);
+    uint64 temp;
+    ::std::pair<bool, const uint8*> p = ReadVarint64FromArray(buffer_, &temp);
+    if (!p.first) {
+      return std::make_pair(0, false);
+    }
+    buffer_ = p.second;
+    return std::make_pair(temp, true);
   } else {
     uint64 temp;
     bool success = ReadVarint64Slow(&temp);

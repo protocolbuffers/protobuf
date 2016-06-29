@@ -42,6 +42,23 @@ import java.nio.ByteBuffer;
  * guaranteed that the buffer backing the {@link ByteString} will never change! Mutation of a
  * {@link ByteString} can lead to unexpected and undesirable consequences in your application,
  * and will likely be difficult to debug. Proceed with caution!
+ *
+ * <p>This can have a number of significant side affects that have
+ * spooky-action-at-a-distance-like behavior. In particular, if the bytes value changes out from
+ * under a Protocol Buffer:
+ * <ul>
+ * <li>serialization may throw
+ * <li>serialization may succeed but the wrong bytes may be written out
+ * <li>messages are no longer threadsafe
+ * <li>hashCode may be incorrect
+ *   <ul>
+ *   <li>can result in a permanent memory leak when used as a key in a long-lived HashMap
+ *   <li> the semantics of many programs may be violated if this is the case
+ *   </ul>
+ * </ul>
+ * Each of these issues will occur in parts of the code base that are entirely distinct from the
+ * parts of the code base modifying the buffer. In fact, both parts of the code base may be correct
+ * - it is the bridging with the unsafe operations that was in error!
  */
 @ExperimentalApi
 public final class UnsafeByteOperations {

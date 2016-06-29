@@ -120,23 +120,28 @@ int ImmutableMessageLiteGenerator::GenerateStaticVariableInitializers(
 // ===================================================================
 
 void ImmutableMessageLiteGenerator::GenerateInterface(io::Printer* printer) {
+  MaybePrintGeneratedAnnotation(context_, printer, descriptor_,
+                                /* immutable = */ true, "OrBuilder");
   if (descriptor_->extension_range_count() > 0) {
     printer->Print(
-      "public interface $classname$OrBuilder extends \n"
-      "    $extra_interfaces$\n"
-      "     com.google.protobuf.GeneratedMessageLite.\n"
-      "          ExtendableMessageOrBuilder<\n"
-      "              $classname$, $classname$.Builder> {\n",
-      "extra_interfaces", ExtraMessageOrBuilderInterfaces(descriptor_),
-      "classname", descriptor_->name());
+        "public interface $classname$OrBuilder$idend$ extends \n"
+        "    $extra_interfaces$\n"
+        "     com.google.protobuf.GeneratedMessageLite.\n"
+        "          ExtendableMessageOrBuilder<\n"
+        "              $classname$, $classname$.Builder> {\n",
+        "extra_interfaces", ExtraMessageOrBuilderInterfaces(descriptor_),
+        "classname", descriptor_->name(),
+        "idend", "");
   } else {
     printer->Print(
-      "public interface $classname$OrBuilder extends\n"
-      "    $extra_interfaces$\n"
-      "    com.google.protobuf.MessageLiteOrBuilder {\n",
-      "extra_interfaces", ExtraMessageOrBuilderInterfaces(descriptor_),
-      "classname", descriptor_->name());
+        "public interface $classname$OrBuilder$idend$ extends\n"
+        "    $extra_interfaces$\n"
+        "    com.google.protobuf.MessageLiteOrBuilder {\n",
+        "extra_interfaces", ExtraMessageOrBuilderInterfaces(descriptor_),
+        "classname", descriptor_->name(),
+        "idend", "");
   }
+  printer->Annotate("classname", "idend", descriptor_);
 
   printer->Indent();
     for (int i = 0; i < descriptor_->field_count(); i++) {
@@ -163,9 +168,7 @@ void ImmutableMessageLiteGenerator::GenerateInterface(io::Printer* printer) {
 // ===================================================================
 
 void ImmutableMessageLiteGenerator::Generate(io::Printer* printer) {
-  bool is_own_file =
-    descriptor_->containing_type() == NULL &&
-    MultipleJavaFiles(descriptor_->file(), /* immutable = */ true);
+  bool is_own_file = IsOwnFile(descriptor_, /* immutable = */ true);
 
   map<string, string> variables;
   variables["static"] = is_own_file ? " " : " static ";
@@ -173,6 +176,8 @@ void ImmutableMessageLiteGenerator::Generate(io::Printer* printer) {
   variables["extra_interfaces"] = ExtraMessageInterfaces(descriptor_);
 
   WriteMessageDocComment(printer, descriptor_);
+  MaybePrintGeneratedAnnotation(context_, printer, descriptor_,
+                                /* immutable = */ true);
 
   // The builder_type stores the super type name of the nested Builder class.
   string builder_type;

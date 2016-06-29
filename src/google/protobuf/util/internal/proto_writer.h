@@ -117,6 +117,7 @@ class LIBPROTOBUF_EXPORT ProtoWriter : public StructuredObjectWriter {
     return RenderDataPiece(name, DataPiece::NullData());
   }
 
+
   // Renders a DataPiece 'value' into a field whose wire type is determined
   // from the given field 'name'.
   virtual ProtoWriter* RenderDataPiece(StringPiece name,
@@ -197,6 +198,9 @@ class LIBPROTOBUF_EXPORT ProtoWriter : public StructuredObjectWriter {
 
     // TypeInfo to lookup types.
     const TypeInfo* typeinfo_;
+
+    // Whether the root type is a proto3 or not.
+    bool proto3_;
 
     // Additional variables if this element is a message:
     // (Root element is always a message).

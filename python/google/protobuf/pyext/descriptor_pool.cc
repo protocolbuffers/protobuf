@@ -305,6 +305,40 @@ PyObject* FindOneofByName(PyDescriptorPool* self, PyObject* arg) {
   return PyOneofDescriptor_FromDescriptor(oneof_descriptor);
 }
 
+PyObject* FindServiceByName(PyDescriptorPool* self, PyObject* arg) {
+  Py_ssize_t name_size;
+  char* name;
+  if (PyString_AsStringAndSize(arg, &name, &name_size) < 0) {
+    return NULL;
+  }
+
+  const ServiceDescriptor* service_descriptor =
+      self->pool->FindServiceByName(string(name, name_size));
+  if (service_descriptor == NULL) {
+    PyErr_Format(PyExc_KeyError, "Couldn't find service %.200s", name);
+    return NULL;
+  }
+
+  return PyServiceDescriptor_FromDescriptor(service_descriptor);
+}
+
+PyObject* FindMethodByName(PyDescriptorPool* self, PyObject* arg) {
+  Py_ssize_t name_size;
+  char* name;
+  if (PyString_AsStringAndSize(arg, &name, &name_size) < 0) {
+    return NULL;
+  }
+
+  const MethodDescriptor* method_descriptor =
+      self->pool->FindMethodByName(string(name, name_size));
+  if (method_descriptor == NULL) {
+    PyErr_Format(PyExc_KeyError, "Couldn't find method %.200s", name);
+    return NULL;
+  }
+
+  return PyMethodDescriptor_FromDescriptor(method_descriptor);
+}
+
 PyObject* FindFileContainingSymbol(PyDescriptorPool* self, PyObject* arg) {
   Py_ssize_t name_size;
   char* name;
@@ -491,6 +525,10 @@ static PyMethodDef Methods[] = {
     "Searches for enum type descriptor by full name." },
   { "FindOneofByName", (PyCFunction)FindOneofByName, METH_O,
     "Searches for oneof descriptor by full name." },
+  { "FindServiceByName", (PyCFunction)FindServiceByName, METH_O,
+    "Searches for service descriptor by full name." },
+  { "FindMethodByName", (PyCFunction)FindMethodByName, METH_O,
+    "Searches for method descriptor by full name." },
 
   { "FindFileContainingSymbol", (PyCFunction)FindFileContainingSymbol, METH_O,
     "Gets the FileDescriptor containing the specified symbol." },
