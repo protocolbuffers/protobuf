@@ -227,7 +227,13 @@ int32_t GPBCodedInputStreamReadTag(GPBCodedInputStreamState *state) {
   state->lastTag = ReadRawVarint32(state);
   if (state->lastTag == 0) {
     // If we actually read zero, that's not a valid tag.
-    RaiseException(GPBCodedInputStreamErrorInvalidTag, @"Last tag can't be 0");
+    RaiseException(GPBCodedInputStreamErrorInvalidTag,
+                   @"A zero tag on the wire is invalid.");
+  }
+  // Tags have to include a valid wireformat, check that also.
+  if (!GPBWireFormatIsValidTag(state->lastTag)) {
+    RaiseException(GPBCodedInputStreamErrorInvalidTag,
+                   @"Invalid wireformat in tag.");
   }
   return state->lastTag;
 }
@@ -352,6 +358,7 @@ void GPBCodedInputStreamCheckLastTagWas(GPBCodedInputStreamState *state,
 }
 
 - (BOOL)skipField:(int32_t)tag {
+  NSAssert(GPBWireFormatIsValidTag(tag), @"Invalid tag");
   switch (GPBWireFormatGetTagWireType(tag)) {
     case GPBWireFormatVarint:
       GPBCodedInputStreamReadInt32(&state_);
@@ -374,8 +381,6 @@ void GPBCodedInputStreamCheckLastTagWas(GPBCodedInputStreamState *state,
       SkipRawData(&state_, sizeof(int32_t));
       return YES;
   }
-  RaiseException(GPBCodedInputStreamErrorInvalidTag, nil);
-  return NO;
 }
 
 - (void)skipMessage {

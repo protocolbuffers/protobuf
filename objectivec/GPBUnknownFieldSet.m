@@ -359,6 +359,7 @@ static void GPBUnknownFieldSetMergeUnknownFields(const void *key,
 }
 
 - (BOOL)mergeFieldFrom:(int32_t)tag input:(GPBCodedInputStream *)input {
+  NSAssert(GPBWireFormatIsValidTag(tag), @"Got passed an invalid tag");
   int32_t number = GPBWireFormatGetTagFieldNumber(tag);
   GPBCodedInputStreamState *state = &input->state_;
   switch (GPBWireFormatGetTagWireType(tag)) {
