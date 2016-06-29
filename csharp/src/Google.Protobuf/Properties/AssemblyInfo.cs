@@ -30,7 +30,6 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #endregion
 
-using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Security;
 
@@ -38,30 +37,13 @@ using System.Security;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 
-[assembly: AssemblyTitle("Google.Protobuf")]
-[assembly: AssemblyDescription("")]
-[assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("Google.Protobuf")]
-[assembly: AssemblyCopyright("Copyright ©  2015")]
-[assembly: AssemblyTrademark("")]
-[assembly: AssemblyCulture("")]
-
 #if !NCRUNCH
 [assembly: AllowPartiallyTrustedCallers]
 #endif
 
-#if SIGNED
 [assembly: InternalsVisibleTo("Google.Protobuf.Test, PublicKey=" +
     "002400000480000094000000060200000024000052534131000400000100010025800fbcfc63a1" +
     "7c66b303aae80b03a6beaa176bb6bef883be436f2a1579edd80ce23edf151a1f4ced97af83abcd" +
     "981207041fd5b2da3b498346fcfcd94910d52f25537c4a43ce3fbe17dc7d43e6cbdb4d8f1242dc" +
     "b6bd9b5906be74da8daa7d7280f97130f318a16c07baf118839b156299a48522f9fae2371c9665" +
     "c5ae9cb6")]
-#else
-[assembly: InternalsVisibleTo("Google.Protobuf.Test")]
-#endif
-
-[assembly: AssemblyVersion("3.0.0.0")]
-[assembly: AssemblyFileVersion("3.0.0.0")]
-[assembly: AssemblyInformationalVersion("3.0.0-beta3")]

@@ -66,7 +66,7 @@ namespace Google.Protobuf.Examples.AddressBook
             // The message performs a deep-comparison on equality:
             if (restored.People.Count != 1 || !person.Equals(restored.People[0]))
             {
-                throw new ApplicationException("There is a bad person in here!");
+                throw new Exception("There is a bad person in here!");
             }
         }
     }
