@@ -48,6 +48,10 @@
 #include <iostream>
 #include <ctype.h>
 
+#if HAVE_LIMITS_H
+#include <limits.h>
+#endif
+
 #include <memory>
 #ifndef _SHARED_PTR_H
 #include <google/protobuf/stubs/shared_ptr.h>
@@ -110,6 +114,8 @@ static const char* kPathSeparator = ";";
 #else
 static const char* kPathSeparator = ":";
 #endif
+
+#include <limits.h>
 
 // Returns true if the text looks like a Windows-style absolute path, starting
 // with a drive letter.  Example:  "C:\foo".  TODO(kenton):  Share this with
