@@ -1,24 +1,22 @@
-#
-# 	Untracked directories
-#
-src/AddressBook/bin
-src/AddressBook/obj
-src/Google.Protobuf/bin/
-src/Google.Protobuf/obj/
-src/Google.Protobuf.Conformance/bin/
-src/Google.Protobuf.Conformance/obj/
-src/Google.Protobuf.Test/bin/
-src/Google.Protobuf.Test/obj/
-src/Google.Protobuf.JsonDump/bin/
-src/Google.Protobuf.JsonDump/obj/
-mono/bin
-mono/tmp
+# Package management
+project.lock.json
+.vs
+*.nuget.targets
+*.nuget.props
+
+
+# Output directories
+bin
+obj
+tmp
+
+# Miscellaneous files
+# (possibly out of date...)
+
 mono/protoc
 build_output
 build_temp
 build/msbuild*.log
-lib/Microsoft.Silverlight.Testing
-lib/NUnit
 
 #
 # 	Untracked files
