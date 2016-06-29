@@ -438,8 +438,8 @@ class enable_shared_from_this {
 
  protected:
   enable_shared_from_this() { }
-  enable_shared_from_this(const enable_shared_from_this& other) { }
-  enable_shared_from_this& operator=(const enable_shared_from_this& other) {
+  enable_shared_from_this(const enable_shared_from_this&) { }
+  enable_shared_from_this& operator=(const enable_shared_from_this&) {
     return *this;
   }
   ~enable_shared_from_this() { }
