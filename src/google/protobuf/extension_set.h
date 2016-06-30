@@ -419,13 +419,8 @@ class LIBPROTOBUF_EXPORT ExtensionSet {
   // are never forced to serialize deterministically.
   uint8* SerializeWithCachedSizesToArray(int start_field_number,
                                          int end_field_number,
-                                         uint8* target) const {
-    return InternalSerializeWithCachedSizesToArray(
-        start_field_number, end_field_number, false, target);
-  }
-  uint8* SerializeMessageSetWithCachedSizesToArray(uint8* target) const {
-    return InternalSerializeMessageSetWithCachedSizesToArray(false, target);
-  }
+                                         uint8* target) const;
+  uint8* SerializeMessageSetWithCachedSizesToArray(uint8* target) const;
 
   // Returns the total serialized size of all the extensions.
   int ByteSize() const;
