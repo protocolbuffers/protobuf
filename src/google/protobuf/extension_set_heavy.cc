@@ -409,6 +409,18 @@ int ExtensionSet::Extension::SpaceUsedExcludingSelf() const {
 
 // The Serialize*ToArray methods are only needed in the heavy library, as
 // the lite library only generates SerializeWithCachedSizes.
+uint8* ExtensionSet::SerializeWithCachedSizesToArray(int start_field_number,
+                                                     int end_field_number,
+                                                     uint8* target) const {
+  return InternalSerializeWithCachedSizesToArray(
+      start_field_number, end_field_number, false, target);
+}
+
+uint8* ExtensionSet::SerializeMessageSetWithCachedSizesToArray(
+    uint8* target) const {
+  return InternalSerializeMessageSetWithCachedSizesToArray(false, target);
+}
+
 uint8* ExtensionSet::InternalSerializeWithCachedSizesToArray(
     int start_field_number, int end_field_number,
     bool deterministic, uint8* target) const {
