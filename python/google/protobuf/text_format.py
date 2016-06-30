@@ -81,8 +81,8 @@ class ParseError(Error):
     if message is not None and line is not None:
       loc = str(line)
       if column is not None:
-        loc += ':{}'.format(column)
-      message = '{} : {}'.format(loc, message)
+        loc += ':{0}'.format(column)
+      message = '{0} : {1}'.format(loc, message)
     if message is not None:
       super(ParseError, self).__init__(message)
     else:
