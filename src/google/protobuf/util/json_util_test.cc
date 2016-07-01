@@ -47,6 +47,7 @@ namespace {
 using proto3::FOO;
 using proto3::BAR;
 using proto3::TestMessage;
+using proto3::TestMap;
 
 static const char kTypeUrlPrefix[] = "type.googleapis.com";
 
@@ -76,8 +77,11 @@ class JsonUtilTest : public testing::Test {
 
   bool FromJson(const string& json, Message* message) {
     string binary;
-    GOOGLE_CHECK_OK(JsonToBinaryString(
-        resolver_.get(), GetTypeUrl(message->GetDescriptor()), json, &binary));
+    if (!JsonToBinaryString(resolver_.get(),
+                            GetTypeUrl(message->GetDescriptor()), json, &binary)
+             .ok()) {
+      return false;
+    }
     return message->ParseFromString(binary);
   }
 
@@ -113,9 +117,18 @@ TEST_F(JsonUtilTest, TestDefaultValues) {
       "\"doubleValue\":0,"
       "\"stringValue\":\"\","
       "\"bytesValue\":\"\","
-      // TODO(xiaofeng): The default enum value should be FOO. I believe
-      // this is a bug in DefaultValueObjectWriter.
-      "\"enumValue\":null"
+      "\"enumValue\":\"FOO\","
+      "\"repeatedBoolValue\":[],"
+      "\"repeatedInt32Value\":[],"
+      "\"repeatedInt64Value\":[],"
+      "\"repeatedUint32Value\":[],"
+      "\"repeatedUint64Value\":[],"
+      "\"repeatedFloatValue\":[],"
+      "\"repeatedDoubleValue\":[],"
+      "\"repeatedStringValue\":[],"
+      "\"repeatedBytesValue\":[],"
+      "\"repeatedEnumValue\":[],"
+      "\"repeatedMessageValue\":[]"
       "}",
       ToJson(m, options));
 }
@@ -146,12 +159,31 @@ TEST_F(JsonUtilTest, ParseMessage) {
   EXPECT_EQ(96, m.repeated_message_value(1).value());
 }
 
+TEST_F(JsonUtilTest, ParseMap) {
+  TestMap message;
+  (*message.mutable_string_map())["hello"] = 1234;
+  JsonOptions options;
+  EXPECT_EQ("{\"stringMap\":{\"hello\":1234}}", ToJson(message, options));
+  TestMap other;
+  ASSERT_TRUE(FromJson(ToJson(message, options), &other));
+  EXPECT_EQ(message.DebugString(), other.DebugString());
+}
+
+TEST_F(JsonUtilTest, TestParseErrors) {
+  TestMessage m;
+  JsonOptions options;
+  // Parsing should fail if the field name can not be recognized.
+  EXPECT_FALSE(FromJson("{\"unknownName\":0}", &m));
+  // Parsing should fail if the value is invalid.
+  EXPECT_FALSE(FromJson("{\"int32Value\":2147483648}", &m));
+}
+
 typedef pair<char*, int> Segment;
 // A ZeroCopyOutputStream that writes to multiple buffers.
 class SegmentedZeroCopyOutputStream : public io::ZeroCopyOutputStream {
  public:
   explicit SegmentedZeroCopyOutputStream(list<Segment> segments)
-      : segments_(segments), last_segment_(NULL, 0), byte_count_(0) {}
+      : segments_(segments), last_segment_(static_cast<char*>(NULL), 0), byte_count_(0) {}
 
   virtual bool Next(void** buffer, int* length) {
     if (segments_.empty()) {

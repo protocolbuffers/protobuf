@@ -38,6 +38,7 @@
 #include <string>
 
 #include <google/protobuf/compiler/code_generator.h>
+#include <google/protobuf/stubs/mutex.h>
 #include <google/protobuf/stubs/common.h>
 
 namespace google {
@@ -47,6 +48,7 @@ class Descriptor;
 class EnumDescriptor;
 class EnumValueDescriptor;
 class FieldDescriptor;
+class OneofDescriptor;
 class ServiceDescriptor;
 
 namespace io { class Printer; }
@@ -147,6 +149,7 @@ class LIBPROTOC_EXPORT Generator : public CodeGenerator {
 
   void FixAllDescriptorOptions() const;
   void FixOptionsForField(const FieldDescriptor& field) const;
+  void FixOptionsForOneof(const OneofDescriptor& oneof) const;
   void FixOptionsForEnum(const EnumDescriptor& descriptor) const;
   void FixOptionsForMessage(const Descriptor& descriptor) const;
 

@@ -72,12 +72,12 @@ class SymbolDatabase(object):
   buffer types used within a program.
   """
 
-  def __init__(self):
+  def __init__(self, pool=None):
     """Constructor."""
 
     self._symbols = {}
     self._symbols_by_file = {}
-    self.pool = descriptor_pool.DescriptorPool()
+    self.pool = pool or descriptor_pool.Default()
 
   def RegisterMessage(self, message):
     """Registers the given message type in the local database.
@@ -177,7 +177,7 @@ class SymbolDatabase(object):
       result.update(self._symbols_by_file[f])
     return result
 
-_DEFAULT = SymbolDatabase()
+_DEFAULT = SymbolDatabase(pool=descriptor_pool.Default())
 
 
 def Default():

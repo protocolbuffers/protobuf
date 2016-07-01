@@ -255,6 +255,9 @@ class Message(object):
   def ClearExtension(self, extension_handle):
     raise NotImplementedError
 
+  def DiscardUnknownFields(self):
+    raise NotImplementedError
+
   def ByteSize(self):
     """Returns the serialized size of this message.
     Recursively calls ByteSize() on all contained messages.

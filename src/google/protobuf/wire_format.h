@@ -231,8 +231,8 @@ class LIBPROTOBUF_EXPORT WireFormat {
       const Message& message);
 
   enum Operation {
-    PARSE,
-    SERIALIZE,
+    PARSE = 0,
+    SERIALIZE = 1,
   };
 
   // Verifies that a string field is valid UTF8, logging an error if not.
@@ -247,13 +247,6 @@ class LIBPROTOBUF_EXPORT WireFormat {
                                          const char* field_name);
 
  private:
-  // Verifies that a string field is valid UTF8, logging an error if not.
-  static void VerifyUTF8StringFallback(
-      const char* data,
-      int size,
-      Operation op,
-      const char* field_name);
-
   // Skip a MessageSet field.
   static bool SkipMessageSetField(io::CodedInputStream* input,
                                   uint32 field_number,
@@ -264,8 +257,6 @@ class LIBPROTOBUF_EXPORT WireFormat {
                                            const FieldDescriptor* field,
                                            Message* message,
                                            io::CodedInputStream* input);
-
-
 
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(WireFormat);
 };
@@ -321,7 +312,8 @@ inline int WireFormat::TagSize(int field_number, FieldDescriptor::Type type) {
 inline void WireFormat::VerifyUTF8String(const char* data, int size,
     WireFormat::Operation op) {
 #ifdef GOOGLE_PROTOBUF_UTF8_VALIDATION_ENABLED
-  WireFormat::VerifyUTF8StringFallback(data, size, op, NULL);
+  WireFormatLite::VerifyUtf8String(
+      data, size, static_cast<WireFormatLite::Operation>(op), NULL);
 #else
   // Avoid the compiler warning about unsued variables.
   (void)data; (void)size; (void)op;
@@ -332,7 +324,8 @@ inline void WireFormat::VerifyUTF8StringNamedField(
     const char* data, int size, WireFormat::Operation op,
     const char* field_name) {
 #ifdef GOOGLE_PROTOBUF_UTF8_VALIDATION_ENABLED
-  WireFormat::VerifyUTF8StringFallback(data, size, op, field_name);
+  WireFormatLite::VerifyUtf8String(
+      data, size, static_cast<WireFormatLite::Operation>(op), field_name);
 #endif
 }
 

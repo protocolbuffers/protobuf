@@ -2059,11 +2059,51 @@
 
   // Ensure the messages are unique per map.
   [msg1.mapInt32ForeignMessage
-      enumerateKeysAndValuesUsingBlock:^(int32_t key, id value, BOOL *stop) {
+      enumerateKeysAndObjectsUsingBlock:^(int32_t key, id value, BOOL *stop) {
 #pragma unused(stop)
-        ForeignMessage *subMsg2 = [msg2.mapInt32ForeignMessage valueForKey:key];
+        ForeignMessage *subMsg2 = [msg2.mapInt32ForeignMessage objectForKey:key];
         XCTAssertNotEqual(value, subMsg2);  // Ptr compare, new object.
       }];
+}
+
+- (void)test_GPBGetMessageRepeatedField {
+  TestAllTypes *message = [TestAllTypes message];
+  GPBFieldDescriptor *fieldDescriptor = [[message descriptor] fieldWithName:@"repeatedStringArray"];
+  XCTAssertNotNil(fieldDescriptor);
+  NSMutableArray *fieldArray = GPBGetMessageRepeatedField(message, fieldDescriptor);
+  XCTAssertNotNil(fieldArray);  // Should have autocreated.
+  XCTAssertTrue(fieldArray == message.repeatedStringArray);  // Same pointer
+}
+
+- (void)test_GPBSetMessageRepeatedField {
+  TestAllTypes *message = [TestAllTypes message];
+  GPBFieldDescriptor *fieldDescriptor = [[message descriptor] fieldWithName:@"repeatedStringArray"];
+  XCTAssertNotNil(fieldDescriptor);
+
+  NSMutableArray *fieldArray = [NSMutableArray arrayWithObject:@"foo"];
+  GPBSetMessageRepeatedField(message, fieldDescriptor, fieldArray);
+  XCTAssertTrue(fieldArray == message.repeatedStringArray);  // Same pointer
+  XCTAssertEqualObjects(@"foo", message.repeatedStringArray.firstObject);
+}
+
+- (void)test_GPBGetMessageMapField {
+  TestMap *message = [TestMap message];
+  GPBFieldDescriptor *fieldDescriptor = [[message descriptor] fieldWithName:@"mapStringString"];
+  XCTAssertNotNil(fieldDescriptor);
+  NSMutableDictionary *fieldMap = GPBGetMessageMapField(message, fieldDescriptor);
+  XCTAssertNotNil(fieldMap);  // Should have autocreated.
+  XCTAssertTrue(fieldMap == message.mapStringString);  // Same pointer
+}
+
+- (void)test_GPBSetMessageMapField {
+  TestMap *message = [TestMap message];
+  GPBFieldDescriptor *fieldDescriptor = [[message descriptor] fieldWithName:@"mapStringString"];
+  XCTAssertNotNil(fieldDescriptor);
+
+  NSMutableDictionary *fieldMap = [NSMutableDictionary dictionaryWithObject:@"bar" forKey:@"foo"];
+  GPBSetMessageMapField(message, fieldDescriptor, fieldMap);
+  XCTAssertTrue(fieldMap == message.mapStringString);  // Same pointer
+  XCTAssertEqualObjects(@"bar", message.mapStringString[@"foo"]);
 }
 
 #pragma mark - Subset from from map_tests.cc
@@ -2074,8 +2114,7 @@
 
   // Add an uninitialized message.
   TestRequired *subMsg = [[TestRequired alloc] init];
-  msg.mapField = [GPBInt32ObjectDictionary dictionary];
-  [msg.mapField setValue:subMsg forKey:0];
+  [msg.mapField setObject:subMsg forKey:0];
   XCTAssertFalse(msg.initialized);
 
   // Initialize uninitialized message

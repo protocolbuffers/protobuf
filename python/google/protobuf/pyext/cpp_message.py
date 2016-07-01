@@ -37,21 +37,29 @@ Descriptor objects at runtime backed by the protocol buffer C++ API.
 __author__ = 'tibell@google.com (Johan Tibell)'
 
 from google.protobuf.pyext import _message
-from google.protobuf import message
 
 
-def NewMessage(bases, message_descriptor, dictionary):
-  """Creates a new protocol message *class*."""
-  new_bases = []
-  for base in bases:
-    if base is message.Message:
-      # _message.Message must come before message.Message as it
-      # overrides methods in that class.
-      new_bases.append(_message.Message)
-    new_bases.append(base)
-  return tuple(new_bases)
+class GeneratedProtocolMessageType(_message.MessageMeta):
 
+  """Metaclass for protocol message classes created at runtime from Descriptors.
 
-def InitMessage(message_descriptor, cls):
-  """Finalizes the creation of a message class."""
-  cls.AddDescriptors(message_descriptor)
+  The protocol compiler currently uses this metaclass to create protocol
+  message classes at runtime.  Clients can also manually create their own
+  classes at runtime, as in this example:
+
+  mydescriptor = Descriptor(.....)
+  class MyProtoClass(Message):
+    __metaclass__ = GeneratedProtocolMessageType
+    DESCRIPTOR = mydescriptor
+  myproto_instance = MyProtoClass()
+  myproto.foo_field = 23
+  ...
+
+  The above example will not work for nested types. If you wish to include them,
+  use reflection.MakeClass() instead of manually instantiating the class in
+  order to create the appropriate class structure.
+  """
+
+  # Must be consistent with the protocol-compiler code in
+  # proto2/compiler/internal/generator.*.
+  _DESCRIPTOR_KEY = 'DESCRIPTOR'

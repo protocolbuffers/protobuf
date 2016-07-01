@@ -42,6 +42,7 @@
 #include <string>
 #include <vector>
 #include <google/protobuf/stubs/common.h>
+#include <google/protobuf/compiler/java/java_options.h>
 
 namespace google {
 namespace protobuf {
@@ -67,7 +68,8 @@ namespace java {
 
 class FileGenerator {
  public:
-  FileGenerator(const FileDescriptor* file, bool immutable_api = true);
+  FileGenerator(const FileDescriptor* file, const Options& options,
+                bool immutable_api = true);
   ~FileGenerator();
 
   // Checks for problems that would otherwise lead to cryptic compile errors.
@@ -82,11 +84,11 @@ class FileGenerator {
   // service type).
   void GenerateSiblings(const string& package_dir,
                         GeneratorContext* generator_context,
-                        vector<string>* file_list);
+                        vector<string>* file_list,
+                        vector<string>* annotation_list);
 
   const string& java_package() { return java_package_; }
   const string& classname()    { return classname_;    }
-
 
  private:
   void GenerateDescriptorInitializationCodeForImmutable(io::Printer* printer);
@@ -104,8 +106,8 @@ class FileGenerator {
   google::protobuf::scoped_ptr<GeneratorFactory> generator_factory_;
   google::protobuf::scoped_ptr<Context> context_;
   ClassNameResolver* name_resolver_;
+  const Options options_;
   bool immutable_api_;
-
 
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(FileGenerator);
 };

@@ -45,6 +45,8 @@
 
 
 #include <google/protobuf/stubs/common.h>
+#include <google/protobuf/stubs/logging.h>
+#include <google/protobuf/stubs/once.h>
 
 #include <google/protobuf/repeated_field.h>
 
@@ -271,6 +273,8 @@ class LIBPROTOBUF_EXPORT ExtensionSet {
 
   MessageLite* ReleaseMessage(const FieldDescriptor* descriptor,
                               MessageFactory* factory);
+  MessageLite* UnsafeArenaReleaseMessage(const FieldDescriptor* descriptor,
+                                         MessageFactory* factory);
 #undef desc
   ::google::protobuf::Arena* GetArenaNoVirtual() const { return arena_; }
 
@@ -330,6 +334,8 @@ class LIBPROTOBUF_EXPORT ExtensionSet {
                           const MessageLite& prototype, desc);
   MessageLite* AddMessage(const FieldDescriptor* descriptor,
                           MessageFactory* factory);
+  void AddAllocatedMessage(const FieldDescriptor* descriptor,
+                           MessageLite* new_entry);
 #undef desc
 
   void RemoveLast(int number);
@@ -399,12 +405,21 @@ class LIBPROTOBUF_EXPORT ExtensionSet {
   // serialized extensions.
   //
   // Returns a pointer past the last written byte.
-  uint8* SerializeWithCachedSizesToArray(int start_field_number,
-                                         int end_field_number,
-                                         uint8* target) const;
+  uint8* InternalSerializeWithCachedSizesToArray(int start_field_number,
+                                                 int end_field_number,
+                                                 bool deterministic,
+                                                 uint8* target) const;
 
   // Like above but serializes in MessageSet format.
   void SerializeMessageSetWithCachedSizes(io::CodedOutputStream* output) const;
+  uint8* InternalSerializeMessageSetWithCachedSizesToArray(bool deterministic,
+                                                           uint8* target) const;
+
+  // For backward-compatibility, versions of two of the above methods that
+  // are never forced to serialize deterministically.
+  uint8* SerializeWithCachedSizesToArray(int start_field_number,
+                                         int end_field_number,
+                                         uint8* target) const;
   uint8* SerializeMessageSetWithCachedSizesToArray(uint8* target) const;
 
   // Returns the total serialized size of all the extensions.
@@ -452,6 +467,13 @@ class LIBPROTOBUF_EXPORT ExtensionSet {
     virtual void WriteMessage(int number,
                               io::CodedOutputStream* output) const = 0;
     virtual uint8* WriteMessageToArray(int number, uint8* target) const = 0;
+    virtual uint8* InternalWriteMessageToArray(int number, bool,
+                                               uint8* target) const {
+      // TODO(gpike): make this pure virtual. This is a placeholder because we
+      // need to update third_party/upb, for example.
+      return WriteMessageToArray(number, target);
+    }
+
    private:
     GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(LazyMessageExtension);
   };
@@ -518,14 +540,16 @@ class LIBPROTOBUF_EXPORT ExtensionSet {
     void SerializeFieldWithCachedSizes(
         int number,
         io::CodedOutputStream* output) const;
-    uint8* SerializeFieldWithCachedSizesToArray(
+    uint8* InternalSerializeFieldWithCachedSizesToArray(
         int number,
+        bool deterministic,
         uint8* target) const;
     void SerializeMessageSetItemWithCachedSizes(
         int number,
         io::CodedOutputStream* output) const;
-    uint8* SerializeMessageSetItemWithCachedSizesToArray(
+    uint8* InternalSerializeMessageSetItemWithCachedSizesToArray(
         int number,
+        bool deterministic,
         uint8* target) const;
     int ByteSize(int number) const;
     int MessageSetItemByteSize(int number) const;
@@ -534,6 +558,7 @@ class LIBPROTOBUF_EXPORT ExtensionSet {
     void Free();
     int SpaceUsedExcludingSelf() const;
   };
+  typedef std::map<int, Extension> ExtensionMap;
 
 
   // Merges existing Extension from other_extension
@@ -578,6 +603,10 @@ class LIBPROTOBUF_EXPORT ExtensionSet {
   bool MaybeNewExtension(int number, const FieldDescriptor* descriptor,
                          Extension** result);
 
+  // Gets the repeated extension for the given descriptor, creating it if
+  // it does not exist.
+  Extension* MaybeNewRepeatedExtension(const FieldDescriptor* descriptor);
+
   // Parse a single MessageSet item -- called just after the item group start
   // tag has been read.
   bool ParseMessageSetItem(io::CodedInputStream* input,
@@ -600,7 +629,7 @@ class LIBPROTOBUF_EXPORT ExtensionSet {
   // only contain a small number of extensions whereas hash_map is optimized
   // for 100 elements or more.  Also, we want AppendToList() to order fields
   // by field number.
-  std::map<int, Extension> extensions_;
+  ExtensionMap extensions_;
   ::google::protobuf::Arena* arena_;
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(ExtensionSet);
 };
@@ -716,15 +745,13 @@ class RepeatedPrimitiveTypeTraits {
   static const RepeatedFieldType* GetDefaultRepeatedField();
 };
 
-// Declared here so that this can be friended below.
-void InitializeDefaultRepeatedFields();
-void DestroyDefaultRepeatedFields();
+LIBPROTOBUF_EXPORT extern ProtobufOnceType repeated_primitive_generic_type_traits_once_init_;
 
 class LIBPROTOBUF_EXPORT RepeatedPrimitiveGenericTypeTraits {
  private:
   template<typename Type> friend class RepeatedPrimitiveTypeTraits;
-  friend void InitializeDefaultRepeatedFields();
-  friend void DestroyDefaultRepeatedFields();
+  static void InitializeDefaultRepeatedFields();
+  static void DestroyDefaultRepeatedFields();
   static const RepeatedField<int32>* default_repeated_field_int32_;
   static const RepeatedField<int64>* default_repeated_field_int64_;
   static const RepeatedField<uint32>* default_repeated_field_uint32_;
@@ -759,6 +786,9 @@ template<> inline void RepeatedPrimitiveTypeTraits<TYPE>::Add(             \
 }                                                                          \
 template<> inline const RepeatedField<TYPE>*                               \
     RepeatedPrimitiveTypeTraits<TYPE>::GetDefaultRepeatedField() {         \
+  ::google::protobuf::GoogleOnceInit(                                                          \
+      &repeated_primitive_generic_type_traits_once_init_,                  \
+      &RepeatedPrimitiveGenericTypeTraits::InitializeDefaultRepeatedFields); \
   return RepeatedPrimitiveGenericTypeTraits::                              \
       default_repeated_field_##TYPE##_;                                    \
 }                                                                          \
@@ -812,6 +842,8 @@ class LIBPROTOBUF_EXPORT StringTypeTraits {
   }
 };
 
+LIBPROTOBUF_EXPORT extern ProtobufOnceType repeated_string_type_traits_once_init_;
+
 class LIBPROTOBUF_EXPORT RepeatedStringTypeTraits {
  public:
   typedef const string& ConstType;
@@ -855,12 +887,14 @@ class LIBPROTOBUF_EXPORT RepeatedStringTypeTraits {
   }
 
   static const RepeatedFieldType* GetDefaultRepeatedField() {
+    ::google::protobuf::GoogleOnceInit(&repeated_string_type_traits_once_init_,
+                   &InitializeDefaultRepeatedFields);
     return default_repeated_field_;
   }
 
  private:
-  friend void InitializeDefaultRepeatedFields();
-  friend void DestroyDefaultRepeatedFields();
+  static void InitializeDefaultRepeatedFields();
+  static void DestroyDefaultRepeatedFields();
   static const RepeatedFieldType *default_repeated_field_;
 };
 
@@ -967,9 +1001,20 @@ class MessageTypeTraits {
                                   MutableType message, ExtensionSet* set) {
     set->SetAllocatedMessage(number, field_type, NULL, message);
   }
+  static inline void UnsafeArenaSetAllocated(int number, FieldType field_type,
+                                             MutableType message,
+                                             ExtensionSet* set) {
+    set->UnsafeArenaSetAllocatedMessage(number, field_type, NULL, message);
+  }
   static inline MutableType Release(int number, FieldType /* field_type */,
                                     ExtensionSet* set) {
     return static_cast<Type*>(set->ReleaseMessage(
+        number, Type::default_instance()));
+  }
+  static inline MutableType UnsafeArenaRelease(int number,
+                                               FieldType /* field_type */,
+                                               ExtensionSet* set) {
+    return static_cast<Type*>(set->UnsafeArenaReleaseMessage(
         number, Type::default_instance()));
   }
 };
@@ -1019,6 +1064,8 @@ class RepeatedMessageTypeTraits {
   static const RepeatedFieldType* GetDefaultRepeatedField();
 };
 
+LIBPROTOBUF_EXPORT extern ProtobufOnceType repeated_message_generic_type_traits_once_init_;
+
 // This class exists only to hold a generic default empty repeated field for all
 // message-type repeated field extensions.
 class LIBPROTOBUF_EXPORT RepeatedMessageGenericTypeTraits {
@@ -1026,14 +1073,17 @@ class LIBPROTOBUF_EXPORT RepeatedMessageGenericTypeTraits {
   typedef RepeatedPtrField< ::google::protobuf::MessageLite*> RepeatedFieldType;
  private:
   template<typename Type> friend class RepeatedMessageTypeTraits;
-  friend void InitializeDefaultRepeatedFields();
-  friend void DestroyDefaultRepeatedFields();
+  static void InitializeDefaultRepeatedFields();
+  static void DestroyDefaultRepeatedFields();
   static const RepeatedFieldType* default_repeated_field_;
 };
 
 template<typename Type> inline
     const typename RepeatedMessageTypeTraits<Type>::RepeatedFieldType*
     RepeatedMessageTypeTraits<Type>::GetDefaultRepeatedField() {
+  ::google::protobuf::GoogleOnceInit(
+      &repeated_message_generic_type_traits_once_init_,
+      &RepeatedMessageGenericTypeTraits::InitializeDefaultRepeatedFields);
   return reinterpret_cast<const RepeatedFieldType*>(
       RepeatedMessageGenericTypeTraits::default_repeated_field_);
 }
@@ -1160,11 +1210,31 @@ class ExtensionIdentifier {
   template <typename _proto_TypeTraits,                                       \
             ::google::protobuf::internal::FieldType _field_type,                        \
             bool _is_packed>                                                  \
+  inline void UnsafeArenaSetAllocatedExtension(                               \
+      const ::google::protobuf::internal::ExtensionIdentifier<                          \
+        CLASSNAME, _proto_TypeTraits, _field_type, _is_packed>& id,           \
+      typename _proto_TypeTraits::Singular::MutableType value) {              \
+    _proto_TypeTraits::UnsafeArenaSetAllocated(id.number(), _field_type,      \
+                                               value, &_extensions_);         \
+  }                                                                           \
+  template <typename _proto_TypeTraits,                                       \
+            ::google::protobuf::internal::FieldType _field_type,                        \
+            bool _is_packed>                                                  \
   inline typename _proto_TypeTraits::Singular::MutableType ReleaseExtension(  \
       const ::google::protobuf::internal::ExtensionIdentifier<                          \
         CLASSNAME, _proto_TypeTraits, _field_type, _is_packed>& id) {         \
     return _proto_TypeTraits::Release(id.number(), _field_type,               \
                                       &_extensions_);                         \
+  }                                                                           \
+  template <typename _proto_TypeTraits,                                       \
+            ::google::protobuf::internal::FieldType _field_type,                        \
+            bool _is_packed>                                                  \
+  inline typename _proto_TypeTraits::Singular::MutableType                    \
+      UnsafeArenaReleaseExtension(                                            \
+          const ::google::protobuf::internal::ExtensionIdentifier<                      \
+            CLASSNAME, _proto_TypeTraits, _field_type, _is_packed>& id) {     \
+    return _proto_TypeTraits::UnsafeArenaRelease(id.number(), _field_type,    \
+                                                 &_extensions_);              \
   }                                                                           \
                                                                               \
   /* Repeated accessors */                                                    \

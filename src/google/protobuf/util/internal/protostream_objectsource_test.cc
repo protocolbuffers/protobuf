@@ -50,6 +50,7 @@
 #include <google/protobuf/util/internal/testdata/anys.pb.h>
 #include <google/protobuf/util/internal/testdata/maps.pb.h>
 #include <google/protobuf/util/internal/testdata/struct.pb.h>
+#include <google/protobuf/util/internal/testdata/timestamp_duration.pb.h>
 #include <gtest/gtest.h>
 
 
@@ -69,12 +70,15 @@ using google::protobuf::testing::Author;
 using google::protobuf::testing::BadAuthor;
 using google::protobuf::testing::BadNestedBook;
 using google::protobuf::testing::Book;
+using google::protobuf::testing::Cyclic;
 using google::protobuf::testing::Book_Label;
 using google::protobuf::testing::NestedBook;
 using google::protobuf::testing::PackedPrimitive;
 using google::protobuf::testing::Primitive;
 using google::protobuf::testing::more_author;
 using google::protobuf::testing::maps::MapOut;
+using google::protobuf::testing::maps::MapOutWireFormat;
+using google::protobuf::testing::timestampduration::TimestampDuration;
 using google::protobuf::testing::anys::AnyOut;
 using google::protobuf::testing::anys::AnyM;
 using google::protobuf::testing::FieldMaskTest;
@@ -92,7 +96,11 @@ string GetTypeUrl(const Descriptor* descriptor) {
 class ProtostreamObjectSourceTest
     : public ::testing::TestWithParam<testing::TypeInfoSource> {
  protected:
-  ProtostreamObjectSourceTest() : helper_(GetParam()), mock_(), ow_(&mock_) {
+  ProtostreamObjectSourceTest()
+      : helper_(GetParam()),
+        mock_(),
+        ow_(&mock_),
+        use_lower_camel_for_enums_(false) {
     helper_.ResetTypeInfo(Book::descriptor());
   }
 
@@ -112,66 +120,68 @@ class ProtostreamObjectSourceTest
 
     google::protobuf::scoped_ptr<ProtoStreamObjectSource> os(
         helper_.NewProtoSource(&in_stream, GetTypeUrl(descriptor)));
+    if (use_lower_camel_for_enums_) os->set_use_lower_camel_for_enums(true);
+    os->set_max_recursion_depth(64);
     return os->WriteTo(&mock_);
   }
 
   void PrepareExpectingObjectWriterForRepeatedPrimitive() {
     ow_.StartObject("")
-        ->StartList("rep_fix32")
+        ->StartList("repFix32")
         ->RenderUint32("", bit_cast<uint32>(3201))
         ->RenderUint32("", bit_cast<uint32>(0))
         ->RenderUint32("", bit_cast<uint32>(3202))
         ->EndList()
-        ->StartList("rep_u32")
+        ->StartList("repU32")
         ->RenderUint32("", bit_cast<uint32>(3203))
         ->RenderUint32("", bit_cast<uint32>(0))
         ->EndList()
-        ->StartList("rep_i32")
+        ->StartList("repI32")
         ->RenderInt32("", 0)
         ->RenderInt32("", 3204)
         ->RenderInt32("", 3205)
         ->EndList()
-        ->StartList("rep_sf32")
+        ->StartList("repSf32")
         ->RenderInt32("", 3206)
         ->RenderInt32("", 0)
         ->EndList()
-        ->StartList("rep_s32")
+        ->StartList("repS32")
         ->RenderInt32("", 0)
         ->RenderInt32("", 3207)
         ->RenderInt32("", 3208)
         ->EndList()
-        ->StartList("rep_fix64")
+        ->StartList("repFix64")
         ->RenderUint64("", bit_cast<uint64>(6401LL))
         ->RenderUint64("", bit_cast<uint64>(0LL))
         ->EndList()
-        ->StartList("rep_u64")
+        ->StartList("repU64")
         ->RenderUint64("", bit_cast<uint64>(0LL))
         ->RenderUint64("", bit_cast<uint64>(6402LL))
         ->RenderUint64("", bit_cast<uint64>(6403LL))
         ->EndList()
-        ->StartList("rep_i64")
+        ->StartList("repI64")
         ->RenderInt64("", 6404L)
         ->RenderInt64("", 0L)
         ->EndList()
-        ->StartList("rep_sf64")
+        ->StartList("repSf64")
         ->RenderInt64("", 0L)
         ->RenderInt64("", 6405L)
         ->RenderInt64("", 6406L)
         ->EndList()
-        ->StartList("rep_s64")
+        ->StartList("repS64")
         ->RenderInt64("", 6407L)
         ->RenderInt64("", 0L)
         ->EndList()
-        ->StartList("rep_float")
+        ->StartList("repFloat")
         ->RenderFloat("", 0.0f)
         ->RenderFloat("", 32.1f)
         ->RenderFloat("", 32.2f)
         ->EndList()
-        ->StartList("rep_double")
+        ->StartList("repDouble")
         ->RenderDouble("", 64.1L)
         ->RenderDouble("", 0.0L)
         ->EndList()
-        ->StartList("rep_bool")
+        ->StartList("repBool")
         ->RenderBool("", true)
         ->RenderBool("", false)
         ->EndList()
@@ -256,10 +266,13 @@ class ProtostreamObjectSourceTest
     return primitive;
   }
 
+  void UseLowerCamelForEnums() { use_lower_camel_for_enums_ = true; }
+
   testing::TypeInfoTestHelper helper_;
 
   ::testing::NiceMock<MockObjectWriter> mock_;
   ExpectingObjectWriter ow_;
+  bool use_lower_camel_for_enums_;
 };
 
 INSTANTIATE_TEST_CASE_P(DifferentTypeInfoSourceTest,
@@ -317,19 +330,26 @@ TEST_P(ProtostreamObjectSourceTest, RepeatingPrimitives) {
   primitive.add_rep_str("String Two");
   primitive.add_rep_bytes("Some Bytes");
 
-  ow_.StartList("rep_str")
+  ow_.StartList("repStr")
       ->RenderString("", "String One")
       ->RenderString("", "String Two")
       ->EndList()
-      ->StartList("rep_bytes")
+      ->StartList("repBytes")
       ->RenderBytes("", "Some Bytes")
       ->EndList();
   DoTest(primitive, Primitive::descriptor());
 }
 
+TEST_P(ProtostreamObjectSourceTest, CustomJsonName) {
+  Author author;
+  author.set_id(12345);
+
+  ow_.StartObject("")->RenderUint64("@id", 12345)->EndObject();
+  DoTest(author, Author::descriptor());
+}
+
 TEST_P(ProtostreamObjectSourceTest, NestedMessage) {
   Author* author = new Author();
-  author->set_id(101L);
   author->set_name("Tolstoy");
   Book book;
   book.set_title("My Book");
@@ -338,7 +358,6 @@ TEST_P(ProtostreamObjectSourceTest, NestedMessage) {
   ow_.StartObject("")
       ->RenderString("title", "My Book")
       ->StartObject("author")
-      ->RenderUint64("id", bit_cast<uint64>(101LL))
       ->RenderString("name", "Tolstoy")
       ->EndObject()
       ->EndObject();
@@ -455,6 +474,52 @@ TEST_P(ProtostreamObjectSourceTest,
   DoTest(book, Book::descriptor());
 }
 
+TEST_P(ProtostreamObjectSourceTest, LowerCamelEnumOutputTest) {
+  Book book;
+  book.set_type(Book::ACTION_AND_ADVENTURE);
+
+  UseLowerCamelForEnums();
+
+  ow_.StartObject("")->RenderString("type", "actionAndAdventure")->EndObject();
+  DoTest(book, Book::descriptor());
+}
+
+TEST_P(ProtostreamObjectSourceTest, EnumCaseIsUnchangedByDefault) {
+  Book book;
+  book.set_type(Book::ACTION_AND_ADVENTURE);
+  ow_.StartObject("")
+      ->RenderString("type", "ACTION_AND_ADVENTURE")
+      ->EndObject();
+  DoTest(book, Book::descriptor());
+}
+
+TEST_P(ProtostreamObjectSourceTest, CyclicMessageDepthTest) {
+  Cyclic cyclic;
+  cyclic.set_m_int(123);
+
+  Book* book = cyclic.mutable_m_book();
+  book->set_title("book title");
+  Cyclic* current = cyclic.mutable_m_cyclic();
+  Author* current_author = cyclic.add_m_author();
+  for (int i = 0; i < 63; ++i) {
+    Author* next = current_author->add_friend_();
+    next->set_id(i);
+    next->set_name(StrCat("author_name_", i));
+    next->set_alive(true);
+    current_author = next;
+  }
+
+  // Recursive message with depth (65) > max (max is 64).
+  for (int i = 0; i < 64; ++i) {
+    Cyclic* next = current->mutable_m_cyclic();
+    next->set_m_str(StrCat("count_", i));
+    current = next;
+  }
+
+  Status status = ExecuteTest(cyclic, Cyclic::descriptor());
+  EXPECT_EQ(util::error::INVALID_ARGUMENT, status.error_code());
+}
+
 class ProtostreamObjectSourceMapsTest : public ProtostreamObjectSourceTest {
  protected:
   ProtostreamObjectSourceMapsTest() {
@@ -530,6 +595,67 @@ TEST_P(ProtostreamObjectSourceMapsTest, MapsTest) {
       ->EndObject()
       ->EndObject()
       ->RenderString("bar", "top bar")
+      ->EndObject();
+
+  DoTest(out, MapOut::descriptor());
+}
+
+TEST_P(ProtostreamObjectSourceMapsTest, MissingKeysTest) {
+  // MapOutWireFormat has the same wire representation with MapOut but uses
+  // repeated message fields to represent map fields so we can intentionally
+  // leave out the key field or the value field of a map entry.
+  MapOutWireFormat out;
+  // Create some map entries without keys. They will be rendered with the
+  // default values ("" for strings, "0" for integers, etc.).
+  // {
+  //   "map1": {
+  //     "": {
+  //       "foo": "foovalue"
+  //     }
+  //   },
+  //   "map2": {
+  //     "": {
+  //       "map1": {
+  //         "nested_key1": {
+  //           "foo": "nested_foo"
+  //         }
+  //       }
+  //     }
+  //   },
+  //   "map3": {
+  //     "0": "one one one"
+  //   },
+  //   "map4": {
+  //     "false": "bool"
+  //   }
+  // }
+  out.add_map1()->mutable_value()->set_foo("foovalue");
+  MapOut* nested = out.add_map2()->mutable_value();
+  (*nested->mutable_map1())["nested_key1"].set_foo("nested_foo");
+  out.add_map3()->set_value("one one one");
+  out.add_map4()->set_value("bool");
+
+  ow_.StartObject("")
+      ->StartObject("map1")
+      ->StartObject("")
+      ->RenderString("foo", "foovalue")
+      ->EndObject()
+      ->EndObject()
+      ->StartObject("map2")
+      ->StartObject("")
+      ->StartObject("map1")
+      ->StartObject("nested_key1")
+      ->RenderString("foo", "nested_foo")
+      ->EndObject()
+      ->EndObject()
+      ->EndObject()
+      ->EndObject()
+      ->StartObject("map3")
+      ->RenderString("0", "one one one")
+      ->EndObject()
+      ->StartObject("map4")
+      ->RenderString("false", "bool")
+      ->EndObject()
       ->EndObject();
 
   DoTest(out, MapOut::descriptor());
@@ -794,16 +920,16 @@ TEST_P(ProtostreamObjectSourceFieldMaskTest, FieldMaskRenderSuccess) {
 
   ow_.StartObject("")
       ->RenderString("id", "1")
-      ->RenderString("single_mask", "path1,snakeCasePath2")
-      ->StartList("repeated_mask")
+      ->RenderString("singleMask", "path1,snakeCasePath2")
+      ->StartList("repeatedMask")
       ->RenderString("", "path3")
       ->RenderString("", "snakeCasePath4,path5")
       ->EndList()
-      ->StartList("nested_mask")
+      ->StartList("nestedMask")
       ->StartObject("")
       ->RenderString("data", "data")
-      ->RenderString("single_mask", "nested.path1,nestedField.snakeCasePath2")
-      ->StartList("repeated_mask")
+      ->RenderString("singleMask", "nested.path1,nestedField.snakeCasePath2")
+      ->StartList("repeatedMask")
       ->RenderString("", "nestedField.path3,nested.snakeCasePath4")
       ->RenderString("", "nested.path5")
       ->RenderString("",
@@ -816,6 +942,63 @@ TEST_P(ProtostreamObjectSourceFieldMaskTest, FieldMaskRenderSuccess) {
       ->EndObject();
 
   DoTest(out, FieldMaskTest::descriptor());
+}
+
+class ProtostreamObjectSourceTimestampTest
+    : public ProtostreamObjectSourceTest {
+ protected:
+  ProtostreamObjectSourceTimestampTest() {
+    helper_.ResetTypeInfo(TimestampDuration::descriptor());
+  }
+};
+
+INSTANTIATE_TEST_CASE_P(DifferentTypeInfoSourceTest,
+                        ProtostreamObjectSourceTimestampTest,
+                        ::testing::Values(
+                            testing::USE_TYPE_RESOLVER));
+
+TEST_P(ProtostreamObjectSourceTimestampTest, InvalidTimestampBelowMinTest) {
+  TimestampDuration out;
+  google::protobuf::Timestamp* ts = out.mutable_ts();
+  // Min allowed seconds - 1
+  ts->set_seconds(kTimestampMinSeconds - 1);
+  ow_.StartObject("");
+
+  Status status = ExecuteTest(out, TimestampDuration::descriptor());
+  EXPECT_EQ(util::error::INTERNAL, status.error_code());
+}
+
+TEST_P(ProtostreamObjectSourceTimestampTest, InvalidTimestampAboveMaxTest) {
+  TimestampDuration out;
+  google::protobuf::Timestamp* ts = out.mutable_ts();
+  // Max allowed seconds + 1
+  ts->set_seconds(kTimestampMaxSeconds + 1);
+  ow_.StartObject("");
+
+  Status status = ExecuteTest(out, TimestampDuration::descriptor());
+  EXPECT_EQ(util::error::INTERNAL, status.error_code());
+}
+
+TEST_P(ProtostreamObjectSourceTimestampTest, InvalidDurationBelowMinTest) {
+  TimestampDuration out;
+  google::protobuf::Duration* dur = out.mutable_dur();
+  // Min allowed seconds - 1
+  dur->set_seconds(kDurationMinSeconds - 1);
+  ow_.StartObject("");
+
+  Status status = ExecuteTest(out, TimestampDuration::descriptor());
+  EXPECT_EQ(util::error::INTERNAL, status.error_code());
+}
+
+TEST_P(ProtostreamObjectSourceTimestampTest, InvalidDurationAboveMaxTest) {
+  TimestampDuration out;
+  google::protobuf::Duration* dur = out.mutable_dur();
+  // Min allowed seconds + 1
+  dur->set_seconds(kDurationMaxSeconds + 1);
+  ow_.StartObject("");
+
+  Status status = ExecuteTest(out, TimestampDuration::descriptor());
+  EXPECT_EQ(util::error::INTERNAL, status.error_code());
 }
 
 }  // namespace converter

@@ -37,21 +37,22 @@
 #define GPBOBJC_SKIP_MESSAGE_TEXTFORMAT_EXTRAS 0
 #endif
 
-// Most uses of protocol buffers don't need field options, by default the
-// static data will be compiled out, define this to 1 to include it. The only
-// time you need this is if you are doing introspection of the protocol buffers.
-#ifndef GPBOBJC_INCLUDE_FIELD_OPTIONS
-#define GPBOBJC_INCLUDE_FIELD_OPTIONS 0
-#endif
-
 // Used in the generated code to give sizes to enums. int32_t was chosen based
 // on the fact that Protocol Buffers enums are limited to this range.
-// The complexity and double definition here are so we get the nice name
-// for objective C, but also define the name with a trailing underscore so
-// the Swift bridge will have one where the names line up to support short
-// names since they are scoped to the enum.
-// https://developer.apple.com/library/ios/documentation/Swift/Conceptual/BuildingCocoaApps/InteractingWithCAPIs.html#//apple_ref/doc/uid/TP40014216-CH8-XID_11
-#define GPB_ENUM(X) NS_ENUM(int32_t, X)
+#if !__has_feature(objc_fixed_enum)
+ #error All supported Xcode versions should support objc_fixed_enum.
+#endif
+// If the headers are imported into Objective-C++, we can run into an issue
+// where the defintion of NS_ENUM (really CF_ENUM) changes based on the C++
+// standard that is in effect.  If it isn't C++11 or higher, the definition
+// doesn't allow us to forward declare. We work around this one case by
+// providing a local definition. The default case has to use NS_ENUM for the
+// magic that is Swift bridging of enums.
+#if (defined(__cplusplus) && __cplusplus && __cplusplus < 201103L)
+ #define GPB_ENUM(X) enum X : int32_t X; enum X : int32_t
+#else
+ #define GPB_ENUM(X) NS_ENUM(int32_t, X)
+#endif
 // GPB_ENUM_FWD_DECLARE is used for forward declaring enums, ex:
 //   GPB_ENUM_FWD_DECLARE(Foo_Enum)
 //   @property (nonatomic) Foo_Enum value;
@@ -81,4 +82,4 @@
 // generated Objective C sources.  In general we don't want to change the
 // runtime interfaces (or this version) as it means everything has to be
 // regenerated.
-#define GOOGLE_PROTOBUF_OBJC_GEN_VERSION 30000
+#define GOOGLE_PROTOBUF_OBJC_GEN_VERSION 30001

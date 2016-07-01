@@ -52,7 +52,7 @@ CF_EXTERN_C_BEGIN
 // generated sources to make sure they are linked with a supporting runtime.
 void GPBCheckRuntimeVersionInternal(int32_t version);
 GPB_INLINE void GPBDebugCheckRuntimeVersion() {
-#if DEBUG
+#if defined(DEBUG) && DEBUG
   GPBCheckRuntimeVersionInternal(GOOGLE_PROTOBUF_OBJC_GEN_VERSION);
 #endif
 }
@@ -125,6 +125,10 @@ GPB_INLINE uint64_t GPBEncodeZigZag64(int64_t n) {
   return (n << 1) ^ (n >> 63);
 }
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wswitch-enum"
+#pragma clang diagnostic ignored "-Wdirect-ivar-access"
+
 GPB_INLINE BOOL GPBDataTypeIsObject(GPBDataType type) {
   switch (type) {
     case GPBDataTypeBytes:
@@ -185,7 +189,9 @@ GPB_INLINE void GPBSetHasIvarField(GPBMessage *self, GPBFieldDescriptor *field,
 }
 
 void GPBMaybeClearOneof(GPBMessage *self, GPBOneofDescriptor *oneof,
-                        uint32_t fieldNumberNotToClear);
+                        int32_t oneofHasIndex, uint32_t fieldNumberNotToClear);
+
+#pragma clang diagnostic pop
 
 //%PDDM-DEFINE GPB_IVAR_SET_DECL(NAME, TYPE)
 //%void GPBSet##NAME##IvarWithFieldInternal(GPBMessage *self,

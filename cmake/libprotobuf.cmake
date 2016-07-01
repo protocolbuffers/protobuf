@@ -25,13 +25,13 @@ set(libprotobuf_files
   ${protobuf_source_dir}/src/google/protobuf/source_context.pb.cc
   ${protobuf_source_dir}/src/google/protobuf/struct.pb.cc
   ${protobuf_source_dir}/src/google/protobuf/stubs/mathlimits.cc
-  ${protobuf_source_dir}/src/google/protobuf/stubs/structurally_valid.cc
   ${protobuf_source_dir}/src/google/protobuf/stubs/substitute.cc
   ${protobuf_source_dir}/src/google/protobuf/text_format.cc
   ${protobuf_source_dir}/src/google/protobuf/timestamp.pb.cc
   ${protobuf_source_dir}/src/google/protobuf/type.pb.cc
   ${protobuf_source_dir}/src/google/protobuf/unknown_field_set.cc
   ${protobuf_source_dir}/src/google/protobuf/util/field_comparator.cc
+  ${protobuf_source_dir}/src/google/protobuf/util/field_mask_util.cc
   ${protobuf_source_dir}/src/google/protobuf/util/internal/datapiece.cc
   ${protobuf_source_dir}/src/google/protobuf/util/internal/default_value_objectwriter.cc
   ${protobuf_source_dir}/src/google/protobuf/util/internal/error_listener.cc
@@ -40,6 +40,7 @@ set(libprotobuf_files
   ${protobuf_source_dir}/src/google/protobuf/util/internal/json_objectwriter.cc
   ${protobuf_source_dir}/src/google/protobuf/util/internal/json_stream_parser.cc
   ${protobuf_source_dir}/src/google/protobuf/util/internal/object_writer.cc
+  ${protobuf_source_dir}/src/google/protobuf/util/internal/proto_writer.cc
   ${protobuf_source_dir}/src/google/protobuf/util/internal/protostream_objectsource.cc
   ${protobuf_source_dir}/src/google/protobuf/util/internal/protostream_objectwriter.cc
   ${protobuf_source_dir}/src/google/protobuf/util/internal/type_info.cc
@@ -47,13 +48,21 @@ set(libprotobuf_files
   ${protobuf_source_dir}/src/google/protobuf/util/internal/utility.cc
   ${protobuf_source_dir}/src/google/protobuf/util/json_util.cc
   ${protobuf_source_dir}/src/google/protobuf/util/message_differencer.cc
+  ${protobuf_source_dir}/src/google/protobuf/util/time_util.cc
   ${protobuf_source_dir}/src/google/protobuf/util/type_resolver_util.cc
   ${protobuf_source_dir}/src/google/protobuf/wire_format.cc
   ${protobuf_source_dir}/src/google/protobuf/wrappers.pb.cc
 )
 
-add_library(libprotobuf ${libprotobuf_lite_files} ${libprotobuf_files})
+add_library(libprotobuf ${protobuf_SHARED_OR_STATIC}
+  ${libprotobuf_lite_files} ${libprotobuf_files})
 target_link_libraries(libprotobuf ${CMAKE_THREAD_LIBS_INIT} ${ZLIB_LIBRARIES})
+target_include_directories(libprotobuf PUBLIC ${protobuf_source_dir}/src)
+if(MSVC AND protobuf_BUILD_SHARED_LIBS)
+  target_compile_definitions(libprotobuf
+    PUBLIC  PROTOBUF_USE_DLLS
+    PRIVATE LIBPROTOBUF_EXPORTS)
+endif()
 set_target_properties(libprotobuf PROPERTIES
-    COMPILE_DEFINITIONS LIBPROTOBUF_EXPORTS
-    OUTPUT_NAME ${LIB_PREFIX}protobuf)
+    OUTPUT_NAME ${LIB_PREFIX}protobuf
+    DEBUG_POSTFIX "${protobuf_DEBUG_POSTFIX}")

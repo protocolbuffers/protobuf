@@ -69,8 +69,7 @@ class LIBPROTOBUF_EXPORT InternalMetadataWithArena {
     ptr_ = NULL;
   }
 
-  inline const UnknownFieldSet& unknown_fields() const
-      GOOGLE_ATTRIBUTE_ALWAYS_INLINE {
+  GOOGLE_ATTRIBUTE_ALWAYS_INLINE const UnknownFieldSet& unknown_fields() const {
     if (GOOGLE_PREDICT_FALSE(have_unknown_fields())) {
       return PtrValue<Container>()->unknown_fields_;
     } else {
@@ -78,7 +77,7 @@ class LIBPROTOBUF_EXPORT InternalMetadataWithArena {
     }
   }
 
-  inline UnknownFieldSet* mutable_unknown_fields() GOOGLE_ATTRIBUTE_ALWAYS_INLINE {
+  GOOGLE_ATTRIBUTE_ALWAYS_INLINE UnknownFieldSet* mutable_unknown_fields() {
     if (GOOGLE_PREDICT_TRUE(have_unknown_fields())) {
       return &PtrValue<Container>()->unknown_fields_;
     } else {
@@ -86,7 +85,7 @@ class LIBPROTOBUF_EXPORT InternalMetadataWithArena {
     }
   }
 
-  inline Arena* arena() const GOOGLE_ATTRIBUTE_ALWAYS_INLINE {
+  GOOGLE_ATTRIBUTE_ALWAYS_INLINE Arena* arena() const {
     if (GOOGLE_PREDICT_FALSE(have_unknown_fields())) {
       return PtrValue<Container>()->arena_;
     } else {
@@ -94,11 +93,11 @@ class LIBPROTOBUF_EXPORT InternalMetadataWithArena {
     }
   }
 
-  inline bool have_unknown_fields() const GOOGLE_ATTRIBUTE_ALWAYS_INLINE {
+  GOOGLE_ATTRIBUTE_ALWAYS_INLINE bool have_unknown_fields() const {
     return PtrTag() == kTagContainer;
   }
 
-  inline void Swap(InternalMetadataWithArena* other) GOOGLE_ATTRIBUTE_ALWAYS_INLINE {
+  GOOGLE_ATTRIBUTE_ALWAYS_INLINE void Swap(InternalMetadataWithArena* other) {
     // Semantics here are that we swap only the unknown fields, not the arena
     // pointer. We cannot simply swap ptr_ with other->ptr_ because we need to
     // maintain our own arena ptr. Also, our ptr_ and other's ptr_ may be in
@@ -110,7 +109,7 @@ class LIBPROTOBUF_EXPORT InternalMetadataWithArena {
     }
   }
 
-  inline void* raw_arena_ptr() const GOOGLE_ATTRIBUTE_ALWAYS_INLINE {
+  GOOGLE_ATTRIBUTE_ALWAYS_INLINE void* raw_arena_ptr() const {
     return ptr_;
   }
 
@@ -128,7 +127,7 @@ class LIBPROTOBUF_EXPORT InternalMetadataWithArena {
   static const intptr_t kPtrValueMask = ~kPtrTagMask;
 
   // Accessors for pointer tag and pointer value.
-  inline int PtrTag() const GOOGLE_ATTRIBUTE_ALWAYS_INLINE {
+  GOOGLE_ATTRIBUTE_ALWAYS_INLINE int PtrTag() const {
     return reinterpret_cast<intptr_t>(ptr_) & kPtrTagMask;
   }
 
@@ -143,7 +142,7 @@ class LIBPROTOBUF_EXPORT InternalMetadataWithArena {
     Arena* arena_;
   };
 
-  UnknownFieldSet* mutable_unknown_fields_slow() GOOGLE_ATTRIBUTE_NOINLINE {
+  GOOGLE_ATTRIBUTE_NOINLINE UnknownFieldSet* mutable_unknown_fields_slow() {
     Arena* my_arena = arena();
     Container* container = Arena::Create<Container>(my_arena);
     ptr_ = reinterpret_cast<void*>(

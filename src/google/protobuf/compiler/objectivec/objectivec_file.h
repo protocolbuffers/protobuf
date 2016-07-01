@@ -55,14 +55,15 @@ class MessageGenerator;
 
 class FileGenerator {
  public:
-  explicit FileGenerator(const FileDescriptor* file);
+  FileGenerator(const FileDescriptor* file, const Options& options);
   ~FileGenerator();
 
   void GenerateSource(io::Printer* printer);
   void GenerateHeader(io::Printer* printer);
 
   const string& RootClassName() const { return root_class_name_; }
-  const string Path() const;
+  const string Path() const { return FilePath(file_); }
+  const FileDescriptor* Descriptor() const { return file_; }
 
   bool IsPublicDependency() const { return is_public_dep_; }
 
@@ -84,7 +85,11 @@ class FileGenerator {
   vector<ExtensionGenerator*> extension_generators_;
   bool is_public_dep_;
 
+  const Options options_;
+
   const vector<FileGenerator*>& DependencyGenerators();
+  void PrintFileRuntimePreamble(
+      io::Printer* printer, const string& header_to_import) const;
 
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(FileGenerator);
 };

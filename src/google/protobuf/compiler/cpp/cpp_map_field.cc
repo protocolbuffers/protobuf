@@ -49,10 +49,11 @@ void SetMessageVariables(const FieldDescriptor* descriptor,
                          const Options& options) {
   SetCommonFieldVariables(descriptor, variables, options);
   (*variables)["type"] = FieldMessageTypeName(descriptor);
-  (*variables)["stream_writer"] = (*variables)["declared_type"] +
-      (HasFastArraySerialization(descriptor->message_type()->file()) ?
-       "MaybeToArray" :
-       "");
+  (*variables)["stream_writer"] =
+      (*variables)["declared_type"] +
+      (HasFastArraySerialization(descriptor->message_type()->file(), options)
+           ? "MaybeToArray"
+           : "");
   (*variables)["full_name"] = descriptor->full_name();
 
   const FieldDescriptor* key =
@@ -66,7 +67,7 @@ void SetMessageVariables(const FieldDescriptor* descriptor,
       (*variables)["wrapper"] = "EntryWrapper";
       break;
     case FieldDescriptor::CPPTYPE_ENUM:
-      (*variables)["val_cpp"] = ClassName(val->enum_type(), false);
+      (*variables)["val_cpp"] = ClassName(val->enum_type(), true);
       (*variables)["wrapper"] = "EnumEntryWrapper";
       break;
     default:
@@ -83,7 +84,7 @@ void SetMessageVariables(const FieldDescriptor* descriptor,
   (*variables)["number"] = SimpleItoa(descriptor->number());
   (*variables)["tag"] = SimpleItoa(internal::WireFormat::MakeTag(descriptor));
 
-  if (HasDescriptorMethods(descriptor->file())) {
+  if (HasDescriptorMethods(descriptor->file(), options)) {
     (*variables)["lite"] = "";
   } else {
     (*variables)["lite"] = "Lite";
@@ -98,10 +99,11 @@ void SetMessageVariables(const FieldDescriptor* descriptor,
   }
 }
 
-MapFieldGenerator::
-MapFieldGenerator(const FieldDescriptor* descriptor,
-                              const Options& options)
-    : descriptor_(descriptor) {
+MapFieldGenerator::MapFieldGenerator(const FieldDescriptor* descriptor,
+                                     const Options& options)
+    : FieldGenerator(options),
+      descriptor_(descriptor),
+      dependent_field_(options.proto_h && IsFieldDependent(descriptor)) {
   SetMessageVariables(descriptor, &variables_, options);
 }
 
@@ -126,10 +128,10 @@ GeneratePrivateMembers(io::Printer* printer) const {
 void MapFieldGenerator::
 GenerateAccessorDeclarations(io::Printer* printer) const {
   printer->Print(variables_,
-      "const ::google::protobuf::Map< $key_cpp$, $val_cpp$ >&\n"
-      "    $name$() const$deprecation$;\n"
-      "::google::protobuf::Map< $key_cpp$, $val_cpp$ >*\n"
-      "    mutable_$name$()$deprecation$;\n");
+      "$deprecated_attr$const ::google::protobuf::Map< $key_cpp$, $val_cpp$ >&\n"
+      "    $name$() const;\n"
+      "$deprecated_attr$::google::protobuf::Map< $key_cpp$, $val_cpp$ >*\n"
+      "    mutable_$name$();\n");
 }
 
 void MapFieldGenerator::
@@ -152,7 +154,9 @@ GenerateInlineAccessorDefinitions(io::Printer* printer,
 
 void MapFieldGenerator::
 GenerateClearingCode(io::Printer* printer) const {
-  printer->Print(variables_, "$name$_.Clear();\n");
+  map<string, string> variables(variables_);
+  variables["this_message"] = dependent_field_ ? DependentBaseDownCast() : "";
+  printer->Print(variables, "$this_message$$name$_.Clear();\n");
 }
 
 void MapFieldGenerator::
@@ -167,7 +171,7 @@ GenerateSwappingCode(io::Printer* printer) const {
 
 void MapFieldGenerator::
 GenerateConstructorCode(io::Printer* printer) const {
-  if (HasDescriptorMethods(descriptor_->file())) {
+  if (HasDescriptorMethods(descriptor_->file(), options_)) {
     printer->Print(variables_,
         "$name$_.SetAssignDescriptorCallback(\n"
         "    protobuf_AssignDescriptorsOnce);\n"
@@ -178,33 +182,33 @@ GenerateConstructorCode(io::Printer* printer) const {
 
 void MapFieldGenerator::
 GenerateMergeFromCodedStream(io::Printer* printer) const {
+    const FieldDescriptor* key_field =
+        descriptor_->message_type()->FindFieldByName("key");
   const FieldDescriptor* value_field =
       descriptor_->message_type()->FindFieldByName("value");
-  printer->Print(variables_,
-      "::google::protobuf::scoped_ptr<$map_classname$> entry($name$_.NewEntry());\n");
-
+  bool using_entry = false;
+  string key;
+  string value;
   if (IsProto3Field(descriptor_) ||
       value_field->type() != FieldDescriptor::TYPE_ENUM) {
     printer->Print(variables_,
+        "$map_classname$::Parser< ::google::protobuf::internal::MapField$lite$<\n"
+                   "    $key_cpp$, $val_cpp$,\n"
+                   "    $key_wire_type$,\n"
+                   "    $val_wire_type$,\n"
+                   "    $default_enum_value$ >,\n"
+                   "  ::google::protobuf::Map< $key_cpp$, $val_cpp$ > >"
+        " parser(&$name$_);\n"
         "DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtual(\n"
-        "    input, entry.get()));\n");
-    switch (value_field->cpp_type()) {
-      case FieldDescriptor::CPPTYPE_MESSAGE:
-        printer->Print(variables_,
-            "(*mutable_$name$())[entry->key()].Swap("
-            "entry->mutable_value());\n");
-        break;
-      case FieldDescriptor::CPPTYPE_ENUM:
-        printer->Print(variables_,
-            "(*mutable_$name$())[entry->key()] =\n"
-            "    static_cast<$val_cpp$>(*entry->mutable_value());\n");
-        break;
-      default:
-        printer->Print(variables_,
-            "(*mutable_$name$())[entry->key()] = *entry->mutable_value();\n");
-        break;
-    }
+        "    input, &parser));\n");
+    key = "parser.key()";
+    value = "parser.value()";
   } else {
+    using_entry = true;
+    key = "entry->key()";
+    value = "entry->value()";
+    printer->Print(variables_,
+        "::google::protobuf::scoped_ptr<$map_classname$> entry($name$_.NewEntry());\n");
     printer->Print(variables_,
         "{\n"
         "  ::std::string data;\n"
@@ -212,9 +216,9 @@ GenerateMergeFromCodedStream(io::Printer* printer) const {
         "  DO_(entry->ParseFromString(data));\n"
         "  if ($val_cpp$_IsValid(*entry->mutable_value())) {\n"
         "    (*mutable_$name$())[entry->key()] =\n"
-        "        static_cast<$val_cpp$>(*entry->mutable_value());\n"
+        "        static_cast< $val_cpp$ >(*entry->mutable_value());\n"
         "  } else {\n");
-    if (HasDescriptorMethods(descriptor_->file())) {
+    if (HasDescriptorMethods(descriptor_->file(), options_)) {
       printer->Print(variables_,
           "    mutable_unknown_fields()"
           "->AddLengthDelimited($number$, data);\n");
@@ -225,14 +229,23 @@ GenerateMergeFromCodedStream(io::Printer* printer) const {
           "    unknown_fields_stream.WriteString(data);\n");
     }
 
-
     printer->Print(variables_,
         "  }\n"
         "}\n");
   }
 
+  if (key_field->type() == FieldDescriptor::TYPE_STRING) {
+    GenerateUtf8CheckCodeForString(
+    key_field, options_, true, variables_,
+        StrCat(key, ".data(), ", key, ".length(),\n").data(), printer);
+  }
+  if (value_field->type() == FieldDescriptor::TYPE_STRING) {
+    GenerateUtf8CheckCodeForString(value_field, options_, true, variables_,
+        StrCat(value, ".data(), ", value, ".length(),\n").data(), printer);
+  }
+
   // If entry is allocated by arena, its desctructor should be avoided.
-  if (SupportsArenas(descriptor_)) {
+  if (using_entry && SupportsArenas(descriptor_)) {
     printer->Print(variables_,
         "if (entry->GetArena() != NULL) entry.release();\n");
   }
@@ -258,7 +271,30 @@ GenerateSerializeWithCachedSizes(io::Printer* printer) const {
   printer->Print(variables_,
       "    entry.reset($name$_.New$wrapper$(it->first, it->second));\n"
       "    ::google::protobuf::internal::WireFormatLite::Write$stream_writer$(\n"
-      "        $number$, *entry, output);\n"
+      "        $number$, *entry, output);\n");
+
+  printer->Indent();
+  printer->Indent();
+
+  const FieldDescriptor* key_field =
+      descriptor_->message_type()->FindFieldByName("key");
+  const FieldDescriptor* value_field =
+      descriptor_->message_type()->FindFieldByName("value");
+  if (key_field->type() == FieldDescriptor::TYPE_STRING) {
+    GenerateUtf8CheckCodeForString(key_field, options_, false, variables_,
+                                   "it->first.data(), it->first.length(),\n",
+                                   printer);
+  }
+  if (value_field->type() == FieldDescriptor::TYPE_STRING) {
+    GenerateUtf8CheckCodeForString(value_field, options_, false, variables_,
+                                   "it->second.data(), it->second.length(),\n",
+                                   printer);
+  }
+
+  printer->Outdent();
+  printer->Outdent();
+
+  printer->Print(
       "  }\n");
 
   // If entry is allocated by arena, its desctructor should be avoided.
@@ -292,8 +328,30 @@ GenerateSerializeWithCachedSizesToArray(io::Printer* printer) const {
   printer->Print(variables_,
       "    entry.reset($name$_.New$wrapper$(it->first, it->second));\n"
       "    target = ::google::protobuf::internal::WireFormatLite::\n"
-      "        Write$declared_type$NoVirtualToArray(\n"
-      "            $number$, *entry, target);\n"
+      "        InternalWrite$declared_type$NoVirtualToArray(\n"
+      "            $number$, *entry, false, target);\n");
+
+  printer->Indent();
+  printer->Indent();
+
+  const FieldDescriptor* key_field =
+      descriptor_->message_type()->FindFieldByName("key");
+  const FieldDescriptor* value_field =
+      descriptor_->message_type()->FindFieldByName("value");
+  if (key_field->type() == FieldDescriptor::TYPE_STRING) {
+    GenerateUtf8CheckCodeForString(key_field, options_, false, variables_,
+                                   "it->first.data(), it->first.length(),\n",
+                                   printer);
+  }
+  if (value_field->type() == FieldDescriptor::TYPE_STRING) {
+    GenerateUtf8CheckCodeForString(value_field, options_, false, variables_,
+                                   "it->second.data(), it->second.length(),\n",
+                                   printer);
+  }
+
+  printer->Outdent();
+  printer->Outdent();
+  printer->Print(
       "  }\n");
 
   // If entry is allocated by arena, its desctructor should be avoided.

@@ -38,6 +38,7 @@
 
 #include <google/protobuf/wire_format.h>
 
+#include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/stubs/stringprintf.h>
 #include <google/protobuf/descriptor.h>
@@ -53,15 +54,6 @@
 namespace google {
 namespace protobuf {
 namespace internal {
-
-namespace {
-
-// This function turns out to be convenient when using some macros later.
-inline int GetEnumNumber(const EnumValueDescriptor* descriptor) {
-  return descriptor->number();
-}
-
-}  // anonymous namespace
 
 // ===================================================================
 
@@ -469,6 +461,10 @@ bool WireFormat::ParseAndMergeMessageSetField(uint32 field_number,
   }
 }
 
+static bool StrictUtf8Check(const FieldDescriptor* field) {
+  return field->file()->syntax() == FileDescriptor::SYNTAX_PROTO3;
+}
+
 bool WireFormat::ParseAndMergeField(
     uint32 tag,
     const FieldDescriptor* field,        // May be NULL for unknown
@@ -641,10 +637,19 @@ bool WireFormat::ParseAndMergeField(
 
       // Handle strings separately so that we can optimize the ctype=CORD case.
       case FieldDescriptor::TYPE_STRING: {
+        bool strict_utf8_check = StrictUtf8Check(field);
         string value;
         if (!WireFormatLite::ReadString(input, &value)) return false;
-        VerifyUTF8StringNamedField(value.data(), value.length(), PARSE,
-                                   field->name().c_str());
+        if (strict_utf8_check) {
+          if (!WireFormatLite::VerifyUtf8String(
+                  value.data(), value.length(), WireFormatLite::PARSE,
+                  field->full_name().c_str())) {
+            return false;
+          }
+        } else {
+          VerifyUTF8StringNamedField(value.data(), value.length(), PARSE,
+                                     field->full_name().c_str());
+        }
         if (field->is_repeated()) {
           message_reflection->AddString(message, field, value);
         } else {
@@ -902,13 +907,20 @@ void WireFormat::SerializeFieldWithCachedSizes(
       // Handle strings separately so that we can get string references
       // instead of copying.
       case FieldDescriptor::TYPE_STRING: {
+        bool strict_utf8_check = StrictUtf8Check(field);
         string scratch;
         const string& value = field->is_repeated() ?
           message_reflection->GetRepeatedStringReference(
             message, field, j, &scratch) :
           message_reflection->GetStringReference(message, field, &scratch);
-        VerifyUTF8StringNamedField(value.data(), value.length(), SERIALIZE,
-                                   field->name().c_str());
+        if (strict_utf8_check) {
+          WireFormatLite::VerifyUtf8String(value.data(), value.length(),
+                                           WireFormatLite::SERIALIZE,
+                                           field->full_name().c_str());
+        } else {
+          VerifyUTF8StringNamedField(value.data(), value.length(), SERIALIZE,
+                                     field->full_name().c_str());
+        }
         WireFormatLite::WriteString(field->number(), value, output);
         break;
       }
@@ -1115,34 +1127,6 @@ int WireFormat::MessageSetItemByteSize(
 
   return our_size;
 }
-
-void WireFormat::VerifyUTF8StringFallback(const char* data,
-                                          int size,
-                                          Operation op,
-                                          const char* field_name) {
-  if (!IsStructurallyValidUTF8(data, size)) {
-    const char* operation_str = NULL;
-    switch (op) {
-      case PARSE:
-        operation_str = "parsing";
-        break;
-      case SERIALIZE:
-        operation_str = "serializing";
-        break;
-      // no default case: have the compiler warn if a case is not covered.
-    }
-    string quoted_field_name = "";
-    if (field_name != NULL) {
-      quoted_field_name = StringPrintf(" '%s'", field_name);
-    }
-    // no space below to avoid double space when the field name is missing.
-    GOOGLE_LOG(ERROR) << "String field" << quoted_field_name << " contains invalid "
-               << "UTF-8 data when " << operation_str << " a protocol "
-               << "buffer. Use the 'bytes' type if you intend to send raw "
-               << "bytes. ";
-  }
-}
-
 
 }  // namespace internal
 }  // namespace protobuf

@@ -1,0 +1,85 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2008 Google Inc.  All rights reserved.
+// https://developers.google.com/protocol-buffers/
+//
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are
+// met:
+//
+//     * Redistributions of source code must retain the above copyright
+// notice, this list of conditions and the following disclaimer.
+//     * Redistributions in binary form must reproduce the above
+// copyright notice, this list of conditions and the following disclaimer
+// in the documentation and/or other materials provided with the
+// distribution.
+//     * Neither the name of Google Inc. nor the names of its
+// contributors may be used to endorse or promote products derived from
+// this software without specific prior written permission.
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+syntax = "proto2";
+
+package map_for_proto2_test;
+
+option java_package = "map_test";
+option java_outer_classname = "MapForProto2TestProto";
+option java_generate_equals_and_hash = true;
+
+message TestMap {
+  message MessageValue {
+    optional int32 value = 1;
+  }
+  enum EnumValue {
+    FOO = 0;
+    BAR = 1;
+    BAZ = 2;
+    QUX = 3;
+  }
+
+  map<int32, int32>         int32_to_int32_field = 1;
+  map<int32, string>        int32_to_string_field = 2;
+  map<int32, bytes>         int32_to_bytes_field = 3;
+  map<int32, EnumValue>     int32_to_enum_field = 4;
+  map<int32, MessageValue>  int32_to_message_field = 5;
+  map<string, int32>        string_to_int32_field = 6;
+
+  message MessageWithRequiredFields {
+    required int32 value = 1;
+  }
+  map<int32, MessageWithRequiredFields> required_message_map = 11;
+}
+
+message TestUnknownEnumValue {
+  // Wire-compatible with TestMap.int32_to_enum_field so we can test the
+  // parsing behavior of TestMap regarding unknown enum values.
+  map<int32, int32> int32_to_int32_field = 4;
+}
+
+// Test that the maps initialization code works correctly when the map field
+// references the containing message.
+message TestRecursiveMap {
+  optional int32 value = 1;
+  map<int32, TestRecursiveMap> recursive_map_field = 2;
+}
+
+
+// a decoy of TestMap for testing parsing errors
+message BizarroTestMap {
+  map<int32, bytes> int32_to_int32_field = 1; // same key type, different value
+  map<string, int32> int32_to_string_field = 2; // different key and value types
+  map<string, int32> int32_to_bytes_field = 3; // different key types, same value
+  map<string, bytes> int32_to_enum_field = 4; // different key and value types
+  map<string, bytes> int32_to_message_field = 5; // different key and value types
+  map<string, bytes> string_to_int32_field = 6;  // same key type, different value
+}

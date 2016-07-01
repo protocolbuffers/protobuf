@@ -42,7 +42,6 @@ option cc_generic_services = true;     // auto-added
 option java_generic_services = true;   // auto-added
 option py_generic_services = true;     // auto-added
 option cc_enable_arenas = true;
-option csharp_namespace = "Google.ProtocolBuffers.TestProtos";
 
 import "google/protobuf/unittest_import.proto";
 
@@ -196,6 +195,7 @@ message TestDeprecatedFields {
 // that.
 message ForeignMessage {
   optional int32 c = 1;
+  optional int32 d = 2;
 }
 
 enum ForeignEnum {
@@ -696,6 +696,7 @@ message TestRequiredOneof {
     required double required_double = 1;
   }
 }
+
 
 // Test messages for packed fields
 

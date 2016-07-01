@@ -40,9 +40,11 @@
 #include <google/protobuf/stubs/shared_ptr.h>
 #endif
 
+#include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
-#include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/util/internal/object_writer.h>
+#include <google/protobuf/util/internal/json_escaping.h>
+#include <google/protobuf/stubs/strutil.h>
 
 namespace google {
 namespace protobuf {
@@ -58,7 +60,7 @@ using util::error::INVALID_ARGUMENT;
 
 namespace converter {
 
-// Number of digits in a unicode escape sequence (/uXXXX)
+// Number of digits in an escaped UTF-16 code unit ('\\' 'u' X X X X)
 static const int kUnicodeEscapedLength = 6;
 
 // Length of the true, false, and null literals.
@@ -104,16 +106,42 @@ JsonStreamParser::JsonStreamParser(ObjectWriter* ow)
       parsed_(),
       parsed_storage_(),
       string_open_(0),
-      utf8_storage_(),
-      utf8_length_(0) {
+      chunk_storage_(),
+      coerce_to_utf8_(false) {
   // Initialize the stack with a single value to be parsed.
   stack_.push(VALUE);
 }
 
 JsonStreamParser::~JsonStreamParser() {}
 
+
 util::Status JsonStreamParser::Parse(StringPiece json) {
-  return ParseChunk(json);
+  StringPiece chunk = json;
+  // If we have leftovers from a previous chunk, append the new chunk to it
+  // and create a new StringPiece pointing at the string's data. This could
+  // be large but we rely on the chunks to be small, assuming they are
+  // fragments of a Cord.
+  if (!leftover_.empty()) {
+    // Don't point chunk to leftover_ because leftover_ will be updated in
+    // ParseChunk(chunk).
+    chunk_storage_.swap(leftover_);
+    json.AppendToString(&chunk_storage_);
+    chunk = StringPiece(chunk_storage_);
+  }
+
+  // Find the structurally valid UTF8 prefix and parse only that.
+  int n = internal::UTF8SpnStructurallyValid(chunk);
+  if (n > 0) {
+    util::Status status = ParseChunk(chunk.substr(0, n));
+
+    // Any leftover characters are stashed in leftover_ for later parsing when
+    // there is more data available.
+    chunk.substr(n).AppendToString(&leftover_);
+    return status;
+  } else {
+    chunk.CopyToString(&leftover_);
+    return util::Status::OK;
+  }
 }
 
 util::Status JsonStreamParser::FinishParse() {
@@ -122,9 +150,22 @@ util::Status JsonStreamParser::FinishParse() {
   if (stack_.empty() && leftover_.empty()) {
     return util::Status::OK;
   }
+
+  // Storage for UTF8-coerced string.
+  google::protobuf::scoped_array<char> utf8;
+  if (coerce_to_utf8_) {
+    utf8.reset(new char[leftover_.size()]);
+    char* coerced = internal::UTF8CoerceToStructurallyValid(leftover_, utf8.get(), ' ');
+    p_ = json_ = StringPiece(coerced, leftover_.size());
+  } else {
+    p_ = json_ = leftover_;
+    if (!internal::IsStructurallyValidUTF8(leftover_)) {
+      return ReportFailure("Encountered non UTF-8 code points.");
+    }
+  }
+
   // Parse the remainder in finishing mode, which reports errors for things like
   // unterminated strings or unknown tokens that would normally be retried.
-  p_ = json_ = StringPiece(leftover_);
   finishing_ = true;
   util::Status result = RunParser();
   if (result.ok()) {
@@ -137,16 +178,10 @@ util::Status JsonStreamParser::FinishParse() {
 }
 
 util::Status JsonStreamParser::ParseChunk(StringPiece chunk) {
-  // If we have leftovers from a previous chunk, append the new chunk to it and
-  // create a new StringPiece pointing at the string's data. This could be
-  // large but we rely on the chunks to be small, assuming they are fragments
-  // of a Cord.
-  if (!leftover_.empty()) {
-    chunk.AppendToString(&leftover_);
-    p_ = json_ = StringPiece(leftover_);
-  } else {
-    p_ = json_ = chunk;
-  }
+  // Do not do any work if the chunk is empty.
+  if (chunk.empty()) return util::Status::OK;
+
+  p_ = json_ = chunk;
 
   finishing_ = false;
   util::Status result = RunParser();
@@ -385,9 +420,45 @@ util::Status JsonStreamParser::ParseUnicodeEscape() {
     }
     code = (code << 4) + hex_digit_to_int(p_.data()[i]);
   }
+  if (code >= JsonEscaping::kMinHighSurrogate &&
+      code <= JsonEscaping::kMaxHighSurrogate) {
+    if (p_.length() < 2 * kUnicodeEscapedLength) {
+      if (!finishing_) {
+        return util::Status::CANCELLED;
+      }
+      if (!coerce_to_utf8_) {
+        return ReportFailure("Missing low surrogate.");
+      }
+    } else if (p_.data()[kUnicodeEscapedLength] == '\\' &&
+               p_.data()[kUnicodeEscapedLength + 1] == 'u') {
+      uint32 low_code = 0;
+      for (int i = kUnicodeEscapedLength + 2; i < 2 * kUnicodeEscapedLength;
+           ++i) {
+        if (!isxdigit(p_.data()[i])) {
+          return ReportFailure("Invalid escape sequence.");
+        }
+        low_code = (low_code << 4) + hex_digit_to_int(p_.data()[i]);
+      }
+      if (low_code >= JsonEscaping::kMinLowSurrogate &&
+          low_code <= JsonEscaping::kMaxLowSurrogate) {
+        // Convert UTF-16 surrogate pair to 21-bit Unicode codepoint.
+        code = (((code & 0x3FF) << 10) | (low_code & 0x3FF)) +
+               JsonEscaping::kMinSupplementaryCodePoint;
+        // Advance past the first code unit escape.
+        p_.remove_prefix(kUnicodeEscapedLength);
+      } else if (!coerce_to_utf8_) {
+        return ReportFailure("Invalid low surrogate.");
+      }
+    } else if (!coerce_to_utf8_) {
+      return ReportFailure("Missing low surrogate.");
+    }
+  }
+  if (!coerce_to_utf8_ && !IsValidCodePoint(code)) {
+    return ReportFailure("Invalid unicode code point.");
+  }
   char buf[UTFmax];
   int len = EncodeAsUTF8Char(code, buf);
-  // Advance past the unicode escape.
+  // Advance past the [final] code unit escape.
   p_.remove_prefix(kUnicodeEscapedLength);
   parsed_storage_.append(buf, len);
   return util::Status::OK;
@@ -439,7 +510,7 @@ util::Status JsonStreamParser::ParseNumberHelper(NumberResult* result) {
       floating = true;
       continue;
     }
-    if (c == '+' || c == '-') continue;
+    if (c == '+' || c == '-' || c == 'x') continue;
     // Not a valid number character, break out.
     break;
   }
@@ -465,6 +536,10 @@ util::Status JsonStreamParser::ParseNumberHelper(NumberResult* result) {
 
   // Positive non-floating point number, parse as a uint64.
   if (!negative) {
+    // Octal/Hex numbers are not valid JSON values.
+    if (number.length() >= 2 && number[0] == '0') {
+      return ReportFailure("Octal/hex numbers are not valid JSON values.");
+    }
     if (!safe_strtou64(number, &result->uint_val)) {
       return ReportFailure("Unable to parse number.");
     }
@@ -473,6 +548,10 @@ util::Status JsonStreamParser::ParseNumberHelper(NumberResult* result) {
     return util::Status::OK;
   }
 
+  // Octal/Hex numbers are not valid JSON values.
+  if (number.length() >= 3 && number[1] == '0') {
+    return ReportFailure("Octal/hex numbers are not valid JSON values.");
+  }
   // Negative non-floating point number, parse as an int64.
   if (!safe_strto64(number, &result->int_val)) {
     return ReportFailure("Unable to parse number.");
@@ -643,8 +722,9 @@ util::Status JsonStreamParser::ReportFailure(StringPiece message) {
   static const int kContextLength = 20;
   const char* p_start = p_.data();
   const char* json_start = json_.data();
-  const char* begin = max(p_start - kContextLength, json_start);
-  const char* end = min(p_start + kContextLength, json_start + json_.size());
+  const char* begin = std::max(p_start - kContextLength, json_start);
+  const char* end =
+      std::min(p_start + kContextLength, json_start + json_.size());
   StringPiece segment(begin, end - begin);
   string location(p_start - begin, ' ');
   location.push_back('^');
@@ -672,8 +752,8 @@ void JsonStreamParser::SkipWhitespace() {
 void JsonStreamParser::Advance() {
   // Advance by moving one UTF8 character while making sure we don't go beyond
   // the length of StringPiece.
-  p_.remove_prefix(
-      min<int>(p_.length(), UTF8FirstLetterNumBytes(p_.data(), p_.length())));
+  p_.remove_prefix(std::min<int>(
+      p_.length(), UTF8FirstLetterNumBytes(p_.data(), p_.length())));
 }
 
 util::Status JsonStreamParser::ParseKey() {

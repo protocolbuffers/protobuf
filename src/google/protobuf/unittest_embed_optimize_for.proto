@@ -39,8 +39,6 @@ import "google/protobuf/unittest_optimize_for.proto";
 
 package protobuf_unittest;
 
-option csharp_namespace = "Google.ProtocolBuffers.TestProtos";
-
 // We optimize for speed here, but we are importing a proto that is optimized
 // for code size.
 option optimize_for = SPEED;

@@ -33,6 +33,7 @@
 #include <string>
 #include <iostream>
 
+#include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/arena_test_util.h>
 #include <google/protobuf/map_lite_unittest.pb.h>
@@ -377,13 +378,6 @@ int main(int argc, char* argv[]) {
   }
 
   {
-    // Proto2SetMapFieldsInitialized
-    protobuf_unittest::TestEnumStartWithNonZeroMapLite message;
-    EXPECT_EQ(protobuf_unittest::PROTO2_NON_ZERO_MAP_ENUM_FOO_LITE,
-              (*message.mutable_map_field())[0]);
-  }
-
-  {
     // Clear
     protobuf_unittest::TestMapLite message;
 
@@ -692,35 +686,31 @@ int main(int argc, char* argv[]) {
     EXPECT_TRUE(map_message.IsInitialized());
   }
 
-  // arena support for map  =========================================
-
   {
-    // ParsingAndSerializingNoHeapAllocation
+      // Check that adding more values to enum does not corrupt message
+      // when passed through an old client.
+      protobuf_unittest::V2MessageLite v2_message;
+      v2_message.set_int_field(800);
+      // Set enum field to the value not understood by the old client.
+      v2_message.set_enum_field(protobuf_unittest::V2_SECOND);
+      string v2_bytes = v2_message.SerializeAsString();
 
-    // Allocate a large initial block to avoid mallocs during hooked test.
-    std::vector<char> arena_block(128 * 1024);
-    google::protobuf::ArenaOptions options;
-    options.initial_block = &arena_block[0];
-    options.initial_block_size = arena_block.size();
-    google::protobuf::Arena arena(options);
-    string data;
-    data.reserve(128 * 1024);
+      protobuf_unittest::V1MessageLite v1_message;
+      v1_message.ParseFromString(v2_bytes);
+      EXPECT_TRUE(v1_message.IsInitialized());
+      EXPECT_EQ(v1_message.int_field(), v2_message.int_field());
+      // V1 client does not understand V2_SECOND value, so it discards it and
+      // uses default value instead.
+      EXPECT_EQ(v1_message.enum_field(), protobuf_unittest::V1_FIRST);
 
-    {
-      google::protobuf::internal::NoHeapChecker no_heap;
+      // However, when re-serialized, it should preserve enum value.
+      string v1_bytes = v1_message.SerializeAsString();
 
-      protobuf_unittest::TestArenaMapLite* from =
-          google::protobuf::Arena::CreateMessage<protobuf_unittest::TestArenaMapLite>(
-              &arena);
-      google::protobuf::MapLiteTestUtil::SetArenaMapFields(from);
-      from->SerializeToString(&data);
+      protobuf_unittest::V2MessageLite same_v2_message;
+      same_v2_message.ParseFromString(v1_bytes);
 
-      protobuf_unittest::TestArenaMapLite* to =
-          google::protobuf::Arena::CreateMessage<protobuf_unittest::TestArenaMapLite>(
-              &arena);
-      to->ParseFromString(data);
-      google::protobuf::MapLiteTestUtil::ExpectArenaMapFieldsSet(*to);
-    }
+      EXPECT_EQ(v2_message.int_field(), same_v2_message.int_field());
+      EXPECT_EQ(v2_message.enum_field(), same_v2_message.enum_field());
   }
 
   std::cout << "PASS" << std::endl;

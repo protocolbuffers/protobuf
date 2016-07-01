@@ -45,7 +45,9 @@
 #endif
 #include <utility>
 
+#include <google/protobuf/stubs/callback.h>
 #include <google/protobuf/stubs/common.h>
+#include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/stringprintf.h>
 #include <google/protobuf/any.h>
 #include <google/protobuf/io/printer.h>
@@ -237,7 +239,23 @@ void MessageDifferencer::TreatAsSet(const FieldDescriptor* field) {
   GOOGLE_CHECK(key_comparator == NULL)
       << "Cannot treat this repeated field as both Map and Set for"
       << " comparison.  Field name is: " << field->full_name();
+  GOOGLE_CHECK(list_fields_.find(field) == list_fields_.end())
+      << "Cannot treat the same field as both SET and LIST. Field name is: "
+      << field->full_name();
   set_fields_.insert(field);
+}
+
+void MessageDifferencer::TreatAsList(const FieldDescriptor* field) {
+  GOOGLE_CHECK(field->is_repeated()) << "Field must be repeated: "
+                              << field->full_name();
+  const MapKeyComparator* key_comparator = GetMapKeyComparator(field);
+  GOOGLE_CHECK(key_comparator == NULL)
+      << "Cannot treat this repeated field as both Map and Set for"
+      << " comparison.  Field name is: " << field->full_name();
+  GOOGLE_CHECK(set_fields_.find(field) == set_fields_.end())
+      << "Cannot treat the same field as both SET and LIST. Field name is: "
+      << field->full_name();
+  list_fields_.insert(field);
 }
 
 void MessageDifferencer::TreatAsMap(const FieldDescriptor* field,
@@ -253,6 +271,9 @@ void MessageDifferencer::TreatAsMap(const FieldDescriptor* field,
       << field->full_name() << ", not " << key->containing_type()->full_name();
   GOOGLE_CHECK(set_fields_.find(field) == set_fields_.end())
       << "Cannot treat this repeated field as both Map and Set for "
+      << "comparison.";
+  GOOGLE_CHECK(list_fields_.find(field) == list_fields_.end())
+      << "Cannot treat this repeated field as both Map and List for "
       << "comparison.";
   MapKeyComparator* key_comparator =
       new MultipleFieldsMapKeyComparator(this, key);
@@ -435,7 +456,9 @@ bool MessageDifferencer::Compare(
   const Descriptor* descriptor2 = message2.GetDescriptor();
   if (descriptor1 != descriptor2) {
     GOOGLE_LOG(DFATAL) << "Comparison between two messages with different "
-                << "descriptors.";
+                << "descriptors. "
+                << descriptor1->full_name() << " vs "
+                << descriptor2->full_name();
     return false;
   }
   // Expand google.protobuf.Any payload if possible.
@@ -451,7 +474,10 @@ bool MessageDifferencer::Compare(
 
   // Retrieve all the set fields, including extensions.
   vector<const FieldDescriptor*> message1_fields;
+  message1_fields.reserve(1 + message1.GetDescriptor()->field_count());
+
   vector<const FieldDescriptor*> message2_fields;
+  message2_fields.reserve(1 + message2.GetDescriptor()->field_count());
 
   reflection1->ListFields(message1, &message1_fields);
   reflection2->ListFields(message2, &message2_fields);
@@ -919,7 +945,8 @@ bool MessageDifferencer::CheckPathChanged(
 bool MessageDifferencer::IsTreatedAsSet(const FieldDescriptor* field) {
   if (!field->is_repeated()) return false;
   if (field->is_map()) return true;
-  if (repeated_field_comparison_ == AS_SET) return true;
+  if (repeated_field_comparison_ == AS_SET)
+    return list_fields_.find(field) == list_fields_.end();
   return (set_fields_.find(field) != set_fields_.end());
 }
 
@@ -939,6 +966,18 @@ bool MessageDifferencer::IsIgnored(
   for (int i = 0; i < ignore_criteria_.size(); ++i) {
     if (ignore_criteria_[i]->IsIgnored(message1, message2, field,
                                        parent_fields)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+bool MessageDifferencer::IsUnknownFieldIgnored(
+    const Message& message1, const Message& message2,
+    const SpecificField& field, const vector<SpecificField>& parent_fields) {
+  for (int i = 0; i < ignore_criteria_.size(); ++i) {
+    if (ignore_criteria_[i]->IsUnknownFieldIgnored(message1, message2, field,
+                                                   parent_fields)) {
       return true;
     }
   }
@@ -988,7 +1027,7 @@ bool MessageDifferencer::UnpackAny(const Message& any,
       any.GetDescriptor()->file()->pool()->FindMessageTypeByName(
           full_type_name);
   if (desc == NULL) {
-    GOOGLE_LOG(ERROR) << "Proto type '" << full_type_name << "' not found";
+    GOOGLE_DLOG(ERROR) << "Proto type '" << full_type_name << "' not found";
     return false;
   }
 
@@ -998,7 +1037,7 @@ bool MessageDifferencer::UnpackAny(const Message& any,
   data->reset(dynamic_message_factory_->GetPrototype(desc)->New());
   string serialized_value = reflection->GetString(any, value_field);
   if (!(*data)->ParseFromString(serialized_value)) {
-    GOOGLE_LOG(ERROR) << "Failed to parse value for " << full_type_name;
+    GOOGLE_DLOG(ERROR) << "Failed to parse value for " << full_type_name;
     return false;
   }
   return true;
@@ -1126,15 +1165,6 @@ bool MessageDifferencer::CompareUnknownFields(
       continue;
     }
 
-    if (change_type == ADDITION || change_type == DELETION ||
-        change_type == MODIFICATION) {
-      if (reporter_ == NULL) {
-        // We found a difference and we have no reproter.
-        return false;
-      }
-      is_different = true;
-    }
-
     // Build the SpecificField.  This is slightly complicated.
     SpecificField specific_field;
     specific_field.unknown_field_number = focus_field->number();
@@ -1157,6 +1187,25 @@ bool MessageDifferencer::CompareUnknownFields(
     } else {
       specific_field.index = index1 - current_repeated_start1;
       specific_field.new_index = index2 - current_repeated_start2;
+    }
+
+    if (IsUnknownFieldIgnored(message1, message2, specific_field,
+                              *parent_field)) {
+      if (reporter_ != NULL) {
+        parent_field->push_back(specific_field);
+        reporter_->ReportUnknownFieldIgnored(message1, message2, *parent_field);
+        parent_field->pop_back();
+      }
+      return true;
+    }
+
+    if (change_type == ADDITION || change_type == DELETION ||
+        change_type == MODIFICATION) {
+      if (reporter_ == NULL) {
+        // We found a difference and we have no reproter.
+        return false;
+      }
+      is_different = true;
     }
 
     parent_field->push_back(specific_field);
@@ -1340,9 +1389,11 @@ bool MessageDifferencer::MatchRepeatedFieldIndices(
       // doesn't neccessarily imply Compare(b, c). Therefore a naive greedy
       // algorithm will fail to find a maximum matching.
       // Here we use the argumenting path algorithm.
-      MaximumMatcher::NodeMatchCallback* callback = NewPermanentCallback(
-          this, &MessageDifferencer::IsMatch, repeated_field, key_comparator,
-          &message1, &message2, parent_fields);
+      MaximumMatcher::NodeMatchCallback* callback =
+          ::google::protobuf::internal::NewPermanentCallback(
+              this, &MessageDifferencer::IsMatch,
+              repeated_field, key_comparator,
+              &message1, &message2, parent_fields);
       MaximumMatcher matcher(count1, count2, callback, match_list1,
                              match_list2);
       // If diff info is not needed, we should end the matching process as
@@ -1614,6 +1665,18 @@ void MessageDifferencer::StreamReporter::ReportMatched(
 void MessageDifferencer::StreamReporter::ReportIgnored(
     const Message& message1,
     const Message& message2,
+    const vector<SpecificField>& field_path) {
+  printer_->Print("ignored: ");
+  PrintPath(field_path, true);
+  if (CheckPathChanged(field_path)) {
+    printer_->Print(" -> ");
+    PrintPath(field_path, false);
+  }
+  printer_->Print("\n");  // Print for newlines.
+}
+
+void MessageDifferencer::StreamReporter::ReportUnknownFieldIgnored(
+    const Message& message1, const Message& message2,
     const vector<SpecificField>& field_path) {
   printer_->Print("ignored: ");
   PrintPath(field_path, true);

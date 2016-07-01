@@ -40,7 +40,6 @@ import "google/protobuf/unittest.proto";
 package protobuf_unittest;
 
 option optimize_for = CODE_SIZE;
-option csharp_namespace = "Google.ProtocolBuffers.TestProtos";
 
 message TestOptimizedForSize {
   optional int32 i = 1;

@@ -32,7 +32,7 @@
 
 package protobuf_unittest_import;
 
-option java_package = "com.google.protobuf.nano";
+option java_package = "com.google.protobuf";
 option java_outer_classname = "MultipleNameClashNano";
 option java_multiple_files = true;
 

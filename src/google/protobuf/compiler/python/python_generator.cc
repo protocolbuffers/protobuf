@@ -58,6 +58,7 @@
 #include <google/protobuf/compiler/python/python_generator.h>
 #include <google/protobuf/descriptor.pb.h>
 
+#include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/stubs/stringprintf.h>
 #include <google/protobuf/io/printer.h>
@@ -234,7 +235,7 @@ string StringifyDefaultValue(const FieldDescriptor& field) {
         // infinity * 0 = nan
         return "(1e10000 * 0)";
       } else {
-        return SimpleDtoa(value);
+        return "float(" + SimpleDtoa(value) + ")";
       }
     }
     case FieldDescriptor::CPPTYPE_FLOAT: {
@@ -250,7 +251,7 @@ string StringifyDefaultValue(const FieldDescriptor& field) {
         // infinity - infinity = nan
         return "(1e10000 * 0)";
       } else {
-        return SimpleFtoa(value);
+        return "float(" + SimpleFtoa(value) + ")";
       }
     }
     case FieldDescriptor::CPPTYPE_BOOL:
@@ -706,11 +707,18 @@ void Generator::PrintDescriptor(const Descriptor& message_descriptor) const {
     m["name"] = desc->name();
     m["full_name"] = desc->full_name();
     m["index"] = SimpleItoa(desc->index());
+    string options_string =
+        OptionsValue("OneofOptions", desc->options().SerializeAsString());
+    if (options_string == "None") {
+      m["options"] = "";
+    } else {
+      m["options"] = ", options=" + options_string;
+    }
     printer_->Print(
         m,
         "_descriptor.OneofDescriptor(\n"
         "  name='$name$', full_name='$full_name$',\n"
-        "  index=$index$, containing_type=None, fields=[]),\n");
+        "  index=$index$, containing_type=None, fields=[]$options$),\n");
   }
   printer_->Outdent();
   printer_->Print("],\n");
@@ -1234,6 +1242,18 @@ void Generator::FixAllDescriptorOptions() const {
   }
 }
 
+void Generator::FixOptionsForOneof(const OneofDescriptor& oneof) const {
+  string oneof_options = OptionsValue(
+      "OneofOptions", oneof.options().SerializeAsString());
+  if (oneof_options != "None") {
+    string oneof_name = strings::Substitute(
+        "$0.$1['$2']",
+        ModuleLevelDescriptorName(*oneof.containing_type()),
+        "oneofs_by_name", oneof.name());
+    PrintDescriptorOptionsFixingCode(oneof_name, oneof_options, printer_);
+  }
+}
+
 // Prints expressions that set the options for an enum descriptor and its
 // value descriptors.
 void Generator::FixOptionsForEnum(const EnumDescriptor& enum_descriptor) const {
@@ -1286,6 +1306,10 @@ void Generator::FixOptionsForMessage(const Descriptor& descriptor) const {
   // Nested messages.
   for (int i = 0; i < descriptor.nested_type_count(); ++i) {
     FixOptionsForMessage(*descriptor.nested_type(i));
+  }
+  // Oneofs.
+  for (int i = 0; i < descriptor.oneof_decl_count(); ++i) {
+    FixOptionsForOneof(*descriptor.oneof_decl(i));
   }
   // Enums.
   for (int i = 0; i < descriptor.enum_type_count(); ++i) {

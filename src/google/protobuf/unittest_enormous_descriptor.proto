@@ -40,7 +40,6 @@ syntax = "proto2";
 
 package google.protobuf;
 option java_package = "com.google.protobuf";
-option csharp_namespace = "Google.ProtocolBuffers.TestProtos";
 
 // Avoid generating insanely long methods.
 option optimize_for = CODE_SIZE;

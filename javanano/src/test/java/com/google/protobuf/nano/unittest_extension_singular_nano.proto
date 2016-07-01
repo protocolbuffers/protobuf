@@ -1,7 +1,7 @@
 syntax = "proto2";
 
 option java_multiple_files = true;
-option java_package = "com.google.protobuf.nano";
+option java_package = "com.google.protobuf";
 
 import "google/protobuf/nano/unittest_extension_nano.proto";
 

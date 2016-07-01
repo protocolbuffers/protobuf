@@ -32,9 +32,9 @@ syntax = "proto2";
 
 option cc_enable_arenas = true;
 option optimize_for = LITE_RUNTIME;
-option csharp_namespace = "Google.ProtocolBuffers.TestProtos";
 
 import "google/protobuf/unittest_lite.proto";
+import "google/protobuf/unittest_no_arena_lite.proto";
 
 package protobuf_unittest;
 
@@ -73,17 +73,17 @@ message TestArenaMapLite {
   map<int32   , float   > map_int32_float       = 11;
   map<int32   , double  > map_int32_double      = 12;
   map<bool    , bool    > map_bool_bool         = 13;
-  map<int32   , MapEnumLite> map_int32_enum     = 14;
-  map<int32   , ForeignMessageArenaLite> map_int32_foreign_message = 15;
+  map<string  , string  > map_string_string     = 14;
+  map<int32   , bytes   > map_int32_bytes       = 15;
+  map<int32   , MapEnumLite> map_int32_enum     = 16;
+  map<int32   , ForeignMessageArenaLite> map_int32_foreign_message = 17;
+  map<int32, .protobuf_unittest_no_arena.ForeignMessageLite>
+      map_int32_foreign_message_no_arena = 18;
 }
 
 // Test embeded message with required fields
 message TestRequiredMessageMapLite {
   map<int32, TestRequiredLite> map_field = 1;
-}
-
-message TestEnumStartWithNonZeroMapLite {
-  map<int32, Proto2MapEnumStartWithNonZeroLite> map_field = 101;
 }
 
 message TestEnumMapLite {
@@ -111,10 +111,6 @@ enum Proto2MapEnumPlusExtraLite {
   E_PROTO2_MAP_ENUM_BAR_LITE   = 1;
   E_PROTO2_MAP_ENUM_BAZ_LITE   = 2;
   E_PROTO2_MAP_ENUM_EXTRA_LITE = 3;
-}
-
-enum Proto2MapEnumStartWithNonZeroLite {
-  PROTO2_NON_ZERO_MAP_ENUM_FOO_LITE = 1;
 }
 
 enum MapEnumLite {

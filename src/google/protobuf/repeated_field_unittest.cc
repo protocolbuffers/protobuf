@@ -42,6 +42,7 @@
 
 #include <google/protobuf/repeated_field.h>
 
+#include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/unittest.pb.h>
 #include <google/protobuf/stubs/strutil.h>
@@ -1429,7 +1430,6 @@ class RepeatedFieldInsertionIteratorsTest : public testing::Test {
     std::copy(nested_ptrs.begin(), nested_ptrs.end(),
               RepeatedFieldBackInserter(
                   protobuffer.mutable_repeated_nested_message()));
-
   }
 
   virtual void TearDown() {
@@ -1519,6 +1519,44 @@ TEST_F(RepeatedFieldInsertionIteratorsTest,
   TestAllTypes testproto;
   std::copy(data.begin(), data.end(), AllocatedRepeatedPtrFieldBackInserter(
                                           testproto.mutable_repeated_string()));
+  EXPECT_EQ(testproto.DebugString(), goldenproto.DebugString());
+}
+
+TEST_F(RepeatedFieldInsertionIteratorsTest,
+       UnsafeArenaAllocatedRepeatedPtrFieldWithStringIntData) {
+  vector<Nested*> data;
+  TestAllTypes goldenproto;
+  for (int i = 0; i < 10; ++i) {
+    Nested* new_data = new Nested;
+    new_data->set_bb(i);
+    data.push_back(new_data);
+
+    new_data = goldenproto.add_repeated_nested_message();
+    new_data->set_bb(i);
+  }
+  TestAllTypes testproto;
+  std::copy(data.begin(), data.end(),
+            UnsafeArenaAllocatedRepeatedPtrFieldBackInserter(
+                testproto.mutable_repeated_nested_message()));
+  EXPECT_EQ(testproto.DebugString(), goldenproto.DebugString());
+}
+
+TEST_F(RepeatedFieldInsertionIteratorsTest,
+       UnsafeArenaAllocatedRepeatedPtrFieldWithString) {
+  vector<string*> data;
+  TestAllTypes goldenproto;
+  for (int i = 0; i < 10; ++i) {
+    string* new_data = new string;
+    *new_data = "name-" + SimpleItoa(i);
+    data.push_back(new_data);
+
+    new_data = goldenproto.add_repeated_string();
+    *new_data = "name-" + SimpleItoa(i);
+  }
+  TestAllTypes testproto;
+  std::copy(data.begin(), data.end(),
+            UnsafeArenaAllocatedRepeatedPtrFieldBackInserter(
+                testproto.mutable_repeated_string()));
   EXPECT_EQ(testproto.DebugString(), goldenproto.DebugString());
 }
 

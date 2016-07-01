@@ -2,11 +2,12 @@
 // source: google/protobuf/field_mask.proto
 
 #define INTERNAL_SUPPRESS_PROTOBUF_FIELD_DEPRECATION
-#include "google/protobuf/field_mask.pb.h"
+#include <google/protobuf/field_mask.pb.h>
 
 #include <algorithm>
 
 #include <google/protobuf/stubs/common.h>
+#include <google/protobuf/stubs/port.h>
 #include <google/protobuf/stubs/once.h>
 #include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/wire_format_lite_inl.h>
@@ -81,8 +82,9 @@ void protobuf_AddDesc_google_2fprotobuf_2ffield_5fmask_2eproto() {
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
     "\n google/protobuf/field_mask.proto\022\017goog"
     "le.protobuf\"\032\n\tFieldMask\022\r\n\005paths\030\001 \003(\tB"
-    "F\n\023com.google.protobufB\016FieldMaskProtoP\001"
-    "\242\002\003GPB\252\002\026Google.ProtocolBuffersb\006proto3", 159);
+    "Q\n\023com.google.protobufB\016FieldMaskProtoP\001"
+    "\240\001\001\242\002\003GPB\252\002\036Google.Protobuf.WellKnownTyp"
+    "esb\006proto3", 170);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "google/protobuf/field_mask.proto", &protobuf_RegisterTypes);
   FieldMask::default_instance_ = new FieldMask();
@@ -109,9 +111,9 @@ static void MergeFromFail(int line) {
 
 // ===================================================================
 
-#ifndef _MSC_VER
+#if !defined(_MSC_VER) || _MSC_VER >= 1900
 const int FieldMask::kPathsFieldNumber;
-#endif  // !_MSC_VER
+#endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
 FieldMask::FieldMask()
   : ::google::protobuf::Message(), _internal_metadata_(NULL) {
@@ -173,12 +175,13 @@ FieldMask* FieldMask::New(::google::protobuf::Arena* arena) const {
 }
 
 void FieldMask::Clear() {
+// @@protoc_insertion_point(message_clear_start:google.protobuf.FieldMask)
   paths_.Clear();
 }
 
 bool FieldMask::MergePartialFromCodedStream(
     ::google::protobuf::io::CodedInputStream* input) {
-#define DO_(EXPRESSION) if (!(EXPRESSION)) goto failure
+#define DO_(EXPRESSION) if (!GOOGLE_PREDICT_TRUE(EXPRESSION)) goto failure
   ::google::protobuf::uint32 tag;
   // @@protoc_insertion_point(parse_start:google.protobuf.FieldMask)
   for (;;) {
@@ -192,11 +195,11 @@ bool FieldMask::MergePartialFromCodedStream(
          parse_paths:
           DO_(::google::protobuf::internal::WireFormatLite::ReadString(
                 input, this->add_paths()));
-          ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
+          DO_(::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
             this->paths(this->paths_size() - 1).data(),
             this->paths(this->paths_size() - 1).length(),
-            ::google::protobuf::internal::WireFormat::PARSE,
-            "google.protobuf.FieldMask.paths");
+            ::google::protobuf::internal::WireFormatLite::PARSE,
+            "google.protobuf.FieldMask.paths"));
         } else {
           goto handle_unusual;
         }
@@ -231,10 +234,10 @@ void FieldMask::SerializeWithCachedSizes(
   // @@protoc_insertion_point(serialize_start:google.protobuf.FieldMask)
   // repeated string paths = 1;
   for (int i = 0; i < this->paths_size(); i++) {
-  ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
-    this->paths(i).data(), this->paths(i).length(),
-    ::google::protobuf::internal::WireFormat::SERIALIZE,
-    "google.protobuf.FieldMask.paths");
+    ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
+      this->paths(i).data(), this->paths(i).length(),
+      ::google::protobuf::internal::WireFormatLite::SERIALIZE,
+      "google.protobuf.FieldMask.paths");
     ::google::protobuf::internal::WireFormatLite::WriteString(
       1, this->paths(i), output);
   }
@@ -242,14 +245,14 @@ void FieldMask::SerializeWithCachedSizes(
   // @@protoc_insertion_point(serialize_end:google.protobuf.FieldMask)
 }
 
-::google::protobuf::uint8* FieldMask::SerializeWithCachedSizesToArray(
-    ::google::protobuf::uint8* target) const {
+::google::protobuf::uint8* FieldMask::InternalSerializeWithCachedSizesToArray(
+    bool deterministic, ::google::protobuf::uint8* target) const {
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.FieldMask)
   // repeated string paths = 1;
   for (int i = 0; i < this->paths_size(); i++) {
-    ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
+    ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
       this->paths(i).data(), this->paths(i).length(),
-      ::google::protobuf::internal::WireFormat::SERIALIZE,
+      ::google::protobuf::internal::WireFormatLite::SERIALIZE,
       "google.protobuf.FieldMask.paths");
     target = ::google::protobuf::internal::WireFormatLite::
       WriteStringToArray(1, this->paths(i), target);
@@ -260,6 +263,7 @@ void FieldMask::SerializeWithCachedSizes(
 }
 
 int FieldMask::ByteSize() const {
+// @@protoc_insertion_point(message_byte_size_start:google.protobuf.FieldMask)
   int total_size = 0;
 
   // repeated string paths = 1;
@@ -276,29 +280,35 @@ int FieldMask::ByteSize() const {
 }
 
 void FieldMask::MergeFrom(const ::google::protobuf::Message& from) {
+// @@protoc_insertion_point(generalized_merge_from_start:google.protobuf.FieldMask)
   if (GOOGLE_PREDICT_FALSE(&from == this)) MergeFromFail(__LINE__);
   const FieldMask* source = 
       ::google::protobuf::internal::DynamicCastToGenerated<const FieldMask>(
           &from);
   if (source == NULL) {
+  // @@protoc_insertion_point(generalized_merge_from_cast_fail:google.protobuf.FieldMask)
     ::google::protobuf::internal::ReflectionOps::Merge(from, this);
   } else {
+  // @@protoc_insertion_point(generalized_merge_from_cast_success:google.protobuf.FieldMask)
     MergeFrom(*source);
   }
 }
 
 void FieldMask::MergeFrom(const FieldMask& from) {
+// @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.FieldMask)
   if (GOOGLE_PREDICT_FALSE(&from == this)) MergeFromFail(__LINE__);
   paths_.MergeFrom(from.paths_);
 }
 
 void FieldMask::CopyFrom(const ::google::protobuf::Message& from) {
+// @@protoc_insertion_point(generalized_copy_from_start:google.protobuf.FieldMask)
   if (&from == this) return;
   Clear();
   MergeFrom(from);
 }
 
 void FieldMask::CopyFrom(const FieldMask& from) {
+// @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.FieldMask)
   if (&from == this) return;
   Clear();
   MergeFrom(from);
@@ -359,6 +369,7 @@ void FieldMask::clear_paths() {
   // @@protoc_insertion_point(field_set_pointer:google.protobuf.FieldMask.paths)
 }
  ::std::string* FieldMask::add_paths() {
+  // @@protoc_insertion_point(field_add_mutable:google.protobuf.FieldMask.paths)
   return paths_.Add();
 }
  void FieldMask::add_paths(const ::std::string& value) {

@@ -27,7 +27,7 @@
 #include <google/protobuf/repeated_field.h>
 #include <google/protobuf/extension_set.h>
 #include <google/protobuf/unknown_field_set.h>
-#include "google/protobuf/any.h"
+#include <google/protobuf/any.h>
 // @@protoc_insertion_point(includes)
 
 namespace google {
@@ -42,7 +42,7 @@ class Any;
 
 // ===================================================================
 
-class LIBPROTOBUF_EXPORT Any : public ::google::protobuf::Message {
+class LIBPROTOBUF_EXPORT Any : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.Any) */ {
  public:
   Any();
   virtual ~Any();
@@ -60,6 +60,8 @@ class LIBPROTOBUF_EXPORT Any : public ::google::protobuf::Message {
   // implements Any -----------------------------------------------
 
   void PackFrom(const ::google::protobuf::Message& message);
+  void PackFrom(const ::google::protobuf::Message& message,
+                const ::std::string& type_url_prefix);
   bool UnpackTo(::google::protobuf::Message* message) const;
   template<typename T> bool Is() const {
     return _any_metadata_.Is<T>();
@@ -84,7 +86,11 @@ class LIBPROTOBUF_EXPORT Any : public ::google::protobuf::Message {
       ::google::protobuf::io::CodedInputStream* input);
   void SerializeWithCachedSizes(
       ::google::protobuf::io::CodedOutputStream* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
+  ::google::protobuf::uint8* InternalSerializeWithCachedSizesToArray(
+      bool deterministic, ::google::protobuf::uint8* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const {
+    return InternalSerializeWithCachedSizesToArray(false, output);
+  }
   int GetCachedSize() const { return _cached_size_; }
   private:
   void SharedCtor();
@@ -182,6 +188,7 @@ inline ::std::string* Any::mutable_type_url() {
   return type_url_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
 inline ::std::string* Any::release_type_url() {
+  // @@protoc_insertion_point(field_release:google.protobuf.Any.type_url)
   
   return type_url_.ReleaseNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
@@ -225,6 +232,7 @@ inline ::std::string* Any::mutable_value() {
   return value_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
 inline ::std::string* Any::release_value() {
+  // @@protoc_insertion_point(field_release:google.protobuf.Any.value)
   
   return value_.ReleaseNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }

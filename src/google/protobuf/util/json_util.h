@@ -44,7 +44,7 @@ class ZeroCopyOutputStream;
 }  // namespace io
 namespace util {
 
-struct LIBPROTOBUF_EXPORT JsonOptions {
+struct JsonOptions {
   // Whether to add spaces, line breaks and indentation to make the JSON output
   // easy to read.
   bool add_whitespace;
@@ -65,7 +65,7 @@ struct LIBPROTOBUF_EXPORT JsonOptions {
 //   2. input is not valid protobuf wire format, or conflicts with the type
 //      information returned by TypeResolver.
 // Note that unknown fields will be discarded silently.
-LIBPROTOBUF_EXPORT util::Status BinaryToJsonStream(
+util::Status BinaryToJsonStream(
     TypeResolver* resolver,
     const string& type_url,
     io::ZeroCopyInputStream* binary_input,
@@ -101,7 +101,7 @@ inline util::Status BinaryToJsonString(TypeResolver* resolver,
 //   2. input is not valid JSON format, or conflicts with the type
 //      information returned by TypeResolver.
 //   3. input has unknown fields.
-LIBPROTOBUF_EXPORT util::Status JsonToBinaryStream(
+util::Status JsonToBinaryStream(
     TypeResolver* resolver,
     const string& type_url,
     io::ZeroCopyInputStream* json_input,

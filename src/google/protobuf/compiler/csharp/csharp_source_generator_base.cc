@@ -39,22 +39,17 @@
 
 #include <google/protobuf/compiler/csharp/csharp_source_generator_base.h>
 #include <google/protobuf/compiler/csharp/csharp_helpers.h>
+#include <google/protobuf/compiler/csharp/csharp_names.h>
+#include <google/protobuf/compiler/csharp/csharp_options.h>
 
 namespace google {
 namespace protobuf {
 namespace compiler {
 namespace csharp {
 
-SourceGeneratorBase::SourceGeneratorBase(const FileDescriptor* descriptor)
-    : descriptor_(descriptor) {
-  optimizeSize_ = (descriptor->options().optimize_for()
-      == FileOptions::CODE_SIZE);
-  optimizeSpeed_ = (descriptor->options().optimize_for() == FileOptions::SPEED);
-  useLiteRuntime_ = (descriptor->options().optimize_for()
-      == FileOptions::LITE_RUNTIME);
-
-  optimizeSpeed_ |= useLiteRuntime_;
-  runtimeSuffix_ = useLiteRuntime_ ? "Lite" : "";
+SourceGeneratorBase::SourceGeneratorBase(const FileDescriptor* descriptor,
+                                         const Options *options)
+    : descriptor_(descriptor), options_(options) {
 }
 
 SourceGeneratorBase::~SourceGeneratorBase() {
@@ -65,7 +60,11 @@ void SourceGeneratorBase::WriteGeneratedCodeAttributes(io::Printer* printer) {
 }
 
 std::string SourceGeneratorBase::class_access_level() {
-  return "public";  // public_classes is always on.
+  return (IsDescriptorProto(descriptor_) || this->options()->internal_access) ? "internal" : "public";
+}
+
+const Options* SourceGeneratorBase::options() {
+  return this->options_;
 }
 
 }  // namespace csharp

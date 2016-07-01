@@ -2,11 +2,12 @@
 // source: google/protobuf/any.proto
 
 #define INTERNAL_SUPPRESS_PROTOBUF_FIELD_DEPRECATION
-#include "google/protobuf/any.pb.h"
+#include <google/protobuf/any.pb.h>
 
 #include <algorithm>
 
 #include <google/protobuf/stubs/common.h>
+#include <google/protobuf/stubs/port.h>
 #include <google/protobuf/stubs/once.h>
 #include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/wire_format_lite_inl.h>
@@ -82,9 +83,10 @@ void protobuf_AddDesc_google_2fprotobuf_2fany_2eproto() {
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
     "\n\031google/protobuf/any.proto\022\017google.prot"
     "obuf\"&\n\003Any\022\020\n\010type_url\030\001 \001(\t\022\r\n\005value\030\002"
-    " \001(\014BC\n\023com.google.protobufB\010AnyProtoP\001\240"
-    "\001\001\242\002\003GPB\252\002\026Google.ProtocolBuffersb\006proto"
-    "3", 161);
+    " \001(\014Br\n\023com.google.protobufB\010AnyProtoP\001Z"
+    "%github.com/golang/protobuf/ptypes/any\240\001"
+    "\001\242\002\003GPB\252\002\036Google.Protobuf.WellKnownTypes"
+    "b\006proto3", 208);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "google/protobuf/any.proto", &protobuf_RegisterTypes);
   Any::default_instance_ = new Any();
@@ -115,14 +117,19 @@ void Any::PackFrom(const ::google::protobuf::Message& message) {
   _any_metadata_.PackFrom(message);
 }
 
+void Any::PackFrom(const ::google::protobuf::Message& message,
+                           const ::std::string& type_url_prefix) {
+  _any_metadata_.PackFrom(message, type_url_prefix);
+}
+
 bool Any::UnpackTo(::google::protobuf::Message* message) const {
   return _any_metadata_.UnpackTo(message);
 }
 
-#ifndef _MSC_VER
+#if !defined(_MSC_VER) || _MSC_VER >= 1900
 const int Any::kTypeUrlFieldNumber;
 const int Any::kValueFieldNumber;
-#endif  // !_MSC_VER
+#endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
 Any::Any()
   : ::google::protobuf::Message(), _internal_metadata_(NULL), _any_metadata_(&type_url_, &value_) {
@@ -189,13 +196,14 @@ Any* Any::New(::google::protobuf::Arena* arena) const {
 }
 
 void Any::Clear() {
+// @@protoc_insertion_point(message_clear_start:google.protobuf.Any)
   type_url_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   value_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
 
 bool Any::MergePartialFromCodedStream(
     ::google::protobuf::io::CodedInputStream* input) {
-#define DO_(EXPRESSION) if (!(EXPRESSION)) goto failure
+#define DO_(EXPRESSION) if (!GOOGLE_PREDICT_TRUE(EXPRESSION)) goto failure
   ::google::protobuf::uint32 tag;
   // @@protoc_insertion_point(parse_start:google.protobuf.Any)
   for (;;) {
@@ -208,10 +216,10 @@ bool Any::MergePartialFromCodedStream(
         if (tag == 10) {
           DO_(::google::protobuf::internal::WireFormatLite::ReadString(
                 input, this->mutable_type_url()));
-          ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
+          DO_(::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
             this->type_url().data(), this->type_url().length(),
-            ::google::protobuf::internal::WireFormat::PARSE,
-            "google.protobuf.Any.type_url");
+            ::google::protobuf::internal::WireFormatLite::PARSE,
+            "google.protobuf.Any.type_url"));
         } else {
           goto handle_unusual;
         }
@@ -258,9 +266,9 @@ void Any::SerializeWithCachedSizes(
   // @@protoc_insertion_point(serialize_start:google.protobuf.Any)
   // optional string type_url = 1;
   if (this->type_url().size() > 0) {
-    ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
+    ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
       this->type_url().data(), this->type_url().length(),
-      ::google::protobuf::internal::WireFormat::SERIALIZE,
+      ::google::protobuf::internal::WireFormatLite::SERIALIZE,
       "google.protobuf.Any.type_url");
     ::google::protobuf::internal::WireFormatLite::WriteStringMaybeAliased(
       1, this->type_url(), output);
@@ -275,14 +283,14 @@ void Any::SerializeWithCachedSizes(
   // @@protoc_insertion_point(serialize_end:google.protobuf.Any)
 }
 
-::google::protobuf::uint8* Any::SerializeWithCachedSizesToArray(
-    ::google::protobuf::uint8* target) const {
+::google::protobuf::uint8* Any::InternalSerializeWithCachedSizesToArray(
+    bool deterministic, ::google::protobuf::uint8* target) const {
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.Any)
   // optional string type_url = 1;
   if (this->type_url().size() > 0) {
-    ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
+    ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
       this->type_url().data(), this->type_url().length(),
-      ::google::protobuf::internal::WireFormat::SERIALIZE,
+      ::google::protobuf::internal::WireFormatLite::SERIALIZE,
       "google.protobuf.Any.type_url");
     target =
       ::google::protobuf::internal::WireFormatLite::WriteStringToArray(
@@ -301,6 +309,7 @@ void Any::SerializeWithCachedSizes(
 }
 
 int Any::ByteSize() const {
+// @@protoc_insertion_point(message_byte_size_start:google.protobuf.Any)
   int total_size = 0;
 
   // optional string type_url = 1;
@@ -324,18 +333,22 @@ int Any::ByteSize() const {
 }
 
 void Any::MergeFrom(const ::google::protobuf::Message& from) {
+// @@protoc_insertion_point(generalized_merge_from_start:google.protobuf.Any)
   if (GOOGLE_PREDICT_FALSE(&from == this)) MergeFromFail(__LINE__);
   const Any* source = 
       ::google::protobuf::internal::DynamicCastToGenerated<const Any>(
           &from);
   if (source == NULL) {
+  // @@protoc_insertion_point(generalized_merge_from_cast_fail:google.protobuf.Any)
     ::google::protobuf::internal::ReflectionOps::Merge(from, this);
   } else {
+  // @@protoc_insertion_point(generalized_merge_from_cast_success:google.protobuf.Any)
     MergeFrom(*source);
   }
 }
 
 void Any::MergeFrom(const Any& from) {
+// @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.Any)
   if (GOOGLE_PREDICT_FALSE(&from == this)) MergeFromFail(__LINE__);
   if (from.type_url().size() > 0) {
 
@@ -348,12 +361,14 @@ void Any::MergeFrom(const Any& from) {
 }
 
 void Any::CopyFrom(const ::google::protobuf::Message& from) {
+// @@protoc_insertion_point(generalized_copy_from_start:google.protobuf.Any)
   if (&from == this) return;
   Clear();
   MergeFrom(from);
 }
 
 void Any::CopyFrom(const Any& from) {
+// @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.Any)
   if (&from == this) return;
   Clear();
   MergeFrom(from);
@@ -416,6 +431,7 @@ void Any::clear_type_url() {
   return type_url_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
  ::std::string* Any::release_type_url() {
+  // @@protoc_insertion_point(field_release:google.protobuf.Any.type_url)
   
   return type_url_.ReleaseNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
@@ -459,6 +475,7 @@ void Any::clear_value() {
   return value_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
  ::std::string* Any::release_value() {
+  // @@protoc_insertion_point(field_release:google.protobuf.Any.value)
   
   return value_.ReleaseNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }

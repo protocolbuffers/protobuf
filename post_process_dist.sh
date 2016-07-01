@@ -27,7 +27,7 @@ fi
 
 set -ex
 
-LANGUAGES="cpp csharp java javanano objectivec python ruby"
+LANGUAGES="cpp csharp java javanano js objectivec python ruby"
 BASENAME=`basename $1 .tar.gz`
 VERSION=${BASENAME:9}
 
@@ -40,11 +40,7 @@ rm $BASENAME.tar.gz
 
 # Set the entire contents to be user-writable.
 chmod -R u+w $BASENAME
-
-# Convert the MSVC projects to MSVC 2005 format.
-cd $BASENAME/vsprojects
-./convert2008to2005.sh
-cd ..
+cd $BASENAME
 
 for LANG in $LANGUAGES; do
   # Build the dist again in .tar.gz

@@ -54,6 +54,7 @@
 #include <google/protobuf/stubs/substitute.h>
 
 #include <google/protobuf/testing/file.h>
+#include <google/protobuf/testing/file.h>
 #include <google/protobuf/testing/googletest.h>
 #include <gtest/gtest.h>
 
@@ -107,7 +108,7 @@ class MockGeneratorContext : public GeneratorContext {
 
   virtual io::ZeroCopyOutputStream* Open(const string& filename) {
     string** map_slot = &files_[filename];
-    if (*map_slot != NULL) delete *map_slot;
+    delete *map_slot;
     *map_slot = new string;
 
     return new io::StringOutputStream(*map_slot);
@@ -133,8 +134,7 @@ TEST(BootstrapTest, GeneratedDescriptorMatches) {
   CppGenerator generator;
   MockGeneratorContext context;
   string error;
-  string parameter;
-  parameter = "dllexport_decl=LIBPROTOBUF_EXPORT";
+  string parameter = "dllexport_decl=LIBPROTOBUF_EXPORT";
   ASSERT_TRUE(generator.Generate(proto_file, parameter,
                                  &context, &error));
   parameter = "dllexport_decl=LIBPROTOC_EXPORT";

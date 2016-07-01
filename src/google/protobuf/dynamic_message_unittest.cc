@@ -40,7 +40,11 @@
 // reflection_ops_unittest, cover the rest of the functionality used by
 // DynamicMessage.
 
-#include <google/protobuf/stubs/common.h>
+#include <memory>
+#ifndef _SHARED_PTR_H
+#include <google/protobuf/stubs/shared_ptr.h>
+#endif
+
 #include <google/protobuf/dynamic_message.h>
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/descriptor.pb.h>
@@ -48,6 +52,8 @@
 #include <google/protobuf/unittest.pb.h>
 #include <google/protobuf/unittest_no_field_presence.pb.h>
 
+#include <google/protobuf/stubs/logging.h>
+#include <google/protobuf/stubs/common.h>
 #include <google/protobuf/testing/googletest.h>
 #include <gtest/gtest.h>
 
@@ -142,7 +148,7 @@ TEST_F(DynamicMessageTest, IndependentOffsets) {
   // Check that all fields have independent offsets by setting each
   // one to a unique value then checking that they all still have those
   // unique values (i.e. they don't stomp each other).
-  scoped_ptr<Message> message(prototype_->New());
+  google::protobuf::scoped_ptr<Message> message(prototype_->New());
   TestUtil::ReflectionTester reflection_tester(descriptor_);
 
   reflection_tester.SetAllFieldsViaReflection(message.get());
@@ -151,7 +157,7 @@ TEST_F(DynamicMessageTest, IndependentOffsets) {
 
 TEST_F(DynamicMessageTest, Extensions) {
   // Check that extensions work.
-  scoped_ptr<Message> message(extensions_prototype_->New());
+  google::protobuf::scoped_ptr<Message> message(extensions_prototype_->New());
   TestUtil::ReflectionTester reflection_tester(extensions_descriptor_);
 
   reflection_tester.SetAllFieldsViaReflection(message.get());
@@ -160,7 +166,7 @@ TEST_F(DynamicMessageTest, Extensions) {
 
 TEST_F(DynamicMessageTest, PackedFields) {
   // Check that packed fields work properly.
-  scoped_ptr<Message> message(packed_prototype_->New());
+  google::protobuf::scoped_ptr<Message> message(packed_prototype_->New());
   TestUtil::ReflectionTester reflection_tester(packed_descriptor_);
 
   reflection_tester.SetPackedFieldsViaReflection(message.get());
@@ -169,7 +175,7 @@ TEST_F(DynamicMessageTest, PackedFields) {
 
 TEST_F(DynamicMessageTest, Oneof) {
   // Check that oneof fields work properly.
-  scoped_ptr<Message> message(oneof_prototype_->New());
+  google::protobuf::scoped_ptr<Message> message(oneof_prototype_->New());
 
   // Check default values.
   const Descriptor* descriptor = message->GetDescriptor();
@@ -230,7 +236,7 @@ TEST_F(DynamicMessageTest, SpaceUsed) {
   // Since we share the implementation with generated messages, we don't need
   // to test very much here.  Just make sure it appears to be working.
 
-  scoped_ptr<Message> message(prototype_->New());
+  google::protobuf::scoped_ptr<Message> message(prototype_->New());
   TestUtil::ReflectionTester reflection_tester(descriptor_);
 
   int initial_space_used = message->SpaceUsed();

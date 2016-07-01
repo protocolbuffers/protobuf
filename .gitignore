@@ -55,8 +55,10 @@ src/google/protobuf/util/**/*.pb.h
 *_pb2.py
 python/*.egg
 python/.eggs/
+python/.tox
 python/build/
 python/google/protobuf/compiler/
+python/google/protobuf/util/
 
 src/protoc
 src/unittest_proto_middleman
@@ -79,28 +81,35 @@ java/target
 javanano/target
 
 # Windows native output.
-vsprojects/Debug
-vsprojects/Release
+cmake/build
+build_msvc
 
 # NuGet packages: we want the repository configuration, but not the
 # packages themselves.
 /csharp/src/packages/*/
 
-# Directories created by opening the Objective C Xcode projects.
-objectivec/ProtocolBuffers_OSX.xcodeproj/project.xcworkspace/xcuserdata/
-objectivec/ProtocolBuffers_OSX.xcodeproj/project.xcworkspace/xcshareddata/ProtocolBuffers_OSX.xccheckout
-objectivec/ProtocolBuffers_OSX.xcodeproj/xcuserdata/
-objectivec/ProtocolBuffers_iOS.xcodeproj/project.xcworkspace/xcuserdata/
-objectivec/ProtocolBuffers_iOS.xcodeproj/project.xcworkspace/xcshareddata/ProtocolBuffers_iOS.xccheckout
-objectivec/ProtocolBuffers_iOS.xcodeproj/xcuserdata/
 # OS X's Finder creates these for state about opened windows/etc.
 **/.DS_Store
+
+# Cocoapods artifacts
+# Podfile.lock and the workspace file are tracked, to ease deleting them. That's
+# needed to trigger "pod install" to rerun the preinstall commands.
+Pods/
 
 # Comformance test output
 conformance/.libs/
 conformance/com/
 conformance/conformance-cpp
+conformance/conformance-csharp
+conformance/conformance-java
+conformance/conformance-objc
 conformance/conformance-test-runner
 conformance/conformance.pb.cc
 conformance/conformance.pb.h
+conformance/Conformance.pbobjc.h
+conformance/Conformance.pbobjc.m
+conformance/conformance.rb
+conformance/google/
+conformance/javac_middleman
+conformance/lite/
 conformance/protoc_middleman

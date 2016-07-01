@@ -43,7 +43,7 @@ package google.protobuf;
 option go_package = "descriptor";
 option java_package = "com.google.protobuf";
 option java_outer_classname = "DescriptorProtos";
-option csharp_namespace = "Google.ProtocolBuffers.DescriptorProtos";
+option csharp_namespace = "Google.Protobuf.Reflection";
 option objc_class_prefix = "GPB";
 
 // descriptor.proto must be optimized for speed because reflection-based
@@ -190,12 +190,19 @@ message FieldDescriptorProto {
   // list.  This field is a member of that oneof.
   optional int32 oneof_index = 9;
 
+  // JSON name of this field. The value is set by protocol compiler. If the
+  // user has set a "json_name" option on this field, that option's value
+  // will be used. Otherwise, it's deduced from the field's name by converting
+  // it to camelCase.
+  optional string json_name = 10;
+
   optional FieldOptions options = 8;
 }
 
 // Describes a oneof.
 message OneofDescriptorProto {
   optional string name = 1;
+  optional OneofOptions options = 2;
 }
 
 // Describes an enum type.
@@ -300,10 +307,12 @@ message FileOptions {
 
   // If set true, then the Java code generator will generate equals() and
   // hashCode() methods for all messages defined in the .proto file.
-  // - In the full runtime, this is purely a speed optimization, as the
+  // This increases generated code size, potentially substantially for large
+  // protos, which may harm a memory-constrained application.
+  // - In the full runtime this is a speed optimization, as the
   // AbstractMessage base class includes reflection-based implementations of
   // these methods.
-  //- In the lite runtime, setting this option changes the semantics of
+  // - In the lite runtime, setting this option changes the semantics of
   // equals() and hashCode() to more closely match those of the full runtime;
   // the generated methods compute their results based on field values rather
   // than object identity. (Implementations should not assume that hashcodes
@@ -374,6 +383,8 @@ message FileOptions {
 
   // Clients can define custom options in extensions of this message. See above.
   extensions 1000 to max;
+
+  reserved 38;
 }
 
 message MessageOptions {
@@ -520,6 +531,15 @@ message FieldOptions {
   // For Google-internal migration only. Do not use.
   optional bool weak = 10 [default=false];
 
+
+  // The parser stores options it doesn't recognize here. See above.
+  repeated UninterpretedOption uninterpreted_option = 999;
+
+  // Clients can define custom options in extensions of this message. See above.
+  extensions 1000 to max;
+}
+
+message OneofOptions {
   // The parser stores options it doesn't recognize here. See above.
   repeated UninterpretedOption uninterpreted_option = 999;
 
@@ -762,5 +782,31 @@ message SourceCodeInfo {
     optional string leading_comments = 3;
     optional string trailing_comments = 4;
     repeated string leading_detached_comments = 6;
+  }
+}
+
+// Describes the relationship between generated code and its original source
+// file. A GeneratedCodeInfo message is associated with only one generated
+// source file, but may contain references to different source .proto files.
+message GeneratedCodeInfo {
+  // An Annotation connects some span of text in generated code to an element
+  // of its generating .proto file.
+  repeated Annotation annotation = 1;
+  message Annotation {
+    // Identifies the element in the original source .proto file. This field
+    // is formatted the same as SourceCodeInfo.Location.path.
+    repeated int32 path = 1 [packed=true];
+
+    // Identifies the filesystem path to the original source .proto.
+    optional string source_file = 2;
+
+    // Identifies the starting offset in bytes in the generated code
+    // that relates to the identified object.
+    optional int32 begin = 3;
+
+    // Identifies the ending offset in bytes in the generated code that
+    // relates to the identified offset. The end offset should be one past
+    // the last relevant byte (so the length of the text = end - begin).
+    optional int32 end = 4;
   }
 }

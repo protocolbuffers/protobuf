@@ -314,26 +314,20 @@ LIBPROTOBUF_EXPORT int UnescapeCEscapeString(const string& src, string* dest,
 LIBPROTOBUF_EXPORT string UnescapeCEscapeString(const string& src);
 
 // ----------------------------------------------------------------------
-// CEscapeString()
-//    Copies 'src' to 'dest', escaping dangerous characters using
-//    C-style escape sequences. This is very useful for preparing query
-//    flags. 'src' and 'dest' should not overlap.
-//    Returns the number of bytes written to 'dest' (not including the \0)
-//    or -1 if there was insufficient space.
-//
-//    Currently only \n, \r, \t, ", ', \ and !isprint() chars are escaped.
-// ----------------------------------------------------------------------
-LIBPROTOBUF_EXPORT int CEscapeString(const char* src, int src_len,
-                                     char* dest, int dest_len);
-
-// ----------------------------------------------------------------------
 // CEscape()
-//    More convenient form of CEscapeString: returns result as a "string".
-//    This version is slower than CEscapeString() because it does more
-//    allocation.  However, it is much more convenient to use in
-//    non-speed-critical code like logging messages etc.
+//    Escapes 'src' using C-style escape sequences and returns the resulting
+//    string.
+//
+//    Escaped chars: \n, \r, \t, ", ', \, and !isprint().
 // ----------------------------------------------------------------------
 LIBPROTOBUF_EXPORT string CEscape(const string& src);
+
+// ----------------------------------------------------------------------
+// CEscapeAndAppend()
+//    Escapes 'src' using C-style escape sequences, and appends the escaped
+//    string to 'dest'.
+// ----------------------------------------------------------------------
+LIBPROTOBUF_EXPORT void CEscapeAndAppend(StringPiece src, string* dest);
 
 namespace strings {
 // Like CEscape() but does not escape bytes with the upper bit set.
@@ -654,6 +648,9 @@ struct LIBPROTOBUF_EXPORT AlphaNum {
   AlphaNum(StringPiece str)
       : piece_data_(str.data()), piece_size_(str.size()) {}
 
+  AlphaNum(internal::StringPiecePod str)
+      : piece_data_(str.data()), piece_size_(str.size()) {}
+
   size_t size() const { return piece_size_; }
   const char *data() const { return piece_data_; }
 
@@ -852,6 +849,11 @@ LIBPROTOBUF_EXPORT void Base64Escape(const unsigned char* src, int szsrc,
                                      string* dest, bool do_padding);
 LIBPROTOBUF_EXPORT void WebSafeBase64Escape(const unsigned char* src, int szsrc,
                                             string* dest, bool do_padding);
+
+inline bool IsValidCodePoint(uint32 code_point) {
+  return code_point < 0xD800 ||
+         (code_point >= 0xE000 && code_point <= 0x10FFFF);
+}
 
 static const int UTFmax = 4;
 // ----------------------------------------------------------------------

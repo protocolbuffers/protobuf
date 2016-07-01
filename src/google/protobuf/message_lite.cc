@@ -35,7 +35,9 @@
 
 #include <google/protobuf/message_lite.h>
 #include <google/protobuf/arena.h>
+#include <google/protobuf/repeated_field.h>
 #include <string>
+#include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/io/zero_copy_stream_impl_lite.h>
@@ -60,13 +62,15 @@ namespace {
 // provide a useful error message.
 void ByteSizeConsistencyError(int byte_size_before_serialization,
                               int byte_size_after_serialization,
-                              int bytes_produced_by_serialization) {
+                              int bytes_produced_by_serialization,
+                              const MessageLite& message) {
   GOOGLE_CHECK_EQ(byte_size_before_serialization, byte_size_after_serialization)
-      << "Protocol message was modified concurrently during serialization.";
+      << message.GetTypeName()
+      << " was modified concurrently during serialization.";
   GOOGLE_CHECK_EQ(bytes_produced_by_serialization, byte_size_before_serialization)
       << "Byte size calculation and serialization were inconsistent.  This "
          "may indicate a bug in protocol buffers or it may be caused by "
-         "concurrent modification of the message.";
+         "concurrent modification of " << message.GetTypeName() << ".";
   GOOGLE_LOG(FATAL) << "This shouldn't be called if all the sizes are equal.";
 }
 
@@ -98,27 +102,19 @@ string InitializationErrorMessage(const char* action,
 // call MergePartialFromCodedStream().  However, when parsing very small
 // messages, every function call introduces significant overhead.  To avoid
 // this without reproducing code, we use these forced-inline helpers.
-//
-// Note:  GCC only allows GOOGLE_ATTRIBUTE_ALWAYS_INLINE on declarations, not
-//   definitions.
-inline bool InlineMergeFromCodedStream(io::CodedInputStream* input,
-                                       MessageLite* message)
-                                       GOOGLE_ATTRIBUTE_ALWAYS_INLINE;
-inline bool InlineParseFromCodedStream(io::CodedInputStream* input,
-                                       MessageLite* message)
-                                       GOOGLE_ATTRIBUTE_ALWAYS_INLINE;
-inline bool InlineParsePartialFromCodedStream(io::CodedInputStream* input,
-                                              MessageLite* message)
-                                              GOOGLE_ATTRIBUTE_ALWAYS_INLINE;
-inline bool InlineParseFromArray(const void* data, int size,
-                                 MessageLite* message)
-                                 GOOGLE_ATTRIBUTE_ALWAYS_INLINE;
-inline bool InlineParsePartialFromArray(const void* data, int size,
-                                        MessageLite* message)
-                                        GOOGLE_ATTRIBUTE_ALWAYS_INLINE;
+GOOGLE_ATTRIBUTE_ALWAYS_INLINE bool InlineMergeFromCodedStream(
+    io::CodedInputStream* input, MessageLite* message);
+GOOGLE_ATTRIBUTE_ALWAYS_INLINE bool InlineParseFromCodedStream(
+    io::CodedInputStream* input, MessageLite* message);
+GOOGLE_ATTRIBUTE_ALWAYS_INLINE bool InlineParsePartialFromCodedStream(
+    io::CodedInputStream* input, MessageLite* message);
+GOOGLE_ATTRIBUTE_ALWAYS_INLINE bool InlineParseFromArray(
+    const void* data, int size, MessageLite* message);
+GOOGLE_ATTRIBUTE_ALWAYS_INLINE bool InlineParsePartialFromArray(
+    const void* data, int size, MessageLite* message);
 
-bool InlineMergeFromCodedStream(io::CodedInputStream* input,
-                                MessageLite* message) {
+inline bool InlineMergeFromCodedStream(io::CodedInputStream* input,
+                                       MessageLite* message) {
   if (!message->MergePartialFromCodedStream(input)) return false;
   if (!message->IsInitialized()) {
     GOOGLE_LOG(ERROR) << InitializationErrorMessage("parse", *message);
@@ -127,26 +123,27 @@ bool InlineMergeFromCodedStream(io::CodedInputStream* input,
   return true;
 }
 
-bool InlineParseFromCodedStream(io::CodedInputStream* input,
-                                MessageLite* message) {
+inline bool InlineParseFromCodedStream(io::CodedInputStream* input,
+                                       MessageLite* message) {
   message->Clear();
   return InlineMergeFromCodedStream(input, message);
 }
 
-bool InlineParsePartialFromCodedStream(io::CodedInputStream* input,
-                                       MessageLite* message) {
+inline bool InlineParsePartialFromCodedStream(io::CodedInputStream* input,
+                                              MessageLite* message) {
   message->Clear();
   return message->MergePartialFromCodedStream(input);
 }
 
-bool InlineParseFromArray(const void* data, int size, MessageLite* message) {
+inline bool InlineParseFromArray(
+    const void* data, int size, MessageLite* message) {
   io::CodedInputStream input(reinterpret_cast<const uint8*>(data), size);
   return InlineParseFromCodedStream(&input, message) &&
          input.ConsumedEntireMessage();
 }
 
-bool InlineParsePartialFromArray(const void* data, int size,
-                                 MessageLite* message) {
+inline bool InlineParsePartialFromArray(
+    const void* data, int size, MessageLite* message) {
   io::CodedInputStream input(reinterpret_cast<const uint8*>(data), size);
   return InlineParsePartialFromCodedStream(&input, message) &&
          input.ConsumedEntireMessage();
@@ -224,7 +221,8 @@ bool MessageLite::ParsePartialFromArray(const void* data, int size) {
 
 // ===================================================================
 
-uint8* MessageLite::SerializeWithCachedSizesToArray(uint8* target) const {
+uint8* MessageLite::InternalSerializeWithCachedSizesToArray(
+    bool deterministic, uint8* target) const {
   // We only optimize this when using optimize_for = SPEED.  In other cases
   // we just use the CodedOutputStream path.
   int size = GetCachedSize();
@@ -253,7 +251,7 @@ bool MessageLite::SerializePartialToCodedStream(
   if (buffer != NULL) {
     uint8* end = SerializeWithCachedSizesToArray(buffer);
     if (end - buffer != size) {
-      ByteSizeConsistencyError(size, ByteSize(), end - buffer);
+      ByteSizeConsistencyError(size, ByteSize(), end - buffer, *this);
     }
     return true;
   } else {
@@ -266,7 +264,7 @@ bool MessageLite::SerializePartialToCodedStream(
 
     if (final_byte_count - original_byte_count != size) {
       ByteSizeConsistencyError(size, ByteSize(),
-                               final_byte_count - original_byte_count);
+                               final_byte_count - original_byte_count, *this);
     }
 
     return true;
@@ -304,7 +302,7 @@ bool MessageLite::AppendPartialToString(string* output) const {
       reinterpret_cast<uint8*>(io::mutable_string_data(output) + old_size);
   uint8* end = SerializeWithCachedSizesToArray(start);
   if (end - start != byte_size) {
-    ByteSizeConsistencyError(byte_size, ByteSize(), end - start);
+    ByteSizeConsistencyError(byte_size, ByteSize(), end - start, *this);
   }
   return true;
 }
@@ -330,7 +328,7 @@ bool MessageLite::SerializePartialToArray(void* data, int size) const {
   uint8* start = reinterpret_cast<uint8*>(data);
   uint8* end = SerializeWithCachedSizesToArray(start);
   if (end - start != byte_size) {
-    ByteSizeConsistencyError(byte_size, ByteSize(), end - start);
+    ByteSizeConsistencyError(byte_size, ByteSize(), end - start, *this);
   }
   return true;
 }
@@ -352,6 +350,24 @@ string MessageLite::SerializePartialAsString() const {
     output.clear();
   return output;
 }
+
+namespace internal {
+template<>
+MessageLite* GenericTypeHandler<MessageLite>::NewFromPrototype(
+    const MessageLite* prototype, google::protobuf::Arena* arena) {
+  return prototype->New(arena);
+}
+template <>
+void GenericTypeHandler<MessageLite>::Merge(const MessageLite& from,
+                                            MessageLite* to) {
+  to->CheckTypeAndMergeFrom(from);
+}
+template<>
+void GenericTypeHandler<string>::Merge(const string& from,
+                                              string* to) {
+  *to = from;
+}
+}  // namespace internal
 
 }  // namespace protobuf
 }  // namespace google

@@ -34,7 +34,9 @@
 #include <google/protobuf/wrappers.pb.h>
 #include <google/protobuf/descriptor.pb.h>
 #include <google/protobuf/descriptor.h>
+#include <google/protobuf/util/internal/utility.h>
 #include <google/protobuf/util/type_resolver.h>
+#include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/stubs/status.h>
 
 namespace google {
@@ -52,8 +54,7 @@ using util::Status;
 using util::error::INVALID_ARGUMENT;
 using util::error::NOT_FOUND;
 
-bool SplitTypeUrl(const string& type_url,
-                  string* url_prefix,
+bool SplitTypeUrl(const string& type_url, string* url_prefix,
                   string* message_name) {
   size_t pos = type_url.find_last_of("/");
   if (pos == string::npos) {
@@ -64,19 +65,19 @@ bool SplitTypeUrl(const string& type_url,
   return true;
 }
 
-
 class DescriptorPoolTypeResolver : public TypeResolver {
  public:
   DescriptorPoolTypeResolver(const string& url_prefix,
                              const DescriptorPool* pool)
-      : url_prefix_(url_prefix), pool_(pool) {
-  }
+      : url_prefix_(url_prefix), pool_(pool) {}
 
   Status ResolveMessageType(const string& type_url, Type* type) {
     string url_prefix, message_name;
     if (!SplitTypeUrl(type_url, &url_prefix, &message_name) ||
         url_prefix != url_prefix_) {
-      return Status(INVALID_ARGUMENT, "Failed to parse type url: " + type_url);
+      return Status(INVALID_ARGUMENT,
+                    StrCat("Invalid type URL, type URLs must be of the form '",
+                           url_prefix_, "/<typename>', got: ", type_url));
     }
     if (url_prefix != url_prefix_) {
       return Status(INVALID_ARGUMENT,
@@ -84,7 +85,8 @@ class DescriptorPoolTypeResolver : public TypeResolver {
     }
     const Descriptor* descriptor = pool_->FindMessageTypeByName(message_name);
     if (descriptor == NULL) {
-      return Status(NOT_FOUND, "Cannot found the type: " + message_name);
+      return Status(NOT_FOUND,
+                    "Invalid type URL, unknown type: " + message_name);
     }
     ConvertDescriptor(descriptor, type);
     return Status();
@@ -94,7 +96,9 @@ class DescriptorPoolTypeResolver : public TypeResolver {
     string url_prefix, type_name;
     if (!SplitTypeUrl(type_url, &url_prefix, &type_name) ||
         url_prefix != url_prefix_) {
-      return Status(INVALID_ARGUMENT, "Failed to parse type url: " + type_url);
+      return Status(INVALID_ARGUMENT,
+                    StrCat("Invalid type URL, type URLs must be of the form '",
+                           url_prefix_, "/<typename>', got: ", type_url));
     }
     if (url_prefix != url_prefix_) {
       return Status(INVALID_ARGUMENT,
@@ -102,7 +106,7 @@ class DescriptorPoolTypeResolver : public TypeResolver {
     }
     const EnumDescriptor* descriptor = pool_->FindEnumTypeByName(type_name);
     if (descriptor == NULL) {
-      return Status(NOT_FOUND, "Cannot found the type: " + type_name);
+      return Status(NOT_FOUND, "Invalid type URL, unknown type: " + type_name);
     }
     ConvertEnumDescriptor(descriptor, enum_type);
     return Status();
@@ -155,6 +159,10 @@ class DescriptorPoolTypeResolver : public TypeResolver {
     }
     field->set_number(descriptor->number());
     field->set_name(descriptor->name());
+    field->set_json_name(descriptor->json_name());
+    if (descriptor->has_default_value()) {
+      field->set_default_value(DefaultValueAsString(descriptor));
+    }
     if (descriptor->type() == FieldDescriptor::TYPE_MESSAGE) {
       field->set_type_url(GetTypeUrl(descriptor->message_type()));
     } else if (descriptor->type() == FieldDescriptor::TYPE_ENUM) {
@@ -178,8 +186,7 @@ class DescriptorPoolTypeResolver : public TypeResolver {
         descriptor->file()->name());
     for (int i = 0; i < descriptor->value_count(); ++i) {
       const EnumValueDescriptor* value_descriptor = descriptor->value(i);
-      EnumValue* value =
-          enum_type->mutable_enumvalue()->Add();
+      EnumValue* value = enum_type->mutable_enumvalue()->Add();
       value->set_name(value_descriptor->name());
       value->set_number(value_descriptor->number());
 
@@ -196,14 +203,54 @@ class DescriptorPoolTypeResolver : public TypeResolver {
     return url_prefix_ + "/" + descriptor->full_name();
   }
 
+  string DefaultValueAsString(const FieldDescriptor* descriptor) {
+    switch (descriptor->cpp_type()) {
+      case FieldDescriptor::CPPTYPE_INT32:
+        return SimpleItoa(descriptor->default_value_int32());
+        break;
+      case FieldDescriptor::CPPTYPE_INT64:
+        return SimpleItoa(descriptor->default_value_int64());
+        break;
+      case FieldDescriptor::CPPTYPE_UINT32:
+        return SimpleItoa(descriptor->default_value_uint32());
+        break;
+      case FieldDescriptor::CPPTYPE_UINT64:
+        return SimpleItoa(descriptor->default_value_uint64());
+        break;
+      case FieldDescriptor::CPPTYPE_FLOAT:
+        return SimpleFtoa(descriptor->default_value_float());
+        break;
+      case FieldDescriptor::CPPTYPE_DOUBLE:
+        return SimpleDtoa(descriptor->default_value_double());
+        break;
+      case FieldDescriptor::CPPTYPE_BOOL:
+        return descriptor->default_value_bool() ? "true" : "false";
+        break;
+      case FieldDescriptor::CPPTYPE_STRING:
+        if (descriptor->type() == FieldDescriptor::TYPE_BYTES) {
+          return CEscape(descriptor->default_value_string());
+        } else {
+          return descriptor->default_value_string();
+        }
+        break;
+      case FieldDescriptor::CPPTYPE_ENUM:
+        return descriptor->default_value_enum()->name();
+        break;
+      case FieldDescriptor::CPPTYPE_MESSAGE:
+        GOOGLE_LOG(DFATAL) << "Messages can't have default values!";
+        break;
+    }
+    return "";
+  }
+
   string url_prefix_;
   const DescriptorPool* pool_;
 };
 
 }  // namespace
 
-TypeResolver* NewTypeResolverForDescriptorPool(
-    const string& url_prefix, const DescriptorPool* pool) {
+TypeResolver* NewTypeResolverForDescriptorPool(const string& url_prefix,
+                                               const DescriptorPool* pool) {
   return new DescriptorPoolTypeResolver(url_prefix, pool);
 }
 

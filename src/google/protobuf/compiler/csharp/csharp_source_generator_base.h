@@ -40,34 +40,21 @@ namespace protobuf {
 namespace compiler {
 namespace csharp {
 
+struct Options;
+
 class SourceGeneratorBase {
  protected:
-  SourceGeneratorBase(const FileDescriptor* descriptor);
+  SourceGeneratorBase(const FileDescriptor* descriptor, const Options* options);
   virtual ~SourceGeneratorBase();
 
   std::string class_access_level();
-
-  bool optimize_size() {
-    return optimizeSize_;
-  }
-  bool optimize_speed() {
-    return optimizeSpeed_;
-  }
-  bool use_lite_runtime() {
-    return useLiteRuntime_;
-  }
-  std::string runtime_suffix() {
-    return runtimeSuffix_;
-  }
+  const Options* options();
 
   void WriteGeneratedCodeAttributes(io::Printer* printer);
 
  private:
   const FileDescriptor* descriptor_;
-  bool optimizeSize_;
-  bool optimizeSpeed_;
-  bool useLiteRuntime_;
-  std::string runtimeSuffix_;
+  const Options *options_;
 
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(SourceGeneratorBase);
 };

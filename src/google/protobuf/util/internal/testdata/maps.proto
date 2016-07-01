@@ -44,6 +44,35 @@ message MapOut {
   map<string, MapM> map1 = 1;
   map<string, MapOut> map2 = 2;
   map<int32, string> map3 = 3;
+  map<bool, string> map4 = 5;
+  string bar = 4;
+}
+
+// A message with exactly the same wire representation as MapOut, but using
+// repeated message fields instead of map fields. We use this message to test
+// the wire-format compatibility of the JSON transcoder (e.g., whether it
+// handles missing keys correctly).
+message MapOutWireFormat {
+  message Map1Entry {
+    string key = 1;
+    MapM value = 2;
+  }
+  repeated Map1Entry map1 = 1;
+  message Map2Entry {
+    string key = 1;
+    MapOut value = 2;
+  }
+  repeated Map2Entry map2 = 2;
+  message Map3Entry {
+    int32 key = 1;
+    string value = 2;
+  }
+  repeated Map3Entry map3 = 3;
+  message Map4Entry {
+    bool key = 1;
+    string value = 2;
+  }
+  repeated Map4Entry map4 = 5;
   string bar = 4;
 }
 

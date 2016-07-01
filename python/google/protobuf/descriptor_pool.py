@@ -57,8 +57,6 @@ directly instead of this class.
 
 __author__ = 'matthewtoia@google.com (Matt Toia)'
 
-import sys
-
 from google.protobuf import descriptor
 from google.protobuf import descriptor_database
 from google.protobuf import text_encoding
@@ -84,6 +82,12 @@ def _NormalizeFullyQualifiedName(name):
 
 class DescriptorPool(object):
   """A collection of protobufs dynamically constructed by descriptor protos."""
+
+  if _USE_C_DESCRIPTORS:
+
+    def __new__(cls, descriptor_db=None):
+      # pylint: disable=protected-access
+      return descriptor._message.DescriptorPool(descriptor_db)
 
   def __init__(self, descriptor_db=None):
     """Initializes a Pool of proto buffs.
@@ -192,8 +196,7 @@ class DescriptorPool(object):
 
     try:
       file_proto = self._internal_db.FindFileByName(file_name)
-    except KeyError:
-      _, error, _ = sys.exc_info()  #PY25 compatible for GAE.
+    except KeyError as error:
       if self._descriptor_db:
         file_proto = self._descriptor_db.FindFileByName(file_name)
       else:
@@ -228,8 +231,7 @@ class DescriptorPool(object):
 
     try:
       file_proto = self._internal_db.FindFileContainingSymbol(symbol)
-    except KeyError:
-      _, error, _ = sys.exc_info()  #PY25 compatible for GAE.
+    except KeyError as error:
       if self._descriptor_db:
         file_proto = self._descriptor_db.FindFileContainingSymbol(symbol)
       else:
@@ -268,6 +270,39 @@ class DescriptorPool(object):
       self.FindFileContainingSymbol(full_name)
     return self._enum_descriptors[full_name]
 
+  def FindFieldByName(self, full_name):
+    """Loads the named field descriptor from the pool.
+
+    Args:
+      full_name: The full name of the field descriptor to load.
+
+    Returns:
+      The field descriptor for the named field.
+    """
+    full_name = _NormalizeFullyQualifiedName(full_name)
+    message_name, _, field_name = full_name.rpartition('.')
+    message_descriptor = self.FindMessageTypeByName(message_name)
+    return message_descriptor.fields_by_name[field_name]
+
+  def FindExtensionByName(self, full_name):
+    """Loads the named extension descriptor from the pool.
+
+    Args:
+      full_name: The full name of the extension descriptor to load.
+
+    Returns:
+      A FieldDescriptor, describing the named extension.
+    """
+    full_name = _NormalizeFullyQualifiedName(full_name)
+    message_name, _, extension_name = full_name.rpartition('.')
+    try:
+      # Most extensions are nested inside a message.
+      scope = self.FindMessageTypeByName(message_name)
+    except KeyError:
+      # Some extensions are defined at file scope.
+      scope = self.FindFileContainingSymbol(full_name)
+    return scope.extensions_by_name[extension_name]
+
   def _ConvertFileProtoToFileDescriptor(self, file_proto):
     """Creates a FileDescriptor from a proto or returns a cached copy.
 
@@ -284,14 +319,17 @@ class DescriptorPool(object):
     if file_proto.name not in self._file_descriptors:
       built_deps = list(self._GetDeps(file_proto.dependency))
       direct_deps = [self.FindFileByName(n) for n in file_proto.dependency]
+      public_deps = [direct_deps[i] for i in file_proto.public_dependency]
 
       file_descriptor = descriptor.FileDescriptor(
+          pool=self,
           name=file_proto.name,
           package=file_proto.package,
           syntax=file_proto.syntax,
           options=file_proto.options,
           serialized_pb=file_proto.SerializeToString(),
-          dependencies=direct_deps)
+          dependencies=direct_deps,
+          public_dependencies=public_deps)
       if _USE_C_DESCRIPTORS:
         # When using C++ descriptors, all objects defined in the file were added
         # to the C++ database when the FileDescriptor was built above.
@@ -356,6 +394,11 @@ class DescriptorPool(object):
               desc_proto_prefix, desc_proto.name, scope)
           file_descriptor.message_types_by_name[desc_proto.name] = desc
 
+        for index, service_proto in enumerate(file_proto.service):
+          file_descriptor.services_by_name[service_proto.name] = (
+              self._MakeServiceDescriptor(service_proto, index, scope,
+                                          file_proto.package, file_descriptor))
+
       self.Add(file_proto)
       self._file_descriptors[file_proto.name] = file_descriptor
 
@@ -403,7 +446,7 @@ class DescriptorPool(object):
         for index, extension in enumerate(desc_proto.extension)]
     oneofs = [
         descriptor.OneofDescriptor(desc.name, '.'.join((desc_name, desc.name)),
-                                   index, None, [])
+                                   index, None, [], desc.options)
         for index, desc in enumerate(desc_proto.oneof_decl)]
     extension_ranges = [(r.start, r.end) for r in desc_proto.extension_range]
     if extension_ranges:
@@ -602,10 +645,24 @@ class DescriptorPool(object):
         field_desc.default_value = text_encoding.CUnescape(
             field_proto.default_value)
       else:
+        # All other types are of the "int" type.
         field_desc.default_value = int(field_proto.default_value)
     else:
       field_desc.has_default_value = False
-      field_desc.default_value = None
+      if (field_proto.type == descriptor.FieldDescriptor.TYPE_DOUBLE or
+          field_proto.type == descriptor.FieldDescriptor.TYPE_FLOAT):
+        field_desc.default_value = 0.0
+      elif field_proto.type == descriptor.FieldDescriptor.TYPE_STRING:
+        field_desc.default_value = u''
+      elif field_proto.type == descriptor.FieldDescriptor.TYPE_BOOL:
+        field_desc.default_value = False
+      elif field_proto.type == descriptor.FieldDescriptor.TYPE_ENUM:
+        field_desc.default_value = field_desc.enum_type.values[0].number
+      elif field_proto.type == descriptor.FieldDescriptor.TYPE_BYTES:
+        field_desc.default_value = b''
+      else:
+        # All other types are of the "int" type.
+        field_desc.default_value = 0
 
     field_desc.type = field_proto.type
 
@@ -626,6 +683,64 @@ class DescriptorPool(object):
         number=value_proto.number,
         options=value_proto.options,
         type=None)
+
+  def _MakeServiceDescriptor(self, service_proto, service_index, scope,
+                             package, file_desc):
+    """Make a protobuf ServiceDescriptor given a ServiceDescriptorProto.
+
+    Args:
+      service_proto: The descriptor_pb2.ServiceDescriptorProto protobuf message.
+      service_index: The index of the service in the File.
+      scope: Dict mapping short and full symbols to message and enum types.
+      package: Optional package name for the new message EnumDescriptor.
+      file_desc: The file containing the service descriptor.
+
+    Returns:
+      The added descriptor.
+    """
+
+    if package:
+      service_name = '.'.join((package, service_proto.name))
+    else:
+      service_name = service_proto.name
+
+    methods = [self._MakeMethodDescriptor(method_proto, service_name, package,
+                                          scope, index)
+               for index, method_proto in enumerate(service_proto.method)]
+    desc = descriptor.ServiceDescriptor(name=service_proto.name,
+                                        full_name=service_name,
+                                        index=service_index,
+                                        methods=methods,
+                                        options=service_proto.options,
+                                        file=file_desc)
+    return desc
+
+  def _MakeMethodDescriptor(self, method_proto, service_name, package, scope,
+                            index):
+    """Creates a method descriptor from a MethodDescriptorProto.
+
+    Args:
+      method_proto: The proto describing the method.
+      service_name: The name of the containing service.
+      package: Optional package name to look up for types.
+      scope: Scope containing available types.
+      index: Index of the method in the service.
+
+    Returns:
+      An initialized MethodDescriptor object.
+    """
+    full_name = '.'.join((service_name, method_proto.name))
+    input_type = self._GetTypeFromScope(
+        package, method_proto.input_type, scope)
+    output_type = self._GetTypeFromScope(
+        package, method_proto.output_type, scope)
+    return descriptor.MethodDescriptor(name=method_proto.name,
+                                       full_name=full_name,
+                                       index=index,
+                                       containing_service=None,
+                                       input_type=input_type,
+                                       output_type=output_type,
+                                       options=method_proto.options)
 
   def _ExtractSymbols(self, descriptors):
     """Pulls out all the symbols from descriptor protos.
@@ -684,3 +799,16 @@ class DescriptorPool(object):
 
 def _PrefixWithDot(name):
   return name if name.startswith('.') else '.%s' % name
+
+
+if _USE_C_DESCRIPTORS:
+  # TODO(amauryfa): This pool could be constructed from Python code, when we
+  # support a flag like 'use_cpp_generated_pool=True'.
+  # pylint: disable=protected-access
+  _DEFAULT = descriptor._message.default_pool
+else:
+  _DEFAULT = DescriptorPool()
+
+
+def Default():
+  return _DEFAULT

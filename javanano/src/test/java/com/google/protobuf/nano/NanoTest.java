@@ -40,10 +40,10 @@ import com.google.protobuf.nano.UnittestRecursiveNano.RecursiveMessageNano;
 import com.google.protobuf.nano.NanoReferenceTypesCompat;
 import com.google.protobuf.nano.UnittestSimpleNano.SimpleMessageNano;
 import com.google.protobuf.nano.UnittestSingleNano.SingleMessageNano;
-import com.google.protobuf.nano.testext.Extensions;
-import com.google.protobuf.nano.testext.Extensions.AnotherMessage;
-import com.google.protobuf.nano.testext.Extensions.MessageWithGroup;
-import com.google.protobuf.nano.testimport.UnittestImportNano;
+import com.google.protobuf.nano.testext.nano.Extensions;
+import com.google.protobuf.nano.testext.nano.Extensions.AnotherMessage;
+import com.google.protobuf.nano.testext.nano.Extensions.MessageWithGroup;
+import com.google.protobuf.nano.testimport.nano.UnittestImportNano;
 
 import junit.framework.TestCase;
 

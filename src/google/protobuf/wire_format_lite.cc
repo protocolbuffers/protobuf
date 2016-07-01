@@ -37,17 +37,22 @@
 #include <stack>
 #include <string>
 #include <vector>
+#include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
+#include <google/protobuf/stubs/stringprintf.h>
 #include <google/protobuf/io/coded_stream_inl.h>
 #include <google/protobuf/io/zero_copy_stream.h>
 #include <google/protobuf/io/zero_copy_stream_impl_lite.h>
+
 
 namespace google {
 namespace protobuf {
 namespace internal {
 
-#ifndef _MSC_VER    // MSVC doesn't like definitions of inline constants, GCC
-                    // requires them.
+
+#if !defined(_MSC_VER) || _MSC_VER >= 1900
+// Old version of MSVC doesn't like definitions of inline constants, GCC
+// requires them.
 const int WireFormatLite::kMessageSetItemStartTag;
 const int WireFormatLite::kMessageSetItemEndTag;
 const int WireFormatLite::kMessageSetTypeIdTag;
@@ -407,7 +412,7 @@ void WireFormatLite::WriteString(int field_number, const string& value,
                                  io::CodedOutputStream* output) {
   // String is for UTF-8 text only
   WriteTag(field_number, WIRETYPE_LENGTH_DELIMITED, output);
-  GOOGLE_CHECK(value.size() <= kint32max);
+  GOOGLE_CHECK_LE(value.size(), kint32max);
   output->WriteVarint32(value.size());
   output->WriteString(value);
 }
@@ -416,14 +421,14 @@ void WireFormatLite::WriteStringMaybeAliased(
     io::CodedOutputStream* output) {
   // String is for UTF-8 text only
   WriteTag(field_number, WIRETYPE_LENGTH_DELIMITED, output);
-  GOOGLE_CHECK(value.size() <= kint32max);
+  GOOGLE_CHECK_LE(value.size(), kint32max);
   output->WriteVarint32(value.size());
   output->WriteRawMaybeAliased(value.data(), value.size());
 }
 void WireFormatLite::WriteBytes(int field_number, const string& value,
                                 io::CodedOutputStream* output) {
   WriteTag(field_number, WIRETYPE_LENGTH_DELIMITED, output);
-  GOOGLE_CHECK(value.size() <= kint32max);
+  GOOGLE_CHECK_LE(value.size(), kint32max);
   output->WriteVarint32(value.size());
   output->WriteString(value);
 }
@@ -431,7 +436,7 @@ void WireFormatLite::WriteBytesMaybeAliased(
     int field_number, const string& value,
     io::CodedOutputStream* output) {
   WriteTag(field_number, WIRETYPE_LENGTH_DELIMITED, output);
-  GOOGLE_CHECK(value.size() <= kint32max);
+  GOOGLE_CHECK_LE(value.size(), kint32max);
   output->WriteVarint32(value.size());
   output->WriteRawMaybeAliased(value.data(), value.size());
 }
@@ -484,9 +489,9 @@ void WireFormatLite::WriteMessageMaybeToArray(int field_number,
   }
 }
 
-static inline bool ReadBytesToString(io::CodedInputStream* input,
-                                     string* value) GOOGLE_ATTRIBUTE_ALWAYS_INLINE;
-static inline bool ReadBytesToString(io::CodedInputStream* input,
+GOOGLE_ATTRIBUTE_ALWAYS_INLINE static bool ReadBytesToString(
+    io::CodedInputStream* input, string* value);
+inline static bool ReadBytesToString(io::CodedInputStream* input,
                                      string* value) {
   uint32 length;
   return input->ReadVarint32(&length) &&
@@ -502,6 +507,35 @@ bool WireFormatLite::ReadBytes(io::CodedInputStream* input, string** p) {
     *p = new ::std::string();
   }
   return ReadBytesToString(input, *p);
+}
+
+bool WireFormatLite::VerifyUtf8String(const char* data,
+                                      int size,
+                                      Operation op,
+                                      const char* field_name) {
+  if (!IsStructurallyValidUTF8(data, size)) {
+    const char* operation_str = NULL;
+    switch (op) {
+      case PARSE:
+        operation_str = "parsing";
+        break;
+      case SERIALIZE:
+        operation_str = "serializing";
+        break;
+      // no default case: have the compiler warn if a case is not covered.
+    }
+    string quoted_field_name = "";
+    if (field_name != NULL) {
+      quoted_field_name = StringPrintf(" '%s'", field_name);
+    }
+    // no space below to avoid double space when the field name is missing.
+    GOOGLE_LOG(ERROR) << "String field" << quoted_field_name << " contains invalid "
+               << "UTF-8 data when " << operation_str << " a protocol "
+               << "buffer. Use the 'bytes' type if you intend to send raw "
+               << "bytes. ";
+    return false;
+  }
+  return true;
 }
 
 }  // namespace internal

@@ -28,9 +28,6 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-// arenastring_unittest.cc is not open-sourced. Do not include in open-source
-// distribution.
-
 // Based on mvels@'s frankenstring.
 
 #include <google/protobuf/arenastring.h>
@@ -42,6 +39,7 @@
 #endif
 #include <cstdlib>
 
+#include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
 #include <gtest/gtest.h>
 

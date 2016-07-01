@@ -53,9 +53,10 @@ NS_ASSUME_NONNULL_BEGIN
 + (instancetype)arrayWithValueArray:(GPBInt32Array *)array;
 + (instancetype)arrayWithCapacity:(NSUInteger)count;
 
+- (instancetype)init NS_DESIGNATED_INITIALIZER;
 // Initializes the array, copying the values.
 - (instancetype)initWithValues:(const int32_t [])values
-                         count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
+                         count:(NSUInteger)count;
 - (instancetype)initWithValueArray:(GPBInt32Array *)array;
 - (instancetype)initWithCapacity:(NSUInteger)count;
 
@@ -92,9 +93,10 @@ NS_ASSUME_NONNULL_BEGIN
 + (instancetype)arrayWithValueArray:(GPBUInt32Array *)array;
 + (instancetype)arrayWithCapacity:(NSUInteger)count;
 
+- (instancetype)init NS_DESIGNATED_INITIALIZER;
 // Initializes the array, copying the values.
 - (instancetype)initWithValues:(const uint32_t [])values
-                         count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
+                         count:(NSUInteger)count;
 - (instancetype)initWithValueArray:(GPBUInt32Array *)array;
 - (instancetype)initWithCapacity:(NSUInteger)count;
 
@@ -131,9 +133,10 @@ NS_ASSUME_NONNULL_BEGIN
 + (instancetype)arrayWithValueArray:(GPBInt64Array *)array;
 + (instancetype)arrayWithCapacity:(NSUInteger)count;
 
+- (instancetype)init NS_DESIGNATED_INITIALIZER;
 // Initializes the array, copying the values.
 - (instancetype)initWithValues:(const int64_t [])values
-                         count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
+                         count:(NSUInteger)count;
 - (instancetype)initWithValueArray:(GPBInt64Array *)array;
 - (instancetype)initWithCapacity:(NSUInteger)count;
 
@@ -170,9 +173,10 @@ NS_ASSUME_NONNULL_BEGIN
 + (instancetype)arrayWithValueArray:(GPBUInt64Array *)array;
 + (instancetype)arrayWithCapacity:(NSUInteger)count;
 
+- (instancetype)init NS_DESIGNATED_INITIALIZER;
 // Initializes the array, copying the values.
 - (instancetype)initWithValues:(const uint64_t [])values
-                         count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
+                         count:(NSUInteger)count;
 - (instancetype)initWithValueArray:(GPBUInt64Array *)array;
 - (instancetype)initWithCapacity:(NSUInteger)count;
 
@@ -209,9 +213,10 @@ NS_ASSUME_NONNULL_BEGIN
 + (instancetype)arrayWithValueArray:(GPBFloatArray *)array;
 + (instancetype)arrayWithCapacity:(NSUInteger)count;
 
+- (instancetype)init NS_DESIGNATED_INITIALIZER;
 // Initializes the array, copying the values.
 - (instancetype)initWithValues:(const float [])values
-                         count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
+                         count:(NSUInteger)count;
 - (instancetype)initWithValueArray:(GPBFloatArray *)array;
 - (instancetype)initWithCapacity:(NSUInteger)count;
 
@@ -248,9 +253,10 @@ NS_ASSUME_NONNULL_BEGIN
 + (instancetype)arrayWithValueArray:(GPBDoubleArray *)array;
 + (instancetype)arrayWithCapacity:(NSUInteger)count;
 
+- (instancetype)init NS_DESIGNATED_INITIALIZER;
 // Initializes the array, copying the values.
 - (instancetype)initWithValues:(const double [])values
-                         count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
+                         count:(NSUInteger)count;
 - (instancetype)initWithValueArray:(GPBDoubleArray *)array;
 - (instancetype)initWithCapacity:(NSUInteger)count;
 
@@ -287,9 +293,10 @@ NS_ASSUME_NONNULL_BEGIN
 + (instancetype)arrayWithValueArray:(GPBBoolArray *)array;
 + (instancetype)arrayWithCapacity:(NSUInteger)count;
 
+- (instancetype)init NS_DESIGNATED_INITIALIZER;
 // Initializes the array, copying the values.
 - (instancetype)initWithValues:(const BOOL [])values
-                         count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
+                         count:(NSUInteger)count;
 - (instancetype)initWithValueArray:(GPBBoolArray *)array;
 - (instancetype)initWithCapacity:(NSUInteger)count;
 
@@ -330,12 +337,13 @@ NS_ASSUME_NONNULL_BEGIN
 + (instancetype)arrayWithValidationFunction:(nullable GPBEnumValidationFunc)func
                                    capacity:(NSUInteger)count;
 
-- (instancetype)initWithValidationFunction:(nullable GPBEnumValidationFunc)func;
+- (instancetype)initWithValidationFunction:(nullable GPBEnumValidationFunc)func
+    NS_DESIGNATED_INITIALIZER;
 
 // Initializes the array, copying the values.
 - (instancetype)initWithValidationFunction:(nullable GPBEnumValidationFunc)func
                                  rawValues:(const int32_t [])values
-                                     count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
+                                     count:(NSUInteger)count;
 - (instancetype)initWithValueArray:(GPBEnumArray *)array;
 - (instancetype)initWithValidationFunction:(nullable GPBEnumValidationFunc)func
                                   capacity:(NSUInteger)count;
@@ -422,9 +430,10 @@ NS_ASSUME_NONNULL_END
 //%+ (instancetype)arrayWithValueArray:(GPB##NAME##Array *)array;
 //%+ (instancetype)arrayWithCapacity:(NSUInteger)count;
 //%
+//%- (instancetype)init NS_DESIGNATED_INITIALIZER;
 //%// Initializes the array, copying the values.
 //%- (instancetype)initWithValues:(const TYPE [])values
-//%                         count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
+//%                         count:(NSUInteger)count;
 //%- (instancetype)initWithValueArray:(GPB##NAME##Array *)array;
 //%- (instancetype)initWithCapacity:(NSUInteger)count;
 //%
@@ -455,12 +464,13 @@ NS_ASSUME_NONNULL_END
 //%+ (instancetype)arrayWithValidationFunction:(nullable GPBEnumValidationFunc)func
 //%                                   capacity:(NSUInteger)count;
 //%
-//%- (instancetype)initWithValidationFunction:(nullable GPBEnumValidationFunc)func;
+//%- (instancetype)initWithValidationFunction:(nullable GPBEnumValidationFunc)func
+//%    NS_DESIGNATED_INITIALIZER;
 //%
 //%// Initializes the array, copying the values.
 //%- (instancetype)initWithValidationFunction:(nullable GPBEnumValidationFunc)func
 //%                                 rawValues:(const TYPE [])values
-//%                                     count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
+//%                                     count:(NSUInteger)count;
 //%- (instancetype)initWithValueArray:(GPB##NAME##Array *)array;
 //%- (instancetype)initWithValidationFunction:(nullable GPBEnumValidationFunc)func
 //%                                  capacity:(NSUInteger)count;

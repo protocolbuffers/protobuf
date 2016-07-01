@@ -43,26 +43,33 @@ namespace testing {
 
 using google::protobuf::testing::DefaultValueTest;
 
-// Tests to cover some basic DefaultValueObjectWriter use cases. More tests are
-// in the marshalling_test.cc and translator_integration_test.cc.
-class DefaultValueObjectWriterTest
+// Base class for setting up required state for running default values tests on
+// different descriptors.
+class BaseDefaultValueObjectWriterTest
     : public ::testing::TestWithParam<testing::TypeInfoSource> {
  protected:
-  DefaultValueObjectWriterTest()
+  explicit BaseDefaultValueObjectWriterTest(const Descriptor* descriptor)
       : helper_(GetParam()), mock_(), expects_(&mock_) {
-    helper_.ResetTypeInfo(DefaultValueTest::descriptor());
+    helper_.ResetTypeInfo(descriptor);
     testing_.reset(helper_.NewDefaultValueWriter(
-        string(kTypeServiceBaseUrl) + "/" +
-            DefaultValueTest::descriptor()->full_name(),
-        &mock_));
+        string(kTypeServiceBaseUrl) + "/" + descriptor->full_name(), &mock_));
   }
 
-  virtual ~DefaultValueObjectWriterTest() {}
+  virtual ~BaseDefaultValueObjectWriterTest() {}
 
   TypeInfoTestHelper helper_;
   MockObjectWriter mock_;
   ExpectingObjectWriter expects_;
   google::protobuf::scoped_ptr<DefaultValueObjectWriter> testing_;
+};
+
+// Tests to cover some basic DefaultValueObjectWriter use cases. More tests are
+// in the marshalling_test.cc and translator_integration_test.cc.
+class DefaultValueObjectWriterTest : public BaseDefaultValueObjectWriterTest {
+ protected:
+  DefaultValueObjectWriterTest()
+      : BaseDefaultValueObjectWriterTest(DefaultValueTest::descriptor()) {}
+  virtual ~DefaultValueObjectWriterTest() {}
 };
 
 INSTANTIATE_TEST_CASE_P(DifferentTypeInfoSourceTest,
@@ -73,15 +80,18 @@ INSTANTIATE_TEST_CASE_P(DifferentTypeInfoSourceTest,
 TEST_P(DefaultValueObjectWriterTest, Empty) {
   // Set expectation
   expects_.StartObject("")
-      ->RenderDouble("double_value", 0.0)
-      ->RenderFloat("float_value", 0.0)
-      ->RenderInt64("int64_value", 0)
-      ->RenderUint64("uint64_value", 0)
-      ->RenderInt32("int32_value", 0)
-      ->RenderUint32("uint32_value", 0)
-      ->RenderBool("bool_value", false)
-      ->RenderString("string_value", "")
-      ->RenderBytes("bytes_value", "")
+      ->RenderDouble("doubleValue", 0.0)
+      ->StartList("repeatedDouble")
+      ->EndList()
+      ->RenderFloat("floatValue", 0.0)
+      ->RenderInt64("int64Value", 0)
+      ->RenderUint64("uint64Value", 0)
+      ->RenderInt32("int32Value", 0)
+      ->RenderUint32("uint32Value", 0)
+      ->RenderBool("boolValue", false)
+      ->RenderString("stringValue", "")
+      ->RenderBytes("bytesValue", "")
+      ->RenderString("enumValue", "ENUM_FIRST")
       ->EndObject();
 
   // Actual testing
@@ -91,46 +101,53 @@ TEST_P(DefaultValueObjectWriterTest, Empty) {
 TEST_P(DefaultValueObjectWriterTest, NonDefaultDouble) {
   // Set expectation
   expects_.StartObject("")
-      ->RenderDouble("double_value", 1.0)
-      ->RenderFloat("float_value", 0.0)
-      ->RenderInt64("int64_value", 0)
-      ->RenderUint64("uint64_value", 0)
-      ->RenderInt32("int32_value", 0)
-      ->RenderUint32("uint32_value", 0)
-      ->RenderBool("bool_value", false)
-      ->RenderString("string_value", "")
+      ->RenderDouble("doubleValue", 1.0)
+      ->StartList("repeatedDouble")
+      ->EndList()
+      ->RenderFloat("floatValue", 0.0)
+      ->RenderInt64("int64Value", 0)
+      ->RenderUint64("uint64Value", 0)
+      ->RenderInt32("int32Value", 0)
+      ->RenderUint32("uint32Value", 0)
+      ->RenderBool("boolValue", false)
+      ->RenderString("stringValue", "")
+      ->RenderString("enumValue", "ENUM_FIRST")
       ->EndObject();
 
   // Actual testing
-  testing_->StartObject("")->RenderDouble("double_value", 1.0)->EndObject();
+  testing_->StartObject("")->RenderDouble("doubleValue", 1.0)->EndObject();
 }
 
 TEST_P(DefaultValueObjectWriterTest, ShouldRetainUnknownField) {
   // Set expectation
   expects_.StartObject("")
-      ->RenderDouble("double_value", 1.0)
-      ->RenderFloat("float_value", 0.0)
-      ->RenderInt64("int64_value", 0)
-      ->RenderUint64("uint64_value", 0)
-      ->RenderInt32("int32_value", 0)
-      ->RenderUint32("uint32_value", 0)
-      ->RenderBool("bool_value", false)
-      ->RenderString("string_value", "")
+      ->RenderDouble("doubleValue", 1.0)
+      ->StartList("repeatedDouble")
+      ->EndList()
+      ->RenderFloat("floatValue", 0.0)
+      ->RenderInt64("int64Value", 0)
+      ->RenderUint64("uint64Value", 0)
+      ->RenderInt32("int32Value", 0)
+      ->RenderUint32("uint32Value", 0)
+      ->RenderBool("boolValue", false)
+      ->RenderString("stringValue", "")
       ->RenderString("unknown", "abc")
-      ->StartObject("unknown_object")
+      ->StartObject("unknownObject")
       ->RenderString("unknown", "def")
       ->EndObject()
+      ->RenderString("enumValue", "ENUM_FIRST")
       ->EndObject();
 
   // Actual testing
   testing_->StartObject("")
-      ->RenderDouble("double_value", 1.0)
+      ->RenderDouble("doubleValue", 1.0)
       ->RenderString("unknown", "abc")
-      ->StartObject("unknown_object")
+      ->StartObject("unknownObject")
       ->RenderString("unknown", "def")
       ->EndObject()
       ->EndObject();
 }
+
 
 }  // namespace testing
 }  // namespace converter

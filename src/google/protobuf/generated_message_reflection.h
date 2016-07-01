@@ -58,7 +58,9 @@ class GMR_Handlers;
 }  // namespace upb
 
 namespace protobuf {
-  class DescriptorPool;
+class DescriptorPool;
+class MapKey;
+class MapValueRef;
 }
 
 namespace protobuf {
@@ -261,6 +263,25 @@ class LIBPROTOBUF_EXPORT GeneratedMessageReflection : public Reflection {
       const Message& message,
       const OneofDescriptor* oneof_descriptor) const;
 
+ private:
+  bool ContainsMapKey(const Message& message,
+                      const FieldDescriptor* field,
+                      const MapKey& key) const;
+  bool InsertOrLookupMapValue(Message* message,
+                              const FieldDescriptor* field,
+                              const MapKey& key,
+                              MapValueRef* val) const;
+  bool DeleteMapValue(Message* message,
+                      const FieldDescriptor* field,
+                      const MapKey& key) const;
+  MapIterator MapBegin(
+      Message* message,
+      const FieldDescriptor* field) const;
+  MapIterator MapEnd(
+      Message* message,
+      const FieldDescriptor* field) const;
+  int MapSize(const Message& message, const FieldDescriptor* field) const;
+
  public:
   void SetInt32 (Message* message,
                  const FieldDescriptor* field, int32  value) const;
@@ -371,6 +392,9 @@ class LIBPROTOBUF_EXPORT GeneratedMessageReflection : public Reflection {
                     int value) const;
   Message* AddMessage(Message* message, const FieldDescriptor* field,
                       MessageFactory* factory = NULL) const;
+  void AddAllocatedMessage(
+      Message* message, const FieldDescriptor* field,
+      Message* new_entry) const;
 
   const FieldDescriptor* FindKnownExtensionByName(const string& name) const;
   const FieldDescriptor* FindKnownExtensionByNumber(int number) const;
@@ -391,9 +415,14 @@ class LIBPROTOBUF_EXPORT GeneratedMessageReflection : public Reflection {
   static const int kUnknownFieldSetInMetadata = -1;
 
  protected:
-  virtual void* MutableRawRepeatedField(
+  void* MutableRawRepeatedField(
       Message* message, const FieldDescriptor* field, FieldDescriptor::CppType,
       int ctype, const Descriptor* desc) const;
+
+  const void* GetRawRepeatedField(
+      const Message& message, const FieldDescriptor* field,
+      FieldDescriptor::CppType, int ctype,
+      const Descriptor* desc) const;
 
   virtual MessageFactory* GetMessageFactory() const;
 
@@ -407,7 +436,7 @@ class LIBPROTOBUF_EXPORT GeneratedMessageReflection : public Reflection {
 
   // To parse directly into a proto2 generated class, the class GMR_Handlers
   // needs access to member offsets and hasbits.
-  friend class LIBPROTOBUF_EXPORT upb::google_opensource::GMR_Handlers;
+  friend class upb::google_opensource::GMR_Handlers;
 
   const Descriptor* descriptor_;
   const Message* default_instance_;
@@ -539,6 +568,9 @@ class LIBPROTOBUF_EXPORT GeneratedMessageReflection : public Reflection {
                                       Message* sub_message,
                                       const FieldDescriptor* field) const;
 
+  internal::MapFieldBase* MapData(
+      Message* message, const FieldDescriptor* field) const;
+
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(GeneratedMessageReflection);
 };
 
@@ -550,7 +582,16 @@ class LIBPROTOBUF_EXPORT GeneratedMessageReflection : public Reflection {
 // which the offsets of the direct fields of a class are non-constant.
 // Fields inherited from superclasses *can* have non-constant offsets,
 // but that's not what this macro will be used for.
-//
+#if defined(__clang__)
+// For Clang we use __builtin_offsetof() and suppress the warning,
+// to avoid Control Flow Integrity and UBSan vptr sanitizers from
+// crashing while trying to validate the invalid reinterpet_casts.
+#define GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(TYPE, FIELD)    \
+  _Pragma("clang diagnostic push")                            \
+  _Pragma("clang diagnostic ignored \"-Winvalid-offsetof\"")  \
+  __builtin_offsetof(TYPE, FIELD)                             \
+  _Pragma("clang diagnostic pop")
+#else
 // Note that we calculate relative to the pointer value 16 here since if we
 // just use zero, GCC complains about dereferencing a NULL pointer.  We
 // choose 16 rather than some other number just in case the compiler would
@@ -560,6 +601,7 @@ class LIBPROTOBUF_EXPORT GeneratedMessageReflection : public Reflection {
       reinterpret_cast<const char*>(                          \
           &reinterpret_cast<const TYPE*>(16)->FIELD) -        \
       reinterpret_cast<const char*>(16))
+#endif
 
 #define PROTO2_GENERATED_DEFAULT_ONEOF_FIELD_OFFSET(ONEOF, FIELD)     \
   static_cast<int>(                                                   \

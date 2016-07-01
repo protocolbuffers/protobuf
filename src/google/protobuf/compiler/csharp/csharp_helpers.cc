@@ -46,11 +46,14 @@
 
 #include <google/protobuf/compiler/csharp/csharp_field_base.h>
 #include <google/protobuf/compiler/csharp/csharp_enum_field.h>
+#include <google/protobuf/compiler/csharp/csharp_map_field.h>
 #include <google/protobuf/compiler/csharp/csharp_message_field.h>
+#include <google/protobuf/compiler/csharp/csharp_options.h>
 #include <google/protobuf/compiler/csharp/csharp_primitive_field.h>
 #include <google/protobuf/compiler/csharp/csharp_repeated_enum_field.h>
 #include <google/protobuf/compiler/csharp/csharp_repeated_message_field.h>
 #include <google/protobuf/compiler/csharp/csharp_repeated_primitive_field.h>
+#include <google/protobuf/compiler/csharp/csharp_wrapper_field.h>
 
 namespace google {
 namespace protobuf {
@@ -112,48 +115,28 @@ std::string GetFileNamespace(const FileDescriptor* descriptor) {
   if (descriptor->options().has_csharp_namespace()) {
     return descriptor->options().csharp_namespace();
   }
-  return descriptor->package();
+  return UnderscoresToCamelCase(descriptor->package(), true, true);
 }
 
-std::string GetUmbrellaClassNameInternal(const std::string& proto_file) {
-  int lastslash = proto_file.find_last_of("/");
-  std::string base = proto_file.substr(lastslash + 1);
-  return UnderscoresToPascalCase(StripDotProto(base));
+// Returns the Pascal-cased last part of the proto file. For example,
+// input of "google/protobuf/foo_bar.proto" would result in "FooBar".
+std::string GetFileNameBase(const FileDescriptor* descriptor) {
+    std::string proto_file = descriptor->name();
+    int lastslash = proto_file.find_last_of("/");
+    std::string base = proto_file.substr(lastslash + 1);
+    return UnderscoresToPascalCase(StripDotProto(base));
 }
 
-std::string GetFileUmbrellaClassname(const FileDescriptor* descriptor) {
-  // umbrella_classname can no longer be set using message option.
-  return GetUmbrellaClassNameInternal(descriptor->name());
-}
-
-std::string GetFileUmbrellaNamespace(const FileDescriptor* descriptor) {
-  // TODO(jtattermusch): reintroduce csharp_umbrella_namespace option
-  bool collision = false;
-  std::string umbrella_classname = GetFileUmbrellaClassname(descriptor);
-  for(int i = 0; i < descriptor->message_type_count(); i++) {
-    if (descriptor->message_type(i)->name() == umbrella_classname) {
-      collision = true;
-      break;
-    }
-  }
-  for (int i = 0; i < descriptor->service_count(); i++) {
-    if (descriptor->service(i)->name() == umbrella_classname) {
-      collision = true;
-      break;
-    }
-  }
-  for (int i = 0; i < descriptor->enum_type_count(); i++) {
-    if (descriptor->enum_type(i)->name() == umbrella_classname) {
-      collision = true;
-      break;
-    }
-  }
-  return collision ? "Proto" : "";
+std::string GetReflectionClassUnqualifiedName(const FileDescriptor* descriptor) {
+  // TODO: Detect collisions with existing messages,
+  // and append an underscore if necessary.
+  return GetFileNameBase(descriptor) + "Reflection";
 }
 
 // TODO(jtattermusch): can we reuse a utility function?
 std::string UnderscoresToCamelCase(const std::string& input,
-                                   bool cap_next_letter) {
+                                   bool cap_next_letter,
+                                   bool preserve_period) {
   string result;
   // Note:  I distrust ctype.h due to locales.
   for (int i = 0; i < input.size(); i++) {
@@ -179,6 +162,9 @@ std::string UnderscoresToCamelCase(const std::string& input,
       cap_next_letter = true;
     } else {
       cap_next_letter = true;
+      if (input[i] == '.' && preserve_period) {
+        result += '.';
+      }
     }
   }
   // Add a trailing "_" if the name should be altered.
@@ -190,6 +176,104 @@ std::string UnderscoresToCamelCase(const std::string& input,
 
 std::string UnderscoresToPascalCase(const std::string& input) {
   return UnderscoresToCamelCase(input, true);
+}
+
+// Convert a string which is expected to be SHOUTY_CASE (but may not be *precisely* shouty)
+// into a PascalCase string. Precise rules implemented:
+
+// Previous input character      Current character         Case
+// Any                           Non-alphanumeric          Skipped
+// None - first char of input    Alphanumeric              Upper
+// Non-letter (e.g. _ or 1)      Alphanumeric              Upper
+// Numeric                       Alphanumeric              Upper
+// Lower letter                  Alphanumeric              Same as current
+// Upper letter                  Alphanumeric              Lower
+std::string ShoutyToPascalCase(const std::string& input) {
+  string result;
+  // Simple way of implementing "always start with upper"
+  char previous = '_';
+  for (int i = 0; i < input.size(); i++) {
+    char current = input[i];
+    if (!ascii_isalnum(current)) {
+      previous = current;
+      continue;      
+    }
+    if (!ascii_isalnum(previous)) {
+      result += ascii_toupper(current);
+    } else if (ascii_isdigit(previous)) {
+      result += ascii_toupper(current);
+    } else if (ascii_islower(previous)) {
+      result += current;
+    } else {
+      result += ascii_tolower(current);
+    }
+    previous = current;
+  }
+  return result;
+}
+
+// Attempt to remove a prefix from a value, ignoring casing and skipping underscores.
+// (foo, foo_bar) => bar - underscore after prefix is skipped
+// (FOO, foo_bar) => bar - casing is ignored
+// (foo_bar, foobarbaz) => baz - underscore in prefix is ignored
+// (foobar, foo_barbaz) => baz - underscore in value is ignored
+// (foo, bar) => bar - prefix isn't matched; return original value
+std::string TryRemovePrefix(const std::string& prefix, const std::string& value) {
+  // First normalize to a lower-case no-underscores prefix to match against
+  std::string prefix_to_match = "";
+  for (size_t i = 0; i < prefix.size(); i++) {
+    if (prefix[i] != '_') {
+      prefix_to_match += ascii_tolower(prefix[i]);
+    }
+  }
+  
+  // This keeps track of how much of value we've consumed
+  size_t prefix_index, value_index;
+  for (prefix_index = 0, value_index = 0;
+      prefix_index < prefix_to_match.size() && value_index < value.size();
+      value_index++) {
+    // Skip over underscores in the value
+    if (value[value_index] == '_') {
+      continue;
+    }
+    if (ascii_tolower(value[value_index]) != prefix_to_match[prefix_index++]) {
+      // Failed to match the prefix - bail out early.
+      return value;
+    }
+  }
+
+  // If we didn't finish looking through the prefix, we can't strip it.
+  if (prefix_index < prefix_to_match.size()) {
+    return value;
+  }
+
+  // Step over any underscores after the prefix
+  while (value_index < value.size() && value[value_index] == '_') {
+    value_index++;
+  }
+
+  // If there's nothing left (e.g. it was a prefix with only underscores afterwards), don't strip.
+  if (value_index == value.size()) {
+    return value;
+  }
+
+  return value.substr(value_index);
+}
+
+// Format the enum value name in a pleasant way for C#:
+// - Strip the enum name as a prefix if possible
+// - Convert to PascalCase.
+// For example, an enum called Color with a value of COLOR_BLUE should
+// result in an enum value in C# called just Blue
+std::string GetEnumValueName(const std::string& enum_name, const std::string& enum_value_name) {
+  std::string stripped = TryRemovePrefix(enum_name, enum_value_name);
+  std::string result = ShoutyToPascalCase(stripped);
+  // Just in case we have an enum name of FOO and a value of FOO_2... make sure the returned
+  // string is a valid identifier.
+  if (ascii_isdigit(result[0])) {
+    result = "_" + result;
+  }
+  return result;
 }
 
 std::string ToCSharpName(const std::string& name, const FileDescriptor* file) {
@@ -205,30 +289,17 @@ std::string ToCSharpName(const std::string& name, const FileDescriptor* file) {
     // the C# namespace.
     classname = name.substr(file->package().size() + 1);
   }
-  result += StringReplace(classname, ".", ".Types.", false);
+  result += StringReplace(classname, ".", ".Types.", true);
   return "global::" + result;
 }
 
-
-
-std::string GetFullUmbrellaClassName(const FileDescriptor* descriptor) {
+std::string GetReflectionClassName(const FileDescriptor* descriptor) {
   std::string result = GetFileNamespace(descriptor);
   if (!result.empty()) {
     result += '.';
   }
-  result += GetQualifiedUmbrellaClassName(descriptor);
+  result += GetReflectionClassUnqualifiedName(descriptor);
   return "global::" + result;
-}
-
-std::string GetQualifiedUmbrellaClassName(const FileDescriptor* descriptor) {
-  std::string umbrellaNamespace = GetFileUmbrellaNamespace(descriptor);
-  std::string umbrellaClassname = GetFileUmbrellaClassname(descriptor);
-
-  std::string fullName = umbrellaClassname;
-  if (!umbrellaNamespace.empty()) {
-    fullName = umbrellaNamespace + "." + umbrellaClassname;
-  }
-  return fullName;
 }
 
 std::string GetClassName(const Descriptor* descriptor) {
@@ -257,10 +328,51 @@ std::string GetFieldConstantName(const FieldDescriptor* field) {
 std::string GetPropertyName(const FieldDescriptor* descriptor) {
   // TODO(jtattermusch): consider introducing csharp_property_name field option
   std::string property_name = UnderscoresToPascalCase(GetFieldName(descriptor));
-  if (property_name == descriptor->containing_type()->name()) {
+  // Avoid either our own type name or reserved names. Note that not all names
+  // are reserved - a field called to_string, write_to etc would still cause a problem.
+  // There are various ways of ending up with naming collisions, but we try to avoid obvious
+  // ones.
+  if (property_name == descriptor->containing_type()->name()
+      || property_name == "Types"
+      || property_name == "Descriptor") {
     property_name += "_";
   }
   return property_name;
+}
+
+std::string GetOutputFile(
+    const google::protobuf::FileDescriptor* descriptor,
+    const std::string file_extension,
+    const bool generate_directories,
+    const std::string base_namespace,
+    string* error) {
+  string relative_filename = GetFileNameBase(descriptor) + file_extension;
+  if (!generate_directories) {
+    return relative_filename;
+  }
+  string ns = GetFileNamespace(descriptor);
+  string namespace_suffix = ns;
+  if (!base_namespace.empty()) {
+    // Check that the base_namespace is either equal to or a leading part of
+    // the file namespace. This isn't just a simple prefix; "Foo.B" shouldn't
+    // be regarded as a prefix of "Foo.Bar". The simplest option is to add "."
+    // to both.
+    string extended_ns = ns + ".";
+    if (extended_ns.find(base_namespace + ".") != 0) {
+      *error = "Namespace " + ns + " is not a prefix namespace of base namespace " + base_namespace;
+      return ""; // This will be ignored, because we've set an error.
+    }
+    namespace_suffix = ns.substr(base_namespace.length());
+    if (namespace_suffix.find(".") == 0) {
+      namespace_suffix = namespace_suffix.substr(1);
+    }
+  }
+
+  string namespace_dir = StringReplace(namespace_suffix, ".", "/", true);
+  if (!namespace_dir.empty()) {
+    namespace_dir += "/";
+  }
+  return namespace_dir + relative_filename;
 }
 
 // TODO: c&p from Java protoc plugin
@@ -339,83 +451,56 @@ std::string FileDescriptorToBase64(const FileDescriptor* descriptor) {
 }
 
 FieldGeneratorBase* CreateFieldGenerator(const FieldDescriptor* descriptor,
-                                         int fieldOrdinal) {
+                                         int fieldOrdinal,
+                                         const Options* options) {
   switch (descriptor->type()) {
     case FieldDescriptor::TYPE_GROUP:
     case FieldDescriptor::TYPE_MESSAGE:
       if (descriptor->is_repeated()) {
-        return new RepeatedMessageFieldGenerator(descriptor, fieldOrdinal);
+        if (descriptor->is_map()) {
+          return new MapFieldGenerator(descriptor, fieldOrdinal, options);
+        } else {
+          return new RepeatedMessageFieldGenerator(descriptor, fieldOrdinal, options);
+        }
       } else {
-	if (descriptor->containing_oneof()) {
-	  return new MessageOneofFieldGenerator(descriptor, fieldOrdinal);
-	} else {
-	  return new MessageFieldGenerator(descriptor, fieldOrdinal);
-	}
+        if (IsWrapperType(descriptor)) {
+          if (descriptor->containing_oneof()) {
+            return new WrapperOneofFieldGenerator(descriptor, fieldOrdinal, options);
+          } else {
+            return new WrapperFieldGenerator(descriptor, fieldOrdinal, options);
+          }
+        } else {
+          if (descriptor->containing_oneof()) {
+            return new MessageOneofFieldGenerator(descriptor, fieldOrdinal, options);
+          } else {
+            return new MessageFieldGenerator(descriptor, fieldOrdinal, options);
+          }
+        }
       }
     case FieldDescriptor::TYPE_ENUM:
       if (descriptor->is_repeated()) {
-        return new RepeatedEnumFieldGenerator(descriptor, fieldOrdinal);
+        return new RepeatedEnumFieldGenerator(descriptor, fieldOrdinal, options);
       } else {
-	if (descriptor->containing_oneof()) {
-	  return new EnumOneofFieldGenerator(descriptor, fieldOrdinal);
-	} else {
-	  return new EnumFieldGenerator(descriptor, fieldOrdinal);
-	}
+        if (descriptor->containing_oneof()) {
+          return new EnumOneofFieldGenerator(descriptor, fieldOrdinal, options);
+        } else {
+          return new EnumFieldGenerator(descriptor, fieldOrdinal, options);
+        }
       }
     default:
       if (descriptor->is_repeated()) {
-        return new RepeatedPrimitiveFieldGenerator(descriptor, fieldOrdinal);
+        return new RepeatedPrimitiveFieldGenerator(descriptor, fieldOrdinal, options);
       } else {
-	if (descriptor->containing_oneof()) {
-	  return new PrimitiveOneofFieldGenerator(descriptor, fieldOrdinal);
-	} else {
-	  return new PrimitiveFieldGenerator(descriptor, fieldOrdinal);
-	}
+        if (descriptor->containing_oneof()) {
+          return new PrimitiveOneofFieldGenerator(descriptor, fieldOrdinal, options);
+        } else {
+          return new PrimitiveFieldGenerator(descriptor, fieldOrdinal, options);
+        }
       }
   }
 }
 
-bool HasRequiredFields(const Descriptor* descriptor, std::set<const Descriptor*>* already_seen) {
-  if (already_seen->find(descriptor) != already_seen->end()) {
-    // The type is already in cache.  This means that either:
-    // a. The type has no required fields.
-    // b. We are in the midst of checking if the type has required fields,
-    //    somewhere up the stack.  In this case, we know that if the type
-    //    has any required fields, they'll be found when we return to it,
-    //    and the whole call to HasRequiredFields() will return true.
-    //    Therefore, we don't have to check if this type has required fields
-    //    here.
-    return false;
-  }
-  already_seen->insert(descriptor);
-
-  // If the type has extensions, an extension with message type could contain
-  // required fields, so we have to be conservative and assume such an
-  // extension exists.
-  if (descriptor->extension_count() > 0) {
-    return true;
-  }
-
-  for (int i = 0; i < descriptor->field_count(); i++) {
-    const FieldDescriptor* field = descriptor->field(i);
-    if (field->is_required()) {
-      return true;
-    }
-    if (GetCSharpType(field->type()) == CSHARPTYPE_MESSAGE) {
-      if (HasRequiredFields(field->message_type(), already_seen)) {
-        return true;
-      }
-    }
-  }
-  return false;
-}
-
-bool HasRequiredFields(const Descriptor* descriptor) {
-  std::set<const Descriptor*> already_seen;
-  return HasRequiredFields(descriptor, &already_seen);
-}
-
-}  // namespace java
+}  // namespace csharp
 }  // namespace compiler
 }  // namespace protobuf
 }  // namespace google

@@ -1,0 +1,95 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2008 Google Inc.  All rights reserved.
+// https://developers.google.com/protocol-buffers/
+//
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are
+// met:
+//
+//     * Redistributions of source code must retain the above copyright
+// notice, this list of conditions and the following disclaimer.
+//     * Redistributions in binary form must reproduce the above
+// copyright notice, this list of conditions and the following disclaimer
+// in the documentation and/or other materials provided with the
+// distribution.
+//     * Neither the name of Google Inc. nor the names of its
+// contributors may be used to endorse or promote products derived from
+// this software without specific prior written permission.
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+syntax = "proto3";
+
+package field_presence_test;
+
+import "google/protobuf/unittest.proto";
+
+option java_package = "com.google.protobuf";
+option java_outer_classname = "FieldPresenceTestProto";
+option java_generate_equals_and_hash = true;
+
+message TestAllTypes {
+  enum NestedEnum {
+    FOO = 0;
+    BAR = 1;
+    BAZ = 2;
+  }
+  message NestedMessage {
+    int32 value = 1;
+  }
+
+  int32 optional_int32 = 1;
+  string optional_string = 2;
+  bytes optional_bytes = 3;
+  NestedEnum optional_nested_enum = 4;
+  NestedMessage optional_nested_message = 5;
+  protobuf_unittest.TestRequired optional_proto2_message = 6;
+  NestedMessage optional_lazy_message = 7 [lazy=true];
+
+  oneof oneof_field {
+    int32 oneof_int32 = 11;
+    uint32 oneof_uint32 = 12;
+    string oneof_string = 13;
+    bytes oneof_bytes = 14;
+    NestedEnum oneof_nested_enum = 15;
+    NestedMessage oneof_nested_message = 16;
+    protobuf_unittest.TestRequired oneof_proto2_message = 17;
+  }
+
+  repeated int32 repeated_int32 = 21;
+  repeated string repeated_string = 22;
+  repeated bytes repeated_bytes = 23;
+  repeated NestedEnum repeated_nested_enum = 24;
+  repeated NestedMessage repeated_nested_message = 25;
+  repeated protobuf_unittest.TestRequired repeated_proto2_message = 26;
+  repeated NestedEnum packed_nested_enum = 27 [packed = true];
+}
+
+message TestOptionalFieldsOnly {
+  int32 optional_int32 = 1;
+  string optional_string = 2;
+  bytes optional_bytes = 3;
+  TestAllTypes.NestedEnum optional_nested_enum = 4;
+  TestAllTypes.NestedMessage optional_nested_message = 5;
+  protobuf_unittest.TestRequired optional_proto2_message = 6;
+  TestAllTypes.NestedMessage optional_lazy_message = 7 [lazy=true];
+}
+
+message TestRepeatedFieldsOnly {
+  repeated int32 repeated_int32 = 21;
+  repeated string repeated_string = 22;
+  repeated bytes repeated_bytes = 23;
+  repeated TestAllTypes.NestedEnum repeated_nested_enum = 24;
+  repeated TestAllTypes.NestedMessage repeated_nested_message = 25;
+  repeated protobuf_unittest.TestRequired repeated_proto2_message = 26;
+}

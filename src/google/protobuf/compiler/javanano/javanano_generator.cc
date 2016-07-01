@@ -67,8 +67,13 @@ void UpdateParamsRecursively(Params& params,
       file->name(), file->options().java_outer_classname());
   }
   if (file->options().has_java_package()) {
+    string result = file->options().java_package();
+    if (!result.empty()) {
+      result += ".";
+    }
+    result += "nano";
     params.set_java_package(
-      file->name(), file->options().java_package());
+      file->name(), result);
   }
   if (file->options().has_java_multiple_files()) {
     params.set_java_multiple_files(

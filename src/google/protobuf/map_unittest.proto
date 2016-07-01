@@ -31,9 +31,9 @@
 syntax = "proto3";
 
 option cc_enable_arenas = true;
-option csharp_namespace = "Google.ProtocolBuffers.TestProtos";
 
 import "google/protobuf/unittest.proto";
+import "google/protobuf/unittest_no_arena.proto";
 
 // We don't put this in a package within proto2 because we need to make sure
 // that the generated code doesn't depend on being in the proto2 namespace.
@@ -59,6 +59,7 @@ message TestMap {
   map<int32   , bytes   > map_int32_bytes       = 15;
   map<int32   , MapEnum > map_int32_enum        = 16;
   map<int32   , ForeignMessage> map_int32_foreign_message = 17;
+  map<string  , ForeignMessage> map_string_foreign_message = 18;
 }
 
 message TestMapSubmessage {
@@ -101,8 +102,12 @@ message TestArenaMap {
   map<int32   , float   > map_int32_float       = 11;
   map<int32   , double  > map_int32_double      = 12;
   map<bool    , bool    > map_bool_bool         = 13;
-  map<int32   , MapEnum > map_int32_enum        = 14;
-  map<int32   , ForeignMessage> map_int32_foreign_message = 15;
+  map<string  , string  > map_string_string     = 14;
+  map<int32   , bytes   > map_int32_bytes       = 15;
+  map<int32   , MapEnum > map_int32_enum        = 16;
+  map<int32   , ForeignMessage> map_int32_foreign_message = 17;
+  map<int32, .protobuf_unittest_no_arena.ForeignMessage>
+      map_int32_foreign_message_no_arena = 18;
 }
 
 // Previously, message containing enum called Type cannot be used as value of
@@ -111,10 +116,14 @@ message MessageContainingEnumCalledType {
   enum Type {
     TYPE_FOO = 0;
   }
-  map<int32, MessageContainingEnumCalledType> type = 1;
+  map<string, MessageContainingEnumCalledType> type = 1;
 }
 
 // Previously, message cannot contain map field called "entry".
 message MessageContainingMapCalledEntry {
   map<int32, int32> entry = 1;
+}
+
+message TestRecursiveMapMessage {
+  map<string, TestRecursiveMapMessage> a = 1;
 }

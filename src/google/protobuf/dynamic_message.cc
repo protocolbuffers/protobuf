@@ -64,6 +64,10 @@
 
 #include <algorithm>
 #include <google/protobuf/stubs/hash.h>
+#include <memory>
+#ifndef _SHARED_PTR_H
+#include <google/protobuf/stubs/shared_ptr.h>
+#endif
 
 #include <google/protobuf/stubs/common.h>
 
@@ -79,6 +83,7 @@
 #include <google/protobuf/map_type_handler.h>
 #include <google/protobuf/extension_set.h>
 #include <google/protobuf/wire_format.h>
+#include <google/protobuf/map_field.h>
 
 namespace google {
 namespace protobuf {
@@ -87,7 +92,7 @@ using internal::WireFormat;
 using internal::ExtensionSet;
 using internal::GeneratedMessageReflection;
 using internal::MapField;
-using internal::MapFieldBase;
+using internal::DynamicMapField;
 
 
 using internal::ArenaStringPtr;
@@ -116,7 +121,7 @@ int FieldSpaceUsed(const FieldDescriptor* field) {
       case FD::CPPTYPE_ENUM   : return sizeof(RepeatedField<int     >);
       case FD::CPPTYPE_MESSAGE:
         if (IsMapFieldInApi(field)) {
-          return sizeof(MapFieldBase);
+          return sizeof(DynamicMapField);
         } else {
           return sizeof(RepeatedPtrField<Message>);
         }
@@ -227,8 +232,8 @@ class DynamicMessage : public Message {
 
     // Warning:  The order in which the following pointers are defined is
     //   important (the prototype must be deleted *before* the offsets).
-    scoped_array<int> offsets;
-    scoped_ptr<const GeneratedMessageReflection> reflection;
+    google::protobuf::scoped_array<int> offsets;
+    google::protobuf::scoped_ptr<const GeneratedMessageReflection> reflection;
     // Don't use a scoped_ptr to hold the prototype: the destructor for
     // DynamicMessage needs to know whether it is the prototype, and does so by
     // looking back at this field. This would assume details about the
@@ -261,6 +266,16 @@ class DynamicMessage : public Message {
 
   Metadata GetMetadata() const;
 
+  // We actually allocate more memory than sizeof(*this) when this
+  // class's memory is allocated via the global operator new. Thus, we need to
+  // manually call the global operator delete. Calling the destructor is taken
+  // care of for us. This makes DynamicMessage compatible with -fsized-delete.
+  // It doesn't work for MSVC though.
+#ifndef _MSC_VER
+  static void operator delete(void* ptr) {
+    ::operator delete(ptr);
+  }
+#endif  // !_MSC_VER
 
  private:
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(DynamicMessage);
@@ -389,7 +404,8 @@ void DynamicMessage::SharedCtor() {
           new(field_ptr) Message*(NULL);
         } else {
           if (IsMapFieldInApi(field)) {
-            new (field_ptr) MapFieldBase();
+            new (field_ptr) DynamicMapField(
+                type_info_->factory->GetPrototypeNoLock(field->message_type()));
           } else {
             new (field_ptr) RepeatedPtrField<Message>();
           }
@@ -412,7 +428,7 @@ DynamicMessage::~DynamicMessage() {
   }
 
   // We need to manually run the destructors for repeated fields and strings,
-  // just as we ran their constructors in the the DynamicMessage constructor.
+  // just as we ran their constructors in the DynamicMessage constructor.
   // We also need to manually delete oneof fields if it is set and is string
   // or message.
   // Additionally, if any singular embedded messages have been allocated, we
@@ -435,10 +451,12 @@ DynamicMessage::~DynamicMessage() {
             case FieldOptions::STRING: {
               const ::std::string* default_value =
                   &(reinterpret_cast<const ArenaStringPtr*>(
-                      type_info_->prototype->OffsetToPointer(
-                          type_info_->offsets[i]))->Get(NULL));
-              reinterpret_cast<ArenaStringPtr*>(field_ptr)->Destroy(default_value,
-                                                                    NULL);
+                      reinterpret_cast<uint8*>(
+                          type_info_->default_oneof_instance)
+                      + type_info_->offsets[i])
+                    ->Get(NULL));
+              reinterpret_cast<ArenaStringPtr*>(field_ptr)->Destroy(
+                  default_value, NULL);
               break;
             }
           }
@@ -480,7 +498,7 @@ DynamicMessage::~DynamicMessage() {
 
         case FieldDescriptor::CPPTYPE_MESSAGE:
           if (IsMapFieldInApi(field)) {
-            reinterpret_cast<MapFieldBase*>(field_ptr)->~MapFieldBase();
+            reinterpret_cast<DynamicMapField*>(field_ptr)->~DynamicMapField();
           } else {
             reinterpret_cast<RepeatedPtrField<Message>*>(field_ptr)
                 ->~RepeatedPtrField<Message>();
@@ -496,8 +514,8 @@ DynamicMessage::~DynamicMessage() {
               &(reinterpret_cast<const ArenaStringPtr*>(
                   type_info_->prototype->OffsetToPointer(
                       type_info_->offsets[i]))->Get(NULL));
-          reinterpret_cast<ArenaStringPtr*>(field_ptr)->Destroy(default_value,
-                                                                NULL);
+          reinterpret_cast<ArenaStringPtr*>(field_ptr)->Destroy(
+              default_value, NULL);
           break;
         }
       }
@@ -697,7 +715,7 @@ const Message* DynamicMessageFactory::GetPrototypeNoLock(
     // Oneof fields do not use any space.
     if (!type->field(i)->containing_oneof()) {
       int field_size = FieldSpaceUsed(type->field(i));
-      size = AlignTo(size, min(kSafeAlignment, field_size));
+      size = AlignTo(size, std::min(kSafeAlignment, field_size));
       offsets[i] = size;
       size += field_size;
     }
@@ -723,8 +741,14 @@ const Message* DynamicMessageFactory::GetPrototypeNoLock(
   // Allocate the prototype.
   void* base = operator new(size);
   memset(base, 0, size);
+  // The prototype in type_info has to be set before creating the prototype
+  // instance on memory. e.g., message Foo { map<int32, Foo> a = 1; }. When
+  // creating prototype for Foo, prototype of the map entry will also be
+  // created, which needs the address of the prototype of Foo (the value in
+  // map). To break the cyclic dependency, we have to assgin the address of
+  // prototype into type_info first.
+  type_info->prototype = static_cast<DynamicMessage*>(base);
   DynamicMessage* prototype = new(base) DynamicMessage(type_info);
-  type_info->prototype = prototype;
 
   // Construct the reflection object.
   if (type->oneof_decl_count() > 0) {
@@ -735,7 +759,7 @@ const Message* DynamicMessageFactory::GetPrototypeNoLock(
       for (int j = 0; j < type->oneof_decl(i)->field_count(); j++) {
         const FieldDescriptor* field = type->oneof_decl(i)->field(j);
         int field_size = OneofFieldSpaceUsed(field);
-        oneof_size = AlignTo(oneof_size, min(kSafeAlignment, field_size));
+        oneof_size = AlignTo(oneof_size, std::min(kSafeAlignment, field_size));
         offsets[field->index()] = oneof_size;
         oneof_size += field_size;
       }

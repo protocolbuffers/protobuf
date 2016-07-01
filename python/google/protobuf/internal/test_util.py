@@ -38,6 +38,8 @@ __author__ = 'robinson@google.com (Will Robinson)'
 
 import os.path
 
+import sys
+
 from google.protobuf import unittest_import_pb2
 from google.protobuf import unittest_pb2
 from google.protobuf import descriptor_pb2
@@ -604,7 +606,8 @@ def GoldenFile(filename):
 
   # Search internally.
   path = '.'
-  full_path = os.path.join(path, 'third_party/py/google/protobuf/testdata', filename)
+  full_path = os.path.join(path, 'third_party/py/google/protobuf/testdata',
+                           filename)
   if os.path.exists(full_path):
     # Found it.  Load the golden file from the testdata directory.
     return open(full_path, 'rb')

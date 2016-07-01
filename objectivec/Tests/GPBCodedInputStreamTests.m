@@ -225,8 +225,10 @@
   // Serialize and parse it.  Make sure to parse from an InputStream, not
   // directly from a ByteString, so that CodedInputStream uses buffered
   // reading.
+  NSData *messageData = message.data;
+  XCTAssertNotNil(messageData);
   GPBCodedInputStream* stream =
-      [GPBCodedInputStream streamWithData:message.data];
+      [GPBCodedInputStream streamWithData:messageData];
   TestAllTypes* message2 = [TestAllTypes parseFromCodedInputStream:stream
                                                  extensionRegistry:nil
                                                              error:NULL];
@@ -264,6 +266,9 @@
 }
 
 // Verifies fix for b/10315336.
+// Note: Now that there isn't a custom string class under the hood, this test
+// isn't as critical, but it does cover bad input and if a custom class is added
+// again, it will help validate that class' handing of bad utf8.
 - (void)testReadMalformedString {
   NSOutputStream* rawOutput = [NSOutputStream outputStreamToMemory];
   GPBCodedOutputStream* output =
@@ -274,19 +279,57 @@
   [output writeRawVarint32:tag];
   [output writeRawVarint32:5];
   // Create an invalid utf-8 byte array.
-  uint8_t bytes[5] = {0xc2, 0xf2};
+  uint8_t bytes[] = {0xc2, 0xf2, 0x0, 0x0, 0x0};
   [output writeRawData:[NSData dataWithBytes:bytes length:sizeof(bytes)]];
   [output flush];
 
-  NSData* data =
+  NSData *data =
       [rawOutput propertyForKey:NSStreamDataWrittenToMemoryStreamKey];
   GPBCodedInputStream* input = [GPBCodedInputStream streamWithData:data];
+  NSError *error = nil;
   TestAllTypes* message = [TestAllTypes parseFromCodedInputStream:input
                                                 extensionRegistry:nil
-                                                            error:NULL];
-  // Make sure we can read string properties twice without crashing.
-  XCTAssertEqual([message.defaultString length], (NSUInteger)0);
-  XCTAssertEqualObjects(@"", message.defaultString);
+                                                            error:&error];
+  XCTAssertNotNil(error);
+  XCTAssertNil(message);
+}
+
+- (void)testBOMWithinStrings {
+  // We've seen servers that end up with BOMs within strings (not always at the
+  // start, and sometimes in multiple places), make sure they always parse
+  // correctly. (Again, this is inpart incase a custom string class is ever
+  // used again.)
+  const char* strs[] = {
+    "\xEF\xBB\xBF String with BOM",
+    "String with \xEF\xBB\xBF in middle",
+    "String with end bom \xEF\xBB\xBF",
+    "\xEF\xBB\xBF\xe2\x99\xa1",  // BOM White Heart
+    "\xEF\xBB\xBF\xEF\xBB\xBF String with Two BOM",
+  };
+  for (size_t i = 0; i < GPBARRAYSIZE(strs); ++i) {
+    NSOutputStream* rawOutput = [NSOutputStream outputStreamToMemory];
+    GPBCodedOutputStream* output =
+        [GPBCodedOutputStream streamWithOutputStream:rawOutput];
+
+    int32_t tag = GPBWireFormatMakeTag(TestAllTypes_FieldNumber_DefaultString,
+                                       GPBWireFormatLengthDelimited);
+    [output writeRawVarint32:tag];
+    size_t length = strlen(strs[i]);
+    [output writeRawVarint32:(int32_t)length];
+    [output writeRawData:[NSData dataWithBytes:strs[i] length:length]];
+    [output flush];
+
+    NSData* data =
+        [rawOutput propertyForKey:NSStreamDataWrittenToMemoryStreamKey];
+    GPBCodedInputStream* input = [GPBCodedInputStream streamWithData:data];
+    TestAllTypes* message = [TestAllTypes parseFromCodedInputStream:input
+                                                  extensionRegistry:nil
+                                                              error:NULL];
+    XCTAssertNotNil(message, @"Loop %zd", i);
+    // Ensure the string is there. NSString can consume the BOM in some
+    // cases, so don't actually check the string for exact equality.
+    XCTAssertTrue(message.defaultString.length > 0, @"Loop %zd", i);
+  }
 }
 
 @end

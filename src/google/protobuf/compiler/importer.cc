@@ -185,6 +185,19 @@ void SourceTreeDescriptorDatabase::ValidationErrorCollector::AddError(
   owner_->error_collector_->AddError(filename, line, column, message);
 }
 
+void SourceTreeDescriptorDatabase::ValidationErrorCollector::AddWarning(
+    const string& filename,
+    const string& element_name,
+    const Message* descriptor,
+    ErrorLocation location,
+    const string& message) {
+  if (owner_->error_collector_ == NULL) return;
+
+  int line, column;
+  owner_->source_locations_.Find(descriptor, location, &line, &column);
+  owner_->error_collector_->AddWarning(filename, line, column, message);
+}
+
 // ===================================================================
 
 Importer::Importer(SourceTree* source_tree,

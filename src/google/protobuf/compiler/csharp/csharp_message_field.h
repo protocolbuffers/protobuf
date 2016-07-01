@@ -41,17 +41,18 @@ namespace protobuf {
 namespace compiler {
 namespace csharp {
 
-class Writer;
-
 class MessageFieldGenerator : public FieldGeneratorBase {
  public:
-  MessageFieldGenerator(const FieldDescriptor* descriptor, int fieldOrdinal);
+  MessageFieldGenerator(const FieldDescriptor* descriptor,
+                        int fieldOrdinal,
+                        const Options *options);
   ~MessageFieldGenerator();
 
+  virtual void GenerateCodecCode(io::Printer* printer);
+  virtual void GenerateCloningCode(io::Printer* printer);
+  virtual void GenerateFreezingCode(io::Printer* printer);
   virtual void GenerateMembers(io::Printer* printer);
-  virtual void GenerateBuilderMembers(io::Printer* printer);
   virtual void GenerateMergingCode(io::Printer* printer);
-  virtual void GenerateBuildingCode(io::Printer* printer);
   virtual void GenerateParsingCode(io::Printer* printer);
   virtual void GenerateSerializationCode(io::Printer* printer);
   virtual void GenerateSerializedSizeCode(io::Printer* printer);
@@ -66,12 +67,13 @@ class MessageFieldGenerator : public FieldGeneratorBase {
 
 class MessageOneofFieldGenerator : public MessageFieldGenerator {
  public:
-  MessageOneofFieldGenerator(const FieldDescriptor* descriptor, int fieldOrdinal);
+  MessageOneofFieldGenerator(const FieldDescriptor* descriptor,
+                             int fieldOrdinal,
+                             const Options *options);
   ~MessageOneofFieldGenerator();
 
+  virtual void GenerateCloningCode(io::Printer* printer);
   virtual void GenerateMembers(io::Printer* printer);
-  virtual void GenerateBuilderMembers(io::Printer* printer);
-  virtual void WriteEquals(io::Printer* printer);
   virtual void WriteToString(io::Printer* printer);
   virtual void GenerateParsingCode(io::Printer* printer);
 

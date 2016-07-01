@@ -1,0 +1,11 @@
+JsonInput.FieldNameInLowerCamelCase.Validator
+JsonInput.FieldNameInSnakeCase.JsonOutput
+JsonInput.FieldNameInSnakeCase.ProtobufOutput
+JsonInput.FieldNameWithMixedCases.JsonOutput
+JsonInput.FieldNameWithMixedCases.ProtobufOutput
+JsonInput.FieldNameWithMixedCases.Validator
+JsonInput.Int64FieldMaxValueNotQuoted.JsonOutput
+JsonInput.Int64FieldMaxValueNotQuoted.ProtobufOutput
+JsonInput.OriginalProtoFieldName.JsonOutput
+JsonInput.Uint64FieldMaxValueNotQuoted.JsonOutput
+JsonInput.Uint64FieldMaxValueNotQuoted.ProtobufOutput

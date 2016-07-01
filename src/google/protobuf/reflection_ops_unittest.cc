@@ -37,6 +37,7 @@
 #include <google/protobuf/unittest.pb.h>
 #include <google/protobuf/test_util.h>
 
+#include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/testing/googletest.h>
 #include <gtest/gtest.h>

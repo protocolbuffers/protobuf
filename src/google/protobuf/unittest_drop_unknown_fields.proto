@@ -33,7 +33,7 @@ syntax = "proto3";
 package unittest_drop_unknown_fields;
 option objc_class_prefix = "DropUnknowns";
 
-option csharp_namespace = "Google.ProtocolBuffers.TestProtos";
+option csharp_namespace = "Google.Protobuf.TestProtos";
 
 message Foo {
   enum NestedEnum {

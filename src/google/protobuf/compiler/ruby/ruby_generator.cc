@@ -47,7 +47,7 @@ namespace compiler {
 namespace ruby {
 
 // Forward decls.
-std::string IntToString(uint32 value);
+std::string IntToString(int32 value);
 std::string StripDotProto(const std::string& proto_file);
 std::string LabelForField(google::protobuf::FieldDescriptor* field);
 std::string TypeName(google::protobuf::FieldDescriptor* field);
@@ -64,7 +64,7 @@ void GenerateEnumAssignment(
     const google::protobuf::EnumDescriptor* en,
     google::protobuf::io::Printer* printer);
 
-std::string IntToString(uint32 value) {
+std::string IntToString(int32 value) {
   std::ostringstream os;
   os << value;
   return os.str();
@@ -73,6 +73,10 @@ std::string IntToString(uint32 value) {
 std::string StripDotProto(const std::string& proto_file) {
   int lastindex = proto_file.find_last_of(".");
   return proto_file.substr(0, lastindex);
+}
+
+std::string GetOutputFilename(const std::string& proto_file) {
+  return StripDotProto(proto_file) + ".rb";
 }
 
 std::string LabelForField(const google::protobuf::FieldDescriptor* field) {
@@ -85,17 +89,25 @@ std::string LabelForField(const google::protobuf::FieldDescriptor* field) {
 }
 
 std::string TypeName(const google::protobuf::FieldDescriptor* field) {
-  switch (field->cpp_type()) {
-    case FieldDescriptor::CPPTYPE_INT32: return "int32";
-    case FieldDescriptor::CPPTYPE_INT64: return "int64";
-    case FieldDescriptor::CPPTYPE_UINT32: return "uint32";
-    case FieldDescriptor::CPPTYPE_UINT64: return "uint64";
-    case FieldDescriptor::CPPTYPE_DOUBLE: return "double";
-    case FieldDescriptor::CPPTYPE_FLOAT: return "float";
-    case FieldDescriptor::CPPTYPE_BOOL: return "bool";
-    case FieldDescriptor::CPPTYPE_ENUM: return "enum";
-    case FieldDescriptor::CPPTYPE_STRING: return "string";
-    case FieldDescriptor::CPPTYPE_MESSAGE: return "message";
+  switch (field->type()) {
+    case FieldDescriptor::TYPE_INT32: return "int32";
+    case FieldDescriptor::TYPE_INT64: return "int64";
+    case FieldDescriptor::TYPE_UINT32: return "uint32";
+    case FieldDescriptor::TYPE_UINT64: return "uint64";
+    case FieldDescriptor::TYPE_SINT32: return "sint32";
+    case FieldDescriptor::TYPE_SINT64: return "sint64";
+    case FieldDescriptor::TYPE_FIXED32: return "fixed32";
+    case FieldDescriptor::TYPE_FIXED64: return "fixed64";
+    case FieldDescriptor::TYPE_SFIXED32: return "sfixed32";
+    case FieldDescriptor::TYPE_SFIXED64: return "sfixed64";
+    case FieldDescriptor::TYPE_DOUBLE: return "double";
+    case FieldDescriptor::TYPE_FLOAT: return "float";
+    case FieldDescriptor::TYPE_BOOL: return "bool";
+    case FieldDescriptor::TYPE_ENUM: return "enum";
+    case FieldDescriptor::TYPE_STRING: return "string";
+    case FieldDescriptor::TYPE_BYTES: return "bytes";
+    case FieldDescriptor::TYPE_MESSAGE: return "message";
+    case FieldDescriptor::TYPE_GROUP: return "group";
     default: assert(false); return "";
   }
 }
@@ -323,8 +335,69 @@ void EndPackageModules(
   }
 }
 
-void GenerateFile(const google::protobuf::FileDescriptor* file,
-                  google::protobuf::io::Printer* printer) {
+bool UsesTypeFromFile(const Descriptor* message, const FileDescriptor* file,
+                      string* error) {
+  for (int i = 0; i < message->field_count(); i++) {
+    const FieldDescriptor* field = message->field(i);
+    if ((field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE &&
+         field->message_type()->file() == file) ||
+        (field->type() == FieldDescriptor::TYPE_ENUM &&
+         field->enum_type()->file() == file)) {
+      *error = "proto3 message field " + field->full_name() + " in file " +
+               file->name() + " has a dependency on a type from proto2 file " +
+               file->name() +
+               ".  Ruby doesn't support proto2 yet, so we must fail.";
+      return true;
+    }
+  }
+
+  for (int i = 0; i < message->nested_type_count(); i++) {
+    if (UsesTypeFromFile(message->nested_type(i), file, error)) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+// Ruby doesn't currently support proto2.  This causes a failure even for proto3
+// files that import proto2.  But in some cases, the proto2 file is only being
+// imported to extend another proto2 message.  The prime example is declaring
+// custom options by extending FileOptions/FieldOptions/etc.
+//
+// If the proto3 messages don't have any proto2 submessages, it is safe to omit
+// the dependency completely.  Users won't be able to use any proto2 extensions,
+// but they already couldn't because proto2 messages aren't supported.
+//
+// If/when we add proto2 support, we should remove this.
+bool MaybeEmitDependency(const FileDescriptor* import,
+                         const FileDescriptor* from,
+                         io::Printer* printer,
+                         string* error) {
+  if (import->syntax() == FileDescriptor::SYNTAX_PROTO2) {
+    for (int i = 0; i < from->message_type_count(); i++) {
+      if (UsesTypeFromFile(from->message_type(i), import, error)) {
+        // Error text was already set by UsesTypeFromFile().
+        return false;
+      }
+    }
+
+    // Ok to omit this proto2 dependency -- so we won't print anything.
+    GOOGLE_LOG(WARNING) << "Omitting proto2 dependency '" << import->name()
+                        << "' from proto3 output file '"
+                        << GetOutputFilename(from->name())
+                        << "' because we don't support proto2 and no proto2 "
+                           "types from that file are being used.";
+    return true;
+  } else {
+    printer->Print(
+      "require '$name$'\n", "name", StripDotProto(import->name()));
+    return true;
+  }
+}
+
+bool GenerateFile(const FileDescriptor* file, io::Printer* printer,
+                  string* error) {
   printer->Print(
     "# Generated by the protocol buffer compiler.  DO NOT EDIT!\n"
     "# source: $filename$\n"
@@ -335,9 +408,9 @@ void GenerateFile(const google::protobuf::FileDescriptor* file,
     "require 'google/protobuf'\n\n");
 
   for (int i = 0; i < file->dependency_count(); i++) {
-    const std::string& name = file->dependency(i)->name();
-    printer->Print(
-      "require '$name$'\n", "name", StripDotProto(name));
+    if (!MaybeEmitDependency(file->dependency(i), file, printer, error)) {
+      return false;
+    }
   }
 
   printer->Print(
@@ -361,6 +434,7 @@ void GenerateFile(const google::protobuf::FileDescriptor* file,
     GenerateEnumAssignment("", file->enum_type(i), printer);
   }
   EndPackageModules(levels, printer);
+  return true;
 }
 
 bool Generator::Generate(
@@ -376,15 +450,11 @@ bool Generator::Generate(
     return false;
   }
 
-  std::string filename =
-      StripDotProto(file->name()) + ".rb";
   scoped_ptr<io::ZeroCopyOutputStream> output(
-      generator_context->Open(filename));
+      generator_context->Open(GetOutputFilename(file->name())));
   io::Printer printer(output.get(), '$');
 
-  GenerateFile(file, &printer);
-
-  return true;
+  return GenerateFile(file, &printer, error);
 }
 
 }  // namespace ruby

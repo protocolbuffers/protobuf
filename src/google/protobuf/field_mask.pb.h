@@ -41,7 +41,7 @@ class FieldMask;
 
 // ===================================================================
 
-class LIBPROTOBUF_EXPORT FieldMask : public ::google::protobuf::Message {
+class LIBPROTOBUF_EXPORT FieldMask : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.FieldMask) */ {
  public:
   FieldMask();
   virtual ~FieldMask();
@@ -75,7 +75,11 @@ class LIBPROTOBUF_EXPORT FieldMask : public ::google::protobuf::Message {
       ::google::protobuf::io::CodedInputStream* input);
   void SerializeWithCachedSizes(
       ::google::protobuf::io::CodedOutputStream* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
+  ::google::protobuf::uint8* InternalSerializeWithCachedSizesToArray(
+      bool deterministic, ::google::protobuf::uint8* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const {
+    return InternalSerializeWithCachedSizesToArray(false, output);
+  }
   int GetCachedSize() const { return _cached_size_; }
   private:
   void SharedCtor();
@@ -164,6 +168,7 @@ inline void FieldMask::set_paths(int index, const char* value, size_t size) {
   // @@protoc_insertion_point(field_set_pointer:google.protobuf.FieldMask.paths)
 }
 inline ::std::string* FieldMask::add_paths() {
+  // @@protoc_insertion_point(field_add_mutable:google.protobuf.FieldMask.paths)
   return paths_.Add();
 }
 inline void FieldMask::add_paths(const ::std::string& value) {

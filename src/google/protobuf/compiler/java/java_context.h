@@ -39,6 +39,7 @@
 #include <vector>
 
 #include <google/protobuf/stubs/common.h>
+#include <google/protobuf/compiler/java/java_options.h>
 
 namespace google {
 namespace protobuf {
@@ -46,6 +47,7 @@ namespace protobuf {
   class FieldDescriptor;
   class OneofDescriptor;
   class Descriptor;
+  class EnumDescriptor;
   namespace compiler {
     namespace java {
       class ClassNameResolver;  // name_resolver.h
@@ -63,7 +65,7 @@ struct OneofGeneratorInfo;
 // generators.
 class Context {
  public:
-  explicit Context(const FileDescriptor* file);
+  Context(const FileDescriptor* file, const Options& options);
   ~Context();
 
   // Get the name resolver associated with this context. The resolver
@@ -78,6 +80,17 @@ class Context {
   const OneofGeneratorInfo* GetOneofGeneratorInfo(
       const OneofDescriptor* oneof) const;
 
+  const Options& options() const { return options_; }
+
+  // Enforces all the files (including transitive dependencies) to use
+  // LiteRuntime.
+
+  bool EnforceLite() const { return options_.enforce_lite; }
+
+  // Does this message class have generated parsing, serialization, and other
+  // standard methods for which reflection-based fallback implementations exist?
+  bool HasGeneratedMethods(const Descriptor* descriptor) const;
+
  private:
   void InitializeFieldGeneratorInfo(const FileDescriptor* file);
   void InitializeFieldGeneratorInfoForMessage(const Descriptor* message);
@@ -87,6 +100,7 @@ class Context {
   google::protobuf::scoped_ptr<ClassNameResolver> name_resolver_;
   map<const FieldDescriptor*, FieldGeneratorInfo> field_generator_info_map_;
   map<const OneofDescriptor*, OneofGeneratorInfo> oneof_generator_info_map_;
+  Options options_;
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(Context);
 };
 

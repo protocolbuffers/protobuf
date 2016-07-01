@@ -30,6 +30,7 @@
 
 #include <google/protobuf/util/internal/json_escaping.h>
 
+#include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
 
 namespace google {
@@ -185,7 +186,7 @@ bool ReadCodePoint(StringPiece str, int index,
                    uint32 *cp, int* num_left, int *num_read) {
   if (*num_left == 0) {
     // Last read was complete. Start reading a new unicode code point.
-    *cp = str[index++];
+    *cp = static_cast<uint8>(str[index++]);
     *num_read = 1;
     // The length of the code point is determined from reading the first byte.
     //
@@ -234,7 +235,7 @@ bool ReadCodePoint(StringPiece str, int index,
     *num_read = 0;
   }
   while (*num_left > 0 && index < str.size()) {
-    uint32 ch = str[index++];
+    uint32 ch = static_cast<uint8>(str[index++]);
     --(*num_left);
     ++(*num_read);
     *cp = (*cp << 6) | (ch & 0x3f);
@@ -254,7 +255,7 @@ StringPiece ToHex(uint16 cp, char* buffer) {
   buffer[3] = kHex[cp & 0x0f];
   cp >>= 4;
   buffer[2] = kHex[cp & 0x0f];
-  return StringPiece(buffer, 0, 6);
+  return StringPiece(buffer).substr(0, 6);
 }
 
 // Stores the 32-bit unicode code point as its hexadecimal digits in buffer

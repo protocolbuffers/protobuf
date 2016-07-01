@@ -43,6 +43,7 @@
 #include <google/protobuf/map_unittest.pb.h>
 #include <google/protobuf/test_util.h>
 #include <google/protobuf/unittest.pb.h>
+#include <google/protobuf/util/json_format_proto3.pb.h>
 #include <google/protobuf/util/type_resolver.h>
 #include <google/protobuf/testing/googletest.h>
 #include <gtest/gtest.h>
@@ -330,6 +331,19 @@ TEST_F(DescriptorPoolTypeResolverTest, TestEnum) {
   EnumHasValue(type, "BAR", 2);
   EnumHasValue(type, "BAZ", 3);
   EnumHasValue(type, "NEG", -1);
+}
+
+TEST_F(DescriptorPoolTypeResolverTest, TestJsonName) {
+  Type type;
+  ASSERT_TRUE(resolver_->ResolveMessageType(
+                           GetTypeUrl<protobuf_unittest::TestAllTypes>(), &type)
+                  .ok());
+  EXPECT_EQ("optionalInt32", FindField(type, "optional_int32")->json_name());
+
+  ASSERT_TRUE(resolver_->ResolveMessageType(
+                           GetTypeUrl<proto3::TestCustomJsonName>(), &type)
+                  .ok());
+  EXPECT_EQ("@value", FindField(type, "value")->json_name());
 }
 
 }  // namespace

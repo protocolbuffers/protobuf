@@ -35,6 +35,7 @@
 #import "GPBUnknownField_PackagePrivate.h"
 #import "google/protobuf/Unittest.pbobjc.h"
 #import "google/protobuf/UnittestMset.pbobjc.h"
+#import "google/protobuf/UnittestMsetWireFormat.pbobjc.h"
 
 @interface WireFormatTests : GPBTestCase
 @end
@@ -166,12 +167,12 @@ const int kUnknownTypeId = 1550055;
   XCTAssertEqual([raw.itemArray[2] typeId], kUnknownTypeId);
 
   TestMessageSetExtension1* message1 =
-      [TestMessageSetExtension1 parseFromData:[raw.itemArray[0] message]
+      [TestMessageSetExtension1 parseFromData:[((RawMessageSet_Item*)raw.itemArray[0]) message]
                                         error:NULL];
   XCTAssertEqual(message1.i, 123);
 
   TestMessageSetExtension2* message2 =
-      [TestMessageSetExtension2 parseFromData:[raw.itemArray[1] message]
+      [TestMessageSetExtension2 parseFromData:[((RawMessageSet_Item*)raw.itemArray[1]) message]
                                         error:NULL];
   XCTAssertEqualObjects(message2.str, @"foo");
 
@@ -189,7 +190,6 @@ const int kUnknownTypeId = 1550055;
     TestMessageSetExtension1* message = [TestMessageSetExtension1 message];
     message.i = 123;
     item.message = [message data];
-    raw.itemArray = [NSMutableArray array];
     [raw.itemArray addObject:item];
   }
 

@@ -51,23 +51,22 @@ class ScopedPyObjectPtr {
 
   // Reset.  Deletes the current owned object, if any.
   // Then takes ownership of a new object, if given.
-  // this->reset(this->get()) works.
+  // This function must be called with a reference that you own.
+  //   this->reset(this->get()) is wrong!
+  //   this->reset(this->release()) is OK.
   PyObject* reset(PyObject* p = NULL) {
-    if (p != ptr_) {
-      Py_XDECREF(ptr_);
-      ptr_ = p;
-    }
+    Py_XDECREF(ptr_);
+    ptr_ = p;
     return ptr_;
   }
 
   // Releases ownership of the object.
+  // The caller now owns the returned reference.
   PyObject* release() {
     PyObject* p = ptr_;
     ptr_ = NULL;
     return p;
   }
-
-  operator PyObject*() { return ptr_; }
 
   PyObject* operator->() const  {
     assert(ptr_ != NULL);

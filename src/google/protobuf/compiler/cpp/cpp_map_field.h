@@ -43,8 +43,7 @@ namespace cpp {
 
 class MapFieldGenerator : public FieldGenerator {
  public:
-  explicit MapFieldGenerator(const FieldDescriptor* descriptor,
-                             const Options& options);
+  MapFieldGenerator(const FieldDescriptor* descriptor, const Options& options);
   ~MapFieldGenerator();
 
   // implements FieldGenerator ---------------------------------------
@@ -63,6 +62,7 @@ class MapFieldGenerator : public FieldGenerator {
 
  private:
   const FieldDescriptor* descriptor_;
+  const bool dependent_field_;
   map<string, string> variables_;
 
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(MapFieldGenerator);

@@ -1,6 +1,6 @@
 package protobuf_unittest;
 
-option java_package = "com.google.protobuf.nano";
+option java_package = "com.google.protobuf";
 option java_outer_classname = "NanoReferenceTypes";
 
 message TestAllTypesNano {

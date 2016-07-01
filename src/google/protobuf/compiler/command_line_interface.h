@@ -212,6 +212,7 @@ class LIBPROTOC_EXPORT CommandLineInterface {
   // Parse all command-line arguments.
   ParseArgumentStatus ParseArguments(int argc, const char* const argv[]);
 
+
   // Parses a command-line argument into a name/value pair.  Returns
   // true if the next argument in the argv should be used as the value,
   // false otherwise.
@@ -262,8 +263,11 @@ class LIBPROTOC_EXPORT CommandLineInterface {
   // in order.  Any files in *already_seen will not be added, and each file
   // added will be inserted into *already_seen.  If include_source_code_info is
   // true then include the source code information in the FileDescriptorProtos.
+  // If include_json_name is true, populate the json_name field of
+  // FieldDescriptorProto for all fields.
   static void GetTransitiveDependencies(
       const FileDescriptor* file,
+      bool include_json_name,
       bool include_source_code_info,
       set<const FileDescriptor*>* already_seen,
       RepeatedPtrField<FileDescriptorProto>* output);

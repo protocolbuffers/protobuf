@@ -56,6 +56,13 @@ message Book {
   optional Publisher publisher = 9;
   repeated Label labels = 10;
 
+  enum Type {
+    FICTION = 1;
+    KIDS = 2;
+    ACTION_AND_ADVENTURE = 3;
+  }
+  optional Type type = 11;
+
   extensions 200 to 499;
 }
 
@@ -66,7 +73,7 @@ message Publisher {
 
 // An author of a book
 message Author {
-  optional uint64 id = 1;
+  optional uint64 id = 1 [json_name = "@id"];
   optional string name = 2;
   repeated string pseudonym = 3;
   optional bool alive = 4;
@@ -168,4 +175,13 @@ message NestedBook {
 // Field number of NestedBook is reused for something else.
 message BadNestedBook {
   repeated uint32 book = 1 [packed=true];  // Packed to optional message.
+}
+
+// A recursively defined message.
+message Cyclic {
+  optional int32 m_int = 1;
+  optional string m_str = 2;
+  optional Book m_book = 3;
+  repeated Author m_author = 5;
+  optional Cyclic m_cyclic = 4;
 }

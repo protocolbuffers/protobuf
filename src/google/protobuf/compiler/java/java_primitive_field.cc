@@ -35,6 +35,7 @@
 #include <map>
 #include <string>
 
+#include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/compiler/java/java_context.h>
 #include <google/protobuf/compiler/java/java_doc_comment.h>
@@ -74,12 +75,7 @@ void SetPrimitiveVariables(const FieldDescriptor* descriptor,
       "" : ("= " + ImmutableDefaultValue(descriptor, name_resolver));
   (*variables)["capitalized_type"] =
       GetCapitalizedType(descriptor, /* immutable = */ true);
-  if (descriptor->is_packed()) {
-    (*variables)["tag"] = SimpleItoa(WireFormatLite::MakeTag(
-        descriptor->number(), WireFormatLite::WIRETYPE_LENGTH_DELIMITED));
-  } else {
-    (*variables)["tag"] = SimpleItoa(WireFormat::MakeTag(descriptor));
-  }
+  (*variables)["tag"] = SimpleItoa(WireFormat::MakeTag(descriptor));
   (*variables)["tag_size"] = SimpleItoa(
       WireFormat::TagSize(descriptor->number(), GetType(descriptor)));
   if (IsReferenceType(GetJavaType(descriptor))) {
@@ -98,8 +94,7 @@ void SetPrimitiveVariables(const FieldDescriptor* descriptor,
   if (fixed_size != -1) {
     (*variables)["fixed_size"] = SimpleItoa(fixed_size);
   }
-  (*variables)["on_changed"] =
-      HasDescriptorMethods(descriptor->containing_type()) ? "onChanged();" : "";
+  (*variables)["on_changed"] = "onChanged();";
 
   if (SupportFieldPresence(descriptor->file())) {
     // For singular messages and builders, one bit is used for the hasField bit.
@@ -605,7 +600,7 @@ GenerateMembers(io::Printer* printer) const {
     "}\n");
 
   if (descriptor_->is_packed() &&
-      HasGeneratedMethods(descriptor_->containing_type())) {
+      context_->HasGeneratedMethods(descriptor_->containing_type())) {
     printer->Print(variables_,
       "private int $name$MemoizedSerializedSize = -1;\n");
   }
@@ -782,8 +777,8 @@ GenerateSerializationCode(io::Printer* printer) const {
     // That makes it safe to rely on the memoized size here.
     printer->Print(variables_,
       "if (get$capitalized_name$List().size() > 0) {\n"
-      "  output.writeRawVarint32($tag$);\n"
-      "  output.writeRawVarint32($name$MemoizedSerializedSize);\n"
+      "  output.writeUInt32NoTag($tag$);\n"
+      "  output.writeUInt32NoTag($name$MemoizedSerializedSize);\n"
       "}\n"
       "for (int i = 0; i < $name$_.size(); i++) {\n"
       "  output.write$capitalized_type$NoTag($name$_.get(i));\n"

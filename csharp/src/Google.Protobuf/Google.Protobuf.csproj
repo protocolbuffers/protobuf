@@ -1,0 +1,168 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>9.0.30729</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{6908BDCE-D925-43F3-94AC-A531E6DF2591}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Google.Protobuf</RootNamespace>
+    <AssemblyName>Google.Protobuf</AssemblyName>
+    <ProjectTypeGuids>{786C830F-07A1-408B-BD7F-6EE04809D6DB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+    <TargetFrameworkProfile>Profile259</TargetFrameworkProfile>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <OldToolsVersion>3.5</OldToolsVersion>
+    <MinimumVisualStudioVersion>10.0</MinimumVisualStudioVersion>
+    <NuGetPackageImportStamp>
+    </NuGetPackageImportStamp>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug</OutputPath>
+    <IntermediateOutputPath>obj\Debug\</IntermediateOutputPath>
+    <DocumentationFile>bin\Debug\Google.Protobuf.xml</DocumentationFile>
+    <NoWarn>
+    </NoWarn>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <NoStdLib>true</NoStdLib>
+    <GenerateSerializationAssemblies>Off</GenerateSerializationAssemblies>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release</OutputPath>
+    <IntermediateOutputPath>obj\Release\</IntermediateOutputPath>
+    <DocumentationFile>$(OutputPath)\$(AssemblyName).xml</DocumentationFile>
+    <NoWarn>
+    </NoWarn>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <NoStdLib>true</NoStdLib>
+    <GenerateSerializationAssemblies>Off</GenerateSerializationAssemblies>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'ReleaseSigned|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\ReleaseSigned</OutputPath>
+    <IntermediateOutputPath>obj\ReleaseSigned\</IntermediateOutputPath>
+    <DocumentationFile>$(OutputPath)\$(AssemblyName).xml</DocumentationFile>
+    <NoWarn>
+    </NoWarn>
+    <DefineConstants>TRACE;SIGNED</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <NoStdLib>true</NoStdLib>
+    <GenerateSerializationAssemblies>Off</GenerateSerializationAssemblies>
+    <SignAssembly>True</SignAssembly>
+    <AssemblyOriginatorKeyFile>..\..\keys\Google.Protobuf.snk</AssemblyOriginatorKeyFile>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="mscorlib" />
+    <Reference Include="System" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="ByteArray.cs" />
+    <Compile Include="ByteString.cs" />
+    <Compile Include="CodedOutputStream.ComputeSize.cs" />
+    <Compile Include="CodedInputStream.cs" />
+    <Compile Include="CodedOutputStream.cs" />
+    <Compile Include="Collections\MapField.cs" />
+    <Compile Include="Collections\ReadOnlyDictionary.cs" />
+    <Compile Include="Collections\RepeatedField.cs" />
+    <Compile Include="Compatibility\PropertyInfoExtensions.cs" />
+    <Compile Include="Compatibility\TypeExtensions.cs" />
+    <Compile Include="FieldCodec.cs" />
+    <Compile Include="FrameworkPortability.cs" />
+    <Compile Include="ICustomDiagnosticMessage.cs" />
+    <Compile Include="IDeepCloneable.cs" />
+    <Compile Include="InvalidJsonException.cs" />
+    <Compile Include="JsonFormatter.cs" />
+    <Compile Include="JsonParser.cs" />
+    <Compile Include="JsonToken.cs" />
+    <Compile Include="JsonTokenizer.cs" />
+    <Compile Include="MessageExtensions.cs" />
+    <Compile Include="IMessage.cs" />
+    <Compile Include="InvalidProtocolBufferException.cs" />
+    <Compile Include="LimitedInputStream.cs" />
+    <Compile Include="MessageParser.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Reflection\Descriptor.cs" />
+    <Compile Include="Reflection\DescriptorBase.cs" />
+    <Compile Include="Reflection\DescriptorPool.cs" />
+    <Compile Include="Reflection\DescriptorUtil.cs" />
+    <Compile Include="Reflection\DescriptorValidationException.cs" />
+    <Compile Include="Reflection\EnumDescriptor.cs" />
+    <Compile Include="Reflection\EnumValueDescriptor.cs" />
+    <Compile Include="Reflection\FieldAccessorBase.cs" />
+    <Compile Include="Reflection\FieldDescriptor.cs" />
+    <Compile Include="Reflection\FieldType.cs" />
+    <Compile Include="Reflection\FileDescriptor.cs" />
+    <Compile Include="Reflection\GeneratedClrTypeInfo.cs" />
+    <Compile Include="Reflection\IDescriptor.cs" />
+    <Compile Include="Reflection\IFieldAccessor.cs" />
+    <Compile Include="Reflection\MapFieldAccessor.cs" />
+    <Compile Include="Reflection\MessageDescriptor.cs" />
+    <Compile Include="Reflection\MethodDescriptor.cs" />
+    <Compile Include="Reflection\OneofAccessor.cs" />
+    <Compile Include="Reflection\OneofDescriptor.cs" />
+    <Compile Include="Reflection\OriginalNameAttribute.cs" />
+    <Compile Include="Reflection\PackageDescriptor.cs" />
+    <Compile Include="Reflection\PartialClasses.cs" />
+    <Compile Include="Reflection\ReflectionUtil.cs" />
+    <Compile Include="Reflection\RepeatedFieldAccessor.cs" />
+    <Compile Include="Reflection\ServiceDescriptor.cs" />
+    <Compile Include="Reflection\SingleFieldAccessor.cs" />
+    <Compile Include="ProtoPreconditions.cs" />
+    <Compile Include="Reflection\TypeRegistry.cs" />
+    <Compile Include="WellKnownTypes\Any.cs" />
+    <Compile Include="WellKnownTypes\AnyPartial.cs" />
+    <Compile Include="WellKnownTypes\Api.cs" />
+    <Compile Include="WellKnownTypes\Duration.cs" />
+    <Compile Include="WellKnownTypes\DurationPartial.cs" />
+    <Compile Include="WellKnownTypes\Empty.cs" />
+    <Compile Include="WellKnownTypes\FieldMask.cs" />
+    <Compile Include="WellKnownTypes\FieldMaskPartial.cs" />
+    <Compile Include="WellKnownTypes\SourceContext.cs" />
+    <Compile Include="WellKnownTypes\Struct.cs" />
+    <Compile Include="WellKnownTypes\TimeExtensions.cs" />
+    <Compile Include="WellKnownTypes\Timestamp.cs" />
+    <Compile Include="WellKnownTypes\TimestampPartial.cs" />
+    <Compile Include="WellKnownTypes\Type.cs" />
+    <Compile Include="WellKnownTypes\ValuePartial.cs" />
+    <Compile Include="WellKnownTypes\Wrappers.cs" />
+    <Compile Include="WellKnownTypes\WrappersPartial.cs" />
+    <Compile Include="WireFormat.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Google.Protobuf.nuspec" />
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup />
+  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
+  <Import Project="..\packages\NuSpec.ReferenceGenerator.1.4.1\build\portable-net45+win+wpa81+wp80+MonoAndroid10+xamarinios10+MonoTouch10\NuSpec.ReferenceGenerator.targets" Condition="Exists('..\packages\NuSpec.ReferenceGenerator.1.4.1\build\portable-net45+win+wpa81+wp80+MonoAndroid10+xamarinios10+MonoTouch10\NuSpec.ReferenceGenerator.targets')" />
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\packages\NuSpec.ReferenceGenerator.1.4.1\build\portable-net45+win+wpa81+wp80+MonoAndroid10+xamarinios10+MonoTouch10\NuSpec.ReferenceGenerator.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\NuSpec.ReferenceGenerator.1.4.1\build\portable-net45+win+wpa81+wp80+MonoAndroid10+xamarinios10+MonoTouch10\NuSpec.ReferenceGenerator.targets'))" />
+  </Target>
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

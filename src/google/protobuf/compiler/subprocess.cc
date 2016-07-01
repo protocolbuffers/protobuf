@@ -42,9 +42,11 @@
 #include <signal.h>
 #endif
 
+#include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/message.h>
 #include <google/protobuf/stubs/substitute.h>
+
 
 namespace google {
 namespace protobuf {
@@ -359,7 +361,7 @@ bool Subprocess::Communicate(const Message& input, Message* output,
   string output_data;
 
   int input_pos = 0;
-  int max_fd = max(child_stdin_, child_stdout_);
+  int max_fd = std::max(child_stdin_, child_stdout_);
 
   while (child_stdout_ != -1) {
     fd_set read_fds;

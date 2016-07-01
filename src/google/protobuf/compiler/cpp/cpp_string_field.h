@@ -46,8 +46,8 @@ namespace cpp {
 
 class StringFieldGenerator : public FieldGenerator {
  public:
-  explicit StringFieldGenerator(const FieldDescriptor* descriptor,
-                                const Options& options);
+  StringFieldGenerator(const FieldDescriptor* descriptor,
+                       const Options& options);
   ~StringFieldGenerator();
 
   // implements FieldGenerator ---------------------------------------
@@ -79,8 +79,8 @@ class StringFieldGenerator : public FieldGenerator {
 
 class StringOneofFieldGenerator : public StringFieldGenerator {
  public:
-  explicit StringOneofFieldGenerator(const FieldDescriptor* descriptor,
-                                     const Options& options);
+  StringOneofFieldGenerator(const FieldDescriptor* descriptor,
+                            const Options& options);
   ~StringOneofFieldGenerator();
 
   // implements FieldGenerator ---------------------------------------
@@ -93,13 +93,14 @@ class StringOneofFieldGenerator : public StringFieldGenerator {
   void GenerateMergeFromCodedStream(io::Printer* printer) const;
 
  private:
+  const bool dependent_field_;
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(StringOneofFieldGenerator);
 };
 
 class RepeatedStringFieldGenerator : public FieldGenerator {
  public:
-  explicit RepeatedStringFieldGenerator(const FieldDescriptor* descriptor,
-                                        const Options& options);
+  RepeatedStringFieldGenerator(const FieldDescriptor* descriptor,
+                               const Options& options);
   ~RepeatedStringFieldGenerator();
 
   // implements FieldGenerator ---------------------------------------

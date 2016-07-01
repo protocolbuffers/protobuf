@@ -31,9 +31,15 @@
 // Collects all the compiled protos into one file and compiles them to make sure
 // the compiler is generating valid code.
 
+// The unittest_custom_options.proto extends the messages in descriptor.proto
+// so we build it in to test extending in general. The library doesn't provide
+// a descriptor as it doesn't use the classes/enums.
+#import "google/protobuf/Descriptor.pbobjc.m"
+
 #import "google/protobuf/MapProto2Unittest.pbobjc.m"
 #import "google/protobuf/MapUnittest.pbobjc.m"
 #import "google/protobuf/Unittest.pbobjc.m"
+#import "google/protobuf/UnittestArena.pbobjc.m"
 #import "google/protobuf/UnittestCustomOptions.pbobjc.m"
 #import "google/protobuf/UnittestCycle.pbobjc.m"
 #import "google/protobuf/UnittestDropUnknownFields.pbobjc.m"
@@ -46,6 +52,9 @@
 #import "google/protobuf/UnittestImportPublicLite.pbobjc.m"
 #import "google/protobuf/UnittestLite.pbobjc.m"
 #import "google/protobuf/UnittestMset.pbobjc.m"
+#import "google/protobuf/UnittestMsetWireFormat.pbobjc.m"
+#import "google/protobuf/UnittestNoArena.pbobjc.m"
+#import "google/protobuf/UnittestNoArenaImport.pbobjc.m"
 #import "google/protobuf/UnittestNoGenericServices.pbobjc.m"
 #import "google/protobuf/UnittestObjc.pbobjc.m"
 #import "google/protobuf/UnittestObjcStartup.pbobjc.m"

@@ -42,8 +42,8 @@
 #include <string>
 
 #include <google/protobuf/stubs/once.h>
-
 #include <google/protobuf/stubs/common.h>
+
 namespace google {
 
 namespace protobuf {
@@ -62,6 +62,8 @@ namespace internal {
 // there.
 #undef DEPRECATED_PROTOBUF_FIELD
 #define PROTOBUF_DEPRECATED
+
+#define GOOGLE_PROTOBUF_DEPRECATED_ATTR
 
 
 // Constants for special floating point values.
@@ -89,12 +91,6 @@ LIBPROTOBUF_EXPORT inline const ::std::string& GetEmptyString() {
   return GetEmptyStringAlreadyInited();
 }
 
-// Defined in generated_message_reflection.cc -- not actually part of the lite
-// library.
-//
-// TODO(jasonh): The various callers get this declaration from a variety of
-// places: probably in most cases repeated_field.h. Clean these up so they all
-// get the declaration from this file.
 LIBPROTOBUF_EXPORT int StringSpaceUsedExcludingSelf(const string& str);
 
 

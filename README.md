@@ -7,182 +7,66 @@ Copyright 2008 Google Inc.
 
 https://developers.google.com/protocol-buffers/
 
-C++ Installation - Unix
------------------------
+Overview
+--------
 
-If you get the source from github, you need to generate the configure script
-first:
+Protocol Buffers (a.k.a., protobuf) are Google's language-neutral,
+platform-neutral, extensible mechanism for serializing structured data. You
+can find [protobuf's documentation on the Google Developers site](https://developers.google.com/protocol-buffers/).
 
-    $ ./autogen.sh
+This README file contains protobuf installation instructions. To install
+protobuf, you need to install the protocol compiler (used to compile .proto
+files) and the protobuf runtime for your chosen programming language.
 
-This will download gmock source (which is used for C++ Protocol Buffer
-unit-tests) to the current directory and run automake, autoconf, etc.
-to generate the configure script and various template makefiles.
+Protocol Compiler Installation
+------------------------------
 
-You can skip this step if you are using a release package (which already
-contains gmock and the configure script).
+The protocol compiler is written in C++. If you are using C++, please follow
+the [C++ Installation Instructions](src/README.md) to install protoc along
+with the C++ runtime.
 
-To build and install the C++ Protocol Buffer runtime and the Protocol
-Buffer compiler (protoc) execute the following:
+For non-C++ users, the simplest way to install the protocol compiler is to
+download a pre-built binary from our release page:
 
-    $ ./configure
-    $ make
-    $ make check
-    $ make install
+  [https://github.com/google/protobuf/releases](https://github.com/google/protobuf/releases)
 
-If "make check" fails, you can still install, but it is likely that
-some features of this library will not work correctly on your system.
-Proceed at your own risk.
+In the downloads section of each release, you can find pre-built binaries in
+zip packages: protoc-$VERSION-$PLATFORM.zip. It contains the protoc binary
+as well as a set of standard .proto files distributed along with protobuf.
 
-"make install" may require superuser privileges.
+If you are looking for an old version that is not available in the release
+page, check out the maven repo here:
 
-For advanced usage information on configure and make, see INSTALL.txt.
+  [http://repo1.maven.org/maven2/com/google/protobuf/protoc/](http://repo1.maven.org/maven2/com/google/protobuf/protoc/)
 
-**Hint on install location**
+These pre-built binaries are only provided for released versions. If you want
+to use the github master version at HEAD, or you need to modify protobuf code,
+or you are using C++, it's recommended to build your own protoc binary from
+source.
 
-  By default, the package will be installed to /usr/local.  However,
-  on many platforms, /usr/local/lib is not part of LD_LIBRARY_PATH.
-  You can add it, but it may be easier to just install to /usr
-  instead.  To do this, invoke configure as follows:
+If you would like to build protoc binary from source, see the [C++ Installation
+Instructions](src/README.md).
 
-    ./configure --prefix=/usr
+Protobuf Runtime Installation
+-----------------------------
 
-  If you already built the package with a different prefix, make sure
-  to run "make clean" before building again.
+Protobuf supports several different programming languages. For each programming
+language, you can find instructions in the corresponding source directory about
+how to install protobuf runtime for that specific language:
 
-**Compiling dependent packages**
+| Language                             | Source                                                |
+|--------------------------------------|-------------------------------------------------------|
+| C++ (include C++ runtime and protoc) | [src](src)                                            |
+| Java                                 | [java](java)                                          |
+| Python                               | [python](python)                                      |
+| Objective-C                          | [objectivec](objectivec)                              |
+| C#                                   | [csharp](csharp)                                      |
+| JavaNano                             | [javanano](javanano)                                  |
+| JavaScript                           | [js](js)                                              |
+| Ruby                                 | [ruby](ruby)                                          |
+| Go                                   | [golang/protobuf](https://github.com/golang/protobuf) |
+| PHP                                  | TBD                                                   |
 
-  To compile a package that uses Protocol Buffers, you need to pass
-  various flags to your compiler and linker.  As of version 2.2.0,
-  Protocol Buffers integrates with pkg-config to manage this.  If you
-  have pkg-config installed, then you can invoke it to get a list of
-  flags like so:
-
-    pkg-config --cflags protobuf         # print compiler flags
-    pkg-config --libs protobuf           # print linker flags
-    pkg-config --cflags --libs protobuf  # print both
-
-  For example:
-
-    c++ my_program.cc my_proto.pb.cc `pkg-config --cflags --libs protobuf`
-
-  Note that packages written prior to the 2.2.0 release of Protocol
-  Buffers may not yet integrate with pkg-config to get flags, and may
-  not pass the correct set of flags to correctly link against
-  libprotobuf.  If the package in question uses autoconf, you can
-  often fix the problem by invoking its configure script like:
-
-    configure CXXFLAGS="$(pkg-config --cflags protobuf)" \
-              LIBS="$(pkg-config --libs protobuf)"
-
-  This will force it to use the correct flags.
-
-  If you are writing an autoconf-based package that uses Protocol
-  Buffers, you should probably use the PKG_CHECK_MODULES macro in your
-  configure script like:
-
-    PKG_CHECK_MODULES([protobuf], [protobuf])
-
-  See the pkg-config man page for more info.
-
-  If you only want protobuf-lite, substitute "protobuf-lite" in place
-  of "protobuf" in these examples.
-
-**Note for Mac users**
-
-  For a Mac system, Unix tools are not available by default. You will first need
-  to install Xcode from the Mac AppStore and then run the following command from
-  a terminal:
-
-    $ sudo xcode-select --install
-
-  To install Unix tools, you can install "port" following the instructions at
-  https://www.macports.org . This will reside in /opt/local/bin/port for most
-  Mac installations.
-
-    $ sudo /opt/local/bin/port install autoconf automake libtool
-
-  Then follow the Unix instructions above.
-
-**Note for cross-compiling**
-
-  The makefiles normally invoke the protoc executable that they just
-  built in order to build tests.  When cross-compiling, the protoc
-  executable may not be executable on the host machine.  In this case,
-  you must build a copy of protoc for the host machine first, then use
-  the --with-protoc option to tell configure to use it instead.  For
-  example:
-
-    ./configure --with-protoc=protoc
-
-  This will use the installed protoc (found in your $PATH) instead of
-  trying to execute the one built during the build process.  You can
-  also use an executable that hasn't been installed.  For example, if
-  you built the protobuf package for your host machine in ../host,
-  you might do:
-
-    ./configure --with-protoc=../host/src/protoc
-
-  Either way, you must make sure that the protoc executable you use
-  has the same version as the protobuf source code you are trying to
-  use it with.
-
-**Note for Solaris users**
-
-  Solaris 10 x86 has a bug that will make linking fail, complaining
-  about libstdc++.la being invalid.  We have included a work-around
-  in this package.  To use the work-around, run configure as follows:
-
-    ./configure LDFLAGS=-L$PWD/src/solaris
-
-  See src/solaris/libstdc++.la for more info on this bug.
-
-**Note for HP C++ Tru64 users**
-
-  To compile invoke configure as follows:
-
-    ./configure CXXFLAGS="-O -std ansi -ieee -D__USE_STD_IOSTREAM"
-
-  Also, you will need to use gmake instead of make.
-
-**Note for AIX users**
-
-  Compile using the IBM xlC C++ compiler as follows:
-
-    ./configure CXX=xlC
-
-  Also, you will need to use GNU `make` (`gmake`) instead of AIX `make`.
-
-C++ Installation - Windows
---------------------------
-
-If you are using Microsoft Visual C++, see cmake/README.md.
-
-If you are using Cygwin or MinGW, follow the Unix installation
-instructions, above.
-
-Binary Compatibility Warning
-----------------------------
-
-Due to the nature of C++, it is unlikely that any two versions of the
-Protocol Buffers C++ runtime libraries will have compatible ABIs.
-That is, if you linked an executable against an older version of
-libprotobuf, it is unlikely to work with a newer version without
-re-compiling.  This problem, when it occurs, will normally be detected
-immediately on startup of your app.  Still, you may want to consider
-using static linkage.  You can configure this package to install
-static libraries only using:
-
-    ./configure --disable-shared
-
-Java and Python Installation
-----------------------------
-
-The Java and Python runtime libraries for Protocol Buffers are located
-in the java and python directories.  See the README file in each
-directory for more information on how to compile and install them.
-Note that both of them require you to first install the Protocol
-Buffer compiler (protoc), which is part of the C++ package.
 
 Usage
 -----

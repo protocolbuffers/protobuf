@@ -35,8 +35,10 @@
 #include <google/protobuf/stubs/status.h>
 #include <google/protobuf/stubs/stringpiece.h>
 #include <google/protobuf/stubs/strutil.h>
-#include <stdio.h>
+#include <google/protobuf/stubs/int128.h>
 #include <errno.h>
+#include <sstream>
+#include <stdio.h>
 #include <vector>
 
 #ifdef _WIN32
@@ -47,6 +49,9 @@
 #include <pthread.h>
 #else
 #error "No suitable threading library available."
+#endif
+#if defined(__ANDROID__)
+#include <android/log.h>
 #endif
 
 namespace google {
@@ -104,7 +109,43 @@ string VersionString(int version) {
 // emulates google3/base/logging.cc
 
 namespace internal {
+#if defined(__ANDROID__)
+inline void DefaultLogHandler(LogLevel level, const char* filename, int line,
+                              const string& message) {
+#ifdef GOOGLE_PROTOBUF_MIN_LOG_LEVEL
+  if (level < GOOGLE_PROTOBUF_MIN_LOG_LEVEL) {
+    return;
+  }
+  static const char* level_names[] = {"INFO", "WARNING", "ERROR", "FATAL"};
 
+  static const int android_log_levels[] = {
+      ANDROID_LOG_INFO,   // LOG(INFO),
+      ANDROID_LOG_WARN,   // LOG(WARNING)
+      ANDROID_LOG_ERROR,  // LOG(ERROR)
+      ANDROID_LOG_FATAL,  // LOG(FATAL)
+  };
+
+  // Bound the logging level.
+  const int android_log_level = android_log_levels[level];
+  ::std::ostringstream ostr;
+  ostr << "[libprotobuf " << level_names[level] << " " << filename << ":"
+       << line << "] " << message.c_str();
+
+  // Output the log string the Android log at the appropriate level.
+  __android_log_write(android_log_level, "libprotobuf-native",
+                      ostr.str().c_str());
+  // Also output to std::cerr.
+  fprintf(stderr, "%s", ostr.str().c_str());
+  fflush(stderr);
+
+  // Indicate termination if needed.
+  if (android_log_level == ANDROID_LOG_FATAL) {
+    __android_log_write(ANDROID_LOG_FATAL, "libprotobuf-native",
+                        "terminating.\n");
+  }
+#endif
+}
+#else
 void DefaultLogHandler(LogLevel level, const char* filename, int line,
                        const string& message) {
   static const char* level_names[] = { "INFO", "WARNING", "ERROR", "FATAL" };
@@ -115,6 +156,7 @@ void DefaultLogHandler(LogLevel level, const char* filename, int line,
           level_names[level], filename, line, message.c_str());
   fflush(stderr);  // Needed on MSVC.
 }
+#endif
 
 void NullLogHandler(LogLevel /* level */, const char* /* filename */,
                     int /* line */, const string& /* message */) {
@@ -154,19 +196,16 @@ LogMessage& LogMessage::operator<<(const StringPiece& value) {
   return *this;
 }
 
-LogMessage& LogMessage::operator<<(long long value) {
-  message_ += SimpleItoa(value);
-  return *this;
-}
-
-LogMessage& LogMessage::operator<<(unsigned long long value) {
-  message_ += SimpleItoa(value);
-  return *this;
-}
-
 LogMessage& LogMessage::operator<<(
     const ::google::protobuf::util::Status& status) {
   message_ += status.ToString();
+  return *this;
+}
+
+LogMessage& LogMessage::operator<<(const uint128& value) {
+  std::ostringstream str;
+  str << value;
+  message_ += str.str();
   return *this;
 }
 
@@ -194,6 +233,8 @@ DECLARE_STREAM_OPERATOR(long         , "%ld")
 DECLARE_STREAM_OPERATOR(unsigned long, "%lu")
 DECLARE_STREAM_OPERATOR(double       , "%g" )
 DECLARE_STREAM_OPERATOR(void*        , "%p" )
+DECLARE_STREAM_OPERATOR(long long         , "%" GOOGLE_LL_FORMAT "d")
+DECLARE_STREAM_OPERATOR(unsigned long long, "%" GOOGLE_LL_FORMAT "u")
 #undef DECLARE_STREAM_OPERATOR
 
 LogMessage::LogMessage(LogLevel level, const char* filename, int line)

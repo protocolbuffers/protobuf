@@ -44,6 +44,7 @@
 #include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/io/zero_copy_stream_impl.h>
 
+#include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/testing/googletest.h>
@@ -173,7 +174,7 @@ TEST(ExtensionSetTest, SetAllocatedExtension) {
 }
 
 TEST(ExtensionSetTest, ReleaseExtension) {
-  unittest::TestMessageSet message;
+  proto2_wireformat_unittest::TestMessageSet message;
   EXPECT_FALSE(message.HasExtension(
       unittest::TestMessageSetExtension1::message_set_extension));
   // Add a extension using SetAllocatedExtension
@@ -202,6 +203,74 @@ TEST(ExtensionSetTest, ReleaseExtension) {
       unittest::TestMessageSetExtension1::message_set_extension);
   EXPECT_TRUE(released_extension != NULL);
   delete released_extension;
+}
+
+TEST(ExtensionSetTest, ArenaUnsafeArenaSetAllocatedAndRelease) {
+  ::google::protobuf::Arena arena;
+  unittest::TestAllExtensions* message =
+      ::google::protobuf::Arena::CreateMessage<unittest::TestAllExtensions>(&arena);
+  unittest::ForeignMessage extension;
+  message->UnsafeArenaSetAllocatedExtension(
+      unittest::optional_foreign_message_extension,
+      &extension);
+  // No copy when set.
+  unittest::ForeignMessage* mutable_extension =
+      message->MutableExtension(unittest::optional_foreign_message_extension);
+  EXPECT_EQ(&extension, mutable_extension);
+  // No copy when unsafe released.
+  unittest::ForeignMessage* released_extension =
+      message->UnsafeArenaReleaseExtension(
+          unittest::optional_foreign_message_extension);
+  EXPECT_EQ(&extension, released_extension);
+  EXPECT_FALSE(message->HasExtension(
+      unittest::optional_foreign_message_extension));
+  // Set the ownership back and let the destructors run.  It should not take
+  // ownership, so this should not crash.
+  message->UnsafeArenaSetAllocatedExtension(
+      unittest::optional_foreign_message_extension,
+      &extension);
+}
+
+TEST(ExtensionSetTest, UnsafeArenaSetAllocatedAndRelease) {
+  unittest::TestAllExtensions message;
+  unittest::ForeignMessage* extension = new unittest::ForeignMessage();
+  message.UnsafeArenaSetAllocatedExtension(
+      unittest::optional_foreign_message_extension,
+      extension);
+  // No copy when set.
+  unittest::ForeignMessage* mutable_extension =
+      message.MutableExtension(unittest::optional_foreign_message_extension);
+  EXPECT_EQ(extension, mutable_extension);
+  // No copy when unsafe released.
+  unittest::ForeignMessage* released_extension =
+      message.UnsafeArenaReleaseExtension(
+          unittest::optional_foreign_message_extension);
+  EXPECT_EQ(extension, released_extension);
+  EXPECT_FALSE(message.HasExtension(
+      unittest::optional_foreign_message_extension));
+  // Set the ownership back and let the destructors run.  It should take
+  // ownership, so this should not leak.
+  message.UnsafeArenaSetAllocatedExtension(
+      unittest::optional_foreign_message_extension,
+      extension);
+}
+
+TEST(ExtensionSetTest, ArenaUnsafeArenaReleaseOfHeapAlloc) {
+  ::google::protobuf::Arena arena;
+  unittest::TestAllExtensions* message =
+      ::google::protobuf::Arena::CreateMessage<unittest::TestAllExtensions>(&arena);
+  unittest::ForeignMessage* extension = new unittest::ForeignMessage;
+  message->SetAllocatedExtension(
+      unittest::optional_foreign_message_extension,
+      extension);
+  // The arena should maintain ownership of the heap allocated proto because we
+  // used UnsafeArenaReleaseExtension.  The leak checker will ensure this.
+  unittest::ForeignMessage* released_extension =
+      message->UnsafeArenaReleaseExtension(
+          unittest::optional_foreign_message_extension);
+  EXPECT_EQ(extension, released_extension);
+  EXPECT_FALSE(message->HasExtension(
+      unittest::optional_foreign_message_extension));
 }
 
 
@@ -359,9 +428,8 @@ TEST(ExtensionSetTest, ArenaSetAllocatedMessageAndRelease) {
   unittest::ForeignMessage* foreign_message = new unittest::ForeignMessage();
   message->SetAllocatedExtension(unittest::optional_foreign_message_extension,
                                  foreign_message);
-  // foreign_message is copied underneath, as foreign_message is on heap
-  // and extension_set is on an arena.
-  EXPECT_NE(foreign_message,
+  // foreign_message is now owned by the arena.
+  EXPECT_EQ(foreign_message,
             message->MutableExtension(
                 unittest::optional_foreign_message_extension));
 

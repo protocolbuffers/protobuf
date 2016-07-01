@@ -1,0 +1,72 @@
+# This is the list of conformance tests that are known to fail for the
+# Python/C++ implementation right now.  These should be fixed.
+#
+# By listing them here we can keep tabs on which ones are failing and be sure
+# that we don't introduce regressions in other tests.
+#
+# TODO(haberman): insert links to corresponding bugs tracking the issue.
+# Should we use GitHub issues or the Google-internal bug tracker?
+
+DurationProtoInputTooLarge.JsonOutput
+DurationProtoInputTooSmall.JsonOutput
+FieldMaskNumbersDontRoundTrip.JsonOutput
+FieldMaskPathsDontRoundTrip.JsonOutput
+FieldMaskTooManyUnderscore.JsonOutput
+JsonInput.AnyWithFieldMask.ProtobufOutput
+JsonInput.BytesFieldInvalidBase64Characters
+JsonInput.DoubleFieldInfinityNotQuoted
+JsonInput.DoubleFieldNanNotQuoted
+JsonInput.DoubleFieldNegativeInfinityNotQuoted
+JsonInput.DoubleFieldTooSmall
+JsonInput.DurationJsonInputTooLarge
+JsonInput.DurationJsonInputTooSmall
+JsonInput.DurationMissingS
+JsonInput.EnumFieldNumericValueNonZero.JsonOutput
+JsonInput.EnumFieldNumericValueNonZero.ProtobufOutput
+JsonInput.EnumFieldNumericValueZero.JsonOutput
+JsonInput.EnumFieldNumericValueZero.ProtobufOutput
+JsonInput.EnumFieldUnknownValue.Validator
+JsonInput.FieldMask.ProtobufOutput
+JsonInput.FieldMaskInvalidCharacter
+JsonInput.FieldNameInLowerCamelCase.Validator
+JsonInput.FieldNameInSnakeCase.JsonOutput
+JsonInput.FieldNameInSnakeCase.ProtobufOutput
+JsonInput.FloatFieldInfinityNotQuoted
+JsonInput.FloatFieldNanNotQuoted
+JsonInput.FloatFieldNegativeInfinityNotQuoted
+JsonInput.FloatFieldTooLarge
+JsonInput.FloatFieldTooSmall
+JsonInput.Int32FieldExponentialFormat.JsonOutput
+JsonInput.Int32FieldExponentialFormat.ProtobufOutput
+JsonInput.Int32FieldFloatTrailingZero.JsonOutput
+JsonInput.Int32FieldFloatTrailingZero.ProtobufOutput
+JsonInput.Int32FieldMaxFloatValue.JsonOutput
+JsonInput.Int32FieldMaxFloatValue.ProtobufOutput
+JsonInput.Int32FieldMinFloatValue.JsonOutput
+JsonInput.Int32FieldMinFloatValue.ProtobufOutput
+JsonInput.OriginalProtoFieldName.JsonOutput
+JsonInput.OriginalProtoFieldName.ProtobufOutput
+JsonInput.RepeatedFieldWrongElementTypeExpectingIntegersGotBool
+JsonInput.TimestampJsonInputLowercaseT
+JsonInput.Uint32FieldMaxFloatValue.JsonOutput
+JsonInput.Uint32FieldMaxFloatValue.ProtobufOutput
+JsonInput.ValueAcceptNull.JsonOutput
+JsonInput.ValueAcceptNull.ProtobufOutput
+ProtobufInput.PrematureEofInDelimitedDataForKnownNonRepeatedValue.MESSAGE
+ProtobufInput.PrematureEofInDelimitedDataForKnownRepeatedValue.MESSAGE
+ProtobufInput.PrematureEofInPackedField.BOOL
+ProtobufInput.PrematureEofInPackedField.DOUBLE
+ProtobufInput.PrematureEofInPackedField.ENUM
+ProtobufInput.PrematureEofInPackedField.FIXED32
+ProtobufInput.PrematureEofInPackedField.FIXED64
+ProtobufInput.PrematureEofInPackedField.FLOAT
+ProtobufInput.PrematureEofInPackedField.INT32
+ProtobufInput.PrematureEofInPackedField.INT64
+ProtobufInput.PrematureEofInPackedField.SFIXED32
+ProtobufInput.PrematureEofInPackedField.SFIXED64
+ProtobufInput.PrematureEofInPackedField.SINT32
+ProtobufInput.PrematureEofInPackedField.SINT64
+ProtobufInput.PrematureEofInPackedField.UINT32
+ProtobufInput.PrematureEofInPackedField.UINT64
+TimestampProtoInputTooLarge.JsonOutput
+TimestampProtoInputTooSmall.JsonOutput
