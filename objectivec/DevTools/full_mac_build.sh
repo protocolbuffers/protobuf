@@ -37,6 +37,10 @@ OPTIONS:
          Skip the invoke of Xcode to test the runtime on both iOS and OS X.
    --skip-xcode-ios
          Skip the invoke of Xcode to test the runtime on iOS.
+   --skip-xcode-debug
+         Skip the Xcode Debug configuration.
+   --skip-xcode-release
+         Skip the Xcode Release configuration.
    --skip-xcode-osx
          Skip the invoke of Xcode to test the runtime on OS X.
    --skip-objc-conformance
@@ -66,8 +70,8 @@ wrapped_make() {
 }
 
 NUM_MAKE_JOBS=$(/usr/sbin/sysctl -n hw.ncpu)
-if [[ "${NUM_MAKE_JOBS}" -lt 4 ]] ; then
-  NUM_MAKE_JOBS=4
+if [[ "${NUM_MAKE_JOBS}" -lt 2 ]] ; then
+  NUM_MAKE_JOBS=2
 fi
 
 DO_AUTOGEN=no
@@ -76,6 +80,8 @@ REGEN_DESCRIPTORS=no
 CORE_ONLY=no
 DO_XCODE_IOS_TESTS=yes
 DO_XCODE_OSX_TESTS=yes
+DO_XCODE_DEBUG=yes
+DO_XCODE_RELEASE=yes
 DO_OBJC_CONFORMANCE_TESTS=yes
 while [[ $# != 0 ]]; do
   case "${1}" in
@@ -108,6 +114,12 @@ while [[ $# != 0 ]]; do
       ;;
     --skip-xcode-osx )
       DO_XCODE_OSX_TESTS=no
+      ;;
+    --skip-xcode-debug )
+      DO_XCODE_DEBUG=no
+      ;;
+    --skip-xcode-release )
+      DO_XCODE_RELEASE=no
       ;;
     --skip-objc-conformance )
       DO_OBJC_CONFORMANCE_TESTS=no
@@ -151,8 +163,12 @@ if [[ "${DO_CLEAN}" == "yes" ]] ; then
         -project objectivec/ProtocolBuffers_iOS.xcodeproj
         -scheme ProtocolBuffers
     )
-  "${XCODEBUILD_CLEAN_BASE_IOS[@]}" -configuration Debug clean
-  "${XCODEBUILD_CLEAN_BASE_IOS[@]}" -configuration Release clean
+    if [[ "${DO_XCODE_DEBUG}" == "yes" ]] ; then
+      "${XCODEBUILD_CLEAN_BASE_IOS[@]}" -configuration Debug clean
+    fi
+    if [[ "${DO_XCODE_RELEASE}" == "yes" ]] ; then
+      "${XCODEBUILD_CLEAN_BASE_IOS[@]}" -configuration Release clean
+    fi
   fi
   if [[ "${DO_XCODE_OSX_TESTS}" == "yes" ]] ; then
     XCODEBUILD_CLEAN_BASE_OSX=(
@@ -160,8 +176,12 @@ if [[ "${DO_CLEAN}" == "yes" ]] ; then
         -project objectivec/ProtocolBuffers_OSX.xcodeproj
         -scheme ProtocolBuffers
     )
-  "${XCODEBUILD_CLEAN_BASE_OSX[@]}" -configuration Debug clean
-  "${XCODEBUILD_CLEAN_BASE_OSX[@]}" -configuration Release clean
+    if [[ "${DO_XCODE_DEBUG}" == "yes" ]] ; then
+      "${XCODEBUILD_CLEAN_BASE_OSX[@]}" -configuration Debug clean
+    fi
+    if [[ "${DO_XCODE_RELEASE}" == "yes" ]] ; then
+      "${XCODEBUILD_CLEAN_BASE_OSX[@]}" -configuration Release clean
+    fi
   fi
 fi
 
@@ -222,6 +242,14 @@ if [[ "${DO_XCODE_IOS_TESTS}" == "yes" ]] ; then
           -destination "platform=iOS Simulator,name=iPad Air,OS=9.0" # 64bit
       )
       ;;
+    7.2* )
+      XCODEBUILD_TEST_BASE_IOS+=(
+          -destination "platform=iOS Simulator,name=iPhone 4s,OS=8.1" # 32bit
+          -destination "platform=iOS Simulator,name=iPhone 6,OS=9.2" # 64bit
+          -destination "platform=iOS Simulator,name=iPad 2,OS=8.1" # 32bit
+          -destination "platform=iOS Simulator,name=iPad Air,OS=9.2" # 64bit
+      )
+      ;;
     7.3* )
       XCODEBUILD_TEST_BASE_IOS+=(
           -destination "platform=iOS Simulator,name=iPhone 4s,OS=8.1" # 32bit
@@ -230,23 +258,19 @@ if [[ "${DO_XCODE_IOS_TESTS}" == "yes" ]] ; then
           -destination "platform=iOS Simulator,name=iPad Air,OS=9.3" # 64bit
       )
       ;;
-    7.* )
-      XCODEBUILD_TEST_BASE_IOS+=(
-          -destination "platform=iOS Simulator,name=iPhone 4s,OS=8.1" # 32bit
-          -destination "platform=iOS Simulator,name=iPhone 6,OS=9.2" # 64bit
-          -destination "platform=iOS Simulator,name=iPad 2,OS=8.1" # 32bit
-          -destination "platform=iOS Simulator,name=iPad Air,OS=9.2" # 64bit
-      )
-      ;;
     * )
       echo "Time to update the simulator targets for Xcode ${XCODE_VERSION}"
       exit 2
       ;;
   esac
-  header "Doing Xcode iOS build/tests - Debug"
-  "${XCODEBUILD_TEST_BASE_IOS[@]}" -configuration Debug test
-  header "Doing Xcode iOS build/tests - Release"
-  "${XCODEBUILD_TEST_BASE_IOS[@]}" -configuration Release test
+  if [[ "${DO_XCODE_DEBUG}" == "yes" ]] ; then
+    header "Doing Xcode iOS build/tests - Debug"
+    "${XCODEBUILD_TEST_BASE_IOS[@]}" -configuration Debug test
+  fi
+  if [[ "${DO_XCODE_RELEASE}" == "yes" ]] ; then
+    header "Doing Xcode iOS build/tests - Release"
+    "${XCODEBUILD_TEST_BASE_IOS[@]}" -configuration Release test
+  fi
   # Don't leave the simulator in the developer's face.
   killall "${IOS_SIMULATOR_NAME}"
 fi
@@ -258,13 +282,18 @@ if [[ "${DO_XCODE_OSX_TESTS}" == "yes" ]] ; then
       # Since the ObjC 2.0 Runtime is required, 32bit OS X isn't supported.
       -destination "platform=OS X,arch=x86_64" # 64bit
   )
-  header "Doing Xcode OS X build/tests - Debug"
-  "${XCODEBUILD_TEST_BASE_OSX[@]}" -configuration Debug test
-  header "Doing Xcode OS X build/tests - Release"
-  "${XCODEBUILD_TEST_BASE_OSX[@]}" -configuration Release test
+  if [[ "${DO_XCODE_DEBUG}" == "yes" ]] ; then
+    header "Doing Xcode OS X build/tests - Debug"
+    "${XCODEBUILD_TEST_BASE_OSX[@]}" -configuration Debug test
+  fi
+  if [[ "${DO_XCODE_RELEASE}" == "yes" ]] ; then
+    header "Doing Xcode OS X build/tests - Release"
+    "${XCODEBUILD_TEST_BASE_OSX[@]}" -configuration Release test
+  fi
 fi
 
 if [[ "${DO_OBJC_CONFORMANCE_TESTS}" == "yes" ]] ; then
+  header "Running ObjC Conformance Tests"
   cd conformance
   wrapped_make -j "${NUM_MAKE_JOBS}" test_objc
   cd ..

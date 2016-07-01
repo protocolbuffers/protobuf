@@ -62,14 +62,13 @@ bool IsRetainedName(const string& name);
 // handling under ARC.
 bool IsInitName(const string& name);
 
-// Gets the name of the file we're going to generate (sans the .pb.h
-// extension).  This does not include the path to that file.
-string FileName(const FileDescriptor* file);
-
 // Gets the path of the file we're going to generate (sans the .pb.h
 // extension).  The path will be dependent on the objectivec package
 // declared in the proto package.
 string FilePath(const FileDescriptor* file);
+
+// Just like FilePath(), but without the directory part.
+string FilePathBasename(const FileDescriptor* file);
 
 // Gets the name of the root class we'll generate in the file.  This class
 // is not meant for external consumption, but instead contains helpers that
@@ -168,6 +167,16 @@ string BuildFlagsString(const vector<string>& strings);
 
 // Builds a HeaderDoc style comment out of the comments in the .proto file.
 string BuildCommentsString(const SourceLocation& location);
+
+// The name the commonly used by the library when built as a framework.
+// This lines up to the name used in the CocoaPod.
+extern const char* const ProtobufLibraryFrameworkName;
+// Returns the CPP symbol name to use as the gate for framework style imports
+// for the given framework name to use.
+string ProtobufFrameworkImportSymbol(const string& framework_name);
+
+// Checks if the file is one of the proto's bundled with the library.
+bool IsProtobufLibraryBundledProtoFile(const FileDescriptor* file);
 
 // Checks the prefix for a given file and outputs any warnings needed, if
 // there are flat out errors, then out_error is filled in and the result is
