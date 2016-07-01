@@ -50,7 +50,7 @@ typedef GPB_ENUM(GPBSourceContext_FieldNumber) {
 @interface GPBSourceContext : GPBMessage
 
 /// The path-qualified name of the .proto file that contained the associated
-/// protobuf element.  For example: `"google/protobuf/source.proto"`.
+/// protobuf element.  For example: `"google/protobuf/source_context.proto"`.
 @property(nonatomic, readwrite, copy, null_resettable) NSString *fileName;
 
 @end

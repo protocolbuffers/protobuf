@@ -375,6 +375,7 @@ libprotoc_la_SOURCES =                                         \
   google/protobuf/compiler/java/java_message_builder_lite.h    \
   google/protobuf/compiler/java/java_name_resolver.cc          \
   google/protobuf/compiler/java/java_name_resolver.h           \
+  google/protobuf/compiler/java/java_options.h                 \
   google/protobuf/compiler/java/java_primitive_field.cc        \
   google/protobuf/compiler/java/java_primitive_field.h         \
   google/protobuf/compiler/java/java_primitive_field_lite.cc   \
