@@ -3050,7 +3050,8 @@ void Generator::GenerateFile(const GeneratorOptions& options,
   // This will ensure that the file-level object will be declared to hold
   // the extensions.
   for (int i = 0; i < file->extension_count(); i++) {
-    provided.insert(file->extension(i)->full_name());
+    provided.insert(GetPath(options, file) + "." +
+                    JSObjectFieldName(options, file->extension(i)));
   }
 
   FindProvidesForFile(options, printer, file, &provided);
