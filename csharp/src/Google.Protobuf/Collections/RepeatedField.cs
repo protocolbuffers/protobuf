@@ -34,7 +34,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
-using System.Text;
 
 namespace Google.Protobuf.Collections
 {
@@ -227,10 +226,7 @@ namespace Google.Protobuf.Collections
         /// <param name="item">The item to add.</param>
         public void Add(T item)
         {
-            if (item == null)
-            {
-                throw new ArgumentNullException("item");
-            }
+            ProtoPreconditions.CheckNotNullUnconstrained(item, nameof(item));
             EnsureSize(count + 1);
             array[count++] = item;
         }
@@ -300,10 +296,7 @@ namespace Google.Protobuf.Collections
         /// <param name="values">The values to add to this collection.</param>
         public void Add(RepeatedField<T> values)
         {
-            if (values == null)
-            {
-                throw new ArgumentNullException("values");
-            }
+            ProtoPreconditions.CheckNotNull(values, nameof(values));
             EnsureSize(count + values.count);
             // We know that all the values will be valid, because it's a RepeatedField.
             Array.Copy(values.array, 0, array, count, values.count);
@@ -316,10 +309,7 @@ namespace Google.Protobuf.Collections
         /// <param name="values">The values to add to this collection.</param>
         public void Add(IEnumerable<T> values)
         {
-            if (values == null)
-            {
-                throw new ArgumentNullException("values");
-            }
+            ProtoPreconditions.CheckNotNull(values, nameof(values));
             // TODO: Check for ICollection and get the Count, to optimize?
             foreach (T item in values)
             {
@@ -418,10 +408,7 @@ namespace Google.Protobuf.Collections
         /// <returns>The zero-based index of the item, or -1 if it is not found.</returns>
         public int IndexOf(T item)
         {
-            if (item == null)
-            {
-                throw new ArgumentNullException("item");
-            }
+            ProtoPreconditions.CheckNotNullUnconstrained(item, nameof(item));
             EqualityComparer<T> comparer = EqualityComparer<T>.Default;
             for (int i = 0; i < count; i++)
             {
@@ -440,13 +427,10 @@ namespace Google.Protobuf.Collections
         /// <param name="item">The item to insert.</param>
         public void Insert(int index, T item)
         {
-            if (item == null)
-            {
-                throw new ArgumentNullException("item");
-            }
+            ProtoPreconditions.CheckNotNullUnconstrained(item, nameof(item));
             if (index < 0 || index > count)
             {
-                throw new ArgumentOutOfRangeException("index");
+                throw new ArgumentOutOfRangeException(nameof(index));
             }
             EnsureSize(count + 1);
             Array.Copy(array, index, array, index + 1, count - index);
@@ -462,7 +446,7 @@ namespace Google.Protobuf.Collections
         {
             if (index < 0 || index >= count)
             {
-                throw new ArgumentOutOfRangeException("index");
+                throw new ArgumentOutOfRangeException(nameof(index));
             }
             Array.Copy(array, index + 1, array, index, count - index - 1);
             count--;
@@ -494,7 +478,7 @@ namespace Google.Protobuf.Collections
             {
                 if (index < 0 || index >= count)
                 {
-                    throw new ArgumentOutOfRangeException("index");
+                    throw new ArgumentOutOfRangeException(nameof(index));
                 }
                 return array[index];
             }
@@ -502,12 +486,9 @@ namespace Google.Protobuf.Collections
             {
                 if (index < 0 || index >= count)
                 {
-                    throw new ArgumentOutOfRangeException("index");
+                    throw new ArgumentOutOfRangeException(nameof(index));
                 }
-                if (value == null)
-                {
-                    throw new ArgumentNullException("value");
-                }
+                ProtoPreconditions.CheckNotNullUnconstrained(value, nameof(value));
                 array[index] = value;
             }
         }
