@@ -122,10 +122,9 @@ void ReflectionClassGenerator::WriteIntroduction(io::Printer* printer) {
   }
 
   printer->Print(
-    "/// <summary>Holder for reflection information generated from $file_name$</summary>\n"
-    "[global::System.Diagnostics.DebuggerNonUserCodeAttribute()]\n",
+    "/// <summary>Holder for reflection information generated from $file_name$</summary>\n",
     "file_name", file_->name());
-  WriteGeneratedCodeAttributes(printer);
+  WriteGeneratedTypeAttributes(printer);
   printer->Print(
     "$access_level$ static partial class $reflection_class_name$ {\n"
     "\n",

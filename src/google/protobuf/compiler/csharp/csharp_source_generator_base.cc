@@ -56,6 +56,10 @@ SourceGeneratorBase::~SourceGeneratorBase() {
 }
 
 void SourceGeneratorBase::WriteGeneratedCodeAttributes(io::Printer* printer) {
+  printer->Print("[global::System.Diagnostics.DebuggerNonUserCodeAttribute]\n");
+}
+
+void SourceGeneratorBase::WriteGeneratedTypeAttributes(io::Printer* printer) {
   // This hook can be used to reintroduce generated code attributes in the future.
 }
 

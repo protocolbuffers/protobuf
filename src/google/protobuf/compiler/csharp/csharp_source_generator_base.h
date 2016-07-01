@@ -50,7 +50,12 @@ class SourceGeneratorBase {
   std::string class_access_level();
   const Options* options();
 
+  // Write any attributes used to decorate generated function members (methods and properties).
+  // Should not be used to decorate types.
   void WriteGeneratedCodeAttributes(io::Printer* printer);
+  // Write any attributes used to decorate generated types.
+  // Should not be used to decorate function members.
+  void WriteGeneratedTypeAttributes(io::Printer* printer);
 
  private:
   const FileDescriptor* descriptor_;

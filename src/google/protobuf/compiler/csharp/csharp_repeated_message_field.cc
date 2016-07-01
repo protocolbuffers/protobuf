@@ -79,7 +79,7 @@ void RepeatedMessageFieldGenerator::GenerateMembers(io::Printer* printer) {
     variables_,
     "private readonly pbc::RepeatedField<$type_name$> $name$_ = new pbc::RepeatedField<$type_name$>();\n");
   WritePropertyDocComment(printer, descriptor_);
-  AddDeprecatedFlag(printer);
+  AddPublicMemberAttributes(printer);
   printer->Print(
     variables_,
     "$access_level$ pbc::RepeatedField<$type_name$> $property_name$ {\n"

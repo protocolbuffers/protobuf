@@ -80,7 +80,7 @@ void MapFieldGenerator::GenerateMembers(io::Printer* printer) {
     ", $tag$);\n"
     "private readonly pbc::MapField<$key_type_name$, $value_type_name$> $name$_ = new pbc::MapField<$key_type_name$, $value_type_name$>();\n");
   WritePropertyDocComment(printer, descriptor_);
-  AddDeprecatedFlag(printer);
+  AddPublicMemberAttributes(printer);
   printer->Print(
     variables_,
     "$access_level$ pbc::MapField<$key_type_name$, $value_type_name$> $property_name$ {\n"
