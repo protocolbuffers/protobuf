@@ -307,7 +307,7 @@ namespace Google.Protobuf.Collections
         /// Adds all of the specified values into this collection.
         /// </summary>
         /// <param name="values">The values to add to this collection.</param>
-        public void Add(IEnumerable<T> values)
+        public void AddRange(IEnumerable<T> values)
         {
             ProtoPreconditions.CheckNotNull(values, nameof(values));
             // TODO: Check for ICollection and get the Count, to optimize?
@@ -315,6 +315,18 @@ namespace Google.Protobuf.Collections
             {
                 Add(item);
             }
+        }
+
+        /// <summary>
+        /// Adds all of the specified values into this collection. This method is present to
+        /// allow repeated fields to be constructed from queries within collection initializers.
+        /// Within non-collection-initializer code, consider using the equivalent <see cref="AddRange"/>
+        /// method instead for clarity.
+        /// </summary>
+        /// <param name="values">The values to add to this collection.</param>
+        public void Add(IEnumerable<T> values)
+        {
+            AddRange(values);
         }
 
         /// <summary>
