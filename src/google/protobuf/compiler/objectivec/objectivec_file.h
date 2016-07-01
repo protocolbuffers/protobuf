@@ -62,7 +62,8 @@ class FileGenerator {
   void GenerateHeader(io::Printer* printer);
 
   const string& RootClassName() const { return root_class_name_; }
-  const string Path() const;
+  const string Path() const { return FilePath(file_); }
+  const FileDescriptor* Descriptor() const { return file_; }
 
   bool IsPublicDependency() const { return is_public_dep_; }
 
@@ -87,6 +88,8 @@ class FileGenerator {
   const Options options_;
 
   const vector<FileGenerator*>& DependencyGenerators();
+  void PrintFilePreamble(
+      io::Printer* printer, const string& header_to_import) const;
 
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(FileGenerator);
 };
