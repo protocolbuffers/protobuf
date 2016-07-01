@@ -75,6 +75,16 @@ namespace Google.Protobuf.Collections
         }
 
         [Test]
+        public void AddRange()
+        {
+            var list = new RepeatedField<string>();
+            list.AddRange(new[] { "foo", "bar" });
+            Assert.AreEqual(2, list.Count);
+            Assert.AreEqual("foo", list[0]);
+            Assert.AreEqual("bar", list[1]);
+        }
+
+        [Test]
         public void Add_RepeatedField()
         {
             var list = new RepeatedField<string> { "original" };
