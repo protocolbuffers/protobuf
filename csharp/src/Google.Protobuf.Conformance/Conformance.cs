@@ -10,7 +10,6 @@ using scg = global::System.Collections.Generic;
 namespace Conformance {
 
   /// <summary>Holder for reflection information generated from conformance.proto</summary>
-  [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
   public static partial class ConformanceReflection {
 
     #region Descriptor
@@ -220,25 +219,29 @@ namespace Conformance {
   ///    2. parse the protobuf or JSON payload in "payload" (which may fail)
   ///    3. if the parse succeeded, serialize the message in the requested format.
   /// </summary>
-  [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
   public sealed partial class ConformanceRequest : pb::IMessage<ConformanceRequest> {
     private static readonly pb::MessageParser<ConformanceRequest> _parser = new pb::MessageParser<ConformanceRequest>(() => new ConformanceRequest());
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<ConformanceRequest> Parser { get { return _parser; } }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
       get { return global::Conformance.ConformanceReflection.Descriptor.MessageTypes[0]; }
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     pbr::MessageDescriptor pb::IMessage.Descriptor {
       get { return Descriptor; }
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public ConformanceRequest() {
       OnConstruction();
     }
 
     partial void OnConstruction();
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public ConformanceRequest(ConformanceRequest other) : this() {
       requestedOutputFormat_ = other.requestedOutputFormat_;
       switch (other.PayloadCase) {
@@ -252,12 +255,14 @@ namespace Conformance {
 
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public ConformanceRequest Clone() {
       return new ConformanceRequest(this);
     }
 
     /// <summary>Field number for the "protobuf_payload" field.</summary>
     public const int ProtobufPayloadFieldNumber = 1;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public pb::ByteString ProtobufPayload {
       get { return payloadCase_ == PayloadOneofCase.ProtobufPayload ? (pb::ByteString) payload_ : pb::ByteString.Empty; }
       set {
@@ -268,6 +273,7 @@ namespace Conformance {
 
     /// <summary>Field number for the "json_payload" field.</summary>
     public const int JsonPayloadFieldNumber = 2;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public string JsonPayload {
       get { return payloadCase_ == PayloadOneofCase.JsonPayload ? (string) payload_ : ""; }
       set {
@@ -282,6 +288,7 @@ namespace Conformance {
     /// <summary>
     ///  Which format should the testee serialize its message to?
     /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public global::Conformance.WireFormat RequestedOutputFormat {
       get { return requestedOutputFormat_; }
       set {
@@ -297,19 +304,23 @@ namespace Conformance {
       JsonPayload = 2,
     }
     private PayloadOneofCase payloadCase_ = PayloadOneofCase.None;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public PayloadOneofCase PayloadCase {
       get { return payloadCase_; }
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void ClearPayload() {
       payloadCase_ = PayloadOneofCase.None;
       payload_ = null;
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as ConformanceRequest);
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public bool Equals(ConformanceRequest other) {
       if (ReferenceEquals(other, null)) {
         return false;
@@ -324,6 +335,7 @@ namespace Conformance {
       return true;
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override int GetHashCode() {
       int hash = 1;
       if (payloadCase_ == PayloadOneofCase.ProtobufPayload) hash ^= ProtobufPayload.GetHashCode();
@@ -333,10 +345,12 @@ namespace Conformance {
       return hash;
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override string ToString() {
       return pb::JsonFormatter.ToDiagnosticString(this);
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
       if (payloadCase_ == PayloadOneofCase.ProtobufPayload) {
         output.WriteRawTag(10);
@@ -352,6 +366,7 @@ namespace Conformance {
       }
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
       int size = 0;
       if (payloadCase_ == PayloadOneofCase.ProtobufPayload) {
@@ -366,6 +381,7 @@ namespace Conformance {
       return size;
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(ConformanceRequest other) {
       if (other == null) {
         return;
@@ -384,6 +400,7 @@ namespace Conformance {
 
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(pb::CodedInputStream input) {
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
@@ -412,25 +429,29 @@ namespace Conformance {
   /// <summary>
   ///  Represents a single test case's output.
   /// </summary>
-  [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
   public sealed partial class ConformanceResponse : pb::IMessage<ConformanceResponse> {
     private static readonly pb::MessageParser<ConformanceResponse> _parser = new pb::MessageParser<ConformanceResponse>(() => new ConformanceResponse());
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<ConformanceResponse> Parser { get { return _parser; } }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
       get { return global::Conformance.ConformanceReflection.Descriptor.MessageTypes[1]; }
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     pbr::MessageDescriptor pb::IMessage.Descriptor {
       get { return Descriptor; }
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public ConformanceResponse() {
       OnConstruction();
     }
 
     partial void OnConstruction();
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public ConformanceResponse(ConformanceResponse other) : this() {
       switch (other.ResultCase) {
         case ResultOneofCase.ParseError:
@@ -455,6 +476,7 @@ namespace Conformance {
 
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public ConformanceResponse Clone() {
       return new ConformanceResponse(this);
     }
@@ -468,6 +490,7 @@ namespace Conformance {
     ///  Setting this string does not necessarily mean the testee failed the
     ///  test.  Some of the test cases are intentionally invalid input.
     /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public string ParseError {
       get { return resultCase_ == ResultOneofCase.ParseError ? (string) result_ : ""; }
       set {
@@ -483,6 +506,7 @@ namespace Conformance {
     ///  serializing it to the requested output format, set the error message in
     ///  this field.
     /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public string SerializeError {
       get { return resultCase_ == ResultOneofCase.SerializeError ? (string) result_ : ""; }
       set {
@@ -498,6 +522,7 @@ namespace Conformance {
     ///  indicate that the test failed.  The string can provide more information
     ///  about the failure.
     /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public string RuntimeError {
       get { return resultCase_ == ResultOneofCase.RuntimeError ? (string) result_ : ""; }
       set {
@@ -512,6 +537,7 @@ namespace Conformance {
     ///  If the input was successfully parsed and the requested output was
     ///  protobuf, serialize it to protobuf and set it in this field.
     /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public pb::ByteString ProtobufPayload {
       get { return resultCase_ == ResultOneofCase.ProtobufPayload ? (pb::ByteString) result_ : pb::ByteString.Empty; }
       set {
@@ -526,6 +552,7 @@ namespace Conformance {
     ///  If the input was successfully parsed and the requested output was JSON,
     ///  serialize to JSON and set it in this field.
     /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public string JsonPayload {
       get { return resultCase_ == ResultOneofCase.JsonPayload ? (string) result_ : ""; }
       set {
@@ -540,6 +567,7 @@ namespace Conformance {
     ///  For when the testee skipped the test, likely because a certain feature
     ///  wasn't supported, like JSON input/output.
     /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public string Skipped {
       get { return resultCase_ == ResultOneofCase.Skipped ? (string) result_ : ""; }
       set {
@@ -560,19 +588,23 @@ namespace Conformance {
       Skipped = 5,
     }
     private ResultOneofCase resultCase_ = ResultOneofCase.None;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public ResultOneofCase ResultCase {
       get { return resultCase_; }
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void ClearResult() {
       resultCase_ = ResultOneofCase.None;
       result_ = null;
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as ConformanceResponse);
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public bool Equals(ConformanceResponse other) {
       if (ReferenceEquals(other, null)) {
         return false;
@@ -590,6 +622,7 @@ namespace Conformance {
       return true;
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override int GetHashCode() {
       int hash = 1;
       if (resultCase_ == ResultOneofCase.ParseError) hash ^= ParseError.GetHashCode();
@@ -602,10 +635,12 @@ namespace Conformance {
       return hash;
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override string ToString() {
       return pb::JsonFormatter.ToDiagnosticString(this);
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
       if (resultCase_ == ResultOneofCase.ParseError) {
         output.WriteRawTag(10);
@@ -633,6 +668,7 @@ namespace Conformance {
       }
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
       int size = 0;
       if (resultCase_ == ResultOneofCase.ParseError) {
@@ -656,6 +692,7 @@ namespace Conformance {
       return size;
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(ConformanceResponse other) {
       if (other == null) {
         return;
@@ -683,6 +720,7 @@ namespace Conformance {
 
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(pb::CodedInputStream input) {
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
@@ -724,25 +762,29 @@ namespace Conformance {
   ///  This proto includes every type of field in both singular and repeated
   ///  forms.
   /// </summary>
-  [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
   public sealed partial class TestAllTypes : pb::IMessage<TestAllTypes> {
     private static readonly pb::MessageParser<TestAllTypes> _parser = new pb::MessageParser<TestAllTypes>(() => new TestAllTypes());
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<TestAllTypes> Parser { get { return _parser; } }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
       get { return global::Conformance.ConformanceReflection.Descriptor.MessageTypes[2]; }
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     pbr::MessageDescriptor pb::IMessage.Descriptor {
       get { return Descriptor; }
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public TestAllTypes() {
       OnConstruction();
     }
 
     partial void OnConstruction();
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public TestAllTypes(TestAllTypes other) : this() {
       optionalInt32_ = other.optionalInt32_;
       optionalInt64_ = other.optionalInt64_;
@@ -865,6 +907,7 @@ namespace Conformance {
 
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public TestAllTypes Clone() {
       return new TestAllTypes(this);
     }
@@ -875,6 +918,7 @@ namespace Conformance {
     /// <summary>
     ///  Singular
     /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int OptionalInt32 {
       get { return optionalInt32_; }
       set {
@@ -885,6 +929,7 @@ namespace Conformance {
     /// <summary>Field number for the "optional_int64" field.</summary>
     public const int OptionalInt64FieldNumber = 2;
     private long optionalInt64_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public long OptionalInt64 {
       get { return optionalInt64_; }
       set {
@@ -895,6 +940,7 @@ namespace Conformance {
     /// <summary>Field number for the "optional_uint32" field.</summary>
     public const int OptionalUint32FieldNumber = 3;
     private uint optionalUint32_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public uint OptionalUint32 {
       get { return optionalUint32_; }
       set {
@@ -905,6 +951,7 @@ namespace Conformance {
     /// <summary>Field number for the "optional_uint64" field.</summary>
     public const int OptionalUint64FieldNumber = 4;
     private ulong optionalUint64_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public ulong OptionalUint64 {
       get { return optionalUint64_; }
       set {
@@ -915,6 +962,7 @@ namespace Conformance {
     /// <summary>Field number for the "optional_sint32" field.</summary>
     public const int OptionalSint32FieldNumber = 5;
     private int optionalSint32_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int OptionalSint32 {
       get { return optionalSint32_; }
       set {
@@ -925,6 +973,7 @@ namespace Conformance {
     /// <summary>Field number for the "optional_sint64" field.</summary>
     public const int OptionalSint64FieldNumber = 6;
     private long optionalSint64_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public long OptionalSint64 {
       get { return optionalSint64_; }
       set {
@@ -935,6 +984,7 @@ namespace Conformance {
     /// <summary>Field number for the "optional_fixed32" field.</summary>
     public const int OptionalFixed32FieldNumber = 7;
     private uint optionalFixed32_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public uint OptionalFixed32 {
       get { return optionalFixed32_; }
       set {
@@ -945,6 +995,7 @@ namespace Conformance {
     /// <summary>Field number for the "optional_fixed64" field.</summary>
     public const int OptionalFixed64FieldNumber = 8;
     private ulong optionalFixed64_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public ulong OptionalFixed64 {
       get { return optionalFixed64_; }
       set {
@@ -955,6 +1006,7 @@ namespace Conformance {
     /// <summary>Field number for the "optional_sfixed32" field.</summary>
     public const int OptionalSfixed32FieldNumber = 9;
     private int optionalSfixed32_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int OptionalSfixed32 {
       get { return optionalSfixed32_; }
       set {
@@ -965,6 +1017,7 @@ namespace Conformance {
     /// <summary>Field number for the "optional_sfixed64" field.</summary>
     public const int OptionalSfixed64FieldNumber = 10;
     private long optionalSfixed64_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public long OptionalSfixed64 {
       get { return optionalSfixed64_; }
       set {
@@ -975,6 +1028,7 @@ namespace Conformance {
     /// <summary>Field number for the "optional_float" field.</summary>
     public const int OptionalFloatFieldNumber = 11;
     private float optionalFloat_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public float OptionalFloat {
       get { return optionalFloat_; }
       set {
@@ -985,6 +1039,7 @@ namespace Conformance {
     /// <summary>Field number for the "optional_double" field.</summary>
     public const int OptionalDoubleFieldNumber = 12;
     private double optionalDouble_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public double OptionalDouble {
       get { return optionalDouble_; }
       set {
@@ -995,6 +1050,7 @@ namespace Conformance {
     /// <summary>Field number for the "optional_bool" field.</summary>
     public const int OptionalBoolFieldNumber = 13;
     private bool optionalBool_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public bool OptionalBool {
       get { return optionalBool_; }
       set {
@@ -1005,6 +1061,7 @@ namespace Conformance {
     /// <summary>Field number for the "optional_string" field.</summary>
     public const int OptionalStringFieldNumber = 14;
     private string optionalString_ = "";
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public string OptionalString {
       get { return optionalString_; }
       set {
@@ -1015,6 +1072,7 @@ namespace Conformance {
     /// <summary>Field number for the "optional_bytes" field.</summary>
     public const int OptionalBytesFieldNumber = 15;
     private pb::ByteString optionalBytes_ = pb::ByteString.Empty;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public pb::ByteString OptionalBytes {
       get { return optionalBytes_; }
       set {
@@ -1025,6 +1083,7 @@ namespace Conformance {
     /// <summary>Field number for the "optional_nested_message" field.</summary>
     public const int OptionalNestedMessageFieldNumber = 18;
     private global::Conformance.TestAllTypes.Types.NestedMessage optionalNestedMessage_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public global::Conformance.TestAllTypes.Types.NestedMessage OptionalNestedMessage {
       get { return optionalNestedMessage_; }
       set {
@@ -1035,6 +1094,7 @@ namespace Conformance {
     /// <summary>Field number for the "optional_foreign_message" field.</summary>
     public const int OptionalForeignMessageFieldNumber = 19;
     private global::Conformance.ForeignMessage optionalForeignMessage_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public global::Conformance.ForeignMessage OptionalForeignMessage {
       get { return optionalForeignMessage_; }
       set {
@@ -1045,6 +1105,7 @@ namespace Conformance {
     /// <summary>Field number for the "optional_nested_enum" field.</summary>
     public const int OptionalNestedEnumFieldNumber = 21;
     private global::Conformance.TestAllTypes.Types.NestedEnum optionalNestedEnum_ = 0;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public global::Conformance.TestAllTypes.Types.NestedEnum OptionalNestedEnum {
       get { return optionalNestedEnum_; }
       set {
@@ -1055,6 +1116,7 @@ namespace Conformance {
     /// <summary>Field number for the "optional_foreign_enum" field.</summary>
     public const int OptionalForeignEnumFieldNumber = 22;
     private global::Conformance.ForeignEnum optionalForeignEnum_ = 0;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public global::Conformance.ForeignEnum OptionalForeignEnum {
       get { return optionalForeignEnum_; }
       set {
@@ -1065,6 +1127,7 @@ namespace Conformance {
     /// <summary>Field number for the "optional_string_piece" field.</summary>
     public const int OptionalStringPieceFieldNumber = 24;
     private string optionalStringPiece_ = "";
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public string OptionalStringPiece {
       get { return optionalStringPiece_; }
       set {
@@ -1075,6 +1138,7 @@ namespace Conformance {
     /// <summary>Field number for the "optional_cord" field.</summary>
     public const int OptionalCordFieldNumber = 25;
     private string optionalCord_ = "";
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public string OptionalCord {
       get { return optionalCord_; }
       set {
@@ -1085,6 +1149,7 @@ namespace Conformance {
     /// <summary>Field number for the "recursive_message" field.</summary>
     public const int RecursiveMessageFieldNumber = 27;
     private global::Conformance.TestAllTypes recursiveMessage_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public global::Conformance.TestAllTypes RecursiveMessage {
       get { return recursiveMessage_; }
       set {
@@ -1100,6 +1165,7 @@ namespace Conformance {
     /// <summary>
     ///  Repeated
     /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public pbc::RepeatedField<int> RepeatedInt32 {
       get { return repeatedInt32_; }
     }
@@ -1109,6 +1175,7 @@ namespace Conformance {
     private static readonly pb::FieldCodec<long> _repeated_repeatedInt64_codec
         = pb::FieldCodec.ForInt64(258);
     private readonly pbc::RepeatedField<long> repeatedInt64_ = new pbc::RepeatedField<long>();
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public pbc::RepeatedField<long> RepeatedInt64 {
       get { return repeatedInt64_; }
     }
@@ -1118,6 +1185,7 @@ namespace Conformance {
     private static readonly pb::FieldCodec<uint> _repeated_repeatedUint32_codec
         = pb::FieldCodec.ForUInt32(266);
     private readonly pbc::RepeatedField<uint> repeatedUint32_ = new pbc::RepeatedField<uint>();
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public pbc::RepeatedField<uint> RepeatedUint32 {
       get { return repeatedUint32_; }
     }
@@ -1127,6 +1195,7 @@ namespace Conformance {
     private static readonly pb::FieldCodec<ulong> _repeated_repeatedUint64_codec
         = pb::FieldCodec.ForUInt64(274);
     private readonly pbc::RepeatedField<ulong> repeatedUint64_ = new pbc::RepeatedField<ulong>();
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public pbc::RepeatedField<ulong> RepeatedUint64 {
       get { return repeatedUint64_; }
     }
@@ -1136,6 +1205,7 @@ namespace Conformance {
     private static readonly pb::FieldCodec<int> _repeated_repeatedSint32_codec
         = pb::FieldCodec.ForSInt32(282);
     private readonly pbc::RepeatedField<int> repeatedSint32_ = new pbc::RepeatedField<int>();
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public pbc::RepeatedField<int> RepeatedSint32 {
       get { return repeatedSint32_; }
     }
@@ -1145,6 +1215,7 @@ namespace Conformance {
     private static readonly pb::FieldCodec<long> _repeated_repeatedSint64_codec
         = pb::FieldCodec.ForSInt64(290);
     private readonly pbc::RepeatedField<long> repeatedSint64_ = new pbc::RepeatedField<long>();
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public pbc::RepeatedField<long> RepeatedSint64 {
       get { return repeatedSint64_; }
     }
@@ -1154,6 +1225,7 @@ namespace Conformance {
     private static readonly pb::FieldCodec<uint> _repeated_repeatedFixed32_codec
         = pb::FieldCodec.ForFixed32(298);
     private readonly pbc::RepeatedField<uint> repeatedFixed32_ = new pbc::RepeatedField<uint>();
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public pbc::RepeatedField<uint> RepeatedFixed32 {
       get { return repeatedFixed32_; }
     }
@@ -1163,6 +1235,7 @@ namespace Conformance {
     private static readonly pb::FieldCodec<ulong> _repeated_repeatedFixed64_codec
         = pb::FieldCodec.ForFixed64(306);
     private readonly pbc::RepeatedField<ulong> repeatedFixed64_ = new pbc::RepeatedField<ulong>();
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public pbc::RepeatedField<ulong> RepeatedFixed64 {
       get { return repeatedFixed64_; }
     }
@@ -1172,6 +1245,7 @@ namespace Conformance {
     private static readonly pb::FieldCodec<int> _repeated_repeatedSfixed32_codec
         = pb::FieldCodec.ForSFixed32(314);
     private readonly pbc::RepeatedField<int> repeatedSfixed32_ = new pbc::RepeatedField<int>();
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public pbc::RepeatedField<int> RepeatedSfixed32 {
       get { return repeatedSfixed32_; }
     }
@@ -1181,6 +1255,7 @@ namespace Conformance {
     private static readonly pb::FieldCodec<long> _repeated_repeatedSfixed64_codec
         = pb::FieldCodec.ForSFixed64(322);
     private readonly pbc::RepeatedField<long> repeatedSfixed64_ = new pbc::RepeatedField<long>();
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public pbc::RepeatedField<long> RepeatedSfixed64 {
       get { return repeatedSfixed64_; }
     }
@@ -1190,6 +1265,7 @@ namespace Conformance {
     private static readonly pb::FieldCodec<float> _repeated_repeatedFloat_codec
         = pb::FieldCodec.ForFloat(330);
     private readonly pbc::RepeatedField<float> repeatedFloat_ = new pbc::RepeatedField<float>();
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public pbc::RepeatedField<float> RepeatedFloat {
       get { return repeatedFloat_; }
     }
@@ -1199,6 +1275,7 @@ namespace Conformance {
     private static readonly pb::FieldCodec<double> _repeated_repeatedDouble_codec
         = pb::FieldCodec.ForDouble(338);
     private readonly pbc::RepeatedField<double> repeatedDouble_ = new pbc::RepeatedField<double>();
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public pbc::RepeatedField<double> RepeatedDouble {
       get { return repeatedDouble_; }
     }
@@ -1208,6 +1285,7 @@ namespace Conformance {
     private static readonly pb::FieldCodec<bool> _repeated_repeatedBool_codec
         = pb::FieldCodec.ForBool(346);
     private readonly pbc::RepeatedField<bool> repeatedBool_ = new pbc::RepeatedField<bool>();
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public pbc::RepeatedField<bool> RepeatedBool {
       get { return repeatedBool_; }
     }
@@ -1217,6 +1295,7 @@ namespace Conformance {
     private static readonly pb::FieldCodec<string> _repeated_repeatedString_codec
         = pb::FieldCodec.ForString(354);
     private readonly pbc::RepeatedField<string> repeatedString_ = new pbc::RepeatedField<string>();
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public pbc::RepeatedField<string> RepeatedString {
       get { return repeatedString_; }
     }
@@ -1226,6 +1305,7 @@ namespace Conformance {
     private static readonly pb::FieldCodec<pb::ByteString> _repeated_repeatedBytes_codec
         = pb::FieldCodec.ForBytes(362);
     private readonly pbc::RepeatedField<pb::ByteString> repeatedBytes_ = new pbc::RepeatedField<pb::ByteString>();
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public pbc::RepeatedField<pb::ByteString> RepeatedBytes {
       get { return repeatedBytes_; }
     }
@@ -1235,6 +1315,7 @@ namespace Conformance {
     private static readonly pb::FieldCodec<global::Conformance.TestAllTypes.Types.NestedMessage> _repeated_repeatedNestedMessage_codec
         = pb::FieldCodec.ForMessage(386, global::Conformance.TestAllTypes.Types.NestedMessage.Parser);
     private readonly pbc::RepeatedField<global::Conformance.TestAllTypes.Types.NestedMessage> repeatedNestedMessage_ = new pbc::RepeatedField<global::Conformance.TestAllTypes.Types.NestedMessage>();
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public pbc::RepeatedField<global::Conformance.TestAllTypes.Types.NestedMessage> RepeatedNestedMessage {
       get { return repeatedNestedMessage_; }
     }
@@ -1244,6 +1325,7 @@ namespace Conformance {
     private static readonly pb::FieldCodec<global::Conformance.ForeignMessage> _repeated_repeatedForeignMessage_codec
         = pb::FieldCodec.ForMessage(394, global::Conformance.ForeignMessage.Parser);
     private readonly pbc::RepeatedField<global::Conformance.ForeignMessage> repeatedForeignMessage_ = new pbc::RepeatedField<global::Conformance.ForeignMessage>();
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public pbc::RepeatedField<global::Conformance.ForeignMessage> RepeatedForeignMessage {
       get { return repeatedForeignMessage_; }
     }
@@ -1253,6 +1335,7 @@ namespace Conformance {
     private static readonly pb::FieldCodec<global::Conformance.TestAllTypes.Types.NestedEnum> _repeated_repeatedNestedEnum_codec
         = pb::FieldCodec.ForEnum(410, x => (int) x, x => (global::Conformance.TestAllTypes.Types.NestedEnum) x);
     private readonly pbc::RepeatedField<global::Conformance.TestAllTypes.Types.NestedEnum> repeatedNestedEnum_ = new pbc::RepeatedField<global::Conformance.TestAllTypes.Types.NestedEnum>();
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public pbc::RepeatedField<global::Conformance.TestAllTypes.Types.NestedEnum> RepeatedNestedEnum {
       get { return repeatedNestedEnum_; }
     }
@@ -1262,6 +1345,7 @@ namespace Conformance {
     private static readonly pb::FieldCodec<global::Conformance.ForeignEnum> _repeated_repeatedForeignEnum_codec
         = pb::FieldCodec.ForEnum(418, x => (int) x, x => (global::Conformance.ForeignEnum) x);
     private readonly pbc::RepeatedField<global::Conformance.ForeignEnum> repeatedForeignEnum_ = new pbc::RepeatedField<global::Conformance.ForeignEnum>();
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public pbc::RepeatedField<global::Conformance.ForeignEnum> RepeatedForeignEnum {
       get { return repeatedForeignEnum_; }
     }
@@ -1271,6 +1355,7 @@ namespace Conformance {
     private static readonly pb::FieldCodec<string> _repeated_repeatedStringPiece_codec
         = pb::FieldCodec.ForString(434);
     private readonly pbc::RepeatedField<string> repeatedStringPiece_ = new pbc::RepeatedField<string>();
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public pbc::RepeatedField<string> RepeatedStringPiece {
       get { return repeatedStringPiece_; }
     }
@@ -1280,6 +1365,7 @@ namespace Conformance {
     private static readonly pb::FieldCodec<string> _repeated_repeatedCord_codec
         = pb::FieldCodec.ForString(442);
     private readonly pbc::RepeatedField<string> repeatedCord_ = new pbc::RepeatedField<string>();
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public pbc::RepeatedField<string> RepeatedCord {
       get { return repeatedCord_; }
     }
@@ -1292,6 +1378,7 @@ namespace Conformance {
     /// <summary>
     ///  Map
     /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public pbc::MapField<int, int> MapInt32Int32 {
       get { return mapInt32Int32_; }
     }
@@ -1301,6 +1388,7 @@ namespace Conformance {
     private static readonly pbc::MapField<long, long>.Codec _map_mapInt64Int64_codec
         = new pbc::MapField<long, long>.Codec(pb::FieldCodec.ForInt64(8), pb::FieldCodec.ForInt64(16), 458);
     private readonly pbc::MapField<long, long> mapInt64Int64_ = new pbc::MapField<long, long>();
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public pbc::MapField<long, long> MapInt64Int64 {
       get { return mapInt64Int64_; }
     }
@@ -1310,6 +1398,7 @@ namespace Conformance {
     private static readonly pbc::MapField<uint, uint>.Codec _map_mapUint32Uint32_codec
         = new pbc::MapField<uint, uint>.Codec(pb::FieldCodec.ForUInt32(8), pb::FieldCodec.ForUInt32(16), 466);
     private readonly pbc::MapField<uint, uint> mapUint32Uint32_ = new pbc::MapField<uint, uint>();
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public pbc::MapField<uint, uint> MapUint32Uint32 {
       get { return mapUint32Uint32_; }
     }
@@ -1319,6 +1408,7 @@ namespace Conformance {
     private static readonly pbc::MapField<ulong, ulong>.Codec _map_mapUint64Uint64_codec
         = new pbc::MapField<ulong, ulong>.Codec(pb::FieldCodec.ForUInt64(8), pb::FieldCodec.ForUInt64(16), 474);
     private readonly pbc::MapField<ulong, ulong> mapUint64Uint64_ = new pbc::MapField<ulong, ulong>();
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public pbc::MapField<ulong, ulong> MapUint64Uint64 {
       get { return mapUint64Uint64_; }
     }
@@ -1328,6 +1418,7 @@ namespace Conformance {
     private static readonly pbc::MapField<int, int>.Codec _map_mapSint32Sint32_codec
         = new pbc::MapField<int, int>.Codec(pb::FieldCodec.ForSInt32(8), pb::FieldCodec.ForSInt32(16), 482);
     private readonly pbc::MapField<int, int> mapSint32Sint32_ = new pbc::MapField<int, int>();
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public pbc::MapField<int, int> MapSint32Sint32 {
       get { return mapSint32Sint32_; }
     }
@@ -1337,6 +1428,7 @@ namespace Conformance {
     private static readonly pbc::MapField<long, long>.Codec _map_mapSint64Sint64_codec
         = new pbc::MapField<long, long>.Codec(pb::FieldCodec.ForSInt64(8), pb::FieldCodec.ForSInt64(16), 490);
     private readonly pbc::MapField<long, long> mapSint64Sint64_ = new pbc::MapField<long, long>();
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public pbc::MapField<long, long> MapSint64Sint64 {
       get { return mapSint64Sint64_; }
     }
@@ -1346,6 +1438,7 @@ namespace Conformance {
     private static readonly pbc::MapField<uint, uint>.Codec _map_mapFixed32Fixed32_codec
         = new pbc::MapField<uint, uint>.Codec(pb::FieldCodec.ForFixed32(13), pb::FieldCodec.ForFixed32(21), 498);
     private readonly pbc::MapField<uint, uint> mapFixed32Fixed32_ = new pbc::MapField<uint, uint>();
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public pbc::MapField<uint, uint> MapFixed32Fixed32 {
       get { return mapFixed32Fixed32_; }
     }
@@ -1355,6 +1448,7 @@ namespace Conformance {
     private static readonly pbc::MapField<ulong, ulong>.Codec _map_mapFixed64Fixed64_codec
         = new pbc::MapField<ulong, ulong>.Codec(pb::FieldCodec.ForFixed64(9), pb::FieldCodec.ForFixed64(17), 506);
     private readonly pbc::MapField<ulong, ulong> mapFixed64Fixed64_ = new pbc::MapField<ulong, ulong>();
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public pbc::MapField<ulong, ulong> MapFixed64Fixed64 {
       get { return mapFixed64Fixed64_; }
     }
@@ -1364,6 +1458,7 @@ namespace Conformance {
     private static readonly pbc::MapField<int, int>.Codec _map_mapSfixed32Sfixed32_codec
         = new pbc::MapField<int, int>.Codec(pb::FieldCodec.ForSFixed32(13), pb::FieldCodec.ForSFixed32(21), 514);
     private readonly pbc::MapField<int, int> mapSfixed32Sfixed32_ = new pbc::MapField<int, int>();
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public pbc::MapField<int, int> MapSfixed32Sfixed32 {
       get { return mapSfixed32Sfixed32_; }
     }
@@ -1373,6 +1468,7 @@ namespace Conformance {
     private static readonly pbc::MapField<long, long>.Codec _map_mapSfixed64Sfixed64_codec
         = new pbc::MapField<long, long>.Codec(pb::FieldCodec.ForSFixed64(9), pb::FieldCodec.ForSFixed64(17), 522);
     private readonly pbc::MapField<long, long> mapSfixed64Sfixed64_ = new pbc::MapField<long, long>();
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public pbc::MapField<long, long> MapSfixed64Sfixed64 {
       get { return mapSfixed64Sfixed64_; }
     }
@@ -1382,6 +1478,7 @@ namespace Conformance {
     private static readonly pbc::MapField<int, float>.Codec _map_mapInt32Float_codec
         = new pbc::MapField<int, float>.Codec(pb::FieldCodec.ForInt32(8), pb::FieldCodec.ForFloat(21), 530);
     private readonly pbc::MapField<int, float> mapInt32Float_ = new pbc::MapField<int, float>();
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public pbc::MapField<int, float> MapInt32Float {
       get { return mapInt32Float_; }
     }
@@ -1391,6 +1488,7 @@ namespace Conformance {
     private static readonly pbc::MapField<int, double>.Codec _map_mapInt32Double_codec
         = new pbc::MapField<int, double>.Codec(pb::FieldCodec.ForInt32(8), pb::FieldCodec.ForDouble(17), 538);
     private readonly pbc::MapField<int, double> mapInt32Double_ = new pbc::MapField<int, double>();
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public pbc::MapField<int, double> MapInt32Double {
       get { return mapInt32Double_; }
     }
@@ -1400,6 +1498,7 @@ namespace Conformance {
     private static readonly pbc::MapField<bool, bool>.Codec _map_mapBoolBool_codec
         = new pbc::MapField<bool, bool>.Codec(pb::FieldCodec.ForBool(8), pb::FieldCodec.ForBool(16), 546);
     private readonly pbc::MapField<bool, bool> mapBoolBool_ = new pbc::MapField<bool, bool>();
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public pbc::MapField<bool, bool> MapBoolBool {
       get { return mapBoolBool_; }
     }
@@ -1409,6 +1508,7 @@ namespace Conformance {
     private static readonly pbc::MapField<string, string>.Codec _map_mapStringString_codec
         = new pbc::MapField<string, string>.Codec(pb::FieldCodec.ForString(10), pb::FieldCodec.ForString(18), 554);
     private readonly pbc::MapField<string, string> mapStringString_ = new pbc::MapField<string, string>();
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public pbc::MapField<string, string> MapStringString {
       get { return mapStringString_; }
     }
@@ -1418,6 +1518,7 @@ namespace Conformance {
     private static readonly pbc::MapField<string, pb::ByteString>.Codec _map_mapStringBytes_codec
         = new pbc::MapField<string, pb::ByteString>.Codec(pb::FieldCodec.ForString(10), pb::FieldCodec.ForBytes(18), 562);
     private readonly pbc::MapField<string, pb::ByteString> mapStringBytes_ = new pbc::MapField<string, pb::ByteString>();
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public pbc::MapField<string, pb::ByteString> MapStringBytes {
       get { return mapStringBytes_; }
     }
@@ -1427,6 +1528,7 @@ namespace Conformance {
     private static readonly pbc::MapField<string, global::Conformance.TestAllTypes.Types.NestedMessage>.Codec _map_mapStringNestedMessage_codec
         = new pbc::MapField<string, global::Conformance.TestAllTypes.Types.NestedMessage>.Codec(pb::FieldCodec.ForString(10), pb::FieldCodec.ForMessage(18, global::Conformance.TestAllTypes.Types.NestedMessage.Parser), 570);
     private readonly pbc::MapField<string, global::Conformance.TestAllTypes.Types.NestedMessage> mapStringNestedMessage_ = new pbc::MapField<string, global::Conformance.TestAllTypes.Types.NestedMessage>();
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public pbc::MapField<string, global::Conformance.TestAllTypes.Types.NestedMessage> MapStringNestedMessage {
       get { return mapStringNestedMessage_; }
     }
@@ -1436,6 +1538,7 @@ namespace Conformance {
     private static readonly pbc::MapField<string, global::Conformance.ForeignMessage>.Codec _map_mapStringForeignMessage_codec
         = new pbc::MapField<string, global::Conformance.ForeignMessage>.Codec(pb::FieldCodec.ForString(10), pb::FieldCodec.ForMessage(18, global::Conformance.ForeignMessage.Parser), 578);
     private readonly pbc::MapField<string, global::Conformance.ForeignMessage> mapStringForeignMessage_ = new pbc::MapField<string, global::Conformance.ForeignMessage>();
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public pbc::MapField<string, global::Conformance.ForeignMessage> MapStringForeignMessage {
       get { return mapStringForeignMessage_; }
     }
@@ -1445,6 +1548,7 @@ namespace Conformance {
     private static readonly pbc::MapField<string, global::Conformance.TestAllTypes.Types.NestedEnum>.Codec _map_mapStringNestedEnum_codec
         = new pbc::MapField<string, global::Conformance.TestAllTypes.Types.NestedEnum>.Codec(pb::FieldCodec.ForString(10), pb::FieldCodec.ForEnum(16, x => (int) x, x => (global::Conformance.TestAllTypes.Types.NestedEnum) x), 586);
     private readonly pbc::MapField<string, global::Conformance.TestAllTypes.Types.NestedEnum> mapStringNestedEnum_ = new pbc::MapField<string, global::Conformance.TestAllTypes.Types.NestedEnum>();
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public pbc::MapField<string, global::Conformance.TestAllTypes.Types.NestedEnum> MapStringNestedEnum {
       get { return mapStringNestedEnum_; }
     }
@@ -1454,12 +1558,14 @@ namespace Conformance {
     private static readonly pbc::MapField<string, global::Conformance.ForeignEnum>.Codec _map_mapStringForeignEnum_codec
         = new pbc::MapField<string, global::Conformance.ForeignEnum>.Codec(pb::FieldCodec.ForString(10), pb::FieldCodec.ForEnum(16, x => (int) x, x => (global::Conformance.ForeignEnum) x), 594);
     private readonly pbc::MapField<string, global::Conformance.ForeignEnum> mapStringForeignEnum_ = new pbc::MapField<string, global::Conformance.ForeignEnum>();
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public pbc::MapField<string, global::Conformance.ForeignEnum> MapStringForeignEnum {
       get { return mapStringForeignEnum_; }
     }
 
     /// <summary>Field number for the "oneof_uint32" field.</summary>
     public const int OneofUint32FieldNumber = 111;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public uint OneofUint32 {
       get { return oneofFieldCase_ == OneofFieldOneofCase.OneofUint32 ? (uint) oneofField_ : 0; }
       set {
@@ -1470,6 +1576,7 @@ namespace Conformance {
 
     /// <summary>Field number for the "oneof_nested_message" field.</summary>
     public const int OneofNestedMessageFieldNumber = 112;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public global::Conformance.TestAllTypes.Types.NestedMessage OneofNestedMessage {
       get { return oneofFieldCase_ == OneofFieldOneofCase.OneofNestedMessage ? (global::Conformance.TestAllTypes.Types.NestedMessage) oneofField_ : null; }
       set {
@@ -1480,6 +1587,7 @@ namespace Conformance {
 
     /// <summary>Field number for the "oneof_string" field.</summary>
     public const int OneofStringFieldNumber = 113;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public string OneofString {
       get { return oneofFieldCase_ == OneofFieldOneofCase.OneofString ? (string) oneofField_ : ""; }
       set {
@@ -1490,6 +1598,7 @@ namespace Conformance {
 
     /// <summary>Field number for the "oneof_bytes" field.</summary>
     public const int OneofBytesFieldNumber = 114;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public pb::ByteString OneofBytes {
       get { return oneofFieldCase_ == OneofFieldOneofCase.OneofBytes ? (pb::ByteString) oneofField_ : pb::ByteString.Empty; }
       set {
@@ -1505,6 +1614,7 @@ namespace Conformance {
     /// <summary>
     ///  Well-known types
     /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public bool? OptionalBoolWrapper {
       get { return optionalBoolWrapper_; }
       set {
@@ -1516,6 +1626,7 @@ namespace Conformance {
     public const int OptionalInt32WrapperFieldNumber = 202;
     private static readonly pb::FieldCodec<int?> _single_optionalInt32Wrapper_codec = pb::FieldCodec.ForStructWrapper<int>(1618);
     private int? optionalInt32Wrapper_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int? OptionalInt32Wrapper {
       get { return optionalInt32Wrapper_; }
       set {
@@ -1527,6 +1638,7 @@ namespace Conformance {
     public const int OptionalInt64WrapperFieldNumber = 203;
     private static readonly pb::FieldCodec<long?> _single_optionalInt64Wrapper_codec = pb::FieldCodec.ForStructWrapper<long>(1626);
     private long? optionalInt64Wrapper_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public long? OptionalInt64Wrapper {
       get { return optionalInt64Wrapper_; }
       set {
@@ -1538,6 +1650,7 @@ namespace Conformance {
     public const int OptionalUint32WrapperFieldNumber = 204;
     private static readonly pb::FieldCodec<uint?> _single_optionalUint32Wrapper_codec = pb::FieldCodec.ForStructWrapper<uint>(1634);
     private uint? optionalUint32Wrapper_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public uint? OptionalUint32Wrapper {
       get { return optionalUint32Wrapper_; }
       set {
@@ -1549,6 +1662,7 @@ namespace Conformance {
     public const int OptionalUint64WrapperFieldNumber = 205;
     private static readonly pb::FieldCodec<ulong?> _single_optionalUint64Wrapper_codec = pb::FieldCodec.ForStructWrapper<ulong>(1642);
     private ulong? optionalUint64Wrapper_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public ulong? OptionalUint64Wrapper {
       get { return optionalUint64Wrapper_; }
       set {
@@ -1560,6 +1674,7 @@ namespace Conformance {
     public const int OptionalFloatWrapperFieldNumber = 206;
     private static readonly pb::FieldCodec<float?> _single_optionalFloatWrapper_codec = pb::FieldCodec.ForStructWrapper<float>(1650);
     private float? optionalFloatWrapper_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public float? OptionalFloatWrapper {
       get { return optionalFloatWrapper_; }
       set {
@@ -1571,6 +1686,7 @@ namespace Conformance {
     public const int OptionalDoubleWrapperFieldNumber = 207;
     private static readonly pb::FieldCodec<double?> _single_optionalDoubleWrapper_codec = pb::FieldCodec.ForStructWrapper<double>(1658);
     private double? optionalDoubleWrapper_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public double? OptionalDoubleWrapper {
       get { return optionalDoubleWrapper_; }
       set {
@@ -1582,6 +1698,7 @@ namespace Conformance {
     public const int OptionalStringWrapperFieldNumber = 208;
     private static readonly pb::FieldCodec<string> _single_optionalStringWrapper_codec = pb::FieldCodec.ForClassWrapper<string>(1666);
     private string optionalStringWrapper_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public string OptionalStringWrapper {
       get { return optionalStringWrapper_; }
       set {
@@ -1593,6 +1710,7 @@ namespace Conformance {
     public const int OptionalBytesWrapperFieldNumber = 209;
     private static readonly pb::FieldCodec<pb::ByteString> _single_optionalBytesWrapper_codec = pb::FieldCodec.ForClassWrapper<pb::ByteString>(1674);
     private pb::ByteString optionalBytesWrapper_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public pb::ByteString OptionalBytesWrapper {
       get { return optionalBytesWrapper_; }
       set {
@@ -1605,6 +1723,7 @@ namespace Conformance {
     private static readonly pb::FieldCodec<bool?> _repeated_repeatedBoolWrapper_codec
         = pb::FieldCodec.ForStructWrapper<bool>(1690);
     private readonly pbc::RepeatedField<bool?> repeatedBoolWrapper_ = new pbc::RepeatedField<bool?>();
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public pbc::RepeatedField<bool?> RepeatedBoolWrapper {
       get { return repeatedBoolWrapper_; }
     }
@@ -1614,6 +1733,7 @@ namespace Conformance {
     private static readonly pb::FieldCodec<int?> _repeated_repeatedInt32Wrapper_codec
         = pb::FieldCodec.ForStructWrapper<int>(1698);
     private readonly pbc::RepeatedField<int?> repeatedInt32Wrapper_ = new pbc::RepeatedField<int?>();
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public pbc::RepeatedField<int?> RepeatedInt32Wrapper {
       get { return repeatedInt32Wrapper_; }
     }
@@ -1623,6 +1743,7 @@ namespace Conformance {
     private static readonly pb::FieldCodec<long?> _repeated_repeatedInt64Wrapper_codec
         = pb::FieldCodec.ForStructWrapper<long>(1706);
     private readonly pbc::RepeatedField<long?> repeatedInt64Wrapper_ = new pbc::RepeatedField<long?>();
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public pbc::RepeatedField<long?> RepeatedInt64Wrapper {
       get { return repeatedInt64Wrapper_; }
     }
@@ -1632,6 +1753,7 @@ namespace Conformance {
     private static readonly pb::FieldCodec<uint?> _repeated_repeatedUint32Wrapper_codec
         = pb::FieldCodec.ForStructWrapper<uint>(1714);
     private readonly pbc::RepeatedField<uint?> repeatedUint32Wrapper_ = new pbc::RepeatedField<uint?>();
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public pbc::RepeatedField<uint?> RepeatedUint32Wrapper {
       get { return repeatedUint32Wrapper_; }
     }
@@ -1641,6 +1763,7 @@ namespace Conformance {
     private static readonly pb::FieldCodec<ulong?> _repeated_repeatedUint64Wrapper_codec
         = pb::FieldCodec.ForStructWrapper<ulong>(1722);
     private readonly pbc::RepeatedField<ulong?> repeatedUint64Wrapper_ = new pbc::RepeatedField<ulong?>();
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public pbc::RepeatedField<ulong?> RepeatedUint64Wrapper {
       get { return repeatedUint64Wrapper_; }
     }
@@ -1650,6 +1773,7 @@ namespace Conformance {
     private static readonly pb::FieldCodec<float?> _repeated_repeatedFloatWrapper_codec
         = pb::FieldCodec.ForStructWrapper<float>(1730);
     private readonly pbc::RepeatedField<float?> repeatedFloatWrapper_ = new pbc::RepeatedField<float?>();
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public pbc::RepeatedField<float?> RepeatedFloatWrapper {
       get { return repeatedFloatWrapper_; }
     }
@@ -1659,6 +1783,7 @@ namespace Conformance {
     private static readonly pb::FieldCodec<double?> _repeated_repeatedDoubleWrapper_codec
         = pb::FieldCodec.ForStructWrapper<double>(1738);
     private readonly pbc::RepeatedField<double?> repeatedDoubleWrapper_ = new pbc::RepeatedField<double?>();
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public pbc::RepeatedField<double?> RepeatedDoubleWrapper {
       get { return repeatedDoubleWrapper_; }
     }
@@ -1668,6 +1793,7 @@ namespace Conformance {
     private static readonly pb::FieldCodec<string> _repeated_repeatedStringWrapper_codec
         = pb::FieldCodec.ForClassWrapper<string>(1746);
     private readonly pbc::RepeatedField<string> repeatedStringWrapper_ = new pbc::RepeatedField<string>();
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public pbc::RepeatedField<string> RepeatedStringWrapper {
       get { return repeatedStringWrapper_; }
     }
@@ -1677,6 +1803,7 @@ namespace Conformance {
     private static readonly pb::FieldCodec<pb::ByteString> _repeated_repeatedBytesWrapper_codec
         = pb::FieldCodec.ForClassWrapper<pb::ByteString>(1754);
     private readonly pbc::RepeatedField<pb::ByteString> repeatedBytesWrapper_ = new pbc::RepeatedField<pb::ByteString>();
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public pbc::RepeatedField<pb::ByteString> RepeatedBytesWrapper {
       get { return repeatedBytesWrapper_; }
     }
@@ -1684,6 +1811,7 @@ namespace Conformance {
     /// <summary>Field number for the "optional_duration" field.</summary>
     public const int OptionalDurationFieldNumber = 301;
     private global::Google.Protobuf.WellKnownTypes.Duration optionalDuration_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public global::Google.Protobuf.WellKnownTypes.Duration OptionalDuration {
       get { return optionalDuration_; }
       set {
@@ -1694,6 +1822,7 @@ namespace Conformance {
     /// <summary>Field number for the "optional_timestamp" field.</summary>
     public const int OptionalTimestampFieldNumber = 302;
     private global::Google.Protobuf.WellKnownTypes.Timestamp optionalTimestamp_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public global::Google.Protobuf.WellKnownTypes.Timestamp OptionalTimestamp {
       get { return optionalTimestamp_; }
       set {
@@ -1704,6 +1833,7 @@ namespace Conformance {
     /// <summary>Field number for the "optional_field_mask" field.</summary>
     public const int OptionalFieldMaskFieldNumber = 303;
     private global::Google.Protobuf.WellKnownTypes.FieldMask optionalFieldMask_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public global::Google.Protobuf.WellKnownTypes.FieldMask OptionalFieldMask {
       get { return optionalFieldMask_; }
       set {
@@ -1714,6 +1844,7 @@ namespace Conformance {
     /// <summary>Field number for the "optional_struct" field.</summary>
     public const int OptionalStructFieldNumber = 304;
     private global::Google.Protobuf.WellKnownTypes.Struct optionalStruct_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public global::Google.Protobuf.WellKnownTypes.Struct OptionalStruct {
       get { return optionalStruct_; }
       set {
@@ -1724,6 +1855,7 @@ namespace Conformance {
     /// <summary>Field number for the "optional_any" field.</summary>
     public const int OptionalAnyFieldNumber = 305;
     private global::Google.Protobuf.WellKnownTypes.Any optionalAny_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public global::Google.Protobuf.WellKnownTypes.Any OptionalAny {
       get { return optionalAny_; }
       set {
@@ -1734,6 +1866,7 @@ namespace Conformance {
     /// <summary>Field number for the "optional_value" field.</summary>
     public const int OptionalValueFieldNumber = 306;
     private global::Google.Protobuf.WellKnownTypes.Value optionalValue_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public global::Google.Protobuf.WellKnownTypes.Value OptionalValue {
       get { return optionalValue_; }
       set {
@@ -1746,6 +1879,7 @@ namespace Conformance {
     private static readonly pb::FieldCodec<global::Google.Protobuf.WellKnownTypes.Duration> _repeated_repeatedDuration_codec
         = pb::FieldCodec.ForMessage(2490, global::Google.Protobuf.WellKnownTypes.Duration.Parser);
     private readonly pbc::RepeatedField<global::Google.Protobuf.WellKnownTypes.Duration> repeatedDuration_ = new pbc::RepeatedField<global::Google.Protobuf.WellKnownTypes.Duration>();
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public pbc::RepeatedField<global::Google.Protobuf.WellKnownTypes.Duration> RepeatedDuration {
       get { return repeatedDuration_; }
     }
@@ -1755,6 +1889,7 @@ namespace Conformance {
     private static readonly pb::FieldCodec<global::Google.Protobuf.WellKnownTypes.Timestamp> _repeated_repeatedTimestamp_codec
         = pb::FieldCodec.ForMessage(2498, global::Google.Protobuf.WellKnownTypes.Timestamp.Parser);
     private readonly pbc::RepeatedField<global::Google.Protobuf.WellKnownTypes.Timestamp> repeatedTimestamp_ = new pbc::RepeatedField<global::Google.Protobuf.WellKnownTypes.Timestamp>();
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public pbc::RepeatedField<global::Google.Protobuf.WellKnownTypes.Timestamp> RepeatedTimestamp {
       get { return repeatedTimestamp_; }
     }
@@ -1764,6 +1899,7 @@ namespace Conformance {
     private static readonly pb::FieldCodec<global::Google.Protobuf.WellKnownTypes.FieldMask> _repeated_repeatedFieldmask_codec
         = pb::FieldCodec.ForMessage(2506, global::Google.Protobuf.WellKnownTypes.FieldMask.Parser);
     private readonly pbc::RepeatedField<global::Google.Protobuf.WellKnownTypes.FieldMask> repeatedFieldmask_ = new pbc::RepeatedField<global::Google.Protobuf.WellKnownTypes.FieldMask>();
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public pbc::RepeatedField<global::Google.Protobuf.WellKnownTypes.FieldMask> RepeatedFieldmask {
       get { return repeatedFieldmask_; }
     }
@@ -1773,6 +1909,7 @@ namespace Conformance {
     private static readonly pb::FieldCodec<global::Google.Protobuf.WellKnownTypes.Struct> _repeated_repeatedStruct_codec
         = pb::FieldCodec.ForMessage(2594, global::Google.Protobuf.WellKnownTypes.Struct.Parser);
     private readonly pbc::RepeatedField<global::Google.Protobuf.WellKnownTypes.Struct> repeatedStruct_ = new pbc::RepeatedField<global::Google.Protobuf.WellKnownTypes.Struct>();
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public pbc::RepeatedField<global::Google.Protobuf.WellKnownTypes.Struct> RepeatedStruct {
       get { return repeatedStruct_; }
     }
@@ -1782,6 +1919,7 @@ namespace Conformance {
     private static readonly pb::FieldCodec<global::Google.Protobuf.WellKnownTypes.Any> _repeated_repeatedAny_codec
         = pb::FieldCodec.ForMessage(2522, global::Google.Protobuf.WellKnownTypes.Any.Parser);
     private readonly pbc::RepeatedField<global::Google.Protobuf.WellKnownTypes.Any> repeatedAny_ = new pbc::RepeatedField<global::Google.Protobuf.WellKnownTypes.Any>();
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public pbc::RepeatedField<global::Google.Protobuf.WellKnownTypes.Any> RepeatedAny {
       get { return repeatedAny_; }
     }
@@ -1791,6 +1929,7 @@ namespace Conformance {
     private static readonly pb::FieldCodec<global::Google.Protobuf.WellKnownTypes.Value> _repeated_repeatedValue_codec
         = pb::FieldCodec.ForMessage(2530, global::Google.Protobuf.WellKnownTypes.Value.Parser);
     private readonly pbc::RepeatedField<global::Google.Protobuf.WellKnownTypes.Value> repeatedValue_ = new pbc::RepeatedField<global::Google.Protobuf.WellKnownTypes.Value>();
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public pbc::RepeatedField<global::Google.Protobuf.WellKnownTypes.Value> RepeatedValue {
       get { return repeatedValue_; }
     }
@@ -1801,6 +1940,7 @@ namespace Conformance {
     /// <summary>
     ///  Test field-name-to-JSON-name convention.
     /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int Fieldname1 {
       get { return fieldname1_; }
       set {
@@ -1811,6 +1951,7 @@ namespace Conformance {
     /// <summary>Field number for the "field_name2" field.</summary>
     public const int FieldName2FieldNumber = 402;
     private int fieldName2_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int FieldName2 {
       get { return fieldName2_; }
       set {
@@ -1821,6 +1962,7 @@ namespace Conformance {
     /// <summary>Field number for the "_field_name3" field.</summary>
     public const int FieldName3FieldNumber = 403;
     private int FieldName3_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int FieldName3 {
       get { return FieldName3_; }
       set {
@@ -1831,6 +1973,7 @@ namespace Conformance {
     /// <summary>Field number for the "field__name4_" field.</summary>
     public const int FieldName4FieldNumber = 404;
     private int fieldName4_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int FieldName4 {
       get { return fieldName4_; }
       set {
@@ -1841,6 +1984,7 @@ namespace Conformance {
     /// <summary>Field number for the "field0name5" field.</summary>
     public const int Field0Name5FieldNumber = 405;
     private int field0Name5_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int Field0Name5 {
       get { return field0Name5_; }
       set {
@@ -1851,6 +1995,7 @@ namespace Conformance {
     /// <summary>Field number for the "field_0_name6" field.</summary>
     public const int Field0Name6FieldNumber = 406;
     private int field0Name6_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int Field0Name6 {
       get { return field0Name6_; }
       set {
@@ -1861,6 +2006,7 @@ namespace Conformance {
     /// <summary>Field number for the "fieldName7" field.</summary>
     public const int FieldName7FieldNumber = 407;
     private int fieldName7_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int FieldName7 {
       get { return fieldName7_; }
       set {
@@ -1871,6 +2017,7 @@ namespace Conformance {
     /// <summary>Field number for the "FieldName8" field.</summary>
     public const int FieldName8FieldNumber = 408;
     private int fieldName8_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int FieldName8 {
       get { return fieldName8_; }
       set {
@@ -1881,6 +2028,7 @@ namespace Conformance {
     /// <summary>Field number for the "field_Name9" field.</summary>
     public const int FieldName9FieldNumber = 409;
     private int fieldName9_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int FieldName9 {
       get { return fieldName9_; }
       set {
@@ -1891,6 +2039,7 @@ namespace Conformance {
     /// <summary>Field number for the "Field_Name10" field.</summary>
     public const int FieldName10FieldNumber = 410;
     private int fieldName10_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int FieldName10 {
       get { return fieldName10_; }
       set {
@@ -1901,6 +2050,7 @@ namespace Conformance {
     /// <summary>Field number for the "FIELD_NAME11" field.</summary>
     public const int FIELDNAME11FieldNumber = 411;
     private int fIELDNAME11_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int FIELDNAME11 {
       get { return fIELDNAME11_; }
       set {
@@ -1911,6 +2061,7 @@ namespace Conformance {
     /// <summary>Field number for the "FIELD_name12" field.</summary>
     public const int FIELDName12FieldNumber = 412;
     private int fIELDName12_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int FIELDName12 {
       get { return fIELDName12_; }
       set {
@@ -1928,19 +2079,23 @@ namespace Conformance {
       OneofBytes = 114,
     }
     private OneofFieldOneofCase oneofFieldCase_ = OneofFieldOneofCase.None;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public OneofFieldOneofCase OneofFieldCase {
       get { return oneofFieldCase_; }
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void ClearOneofField() {
       oneofFieldCase_ = OneofFieldOneofCase.None;
       oneofField_ = null;
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as TestAllTypes);
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public bool Equals(TestAllTypes other) {
       if (ReferenceEquals(other, null)) {
         return false;
@@ -2060,6 +2215,7 @@ namespace Conformance {
       return true;
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override int GetHashCode() {
       int hash = 1;
       if (OptionalInt32 != 0) hash ^= OptionalInt32.GetHashCode();
@@ -2174,10 +2330,12 @@ namespace Conformance {
       return hash;
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override string ToString() {
       return pb::JsonFormatter.ToDiagnosticString(this);
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
       if (OptionalInt32 != 0) {
         output.WriteRawTag(8);
@@ -2439,6 +2597,7 @@ namespace Conformance {
       }
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
       int size = 0;
       if (OptionalInt32 != 0) {
@@ -2658,6 +2817,7 @@ namespace Conformance {
       return size;
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(TestAllTypes other) {
       if (other == null) {
         return;
@@ -2926,6 +3086,7 @@ namespace Conformance {
 
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(pb::CodedInputStream input) {
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
@@ -3445,7 +3606,7 @@ namespace Conformance {
 
     #region Nested types
     /// <summary>Container for nested types declared in the TestAllTypes message type.</summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static partial class Types {
       public enum NestedEnum {
         [pbr::OriginalName("FOO")] Foo = 0,
@@ -3457,30 +3618,35 @@ namespace Conformance {
         [pbr::OriginalName("NEG")] Neg = -1,
       }
 
-      [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
       public sealed partial class NestedMessage : pb::IMessage<NestedMessage> {
         private static readonly pb::MessageParser<NestedMessage> _parser = new pb::MessageParser<NestedMessage>(() => new NestedMessage());
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public static pb::MessageParser<NestedMessage> Parser { get { return _parser; } }
 
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public static pbr::MessageDescriptor Descriptor {
           get { return global::Conformance.TestAllTypes.Descriptor.NestedTypes[0]; }
         }
 
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         pbr::MessageDescriptor pb::IMessage.Descriptor {
           get { return Descriptor; }
         }
 
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public NestedMessage() {
           OnConstruction();
         }
 
         partial void OnConstruction();
 
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public NestedMessage(NestedMessage other) : this() {
           a_ = other.a_;
           Corecursive = other.corecursive_ != null ? other.Corecursive.Clone() : null;
         }
 
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public NestedMessage Clone() {
           return new NestedMessage(this);
         }
@@ -3488,6 +3654,7 @@ namespace Conformance {
         /// <summary>Field number for the "a" field.</summary>
         public const int AFieldNumber = 1;
         private int a_;
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public int A {
           get { return a_; }
           set {
@@ -3498,6 +3665,7 @@ namespace Conformance {
         /// <summary>Field number for the "corecursive" field.</summary>
         public const int CorecursiveFieldNumber = 2;
         private global::Conformance.TestAllTypes corecursive_;
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public global::Conformance.TestAllTypes Corecursive {
           get { return corecursive_; }
           set {
@@ -3505,10 +3673,12 @@ namespace Conformance {
           }
         }
 
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public override bool Equals(object other) {
           return Equals(other as NestedMessage);
         }
 
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public bool Equals(NestedMessage other) {
           if (ReferenceEquals(other, null)) {
             return false;
@@ -3521,6 +3691,7 @@ namespace Conformance {
           return true;
         }
 
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public override int GetHashCode() {
           int hash = 1;
           if (A != 0) hash ^= A.GetHashCode();
@@ -3528,10 +3699,12 @@ namespace Conformance {
           return hash;
         }
 
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public override string ToString() {
           return pb::JsonFormatter.ToDiagnosticString(this);
         }
 
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public void WriteTo(pb::CodedOutputStream output) {
           if (A != 0) {
             output.WriteRawTag(8);
@@ -3543,6 +3716,7 @@ namespace Conformance {
           }
         }
 
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public int CalculateSize() {
           int size = 0;
           if (A != 0) {
@@ -3554,6 +3728,7 @@ namespace Conformance {
           return size;
         }
 
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public void MergeFrom(NestedMessage other) {
           if (other == null) {
             return;
@@ -3569,6 +3744,7 @@ namespace Conformance {
           }
         }
 
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public void MergeFrom(pb::CodedInputStream input) {
           uint tag;
           while ((tag = input.ReadTag()) != 0) {
@@ -3598,29 +3774,34 @@ namespace Conformance {
 
   }
 
-  [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
   public sealed partial class ForeignMessage : pb::IMessage<ForeignMessage> {
     private static readonly pb::MessageParser<ForeignMessage> _parser = new pb::MessageParser<ForeignMessage>(() => new ForeignMessage());
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<ForeignMessage> Parser { get { return _parser; } }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
       get { return global::Conformance.ConformanceReflection.Descriptor.MessageTypes[3]; }
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     pbr::MessageDescriptor pb::IMessage.Descriptor {
       get { return Descriptor; }
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public ForeignMessage() {
       OnConstruction();
     }
 
     partial void OnConstruction();
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public ForeignMessage(ForeignMessage other) : this() {
       c_ = other.c_;
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public ForeignMessage Clone() {
       return new ForeignMessage(this);
     }
@@ -3628,6 +3809,7 @@ namespace Conformance {
     /// <summary>Field number for the "c" field.</summary>
     public const int CFieldNumber = 1;
     private int c_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int C {
       get { return c_; }
       set {
@@ -3635,10 +3817,12 @@ namespace Conformance {
       }
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as ForeignMessage);
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public bool Equals(ForeignMessage other) {
       if (ReferenceEquals(other, null)) {
         return false;
@@ -3650,16 +3834,19 @@ namespace Conformance {
       return true;
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override int GetHashCode() {
       int hash = 1;
       if (C != 0) hash ^= C.GetHashCode();
       return hash;
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override string ToString() {
       return pb::JsonFormatter.ToDiagnosticString(this);
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
       if (C != 0) {
         output.WriteRawTag(8);
@@ -3667,6 +3854,7 @@ namespace Conformance {
       }
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
       int size = 0;
       if (C != 0) {
@@ -3675,6 +3863,7 @@ namespace Conformance {
       return size;
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(ForeignMessage other) {
       if (other == null) {
         return;
@@ -3684,6 +3873,7 @@ namespace Conformance {
       }
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(pb::CodedInputStream input) {
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
