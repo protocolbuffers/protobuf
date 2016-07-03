@@ -2349,7 +2349,7 @@ TEST_F(ComparisonTest, RepeatedMapFieldTest_RepeatedMessageKey) {
 }
 
 TEST_F(ComparisonTest, RepeatedSetOptionTest_Unknown) {
-  // Currently, as_set option doens't have affects on unknown field.
+  // Currently, as_set option doesn't have affects on unknown field.
   // If needed, this feature will be added by request.
   repeated_field_as_set();
   unknown1_->AddGroup(245)->AddFixed32(248, 1);

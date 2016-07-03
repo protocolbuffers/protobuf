@@ -243,7 +243,7 @@ inline bool HasGenericServices(const FileDescriptor *file, bool enforce_lite) {
 }
 
 inline bool IsLazy(const FieldDescriptor* descriptor, bool enforce_lite) {
-  // Currently, the proto-lite version suports lazy field.
+  // Currently, the proto-lite version supports lazy field.
   // TODO(niwasaki): Support lazy fields also for other proto runtimes.
   if (HasDescriptorMethods(descriptor->file(), enforce_lite)) {
     return false;

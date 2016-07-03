@@ -151,7 +151,7 @@ string StripProto(const string& filename) {
   return StripSuffixString(filename, suffix);
 }
 
-// Given a filename like foo/bar/baz.proto, returns the correspoding JavaScript
+// Given a filename like foo/bar/baz.proto, returns the corresponding JavaScript
 // file foo/bar/baz.js.
 string GetJSFilename(const string& filename) {
   return StripProto(filename) + "_pb.js";

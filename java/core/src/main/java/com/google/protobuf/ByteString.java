@@ -87,17 +87,17 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
    * Empty {@code ByteString}.
    */
   public static final ByteString EMPTY = new LiteralByteString(Internal.EMPTY_BYTE_ARRAY);
-  
-  /** 
+
+  /**
    * An interface to efficiently copy {@code byte[]}.
-   * 
-   * <p>One of the noticable costs of copying a byte[] into a new array using 
-   * {@code System.arraycopy} is nullification of a new buffer before the copy. It has been shown 
+   *
+   * <p>One of the noticeable costs of copying a byte[] into a new array using
+   * {@code System.arraycopy} is nullification of a new buffer before the copy. It has been shown
    * the Hotspot VM is capable to intrisicfy {@code Arrays.copyOfRange} operation to avoid this
    * expensive nullification and provide substantial performance gain. Unfortunately this does not
    * hold on Android runtimes and could make the copy slightly slower due to additional code in
    * the {@code Arrays.copyOfRange}. Thus we provide two different implementation for array copier
-   * for Hotspot and Android runtimes. 
+   * for Hotspot and Android runtimes.
    */
   private interface ByteArrayCopier {
     /**
@@ -105,7 +105,7 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
      */
     byte[] copyFrom(byte[] bytes, int offset, int size);
   }
-  
+
   /** Implementation of {@code ByteArrayCopier} which uses {@link System#arraycopy}. */
   private static final class SystemByteArrayCopier implements ByteArrayCopier {
     @Override
@@ -115,7 +115,7 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
       return copy;
     }
   }
-  
+
   /** Implementation of {@code ByteArrayCopier} which uses {@link Arrays#copyOfRange}. */
   private static final class ArraysByteArrayCopier implements ByteArrayCopier {
     @Override
@@ -123,7 +123,7 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
       return Arrays.copyOfRange(bytes, offset, offset + size);
     }
   }
-  
+
   private static final ByteArrayCopier byteArrayCopier;
   static {
     boolean isAndroid = true;
@@ -132,7 +132,7 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
     } catch (ClassNotFoundException e) {
       isAndroid = false;
     }
-    
+
     byteArrayCopier = isAndroid ? new SystemByteArrayCopier() : new ArraysByteArrayCopier();
   }
 
@@ -309,7 +309,7 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
   public static ByteString copyFrom(byte[] bytes) {
     return copyFrom(bytes, 0, bytes.length);
   }
-  
+
   /**
    * Wraps the given bytes into a {@code ByteString}. Intended for internal only
    * usage to force a classload of ByteString before LiteralByteString.
@@ -402,7 +402,7 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
    * immutable tree of byte arrays ("chunks") of the stream data.  The
    * first chunk is small, with subsequent chunks each being double
    * the size, up to 8K.
-   * 
+   *
    * <p>Each byte read from the input stream will be copied twice to ensure
    * that the resulting ByteString is truly immutable.
    *
@@ -1226,7 +1226,7 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
     return String.format("<ByteString@%s size=%d>",
         Integer.toHexString(System.identityHashCode(this)), size());
   }
-  
+
   /**
    * This class implements a {@link com.google.protobuf.ByteString} backed by a
    * single array of bytes, contiguous in memory. It supports substring by
@@ -1450,7 +1450,7 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
       return 0;
     }
   }
-  
+
   /**
    * This class is used to represent the substring of a {@link ByteString} over a
    * single byte array. In terms of the public API of {@link ByteString}, you end

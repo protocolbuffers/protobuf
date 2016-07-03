@@ -228,7 +228,7 @@ int FieldGenerator::ExtraRuntimeHasBitsNeeded(void) const {
 void FieldGenerator::SetExtraRuntimeHasBitsBase(int index_base) {
   // NOTE: src/google/protobuf/compiler/plugin.cc makes use of cerr for some
   // error cases, so it seems to be ok to use as a back door for errors.
-  cerr << "Error: should have overriden SetExtraRuntimeHasBitsBase()." << endl;
+  cerr << "Error: should have overridden SetExtraRuntimeHasBitsBase()." << endl;
   cerr.flush();
   abort();
 }

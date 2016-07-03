@@ -614,7 +614,7 @@ CommandLineInterface::MemoryOutputStream::~MemoryOutputStream() {
   } else {
     // This was an OpenForInsert().
 
-    // If the data doens't end with a clean line break, add one.
+    // If the data doesn't end with a clean line break, add one.
     if (!data_.empty() && data_[data_.size() - 1] != '\n') {
       data_.push_back('\n');
     }

@@ -315,7 +315,7 @@ inline void WireFormat::VerifyUTF8String(const char* data, int size,
   WireFormatLite::VerifyUtf8String(
       data, size, static_cast<WireFormatLite::Operation>(op), NULL);
 #else
-  // Avoid the compiler warning about unsued variables.
+  // Avoid the compiler warning about unused variables.
   (void)data; (void)size; (void)op;
 #endif
 }

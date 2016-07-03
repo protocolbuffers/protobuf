@@ -58,7 +58,7 @@ class ConformanceJavaLite {
       }
       case JSON_PAYLOAD: {
         return Conformance.ConformanceResponse.newBuilder().setSkipped(
-            "Lite runtime does not suport Json Formant.").build();
+            "Lite runtime does not support JSON format.").build();
       }
       case PAYLOAD_NOT_SET: {
         throw new RuntimeException("Request didn't have payload.");
@@ -78,7 +78,7 @@ class ConformanceJavaLite {
 
       case JSON:
         return Conformance.ConformanceResponse.newBuilder().setSkipped(
-            "Lite runtime does not suport Json Formant.").build();
+            "Lite runtime does not support JSON format.").build();
 
       default: {
         throw new RuntimeException("Unexpected request output.");
