@@ -140,6 +140,9 @@ public class JsonFormatTest extends TestCase {
   private String toJsonString(Message message) throws IOException {
     return JsonFormat.printer().print(message);
   }
+  private String toCompactJsonString(Message message) throws IOException{
+    return JsonFormat.printer().omittingInsignificantWhitespace().print(message);
+  }
 
   private void mergeFromJson(String json, Message.Builder builder) throws IOException {
     JsonFormat.parser().merge(json, builder);
@@ -1166,4 +1169,59 @@ public class JsonFormatTest extends TestCase {
     JsonFormat.parser().merge("{\"optional_int32\": 54321}", builder);
     assertEquals(54321, builder.getOptionalInt32());
   }
+
+  public void testOmittingInsignificantWhiteSpace() throws Exception {
+    TestAllTypes message = TestAllTypes.newBuilder().setOptionalInt32(12345).build();
+    assertEquals("{" + "\"optionalInt32\":12345" + "}", JsonFormat.printer().omittingInsignificantWhitespace().print(message));
+    TestAllTypes message1 = TestAllTypes.getDefaultInstance();
+    assertEquals("{}", JsonFormat.printer().omittingInsignificantWhitespace().print(message1));
+    TestAllTypes.Builder builder = TestAllTypes.newBuilder();
+    setAllFields(builder);
+    TestAllTypes message2 = builder.build();
+    assertEquals(
+        "{"
+            + "\"optionalInt32\":1234,"
+            + "\"optionalInt64\":\"1234567890123456789\","
+            + "\"optionalUint32\":5678,"
+            + "\"optionalUint64\":\"2345678901234567890\","
+            + "\"optionalSint32\":9012,"
+            + "\"optionalSint64\":\"3456789012345678901\","
+            + "\"optionalFixed32\":3456,"
+            + "\"optionalFixed64\":\"4567890123456789012\","
+            + "\"optionalSfixed32\":7890,"
+            + "\"optionalSfixed64\":\"5678901234567890123\","
+            + "\"optionalFloat\":1.5,"
+            + "\"optionalDouble\":1.25,"
+            + "\"optionalBool\":true,"
+            + "\"optionalString\":\"Hello world!\","
+            + "\"optionalBytes\":\"AAEC\","
+            + "\"optionalNestedMessage\":{"
+            + "\"value\":100"
+            + "},"
+            + "\"optionalNestedEnum\":\"BAR\","
+            + "\"repeatedInt32\":[1234,234],"
+            + "\"repeatedInt64\":[\"1234567890123456789\",\"234567890123456789\"],"
+            + "\"repeatedUint32\":[5678,678],"
+            + "\"repeatedUint64\":[\"2345678901234567890\",\"345678901234567890\"],"
+            + "\"repeatedSint32\":[9012,10],"
+            + "\"repeatedSint64\":[\"3456789012345678901\",\"456789012345678901\"],"
+            + "\"repeatedFixed32\":[3456,456],"
+            + "\"repeatedFixed64\":[\"4567890123456789012\",\"567890123456789012\"],"
+            + "\"repeatedSfixed32\":[7890,890],"
+            + "\"repeatedSfixed64\":[\"5678901234567890123\",\"678901234567890123\"],"
+            + "\"repeatedFloat\":[1.5,11.5],"
+            + "\"repeatedDouble\":[1.25,11.25],"
+            + "\"repeatedBool\":[true,true],"
+            + "\"repeatedString\":[\"Hello world!\",\"ello world!\"],"
+            + "\"repeatedBytes\":[\"AAEC\",\"AQI=\"],"
+            + "\"repeatedNestedMessage\":[{"
+            + "\"value\":100"
+            + "},{"
+            + "\"value\":200"
+            + "}],"
+            + "\"repeatedNestedEnum\":[\"BAR\",\"BAZ\"]"
+            + "}",
+        toCompactJsonString(message2));
+  }
+
 }

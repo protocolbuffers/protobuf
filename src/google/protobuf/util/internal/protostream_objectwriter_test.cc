@@ -183,6 +183,10 @@ class ProtoStreamObjectWriterTest : public BaseProtoStreamObjectWriterTest {
   ProtoStreamObjectWriterTest()
       : BaseProtoStreamObjectWriterTest(Book::descriptor()) {}
 
+  void ResetProtoWriter() {
+    ResetTypeInfo(Book::descriptor());
+  }
+
   virtual ~ProtoStreamObjectWriterTest() {}
 };
 
@@ -698,6 +702,119 @@ TEST_P(ProtoStreamObjectWriterTest, UnknownListAtPublisher) {
   EXPECT_CALL(listener_, InvalidName(_, StringPiece("alliance"),
                                      StringPiece("Cannot find field.")))
       .With(Args<0>(HasObjectLocation("publisher")));
+  ow_->StartObject("")
+      ->StartObject("publisher")
+      ->RenderString("name", "propaganda")
+      ->StartList("alliance")
+      ->EndList()
+      ->EndObject()
+      ->RenderString("title", "Brainwashing")
+      ->EndObject();
+  CheckOutput(expected);
+}
+
+TEST_P(ProtoStreamObjectWriterTest, IgnoreUnknownFieldAtRoot) {
+  Book empty;
+
+  options_.ignore_unknown_fields = true;
+  ResetProtoWriter();
+
+  EXPECT_CALL(listener_, InvalidName(_, _, _)).Times(0);
+  ow_->StartObject("")->RenderString("unknown", "Nope!")->EndObject();
+  CheckOutput(empty, 0);
+}
+
+TEST_P(ProtoStreamObjectWriterTest, IgnoreUnknownFieldAtAuthorFriend) {
+  Book expected;
+  Author* paul = expected.mutable_author();
+  paul->set_name("Paul");
+  Author* mark = paul->add_friend_();
+  mark->set_name("Mark");
+  Author* john = paul->add_friend_();
+  john->set_name("John");
+  Author* luke = paul->add_friend_();
+  luke->set_name("Luke");
+
+  options_.ignore_unknown_fields = true;
+  ResetProtoWriter();
+
+  EXPECT_CALL(listener_, InvalidName(_, _, _)).Times(0);
+  ow_->StartObject("")
+      ->StartObject("author")
+      ->RenderString("name", "Paul")
+      ->StartList("friend")
+      ->StartObject("")
+      ->RenderString("name", "Mark")
+      ->EndObject()
+      ->StartObject("")
+      ->RenderString("name", "John")
+      ->RenderString("address", "Patmos")
+      ->EndObject()
+      ->StartObject("")
+      ->RenderString("name", "Luke")
+      ->EndObject()
+      ->EndList()
+      ->EndObject()
+      ->EndObject();
+  CheckOutput(expected);
+}
+
+TEST_P(ProtoStreamObjectWriterTest, IgnoreUnknownObjectAtRoot) {
+  Book empty;
+
+  options_.ignore_unknown_fields = true;
+  ResetProtoWriter();
+
+  EXPECT_CALL(listener_, InvalidName(_, StringPiece("unknown"),
+                                     StringPiece("Cannot find field.")))
+      .Times(0);
+  ow_->StartObject("")->StartObject("unknown")->EndObject()->EndObject();
+  CheckOutput(empty, 0);
+}
+
+TEST_P(ProtoStreamObjectWriterTest, IgnoreUnknownObjectAtAuthor) {
+  Book expected;
+  Author* author = expected.mutable_author();
+  author->set_name("William");
+  author->add_pseudonym("Bill");
+
+  options_.ignore_unknown_fields = true;
+  ResetProtoWriter();
+
+  EXPECT_CALL(listener_, InvalidName(_, _, _)).Times(0);
+  ow_->StartObject("")
+      ->StartObject("author")
+      ->RenderString("name", "William")
+      ->StartObject("wife")
+      ->RenderString("name", "Hilary")
+      ->EndObject()
+      ->RenderString("pseudonym", "Bill")
+      ->EndObject()
+      ->EndObject();
+  CheckOutput(expected);
+}
+
+TEST_P(ProtoStreamObjectWriterTest, IgnoreUnknownListAtRoot) {
+  Book empty;
+
+  options_.ignore_unknown_fields = true;
+  ResetProtoWriter();
+
+  EXPECT_CALL(listener_, InvalidName(_, _, _)).Times(0);
+  ow_->StartObject("")->StartList("unknown")->EndList()->EndObject();
+  CheckOutput(empty, 0);
+}
+
+TEST_P(ProtoStreamObjectWriterTest, IgnoreUnknownListAtPublisher) {
+  Book expected;
+  expected.set_title("Brainwashing");
+  Publisher* publisher = expected.mutable_publisher();
+  publisher->set_name("propaganda");
+
+  options_.ignore_unknown_fields = true;
+  ResetProtoWriter();
+
+  EXPECT_CALL(listener_, InvalidName(_, _, _)).Times(0);
   ow_->StartObject("")
       ->StartObject("publisher")
       ->RenderString("name", "propaganda")
