@@ -2363,7 +2363,7 @@ template<typename T> class RepeatedPtrFieldBackInsertIterator
   RepeatedPtrField<T>* field_;
 };
 
-// A back inserter for RepeatedPtrFields that inserts by transfering ownership
+// A back inserter for RepeatedPtrFields that inserts by transferring ownership
 // of a pointer.
 template<typename T> class AllocatedRepeatedPtrFieldBackInsertIterator
     : public std::iterator<std::output_iterator_tag, T> {

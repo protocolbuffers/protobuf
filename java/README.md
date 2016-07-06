@@ -88,7 +88,7 @@ Compatibility Notice
 
 * Protobuf minor version releases are backwards-compatible. If your code
   can build/run against the old version, it's expected to build/run against
-  the new version as well. Both binary compatibility and source compatbility
+  the new version as well. Both binary compatibility and source compatibility
   are guaranteed for minor version releases if the user follows the guideline
   described in this section.
 
@@ -98,7 +98,7 @@ Compatibility Notice
 
 * APIs marked with the @ExperimentalApi annotation are subject to change. They
   can be modified in any way, or even removed, at any time. Don't use them if
-  compatiblity is needed. If your code is a library itself (i.e. it is used on
+  compatibility is needed. If your code is a library itself (i.e. it is used on
   the CLASSPATH of users outside your own control), you should not use
   experimental APIs, unless you repackage them (e.g. using ProGuard).
 

@@ -94,7 +94,7 @@ class LIBPROTOBUF_EXPORT RepeatedFieldAccessor {
   virtual void Swap(Field* data, const RepeatedFieldAccessor* other_mutator,
                     Field* other_data) const = 0;
 
-  // Create an iterator that points at the begining of the repeated field.
+  // Create an iterator that points at the beginning of the repeated field.
   virtual Iterator* BeginIterator(const Field* data) const = 0;
   // Create an iterator that points at the end of the repeated field.
   virtual Iterator* EndIterator(const Field* data) const = 0;

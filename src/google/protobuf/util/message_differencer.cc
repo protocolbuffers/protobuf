@@ -1386,7 +1386,7 @@ bool MessageDifferencer::MatchRepeatedFieldIndices(
   if (key_comparator != NULL || IsTreatedAsSet(repeated_field)) {
     if (scope_ == PARTIAL) {
       // When partial matching is enabled, Compare(a, b) && Compare(a, c)
-      // doesn't neccessarily imply Compare(b, c). Therefore a naive greedy
+      // doesn't necessarily imply Compare(b, c). Therefore a naive greedy
       // algorithm will fail to find a maximum matching.
       // Here we use the argumenting path algorithm.
       MaximumMatcher::NodeMatchCallback* callback =

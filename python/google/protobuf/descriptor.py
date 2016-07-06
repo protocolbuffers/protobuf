@@ -349,7 +349,7 @@ class Descriptor(_NestedDescriptorBase):
     Args:
       proto: An empty descriptor_pb2.DescriptorProto.
     """
-    # This function is overriden to give a better doc comment.
+    # This function is overridden to give a better doc comment.
     super(Descriptor, self).CopyToProto(proto)
 
 
@@ -626,7 +626,7 @@ class EnumDescriptor(_NestedDescriptorBase):
     Args:
       proto: An empty descriptor_pb2.EnumDescriptorProto.
     """
-    # This function is overriden to give a better doc comment.
+    # This function is overridden to give a better doc comment.
     super(EnumDescriptor, self).CopyToProto(proto)
 
 
@@ -747,7 +747,7 @@ class ServiceDescriptor(_NestedDescriptorBase):
     Args:
       proto: An empty descriptor_pb2.ServiceDescriptorProto.
     """
-    # This function is overriden to give a better doc comment.
+    # This function is overridden to give a better doc comment.
     super(ServiceDescriptor, self).CopyToProto(proto)
 
 

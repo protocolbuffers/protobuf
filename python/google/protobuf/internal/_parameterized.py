@@ -347,7 +347,7 @@ class TestGeneratorMetaclass(type):
   iterable conforms to the test pattern, the injected methods will be picked
   up as tests by the unittest framework.
 
-  In general, it is supposed to be used in conjuction with the
+  In general, it is supposed to be used in conjunction with the
   Parameters decorator.
   """
 

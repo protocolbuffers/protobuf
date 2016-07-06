@@ -55,7 +55,7 @@
 ** store pointers or integers of at least 32 bits (upb isn't really useful on
 ** systems where sizeof(void*) < 4).
 **
-** The table must be homogenous (all values of the same type).  In debug
+** The table must be homogeneous (all values of the same type).  In debug
 ** mode, we check this on insert and lookup.
 */
 
