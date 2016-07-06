@@ -185,8 +185,6 @@ extend TestExtendable {
 }
 
 message TestMapFields {
-  option (jspb.generate_from_object) = true;
-
   map<string, string> map_string_string = 1;
   map<string, int32> map_string_int32 = 2;
   map<string, int64> map_string_int64 = 3;
