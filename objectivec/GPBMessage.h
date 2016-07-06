@@ -97,7 +97,7 @@ CF_EXTERN_C_END
 ///                 the data can not be parsed.
 ///
 /// @return A new instance of the class messaged.
-+ (instancetype)parseFromData:(NSData *)data error:(NSError **)errorPtr;
++ (nullable instancetype)parseFromData:(NSData *)data error:(NSError **)errorPtr;
 
 /// Creates a new instance by parsing the data. This method should be sent to
 /// the generated message class that the data should be interpreted as. If
@@ -116,9 +116,9 @@ CF_EXTERN_C_END
 ///                          reason if the data can not be parsed.
 ///
 /// @return A new instance of the class messaged.
-+ (instancetype)parseFromData:(NSData *)data
-            extensionRegistry:(nullable GPBExtensionRegistry *)extensionRegistry
-                        error:(NSError **)errorPtr;
++ (nullable instancetype)parseFromData:(NSData *)data
+                     extensionRegistry:(nullable GPBExtensionRegistry *)extensionRegistry
+                                 error:(NSError **)errorPtr;
 
 /// Creates a new instance by parsing the data from the given input stream. This
 /// method should be sent to the generated message class that the data should
@@ -137,10 +137,10 @@ CF_EXTERN_C_END
 ///                          reason if the data can not be parsed.
 ///
 /// @return A new instance of the class messaged.
-+ (instancetype)parseFromCodedInputStream:(GPBCodedInputStream *)input
-                        extensionRegistry:
-                            (nullable GPBExtensionRegistry *)extensionRegistry
-                                    error:(NSError **)errorPtr;
++ (nullable instancetype)parseFromCodedInputStream:(GPBCodedInputStream *)input
+                                 extensionRegistry:
+                                     (nullable GPBExtensionRegistry *)extensionRegistry
+                                             error:(NSError **)errorPtr;
 
 /// Creates a new instance by parsing the data from the given input stream. This
 /// method should be sent to the generated message class that the data should
@@ -160,10 +160,10 @@ CF_EXTERN_C_END
 ///                          reason if the data can not be parsed.
 ///
 /// @return A new instance of the class messaged.
-+ (instancetype)parseDelimitedFromCodedInputStream:(GPBCodedInputStream *)input
-                                 extensionRegistry:
-                                     (nullable GPBExtensionRegistry *)extensionRegistry
-                                             error:(NSError **)errorPtr;
++ (nullable instancetype)parseDelimitedFromCodedInputStream:(GPBCodedInputStream *)input
+                                          extensionRegistry:
+                                              (nullable GPBExtensionRegistry *)extensionRegistry
+                                                      error:(NSError **)errorPtr;
 
 /// Initializes an instance by parsing the data. This method should be sent to
 /// the generated message class that the data should be interpreted as. If
@@ -179,7 +179,7 @@ CF_EXTERN_C_END
 /// @param data     The data to parse.
 /// @param errorPtr An optional error pointer to fill in with a failure reason if
 ///                 the data can not be parsed.
-- (instancetype)initWithData:(NSData *)data error:(NSError **)errorPtr;
+- (nullable instancetype)initWithData:(NSData *)data error:(NSError **)errorPtr;
 
 /// Initializes an instance by parsing the data. This method should be sent to
 /// the generated message class that the data should be interpreted as. If
@@ -196,9 +196,9 @@ CF_EXTERN_C_END
 /// @param extensionRegistry The extension registry to use to look up extensions.
 /// @param errorPtr          An optional error pointer to fill in with a failure
 ///                          reason if the data can not be parsed.
-- (instancetype)initWithData:(NSData *)data
-           extensionRegistry:(nullable GPBExtensionRegistry *)extensionRegistry
-                       error:(NSError **)errorPtr;
+- (nullable instancetype)initWithData:(NSData *)data
+                    extensionRegistry:(nullable GPBExtensionRegistry *)extensionRegistry
+                                error:(NSError **)errorPtr;
 
 /// Initializes an instance by parsing the data from the given input stream. This
 /// method should be sent to the generated message class that the data should
@@ -216,10 +216,10 @@ CF_EXTERN_C_END
 /// @param extensionRegistry The extension registry to use to look up extensions.
 /// @param errorPtr          An optional error pointer to fill in with a failure
 ///                          reason if the data can not be parsed.
-- (instancetype)initWithCodedInputStream:(GPBCodedInputStream *)input
-                       extensionRegistry:
-                           (nullable GPBExtensionRegistry *)extensionRegistry
-                                   error:(NSError **)errorPtr;
+- (nullable instancetype)initWithCodedInputStream:(GPBCodedInputStream *)input
+                                extensionRegistry:
+                                    (nullable GPBExtensionRegistry *)extensionRegistry
+                                            error:(NSError **)errorPtr;
 
 /// Writes out the message to the given output stream.
 - (void)writeToCodedOutputStream:(GPBCodedOutputStream *)output;
