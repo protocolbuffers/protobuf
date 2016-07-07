@@ -60,7 +60,6 @@ EnumGenerator::~EnumGenerator() {
 
 void EnumGenerator::Generate(io::Printer* printer) {
   WriteEnumDocComment(printer, descriptor_);
-  WriteGeneratedTypeAttributes(printer);
   printer->Print("$access_level$ enum $name$ {\n",
                  "access_level", class_access_level(),
                  "name", descriptor_->name());

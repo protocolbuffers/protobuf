@@ -59,10 +59,6 @@ void SourceGeneratorBase::WriteGeneratedCodeAttributes(io::Printer* printer) {
   printer->Print("[global::System.Diagnostics.DebuggerNonUserCodeAttribute]\n");
 }
 
-void SourceGeneratorBase::WriteGeneratedTypeAttributes(io::Printer* printer) {
-  // This hook can be used to reintroduce generated code attributes in the future.
-}
-
 std::string SourceGeneratorBase::class_access_level() {
   return (IsDescriptorProto(descriptor_) || this->options()->internal_access) ? "internal" : "public";
 }

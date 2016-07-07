@@ -122,12 +122,10 @@ void ReflectionClassGenerator::WriteIntroduction(io::Printer* printer) {
   }
 
   printer->Print(
-    "/// <summary>Holder for reflection information generated from $file_name$</summary>\n",
-    "file_name", file_->name());
-  WriteGeneratedTypeAttributes(printer);
-  printer->Print(
+    "/// <summary>Holder for reflection information generated from $file_name$</summary>\n"
     "$access_level$ static partial class $reflection_class_name$ {\n"
     "\n",
+    "file_name", file_->name(),
     "access_level", class_access_level(),
     "reflection_class_name", reflectionClassname_);
   printer->Indent();
