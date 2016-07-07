@@ -189,7 +189,7 @@ bool DefaultFieldComparator::CompareDoubleOrFloat(const FieldDescriptor& field,
       return MathUtil::AlmostEquals(value_1, value_2);
     } else {
       // Use user-provided fraction and margin. Since they are stored as
-      // doubles, we explicitely cast them to types of values provided. This
+      // doubles, we explicitly cast them to types of values provided. This
       // is very likely to fail if provided values are not numeric.
       return MathUtil::WithinFractionOrMargin(
           value_1, value_2, static_cast<T>(tolerance->fraction),

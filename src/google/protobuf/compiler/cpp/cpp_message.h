@@ -66,7 +66,7 @@ class MessageGenerator {
 
   // Header stuff.
 
-  // Return names for foward declarations of this class and all its nested
+  // Return names for forward declarations of this class and all its nested
   // types. A given key in {class,enum}_names will map from a class name to the
   // descriptor that was responsible for its inclusion in the map. This can be
   // used to associate the descriptor with the code generated for it.

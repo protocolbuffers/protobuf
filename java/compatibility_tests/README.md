@@ -5,7 +5,7 @@ previously released versions.
 
 ## Directory Layout
 
-For each released protobuf version we are testing compatiblity with, there
+For each released protobuf version we are testing compatibility with, there
 is a sub-directory with the following layout (take v2.5.0 as an example):
 
   * v2.5.0
@@ -47,4 +47,4 @@ For each version, the test script will test:
   * only upgrading more_protos to the new version
 
 and see whether everything builds/runs fine. Both source compatibility and
-binary compatiblity will be tested.
+binary compatibility will be tested.

@@ -37,7 +37,7 @@ mark_as_advanced(protobuf_BUILD_EXAMPLES_MULTITEST)
 if(protobuf_BUILD_EXAMPLES_MULTITEST)
   set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
-  #Build using the legacy compatiblity module.
+  #Build using the legacy compatibility module.
   add_examples_build(examples-legacy
     "-Dprotobuf_DIR:PATH=${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_CMAKEDIR}"
     "-Dprotobuf_MODULE_COMPATIBLE:BOOL=TRUE"
@@ -49,7 +49,7 @@ if(protobuf_BUILD_EXAMPLES_MULTITEST)
     "-Dprotobuf_DIR:PATH=${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_CMAKEDIR}"
   )
 
-  #Build using the installed library in legacy compatiblity mode.
+  #Build using the installed library in legacy compatibility mode.
   add_examples_build(examples-installed-legacy
     "-Dprotobuf_DIR:PATH=${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_CMAKEDIR}"
     "-Dprotobuf_MODULE_COMPATIBLE:BOOL=TRUE"

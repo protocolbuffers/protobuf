@@ -502,7 +502,7 @@ static void StressTestIterators(int n, bool test_old_style_proto2_maps) {
   // Test old iterator vs new iterator, with table modification in between.
   TestOldVersusNewIterator<Map<int, int>::const_iterator>(n % 3, &m);
   TestOldVersusNewIterator<Map<int, int>::iterator>(n % (1 + (n / 40)), &m);
-  // Finally, ensure erase(iterator) doesn't reorder anything, becuase that is
+  // Finally, ensure erase(iterator) doesn't reorder anything, because that is
   // what its documentation says.
   m[last_key] = m[last_key ^ 999] = 0;
   vector<Map<int, int>::iterator> v;

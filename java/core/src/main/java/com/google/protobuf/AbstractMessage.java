@@ -498,7 +498,7 @@ public abstract class AbstractMessage
      * override this method.
      */
     void markClean() {
-      throw new IllegalStateException("Should be overriden by subclasses.");
+      throw new IllegalStateException("Should be overridden by subclasses.");
     }
 
     /**
@@ -510,7 +510,7 @@ public abstract class AbstractMessage
      * override this method.
      */
     void dispose() {
-      throw new IllegalStateException("Should be overriden by subclasses.");
+      throw new IllegalStateException("Should be overridden by subclasses.");
     }
 
     // ===============================================================
@@ -605,7 +605,7 @@ public abstract class AbstractMessage
   }
 
   /**
-   * @deprecated from v3.0.0-beta-3+, for compatiblity with v2.5.0 and v2.6.1
+   * @deprecated from v3.0.0-beta-3+, for compatibility with v2.5.0 and v2.6.1
    * generated code.
    */
   @Deprecated
@@ -614,7 +614,7 @@ public abstract class AbstractMessage
   }
   //
   /**
-   * @deprecated from v3.0.0-beta-3+, for compatiblity with v2.5.0 and v2.6.1
+   * @deprecated from v3.0.0-beta-3+, for compatibility with v2.5.0 and v2.6.1
    * generated code.
    */
   @Deprecated
@@ -623,7 +623,7 @@ public abstract class AbstractMessage
   }
   //
   /**
-   * @deprecated from v3.0.0-beta-3+, for compatiblity with v2.5.0 and v2.6.1
+   * @deprecated from v3.0.0-beta-3+, for compatibility with v2.5.0 and v2.6.1
    * generated code.
    */
   @Deprecated
@@ -632,7 +632,7 @@ public abstract class AbstractMessage
   }
   //
   /**
-   * @deprecated from v3.0.0-beta-3+, for compatiblity with v2.5.0 and v2.6.1
+   * @deprecated from v3.0.0-beta-3+, for compatibility with v2.5.0 and v2.6.1
    * generated code.
    */
   @Deprecated

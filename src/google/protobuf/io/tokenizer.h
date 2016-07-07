@@ -329,7 +329,7 @@ class LIBPROTOBUF_EXPORT Tokenizer {
   // depending on what was read.  This needs to know if the first
   // character was a zero in order to correctly recognize hex and octal
   // numbers.
-  // It also needs to know if the first characted was a . to parse floating
+  // It also needs to know if the first character was a . to parse floating
   // point correctly.
   TokenType ConsumeNumber(bool started_with_zero, bool started_with_dot);
 

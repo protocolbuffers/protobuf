@@ -11,7 +11,7 @@ TEST_VERSION=`grep "^  <version>.*</version>" pom.xml | sed "s|  <version>\(.*\)
 
 # The old version of protobuf that we are testing compatibility against. This
 # is usually the same as TEST_VERSION (i.e., we use the tests extracted from
-# that version to test compatibilty of the newest runtime against it), but it
+# that version to test compatibility of the newest runtime against it), but it
 # is also possible to use this same test set to test the compatibiilty of the
 # latest version against other versions.
 case "$1" in
@@ -40,7 +40,7 @@ esac
 # Extract the latest protobuf version number.
 VERSION_NUMBER=`grep "^  <version>.*</version>" ../../pom.xml | sed "s|  <version>\(.*\)</version>|\1|"`
 
-echo "Running compatibilty tests between $VERSION_NUMBER and $OLD_VERSION"
+echo "Running compatibility tests between $VERSION_NUMBER and $OLD_VERSION"
 
 # Check protoc
 [ -f ../../../src/protoc ] || {
@@ -55,7 +55,7 @@ echo "Running compatibilty tests between $VERSION_NUMBER and $OLD_VERSION"
   popd
 }
 
-# Download old version source for the compatiblity test
+# Download old version source for the compatibility test
 [ -d protobuf ] || {
   git clone https://github.com/google/protobuf.git
   cd protobuf
@@ -92,7 +92,7 @@ mvn clean test \
 # jar against the new runtime directly without recompile.
 
 # Collect all test dependencies in a single jar file (except for protobuf) to
-# make it easier to run binary compatibilty test (where we will need to run
+# make it easier to run binary compatibility test (where we will need to run
 # the jar files directly).
 cd deps
 mvn assembly:single

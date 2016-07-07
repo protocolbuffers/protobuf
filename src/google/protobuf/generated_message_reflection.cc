@@ -2126,7 +2126,7 @@ inline void GeneratedMessageReflection::ClearOneofField(
 inline void GeneratedMessageReflection::ClearOneof(
     Message* message, const OneofDescriptor* oneof_descriptor) const {
   // TODO(jieluo): Consider to cache the unused object instead of deleting
-  // it. It will be much faster if an aplication switches a lot from
+  // it. It will be much faster if an application switches a lot from
   // a few oneof fields.  Time/space tradeoff
   uint32 oneof_case = GetOneofCase(*message, oneof_descriptor);
   if (oneof_case > 0) {

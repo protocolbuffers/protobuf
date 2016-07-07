@@ -173,7 +173,7 @@ module Google
           external_enumerator.each_with_index do |val, i|
             result = yield(val)
             results << result
-            #nil means no change occured from yield; usually occurs when #to_a is called
+            #nil means no change occurred from yield; usually occurs when #to_a is called
             if result
               repeated_field[i] = result if result != val
             end

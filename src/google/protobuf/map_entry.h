@@ -83,7 +83,7 @@ class LIBPROTOBUF_EXPORT MapEntryBase : public Message {
 // reflection, its in-memory type is the same as generated message with the same
 // fields. However, in order to decide the in-memory type of key/value, we need
 // to know both their cpp type in generated api and proto type. In
-// implmentation, all in-memory types have related wire format functions to
+// implementation, all in-memory types have related wire format functions to
 // support except ArenaStringPtr. Therefore, we need to define another type with
 // supporting wire format functions. Since this type is only used as return type
 // of MapEntry accessors, it's named MapEntry accessor type.

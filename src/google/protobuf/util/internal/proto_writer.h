@@ -184,7 +184,7 @@ class LIBPROTOBUF_EXPORT ProtoWriter : public StructuredObjectWriter {
       return static_cast<ProtoElement*>(BaseElement::parent());
     }
 
-    // Returns true if the index is already taken by a preceeding oneof input.
+    // Returns true if the index is already taken by a preceding oneof input.
     bool IsOneofIndexTaken(int32 index);
 
     // Marks the oneof 'index' as taken. Future inputs to this oneof will

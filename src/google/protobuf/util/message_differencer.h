@@ -278,7 +278,7 @@ class LIBPROTOBUF_EXPORT MessageDifferencer {
         const Message& message2,
         const vector<SpecificField>& field_path) { }
 
-    // Report that an unkown field is ignored. (see comment above).
+    // Report that an unknown field is ignored. (see comment above).
     // Note this is a different function since the last SpecificField in field
     // path has a null field.  This could break existing Reporter.
     virtual void ReportUnknownFieldIgnored(
