@@ -73,7 +73,7 @@ void WrapperFieldGenerator::GenerateMembers(io::Printer* printer) {
     ";\n"
     "private $type_name$ $name$_;\n");
   WritePropertyDocComment(printer, descriptor_);
-  AddDeprecatedFlag(printer);
+  AddPublicMemberAttributes(printer);
   printer->Print(
     variables_,
     "$access_level$ $type_name$ $property_name$ {\n"
@@ -169,7 +169,7 @@ void WrapperOneofFieldGenerator::GenerateMembers(io::Printer* printer) {
   GenerateCodecCode(printer);
   printer->Print(";\n");
   WritePropertyDocComment(printer, descriptor_);
-  AddDeprecatedFlag(printer);
+  AddPublicMemberAttributes(printer);
   printer->Print(
     variables_,
     "$access_level$ $type_name$ $property_name$ {\n"

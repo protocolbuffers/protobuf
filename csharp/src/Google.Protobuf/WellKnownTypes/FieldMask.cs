@@ -10,7 +10,6 @@ using scg = global::System.Collections.Generic;
 namespace Google.Protobuf.WellKnownTypes {
 
   /// <summary>Holder for reflection information generated from google/protobuf/field_mask.proto</summary>
-  [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
   public static partial class FieldMaskReflection {
 
     #region Descriptor
@@ -105,6 +104,58 @@ namespace Google.Protobuf.WellKnownTypes {
   ///  describe the updated values, the API ignores the values of all
   ///  fields not covered by the mask.
   ///
+  ///  If a repeated field is specified for an update operation, the existing
+  ///  repeated values in the target resource will be overwritten by the new values.
+  ///  Note that a repeated field is only allowed in the last position of a field
+  ///  mask.
+  ///
+  ///  If a sub-message is specified in the last position of the field mask for an
+  ///  update operation, then the existing sub-message in the target resource is
+  ///  overwritten. Given the target message:
+  ///
+  ///      f {
+  ///        b {
+  ///          d : 1
+  ///          x : 2
+  ///        }
+  ///        c : 1
+  ///      }
+  ///
+  ///  And an update message:
+  ///
+  ///      f {
+  ///        b {
+  ///          d : 10
+  ///        }
+  ///      }
+  ///
+  ///  then if the field mask is:
+  ///
+  ///   paths: "f.b"
+  ///
+  ///  then the result will be:
+  ///
+  ///      f {
+  ///        b {
+  ///          d : 10
+  ///        }
+  ///        c : 1
+  ///      }
+  ///
+  ///  However, if the update mask was:
+  ///
+  ///   paths: "f.b.d"
+  ///
+  ///  then the result would be:
+  ///
+  ///      f {
+  ///        b {
+  ///          d : 10
+  ///          x : 2
+  ///        }
+  ///        c : 1
+  ///      }
+  ///
   ///  In order to reset a field's value to the default, the field must
   ///  be in the mask and set to the default value in the provided resource.
   ///  Hence, in order to reset all fields of a resource, provide a default
@@ -187,29 +238,34 @@ namespace Google.Protobuf.WellKnownTypes {
   ///  Note that oneof type names ("test_oneof" in this case) cannot be used in
   ///  paths.
   /// </summary>
-  [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
   public sealed partial class FieldMask : pb::IMessage<FieldMask> {
     private static readonly pb::MessageParser<FieldMask> _parser = new pb::MessageParser<FieldMask>(() => new FieldMask());
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<FieldMask> Parser { get { return _parser; } }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
       get { return global::Google.Protobuf.WellKnownTypes.FieldMaskReflection.Descriptor.MessageTypes[0]; }
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     pbr::MessageDescriptor pb::IMessage.Descriptor {
       get { return Descriptor; }
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public FieldMask() {
       OnConstruction();
     }
 
     partial void OnConstruction();
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public FieldMask(FieldMask other) : this() {
       paths_ = other.paths_.Clone();
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public FieldMask Clone() {
       return new FieldMask(this);
     }
@@ -222,14 +278,17 @@ namespace Google.Protobuf.WellKnownTypes {
     /// <summary>
     ///  The set of field mask paths.
     /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public pbc::RepeatedField<string> Paths {
       get { return paths_; }
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as FieldMask);
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public bool Equals(FieldMask other) {
       if (ReferenceEquals(other, null)) {
         return false;
@@ -241,26 +300,31 @@ namespace Google.Protobuf.WellKnownTypes {
       return true;
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override int GetHashCode() {
       int hash = 1;
       hash ^= paths_.GetHashCode();
       return hash;
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override string ToString() {
       return pb::JsonFormatter.ToDiagnosticString(this);
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
       paths_.WriteTo(output, _repeated_paths_codec);
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
       int size = 0;
       size += paths_.CalculateSize(_repeated_paths_codec);
       return size;
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(FieldMask other) {
       if (other == null) {
         return;
@@ -268,6 +332,7 @@ namespace Google.Protobuf.WellKnownTypes {
       paths_.Add(other.paths_);
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(pb::CodedInputStream input) {
       uint tag;
       while ((tag = input.ReadTag()) != 0) {

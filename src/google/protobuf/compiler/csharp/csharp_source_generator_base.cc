@@ -56,7 +56,7 @@ SourceGeneratorBase::~SourceGeneratorBase() {
 }
 
 void SourceGeneratorBase::WriteGeneratedCodeAttributes(io::Printer* printer) {
-  // This hook can be used to reintroduce generated code attributes in the future.
+  printer->Print("[global::System.Diagnostics.DebuggerNonUserCodeAttribute]\n");
 }
 
 std::string SourceGeneratorBase::class_access_level() {

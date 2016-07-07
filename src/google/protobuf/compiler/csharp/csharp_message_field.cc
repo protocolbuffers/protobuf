@@ -65,7 +65,7 @@ void MessageFieldGenerator::GenerateMembers(io::Printer* printer) {
     variables_,
     "private $type_name$ $name$_;\n");
   WritePropertyDocComment(printer, descriptor_);
-  AddDeprecatedFlag(printer);
+  AddPublicMemberAttributes(printer);
   printer->Print(
     variables_,
     "$access_level$ $type_name$ $property_name$ {\n"
@@ -159,7 +159,7 @@ MessageOneofFieldGenerator::~MessageOneofFieldGenerator() {
 
 void MessageOneofFieldGenerator::GenerateMembers(io::Printer* printer) {
   WritePropertyDocComment(printer, descriptor_);
-  AddDeprecatedFlag(printer);
+  AddPublicMemberAttributes(printer);
   printer->Print(
     variables_,
     "$access_level$ $type_name$ $property_name$ {\n"
