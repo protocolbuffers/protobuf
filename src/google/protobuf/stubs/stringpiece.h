@@ -222,14 +222,6 @@ class LIBPROTOBUF_EXPORT StringPiece {
       : ptr_(str.data()), length_(0) {
     length_ = CheckedSsizeTFromSizeT(str.size());
   }
-#if defined(HAS_GLOBAL_STRING)
-  template <class Allocator>
-  StringPiece(  // NOLINT(runtime/explicit)
-      const basic_string<char, std::char_traits<char>, Allocator>& str)
-      : ptr_(str.data()), length_(0) {
-    length_ = CheckedSsizeTFromSizeT(str.size());
-  }
-#endif
 
   StringPiece(const char* offset, stringpiece_ssize_type len)
       : ptr_(offset), length_(len) {
