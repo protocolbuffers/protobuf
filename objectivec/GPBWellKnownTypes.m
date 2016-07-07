@@ -32,8 +32,6 @@
 // the static library. If these were compiled separately, the category methods
 // below would be stripped by the linker.
 
-#import "google/protobuf/Timestamp.pbobjc.m"
-#import "google/protobuf/Duration.pbobjc.m"
 #import "GPBWellKnownTypes.h"
 
 static NSTimeInterval TimeIntervalSince1970FromSecondsAndNanos(int64_t seconds,

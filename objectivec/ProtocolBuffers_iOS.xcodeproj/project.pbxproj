@@ -62,6 +62,8 @@
 		F4487C851AAF6AC500531423 /* GPBMessageTests+Merge.m in Sources */ = {isa = PBXBuildFile; fileRef = F4487C841AAF6AC500531423 /* GPBMessageTests+Merge.m */; };
 		F45C69CC16DFD08D0081955B /* GPBExtensionInternals.m in Sources */ = {isa = PBXBuildFile; fileRef = F45C69CB16DFD08D0081955B /* GPBExtensionInternals.m */; };
 		F45E57C91AE6DC98000B7D99 /* text_format_map_unittest_data.txt in Resources */ = {isa = PBXBuildFile; fileRef = F45E57C81AE6DC98000B7D99 /* text_format_map_unittest_data.txt */; };
+		F47476E91D21A537007C7B1A /* Duration.pbobjc.m in Sources */ = {isa = PBXBuildFile; fileRef = 8B4248DE1A929C7D00BC1EC6 /* Duration.pbobjc.m */; };
+		F47476EA1D21A537007C7B1A /* Timestamp.pbobjc.m in Sources */ = {isa = PBXBuildFile; fileRef = 8B4248E01A929C7D00BC1EC6 /* Timestamp.pbobjc.m */; };
 		F4B51B1C1BBC5C7100744318 /* GPBObjectiveCPlusPlusTest.mm in Sources */ = {isa = PBXBuildFile; fileRef = F4B51B1B1BBC5C7100744318 /* GPBObjectiveCPlusPlusTest.mm */; };
 		F4E675D01B21D1620054530B /* Any.pbobjc.m in Sources */ = {isa = PBXBuildFile; fileRef = F4E675B71B21D1440054530B /* Any.pbobjc.m */; };
 		F4E675D11B21D1620054530B /* Api.pbobjc.m in Sources */ = {isa = PBXBuildFile; fileRef = F4E675B91B21D1440054530B /* Api.pbobjc.m */; };
@@ -713,6 +715,7 @@
 				F4E675D31B21D1620054530B /* FieldMask.pbobjc.m in Sources */,
 				7461B54C0F94FB4E00A0C422 /* GPBUnknownField.m in Sources */,
 				7461B5530F94FB4E00A0C422 /* GPBMessage.m in Sources */,
+				F47476E91D21A537007C7B1A /* Duration.pbobjc.m in Sources */,
 				7461B5610F94FB4E00A0C422 /* GPBUnknownFieldSet.m in Sources */,
 				7461B5630F94FB4E00A0C422 /* GPBUtilities.m in Sources */,
 				7461B5640F94FB4E00A0C422 /* GPBWireFormat.m in Sources */,
@@ -727,6 +730,7 @@
 				F4E675D61B21D1620054530B /* Type.pbobjc.m in Sources */,
 				F4E675D51B21D1620054530B /* Struct.pbobjc.m in Sources */,
 				F4E675D71B21D1620054530B /* Wrappers.pbobjc.m in Sources */,
+				F47476EA1D21A537007C7B1A /* Timestamp.pbobjc.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -878,6 +882,7 @@
 					"$(inherited)",
 					"\"$(DEVELOPER_DIR)/usr/lib\"",
 				);
+				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = UnitTests;
 				SWIFT_OBJC_BRIDGING_HEADER = "Tests/UnitTests-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
@@ -912,6 +917,7 @@
 					"$(inherited)",
 					"\"$(DEVELOPER_DIR)/usr/lib\"",
 				);
+				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = UnitTests;
 				SWIFT_OBJC_BRIDGING_HEADER = "Tests/UnitTests-Bridging-Header.h";
 				TARGETED_DEVICE_FAMILY = "1,2";

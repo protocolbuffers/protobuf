@@ -54,15 +54,13 @@
 #import "GPBWellKnownTypes.m"
 #import "GPBWireFormat.m"
 
-// Duration and Timestamp are #imported into GPBWellKnownTypes.m to the
-// Objective C categories added will always be linked in with the classes.
 #import "google/protobuf/Any.pbobjc.m"
 #import "google/protobuf/Api.pbobjc.m"
-// #import "google/protobuf/Duration.pbobjc.m"
+#import "google/protobuf/Duration.pbobjc.m"
 #import "google/protobuf/Empty.pbobjc.m"
 #import "google/protobuf/FieldMask.pbobjc.m"
 #import "google/protobuf/SourceContext.pbobjc.m"
 #import "google/protobuf/Struct.pbobjc.m"
-// #import "google/protobuf/Timestamp.pbobjc.m"
+#import "google/protobuf/Timestamp.pbobjc.m"
 #import "google/protobuf/Type.pbobjc.m"
 #import "google/protobuf/Wrappers.pbobjc.m"
