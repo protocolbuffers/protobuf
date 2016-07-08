@@ -58,6 +58,27 @@ namespace Google.Protobuf.Collections
         /// <summary>
         /// Creates a deep clone of this repeated field.
         /// </summary>
+        public RepeatedField() : this(0)
+        {
+            
+        }
+
+        /// <summary>
+        /// Creates a deep clone of this repeated field.
+        /// </summary>
+        /// <param name="capacity">Capacity. The initial capacity of the internal buffer</param>
+        public RepeatedField(int capacity)
+        {
+            if (capacity < 0)
+                throw new ArgumentOutOfRangeException("capacity must be greater or equal to 0", (Exception)null);
+
+            if(capacity > 0)
+                array = new T[capacity];
+        }
+
+        /// <summary>
+        /// Creates a deep clone of this repeated field.
+        /// </summary>
         /// <remarks>
         /// If the field type is
         /// a message type, each element is also cloned; otherwise, it is
@@ -320,10 +341,20 @@ namespace Google.Protobuf.Collections
             {
                 throw new ArgumentNullException("values");
             }
-            // TODO: Check for ICollection and get the Count, to optimize?
-            foreach (T item in values)
+
+            ICollection collection = values as ICollection;
+            if (collection != null)
             {
-                Add(item);
+                this.EnsureSize(this.count + collection.Count);
+                collection.CopyTo(this.array, this.count);
+                this.count += collection.Count;
+            }
+            else
+            {
+                foreach (T item in values)
+                {
+                    Add(item);
+                }
             }
         }
 
