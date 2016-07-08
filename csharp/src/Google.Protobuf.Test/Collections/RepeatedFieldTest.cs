@@ -75,13 +75,81 @@ namespace Google.Protobuf.Collections
         }
 
         [Test]
-        public void AddRange()
+        public void AddRange_SlowPath()
         {
             var list = new RepeatedField<string>();
-            list.AddRange(new[] { "foo", "bar" });
+            list.AddRange(new[] { "foo", "bar" }.Select(x => x));
             Assert.AreEqual(2, list.Count);
             Assert.AreEqual("foo", list[0]);
             Assert.AreEqual("bar", list[1]);
+        }
+
+        [Test]
+        public void AddRange_SlowPath_NullsProhibited_ReferenceType()
+        {
+            var list = new RepeatedField<string>();
+            // It's okay for this to throw ArgumentNullException if necessary.
+            // It's not ideal, but not awful.
+            Assert.Catch<ArgumentException>(() => list.AddRange(new[] { "foo", null }.Select(x => x)));
+        }
+
+        [Test]
+        public void AddRange_SlowPath_NullsProhibited_NullableValueType()
+        {
+            var list = new RepeatedField<int?>();
+            // It's okay for this to throw ArgumentNullException if necessary.
+            // It's not ideal, but not awful.
+            Assert.Catch<ArgumentException>(() => list.AddRange(new[] { 20, (int?)null }.Select(x => x)));
+        }
+
+        [Test]
+        public void AddRange_Optimized_NonNullableValueType()
+        {
+            var list = new RepeatedField<int>();
+            list.AddRange(new List<int> { 20, 30 });
+            Assert.AreEqual(2, list.Count);
+            Assert.AreEqual(20, list[0]);
+            Assert.AreEqual(30, list[1]);
+        }
+
+        [Test]
+        public void AddRange_Optimized_ReferenceType()
+        {
+            var list = new RepeatedField<string>();
+            list.AddRange(new List<string> { "foo", "bar" });
+            Assert.AreEqual(2, list.Count);
+            Assert.AreEqual("foo", list[0]);
+            Assert.AreEqual("bar", list[1]);
+        }
+
+        [Test]
+        public void AddRange_Optimized_NullableValueType()
+        {
+            var list = new RepeatedField<int?>();
+            list.AddRange(new List<int?> { 20, 30 });
+            Assert.AreEqual(2, list.Count);
+            Assert.AreEqual((int?) 20, list[0]);
+            Assert.AreEqual((int?) 30, list[1]);
+        }
+
+        [Test]
+        public void AddRange_Optimized_NullsProhibited_ReferenceType()
+        {
+            // We don't just trust that a collection with a nullable element type doesn't contain nulls
+            var list = new RepeatedField<string>();
+            // It's okay for this to throw ArgumentNullException if necessary.
+            // It's not ideal, but not awful.
+            Assert.Catch<ArgumentException>(() => list.AddRange(new List<string> { "foo", null }));
+        }
+
+        [Test]
+        public void AddRange_Optimized_NullsProhibited_NullableValueType()
+        {
+            // We don't just trust that a collection with a nullable element type doesn't contain nulls
+            var list = new RepeatedField<int?>();
+            // It's okay for this to throw ArgumentNullException if necessary.
+            // It's not ideal, but not awful.
+            Assert.Catch<ArgumentException>(() => list.AddRange(new List<int?> { 20, null }));
         }
 
         [Test]
