@@ -281,12 +281,12 @@ namespace Google.Protobuf.Collections
         /// <summary>
         /// Gets the number of elements contained in the collection.
         /// </summary>
-        public int Count { get { return count; } }
+        public int Count => count;
 
         /// <summary>
         /// Gets a value indicating whether the collection is read-only.
         /// </summary>
-        public bool IsReadOnly { get { return false; } }
+        public bool IsReadOnly => false;
 
         // TODO: Remove this overload and just handle it in the one below, at execution time?
 
@@ -310,7 +310,41 @@ namespace Google.Protobuf.Collections
         public void AddRange(IEnumerable<T> values)
         {
             ProtoPreconditions.CheckNotNull(values, nameof(values));
-            // TODO: Check for ICollection and get the Count, to optimize?
+
+            // Optimize the case where we know the size and can ask the collection to
+            // copy itself.
+            var collection = values as ICollection;
+            if (collection != null)
+            {
+                var extraCount = collection.Count;
+                // For reference types and nullable value types, we need to check that there are no nulls
+                // present. (This isn't a thread-safe approach, but we don't advertise this is thread-safe.)
+                // We expect the JITter to optimize this test to true/false, so it's effectively conditional
+                // specialization.
+                if (default(T) == null)
+                {
+                    // TODO: Measure whether iterating once to check and then letting the collection copy
+                    // itself is faster or slower than iterating and adding as we go. For large
+                    // collections this will not be great in terms of cache usage... but the optimized
+                    // copy may be significantly faster than doing it one at a time.
+                    foreach (var item in collection)
+                    {
+                        if (item == null)
+                        {
+                            throw new ArgumentException("Sequence contained null element", nameof(values));
+                        }
+                    }
+                }
+                EnsureSize(count + extraCount);
+                collection.CopyTo(array, count);
+                count += extraCount;
+                return;
+            }
+
+            // We *could* check for ICollection<T> as well, but very very few collections implement
+            // ICollection<T> but not ICollection. (HashSet<T> does, for one...)
+
+            // Fall back to a slower path of adding items one at a time.
             foreach (T item in values)
             {
                 Add(item);
@@ -506,16 +540,16 @@ namespace Google.Protobuf.Collections
         }
 
         #region Explicit interface implementation for IList and ICollection.
-        bool IList.IsFixedSize { get { return false; } }
+        bool IList.IsFixedSize => false;
 
         void ICollection.CopyTo(Array array, int index)
         {
             Array.Copy(this.array, 0, array, index, count);
         }
 
-        bool ICollection.IsSynchronized { get { return false; } }
+        bool ICollection.IsSynchronized => false;
 
-        object ICollection.SyncRoot { get { return this; } }
+        object ICollection.SyncRoot => this;
 
         object IList.this[int index]
         {
