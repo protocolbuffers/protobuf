@@ -153,10 +153,18 @@ namespace Google.Protobuf.Collections
         }
 
         [Test]
-        public void Add_RepeatedField()
+        public void AddRange_AlreadyNotEmpty()
+        {
+            var list = new RepeatedField<int> { 1, 2, 3 };
+            list.AddRange(new List<int> { 4, 5, 6 });
+            CollectionAssert.AreEqual(new[] { 1, 2, 3, 4, 5, 6 }, list);
+        }
+
+        [Test]
+        public void AddRange_RepeatedField()
         {
             var list = new RepeatedField<string> { "original" };
-            list.Add(new RepeatedField<string> { "foo", "bar" });
+            list.AddRange(new RepeatedField<string> { "foo", "bar" });
             Assert.AreEqual(3, list.Count);
             Assert.AreEqual("original", list[0]);
             Assert.AreEqual("foo", list[1]);

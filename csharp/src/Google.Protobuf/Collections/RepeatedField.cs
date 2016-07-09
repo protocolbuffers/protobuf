@@ -288,21 +288,6 @@ namespace Google.Protobuf.Collections
         /// </summary>
         public bool IsReadOnly => false;
 
-        // TODO: Remove this overload and just handle it in the one below, at execution time?
-
-        /// <summary>
-        /// Adds all of the specified values into this collection.
-        /// </summary>
-        /// <param name="values">The values to add to this collection.</param>
-        public void Add(RepeatedField<T> values)
-        {
-            ProtoPreconditions.CheckNotNull(values, nameof(values));
-            EnsureSize(count + values.count);
-            // We know that all the values will be valid, because it's a RepeatedField.
-            Array.Copy(values.array, 0, array, count, values.count);
-            count += values.count;
-        }
-
         /// <summary>
         /// Adds all of the specified values into this collection.
         /// </summary>
@@ -311,8 +296,19 @@ namespace Google.Protobuf.Collections
         {
             ProtoPreconditions.CheckNotNull(values, nameof(values));
 
-            // Optimize the case where we know the size and can ask the collection to
-            // copy itself.
+            // Optimization 1: If the collection we're adding is already a RepeatedField<T>,
+            // we know the values are valid.
+            var otherRepeatedField = values as RepeatedField<T>;
+            if (otherRepeatedField != null)
+            {
+                EnsureSize(count + otherRepeatedField.count);
+                Array.Copy(otherRepeatedField.array, 0, array, count, otherRepeatedField.count);
+                count += otherRepeatedField.count;
+                return;
+            }
+
+            // Optimization 2: The collection is an ICollection, so we can expand
+            // just once and ask the collection to copy itself into the array.
             var collection = values as ICollection;
             if (collection != null)
             {
