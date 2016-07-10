@@ -1,3 +1,5 @@
+workspace(name = "google_protobuf")
+
 new_http_archive(
     name = "gmock_archive",
     url = "https://googlemock.googlecode.com/files/gmock-1.7.0.zip",
