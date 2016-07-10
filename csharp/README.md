@@ -9,8 +9,8 @@ Usage
 The easiest way how to use C# protobufs is via the `Google.Protobuf`
 NuGet package. Just add the NuGet package to your VS project.
 
-Besides C# runtime library, the NuGet package also contains 
-precompiled version of `protoc.exe` and a copy of well known `.proto`
+You will also want to install the `Google.Protobuf.Tools` NuGet package, which
+contains precompiled version of `protoc.exe` and a copy of well known `.proto`
 files under the package's `tools` directory.
 
 To generate C# files from your `.proto` files, invoke `protoc` with the 
