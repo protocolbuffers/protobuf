@@ -612,9 +612,7 @@ namespace Google.Protobuf
         }
 
         /// <summary>
-        /// Reads an enum field value from the stream. If the enum is valid for type T,
-        /// then the ref value is set and it returns true.  Otherwise the unknown output
-        /// value is set and this method returns false.
+        /// Reads an enum field value from the stream.
         /// </summary>   
         public int ReadEnum()
         {
