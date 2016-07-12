@@ -463,8 +463,6 @@ objectivec_EXTRA_DIST=                                                       \
   objectivec/ProtocolBuffers_iOS.xcodeproj/project.pbxproj                   \
   objectivec/ProtocolBuffers_iOS.xcodeproj/project.xcworkspace/contents.xcworkspacedata \
   objectivec/ProtocolBuffers_iOS.xcodeproj/project.xcworkspace/xcshareddata/WorkspaceSettings.xcsettings \
-  objectivec/ProtocolBuffers_iOS.xcodeproj/xcshareddata/xcbaselines/8BBEA4A5147C727100C4ADB7.xcbaseline/FFE465CA-0E74-40E8-9F09-500B66B7DCB2.plist \
-  objectivec/ProtocolBuffers_iOS.xcodeproj/xcshareddata/xcbaselines/8BBEA4A5147C727100C4ADB7.xcbaseline/Info.plist \
   objectivec/ProtocolBuffers_iOS.xcodeproj/xcshareddata/xcschemes/PerformanceTests.xcscheme \
   objectivec/ProtocolBuffers_iOS.xcodeproj/xcshareddata/xcschemes/ProtocolBuffers.xcscheme \
   objectivec/ProtocolBuffers_OSX.xcodeproj/project.pbxproj                   \
