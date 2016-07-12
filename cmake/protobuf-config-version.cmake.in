@@ -3,7 +3,7 @@ set(${PACKAGE_FIND_NAME}_VERSION_PRERELEASE "@protobuf_VERSION_PRERELEASE@" PARE
 
 # Prerelease versions cannot be passed in directly via the find_package command,
 # so we allow users to specify it in a variable
-if(NOT DEFINED "${${PACKAGE_FIND_NAME}_FIND_VERSION_PRERELEASE}")
+if(NOT DEFINED "${PACKAGE_FIND_NAME}_FIND_VERSION_PRERELEASE")
   set("${${PACKAGE_FIND_NAME}_FIND_VERSION_PRERELEASE}" "")
 else()
   set(PACKAGE_FIND_VERSION ${PACKAGE_FIND_VERSION}-${${PACKAGE_FIND_NAME}_FIND_VERSION_PRERELEASE})
