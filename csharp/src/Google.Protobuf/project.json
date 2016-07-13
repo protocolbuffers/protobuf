@@ -39,8 +39,10 @@
   },
 
   "frameworks": {
-    // TODO: A net45 target here? Need to check that targeting this
-    // from a desktop framework doesn't add any extra dependencies.
+    // This target allows the package to be installed in a .NET 4.5+
+    // project without asking for myriad other dependencies.
+    "net45": {
+    },
     "netstandard1.0": {
       "dependencies": {
         "System.Collections": "4.0.11",
