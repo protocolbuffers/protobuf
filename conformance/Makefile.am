@@ -84,47 +84,47 @@ other_language_protoc_outputs =                                \
   google/protobuf/wrappers.pb.cc                               \
   google/protobuf/wrappers.pb.h                                \
   google/protobuf/wrappers.rb                                  \
-  google/protobuf/wrappers_pb2.py                              \
-  lite/com/google/protobuf/Any.java                            \
-  lite/com/google/protobuf/AnyOrBuilder.java                   \
-  lite/com/google/protobuf/AnyProto.java                       \
-  lite/com/google/protobuf/BoolValue.java                      \
-  lite/com/google/protobuf/BoolValueOrBuilder.java             \
-  lite/com/google/protobuf/BytesValue.java                     \
-  lite/com/google/protobuf/BytesValueOrBuilder.java            \
-  lite/com/google/protobuf/conformance/Conformance.java        \
-  lite/com/google/protobuf/DoubleValue.java                    \
-  lite/com/google/protobuf/DoubleValueOrBuilder.java           \
-  lite/com/google/protobuf/Duration.java                       \
-  lite/com/google/protobuf/DurationOrBuilder.java              \
-  lite/com/google/protobuf/DurationProto.java                  \
-  lite/com/google/protobuf/FieldMask.java                      \
-  lite/com/google/protobuf/FieldMaskOrBuilder.java             \
-  lite/com/google/protobuf/FieldMaskProto.java                 \
-  lite/com/google/protobuf/FloatValue.java                     \
-  lite/com/google/protobuf/FloatValueOrBuilder.java            \
-  lite/com/google/protobuf/Int32Value.java                     \
-  lite/com/google/protobuf/Int32ValueOrBuilder.java            \
-  lite/com/google/protobuf/Int64Value.java                     \
-  lite/com/google/protobuf/Int64ValueOrBuilder.java            \
-  lite/com/google/protobuf/ListValue.java                      \
-  lite/com/google/protobuf/ListValueOrBuilder.java             \
-  lite/com/google/protobuf/NullValue.java                      \
-  lite/com/google/protobuf/StringValue.java                    \
-  lite/com/google/protobuf/StringValueOrBuilder.java           \
-  lite/com/google/protobuf/Struct.java                         \
-  lite/com/google/protobuf/StructOrBuilder.java                \
-  lite/com/google/protobuf/StructProto.java                    \
-  lite/com/google/protobuf/Timestamp.java                      \
-  lite/com/google/protobuf/TimestampOrBuilder.java             \
-  lite/com/google/protobuf/TimestampProto.java                 \
-  lite/com/google/protobuf/UInt32Value.java                    \
-  lite/com/google/protobuf/UInt32ValueOrBuilder.java           \
-  lite/com/google/protobuf/UInt64Value.java                    \
-  lite/com/google/protobuf/UInt64ValueOrBuilder.java           \
-  lite/com/google/protobuf/Value.java                          \
-  lite/com/google/protobuf/ValueOrBuilder.java                 \
-  lite/com/google/protobuf/WrappersProto.java
+  google/protobuf/wrappers_pb2.py
+  # lite/com/google/protobuf/Any.java                            \
+  # lite/com/google/protobuf/AnyOrBuilder.java                   \
+  # lite/com/google/protobuf/AnyProto.java                       \
+  # lite/com/google/protobuf/BoolValue.java                      \
+  # lite/com/google/protobuf/BoolValueOrBuilder.java             \
+  # lite/com/google/protobuf/BytesValue.java                     \
+  # lite/com/google/protobuf/BytesValueOrBuilder.java            \
+  # lite/com/google/protobuf/conformance/Conformance.java        \
+  # lite/com/google/protobuf/DoubleValue.java                    \
+  # lite/com/google/protobuf/DoubleValueOrBuilder.java           \
+  # lite/com/google/protobuf/Duration.java                       \
+  # lite/com/google/protobuf/DurationOrBuilder.java              \
+  # lite/com/google/protobuf/DurationProto.java                  \
+  # lite/com/google/protobuf/FieldMask.java                      \
+  # lite/com/google/protobuf/FieldMaskOrBuilder.java             \
+  # lite/com/google/protobuf/FieldMaskProto.java                 \
+  # lite/com/google/protobuf/FloatValue.java                     \
+  # lite/com/google/protobuf/FloatValueOrBuilder.java            \
+  # lite/com/google/protobuf/Int32Value.java                     \
+  # lite/com/google/protobuf/Int32ValueOrBuilder.java            \
+  # lite/com/google/protobuf/Int64Value.java                     \
+  # lite/com/google/protobuf/Int64ValueOrBuilder.java            \
+  # lite/com/google/protobuf/ListValue.java                      \
+  # lite/com/google/protobuf/ListValueOrBuilder.java             \
+  # lite/com/google/protobuf/NullValue.java                      \
+  # lite/com/google/protobuf/StringValue.java                    \
+  # lite/com/google/protobuf/StringValueOrBuilder.java           \
+  # lite/com/google/protobuf/Struct.java                         \
+  # lite/com/google/protobuf/StructOrBuilder.java                \
+  # lite/com/google/protobuf/StructProto.java                    \
+  # lite/com/google/protobuf/Timestamp.java                      \
+  # lite/com/google/protobuf/TimestampOrBuilder.java             \
+  # lite/com/google/protobuf/TimestampProto.java                 \
+  # lite/com/google/protobuf/UInt32Value.java                    \
+  # lite/com/google/protobuf/UInt32ValueOrBuilder.java           \
+  # lite/com/google/protobuf/UInt64Value.java                    \
+  # lite/com/google/protobuf/UInt64ValueOrBuilder.java           \
+  # lite/com/google/protobuf/Value.java                          \
+  # lite/com/google/protobuf/ValueOrBuilder.java                 \
+  # lite/com/google/protobuf/WrappersProto.java
 
 bin_PROGRAMS = conformance-test-runner conformance-cpp
 
@@ -192,7 +192,7 @@ if USE_EXTERNAL_PROTOC
 protoc_middleman: $(conformance_protoc_inputs) $(well_known_type_protoc_inputs)
 	$(PROTOC) -I$(srcdir) -I$(top_srcdir) --cpp_out=. --java_out=. --ruby_out=. --objc_out=. --python_out=. $(conformance_protoc_inputs)
 	$(PROTOC) -I$(srcdir) -I$(top_srcdir) --cpp_out=. --java_out=. --ruby_out=. --python_out=. $(well_known_type_protoc_inputs)
-	$(PROTOC) -I$(srcdir) -I$(top_srcdir) --java_out=lite:lite $(conformance_protoc_inputs) $(well_known_type_protoc_inputs)
+	## $(PROTOC) -I$(srcdir) -I$(top_srcdir) --java_out=lite:lite $(conformance_protoc_inputs) $(well_known_type_protoc_inputs)
 	touch protoc_middleman
 
 else
@@ -203,8 +203,8 @@ else
 protoc_middleman: $(top_srcdir)/src/protoc$(EXEEXT) $(conformance_protoc_inputs) $(well_known_type_protoc_inputs)
 	oldpwd=`pwd` && ( cd $(srcdir) && $$oldpwd/../src/protoc$(EXEEXT) -I. -I$(top_srcdir)/src --cpp_out=$$oldpwd --java_out=$$oldpwd --ruby_out=$$oldpwd --objc_out=$$oldpwd --python_out=$$oldpwd $(conformance_protoc_inputs) )
 	oldpwd=`pwd` && ( cd $(srcdir) && $$oldpwd/../src/protoc$(EXEEXT) -I. -I$(top_srcdir)/src --cpp_out=$$oldpwd --java_out=$$oldpwd --ruby_out=$$oldpwd --python_out=$$oldpwd $(well_known_type_protoc_inputs) )
-	@mkdir -p lite
-	oldpwd=`pwd` && ( cd $(srcdir) && $$oldpwd/../src/protoc$(EXEEXT) -I. -I$(top_srcdir)/src --java_out=lite:$$oldpwd/lite $(conformance_protoc_inputs) $(well_known_type_protoc_inputs) )
+	## @mkdir -p lite
+	## oldpwd=`pwd` && ( cd $(srcdir) && $$oldpwd/../src/protoc$(EXEEXT) -I. -I$(top_srcdir)/src --java_out=lite:$$oldpwd/lite $(conformance_protoc_inputs) $(well_known_type_protoc_inputs) )
 	touch protoc_middleman
 
 endif
