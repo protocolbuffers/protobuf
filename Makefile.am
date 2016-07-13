@@ -89,7 +89,6 @@ csharp_EXTRA_DIST=                                                           \
   csharp/src/Google.Protobuf.Test/JsonFormatterTest.cs                       \
   csharp/src/Google.Protobuf.Test/JsonParserTest.cs                          \
   csharp/src/Google.Protobuf.Test/JsonTokenizerTest.cs                       \
-  csharp/src/Google.Protobuf.Test/Properties/AppManifest.xml                 \
   csharp/src/Google.Protobuf.Test/Reflection/DescriptorsTest.cs              \
   csharp/src/Google.Protobuf.Test/Reflection/FieldAccessTest.cs              \
   csharp/src/Google.Protobuf.Test/Reflection/TypeRegistryTest.cs             \
