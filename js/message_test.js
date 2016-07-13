@@ -143,6 +143,10 @@ describe('Message test suite', function() {
     var bar = new proto.jspb.test.Complex([
         undefined, undefined, undefined, [],
         undefined, undefined, undefined, undefined]);
+    assertFalse(foo.hasAString());
+    assertFalse(foo.hasAnOutOfOrderBool());
+    assertTrue(foo.hasANestedMessage());
+    assertFalse(foo.getANestedMessage().hasAnInt());
     var result = foo.toObject();
     assertObjectEquals({
       aString: undefined,
@@ -183,6 +187,14 @@ describe('Message test suite', function() {
     var defaultString = "default<>\'\"abc";
     var response = new proto.jspb.test.DefaultValues();
 
+    // Test presence
+    assertFalse(response.hasStringField());
+    assertFalse(response.hasBoolField());
+    assertFalse(response.hasIntField());
+    assertFalse(response.hasEnumField());
+    assertFalse(response.hasEmptyField());
+    assertFalse(response.hasBytesField());
+
     // Test toObject
     var expectedObject = {
       stringField: defaultString,
@@ -211,6 +223,10 @@ describe('Message test suite', function() {
     // Test with undefined values,
     // Use push to workaround IE treating undefined array elements as holes.
     response = makeDefault([undefined, undefined, undefined, undefined]);
+    assertFalse(response.hasStringField());
+    assertFalse(response.hasBoolField());
+    assertFalse(response.hasIntField());
+    assertFalse(response.hasEnumField());
     assertEquals(defaultString, response.getStringField());
     assertEquals(true, response.getBoolField());
     assertEquals(11, response.getIntField());
@@ -218,6 +234,10 @@ describe('Message test suite', function() {
 
     // Test with null values, as would be returned by a JSON serializer.
     response = makeDefault([null, null, null, null]);
+    assertFalse(response.hasStringField());
+    assertFalse(response.hasBoolField());
+    assertFalse(response.hasIntField());
+    assertFalse(response.hasEnumField());
     assertEquals(defaultString, response.getStringField());
     assertEquals(true, response.getBoolField());
     assertEquals(11, response.getIntField());
@@ -225,6 +245,10 @@ describe('Message test suite', function() {
 
     // Test with false-like values.
     response = makeDefault(['', false, 0, 0]);
+    assertTrue(response.hasStringField());
+    assertTrue(response.hasBoolField());
+    assertTrue(response.hasIntField());
+    assertTrue(response.hasEnumField());
     assertEquals('', response.getStringField());
     assertEquals(false, response.getBoolField());
     assertEquals(true, response.getIntField() == 0);
@@ -234,6 +258,10 @@ describe('Message test suite', function() {
     response = makeDefault(['blah', false, 111, 77]);
     response.clearStringField(); response.clearBoolField();
     response.clearIntField(); response.clearEnumField();
+    assertFalse(response.hasStringField());
+    assertFalse(response.hasBoolField());
+    assertFalse(response.hasIntField());
+    assertFalse(response.hasEnumField());
     assertEquals(defaultString, response.getStringField());
     assertEquals(true, response.getBoolField());
     assertEquals(11, response.getIntField());
@@ -243,6 +271,10 @@ describe('Message test suite', function() {
     response = makeDefault(['blah', false, 111, 77]);
     response.setStringField(null); response.setBoolField(null);
     response.setIntField(undefined); response.setEnumField(undefined);
+    assertFalse(response.hasStringField());
+    assertFalse(response.hasBoolField());
+    assertFalse(response.hasIntField());
+    assertFalse(response.hasEnumField());
     assertEquals(defaultString, response.getStringField());
     assertEquals(true, response.getBoolField());
     assertEquals(11, response.getIntField());
@@ -266,6 +298,9 @@ describe('Message test suite', function() {
     foo.clearANestedMessage();
     foo.clearARepeatedMessageList();
     foo.clearARepeatedStringList();
+    assertFalse(foo.hasAString());
+    assertFalse(foo.hasABool());
+    assertFalse(foo.hasANestedMessage());
     assertUndefined(foo.getAString());
     assertUndefined(foo.getABool());
     assertUndefined(foo.getANestedMessage());
@@ -288,6 +323,9 @@ describe('Message test suite', function() {
     foo.setANestedMessage(null);
     foo.setARepeatedMessageList(null);
     foo.setARepeatedStringList(null);
+    assertFalse(foo.hasAString());
+    assertFalse(foo.hasABool());
+    assertFalse(foo.hasANestedMessage());
     assertNull(foo.getAString());
     assertNull(foo.getABool());
     assertNull(foo.getANestedMessage());
@@ -304,6 +342,9 @@ describe('Message test suite', function() {
     foo.setANestedMessage(undefined);
     foo.setARepeatedMessageList(undefined);
     foo.setARepeatedStringList(undefined);
+    assertFalse(foo.hasAString());
+    assertFalse(foo.hasABool());
+    assertFalse(foo.hasANestedMessage());
     assertUndefined(foo.getAString());
     assertUndefined(foo.getABool());
     assertUndefined(foo.getANestedMessage());
@@ -779,6 +820,8 @@ describe('Message test suite', function() {
   it('testInitializeMessageWithSingleValueSetInOneof', function() {
     var message = new proto.jspb.test.TestMessageWithOneof([,, 'x']);
 
+    assertTrue(message.hasPone());
+    assertFalse(message.hasPthree());
     assertEquals('x', message.getPone());
     assertUndefined(message.getPthree());
     assertEquals(
@@ -789,6 +832,8 @@ describe('Message test suite', function() {
   it('testKeepsLastWireValueSetInUnion_multipleValues', function() {
     var message = new proto.jspb.test.TestMessageWithOneof([,, 'x',, 'y']);
 
+    assertFalse(message.hasPone());
+    assertTrue(message.hasPthree());
     assertUndefined('x', message.getPone());
     assertEquals('y', message.getPthree());
     assertEquals(
@@ -798,14 +843,20 @@ describe('Message test suite', function() {
 
   it('testSettingOneofFieldClearsOthers', function() {
     var message = new proto.jspb.test.TestMessageWithOneof;
+    assertFalse(message.hasPone());
+    assertFalse(message.hasPthree());
     assertUndefined(message.getPone());
     assertUndefined(message.getPthree());
 
     message.setPone('hi');
+    assertTrue(message.hasPone());
+    assertFalse(message.hasPthree());
     assertEquals('hi', message.getPone());
     assertUndefined(message.getPthree());
 
     message.setPthree('bye');
+    assertFalse(message.hasPone());
+    assertTrue(message.hasPthree());
     assertUndefined(message.getPone());
     assertEquals('bye', message.getPthree());
   });
@@ -813,17 +864,26 @@ describe('Message test suite', function() {
   it('testSettingOneofFieldDoesNotClearFieldsFromOtherUnions', function() {
     var other = new proto.jspb.test.TestMessageWithOneof;
     var message = new proto.jspb.test.TestMessageWithOneof;
+    assertFalse(message.hasPone());
+    assertFalse(message.hasPthree());
+    assertFalse(message.hasRone());
     assertUndefined(message.getPone());
     assertUndefined(message.getPthree());
     assertUndefined(message.getRone());
 
     message.setPone('hi');
     message.setRone(other);
+    assertTrue(message.hasPone());
+    assertFalse(message.hasPthree());
+    assertTrue(message.hasRone());
     assertEquals('hi', message.getPone());
     assertUndefined(message.getPthree());
     assertEquals(other, message.getRone());
 
     message.setPthree('bye');
+    assertFalse(message.hasPone());
+    assertTrue(message.hasPthree());
+    assertTrue(message.hasRone());
     assertUndefined(message.getPone());
     assertEquals('bye', message.getPthree());
     assertEquals(other, message.getRone());
@@ -850,6 +910,8 @@ describe('Message test suite', function() {
 
   it('testMessageWithDefaultOneofValues', function() {
     var message = new proto.jspb.test.TestMessageWithOneof;
+    assertFalse(message.hasAone());
+    assertFalse(message.hasAtwo());
     assertEquals(1234, message.getAone());
     assertUndefined(message.getAtwo());
     assertEquals(
@@ -858,6 +920,8 @@ describe('Message test suite', function() {
         message.getDefaultOneofACase());
 
     message.setAone(567);
+    assertTrue(message.hasAone());
+    assertFalse(message.hasAtwo());
     assertEquals(567, message.getAone());
     assertUndefined(message.getAtwo());
     assertEquals(
@@ -865,6 +929,8 @@ describe('Message test suite', function() {
         message.getDefaultOneofACase());
 
     message.setAtwo(890);
+    assertFalse(message.hasAone());
+    assertTrue(message.hasAtwo());
     assertEquals(1234, message.getAone());
     assertEquals(890, message.getAtwo());
     assertEquals(
@@ -872,6 +938,8 @@ describe('Message test suite', function() {
         message.getDefaultOneofACase());
 
     message.clearAtwo();
+    assertFalse(message.hasAone());
+    assertFalse(message.hasAtwo());
     assertEquals(1234, message.getAone());
     assertUndefined(message.getAtwo());
     assertEquals(
@@ -882,6 +950,8 @@ describe('Message test suite', function() {
 
   it('testMessageWithDefaultOneofValues_defaultNotOnFirstField', function() {
     var message = new proto.jspb.test.TestMessageWithOneof;
+    assertFalse(message.hasBone());
+    assertFalse(message.hasBtwo());
     assertUndefined(message.getBone());
     assertEquals(1234, message.getBtwo());
     assertEquals(
@@ -890,6 +960,8 @@ describe('Message test suite', function() {
         message.getDefaultOneofBCase());
 
     message.setBone(2);
+    assertTrue(message.hasBone());
+    assertFalse(message.hasBtwo());
     assertEquals(2, message.getBone());
     assertEquals(1234, message.getBtwo());
     assertEquals(
@@ -897,6 +969,8 @@ describe('Message test suite', function() {
         message.getDefaultOneofBCase());
 
     message.setBtwo(3);
+    assertFalse(message.hasBone());
+    assertTrue(message.hasBtwo());
     assertUndefined(message.getBone());
     assertEquals(3, message.getBtwo());
     assertEquals(
@@ -904,6 +978,8 @@ describe('Message test suite', function() {
         message.getDefaultOneofBCase());
 
     message.clearBtwo();
+    assertFalse(message.hasBone());
+    assertFalse(message.hasBtwo());
     assertUndefined(message.getBone());
     assertEquals(1234, message.getBtwo());
     assertEquals(
@@ -915,6 +991,8 @@ describe('Message test suite', function() {
   it('testInitializeMessageWithOneofDefaults', function() {
     var message =
         new proto.jspb.test.TestMessageWithOneof(new Array(9).concat(567));
+    assertTrue(message.hasAone());
+    assertFalse(message.hasAtwo());
     assertEquals(567, message.getAone());
     assertUndefined(message.getAtwo());
     assertEquals(
@@ -923,6 +1001,8 @@ describe('Message test suite', function() {
 
     message =
         new proto.jspb.test.TestMessageWithOneof(new Array(10).concat(890));
+    assertFalse(message.hasAone());
+    assertTrue(message.hasAtwo());
     assertEquals(1234, message.getAone());
     assertEquals(890, message.getAtwo());
     assertEquals(
@@ -931,6 +1011,8 @@ describe('Message test suite', function() {
 
     message =
         new proto.jspb.test.TestMessageWithOneof(new Array(9).concat(567, 890));
+    assertFalse(message.hasAone());
+    assertTrue(message.hasAtwo());
     assertEquals(1234, message.getAone());
     assertEquals(890, message.getAtwo());
     assertEquals(
@@ -944,6 +1026,8 @@ describe('Message test suite', function() {
 
         message =
             new proto.jspb.test.TestMessageWithOneof(new Array(11).concat(567));
+        assertTrue(message.hasBone());
+        assertFalse(message.hasBtwo());
         assertEquals(567, message.getBone());
         assertEquals(1234, message.getBtwo());
         assertEquals(
@@ -952,6 +1036,8 @@ describe('Message test suite', function() {
 
         message =
             new proto.jspb.test.TestMessageWithOneof(new Array(12).concat(890));
+        assertFalse(message.hasBone());
+        assertTrue(message.hasBtwo());
         assertUndefined(message.getBone());
         assertEquals(890, message.getBtwo());
         assertEquals(
@@ -960,6 +1046,8 @@ describe('Message test suite', function() {
 
         message = new proto.jspb.test.TestMessageWithOneof(
             new Array(11).concat(567, 890));
+        assertFalse(message.hasBone());
+        assertTrue(message.hasBtwo());
         assertUndefined(message.getBone());
         assertEquals(890, message.getBtwo());
         assertEquals(
@@ -976,6 +1064,8 @@ describe('Message test suite', function() {
 
     var other = new proto.jspb.test.TestMessageWithOneof;
     message.setRone(other);
+    assertTrue(message.hasRone());
+    assertFalse(message.hasRtwo());
     assertEquals(other, message.getRone());
     assertUndefined(message.getRtwo());
     assertEquals(
@@ -983,6 +1073,8 @@ describe('Message test suite', function() {
         message.getRecursiveOneofCase());
 
     message.setRtwo('hi');
+    assertFalse(message.hasRone());
+    assertTrue(message.hasRtwo());
     assertUndefined(message.getRone());
     assertEquals('hi', message.getRtwo());
     assertEquals(
@@ -994,6 +1086,8 @@ describe('Message test suite', function() {
      function() {
     var message = new proto.jspb.test.TestMessageWithOneof;
     message.setPone('x');
+    assertTrue(message.hasPone());
+    assertFalse(message.hasPthree());
     assertEquals('x', message.getPone());
     assertUndefined(message.getPthree());
     assertEquals(

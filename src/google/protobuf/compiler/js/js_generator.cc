@@ -2031,9 +2031,9 @@ void Generator::GenerateClassFieldToObject(const GeneratorOptions& options,
                      "getter", JSGetterName(options, field, BYTES_B64));
     } else {
       if (field->has_default_value()) {
-        printer->Print("jspb.Message.getField(msg, $index$) == null ? "
+        printer->Print("!msg.has$getter$() ? "
                        "$defaultValue$ : ",
-                       "index", JSFieldIndex(field),
+                       "getter", JSGetterName(options, field),
                        "defaultValue", JSFieldDefault(field));
       }
       if (field->cpp_type() == FieldDescriptor::CPPTYPE_FLOAT ||
@@ -2206,6 +2206,18 @@ void GenerateBytesWrapper(const GeneratorOptions& options,
 void Generator::GenerateClassField(const GeneratorOptions& options,
                                    io::Printer* printer,
                                    const FieldDescriptor* field) const {
+  if (HasFieldPresence(field) && !field->is_repeated()) {
+    printer->Print(
+        "/** @return {boolean} */\n"
+        "$class$.prototype.has$name$ = function() {\n"
+        "  return jspb.Message.getField(this, $index$) != null;\n"
+        "};\n"
+        "\n"
+        "\n",
+        "class", GetPath(options, field->containing_type()),
+        "name", JSGetterName(options, field),
+        "index", JSFieldIndex(field));
+  }
   if (field->is_map()) {
     const FieldDescriptor* key_field = MapFieldKey(field);
     const FieldDescriptor* value_field = MapFieldValue(field);
@@ -2408,9 +2420,9 @@ void Generator::GenerateClassField(const GeneratorOptions& options,
                      "default", Proto3PrimitiveFieldDefault(field));
     } else {
       if (field->has_default_value()) {
-        printer->Print("jspb.Message.getField(this, $index$) == null ? "
+        printer->Print("!this.has$name$() ? "
                        "$defaultValue$ : ",
-                       "index", JSFieldIndex(field),
+                       "name", JSGetterName(options, field),
                        "defaultValue", JSFieldDefault(field));
       }
       if (field->cpp_type() == FieldDescriptor::CPPTYPE_FLOAT ||
