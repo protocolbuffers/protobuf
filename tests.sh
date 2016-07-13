@@ -55,7 +55,14 @@ build_csharp() {
   NUGET=/usr/local/bin/nuget.exe
 
   if [ "$TRAVIS" == "true" ]; then
-    # Install dotnet SDK as per Ubuntu 14.04 instructions on dot.net
+    # Install latest version of Mono
+    sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF
+    echo "deb http://download.mono-project.com/repo/debian wheezy main" | sudo tee /etc/apt/sources.list.d/mono-xamarin.list
+    echo "deb http://download.mono-project.com/repo/debian wheezy-libtiff-compat main" | sudo tee -a /etc/apt/sources.list.d/mono-xamarin.list
+    sudo apt-get update -qq
+    sudo apt-get install -qq mono-devel referenceassemblies-pcl nunit
+    
+    # Then install the dotnet SDK as per Ubuntu 14.04 instructions on dot.net.
     sudo sh -c 'echo "deb [arch=amd64] https://apt-mo.trafficmanager.net/repos/dotnet/ trusty main" > /etc/apt/sources.list.d/dotnetdev.list'
     sudo apt-key adv --keyserver apt-mo.trafficmanager.net --recv-keys 417A0893
     sudo apt-get update -qq
