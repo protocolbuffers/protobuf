@@ -34,7 +34,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
-using System.Text;
 
 namespace Google.Protobuf.Collections
 {
@@ -227,10 +226,7 @@ namespace Google.Protobuf.Collections
         /// <param name="item">The item to add.</param>
         public void Add(T item)
         {
-            if (item == null)
-            {
-                throw new ArgumentNullException("item");
-            }
+            ProtoPreconditions.CheckNotNullUnconstrained(item, nameof(item));
             EnsureSize(count + 1);
             array[count++] = item;
         }
@@ -285,46 +281,82 @@ namespace Google.Protobuf.Collections
         /// <summary>
         /// Gets the number of elements contained in the collection.
         /// </summary>
-        public int Count { get { return count; } }
+        public int Count => count;
 
         /// <summary>
         /// Gets a value indicating whether the collection is read-only.
         /// </summary>
-        public bool IsReadOnly { get { return false; } }
-
-        // TODO: Remove this overload and just handle it in the one below, at execution time?
+        public bool IsReadOnly => false;
 
         /// <summary>
         /// Adds all of the specified values into this collection.
         /// </summary>
         /// <param name="values">The values to add to this collection.</param>
-        public void Add(RepeatedField<T> values)
+        public void AddRange(IEnumerable<T> values)
         {
-            if (values == null)
-            {
-                throw new ArgumentNullException("values");
-            }
-            EnsureSize(count + values.count);
-            // We know that all the values will be valid, because it's a RepeatedField.
-            Array.Copy(values.array, 0, array, count, values.count);
-            count += values.count;
-        }
+            ProtoPreconditions.CheckNotNull(values, nameof(values));
 
-        /// <summary>
-        /// Adds all of the specified values into this collection.
-        /// </summary>
-        /// <param name="values">The values to add to this collection.</param>
-        public void Add(IEnumerable<T> values)
-        {
-            if (values == null)
+            // Optimization 1: If the collection we're adding is already a RepeatedField<T>,
+            // we know the values are valid.
+            var otherRepeatedField = values as RepeatedField<T>;
+            if (otherRepeatedField != null)
             {
-                throw new ArgumentNullException("values");
+                EnsureSize(count + otherRepeatedField.count);
+                Array.Copy(otherRepeatedField.array, 0, array, count, otherRepeatedField.count);
+                count += otherRepeatedField.count;
+                return;
             }
-            // TODO: Check for ICollection and get the Count, to optimize?
+
+            // Optimization 2: The collection is an ICollection, so we can expand
+            // just once and ask the collection to copy itself into the array.
+            var collection = values as ICollection;
+            if (collection != null)
+            {
+                var extraCount = collection.Count;
+                // For reference types and nullable value types, we need to check that there are no nulls
+                // present. (This isn't a thread-safe approach, but we don't advertise this is thread-safe.)
+                // We expect the JITter to optimize this test to true/false, so it's effectively conditional
+                // specialization.
+                if (default(T) == null)
+                {
+                    // TODO: Measure whether iterating once to check and then letting the collection copy
+                    // itself is faster or slower than iterating and adding as we go. For large
+                    // collections this will not be great in terms of cache usage... but the optimized
+                    // copy may be significantly faster than doing it one at a time.
+                    foreach (var item in collection)
+                    {
+                        if (item == null)
+                        {
+                            throw new ArgumentException("Sequence contained null element", nameof(values));
+                        }
+                    }
+                }
+                EnsureSize(count + extraCount);
+                collection.CopyTo(array, count);
+                count += extraCount;
+                return;
+            }
+
+            // We *could* check for ICollection<T> as well, but very very few collections implement
+            // ICollection<T> but not ICollection. (HashSet<T> does, for one...)
+
+            // Fall back to a slower path of adding items one at a time.
             foreach (T item in values)
             {
                 Add(item);
             }
+        }
+
+        /// <summary>
+        /// Adds all of the specified values into this collection. This method is present to
+        /// allow repeated fields to be constructed from queries within collection initializers.
+        /// Within non-collection-initializer code, consider using the equivalent <see cref="AddRange"/>
+        /// method instead for clarity.
+        /// </summary>
+        /// <param name="values">The values to add to this collection.</param>
+        public void Add(IEnumerable<T> values)
+        {
+            AddRange(values);
         }
 
         /// <summary>
@@ -418,10 +450,7 @@ namespace Google.Protobuf.Collections
         /// <returns>The zero-based index of the item, or -1 if it is not found.</returns>
         public int IndexOf(T item)
         {
-            if (item == null)
-            {
-                throw new ArgumentNullException("item");
-            }
+            ProtoPreconditions.CheckNotNullUnconstrained(item, nameof(item));
             EqualityComparer<T> comparer = EqualityComparer<T>.Default;
             for (int i = 0; i < count; i++)
             {
@@ -440,13 +469,10 @@ namespace Google.Protobuf.Collections
         /// <param name="item">The item to insert.</param>
         public void Insert(int index, T item)
         {
-            if (item == null)
-            {
-                throw new ArgumentNullException("item");
-            }
+            ProtoPreconditions.CheckNotNullUnconstrained(item, nameof(item));
             if (index < 0 || index > count)
             {
-                throw new ArgumentOutOfRangeException("index");
+                throw new ArgumentOutOfRangeException(nameof(index));
             }
             EnsureSize(count + 1);
             Array.Copy(array, index, array, index + 1, count - index);
@@ -462,7 +488,7 @@ namespace Google.Protobuf.Collections
         {
             if (index < 0 || index >= count)
             {
-                throw new ArgumentOutOfRangeException("index");
+                throw new ArgumentOutOfRangeException(nameof(index));
             }
             Array.Copy(array, index + 1, array, index, count - index - 1);
             count--;
@@ -494,7 +520,7 @@ namespace Google.Protobuf.Collections
             {
                 if (index < 0 || index >= count)
                 {
-                    throw new ArgumentOutOfRangeException("index");
+                    throw new ArgumentOutOfRangeException(nameof(index));
                 }
                 return array[index];
             }
@@ -502,27 +528,24 @@ namespace Google.Protobuf.Collections
             {
                 if (index < 0 || index >= count)
                 {
-                    throw new ArgumentOutOfRangeException("index");
+                    throw new ArgumentOutOfRangeException(nameof(index));
                 }
-                if (value == null)
-                {
-                    throw new ArgumentNullException("value");
-                }
+                ProtoPreconditions.CheckNotNullUnconstrained(value, nameof(value));
                 array[index] = value;
             }
         }
 
         #region Explicit interface implementation for IList and ICollection.
-        bool IList.IsFixedSize { get { return false; } }
+        bool IList.IsFixedSize => false;
 
         void ICollection.CopyTo(Array array, int index)
         {
             Array.Copy(this.array, 0, array, index, count);
         }
 
-        bool ICollection.IsSynchronized { get { return false; } }
+        bool ICollection.IsSynchronized => false;
 
-        object ICollection.SyncRoot { get { return this; } }
+        object ICollection.SyncRoot => this;
 
         object IList.this[int index]
         {
