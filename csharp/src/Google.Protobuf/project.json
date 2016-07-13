@@ -1,8 +1,9 @@
 {
   "version": "3.0.0-beta3",
-  "title":  "Google Protocol Buffers",
+  "title": "Google Protocol Buffers",
   "description": "See project site for more info.",
   "authors": [ "Google Inc." ],
+  "copyright": "Copyright 2015, Google Inc.",
 
   "packOptions": {
     "summary": "C# runtime library for Protocol Buffers - Google's data interchange format.",
@@ -10,12 +11,11 @@
     "owners": [ "protobuf-packages" ],
     "licenseUrl": "https://github.com/google/protobuf/blob/master/LICENSE",
     "projectUrl": "https://github.com/google/protobuf",
+    "releaseNotes": "C# proto3 support",
     "requireLicenseAcceptance": false,
     "repository": {
       "url": "https://github.com/nodatime/nodatime.git"
     }
-    // Release notes?
-    // Copyright?
   },
 
   "buildOptions": {
@@ -58,7 +58,7 @@
         "System.Runtime.Extensions": "4.1.0",
         "System.Text.Encoding": "4.0.11",
         "System.Text.RegularExpressions": "4.1.0",
-        "System.Threading": "4.0.11",
+        "System.Threading": "4.0.11"
       }
     }
   }
