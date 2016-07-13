@@ -32,8 +32,8 @@
 #define GOOGLE_PROTOBUF_UTIL_CONVERTER_PROTO_WRITER_H__
 
 #include <deque>
-#include <google/protobuf/stubs/hash.h>
 #include <string>
+#include <vector>
 
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/io/coded_stream.h>
@@ -45,6 +45,7 @@
 #include <google/protobuf/util/internal/structured_objectwriter.h>
 #include <google/protobuf/util/type_resolver.h>
 #include <google/protobuf/stubs/bytestream.h>
+#include <google/protobuf/stubs/hash.h>
 
 namespace google {
 namespace protobuf {
@@ -191,6 +192,8 @@ class LIBPROTOBUF_EXPORT ProtoWriter : public StructuredObjectWriter {
     // generate an error.
     void TakeOneofIndex(int32 index);
 
+    bool proto3() { return proto3_; }
+
    private:
     // Used for access to variables of the enclosing instance of
     // ProtoWriter.
@@ -203,7 +206,7 @@ class LIBPROTOBUF_EXPORT ProtoWriter : public StructuredObjectWriter {
     // TypeInfo to lookup types.
     const TypeInfo* typeinfo_;
 
-    // Whether the root type is a proto3 or not.
+    // Whether the type_ is proto3 or not.
     bool proto3_;
 
     // Additional variables if this element is a message:
@@ -221,7 +224,7 @@ class LIBPROTOBUF_EXPORT ProtoWriter : public StructuredObjectWriter {
 
     // Set of oneof indices already seen for the type_. Used to validate
     // incoming messages so no more than one oneof is set.
-    hash_set<int32> oneof_indices_;
+    std::vector<bool> oneof_indices_;
 
     GOOGLE_DISALLOW_IMPLICIT_CONSTRUCTORS(ProtoElement);
   };

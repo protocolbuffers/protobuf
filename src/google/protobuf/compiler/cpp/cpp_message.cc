@@ -2715,7 +2715,9 @@ GenerateMergeFrom(io::Printer* printer) {
         "void $classname$::MergeFrom(const ::google::protobuf::Message& from) {\n"
         "// @@protoc_insertion_point(generalized_merge_from_start:"
         "$full_name$)\n"
-        "  if (GOOGLE_PREDICT_FALSE(&from == this)) MergeFromFail(__LINE__);\n",
+        "  if (GOOGLE_PREDICT_FALSE(&from == this)) {\n"
+        "    ::google::protobuf::internal::MergeFromFail(__FILE__, __LINE__);\n"
+        "  }\n",
         "classname", classname_, "full_name", descriptor_->full_name());
     printer->Indent();
 
@@ -2756,7 +2758,9 @@ GenerateMergeFrom(io::Printer* printer) {
       "void $classname$::MergeFrom(const $classname$& from) {\n"
       "// @@protoc_insertion_point(class_specific_merge_from_start:"
       "$full_name$)\n"
-      "  if (GOOGLE_PREDICT_FALSE(&from == this)) MergeFromFail(__LINE__);\n",
+      "  if (GOOGLE_PREDICT_FALSE(&from == this)) {\n"
+      "    ::google::protobuf::internal::MergeFromFail(__FILE__, __LINE__);\n"
+      "  }\n",
       "classname", classname_, "full_name", descriptor_->full_name());
   printer->Indent();
 

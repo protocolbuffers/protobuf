@@ -140,7 +140,7 @@ public class JsonFormatTest extends TestCase {
   private String toJsonString(Message message) throws IOException {
     return JsonFormat.printer().print(message);
   }
-  private String toCompactJsonString(Message message) throws IOException{
+  private String toCompactJsonString(Message message) throws IOException {
     return JsonFormat.printer().omittingInsignificantWhitespace().print(message);
   }
 
@@ -1172,7 +1172,9 @@ public class JsonFormatTest extends TestCase {
 
   public void testOmittingInsignificantWhiteSpace() throws Exception {
     TestAllTypes message = TestAllTypes.newBuilder().setOptionalInt32(12345).build();
-    assertEquals("{" + "\"optionalInt32\":12345" + "}", JsonFormat.printer().omittingInsignificantWhitespace().print(message));
+    assertEquals(
+        "{" + "\"optionalInt32\":12345" + "}",
+        JsonFormat.printer().omittingInsignificantWhitespace().print(message));
     TestAllTypes message1 = TestAllTypes.getDefaultInstance();
     assertEquals("{}", JsonFormat.printer().omittingInsignificantWhitespace().print(message1));
     TestAllTypes.Builder builder = TestAllTypes.newBuilder();
@@ -1224,4 +1226,20 @@ public class JsonFormatTest extends TestCase {
         toCompactJsonString(message2));
   }
 
+  // Regression test for b/29892357
+  public void testEmptyWrapperTypesInAny() throws Exception {
+    JsonFormat.TypeRegistry registry =
+        JsonFormat.TypeRegistry.newBuilder().add(TestAllTypes.getDescriptor()).build();
+    JsonFormat.Parser parser = JsonFormat.parser().usingTypeRegistry(registry);
+
+    Any.Builder builder = Any.newBuilder();
+    parser.merge(
+        "{\n"
+            + "  \"@type\": \"type.googleapis.com/google.protobuf.BoolValue\",\n"
+            + "  \"value\": false\n"
+            + "}\n",
+        builder);
+    Any any = builder.build();
+    assertEquals(0, any.getValue().size());
+  }
 }

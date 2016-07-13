@@ -166,10 +166,10 @@ class MapTypeHandler<WireFormatLite::TYPE_MESSAGE, Type> {
                            io::CodedOutputStream* output);
   static inline uint8* InternalWriteToArray(int field,
                                             const MapEntryAccessorType& value,
-                                            bool deterministic, uint8* output);
+                                            bool deterministic, uint8* target);
   static inline uint8* WriteToArray(int field,
                                     const MapEntryAccessorType& value,
-                                    uint8* output);
+                                    uint8* target);
 
   // Functions to manipulate data on memory. ========================
   static inline const Type& GetExternalReference(const Type* value);
@@ -227,11 +227,11 @@ class MapTypeHandler<WireFormatLite::TYPE_MESSAGE, Type> {
         int field,                                                            \
         const MapEntryAccessorType& value,                                    \
         bool deterministic,                                                   \
-        uint8* output);                                                       \
+        uint8* target);                                                       \
     static inline uint8* WriteToArray(int field,                              \
                                       const MapEntryAccessorType& value,      \
-                                      uint8* output) {                        \
-      return InternalWriteToArray(field, value, false, output);               \
+                                      uint8* target) {                        \
+      return InternalWriteToArray(field, value, false, target);               \
     }                                                                         \
     static inline const MapEntryAccessorType& GetExternalReference(           \
         const TypeOnMemory& value);                                           \
@@ -374,9 +374,9 @@ template <typename Type>
 inline uint8*
 MapTypeHandler<WireFormatLite::TYPE_MESSAGE, Type>::InternalWriteToArray(
     int field, const MapEntryAccessorType& value, bool deterministic,
-    uint8* output) {
+    uint8* target) {
   return WireFormatLite::InternalWriteMessageToArray(field, value,
-                                                     deterministic, output);
+                                                     deterministic, target);
 }
 
 #define WRITE_METHOD(FieldType, DeclaredType)                                  \
@@ -390,8 +390,8 @@ MapTypeHandler<WireFormatLite::TYPE_MESSAGE, Type>::InternalWriteToArray(
   inline uint8*                                                                \
   MapTypeHandler<WireFormatLite::TYPE_##FieldType,                             \
                  Type>::InternalWriteToArray(                                  \
-      int field, const MapEntryAccessorType& value, bool, uint8* output) {     \
-    return WireFormatLite::Write##DeclaredType##ToArray(field, value, output); \
+      int field, const MapEntryAccessorType& value, bool, uint8* target) {     \
+    return WireFormatLite::Write##DeclaredType##ToArray(field, value, target); \
   }
 
 WRITE_METHOD(STRING  , String)

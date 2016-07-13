@@ -41,8 +41,8 @@
 #include <assert.h>
 #include <string>
 
-#include <google/protobuf/stubs/once.h>
 #include <google/protobuf/stubs/common.h>
+#include <google/protobuf/stubs/once.h>
 
 namespace google {
 
@@ -114,6 +114,10 @@ class ArenaString;
 // then NULL is returned (e.g., input does not start with a valid varint).
 ArenaString* ReadArenaString(::google::protobuf::io::CodedInputStream* input,
                              ::google::protobuf::Arena* arena);
+
+// Helper function to crash on merge failure.
+// Moved out of generated code to reduce binary size.
+void MergeFromFail(const char* file, int line) GOOGLE_ATTRIBUTE_NORETURN;
 
 }  // namespace internal
 }  // namespace protobuf

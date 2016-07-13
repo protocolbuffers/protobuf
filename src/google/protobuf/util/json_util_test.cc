@@ -34,6 +34,8 @@
 #include <string>
 
 #include <google/protobuf/io/zero_copy_stream.h>
+#include <google/protobuf/descriptor_database.h>
+#include <google/protobuf/dynamic_message.h>
 #include <google/protobuf/util/json_format_proto3.pb.h>
 #include <google/protobuf/util/type_resolver.h>
 #include <google/protobuf/util/type_resolver_util.h>
@@ -63,28 +65,21 @@ static string GetTypeUrl(const Descriptor* message) {
 class JsonUtilTest : public testing::Test {
  protected:
   JsonUtilTest() {
-    resolver_.reset(NewTypeResolverForDescriptorPool(
-        kTypeUrlPrefix, DescriptorPool::generated_pool()));
   }
 
   string ToJson(const Message& message, const JsonPrintOptions& options) {
     string result;
-    GOOGLE_CHECK_OK(BinaryToJsonString(resolver_.get(),
-                                GetTypeUrl(message.GetDescriptor()),
-                                message.SerializeAsString(), &result, options));
+    GOOGLE_CHECK_OK(MessageToJsonString(message, &result, options));
     return result;
   }
 
   bool FromJson(const string& json, Message* message,
                 const JsonParseOptions& options) {
-    string binary;
-    if (!JsonToBinaryString(resolver_.get(),
-                            GetTypeUrl(message->GetDescriptor()), json, &binary,
-                            options)
-             .ok()) {
-      return false;
-    }
-    return message->ParseFromString(binary);
+    return JsonStringToMessage(json, message, options).ok();
+  }
+
+  bool FromJson(const string& json, Message* message) {
+    return FromJson(json, message, JsonParseOptions());
   }
 
   google::protobuf::scoped_ptr<TypeResolver> resolver_;
@@ -187,6 +182,45 @@ TEST_F(JsonUtilTest, TestParseErrors) {
   EXPECT_FALSE(FromJson("{\"unknownName\":0}", &m, options));
   // Parsing should fail if the value is invalid.
   EXPECT_FALSE(FromJson("{\"int32Value\":2147483648}", &m, options));
+}
+
+TEST_F(JsonUtilTest, TestDynamicMessage) {
+  // Some random message but good enough to test the wrapper functions.
+  string input =
+      "{\n"
+      "  \"int32Value\": 1024,\n"
+      "  \"repeatedInt32Value\": [1, 2],\n"
+      "  \"messageValue\": {\n"
+      "    \"value\": 2048\n"
+      "  },\n"
+      "  \"repeatedMessageValue\": [\n"
+      "    {\"value\": 40}, {\"value\": 96}\n"
+      "  ]\n"
+      "}\n";
+
+  // Create a new DescriptorPool with the same protos as the generated one.
+  DescriptorPoolDatabase database(*DescriptorPool::generated_pool());
+  DescriptorPool pool(&database);
+  // A dynamic version of the test proto.
+  DynamicMessageFactory factory;
+  google::protobuf::scoped_ptr<Message> message(factory.GetPrototype(
+      pool.FindMessageTypeByName("proto3.TestMessage"))->New());
+  EXPECT_TRUE(FromJson(input, message.get()));
+
+  // Convert to generated message for easy inspection.
+  TestMessage generated;
+  EXPECT_TRUE(generated.ParseFromString(message->SerializeAsString()));
+  EXPECT_EQ(1024, generated.int32_value());
+  ASSERT_EQ(2, generated.repeated_int32_value_size());
+  EXPECT_EQ(1, generated.repeated_int32_value(0));
+  EXPECT_EQ(2, generated.repeated_int32_value(1));
+  EXPECT_EQ(2048, generated.message_value().value());
+  ASSERT_EQ(2, generated.repeated_message_value_size());
+  EXPECT_EQ(40, generated.repeated_message_value(0).value());
+  EXPECT_EQ(96, generated.repeated_message_value(1).value());
+
+  JsonOptions options;
+  EXPECT_EQ(ToJson(generated, options), ToJson(*message, options));
 }
 
 typedef pair<char*, int> Segment;

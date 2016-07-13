@@ -149,6 +149,39 @@ TEST_P(DefaultValueObjectWriterTest, ShouldRetainUnknownField) {
 }
 
 
+class DefaultValueObjectWriterSuppressListTest
+    : public BaseDefaultValueObjectWriterTest {
+ protected:
+  DefaultValueObjectWriterSuppressListTest()
+      : BaseDefaultValueObjectWriterTest(DefaultValueTest::descriptor()) {
+    testing_->set_suppress_empty_list(true);
+  }
+  ~DefaultValueObjectWriterSuppressListTest() {}
+};
+
+INSTANTIATE_TEST_CASE_P(DifferentTypeInfoSourceTest,
+                        DefaultValueObjectWriterSuppressListTest,
+                        ::testing::Values(
+                            testing::USE_TYPE_RESOLVER));
+
+TEST_P(DefaultValueObjectWriterSuppressListTest, Empty) {
+  // Set expectation. Emtpy lists should be suppressed.
+  expects_.StartObject("")
+      ->RenderDouble("doubleValue", 0.0)
+      ->RenderFloat("floatValue", 0.0)
+      ->RenderInt64("int64Value", 0)
+      ->RenderUint64("uint64Value", 0)
+      ->RenderInt32("int32Value", 0)
+      ->RenderUint32("uint32Value", 0)
+      ->RenderBool("boolValue", false)
+      ->RenderString("stringValue", "")
+      ->RenderBytes("bytesValue", "")
+      ->RenderString("enumValue", "ENUM_FIRST")
+      ->EndObject();
+
+  // Actual testing
+  testing_->StartObject("")->EndObject();
+}
 }  // namespace testing
 }  // namespace converter
 }  // namespace util

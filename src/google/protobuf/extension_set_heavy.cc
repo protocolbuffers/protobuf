@@ -341,7 +341,7 @@ bool ExtensionSet::ParseMessageSet(io::CodedInputStream* input,
 
 int ExtensionSet::SpaceUsedExcludingSelf() const {
   int total_size =
-      extensions_.size() * sizeof(map<int, Extension>::value_type);
+      extensions_.size() * sizeof(ExtensionMap::value_type);
   for (ExtensionMap::const_iterator iter = extensions_.begin(),
        end = extensions_.end();
        iter != end;

@@ -79,8 +79,6 @@ bool JavaGenerator::Generate(const FileDescriptor* file,
       file_options.generate_mutable_code = true;
     } else if (options[i].first == "shared") {
       file_options.generate_shared_code = true;
-    } else if (options[i].first == "lite") {
-      file_options.enforce_lite = true;
     } else if (options[i].first == "annotate_code") {
       file_options.annotate_code = true;
     } else if (options[i].first == "annotation_list_file") {

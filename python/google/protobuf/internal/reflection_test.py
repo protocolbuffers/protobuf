@@ -972,6 +972,7 @@ class ReflectionTest(unittest.TestCase):
     proto.repeated_nested_message.add(bb=23)
     self.assertEqual(1, len(proto.repeated_nested_message))
     self.assertEqual(23, proto.repeated_nested_message[0].bb)
+    self.assertRaises(TypeError, proto.repeated_nested_message.add, 23)
 
   def testRepeatedCompositeRemove(self):
     proto = unittest_pb2.TestAllTypes()

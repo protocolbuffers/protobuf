@@ -74,6 +74,7 @@
 #include <google/protobuf/io/tokenizer.h>
 #include <google/protobuf/io/zero_copy_stream_impl.h>
 #include <google/protobuf/util/time_util.h>
+#include <google/protobuf/util/message_differencer.h>
 #include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/stubs/substitute.h>
 #include <gmock/gmock.h>
@@ -2867,6 +2868,82 @@ TEST(WireFormatForMapFieldTest, MapParseHelpers) {
     EXPECT_FALSE(
       message.ParseFromBoundedZeroCopyStream(&stream, data.size() + 1));
   }
+}
+
+// Deterministic Serialization Test ==========================================
+
+template <typename T>
+static string DeterministicSerialization(const T& t) {
+  const int size = t.ByteSize();
+  string result(size, '\0');
+  io::ArrayOutputStream array_stream(string_as_array(&result), size);
+  io::CodedOutputStream output_stream(&array_stream);
+  output_stream.SetSerializationDeterministic(true);
+  t.SerializeWithCachedSizes(&output_stream);
+  EXPECT_FALSE(output_stream.HadError());
+  EXPECT_EQ(size, output_stream.ByteCount());
+  return result;
+}
+
+// Helper to test the serialization of the first arg against a golden file.
+static void TestDeterministicSerialization(const protobuf_unittest::TestMaps& t,
+                                           const string& filename) {
+  string expected;
+  GOOGLE_CHECK_OK(File::GetContents(
+      TestSourceDir() + "/google/protobuf/testdata/" + filename,
+      &expected, true));
+  const string actual = DeterministicSerialization(t);
+  EXPECT_EQ(expected, actual);
+  protobuf_unittest::TestMaps u;
+  EXPECT_TRUE(u.ParseFromString(actual));
+  EXPECT_TRUE(google::protobuf::util::MessageDifferencer::Equals(u, t));
+}
+
+// Helper for MapSerializationTest.  Return a 7-bit ASCII string.
+static string ConstructKey(uint64 n) {
+  string s(n % static_cast<uint64>(9), '\0');
+  if (s.empty()) {
+    return StrCat(n);
+  } else {
+    while (n != 0) {
+      s[n % s.size()] = (n >> 10) & 0x7f;
+      n /= 888;
+    }
+    return s;
+  }
+}
+
+TEST(MapSerializationTest, Deterministic) {
+  const int kIters = 25;
+  protobuf_unittest::TestMaps t;
+  protobuf_unittest::TestIntIntMap inner;
+  (*inner.mutable_m())[0] = (*inner.mutable_m())[10] =
+      (*inner.mutable_m())[-200] = 0;
+  uint64 frog = 9;
+  const uint64 multiplier = 0xa29cd16f;
+  for (int i = 0; i < kIters; i++) {
+    const int32 i32 = static_cast<int32>(frog & 0xffffffff);
+    const uint32 u32 = static_cast<uint32>(i32) * 91919;
+    const int64 i64 = static_cast<int64>(frog);
+    const uint64 u64 = frog * static_cast<uint64>(187321);
+    const bool b = i32 > 0;
+    const string s = ConstructKey(frog);
+    (*inner.mutable_m())[i] = i32;
+    (*t.mutable_m_int32())[i32] = (*t.mutable_m_sint32())[i32] =
+        (*t.mutable_m_sfixed32())[i32] = inner;
+    (*t.mutable_m_uint32())[u32] = (*t.mutable_m_fixed32())[u32] = inner;
+    (*t.mutable_m_int64())[i64] = (*t.mutable_m_sint64())[i64] =
+        (*t.mutable_m_sfixed64())[i64] = inner;
+    (*t.mutable_m_uint64())[u64] = (*t.mutable_m_fixed64())[u64] = inner;
+    (*t.mutable_m_bool())[b] = inner;
+    (*t.mutable_m_string())[s] = inner;
+    (*t.mutable_m_string())[s + string(1 << (u32 % static_cast<uint32>(9)),
+                                       b)] = inner;
+    inner.mutable_m()->erase(i);
+    frog = frog * multiplier + i;
+    frog ^= (frog >> 41);
+  }
+  TestDeterministicSerialization(t, "golden_message_maps");
 }
 
 // Text Format Test =================================================

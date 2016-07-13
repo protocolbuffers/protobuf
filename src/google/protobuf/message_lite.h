@@ -81,7 +81,7 @@ namespace internal {
 class LIBPROTOBUF_EXPORT MessageLite {
  public:
   inline MessageLite() {}
-  virtual ~MessageLite();
+  virtual ~MessageLite() {}
 
   // Basic Operations ------------------------------------------------
 

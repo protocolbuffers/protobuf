@@ -177,6 +177,66 @@ util::Status JsonToBinaryString(TypeResolver* resolver,
       resolver, type_url, &input_stream, &output_stream, options);
 }
 
+namespace {
+const char* kTypeUrlPrefix = "type.googleapis.com";
+TypeResolver* generated_type_resolver_ = NULL;
+GOOGLE_PROTOBUF_DECLARE_ONCE(generated_type_resolver_init_);
+
+string GetTypeUrl(const Message& message) {
+  return string(kTypeUrlPrefix) + "/" + message.GetDescriptor()->full_name();
+}
+
+void DeleteGeneratedTypeResolver() { delete generated_type_resolver_; }
+
+void InitGeneratedTypeResolver() {
+  generated_type_resolver_ = NewTypeResolverForDescriptorPool(
+      kTypeUrlPrefix, DescriptorPool::generated_pool());
+  ::google::protobuf::internal::OnShutdown(&DeleteGeneratedTypeResolver);
+}
+
+TypeResolver* GetGeneratedTypeResolver() {
+  ::google::protobuf::GoogleOnceInit(&generated_type_resolver_init_, &InitGeneratedTypeResolver);
+  return generated_type_resolver_;
+}
+}  // namespace
+
+util::Status MessageToJsonString(const Message& message, string* output,
+                                   const JsonOptions& options) {
+  const DescriptorPool* pool = message.GetDescriptor()->file()->pool();
+  TypeResolver* resolver =
+      pool == DescriptorPool::generated_pool()
+          ? GetGeneratedTypeResolver()
+          : NewTypeResolverForDescriptorPool(kTypeUrlPrefix, pool);
+  util::Status result =
+      BinaryToJsonString(resolver, GetTypeUrl(message),
+                         message.SerializeAsString(), output, options);
+  if (pool != DescriptorPool::generated_pool()) {
+    delete resolver;
+  }
+  return result;
+}
+
+util::Status JsonStringToMessage(const string& input, Message* message,
+                                   const JsonParseOptions& options) {
+  const DescriptorPool* pool = message->GetDescriptor()->file()->pool();
+  TypeResolver* resolver =
+      pool == DescriptorPool::generated_pool()
+          ? GetGeneratedTypeResolver()
+          : NewTypeResolverForDescriptorPool(kTypeUrlPrefix, pool);
+  string binary;
+  util::Status result = JsonToBinaryString(
+      resolver, GetTypeUrl(*message), input, &binary, options);
+  if (result.ok() && !message->ParseFromString(binary)) {
+    result =
+        util::Status(util::error::INVALID_ARGUMENT,
+                       "JSON transcoder produced invalid protobuf output.");
+  }
+  if (pool != DescriptorPool::generated_pool()) {
+    delete resolver;
+  }
+  return result;
+}
+
 }  // namespace util
 }  // namespace protobuf
 }  // namespace google

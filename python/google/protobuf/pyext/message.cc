@@ -1041,7 +1041,12 @@ int InternalDeleteRepeatedField(
 }
 
 // Initializes fields of a message. Used in constructors.
-int InitAttributes(CMessage* self, PyObject* kwargs) {
+int InitAttributes(CMessage* self, PyObject* args, PyObject* kwargs) {
+  if (args != NULL && PyTuple_Size(args) != 0) {
+    PyErr_SetString(PyExc_TypeError, "No positional arguments allowed");
+    return -1;
+  }
+
   if (kwargs == NULL) {
     return 0;
   }
@@ -1167,7 +1172,7 @@ int InitAttributes(CMessage* self, PyObject* kwargs) {
       }
       CMessage* cmessage = reinterpret_cast<CMessage*>(message.get());
       if (PyDict_Check(value)) {
-        if (InitAttributes(cmessage, value) < 0) {
+        if (InitAttributes(cmessage, NULL, value) < 0) {
           return -1;
         }
       } else {
@@ -1245,12 +1250,7 @@ static PyObject* New(PyTypeObject* cls,
 // The __init__ method of Message classes.
 // It initializes fields from keywords passed to the constructor.
 static int Init(CMessage* self, PyObject* args, PyObject* kwargs) {
-  if (PyTuple_Size(args) != 0) {
-    PyErr_SetString(PyExc_TypeError, "No positional arguments allowed");
-    return -1;
-  }
-
-  return InitAttributes(self, kwargs);
+  return InitAttributes(self, args, kwargs);
 }
 
 // ---------------------------------------------------------------------

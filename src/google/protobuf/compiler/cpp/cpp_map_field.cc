@@ -251,117 +251,148 @@ GenerateMergeFromCodedStream(io::Printer* printer) const {
   }
 }
 
+static void GenerateSerializationLoop(io::Printer* printer,
+                                      const map<string, string>& variables,
+                                      bool supports_arenas,
+                                      const string& utf8_check,
+                                      const string& loop_header,
+                                      const string& ptr,
+                                      bool loop_via_iterators) {
+  printer->Print(variables,
+      StrCat("::google::protobuf::scoped_ptr<$map_classname$> entry;\n",
+             loop_header, " {\n").c_str());
+  printer->Indent();
+
+  printer->Print(variables, StrCat(
+      "entry.reset($name$_.New$wrapper$(\n"
+      "    ", ptr, "->first, ", ptr, "->second));\n"
+      "$write_entry$;\n").c_str());
+
+  // If entry is allocated by arena, its desctructor should be avoided.
+  if (supports_arenas) {
+    printer->Print(
+        "if (entry->GetArena() != NULL) {\n"
+        "  entry.release();\n"
+        "}\n");
+  }
+
+  if (!utf8_check.empty()) {
+    // If loop_via_iterators is true then ptr is actually an iterator, and we
+    // create a pointer by prefixing it with "&*".
+    printer->Print(
+        StrCat(utf8_check, "(", (loop_via_iterators ? "&*" : ""), ptr, ");\n")
+            .c_str());
+  }
+
+  printer->Outdent();
+  printer->Print(
+      "}\n");
+}
+
 void MapFieldGenerator::
 GenerateSerializeWithCachedSizes(io::Printer* printer) const {
-  printer->Print(variables_,
-      "{\n"
-      "  ::google::protobuf::scoped_ptr<$map_classname$> entry;\n"
-      "  for (::google::protobuf::Map< $key_cpp$, $val_cpp$ >::const_iterator\n"
-      "      it = this->$name$().begin();\n"
-      "      it != this->$name$().end(); ++it) {\n");
-
-  // If entry is allocated by arena, its desctructor should be avoided.
-  if (SupportsArenas(descriptor_)) {
-    printer->Print(variables_,
-        "    if (entry.get() != NULL && entry->GetArena() != NULL) {\n"
-        "      entry.release();\n"
-        "    }\n");
-  }
-
-  printer->Print(variables_,
-      "    entry.reset($name$_.New$wrapper$(it->first, it->second));\n"
-      "    ::google::protobuf::internal::WireFormatLite::Write$stream_writer$(\n"
-      "        $number$, *entry, output);\n");
-
-  printer->Indent();
-  printer->Indent();
-
-  const FieldDescriptor* key_field =
-      descriptor_->message_type()->FindFieldByName("key");
-  const FieldDescriptor* value_field =
-      descriptor_->message_type()->FindFieldByName("value");
-  if (key_field->type() == FieldDescriptor::TYPE_STRING) {
-    GenerateUtf8CheckCodeForString(key_field, options_, false, variables_,
-                                   "it->first.data(), it->first.length(),\n",
-                                   printer);
-  }
-  if (value_field->type() == FieldDescriptor::TYPE_STRING) {
-    GenerateUtf8CheckCodeForString(value_field, options_, false, variables_,
-                                   "it->second.data(), it->second.length(),\n",
-                                   printer);
-  }
-
-  printer->Outdent();
-  printer->Outdent();
-
-  printer->Print(
-      "  }\n");
-
-  // If entry is allocated by arena, its desctructor should be avoided.
-  if (SupportsArenas(descriptor_)) {
-    printer->Print(variables_,
-        "  if (entry.get() != NULL && entry->GetArena() != NULL) {\n"
-        "    entry.release();\n"
-        "  }\n");
-  }
-
-  printer->Print("}\n");
+  map<string, string> variables(variables_);
+  variables["write_entry"] = "::google::protobuf::internal::WireFormatLite::Write" +
+                             variables["stream_writer"] + "(\n            " +
+                             variables["number"] + ", *entry, output)";
+  variables["deterministic"] = "output->IsSerializationDeterminstic()";
+  GenerateSerializeWithCachedSizes(printer, variables);
 }
 
 void MapFieldGenerator::
 GenerateSerializeWithCachedSizesToArray(io::Printer* printer) const {
-  printer->Print(variables_,
-      "{\n"
-      "  ::google::protobuf::scoped_ptr<$map_classname$> entry;\n"
-      "  for (::google::protobuf::Map< $key_cpp$, $val_cpp$ >::const_iterator\n"
-      "      it = this->$name$().begin();\n"
-      "      it != this->$name$().end(); ++it) {\n");
+  map<string, string> variables(variables_);
+  variables["write_entry"] =
+      "target = ::google::protobuf::internal::WireFormatLite::\n"
+      "                   InternalWrite" + variables["declared_type"] +
+      "NoVirtualToArray(\n                       " + variables["number"] +
+      ", *entry, deterministic, target);\n";
+  variables["deterministic"] = "deterministic";
+  GenerateSerializeWithCachedSizes(printer, variables);
+}
 
-  // If entry is allocated by arena, its desctructor should be avoided.
-  if (SupportsArenas(descriptor_)) {
-    printer->Print(variables_,
-        "    if (entry.get() != NULL && entry->GetArena() != NULL) {\n"
-        "      entry.release();\n"
-        "    }\n");
-  }
-
-  printer->Print(variables_,
-      "    entry.reset($name$_.New$wrapper$(it->first, it->second));\n"
-      "    target = ::google::protobuf::internal::WireFormatLite::\n"
-      "        InternalWrite$declared_type$NoVirtualToArray(\n"
-      "            $number$, *entry, false, target);\n");
-
+void MapFieldGenerator::GenerateSerializeWithCachedSizes(
+    io::Printer* printer, const map<string, string>& variables) const {
+  printer->Print(variables,
+      "if (!this->$name$().empty()) {\n");
   printer->Indent();
-  printer->Indent();
-
   const FieldDescriptor* key_field =
       descriptor_->message_type()->FindFieldByName("key");
   const FieldDescriptor* value_field =
       descriptor_->message_type()->FindFieldByName("value");
-  if (key_field->type() == FieldDescriptor::TYPE_STRING) {
-    GenerateUtf8CheckCodeForString(key_field, options_, false, variables_,
-                                   "it->first.data(), it->first.length(),\n",
-                                   printer);
+  const bool string_key = key_field->type() == FieldDescriptor::TYPE_STRING;
+  const bool string_value = value_field->type() == FieldDescriptor::TYPE_STRING;
+
+  printer->Print(variables,
+      "typedef ::google::protobuf::Map< $key_cpp$, $val_cpp$ >::const_pointer\n"
+      "    ConstPtr;\n");
+  if (string_key) {
+    printer->Print(variables,
+        "typedef ConstPtr SortItem;\n"
+        "typedef ::google::protobuf::internal::"
+        "CompareByDerefFirst<SortItem> Less;\n");
+  } else {
+    printer->Print(variables,
+        "typedef ::google::protobuf::internal::SortItem< $key_cpp$, ConstPtr > "
+        "SortItem;\n"
+        "typedef ::google::protobuf::internal::CompareByFirstField<SortItem> Less;\n");
   }
-  if (value_field->type() == FieldDescriptor::TYPE_STRING) {
-    GenerateUtf8CheckCodeForString(value_field, options_, false, variables_,
-                                   "it->second.data(), it->second.length(),\n",
-                                   printer);
+  string utf8_check;
+  if (string_key || string_value) {
+    printer->Print(
+        "struct Utf8Check {\n"
+        "  static void Check(ConstPtr p) {\n");
+    printer->Indent();
+    printer->Indent();
+    if (string_key) {
+      GenerateUtf8CheckCodeForString(key_field, options_, false, variables,
+                                     "p->first.data(), p->first.length(),\n",
+                                     printer);
+    }
+    if (string_value) {
+      GenerateUtf8CheckCodeForString(value_field, options_, false, variables,
+                                     "p->second.data(), p->second.length(),\n",
+                                     printer);
+    }
+    printer->Outdent();
+    printer->Outdent();
+    printer->Print(
+        "  }\n"
+        "};\n");
+    utf8_check = "Utf8Check::Check";
   }
 
-  printer->Outdent();
+  printer->Print(variables,
+      "\n"
+      "if ($deterministic$ &&\n"
+      "    this->$name$().size() > 1) {\n"
+      "  ::google::protobuf::scoped_array<SortItem> items(\n"
+      "      new SortItem[this->$name$().size()]);\n"
+      "  typedef ::google::protobuf::Map< $key_cpp$, $val_cpp$ >::size_type size_type;\n"
+      "  size_type n = 0;\n"
+      "  for (::google::protobuf::Map< $key_cpp$, $val_cpp$ >::const_iterator\n"
+      "      it = this->$name$().begin();\n"
+      "      it != this->$name$().end(); ++it, ++n) {\n"
+      "    items[n] = SortItem(&*it);\n"
+      "  }\n"
+      "  ::std::sort(&items[0], &items[n], Less());\n");
+  printer->Indent();
+  GenerateSerializationLoop(printer, variables, SupportsArenas(descriptor_),
+                            utf8_check, "for (size_type i = 0; i < n; i++)",
+                            string_key ? "items[i]" : "items[i].second", false);
   printer->Outdent();
   printer->Print(
-      "  }\n");
-
-  // If entry is allocated by arena, its desctructor should be avoided.
-  if (SupportsArenas(descriptor_)) {
-    printer->Print(variables_,
-        "  if (entry.get() != NULL && entry->GetArena() != NULL) {\n"
-        "    entry.release();\n"
-        "  }\n");
-  }
-
+      "} else {\n");
+  printer->Indent();
+  GenerateSerializationLoop(
+      printer, variables, SupportsArenas(descriptor_), utf8_check,
+      "for (::google::protobuf::Map< $key_cpp$, $val_cpp$ >::const_iterator\n"
+      "    it = this->$name$().begin();\n"
+      "    it != this->$name$().end(); ++it)",
+      "it", true);
+  printer->Outdent();
+  printer->Print("}\n");
+  printer->Outdent();
   printer->Print("}\n");
 }
 

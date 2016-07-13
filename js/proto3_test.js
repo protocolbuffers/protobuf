@@ -225,12 +225,18 @@ describe('proto3Test', function() {
     assertEquals(msg.getOneofForeignMessage(), undefined);
     assertEquals(msg.getOneofString(), undefined);
     assertEquals(msg.getOneofBytes(), undefined);
+    assertFalse(msg.hasOneofUint32());
+    assertFalse(msg.hasOneofString());
+    assertFalse(msg.hasOneofBytes());
 
     msg.setOneofUint32(42);
     assertEquals(msg.getOneofUint32(), 42);
     assertEquals(msg.getOneofForeignMessage(), undefined);
     assertEquals(msg.getOneofString(), undefined);
     assertEquals(msg.getOneofBytes(), undefined);
+    assertTrue(msg.hasOneofUint32());
+    assertFalse(msg.hasOneofString());
+    assertFalse(msg.hasOneofBytes());
 
 
     var submsg = new proto.jspb.test.ForeignMessage();
@@ -239,12 +245,18 @@ describe('proto3Test', function() {
     assertEquals(msg.getOneofForeignMessage(), submsg);
     assertEquals(msg.getOneofString(), undefined);
     assertEquals(msg.getOneofBytes(), undefined);
+    assertFalse(msg.hasOneofUint32());
+    assertFalse(msg.hasOneofString());
+    assertFalse(msg.hasOneofBytes());
 
     msg.setOneofString('hello');
     assertEquals(msg.getOneofUint32(), undefined);
     assertEquals(msg.getOneofForeignMessage(), undefined);
     assertEquals(msg.getOneofString(), 'hello');
     assertEquals(msg.getOneofBytes(), undefined);
+    assertFalse(msg.hasOneofUint32());
+    assertTrue(msg.hasOneofString());
+    assertFalse(msg.hasOneofBytes());
 
     msg.setOneofBytes(goog.crypt.base64.encodeString('\u00FF\u00FF'));
     assertEquals(msg.getOneofUint32(), undefined);
@@ -252,6 +264,9 @@ describe('proto3Test', function() {
     assertEquals(msg.getOneofString(), undefined);
     assertEquals(msg.getOneofBytes_asB64(),
         goog.crypt.base64.encodeString('\u00FF\u00FF'));
+    assertFalse(msg.hasOneofUint32());
+    assertFalse(msg.hasOneofString());
+    assertTrue(msg.hasOneofBytes());
   });
 
 

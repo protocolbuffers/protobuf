@@ -46,8 +46,6 @@
 namespace google {
 namespace protobuf {
 
-MessageLite::~MessageLite() {}
-
 string MessageLite::InitializationErrorString() const {
   return "(cannot determine missing fields for lite message)";
 }

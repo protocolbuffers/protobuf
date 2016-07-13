@@ -179,7 +179,7 @@ struct Metadata {
 class LIBPROTOBUF_EXPORT Message : public MessageLite {
  public:
   inline Message() {}
-  virtual ~Message();
+  virtual ~Message() {}
 
   // Basic Operations ------------------------------------------------
 
