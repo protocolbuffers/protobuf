@@ -96,7 +96,7 @@ namespace Google.Protobuf.WellKnownTypes
             var message = SampleMessages.CreateFullTestAllTypes();
             var any = Any.Pack(message);
             var text = any.ToString();
-            Assert.That(text, Is.StringContaining("\"@value\": \"" + message.ToByteString().ToBase64() + "\""));
+            Assert.That(text, Does.Contain("\"@value\": \"" + message.ToByteString().ToBase64() + "\""));
         }
 
         [Test]
