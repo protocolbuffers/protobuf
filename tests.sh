@@ -57,8 +57,8 @@ build_csharp() {
   if [ "$TRAVIS" == "true" ]; then
     # Install latest version of Mono
     sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF
+    sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 1397BC53640DB551
     echo "deb http://download.mono-project.com/repo/debian wheezy main" | sudo tee /etc/apt/sources.list.d/mono-xamarin.list
-    echo "deb http://download.mono-project.com/repo/debian wheezy-libtiff-compat main" | sudo tee -a /etc/apt/sources.list.d/mono-xamarin.list
     sudo apt-get update -qq
     sudo apt-get install -qq mono-devel referenceassemblies-pcl nunit
     
