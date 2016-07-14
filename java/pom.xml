@@ -182,7 +182,7 @@
 
   <modules>
     <module>core</module>
-    <module>lite</module>
+    <!-- <module>lite</module> -->
     <module>util</module>
   </modules>
 
