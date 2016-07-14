@@ -46,8 +46,8 @@ namespace Google.Protobuf.WellKnownTypes
             var mask = new FieldMask { Paths = { input } };
             var text = mask.ToString();
             // More specific test below
-            Assert.That(text, Is.StringContaining("@warning"));
-            Assert.That(text, Is.StringContaining(input));
+            Assert.That(text, Does.Contain("@warning"));
+            Assert.That(text, Does.Contain(input));
         }
 
         [Test]

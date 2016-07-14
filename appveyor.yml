@@ -14,10 +14,16 @@ environment:
 
     - language: csharp
 
+# Our build scripts run tests automatically; we don't want AppVeyor
+# to try to detect them itself.
+test: off
+
 install:
   - ps: Start-FileDownload https://googlemock.googlecode.com/files/gmock-1.7.0.zip
   - 7z x gmock-1.7.0.zip
   - rename gmock-1.7.0 gmock
+  - ps: Start-FileDownload https://go.microsoft.com/fwlink/?LinkID=809122 -FileName dotnetsdk.exe
+  - dotnetsdk.exe /install /quiet /norestart
 
 before_build:
   - if %platform%==Win32 set generator=Visual Studio 12

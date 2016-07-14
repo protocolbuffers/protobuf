@@ -57,15 +57,27 @@ build_csharp() {
   if [ "$TRAVIS" == "true" ]; then
     # Install latest version of Mono
     sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF
+    sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 1397BC53640DB551
     echo "deb http://download.mono-project.com/repo/debian wheezy main" | sudo tee /etc/apt/sources.list.d/mono-xamarin.list
-    echo "deb http://download.mono-project.com/repo/debian wheezy-libtiff-compat main" | sudo tee -a /etc/apt/sources.list.d/mono-xamarin.list
     sudo apt-get update -qq
     sudo apt-get install -qq mono-devel referenceassemblies-pcl nunit
-    wget www.nuget.org/NuGet.exe -O nuget.exe
-    NUGET=../../nuget.exe
+    
+    # Then install the dotnet SDK as per Ubuntu 14.04 instructions on dot.net.
+    sudo sh -c 'echo "deb [arch=amd64] https://apt-mo.trafficmanager.net/repos/dotnet/ trusty main" > /etc/apt/sources.list.d/dotnetdev.list'
+    sudo apt-key adv --keyserver apt-mo.trafficmanager.net --recv-keys 417A0893
+    sudo apt-get update -qq
+    sudo apt-get install -qq dotnet-dev-1.0.0-preview2-003121
   fi
 
-  (cd csharp/src; mono $NUGET restore)
+  # Perform "dotnet new" once to get the setup preprocessing out of the
+  # way. That spews a lot of output (including backspaces) into logs
+  # otherwise, and can cause problems. It doesn't matter if this step
+  # is performed multiple times; it's cheap after the first time anyway.
+  mkdir dotnettmp
+  (cd dotnettmp; dotnet new > /dev/null)
+  rm -rf dotnettmp
+
+  (cd csharp/src; dotnet restore)
   csharp/buildall.sh
   cd conformance && make test_csharp && cd ..
 }
