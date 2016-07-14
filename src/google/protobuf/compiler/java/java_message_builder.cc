@@ -181,6 +181,18 @@ Generate(io::Printer* printer) {
       "  return this;\n"
       "}\n"
       "\n");
+  } else {
+    printer->Print(
+      "public final Builder setUnknownFields(\n"
+      "    final com.google.protobuf.UnknownFieldSet unknownFields) {\n"
+      "  return super.setUnknownFields(unknownFields);\n"
+      "}\n"
+      "\n"
+      "public final Builder mergeUnknownFields(\n"
+      "    final com.google.protobuf.UnknownFieldSet unknownFields) {\n"
+      "  return super.mergeUnknownFields(unknownFields);\n"
+      "}\n"
+      "\n");
   }
 
   printer->Print(
@@ -437,6 +449,62 @@ GenerateCommonBuilderMethods(io::Printer* printer) {
     "}\n"
     "\n",
     "classname", name_resolver_->GetImmutableClassName(descriptor_));
+
+  printer->Print(
+    "public Builder clone() {\n"
+    "  return (Builder) super.clone();\n"
+    "}\n"
+    "public Builder setField(\n"
+    "    com.google.protobuf.Descriptors.FieldDescriptor field,\n"
+    "    Object value) {\n"
+    "  return (Builder) super.setField(field, value);\n"
+    "}\n"
+    "public Builder clearField(\n"
+    "    com.google.protobuf.Descriptors.FieldDescriptor field) {\n"
+    "  return (Builder) super.clearField(field);\n"
+    "}\n"
+    "public Builder clearOneof(\n"
+    "    com.google.protobuf.Descriptors.OneofDescriptor oneof) {\n"
+    "  return (Builder) super.clearOneof(oneof);\n"
+    "}\n"
+    "public Builder setRepeatedField(\n"
+    "    com.google.protobuf.Descriptors.FieldDescriptor field,\n"
+    "    int index, Object value) {\n"
+    "  return (Builder) super.setRepeatedField(field, index, value);\n"
+    "}\n"
+    "public Builder addRepeatedField(\n"
+    "    com.google.protobuf.Descriptors.FieldDescriptor field,\n"
+    "    Object value) {\n"
+    "  return (Builder) super.addRepeatedField(field, value);\n"
+    "}\n");
+
+  if (descriptor_->extension_range_count() > 0) {
+    printer->Print(
+      "public <Type> Builder setExtension(\n"
+      "    com.google.protobuf.GeneratedMessage.GeneratedExtension<\n"
+      "        $classname$, Type> extension,\n"
+      "    Type value) {\n"
+      "  return (Builder) super.setExtension(extension, value);\n"
+      "}\n"
+      "public <Type> Builder setExtension(\n"
+      "    com.google.protobuf.GeneratedMessage.GeneratedExtension<\n"
+      "        $classname$, java.util.List<Type>> extension,\n"
+      "    int index, Type value) {\n"
+      "  return (Builder) super.setExtension(extension, index, value);\n"
+      "}\n"
+      "public <Type> Builder addExtension(\n"
+      "    com.google.protobuf.GeneratedMessage.GeneratedExtension<\n"
+      "        $classname$, java.util.List<Type>> extension,\n"
+      "    Type value) {\n"
+      "  return (Builder) super.addExtension(extension, value);\n"
+      "}\n"
+      "public <Type> Builder clearExtension(\n"
+      "    com.google.protobuf.GeneratedMessage.GeneratedExtension<\n"
+      "        $classname$, ?> extension) {\n"
+      "  return (Builder) super.clearExtension(extension);\n"
+      "}\n",
+      "classname", name_resolver_->GetImmutableClassName(descriptor_));
+  }
 
   // -----------------------------------------------------------------
 

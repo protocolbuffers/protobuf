@@ -1396,7 +1396,7 @@ public abstract class GeneratedMessage extends AbstractMessage
       return setExtension((ExtensionLite<MessageType, Type>) extension, value);
     }
     /** Set the value of an extension. */
-    public final <Type> BuilderType setExtension(
+    public <Type> BuilderType setExtension(
         final GeneratedExtension<MessageType, Type> extension, final Type value) {
       return setExtension((ExtensionLite<MessageType, Type>) extension, value);
     }
@@ -1407,7 +1407,7 @@ public abstract class GeneratedMessage extends AbstractMessage
       return setExtension((ExtensionLite<MessageType, List<Type>>) extension, index, value);
     }
     /** Set the value of one element of a repeated extension. */
-    public final <Type> BuilderType setExtension(
+    public <Type> BuilderType setExtension(
         final GeneratedExtension<MessageType, List<Type>> extension,
         final int index, final Type value) {
       return setExtension((ExtensionLite<MessageType, List<Type>>) extension, index, value);
@@ -1418,7 +1418,7 @@ public abstract class GeneratedMessage extends AbstractMessage
       return addExtension((ExtensionLite<MessageType, List<Type>>) extension, value);
     }
     /** Append a value to a repeated extension. */
-    public final <Type> BuilderType addExtension(
+    public <Type> BuilderType addExtension(
         final GeneratedExtension<MessageType, List<Type>> extension, final Type value) {
       return addExtension((ExtensionLite<MessageType, List<Type>>) extension, value);
     }
@@ -1428,7 +1428,7 @@ public abstract class GeneratedMessage extends AbstractMessage
       return clearExtension((ExtensionLite<MessageType, ?>) extension);
     }
     /** Clear an extension. */
-    public final <Type> BuilderType clearExtension(
+    public <Type> BuilderType clearExtension(
         final GeneratedExtension<MessageType, ?> extension) {
       return clearExtension((ExtensionLite<MessageType, ?>) extension);
     }
