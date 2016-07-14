@@ -32,6 +32,7 @@
 
 using System.Collections.Generic;
 using System.IO;
+using System.Reflection;
 using Google.Protobuf.TestProtos;
 using NUnit.Framework;
 
@@ -162,7 +163,7 @@ namespace Google.Protobuf
                 codedOutput.Flush();
                 Assert.AreEqual(0, stream.Position);
                 Assert.AreEqual(0, codec.CalculateSizeWithTag(codec.DefaultValue));
-                if (typeof(T).IsValueType)
+                if (typeof(T).GetTypeInfo().IsValueType)
                 {
                     Assert.AreEqual(default(T), codec.DefaultValue);
                 }

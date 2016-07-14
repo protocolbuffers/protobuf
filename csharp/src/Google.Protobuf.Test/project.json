@@ -1,0 +1,44 @@
+{
+  "buildOptions": {
+    "debugType": "portable",
+    "keyFile": "../../keys/Google.Protobuf.snk"
+  },
+
+  "configurations": {
+    "Debug": {
+      "buildOptions": {
+        "define": [ "DEBUG", "TRACE" ]
+      }
+    },
+    "Release": {
+      "buildOptions": {
+        "define": [ "RELEASE", "TRACE" ],
+        "optimize": true
+      }
+    }
+  },
+
+  "dependencies": {
+    "Google.Protobuf": { "target": "project" },
+    "NUnit": "3.4.0",
+    "dotnet-test-nunit": "3.4.0-alpha-2",
+  },
+
+  "testRunner": "nunit",
+
+  "frameworks": {
+    "netcoreapp1.0": {
+      "imports" : [ "dnxcore50", "netcoreapp1.0", "portable-net45+win8" ],
+      "buildOptions": {
+        "define": [ "PCL" ]
+      },
+      "dependencies": {
+        "Microsoft.NETCore.App": { 
+          "version": "1.0.0",
+          "type": "platform"
+        },
+        "System.Console": "4.0.0"
+      }
+    }
+  }
+}
