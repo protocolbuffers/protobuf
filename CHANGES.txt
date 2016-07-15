@@ -78,6 +78,10 @@
   Ruby (alpha)
   * Accessors for oneof fields now return default values instead of nil.
 
+  Java Lite
+  * Java lite support is removed from protocol compiler. It will be supported
+    as a protocol compiler plugin in a separate code branch.
+
 2016-05-16 version 3.0.0-beta-3 (C++/Java/Python/Ruby/Nano/Objective-C/C#/JavaScript)
   General
   * Supported Proto3 lite-runtime in C++/Java for mobile platforms.
