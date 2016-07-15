@@ -472,9 +472,11 @@ libprotoc_la_SOURCES =                                         \
   google/protobuf/compiler/csharp/csharp_wrapper_field.cc      \
   google/protobuf/compiler/csharp/csharp_wrapper_field.h
 
-bin_PROGRAMS = protoc
+bin_PROGRAMS = protoc protoc-gen-javalite
 protoc_LDADD = $(PTHREAD_LIBS) libprotobuf.la libprotoc.la
 protoc_SOURCES = google/protobuf/compiler/main.cc
+protoc_gen_javalite_LDADD = $(PTHREAD_LIBS) libprotobuf.la libprotoc.la
+protoc_gen_javalite_SOURCES = google/protobuf/compiler/java/java_lite_main.cc
 
 # Tests ==============================================================
 
@@ -677,6 +679,7 @@ COMMON_TEST_SOURCES =                                          \
 
 check_PROGRAMS = protoc protobuf-test protobuf-lazy-descriptor-test \
                  protobuf-lite-test test_plugin protobuf-lite-arena-test \
+								 protoc-gen-javalite \
                  $(GZCHECKPROGRAMS)
 protobuf_test_LDADD = $(PTHREAD_LIBS) libprotobuf.la libprotoc.la \
                       ../gmock/gtest/lib/libgtest.la              \
