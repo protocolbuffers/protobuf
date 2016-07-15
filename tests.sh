@@ -238,6 +238,8 @@ build_objectivec_osx() {
 build_objectivec_cocoapods_integration() {
   # First, load the RVM environment in bash, needed to update ruby.
   source ~/.rvm/scripts/rvm
+  # Update rvm to the latest version.
+  rvm get head
   # Update ruby to 2.2.3 as the default one crashes with segmentation faults
   # when using pod.
   rvm use 2.2.3 --install --binary --fuzzy
