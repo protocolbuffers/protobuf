@@ -132,7 +132,7 @@ std::string LIBPROTOBUF_EXPORT VersionString(int version);
 #define GOOGLE_PROTOBUF_VERIFY_VERSION                                    \
   ::google::protobuf::internal::VerifyVersion(                            \
     GOOGLE_PROTOBUF_VERSION, GOOGLE_PROTOBUF_MIN_LIBRARY_VERSION,         \
-    __FILE__)
+    GOOGLE_FILE)
 
 
 // ===================================================================
