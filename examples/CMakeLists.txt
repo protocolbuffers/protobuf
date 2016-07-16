@@ -11,6 +11,10 @@ if(protobuf_VERBOSE)
   message(STATUS "Using Protocol Buffers ${Protobuf_VERSION}")
 endif()
 
+if(protobuf_WITH_ZLIB)
+  find_package(ZLIB)
+endif()
+
 set(CMAKE_INCLUDE_CURRENT_DIR TRUE)
 
 # http://www.cmake.org/Wiki/CMake_FAQ#How_can_I_build_my_MSVC_application_with_a_static_runtime.3F
