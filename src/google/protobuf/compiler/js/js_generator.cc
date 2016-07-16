@@ -1257,11 +1257,14 @@ string GetPivot(const Descriptor* desc) {
 // Returns true for fields that represent "null" as distinct from the default
 // value. See http://go/proto3#heading=h.kozewqqcqhuz for more information.
 bool HasFieldPresence(const FieldDescriptor* field) {
+  if (field->is_repeated()) {
+    return false;
+  }
+
   return
-      !field->is_repeated() &&
-      ((field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) ||
+      (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) ||
       (field->containing_oneof() != NULL) ||
-      (field->file()->syntax() != FileDescriptor::SYNTAX_PROTO3));
+      (field->file()->syntax() != FileDescriptor::SYNTAX_PROTO3);
 }
 
 // For proto3 fields without presence, returns a string representing the default
@@ -2322,20 +2325,6 @@ void Generator::GenerateClassField(const GeneratorOptions& options,
         "clearedvalue", (field->is_repeated() ? "[]" : "undefined"),
         "returnvalue", JSReturnClause(field));
 
-    printer->Print(
-        "/**\n"
-        " * Returns whether this field is set.\n"
-        " * @return{!boolean}\n"
-        " */\n"
-        "$class$.prototype.has$name$ = function() {\n"
-        "  return jspb.Message.getField(this, $index$) != null;\n"
-        "};\n"
-        "\n"
-        "\n",
-        "class", GetPath(options, field->containing_type()),
-        "name", JSGetterName(options, field),
-        "index", JSFieldIndex(field));
-
   } else {
     bool untyped =
         false;
@@ -2497,22 +2486,22 @@ void Generator::GenerateClassField(const GeneratorOptions& options,
           "clearedvalue", (field->is_repeated() ? "[]" : "undefined"),
           "returnvalue", JSReturnClause(field));
     }
+  }
 
-    if (HasFieldPresence(field)) {
-      printer->Print(
-          "/**\n"
-          " * Returns whether this field is set.\n"
-          " * @return{!boolean}\n"
-          " */\n"
-          "$class$.prototype.has$name$ = function() {\n"
-          "  return jspb.Message.getField(this, $index$) != null;\n"
-          "};\n"
-          "\n"
-          "\n",
-          "class", GetPath(options, field->containing_type()),
-          "name", JSGetterName(options, field),
-          "index", JSFieldIndex(field));
-    }
+  if (HasFieldPresence(field)) {
+    printer->Print(
+        "/**\n"
+        " * Returns whether this field is set.\n"
+        " * @return{!boolean}\n"
+        " */\n"
+        "$class$.prototype.has$name$ = function() {\n"
+        "  return jspb.Message.getField(this, $index$) != null;\n"
+        "};\n"
+        "\n"
+        "\n",
+        "class", GetPath(options, field->containing_type()),
+        "name", JSGetterName(options, field),
+        "index", JSFieldIndex(field));
   }
 }
 
