@@ -747,29 +747,16 @@ jspb.Message.getFieldProto3 = function(msg, fieldNumber, defaultValue) {
  * of serialization/parsing callbacks (which are required by the map at
  * construction time, and the map may be constructed here).
  *
- * The below callbacks are used to allow the map to serialize and parse its
- * binary wire format data. Their purposes are described in more detail in
- * `jspb.Map`'s constructor documentation.
- *
  * @template K, V
  * @param {!jspb.Message} msg
  * @param {number} fieldNumber
  * @param {boolean|undefined} noLazyCreate
  * @param {?=} opt_valueCtor
- * @param {function(number,K)=} opt_keyWriterFn
- * @param {function():K=} opt_keyReaderFn
- * @param {function(number,V)|function(number,V,?)|
- *         function(number,V,?,?,?,?)=} opt_valueWriterFn
- * @param {function():V|
- *         function(V,function(?,?))=} opt_valueReaderFn
- * @param {function(?,?)|function(?,?,?,?,?)=} opt_valueWriterCallback
- * @param {function(?,?)=} opt_valueReaderCallback
  * @return {!jspb.Map<K, V>|undefined}
  * @protected
  */
 jspb.Message.getMapField = function(msg, fieldNumber, noLazyCreate,
-    opt_valueCtor, opt_keyWriterFn, opt_keyReaderFn, opt_valueWriterFn,
-    opt_valueReaderFn, opt_valueWriterCallback, opt_valueReaderCallback) {
+    opt_valueCtor) {
   if (!msg.wrappers_) {
     msg.wrappers_ = {};
   }
@@ -787,10 +774,7 @@ jspb.Message.getMapField = function(msg, fieldNumber, noLazyCreate,
     }
     return msg.wrappers_[fieldNumber] =
         new jspb.Map(
-            /** @type {!Array<!Array<!Object>>} */ (arr),
-            opt_keyWriterFn, opt_keyReaderFn, opt_valueWriterFn,
-            opt_valueReaderFn, opt_valueCtor, opt_valueWriterCallback,
-            opt_valueReaderCallback);
+            /** @type {!Array<!Array<!Object>>} */ (arr), opt_valueCtor);
   }
 };
 

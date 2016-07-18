@@ -2253,25 +2253,6 @@ void Generator::GenerateClassField(const GeneratorOptions& options,
           "      null");
     }
 
-    if (options.binary) {
-      printer->Print(",\n"
-          "      $keyWriterFn$,\n"
-          "      $keyReaderFn$,\n"
-          "      $valueWriterFn$,\n"
-          "      $valueReaderFn$",
-          "keyWriterFn", JSBinaryWriterMethodName(options, key_field),
-          "keyReaderFn", JSBinaryReaderMethodName(options, key_field),
-          "valueWriterFn", JSBinaryWriterMethodName(options, value_field),
-          "valueReaderFn", JSBinaryReaderMethodName(options, value_field));
-
-      if (value_field->type() == FieldDescriptor::TYPE_MESSAGE) {
-        printer->Print(",\n"
-            "      $messageType$.serializeBinaryToWriter,\n"
-            "      $messageType$.deserializeBinaryFromReader",
-            "messageType", GetPath(options, value_field->message_type()));
-      }
-    }
-
     printer->Print(
         "));\n");
 
@@ -2620,10 +2601,25 @@ void Generator::GenerateClassDeserializeBinaryField(
                  "num", SimpleItoa(field->number()));
 
   if (field->is_map()) {
+    const FieldDescriptor* key_field = MapFieldKey(field);
+    const FieldDescriptor* value_field = MapFieldValue(field);
     printer->Print(
         "      var value = msg.get$name$();\n"
-        "      reader.readMessage(value, jspb.Map.deserializeBinary);\n",
+        "      reader.readMessage(value, function(message, reader) {\n",
         "name", JSGetterName(options, field));
+
+    printer->Print("        jspb.Map.deserializeBinary(message, reader, "
+                   "$keyReaderFn$, $valueReaderFn$",
+          "keyReaderFn", JSBinaryReaderMethodName(options, key_field),
+          "valueReaderFn", JSBinaryReaderMethodName(options, value_field));
+
+    if (value_field->type() == FieldDescriptor::TYPE_MESSAGE) {
+      printer->Print(", $messageType$.deserializeBinaryFromReader",
+          "messageType", GetPath(options, value_field->message_type()));
+    }
+
+    printer->Print(");\n");
+    printer->Print("         });\n");
   } else {
     if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
       printer->Print(
@@ -2782,9 +2778,21 @@ void Generator::GenerateClassSerializeBinaryField(
 
   // Write the field on the wire.
   if (field->is_map()) {
+    const FieldDescriptor* key_field = MapFieldKey(field);
+    const FieldDescriptor* value_field = MapFieldValue(field);
     printer->Print(
-        "    f.serializeBinary($index$, writer);\n",
-        "index", SimpleItoa(field->number()));
+        "    f.serializeBinary($index$, writer, "
+                              "$keyWriterFn$, $valueWriterFn$",
+        "index", SimpleItoa(field->number()),
+        "keyWriterFn", JSBinaryWriterMethodName(options, key_field),
+        "valueWriterFn", JSBinaryWriterMethodName(options, value_field));
+
+    if (value_field->type() == FieldDescriptor::TYPE_MESSAGE) {
+      printer->Print(", $messageType$.serializeBinaryToWriter",
+          "messageType", GetPath(options, value_field->message_type()));
+    }
+
+    printer->Print(");\n");
   } else {
     printer->Print(
         "    writer.write$method$(\n"
