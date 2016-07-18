@@ -39,7 +39,7 @@ import java.io.InputStream;
  *
  * <p>All methods may throw {@link InvalidProtocolBufferException}. In the event of invalid data,
  * like an encoding error, the cause of the thrown exception will be {@code null}. However, if an
- * I/O problem occurs, an exception is thrown with an {@link IOException} cause.
+ * I/O problem occurs, an exception is thrown with an {@link java.io.IOException} cause.
  *
  * @author liujisi@google.com (Pherl Liu)
  */
