@@ -76,7 +76,6 @@ from google.protobuf.internal import well_known_types
 from google.protobuf.internal import wire_format
 from google.protobuf import descriptor as descriptor_mod
 from google.protobuf import message as message_mod
-from google.protobuf import symbol_database
 from google.protobuf import text_format
 
 _FieldDescriptor = descriptor_mod.FieldDescriptor
@@ -98,16 +97,12 @@ class GeneratedProtocolMessageType(type):
   classes at runtime, as in this example:
 
   mydescriptor = Descriptor(.....)
-  class MyProtoClass(Message):
-    __metaclass__ = GeneratedProtocolMessageType
-    DESCRIPTOR = mydescriptor
+  factory = symbol_database.Default()
+  factory.pool.AddDescriptor(mydescriptor)
+  MyProtoClass = factory.GetPrototype(mydescriptor)
   myproto_instance = MyProtoClass()
   myproto.foo_field = 23
   ...
-
-  The above example will not work for nested types. If you wish to include them,
-  use reflection.MakeClass() instead of manually instantiating the class in
-  order to create the appropriate class structure.
   """
 
   # Must be consistent with the protocol-compiler code in
@@ -926,25 +921,32 @@ def _InternalUnpackAny(msg):
   Returns:
     The unpacked message.
   """
+  # TODO(amauryfa): Don't use the factory of generated messages.
+  # To make Any work with custom factories, use the message factory of the
+  # parent message.
+  # pylint: disable=g-import-not-at-top
+  from google.protobuf import symbol_database
+  factory = symbol_database.Default()
+
   type_url = msg.type_url
-  db = symbol_database.Default()
 
   if not type_url:
     return None
 
   # TODO(haberman): For now we just strip the hostname.  Better logic will be
   # required.
-  type_name = type_url.split("/")[-1]
-  descriptor = db.pool.FindMessageTypeByName(type_name)
+  type_name = type_url.split('/')[-1]
+  descriptor = factory.pool.FindMessageTypeByName(type_name)
 
   if descriptor is None:
     return None
 
-  message_class = db.GetPrototype(descriptor)
+  message_class = factory.GetPrototype(descriptor)
   message = message_class()
 
   message.ParseFromString(msg.value)
   return message
+
 
 def _AddEqualsMethod(message_descriptor, cls):
   """Helper for _AddMessageMethods()."""

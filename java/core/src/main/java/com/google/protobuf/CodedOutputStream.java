@@ -145,6 +145,44 @@ public abstract class CodedOutputStream extends ByteOutput {
   }
 
   /**
+   * Configures serialization to be deterministic.
+   *
+   * <p>The deterministic serialization guarantees that for a given binary, equal (defined by the
+   * {@code equals()} methods in protos) messages will always be serialized to the same bytes. This
+   * implies:
+   *
+   * <ul>
+   * <li>repeated serialization of a message will return the same bytes
+   * <li>different processes of the same binary (which may be executing on different machines) will
+   *     serialize equal messages to the same bytes.
+   * </ul>
+   *
+   * <p>Note the deterministic serialization is NOT canonical across languages; it is also unstable
+   * across different builds with schema changes due to unknown fields. Users who need canonical
+   * serialization, e.g. persistent storage in a canonical form, fingerprinting, etc, should define
+   * their own canonicalization specification and implement the serializer using reflection APIs
+   * rather than relying on this API.
+   *
+   * <p> Once set, the serializer will:  (Note this is an implementation detail and may subject to
+   * change in the future)
+   *
+   * <ul>
+   * <li> sort map entries by keys in lexicographical order or numerical order. Note: For string
+   *     keys, the order is based on comparing the Unicode value of each character in the strings.
+   *     The order may be different from the deterministic serialization in other languages where
+   *     maps are sorted on the lexicographical order of the UTF8 encoded keys.
+   * </ul>
+   */
+  void useDeterministicSerialization() {
+    serializationDeterministic = true;
+  }
+
+  boolean isSerializationDeterministic() {
+    return serializationDeterministic;
+  }
+  private boolean serializationDeterministic;
+
+  /**
    * Create a new {@code CodedOutputStream} that writes to the given {@link ByteBuffer}.
    *
    * @deprecated the size parameter is no longer used since use of an internal buffer is useless

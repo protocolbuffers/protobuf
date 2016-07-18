@@ -45,6 +45,7 @@ const ::google::protobuf::EnumDescriptor* NullValue_descriptor_ = NULL;
 }  // namespace
 
 
+void protobuf_AssignDesc_google_2fprotobuf_2fstruct_2eproto() GOOGLE_ATTRIBUTE_COLD;
 void protobuf_AssignDesc_google_2fprotobuf_2fstruct_2eproto() {
   protobuf_AddDesc_google_2fprotobuf_2fstruct_2eproto();
   const ::google::protobuf::FileDescriptor* file =
@@ -116,6 +117,7 @@ inline void protobuf_AssignDescriptorsOnce() {
                  &protobuf_AssignDesc_google_2fprotobuf_2fstruct_2eproto);
 }
 
+void protobuf_RegisterTypes(const ::std::string&) GOOGLE_ATTRIBUTE_COLD;
 void protobuf_RegisterTypes(const ::std::string&) {
   protobuf_AssignDescriptorsOnce();
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
@@ -147,6 +149,7 @@ void protobuf_ShutdownFile_google_2fprotobuf_2fstruct_2eproto() {
   delete ListValue_reflection_;
 }
 
+void protobuf_AddDesc_google_2fprotobuf_2fstruct_2eproto() GOOGLE_ATTRIBUTE_COLD;
 void protobuf_AddDesc_google_2fprotobuf_2fstruct_2eproto() {
   static bool already_here = false;
   if (already_here) return;
@@ -201,16 +204,6 @@ bool NullValue_IsValid(int value) {
       return false;
   }
 }
-
-
-namespace {
-
-static void MergeFromFail(int line) GOOGLE_ATTRIBUTE_COLD;
-static void MergeFromFail(int line) {
-  GOOGLE_CHECK(false) << __FILE__ << ":" << line;
-}
-
-}  // namespace
 
 
 // ===================================================================
@@ -348,18 +341,51 @@ void Struct::SerializeWithCachedSizes(
     ::google::protobuf::io::CodedOutputStream* output) const {
   // @@protoc_insertion_point(serialize_start:google.protobuf.Struct)
   // map<string, .google.protobuf.Value> fields = 1;
-  {
-    ::google::protobuf::scoped_ptr<Struct_FieldsEntry> entry;
-    for (::google::protobuf::Map< ::std::string, ::google::protobuf::Value >::const_iterator
-        it = this->fields().begin();
-        it != this->fields().end(); ++it) {
-      entry.reset(fields_.NewEntryWrapper(it->first, it->second));
-      ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
-          1, *entry, output);
-      ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
-        it->first.data(), it->first.length(),
-        ::google::protobuf::internal::WireFormatLite::SERIALIZE,
-        "google.protobuf.Struct.FieldsEntry.key");
+  if (!this->fields().empty()) {
+    typedef ::google::protobuf::Map< ::std::string, ::google::protobuf::Value >::const_pointer
+        ConstPtr;
+    typedef ConstPtr SortItem;
+    typedef ::google::protobuf::internal::CompareByDerefFirst<SortItem> Less;
+    struct Utf8Check {
+      static void Check(ConstPtr p) {
+        ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
+          p->first.data(), p->first.length(),
+          ::google::protobuf::internal::WireFormatLite::SERIALIZE,
+          "google.protobuf.Struct.FieldsEntry.key");
+      }
+    };
+
+    if (output->IsSerializationDeterminstic() &&
+        this->fields().size() > 1) {
+      ::google::protobuf::scoped_array<SortItem> items(
+          new SortItem[this->fields().size()]);
+      typedef ::google::protobuf::Map< ::std::string, ::google::protobuf::Value >::size_type size_type;
+      size_type n = 0;
+      for (::google::protobuf::Map< ::std::string, ::google::protobuf::Value >::const_iterator
+          it = this->fields().begin();
+          it != this->fields().end(); ++it, ++n) {
+        items[n] = SortItem(&*it);
+      }
+      ::std::sort(&items[0], &items[n], Less());
+      ::google::protobuf::scoped_ptr<Struct_FieldsEntry> entry;
+      for (size_type i = 0; i < n; i++) {
+        entry.reset(fields_.NewEntryWrapper(
+            items[i]->first, items[i]->second));
+        ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+            1, *entry, output);
+        Utf8Check::Check(items[i]);
+      }
+    } else {
+      ::google::protobuf::scoped_ptr<Struct_FieldsEntry> entry;
+      for (::google::protobuf::Map< ::std::string, ::google::protobuf::Value >::const_iterator
+          it = this->fields().begin();
+          it != this->fields().end(); ++it) {
+        entry.reset(fields_.NewEntryWrapper(
+            it->first, it->second));
+        ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
+            1, *entry, output);
+        Utf8Check::Check(&*it);
+      }
     }
   }
 
@@ -370,19 +396,55 @@ void Struct::SerializeWithCachedSizes(
     bool deterministic, ::google::protobuf::uint8* target) const {
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.Struct)
   // map<string, .google.protobuf.Value> fields = 1;
-  {
-    ::google::protobuf::scoped_ptr<Struct_FieldsEntry> entry;
-    for (::google::protobuf::Map< ::std::string, ::google::protobuf::Value >::const_iterator
-        it = this->fields().begin();
-        it != this->fields().end(); ++it) {
-      entry.reset(fields_.NewEntryWrapper(it->first, it->second));
-      target = ::google::protobuf::internal::WireFormatLite::
-          InternalWriteMessageNoVirtualToArray(
-              1, *entry, false, target);
-      ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
-        it->first.data(), it->first.length(),
-        ::google::protobuf::internal::WireFormatLite::SERIALIZE,
-        "google.protobuf.Struct.FieldsEntry.key");
+  if (!this->fields().empty()) {
+    typedef ::google::protobuf::Map< ::std::string, ::google::protobuf::Value >::const_pointer
+        ConstPtr;
+    typedef ConstPtr SortItem;
+    typedef ::google::protobuf::internal::CompareByDerefFirst<SortItem> Less;
+    struct Utf8Check {
+      static void Check(ConstPtr p) {
+        ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
+          p->first.data(), p->first.length(),
+          ::google::protobuf::internal::WireFormatLite::SERIALIZE,
+          "google.protobuf.Struct.FieldsEntry.key");
+      }
+    };
+
+    if (deterministic &&
+        this->fields().size() > 1) {
+      ::google::protobuf::scoped_array<SortItem> items(
+          new SortItem[this->fields().size()]);
+      typedef ::google::protobuf::Map< ::std::string, ::google::protobuf::Value >::size_type size_type;
+      size_type n = 0;
+      for (::google::protobuf::Map< ::std::string, ::google::protobuf::Value >::const_iterator
+          it = this->fields().begin();
+          it != this->fields().end(); ++it, ++n) {
+        items[n] = SortItem(&*it);
+      }
+      ::std::sort(&items[0], &items[n], Less());
+      ::google::protobuf::scoped_ptr<Struct_FieldsEntry> entry;
+      for (size_type i = 0; i < n; i++) {
+        entry.reset(fields_.NewEntryWrapper(
+            items[i]->first, items[i]->second));
+        target = ::google::protobuf::internal::WireFormatLite::
+                   InternalWriteMessageNoVirtualToArray(
+                       1, *entry, deterministic, target);
+;
+        Utf8Check::Check(items[i]);
+      }
+    } else {
+      ::google::protobuf::scoped_ptr<Struct_FieldsEntry> entry;
+      for (::google::protobuf::Map< ::std::string, ::google::protobuf::Value >::const_iterator
+          it = this->fields().begin();
+          it != this->fields().end(); ++it) {
+        entry.reset(fields_.NewEntryWrapper(
+            it->first, it->second));
+        target = ::google::protobuf::internal::WireFormatLite::
+                   InternalWriteMessageNoVirtualToArray(
+                       1, *entry, deterministic, target);
+;
+        Utf8Check::Check(&*it);
+      }
     }
   }
 
@@ -415,7 +477,9 @@ int Struct::ByteSize() const {
 
 void Struct::MergeFrom(const ::google::protobuf::Message& from) {
 // @@protoc_insertion_point(generalized_merge_from_start:google.protobuf.Struct)
-  if (GOOGLE_PREDICT_FALSE(&from == this)) MergeFromFail(__LINE__);
+  if (GOOGLE_PREDICT_FALSE(&from == this)) {
+    ::google::protobuf::internal::MergeFromFail(__FILE__, __LINE__);
+  }
   const Struct* source = 
       ::google::protobuf::internal::DynamicCastToGenerated<const Struct>(
           &from);
@@ -430,7 +494,9 @@ void Struct::MergeFrom(const ::google::protobuf::Message& from) {
 
 void Struct::MergeFrom(const Struct& from) {
 // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.Struct)
-  if (GOOGLE_PREDICT_FALSE(&from == this)) MergeFromFail(__LINE__);
+  if (GOOGLE_PREDICT_FALSE(&from == this)) {
+    ::google::protobuf::internal::MergeFromFail(__FILE__, __LINE__);
+  }
   fields_.MergeFrom(from.fields_);
 }
 
@@ -881,7 +947,9 @@ int Value::ByteSize() const {
 
 void Value::MergeFrom(const ::google::protobuf::Message& from) {
 // @@protoc_insertion_point(generalized_merge_from_start:google.protobuf.Value)
-  if (GOOGLE_PREDICT_FALSE(&from == this)) MergeFromFail(__LINE__);
+  if (GOOGLE_PREDICT_FALSE(&from == this)) {
+    ::google::protobuf::internal::MergeFromFail(__FILE__, __LINE__);
+  }
   const Value* source = 
       ::google::protobuf::internal::DynamicCastToGenerated<const Value>(
           &from);
@@ -896,7 +964,9 @@ void Value::MergeFrom(const ::google::protobuf::Message& from) {
 
 void Value::MergeFrom(const Value& from) {
 // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.Value)
-  if (GOOGLE_PREDICT_FALSE(&from == this)) MergeFromFail(__LINE__);
+  if (GOOGLE_PREDICT_FALSE(&from == this)) {
+    ::google::protobuf::internal::MergeFromFail(__FILE__, __LINE__);
+  }
   switch (from.kind_case()) {
     case kNullValue: {
       set_null_value(from.null_value());
@@ -1406,7 +1476,9 @@ int ListValue::ByteSize() const {
 
 void ListValue::MergeFrom(const ::google::protobuf::Message& from) {
 // @@protoc_insertion_point(generalized_merge_from_start:google.protobuf.ListValue)
-  if (GOOGLE_PREDICT_FALSE(&from == this)) MergeFromFail(__LINE__);
+  if (GOOGLE_PREDICT_FALSE(&from == this)) {
+    ::google::protobuf::internal::MergeFromFail(__FILE__, __LINE__);
+  }
   const ListValue* source = 
       ::google::protobuf::internal::DynamicCastToGenerated<const ListValue>(
           &from);
@@ -1421,7 +1493,9 @@ void ListValue::MergeFrom(const ::google::protobuf::Message& from) {
 
 void ListValue::MergeFrom(const ListValue& from) {
 // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.ListValue)
-  if (GOOGLE_PREDICT_FALSE(&from == this)) MergeFromFail(__LINE__);
+  if (GOOGLE_PREDICT_FALSE(&from == this)) {
+    ::google::protobuf::internal::MergeFromFail(__FILE__, __LINE__);
+  }
   values_.MergeFrom(from.values_);
 }
 

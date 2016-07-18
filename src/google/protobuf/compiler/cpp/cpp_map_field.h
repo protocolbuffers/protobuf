@@ -61,6 +61,10 @@ class MapFieldGenerator : public FieldGenerator {
   void GenerateByteSize(io::Printer* printer) const;
 
  private:
+  // A helper for GenerateSerializeWithCachedSizes{,ToArray}.
+  void GenerateSerializeWithCachedSizes(
+      io::Printer* printer, const map<string, string>& variables) const;
+
   const FieldDescriptor* descriptor_;
   const bool dependent_field_;
   map<string, string> variables_;

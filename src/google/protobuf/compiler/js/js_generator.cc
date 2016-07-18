@@ -2031,9 +2031,8 @@ void Generator::GenerateClassFieldToObject(const GeneratorOptions& options,
                      "getter", JSGetterName(options, field, BYTES_B64));
     } else {
       if (field->has_default_value()) {
-        printer->Print("jspb.Message.getField(msg, $index$) == null ? "
-                       "$defaultValue$ : ",
-                       "index", JSFieldIndex(field),
+        printer->Print("!msg.has$name$() ? $defaultValue$ : ",
+                       "name", JSGetterName(options, field),
                        "defaultValue", JSFieldDefault(field));
       }
       if (field->cpp_type() == FieldDescriptor::CPPTYPE_FLOAT ||
@@ -2408,9 +2407,8 @@ void Generator::GenerateClassField(const GeneratorOptions& options,
                      "default", Proto3PrimitiveFieldDefault(field));
     } else {
       if (field->has_default_value()) {
-        printer->Print("jspb.Message.getField(this, $index$) == null ? "
-                       "$defaultValue$ : ",
-                       "index", JSFieldIndex(field),
+        printer->Print("!this.has$name$() ? $defaultValue$ : ",
+                       "name", JSGetterName(options, field),
                        "defaultValue", JSFieldDefault(field));
       }
       if (field->cpp_type() == FieldDescriptor::CPPTYPE_FLOAT ||
@@ -2515,6 +2513,20 @@ void Generator::GenerateClassField(const GeneratorOptions& options,
           "\n",
           "clearedvalue", (field->is_repeated() ? "[]" : "undefined"),
           "returnvalue", JSReturnClause(field));
+
+      printer->Print(
+          "/**\n"
+          " * Returns whether this field is set.\n"
+          " * @return{!boolean}\n"
+          " */\n"
+          "$class$.prototype.has$name$ = function() {\n"
+          "  return jspb.Message.getField(this, $index$) != null;\n"
+          "};\n"
+          "\n"
+          "\n",
+          "class", GetPath(options, field->containing_type()),
+          "name", JSGetterName(options, field),
+          "index", JSFieldIndex(field));
     }
   }
 }

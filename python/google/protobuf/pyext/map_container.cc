@@ -348,9 +348,10 @@ PyObject* MapReflectionFriend::Contains(PyObject* _self, PyObject* key) {
 }
 
 // Initializes the underlying Message object of "to" so it becomes a new parent
-// repeated scalar, and copies all the values from "from" to it. A child scalar
+// map container, and copies all the values from "from" to it. A child map
 // container can be released by passing it as both from and to (e.g. making it
 // the recipient of the new parent message and copying the values from itself).
+// In fact, this is the only supported use at the moment.
 static int InitializeAndCopyToParentContainer(MapContainer* from,
                                               MapContainer* to) {
   // For now we require from == to, re-evaluate if we want to support deep copy

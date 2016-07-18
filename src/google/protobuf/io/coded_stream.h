@@ -813,6 +813,44 @@ class LIBPROTOBUF_EXPORT CodedOutputStream {
   // created.
   bool HadError() const { return had_error_; }
 
+  // Deterministic serialization, if requested, guarantees that for a given
+  // binary, equal messages will always be serialized to the same bytes. This
+  // implies:
+  //   . repeated serialization of a message will return the same bytes
+  //   . different processes of the same binary (which may be executing on
+  //     different machines) will serialize equal messages to the same bytes.
+  //
+  // Note the deterministic serialization is NOT canonical across languages; it
+  // is also unstable across different builds with schema changes due to unknown
+  // fields. Users who need canonical serialization, e.g., persistent storage in
+  // a canonical form, fingerprinting, etc., should define their own
+  // canonicalization specification and implement the serializer using
+  // reflection APIs rather than relying on this API.
+  //
+  // If determinisitc serialization is requested, the serializer will
+  // sort map entries by keys in lexicographical order or numerical order.
+  // (This is an implementation detail and may subject to change.)
+  //
+  // There are two ways to determine whether serialization should be
+  // deterministic for this CodedOutputStream.  If SetSerializationDeterministic
+  // has not yet been called, then the default comes from the global default,
+  // which is false, until SetDefaultSerializationDeterministic has been called.
+  // Otherwise, SetSerializationDeterministic has been called, and the last
+  // value passed to it is all that matters.
+  void SetSerializationDeterministic(bool value) {
+    serialization_deterministic_is_overridden_ = true;
+    serialization_deterministic_override_ = value;
+  }
+  // See above.  Also, note that users of this CodedOutputStream may need to
+  // call IsSerializationDeterminstic() to serialize in the intended way.  This
+  // CodedOutputStream cannot enforce a desire for deterministic serialization
+  // by itself.
+  bool IsSerializationDeterminstic() const {
+    return serialization_deterministic_is_overridden_ ?
+        serialization_deterministic_override_ :
+        default_serialization_deterministic_;
+  }
+
  private:
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(CodedOutputStream);
 
@@ -822,6 +860,10 @@ class LIBPROTOBUF_EXPORT CodedOutputStream {
   int total_bytes_;  // Sum of sizes of all buffers seen so far.
   bool had_error_;   // Whether an error occurred during output.
   bool aliasing_enabled_;  // See EnableAliasing().
+  // See SetSerializationDeterministic() regarding these three fields.
+  bool serialization_deterministic_is_overridden_;
+  bool serialization_deterministic_override_;
+  static bool default_serialization_deterministic_;
 
   // Advance the buffer by a given number of bytes.
   void Advance(int amount);
@@ -849,6 +891,11 @@ class LIBPROTOBUF_EXPORT CodedOutputStream {
       uint64 value, uint8* target);
 
   static int VarintSize32Fallback(uint32 value);
+
+  // See above.  Other projects may use "friend" to allow them to call this.
+  static void SetDefaultSerializationDeterministic() {
+    default_serialization_deterministic_ = true;
+  }
 };
 
 // inline methods ====================================================

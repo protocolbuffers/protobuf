@@ -35,6 +35,7 @@ import static java.util.Arrays.asList;
 import junit.framework.TestCase;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.ConcurrentModificationException;
 import java.util.Iterator;
 import java.util.List;
@@ -233,7 +234,7 @@ public class LazyStringArrayListTest extends TestCase {
     }
     
     try {
-      list.addAllByteArray(asList(BYTE_STRING_A.toByteArray()));
+      list.addAllByteArray(Collections.singletonList(BYTE_STRING_A.toByteArray()));
       fail();
     } catch (UnsupportedOperationException e) {
       // expected

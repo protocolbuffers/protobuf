@@ -122,6 +122,10 @@ class LIBPROTOBUF_EXPORT DefaultValueObjectWriter : public ObjectWriter {
   // field_scrub_callback pointer is also transferred to this class
   void RegisterFieldScrubCallBack(FieldScrubCallBackPtr field_scrub_callback);
 
+  // If set to true, empty lists are suppressed from output when default values
+  // are written.
+  void set_suppress_empty_list(bool value) { suppress_empty_list_ = value; }
+
  private:
   enum NodeKind {
     PRIMITIVE = 0,
@@ -136,7 +140,7 @@ class LIBPROTOBUF_EXPORT DefaultValueObjectWriter : public ObjectWriter {
    public:
     Node(const string& name, const google::protobuf::Type* type, NodeKind kind,
          const DataPiece& data, bool is_placeholder, const vector<string>& path,
-         FieldScrubCallBack* field_scrub_callback);
+         bool suppress_empty_list, FieldScrubCallBack* field_scrub_callback);
     virtual ~Node() {
       for (int i = 0; i < children_.size(); ++i) {
         delete children_[i];
@@ -212,6 +216,9 @@ class LIBPROTOBUF_EXPORT DefaultValueObjectWriter : public ObjectWriter {
     // Path of the field of this node
     std::vector<string> path_;
 
+    // Whether to suppress empty list output.
+    bool suppress_empty_list_;
+
     // Pointer to function for determining whether a field needs to be scrubbed
     // or not. This callback is owned by the creator of this node.
     FieldScrubCallBack* field_scrub_callback_;
@@ -256,6 +263,9 @@ class LIBPROTOBUF_EXPORT DefaultValueObjectWriter : public ObjectWriter {
   google::protobuf::scoped_ptr<Node> root_;
   // The stack to hold the path of Nodes from current_ to root_;
   std::stack<Node*> stack_;
+
+  // Whether to suppress output of empty lists.
+  bool suppress_empty_list_;
 
   // Unique Pointer to function for determining whether a field needs to be
   // scrubbed or not.

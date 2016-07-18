@@ -759,6 +759,20 @@ class TextFormat::Parser::ParserImpl {
       }
       return true;
     }
+    if (TryConsume("[")) {
+      while (true) {
+        if (!LookingAt("{") && !LookingAt("<")) {
+          DO(SkipFieldValue());
+        } else {
+          DO(SkipFieldMessage());
+        }
+        if (TryConsume("]")) {
+          break;
+        }
+        DO(Consume(","));
+      }
+      return true;
+    }
     // Possible field values other than string:
     //   12345        => TYPE_INTEGER
     //   -12345       => TYPE_SYMBOL + TYPE_INTEGER

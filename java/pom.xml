@@ -11,7 +11,7 @@
 
   <groupId>com.google.protobuf</groupId>
   <artifactId>protobuf-parent</artifactId>
-  <version>3.0.0-beta-3</version>
+  <version>3.0.0-beta-4</version>
   <packaging>pom</packaging>
 
   <name>Protocol Buffers [Parent]</name>
@@ -182,7 +182,7 @@
 
   <modules>
     <module>core</module>
-    <module>lite</module>
+    <!-- <module>lite</module> -->
     <module>util</module>
   </modules>
 

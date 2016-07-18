@@ -535,6 +535,32 @@ class MapEntryLite : public MessageLite {
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(MapEntryLite);
 };
 
+// Helpers for deterministic serialization =============================
+
+// This struct can be used with any generic sorting algorithm.  If the Key
+// type is relatively small and easy to copy then copying Keys into an
+// array of SortItems can be beneficial.  Then all the data the sorting
+// algorithm needs to touch is in that one array.
+template <typename Key, typename PtrToKeyValuePair> struct SortItem {
+  SortItem() {}
+  explicit SortItem(PtrToKeyValuePair p) : first(p->first), second(p) {}
+
+  Key first;
+  PtrToKeyValuePair second;
+};
+
+template <typename T> struct CompareByFirstField {
+  bool operator()(const T& a, const T& b) const {
+    return a.first < b.first;
+  }
+};
+
+template <typename T> struct CompareByDerefFirst {
+  bool operator()(const T& a, const T& b) const {
+    return a->first < b->first;
+  }
+};
+
 }  // namespace internal
 }  // namespace protobuf
 
