@@ -725,7 +725,7 @@ EXTRA_DIST = $(@DIST_LANG@_EXTRA_DIST)   \
   editors/README.txt                     \
   editors/proto.vim                      \
   editors/protobuf-mode.el               \
-  examples/README.txt                    \
+  examples/README.md                     \
   examples/Makefile                      \
   examples/addressbook.proto             \
   examples/add_person.cc                 \
