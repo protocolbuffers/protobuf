@@ -1203,7 +1203,7 @@ GenerateMergingCode(io::Printer* printer) const {
     "    $name$_ = other.$name$_;\n"
     "    $clear_mutable_bit_builder$;\n"
     "    $name$Builder_ = \n"
-    "      com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders ?\n"
+    "      com.google.protobuf.GeneratedMessage$ver$.alwaysUseFieldBuilders ?\n"
     "         get$capitalized_name$FieldBuilder() : null;\n"
     "  } else {\n"
     "    $name$Builder_.addAllMessages(other.$name$_);\n"
