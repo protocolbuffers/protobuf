@@ -1952,7 +1952,7 @@ void Generator::GenerateClassToObject(const GeneratorOptions& options,
       " * @return {!Object}\n"
       " */\n"
       "$classname$.toObject = function(includeInstance, msg) {\n"
-      "  var f, obj = {};",
+      "  var f, obj = {",
       "classname", GetPath(options, desc));
 
   bool first = true;
@@ -1963,16 +1963,20 @@ void Generator::GenerateClassToObject(const GeneratorOptions& options,
     }
 
     if (!first) {
-      printer->Print("\n  ");
+      printer->Print(",\n    ");
     } else {
-      printer->Print("\n\n  ");
+      printer->Print("\n    ");
       first = false;
     }
 
     GenerateClassFieldToObject(options, printer, field);
   }
 
-  printer->Print("\n\n");
+  if (!first) {
+    printer->Print("\n  };\n\n");
+  } else {
+    printer->Print("\n\n  };\n\n");
+  }
 
   if (IsExtendable(desc)) {
     printer->Print(
@@ -1999,12 +2003,7 @@ void Generator::GenerateClassToObject(const GeneratorOptions& options,
 void Generator::GenerateClassFieldToObject(const GeneratorOptions& options,
                                            io::Printer* printer,
                                            const FieldDescriptor* field) const {
-  if (HasFieldPresence(field)) {
-    printer->Print("if (msg.has$name$()) ",
-      "name", JSGetterName(options, field));
-  }
-
-  printer->Print("obj.$fieldname$ = ",
+  printer->Print("$fieldname$: ",
                  "fieldname", JSObjectFieldName(options, field));
 
   if (field->is_map()) {
@@ -2034,10 +2033,19 @@ void Generator::GenerateClassFieldToObject(const GeneratorOptions& options,
       printer->Print("msg.get$getter$()",
                      "getter", JSGetterName(options, field, BYTES_B64));
     } else {
+      if (field->has_default_value()) {
+        printer->Print("!msg.has$name$() ? $defaultValue$ : ",
+                       "name", JSGetterName(options, field),
+                       "defaultValue", JSFieldDefault(field));
+      }
       if (field->cpp_type() == FieldDescriptor::CPPTYPE_FLOAT ||
           field->cpp_type() == FieldDescriptor::CPPTYPE_DOUBLE) {
         if (field->is_repeated()) {
           printer->Print("jspb.Message.getRepeatedFloatingPointField("
+                         "msg, $index$)",
+                         "index", JSFieldIndex(field));
+        } else if (field->is_optional() && !field->has_default_value()) {
+          printer->Print("jspb.Message.getOptionalFloatingPointField("
                          "msg, $index$)",
                          "index", JSFieldIndex(field));
         } else {

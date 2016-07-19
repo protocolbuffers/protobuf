@@ -145,7 +145,11 @@ describe('Message test suite', function() {
         undefined, undefined, undefined, undefined]);
     var result = foo.toObject();
     assertObjectEquals({
-      aNestedMessage: {},
+      aString: undefined,
+      anOutOfOrderBool: undefined,
+      aNestedMessage: {
+        anInt: undefined
+      },
       // Note: JsPb converts undefined repeated fields to empty arrays.
       aRepeatedMessageList: [],
       aRepeatedStringList: []
@@ -180,7 +184,14 @@ describe('Message test suite', function() {
     var response = new proto.jspb.test.DefaultValues();
 
     // Test toObject
-    var expectedObject = {};
+    var expectedObject = {
+      stringField: defaultString,
+      boolField: true,
+      intField: 11,
+      enumField: 13,
+      emptyField: '',
+      bytesField: 'bW9v'
+    };
     assertObjectEquals(expectedObject, response.toObject());
 
 
@@ -748,7 +759,12 @@ describe('Message test suite', function() {
     assertObjectEquals({id: 'g1', someBoolList: [true, false]},
         groups[0].toObject());
     assertObjectEquals({
-      repeatedGroupList: [{id: 'g1', someBoolList: [true, false]}]
+      repeatedGroupList: [{id: 'g1', someBoolList: [true, false]}],
+      requiredGroup: {id: undefined},
+      optionalGroup: undefined,
+      requiredSimple: {aRepeatedStringList: [], aString: undefined},
+      optionalSimple: undefined,
+      id: undefined
     }, group.toObject());
     var group1 = new proto.jspb.test.TestGroup1();
     group1.setGroup(someGroup);
