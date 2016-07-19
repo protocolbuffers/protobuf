@@ -8,8 +8,8 @@
 goog.require('goog.object');
 goog.require('jspb.BinaryReader');
 goog.require('jspb.BinaryWriter');
-goog.require('jspb.ExtensionFieldInfo');
 goog.require('jspb.ExtensionFieldBinaryInfo');
+goog.require('jspb.ExtensionFieldInfo');
 goog.require('jspb.Message');
 
 exports.Message = jspb.Message;

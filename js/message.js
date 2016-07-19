@@ -34,8 +34,8 @@
  * @author mwr@google.com (Mark Rawling)
  */
 
-goog.provide('jspb.ExtensionFieldInfo');
 goog.provide('jspb.ExtensionFieldBinaryInfo');
+goog.provide('jspb.ExtensionFieldInfo');
 goog.provide('jspb.Message');
 
 goog.require('goog.array');
