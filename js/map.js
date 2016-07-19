@@ -44,65 +44,23 @@ goog.forwardDeclare('jspb.BinaryWriter');
  * on ES6 itself.
  *
  * This constructor should only be called from generated message code. It is not
- * intended for general use by library consumers. The callback function
- * arguments are references to methods in `BinaryReader` and `BinaryWriter`, as
- * well as constructors and reader/writer methods in submessage types if
- * appropriate, that are used for binary serialization and parsing.
+ * intended for general use by library consumers.
  *
  * @template K, V
  *
  * @param {!Array<!Array<!Object>>} arr
  *
- * @param {function(this:jspb.BinaryWriter,number,K)=} opt_keyWriterFn
- *     The method on BinaryWriter that writes type K to the stream.
- *
- * @param {function(this:jspb.BinaryReader):K=} opt_keyReaderFn
- *     The method on BinaryReader that reads type K from the stream.
- *
- * @param {function(this:jspb.BinaryWriter,number,V)|
- *         function(this:jspb.BinaryReader,V,?)=} opt_valueWriterFn
- *     The method on BinaryWriter that writes type V to the stream.  May be
- *     writeMessage, in which case the second callback arg form is used.
- *
- * @param {function(this:jspb.BinaryReader):V|
- *         function(this:jspb.BinaryReader,V,
- *                  function(V,!jspb.BinaryReader))=} opt_valueReaderFn
- *    The method on BinaryReader that reads type V from the stream. May be
- *    readMessage, in which case the second callback arg form is used.
- *
  * @param {?function(new:V)|function(new:V,?)=} opt_valueCtor
  *    The constructor for type V, if type V is a message type.
- *
- * @param {?function(V,!jspb.BinaryWriter)=} opt_valueWriterCallback
- *    The BinaryWriter serialization callback for type V, if V is a message
- *    type.
- *
- * @param {?function(V,!jspb.BinaryReader)=} opt_valueReaderCallback
- *    The BinaryReader parsing callback for type V, if V is a message type.
  *
  * @constructor
  * @struct
  */
-jspb.Map = function(
-    arr, opt_keyWriterFn, opt_keyReaderFn, opt_valueWriterFn, opt_valueReaderFn,
-    opt_valueCtor, opt_valueWriterCallback, opt_valueReaderCallback) {
-
+jspb.Map = function(arr, opt_valueCtor) {
   /** @const @private */
   this.arr_ = arr;
   /** @const @private */
-  this.keyWriterFn_ = opt_keyWriterFn;
-  /** @const @private */
-  this.keyReaderFn_ = opt_keyReaderFn;
-  /** @const @private */
-  this.valueWriterFn_ = opt_valueWriterFn;
-  /** @const @private */
-  this.valueReaderFn_ = opt_valueReaderFn;
-  /** @const @private */
   this.valueCtor_ = opt_valueCtor;
-  /** @const @private */
-  this.valueWriterCallback_ = opt_valueWriterCallback;
-  /** @const @private */
-  this.valueReaderCallback_ = opt_valueReaderCallback;
 
   /** @type {!Object<string, !jspb.Map.Entry_<K,V>>} @private */
   this.map_ = {};
@@ -385,19 +343,29 @@ jspb.Map.prototype.has = function(key) {
  * number.
  * @param {number} fieldNumber
  * @param {!jspb.BinaryWriter} writer
+ * @param {function(this:jspb.BinaryWriter,number,K)=} keyWriterFn
+ *     The method on BinaryWriter that writes type K to the stream.
+ * @param {function(this:jspb.BinaryWriter,number,V)|
+ *         function(this:jspb.BinaryReader,V,?)=} valueWriterFn
+ *     The method on BinaryWriter that writes type V to the stream.  May be
+ *     writeMessage, in which case the second callback arg form is used.
+ * @param {?function(V,!jspb.BinaryWriter)=} opt_valueWriterCallback
+ *    The BinaryWriter serialization callback for type V, if V is a message
+ *    type.
  */
-jspb.Map.prototype.serializeBinary = function(fieldNumber, writer) {
+jspb.Map.prototype.serializeBinary = function(
+    fieldNumber, writer, keyWriterFn, valueWriterFn, opt_valueWriterCallback) {
   var strKeys = this.stringKeys_();
   strKeys.sort();
   for (var i = 0; i < strKeys.length; i++) {
     var entry = this.map_[strKeys[i]];
     writer.beginSubMessage(fieldNumber);
-    this.keyWriterFn_.call(writer, 1, entry.key);
+    keyWriterFn.call(writer, 1, entry.key);
     if (this.valueCtor_) {
-      this.valueWriterFn_.call(writer, 2, this.wrapEntry_(entry),
-                               this.valueWriterCallback_);
+      valueWriterFn.call(writer, 2, this.wrapEntry_(entry),
+                         opt_valueWriterCallback);
     } else {
-      this.valueWriterFn_.call(writer, 2, entry.value);
+      valueWriterFn_.call(writer, 2, entry.value);
     }
     writer.endSubMessage();
   }
@@ -410,8 +378,21 @@ jspb.Map.prototype.serializeBinary = function(fieldNumber, writer) {
  * when a key/value pair submessage is encountered.
  * @param {!jspb.Map} map
  * @param {!jspb.BinaryReader} reader
+ * @param {function(this:jspb.BinaryReader):K=} keyReaderFn
+ *     The method on BinaryReader that reads type K from the stream.
+ *
+ * @param {function(this:jspb.BinaryReader):V|
+ *         function(this:jspb.BinaryReader,V,
+ *                  function(V,!jspb.BinaryReader))=} valueReaderFn
+ *    The method on BinaryReader that reads type V from the stream. May be
+ *    readMessage, in which case the second callback arg form is used.
+ *
+ * @param {?function(V,!jspb.BinaryReader)=} opt_valueReaderCallback
+ *    The BinaryReader parsing callback for type V, if V is a message type.
+ *
  */
-jspb.Map.deserializeBinary = function(map, reader) {
+jspb.Map.deserializeBinary = function(map, reader, keyReaderFn, valueReaderFn,
+                                      opt_valueReaderCallback) {
   var key = undefined;
   var value = undefined;
 
@@ -422,14 +403,14 @@ jspb.Map.deserializeBinary = function(map, reader) {
     var field = reader.getFieldNumber();
     if (field == 1) {
       // Key.
-      key = map.keyReaderFn_.call(reader);
+      key = keyReaderFn.call(reader);
     } else if (field == 2) {
       // Value.
       if (map.valueCtor_) {
         value = new map.valueCtor_();
-        map.valueReaderFn_.call(reader, value, map.valueReaderCallback_);
+        valueReaderFn.call(reader, value, opt_valueReaderCallback);
       } else {
-        value = map.valueReaderFn_.call(reader);
+        value = valueReaderFn.call(reader);
       }
     }
   }

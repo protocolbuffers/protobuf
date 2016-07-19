@@ -2252,25 +2252,6 @@ void Generator::GenerateClassField(const GeneratorOptions& options,
           "      null");
     }
 
-    if (options.binary) {
-      printer->Print(",\n"
-          "      $keyWriterFn$,\n"
-          "      $keyReaderFn$,\n"
-          "      $valueWriterFn$,\n"
-          "      $valueReaderFn$",
-          "keyWriterFn", JSBinaryWriterMethodName(options, key_field),
-          "keyReaderFn", JSBinaryReaderMethodName(options, key_field),
-          "valueWriterFn", JSBinaryWriterMethodName(options, value_field),
-          "valueReaderFn", JSBinaryReaderMethodName(options, value_field));
-
-      if (value_field->type() == FieldDescriptor::TYPE_MESSAGE) {
-        printer->Print(",\n"
-            "      $messageType$.serializeBinaryToWriter,\n"
-            "      $messageType$.deserializeBinaryFromReader",
-            "messageType", GetPath(options, value_field->message_type()));
-      }
-    }
-
     printer->Print(
         "));\n");
 
@@ -2555,6 +2536,29 @@ void Generator::GenerateClassExtensionFieldInfo(const GeneratorOptions& options,
         "$class$.extensions = {};\n"
         "\n",
         "class", GetPath(options, desc));
+
+    if (options.binary) {
+      printer->Print(
+          "\n"
+          "/**\n"
+          " * The extensions registered with this message class. This is a "
+          "map of\n"
+          " * extension field number to fieldInfo object.\n"
+          " *\n"
+          " * For example:\n"
+          " *     { 123: {fieldIndex: 123, fieldName: {my_field_name: 0}, "
+          "ctor: proto.example.MyMessage} }\n"
+          " *\n"
+          " * fieldName contains the JsCompiler renamed field name property "
+          "so that it\n"
+          " * works in OPTIMIZED mode.\n"
+          " *\n"
+          " * @type {!Object.<number, jspb.ExtensionFieldInfo>}\n"
+          " */\n"
+          "$class$.extensionsBinary = {};\n"
+          "\n",
+          "class", GetPath(options, desc));
+    }
   }
 }
 
@@ -2602,7 +2606,7 @@ void Generator::GenerateClassDeserializeBinary(const GeneratorOptions& options,
       "    default:\n");
   if (IsExtendable(desc)) {
     printer->Print(
-        "      jspb.Message.readBinaryExtension(msg, reader, $extobj$,\n"
+        "      jspb.Message.readBinaryExtension(msg, reader, $extobj$Binary,\n"
         "        $class$.prototype.getExtension,\n"
         "        $class$.prototype.setExtension);\n"
         "      break;\n",
@@ -2632,10 +2636,25 @@ void Generator::GenerateClassDeserializeBinaryField(
                  "num", SimpleItoa(field->number()));
 
   if (field->is_map()) {
+    const FieldDescriptor* key_field = MapFieldKey(field);
+    const FieldDescriptor* value_field = MapFieldValue(field);
     printer->Print(
         "      var value = msg.get$name$();\n"
-        "      reader.readMessage(value, jspb.Map.deserializeBinary);\n",
+        "      reader.readMessage(value, function(message, reader) {\n",
         "name", JSGetterName(options, field));
+
+    printer->Print("        jspb.Map.deserializeBinary(message, reader, "
+                   "$keyReaderFn$, $valueReaderFn$",
+          "keyReaderFn", JSBinaryReaderMethodName(options, key_field),
+          "valueReaderFn", JSBinaryReaderMethodName(options, value_field));
+
+    if (value_field->type() == FieldDescriptor::TYPE_MESSAGE) {
+      printer->Print(", $messageType$.deserializeBinaryFromReader",
+          "messageType", GetPath(options, value_field->message_type()));
+    }
+
+    printer->Print(");\n");
+    printer->Print("         });\n");
   } else {
     if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
       printer->Print(
@@ -2721,8 +2740,8 @@ void Generator::GenerateClassSerializeBinary(const GeneratorOptions& options,
 
   if (IsExtendable(desc)) {
     printer->Print(
-        "  jspb.Message.serializeBinaryExtensions(this, writer, $extobj$,\n"
-        "    $class$.prototype.getExtension);\n",
+        "  jspb.Message.serializeBinaryExtensions(this, writer,\n"
+        "    $extobj$Binary, $class$.prototype.getExtension);\n",
         "extobj", JSExtensionsObjectName(options, desc->file(), desc),
         "class", GetPath(options, desc));
   }
@@ -2794,9 +2813,21 @@ void Generator::GenerateClassSerializeBinaryField(
 
   // Write the field on the wire.
   if (field->is_map()) {
+    const FieldDescriptor* key_field = MapFieldKey(field);
+    const FieldDescriptor* value_field = MapFieldValue(field);
     printer->Print(
-        "    f.serializeBinary($index$, writer);\n",
-        "index", SimpleItoa(field->number()));
+        "    f.serializeBinary($index$, writer, "
+                              "$keyWriterFn$, $valueWriterFn$",
+        "index", SimpleItoa(field->number()),
+        "keyWriterFn", JSBinaryWriterMethodName(options, key_field),
+        "valueWriterFn", JSBinaryWriterMethodName(options, value_field));
+
+    if (value_field->type() == FieldDescriptor::TYPE_MESSAGE) {
+      printer->Print(", $messageType$.serializeBinaryToWriter",
+          "messageType", GetPath(options, value_field->message_type()));
+    }
+
+    printer->Print(");\n");
   } else {
     printer->Print(
         "    writer.write$method$(\n"
@@ -2878,7 +2909,7 @@ void Generator::GenerateExtension(const GeneratorOptions& options,
       "     /** @type {?function((boolean|undefined),!jspb.Message=): "
       "!Object} */ (\n"
       "         $toObject$),\n"
-      "    $repeated$",
+      "    $repeated$);\n",
       "index", SimpleItoa(field->number()),
       "name", JSObjectFieldName(options, field),
       "ctor", (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE ?
@@ -2890,12 +2921,18 @@ void Generator::GenerateExtension(const GeneratorOptions& options,
 
   if (options.binary) {
     printer->Print(
-        ",\n"
+        "\n"
+        "$extendName$Binary[$index$] = new jspb.ExtensionFieldBinaryInfo(\n"
+        "    $class$.$name$,\n"
         "    $binaryReaderFn$,\n"
         "    $binaryWriterFn$,\n"
         "    $binaryMessageSerializeFn$,\n"
-        "    $binaryMessageDeserializeFn$,\n"
-        "    $isPacked$);\n",
+        "    $binaryMessageDeserializeFn$,\n",
+        "extendName", JSExtensionsObjectName(options, field->file(),
+                                             field->containing_type()),
+        "index", SimpleItoa(field->number()),
+        "class", extension_scope,
+        "name", JSObjectFieldName(options, field),
         "binaryReaderFn", JSBinaryReaderMethodName(options, field),
         "binaryWriterFn", JSBinaryWriterMethodName(options, field),
         "binaryMessageSerializeFn",
@@ -2905,10 +2942,11 @@ void Generator::GenerateExtension(const GeneratorOptions& options,
         "binaryMessageDeserializeFn",
         (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) ?
         (SubmessageTypeRef(options, field) +
-         ".deserializeBinaryFromReader") : "null",
+         ".deserializeBinaryFromReader") : "null");
+
+    printer->Print(
+        "    $isPacked$);\n",
         "isPacked", (field->is_packed() ? "true" : "false"));
-  } else {
-    printer->Print(");\n");
   }
 
   printer->Print(
