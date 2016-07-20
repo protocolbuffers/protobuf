@@ -14,6 +14,7 @@ The Objective C implementation requires:
 
 - Objective C 2.0 Runtime (32bit & 64bit iOS, 64bit OS X).
 - Xcode 7.0 (or later).
+- Automake and libtool. Those can be installed by running `brew install libtool automake`.
 - The library code does *not* use ARC (for performance reasons), but it all can
   be called from ARC code.
 
