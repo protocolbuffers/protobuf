@@ -48,14 +48,23 @@ $TIME_CMD $TEST_SCRIPT cpp > >(tee $CPP_STDOUT) 2> >(tee $CPP_STDERR >&2)
 # Other tests are run in parallel.
 
 parallel --results $LOG_OUTPUT_DIR --joblog $OUTPUT_DIR/joblog $TEST_SCRIPT ::: \
-  csharp \
-  java_jdk7 \
-  javanano_jdk7 \
-  java_oracle7 \
-  javanano_oracle7 \
-  python \
-  python_cpp \
-  ruby21 \
+  cpp_distcheck \
+  golang \
+  java_jdk6 \
+  javanano_jdk6 \
+  javascript \
+  ruby19 \
+  ruby20 \
+  ruby22 \
+  jruby \
+  # csharp \
+  # java_jdk7 \
+  # javanano_jdk7 \
+  # java_oracle7 \
+  # javanano_oracle7 \
+  # python \
+  # python_cpp \
+  # ruby21 \
   || true  # Process test results even if tests fail.
 
 cat $OUTPUT_DIR/joblog
