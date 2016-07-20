@@ -63,7 +63,7 @@ build_csharp() {
     sudo apt-get install -qq mono-devel referenceassemblies-pcl nunit
     
     # Then install the dotnet SDK as per Ubuntu 14.04 instructions on dot.net.
-    sudo sh -c 'echo "deb [arch=amd64] https://apt-mo.trafficmanager.net/repos/dotnet/ trusty main" > /etc/apt/sources.list.d/dotnetdev.list'
+    sudo sh -c 'echo "deb [arch=amd64] https://apt-mo.trafficmanager.net/repos/dotnet-release/ trusty main" > /etc/apt/sources.list.d/dotnetdev.list'
     sudo apt-key adv --keyserver apt-mo.trafficmanager.net --recv-keys 417A0893
     sudo apt-get update -qq
     sudo apt-get install -qq dotnet-dev-1.0.0-preview2-003121
