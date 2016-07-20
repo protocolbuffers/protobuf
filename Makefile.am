@@ -782,6 +782,7 @@ EXTRA_DIST = $(@DIST_LANG@_EXTRA_DIST)   \
   editors/README.txt                     \
   editors/proto.vim                      \
   editors/protobuf-mode.el               \
+  examples/CMakeLists.txt                \
   examples/README.txt                    \
   examples/Makefile                      \
   examples/addressbook.proto             \
