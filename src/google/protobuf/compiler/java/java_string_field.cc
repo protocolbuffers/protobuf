@@ -79,9 +79,11 @@ void SetPrimitiveVariables(const FieldDescriptor* descriptor,
       "    throw new NullPointerException();\n"
       "  }\n";
   (*variables)["writeString"] =
-      "com.google.protobuf.GeneratedMessage.writeString";
+      "com.google.protobuf.GeneratedMessage" + GeneratedCodeVersionSuffix() +
+      ".writeString";
   (*variables)["computeStringSize"] =
-      "com.google.protobuf.GeneratedMessage.computeStringSize";
+      "com.google.protobuf.GeneratedMessage" + GeneratedCodeVersionSuffix() +
+      ".computeStringSize";
 
   // TODO(birdo): Add @deprecated javadoc when generating javadoc is supported
   // by the proto compiler

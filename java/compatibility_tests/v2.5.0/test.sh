@@ -31,6 +31,14 @@ case "$1" in
     OLD_VERSION=3.0.0-beta-2
     OLD_VERSION_PROTOC=http://repo1.maven.org/maven2/com/google/protobuf/protoc/3.0.0-beta-2/protoc-3.0.0-beta-2-linux-x86_32.exe
     ;;
+  3.0.0-beta-3)
+    OLD_VERSION=3.0.0-beta-3
+    OLD_VERSION_PROTOC=http://repo1.maven.org/maven2/com/google/protobuf/protoc/3.0.0-beta-3/protoc-3.0.0-beta-3-linux-x86_32.exe
+    ;;
+  3.0.0-beta-4)
+    OLD_VERSION=3.0.0-beta-4
+    OLD_VERSION_PROTOC=http://repo1.maven.org/maven2/com/google/protobuf/protoc/3.0.0-beta-4/protoc-3.0.0-beta-4-linux-x86_32.exe
+    ;;
   *)
     echo "[ERROR]: Unknown version number: $1"
     exit 1

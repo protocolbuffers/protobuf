@@ -94,20 +94,22 @@ Generate(io::Printer* printer) {
   if (descriptor_->extension_range_count() > 0) {
     printer->Print(
       "public static final class Builder extends\n"
-      "    com.google.protobuf.GeneratedMessage.ExtendableBuilder<\n"
+      "    com.google.protobuf.GeneratedMessage$ver$.ExtendableBuilder<\n"
       "      $classname$, Builder> implements\n"
       "    $extra_interfaces$\n"
       "    $classname$OrBuilder {\n",
       "classname", name_resolver_->GetImmutableClassName(descriptor_),
-      "extra_interfaces", ExtraBuilderInterfaces(descriptor_));
+      "extra_interfaces", ExtraBuilderInterfaces(descriptor_),
+      "ver", GeneratedCodeVersionSuffix());
   } else {
     printer->Print(
       "public static final class Builder extends\n"
-      "    com.google.protobuf.GeneratedMessage.Builder<Builder> implements\n"
+      "    com.google.protobuf.GeneratedMessage$ver$.Builder<Builder> implements\n"
       "    $extra_interfaces$\n"
       "    $classname$OrBuilder {\n",
       "classname", name_resolver_->GetImmutableClassName(descriptor_),
-      "extra_interfaces", ExtraBuilderInterfaces(descriptor_));
+      "extra_interfaces", ExtraBuilderInterfaces(descriptor_),
+      "ver", GeneratedCodeVersionSuffix());
   }
   printer->Indent();
 
@@ -280,7 +282,7 @@ GenerateDescriptorMethods(io::Printer* printer) {
         "}\n");
   }
   printer->Print(
-    "protected com.google.protobuf.GeneratedMessage.FieldAccessorTable\n"
+    "protected com.google.protobuf.GeneratedMessage$ver$.FieldAccessorTable\n"
     "    internalGetFieldAccessorTable() {\n"
     "  return $fileclass$.internal_$identifier$_fieldAccessorTable\n"
     "      .ensureFieldAccessorsInitialized(\n"
@@ -289,7 +291,8 @@ GenerateDescriptorMethods(io::Printer* printer) {
     "\n",
     "classname", name_resolver_->GetImmutableClassName(descriptor_),
     "fileclass", name_resolver_->GetImmutableClassName(descriptor_->file()),
-    "identifier", UniqueFileScopeIdentifier(descriptor_));
+    "identifier", UniqueFileScopeIdentifier(descriptor_),
+    "ver", GeneratedCodeVersionSuffix());
 }
 
 // ===================================================================
@@ -306,15 +309,18 @@ GenerateCommonBuilderMethods(io::Printer* printer) {
 
   printer->Print(
     "private Builder(\n"
-    "    com.google.protobuf.GeneratedMessage.BuilderParent parent) {\n"
+    "    com.google.protobuf.GeneratedMessage$ver$.BuilderParent parent) {\n"
     "  super(parent);\n"
     "  maybeForceBuilderInitialization();\n"
     "}\n",
-    "classname", name_resolver_->GetImmutableClassName(descriptor_));
+    "classname", name_resolver_->GetImmutableClassName(descriptor_),
+    "ver", GeneratedCodeVersionSuffix());
 
   printer->Print(
     "private void maybeForceBuilderInitialization() {\n"
-    "  if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {\n");
+    "  if (com.google.protobuf.GeneratedMessage$ver$\n"
+    "          .alwaysUseFieldBuilders) {\n",
+    "ver", GeneratedCodeVersionSuffix());
 
   printer->Indent();
   printer->Indent();
@@ -590,6 +596,7 @@ GenerateCommonBuilderMethods(io::Printer* printer) {
       "  return this;\n"
       "}\n"
       "\n");
+
   }
 }
 
