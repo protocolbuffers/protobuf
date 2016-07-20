@@ -768,7 +768,6 @@ string MaybeNumberString(const FieldDescriptor* field, const string& orig) {
 }
 
 string JSFieldDefault(const FieldDescriptor* field) {
-  assert(field->has_default_value());
   switch (field->cpp_type()) {
     case FieldDescriptor::CPPTYPE_INT32:
       return MaybeNumberString(
@@ -943,7 +942,7 @@ string JSFieldTypeAnnotation(const GeneratorOptions& options,
   }
 
   if (field->is_optional() && is_primitive &&
-      (!field->has_default_value() || force_optional) && !force_present) {
+      force_optional && !force_present) {
     jstype += "?";
   } else if (field->is_required() && !is_primitive && !force_optional) {
     jstype = "!" + jstype;
@@ -1258,6 +1257,10 @@ string GetPivot(const Descriptor* desc) {
 // Returns true for fields that represent "null" as distinct from the default
 // value. See http://go/proto3#heading=h.kozewqqcqhuz for more information.
 bool HasFieldPresence(const FieldDescriptor* field) {
+  if (field->is_repeated()) {
+    return false;
+  }
+
   return
       (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) ||
       (field->containing_oneof() != NULL) ||
@@ -2387,7 +2390,7 @@ void Generator::GenerateClassField(const GeneratorOptions& options,
                      "index", JSFieldIndex(field),
                      "default", Proto3PrimitiveFieldDefault(field));
     } else {
-      if (field->has_default_value()) {
+      if (!field->is_repeated()) {
         printer->Print("!this.has$name$() ? $defaultValue$ : ",
                        "name", JSGetterName(options, field),
                        "defaultValue", JSFieldDefault(field));
@@ -2396,10 +2399,6 @@ void Generator::GenerateClassField(const GeneratorOptions& options,
           field->cpp_type() == FieldDescriptor::CPPTYPE_DOUBLE) {
         if (field->is_repeated()) {
           printer->Print("jspb.Message.getRepeatedFloatingPointField("
-                         "this, $index$)",
-                         "index", JSFieldIndex(field));
-        } else if (field->is_optional() && !field->has_default_value()) {
-          printer->Print("jspb.Message.getOptionalFloatingPointField("
                          "this, $index$)",
                          "index", JSFieldIndex(field));
         } else {
@@ -2477,7 +2476,7 @@ void Generator::GenerateClassField(const GeneratorOptions& options,
           "returndoc", JSReturnDoc(options, field));
     }
 
-    if (HasFieldPresence(field)) {
+    if (HasFieldPresence(field) || field->is_repeated()) {
       printer->Print(
           "$class$.prototype.clear$name$ = function() {\n"
           "  jspb.Message.set$oneoftag$Field(this, $index$$oneofgroup$, ",
@@ -2494,21 +2493,23 @@ void Generator::GenerateClassField(const GeneratorOptions& options,
           "\n",
           "clearedvalue", (field->is_repeated() ? "[]" : "undefined"),
           "returnvalue", JSReturnClause(field));
-
-      printer->Print(
-          "/**\n"
-          " * Returns whether this field is set.\n"
-          " * @return{!boolean}\n"
-          " */\n"
-          "$class$.prototype.has$name$ = function() {\n"
-          "  return jspb.Message.getField(this, $index$) != null;\n"
-          "};\n"
-          "\n"
-          "\n",
-          "class", GetPath(options, field->containing_type()),
-          "name", JSGetterName(options, field),
-          "index", JSFieldIndex(field));
     }
+  }
+
+  if (HasFieldPresence(field)) {
+    printer->Print(
+        "/**\n"
+        " * Returns whether this field is set.\n"
+        " * @return{!boolean}\n"
+        " */\n"
+        "$class$.prototype.has$name$ = function() {\n"
+        "  return jspb.Message.getField(this, $index$) != null;\n"
+        "};\n"
+        "\n"
+        "\n",
+        "class", GetPath(options, field->containing_type()),
+        "name", JSGetterName(options, field),
+        "index", JSFieldIndex(field));
   }
 }
 
@@ -2756,11 +2757,18 @@ void Generator::GenerateClassSerializeBinaryField(
     const GeneratorOptions& options,
     io::Printer* printer,
     const FieldDescriptor* field) const {
-  printer->Print(
-      "  f = this.get$name$($nolazy$);\n",
-      "name", JSGetterName(options, field, BYTES_U8),
-      // No lazy creation for maps containers -- fastpath the empty case.
-      "nolazy", (field->is_map()) ? "true" : "");
+  if (HasFieldPresence(field) &&
+      field->cpp_type() != FieldDescriptor::CPPTYPE_MESSAGE) {
+    printer->Print(
+        "  f = jspb.Message.getField(this, $index$);\n",
+        "index", JSFieldIndex(field));
+  } else {
+    printer->Print(
+        "  f = this.get$name$($nolazy$);\n",
+        "name", JSGetterName(options, field, BYTES_U8),
+        // No lazy creation for maps containers -- fastpath the empty case.
+        "nolazy", (field->is_map()) ? "true" : "");
+  }
 
 
   // Print an `if (condition)` statement that evaluates to true if the field
