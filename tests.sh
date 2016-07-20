@@ -44,6 +44,30 @@ build_cpp() {
 build_cpp_distcheck() {
   ./autogen.sh
   ./configure
+  make dist
+
+  # List all files that should be included in the distribution package.
+  git ls-files | grep "^\(java\|python\|objectivec\|csharp\|js\|ruby\|cmake\|examples\)" |\
+      grep -v ".gitignore" | grep -v "java/compatibility_tests" > dist.lst
+  # Unzip the dist tar file.
+  DIST=`ls *.tar.gz`
+  tar -xf $DIST
+  cd ${DIST//.tar.gz}
+  # Check if every file exists in the dist tar file.
+  FILES_MISSING=""
+  for FILE in $(<../dist.lst); do
+    if ! file $FILE &>/dev/null; then
+      echo "$FILE is not found!"
+      FILES_MISSING="$FILE $FILES_MISSING"
+    fi
+  done
+  cd ..
+  if [ ! -z "$FILES_MISSING" ]; then
+    echo "Missing files in EXTRA_DIST: $FILES_MISSING"
+    exit 1
+  fi
+
+  # Do the regular dist-check for C++.
   make distcheck -j2
 }
 
@@ -320,6 +344,7 @@ build_javascript() {
 if [ "$#" -ne 1 ]; then
   echo "
 Usage: $0 { cpp |
+            cpp_distcheck |
             csharp |
             java_jdk6 |
             java_jdk7 |
