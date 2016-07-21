@@ -15,10 +15,8 @@ env:
   - CONFIG=cpp
   - CONFIG=cpp_distcheck
   - CONFIG=golang
-  - CONFIG=java_jdk6
   - CONFIG=java_jdk7
   - CONFIG=java_oracle7
-  - CONFIG=javanano_jdk6
   - CONFIG=javanano_jdk7
   - CONFIG=javanano_oracle7
   - CONFIG=javascript
@@ -40,13 +38,9 @@ matrix:
     # It's nontrivial to programmatically install a new JDK from the command
     # line on OS X, so we rely on testing on Linux for Java code.
     - os: osx
-      env: CONFIG=java_jdk6
-    - os: osx
       env: CONFIG=java_jdk7
     - os: osx
       env: CONFIG=java_oracle7
-    - os: osx
-      env: CONFIG=javanano_jdk6
     - os: osx
       env: CONFIG=javanano_jdk7
     - os: osx

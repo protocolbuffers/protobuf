@@ -127,13 +127,10 @@ build_golang() {
 use_java() {
   version=$1
   case "$version" in
-    jdk6)
-      on_travis sudo apt-get install openjdk-6-jdk
-      export PATH=/usr/lib/jvm/java-6-openjdk-amd64/bin:$PATH
-      ;;
     jdk7)
       on_travis sudo apt-get install openjdk-7-jdk
       export PATH=/usr/lib/jvm/java-7-openjdk-amd64/bin:$PATH
+      export JAVA_HOME=/usr/lib/jvm/java-7-openjdk-amd64
       ;;
     oracle7)
       if [ "$TRAVIS" == "true" ]; then
@@ -144,6 +141,7 @@ use_java() {
         yes | sudo apt-get install oracle-java7-installer
       fi;
       export PATH=/usr/lib/jvm/java-7-oracle/bin:$PATH
+      export JAVA_HOME=/usr/lib/jvm/java-7-openjdk-amd64
       ;;
   esac
 
@@ -154,6 +152,7 @@ use_java() {
 
   which java
   java -version
+  $MVN -version
 }
 
 # --batch-mode supresses download progress output that spams the logs.
@@ -186,10 +185,6 @@ build_javanano() {
   cd javanano && $MVN test && cd ..
 }
 
-build_java_jdk6() {
-  use_java jdk6
-  build_java jdk6
-}
 build_java_jdk7() {
   use_java jdk7
   build_java_with_conformance_tests
@@ -199,10 +194,6 @@ build_java_oracle7() {
   build_java oracle7
 }
 
-build_javanano_jdk6() {
-  use_java jdk6
-  build_javanano
-}
 build_javanano_jdk7() {
   use_java jdk7
   build_javanano
@@ -346,10 +337,8 @@ if [ "$#" -ne 1 ]; then
 Usage: $0 { cpp |
             cpp_distcheck |
             csharp |
-            java_jdk6 |
             java_jdk7 |
             java_oracle7 |
-            javanano_jdk6 |
             javanano_jdk7 |
             javanano_oracle7 |
             objectivec_ios |
