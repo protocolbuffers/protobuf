@@ -244,6 +244,11 @@ void* RepeatedField_index_native(VALUE _self, int index) {
   return RepeatedField_memoryat(self, index, element_size);
 }
 
+int RepeatedField_size(VALUE _self) {
+  RepeatedField* self = ruby_to_RepeatedField(_self);
+  return self->size;
+}
+
 /*
  * Private ruby method, used by RepeatedField.pop
  */
