@@ -1,10 +1,14 @@
 #!/usr/bin/env bash
 
 # Exit on any error.
-set -e
+set -ex
 
 test_version() {
+  echo $PATH
+  which ruby
+  ruby --version
   version=$1
+  cwd=`pwd`
   if [ "$version" == "jruby" ] ; then
     # No conformance tests yet -- JRuby is too broken to run them.
     bash --login -c \
@@ -18,7 +22,7 @@ test_version() {
        which ruby && \
        gem install bundler && bundle && \
        rake test &&
-       cd ../conformance && make test_ruby"
+       cd ../conformance && make test_ruby RUBYBASE=$cwd"
   fi
 }
 
