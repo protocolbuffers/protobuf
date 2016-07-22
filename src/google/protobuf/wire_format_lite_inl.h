@@ -346,9 +346,9 @@ inline bool WireFormatLite::ReadPackedFixedSizePrimitive(
     io::CodedInputStream* input, RepeatedField<CType>* values) {
   int length;
   if (!input->ReadVarintSizeAsInt(&length)) return false;
-  const uint32 old_entries = values->size();
-  const uint32 new_entries = length / sizeof(CType);
-  const uint32 new_bytes = new_entries * sizeof(CType);
+  const int old_entries = values->size();
+  const int new_entries = length / sizeof(CType);
+  const int new_bytes = new_entries * sizeof(CType);
   if (new_bytes != length) return false;
   // We would *like* to pre-allocate the buffer to write into (for
   // speed), but *must* avoid performing a very large allocation due
@@ -382,7 +382,7 @@ inline bool WireFormatLite::ReadPackedFixedSizePrimitive(
 #else
     values->Reserve(old_entries + new_entries);
     CType value;
-    for (uint32 i = 0; i < new_entries; ++i) {
+    for (int i = 0; i < new_entries; ++i) {
       if (!ReadPrimitive<CType, DeclaredType>(input, &value)) return false;
       values->AddAlreadyReserved(value);
     }
@@ -392,7 +392,7 @@ inline bool WireFormatLite::ReadPackedFixedSizePrimitive(
     // safely allocate.  We read as much as we can into *values
     // without pre-allocating "length" bytes.
     CType value;
-    for (uint32 i = 0; i < new_entries; ++i) {
+    for (int i = 0; i < new_entries; ++i) {
       if (!ReadPrimitive<CType, DeclaredType>(input, &value)) return false;
       values->Add(value);
     }
