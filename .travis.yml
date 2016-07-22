@@ -28,8 +28,6 @@ env:
   - CONFIG=objectivec_cocoapods_integration
   - CONFIG=python
   - CONFIG=python_cpp
-  - CONFIG=ruby19
-  - CONFIG=ruby20
   - CONFIG=ruby21
   - CONFIG=ruby22
   - CONFIG=jruby
