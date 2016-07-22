@@ -1306,7 +1306,8 @@ bool Parser::Finish() {
     return true;
   }
   // Force a newline onto the end to finish parsing.
-  p_ = StringPiece(leftover_ + "\n");
+  leftover_ += "\n";
+  p_ = StringPiece(leftover_);
   if (!ParseLoop()) {
     return false;
   }

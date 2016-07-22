@@ -223,7 +223,7 @@ bool ImportWriter::ProtoFrameworkCollector::ConsumeLine(
       offset = proto_file_list.length();
     }
 
-    StringPiece proto_file(proto_file_list, start, offset);
+    StringPiece proto_file(proto_file_list, start, offset - start);
     StringPieceTrimWhitespace(&proto_file);
     if (proto_file.size() != 0) {
       map<string, string>::iterator existing_entry =
