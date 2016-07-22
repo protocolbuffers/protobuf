@@ -48,6 +48,7 @@ $TIME_CMD $TEST_SCRIPT cpp > >(tee $CPP_STDOUT) 2> >(tee $CPP_STDERR >&2)
 # Other tests are run in parallel.
 
 parallel --results $LOG_OUTPUT_DIR --joblog $OUTPUT_DIR/joblog $TEST_SCRIPT ::: \
+  cpp_distcheck \
   csharp \
   java_jdk7 \
   javanano_jdk7 \
