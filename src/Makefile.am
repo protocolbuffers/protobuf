@@ -19,8 +19,9 @@ PTHREAD_DEF =
 endif
 
 if GCC
-# These are good warnings to turn on by default
-NO_OPT_CXXFLAGS = $(PTHREAD_CFLAGS) $(PTHREAD_DEF) $(ZLIB_DEF) -Wall -Wwrite-strings -Woverloaded-virtual -Wno-sign-compare
+# Turn on all warnings except for sign comparison (we ignore sign comparison
+# in Google so our code base have tons of such warnings).
+NO_OPT_CXXFLAGS = $(PTHREAD_CFLAGS) $(PTHREAD_DEF) $(ZLIB_DEF) -Wall -Wno-sign-compare
 else
 NO_OPT_CXXFLAGS = $(PTHREAD_CFLAGS) $(PTHREAD_DEF) $(ZLIB_DEF)
 endif
@@ -50,7 +51,8 @@ clean-local:
 	rm -f *.loT
 
 CLEANFILES = $(protoc_outputs) unittest_proto_middleman \
-             testzip.jar testzip.list testzip.proto testzip.zip
+             testzip.jar testzip.list testzip.proto testzip.zip \
+             no_warning_test.cc
 
 MAINTAINERCLEANFILES =   \
   Makefile.in
@@ -122,7 +124,6 @@ nobase_include_HEADERS =                                        \
   google/protobuf/reflection.h                                  \
   google/protobuf/reflection_ops.h                              \
   google/protobuf/repeated_field.h                              \
-  google/protobuf/repeated_field_reflection.h                   \
   google/protobuf/service.h                                     \
   google/protobuf/source_context.pb.h                           \
   google/protobuf/struct.pb.h                                   \
@@ -680,7 +681,7 @@ COMMON_TEST_SOURCES =                                          \
 
 check_PROGRAMS = protoc protobuf-test protobuf-lazy-descriptor-test \
                  protobuf-lite-test test_plugin protobuf-lite-arena-test \
-                 $(GZCHECKPROGRAMS)
+                 no-warning-test $(GZCHECKPROGRAMS)
 protobuf_test_LDADD = $(PTHREAD_LIBS) libprotobuf.la libprotoc.la \
                       ../gmock/gtest/lib/libgtest.la              \
                       ../gmock/lib/libgmock.la                    \
@@ -833,6 +834,27 @@ zcgunzip_LDADD = $(PTHREAD_LIBS) libprotobuf.la
 zcgunzip_SOURCES = google/protobuf/testing/zcgunzip.cc
 endif
 
+# This test target is to ensure all our public header files and generated
+# code is free from warnings. We have to be more pedantic about these
+# files because they are compiled by users with different compiler flags.
+no_warning_test.cc:
+	echo "// Generated from Makefile.am" > no_warning_test.cc
+	for FILE in $(nobase_include_HEADERS); do \
+	  if ! echo $${FILE} | grep "atomicops"; then \
+	    echo "#include <$${FILE}>" >> no_warning_test.cc; \
+	  fi \
+	done
+	echo "#include <gtest/gtest.h>" >> no_warning_test.cc
+	echo "TEST(NoWarningTest, Empty) {}" >> no_warning_test.cc
+
+no_warning_test_LDADD = $(PTHREAD_LIBS) libprotobuf.la      \
+                        ../gmock/gtest/lib/libgtest.la      \
+                        ../gmock/gtest/lib/libgtest_main.la
+no_warning_test_CPPFLAGS = -I$(srcdir)/../gmock/gtest/include
+no_warning_test_CXXFLAGS = $(PTHREAD_CFLAGS) $(PTHREAD_DEF) $(ZLIB_DEF) \
+                           -Wall -Werror
+nodist_no_warning_test_SOURCES = no_warning_test.cc $(protoc_outputs)
+
 TESTS = protobuf-test protobuf-lazy-descriptor-test protobuf-lite-test \
         google/protobuf/compiler/zip_output_unittest.sh $(GZTESTS)     \
-        protobuf-lite-arena-test
+        protobuf-lite-arena-test no-warning-test
