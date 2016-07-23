@@ -1250,7 +1250,7 @@ class Map {
     // Return whether table_[b] is a linked list that seems awfully long.
     // Requires table_[b] to point to a non-empty linked list.
     bool TableEntryIsTooLong(size_type b) {
-      const int kMaxLength = 8;
+      const size_type kMaxLength = 8;
       size_type count = 0;
       Node* node = static_cast<Node*>(table_[b]);
       do {
