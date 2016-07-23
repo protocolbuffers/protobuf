@@ -1072,6 +1072,10 @@ string JSBinaryReadWriteMethodName(const FieldDescriptor* field,
   } else if (is_writer && field->is_repeated()) {
     name = "Repeated" + name;
   }
+  if (field->cpp_type() == FieldDescriptor::CPPTYPE_INT64 ||
+      field->cpp_type() == FieldDescriptor::CPPTYPE_UINT64) {
+    name += "String";
+  }
   return name;
 }
 

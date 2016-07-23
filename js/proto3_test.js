@@ -133,15 +133,15 @@ describe('proto3Test', function() {
     var msg = new proto.jspb.test.TestProto3();
 
     msg.setOptionalInt32(-42);
-    msg.setOptionalInt64(-0x7fffffff00000000);
+    msg.setOptionalInt64('-9223372032559808512');
     msg.setOptionalUint32(0x80000000);
-    msg.setOptionalUint64(0xf000000000000000);
+    msg.setOptionalUint64('17293822569102704640');
     msg.setOptionalSint32(-100);
-    msg.setOptionalSint64(-0x8000000000000000);
+    msg.setOptionalSint64(-0x8000000000000000 + '');
     msg.setOptionalFixed32(1234);
-    msg.setOptionalFixed64(0x1234567800000000);
+    msg.setOptionalFixed64('1311768464867721216');
     msg.setOptionalSfixed32(-1234);
-    msg.setOptionalSfixed64(-0x1234567800000000);
+    msg.setOptionalSfixed64('-1311768464867721216');
     msg.setOptionalFloat(1.5);
     msg.setOptionalDouble(-1.5);
     msg.setOptionalBool(true);
@@ -153,15 +153,15 @@ describe('proto3Test', function() {
     msg.setOptionalForeignEnum(proto.jspb.test.Proto3Enum.PROTO3_BAR);
 
     msg.setRepeatedInt32List([-42]);
-    msg.setRepeatedInt64List([-0x7fffffff00000000]);
+    msg.setRepeatedInt64List(['-9223372032559808512']);
     msg.setRepeatedUint32List([0x80000000]);
-    msg.setRepeatedUint64List([0xf000000000000000]);
+    msg.setRepeatedUint64List(['17293822569102704640']);
     msg.setRepeatedSint32List([-100]);
-    msg.setRepeatedSint64List([-0x8000000000000000]);
+    msg.setRepeatedSint64List([-0x8000000000000000 + '']);
     msg.setRepeatedFixed32List([1234]);
-    msg.setRepeatedFixed64List([0x1234567800000000]);
+    msg.setRepeatedFixed64List(['1311768464867721216']);
     msg.setRepeatedSfixed32List([-1234]);
-    msg.setRepeatedSfixed64List([-0x1234567800000000]);
+    msg.setRepeatedSfixed64List(['-1311768464867721216']);
     msg.setRepeatedFloatList([1.5]);
     msg.setRepeatedDoubleList([-1.5]);
     msg.setRepeatedBoolList([true]);
@@ -178,15 +178,15 @@ describe('proto3Test', function() {
     msg = proto.jspb.test.TestProto3.deserializeBinary(serialized);
 
     assertEquals(msg.getOptionalInt32(), -42);
-    assertEquals(msg.getOptionalInt64(), -0x7fffffff00000000);
+    assertEquals(msg.getOptionalInt64(), '-9223372032559808512');
     assertEquals(msg.getOptionalUint32(), 0x80000000);
-    assertEquals(msg.getOptionalUint64(), 0xf000000000000000);
+    assertEquals(msg.getOptionalUint64(), '17293822569102704640');
     assertEquals(msg.getOptionalSint32(), -100);
-    assertEquals(msg.getOptionalSint64(), -0x8000000000000000);
+    assertEquals(msg.getOptionalSint64(), -0x8000000000000000 + '');
     assertEquals(msg.getOptionalFixed32(), 1234);
-    assertEquals(msg.getOptionalFixed64(), 0x1234567800000000);
+    assertEquals(msg.getOptionalFixed64(), '1311768464867721216');
     assertEquals(msg.getOptionalSfixed32(), -1234);
-    assertEquals(msg.getOptionalSfixed64(), -0x1234567800000000);
+    assertEquals(msg.getOptionalSfixed64(), '-1311768464867721216');
     assertEquals(msg.getOptionalFloat(), 1.5);
     assertEquals(msg.getOptionalDouble(), -1.5);
     assertEquals(msg.getOptionalBool(), true);
@@ -197,15 +197,15 @@ describe('proto3Test', function() {
         proto.jspb.test.Proto3Enum.PROTO3_BAR);
 
     assertElementsEquals(msg.getRepeatedInt32List(), [-42]);
-    assertElementsEquals(msg.getRepeatedInt64List(), [-0x7fffffff00000000]);
+    assertElementsEquals(msg.getRepeatedInt64List(), ['-9223372032559808512']);
     assertElementsEquals(msg.getRepeatedUint32List(), [0x80000000]);
-    assertElementsEquals(msg.getRepeatedUint64List(), [0xf000000000000000]);
+    assertElementsEquals(msg.getRepeatedUint64List(), ['17293822569102704640']);
     assertElementsEquals(msg.getRepeatedSint32List(), [-100]);
-    assertElementsEquals(msg.getRepeatedSint64List(), [-0x8000000000000000]);
+    assertElementsEquals(msg.getRepeatedSint64List(), [-0x8000000000000000 + '']);
     assertElementsEquals(msg.getRepeatedFixed32List(), [1234]);
-    assertElementsEquals(msg.getRepeatedFixed64List(), [0x1234567800000000]);
+    assertElementsEquals(msg.getRepeatedFixed64List(), ['1311768464867721216']);
     assertElementsEquals(msg.getRepeatedSfixed32List(), [-1234]);
-    assertElementsEquals(msg.getRepeatedSfixed64List(), [-0x1234567800000000]);
+    assertElementsEquals(msg.getRepeatedSfixed64List(), ['-1311768464867721216']);
     assertElementsEquals(msg.getRepeatedFloatList(), [1.5]);
     assertElementsEquals(msg.getRepeatedDoubleList(), [-1.5]);
     assertElementsEquals(msg.getRepeatedBoolList(), [true]);
