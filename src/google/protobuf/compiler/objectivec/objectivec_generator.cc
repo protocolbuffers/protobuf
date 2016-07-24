@@ -50,7 +50,12 @@ bool ObjectiveCGenerator::Generate(const FileDescriptor* file,
                                    OutputDirectory* output_directory,
                                    string* error) const {
   // -----------------------------------------------------------------
-  // Parse generator options.
+  // Parse generator options. These options are passed to the compiler using the
+  // --objc_opt flag. The options are passed as a comma separated list of
+  // options along with their values. If the option appears multiple times, only
+  // the last value will be considered.
+  //
+  // e.g. protoc ... --objc_opt=expected_prefixes=file.txt,generate_for_named_framework=MyFramework
 
   Options generation_options;
 
@@ -70,7 +75,7 @@ bool ObjectiveCGenerator::Generate(const FileDescriptor* file,
       //     (i.e. - "package=prefix # comment")
       //
       // There is no validation that the prefixes are good prefixes, it is
-      // assume they are when you create the file.
+      // assumed that they are when you create the file.
       generation_options.expected_prefixes_path = options[i].second;
     } else if (options[i].first == "generate_for_named_framework") {
       // The name of the framework that protos are being generated for. This
@@ -79,11 +84,12 @@ bool ObjectiveCGenerator::Generate(const FileDescriptor* file,
       //
       // NOTE: If this option is used with
       // named_framework_to_proto_path_mappings_path, then this is effectively
-      // the "default" to use for everything that wasn't mapped by the other.
-      generation_options.named_framework_to_proto_path_mappings_path = options[i].second;
+      // the "default" framework name used for everything that wasn't mapped by
+      // the mapping file.
+      generation_options.generate_for_named_framework = options[i].second;
     } else if (options[i].first == "named_framework_to_proto_path_mappings_path") {
-      // Path to find a file containing the listing of framework names and
-      // proto files. The generator uses this to decide if another proto file
+      // Path to find a file containing the list of framework names and proto
+      // files. The generator uses this to decide if a proto file
       // referenced should use a framework style import vs. a user level import
       // (#import <FRAMEWORK/file.pbobjc.h> vs #import "dir/file.pbobjc.h").
       //
@@ -97,8 +103,11 @@ bool ObjectiveCGenerator::Generate(const FileDescriptor* file,
       // with commas.
       //
       // There can be multiple lines listing the same frameworkName incase it
-      // has a lot of proto files included in it; and having multiple lines
-      // makes things easier to read.
+      // has a lot of proto files included in it; having multiple lines makes
+      // things easier to read. If a proto file is not configured in the
+      // mappings file, it will use the default framework name if one was passed
+      // with generate_for_named_framework, or the relative path to it's include
+      // path otherwise.
       generation_options.named_framework_to_proto_path_mappings_path = options[i].second;
     } else {
       *error = "error: Unknown generator option: " + options[i].first;
