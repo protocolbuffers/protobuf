@@ -3,7 +3,7 @@
 # generated_code.rb is in the same directory as this test.
 $LOAD_PATH.unshift(File.expand_path(File.dirname(__FILE__)))
 
-require 'generated_code'
+require 'generated_code_pb'
 require 'test/unit'
 
 class GeneratedCodeTest < Test::Unit::TestCase

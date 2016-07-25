@@ -48,7 +48,7 @@ namespace ruby {
 
 // Forward decls.
 std::string IntToString(int32 value);
-std::string StripDotProto(const std::string& proto_file);
+std::string GetRequireName(const std::string& proto_file);
 std::string LabelForField(google::protobuf::FieldDescriptor* field);
 std::string TypeName(google::protobuf::FieldDescriptor* field);
 void GenerateMessage(const google::protobuf::Descriptor* message,
@@ -70,13 +70,13 @@ std::string IntToString(int32 value) {
   return os.str();
 }
 
-std::string StripDotProto(const std::string& proto_file) {
+std::string GetRequireName(const std::string& proto_file) {
   int lastindex = proto_file.find_last_of(".");
-  return proto_file.substr(0, lastindex);
+  return proto_file.substr(0, lastindex) + "_pb";
 }
 
 std::string GetOutputFilename(const std::string& proto_file) {
-  return StripDotProto(proto_file) + ".rb";
+  return GetRequireName(proto_file) + ".rb";
 }
 
 std::string LabelForField(const google::protobuf::FieldDescriptor* field) {
@@ -391,7 +391,7 @@ bool MaybeEmitDependency(const FileDescriptor* import,
     return true;
   } else {
     printer->Print(
-      "require '$name$'\n", "name", StripDotProto(import->name()));
+      "require '$name$'\n", "name", GetRequireName(import->name()));
     return true;
   }
 }
