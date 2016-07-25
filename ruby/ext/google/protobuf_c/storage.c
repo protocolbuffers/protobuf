@@ -117,25 +117,24 @@ void native_slot_check_int_range_precision(upb_fieldtype_t type, VALUE val) {
   }
 }
 
-void native_slot_validate_string_encoding(upb_fieldtype_t type, VALUE value) {
-  bool bad_encoding = false;
-  rb_encoding* string_encoding = rb_enc_from_index(ENCODING_GET(value));
-  if (type == UPB_TYPE_STRING) {
-    bad_encoding =
-        string_encoding != kRubyStringUtf8Encoding &&
-        string_encoding != kRubyStringASCIIEncoding;
-  } else {
-    bad_encoding =
-        string_encoding != kRubyString8bitEncoding;
+VALUE native_slot_encode_and_freeze_string(upb_fieldtype_t type, VALUE value) {
+  rb_encoding* desired_encoding = (type == UPB_TYPE_STRING) ?
+      kRubyStringUtf8Encoding : kRubyString8bitEncoding;
+  VALUE desired_encoding_value = rb_enc_from_encoding(desired_encoding);
+
+  // Note: this will not duplicate underlying string data unless necessary.
+  value = rb_str_encode(value, desired_encoding_value, 0, Qnil);
+
+  if (type == UPB_TYPE_STRING &&
+      rb_enc_str_coderange(value) == ENC_CODERANGE_BROKEN) {
+    rb_raise(rb_eEncodingError, "String is invalid UTF-8");
   }
-  // Check that encoding is UTF-8 or ASCII (for string fields) or ASCII-8BIT
-  // (for bytes fields).
-  if (bad_encoding) {
-    rb_raise(rb_eTypeError, "Encoding for '%s' fields must be %s (was %s)",
-             (type == UPB_TYPE_STRING) ? "string" : "bytes",
-             (type == UPB_TYPE_STRING) ? "UTF-8 or ASCII" : "ASCII-8BIT",
-             rb_enc_name(string_encoding));
-  }
+
+  // Ensure the data remains valid.  Since we called #encode a moment ago,
+  // this does not freeze the string the user assigned.
+  rb_obj_freeze(value);
+
+  return value;
 }
 
 void native_slot_set(upb_fieldtype_t type, VALUE type_class,
@@ -181,8 +180,8 @@ void native_slot_set_value_and_case(upb_fieldtype_t type, VALUE type_class,
       if (CLASS_OF(value) != rb_cString) {
         rb_raise(rb_eTypeError, "Invalid argument for string field.");
       }
-      native_slot_validate_string_encoding(type, value);
-      DEREF(memory, VALUE) = value;
+
+      DEREF(memory, VALUE) = native_slot_encode_and_freeze_string(type, value);
       break;
     }
     case UPB_TYPE_MESSAGE: {

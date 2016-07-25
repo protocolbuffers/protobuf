@@ -255,14 +255,17 @@ module BasicTest
       m = TestMessage.new
 
       # Assigning a normal (ASCII or UTF8) string to a bytes field, or
-      # ASCII-8BIT to a string field, raises an error.
-      assert_raise TypeError do
-        m.optional_bytes = "Test string ASCII".encode!('ASCII')
-      end
-      assert_raise TypeError do
+      # ASCII-8BIT to a string field will convert to the proper encoding.
+      m.optional_bytes = "Test string ASCII".encode!('ASCII')
+      assert m.optional_bytes.frozen?
+      assert_equal Encoding::ASCII_8BIT, m.optional_bytes.encoding
+      assert_equal "Test string ASCII", m.optional_bytes
+
+      assert_raise Encoding::UndefinedConversionError do
         m.optional_bytes = "Test string UTF-8 \u0100".encode!('UTF-8')
       end
-      assert_raise TypeError do
+
+      assert_raise Encoding::UndefinedConversionError do
         m.optional_string = ["FFFF"].pack('H*')
       end
 
@@ -270,11 +273,10 @@ module BasicTest
       m.optional_bytes = ["FFFF"].pack('H*')
       m.optional_string = "\u0100"
 
-      # strings are mutable so we can do this, but serialize should catch it.
+      # strings are immutable so we can't do this, but serialize should catch it.
       m.optional_string = "asdf".encode!('UTF-8')
-      m.optional_string.encode!('ASCII-8BIT')
-      assert_raise TypeError do
-        data = TestMessage.encode(m)
+      assert_raise RuntimeError do
+        m.optional_string.encode!('ASCII-8BIT')
       end
     end
 
@@ -558,7 +560,7 @@ module BasicTest
       assert_raise TypeError do
         m[1] = 1
       end
-      assert_raise TypeError do
+      assert_raise Encoding::UndefinedConversionError do
         bytestring = ["FFFF"].pack("H*")
         m[bytestring] = 1
       end
@@ -566,9 +568,8 @@ module BasicTest
       m = Google::Protobuf::Map.new(:bytes, :int32)
       bytestring = ["FFFF"].pack("H*")
       m[bytestring] = 1
-      assert_raise TypeError do
-        m["asdf"] = 1
-      end
+      # Allowed -- we will automatically convert to ASCII-8BIT.
+      m["asdf"] = 1
       assert_raise TypeError do
         m[1] = 1
       end
@@ -853,15 +854,22 @@ module BasicTest
 
     def test_encode_decode_helpers
       m = TestMessage.new(:optional_string => 'foo', :repeated_string => ['bar1', 'bar2'])
+      assert_equal 'foo', m.optional_string
+      assert_equal ['bar1', 'bar2'], m.repeated_string
+
       json = m.to_json
       m2 = TestMessage.decode_json(json)
-      assert m2.optional_string == 'foo'
-      assert m2.repeated_string == ['bar1', 'bar2']
+      assert_equal 'foo', m2.optional_string
+      assert_equal ['bar1', 'bar2'], m2.repeated_string
+      if RUBY_PLATFORM != "java"
+        assert m2.optional_string.frozen?
+        assert m2.repeated_string[0].frozen?
+      end
 
       proto = m.to_proto
       m2 = TestMessage.decode(proto)
-      assert m2.optional_string == 'foo'
-      assert m2.repeated_string == ['bar1', 'bar2']
+      assert_equal 'foo', m2.optional_string
+      assert_equal ['bar1', 'bar2'], m2.repeated_string
     end
 
     def test_protobuf_encode_decode_helpers

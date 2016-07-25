@@ -504,7 +504,7 @@ public class RubyMessage extends RubyObject {
                 break;
             case BYTES:
             case STRING:
-                Utils.validateStringEncoding(context.runtime, fieldDescriptor.getType(), value);
+                Utils.validateStringEncoding(context, fieldDescriptor.getType(), value);
                 RubyString str = (RubyString) value;
                 switch (fieldDescriptor.getType()) {
                     case BYTES:
@@ -695,7 +695,7 @@ public class RubyMessage extends RubyObject {
                     }
                 }
                 if (addValue) {
-                    Utils.checkType(context, fieldType, value, (RubyModule) typeClass);
+                    value = Utils.checkType(context, fieldType, value, (RubyModule) typeClass);
                     this.fields.put(fieldDescriptor, value);
                 } else {
                     this.fields.remove(fieldDescriptor);
