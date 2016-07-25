@@ -102,6 +102,25 @@ When you have done deployment for all platforms, go to
 https://oss.sonatype.org/#stagingRepositories, verify that the staging
 repository has all the binaries, close and release this repository.
 
+## Upload zip packages to github release page.
+After uploading protoc artifacts to Maven Central repository, run the
+build-zip.sh script to bulid zip packages for these protoc binaries
+and upload these zip packages to the download section of the github
+release. For example:
+```
+$ ./build-zip.sh 3.0.0-beta-4
+```
+The above command will create 5 zip files:
+```
+dist/protoc-3.0.0-beta-4-win32.zip
+dist/protoc-3.0.0-beta-4-osx-x86_32.zip
+dist/protoc-3.0.0-beta-4-osx-x86_64.zip
+dist/protoc-3.0.0-beta-4-linux-x86_32.zip
+dist/protoc-3.0.0-beta-4-linux-x86_64.zip
+```
+Before running the script, make sure the artifacts are accessible from:
+http://repo1.maven.org/maven2/com/google/protobuf/protoc/
+
 ### Tips for deploying on Linux
 We build on Centos 6.6 to provide a good compatibility for not very new
 systems. We have provided a ``Dockerfile`` under this directory to build the
