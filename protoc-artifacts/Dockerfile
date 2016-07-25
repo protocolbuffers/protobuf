@@ -21,9 +21,9 @@ ENV JAVA_HOME /var/local/jdk1.8.0_45
 ENV PATH $JAVA_HOME/bin:$PATH
 
 # Install Maven
-RUN wget -q http://apache.cs.utah.edu/maven/maven-3/3.3.3/binaries/apache-maven-3.3.3-bin.tar.gz -O - | \
+RUN wget -q http://apache.cs.utah.edu/maven/maven-3/3.3.9/binaries/apache-maven-3.3.9-bin.tar.gz -O - | \
     tar xz -C /var/local
-ENV PATH /var/local/apache-maven-3.3.3/bin:$PATH
+ENV PATH /var/local/apache-maven-3.3.9/bin:$PATH
 
 # Install GCC 4.7 to support -static-libstdc++
 RUN wget http://people.centos.org/tru/devtools-1.1/devtools-1.1.repo -P /etc/yum.repos.d
