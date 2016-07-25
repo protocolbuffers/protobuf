@@ -91,6 +91,9 @@ GPB_INLINE int64_t GPBLogicalRightShift64(int64_t value, int32_t spaces) {
   return (int64_t)((uint64_t)(value) >> spaces);
 }
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wconversion"
+
 // Decode a ZigZag-encoded 32-bit value.  ZigZag encodes signed integers
 // into values that can be efficiently encoded with varint.  (Otherwise,
 // negative values must be sign-extended to 64 bits to be varint encoded,
@@ -124,6 +127,8 @@ GPB_INLINE uint64_t GPBEncodeZigZag64(int64_t n) {
   // Note:  the right-shift must be arithmetic
   return (n << 1) ^ (n >> 63);
 }
+
+#pragma clang diagnostic pop
 
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wswitch-enum"
