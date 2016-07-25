@@ -61,6 +61,7 @@ python/google/protobuf/compiler/
 python/google/protobuf/util/
 
 src/protoc
+src/protoc-gen-javalite
 src/unittest_proto_middleman
 
 # Generated test scaffolding
