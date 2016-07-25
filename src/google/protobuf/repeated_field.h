@@ -281,7 +281,7 @@ class RepeatedField {
       Element* e = &rep->elements[0];
       Element* limit = &rep->elements[size];
       for (; e < limit; e++) {
-        e->Element::~Element();
+        e->~Element();
       }
       if (rep->arena == NULL) {
         delete[] reinterpret_cast<char*>(rep);
