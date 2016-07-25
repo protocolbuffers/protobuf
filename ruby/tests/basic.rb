@@ -861,8 +861,10 @@ module BasicTest
       m2 = TestMessage.decode_json(json)
       assert_equal 'foo', m2.optional_string
       assert_equal ['bar1', 'bar2'], m2.repeated_string
-      assert m2.optional_string.frozen?
-      assert m2.repeated_string[0].frozen?
+      if RUBY_PLATFORM != "java"
+        assert m2.optional_string.frozen?
+        assert m2.repeated_string[0].frozen?
+      end
 
       proto = m.to_proto
       m2 = TestMessage.decode(proto)
