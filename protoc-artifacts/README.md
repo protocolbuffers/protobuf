@@ -82,6 +82,7 @@ Use the following command to deploy artifacts for the host platform to a
 staging repository.
 ```
 $ mvn clean deploy -P release
+$ mvn -f javalite-pom.xml clean deploy -P release
 ```
 It creates a new staging repository. Go to
 https://oss.sonatype.org/#stagingRepositories and find the repository, usually
@@ -93,6 +94,7 @@ have found in the first deployment so that all artifacts go to the same
 repository:
 ```
 $ mvn clean deploy -P release -Dstaging.repository=comgoogle-123
+$ mvn -f javalite-pom.xml clean deploy -P release -Dstaging.repository=comgoogle-123
 ```
 
 A 32-bit artifact can be deployed from a 64-bit host with
