@@ -27,7 +27,7 @@ internal_build_cpp() {
     return
   fi
 
-  internal_build_cpp_for_real $HOME/built
+  internal_build_cpp_for_real
 
   # Install protoc and C++ runtime to the cache directory.
   make install
@@ -44,16 +44,16 @@ internal_build_cpp_for_real() {
   fi
 
   ./autogen.sh
-  if [ -z "$1" ]; then
-    ./configure
-  else
-    ./configure --prefix=$1
-  fi
+  ./configure --prefix=$HOME/built
   make -j2
 }
 
 build_cpp() {
   internal_build_cpp_for_real
+  if [ ! -f $HOME/built/bin/protoc ]; then
+    # Cache the build result for other test runs to use.
+    make install
+  fi
   make check -j2
   cd conformance && make test_cpp && cd ..
 
