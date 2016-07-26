@@ -547,7 +547,7 @@ EXTRA_DIST =                                                   \
   google/protobuf/package_info.h                               \
   google/protobuf/io/package_info.h                            \
   google/protobuf/compiler/ruby/ruby_generated_code.proto      \
-  google/protobuf/compiler/ruby/ruby_generated_code.rb         \
+  google/protobuf/compiler/ruby/ruby_generated_code_pb.rb      \
   google/protobuf/compiler/package_info.h                      \
   google/protobuf/compiler/zip_output_unittest.sh              \
   README.md
