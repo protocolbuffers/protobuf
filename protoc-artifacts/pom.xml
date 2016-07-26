@@ -59,6 +59,7 @@
             <argument>build-protoc.sh</argument>
             <argument>${os.detected.name}</argument>
             <argument>${os.detected.arch}</argument>
+            <argument>protoc</argument>
           </arguments>
         </configuration>
       </plugin>
