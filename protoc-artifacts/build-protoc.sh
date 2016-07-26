@@ -3,9 +3,9 @@
 # Builds protoc executable into target/protoc.exe; optionally build protoc
 # plugins into target/protoc-gen-*.exe
 # To be run from Maven.
-# Usage: build-protoc.sh <OS> <ARCH> [target]
+# Usage: build-protoc.sh <OS> <ARCH> <TARGET>
 # <OS> and <ARCH> are ${os.detected.name} and ${os.detected.arch} from os-maven-plugin
-# target can be "protoc" (by default) or protoc-gen-javalite
+# <TARGET> can be "protoc" or protoc-gen-javalite
 OS=$1
 ARCH=$2
 MAKE_TARGET=$3
