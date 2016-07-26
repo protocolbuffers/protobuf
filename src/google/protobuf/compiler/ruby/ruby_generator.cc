@@ -48,7 +48,7 @@ namespace ruby {
 
 // Forward decls.
 std::string IntToString(int32 value);
-std::string StripDotProto(const std::string& proto_file);
+std::string GetRequireName(const std::string& proto_file);
 std::string LabelForField(google::protobuf::FieldDescriptor* field);
 std::string TypeName(google::protobuf::FieldDescriptor* field);
 void GenerateMessage(const google::protobuf::Descriptor* message,
@@ -70,13 +70,13 @@ std::string IntToString(int32 value) {
   return os.str();
 }
 
-std::string StripDotProto(const std::string& proto_file) {
+std::string GetRequireName(const std::string& proto_file) {
   int lastindex = proto_file.find_last_of(".");
-  return proto_file.substr(0, lastindex);
+  return proto_file.substr(0, lastindex) + "_pb";
 }
 
 std::string GetOutputFilename(const std::string& proto_file) {
-  return StripDotProto(proto_file) + ".rb";
+  return GetRequireName(proto_file) + ".rb";
 }
 
 std::string LabelForField(const google::protobuf::FieldDescriptor* field) {
@@ -237,15 +237,52 @@ void GenerateEnum(const google::protobuf::EnumDescriptor* en,
     "end\n");
 }
 
-// Module names, class names, and enum value names need to be Ruby constants,
-// which must start with a capital letter.
+// Locale-agnostic utility functions.
+bool IsLower(char ch) { return ch >= 'a' && ch <= 'z'; }
+
+bool IsUpper(char ch) { return ch >= 'A' && ch <= 'Z'; }
+
+bool IsAlpha(char ch) { return IsLower(ch) || IsUpper(ch); }
+
+char ToUpper(char ch) { return IsLower(ch) ? (ch - 'a' + 'A') : ch; }
+
+
+// Package names in protobuf are snake_case by convention, but Ruby module
+// names must be PascalCased.
+//
+//   foo_bar_baz -> FooBarBaz
+std::string PackageToModule(const std::string& name) {
+  bool next_upper = true;
+  std::string result;
+  result.reserve(name.size());
+
+  for (int i = 0; i < name.size(); i++) {
+    if (name[i] == '_') {
+      next_upper = true;
+    } else {
+      if (next_upper) {
+        result.push_back(ToUpper(name[i]));
+      } else {
+        result.push_back(name[i]);
+      }
+      next_upper = false;
+    }
+  }
+
+  return result;
+}
+
+// Class and enum names in protobuf should be PascalCased by convention, but
+// since there is nothing enforcing this we need to ensure that they are valid
+// Ruby constants.  That mainly means making sure that the first character is
+// an upper-case letter.
 std::string RubifyConstant(const std::string& name) {
   std::string ret = name;
   if (!ret.empty()) {
-    if (ret[0] >= 'a' && ret[0] <= 'z') {
+    if (IsLower(ret[0])) {
       // If it starts with a lowercase letter, capitalize it.
-      ret[0] = ret[0] - 'a' + 'A';
-    } else if (ret[0] < 'A' || ret[0] > 'Z') {
+      ret[0] = ToUpper(ret[0]);
+    } else if (!IsAlpha(ret[0])) {
       // Otherwise (e.g. if it begins with an underscore), we need to come up
       // with some prefix that starts with a capital letter. We could be smarter
       // here, e.g. try to strip leading underscores, but this may cause other
@@ -254,6 +291,7 @@ std::string RubifyConstant(const std::string& name) {
       ret = "PB_" + ret;
     }
   }
+
   return ret;
 }
 
@@ -314,7 +352,7 @@ int GeneratePackageModules(
       component = package_name.substr(0, dot_index);
       package_name = package_name.substr(dot_index + 1);
     }
-    component = RubifyConstant(component);
+    component = PackageToModule(component);
     printer->Print(
       "module $name$\n",
       "name", component);
@@ -391,7 +429,7 @@ bool MaybeEmitDependency(const FileDescriptor* import,
     return true;
   } else {
     printer->Print(
-      "require '$name$'\n", "name", StripDotProto(import->name()));
+      "require '$name$'\n", "name", GetRequireName(import->name()));
     return true;
   }
 }
