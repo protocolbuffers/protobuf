@@ -132,8 +132,8 @@ typedef uint64_t uint64;
 #define GOOGLE_LL_FORMAT "I64"  // As in printf("%I64d", ...)
 #else
 // By long long, we actually mean int64.
-#define GOOGLE_LONGLONG(x) INT64_C(x)
-#define GOOGLE_ULONGLONG(x) UINT64_C(x)
+#define GOOGLE_LONGLONG(x) x##LL
+#define GOOGLE_ULONGLONG(x) x##ULL
 // Used to format real long long integers.
 #define GOOGLE_LL_FORMAT "ll"  // As in "%lld". Note that "q" is poor form also.
 #endif
