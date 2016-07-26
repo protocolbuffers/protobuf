@@ -12,22 +12,28 @@ on_travis() {
 
 # For when some other test needs the C++ main build, including protoc and
 # libprotobuf.
-internal_get_protoc() {
+internal_build_cpp() {
   if [ -f src/protoc ]; then
     # Already built.
     return
   fi
 
   if [ -f $HOME/built/bin/protoc ]; then
-    # We have a cached protoc.
+    # Restore the cached build.
     cp -f $HOME/built/bin/protoc src/protoc
+    # Run autogen.sh and configure for conformance tests.
+    ./autogen.sh
+    ./configure --with-protolib-for-conformance-tests=$HOME/built
     return
   fi
 
-  internal_get_protoc_for_real
+  internal_build_cpp_for_real $HOME/built
+
+  # Install protoc and C++ runtime to the cache directory.
+  make install
 }
 
-internal_get_protoc_for_real() {
+internal_build_cpp_for_real() {
   if [[ $(uname -s) == "Linux" && "$TRAVIS" == "true" ]]; then
     # Install GCC 4.8 to replace the default GCC 4.6. We need 4.8 for more
     # decent C++ 11 support in order to compile conformance tests.
@@ -38,14 +44,16 @@ internal_get_protoc_for_real() {
   fi
 
   ./autogen.sh
-  ./configure --prefix=$HOME/built
+  if [ -z "$1" ]; then
+    ./configure
+  else
+    ./configure --prefix=$1
+  fi
   make -j2
-
-  make install
 }
 
 build_cpp() {
-  internal_get_protoc_for_real
+  internal_build_cpp_for_real
   make check -j2
   cd conformance && make test_cpp && cd ..
 
@@ -87,7 +95,7 @@ build_csharp() {
   # Just for the conformance tests. We don't currently
   # need to really build protoc, but it's simplest to keep with the
   # conventions of the other builds.
-  internal_get_protoc
+  internal_build_cpp
   NUGET=/usr/local/bin/nuget.exe
 
   if [ "$TRAVIS" == "true" ]; then
@@ -120,7 +128,7 @@ build_csharp() {
 
 build_golang() {
   # Go build needs `protoc`.
-  internal_get_protoc
+  internal_build_cpp
   # Add protoc to the path so that the examples build finds it.
   export PATH="`pwd`/src:$PATH"
 
@@ -176,7 +184,7 @@ build_java() {
   version=$1
   dir=java_$version
   # Java build needs `protoc`.
-  internal_get_protoc
+  internal_build_cpp
   cp -r java $dir
   cd $dir && $MVN clean && $MVN test
   cd ../..
@@ -186,7 +194,7 @@ build_java() {
 # So this can't run in parallel with two different sets of tests.
 build_java_with_conformance_tests() {
   # Java build needs `protoc`.
-  internal_get_protoc
+  internal_build_cpp
   cd java && $MVN test && $MVN install
   cd util && $MVN package assembly:single
   cd ../..
@@ -195,7 +203,7 @@ build_java_with_conformance_tests() {
 
 build_javanano() {
   # Java build needs `protoc`.
-  internal_get_protoc
+  internal_build_cpp
   cd javanano && $MVN test && cd ..
 }
 
@@ -280,7 +288,7 @@ build_objectivec_cocoapods_integration() {
 }
 
 build_python() {
-  internal_get_protoc
+  internal_build_cpp
   internal_install_python_deps
   cd python
   # Only test Python 2.6/3.x on Linux
@@ -294,7 +302,7 @@ build_python() {
 }
 
 build_python_cpp() {
-  internal_get_protoc
+  internal_build_cpp
   internal_install_python_deps
   export LD_LIBRARY_PATH=../src/.libs # for Linux
   export DYLD_LIBRARY_PATH=../src/.libs # for OS X
@@ -311,15 +319,15 @@ build_python_cpp() {
 }
 
 build_ruby21() {
-  internal_get_protoc  # For conformance tests.
+  internal_build_cpp  # For conformance tests.
   cd ruby && bash travis-test.sh ruby-2.1 && cd ..
 }
 build_ruby22() {
-  internal_get_protoc  # For conformance tests.
+  internal_build_cpp  # For conformance tests.
   cd ruby && bash travis-test.sh ruby-2.2 && cd ..
 }
 build_jruby() {
-  internal_get_protoc  # For conformance tests.
+  internal_build_cpp  # For conformance tests.
   # TODO(xiaofeng): Upgrade to jruby-9.x. There are some broken jests to be
   # fixed.
   cd ruby && bash travis-test.sh jruby-1.7 && cd ..
@@ -331,7 +339,7 @@ build_ruby_all() {
 }
 
 build_javascript() {
-  internal_get_protoc
+  internal_build_cpp
   cd js && npm install && npm test && cd ..
 }
 
