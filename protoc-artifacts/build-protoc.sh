@@ -5,7 +5,7 @@
 # To be run from Maven.
 # Usage: build-protoc.sh <OS> <ARCH> <TARGET>
 # <OS> and <ARCH> are ${os.detected.name} and ${os.detected.arch} from os-maven-plugin
-# <TARGET> can be "protoc" or protoc-gen-javalite
+# <TARGET> can be "protoc" or "protoc-gen-javalite"
 OS=$1
 ARCH=$2
 MAKE_TARGET=$3
