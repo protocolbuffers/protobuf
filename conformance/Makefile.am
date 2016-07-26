@@ -1,5 +1,11 @@
 ## Process this file with automake to produce Makefile.in
 
+if USE_EXTERNAL_PROTOLIB
+protobuf_lib = $(PROTOLIB)/lib/libprotobuf.la
+else
+protobuf_lib = $(top_srcdir)/lib/libprotobuf.la
+endif
+
 conformance_protoc_inputs =                                    \
   conformance.proto
 
@@ -147,7 +153,7 @@ EXTRA_DIST =                  \
   failure_list_python-post26.txt \
   failure_list_ruby.txt
 
-conformance_test_runner_LDADD = $(top_srcdir)/src/libprotobuf.la
+conformance_test_runner_LDADD = $(protobuf_lib)
 conformance_test_runner_SOURCES = conformance_test.h conformance_test.cc \
                                   conformance_test_runner.cc             \
                                   third_party/jsoncpp/json.h             \
@@ -160,7 +166,7 @@ conformance_test_runner_CXXFLAGS = -std=c++11
 conformance_test_runner-conformance_test.$(OBJEXT): conformance.pb.h
 conformance_test_runner-conformance_test_runner.$(OBJEXT): conformance.pb.h
 
-conformance_cpp_LDADD = $(top_srcdir)/src/libprotobuf.la
+conformance_cpp_LDADD = $(protobuf_lib)
 conformance_cpp_SOURCES = conformance_cpp.cc
 nodist_conformance_cpp_SOURCES = conformance.pb.cc
 conformance_cpp_CPPFLAGS = -I$(top_srcdir)/src
