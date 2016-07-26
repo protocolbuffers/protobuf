@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package A.B.C;
+package a.b.c;
 
 message TestMessage {
   int32 optional_int32 = 1;
