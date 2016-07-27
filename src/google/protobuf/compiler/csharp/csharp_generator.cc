@@ -83,9 +83,6 @@ bool Generator::Generate(
       cli_options.base_namespace_specified = true;
     } else if (options[i].first == "internal_access") {
       cli_options.internal_access = true;
-    } else if (options[i].first == "legacy_enum_values") {
-      // TODO: Remove this before final release
-      cli_options.legacy_enum_values = true;
     } else {
       *error = "Unknown generator option: " + options[i].first;
       return false;
