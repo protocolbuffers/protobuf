@@ -87,7 +87,6 @@ RUN wget www.nuget.org/NuGet.exe -O /usr/local/bin/nuget.exe
 RUN pip install pip --upgrade
 RUN pip install virtualenv tox yattag
 
-
 ##################
 # Ruby dependencies
 
@@ -95,12 +94,12 @@ RUN pip install virtualenv tox yattag
 RUN gpg --keyserver hkp://keys.gnupg.net --recv-keys 409B6B1796C275462A1703113804BB82D39DC0E3
 RUN \curl -sSL https://get.rvm.io | bash -s stable
 
-# Install Ruby 2.1
+# Install Ruby 2.1, Ruby 2.2 and JRuby 1.7
 RUN /bin/bash -l -c "rvm install ruby-2.1"
-RUN /bin/bash -l -c "rvm use --default ruby-2.1"
+RUN /bin/bash -l -c "rvm install ruby-2.2"
+RUN /bin/bash -l -c "rvm install jruby-1.7"
 RUN /bin/bash -l -c "echo 'gem: --no-ri --no-rdoc' > ~/.gemrc"
 RUN /bin/bash -l -c "echo 'export PATH=/usr/local/rvm/bin:$PATH' >> ~/.bashrc"
-RUN /bin/bash -l -c "echo 'rvm --default use ruby-2.1' >> ~/.bashrc"
 RUN /bin/bash -l -c "gem install bundler --no-ri --no-rdoc"
 
 ##################
@@ -118,10 +117,27 @@ RUN cd /tmp && \
   ./configure && \
   make -j6 && \
   cd java && \
-  $MVN install dependency:go-offline -Dmaven.repo.local=$MAVEN_REPO -P lite && \
   $MVN install dependency:go-offline -Dmaven.repo.local=$MAVEN_REPO && \
   cd ../javanano && \
   $MVN install dependency:go-offline -Dmaven.repo.local=$MAVEN_REPO
+
+##################
+# Go dependencies.
+RUN apt-get install -y  \
+  # -- For go -- \
+  golang
+
+##################
+# Javascript dependencies.
+Run apt-get install -y \
+  # -- For javascript -- \
+  npm
+
+# On Debian/Ubuntu, nodejs binary is named 'nodejs' because the name 'node'
+# is taken by another legacy binary. We don't have that legacy binary and
+# npm expects the binary to be named 'node', so we just create a symbol
+# link here.
+RUN ln -s `which nodejs` /usr/bin/node
 
 ##################
 # Prepare ccache
