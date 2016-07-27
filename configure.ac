@@ -57,6 +57,11 @@ AC_ARG_WITH([protoc],
     [use the given protoc command instead of building a new one when building tests (useful for cross-compiling)])],
   [],[with_protoc=no])
 
+AC_ARG_WITH([protolib_for_conformance_tests],
+  [AS_HELP_STRING([--with-protolib-for-conformance-tests=COMMAND],
+    [use the given protobuf library instead of a new one when building conformance tests])],
+  [],[with_protolib_for_conformance_tests=no])
+
 # Checks for programs.
 AC_PROG_CC
 AC_PROG_CXX
@@ -153,6 +158,11 @@ AS_IF([test "$with_protoc" != "no"], [
   AC_SUBST([PROTOC])
 ])
 AM_CONDITIONAL([USE_EXTERNAL_PROTOC], [test "$with_protoc" != "no"])
+AS_IF([test "$with_protolib_for_conformance_tests" != "no"], [
+  PROTOLIB=$with_protolib_for_conformance_tests
+  AC_SUBST([PROTOLIB])
+])
+AM_CONDITIONAL([USE_EXTERNAL_PROTOLIB], [test "$with_protolib_for_conformance_tests" != "no"])
 
 ACX_PTHREAD
 AM_CONDITIONAL([HAVE_PTHREAD], [test "x$acx_pthread_ok" = "xyes"])

@@ -18,6 +18,22 @@ internal_build_cpp() {
     return
   fi
 
+  if [ -f $HOME/built/bin/protoc ]; then
+    # Restore the cached build.
+    cp -f $HOME/built/bin/protoc src/protoc
+    # Run autogen.sh and configure for conformance tests.
+    ./autogen.sh
+    ./configure --with-protolib-for-conformance-tests=$HOME/built
+    return
+  fi
+
+  internal_build_cpp_for_real
+
+  # Install protoc and C++ runtime to the cache directory.
+  make install
+}
+
+internal_build_cpp_for_real() {
   if [[ $(uname -s) == "Linux" && "$TRAVIS" == "true" ]]; then
     # Install GCC 4.8 to replace the default GCC 4.6. We need 4.8 for more
     # decent C++ 11 support in order to compile conformance tests.
@@ -28,12 +44,16 @@ internal_build_cpp() {
   fi
 
   ./autogen.sh
-  ./configure
+  ./configure --prefix=$HOME/built
   make -j2
 }
 
 build_cpp() {
-  internal_build_cpp
+  internal_build_cpp_for_real
+  if [ ! -f $HOME/built/bin/protoc ]; then
+    # Cache the build result for other test runs to use.
+    make install
+  fi
   make check -j2
   cd conformance && make test_cpp && cd ..
 
