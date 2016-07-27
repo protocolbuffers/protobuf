@@ -5,7 +5,7 @@ sudo: required
 # rvm/gemfile/jdk/etc. entries rather than manually doing the work.
 language: cpp
 os:
-  - osx
+  - linux
 script:
   - ./tests.sh $CONFIG
 env:
