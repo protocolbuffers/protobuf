@@ -1,3 +1,14 @@
+# Special notes about building pre-compiled protoc-gen-javalite
+This section is only visible from the javalite branch, which is forked from the
+master branch to provide a stable java lite support. The ``protoc-gen-javalite``
+plugin can only be built and published in this branch.
+
+The sections below in this README are branched from the master, with all the mvn
+commands changed to have an extra ``-f javalite-pom.xml`` parameter to load the
+correct configuration for plugins. The original ``pom.xml`` in this branch is
+renamed to ``protoc-pom.xml`` to prevent the protoc from being accidentally
+published using this branch.
+
 # Build scripts that publish pre-compiled protoc artifacts
 ``protoc`` is the compiler for ``.proto`` files. It generates language bindings
 for the messages and/or RPC services from ``.proto`` files.
@@ -36,7 +47,7 @@ $ ./autogen.sh && ./configure && make
 ## To install artifacts locally
 The following command will install the ``protoc`` artifact to your local Maven repository.
 ```
-$ mvn install
+$ mvn -f javalite-pom.xml install
 ```
 
 ## Cross-compilation
@@ -57,7 +68,7 @@ Frequently used values are:
 For example, MinGW32 only ships with 32-bit compilers, but you can still build
 32-bit protoc under 64-bit Windows, with the following command:
 ```
-$ mvn install -Dos.detected.arch=x86_32
+$ mvn -f javalite-pom.xml install -Dos.detected.arch=x86_32
 ```
 
 ## To push artifacts to Maven Central
@@ -81,7 +92,7 @@ Windows.
 Use the following command to deploy artifacts for the host platform to a
 staging repository.
 ```
-$ mvn clean deploy -P release
+$ mvn -f javalite-pom.xml clean deploy -P release
 ```
 It creates a new staging repository. Go to
 https://oss.sonatype.org/#stagingRepositories and find the repository, usually
@@ -92,7 +103,7 @@ subsequent deployments you will need to provide the repository name that you
 have found in the first deployment so that all artifacts go to the same
 repository:
 ```
-$ mvn clean deploy -P release -Dstaging.repository=comgoogle-123
+$ mvn -f javalite-pom.xml clean deploy -P release -Dstaging.repository=comgoogle-123
 ```
 
 A 32-bit artifact can be deployed from a 64-bit host with
