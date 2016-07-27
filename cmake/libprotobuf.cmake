@@ -56,7 +56,10 @@ set(libprotobuf_files
 
 add_library(libprotobuf ${protobuf_SHARED_OR_STATIC}
   ${libprotobuf_lite_files} ${libprotobuf_files})
-target_link_libraries(libprotobuf ${CMAKE_THREAD_LIBS_INIT} ${ZLIB_LIBRARIES})
+target_link_libraries(libprotobuf ${CMAKE_THREAD_LIBS_INIT})
+if(protobuf_WITH_ZLIB)
+    target_link_libraries(libprotobuf ${ZLIB_LIBRARIES})
+endif()
 target_include_directories(libprotobuf PUBLIC ${protobuf_source_dir}/src)
 if(MSVC AND protobuf_BUILD_SHARED_LIBS)
   target_compile_definitions(libprotobuf
