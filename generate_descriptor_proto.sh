@@ -94,13 +94,3 @@ do
   PROCESS_ROUND=$((PROCESS_ROUND + 1))
 done
 cd ..
-
-if test -x objectivec/generate_well_known_types.sh; then
-  echo "Generating messages for objc."
-  objectivec/generate_well_known_types.sh $@
-fi
-
-if test -x csharp/generate_protos.sh; then
-  echo "Generating messages for C#."
-  csharp/generate_protos.sh $@
-fi

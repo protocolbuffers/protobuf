@@ -45,14 +45,10 @@ rather build without Maven, see below.
 
    The .jar will be placed in the "target" directory.
 
-The above instructions will install 3 maven artifacts:
+The above instructions will install 2 maven artifacts:
 
   * protobuf-java: The core Java Protocol Buffers library. Most users only
                    need this artifact.
-  * protobuf-lite: The lite version of core Java Protobuf Buffers library. It
-                   is a subset of the core library and is used together with
-                   the 'lite' code generator flag to reduce generated code size
-                   for mobile.
   * protobuf-java-util: Utilities to work with protos. It contains JSON support
                         as well as utilities to work with proto3 well-known
                         types.
