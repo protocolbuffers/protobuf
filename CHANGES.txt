@@ -1,3 +1,54 @@
+2016-07-27 version 3.0.0 (C++/Java/Python/Ruby/Objective-C/C#/JavaScript/Lite)
+  General
+  * This log only contains changes since the beta-4 release. Summarized change
+    log since the last stable release (v2.6.1) can be found in the github
+    release page.
+
+  Compatibility Notice
+  * v3.0.0 is the first API stable release of the v3.x series. We do not expect
+    any future API breaking changes.
+  * For C++, Java Lite and Objective-C, source level compatibility is
+    guaranteed.  Upgrading from v3.0.0 to newer minor version releases will be
+    source compatible. For example, if your code compiles against protobuf
+    v3.0.0, it will continue to compile after you upgrade protobuf library to
+    v3.1.0.
+  * For other languages, both source level compatibility and binary level
+    compatibility are guaranteed. For example, if you have a Java binary built
+    against protobuf v3.0.0. After switching the protobuf runtime binary to
+    v3.1.0, your built binary should continue to work.
+  * Compatibility is only guaranteed for documented API and documented
+    behaviors. If you are using undocumented API (e.g., use anything in the C++
+    internal namespace), it can be broken by minor version releases in an
+    undetermined manner.
+
+  Ruby
+  * When you assign a string field `a.string_field = "X"`, we now call
+    #encode(UTF-8) on the string and freeze the copy. This saves you from
+    needing to ensure the string is already encoded as UTF-8. It also prevents
+    you from mutating the string after it has been assigned (this is how we
+    ensure it stays valid UTF-8).
+  * The generated file for `foo.proto` is now `foo_pb.rb` instead of just
+    `foo.rb`. This makes it easier to see which imports/requires are from
+    protobuf generated code, and also prevents conflicts with any `foo.rb` file
+    you might have written directly in Ruby. It is a backward-incompatible
+    change: you will need to update all of your `require` statements.
+  * For package names like `foo_bar`, we now translate this to the Ruby module
+    `FooBar`. This is more idiomatic Ruby than what we used to do (`Foo_bar`).
+
+  JavaScript
+  * Scalar fields like numbers and boolean now return defaults instead of
+    `undefined` or `null` when they are unset. You can test for presence
+    explicitly by calling `hasFoo()`, which we now generate for scalar fields.
+
+  Java Lite
+  * Java Lite is now implemented as a separate plugin, maintained in the
+    `javalite` branch. Both lite runtime and protoc artifacts will be available
+    in Maven.
+
+  C#
+  * Target platforms now .NET 4.5, selected portable subsets and .NET Core.
+  * legacy_enum_values option is no longer supported.
+
 2016-07-15 version 3.0.0-beta-4 (C++/Java/Python/Ruby/Objective-C/C#/JavaScript)
   General
   * Added a deterministic serialization API for C++. The deterministic
