@@ -147,7 +147,6 @@ function(_protobuf_find_libraries name filename)
       LOCATION_RELEASE)
     get_target_property(${name}_LIBRARY_DEBUG protobuf::lib${filename}
       LOCATION_DEBUG)
-    endif()
 
     select_library_configurations(${name})
     set(${name}_LIBRARY ${${name}_LIBRARY} PARENT_SCOPE)
