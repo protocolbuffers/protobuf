@@ -6,7 +6,7 @@
   <parent>
     <groupId>com.google.protobuf</groupId>
     <artifactId>protobuf-parent</artifactId>
-    <version>3.0.0-beta-3</version>
+    <version>3.0.0</version>
   </parent>
 
   <artifactId>protobuf-lite</artifactId>
@@ -33,6 +33,7 @@
   <properties>
     <core.root>../core</core.root>
     <test.proto.dir>${core.root}/src/test/proto</test.proto.dir>
+    <protoc-gen-javalite>${protobuf.source.dir}/protoc-gen-javalite</protoc-gen-javalite>
   </properties>
 
   <build>
