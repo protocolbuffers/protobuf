@@ -2,8 +2,9 @@
     <echo message="Running protoc ..."/>
     <mkdir dir="${generated.sources.lite.dir}"/>
     <exec executable="${protoc}">
-        <arg value="--java_out=lite:${generated.sources.lite.dir}"/>
+        <arg value="--javalite_out=${generated.sources.lite.dir}"/>
         <arg value="--proto_path=${protobuf.source.dir}"/>
+        <arg value="--plugin=protoc-gen-javalite=${protoc-gen-javalite}"/>
         <arg value="${protobuf.source.dir}/google/protobuf/any.proto"/>
         <arg value="${protobuf.source.dir}/google/protobuf/api.proto"/>
         <arg value="${protobuf.source.dir}/google/protobuf/descriptor.proto"/>

@@ -33,6 +33,7 @@
   <properties>
     <core.root>../core</core.root>
     <test.proto.dir>${core.root}/src/test/proto</test.proto.dir>
+    <protoc-gen-javalite>${protobuf.source.dir}/protoc-gen-javalite</protoc-gen-javalite>
   </properties>
 
   <build>
