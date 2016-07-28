@@ -37,11 +37,11 @@ import java.nio.ByteBuffer;
  * An output target for raw bytes. This interface provides semantics that support two types of
  * writing:
  *
- * <p/><b>Traditional write operations:</b>
+ * <p><b>Traditional write operations:</b>
  * (as defined by {@link java.io.OutputStream}) where the target method is responsible for either
  * copying the data or completing the write before returning from the method call.
  *
- * <p/><b>Lazy write operations:</b> where the caller guarantees that it will never modify the
+ * <p><b>Lazy write operations:</b> where the caller guarantees that it will never modify the
  * provided buffer and it can therefore be considered immutable. The target method is free to
  * maintain a reference to the buffer beyond the scope of the method call (e.g. until the write
  * operation completes).
