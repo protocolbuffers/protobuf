@@ -33,6 +33,10 @@ AM_LDFLAGS = $(PTHREAD_CFLAGS)
 # If I say "dist_include_DATA", automake complains that $(includedir) is not
 # a "legitimate" directory for DATA.  Screw you, automake.
 protodir = $(includedir)
+
+# If you are adding new files here, also remember to change the build files for
+# all other languages, //protoc-artifacts/build-zip.sh and run
+# //update_file_list.sh for bazel.
 nobase_dist_proto_DATA = google/protobuf/descriptor.proto     \
                          google/protobuf/any.proto            \
                          google/protobuf/api.proto            \
