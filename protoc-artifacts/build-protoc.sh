@@ -147,6 +147,7 @@ cd "$(dirname "$0")"
 WORKING_DIR=$(pwd)
 CONFIGURE_ARGS="--disable-shared"
 
+TARGET_FILE=target/$MAKE_TARGET.exe
 if [[ "$OS" == windows ]]; then
   MAKE_TARGET="${MAKE_TARGET}.exe"
 fi
@@ -221,13 +222,10 @@ fi
 
 export CXXFLAGS LDFLAGS
 
-TARGET_FILE=target/$MAKE_TARGET.exe
-
 cd "$WORKING_DIR"/.. && ./configure $CONFIGURE_ARGS &&
-  cd src && make clean && make $MAKE_TARGET -j4 &&
+  cd src && make clean && make $MAKE_TARGET &&
   cd "$WORKING_DIR" && mkdir -p target &&
-  (cp ../src/$MAKE_TARGET $TARGET_FILE ||
-   cp ../src/$MAKE_TARGET.exe $TARGET_FILE) ||
+  cp ../src/$MAKE_TARGET $TARGET_FILE ||
   exit 1
 
 if [[ "$OS" == osx ]]; then
