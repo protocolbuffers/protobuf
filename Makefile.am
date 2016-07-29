@@ -656,6 +656,7 @@ python_EXTRA_DIST=                                                           \
   python/google/protobuf/text_encoding.py                                    \
   python/google/protobuf/text_format.py                                      \
   python/mox.py                                                              \
+  python/setup.cfg                                                           \
   python/setup.py                                                            \
   python/stubout.py                                                          \
   python/tox.ini                                                             \
