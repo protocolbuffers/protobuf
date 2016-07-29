@@ -82,21 +82,27 @@ mkdir -p ${DIR}/bin
 # Create a zip file for each binary.
 for((i=0;i<${#FILE_NAMES[@]};i+=2));do
   ZIP_NAME=${FILE_NAMES[$i]}
+  if [ ${ZIP_NAME:0:3} = "win" ]; then
+    BINARY="$TARGET.exe"
+  else
+    BINARY="$TARGET"
+  fi
   BINARY_NAME=${FILE_NAMES[$(($i+1))]}
   BINARY_URL=http://repo1.maven.org/maven2/com/google/protobuf/$TARGET/${VERSION_NUMBER}/$TARGET-${VERSION_NUMBER}-${BINARY_NAME}
-  if ! wget ${BINARY_URL} -O ${DIR}/bin/$TARGET &> /dev/null; then
+  if ! wget ${BINARY_URL} -O ${DIR}/bin/$BINARY &> /dev/null; then
     echo "[ERROR] Failed to download ${BINARY_URL}" >&2
     echo "[ERROR] Skipped $TARGET-${VERSION_NAME}-${ZIP_NAME}" >&2
     continue
   fi
   TARGET_ZIP_FILE=`pwd`/dist/$TARGET-${VERSION_NUMBER}-${ZIP_NAME}
   pushd $DIR &> /dev/null
-  chmod +x bin/$TARGET
+  chmod +x bin/$BINARY
   if [ "$TARGET" = "protoc" ]; then
     zip -r ${TARGET_ZIP_FILE} include bin readme.txt &> /dev/null
   else
     zip -r ${TARGET_ZIP_FILE} bin &> /dev/null
   fi
+  rm  bin/$BINARY
   popd &> /dev/null
   echo "[INFO] Successfully created ${TARGET_ZIP_FILE}"
 done
