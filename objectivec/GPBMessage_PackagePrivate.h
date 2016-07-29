@@ -78,10 +78,6 @@ typedef struct GPBMessage_Storage *GPBMessage_StoragePtr;
 // returns nil if the extension is not set)
 - (id)getExistingExtension:(GPBExtensionDescriptor *)extension;
 
-// Returns an array of GPBExtensionDescriptor* for all the extensions currently
-// in use on the message.  They are sorted by field number.
-- (NSArray *)sortedExtensionsInUse;
-
 // Parses a message of this type from the input and merges it with this
 // message.
 //

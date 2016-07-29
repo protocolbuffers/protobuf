@@ -490,7 +490,7 @@ public abstract class AbstractMessage
 
     /**
      * Used to support nested builders and called to mark this builder as clean.
-     * Clean builders will propagate the {@link BuildParent#markDirty()} event
+     * Clean builders will propagate the {@link BuilderParent#markDirty()} event
      * to their parent builders, while dirty builders will not, as their parents
      * should be dirty already.
      *
