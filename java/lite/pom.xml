@@ -9,6 +9,7 @@
     <version>3.0.0</version>
   </parent>
 
+  <version>3.0.1</version>
   <artifactId>protobuf-lite</artifactId>
   <packaging>bundle</packaging>
 
