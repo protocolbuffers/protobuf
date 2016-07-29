@@ -152,8 +152,7 @@ idea of how the library generally works:
     // Serializes to a UInt8Array.
     bytes = message.serializeBinary();
 
-    var message2 = new MyMessage();
-    message2.deserializeBinary(bytes);
+    var message2 = MyMessage.deserializeBinary(bytes);
 
 For more examples, see the tests.  You can also look at the generated code
 to see what methods are defined for your generated messages.
