@@ -92,7 +92,7 @@ class TestWellKnownTypes < Test::Unit::TestCase
     ts = Google::Protobuf::Timestamp.new(seconds: 12345, nanos: 6789)
     any.pack(ts)
 
-    assert_true any.is(Google::Protobuf::Timestamp)
+    assert any.is(Google::Protobuf::Timestamp)
     assert_equal ts, any.unpack(Google::Protobuf::Timestamp)
   end
 end
