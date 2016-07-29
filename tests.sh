@@ -195,6 +195,14 @@ build_java_oracle7() {
   use_java oracle7
   build_java oracle7
 }
+build_java_compatibility() {
+  use_java jdk7
+  internal_build_cpp
+  # Use the unit-tests extraced from 2.5.0 to test the compatibilty between
+  # 3.0.0-beta-4 and the current version.
+  cd java/compatibility_tests/v2.5.0
+  ./test.sh 3.0.0-beta-4
+}
 
 build_javanano_jdk7() {
   use_java jdk7
@@ -340,6 +348,7 @@ Usage: $0 { cpp |
             csharp |
             java_jdk7 |
             java_oracle7 |
+            java_compatibility |
             javanano_jdk7 |
             javanano_oracle7 |
             objectivec_ios |

@@ -1,16 +1,29 @@
 #!/bin/bash
 
-# Builds protoc executable into target/protoc.exe
+# Builds protoc executable into target/protoc.exe; optionally build protoc
+# plugins into target/protoc-gen-*.exe
 # To be run from Maven.
-# Usage: build-protoc.sh <OS> <ARCH>
+# Usage: build-protoc.sh <OS> <ARCH> <TARGET>
 # <OS> and <ARCH> are ${os.detected.name} and ${os.detected.arch} from os-maven-plugin
+# <TARGET> can be "protoc" or "protoc-gen-javalite"
 OS=$1
 ARCH=$2
+MAKE_TARGET=$3
 
-if [[ $# < 2 ]]; then
+if [[ $# < 3 ]]; then
   echo "No arguments provided. This script is intended to be run from Maven."
   exit 1
 fi
+
+case $MAKE_TARGET in
+  protoc-gen-javalite)
+    ;;
+  protoc)
+    ;;
+  *)
+    echo "Target ""$TARGET"" invalid."
+    exit 1
+esac
 
 # Under Cygwin, bash doesn't have these in PATH when called from Maven which
 # runs in Windows version of Java.
@@ -126,7 +139,7 @@ checkDependencies ()
 }
 ############################################################################
 
-echo "Building protoc, OS=$OS ARCH=$ARCH"
+echo "Building protoc, OS=$OS ARCH=$ARCH TARGET=$TARGET"
 
 # Nested double quotes are unintuitive, but it works.
 cd "$(dirname "$0")"
@@ -134,7 +147,7 @@ cd "$(dirname "$0")"
 WORKING_DIR=$(pwd)
 CONFIGURE_ARGS="--disable-shared"
 
-MAKE_TARGET="protoc"
+TARGET_FILE=target/$MAKE_TARGET.exe
 if [[ "$OS" == windows ]]; then
   MAKE_TARGET="${MAKE_TARGET}.exe"
 fi
@@ -209,12 +222,10 @@ fi
 
 export CXXFLAGS LDFLAGS
 
-TARGET_FILE=target/protoc.exe
-
 cd "$WORKING_DIR"/.. && ./configure $CONFIGURE_ARGS &&
   cd src && make clean && make $MAKE_TARGET &&
   cd "$WORKING_DIR" && mkdir -p target &&
-  (cp ../src/protoc $TARGET_FILE || cp ../src/protoc.exe $TARGET_FILE) ||
+  cp ../src/$MAKE_TARGET $TARGET_FILE ||
   exit 1
 
 if [[ "$OS" == osx ]]; then

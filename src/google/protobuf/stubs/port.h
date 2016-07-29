@@ -109,15 +109,15 @@ typedef unsigned __int16 uint16;
 typedef unsigned __int32 uint32;
 typedef unsigned __int64 uint64;
 #else
-typedef signed char  int8;
-typedef short int16;
-typedef int int32;
-typedef long long int64;
+typedef int8_t int8;
+typedef int16_t int16;
+typedef int32_t int32;
+typedef int64_t int64;
 
-typedef unsigned char  uint8;
-typedef unsigned short uint16;
-typedef unsigned int uint32;
-typedef unsigned long long uint64;
+typedef uint8_t uint8;
+typedef uint16_t uint16;
+typedef uint32_t uint32;
+typedef uint64_t uint64;
 #endif
 
 // long long macros to be used because gcc and vc++ use different suffixes,
@@ -131,8 +131,10 @@ typedef unsigned long long uint64;
 #define GOOGLE_ULONGLONG(x) x##UI64
 #define GOOGLE_LL_FORMAT "I64"  // As in printf("%I64d", ...)
 #else
+// By long long, we actually mean int64.
 #define GOOGLE_LONGLONG(x) x##LL
 #define GOOGLE_ULONGLONG(x) x##ULL
+// Used to format real long long integers.
 #define GOOGLE_LL_FORMAT "ll"  // As in "%lld". Note that "q" is poor form also.
 #endif
 

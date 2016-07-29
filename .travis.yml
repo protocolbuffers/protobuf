@@ -57,6 +57,10 @@ matrix:
     # tests on jenkins running in parallel.
     - os: linux
       env: CONFIG=cpp_distcheck
+    # The Java compatibility test currently only runs on Linux because it will
+    # fetch pre-built Linux protoc binaries in the test.
+    - os: linux
+      env: CONFIG=java_compatibility
   allow_failures:
     # These currently do not work on OS X but are being worked on by @haberman.
     - os: osx
