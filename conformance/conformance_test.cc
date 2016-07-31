@@ -814,18 +814,26 @@ bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
       "Uint64FieldMaxValue",
       R"({"optionalUint64": "18446744073709551615"})",
       "optional_uint64: 18446744073709551615");
+  // While not the largest Int64, this is the largest
+  // Int64 which can be exactly represented within an
+  // IEEE-754 64-bit float, which is the expected level
+  // of interoperability guarantee. Larger values may
+  // work in some implementations, but should not be
+  // relied upon.
   RunValidJsonTest(
       "Int64FieldMaxValueNotQuoted",
-      R"({"optionalInt64": 9223372036854775807})",
-      "optional_int64: 9223372036854775807");
+      R"({"optionalInt64": 9223372036854774784})",
+      "optional_int64: 9223372036854774784");
   RunValidJsonTest(
       "Int64FieldMinValueNotQuoted",
       R"({"optionalInt64": -9223372036854775808})",
       "optional_int64: -9223372036854775808");
+  // Largest interoperable Uint64; see comment above
+  // for Int64FieldMaxValueNotQuoted.
   RunValidJsonTest(
       "Uint64FieldMaxValueNotQuoted",
-      R"({"optionalUint64": 18446744073709551615})",
-      "optional_uint64: 18446744073709551615");
+      R"({"optionalUint64": 18446744073709549568})",
+      "optional_uint64: 18446744073709549568");
   // Values can be represented as JSON strings.
   RunValidJsonTest(
       "Int32FieldStringValue",
