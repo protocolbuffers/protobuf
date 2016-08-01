@@ -85,6 +85,30 @@ class TestWellKnownTypes < Test::Unit::TestCase
 
     assert_equal(should_equal, struct.to_h)
     assert_equal(should_equal["sublist"].length, struct["sublist"].length)
+
+    assert_raise Google::Protobuf::UnexpectedStructType do
+      struct[123] = 5
+    end
+
+    assert_raise Google::Protobuf::UnexpectedStructType do
+      struct[5] = Time.new
+    end
+
+    assert_raise Google::Protobuf::UnexpectedStructType do
+      struct[5] = [Time.new]
+    end
+
+    assert_raise Google::Protobuf::UnexpectedStructType do
+      struct[5] = {123 => 456}
+    end
+
+    assert_raise Google::Protobuf::UnexpectedStructType do
+      struct = Google::Protobuf::Struct.new
+      struct.fields["foo"] = Google::Protobuf::Value.new
+      # Tries to return a Ruby value for a Value class whose type
+      # hasn't been filled in.
+      struct["foo"]
+    end
   end
 
   def test_any

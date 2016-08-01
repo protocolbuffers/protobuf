@@ -90,6 +90,8 @@ module Google
       end
     end
 
+    class UnexpectedStructType < Google::Protobuf::Error; end
+
     Value.class_eval do
       def to_ruby(recursive = false)
         case self.kind
@@ -114,31 +116,32 @@ module Google
         when :bool_value
           self.bool_value
         else
-          raise "Value not set"
+          raise UnexpectedStructType
         end
       end
 
       def from_ruby(value)
-        if value.nil?
+        case value
+        when NilClass
           self.null_value = 0
-        elsif value.is_a?(Numeric)
+        when Numeric
           self.number_value = value
-        elsif value.is_a?(String)
+        when String
           self.string_value = value
-        elsif value.is_a?(TrueClass)
+        when TrueClass
           self.bool_value = true
-        elsif value.is_a?(FalseClass)
+        when FalseClass
           self.bool_value = false
-        elsif value.is_a?(Struct)
+        when Struct
           self.struct_value = value
-        elsif value.is_a?(Hash)
+        when Hash
           self.struct_value = Struct.from_hash(value)
-        elsif value.is_a?(ListValue)
+        when ListValue
           self.list_value = value
-        elsif value.is_a?(Array)
+        when Array
           self.list_value = ListValue.from_a(value)
         else
-          raise "Unexpected type"
+          raise UnexpectedStructType
         end
       end
     end
@@ -149,6 +152,9 @@ module Google
       end
 
       def []=(key, value)
+        unless key.is_a?(String)
+          raise UnexpectedStructType, "Struct keys must be strings."
+        end
         self.fields[key] ||= Google::Protobuf::Value.new
         self.fields[key].from_ruby(value)
       end

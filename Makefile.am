@@ -681,6 +681,7 @@ ruby_EXTRA_DIST=                                                             \
   ruby/google-protobuf.gemspec                                               \
   ruby/lib/google/protobuf/message_exts.rb                                   \
   ruby/lib/google/protobuf/repeated_field.rb                                 \
+  ruby/lib/google/protobuf/well_known_types.rb                               \
   ruby/lib/google/protobuf.rb                                                \
   ruby/pom.xml                                                               \
   ruby/src/main/java/com/google/protobuf/jruby/RubyBuilder.java              \
