@@ -40,7 +40,7 @@ package jspb.test;
 // properly.
 message TestAllTypes {
   optional    int32 optional_int32    =  1;
-  optional    int64 optional_int64    =  2;
+  optional    int64 optional_int64    =  2 [jstype=JS_NUMBER];
   optional   uint32 optional_uint32   =  3;
   optional   uint64 optional_uint64   =  4;
   optional   sint32 optional_sint32   =  5;

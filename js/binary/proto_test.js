@@ -107,7 +107,7 @@ function fillAllFields(msg) {
   msg.setOptionalInt32(-42);
   // can be exactly represented by JS number (64-bit double, i.e., 52-bit
   // mantissa).
-  msg.setOptionalInt64('-9223372032559808512');
+  msg.setOptionalInt64(-0x7fffffff00000000);
   msg.setOptionalUint32(0x80000000);
   msg.setOptionalUint64('17293822569102704640');
   msg.setOptionalSint32(-100);
@@ -199,7 +199,7 @@ function bytesCompare(arr, expected) {
  */
 function checkAllFields(original, copy) {
   assertEquals(copy.getOptionalInt32(), -42);
-  assertEquals(copy.getOptionalInt64(), '-9223372032559808512');
+  assertEquals(copy.getOptionalInt64(), -0x7fffffff00000000);
   assertEquals(copy.getOptionalUint32(), 0x80000000);
   assertEquals(copy.getOptionalUint64(), '17293822569102704640');
   assertEquals(copy.getOptionalSint32(), -100);
