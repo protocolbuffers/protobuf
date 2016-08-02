@@ -468,9 +468,9 @@ module BasicTest
       assert m.length == 2
 
       m2 = m.dup
-      assert m == m2
+      assert_equal m, m2
       assert m.hash != 0
-      assert m.hash == m2.hash
+      assert_equal m.hash, m2.hash
 
       collected = {}
       m.each { |k,v| collected[v] = k }
