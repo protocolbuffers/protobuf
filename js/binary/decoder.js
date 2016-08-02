@@ -895,11 +895,9 @@ jspb.BinaryDecoder.prototype.readEnum = function() {
 
 /**
  * Reads and parses a UTF-8 encoded unicode string from the stream.
- * The code is inspired by maps.vectortown.parse.StreamedDataViewReader, with
- * the exception that the implementation here does not get confused if it
- * encounters characters longer than three bytes. These characters are ignored
- * though, as they are extremely rare: three UTF-8 bytes cover virtually all
- * characters in common use (http://en.wikipedia.org/wiki/UTF-8).
+ * The code is inspired by maps.vectortown.parse.StreamedDataViewReader.
+ * Supports codepoints from U+0000 up to U+10FFFF. 
+ * (http://en.wikipedia.org/wiki/UTF-8).
  * @param {number} length The length of the string to read.
  * @return {string} The decoded string.
  */
@@ -907,30 +905,47 @@ jspb.BinaryDecoder.prototype.readString = function(length) {
   var bytes = this.bytes_;
   var cursor = this.cursor_;
   var end = cursor + length;
-  var chars = [];
+  var codepoints = [];
 
   while (cursor < end) {
     var c = bytes[cursor++];
     if (c < 128) { // Regular 7-bit ASCII.
-      chars.push(c);
+      codepoints.push(c);
     } else if (c < 192) {
       // UTF-8 continuation mark. We are out of sync. This
       // might happen if we attempted to read a character
-      // with more than three bytes.
+      // with more than four bytes.
       continue;
     } else if (c < 224) { // UTF-8 with two bytes.
       var c2 = bytes[cursor++];
-      chars.push(((c & 31) << 6) | (c2 & 63));
+      codepoints.push(((c & 31) << 6) | (c2 & 63));
     } else if (c < 240) { // UTF-8 with three bytes.
       var c2 = bytes[cursor++];
       var c3 = bytes[cursor++];
-      chars.push(((c & 15) << 12) | ((c2 & 63) << 6) | (c3 & 63));
+      codepoints.push(((c & 15) << 12) | ((c2 & 63) << 6) | (c3 & 63));
+    } else if (c < 248) { // UTF-8 with 4 bytes.
+      var c2 = bytes[cursor++];
+      var c3 = bytes[cursor++];
+      var c4 = bytes[cursor++];
+      // Characters written on 4 bytes have 21 bits for a codepoint. 
+      // We can't fit that on 16bit characters, so we use surrogates.
+      var codepoint = ((c & 7) << 18) | ((c2 & 63) << 12) | ((c3 & 63) << 6) | (c4 & 63);
+      // Surrogates formula from wikipedia.
+      // 1. Subtract 0x10000 from codepoint
+      codepoint -= 65536;
+      // 2. Split this into the high 10-bit value and the low 10-bit value
+      var low = codepoint & 1023;
+      var high = (codepoint >> 10) & 1023;
+      // 3. Add 0xD800 to the high value to form the high surrogate
+      high += 55296;
+      // 4. Add 0xDC00 to the low value to form the low surrogate:
+      low += 56320;
+      codepoints.push(high);
+      codepoints.push(low);
     }
   }
 
-  // String.fromCharCode.apply is faster than manually appending characters on
-  // Chrome 25+, and generates no additional cons string garbage.
-  var result = String.fromCharCode.apply(null, chars);
+  var result = String.fromCodePoint.apply(null, codepoints);
   this.cursor_ = cursor;
   return result;
 };

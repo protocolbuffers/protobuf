@@ -412,16 +412,22 @@ jspb.BinaryEncoder.prototype.writeString = function(value) {
 
   // UTF16 to UTF8 conversion loop swiped from goog.crypt.stringToUtf8ByteArray.
   for (var i = 0; i < value.length; i++) {
-    var c = value.charCodeAt(i);
+    var c = value.codePointAt(i);
     if (c < 128) {
       this.buffer_.push(c);
     } else if (c < 2048) {
       this.buffer_.push((c >> 6) | 192);
       this.buffer_.push((c & 63) | 128);
-    } else {
+    } else if (c < 65536) {
       this.buffer_.push((c >> 12) | 224);
       this.buffer_.push(((c >> 6) & 63) | 128);
       this.buffer_.push((c & 63) | 128);
+    } else {
+      this.buffer_.push((c >> 18) | 240);
+      this.buffer_.push(((c >> 12) & 63 ) | 128);
+      this.buffer_.push(((c >> 6) & 63) | 128);
+      this.buffer_.push((c & 63) | 128);
+      i++;
     }
   }
 
