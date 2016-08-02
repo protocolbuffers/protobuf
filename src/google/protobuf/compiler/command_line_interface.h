@@ -55,6 +55,11 @@ class FileDescriptor;        // descriptor.h
 class FileDescriptorProto;   // descriptor.pb.h
 template<typename T> class RepeatedPtrField;  // repeated_field.h
 
+}  // namespace protobuf
+}  // namespace google
+
+namespace google {
+namespace protobuf {
 namespace compiler {
 
 class CodeGenerator;        // code_generator.h
