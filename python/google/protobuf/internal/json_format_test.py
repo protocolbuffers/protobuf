@@ -97,6 +97,9 @@ class JsonFormatBase(unittest.TestCase):
     json_format.Parse(json_format.MessageToJson(message),
                       parsed_message)
     self.assertEqual(message, parsed_message)
+    json_format.ParseDict(json_format.MessageToJson(message, as_str=False),
+                          parsed_message)
+    self.assertEqual(message, parsed_message)
 
   def CheckError(self, text, error_message):
     message = json_format_proto3_pb2.TestMessage()

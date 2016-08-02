@@ -86,7 +86,7 @@ class ParseError(Error):
   """Thrown in case of parsing error."""
 
 
-def MessageToJson(message, including_default_value_fields=False):
+def MessageToJson(message, including_default_value_fields=False, as_str=True):
   """Converts protobuf message to JSON format.
 
   Args:
@@ -95,11 +95,15 @@ def MessageToJson(message, including_default_value_fields=False):
         repeated fields, and map fields will always be serialized.  If
         False, only serialize non-empty fields.  Singular message fields
         and oneof fields are not affected by this option.
+    as_str: If True, will return the message as a string object. If false,
+        the Python dictionary representation of the object will be returned.
 
   Returns:
     A string containing the JSON formatted protocol buffer message.
   """
   printer = _Printer(including_default_value_fields)
+  if as_str is False:
+    return printer.ToJsonDict(message)
   return printer.ToJsonString(message)
 
 
@@ -119,6 +123,9 @@ class _Printer(object):
   def ToJsonString(self, message):
     js = self._MessageToJsonObject(message)
     return json.dumps(js, indent=2)
+
+  def ToJsonDict(self, message):
+    return self._MessageToJsonObject(message)
 
   def _MessageToJsonObject(self, message):
     """Converts message to an object according to Proto3 JSON Specification."""
@@ -309,7 +316,7 @@ def Parse(text, message, ignore_unknown_fields=False):
   """Parses a JSON representation of a protocol message into a message.
 
   Args:
-    text: Message JSON representation.
+    text: Message JSON representation as a Python string.
     message: A protocol beffer message to merge into.
     ignore_unknown_fields: If True, do not raise errors for unknown fields.
 
@@ -328,8 +335,25 @@ def Parse(text, message, ignore_unknown_fields=False):
       js = json.loads(text, object_pairs_hook=_DuplicateChecker)
   except ValueError as e:
     raise ParseError('Failed to load JSON: {0}.'.format(str(e)))
+  return ParseDict(js, message, ignore_unknown_fields)
+
+
+def ParseDict(proto_dict, message, ignore_unknown_fields=False):
+  """Parses a JSON representation of a protocol message into a message.
+
+  Args:
+    proto_dict: Message JSON representation as a Python dictionary.
+    message: A protocol beffer message to merge into.
+    ignore_unknown_fields: If True, do not raise errors for unknown fields.
+
+  Returns:
+    The same message passed as argument.
+
+  Raises::
+    ParseError: On JSON parsing problems.
+  """
   parser = _Parser(ignore_unknown_fields)
-  parser.ConvertMessage(js, message)
+  parser.ConvertMessage(proto_dict, message)
   return message
 
 
