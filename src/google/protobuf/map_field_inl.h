@@ -339,9 +339,9 @@ MapField<Key, T, kKeyFieldType, kValueFieldType,
          default_enum_value>::Swap(
     MapFieldLiteType* other) {
   MapField* down_other = down_cast<MapField*>(other);
-  std::swap(MapFieldBase::repeated_field_, down_other->repeated_field_);
+  std::swap(this->MapFieldBase::repeated_field_, down_other->repeated_field_);
   MapFieldLiteType::Swap(other);
-  std::swap(MapFieldBase::state_, down_other->state_);
+  std::swap(this->MapFieldBase::state_, down_other->state_);
 }
 
 template <typename Key, typename T,
@@ -352,7 +352,7 @@ void
 MapField<Key, T, kKeyFieldType, kValueFieldType,
          default_enum_value>::SetEntryDescriptor(
     const Descriptor** descriptor) {
-  MapFieldBase::entry_descriptor_ = descriptor;
+  this->MapFieldBase::entry_descriptor_ = descriptor;
 }
 
 template <typename Key, typename T,
@@ -362,7 +362,7 @@ template <typename Key, typename T,
 void
 MapField<Key, T, kKeyFieldType, kValueFieldType,
          default_enum_value>::SetAssignDescriptorCallback(void (*callback)()) {
-  MapFieldBase::assign_descriptor_callback_ = callback;
+  this->MapFieldBase::assign_descriptor_callback_ = callback;
 }
 
 template <typename Key, typename T,
@@ -392,19 +392,19 @@ template <typename Key, typename T,
 void
 MapField<Key, T, kKeyFieldType, kValueFieldType,
          default_enum_value>::SyncRepeatedFieldWithMapNoLock() const {
-  if (MapFieldBase::repeated_field_ == NULL) {
-    if (MapFieldBase::arena_ == NULL) {
-      MapFieldBase::repeated_field_ = new RepeatedPtrField<Message>();
+  if (this->MapFieldBase::repeated_field_ == NULL) {
+    if (this->MapFieldBase::arena_ == NULL) {
+      this->MapFieldBase::repeated_field_ = new RepeatedPtrField<Message>();
     } else {
-      MapFieldBase::repeated_field_ =
+      this->MapFieldBase::repeated_field_ =
           Arena::CreateMessage<RepeatedPtrField<Message> >(
-              MapFieldBase::arena_);
+              this->MapFieldBase::arena_);
     }
   }
   const Map<Key, T>& map = GetInternalMap();
   RepeatedPtrField<EntryType>* repeated_field =
       reinterpret_cast<RepeatedPtrField<EntryType>*>(
-          MapFieldBase::repeated_field_);
+          this->MapFieldBase::repeated_field_);
 
   repeated_field->Clear();
 
@@ -413,7 +413,7 @@ MapField<Key, T, kKeyFieldType, kValueFieldType,
     InitDefaultEntryOnce();
     GOOGLE_CHECK(default_entry_ != NULL);
     EntryType* new_entry =
-        down_cast<EntryType*>(default_entry_->New(MapFieldBase::arena_));
+        down_cast<EntryType*>(default_entry_->New(this->MapFieldBase::arena_));
     repeated_field->AddAllocated(new_entry);
     (*new_entry->mutable_key()) = it->first;
     (*new_entry->mutable_value()) = it->second;
@@ -430,8 +430,8 @@ MapField<Key, T, kKeyFieldType, kValueFieldType,
   Map<Key, T>* map = const_cast<MapField*>(this)->MutableInternalMap();
   RepeatedPtrField<EntryType>* repeated_field =
       reinterpret_cast<RepeatedPtrField<EntryType>*>(
-          MapFieldBase::repeated_field_);
-  GOOGLE_CHECK(MapFieldBase::repeated_field_ != NULL);
+          this->MapFieldBase::repeated_field_);
+  GOOGLE_CHECK(this->MapFieldBase::repeated_field_ != NULL);
   map->clear();
   for (typename RepeatedPtrField<EntryType>::iterator it =
            repeated_field->begin(); it != repeated_field->end(); ++it) {
@@ -452,8 +452,8 @@ int
 MapField<Key, T, kKeyFieldType, kValueFieldType,
          default_enum_value>::SpaceUsedExcludingSelfNoLock() const {
   int size = 0;
-  if (MapFieldBase::repeated_field_ != NULL) {
-    size += MapFieldBase::repeated_field_->SpaceUsedExcludingSelf();
+  if (this->MapFieldBase::repeated_field_ != NULL) {
+    size += this->MapFieldBase::repeated_field_->SpaceUsedExcludingSelf();
   }
   Map<Key, T>* map = const_cast<MapField*>(this)->MutableInternalMap();
   size += sizeof(*map);
@@ -475,10 +475,10 @@ MapField<Key, T, kKeyFieldType, kValueFieldType,
     const {
   if (default_entry_ == NULL) {
     MapFieldBase::InitMetadataOnce();
-    GOOGLE_CHECK(*MapFieldBase::entry_descriptor_ != NULL);
+    GOOGLE_CHECK(*this->MapFieldBase::entry_descriptor_ != NULL);
     default_entry_ = down_cast<const EntryType*>(
         MessageFactory::generated_factory()->GetPrototype(
-            *MapFieldBase::entry_descriptor_));
+            *this->MapFieldBase::entry_descriptor_));
   }
 }
 
