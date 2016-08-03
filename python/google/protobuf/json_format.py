@@ -310,7 +310,7 @@ def Parse(text, message, ignore_unknown_fields=False):
 
   Args:
     text: Message JSON representation.
-    message: A protocol beffer message to merge into.
+    message: A protocol buffer message to merge into.
     ignore_unknown_fields: If True, do not raise errors for unknown fields.
 
   Returns:
