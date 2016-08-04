@@ -2043,7 +2043,7 @@ void Generator::GenerateClassToObject(const GeneratorOptions& options,
       " * @return {!Object}\n"
       " */\n"
       "$classname$.toObject = function(includeInstance, msg) {\n"
-      "  var f, obj = {",
+      "  var f, obj = {};",
       "classname", GetPath(options, desc));
 
   bool first = true;
@@ -2054,20 +2054,16 @@ void Generator::GenerateClassToObject(const GeneratorOptions& options,
     }
 
     if (!first) {
-      printer->Print(",\n    ");
+      printer->Print("\n  ");
     } else {
-      printer->Print("\n    ");
+      printer->Print("\n\n  ");
       first = false;
     }
 
     GenerateClassFieldToObject(options, printer, field);
   }
 
-  if (!first) {
-    printer->Print("\n  };\n\n");
-  } else {
-    printer->Print("\n\n  };\n\n");
-  }
+  printer->Print("\n\n");
 
   if (IsExtendable(desc)) {
     printer->Print(
@@ -2139,7 +2135,12 @@ void Generator::GenerateFieldValueExpression(io::Printer* printer,
 void Generator::GenerateClassFieldToObject(const GeneratorOptions& options,
                                            io::Printer* printer,
                                            const FieldDescriptor* field) const {
-  printer->Print("$fieldname$: ",
+  if (HasFieldPresence(options, field)) {
+    printer->Print("if (msg.has$name$()) ",
+      "name", JSGetterName(options, field));
+  }
+
+  printer->Print("obj.$fieldname$ = ",
                  "fieldname", JSObjectFieldName(options, field));
 
   if (IsMap(options, field)) {
@@ -2165,24 +2166,9 @@ void Generator::GenerateClassFieldToObject(const GeneratorOptions& options,
     printer->Print("msg.get$getter$()",
                    "getter", JSGetterName(options, field, BYTES_B64));
   } else {
-    bool use_default = field->has_default_value();
-
-    if (field->file()->syntax() == FileDescriptor::SYNTAX_PROTO3 &&
-        // Repeated fields get initialized to their default in the constructor
-        // (why?), so we emit a plain getField() call for them.
-        !field->is_repeated() && !UseBrokenPresenceSemantics(options, field)) {
-      // Proto3 puts all defaults (including implicit defaults) in toObject().
-      // But for proto2 we leave the existing semantics unchanged: unset fields
-      // without default are unset.
-      use_default = true;
-    }
-
     // We don't implement this by calling the accessors, because the semantics
     // of the accessors are changing independently of the toObject() semantics.
-    // We are migrating the accessors to return defaults instead of null, but
-    // it may take longer to migrate toObject (or we might not want to do it at
-    // all).  So we want to generate independent code.
-    GenerateFieldValueExpression(printer, "msg", field, use_default);
+    GenerateFieldValueExpression(printer, "msg", field, false);
   }
 }
 
