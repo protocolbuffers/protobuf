@@ -40,8 +40,8 @@
 NS_ASSUME_NONNULL_BEGIN
 
 /**
-Syntax used in the proto file.
-*/
+ * Syntax used in the proto file.
+ **/
 typedef NS_ENUM(uint8_t, GPBFileSyntax) {
 	/** Unknown syntax. */
   GPBFileSyntaxUnknown = 0,
@@ -52,8 +52,8 @@ typedef NS_ENUM(uint8_t, GPBFileSyntax) {
 };
 
 /**
-Type of proto field.
-*/
+ * Type of proto field.
+ **/
 typedef NS_ENUM(uint8_t, GPBFieldType) {
 	/** Optional/required field. Only valid for proto2 fields. */
   GPBFieldTypeSingle,
@@ -64,8 +64,8 @@ typedef NS_ENUM(uint8_t, GPBFieldType) {
 };
 
 /**
-Describes a proto message.
-*/
+ * Describes a proto message.
+ **/
 @interface GPBDescriptor : NSObject<NSCopying>
 
 /** Name of the message. */
@@ -87,35 +87,35 @@ Describes a proto message.
 @property(nonatomic, readonly) Class messageClass;
 
 /**
-Gets the field for the given number.
-
-@param fieldNumber The number for the field to get.
-
-@return The field descriptor for the given number, or nil if not found.
-*/
+ * Gets the field for the given number.
+ *
+ * @param fieldNumber The number for the field to get.
+ *
+ * @return The field descriptor for the given number, or nil if not found.
+ **/
 - (nullable GPBFieldDescriptor *)fieldWithNumber:(uint32_t)fieldNumber;
 /**
-Gets the field for the given name.
-
-@param name The name for the field to get.
-
-@return The field descriptor for the given name, or nil if not found.
-*/
+ * Gets the field for the given name.
+ *
+ * @param name The name for the field to get.
+ *
+ * @return The field descriptor for the given name, or nil if not found.
+ **/
 - (nullable GPBFieldDescriptor *)fieldWithName:(NSString *)name;
 /**
-Gets the oneof for the given name.
-
-@param name The name for the oneof to get.
-
-@return The oneof descriptor for the given name, or nil if not found.
-*/
+ * Gets the oneof for the given name.
+ *
+ * @param name The name for the oneof to get.
+ *
+ * @return The oneof descriptor for the given name, or nil if not found.
+ **/
 - (nullable GPBOneofDescriptor *)oneofWithName:(NSString *)name;
 
 @end
 
 /**
-Describes a proto file.
-*/
+ * Describes a proto file.
+ **/
 @interface GPBFileDescriptor : NSObject
 
 /** The package declared in the proto file. */
@@ -126,8 +126,8 @@ Describes a proto file.
 @end
 
 /**
-Describes a oneof field.
-*/
+ * Describes a oneof field.
+ **/
 @interface GPBOneofDescriptor : NSObject
 /** Name of the oneof field. */
 @property(nonatomic, readonly) NSString *name;
@@ -135,26 +135,26 @@ Describes a oneof field.
 @property(nonatomic, readonly) NSArray<GPBFieldDescriptor*> *fields;
 
 /**
-Gets the field for the given number.
-
-@param fieldNumber The number for the field to get.
-
-@return The field descriptor for the given number, or nil if not found.
-*/
+ * Gets the field for the given number.
+ *
+ * @param fieldNumber The number for the field to get.
+ *
+ * @return The field descriptor for the given number, or nil if not found.
+ **/
 - (nullable GPBFieldDescriptor *)fieldWithNumber:(uint32_t)fieldNumber;
 /**
-Gets the field for the given name.
-
-@param name The name for the field to get.
-
-@return The field descriptor for the given name, or nil if not found.
-*/
+ * Gets the field for the given name.
+ *
+ * @param name The name for the field to get.
+ *
+ * @return The field descriptor for the given name, or nil if not found.
+ **/
 - (nullable GPBFieldDescriptor *)fieldWithName:(NSString *)name;
 @end
 
 /**
-Describes a proto field.
-*/
+ * Describes a proto field.
+ **/
 @interface GPBFieldDescriptor : NSObject
 
 /** Name of the field. */
@@ -188,22 +188,22 @@ Describes a proto field.
 @property(nonatomic, readonly, strong, nullable) GPBEnumDescriptor *enumDescriptor;
 
 /**
-Checks whether the given enum raw value is a valid enum value.
-
-@param value The raw enum value to check.
-
-@return YES if value is a valid enum raw value.
-*/
+ * Checks whether the given enum raw value is a valid enum value.
+ *
+ * @param value The raw enum value to check.
+ *
+ * @return YES if value is a valid enum raw value.
+ **/
 - (BOOL)isValidEnumValue:(int32_t)value;
 
-/** @return Name for the text format, or nil if not known. */ 
+/** @return Name for the text format, or nil if not known. */
 - (nullable NSString *)textFormatName;
 
 @end
 
 /**
-Describes a proto enum.
-*/
+ * Describes a proto enum.
+ **/
 @interface GPBEnumDescriptor : NSObject
 
 /** Name of the enum. */
@@ -212,46 +212,46 @@ Describes a proto enum.
 @property(nonatomic, readonly) GPBEnumValidationFunc enumVerifier;
 
 /**
-Returns the enum value name for the given raw enum.
-
-@param number The raw enum value.
-
-@return The name of the enum value passed, or nil if not valid.
-*/
+ * Returns the enum value name for the given raw enum.
+ *
+ * @param number The raw enum value.
+ *
+ * @return The name of the enum value passed, or nil if not valid.
+ **/
 - (nullable NSString *)enumNameForValue:(int32_t)number;
 /**
-Gets the enum raw value for the given enum name.
-
-@param outValue A pointer where the value will be set.
-@param name     The enum name for which to get the raw value.
-
-@return YES if a value was copied into the pointer, NO otherwise.
-*/
+ * Gets the enum raw value for the given enum name.
+ *
+ * @param outValue A pointer where the value will be set.
+ * @param name     The enum name for which to get the raw value.
+ *
+ * @return YES if a value was copied into the pointer, NO otherwise.
+ **/
 - (BOOL)getValue:(nullable int32_t *)outValue forEnumName:(NSString *)name;
 
 /**
-Returns the text format for the given raw enum value.
-
-@param number The raw enum value.
-
-@return The text format name for the raw enum value, or nil if not valid.
-*/
+ * Returns the text format for the given raw enum value.
+ *
+ * @param number The raw enum value.
+ *
+ * @return The text format name for the raw enum value, or nil if not valid.
+ **/
 - (nullable NSString *)textFormatNameForValue:(int32_t)number;
 /**
-Gets the enum raw value for the given text format name.
-
-@param outValue       A pointer where the value will be set.
-@param textFormatName The text format name for which to get the raw value.
-
-@return YES if a value was copied into the pointer, NO otherwise.
-*/
+ * Gets the enum raw value for the given text format name.
+ *
+ * @param outValue       A pointer where the value will be set.
+ * @param textFormatName The text format name for which to get the raw value.
+ *
+ * @return YES if a value was copied into the pointer, NO otherwise.
+ **/
 - (BOOL)getValue:(nullable int32_t *)outValue forEnumTextFormatName:(NSString *)textFormatName;
 
 @end
 
 /**
-Describes a proto extension.
-*/
+ * Describes a proto extension.
+ **/
 @interface GPBExtensionDescriptor : NSObject<NSCopying>
 /** Field number under which the extension is stored. */
 @property(nonatomic, readonly) uint32_t fieldNumber;

@@ -40,160 +40,160 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark - Int32
 
 /**
-Class used for repeated fields of int32_t values. This performs better than
-boxing into NSNumbers in NSArrays.
-
-@note This class is not meant to be subclassed.
-*/
+ * Class used for repeated fields of int32_t values. This performs better than
+ * boxing into NSNumbers in NSArrays.
+ *
+ * @note This class is not meant to be subclassed.
+ **/
 @interface GPBInt32Array : NSObject <NSCopying>
 
 /** The number of elements contained in the array. */
 @property(nonatomic, readonly) NSUInteger count;
 
 /**
-@return A newly instanced and empty GPBInt32Array.
-*/
+ * @return A newly instanced and empty GPBInt32Array.
+ **/
 + (instancetype)array;
 /**
-Creates and initializes a GPBInt32Array with the single element given.
-
-@param value The value to be placed in the array.
-
-@return A newly instanced GPBInt32Array with value in it.
-*/
+ * Creates and initializes a GPBInt32Array with the single element given.
+ *
+ * @param value The value to be placed in the array.
+ *
+ * @return A newly instanced GPBInt32Array with value in it.
+ **/
 + (instancetype)arrayWithValue:(int32_t)value;
 /**
-Creates and initializes a GPBInt32Array with the contents of the given
-array.
-
-@param array Array with the contents to be put into the new array.
-
-@return A newly instanced GPBInt32Array with the contents of array.
-*/
+ * Creates and initializes a GPBInt32Array with the contents of the given
+ * array.
+ *
+ * @param array Array with the contents to be put into the new array.
+ *
+ * @return A newly instanced GPBInt32Array with the contents of array.
+ **/
 + (instancetype)arrayWithValueArray:(GPBInt32Array *)array;
 /**
-Creates and initializes a GPBInt32Array with the given capacity.
-
-@param count The capacity needed for the array.
-
-@return A newly instanced GPBInt32Array with a capacity of count.
-*/
+ * Creates and initializes a GPBInt32Array with the given capacity.
+ *
+ * @param count The capacity needed for the array.
+ *
+ * @return A newly instanced GPBInt32Array with a capacity of count.
+ **/
 + (instancetype)arrayWithCapacity:(NSUInteger)count;
 
-/** @return A newly initialized and empty GPBInt32Array. */
+/**
+ * @return A newly initialized and empty GPBInt32Array.
+ **/
 - (instancetype)init NS_DESIGNATED_INITIALIZER;
 /**
-Initializes the array, copying the given values.
-
-@param values An array with the values to put inside this array.
-@param count  The number of elements to copy into the array.
-
-@return A newly initialized GPBInt32Array with a copy of the values.
-*/
+ * Initializes the array, copying the given values.
+ *
+ * @param values An array with the values to put inside this array.
+ * @param count  The number of elements to copy into the array.
+ *
+ * @return A newly initialized GPBInt32Array with a copy of the values.
+ **/
 - (instancetype)initWithValues:(const int32_t [])values
                          count:(NSUInteger)count;
 /**
-Initializes the array, copying the given values.
-
-@param array An array with the values to put inside this array.
-
-@return A newly initialized GPBInt32Array with a copy of the values.
-*/
+ * Initializes the array, copying the given values.
+ *
+ * @param array An array with the values to put inside this array.
+ *
+ * @return A newly initialized GPBInt32Array with a copy of the values.
+ **/
 - (instancetype)initWithValueArray:(GPBInt32Array *)array;
 /**
-Initializes the array with the given capacity.
-
-@param count The capacity needed for the array.
-
-@return A newly initialized GPBInt32Array with a capacity of count.
-*/
+ * Initializes the array with the given capacity.
+ *
+ * @param count The capacity needed for the array.
+ *
+ * @return A newly initialized GPBInt32Array with a capacity of count.
+ **/
 - (instancetype)initWithCapacity:(NSUInteger)count;
 
 /**
-Gets the value at the given index.
-
-@param index The index of the value to get.
-
-@return The value at the given index.
-*/
+ * Gets the value at the given index.
+ *
+ * @param index The index of the value to get.
+ *
+ * @return The value at the given index.
+ **/
 - (int32_t)valueAtIndex:(NSUInteger)index;
 
 /**
-Enumerates the values on this array with the given block.
-
-@param block The block to enumerate with.
-
-- *value*: The current value being enumerated.
-- *idx*:   The index of the current value.
-- *stop*:  A pointer to a boolean that when set stops the enumeration.
-*/
+ * Enumerates the values on this array with the given block.
+ *
+ * @param block The block to enumerate with.
+ *   **value**: The current value being enumerated.
+ *   **idx**:   The index of the current value.
+ *   **stop**:  A pointer to a boolean that when set stops the enumeration.
+ **/
 - (void)enumerateValuesWithBlock:(void (^)(int32_t value, NSUInteger idx, BOOL *stop))block;
 /**
-Enumerates the values on this array with the given block.
-
-@param opts  Options to control the enumeration.
-@param block The block to enumerate with.
-
-- *value*: The current value being enumerated.
-- *idx*:   The index of the current value.
-- *stop*:  A pointer to a boolean that when set stops the enumeration.
-*/
+ * Enumerates the values on this array with the given block.
+ *
+ * @param opts  Options to control the enumeration.
+ * @param block The block to enumerate with.
+ *   **value**: The current value being enumerated.
+ *   **idx**:   The index of the current value.
+ *   **stop**:  A pointer to a boolean that when set stops the enumeration.
+ **/
 - (void)enumerateValuesWithOptions:(NSEnumerationOptions)opts
                         usingBlock:(void (^)(int32_t value, NSUInteger idx, BOOL *stop))block;
 
 /**
-Adds a value to this array.
-
-@param value The value to add to this array.
-*/
+ * Adds a value to this array.
+ *
+ * @param value The value to add to this array.
+ **/
 - (void)addValue:(int32_t)value;
 /**
-Adds values to this array.
-
-@param values The values to add to this array.
-@param count  The number of elements to add.
-*/
+ * Adds values to this array.
+ *
+ * @param values The values to add to this array.
+ * @param count  The number of elements to add.
+ **/
 - (void)addValues:(const int32_t [])values count:(NSUInteger)count;
 /**
-Adds the values from the given array to this array.
-
-@param array The array containing the elements to add to this array.
-*/
+ * Adds the values from the given array to this array.
+ *
+ * @param array The array containing the elements to add to this array.
+ **/
 - (void)addValuesFromArray:(GPBInt32Array *)array;
 
 /**
-Inserts a value into the given position.
-
-@param value The value to add to this array.
-@param index The index into which to insert the value.
-*/
+ * Inserts a value into the given position.
+ *
+ * @param value The value to add to this array.
+ * @param index The index into which to insert the value.
+ **/
 - (void)insertValue:(int32_t)value atIndex:(NSUInteger)index;
 
 /**
-Replaces the value at the given index with the given value.
-
-@param index The index for which to replace the value.
-@param value The value to replace with.
-*/
+ * Replaces the value at the given index with the given value.
+ *
+ * @param index The index for which to replace the value.
+ * @param value The value to replace with.
+ **/
 - (void)replaceValueAtIndex:(NSUInteger)index withValue:(int32_t)value;
 
 /**
-Removes the value at the given index.
-
-@param index The index of the value to remove.
-*/
+ * Removes the value at the given index.
+ *
+ * @param index The index of the value to remove.
+ **/
 - (void)removeValueAtIndex:(NSUInteger)index;
 /**
-Removes all the values from this array.
-*/
+ * Removes all the values from this array.
+ **/
 - (void)removeAll;
 
 /**
-Exchanges the values between the given indexes.
-
-@param idx1 The index of the first element to exchange.
-@param idx2 The index of the second element to exchange.
-*/
+ * Exchanges the values between the given indexes.
+ *
+ * @param idx1 The index of the first element to exchange.
+ * @param idx2 The index of the second element to exchange.
+ **/
 - (void)exchangeValueAtIndex:(NSUInteger)idx1
             withValueAtIndex:(NSUInteger)idx2;
 
@@ -202,160 +202,160 @@ Exchanges the values between the given indexes.
 #pragma mark - UInt32
 
 /**
-Class used for repeated fields of uint32_t values. This performs better than
-boxing into NSNumbers in NSArrays.
-
-@note This class is not meant to be subclassed.
-*/
+ * Class used for repeated fields of uint32_t values. This performs better than
+ * boxing into NSNumbers in NSArrays.
+ *
+ * @note This class is not meant to be subclassed.
+ **/
 @interface GPBUInt32Array : NSObject <NSCopying>
 
 /** The number of elements contained in the array. */
 @property(nonatomic, readonly) NSUInteger count;
 
 /**
-@return A newly instanced and empty GPBUInt32Array.
-*/
+ * @return A newly instanced and empty GPBUInt32Array.
+ **/
 + (instancetype)array;
 /**
-Creates and initializes a GPBUInt32Array with the single element given.
-
-@param value The value to be placed in the array.
-
-@return A newly instanced GPBUInt32Array with value in it.
-*/
+ * Creates and initializes a GPBUInt32Array with the single element given.
+ *
+ * @param value The value to be placed in the array.
+ *
+ * @return A newly instanced GPBUInt32Array with value in it.
+ **/
 + (instancetype)arrayWithValue:(uint32_t)value;
 /**
-Creates and initializes a GPBUInt32Array with the contents of the given
-array.
-
-@param array Array with the contents to be put into the new array.
-
-@return A newly instanced GPBUInt32Array with the contents of array.
-*/
+ * Creates and initializes a GPBUInt32Array with the contents of the given
+ * array.
+ *
+ * @param array Array with the contents to be put into the new array.
+ *
+ * @return A newly instanced GPBUInt32Array with the contents of array.
+ **/
 + (instancetype)arrayWithValueArray:(GPBUInt32Array *)array;
 /**
-Creates and initializes a GPBUInt32Array with the given capacity.
-
-@param count The capacity needed for the array.
-
-@return A newly instanced GPBUInt32Array with a capacity of count.
-*/
+ * Creates and initializes a GPBUInt32Array with the given capacity.
+ *
+ * @param count The capacity needed for the array.
+ *
+ * @return A newly instanced GPBUInt32Array with a capacity of count.
+ **/
 + (instancetype)arrayWithCapacity:(NSUInteger)count;
 
-/** @return A newly initialized and empty GPBUInt32Array. */
+/**
+ * @return A newly initialized and empty GPBUInt32Array.
+ **/
 - (instancetype)init NS_DESIGNATED_INITIALIZER;
 /**
-Initializes the array, copying the given values.
-
-@param values An array with the values to put inside this array.
-@param count  The number of elements to copy into the array.
-
-@return A newly initialized GPBUInt32Array with a copy of the values.
-*/
+ * Initializes the array, copying the given values.
+ *
+ * @param values An array with the values to put inside this array.
+ * @param count  The number of elements to copy into the array.
+ *
+ * @return A newly initialized GPBUInt32Array with a copy of the values.
+ **/
 - (instancetype)initWithValues:(const uint32_t [])values
                          count:(NSUInteger)count;
 /**
-Initializes the array, copying the given values.
-
-@param array An array with the values to put inside this array.
-
-@return A newly initialized GPBUInt32Array with a copy of the values.
-*/
+ * Initializes the array, copying the given values.
+ *
+ * @param array An array with the values to put inside this array.
+ *
+ * @return A newly initialized GPBUInt32Array with a copy of the values.
+ **/
 - (instancetype)initWithValueArray:(GPBUInt32Array *)array;
 /**
-Initializes the array with the given capacity.
-
-@param count The capacity needed for the array.
-
-@return A newly initialized GPBUInt32Array with a capacity of count.
-*/
+ * Initializes the array with the given capacity.
+ *
+ * @param count The capacity needed for the array.
+ *
+ * @return A newly initialized GPBUInt32Array with a capacity of count.
+ **/
 - (instancetype)initWithCapacity:(NSUInteger)count;
 
 /**
-Gets the value at the given index.
-
-@param index The index of the value to get.
-
-@return The value at the given index.
-*/
+ * Gets the value at the given index.
+ *
+ * @param index The index of the value to get.
+ *
+ * @return The value at the given index.
+ **/
 - (uint32_t)valueAtIndex:(NSUInteger)index;
 
 /**
-Enumerates the values on this array with the given block.
-
-@param block The block to enumerate with.
-
-- *value*: The current value being enumerated.
-- *idx*:   The index of the current value.
-- *stop*:  A pointer to a boolean that when set stops the enumeration.
-*/
+ * Enumerates the values on this array with the given block.
+ *
+ * @param block The block to enumerate with.
+ *   **value**: The current value being enumerated.
+ *   **idx**:   The index of the current value.
+ *   **stop**:  A pointer to a boolean that when set stops the enumeration.
+ **/
 - (void)enumerateValuesWithBlock:(void (^)(uint32_t value, NSUInteger idx, BOOL *stop))block;
 /**
-Enumerates the values on this array with the given block.
-
-@param opts  Options to control the enumeration.
-@param block The block to enumerate with.
-
-- *value*: The current value being enumerated.
-- *idx*:   The index of the current value.
-- *stop*:  A pointer to a boolean that when set stops the enumeration.
-*/
+ * Enumerates the values on this array with the given block.
+ *
+ * @param opts  Options to control the enumeration.
+ * @param block The block to enumerate with.
+ *   **value**: The current value being enumerated.
+ *   **idx**:   The index of the current value.
+ *   **stop**:  A pointer to a boolean that when set stops the enumeration.
+ **/
 - (void)enumerateValuesWithOptions:(NSEnumerationOptions)opts
                         usingBlock:(void (^)(uint32_t value, NSUInteger idx, BOOL *stop))block;
 
 /**
-Adds a value to this array.
-
-@param value The value to add to this array.
-*/
+ * Adds a value to this array.
+ *
+ * @param value The value to add to this array.
+ **/
 - (void)addValue:(uint32_t)value;
 /**
-Adds values to this array.
-
-@param values The values to add to this array.
-@param count  The number of elements to add.
-*/
+ * Adds values to this array.
+ *
+ * @param values The values to add to this array.
+ * @param count  The number of elements to add.
+ **/
 - (void)addValues:(const uint32_t [])values count:(NSUInteger)count;
 /**
-Adds the values from the given array to this array.
-
-@param array The array containing the elements to add to this array.
-*/
+ * Adds the values from the given array to this array.
+ *
+ * @param array The array containing the elements to add to this array.
+ **/
 - (void)addValuesFromArray:(GPBUInt32Array *)array;
 
 /**
-Inserts a value into the given position.
-
-@param value The value to add to this array.
-@param index The index into which to insert the value.
-*/
+ * Inserts a value into the given position.
+ *
+ * @param value The value to add to this array.
+ * @param index The index into which to insert the value.
+ **/
 - (void)insertValue:(uint32_t)value atIndex:(NSUInteger)index;
 
 /**
-Replaces the value at the given index with the given value.
-
-@param index The index for which to replace the value.
-@param value The value to replace with.
-*/
+ * Replaces the value at the given index with the given value.
+ *
+ * @param index The index for which to replace the value.
+ * @param value The value to replace with.
+ **/
 - (void)replaceValueAtIndex:(NSUInteger)index withValue:(uint32_t)value;
 
 /**
-Removes the value at the given index.
-
-@param index The index of the value to remove.
-*/
+ * Removes the value at the given index.
+ *
+ * @param index The index of the value to remove.
+ **/
 - (void)removeValueAtIndex:(NSUInteger)index;
 /**
-Removes all the values from this array.
-*/
+ * Removes all the values from this array.
+ **/
 - (void)removeAll;
 
 /**
-Exchanges the values between the given indexes.
-
-@param idx1 The index of the first element to exchange.
-@param idx2 The index of the second element to exchange.
-*/
+ * Exchanges the values between the given indexes.
+ *
+ * @param idx1 The index of the first element to exchange.
+ * @param idx2 The index of the second element to exchange.
+ **/
 - (void)exchangeValueAtIndex:(NSUInteger)idx1
             withValueAtIndex:(NSUInteger)idx2;
 
@@ -364,160 +364,160 @@ Exchanges the values between the given indexes.
 #pragma mark - Int64
 
 /**
-Class used for repeated fields of int64_t values. This performs better than
-boxing into NSNumbers in NSArrays.
-
-@note This class is not meant to be subclassed.
-*/
+ * Class used for repeated fields of int64_t values. This performs better than
+ * boxing into NSNumbers in NSArrays.
+ *
+ * @note This class is not meant to be subclassed.
+ **/
 @interface GPBInt64Array : NSObject <NSCopying>
 
 /** The number of elements contained in the array. */
 @property(nonatomic, readonly) NSUInteger count;
 
 /**
-@return A newly instanced and empty GPBInt64Array.
-*/
+ * @return A newly instanced and empty GPBInt64Array.
+ **/
 + (instancetype)array;
 /**
-Creates and initializes a GPBInt64Array with the single element given.
-
-@param value The value to be placed in the array.
-
-@return A newly instanced GPBInt64Array with value in it.
-*/
+ * Creates and initializes a GPBInt64Array with the single element given.
+ *
+ * @param value The value to be placed in the array.
+ *
+ * @return A newly instanced GPBInt64Array with value in it.
+ **/
 + (instancetype)arrayWithValue:(int64_t)value;
 /**
-Creates and initializes a GPBInt64Array with the contents of the given
-array.
-
-@param array Array with the contents to be put into the new array.
-
-@return A newly instanced GPBInt64Array with the contents of array.
-*/
+ * Creates and initializes a GPBInt64Array with the contents of the given
+ * array.
+ *
+ * @param array Array with the contents to be put into the new array.
+ *
+ * @return A newly instanced GPBInt64Array with the contents of array.
+ **/
 + (instancetype)arrayWithValueArray:(GPBInt64Array *)array;
 /**
-Creates and initializes a GPBInt64Array with the given capacity.
-
-@param count The capacity needed for the array.
-
-@return A newly instanced GPBInt64Array with a capacity of count.
-*/
+ * Creates and initializes a GPBInt64Array with the given capacity.
+ *
+ * @param count The capacity needed for the array.
+ *
+ * @return A newly instanced GPBInt64Array with a capacity of count.
+ **/
 + (instancetype)arrayWithCapacity:(NSUInteger)count;
 
-/** @return A newly initialized and empty GPBInt64Array. */
+/**
+ * @return A newly initialized and empty GPBInt64Array.
+ **/
 - (instancetype)init NS_DESIGNATED_INITIALIZER;
 /**
-Initializes the array, copying the given values.
-
-@param values An array with the values to put inside this array.
-@param count  The number of elements to copy into the array.
-
-@return A newly initialized GPBInt64Array with a copy of the values.
-*/
+ * Initializes the array, copying the given values.
+ *
+ * @param values An array with the values to put inside this array.
+ * @param count  The number of elements to copy into the array.
+ *
+ * @return A newly initialized GPBInt64Array with a copy of the values.
+ **/
 - (instancetype)initWithValues:(const int64_t [])values
                          count:(NSUInteger)count;
 /**
-Initializes the array, copying the given values.
-
-@param array An array with the values to put inside this array.
-
-@return A newly initialized GPBInt64Array with a copy of the values.
-*/
+ * Initializes the array, copying the given values.
+ *
+ * @param array An array with the values to put inside this array.
+ *
+ * @return A newly initialized GPBInt64Array with a copy of the values.
+ **/
 - (instancetype)initWithValueArray:(GPBInt64Array *)array;
 /**
-Initializes the array with the given capacity.
-
-@param count The capacity needed for the array.
-
-@return A newly initialized GPBInt64Array with a capacity of count.
-*/
+ * Initializes the array with the given capacity.
+ *
+ * @param count The capacity needed for the array.
+ *
+ * @return A newly initialized GPBInt64Array with a capacity of count.
+ **/
 - (instancetype)initWithCapacity:(NSUInteger)count;
 
 /**
-Gets the value at the given index.
-
-@param index The index of the value to get.
-
-@return The value at the given index.
-*/
+ * Gets the value at the given index.
+ *
+ * @param index The index of the value to get.
+ *
+ * @return The value at the given index.
+ **/
 - (int64_t)valueAtIndex:(NSUInteger)index;
 
 /**
-Enumerates the values on this array with the given block.
-
-@param block The block to enumerate with.
-
-- *value*: The current value being enumerated.
-- *idx*:   The index of the current value.
-- *stop*:  A pointer to a boolean that when set stops the enumeration.
-*/
+ * Enumerates the values on this array with the given block.
+ *
+ * @param block The block to enumerate with.
+ *   **value**: The current value being enumerated.
+ *   **idx**:   The index of the current value.
+ *   **stop**:  A pointer to a boolean that when set stops the enumeration.
+ **/
 - (void)enumerateValuesWithBlock:(void (^)(int64_t value, NSUInteger idx, BOOL *stop))block;
 /**
-Enumerates the values on this array with the given block.
-
-@param opts  Options to control the enumeration.
-@param block The block to enumerate with.
-
-- *value*: The current value being enumerated.
-- *idx*:   The index of the current value.
-- *stop*:  A pointer to a boolean that when set stops the enumeration.
-*/
+ * Enumerates the values on this array with the given block.
+ *
+ * @param opts  Options to control the enumeration.
+ * @param block The block to enumerate with.
+ *   **value**: The current value being enumerated.
+ *   **idx**:   The index of the current value.
+ *   **stop**:  A pointer to a boolean that when set stops the enumeration.
+ **/
 - (void)enumerateValuesWithOptions:(NSEnumerationOptions)opts
                         usingBlock:(void (^)(int64_t value, NSUInteger idx, BOOL *stop))block;
 
 /**
-Adds a value to this array.
-
-@param value The value to add to this array.
-*/
+ * Adds a value to this array.
+ *
+ * @param value The value to add to this array.
+ **/
 - (void)addValue:(int64_t)value;
 /**
-Adds values to this array.
-
-@param values The values to add to this array.
-@param count  The number of elements to add.
-*/
+ * Adds values to this array.
+ *
+ * @param values The values to add to this array.
+ * @param count  The number of elements to add.
+ **/
 - (void)addValues:(const int64_t [])values count:(NSUInteger)count;
 /**
-Adds the values from the given array to this array.
-
-@param array The array containing the elements to add to this array.
-*/
+ * Adds the values from the given array to this array.
+ *
+ * @param array The array containing the elements to add to this array.
+ **/
 - (void)addValuesFromArray:(GPBInt64Array *)array;
 
 /**
-Inserts a value into the given position.
-
-@param value The value to add to this array.
-@param index The index into which to insert the value.
-*/
+ * Inserts a value into the given position.
+ *
+ * @param value The value to add to this array.
+ * @param index The index into which to insert the value.
+ **/
 - (void)insertValue:(int64_t)value atIndex:(NSUInteger)index;
 
 /**
-Replaces the value at the given index with the given value.
-
-@param index The index for which to replace the value.
-@param value The value to replace with.
-*/
+ * Replaces the value at the given index with the given value.
+ *
+ * @param index The index for which to replace the value.
+ * @param value The value to replace with.
+ **/
 - (void)replaceValueAtIndex:(NSUInteger)index withValue:(int64_t)value;
 
 /**
-Removes the value at the given index.
-
-@param index The index of the value to remove.
-*/
+ * Removes the value at the given index.
+ *
+ * @param index The index of the value to remove.
+ **/
 - (void)removeValueAtIndex:(NSUInteger)index;
 /**
-Removes all the values from this array.
-*/
+ * Removes all the values from this array.
+ **/
 - (void)removeAll;
 
 /**
-Exchanges the values between the given indexes.
-
-@param idx1 The index of the first element to exchange.
-@param idx2 The index of the second element to exchange.
-*/
+ * Exchanges the values between the given indexes.
+ *
+ * @param idx1 The index of the first element to exchange.
+ * @param idx2 The index of the second element to exchange.
+ **/
 - (void)exchangeValueAtIndex:(NSUInteger)idx1
             withValueAtIndex:(NSUInteger)idx2;
 
@@ -526,160 +526,160 @@ Exchanges the values between the given indexes.
 #pragma mark - UInt64
 
 /**
-Class used for repeated fields of uint64_t values. This performs better than
-boxing into NSNumbers in NSArrays.
-
-@note This class is not meant to be subclassed.
-*/
+ * Class used for repeated fields of uint64_t values. This performs better than
+ * boxing into NSNumbers in NSArrays.
+ *
+ * @note This class is not meant to be subclassed.
+ **/
 @interface GPBUInt64Array : NSObject <NSCopying>
 
 /** The number of elements contained in the array. */
 @property(nonatomic, readonly) NSUInteger count;
 
 /**
-@return A newly instanced and empty GPBUInt64Array.
-*/
+ * @return A newly instanced and empty GPBUInt64Array.
+ **/
 + (instancetype)array;
 /**
-Creates and initializes a GPBUInt64Array with the single element given.
-
-@param value The value to be placed in the array.
-
-@return A newly instanced GPBUInt64Array with value in it.
-*/
+ * Creates and initializes a GPBUInt64Array with the single element given.
+ *
+ * @param value The value to be placed in the array.
+ *
+ * @return A newly instanced GPBUInt64Array with value in it.
+ **/
 + (instancetype)arrayWithValue:(uint64_t)value;
 /**
-Creates and initializes a GPBUInt64Array with the contents of the given
-array.
-
-@param array Array with the contents to be put into the new array.
-
-@return A newly instanced GPBUInt64Array with the contents of array.
-*/
+ * Creates and initializes a GPBUInt64Array with the contents of the given
+ * array.
+ *
+ * @param array Array with the contents to be put into the new array.
+ *
+ * @return A newly instanced GPBUInt64Array with the contents of array.
+ **/
 + (instancetype)arrayWithValueArray:(GPBUInt64Array *)array;
 /**
-Creates and initializes a GPBUInt64Array with the given capacity.
-
-@param count The capacity needed for the array.
-
-@return A newly instanced GPBUInt64Array with a capacity of count.
-*/
+ * Creates and initializes a GPBUInt64Array with the given capacity.
+ *
+ * @param count The capacity needed for the array.
+ *
+ * @return A newly instanced GPBUInt64Array with a capacity of count.
+ **/
 + (instancetype)arrayWithCapacity:(NSUInteger)count;
 
-/** @return A newly initialized and empty GPBUInt64Array. */
+/**
+ * @return A newly initialized and empty GPBUInt64Array.
+ **/
 - (instancetype)init NS_DESIGNATED_INITIALIZER;
 /**
-Initializes the array, copying the given values.
-
-@param values An array with the values to put inside this array.
-@param count  The number of elements to copy into the array.
-
-@return A newly initialized GPBUInt64Array with a copy of the values.
-*/
+ * Initializes the array, copying the given values.
+ *
+ * @param values An array with the values to put inside this array.
+ * @param count  The number of elements to copy into the array.
+ *
+ * @return A newly initialized GPBUInt64Array with a copy of the values.
+ **/
 - (instancetype)initWithValues:(const uint64_t [])values
                          count:(NSUInteger)count;
 /**
-Initializes the array, copying the given values.
-
-@param array An array with the values to put inside this array.
-
-@return A newly initialized GPBUInt64Array with a copy of the values.
-*/
+ * Initializes the array, copying the given values.
+ *
+ * @param array An array with the values to put inside this array.
+ *
+ * @return A newly initialized GPBUInt64Array with a copy of the values.
+ **/
 - (instancetype)initWithValueArray:(GPBUInt64Array *)array;
 /**
-Initializes the array with the given capacity.
-
-@param count The capacity needed for the array.
-
-@return A newly initialized GPBUInt64Array with a capacity of count.
-*/
+ * Initializes the array with the given capacity.
+ *
+ * @param count The capacity needed for the array.
+ *
+ * @return A newly initialized GPBUInt64Array with a capacity of count.
+ **/
 - (instancetype)initWithCapacity:(NSUInteger)count;
 
 /**
-Gets the value at the given index.
-
-@param index The index of the value to get.
-
-@return The value at the given index.
-*/
+ * Gets the value at the given index.
+ *
+ * @param index The index of the value to get.
+ *
+ * @return The value at the given index.
+ **/
 - (uint64_t)valueAtIndex:(NSUInteger)index;
 
 /**
-Enumerates the values on this array with the given block.
-
-@param block The block to enumerate with.
-
-- *value*: The current value being enumerated.
-- *idx*:   The index of the current value.
-- *stop*:  A pointer to a boolean that when set stops the enumeration.
-*/
+ * Enumerates the values on this array with the given block.
+ *
+ * @param block The block to enumerate with.
+ *   **value**: The current value being enumerated.
+ *   **idx**:   The index of the current value.
+ *   **stop**:  A pointer to a boolean that when set stops the enumeration.
+ **/
 - (void)enumerateValuesWithBlock:(void (^)(uint64_t value, NSUInteger idx, BOOL *stop))block;
 /**
-Enumerates the values on this array with the given block.
-
-@param opts  Options to control the enumeration.
-@param block The block to enumerate with.
-
-- *value*: The current value being enumerated.
-- *idx*:   The index of the current value.
-- *stop*:  A pointer to a boolean that when set stops the enumeration.
-*/
+ * Enumerates the values on this array with the given block.
+ *
+ * @param opts  Options to control the enumeration.
+ * @param block The block to enumerate with.
+ *   **value**: The current value being enumerated.
+ *   **idx**:   The index of the current value.
+ *   **stop**:  A pointer to a boolean that when set stops the enumeration.
+ **/
 - (void)enumerateValuesWithOptions:(NSEnumerationOptions)opts
                         usingBlock:(void (^)(uint64_t value, NSUInteger idx, BOOL *stop))block;
 
 /**
-Adds a value to this array.
-
-@param value The value to add to this array.
-*/
+ * Adds a value to this array.
+ *
+ * @param value The value to add to this array.
+ **/
 - (void)addValue:(uint64_t)value;
 /**
-Adds values to this array.
-
-@param values The values to add to this array.
-@param count  The number of elements to add.
-*/
+ * Adds values to this array.
+ *
+ * @param values The values to add to this array.
+ * @param count  The number of elements to add.
+ **/
 - (void)addValues:(const uint64_t [])values count:(NSUInteger)count;
 /**
-Adds the values from the given array to this array.
-
-@param array The array containing the elements to add to this array.
-*/
+ * Adds the values from the given array to this array.
+ *
+ * @param array The array containing the elements to add to this array.
+ **/
 - (void)addValuesFromArray:(GPBUInt64Array *)array;
 
 /**
-Inserts a value into the given position.
-
-@param value The value to add to this array.
-@param index The index into which to insert the value.
-*/
+ * Inserts a value into the given position.
+ *
+ * @param value The value to add to this array.
+ * @param index The index into which to insert the value.
+ **/
 - (void)insertValue:(uint64_t)value atIndex:(NSUInteger)index;
 
 /**
-Replaces the value at the given index with the given value.
-
-@param index The index for which to replace the value.
-@param value The value to replace with.
-*/
+ * Replaces the value at the given index with the given value.
+ *
+ * @param index The index for which to replace the value.
+ * @param value The value to replace with.
+ **/
 - (void)replaceValueAtIndex:(NSUInteger)index withValue:(uint64_t)value;
 
 /**
-Removes the value at the given index.
-
-@param index The index of the value to remove.
-*/
+ * Removes the value at the given index.
+ *
+ * @param index The index of the value to remove.
+ **/
 - (void)removeValueAtIndex:(NSUInteger)index;
 /**
-Removes all the values from this array.
-*/
+ * Removes all the values from this array.
+ **/
 - (void)removeAll;
 
 /**
-Exchanges the values between the given indexes.
-
-@param idx1 The index of the first element to exchange.
-@param idx2 The index of the second element to exchange.
-*/
+ * Exchanges the values between the given indexes.
+ *
+ * @param idx1 The index of the first element to exchange.
+ * @param idx2 The index of the second element to exchange.
+ **/
 - (void)exchangeValueAtIndex:(NSUInteger)idx1
             withValueAtIndex:(NSUInteger)idx2;
 
@@ -688,160 +688,160 @@ Exchanges the values between the given indexes.
 #pragma mark - Float
 
 /**
-Class used for repeated fields of float values. This performs better than
-boxing into NSNumbers in NSArrays.
-
-@note This class is not meant to be subclassed.
-*/
+ * Class used for repeated fields of float values. This performs better than
+ * boxing into NSNumbers in NSArrays.
+ *
+ * @note This class is not meant to be subclassed.
+ **/
 @interface GPBFloatArray : NSObject <NSCopying>
 
 /** The number of elements contained in the array. */
 @property(nonatomic, readonly) NSUInteger count;
 
 /**
-@return A newly instanced and empty GPBFloatArray.
-*/
+ * @return A newly instanced and empty GPBFloatArray.
+ **/
 + (instancetype)array;
 /**
-Creates and initializes a GPBFloatArray with the single element given.
-
-@param value The value to be placed in the array.
-
-@return A newly instanced GPBFloatArray with value in it.
-*/
+ * Creates and initializes a GPBFloatArray with the single element given.
+ *
+ * @param value The value to be placed in the array.
+ *
+ * @return A newly instanced GPBFloatArray with value in it.
+ **/
 + (instancetype)arrayWithValue:(float)value;
 /**
-Creates and initializes a GPBFloatArray with the contents of the given
-array.
-
-@param array Array with the contents to be put into the new array.
-
-@return A newly instanced GPBFloatArray with the contents of array.
-*/
+ * Creates and initializes a GPBFloatArray with the contents of the given
+ * array.
+ *
+ * @param array Array with the contents to be put into the new array.
+ *
+ * @return A newly instanced GPBFloatArray with the contents of array.
+ **/
 + (instancetype)arrayWithValueArray:(GPBFloatArray *)array;
 /**
-Creates and initializes a GPBFloatArray with the given capacity.
-
-@param count The capacity needed for the array.
-
-@return A newly instanced GPBFloatArray with a capacity of count.
-*/
+ * Creates and initializes a GPBFloatArray with the given capacity.
+ *
+ * @param count The capacity needed for the array.
+ *
+ * @return A newly instanced GPBFloatArray with a capacity of count.
+ **/
 + (instancetype)arrayWithCapacity:(NSUInteger)count;
 
-/** @return A newly initialized and empty GPBFloatArray. */
+/**
+ * @return A newly initialized and empty GPBFloatArray.
+ **/
 - (instancetype)init NS_DESIGNATED_INITIALIZER;
 /**
-Initializes the array, copying the given values.
-
-@param values An array with the values to put inside this array.
-@param count  The number of elements to copy into the array.
-
-@return A newly initialized GPBFloatArray with a copy of the values.
-*/
+ * Initializes the array, copying the given values.
+ *
+ * @param values An array with the values to put inside this array.
+ * @param count  The number of elements to copy into the array.
+ *
+ * @return A newly initialized GPBFloatArray with a copy of the values.
+ **/
 - (instancetype)initWithValues:(const float [])values
                          count:(NSUInteger)count;
 /**
-Initializes the array, copying the given values.
-
-@param array An array with the values to put inside this array.
-
-@return A newly initialized GPBFloatArray with a copy of the values.
-*/
+ * Initializes the array, copying the given values.
+ *
+ * @param array An array with the values to put inside this array.
+ *
+ * @return A newly initialized GPBFloatArray with a copy of the values.
+ **/
 - (instancetype)initWithValueArray:(GPBFloatArray *)array;
 /**
-Initializes the array with the given capacity.
-
-@param count The capacity needed for the array.
-
-@return A newly initialized GPBFloatArray with a capacity of count.
-*/
+ * Initializes the array with the given capacity.
+ *
+ * @param count The capacity needed for the array.
+ *
+ * @return A newly initialized GPBFloatArray with a capacity of count.
+ **/
 - (instancetype)initWithCapacity:(NSUInteger)count;
 
 /**
-Gets the value at the given index.
-
-@param index The index of the value to get.
-
-@return The value at the given index.
-*/
+ * Gets the value at the given index.
+ *
+ * @param index The index of the value to get.
+ *
+ * @return The value at the given index.
+ **/
 - (float)valueAtIndex:(NSUInteger)index;
 
 /**
-Enumerates the values on this array with the given block.
-
-@param block The block to enumerate with.
-
-- *value*: The current value being enumerated.
-- *idx*:   The index of the current value.
-- *stop*:  A pointer to a boolean that when set stops the enumeration.
-*/
+ * Enumerates the values on this array with the given block.
+ *
+ * @param block The block to enumerate with.
+ *   **value**: The current value being enumerated.
+ *   **idx**:   The index of the current value.
+ *   **stop**:  A pointer to a boolean that when set stops the enumeration.
+ **/
 - (void)enumerateValuesWithBlock:(void (^)(float value, NSUInteger idx, BOOL *stop))block;
 /**
-Enumerates the values on this array with the given block.
-
-@param opts  Options to control the enumeration.
-@param block The block to enumerate with.
-
-- *value*: The current value being enumerated.
-- *idx*:   The index of the current value.
-- *stop*:  A pointer to a boolean that when set stops the enumeration.
-*/
+ * Enumerates the values on this array with the given block.
+ *
+ * @param opts  Options to control the enumeration.
+ * @param block The block to enumerate with.
+ *   **value**: The current value being enumerated.
+ *   **idx**:   The index of the current value.
+ *   **stop**:  A pointer to a boolean that when set stops the enumeration.
+ **/
 - (void)enumerateValuesWithOptions:(NSEnumerationOptions)opts
                         usingBlock:(void (^)(float value, NSUInteger idx, BOOL *stop))block;
 
 /**
-Adds a value to this array.
-
-@param value The value to add to this array.
-*/
+ * Adds a value to this array.
+ *
+ * @param value The value to add to this array.
+ **/
 - (void)addValue:(float)value;
 /**
-Adds values to this array.
-
-@param values The values to add to this array.
-@param count  The number of elements to add.
-*/
+ * Adds values to this array.
+ *
+ * @param values The values to add to this array.
+ * @param count  The number of elements to add.
+ **/
 - (void)addValues:(const float [])values count:(NSUInteger)count;
 /**
-Adds the values from the given array to this array.
-
-@param array The array containing the elements to add to this array.
-*/
+ * Adds the values from the given array to this array.
+ *
+ * @param array The array containing the elements to add to this array.
+ **/
 - (void)addValuesFromArray:(GPBFloatArray *)array;
 
 /**
-Inserts a value into the given position.
-
-@param value The value to add to this array.
-@param index The index into which to insert the value.
-*/
+ * Inserts a value into the given position.
+ *
+ * @param value The value to add to this array.
+ * @param index The index into which to insert the value.
+ **/
 - (void)insertValue:(float)value atIndex:(NSUInteger)index;
 
 /**
-Replaces the value at the given index with the given value.
-
-@param index The index for which to replace the value.
-@param value The value to replace with.
-*/
+ * Replaces the value at the given index with the given value.
+ *
+ * @param index The index for which to replace the value.
+ * @param value The value to replace with.
+ **/
 - (void)replaceValueAtIndex:(NSUInteger)index withValue:(float)value;
 
 /**
-Removes the value at the given index.
-
-@param index The index of the value to remove.
-*/
+ * Removes the value at the given index.
+ *
+ * @param index The index of the value to remove.
+ **/
 - (void)removeValueAtIndex:(NSUInteger)index;
 /**
-Removes all the values from this array.
-*/
+ * Removes all the values from this array.
+ **/
 - (void)removeAll;
 
 /**
-Exchanges the values between the given indexes.
-
-@param idx1 The index of the first element to exchange.
-@param idx2 The index of the second element to exchange.
-*/
+ * Exchanges the values between the given indexes.
+ *
+ * @param idx1 The index of the first element to exchange.
+ * @param idx2 The index of the second element to exchange.
+ **/
 - (void)exchangeValueAtIndex:(NSUInteger)idx1
             withValueAtIndex:(NSUInteger)idx2;
 
@@ -850,160 +850,160 @@ Exchanges the values between the given indexes.
 #pragma mark - Double
 
 /**
-Class used for repeated fields of double values. This performs better than
-boxing into NSNumbers in NSArrays.
-
-@note This class is not meant to be subclassed.
-*/
+ * Class used for repeated fields of double values. This performs better than
+ * boxing into NSNumbers in NSArrays.
+ *
+ * @note This class is not meant to be subclassed.
+ **/
 @interface GPBDoubleArray : NSObject <NSCopying>
 
 /** The number of elements contained in the array. */
 @property(nonatomic, readonly) NSUInteger count;
 
 /**
-@return A newly instanced and empty GPBDoubleArray.
-*/
+ * @return A newly instanced and empty GPBDoubleArray.
+ **/
 + (instancetype)array;
 /**
-Creates and initializes a GPBDoubleArray with the single element given.
-
-@param value The value to be placed in the array.
-
-@return A newly instanced GPBDoubleArray with value in it.
-*/
+ * Creates and initializes a GPBDoubleArray with the single element given.
+ *
+ * @param value The value to be placed in the array.
+ *
+ * @return A newly instanced GPBDoubleArray with value in it.
+ **/
 + (instancetype)arrayWithValue:(double)value;
 /**
-Creates and initializes a GPBDoubleArray with the contents of the given
-array.
-
-@param array Array with the contents to be put into the new array.
-
-@return A newly instanced GPBDoubleArray with the contents of array.
-*/
+ * Creates and initializes a GPBDoubleArray with the contents of the given
+ * array.
+ *
+ * @param array Array with the contents to be put into the new array.
+ *
+ * @return A newly instanced GPBDoubleArray with the contents of array.
+ **/
 + (instancetype)arrayWithValueArray:(GPBDoubleArray *)array;
 /**
-Creates and initializes a GPBDoubleArray with the given capacity.
-
-@param count The capacity needed for the array.
-
-@return A newly instanced GPBDoubleArray with a capacity of count.
-*/
+ * Creates and initializes a GPBDoubleArray with the given capacity.
+ *
+ * @param count The capacity needed for the array.
+ *
+ * @return A newly instanced GPBDoubleArray with a capacity of count.
+ **/
 + (instancetype)arrayWithCapacity:(NSUInteger)count;
 
-/** @return A newly initialized and empty GPBDoubleArray. */
+/**
+ * @return A newly initialized and empty GPBDoubleArray.
+ **/
 - (instancetype)init NS_DESIGNATED_INITIALIZER;
 /**
-Initializes the array, copying the given values.
-
-@param values An array with the values to put inside this array.
-@param count  The number of elements to copy into the array.
-
-@return A newly initialized GPBDoubleArray with a copy of the values.
-*/
+ * Initializes the array, copying the given values.
+ *
+ * @param values An array with the values to put inside this array.
+ * @param count  The number of elements to copy into the array.
+ *
+ * @return A newly initialized GPBDoubleArray with a copy of the values.
+ **/
 - (instancetype)initWithValues:(const double [])values
                          count:(NSUInteger)count;
 /**
-Initializes the array, copying the given values.
-
-@param array An array with the values to put inside this array.
-
-@return A newly initialized GPBDoubleArray with a copy of the values.
-*/
+ * Initializes the array, copying the given values.
+ *
+ * @param array An array with the values to put inside this array.
+ *
+ * @return A newly initialized GPBDoubleArray with a copy of the values.
+ **/
 - (instancetype)initWithValueArray:(GPBDoubleArray *)array;
 /**
-Initializes the array with the given capacity.
-
-@param count The capacity needed for the array.
-
-@return A newly initialized GPBDoubleArray with a capacity of count.
-*/
+ * Initializes the array with the given capacity.
+ *
+ * @param count The capacity needed for the array.
+ *
+ * @return A newly initialized GPBDoubleArray with a capacity of count.
+ **/
 - (instancetype)initWithCapacity:(NSUInteger)count;
 
 /**
-Gets the value at the given index.
-
-@param index The index of the value to get.
-
-@return The value at the given index.
-*/
+ * Gets the value at the given index.
+ *
+ * @param index The index of the value to get.
+ *
+ * @return The value at the given index.
+ **/
 - (double)valueAtIndex:(NSUInteger)index;
 
 /**
-Enumerates the values on this array with the given block.
-
-@param block The block to enumerate with.
-
-- *value*: The current value being enumerated.
-- *idx*:   The index of the current value.
-- *stop*:  A pointer to a boolean that when set stops the enumeration.
-*/
+ * Enumerates the values on this array with the given block.
+ *
+ * @param block The block to enumerate with.
+ *   **value**: The current value being enumerated.
+ *   **idx**:   The index of the current value.
+ *   **stop**:  A pointer to a boolean that when set stops the enumeration.
+ **/
 - (void)enumerateValuesWithBlock:(void (^)(double value, NSUInteger idx, BOOL *stop))block;
 /**
-Enumerates the values on this array with the given block.
-
-@param opts  Options to control the enumeration.
-@param block The block to enumerate with.
-
-- *value*: The current value being enumerated.
-- *idx*:   The index of the current value.
-- *stop*:  A pointer to a boolean that when set stops the enumeration.
-*/
+ * Enumerates the values on this array with the given block.
+ *
+ * @param opts  Options to control the enumeration.
+ * @param block The block to enumerate with.
+ *   **value**: The current value being enumerated.
+ *   **idx**:   The index of the current value.
+ *   **stop**:  A pointer to a boolean that when set stops the enumeration.
+ **/
 - (void)enumerateValuesWithOptions:(NSEnumerationOptions)opts
                         usingBlock:(void (^)(double value, NSUInteger idx, BOOL *stop))block;
 
 /**
-Adds a value to this array.
-
-@param value The value to add to this array.
-*/
+ * Adds a value to this array.
+ *
+ * @param value The value to add to this array.
+ **/
 - (void)addValue:(double)value;
 /**
-Adds values to this array.
-
-@param values The values to add to this array.
-@param count  The number of elements to add.
-*/
+ * Adds values to this array.
+ *
+ * @param values The values to add to this array.
+ * @param count  The number of elements to add.
+ **/
 - (void)addValues:(const double [])values count:(NSUInteger)count;
 /**
-Adds the values from the given array to this array.
-
-@param array The array containing the elements to add to this array.
-*/
+ * Adds the values from the given array to this array.
+ *
+ * @param array The array containing the elements to add to this array.
+ **/
 - (void)addValuesFromArray:(GPBDoubleArray *)array;
 
 /**
-Inserts a value into the given position.
-
-@param value The value to add to this array.
-@param index The index into which to insert the value.
-*/
+ * Inserts a value into the given position.
+ *
+ * @param value The value to add to this array.
+ * @param index The index into which to insert the value.
+ **/
 - (void)insertValue:(double)value atIndex:(NSUInteger)index;
 
 /**
-Replaces the value at the given index with the given value.
-
-@param index The index for which to replace the value.
-@param value The value to replace with.
-*/
+ * Replaces the value at the given index with the given value.
+ *
+ * @param index The index for which to replace the value.
+ * @param value The value to replace with.
+ **/
 - (void)replaceValueAtIndex:(NSUInteger)index withValue:(double)value;
 
 /**
-Removes the value at the given index.
-
-@param index The index of the value to remove.
-*/
+ * Removes the value at the given index.
+ *
+ * @param index The index of the value to remove.
+ **/
 - (void)removeValueAtIndex:(NSUInteger)index;
 /**
-Removes all the values from this array.
-*/
+ * Removes all the values from this array.
+ **/
 - (void)removeAll;
 
 /**
-Exchanges the values between the given indexes.
-
-@param idx1 The index of the first element to exchange.
-@param idx2 The index of the second element to exchange.
-*/
+ * Exchanges the values between the given indexes.
+ *
+ * @param idx1 The index of the first element to exchange.
+ * @param idx2 The index of the second element to exchange.
+ **/
 - (void)exchangeValueAtIndex:(NSUInteger)idx1
             withValueAtIndex:(NSUInteger)idx2;
 
@@ -1012,160 +1012,160 @@ Exchanges the values between the given indexes.
 #pragma mark - Bool
 
 /**
-Class used for repeated fields of BOOL values. This performs better than
-boxing into NSNumbers in NSArrays.
-
-@note This class is not meant to be subclassed.
-*/
+ * Class used for repeated fields of BOOL values. This performs better than
+ * boxing into NSNumbers in NSArrays.
+ *
+ * @note This class is not meant to be subclassed.
+ **/
 @interface GPBBoolArray : NSObject <NSCopying>
 
 /** The number of elements contained in the array. */
 @property(nonatomic, readonly) NSUInteger count;
 
 /**
-@return A newly instanced and empty GPBBoolArray.
-*/
+ * @return A newly instanced and empty GPBBoolArray.
+ **/
 + (instancetype)array;
 /**
-Creates and initializes a GPBBoolArray with the single element given.
-
-@param value The value to be placed in the array.
-
-@return A newly instanced GPBBoolArray with value in it.
-*/
+ * Creates and initializes a GPBBoolArray with the single element given.
+ *
+ * @param value The value to be placed in the array.
+ *
+ * @return A newly instanced GPBBoolArray with value in it.
+ **/
 + (instancetype)arrayWithValue:(BOOL)value;
 /**
-Creates and initializes a GPBBoolArray with the contents of the given
-array.
-
-@param array Array with the contents to be put into the new array.
-
-@return A newly instanced GPBBoolArray with the contents of array.
-*/
+ * Creates and initializes a GPBBoolArray with the contents of the given
+ * array.
+ *
+ * @param array Array with the contents to be put into the new array.
+ *
+ * @return A newly instanced GPBBoolArray with the contents of array.
+ **/
 + (instancetype)arrayWithValueArray:(GPBBoolArray *)array;
 /**
-Creates and initializes a GPBBoolArray with the given capacity.
-
-@param count The capacity needed for the array.
-
-@return A newly instanced GPBBoolArray with a capacity of count.
-*/
+ * Creates and initializes a GPBBoolArray with the given capacity.
+ *
+ * @param count The capacity needed for the array.
+ *
+ * @return A newly instanced GPBBoolArray with a capacity of count.
+ **/
 + (instancetype)arrayWithCapacity:(NSUInteger)count;
 
-/** @return A newly initialized and empty GPBBoolArray. */
+/**
+ * @return A newly initialized and empty GPBBoolArray.
+ **/
 - (instancetype)init NS_DESIGNATED_INITIALIZER;
 /**
-Initializes the array, copying the given values.
-
-@param values An array with the values to put inside this array.
-@param count  The number of elements to copy into the array.
-
-@return A newly initialized GPBBoolArray with a copy of the values.
-*/
+ * Initializes the array, copying the given values.
+ *
+ * @param values An array with the values to put inside this array.
+ * @param count  The number of elements to copy into the array.
+ *
+ * @return A newly initialized GPBBoolArray with a copy of the values.
+ **/
 - (instancetype)initWithValues:(const BOOL [])values
                          count:(NSUInteger)count;
 /**
-Initializes the array, copying the given values.
-
-@param array An array with the values to put inside this array.
-
-@return A newly initialized GPBBoolArray with a copy of the values.
-*/
+ * Initializes the array, copying the given values.
+ *
+ * @param array An array with the values to put inside this array.
+ *
+ * @return A newly initialized GPBBoolArray with a copy of the values.
+ **/
 - (instancetype)initWithValueArray:(GPBBoolArray *)array;
 /**
-Initializes the array with the given capacity.
-
-@param count The capacity needed for the array.
-
-@return A newly initialized GPBBoolArray with a capacity of count.
-*/
+ * Initializes the array with the given capacity.
+ *
+ * @param count The capacity needed for the array.
+ *
+ * @return A newly initialized GPBBoolArray with a capacity of count.
+ **/
 - (instancetype)initWithCapacity:(NSUInteger)count;
 
 /**
-Gets the value at the given index.
-
-@param index The index of the value to get.
-
-@return The value at the given index.
-*/
+ * Gets the value at the given index.
+ *
+ * @param index The index of the value to get.
+ *
+ * @return The value at the given index.
+ **/
 - (BOOL)valueAtIndex:(NSUInteger)index;
 
 /**
-Enumerates the values on this array with the given block.
-
-@param block The block to enumerate with.
-
-- *value*: The current value being enumerated.
-- *idx*:   The index of the current value.
-- *stop*:  A pointer to a boolean that when set stops the enumeration.
-*/
+ * Enumerates the values on this array with the given block.
+ *
+ * @param block The block to enumerate with.
+ *   **value**: The current value being enumerated.
+ *   **idx**:   The index of the current value.
+ *   **stop**:  A pointer to a boolean that when set stops the enumeration.
+ **/
 - (void)enumerateValuesWithBlock:(void (^)(BOOL value, NSUInteger idx, BOOL *stop))block;
 /**
-Enumerates the values on this array with the given block.
-
-@param opts  Options to control the enumeration.
-@param block The block to enumerate with.
-
-- *value*: The current value being enumerated.
-- *idx*:   The index of the current value.
-- *stop*:  A pointer to a boolean that when set stops the enumeration.
-*/
+ * Enumerates the values on this array with the given block.
+ *
+ * @param opts  Options to control the enumeration.
+ * @param block The block to enumerate with.
+ *   **value**: The current value being enumerated.
+ *   **idx**:   The index of the current value.
+ *   **stop**:  A pointer to a boolean that when set stops the enumeration.
+ **/
 - (void)enumerateValuesWithOptions:(NSEnumerationOptions)opts
                         usingBlock:(void (^)(BOOL value, NSUInteger idx, BOOL *stop))block;
 
 /**
-Adds a value to this array.
-
-@param value The value to add to this array.
-*/
+ * Adds a value to this array.
+ *
+ * @param value The value to add to this array.
+ **/
 - (void)addValue:(BOOL)value;
 /**
-Adds values to this array.
-
-@param values The values to add to this array.
-@param count  The number of elements to add.
-*/
+ * Adds values to this array.
+ *
+ * @param values The values to add to this array.
+ * @param count  The number of elements to add.
+ **/
 - (void)addValues:(const BOOL [])values count:(NSUInteger)count;
 /**
-Adds the values from the given array to this array.
-
-@param array The array containing the elements to add to this array.
-*/
+ * Adds the values from the given array to this array.
+ *
+ * @param array The array containing the elements to add to this array.
+ **/
 - (void)addValuesFromArray:(GPBBoolArray *)array;
 
 /**
-Inserts a value into the given position.
-
-@param value The value to add to this array.
-@param index The index into which to insert the value.
-*/
+ * Inserts a value into the given position.
+ *
+ * @param value The value to add to this array.
+ * @param index The index into which to insert the value.
+ **/
 - (void)insertValue:(BOOL)value atIndex:(NSUInteger)index;
 
 /**
-Replaces the value at the given index with the given value.
-
-@param index The index for which to replace the value.
-@param value The value to replace with.
-*/
+ * Replaces the value at the given index with the given value.
+ *
+ * @param index The index for which to replace the value.
+ * @param value The value to replace with.
+ **/
 - (void)replaceValueAtIndex:(NSUInteger)index withValue:(BOOL)value;
 
 /**
-Removes the value at the given index.
-
-@param index The index of the value to remove.
-*/
+ * Removes the value at the given index.
+ *
+ * @param index The index of the value to remove.
+ **/
 - (void)removeValueAtIndex:(NSUInteger)index;
 /**
-Removes all the values from this array.
-*/
+ * Removes all the values from this array.
+ **/
 - (void)removeAll;
 
 /**
-Exchanges the values between the given indexes.
-
-@param idx1 The index of the first element to exchange.
-@param idx2 The index of the second element to exchange.
-*/
+ * Exchanges the values between the given indexes.
+ *
+ * @param idx1 The index of the first element to exchange.
+ * @param idx2 The index of the second element to exchange.
+ **/
 - (void)exchangeValueAtIndex:(NSUInteger)idx1
             withValueAtIndex:(NSUInteger)idx2;
 
@@ -1174,11 +1174,11 @@ Exchanges the values between the given indexes.
 #pragma mark - Enum
 
 /**
- This class is used for repeated fields of int32_t values. This performs
- better than boxing into NSNumbers in NSArrays.
-
-@note This class is not meant to be subclassed.
-*/
+ * This class is used for repeated fields of int32_t values. This performs
+ * better than boxing into NSNumbers in NSArrays.
+ *
+ * @note This class is not meant to be subclassed.
+ **/
 @interface GPBEnumArray : NSObject <NSCopying>
 
 /** The number of elements contained in the array. */
@@ -1187,87 +1187,87 @@ Exchanges the values between the given indexes.
 @property(nonatomic, readonly) GPBEnumValidationFunc validationFunc;
 
 /**
-@return A newly instanced and empty GPBEnumArray.
-*/
+ * @return A newly instanced and empty GPBEnumArray.
+ **/
 + (instancetype)array;
 /**
-Creates and initializes a GPBEnumArray with the enum validation function
-given.
-
-@param func The enum validation function for the array.
-
-@return A newly instanced GPBEnumArray.
-*/
+ * Creates and initializes a GPBEnumArray with the enum validation function
+ * given.
+ *
+ * @param func The enum validation function for the array.
+ *
+ * @return A newly instanced GPBEnumArray.
+ **/
 + (instancetype)arrayWithValidationFunction:(nullable GPBEnumValidationFunc)func;
 /**
-Creates and initializes a GPBEnumArray with the enum validation function
-given and the single raw value given.
-
-@param func  The enum validation function for the array.
-@param value The raw value to add to this array.
-
-@return A newly instanced GPBEnumArray.
-*/
+ * Creates and initializes a GPBEnumArray with the enum validation function
+ * given and the single raw value given.
+ *
+ * @param func  The enum validation function for the array.
+ * @param value The raw value to add to this array.
+ *
+ * @return A newly instanced GPBEnumArray.
+ **/
 + (instancetype)arrayWithValidationFunction:(nullable GPBEnumValidationFunc)func
                                    rawValue:(int32_t)value;
 /**
-Creates and initializes a GPBEnumArray that adds the elements from the
-given array.
-
-@param array Array containing the values to add to the new array.
-
-@return A newly instanced GPBEnumArray.
-*/
+ * Creates and initializes a GPBEnumArray that adds the elements from the
+ * given array.
+ *
+ * @param array Array containing the values to add to the new array.
+ *
+ * @return A newly instanced GPBEnumArray.
+ **/
 + (instancetype)arrayWithValueArray:(GPBEnumArray *)array;
 /**
-Creates and initializes a GPBEnumArray with the given enum validation
- function and with the givencapacity.
-
-@param func  The enum validation function for the array.
-@param count The capacity needed for the array.
-
-@return A newly instanced GPBEnumArray with a capacity of count.
-*/
+ * Creates and initializes a GPBEnumArray with the given enum validation
+ * function and with the givencapacity.
+ *
+ * @param func  The enum validation function for the array.
+ * @param count The capacity needed for the array.
+ *
+ * @return A newly instanced GPBEnumArray with a capacity of count.
+ **/
 + (instancetype)arrayWithValidationFunction:(nullable GPBEnumValidationFunc)func
                                    capacity:(NSUInteger)count;
 
 /**
-Initializes the array with the given enum validation function.
-
-@param func The enum validation function for the array.
-
-@return A newly initialized GPBEnumArray with a copy of the values.
-*/
+ * Initializes the array with the given enum validation function.
+ *
+ * @param func The enum validation function for the array.
+ *
+ * @return A newly initialized GPBEnumArray with a copy of the values.
+ **/
 - (instancetype)initWithValidationFunction:(nullable GPBEnumValidationFunc)func
     NS_DESIGNATED_INITIALIZER;
 /**
-Initializes the array, copying the given values.
-
-@param func   The enum validation function for the array.
-@param values An array with the values to put inside this array.
-@param count  The number of elements to copy into the array.
-
-@return A newly initialized GPBEnumArray with a copy of the values.
-*/
+ * Initializes the array, copying the given values.
+ *
+ * @param func   The enum validation function for the array.
+ * @param values An array with the values to put inside this array.
+ * @param count  The number of elements to copy into the array.
+ *
+ * @return A newly initialized GPBEnumArray with a copy of the values.
+ **/
 - (instancetype)initWithValidationFunction:(nullable GPBEnumValidationFunc)func
                                  rawValues:(const int32_t [])values
                                      count:(NSUInteger)count;
 /**
-Initializes the array, copying the given values.
-
-@param array An array with the values to put inside this array.
-
-@return A newly initialized GPBEnumArray with a copy of the values.
-*/
+ * Initializes the array, copying the given values.
+ *
+ * @param array An array with the values to put inside this array.
+ *
+ * @return A newly initialized GPBEnumArray with a copy of the values.
+ **/
 - (instancetype)initWithValueArray:(GPBEnumArray *)array;
 /**
-Initializes the array with the given capacity.
-
-@param func  The enum validation function for the array.
-@param count The capacity needed for the array.
-
-@return A newly initialized GPBEnumArray with a capacity of count.
-*/
+ * Initializes the array with the given capacity.
+ *
+ * @param func  The enum validation function for the array.
+ * @param count The capacity needed for the array.
+ *
+ * @return A newly initialized GPBEnumArray with a capacity of count.
+ **/
 - (instancetype)initWithValidationFunction:(nullable GPBEnumValidationFunc)func
                                   capacity:(NSUInteger)count;
 
@@ -1276,34 +1276,32 @@ Initializes the array with the given capacity.
 // desired, use "raw" version of the method.
 
 /**
-Gets the value at the given index.
-
-@param index The index of the value to get.
-
-@return The value at the given index.
-*/
+ * Gets the value at the given index.
+ *
+ * @param index The index of the value to get.
+ *
+ * @return The value at the given index.
+ **/
 - (int32_t)valueAtIndex:(NSUInteger)index;
 
 /**
-Enumerates the values on this array with the given block.
-
-@param block The block to enumerate with.
-
-- *value*: The current value being enumerated.
-- *idx*:   The index of the current value.
-- *stop*:  A pointer to a boolean that when set stops the enumeration.
-*/
+ * Enumerates the values on this array with the given block.
+ *
+ * @param block The block to enumerate with.
+ *   **value**: The current value being enumerated.
+ *   **idx**:   The index of the current value.
+ *   **stop**:  A pointer to a boolean that when set stops the enumeration.
+ **/
 - (void)enumerateValuesWithBlock:(void (^)(int32_t value, NSUInteger idx, BOOL *stop))block;
 /**
-Enumerates the values on this array with the given block.
-
-@param opts  Options to control the enumeration.
-@param block The block to enumerate with.
-
-- *value*: The current value being enumerated.
-- *idx*:   The index of the current value.
-- *stop*:  A pointer to a boolean that when set stops the enumeration.
-*/
+ * Enumerates the values on this array with the given block.
+ *
+ * @param opts  Options to control the enumeration.
+ * @param block The block to enumerate with.
+ *   **value**: The current value being enumerated.
+ *   **idx**:   The index of the current value.
+ *   **stop**:  A pointer to a boolean that when set stops the enumeration.
+ **/
 - (void)enumerateValuesWithOptions:(NSEnumerationOptions)opts
                         usingBlock:(void (^)(int32_t value, NSUInteger idx, BOOL *stop))block;
 
@@ -1313,25 +1311,23 @@ Enumerates the values on this array with the given block.
 - (int32_t)rawValueAtIndex:(NSUInteger)index;
 
 /**
-Enumerates the values on this array with the given block.
-
-@param block The block to enumerate with.
-
-- *value*: The current value being enumerated.
-- *idx*:   The index of the current value.
-- *stop*:  A pointer to a boolean that when set stops the enumeration.
-*/
+ * Enumerates the values on this array with the given block.
+ *
+ * @param block The block to enumerate with.
+ *   **value**: The current value being enumerated.
+ *   **idx**:   The index of the current value.
+ *   **stop**:  A pointer to a boolean that when set stops the enumeration.
+ **/
 - (void)enumerateRawValuesWithBlock:(void (^)(int32_t value, NSUInteger idx, BOOL *stop))block;
 /**
-Enumerates the values on this array with the given block.
-
-@param opts  Options to control the enumeration.
-@param block The block to enumerate with.
-
-- *value*: The current value being enumerated.
-- *idx*:   The index of the current value.
-- *stop*:  A pointer to a boolean that when set stops the enumeration.
-*/
+ * Enumerates the values on this array with the given block.
+ *
+ * @param opts  Options to control the enumeration.
+ * @param block The block to enumerate with.
+ *   **value**: The current value being enumerated.
+ *   **idx**:   The index of the current value.
+ *   **stop**:  A pointer to a boolean that when set stops the enumeration.
+ **/
 - (void)enumerateRawValuesWithOptions:(NSEnumerationOptions)opts
                            usingBlock:(void (^)(int32_t value, NSUInteger idx, BOOL *stop))block;
 
@@ -1341,108 +1337,108 @@ Enumerates the values on this array with the given block.
 // values.
 
 /**
-Adds a value to this array.
-
-@param value The value to add to this array.
-*/
+ * Adds a value to this array.
+ *
+ * @param value The value to add to this array.
+ **/
 - (void)addValue:(int32_t)value;
 /**
-Adds values to this array.
-
-@param values The values to add to this array.
-@param count  The number of elements to add.
-*/
+ * Adds values to this array.
+ *
+ * @param values The values to add to this array.
+ * @param count  The number of elements to add.
+ **/
 - (void)addValues:(const int32_t [])values count:(NSUInteger)count;
 
 /**
-Inserts a value into the given position.
-
-@param value The value to add to this array.
-@param index The index into which to insert the value.
-*/
+ * Inserts a value into the given position.
+ *
+ * @param value The value to add to this array.
+ * @param index The index into which to insert the value.
+ **/
 - (void)insertValue:(int32_t)value atIndex:(NSUInteger)index;
 
 /**
-Replaces the value at the given index with the given value.
-
-@param index The index for which to replace the value.
-@param value The value to replace with.
-*/
+ * Replaces the value at the given index with the given value.
+ *
+ * @param index The index for which to replace the value.
+ * @param value The value to replace with.
+ **/
 - (void)replaceValueAtIndex:(NSUInteger)index withValue:(int32_t)value;
 
 // These methods bypass the validationFunc to provide setting of values that were not
 // known at the time the binary was compiled.
 
 /**
-Adds a raw enum value to this array.
-
-@note This method bypass the validationFunc to enable the setting of values that
-      were not known at the time the binary was compiled.
-
-@param value The raw enum value to add to the array.
-*/
+ * Adds a raw enum value to this array.
+ *
+ * @note This method bypass the validationFunc to enable the setting of values that
+ *       were not known at the time the binary was compiled.
+ *
+ * @param value The raw enum value to add to the array.
+ **/
 - (void)addRawValue:(int32_t)value;
 /**
-Adds raw enum values to this array.
-
-@note This method bypass the validationFunc to enable the setting of values that
-      were not known at the time the binary was compiled.
-
-@param array Array containing the raw enum values to add to this array.
-*/
+ * Adds raw enum values to this array.
+ *
+ * @note This method bypass the validationFunc to enable the setting of values that
+ *       were not known at the time the binary was compiled.
+ *
+ * @param array Array containing the raw enum values to add to this array.
+ **/
 - (void)addRawValuesFromArray:(GPBEnumArray *)array;
 /**
-Adds raw enum values to this array.
-
-@note This method bypass the validationFunc to enable the setting of values that
-      were not known at the time the binary was compiled.
-
-@param values Array containing the raw enum values to add to this array.
-@param count  The number of raw values to add.
-*/
+ * Adds raw enum values to this array.
+ *
+ * @note This method bypass the validationFunc to enable the setting of values that
+ *       were not known at the time the binary was compiled.
+ *
+ * @param values Array containing the raw enum values to add to this array.
+ * @param count  The number of raw values to add.
+ **/
 - (void)addRawValues:(const int32_t [])values count:(NSUInteger)count;
 
 /**
-Inserts a raw enum value at the given index.
-
-@note This method bypass the validationFunc to enable the setting of values that
-      were not known at the time the binary was compiled.
-
-@param value Raw enum value to add.
-@param index The index into which to insert the value.
-*/
+ * Inserts a raw enum value at the given index.
+ *
+ * @note This method bypass the validationFunc to enable the setting of values that
+ *       were not known at the time the binary was compiled.
+ *
+ * @param value Raw enum value to add.
+ * @param index The index into which to insert the value.
+ **/
 - (void)insertRawValue:(int32_t)value atIndex:(NSUInteger)index;
 
 /**
-Replaces the raw enum value at the given index with the given value.
-
-@note This method bypass the validationFunc to enable the setting of values that
-      were not known at the time the binary was compiled.
-
-@param index The index for which to replace the value.
-@param value The raw enum value to replace with.
-*/
+ * Replaces the raw enum value at the given index with the given value.
+ *
+ * @note This method bypass the validationFunc to enable the setting of values that
+ *       were not known at the time the binary was compiled.
+ *
+ * @param index The index for which to replace the value.
+ * @param value The raw enum value to replace with.
+ **/
 - (void)replaceValueAtIndex:(NSUInteger)index withRawValue:(int32_t)value;
 
 // No validation applies to these methods.
 
 /**
-Removes the value at the given index.
-
-@param index The index of the value to remove.
-*/
+ * Removes the value at the given index.
+ *
+ * @param index The index of the value to remove.
+ **/
 - (void)removeValueAtIndex:(NSUInteger)index;
 /**
-Removes all the values from this array.
-*/
+ * Removes all the values from this array.
+ **/
 - (void)removeAll;
 
 /**
-Exchanges the values between the given indexes.
-
-@param idx1 The index of the first element to exchange.
-@param idx2 The index of the second element to exchange.
-*/
+ * Exchanges the values between the given indexes.
+ *
+ * @param idx1 The index of the first element to exchange.
+ * @param idx2 The index of the second element to exchange.
+ **/
 - (void)exchangeValueAtIndex:(NSUInteger)idx1
             withValueAtIndex:(NSUInteger)idx2;
 
@@ -1470,73 +1466,75 @@ NS_ASSUME_NONNULL_END
 //%#pragma mark - NAME
 //%
 //%/**
-//%Class used for repeated fields of ##TYPE## values. This performs better than
-//%boxing into NSNumbers in NSArrays.
-//%
-//%@note This class is not meant to be subclassed.
-//%*/
+//% * Class used for repeated fields of ##TYPE## values. This performs better than
+//% * boxing into NSNumbers in NSArrays.
+//% *
+//% * @note This class is not meant to be subclassed.
+//% **/
 //%@interface GPB##NAME##Array : NSObject <NSCopying>
 //%
 //%/** The number of elements contained in the array. */
 //%@property(nonatomic, readonly) NSUInteger count;
 //%
 //%/**
-//%@return A newly instanced and empty GPB##NAME##Array.
-//%*/
+//% * @return A newly instanced and empty GPB##NAME##Array.
+//% **/
 //%+ (instancetype)array;
 //%/**
-//%Creates and initializes a GPB##NAME##Array with the single element given.
-//%
-//%@param value The value to be placed in the array.
-//%
-//%@return A newly instanced GPB##NAME##Array with value in it.
-//%*/
+//% * Creates and initializes a GPB##NAME##Array with the single element given.
+//% * 
+//% * @param value The value to be placed in the array.
+//% *
+//% * @return A newly instanced GPB##NAME##Array with value in it.
+//% **/
 //%+ (instancetype)arrayWithValue:(TYPE)value;
 //%/**
-//%Creates and initializes a GPB##NAME##Array with the contents of the given
-//%array.
-//%
-//%@param array Array with the contents to be put into the new array.
-//%
-//%@return A newly instanced GPB##NAME##Array with the contents of array.
-//%*/
+//% * Creates and initializes a GPB##NAME##Array with the contents of the given
+//% * array.
+//% *
+//% * @param array Array with the contents to be put into the new array.
+//% *
+//% * @return A newly instanced GPB##NAME##Array with the contents of array.
+//% **/
 //%+ (instancetype)arrayWithValueArray:(GPB##NAME##Array *)array;
 //%/**
-//%Creates and initializes a GPB##NAME##Array with the given capacity.
-//%
-//%@param count The capacity needed for the array.
-//%
-//%@return A newly instanced GPB##NAME##Array with a capacity of count.
-//%*/
+//% * Creates and initializes a GPB##NAME##Array with the given capacity.
+//% *
+//% * @param count The capacity needed for the array.
+//% *
+//% * @return A newly instanced GPB##NAME##Array with a capacity of count.
+//% **/
 //%+ (instancetype)arrayWithCapacity:(NSUInteger)count;
 //%
-//%/** @return A newly initialized and empty GPB##NAME##Array. */
+//%/** 
+//% * @return A newly initialized and empty GPB##NAME##Array.
+//% **/
 //%- (instancetype)init NS_DESIGNATED_INITIALIZER;
 //%/**
-//%Initializes the array, copying the given values.
-//%
-//%@param values An array with the values to put inside this array.
-//%@param count  The number of elements to copy into the array.
-//%
-//%@return A newly initialized GPB##NAME##Array with a copy of the values.
-//%*/
+//% * Initializes the array, copying the given values.
+//% *
+//% * @param values An array with the values to put inside this array.
+//% * @param count  The number of elements to copy into the array.
+//% *
+//% * @return A newly initialized GPB##NAME##Array with a copy of the values.
+//% **/
 //%- (instancetype)initWithValues:(const TYPE [])values
 //%                         count:(NSUInteger)count;
 //%/**
-//%Initializes the array, copying the given values.
-//%
-//%@param array An array with the values to put inside this array.
-//%
-//%@return A newly initialized GPB##NAME##Array with a copy of the values.
-//%*/
+//% * Initializes the array, copying the given values.
+//% *
+//% * @param array An array with the values to put inside this array.
+//% *
+//% * @return A newly initialized GPB##NAME##Array with a copy of the values.
+//% **/
 //%- (instancetype)initWithValueArray:(GPB##NAME##Array *)array;
 //%/**
-//%Initializes the array with the given capacity.
-//%
-//%@param count The capacity needed for the array.
-//%
-//%@return A newly initialized GPB##NAME##Array with a capacity of count.
-//%*/
+//% * Initializes the array with the given capacity.
+//% *
+//% * @param count The capacity needed for the array.
+//% *
+//% * @return A newly initialized GPB##NAME##Array with a capacity of count.
+//% **/
 //%- (instancetype)initWithCapacity:(NSUInteger)count;
 //%
 //%ARRAY_IMMUTABLE_INTERFACE(NAME, TYPE, Basic)
@@ -1554,11 +1552,11 @@ NS_ASSUME_NONNULL_END
 //%#pragma mark - NAME
 //%
 //%/**
-//% This class is used for repeated fields of ##TYPE## values. This performs
-//% better than boxing into NSNumbers in NSArrays.
-//%
-//%@note This class is not meant to be subclassed.
-//%*/
+//% * This class is used for repeated fields of ##TYPE## values. This performs
+//% * better than boxing into NSNumbers in NSArrays.
+//% *
+//% * @note This class is not meant to be subclassed.
+//% **/
 //%@interface GPB##NAME##Array : NSObject <NSCopying>
 //%
 //%/** The number of elements contained in the array. */
@@ -1567,87 +1565,87 @@ NS_ASSUME_NONNULL_END
 //%@property(nonatomic, readonly) GPBEnumValidationFunc validationFunc;
 //%
 //%/**
-//%@return A newly instanced and empty GPB##NAME##Array.
-//%*/
+//% * @return A newly instanced and empty GPB##NAME##Array.
+//% **/
 //%+ (instancetype)array;
 //%/**
-//%Creates and initializes a GPB##NAME##Array with the enum validation function
-//%given.
-//%
-//%@param func The enum validation function for the array.
-//%
-//%@return A newly instanced GPB##NAME##Array.
-//%*/
+//% * Creates and initializes a GPB##NAME##Array with the enum validation function
+//% * given.
+//% *
+//% * @param func The enum validation function for the array.
+//% *
+//% * @return A newly instanced GPB##NAME##Array.
+//% **/
 //%+ (instancetype)arrayWithValidationFunction:(nullable GPBEnumValidationFunc)func;
 //%/**
-//%Creates and initializes a GPB##NAME##Array with the enum validation function
-//%given and the single raw value given.
-//%
-//%@param func  The enum validation function for the array.
-//%@param value The raw value to add to this array.
-//%
-//%@return A newly instanced GPB##NAME##Array.
-//%*/
+//% * Creates and initializes a GPB##NAME##Array with the enum validation function
+//% * given and the single raw value given.
+//% *
+//% * @param func  The enum validation function for the array.
+//% * @param value The raw value to add to this array.
+//% *
+//% * @return A newly instanced GPB##NAME##Array.
+//% **/
 //%+ (instancetype)arrayWithValidationFunction:(nullable GPBEnumValidationFunc)func
 //%                                   rawValue:(TYPE)value;
 //%/**
-//%Creates and initializes a GPB##NAME##Array that adds the elements from the
-//%given array.
-//%
-//%@param array Array containing the values to add to the new array.
-//%
-//%@return A newly instanced GPB##NAME##Array.
-//%*/
+//% * Creates and initializes a GPB##NAME##Array that adds the elements from the
+//% * given array.
+//% *
+//% * @param array Array containing the values to add to the new array.
+//% *
+//% * @return A newly instanced GPB##NAME##Array.
+//% **/
 //%+ (instancetype)arrayWithValueArray:(GPB##NAME##Array *)array;
 //%/**
-//%Creates and initializes a GPB##NAME##Array with the given enum validation
-//% function and with the givencapacity.
-//%
-//%@param func  The enum validation function for the array.
-//%@param count The capacity needed for the array.
-//%
-//%@return A newly instanced GPB##NAME##Array with a capacity of count.
-//%*/
+//% * Creates and initializes a GPB##NAME##Array with the given enum validation
+//% * function and with the givencapacity.
+//% *
+//% * @param func  The enum validation function for the array.
+//% * @param count The capacity needed for the array.
+//% *
+//% * @return A newly instanced GPB##NAME##Array with a capacity of count.
+//% **/
 //%+ (instancetype)arrayWithValidationFunction:(nullable GPBEnumValidationFunc)func
 //%                                   capacity:(NSUInteger)count;
 //%
 //%/**
-//%Initializes the array with the given enum validation function.
-//%
-//%@param func The enum validation function for the array.
-//%
-//%@return A newly initialized GPB##NAME##Array with a copy of the values.
-//%*/
+//% * Initializes the array with the given enum validation function.
+//% *
+//% * @param func The enum validation function for the array.
+//% *
+//% * @return A newly initialized GPB##NAME##Array with a copy of the values.
+//% **/
 //%- (instancetype)initWithValidationFunction:(nullable GPBEnumValidationFunc)func
 //%    NS_DESIGNATED_INITIALIZER;
 //%/**
-//%Initializes the array, copying the given values.
-//%
-//%@param func   The enum validation function for the array.
-//%@param values An array with the values to put inside this array.
-//%@param count  The number of elements to copy into the array.
-//%
-//%@return A newly initialized GPB##NAME##Array with a copy of the values.
-//%*/
+//% * Initializes the array, copying the given values.
+//% *
+//% * @param func   The enum validation function for the array.
+//% * @param values An array with the values to put inside this array.
+//% * @param count  The number of elements to copy into the array.
+//% *
+//% * @return A newly initialized GPB##NAME##Array with a copy of the values.
+//% **/
 //%- (instancetype)initWithValidationFunction:(nullable GPBEnumValidationFunc)func
 //%                                 rawValues:(const TYPE [])values
 //%                                     count:(NSUInteger)count;
 //%/**
-//%Initializes the array, copying the given values.
-//%
-//%@param array An array with the values to put inside this array.
-//%
-//%@return A newly initialized GPB##NAME##Array with a copy of the values.
-//%*/
+//% * Initializes the array, copying the given values.
+//% *
+//% * @param array An array with the values to put inside this array.
+//% *
+//% * @return A newly initialized GPB##NAME##Array with a copy of the values.
+//% **/
 //%- (instancetype)initWithValueArray:(GPB##NAME##Array *)array;
 //%/**
-//%Initializes the array with the given capacity.
-//%
-//%@param func  The enum validation function for the array.
-//%@param count The capacity needed for the array.
-//%
-//%@return A newly initialized GPB##NAME##Array with a capacity of count.
-//%*/
+//% * Initializes the array with the given capacity.
+//% *
+//% * @param func  The enum validation function for the array.
+//% * @param count The capacity needed for the array.
+//% *
+//% * @return A newly initialized GPB##NAME##Array with a capacity of count.
+//% **/
 //%- (instancetype)initWithValidationFunction:(nullable GPBEnumValidationFunc)func
 //%                                  capacity:(NSUInteger)count;
 //%
@@ -1663,25 +1661,23 @@ NS_ASSUME_NONNULL_END
 //%- (TYPE)rawValueAtIndex:(NSUInteger)index;
 //%
 //%/**
-//%Enumerates the values on this array with the given block.
-//%
-//%@param block The block to enumerate with.
-//%
-//%- *value*: The current value being enumerated.
-//%- *idx*:   The index of the current value.
-//%- *stop*:  A pointer to a boolean that when set stops the enumeration.
-//%*/
+//% * Enumerates the values on this array with the given block.
+//% * 
+//% * @param block The block to enumerate with.
+//% *   **value**: The current value being enumerated.
+//% *   **idx**:   The index of the current value.
+//% *   **stop**:  A pointer to a boolean that when set stops the enumeration.
+//% **/
 //%- (void)enumerateRawValuesWithBlock:(void (^)(TYPE value, NSUInteger idx, BOOL *stop))block;
 //%/**
-//%Enumerates the values on this array with the given block.
-//%
-//%@param opts  Options to control the enumeration.
-//%@param block The block to enumerate with.
-//%
-//%- *value*: The current value being enumerated.
-//%- *idx*:   The index of the current value.
-//%- *stop*:  A pointer to a boolean that when set stops the enumeration.
-//%*/
+//% * Enumerates the values on this array with the given block.
+//% *
+//% * @param opts  Options to control the enumeration.
+//% * @param block The block to enumerate with.
+//% *   **value**: The current value being enumerated.
+//% *   **idx**:   The index of the current value.
+//% *   **stop**:  A pointer to a boolean that when set stops the enumeration.
+//% **/
 //%- (void)enumerateRawValuesWithOptions:(NSEnumerationOptions)opts
 //%                           usingBlock:(void (^)(TYPE value, NSUInteger idx, BOOL *stop))block;
 //%
@@ -1697,85 +1693,83 @@ NS_ASSUME_NONNULL_END
 
 //%PDDM-DEFINE ARRAY_IMMUTABLE_INTERFACE(NAME, TYPE, HELPER_NAME)
 //%/**
-//%Gets the value at the given index.
-//%
-//%@param index The index of the value to get.
-//%
-//%@return The value at the given index.
-//%*/
+//% * Gets the value at the given index.
+//% *
+//% * @param index The index of the value to get.
+//% *
+//% * @return The value at the given index.
+//% **/
 //%- (TYPE)valueAtIndex:(NSUInteger)index;
 //%
 //%/**
-//%Enumerates the values on this array with the given block.
-//%
-//%@param block The block to enumerate with.
-//%
-//%- *value*: The current value being enumerated.
-//%- *idx*:   The index of the current value.
-//%- *stop*:  A pointer to a boolean that when set stops the enumeration.
-//%*/
+//% * Enumerates the values on this array with the given block.
+//% *
+//% * @param block The block to enumerate with.
+//% *   **value**: The current value being enumerated.
+//% *   **idx**:   The index of the current value.
+//% *   **stop**:  A pointer to a boolean that when set stops the enumeration.
+//% **/
 //%- (void)enumerateValuesWithBlock:(void (^)(TYPE value, NSUInteger idx, BOOL *stop))block;
 //%/**
-//%Enumerates the values on this array with the given block.
-//%
-//%@param opts  Options to control the enumeration.
-//%@param block The block to enumerate with.
-//%
-//%- *value*: The current value being enumerated.
-//%- *idx*:   The index of the current value.
-//%- *stop*:  A pointer to a boolean that when set stops the enumeration.
-//%*/
+//% * Enumerates the values on this array with the given block.
+//% *
+//% * @param opts  Options to control the enumeration.
+//% * @param block The block to enumerate with. 
+//% *   **value**: The current value being enumerated.
+//% *   **idx**:   The index of the current value.
+//% *   **stop**:  A pointer to a boolean that when set stops the enumeration.
+//% **/
 //%- (void)enumerateValuesWithOptions:(NSEnumerationOptions)opts
 //%                        usingBlock:(void (^)(TYPE value, NSUInteger idx, BOOL *stop))block;
 
 //%PDDM-DEFINE ARRAY_MUTABLE_INTERFACE(NAME, TYPE, HELPER_NAME)
 //%/**
-//%Adds a value to this array.
-//%
-//%@param value The value to add to this array.
-//%*/
+//% * Adds a value to this array.
+//% *
+//% * @param value The value to add to this array.
+//% **/
 //%- (void)addValue:(TYPE)value;
 //%/**
-//%Adds values to this array.
-//%
-//%@param values The values to add to this array.
-//%@param count  The number of elements to add.
-//%*/
+//% * Adds values to this array.
+//% *
+//% * @param values The values to add to this array.
+//% * @param count  The number of elements to add.
+//% **/
 //%- (void)addValues:(const TYPE [])values count:(NSUInteger)count;
 //%ARRAY_EXTRA_MUTABLE_METHODS1_##HELPER_NAME(NAME, TYPE)
 //%/**
-//%Inserts a value into the given position.
-//%
-//%@param value The value to add to this array.
-//%@param index The index into which to insert the value.
-//%*/
+//% * Inserts a value into the given position.
+//% *
+//% * @param value The value to add to this array.
+//% * @param index The index into which to insert the value.
+//% **/
 //%- (void)insertValue:(TYPE)value atIndex:(NSUInteger)index;
 //%
 //%/**
-//%Replaces the value at the given index with the given value.
-//%
-//%@param index The index for which to replace the value.
-//%@param value The value to replace with.
-//%*/
+//% * Replaces the value at the given index with the given value.
+//% *
+//% * @param index The index for which to replace the value.
+//% * @param value The value to replace with.
+//% **/
 //%- (void)replaceValueAtIndex:(NSUInteger)index withValue:(TYPE)value;
 //%ARRAY_EXTRA_MUTABLE_METHODS2_##HELPER_NAME(NAME, TYPE)
 //%/**
-//%Removes the value at the given index.
-//%
-//%@param index The index of the value to remove.
-//%*/
+//% * Removes the value at the given index.
+//% *
+//% * @param index The index of the value to remove.
+//% **/
 //%- (void)removeValueAtIndex:(NSUInteger)index;
 //%/**
-//%Removes all the values from this array.
-//%*/
+//% * Removes all the values from this array.
+//% **/
 //%- (void)removeAll;
 //%
 //%/**
-//%Exchanges the values between the given indexes.
-//%
-//%@param idx1 The index of the first element to exchange.
-//%@param idx2 The index of the second element to exchange.
-//%*/
+//% * Exchanges the values between the given indexes.
+//% *
+//% * @param idx1 The index of the first element to exchange.
+//% * @param idx2 The index of the second element to exchange.
+//% **/
 //%- (void)exchangeValueAtIndex:(NSUInteger)idx1
 //%            withValueAtIndex:(NSUInteger)idx2;
 
@@ -1785,10 +1779,10 @@ NS_ASSUME_NONNULL_END
 
 //%PDDM-DEFINE ARRAY_EXTRA_MUTABLE_METHODS1_Basic(NAME, TYPE)
 //%/**
-//%Adds the values from the given array to this array.
-//%
-//%@param array The array containing the elements to add to this array.
-//%*/
+//% * Adds the values from the given array to this array.
+//% *
+//% * @param array The array containing the elements to add to this array.
+//% **/
 //%- (void)addValuesFromArray:(GPB##NAME##Array *)array;
 //%
 //%PDDM-DEFINE ARRAY_EXTRA_MUTABLE_METHODS2_Basic(NAME, TYPE)
@@ -1801,54 +1795,54 @@ NS_ASSUME_NONNULL_END
 //%// known at the time the binary was compiled.
 //%
 //%/**
-//%Adds a raw enum value to this array.
-//%
-//%@note This method bypass the validationFunc to enable the setting of values that
-//%      were not known at the time the binary was compiled.
-//%
-//%@param value The raw enum value to add to the array.
-//%*/
+//% * Adds a raw enum value to this array.
+//% *
+//% * @note This method bypass the validationFunc to enable the setting of values that
+//% *       were not known at the time the binary was compiled.
+//% *
+//% * @param value The raw enum value to add to the array.
+//% **/
 //%- (void)addRawValue:(TYPE)value;
 //%/**
-//%Adds raw enum values to this array.
-//%
-//%@note This method bypass the validationFunc to enable the setting of values that
-//%      were not known at the time the binary was compiled.
-//%
-//%@param array Array containing the raw enum values to add to this array.
-//%*/
+//% * Adds raw enum values to this array.
+//% *
+//% * @note This method bypass the validationFunc to enable the setting of values that
+//% *       were not known at the time the binary was compiled.
+//% *
+//% * @param array Array containing the raw enum values to add to this array.
+//% **/
 //%- (void)addRawValuesFromArray:(GPB##NAME##Array *)array;
 //%/**
-//%Adds raw enum values to this array.
-//%
-//%@note This method bypass the validationFunc to enable the setting of values that
-//%      were not known at the time the binary was compiled.
-//%
-//%@param values Array containing the raw enum values to add to this array.
-//%@param count  The number of raw values to add.
-//%*/
+//% * Adds raw enum values to this array.
+//% *
+//% * @note This method bypass the validationFunc to enable the setting of values that
+//% *       were not known at the time the binary was compiled.
+//% *
+//% * @param values Array containing the raw enum values to add to this array.
+//% * @param count  The number of raw values to add.
+//% **/
 //%- (void)addRawValues:(const TYPE [])values count:(NSUInteger)count;
 //%
 //%/**
-//%Inserts a raw enum value at the given index.
-//%
-//%@note This method bypass the validationFunc to enable the setting of values that
-//%      were not known at the time the binary was compiled.
-//%
-//%@param value Raw enum value to add.
-//%@param index The index into which to insert the value.
-//%*/
+//% * Inserts a raw enum value at the given index.
+//% *
+//% * @note This method bypass the validationFunc to enable the setting of values that
+//% *       were not known at the time the binary was compiled.
+//% *
+//% * @param value Raw enum value to add.
+//% * @param index The index into which to insert the value.
+//% **/
 //%- (void)insertRawValue:(TYPE)value atIndex:(NSUInteger)index;
 //%
 //%/**
-//%Replaces the raw enum value at the given index with the given value.
-//%
-//%@note This method bypass the validationFunc to enable the setting of values that
-//%      were not known at the time the binary was compiled.
-//%
-//%@param index The index for which to replace the value.
-//%@param value The raw enum value to replace with.
-//%*/
+//% * Replaces the raw enum value at the given index with the given value.
+//% *
+//% * @note This method bypass the validationFunc to enable the setting of values that
+//% *       were not known at the time the binary was compiled.
+//% *
+//% * @param index The index for which to replace the value.
+//% * @param value The raw enum value to replace with.
+//% **/
 //%- (void)replaceValueAtIndex:(NSUInteger)index withRawValue:(TYPE)value;
 //%
 //%// No validation applies to these methods.

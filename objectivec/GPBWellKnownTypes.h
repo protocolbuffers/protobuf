@@ -47,8 +47,8 @@
 NS_ASSUME_NONNULL_BEGIN
 
 /**
-Category for GPBTimestamp to work with standard Foundation time/date types.
-*/
+ * Category for GPBTimestamp to work with standard Foundation time/date types.
+ **/
 @interface GPBTimestamp (GBPWellKnownTypes)
 
 /** The NSDate representation of this GPBTimestamp. */
@@ -58,40 +58,40 @@ Category for GPBTimestamp to work with standard Foundation time/date types.
 @property(nonatomic, readwrite) NSTimeInterval timeIntervalSince1970;
 
 /**
-Initializes a GPBTimestamp with the given NSDate.
-
-@param date The date to configure the GPBTimestamp with.
-
-@return A newly initialized GPBTimestamp.
-*/
+ * Initializes a GPBTimestamp with the given NSDate.
+ *
+ * @param date The date to configure the GPBTimestamp with.
+ *
+ * @return A newly initialized GPBTimestamp.
+ **/
 - (instancetype)initWithDate:(NSDate *)date;
 
 /**
-Initializes a GPBTimestamp with the given NSTimeInterval.
-
-@param timeIntervalSince1970 Time interval to configure the GPBTimestamp with.
-
-@return A newly initialized GPBTimestamp.
-*/
+ * Initializes a GPBTimestamp with the given NSTimeInterval.
+ *
+ * @param timeIntervalSince1970 Time interval to configure the GPBTimestamp with.
+ *
+ * @return A newly initialized GPBTimestamp.
+ **/
 - (instancetype)initWithTimeIntervalSince1970:(NSTimeInterval)timeIntervalSince1970;
 
 @end
 
 /**
-Category for GPBDuration to work with standard Foundation time type.
-*/
+ * Category for GPBDuration to work with standard Foundation time type.
+ **/
 @interface GPBDuration (GBPWellKnownTypes)
 
 /** The NSTimeInterval representation of this GPBTimestamp. */
 @property(nonatomic, readwrite) NSTimeInterval timeIntervalSince1970;
 
 /**
-Initializes a GPBDuration with the given NSTimeInterval.
-
-@param timeIntervalSince1970 Time interval to configure the GPBDuration with.
-
-@return A newly initialized GPBTimestamp.
-*/
+ * Initializes a GPBDuration with the given NSTimeInterval.
+ *
+ * @param timeIntervalSince1970 Time interval to configure the GPBDuration with.
+ *
+ * @return A newly initialized GPBTimestamp.
+ **/
 - (instancetype)initWithTimeIntervalSince1970:(NSTimeInterval)timeIntervalSince1970;
 
 @end

@@ -37,27 +37,27 @@
 @class GPBInt32Array;
 
 /**
-Verifies that a given value can be represented by an enum type.
-*/
+ * Verifies that a given value can be represented by an enum type.
+ * */
 typedef BOOL (*GPBEnumValidationFunc)(int32_t);
 
 /**
-Fetches an EnumDescriptor.
-*/
+ * Fetches an EnumDescriptor.
+ * */
 typedef GPBEnumDescriptor *(*GPBEnumDescriptorFunc)(void);
 
 /**
-Magic value used at runtime to indicate an enum value that wasn't know at
-compile time.
-*/
+ * Magic value used at runtime to indicate an enum value that wasn't know at
+ * compile time.
+ * */
 enum {
   kGPBUnrecognizedEnumeratorValue = (int32_t)0xFBADBEEF,
 };
 
 /**
-A union for storing all possible Protobuf values. Note that owner is
-responsible for memory management of object types.
-*/
+ * A union for storing all possible Protobuf values. Note that owner is
+ * responsible for memory management of object types.
+ * */
 typedef union {
   BOOL valueBool;
   int32_t valueInt32;
@@ -73,12 +73,12 @@ typedef union {
 } GPBGenericValue;
 
 /**
-Enum listing the possible data types that a field can contain.
-
-@note Do not change the order of this enum (or add things to it) without
-      thinking about it very carefully. There are several things that depend
-      on the order.
-*/
+ * Enum listing the possible data types that a field can contain.
+ * 
+ * @note Do not change the order of this enum (or add things to it) without
+ *       thinking about it very carefully. There are several things that depend
+ *       on the order.
+ * */
 typedef NS_ENUM(uint8_t, GPBDataType) {
   /** Field contains boolean value(s). */
   GPBDataTypeBool = 0,
@@ -95,16 +95,16 @@ typedef NS_ENUM(uint8_t, GPBDataType) {
   /** Field contains double value(s). */
   GPBDataTypeDouble,
   /**
-  Field contains variable length value(s). Inefficient for encoding negative
-  numbers – if your field is likely to have negative values, use
-  GPBDataTypeSInt32 instead.
-  */
+   * Field contains variable length value(s). Inefficient for encoding negative
+   * numbers – if your field is likely to have negative values, use
+   * GPBDataTypeSInt32 instead.
+   **/
   GPBDataTypeInt32,
   /**
-  Field contains variable length value(s). Inefficient for encoding negative
-  numbers – if your field is likely to have negative values, use
-  GPBDataTypeSInt64 instead.
-  */
+   * Field contains variable length value(s). Inefficient for encoding negative
+   * numbers – if your field is likely to have negative values, use
+   * GPBDataTypeSInt64 instead.
+   **/
   GPBDataTypeInt64,
   /** Field contains signed variable length integer value(s). */
   GPBDataTypeSInt32,
@@ -128,15 +128,17 @@ typedef NS_ENUM(uint8_t, GPBDataType) {
 
 enum {
   /**
-  A count of the number of types in GPBDataType. Separated out from the
-  GPBDataType enum to avoid warnings regarding not handling GPBDataType_Count
-  in switch statements.
-  */
+   * A count of the number of types in GPBDataType. Separated out from the
+   * GPBDataType enum to avoid warnings regarding not handling GPBDataType_Count
+   * in switch statements.
+   **/
   GPBDataType_Count = GPBDataTypeEnum + 1
 };
 
 /** An extension range. */
 typedef struct GPBExtensionRange {
-  uint32_t start;  // inclusive
-  uint32_t end;    // exclusive
+  /** Inclusive. */
+  uint32_t start;
+  /** Exclusive. */
+  uint32_t end;
 } GPBExtensionRange;
