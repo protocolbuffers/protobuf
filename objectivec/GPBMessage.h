@@ -65,15 +65,13 @@ CF_EXTERN_C_END
 
 /**
  * Base class that each generated message subclasses from.
- *
- * @note If you add an instance method/property to this class that may conflict
- *       with fields declared in protos, you need to update
- *       objective_helpers.cc. The main cases are methods that take no
- *       arguments, or setFoo:/hasFoo: type methods.
  **/
 @interface GPBMessage : NSObject<NSSecureCoding, NSCopying>
-
-
+ 
+// @note If you add an instance method/property to this class that may conflict
+//       with fields declared in protos, you need to update
+//       objective_helpers.cc. The main cases are methods that take no
+//       arguments, or setFoo:/hasFoo: type methods.
 
 /**
  * The set of unknown fields for this message.
@@ -170,16 +168,16 @@ CF_EXTERN_C_END
  * is returned in errorPtr (when provided).
  *
  * @note Unlike the parseFrom... methods, this never checks to see if all of
-       * the required fields are set. So this method can be used to reload
-       * messages that may not be complete.
+ *       the required fields are set. So this method can be used to reload
+ *       messages that may not be complete.
  *
  * @note The errors returned are likely coming from the domain and codes listed
-       * at the top of this file and GPBCodedInputStream.h.
+ *       at the top of this file and GPBCodedInputStream.h.
  *
  * @param input             The stream to read data from.
  * @param extensionRegistry The extension registry to use to look up extensions.
  * @param errorPtr          An optional error pointer to fill in with a failure
-                          * reason if the data can not be parsed.
+ *                          reason if the data can not be parsed.
  *
  * @return A new instance of the generated class.
  **/
@@ -195,14 +193,14 @@ CF_EXTERN_C_END
  * errorPtr (when provided).
  *
  * @note In DEBUG builds, the parsed message is checked to be sure all required
-       * fields were provided, and the parse will fail if some are missing.
+ *       fields were provided, and the parse will fail if some are missing.
  *
  * @note The errors returned are likely coming from the domain and codes listed
-       * at the top of this file and GPBCodedInputStream.h.
+ *       at the top of this file and GPBCodedInputStream.h.
  *
  * @param data     The data to parse.
  * @param errorPtr An optional error pointer to fill in with a failure reason if
-                 * the data can not be parsed.
+ *                 the data can not be parsed.
  *
  * @return An initialized instance of the generated class.
  **/
@@ -215,15 +213,15 @@ CF_EXTERN_C_END
  * errorPtr (when provided).
  *
  * @note In DEBUG builds, the parsed message is checked to be sure all required
-       * fields were provided, and the parse will fail if some are missing.
+ *       fields were provided, and the parse will fail if some are missing.
  *
  * @note The errors returned are likely coming from the domain and codes listed
-       * at the top of this file and GPBCodedInputStream.h.
+ *       at the top of this file and GPBCodedInputStream.h.
  *
  * @param data              The data to parse.
  * @param extensionRegistry The extension registry to use to look up extensions.
  * @param errorPtr          An optional error pointer to fill in with a failure
-                          * reason if the data can not be parsed.
+ *                          reason if the data can not be parsed.
  *
  * @return An initialized instance of the generated class.
  **/
@@ -238,16 +236,16 @@ CF_EXTERN_C_END
  * is returned in errorPtr (when provided).
  *
  * @note Unlike the parseFrom... methods, this never checks to see if all of
-       * the required fields are set. So this method can be used to reload
-       * messages that may not be complete.
+ *       the required fields are set. So this method can be used to reload
+ *       messages that may not be complete.
  *
  * @note The errors returned are likely coming from the domain and codes listed
-       * at the top of this file and GPBCodedInputStream.h.
+ *       at the top of this file and GPBCodedInputStream.h.
  *
  * @param input             The stream to read data from.
  * @param extensionRegistry The extension registry to use to look up extensions.
  * @param errorPtr          An optional error pointer to fill in with a failure
-                          * reason if the data can not be parsed.
+ *                          reason if the data can not be parsed.
  *
  * @return An initialized instance of the generated class.
  **/
@@ -264,7 +262,7 @@ CF_EXTERN_C_END
  * @param extensionRegistry The extension registry to use to look up extensions.
  *
  * @exception GPBCodedInputStreamException Exception thrown when parsing was
-                                         * unsuccessful.
+ *                                         unsuccessful.
  **/
 - (void)mergeFromData:(NSData *)data
     extensionRegistry:(nullable GPBExtensionRegistry *)extensionRegistry;
@@ -313,10 +311,10 @@ CF_EXTERN_C_END
  * If there is an error while generating the data, nil is returned.
  *
  * @note This value is not cached, so if you are using it repeatedly, cache
-       * it yourself.
+ *       it yourself.
  *
  * @note In DEBUG ONLY, the message is also checked for all required field,
-       * if one is missing, nil will be returned.
+ *       if one is missing, nil will be returned.
  *
  * @return The binary representation of the message.
  **/
@@ -327,7 +325,7 @@ CF_EXTERN_C_END
  * returning that as an NSData.
  *
  * @note This value is not cached, so if you are using it repeatedly, it is
-       * recommended to keep a local copy.
+ *       recommended to keep a local copy.
  *
  * @return The binary representation of the size along with the message.
  **/

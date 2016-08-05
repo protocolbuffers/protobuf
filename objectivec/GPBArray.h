@@ -54,6 +54,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @return A newly instanced and empty GPBInt32Array.
  **/
 + (instancetype)array;
+
 /**
  * Creates and initializes a GPBInt32Array with the single element given.
  *
@@ -62,6 +63,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @return A newly instanced GPBInt32Array with value in it.
  **/
 + (instancetype)arrayWithValue:(int32_t)value;
+
 /**
  * Creates and initializes a GPBInt32Array with the contents of the given
  * array.
@@ -71,6 +73,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @return A newly instanced GPBInt32Array with the contents of array.
  **/
 + (instancetype)arrayWithValueArray:(GPBInt32Array *)array;
+
 /**
  * Creates and initializes a GPBInt32Array with the given capacity.
  *
@@ -84,6 +87,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @return A newly initialized and empty GPBInt32Array.
  **/
 - (instancetype)init NS_DESIGNATED_INITIALIZER;
+
 /**
  * Initializes the array, copying the given values.
  *
@@ -94,6 +98,7 @@ NS_ASSUME_NONNULL_BEGIN
  **/
 - (instancetype)initWithValues:(const int32_t [])values
                          count:(NSUInteger)count;
+
 /**
  * Initializes the array, copying the given values.
  *
@@ -102,6 +107,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @return A newly initialized GPBInt32Array with a copy of the values.
  **/
 - (instancetype)initWithValueArray:(GPBInt32Array *)array;
+
 /**
  * Initializes the array with the given capacity.
  *
@@ -129,6 +135,7 @@ NS_ASSUME_NONNULL_BEGIN
  *   **stop**:  A pointer to a boolean that when set stops the enumeration.
  **/
 - (void)enumerateValuesWithBlock:(void (^)(int32_t value, NSUInteger idx, BOOL *stop))block;
+
 /**
  * Enumerates the values on this array with the given block.
  *
@@ -147,6 +154,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @param value The value to add to this array.
  **/
 - (void)addValue:(int32_t)value;
+
 /**
  * Adds values to this array.
  *
@@ -154,6 +162,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @param count  The number of elements to add.
  **/
 - (void)addValues:(const int32_t [])values count:(NSUInteger)count;
+
 /**
  * Adds the values from the given array to this array.
  *
@@ -183,6 +192,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @param index The index of the value to remove.
  **/
 - (void)removeValueAtIndex:(NSUInteger)index;
+
 /**
  * Removes all the values from this array.
  **/
@@ -216,6 +226,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @return A newly instanced and empty GPBUInt32Array.
  **/
 + (instancetype)array;
+
 /**
  * Creates and initializes a GPBUInt32Array with the single element given.
  *
@@ -224,6 +235,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @return A newly instanced GPBUInt32Array with value in it.
  **/
 + (instancetype)arrayWithValue:(uint32_t)value;
+
 /**
  * Creates and initializes a GPBUInt32Array with the contents of the given
  * array.
@@ -233,6 +245,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @return A newly instanced GPBUInt32Array with the contents of array.
  **/
 + (instancetype)arrayWithValueArray:(GPBUInt32Array *)array;
+
 /**
  * Creates and initializes a GPBUInt32Array with the given capacity.
  *
@@ -246,6 +259,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @return A newly initialized and empty GPBUInt32Array.
  **/
 - (instancetype)init NS_DESIGNATED_INITIALIZER;
+
 /**
  * Initializes the array, copying the given values.
  *
@@ -256,6 +270,7 @@ NS_ASSUME_NONNULL_BEGIN
  **/
 - (instancetype)initWithValues:(const uint32_t [])values
                          count:(NSUInteger)count;
+
 /**
  * Initializes the array, copying the given values.
  *
@@ -264,6 +279,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @return A newly initialized GPBUInt32Array with a copy of the values.
  **/
 - (instancetype)initWithValueArray:(GPBUInt32Array *)array;
+
 /**
  * Initializes the array with the given capacity.
  *
@@ -291,6 +307,7 @@ NS_ASSUME_NONNULL_BEGIN
  *   **stop**:  A pointer to a boolean that when set stops the enumeration.
  **/
 - (void)enumerateValuesWithBlock:(void (^)(uint32_t value, NSUInteger idx, BOOL *stop))block;
+
 /**
  * Enumerates the values on this array with the given block.
  *
@@ -309,6 +326,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @param value The value to add to this array.
  **/
 - (void)addValue:(uint32_t)value;
+
 /**
  * Adds values to this array.
  *
@@ -316,6 +334,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @param count  The number of elements to add.
  **/
 - (void)addValues:(const uint32_t [])values count:(NSUInteger)count;
+
 /**
  * Adds the values from the given array to this array.
  *
@@ -345,6 +364,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @param index The index of the value to remove.
  **/
 - (void)removeValueAtIndex:(NSUInteger)index;
+
 /**
  * Removes all the values from this array.
  **/
@@ -378,6 +398,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @return A newly instanced and empty GPBInt64Array.
  **/
 + (instancetype)array;
+
 /**
  * Creates and initializes a GPBInt64Array with the single element given.
  *
@@ -386,6 +407,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @return A newly instanced GPBInt64Array with value in it.
  **/
 + (instancetype)arrayWithValue:(int64_t)value;
+
 /**
  * Creates and initializes a GPBInt64Array with the contents of the given
  * array.
@@ -395,6 +417,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @return A newly instanced GPBInt64Array with the contents of array.
  **/
 + (instancetype)arrayWithValueArray:(GPBInt64Array *)array;
+
 /**
  * Creates and initializes a GPBInt64Array with the given capacity.
  *
@@ -408,6 +431,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @return A newly initialized and empty GPBInt64Array.
  **/
 - (instancetype)init NS_DESIGNATED_INITIALIZER;
+
 /**
  * Initializes the array, copying the given values.
  *
@@ -418,6 +442,7 @@ NS_ASSUME_NONNULL_BEGIN
  **/
 - (instancetype)initWithValues:(const int64_t [])values
                          count:(NSUInteger)count;
+
 /**
  * Initializes the array, copying the given values.
  *
@@ -426,6 +451,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @return A newly initialized GPBInt64Array with a copy of the values.
  **/
 - (instancetype)initWithValueArray:(GPBInt64Array *)array;
+
 /**
  * Initializes the array with the given capacity.
  *
@@ -453,6 +479,7 @@ NS_ASSUME_NONNULL_BEGIN
  *   **stop**:  A pointer to a boolean that when set stops the enumeration.
  **/
 - (void)enumerateValuesWithBlock:(void (^)(int64_t value, NSUInteger idx, BOOL *stop))block;
+
 /**
  * Enumerates the values on this array with the given block.
  *
@@ -471,6 +498,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @param value The value to add to this array.
  **/
 - (void)addValue:(int64_t)value;
+
 /**
  * Adds values to this array.
  *
@@ -478,6 +506,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @param count  The number of elements to add.
  **/
 - (void)addValues:(const int64_t [])values count:(NSUInteger)count;
+
 /**
  * Adds the values from the given array to this array.
  *
@@ -507,6 +536,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @param index The index of the value to remove.
  **/
 - (void)removeValueAtIndex:(NSUInteger)index;
+
 /**
  * Removes all the values from this array.
  **/
@@ -540,6 +570,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @return A newly instanced and empty GPBUInt64Array.
  **/
 + (instancetype)array;
+
 /**
  * Creates and initializes a GPBUInt64Array with the single element given.
  *
@@ -548,6 +579,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @return A newly instanced GPBUInt64Array with value in it.
  **/
 + (instancetype)arrayWithValue:(uint64_t)value;
+
 /**
  * Creates and initializes a GPBUInt64Array with the contents of the given
  * array.
@@ -557,6 +589,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @return A newly instanced GPBUInt64Array with the contents of array.
  **/
 + (instancetype)arrayWithValueArray:(GPBUInt64Array *)array;
+
 /**
  * Creates and initializes a GPBUInt64Array with the given capacity.
  *
@@ -570,6 +603,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @return A newly initialized and empty GPBUInt64Array.
  **/
 - (instancetype)init NS_DESIGNATED_INITIALIZER;
+
 /**
  * Initializes the array, copying the given values.
  *
@@ -580,6 +614,7 @@ NS_ASSUME_NONNULL_BEGIN
  **/
 - (instancetype)initWithValues:(const uint64_t [])values
                          count:(NSUInteger)count;
+
 /**
  * Initializes the array, copying the given values.
  *
@@ -588,6 +623,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @return A newly initialized GPBUInt64Array with a copy of the values.
  **/
 - (instancetype)initWithValueArray:(GPBUInt64Array *)array;
+
 /**
  * Initializes the array with the given capacity.
  *
@@ -615,6 +651,7 @@ NS_ASSUME_NONNULL_BEGIN
  *   **stop**:  A pointer to a boolean that when set stops the enumeration.
  **/
 - (void)enumerateValuesWithBlock:(void (^)(uint64_t value, NSUInteger idx, BOOL *stop))block;
+
 /**
  * Enumerates the values on this array with the given block.
  *
@@ -633,6 +670,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @param value The value to add to this array.
  **/
 - (void)addValue:(uint64_t)value;
+
 /**
  * Adds values to this array.
  *
@@ -640,6 +678,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @param count  The number of elements to add.
  **/
 - (void)addValues:(const uint64_t [])values count:(NSUInteger)count;
+
 /**
  * Adds the values from the given array to this array.
  *
@@ -669,6 +708,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @param index The index of the value to remove.
  **/
 - (void)removeValueAtIndex:(NSUInteger)index;
+
 /**
  * Removes all the values from this array.
  **/
@@ -702,6 +742,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @return A newly instanced and empty GPBFloatArray.
  **/
 + (instancetype)array;
+
 /**
  * Creates and initializes a GPBFloatArray with the single element given.
  *
@@ -710,6 +751,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @return A newly instanced GPBFloatArray with value in it.
  **/
 + (instancetype)arrayWithValue:(float)value;
+
 /**
  * Creates and initializes a GPBFloatArray with the contents of the given
  * array.
@@ -719,6 +761,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @return A newly instanced GPBFloatArray with the contents of array.
  **/
 + (instancetype)arrayWithValueArray:(GPBFloatArray *)array;
+
 /**
  * Creates and initializes a GPBFloatArray with the given capacity.
  *
@@ -732,6 +775,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @return A newly initialized and empty GPBFloatArray.
  **/
 - (instancetype)init NS_DESIGNATED_INITIALIZER;
+
 /**
  * Initializes the array, copying the given values.
  *
@@ -742,6 +786,7 @@ NS_ASSUME_NONNULL_BEGIN
  **/
 - (instancetype)initWithValues:(const float [])values
                          count:(NSUInteger)count;
+
 /**
  * Initializes the array, copying the given values.
  *
@@ -750,6 +795,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @return A newly initialized GPBFloatArray with a copy of the values.
  **/
 - (instancetype)initWithValueArray:(GPBFloatArray *)array;
+
 /**
  * Initializes the array with the given capacity.
  *
@@ -777,6 +823,7 @@ NS_ASSUME_NONNULL_BEGIN
  *   **stop**:  A pointer to a boolean that when set stops the enumeration.
  **/
 - (void)enumerateValuesWithBlock:(void (^)(float value, NSUInteger idx, BOOL *stop))block;
+
 /**
  * Enumerates the values on this array with the given block.
  *
@@ -795,6 +842,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @param value The value to add to this array.
  **/
 - (void)addValue:(float)value;
+
 /**
  * Adds values to this array.
  *
@@ -802,6 +850,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @param count  The number of elements to add.
  **/
 - (void)addValues:(const float [])values count:(NSUInteger)count;
+
 /**
  * Adds the values from the given array to this array.
  *
@@ -831,6 +880,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @param index The index of the value to remove.
  **/
 - (void)removeValueAtIndex:(NSUInteger)index;
+
 /**
  * Removes all the values from this array.
  **/
@@ -864,6 +914,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @return A newly instanced and empty GPBDoubleArray.
  **/
 + (instancetype)array;
+
 /**
  * Creates and initializes a GPBDoubleArray with the single element given.
  *
@@ -872,6 +923,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @return A newly instanced GPBDoubleArray with value in it.
  **/
 + (instancetype)arrayWithValue:(double)value;
+
 /**
  * Creates and initializes a GPBDoubleArray with the contents of the given
  * array.
@@ -881,6 +933,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @return A newly instanced GPBDoubleArray with the contents of array.
  **/
 + (instancetype)arrayWithValueArray:(GPBDoubleArray *)array;
+
 /**
  * Creates and initializes a GPBDoubleArray with the given capacity.
  *
@@ -894,6 +947,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @return A newly initialized and empty GPBDoubleArray.
  **/
 - (instancetype)init NS_DESIGNATED_INITIALIZER;
+
 /**
  * Initializes the array, copying the given values.
  *
@@ -904,6 +958,7 @@ NS_ASSUME_NONNULL_BEGIN
  **/
 - (instancetype)initWithValues:(const double [])values
                          count:(NSUInteger)count;
+
 /**
  * Initializes the array, copying the given values.
  *
@@ -912,6 +967,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @return A newly initialized GPBDoubleArray with a copy of the values.
  **/
 - (instancetype)initWithValueArray:(GPBDoubleArray *)array;
+
 /**
  * Initializes the array with the given capacity.
  *
@@ -939,6 +995,7 @@ NS_ASSUME_NONNULL_BEGIN
  *   **stop**:  A pointer to a boolean that when set stops the enumeration.
  **/
 - (void)enumerateValuesWithBlock:(void (^)(double value, NSUInteger idx, BOOL *stop))block;
+
 /**
  * Enumerates the values on this array with the given block.
  *
@@ -957,6 +1014,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @param value The value to add to this array.
  **/
 - (void)addValue:(double)value;
+
 /**
  * Adds values to this array.
  *
@@ -964,6 +1022,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @param count  The number of elements to add.
  **/
 - (void)addValues:(const double [])values count:(NSUInteger)count;
+
 /**
  * Adds the values from the given array to this array.
  *
@@ -993,6 +1052,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @param index The index of the value to remove.
  **/
 - (void)removeValueAtIndex:(NSUInteger)index;
+
 /**
  * Removes all the values from this array.
  **/
@@ -1026,6 +1086,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @return A newly instanced and empty GPBBoolArray.
  **/
 + (instancetype)array;
+
 /**
  * Creates and initializes a GPBBoolArray with the single element given.
  *
@@ -1034,6 +1095,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @return A newly instanced GPBBoolArray with value in it.
  **/
 + (instancetype)arrayWithValue:(BOOL)value;
+
 /**
  * Creates and initializes a GPBBoolArray with the contents of the given
  * array.
@@ -1043,6 +1105,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @return A newly instanced GPBBoolArray with the contents of array.
  **/
 + (instancetype)arrayWithValueArray:(GPBBoolArray *)array;
+
 /**
  * Creates and initializes a GPBBoolArray with the given capacity.
  *
@@ -1056,6 +1119,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @return A newly initialized and empty GPBBoolArray.
  **/
 - (instancetype)init NS_DESIGNATED_INITIALIZER;
+
 /**
  * Initializes the array, copying the given values.
  *
@@ -1066,6 +1130,7 @@ NS_ASSUME_NONNULL_BEGIN
  **/
 - (instancetype)initWithValues:(const BOOL [])values
                          count:(NSUInteger)count;
+
 /**
  * Initializes the array, copying the given values.
  *
@@ -1074,6 +1139,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @return A newly initialized GPBBoolArray with a copy of the values.
  **/
 - (instancetype)initWithValueArray:(GPBBoolArray *)array;
+
 /**
  * Initializes the array with the given capacity.
  *
@@ -1101,6 +1167,7 @@ NS_ASSUME_NONNULL_BEGIN
  *   **stop**:  A pointer to a boolean that when set stops the enumeration.
  **/
 - (void)enumerateValuesWithBlock:(void (^)(BOOL value, NSUInteger idx, BOOL *stop))block;
+
 /**
  * Enumerates the values on this array with the given block.
  *
@@ -1119,6 +1186,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @param value The value to add to this array.
  **/
 - (void)addValue:(BOOL)value;
+
 /**
  * Adds values to this array.
  *
@@ -1126,6 +1194,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @param count  The number of elements to add.
  **/
 - (void)addValues:(const BOOL [])values count:(NSUInteger)count;
+
 /**
  * Adds the values from the given array to this array.
  *
@@ -1155,6 +1224,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @param index The index of the value to remove.
  **/
 - (void)removeValueAtIndex:(NSUInteger)index;
+
 /**
  * Removes all the values from this array.
  **/
@@ -1190,6 +1260,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @return A newly instanced and empty GPBEnumArray.
  **/
 + (instancetype)array;
+
 /**
  * Creates and initializes a GPBEnumArray with the enum validation function
  * given.
@@ -1199,6 +1270,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @return A newly instanced GPBEnumArray.
  **/
 + (instancetype)arrayWithValidationFunction:(nullable GPBEnumValidationFunc)func;
+
 /**
  * Creates and initializes a GPBEnumArray with the enum validation function
  * given and the single raw value given.
@@ -1210,6 +1282,7 @@ NS_ASSUME_NONNULL_BEGIN
  **/
 + (instancetype)arrayWithValidationFunction:(nullable GPBEnumValidationFunc)func
                                    rawValue:(int32_t)value;
+
 /**
  * Creates and initializes a GPBEnumArray that adds the elements from the
  * given array.
@@ -1219,6 +1292,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @return A newly instanced GPBEnumArray.
  **/
 + (instancetype)arrayWithValueArray:(GPBEnumArray *)array;
+
 /**
  * Creates and initializes a GPBEnumArray with the given enum validation
  * function and with the givencapacity.
@@ -1240,6 +1314,7 @@ NS_ASSUME_NONNULL_BEGIN
  **/
 - (instancetype)initWithValidationFunction:(nullable GPBEnumValidationFunc)func
     NS_DESIGNATED_INITIALIZER;
+
 /**
  * Initializes the array, copying the given values.
  *
@@ -1252,6 +1327,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype)initWithValidationFunction:(nullable GPBEnumValidationFunc)func
                                  rawValues:(const int32_t [])values
                                      count:(NSUInteger)count;
+
 /**
  * Initializes the array, copying the given values.
  *
@@ -1260,6 +1336,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @return A newly initialized GPBEnumArray with a copy of the values.
  **/
 - (instancetype)initWithValueArray:(GPBEnumArray *)array;
+
 /**
  * Initializes the array with the given capacity.
  *
@@ -1293,6 +1370,7 @@ NS_ASSUME_NONNULL_BEGIN
  *   **stop**:  A pointer to a boolean that when set stops the enumeration.
  **/
 - (void)enumerateValuesWithBlock:(void (^)(int32_t value, NSUInteger idx, BOOL *stop))block;
+
 /**
  * Enumerates the values on this array with the given block.
  *
@@ -1308,6 +1386,13 @@ NS_ASSUME_NONNULL_BEGIN
 // These methods bypass the validationFunc to provide access to values that were not
 // known at the time the binary was compiled.
 
+/**
+ * Gets the raw enum value at the given index.
+ *
+ * @param index The index of the raw enum value to get.
+ *
+ * @return The raw enum value at the given index.
+ **/
 - (int32_t)rawValueAtIndex:(NSUInteger)index;
 
 /**
@@ -1319,6 +1404,7 @@ NS_ASSUME_NONNULL_BEGIN
  *   **stop**:  A pointer to a boolean that when set stops the enumeration.
  **/
 - (void)enumerateRawValuesWithBlock:(void (^)(int32_t value, NSUInteger idx, BOOL *stop))block;
+
 /**
  * Enumerates the values on this array with the given block.
  *
@@ -1342,6 +1428,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @param value The value to add to this array.
  **/
 - (void)addValue:(int32_t)value;
+
 /**
  * Adds values to this array.
  *
@@ -1349,6 +1436,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @param count  The number of elements to add.
  **/
 - (void)addValues:(const int32_t [])values count:(NSUInteger)count;
+
 
 /**
  * Inserts a value into the given position.
@@ -1378,6 +1466,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @param value The raw enum value to add to the array.
  **/
 - (void)addRawValue:(int32_t)value;
+
 /**
  * Adds raw enum values to this array.
  *
@@ -1387,6 +1476,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @param array Array containing the raw enum values to add to this array.
  **/
 - (void)addRawValuesFromArray:(GPBEnumArray *)array;
+
 /**
  * Adds raw enum values to this array.
  *
@@ -1428,6 +1518,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @param index The index of the value to remove.
  **/
 - (void)removeValueAtIndex:(NSUInteger)index;
+
 /**
  * Removes all the values from this array.
  **/
@@ -1480,6 +1571,7 @@ NS_ASSUME_NONNULL_END
 //% * @return A newly instanced and empty GPB##NAME##Array.
 //% **/
 //%+ (instancetype)array;
+//%
 //%/**
 //% * Creates and initializes a GPB##NAME##Array with the single element given.
 //% * 
@@ -1488,6 +1580,7 @@ NS_ASSUME_NONNULL_END
 //% * @return A newly instanced GPB##NAME##Array with value in it.
 //% **/
 //%+ (instancetype)arrayWithValue:(TYPE)value;
+//%
 //%/**
 //% * Creates and initializes a GPB##NAME##Array with the contents of the given
 //% * array.
@@ -1497,6 +1590,7 @@ NS_ASSUME_NONNULL_END
 //% * @return A newly instanced GPB##NAME##Array with the contents of array.
 //% **/
 //%+ (instancetype)arrayWithValueArray:(GPB##NAME##Array *)array;
+//%
 //%/**
 //% * Creates and initializes a GPB##NAME##Array with the given capacity.
 //% *
@@ -1510,6 +1604,7 @@ NS_ASSUME_NONNULL_END
 //% * @return A newly initialized and empty GPB##NAME##Array.
 //% **/
 //%- (instancetype)init NS_DESIGNATED_INITIALIZER;
+//%
 //%/**
 //% * Initializes the array, copying the given values.
 //% *
@@ -1520,6 +1615,7 @@ NS_ASSUME_NONNULL_END
 //% **/
 //%- (instancetype)initWithValues:(const TYPE [])values
 //%                         count:(NSUInteger)count;
+//%
 //%/**
 //% * Initializes the array, copying the given values.
 //% *
@@ -1528,6 +1624,7 @@ NS_ASSUME_NONNULL_END
 //% * @return A newly initialized GPB##NAME##Array with a copy of the values.
 //% **/
 //%- (instancetype)initWithValueArray:(GPB##NAME##Array *)array;
+//%
 //%/**
 //% * Initializes the array with the given capacity.
 //% *
@@ -1568,6 +1665,7 @@ NS_ASSUME_NONNULL_END
 //% * @return A newly instanced and empty GPB##NAME##Array.
 //% **/
 //%+ (instancetype)array;
+//%
 //%/**
 //% * Creates and initializes a GPB##NAME##Array with the enum validation function
 //% * given.
@@ -1577,6 +1675,7 @@ NS_ASSUME_NONNULL_END
 //% * @return A newly instanced GPB##NAME##Array.
 //% **/
 //%+ (instancetype)arrayWithValidationFunction:(nullable GPBEnumValidationFunc)func;
+//%
 //%/**
 //% * Creates and initializes a GPB##NAME##Array with the enum validation function
 //% * given and the single raw value given.
@@ -1588,6 +1687,7 @@ NS_ASSUME_NONNULL_END
 //% **/
 //%+ (instancetype)arrayWithValidationFunction:(nullable GPBEnumValidationFunc)func
 //%                                   rawValue:(TYPE)value;
+//%
 //%/**
 //% * Creates and initializes a GPB##NAME##Array that adds the elements from the
 //% * given array.
@@ -1597,6 +1697,7 @@ NS_ASSUME_NONNULL_END
 //% * @return A newly instanced GPB##NAME##Array.
 //% **/
 //%+ (instancetype)arrayWithValueArray:(GPB##NAME##Array *)array;
+//%
 //%/**
 //% * Creates and initializes a GPB##NAME##Array with the given enum validation
 //% * function and with the givencapacity.
@@ -1618,6 +1719,7 @@ NS_ASSUME_NONNULL_END
 //% **/
 //%- (instancetype)initWithValidationFunction:(nullable GPBEnumValidationFunc)func
 //%    NS_DESIGNATED_INITIALIZER;
+//%
 //%/**
 //% * Initializes the array, copying the given values.
 //% *
@@ -1630,6 +1732,7 @@ NS_ASSUME_NONNULL_END
 //%- (instancetype)initWithValidationFunction:(nullable GPBEnumValidationFunc)func
 //%                                 rawValues:(const TYPE [])values
 //%                                     count:(NSUInteger)count;
+//%
 //%/**
 //% * Initializes the array, copying the given values.
 //% *
@@ -1638,6 +1741,7 @@ NS_ASSUME_NONNULL_END
 //% * @return A newly initialized GPB##NAME##Array with a copy of the values.
 //% **/
 //%- (instancetype)initWithValueArray:(GPB##NAME##Array *)array;
+//%
 //%/**
 //% * Initializes the array with the given capacity.
 //% *
@@ -1658,6 +1762,13 @@ NS_ASSUME_NONNULL_END
 //%// These methods bypass the validationFunc to provide access to values that were not
 //%// known at the time the binary was compiled.
 //%
+//%/**
+//% * Gets the raw enum value at the given index.
+//% *
+//% * @param index The index of the raw enum value to get.
+//% *
+//% * @return The raw enum value at the given index.
+//% **/
 //%- (TYPE)rawValueAtIndex:(NSUInteger)index;
 //%
 //%/**
@@ -1669,6 +1780,7 @@ NS_ASSUME_NONNULL_END
 //% *   **stop**:  A pointer to a boolean that when set stops the enumeration.
 //% **/
 //%- (void)enumerateRawValuesWithBlock:(void (^)(TYPE value, NSUInteger idx, BOOL *stop))block;
+//%
 //%/**
 //% * Enumerates the values on this array with the given block.
 //% *
@@ -1710,6 +1822,7 @@ NS_ASSUME_NONNULL_END
 //% *   **stop**:  A pointer to a boolean that when set stops the enumeration.
 //% **/
 //%- (void)enumerateValuesWithBlock:(void (^)(TYPE value, NSUInteger idx, BOOL *stop))block;
+//%
 //%/**
 //% * Enumerates the values on this array with the given block.
 //% *
@@ -1729,6 +1842,7 @@ NS_ASSUME_NONNULL_END
 //% * @param value The value to add to this array.
 //% **/
 //%- (void)addValue:(TYPE)value;
+//%
 //%/**
 //% * Adds values to this array.
 //% *
@@ -1736,6 +1850,7 @@ NS_ASSUME_NONNULL_END
 //% * @param count  The number of elements to add.
 //% **/
 //%- (void)addValues:(const TYPE [])values count:(NSUInteger)count;
+//%
 //%ARRAY_EXTRA_MUTABLE_METHODS1_##HELPER_NAME(NAME, TYPE)
 //%/**
 //% * Inserts a value into the given position.
@@ -1759,6 +1874,7 @@ NS_ASSUME_NONNULL_END
 //% * @param index The index of the value to remove.
 //% **/
 //%- (void)removeValueAtIndex:(NSUInteger)index;
+//%
 //%/**
 //% * Removes all the values from this array.
 //% **/
@@ -1803,6 +1919,7 @@ NS_ASSUME_NONNULL_END
 //% * @param value The raw enum value to add to the array.
 //% **/
 //%- (void)addRawValue:(TYPE)value;
+//%
 //%/**
 //% * Adds raw enum values to this array.
 //% *
@@ -1812,6 +1929,7 @@ NS_ASSUME_NONNULL_END
 //% * @param array Array containing the raw enum values to add to this array.
 //% **/
 //%- (void)addRawValuesFromArray:(GPB##NAME##Array *)array;
+//%
 //%/**
 //% * Adds raw enum values to this array.
 //% *

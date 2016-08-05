@@ -39,22 +39,18 @@
 #define GPBOBJC_SKIP_MESSAGE_TEXTFORMAT_EXTRAS 0
 #endif
 
-/**
- * Used in the generated code to give sizes to enums. int32_t was chosen based
- * on the fact that Protocol Buffers enums are limited to this range.
- **/
+// Used in the generated code to give sizes to enums. int32_t was chosen based
+// on the fact that Protocol Buffers enums are limited to this range.
 #if !__has_feature(objc_fixed_enum)
  #error All supported Xcode versions should support objc_fixed_enum.
 #endif
 
-/**
- * If the headers are imported into Objective-C++, we can run into an issue
- * where the defintion of NS_ENUM (really CF_ENUM) changes based on the C++
- * standard that is in effect.  If it isn't C++11 or higher, the definition
- * doesn't allow us to forward declare. We work around this one case by
- * providing a local definition. The default case has to use NS_ENUM for the
- * magic that is Swift bridging of enums.
- **/
+// If the headers are imported into Objective-C++, we can run into an issue
+// where the defintion of NS_ENUM (really CF_ENUM) changes based on the C++
+// standard that is in effect.  If it isn't C++11 or higher, the definition
+// doesn't allow us to forward declare. We work around this one case by
+// providing a local definition. The default case has to use NS_ENUM for the
+// magic that is Swift bridging of enums.
 #if (defined(__cplusplus) && __cplusplus && __cplusplus < 201103L)
  #define GPB_ENUM(X) enum X : int32_t X; enum X : int32_t
 #else
@@ -72,7 +68,7 @@
 #define GPB_ENUM_FWD_DECLARE(X) enum X : int32_t
 
 /**
- * Based upon CF_INLINE. Forces inlining in release.
+ * Based upon CF_INLINE. Forces inlining in non DEBUG builds.
  **/
 #if !defined(DEBUG)
 #define GPB_INLINE static __inline__ __attribute__((always_inline))
@@ -91,16 +87,16 @@
 #endif
 #endif
 
-/**
- * If property name starts with init we need to annotate it to get past ARC.
- * http://stackoverflow.com/questions/18723226/how-do-i-annotate-an-objective-c-property-with-an-objc-method-family/18723227#18723227
- **/
+// If property name starts with init we need to annotate it to get past ARC.
+// http://stackoverflow.com/questions/18723226/how-do-i-annotate-an-objective-c-property-with-an-objc-method-family/18723227#18723227
+//
+// @note Meant to be used internally by generated code.
 #define GPB_METHOD_FAMILY_NONE __attribute__((objc_method_family(none)))
 
-/**
- * The protoc-gen-objc version which works with the current version of the
- * generated Objective C sources.  In general we don't want to change the
- * runtime interfaces (or this version) as it means everything has to be
- * regenerated.
- **/
+// The protoc-gen-objc version which works with the current version of the
+// generated Objective C sources.  In general we don't want to change the
+// runtime interfaces (or this version) as it means everything has to be
+// regenerated.
+//
+// @note Meant to be used internally by generated code.
 #define GOOGLE_PROTOBUF_OBJC_GEN_VERSION 30001

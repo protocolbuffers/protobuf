@@ -39,27 +39,27 @@ CF_EXTERN_C_BEGIN
 NS_ASSUME_NONNULL_BEGIN
 
 /**
- * Generates a string that should be a valid "Text Format" for the C++ version
+ * Generates a string that should be a valid "TextFormat" for the C++ version
  * of Protocol Buffers.
  *
  * @param message    The message to generate from.
  * @param lineIndent A string to use as the prefix for all lines generated. Can
  *                   be nil if no extra indent is needed.
  *
- * @return An NSString with the Text Format of the message.
+ * @return An NSString with the TextFormat of the message.
  **/
 NSString *GPBTextFormatForMessage(GPBMessage *message,
                                   NSString * __nullable lineIndent);
 
 /**
- * Generates a string that should be a valid "Text Format" for the C++ version
+ * Generates a string that should be a valid "TextFormat" for the C++ version
  * of Protocol Buffers.
  *
  * @param unknownSet The unknown field set to generate from.
  * @param lineIndent A string to use as the prefix for all lines generated. Can
  *                   be nil if no extra indent is needed.
  *
- * @return An NSString with the Text Format of the unknown field set.
+ * @return An NSString with the TextFormat of the unknown field set.
  **/
 NSString *GPBTextFormatForUnknownFieldSet(GPBUnknownFieldSet * __nullable unknownSet,
                                           NSString * __nullable lineIndent);
@@ -96,7 +96,9 @@ void GPBClearMessageField(GPBMessage *self, GPBFieldDescriptor *field);
 // This block of code is generated, do not edit it directly.
 
 
-/** @name Get/Set a given field from/to a message. */
+//
+// @name Get/Set a given field from/to a message. */
+//
 
 // Single Fields
 
@@ -381,7 +383,9 @@ CF_EXTERN_C_END
 
 //%PDDM-DEFINE GPB_ACCESSORS()
 //%
-//%/** @name Get/Set a given field from/to a message. */
+//%//
+//%// @name Get/Set a given field from/to a message. */
+//%//
 //%
 //%// Single Fields
 //%

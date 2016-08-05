@@ -50,7 +50,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 /**
  * Class used for map fields of <uint32_t, uint32_t>
- * values. This performs better than boxing into NSNumbers in NSArrays.
+ * values. This performs better than boxing into NSNumbers in NSDictionaries.
  *
  * @note This class is not meant to be subclassed.
  **/
@@ -63,28 +63,31 @@ NS_ASSUME_NONNULL_BEGIN
  * @return A newly instanced and empty dictionary.
  **/
 + (instancetype)dictionary;
+
 /**
  * Creates and initializes a dictionary with the single entry given.
  *
- * @param value The value to be placed in the dictionary.
- * @param key         The key under which to store the value.
+ * @param value     The value to be placed in the dictionary.
+ * @param key       The key under which to store the value.
  *
  * @return A newly instanced dictionary with the key and value in it.
  **/
 + (instancetype)dictionaryWithUInt32:(uint32_t)value
                               forKey:(uint32_t)key;
+
 /**
  * Creates and initializes a dictionary with the entries given.
  *
- * @param values The values to be placed in the dictionary.
- * @param keys           The keys under which to store the values.
- * @param count          The number of entries to store in the dictionary.
+ * @param values      The values to be placed in the dictionary.
+ * @param keys        The keys under which to store the values.
+ * @param count       The number of entries to store in the dictionary.
  *
  * @return A newly instanced dictionary with the keys and values in it.
  **/
 + (instancetype)dictionaryWithUInt32s:(const uint32_t [])values
                               forKeys:(const uint32_t [])keys
                                 count:(NSUInteger)count;
+
 /**
  * Creates and initializes a dictionary with the entries from the given.
  * dictionary.
@@ -95,6 +98,7 @@ NS_ASSUME_NONNULL_BEGIN
  *         dictionary in it.
  **/
 + (instancetype)dictionaryWithDictionary:(GPBUInt32UInt32Dictionary *)dictionary;
+
 /**
  * Creates and initializes a dictionary with the given capacity.
  *
@@ -107,15 +111,16 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * Initializes this dictionary, copying the given values and keys.
  *
- * @param values The values to be placed in this dictionary.
- * @param keys           The keys under which to store the values.
- * @param count          The number of elements to copy into the dictionary.
+ * @param values      The values to be placed in this dictionary.
+ * @param keys        The keys under which to store the values.
+ * @param count       The number of elements to copy into the dictionary.
  *
  * @return A newly initialized dictionary with a copy of the values and keys.
  **/
 - (instancetype)initWithUInt32s:(const uint32_t [])values
                         forKeys:(const uint32_t [])keys
                           count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
+
 /**
  * Initializes this dictionary, copying the entries from the given dictionary.
  *
@@ -124,6 +129,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @return A newly initialized dictionary with the entries of the given dictionary.
  **/
 - (instancetype)initWithDictionary:(GPBUInt32UInt32Dictionary *)dictionary;
+
 /**
  * Initializes this dictionary with the requested capacity.
  *
@@ -147,9 +153,9 @@ NS_ASSUME_NONNULL_BEGIN
  * Enumerates the keys and values on this dictionary with the given block.
  *
  * @param block The block to enumerate with.
- *   **key**:       The key for the current entry.
- *   **value**: The value for the current entry
- *   **stop**:      A pointer to a boolean that when set stops the enumeration.
+ *   **key**:        The key for the current entry.
+ *   **value**:      The value for the current entry
+ *   **stop**:       A pointer to a boolean that when set stops the enumeration.
  **/
 - (void)enumerateKeysAndUInt32sUsingBlock:
     (void (^)(uint32_t key, uint32_t value, BOOL *stop))block;
@@ -165,8 +171,8 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * Sets the value for the given key.
  *
- * @param value The value to set.
- * @param key         The key under which to store the value.
+ * @param value     The value to set.
+ * @param key       The key under which to store the value.
  **/
 - (void)setUInt32:(uint32_t)value forKey:(uint32_t)key;
 
@@ -176,6 +182,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @param aKey Key to be removed from this dictionary.
  **/
 - (void)removeUInt32ForKey:(uint32_t)aKey;
+
 /**
  * Removes all entries in this dictionary.
  **/
@@ -187,7 +194,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 /**
  * Class used for map fields of <uint32_t, int32_t>
- * values. This performs better than boxing into NSNumbers in NSArrays.
+ * values. This performs better than boxing into NSNumbers in NSDictionaries.
  *
  * @note This class is not meant to be subclassed.
  **/
@@ -200,28 +207,31 @@ NS_ASSUME_NONNULL_BEGIN
  * @return A newly instanced and empty dictionary.
  **/
 + (instancetype)dictionary;
+
 /**
  * Creates and initializes a dictionary with the single entry given.
  *
- * @param value The value to be placed in the dictionary.
- * @param key         The key under which to store the value.
+ * @param value     The value to be placed in the dictionary.
+ * @param key       The key under which to store the value.
  *
  * @return A newly instanced dictionary with the key and value in it.
  **/
 + (instancetype)dictionaryWithInt32:(int32_t)value
                              forKey:(uint32_t)key;
+
 /**
  * Creates and initializes a dictionary with the entries given.
  *
- * @param values The values to be placed in the dictionary.
- * @param keys           The keys under which to store the values.
- * @param count          The number of entries to store in the dictionary.
+ * @param values      The values to be placed in the dictionary.
+ * @param keys        The keys under which to store the values.
+ * @param count       The number of entries to store in the dictionary.
  *
  * @return A newly instanced dictionary with the keys and values in it.
  **/
 + (instancetype)dictionaryWithInt32s:(const int32_t [])values
                              forKeys:(const uint32_t [])keys
                                count:(NSUInteger)count;
+
 /**
  * Creates and initializes a dictionary with the entries from the given.
  * dictionary.
@@ -232,6 +242,7 @@ NS_ASSUME_NONNULL_BEGIN
  *         dictionary in it.
  **/
 + (instancetype)dictionaryWithDictionary:(GPBUInt32Int32Dictionary *)dictionary;
+
 /**
  * Creates and initializes a dictionary with the given capacity.
  *
@@ -244,15 +255,16 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * Initializes this dictionary, copying the given values and keys.
  *
- * @param values The values to be placed in this dictionary.
- * @param keys           The keys under which to store the values.
- * @param count          The number of elements to copy into the dictionary.
+ * @param values      The values to be placed in this dictionary.
+ * @param keys        The keys under which to store the values.
+ * @param count       The number of elements to copy into the dictionary.
  *
  * @return A newly initialized dictionary with a copy of the values and keys.
  **/
 - (instancetype)initWithInt32s:(const int32_t [])values
                        forKeys:(const uint32_t [])keys
                          count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
+
 /**
  * Initializes this dictionary, copying the entries from the given dictionary.
  *
@@ -261,6 +273,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @return A newly initialized dictionary with the entries of the given dictionary.
  **/
 - (instancetype)initWithDictionary:(GPBUInt32Int32Dictionary *)dictionary;
+
 /**
  * Initializes this dictionary with the requested capacity.
  *
@@ -284,9 +297,9 @@ NS_ASSUME_NONNULL_BEGIN
  * Enumerates the keys and values on this dictionary with the given block.
  *
  * @param block The block to enumerate with.
- *   **key**:       The key for the current entry.
- *   **value**: The value for the current entry
- *   **stop**:      A pointer to a boolean that when set stops the enumeration.
+ *   **key**:        The key for the current entry.
+ *   **value**:      The value for the current entry
+ *   **stop**:       A pointer to a boolean that when set stops the enumeration.
  **/
 - (void)enumerateKeysAndInt32sUsingBlock:
     (void (^)(uint32_t key, int32_t value, BOOL *stop))block;
@@ -302,8 +315,8 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * Sets the value for the given key.
  *
- * @param value The value to set.
- * @param key         The key under which to store the value.
+ * @param value     The value to set.
+ * @param key       The key under which to store the value.
  **/
 - (void)setInt32:(int32_t)value forKey:(uint32_t)key;
 
@@ -313,6 +326,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @param aKey Key to be removed from this dictionary.
  **/
 - (void)removeInt32ForKey:(uint32_t)aKey;
+
 /**
  * Removes all entries in this dictionary.
  **/
@@ -324,7 +338,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 /**
  * Class used for map fields of <uint32_t, uint64_t>
- * values. This performs better than boxing into NSNumbers in NSArrays.
+ * values. This performs better than boxing into NSNumbers in NSDictionaries.
  *
  * @note This class is not meant to be subclassed.
  **/
@@ -337,28 +351,31 @@ NS_ASSUME_NONNULL_BEGIN
  * @return A newly instanced and empty dictionary.
  **/
 + (instancetype)dictionary;
+
 /**
  * Creates and initializes a dictionary with the single entry given.
  *
- * @param value The value to be placed in the dictionary.
- * @param key         The key under which to store the value.
+ * @param value     The value to be placed in the dictionary.
+ * @param key       The key under which to store the value.
  *
  * @return A newly instanced dictionary with the key and value in it.
  **/
 + (instancetype)dictionaryWithUInt64:(uint64_t)value
                               forKey:(uint32_t)key;
+
 /**
  * Creates and initializes a dictionary with the entries given.
  *
- * @param values The values to be placed in the dictionary.
- * @param keys           The keys under which to store the values.
- * @param count          The number of entries to store in the dictionary.
+ * @param values      The values to be placed in the dictionary.
+ * @param keys        The keys under which to store the values.
+ * @param count       The number of entries to store in the dictionary.
  *
  * @return A newly instanced dictionary with the keys and values in it.
  **/
 + (instancetype)dictionaryWithUInt64s:(const uint64_t [])values
                               forKeys:(const uint32_t [])keys
                                 count:(NSUInteger)count;
+
 /**
  * Creates and initializes a dictionary with the entries from the given.
  * dictionary.
@@ -369,6 +386,7 @@ NS_ASSUME_NONNULL_BEGIN
  *         dictionary in it.
  **/
 + (instancetype)dictionaryWithDictionary:(GPBUInt32UInt64Dictionary *)dictionary;
+
 /**
  * Creates and initializes a dictionary with the given capacity.
  *
@@ -381,15 +399,16 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * Initializes this dictionary, copying the given values and keys.
  *
- * @param values The values to be placed in this dictionary.
- * @param keys           The keys under which to store the values.
- * @param count          The number of elements to copy into the dictionary.
+ * @param values      The values to be placed in this dictionary.
+ * @param keys        The keys under which to store the values.
+ * @param count       The number of elements to copy into the dictionary.
  *
  * @return A newly initialized dictionary with a copy of the values and keys.
  **/
 - (instancetype)initWithUInt64s:(const uint64_t [])values
                         forKeys:(const uint32_t [])keys
                           count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
+
 /**
  * Initializes this dictionary, copying the entries from the given dictionary.
  *
@@ -398,6 +417,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @return A newly initialized dictionary with the entries of the given dictionary.
  **/
 - (instancetype)initWithDictionary:(GPBUInt32UInt64Dictionary *)dictionary;
+
 /**
  * Initializes this dictionary with the requested capacity.
  *
@@ -421,9 +441,9 @@ NS_ASSUME_NONNULL_BEGIN
  * Enumerates the keys and values on this dictionary with the given block.
  *
  * @param block The block to enumerate with.
- *   **key**:       The key for the current entry.
- *   **value**: The value for the current entry
- *   **stop**:      A pointer to a boolean that when set stops the enumeration.
+ *   **key**:        The key for the current entry.
+ *   **value**:      The value for the current entry
+ *   **stop**:       A pointer to a boolean that when set stops the enumeration.
  **/
 - (void)enumerateKeysAndUInt64sUsingBlock:
     (void (^)(uint32_t key, uint64_t value, BOOL *stop))block;
@@ -439,8 +459,8 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * Sets the value for the given key.
  *
- * @param value The value to set.
- * @param key         The key under which to store the value.
+ * @param value     The value to set.
+ * @param key       The key under which to store the value.
  **/
 - (void)setUInt64:(uint64_t)value forKey:(uint32_t)key;
 
@@ -450,6 +470,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @param aKey Key to be removed from this dictionary.
  **/
 - (void)removeUInt64ForKey:(uint32_t)aKey;
+
 /**
  * Removes all entries in this dictionary.
  **/
@@ -461,7 +482,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 /**
  * Class used for map fields of <uint32_t, int64_t>
- * values. This performs better than boxing into NSNumbers in NSArrays.
+ * values. This performs better than boxing into NSNumbers in NSDictionaries.
  *
  * @note This class is not meant to be subclassed.
  **/
@@ -474,28 +495,31 @@ NS_ASSUME_NONNULL_BEGIN
  * @return A newly instanced and empty dictionary.
  **/
 + (instancetype)dictionary;
+
 /**
  * Creates and initializes a dictionary with the single entry given.
  *
- * @param value The value to be placed in the dictionary.
- * @param key         The key under which to store the value.
+ * @param value     The value to be placed in the dictionary.
+ * @param key       The key under which to store the value.
  *
  * @return A newly instanced dictionary with the key and value in it.
  **/
 + (instancetype)dictionaryWithInt64:(int64_t)value
                              forKey:(uint32_t)key;
+
 /**
  * Creates and initializes a dictionary with the entries given.
  *
- * @param values The values to be placed in the dictionary.
- * @param keys           The keys under which to store the values.
- * @param count          The number of entries to store in the dictionary.
+ * @param values      The values to be placed in the dictionary.
+ * @param keys        The keys under which to store the values.
+ * @param count       The number of entries to store in the dictionary.
  *
  * @return A newly instanced dictionary with the keys and values in it.
  **/
 + (instancetype)dictionaryWithInt64s:(const int64_t [])values
                              forKeys:(const uint32_t [])keys
                                count:(NSUInteger)count;
+
 /**
  * Creates and initializes a dictionary with the entries from the given.
  * dictionary.
@@ -506,6 +530,7 @@ NS_ASSUME_NONNULL_BEGIN
  *         dictionary in it.
  **/
 + (instancetype)dictionaryWithDictionary:(GPBUInt32Int64Dictionary *)dictionary;
+
 /**
  * Creates and initializes a dictionary with the given capacity.
  *
@@ -518,15 +543,16 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * Initializes this dictionary, copying the given values and keys.
  *
- * @param values The values to be placed in this dictionary.
- * @param keys           The keys under which to store the values.
- * @param count          The number of elements to copy into the dictionary.
+ * @param values      The values to be placed in this dictionary.
+ * @param keys        The keys under which to store the values.
+ * @param count       The number of elements to copy into the dictionary.
  *
  * @return A newly initialized dictionary with a copy of the values and keys.
  **/
 - (instancetype)initWithInt64s:(const int64_t [])values
                        forKeys:(const uint32_t [])keys
                          count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
+
 /**
  * Initializes this dictionary, copying the entries from the given dictionary.
  *
@@ -535,6 +561,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @return A newly initialized dictionary with the entries of the given dictionary.
  **/
 - (instancetype)initWithDictionary:(GPBUInt32Int64Dictionary *)dictionary;
+
 /**
  * Initializes this dictionary with the requested capacity.
  *
@@ -558,9 +585,9 @@ NS_ASSUME_NONNULL_BEGIN
  * Enumerates the keys and values on this dictionary with the given block.
  *
  * @param block The block to enumerate with.
- *   **key**:       The key for the current entry.
- *   **value**: The value for the current entry
- *   **stop**:      A pointer to a boolean that when set stops the enumeration.
+ *   **key**:        The key for the current entry.
+ *   **value**:      The value for the current entry
+ *   **stop**:       A pointer to a boolean that when set stops the enumeration.
  **/
 - (void)enumerateKeysAndInt64sUsingBlock:
     (void (^)(uint32_t key, int64_t value, BOOL *stop))block;
@@ -576,8 +603,8 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * Sets the value for the given key.
  *
- * @param value The value to set.
- * @param key         The key under which to store the value.
+ * @param value     The value to set.
+ * @param key       The key under which to store the value.
  **/
 - (void)setInt64:(int64_t)value forKey:(uint32_t)key;
 
@@ -587,6 +614,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @param aKey Key to be removed from this dictionary.
  **/
 - (void)removeInt64ForKey:(uint32_t)aKey;
+
 /**
  * Removes all entries in this dictionary.
  **/
@@ -598,7 +626,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 /**
  * Class used for map fields of <uint32_t, BOOL>
- * values. This performs better than boxing into NSNumbers in NSArrays.
+ * values. This performs better than boxing into NSNumbers in NSDictionaries.
  *
  * @note This class is not meant to be subclassed.
  **/
@@ -611,28 +639,31 @@ NS_ASSUME_NONNULL_BEGIN
  * @return A newly instanced and empty dictionary.
  **/
 + (instancetype)dictionary;
+
 /**
  * Creates and initializes a dictionary with the single entry given.
  *
- * @param value The value to be placed in the dictionary.
- * @param key         The key under which to store the value.
+ * @param value     The value to be placed in the dictionary.
+ * @param key       The key under which to store the value.
  *
  * @return A newly instanced dictionary with the key and value in it.
  **/
 + (instancetype)dictionaryWithBool:(BOOL)value
                             forKey:(uint32_t)key;
+
 /**
  * Creates and initializes a dictionary with the entries given.
  *
- * @param values The values to be placed in the dictionary.
- * @param keys           The keys under which to store the values.
- * @param count          The number of entries to store in the dictionary.
+ * @param values      The values to be placed in the dictionary.
+ * @param keys        The keys under which to store the values.
+ * @param count       The number of entries to store in the dictionary.
  *
  * @return A newly instanced dictionary with the keys and values in it.
  **/
 + (instancetype)dictionaryWithBools:(const BOOL [])values
                             forKeys:(const uint32_t [])keys
                               count:(NSUInteger)count;
+
 /**
  * Creates and initializes a dictionary with the entries from the given.
  * dictionary.
@@ -643,6 +674,7 @@ NS_ASSUME_NONNULL_BEGIN
  *         dictionary in it.
  **/
 + (instancetype)dictionaryWithDictionary:(GPBUInt32BoolDictionary *)dictionary;
+
 /**
  * Creates and initializes a dictionary with the given capacity.
  *
@@ -655,15 +687,16 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * Initializes this dictionary, copying the given values and keys.
  *
- * @param values The values to be placed in this dictionary.
- * @param keys           The keys under which to store the values.
- * @param count          The number of elements to copy into the dictionary.
+ * @param values      The values to be placed in this dictionary.
+ * @param keys        The keys under which to store the values.
+ * @param count       The number of elements to copy into the dictionary.
  *
  * @return A newly initialized dictionary with a copy of the values and keys.
  **/
 - (instancetype)initWithBools:(const BOOL [])values
                       forKeys:(const uint32_t [])keys
                         count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
+
 /**
  * Initializes this dictionary, copying the entries from the given dictionary.
  *
@@ -672,6 +705,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @return A newly initialized dictionary with the entries of the given dictionary.
  **/
 - (instancetype)initWithDictionary:(GPBUInt32BoolDictionary *)dictionary;
+
 /**
  * Initializes this dictionary with the requested capacity.
  *
@@ -695,9 +729,9 @@ NS_ASSUME_NONNULL_BEGIN
  * Enumerates the keys and values on this dictionary with the given block.
  *
  * @param block The block to enumerate with.
- *   **key**:       The key for the current entry.
- *   **value**: The value for the current entry
- *   **stop**:      A pointer to a boolean that when set stops the enumeration.
+ *   **key**:        The key for the current entry.
+ *   **value**:      The value for the current entry
+ *   **stop**:       A pointer to a boolean that when set stops the enumeration.
  **/
 - (void)enumerateKeysAndBoolsUsingBlock:
     (void (^)(uint32_t key, BOOL value, BOOL *stop))block;
@@ -713,8 +747,8 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * Sets the value for the given key.
  *
- * @param value The value to set.
- * @param key         The key under which to store the value.
+ * @param value     The value to set.
+ * @param key       The key under which to store the value.
  **/
 - (void)setBool:(BOOL)value forKey:(uint32_t)key;
 
@@ -724,6 +758,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @param aKey Key to be removed from this dictionary.
  **/
 - (void)removeBoolForKey:(uint32_t)aKey;
+
 /**
  * Removes all entries in this dictionary.
  **/
@@ -735,7 +770,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 /**
  * Class used for map fields of <uint32_t, float>
- * values. This performs better than boxing into NSNumbers in NSArrays.
+ * values. This performs better than boxing into NSNumbers in NSDictionaries.
  *
  * @note This class is not meant to be subclassed.
  **/
@@ -748,28 +783,31 @@ NS_ASSUME_NONNULL_BEGIN
  * @return A newly instanced and empty dictionary.
  **/
 + (instancetype)dictionary;
+
 /**
  * Creates and initializes a dictionary with the single entry given.
  *
- * @param value The value to be placed in the dictionary.
- * @param key         The key under which to store the value.
+ * @param value     The value to be placed in the dictionary.
+ * @param key       The key under which to store the value.
  *
  * @return A newly instanced dictionary with the key and value in it.
  **/
 + (instancetype)dictionaryWithFloat:(float)value
                              forKey:(uint32_t)key;
+
 /**
  * Creates and initializes a dictionary with the entries given.
  *
- * @param values The values to be placed in the dictionary.
- * @param keys           The keys under which to store the values.
- * @param count          The number of entries to store in the dictionary.
+ * @param values      The values to be placed in the dictionary.
+ * @param keys        The keys under which to store the values.
+ * @param count       The number of entries to store in the dictionary.
  *
  * @return A newly instanced dictionary with the keys and values in it.
  **/
 + (instancetype)dictionaryWithFloats:(const float [])values
                              forKeys:(const uint32_t [])keys
                                count:(NSUInteger)count;
+
 /**
  * Creates and initializes a dictionary with the entries from the given.
  * dictionary.
@@ -780,6 +818,7 @@ NS_ASSUME_NONNULL_BEGIN
  *         dictionary in it.
  **/
 + (instancetype)dictionaryWithDictionary:(GPBUInt32FloatDictionary *)dictionary;
+
 /**
  * Creates and initializes a dictionary with the given capacity.
  *
@@ -792,15 +831,16 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * Initializes this dictionary, copying the given values and keys.
  *
- * @param values The values to be placed in this dictionary.
- * @param keys           The keys under which to store the values.
- * @param count          The number of elements to copy into the dictionary.
+ * @param values      The values to be placed in this dictionary.
+ * @param keys        The keys under which to store the values.
+ * @param count       The number of elements to copy into the dictionary.
  *
  * @return A newly initialized dictionary with a copy of the values and keys.
  **/
 - (instancetype)initWithFloats:(const float [])values
                        forKeys:(const uint32_t [])keys
                          count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
+
 /**
  * Initializes this dictionary, copying the entries from the given dictionary.
  *
@@ -809,6 +849,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @return A newly initialized dictionary with the entries of the given dictionary.
  **/
 - (instancetype)initWithDictionary:(GPBUInt32FloatDictionary *)dictionary;
+
 /**
  * Initializes this dictionary with the requested capacity.
  *
@@ -832,9 +873,9 @@ NS_ASSUME_NONNULL_BEGIN
  * Enumerates the keys and values on this dictionary with the given block.
  *
  * @param block The block to enumerate with.
- *   **key**:       The key for the current entry.
- *   **value**: The value for the current entry
- *   **stop**:      A pointer to a boolean that when set stops the enumeration.
+ *   **key**:        The key for the current entry.
+ *   **value**:      The value for the current entry
+ *   **stop**:       A pointer to a boolean that when set stops the enumeration.
  **/
 - (void)enumerateKeysAndFloatsUsingBlock:
     (void (^)(uint32_t key, float value, BOOL *stop))block;
@@ -850,8 +891,8 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * Sets the value for the given key.
  *
- * @param value The value to set.
- * @param key         The key under which to store the value.
+ * @param value     The value to set.
+ * @param key       The key under which to store the value.
  **/
 - (void)setFloat:(float)value forKey:(uint32_t)key;
 
@@ -861,6 +902,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @param aKey Key to be removed from this dictionary.
  **/
 - (void)removeFloatForKey:(uint32_t)aKey;
+
 /**
  * Removes all entries in this dictionary.
  **/
@@ -872,7 +914,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 /**
  * Class used for map fields of <uint32_t, double>
- * values. This performs better than boxing into NSNumbers in NSArrays.
+ * values. This performs better than boxing into NSNumbers in NSDictionaries.
  *
  * @note This class is not meant to be subclassed.
  **/
@@ -885,28 +927,31 @@ NS_ASSUME_NONNULL_BEGIN
  * @return A newly instanced and empty dictionary.
  **/
 + (instancetype)dictionary;
+
 /**
  * Creates and initializes a dictionary with the single entry given.
  *
- * @param value The value to be placed in the dictionary.
- * @param key         The key under which to store the value.
+ * @param value     The value to be placed in the dictionary.
+ * @param key       The key under which to store the value.
  *
  * @return A newly instanced dictionary with the key and value in it.
  **/
 + (instancetype)dictionaryWithDouble:(double)value
                               forKey:(uint32_t)key;
+
 /**
  * Creates and initializes a dictionary with the entries given.
  *
- * @param values The values to be placed in the dictionary.
- * @param keys           The keys under which to store the values.
- * @param count          The number of entries to store in the dictionary.
+ * @param values      The values to be placed in the dictionary.
+ * @param keys        The keys under which to store the values.
+ * @param count       The number of entries to store in the dictionary.
  *
  * @return A newly instanced dictionary with the keys and values in it.
  **/
 + (instancetype)dictionaryWithDoubles:(const double [])values
                               forKeys:(const uint32_t [])keys
                                 count:(NSUInteger)count;
+
 /**
  * Creates and initializes a dictionary with the entries from the given.
  * dictionary.
@@ -917,6 +962,7 @@ NS_ASSUME_NONNULL_BEGIN
  *         dictionary in it.
  **/
 + (instancetype)dictionaryWithDictionary:(GPBUInt32DoubleDictionary *)dictionary;
+
 /**
  * Creates and initializes a dictionary with the given capacity.
  *
@@ -929,15 +975,16 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * Initializes this dictionary, copying the given values and keys.
  *
- * @param values The values to be placed in this dictionary.
- * @param keys           The keys under which to store the values.
- * @param count          The number of elements to copy into the dictionary.
+ * @param values      The values to be placed in this dictionary.
+ * @param keys        The keys under which to store the values.
+ * @param count       The number of elements to copy into the dictionary.
  *
  * @return A newly initialized dictionary with a copy of the values and keys.
  **/
 - (instancetype)initWithDoubles:(const double [])values
                         forKeys:(const uint32_t [])keys
                           count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
+
 /**
  * Initializes this dictionary, copying the entries from the given dictionary.
  *
@@ -946,6 +993,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @return A newly initialized dictionary with the entries of the given dictionary.
  **/
 - (instancetype)initWithDictionary:(GPBUInt32DoubleDictionary *)dictionary;
+
 /**
  * Initializes this dictionary with the requested capacity.
  *
@@ -969,9 +1017,9 @@ NS_ASSUME_NONNULL_BEGIN
  * Enumerates the keys and values on this dictionary with the given block.
  *
  * @param block The block to enumerate with.
- *   **key**:       The key for the current entry.
- *   **value**: The value for the current entry
- *   **stop**:      A pointer to a boolean that when set stops the enumeration.
+ *   **key**:        The key for the current entry.
+ *   **value**:      The value for the current entry
+ *   **stop**:       A pointer to a boolean that when set stops the enumeration.
  **/
 - (void)enumerateKeysAndDoublesUsingBlock:
     (void (^)(uint32_t key, double value, BOOL *stop))block;
@@ -987,8 +1035,8 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * Sets the value for the given key.
  *
- * @param value The value to set.
- * @param key         The key under which to store the value.
+ * @param value     The value to set.
+ * @param key       The key under which to store the value.
  **/
 - (void)setDouble:(double)value forKey:(uint32_t)key;
 
@@ -998,6 +1046,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @param aKey Key to be removed from this dictionary.
  **/
 - (void)removeDoubleForKey:(uint32_t)aKey;
+
 /**
  * Removes all entries in this dictionary.
  **/
@@ -1009,7 +1058,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 /**
  * Class used for map fields of <uint32_t, int32_t>
- * values. This performs better than boxing into NSNumbers in NSArrays.
+ * values. This performs better than boxing into NSNumbers in NSDictionaries.
  *
  * @note This class is not meant to be subclassed.
  **/
@@ -1024,6 +1073,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @return A newly instanced and empty dictionary.
  **/
 + (instancetype)dictionary;
+
 /**
  * Creates and initializes a dictionary with the given validation function.
  *
@@ -1032,6 +1082,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @return A newly instanced dictionary.
  **/
 + (instancetype)dictionaryWithValidationFunction:(nullable GPBEnumValidationFunc)func;
+
 /**
  * Creates and initializes a dictionary with the single entry given.
  *
@@ -1044,6 +1095,7 @@ NS_ASSUME_NONNULL_BEGIN
 + (instancetype)dictionaryWithValidationFunction:(nullable GPBEnumValidationFunc)func
                                         rawValue:(int32_t)rawValue
                                           forKey:(uint32_t)key;
+
 /**
  * Creates and initializes a dictionary with the entries given.
  *
@@ -1058,6 +1110,7 @@ NS_ASSUME_NONNULL_BEGIN
                                        rawValues:(const int32_t [])values
                                          forKeys:(const uint32_t [])keys
                                            count:(NSUInteger)count;
+
 /**
  * Creates and initializes a dictionary with the entries from the given.
  * dictionary.
@@ -1068,6 +1121,7 @@ NS_ASSUME_NONNULL_BEGIN
  *         dictionary in it.
  **/
 + (instancetype)dictionaryWithDictionary:(GPBUInt32EnumDictionary *)dictionary;
+
 /**
  * Creates and initializes a dictionary with the given capacity.
  *
@@ -1087,6 +1141,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @return A newly initialized dictionary.
  **/
 - (instancetype)initWithValidationFunction:(nullable GPBEnumValidationFunc)func;
+
 /**
  * Initializes a dictionary with the entries given.
  *
@@ -1101,6 +1156,7 @@ NS_ASSUME_NONNULL_BEGIN
                                  rawValues:(const int32_t [])values
                                    forKeys:(const uint32_t [])keys
                                      count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
+
 /**
  * Initializes a dictionary with the entries from the given.
  * dictionary.
@@ -1111,6 +1167,7 @@ NS_ASSUME_NONNULL_BEGIN
  *         dictionary in it.
  **/
 - (instancetype)initWithDictionary:(GPBUInt32EnumDictionary *)dictionary;
+
 /**
  * Initializes a dictionary with the given capacity.
  *
@@ -1140,9 +1197,9 @@ NS_ASSUME_NONNULL_BEGIN
  * Enumerates the keys and values on this dictionary with the given block.
  *
  * @param block The block to enumerate with.
- *   **key**:       The key for the current entry.
- *   **value**: The value for the current entry
- *   **stop**:      A pointer to a boolean that when set stops the enumeration.
+ *   **key**:        The key for the current entry.
+ *   **value**:      The value for the current entry
+ *   **stop**:       A pointer to a boolean that when set stops the enumeration.
  **/
 - (void)enumerateKeysAndEnumsUsingBlock:
     (void (^)(uint32_t key, int32_t value, BOOL *stop))block;
@@ -1193,8 +1250,8 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * Sets the value for the given key.
  *
- * @param value The value to set.
- * @param key         The key under which to store the value.
+ * @param value     The value to set.
+ * @param key       The key under which to store the value.
  **/
 - (void)setEnum:(int32_t)value forKey:(uint32_t)key;
 
@@ -1215,6 +1272,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @param aKey Key to be removed from this dictionary.
  **/
 - (void)removeEnumForKey:(uint32_t)aKey;
+
 /**
  * Removes all entries in this dictionary.
  **/
@@ -1226,7 +1284,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 /**
  * Class used for map fields of <uint32_t, ObjectType>
- * values. This performs better than boxing into NSNumbers in NSArrays.
+ * values. This performs better than boxing into NSNumbers in NSDictionaries.
  *
  * @note This class is not meant to be subclassed.
  **/
@@ -1239,28 +1297,31 @@ NS_ASSUME_NONNULL_BEGIN
  * @return A newly instanced and empty dictionary.
  **/
 + (instancetype)dictionary;
+
 /**
  * Creates and initializes a dictionary with the single entry given.
  *
- * @param object The value to be placed in the dictionary.
- * @param key         The key under which to store the value.
+ * @param object     The value to be placed in the dictionary.
+ * @param key        The key under which to store the value.
  *
  * @return A newly instanced dictionary with the key and value in it.
  **/
 + (instancetype)dictionaryWithObject:(ObjectType)object
                               forKey:(uint32_t)key;
+
 /**
  * Creates and initializes a dictionary with the entries given.
  *
- * @param objects The values to be placed in the dictionary.
- * @param keys           The keys under which to store the values.
- * @param count          The number of entries to store in the dictionary.
+ * @param objects      The values to be placed in the dictionary.
+ * @param keys         The keys under which to store the values.
+ * @param count        The number of entries to store in the dictionary.
  *
  * @return A newly instanced dictionary with the keys and values in it.
  **/
 + (instancetype)dictionaryWithObjects:(const ObjectType GPB_UNSAFE_UNRETAINED [])objects
                               forKeys:(const uint32_t [])keys
                                 count:(NSUInteger)count;
+
 /**
  * Creates and initializes a dictionary with the entries from the given.
  * dictionary.
@@ -1271,6 +1332,7 @@ NS_ASSUME_NONNULL_BEGIN
  *         dictionary in it.
  **/
 + (instancetype)dictionaryWithDictionary:(GPBUInt32ObjectDictionary *)dictionary;
+
 /**
  * Creates and initializes a dictionary with the given capacity.
  *
@@ -1283,15 +1345,16 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * Initializes this dictionary, copying the given values and keys.
  *
- * @param objects The values to be placed in this dictionary.
- * @param keys           The keys under which to store the values.
- * @param count          The number of elements to copy into the dictionary.
+ * @param objects      The values to be placed in this dictionary.
+ * @param keys         The keys under which to store the values.
+ * @param count        The number of elements to copy into the dictionary.
  *
  * @return A newly initialized dictionary with a copy of the values and keys.
  **/
 - (instancetype)initWithObjects:(const ObjectType GPB_UNSAFE_UNRETAINED [])objects
                         forKeys:(const uint32_t [])keys
                           count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
+
 /**
  * Initializes this dictionary, copying the entries from the given dictionary.
  *
@@ -1300,6 +1363,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @return A newly initialized dictionary with the entries of the given dictionary.
  **/
 - (instancetype)initWithDictionary:(GPBUInt32ObjectDictionary *)dictionary;
+
 /**
  * Initializes this dictionary with the requested capacity.
  *
@@ -1322,9 +1386,9 @@ NS_ASSUME_NONNULL_BEGIN
  * Enumerates the keys and values on this dictionary with the given block.
  *
  * @param block The block to enumerate with.
- *   **key**:       The key for the current entry.
- *   **object**: The value for the current entry
- *   **stop**:      A pointer to a boolean that when set stops the enumeration.
+ *   **key**:         The key for the current entry.
+ *   **object**:      The value for the current entry
+ *   **stop**:        A pointer to a boolean that when set stops the enumeration.
  **/
 - (void)enumerateKeysAndObjectsUsingBlock:
     (void (^)(uint32_t key, ObjectType object, BOOL *stop))block;
@@ -1340,8 +1404,8 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * Sets the value for the given key.
  *
- * @param object The value to set.
- * @param key         The key under which to store the value.
+ * @param object     The value to set.
+ * @param key        The key under which to store the value.
  **/
 - (void)setObject:(ObjectType)object forKey:(uint32_t)key;
 
@@ -1351,6 +1415,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @param aKey Key to be removed from this dictionary.
  **/
 - (void)removeObjectForKey:(uint32_t)aKey;
+
 /**
  * Removes all entries in this dictionary.
  **/
@@ -1362,7 +1427,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 /**
  * Class used for map fields of <int32_t, uint32_t>
- * values. This performs better than boxing into NSNumbers in NSArrays.
+ * values. This performs better than boxing into NSNumbers in NSDictionaries.
  *
  * @note This class is not meant to be subclassed.
  **/
@@ -1375,28 +1440,31 @@ NS_ASSUME_NONNULL_BEGIN
  * @return A newly instanced and empty dictionary.
  **/
 + (instancetype)dictionary;
+
 /**
  * Creates and initializes a dictionary with the single entry given.
  *
- * @param value The value to be placed in the dictionary.
- * @param key         The key under which to store the value.
+ * @param value     The value to be placed in the dictionary.
+ * @param key       The key under which to store the value.
  *
  * @return A newly instanced dictionary with the key and value in it.
  **/
 + (instancetype)dictionaryWithUInt32:(uint32_t)value
                               forKey:(int32_t)key;
+
 /**
  * Creates and initializes a dictionary with the entries given.
  *
- * @param values The values to be placed in the dictionary.
- * @param keys           The keys under which to store the values.
- * @param count          The number of entries to store in the dictionary.
+ * @param values      The values to be placed in the dictionary.
+ * @param keys        The keys under which to store the values.
+ * @param count       The number of entries to store in the dictionary.
  *
  * @return A newly instanced dictionary with the keys and values in it.
  **/
 + (instancetype)dictionaryWithUInt32s:(const uint32_t [])values
                               forKeys:(const int32_t [])keys
                                 count:(NSUInteger)count;
+
 /**
  * Creates and initializes a dictionary with the entries from the given.
  * dictionary.
@@ -1407,6 +1475,7 @@ NS_ASSUME_NONNULL_BEGIN
  *         dictionary in it.
  **/
 + (instancetype)dictionaryWithDictionary:(GPBInt32UInt32Dictionary *)dictionary;
+
 /**
  * Creates and initializes a dictionary with the given capacity.
  *
@@ -1419,15 +1488,16 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * Initializes this dictionary, copying the given values and keys.
  *
- * @param values The values to be placed in this dictionary.
- * @param keys           The keys under which to store the values.
- * @param count          The number of elements to copy into the dictionary.
+ * @param values      The values to be placed in this dictionary.
+ * @param keys        The keys under which to store the values.
+ * @param count       The number of elements to copy into the dictionary.
  *
  * @return A newly initialized dictionary with a copy of the values and keys.
  **/
 - (instancetype)initWithUInt32s:(const uint32_t [])values
                         forKeys:(const int32_t [])keys
                           count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
+
 /**
  * Initializes this dictionary, copying the entries from the given dictionary.
  *
@@ -1436,6 +1506,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @return A newly initialized dictionary with the entries of the given dictionary.
  **/
 - (instancetype)initWithDictionary:(GPBInt32UInt32Dictionary *)dictionary;
+
 /**
  * Initializes this dictionary with the requested capacity.
  *
@@ -1459,9 +1530,9 @@ NS_ASSUME_NONNULL_BEGIN
  * Enumerates the keys and values on this dictionary with the given block.
  *
  * @param block The block to enumerate with.
- *   **key**:       The key for the current entry.
- *   **value**: The value for the current entry
- *   **stop**:      A pointer to a boolean that when set stops the enumeration.
+ *   **key**:        The key for the current entry.
+ *   **value**:      The value for the current entry
+ *   **stop**:       A pointer to a boolean that when set stops the enumeration.
  **/
 - (void)enumerateKeysAndUInt32sUsingBlock:
     (void (^)(int32_t key, uint32_t value, BOOL *stop))block;
@@ -1477,8 +1548,8 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * Sets the value for the given key.
  *
- * @param value The value to set.
- * @param key         The key under which to store the value.
+ * @param value     The value to set.
+ * @param key       The key under which to store the value.
  **/
 - (void)setUInt32:(uint32_t)value forKey:(int32_t)key;
 
@@ -1488,6 +1559,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @param aKey Key to be removed from this dictionary.
  **/
 - (void)removeUInt32ForKey:(int32_t)aKey;
+
 /**
  * Removes all entries in this dictionary.
  **/
@@ -1499,7 +1571,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 /**
  * Class used for map fields of <int32_t, int32_t>
- * values. This performs better than boxing into NSNumbers in NSArrays.
+ * values. This performs better than boxing into NSNumbers in NSDictionaries.
  *
  * @note This class is not meant to be subclassed.
  **/
@@ -1512,28 +1584,31 @@ NS_ASSUME_NONNULL_BEGIN
  * @return A newly instanced and empty dictionary.
  **/
 + (instancetype)dictionary;
+
 /**
  * Creates and initializes a dictionary with the single entry given.
  *
- * @param value The value to be placed in the dictionary.
- * @param key         The key under which to store the value.
+ * @param value     The value to be placed in the dictionary.
+ * @param key       The key under which to store the value.
  *
  * @return A newly instanced dictionary with the key and value in it.
  **/
 + (instancetype)dictionaryWithInt32:(int32_t)value
                              forKey:(int32_t)key;
+
 /**
  * Creates and initializes a dictionary with the entries given.
  *
- * @param values The values to be placed in the dictionary.
- * @param keys           The keys under which to store the values.
- * @param count          The number of entries to store in the dictionary.
+ * @param values      The values to be placed in the dictionary.
+ * @param keys        The keys under which to store the values.
+ * @param count       The number of entries to store in the dictionary.
  *
  * @return A newly instanced dictionary with the keys and values in it.
  **/
 + (instancetype)dictionaryWithInt32s:(const int32_t [])values
                              forKeys:(const int32_t [])keys
                                count:(NSUInteger)count;
+
 /**
  * Creates and initializes a dictionary with the entries from the given.
  * dictionary.
@@ -1544,6 +1619,7 @@ NS_ASSUME_NONNULL_BEGIN
  *         dictionary in it.
  **/
 + (instancetype)dictionaryWithDictionary:(GPBInt32Int32Dictionary *)dictionary;
+
 /**
  * Creates and initializes a dictionary with the given capacity.
  *
@@ -1556,15 +1632,16 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * Initializes this dictionary, copying the given values and keys.
  *
- * @param values The values to be placed in this dictionary.
- * @param keys           The keys under which to store the values.
- * @param count          The number of elements to copy into the dictionary.
+ * @param values      The values to be placed in this dictionary.
+ * @param keys        The keys under which to store the values.
+ * @param count       The number of elements to copy into the dictionary.
  *
  * @return A newly initialized dictionary with a copy of the values and keys.
  **/
 - (instancetype)initWithInt32s:(const int32_t [])values
                        forKeys:(const int32_t [])keys
                          count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
+
 /**
  * Initializes this dictionary, copying the entries from the given dictionary.
  *
@@ -1573,6 +1650,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @return A newly initialized dictionary with the entries of the given dictionary.
  **/
 - (instancetype)initWithDictionary:(GPBInt32Int32Dictionary *)dictionary;
+
 /**
  * Initializes this dictionary with the requested capacity.
  *
@@ -1596,9 +1674,9 @@ NS_ASSUME_NONNULL_BEGIN
  * Enumerates the keys and values on this dictionary with the given block.
  *
  * @param block The block to enumerate with.
- *   **key**:       The key for the current entry.
- *   **value**: The value for the current entry
- *   **stop**:      A pointer to a boolean that when set stops the enumeration.
+ *   **key**:        The key for the current entry.
+ *   **value**:      The value for the current entry
+ *   **stop**:       A pointer to a boolean that when set stops the enumeration.
  **/
 - (void)enumerateKeysAndInt32sUsingBlock:
     (void (^)(int32_t key, int32_t value, BOOL *stop))block;
@@ -1614,8 +1692,8 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * Sets the value for the given key.
  *
- * @param value The value to set.
- * @param key         The key under which to store the value.
+ * @param value     The value to set.
+ * @param key       The key under which to store the value.
  **/
 - (void)setInt32:(int32_t)value forKey:(int32_t)key;
 
@@ -1625,6 +1703,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @param aKey Key to be removed from this dictionary.
  **/
 - (void)removeInt32ForKey:(int32_t)aKey;
+
 /**
  * Removes all entries in this dictionary.
  **/
@@ -1636,7 +1715,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 /**
  * Class used for map fields of <int32_t, uint64_t>
- * values. This performs better than boxing into NSNumbers in NSArrays.
+ * values. This performs better than boxing into NSNumbers in NSDictionaries.
  *
  * @note This class is not meant to be subclassed.
  **/
@@ -1649,28 +1728,31 @@ NS_ASSUME_NONNULL_BEGIN
  * @return A newly instanced and empty dictionary.
  **/
 + (instancetype)dictionary;
+
 /**
  * Creates and initializes a dictionary with the single entry given.
  *
- * @param value The value to be placed in the dictionary.
- * @param key         The key under which to store the value.
+ * @param value     The value to be placed in the dictionary.
+ * @param key       The key under which to store the value.
  *
  * @return A newly instanced dictionary with the key and value in it.
  **/
 + (instancetype)dictionaryWithUInt64:(uint64_t)value
                               forKey:(int32_t)key;
+
 /**
  * Creates and initializes a dictionary with the entries given.
  *
- * @param values The values to be placed in the dictionary.
- * @param keys           The keys under which to store the values.
- * @param count          The number of entries to store in the dictionary.
+ * @param values      The values to be placed in the dictionary.
+ * @param keys        The keys under which to store the values.
+ * @param count       The number of entries to store in the dictionary.
  *
  * @return A newly instanced dictionary with the keys and values in it.
  **/
 + (instancetype)dictionaryWithUInt64s:(const uint64_t [])values
                               forKeys:(const int32_t [])keys
                                 count:(NSUInteger)count;
+
 /**
  * Creates and initializes a dictionary with the entries from the given.
  * dictionary.
@@ -1681,6 +1763,7 @@ NS_ASSUME_NONNULL_BEGIN
  *         dictionary in it.
  **/
 + (instancetype)dictionaryWithDictionary:(GPBInt32UInt64Dictionary *)dictionary;
+
 /**
  * Creates and initializes a dictionary with the given capacity.
  *
@@ -1693,15 +1776,16 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * Initializes this dictionary, copying the given values and keys.
  *
- * @param values The values to be placed in this dictionary.
- * @param keys           The keys under which to store the values.
- * @param count          The number of elements to copy into the dictionary.
+ * @param values      The values to be placed in this dictionary.
+ * @param keys        The keys under which to store the values.
+ * @param count       The number of elements to copy into the dictionary.
  *
  * @return A newly initialized dictionary with a copy of the values and keys.
  **/
 - (instancetype)initWithUInt64s:(const uint64_t [])values
                         forKeys:(const int32_t [])keys
                           count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
+
 /**
  * Initializes this dictionary, copying the entries from the given dictionary.
  *
@@ -1710,6 +1794,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @return A newly initialized dictionary with the entries of the given dictionary.
  **/
 - (instancetype)initWithDictionary:(GPBInt32UInt64Dictionary *)dictionary;
+
 /**
  * Initializes this dictionary with the requested capacity.
  *
@@ -1733,9 +1818,9 @@ NS_ASSUME_NONNULL_BEGIN
  * Enumerates the keys and values on this dictionary with the given block.
  *
  * @param block The block to enumerate with.
- *   **key**:       The key for the current entry.
- *   **value**: The value for the current entry
- *   **stop**:      A pointer to a boolean that when set stops the enumeration.
+ *   **key**:        The key for the current entry.
+ *   **value**:      The value for the current entry
+ *   **stop**:       A pointer to a boolean that when set stops the enumeration.
  **/
 - (void)enumerateKeysAndUInt64sUsingBlock:
     (void (^)(int32_t key, uint64_t value, BOOL *stop))block;
@@ -1751,8 +1836,8 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * Sets the value for the given key.
  *
- * @param value The value to set.
- * @param key         The key under which to store the value.
+ * @param value     The value to set.
+ * @param key       The key under which to store the value.
  **/
 - (void)setUInt64:(uint64_t)value forKey:(int32_t)key;
 
@@ -1762,6 +1847,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @param aKey Key to be removed from this dictionary.
  **/
 - (void)removeUInt64ForKey:(int32_t)aKey;
+
 /**
  * Removes all entries in this dictionary.
  **/
@@ -1773,7 +1859,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 /**
  * Class used for map fields of <int32_t, int64_t>
- * values. This performs better than boxing into NSNumbers in NSArrays.
+ * values. This performs better than boxing into NSNumbers in NSDictionaries.
  *
  * @note This class is not meant to be subclassed.
  **/
@@ -1786,28 +1872,31 @@ NS_ASSUME_NONNULL_BEGIN
  * @return A newly instanced and empty dictionary.
  **/
 + (instancetype)dictionary;
+
 /**
  * Creates and initializes a dictionary with the single entry given.
  *
- * @param value The value to be placed in the dictionary.
- * @param key         The key under which to store the value.
+ * @param value     The value to be placed in the dictionary.
+ * @param key       The key under which to store the value.
  *
  * @return A newly instanced dictionary with the key and value in it.
  **/
 + (instancetype)dictionaryWithInt64:(int64_t)value
                              forKey:(int32_t)key;
+
 /**
  * Creates and initializes a dictionary with the entries given.
  *
- * @param values The values to be placed in the dictionary.
- * @param keys           The keys under which to store the values.
- * @param count          The number of entries to store in the dictionary.
+ * @param values      The values to be placed in the dictionary.
+ * @param keys        The keys under which to store the values.
+ * @param count       The number of entries to store in the dictionary.
  *
  * @return A newly instanced dictionary with the keys and values in it.
  **/
 + (instancetype)dictionaryWithInt64s:(const int64_t [])values
                              forKeys:(const int32_t [])keys
                                count:(NSUInteger)count;
+
 /**
  * Creates and initializes a dictionary with the entries from the given.
  * dictionary.
@@ -1818,6 +1907,7 @@ NS_ASSUME_NONNULL_BEGIN
  *         dictionary in it.
  **/
 + (instancetype)dictionaryWithDictionary:(GPBInt32Int64Dictionary *)dictionary;
+
 /**
  * Creates and initializes a dictionary with the given capacity.
  *
@@ -1830,15 +1920,16 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * Initializes this dictionary, copying the given values and keys.
  *
- * @param values The values to be placed in this dictionary.
- * @param keys           The keys under which to store the values.
- * @param count          The number of elements to copy into the dictionary.
+ * @param values      The values to be placed in this dictionary.
+ * @param keys        The keys under which to store the values.
+ * @param count       The number of elements to copy into the dictionary.
  *
  * @return A newly initialized dictionary with a copy of the values and keys.
  **/
 - (instancetype)initWithInt64s:(const int64_t [])values
                        forKeys:(const int32_t [])keys
                          count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
+
 /**
  * Initializes this dictionary, copying the entries from the given dictionary.
  *
@@ -1847,6 +1938,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @return A newly initialized dictionary with the entries of the given dictionary.
  **/
 - (instancetype)initWithDictionary:(GPBInt32Int64Dictionary *)dictionary;
+
 /**
  * Initializes this dictionary with the requested capacity.
  *
@@ -1870,9 +1962,9 @@ NS_ASSUME_NONNULL_BEGIN
  * Enumerates the keys and values on this dictionary with the given block.
  *
  * @param block The block to enumerate with.
- *   **key**:       The key for the current entry.
- *   **value**: The value for the current entry
- *   **stop**:      A pointer to a boolean that when set stops the enumeration.
+ *   **key**:        The key for the current entry.
+ *   **value**:      The value for the current entry
+ *   **stop**:       A pointer to a boolean that when set stops the enumeration.
  **/
 - (void)enumerateKeysAndInt64sUsingBlock:
     (void (^)(int32_t key, int64_t value, BOOL *stop))block;
@@ -1888,8 +1980,8 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * Sets the value for the given key.
  *
- * @param value The value to set.
- * @param key         The key under which to store the value.
+ * @param value     The value to set.
+ * @param key       The key under which to store the value.
  **/
 - (void)setInt64:(int64_t)value forKey:(int32_t)key;
 
@@ -1899,6 +1991,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @param aKey Key to be removed from this dictionary.
  **/
 - (void)removeInt64ForKey:(int32_t)aKey;
+
 /**
  * Removes all entries in this dictionary.
  **/
@@ -1910,7 +2003,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 /**
  * Class used for map fields of <int32_t, BOOL>
- * values. This performs better than boxing into NSNumbers in NSArrays.
+ * values. This performs better than boxing into NSNumbers in NSDictionaries.
  *
  * @note This class is not meant to be subclassed.
  **/
@@ -1923,28 +2016,31 @@ NS_ASSUME_NONNULL_BEGIN
  * @return A newly instanced and empty dictionary.
  **/
 + (instancetype)dictionary;
+
 /**
  * Creates and initializes a dictionary with the single entry given.
  *
- * @param value The value to be placed in the dictionary.
- * @param key         The key under which to store the value.
+ * @param value     The value to be placed in the dictionary.
+ * @param key       The key under which to store the value.
  *
  * @return A newly instanced dictionary with the key and value in it.
  **/
 + (instancetype)dictionaryWithBool:(BOOL)value
                             forKey:(int32_t)key;
+
 /**
  * Creates and initializes a dictionary with the entries given.
  *
- * @param values The values to be placed in the dictionary.
- * @param keys           The keys under which to store the values.
- * @param count          The number of entries to store in the dictionary.
+ * @param values      The values to be placed in the dictionary.
+ * @param keys        The keys under which to store the values.
+ * @param count       The number of entries to store in the dictionary.
  *
  * @return A newly instanced dictionary with the keys and values in it.
  **/
 + (instancetype)dictionaryWithBools:(const BOOL [])values
                             forKeys:(const int32_t [])keys
                               count:(NSUInteger)count;
+
 /**
  * Creates and initializes a dictionary with the entries from the given.
  * dictionary.
@@ -1955,6 +2051,7 @@ NS_ASSUME_NONNULL_BEGIN
  *         dictionary in it.
  **/
 + (instancetype)dictionaryWithDictionary:(GPBInt32BoolDictionary *)dictionary;
+
 /**
  * Creates and initializes a dictionary with the given capacity.
  *
@@ -1967,15 +2064,16 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * Initializes this dictionary, copying the given values and keys.
  *
- * @param values The values to be placed in this dictionary.
- * @param keys           The keys under which to store the values.
- * @param count          The number of elements to copy into the dictionary.
+ * @param values      The values to be placed in this dictionary.
+ * @param keys        The keys under which to store the values.
+ * @param count       The number of elements to copy into the dictionary.
  *
  * @return A newly initialized dictionary with a copy of the values and keys.
  **/
 - (instancetype)initWithBools:(const BOOL [])values
                       forKeys:(const int32_t [])keys
                         count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
+
 /**
  * Initializes this dictionary, copying the entries from the given dictionary.
  *
@@ -1984,6 +2082,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @return A newly initialized dictionary with the entries of the given dictionary.
  **/
 - (instancetype)initWithDictionary:(GPBInt32BoolDictionary *)dictionary;
+
 /**
  * Initializes this dictionary with the requested capacity.
  *
@@ -2007,9 +2106,9 @@ NS_ASSUME_NONNULL_BEGIN
  * Enumerates the keys and values on this dictionary with the given block.
  *
  * @param block The block to enumerate with.
- *   **key**:       The key for the current entry.
- *   **value**: The value for the current entry
- *   **stop**:      A pointer to a boolean that when set stops the enumeration.
+ *   **key**:        The key for the current entry.
+ *   **value**:      The value for the current entry
+ *   **stop**:       A pointer to a boolean that when set stops the enumeration.
  **/
 - (void)enumerateKeysAndBoolsUsingBlock:
     (void (^)(int32_t key, BOOL value, BOOL *stop))block;
@@ -2025,8 +2124,8 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * Sets the value for the given key.
  *
- * @param value The value to set.
- * @param key         The key under which to store the value.
+ * @param value     The value to set.
+ * @param key       The key under which to store the value.
  **/
 - (void)setBool:(BOOL)value forKey:(int32_t)key;
 
@@ -2036,6 +2135,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @param aKey Key to be removed from this dictionary.
  **/
 - (void)removeBoolForKey:(int32_t)aKey;
+
 /**
  * Removes all entries in this dictionary.
  **/
@@ -2047,7 +2147,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 /**
  * Class used for map fields of <int32_t, float>
- * values. This performs better than boxing into NSNumbers in NSArrays.
+ * values. This performs better than boxing into NSNumbers in NSDictionaries.
  *
  * @note This class is not meant to be subclassed.
  **/
@@ -2060,28 +2160,31 @@ NS_ASSUME_NONNULL_BEGIN
  * @return A newly instanced and empty dictionary.
  **/
 + (instancetype)dictionary;
+
 /**
  * Creates and initializes a dictionary with the single entry given.
  *
- * @param value The value to be placed in the dictionary.
- * @param key         The key under which to store the value.
+ * @param value     The value to be placed in the dictionary.
+ * @param key       The key under which to store the value.
  *
  * @return A newly instanced dictionary with the key and value in it.
  **/
 + (instancetype)dictionaryWithFloat:(float)value
                              forKey:(int32_t)key;
+
 /**
  * Creates and initializes a dictionary with the entries given.
  *
- * @param values The values to be placed in the dictionary.
- * @param keys           The keys under which to store the values.
- * @param count          The number of entries to store in the dictionary.
+ * @param values      The values to be placed in the dictionary.
+ * @param keys        The keys under which to store the values.
+ * @param count       The number of entries to store in the dictionary.
  *
  * @return A newly instanced dictionary with the keys and values in it.
  **/
 + (instancetype)dictionaryWithFloats:(const float [])values
                              forKeys:(const int32_t [])keys
                                count:(NSUInteger)count;
+
 /**
  * Creates and initializes a dictionary with the entries from the given.
  * dictionary.
@@ -2092,6 +2195,7 @@ NS_ASSUME_NONNULL_BEGIN
  *         dictionary in it.
  **/
 + (instancetype)dictionaryWithDictionary:(GPBInt32FloatDictionary *)dictionary;
+
 /**
  * Creates and initializes a dictionary with the given capacity.
  *
@@ -2104,15 +2208,16 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * Initializes this dictionary, copying the given values and keys.
  *
- * @param values The values to be placed in this dictionary.
- * @param keys           The keys under which to store the values.
- * @param count          The number of elements to copy into the dictionary.
+ * @param values      The values to be placed in this dictionary.
+ * @param keys        The keys under which to store the values.
+ * @param count       The number of elements to copy into the dictionary.
  *
  * @return A newly initialized dictionary with a copy of the values and keys.
  **/
 - (instancetype)initWithFloats:(const float [])values
                        forKeys:(const int32_t [])keys
                          count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
+
 /**
  * Initializes this dictionary, copying the entries from the given dictionary.
  *
@@ -2121,6 +2226,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @return A newly initialized dictionary with the entries of the given dictionary.
  **/
 - (instancetype)initWithDictionary:(GPBInt32FloatDictionary *)dictionary;
+
 /**
  * Initializes this dictionary with the requested capacity.
  *
@@ -2144,9 +2250,9 @@ NS_ASSUME_NONNULL_BEGIN
  * Enumerates the keys and values on this dictionary with the given block.
  *
  * @param block The block to enumerate with.
- *   **key**:       The key for the current entry.
- *   **value**: The value for the current entry
- *   **stop**:      A pointer to a boolean that when set stops the enumeration.
+ *   **key**:        The key for the current entry.
+ *   **value**:      The value for the current entry
+ *   **stop**:       A pointer to a boolean that when set stops the enumeration.
  **/
 - (void)enumerateKeysAndFloatsUsingBlock:
     (void (^)(int32_t key, float value, BOOL *stop))block;
@@ -2162,8 +2268,8 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * Sets the value for the given key.
  *
- * @param value The value to set.
- * @param key         The key under which to store the value.
+ * @param value     The value to set.
+ * @param key       The key under which to store the value.
  **/
 - (void)setFloat:(float)value forKey:(int32_t)key;
 
@@ -2173,6 +2279,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @param aKey Key to be removed from this dictionary.
  **/
 - (void)removeFloatForKey:(int32_t)aKey;
+
 /**
  * Removes all entries in this dictionary.
  **/
@@ -2184,7 +2291,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 /**
  * Class used for map fields of <int32_t, double>
- * values. This performs better than boxing into NSNumbers in NSArrays.
+ * values. This performs better than boxing into NSNumbers in NSDictionaries.
  *
  * @note This class is not meant to be subclassed.
  **/
@@ -2197,28 +2304,31 @@ NS_ASSUME_NONNULL_BEGIN
  * @return A newly instanced and empty dictionary.
  **/
 + (instancetype)dictionary;
+
 /**
  * Creates and initializes a dictionary with the single entry given.
  *
- * @param value The value to be placed in the dictionary.
- * @param key         The key under which to store the value.
+ * @param value     The value to be placed in the dictionary.
+ * @param key       The key under which to store the value.
  *
  * @return A newly instanced dictionary with the key and value in it.
  **/
 + (instancetype)dictionaryWithDouble:(double)value
                               forKey:(int32_t)key;
+
 /**
  * Creates and initializes a dictionary with the entries given.
  *
- * @param values The values to be placed in the dictionary.
- * @param keys           The keys under which to store the values.
- * @param count          The number of entries to store in the dictionary.
+ * @param values      The values to be placed in the dictionary.
+ * @param keys        The keys under which to store the values.
+ * @param count       The number of entries to store in the dictionary.
  *
  * @return A newly instanced dictionary with the keys and values in it.
  **/
 + (instancetype)dictionaryWithDoubles:(const double [])values
                               forKeys:(const int32_t [])keys
                                 count:(NSUInteger)count;
+
 /**
  * Creates and initializes a dictionary with the entries from the given.
  * dictionary.
@@ -2229,6 +2339,7 @@ NS_ASSUME_NONNULL_BEGIN
  *         dictionary in it.
  **/
 + (instancetype)dictionaryWithDictionary:(GPBInt32DoubleDictionary *)dictionary;
+
 /**
  * Creates and initializes a dictionary with the given capacity.
  *
@@ -2241,15 +2352,16 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * Initializes this dictionary, copying the given values and keys.
  *
- * @param values The values to be placed in this dictionary.
- * @param keys           The keys under which to store the values.
- * @param count          The number of elements to copy into the dictionary.
+ * @param values      The values to be placed in this dictionary.
+ * @param keys        The keys under which to store the values.
+ * @param count       The number of elements to copy into the dictionary.
  *
  * @return A newly initialized dictionary with a copy of the values and keys.
  **/
 - (instancetype)initWithDoubles:(const double [])values
                         forKeys:(const int32_t [])keys
                           count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
+
 /**
  * Initializes this dictionary, copying the entries from the given dictionary.
  *
@@ -2258,6 +2370,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @return A newly initialized dictionary with the entries of the given dictionary.
  **/
 - (instancetype)initWithDictionary:(GPBInt32DoubleDictionary *)dictionary;
+
 /**
  * Initializes this dictionary with the requested capacity.
  *
@@ -2281,9 +2394,9 @@ NS_ASSUME_NONNULL_BEGIN
  * Enumerates the keys and values on this dictionary with the given block.
  *
  * @param block The block to enumerate with.
- *   **key**:       The key for the current entry.
- *   **value**: The value for the current entry
- *   **stop**:      A pointer to a boolean that when set stops the enumeration.
+ *   **key**:        The key for the current entry.
+ *   **value**:      The value for the current entry
+ *   **stop**:       A pointer to a boolean that when set stops the enumeration.
  **/
 - (void)enumerateKeysAndDoublesUsingBlock:
     (void (^)(int32_t key, double value, BOOL *stop))block;
@@ -2299,8 +2412,8 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * Sets the value for the given key.
  *
- * @param value The value to set.
- * @param key         The key under which to store the value.
+ * @param value     The value to set.
+ * @param key       The key under which to store the value.
  **/
 - (void)setDouble:(double)value forKey:(int32_t)key;
 
@@ -2310,6 +2423,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @param aKey Key to be removed from this dictionary.
  **/
 - (void)removeDoubleForKey:(int32_t)aKey;
+
 /**
  * Removes all entries in this dictionary.
  **/
@@ -2321,7 +2435,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 /**
  * Class used for map fields of <int32_t, int32_t>
- * values. This performs better than boxing into NSNumbers in NSArrays.
+ * values. This performs better than boxing into NSNumbers in NSDictionaries.
  *
  * @note This class is not meant to be subclassed.
  **/
@@ -2336,6 +2450,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @return A newly instanced and empty dictionary.
  **/
 + (instancetype)dictionary;
+
 /**
  * Creates and initializes a dictionary with the given validation function.
  *
@@ -2344,6 +2459,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @return A newly instanced dictionary.
  **/
 + (instancetype)dictionaryWithValidationFunction:(nullable GPBEnumValidationFunc)func;
+
 /**
  * Creates and initializes a dictionary with the single entry given.
  *
@@ -2356,6 +2472,7 @@ NS_ASSUME_NONNULL_BEGIN
 + (instancetype)dictionaryWithValidationFunction:(nullable GPBEnumValidationFunc)func
                                         rawValue:(int32_t)rawValue
                                           forKey:(int32_t)key;
+
 /**
  * Creates and initializes a dictionary with the entries given.
  *
@@ -2370,6 +2487,7 @@ NS_ASSUME_NONNULL_BEGIN
                                        rawValues:(const int32_t [])values
                                          forKeys:(const int32_t [])keys
                                            count:(NSUInteger)count;
+
 /**
  * Creates and initializes a dictionary with the entries from the given.
  * dictionary.
@@ -2380,6 +2498,7 @@ NS_ASSUME_NONNULL_BEGIN
  *         dictionary in it.
  **/
 + (instancetype)dictionaryWithDictionary:(GPBInt32EnumDictionary *)dictionary;
+
 /**
  * Creates and initializes a dictionary with the given capacity.
  *
@@ -2399,6 +2518,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @return A newly initialized dictionary.
  **/
 - (instancetype)initWithValidationFunction:(nullable GPBEnumValidationFunc)func;
+
 /**
  * Initializes a dictionary with the entries given.
  *
@@ -2413,6 +2533,7 @@ NS_ASSUME_NONNULL_BEGIN
                                  rawValues:(const int32_t [])values
                                    forKeys:(const int32_t [])keys
                                      count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
+
 /**
  * Initializes a dictionary with the entries from the given.
  * dictionary.
@@ -2423,6 +2544,7 @@ NS_ASSUME_NONNULL_BEGIN
  *         dictionary in it.
  **/
 - (instancetype)initWithDictionary:(GPBInt32EnumDictionary *)dictionary;
+
 /**
  * Initializes a dictionary with the given capacity.
  *
@@ -2452,9 +2574,9 @@ NS_ASSUME_NONNULL_BEGIN
  * Enumerates the keys and values on this dictionary with the given block.
  *
  * @param block The block to enumerate with.
- *   **key**:       The key for the current entry.
- *   **value**: The value for the current entry
- *   **stop**:      A pointer to a boolean that when set stops the enumeration.
+ *   **key**:        The key for the current entry.
+ *   **value**:      The value for the current entry
+ *   **stop**:       A pointer to a boolean that when set stops the enumeration.
  **/
 - (void)enumerateKeysAndEnumsUsingBlock:
     (void (^)(int32_t key, int32_t value, BOOL *stop))block;
@@ -2505,8 +2627,8 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * Sets the value for the given key.
  *
- * @param value The value to set.
- * @param key         The key under which to store the value.
+ * @param value     The value to set.
+ * @param key       The key under which to store the value.
  **/
 - (void)setEnum:(int32_t)value forKey:(int32_t)key;
 
@@ -2527,6 +2649,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @param aKey Key to be removed from this dictionary.
  **/
 - (void)removeEnumForKey:(int32_t)aKey;
+
 /**
  * Removes all entries in this dictionary.
  **/
@@ -2538,7 +2661,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 /**
  * Class used for map fields of <int32_t, ObjectType>
- * values. This performs better than boxing into NSNumbers in NSArrays.
+ * values. This performs better than boxing into NSNumbers in NSDictionaries.
  *
  * @note This class is not meant to be subclassed.
  **/
@@ -2551,28 +2674,31 @@ NS_ASSUME_NONNULL_BEGIN
  * @return A newly instanced and empty dictionary.
  **/
 + (instancetype)dictionary;
+
 /**
  * Creates and initializes a dictionary with the single entry given.
  *
- * @param object The value to be placed in the dictionary.
- * @param key         The key under which to store the value.
+ * @param object     The value to be placed in the dictionary.
+ * @param key        The key under which to store the value.
  *
  * @return A newly instanced dictionary with the key and value in it.
  **/
 + (instancetype)dictionaryWithObject:(ObjectType)object
                               forKey:(int32_t)key;
+
 /**
  * Creates and initializes a dictionary with the entries given.
  *
- * @param objects The values to be placed in the dictionary.
- * @param keys           The keys under which to store the values.
- * @param count          The number of entries to store in the dictionary.
+ * @param objects      The values to be placed in the dictionary.
+ * @param keys         The keys under which to store the values.
+ * @param count        The number of entries to store in the dictionary.
  *
  * @return A newly instanced dictionary with the keys and values in it.
  **/
 + (instancetype)dictionaryWithObjects:(const ObjectType GPB_UNSAFE_UNRETAINED [])objects
                               forKeys:(const int32_t [])keys
                                 count:(NSUInteger)count;
+
 /**
  * Creates and initializes a dictionary with the entries from the given.
  * dictionary.
@@ -2583,6 +2709,7 @@ NS_ASSUME_NONNULL_BEGIN
  *         dictionary in it.
  **/
 + (instancetype)dictionaryWithDictionary:(GPBInt32ObjectDictionary *)dictionary;
+
 /**
  * Creates and initializes a dictionary with the given capacity.
  *
@@ -2595,15 +2722,16 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * Initializes this dictionary, copying the given values and keys.
  *
- * @param objects The values to be placed in this dictionary.
- * @param keys           The keys under which to store the values.
- * @param count          The number of elements to copy into the dictionary.
+ * @param objects      The values to be placed in this dictionary.
+ * @param keys         The keys under which to store the values.
+ * @param count        The number of elements to copy into the dictionary.
  *
  * @return A newly initialized dictionary with a copy of the values and keys.
  **/
 - (instancetype)initWithObjects:(const ObjectType GPB_UNSAFE_UNRETAINED [])objects
                         forKeys:(const int32_t [])keys
                           count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
+
 /**
  * Initializes this dictionary, copying the entries from the given dictionary.
  *
@@ -2612,6 +2740,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @return A newly initialized dictionary with the entries of the given dictionary.
  **/
 - (instancetype)initWithDictionary:(GPBInt32ObjectDictionary *)dictionary;
+
 /**
  * Initializes this dictionary with the requested capacity.
  *
@@ -2634,9 +2763,9 @@ NS_ASSUME_NONNULL_BEGIN
  * Enumerates the keys and values on this dictionary with the given block.
  *
  * @param block The block to enumerate with.
- *   **key**:       The key for the current entry.
- *   **object**: The value for the current entry
- *   **stop**:      A pointer to a boolean that when set stops the enumeration.
+ *   **key**:         The key for the current entry.
+ *   **object**:      The value for the current entry
+ *   **stop**:        A pointer to a boolean that when set stops the enumeration.
  **/
 - (void)enumerateKeysAndObjectsUsingBlock:
     (void (^)(int32_t key, ObjectType object, BOOL *stop))block;
@@ -2652,8 +2781,8 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * Sets the value for the given key.
  *
- * @param object The value to set.
- * @param key         The key under which to store the value.
+ * @param object     The value to set.
+ * @param key        The key under which to store the value.
  **/
 - (void)setObject:(ObjectType)object forKey:(int32_t)key;
 
@@ -2663,6 +2792,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @param aKey Key to be removed from this dictionary.
  **/
 - (void)removeObjectForKey:(int32_t)aKey;
+
 /**
  * Removes all entries in this dictionary.
  **/
@@ -2674,7 +2804,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 /**
  * Class used for map fields of <uint64_t, uint32_t>
- * values. This performs better than boxing into NSNumbers in NSArrays.
+ * values. This performs better than boxing into NSNumbers in NSDictionaries.
  *
  * @note This class is not meant to be subclassed.
  **/
@@ -2687,28 +2817,31 @@ NS_ASSUME_NONNULL_BEGIN
  * @return A newly instanced and empty dictionary.
  **/
 + (instancetype)dictionary;
+
 /**
  * Creates and initializes a dictionary with the single entry given.
  *
- * @param value The value to be placed in the dictionary.
- * @param key         The key under which to store the value.
+ * @param value     The value to be placed in the dictionary.
+ * @param key       The key under which to store the value.
  *
  * @return A newly instanced dictionary with the key and value in it.
  **/
 + (instancetype)dictionaryWithUInt32:(uint32_t)value
                               forKey:(uint64_t)key;
+
 /**
  * Creates and initializes a dictionary with the entries given.
  *
- * @param values The values to be placed in the dictionary.
- * @param keys           The keys under which to store the values.
- * @param count          The number of entries to store in the dictionary.
+ * @param values      The values to be placed in the dictionary.
+ * @param keys        The keys under which to store the values.
+ * @param count       The number of entries to store in the dictionary.
  *
  * @return A newly instanced dictionary with the keys and values in it.
  **/
 + (instancetype)dictionaryWithUInt32s:(const uint32_t [])values
                               forKeys:(const uint64_t [])keys
                                 count:(NSUInteger)count;
+
 /**
  * Creates and initializes a dictionary with the entries from the given.
  * dictionary.
@@ -2719,6 +2852,7 @@ NS_ASSUME_NONNULL_BEGIN
  *         dictionary in it.
  **/
 + (instancetype)dictionaryWithDictionary:(GPBUInt64UInt32Dictionary *)dictionary;
+
 /**
  * Creates and initializes a dictionary with the given capacity.
  *
@@ -2731,15 +2865,16 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * Initializes this dictionary, copying the given values and keys.
  *
- * @param values The values to be placed in this dictionary.
- * @param keys           The keys under which to store the values.
- * @param count          The number of elements to copy into the dictionary.
+ * @param values      The values to be placed in this dictionary.
+ * @param keys        The keys under which to store the values.
+ * @param count       The number of elements to copy into the dictionary.
  *
  * @return A newly initialized dictionary with a copy of the values and keys.
  **/
 - (instancetype)initWithUInt32s:(const uint32_t [])values
                         forKeys:(const uint64_t [])keys
                           count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
+
 /**
  * Initializes this dictionary, copying the entries from the given dictionary.
  *
@@ -2748,6 +2883,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @return A newly initialized dictionary with the entries of the given dictionary.
  **/
 - (instancetype)initWithDictionary:(GPBUInt64UInt32Dictionary *)dictionary;
+
 /**
  * Initializes this dictionary with the requested capacity.
  *
@@ -2771,9 +2907,9 @@ NS_ASSUME_NONNULL_BEGIN
  * Enumerates the keys and values on this dictionary with the given block.
  *
  * @param block The block to enumerate with.
- *   **key**:       The key for the current entry.
- *   **value**: The value for the current entry
- *   **stop**:      A pointer to a boolean that when set stops the enumeration.
+ *   **key**:        The key for the current entry.
+ *   **value**:      The value for the current entry
+ *   **stop**:       A pointer to a boolean that when set stops the enumeration.
  **/
 - (void)enumerateKeysAndUInt32sUsingBlock:
     (void (^)(uint64_t key, uint32_t value, BOOL *stop))block;
@@ -2789,8 +2925,8 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * Sets the value for the given key.
  *
- * @param value The value to set.
- * @param key         The key under which to store the value.
+ * @param value     The value to set.
+ * @param key       The key under which to store the value.
  **/
 - (void)setUInt32:(uint32_t)value forKey:(uint64_t)key;
 
@@ -2800,6 +2936,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @param aKey Key to be removed from this dictionary.
  **/
 - (void)removeUInt32ForKey:(uint64_t)aKey;
+
 /**
  * Removes all entries in this dictionary.
  **/
@@ -2811,7 +2948,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 /**
  * Class used for map fields of <uint64_t, int32_t>
- * values. This performs better than boxing into NSNumbers in NSArrays.
+ * values. This performs better than boxing into NSNumbers in NSDictionaries.
  *
  * @note This class is not meant to be subclassed.
  **/
@@ -2824,28 +2961,31 @@ NS_ASSUME_NONNULL_BEGIN
  * @return A newly instanced and empty dictionary.
  **/
 + (instancetype)dictionary;
+
 /**
  * Creates and initializes a dictionary with the single entry given.
  *
- * @param value The value to be placed in the dictionary.
- * @param key         The key under which to store the value.
+ * @param value     The value to be placed in the dictionary.
+ * @param key       The key under which to store the value.
  *
  * @return A newly instanced dictionary with the key and value in it.
  **/
 + (instancetype)dictionaryWithInt32:(int32_t)value
                              forKey:(uint64_t)key;
+
 /**
  * Creates and initializes a dictionary with the entries given.
  *
- * @param values The values to be placed in the dictionary.
- * @param keys           The keys under which to store the values.
- * @param count          The number of entries to store in the dictionary.
+ * @param values      The values to be placed in the dictionary.
+ * @param keys        The keys under which to store the values.
+ * @param count       The number of entries to store in the dictionary.
  *
  * @return A newly instanced dictionary with the keys and values in it.
  **/
 + (instancetype)dictionaryWithInt32s:(const int32_t [])values
                              forKeys:(const uint64_t [])keys
                                count:(NSUInteger)count;
+
 /**
  * Creates and initializes a dictionary with the entries from the given.
  * dictionary.
@@ -2856,6 +2996,7 @@ NS_ASSUME_NONNULL_BEGIN
  *         dictionary in it.
  **/
 + (instancetype)dictionaryWithDictionary:(GPBUInt64Int32Dictionary *)dictionary;
+
 /**
  * Creates and initializes a dictionary with the given capacity.
  *
@@ -2868,15 +3009,16 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * Initializes this dictionary, copying the given values and keys.
  *
- * @param values The values to be placed in this dictionary.
- * @param keys           The keys under which to store the values.
- * @param count          The number of elements to copy into the dictionary.
+ * @param values      The values to be placed in this dictionary.
+ * @param keys        The keys under which to store the values.
+ * @param count       The number of elements to copy into the dictionary.
  *
  * @return A newly initialized dictionary with a copy of the values and keys.
  **/
 - (instancetype)initWithInt32s:(const int32_t [])values
                        forKeys:(const uint64_t [])keys
                          count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
+
 /**
  * Initializes this dictionary, copying the entries from the given dictionary.
  *
@@ -2885,6 +3027,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @return A newly initialized dictionary with the entries of the given dictionary.
  **/
 - (instancetype)initWithDictionary:(GPBUInt64Int32Dictionary *)dictionary;
+
 /**
  * Initializes this dictionary with the requested capacity.
  *
@@ -2908,9 +3051,9 @@ NS_ASSUME_NONNULL_BEGIN
  * Enumerates the keys and values on this dictionary with the given block.
  *
  * @param block The block to enumerate with.
- *   **key**:       The key for the current entry.
- *   **value**: The value for the current entry
- *   **stop**:      A pointer to a boolean that when set stops the enumeration.
+ *   **key**:        The key for the current entry.
+ *   **value**:      The value for the current entry
+ *   **stop**:       A pointer to a boolean that when set stops the enumeration.
  **/
 - (void)enumerateKeysAndInt32sUsingBlock:
     (void (^)(uint64_t key, int32_t value, BOOL *stop))block;
@@ -2926,8 +3069,8 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * Sets the value for the given key.
  *
- * @param value The value to set.
- * @param key         The key under which to store the value.
+ * @param value     The value to set.
+ * @param key       The key under which to store the value.
  **/
 - (void)setInt32:(int32_t)value forKey:(uint64_t)key;
 
@@ -2937,6 +3080,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @param aKey Key to be removed from this dictionary.
  **/
 - (void)removeInt32ForKey:(uint64_t)aKey;
+
 /**
  * Removes all entries in this dictionary.
  **/
@@ -2948,7 +3092,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 /**
  * Class used for map fields of <uint64_t, uint64_t>
- * values. This performs better than boxing into NSNumbers in NSArrays.
+ * values. This performs better than boxing into NSNumbers in NSDictionaries.
  *
  * @note This class is not meant to be subclassed.
  **/
@@ -2961,28 +3105,31 @@ NS_ASSUME_NONNULL_BEGIN
  * @return A newly instanced and empty dictionary.
  **/
 + (instancetype)dictionary;
+
 /**
  * Creates and initializes a dictionary with the single entry given.
  *
- * @param value The value to be placed in the dictionary.
- * @param key         The key under which to store the value.
+ * @param value     The value to be placed in the dictionary.
+ * @param key       The key under which to store the value.
  *
  * @return A newly instanced dictionary with the key and value in it.
  **/
 + (instancetype)dictionaryWithUInt64:(uint64_t)value
                               forKey:(uint64_t)key;
+
 /**
  * Creates and initializes a dictionary with the entries given.
  *
- * @param values The values to be placed in the dictionary.
- * @param keys           The keys under which to store the values.
- * @param count          The number of entries to store in the dictionary.
+ * @param values      The values to be placed in the dictionary.
+ * @param keys        The keys under which to store the values.
+ * @param count       The number of entries to store in the dictionary.
  *
  * @return A newly instanced dictionary with the keys and values in it.
  **/
 + (instancetype)dictionaryWithUInt64s:(const uint64_t [])values
                               forKeys:(const uint64_t [])keys
                                 count:(NSUInteger)count;
+
 /**
  * Creates and initializes a dictionary with the entries from the given.
  * dictionary.
@@ -2993,6 +3140,7 @@ NS_ASSUME_NONNULL_BEGIN
  *         dictionary in it.
  **/
 + (instancetype)dictionaryWithDictionary:(GPBUInt64UInt64Dictionary *)dictionary;
+
 /**
  * Creates and initializes a dictionary with the given capacity.
  *
@@ -3005,15 +3153,16 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * Initializes this dictionary, copying the given values and keys.
  *
- * @param values The values to be placed in this dictionary.
- * @param keys           The keys under which to store the values.
- * @param count          The number of elements to copy into the dictionary.
+ * @param values      The values to be placed in this dictionary.
+ * @param keys        The keys under which to store the values.
+ * @param count       The number of elements to copy into the dictionary.
  *
  * @return A newly initialized dictionary with a copy of the values and keys.
  **/
 - (instancetype)initWithUInt64s:(const uint64_t [])values
                         forKeys:(const uint64_t [])keys
                           count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
+
 /**
  * Initializes this dictionary, copying the entries from the given dictionary.
  *
@@ -3022,6 +3171,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @return A newly initialized dictionary with the entries of the given dictionary.
  **/
 - (instancetype)initWithDictionary:(GPBUInt64UInt64Dictionary *)dictionary;
+
 /**
  * Initializes this dictionary with the requested capacity.
  *
@@ -3045,9 +3195,9 @@ NS_ASSUME_NONNULL_BEGIN
  * Enumerates the keys and values on this dictionary with the given block.
  *
  * @param block The block to enumerate with.
- *   **key**:       The key for the current entry.
- *   **value**: The value for the current entry
- *   **stop**:      A pointer to a boolean that when set stops the enumeration.
+ *   **key**:        The key for the current entry.
+ *   **value**:      The value for the current entry
+ *   **stop**:       A pointer to a boolean that when set stops the enumeration.
  **/
 - (void)enumerateKeysAndUInt64sUsingBlock:
     (void (^)(uint64_t key, uint64_t value, BOOL *stop))block;
@@ -3063,8 +3213,8 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * Sets the value for the given key.
  *
- * @param value The value to set.
- * @param key         The key under which to store the value.
+ * @param value     The value to set.
+ * @param key       The key under which to store the value.
  **/
 - (void)setUInt64:(uint64_t)value forKey:(uint64_t)key;
 
@@ -3074,6 +3224,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @param aKey Key to be removed from this dictionary.
  **/
 - (void)removeUInt64ForKey:(uint64_t)aKey;
+
 /**
  * Removes all entries in this dictionary.
  **/
@@ -3085,7 +3236,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 /**
  * Class used for map fields of <uint64_t, int64_t>
- * values. This performs better than boxing into NSNumbers in NSArrays.
+ * values. This performs better than boxing into NSNumbers in NSDictionaries.
  *
  * @note This class is not meant to be subclassed.
  **/
@@ -3098,28 +3249,31 @@ NS_ASSUME_NONNULL_BEGIN
  * @return A newly instanced and empty dictionary.
  **/
 + (instancetype)dictionary;
+
 /**
  * Creates and initializes a dictionary with the single entry given.
  *
- * @param value The value to be placed in the dictionary.
- * @param key         The key under which to store the value.
+ * @param value     The value to be placed in the dictionary.
+ * @param key       The key under which to store the value.
  *
  * @return A newly instanced dictionary with the key and value in it.
  **/
 + (instancetype)dictionaryWithInt64:(int64_t)value
                              forKey:(uint64_t)key;
+
 /**
  * Creates and initializes a dictionary with the entries given.
  *
- * @param values The values to be placed in the dictionary.
- * @param keys           The keys under which to store the values.
- * @param count          The number of entries to store in the dictionary.
+ * @param values      The values to be placed in the dictionary.
+ * @param keys        The keys under which to store the values.
+ * @param count       The number of entries to store in the dictionary.
  *
  * @return A newly instanced dictionary with the keys and values in it.
  **/
 + (instancetype)dictionaryWithInt64s:(const int64_t [])values
                              forKeys:(const uint64_t [])keys
                                count:(NSUInteger)count;
+
 /**
  * Creates and initializes a dictionary with the entries from the given.
  * dictionary.
@@ -3130,6 +3284,7 @@ NS_ASSUME_NONNULL_BEGIN
  *         dictionary in it.
  **/
 + (instancetype)dictionaryWithDictionary:(GPBUInt64Int64Dictionary *)dictionary;
+
 /**
  * Creates and initializes a dictionary with the given capacity.
  *
@@ -3142,15 +3297,16 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * Initializes this dictionary, copying the given values and keys.
  *
- * @param values The values to be placed in this dictionary.
- * @param keys           The keys under which to store the values.
- * @param count          The number of elements to copy into the dictionary.
+ * @param values      The values to be placed in this dictionary.
+ * @param keys        The keys under which to store the values.
+ * @param count       The number of elements to copy into the dictionary.
  *
  * @return A newly initialized dictionary with a copy of the values and keys.
  **/
 - (instancetype)initWithInt64s:(const int64_t [])values
                        forKeys:(const uint64_t [])keys
                          count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
+
 /**
  * Initializes this dictionary, copying the entries from the given dictionary.
  *
@@ -3159,6 +3315,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @return A newly initialized dictionary with the entries of the given dictionary.
  **/
 - (instancetype)initWithDictionary:(GPBUInt64Int64Dictionary *)dictionary;
+
 /**
  * Initializes this dictionary with the requested capacity.
  *
@@ -3182,9 +3339,9 @@ NS_ASSUME_NONNULL_BEGIN
  * Enumerates the keys and values on this dictionary with the given block.
  *
  * @param block The block to enumerate with.
- *   **key**:       The key for the current entry.
- *   **value**: The value for the current entry
- *   **stop**:      A pointer to a boolean that when set stops the enumeration.
+ *   **key**:        The key for the current entry.
+ *   **value**:      The value for the current entry
+ *   **stop**:       A pointer to a boolean that when set stops the enumeration.
  **/
 - (void)enumerateKeysAndInt64sUsingBlock:
     (void (^)(uint64_t key, int64_t value, BOOL *stop))block;
@@ -3200,8 +3357,8 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * Sets the value for the given key.
  *
- * @param value The value to set.
- * @param key         The key under which to store the value.
+ * @param value     The value to set.
+ * @param key       The key under which to store the value.
  **/
 - (void)setInt64:(int64_t)value forKey:(uint64_t)key;
 
@@ -3211,6 +3368,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @param aKey Key to be removed from this dictionary.
  **/
 - (void)removeInt64ForKey:(uint64_t)aKey;
+
 /**
  * Removes all entries in this dictionary.
  **/
@@ -3222,7 +3380,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 /**
  * Class used for map fields of <uint64_t, BOOL>
- * values. This performs better than boxing into NSNumbers in NSArrays.
+ * values. This performs better than boxing into NSNumbers in NSDictionaries.
  *
  * @note This class is not meant to be subclassed.
  **/
@@ -3235,28 +3393,31 @@ NS_ASSUME_NONNULL_BEGIN
  * @return A newly instanced and empty dictionary.
  **/
 + (instancetype)dictionary;
+
 /**
  * Creates and initializes a dictionary with the single entry given.
  *
- * @param value The value to be placed in the dictionary.
- * @param key         The key under which to store the value.
+ * @param value     The value to be placed in the dictionary.
+ * @param key       The key under which to store the value.
  *
  * @return A newly instanced dictionary with the key and value in it.
  **/
 + (instancetype)dictionaryWithBool:(BOOL)value
                             forKey:(uint64_t)key;
+
 /**
  * Creates and initializes a dictionary with the entries given.
  *
- * @param values The values to be placed in the dictionary.
- * @param keys           The keys under which to store the values.
- * @param count          The number of entries to store in the dictionary.
+ * @param values      The values to be placed in the dictionary.
+ * @param keys        The keys under which to store the values.
+ * @param count       The number of entries to store in the dictionary.
  *
  * @return A newly instanced dictionary with the keys and values in it.
  **/
 + (instancetype)dictionaryWithBools:(const BOOL [])values
                             forKeys:(const uint64_t [])keys
                               count:(NSUInteger)count;
+
 /**
  * Creates and initializes a dictionary with the entries from the given.
  * dictionary.
@@ -3267,6 +3428,7 @@ NS_ASSUME_NONNULL_BEGIN
  *         dictionary in it.
  **/
 + (instancetype)dictionaryWithDictionary:(GPBUInt64BoolDictionary *)dictionary;
+
 /**
  * Creates and initializes a dictionary with the given capacity.
  *
@@ -3279,15 +3441,16 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * Initializes this dictionary, copying the given values and keys.
  *
- * @param values The values to be placed in this dictionary.
- * @param keys           The keys under which to store the values.
- * @param count          The number of elements to copy into the dictionary.
+ * @param values      The values to be placed in this dictionary.
+ * @param keys        The keys under which to store the values.
+ * @param count       The number of elements to copy into the dictionary.
  *
  * @return A newly initialized dictionary with a copy of the values and keys.
  **/
 - (instancetype)initWithBools:(const BOOL [])values
                       forKeys:(const uint64_t [])keys
                         count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
+
 /**
  * Initializes this dictionary, copying the entries from the given dictionary.
  *
@@ -3296,6 +3459,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @return A newly initialized dictionary with the entries of the given dictionary.
  **/
 - (instancetype)initWithDictionary:(GPBUInt64BoolDictionary *)dictionary;
+
 /**
  * Initializes this dictionary with the requested capacity.
  *
@@ -3319,9 +3483,9 @@ NS_ASSUME_NONNULL_BEGIN
  * Enumerates the keys and values on this dictionary with the given block.
  *
  * @param block The block to enumerate with.
- *   **key**:       The key for the current entry.
- *   **value**: The value for the current entry
- *   **stop**:      A pointer to a boolean that when set stops the enumeration.
+ *   **key**:        The key for the current entry.
+ *   **value**:      The value for the current entry
+ *   **stop**:       A pointer to a boolean that when set stops the enumeration.
  **/
 - (void)enumerateKeysAndBoolsUsingBlock:
     (void (^)(uint64_t key, BOOL value, BOOL *stop))block;
@@ -3337,8 +3501,8 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * Sets the value for the given key.
  *
- * @param value The value to set.
- * @param key         The key under which to store the value.
+ * @param value     The value to set.
+ * @param key       The key under which to store the value.
  **/
 - (void)setBool:(BOOL)value forKey:(uint64_t)key;
 
@@ -3348,6 +3512,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @param aKey Key to be removed from this dictionary.
  **/
 - (void)removeBoolForKey:(uint64_t)aKey;
+
 /**
  * Removes all entries in this dictionary.
  **/
@@ -3359,7 +3524,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 /**
  * Class used for map fields of <uint64_t, float>
- * values. This performs better than boxing into NSNumbers in NSArrays.
+ * values. This performs better than boxing into NSNumbers in NSDictionaries.
  *
  * @note This class is not meant to be subclassed.
  **/
@@ -3372,28 +3537,31 @@ NS_ASSUME_NONNULL_BEGIN
  * @return A newly instanced and empty dictionary.
  **/
 + (instancetype)dictionary;
+
 /**
  * Creates and initializes a dictionary with the single entry given.
  *
- * @param value The value to be placed in the dictionary.
- * @param key         The key under which to store the value.
+ * @param value     The value to be placed in the dictionary.
+ * @param key       The key under which to store the value.
  *
  * @return A newly instanced dictionary with the key and value in it.
  **/
 + (instancetype)dictionaryWithFloat:(float)value
                              forKey:(uint64_t)key;
+
 /**
  * Creates and initializes a dictionary with the entries given.
  *
- * @param values The values to be placed in the dictionary.
- * @param keys           The keys under which to store the values.
- * @param count          The number of entries to store in the dictionary.
+ * @param values      The values to be placed in the dictionary.
+ * @param keys        The keys under which to store the values.
+ * @param count       The number of entries to store in the dictionary.
  *
  * @return A newly instanced dictionary with the keys and values in it.
  **/
 + (instancetype)dictionaryWithFloats:(const float [])values
                              forKeys:(const uint64_t [])keys
                                count:(NSUInteger)count;
+
 /**
  * Creates and initializes a dictionary with the entries from the given.
  * dictionary.
@@ -3404,6 +3572,7 @@ NS_ASSUME_NONNULL_BEGIN
  *         dictionary in it.
  **/
 + (instancetype)dictionaryWithDictionary:(GPBUInt64FloatDictionary *)dictionary;
+
 /**
  * Creates and initializes a dictionary with the given capacity.
  *
@@ -3416,15 +3585,16 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * Initializes this dictionary, copying the given values and keys.
  *
- * @param values The values to be placed in this dictionary.
- * @param keys           The keys under which to store the values.
- * @param count          The number of elements to copy into the dictionary.
+ * @param values      The values to be placed in this dictionary.
+ * @param keys        The keys under which to store the values.
+ * @param count       The number of elements to copy into the dictionary.
  *
  * @return A newly initialized dictionary with a copy of the values and keys.
  **/
 - (instancetype)initWithFloats:(const float [])values
                        forKeys:(const uint64_t [])keys
                          count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
+
 /**
  * Initializes this dictionary, copying the entries from the given dictionary.
  *
@@ -3433,6 +3603,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @return A newly initialized dictionary with the entries of the given dictionary.
  **/
 - (instancetype)initWithDictionary:(GPBUInt64FloatDictionary *)dictionary;
+
 /**
  * Initializes this dictionary with the requested capacity.
  *
@@ -3456,9 +3627,9 @@ NS_ASSUME_NONNULL_BEGIN
  * Enumerates the keys and values on this dictionary with the given block.
  *
  * @param block The block to enumerate with.
- *   **key**:       The key for the current entry.
- *   **value**: The value for the current entry
- *   **stop**:      A pointer to a boolean that when set stops the enumeration.
+ *   **key**:        The key for the current entry.
+ *   **value**:      The value for the current entry
+ *   **stop**:       A pointer to a boolean that when set stops the enumeration.
  **/
 - (void)enumerateKeysAndFloatsUsingBlock:
     (void (^)(uint64_t key, float value, BOOL *stop))block;
@@ -3474,8 +3645,8 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * Sets the value for the given key.
  *
- * @param value The value to set.
- * @param key         The key under which to store the value.
+ * @param value     The value to set.
+ * @param key       The key under which to store the value.
  **/
 - (void)setFloat:(float)value forKey:(uint64_t)key;
 
@@ -3485,6 +3656,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @param aKey Key to be removed from this dictionary.
  **/
 - (void)removeFloatForKey:(uint64_t)aKey;
+
 /**
  * Removes all entries in this dictionary.
  **/
@@ -3496,7 +3668,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 /**
  * Class used for map fields of <uint64_t, double>
- * values. This performs better than boxing into NSNumbers in NSArrays.
+ * values. This performs better than boxing into NSNumbers in NSDictionaries.
  *
  * @note This class is not meant to be subclassed.
  **/
@@ -3509,28 +3681,31 @@ NS_ASSUME_NONNULL_BEGIN
  * @return A newly instanced and empty dictionary.
  **/
 + (instancetype)dictionary;
+
 /**
  * Creates and initializes a dictionary with the single entry given.
  *
- * @param value The value to be placed in the dictionary.
- * @param key         The key under which to store the value.
+ * @param value     The value to be placed in the dictionary.
+ * @param key       The key under which to store the value.
  *
  * @return A newly instanced dictionary with the key and value in it.
  **/
 + (instancetype)dictionaryWithDouble:(double)value
                               forKey:(uint64_t)key;
+
 /**
  * Creates and initializes a dictionary with the entries given.
  *
- * @param values The values to be placed in the dictionary.
- * @param keys           The keys under which to store the values.
- * @param count          The number of entries to store in the dictionary.
+ * @param values      The values to be placed in the dictionary.
+ * @param keys        The keys under which to store the values.
+ * @param count       The number of entries to store in the dictionary.
  *
  * @return A newly instanced dictionary with the keys and values in it.
  **/
 + (instancetype)dictionaryWithDoubles:(const double [])values
                               forKeys:(const uint64_t [])keys
                                 count:(NSUInteger)count;
+
 /**
  * Creates and initializes a dictionary with the entries from the given.
  * dictionary.
@@ -3541,6 +3716,7 @@ NS_ASSUME_NONNULL_BEGIN
  *         dictionary in it.
  **/
 + (instancetype)dictionaryWithDictionary:(GPBUInt64DoubleDictionary *)dictionary;
+
 /**
  * Creates and initializes a dictionary with the given capacity.
  *
@@ -3553,15 +3729,16 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * Initializes this dictionary, copying the given values and keys.
  *
- * @param values The values to be placed in this dictionary.
- * @param keys           The keys under which to store the values.
- * @param count          The number of elements to copy into the dictionary.
+ * @param values      The values to be placed in this dictionary.
+ * @param keys        The keys under which to store the values.
+ * @param count       The number of elements to copy into the dictionary.
  *
  * @return A newly initialized dictionary with a copy of the values and keys.
  **/
 - (instancetype)initWithDoubles:(const double [])values
                         forKeys:(const uint64_t [])keys
                           count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
+
 /**
  * Initializes this dictionary, copying the entries from the given dictionary.
  *
@@ -3570,6 +3747,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @return A newly initialized dictionary with the entries of the given dictionary.
  **/
 - (instancetype)initWithDictionary:(GPBUInt64DoubleDictionary *)dictionary;
+
 /**
  * Initializes this dictionary with the requested capacity.
  *
@@ -3593,9 +3771,9 @@ NS_ASSUME_NONNULL_BEGIN
  * Enumerates the keys and values on this dictionary with the given block.
  *
  * @param block The block to enumerate with.
- *   **key**:       The key for the current entry.
- *   **value**: The value for the current entry
- *   **stop**:      A pointer to a boolean that when set stops the enumeration.
+ *   **key**:        The key for the current entry.
+ *   **value**:      The value for the current entry
+ *   **stop**:       A pointer to a boolean that when set stops the enumeration.
  **/
 - (void)enumerateKeysAndDoublesUsingBlock:
     (void (^)(uint64_t key, double value, BOOL *stop))block;
@@ -3611,8 +3789,8 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * Sets the value for the given key.
  *
- * @param value The value to set.
- * @param key         The key under which to store the value.
+ * @param value     The value to set.
+ * @param key       The key under which to store the value.
  **/
 - (void)setDouble:(double)value forKey:(uint64_t)key;
 
@@ -3622,6 +3800,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @param aKey Key to be removed from this dictionary.
  **/
 - (void)removeDoubleForKey:(uint64_t)aKey;
+
 /**
  * Removes all entries in this dictionary.
  **/
@@ -3633,7 +3812,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 /**
  * Class used for map fields of <uint64_t, int32_t>
- * values. This performs better than boxing into NSNumbers in NSArrays.
+ * values. This performs better than boxing into NSNumbers in NSDictionaries.
  *
  * @note This class is not meant to be subclassed.
  **/
@@ -3648,6 +3827,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @return A newly instanced and empty dictionary.
  **/
 + (instancetype)dictionary;
+
 /**
  * Creates and initializes a dictionary with the given validation function.
  *
@@ -3656,6 +3836,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @return A newly instanced dictionary.
  **/
 + (instancetype)dictionaryWithValidationFunction:(nullable GPBEnumValidationFunc)func;
+
 /**
  * Creates and initializes a dictionary with the single entry given.
  *
@@ -3668,6 +3849,7 @@ NS_ASSUME_NONNULL_BEGIN
 + (instancetype)dictionaryWithValidationFunction:(nullable GPBEnumValidationFunc)func
                                         rawValue:(int32_t)rawValue
                                           forKey:(uint64_t)key;
+
 /**
  * Creates and initializes a dictionary with the entries given.
  *
@@ -3682,6 +3864,7 @@ NS_ASSUME_NONNULL_BEGIN
                                        rawValues:(const int32_t [])values
                                          forKeys:(const uint64_t [])keys
                                            count:(NSUInteger)count;
+
 /**
  * Creates and initializes a dictionary with the entries from the given.
  * dictionary.
@@ -3692,6 +3875,7 @@ NS_ASSUME_NONNULL_BEGIN
  *         dictionary in it.
  **/
 + (instancetype)dictionaryWithDictionary:(GPBUInt64EnumDictionary *)dictionary;
+
 /**
  * Creates and initializes a dictionary with the given capacity.
  *
@@ -3711,6 +3895,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @return A newly initialized dictionary.
  **/
 - (instancetype)initWithValidationFunction:(nullable GPBEnumValidationFunc)func;
+
 /**
  * Initializes a dictionary with the entries given.
  *
@@ -3725,6 +3910,7 @@ NS_ASSUME_NONNULL_BEGIN
                                  rawValues:(const int32_t [])values
                                    forKeys:(const uint64_t [])keys
                                      count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
+
 /**
  * Initializes a dictionary with the entries from the given.
  * dictionary.
@@ -3735,6 +3921,7 @@ NS_ASSUME_NONNULL_BEGIN
  *         dictionary in it.
  **/
 - (instancetype)initWithDictionary:(GPBUInt64EnumDictionary *)dictionary;
+
 /**
  * Initializes a dictionary with the given capacity.
  *
@@ -3764,9 +3951,9 @@ NS_ASSUME_NONNULL_BEGIN
  * Enumerates the keys and values on this dictionary with the given block.
  *
  * @param block The block to enumerate with.
- *   **key**:       The key for the current entry.
- *   **value**: The value for the current entry
- *   **stop**:      A pointer to a boolean that when set stops the enumeration.
+ *   **key**:        The key for the current entry.
+ *   **value**:      The value for the current entry
+ *   **stop**:       A pointer to a boolean that when set stops the enumeration.
  **/
 - (void)enumerateKeysAndEnumsUsingBlock:
     (void (^)(uint64_t key, int32_t value, BOOL *stop))block;
@@ -3817,8 +4004,8 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * Sets the value for the given key.
  *
- * @param value The value to set.
- * @param key         The key under which to store the value.
+ * @param value     The value to set.
+ * @param key       The key under which to store the value.
  **/
 - (void)setEnum:(int32_t)value forKey:(uint64_t)key;
 
@@ -3839,6 +4026,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @param aKey Key to be removed from this dictionary.
  **/
 - (void)removeEnumForKey:(uint64_t)aKey;
+
 /**
  * Removes all entries in this dictionary.
  **/
@@ -3850,7 +4038,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 /**
  * Class used for map fields of <uint64_t, ObjectType>
- * values. This performs better than boxing into NSNumbers in NSArrays.
+ * values. This performs better than boxing into NSNumbers in NSDictionaries.
  *
  * @note This class is not meant to be subclassed.
  **/
@@ -3863,28 +4051,31 @@ NS_ASSUME_NONNULL_BEGIN
  * @return A newly instanced and empty dictionary.
  **/
 + (instancetype)dictionary;
+
 /**
  * Creates and initializes a dictionary with the single entry given.
  *
- * @param object The value to be placed in the dictionary.
- * @param key         The key under which to store the value.
+ * @param object     The value to be placed in the dictionary.
+ * @param key        The key under which to store the value.
  *
  * @return A newly instanced dictionary with the key and value in it.
  **/
 + (instancetype)dictionaryWithObject:(ObjectType)object
                               forKey:(uint64_t)key;
+
 /**
  * Creates and initializes a dictionary with the entries given.
  *
- * @param objects The values to be placed in the dictionary.
- * @param keys           The keys under which to store the values.
- * @param count          The number of entries to store in the dictionary.
+ * @param objects      The values to be placed in the dictionary.
+ * @param keys         The keys under which to store the values.
+ * @param count        The number of entries to store in the dictionary.
  *
  * @return A newly instanced dictionary with the keys and values in it.
  **/
 + (instancetype)dictionaryWithObjects:(const ObjectType GPB_UNSAFE_UNRETAINED [])objects
                               forKeys:(const uint64_t [])keys
                                 count:(NSUInteger)count;
+
 /**
  * Creates and initializes a dictionary with the entries from the given.
  * dictionary.
@@ -3895,6 +4086,7 @@ NS_ASSUME_NONNULL_BEGIN
  *         dictionary in it.
  **/
 + (instancetype)dictionaryWithDictionary:(GPBUInt64ObjectDictionary *)dictionary;
+
 /**
  * Creates and initializes a dictionary with the given capacity.
  *
@@ -3907,15 +4099,16 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * Initializes this dictionary, copying the given values and keys.
  *
- * @param objects The values to be placed in this dictionary.
- * @param keys           The keys under which to store the values.
- * @param count          The number of elements to copy into the dictionary.
+ * @param objects      The values to be placed in this dictionary.
+ * @param keys         The keys under which to store the values.
+ * @param count        The number of elements to copy into the dictionary.
  *
  * @return A newly initialized dictionary with a copy of the values and keys.
  **/
 - (instancetype)initWithObjects:(const ObjectType GPB_UNSAFE_UNRETAINED [])objects
                         forKeys:(const uint64_t [])keys
                           count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
+
 /**
  * Initializes this dictionary, copying the entries from the given dictionary.
  *
@@ -3924,6 +4117,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @return A newly initialized dictionary with the entries of the given dictionary.
  **/
 - (instancetype)initWithDictionary:(GPBUInt64ObjectDictionary *)dictionary;
+
 /**
  * Initializes this dictionary with the requested capacity.
  *
@@ -3946,9 +4140,9 @@ NS_ASSUME_NONNULL_BEGIN
  * Enumerates the keys and values on this dictionary with the given block.
  *
  * @param block The block to enumerate with.
- *   **key**:       The key for the current entry.
- *   **object**: The value for the current entry
- *   **stop**:      A pointer to a boolean that when set stops the enumeration.
+ *   **key**:         The key for the current entry.
+ *   **object**:      The value for the current entry
+ *   **stop**:        A pointer to a boolean that when set stops the enumeration.
  **/
 - (void)enumerateKeysAndObjectsUsingBlock:
     (void (^)(uint64_t key, ObjectType object, BOOL *stop))block;
@@ -3964,8 +4158,8 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * Sets the value for the given key.
  *
- * @param object The value to set.
- * @param key         The key under which to store the value.
+ * @param object     The value to set.
+ * @param key        The key under which to store the value.
  **/
 - (void)setObject:(ObjectType)object forKey:(uint64_t)key;
 
@@ -3975,6 +4169,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @param aKey Key to be removed from this dictionary.
  **/
 - (void)removeObjectForKey:(uint64_t)aKey;
+
 /**
  * Removes all entries in this dictionary.
  **/
@@ -3986,7 +4181,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 /**
  * Class used for map fields of <int64_t, uint32_t>
- * values. This performs better than boxing into NSNumbers in NSArrays.
+ * values. This performs better than boxing into NSNumbers in NSDictionaries.
  *
  * @note This class is not meant to be subclassed.
  **/
@@ -3999,28 +4194,31 @@ NS_ASSUME_NONNULL_BEGIN
  * @return A newly instanced and empty dictionary.
  **/
 + (instancetype)dictionary;
+
 /**
  * Creates and initializes a dictionary with the single entry given.
  *
- * @param value The value to be placed in the dictionary.
- * @param key         The key under which to store the value.
+ * @param value     The value to be placed in the dictionary.
+ * @param key       The key under which to store the value.
  *
  * @return A newly instanced dictionary with the key and value in it.
  **/
 + (instancetype)dictionaryWithUInt32:(uint32_t)value
                               forKey:(int64_t)key;
+
 /**
  * Creates and initializes a dictionary with the entries given.
  *
- * @param values The values to be placed in the dictionary.
- * @param keys           The keys under which to store the values.
- * @param count          The number of entries to store in the dictionary.
+ * @param values      The values to be placed in the dictionary.
+ * @param keys        The keys under which to store the values.
+ * @param count       The number of entries to store in the dictionary.
  *
  * @return A newly instanced dictionary with the keys and values in it.
  **/
 + (instancetype)dictionaryWithUInt32s:(const uint32_t [])values
                               forKeys:(const int64_t [])keys
                                 count:(NSUInteger)count;
+
 /**
  * Creates and initializes a dictionary with the entries from the given.
  * dictionary.
@@ -4031,6 +4229,7 @@ NS_ASSUME_NONNULL_BEGIN
  *         dictionary in it.
  **/
 + (instancetype)dictionaryWithDictionary:(GPBInt64UInt32Dictionary *)dictionary;
+
 /**
  * Creates and initializes a dictionary with the given capacity.
  *
@@ -4043,15 +4242,16 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * Initializes this dictionary, copying the given values and keys.
  *
- * @param values The values to be placed in this dictionary.
- * @param keys           The keys under which to store the values.
- * @param count          The number of elements to copy into the dictionary.
+ * @param values      The values to be placed in this dictionary.
+ * @param keys        The keys under which to store the values.
+ * @param count       The number of elements to copy into the dictionary.
  *
  * @return A newly initialized dictionary with a copy of the values and keys.
  **/
 - (instancetype)initWithUInt32s:(const uint32_t [])values
                         forKeys:(const int64_t [])keys
                           count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
+
 /**
  * Initializes this dictionary, copying the entries from the given dictionary.
  *
@@ -4060,6 +4260,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @return A newly initialized dictionary with the entries of the given dictionary.
  **/
 - (instancetype)initWithDictionary:(GPBInt64UInt32Dictionary *)dictionary;
+
 /**
  * Initializes this dictionary with the requested capacity.
  *
@@ -4083,9 +4284,9 @@ NS_ASSUME_NONNULL_BEGIN
  * Enumerates the keys and values on this dictionary with the given block.
  *
  * @param block The block to enumerate with.
- *   **key**:       The key for the current entry.
- *   **value**: The value for the current entry
- *   **stop**:      A pointer to a boolean that when set stops the enumeration.
+ *   **key**:        The key for the current entry.
+ *   **value**:      The value for the current entry
+ *   **stop**:       A pointer to a boolean that when set stops the enumeration.
  **/
 - (void)enumerateKeysAndUInt32sUsingBlock:
     (void (^)(int64_t key, uint32_t value, BOOL *stop))block;
@@ -4101,8 +4302,8 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * Sets the value for the given key.
  *
- * @param value The value to set.
- * @param key         The key under which to store the value.
+ * @param value     The value to set.
+ * @param key       The key under which to store the value.
  **/
 - (void)setUInt32:(uint32_t)value forKey:(int64_t)key;
 
@@ -4112,6 +4313,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @param aKey Key to be removed from this dictionary.
  **/
 - (void)removeUInt32ForKey:(int64_t)aKey;
+
 /**
  * Removes all entries in this dictionary.
  **/
@@ -4123,7 +4325,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 /**
  * Class used for map fields of <int64_t, int32_t>
- * values. This performs better than boxing into NSNumbers in NSArrays.
+ * values. This performs better than boxing into NSNumbers in NSDictionaries.
  *
  * @note This class is not meant to be subclassed.
  **/
@@ -4136,28 +4338,31 @@ NS_ASSUME_NONNULL_BEGIN
  * @return A newly instanced and empty dictionary.
  **/
 + (instancetype)dictionary;
+
 /**
  * Creates and initializes a dictionary with the single entry given.
  *
- * @param value The value to be placed in the dictionary.
- * @param key         The key under which to store the value.
+ * @param value     The value to be placed in the dictionary.
+ * @param key       The key under which to store the value.
  *
  * @return A newly instanced dictionary with the key and value in it.
  **/
 + (instancetype)dictionaryWithInt32:(int32_t)value
                              forKey:(int64_t)key;
+
 /**
  * Creates and initializes a dictionary with the entries given.
  *
- * @param values The values to be placed in the dictionary.
- * @param keys           The keys under which to store the values.
- * @param count          The number of entries to store in the dictionary.
+ * @param values      The values to be placed in the dictionary.
+ * @param keys        The keys under which to store the values.
+ * @param count       The number of entries to store in the dictionary.
  *
  * @return A newly instanced dictionary with the keys and values in it.
  **/
 + (instancetype)dictionaryWithInt32s:(const int32_t [])values
                              forKeys:(const int64_t [])keys
                                count:(NSUInteger)count;
+
 /**
  * Creates and initializes a dictionary with the entries from the given.
  * dictionary.
@@ -4168,6 +4373,7 @@ NS_ASSUME_NONNULL_BEGIN
  *         dictionary in it.
  **/
 + (instancetype)dictionaryWithDictionary:(GPBInt64Int32Dictionary *)dictionary;
+
 /**
  * Creates and initializes a dictionary with the given capacity.
  *
@@ -4180,15 +4386,16 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * Initializes this dictionary, copying the given values and keys.
  *
- * @param values The values to be placed in this dictionary.
- * @param keys           The keys under which to store the values.
- * @param count          The number of elements to copy into the dictionary.
+ * @param values      The values to be placed in this dictionary.
+ * @param keys        The keys under which to store the values.
+ * @param count       The number of elements to copy into the dictionary.
  *
  * @return A newly initialized dictionary with a copy of the values and keys.
  **/
 - (instancetype)initWithInt32s:(const int32_t [])values
                        forKeys:(const int64_t [])keys
                          count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
+
 /**
  * Initializes this dictionary, copying the entries from the given dictionary.
  *
@@ -4197,6 +4404,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @return A newly initialized dictionary with the entries of the given dictionary.
  **/
 - (instancetype)initWithDictionary:(GPBInt64Int32Dictionary *)dictionary;
+
 /**
  * Initializes this dictionary with the requested capacity.
  *
@@ -4220,9 +4428,9 @@ NS_ASSUME_NONNULL_BEGIN
  * Enumerates the keys and values on this dictionary with the given block.
  *
  * @param block The block to enumerate with.
- *   **key**:       The key for the current entry.
- *   **value**: The value for the current entry
- *   **stop**:      A pointer to a boolean that when set stops the enumeration.
+ *   **key**:        The key for the current entry.
+ *   **value**:      The value for the current entry
+ *   **stop**:       A pointer to a boolean that when set stops the enumeration.
  **/
 - (void)enumerateKeysAndInt32sUsingBlock:
     (void (^)(int64_t key, int32_t value, BOOL *stop))block;
@@ -4238,8 +4446,8 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * Sets the value for the given key.
  *
- * @param value The value to set.
- * @param key         The key under which to store the value.
+ * @param value     The value to set.
+ * @param key       The key under which to store the value.
  **/
 - (void)setInt32:(int32_t)value forKey:(int64_t)key;
 
@@ -4249,6 +4457,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @param aKey Key to be removed from this dictionary.
  **/
 - (void)removeInt32ForKey:(int64_t)aKey;
+
 /**
  * Removes all entries in this dictionary.
  **/
@@ -4260,7 +4469,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 /**
  * Class used for map fields of <int64_t, uint64_t>
- * values. This performs better than boxing into NSNumbers in NSArrays.
+ * values. This performs better than boxing into NSNumbers in NSDictionaries.
  *
  * @note This class is not meant to be subclassed.
  **/
@@ -4273,28 +4482,31 @@ NS_ASSUME_NONNULL_BEGIN
  * @return A newly instanced and empty dictionary.
  **/
 + (instancetype)dictionary;
+
 /**
  * Creates and initializes a dictionary with the single entry given.
  *
- * @param value The value to be placed in the dictionary.
- * @param key         The key under which to store the value.
+ * @param value     The value to be placed in the dictionary.
+ * @param key       The key under which to store the value.
  *
  * @return A newly instanced dictionary with the key and value in it.
  **/
 + (instancetype)dictionaryWithUInt64:(uint64_t)value
                               forKey:(int64_t)key;
+
 /**
  * Creates and initializes a dictionary with the entries given.
  *
- * @param values The values to be placed in the dictionary.
- * @param keys           The keys under which to store the values.
- * @param count          The number of entries to store in the dictionary.
+ * @param values      The values to be placed in the dictionary.
+ * @param keys        The keys under which to store the values.
+ * @param count       The number of entries to store in the dictionary.
  *
  * @return A newly instanced dictionary with the keys and values in it.
  **/
 + (instancetype)dictionaryWithUInt64s:(const uint64_t [])values
                               forKeys:(const int64_t [])keys
                                 count:(NSUInteger)count;
+
 /**
  * Creates and initializes a dictionary with the entries from the given.
  * dictionary.
@@ -4305,6 +4517,7 @@ NS_ASSUME_NONNULL_BEGIN
  *         dictionary in it.
  **/
 + (instancetype)dictionaryWithDictionary:(GPBInt64UInt64Dictionary *)dictionary;
+
 /**
  * Creates and initializes a dictionary with the given capacity.
  *
@@ -4317,15 +4530,16 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * Initializes this dictionary, copying the given values and keys.
  *
- * @param values The values to be placed in this dictionary.
- * @param keys           The keys under which to store the values.
- * @param count          The number of elements to copy into the dictionary.
+ * @param values      The values to be placed in this dictionary.
+ * @param keys        The keys under which to store the values.
+ * @param count       The number of elements to copy into the dictionary.
  *
  * @return A newly initialized dictionary with a copy of the values and keys.
  **/
 - (instancetype)initWithUInt64s:(const uint64_t [])values
                         forKeys:(const int64_t [])keys
                           count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
+
 /**
  * Initializes this dictionary, copying the entries from the given dictionary.
  *
@@ -4334,6 +4548,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @return A newly initialized dictionary with the entries of the given dictionary.
  **/
 - (instancetype)initWithDictionary:(GPBInt64UInt64Dictionary *)dictionary;
+
 /**
  * Initializes this dictionary with the requested capacity.
  *
@@ -4357,9 +4572,9 @@ NS_ASSUME_NONNULL_BEGIN
  * Enumerates the keys and values on this dictionary with the given block.
  *
  * @param block The block to enumerate with.
- *   **key**:       The key for the current entry.
- *   **value**: The value for the current entry
- *   **stop**:      A pointer to a boolean that when set stops the enumeration.
+ *   **key**:        The key for the current entry.
+ *   **value**:      The value for the current entry
+ *   **stop**:       A pointer to a boolean that when set stops the enumeration.
  **/
 - (void)enumerateKeysAndUInt64sUsingBlock:
     (void (^)(int64_t key, uint64_t value, BOOL *stop))block;
@@ -4375,8 +4590,8 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * Sets the value for the given key.
  *
- * @param value The value to set.
- * @param key         The key under which to store the value.
+ * @param value     The value to set.
+ * @param key       The key under which to store the value.
  **/
 - (void)setUInt64:(uint64_t)value forKey:(int64_t)key;
 
@@ -4386,6 +4601,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @param aKey Key to be removed from this dictionary.
  **/
 - (void)removeUInt64ForKey:(int64_t)aKey;
+
 /**
  * Removes all entries in this dictionary.
  **/
@@ -4397,7 +4613,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 /**
  * Class used for map fields of <int64_t, int64_t>
- * values. This performs better than boxing into NSNumbers in NSArrays.
+ * values. This performs better than boxing into NSNumbers in NSDictionaries.
  *
  * @note This class is not meant to be subclassed.
  **/
@@ -4410,28 +4626,31 @@ NS_ASSUME_NONNULL_BEGIN
  * @return A newly instanced and empty dictionary.
  **/
 + (instancetype)dictionary;
+
 /**
  * Creates and initializes a dictionary with the single entry given.
  *
- * @param value The value to be placed in the dictionary.
- * @param key         The key under which to store the value.
+ * @param value     The value to be placed in the dictionary.
+ * @param key       The key under which to store the value.
  *
  * @return A newly instanced dictionary with the key and value in it.
  **/
 + (instancetype)dictionaryWithInt64:(int64_t)value
                              forKey:(int64_t)key;
+
 /**
  * Creates and initializes a dictionary with the entries given.
  *
- * @param values The values to be placed in the dictionary.
- * @param keys           The keys under which to store the values.
- * @param count          The number of entries to store in the dictionary.
+ * @param values      The values to be placed in the dictionary.
+ * @param keys        The keys under which to store the values.
+ * @param count       The number of entries to store in the dictionary.
  *
  * @return A newly instanced dictionary with the keys and values in it.
  **/
 + (instancetype)dictionaryWithInt64s:(const int64_t [])values
                              forKeys:(const int64_t [])keys
                                count:(NSUInteger)count;
+
 /**
  * Creates and initializes a dictionary with the entries from the given.
  * dictionary.
@@ -4442,6 +4661,7 @@ NS_ASSUME_NONNULL_BEGIN
  *         dictionary in it.
  **/
 + (instancetype)dictionaryWithDictionary:(GPBInt64Int64Dictionary *)dictionary;
+
 /**
  * Creates and initializes a dictionary with the given capacity.
  *
@@ -4454,15 +4674,16 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * Initializes this dictionary, copying the given values and keys.
  *
- * @param values The values to be placed in this dictionary.
- * @param keys           The keys under which to store the values.
- * @param count          The number of elements to copy into the dictionary.
+ * @param values      The values to be placed in this dictionary.
+ * @param keys        The keys under which to store the values.
+ * @param count       The number of elements to copy into the dictionary.
  *
  * @return A newly initialized dictionary with a copy of the values and keys.
  **/
 - (instancetype)initWithInt64s:(const int64_t [])values
                        forKeys:(const int64_t [])keys
                          count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
+
 /**
  * Initializes this dictionary, copying the entries from the given dictionary.
  *
@@ -4471,6 +4692,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @return A newly initialized dictionary with the entries of the given dictionary.
  **/
 - (instancetype)initWithDictionary:(GPBInt64Int64Dictionary *)dictionary;
+
 /**
  * Initializes this dictionary with the requested capacity.
  *
@@ -4494,9 +4716,9 @@ NS_ASSUME_NONNULL_BEGIN
  * Enumerates the keys and values on this dictionary with the given block.
  *
  * @param block The block to enumerate with.
- *   **key**:       The key for the current entry.
- *   **value**: The value for the current entry
- *   **stop**:      A pointer to a boolean that when set stops the enumeration.
+ *   **key**:        The key for the current entry.
+ *   **value**:      The value for the current entry
+ *   **stop**:       A pointer to a boolean that when set stops the enumeration.
  **/
 - (void)enumerateKeysAndInt64sUsingBlock:
     (void (^)(int64_t key, int64_t value, BOOL *stop))block;
@@ -4512,8 +4734,8 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * Sets the value for the given key.
  *
- * @param value The value to set.
- * @param key         The key under which to store the value.
+ * @param value     The value to set.
+ * @param key       The key under which to store the value.
  **/
 - (void)setInt64:(int64_t)value forKey:(int64_t)key;
 
@@ -4523,6 +4745,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @param aKey Key to be removed from this dictionary.
  **/
 - (void)removeInt64ForKey:(int64_t)aKey;
+
 /**
  * Removes all entries in this dictionary.
  **/
@@ -4534,7 +4757,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 /**
  * Class used for map fields of <int64_t, BOOL>
- * values. This performs better than boxing into NSNumbers in NSArrays.
+ * values. This performs better than boxing into NSNumbers in NSDictionaries.
  *
  * @note This class is not meant to be subclassed.
  **/
@@ -4547,28 +4770,31 @@ NS_ASSUME_NONNULL_BEGIN
  * @return A newly instanced and empty dictionary.
  **/
 + (instancetype)dictionary;
+
 /**
  * Creates and initializes a dictionary with the single entry given.
  *
- * @param value The value to be placed in the dictionary.
- * @param key         The key under which to store the value.
+ * @param value     The value to be placed in the dictionary.
+ * @param key       The key under which to store the value.
  *
  * @return A newly instanced dictionary with the key and value in it.
  **/
 + (instancetype)dictionaryWithBool:(BOOL)value
                             forKey:(int64_t)key;
+
 /**
  * Creates and initializes a dictionary with the entries given.
  *
- * @param values The values to be placed in the dictionary.
- * @param keys           The keys under which to store the values.
- * @param count          The number of entries to store in the dictionary.
+ * @param values      The values to be placed in the dictionary.
+ * @param keys        The keys under which to store the values.
+ * @param count       The number of entries to store in the dictionary.
  *
  * @return A newly instanced dictionary with the keys and values in it.
  **/
 + (instancetype)dictionaryWithBools:(const BOOL [])values
                             forKeys:(const int64_t [])keys
                               count:(NSUInteger)count;
+
 /**
  * Creates and initializes a dictionary with the entries from the given.
  * dictionary.
@@ -4579,6 +4805,7 @@ NS_ASSUME_NONNULL_BEGIN
  *         dictionary in it.
  **/
 + (instancetype)dictionaryWithDictionary:(GPBInt64BoolDictionary *)dictionary;
+
 /**
  * Creates and initializes a dictionary with the given capacity.
  *
@@ -4591,15 +4818,16 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * Initializes this dictionary, copying the given values and keys.
  *
- * @param values The values to be placed in this dictionary.
- * @param keys           The keys under which to store the values.
- * @param count          The number of elements to copy into the dictionary.
+ * @param values      The values to be placed in this dictionary.
+ * @param keys        The keys under which to store the values.
+ * @param count       The number of elements to copy into the dictionary.
  *
  * @return A newly initialized dictionary with a copy of the values and keys.
  **/
 - (instancetype)initWithBools:(const BOOL [])values
                       forKeys:(const int64_t [])keys
                         count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
+
 /**
  * Initializes this dictionary, copying the entries from the given dictionary.
  *
@@ -4608,6 +4836,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @return A newly initialized dictionary with the entries of the given dictionary.
  **/
 - (instancetype)initWithDictionary:(GPBInt64BoolDictionary *)dictionary;
+
 /**
  * Initializes this dictionary with the requested capacity.
  *
@@ -4631,9 +4860,9 @@ NS_ASSUME_NONNULL_BEGIN
  * Enumerates the keys and values on this dictionary with the given block.
  *
  * @param block The block to enumerate with.
- *   **key**:       The key for the current entry.
- *   **value**: The value for the current entry
- *   **stop**:      A pointer to a boolean that when set stops the enumeration.
+ *   **key**:        The key for the current entry.
+ *   **value**:      The value for the current entry
+ *   **stop**:       A pointer to a boolean that when set stops the enumeration.
  **/
 - (void)enumerateKeysAndBoolsUsingBlock:
     (void (^)(int64_t key, BOOL value, BOOL *stop))block;
@@ -4649,8 +4878,8 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * Sets the value for the given key.
  *
- * @param value The value to set.
- * @param key         The key under which to store the value.
+ * @param value     The value to set.
+ * @param key       The key under which to store the value.
  **/
 - (void)setBool:(BOOL)value forKey:(int64_t)key;
 
@@ -4660,6 +4889,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @param aKey Key to be removed from this dictionary.
  **/
 - (void)removeBoolForKey:(int64_t)aKey;
+
 /**
  * Removes all entries in this dictionary.
  **/
@@ -4671,7 +4901,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 /**
  * Class used for map fields of <int64_t, float>
- * values. This performs better than boxing into NSNumbers in NSArrays.
+ * values. This performs better than boxing into NSNumbers in NSDictionaries.
  *
  * @note This class is not meant to be subclassed.
  **/
@@ -4684,28 +4914,31 @@ NS_ASSUME_NONNULL_BEGIN
  * @return A newly instanced and empty dictionary.
  **/
 + (instancetype)dictionary;
+
 /**
  * Creates and initializes a dictionary with the single entry given.
  *
- * @param value The value to be placed in the dictionary.
- * @param key         The key under which to store the value.
+ * @param value     The value to be placed in the dictionary.
+ * @param key       The key under which to store the value.
  *
  * @return A newly instanced dictionary with the key and value in it.
  **/
 + (instancetype)dictionaryWithFloat:(float)value
                              forKey:(int64_t)key;
+
 /**
  * Creates and initializes a dictionary with the entries given.
  *
- * @param values The values to be placed in the dictionary.
- * @param keys           The keys under which to store the values.
- * @param count          The number of entries to store in the dictionary.
+ * @param values      The values to be placed in the dictionary.
+ * @param keys        The keys under which to store the values.
+ * @param count       The number of entries to store in the dictionary.
  *
  * @return A newly instanced dictionary with the keys and values in it.
  **/
 + (instancetype)dictionaryWithFloats:(const float [])values
                              forKeys:(const int64_t [])keys
                                count:(NSUInteger)count;
+
 /**
  * Creates and initializes a dictionary with the entries from the given.
  * dictionary.
@@ -4716,6 +4949,7 @@ NS_ASSUME_NONNULL_BEGIN
  *         dictionary in it.
  **/
 + (instancetype)dictionaryWithDictionary:(GPBInt64FloatDictionary *)dictionary;
+
 /**
  * Creates and initializes a dictionary with the given capacity.
  *
@@ -4728,15 +4962,16 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * Initializes this dictionary, copying the given values and keys.
  *
- * @param values The values to be placed in this dictionary.
- * @param keys           The keys under which to store the values.
- * @param count          The number of elements to copy into the dictionary.
+ * @param values      The values to be placed in this dictionary.
+ * @param keys        The keys under which to store the values.
+ * @param count       The number of elements to copy into the dictionary.
  *
  * @return A newly initialized dictionary with a copy of the values and keys.
  **/
 - (instancetype)initWithFloats:(const float [])values
                        forKeys:(const int64_t [])keys
                          count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
+
 /**
  * Initializes this dictionary, copying the entries from the given dictionary.
  *
@@ -4745,6 +4980,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @return A newly initialized dictionary with the entries of the given dictionary.
  **/
 - (instancetype)initWithDictionary:(GPBInt64FloatDictionary *)dictionary;
+
 /**
  * Initializes this dictionary with the requested capacity.
  *
@@ -4768,9 +5004,9 @@ NS_ASSUME_NONNULL_BEGIN
  * Enumerates the keys and values on this dictionary with the given block.
  *
  * @param block The block to enumerate with.
- *   **key**:       The key for the current entry.
- *   **value**: The value for the current entry
- *   **stop**:      A pointer to a boolean that when set stops the enumeration.
+ *   **key**:        The key for the current entry.
+ *   **value**:      The value for the current entry
+ *   **stop**:       A pointer to a boolean that when set stops the enumeration.
  **/
 - (void)enumerateKeysAndFloatsUsingBlock:
     (void (^)(int64_t key, float value, BOOL *stop))block;
@@ -4786,8 +5022,8 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * Sets the value for the given key.
  *
- * @param value The value to set.
- * @param key         The key under which to store the value.
+ * @param value     The value to set.
+ * @param key       The key under which to store the value.
  **/
 - (void)setFloat:(float)value forKey:(int64_t)key;
 
@@ -4797,6 +5033,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @param aKey Key to be removed from this dictionary.
  **/
 - (void)removeFloatForKey:(int64_t)aKey;
+
 /**
  * Removes all entries in this dictionary.
  **/
@@ -4808,7 +5045,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 /**
  * Class used for map fields of <int64_t, double>
- * values. This performs better than boxing into NSNumbers in NSArrays.
+ * values. This performs better than boxing into NSNumbers in NSDictionaries.
  *
  * @note This class is not meant to be subclassed.
  **/
@@ -4821,28 +5058,31 @@ NS_ASSUME_NONNULL_BEGIN
  * @return A newly instanced and empty dictionary.
  **/
 + (instancetype)dictionary;
+
 /**
  * Creates and initializes a dictionary with the single entry given.
  *
- * @param value The value to be placed in the dictionary.
- * @param key         The key under which to store the value.
+ * @param value     The value to be placed in the dictionary.
+ * @param key       The key under which to store the value.
  *
  * @return A newly instanced dictionary with the key and value in it.
  **/
 + (instancetype)dictionaryWithDouble:(double)value
                               forKey:(int64_t)key;
+
 /**
  * Creates and initializes a dictionary with the entries given.
  *
- * @param values The values to be placed in the dictionary.
- * @param keys           The keys under which to store the values.
- * @param count          The number of entries to store in the dictionary.
+ * @param values      The values to be placed in the dictionary.
+ * @param keys        The keys under which to store the values.
+ * @param count       The number of entries to store in the dictionary.
  *
  * @return A newly instanced dictionary with the keys and values in it.
  **/
 + (instancetype)dictionaryWithDoubles:(const double [])values
                               forKeys:(const int64_t [])keys
                                 count:(NSUInteger)count;
+
 /**
  * Creates and initializes a dictionary with the entries from the given.
  * dictionary.
@@ -4853,6 +5093,7 @@ NS_ASSUME_NONNULL_BEGIN
  *         dictionary in it.
  **/
 + (instancetype)dictionaryWithDictionary:(GPBInt64DoubleDictionary *)dictionary;
+
 /**
  * Creates and initializes a dictionary with the given capacity.
  *
@@ -4865,15 +5106,16 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * Initializes this dictionary, copying the given values and keys.
  *
- * @param values The values to be placed in this dictionary.
- * @param keys           The keys under which to store the values.
- * @param count          The number of elements to copy into the dictionary.
+ * @param values      The values to be placed in this dictionary.
+ * @param keys        The keys under which to store the values.
+ * @param count       The number of elements to copy into the dictionary.
  *
  * @return A newly initialized dictionary with a copy of the values and keys.
  **/
 - (instancetype)initWithDoubles:(const double [])values
                         forKeys:(const int64_t [])keys
                           count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
+
 /**
  * Initializes this dictionary, copying the entries from the given dictionary.
  *
@@ -4882,6 +5124,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @return A newly initialized dictionary with the entries of the given dictionary.
  **/
 - (instancetype)initWithDictionary:(GPBInt64DoubleDictionary *)dictionary;
+
 /**
  * Initializes this dictionary with the requested capacity.
  *
@@ -4905,9 +5148,9 @@ NS_ASSUME_NONNULL_BEGIN
  * Enumerates the keys and values on this dictionary with the given block.
  *
  * @param block The block to enumerate with.
- *   **key**:       The key for the current entry.
- *   **value**: The value for the current entry
- *   **stop**:      A pointer to a boolean that when set stops the enumeration.
+ *   **key**:        The key for the current entry.
+ *   **value**:      The value for the current entry
+ *   **stop**:       A pointer to a boolean that when set stops the enumeration.
  **/
 - (void)enumerateKeysAndDoublesUsingBlock:
     (void (^)(int64_t key, double value, BOOL *stop))block;
@@ -4923,8 +5166,8 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * Sets the value for the given key.
  *
- * @param value The value to set.
- * @param key         The key under which to store the value.
+ * @param value     The value to set.
+ * @param key       The key under which to store the value.
  **/
 - (void)setDouble:(double)value forKey:(int64_t)key;
 
@@ -4934,6 +5177,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @param aKey Key to be removed from this dictionary.
  **/
 - (void)removeDoubleForKey:(int64_t)aKey;
+
 /**
  * Removes all entries in this dictionary.
  **/
@@ -4945,7 +5189,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 /**
  * Class used for map fields of <int64_t, int32_t>
- * values. This performs better than boxing into NSNumbers in NSArrays.
+ * values. This performs better than boxing into NSNumbers in NSDictionaries.
  *
  * @note This class is not meant to be subclassed.
  **/
@@ -4960,6 +5204,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @return A newly instanced and empty dictionary.
  **/
 + (instancetype)dictionary;
+
 /**
  * Creates and initializes a dictionary with the given validation function.
  *
@@ -4968,6 +5213,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @return A newly instanced dictionary.
  **/
 + (instancetype)dictionaryWithValidationFunction:(nullable GPBEnumValidationFunc)func;
+
 /**
  * Creates and initializes a dictionary with the single entry given.
  *
@@ -4980,6 +5226,7 @@ NS_ASSUME_NONNULL_BEGIN
 + (instancetype)dictionaryWithValidationFunction:(nullable GPBEnumValidationFunc)func
                                         rawValue:(int32_t)rawValue
                                           forKey:(int64_t)key;
+
 /**
  * Creates and initializes a dictionary with the entries given.
  *
@@ -4994,6 +5241,7 @@ NS_ASSUME_NONNULL_BEGIN
                                        rawValues:(const int32_t [])values
                                          forKeys:(const int64_t [])keys
                                            count:(NSUInteger)count;
+
 /**
  * Creates and initializes a dictionary with the entries from the given.
  * dictionary.
@@ -5004,6 +5252,7 @@ NS_ASSUME_NONNULL_BEGIN
  *         dictionary in it.
  **/
 + (instancetype)dictionaryWithDictionary:(GPBInt64EnumDictionary *)dictionary;
+
 /**
  * Creates and initializes a dictionary with the given capacity.
  *
@@ -5023,6 +5272,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @return A newly initialized dictionary.
  **/
 - (instancetype)initWithValidationFunction:(nullable GPBEnumValidationFunc)func;
+
 /**
  * Initializes a dictionary with the entries given.
  *
@@ -5037,6 +5287,7 @@ NS_ASSUME_NONNULL_BEGIN
                                  rawValues:(const int32_t [])values
                                    forKeys:(const int64_t [])keys
                                      count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
+
 /**
  * Initializes a dictionary with the entries from the given.
  * dictionary.
@@ -5047,6 +5298,7 @@ NS_ASSUME_NONNULL_BEGIN
  *         dictionary in it.
  **/
 - (instancetype)initWithDictionary:(GPBInt64EnumDictionary *)dictionary;
+
 /**
  * Initializes a dictionary with the given capacity.
  *
@@ -5076,9 +5328,9 @@ NS_ASSUME_NONNULL_BEGIN
  * Enumerates the keys and values on this dictionary with the given block.
  *
  * @param block The block to enumerate with.
- *   **key**:       The key for the current entry.
- *   **value**: The value for the current entry
- *   **stop**:      A pointer to a boolean that when set stops the enumeration.
+ *   **key**:        The key for the current entry.
+ *   **value**:      The value for the current entry
+ *   **stop**:       A pointer to a boolean that when set stops the enumeration.
  **/
 - (void)enumerateKeysAndEnumsUsingBlock:
     (void (^)(int64_t key, int32_t value, BOOL *stop))block;
@@ -5129,8 +5381,8 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * Sets the value for the given key.
  *
- * @param value The value to set.
- * @param key         The key under which to store the value.
+ * @param value     The value to set.
+ * @param key       The key under which to store the value.
  **/
 - (void)setEnum:(int32_t)value forKey:(int64_t)key;
 
@@ -5151,6 +5403,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @param aKey Key to be removed from this dictionary.
  **/
 - (void)removeEnumForKey:(int64_t)aKey;
+
 /**
  * Removes all entries in this dictionary.
  **/
@@ -5162,7 +5415,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 /**
  * Class used for map fields of <int64_t, ObjectType>
- * values. This performs better than boxing into NSNumbers in NSArrays.
+ * values. This performs better than boxing into NSNumbers in NSDictionaries.
  *
  * @note This class is not meant to be subclassed.
  **/
@@ -5175,28 +5428,31 @@ NS_ASSUME_NONNULL_BEGIN
  * @return A newly instanced and empty dictionary.
  **/
 + (instancetype)dictionary;
+
 /**
  * Creates and initializes a dictionary with the single entry given.
  *
- * @param object The value to be placed in the dictionary.
- * @param key         The key under which to store the value.
+ * @param object     The value to be placed in the dictionary.
+ * @param key        The key under which to store the value.
  *
  * @return A newly instanced dictionary with the key and value in it.
  **/
 + (instancetype)dictionaryWithObject:(ObjectType)object
                               forKey:(int64_t)key;
+
 /**
  * Creates and initializes a dictionary with the entries given.
  *
- * @param objects The values to be placed in the dictionary.
- * @param keys           The keys under which to store the values.
- * @param count          The number of entries to store in the dictionary.
+ * @param objects      The values to be placed in the dictionary.
+ * @param keys         The keys under which to store the values.
+ * @param count        The number of entries to store in the dictionary.
  *
  * @return A newly instanced dictionary with the keys and values in it.
  **/
 + (instancetype)dictionaryWithObjects:(const ObjectType GPB_UNSAFE_UNRETAINED [])objects
                               forKeys:(const int64_t [])keys
                                 count:(NSUInteger)count;
+
 /**
  * Creates and initializes a dictionary with the entries from the given.
  * dictionary.
@@ -5207,6 +5463,7 @@ NS_ASSUME_NONNULL_BEGIN
  *         dictionary in it.
  **/
 + (instancetype)dictionaryWithDictionary:(GPBInt64ObjectDictionary *)dictionary;
+
 /**
  * Creates and initializes a dictionary with the given capacity.
  *
@@ -5219,15 +5476,16 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * Initializes this dictionary, copying the given values and keys.
  *
- * @param objects The values to be placed in this dictionary.
- * @param keys           The keys under which to store the values.
- * @param count          The number of elements to copy into the dictionary.
+ * @param objects      The values to be placed in this dictionary.
+ * @param keys         The keys under which to store the values.
+ * @param count        The number of elements to copy into the dictionary.
  *
  * @return A newly initialized dictionary with a copy of the values and keys.
  **/
 - (instancetype)initWithObjects:(const ObjectType GPB_UNSAFE_UNRETAINED [])objects
                         forKeys:(const int64_t [])keys
                           count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
+
 /**
  * Initializes this dictionary, copying the entries from the given dictionary.
  *
@@ -5236,6 +5494,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @return A newly initialized dictionary with the entries of the given dictionary.
  **/
 - (instancetype)initWithDictionary:(GPBInt64ObjectDictionary *)dictionary;
+
 /**
  * Initializes this dictionary with the requested capacity.
  *
@@ -5258,9 +5517,9 @@ NS_ASSUME_NONNULL_BEGIN
  * Enumerates the keys and values on this dictionary with the given block.
  *
  * @param block The block to enumerate with.
- *   **key**:       The key for the current entry.
- *   **object**: The value for the current entry
- *   **stop**:      A pointer to a boolean that when set stops the enumeration.
+ *   **key**:         The key for the current entry.
+ *   **object**:      The value for the current entry
+ *   **stop**:        A pointer to a boolean that when set stops the enumeration.
  **/
 - (void)enumerateKeysAndObjectsUsingBlock:
     (void (^)(int64_t key, ObjectType object, BOOL *stop))block;
@@ -5276,8 +5535,8 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * Sets the value for the given key.
  *
- * @param object The value to set.
- * @param key         The key under which to store the value.
+ * @param object     The value to set.
+ * @param key        The key under which to store the value.
  **/
 - (void)setObject:(ObjectType)object forKey:(int64_t)key;
 
@@ -5287,6 +5546,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @param aKey Key to be removed from this dictionary.
  **/
 - (void)removeObjectForKey:(int64_t)aKey;
+
 /**
  * Removes all entries in this dictionary.
  **/
@@ -5298,7 +5558,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 /**
  * Class used for map fields of <BOOL, uint32_t>
- * values. This performs better than boxing into NSNumbers in NSArrays.
+ * values. This performs better than boxing into NSNumbers in NSDictionaries.
  *
  * @note This class is not meant to be subclassed.
  **/
@@ -5311,28 +5571,31 @@ NS_ASSUME_NONNULL_BEGIN
  * @return A newly instanced and empty dictionary.
  **/
 + (instancetype)dictionary;
+
 /**
  * Creates and initializes a dictionary with the single entry given.
  *
- * @param value The value to be placed in the dictionary.
- * @param key         The key under which to store the value.
+ * @param value     The value to be placed in the dictionary.
+ * @param key       The key under which to store the value.
  *
  * @return A newly instanced dictionary with the key and value in it.
  **/
 + (instancetype)dictionaryWithUInt32:(uint32_t)value
                               forKey:(BOOL)key;
+
 /**
  * Creates and initializes a dictionary with the entries given.
  *
- * @param values The values to be placed in the dictionary.
- * @param keys           The keys under which to store the values.
- * @param count          The number of entries to store in the dictionary.
+ * @param values      The values to be placed in the dictionary.
+ * @param keys        The keys under which to store the values.
+ * @param count       The number of entries to store in the dictionary.
  *
  * @return A newly instanced dictionary with the keys and values in it.
  **/
 + (instancetype)dictionaryWithUInt32s:(const uint32_t [])values
                               forKeys:(const BOOL [])keys
                                 count:(NSUInteger)count;
+
 /**
  * Creates and initializes a dictionary with the entries from the given.
  * dictionary.
@@ -5343,6 +5606,7 @@ NS_ASSUME_NONNULL_BEGIN
  *         dictionary in it.
  **/
 + (instancetype)dictionaryWithDictionary:(GPBBoolUInt32Dictionary *)dictionary;
+
 /**
  * Creates and initializes a dictionary with the given capacity.
  *
@@ -5355,15 +5619,16 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * Initializes this dictionary, copying the given values and keys.
  *
- * @param values The values to be placed in this dictionary.
- * @param keys           The keys under which to store the values.
- * @param count          The number of elements to copy into the dictionary.
+ * @param values      The values to be placed in this dictionary.
+ * @param keys        The keys under which to store the values.
+ * @param count       The number of elements to copy into the dictionary.
  *
  * @return A newly initialized dictionary with a copy of the values and keys.
  **/
 - (instancetype)initWithUInt32s:(const uint32_t [])values
                         forKeys:(const BOOL [])keys
                           count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
+
 /**
  * Initializes this dictionary, copying the entries from the given dictionary.
  *
@@ -5372,6 +5637,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @return A newly initialized dictionary with the entries of the given dictionary.
  **/
 - (instancetype)initWithDictionary:(GPBBoolUInt32Dictionary *)dictionary;
+
 /**
  * Initializes this dictionary with the requested capacity.
  *
@@ -5395,9 +5661,9 @@ NS_ASSUME_NONNULL_BEGIN
  * Enumerates the keys and values on this dictionary with the given block.
  *
  * @param block The block to enumerate with.
- *   **key**:       The key for the current entry.
- *   **value**: The value for the current entry
- *   **stop**:      A pointer to a boolean that when set stops the enumeration.
+ *   **key**:        The key for the current entry.
+ *   **value**:      The value for the current entry
+ *   **stop**:       A pointer to a boolean that when set stops the enumeration.
  **/
 - (void)enumerateKeysAndUInt32sUsingBlock:
     (void (^)(BOOL key, uint32_t value, BOOL *stop))block;
@@ -5413,8 +5679,8 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * Sets the value for the given key.
  *
- * @param value The value to set.
- * @param key         The key under which to store the value.
+ * @param value     The value to set.
+ * @param key       The key under which to store the value.
  **/
 - (void)setUInt32:(uint32_t)value forKey:(BOOL)key;
 
@@ -5424,6 +5690,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @param aKey Key to be removed from this dictionary.
  **/
 - (void)removeUInt32ForKey:(BOOL)aKey;
+
 /**
  * Removes all entries in this dictionary.
  **/
@@ -5435,7 +5702,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 /**
  * Class used for map fields of <BOOL, int32_t>
- * values. This performs better than boxing into NSNumbers in NSArrays.
+ * values. This performs better than boxing into NSNumbers in NSDictionaries.
  *
  * @note This class is not meant to be subclassed.
  **/
@@ -5448,28 +5715,31 @@ NS_ASSUME_NONNULL_BEGIN
  * @return A newly instanced and empty dictionary.
  **/
 + (instancetype)dictionary;
+
 /**
  * Creates and initializes a dictionary with the single entry given.
  *
- * @param value The value to be placed in the dictionary.
- * @param key         The key under which to store the value.
+ * @param value     The value to be placed in the dictionary.
+ * @param key       The key under which to store the value.
  *
  * @return A newly instanced dictionary with the key and value in it.
  **/
 + (instancetype)dictionaryWithInt32:(int32_t)value
                              forKey:(BOOL)key;
+
 /**
  * Creates and initializes a dictionary with the entries given.
  *
- * @param values The values to be placed in the dictionary.
- * @param keys           The keys under which to store the values.
- * @param count          The number of entries to store in the dictionary.
+ * @param values      The values to be placed in the dictionary.
+ * @param keys        The keys under which to store the values.
+ * @param count       The number of entries to store in the dictionary.
  *
  * @return A newly instanced dictionary with the keys and values in it.
  **/
 + (instancetype)dictionaryWithInt32s:(const int32_t [])values
                              forKeys:(const BOOL [])keys
                                count:(NSUInteger)count;
+
 /**
  * Creates and initializes a dictionary with the entries from the given.
  * dictionary.
@@ -5480,6 +5750,7 @@ NS_ASSUME_NONNULL_BEGIN
  *         dictionary in it.
  **/
 + (instancetype)dictionaryWithDictionary:(GPBBoolInt32Dictionary *)dictionary;
+
 /**
  * Creates and initializes a dictionary with the given capacity.
  *
@@ -5492,15 +5763,16 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * Initializes this dictionary, copying the given values and keys.
  *
- * @param values The values to be placed in this dictionary.
- * @param keys           The keys under which to store the values.
- * @param count          The number of elements to copy into the dictionary.
+ * @param values      The values to be placed in this dictionary.
+ * @param keys        The keys under which to store the values.
+ * @param count       The number of elements to copy into the dictionary.
  *
  * @return A newly initialized dictionary with a copy of the values and keys.
  **/
 - (instancetype)initWithInt32s:(const int32_t [])values
                        forKeys:(const BOOL [])keys
                          count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
+
 /**
  * Initializes this dictionary, copying the entries from the given dictionary.
  *
@@ -5509,6 +5781,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @return A newly initialized dictionary with the entries of the given dictionary.
  **/
 - (instancetype)initWithDictionary:(GPBBoolInt32Dictionary *)dictionary;
+
 /**
  * Initializes this dictionary with the requested capacity.
  *
@@ -5532,9 +5805,9 @@ NS_ASSUME_NONNULL_BEGIN
  * Enumerates the keys and values on this dictionary with the given block.
  *
  * @param block The block to enumerate with.
- *   **key**:       The key for the current entry.
- *   **value**: The value for the current entry
- *   **stop**:      A pointer to a boolean that when set stops the enumeration.
+ *   **key**:        The key for the current entry.
+ *   **value**:      The value for the current entry
+ *   **stop**:       A pointer to a boolean that when set stops the enumeration.
  **/
 - (void)enumerateKeysAndInt32sUsingBlock:
     (void (^)(BOOL key, int32_t value, BOOL *stop))block;
@@ -5550,8 +5823,8 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * Sets the value for the given key.
  *
- * @param value The value to set.
- * @param key         The key under which to store the value.
+ * @param value     The value to set.
+ * @param key       The key under which to store the value.
  **/
 - (void)setInt32:(int32_t)value forKey:(BOOL)key;
 
@@ -5561,6 +5834,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @param aKey Key to be removed from this dictionary.
  **/
 - (void)removeInt32ForKey:(BOOL)aKey;
+
 /**
  * Removes all entries in this dictionary.
  **/
@@ -5572,7 +5846,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 /**
  * Class used for map fields of <BOOL, uint64_t>
- * values. This performs better than boxing into NSNumbers in NSArrays.
+ * values. This performs better than boxing into NSNumbers in NSDictionaries.
  *
  * @note This class is not meant to be subclassed.
  **/
@@ -5585,28 +5859,31 @@ NS_ASSUME_NONNULL_BEGIN
  * @return A newly instanced and empty dictionary.
  **/
 + (instancetype)dictionary;
+
 /**
  * Creates and initializes a dictionary with the single entry given.
  *
- * @param value The value to be placed in the dictionary.
- * @param key         The key under which to store the value.
+ * @param value     The value to be placed in the dictionary.
+ * @param key       The key under which to store the value.
  *
  * @return A newly instanced dictionary with the key and value in it.
  **/
 + (instancetype)dictionaryWithUInt64:(uint64_t)value
                               forKey:(BOOL)key;
+
 /**
  * Creates and initializes a dictionary with the entries given.
  *
- * @param values The values to be placed in the dictionary.
- * @param keys           The keys under which to store the values.
- * @param count          The number of entries to store in the dictionary.
+ * @param values      The values to be placed in the dictionary.
+ * @param keys        The keys under which to store the values.
+ * @param count       The number of entries to store in the dictionary.
  *
  * @return A newly instanced dictionary with the keys and values in it.
  **/
 + (instancetype)dictionaryWithUInt64s:(const uint64_t [])values
                               forKeys:(const BOOL [])keys
                                 count:(NSUInteger)count;
+
 /**
  * Creates and initializes a dictionary with the entries from the given.
  * dictionary.
@@ -5617,6 +5894,7 @@ NS_ASSUME_NONNULL_BEGIN
  *         dictionary in it.
  **/
 + (instancetype)dictionaryWithDictionary:(GPBBoolUInt64Dictionary *)dictionary;
+
 /**
  * Creates and initializes a dictionary with the given capacity.
  *
@@ -5629,15 +5907,16 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * Initializes this dictionary, copying the given values and keys.
  *
- * @param values The values to be placed in this dictionary.
- * @param keys           The keys under which to store the values.
- * @param count          The number of elements to copy into the dictionary.
+ * @param values      The values to be placed in this dictionary.
+ * @param keys        The keys under which to store the values.
+ * @param count       The number of elements to copy into the dictionary.
  *
  * @return A newly initialized dictionary with a copy of the values and keys.
  **/
 - (instancetype)initWithUInt64s:(const uint64_t [])values
                         forKeys:(const BOOL [])keys
                           count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
+
 /**
  * Initializes this dictionary, copying the entries from the given dictionary.
  *
@@ -5646,6 +5925,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @return A newly initialized dictionary with the entries of the given dictionary.
  **/
 - (instancetype)initWithDictionary:(GPBBoolUInt64Dictionary *)dictionary;
+
 /**
  * Initializes this dictionary with the requested capacity.
  *
@@ -5669,9 +5949,9 @@ NS_ASSUME_NONNULL_BEGIN
  * Enumerates the keys and values on this dictionary with the given block.
  *
  * @param block The block to enumerate with.
- *   **key**:       The key for the current entry.
- *   **value**: The value for the current entry
- *   **stop**:      A pointer to a boolean that when set stops the enumeration.
+ *   **key**:        The key for the current entry.
+ *   **value**:      The value for the current entry
+ *   **stop**:       A pointer to a boolean that when set stops the enumeration.
  **/
 - (void)enumerateKeysAndUInt64sUsingBlock:
     (void (^)(BOOL key, uint64_t value, BOOL *stop))block;
@@ -5687,8 +5967,8 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * Sets the value for the given key.
  *
- * @param value The value to set.
- * @param key         The key under which to store the value.
+ * @param value     The value to set.
+ * @param key       The key under which to store the value.
  **/
 - (void)setUInt64:(uint64_t)value forKey:(BOOL)key;
 
@@ -5698,6 +5978,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @param aKey Key to be removed from this dictionary.
  **/
 - (void)removeUInt64ForKey:(BOOL)aKey;
+
 /**
  * Removes all entries in this dictionary.
  **/
@@ -5709,7 +5990,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 /**
  * Class used for map fields of <BOOL, int64_t>
- * values. This performs better than boxing into NSNumbers in NSArrays.
+ * values. This performs better than boxing into NSNumbers in NSDictionaries.
  *
  * @note This class is not meant to be subclassed.
  **/
@@ -5722,28 +6003,31 @@ NS_ASSUME_NONNULL_BEGIN
  * @return A newly instanced and empty dictionary.
  **/
 + (instancetype)dictionary;
+
 /**
  * Creates and initializes a dictionary with the single entry given.
  *
- * @param value The value to be placed in the dictionary.
- * @param key         The key under which to store the value.
+ * @param value     The value to be placed in the dictionary.
+ * @param key       The key under which to store the value.
  *
  * @return A newly instanced dictionary with the key and value in it.
  **/
 + (instancetype)dictionaryWithInt64:(int64_t)value
                              forKey:(BOOL)key;
+
 /**
  * Creates and initializes a dictionary with the entries given.
  *
- * @param values The values to be placed in the dictionary.
- * @param keys           The keys under which to store the values.
- * @param count          The number of entries to store in the dictionary.
+ * @param values      The values to be placed in the dictionary.
+ * @param keys        The keys under which to store the values.
+ * @param count       The number of entries to store in the dictionary.
  *
  * @return A newly instanced dictionary with the keys and values in it.
  **/
 + (instancetype)dictionaryWithInt64s:(const int64_t [])values
                              forKeys:(const BOOL [])keys
                                count:(NSUInteger)count;
+
 /**
  * Creates and initializes a dictionary with the entries from the given.
  * dictionary.
@@ -5754,6 +6038,7 @@ NS_ASSUME_NONNULL_BEGIN
  *         dictionary in it.
  **/
 + (instancetype)dictionaryWithDictionary:(GPBBoolInt64Dictionary *)dictionary;
+
 /**
  * Creates and initializes a dictionary with the given capacity.
  *
@@ -5766,15 +6051,16 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * Initializes this dictionary, copying the given values and keys.
  *
- * @param values The values to be placed in this dictionary.
- * @param keys           The keys under which to store the values.
- * @param count          The number of elements to copy into the dictionary.
+ * @param values      The values to be placed in this dictionary.
+ * @param keys        The keys under which to store the values.
+ * @param count       The number of elements to copy into the dictionary.
  *
  * @return A newly initialized dictionary with a copy of the values and keys.
  **/
 - (instancetype)initWithInt64s:(const int64_t [])values
                        forKeys:(const BOOL [])keys
                          count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
+
 /**
  * Initializes this dictionary, copying the entries from the given dictionary.
  *
@@ -5783,6 +6069,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @return A newly initialized dictionary with the entries of the given dictionary.
  **/
 - (instancetype)initWithDictionary:(GPBBoolInt64Dictionary *)dictionary;
+
 /**
  * Initializes this dictionary with the requested capacity.
  *
@@ -5806,9 +6093,9 @@ NS_ASSUME_NONNULL_BEGIN
  * Enumerates the keys and values on this dictionary with the given block.
  *
  * @param block The block to enumerate with.
- *   **key**:       The key for the current entry.
- *   **value**: The value for the current entry
- *   **stop**:      A pointer to a boolean that when set stops the enumeration.
+ *   **key**:        The key for the current entry.
+ *   **value**:      The value for the current entry
+ *   **stop**:       A pointer to a boolean that when set stops the enumeration.
  **/
 - (void)enumerateKeysAndInt64sUsingBlock:
     (void (^)(BOOL key, int64_t value, BOOL *stop))block;
@@ -5824,8 +6111,8 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * Sets the value for the given key.
  *
- * @param value The value to set.
- * @param key         The key under which to store the value.
+ * @param value     The value to set.
+ * @param key       The key under which to store the value.
  **/
 - (void)setInt64:(int64_t)value forKey:(BOOL)key;
 
@@ -5835,6 +6122,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @param aKey Key to be removed from this dictionary.
  **/
 - (void)removeInt64ForKey:(BOOL)aKey;
+
 /**
  * Removes all entries in this dictionary.
  **/
@@ -5846,7 +6134,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 /**
  * Class used for map fields of <BOOL, BOOL>
- * values. This performs better than boxing into NSNumbers in NSArrays.
+ * values. This performs better than boxing into NSNumbers in NSDictionaries.
  *
  * @note This class is not meant to be subclassed.
  **/
@@ -5859,28 +6147,31 @@ NS_ASSUME_NONNULL_BEGIN
  * @return A newly instanced and empty dictionary.
  **/
 + (instancetype)dictionary;
+
 /**
  * Creates and initializes a dictionary with the single entry given.
  *
- * @param value The value to be placed in the dictionary.
- * @param key         The key under which to store the value.
+ * @param value     The value to be placed in the dictionary.
+ * @param key       The key under which to store the value.
  *
  * @return A newly instanced dictionary with the key and value in it.
  **/
 + (instancetype)dictionaryWithBool:(BOOL)value
                             forKey:(BOOL)key;
+
 /**
  * Creates and initializes a dictionary with the entries given.
  *
- * @param values The values to be placed in the dictionary.
- * @param keys           The keys under which to store the values.
- * @param count          The number of entries to store in the dictionary.
+ * @param values      The values to be placed in the dictionary.
+ * @param keys        The keys under which to store the values.
+ * @param count       The number of entries to store in the dictionary.
  *
  * @return A newly instanced dictionary with the keys and values in it.
  **/
 + (instancetype)dictionaryWithBools:(const BOOL [])values
                             forKeys:(const BOOL [])keys
                               count:(NSUInteger)count;
+
 /**
  * Creates and initializes a dictionary with the entries from the given.
  * dictionary.
@@ -5891,6 +6182,7 @@ NS_ASSUME_NONNULL_BEGIN
  *         dictionary in it.
  **/
 + (instancetype)dictionaryWithDictionary:(GPBBoolBoolDictionary *)dictionary;
+
 /**
  * Creates and initializes a dictionary with the given capacity.
  *
@@ -5903,15 +6195,16 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * Initializes this dictionary, copying the given values and keys.
  *
- * @param values The values to be placed in this dictionary.
- * @param keys           The keys under which to store the values.
- * @param count          The number of elements to copy into the dictionary.
+ * @param values      The values to be placed in this dictionary.
+ * @param keys        The keys under which to store the values.
+ * @param count       The number of elements to copy into the dictionary.
  *
  * @return A newly initialized dictionary with a copy of the values and keys.
  **/
 - (instancetype)initWithBools:(const BOOL [])values
                       forKeys:(const BOOL [])keys
                         count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
+
 /**
  * Initializes this dictionary, copying the entries from the given dictionary.
  *
@@ -5920,6 +6213,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @return A newly initialized dictionary with the entries of the given dictionary.
  **/
 - (instancetype)initWithDictionary:(GPBBoolBoolDictionary *)dictionary;
+
 /**
  * Initializes this dictionary with the requested capacity.
  *
@@ -5943,9 +6237,9 @@ NS_ASSUME_NONNULL_BEGIN
  * Enumerates the keys and values on this dictionary with the given block.
  *
  * @param block The block to enumerate with.
- *   **key**:       The key for the current entry.
- *   **value**: The value for the current entry
- *   **stop**:      A pointer to a boolean that when set stops the enumeration.
+ *   **key**:        The key for the current entry.
+ *   **value**:      The value for the current entry
+ *   **stop**:       A pointer to a boolean that when set stops the enumeration.
  **/
 - (void)enumerateKeysAndBoolsUsingBlock:
     (void (^)(BOOL key, BOOL value, BOOL *stop))block;
@@ -5961,8 +6255,8 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * Sets the value for the given key.
  *
- * @param value The value to set.
- * @param key         The key under which to store the value.
+ * @param value     The value to set.
+ * @param key       The key under which to store the value.
  **/
 - (void)setBool:(BOOL)value forKey:(BOOL)key;
 
@@ -5972,6 +6266,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @param aKey Key to be removed from this dictionary.
  **/
 - (void)removeBoolForKey:(BOOL)aKey;
+
 /**
  * Removes all entries in this dictionary.
  **/
@@ -5983,7 +6278,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 /**
  * Class used for map fields of <BOOL, float>
- * values. This performs better than boxing into NSNumbers in NSArrays.
+ * values. This performs better than boxing into NSNumbers in NSDictionaries.
  *
  * @note This class is not meant to be subclassed.
  **/
@@ -5996,28 +6291,31 @@ NS_ASSUME_NONNULL_BEGIN
  * @return A newly instanced and empty dictionary.
  **/
 + (instancetype)dictionary;
+
 /**
  * Creates and initializes a dictionary with the single entry given.
  *
- * @param value The value to be placed in the dictionary.
- * @param key         The key under which to store the value.
+ * @param value     The value to be placed in the dictionary.
+ * @param key       The key under which to store the value.
  *
  * @return A newly instanced dictionary with the key and value in it.
  **/
 + (instancetype)dictionaryWithFloat:(float)value
                              forKey:(BOOL)key;
+
 /**
  * Creates and initializes a dictionary with the entries given.
  *
- * @param values The values to be placed in the dictionary.
- * @param keys           The keys under which to store the values.
- * @param count          The number of entries to store in the dictionary.
+ * @param values      The values to be placed in the dictionary.
+ * @param keys        The keys under which to store the values.
+ * @param count       The number of entries to store in the dictionary.
  *
  * @return A newly instanced dictionary with the keys and values in it.
  **/
 + (instancetype)dictionaryWithFloats:(const float [])values
                              forKeys:(const BOOL [])keys
                                count:(NSUInteger)count;
+
 /**
  * Creates and initializes a dictionary with the entries from the given.
  * dictionary.
@@ -6028,6 +6326,7 @@ NS_ASSUME_NONNULL_BEGIN
  *         dictionary in it.
  **/
 + (instancetype)dictionaryWithDictionary:(GPBBoolFloatDictionary *)dictionary;
+
 /**
  * Creates and initializes a dictionary with the given capacity.
  *
@@ -6040,15 +6339,16 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * Initializes this dictionary, copying the given values and keys.
  *
- * @param values The values to be placed in this dictionary.
- * @param keys           The keys under which to store the values.
- * @param count          The number of elements to copy into the dictionary.
+ * @param values      The values to be placed in this dictionary.
+ * @param keys        The keys under which to store the values.
+ * @param count       The number of elements to copy into the dictionary.
  *
  * @return A newly initialized dictionary with a copy of the values and keys.
  **/
 - (instancetype)initWithFloats:(const float [])values
                        forKeys:(const BOOL [])keys
                          count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
+
 /**
  * Initializes this dictionary, copying the entries from the given dictionary.
  *
@@ -6057,6 +6357,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @return A newly initialized dictionary with the entries of the given dictionary.
  **/
 - (instancetype)initWithDictionary:(GPBBoolFloatDictionary *)dictionary;
+
 /**
  * Initializes this dictionary with the requested capacity.
  *
@@ -6080,9 +6381,9 @@ NS_ASSUME_NONNULL_BEGIN
  * Enumerates the keys and values on this dictionary with the given block.
  *
  * @param block The block to enumerate with.
- *   **key**:       The key for the current entry.
- *   **value**: The value for the current entry
- *   **stop**:      A pointer to a boolean that when set stops the enumeration.
+ *   **key**:        The key for the current entry.
+ *   **value**:      The value for the current entry
+ *   **stop**:       A pointer to a boolean that when set stops the enumeration.
  **/
 - (void)enumerateKeysAndFloatsUsingBlock:
     (void (^)(BOOL key, float value, BOOL *stop))block;
@@ -6098,8 +6399,8 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * Sets the value for the given key.
  *
- * @param value The value to set.
- * @param key         The key under which to store the value.
+ * @param value     The value to set.
+ * @param key       The key under which to store the value.
  **/
 - (void)setFloat:(float)value forKey:(BOOL)key;
 
@@ -6109,6 +6410,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @param aKey Key to be removed from this dictionary.
  **/
 - (void)removeFloatForKey:(BOOL)aKey;
+
 /**
  * Removes all entries in this dictionary.
  **/
@@ -6120,7 +6422,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 /**
  * Class used for map fields of <BOOL, double>
- * values. This performs better than boxing into NSNumbers in NSArrays.
+ * values. This performs better than boxing into NSNumbers in NSDictionaries.
  *
  * @note This class is not meant to be subclassed.
  **/
@@ -6133,28 +6435,31 @@ NS_ASSUME_NONNULL_BEGIN
  * @return A newly instanced and empty dictionary.
  **/
 + (instancetype)dictionary;
+
 /**
  * Creates and initializes a dictionary with the single entry given.
  *
- * @param value The value to be placed in the dictionary.
- * @param key         The key under which to store the value.
+ * @param value     The value to be placed in the dictionary.
+ * @param key       The key under which to store the value.
  *
  * @return A newly instanced dictionary with the key and value in it.
  **/
 + (instancetype)dictionaryWithDouble:(double)value
                               forKey:(BOOL)key;
+
 /**
  * Creates and initializes a dictionary with the entries given.
  *
- * @param values The values to be placed in the dictionary.
- * @param keys           The keys under which to store the values.
- * @param count          The number of entries to store in the dictionary.
+ * @param values      The values to be placed in the dictionary.
+ * @param keys        The keys under which to store the values.
+ * @param count       The number of entries to store in the dictionary.
  *
  * @return A newly instanced dictionary with the keys and values in it.
  **/
 + (instancetype)dictionaryWithDoubles:(const double [])values
                               forKeys:(const BOOL [])keys
                                 count:(NSUInteger)count;
+
 /**
  * Creates and initializes a dictionary with the entries from the given.
  * dictionary.
@@ -6165,6 +6470,7 @@ NS_ASSUME_NONNULL_BEGIN
  *         dictionary in it.
  **/
 + (instancetype)dictionaryWithDictionary:(GPBBoolDoubleDictionary *)dictionary;
+
 /**
  * Creates and initializes a dictionary with the given capacity.
  *
@@ -6177,15 +6483,16 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * Initializes this dictionary, copying the given values and keys.
  *
- * @param values The values to be placed in this dictionary.
- * @param keys           The keys under which to store the values.
- * @param count          The number of elements to copy into the dictionary.
+ * @param values      The values to be placed in this dictionary.
+ * @param keys        The keys under which to store the values.
+ * @param count       The number of elements to copy into the dictionary.
  *
  * @return A newly initialized dictionary with a copy of the values and keys.
  **/
 - (instancetype)initWithDoubles:(const double [])values
                         forKeys:(const BOOL [])keys
                           count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
+
 /**
  * Initializes this dictionary, copying the entries from the given dictionary.
  *
@@ -6194,6 +6501,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @return A newly initialized dictionary with the entries of the given dictionary.
  **/
 - (instancetype)initWithDictionary:(GPBBoolDoubleDictionary *)dictionary;
+
 /**
  * Initializes this dictionary with the requested capacity.
  *
@@ -6217,9 +6525,9 @@ NS_ASSUME_NONNULL_BEGIN
  * Enumerates the keys and values on this dictionary with the given block.
  *
  * @param block The block to enumerate with.
- *   **key**:       The key for the current entry.
- *   **value**: The value for the current entry
- *   **stop**:      A pointer to a boolean that when set stops the enumeration.
+ *   **key**:        The key for the current entry.
+ *   **value**:      The value for the current entry
+ *   **stop**:       A pointer to a boolean that when set stops the enumeration.
  **/
 - (void)enumerateKeysAndDoublesUsingBlock:
     (void (^)(BOOL key, double value, BOOL *stop))block;
@@ -6235,8 +6543,8 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * Sets the value for the given key.
  *
- * @param value The value to set.
- * @param key         The key under which to store the value.
+ * @param value     The value to set.
+ * @param key       The key under which to store the value.
  **/
 - (void)setDouble:(double)value forKey:(BOOL)key;
 
@@ -6246,6 +6554,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @param aKey Key to be removed from this dictionary.
  **/
 - (void)removeDoubleForKey:(BOOL)aKey;
+
 /**
  * Removes all entries in this dictionary.
  **/
@@ -6257,7 +6566,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 /**
  * Class used for map fields of <BOOL, int32_t>
- * values. This performs better than boxing into NSNumbers in NSArrays.
+ * values. This performs better than boxing into NSNumbers in NSDictionaries.
  *
  * @note This class is not meant to be subclassed.
  **/
@@ -6272,6 +6581,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @return A newly instanced and empty dictionary.
  **/
 + (instancetype)dictionary;
+
 /**
  * Creates and initializes a dictionary with the given validation function.
  *
@@ -6280,6 +6590,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @return A newly instanced dictionary.
  **/
 + (instancetype)dictionaryWithValidationFunction:(nullable GPBEnumValidationFunc)func;
+
 /**
  * Creates and initializes a dictionary with the single entry given.
  *
@@ -6292,6 +6603,7 @@ NS_ASSUME_NONNULL_BEGIN
 + (instancetype)dictionaryWithValidationFunction:(nullable GPBEnumValidationFunc)func
                                         rawValue:(int32_t)rawValue
                                           forKey:(BOOL)key;
+
 /**
  * Creates and initializes a dictionary with the entries given.
  *
@@ -6306,6 +6618,7 @@ NS_ASSUME_NONNULL_BEGIN
                                        rawValues:(const int32_t [])values
                                          forKeys:(const BOOL [])keys
                                            count:(NSUInteger)count;
+
 /**
  * Creates and initializes a dictionary with the entries from the given.
  * dictionary.
@@ -6316,6 +6629,7 @@ NS_ASSUME_NONNULL_BEGIN
  *         dictionary in it.
  **/
 + (instancetype)dictionaryWithDictionary:(GPBBoolEnumDictionary *)dictionary;
+
 /**
  * Creates and initializes a dictionary with the given capacity.
  *
@@ -6335,6 +6649,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @return A newly initialized dictionary.
  **/
 - (instancetype)initWithValidationFunction:(nullable GPBEnumValidationFunc)func;
+
 /**
  * Initializes a dictionary with the entries given.
  *
@@ -6349,6 +6664,7 @@ NS_ASSUME_NONNULL_BEGIN
                                  rawValues:(const int32_t [])values
                                    forKeys:(const BOOL [])keys
                                      count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
+
 /**
  * Initializes a dictionary with the entries from the given.
  * dictionary.
@@ -6359,6 +6675,7 @@ NS_ASSUME_NONNULL_BEGIN
  *         dictionary in it.
  **/
 - (instancetype)initWithDictionary:(GPBBoolEnumDictionary *)dictionary;
+
 /**
  * Initializes a dictionary with the given capacity.
  *
@@ -6388,9 +6705,9 @@ NS_ASSUME_NONNULL_BEGIN
  * Enumerates the keys and values on this dictionary with the given block.
  *
  * @param block The block to enumerate with.
- *   **key**:       The key for the current entry.
- *   **value**: The value for the current entry
- *   **stop**:      A pointer to a boolean that when set stops the enumeration.
+ *   **key**:        The key for the current entry.
+ *   **value**:      The value for the current entry
+ *   **stop**:       A pointer to a boolean that when set stops the enumeration.
  **/
 - (void)enumerateKeysAndEnumsUsingBlock:
     (void (^)(BOOL key, int32_t value, BOOL *stop))block;
@@ -6441,8 +6758,8 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * Sets the value for the given key.
  *
- * @param value The value to set.
- * @param key         The key under which to store the value.
+ * @param value     The value to set.
+ * @param key       The key under which to store the value.
  **/
 - (void)setEnum:(int32_t)value forKey:(BOOL)key;
 
@@ -6463,6 +6780,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @param aKey Key to be removed from this dictionary.
  **/
 - (void)removeEnumForKey:(BOOL)aKey;
+
 /**
  * Removes all entries in this dictionary.
  **/
@@ -6474,7 +6792,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 /**
  * Class used for map fields of <BOOL, ObjectType>
- * values. This performs better than boxing into NSNumbers in NSArrays.
+ * values. This performs better than boxing into NSNumbers in NSDictionaries.
  *
  * @note This class is not meant to be subclassed.
  **/
@@ -6487,28 +6805,31 @@ NS_ASSUME_NONNULL_BEGIN
  * @return A newly instanced and empty dictionary.
  **/
 + (instancetype)dictionary;
+
 /**
  * Creates and initializes a dictionary with the single entry given.
  *
- * @param object The value to be placed in the dictionary.
- * @param key         The key under which to store the value.
+ * @param object     The value to be placed in the dictionary.
+ * @param key        The key under which to store the value.
  *
  * @return A newly instanced dictionary with the key and value in it.
  **/
 + (instancetype)dictionaryWithObject:(ObjectType)object
                               forKey:(BOOL)key;
+
 /**
  * Creates and initializes a dictionary with the entries given.
  *
- * @param objects The values to be placed in the dictionary.
- * @param keys           The keys under which to store the values.
- * @param count          The number of entries to store in the dictionary.
+ * @param objects      The values to be placed in the dictionary.
+ * @param keys         The keys under which to store the values.
+ * @param count        The number of entries to store in the dictionary.
  *
  * @return A newly instanced dictionary with the keys and values in it.
  **/
 + (instancetype)dictionaryWithObjects:(const ObjectType GPB_UNSAFE_UNRETAINED [])objects
                               forKeys:(const BOOL [])keys
                                 count:(NSUInteger)count;
+
 /**
  * Creates and initializes a dictionary with the entries from the given.
  * dictionary.
@@ -6519,6 +6840,7 @@ NS_ASSUME_NONNULL_BEGIN
  *         dictionary in it.
  **/
 + (instancetype)dictionaryWithDictionary:(GPBBoolObjectDictionary *)dictionary;
+
 /**
  * Creates and initializes a dictionary with the given capacity.
  *
@@ -6531,15 +6853,16 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * Initializes this dictionary, copying the given values and keys.
  *
- * @param objects The values to be placed in this dictionary.
- * @param keys           The keys under which to store the values.
- * @param count          The number of elements to copy into the dictionary.
+ * @param objects      The values to be placed in this dictionary.
+ * @param keys         The keys under which to store the values.
+ * @param count        The number of elements to copy into the dictionary.
  *
  * @return A newly initialized dictionary with a copy of the values and keys.
  **/
 - (instancetype)initWithObjects:(const ObjectType GPB_UNSAFE_UNRETAINED [])objects
                         forKeys:(const BOOL [])keys
                           count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
+
 /**
  * Initializes this dictionary, copying the entries from the given dictionary.
  *
@@ -6548,6 +6871,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @return A newly initialized dictionary with the entries of the given dictionary.
  **/
 - (instancetype)initWithDictionary:(GPBBoolObjectDictionary *)dictionary;
+
 /**
  * Initializes this dictionary with the requested capacity.
  *
@@ -6570,9 +6894,9 @@ NS_ASSUME_NONNULL_BEGIN
  * Enumerates the keys and values on this dictionary with the given block.
  *
  * @param block The block to enumerate with.
- *   **key**:       The key for the current entry.
- *   **object**: The value for the current entry
- *   **stop**:      A pointer to a boolean that when set stops the enumeration.
+ *   **key**:         The key for the current entry.
+ *   **object**:      The value for the current entry
+ *   **stop**:        A pointer to a boolean that when set stops the enumeration.
  **/
 - (void)enumerateKeysAndObjectsUsingBlock:
     (void (^)(BOOL key, ObjectType object, BOOL *stop))block;
@@ -6588,8 +6912,8 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * Sets the value for the given key.
  *
- * @param object The value to set.
- * @param key         The key under which to store the value.
+ * @param object     The value to set.
+ * @param key        The key under which to store the value.
  **/
 - (void)setObject:(ObjectType)object forKey:(BOOL)key;
 
@@ -6599,6 +6923,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @param aKey Key to be removed from this dictionary.
  **/
 - (void)removeObjectForKey:(BOOL)aKey;
+
 /**
  * Removes all entries in this dictionary.
  **/
@@ -6610,7 +6935,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 /**
  * Class used for map fields of <NSString, uint32_t>
- * values. This performs better than boxing into NSNumbers in NSArrays.
+ * values. This performs better than boxing into NSNumbers in NSDictionaries.
  *
  * @note This class is not meant to be subclassed.
  **/
@@ -6623,28 +6948,31 @@ NS_ASSUME_NONNULL_BEGIN
  * @return A newly instanced and empty dictionary.
  **/
 + (instancetype)dictionary;
+
 /**
  * Creates and initializes a dictionary with the single entry given.
  *
- * @param value The value to be placed in the dictionary.
- * @param key         The key under which to store the value.
+ * @param value     The value to be placed in the dictionary.
+ * @param key       The key under which to store the value.
  *
  * @return A newly instanced dictionary with the key and value in it.
  **/
 + (instancetype)dictionaryWithUInt32:(uint32_t)value
                               forKey:(NSString *)key;
+
 /**
  * Creates and initializes a dictionary with the entries given.
  *
- * @param values The values to be placed in the dictionary.
- * @param keys           The keys under which to store the values.
- * @param count          The number of entries to store in the dictionary.
+ * @param values      The values to be placed in the dictionary.
+ * @param keys        The keys under which to store the values.
+ * @param count       The number of entries to store in the dictionary.
  *
  * @return A newly instanced dictionary with the keys and values in it.
  **/
 + (instancetype)dictionaryWithUInt32s:(const uint32_t [])values
                               forKeys:(const NSString * GPB_UNSAFE_UNRETAINED [])keys
                                 count:(NSUInteger)count;
+
 /**
  * Creates and initializes a dictionary with the entries from the given.
  * dictionary.
@@ -6655,6 +6983,7 @@ NS_ASSUME_NONNULL_BEGIN
  *         dictionary in it.
  **/
 + (instancetype)dictionaryWithDictionary:(GPBStringUInt32Dictionary *)dictionary;
+
 /**
  * Creates and initializes a dictionary with the given capacity.
  *
@@ -6667,15 +6996,16 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * Initializes this dictionary, copying the given values and keys.
  *
- * @param values The values to be placed in this dictionary.
- * @param keys           The keys under which to store the values.
- * @param count          The number of elements to copy into the dictionary.
+ * @param values      The values to be placed in this dictionary.
+ * @param keys        The keys under which to store the values.
+ * @param count       The number of elements to copy into the dictionary.
  *
  * @return A newly initialized dictionary with a copy of the values and keys.
  **/
 - (instancetype)initWithUInt32s:(const uint32_t [])values
                         forKeys:(const NSString * GPB_UNSAFE_UNRETAINED [])keys
                           count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
+
 /**
  * Initializes this dictionary, copying the entries from the given dictionary.
  *
@@ -6684,6 +7014,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @return A newly initialized dictionary with the entries of the given dictionary.
  **/
 - (instancetype)initWithDictionary:(GPBStringUInt32Dictionary *)dictionary;
+
 /**
  * Initializes this dictionary with the requested capacity.
  *
@@ -6707,9 +7038,9 @@ NS_ASSUME_NONNULL_BEGIN
  * Enumerates the keys and values on this dictionary with the given block.
  *
  * @param block The block to enumerate with.
- *   **key**:       The key for the current entry.
- *   **value**: The value for the current entry
- *   **stop**:      A pointer to a boolean that when set stops the enumeration.
+ *   **key**:        The key for the current entry.
+ *   **value**:      The value for the current entry
+ *   **stop**:       A pointer to a boolean that when set stops the enumeration.
  **/
 - (void)enumerateKeysAndUInt32sUsingBlock:
     (void (^)(NSString *key, uint32_t value, BOOL *stop))block;
@@ -6725,8 +7056,8 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * Sets the value for the given key.
  *
- * @param value The value to set.
- * @param key         The key under which to store the value.
+ * @param value     The value to set.
+ * @param key       The key under which to store the value.
  **/
 - (void)setUInt32:(uint32_t)value forKey:(NSString *)key;
 
@@ -6736,6 +7067,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @param aKey Key to be removed from this dictionary.
  **/
 - (void)removeUInt32ForKey:(NSString *)aKey;
+
 /**
  * Removes all entries in this dictionary.
  **/
@@ -6747,7 +7079,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 /**
  * Class used for map fields of <NSString, int32_t>
- * values. This performs better than boxing into NSNumbers in NSArrays.
+ * values. This performs better than boxing into NSNumbers in NSDictionaries.
  *
  * @note This class is not meant to be subclassed.
  **/
@@ -6760,28 +7092,31 @@ NS_ASSUME_NONNULL_BEGIN
  * @return A newly instanced and empty dictionary.
  **/
 + (instancetype)dictionary;
+
 /**
  * Creates and initializes a dictionary with the single entry given.
  *
- * @param value The value to be placed in the dictionary.
- * @param key         The key under which to store the value.
+ * @param value     The value to be placed in the dictionary.
+ * @param key       The key under which to store the value.
  *
  * @return A newly instanced dictionary with the key and value in it.
  **/
 + (instancetype)dictionaryWithInt32:(int32_t)value
                              forKey:(NSString *)key;
+
 /**
  * Creates and initializes a dictionary with the entries given.
  *
- * @param values The values to be placed in the dictionary.
- * @param keys           The keys under which to store the values.
- * @param count          The number of entries to store in the dictionary.
+ * @param values      The values to be placed in the dictionary.
+ * @param keys        The keys under which to store the values.
+ * @param count       The number of entries to store in the dictionary.
  *
  * @return A newly instanced dictionary with the keys and values in it.
  **/
 + (instancetype)dictionaryWithInt32s:(const int32_t [])values
                              forKeys:(const NSString * GPB_UNSAFE_UNRETAINED [])keys
                                count:(NSUInteger)count;
+
 /**
  * Creates and initializes a dictionary with the entries from the given.
  * dictionary.
@@ -6792,6 +7127,7 @@ NS_ASSUME_NONNULL_BEGIN
  *         dictionary in it.
  **/
 + (instancetype)dictionaryWithDictionary:(GPBStringInt32Dictionary *)dictionary;
+
 /**
  * Creates and initializes a dictionary with the given capacity.
  *
@@ -6804,15 +7140,16 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * Initializes this dictionary, copying the given values and keys.
  *
- * @param values The values to be placed in this dictionary.
- * @param keys           The keys under which to store the values.
- * @param count          The number of elements to copy into the dictionary.
+ * @param values      The values to be placed in this dictionary.
+ * @param keys        The keys under which to store the values.
+ * @param count       The number of elements to copy into the dictionary.
  *
  * @return A newly initialized dictionary with a copy of the values and keys.
  **/
 - (instancetype)initWithInt32s:(const int32_t [])values
                        forKeys:(const NSString * GPB_UNSAFE_UNRETAINED [])keys
                          count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
+
 /**
  * Initializes this dictionary, copying the entries from the given dictionary.
  *
@@ -6821,6 +7158,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @return A newly initialized dictionary with the entries of the given dictionary.
  **/
 - (instancetype)initWithDictionary:(GPBStringInt32Dictionary *)dictionary;
+
 /**
  * Initializes this dictionary with the requested capacity.
  *
@@ -6844,9 +7182,9 @@ NS_ASSUME_NONNULL_BEGIN
  * Enumerates the keys and values on this dictionary with the given block.
  *
  * @param block The block to enumerate with.
- *   **key**:       The key for the current entry.
- *   **value**: The value for the current entry
- *   **stop**:      A pointer to a boolean that when set stops the enumeration.
+ *   **key**:        The key for the current entry.
+ *   **value**:      The value for the current entry
+ *   **stop**:       A pointer to a boolean that when set stops the enumeration.
  **/
 - (void)enumerateKeysAndInt32sUsingBlock:
     (void (^)(NSString *key, int32_t value, BOOL *stop))block;
@@ -6862,8 +7200,8 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * Sets the value for the given key.
  *
- * @param value The value to set.
- * @param key         The key under which to store the value.
+ * @param value     The value to set.
+ * @param key       The key under which to store the value.
  **/
 - (void)setInt32:(int32_t)value forKey:(NSString *)key;
 
@@ -6873,6 +7211,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @param aKey Key to be removed from this dictionary.
  **/
 - (void)removeInt32ForKey:(NSString *)aKey;
+
 /**
  * Removes all entries in this dictionary.
  **/
@@ -6884,7 +7223,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 /**
  * Class used for map fields of <NSString, uint64_t>
- * values. This performs better than boxing into NSNumbers in NSArrays.
+ * values. This performs better than boxing into NSNumbers in NSDictionaries.
  *
  * @note This class is not meant to be subclassed.
  **/
@@ -6897,28 +7236,31 @@ NS_ASSUME_NONNULL_BEGIN
  * @return A newly instanced and empty dictionary.
  **/
 + (instancetype)dictionary;
+
 /**
  * Creates and initializes a dictionary with the single entry given.
  *
- * @param value The value to be placed in the dictionary.
- * @param key         The key under which to store the value.
+ * @param value     The value to be placed in the dictionary.
+ * @param key       The key under which to store the value.
  *
  * @return A newly instanced dictionary with the key and value in it.
  **/
 + (instancetype)dictionaryWithUInt64:(uint64_t)value
                               forKey:(NSString *)key;
+
 /**
  * Creates and initializes a dictionary with the entries given.
  *
- * @param values The values to be placed in the dictionary.
- * @param keys           The keys under which to store the values.
- * @param count          The number of entries to store in the dictionary.
+ * @param values      The values to be placed in the dictionary.
+ * @param keys        The keys under which to store the values.
+ * @param count       The number of entries to store in the dictionary.
  *
  * @return A newly instanced dictionary with the keys and values in it.
  **/
 + (instancetype)dictionaryWithUInt64s:(const uint64_t [])values
                               forKeys:(const NSString * GPB_UNSAFE_UNRETAINED [])keys
                                 count:(NSUInteger)count;
+
 /**
  * Creates and initializes a dictionary with the entries from the given.
  * dictionary.
@@ -6929,6 +7271,7 @@ NS_ASSUME_NONNULL_BEGIN
  *         dictionary in it.
  **/
 + (instancetype)dictionaryWithDictionary:(GPBStringUInt64Dictionary *)dictionary;
+
 /**
  * Creates and initializes a dictionary with the given capacity.
  *
@@ -6941,15 +7284,16 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * Initializes this dictionary, copying the given values and keys.
  *
- * @param values The values to be placed in this dictionary.
- * @param keys           The keys under which to store the values.
- * @param count          The number of elements to copy into the dictionary.
+ * @param values      The values to be placed in this dictionary.
+ * @param keys        The keys under which to store the values.
+ * @param count       The number of elements to copy into the dictionary.
  *
  * @return A newly initialized dictionary with a copy of the values and keys.
  **/
 - (instancetype)initWithUInt64s:(const uint64_t [])values
                         forKeys:(const NSString * GPB_UNSAFE_UNRETAINED [])keys
                           count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
+
 /**
  * Initializes this dictionary, copying the entries from the given dictionary.
  *
@@ -6958,6 +7302,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @return A newly initialized dictionary with the entries of the given dictionary.
  **/
 - (instancetype)initWithDictionary:(GPBStringUInt64Dictionary *)dictionary;
+
 /**
  * Initializes this dictionary with the requested capacity.
  *
@@ -6981,9 +7326,9 @@ NS_ASSUME_NONNULL_BEGIN
  * Enumerates the keys and values on this dictionary with the given block.
  *
  * @param block The block to enumerate with.
- *   **key**:       The key for the current entry.
- *   **value**: The value for the current entry
- *   **stop**:      A pointer to a boolean that when set stops the enumeration.
+ *   **key**:        The key for the current entry.
+ *   **value**:      The value for the current entry
+ *   **stop**:       A pointer to a boolean that when set stops the enumeration.
  **/
 - (void)enumerateKeysAndUInt64sUsingBlock:
     (void (^)(NSString *key, uint64_t value, BOOL *stop))block;
@@ -6999,8 +7344,8 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * Sets the value for the given key.
  *
- * @param value The value to set.
- * @param key         The key under which to store the value.
+ * @param value     The value to set.
+ * @param key       The key under which to store the value.
  **/
 - (void)setUInt64:(uint64_t)value forKey:(NSString *)key;
 
@@ -7010,6 +7355,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @param aKey Key to be removed from this dictionary.
  **/
 - (void)removeUInt64ForKey:(NSString *)aKey;
+
 /**
  * Removes all entries in this dictionary.
  **/
@@ -7021,7 +7367,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 /**
  * Class used for map fields of <NSString, int64_t>
- * values. This performs better than boxing into NSNumbers in NSArrays.
+ * values. This performs better than boxing into NSNumbers in NSDictionaries.
  *
  * @note This class is not meant to be subclassed.
  **/
@@ -7034,28 +7380,31 @@ NS_ASSUME_NONNULL_BEGIN
  * @return A newly instanced and empty dictionary.
  **/
 + (instancetype)dictionary;
+
 /**
  * Creates and initializes a dictionary with the single entry given.
  *
- * @param value The value to be placed in the dictionary.
- * @param key         The key under which to store the value.
+ * @param value     The value to be placed in the dictionary.
+ * @param key       The key under which to store the value.
  *
  * @return A newly instanced dictionary with the key and value in it.
  **/
 + (instancetype)dictionaryWithInt64:(int64_t)value
                              forKey:(NSString *)key;
+
 /**
  * Creates and initializes a dictionary with the entries given.
  *
- * @param values The values to be placed in the dictionary.
- * @param keys           The keys under which to store the values.
- * @param count          The number of entries to store in the dictionary.
+ * @param values      The values to be placed in the dictionary.
+ * @param keys        The keys under which to store the values.
+ * @param count       The number of entries to store in the dictionary.
  *
  * @return A newly instanced dictionary with the keys and values in it.
  **/
 + (instancetype)dictionaryWithInt64s:(const int64_t [])values
                              forKeys:(const NSString * GPB_UNSAFE_UNRETAINED [])keys
                                count:(NSUInteger)count;
+
 /**
  * Creates and initializes a dictionary with the entries from the given.
  * dictionary.
@@ -7066,6 +7415,7 @@ NS_ASSUME_NONNULL_BEGIN
  *         dictionary in it.
  **/
 + (instancetype)dictionaryWithDictionary:(GPBStringInt64Dictionary *)dictionary;
+
 /**
  * Creates and initializes a dictionary with the given capacity.
  *
@@ -7078,15 +7428,16 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * Initializes this dictionary, copying the given values and keys.
  *
- * @param values The values to be placed in this dictionary.
- * @param keys           The keys under which to store the values.
- * @param count          The number of elements to copy into the dictionary.
+ * @param values      The values to be placed in this dictionary.
+ * @param keys        The keys under which to store the values.
+ * @param count       The number of elements to copy into the dictionary.
  *
  * @return A newly initialized dictionary with a copy of the values and keys.
  **/
 - (instancetype)initWithInt64s:(const int64_t [])values
                        forKeys:(const NSString * GPB_UNSAFE_UNRETAINED [])keys
                          count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
+
 /**
  * Initializes this dictionary, copying the entries from the given dictionary.
  *
@@ -7095,6 +7446,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @return A newly initialized dictionary with the entries of the given dictionary.
  **/
 - (instancetype)initWithDictionary:(GPBStringInt64Dictionary *)dictionary;
+
 /**
  * Initializes this dictionary with the requested capacity.
  *
@@ -7118,9 +7470,9 @@ NS_ASSUME_NONNULL_BEGIN
  * Enumerates the keys and values on this dictionary with the given block.
  *
  * @param block The block to enumerate with.
- *   **key**:       The key for the current entry.
- *   **value**: The value for the current entry
- *   **stop**:      A pointer to a boolean that when set stops the enumeration.
+ *   **key**:        The key for the current entry.
+ *   **value**:      The value for the current entry
+ *   **stop**:       A pointer to a boolean that when set stops the enumeration.
  **/
 - (void)enumerateKeysAndInt64sUsingBlock:
     (void (^)(NSString *key, int64_t value, BOOL *stop))block;
@@ -7136,8 +7488,8 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * Sets the value for the given key.
  *
- * @param value The value to set.
- * @param key         The key under which to store the value.
+ * @param value     The value to set.
+ * @param key       The key under which to store the value.
  **/
 - (void)setInt64:(int64_t)value forKey:(NSString *)key;
 
@@ -7147,6 +7499,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @param aKey Key to be removed from this dictionary.
  **/
 - (void)removeInt64ForKey:(NSString *)aKey;
+
 /**
  * Removes all entries in this dictionary.
  **/
@@ -7158,7 +7511,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 /**
  * Class used for map fields of <NSString, BOOL>
- * values. This performs better than boxing into NSNumbers in NSArrays.
+ * values. This performs better than boxing into NSNumbers in NSDictionaries.
  *
  * @note This class is not meant to be subclassed.
  **/
@@ -7171,28 +7524,31 @@ NS_ASSUME_NONNULL_BEGIN
  * @return A newly instanced and empty dictionary.
  **/
 + (instancetype)dictionary;
+
 /**
  * Creates and initializes a dictionary with the single entry given.
  *
- * @param value The value to be placed in the dictionary.
- * @param key         The key under which to store the value.
+ * @param value     The value to be placed in the dictionary.
+ * @param key       The key under which to store the value.
  *
  * @return A newly instanced dictionary with the key and value in it.
  **/
 + (instancetype)dictionaryWithBool:(BOOL)value
                             forKey:(NSString *)key;
+
 /**
  * Creates and initializes a dictionary with the entries given.
  *
- * @param values The values to be placed in the dictionary.
- * @param keys           The keys under which to store the values.
- * @param count          The number of entries to store in the dictionary.
+ * @param values      The values to be placed in the dictionary.
+ * @param keys        The keys under which to store the values.
+ * @param count       The number of entries to store in the dictionary.
  *
  * @return A newly instanced dictionary with the keys and values in it.
  **/
 + (instancetype)dictionaryWithBools:(const BOOL [])values
                             forKeys:(const NSString * GPB_UNSAFE_UNRETAINED [])keys
                               count:(NSUInteger)count;
+
 /**
  * Creates and initializes a dictionary with the entries from the given.
  * dictionary.
@@ -7203,6 +7559,7 @@ NS_ASSUME_NONNULL_BEGIN
  *         dictionary in it.
  **/
 + (instancetype)dictionaryWithDictionary:(GPBStringBoolDictionary *)dictionary;
+
 /**
  * Creates and initializes a dictionary with the given capacity.
  *
@@ -7215,15 +7572,16 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * Initializes this dictionary, copying the given values and keys.
  *
- * @param values The values to be placed in this dictionary.
- * @param keys           The keys under which to store the values.
- * @param count          The number of elements to copy into the dictionary.
+ * @param values      The values to be placed in this dictionary.
+ * @param keys        The keys under which to store the values.
+ * @param count       The number of elements to copy into the dictionary.
  *
  * @return A newly initialized dictionary with a copy of the values and keys.
  **/
 - (instancetype)initWithBools:(const BOOL [])values
                       forKeys:(const NSString * GPB_UNSAFE_UNRETAINED [])keys
                         count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
+
 /**
  * Initializes this dictionary, copying the entries from the given dictionary.
  *
@@ -7232,6 +7590,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @return A newly initialized dictionary with the entries of the given dictionary.
  **/
 - (instancetype)initWithDictionary:(GPBStringBoolDictionary *)dictionary;
+
 /**
  * Initializes this dictionary with the requested capacity.
  *
@@ -7255,9 +7614,9 @@ NS_ASSUME_NONNULL_BEGIN
  * Enumerates the keys and values on this dictionary with the given block.
  *
  * @param block The block to enumerate with.
- *   **key**:       The key for the current entry.
- *   **value**: The value for the current entry
- *   **stop**:      A pointer to a boolean that when set stops the enumeration.
+ *   **key**:        The key for the current entry.
+ *   **value**:      The value for the current entry
+ *   **stop**:       A pointer to a boolean that when set stops the enumeration.
  **/
 - (void)enumerateKeysAndBoolsUsingBlock:
     (void (^)(NSString *key, BOOL value, BOOL *stop))block;
@@ -7273,8 +7632,8 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * Sets the value for the given key.
  *
- * @param value The value to set.
- * @param key         The key under which to store the value.
+ * @param value     The value to set.
+ * @param key       The key under which to store the value.
  **/
 - (void)setBool:(BOOL)value forKey:(NSString *)key;
 
@@ -7284,6 +7643,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @param aKey Key to be removed from this dictionary.
  **/
 - (void)removeBoolForKey:(NSString *)aKey;
+
 /**
  * Removes all entries in this dictionary.
  **/
@@ -7295,7 +7655,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 /**
  * Class used for map fields of <NSString, float>
- * values. This performs better than boxing into NSNumbers in NSArrays.
+ * values. This performs better than boxing into NSNumbers in NSDictionaries.
  *
  * @note This class is not meant to be subclassed.
  **/
@@ -7308,28 +7668,31 @@ NS_ASSUME_NONNULL_BEGIN
  * @return A newly instanced and empty dictionary.
  **/
 + (instancetype)dictionary;
+
 /**
  * Creates and initializes a dictionary with the single entry given.
  *
- * @param value The value to be placed in the dictionary.
- * @param key         The key under which to store the value.
+ * @param value     The value to be placed in the dictionary.
+ * @param key       The key under which to store the value.
  *
  * @return A newly instanced dictionary with the key and value in it.
  **/
 + (instancetype)dictionaryWithFloat:(float)value
                              forKey:(NSString *)key;
+
 /**
  * Creates and initializes a dictionary with the entries given.
  *
- * @param values The values to be placed in the dictionary.
- * @param keys           The keys under which to store the values.
- * @param count          The number of entries to store in the dictionary.
+ * @param values      The values to be placed in the dictionary.
+ * @param keys        The keys under which to store the values.
+ * @param count       The number of entries to store in the dictionary.
  *
  * @return A newly instanced dictionary with the keys and values in it.
  **/
 + (instancetype)dictionaryWithFloats:(const float [])values
                              forKeys:(const NSString * GPB_UNSAFE_UNRETAINED [])keys
                                count:(NSUInteger)count;
+
 /**
  * Creates and initializes a dictionary with the entries from the given.
  * dictionary.
@@ -7340,6 +7703,7 @@ NS_ASSUME_NONNULL_BEGIN
  *         dictionary in it.
  **/
 + (instancetype)dictionaryWithDictionary:(GPBStringFloatDictionary *)dictionary;
+
 /**
  * Creates and initializes a dictionary with the given capacity.
  *
@@ -7352,15 +7716,16 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * Initializes this dictionary, copying the given values and keys.
  *
- * @param values The values to be placed in this dictionary.
- * @param keys           The keys under which to store the values.
- * @param count          The number of elements to copy into the dictionary.
+ * @param values      The values to be placed in this dictionary.
+ * @param keys        The keys under which to store the values.
+ * @param count       The number of elements to copy into the dictionary.
  *
  * @return A newly initialized dictionary with a copy of the values and keys.
  **/
 - (instancetype)initWithFloats:(const float [])values
                        forKeys:(const NSString * GPB_UNSAFE_UNRETAINED [])keys
                          count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
+
 /**
  * Initializes this dictionary, copying the entries from the given dictionary.
  *
@@ -7369,6 +7734,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @return A newly initialized dictionary with the entries of the given dictionary.
  **/
 - (instancetype)initWithDictionary:(GPBStringFloatDictionary *)dictionary;
+
 /**
  * Initializes this dictionary with the requested capacity.
  *
@@ -7392,9 +7758,9 @@ NS_ASSUME_NONNULL_BEGIN
  * Enumerates the keys and values on this dictionary with the given block.
  *
  * @param block The block to enumerate with.
- *   **key**:       The key for the current entry.
- *   **value**: The value for the current entry
- *   **stop**:      A pointer to a boolean that when set stops the enumeration.
+ *   **key**:        The key for the current entry.
+ *   **value**:      The value for the current entry
+ *   **stop**:       A pointer to a boolean that when set stops the enumeration.
  **/
 - (void)enumerateKeysAndFloatsUsingBlock:
     (void (^)(NSString *key, float value, BOOL *stop))block;
@@ -7410,8 +7776,8 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * Sets the value for the given key.
  *
- * @param value The value to set.
- * @param key         The key under which to store the value.
+ * @param value     The value to set.
+ * @param key       The key under which to store the value.
  **/
 - (void)setFloat:(float)value forKey:(NSString *)key;
 
@@ -7421,6 +7787,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @param aKey Key to be removed from this dictionary.
  **/
 - (void)removeFloatForKey:(NSString *)aKey;
+
 /**
  * Removes all entries in this dictionary.
  **/
@@ -7432,7 +7799,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 /**
  * Class used for map fields of <NSString, double>
- * values. This performs better than boxing into NSNumbers in NSArrays.
+ * values. This performs better than boxing into NSNumbers in NSDictionaries.
  *
  * @note This class is not meant to be subclassed.
  **/
@@ -7445,28 +7812,31 @@ NS_ASSUME_NONNULL_BEGIN
  * @return A newly instanced and empty dictionary.
  **/
 + (instancetype)dictionary;
+
 /**
  * Creates and initializes a dictionary with the single entry given.
  *
- * @param value The value to be placed in the dictionary.
- * @param key         The key under which to store the value.
+ * @param value     The value to be placed in the dictionary.
+ * @param key       The key under which to store the value.
  *
  * @return A newly instanced dictionary with the key and value in it.
  **/
 + (instancetype)dictionaryWithDouble:(double)value
                               forKey:(NSString *)key;
+
 /**
  * Creates and initializes a dictionary with the entries given.
  *
- * @param values The values to be placed in the dictionary.
- * @param keys           The keys under which to store the values.
- * @param count          The number of entries to store in the dictionary.
+ * @param values      The values to be placed in the dictionary.
+ * @param keys        The keys under which to store the values.
+ * @param count       The number of entries to store in the dictionary.
  *
  * @return A newly instanced dictionary with the keys and values in it.
  **/
 + (instancetype)dictionaryWithDoubles:(const double [])values
                               forKeys:(const NSString * GPB_UNSAFE_UNRETAINED [])keys
                                 count:(NSUInteger)count;
+
 /**
  * Creates and initializes a dictionary with the entries from the given.
  * dictionary.
@@ -7477,6 +7847,7 @@ NS_ASSUME_NONNULL_BEGIN
  *         dictionary in it.
  **/
 + (instancetype)dictionaryWithDictionary:(GPBStringDoubleDictionary *)dictionary;
+
 /**
  * Creates and initializes a dictionary with the given capacity.
  *
@@ -7489,15 +7860,16 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * Initializes this dictionary, copying the given values and keys.
  *
- * @param values The values to be placed in this dictionary.
- * @param keys           The keys under which to store the values.
- * @param count          The number of elements to copy into the dictionary.
+ * @param values      The values to be placed in this dictionary.
+ * @param keys        The keys under which to store the values.
+ * @param count       The number of elements to copy into the dictionary.
  *
  * @return A newly initialized dictionary with a copy of the values and keys.
  **/
 - (instancetype)initWithDoubles:(const double [])values
                         forKeys:(const NSString * GPB_UNSAFE_UNRETAINED [])keys
                           count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
+
 /**
  * Initializes this dictionary, copying the entries from the given dictionary.
  *
@@ -7506,6 +7878,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @return A newly initialized dictionary with the entries of the given dictionary.
  **/
 - (instancetype)initWithDictionary:(GPBStringDoubleDictionary *)dictionary;
+
 /**
  * Initializes this dictionary with the requested capacity.
  *
@@ -7529,9 +7902,9 @@ NS_ASSUME_NONNULL_BEGIN
  * Enumerates the keys and values on this dictionary with the given block.
  *
  * @param block The block to enumerate with.
- *   **key**:       The key for the current entry.
- *   **value**: The value for the current entry
- *   **stop**:      A pointer to a boolean that when set stops the enumeration.
+ *   **key**:        The key for the current entry.
+ *   **value**:      The value for the current entry
+ *   **stop**:       A pointer to a boolean that when set stops the enumeration.
  **/
 - (void)enumerateKeysAndDoublesUsingBlock:
     (void (^)(NSString *key, double value, BOOL *stop))block;
@@ -7547,8 +7920,8 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * Sets the value for the given key.
  *
- * @param value The value to set.
- * @param key         The key under which to store the value.
+ * @param value     The value to set.
+ * @param key       The key under which to store the value.
  **/
 - (void)setDouble:(double)value forKey:(NSString *)key;
 
@@ -7558,6 +7931,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @param aKey Key to be removed from this dictionary.
  **/
 - (void)removeDoubleForKey:(NSString *)aKey;
+
 /**
  * Removes all entries in this dictionary.
  **/
@@ -7569,7 +7943,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 /**
  * Class used for map fields of <NSString, int32_t>
- * values. This performs better than boxing into NSNumbers in NSArrays.
+ * values. This performs better than boxing into NSNumbers in NSDictionaries.
  *
  * @note This class is not meant to be subclassed.
  **/
@@ -7584,6 +7958,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @return A newly instanced and empty dictionary.
  **/
 + (instancetype)dictionary;
+
 /**
  * Creates and initializes a dictionary with the given validation function.
  *
@@ -7592,6 +7967,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @return A newly instanced dictionary.
  **/
 + (instancetype)dictionaryWithValidationFunction:(nullable GPBEnumValidationFunc)func;
+
 /**
  * Creates and initializes a dictionary with the single entry given.
  *
@@ -7604,6 +7980,7 @@ NS_ASSUME_NONNULL_BEGIN
 + (instancetype)dictionaryWithValidationFunction:(nullable GPBEnumValidationFunc)func
                                         rawValue:(int32_t)rawValue
                                           forKey:(NSString *)key;
+
 /**
  * Creates and initializes a dictionary with the entries given.
  *
@@ -7618,6 +7995,7 @@ NS_ASSUME_NONNULL_BEGIN
                                        rawValues:(const int32_t [])values
                                          forKeys:(const NSString * GPB_UNSAFE_UNRETAINED [])keys
                                            count:(NSUInteger)count;
+
 /**
  * Creates and initializes a dictionary with the entries from the given.
  * dictionary.
@@ -7628,6 +8006,7 @@ NS_ASSUME_NONNULL_BEGIN
  *         dictionary in it.
  **/
 + (instancetype)dictionaryWithDictionary:(GPBStringEnumDictionary *)dictionary;
+
 /**
  * Creates and initializes a dictionary with the given capacity.
  *
@@ -7647,6 +8026,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @return A newly initialized dictionary.
  **/
 - (instancetype)initWithValidationFunction:(nullable GPBEnumValidationFunc)func;
+
 /**
  * Initializes a dictionary with the entries given.
  *
@@ -7661,6 +8041,7 @@ NS_ASSUME_NONNULL_BEGIN
                                  rawValues:(const int32_t [])values
                                    forKeys:(const NSString * GPB_UNSAFE_UNRETAINED [])keys
                                      count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
+
 /**
  * Initializes a dictionary with the entries from the given.
  * dictionary.
@@ -7671,6 +8052,7 @@ NS_ASSUME_NONNULL_BEGIN
  *         dictionary in it.
  **/
 - (instancetype)initWithDictionary:(GPBStringEnumDictionary *)dictionary;
+
 /**
  * Initializes a dictionary with the given capacity.
  *
@@ -7700,9 +8082,9 @@ NS_ASSUME_NONNULL_BEGIN
  * Enumerates the keys and values on this dictionary with the given block.
  *
  * @param block The block to enumerate with.
- *   **key**:       The key for the current entry.
- *   **value**: The value for the current entry
- *   **stop**:      A pointer to a boolean that when set stops the enumeration.
+ *   **key**:        The key for the current entry.
+ *   **value**:      The value for the current entry
+ *   **stop**:       A pointer to a boolean that when set stops the enumeration.
  **/
 - (void)enumerateKeysAndEnumsUsingBlock:
     (void (^)(NSString *key, int32_t value, BOOL *stop))block;
@@ -7753,8 +8135,8 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * Sets the value for the given key.
  *
- * @param value The value to set.
- * @param key         The key under which to store the value.
+ * @param value     The value to set.
+ * @param key       The key under which to store the value.
  **/
 - (void)setEnum:(int32_t)value forKey:(NSString *)key;
 
@@ -7775,6 +8157,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @param aKey Key to be removed from this dictionary.
  **/
 - (void)removeEnumForKey:(NSString *)aKey;
+
 /**
  * Removes all entries in this dictionary.
  **/
@@ -7847,7 +8230,7 @@ NS_ASSUME_NONNULL_END
 //%
 //%/**
 //% * Class used for map fields of <##KEY_TYPE##, ##VALUE_TYPE##>
-//% * values. This performs better than boxing into NSNumbers in NSArrays.
+//% * values. This performs better than boxing into NSNumbers in NSDictionaries.
 //% * 
 //% * @note This class is not meant to be subclassed.
 //% **/
@@ -7860,28 +8243,31 @@ NS_ASSUME_NONNULL_END
 //% * @return A newly instanced and empty dictionary.
 //% **/
 //%+ (instancetype)dictionary;
+//%
 //%/**
 //% * Creates and initializes a dictionary with the single entry given.
 //% * 
-//% * @param ##VNAME_VAR The value to be placed in the dictionary.
-//% * @param key         The key under which to store the value.
+//% * @param ##VNAME_VAR     The value to be placed in the dictionary.
+//% * @param key ##VNAME_VAR$S## The key under which to store the value.
 //% * 
 //% * @return A newly instanced dictionary with the key and value in it.
 //% **/
 //%+ (instancetype)dictionaryWith##VNAME##:(VALUE_TYPE)##VNAME_VAR
 //%                       ##VNAME$S## forKey:(KEY_TYPE##KisP$S##KisP)key;
+//%
 //%/**
 //% * Creates and initializes a dictionary with the entries given.
 //% * 
-//% * @param ##VNAME_VAR##s The values to be placed in the dictionary.
-//% * @param keys           The keys under which to store the values.
-//% * @param count          The number of entries to store in the dictionary.
+//% * @param ##VNAME_VAR##s      The values to be placed in the dictionary.
+//% * @param keys ##VNAME_VAR$S##  The keys under which to store the values.
+//% * @param count ##VNAME_VAR$S## The number of entries to store in the dictionary.
 //% * 
 //% * @return A newly instanced dictionary with the keys and values in it.
 //% **/
 //%+ (instancetype)dictionaryWith##VNAME##s:(const VALUE_TYPE ARRAY_ARG_MODIFIER##VHELPER()[])##VNAME_VAR##s
 //%                      ##VNAME$S##  forKeys:(const KEY_TYPE##KisP$S##KisP ARRAY_ARG_MODIFIER##KHELPER()[])keys
 //%                      ##VNAME$S##    count:(NSUInteger)count;
+//%
 //%/**
 //% * Creates and initializes a dictionary with the entries from the given.
 //% * dictionary.
@@ -7892,6 +8278,7 @@ NS_ASSUME_NONNULL_END
 //% *         dictionary in it.
 //% **/
 //%+ (instancetype)dictionaryWithDictionary:(GPB##KEY_NAME##VALUE_NAME##Dictionary *)dictionary;
+//%
 //%/**
 //% * Creates and initializes a dictionary with the given capacity.
 //% * 
@@ -7904,15 +8291,16 @@ NS_ASSUME_NONNULL_END
 //%/**
 //% * Initializes this dictionary, copying the given values and keys.
 //% * 
-//% * @param ##VNAME_VAR##s The values to be placed in this dictionary.
-//% * @param keys           The keys under which to store the values.
-//% * @param count          The number of elements to copy into the dictionary.
+//% * @param ##VNAME_VAR##s      The values to be placed in this dictionary.
+//% * @param keys ##VNAME_VAR$S##  The keys under which to store the values.
+//% * @param count ##VNAME_VAR$S## The number of elements to copy into the dictionary.
 //% * 
 //% * @return A newly initialized dictionary with a copy of the values and keys.
 //% **/
 //%- (instancetype)initWith##VNAME##s:(const VALUE_TYPE ARRAY_ARG_MODIFIER##VHELPER()[])##VNAME_VAR##s
 //%                ##VNAME$S##  forKeys:(const KEY_TYPE##KisP$S##KisP ARRAY_ARG_MODIFIER##KHELPER()[])keys
 //%                ##VNAME$S##    count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
+//%
 //%/**
 //% * Initializes this dictionary, copying the entries from the given dictionary.
 //% * 
@@ -7921,6 +8309,7 @@ NS_ASSUME_NONNULL_END
 //% * @return A newly initialized dictionary with the entries of the given dictionary.
 //% **/
 //%- (instancetype)initWithDictionary:(GPB##KEY_NAME##VALUE_NAME##Dictionary *)dictionary;
+//%
 //%/**
 //% * Initializes this dictionary with the requested capacity.
 //% * 
@@ -7952,7 +8341,7 @@ NS_ASSUME_NONNULL_END
 //%
 //%/**
 //% * Class used for map fields of <##KEY_TYPE##, ##VALUE_TYPE##>
-//% * values. This performs better than boxing into NSNumbers in NSArrays.
+//% * values. This performs better than boxing into NSNumbers in NSDictionaries.
 //% * 
 //% * @note This class is not meant to be subclassed.
 //% **/
@@ -7967,6 +8356,7 @@ NS_ASSUME_NONNULL_END
 //% * @return A newly instanced and empty dictionary.
 //% **/
 //%+ (instancetype)dictionary;
+//%
 //%/**
 //% * Creates and initializes a dictionary with the given validation function.
 //% * 
@@ -7975,6 +8365,7 @@ NS_ASSUME_NONNULL_END
 //% * @return A newly instanced dictionary.
 //% **/
 //%+ (instancetype)dictionaryWithValidationFunction:(nullable GPBEnumValidationFunc)func;
+//%
 //%/**
 //% * Creates and initializes a dictionary with the single entry given.
 //% * 
@@ -7987,6 +8378,7 @@ NS_ASSUME_NONNULL_END
 //%+ (instancetype)dictionaryWithValidationFunction:(nullable GPBEnumValidationFunc)func
 //%                                        rawValue:(VALUE_TYPE)rawValue
 //%                                          forKey:(KEY_TYPE##KisP$S##KisP)key;
+//%
 //%/**
 //% * Creates and initializes a dictionary with the entries given.
 //% * 
@@ -8001,6 +8393,7 @@ NS_ASSUME_NONNULL_END
 //%                                       rawValues:(const VALUE_TYPE ARRAY_ARG_MODIFIER##VHELPER()[])values
 //%                                         forKeys:(const KEY_TYPE##KisP$S##KisP ARRAY_ARG_MODIFIER##KHELPER()[])keys
 //%                                           count:(NSUInteger)count;
+//%
 //%/**
 //% * Creates and initializes a dictionary with the entries from the given.
 //% * dictionary.
@@ -8011,6 +8404,7 @@ NS_ASSUME_NONNULL_END
 //% *         dictionary in it.
 //% **/
 //%+ (instancetype)dictionaryWithDictionary:(GPB##KEY_NAME##VALUE_NAME##Dictionary *)dictionary;
+//%
 //%/**
 //% * Creates and initializes a dictionary with the given capacity.
 //% * 
@@ -8030,6 +8424,7 @@ NS_ASSUME_NONNULL_END
 //% * @return A newly initialized dictionary.
 //% **/
 //%- (instancetype)initWithValidationFunction:(nullable GPBEnumValidationFunc)func;
+//%
 //%/**
 //% * Initializes a dictionary with the entries given.
 //% * 
@@ -8044,6 +8439,7 @@ NS_ASSUME_NONNULL_END
 //%                                 rawValues:(const VALUE_TYPE ARRAY_ARG_MODIFIER##VHELPER()[])values
 //%                                   forKeys:(const KEY_TYPE##KisP$S##KisP ARRAY_ARG_MODIFIER##KHELPER()[])keys
 //%                                     count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
+//%
 //%/**
 //% * Initializes a dictionary with the entries from the given.
 //% * dictionary.
@@ -8054,6 +8450,7 @@ NS_ASSUME_NONNULL_END
 //% *         dictionary in it.
 //% **/
 //%- (instancetype)initWithDictionary:(GPB##KEY_NAME##VALUE_NAME##Dictionary *)dictionary;
+//%
 //%/**
 //% * Initializes a dictionary with the given capacity.
 //% * 
@@ -8126,9 +8523,9 @@ NS_ASSUME_NONNULL_END
 //% * Enumerates the keys and values on this dictionary with the given block.
 //% * 
 //% * @param block The block to enumerate with.
-//% *   **key**:       The key for the current entry.
-//% *   **VNAME_VAR**: The value for the current entry
-//% *   **stop**:      A pointer to a boolean that when set stops the enumeration.
+//% *   **key**: ##VNAME_VAR$S##  The key for the current entry.
+//% *   **VNAME_VAR**:      The value for the current entry
+//% *   **stop**: ##VNAME_VAR$S## A pointer to a boolean that when set stops the enumeration.
 //% **/
 //%- (void)enumerateKeysAnd##VNAME##sUsingBlock:
 //%    (void (^)(KEY_TYPE KisP##key, VALUE_TYPE VNAME_VAR, BOOL *stop))block;
@@ -8137,8 +8534,8 @@ NS_ASSUME_NONNULL_END
 //%/**
 //% * Sets the value for the given key.
 //% * 
-//% * @param ##VNAME_VAR The value to set.
-//% * @param key         The key under which to store the value.
+//% * @param ##VNAME_VAR     The value to set.
+//% * @param key ##VNAME_VAR$S## The key under which to store the value.
 //% **/
 //%- (void)set##VNAME##:(VALUE_TYPE)##VNAME_VAR forKey:(KEY_TYPE##KisP$S##KisP)key;
 //%DICTIONARY_EXTRA_MUTABLE_METHODS_##VHELPER(KEY_NAME, KEY_TYPE, KisP, VALUE_NAME, VALUE_TYPE)
@@ -8148,6 +8545,7 @@ NS_ASSUME_NONNULL_END
 //% * @param aKey Key to be removed from this dictionary.
 //% **/
 //%- (void)remove##VNAME##ForKey:(KEY_TYPE##KisP$S##KisP)aKey;
+//%
 //%/**
 //% * Removes all entries in this dictionary.
 //% **/

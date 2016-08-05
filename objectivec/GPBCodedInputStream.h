@@ -38,8 +38,8 @@ NS_ASSUME_NONNULL_BEGIN
 CF_EXTERN_C_BEGIN
 
 /**
- * GPBCodedInputStream exception name. Exceptions raised from
- * GPBCodedInputStream contain an underlying error in the userInfo dictionary
+ * @c GPBCodedInputStream exception name. Exceptions raised from
+ * @c GPBCodedInputStream contain an underlying error in the userInfo dictionary
  * under the GPBCodedInputStreamUnderlyingErrorKey key.
  **/
 extern NSString *const GPBCodedInputStreamException;
@@ -47,11 +47,11 @@ extern NSString *const GPBCodedInputStreamException;
 /** The key under which the underlying NSError from the exception is stored. */
 extern NSString *const GPBCodedInputStreamUnderlyingErrorKey;
 
-/** NSError domain used for GPBCodedInputStream errors. */
+/** NSError domain used for @c GPBCodedInputStream errors. */
 extern NSString *const GPBCodedInputStreamErrorDomain;
 
 /**
- * Error code for NSError with GPBCodedInputStreamErrorDomain.
+ * Error code for NSError with @c GPBCodedInputStreamErrorDomain.
  **/
 typedef NS_ENUM(NSInteger, GPBCodedInputStreamErrorCode) {
   /** The size does not fit in the remaining bytes to be read. */
@@ -76,11 +76,11 @@ CF_EXTERN_C_END
  * Reads and decodes protocol message fields.
  *
  * The common uses of protocol buffers shouldn't need to use this class.
- * GPBMessage's provide a `+parseFromData:error:` and
- * `+parseFromData:extensionRegistry:error:` method that will decode a
+ * @c GPBMessage's provide a @c +parseFromData:error: and
+ * @c +parseFromData:extensionRegistry:error: method that will decode a
  * message for you.
  *
- * @note Subclassing of GPBCodedInputStream is NOT supported.
+ * @note Subclassing of @c GPBCodedInputStream is NOT supported.
  **/
 @interface GPBCodedInputStream : NSObject
 

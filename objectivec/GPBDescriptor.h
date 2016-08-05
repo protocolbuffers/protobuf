@@ -39,11 +39,9 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-/**
- * Syntax used in the proto file.
- **/
+/** Syntax used in the proto file. */
 typedef NS_ENUM(uint8_t, GPBFileSyntax) {
-	/** Unknown syntax. */
+  /** Unknown syntax. */
   GPBFileSyntaxUnknown = 0,
   /** Proto2 syntax. */
   GPBFileSyntaxProto2 = 2,
@@ -51,11 +49,9 @@ typedef NS_ENUM(uint8_t, GPBFileSyntax) {
   GPBFileSyntaxProto3 = 3,
 };
 
-/**
- * Type of proto field.
- **/
+/** Type of proto field. */
 typedef NS_ENUM(uint8_t, GPBFieldType) {
-	/** Optional/required field. Only valid for proto2 fields. */
+  /** Optional/required field. Only valid for proto2 fields. */
   GPBFieldTypeSingle,
   /** Repeated field. */
   GPBFieldTypeRepeated,
@@ -94,6 +90,7 @@ typedef NS_ENUM(uint8_t, GPBFieldType) {
  * @return The field descriptor for the given number, or nil if not found.
  **/
 - (nullable GPBFieldDescriptor *)fieldWithNumber:(uint32_t)fieldNumber;
+
 /**
  * Gets the field for the given name.
  *
@@ -102,6 +99,7 @@ typedef NS_ENUM(uint8_t, GPBFieldType) {
  * @return The field descriptor for the given name, or nil if not found.
  **/
 - (nullable GPBFieldDescriptor *)fieldWithName:(NSString *)name;
+
 /**
  * Gets the oneof for the given name.
  *
@@ -142,6 +140,7 @@ typedef NS_ENUM(uint8_t, GPBFieldType) {
  * @return The field descriptor for the given number, or nil if not found.
  **/
 - (nullable GPBFieldDescriptor *)fieldWithNumber:(uint32_t)fieldNumber;
+
 /**
  * Gets the field for the given name.
  *
@@ -150,6 +149,7 @@ typedef NS_ENUM(uint8_t, GPBFieldType) {
  * @return The field descriptor for the given name, or nil if not found.
  **/
 - (nullable GPBFieldDescriptor *)fieldWithName:(NSString *)name;
+
 @end
 
 /**
@@ -173,7 +173,7 @@ typedef NS_ENUM(uint8_t, GPBFieldType) {
 @property(nonatomic, readonly, getter=isOptional) BOOL optional;
 /** Type of field (single, repeated, map). */
 @property(nonatomic, readonly) GPBFieldType fieldType;
-/** Type of the key if the field is a map. The value type is -msgClass. */
+/** Type of the key if the field is a map. The value's type is -fieldType. */
 @property(nonatomic, readonly) GPBDataType mapKeyDataType;
 /** Whether the field is packable. */
 @property(nonatomic, readonly, getter=isPackable) BOOL packable;
@@ -219,6 +219,7 @@ typedef NS_ENUM(uint8_t, GPBFieldType) {
  * @return The name of the enum value passed, or nil if not valid.
  **/
 - (nullable NSString *)enumNameForValue:(int32_t)number;
+
 /**
  * Gets the enum raw value for the given enum name.
  *
@@ -237,6 +238,7 @@ typedef NS_ENUM(uint8_t, GPBFieldType) {
  * @return The text format name for the raw enum value, or nil if not valid.
  **/
 - (nullable NSString *)textFormatNameForValue:(int32_t)number;
+
 /**
  * Gets the enum raw value for the given text format name.
  *
