@@ -68,10 +68,9 @@ CF_EXTERN_C_END
  **/
 @interface GPBMessage : NSObject<NSSecureCoding, NSCopying>
  
-// @note If you add an instance method/property to this class that may conflict
-//       with fields declared in protos, you need to update
-//       objective_helpers.cc. The main cases are methods that take no
-//       arguments, or setFoo:/hasFoo: type methods.
+// If you add an instance method/property to this class that may conflict with
+// fields declared in protos, you need to update objective_helpers.cc. The main
+// cases are methods that take no arguments, or setFoo:/hasFoo: type methods.
 
 /**
  * The set of unknown fields for this message.

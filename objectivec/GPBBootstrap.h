@@ -90,7 +90,7 @@
 // If property name starts with init we need to annotate it to get past ARC.
 // http://stackoverflow.com/questions/18723226/how-do-i-annotate-an-objective-c-property-with-an-objc-method-family/18723227#18723227
 //
-// @note Meant to be used internally by generated code.
+// Meant to be used internally by generated code.
 #define GPB_METHOD_FAMILY_NONE __attribute__((objc_method_family(none)))
 
 // The protoc-gen-objc version which works with the current version of the
@@ -98,5 +98,5 @@
 // runtime interfaces (or this version) as it means everything has to be
 // regenerated.
 //
-// @note Meant to be used internally by generated code.
+// Meant to be used internally by generated code.
 #define GOOGLE_PROTOBUF_OBJC_GEN_VERSION 30001
