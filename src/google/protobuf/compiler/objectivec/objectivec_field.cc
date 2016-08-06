@@ -331,7 +331,7 @@ void ObjCObjFieldGenerator::GeneratePropertyDeclaration(
   printer->Print(variables_, "$comments$");
   printer->Print(
       variables_,
-      "@property(nonatomic, readwrite, $property_storage_attribute$, null_resettable) $property_type$ *$name$$storage_attribute$$deprecated_attribute$;\n");
+      "@property(nonatomic, readwrite, $property_storage_attribute$, nullable) $property_type$ *$name$$storage_attribute$$deprecated_attribute$;\n");
   if (WantsHasProperty()) {
     printer->Print(
         variables_,
@@ -386,7 +386,7 @@ void RepeatedFieldGenerator::GeneratePropertyDeclaration(
       variables_,
       "$comments$"
       "$array_comment$"
-      "@property(nonatomic, readwrite, strong, null_resettable) $array_property_type$ *$name$$storage_attribute$$deprecated_attribute$;\n"
+      "@property(nonatomic, readwrite, strong, nullable) $array_property_type$ *$name$$storage_attribute$$deprecated_attribute$;\n"
       "/// The number of items in @c $name$ without causing the array to be created.\n"
       "@property(nonatomic, readonly) NSUInteger $name$_Count$deprecated_attribute$;\n");
   if (IsInitName(variables_.find("name")->second)) {
