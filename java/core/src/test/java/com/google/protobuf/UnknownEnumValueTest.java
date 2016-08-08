@@ -229,7 +229,7 @@ public class UnknownEnumValueTest extends TestCase {
     assertFalse(message.equals(differentMessage));
   }
   
-  public void testUnknownEnumValuesInTextFormat() {
+  public void testUnknownEnumValuesInTextFormat() throws ParseException {
     TestAllTypes.Builder builder = TestAllTypes.newBuilder();
     builder.setOptionalNestedEnumValue(4321);
     builder.addRepeatedNestedEnumValue(5432);
@@ -239,17 +239,26 @@ public class UnknownEnumValueTest extends TestCase {
     // We can print a message with unknown enum values.
     String textData = TextFormat.printToString(message);
     assertEquals(
-        "optional_nested_enum: UNKNOWN_ENUM_VALUE_NestedEnum_4321\n"
-        + "repeated_nested_enum: UNKNOWN_ENUM_VALUE_NestedEnum_5432\n"
-        + "packed_nested_enum: UNKNOWN_ENUM_VALUE_NestedEnum_6543\n", textData);
+        "optional_nested_enum: 4321\n"
+        + "repeated_nested_enum: 5432\n"
+        + "packed_nested_enum: 6543\n", textData);
     
     // Parsing unknown enum values will fail just like parsing other kinds of
     // unknown fields.
-    try {
-      TextFormat.merge(textData, builder);
-      fail();
-    } catch (ParseException e) {
-      // expected.
-    }
+    
+    builder = TestAllTypes.newBuilder();
+    TextFormat.merge(textData, builder);
+    message = builder.build();
+    
+    assertEquals(4321, message.getOptionalNestedEnumValue());
+    assertEquals(5432, message.getRepeatedNestedEnumValue(0));
+    assertEquals(5432, message.getRepeatedNestedEnumValueList().get(0).intValue());
+    assertEquals(6543, message.getPackedNestedEnumValue(0));
+    // Returns UNRECOGNIZED if an enum type is requested.
+    assertEquals(TestAllTypes.NestedEnum.UNRECOGNIZED, message.getOptionalNestedEnum());
+    assertEquals(TestAllTypes.NestedEnum.UNRECOGNIZED, message.getRepeatedNestedEnum(0));
+    assertEquals(TestAllTypes.NestedEnum.UNRECOGNIZED, message.getRepeatedNestedEnumList().get(0));
+    assertEquals(TestAllTypes.NestedEnum.UNRECOGNIZED, message.getPackedNestedEnum(0));
+    
   }
 }

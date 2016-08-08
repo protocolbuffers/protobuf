@@ -34,6 +34,7 @@ import com.google.protobuf.Descriptors.Descriptor;
 import com.google.protobuf.Descriptors.EnumDescriptor;
 import com.google.protobuf.Descriptors.EnumValueDescriptor;
 import com.google.protobuf.Descriptors.FieldDescriptor;
+import com.google.protobuf.Descriptors.FileDescriptor;
 
 import java.io.IOException;
 import java.math.BigInteger;
@@ -442,7 +443,11 @@ public final class TextFormat {
           break;
 
         case ENUM:
-          generator.print(((EnumValueDescriptor) value).getName());
+          if (((EnumValueDescriptor) value).getIndex() == -1) {
+            generator.print(String.valueOf(((EnumValueDescriptor) value).getNumber()));
+          } else {
+            generator.print(((EnumValueDescriptor) value).getName());
+          }
           break;
 
         case MESSAGE:
@@ -1679,7 +1684,11 @@ public final class TextFormat {
 
             if (tokenizer.lookingAtInteger()) {
               final int number = tokenizer.consumeInt32();
-              value = enumType.findValueByNumber(number);
+              if (enumType.getFile().supportsUnknownEnumValue()) {
+                value = enumType.findValueByNumberCreatingIfUnknown(number);
+              } else {
+                value = enumType.findValueByNumber(number);
+              }
               if (value == null) {
                 throw tokenizer.parseExceptionPreviousToken(
                   "Enum type \"" + enumType.getFullName()
