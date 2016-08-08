@@ -1052,7 +1052,15 @@ static void AppendStringEscaped(NSString *toPrint, NSMutableString *destStr) {
       case '\'': [destStr appendString:@"\\\'"]; break;
       case '\\': [destStr appendString:@"\\\\"]; break;
       default:
-        [destStr appendFormat:@"%C", aChar];
+        // This differs slightly from the C++ code in that the C++ doesn't
+        // generate UTF8; it looks at the string in UTF8, but escapes every
+        // byte > 0x7E.
+        if (aChar < 0x20) {
+          [destStr appendFormat:@"\\%d%d%d",
+                                (aChar / 64), ((aChar % 64) / 8), (aChar % 8)];
+        } else {
+          [destStr appendFormat:@"%C", aChar];
+        }
         break;
     }
   }
