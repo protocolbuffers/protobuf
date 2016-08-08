@@ -170,7 +170,8 @@ bool HasNonZeroDefaultValue(const FieldDescriptor* field);
 
 string BuildFlagsString(const vector<string>& strings);
 
-// Builds a HeaderDoc style comment out of the comments in the .proto file.
+// Builds HeaderDoc/appledoc style comments out of the comments in the .proto
+// file.
 string BuildCommentsString(const SourceLocation& location,
                            bool prefer_single_line);
 

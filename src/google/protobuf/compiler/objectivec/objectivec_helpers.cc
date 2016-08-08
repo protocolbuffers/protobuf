@@ -840,6 +840,10 @@ string BuildCommentsString(const SourceLocation& location,
   while (!lines.empty() && lines.back().empty()) {
     lines.pop_back();
   }
+  // If there are no comments, just return an empty string.
+  if (lines.size() == 0) {
+    return "";
+  }
 
   string prefix;
   string suffix;
@@ -857,11 +861,14 @@ string BuildCommentsString(const SourceLocation& location,
   }
 
   for (int i = 0; i < lines.size(); i++) {
-    // HeaderDoc uses '\' and '@' for markers; escape them.
-    const string line = StripPrefixString(
-        StringReplace(lines[i], "\\", "\\\\", true), " ");
-    final_comments +=
-        prefix + StringReplace(line, "@", "\\@", true) + suffix;
+    string line = StripPrefixString(lines[i], " ");
+    // HeaderDoc and appledoc use '\' and '@' for markers; escape them.
+    line = StringReplace(line, "\\", "\\\\", true);
+    line = StringReplace(line, "@", "\\@", true);
+    // Decouple / from * to not have inline comments inside comments.
+    line = StringReplace(line, "/*", "/\\*", true);
+    line = StringReplace(line, "*/", "*\\/", true);
+    final_comments += prefix + line + suffix;
   }
   final_comments += epilogue;
   return final_comments;
