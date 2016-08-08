@@ -36,21 +36,28 @@
 @class GPBMessage;
 @class GPBInt32Array;
 
-// Function used to verify that a given value can be represented by an
-// enum type.
+/**
+ * Verifies that a given value can be represented by an enum type.
+ * */
 typedef BOOL (*GPBEnumValidationFunc)(int32_t);
 
-// Function used to fetch an EnumDescriptor.
+/**
+ * Fetches an EnumDescriptor.
+ * */
 typedef GPBEnumDescriptor *(*GPBEnumDescriptorFunc)(void);
 
-// Magic values used for when an the at runtime to indicate an enum value
-// that wasn't know at compile time.
+/**
+ * Magic value used at runtime to indicate an enum value that wasn't know at
+ * compile time.
+ * */
 enum {
   kGPBUnrecognizedEnumeratorValue = (int32_t)0xFBADBEEF,
 };
 
-// A union for storing all possible Protobuf values.
-// Note that owner is responsible for memory management of object types.
+/**
+ * A union for storing all possible Protobuf values. Note that owner is
+ * responsible for memory management of object types.
+ * */
 typedef union {
   BOOL valueBool;
   int32_t valueInt32;
@@ -65,38 +72,73 @@ typedef union {
   int32_t valueEnum;
 } GPBGenericValue;
 
-// Do not change the order of this enum (or add things to it) without thinking
-// about it very carefully. There are several things that depend on the order.
+/**
+ * Enum listing the possible data types that a field can contain.
+ * 
+ * @note Do not change the order of this enum (or add things to it) without
+ *       thinking about it very carefully. There are several things that depend
+ *       on the order.
+ * */
 typedef NS_ENUM(uint8_t, GPBDataType) {
+  /** Field contains boolean value(s). */
   GPBDataTypeBool = 0,
+  /** Field contains unsigned 4 byte value(s). */
   GPBDataTypeFixed32,
+  /** Field contains signed 4 byte value(s). */
   GPBDataTypeSFixed32,
+  /** Field contains float value(s). */
   GPBDataTypeFloat,
+  /** Field contains unsigned 8 byte value(s). */
   GPBDataTypeFixed64,
+  /** Field contains signed 8 byte value(s). */
   GPBDataTypeSFixed64,
+  /** Field contains double value(s). */
   GPBDataTypeDouble,
+  /**
+   * Field contains variable length value(s). Inefficient for encoding negative
+   * numbers – if your field is likely to have negative values, use
+   * GPBDataTypeSInt32 instead.
+   **/
   GPBDataTypeInt32,
+  /**
+   * Field contains variable length value(s). Inefficient for encoding negative
+   * numbers – if your field is likely to have negative values, use
+   * GPBDataTypeSInt64 instead.
+   **/
   GPBDataTypeInt64,
+  /** Field contains signed variable length integer value(s). */
   GPBDataTypeSInt32,
+  /** Field contains signed variable length integer value(s). */
   GPBDataTypeSInt64,
+  /** Field contains unsigned variable length integer value(s). */
   GPBDataTypeUInt32,
+  /** Field contains unsigned variable length integer value(s). */
   GPBDataTypeUInt64,
+  /** Field contains an arbitrary sequence of bytes. */
   GPBDataTypeBytes,
+  /** Field contains UTF-8 encoded or 7-bit ASCII text. */
   GPBDataTypeString,
+  /** Field contains message type(s). */
   GPBDataTypeMessage,
+  /** Field contains message type(s). */
   GPBDataTypeGroup,
+  /** Field contains enum value(s). */
   GPBDataTypeEnum,
 };
 
 enum {
-  // A count of the number of types in GPBDataType. Separated out from the
-  // GPBDataType enum to avoid warnings regarding not handling
-  // GPBDataType_Count in switch statements.
+  /**
+   * A count of the number of types in GPBDataType. Separated out from the
+   * GPBDataType enum to avoid warnings regarding not handling GPBDataType_Count
+   * in switch statements.
+   **/
   GPBDataType_Count = GPBDataTypeEnum + 1
 };
 
-// An extension range.
+/** An extension range. */
 typedef struct GPBExtensionRange {
-  uint32_t start;  // inclusive
-  uint32_t end;    // exclusive
+  /** Inclusive. */
+  uint32_t start;
+  /** Exclusive. */
+  uint32_t end;
 } GPBExtensionRange;
