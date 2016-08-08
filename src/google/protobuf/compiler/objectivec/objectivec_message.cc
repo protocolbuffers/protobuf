@@ -331,7 +331,7 @@ void MessageGenerator::GenerateMessageHeader(io::Printer* printer) {
   string message_comments;
   SourceLocation location;
   if (descriptor_->GetSourceLocation(&location)) {
-    message_comments = BuildCommentsString(location);
+    message_comments = BuildCommentsString(location, false);
   } else {
     message_comments = "";
   }
