@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    google-protobuf (3.0.0.alpha.5.0.5)
+    google-protobuf (3.0.0)
 
 GEM
   remote: https://rubygems.org/
@@ -27,4 +27,4 @@ DEPENDENCIES
   test-unit
 
 BUNDLED WITH
-   1.11.2
+   1.12.5

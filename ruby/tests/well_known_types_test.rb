@@ -3,6 +3,30 @@
 require 'test/unit'
 require 'google/protobuf/well_known_types'
 
+# Test that well-known types are available under both old and new names.
+require 'google/protobuf/any_pb'
+require 'google/protobuf/api_pb'
+require 'google/protobuf/duration_pb'
+require 'google/protobuf/empty_pb'
+require 'google/protobuf/field_mask_pb'
+require 'google/protobuf/source_context_pb'
+require 'google/protobuf/struct_pb'
+require 'google/protobuf/timestamp_pb'
+require 'google/protobuf/type_pb'
+require 'google/protobuf/wrappers_pb'
+
+# Old, deprecated names.
+require 'google/protobuf/any'
+require 'google/protobuf/api'
+require 'google/protobuf/duration'
+require 'google/protobuf/empty'
+require 'google/protobuf/field_mask'
+require 'google/protobuf/source_context'
+require 'google/protobuf/struct'
+require 'google/protobuf/timestamp'
+require 'google/protobuf/type'
+require 'google/protobuf/wrappers'
+
 class TestWellKnownTypes < Test::Unit::TestCase
   def test_timestamp
     ts = Google::Protobuf::Timestamp.new

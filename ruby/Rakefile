@@ -32,9 +32,27 @@ unless ENV['IN_DOCKER'] == 'true'
   well_known_protos.each do |proto_file|
     input_file = "../src/" + proto_file
     output_file = "lib/" + proto_file.sub(/\.proto$/, "_pb.rb")
+
     genproto_output << output_file
     file output_file => input_file do |file_task|
-      sh "../src/protoc -I../src --ruby_out=lib #{input_file}"
+      sh "pwd && ../src/protoc -I../src --ruby_out=lib #{input_file}"
+    end
+
+    # For the time being, output forwarding header files so that people can
+    # require() the old names.
+    forwarding_output_file = "lib/" + proto_file.sub(/\.proto$/, ".rb")
+    genproto_output << forwarding_output_file
+    file forwarding_output_file => input_file do |forwarding_file_task|
+      bare_name = proto_file.sub(/\.proto$/, "")
+      File.open(forwarding_output_file, "w") do |file|
+        file.puts("# Temporary forwarding header.")
+        file.puts(%Q{warn("Include of legacy file '#{bare_name}.rb'. " +})
+        file.puts(%Q<     "Please update the source file \#{caller(3, 1)} " +>)
+        file.puts(%Q<     "to include #{bare_name}_pb instead. " +>)
+        file.puts(%Q<     "(If this is an auto-generated file, please regenerate " +>)
+        file.puts(%Q<     "it with a new version of protoc)")>)
+        file.puts("require '#{bare_name}'")
+      end
     end
   end
 end
