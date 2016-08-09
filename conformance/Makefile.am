@@ -1,7 +1,8 @@
 ## Process this file with automake to produce Makefile.in
 
 conformance_protoc_inputs =                                    \
-  conformance.proto
+  conformance.proto                                            \
+  $(top_srcdir)/src/google/protobuf/test_messages_proto3.proto
 
 well_known_type_protoc_inputs =                                \
   $(top_srcdir)/src/google/protobuf/any.proto                  \
@@ -152,7 +153,7 @@ conformance_test_runner_SOURCES = conformance_test.h conformance_test.cc \
                                   conformance_test_runner.cc             \
                                   third_party/jsoncpp/json.h             \
                                   third_party/jsoncpp/jsoncpp.cpp
-nodist_conformance_test_runner_SOURCES = conformance.pb.cc
+nodist_conformance_test_runner_SOURCES = conformance.pb.cc google/protobuf/test_messages_proto3.pb.cc
 conformance_test_runner_CPPFLAGS = -I$(top_srcdir)/src -I$(srcdir)
 conformance_test_runner_CXXFLAGS = -std=c++11
 # Explicit deps beacuse BUILT_SOURCES are only done before a "make all/check"
@@ -162,7 +163,7 @@ conformance_test_runner-conformance_test_runner.$(OBJEXT): conformance.pb.h
 
 conformance_cpp_LDADD = $(top_srcdir)/src/libprotobuf.la
 conformance_cpp_SOURCES = conformance_cpp.cc
-nodist_conformance_cpp_SOURCES = conformance.pb.cc
+nodist_conformance_cpp_SOURCES = conformance.pb.cc google/protobuf/test_messages_proto3.pb.cc
 conformance_cpp_CPPFLAGS = -I$(top_srcdir)/src
 # Explicit dep beacuse BUILT_SOURCES are only done before a "make all/check"
 # so a direct "make test_cpp" could fail if parallel enough.
@@ -221,7 +222,7 @@ MAINTAINERCLEANFILES =   \
   Makefile.in
 
 javac_middleman: ConformanceJava.java protoc_middleman $(other_language_protoc_outputs)
-	jar=`ls ../java/util/target/*jar-with-dependencies.jar` && javac -classpath ../java/target/classes:$$jar ConformanceJava.java com/google/protobuf/conformance/Conformance.java
+	jar=`ls ../java/util/target/*jar-with-dependencies.jar` && javac -classpath ../java/target/classes:$$jar ConformanceJava.java com/google/protobuf/conformance/Conformance.java com/google/protobuf_test_messages/proto3/TestMessagesProto3.java
 	@touch javac_middleman
 
 conformance-java: javac_middleman

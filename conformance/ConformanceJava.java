@@ -1,5 +1,6 @@
 
 import com.google.protobuf.conformance.Conformance;
+import com.google.protobuf_test_messages.proto3.TestMessagesProto3;
 import com.google.protobuf.util.JsonFormat;
 import com.google.protobuf.util.JsonFormat.TypeRegistry;
 import com.google.protobuf.InvalidProtocolBufferException;
@@ -48,12 +49,12 @@ class ConformanceJava {
   }
 
   private Conformance.ConformanceResponse doTest(Conformance.ConformanceRequest request) {
-    Conformance.TestAllTypes testMessage;
+    TestMessagesProto3.TestAllTypes testMessage;
 
     switch (request.getPayloadCase()) {
       case PROTOBUF_PAYLOAD: {
         try {
-          testMessage = Conformance.TestAllTypes.parseFrom(request.getProtobufPayload());
+          testMessage = TestMessagesProto3.TestAllTypes.parseFrom(request.getProtobufPayload());
         } catch (InvalidProtocolBufferException e) {
           return Conformance.ConformanceResponse.newBuilder().setParseError(e.getMessage()).build();
         }
@@ -61,7 +62,7 @@ class ConformanceJava {
       }
       case JSON_PAYLOAD: {
         try {
-          Conformance.TestAllTypes.Builder builder = Conformance.TestAllTypes.newBuilder();
+          TestMessagesProto3.TestAllTypes.Builder builder = TestMessagesProto3.TestAllTypes.newBuilder();
           JsonFormat.parser().usingTypeRegistry(typeRegistry)
               .merge(request.getJsonPayload(), builder);
           testMessage = builder.build();
@@ -127,7 +128,7 @@ class ConformanceJava {
 
   public void run() throws Exception {
     typeRegistry = TypeRegistry.newBuilder().add(
-        Conformance.TestAllTypes.getDescriptor()).build();
+        TestMessagesProto3.TestAllTypes.getDescriptor()).build();
     while (doTestIo()) {
       this.testCount++;
     }
