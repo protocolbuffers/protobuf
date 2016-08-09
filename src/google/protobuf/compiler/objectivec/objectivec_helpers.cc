@@ -830,7 +830,8 @@ string BuildFlagsString(const vector<string>& strings) {
   return string;
 }
 
-string BuildCommentsString(const SourceLocation& location) {
+string BuildCommentsString(const SourceLocation& location,
+                           bool prefer_single_line) {
   const string& comments = location.leading_comments.empty()
                                ? location.trailing_comments
                                : location.leading_comments;
@@ -839,15 +840,37 @@ string BuildCommentsString(const SourceLocation& location) {
   while (!lines.empty() && lines.back().empty()) {
     lines.pop_back();
   }
-  string prefix("///");
-  string suffix("\n");
-  string final_comments;
-  for (int i = 0; i < lines.size(); i++) {
-    // HeaderDoc uses '\' and '@' for markers; escape them.
-    const string line = StringReplace(lines[i], "\\", "\\\\", true);
-    final_comments +=
-        prefix + StringReplace(line, "@", "\\@", true) + suffix;
+  // If there are no comments, just return an empty string.
+  if (lines.size() == 0) {
+    return "";
   }
+
+  string prefix;
+  string suffix;
+  string final_comments;
+  string epilogue;
+
+  if (prefer_single_line && lines.size() == 1) {
+    prefix = "/** ";
+    suffix = " */\n";
+  } else {
+    prefix = " * ";
+    suffix = "\n";
+    final_comments += "/**\n";
+    epilogue = " **/\n";
+  }
+
+  for (int i = 0; i < lines.size(); i++) {
+    string line = StripPrefixString(lines[i], " ");
+    // HeaderDoc and appledoc use '\' and '@' for markers; escape them.
+    line = StringReplace(line, "\\", "\\\\", true);
+    line = StringReplace(line, "@", "\\@", true);
+    // Decouple / from * to not have inline comments inside comments.
+    line = StringReplace(line, "/*", "/\\*", true);
+    line = StringReplace(line, "*/", "*\\/", true);
+    final_comments += prefix + line + suffix;
+  }
+  final_comments += epilogue;
   return final_comments;
 }
 

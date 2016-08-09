@@ -53,7 +53,7 @@ OneofGenerator::OneofGenerator(const OneofDescriptor* descriptor)
   string comments;
   SourceLocation location;
   if (descriptor_->GetSourceLocation(&location)) {
-    comments = BuildCommentsString(location);
+    comments = BuildCommentsString(location, true);
   } else {
     comments = "";
   }
@@ -104,7 +104,9 @@ void OneofGenerator::GeneratePublicCasePropertyDeclaration(
 void OneofGenerator::GenerateClearFunctionDeclaration(io::Printer* printer) {
   printer->Print(
       variables_,
-      "/// Clears whatever value was set for the oneof '$name$'.\n"
+      "/**\n"
+      " * Clears whatever value was set for the oneof '$name$'.\n"
+      " **/\n"
       "void $owning_message_class$_Clear$capitalized_name$OneOfCase($owning_message_class$ *message);\n");
 }
 
