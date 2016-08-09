@@ -63,7 +63,7 @@ void ExtensionGenerator::GenerateMembersHeader(io::Printer* printer) {
   vars["method_name"] = method_name_;
   SourceLocation location;
   if (descriptor_->GetSourceLocation(&location)) {
-    vars["comments"] = BuildCommentsString(location);
+    vars["comments"] = BuildCommentsString(location, true);
   } else {
     vars["comments"] = "";
   }

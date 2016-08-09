@@ -170,8 +170,10 @@ bool HasNonZeroDefaultValue(const FieldDescriptor* field);
 
 string BuildFlagsString(const vector<string>& strings);
 
-// Builds a HeaderDoc style comment out of the comments in the .proto file.
-string BuildCommentsString(const SourceLocation& location);
+// Builds HeaderDoc/appledoc style comments out of the comments in the .proto
+// file.
+string BuildCommentsString(const SourceLocation& location,
+                           bool prefer_single_line);
 
 // The name the commonly used by the library when built as a framework.
 // This lines up to the name used in the CocoaPod.
