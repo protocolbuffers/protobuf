@@ -1,4 +1,4 @@
-# No tests currently failing.
+# All tests currently passing.
 #
-# json input or output tests are skipped (in conformance_objc.m) as mobile
-# platforms don't support json wire format to avoid code bloat.
+# JSON input or output tests are skipped (in conformance_objc.m) as mobile
+# platforms don't support JSON wire format to avoid code bloat.

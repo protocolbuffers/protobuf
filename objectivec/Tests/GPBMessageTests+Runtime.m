@@ -1972,6 +1972,254 @@
   [msg release];
 }
 
+- (void)testProto2OneofSetToDefault {
+
+  // proto3 doesn't normally write out zero (default) fields, but if they are
+  // in a oneof it does.  proto2 doesn't have this special behavior, but we
+  // still confirm setting to the explicit default does set the case to be
+  // sure the runtime is working correctly.
+
+  NSString *oneofStringDefault = @"string";
+  NSData *oneofBytesDefault = [@"data" dataUsingEncoding:NSUTF8StringEncoding];
+
+  Message2 *msg = [[Message2 alloc] init];
+
+  uint32_t values[] = {
+    Message2_O_OneOfCase_OneofInt32,
+    Message2_O_OneOfCase_OneofInt64,
+    Message2_O_OneOfCase_OneofUint32,
+    Message2_O_OneOfCase_OneofUint64,
+    Message2_O_OneOfCase_OneofSint32,
+    Message2_O_OneOfCase_OneofSint64,
+    Message2_O_OneOfCase_OneofFixed32,
+    Message2_O_OneOfCase_OneofFixed64,
+    Message2_O_OneOfCase_OneofSfixed32,
+    Message2_O_OneOfCase_OneofSfixed64,
+    Message2_O_OneOfCase_OneofFloat,
+    Message2_O_OneOfCase_OneofDouble,
+    Message2_O_OneOfCase_OneofBool,
+    Message2_O_OneOfCase_OneofString,
+    Message2_O_OneOfCase_OneofBytes,
+    // Skip group
+    // Skip message
+    Message2_O_OneOfCase_OneofEnum,
+  };
+
+  for (size_t i = 0; i < GPBARRAYSIZE(values); ++i) {
+    switch (values[i]) {
+      case Message3_O_OneOfCase_OneofInt32:
+        msg.oneofInt32 = 100;
+        break;
+      case Message3_O_OneOfCase_OneofInt64:
+        msg.oneofInt64 = 101;
+        break;
+      case Message3_O_OneOfCase_OneofUint32:
+        msg.oneofUint32 = 102;
+        break;
+      case Message3_O_OneOfCase_OneofUint64:
+        msg.oneofUint64 = 103;
+        break;
+      case Message3_O_OneOfCase_OneofSint32:
+        msg.oneofSint32 = 104;
+        break;
+      case Message3_O_OneOfCase_OneofSint64:
+        msg.oneofSint64 = 105;
+        break;
+      case Message3_O_OneOfCase_OneofFixed32:
+        msg.oneofFixed32 = 106;
+        break;
+      case Message3_O_OneOfCase_OneofFixed64:
+        msg.oneofFixed64 = 107;
+        break;
+      case Message3_O_OneOfCase_OneofSfixed32:
+        msg.oneofSfixed32 = 108;
+        break;
+      case Message3_O_OneOfCase_OneofSfixed64:
+        msg.oneofSfixed64 = 109;
+        break;
+      case Message3_O_OneOfCase_OneofFloat:
+        msg.oneofFloat = 110.0f;
+        break;
+      case Message3_O_OneOfCase_OneofDouble:
+        msg.oneofDouble = 111.0;
+        break;
+      case Message3_O_OneOfCase_OneofBool:
+        msg.oneofBool = YES;
+        break;
+      case Message3_O_OneOfCase_OneofString:
+        msg.oneofString = oneofStringDefault;
+        break;
+      case Message3_O_OneOfCase_OneofBytes:
+        msg.oneofBytes = oneofBytesDefault;
+        break;
+      case Message3_O_OneOfCase_OneofEnum:
+        msg.oneofEnum = Message3_Enum_Baz;
+        break;
+      default:
+        XCTFail(@"shouldn't happen, loop: %zd, value: %d", i, values[i]);
+        break;
+    }
+
+    // Should be set to the correct case.
+    XCTAssertEqual(msg.oOneOfCase, values[i], "Loop: %zd", i);
+
+    // Confirm everything is back as the defaults.
+    XCTAssertEqual(msg.oneofInt32, 100, "Loop: %zd", i);
+    XCTAssertEqual(msg.oneofInt64, 101, "Loop: %zd", i);
+    XCTAssertEqual(msg.oneofUint32, 102U, "Loop: %zd", i);
+    XCTAssertEqual(msg.oneofUint64, 103U, "Loop: %zd", i);
+    XCTAssertEqual(msg.oneofSint32, 104, "Loop: %zd", i);
+    XCTAssertEqual(msg.oneofSint64, 105, "Loop: %zd", i);
+    XCTAssertEqual(msg.oneofFixed32, 106U, "Loop: %zd", i);
+    XCTAssertEqual(msg.oneofFixed64, 107U, "Loop: %zd", i);
+    XCTAssertEqual(msg.oneofSfixed32, 108, "Loop: %zd", i);
+    XCTAssertEqual(msg.oneofSfixed64, 109, "Loop: %zd", i);
+    XCTAssertEqual(msg.oneofFloat, 110.0f, "Loop: %zd", i);
+    XCTAssertEqual(msg.oneofDouble, 111.0, "Loop: %zd", i);
+    XCTAssertEqual(msg.oneofBool, YES, "Loop: %zd", i);
+    XCTAssertEqualObjects(msg.oneofString, oneofStringDefault, "Loop: %zd", i);
+    XCTAssertEqualObjects(msg.oneofBytes, oneofBytesDefault, "Loop: %zd", i);
+    XCTAssertNotNil(msg.oneofGroup, "Loop: %zd", i);
+    // Skip group
+    // Skip message
+    XCTAssertEqual(msg.oneofEnum, Message2_Enum_Baz, "Loop: %zd", i);
+  }
+
+  // We special case nil on string, data, message, ensure they work as expected.
+  // i.e. - it clears the case.
+  msg.oneofString = nil;
+  XCTAssertEqual(msg.oOneOfCase, Message3_O_OneOfCase_GPBUnsetOneOfCase);
+  msg.oneofBytes = nil;
+  XCTAssertEqual(msg.oOneOfCase, Message3_O_OneOfCase_GPBUnsetOneOfCase);
+  msg.oneofMessage = nil;
+  XCTAssertEqual(msg.oOneOfCase, Message3_O_OneOfCase_GPBUnsetOneOfCase);
+
+  [msg release];
+}
+
+- (void)testProto3OneofSetToZero {
+
+  // Normally setting a proto3 field to the zero value should result in it being
+  // reset/cleared.  But in a oneof, it still gets recored so it can go out
+  // over the wire and the other side can see what was set in the oneof.
+
+  NSString *oneofStringDefault = @"";
+  NSData *oneofBytesDefault = [NSData data];
+
+  Message3 *msg = [[Message3 alloc] init];
+
+  uint32_t values[] = {
+    Message3_O_OneOfCase_OneofInt32,
+    Message3_O_OneOfCase_OneofInt64,
+    Message3_O_OneOfCase_OneofUint32,
+    Message3_O_OneOfCase_OneofUint64,
+    Message3_O_OneOfCase_OneofSint32,
+    Message3_O_OneOfCase_OneofSint64,
+    Message3_O_OneOfCase_OneofFixed32,
+    Message3_O_OneOfCase_OneofFixed64,
+    Message3_O_OneOfCase_OneofSfixed32,
+    Message3_O_OneOfCase_OneofSfixed64,
+    Message3_O_OneOfCase_OneofFloat,
+    Message3_O_OneOfCase_OneofDouble,
+    Message3_O_OneOfCase_OneofBool,
+    Message3_O_OneOfCase_OneofString,
+    Message3_O_OneOfCase_OneofBytes,
+    Message3_O_OneOfCase_OneofMessage,
+    Message3_O_OneOfCase_OneofEnum,
+  };
+
+  for (size_t i = 0; i < GPBARRAYSIZE(values); ++i) {
+    switch (values[i]) {
+      case Message3_O_OneOfCase_OneofInt32:
+        msg.oneofInt32 = 0;
+        break;
+      case Message3_O_OneOfCase_OneofInt64:
+        msg.oneofInt64 = 0;
+        break;
+      case Message3_O_OneOfCase_OneofUint32:
+        msg.oneofUint32 = 0;
+        break;
+      case Message3_O_OneOfCase_OneofUint64:
+        msg.oneofUint64 = 0;
+        break;
+      case Message3_O_OneOfCase_OneofSint32:
+        msg.oneofSint32 = 0;
+        break;
+      case Message3_O_OneOfCase_OneofSint64:
+        msg.oneofSint64 = 0;
+        break;
+      case Message3_O_OneOfCase_OneofFixed32:
+        msg.oneofFixed32 = 0;
+        break;
+      case Message3_O_OneOfCase_OneofFixed64:
+        msg.oneofFixed64 = 0;
+        break;
+      case Message3_O_OneOfCase_OneofSfixed32:
+        msg.oneofSfixed32 = 0;
+        break;
+      case Message3_O_OneOfCase_OneofSfixed64:
+        msg.oneofSfixed64 = 0;
+        break;
+      case Message3_O_OneOfCase_OneofFloat:
+        msg.oneofFloat = 0.0f;
+        break;
+      case Message3_O_OneOfCase_OneofDouble:
+        msg.oneofDouble = 0.0;
+        break;
+      case Message3_O_OneOfCase_OneofBool:
+        msg.oneofBool = NO;
+        break;
+      case Message3_O_OneOfCase_OneofString:
+        msg.oneofString = oneofStringDefault;
+        break;
+      case Message3_O_OneOfCase_OneofBytes:
+        msg.oneofBytes = oneofBytesDefault;
+        break;
+      case Message3_O_OneOfCase_OneofMessage:
+        msg.oneofMessage.optionalInt32 = 0;
+        break;
+      case Message3_O_OneOfCase_OneofEnum:
+        msg.oneofEnum = Message3_Enum_Foo;
+        break;
+      default:
+        XCTFail(@"shouldn't happen, loop: %zd, value: %d", i, values[i]);
+        break;
+    }
+
+    // Should be set to the correct case.
+    XCTAssertEqual(msg.oOneOfCase, values[i], "Loop: %zd", i);
+
+    // Confirm everything is still zeros.
+    XCTAssertEqual(msg.oneofInt32, 0, "Loop: %zd", i);
+    XCTAssertEqual(msg.oneofInt64, 0, "Loop: %zd", i);
+    XCTAssertEqual(msg.oneofUint32, 0U, "Loop: %zd", i);
+    XCTAssertEqual(msg.oneofUint64, 0U, "Loop: %zd", i);
+    XCTAssertEqual(msg.oneofSint32, 0, "Loop: %zd", i);
+    XCTAssertEqual(msg.oneofSint64, 0, "Loop: %zd", i);
+    XCTAssertEqual(msg.oneofFixed32, 0U, "Loop: %zd", i);
+    XCTAssertEqual(msg.oneofFixed64, 0U, "Loop: %zd", i);
+    XCTAssertEqual(msg.oneofSfixed32, 0, "Loop: %zd", i);
+    XCTAssertEqual(msg.oneofSfixed64, 0, "Loop: %zd", i);
+    XCTAssertEqual(msg.oneofFloat, 0.0f, "Loop: %zd", i);
+    XCTAssertEqual(msg.oneofDouble, 0.0, "Loop: %zd", i);
+    XCTAssertEqual(msg.oneofBool, NO, "Loop: %zd", i);
+    XCTAssertEqualObjects(msg.oneofString, oneofStringDefault, "Loop: %zd", i);
+    XCTAssertEqualObjects(msg.oneofBytes, oneofBytesDefault, "Loop: %zd", i);
+    XCTAssertNotNil(msg.oneofMessage, "Loop: %zd", i);
+    XCTAssertEqual(msg.oneofEnum, Message3_Enum_Foo, "Loop: %zd", i);
+  }
+
+  // We special case nil on string, data, message, ensure they work as expected.
+  msg.oneofString = nil;
+  XCTAssertEqual(msg.oOneOfCase, Message3_O_OneOfCase_GPBUnsetOneOfCase);
+  msg.oneofBytes = nil;
+  XCTAssertEqual(msg.oOneOfCase, Message3_O_OneOfCase_GPBUnsetOneOfCase);
+  msg.oneofMessage = nil;
+  XCTAssertEqual(msg.oOneOfCase, Message3_O_OneOfCase_GPBUnsetOneOfCase);
+
+  [msg release];
+}
+
 - (void)testCopyingMakesUniqueObjects {
   const int repeatCount = 5;
   TestAllTypes *msg1 = [TestAllTypes message];
