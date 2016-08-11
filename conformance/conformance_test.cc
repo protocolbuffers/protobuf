@@ -1246,28 +1246,28 @@ bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
     TestAllTypes message;
     message.set_oneof_uint32(0);
     RunValidProtobufTest(
-        "Oneof_Zero_uint32", message, "oneof_uint32: 0");
+        "OneofZeroUint32", message, "oneof_uint32: 0");
     message.mutable_oneof_nested_message()->set_a(0);
     RunValidProtobufTest(
-        "Oneof_Zero_message", message, "oneof_nested_message: {}");
+        "OneofZeroMessage", message, "oneof_nested_message: {}");
     message.set_oneof_string("");
     RunValidProtobufTest(
-        "Oneof_Zero_string", message, "oneof_string: \"\"");
+        "OneofZeroString", message, "oneof_string: \"\"");
     message.set_oneof_bytes("");
     RunValidProtobufTest(
-        "Oneof_Zero_bytes", message, "oneof_bytes: \"\"");
+        "OneofZeroBytes", message, "oneof_bytes: \"\"");
   }
   RunValidJsonTest(
-      "Oneof_Zero_uint32",
+      "OneofZeroUint32",
       R"({"oneofUint32": 0})", "oneof_uint32: 0");
   RunValidJsonTest(
-      "Oneof_Zero_message",
+      "OneofZeroMessage",
       R"({"oneofNestedMessage": {}})", "oneof_nested_message: {}");
   RunValidJsonTest(
-      "Oneof_Zero_string",
+      "OneofZeroString",
       R"({"oneofString": ""})", "oneof_string: \"\"");
   RunValidJsonTest(
-      "Oneof_Zero_bytes",
+      "OneofZeroBytes",
       R"({"oneofBytes": ""})", "oneof_bytes: \"\"");
 
   // Repeated fields.

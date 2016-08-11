@@ -1,6 +1,6 @@
-ProtobufInput.Oneof_Zero_bytes.ProtobufOutput
-ProtobufInput.Oneof_Zero_string.ProtobufOutput
-ProtobufInput.Oneof_Zero_uint32.ProtobufOutput
+ProtobufInput.OneofZeroBytes.ProtobufOutput
+ProtobufInput.OneofZeroString.ProtobufOutput
+ProtobufInput.OneofZeroUint32.ProtobufOutput
 #
 # json input or output tests are skipped (in conformance_objc.m) as mobile
 # platforms don't support json wire format to avoid code bloat.
