@@ -1256,6 +1256,21 @@ bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
     message.set_oneof_bytes("");
     RunValidProtobufTest(
         "OneofZeroBytes", message, "oneof_bytes: \"\"");
+    message.set_oneof_bool(false);
+    RunValidProtobufTest(
+        "OneofZeroBool", message, "oneof_bool: false");
+    message.set_oneof_uint64(0);
+    RunValidProtobufTest(
+        "OneofZeroUint64", message, "oneof_uint64: 0");
+    message.set_oneof_float(0.0f);
+    RunValidProtobufTest(
+        "OneofZeroFloat", message, "oneof_float: 0");
+    message.set_oneof_double(0.0);
+    RunValidProtobufTest(
+        "OneofZeroDouble", message, "oneof_double: 0");
+    message.set_oneof_enum(TestAllTypes::FOO);
+    RunValidProtobufTest(
+        "OneofZeroEnum", message, "oneof_enum: FOO");
   }
   RunValidJsonTest(
       "OneofZeroUint32",
@@ -1269,6 +1284,21 @@ bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
   RunValidJsonTest(
       "OneofZeroBytes",
       R"({"oneofBytes": ""})", "oneof_bytes: \"\"");
+  RunValidJsonTest(
+      "OneofZeroBool",
+      R"({"oneofBool": false})", "oneof_bool: false");
+  RunValidJsonTest(
+      "OneofZeroUint64",
+      R"({"oneofUint64": 0})", "oneof_uint64: 0");
+  RunValidJsonTest(
+      "OneofZeroFloat",
+      R"({"oneofFloat": 0.0})", "oneof_float: 0");
+  RunValidJsonTest(
+      "OneofZeroDouble",
+      R"({"oneofDouble": 0.0})", "oneof_double: 0");
+  RunValidJsonTest(
+      "OneofZeroEnum",
+      R"({"oneofEnum":"FOO"})", "oneof_enum: FOO");
 
   // Repeated fields.
   RunValidJsonTest(
