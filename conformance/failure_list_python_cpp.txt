@@ -44,6 +44,8 @@ JsonInput.Int32FieldMaxFloatValue.JsonOutput
 JsonInput.Int32FieldMaxFloatValue.ProtobufOutput
 JsonInput.Int32FieldMinFloatValue.JsonOutput
 JsonInput.Int32FieldMinFloatValue.ProtobufOutput
+JsonInput.OneofZeroMessage.JsonOutput
+JsonInput.OneofZeroMessage.ProtobufOutput
 JsonInput.OriginalProtoFieldName.JsonOutput
 JsonInput.OriginalProtoFieldName.ProtobufOutput
 JsonInput.RepeatedFieldWrongElementTypeExpectingIntegersGotBool

@@ -1,4 +1,6 @@
-# No tests currently failing.
+ProtobufInput.OneofZeroBytes.ProtobufOutput
+ProtobufInput.OneofZeroString.ProtobufOutput
+ProtobufInput.OneofZeroUint32.ProtobufOutput
 #
 # json input or output tests are skipped (in conformance_objc.m) as mobile
 # platforms don't support json wire format to avoid code bloat.

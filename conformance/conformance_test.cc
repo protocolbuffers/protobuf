@@ -272,11 +272,16 @@ void ConformanceTestSuite::RunValidInputTest(
   TestAllTypes test_message;
 
   switch (response.result_case()) {
+    case ConformanceResponse::RESULT_NOT_SET:
+      ReportFailure(test_name, request, response,
+                    "Response didn't have any field in the Response.");
+      return;
+
     case ConformanceResponse::kParseError:
     case ConformanceResponse::kRuntimeError:
     case ConformanceResponse::kSerializeError:
       ReportFailure(test_name, request, response,
-                    "Failed to parse JSON input or produce JSON output.");
+                    "Failed to parse input or produce output.");
       return;
 
     case ConformanceResponse::kSkipped:
@@ -395,6 +400,17 @@ void ConformanceTestSuite::RunValidJsonTest(
 void ConformanceTestSuite::RunValidJsonTestWithProtobufInput(
     const string& test_name, const TestAllTypes& input,
     const string& equivalent_text_format) {
+  RunValidInputTest("ProtobufInput." + test_name + ".JsonOutput",
+                    input.SerializeAsString(), conformance::PROTOBUF,
+                    equivalent_text_format, conformance::JSON);
+}
+
+void ConformanceTestSuite::RunValidProtobufTest(
+    const string& test_name, const TestAllTypes& input,
+    const string& equivalent_text_format) {
+  RunValidInputTest("ProtobufInput." + test_name + ".ProtobufOutput",
+                    input.SerializeAsString(), conformance::PROTOBUF,
+                    equivalent_text_format, conformance::PROTOBUF);
   RunValidInputTest("ProtobufInput." + test_name + ".JsonOutput",
                     input.SerializeAsString(), conformance::PROTOBUF,
                     equivalent_text_format, conformance::JSON);
@@ -1225,6 +1241,34 @@ bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
   ExpectParseFailureForJson(
       "OneofFieldDuplicate",
       R"({"oneofUint32": 1, "oneofString": "test"})");
+  // Ensure zero values for oneof make it out/backs.
+  {
+    TestAllTypes message;
+    message.set_oneof_uint32(0);
+    RunValidProtobufTest(
+        "OneofZeroUint32", message, "oneof_uint32: 0");
+    message.mutable_oneof_nested_message()->set_a(0);
+    RunValidProtobufTest(
+        "OneofZeroMessage", message, "oneof_nested_message: {}");
+    message.set_oneof_string("");
+    RunValidProtobufTest(
+        "OneofZeroString", message, "oneof_string: \"\"");
+    message.set_oneof_bytes("");
+    RunValidProtobufTest(
+        "OneofZeroBytes", message, "oneof_bytes: \"\"");
+  }
+  RunValidJsonTest(
+      "OneofZeroUint32",
+      R"({"oneofUint32": 0})", "oneof_uint32: 0");
+  RunValidJsonTest(
+      "OneofZeroMessage",
+      R"({"oneofNestedMessage": {}})", "oneof_nested_message: {}");
+  RunValidJsonTest(
+      "OneofZeroString",
+      R"({"oneofString": ""})", "oneof_string: \"\"");
+  RunValidJsonTest(
+      "OneofZeroBytes",
+      R"({"oneofBytes": ""})", "oneof_bytes: \"\"");
 
   // Repeated fields.
   RunValidJsonTest(
