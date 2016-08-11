@@ -210,6 +210,11 @@ message TestAllTypes {
     NestedMessage oneof_nested_message = 112;
     string oneof_string = 113;
     bytes oneof_bytes = 114;
+    bool oneof_bool = 115;
+    uint64 oneof_uint64 = 116;
+    float oneof_float = 117;
+    double oneof_double = 118;
+    NestedEnum oneof_enum = 119;
   }
 
   // Well-known types

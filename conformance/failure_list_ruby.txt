@@ -103,8 +103,14 @@ JsonInput.MessageMapField.JsonOutput
 JsonInput.MessageMapField.ProtobufOutput
 JsonInput.MessageRepeatedField.JsonOutput
 JsonInput.MessageRepeatedField.ProtobufOutput
+JsonInput.OneofZeroDouble.JsonOutput
+JsonInput.OneofZeroDouble.ProtobufOutput
+JsonInput.OneofZeroFloat.JsonOutput
+JsonInput.OneofZeroFloat.ProtobufOutput
 JsonInput.OneofZeroUint32.JsonOutput
 JsonInput.OneofZeroUint32.ProtobufOutput
+JsonInput.OneofZeroUint64.JsonOutput
+JsonInput.OneofZeroUint64.ProtobufOutput
 JsonInput.OptionalBoolWrapper.JsonOutput
 JsonInput.OptionalBoolWrapper.ProtobufOutput
 JsonInput.OptionalBytesWrapper.JsonOutput
