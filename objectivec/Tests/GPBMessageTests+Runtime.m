@@ -2063,7 +2063,7 @@
     // Should be set to the correct case.
     XCTAssertEqual(msg.oOneOfCase, values[i], "Loop: %zd", i);
 
-    // Confirm everything is back as the defaults.
+    // Confirm everything is the defaults.
     XCTAssertEqual(msg.oneofInt32, 100, "Loop: %zd", i);
     XCTAssertEqual(msg.oneofInt64, 101, "Loop: %zd", i);
     XCTAssertEqual(msg.oneofUint32, 102U, "Loop: %zd", i);
@@ -2079,22 +2079,25 @@
     XCTAssertEqual(msg.oneofBool, YES, "Loop: %zd", i);
     XCTAssertEqualObjects(msg.oneofString, oneofStringDefault, "Loop: %zd", i);
     XCTAssertEqualObjects(msg.oneofBytes, oneofBytesDefault, "Loop: %zd", i);
-    XCTAssertNotNil(msg.oneofGroup, "Loop: %zd", i);
-    // Skip group
-    // Skip message
+    // Skip group, no default to consider.
+    // Skip message, no default to consider.
     XCTAssertEqual(msg.oneofEnum, Message2_Enum_Baz, "Loop: %zd", i);
   }
 
-  // We special case nil on string, data, group, message, ensure they work as
-  // expected. i.e. - it clears the case.
+  // We special case nil on string, data, group, and message, ensure they work
+  // as expected. i.e. - it clears the case.
   msg.oneofString = nil;
+  XCTAssertEqualObjects(msg.oneofString, oneofStringDefault);
   XCTAssertEqual(msg.oOneOfCase, Message2_O_OneOfCase_GPBUnsetOneOfCase);
   msg.oneofBytes = nil;
   XCTAssertEqual(msg.oOneOfCase, Message2_O_OneOfCase_GPBUnsetOneOfCase);
+  XCTAssertEqualObjects(msg.oneofBytes, oneofBytesDefault);
   msg.oneofGroup = nil;
   XCTAssertEqual(msg.oOneOfCase, Message2_O_OneOfCase_GPBUnsetOneOfCase);
+  XCTAssertNotNil(msg.oneofGroup);
   msg.oneofMessage = nil;
   XCTAssertEqual(msg.oOneOfCase, Message2_O_OneOfCase_GPBUnsetOneOfCase);
+  XCTAssertNotNil(msg.oneofMessage);
 
   [msg release];
 }
@@ -2214,10 +2217,13 @@
   // We special case nil on string, data, message, ensure they work as expected.
   msg.oneofString = nil;
   XCTAssertEqual(msg.oOneOfCase, Message3_O_OneOfCase_GPBUnsetOneOfCase);
+  XCTAssertEqualObjects(msg.oneofString, oneofStringDefault);
   msg.oneofBytes = nil;
   XCTAssertEqual(msg.oOneOfCase, Message3_O_OneOfCase_GPBUnsetOneOfCase);
+  XCTAssertEqualObjects(msg.oneofBytes, oneofBytesDefault);
   msg.oneofMessage = nil;
   XCTAssertEqual(msg.oOneOfCase, Message3_O_OneOfCase_GPBUnsetOneOfCase);
+  XCTAssertNotNil(msg.oneofMessage);
 
   [msg release];
 }
