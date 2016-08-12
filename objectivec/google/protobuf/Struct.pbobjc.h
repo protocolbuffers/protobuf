@@ -35,7 +35,7 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * `NullValue` is a singleton enumeration to represent the null value for the
  * `Value` type union.
- * 
+ *
  *  The JSON representation for `NullValue` is JSON `null`.
  **/
 typedef GPB_ENUM(GPBNullValue) {
@@ -85,7 +85,7 @@ typedef GPB_ENUM(GPBStruct_FieldNumber) {
  * scripting languages like JS a struct is represented as an
  * object. The details of that representation are described together
  * with the proto support for the language.
- * 
+ *
  * The JSON representation for `Struct` is JSON object.
  **/
 @interface GPBStruct : GPBMessage
@@ -123,7 +123,7 @@ typedef GPB_ENUM(GPBValue_Kind_OneOfCase) {
  * null, a number, a string, a boolean, a recursive struct value, or a
  * list of values. A producer of value is expected to set one of that
  * variants, absence of any variant indicates an error.
- * 
+ *
  * The JSON representation for `Value` is JSON value.
  **/
 @interface GPBValue : GPBMessage
@@ -176,7 +176,7 @@ typedef GPB_ENUM(GPBListValue_FieldNumber) {
 
 /**
  * `ListValue` is a wrapper around a repeated field of values.
- * 
+ *
  * The JSON representation for `ListValue` is JSON array.
  **/
 @interface GPBListValue : GPBMessage
