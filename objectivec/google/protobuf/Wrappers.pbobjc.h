@@ -49,7 +49,7 @@ typedef GPB_ENUM(GPBDoubleValue_FieldNumber) {
 
 /**
  * Wrapper message for `double`.
- * 
+ *
  * The JSON representation for `DoubleValue` is JSON number.
  **/
 @interface GPBDoubleValue : GPBMessage
@@ -67,7 +67,7 @@ typedef GPB_ENUM(GPBFloatValue_FieldNumber) {
 
 /**
  * Wrapper message for `float`.
- * 
+ *
  * The JSON representation for `FloatValue` is JSON number.
  **/
 @interface GPBFloatValue : GPBMessage
@@ -85,7 +85,7 @@ typedef GPB_ENUM(GPBInt64Value_FieldNumber) {
 
 /**
  * Wrapper message for `int64`.
- * 
+ *
  * The JSON representation for `Int64Value` is JSON string.
  **/
 @interface GPBInt64Value : GPBMessage
@@ -103,7 +103,7 @@ typedef GPB_ENUM(GPBUInt64Value_FieldNumber) {
 
 /**
  * Wrapper message for `uint64`.
- * 
+ *
  * The JSON representation for `UInt64Value` is JSON string.
  **/
 @interface GPBUInt64Value : GPBMessage
@@ -121,7 +121,7 @@ typedef GPB_ENUM(GPBInt32Value_FieldNumber) {
 
 /**
  * Wrapper message for `int32`.
- * 
+ *
  * The JSON representation for `Int32Value` is JSON number.
  **/
 @interface GPBInt32Value : GPBMessage
@@ -139,7 +139,7 @@ typedef GPB_ENUM(GPBUInt32Value_FieldNumber) {
 
 /**
  * Wrapper message for `uint32`.
- * 
+ *
  * The JSON representation for `UInt32Value` is JSON number.
  **/
 @interface GPBUInt32Value : GPBMessage
@@ -157,7 +157,7 @@ typedef GPB_ENUM(GPBBoolValue_FieldNumber) {
 
 /**
  * Wrapper message for `bool`.
- * 
+ *
  * The JSON representation for `BoolValue` is JSON `true` and `false`.
  **/
 @interface GPBBoolValue : GPBMessage
@@ -175,7 +175,7 @@ typedef GPB_ENUM(GPBStringValue_FieldNumber) {
 
 /**
  * Wrapper message for `string`.
- * 
+ *
  * The JSON representation for `StringValue` is JSON string.
  **/
 @interface GPBStringValue : GPBMessage
@@ -193,7 +193,7 @@ typedef GPB_ENUM(GPBBytesValue_FieldNumber) {
 
 /**
  * Wrapper message for `bytes`.
- * 
+ *
  * The JSON representation for `BytesValue` is JSON string.
  **/
 @interface GPBBytesValue : GPBMessage

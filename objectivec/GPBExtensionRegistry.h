@@ -77,7 +77,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @param descriptor  The descriptor to look for a registered extension on.
  * @param fieldNumber The field number of the extension to look for.
  *
- * @return The registered  GPBExtensionDescripto or nil if none was found.
+ * @return The registered GPBExtensionDescriptor or nil if none was found.
  **/
 - (nullable GPBExtensionDescriptor *)extensionForDescriptor:(GPBDescriptor *)descriptor
                                                 fieldNumber:(NSInteger)fieldNumber;

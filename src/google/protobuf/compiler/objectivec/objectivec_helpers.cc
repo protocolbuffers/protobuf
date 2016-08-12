@@ -850,14 +850,17 @@ string BuildCommentsString(const SourceLocation& location,
   string final_comments;
   string epilogue;
 
+  bool add_leading_space = false;
+
   if (prefer_single_line && lines.size() == 1) {
     prefix = "/** ";
     suffix = " */\n";
   } else {
-    prefix = " * ";
+    prefix = "* ";
     suffix = "\n";
     final_comments += "/**\n";
     epilogue = " **/\n";
+    add_leading_space = true;
   }
 
   for (int i = 0; i < lines.size(); i++) {
@@ -868,7 +871,12 @@ string BuildCommentsString(const SourceLocation& location,
     // Decouple / from * to not have inline comments inside comments.
     line = StringReplace(line, "/*", "/\\*", true);
     line = StringReplace(line, "*/", "*\\/", true);
-    final_comments += prefix + line + suffix;
+    line = prefix + line;
+    StripWhitespace(&line);
+    // If not a one line, need to add the first space before *, as
+    // StripWhitespace would have removed it.
+    line = (add_leading_space ? " " : "") + line;
+    final_comments += line + suffix;
   }
   final_comments += epilogue;
   return final_comments;
