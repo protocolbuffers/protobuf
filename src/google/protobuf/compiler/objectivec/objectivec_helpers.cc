@@ -850,9 +850,9 @@ string BuildCommentsString(const SourceLocation& location,
   string final_comments;
   string epilogue;
 
-  bool is_one_line = prefer_single_line && lines.size() == 1;
+  bool add_leading_space = false;
 
-  if (is_one_line) {
+  if (prefer_single_line && lines.size() == 1) {
     prefix = "/** ";
     suffix = " */\n";
   } else {
@@ -860,6 +860,7 @@ string BuildCommentsString(const SourceLocation& location,
     suffix = "\n";
     final_comments += "/**\n";
     epilogue = " **/\n";
+    add_leading_space = true;
   }
 
   for (int i = 0; i < lines.size(); i++) {
@@ -874,7 +875,7 @@ string BuildCommentsString(const SourceLocation& location,
     StripWhitespace(&line);
     // If not a one line, need to add the first space before *, as
     // StripWhitespace would have removed it.
-    line = (is_one_line ? "" : " ") + line;
+    line = (add_leading_space ? " " : "") + line;
     final_comments += line + suffix;
   }
   final_comments += epilogue;
