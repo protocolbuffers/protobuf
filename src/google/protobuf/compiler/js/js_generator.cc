@@ -475,33 +475,43 @@ bool IgnoreOneof(const OneofDescriptor* oneof) {
 }
 
 string JSIdent(const GeneratorOptions& options, const FieldDescriptor* field,
-               bool is_upper_camel, bool is_map, bool drop_list) {
+               bool is_upper_camel, bool is_map, bool drop_list,
+               bool preserve_fieldnames = false) {
   string result;
   if (field->type() == FieldDescriptor::TYPE_GROUP) {
     result = is_upper_camel ?
         ToUpperCamel(ParseUpperCamel(field->message_type()->name())) :
-        ToLowerCamel(ParseUpperCamel(field->message_type()->name()));
+        preserve_fieldnames ?
+            field->message_type()->name() :
+            ToLowerCamel(ParseUpperCamel(field->message_type()->name()));
   } else {
     result = is_upper_camel ?
         ToUpperCamel(ParseLowerUnderscore(field->name())) :
-        ToLowerCamel(ParseLowerUnderscore(field->name()));
+        preserve_fieldnames ?
+            field->name() :
+            ToLowerCamel(ParseLowerUnderscore(field->name()));
   }
-  if (is_map || IsMap(options, field)) {
-    // JSPB-style or proto3-style map.
-    result += "Map";
-  } else if (!drop_list && field->is_repeated()) {
-    // Repeated field.
-    result += "List";
+  if (!preserve_fieldnames) {
+    if (is_map || IsMap(options, field)) {
+      // JSPB-style or proto3-style map.
+      result += "Map";
+    } else if (!drop_list && field->is_repeated()) {
+      // Repeated field.
+      result += "List";
+    }
   }
   return result;
 }
 
 string JSObjectFieldName(const GeneratorOptions& options,
-                         const FieldDescriptor* field) {
+                         const FieldDescriptor* field,
+                         bool actually_object_field_name = false) {
   string name = JSIdent(options, field,
                         /* is_upper_camel = */ false,
                         /* is_map = */ false,
-                        /* drop_list = */ false);
+                        /* drop_list = */ false,
+                        /* preserve_fieldnames = */ actually_object_field_name
+                            && options.preserve_proto_fieldnames);
   if (IsReserved(name)) {
     name = "pb_" + name;
   }
@@ -2140,7 +2150,7 @@ void Generator::GenerateClassFieldToObject(const GeneratorOptions& options,
                                            io::Printer* printer,
                                            const FieldDescriptor* field) const {
   printer->Print("$fieldname$: ",
-                 "fieldname", JSObjectFieldName(options, field));
+                 "fieldname", JSObjectFieldName(options, field, true));
 
   if (IsMap(options, field)) {
     printer->Print("(f = msg.get$name$()) ? f.toArray() : []",
@@ -3172,6 +3182,12 @@ bool GeneratorOptions::ParseFromOptions(
         return false;
       }
       error_on_name_conflict = true;
+    } else if (options[i].first == "preserve_proto_fieldnames") {
+      if (options[i].second != "") {
+        *error = "Unexpected option value for preserve_proto_fieldnames";
+        return false;
+      }
+      preserve_proto_fieldnames = true;
     } else if (options[i].first == "output_dir") {
       output_dir = options[i].second;
     } else if (options[i].first == "namespace_prefix") {
