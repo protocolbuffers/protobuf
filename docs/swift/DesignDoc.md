@@ -93,7 +93,28 @@ might still collide with a Swift type.
 
 In these scenarios, we will append `Message` to message types and `Enum` to
 enum types if the package-prefixed name would collide with an existing Swift
-type.
+type. For example, the following proto:
+
+```protobuf
+message Foo {
+  message CollectionType {
+    repeated string values = 1;
+  }
+}
+```
+
+would translate to the following Swift code:
+
+```swift
+struct Foo: ProtoMessage {
+  struct CollectionTypeMessage: ProtoMessage {
+    var valuesArray: [String]
+  }
+}
+```
+
+Notice that the `CollectionType` message has had its name changed to avoid a
+collision with Swift's `CollectionType` protocol.
 
 # Features of Protocol Buffers
 
@@ -117,13 +138,13 @@ unique type symbol emitted in the generated binary.
 
 Users are likely to balk at the ugliness of underscore-delimited names for every
 generated type. To improve upon this situation, we will add a new string file
-level option, `swift_package_prefix`, that can be added to `.proto` files.
+level option, `swift_proto_package_prefix`, that can be added to `.proto` files.
 When present, this will cause the package portion of the top-level type names
 to be replaced with the provided string. For example, the following `.proto`
 file:
 
 ```protobuf
-option swift_package_prefix = "FBP";
+option swift_proto_package_prefix = "FBP";
 package foo.bar;
 
 message Baz {
@@ -223,6 +244,16 @@ drafted or sent proposals for review that would benefit our designs:
     (https://github.com/apple/swift-evolution/blob/master/proposals/0030-property-behavior-decls.md)
 *   [Drafted: Resettable Properties]
     (https://github.com/patters/swift-evolution/blob/master/proposals/0000-resettable-properties.md)
+
+Lastly, we note some name transformations that we would apply to fields:
+
+* Repeated fields will have `Array` appended to their names. This is because
+  there is a trend in some messages to name repeated fields with the singular
+  version of the name (`descriptor.proto` in particular does this), and
+  `foo.name.append(bar)` looks potentially like appending a string to another
+  string whereas `foo.nameArray.append(bar)` is much clearer.
+* If a field name would collide with one of the properties or methods in
+  `ProtoMessage`'s public interface, we append `Field` to its name.
 
 ### Backing storage
 
@@ -368,7 +399,7 @@ public struct Foo: ProtoMessage {
 }
 ```
 
-If the user explicitly clear `bar`, or if it was never set when read from
+If the user explicitly clears `bar`, or if it was never set when read from
 the wire, retrieving the value of `bar` would return the default, statically
 allocated instance of `Bar` containing default values for its fields. This
 achieves the desired behavior for reading default values in the same way that
