@@ -64,6 +64,8 @@ src/protoc
 src/unittest_proto_middleman
 
 # Generated test scaffolding
+src/no_warning_test.cc
+src/no-warning-test
 src/protobuf*-test
 src/test_plugin
 src/testzip.*
@@ -108,7 +110,7 @@ conformance/conformance.pb.cc
 conformance/conformance.pb.h
 conformance/Conformance.pbobjc.h
 conformance/Conformance.pbobjc.m
-conformance/conformance.rb
+conformance/conformance_pb.rb
 conformance/google/
 conformance/javac_middleman
 conformance/lite/
