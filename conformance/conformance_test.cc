@@ -705,7 +705,7 @@ bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
         "fieldName15": 15,
         "fieldName16": 16,
         "fieldName17": 17,
-        "fieldName18": 18,
+        "fieldName18": 18
       })",
       R"(
         __field_name13: 13
