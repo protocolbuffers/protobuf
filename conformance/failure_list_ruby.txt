@@ -59,6 +59,9 @@ JsonInput.EnumFieldUnknownValue.Validator
 JsonInput.FieldMask.JsonOutput
 JsonInput.FieldMask.ProtobufOutput
 JsonInput.FieldNameInSnakeCase.JsonOutput
+JsonInput.FieldNameInSnakeCase.ProtobufOutput
+JsonInput.FieldNameWithDoubleUnderscores.JsonOutput
+JsonInput.FieldNameWithDoubleUnderscores.ProtobufOutput
 JsonInput.FieldNameWithMixedCases.JsonOutput
 JsonInput.FieldNameWithMixedCases.ProtobufOutput
 JsonInput.FieldNameWithMixedCases.Validator

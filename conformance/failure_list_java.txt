@@ -21,7 +21,10 @@ JsonInput.EnumFieldNotQuoted
 JsonInput.FieldMaskInvalidCharacter
 JsonInput.FieldNameDuplicate
 JsonInput.FieldNameInSnakeCase.JsonOutput
+JsonInput.FieldNameInSnakeCase.ProtobufOutput
 JsonInput.FieldNameNotQuoted
+JsonInput.FieldNameWithDoubleUnderscores.JsonOutput
+JsonInput.FieldNameWithDoubleUnderscores.ProtobufOutput
 JsonInput.FloatFieldInfinityNotQuoted
 JsonInput.FloatFieldNanNotQuoted
 JsonInput.FloatFieldNegativeInfinityNotQuoted
