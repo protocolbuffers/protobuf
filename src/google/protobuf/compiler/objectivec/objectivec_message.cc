@@ -579,6 +579,19 @@ void MessageGenerator::GenerateSource(io::Printer* printer) {
           "    [localDescriptor setupExtensionRanges:ranges\n"
           "                                    count:(uint32_t)(sizeof(ranges) / sizeof(GPBExtensionRange))];\n");
     }
+    if (descriptor_->containing_type() != NULL) {
+      string parent_class_name = ClassName(descriptor_->containing_type());
+      printer->Print(
+          "    [localDescriptor setupContainingMessageClassName:GPBStringifySymbol($parent_name$)];\n",
+          "parent_name", parent_class_name);
+    }
+    string suffix_added;
+    ClassName(descriptor_, &suffix_added);
+    if (suffix_added.size() > 0) {
+      printer->Print(
+          "    [localDescriptor setupMessageClassNameSuffix:@\"$suffix$\"];\n",
+          "suffix", suffix_added);
+    }
     printer->Print(
         "    NSAssert(descriptor == nil, @\"Startup recursed!\");\n"
         "    descriptor = localDescriptor;\n"

@@ -99,4 +99,4 @@
 // regenerated.
 //
 // Meant to be used internally by generated code.
-#define GOOGLE_PROTOBUF_OBJC_GEN_VERSION 30001
+#define GOOGLE_PROTOBUF_OBJC_GEN_VERSION 30002

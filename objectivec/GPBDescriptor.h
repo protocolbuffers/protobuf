@@ -81,6 +81,13 @@ typedef NS_ENUM(uint8_t, GPBFieldType) {
 @property(nonatomic, readonly, getter=isWireFormat) BOOL wireFormat;
 /** The class of this message. */
 @property(nonatomic, readonly) Class messageClass;
+/** Containing message descriptor if this message is nested, or nil otherwise. */
+@property(readonly, nullable) GPBDescriptor *containingType;
+/**
+ * Fully qualified name for this message (package.message). Can be nil if the
+ * value is unable to be computed.
+ */
+@property(readonly, nullable) NSString *fullName;
 
 /**
  * Gets the field for the given number.
@@ -118,6 +125,8 @@ typedef NS_ENUM(uint8_t, GPBFieldType) {
 
 /** The package declared in the proto file. */
 @property(nonatomic, readonly, copy) NSString *package;
+/** The objc prefix declared in the proto file. */
+@property(nonatomic, readonly, copy, nullable) NSString *objcPrefix;
 /** The syntax of the proto file. */
 @property(nonatomic, readonly) GPBFileSyntax syntax;
 

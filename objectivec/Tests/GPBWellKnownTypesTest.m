@@ -32,6 +32,8 @@
 
 #import <XCTest/XCTest.h>
 
+#import "google/protobuf/AnyTest.pbobjc.h"
+
 // A basically random interval into the future for testing with.
 static const NSTimeInterval kFutureOffsetInterval = 15000;
 
@@ -97,6 +99,60 @@ static const NSTimeInterval kTimeAccuracy = 1e-9;
   durationTime = duration2.timeIntervalSince1970;
   XCTAssertEqualWithAccuracy(time, durationTime, kTimeAccuracy);
   [duration2 release];
+}
+
+- (void)testAnyHelpers {
+
+  // Set and extract covers most of the code.
+
+  TestAny *subMessage = [TestAny message];
+  subMessage.int32Value = 12345;
+  TestAny *message = [TestAny message];
+  NSError *err = nil;
+  message.anyValue = [GPBAny anyWithMessage:subMessage error:&err];
+  XCTAssertNil(err);
+
+  NSData *data = message.data;
+  XCTAssertNotNil(data);
+
+  TestAny *message2 = [TestAny parseFromData:data error:&err];
+  XCTAssertNil(err);
+  XCTAssertNotNil(message2);
+  XCTAssertTrue(message2.hasAnyValue);
+
+  TestAny *subMessage2 =
+      (TestAny *)[message.anyValue unpackMessageClass:[TestAny class]
+                                                error:&err];
+  XCTAssertNil(err);
+  XCTAssertNotNil(subMessage2);
+  XCTAssertEqual(subMessage2.int32Value, 12345);
+
+  // NULL errorPtr in the two calls.
+
+  message.anyValue = [GPBAny anyWithMessage:subMessage error:NULL];
+  NSData *data2 = message.data;
+  XCTAssertEqualObjects(data2, data);
+
+  TestAny *subMessage3 =
+      (TestAny *)[message.anyValue unpackMessageClass:[TestAny class]
+                                                error:NULL];
+  XCTAssertNotNil(subMessage3);
+  XCTAssertEqualObjects(subMessage2, subMessage3);
+
+  // Try to extract wrong type.
+
+  GPBTimestamp *wrongMessage =
+      (GPBTimestamp *)[message.anyValue unpackMessageClass:[GPBTimestamp class]
+                                                     error:&err];
+  XCTAssertNotNil(err);
+  XCTAssertNil(wrongMessage);
+  XCTAssertEqualObjects(err.domain, GPBWellKnownTypesErrorDomain);
+  XCTAssertEqual(err.code, GPBWellKnownTypesErrorCodeTypeURLMismatch);
+
+  wrongMessage =
+      (GPBTimestamp *)[message.anyValue unpackMessageClass:[GPBTimestamp class]
+                                                     error:NULL];
+  XCTAssertNil(wrongMessage);
 }
 
 @end

@@ -165,10 +165,15 @@ typedef NS_OPTIONS(uint32_t, GPBDescriptorInitializationFlags) {
       firstHasIndex:(int32_t)firstHasIndex;
 - (void)setupExtraTextInfo:(const char *)extraTextFormatInfo;
 - (void)setupExtensionRanges:(const GPBExtensionRange *)ranges count:(int32_t)count;
+- (void)setupContainingMessageClassName:(const char *)msgClassName;
+- (void)setupMessageClassNameSuffix:(NSString *)suffix;
 
 @end
 
 @interface GPBFileDescriptor ()
+- (instancetype)initWithPackage:(NSString *)package
+                     objcPrefix:(NSString *)objcPrefix
+                         syntax:(GPBFileSyntax)syntax;
 - (instancetype)initWithPackage:(NSString *)package
                          syntax:(GPBFileSyntax)syntax;
 @end

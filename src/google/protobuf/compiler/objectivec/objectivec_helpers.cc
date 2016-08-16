@@ -210,10 +210,14 @@ const char* const kReservedWordList[] = {
 hash_set<string> kReservedWords =
     MakeWordsMap(kReservedWordList, GOOGLE_ARRAYSIZE(kReservedWordList));
 
-string SanitizeNameForObjC(const string& input, const string& extension) {
+string SanitizeNameForObjC(const string& input,
+                           const string& extension,
+                           string* out_suffix_added) {
   if (kReservedWords.count(input) > 0) {
+    if (out_suffix_added) *out_suffix_added = extension;
     return input + extension;
   }
+  if (out_suffix_added) out_suffix_added->clear();
   return input;
 }
 
@@ -308,6 +312,12 @@ string BaseFileName(const FileDescriptor* file) {
   return basename;
 }
 
+string FileClassPrefix(const FileDescriptor* file) {
+  // Default is empty string, no need to check has_objc_class_prefix.
+  string result = file->options().objc_class_prefix();
+  return result;
+}
+
 string FilePath(const FileDescriptor* file) {
   string output;
   string basename;
@@ -338,19 +348,13 @@ string FilePathBasename(const FileDescriptor* file) {
   return output;
 }
 
-string FileClassPrefix(const FileDescriptor* file) {
-  // Default is empty string, no need to check has_objc_class_prefix.
-  string result = file->options().objc_class_prefix();
-  return result;
-}
-
 string FileClassName(const FileDescriptor* file) {
   string name = FileClassPrefix(file);
   name += UnderscoresToCamelCase(StripProto(BaseFileName(file)), true);
   name += "Root";
   // There aren't really any reserved words that end in "Root", but playing
   // it safe and checking.
-  return SanitizeNameForObjC(name, "_RootClass");
+  return SanitizeNameForObjC(name, "_RootClass", NULL);
 }
 
 string ClassNameWorker(const Descriptor* descriptor) {
@@ -372,11 +376,15 @@ string ClassNameWorker(const EnumDescriptor* descriptor) {
 }
 
 string ClassName(const Descriptor* descriptor) {
+  return ClassName(descriptor, NULL);
+}
+
+string ClassName(const Descriptor* descriptor, string* out_suffix_added) {
   // 1. Message names are used as is (style calls for CamelCase, trust it).
   // 2. Check for reserved word at the very end and then suffix things.
   string prefix = FileClassPrefix(descriptor->file());
   string name = ClassNameWorker(descriptor);
-  return SanitizeNameForObjC(prefix + name, "_Class");
+  return SanitizeNameForObjC(prefix + name, "_Class", out_suffix_added);
 }
 
 string EnumName(const EnumDescriptor* descriptor) {
@@ -390,7 +398,7 @@ string EnumName(const EnumDescriptor* descriptor) {
   //    yields Fixed_Class, Fixed_Size.
   string name = FileClassPrefix(descriptor->file());
   name += ClassNameWorker(descriptor);
-  return SanitizeNameForObjC(name, "_Enum");
+  return SanitizeNameForObjC(name, "_Enum", NULL);
 }
 
 string EnumValueName(const EnumValueDescriptor* descriptor) {
@@ -405,7 +413,7 @@ string EnumValueName(const EnumValueDescriptor* descriptor) {
   const string& name = class_name + "_" + value_str;
   // There aren't really any reserved words with an underscore and a leading
   // capital letter, but playing it safe and checking.
-  return SanitizeNameForObjC(name, "_Value");
+  return SanitizeNameForObjC(name, "_Value", NULL);
 }
 
 string EnumValueShortName(const EnumValueDescriptor* descriptor) {
@@ -442,7 +450,7 @@ string UnCamelCaseEnumShortName(const string& name) {
 string ExtensionMethodName(const FieldDescriptor* descriptor) {
   const string& name = NameFromFieldDescriptor(descriptor);
   const string& result = UnderscoresToCamelCase(name, false);
-  return SanitizeNameForObjC(result, "_Extension");
+  return SanitizeNameForObjC(result, "_Extension", NULL);
 }
 
 string FieldName(const FieldDescriptor* field) {
@@ -457,7 +465,7 @@ string FieldName(const FieldDescriptor* field) {
       result += "_p";
     }
   }
-  return SanitizeNameForObjC(result, "_p");
+  return SanitizeNameForObjC(result, "_p", NULL);
 }
 
 string FieldNameCapitalized(const FieldDescriptor* field) {

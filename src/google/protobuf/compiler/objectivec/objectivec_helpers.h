@@ -67,6 +67,9 @@ bool IsRetainedName(const string& name);
 // handling under ARC.
 bool IsInitName(const string& name);
 
+// Gets the objc_class_prefix.
+string FileClassPrefix(const FileDescriptor* file);
+
 // Gets the path of the file we're going to generate (sans the .pb.h
 // extension).  The path will be dependent on the objectivec package
 // declared in the proto package.
@@ -83,6 +86,7 @@ string FileClassName(const FileDescriptor* file);
 // These return the fully-qualified class name corresponding to the given
 // descriptor.
 string ClassName(const Descriptor* descriptor);
+string ClassName(const Descriptor* descriptor, string* out_suffix_added);
 string EnumName(const EnumDescriptor* descriptor);
 
 // Returns the fully-qualified name of the enum value corresponding to the
