@@ -660,12 +660,14 @@ bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
       R"({
         "fieldname1": 1,
         "fieldName2": 2,
-        "FieldName3": 3
+        "FieldName3": 3,
+        "FieldName4": 4
       })",
       R"(
         fieldname1: 1
         field_name2: 2
         _field_name3: 3
+        field__name4_: 4
       )");
   RunValidJsonTest(
       "FieldNameWithNumbers",
@@ -695,6 +697,24 @@ bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
         FIELD_NAME11: 11
         FIELD_name12: 12
       )");
+  RunValidJsonTest(
+      "FieldNameWithDoubleUnderscores",
+      R"({
+        "fieldName13": 13,
+        "fieldName14": 14,
+        "fieldName15": 15,
+        "fieldName16": 16,
+        "fieldName17": 17,
+        "fieldName18": 18
+      })",
+      R"(
+        __field_name13: 13
+        __Field_name14: 14
+        field__name15: 15
+        field__Name16: 16
+        field_name17__: 17
+        Field_name18__: 18
+      )");
   // Using the original proto field name in JSON is also allowed.
   RunValidJsonTest(
       "OriginalProtoFieldName",
@@ -702,6 +722,7 @@ bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
         "fieldname1": 1,
         "field_name2": 2,
         "_field_name3": 3,
+        "field__name4_": 4,
         "field0name5": 5,
         "field_0_name6": 6,
         "fieldName7": 7,
@@ -709,12 +730,19 @@ bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
         "field_Name9": 9,
         "Field_Name10": 10,
         "FIELD_NAME11": 11,
-        "FIELD_name12": 12
+        "FIELD_name12": 12,
+        "__field_name13": 13,
+        "__Field_name14": 14,
+        "field__name15": 15,
+        "field__Name16": 16,
+        "field_name17__": 17,
+        "Field_name18__": 18
       })",
       R"(
         fieldname1: 1
         field_name2: 2
         _field_name3: 3
+        field__name4_: 4
         field0name5: 5
         field_0_name6: 6
         fieldName7: 7
@@ -723,6 +751,12 @@ bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
         Field_Name10: 10
         FIELD_NAME11: 11
         FIELD_name12: 12
+        __field_name13: 13
+        __Field_name14: 14
+        field__name15: 15
+        field__Name16: 16
+        field_name17__: 17
+        Field_name18__: 18
       )");
   // Field names can be escaped.
   RunValidJsonTest(
