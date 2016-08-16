@@ -38,10 +38,10 @@ See conformance.proto for more information.
 import struct
 import sys
 import os
-from google.protobuf import message
 from google.protobuf import json_format
+from google.protobuf import message
+from google.protobuf import test_messages_proto3_pb2
 import conformance_pb2
-import google.protobuf_test_messages.proto3_pb
 
 sys.stdout = os.fdopen(sys.stdout.fileno(), 'wb', 0)
 sys.stdin = os.fdopen(sys.stdin.fileno(), 'rb', 0)
@@ -53,9 +53,9 @@ class ProtocolError(Exception):
   pass
 
 def do_test(request):
-  test_message = proto3_pb.TestAllTypes()
+  test_message = test_messages_proto3_pb2.TestAllTypes()
   response = conformance_pb2.ConformanceResponse()
-  test_message = proto3_pb.TestAllTypes()
+  test_message = test_messages_proto3_pb2.TestAllTypes()
 
   try:
     if request.WhichOneof('payload') == 'protobuf_payload':
