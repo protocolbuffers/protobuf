@@ -96,7 +96,7 @@ GPB_INLINE int64_t GPBLogicalRightShift64(int64_t value, int32_t spaces) {
 // negative values must be sign-extended to 64 bits to be varint encoded,
 // thus always taking 10 bytes on the wire.)
 GPB_INLINE int32_t GPBDecodeZigZag32(uint32_t n) {
-  return GPBLogicalRightShift32(n, 1) ^ -(n & 1);
+  return (int32_t)(GPBLogicalRightShift32((int32_t)n, 1) ^ -((int32_t)(n) & 1));
 }
 
 // Decode a ZigZag-encoded 64-bit value.  ZigZag encodes signed integers
@@ -104,7 +104,7 @@ GPB_INLINE int32_t GPBDecodeZigZag32(uint32_t n) {
 // negative values must be sign-extended to 64 bits to be varint encoded,
 // thus always taking 10 bytes on the wire.)
 GPB_INLINE int64_t GPBDecodeZigZag64(uint64_t n) {
-  return GPBLogicalRightShift64(n, 1) ^ -(n & 1);
+  return (int64_t)(GPBLogicalRightShift64((int64_t)n, 1) ^ -((int64_t)(n) & 1));
 }
 
 // Encode a ZigZag-encoded 32-bit value.  ZigZag encodes signed integers
@@ -113,7 +113,7 @@ GPB_INLINE int64_t GPBDecodeZigZag64(uint64_t n) {
 // thus always taking 10 bytes on the wire.)
 GPB_INLINE uint32_t GPBEncodeZigZag32(int32_t n) {
   // Note:  the right-shift must be arithmetic
-  return (n << 1) ^ (n >> 31);
+  return (uint32_t)((n << 1) ^ (n >> 31));
 }
 
 // Encode a ZigZag-encoded 64-bit value.  ZigZag encodes signed integers
@@ -122,7 +122,7 @@ GPB_INLINE uint32_t GPBEncodeZigZag32(int32_t n) {
 // thus always taking 10 bytes on the wire.)
 GPB_INLINE uint64_t GPBEncodeZigZag64(int64_t n) {
   // Note:  the right-shift must be arithmetic
-  return (n << 1) ^ (n >> 63);
+  return (uint64_t)((n << 1) ^ (n >> 63));
 }
 
 #pragma clang diagnostic push
