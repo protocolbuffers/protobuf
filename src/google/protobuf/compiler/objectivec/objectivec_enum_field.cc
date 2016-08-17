@@ -83,12 +83,16 @@ void EnumFieldGenerator::GenerateCFunctionDeclarations(
 
   printer->Print(
       variables_,
-      "/// Fetches the raw value of a @c $owning_message_class$'s @c $name$ property, even\n"
-      "/// if the value was not defined by the enum at the time the code was generated.\n"
+      "/**\n"
+      " * Fetches the raw value of a @c $owning_message_class$'s @c $name$ property, even\n"
+      " * if the value was not defined by the enum at the time the code was generated.\n"
+      " **/\n"
       "int32_t $owning_message_class$_$capitalized_name$_RawValue($owning_message_class$ *message);\n"
-      "/// Sets the raw value of an @c $owning_message_class$'s @c $name$ property, allowing\n"
-      "/// it to be set to a value that was not defined by the enum at the time the code\n"
-      "/// was generated.\n"
+      "/**\n"
+      " * Sets the raw value of an @c $owning_message_class$'s @c $name$ property, allowing\n"
+      " * it to be set to a value that was not defined by the enum at the time the code\n"
+      " * was generated.\n"
+      " **/\n"
       "void Set$owning_message_class$_$capitalized_name$_RawValue($owning_message_class$ *message, int32_t value);\n"
       "\n");
 }

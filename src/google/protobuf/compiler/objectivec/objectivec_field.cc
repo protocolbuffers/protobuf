@@ -64,7 +64,7 @@ void SetCommonFieldVariables(const FieldDescriptor* descriptor,
 
   SourceLocation location;
   if (descriptor->GetSourceLocation(&location)) {
-    (*variables)["comments"] = BuildCommentsString(location);
+    (*variables)["comments"] = BuildCommentsString(location, true);
   } else {
     (*variables)["comments"] = "\n";
   }
@@ -335,7 +335,7 @@ void ObjCObjFieldGenerator::GeneratePropertyDeclaration(
   if (WantsHasProperty()) {
     printer->Print(
         variables_,
-        "/// Test to see if @c $name$ has been set.\n"
+        "/** Test to see if @c $name$ has been set. */\n"
         "@property(nonatomic, readwrite) BOOL has$capitalized_name$$deprecated_attribute$;\n");
   }
   if (IsInitName(variables_.find("name")->second)) {
@@ -387,7 +387,7 @@ void RepeatedFieldGenerator::GeneratePropertyDeclaration(
       "$comments$"
       "$array_comment$"
       "@property(nonatomic, readwrite, strong, null_resettable) $array_property_type$ *$name$$storage_attribute$$deprecated_attribute$;\n"
-      "/// The number of items in @c $name$ without causing the array to be created.\n"
+      "/** The number of items in @c $name$ without causing the array to be created. */\n"
       "@property(nonatomic, readonly) NSUInteger $name$_Count$deprecated_attribute$;\n");
   if (IsInitName(variables_.find("name")->second)) {
     // If property name starts with init we need to annotate it to get past ARC.

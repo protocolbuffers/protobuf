@@ -28,11 +28,13 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-// The Objective C runtime has complete enough info that most protos don’t end
-// up using this, so leaving it on is no cost or very little cost.  If you
-// happen to see it causing bloat, this is the way to disable it. If you do
-// need to disable it, try only disabling it for Release builds as having
-// full TextFormat can be useful for debugging.
+/**
+ * The Objective C runtime has complete enough info that most protos don’t end
+ * up using this, so leaving it on is no cost or very little cost.  If you
+ * happen to see it causing bloat, this is the way to disable it. If you do
+ * need to disable it, try only disabling it for Release builds as having
+ * full TextFormat can be useful for debugging.
+ **/
 #ifndef GPBOBJC_SKIP_MESSAGE_TEXTFORMAT_EXTRAS
 #define GPBOBJC_SKIP_MESSAGE_TEXTFORMAT_EXTRAS 0
 #endif
@@ -42,6 +44,7 @@
 #if !__has_feature(objc_fixed_enum)
  #error All supported Xcode versions should support objc_fixed_enum.
 #endif
+
 // If the headers are imported into Objective-C++, we can run into an issue
 // where the defintion of NS_ENUM (really CF_ENUM) changes based on the C++
 // standard that is in effect.  If it isn't C++11 or higher, the definition
@@ -53,19 +56,29 @@
 #else
  #define GPB_ENUM(X) NS_ENUM(int32_t, X)
 #endif
-// GPB_ENUM_FWD_DECLARE is used for forward declaring enums, ex:
-//   GPB_ENUM_FWD_DECLARE(Foo_Enum)
-//   @property (nonatomic) Foo_Enum value;
+
+/**
+ * GPB_ENUM_FWD_DECLARE is used for forward declaring enums, for example:
+ *
+ * ```
+ * GPB_ENUM_FWD_DECLARE(Foo_Enum)
+ * @property (nonatomic) Foo_Enum value;
+ * ```
+ **/
 #define GPB_ENUM_FWD_DECLARE(X) enum X : int32_t
 
-// Based upon CF_INLINE. Forces inlining in release.
+/**
+ * Based upon CF_INLINE. Forces inlining in non DEBUG builds.
+ **/
 #if !defined(DEBUG)
 #define GPB_INLINE static __inline__ __attribute__((always_inline))
 #else
 #define GPB_INLINE static __inline__
 #endif
 
-// For use in public headers that might need to deal with ARC.
+/**
+ * For use in public headers that might need to deal with ARC.
+ **/
 #ifndef GPB_UNSAFE_UNRETAINED
 #if __has_feature(objc_arc)
 #define GPB_UNSAFE_UNRETAINED __unsafe_unretained
@@ -76,10 +89,14 @@
 
 // If property name starts with init we need to annotate it to get past ARC.
 // http://stackoverflow.com/questions/18723226/how-do-i-annotate-an-objective-c-property-with-an-objc-method-family/18723227#18723227
+//
+// Meant to be used internally by generated code.
 #define GPB_METHOD_FAMILY_NONE __attribute__((objc_method_family(none)))
 
 // The protoc-gen-objc version which works with the current version of the
 // generated Objective C sources.  In general we don't want to change the
 // runtime interfaces (or this version) as it means everything has to be
 // regenerated.
+//
+// Meant to be used internally by generated code.
 #define GOOGLE_PROTOBUF_OBJC_GEN_VERSION 30001

@@ -34,12 +34,17 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-/// Every generated proto file defines a local "Root" class that exposes a
-/// @c GPBExtensionRegistry for all the extensions defined by that file and
-/// the files it depends on.
+/**
+ * Every generated proto file defines a local "Root" class that exposes a
+ * GPBExtensionRegistry for all the extensions defined by that file and
+ * the files it depends on.
+ **/
 @interface GPBRootObject : NSObject
 
-/// An extension registry for the given file and all the files it depends on.
+/**
+ * @return An extension registry for the given file and all the files it depends
+ * on.
+ **/
 + (GPBExtensionRegistry *)extensionRegistry;
 
 @end
