@@ -1026,20 +1026,53 @@ bool ValidateObjCClassPrefix(const FileDescriptor* file,
     return true;
   }
 
-  // Check: Error - Make sure the prefix wasn't expected for a different
-  // package (overlap is allowed, but it has to be listed as an expected
-  // overlap).
+  // Look for any other package that uses the same prefix.
+  string other_package_for_prefix;
   for (map<string, string>::iterator i = expected_package_prefixes.begin();
        i != expected_package_prefixes.end(); ++i) {
     if (i->second == prefix) {
-      *out_error =
-          "error: Found 'option objc_class_prefix = \"" + prefix +
-          "\";' in '" + file->name() +
-          "'; that prefix is already used for 'package " + i->first +
-          ";'. It can only be reused by listing it in the expected file (" +
-          generation_options.expected_prefixes_path + ").";
-      return false;  // Only report first usage of the prefix.
+      other_package_for_prefix = i->first;
+      break;
     }
+  }
+
+  // Check: Warning - If the file does not have a package, check whether
+  // the prefix declared is being used by another package or not.
+  if (package.length() == 0) {
+    // The file does not have a package and ...
+    if (other_package_for_prefix.length() > 0) {
+      // ... another package has declared the same prefix.
+      cerr << endl
+           << "protoc:0: warning: File '" << file->name() << "' has no package "
+           << "and package '" << other_package_for_prefix << "' already uses '"
+           << prefix << "' as its prefix. Consider either adding a new package "
+           << "to the proto, or reusing one of the packages already using this "
+           << "prefix in the expected prefixes file ("
+           << generation_options.expected_prefixes_path << ")." << endl;
+      cerr.flush();
+    } else {
+      // ... no other package has declared that prefix.
+      cerr << endl
+           << "protoc:0: warning: File '" << file->name() << "' has no "
+           << "package. Consider adding a new package to the proto and adding '"
+           << "new.package = " << prefix << "' to the expected prefixes file ("
+           << generation_options.expected_prefixes_path << ")." << endl;
+      cerr.flush();
+    }
+  }
+
+  // Check: Error - Make sure the prefix wasn't expected for a different
+  // package (overlap is allowed, but it has to be listed as an expected
+  // overlap).
+  if (package.length() > 0 && other_package_for_prefix.length() > 0) {
+    *out_error =
+        "error: Found 'option objc_class_prefix = \"" + prefix +
+        "\";' in '" + file->name() +
+        "'; that prefix is already used for 'package " +
+        other_package_for_prefix + ";'. It can only be reused by listing " +
+        "it in the expected file (" +
+        generation_options.expected_prefixes_path + ").";
+    return false;  // Only report first usage of the prefix.
   }
 
   // Check: Warning - Make sure the prefix is is a reasonable value according
@@ -1065,7 +1098,7 @@ bool ValidateObjCClassPrefix(const FileDescriptor* file,
 
   // Check: Warning - If the given package/prefix pair wasn't expected, issue a
   // warning issue a warning suggesting it gets added to the file.
-  if (!expected_package_prefixes.empty()) {
+  if (package.length() > 0 && !expected_package_prefixes.empty()) {
     cerr << endl
          << "protoc:0: warning: Found unexpected 'option objc_class_prefix = \""
          << prefix << "\";' in '" << file->name() << "';"
