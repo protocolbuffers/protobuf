@@ -1021,7 +1021,7 @@ bool ValidateObjCClassPrefix(const FileDescriptor* file,
   }
 
   // If there was no prefix option, we're done at this point.
-  if (prefix.length() == 0) {
+  if (prefix.empty()) {
     // No prefix, nothing left to check.
     return true;
   }
@@ -1038,9 +1038,17 @@ bool ValidateObjCClassPrefix(const FileDescriptor* file,
 
   // Check: Warning - If the file does not have a package, check whether
   // the prefix declared is being used by another package or not.
-  if (package.length() == 0) {
+  if (package.empty()) {
     // The file does not have a package and ...
-    if (other_package_for_prefix.length() > 0) {
+    if (other_package_for_prefix.empty()) {
+      // ... no other package has declared that prefix.
+      cerr << endl
+           << "protoc:0: warning: File '" << file->name() << "' has no "
+           << "package. Consider adding a new package to the proto and adding '"
+           << "new.package = " << prefix << "' to the expected prefixes file ("
+           << generation_options.expected_prefixes_path << ")." << endl;
+      cerr.flush();
+    } else {
       // ... another package has declared the same prefix.
       cerr << endl
            << "protoc:0: warning: File '" << file->name() << "' has no package "
@@ -1050,21 +1058,13 @@ bool ValidateObjCClassPrefix(const FileDescriptor* file,
            << "prefix in the expected prefixes file ("
            << generation_options.expected_prefixes_path << ")." << endl;
       cerr.flush();
-    } else {
-      // ... no other package has declared that prefix.
-      cerr << endl
-           << "protoc:0: warning: File '" << file->name() << "' has no "
-           << "package. Consider adding a new package to the proto and adding '"
-           << "new.package = " << prefix << "' to the expected prefixes file ("
-           << generation_options.expected_prefixes_path << ")." << endl;
-      cerr.flush();
     }
   }
 
   // Check: Error - Make sure the prefix wasn't expected for a different
   // package (overlap is allowed, but it has to be listed as an expected
   // overlap).
-  if (package.length() > 0 && other_package_for_prefix.length() > 0) {
+  if (!package.empty() && !other_package_for_prefix.empty()) {
     *out_error =
         "error: Found 'option objc_class_prefix = \"" + prefix +
         "\";' in '" + file->name() +
@@ -1098,7 +1098,7 @@ bool ValidateObjCClassPrefix(const FileDescriptor* file,
 
   // Check: Warning - If the given package/prefix pair wasn't expected, issue a
   // warning issue a warning suggesting it gets added to the file.
-  if (package.length() > 0 && !expected_package_prefixes.empty()) {
+  if (!package.empty() && !expected_package_prefixes.empty()) {
     cerr << endl
          << "protoc:0: warning: Found unexpected 'option objc_class_prefix = \""
          << prefix << "\";' in '" << file->name() << "';"
