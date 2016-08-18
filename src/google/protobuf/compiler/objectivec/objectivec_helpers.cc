@@ -1026,6 +1026,27 @@ bool ValidateObjCClassPrefix(const FileDescriptor* file,
     return true;
   }
 
+  // Check: Warning - Make sure the prefix is is a reasonable value according
+  // to Apple's rules (the checks above implicitly whitelist anything that
+  // doesn't meet these rules).
+  if (!ascii_isupper(prefix[0])) {
+    cerr << endl
+         << "protoc:0: warning: Invalid 'option objc_class_prefix = \""
+         << prefix << "\";' in '" << file->name() << "';"
+         << " it should start with a capital letter." << endl;
+    cerr.flush();
+  }
+  if (prefix.length() < 3) {
+    // Apple reserves 2 character prefixes for themselves. They do use some
+    // 3 character prefixes, but they haven't updated the rules/docs.
+    cerr << endl
+         << "protoc:0: warning: Invalid 'option objc_class_prefix = \""
+         << prefix << "\";' in '" << file->name() << "';"
+         << " Apple recommends they should be at least 3 characters long."
+         << endl;
+    cerr.flush();
+  }
+
   // Look for any other package that uses the same prefix.
   string other_package_for_prefix;
   for (map<string, string>::iterator i = expected_package_prefixes.begin();
@@ -1059,12 +1080,13 @@ bool ValidateObjCClassPrefix(const FileDescriptor* file,
            << generation_options.expected_prefixes_path << ")." << endl;
       cerr.flush();
     }
+    return true;
   }
 
   // Check: Error - Make sure the prefix wasn't expected for a different
   // package (overlap is allowed, but it has to be listed as an expected
   // overlap).
-  if (!package.empty() && !other_package_for_prefix.empty()) {
+  if (!other_package_for_prefix.empty()) {
     *out_error =
         "error: Found 'option objc_class_prefix = \"" + prefix +
         "\";' in '" + file->name() +
@@ -1075,30 +1097,9 @@ bool ValidateObjCClassPrefix(const FileDescriptor* file,
     return false;  // Only report first usage of the prefix.
   }
 
-  // Check: Warning - Make sure the prefix is is a reasonable value according
-  // to Apple's rules (the checks above implicitly whitelist anything that
-  // doesn't meet these rules).
-  if (!ascii_isupper(prefix[0])) {
-    cerr << endl
-         << "protoc:0: warning: Invalid 'option objc_class_prefix = \""
-         << prefix << "\";' in '" << file->name() << "';"
-         << " it should start with a capital letter." << endl;
-    cerr.flush();
-  }
-  if (prefix.length() < 3) {
-    // Apple reserves 2 character prefixes for themselves. They do use some
-    // 3 character prefixes, but they haven't updated the rules/docs.
-    cerr << endl
-         << "protoc:0: warning: Invalid 'option objc_class_prefix = \""
-         << prefix << "\";' in '" << file->name() << "';"
-         << " Apple recommends they should be at least 3 characters long."
-         << endl;
-    cerr.flush();
-  }
-
   // Check: Warning - If the given package/prefix pair wasn't expected, issue a
   // warning issue a warning suggesting it gets added to the file.
-  if (!package.empty() && !expected_package_prefixes.empty()) {
+  if (!expected_package_prefixes.empty()) {
     cerr << endl
          << "protoc:0: warning: Found unexpected 'option objc_class_prefix = \""
          << prefix << "\";' in '" << file->name() << "';"
