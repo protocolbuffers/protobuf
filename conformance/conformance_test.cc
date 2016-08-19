@@ -763,6 +763,10 @@ bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
       "FieldNameEscaped",
       R"({"fieldn\u0061me1": 1})",
       "fieldname1: 1");
+  // String ends with escape character.
+  ExpectParseFailureForJson(
+      "StringEndsWithEscapeChar",
+      "{\"optionalString\": \"abc\\");
   // Field names must be quoted (or it's not valid JSON).
   ExpectParseFailureForJson(
       "FieldNameNotQuoted",
@@ -771,6 +775,17 @@ bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
   ExpectParseFailureForJson(
       "TrailingCommaInAnObject",
       R"({"fieldname1":1,})");
+  ExpectParseFailureForJson(
+      "TrailingCommaInAnObjectWithSpace",
+      R"({"fieldname1":1 ,})");
+  ExpectParseFailureForJson(
+      "TrailingCommaInAnObjectWithSpaceCommaSpace",
+      R"({"fieldname1":1 , })");
+  ExpectParseFailureForJson(
+      "TrailingCommaInAnObjectWithNewlines",
+      R"({
+        "fieldname1":1,
+      })");
   // JSON doesn't support comments.
   ExpectParseFailureForJson(
       "JsonWithComments",
@@ -778,6 +793,42 @@ bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
         // This is a comment.
         "fieldname1": 1
       })");
+  // JSON spec says whitespace doesn't matter, so try a few spacings to be sure.
+  RunValidJsonTest(
+      "OneLineNoSpaces",
+      "{\"optionalInt32\":1,\"optionalInt64\":2}",
+      R"(
+        optional_int32: 1
+        optional_int64: 2
+      )");
+  RunValidJsonTest(
+      "OneLineWithSpaces",
+      "{ \"optionalInt32\" : 1 , \"optionalInt64\" : 2 }",
+      R"(
+        optional_int32: 1
+        optional_int64: 2
+      )");
+  RunValidJsonTest(
+      "MultilineNoSpaces",
+      "{\n\"optionalInt32\"\n:\n1\n,\n\"optionalInt64\"\n:\n2\n}",
+      R"(
+        optional_int32: 1
+        optional_int64: 2
+      )");
+  RunValidJsonTest(
+      "MultilineWithSpaces",
+      "{\n  \"optionalInt32\"  :  1\n  ,\n  \"optionalInt64\"  :  2\n}\n",
+      R"(
+        optional_int32: 1
+        optional_int64: 2
+      )");
+  // Missing comma between key/value pairs.
+  ExpectParseFailureForJson(
+      "MissingCommaOneLine",
+      "{ \"optionalInt32\": 1 \"optionalInt64\": 2 }");
+  ExpectParseFailureForJson(
+      "MissingCommaMultiline",
+      "{\n  \"optionalInt32\": 1\n  \"optionalInt64\": 2\n}");
   // Duplicated field names are not allowed.
   ExpectParseFailureForJson(
       "FieldNameDuplicate",
@@ -1389,6 +1440,15 @@ bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
   ExpectParseFailureForJson(
       "RepeatedFieldTrailingComma",
       R"({"repeatedInt32": [1, 2, 3, 4,]})");
+  ExpectParseFailureForJson(
+      "RepeatedFieldTrailingCommaWithSpace",
+      "{\"repeatedInt32\": [1, 2, 3, 4 ,]}");
+  ExpectParseFailureForJson(
+      "RepeatedFieldTrailingCommaWithSpaceCommaSpace",
+      "{\"repeatedInt32\": [1, 2, 3, 4 , ]}");
+  ExpectParseFailureForJson(
+      "RepeatedFieldTrailingCommaWithNewlines",
+      "{\"repeatedInt32\": [\n  1,\n  2,\n  3,\n  4,\n]}");
 
   // Map fields.
   RunValidJsonTest(
@@ -1506,6 +1566,18 @@ bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
   ExpectParseFailureForJson(
       "MapFieldValueIsNull",
       R"({"mapInt32Int32": {"0": null}})");
+
+  // http://www.rfc-editor.org/rfc/rfc7159.txt says strings have to use double
+  // quotes.
+  ExpectParseFailureForJson(
+      "StringFieldSingleQuoteKey",
+      R"({'optionalString': "Hello world!"})");
+  ExpectParseFailureForJson(
+      "StringFieldSingleQuoteValue",
+      R"({"optionalString": 'Hello world!'})");
+  ExpectParseFailureForJson(
+      "StringFieldSingleQuoteBoth",
+      R"({'optionalString': 'Hello world!'})");
 
   // Wrapper types.
   RunValidJsonTest(
