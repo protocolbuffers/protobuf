@@ -40,6 +40,7 @@
 #include <windows.h>         // Find*File().  :(
 #include <io.h>
 #include <direct.h>
+#include <tchar.h>
 #else
 #include <dirent.h>
 #include <unistd.h>
@@ -140,31 +141,40 @@ void File::DeleteRecursively(const string& name,
   // in tests to delete temporary directories that are under /tmp anyway.
 
 #ifdef _MSC_VER
+
+#ifdef _UNICODE
+  typedef std::wstring tstring;
+#else
+  typedef std::string tstring;
+#endif
+  tstring t_name(name.begin(), name.end());
+
   // This interface is so weird.
   WIN32_FIND_DATA find_data;
-  HANDLE find_handle = FindFirstFile((name + "/*").c_str(), &find_data);
+  HANDLE find_handle = FindFirstFile((t_name + _T("/*")).c_str(), &find_data);
   if (find_handle == INVALID_HANDLE_VALUE) {
     // Just delete it, whatever it is.
-    DeleteFile(name.c_str());
-    RemoveDirectory(name.c_str());
+    DeleteFile(t_name.c_str());
+    RemoveDirectory(t_name.c_str());
     return;
   }
 
   do {
-    string entry_name = find_data.cFileName;
-    if (entry_name != "." && entry_name != "..") {
-      string path = name + "/" + entry_name;
+    tstring t_entry_name = find_data.cFileName;
+    if (t_entry_name != _T(".") && t_entry_name != _T("..")) {
+      tstring t_path = t_name + _T("/") + t_entry_name;
+      string path(t_path.begin(), t_path.end());
       if (find_data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
         DeleteRecursively(path, NULL, NULL);
-        RemoveDirectory(path.c_str());
+        RemoveDirectory(t_path.c_str());
       } else {
-        DeleteFile(path.c_str());
+        DeleteFile(t_path.c_str());
       }
     }
   } while(FindNextFile(find_handle, &find_data));
   FindClose(find_handle);
 
-  RemoveDirectory(name.c_str());
+  RemoveDirectory(t_name.c_str());
 #else
   // Use opendir()!  Yay!
   // lstat = Don't follow symbolic links.
