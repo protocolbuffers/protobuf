@@ -719,6 +719,11 @@ TEST_F(CommandLineInterfaceTest, TrailingBackslash) {
   ExpectGenerated("test_generator", "", "foo.proto", "Foo");
 }
 
+TEST_F(CommandLineInterfaceTest, Win32ErrorMessage) {
+  EXPECT_EQ("The system cannot find the file specified.\r\n",
+    Subprocess::Win32ErrorMessage(ERROR_FILE_NOT_FOUND));
+}
+
 #endif  // defined(_WIN32) || defined(__CYGWIN__)
 
 TEST_F(CommandLineInterfaceTest, PathLookup) {
