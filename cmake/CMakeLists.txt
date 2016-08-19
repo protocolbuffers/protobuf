@@ -159,6 +159,10 @@ else (MSVC)
   set(LIB_PREFIX)
 endif (MSVC)
 
+if (UNICODE)
+  add_definitions(-DUNICODE -D_UNICODE)
+endif (UNICODE)
+
 include(libprotobuf-lite.cmake)
 include(libprotobuf.cmake)
 include(libprotoc.cmake)
