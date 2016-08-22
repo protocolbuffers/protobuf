@@ -654,14 +654,16 @@ bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
   RunValidJsonTest("HelloWorld", "{\"optionalString\":\"Hello, World!\"}",
                    "optional_string: 'Hello, World!'");
 
+  // NOTE: The spec for JSON support is still being sorted out, these may not
+  // all be correct.
   // Test field name conventions.
   RunValidJsonTest(
       "FieldNameInSnakeCase",
       R"({
         "fieldname1": 1,
         "fieldName2": 2,
-        "FieldName3": 3,
-        "FieldName4": 4
+        "fieldName3": 3,
+        "fieldName4": 4
       })",
       R"(
         fieldname1: 1
@@ -848,18 +850,22 @@ bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
         "optionalNestedMessage": {a: 1},
         "optional_nested_message": {}
       })");
+  // NOTE: The spec for JSON support is still being sorted out, these may not
+  // all be correct.
   // Serializers should use lowerCamelCase by default.
   RunValidJsonTestWithValidator(
       "FieldNameInLowerCamelCase",
       R"({
         "fieldname1": 1,
         "fieldName2": 2,
-        "FieldName3": 3
+        "fieldName3": 3,
+        "fieldName4": 4
       })",
       [](const Json::Value& value) {
         return value.isMember("fieldname1") &&
             value.isMember("fieldName2") &&
-            value.isMember("FieldName3");
+            value.isMember("fieldName3") &&
+            value.isMember("fieldName4");
       });
   RunValidJsonTestWithValidator(
       "FieldNameWithNumbers",
@@ -888,6 +894,24 @@ bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
             value.isMember("fieldName10") &&
             value.isMember("fIELDNAME11") &&
             value.isMember("fIELDName12");
+      });
+  RunValidJsonTestWithValidator(
+      "FieldNameWithDoubleUnderscores",
+      R"({
+        "fieldName13": 13,
+        "fieldName14": 14,
+        "fieldName15": 15,
+        "fieldName16": 16,
+        "fieldName17": 17,
+        "fieldName18": 18
+      })",
+      [](const Json::Value& value) {
+        return value.isMember("fieldName13") &&
+            value.isMember("fieldName14") &&
+            value.isMember("fieldName15") &&
+            value.isMember("fieldName16") &&
+            value.isMember("fieldName17") &&
+            value.isMember("fieldName18");
       });
 
   // Integer fields.

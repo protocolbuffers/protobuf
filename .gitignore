@@ -111,7 +111,10 @@ conformance/conformance.pb.h
 conformance/Conformance.pbobjc.h
 conformance/Conformance.pbobjc.m
 conformance/conformance_pb.rb
+conformance/failing_tests.txt
 conformance/google/
 conformance/javac_middleman
 conformance/lite/
+conformance/nonexistent_tests.txt
 conformance/protoc_middleman
+conformance/succeeding_tests.txt
