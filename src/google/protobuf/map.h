@@ -1731,6 +1731,11 @@ struct hash<google::protobuf::MapKey> {
         return hash< ::google::protobuf::int64>()(map_key.GetInt64Value());
       case google::protobuf::FieldDescriptor::CPPTYPE_UINT64:
         return hash< ::google::protobuf::uint64>()(map_key.GetUInt64Value());
+#else
+      case google::protobuf::FieldDescriptor::CPPTYPE_INT64:
+      case google::protobuf::FieldDescriptor::CPPTYPE_UINT64:
+        GOOGLE_LOG(FATAL) << "Unsupported on this platform.";
+        break;
 #endif
       case google::protobuf::FieldDescriptor::CPPTYPE_INT32:
         return hash< ::google::protobuf::int32>()(map_key.GetInt32Value());
