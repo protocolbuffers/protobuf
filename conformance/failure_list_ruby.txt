@@ -156,6 +156,7 @@ JsonInput.RepeatedUint32Wrapper.JsonOutput
 JsonInput.RepeatedUint32Wrapper.ProtobufOutput
 JsonInput.RepeatedUint64Wrapper.JsonOutput
 JsonInput.RepeatedUint64Wrapper.ProtobufOutput
+JsonInput.StringEndsWithEscapeChar
 JsonInput.StringFieldNotAString
 JsonInput.StringFieldSurrogateInWrongOrder
 JsonInput.StringFieldSurrogatePair.JsonOutput
