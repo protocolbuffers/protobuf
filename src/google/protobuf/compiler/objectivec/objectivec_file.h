@@ -62,8 +62,6 @@ class FileGenerator {
   void GenerateHeader(io::Printer* printer);
 
   const string& RootClassName() const { return root_class_name_; }
-  const string Path() const { return FilePath(file_); }
-  const FileDescriptor* Descriptor() const { return file_; }
 
   bool IsPublicDependency() const { return is_public_dep_; }
 

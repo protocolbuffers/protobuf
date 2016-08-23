@@ -225,6 +225,42 @@ class LIBPROTOC_EXPORT LineConsumer {
 bool ParseSimpleFile(
     const string& path, LineConsumer* line_consumer, string* out_error);
 
+
+// Helper class for parsing framework import mappings and generating
+// import statements.
+class LIBPROTOC_EXPORT ImportWriter {
+ public:
+  ImportWriter(const Options& options)
+      : options_(options),
+        need_to_parse_mapping_file_(true) {}
+
+  void AddFile(const FileDescriptor* file);
+  void Print(io::Printer *printer) const;
+
+ private:
+  class ProtoFrameworkCollector : public LineConsumer {
+   public:
+    ProtoFrameworkCollector(map<string, string>* inout_proto_file_to_framework_name)
+        : map_(inout_proto_file_to_framework_name) {}
+
+    virtual bool ConsumeLine(const StringPiece& line, string* out_error);
+
+   private:
+    map<string, string>* map_;
+  };
+
+  void ParseFrameworkMappings();
+
+  const Options options_;
+  map<string, string> proto_file_to_framework_name_;
+  bool need_to_parse_mapping_file_;
+
+  vector<string> protobuf_framework_imports_;
+  vector<string> protobuf_non_framework_imports_;
+  vector<string> other_framework_imports_;
+  vector<string> other_imports_;
+};
+
 }  // namespace objectivec
 }  // namespace compiler
 }  // namespace protobuf
