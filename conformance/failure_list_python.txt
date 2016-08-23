@@ -19,9 +19,6 @@ JsonInput.EnumFieldNumericValueZero.ProtobufOutput
 JsonInput.EnumFieldUnknownValue.Validator
 JsonInput.FieldMask.ProtobufOutput
 JsonInput.FieldMaskInvalidCharacter
-JsonInput.FieldNameInLowerCamelCase.Validator
-JsonInput.FieldNameInSnakeCase.JsonOutput
-JsonInput.FieldNameInSnakeCase.ProtobufOutput
 JsonInput.FloatFieldInfinityNotQuoted
 JsonInput.FloatFieldNanNotQuoted
 JsonInput.FloatFieldNegativeInfinityNotQuoted

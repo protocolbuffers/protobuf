@@ -22,9 +22,6 @@ JsonInput.FieldMaskInvalidCharacter
 JsonInput.FieldNameDuplicate
 JsonInput.FieldNameDuplicateDifferentCasing1
 JsonInput.FieldNameDuplicateDifferentCasing2
-JsonInput.FieldNameInLowerCamelCase.Validator
-JsonInput.FieldNameInSnakeCase.JsonOutput
-JsonInput.FieldNameInSnakeCase.ProtobufOutput
 JsonInput.FieldNameNotQuoted
 JsonInput.MapFieldValueIsNull
 JsonInput.RepeatedFieldMessageElementIsNull
