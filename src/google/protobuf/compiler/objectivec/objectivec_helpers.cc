@@ -1434,14 +1434,25 @@ bool ParseSimpleFile(
   return parser.Finish();
 }
 
-void ImportWriter::AddFile(const FileDescriptor* file) {
-  const string extension(".pbobjc.h");
+ImportWriter::ImportWriter(
+  const string& generate_for_named_framework,
+  const string& named_framework_to_proto_path_mappings_path)
+    : generate_for_named_framework_(generate_for_named_framework),
+      named_framework_to_proto_path_mappings_path_(
+          named_framework_to_proto_path_mappings_path),
+      need_to_parse_mapping_file_(true) {
+}
+
+ImportWriter::~ImportWriter() {}
+
+void ImportWriter::AddFile(const FileDescriptor* file,
+                           const string& header_extension) {
   const string file_path(FilePath(file));
 
   if (IsProtobufLibraryBundledProtoFile(file)) {
     protobuf_framework_imports_.push_back(
-        FilePathBasename(file) + extension);
-    protobuf_non_framework_imports_.push_back(file_path + extension);
+        FilePathBasename(file) + header_extension);
+    protobuf_non_framework_imports_.push_back(file_path + header_extension);
     return;
   }
 
@@ -1455,18 +1466,18 @@ void ImportWriter::AddFile(const FileDescriptor* file) {
   if (proto_lookup != proto_file_to_framework_name_.end()) {
     other_framework_imports_.push_back(
         proto_lookup->second + "/" +
-        FilePathBasename(file) + extension);
+        FilePathBasename(file) + header_extension);
     return;
   }
 
-  if (!options_.generate_for_named_framework.empty()) {
+  if (!generate_for_named_framework_.empty()) {
     other_framework_imports_.push_back(
-        options_.generate_for_named_framework + "/" +
-        FilePathBasename(file) + extension);
+        generate_for_named_framework_ + "/" +
+        FilePathBasename(file) + header_extension);
     return;
   }
 
-  other_imports_.push_back(file_path + extension);
+  other_imports_.push_back(file_path + header_extension);
 }
 
 void ImportWriter::Print(io::Printer* printer) const {
@@ -1534,15 +1545,15 @@ void ImportWriter::Print(io::Printer* printer) const {
 
 void ImportWriter::ParseFrameworkMappings() {
   need_to_parse_mapping_file_ = false;
-  if (options_.named_framework_to_proto_path_mappings_path.empty()) {
+  if (named_framework_to_proto_path_mappings_path_.empty()) {
     return;  // Nothing to do.
   }
 
   ProtoFrameworkCollector collector(&proto_file_to_framework_name_);
   string parse_error;
-  if (!ParseSimpleFile(options_.named_framework_to_proto_path_mappings_path,
+  if (!ParseSimpleFile(named_framework_to_proto_path_mappings_path_,
                        &collector, &parse_error)) {
-    cerr << "error parsing " << options_.named_framework_to_proto_path_mappings_path
+    cerr << "error parsing " << named_framework_to_proto_path_mappings_path_
          << " : " << parse_error << endl;
     cerr.flush();
   }

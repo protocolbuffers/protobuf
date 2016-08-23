@@ -230,11 +230,11 @@ bool ParseSimpleFile(
 // import statements.
 class LIBPROTOC_EXPORT ImportWriter {
  public:
-  ImportWriter(const Options& options)
-      : options_(options),
-        need_to_parse_mapping_file_(true) {}
+  ImportWriter(const string& generate_for_named_framework,
+               const string& named_framework_to_proto_path_mappings_path);
+  ~ImportWriter();
 
-  void AddFile(const FileDescriptor* file);
+  void AddFile(const FileDescriptor* file, const string& header_extension);
   void Print(io::Printer *printer) const;
 
  private:
@@ -251,7 +251,8 @@ class LIBPROTOC_EXPORT ImportWriter {
 
   void ParseFrameworkMappings();
 
-  const Options options_;
+  const string generate_for_named_framework_;
+  const string named_framework_to_proto_path_mappings_path_;
   map<string, string> proto_file_to_framework_name_;
   bool need_to_parse_mapping_file_;
 

@@ -51,6 +51,8 @@ namespace protobuf {
 // runtime being used.
 const int32 GOOGLE_PROTOBUF_OBJC_GEN_VERSION = 30001;
 
+const char* kHeaderExtension = ".pbobjc.h";
+
 namespace compiler {
 namespace objectivec {
 
@@ -100,13 +102,16 @@ void FileGenerator::GenerateHeader(io::Printer *printer) {
 
   // #import any headers for "public imports" in the proto file.
   {
-    ImportWriter import_writer(options_);
+    ImportWriter import_writer(
+        options_.generate_for_named_framework,
+        options_.named_framework_to_proto_path_mappings_path);
     const vector<FileGenerator *> &dependency_generators = DependencyGenerators();
+    const string header_extension(kHeaderExtension);
     for (vector<FileGenerator *>::const_iterator iter =
              dependency_generators.begin();
          iter != dependency_generators.end(); ++iter) {
       if ((*iter)->IsPublicDependency()) {
-        import_writer.AddFile((*iter)->file_);
+        import_writer.AddFile((*iter)->file_, header_extension);
       }
     }
     import_writer.Print(printer);
@@ -208,10 +213,13 @@ void FileGenerator::GenerateSource(io::Printer *printer) {
   PrintFileRuntimePreamble(printer, "GPBProtocolBuffers_RuntimeSupport.h");
 
   {
-    ImportWriter import_writer(options_);
+    ImportWriter import_writer(
+        options_.generate_for_named_framework,
+        options_.named_framework_to_proto_path_mappings_path);
+    const string header_extension(kHeaderExtension);
 
     // #import the header for this proto file.
-    import_writer.AddFile(file_);
+    import_writer.AddFile(file_, header_extension);
 
     // #import the headers for anything that a plain dependency of this proto
     // file (that means they were just an include, not a "public" include).
@@ -221,7 +229,7 @@ void FileGenerator::GenerateSource(io::Printer *printer) {
              dependency_generators.begin();
          iter != dependency_generators.end(); ++iter) {
       if (!(*iter)->IsPublicDependency()) {
-        import_writer.AddFile((*iter)->file_);
+        import_writer.AddFile((*iter)->file_, header_extension);
       }
     }
 
