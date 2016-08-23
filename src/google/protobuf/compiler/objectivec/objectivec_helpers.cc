@@ -44,9 +44,10 @@
 
 #include <google/protobuf/stubs/hash.h>
 #include <google/protobuf/compiler/objectivec/objectivec_helpers.h>
-#include <google/protobuf/io/coded_stream.h>
-#include <google/protobuf/io/zero_copy_stream_impl.h>
 #include <google/protobuf/descriptor.pb.h>
+#include <google/protobuf/io/coded_stream.h>
+#include <google/protobuf/io/printer.h>
+#include <google/protobuf/io/zero_copy_stream_impl.h>
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/stubs/strutil.h>
 
@@ -1431,6 +1432,178 @@ bool ParseSimpleFile(
     }
   }
   return parser.Finish();
+}
+
+ImportWriter::ImportWriter(
+  const string& generate_for_named_framework,
+  const string& named_framework_to_proto_path_mappings_path)
+    : generate_for_named_framework_(generate_for_named_framework),
+      named_framework_to_proto_path_mappings_path_(
+          named_framework_to_proto_path_mappings_path),
+      need_to_parse_mapping_file_(true) {
+}
+
+ImportWriter::~ImportWriter() {}
+
+void ImportWriter::AddFile(const FileDescriptor* file,
+                           const string& header_extension) {
+  const string file_path(FilePath(file));
+
+  if (IsProtobufLibraryBundledProtoFile(file)) {
+    protobuf_framework_imports_.push_back(
+        FilePathBasename(file) + header_extension);
+    protobuf_non_framework_imports_.push_back(file_path + header_extension);
+    return;
+  }
+
+  // Lazy parse any mappings.
+  if (need_to_parse_mapping_file_) {
+    ParseFrameworkMappings();
+  }
+
+  map<string, string>::iterator proto_lookup =
+      proto_file_to_framework_name_.find(file->name());
+  if (proto_lookup != proto_file_to_framework_name_.end()) {
+    other_framework_imports_.push_back(
+        proto_lookup->second + "/" +
+        FilePathBasename(file) + header_extension);
+    return;
+  }
+
+  if (!generate_for_named_framework_.empty()) {
+    other_framework_imports_.push_back(
+        generate_for_named_framework_ + "/" +
+        FilePathBasename(file) + header_extension);
+    return;
+  }
+
+  other_imports_.push_back(file_path + header_extension);
+}
+
+void ImportWriter::Print(io::Printer* printer) const {
+  assert(protobuf_non_framework_imports_.size() ==
+         protobuf_framework_imports_.size());
+
+  bool add_blank_line = false;
+
+  if (protobuf_framework_imports_.size() > 0) {
+    const string framework_name(ProtobufLibraryFrameworkName);
+    const string cpp_symbol(ProtobufFrameworkImportSymbol(framework_name));
+
+    printer->Print(
+        "#if $cpp_symbol$\n",
+        "cpp_symbol", cpp_symbol);
+    for (vector<string>::const_iterator iter = protobuf_framework_imports_.begin();
+         iter != protobuf_framework_imports_.end(); ++iter) {
+      printer->Print(
+          " #import <$framework_name$/$header$>\n",
+          "framework_name", framework_name,
+          "header", *iter);
+    }
+    printer->Print(
+        "#else\n");
+    for (vector<string>::const_iterator iter = protobuf_non_framework_imports_.begin();
+         iter != protobuf_non_framework_imports_.end(); ++iter) {
+      printer->Print(
+          " #import \"$header$\"\n",
+          "header", *iter);
+    }
+    printer->Print(
+        "#endif\n");
+
+    add_blank_line = true;
+  }
+
+  if (other_framework_imports_.size() > 0) {
+    if (add_blank_line) {
+      printer->Print("\n");
+    }
+
+    for (vector<string>::const_iterator iter = other_framework_imports_.begin();
+         iter != other_framework_imports_.end(); ++iter) {
+      printer->Print(
+          " #import <$header$>\n",
+          "header", *iter);
+    }
+
+    add_blank_line = true;
+  }
+
+  if (other_imports_.size() > 0) {
+    if (add_blank_line) {
+      printer->Print("\n");
+    }
+
+    for (vector<string>::const_iterator iter = other_imports_.begin();
+         iter != other_imports_.end(); ++iter) {
+      printer->Print(
+          " #import \"$header$\"\n",
+          "header", *iter);
+    }
+  }
+}
+
+void ImportWriter::ParseFrameworkMappings() {
+  need_to_parse_mapping_file_ = false;
+  if (named_framework_to_proto_path_mappings_path_.empty()) {
+    return;  // Nothing to do.
+  }
+
+  ProtoFrameworkCollector collector(&proto_file_to_framework_name_);
+  string parse_error;
+  if (!ParseSimpleFile(named_framework_to_proto_path_mappings_path_,
+                       &collector, &parse_error)) {
+    cerr << "error parsing " << named_framework_to_proto_path_mappings_path_
+         << " : " << parse_error << endl;
+    cerr.flush();
+  }
+}
+
+bool ImportWriter::ProtoFrameworkCollector::ConsumeLine(
+    const StringPiece& line, string* out_error) {
+  int offset = line.find(':');
+  if (offset == StringPiece::npos) {
+    *out_error =
+        string("Framework/proto file mapping line without colon sign: '") +
+        line.ToString() + "'.";
+    return false;
+  }
+  StringPiece framework_name(line, 0, offset);
+  StringPiece proto_file_list(line, offset + 1, line.length() - offset - 1);
+  StringPieceTrimWhitespace(&framework_name);
+
+  int start = 0;
+  while (start < proto_file_list.length()) {
+    offset = proto_file_list.find(',', start);
+    if (offset == StringPiece::npos) {
+      offset = proto_file_list.length();
+    }
+
+    StringPiece proto_file(proto_file_list, start, offset - start);
+    StringPieceTrimWhitespace(&proto_file);
+    if (proto_file.size() != 0) {
+      map<string, string>::iterator existing_entry =
+          map_->find(proto_file.ToString());
+      if (existing_entry != map_->end()) {
+        cerr << "warning: duplicate proto file reference, replacing framework entry for '"
+             << proto_file.ToString() << "' with '" << framework_name.ToString()
+             << "' (was '" << existing_entry->second << "')." << endl;
+        cerr.flush();
+      }
+
+      if (proto_file.find(' ') != StringPiece::npos) {
+        cerr << "note: framework mapping file had a proto file with a space in, hopefully that isn't a missing comma: '"
+             << proto_file.ToString() << "'" << endl;
+        cerr.flush();
+      }
+
+      (*map_)[proto_file.ToString()] = framework_name.ToString();
+    }
+
+    start = offset + 1;
+  }
+
+  return true;
 }
 
 

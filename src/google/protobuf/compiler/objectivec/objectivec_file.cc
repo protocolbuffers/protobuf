@@ -51,207 +51,10 @@ namespace protobuf {
 // runtime being used.
 const int32 GOOGLE_PROTOBUF_OBJC_GEN_VERSION = 30001;
 
+const char* kHeaderExtension = ".pbobjc.h";
+
 namespace compiler {
 namespace objectivec {
-
-namespace {
-
-class ImportWriter {
- public:
-  ImportWriter(const Options& options)
-      : options_(options),
-        need_to_parse_mapping_file_(true) {}
-
-  void AddFile(const FileGenerator* file);
-  void Print(io::Printer *printer) const;
-
- private:
-  class ProtoFrameworkCollector : public LineConsumer {
-   public:
-    ProtoFrameworkCollector(map<string, string>* inout_proto_file_to_framework_name)
-        : map_(inout_proto_file_to_framework_name) {}
-
-    virtual bool ConsumeLine(const StringPiece& line, string* out_error);
-
-   private:
-    map<string, string>* map_;
-  };
-
-  void ParseFrameworkMappings();
-
-  const Options options_;
-  map<string, string> proto_file_to_framework_name_;
-  bool need_to_parse_mapping_file_;
-
-  vector<string> protobuf_framework_imports_;
-  vector<string> protobuf_non_framework_imports_;
-  vector<string> other_framework_imports_;
-  vector<string> other_imports_;
-};
-
-void ImportWriter::AddFile(const FileGenerator* file) {
-  const FileDescriptor* file_descriptor = file->Descriptor();
-  const string extension(".pbobjc.h");
-
-  if (IsProtobufLibraryBundledProtoFile(file_descriptor)) {
-    protobuf_framework_imports_.push_back(
-        FilePathBasename(file_descriptor) + extension);
-    protobuf_non_framework_imports_.push_back(file->Path() + extension);
-    return;
-  }
-
-  // Lazy parse any mappings.
-  if (need_to_parse_mapping_file_) {
-    ParseFrameworkMappings();
-  }
-
-  map<string, string>::iterator proto_lookup =
-      proto_file_to_framework_name_.find(file_descriptor->name());
-  if (proto_lookup != proto_file_to_framework_name_.end()) {
-    other_framework_imports_.push_back(
-        proto_lookup->second + "/" +
-        FilePathBasename(file_descriptor) + extension);
-    return;
-  }
-
-  if (!options_.generate_for_named_framework.empty()) {
-    other_framework_imports_.push_back(
-        options_.generate_for_named_framework + "/" +
-        FilePathBasename(file_descriptor) + extension);
-    return;
-  }
-
-  other_imports_.push_back(file->Path() + extension);
-}
-
-void ImportWriter::Print(io::Printer* printer) const {
-  assert(protobuf_non_framework_imports_.size() ==
-         protobuf_framework_imports_.size());
-
-  bool add_blank_line = false;
-
-  if (protobuf_framework_imports_.size() > 0) {
-    const string framework_name(ProtobufLibraryFrameworkName);
-    const string cpp_symbol(ProtobufFrameworkImportSymbol(framework_name));
-
-    printer->Print(
-        "#if $cpp_symbol$\n",
-        "cpp_symbol", cpp_symbol);
-    for (vector<string>::const_iterator iter = protobuf_framework_imports_.begin();
-         iter != protobuf_framework_imports_.end(); ++iter) {
-      printer->Print(
-          " #import <$framework_name$/$header$>\n",
-          "framework_name", framework_name,
-          "header", *iter);
-    }
-    printer->Print(
-        "#else\n");
-    for (vector<string>::const_iterator iter = protobuf_non_framework_imports_.begin();
-         iter != protobuf_non_framework_imports_.end(); ++iter) {
-      printer->Print(
-          " #import \"$header$\"\n",
-          "header", *iter);
-    }
-    printer->Print(
-        "#endif\n");
-
-    add_blank_line = true;
-  }
-
-  if (other_framework_imports_.size() > 0) {
-    if (add_blank_line) {
-      printer->Print("\n");
-    }
-
-    for (vector<string>::const_iterator iter = other_framework_imports_.begin();
-         iter != other_framework_imports_.end(); ++iter) {
-      printer->Print(
-          " #import <$header$>\n",
-          "header", *iter);
-    }
-
-    add_blank_line = true;
-  }
-
-  if (other_imports_.size() > 0) {
-    if (add_blank_line) {
-      printer->Print("\n");
-    }
-
-    for (vector<string>::const_iterator iter = other_imports_.begin();
-         iter != other_imports_.end(); ++iter) {
-      printer->Print(
-          " #import \"$header$\"\n",
-          "header", *iter);
-    }
-  }
-}
-
-void ImportWriter::ParseFrameworkMappings() {
-  need_to_parse_mapping_file_ = false;
-  if (options_.named_framework_to_proto_path_mappings_path.empty()) {
-    return;  // Nothing to do.
-  }
-
-  ProtoFrameworkCollector collector(&proto_file_to_framework_name_);
-  string parse_error;
-  if (!ParseSimpleFile(options_.named_framework_to_proto_path_mappings_path,
-                       &collector, &parse_error)) {
-    cerr << "error parsing " << options_.named_framework_to_proto_path_mappings_path
-         << " : " << parse_error << endl;
-    cerr.flush();
-  }
-}
-
-bool ImportWriter::ProtoFrameworkCollector::ConsumeLine(
-    const StringPiece& line, string* out_error) {
-  int offset = line.find(':');
-  if (offset == StringPiece::npos) {
-    *out_error =
-        string("Framework/proto file mapping line without colon sign: '") +
-        line.ToString() + "'.";
-    return false;
-  }
-  StringPiece framework_name(line, 0, offset);
-  StringPiece proto_file_list(line, offset + 1, line.length() - offset - 1);
-  StringPieceTrimWhitespace(&framework_name);
-
-  int start = 0;
-  while (start < proto_file_list.length()) {
-    offset = proto_file_list.find(',', start);
-    if (offset == StringPiece::npos) {
-      offset = proto_file_list.length();
-    }
-
-    StringPiece proto_file(proto_file_list, start, offset - start);
-    StringPieceTrimWhitespace(&proto_file);
-    if (proto_file.size() != 0) {
-      map<string, string>::iterator existing_entry =
-          map_->find(proto_file.ToString());
-      if (existing_entry != map_->end()) {
-        cerr << "warning: duplicate proto file reference, replacing framework entry for '"
-             << proto_file.ToString() << "' with '" << framework_name.ToString()
-             << "' (was '" << existing_entry->second << "')." << endl;
-        cerr.flush();
-      }
-
-      if (proto_file.find(' ') != StringPiece::npos) {
-        cerr << "note: framework mapping file had a proto file with a space in, hopefully that isn't a missing comma: '"
-             << proto_file.ToString() << "'" << endl;
-        cerr.flush();
-      }
-
-      (*map_)[proto_file.ToString()] = framework_name.ToString();
-    }
-
-    start = offset + 1;
-  }
-
-  return true;
-}
-
-}  // namespace
-
 
 FileGenerator::FileGenerator(const FileDescriptor *file, const Options& options)
     : file_(file),
@@ -299,13 +102,16 @@ void FileGenerator::GenerateHeader(io::Printer *printer) {
 
   // #import any headers for "public imports" in the proto file.
   {
-    ImportWriter import_writer(options_);
+    ImportWriter import_writer(
+        options_.generate_for_named_framework,
+        options_.named_framework_to_proto_path_mappings_path);
     const vector<FileGenerator *> &dependency_generators = DependencyGenerators();
+    const string header_extension(kHeaderExtension);
     for (vector<FileGenerator *>::const_iterator iter =
              dependency_generators.begin();
          iter != dependency_generators.end(); ++iter) {
       if ((*iter)->IsPublicDependency()) {
-        import_writer.AddFile(*iter);
+        import_writer.AddFile((*iter)->file_, header_extension);
       }
     }
     import_writer.Print(printer);
@@ -407,10 +213,13 @@ void FileGenerator::GenerateSource(io::Printer *printer) {
   PrintFileRuntimePreamble(printer, "GPBProtocolBuffers_RuntimeSupport.h");
 
   {
-    ImportWriter import_writer(options_);
+    ImportWriter import_writer(
+        options_.generate_for_named_framework,
+        options_.named_framework_to_proto_path_mappings_path);
+    const string header_extension(kHeaderExtension);
 
     // #import the header for this proto file.
-    import_writer.AddFile(this);
+    import_writer.AddFile(file_, header_extension);
 
     // #import the headers for anything that a plain dependency of this proto
     // file (that means they were just an include, not a "public" include).
@@ -420,7 +229,7 @@ void FileGenerator::GenerateSource(io::Printer *printer) {
              dependency_generators.begin();
          iter != dependency_generators.end(); ++iter) {
       if (!(*iter)->IsPublicDependency()) {
-        import_writer.AddFile(*iter);
+        import_writer.AddFile((*iter)->file_, header_extension);
       }
     }
 
