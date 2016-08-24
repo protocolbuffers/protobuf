@@ -784,9 +784,11 @@ TEST(FindOneCharTest, EdgeCases) {
 }
 
 #ifndef NDEBUG
+#ifdef PROTOBUF_HAS_DEATH_TEST
 TEST(NonNegativeLenTest, NonNegativeLen) {
   EXPECT_DEATH(StringPiece("xyz", -1), "len >= 0");
 }
+#endif  // PROTOBUF_HAS_DEATH_TEST
 #endif  // ndef DEBUG
 
 }  // namespace
