@@ -51,6 +51,9 @@
 #include <ctype.h>
 
 #include <limits.h> //For PATH_MAX
+#if defined(__GNU__)
+#define PATH_MAX 4096
+#endif
 
 #include <memory>
 #ifndef _SHARED_PTR_H
