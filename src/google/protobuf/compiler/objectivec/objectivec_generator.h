@@ -47,8 +47,15 @@ class LIBPROTOC_EXPORT ObjectiveCGenerator : public CodeGenerator {
   ~ObjectiveCGenerator();
 
   // implements CodeGenerator ----------------------------------------
-  bool Generate(const FileDescriptor* file, const string& parameter,
-                OutputDirectory* output_directory, string* error) const;
+  bool HasGenerateAll() const;
+  bool Generate(const FileDescriptor* file,
+                const string& parameter,
+                GeneratorContext* context,
+                string* error) const;
+  bool GenerateAll(const vector<const FileDescriptor*>& files,
+                   const string& parameter,
+                   GeneratorContext* context,
+                   string* error) const;
 
  private:
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(ObjectiveCGenerator);

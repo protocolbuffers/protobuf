@@ -980,28 +980,20 @@ bool LoadExpectedPackagePrefixes(const Options &generation_options,
       generation_options.expected_prefixes_path, &collector, out_error);
 }
 
-}  // namespace
-
-bool ValidateObjCClassPrefix(const FileDescriptor* file,
-                             const Options& generation_options,
-                             string* out_error) {
+bool ValidateObjCClassPrefix(
+    const FileDescriptor* file,
+    const string& expected_prefixes_path,
+    const map<string, string>& expected_package_prefixes,
+    string* out_error) {
   const string prefix = file->options().objc_class_prefix();
   const string package = file->package();
 
   // NOTE: src/google/protobuf/compiler/plugin.cc makes use of cerr for some
   // error cases, so it seems to be ok to use as a back door for warnings.
 
-  // Load any expected package prefixes to validate against those.
-  map<string, string> expected_package_prefixes;
-  if (!LoadExpectedPackagePrefixes(generation_options,
-                                   &expected_package_prefixes,
-                                   out_error)) {
-    return false;
-  }
-
   // Check: Error - See if there was an expected prefix for the package and
   // report if it doesn't match (wrong or missing).
-  map<string, string>::iterator package_match =
+  map<string, string>::const_iterator package_match =
       expected_package_prefixes.find(package);
   if (package_match != expected_package_prefixes.end()) {
     // There was an entry, and...
@@ -1050,7 +1042,7 @@ bool ValidateObjCClassPrefix(const FileDescriptor* file,
 
   // Look for any other package that uses the same prefix.
   string other_package_for_prefix;
-  for (map<string, string>::iterator i = expected_package_prefixes.begin();
+  for (map<string, string>::const_iterator i = expected_package_prefixes.begin();
        i != expected_package_prefixes.end(); ++i) {
     if (i->second == prefix) {
       other_package_for_prefix = i->first;
@@ -1068,7 +1060,7 @@ bool ValidateObjCClassPrefix(const FileDescriptor* file,
            << "protoc:0: warning: File '" << file->name() << "' has no "
            << "package. Consider adding a new package to the proto and adding '"
            << "new.package = " << prefix << "' to the expected prefixes file ("
-           << generation_options.expected_prefixes_path << ")." << endl;
+           << expected_prefixes_path << ")." << endl;
       cerr.flush();
     } else {
       // ... another package has declared the same prefix.
@@ -1078,7 +1070,7 @@ bool ValidateObjCClassPrefix(const FileDescriptor* file,
            << prefix << "' as its prefix. Consider either adding a new package "
            << "to the proto, or reusing one of the packages already using this "
            << "prefix in the expected prefixes file ("
-           << generation_options.expected_prefixes_path << ")." << endl;
+           << expected_prefixes_path << ")." << endl;
       cerr.flush();
     }
     return true;
@@ -1094,7 +1086,7 @@ bool ValidateObjCClassPrefix(const FileDescriptor* file,
         "'; that prefix is already used for 'package " +
         other_package_for_prefix + ";'. It can only be reused by listing " +
         "it in the expected file (" +
-        generation_options.expected_prefixes_path + ").";
+        expected_prefixes_path + ").";
     return false;  // Only report first usage of the prefix.
   }
 
@@ -1105,10 +1097,36 @@ bool ValidateObjCClassPrefix(const FileDescriptor* file,
          << "protoc:0: warning: Found unexpected 'option objc_class_prefix = \""
          << prefix << "\";' in '" << file->name() << "';"
          << " consider adding it to the expected prefixes file ("
-         << generation_options.expected_prefixes_path << ")." << endl;
+         << expected_prefixes_path << ")." << endl;
     cerr.flush();
   }
 
+  return true;
+}
+
+}  // namespace
+
+bool ValidateObjCClassPrefixes(const vector<const FileDescriptor*>& files,
+                               const Options& generation_options,
+                               string* out_error) {
+  // Load the expected package prefixes, if available, to validate against.
+  map<string, string> expected_package_prefixes;
+  if (!LoadExpectedPackagePrefixes(generation_options,
+                                   &expected_package_prefixes,
+                                   out_error)) {
+    return false;
+  }
+
+  for (int i = 0; i < files.size(); i++) {
+    bool is_valid =
+        ValidateObjCClassPrefix(files[i],
+                                generation_options.expected_prefixes_path,
+                                expected_package_prefixes,
+                                out_error);
+    if (!is_valid) {
+      return false;
+    }
+  }
   return true;
 }
 
