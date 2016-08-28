@@ -145,5 +145,5 @@ To test the Lua bindings:
 
 ## Contact
 
-Author: Josh Haberman ([jhaberman@gmail.com](jhaberman@gmail.com),
-[haberman@google.com](haberman@google.com))
+Author: Josh Haberman ([jhaberman@gmail.com](mailto:jhaberman@gmail.com),
+[haberman@google.com](mailto:haberman@google.com))
