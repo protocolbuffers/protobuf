@@ -11175,7 +11175,7 @@ static bool parse_mapentry_key(upb_json_parser *p) {
       sel = getsel_for_handlertype(p, UPB_HANDLER_STRING);
       upb_sink_putstring(&subsink, sel, buf, len, NULL);
       sel = getsel_for_handlertype(p, UPB_HANDLER_ENDSTR);
-      upb_sink_endstr(&subsink, sel);
+      upb_sink_endstr(&p->top->sink, sel);
       multipart_end(p);
       break;
     }
