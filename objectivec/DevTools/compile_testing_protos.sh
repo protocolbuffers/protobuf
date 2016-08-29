@@ -99,26 +99,26 @@ CORE_PROTO_FILES+=(
   src/google/protobuf/descriptor.proto
 )
 
-compile_proto() {
+compile_protos() {
   src/protoc                                   \
     --objc_out="${OUTPUT_DIR}/google/protobuf" \
     --proto_path=src/google/protobuf/          \
     --proto_path=src                           \
-    $*
+    "$@"
 }
 
+# Note: there is overlap in package.Message names between some of the test
+# files, so they can't be generated all at once. This works because the overlap
+# isn't linked into a single binary.
 for a_proto in "${CORE_PROTO_FILES[@]}" ; do
-  compile_proto "${a_proto}"
+  compile_protos "${a_proto}"
 done
 
-OBJC_PROTO_FILES=(
-  objectivec/Tests/unittest_cycle.proto
-  objectivec/Tests/unittest_runtime_proto2.proto
-  objectivec/Tests/unittest_runtime_proto3.proto
-  objectivec/Tests/unittest_objc.proto
+# Objective C specific testing protos.
+compile_protos \
+  --proto_path="objectivec/Tests" \
+  objectivec/Tests/unittest_cycle.proto \
+  objectivec/Tests/unittest_runtime_proto2.proto \
+  objectivec/Tests/unittest_runtime_proto3.proto \
+  objectivec/Tests/unittest_objc.proto \
   objectivec/Tests/unittest_objc_startup.proto
-)
-
-for a_proto in "${OBJC_PROTO_FILES[@]}" ; do
-  compile_proto --proto_path="objectivec/Tests" "${a_proto}"
-done

@@ -185,12 +185,12 @@ string ProtobufFrameworkImportSymbol(const string& framework_name);
 // Checks if the file is one of the proto's bundled with the library.
 bool IsProtobufLibraryBundledProtoFile(const FileDescriptor* file);
 
-// Checks the prefix for a given file and outputs any warnings needed, if
-// there are flat out errors, then out_error is filled in and the result is
-// false.
-bool ValidateObjCClassPrefix(const FileDescriptor* file,
-                             const Options& generation_options,
-                             string* out_error);
+// Checks the prefix for the given files and outputs any warnings as needed. If
+// there are flat out errors, then out_error is filled in with the first error
+// and the result is false.
+bool ValidateObjCClassPrefixes(const vector<const FileDescriptor*>& files,
+                               const Options& generation_options,
+                               string* out_error);
 
 // Generate decode data needed for ObjC's GPBDecodeTextFormatName() to transform
 // the input into the expected output.
