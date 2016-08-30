@@ -586,7 +586,6 @@ void DefaultValueObjectWriter::RenderDataPiece(StringPiece name,
         new Node(name.ToString(), NULL, PRIMITIVE, data, false,
                  child == NULL ? current_->path() : child->path(),
                  suppress_empty_list_, field_scrub_callback_.get()));
-    child = node.get();
     current_->AddChild(node.release());
   } else {
     child->set_data(data);

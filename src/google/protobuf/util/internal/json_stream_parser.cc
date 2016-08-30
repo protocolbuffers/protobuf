@@ -315,7 +315,6 @@ util::Status JsonStreamParser::ParseStringHelper() {
       // We're about to handle an escape, copy all bytes from last to data.
       if (last < data) {
         parsed_storage_.append(last, data - last);
-        last = data;
       }
       // If we ran out of string after the \, cancel or report an error
       // depending on if we expect more data later.
@@ -371,7 +370,6 @@ util::Status JsonStreamParser::ParseStringHelper() {
       } else {
         if (last < data) {
           parsed_storage_.append(last, data - last);
-          last = data;
         }
         parsed_ = StringPiece(parsed_storage_);
       }

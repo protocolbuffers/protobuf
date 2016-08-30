@@ -570,6 +570,7 @@ bool Parser::Parse(io::Tokenizer* input, FileDescriptorProto* file) {
 
   input_ = NULL;
   source_code_info_ = NULL;
+  assert(file != NULL);
   source_code_info.Swap(file->mutable_source_code_info());
   return !had_errors_;
 }
