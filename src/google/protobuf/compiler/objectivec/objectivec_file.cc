@@ -59,7 +59,6 @@ namespace objectivec {
 FileGenerator::FileGenerator(const FileDescriptor *file, const Options& options)
     : file_(file),
       root_class_name_(FileClassName(file)),
-      is_public_dep_(false),
       options_(options) {
   for (int i = 0; i < file_->enum_type_count(); i++) {
     EnumGenerator *generator = new EnumGenerator(file_->enum_type(i));
@@ -78,8 +77,6 @@ FileGenerator::FileGenerator(const FileDescriptor *file, const Options& options)
 }
 
 FileGenerator::~FileGenerator() {
-  STLDeleteContainerPointers(dependency_generators_.begin(),
-                             dependency_generators_.end());
   STLDeleteContainerPointers(enum_generators_.begin(), enum_generators_.end());
   STLDeleteContainerPointers(message_generators_.begin(),
                              message_generators_.end());
@@ -105,14 +102,9 @@ void FileGenerator::GenerateHeader(io::Printer *printer) {
     ImportWriter import_writer(
         options_.generate_for_named_framework,
         options_.named_framework_to_proto_path_mappings_path);
-    const vector<FileGenerator *> &dependency_generators = DependencyGenerators();
     const string header_extension(kHeaderExtension);
-    for (vector<FileGenerator *>::const_iterator iter =
-             dependency_generators.begin();
-         iter != dependency_generators.end(); ++iter) {
-      if ((*iter)->IsPublicDependency()) {
-        import_writer.AddFile((*iter)->file_, header_extension);
-      }
+    for (int i = 0; i < file_->public_dependency_count(); i++) {
+      import_writer.AddFile(file_->public_dependency(i), header_extension);
     }
     import_writer.Print(printer);
   }
@@ -223,13 +215,15 @@ void FileGenerator::GenerateSource(io::Printer *printer) {
 
     // #import the headers for anything that a plain dependency of this proto
     // file (that means they were just an include, not a "public" include).
-    const vector<FileGenerator *> &dependency_generators =
-        DependencyGenerators();
-    for (vector<FileGenerator *>::const_iterator iter =
-             dependency_generators.begin();
-         iter != dependency_generators.end(); ++iter) {
-      if (!(*iter)->IsPublicDependency()) {
-        import_writer.AddFile((*iter)->file_, header_extension);
+    set<string> public_import_names;
+    for (int i = 0; i < file_->public_dependency_count(); i++) {
+      public_import_names.insert(file_->public_dependency(i)->name());
+    }
+    for (int i = 0; i < file_->dependency_count(); i++) {
+      const FileDescriptor *dep = file_->dependency(i);
+      bool public_import = (public_import_names.count(dep->name()) != 0);
+      if (!public_import) {
+        import_writer.AddFile(dep, header_extension);
       }
     }
 
@@ -321,14 +315,11 @@ void FileGenerator::GenerateSource(io::Printer *printer) {
           "}\n");
     }
 
-    const vector<FileGenerator *> &dependency_generators =
-        DependencyGenerators();
-    for (vector<FileGenerator *>::const_iterator iter =
-             dependency_generators.begin();
-         iter != dependency_generators.end(); ++iter) {
+    for (int i = 0; i < file_->dependency_count(); i++) {
+      const string root_class_name(FileClassName(file_->dependency(i)));
       printer->Print(
           "[registry addExtensions:[$dependency$ extensionRegistry]];\n",
-          "dependency", (*iter)->RootClassName());
+          "dependency", root_class_name);
     }
 
     printer->Outdent();
@@ -391,24 +382,6 @@ void FileGenerator::GenerateSource(io::Printer *printer) {
     "#pragma clang diagnostic pop\n"
     "\n"
     "// @@protoc_insertion_point(global_scope)\n");
-}
-
-const vector<FileGenerator *> &FileGenerator::DependencyGenerators() {
-  if (file_->dependency_count() != dependency_generators_.size()) {
-    set<string> public_import_names;
-    for (int i = 0; i < file_->public_dependency_count(); i++) {
-      public_import_names.insert(file_->public_dependency(i)->name());
-    }
-    for (int i = 0; i < file_->dependency_count(); i++) {
-      FileGenerator *generator =
-          new FileGenerator(file_->dependency(i), options_);
-      const string& name = file_->dependency(i)->name();
-      bool public_import = (public_import_names.count(name) != 0);
-      generator->SetIsPublicDependency(public_import);
-      dependency_generators_.push_back(generator);
-    }
-  }
-  return dependency_generators_;
 }
 
 // Helper to print the import of the runtime support at the top of generated
