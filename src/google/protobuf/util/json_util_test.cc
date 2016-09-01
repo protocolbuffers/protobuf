@@ -128,6 +128,34 @@ TEST_F(JsonUtilTest, TestDefaultValues) {
       "\"repeatedMessageValue\":[]"
       "}",
       ToJson(m, options));
+
+  options.always_print_primitive_fields = true;
+  m.set_string_value("i am a test string value");
+  m.set_bytes_value("i am a test bytes value");
+  EXPECT_EQ(
+	  "{\"boolValue\":false,"
+	  "\"int32Value\":0,"
+	  "\"int64Value\":\"0\","
+	  "\"uint32Value\":0,"
+	  "\"uint64Value\":\"0\","
+	  "\"floatValue\":0,"
+	  "\"doubleValue\":0,"
+	  "\"stringValue\":\"i am a test string value\","
+	  "\"bytesValue\":\"aSBhbSBhIHRlc3QgYnl0ZXMgdmFsdWU=\","
+	  "\"enumValue\":\"FOO\","
+	  "\"repeatedBoolValue\":[],"
+	  "\"repeatedInt32Value\":[],"
+	  "\"repeatedInt64Value\":[],"
+	  "\"repeatedUint32Value\":[],"
+	  "\"repeatedUint64Value\":[],"
+	  "\"repeatedFloatValue\":[],"
+	  "\"repeatedDoubleValue\":[],"
+	  "\"repeatedStringValue\":[],"
+	  "\"repeatedBytesValue\":[],"
+	  "\"repeatedEnumValue\":[],"
+	  "\"repeatedMessageValue\":[]"
+	  "}",
+	  ToJson(m, options));
 }
 
 TEST_F(JsonUtilTest, ParseMessage) {
