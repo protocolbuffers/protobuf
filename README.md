@@ -65,7 +65,7 @@ how to install protobuf runtime for that specific language:
 | JavaScript                           | [js](js)                                              |
 | Ruby                                 | [ruby](ruby)                                          |
 | Go                                   | [golang/protobuf](https://github.com/golang/protobuf) |
-| PHP                                  | TBD                                                   |
+| PHP                                  | [php](php)                                            |
 
 
 Usage

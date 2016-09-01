@@ -32,6 +32,7 @@ copy ${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\compiler\js\js_generat
 copy ${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\compiler\objectivec\objectivec_generator.h include\google\protobuf\compiler\objectivec\objectivec_generator.h
 copy ${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\compiler\objectivec\objectivec_helpers.h include\google\protobuf\compiler\objectivec\objectivec_helpers.h
 copy ${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\compiler\parser.h include\google\protobuf\compiler\parser.h
+copy ${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\compiler\php\php_generator.h include\google\protobuf\compiler\php\php_generator.h
 copy ${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\compiler\plugin.h include\google\protobuf\compiler\plugin.h
 copy ${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\compiler\plugin.pb.h include\google\protobuf\compiler\plugin.pb.h
 copy ${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\compiler\python\python_generator.h include\google\protobuf\compiler\python\python_generator.h
