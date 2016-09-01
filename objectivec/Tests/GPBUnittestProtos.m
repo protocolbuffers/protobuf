@@ -62,3 +62,11 @@
 #import "google/protobuf/UnittestPreserveUnknownEnum.pbobjc.m"
 #import "google/protobuf/UnittestRuntimeProto2.pbobjc.m"
 #import "google/protobuf/UnittestRuntimeProto3.pbobjc.m"
+
+#import "google/protobuf/UnittestExtensionChainA.pbobjc.m"
+#import "google/protobuf/UnittestExtensionChainB.pbobjc.m"
+#import "google/protobuf/UnittestExtensionChainC.pbobjc.m"
+#import "google/protobuf/UnittestExtensionChainD.pbobjc.m"
+#import "google/protobuf/UnittestExtensionChainE.pbobjc.m"
+// See GPBUnittestProtos2.m for for "UnittestExtensionChainF.pbobjc.m"
+#import "google/protobuf/UnittestExtensionChainG.pbobjc.m"
