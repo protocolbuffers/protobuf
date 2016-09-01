@@ -258,7 +258,7 @@ bool Subprocess::Communicate(const Message& input, Message* output,
 }
 
 string Subprocess::Win32ErrorMessage(DWORD error_code) {
-  char* message;
+  TCHAR* message = nullptr;
 
   // WTF?
   FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER |
@@ -268,7 +268,12 @@ string Subprocess::Win32ErrorMessage(DWORD error_code) {
                 (LPTSTR)&message,  // NOT A BUG!
                 0, NULL);
 
+#ifdef UNICODE
+  wstring wstr = message;
+  string result(wstr.begin(), wstr.end());
+#else
   string result = message;
+#endif
   LocalFree(message);
   return result;
 }
