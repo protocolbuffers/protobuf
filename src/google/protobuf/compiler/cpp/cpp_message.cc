@@ -2419,7 +2419,7 @@ GenerateClear(io::Printer* printer) {
       "  &reinterpret_cast<$classname$*>(16)->f)\n"
       "#endif\n\n"
       "#define ZR_(first, last) do {\\\n"
-      "  ::memset(&first, 0,\\\n"
+      "  ::memset(&(first), 0,\\\n"
       "           ZR_HELPER_(last) - ZR_HELPER_(first) + sizeof(last));\\\n"
       "} while (0)\n\n";
   for (int i = 0; i < runs_of_fields_.size(); i++) {
