@@ -1,3 +1,19 @@
+2016-09-02 version 3.0.2 (C++/Java/Python/Ruby/Objective-C/C#/JavaScript/Lite)
+  General
+  * Various bug fixes.
+
+  Objective C
+  * Fix for oneofs in proto3 syntax files where fields were set to the zero
+    value.
+  * Fix for embedded null character in strings.
+  * CocoaDocs support
+
+  Ruby
+  *
+
+  Javascript
+  *
+
 2016-07-27 version 3.0.0 (C++/Java/Python/Ruby/Objective-C/C#/JavaScript/Lite)
   General
   * This log only contains changes since the beta-4 release. Summarized change
