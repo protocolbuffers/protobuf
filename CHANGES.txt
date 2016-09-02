@@ -9,10 +9,14 @@
   * CocoaDocs support
 
   Ruby
-  *
+  * Fixed memory corruption bug in parsing that could occur under GC pressure.
 
   Javascript
-  *
+  * jspb.Map is now properly exported to CommonJS modules.
+
+  C#
+  * Removed legacy_enum_values flag.
+
 
 2016-07-27 version 3.0.0 (C++/Java/Python/Ruby/Objective-C/C#/JavaScript/Lite)
   General
