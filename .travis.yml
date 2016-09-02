@@ -2,7 +2,9 @@ language: cpp
 compiler:
   - gcc
   - clang
-install: ./travis.sh install
+install:
+  - ./travis.sh install
+  - export PATH=$PATH:$PWD/protoc  # used by genfiles_install()
 script: ./travis.sh script
 after_success: ./travis.sh after_success
 after_failure: ./travis.sh after_failure
