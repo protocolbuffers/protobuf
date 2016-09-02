@@ -166,6 +166,8 @@ extern VALUE cBuilder;
 extern VALUE cError;
 extern VALUE cParseError;
 
+extern VALUE map_parse_frames;
+
 // We forward-declare all of the Ruby method implementations here because we
 // sometimes call the methods directly across .c files, rather than going
 // through Ruby's method dispatching (e.g. during message parse). It's cleaner
