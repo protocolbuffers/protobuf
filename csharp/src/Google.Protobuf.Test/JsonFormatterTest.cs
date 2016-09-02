@@ -230,6 +230,12 @@ namespace Google.Protobuf
         [TestCase("foo_bar", "fooBar")]
         [TestCase("bananaBanana", "bananaBanana")]
         [TestCase("BANANABanana", "bananaBanana")]
+        [TestCase("simple", "simple")]
+        [TestCase("ACTION_AND_ADVENTURE", "actionAndAdventure")]
+        [TestCase("action_and_adventure", "actionAndAdventure")]
+        [TestCase("kFoo", "kFoo")]
+        [TestCase("HTTPServer", "httpServer")]
+        [TestCase("CLIENT", "client")]
         public void ToCamelCase(string original, string expected)
         {
             Assert.AreEqual(expected, JsonFormatter.ToCamelCase(original));
