@@ -45,6 +45,10 @@
 
 namespace google {
 namespace protobuf {
+namespace compiler {
+namespace objectivec {
+
+namespace {
 
 // This is also found in GPBBootstrap.h, and needs to be kept in sync.  It
 // is the version check done to ensure generated code works with the current
@@ -53,8 +57,106 @@ const int32 GOOGLE_PROTOBUF_OBJC_GEN_VERSION = 30001;
 
 const char* kHeaderExtension = ".pbobjc.h";
 
-namespace compiler {
-namespace objectivec {
+// Checks if a message contains any extension definitions (on the message or
+// a nested message under it).
+bool MessageContainsExtensions(const Descriptor* message) {
+  if (message->extension_count() > 0) {
+    return true;
+  }
+  for (int i = 0; i < message->nested_type_count(); i++) {
+    if (MessageContainsExtensions(message->nested_type(i))) {
+      return true;
+    }
+  }
+  return false;
+}
+
+// Checks if the file contains any extensions definitions (at the root or
+// nested under a message).
+bool FileContainsExtensions(const FileDescriptor* file) {
+  if (file->extension_count() > 0) {
+    return true;
+  }
+  for (int i = 0; i < file->message_type_count(); i++) {
+    if (MessageContainsExtensions(file->message_type(i))) {
+      return true;
+    }
+  }
+  return false;
+}
+
+// Helper for CollectMinimalFileDepsContainingExtensionsWorker that marks all
+// deps as visited and prunes them from the needed files list.
+void PruneFileAndDepsMarkingAsVisited(
+    const FileDescriptor* file,
+    vector<const FileDescriptor*>* files,
+    set<const FileDescriptor*>* files_visited) {
+  vector<const FileDescriptor*>::iterator iter =
+      std::find(files->begin(), files->end(), file);
+  if (iter != files->end()) {
+    files->erase(iter);
+  }
+  files_visited->insert(file);
+  for (int i = 0; i < file->dependency_count(); i++) {
+    PruneFileAndDepsMarkingAsVisited(file->dependency(i), files, files_visited);
+  }
+}
+
+// Helper for CollectMinimalFileDepsContainingExtensions.
+void CollectMinimalFileDepsContainingExtensionsWorker(
+    const FileDescriptor* file,
+    vector<const FileDescriptor*>* files,
+    set<const FileDescriptor*>* files_visited) {
+  if (files_visited->find(file) != files_visited->end()) {
+    return;
+  }
+  files_visited->insert(file);
+
+  if (FileContainsExtensions(file)) {
+    files->push_back(file);
+    for (int i = 0; i < file->dependency_count(); i++) {
+      const FileDescriptor* dep = file->dependency(i);
+      PruneFileAndDepsMarkingAsVisited(dep, files, files_visited);
+    }
+  } else {
+    for (int i = 0; i < file->dependency_count(); i++) {
+      const FileDescriptor* dep = file->dependency(i);
+      CollectMinimalFileDepsContainingExtensionsWorker(dep, files,
+                                                       files_visited);
+    }
+  }
+}
+
+// Collect the deps of the given file that contain extensions. This can be used to
+// create the chain of roots that need to be wired together.
+//
+// NOTE: If any changes are made to this and the supporting functions, you will
+// need to manually validate what the generated code is for the test files:
+//   objectivec/Tests/unittest_extension_chain_*.proto
+// There are comments about what the expected code should be line and limited
+// testing objectivec/Tests/GPBUnittestProtos2.m around compilation (#imports
+// specifically).
+void CollectMinimalFileDepsContainingExtensions(
+    const FileDescriptor* file,
+    vector<const FileDescriptor*>* files) {
+  set<const FileDescriptor*> files_visited;
+  for (int i = 0; i < file->dependency_count(); i++) {
+    const FileDescriptor* dep = file->dependency(i);
+    CollectMinimalFileDepsContainingExtensionsWorker(dep, files,
+                                                     &files_visited);
+  }
+}
+
+bool IsDirectDependency(const FileDescriptor* dep, const FileDescriptor* file) {
+  for (int i = 0; i < file->dependency_count(); i++) {
+    if (dep == file->dependency(i)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+}  // namespace
 
 FileGenerator::FileGenerator(const FileDescriptor *file, const Options& options)
     : file_(file),
@@ -204,6 +306,9 @@ void FileGenerator::GenerateSource(io::Printer *printer) {
   // #import the runtime support.
   PrintFileRuntimePreamble(printer, "GPBProtocolBuffers_RuntimeSupport.h");
 
+  vector<const FileDescriptor*> deps_with_extensions;
+  CollectMinimalFileDepsContainingExtensions(file_, &deps_with_extensions);
+
   {
     ImportWriter import_writer(
         options_.generate_for_named_framework,
@@ -224,6 +329,18 @@ void FileGenerator::GenerateSource(io::Printer *printer) {
       bool public_import = (public_import_names.count(dep->name()) != 0);
       if (!public_import) {
         import_writer.AddFile(dep, header_extension);
+      }
+    }
+
+    // If any indirect dependency provided extensions, it needs to be directly
+    // imported so it can get merged into the root's extensions registry.
+    // See the Note by CollectMinimalFileDepsContainingExtensions before
+    // changing this.
+    for (vector<const FileDescriptor *>::iterator iter =
+             deps_with_extensions.begin();
+         iter != deps_with_extensions.end(); ++iter) {
+      if (!IsDirectDependency(*iter, file_)) {
+        import_writer.AddFile(*iter, header_extension);
       }
     }
 
@@ -263,29 +380,11 @@ void FileGenerator::GenerateSource(io::Printer *printer) {
       "@implementation $root_class_name$\n\n",
       "root_class_name", root_class_name_);
 
-  // Generate the extension initialization structures for the top level and
-  // any nested messages.
-  ostringstream extensions_stringstream;
-  if (file_->extension_count() + file_->message_type_count() > 0) {
-    io::OstreamOutputStream extensions_outputstream(&extensions_stringstream);
-    io::Printer extensions_printer(&extensions_outputstream, '$');
-    for (vector<ExtensionGenerator *>::iterator iter =
-             extension_generators_.begin();
-         iter != extension_generators_.end(); ++iter) {
-      (*iter)->GenerateStaticVariablesInitialization(&extensions_printer);
-    }
-    for (vector<MessageGenerator *>::iterator iter =
-             message_generators_.begin();
-         iter != message_generators_.end(); ++iter) {
-      (*iter)->GenerateStaticVariablesInitialization(&extensions_printer);
-    }
-    extensions_stringstream.flush();
-  }
+  const bool file_contains_extensions = FileContainsExtensions(file_);
 
   // If there were any extensions or this file has any dependencies, output
   // a registry to override to create the file specific registry.
-  const string& extensions_str = extensions_stringstream.str();
-  if (extensions_str.length() > 0 || file_->dependency_count() > 0) {
+  if (file_contains_extensions || !deps_with_extensions.empty()) {
     printer->Print(
         "+ (GPBExtensionRegistry*)extensionRegistry {\n"
         "  // This is called by +initialize so there is no need to worry\n"
@@ -298,11 +397,20 @@ void FileGenerator::GenerateSource(io::Printer *printer) {
     printer->Indent();
     printer->Indent();
 
-    if (extensions_str.length() > 0) {
+    if (file_contains_extensions) {
       printer->Print(
           "static GPBExtensionDescription descriptions[] = {\n");
       printer->Indent();
-      printer->Print(extensions_str.c_str());
+      for (vector<ExtensionGenerator *>::iterator iter =
+               extension_generators_.begin();
+           iter != extension_generators_.end(); ++iter) {
+        (*iter)->GenerateStaticVariablesInitialization(printer);
+      }
+      for (vector<MessageGenerator *>::iterator iter =
+               message_generators_.begin();
+           iter != message_generators_.end(); ++iter) {
+        (*iter)->GenerateStaticVariablesInitialization(printer);
+      }
       printer->Outdent();
       printer->Print(
           "};\n"
@@ -315,11 +423,21 @@ void FileGenerator::GenerateSource(io::Printer *printer) {
           "}\n");
     }
 
-    for (int i = 0; i < file_->dependency_count(); i++) {
-      const string root_class_name(FileClassName(file_->dependency(i)));
+    if (deps_with_extensions.empty()) {
       printer->Print(
-          "[registry addExtensions:[$dependency$ extensionRegistry]];\n",
-          "dependency", root_class_name);
+          "// None of the imports (direct or indirect) defined extensions, so no need to add\n"
+          "// them to this registry.\n");
+    } else {
+      printer->Print(
+          "// Merge in the imports (direct or indirect) that defined extensions.\n");
+      for (vector<const FileDescriptor *>::iterator iter =
+               deps_with_extensions.begin();
+           iter != deps_with_extensions.end(); ++iter) {
+        const string root_class_name(FileClassName((*iter)));
+        printer->Print(
+            "[registry addExtensions:[$dependency$ extensionRegistry]];\n",
+            "dependency", root_class_name);
+      }
     }
 
     printer->Outdent();
@@ -328,11 +446,20 @@ void FileGenerator::GenerateSource(io::Printer *printer) {
     printer->Print(
         "  }\n"
         "  return registry;\n"
-        "}\n"
-        "\n");
+        "}\n");
+  } else {
+    if (file_->dependency_count() > 0) {
+      printer->Print(
+          "// No extensions in the file and none of the imports (direct or indirect)\n"
+          "// defined extensions, so no need to generate +extensionRegistry.\n");
+    } else {
+      printer->Print(
+          "// No extensions in the file and no imports, so no need to generate\n"
+          "// +extensionRegistry.\n");
+    }
   }
 
-  printer->Print("@end\n\n");
+  printer->Print("\n@end\n\n");
 
   // File descriptor only needed if there are messages to use it.
   if (message_generators_.size() > 0) {

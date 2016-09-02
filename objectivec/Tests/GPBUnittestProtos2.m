@@ -1,5 +1,6 @@
 // Protocol Buffers - Google's data interchange format
-// Copyright 2015 Google Inc.  All rights reserved.
+// Copyright 2016 Google Inc.  All rights reserved.
+// https://developers.google.com/protocol-buffers/
 //
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are
@@ -27,30 +28,7 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-syntax = "proto2";
-
-package protobuf_unittest;
-
-// Cycles in the Message graph can cause problems for message class
-// initialization order.
-
-// You can't make a object graph that spans files, so this can only be done
-// within a single proto file.
-
-message CycleFoo {
-  optional CycleFoo a_foo = 1;
-  optional CycleBar a_bar = 2;
-  optional CycleBaz a_baz = 3;
-}
-
-message CycleBar {
-  optional CycleBar a_bar = 1;
-  optional CycleBaz a_baz = 2;
-  optional CycleFoo a_foo = 3;
-}
-
-message CycleBaz {
-  optional CycleBaz a_baz = 1;
-  optional CycleFoo a_foo = 2;
-  optional CycleBar a_bar = 3;
-}
+// This one file in the chain tests is compiled by itself to ensure if was
+// generated with the extra #imports needed to pull in the indirect Root class
+// used in its Root registry.
+#import "google/protobuf/UnittestExtensionChainF.pbobjc.m"

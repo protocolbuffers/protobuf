@@ -27,6 +27,9 @@
 
 @implementation GPBTimestampRoot
 
+// No extensions in the file and no imports, so no need to generate
+// +extensionRegistry.
+
 @end
 
 #pragma mark - GPBTimestampRoot_FileDescriptor
