@@ -21,6 +21,7 @@ other_language_protoc_outputs =                                \
   Conformance.pbobjc.h                                         \
   Conformance.pbobjc.m                                         \
   conformance_pb.rb                                            \
+  conformance/conformance.pb.go                                \
   com/google/protobuf/Any.java                                 \
   com/google/protobuf/AnyOrBuilder.java                        \
   com/google/protobuf/AnyProto.java                            \
@@ -195,6 +196,11 @@ protoc_middleman: $(conformance_protoc_inputs) $(well_known_type_protoc_inputs)
 	## $(PROTOC) -I$(srcdir) -I$(top_srcdir) --java_out=lite:lite $(conformance_protoc_inputs) $(well_known_type_protoc_inputs)
 	touch protoc_middleman
 
+protoc_middleman_go: $(conformance_protoc_inputs) $(well_known_type_protoc_inputs)
+	mkdir conformance || true
+	$(PROTOC) -I$(srcdir) -I$(top_srcdir) --go_out=conformance $(conformance_protoc_inputs)
+	touch protoc_middleman_go
+
 else
 
 # We have to cd to $(srcdir) before executing protoc because $(protoc_inputs) is
@@ -207,6 +213,11 @@ protoc_middleman: $(top_srcdir)/src/protoc$(EXEEXT) $(conformance_protoc_inputs)
 	## oldpwd=`pwd` && ( cd $(srcdir) && $$oldpwd/../src/protoc$(EXEEXT) -I. -I$(top_srcdir)/src --java_out=lite:$$oldpwd/lite $(conformance_protoc_inputs) $(well_known_type_protoc_inputs) )
 	touch protoc_middleman
 
+protoc_middleman_go: $(top_srcdir)/src/protoc$(EXEEXT) $(conformance_protoc_inputs) $(well_known_type_protoc_inputs)
+	oldpwd=`pwd` && ( cd $(srcdir) && mkdir $$oldpwd/conformance || true )
+	oldpwd=`pwd` && ( cd $(srcdir) && $$oldpwd/../src/protoc$(EXEEXT) -I. -I$(top_srcdir)/src --go_out=import_path=conformance:$$oldpwd/conformance $(conformance_protoc_inputs) )
+	touch protoc_middleman_go
+
 endif
 
 $(protoc_outputs): protoc_middleman
@@ -215,7 +226,7 @@ $(other_language_protoc_outputs): protoc_middleman
 
 BUILT_SOURCES = $(protoc_outputs) $(other_language_protoc_outputs)
 
-CLEANFILES = $(protoc_outputs) protoc_middleman javac_middleman conformance-java javac_middleman_lite conformance-java-lite conformance-csharp $(other_language_protoc_outputs)
+CLEANFILES = $(protoc_outputs) protoc_middleman protoc_middleman_go javac_middleman conformance-go conformance-java javac_middleman_lite conformance-java-lite conformance-csharp $(other_language_protoc_outputs)
 
 MAINTAINERCLEANFILES =   \
   Makefile.in
@@ -249,6 +260,9 @@ conformance-csharp: $(other_language_protoc_outputs)
 	@echo 'dotnet ../csharp/src/Google.Protobuf.Conformance/bin/Release/netcoreapp1.0/Google.Protobuf.Conformance.dll "$$@"' >> conformance-csharp
 	@chmod +x conformance-csharp
 
+conformance-go: protoc_middleman_go
+	go build -o conformance-go conformance_go.go
+
 # Targets for actually running tests.
 test_cpp: protoc_middleman conformance-test-runner conformance-cpp
 	./conformance-test-runner --failure_list failure_list_cpp.txt ./conformance-cpp
@@ -261,6 +275,9 @@ test_java_lite: protoc_middleman conformance-test-runner conformance-java-lite
 
 test_csharp: protoc_middleman conformance-test-runner conformance-csharp
 	./conformance-test-runner --failure_list failure_list_csharp.txt ./conformance-csharp
+
+test_go: protoc_middleman_go conformance-test-runner conformance-go
+	./conformance-test-runner --failure_list failure_list_go.txt ./conformance-go
 
 test_ruby: protoc_middleman conformance-test-runner $(other_language_protoc_outputs)
 	RUBYLIB=../ruby/lib:. ./conformance-test-runner --failure_list failure_list_ruby.txt ./conformance_ruby.rb
