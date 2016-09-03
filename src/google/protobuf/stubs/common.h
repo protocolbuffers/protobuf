@@ -217,7 +217,7 @@ class FatalException : public std::exception {
 
 // This is at the end of the file instead of the beginning to work around a bug
 // in some versions of MSVC.
-using namespace std;  // Don't do this at home, kids.
+using namespace ::std;  // Don't do this at home, kids.
 
 }  // namespace protobuf
 }  // namespace google
