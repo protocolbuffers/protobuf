@@ -1,4 +1,4 @@
-2016-09-02 version 3.0.2 (C++/Java/Python/Ruby/Objective-C/C#/JavaScript/Lite)
+2016-09-06 version 3.0.2 (C++/Java/Python/Ruby/Objective-C/C#/JavaScript/Lite)
   General
   * Various bug fixes.
 
