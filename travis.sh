@@ -75,12 +75,16 @@ genfiles_install() {
   sudo apt-get install lua5.2 liblua5.2-dev
 
   # Need a recent version of protoc to compile proto3 files.
+  # .travis.yml will add this to our path
+  mkdir protoc
+  cd protoc
   wget https://github.com/google/protobuf/releases/download/v3.0.0-beta-2/protoc-3.0.0-beta-2-linux-x86_64.zip
   unzip protoc-3.0.0-beta-2-linux-x86_64.zip
-  export PATH=.:$PATH
-  protoc --version || true
+  cd ..
 }
 genfiles_script() {
+  protoc --version || true
+
   # Avoid regenerating descriptor.pb, since its output can vary based on the
   # version of protoc.
   touch upb/descriptor/descriptor.pb

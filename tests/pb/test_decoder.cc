@@ -288,10 +288,11 @@ size_t value_string(int* depth, const uint32_t* num, const char* buf,
 }
 
 bool endstr(int* depth, const uint32_t* num) {
-  UPB_UNUSED(depth);
   UPB_UNUSED(num);
   check_stack_alignment();
-  output.append("\"\n");
+  output.append("\n");
+  indentbuf(&output, *depth);
+  appendf(&output, "%" PRIu32 ":\"\n", *num);
   return true;
 }
 
@@ -1096,10 +1097,12 @@ void test_valid() {
       LINE("<")
       LINE("%u:{")
       LINE("  <")
-      LINE("  %u:(5)\"abcde\"")
+      LINE("  %u:(5)\"abcde")
+      LINE("  %u:\"")
       LINE("  >")
       LINE("}")
-      LINE(">"), msg_fn, UPB_DESCRIPTOR_TYPE_STRING);
+      LINE(">"), msg_fn, UPB_DESCRIPTOR_TYPE_STRING,
+                 UPB_DESCRIPTOR_TYPE_STRING);
 
   // Test implicit startseq/endseq.
   uint32_t repfl_fn = rep_fn(UPB_DESCRIPTOR_TYPE_FLOAT);
