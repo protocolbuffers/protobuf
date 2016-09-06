@@ -219,38 +219,33 @@ static bool rm(upb_table *t, lookupkey_t key, upb_value *val,
   if (eql(chain->key, key)) {
     /* Element to remove is at the head of its chain. */
     t->count--;
-    if (val) {
-      _upb_value_setval(val, chain->val.val, t->ctype);
-    }
+    if (val) _upb_value_setval(val, chain->val.val, t->ctype);
+    if (removed) *removed = chain->key;
     if (chain->next) {
       upb_tabent *move = (upb_tabent*)chain->next;
       *chain = *move;
-      if (removed) *removed = move->key;
       move->key = 0;  /* Make the slot empty. */
     } else {
-      if (removed) *removed = chain->key;
       chain->key = 0;  /* Make the slot empty. */
     }
     return true;
   } else {
     /* Element to remove is either in a non-head position or not in the
      * table. */
-    while (chain->next && !eql(chain->next->key, key))
+    while (chain->next && !eql(chain->next->key, key)) {
       chain = (upb_tabent*)chain->next;
+    }
     if (chain->next) {
       /* Found element to remove. */
-      upb_tabent *rm;
-
-      if (val) {
-        _upb_value_setval(val, chain->next->val.val, t->ctype);
-      }
-      rm = (upb_tabent*)chain->next;
-      if (removed) *removed = rm->key;
-      rm->key = 0;
-      chain->next = rm->next;
+      upb_tabent *rm = (upb_tabent*)chain->next;
       t->count--;
+      if (val) _upb_value_setval(val, chain->next->val.val, t->ctype);
+      if (removed) *removed = rm->key;
+      rm->key = 0;  /* Make the slot empty. */
+      chain->next = rm->next;
       return true;
     } else {
+      /* Element to remove is not in the table. */
       return false;
     }
   }
@@ -359,7 +354,7 @@ bool upb_strtable_lookup2(const upb_strtable *t, const char *key, size_t len,
 
 bool upb_strtable_remove3(upb_strtable *t, const char *key, size_t len,
                          upb_value *val, upb_alloc *alloc) {
-  uint32_t hash = MurmurHash2(key, strlen(key), 0);
+  uint32_t hash = MurmurHash2(key, len, 0);
   upb_tabkey tabkey;
   if (rm(&t->t, strkey2(key, len), val, &tabkey, hash, &streql)) {
     upb_free(alloc, (void*)tabkey);
@@ -569,9 +564,7 @@ bool upb_inttable_remove(upb_inttable *t, uintptr_t key, upb_value *val) {
       success = false;
     }
   } else {
-    upb_tabkey removed;
-    uint32_t hash = upb_inthash(key);
-    success = rm(&t->t, intkey(key), val, &removed, hash, &inteql);
+    success = rm(&t->t, intkey(key), val, NULL, upb_inthash(key), &inteql);
   }
   check(t);
   return success;
