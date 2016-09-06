@@ -394,6 +394,7 @@ void Struct::SerializeWithCachedSizes(
 
 ::google::protobuf::uint8* Struct::InternalSerializeWithCachedSizesToArray(
     bool deterministic, ::google::protobuf::uint8* target) const {
+  (void)deterministic; // Unused
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.Struct)
   // map<string, .google.protobuf.Value> fields = 1;
   if (!this->fields().empty()) {
@@ -847,6 +848,7 @@ void Value::SerializeWithCachedSizes(
 
 ::google::protobuf::uint8* Value::InternalSerializeWithCachedSizesToArray(
     bool deterministic, ::google::protobuf::uint8* target) const {
+  (void)deterministic; // Unused
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.Value)
   // optional .google.protobuf.NullValue null_value = 1;
   if (has_null_value()) {
@@ -1444,6 +1446,7 @@ void ListValue::SerializeWithCachedSizes(
 
 ::google::protobuf::uint8* ListValue::InternalSerializeWithCachedSizesToArray(
     bool deterministic, ::google::protobuf::uint8* target) const {
+  (void)deterministic; // Unused
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.ListValue)
   // repeated .google.protobuf.Value values = 1;
   for (unsigned int i = 0, n = this->values_size(); i < n; i++) {
