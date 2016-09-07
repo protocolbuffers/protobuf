@@ -365,7 +365,7 @@ jspb.Map.prototype.serializeBinary = function(
       valueWriterFn.call(writer, 2, this.wrapEntry_(entry),
                          opt_valueWriterCallback);
     } else {
-      valueWriterFn_.call(writer, 2, entry.value);
+      valueWriterFn.call(writer, 2, entry.value);
     }
     writer.endSubMessage();
   }
