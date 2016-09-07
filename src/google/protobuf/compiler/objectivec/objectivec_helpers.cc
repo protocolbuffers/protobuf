@@ -262,6 +262,34 @@ bool IsSpecialName(const string& name, const string* special_names,
   return false;
 }
 
+string GetZeroEnumNameForFlagType(const FlagType flag_type) {
+  switch(flag_type) {
+    case FLAGTYPE_DESCRIPTOR_INITIALIZATION:
+      return "GPBDescriptorInitializationFlag_None";
+    case FLAGTYPE_EXTENSION:
+      return "GPBExtensionNone";
+    case FLAGTYPE_FIELD:
+      return "GPBFieldNone";
+    default:
+      GOOGLE_LOG(FATAL) << "Can't get here.";
+      return "0";
+  }
+}
+
+string GetEnumNameForFlagType(const FlagType flag_type) {
+  switch(flag_type) {
+    case FLAGTYPE_DESCRIPTOR_INITIALIZATION:
+      return "GPBDescriptorInitializationFlags";
+    case FLAGTYPE_EXTENSION:
+      return "GPBExtensionOptions";
+    case FLAGTYPE_FIELD:
+      return "GPBFieldFlags";
+    default:
+      GOOGLE_LOG(FATAL) << "Can't get here.";
+      return string();
+  }
+}
+
 }  // namespace
 
 // Escape C++ trigraphs by escaping question marks to \?
@@ -619,33 +647,6 @@ ObjectiveCType GetObjectiveCType(FieldDescriptor::Type field_type) {
   // the enum are handed in the switch.
   GOOGLE_LOG(FATAL) << "Can't get here.";
   return OBJECTIVECTYPE_INT32;
-}
-
-string GetZeroEnumNameForFlagType(const FlagType flag_type) {
-  switch(flag_type) {
-    case FLAGTYPE_DESCRIPTOR_INITIALIZATION:
-      return "GPBDescriptorInitializationFlag_None";
-    case FLAGTYPE_EXTENSION:
-      return "GPBExtensionOptionNone";
-    case FLAGTYPE_FIELD:
-      return "GPBFieldFlagNone";
-    default:
-      return "0";
-  }
-}
-
-string GetEnumNameForFlagType(const FlagType flag_type) {
-  switch(flag_type) {
-    case FLAGTYPE_DESCRIPTOR_INITIALIZATION:
-      return "GPBDescriptorInitializationFlags";
-    case FLAGTYPE_EXTENSION:
-      return "GPBExtensionOptions";
-    case FLAGTYPE_FIELD:
-      return "GPBFieldFlags";
-    default:
-      // Unknown flag type.
-      assert(false);
-  }
 }
 
 bool IsPrimitiveType(const FieldDescriptor* field) {
