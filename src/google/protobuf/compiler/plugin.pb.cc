@@ -368,6 +368,7 @@ void CodeGeneratorRequest::SerializeWithCachedSizes(
 
 ::google::protobuf::uint8* CodeGeneratorRequest::InternalSerializeWithCachedSizesToArray(
     bool deterministic, ::google::protobuf::uint8* target) const {
+  (void)deterministic; // Unused
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.compiler.CodeGeneratorRequest)
   // repeated string file_to_generate = 1;
   for (int i = 0; i < this->file_to_generate_size(); i++) {
@@ -877,6 +878,7 @@ void CodeGeneratorResponse_File::SerializeWithCachedSizes(
 
 ::google::protobuf::uint8* CodeGeneratorResponse_File::InternalSerializeWithCachedSizesToArray(
     bool deterministic, ::google::protobuf::uint8* target) const {
+  (void)deterministic; // Unused
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.compiler.CodeGeneratorResponse.File)
   // optional string name = 1;
   if (has_name()) {
@@ -1211,6 +1213,7 @@ void CodeGeneratorResponse::SerializeWithCachedSizes(
 
 ::google::protobuf::uint8* CodeGeneratorResponse::InternalSerializeWithCachedSizesToArray(
     bool deterministic, ::google::protobuf::uint8* target) const {
+  (void)deterministic; // Unused
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.compiler.CodeGeneratorResponse)
   // optional string error = 1;
   if (has_error()) {
