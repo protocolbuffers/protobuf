@@ -113,7 +113,7 @@ typedef struct GPBStruct__storage_ {
                                         fields:fields
                                     fieldCount:(uint32_t)(sizeof(fields) / sizeof(GPBMessageFieldDescription))
                                    storageSize:sizeof(GPBStruct__storage_)
-                                         flags:0];
+                                         flags:GPBDescriptorInitializationFlag_None];
     NSAssert(descriptor == nil, @"Startup recursed!");
     descriptor = localDescriptor;
   }
@@ -155,7 +155,7 @@ typedef struct GPBValue__storage_ {
         .number = GPBValue_FieldNumber_NullValue,
         .hasIndex = -1,
         .offset = (uint32_t)offsetof(GPBValue__storage_, nullValue),
-        .flags = GPBFieldOptional | GPBFieldHasEnumDescriptor,
+        .flags = (GPBFieldFlags)(GPBFieldOptional | GPBFieldHasEnumDescriptor),
         .dataType = GPBDataTypeEnum,
       },
       {
@@ -211,7 +211,7 @@ typedef struct GPBValue__storage_ {
                                         fields:fields
                                     fieldCount:(uint32_t)(sizeof(fields) / sizeof(GPBMessageFieldDescription))
                                    storageSize:sizeof(GPBValue__storage_)
-                                         flags:0];
+                                         flags:GPBDescriptorInitializationFlag_None];
     static const char *oneofs[] = {
       "kind",
     };
@@ -277,7 +277,7 @@ typedef struct GPBListValue__storage_ {
                                         fields:fields
                                     fieldCount:(uint32_t)(sizeof(fields) / sizeof(GPBMessageFieldDescription))
                                    storageSize:sizeof(GPBListValue__storage_)
-                                         flags:0];
+                                         flags:GPBDescriptorInitializationFlag_None];
     NSAssert(descriptor == nil, @"Startup recursed!");
     descriptor = localDescriptor;
   }

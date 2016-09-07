@@ -290,7 +290,7 @@ static void GPBWriteRawLittleEndian64(GPBOutputBufferState *state,
                      maxLength:bufferBytesLeft
                     usedLength:&usedBufferLength
                       encoding:NSUTF8StringEncoding
-                       options:0
+                       options:(NSStringEncodingConversionOptions)0
                          range:NSMakeRange(0, [value length])
                 remainingRange:NULL];
     }

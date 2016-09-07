@@ -621,6 +621,33 @@ ObjectiveCType GetObjectiveCType(FieldDescriptor::Type field_type) {
   return OBJECTIVECTYPE_INT32;
 }
 
+string GetZeroEnumNameForFlagType(const FlagType flag_type) {
+  switch(flag_type) {
+    case FLAGTYPE_DESCRIPTOR_INITIALIZATION:
+      return "GPBDescriptorInitializationFlag_None";
+    case FLAGTYPE_EXTENSION:
+      return "GPBExtensionOptionNone";
+    case FLAGTYPE_FIELD:
+      return "GPBFieldFlagNone";
+    default:
+      return "0";
+  }
+}
+
+string GetEnumNameForFlagType(const FlagType flag_type) {
+  switch(flag_type) {
+    case FLAGTYPE_DESCRIPTOR_INITIALIZATION:
+      return "GPBDescriptorInitializationFlags";
+    case FLAGTYPE_EXTENSION:
+      return "GPBExtensionOptions";
+    case FLAGTYPE_FIELD:
+      return "GPBFieldFlags";
+    default:
+      // Unknown flag type.
+      assert(false);
+  }
+}
+
 bool IsPrimitiveType(const FieldDescriptor* field) {
   ObjectiveCType type = GetObjectiveCType(field);
   switch (type) {
@@ -817,17 +844,21 @@ bool HasNonZeroDefaultValue(const FieldDescriptor* field) {
   return false;
 }
 
-string BuildFlagsString(const vector<string>& strings) {
+string BuildFlagsString(const FlagType flag_type,
+                        const vector<string>& strings) {
   if (strings.size() == 0) {
-    return "0";
+    return GetZeroEnumNameForFlagType(flag_type);
+  } else if (strings.size() == 1) {
+    return strings[0];
   }
-  string string;
+  string string("(" + GetEnumNameForFlagType(flag_type) + ")(");
   for (size_t i = 0; i != strings.size(); ++i) {
     if (i > 0) {
       string.append(" | ");
     }
     string.append(strings[i]);
   }
+  string.append(")");
   return string;
 }
 

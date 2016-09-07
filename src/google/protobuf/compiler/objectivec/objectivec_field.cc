@@ -93,7 +93,7 @@ void SetCommonFieldVariables(const FieldDescriptor* descriptor,
     field_flags.push_back("GPBFieldHasEnumDescriptor");
   }
 
-  (*variables)["fieldflags"] = BuildFlagsString(field_flags);
+  (*variables)["fieldflags"] = BuildFlagsString(FLAGTYPE_FIELD, field_flags);
 
   (*variables)["default"] = DefaultValue(descriptor);
   (*variables)["default_name"] = GPBGenericValueFieldName(descriptor);
