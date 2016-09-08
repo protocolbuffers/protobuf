@@ -274,6 +274,7 @@ void Duration::SerializeWithCachedSizes(
 
 ::google::protobuf::uint8* Duration::InternalSerializeWithCachedSizesToArray(
     bool deterministic, ::google::protobuf::uint8* target) const {
+  (void)deterministic; // Unused
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.Duration)
   // optional int64 seconds = 1;
   if (this->seconds() != 0) {

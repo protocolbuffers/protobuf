@@ -278,6 +278,7 @@ void Any::SerializeWithCachedSizes(
 
 ::google::protobuf::uint8* Any::InternalSerializeWithCachedSizesToArray(
     bool deterministic, ::google::protobuf::uint8* target) const {
+  (void)deterministic; // Unused
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.Any)
   // optional string type_url = 1;
   if (this->type_url().size() > 0) {
