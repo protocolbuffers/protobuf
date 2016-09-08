@@ -137,6 +137,12 @@ enum ObjectiveCType {
   OBJECTIVECTYPE_MESSAGE
 };
 
+enum FlagType {
+  FLAGTYPE_DESCRIPTOR_INITIALIZATION,
+  FLAGTYPE_EXTENSION,
+  FLAGTYPE_FIELD
+};
+
 template<class TDescriptor>
 string GetOptionalDeprecatedAttribute(const TDescriptor* descriptor, bool preSpace = true, bool postNewline = false) {
   if (descriptor->options().deprecated()) {
@@ -168,7 +174,7 @@ string GPBGenericValueFieldName(const FieldDescriptor* field);
 string DefaultValue(const FieldDescriptor* field);
 bool HasNonZeroDefaultValue(const FieldDescriptor* field);
 
-string BuildFlagsString(const vector<string>& strings);
+string BuildFlagsString(const FlagType type, const vector<string>& strings);
 
 // Builds HeaderDoc/appledoc style comments out of the comments in the .proto
 // file.

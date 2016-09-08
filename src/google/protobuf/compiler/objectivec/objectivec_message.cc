@@ -521,7 +521,8 @@ void MessageGenerator::GenerateSource(io::Printer* printer) {
     if (descriptor_->options().message_set_wire_format()) {
       init_flags.push_back("GPBDescriptorInitializationFlag_WireFormat");
     }
-    vars["init_flags"] = BuildFlagsString(init_flags);
+    vars["init_flags"] = BuildFlagsString(FLAGTYPE_DESCRIPTOR_INITIALIZATION,
+                                          init_flags);
 
     printer->Print(
         vars,

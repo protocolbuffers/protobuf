@@ -262,6 +262,34 @@ bool IsSpecialName(const string& name, const string* special_names,
   return false;
 }
 
+string GetZeroEnumNameForFlagType(const FlagType flag_type) {
+  switch(flag_type) {
+    case FLAGTYPE_DESCRIPTOR_INITIALIZATION:
+      return "GPBDescriptorInitializationFlag_None";
+    case FLAGTYPE_EXTENSION:
+      return "GPBExtensionNone";
+    case FLAGTYPE_FIELD:
+      return "GPBFieldNone";
+    default:
+      GOOGLE_LOG(FATAL) << "Can't get here.";
+      return "0";
+  }
+}
+
+string GetEnumNameForFlagType(const FlagType flag_type) {
+  switch(flag_type) {
+    case FLAGTYPE_DESCRIPTOR_INITIALIZATION:
+      return "GPBDescriptorInitializationFlags";
+    case FLAGTYPE_EXTENSION:
+      return "GPBExtensionOptions";
+    case FLAGTYPE_FIELD:
+      return "GPBFieldFlags";
+    default:
+      GOOGLE_LOG(FATAL) << "Can't get here.";
+      return string();
+  }
+}
+
 }  // namespace
 
 // Escape C++ trigraphs by escaping question marks to \?
@@ -817,17 +845,21 @@ bool HasNonZeroDefaultValue(const FieldDescriptor* field) {
   return false;
 }
 
-string BuildFlagsString(const vector<string>& strings) {
+string BuildFlagsString(const FlagType flag_type,
+                        const vector<string>& strings) {
   if (strings.size() == 0) {
-    return "0";
+    return GetZeroEnumNameForFlagType(flag_type);
+  } else if (strings.size() == 1) {
+    return strings[0];
   }
-  string string;
+  string string("(" + GetEnumNameForFlagType(flag_type) + ")(");
   for (size_t i = 0; i != strings.size(); ++i) {
     if (i > 0) {
       string.append(" | ");
     }
     string.append(strings[i]);
   }
+  string.append(")");
   return string;
 }
 

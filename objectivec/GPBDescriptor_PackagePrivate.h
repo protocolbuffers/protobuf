@@ -37,6 +37,7 @@
 
 // Describes attributes of the field.
 typedef NS_OPTIONS(uint16_t, GPBFieldFlags) {
+  GPBFieldNone            = 0,
   // These map to standard protobuf concepts.
   GPBFieldRequired        = 1 << 0,
   GPBFieldRepeated        = 1 << 1,
@@ -111,6 +112,7 @@ typedef struct GPBMessageFieldDescriptionWithDefault {
 
 // Describes attributes of the extension.
 typedef NS_OPTIONS(uint8_t, GPBExtensionOptions) {
+  GPBExtensionNone          = 0,
   // These map to standard protobuf concepts.
   GPBExtensionRepeated      = 1 << 0,
   GPBExtensionPacked        = 1 << 1,
@@ -130,6 +132,7 @@ typedef struct GPBExtensionDescription {
 } GPBExtensionDescription;
 
 typedef NS_OPTIONS(uint32_t, GPBDescriptorInitializationFlags) {
+  GPBDescriptorInitializationFlag_None              = 0,
   GPBDescriptorInitializationFlag_FieldsWithDefault = 1 << 0,
   GPBDescriptorInitializationFlag_WireFormat        = 1 << 1,
 };

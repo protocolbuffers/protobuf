@@ -85,7 +85,7 @@ void ExtensionGenerator::GenerateStaticVariablesInitialization(
   if (descriptor_->containing_type()->options().message_set_wire_format())
     options.push_back("GPBExtensionSetWireFormat");
 
-  vars["options"] = BuildFlagsString(options);
+  vars["options"] = BuildFlagsString(FLAGTYPE_EXTENSION, options);
 
   ObjectiveCType objc_type = GetObjectiveCType(descriptor_);
   string singular_type;
