@@ -41,6 +41,10 @@ namespace protobuf {
 namespace compiler {
 namespace objectivec {
 
+// CodeGenerator implementation which generates a ObjectiveC source file and
+// header.  If you create your own protocol compiler binary and you want it to
+// support ObjectiveC output, you can do so by registering an instance of this
+// CodeGenerator with the CommandLineInterface in your main() function.
 class LIBPROTOC_EXPORT ObjectiveCGenerator : public CodeGenerator {
  public:
   ObjectiveCGenerator();

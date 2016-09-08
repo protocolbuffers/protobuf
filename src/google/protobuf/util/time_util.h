@@ -28,6 +28,8 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+// Defines utilities for the Timestamp and Duration well known types.
+
 #ifndef GOOGLE_PROTOBUF_UTIL_TIME_UTIL_H__
 #define GOOGLE_PROTOBUF_UTIL_TIME_UTIL_H__
 
@@ -47,6 +49,7 @@ namespace google {
 namespace protobuf {
 namespace util {
 
+// Utility functions for Timestamp and Duration.
 class LIBPROTOBUF_EXPORT TimeUtil {
   typedef google::protobuf::Timestamp Timestamp;
   typedef google::protobuf::Duration Duration;

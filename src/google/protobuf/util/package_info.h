@@ -28,37 +28,19 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-// Generates Ruby code for a given .proto file.
-
-#ifndef GOOGLE_PROTOBUF_COMPILER_RUBY_GENERATOR_H__
-#define GOOGLE_PROTOBUF_COMPILER_RUBY_GENERATOR_H__
-
-#include <string>
-
-#include <google/protobuf/compiler/code_generator.h>
+// This file exists solely to document the google::protobuf::util namespace.
+// It is not compiled into anything, but it may be read by an automated
+// documentation generator.
 
 namespace google {
+
 namespace protobuf {
-namespace compiler {
-namespace ruby {
 
-// CodeGenerator implementation for generated Ruby protocol buffer classes.
-// If you create your own protocol compiler binary and you want it to support
-// Ruby output, you can do so by registering an instance of this
-// CodeGenerator with the CommandLineInterface in your main() function.
-class LIBPROTOC_EXPORT Generator
-    : public google::protobuf::compiler::CodeGenerator {
-  virtual bool Generate(
-      const FileDescriptor* file,
-      const string& parameter,
-      GeneratorContext* generator_context,
-      string* error) const;
-};
+// Utility classes.
+//
+// This package contains various utilities for message comprasion, JSON
+// conversion, well known types, etc.
+namespace util {}
 
-}  // namespace ruby
-}  // namespace compiler
 }  // namespace protobuf
 }  // namespace google
-
-#endif  // GOOGLE_PROTOBUF_COMPILER_RUBY_GENERATOR_H__
-
