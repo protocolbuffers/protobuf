@@ -1030,6 +1030,22 @@ public class JsonFormatTest extends TestCase {
     }
   }
 
+  public void testParserUnknownFields() throws Exception {
+    try {
+      TestAllTypes.Builder builder = TestAllTypes.newBuilder();
+      String json = "{\n" + "  \"unknownField\": \"XXX\"\n" + "}";
+      JsonFormat.parser().merge(json, builder);
+      fail("Exception is expected.");
+    } catch (InvalidProtocolBufferException e) {
+      // Expected.
+    }
+  }
+  public void testParserIgnoringUnknownFields() throws Exception {
+    TestAllTypes.Builder builder = TestAllTypes.newBuilder();
+    String json = "{\n" + "  \"unknownField\": \"XXX\"\n" + "}";
+    JsonFormat.parser().ignoringUnknownFields().merge(json, builder);
+  }
+
   public void testCustomJsonName() throws Exception {
     TestCustomJsonName message = TestCustomJsonName.newBuilder().setValue(12345).build();
     assertEquals("{\n" + "  \"@value\": 12345\n" + "}", JsonFormat.printer().print(message));
