@@ -2007,52 +2007,52 @@
 
   for (size_t i = 0; i < GPBARRAYSIZE(values); ++i) {
     switch (values[i]) {
-      case Message3_O_OneOfCase_OneofInt32:
+      case Message2_O_OneOfCase_OneofInt32:
         msg.oneofInt32 = 100;
         break;
-      case Message3_O_OneOfCase_OneofInt64:
+      case Message2_O_OneOfCase_OneofInt64:
         msg.oneofInt64 = 101;
         break;
-      case Message3_O_OneOfCase_OneofUint32:
+      case Message2_O_OneOfCase_OneofUint32:
         msg.oneofUint32 = 102;
         break;
-      case Message3_O_OneOfCase_OneofUint64:
+      case Message2_O_OneOfCase_OneofUint64:
         msg.oneofUint64 = 103;
         break;
-      case Message3_O_OneOfCase_OneofSint32:
+      case Message2_O_OneOfCase_OneofSint32:
         msg.oneofSint32 = 104;
         break;
-      case Message3_O_OneOfCase_OneofSint64:
+      case Message2_O_OneOfCase_OneofSint64:
         msg.oneofSint64 = 105;
         break;
-      case Message3_O_OneOfCase_OneofFixed32:
+      case Message2_O_OneOfCase_OneofFixed32:
         msg.oneofFixed32 = 106;
         break;
-      case Message3_O_OneOfCase_OneofFixed64:
+      case Message2_O_OneOfCase_OneofFixed64:
         msg.oneofFixed64 = 107;
         break;
-      case Message3_O_OneOfCase_OneofSfixed32:
+      case Message2_O_OneOfCase_OneofSfixed32:
         msg.oneofSfixed32 = 108;
         break;
-      case Message3_O_OneOfCase_OneofSfixed64:
+      case Message2_O_OneOfCase_OneofSfixed64:
         msg.oneofSfixed64 = 109;
         break;
-      case Message3_O_OneOfCase_OneofFloat:
+      case Message2_O_OneOfCase_OneofFloat:
         msg.oneofFloat = 110.0f;
         break;
-      case Message3_O_OneOfCase_OneofDouble:
+      case Message2_O_OneOfCase_OneofDouble:
         msg.oneofDouble = 111.0;
         break;
-      case Message3_O_OneOfCase_OneofBool:
+      case Message2_O_OneOfCase_OneofBool:
         msg.oneofBool = YES;
         break;
-      case Message3_O_OneOfCase_OneofString:
+      case Message2_O_OneOfCase_OneofString:
         msg.oneofString = oneofStringDefault;
         break;
-      case Message3_O_OneOfCase_OneofBytes:
+      case Message2_O_OneOfCase_OneofBytes:
         msg.oneofBytes = oneofBytesDefault;
         break;
-      case Message3_O_OneOfCase_OneofEnum:
+      case Message2_O_OneOfCase_OneofEnum:
         msg.oneofEnum = Message3_Enum_Baz;
         break;
       default:
@@ -2063,7 +2063,7 @@
     // Should be set to the correct case.
     XCTAssertEqual(msg.oOneOfCase, values[i], "Loop: %zd", i);
 
-    // Confirm everything is back as the defaults.
+    // Confirm everything is the defaults.
     XCTAssertEqual(msg.oneofInt32, 100, "Loop: %zd", i);
     XCTAssertEqual(msg.oneofInt64, 101, "Loop: %zd", i);
     XCTAssertEqual(msg.oneofUint32, 102U, "Loop: %zd", i);
@@ -2079,20 +2079,25 @@
     XCTAssertEqual(msg.oneofBool, YES, "Loop: %zd", i);
     XCTAssertEqualObjects(msg.oneofString, oneofStringDefault, "Loop: %zd", i);
     XCTAssertEqualObjects(msg.oneofBytes, oneofBytesDefault, "Loop: %zd", i);
-    XCTAssertNotNil(msg.oneofGroup, "Loop: %zd", i);
-    // Skip group
-    // Skip message
+    // Skip group, no default to consider.
+    // Skip message, no default to consider.
     XCTAssertEqual(msg.oneofEnum, Message2_Enum_Baz, "Loop: %zd", i);
   }
 
-  // We special case nil on string, data, message, ensure they work as expected.
-  // i.e. - it clears the case.
+  // We special case nil on string, data, group, and message, ensure they work
+  // as expected. i.e. - it clears the case.
   msg.oneofString = nil;
-  XCTAssertEqual(msg.oOneOfCase, Message3_O_OneOfCase_GPBUnsetOneOfCase);
+  XCTAssertEqualObjects(msg.oneofString, oneofStringDefault);
+  XCTAssertEqual(msg.oOneOfCase, Message2_O_OneOfCase_GPBUnsetOneOfCase);
   msg.oneofBytes = nil;
-  XCTAssertEqual(msg.oOneOfCase, Message3_O_OneOfCase_GPBUnsetOneOfCase);
+  XCTAssertEqual(msg.oOneOfCase, Message2_O_OneOfCase_GPBUnsetOneOfCase);
+  XCTAssertEqualObjects(msg.oneofBytes, oneofBytesDefault);
+  msg.oneofGroup = nil;
+  XCTAssertEqual(msg.oOneOfCase, Message2_O_OneOfCase_GPBUnsetOneOfCase);
+  XCTAssertNotNil(msg.oneofGroup);
   msg.oneofMessage = nil;
-  XCTAssertEqual(msg.oOneOfCase, Message3_O_OneOfCase_GPBUnsetOneOfCase);
+  XCTAssertEqual(msg.oOneOfCase, Message2_O_OneOfCase_GPBUnsetOneOfCase);
+  XCTAssertNotNil(msg.oneofMessage);
 
   [msg release];
 }
@@ -2212,10 +2217,13 @@
   // We special case nil on string, data, message, ensure they work as expected.
   msg.oneofString = nil;
   XCTAssertEqual(msg.oOneOfCase, Message3_O_OneOfCase_GPBUnsetOneOfCase);
+  XCTAssertEqualObjects(msg.oneofString, oneofStringDefault);
   msg.oneofBytes = nil;
   XCTAssertEqual(msg.oOneOfCase, Message3_O_OneOfCase_GPBUnsetOneOfCase);
+  XCTAssertEqualObjects(msg.oneofBytes, oneofBytesDefault);
   msg.oneofMessage = nil;
   XCTAssertEqual(msg.oOneOfCase, Message3_O_OneOfCase_GPBUnsetOneOfCase);
+  XCTAssertNotNil(msg.oneofMessage);
 
   [msg release];
 }
