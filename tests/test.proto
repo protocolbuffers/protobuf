@@ -6,6 +6,8 @@
 // ^          |`---|--------^
 // +----------+----+        F
 
+syntax = "proto2";
+
 message A {
   optional B b = 1;
 }
@@ -46,4 +48,21 @@ message SimplePrimitives {
   optional sint32 i32 = 7;
   optional bool b = 8;
   optional string str = 9;
+
+  oneof foo {
+    int32 oneof_int32 = 10;
+    string oneof_string = 11;
+  }
+
+  oneof bar {
+    int64 oneof_int64 = 13;
+    bytes oneof_bytes = 14;
+  }
+
+  message Nested {
+    oneof foo {
+      int32 oneof_int32 = 10;
+      string b = 11;
+    }
+  }
 }
