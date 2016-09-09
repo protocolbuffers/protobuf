@@ -36,6 +36,7 @@
 // a descriptor as it doesn't use the classes/enums.
 #import "google/protobuf/Descriptor.pbobjc.m"
 
+#import "google/protobuf/AnyTest.pbobjc.m"
 #import "google/protobuf/MapProto2Unittest.pbobjc.m"
 #import "google/protobuf/MapUnittest.pbobjc.m"
 #import "google/protobuf/Unittest.pbobjc.m"
