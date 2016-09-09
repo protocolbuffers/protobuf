@@ -29,6 +29,8 @@ typedef struct {
   /* Index of the first def that is under this scope.  For msgdefs, the
    * msgdef itself is at start-1. */
   int start;
+  uint32_t oneof_start;
+  uint32_t oneof_index;
 } upb_descreader_frame;
 
 /* The maximum number of nested declarations that are allowed, ie.
@@ -49,6 +51,7 @@ struct upb_descreader {
   upb_filedef *file;  /* The last file in files. */
   upb_descreader_frame stack[UPB_MAX_MESSAGE_NESTING];
   int stack_len;
+  upb_inttable oneofs;
 
   uint32_t number;
   char *name;
@@ -126,16 +129,27 @@ static upb_def *upb_descreader_last(upb_descreader *r) {
 void upb_descreader_startcontainer(upb_descreader *r) {
   upb_descreader_frame *f = &r->stack[r->stack_len++];
   f->start = upb_filedef_defcount(r->file);
+  f->oneof_start = upb_inttable_count(&r->oneofs);
+  f->oneof_index = 0;
   f->name = NULL;
 }
 
 bool upb_descreader_endcontainer(upb_descreader *r) {
-  upb_descreader_frame *f = &r->stack[--r->stack_len];
+  upb_descreader_frame *f = &r->stack[r->stack_len - 1];
+
+  while (upb_inttable_count(&r->oneofs) > f->oneof_start) {
+    upb_oneofdef *o = upb_value_getptr(upb_inttable_pop(&r->oneofs));
+    bool ok = upb_msgdef_addoneof(upb_descreader_top(r), o, &r->oneofs, NULL);
+    UPB_ASSERT(ok);
+  }
+
   if (!upb_descreader_qualify(r->file, f->name, f->start)) {
     return false;
   }
   upb_gfree(f->name);
   f->name = NULL;
+
+  r->stack_len--;
   return true;
 }
 
@@ -143,6 +157,26 @@ void upb_descreader_setscopename(upb_descreader *r, char *str) {
   upb_descreader_frame *f = &r->stack[r->stack_len-1];
   upb_gfree(f->name);
   f->name = str;
+}
+
+static upb_oneofdef *upb_descreader_getoneof(upb_descreader *r,
+                                             uint32_t index) {
+  bool found;
+  upb_value val;
+  upb_descreader_frame *f = &r->stack[r->stack_len-1];
+
+  /* DescriptorProto messages can be nested, so we will see the nested messages
+   * between when we see the FieldDescriptorProto and the OneofDescriptorProto.
+   * We need to preserve the oneofs in between these two things. */
+  index += f->oneof_start;
+
+  while (upb_inttable_count(&r->oneofs) <= index) {
+    upb_inttable_push(&r->oneofs, upb_value_ptr(upb_oneofdef_new(&r->oneofs)));
+  }
+
+  found = upb_inttable_lookup(&r->oneofs, index, &val);
+  UPB_ASSERT(found);
+  return upb_value_getptr(val);
 }
 
 /** Handlers for google.protobuf.FileDescriptorSet. ***************************/
@@ -536,6 +570,33 @@ static size_t field_ondefaultval(void *closure, const void *hd, const char *buf,
   return n;
 }
 
+static bool field_ononeofindex(void *closure, const void *hd, int32_t index) {
+  upb_descreader *r = closure;
+  upb_oneofdef *o = upb_descreader_getoneof(r, index);
+  bool ok = upb_oneofdef_addfield(o, r->f, NULL, NULL);
+  UPB_UNUSED(hd);
+
+  UPB_ASSERT(ok);
+  return true;
+}
+
+/** Handlers for google.protobuf.OneofDescriptorProto. ************************/
+
+static size_t oneof_name(void *closure, const void *hd, const char *buf,
+                         size_t n, const upb_bufhandle *handle) {
+  upb_descreader *r = closure;
+  upb_descreader_frame *f = &r->stack[r->stack_len-1];
+  upb_oneofdef *o = upb_descreader_getoneof(r, f->oneof_index++);
+  char *name_null_terminated = upb_strndup(buf, n);
+  bool ok = upb_oneofdef_setname(o, name_null_terminated, NULL);
+  UPB_UNUSED(hd);
+  UPB_UNUSED(handle);
+
+  UPB_ASSERT(ok);
+  free(name_null_terminated);
+  return n;
+}
+
 /** Handlers for google.protobuf.DescriptorProto ******************************/
 
 static bool msg_start(void *closure, const void *hd) {
@@ -687,6 +748,10 @@ static void reghandlers(const void *closure, upb_handlers *h) {
                            &field_onextendee, NULL);
     upb_handlers_setstring(h, F(FieldDescriptorProto, default_value),
                            &field_ondefaultval, NULL);
+    upb_handlers_setint32(h, F(FieldDescriptorProto, oneof_index),
+                          &field_ononeofindex, NULL);
+  } else if (upbdefs_google_protobuf_OneofDescriptorProto_is(m)) {
+    upb_handlers_setstring(h, F(OneofDescriptorProto, name), &oneof_name, NULL);
   } else if (upbdefs_google_protobuf_FieldOptions_is(m)) {
     upb_handlers_setbool(h, F(FieldOptions, lazy), &field_onlazy, NULL);
     upb_handlers_setbool(h, F(FieldOptions, packed), &field_onpacked, NULL);
@@ -709,6 +774,7 @@ void descreader_cleanup(void *_r) {
 
   upb_gfree(r->name);
   upb_inttable_uninit(&r->files);
+  upb_inttable_uninit(&r->oneofs);
   upb_gfree(r->default_string);
   while (r->stack_len > 0) {
     upb_descreader_frame *f = &r->stack[--r->stack_len];
@@ -726,6 +792,7 @@ upb_descreader *upb_descreader_create(upb_env *e, const upb_handlers *h) {
   }
 
   upb_inttable_init(&r->files, UPB_CTYPE_PTR);
+  upb_inttable_init(&r->oneofs, UPB_CTYPE_PTR);
   upb_sink_reset(upb_descreader_input(r), h, r);
   r->stack_len = 0;
   r->name = NULL;
