@@ -152,6 +152,7 @@ extern const struct upb_refcounted_vtbl upb_enumdef_vtbl;
 struct upb_oneofdef {
   upb_refcounted base;
 
+  uint32_t index;  /* Index within oneofs. */
   const char *name;
   upb_strtable ntof;
   upb_inttable itof;
@@ -161,7 +162,7 @@ struct upb_oneofdef {
 extern const struct upb_refcounted_vtbl upb_oneofdef_vtbl;
 
 #define UPB_ONEOFDEF_INIT(name, ntof, itof, refs, ref2s) \
-  { UPB_REFCOUNT_INIT(&upb_oneofdef_vtbl, refs, ref2s), name, ntof, itof }
+  { UPB_REFCOUNT_INIT(&upb_oneofdef_vtbl, refs, ref2s), 0, name, ntof, itof }
 
 
 /* upb_symtab *****************************************************************/

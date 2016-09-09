@@ -43,7 +43,9 @@ typedef enum {
   UPB_CTYPE_CSTR     = 6,
   UPB_CTYPE_PTR      = 7,
   UPB_CTYPE_CONSTPTR = 8,
-  UPB_CTYPE_FPTR     = 9
+  UPB_CTYPE_FPTR     = 9,
+  UPB_CTYPE_FLOAT    = 10,
+  UPB_CTYPE_DOUBLE   = 11
 } upb_ctype_t;
 
 typedef struct {
@@ -117,6 +119,29 @@ FUNCS(constptr, constptr,     const void*,  uintptr_t,  UPB_CTYPE_CONSTPTR)
 FUNCS(fptr,     fptr,         upb_func*,    uintptr_t,  UPB_CTYPE_FPTR)
 
 #undef FUNCS
+
+UPB_INLINE void upb_value_setfloat(upb_value *val, float cval) {
+  memcpy(&val->val, &cval, sizeof(cval));
+  SET_TYPE(val->ctype, UPB_CTYPE_FLOAT);
+}
+
+UPB_INLINE void upb_value_setdouble(upb_value *val, double cval) {
+  memcpy(&val->val, &cval, sizeof(cval));
+  SET_TYPE(val->ctype, UPB_CTYPE_DOUBLE);
+}
+
+UPB_INLINE upb_value upb_value_float(float cval) {
+  upb_value ret;
+  upb_value_setfloat(&ret, cval);
+  return ret;
+}
+
+UPB_INLINE upb_value upb_value_double(double cval) {
+  upb_value ret;
+  upb_value_setdouble(&ret, cval);
+  return ret;
+}
+
 #undef SET_TYPE
 
 
@@ -358,6 +383,13 @@ size_t upb_inttable_count(const upb_inttable *t);
 UPB_INLINE size_t upb_strtable_count(const upb_strtable *t) {
   return t->t.count;
 }
+
+void upb_inttable_packedsize(const upb_inttable *t, size_t *size);
+void upb_strtable_packedsize(const upb_strtable *t, size_t *size);
+upb_inttable *upb_inttable_pack(const upb_inttable *t, void *p, size_t *ofs,
+                                size_t size);
+upb_strtable *upb_strtable_pack(const upb_strtable *t, void *p, size_t *ofs,
+                                size_t size);
 
 /* Inserts the given key into the hashtable with the given value.  The key must
  * not already exist in the hash table.  For string tables, the key must be

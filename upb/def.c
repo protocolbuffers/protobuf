@@ -133,7 +133,8 @@ upb_def *upb_def_dup(const upb_def *def, const void *o) {
     case UPB_DEF_ENUM:
       return upb_enumdef_upcast_mutable(
           upb_enumdef_dup(upb_downcast_enumdef(def), o));
-    default: UPB_ASSERT(false); return NULL;
+    default:
+      UPB_UNREACHABLE();
   }
 }
 
@@ -283,6 +284,7 @@ static bool assign_msg_indices(upb_msgdef *m, upb_status *s) {
   /* Sort fields.  upb internally relies on UPB_TYPE_MESSAGE fields having the
    * lowest indexes, but we do not publicly guarantee this. */
   upb_msg_field_iter j;
+  upb_msg_oneof_iter k;
   int i;
   uint32_t selector;
   int n = upb_msgdef_numfields(m);
@@ -366,6 +368,13 @@ static bool assign_msg_indices(upb_msgdef *m, upb_status *s) {
   }
 #undef TRY
 #endif
+
+  for(upb_msg_oneof_begin(&k, m), i = 0;
+      !upb_msg_oneof_done(&k);
+      upb_msg_oneof_next(&k), i++) {
+    upb_oneofdef *o = upb_msg_iter_oneof(&k);
+    o->index = i;
+  }
 
   upb_gfree(fields);
   return true;
@@ -1831,6 +1840,10 @@ const upb_msgdef *upb_oneofdef_containingtype(const upb_oneofdef *o) {
 
 int upb_oneofdef_numfields(const upb_oneofdef *o) {
   return upb_strtable_count(&o->ntof);
+}
+
+uint32_t upb_oneofdef_index(const upb_oneofdef *o) {
+  return o->index;
 }
 
 bool upb_oneofdef_addfield(upb_oneofdef *o, upb_fielddef *f,

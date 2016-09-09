@@ -208,6 +208,12 @@ template <int N> class InlinedEnvironment;
  * exist in debug mode.  This turns into regular assert. */
 #define UPB_ASSERT_DEBUGVAR(expr) assert(expr)
 
+#ifdef __GNUC__
+#define UPB_UNREACHABLE() do { assert(0); __builtin_unreachable(); } while(0)
+#else
+#define UPB_UNREACHABLE() do { assert(0); } while(0)
+#endif
+
 /* Generic function type. */
 typedef void upb_func();
 
@@ -441,17 +447,18 @@ struct upb_alloc {
 };
 
 UPB_INLINE void *upb_malloc(upb_alloc *alloc, size_t size) {
-  UPB_ASSERT(size > 0);
+  UPB_ASSERT(alloc);
   return alloc->func(alloc, NULL, 0, size);
 }
 
 UPB_INLINE void *upb_realloc(upb_alloc *alloc, void *ptr, size_t oldsize,
                              size_t size) {
-  UPB_ASSERT(size > 0);
+  UPB_ASSERT(alloc);
   return alloc->func(alloc, ptr, oldsize, size);
 }
 
 UPB_INLINE void upb_free(upb_alloc *alloc, void *ptr) {
+  assert(alloc);
   alloc->func(alloc, ptr, 0, 0);
 }
 
@@ -500,7 +507,6 @@ UPB_BEGIN_EXTERN_C
 void upb_arena_init(upb_arena *a);
 void upb_arena_init2(upb_arena *a, void *mem, size_t n, upb_alloc *alloc);
 void upb_arena_uninit(upb_arena *a);
-upb_alloc *upb_arena_alloc(upb_arena *a);
 bool upb_arena_addcleanup(upb_arena *a, upb_cleanup_func *func, void *ud);
 size_t upb_arena_bytesallocated(const upb_arena *a);
 void upb_arena_setnextblocksize(upb_arena *a, size_t size);
@@ -584,6 +590,10 @@ struct upb_arena {
   void *future1;
   void *future2;
 };
+
+UPB_BEGIN_EXTERN_C
+UPB_INLINE upb_alloc *upb_arena_alloc(upb_arena *a) { return &a->alloc; }
+UPB_END_EXTERN_C
 
 
 /* upb::Environment ***********************************************************/

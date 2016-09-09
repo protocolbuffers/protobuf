@@ -19,7 +19,6 @@
 ** - handling of keys/escape-sequences/etc that span input buffers.
 */
 
-#include <assert.h>
 #include <errno.h>
 #include <stdint.h>
 #include <stdlib.h>
