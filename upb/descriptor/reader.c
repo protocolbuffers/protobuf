@@ -165,6 +165,9 @@ static upb_oneofdef *upb_descreader_getoneof(upb_descreader *r,
   upb_value val;
   upb_descreader_frame *f = &r->stack[r->stack_len-1];
 
+  /* DescriptorProto messages can be nested, so we will see the nested messages
+   * between when we see the FieldDescriptorProto and the OneofDescriptorProto.
+   * We need to preserve the oneofs in between these two things. */
   index += f->oneof_start;
 
   while (upb_inttable_count(&r->oneofs) <= index) {
