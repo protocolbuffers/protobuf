@@ -570,10 +570,9 @@ static size_t field_ondefaultval(void *closure, const void *hd, const char *buf,
 static bool field_ononeofindex(void *closure, const void *hd, int32_t index) {
   upb_descreader *r = closure;
   upb_oneofdef *o = upb_descreader_getoneof(r, index);
-  bool ok;
+  bool ok = upb_oneofdef_addfield(o, r->f, NULL, NULL);
   UPB_UNUSED(hd);
 
-  ok = upb_oneofdef_addfield(o, r->f, NULL, NULL);
   UPB_ASSERT(ok);
   return true;
 }
@@ -585,12 +584,11 @@ static size_t oneof_name(void *closure, const void *hd, const char *buf,
   upb_descreader *r = closure;
   upb_descreader_frame *f = &r->stack[r->stack_len-1];
   upb_oneofdef *o = upb_descreader_getoneof(r, f->oneof_index++);
-  bool ok;
   char *name_null_terminated = upb_strndup(buf, n);
+  bool ok = upb_oneofdef_setname(o, name_null_terminated, NULL);
   UPB_UNUSED(hd);
   UPB_UNUSED(handle);
 
-  ok = upb_oneofdef_setname(o, name_null_terminated, NULL);
   UPB_ASSERT(ok);
   free(name_null_terminated);
   return n;
