@@ -28,8 +28,6 @@
  * For this reason we don't enable it by default, even in debug builds.
  */
 
-/* #define UPB_DEBUG_REFS */
-
 #ifdef __cplusplus
 namespace upb {
 class RefCounted;
