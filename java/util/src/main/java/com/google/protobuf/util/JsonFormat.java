@@ -224,7 +224,7 @@ public class JsonFormat {
    * Creates a {@link Parser} with default configuration.
    */
   public static Parser parser() {
-    return new Parser(TypeRegistry.getEmptyTypeRegistry());
+    return new Parser(TypeRegistry.getEmptyTypeRegistry(), false);
   }
 
   /**
@@ -232,9 +232,11 @@ public class JsonFormat {
    */
   public static class Parser {
     private final TypeRegistry registry;
+    private final boolean ignoringUnknownFields;
 
-    private Parser(TypeRegistry registry) {
+    private Parser(TypeRegistry registry, boolean ignoreUnknownFields) {
       this.registry = registry;
+      this.ignoringUnknownFields = ignoreUnknownFields;
     }
 
     /**
@@ -247,7 +249,16 @@ public class JsonFormat {
       if (this.registry != TypeRegistry.getEmptyTypeRegistry()) {
         throw new IllegalArgumentException("Only one registry is allowed.");
       }
-      return new Parser(registry);
+      return new Parser(registry, this.ignoringUnknownFields);
+    }
+
+    /**
+     * Creates a new {@link Parser} configured to not throw an exception
+     * when an unknown field is encountered. The new Parser clones all other
+     * configurations from this Parser.
+     */
+    public Parser ignoringUnknownFields() {
+      return new Parser(this.registry, true);
     }
 
     /**
@@ -259,7 +270,7 @@ public class JsonFormat {
     public void merge(String json, Message.Builder builder) throws InvalidProtocolBufferException {
       // TODO(xiaofeng): Investigate the allocation overhead and optimize for
       // mobile.
-      new ParserImpl(registry).merge(json, builder);
+      new ParserImpl(registry, ignoringUnknownFields).merge(json, builder);
     }
 
     /**
@@ -272,7 +283,7 @@ public class JsonFormat {
     public void merge(Reader json, Message.Builder builder) throws IOException {
       // TODO(xiaofeng): Investigate the allocation overhead and optimize for
       // mobile.
-      new ParserImpl(registry).merge(json, builder);
+      new ParserImpl(registry, ignoringUnknownFields).merge(json, builder);
     }
   }
 
@@ -1024,9 +1035,11 @@ public class JsonFormat {
   private static class ParserImpl {
     private final TypeRegistry registry;
     private final JsonParser jsonParser;
+    private final boolean ignoringUnknownFields;
 
-    ParserImpl(TypeRegistry registry) {
+    ParserImpl(TypeRegistry registry, boolean ignoreUnknownFields) {
       this.registry = registry;
+      this.ignoringUnknownFields = ignoreUnknownFields;
       this.jsonParser = new JsonParser();
     }
 
@@ -1191,6 +1204,9 @@ public class JsonFormat {
         }
         FieldDescriptor field = fieldNameMap.get(entry.getKey());
         if (field == null) {
+          if (ignoringUnknownFields) {
+            continue;
+          }
           throw new InvalidProtocolBufferException(
               "Cannot find field: "
                   + entry.getKey()
