@@ -651,7 +651,6 @@ static void *msg_startext(void *closure, const void *hd) {
   return r;
 }
 
-#include <stdio.h>
 static void *msg_startfield(void *closure, const void *hd) {
   upb_descreader *r = closure;
   r->f = upb_fielddef_new(&r->f);
@@ -667,6 +666,8 @@ static bool msg_endfield(void *closure, const void *hd) {
   bool ok;
   UPB_UNUSED(hd);
 
+  /* Oneof fields are added to the msgdef through their oneof, so don't need to
+   * be added here. */
   if (upb_fielddef_containingoneof(r->f) == NULL) {
     ok = upb_msgdef_addfield(m, r->f, &r->f, NULL);
     UPB_ASSERT(ok);
