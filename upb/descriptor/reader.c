@@ -573,7 +573,7 @@ static size_t field_ondefaultval(void *closure, const void *hd, const char *buf,
 static bool field_ononeofindex(void *closure, const void *hd, int32_t index) {
   upb_descreader *r = closure;
   upb_oneofdef *o = upb_descreader_getoneof(r, index);
-  bool ok = upb_oneofdef_addfield(o, r->f, NULL, NULL);
+  bool ok = upb_oneofdef_addfield(o, r->f, &r->f, NULL);
   UPB_UNUSED(hd);
 
   UPB_ASSERT(ok);
@@ -663,9 +663,15 @@ static void *msg_startfield(void *closure, const void *hd) {
 static bool msg_endfield(void *closure, const void *hd) {
   upb_descreader *r = closure;
   upb_msgdef *m = upb_descreader_top(r);
+  bool ok;
   UPB_UNUSED(hd);
 
-  upb_msgdef_addfield(m, r->f, &r->f, NULL);
+  /* Oneof fields are added to the msgdef through their oneof, so don't need to
+   * be added here. */
+  if (upb_fielddef_containingoneof(r->f) == NULL) {
+    ok = upb_msgdef_addfield(m, r->f, &r->f, NULL);
+    UPB_ASSERT(ok);
+  }
   r->f = NULL;
   return true;
 }

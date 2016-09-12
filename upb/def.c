@@ -439,7 +439,16 @@ bool upb_def_freeze(upb_def *const* defs, size_t n, upb_status *s) {
 
 /* upb_enumdef ****************************************************************/
 
-static void upb_enumdef_free(upb_refcounted *r) {
+static void visitenum(const upb_refcounted *r, upb_refcounted_visit *visit,
+                      void *closure) {
+  const upb_enumdef *e = (const upb_enumdef*)r;
+  const upb_def *def = upb_enumdef_upcast(e);
+  if (upb_def_file(def)) {
+    visit(r, upb_filedef_upcast(upb_def_file(def)), closure);
+  }
+}
+
+static void freeenum(upb_refcounted *r) {
   upb_enumdef *e = (upb_enumdef*)r;
   upb_inttable_iter i;
   upb_inttable_begin(&i, &e->iton);
@@ -453,7 +462,7 @@ static void upb_enumdef_free(upb_refcounted *r) {
   upb_gfree(e);
 }
 
-const struct upb_refcounted_vtbl upb_enumdef_vtbl = {NULL, &upb_enumdef_free};
+const struct upb_refcounted_vtbl upb_enumdef_vtbl = {&visitenum, &freeenum};
 
 upb_enumdef *upb_enumdef_new(const void *owner) {
   upb_enumdef *e = upb_gmalloc(sizeof(*e));
@@ -611,6 +620,7 @@ const char *upb_fielddef_fullname(const upb_fielddef *e) {
 static void visitfield(const upb_refcounted *r, upb_refcounted_visit *visit,
                        void *closure) {
   const upb_fielddef *f = (const upb_fielddef*)r;
+  const upb_def *def = upb_fielddef_upcast(f);
   if (upb_fielddef_containingtype(f)) {
     visit(r, upb_msgdef_upcast2(upb_fielddef_containingtype(f)), closure);
   }
@@ -619,6 +629,9 @@ static void visitfield(const upb_refcounted *r, upb_refcounted_visit *visit,
   }
   if (upb_fielddef_subdef(f)) {
     visit(r, upb_def_upcast(upb_fielddef_subdef(f)), closure);
+  }
+  if (upb_def_file(def)) {
+    visit(r, upb_filedef_upcast(upb_def_file(def)), closure);
   }
 }
 
@@ -1384,6 +1397,7 @@ static void visitmsg(const upb_refcounted *r, upb_refcounted_visit *visit,
                      void *closure) {
   upb_msg_oneof_iter o;
   const upb_msgdef *m = (const upb_msgdef*)r;
+  const upb_def *def = upb_msgdef_upcast(m);
   upb_msg_field_iter i;
   for(upb_msg_field_begin(&i, m);
       !upb_msg_field_done(&i);
@@ -1396,6 +1410,9 @@ static void visitmsg(const upb_refcounted *r, upb_refcounted_visit *visit,
       upb_msg_oneof_next(&o)) {
     upb_oneofdef *f = upb_msg_iter_oneof(&o);
     visit(r, upb_oneofdef_upcast(f), closure);
+  }
+  if (upb_def_file(def)) {
+    visit(r, upb_filedef_upcast(upb_def_file(def)), closure);
   }
 }
 
@@ -1545,6 +1562,7 @@ bool upb_msgdef_addfield(upb_msgdef *m, upb_fielddef *f, const void *ref_donor,
    * This method is idempotent. Check if |f| is already part of this msgdef and
    * return immediately if so. */
   if (upb_fielddef_containingtype(f) == m) {
+    if (ref_donor) upb_fielddef_unref(f, ref_donor);
     return true;
   }
 
@@ -2089,6 +2107,7 @@ bool upb_filedef_adddef(upb_filedef *f, upb_def *def, const void *ref_donor,
   if (upb_inttable_push(&f->defs, upb_value_constptr(def))) {
     def->file = f;
     upb_ref2(def, f);
+    upb_ref2(f, def);
     if (ref_donor) upb_def_unref(def, ref_donor);
     if (def->type == UPB_DEF_MSG) {
       upb_downcast_msgdef_mutable(def)->syntax = f->syntax;
