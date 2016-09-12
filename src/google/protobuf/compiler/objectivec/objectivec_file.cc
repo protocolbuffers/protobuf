@@ -37,6 +37,7 @@
 #include <google/protobuf/io/zero_copy_stream_impl.h>
 #include <google/protobuf/stubs/stl_util.h>
 #include <google/protobuf/stubs/strutil.h>
+#include <algorithm> // std::find()
 #include <iostream>
 #include <sstream>
 
@@ -53,7 +54,7 @@ namespace {
 // This is also found in GPBBootstrap.h, and needs to be kept in sync.  It
 // is the version check done to ensure generated code works with the current
 // runtime being used.
-const int32 GOOGLE_PROTOBUF_OBJC_GEN_VERSION = 30001;
+const int32 GOOGLE_PROTOBUF_OBJC_GEN_VERSION = 30002;
 
 const char* kHeaderExtension = ".pbobjc.h";
 
@@ -463,19 +464,22 @@ void FileGenerator::GenerateSource(io::Printer *printer) {
 
   // File descriptor only needed if there are messages to use it.
   if (message_generators_.size() > 0) {
-    string syntax;
+    map<string, string> vars;
+    vars["root_class_name"] = root_class_name_;
+    vars["package"] = file_->package();
+    vars["objc_prefix"] = FileClassPrefix(file_);
     switch (file_->syntax()) {
       case FileDescriptor::SYNTAX_UNKNOWN:
-        syntax = "GPBFileSyntaxUnknown";
+        vars["syntax"] = "GPBFileSyntaxUnknown";
         break;
       case FileDescriptor::SYNTAX_PROTO2:
-        syntax = "GPBFileSyntaxProto2";
+        vars["syntax"] = "GPBFileSyntaxProto2";
         break;
       case FileDescriptor::SYNTAX_PROTO3:
-        syntax = "GPBFileSyntaxProto3";
+        vars["syntax"] = "GPBFileSyntaxProto3";
         break;
     }
-    printer->Print(
+    printer->Print(vars,
         "#pragma mark - $root_class_name$_FileDescriptor\n"
         "\n"
         "static GPBFileDescriptor *$root_class_name$_FileDescriptor(void) {\n"
@@ -483,16 +487,24 @@ void FileGenerator::GenerateSource(io::Printer *printer) {
         "  // about thread safety of the singleton.\n"
         "  static GPBFileDescriptor *descriptor = NULL;\n"
         "  if (!descriptor) {\n"
-        "    GPBDebugCheckRuntimeVersion();\n"
-        "    descriptor = [[GPBFileDescriptor alloc] initWithPackage:@\"$package$\"\n"
-        "                                                     syntax:$syntax$];\n"
+        "    GPBDebugCheckRuntimeVersion();\n");
+    if (vars["objc_prefix"].size() > 0) {
+      printer->Print(
+          vars,
+          "    descriptor = [[GPBFileDescriptor alloc] initWithPackage:@\"$package$\"\n"
+          "                                                 objcPrefix:@\"$objc_prefix$\"\n"
+          "                                                     syntax:$syntax$];\n");
+    } else {
+      printer->Print(
+          vars,
+          "    descriptor = [[GPBFileDescriptor alloc] initWithPackage:@\"$package$\"\n"
+          "                                                     syntax:$syntax$];\n");
+    }
+    printer->Print(
         "  }\n"
         "  return descriptor;\n"
         "}\n"
-        "\n",
-        "root_class_name", root_class_name_,
-        "package", file_->package(),
-        "syntax", syntax);
+        "\n");
   }
 
   for (vector<EnumGenerator *>::iterator iter = enum_generators_.begin();

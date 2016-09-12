@@ -93,6 +93,7 @@ compile_protos() {
 # sources can be generated from them.
 
 CORE_PROTO_FILES=(
+  src/google/protobuf/any_test.proto
   src/google/protobuf/unittest_arena.proto
   src/google/protobuf/unittest_custom_options.proto
   src/google/protobuf/unittest_enormous_descriptor.proto
