@@ -64,6 +64,7 @@ These are projects we know about implementing Protocol Buffers for other program
 * OCaml: http://piqi.org/
 * Perl: http://groups.google.com/group/protobuf-perl
 * Perl: http://search.cpan.org/perldoc?Google::ProtocolBuffers
+* Perl: https://metacpan.org/pod/Google::ProtocolBuffers::Dynamic
 * Perl/XS: http://code.google.com/p/protobuf-perlxs/
 * PHP: http://code.google.com/p/pb4php/
 * PHP: https://github.com/allegro/php-protobuf/
