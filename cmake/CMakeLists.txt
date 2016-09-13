@@ -29,6 +29,47 @@ else (MSVC)
   set(protobuf_WITH_ZLIB_DEFAULT ON)
 endif (MSVC)
 option(protobuf_WITH_ZLIB "Build with zlib support" ${protobuf_WITH_ZLIB_DEFAULT})
+
+option(protobuf_WITHOUT_CPP_COMPILER "Build with C++ compiler support" ON)
+if (protobuf_WITHOUT_CPP_COMPILER)
+    add_definitions(-DGOOGLE_PROTOBUFC_NO_CPP)
+endif ()
+
+option(protobuf_WITHOUT_JAVA_COMPILER "Build with Java compiler support" ON)
+if (protobuf_WITHOUT_JAVA_COMPILER)
+    add_definitions(-DGOOGLE_PROTOBUFC_NO_JAVA)
+endif ()
+
+option(protobuf_WITHOUT_CSHARP_COMPILER "Build with C# compiler support" ON)
+if (protobuf_WITHOUT_CSHARP_COMPILER)
+    add_definitions(-DGOOGLE_PROTOBUFC_NO_CSHARP)
+endif()
+
+option(protobuf_WITHOUT_OBJC_COMPILER "Build with Objective-C compiler support" ON)
+if (protobuf_WITHOUT_OBJC_COMPILER)
+    add_definitions(-DGOOGLE_PROTOBUFC_NO_OBJC)
+endif()
+
+option(protobuf_WITHOUT_JAVANANO_COMPILER "Build with Java Nano compiler support" ON)
+if (protobuf_WITHOUT_JAVANANO_COMPILER)
+    add_definitions(-DGOOGLE_PROTOBUFC_NO_JAVANANO)
+endif()
+
+option(protobuf_WITHOUT_JS_COMPILER "Build with JavaScript compiler support" ON)
+if (protobuf_WITHOUT_JS_COMPILER)
+    add_definitions(-DGOOGLE_PROTOBUFC_NO_JS)
+endif()
+
+option(protobuf_WITHOUT_PYTHON_COMPILER "Build with Python compiler support" ON)
+if (protobuf_WITHOUT_PYTHON_COMPILER)
+    add_definitions(-DGOOGLE_PROTOBUF_NO_PYTHON)
+endif()
+
+option(protobuf_WITHOUT_RUBY_COMPILER "Build with Ruby compiler support" ON)
+if (protobuf_WITHOUT_RUBY_COMPILER)
+    add_definitions(-DGOOGLE_PROTOBUF_NO_RUBY)
+endif()
+
 set(protobuf_DEBUG_POSTFIX "d"
   CACHE STRING "Default debug postfix")
 mark_as_advanced(protobuf_DEBUG_POSTFIX)
