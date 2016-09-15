@@ -552,6 +552,7 @@ EXTRA_DIST =                                                   \
   google/protobuf/testdata/text_format_unittest_extensions_data_pointy.txt  \
   google/protobuf/package_info.h                               \
   google/protobuf/io/package_info.h                            \
+  google/protobuf/util/package_info.h                          \
   google/protobuf/compiler/ruby/ruby_generated_code.proto      \
   google/protobuf/compiler/ruby/ruby_generated_code_pb.rb      \
   google/protobuf/compiler/package_info.h                      \

@@ -28,6 +28,8 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+// This file defines an Arena allocator for better allocation performance.
+
 #ifndef GOOGLE_PROTOBUF_ARENA_H__
 #define GOOGLE_PROTOBUF_ARENA_H__
 
@@ -211,12 +213,10 @@ struct ArenaOptions {
 //
 // This protocol is implemented by all arena-enabled proto2 message classes as
 // well as RepeatedPtrField.
-
-#if __cplusplus >= 201103L
-class LIBPROTOBUF_EXPORT Arena final {
-#else
+//
+// Do NOT subclass Arena. This class will be marked as final when C++11 is
+// enabled.
 class LIBPROTOBUF_EXPORT Arena {
-#endif
  public:
   // Arena constructor taking custom options. See ArenaOptions below for
   // descriptions of the options available.
