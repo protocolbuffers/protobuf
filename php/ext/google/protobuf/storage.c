@@ -1,18 +1,40 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2008 Google Inc.  All rights reserved.
+// https://developers.google.com/protocol-buffers/
+//
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are
+// met:
+//
+//     * Redistributions of source code must retain the above copyright
+// notice, this list of conditions and the following disclaimer.
+//     * Redistributions in binary form must reproduce the above
+// copyright notice, this list of conditions and the following disclaimer
+// in the documentation and/or other materials provided with the
+// distribution.
+//     * Neither the name of Google Inc. nor the names of its
+// contributors may be used to endorse or promote products derived from
+// this software without specific prior written permission.
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
 #include <stdint.h>
 #include <protobuf.h>
+#include <Zend/zend.h>
 
 // -----------------------------------------------------------------------------
-// PHP <-> native slot management.
+// Native slot storage.
 // -----------------------------------------------------------------------------
-
-static zval* int32_to_zval(int32_t value) {
-  zval* tmp;
-  MAKE_STD_ZVAL(tmp);
-  ZVAL_LONG(tmp, value);
-  php_printf("int32 to zval\n");
-  // ZVAL_LONG(tmp, 1);
-  return tmp;
-}
 
 #define DEREF(memory, type) *(type*)(memory)
 
@@ -21,9 +43,9 @@ size_t native_slot_size(upb_fieldtype_t type) {
     case UPB_TYPE_FLOAT: return 4;
     case UPB_TYPE_DOUBLE: return 8;
     case UPB_TYPE_BOOL: return 1;
-    case UPB_TYPE_STRING: return sizeof(zval*);
-    case UPB_TYPE_BYTES: return sizeof(zval*);
-    case UPB_TYPE_MESSAGE: return sizeof(zval*);
+    case UPB_TYPE_STRING: return sizeof(void*);
+    case UPB_TYPE_BYTES: return sizeof(void*);
+    case UPB_TYPE_MESSAGE: return sizeof(void*);
     case UPB_TYPE_ENUM: return 4;
     case UPB_TYPE_INT32: return 4;
     case UPB_TYPE_INT64: return 8;
@@ -33,72 +55,77 @@ size_t native_slot_size(upb_fieldtype_t type) {
   }
 }
 
-static bool is_php_num(zval* value) {
-  // Is numerial string also valid?
-  return (Z_TYPE_P(value) == IS_LONG ||
-          Z_TYPE_P(value) == IS_DOUBLE);
-}
-
-void native_slot_check_int_range_precision(upb_fieldtype_t type, zval* val) {
-  // TODO(teboring): Add it back.
-  // if (!is_php_num(val)) {
-  //   zend_error(E_ERROR, "Expected number type for integral field.");
-  // }
-
-  // if (Z_TYPE_P(val) == IS_DOUBLE) {
-  //   double dbl_val = NUM2DBL(val);
-  //   if (floor(dbl_val) != dbl_val) {
-  //     zend_error(E_ERROR,
-  //              "Non-integral floating point value assigned to integer field.");
-  //   }
-  // }
-  // if (type == UPB_TYPE_UINT32 || type == UPB_TYPE_UINT64) {
-  //   if (NUM2DBL(val) < 0) {
-  //     zend_error(E_ERROR,
-  //              "Assigning negative value to unsigned integer field.");
-  //   }
-  // }
-}
-
-zval* native_slot_get(upb_fieldtype_t type, /*VALUE type_class,*/
-                      const void* memory TSRMLS_DC) {
-  zval* retval = NULL;
+bool native_slot_set(upb_fieldtype_t type, const zend_class_entry* klass,
+                     void* memory, zval* value) {
   switch (type) {
-    // TODO(teboring): Add it back.
-    // case UPB_TYPE_FLOAT:
-    //   return DBL2NUM(DEREF(memory, float));
-    // case UPB_TYPE_DOUBLE:
-    //   return DBL2NUM(DEREF(memory, double));
-    // case UPB_TYPE_BOOL:
-    //   return DEREF(memory, int8_t) ? Qtrue : Qfalse;
-    // case UPB_TYPE_STRING:
-    // case UPB_TYPE_BYTES:
-    // case UPB_TYPE_MESSAGE:
-    //   return DEREF(memory, VALUE);
-    // case UPB_TYPE_ENUM: {
-    //   int32_t val = DEREF(memory, int32_t);
-    //   VALUE symbol = enum_lookup(type_class, INT2NUM(val));
-    //   if (symbol == Qnil) {
-    //     return INT2NUM(val);
-    //   } else {
-    //     return symbol;
-    //   }
-    // }
-    case UPB_TYPE_INT32:
-      return int32_to_zval(DEREF(memory, int32_t));
-    // TODO(teboring): Add it back.
-    // case UPB_TYPE_INT64:
-    //   return LL2NUM(DEREF(memory, int64_t));
-    // case UPB_TYPE_UINT32:
-    //   return UINT2NUM(DEREF(memory, uint32_t));
-    // case UPB_TYPE_UINT64:
-    //   return ULL2NUM(DEREF(memory, uint64_t));
-    default:
-      return EG(uninitialized_zval_ptr);
+    case UPB_TYPE_STRING:
+    case UPB_TYPE_BYTES: {
+      if (!protobuf_convert_to_string(value)) {
+        return false;
+      }
+      if (type == UPB_TYPE_STRING &&
+          !is_structurally_valid_utf8(Z_STRVAL_P(value), Z_STRLEN_P(value))) {
+        zend_error(E_USER_ERROR, "Given string is not UTF8 encoded.");
+        return false;
+      }
+      if (*(zval**)memory != NULL) {
+        REPLACE_ZVAL_VALUE((zval**)memory, value, 1);
+      } else {
+        // Handles repeated/map string field. Memory provided by
+        // RepeatedField/Map is not initialized.
+        MAKE_STD_ZVAL(DEREF(memory, zval*));
+        ZVAL_STRINGL(DEREF(memory, zval*), Z_STRVAL_P(value), Z_STRLEN_P(value),
+                     1);
+      }
+      break;
+    }
+    case UPB_TYPE_MESSAGE: {
+      if (Z_TYPE_P(value) != IS_OBJECT && Z_TYPE_P(value) != IS_NULL) {
+        zend_error(E_USER_ERROR, "Given value is not message.");
+        return false;
+      }
+      if (Z_TYPE_P(value) == IS_OBJECT && klass != Z_OBJCE_P(value)) {
+        zend_error(E_USER_ERROR, "Given message does not have correct class.");
+        return false;
+      }
+      if (EXPECTED(DEREF(memory, zval*) != value)) {
+        if (DEREF(memory, zval*) != NULL) {
+          zval_ptr_dtor((zval**)memory);
+        }
+        DEREF(memory, zval*) = value;
+        Z_ADDREF_P(value);
+      }
+      break;
+    }
+
+#define CASE_TYPE(upb_type, type, c_type, php_type)              \
+  case UPB_TYPE_##upb_type: {                                    \
+    c_type type##_value;                                         \
+    if (protobuf_convert_to_##type(value, &type##_value)) {      \
+      DEREF(memory, c_type) = type##_value;                      \
+    }                                                            \
+    break;                                                       \
   }
+      CASE_TYPE(INT32,  int32,  int32_t,  LONG)
+      CASE_TYPE(UINT32, uint32, uint32_t, LONG)
+      CASE_TYPE(ENUM,   int32,  int32_t,  LONG)
+      CASE_TYPE(INT64,  int64,  int64_t,  LONG)
+      CASE_TYPE(UINT64, uint64, uint64_t, LONG)
+      CASE_TYPE(FLOAT,  float,  float,    DOUBLE)
+      CASE_TYPE(DOUBLE, double, double,   DOUBLE)
+      CASE_TYPE(BOOL,   bool,   int8_t,   BOOL)
+
+#undef CASE_TYPE
+
+    default:
+      break;
+  }
+
+  return true;
 }
 
-void native_slot_init(upb_fieldtype_t type, void* memory) {
+void native_slot_init(upb_fieldtype_t type, void* memory, zval** cache) {
+  zval* tmp = NULL;
   switch (type) {
     case UPB_TYPE_FLOAT:
       DEREF(memory, float) = 0.0;
@@ -109,17 +136,11 @@ void native_slot_init(upb_fieldtype_t type, void* memory) {
     case UPB_TYPE_BOOL:
       DEREF(memory, int8_t) = 0;
       break;
-    // TODO(teboring): Add it back.
-    // case UPB_TYPE_STRING:
-    // case UPB_TYPE_BYTES:
-    //   DEREF(memory, VALUE) = php_str_new2("");
-    //   php_enc_associate(DEREF(memory, VALUE), (type == UPB_TYPE_BYTES)
-    //                                              ? kRubyString8bitEncoding
-    //                                              : kRubyStringUtf8Encoding);
-    //   break;
-    // case UPB_TYPE_MESSAGE:
-    //   DEREF(memory, VALUE) = Qnil;
-    //   break;
+    case UPB_TYPE_STRING:
+    case UPB_TYPE_BYTES:
+    case UPB_TYPE_MESSAGE:
+      DEREF(memory, zval**) = cache;
+      break;
     case UPB_TYPE_ENUM:
     case UPB_TYPE_INT32:
       DEREF(memory, int32_t) = 0;
@@ -138,122 +159,93 @@ void native_slot_init(upb_fieldtype_t type, void* memory) {
   }
 }
 
-void native_slot_set(upb_fieldtype_t type, /*VALUE type_class,*/ void* memory,
-                     zval* value) {
-  native_slot_set_value_and_case(type, /*type_class,*/ memory, value, NULL, 0);
-}
-
-void native_slot_set_value_and_case(upb_fieldtype_t type, /*VALUE type_class,*/
-                                    void* memory, zval* value,
-                                    uint32_t* case_memory,
-                                    uint32_t case_number) {
+void native_slot_get(upb_fieldtype_t type, const void* memory,
+                     zval** cache TSRMLS_DC) {
   switch (type) {
-    case UPB_TYPE_FLOAT:
-      if (!Z_TYPE_P(value) == IS_LONG) {
-        zend_error(E_ERROR, "Expected number type for float field.");
+#define CASE(upb_type, php_type, c_type) \
+    case UPB_TYPE_##upb_type: \
+      SEPARATE_ZVAL_IF_NOT_REF(cache); \
+      ZVAL_##php_type(*cache, DEREF(memory, c_type)); \
+      return;
+
+CASE(FLOAT,  DOUBLE, float)
+CASE(DOUBLE, DOUBLE, double)
+CASE(BOOL,   BOOL,   int8_t)
+CASE(INT32,  LONG,   int32_t)
+CASE(INT64,  LONG,   int64_t)
+CASE(UINT64, LONG,   uint64_t)
+CASE(ENUM,   LONG,   uint32_t)
+
+#undef CASE
+    case UPB_TYPE_UINT32: {
+      // Prepend bit-1 for negative numbers, so that uint32 value will be
+      // consistent on both 32-bit and 64-bit architectures.
+      SEPARATE_ZVAL_IF_NOT_REF(cache);
+      int value = DEREF(memory, int32_t);
+      if (sizeof(int) == 8) {
+        value |= (-((value >> 31) & 0x1) & 0xFFFFFFFF00000000);
       }
-      DEREF(memory, float) = Z_DVAL_P(value);
-      break;
-    case UPB_TYPE_DOUBLE:
-      // TODO(teboring): Add it back.
-      // if (!is_php_num(value)) {
-      //   zend_error(E_ERROR, "Expected number type for double field.");
-      // }
-      // DEREF(memory, double) = Z_DVAL_P(value);
-      break;
-    case UPB_TYPE_BOOL: {
-      int8_t val = -1;
-      if (zval_is_true(value)) {
-        val = 1;
-      } else {
-        val = 0;
-      }
-      // TODO(teboring): Add it back.
-      // else if (value == Qfalse) {
-      //   val = 0;
-      // }
-      // else {
-      //   php_raise(php_eTypeError, "Invalid argument for boolean field.");
-      // }
-      DEREF(memory, int8_t) = val;
-      break;
+      ZVAL_LONG(*cache, value);
+      return;
     }
+
     case UPB_TYPE_STRING:
     case UPB_TYPE_BYTES: {
-      // TODO(teboring): Add it back.
-      // if (Z_TYPE_P(value) != IS_STRING) {
-      //   zend_error(E_ERROR, "Invalid argument for string field.");
-      // }
-      // native_slot_validate_string_encoding(type, value);
-      // DEREF(memory, zval*) = value;
+      // For optional string/bytes fields, the cache is owned by the containing
+      // message and should have been updated during setting/decoding. However,
+      // for repeated string/bytes fields, the cache is provided by zend engine
+      // and has not been updated.
+      zval* value = DEREF(memory, zval*);
+      if (*cache != value) {
+        ZVAL_STRINGL(*cache, Z_STRVAL_P(value), Z_STRLEN_P(value), 1);
+      }
       break;
     }
     case UPB_TYPE_MESSAGE: {
-      // TODO(teboring): Add it back.
-      // if (CLASS_OF(value) == CLASS_OF(Qnil)) {
-      //   value = Qnil;
-      // } else if (CLASS_OF(value) != type_class) {
-      //   php_raise(php_eTypeError,
-      //            "Invalid type %s to assign to submessage field.",
-      //            php_class2name(CLASS_OF(value)));
-      // }
-      // DEREF(memory, VALUE) = value;
-      break;
-    }
-    case UPB_TYPE_ENUM: {
-      // TODO(teboring): Add it back.
-      // int32_t int_val = 0;
-      // if (!is_php_num(value) && TYPE(value) != T_SYMBOL) {
-      //   php_raise(php_eTypeError,
-      //            "Expected number or symbol type for enum field.");
-      // }
-      // if (TYPE(value) == T_SYMBOL) {
-      //   // Ensure that the given symbol exists in the enum module.
-      //   VALUE lookup = php_funcall(type_class, php_intern("resolve"), 1, value);
-      //   if (lookup == Qnil) {
-      //     php_raise(php_eRangeError, "Unknown symbol value for enum field.");
-      //   } else {
-      //     int_val = NUM2INT(lookup);
-      //   }
-      // } else {
-      //   native_slot_check_int_range_precision(UPB_TYPE_INT32, value);
-      //   int_val = NUM2INT(value);
-      // }
-      // DEREF(memory, int32_t) = int_val;
-      // break;
-    }
-    case UPB_TYPE_INT32:
-    case UPB_TYPE_INT64:
-    case UPB_TYPE_UINT32:
-    case UPB_TYPE_UINT64:
-      native_slot_check_int_range_precision(type, value);
-      switch (type) {
-        case UPB_TYPE_INT32:
-          php_printf("Setting INT32 field\n");
-          DEREF(memory, int32_t) = Z_LVAL_P(value);
-          break;
-        case UPB_TYPE_INT64:
-          // TODO(teboring): Add it back.
-          // DEREF(memory, int64_t) = NUM2LL(value);
-          break;
-        case UPB_TYPE_UINT32:
-          // TODO(teboring): Add it back.
-          // DEREF(memory, uint32_t) = NUM2UINT(value);
-          break;
-        case UPB_TYPE_UINT64:
-          // TODO(teboring): Add it back.
-          // DEREF(memory, uint64_t) = NUM2ULL(value);
-          break;
-        default:
-          break;
+      // Same as above for string/bytes fields.
+      zval* value = DEREF(memory, zval*);
+      if (*cache != value) {
+        ZVAL_ZVAL(*cache, value, 1, 0);
       }
-      break;
+      return;
+    }
     default:
-      break;
+      return EG(uninitialized_zval_ptr);
   }
+}
 
-  if (case_memory != NULL) {
-    *case_memory = case_number;
+void native_slot_get_default(upb_fieldtype_t type, zval** cache TSRMLS_DC) {
+  switch (type) {
+#define CASE(upb_type, php_type)     \
+  case UPB_TYPE_##upb_type:          \
+    SEPARATE_ZVAL_IF_NOT_REF(cache); \
+    ZVAL_##php_type(*cache, 0);      \
+    return;
+
+    CASE(FLOAT, DOUBLE)
+    CASE(DOUBLE, DOUBLE)
+    CASE(BOOL, BOOL)
+    CASE(INT32, LONG)
+    CASE(INT64, LONG)
+    CASE(UINT32, LONG)
+    CASE(UINT64, LONG)
+    CASE(ENUM, LONG)
+
+#undef CASE
+
+    case UPB_TYPE_STRING:
+    case UPB_TYPE_BYTES: {
+      SEPARATE_ZVAL_IF_NOT_REF(cache);
+      ZVAL_STRINGL(*cache, "", 0, 1);
+      break;
+    }
+    case UPB_TYPE_MESSAGE: {
+      SEPARATE_ZVAL_IF_NOT_REF(cache);
+      ZVAL_NULL(*cache);
+      return;
+    }
+    default:
+      return EG(uninitialized_zval_ptr);
   }
 }
 
@@ -281,6 +273,40 @@ bool is_map_field(const upb_fielddef* field) {
   return tryget_map_entry_msgdef(field) != NULL;
 }
 
+const upb_fielddef* map_field_key(const upb_fielddef* field) {
+  const upb_msgdef* subdef = map_entry_msgdef(field);
+  return map_entry_key(subdef);
+}
+
+const upb_fielddef* map_field_value(const upb_fielddef* field) {
+  const upb_msgdef* subdef = map_entry_msgdef(field);
+  return map_entry_value(subdef);
+}
+
+const upb_fielddef* map_entry_key(const upb_msgdef* msgdef) {
+  const upb_fielddef* key_field = upb_msgdef_itof(msgdef, MAP_KEY_FIELD);
+  assert(key_field != NULL);
+  return key_field;
+}
+
+const upb_fielddef* map_entry_value(const upb_msgdef* msgdef) {
+  const upb_fielddef* value_field = upb_msgdef_itof(msgdef, MAP_VALUE_FIELD);
+  assert(value_field != NULL);
+  return value_field;
+}
+
+const zend_class_entry* field_type_class(const upb_fielddef* field) {
+  if (upb_fielddef_type(field) == UPB_TYPE_MESSAGE) {
+    zval* desc_php = get_def_obj(upb_fielddef_subdef(field));
+    Descriptor* desc = zend_object_store_get_object(desc_php TSRMLS_CC);
+    return desc->klass;
+  } else if (upb_fielddef_type(field) == UPB_TYPE_ENUM) {
+    zval* desc_php = get_def_obj(upb_fielddef_subdef(field));
+    EnumDescriptor* desc = zend_object_store_get_object(desc_php TSRMLS_CC);
+    return desc->klass;
+  }
+}
+
 // -----------------------------------------------------------------------------
 // Memory layout management.
 // -----------------------------------------------------------------------------
@@ -290,12 +316,29 @@ static size_t align_up_to(size_t offset, size_t granularity) {
   return (offset + granularity - 1) & ~(granularity - 1);
 }
 
+static void* slot_memory(MessageLayout* layout, const void* storage,
+                         const upb_fielddef* field) {
+  return ((uint8_t*)storage) + layout->fields[upb_fielddef_index(field)].offset;
+}
+
+static uint32_t* slot_oneof_case(MessageLayout* layout, const void* storage,
+                                 const upb_fielddef* field) {
+  return (uint32_t*)(((uint8_t*)storage) +
+                     layout->fields[upb_fielddef_index(field)].case_offset);
+}
+
+static int slot_property_cache(MessageLayout* layout, const void* storage,
+                               const upb_fielddef* field) {
+  return layout->fields[upb_fielddef_index(field)].cache_index;
+}
+
 MessageLayout* create_layout(const upb_msgdef* msgdef) {
   MessageLayout* layout = ALLOC(MessageLayout);
   int nfields = upb_msgdef_numfields(msgdef);
   upb_msg_field_iter it;
   upb_msg_oneof_iter oit;
   size_t off = 0;
+  int i = 0;
 
   layout->fields = ALLOC_N(MessageField, nfields);
 
@@ -322,6 +365,7 @@ MessageLayout* create_layout(const upb_msgdef* msgdef) {
     layout->fields[upb_fielddef_index(field)].offset = off;
     layout->fields[upb_fielddef_index(field)].case_offset =
         MESSAGE_FIELD_NO_CASE;
+    layout->fields[upb_fielddef_index(field)].cache_index = i++;
     off += field_size;
   }
 
@@ -353,11 +397,13 @@ MessageLayout* create_layout(const upb_msgdef* msgdef) {
          upb_oneof_next(&fit)) {
       const upb_fielddef* field = upb_oneof_iter_field(&fit);
       layout->fields[upb_fielddef_index(field)].offset = off;
+      layout->fields[upb_fielddef_index(field)].cache_index = i;
     }
+    i++;
     off += field_size;
   }
 
-  // Now the case fields.
+  // Now the case offset.
   for (upb_msg_oneof_begin(&oit, msgdef); !upb_msg_oneof_done(&oit);
        upb_msg_oneof_next(&oit)) {
     const upb_oneofdef* oneof = upb_msg_iter_oneof(&oit);
@@ -389,151 +435,125 @@ void free_layout(MessageLayout* layout) {
   FREE(layout);
 }
 
-// TODO(teboring): Add it back.
-// VALUE field_type_class(const upb_fielddef* field) {
-//   VALUE type_class = Qnil;
-//   if (upb_fielddef_type(field) == UPB_TYPE_MESSAGE) {
-//     VALUE submsgdesc = get_def_obj(upb_fielddef_subdef(field));
-//     type_class = Descriptor_msgclass(submsgdesc);
-//   } else if (upb_fielddef_type(field) == UPB_TYPE_ENUM) {
-//     VALUE subenumdesc = get_def_obj(upb_fielddef_subdef(field));
-//     type_class = EnumDescriptor_enummodule(subenumdesc);
-//   }
-//   return type_class;
-// }
-
-static void* slot_memory(MessageLayout* layout, const void* storage,
-                         const upb_fielddef* field) {
-  return ((uint8_t*)storage) + layout->fields[upb_fielddef_index(field)].offset;
-}
-
-static uint32_t* slot_oneof_case(MessageLayout* layout, const void* storage,
-                                 const upb_fielddef* field) {
-  return (uint32_t*)(((uint8_t*)storage) +
-                     layout->fields[upb_fielddef_index(field)].case_offset);
-}
-
-void layout_set(MessageLayout* layout, void* storage, const upb_fielddef* field,
-                zval* val) {
-  void* memory = slot_memory(layout, storage, field);
-  uint32_t* oneof_case = slot_oneof_case(layout, storage, field);
-
-  if (upb_fielddef_containingoneof(field)) {
-    if (Z_TYPE_P(val) == IS_NULL) {
-      // Assigning nil to a oneof field clears the oneof completely.
-      *oneof_case = ONEOF_CASE_NONE;
-      memset(memory, 0, NATIVE_SLOT_MAX_SIZE);
-    } else {
-      // The transition between field types for a single oneof (union) slot is
-      // somewhat complex because we need to ensure that a GC triggered at any
-      // point by a call into the Ruby VM sees a valid state for this field and
-      // does not either go off into the weeds (following what it thinks is a
-      // VALUE but is actually a different field type) or miss an object (seeing
-      // what it thinks is a primitive field but is actually a VALUE for the new
-      // field type).
-      //
-      // In order for the transition to be safe, the oneof case slot must be in
-      // sync with the value slot whenever the Ruby VM has been called. Thus, we
-      // use native_slot_set_value_and_case(), which ensures that both the value
-      // and case number are altered atomically (w.r.t. the Ruby VM).
-      native_slot_set_value_and_case(upb_fielddef_type(field),
-                                     /*field_type_class(field),*/ memory, val,
-                                     oneof_case, upb_fielddef_number(field));
-    }
-  } else if (is_map_field(field)) {
-    // TODO(teboring): Add it back.
-    // check_map_field_type(val, field);
-    // DEREF(memory, zval*) = val;
-  } else if (upb_fielddef_label(field) == UPB_LABEL_REPEATED) {
-    // TODO(teboring): Add it back.
-    // check_repeated_field_type(val, field);
-    // DEREF(memory, zval*) = val;
-  } else {
-    native_slot_set(upb_fielddef_type(field), /*field_type_class(field),*/ memory,
-                    val);
-  }
-}
-
-void layout_init(MessageLayout* layout, void* storage) {
+void layout_init(MessageLayout* layout, void* storage, zval** properties_table) {
+  int i;
   upb_msg_field_iter it;
-  for (upb_msg_field_begin(&it, layout->msgdef); !upb_msg_field_done(&it);
-       upb_msg_field_next(&it)) {
+  for (upb_msg_field_begin(&it, layout->msgdef), i = 0; !upb_msg_field_done(&it);
+       upb_msg_field_next(&it), i++) {
     const upb_fielddef* field = upb_msg_iter_field(&it);
     void* memory = slot_memory(layout, storage, field);
     uint32_t* oneof_case = slot_oneof_case(layout, storage, field);
+    int cache_index = slot_property_cache(layout, storage, field);
+    zval** property_ptr = &properties_table[cache_index];
 
     if (upb_fielddef_containingoneof(field)) {
-      // TODO(teboring): Add it back.
-      // memset(memory, 0, NATIVE_SLOT_MAX_SIZE);
-      // *oneof_case = ONEOF_CASE_NONE;
+      memset(memory, 0, NATIVE_SLOT_MAX_SIZE);
+      *oneof_case = ONEOF_CASE_NONE;
     } else if (is_map_field(field)) {
-      // TODO(teboring): Add it back.
-      // VALUE map = Qnil;
-
-      // const upb_fielddef* key_field = map_field_key(field);
-      // const upb_fielddef* value_field = map_field_value(field);
-      // VALUE type_class = field_type_class(value_field);
-
-      // if (type_class != Qnil) {
-      //   VALUE args[3] = {
-      //       fieldtype_to_php(upb_fielddef_type(key_field)),
-      //       fieldtype_to_php(upb_fielddef_type(value_field)), type_class,
-      //   };
-      //   map = php_class_new_instance(3, args, cMap);
-      // } else {
-      //   VALUE args[2] = {
-      //       fieldtype_to_php(upb_fielddef_type(key_field)),
-      //       fieldtype_to_php(upb_fielddef_type(value_field)),
-      //   };
-      //   map = php_class_new_instance(2, args, cMap);
-      // }
-
-      // DEREF(memory, VALUE) = map;
+      zval_ptr_dtor(property_ptr);
+      map_field_create_with_type(map_field_type, field, property_ptr);
+      DEREF(memory, zval**) = property_ptr;
     } else if (upb_fielddef_label(field) == UPB_LABEL_REPEATED) {
-      // TODO(teboring): Add it back.
-      // VALUE ary = Qnil;
-
-      // VALUE type_class = field_type_class(field);
-
-      // if (type_class != Qnil) {
-      //   VALUE args[2] = {
-      //       fieldtype_to_php(upb_fielddef_type(field)), type_class,
-      //   };
-      //   ary = php_class_new_instance(2, args, cRepeatedField);
-      // } else {
-      //   VALUE args[1] = {fieldtype_to_php(upb_fielddef_type(field))};
-      //   ary = php_class_new_instance(1, args, cRepeatedField);
-      // }
-
-      // DEREF(memory, VALUE) = ary;
+      zval_ptr_dtor(property_ptr);
+      repeated_field_create_with_type(repeated_field_type, field, property_ptr);
+      DEREF(memory, zval**) = property_ptr;
     } else {
-      native_slot_init(upb_fielddef_type(field), memory);
+      native_slot_init(upb_fielddef_type(field), memory, property_ptr);
     }
   }
 }
 
+// For non-singular fields, the related memory needs to point to the actual
+// zval in properties table first.
+static void* value_memory(const upb_fielddef* field, void* memory) {
+  switch (upb_fielddef_type(field)) {
+    case UPB_TYPE_STRING:
+    case UPB_TYPE_BYTES:
+    case UPB_TYPE_MESSAGE:
+      memory = DEREF(memory, zval**);
+      break;
+    default:
+      // No operation
+      break;
+  }
+  return memory;
+}
+
 zval* layout_get(MessageLayout* layout, const void* storage,
-                 const upb_fielddef* field TSRMLS_DC) {
+                 const upb_fielddef* field, zval** cache TSRMLS_DC) {
   void* memory = slot_memory(layout, storage, field);
   uint32_t* oneof_case = slot_oneof_case(layout, storage, field);
 
   if (upb_fielddef_containingoneof(field)) {
     if (*oneof_case != upb_fielddef_number(field)) {
-      return NULL;
-      // TODO(teboring): Add it back.
-      // return Qnil;
+      native_slot_get_default(upb_fielddef_type(field), cache TSRMLS_CC);
+    } else {
+      native_slot_get(upb_fielddef_type(field), value_memory(field, memory),
+                      cache TSRMLS_CC);
     }
-      return NULL;
-    // TODO(teboring): Add it back.
-    // return native_slot_get(upb_fielddef_type(field), field_type_class(field),
-    //                        memory);
+    return *cache;
   } else if (upb_fielddef_label(field) == UPB_LABEL_REPEATED) {
-      return NULL;
-    // TODO(teboring): Add it back.
-    // return *((VALUE*)memory);
+    return *cache;
   } else {
-    return native_slot_get(
-        upb_fielddef_type(field), /*field_type_class(field), */
-        memory TSRMLS_CC);
+    native_slot_get(upb_fielddef_type(field), value_memory(field, memory),
+                    cache TSRMLS_CC);
+    return *cache;
+  }
+}
+
+void layout_set(MessageLayout* layout, MessageHeader* header, const upb_fielddef* field,
+                zval* val) {
+  void* storage = message_data(header);
+  void* memory = slot_memory(layout, storage, field);
+  uint32_t* oneof_case = slot_oneof_case(layout, storage, field);
+
+  if (upb_fielddef_containingoneof(field)) {
+    upb_fieldtype_t type = upb_fielddef_type(field);
+    zend_class_entry *ce = NULL;
+
+    // For non-singular fields, the related memory needs to point to the actual
+    // zval in properties table first.
+    switch (type) {
+      case UPB_TYPE_MESSAGE: {
+        upb_msgdef* msg = upb_fielddef_msgsubdef(field);
+        zval* desc_php = get_def_obj(msg);
+        Descriptor* desc = zend_object_store_get_object(desc_php TSRMLS_CC);
+        ce = desc->klass;
+        // Intentionally fall through.
+      }
+      case UPB_TYPE_STRING:
+      case UPB_TYPE_BYTES: {
+        int property_cache_index =
+            header->descriptor->layout->fields[upb_fielddef_index(field)]
+                .cache_index;
+        DEREF(memory, zval**) =
+            &(header->std.properties_table)[property_cache_index];
+        memory = DEREF(memory, zval**);
+        break;
+      }
+      default:
+        break;
+    }
+
+    native_slot_set(type, ce, memory, val);
+    *oneof_case = upb_fielddef_number(field);
+  } else if (upb_fielddef_label(field) == UPB_LABEL_REPEATED) {
+    // Works for both repeated and map fields
+    memory = DEREF(memory, zval**);
+    if (EXPECTED(DEREF(memory, zval*) != val)) {
+        zval_ptr_dtor(memory);
+        DEREF(memory, zval*) = val;
+        Z_ADDREF_P(val);
+    }
+  } else {
+    upb_fieldtype_t type = upb_fielddef_type(field);
+    zend_class_entry *ce = NULL;
+    if (type == UPB_TYPE_MESSAGE) {
+      upb_msgdef* msg = upb_fielddef_msgsubdef(field);
+      zval* desc_php = get_def_obj(msg);
+      Descriptor* desc = zend_object_store_get_object(desc_php TSRMLS_CC);
+      ce = desc->klass;
+    }
+    native_slot_set(type, ce, value_memory(field, memory), val);
   }
 }

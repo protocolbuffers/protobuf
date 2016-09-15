@@ -118,3 +118,18 @@ conformance/lite/
 conformance/nonexistent_tests.txt
 conformance/protoc_middleman
 conformance/succeeding_tests.txt
+
+# php test output
+composer.lock
+php/ext/google/protobuf/.libs/
+php/ext/google/protobuf/Makefile.fragments
+php/ext/google/protobuf/Makefile.global
+php/ext/google/protobuf/Makefile.objects
+php/ext/google/protobuf/acinclude.m4
+php/ext/google/protobuf/build/
+php/ext/google/protobuf/config.h
+php/ext/google/protobuf/config.nice
+php/ext/google/protobuf/configure.in
+php/ext/google/protobuf/mkinstalldirs
+php/ext/google/protobuf/run-tests.php
+vendor/
