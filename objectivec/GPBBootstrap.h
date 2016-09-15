@@ -93,10 +93,27 @@
 // Meant to be used internally by generated code.
 #define GPB_METHOD_FAMILY_NONE __attribute__((objc_method_family(none)))
 
-// The protoc-gen-objc version which works with the current version of the
-// generated Objective C sources.  In general we don't want to change the
-// runtime interfaces (or this version) as it means everything has to be
-// regenerated.
+// ----------------------------------------------------------------------------
+// These version numbers are all internal to the ObjC Protobuf runtime; they
+// are used to ensure compatibility between the generated sources and the
+// headers being compiled against and/or the version of sources being run
+// against.
 //
-// Meant to be used internally by generated code.
-#define GOOGLE_PROTOBUF_OBJC_GEN_VERSION 30002
+// They are all #defines so the values are captured into every .o file they
+// are used in and to allow comparisons in the preprocessor.
+
+// Current library runtime version.
+// - Gets bumped when the runtime makes changes to the interfaces between the
+//   generated code and runtime (things added/removed, etc).
+#define GOOGLE_PROTOBUF_OBJC_VERSION 30002
+
+// Minimum runtime version supported for compiling/running against.
+// - Gets changed when support for the older generated code is dropped.
+#define GOOGLE_PROTOBUF_OBJC_MIN_SUPPORTED_VERSION 30001
+
+
+// This is a legacy constant now frozen in time for old generated code. If
+// GOOGLE_PROTOBUF_OBJC_MIN_SUPPORTED_VERSION ever gets moved above 30001 then
+// this should also change to break code compiled with an old runtime that
+// can't be supported any more.
+#define GOOGLE_PROTOBUF_OBJC_GEN_VERSION 30001
