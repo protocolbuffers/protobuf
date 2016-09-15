@@ -1,10 +1,19 @@
 #!/bin/bash
-cd ../ext/google/protobuf/
+
+# Compile protoc
+pushd ../../
+./autogen.sh && ./configure && make
+popd
+
+# Generate test file
+../../src/protoc --php_out=. test.proto test_include.proto
+
+# Compile c extension
+pushd ../ext/google/protobuf/
 make clean
 set -e
-
 phpize && ./configure --enable-debug CFLAGS='-g -O0' && make
-cd -
+popd
 
 tests=( array_test.php encode_decode_test.php generated_class_test.php map_field_test.php )
 
