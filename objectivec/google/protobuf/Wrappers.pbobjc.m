@@ -39,7 +39,7 @@ static GPBFileDescriptor *GPBWrappersRoot_FileDescriptor(void) {
   // about thread safety of the singleton.
   static GPBFileDescriptor *descriptor = NULL;
   if (!descriptor) {
-    GPBDebugCheckRuntimeVersion();
+    GPB_DEBUG_CHECK_RUNTIME_VERSIONS();
     descriptor = [[GPBFileDescriptor alloc] initWithPackage:@"google.protobuf"
                                                  objcPrefix:@"GPB"
                                                      syntax:GPBFileSyntaxProto3];
