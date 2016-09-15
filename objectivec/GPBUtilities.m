@@ -58,8 +58,50 @@ NSData *GPBEmptyNSData(void) {
   return defaultNSData;
 }
 
+// -- About Version Checks --
+// There's actually 3 places these checks all come into play:
+// 1. When the generated source is compile into .o files, the header check
+//    happens. This is checking the protoc used matches the library being used
+//    when making the .o.
+// 2. Every place a generated proto header is included in a developer's code,
+//    the header check comes into play again. But this time it is checking that
+//    the current library headers being used still support/match the ones for
+//    the generated code.
+// 3. At runtime the final check here (GPBCheckRuntimeVersionsInternal), is
+//    called from the generated code passing in values captured when the
+//    generated code's .o was made. This checks that at runtime the generated
+//    code and runtime library match.
+
+void GPBCheckRuntimeVersionSupport(int32_t objcRuntimeVersion) {
+  // NOTE: This is passing the value captured in the compiled code to check
+  // against the values captured when the runtime support was compiled. This
+  // ensures the library code isn't in a different framework/library that
+  // was generated with a non matching version.
+  if (GOOGLE_PROTOBUF_OBJC_VERSION < objcRuntimeVersion) {
+    // Library is too old for headers.
+    [NSException raise:NSInternalInconsistencyException
+                format:@"Linked to ProtocolBuffer runtime version %d,"
+                       @" but code compiled needing atleast %d!",
+                       GOOGLE_PROTOBUF_OBJC_VERSION, objcRuntimeVersion];
+  }
+  if (objcRuntimeVersion < GOOGLE_PROTOBUF_OBJC_MIN_SUPPORTED_VERSION) {
+    // Headers are too old for library.
+    [NSException raise:NSInternalInconsistencyException
+                format:@"Proto generation source compiled against runtime"
+                       @" version %d, but this version of the runtime only"
+                       @" supports back to %d!",
+                       objcRuntimeVersion,
+                       GOOGLE_PROTOBUF_OBJC_MIN_SUPPORTED_VERSION];
+  }
+}
+
+// This api is no longer used for version checks. 30001 is the last version
+// using this old versioning model. When that support is removed, this function
+// can be removed (along with the declaration in GPBUtilities_PackagePrivate.h).
 void GPBCheckRuntimeVersionInternal(int32_t version) {
-  if (version != GOOGLE_PROTOBUF_OBJC_GEN_VERSION) {
+  GPBInternalCompileAssert(GOOGLE_PROTOBUF_OBJC_MIN_SUPPORTED_VERSION == 30001,
+                           time_to_remove_this_old_version_shim);
+  if (version != GOOGLE_PROTOBUF_OBJC_MIN_SUPPORTED_VERSION) {
     [NSException raise:NSInternalInconsistencyException
                 format:@"Linked to ProtocolBuffer runtime version %d,"
                        @" but code compiled with version %d!",
