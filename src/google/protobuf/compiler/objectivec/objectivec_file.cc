@@ -536,8 +536,8 @@ void FileGenerator::PrintFileRuntimePreamble(
 
   printer->Print(
     "#if __has_feature(objc_arc)\n"
-    "  #error This file should be compiled with ARC. Use the -fobjc-arc Compiler Flag to disable ARC for this file.\n"
-    "#endif"
+    " #error This file should be compiled with ARC. Use the -fobjc-arc Compiler Flag to disable ARC for this file.\n"
+    "#endif\n"
     "\n");
 
   const string framework_name(ProtobufLibraryFrameworkName);
