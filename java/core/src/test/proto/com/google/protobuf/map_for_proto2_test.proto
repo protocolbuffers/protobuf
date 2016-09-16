@@ -34,7 +34,6 @@ package map_for_proto2_test;
 
 option java_package = "map_test";
 option java_outer_classname = "MapForProto2TestProto";
-option java_generate_equals_and_hash = true;
 
 message TestMap {
   message MessageValue {
