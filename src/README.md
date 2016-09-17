@@ -20,6 +20,9 @@ To build protobuf from source, the following tools are needed:
   * g++
   * unzip
 
+For a configured build environment, one can build the [docker image](#docker-environment)
+from the Dockerfile provided within this repository.
+
 On Ubuntu, you can install them with:
 
     $ sudo apt-get install autoconf automake libtool curl make g++ unzip
@@ -210,3 +213,15 @@ The complete documentation for Protocol Buffers is available via the
 web at:
 
     https://developers.google.com/protocol-buffers/
+
+Docker Environment
+------------------
+
+A Dockerfile has been made available to simplify the setup of development
+environments. Run `docker build -t google/protobuf:dev` from  the repository's
+root to build the docker container with all dependencies setup.
+
+One may consider mounting the current working directory into the
+`/tmp/protobuf` endpoint in the container. By default the directory is simply
+copied in order to avoid producing build artefacts in the repository's base
+directory.
