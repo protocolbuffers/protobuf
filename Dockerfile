@@ -10,4 +10,6 @@ COPY . /tmp/protobuf
 #RUN cd /tmp && git clone https://github.com/google/protobuf.git && \
   #  cd /tmp/protobuf && git checkout v${PROTOC_VERSION} && \
 RUN cd /tmp/protobuf && \
-    ./autogen.sh && ./configure && make && make check && make install && ldconfig
+    ./autogen.sh && \
+    ./configure && \
+    make && make check && make install && ldconfig && make clean
