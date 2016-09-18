@@ -233,12 +233,9 @@ void ImmutableLazyMessageFieldGenerator::
 GenerateBuildingCode(io::Printer* printer) const {
   printer->Print(variables_,
       "if ($get_has_field_bit_from_local$) {\n"
+      "  result.$name$_.set($name$_);\n"
       "  $set_has_field_bit_to_local$;\n"
       "}\n");
-
-  printer->Print(variables_,
-      "result.$name$_.set(\n"
-      "    $name$_);\n");
 }
 
 void ImmutableLazyMessageFieldGenerator::
