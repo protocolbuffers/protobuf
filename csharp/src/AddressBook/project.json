@@ -1,0 +1,20 @@
+{
+  "buildOptions": {
+    "debugType": "portable",
+    "emitEntryPoint": true,
+    "additionalArguments": [ "/main:Google.Protobuf.Examples.AddressBook.Program" ]
+  },
+  "dependencies": {
+    "Google.Protobuf": { "target": "project" }
+  },
+  "frameworks": {
+    "netcoreapp1.0": {
+      "dependencies": {
+        "Microsoft.NETCore.App": {
+          "type": "platform",
+          "version": "1.0.0"
+        }
+      }
+    }
+  }
+}

@@ -54,7 +54,7 @@ class ContendedMapCleanTest;
 class GeneratedMessageReflection;
 class MapFieldAccessor;
 
-// This class provides accesss to map field using reflection, which is the same
+// This class provides access to map field using reflection, which is the same
 // as those provided for RepeatedPtrField<Message>. It is used for internal
 // reflection implentation only. Users should never use this directly.
 class LIBPROTOBUF_EXPORT MapFieldBase {
@@ -208,7 +208,7 @@ class TypeDefinedMapFieldBase : public MapFieldBase {
   virtual void SetMapIteratorValue(MapIterator* map_iter) const = 0;
 };
 
-// This class provides accesss to map field using generated api. It is used for
+// This class provides access to map field using generated api. It is used for
 // internal generated message implentation only. Users should never use this
 // directly.
 template <typename Key, typename T,

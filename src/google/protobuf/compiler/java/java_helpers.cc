@@ -101,6 +101,20 @@ string FieldName(const FieldDescriptor* field) {
 
 }  // namespace
 
+void PrintGeneratedAnnotation(io::Printer* printer, char delimiter,
+                              const string& annotation_file) {
+  if (annotation_file.empty()) {
+    return;
+  }
+  string ptemplate =
+      "@javax.annotation.Generated(value=\"protoc\", comments=\"annotations:";
+  ptemplate.push_back(delimiter);
+  ptemplate.append("annotation_file");
+  ptemplate.push_back(delimiter);
+  ptemplate.append("\")\n");
+  printer->Print(ptemplate.c_str(), "annotation_file", annotation_file);
+}
+
 string UnderscoresToCamelCase(const string& input, bool cap_next_letter) {
   string result;
   // Note:  I distrust ctype.h due to locales.
@@ -481,9 +495,9 @@ bool IsDefaultValueJavaDefault(const FieldDescriptor* field) {
       return field->default_value_float() == 0.0;
     case FieldDescriptor::CPPTYPE_BOOL:
       return field->default_value_bool() == false;
-
-    case FieldDescriptor::CPPTYPE_STRING:
     case FieldDescriptor::CPPTYPE_ENUM:
+      return field->default_value_enum()->number() == 0;
+    case FieldDescriptor::CPPTYPE_STRING:
     case FieldDescriptor::CPPTYPE_MESSAGE:
       return false;
 
@@ -493,6 +507,11 @@ bool IsDefaultValueJavaDefault(const FieldDescriptor* field) {
 
   GOOGLE_LOG(FATAL) << "Can't get here.";
   return false;
+}
+
+bool IsByteStringWithCustomDefaultValue(const FieldDescriptor* field) {
+  return GetJavaType(field) == JAVATYPE_BYTES &&
+         field->default_value_string() != "";
 }
 
 const char* bit_masks[] = {

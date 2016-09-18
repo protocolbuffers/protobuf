@@ -43,6 +43,6 @@ option objc_class_prefix = "GPB";
 // protobuf element, like the file in which it is defined.
 message SourceContext {
   // The path-qualified name of the .proto file that contained the associated
-  // protobuf element.  For example: `"google/protobuf/source.proto"`.
+  // protobuf element.  For example: `"google/protobuf/source_context.proto"`.
   string file_name = 1;
 }

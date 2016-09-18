@@ -36,6 +36,8 @@
 #define GOOGLE_PROTOBUF_COMPILER_JAVA_HELPERS_H__
 
 #include <string>
+#include <google/protobuf/compiler/java/java_context.h>
+#include <google/protobuf/io/printer.h>
 #include <google/protobuf/descriptor.pb.h>
 #include <google/protobuf/descriptor.h>
 
@@ -48,6 +50,17 @@ namespace java {
 // of '-'.
 extern const char kThickSeparator[];
 extern const char kThinSeparator[];
+
+// If annotation_file is non-empty, prints a javax.annotation.Generated
+// annotation to the given Printer. annotation_file will be referenced in the
+// annotation's comments field. delimiter should be the Printer's delimiter
+// character. annotation_file will be included verbatim into a Java literal
+// string, so it should not contain quotes or invalid Java escape sequences;
+// however, these are unlikely to appear in practice, as the value of
+// annotation_file should be generated from the filename of the source file
+// being annotated (which in turn must be a Java identifier plus ".java").
+void PrintGeneratedAnnotation(io::Printer* printer, char delimiter = '$',
+                              const string& annotation_file = "");
 
 // Converts a name to camel-case. If cap_first_letter is true, capitalize the
 // first letter.
@@ -126,6 +139,38 @@ inline bool MultipleJavaFiles(
   return descriptor->options().java_multiple_files();
 }
 
+// Returns true if `descriptor` will be written to its own .java file.
+// `immutable` should be set to true if we're generating for the immutable API.
+template <typename Descriptor>
+bool IsOwnFile(const Descriptor* descriptor, bool immutable) {
+  return descriptor->containing_type() == NULL &&
+         MultipleJavaFiles(descriptor->file(), immutable);
+}
+
+template <>
+inline bool IsOwnFile(const ServiceDescriptor* descriptor, bool immutable) {
+  return MultipleJavaFiles(descriptor->file(), immutable);
+}
+
+// If `descriptor` describes an object with its own .java file,
+// returns the name (relative to that .java file) of the file that stores
+// annotation data for that descriptor. `suffix` is usually empty, but may
+// (e.g.) be "OrBuilder" for some generated interfaces.
+template <typename Descriptor>
+string AnnotationFileName(const Descriptor* descriptor, const string& suffix) {
+  return descriptor->name() + suffix + ".java.pb.meta";
+}
+
+template <typename Descriptor>
+void MaybePrintGeneratedAnnotation(Context* context, io::Printer* printer,
+                                   Descriptor* descriptor, bool immutable,
+                                   const string& suffix = "") {
+  if (context->options().annotate_code && IsOwnFile(descriptor, immutable)) {
+    PrintGeneratedAnnotation(printer, '$',
+                             AnnotationFileName(descriptor, suffix));
+  }
+}
+
 // Get the unqualified name that should be used for a field's field
 // number constant.
 string FieldConstantName(const FieldDescriptor *field);
@@ -169,11 +214,7 @@ inline string ImmutableDefaultValue(const FieldDescriptor* field,
   return DefaultValue(field, true, name_resolver);
 }
 bool IsDefaultValueJavaDefault(const FieldDescriptor* field);
-
-// Does this message have specialized equals() and hashCode() methods?
-inline bool HasEqualsAndHashCode(const Descriptor* descriptor) {
-  return descriptor->file()->options().java_generate_equals_and_hash();
-}
+bool IsByteStringWithCustomDefaultValue(const FieldDescriptor* field);
 
 // Does this message class have descriptor and reflection methods?
 inline bool HasDescriptorMethods(const Descriptor* descriptor,
@@ -202,7 +243,7 @@ inline bool HasGenericServices(const FileDescriptor *file, bool enforce_lite) {
 }
 
 inline bool IsLazy(const FieldDescriptor* descriptor, bool enforce_lite) {
-  // Currently, the proto-lite version suports lazy field.
+  // Currently, the proto-lite version supports lazy field.
   // TODO(niwasaki): Support lazy fields also for other proto runtimes.
   if (HasDescriptorMethods(descriptor->file(), enforce_lite)) {
     return false;
@@ -344,6 +385,9 @@ inline bool CheckUtf8(const FieldDescriptor* descriptor) {
       descriptor->file()->options().java_string_check_utf8();
 }
 
+inline string GeneratedCodeVersionSuffix() {
+  return "V3";
+}
 }  // namespace java
 }  // namespace compiler
 }  // namespace protobuf

@@ -179,7 +179,7 @@ struct Metadata {
 class LIBPROTOBUF_EXPORT Message : public MessageLite {
  public:
   inline Message() {}
-  virtual ~Message();
+  virtual ~Message() {}
 
   // Basic Operations ------------------------------------------------
 
@@ -585,8 +585,8 @@ class LIBPROTOBUF_EXPORT Reflection {
   // If you have no idea what that meant, then you probably don't need to worry
   // about it (don't provide a MessageFactory).  WARNING:  If the
   // FieldDescriptor is for a compiled-in extension, then
-  // factory->GetPrototype(field->message_type() MUST return an instance of the
-  // compiled-in class for this type, NOT DynamicMessage.
+  // factory->GetPrototype(field->message_type()) MUST return an instance of
+  // the compiled-in class for this type, NOT DynamicMessage.
   virtual Message* MutableMessage(Message* message,
                                   const FieldDescriptor* field,
                                   MessageFactory* factory = NULL) const = 0;

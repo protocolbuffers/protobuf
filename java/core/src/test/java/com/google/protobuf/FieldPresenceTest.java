@@ -31,6 +31,8 @@
 package com.google.protobuf;
 
 import com.google.protobuf.Descriptors.Descriptor;
+import com.google.protobuf.Descriptors.EnumDescriptor;
+import com.google.protobuf.Descriptors.EnumValueDescriptor;
 import com.google.protobuf.Descriptors.FieldDescriptor;
 import com.google.protobuf.FieldPresenceTestProto.TestAllTypes;
 import com.google.protobuf.FieldPresenceTestProto.TestOptionalFieldsOnly;
@@ -152,6 +154,26 @@ public class FieldPresenceTest extends TestCase {
     assertFalse(message1.equals(message2));
   }
 
+  public void testLazyField() throws Exception {
+    // Test default constructed message.
+    TestAllTypes.Builder builder = TestAllTypes.newBuilder();
+    TestAllTypes message = builder.build();
+    assertFalse(message.hasOptionalLazyMessage());
+    assertEquals(0, message.getSerializedSize());
+    assertEquals(ByteString.EMPTY, message.toByteString());
+
+    // Set default instance to the field.
+    builder.setOptionalLazyMessage(TestAllTypes.NestedMessage.getDefaultInstance());
+    message = builder.build();
+    assertTrue(message.hasOptionalLazyMessage());
+    assertEquals(2, message.getSerializedSize());
+
+    // Test parse zero-length from wire sets the presence.
+    TestAllTypes parsed = TestAllTypes.parseFrom(message.toByteString());
+    assertTrue(parsed.hasOptionalLazyMessage());
+    assertEquals(message.getOptionalLazyMessage(), parsed.getOptionalLazyMessage());
+  }
+
   public void testFieldPresence() {
     // Optional non-message fields set to their default value are treated the
     // same way as not set.
@@ -231,6 +253,54 @@ public class FieldPresenceTest extends TestCase {
     assertTrue(message.hasField(optionalBytesField));
     assertTrue(message.hasField(optionalNestedEnumField));
     assertEquals(4, message.getAllFields().size());
+  }
+
+  public void testFieldPresenceDynamicMessage() {
+    Descriptor descriptor = TestAllTypes.getDescriptor();
+    FieldDescriptor optionalInt32Field = descriptor.findFieldByName("optional_int32");
+    FieldDescriptor optionalStringField = descriptor.findFieldByName("optional_string");
+    FieldDescriptor optionalBytesField = descriptor.findFieldByName("optional_bytes");
+    FieldDescriptor optionalNestedEnumField = descriptor.findFieldByName("optional_nested_enum");
+    EnumDescriptor enumDescriptor = optionalNestedEnumField.getEnumType();
+    EnumValueDescriptor defaultEnumValueDescriptor = enumDescriptor.getValues().get(0);
+    EnumValueDescriptor nonDefaultEnumValueDescriptor = enumDescriptor.getValues().get(1);
+
+    DynamicMessage defaultInstance = DynamicMessage.getDefaultInstance(descriptor);
+    // Field not present.
+    DynamicMessage message = defaultInstance.newBuilderForType().build();
+    assertFalse(message.hasField(optionalInt32Field));
+    assertFalse(message.hasField(optionalStringField));
+    assertFalse(message.hasField(optionalBytesField));
+    assertFalse(message.hasField(optionalNestedEnumField));
+    assertEquals(0, message.getAllFields().size());
+
+    // Field set to non-default value is seen as present.
+    message =
+        defaultInstance
+            .newBuilderForType()
+            .setField(optionalInt32Field, 1)
+            .setField(optionalStringField, "x")
+            .setField(optionalBytesField, ByteString.copyFromUtf8("y"))
+            .setField(optionalNestedEnumField, nonDefaultEnumValueDescriptor)
+            .build();
+    assertTrue(message.hasField(optionalInt32Field));
+    assertTrue(message.hasField(optionalStringField));
+    assertTrue(message.hasField(optionalBytesField));
+    assertTrue(message.hasField(optionalNestedEnumField));
+    assertEquals(4, message.getAllFields().size());
+
+    // Field set to default value is seen as not present.
+    message = message.toBuilder()
+            .setField(optionalInt32Field, 0)
+            .setField(optionalStringField, "")
+            .setField(optionalBytesField, ByteString.EMPTY)
+            .setField(optionalNestedEnumField, defaultEnumValueDescriptor)
+            .build();
+    assertFalse(message.hasField(optionalInt32Field));
+    assertFalse(message.hasField(optionalStringField));
+    assertFalse(message.hasField(optionalBytesField));
+    assertFalse(message.hasField(optionalNestedEnumField));
+    assertEquals(0, message.getAllFields().size());
   }
 
   public void testMessageField() {

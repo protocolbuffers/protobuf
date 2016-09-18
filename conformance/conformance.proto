@@ -210,6 +210,11 @@ message TestAllTypes {
     NestedMessage oneof_nested_message = 112;
     string oneof_string = 113;
     bytes oneof_bytes = 114;
+    bool oneof_bool = 115;
+    uint64 oneof_uint64 = 116;
+    float oneof_float = 117;
+    double oneof_double = 118;
+    NestedEnum oneof_enum = 119;
   }
 
   // Well-known types
@@ -248,6 +253,7 @@ message TestAllTypes {
   repeated google.protobuf.Value repeated_value = 316;
 
   // Test field-name-to-JSON-name convention.
+  // (protobuf says names can be any valid C/C++ identifier.)
   int32 fieldname1 = 401;
   int32 field_name2 = 402;
   int32 _field_name3 = 403;
@@ -260,6 +266,12 @@ message TestAllTypes {
   int32 Field_Name10 = 410;
   int32 FIELD_NAME11 = 411;
   int32 FIELD_name12 = 412;
+  int32 __field_name13 = 413;
+  int32 __Field_name14 = 414;
+  int32 field__name15 = 415;
+  int32 field__Name16 = 416;
+  int32 field_name17__ = 417;
+  int32 Field_name18__ = 418;
 }
 
 message ForeignMessage {

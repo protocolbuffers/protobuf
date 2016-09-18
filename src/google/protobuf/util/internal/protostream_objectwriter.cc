@@ -63,7 +63,9 @@ ProtoStreamObjectWriter::ProtoStreamObjectWriter(
     : ProtoWriter(type_resolver, type, output, listener),
       master_type_(type),
       current_(NULL),
-      options_(options) {}
+      options_(options) {
+  set_ignore_unknown_fields(options_.ignore_unknown_fields);
+}
 
 ProtoStreamObjectWriter::ProtoStreamObjectWriter(
     const TypeInfo* typeinfo, const google::protobuf::Type& type,
@@ -384,6 +386,9 @@ ProtoStreamObjectWriter::Item::Item(ProtoStreamObjectWriter* enclosing,
   if (item_type_ == ANY) {
     any_.reset(new AnyWriter(ow_));
   }
+  if (item_type == MAP) {
+    map_keys_.reset(new hash_set<string>);
+  }
 }
 
 ProtoStreamObjectWriter::Item::Item(ProtoStreamObjectWriter::Item* parent,
@@ -398,11 +403,14 @@ ProtoStreamObjectWriter::Item::Item(ProtoStreamObjectWriter::Item* parent,
   if (item_type == ANY) {
     any_.reset(new AnyWriter(ow_));
   }
+  if (item_type == MAP) {
+    map_keys_.reset(new hash_set<string>);
+  }
 }
 
 bool ProtoStreamObjectWriter::Item::InsertMapKeyIfNotPresent(
     StringPiece map_key) {
-  return InsertIfNotPresent(&map_keys_, map_key.ToString());
+  return InsertIfNotPresent(map_keys_.get(), map_key.ToString());
 }
 
 ProtoStreamObjectWriter* ProtoStreamObjectWriter::StartObject(
@@ -899,7 +907,7 @@ Status ProtoStreamObjectWriter::RenderFieldMask(ProtoStreamObjectWriter* ow,
 // conversions as much as possible. Because ToSnakeCase sometimes returns the
 // wrong value.
   google::protobuf::scoped_ptr<ResultCallback1<util::Status, StringPiece> > callback(
-      ::google::protobuf::internal::NewPermanentCallback(&RenderOneFieldPath, ow));
+      NewPermanentCallback(&RenderOneFieldPath, ow));
   return DecodeCompactFieldMaskPaths(data.str(), callback.get());
 }
 
@@ -1000,6 +1008,7 @@ ProtoStreamObjectWriter* ProtoStreamObjectWriter::RenderDataPiece(
                                  DataPiece(name, use_strict_base64_decoding()));
     field = Lookup("value");
     if (field == NULL) {
+      Pop();
       GOOGLE_LOG(DFATAL) << "Map does not have a value field.";
       return this;
     }

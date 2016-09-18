@@ -1,27 +1,13 @@
-# Version info variables
-set(PROTOBUF_VERSION        "@protobuf_VERSION@")
-set(PROTOBUF_VERSION_STRING "@protobuf_VERSION_STRING@")
+# User options
+include("${CMAKE_CURRENT_LIST_DIR}/protobuf-options.cmake")
 
-# Current dir
-get_filename_component(_PROTOBUF_PACKAGE_PREFIX
-  "${CMAKE_CURRENT_LIST_FILE}" PATH)
+# Depend packages
+@_protobuf_FIND_ZLIB@
 
 # Imported targets
-include("${_PROTOBUF_PACKAGE_PREFIX}/protobuf-targets.cmake")
-
-# Compute the installation prefix relative to this file.
-get_filename_component(_PROTOBUF_IMPORT_PREFIX
-  "${_PROTOBUF_PACKAGE_PREFIX}" PATH)
-get_filename_component(_PROTOBUF_IMPORT_PREFIX
-  "${_PROTOBUF_IMPORT_PREFIX}" PATH)
-get_filename_component(_PROTOBUF_IMPORT_PREFIX
-  "${_PROTOBUF_IMPORT_PREFIX}" PATH)
+include("${CMAKE_CURRENT_LIST_DIR}/protobuf-targets.cmake")
 
 # CMake FindProtobuf module compatible file
-if(NOT DEFINED PROTOBUF_MODULE_COMPATIBLE OR "${PROTOBUF_MODULE_COMPATIBLE}")
-  include("${_PROTOBUF_PACKAGE_PREFIX}/protobuf-module.cmake")
+if(protobuf_MODULE_COMPATIBLE)
+  include("${CMAKE_CURRENT_LIST_DIR}/protobuf-module.cmake")
 endif()
-
-# Cleanup temporary variables.
-set(_PROTOBUF_PACKAGE_PREFIX)
-set(_PROTOBUF_IMPORT_PREFIX)

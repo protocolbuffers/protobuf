@@ -166,6 +166,8 @@ extern VALUE cBuilder;
 extern VALUE cError;
 extern VALUE cParseError;
 
+extern VALUE map_parse_frames;
+
 // We forward-declare all of the Ruby method implementations here because we
 // sometimes call the methods directly across .c files, rather than going
 // through Ruby's method dispatching (e.g. during message parse). It's cleaner
@@ -313,7 +315,7 @@ void native_slot_dup(upb_fieldtype_t type, void* to, void* from);
 void native_slot_deep_copy(upb_fieldtype_t type, void* to, void* from);
 bool native_slot_eq(upb_fieldtype_t type, void* mem1, void* mem2);
 
-void native_slot_validate_string_encoding(upb_fieldtype_t type, VALUE value);
+VALUE native_slot_encode_and_freeze_string(upb_fieldtype_t type, VALUE value);
 void native_slot_check_int_range_precision(upb_fieldtype_t type, VALUE value);
 
 extern rb_encoding* kRubyStringUtf8Encoding;
@@ -366,6 +368,7 @@ RepeatedField* ruby_to_RepeatedField(VALUE value);
 VALUE RepeatedField_each(VALUE _self);
 VALUE RepeatedField_index(int argc, VALUE* argv, VALUE _self);
 void* RepeatedField_index_native(VALUE _self, int index);
+int RepeatedField_size(VALUE _self);
 VALUE RepeatedField_index_set(VALUE _self, VALUE _index, VALUE val);
 void RepeatedField_reserve(RepeatedField* self, int new_size);
 VALUE RepeatedField_push(VALUE _self, VALUE val);

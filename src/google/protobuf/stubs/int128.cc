@@ -145,15 +145,15 @@ std::ostream& operator<<(std::ostream& o, const uint128& b) {
   std::streamsize div_base_log;
   switch (flags & std::ios::basefield) {
     case std::ios::hex:
-      div = GOOGLE_ULONGLONG(0x1000000000000000);  // 16^15
+      div = static_cast<uint64>(GOOGLE_ULONGLONG(0x1000000000000000));  // 16^15
       div_base_log = 15;
       break;
     case std::ios::oct:
-      div = GOOGLE_ULONGLONG(01000000000000000000000);  // 8^21
+      div = static_cast<uint64>(GOOGLE_ULONGLONG(01000000000000000000000));  // 8^21
       div_base_log = 21;
       break;
     default:  // std::ios::dec
-      div = GOOGLE_ULONGLONG(10000000000000000000);  // 10^19
+      div = static_cast<uint64>(GOOGLE_ULONGLONG(10000000000000000000));  // 10^19
       div_base_log = 19;
       break;
   }

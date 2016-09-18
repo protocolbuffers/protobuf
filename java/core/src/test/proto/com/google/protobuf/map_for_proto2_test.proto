@@ -72,3 +72,14 @@ message TestRecursiveMap {
   optional int32 value = 1;
   map<int32, TestRecursiveMap> recursive_map_field = 2;
 }
+
+
+// a decoy of TestMap for testing parsing errors
+message BizarroTestMap {
+  map<int32, bytes> int32_to_int32_field = 1; // same key type, different value
+  map<string, int32> int32_to_string_field = 2; // different key and value types
+  map<string, int32> int32_to_bytes_field = 3; // different key types, same value
+  map<string, bytes> int32_to_enum_field = 4; // different key and value types
+  map<string, bytes> int32_to_message_field = 5; // different key and value types
+  map<string, bytes> string_to_int32_field = 6;  // same key type, different value
+}

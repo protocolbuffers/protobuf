@@ -29,9 +29,19 @@
 
 syntax = "proto2";
 
+import "google/protobuf/any.proto";
 import "google/protobuf/unittest.proto";
 
 package protobuf_unittest;
+
+// Used to check that Headerdocs and appledoc work correctly. If these comments
+// are not handled correctly, Xcode will fail to build the tests.
+message TestGeneratedComments {
+  // This is a string that could contain stuff like
+  // mime types as image/* or */plain. Maybe twitter usernames
+  // like @protobuf, @google or @something.
+  optional string string_field = 1;
+}
 
 // Using the messages in unittest.proto, setup for recursive cases for testing
 // extensions at various depths.
@@ -446,4 +456,12 @@ message BoolOnlyMessage {
   optional bool bool_field_30 = 30;
   optional bool bool_field_31 = 31;
   optional bool bool_field_32 = 32;
+}
+
+// Reference to a WKT to test (via generated code inspection), the handling
+// of #imports.  Within the WKTs, references to each other are just path
+// based imports, but when reference from another proto file, they should be
+// conditional to support the framework import style.
+message WKTRefereceMessage {
+  optional google.protobuf.Any an_any = 1;
 }

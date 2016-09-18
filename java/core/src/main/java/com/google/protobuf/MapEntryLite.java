@@ -31,80 +31,74 @@
 package com.google.protobuf;
 
 import java.io.IOException;
+import java.util.AbstractMap;
+import java.util.Map;
 
 /**
  * Implements the lite version of map entry messages.
- * 
+ *
  * This class serves as an utility class to help do serialization/parsing of
  * map entries. It's used in generated code and also in the full version
  * MapEntry message.
- * 
+ *
  * Protobuf internal. Users shouldn't use.
  */
-public class MapEntryLite<K, V>
-    extends AbstractMessageLite<MapEntryLite<K, V>, MapEntryLite.Builder<K, V>> {
-  private static class Metadata<K, V> {
-    public final MapEntryLite<K, V> defaultInstance;
+public class MapEntryLite<K, V> {
+
+  static class Metadata<K, V> {
     public final WireFormat.FieldType keyType;
+    public final K defaultKey;
     public final WireFormat.FieldType valueType;
-    public final Parser<MapEntryLite<K, V>> parser;
+    public final V defaultValue;
+
     public Metadata(
-        MapEntryLite<K, V> defaultInstance,
-        WireFormat.FieldType keyType,
-        WireFormat.FieldType valueType) {
-      this.defaultInstance = defaultInstance; 
+        WireFormat.FieldType keyType, K defaultKey,
+        WireFormat.FieldType valueType, V defaultValue) {
       this.keyType = keyType;
+      this.defaultKey = defaultKey;
       this.valueType = valueType;
-      final Metadata<K, V> finalThis = this;
-      this.parser = new AbstractParser<MapEntryLite<K, V>>() {
-        @Override
-        public MapEntryLite<K, V> parsePartialFrom(
-            CodedInputStream input, ExtensionRegistryLite extensionRegistry)
-            throws InvalidProtocolBufferException {
-          return new MapEntryLite<K, V>(finalThis, input, extensionRegistry);
-        }
-      };
+      this.defaultValue = defaultValue;
     }
   }
-  
+
   private static final int KEY_FIELD_NUMBER = 1;
   private static final int VALUE_FIELD_NUMBER = 2;
-  
+
   private final Metadata<K, V> metadata;
   private final K key;
   private final V value;
-  
+
   /** Creates a default MapEntryLite message instance. */
   private MapEntryLite(
       WireFormat.FieldType keyType, K defaultKey,
       WireFormat.FieldType valueType, V defaultValue) {
-    this.metadata = new Metadata<K, V>(this, keyType, valueType);
+    this.metadata = new Metadata<K, V>(keyType, defaultKey, valueType, defaultValue);
     this.key = defaultKey;
     this.value = defaultValue;
   }
-  
+
   /** Creates a new MapEntryLite message. */
   private MapEntryLite(Metadata<K, V> metadata, K key, V value) {
     this.metadata = metadata;
     this.key = key;
     this.value = value;
   }
-  
+
   public K getKey() {
     return key;
   }
-  
+
   public V getValue() {
     return value;
   }
 
   /**
    * Creates a default MapEntryLite message instance.
-   * 
+   *
    * This method is used by generated code to create the default instance for
    * a map entry message. The created default instance should be used to create
    * new map entry messages of the same type. For each map entry message, only
-   * one default instance should be created. 
+   * one default instance should be created.
    */
   public static <K, V> MapEntryLite<K, V> newDefaultInstance(
       WireFormat.FieldType keyType, K defaultKey,
@@ -112,80 +106,20 @@ public class MapEntryLite<K, V>
     return new MapEntryLite<K, V>(
         keyType, defaultKey, valueType, defaultValue);
   }
-  
-  @Override
-  public void writeTo(CodedOutputStream output) throws IOException {
-    writeField(KEY_FIELD_NUMBER, metadata.keyType, key, output);
-    writeField(VALUE_FIELD_NUMBER, metadata.valueType, value, output);
+
+  static <K, V> void writeTo(CodedOutputStream output, Metadata<K, V> metadata, K key, V value)
+      throws IOException {
+    FieldSet.writeElement(output, metadata.keyType, KEY_FIELD_NUMBER, key);
+    FieldSet.writeElement(output, metadata.valueType, VALUE_FIELD_NUMBER, value);
   }
 
-  private void writeField(
-      int number, WireFormat.FieldType type, Object value,
-      CodedOutputStream output) throws IOException {
-    output.writeTag(number, type.getWireType());
-    FieldSet.writeElementNoTag(output, type, value);
+  static <K, V> int computeSerializedSize(Metadata<K, V> metadata, K key, V value) {
+    return FieldSet.computeElementSize(metadata.keyType, KEY_FIELD_NUMBER, key)
+        + FieldSet.computeElementSize(metadata.valueType, VALUE_FIELD_NUMBER, value);
   }
 
-  private volatile int cachedSerializedSize = -1;
-  @Override
-  public int getSerializedSize() {
-    if (cachedSerializedSize != -1) {
-      return cachedSerializedSize;
-    }
-    int size = 0;
-    size += getFieldSize(KEY_FIELD_NUMBER, metadata.keyType, key);
-    size += getFieldSize(VALUE_FIELD_NUMBER, metadata.valueType, value);
-    cachedSerializedSize = size;
-    return size;
-  }
-
-  private int getFieldSize(
-      int number, WireFormat.FieldType type, Object value) {
-    return CodedOutputStream.computeTagSize(number)
-        + FieldSet.computeElementSizeNoTag(type, value);
-  }
-  
-  /** Parsing constructor. */
-  private MapEntryLite(
-      Metadata<K, V> metadata,
-      CodedInputStream input,
-      ExtensionRegistryLite extensionRegistry)
-      throws InvalidProtocolBufferException {
-    try {
-      K key = metadata.defaultInstance.key;
-      V value = metadata.defaultInstance.value;
-      while (true) {
-        int tag = input.readTag();
-        if (tag == 0) {
-          break;
-        }
-        if (tag == WireFormat.makeTag(
-                KEY_FIELD_NUMBER, metadata.keyType.getWireType())) {
-          key = mergeField(
-              input, extensionRegistry, metadata.keyType, key);
-        } else if (tag == WireFormat.makeTag(
-                       VALUE_FIELD_NUMBER, metadata.valueType.getWireType())) {
-          value = mergeField(
-              input, extensionRegistry, metadata.valueType, value);
-        } else {
-          if (!input.skipField(tag)) {
-            break;
-          }
-        }
-      }
-      this.metadata = metadata;
-      this.key = key;
-      this.value = value;
-    } catch (InvalidProtocolBufferException e) {
-      throw e.setUnfinishedMessage(this);
-    } catch (IOException e) {
-      throw new InvalidProtocolBufferException(e.getMessage())
-          .setUnfinishedMessage(this);
-    }
-  }
-  
   @SuppressWarnings("unchecked")
-  private <T> T mergeField(
+  static <T> T parseField(
       CodedInputStream input, ExtensionRegistryLite extensionRegistry,
       WireFormat.FieldType type, T value) throws IOException {
     switch (type) {
@@ -202,136 +136,91 @@ public class MapEntryLite<K, V>
     }
   }
 
-  @Override
-  public Parser<MapEntryLite<K, V>> getParserForType() {
-    return metadata.parser;
-  }
-
-  @Override
-  public Builder<K, V> newBuilderForType() {
-    return new Builder<K, V>(metadata);
-  }
-
-  @Override
-  public Builder<K, V> toBuilder() {
-    return new Builder<K, V>(metadata, key, value);
-  }
-
-  @Override
-  public MapEntryLite<K, V> getDefaultInstanceForType() {
-    return metadata.defaultInstance;
-  }
-
-  @Override
-  public boolean isInitialized() {
-    if (metadata.valueType.getJavaType() == WireFormat.JavaType.MESSAGE) {
-      return ((MessageLite) value).isInitialized();
-    }
-    return true;
+  /**
+   * Serializes the provided key and value as though they were wrapped by a {@link MapEntryLite}
+   * to the output stream. This helper method avoids allocation of a {@link MapEntryLite}
+   * built with a key and value and is called from generated code directly.
+   */
+  public void serializeTo(CodedOutputStream output, int fieldNumber, K key, V value)
+      throws IOException {
+    output.writeTag(fieldNumber, WireFormat.WIRETYPE_LENGTH_DELIMITED);
+    output.writeUInt32NoTag(computeSerializedSize(metadata, key, value));
+    writeTo(output, metadata, key, value);
   }
 
   /**
-   * Builder used to create {@link MapEntryLite} messages.
+   * Computes the message size for the provided key and value as though they were wrapped
+   * by a {@link MapEntryLite}. This helper method avoids allocation of a {@link MapEntryLite}
+   * built with a key and value and is called from generated code directly.
    */
-  public static class Builder<K, V>
-      extends AbstractMessageLite.Builder<MapEntryLite<K, V>, Builder<K, V>> {
-    private final Metadata<K, V> metadata;
-    private K key;
-    private V value;
-    
-    private Builder(Metadata<K, V> metadata) {
-      this.metadata = metadata;
-      this.key = metadata.defaultInstance.key;
-      this.value = metadata.defaultInstance.value;
-    }
-    
-    public K getKey() {
-      return key;
-    }
-    
-    public V getValue() {
-      return value;
-    }
-    
-    public Builder<K, V> setKey(K key) {
-      this.key = key;
-      return this;
-    }
-    
-    public Builder<K, V> setValue(V value) {
-      this.value = value;
-      return this;
-    }
-    
-    public Builder<K, V> clearKey() {
-      this.key = metadata.defaultInstance.key;
-      return this;
-    }
-    
-    public Builder<K, V> clearValue() {
-      this.value = metadata.defaultInstance.value;
-      return this;
-    }
+  public int computeMessageSize(int fieldNumber, K key, V value) {
+    return CodedOutputStream.computeTagSize(fieldNumber)
+        + CodedOutputStream.computeLengthDelimitedFieldSize(
+            computeSerializedSize(metadata, key, value));
+  }
 
-    @Override
-    public Builder<K, V> clear() {
-      this.key = metadata.defaultInstance.key;
-      this.value = metadata.defaultInstance.value;
-      return this;
-    }
+  /**
+   * Parses an entry off of the input as a {@link Map.Entry}. This helper requires an allocation
+   * so using {@link #parseInto} is preferred if possible.
+   */
+  public Map.Entry<K, V> parseEntry(ByteString bytes, ExtensionRegistryLite extensionRegistry)
+      throws IOException {
+    return parseEntry(bytes.newCodedInput(), metadata, extensionRegistry);
+  }
 
-    @Override
-    public MapEntryLite<K, V> build() {
-      MapEntryLite<K, V> result = buildPartial();
-      if (!result.isInitialized()) {
-        throw newUninitializedMessageException(result);
+  static <K, V> Map.Entry<K, V> parseEntry(
+      CodedInputStream input, Metadata<K, V> metadata, ExtensionRegistryLite extensionRegistry)
+          throws IOException{
+    K key = metadata.defaultKey;
+    V value = metadata.defaultValue;
+    while (true) {
+      int tag = input.readTag();
+      if (tag == 0) {
+        break;
       }
-      return result;
-    }
-
-    @Override
-    public MapEntryLite<K, V> buildPartial() {
-      return new MapEntryLite<K, V>(metadata, key, value);
-    }
-
-    @Override
-    public MessageLite getDefaultInstanceForType() {
-      return metadata.defaultInstance;
-    }
-
-    @Override
-    public boolean isInitialized() {
-      if (metadata.valueType.getJavaType() == WireFormat.JavaType.MESSAGE) {
-        return ((MessageLite) value).isInitialized();
+      if (tag == WireFormat.makeTag(KEY_FIELD_NUMBER, metadata.keyType.getWireType())) {
+        key = parseField(input, extensionRegistry, metadata.keyType, key);
+      } else if (tag == WireFormat.makeTag(VALUE_FIELD_NUMBER, metadata.valueType.getWireType())) {
+        value = parseField(input, extensionRegistry, metadata.valueType, value);
+      } else {
+        if (!input.skipField(tag)) {
+          break;
+        }
       }
-      return true;
+    }
+    return new AbstractMap.SimpleImmutableEntry<K, V>(key, value);
+  }
+
+  /**
+   * Parses an entry off of the input into the map. This helper avoids allocaton of a
+   * {@link MapEntryLite} by parsing directly into the provided {@link MapFieldLite}.
+   */
+  public void parseInto(
+      MapFieldLite<K, V> map, CodedInputStream input, ExtensionRegistryLite extensionRegistry)
+          throws IOException {
+    int length = input.readRawVarint32();
+    final int oldLimit = input.pushLimit(length);
+    K key = metadata.defaultKey;
+    V value = metadata.defaultValue;
+
+    while (true) {
+      int tag = input.readTag();
+      if (tag == 0) {
+        break;
+      }
+      if (tag == WireFormat.makeTag(KEY_FIELD_NUMBER, metadata.keyType.getWireType())) {
+        key = parseField(input, extensionRegistry, metadata.keyType, key);
+      } else if (tag == WireFormat.makeTag(VALUE_FIELD_NUMBER, metadata.valueType.getWireType())) {
+        value = parseField(input, extensionRegistry, metadata.valueType, value);
+      } else {
+        if (!input.skipField(tag)) {
+          break;
+        }
+      }
     }
 
-    private Builder(Metadata<K, V> metadata, K key, V value) {
-      this.metadata = metadata;
-      this.key = key;
-      this.value = value;
-    }
-    
-    @Override
-    public Builder<K, V> clone() {
-      return new Builder<K, V>(metadata, key, value);
-    }
-
-    @Override
-    public Builder<K, V> mergeFrom(
-        CodedInputStream input, ExtensionRegistryLite extensionRegistry)
-        throws IOException {
-      MapEntryLite<K, V> entry =
-          new MapEntryLite<K, V>(metadata, input, extensionRegistry);
-      this.key = entry.key;
-      this.value = entry.value;
-      return this;
-    }
-
-    @Override
-    protected Builder<K, V> internalMergeFrom(MapEntryLite<K, V> message) {
-      throw new UnsupportedOperationException();
-    }
+    input.checkLastTagWas(0);
+    input.popLimit(oldLimit);
+    map.put(key, value);
   }
 }

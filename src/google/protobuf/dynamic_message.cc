@@ -70,7 +70,6 @@
 #endif
 
 #include <google/protobuf/stubs/common.h>
-#include <google/protobuf/stubs/scoped_ptr.h>
 
 #include <google/protobuf/dynamic_message.h>
 #include <google/protobuf/descriptor.h>

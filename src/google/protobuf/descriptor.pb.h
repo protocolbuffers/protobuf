@@ -56,6 +56,7 @@ class MessageOptions;
 class MethodDescriptorProto;
 class MethodOptions;
 class OneofDescriptorProto;
+class OneofOptions;
 class ServiceDescriptorProto;
 class ServiceOptions;
 class SourceCodeInfo;
@@ -180,7 +181,7 @@ inline bool FieldOptions_JSType_Parse(
 }
 // ===================================================================
 
-class LIBPROTOBUF_EXPORT FileDescriptorSet : public ::google::protobuf::Message {
+class LIBPROTOBUF_EXPORT FileDescriptorSet : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.FileDescriptorSet) */ {
  public:
   FileDescriptorSet();
   virtual ~FileDescriptorSet();
@@ -222,7 +223,11 @@ class LIBPROTOBUF_EXPORT FileDescriptorSet : public ::google::protobuf::Message 
       ::google::protobuf::io::CodedInputStream* input);
   void SerializeWithCachedSizes(
       ::google::protobuf::io::CodedOutputStream* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
+  ::google::protobuf::uint8* InternalSerializeWithCachedSizesToArray(
+      bool deterministic, ::google::protobuf::uint8* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const {
+    return InternalSerializeWithCachedSizesToArray(false, output);
+  }
   int GetCachedSize() const { return _cached_size_; }
   private:
   void SharedCtor();
@@ -272,7 +277,7 @@ class LIBPROTOBUF_EXPORT FileDescriptorSet : public ::google::protobuf::Message 
 };
 // -------------------------------------------------------------------
 
-class LIBPROTOBUF_EXPORT FileDescriptorProto : public ::google::protobuf::Message {
+class LIBPROTOBUF_EXPORT FileDescriptorProto : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.FileDescriptorProto) */ {
  public:
   FileDescriptorProto();
   virtual ~FileDescriptorProto();
@@ -314,7 +319,11 @@ class LIBPROTOBUF_EXPORT FileDescriptorProto : public ::google::protobuf::Messag
       ::google::protobuf::io::CodedInputStream* input);
   void SerializeWithCachedSizes(
       ::google::protobuf::io::CodedOutputStream* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
+  ::google::protobuf::uint8* InternalSerializeWithCachedSizesToArray(
+      bool deterministic, ::google::protobuf::uint8* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const {
+    return InternalSerializeWithCachedSizesToArray(false, output);
+  }
   int GetCachedSize() const { return _cached_size_; }
   private:
   void SharedCtor();
@@ -515,7 +524,7 @@ class LIBPROTOBUF_EXPORT FileDescriptorProto : public ::google::protobuf::Messag
 };
 // -------------------------------------------------------------------
 
-class LIBPROTOBUF_EXPORT DescriptorProto_ExtensionRange : public ::google::protobuf::Message {
+class LIBPROTOBUF_EXPORT DescriptorProto_ExtensionRange : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.DescriptorProto.ExtensionRange) */ {
  public:
   DescriptorProto_ExtensionRange();
   virtual ~DescriptorProto_ExtensionRange();
@@ -557,7 +566,11 @@ class LIBPROTOBUF_EXPORT DescriptorProto_ExtensionRange : public ::google::proto
       ::google::protobuf::io::CodedInputStream* input);
   void SerializeWithCachedSizes(
       ::google::protobuf::io::CodedOutputStream* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
+  ::google::protobuf::uint8* InternalSerializeWithCachedSizesToArray(
+      bool deterministic, ::google::protobuf::uint8* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const {
+    return InternalSerializeWithCachedSizesToArray(false, output);
+  }
   int GetCachedSize() const { return _cached_size_; }
   private:
   void SharedCtor();
@@ -614,7 +627,7 @@ class LIBPROTOBUF_EXPORT DescriptorProto_ExtensionRange : public ::google::proto
 };
 // -------------------------------------------------------------------
 
-class LIBPROTOBUF_EXPORT DescriptorProto_ReservedRange : public ::google::protobuf::Message {
+class LIBPROTOBUF_EXPORT DescriptorProto_ReservedRange : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.DescriptorProto.ReservedRange) */ {
  public:
   DescriptorProto_ReservedRange();
   virtual ~DescriptorProto_ReservedRange();
@@ -656,7 +669,11 @@ class LIBPROTOBUF_EXPORT DescriptorProto_ReservedRange : public ::google::protob
       ::google::protobuf::io::CodedInputStream* input);
   void SerializeWithCachedSizes(
       ::google::protobuf::io::CodedOutputStream* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
+  ::google::protobuf::uint8* InternalSerializeWithCachedSizesToArray(
+      bool deterministic, ::google::protobuf::uint8* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const {
+    return InternalSerializeWithCachedSizesToArray(false, output);
+  }
   int GetCachedSize() const { return _cached_size_; }
   private:
   void SharedCtor();
@@ -713,7 +730,7 @@ class LIBPROTOBUF_EXPORT DescriptorProto_ReservedRange : public ::google::protob
 };
 // -------------------------------------------------------------------
 
-class LIBPROTOBUF_EXPORT DescriptorProto : public ::google::protobuf::Message {
+class LIBPROTOBUF_EXPORT DescriptorProto : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.DescriptorProto) */ {
  public:
   DescriptorProto();
   virtual ~DescriptorProto();
@@ -755,7 +772,11 @@ class LIBPROTOBUF_EXPORT DescriptorProto : public ::google::protobuf::Message {
       ::google::protobuf::io::CodedInputStream* input);
   void SerializeWithCachedSizes(
       ::google::protobuf::io::CodedOutputStream* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
+  ::google::protobuf::uint8* InternalSerializeWithCachedSizesToArray(
+      bool deterministic, ::google::protobuf::uint8* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const {
+    return InternalSerializeWithCachedSizesToArray(false, output);
+  }
   int GetCachedSize() const { return _cached_size_; }
   private:
   void SharedCtor();
@@ -930,7 +951,7 @@ class LIBPROTOBUF_EXPORT DescriptorProto : public ::google::protobuf::Message {
 };
 // -------------------------------------------------------------------
 
-class LIBPROTOBUF_EXPORT FieldDescriptorProto : public ::google::protobuf::Message {
+class LIBPROTOBUF_EXPORT FieldDescriptorProto : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.FieldDescriptorProto) */ {
  public:
   FieldDescriptorProto();
   virtual ~FieldDescriptorProto();
@@ -972,7 +993,11 @@ class LIBPROTOBUF_EXPORT FieldDescriptorProto : public ::google::protobuf::Messa
       ::google::protobuf::io::CodedInputStream* input);
   void SerializeWithCachedSizes(
       ::google::protobuf::io::CodedOutputStream* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
+  ::google::protobuf::uint8* InternalSerializeWithCachedSizesToArray(
+      bool deterministic, ::google::protobuf::uint8* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const {
+    return InternalSerializeWithCachedSizesToArray(false, output);
+  }
   int GetCachedSize() const { return _cached_size_; }
   private:
   void SharedCtor();
@@ -1222,7 +1247,7 @@ class LIBPROTOBUF_EXPORT FieldDescriptorProto : public ::google::protobuf::Messa
 };
 // -------------------------------------------------------------------
 
-class LIBPROTOBUF_EXPORT OneofDescriptorProto : public ::google::protobuf::Message {
+class LIBPROTOBUF_EXPORT OneofDescriptorProto : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.OneofDescriptorProto) */ {
  public:
   OneofDescriptorProto();
   virtual ~OneofDescriptorProto();
@@ -1264,7 +1289,11 @@ class LIBPROTOBUF_EXPORT OneofDescriptorProto : public ::google::protobuf::Messa
       ::google::protobuf::io::CodedInputStream* input);
   void SerializeWithCachedSizes(
       ::google::protobuf::io::CodedOutputStream* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
+  ::google::protobuf::uint8* InternalSerializeWithCachedSizesToArray(
+      bool deterministic, ::google::protobuf::uint8* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const {
+    return InternalSerializeWithCachedSizesToArray(false, output);
+  }
   int GetCachedSize() const { return _cached_size_; }
   private:
   void SharedCtor();
@@ -1298,15 +1327,27 @@ class LIBPROTOBUF_EXPORT OneofDescriptorProto : public ::google::protobuf::Messa
   ::std::string* release_name();
   void set_allocated_name(::std::string* name);
 
+  // optional .google.protobuf.OneofOptions options = 2;
+  bool has_options() const;
+  void clear_options();
+  static const int kOptionsFieldNumber = 2;
+  const ::google::protobuf::OneofOptions& options() const;
+  ::google::protobuf::OneofOptions* mutable_options();
+  ::google::protobuf::OneofOptions* release_options();
+  void set_allocated_options(::google::protobuf::OneofOptions* options);
+
   // @@protoc_insertion_point(class_scope:google.protobuf.OneofDescriptorProto)
  private:
   inline void set_has_name();
   inline void clear_has_name();
+  inline void set_has_options();
+  inline void clear_has_options();
 
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
   ::google::protobuf::uint32 _has_bits_[1];
   mutable int _cached_size_;
   ::google::protobuf::internal::ArenaStringPtr name_;
+  ::google::protobuf::OneofOptions* options_;
   friend void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto();
   friend void protobuf_AssignDesc_google_2fprotobuf_2fdescriptor_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fdescriptor_2eproto();
@@ -1316,7 +1357,7 @@ class LIBPROTOBUF_EXPORT OneofDescriptorProto : public ::google::protobuf::Messa
 };
 // -------------------------------------------------------------------
 
-class LIBPROTOBUF_EXPORT EnumDescriptorProto : public ::google::protobuf::Message {
+class LIBPROTOBUF_EXPORT EnumDescriptorProto : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.EnumDescriptorProto) */ {
  public:
   EnumDescriptorProto();
   virtual ~EnumDescriptorProto();
@@ -1358,7 +1399,11 @@ class LIBPROTOBUF_EXPORT EnumDescriptorProto : public ::google::protobuf::Messag
       ::google::protobuf::io::CodedInputStream* input);
   void SerializeWithCachedSizes(
       ::google::protobuf::io::CodedOutputStream* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
+  ::google::protobuf::uint8* InternalSerializeWithCachedSizesToArray(
+      bool deterministic, ::google::protobuf::uint8* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const {
+    return InternalSerializeWithCachedSizesToArray(false, output);
+  }
   int GetCachedSize() const { return _cached_size_; }
   private:
   void SharedCtor();
@@ -1435,7 +1480,7 @@ class LIBPROTOBUF_EXPORT EnumDescriptorProto : public ::google::protobuf::Messag
 };
 // -------------------------------------------------------------------
 
-class LIBPROTOBUF_EXPORT EnumValueDescriptorProto : public ::google::protobuf::Message {
+class LIBPROTOBUF_EXPORT EnumValueDescriptorProto : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.EnumValueDescriptorProto) */ {
  public:
   EnumValueDescriptorProto();
   virtual ~EnumValueDescriptorProto();
@@ -1477,7 +1522,11 @@ class LIBPROTOBUF_EXPORT EnumValueDescriptorProto : public ::google::protobuf::M
       ::google::protobuf::io::CodedInputStream* input);
   void SerializeWithCachedSizes(
       ::google::protobuf::io::CodedOutputStream* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
+  ::google::protobuf::uint8* InternalSerializeWithCachedSizesToArray(
+      bool deterministic, ::google::protobuf::uint8* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const {
+    return InternalSerializeWithCachedSizesToArray(false, output);
+  }
   int GetCachedSize() const { return _cached_size_; }
   private:
   void SharedCtor();
@@ -1551,7 +1600,7 @@ class LIBPROTOBUF_EXPORT EnumValueDescriptorProto : public ::google::protobuf::M
 };
 // -------------------------------------------------------------------
 
-class LIBPROTOBUF_EXPORT ServiceDescriptorProto : public ::google::protobuf::Message {
+class LIBPROTOBUF_EXPORT ServiceDescriptorProto : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.ServiceDescriptorProto) */ {
  public:
   ServiceDescriptorProto();
   virtual ~ServiceDescriptorProto();
@@ -1593,7 +1642,11 @@ class LIBPROTOBUF_EXPORT ServiceDescriptorProto : public ::google::protobuf::Mes
       ::google::protobuf::io::CodedInputStream* input);
   void SerializeWithCachedSizes(
       ::google::protobuf::io::CodedOutputStream* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
+  ::google::protobuf::uint8* InternalSerializeWithCachedSizesToArray(
+      bool deterministic, ::google::protobuf::uint8* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const {
+    return InternalSerializeWithCachedSizesToArray(false, output);
+  }
   int GetCachedSize() const { return _cached_size_; }
   private:
   void SharedCtor();
@@ -1670,7 +1723,7 @@ class LIBPROTOBUF_EXPORT ServiceDescriptorProto : public ::google::protobuf::Mes
 };
 // -------------------------------------------------------------------
 
-class LIBPROTOBUF_EXPORT MethodDescriptorProto : public ::google::protobuf::Message {
+class LIBPROTOBUF_EXPORT MethodDescriptorProto : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.MethodDescriptorProto) */ {
  public:
   MethodDescriptorProto();
   virtual ~MethodDescriptorProto();
@@ -1712,7 +1765,11 @@ class LIBPROTOBUF_EXPORT MethodDescriptorProto : public ::google::protobuf::Mess
       ::google::protobuf::io::CodedInputStream* input);
   void SerializeWithCachedSizes(
       ::google::protobuf::io::CodedOutputStream* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
+  ::google::protobuf::uint8* InternalSerializeWithCachedSizesToArray(
+      bool deterministic, ::google::protobuf::uint8* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const {
+    return InternalSerializeWithCachedSizesToArray(false, output);
+  }
   int GetCachedSize() const { return _cached_size_; }
   private:
   void SharedCtor();
@@ -1826,7 +1883,7 @@ class LIBPROTOBUF_EXPORT MethodDescriptorProto : public ::google::protobuf::Mess
 };
 // -------------------------------------------------------------------
 
-class LIBPROTOBUF_EXPORT FileOptions : public ::google::protobuf::Message {
+class LIBPROTOBUF_EXPORT FileOptions : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.FileOptions) */ {
  public:
   FileOptions();
   virtual ~FileOptions();
@@ -1868,7 +1925,11 @@ class LIBPROTOBUF_EXPORT FileOptions : public ::google::protobuf::Message {
       ::google::protobuf::io::CodedInputStream* input);
   void SerializeWithCachedSizes(
       ::google::protobuf::io::CodedOutputStream* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
+  ::google::protobuf::uint8* InternalSerializeWithCachedSizesToArray(
+      bool deterministic, ::google::protobuf::uint8* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const {
+    return InternalSerializeWithCachedSizesToArray(false, output);
+  }
   int GetCachedSize() const { return _cached_size_; }
   private:
   void SharedCtor();
@@ -2114,7 +2175,7 @@ class LIBPROTOBUF_EXPORT FileOptions : public ::google::protobuf::Message {
 };
 // -------------------------------------------------------------------
 
-class LIBPROTOBUF_EXPORT MessageOptions : public ::google::protobuf::Message {
+class LIBPROTOBUF_EXPORT MessageOptions : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.MessageOptions) */ {
  public:
   MessageOptions();
   virtual ~MessageOptions();
@@ -2156,7 +2217,11 @@ class LIBPROTOBUF_EXPORT MessageOptions : public ::google::protobuf::Message {
       ::google::protobuf::io::CodedInputStream* input);
   void SerializeWithCachedSizes(
       ::google::protobuf::io::CodedOutputStream* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
+  ::google::protobuf::uint8* InternalSerializeWithCachedSizesToArray(
+      bool deterministic, ::google::protobuf::uint8* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const {
+    return InternalSerializeWithCachedSizesToArray(false, output);
+  }
   int GetCachedSize() const { return _cached_size_; }
   private:
   void SharedCtor();
@@ -2249,7 +2314,7 @@ class LIBPROTOBUF_EXPORT MessageOptions : public ::google::protobuf::Message {
 };
 // -------------------------------------------------------------------
 
-class LIBPROTOBUF_EXPORT FieldOptions : public ::google::protobuf::Message {
+class LIBPROTOBUF_EXPORT FieldOptions : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.FieldOptions) */ {
  public:
   FieldOptions();
   virtual ~FieldOptions();
@@ -2291,7 +2356,11 @@ class LIBPROTOBUF_EXPORT FieldOptions : public ::google::protobuf::Message {
       ::google::protobuf::io::CodedInputStream* input);
   void SerializeWithCachedSizes(
       ::google::protobuf::io::CodedOutputStream* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
+  ::google::protobuf::uint8* InternalSerializeWithCachedSizesToArray(
+      bool deterministic, ::google::protobuf::uint8* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const {
+    return InternalSerializeWithCachedSizesToArray(false, output);
+  }
   int GetCachedSize() const { return _cached_size_; }
   private:
   void SharedCtor();
@@ -2460,7 +2529,106 @@ class LIBPROTOBUF_EXPORT FieldOptions : public ::google::protobuf::Message {
 };
 // -------------------------------------------------------------------
 
-class LIBPROTOBUF_EXPORT EnumOptions : public ::google::protobuf::Message {
+class LIBPROTOBUF_EXPORT OneofOptions : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.OneofOptions) */ {
+ public:
+  OneofOptions();
+  virtual ~OneofOptions();
+
+  OneofOptions(const OneofOptions& from);
+
+  inline OneofOptions& operator=(const OneofOptions& from) {
+    CopyFrom(from);
+    return *this;
+  }
+
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
+    return _internal_metadata_.unknown_fields();
+  }
+
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
+    return _internal_metadata_.mutable_unknown_fields();
+  }
+
+  static const ::google::protobuf::Descriptor* descriptor();
+  static const OneofOptions& default_instance();
+
+  void Swap(OneofOptions* other);
+
+  // implements Message ----------------------------------------------
+
+  inline OneofOptions* New() const { return New(NULL); }
+
+  OneofOptions* New(::google::protobuf::Arena* arena) const;
+  void CopyFrom(const ::google::protobuf::Message& from);
+  void MergeFrom(const ::google::protobuf::Message& from);
+  void CopyFrom(const OneofOptions& from);
+  void MergeFrom(const OneofOptions& from);
+  void Clear();
+  bool IsInitialized() const;
+
+  int ByteSize() const;
+  bool MergePartialFromCodedStream(
+      ::google::protobuf::io::CodedInputStream* input);
+  void SerializeWithCachedSizes(
+      ::google::protobuf::io::CodedOutputStream* output) const;
+  ::google::protobuf::uint8* InternalSerializeWithCachedSizesToArray(
+      bool deterministic, ::google::protobuf::uint8* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const {
+    return InternalSerializeWithCachedSizesToArray(false, output);
+  }
+  int GetCachedSize() const { return _cached_size_; }
+  private:
+  void SharedCtor();
+  void SharedDtor();
+  void SetCachedSize(int size) const;
+  void InternalSwap(OneofOptions* other);
+  private:
+  inline ::google::protobuf::Arena* GetArenaNoVirtual() const {
+    return _internal_metadata_.arena();
+  }
+  inline void* MaybeArenaPtr() const {
+    return _internal_metadata_.raw_arena_ptr();
+  }
+  public:
+
+  ::google::protobuf::Metadata GetMetadata() const;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
+  int uninterpreted_option_size() const;
+  void clear_uninterpreted_option();
+  static const int kUninterpretedOptionFieldNumber = 999;
+  const ::google::protobuf::UninterpretedOption& uninterpreted_option(int index) const;
+  ::google::protobuf::UninterpretedOption* mutable_uninterpreted_option(int index);
+  ::google::protobuf::UninterpretedOption* add_uninterpreted_option();
+  ::google::protobuf::RepeatedPtrField< ::google::protobuf::UninterpretedOption >*
+      mutable_uninterpreted_option();
+  const ::google::protobuf::RepeatedPtrField< ::google::protobuf::UninterpretedOption >&
+      uninterpreted_option() const;
+
+  GOOGLE_PROTOBUF_EXTENSION_ACCESSORS(OneofOptions)
+  // @@protoc_insertion_point(class_scope:google.protobuf.OneofOptions)
+ private:
+
+  ::google::protobuf::internal::ExtensionSet _extensions_;
+
+  ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
+  ::google::protobuf::uint32 _has_bits_[1];
+  mutable int _cached_size_;
+  ::google::protobuf::RepeatedPtrField< ::google::protobuf::UninterpretedOption > uninterpreted_option_;
+  friend void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto();
+  friend void protobuf_AssignDesc_google_2fprotobuf_2fdescriptor_2eproto();
+  friend void protobuf_ShutdownFile_google_2fprotobuf_2fdescriptor_2eproto();
+
+  void InitAsDefaultInstance();
+  static OneofOptions* default_instance_;
+};
+// -------------------------------------------------------------------
+
+class LIBPROTOBUF_EXPORT EnumOptions : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.EnumOptions) */ {
  public:
   EnumOptions();
   virtual ~EnumOptions();
@@ -2502,7 +2670,11 @@ class LIBPROTOBUF_EXPORT EnumOptions : public ::google::protobuf::Message {
       ::google::protobuf::io::CodedInputStream* input);
   void SerializeWithCachedSizes(
       ::google::protobuf::io::CodedOutputStream* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
+  ::google::protobuf::uint8* InternalSerializeWithCachedSizesToArray(
+      bool deterministic, ::google::protobuf::uint8* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const {
+    return InternalSerializeWithCachedSizesToArray(false, output);
+  }
   int GetCachedSize() const { return _cached_size_; }
   private:
   void SharedCtor();
@@ -2575,7 +2747,7 @@ class LIBPROTOBUF_EXPORT EnumOptions : public ::google::protobuf::Message {
 };
 // -------------------------------------------------------------------
 
-class LIBPROTOBUF_EXPORT EnumValueOptions : public ::google::protobuf::Message {
+class LIBPROTOBUF_EXPORT EnumValueOptions : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.EnumValueOptions) */ {
  public:
   EnumValueOptions();
   virtual ~EnumValueOptions();
@@ -2617,7 +2789,11 @@ class LIBPROTOBUF_EXPORT EnumValueOptions : public ::google::protobuf::Message {
       ::google::protobuf::io::CodedInputStream* input);
   void SerializeWithCachedSizes(
       ::google::protobuf::io::CodedOutputStream* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
+  ::google::protobuf::uint8* InternalSerializeWithCachedSizesToArray(
+      bool deterministic, ::google::protobuf::uint8* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const {
+    return InternalSerializeWithCachedSizesToArray(false, output);
+  }
   int GetCachedSize() const { return _cached_size_; }
   private:
   void SharedCtor();
@@ -2680,7 +2856,7 @@ class LIBPROTOBUF_EXPORT EnumValueOptions : public ::google::protobuf::Message {
 };
 // -------------------------------------------------------------------
 
-class LIBPROTOBUF_EXPORT ServiceOptions : public ::google::protobuf::Message {
+class LIBPROTOBUF_EXPORT ServiceOptions : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.ServiceOptions) */ {
  public:
   ServiceOptions();
   virtual ~ServiceOptions();
@@ -2722,7 +2898,11 @@ class LIBPROTOBUF_EXPORT ServiceOptions : public ::google::protobuf::Message {
       ::google::protobuf::io::CodedInputStream* input);
   void SerializeWithCachedSizes(
       ::google::protobuf::io::CodedOutputStream* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
+  ::google::protobuf::uint8* InternalSerializeWithCachedSizesToArray(
+      bool deterministic, ::google::protobuf::uint8* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const {
+    return InternalSerializeWithCachedSizesToArray(false, output);
+  }
   int GetCachedSize() const { return _cached_size_; }
   private:
   void SharedCtor();
@@ -2785,7 +2965,7 @@ class LIBPROTOBUF_EXPORT ServiceOptions : public ::google::protobuf::Message {
 };
 // -------------------------------------------------------------------
 
-class LIBPROTOBUF_EXPORT MethodOptions : public ::google::protobuf::Message {
+class LIBPROTOBUF_EXPORT MethodOptions : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.MethodOptions) */ {
  public:
   MethodOptions();
   virtual ~MethodOptions();
@@ -2827,7 +3007,11 @@ class LIBPROTOBUF_EXPORT MethodOptions : public ::google::protobuf::Message {
       ::google::protobuf::io::CodedInputStream* input);
   void SerializeWithCachedSizes(
       ::google::protobuf::io::CodedOutputStream* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
+  ::google::protobuf::uint8* InternalSerializeWithCachedSizesToArray(
+      bool deterministic, ::google::protobuf::uint8* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const {
+    return InternalSerializeWithCachedSizesToArray(false, output);
+  }
   int GetCachedSize() const { return _cached_size_; }
   private:
   void SharedCtor();
@@ -2890,7 +3074,7 @@ class LIBPROTOBUF_EXPORT MethodOptions : public ::google::protobuf::Message {
 };
 // -------------------------------------------------------------------
 
-class LIBPROTOBUF_EXPORT UninterpretedOption_NamePart : public ::google::protobuf::Message {
+class LIBPROTOBUF_EXPORT UninterpretedOption_NamePart : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.UninterpretedOption.NamePart) */ {
  public:
   UninterpretedOption_NamePart();
   virtual ~UninterpretedOption_NamePart();
@@ -2932,7 +3116,11 @@ class LIBPROTOBUF_EXPORT UninterpretedOption_NamePart : public ::google::protobu
       ::google::protobuf::io::CodedInputStream* input);
   void SerializeWithCachedSizes(
       ::google::protobuf::io::CodedOutputStream* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
+  ::google::protobuf::uint8* InternalSerializeWithCachedSizesToArray(
+      bool deterministic, ::google::protobuf::uint8* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const {
+    return InternalSerializeWithCachedSizesToArray(false, output);
+  }
   int GetCachedSize() const { return _cached_size_; }
   private:
   void SharedCtor();
@@ -2997,7 +3185,7 @@ class LIBPROTOBUF_EXPORT UninterpretedOption_NamePart : public ::google::protobu
 };
 // -------------------------------------------------------------------
 
-class LIBPROTOBUF_EXPORT UninterpretedOption : public ::google::protobuf::Message {
+class LIBPROTOBUF_EXPORT UninterpretedOption : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.UninterpretedOption) */ {
  public:
   UninterpretedOption();
   virtual ~UninterpretedOption();
@@ -3039,7 +3227,11 @@ class LIBPROTOBUF_EXPORT UninterpretedOption : public ::google::protobuf::Messag
       ::google::protobuf::io::CodedInputStream* input);
   void SerializeWithCachedSizes(
       ::google::protobuf::io::CodedOutputStream* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
+  ::google::protobuf::uint8* InternalSerializeWithCachedSizesToArray(
+      bool deterministic, ::google::protobuf::uint8* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const {
+    return InternalSerializeWithCachedSizesToArray(false, output);
+  }
   int GetCachedSize() const { return _cached_size_; }
   private:
   void SharedCtor();
@@ -3166,7 +3358,7 @@ class LIBPROTOBUF_EXPORT UninterpretedOption : public ::google::protobuf::Messag
 };
 // -------------------------------------------------------------------
 
-class LIBPROTOBUF_EXPORT SourceCodeInfo_Location : public ::google::protobuf::Message {
+class LIBPROTOBUF_EXPORT SourceCodeInfo_Location : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.SourceCodeInfo.Location) */ {
  public:
   SourceCodeInfo_Location();
   virtual ~SourceCodeInfo_Location();
@@ -3208,7 +3400,11 @@ class LIBPROTOBUF_EXPORT SourceCodeInfo_Location : public ::google::protobuf::Me
       ::google::protobuf::io::CodedInputStream* input);
   void SerializeWithCachedSizes(
       ::google::protobuf::io::CodedOutputStream* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
+  ::google::protobuf::uint8* InternalSerializeWithCachedSizesToArray(
+      bool deterministic, ::google::protobuf::uint8* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const {
+    return InternalSerializeWithCachedSizesToArray(false, output);
+  }
   int GetCachedSize() const { return _cached_size_; }
   private:
   void SharedCtor();
@@ -3320,7 +3516,7 @@ class LIBPROTOBUF_EXPORT SourceCodeInfo_Location : public ::google::protobuf::Me
 };
 // -------------------------------------------------------------------
 
-class LIBPROTOBUF_EXPORT SourceCodeInfo : public ::google::protobuf::Message {
+class LIBPROTOBUF_EXPORT SourceCodeInfo : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.SourceCodeInfo) */ {
  public:
   SourceCodeInfo();
   virtual ~SourceCodeInfo();
@@ -3362,7 +3558,11 @@ class LIBPROTOBUF_EXPORT SourceCodeInfo : public ::google::protobuf::Message {
       ::google::protobuf::io::CodedInputStream* input);
   void SerializeWithCachedSizes(
       ::google::protobuf::io::CodedOutputStream* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
+  ::google::protobuf::uint8* InternalSerializeWithCachedSizesToArray(
+      bool deterministic, ::google::protobuf::uint8* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const {
+    return InternalSerializeWithCachedSizesToArray(false, output);
+  }
   int GetCachedSize() const { return _cached_size_; }
   private:
   void SharedCtor();
@@ -3414,7 +3614,7 @@ class LIBPROTOBUF_EXPORT SourceCodeInfo : public ::google::protobuf::Message {
 };
 // -------------------------------------------------------------------
 
-class LIBPROTOBUF_EXPORT GeneratedCodeInfo_Annotation : public ::google::protobuf::Message {
+class LIBPROTOBUF_EXPORT GeneratedCodeInfo_Annotation : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.GeneratedCodeInfo.Annotation) */ {
  public:
   GeneratedCodeInfo_Annotation();
   virtual ~GeneratedCodeInfo_Annotation();
@@ -3456,7 +3656,11 @@ class LIBPROTOBUF_EXPORT GeneratedCodeInfo_Annotation : public ::google::protobu
       ::google::protobuf::io::CodedInputStream* input);
   void SerializeWithCachedSizes(
       ::google::protobuf::io::CodedOutputStream* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
+  ::google::protobuf::uint8* InternalSerializeWithCachedSizesToArray(
+      bool deterministic, ::google::protobuf::uint8* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const {
+    return InternalSerializeWithCachedSizesToArray(false, output);
+  }
   int GetCachedSize() const { return _cached_size_; }
   private:
   void SharedCtor();
@@ -3542,7 +3746,7 @@ class LIBPROTOBUF_EXPORT GeneratedCodeInfo_Annotation : public ::google::protobu
 };
 // -------------------------------------------------------------------
 
-class LIBPROTOBUF_EXPORT GeneratedCodeInfo : public ::google::protobuf::Message {
+class LIBPROTOBUF_EXPORT GeneratedCodeInfo : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.GeneratedCodeInfo) */ {
  public:
   GeneratedCodeInfo();
   virtual ~GeneratedCodeInfo();
@@ -3584,7 +3788,11 @@ class LIBPROTOBUF_EXPORT GeneratedCodeInfo : public ::google::protobuf::Message 
       ::google::protobuf::io::CodedInputStream* input);
   void SerializeWithCachedSizes(
       ::google::protobuf::io::CodedOutputStream* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
+  ::google::protobuf::uint8* InternalSerializeWithCachedSizesToArray(
+      bool deterministic, ::google::protobuf::uint8* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const {
+    return InternalSerializeWithCachedSizesToArray(false, output);
+  }
   int GetCachedSize() const { return _cached_size_; }
   private:
   void SharedCtor();
@@ -5106,6 +5314,50 @@ inline void OneofDescriptorProto::set_allocated_name(::std::string* name) {
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.OneofDescriptorProto.name)
 }
 
+// optional .google.protobuf.OneofOptions options = 2;
+inline bool OneofDescriptorProto::has_options() const {
+  return (_has_bits_[0] & 0x00000002u) != 0;
+}
+inline void OneofDescriptorProto::set_has_options() {
+  _has_bits_[0] |= 0x00000002u;
+}
+inline void OneofDescriptorProto::clear_has_options() {
+  _has_bits_[0] &= ~0x00000002u;
+}
+inline void OneofDescriptorProto::clear_options() {
+  if (options_ != NULL) options_->::google::protobuf::OneofOptions::Clear();
+  clear_has_options();
+}
+inline const ::google::protobuf::OneofOptions& OneofDescriptorProto::options() const {
+  // @@protoc_insertion_point(field_get:google.protobuf.OneofDescriptorProto.options)
+  return options_ != NULL ? *options_ : *default_instance_->options_;
+}
+inline ::google::protobuf::OneofOptions* OneofDescriptorProto::mutable_options() {
+  set_has_options();
+  if (options_ == NULL) {
+    options_ = new ::google::protobuf::OneofOptions;
+  }
+  // @@protoc_insertion_point(field_mutable:google.protobuf.OneofDescriptorProto.options)
+  return options_;
+}
+inline ::google::protobuf::OneofOptions* OneofDescriptorProto::release_options() {
+  // @@protoc_insertion_point(field_release:google.protobuf.OneofDescriptorProto.options)
+  clear_has_options();
+  ::google::protobuf::OneofOptions* temp = options_;
+  options_ = NULL;
+  return temp;
+}
+inline void OneofDescriptorProto::set_allocated_options(::google::protobuf::OneofOptions* options) {
+  delete options_;
+  options_ = options;
+  if (options) {
+    set_has_options();
+  } else {
+    clear_has_options();
+  }
+  // @@protoc_insertion_point(field_set_allocated:google.protobuf.OneofDescriptorProto.options)
+}
+
 // -------------------------------------------------------------------
 
 // EnumDescriptorProto
@@ -6587,6 +6839,40 @@ FieldOptions::uninterpreted_option() const {
 
 // -------------------------------------------------------------------
 
+// OneofOptions
+
+// repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
+inline int OneofOptions::uninterpreted_option_size() const {
+  return uninterpreted_option_.size();
+}
+inline void OneofOptions::clear_uninterpreted_option() {
+  uninterpreted_option_.Clear();
+}
+inline const ::google::protobuf::UninterpretedOption& OneofOptions::uninterpreted_option(int index) const {
+  // @@protoc_insertion_point(field_get:google.protobuf.OneofOptions.uninterpreted_option)
+  return uninterpreted_option_.Get(index);
+}
+inline ::google::protobuf::UninterpretedOption* OneofOptions::mutable_uninterpreted_option(int index) {
+  // @@protoc_insertion_point(field_mutable:google.protobuf.OneofOptions.uninterpreted_option)
+  return uninterpreted_option_.Mutable(index);
+}
+inline ::google::protobuf::UninterpretedOption* OneofOptions::add_uninterpreted_option() {
+  // @@protoc_insertion_point(field_add:google.protobuf.OneofOptions.uninterpreted_option)
+  return uninterpreted_option_.Add();
+}
+inline ::google::protobuf::RepeatedPtrField< ::google::protobuf::UninterpretedOption >*
+OneofOptions::mutable_uninterpreted_option() {
+  // @@protoc_insertion_point(field_mutable_list:google.protobuf.OneofOptions.uninterpreted_option)
+  return &uninterpreted_option_;
+}
+inline const ::google::protobuf::RepeatedPtrField< ::google::protobuf::UninterpretedOption >&
+OneofOptions::uninterpreted_option() const {
+  // @@protoc_insertion_point(field_list:google.protobuf.OneofOptions.uninterpreted_option)
+  return uninterpreted_option_;
+}
+
+// -------------------------------------------------------------------
+
 // EnumOptions
 
 // optional bool allow_alias = 2;
@@ -7623,6 +7909,8 @@ GeneratedCodeInfo::annotation() const {
 }
 
 #endif  // !PROTOBUF_INLINE_NOT_IN_HEADERS
+// -------------------------------------------------------------------
+
 // -------------------------------------------------------------------
 
 // -------------------------------------------------------------------

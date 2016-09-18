@@ -51,6 +51,7 @@ from google.protobuf.internal import descriptor_pool_test1_pb2
 from google.protobuf.internal import descriptor_pool_test2_pb2
 from google.protobuf.internal import factory_test1_pb2
 from google.protobuf.internal import factory_test2_pb2
+from google.protobuf.internal import file_options_test_pb2
 from google.protobuf.internal import more_messages_pb2
 from google.protobuf import descriptor
 from google.protobuf import descriptor_database
@@ -629,6 +630,23 @@ class AddDescriptorTest(unittest.TestCase):
                      'some/file.proto')
     self.assertEqual(pool.FindMessageTypeByName('package.Message').name,
                      'Message')
+
+  def testFileDescriptorOptionsWithCustomDescriptorPool(self):
+    # Create a descriptor pool, and add a new FileDescriptorProto to it.
+    pool = descriptor_pool.DescriptorPool()
+    file_name = 'file_descriptor_options_with_custom_descriptor_pool.proto'
+    file_descriptor_proto = descriptor_pb2.FileDescriptorProto(name=file_name)
+    extension_id = file_options_test_pb2.foo_options
+    file_descriptor_proto.options.Extensions[extension_id].foo_name = 'foo'
+    pool.Add(file_descriptor_proto)
+    # The options set on the FileDescriptorProto should be available in the
+    # descriptor even if they contain extensions that cannot be deserialized
+    # using the pool.
+    file_descriptor = pool.FindFileByName(file_name)
+    options = file_descriptor.GetOptions()
+    self.assertEqual('foo', options.Extensions[extension_id].foo_name)
+    # The object returned by GetOptions() is cached.
+    self.assertIs(options, file_descriptor.GetOptions())
 
 
 @unittest.skipIf(

@@ -84,6 +84,7 @@ public class TimeUtilTest extends TestCase {
   private class ParseTimestampThread extends Thread {
     private final String[] strings;
     private final Timestamp[] values;
+
     public ParseTimestampThread(String[] strings, Timestamp[] values) {
       this.strings = strings;
       this.values = values;
@@ -102,8 +103,8 @@ public class TimeUtilTest extends TestCase {
         }
         if (result.getSeconds() != values[index].getSeconds()
             || result.getNanos() != values[index].getNanos()) {
-          errorMessage = "Actual result: " + result.toString() + ", expected: "
-              + values[index].toString();
+          errorMessage =
+              "Actual result: " + result.toString() + ", expected: " + values[index].toString();
           break;
         }
         index = (index + 1) % strings.length;
@@ -112,26 +113,26 @@ public class TimeUtilTest extends TestCase {
   }
 
   public void testTimestampConcurrentParsing() throws Exception {
-    String[] timestampStrings = new String[]{
-      "0001-01-01T00:00:00Z",
-      "9999-12-31T23:59:59.999999999Z",
-      "1970-01-01T00:00:00Z",
-      "1969-12-31T23:59:59.999Z",
-    };
+    String[] timestampStrings =
+        new String[] {
+          "0001-01-01T00:00:00Z",
+          "9999-12-31T23:59:59.999999999Z",
+          "1970-01-01T00:00:00Z",
+          "1969-12-31T23:59:59.999Z",
+        };
     Timestamp[] timestampValues = new Timestamp[timestampStrings.length];
     for (int i = 0; i < timestampStrings.length; i++) {
       timestampValues[i] = TimeUtil.parseTimestamp(timestampStrings[i]);
     }
 
     final int THREAD_COUNT = 16;
-    final int RUNNING_TIME = 5000;  // in milliseconds.
+    final int RUNNING_TIME = 5000; // in milliseconds.
     final List<Thread> threads = new ArrayList<Thread>();
 
     stopParsingThreads = false;
     errorMessage = "";
     for (int i = 0; i < THREAD_COUNT; i++) {
-      Thread thread = new ParseTimestampThread(
-          timestampStrings, timestampValues);
+      Thread thread = new ParseTimestampThread(timestampStrings, timestampValues);
       thread.start();
       threads.add(thread);
     }
@@ -146,8 +147,8 @@ public class TimeUtilTest extends TestCase {
   public void testTimetampInvalidFormat() throws Exception {
     try {
       // Value too small.
-      Timestamp value = Timestamp.newBuilder()
-        .setSeconds(TimeUtil.TIMESTAMP_SECONDS_MIN - 1).build();
+      Timestamp value =
+          Timestamp.newBuilder().setSeconds(TimeUtil.TIMESTAMP_SECONDS_MIN - 1).build();
       TimeUtil.toString(value);
       Assert.fail("Exception is expected.");
     } catch (IllegalArgumentException e) {
@@ -156,14 +157,14 @@ public class TimeUtilTest extends TestCase {
 
     try {
       // Value too large.
-      Timestamp value = Timestamp.newBuilder()
-        .setSeconds(TimeUtil.TIMESTAMP_SECONDS_MAX + 1).build();
+      Timestamp value =
+          Timestamp.newBuilder().setSeconds(TimeUtil.TIMESTAMP_SECONDS_MAX + 1).build();
       TimeUtil.toString(value);
       Assert.fail("Exception is expected.");
     } catch (IllegalArgumentException e) {
       // Expected.
     }
-    
+
     try {
       // Invalid nanos value.
       Timestamp value = Timestamp.newBuilder().setNanos(-1).build();
@@ -279,8 +280,7 @@ public class TimeUtilTest extends TestCase {
   public void testDurationInvalidFormat() throws Exception {
     try {
       // Value too small.
-      Duration value = Duration.newBuilder()
-        .setSeconds(TimeUtil.DURATION_SECONDS_MIN - 1).build();
+      Duration value = Duration.newBuilder().setSeconds(TimeUtil.DURATION_SECONDS_MIN - 1).build();
       TimeUtil.toString(value);
       Assert.fail("Exception is expected.");
     } catch (IllegalArgumentException e) {
@@ -289,18 +289,7 @@ public class TimeUtilTest extends TestCase {
 
     try {
       // Value too large.
-      Duration value = Duration.newBuilder()
-        .setSeconds(TimeUtil.DURATION_SECONDS_MAX + 1).build();
-      TimeUtil.toString(value);
-      Assert.fail("Exception is expected.");
-    } catch (IllegalArgumentException e) {
-      // Expected.
-    }
-    
-    try {
-      // Invalid nanos value.
-      Duration value = Duration.newBuilder().setSeconds(1).setNanos(-1)
-          .build();
+      Duration value = Duration.newBuilder().setSeconds(TimeUtil.DURATION_SECONDS_MAX + 1).build();
       TimeUtil.toString(value);
       Assert.fail("Exception is expected.");
     } catch (IllegalArgumentException e) {
@@ -309,8 +298,16 @@ public class TimeUtilTest extends TestCase {
 
     try {
       // Invalid nanos value.
-      Duration value = Duration.newBuilder().setSeconds(-1).setNanos(1)
-          .build();
+      Duration value = Duration.newBuilder().setSeconds(1).setNanos(-1).build();
+      TimeUtil.toString(value);
+      Assert.fail("Exception is expected.");
+    } catch (IllegalArgumentException e) {
+      // Expected.
+    }
+
+    try {
+      // Invalid nanos value.
+      Duration value = Duration.newBuilder().setSeconds(-1).setNanos(1).build();
       TimeUtil.toString(value);
       Assert.fail("Exception is expected.");
     } catch (IllegalArgumentException e) {
@@ -367,8 +364,7 @@ public class TimeUtilTest extends TestCase {
   }
 
   public void testTimestampConversion() throws Exception {
-    Timestamp timestamp =
-      TimeUtil.parseTimestamp("1970-01-01T00:00:01.111111111Z");
+    Timestamp timestamp = TimeUtil.parseTimestamp("1970-01-01T00:00:01.111111111Z");
     assertEquals(1111111111, TimeUtil.toNanos(timestamp));
     assertEquals(1111111, TimeUtil.toMicros(timestamp));
     assertEquals(1111, TimeUtil.toMillis(timestamp));
@@ -378,7 +374,7 @@ public class TimeUtilTest extends TestCase {
     assertEquals("1970-01-01T00:00:01.111111Z", TimeUtil.toString(timestamp));
     timestamp = TimeUtil.createTimestampFromMillis(1111);
     assertEquals("1970-01-01T00:00:01.111Z", TimeUtil.toString(timestamp));
-    
+
     timestamp = TimeUtil.parseTimestamp("1969-12-31T23:59:59.111111111Z");
     assertEquals(-888888889, TimeUtil.toNanos(timestamp));
     assertEquals(-888889, TimeUtil.toMicros(timestamp));
@@ -402,7 +398,7 @@ public class TimeUtilTest extends TestCase {
     assertEquals("1.111111s", TimeUtil.toString(duration));
     duration = TimeUtil.createDurationFromMillis(1111);
     assertEquals("1.111s", TimeUtil.toString(duration));
-    
+
     duration = TimeUtil.parseDuration("-1.111111111s");
     assertEquals(-1111111111, TimeUtil.toNanos(duration));
     assertEquals(-1111111, TimeUtil.toMicros(duration));
@@ -459,29 +455,28 @@ public class TimeUtilTest extends TestCase {
 
     duration = TimeUtil.add(duration, duration);
     assertEquals("-2.250s", TimeUtil.toString(duration));
-    
+
     duration = TimeUtil.subtract(duration, TimeUtil.parseDuration("-1s"));
     assertEquals("-1.250s", TimeUtil.toString(duration));
-    
+
     // Multiplications (with results larger than Long.MAX_VALUE in nanoseconds).
     duration = TimeUtil.parseDuration("0.999999999s");
-    assertEquals("315575999684.424s",
-      TimeUtil.toString(TimeUtil.multiply(duration, 315576000000L)));
+    assertEquals(
+        "315575999684.424s", TimeUtil.toString(TimeUtil.multiply(duration, 315576000000L)));
     duration = TimeUtil.parseDuration("-0.999999999s");
-    assertEquals("-315575999684.424s",
-      TimeUtil.toString(TimeUtil.multiply(duration, 315576000000L)));
-    assertEquals("315575999684.424s",
-      TimeUtil.toString(TimeUtil.multiply(duration, -315576000000L)));
-    
+    assertEquals(
+        "-315575999684.424s", TimeUtil.toString(TimeUtil.multiply(duration, 315576000000L)));
+    assertEquals(
+        "315575999684.424s", TimeUtil.toString(TimeUtil.multiply(duration, -315576000000L)));
+
     // Divisions (with values larger than Long.MAX_VALUE in nanoseconds).
     Duration d1 = TimeUtil.parseDuration("315576000000s");
     Duration d2 = TimeUtil.subtract(d1, TimeUtil.createDurationFromNanos(1));
     assertEquals(1, TimeUtil.divide(d1, d2));
     assertEquals(0, TimeUtil.divide(d2, d1));
     assertEquals("0.000000001s", TimeUtil.toString(TimeUtil.remainder(d1, d2)));
-    assertEquals("315575999999.999999999s",
-      TimeUtil.toString(TimeUtil.remainder(d2, d1)));
-    
+    assertEquals("315575999999.999999999s", TimeUtil.toString(TimeUtil.remainder(d2, d1)));
+
     // Divisions involving negative values.
     //
     // (-5) / 2 = -2, remainder = -1

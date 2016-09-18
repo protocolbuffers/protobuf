@@ -36,8 +36,16 @@
 #import "GPBWireFormat.h"
 #import "GPBMessage_PackagePrivate.h"
 
-// The address of this variable is used as a key for obj_getAssociatedObject.
+// Direct access is use for speed, to avoid even internally declaring things
+// read/write, etc. The warning is enabled in the project to ensure code calling
+// protos can turn on -Wdirect-ivar-access without issues.
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdirect-ivar-access"
+
+// The addresses of these variables are used as keys for objc_getAssociatedObject.
 static const char kTextFormatExtraValueKey = 0;
+static const char kParentClassNameValueKey = 0;
+static const char kClassNameSuffixKey = 0;
 
 // Utility function to generate selectors on the fly.
 static SEL SelFromStrings(const char *prefix, const char *middle,
@@ -209,8 +217,100 @@ static NSArray *NewFieldsArrayForHasIndex(int hasIndex,
   extensionRangesCount_ = count;
 }
 
+- (void)setupContainingMessageClassName:(const char *)msgClassName {
+  // Note: Only fetch the class here, can't send messages to it because
+  // that could cause cycles back to this class within +initialize if
+  // two messages have each other in fields (i.e. - they build a graph).
+  NSAssert(objc_getClass(msgClassName), @"Class %s not defined", msgClassName);
+  NSValue *parentNameValue = [NSValue valueWithPointer:msgClassName];
+  objc_setAssociatedObject(self, &kParentClassNameValueKey,
+                           parentNameValue,
+                           OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+}
+
+- (void)setupMessageClassNameSuffix:(NSString *)suffix {
+  if (suffix.length) {
+    objc_setAssociatedObject(self, &kClassNameSuffixKey,
+                             suffix,
+                             OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+  }
+}
+
 - (NSString *)name {
   return NSStringFromClass(messageClass_);
+}
+
+- (GPBDescriptor *)containingType {
+  NSValue *parentNameValue =
+      objc_getAssociatedObject(self, &kParentClassNameValueKey);
+  if (!parentNameValue) {
+    return nil;
+  }
+  const char *parentName = [parentNameValue pointerValue];
+  Class parentClass = objc_getClass(parentName);
+  NSAssert(parentClass, @"Class %s not defined", parentName);
+  return [parentClass descriptor];
+}
+
+- (NSString *)fullName {
+  NSString *className = NSStringFromClass(self.messageClass);
+  GPBFileDescriptor *file = self.file;
+  NSString *objcPrefix = file.objcPrefix;
+  if (objcPrefix && ![className hasPrefix:objcPrefix]) {
+    NSAssert(0,
+             @"Class didn't have correct prefix? (%@ - %@)",
+             className, objcPrefix);
+    return nil;
+  }
+  GPBDescriptor *parent = self.containingType;
+
+  NSString *name = nil;
+  if (parent) {
+    NSString *parentClassName = NSStringFromClass(parent.messageClass);
+    // The generator will add _Class to avoid reserved words, drop it.
+    NSString *suffix = objc_getAssociatedObject(parent, &kClassNameSuffixKey);
+    if (suffix) {
+      if (![parentClassName hasSuffix:suffix]) {
+        NSAssert(0,
+                 @"ParentMessage class didn't have correct suffix? (%@ - %@)",
+                 className, suffix);
+        return nil;
+      }
+      parentClassName =
+          [parentClassName substringToIndex:(parentClassName.length - suffix.length)];
+    }
+    NSString *parentPrefix = [parentClassName stringByAppendingString:@"_"];
+    if (![className hasPrefix:parentPrefix]) {
+      NSAssert(0,
+               @"Class didn't have the correct parent name prefix? (%@ - %@)",
+               parentPrefix, className);
+      return nil;
+    }
+    name = [className substringFromIndex:parentPrefix.length];
+  } else {
+    name = [className substringFromIndex:objcPrefix.length];
+  }
+
+  // The generator will add _Class to avoid reserved words, drop it.
+  NSString *suffix = objc_getAssociatedObject(self, &kClassNameSuffixKey);
+  if (suffix) {
+    if (![name hasSuffix:suffix]) {
+      NSAssert(0,
+               @"Message class didn't have correct suffix? (%@ - %@)",
+               name, suffix);
+      return nil;
+    }
+    name = [name substringToIndex:(name.length - suffix.length)];
+  }
+
+  NSString *prefix = (parent != nil ? parent.fullName : file.package);
+  NSString *result;
+  if (prefix.length > 0) {
+    result = [NSString stringWithFormat:@"%@.%@", prefix, name];
+  } else {
+    result = name;
+  }
+  return result;
 }
 
 - (id)copyWithZone:(NSZone *)zone {
@@ -249,11 +349,25 @@ static NSArray *NewFieldsArrayForHasIndex(int hasIndex,
 
 @implementation GPBFileDescriptor {
   NSString *package_;
+  NSString *objcPrefix_;
   GPBFileSyntax syntax_;
 }
 
 @synthesize package = package_;
+@synthesize objcPrefix = objcPrefix_;
 @synthesize syntax = syntax_;
+
+- (instancetype)initWithPackage:(NSString *)package
+                     objcPrefix:(NSString *)objcPrefix
+                         syntax:(GPBFileSyntax)syntax {
+  self = [super init];
+  if (self) {
+    package_ = [package copy];
+    objcPrefix_ = [objcPrefix copy];
+    syntax_ = syntax;
+  }
+  return self;
+}
 
 - (instancetype)initWithPackage:(NSString *)package
                          syntax:(GPBFileSyntax)syntax {
@@ -263,6 +377,12 @@ static NSArray *NewFieldsArrayForHasIndex(int hasIndex,
     syntax_ = syntax;
   }
   return self;
+}
+
+- (void)dealloc {
+  [package_ release];
+  [objcPrefix_ release];
+  [super dealloc];
 }
 
 @end
@@ -405,6 +525,9 @@ uint32_t GPBFieldAlternateTag(GPBFieldDescriptor *self) {
     // Extra type specific data.
     if (isMessage) {
       const char *className = coreDesc->dataTypeSpecific.className;
+      // Note: Only fetch the class here, can't send messages to it because
+      // that could cause cycles back to this class within +initialize if
+      // two messages have each other in fields (i.e. - they build a graph).
       msgClass_ = objc_getClass(className);
       NSAssert(msgClass_, @"Class %s not defined", className);
     } else if (dataType == GPBDataTypeEnum) {
@@ -745,6 +868,22 @@ uint32_t GPBFieldAlternateTag(GPBFieldDescriptor *self) {
   return NO;
 }
 
+- (BOOL)getValue:(int32_t *)outValue forEnumTextFormatName:(NSString *)textFormatName {
+    if (nameOffsets_ == NULL) [self calcValueNameOffsets];
+
+    for (uint32_t i = 0; i < valueCount_; ++i) {
+        int32_t value = values_[i];
+        NSString *valueTextFormatName = [self textFormatNameForValue:value];
+        if ([valueTextFormatName isEqual:textFormatName]) {
+            if (outValue) {
+                *outValue = value;
+            }
+            return YES;
+        }
+    }
+    return NO;
+}
+
 - (NSString *)textFormatNameForValue:(int32_t)number {
   if (nameOffsets_ == NULL) [self calcValueNameOffsets];
 
@@ -803,7 +942,7 @@ uint32_t GPBFieldAlternateTag(GPBFieldDescriptor *self) {
   if ((self = [super init])) {
     description_ = description;
 
-#if DEBUG
+#if defined(DEBUG) && DEBUG
     const char *className = description->messageOrGroupClassName;
     if (className) {
       NSAssert(objc_lookUpClass(className) != Nil,
@@ -961,3 +1100,5 @@ uint32_t GPBFieldAlternateTag(GPBFieldDescriptor *self) {
 }
 
 @end
+
+#pragma clang diagnostic pop

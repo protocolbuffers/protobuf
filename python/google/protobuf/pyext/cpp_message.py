@@ -48,9 +48,9 @@ class GeneratedProtocolMessageType(_message.MessageMeta):
   classes at runtime, as in this example:
 
   mydescriptor = Descriptor(.....)
-  class MyProtoClass(Message):
-    __metaclass__ = GeneratedProtocolMessageType
-    DESCRIPTOR = mydescriptor
+  factory = symbol_database.Default()
+  factory.pool.AddDescriptor(mydescriptor)
+  MyProtoClass = factory.GetPrototype(mydescriptor)
   myproto_instance = MyProtoClass()
   myproto.foo_field = 23
   ...

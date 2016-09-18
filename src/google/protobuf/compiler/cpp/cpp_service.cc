@@ -298,13 +298,15 @@ void ServiceGenerator::GenerateGetPrototype(RequestOrResponse which,
       "      return $type$::default_instance();\n");
   }
 
-  printer->Print(vars_,
+  printer->Print(
     "    default:\n"
     "      GOOGLE_LOG(FATAL) << \"Bad method index; this should never happen.\";\n"
-    "      return *static_cast< ::google::protobuf::Message*>(NULL);\n"
+    "      return *::google::protobuf::MessageFactory::generated_factory()\n"
+    "          ->GetPrototype(method->$input_or_output$_type());\n"
     "  }\n"
     "}\n"
-    "\n");
+    "\n",
+    "input_or_output", which == REQUEST ? "input" : "output");
 }
 
 void ServiceGenerator::GenerateStubMethods(io::Printer* printer) {

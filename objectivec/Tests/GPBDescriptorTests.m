@@ -34,11 +34,40 @@
 
 #import "GPBDescriptor.h"
 #import "google/protobuf/Unittest.pbobjc.h"
+#import "google/protobuf/UnittestObjc.pbobjc.h"
+#import "google/protobuf/Descriptor.pbobjc.h"
 
 @interface DescriptorTests : GPBTestCase
 @end
 
 @implementation DescriptorTests
+
+- (void)testDescriptor_containingType {
+  GPBDescriptor *testAllTypesDesc = [TestAllTypes descriptor];
+  GPBDescriptor *nestedMessageDesc = [TestAllTypes_NestedMessage descriptor];
+  XCTAssertNil(testAllTypesDesc.containingType);
+  XCTAssertNotNil(nestedMessageDesc.containingType);
+  XCTAssertEqual(nestedMessageDesc.containingType, testAllTypesDesc);  // Ptr comparison
+}
+
+- (void)testDescriptor_fullName {
+  GPBDescriptor *testAllTypesDesc = [TestAllTypes descriptor];
+  XCTAssertEqualObjects(testAllTypesDesc.fullName, @"protobuf_unittest.TestAllTypes");
+  GPBDescriptor *nestedMessageDesc = [TestAllTypes_NestedMessage descriptor];
+  XCTAssertEqualObjects(nestedMessageDesc.fullName, @"protobuf_unittest.TestAllTypes.NestedMessage");
+
+  // Prefixes removed.
+  GPBDescriptor *descDesc = [GPBDescriptorProto descriptor];
+  XCTAssertEqualObjects(descDesc.fullName, @"google.protobuf.DescriptorProto");
+  GPBDescriptor *descExtRngDesc = [GPBDescriptorProto_ExtensionRange descriptor];
+  XCTAssertEqualObjects(descExtRngDesc.fullName, @"google.protobuf.DescriptorProto.ExtensionRange");
+
+  // Things that get "_Class" added.
+  GPBDescriptor *pointDesc = [Point_Class descriptor];
+  XCTAssertEqualObjects(pointDesc.fullName, @"protobuf_unittest.Point");
+  GPBDescriptor *pointRectDesc = [Point_Rect descriptor];
+  XCTAssertEqualObjects(pointRectDesc.fullName, @"protobuf_unittest.Point.Rect");
+}
 
 - (void)testFieldDescriptor {
   GPBDescriptor *descriptor = [TestAllTypes descriptor];
@@ -125,6 +154,12 @@
       [descriptor getValue:&value forEnumName:@"TestAllTypes_NestedEnum_Baz"]);
   XCTAssertEqual(value, TestAllTypes_NestedEnum_Baz);
 
+  // TextFormat
+  enumName = [descriptor textFormatNameForValue:1];
+  XCTAssertNotNil(enumName);
+  XCTAssertTrue([descriptor getValue:&value forEnumTextFormatName:@"FOO"]);
+  XCTAssertEqual(value, TestAllTypes_NestedEnum_Foo);
+
   // Bad values
   enumName = [descriptor enumNameForValue:0];
   XCTAssertNil(enumName);
@@ -134,6 +169,8 @@
                           forEnumName:@"TestAllTypes_NestedEnum_Unknown"]);
   XCTAssertFalse([descriptor getValue:NULL
                           forEnumName:@"TestAllTypes_NestedEnum_Unknown"]);
+  XCTAssertFalse([descriptor getValue:NULL forEnumTextFormatName:@"Unknown"]);
+  XCTAssertFalse([descriptor getValue:&value forEnumTextFormatName:@"Unknown"]);
 }
 
 - (void)testEnumValueValidator {

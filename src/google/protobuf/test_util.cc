@@ -3332,7 +3332,11 @@ void TestUtil::ReflectionTester::ExpectMessagesReleasedViaReflection(
         break;
       case NOT_NULL:
         EXPECT_TRUE(released != NULL);
-        EXPECT_EQ(&sub_message, released);
+        if (message->GetArena() == NULL) {
+          // released message must be same as sub_message if source message is
+          // not on arena.
+          EXPECT_EQ(&sub_message, released);
+        }
         break;
       case CAN_BE_NULL:
         break;

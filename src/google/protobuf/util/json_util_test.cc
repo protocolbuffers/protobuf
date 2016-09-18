@@ -34,6 +34,8 @@
 #include <string>
 
 #include <google/protobuf/io/zero_copy_stream.h>
+#include <google/protobuf/descriptor_database.h>
+#include <google/protobuf/dynamic_message.h>
 #include <google/protobuf/util/json_format_proto3.pb.h>
 #include <google/protobuf/util/type_resolver.h>
 #include <google/protobuf/util/type_resolver_util.h>
@@ -63,26 +65,21 @@ static string GetTypeUrl(const Descriptor* message) {
 class JsonUtilTest : public testing::Test {
  protected:
   JsonUtilTest() {
-    resolver_.reset(NewTypeResolverForDescriptorPool(
-        kTypeUrlPrefix, DescriptorPool::generated_pool()));
   }
 
-  string ToJson(const Message& message, const JsonOptions& options) {
+  string ToJson(const Message& message, const JsonPrintOptions& options) {
     string result;
-    GOOGLE_CHECK_OK(BinaryToJsonString(resolver_.get(),
-                                GetTypeUrl(message.GetDescriptor()),
-                                message.SerializeAsString(), &result, options));
+    GOOGLE_CHECK_OK(MessageToJsonString(message, &result, options));
     return result;
   }
 
+  bool FromJson(const string& json, Message* message,
+                const JsonParseOptions& options) {
+    return JsonStringToMessage(json, message, options).ok();
+  }
+
   bool FromJson(const string& json, Message* message) {
-    string binary;
-    if (!JsonToBinaryString(resolver_.get(),
-                            GetTypeUrl(message->GetDescriptor()), json, &binary)
-             .ok()) {
-      return false;
-    }
-    return message->ParseFromString(binary);
+    return FromJson(json, message, JsonParseOptions());
   }
 
   google::protobuf::scoped_ptr<TypeResolver> resolver_;
@@ -92,7 +89,7 @@ TEST_F(JsonUtilTest, TestWhitespaces) {
   TestMessage m;
   m.mutable_message_value();
 
-  JsonOptions options;
+  JsonPrintOptions options;
   EXPECT_EQ("{\"messageValue\":{}}", ToJson(m, options));
   options.add_whitespace = true;
   EXPECT_EQ(
@@ -104,7 +101,7 @@ TEST_F(JsonUtilTest, TestWhitespaces) {
 
 TEST_F(JsonUtilTest, TestDefaultValues) {
   TestMessage m;
-  JsonOptions options;
+  JsonPrintOptions options;
   EXPECT_EQ("{}", ToJson(m, options));
   options.always_print_primitive_fields = true;
   EXPECT_EQ(
@@ -117,6 +114,34 @@ TEST_F(JsonUtilTest, TestDefaultValues) {
       "\"doubleValue\":0,"
       "\"stringValue\":\"\","
       "\"bytesValue\":\"\","
+      "\"enumValue\":\"FOO\","
+      "\"repeatedBoolValue\":[],"
+      "\"repeatedInt32Value\":[],"
+      "\"repeatedInt64Value\":[],"
+      "\"repeatedUint32Value\":[],"
+      "\"repeatedUint64Value\":[],"
+      "\"repeatedFloatValue\":[],"
+      "\"repeatedDoubleValue\":[],"
+      "\"repeatedStringValue\":[],"
+      "\"repeatedBytesValue\":[],"
+      "\"repeatedEnumValue\":[],"
+      "\"repeatedMessageValue\":[]"
+      "}",
+      ToJson(m, options));
+
+  options.always_print_primitive_fields = true;
+  m.set_string_value("i am a test string value");
+  m.set_bytes_value("i am a test bytes value");
+  EXPECT_EQ(
+      "{\"boolValue\":false,"
+      "\"int32Value\":0,"
+      "\"int64Value\":\"0\","
+      "\"uint32Value\":0,"
+      "\"uint64Value\":\"0\","
+      "\"floatValue\":0,"
+      "\"doubleValue\":0,"
+      "\"stringValue\":\"i am a test string value\","
+      "\"bytesValue\":\"aSBhbSBhIHRlc3QgYnl0ZXMgdmFsdWU=\","
       "\"enumValue\":\"FOO\","
       "\"repeatedBoolValue\":[],"
       "\"repeatedInt32Value\":[],"
@@ -147,8 +172,9 @@ TEST_F(JsonUtilTest, ParseMessage) {
       "    {\"value\": 40}, {\"value\": 96}\n"
       "  ]\n"
       "}\n";
+  JsonParseOptions options;
   TestMessage m;
-  ASSERT_TRUE(FromJson(input, &m));
+  ASSERT_TRUE(FromJson(input, &m, options));
   EXPECT_EQ(1024, m.int32_value());
   ASSERT_EQ(2, m.repeated_int32_value_size());
   EXPECT_EQ(1, m.repeated_int32_value(0));
@@ -162,20 +188,67 @@ TEST_F(JsonUtilTest, ParseMessage) {
 TEST_F(JsonUtilTest, ParseMap) {
   TestMap message;
   (*message.mutable_string_map())["hello"] = 1234;
-  JsonOptions options;
-  EXPECT_EQ("{\"stringMap\":{\"hello\":1234}}", ToJson(message, options));
+  JsonPrintOptions print_options;
+  JsonParseOptions parse_options;
+  EXPECT_EQ("{\"stringMap\":{\"hello\":1234}}", ToJson(message, print_options));
   TestMap other;
-  ASSERT_TRUE(FromJson(ToJson(message, options), &other));
+  ASSERT_TRUE(FromJson(ToJson(message, print_options), &other, parse_options));
   EXPECT_EQ(message.DebugString(), other.DebugString());
+}
+
+TEST_F(JsonUtilTest, TestParseIgnoreUnknownFields) {
+  TestMessage m;
+  JsonParseOptions options;
+  options.ignore_unknown_fields = true;
+  EXPECT_TRUE(FromJson("{\"unknownName\":0}", &m, options));
 }
 
 TEST_F(JsonUtilTest, TestParseErrors) {
   TestMessage m;
-  JsonOptions options;
+  JsonParseOptions options;
   // Parsing should fail if the field name can not be recognized.
-  EXPECT_FALSE(FromJson("{\"unknownName\":0}", &m));
+  EXPECT_FALSE(FromJson("{\"unknownName\":0}", &m, options));
   // Parsing should fail if the value is invalid.
-  EXPECT_FALSE(FromJson("{\"int32Value\":2147483648}", &m));
+  EXPECT_FALSE(FromJson("{\"int32Value\":2147483648}", &m, options));
+}
+
+TEST_F(JsonUtilTest, TestDynamicMessage) {
+  // Some random message but good enough to test the wrapper functions.
+  string input =
+      "{\n"
+      "  \"int32Value\": 1024,\n"
+      "  \"repeatedInt32Value\": [1, 2],\n"
+      "  \"messageValue\": {\n"
+      "    \"value\": 2048\n"
+      "  },\n"
+      "  \"repeatedMessageValue\": [\n"
+      "    {\"value\": 40}, {\"value\": 96}\n"
+      "  ]\n"
+      "}\n";
+
+  // Create a new DescriptorPool with the same protos as the generated one.
+  DescriptorPoolDatabase database(*DescriptorPool::generated_pool());
+  DescriptorPool pool(&database);
+  // A dynamic version of the test proto.
+  DynamicMessageFactory factory;
+  google::protobuf::scoped_ptr<Message> message(factory.GetPrototype(
+      pool.FindMessageTypeByName("proto3.TestMessage"))->New());
+  EXPECT_TRUE(FromJson(input, message.get()));
+
+  // Convert to generated message for easy inspection.
+  TestMessage generated;
+  EXPECT_TRUE(generated.ParseFromString(message->SerializeAsString()));
+  EXPECT_EQ(1024, generated.int32_value());
+  ASSERT_EQ(2, generated.repeated_int32_value_size());
+  EXPECT_EQ(1, generated.repeated_int32_value(0));
+  EXPECT_EQ(2, generated.repeated_int32_value(1));
+  EXPECT_EQ(2048, generated.message_value().value());
+  ASSERT_EQ(2, generated.repeated_message_value_size());
+  EXPECT_EQ(40, generated.repeated_message_value(0).value());
+  EXPECT_EQ(96, generated.repeated_message_value(1).value());
+
+  JsonOptions options;
+  EXPECT_EQ(ToJson(generated, options), ToJson(*message, options));
 }
 
 typedef pair<char*, int> Segment;

@@ -241,8 +241,14 @@ class LIBPROTOBUF_EXPORT UnknownField {
 // ===================================================================
 // inline implementations
 
+inline UnknownFieldSet::UnknownFieldSet() : fields_(NULL) {}
+
+inline UnknownFieldSet::~UnknownFieldSet() { Clear(); }
+
+inline void UnknownFieldSet::ClearAndFreeMemory() { Clear(); }
+
 inline void UnknownFieldSet::Clear() {
-  if (fields_) {
+  if (fields_ != NULL) {
     ClearFallback();
   }
 }

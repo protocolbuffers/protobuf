@@ -94,8 +94,10 @@ jspb.debug.dump_ = function(thing) {
     var match = /^get([A-Z]\w*)/.exec(name);
     if (match && name != 'getExtension' &&
         name != 'getJsPbMessageId') {
-      var val = thing[name]();
-      if (val != null) {
+      var has = 'has' + match[1];
+      if (!thing[has] || thing[has]())
+      {
+        var val = thing[name]();
         object[jspb.debug.formatFieldName_(match[1])] = jspb.debug.dump_(val);
       }
     }

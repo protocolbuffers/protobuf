@@ -172,12 +172,16 @@ template<>
 const FileDescriptor* GetFileDescriptor(const OneofDescriptor* descriptor) {
   return descriptor->containing_type()->file();
 }
+template<>
+const FileDescriptor* GetFileDescriptor(const MethodDescriptor* descriptor) {
+  return descriptor->service()->file();
+}
 
 // Converts options into a Python protobuf, and cache the result.
 //
 // This is a bit tricky because options can contain extension fields defined in
 // the same proto file. In this case the options parsed from the serialized_pb
-// have unkown fields, and we need to parse them again.
+// have unknown fields, and we need to parse them again.
 //
 // Always returns a new reference.
 template<class DescriptorClass>
@@ -204,11 +208,12 @@ static PyObject* GetOrBuildOptions(const DescriptorClass *descriptor) {
       cdescriptor_pool::GetMessageClass(pool, message_type));
   if (message_class == NULL) {
     // The Options message was not found in the current DescriptorPool.
-    // In this case, there cannot be extensions to these options, and we can
-    // try to use the basic pool instead.
+    // This means that the pool cannot contain any extensions to the Options
+    // message either, so falling back to the basic pool we can only increase
+    // the chances of successfully parsing the options.
     PyErr_Clear();
-    message_class = cdescriptor_pool::GetMessageClass(
-      GetDefaultDescriptorPool(), message_type);
+    pool = GetDefaultDescriptorPool();
+    message_class = cdescriptor_pool::GetMessageClass(pool, message_type);
   }
   if (message_class == NULL) {
     PyErr_Format(PyExc_TypeError, "Could not retrieve class for Options: %s",
@@ -248,7 +253,7 @@ static PyObject* GetOrBuildOptions(const DescriptorClass *descriptor) {
 
   // Cache the result.
   Py_INCREF(value.get());
-  (*pool->descriptor_options)[descriptor] = value.get();
+  (*descriptor_options)[descriptor] = value.get();
 
   return value.release();
 }
@@ -1091,7 +1096,7 @@ PyTypeObject PyEnumDescriptor_Type = {
   0,                                    // tp_weaklistoffset
   0,                                    // tp_iter
   0,                                    // tp_iternext
-  enum_descriptor::Methods,             // tp_getset
+  enum_descriptor::Methods,             // tp_methods
   0,                                    // tp_members
   enum_descriptor::Getters,             // tp_getset
   &descriptor::PyBaseDescriptor_Type,   // tp_base
@@ -1275,6 +1280,10 @@ static PyObject* GetExtensionsByName(PyFileDescriptor* self, void *closure) {
   return NewFileExtensionsByName(_GetDescriptor(self));
 }
 
+static PyObject* GetServicesByName(PyFileDescriptor* self, void *closure) {
+  return NewFileServicesByName(_GetDescriptor(self));
+}
+
 static PyObject* GetDependencies(PyFileDescriptor* self, void *closure) {
   return NewFileDependencies(_GetDescriptor(self));
 }
@@ -1324,6 +1333,7 @@ static PyGetSetDef Getters[] = {
   { "enum_types_by_name", (getter)GetEnumTypesByName, NULL, "Enums by name"},
   { "extensions_by_name", (getter)GetExtensionsByName, NULL,
     "Extensions by name"},
+  { "services_by_name", (getter)GetServicesByName, NULL, "Services by name"},
   { "dependencies", (getter)GetDependencies, NULL, "Dependencies"},
   { "public_dependencies", (getter)GetPublicDependencies, NULL, "Dependencies"},
 
@@ -1452,13 +1462,42 @@ static PyObject* GetContainingType(PyBaseDescriptor *self, void *closure) {
   }
 }
 
+static PyObject* GetHasOptions(PyBaseDescriptor *self, void *closure) {
+  const OneofOptions& options(_GetDescriptor(self)->options());
+  if (&options != &OneofOptions::default_instance()) {
+    Py_RETURN_TRUE;
+  } else {
+    Py_RETURN_FALSE;
+  }
+}
+static int SetHasOptions(PyBaseDescriptor *self, PyObject *value,
+                         void *closure) {
+  return CheckCalledFromGeneratedFile("has_options");
+}
+
+static PyObject* GetOptions(PyBaseDescriptor *self) {
+  return GetOrBuildOptions(_GetDescriptor(self));
+}
+
+static int SetOptions(PyBaseDescriptor *self, PyObject *value,
+                      void *closure) {
+  return CheckCalledFromGeneratedFile("_options");
+}
+
 static PyGetSetDef Getters[] = {
   { "name", (getter)GetName, NULL, "Name"},
   { "full_name", (getter)GetFullName, NULL, "Full name"},
   { "index", (getter)GetIndex, NULL, "Index"},
 
   { "containing_type", (getter)GetContainingType, NULL, "Containing type"},
+  { "has_options", (getter)GetHasOptions, (setter)SetHasOptions, "Has Options"},
+  { "_options", (getter)NULL, (setter)SetOptions, "Options"},
   { "fields", (getter)GetFields, NULL, "Fields"},
+  {NULL}
+};
+
+static PyMethodDef Methods[] = {
+  { "GetOptions", (PyCFunction)GetOptions, METH_NOARGS },
   {NULL}
 };
 
@@ -1492,7 +1531,7 @@ PyTypeObject PyOneofDescriptor_Type = {
   0,                                    // tp_weaklistoffset
   0,                                    // tp_iter
   0,                                    // tp_iternext
-  0,                                    // tp_methods
+  oneof_descriptor::Methods,            // tp_methods
   0,                                    // tp_members
   oneof_descriptor::Getters,            // tp_getset
   &descriptor::PyBaseDescriptor_Type,   // tp_base
@@ -1502,6 +1541,222 @@ PyObject* PyOneofDescriptor_FromDescriptor(
     const OneofDescriptor* oneof_descriptor) {
   return descriptor::NewInternedDescriptor(
       &PyOneofDescriptor_Type, oneof_descriptor, NULL);
+}
+
+namespace service_descriptor {
+
+// Unchecked accessor to the C++ pointer.
+static const ServiceDescriptor* _GetDescriptor(
+    PyBaseDescriptor *self) {
+  return reinterpret_cast<const ServiceDescriptor*>(self->descriptor);
+}
+
+static PyObject* GetName(PyBaseDescriptor* self, void *closure) {
+  return PyString_FromCppString(_GetDescriptor(self)->name());
+}
+
+static PyObject* GetFullName(PyBaseDescriptor* self, void *closure) {
+  return PyString_FromCppString(_GetDescriptor(self)->full_name());
+}
+
+static PyObject* GetIndex(PyBaseDescriptor *self, void *closure) {
+  return PyInt_FromLong(_GetDescriptor(self)->index());
+}
+
+static PyObject* GetMethods(PyBaseDescriptor* self, void *closure) {
+  return NewServiceMethodsSeq(_GetDescriptor(self));
+}
+
+static PyObject* GetMethodsByName(PyBaseDescriptor* self, void *closure) {
+  return NewServiceMethodsByName(_GetDescriptor(self));
+}
+
+static PyObject* FindMethodByName(PyBaseDescriptor *self, PyObject* arg) {
+  Py_ssize_t name_size;
+  char* name;
+  if (PyString_AsStringAndSize(arg, &name, &name_size) < 0) {
+    return NULL;
+  }
+
+  const MethodDescriptor* method_descriptor =
+      _GetDescriptor(self)->FindMethodByName(string(name, name_size));
+  if (method_descriptor == NULL) {
+    PyErr_Format(PyExc_KeyError, "Couldn't find method %.200s", name);
+    return NULL;
+  }
+
+  return PyMethodDescriptor_FromDescriptor(method_descriptor);
+}
+
+static PyObject* GetOptions(PyBaseDescriptor *self) {
+  return GetOrBuildOptions(_GetDescriptor(self));
+}
+
+static PyObject* CopyToProto(PyBaseDescriptor *self, PyObject *target) {
+  return CopyToPythonProto<ServiceDescriptorProto>(_GetDescriptor(self),
+                                                   target);
+}
+
+static PyGetSetDef Getters[] = {
+  { "name", (getter)GetName, NULL, "Name", NULL},
+  { "full_name", (getter)GetFullName, NULL, "Full name", NULL},
+  { "index", (getter)GetIndex, NULL, "Index", NULL},
+
+  { "methods", (getter)GetMethods, NULL, "Methods", NULL},
+  { "methods_by_name", (getter)GetMethodsByName, NULL, "Methods by name", NULL},
+  {NULL}
+};
+
+static PyMethodDef Methods[] = {
+  { "GetOptions", (PyCFunction)GetOptions, METH_NOARGS },
+  { "CopyToProto", (PyCFunction)CopyToProto, METH_O, },
+  { "FindMethodByName", (PyCFunction)FindMethodByName, METH_O },
+  {NULL}
+};
+
+}  // namespace service_descriptor
+
+PyTypeObject PyServiceDescriptor_Type = {
+  PyVarObject_HEAD_INIT(&PyType_Type, 0)
+  FULL_MODULE_NAME ".ServiceDescriptor",  // tp_name
+  sizeof(PyBaseDescriptor),             // tp_basicsize
+  0,                                    // tp_itemsize
+  0,                                    // tp_dealloc
+  0,                                    // tp_print
+  0,                                    // tp_getattr
+  0,                                    // tp_setattr
+  0,                                    // tp_compare
+  0,                                    // tp_repr
+  0,                                    // tp_as_number
+  0,                                    // tp_as_sequence
+  0,                                    // tp_as_mapping
+  0,                                    // tp_hash
+  0,                                    // tp_call
+  0,                                    // tp_str
+  0,                                    // tp_getattro
+  0,                                    // tp_setattro
+  0,                                    // tp_as_buffer
+  Py_TPFLAGS_DEFAULT,                   // tp_flags
+  "A Service Descriptor",               // tp_doc
+  0,                                    // tp_traverse
+  0,                                    // tp_clear
+  0,                                    // tp_richcompare
+  0,                                    // tp_weaklistoffset
+  0,                                    // tp_iter
+  0,                                    // tp_iternext
+  service_descriptor::Methods,          // tp_methods
+  0,                                    // tp_members
+  service_descriptor::Getters,          // tp_getset
+  &descriptor::PyBaseDescriptor_Type,   // tp_base
+};
+
+PyObject* PyServiceDescriptor_FromDescriptor(
+    const ServiceDescriptor* service_descriptor) {
+  return descriptor::NewInternedDescriptor(
+      &PyServiceDescriptor_Type, service_descriptor, NULL);
+}
+
+namespace method_descriptor {
+
+// Unchecked accessor to the C++ pointer.
+static const MethodDescriptor* _GetDescriptor(
+    PyBaseDescriptor *self) {
+  return reinterpret_cast<const MethodDescriptor*>(self->descriptor);
+}
+
+static PyObject* GetName(PyBaseDescriptor* self, void *closure) {
+  return PyString_FromCppString(_GetDescriptor(self)->name());
+}
+
+static PyObject* GetFullName(PyBaseDescriptor* self, void *closure) {
+  return PyString_FromCppString(_GetDescriptor(self)->full_name());
+}
+
+static PyObject* GetIndex(PyBaseDescriptor *self, void *closure) {
+  return PyInt_FromLong(_GetDescriptor(self)->index());
+}
+
+static PyObject* GetContainingService(PyBaseDescriptor *self, void *closure) {
+  const ServiceDescriptor* containing_service =
+      _GetDescriptor(self)->service();
+  return PyServiceDescriptor_FromDescriptor(containing_service);
+}
+
+static PyObject* GetInputType(PyBaseDescriptor *self, void *closure) {
+  const Descriptor* input_type = _GetDescriptor(self)->input_type();
+  return PyMessageDescriptor_FromDescriptor(input_type);
+}
+
+static PyObject* GetOutputType(PyBaseDescriptor *self, void *closure) {
+  const Descriptor* output_type = _GetDescriptor(self)->output_type();
+  return PyMessageDescriptor_FromDescriptor(output_type);
+}
+
+static PyObject* GetOptions(PyBaseDescriptor *self) {
+  return GetOrBuildOptions(_GetDescriptor(self));
+}
+
+static PyObject* CopyToProto(PyBaseDescriptor *self, PyObject *target) {
+  return CopyToPythonProto<MethodDescriptorProto>(_GetDescriptor(self), target);
+}
+
+static PyGetSetDef Getters[] = {
+  { "name", (getter)GetName, NULL, "Name", NULL},
+  { "full_name", (getter)GetFullName, NULL, "Full name", NULL},
+  { "index", (getter)GetIndex, NULL, "Index", NULL},
+  { "containing_service", (getter)GetContainingService, NULL,
+    "Containing service", NULL},
+  { "input_type", (getter)GetInputType, NULL, "Input type", NULL},
+  { "output_type", (getter)GetOutputType, NULL, "Output type", NULL},
+  {NULL}
+};
+
+static PyMethodDef Methods[] = {
+  { "GetOptions", (PyCFunction)GetOptions, METH_NOARGS, },
+  { "CopyToProto", (PyCFunction)CopyToProto, METH_O, },
+  {NULL}
+};
+
+}  // namespace method_descriptor
+
+PyTypeObject PyMethodDescriptor_Type = {
+  PyVarObject_HEAD_INIT(&PyType_Type, 0)
+  FULL_MODULE_NAME ".MethodDescriptor",  // tp_name
+  sizeof(PyBaseDescriptor),             // tp_basicsize
+  0,                                    // tp_itemsize
+  0,                                    // tp_dealloc
+  0,                                    // tp_print
+  0,                                    // tp_getattr
+  0,                                    // tp_setattr
+  0,                                    // tp_compare
+  0,                                    // tp_repr
+  0,                                    // tp_as_number
+  0,                                    // tp_as_sequence
+  0,                                    // tp_as_mapping
+  0,                                    // tp_hash
+  0,                                    // tp_call
+  0,                                    // tp_str
+  0,                                    // tp_getattro
+  0,                                    // tp_setattro
+  0,                                    // tp_as_buffer
+  Py_TPFLAGS_DEFAULT,                   // tp_flags
+  "A Method Descriptor",                // tp_doc
+  0,                                    // tp_traverse
+  0,                                    // tp_clear
+  0,                                    // tp_richcompare
+  0,                                    // tp_weaklistoffset
+  0,                                    // tp_iter
+  0,                                    // tp_iternext
+  method_descriptor::Methods,           // tp_methods
+  0,                                    // tp_members
+  method_descriptor::Getters,           // tp_getset
+  &descriptor::PyBaseDescriptor_Type,   // tp_base
+};
+
+PyObject* PyMethodDescriptor_FromDescriptor(
+    const MethodDescriptor* method_descriptor) {
+  return descriptor::NewInternedDescriptor(
+      &PyMethodDescriptor_Type, method_descriptor, NULL);
 }
 
 // Add a enum values to a type dictionary.
@@ -1571,6 +1826,12 @@ bool InitDescriptor() {
     return false;
 
   if (PyType_Ready(&PyOneofDescriptor_Type) < 0)
+    return false;
+
+  if (PyType_Ready(&PyServiceDescriptor_Type) < 0)
+    return false;
+
+  if (PyType_Ready(&PyMethodDescriptor_Type) < 0)
     return false;
 
   if (!InitDescriptorMappingTypes())

@@ -53,12 +53,12 @@ class GPBBridgeTests: XCTestCase {
     msg.repeatedStringArray.addObject("pqr")
     msg.repeatedEnumArray.addValue(Message2_Enum.Bar.rawValue)
     msg.repeatedEnumArray.addValue(Message2_Enum.Baz.rawValue)
-    msg.mapInt32Int32.setValue(400, forKey:500)
-    msg.mapInt32Int32.setValue(401, forKey:501)
+    msg.mapInt32Int32.setInt32(400, forKey:500)
+    msg.mapInt32Int32.setInt32(401, forKey:501)
     msg.mapStringString.setObject("foo", forKey:"bar")
     msg.mapStringString.setObject("abc", forKey:"xyz")
-    msg.mapInt32Enum.setValue(Message2_Enum.Bar.rawValue, forKey:600)
-    msg.mapInt32Enum.setValue(Message2_Enum.Baz.rawValue, forKey:601)
+    msg.mapInt32Enum.setEnum(Message2_Enum.Bar.rawValue, forKey:600)
+    msg.mapInt32Enum.setEnum(Message2_Enum.Baz.rawValue, forKey:601)
 
     // Check has*.
     XCTAssertTrue(msg.hasOptionalInt32)
@@ -90,18 +90,18 @@ class GPBBridgeTests: XCTestCase {
     XCTAssertEqual(msg.repeatedEnumArray.valueAtIndex(1), Message2_Enum.Baz.rawValue)
     XCTAssertEqual(msg.repeatedInt64Array.count, UInt(0))
     XCTAssertEqual(msg.mapInt32Int32.count, UInt(2))
-    var intValue: Int32 = 0;
-    XCTAssertTrue(msg.mapInt32Int32.valueForKey(500, value:&intValue))
+    var intValue: Int32 = 0
+    XCTAssertTrue(msg.mapInt32Int32.getInt32(&intValue, forKey: 500))
     XCTAssertEqual(intValue, Int32(400))
-    XCTAssertTrue(msg.mapInt32Int32.valueForKey(501, value:&intValue))
+    XCTAssertTrue(msg.mapInt32Int32.getInt32(&intValue, forKey: 501))
     XCTAssertEqual(intValue, Int32(401))
     XCTAssertEqual(msg.mapStringString.count, Int(2))
     XCTAssertEqual(msg.mapStringString.objectForKey("bar") as? String, "foo")
     XCTAssertEqual(msg.mapStringString.objectForKey("xyz") as? String, "abc")
     XCTAssertEqual(msg.mapInt32Enum.count, UInt(2))
-    XCTAssertTrue(msg.mapInt32Enum.valueForKey(600, value:&intValue))
+    XCTAssertTrue(msg.mapInt32Enum.getEnum(&intValue, forKey:600))
     XCTAssertEqual(intValue, Message2_Enum.Bar.rawValue)
-    XCTAssertTrue(msg.mapInt32Enum.valueForKey(601, value:&intValue))
+    XCTAssertTrue(msg.mapInt32Enum.getEnum(&intValue, forKey:601))
     XCTAssertEqual(intValue, Message2_Enum.Baz.rawValue)
 
     // Clearing a string with nil.
@@ -151,11 +151,11 @@ class GPBBridgeTests: XCTestCase {
     msg.repeatedEnumArray.addValue(Message3_Enum.Bar.rawValue)
     msg.repeatedEnumArray.addRawValue(666)
     SetMessage3_OptionalEnum_RawValue(msg2, 666)
-    msg.mapInt32Int32.setValue(400, forKey:500)
-    msg.mapInt32Int32.setValue(401, forKey:501)
+    msg.mapInt32Int32.setInt32(400, forKey:500)
+    msg.mapInt32Int32.setInt32(401, forKey:501)
     msg.mapStringString.setObject("foo", forKey:"bar")
     msg.mapStringString.setObject("abc", forKey:"xyz")
-    msg.mapInt32Enum.setValue(Message2_Enum.Bar.rawValue, forKey:600)
+    msg.mapInt32Enum.setEnum(Message2_Enum.Bar.rawValue, forKey:600)
     // "proto3" syntax lets enum get unknown values.
     msg.mapInt32Enum.setRawValue(666, forKey:601)
 
@@ -183,20 +183,20 @@ class GPBBridgeTests: XCTestCase {
     XCTAssertEqual(msg2.optionalEnum, Message3_Enum.GPBUnrecognizedEnumeratorValue)
     XCTAssertEqual(Message3_OptionalEnum_RawValue(msg2), Int32(666))
     XCTAssertEqual(msg.mapInt32Int32.count, UInt(2))
-    var intValue: Int32 = 0;
-    XCTAssertTrue(msg.mapInt32Int32.valueForKey(500, value:&intValue))
+    var intValue: Int32 = 0
+    XCTAssertTrue(msg.mapInt32Int32.getInt32(&intValue, forKey:500))
     XCTAssertEqual(intValue, Int32(400))
-    XCTAssertTrue(msg.mapInt32Int32.valueForKey(501, value:&intValue))
+    XCTAssertTrue(msg.mapInt32Int32.getInt32(&intValue, forKey:501))
     XCTAssertEqual(intValue, Int32(401))
     XCTAssertEqual(msg.mapStringString.count, Int(2))
     XCTAssertEqual(msg.mapStringString.objectForKey("bar") as? String, "foo")
     XCTAssertEqual(msg.mapStringString.objectForKey("xyz") as? String, "abc")
     XCTAssertEqual(msg.mapInt32Enum.count, UInt(2))
-    XCTAssertTrue(msg.mapInt32Enum.valueForKey(600, value:&intValue))
+    XCTAssertTrue(msg.mapInt32Enum.getEnum(&intValue, forKey:600))
     XCTAssertEqual(intValue, Message2_Enum.Bar.rawValue)
-    XCTAssertTrue(msg.mapInt32Enum.valueForKey(601, value:&intValue))
+    XCTAssertTrue(msg.mapInt32Enum.getEnum(&intValue, forKey:601))
     XCTAssertEqual(intValue, Message3_Enum.GPBUnrecognizedEnumeratorValue.rawValue)
-    XCTAssertTrue(msg.mapInt32Enum.valueForKey(601, rawValue:&intValue))
+    XCTAssertTrue(msg.mapInt32Enum.getRawValue(&intValue, forKey:601))
     XCTAssertEqual(intValue, 666)
 
     // Clearing a string with nil.
@@ -439,14 +439,14 @@ class GPBBridgeTests: XCTestCase {
     msg.optionalGroup.a = 102
     msg.repeatedStringArray.addObject("abc")
     msg.repeatedStringArray.addObject("def")
-    msg.mapInt32Int32.setValue(200, forKey:300)
-    msg.mapInt32Int32.setValue(201, forKey:201)
+    msg.mapInt32Int32.setInt32(200, forKey:300)
+    msg.mapInt32Int32.setInt32(201, forKey:201)
     msg.mapStringString.setObject("foo", forKey:"bar")
     msg.mapStringString.setObject("abc", forKey:"xyz")
 
     let data = msg.data()
 
-    let msg2 = Message2(data: data!, error:nil)
+    let msg2 = try! Message2(data: data!)
     XCTAssertTrue(msg2 !== msg)  // New instance
     XCTAssertEqual(msg.optionalInt32, Int32(100))
     XCTAssertEqual(msg.optionalInt64, Int64(101))

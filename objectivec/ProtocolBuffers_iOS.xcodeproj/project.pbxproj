@@ -23,7 +23,6 @@
 		8B4248E41A929C8900BC1EC6 /* GPBWellKnownTypes.m in Sources */ = {isa = PBXBuildFile; fileRef = 8B4248E21A929C8900BC1EC6 /* GPBWellKnownTypes.m */; };
 		8B4248E61A929C9900BC1EC6 /* GPBWellKnownTypesTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 8B4248E51A929C9900BC1EC6 /* GPBWellKnownTypesTest.m */; };
 		8B79657B14992E3F002FFBFC /* GPBRootObject.m in Sources */ = {isa = PBXBuildFile; fileRef = 8B79657914992E3E002FFBFC /* GPBRootObject.m */; };
-		8B79657D14992E3F002FFBFC /* GPBRootObject.m in Sources */ = {isa = PBXBuildFile; fileRef = 8B79657914992E3E002FFBFC /* GPBRootObject.m */; };
 		8B8B615D17DF7056002EE618 /* GPBARCUnittestProtos.m in Sources */ = {isa = PBXBuildFile; fileRef = 8B8B615C17DF7056002EE618 /* GPBARCUnittestProtos.m */; settings = {COMPILER_FLAGS = "-fobjc-arc"; }; };
 		8B96157414C8C38C00A2AC0B /* GPBDescriptor.m in Sources */ = {isa = PBXBuildFile; fileRef = 8B96157314C8C38C00A2AC0B /* GPBDescriptor.m */; };
 		8B9742331A89D19F00DCE92C /* LaunchScreen.xib in Resources */ = {isa = PBXBuildFile; fileRef = 8B9742321A89D19F00DCE92C /* LaunchScreen.xib */; };
@@ -63,15 +62,9 @@
 		F4487C851AAF6AC500531423 /* GPBMessageTests+Merge.m in Sources */ = {isa = PBXBuildFile; fileRef = F4487C841AAF6AC500531423 /* GPBMessageTests+Merge.m */; };
 		F45C69CC16DFD08D0081955B /* GPBExtensionInternals.m in Sources */ = {isa = PBXBuildFile; fileRef = F45C69CB16DFD08D0081955B /* GPBExtensionInternals.m */; };
 		F45E57C91AE6DC98000B7D99 /* text_format_map_unittest_data.txt in Resources */ = {isa = PBXBuildFile; fileRef = F45E57C81AE6DC98000B7D99 /* text_format_map_unittest_data.txt */; };
+		F47476E91D21A537007C7B1A /* Duration.pbobjc.m in Sources */ = {isa = PBXBuildFile; fileRef = 8B4248DE1A929C7D00BC1EC6 /* Duration.pbobjc.m */; };
+		F47476EA1D21A537007C7B1A /* Timestamp.pbobjc.m in Sources */ = {isa = PBXBuildFile; fileRef = 8B4248E01A929C7D00BC1EC6 /* Timestamp.pbobjc.m */; };
 		F4B51B1C1BBC5C7100744318 /* GPBObjectiveCPlusPlusTest.mm in Sources */ = {isa = PBXBuildFile; fileRef = F4B51B1B1BBC5C7100744318 /* GPBObjectiveCPlusPlusTest.mm */; };
-		F4E675C81B21D1610054530B /* Any.pbobjc.m in Sources */ = {isa = PBXBuildFile; fileRef = F4E675B71B21D1440054530B /* Any.pbobjc.m */; };
-		F4E675C91B21D1610054530B /* Api.pbobjc.m in Sources */ = {isa = PBXBuildFile; fileRef = F4E675B91B21D1440054530B /* Api.pbobjc.m */; };
-		F4E675CA1B21D1610054530B /* Empty.pbobjc.m in Sources */ = {isa = PBXBuildFile; fileRef = F4E675BC1B21D1440054530B /* Empty.pbobjc.m */; };
-		F4E675CB1B21D1610054530B /* FieldMask.pbobjc.m in Sources */ = {isa = PBXBuildFile; fileRef = F4E675BE1B21D1440054530B /* FieldMask.pbobjc.m */; };
-		F4E675CC1B21D1610054530B /* SourceContext.pbobjc.m in Sources */ = {isa = PBXBuildFile; fileRef = F4E675C01B21D1440054530B /* SourceContext.pbobjc.m */; };
-		F4E675CD1B21D1610054530B /* Struct.pbobjc.m in Sources */ = {isa = PBXBuildFile; fileRef = F4E675C21B21D1440054530B /* Struct.pbobjc.m */; };
-		F4E675CE1B21D1610054530B /* Type.pbobjc.m in Sources */ = {isa = PBXBuildFile; fileRef = F4E675C51B21D1440054530B /* Type.pbobjc.m */; };
-		F4E675CF1B21D1610054530B /* Wrappers.pbobjc.m in Sources */ = {isa = PBXBuildFile; fileRef = F4E675C71B21D1440054530B /* Wrappers.pbobjc.m */; };
 		F4E675D01B21D1620054530B /* Any.pbobjc.m in Sources */ = {isa = PBXBuildFile; fileRef = F4E675B71B21D1440054530B /* Any.pbobjc.m */; };
 		F4E675D11B21D1620054530B /* Api.pbobjc.m in Sources */ = {isa = PBXBuildFile; fileRef = F4E675B91B21D1440054530B /* Api.pbobjc.m */; };
 		F4E675D21B21D1620054530B /* Empty.pbobjc.m in Sources */ = {isa = PBXBuildFile; fileRef = F4E675BC1B21D1440054530B /* Empty.pbobjc.m */; };
@@ -80,6 +73,7 @@
 		F4E675D51B21D1620054530B /* Struct.pbobjc.m in Sources */ = {isa = PBXBuildFile; fileRef = F4E675C21B21D1440054530B /* Struct.pbobjc.m */; };
 		F4E675D61B21D1620054530B /* Type.pbobjc.m in Sources */ = {isa = PBXBuildFile; fileRef = F4E675C51B21D1440054530B /* Type.pbobjc.m */; };
 		F4E675D71B21D1620054530B /* Wrappers.pbobjc.m in Sources */ = {isa = PBXBuildFile; fileRef = F4E675C71B21D1440054530B /* Wrappers.pbobjc.m */; };
+		F4F8D8861D78A193002CE128 /* GPBUnittestProtos2.m in Sources */ = {isa = PBXBuildFile; fileRef = F4F8D8841D78A186002CE128 /* GPBUnittestProtos2.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -241,6 +235,7 @@
 		F4E675DD1B21D1DE0054530B /* struct.proto */ = {isa = PBXFileReference; lastKnownFileType = text; name = struct.proto; path = ../src/google/protobuf/struct.proto; sourceTree = "<group>"; };
 		F4E675DE1B21D1DE0054530B /* type.proto */ = {isa = PBXFileReference; lastKnownFileType = text; name = type.proto; path = ../src/google/protobuf/type.proto; sourceTree = "<group>"; };
 		F4E675DF1B21D1DE0054530B /* wrappers.proto */ = {isa = PBXFileReference; lastKnownFileType = text; name = wrappers.proto; path = ../src/google/protobuf/wrappers.proto; sourceTree = "<group>"; };
+		F4F8D8841D78A186002CE128 /* GPBUnittestProtos2.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GPBUnittestProtos2.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -453,6 +448,7 @@
 				7461B6AB0F94FDF800A0C422 /* GPBTestUtilities.h */,
 				7461B6AC0F94FDF800A0C422 /* GPBTestUtilities.m */,
 				8BD3981E14BE59D70081D629 /* GPBUnittestProtos.m */,
+				F4F8D8841D78A186002CE128 /* GPBUnittestProtos2.m */,
 				7461B6B80F94FDF900A0C422 /* GPBUnknownFieldSetTest.m */,
 				7461B6BA0F94FDF900A0C422 /* GPBUtilitiesTests.m */,
 				8B4248E51A929C9900BC1EC6 /* GPBWellKnownTypesTest.m */,
@@ -722,6 +718,7 @@
 				F4E675D31B21D1620054530B /* FieldMask.pbobjc.m in Sources */,
 				7461B54C0F94FB4E00A0C422 /* GPBUnknownField.m in Sources */,
 				7461B5530F94FB4E00A0C422 /* GPBMessage.m in Sources */,
+				F47476E91D21A537007C7B1A /* Duration.pbobjc.m in Sources */,
 				7461B5610F94FB4E00A0C422 /* GPBUnknownFieldSet.m in Sources */,
 				7461B5630F94FB4E00A0C422 /* GPBUtilities.m in Sources */,
 				7461B5640F94FB4E00A0C422 /* GPBWireFormat.m in Sources */,
@@ -736,6 +733,7 @@
 				F4E675D61B21D1620054530B /* Type.pbobjc.m in Sources */,
 				F4E675D51B21D1620054530B /* Struct.pbobjc.m in Sources */,
 				F4E675D71B21D1620054530B /* Wrappers.pbobjc.m in Sources */,
+				F47476EA1D21A537007C7B1A /* Timestamp.pbobjc.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -756,19 +754,14 @@
 				F4353D441AC06F31005A6198 /* GPBDictionaryTests+Int64.m in Sources */,
 				F4353D471AC06F31005A6198 /* GPBDictionaryTests+UInt64.m in Sources */,
 				8BBEA4AA147C727D00C4ADB7 /* GPBCodedOuputStreamTests.m in Sources */,
-				F4E675CC1B21D1610054530B /* SourceContext.pbobjc.m in Sources */,
 				8BBEA4AC147C727D00C4ADB7 /* GPBMessageTests.m in Sources */,
 				F4487C811AAF62FC00531423 /* GPBMessageTests+Serialization.m in Sources */,
 				8B4248E61A929C9900BC1EC6 /* GPBWellKnownTypesTest.m in Sources */,
-				F4E675CA1B21D1610054530B /* Empty.pbobjc.m in Sources */,
-				F4E675CE1B21D1610054530B /* Type.pbobjc.m in Sources */,
 				F4353D1F1AB88243005A6198 /* GPBDescriptorTests.m in Sources */,
-				F4E675CF1B21D1610054530B /* Wrappers.pbobjc.m in Sources */,
+				F4F8D8861D78A193002CE128 /* GPBUnittestProtos2.m in Sources */,
 				F4B51B1C1BBC5C7100744318 /* GPBObjectiveCPlusPlusTest.mm in Sources */,
-				F4E675C81B21D1610054530B /* Any.pbobjc.m in Sources */,
 				8B4248B41A8BD96E00BC1EC6 /* GPBSwiftTests.swift in Sources */,
 				5102DABC1891A073002037B6 /* GPBConcurrencyTests.m in Sources */,
-				F4E675CD1B21D1610054530B /* Struct.pbobjc.m in Sources */,
 				F4487C771AADF84900531423 /* GPBMessageTests+Runtime.m in Sources */,
 				F4353D431AC06F31005A6198 /* GPBDictionaryTests+Int32.m in Sources */,
 				8BBEA4B0147C727D00C4ADB7 /* GPBTestUtilities.m in Sources */,
@@ -780,11 +773,8 @@
 				F4353D461AC06F31005A6198 /* GPBDictionaryTests+UInt32.m in Sources */,
 				8BBEA4B7147C727D00C4ADB7 /* GPBUtilitiesTests.m in Sources */,
 				8BBEA4B8147C727D00C4ADB7 /* GPBWireFormatTests.m in Sources */,
-				8B79657D14992E3F002FFBFC /* GPBRootObject.m in Sources */,
 				8BD3981F14BE59D70081D629 /* GPBUnittestProtos.m in Sources */,
-				F4E675CB1B21D1610054530B /* FieldMask.pbobjc.m in Sources */,
 				8B8B615D17DF7056002EE618 /* GPBARCUnittestProtos.m in Sources */,
-				F4E675C91B21D1610054530B /* Api.pbobjc.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -896,11 +886,18 @@
 					"$(inherited)",
 					"\"$(DEVELOPER_DIR)/usr/lib\"",
 				);
+				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = UnitTests;
 				SWIFT_OBJC_BRIDGING_HEADER = "Tests/UnitTests-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/iOSTestHarness.app/iOSTestHarness";
+				WARNING_CFLAGS = (
+					"$(inherited)",
+					"-Wno-documentation-unknown-command",
+					"-Wno-reserved-id-macro",
+					"-Wno-direct-ivar-access",
+				);
 			};
 			name = Debug;
 		};
@@ -924,10 +921,17 @@
 					"$(inherited)",
 					"\"$(DEVELOPER_DIR)/usr/lib\"",
 				);
+				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = UnitTests;
 				SWIFT_OBJC_BRIDGING_HEADER = "Tests/UnitTests-Bridging-Header.h";
 				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/iOSTestHarness.app/iOSTestHarness";
+				WARNING_CFLAGS = (
+					"$(inherited)",
+					"-Wno-documentation-unknown-command",
+					"-Wno-reserved-id-macro",
+					"-Wno-direct-ivar-access",
+				);
 			};
 			name = Release;
 		};
@@ -935,15 +939,21 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_SECURITY_FLOATLOOPCOUNTER = YES;
 				CLANG_ANALYZER_SECURITY_INSECUREAPI_RAND = YES;
 				CLANG_ANALYZER_SECURITY_INSECUREAPI_STRCPY = YES;
 				CLANG_STATIC_ANALYZER_MODE = deep;
+				CLANG_WARN_ASSIGN_ENUM = YES;
 				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
 				CLANG_WARN_NULLABLE_TO_NONNULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_EXPLICIT_OWNERSHIP_TYPE = YES;
 				CLANG_WARN_OBJC_IMPLICIT_ATOMIC_PROPERTIES = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
 				CLANG_WARN_OBJC_MISSING_PROPERTY_SYNTHESIS = YES;
 				CLANG_WARN_SUSPICIOUS_IMPLICIT_CONVERSION = YES;
+				CLANG_WARN_UNREACHABLE_CODE = YES_AGGRESSIVE;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				ENABLE_TESTABILITY = YES;
@@ -965,6 +975,7 @@
 				GCC_WARN_SHADOW = YES;
 				GCC_WARN_SIGN_COMPARE = YES;
 				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNKNOWN_PRAGMAS = YES;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_LABEL = YES;
@@ -975,6 +986,14 @@
 				ONLY_ACTIVE_ARCH = YES;
 				RUN_CLANG_STATIC_ANALYZER = YES;
 				SDKROOT = iphoneos;
+				WARNING_CFLAGS = (
+					"-Wdocumentation-unknown-command",
+					"-Wundef",
+					"-Wreserved-id-macro",
+					"-Wswitch-enum",
+					"-Wdirect-ivar-access",
+					"-Woverriding-method-mismatch",
+				);
 			};
 			name = Debug;
 		};
@@ -982,15 +1001,21 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_SECURITY_FLOATLOOPCOUNTER = YES;
 				CLANG_ANALYZER_SECURITY_INSECUREAPI_RAND = YES;
 				CLANG_ANALYZER_SECURITY_INSECUREAPI_STRCPY = YES;
 				CLANG_STATIC_ANALYZER_MODE = deep;
+				CLANG_WARN_ASSIGN_ENUM = YES;
 				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
 				CLANG_WARN_NULLABLE_TO_NONNULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_EXPLICIT_OWNERSHIP_TYPE = YES;
 				CLANG_WARN_OBJC_IMPLICIT_ATOMIC_PROPERTIES = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
 				CLANG_WARN_OBJC_MISSING_PROPERTY_SYNTHESIS = YES;
 				CLANG_WARN_SUSPICIOUS_IMPLICIT_CONVERSION = YES;
+				CLANG_WARN_UNREACHABLE_CODE = YES_AGGRESSIVE;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				ENABLE_NS_ASSERTIONS = NO;
@@ -1010,6 +1035,7 @@
 				GCC_WARN_SHADOW = YES;
 				GCC_WARN_SIGN_COMPARE = YES;
 				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNKNOWN_PRAGMAS = YES;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_LABEL = YES;
@@ -1019,6 +1045,14 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 6.1;
 				RUN_CLANG_STATIC_ANALYZER = YES;
 				SDKROOT = iphoneos;
+				WARNING_CFLAGS = (
+					"-Wdocumentation-unknown-command",
+					"-Wundef",
+					"-Wreserved-id-macro",
+					"-Wswitch-enum",
+					"-Wdirect-ivar-access",
+					"-Woverriding-method-mismatch",
+				);
 			};
 			name = Release;
 		};

@@ -95,7 +95,7 @@ void ExtensionSet::AppendToList(
     const Descriptor* containing_type,
     const DescriptorPool* pool,
     std::vector<const FieldDescriptor*>* output) const {
-  for (map<int, Extension>::const_iterator iter = extensions_.begin();
+  for (ExtensionMap::const_iterator iter = extensions_.begin();
        iter != extensions_.end(); ++iter) {
     bool has = false;
     if (iter->second.is_repeated) {
@@ -144,7 +144,7 @@ inline WireFormatLite::FieldType field_type(FieldType type) {
 const MessageLite& ExtensionSet::GetMessage(int number,
                                             const Descriptor* message_type,
                                             MessageFactory* factory) const {
-  map<int, Extension>::const_iterator iter = extensions_.find(number);
+  ExtensionMap::const_iterator iter = extensions_.find(number);
   if (iter == extensions_.end() || iter->second.is_cleared) {
     // Not present.  Return the default value.
     return *factory->GetPrototype(message_type);
@@ -187,7 +187,7 @@ MessageLite* ExtensionSet::MutableMessage(const FieldDescriptor* descriptor,
 
 MessageLite* ExtensionSet::ReleaseMessage(const FieldDescriptor* descriptor,
                                           MessageFactory* factory) {
-  map<int, Extension>::iterator iter = extensions_.find(descriptor->number());
+  ExtensionMap::iterator iter = extensions_.find(descriptor->number());
   if (iter == extensions_.end()) {
     // Not present.  Return NULL.
     return NULL;
@@ -207,6 +207,29 @@ MessageLite* ExtensionSet::ReleaseMessage(const FieldDescriptor* descriptor,
       } else {
         ret = iter->second.message_value;
       }
+    }
+    extensions_.erase(descriptor->number());
+    return ret;
+  }
+}
+
+MessageLite* ExtensionSet::UnsafeArenaReleaseMessage(
+    const FieldDescriptor* descriptor, MessageFactory* factory) {
+  ExtensionMap::iterator iter = extensions_.find(descriptor->number());
+  if (iter == extensions_.end()) {
+    // Not present.  Return NULL.
+    return NULL;
+  } else {
+    GOOGLE_DCHECK_TYPE(iter->second, OPTIONAL, MESSAGE);
+    MessageLite* ret = NULL;
+    if (iter->second.is_lazy) {
+      ret = iter->second.lazymessage_value->UnsafeArenaReleaseMessage(
+          *factory->GetPrototype(descriptor->message_type()));
+      if (arena_ == NULL) {
+        delete iter->second.lazymessage_value;
+      }
+    } else {
+      ret = iter->second.message_value;
     }
     extensions_.erase(descriptor->number());
     return ret;
@@ -318,8 +341,8 @@ bool ExtensionSet::ParseMessageSet(io::CodedInputStream* input,
 
 int ExtensionSet::SpaceUsedExcludingSelf() const {
   int total_size =
-      extensions_.size() * sizeof(map<int, Extension>::value_type);
-  for (map<int, Extension>::const_iterator iter = extensions_.begin(),
+      extensions_.size() * sizeof(ExtensionMap::value_type);
+  for (ExtensionMap::const_iterator iter = extensions_.begin(),
        end = extensions_.end();
        iter != end;
        ++iter) {
@@ -386,31 +409,43 @@ int ExtensionSet::Extension::SpaceUsedExcludingSelf() const {
 
 // The Serialize*ToArray methods are only needed in the heavy library, as
 // the lite library only generates SerializeWithCachedSizes.
-uint8* ExtensionSet::SerializeWithCachedSizesToArray(
-    int start_field_number, int end_field_number,
-    uint8* target) const {
-  map<int, Extension>::const_iterator iter;
-  for (iter = extensions_.lower_bound(start_field_number);
-       iter != extensions_.end() && iter->first < end_field_number;
-       ++iter) {
-    target = iter->second.SerializeFieldWithCachedSizesToArray(iter->first,
-                                                               target);
-  }
-  return target;
+uint8* ExtensionSet::SerializeWithCachedSizesToArray(int start_field_number,
+                                                     int end_field_number,
+                                                     uint8* target) const {
+  return InternalSerializeWithCachedSizesToArray(
+      start_field_number, end_field_number, false, target);
 }
 
 uint8* ExtensionSet::SerializeMessageSetWithCachedSizesToArray(
     uint8* target) const {
-  map<int, Extension>::const_iterator iter;
-  for (iter = extensions_.begin(); iter != extensions_.end(); ++iter) {
-    target = iter->second.SerializeMessageSetItemWithCachedSizesToArray(
-        iter->first, target);
+  return InternalSerializeMessageSetWithCachedSizesToArray(false, target);
+}
+
+uint8* ExtensionSet::InternalSerializeWithCachedSizesToArray(
+    int start_field_number, int end_field_number,
+    bool deterministic, uint8* target) const {
+  ExtensionMap::const_iterator iter;
+  for (iter = extensions_.lower_bound(start_field_number);
+       iter != extensions_.end() && iter->first < end_field_number;
+       ++iter) {
+    target = iter->second.InternalSerializeFieldWithCachedSizesToArray(
+        iter->first, deterministic, target);
   }
   return target;
 }
 
-uint8* ExtensionSet::Extension::SerializeFieldWithCachedSizesToArray(
-    int number, uint8* target) const {
+uint8* ExtensionSet::InternalSerializeMessageSetWithCachedSizesToArray(
+    bool deterministic, uint8* target) const {
+  ExtensionMap::const_iterator iter;
+  for (iter = extensions_.begin(); iter != extensions_.end(); ++iter) {
+    target = iter->second.InternalSerializeMessageSetItemWithCachedSizesToArray(
+        iter->first, deterministic, target);
+  }
+  return target;
+}
+
+uint8* ExtensionSet::Extension::InternalSerializeFieldWithCachedSizesToArray(
+    int number, bool deterministic, uint8* target) const {
   if (is_repeated) {
     if (is_packed) {
       if (cached_size == 0) return target;
@@ -477,6 +512,16 @@ uint8* ExtensionSet::Extension::SerializeFieldWithCachedSizesToArray(
         HANDLE_TYPE(  STRING,   String,  string);
         HANDLE_TYPE(   BYTES,    Bytes,  string);
         HANDLE_TYPE(    ENUM,     Enum,    enum);
+#undef HANDLE_TYPE
+#define HANDLE_TYPE(UPPERCASE, CAMELCASE, LOWERCASE)                        \
+        case FieldDescriptor::TYPE_##UPPERCASE:                             \
+          for (int i = 0; i < repeated_##LOWERCASE##_value->size(); i++) {  \
+            target = WireFormatLite::InternalWrite##CAMELCASE##ToArray(     \
+                      number, repeated_##LOWERCASE##_value->Get(i),         \
+                      deterministic, target);                               \
+          }                                                                 \
+          break
+
         HANDLE_TYPE(   GROUP,    Group, message);
         HANDLE_TYPE( MESSAGE,  Message, message);
 #undef HANDLE_TYPE
@@ -510,10 +555,11 @@ uint8* ExtensionSet::Extension::SerializeFieldWithCachedSizesToArray(
 #undef HANDLE_TYPE
       case FieldDescriptor::TYPE_MESSAGE:
         if (is_lazy) {
-          target = lazymessage_value->WriteMessageToArray(number, target);
+          target = lazymessage_value->InternalWriteMessageToArray(
+              number, deterministic, target);
         } else {
-          target = WireFormatLite::WriteMessageToArray(
-              number, *message_value, target);
+          target = WireFormatLite::InternalWriteMessageToArray(
+              number, *message_value, deterministic, target);
         }
         break;
     }
@@ -521,13 +567,14 @@ uint8* ExtensionSet::Extension::SerializeFieldWithCachedSizesToArray(
   return target;
 }
 
-uint8* ExtensionSet::Extension::SerializeMessageSetItemWithCachedSizesToArray(
-    int number,
-    uint8* target) const {
+uint8*
+ExtensionSet::Extension::InternalSerializeMessageSetItemWithCachedSizesToArray(
+    int number, bool deterministic, uint8* target) const {
   if (type != WireFormatLite::TYPE_MESSAGE || is_repeated) {
     // Not a valid MessageSet extension, but serialize it the normal way.
     GOOGLE_LOG(WARNING) << "Invalid message set extension.";
-    return SerializeFieldWithCachedSizesToArray(number, target);
+    return InternalSerializeFieldWithCachedSizesToArray(number, deterministic,
+                                                        target);
   }
 
   if (is_cleared) return target;
@@ -732,7 +779,7 @@ int ExtensionSet::Extension::MessageSetItemByteSize(int number) const {
 
 void ExtensionSet::SerializeMessageSetWithCachedSizes(
     io::CodedOutputStream* output) const {
-  for (map<int, Extension>::const_iterator iter = extensions_.begin();
+  for (ExtensionMap::const_iterator iter = extensions_.begin();
        iter != extensions_.end(); ++iter) {
     iter->second.SerializeMessageSetItemWithCachedSizes(iter->first, output);
   }
@@ -741,7 +788,7 @@ void ExtensionSet::SerializeMessageSetWithCachedSizes(
 int ExtensionSet::MessageSetByteSize() const {
   int total_size = 0;
 
-  for (map<int, Extension>::const_iterator iter = extensions_.begin();
+  for (ExtensionMap::const_iterator iter = extensions_.begin();
        iter != extensions_.end(); ++iter) {
     total_size += iter->second.MessageSetItemByteSize(iter->first);
   }

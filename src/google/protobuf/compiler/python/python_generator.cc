@@ -44,6 +44,7 @@
 // performance-minded Python code leverage the fast C++ implementation
 // directly.
 
+#include <algorithm>
 #include <google/protobuf/stubs/hash.h>
 #include <limits>
 #include <map>
@@ -107,20 +108,25 @@ string ModuleAlias(const string& filename) {
   return module_name;
 }
 
+// Keywords reserved by the Python language.
+const char* const kKeywords[] = {
+    "False",   "None",     "True",     "and",    "as",    "assert", "break",
+    "class",   "continue", "def",      "del",    "elif",  "else",   "except",
+    "finally", "for",      "from",     "global", "if",    "import", "in",
+    "is",      "lambda",   "nonlocal", "not",    "or",    "pass",   "raise",
+    "return",  "try",      "while",    "with",   "yield",
+};
+const char* const* kKeywordsEnd =
+    kKeywords + (sizeof(kKeywords) / sizeof(kKeywords[0]));
 
-// Returns an import statement of form "from X.Y.Z import T" for the given
-// .proto filename.
-string ModuleImportStatement(const string& filename) {
-  string module_name = ModuleName(filename);
-  int last_dot_pos = module_name.rfind('.');
-  if (last_dot_pos == string::npos) {
-    // NOTE(petya): this is not tested as it would require a protocol buffer
-    // outside of any package, and I don't think that is easily achievable.
-    return "import " + module_name;
-  } else {
-    return "from " + module_name.substr(0, last_dot_pos) + " import " +
-        module_name.substr(last_dot_pos + 1);
+bool ContainsPythonKeyword(const string& module_name) {
+  vector<string> tokens = Split(module_name, ".");
+  for (int i = 0; i < tokens.size(); ++i) {
+    if (std::find(kKeywords, kKeywordsEnd, tokens[i]) != kKeywordsEnd) {
+      return true;
+    }
   }
+  return false;
 }
 
 
@@ -359,10 +365,32 @@ bool Generator::Generate(const FileDescriptor* file,
 void Generator::PrintImports() const {
   for (int i = 0; i < file_->dependency_count(); ++i) {
     const string& filename = file_->dependency(i)->name();
-    string import_statement = ModuleImportStatement(filename);
+
+    string module_name = ModuleName(filename);
     string module_alias = ModuleAlias(filename);
-    printer_->Print("$statement$ as $alias$\n", "statement",
-                    import_statement, "alias", module_alias);
+    if (ContainsPythonKeyword(module_name)) {
+      // If the module path contains a Python keyword, we have to quote the
+      // module name and import it using importlib. Otherwise the usual kind of
+      // import statement would result in a syntax error from the presence of
+      // the keyword.
+      printer_->Print("import importlib\n");
+      printer_->Print("$alias$ = importlib.import_module('$name$')\n", "alias",
+                      module_alias, "name", module_name);
+    } else {
+      int last_dot_pos = module_name.rfind('.');
+      string import_statement;
+      if (last_dot_pos == string::npos) {
+        // NOTE(petya): this is not tested as it would require a protocol buffer
+        // outside of any package, and I don't think that is easily achievable.
+        import_statement = "import " + module_name;
+      } else {
+        import_statement = "from " + module_name.substr(0, last_dot_pos) +
+                           " import " + module_name.substr(last_dot_pos + 1);
+      }
+      printer_->Print("$statement$ as $alias$\n", "statement", import_statement,
+                      "alias", module_alias);
+    }
+
     CopyPublicDependenciesAliases(module_alias, file_->dependency(i));
   }
   printer_->Print("\n");
@@ -707,11 +735,18 @@ void Generator::PrintDescriptor(const Descriptor& message_descriptor) const {
     m["name"] = desc->name();
     m["full_name"] = desc->full_name();
     m["index"] = SimpleItoa(desc->index());
+    string options_string =
+        OptionsValue("OneofOptions", desc->options().SerializeAsString());
+    if (options_string == "None") {
+      m["options"] = "";
+    } else {
+      m["options"] = ", options=" + options_string;
+    }
     printer_->Print(
         m,
         "_descriptor.OneofDescriptor(\n"
         "  name='$name$', full_name='$full_name$',\n"
-        "  index=$index$, containing_type=None, fields=[]),\n");
+        "  index=$index$, containing_type=None, fields=[]$options$),\n");
   }
   printer_->Outdent();
   printer_->Print("],\n");
@@ -1235,6 +1270,18 @@ void Generator::FixAllDescriptorOptions() const {
   }
 }
 
+void Generator::FixOptionsForOneof(const OneofDescriptor& oneof) const {
+  string oneof_options = OptionsValue(
+      "OneofOptions", oneof.options().SerializeAsString());
+  if (oneof_options != "None") {
+    string oneof_name = strings::Substitute(
+        "$0.$1['$2']",
+        ModuleLevelDescriptorName(*oneof.containing_type()),
+        "oneofs_by_name", oneof.name());
+    PrintDescriptorOptionsFixingCode(oneof_name, oneof_options, printer_);
+  }
+}
+
 // Prints expressions that set the options for an enum descriptor and its
 // value descriptors.
 void Generator::FixOptionsForEnum(const EnumDescriptor& enum_descriptor) const {
@@ -1287,6 +1334,10 @@ void Generator::FixOptionsForMessage(const Descriptor& descriptor) const {
   // Nested messages.
   for (int i = 0; i < descriptor.nested_type_count(); ++i) {
     FixOptionsForMessage(*descriptor.nested_type(i));
+  }
+  // Oneofs.
+  for (int i = 0; i < descriptor.oneof_decl_count(); ++i) {
+    FixOptionsForOneof(*descriptor.oneof_decl(i));
   }
   // Enums.
   for (int i = 0; i < descriptor.enum_type_count(); ++i) {

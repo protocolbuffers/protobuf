@@ -200,6 +200,26 @@ class LIBPROTOBUF_EXPORT Printer {
     Annotate(begin_varname, end_varname, descriptor->file()->name(), path);
   }
 
+  // Link a subsitution variable emitted by the last call to Print to the file
+  // with path file_name.
+  void Annotate(const char* varname, const string& file_name) {
+    Annotate(varname, varname, file_name);
+  }
+
+  // Link the output range defined by the substitution variables as emitted by
+  // the last call to Print to the file with path file_name. The range begins
+  // at begin_varname's value and ends after the last character of the value
+  // substituted for end_varname.
+  void Annotate(const char* begin_varname, const char* end_varname,
+                const string& file_name) {
+    if (annotation_collector_ == NULL) {
+      // Annotations aren't turned on for this Printer.
+      return;
+    }
+    vector<int> empty_path;
+    Annotate(begin_varname, end_varname, file_name, empty_path);
+  }
+
   // Print some text after applying variable substitutions.  If a particular
   // variable in the text is not defined, this will crash.  Variables to be
   // substituted are identified by their names surrounded by delimiter

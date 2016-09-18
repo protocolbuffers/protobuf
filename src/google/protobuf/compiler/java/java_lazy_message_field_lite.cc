@@ -59,19 +59,28 @@ ImmutableLazyMessageFieldLiteGenerator::
 void ImmutableLazyMessageFieldLiteGenerator::
 GenerateMembers(io::Printer* printer) const {
   printer->Print(variables_,
-    "private com.google.protobuf.LazyFieldLite $name$_ =\n"
-    "    new com.google.protobuf.LazyFieldLite();\n");
+    "private com.google.protobuf.LazyFieldLite $name$_;");
 
   PrintExtraFieldInfo(variables_, printer);
   WriteFieldDocComment(printer, descriptor_);
-  printer->Print(variables_,
-    "$deprecation$public boolean has$capitalized_name$() {\n"
-    "  return $get_has_field_bit_message$;\n"
-    "}\n");
+  if (SupportFieldPresence(descriptor_->file())) {
+    printer->Print(variables_,
+      "$deprecation$public boolean has$capitalized_name$() {\n"
+      "  return $get_has_field_bit_message$;\n"
+      "}\n");
+  } else {
+    printer->Print(variables_,
+      "$deprecation$public boolean has$capitalized_name$() {\n"
+      "  return $name$_ != null;\n"
+      "}\n");
+  }
 
   WriteFieldDocComment(printer, descriptor_);
   printer->Print(variables_,
     "$deprecation$public $type$ get$capitalized_name$() {\n"
+    "  if ($name$_ == null) {\n"
+    "    return $type$.getDefaultInstance();\n"
+    "  }\n"
     "  return ($type$) $name$_.getValue($type$.getDefaultInstance());\n"
    "}\n");
 
@@ -82,8 +91,11 @@ GenerateMembers(io::Printer* printer) const {
     "  if (value == null) {\n"
     "    throw new NullPointerException();\n"
     "  }\n"
+    "  if ($name$_ == null) {\n"
+    "    $name$_ = new com.google.protobuf.LazyFieldLite();\n"
+    "  }\n"
     "  $name$_.setValue(value);\n"
-    "  $set_has_field_bit_message$;\n"
+    "  $set_has_field_bit_message$\n"
     "}\n");
 
   // Field.Builder setField(Field.Builder builderForValue)
@@ -91,30 +103,36 @@ GenerateMembers(io::Printer* printer) const {
   printer->Print(variables_,
     "private void set$capitalized_name$(\n"
     "    $type$.Builder builderForValue) {\n"
+    "  if ($name$_ == null) {\n"
+    "    $name$_ = new com.google.protobuf.LazyFieldLite();\n"
+    "  }\n"
     "  $name$_.setValue(builderForValue.build());\n"
-    "  $set_has_field_bit_message$;\n"
+    "  $set_has_field_bit_message$\n"
     "}\n");
 
   // Field.Builder mergeField(Field value)
   WriteFieldDocComment(printer, descriptor_);
   printer->Print(variables_,
     "private void merge$capitalized_name$($type$ value) {\n"
-    "  if ($get_has_field_bit_message$ &&\n"
+    "  if (has$capitalized_name$() &&\n"
     "      !$name$_.containsDefaultInstance()) {\n"
     "    $name$_.setValue(\n"
     "      $type$.newBuilder(\n"
     "          get$capitalized_name$()).mergeFrom(value).buildPartial());\n"
     "  } else {\n"
+    "    if ($name$_ == null) {\n"
+    "      $name$_ = new com.google.protobuf.LazyFieldLite();\n"
+    "    }\n"
     "    $name$_.setValue(value);\n"
+    "    $set_has_field_bit_message$\n"
     "  }\n"
-    "  $set_has_field_bit_message$;\n"
     "}\n");
 
   // Field.Builder clearField()
   WriteFieldDocComment(printer, descriptor_);
   printer->Print(variables_,
     "private void clear$capitalized_name$() {\n"
-    "  $name$_.clear();\n"
+    "  $name$_ = null;\n"
     "  $clear_has_field_bit_message$;\n"
     "}\n");
 }
@@ -177,31 +195,30 @@ GenerateBuilderMembers(io::Printer* printer) const {
 
 
 void ImmutableLazyMessageFieldLiteGenerator::
-GenerateInitializationCode(io::Printer* printer) const {
-  printer->Print(variables_, "$name$_.clear();\n");
-}
+GenerateInitializationCode(io::Printer* printer) const {}
 
 void ImmutableLazyMessageFieldLiteGenerator::
 GenerateVisitCode(io::Printer* printer) const {
   printer->Print(variables_,
-    "$name$_ = visitor.visitLazyMessage(\n"
-    "    has$capitalized_name$(), $name$_,\n"
-    "    other.has$capitalized_name$(), other.$name$_);\n");
+    "$name$_ = visitor.visitLazyMessage($name$_, other.$name$_);\n");
 }
 
 void ImmutableLazyMessageFieldLiteGenerator::
 GenerateParsingCode(io::Printer* printer) const {
   printer->Print(variables_,
+    "if ($name$_ == null) {\n"
+    "  $name$_ = new com.google.protobuf.LazyFieldLite();\n"
+    "}\n"
     "$name$_.mergeFrom(input, extensionRegistry);\n");
   printer->Print(variables_,
-    "$set_has_field_bit_message$;\n");
+    "$set_has_field_bit_message$\n");
 }
 
 void ImmutableLazyMessageFieldLiteGenerator::
 GenerateSerializationCode(io::Printer* printer) const {
   // Do not de-serialize lazy fields.
   printer->Print(variables_,
-    "if ($get_has_field_bit_message$) {\n"
+    "if (has$capitalized_name$()) {\n"
     "  output.writeBytes($number$, $name$_.toByteString());\n"
     "}\n");
 }
@@ -209,7 +226,7 @@ GenerateSerializationCode(io::Printer* printer) const {
 void ImmutableLazyMessageFieldLiteGenerator::
 GenerateSerializedSizeCode(io::Printer* printer) const {
   printer->Print(variables_,
-    "if ($get_has_field_bit_message$) {\n"
+    "if (has$capitalized_name$()) {\n"
     "  size += com.google.protobuf.CodedOutputStream\n"
     "    .computeLazyFieldSize($number$, $name$_);\n"
     "}\n");

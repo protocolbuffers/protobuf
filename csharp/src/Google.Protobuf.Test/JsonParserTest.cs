@@ -133,9 +133,12 @@ namespace Google.Protobuf
         }
 
         [Test]
+        [TestCase(typeof(BoolValue), "true", true)]
         [TestCase(typeof(Int32Value), "32", 32)]
         [TestCase(typeof(Int64Value), "32", 32L)]
+        [TestCase(typeof(Int64Value), "\"32\"", 32L)]
         [TestCase(typeof(UInt32Value), "32", 32U)]
+        [TestCase(typeof(UInt64Value), "\"32\"", 32UL)]
         [TestCase(typeof(UInt64Value), "32", 32UL)]
         [TestCase(typeof(StringValue), "\"foo\"", "foo")]
         [TestCase(typeof(FloatValue), "1.5", 1.5f)]
@@ -808,6 +811,17 @@ namespace Google.Protobuf
             Assert.AreEqual(original, parser.Parse<Any>(json));
             string valueFirstJson = "{ \"singleInt32\": 10, \"singleNestedMessage\": { \"bb\": 20 }, \"@type\": \"type.googleapis.com/protobuf_unittest.TestAllTypes\" }";
             Assert.AreEqual(original, parser.Parse<Any>(valueFirstJson));
+        }
+
+        [Test]
+        public void Any_CustomPrefix()
+        {
+            var registry = TypeRegistry.FromMessages(TestAllTypes.Descriptor);
+            var message = new TestAllTypes { SingleInt32 = 10 };
+            var original = Any.Pack(message, "custom.prefix/middle-part");
+            var parser = new JsonParser(new JsonParser.Settings(10, registry));
+            string json = "{ \"@type\": \"custom.prefix/middle-part/protobuf_unittest.TestAllTypes\", \"singleInt32\": 10 }";
+            Assert.AreEqual(original, parser.Parse<Any>(json));
         }
 
         [Test]

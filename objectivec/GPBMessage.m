@@ -44,13 +44,16 @@
 #import "GPBUnknownFieldSet_PackagePrivate.h"
 #import "GPBUtilities_PackagePrivate.h"
 
+// Direct access is use for speed, to avoid even internally declaring things
+// read/write, etc. The warning is enabled in the project to ensure code calling
+// protos can turn on -Wdirect-ivar-access without issues.
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdirect-ivar-access"
+
 NSString *const GPBMessageErrorDomain =
     GPBNSStringifySymbol(GPBMessageErrorDomain);
 
-#ifdef DEBUG
-NSString *const GPBExceptionMessageKey =
-    GPBNSStringifySymbol(GPBExceptionMessage);
-#endif  // DEBUG
+NSString *const GPBErrorReasonKey = @"Reason";
 
 static NSString *const kGPBDataCoderKey = @"GPBData";
 
@@ -95,20 +98,35 @@ static NSMutableDictionary *CloneExtensionMap(NSDictionary *extensionMap,
                                               NSZone *zone)
     __attribute__((ns_returns_retained));
 
+#ifdef DEBUG
 static NSError *MessageError(NSInteger code, NSDictionary *userInfo) {
   return [NSError errorWithDomain:GPBMessageErrorDomain
                              code:code
                          userInfo:userInfo];
 }
+#endif
 
-static NSError *MessageErrorWithReason(NSInteger code, NSString *reason) {
-  NSDictionary *userInfo = nil;
-  if ([reason length]) {
-    userInfo = @{ @"Reason" : reason };
+static NSError *ErrorFromException(NSException *exception) {
+  NSError *error = nil;
+
+  if ([exception.name isEqual:GPBCodedInputStreamException]) {
+    NSDictionary *exceptionInfo = exception.userInfo;
+    error = exceptionInfo[GPBCodedInputStreamUnderlyingErrorKey];
   }
-  return MessageError(code, userInfo);
-}
 
+  if (!error) {
+    NSString *reason = exception.reason;
+    NSDictionary *userInfo = nil;
+    if ([reason length]) {
+      userInfo = @{ GPBErrorReasonKey : reason };
+    }
+
+    error = [NSError errorWithDomain:GPBMessageErrorDomain
+                                code:GPBMessageErrorCodeOther
+                            userInfo:userInfo];
+  }
+  return error;
+}
 
 static void CheckExtension(GPBMessage *self,
                            GPBExtensionDescriptor *extension) {
@@ -694,7 +712,7 @@ void GPBClearMessageAutocreator(GPBMessage *self) {
     return;
   }
 
-#if DEBUG && !defined(NS_BLOCK_ASSERTIONS)
+#if defined(DEBUG) && DEBUG && !defined(NS_BLOCK_ASSERTIONS)
   // Either the autocreator must have its "has" flag set to YES, or it must be
   // NO and not equal to ourselves.
   BOOL autocreatorHas =
@@ -816,8 +834,7 @@ static GPBUnknownFieldSet *GetOrMakeUnknownFields(GPBMessage *self) {
       [self release];
       self = nil;
       if (errorPtr) {
-        *errorPtr = MessageErrorWithReason(GPBMessageErrorCodeMalformedData,
-                                           exception.reason);
+        *errorPtr = ErrorFromException(exception);
       }
     }
 #ifdef DEBUG
@@ -848,8 +865,7 @@ static GPBUnknownFieldSet *GetOrMakeUnknownFields(GPBMessage *self) {
       [self release];
       self = nil;
       if (errorPtr) {
-        *errorPtr = MessageErrorWithReason(GPBMessageErrorCodeMalformedData,
-                                           exception.reason);
+        *errorPtr = ErrorFromException(exception);
       }
     }
 #ifdef DEBUG
@@ -1736,7 +1752,7 @@ static GPBUnknownFieldSet *GetOrMakeUnknownFields(GPBMessage *self) {
 }
 
 - (BOOL)hasExtension:(GPBExtensionDescriptor *)extension {
-#if DEBUG
+#if defined(DEBUG) && DEBUG
   CheckExtension(self, extension);
 #endif  // DEBUG
   return nil != [extensionMap_ objectForKey:extension];
@@ -1759,11 +1775,6 @@ static GPBUnknownFieldSet *GetOrMakeUnknownFields(GPBMessage *self) {
       GPBWriteExtensionValueToOutputStream(extension, value, output);
     }
   }
-}
-
-- (NSArray *)sortedExtensionsInUse {
-  return [[extensionMap_ allKeys]
-      sortedArrayUsingSelector:@selector(compareByFieldNumber:)];
 }
 
 - (void)setExtension:(GPBExtensionDescriptor *)extension value:(id)value {
@@ -1922,8 +1933,7 @@ static GPBUnknownFieldSet *GetOrMakeUnknownFields(GPBMessage *self) {
   @catch (NSException *exception) {
     message = nil;
     if (errorPtr) {
-      *errorPtr = MessageErrorWithReason(GPBMessageErrorCodeMalformedData,
-                                         exception.reason);
+      *errorPtr = ErrorFromException(exception);
     }
   }
 #ifdef DEBUG
@@ -2264,6 +2274,9 @@ static void MergeRepeatedNotPackedFieldFromCodedInputStream(
   while (YES) {
     BOOL merged = NO;
     tag = GPBCodedInputStreamReadTag(state);
+    if (tag == 0) {
+      break;  // Reached end.
+    }
     for (NSUInteger i = 0; i < numFields; ++i) {
       if (startingIndex >= numFields) startingIndex = 0;
       GPBFieldDescriptor *fieldDescriptor = fields[startingIndex];
@@ -2302,7 +2315,7 @@ static void MergeRepeatedNotPackedFieldFromCodedInputStream(
       }
     }  // for(i < numFields)
 
-    if (!merged) {
+    if (!merged && (tag != 0)) {
       // Primitive, repeated types can be packed on unpacked on the wire, and
       // are parsed either way.  The above loop covered tag in the preferred
       // for, so this need to check the alternate form.
@@ -2557,7 +2570,7 @@ static void MergeRepeatedNotPackedFieldFromCodedInputStream(
 
 #pragma mark - isEqual: & hash Support
 
-- (BOOL)isEqual:(GPBMessage *)other {
+- (BOOL)isEqual:(id)other {
   if (other == self) {
     return YES;
   }
@@ -2566,9 +2579,10 @@ static void MergeRepeatedNotPackedFieldFromCodedInputStream(
     return NO;
   }
 
+  GPBMessage *otherMsg = other;
   GPBDescriptor *descriptor = [[self class] descriptor];
   uint8_t *selfStorage = (uint8_t *)messageStorage_;
-  uint8_t *otherStorage = (uint8_t *)other->messageStorage_;
+  uint8_t *otherStorage = (uint8_t *)otherMsg->messageStorage_;
 
   for (GPBFieldDescriptor *field in descriptor->fields_) {
     if (GPBFieldIsMapOrArray(field)) {
@@ -2621,7 +2635,7 @@ static void MergeRepeatedNotPackedFieldFromCodedInputStream(
         case GPBDataTypeFixed32:
         case GPBDataTypeUInt32:
         case GPBDataTypeFloat: {
-          _GPBCompileAssert(sizeof(float) == sizeof(uint32_t), float_not_32_bits);
+          GPBInternalCompileAssert(sizeof(float) == sizeof(uint32_t), float_not_32_bits);
           // These are all 32bit, signed/unsigned doesn't matter for equality.
           uint32_t *selfValPtr = (uint32_t *)&selfStorage[fieldOffset];
           uint32_t *otherValPtr = (uint32_t *)&otherStorage[fieldOffset];
@@ -2636,7 +2650,7 @@ static void MergeRepeatedNotPackedFieldFromCodedInputStream(
         case GPBDataTypeFixed64:
         case GPBDataTypeUInt64:
         case GPBDataTypeDouble: {
-          _GPBCompileAssert(sizeof(double) == sizeof(uint64_t), double_not_64_bits);
+          GPBInternalCompileAssert(sizeof(double) == sizeof(uint64_t), double_not_64_bits);
           // These are all 64bit, signed/unsigned doesn't matter for equality.
           uint64_t *selfValPtr = (uint64_t *)&selfStorage[fieldOffset];
           uint64_t *otherValPtr = (uint64_t *)&otherStorage[fieldOffset];
@@ -2662,14 +2676,14 @@ static void MergeRepeatedNotPackedFieldFromCodedInputStream(
   }  // for(fields)
 
   // nil and empty are equal
-  if (extensionMap_.count != 0 || other->extensionMap_.count != 0) {
-    if (![extensionMap_ isEqual:other->extensionMap_]) {
+  if (extensionMap_.count != 0 || otherMsg->extensionMap_.count != 0) {
+    if (![extensionMap_ isEqual:otherMsg->extensionMap_]) {
       return NO;
     }
   }
 
   // nil and empty are equal
-  GPBUnknownFieldSet *otherUnknowns = other->unknownFields_;
+  GPBUnknownFieldSet *otherUnknowns = otherMsg->unknownFields_;
   if ([unknownFields_ countOfFields] != 0 ||
       [otherUnknowns countOfFields] != 0) {
     if (![unknownFields_ isEqual:otherUnknowns]) {
@@ -2733,7 +2747,7 @@ static void MergeRepeatedNotPackedFieldFromCodedInputStream(
         case GPBDataTypeFixed32:
         case GPBDataTypeUInt32:
         case GPBDataTypeFloat: {
-          _GPBCompileAssert(sizeof(float) == sizeof(uint32_t), float_not_32_bits);
+          GPBInternalCompileAssert(sizeof(float) == sizeof(uint32_t), float_not_32_bits);
           // These are all 32bit, just mix it in.
           uint32_t *valPtr = (uint32_t *)&storage[fieldOffset];
           result = prime * result + *valPtr;
@@ -2745,7 +2759,7 @@ static void MergeRepeatedNotPackedFieldFromCodedInputStream(
         case GPBDataTypeFixed64:
         case GPBDataTypeUInt64:
         case GPBDataTypeDouble: {
-          _GPBCompileAssert(sizeof(double) == sizeof(uint64_t), double_not_64_bits);
+          GPBInternalCompileAssert(sizeof(double) == sizeof(uint64_t), double_not_64_bits);
           // These are all 64bit, just mix what fits into an NSUInteger in.
           uint64_t *valPtr = (uint64_t *)&storage[fieldOffset];
           result = prime * result + (NSUInteger)(*valPtr);
@@ -2792,7 +2806,7 @@ static void MergeRepeatedNotPackedFieldFromCodedInputStream(
   return description;
 }
 
-#if DEBUG
+#if defined(DEBUG) && DEBUG
 
 // Xcode 5.1 added support for custom quick look info.
 // https://developer.apple.com/library/ios/documentation/IDEs/Conceptual/CustomClassDisplay_in_QuickLook/CH01-quick_look_for_custom_objects/CH01-quick_look_for_custom_objects.html#//apple_ref/doc/uid/TP40014001-CH2-SW1
@@ -3182,3 +3196,35 @@ static void ResolveIvarSet(GPBFieldDescriptor *field,
 }
 
 @end
+
+#pragma mark - Messages from GPBUtilities.h but defined here for access to helpers.
+
+// Only exists for public api, no core code should use this.
+id GPBGetMessageRepeatedField(GPBMessage *self, GPBFieldDescriptor *field) {
+#if defined(DEBUG) && DEBUG
+  if (field.fieldType != GPBFieldTypeRepeated) {
+    [NSException raise:NSInvalidArgumentException
+                format:@"%@.%@ is not a repeated field.",
+     [self class], field.name];
+  }
+#endif
+  GPBDescriptor *descriptor = [[self class] descriptor];
+  GPBFileSyntax syntax = descriptor.file.syntax;
+  return GetOrCreateArrayIvarWithField(self, field, syntax);
+}
+
+// Only exists for public api, no core code should use this.
+id GPBGetMessageMapField(GPBMessage *self, GPBFieldDescriptor *field) {
+#if defined(DEBUG) && DEBUG
+  if (field.fieldType != GPBFieldTypeMap) {
+    [NSException raise:NSInvalidArgumentException
+                format:@"%@.%@ is not a map<> field.",
+     [self class], field.name];
+  }
+#endif
+  GPBDescriptor *descriptor = [[self class] descriptor];
+  GPBFileSyntax syntax = descriptor.file.syntax;
+  return GetOrCreateMapIvarWithField(self, field, syntax);
+}
+
+#pragma clang diagnostic pop

@@ -50,9 +50,7 @@
 #include <iostream>
 #include <ctype.h>
 
-#ifdef GOOGLE_PROTOBUF_ARCH_SPARC
 #include <limits.h> //For PATH_MAX
-#endif
 
 #include <memory>
 #ifndef _SHARED_PTR_H
@@ -614,7 +612,7 @@ CommandLineInterface::MemoryOutputStream::~MemoryOutputStream() {
   } else {
     // This was an OpenForInsert().
 
-    // If the data doens't end with a clean line break, add one.
+    // If the data doesn't end with a clean line break, add one.
     if (!data_.empty() && data_[data_.size() - 1] != '\n') {
       data_.push_back('\n');
     }
@@ -641,18 +639,23 @@ CommandLineInterface::MemoryOutputStream::~MemoryOutputStream() {
       return;
     }
 
-    // Seek backwards to the beginning of the line, which is where we will
-    // insert the data.  Note that this has the effect of pushing the insertion
-    // point down, so the data is inserted before it.  This is intentional
-    // because it means that multiple insertions at the same point will end
-    // up in the expected order in the final output.
-    pos = target->find_last_of('\n', pos);
-    if (pos == string::npos) {
-      // Insertion point is on the first line.
-      pos = 0;
+    if ((pos > 3) && (target->substr(pos - 3, 2) == "/*")) {
+      // Support for inline "/* @@protoc_insertion_point() */"
+      pos = pos - 3;
     } else {
-      // Advance to character after '\n'.
-      ++pos;
+      // Seek backwards to the beginning of the line, which is where we will
+      // insert the data.  Note that this has the effect of pushing the
+      // insertion point down, so the data is inserted before it.  This is
+      // intentional because it means that multiple insertions at the same point
+      // will end up in the expected order in the final output.
+      pos = target->find_last_of('\n', pos);
+      if (pos == string::npos) {
+        // Insertion point is on the first line.
+        pos = 0;
+      } else {
+        // Advance to character after '\n'.
+        ++pos;
+      }
     }
 
     // Extract indent.
@@ -1136,8 +1139,13 @@ CommandLineInterface::InterpretArgument(const string& name,
 
       // Make sure disk path exists, warn otherwise.
       if (access(disk_path.c_str(), F_OK) < 0) {
-        std::cerr << disk_path << ": warning: directory does not exist."
-                  << std::endl;
+        // Try the original path; it may have just happed to have a '=' in it.
+        if (access(parts[i].c_str(), F_OK) < 0) {
+          cerr << disk_path << ": warning: directory does not exist." << endl;
+        } else {
+          virtual_path = "";
+          disk_path = parts[i];
+        }
       }
 
       // Don't use make_pair as the old/default standard library on Solaris

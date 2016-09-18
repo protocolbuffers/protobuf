@@ -38,7 +38,7 @@ namespace google {
 namespace protobuf {
 namespace internal {
 
-// This class provides accesss to map field using generated api. It is used for
+// This class provides access to map field using generated api. It is used for
 // internal generated message implentation only. Users should never use this
 // directly.
 template <typename Key, typename T,

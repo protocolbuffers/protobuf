@@ -278,7 +278,7 @@ class LIBPROTOBUF_EXPORT MessageDifferencer {
         const Message& message2,
         const vector<SpecificField>& field_path) { }
 
-    // Report that an unkown field is ignored. (see comment above).
+    // Report that an unknown field is ignored. (see comment above).
     // Note this is a different function since the last SpecificField in field
     // path has a null field.  This could break existing Reporter.
     virtual void ReportUnknownFieldIgnored(
@@ -570,6 +570,12 @@ class LIBPROTOBUF_EXPORT MessageDifferencer {
   // any differences found in human-readable form to the supplied
   // ZeroCopyOutputStream or Printer. If a printer is used, the delimiter
   // *must* be '$'.
+  //
+  // WARNING: this reporter does not necessarily flush its output until it is
+  // destroyed. As a result, it is not safe to assume the output is valid or
+  // complete until after you destroy the reporter. For example, if you use a
+  // StreamReporter to write to a StringOutputStream, the target string may
+  // contain uninitialized data until the reporter is destroyed.
   class LIBPROTOBUF_EXPORT StreamReporter : public Reporter {
    public:
     explicit StreamReporter(io::ZeroCopyOutputStream* output);

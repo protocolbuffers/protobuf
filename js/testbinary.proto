@@ -183,3 +183,30 @@ extend TestExtendable {
       [packed=true];
 
 }
+
+message TestMapFields {
+  map<string, string> map_string_string = 1;
+  map<string, int32> map_string_int32 = 2;
+  map<string, int64> map_string_int64 = 3;
+  map<string, bool> map_string_bool = 4;
+  map<string, double> map_string_double = 5;
+  map<string, MapValueEnum> map_string_enum = 6;
+  map<string, MapValueMessage> map_string_msg = 7;
+
+  map<int32, string> map_int32_string = 8;
+  map<int64, string> map_int64_string = 9;
+  map<bool, string> map_bool_string = 10;
+
+  optional TestMapFields test_map_fields = 11;
+  map<string, TestMapFields> map_string_testmapfields = 12;
+}
+
+enum MapValueEnum {
+  MAP_VALUE_FOO = 0;
+  MAP_VALUE_BAR = 1;
+  MAP_VALUE_BAZ = 2;
+}
+
+message MapValueMessage {
+  optional int32 foo = 1;
+}

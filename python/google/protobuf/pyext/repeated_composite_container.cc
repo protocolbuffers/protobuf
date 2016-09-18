@@ -146,7 +146,7 @@ static PyObject* AddToAttached(RepeatedCompositeContainer* self,
   cmsg->owner = self->owner;
   cmsg->message = sub_message;
   cmsg->parent = self->parent;
-  if (cmessage::InitAttributes(cmsg, kwargs) < 0) {
+  if (cmessage::InitAttributes(cmsg, args, kwargs) < 0) {
     Py_DECREF(cmsg);
     return NULL;
   }
@@ -166,7 +166,7 @@ static PyObject* AddToReleased(RepeatedCompositeContainer* self,
 
   // Create a new Message detached from the rest.
   PyObject* py_cmsg = PyEval_CallObjectWithKeywords(
-      self->child_message_class->AsPyObject(), NULL, kwargs);
+      self->child_message_class->AsPyObject(), args, kwargs);
   if (py_cmsg == NULL)
     return NULL;
 

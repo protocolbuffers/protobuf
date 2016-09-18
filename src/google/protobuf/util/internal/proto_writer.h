@@ -32,8 +32,8 @@
 #define GOOGLE_PROTOBUF_UTIL_CONVERTER_PROTO_WRITER_H__
 
 #include <deque>
-#include <google/protobuf/stubs/hash.h>
 #include <string>
+#include <vector>
 
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/io/coded_stream.h>
@@ -45,6 +45,7 @@
 #include <google/protobuf/util/internal/structured_objectwriter.h>
 #include <google/protobuf/util/type_resolver.h>
 #include <google/protobuf/stubs/bytestream.h>
+#include <google/protobuf/stubs/hash.h>
 
 namespace google {
 namespace protobuf {
@@ -117,6 +118,7 @@ class LIBPROTOBUF_EXPORT ProtoWriter : public StructuredObjectWriter {
     return RenderDataPiece(name, DataPiece::NullData());
   }
 
+
   // Renders a DataPiece 'value' into a field whose wire type is determined
   // from the given field 'name'.
   virtual ProtoWriter* RenderDataPiece(StringPiece name,
@@ -141,6 +143,10 @@ class LIBPROTOBUF_EXPORT ProtoWriter : public StructuredObjectWriter {
   ErrorListener* listener() { return listener_; }
 
   const TypeInfo* typeinfo() { return typeinfo_; }
+
+  void set_ignore_unknown_fields(bool ignore_unknown_fields) {
+    ignore_unknown_fields_ = ignore_unknown_fields;
+  }
 
  protected:
   class LIBPROTOBUF_EXPORT ProtoElement : public BaseElement, public LocationTrackerInterface {
@@ -179,12 +185,14 @@ class LIBPROTOBUF_EXPORT ProtoWriter : public StructuredObjectWriter {
       return static_cast<ProtoElement*>(BaseElement::parent());
     }
 
-    // Returns true if the index is already taken by a preceeding oneof input.
+    // Returns true if the index is already taken by a preceding oneof input.
     bool IsOneofIndexTaken(int32 index);
 
     // Marks the oneof 'index' as taken. Future inputs to this oneof will
     // generate an error.
     void TakeOneofIndex(int32 index);
+
+    bool proto3() { return proto3_; }
 
    private:
     // Used for access to variables of the enclosing instance of
@@ -197,6 +205,9 @@ class LIBPROTOBUF_EXPORT ProtoWriter : public StructuredObjectWriter {
 
     // TypeInfo to lookup types.
     const TypeInfo* typeinfo_;
+
+    // Whether the type_ is proto3 or not.
+    bool proto3_;
 
     // Additional variables if this element is a message:
     // (Root element is always a message).
@@ -213,7 +224,7 @@ class LIBPROTOBUF_EXPORT ProtoWriter : public StructuredObjectWriter {
 
     // Set of oneof indices already seen for the type_. Used to validate
     // incoming messages so no more than one oneof is set.
-    hash_set<int32> oneof_indices_;
+    std::vector<bool> oneof_indices_;
 
     GOOGLE_DISALLOW_IMPLICIT_CONSTRUCTORS(ProtoElement);
   };
@@ -240,7 +251,8 @@ class LIBPROTOBUF_EXPORT ProtoWriter : public StructuredObjectWriter {
 
   // Lookup the field in the current element. Looks in the base descriptor
   // and in any extension. This will report an error if the field cannot be
-  // found or if multiple matching extensions are found.
+  // found when ignore_unknown_names_ is false or if multiple matching
+  // extensions are found.
   const google::protobuf::Field* Lookup(StringPiece name);
 
   // Lookup the field type in the type descriptor. Returns NULL if the type
@@ -292,6 +304,9 @@ class LIBPROTOBUF_EXPORT ProtoWriter : public StructuredObjectWriter {
 
   // Indicates whether we finished writing root message completely.
   bool done_;
+
+  // If true, don't report unknown field names to the listener.
+  bool ignore_unknown_fields_;
 
   // Variable for internal state processing:
   // element_    : the current element.

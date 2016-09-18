@@ -31,7 +31,7 @@ genproto_output = []
 unless ENV['IN_DOCKER'] == 'true'
   well_known_protos.each do |proto_file|
     input_file = "../src/" + proto_file
-    output_file = "lib/" + proto_file.sub(/\.proto$/, ".rb")
+    output_file = "lib/" + proto_file.sub(/\.proto$/, "_pb.rb")
     genproto_output << output_file
     file output_file => input_file do |file_task|
       sh "../src/protoc -I../src --ruby_out=lib #{input_file}"
@@ -80,8 +80,13 @@ end
 
 # Proto for tests.
 genproto_output << "tests/generated_code.rb"
+genproto_output << "tests/test_import.rb"
 file "tests/generated_code.rb" => "tests/generated_code.proto" do |file_task|
   sh "../src/protoc --ruby_out=. tests/generated_code.proto"
+end
+
+file "tests/test_import.rb" => "tests/test_import.proto" do |file_task|
+  sh "../src/protoc --ruby_out=. tests/test_import.proto"
 end
 
 task :genproto => genproto_output

@@ -19,8 +19,9 @@ PTHREAD_DEF =
 endif
 
 if GCC
-# These are good warnings to turn on by default
-NO_OPT_CXXFLAGS = $(PTHREAD_CFLAGS) $(PTHREAD_DEF) $(ZLIB_DEF) -Wall -Wwrite-strings -Woverloaded-virtual -Wno-sign-compare
+# Turn on all warnings except for sign comparison (we ignore sign comparison
+# in Google so our code base have tons of such warnings).
+NO_OPT_CXXFLAGS = $(PTHREAD_CFLAGS) $(PTHREAD_DEF) $(ZLIB_DEF) -Wall -Wno-sign-compare
 else
 NO_OPT_CXXFLAGS = $(PTHREAD_CFLAGS) $(PTHREAD_DEF) $(ZLIB_DEF)
 endif
@@ -32,6 +33,10 @@ AM_LDFLAGS = $(PTHREAD_CFLAGS)
 # If I say "dist_include_DATA", automake complains that $(includedir) is not
 # a "legitimate" directory for DATA.  Screw you, automake.
 protodir = $(includedir)
+
+# If you are adding new files here, also remember to change the build files for
+# all other languages, //protoc-artifacts/build-zip.sh and run
+# //update_file_list.sh for bazel.
 nobase_dist_proto_DATA = google/protobuf/descriptor.proto     \
                          google/protobuf/any.proto            \
                          google/protobuf/api.proto            \
@@ -50,7 +55,8 @@ clean-local:
 	rm -f *.loT
 
 CLEANFILES = $(protoc_outputs) unittest_proto_middleman \
-             testzip.jar testzip.list testzip.proto testzip.zip
+             testzip.jar testzip.list testzip.proto testzip.zip \
+             no_warning_test.cc
 
 MAINTAINERCLEANFILES =   \
   Makefile.in
@@ -59,6 +65,7 @@ nobase_include_HEADERS =                                        \
   google/protobuf/stubs/atomic_sequence_num.h                   \
   google/protobuf/stubs/atomicops.h                             \
   google/protobuf/stubs/atomicops_internals_power.h             \
+  google/protobuf/stubs/atomicops_internals_ppc_gcc.h           \
   google/protobuf/stubs/atomicops_internals_arm64_gcc.h         \
   google/protobuf/stubs/atomicops_internals_arm_gcc.h           \
   google/protobuf/stubs/atomicops_internals_arm_qnx.h           \
@@ -121,7 +128,6 @@ nobase_include_HEADERS =                                        \
   google/protobuf/reflection.h                                  \
   google/protobuf/reflection_ops.h                              \
   google/protobuf/repeated_field.h                              \
-  google/protobuf/repeated_field_reflection.h                   \
   google/protobuf/service.h                                     \
   google/protobuf/source_context.pb.h                           \
   google/protobuf/struct.pb.h                                   \
@@ -156,6 +162,7 @@ nobase_include_HEADERS =                                        \
   google/protobuf/compiler/js/js_generator.h                    \
   google/protobuf/compiler/objectivec/objectivec_generator.h    \
   google/protobuf/compiler/objectivec/objectivec_helpers.h      \
+  google/protobuf/compiler/php/php_generator.h                  \
   google/protobuf/compiler/python/python_generator.h            \
   google/protobuf/compiler/ruby/ruby_generator.h                \
   google/protobuf/util/type_resolver.h                          \
@@ -375,6 +382,7 @@ libprotoc_la_SOURCES =                                         \
   google/protobuf/compiler/java/java_message_builder_lite.h    \
   google/protobuf/compiler/java/java_name_resolver.cc          \
   google/protobuf/compiler/java/java_name_resolver.h           \
+  google/protobuf/compiler/java/java_options.h                 \
   google/protobuf/compiler/java/java_primitive_field.cc        \
   google/protobuf/compiler/java/java_primitive_field.h         \
   google/protobuf/compiler/java/java_primitive_field_lite.cc   \
@@ -436,6 +444,7 @@ libprotoc_la_SOURCES =                                         \
   google/protobuf/compiler/objectivec/objectivec_oneof.h       \
   google/protobuf/compiler/objectivec/objectivec_primitive_field.cc \
   google/protobuf/compiler/objectivec/objectivec_primitive_field.h \
+  google/protobuf/compiler/php/php_generator.cc                \
   google/protobuf/compiler/python/python_generator.cc          \
   google/protobuf/compiler/ruby/ruby_generator.cc              \
   google/protobuf/compiler/csharp/csharp_doc_comment.cc        \
@@ -529,6 +538,7 @@ EXTRA_DIST =                                                   \
   google/protobuf/io/gzip_stream.h                             \
   google/protobuf/io/gzip_stream_unittest.sh                   \
   google/protobuf/testdata/golden_message                      \
+  google/protobuf/testdata/golden_message_maps                 \
   google/protobuf/testdata/golden_message_oneof_implemented    \
   google/protobuf/testdata/golden_message_proto3               \
   google/protobuf/testdata/golden_packed_fields_message        \
@@ -542,10 +552,12 @@ EXTRA_DIST =                                                   \
   google/protobuf/testdata/text_format_unittest_extensions_data_pointy.txt  \
   google/protobuf/package_info.h                               \
   google/protobuf/io/package_info.h                            \
+  google/protobuf/util/package_info.h                          \
   google/protobuf/compiler/ruby/ruby_generated_code.proto      \
-  google/protobuf/compiler/ruby/ruby_generated_code.rb         \
+  google/protobuf/compiler/ruby/ruby_generated_code_pb.rb      \
   google/protobuf/compiler/package_info.h                      \
-  google/protobuf/compiler/zip_output_unittest.sh
+  google/protobuf/compiler/zip_output_unittest.sh              \
+  README.md
 
 protoc_lite_outputs =                                          \
   google/protobuf/map_lite_unittest.pb.cc                      \
@@ -676,7 +688,7 @@ COMMON_TEST_SOURCES =                                          \
 
 check_PROGRAMS = protoc protobuf-test protobuf-lazy-descriptor-test \
                  protobuf-lite-test test_plugin protobuf-lite-arena-test \
-                 $(GZCHECKPROGRAMS)
+                 no-warning-test $(GZCHECKPROGRAMS)
 protobuf_test_LDADD = $(PTHREAD_LIBS) libprotobuf.la libprotoc.la \
                       ../gmock/gtest/lib/libgtest.la              \
                       ../gmock/lib/libgmock.la                    \
@@ -829,6 +841,27 @@ zcgunzip_LDADD = $(PTHREAD_LIBS) libprotobuf.la
 zcgunzip_SOURCES = google/protobuf/testing/zcgunzip.cc
 endif
 
+# This test target is to ensure all our public header files and generated
+# code is free from warnings. We have to be more pedantic about these
+# files because they are compiled by users with different compiler flags.
+no_warning_test.cc:
+	echo "// Generated from Makefile.am" > no_warning_test.cc
+	for FILE in $(nobase_include_HEADERS); do \
+	  if ! echo $${FILE} | grep "atomicops"; then \
+	    echo "#include <$${FILE}>" >> no_warning_test.cc; \
+	  fi \
+	done
+	echo "#include <gtest/gtest.h>" >> no_warning_test.cc
+	echo "TEST(NoWarningTest, Empty) {}" >> no_warning_test.cc
+
+no_warning_test_LDADD = $(PTHREAD_LIBS) libprotobuf.la      \
+                        ../gmock/gtest/lib/libgtest.la      \
+                        ../gmock/gtest/lib/libgtest_main.la
+no_warning_test_CPPFLAGS = -I$(srcdir)/../gmock/gtest/include
+no_warning_test_CXXFLAGS = $(PTHREAD_CFLAGS) $(PTHREAD_DEF) $(ZLIB_DEF) \
+                           -Wall -Werror
+nodist_no_warning_test_SOURCES = no_warning_test.cc $(protoc_outputs)
+
 TESTS = protobuf-test protobuf-lazy-descriptor-test protobuf-lite-test \
         google/protobuf/compiler/zip_output_unittest.sh $(GZTESTS)     \
-        protobuf-lite-arena-test
+        protobuf-lite-arena-test no-warning-test

@@ -30,14 +30,13 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #endregion
 
+using Google.Protobuf.Compatibility;
 using Google.Protobuf.Reflection;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
-using Google.Protobuf.Compatibility;
 
 namespace Google.Protobuf.Collections
 {
@@ -48,9 +47,6 @@ namespace Google.Protobuf.Collections
     /// <typeparam name="TValue">Value type in the map. Must be a type supported by Protocol Buffers.</typeparam>
     /// <remarks>
     /// <para>
-    /// This implementation preserves insertion order for simplicity of testing
-    /// code using maps fields. Overwriting an existing entry does not change the
-    /// position of that entry within the map. Equality is not order-sensitive.
     /// For string keys, the equality comparison is provided by <see cref="StringComparer.Ordinal" />.
     /// </para>
     /// <para>
@@ -64,6 +60,10 @@ namespace Google.Protobuf.Collections
     /// This implementation does not generally prohibit the use of key/value types which are not
     /// supported by Protocol Buffers (e.g. using a key type of <code>byte</code>) but nor does it guarantee
     /// that all operations will work in such cases.
+    /// </para>
+    /// <para>
+    /// The order in which entries are returned when iterating over this object is undefined, and may change
+    /// in future versions.
     /// </para>
     /// </remarks>
     public sealed class MapField<TKey, TValue> : IDeepCloneable<MapField<TKey, TValue>>, IDictionary<TKey, TValue>, IEquatable<MapField<TKey, TValue>>, IDictionary
@@ -112,7 +112,7 @@ namespace Google.Protobuf.Collections
             // Validation of arguments happens in ContainsKey and the indexer
             if (ContainsKey(key))
             {
-                throw new ArgumentException("Key already exists in map", "key");
+                throw new ArgumentException("Key already exists in map", nameof(key));
             }
             this[key] = value;
         }
@@ -124,7 +124,7 @@ namespace Google.Protobuf.Collections
         /// <returns><c>true</c> if the map contains the given key; <c>false</c> otherwise.</returns>
         public bool ContainsKey(TKey key)
         {
-            ProtoPreconditions.CheckNotNullUnconstrained(key, "key");
+            ProtoPreconditions.CheckNotNullUnconstrained(key, nameof(key));
             return map.ContainsKey(key);
         }
 
@@ -141,7 +141,7 @@ namespace Google.Protobuf.Collections
         /// <returns><c>true</c> if the map contained the given key before the entry was removed; <c>false</c> otherwise.</returns>
         public bool Remove(TKey key)
         {
-            ProtoPreconditions.CheckNotNullUnconstrained(key, "key");
+            ProtoPreconditions.CheckNotNullUnconstrained(key, nameof(key));
             LinkedListNode<KeyValuePair<TKey, TValue>> node;
             if (map.TryGetValue(key, out node))
             {
@@ -189,7 +189,7 @@ namespace Google.Protobuf.Collections
         {
             get
             {
-                ProtoPreconditions.CheckNotNullUnconstrained(key, "key");
+                ProtoPreconditions.CheckNotNullUnconstrained(key, nameof(key));
                 TValue value;
                 if (TryGetValue(key, out value))
                 {
@@ -199,11 +199,11 @@ namespace Google.Protobuf.Collections
             }
             set
             {
-                ProtoPreconditions.CheckNotNullUnconstrained(key, "key");
+                ProtoPreconditions.CheckNotNullUnconstrained(key, nameof(key));
                 // value == null check here is redundant, but avoids boxing.
                 if (value == null)
                 {
-                    ProtoPreconditions.CheckNotNullUnconstrained(value, "value");
+                    ProtoPreconditions.CheckNotNullUnconstrained(value, nameof(value));
                 }
                 LinkedListNode<KeyValuePair<TKey, TValue>> node;
                 var pair = new KeyValuePair<TKey, TValue>(key, value);
@@ -235,7 +235,7 @@ namespace Google.Protobuf.Collections
         /// <param name="entries">The entries to add to the map.</param>
         public void Add(IDictionary<TKey, TValue> entries)
         {
-            ProtoPreconditions.CheckNotNull(entries, "entries");
+            ProtoPreconditions.CheckNotNull(entries, nameof(entries));
             foreach (var pair in entries)
             {
                 Add(pair.Key, pair.Value);
@@ -314,7 +314,7 @@ namespace Google.Protobuf.Collections
         {
             if (item.Key == null)
             {
-                throw new ArgumentException("Key is null", "item");
+                throw new ArgumentException("Key is null", nameof(item));
             }
             LinkedListNode<KeyValuePair<TKey, TValue>> node;
             if (map.TryGetValue(item.Key, out node) &&
@@ -502,7 +502,7 @@ namespace Google.Protobuf.Collections
 
         void IDictionary.Remove(object key)
         {
-            ProtoPreconditions.CheckNotNull(key, "key");
+            ProtoPreconditions.CheckNotNull(key, nameof(key));
             if (!(key is TKey))
             {
                 return;
@@ -531,7 +531,7 @@ namespace Google.Protobuf.Collections
         {
             get
             {
-                ProtoPreconditions.CheckNotNull(key, "key");
+                ProtoPreconditions.CheckNotNull(key, nameof(key));
                 if (!(key is TKey))
                 {
                     return null;
@@ -713,11 +713,11 @@ namespace Google.Protobuf.Collections
             {
                 if (arrayIndex < 0)
                 {
-                    throw new ArgumentOutOfRangeException("arrayIndex");
+                    throw new ArgumentOutOfRangeException(nameof(arrayIndex));
                 }
                 if (arrayIndex + Count  >= array.Length)
                 {
-                    throw new ArgumentException("Not enough space in the array", "array");
+                    throw new ArgumentException("Not enough space in the array", nameof(array));
                 }
                 foreach (var item in this)
                 {
@@ -744,11 +744,11 @@ namespace Google.Protobuf.Collections
             {
                 if (index < 0)
                 {
-                    throw new ArgumentOutOfRangeException("index");
+                    throw new ArgumentOutOfRangeException(nameof(index));
                 }
                 if (index + Count >= array.Length)
                 {
-                    throw new ArgumentException("Not enough space in the array", "array");
+                    throw new ArgumentException("Not enough space in the array", nameof(array));
                 }
                 foreach (var item in this)
                 {

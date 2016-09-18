@@ -101,7 +101,7 @@ public class ExtensionRegistry extends ExtensionRegistryLite {
 
   /** Get the unmodifiable singleton empty instance. */
   public static ExtensionRegistry getEmptyRegistry() {
-    return EMPTY;
+    return EMPTY_REGISTRY;
   }
 
 
@@ -243,6 +243,11 @@ public class ExtensionRegistry extends ExtensionRegistryLite {
     add(newExtensionInfo(extension), extension.getExtensionType());
   }
 
+  /** Add an extension from a generated file to the registry. */
+  public void add(final GeneratedMessage.GeneratedExtension<?, ?> extension) {
+    add((Extension<?, ?>) extension);
+  }
+
   static ExtensionInfo newExtensionInfo(final Extension<?, ?> extension) {
     if (extension.getDescriptor().getJavaType() ==
         FieldDescriptor.JavaType.MESSAGE) {
@@ -311,7 +316,7 @@ public class ExtensionRegistry extends ExtensionRegistryLite {
   private final Map<DescriptorIntPair, ExtensionInfo> mutableExtensionsByNumber;
 
   ExtensionRegistry(boolean empty) {
-    super(ExtensionRegistryLite.getEmptyRegistry());
+    super(EMPTY_REGISTRY_LITE);
     this.immutableExtensionsByName =
         Collections.<String, ExtensionInfo>emptyMap();
     this.mutableExtensionsByName =
@@ -321,7 +326,7 @@ public class ExtensionRegistry extends ExtensionRegistryLite {
     this.mutableExtensionsByNumber =
             Collections.<DescriptorIntPair, ExtensionInfo>emptyMap();
   }
-  private static final ExtensionRegistry EMPTY = new ExtensionRegistry(true);
+  static final ExtensionRegistry EMPTY_REGISTRY = new ExtensionRegistry(true);
 
   private void add(
       final ExtensionInfo extension,

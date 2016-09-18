@@ -26,7 +26,7 @@ def _CcOuts(srcs, use_grpc_plugin=False):
 def _PyOuts(srcs):
   return [s[:-len(".proto")] + "_pb2.py" for s in srcs]
 
-def _RelativeOutputPath(path, include):
+def _RelativeOutputPath(path, include, dest=""):
   if include == None:
     return path
 
@@ -35,16 +35,11 @@ def _RelativeOutputPath(path, include):
 
   if include and include[-1] != '/':
     include = include + '/'
+  if dest and dest[-1] != '/':
+    dest = dest + '/'
 
   path = path[len(include):]
-
-  if not path.startswith(PACKAGE_NAME):
-    fail("The package %s is not within the path %s" % (PACKAGE_NAME, path))
-
-  if not PACKAGE_NAME:
-    return path
-
-  return path[len(PACKAGE_NAME)+1:]
+  return dest + path
 
 def _proto_gen_impl(ctx):
   """General implementation for generating protos"""
@@ -53,7 +48,7 @@ def _proto_gen_impl(ctx):
   deps += ctx.files.srcs
   gen_dir = _GenDir(ctx)
   if gen_dir:
-    import_flags = ["-I" + gen_dir]
+    import_flags = ["-I" + gen_dir, "-I" + ctx.var["GENDIR"] + "/" + gen_dir]
   else:
     import_flags = ["-I."]
 
@@ -67,9 +62,19 @@ def _proto_gen_impl(ctx):
   if ctx.attr.gen_py:
     args += ["--python_out=" + ctx.var["GENDIR"] + "/" + gen_dir]
 
-  if ctx.executable.grpc_cpp_plugin:
-    args += ["--plugin=protoc-gen-grpc=" + ctx.executable.grpc_cpp_plugin.path]
-    args += ["--grpc_out=" + ctx.var["GENDIR"] + "/" + gen_dir]
+  if ctx.executable.plugin:
+    plugin = ctx.executable.plugin
+    lang = ctx.attr.plugin_language
+    if not lang and plugin.basename.startswith('protoc-gen-'):
+      lang = plugin.basename[len('protoc-gen-'):]
+    if not lang:
+      fail("cannot infer the target language of plugin", "plugin_language")
+
+    outdir = ctx.var["GENDIR"] + "/" + gen_dir
+    if ctx.attr.plugin_options:
+      outdir = ",".join(ctx.attr.plugin_options) + ":" + outdir
+    args += ["--plugin=protoc-gen-%s=%s" % (lang, plugin.path)]
+    args += ["--%s_out=%s" % (lang, outdir)]
 
   if args:
     ctx.action(
@@ -77,6 +82,7 @@ def _proto_gen_impl(ctx):
         outputs=ctx.outputs.outs,
         arguments=args + import_flags + [s.path for s in srcs],
         executable=ctx.executable.protoc,
+        mnemonic="ProtoCompile",
     )
 
   return struct(
@@ -87,22 +93,24 @@ def _proto_gen_impl(ctx):
       ),
   )
 
-_proto_gen = rule(
+proto_gen = rule(
     attrs = {
         "srcs": attr.label_list(allow_files = True),
         "deps": attr.label_list(providers = ["proto"]),
         "includes": attr.string_list(),
         "protoc": attr.label(
-            cfg = HOST_CFG,
+            cfg = "host",
             executable = True,
             single_file = True,
             mandatory = True,
         ),
-        "grpc_cpp_plugin": attr.label(
-            cfg = HOST_CFG,
+        "plugin": attr.label(
+            cfg = "host",
+            allow_files = True,
             executable = True,
-            single_file = True,
         ),
+        "plugin_language": attr.string(),
+        "plugin_options": attr.string_list(),
         "gen_cc": attr.bool(),
         "gen_py": attr.bool(),
         "outs": attr.output_list(),
@@ -110,6 +118,26 @@ _proto_gen = rule(
     output_to_genfiles = True,
     implementation = _proto_gen_impl,
 )
+"""Generates codes from Protocol Buffers definitions.
+
+This rule helps you to implement Skylark macros specific to the target
+language. You should prefer more specific `cc_proto_library `,
+`py_proto_library` and others unless you are adding such wrapper macros.
+
+Args:
+  srcs: Protocol Buffers definition files (.proto) to run the protocol compiler
+    against.
+  deps: a list of dependency labels; must be other proto libraries.
+  includes: a list of include paths to .proto files.
+  protoc: the label of the protocol compiler to generate the sources.
+  plugin: the label of the protocol compiler plugin to be passed to the protocol
+    compiler.
+  plugin_language: the language of the generated sources
+  plugin_options: a list of options to be passed to the plugin
+  gen_cc: generates C++ sources in addition to the ones from the plugin. 
+  gen_py: generates Python sources in addition to the ones from the plugin.
+  outs: a list of labels of the expected outputs from the protocol compiler.
+"""
 
 def cc_proto_library(
         name,
@@ -155,7 +183,7 @@ def cc_proto_library(
   if internal_bootstrap_hack:
     # For pre-checked-in generated files, we add the internal_bootstrap_hack
     # which will skip the codegen action.
-    _proto_gen(
+    proto_gen(
         name=name + "_genproto",
         srcs=srcs,
         deps=[s + "_genproto" for s in deps],
@@ -175,13 +203,14 @@ def cc_proto_library(
 
   outs = _CcOuts(srcs, use_grpc_plugin)
 
-  _proto_gen(
+  proto_gen(
       name=name + "_genproto",
       srcs=srcs,
       deps=[s + "_genproto" for s in deps],
       includes=includes,
       protoc=protoc,
-      grpc_cpp_plugin=grpc_cpp_plugin,
+      plugin=grpc_cpp_plugin,
+      plugin_language="grpc",
       gen_cc=1,
       outs=outs,
       visibility=["//visibility:public"],
@@ -224,6 +253,36 @@ def internal_gen_well_known_protos_java(srcs):
   )
 
 
+def internal_copied_filegroup(name, srcs, strip_prefix, dest, **kwargs):
+  """Macro to copy files to a different directory and then create a filegroup.
+
+  This is used by the //:protobuf_python py_proto_library target to work around
+  an issue caused by Python source files that are part of the same Python
+  package being in separate directories.
+
+  Args:
+    srcs: The source files to copy and add to the filegroup.
+    strip_prefix: Path to the root of the files to copy.
+    dest: The directory to copy the source files into.
+    **kwargs: extra arguments that will be passesd to the filegroup.
+  """
+  outs = [_RelativeOutputPath(s, strip_prefix, dest) for s in srcs]
+
+  native.genrule(
+      name = name + "_genrule",
+      srcs = srcs,
+      outs = outs,
+      cmd = " && ".join(
+          ["cp $(location %s) $(location %s)" %
+           (s, _RelativeOutputPath(s, strip_prefix, dest)) for s in srcs]),
+  )
+
+  native.filegroup(
+      name = name,
+      srcs = outs,
+      **kwargs)
+
+
 def py_proto_library(
         name,
         srcs=[],
@@ -261,7 +320,7 @@ def py_proto_library(
   if include != None:
     includes = [include]
 
-  _proto_gen(
+  proto_gen(
       name=name + "_genproto",
       srcs=srcs,
       deps=[s + "_genproto" for s in deps],

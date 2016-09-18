@@ -94,20 +94,22 @@ Generate(io::Printer* printer) {
   if (descriptor_->extension_range_count() > 0) {
     printer->Print(
       "public static final class Builder extends\n"
-      "    com.google.protobuf.GeneratedMessage.ExtendableBuilder<\n"
+      "    com.google.protobuf.GeneratedMessage$ver$.ExtendableBuilder<\n"
       "      $classname$, Builder> implements\n"
       "    $extra_interfaces$\n"
       "    $classname$OrBuilder {\n",
       "classname", name_resolver_->GetImmutableClassName(descriptor_),
-      "extra_interfaces", ExtraBuilderInterfaces(descriptor_));
+      "extra_interfaces", ExtraBuilderInterfaces(descriptor_),
+      "ver", GeneratedCodeVersionSuffix());
   } else {
     printer->Print(
       "public static final class Builder extends\n"
-      "    com.google.protobuf.GeneratedMessage.Builder<Builder> implements\n"
+      "    com.google.protobuf.GeneratedMessage$ver$.Builder<Builder> implements\n"
       "    $extra_interfaces$\n"
       "    $classname$OrBuilder {\n",
       "classname", name_resolver_->GetImmutableClassName(descriptor_),
-      "extra_interfaces", ExtraBuilderInterfaces(descriptor_));
+      "extra_interfaces", ExtraBuilderInterfaces(descriptor_),
+      "ver", GeneratedCodeVersionSuffix());
   }
   printer->Indent();
 
@@ -179,6 +181,18 @@ Generate(io::Printer* printer) {
       "public final Builder mergeUnknownFields(\n"
       "    final com.google.protobuf.UnknownFieldSet unknownFields) {\n"
       "  return this;\n"
+      "}\n"
+      "\n");
+  } else {
+    printer->Print(
+      "public final Builder setUnknownFields(\n"
+      "    final com.google.protobuf.UnknownFieldSet unknownFields) {\n"
+      "  return super.setUnknownFields(unknownFields);\n"
+      "}\n"
+      "\n"
+      "public final Builder mergeUnknownFields(\n"
+      "    final com.google.protobuf.UnknownFieldSet unknownFields) {\n"
+      "  return super.mergeUnknownFields(unknownFields);\n"
       "}\n"
       "\n");
   }
@@ -268,7 +282,7 @@ GenerateDescriptorMethods(io::Printer* printer) {
         "}\n");
   }
   printer->Print(
-    "protected com.google.protobuf.GeneratedMessage.FieldAccessorTable\n"
+    "protected com.google.protobuf.GeneratedMessage$ver$.FieldAccessorTable\n"
     "    internalGetFieldAccessorTable() {\n"
     "  return $fileclass$.internal_$identifier$_fieldAccessorTable\n"
     "      .ensureFieldAccessorsInitialized(\n"
@@ -277,7 +291,8 @@ GenerateDescriptorMethods(io::Printer* printer) {
     "\n",
     "classname", name_resolver_->GetImmutableClassName(descriptor_),
     "fileclass", name_resolver_->GetImmutableClassName(descriptor_->file()),
-    "identifier", UniqueFileScopeIdentifier(descriptor_));
+    "identifier", UniqueFileScopeIdentifier(descriptor_),
+    "ver", GeneratedCodeVersionSuffix());
 }
 
 // ===================================================================
@@ -294,15 +309,18 @@ GenerateCommonBuilderMethods(io::Printer* printer) {
 
   printer->Print(
     "private Builder(\n"
-    "    com.google.protobuf.GeneratedMessage.BuilderParent parent) {\n"
+    "    com.google.protobuf.GeneratedMessage$ver$.BuilderParent parent) {\n"
     "  super(parent);\n"
     "  maybeForceBuilderInitialization();\n"
     "}\n",
-    "classname", name_resolver_->GetImmutableClassName(descriptor_));
+    "classname", name_resolver_->GetImmutableClassName(descriptor_),
+    "ver", GeneratedCodeVersionSuffix());
 
   printer->Print(
     "private void maybeForceBuilderInitialization() {\n"
-    "  if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {\n");
+    "  if (com.google.protobuf.GeneratedMessage$ver$\n"
+    "          .alwaysUseFieldBuilders) {\n",
+    "ver", GeneratedCodeVersionSuffix());
 
   printer->Indent();
   printer->Indent();
@@ -438,6 +456,62 @@ GenerateCommonBuilderMethods(io::Printer* printer) {
     "\n",
     "classname", name_resolver_->GetImmutableClassName(descriptor_));
 
+  printer->Print(
+    "public Builder clone() {\n"
+    "  return (Builder) super.clone();\n"
+    "}\n"
+    "public Builder setField(\n"
+    "    com.google.protobuf.Descriptors.FieldDescriptor field,\n"
+    "    Object value) {\n"
+    "  return (Builder) super.setField(field, value);\n"
+    "}\n"
+    "public Builder clearField(\n"
+    "    com.google.protobuf.Descriptors.FieldDescriptor field) {\n"
+    "  return (Builder) super.clearField(field);\n"
+    "}\n"
+    "public Builder clearOneof(\n"
+    "    com.google.protobuf.Descriptors.OneofDescriptor oneof) {\n"
+    "  return (Builder) super.clearOneof(oneof);\n"
+    "}\n"
+    "public Builder setRepeatedField(\n"
+    "    com.google.protobuf.Descriptors.FieldDescriptor field,\n"
+    "    int index, Object value) {\n"
+    "  return (Builder) super.setRepeatedField(field, index, value);\n"
+    "}\n"
+    "public Builder addRepeatedField(\n"
+    "    com.google.protobuf.Descriptors.FieldDescriptor field,\n"
+    "    Object value) {\n"
+    "  return (Builder) super.addRepeatedField(field, value);\n"
+    "}\n");
+
+  if (descriptor_->extension_range_count() > 0) {
+    printer->Print(
+      "public <Type> Builder setExtension(\n"
+      "    com.google.protobuf.GeneratedMessage.GeneratedExtension<\n"
+      "        $classname$, Type> extension,\n"
+      "    Type value) {\n"
+      "  return (Builder) super.setExtension(extension, value);\n"
+      "}\n"
+      "public <Type> Builder setExtension(\n"
+      "    com.google.protobuf.GeneratedMessage.GeneratedExtension<\n"
+      "        $classname$, java.util.List<Type>> extension,\n"
+      "    int index, Type value) {\n"
+      "  return (Builder) super.setExtension(extension, index, value);\n"
+      "}\n"
+      "public <Type> Builder addExtension(\n"
+      "    com.google.protobuf.GeneratedMessage.GeneratedExtension<\n"
+      "        $classname$, java.util.List<Type>> extension,\n"
+      "    Type value) {\n"
+      "  return (Builder) super.addExtension(extension, value);\n"
+      "}\n"
+      "public <Type> Builder clearExtension(\n"
+      "    com.google.protobuf.GeneratedMessage.GeneratedExtension<\n"
+      "        $classname$, ?> extension) {\n"
+      "  return (Builder) super.clearExtension(extension);\n"
+      "}\n",
+      "classname", name_resolver_->GetImmutableClassName(descriptor_));
+  }
+
   // -----------------------------------------------------------------
 
   if (context_->HasGeneratedMethods(descriptor_)) {
@@ -522,6 +596,7 @@ GenerateCommonBuilderMethods(io::Printer* printer) {
       "  return this;\n"
       "}\n"
       "\n");
+
   }
 }
 

@@ -10,7 +10,6 @@ using scg = global::System.Collections.Generic;
 namespace Google.Protobuf.WellKnownTypes {
 
   /// <summary>Holder for reflection information generated from google/protobuf/source_context.proto</summary>
-  [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
   public static partial class SourceContextReflection {
 
     #region Descriptor
@@ -42,29 +41,34 @@ namespace Google.Protobuf.WellKnownTypes {
   ///  `SourceContext` represents information about the source of a
   ///  protobuf element, like the file in which it is defined.
   /// </summary>
-  [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
   public sealed partial class SourceContext : pb::IMessage<SourceContext> {
     private static readonly pb::MessageParser<SourceContext> _parser = new pb::MessageParser<SourceContext>(() => new SourceContext());
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<SourceContext> Parser { get { return _parser; } }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
       get { return global::Google.Protobuf.WellKnownTypes.SourceContextReflection.Descriptor.MessageTypes[0]; }
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     pbr::MessageDescriptor pb::IMessage.Descriptor {
       get { return Descriptor; }
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public SourceContext() {
       OnConstruction();
     }
 
     partial void OnConstruction();
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public SourceContext(SourceContext other) : this() {
       fileName_ = other.fileName_;
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public SourceContext Clone() {
       return new SourceContext(this);
     }
@@ -74,8 +78,9 @@ namespace Google.Protobuf.WellKnownTypes {
     private string fileName_ = "";
     /// <summary>
     ///  The path-qualified name of the .proto file that contained the associated
-    ///  protobuf element.  For example: `"google/protobuf/source.proto"`.
+    ///  protobuf element.  For example: `"google/protobuf/source_context.proto"`.
     /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public string FileName {
       get { return fileName_; }
       set {
@@ -83,10 +88,12 @@ namespace Google.Protobuf.WellKnownTypes {
       }
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as SourceContext);
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public bool Equals(SourceContext other) {
       if (ReferenceEquals(other, null)) {
         return false;
@@ -98,16 +105,19 @@ namespace Google.Protobuf.WellKnownTypes {
       return true;
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override int GetHashCode() {
       int hash = 1;
       if (FileName.Length != 0) hash ^= FileName.GetHashCode();
       return hash;
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override string ToString() {
       return pb::JsonFormatter.ToDiagnosticString(this);
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
       if (FileName.Length != 0) {
         output.WriteRawTag(10);
@@ -115,6 +125,7 @@ namespace Google.Protobuf.WellKnownTypes {
       }
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
       int size = 0;
       if (FileName.Length != 0) {
@@ -123,6 +134,7 @@ namespace Google.Protobuf.WellKnownTypes {
       return size;
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(SourceContext other) {
       if (other == null) {
         return;
@@ -132,6 +144,7 @@ namespace Google.Protobuf.WellKnownTypes {
       }
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(pb::CodedInputStream input) {
       uint tag;
       while ((tag = input.ReadTag()) != 0) {

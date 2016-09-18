@@ -35,15 +35,14 @@ import com.google.protobuf.Timestamp;
 
 import java.math.BigInteger;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.GregorianCalendar;
-import java.util.TimeZone;
 
 /**
  * Utilities to help create/manipulate Timestamp/Duration
+ *
+ * @deprecated Use {@link Durations} and {@link Timestamps} instead.
  */
-public class TimeUtil {
+@Deprecated
+public final class TimeUtil {
   // Timestamp for "0001-01-01T00:00:00Z"
   public static final long TIMESTAMP_SECONDS_MIN = -62135596800L;
 
@@ -53,28 +52,6 @@ public class TimeUtil {
   public static final long DURATION_SECONDS_MAX = 315576000000L;
 
   private static final long NANOS_PER_SECOND = 1000000000;
-  private static final long NANOS_PER_MILLISECOND = 1000000;
-  private static final long NANOS_PER_MICROSECOND = 1000;
-  private static final long MILLIS_PER_SECOND = 1000;
-  private static final long MICROS_PER_SECOND = 1000000;
-
-  private static final ThreadLocal<SimpleDateFormat> timestampFormat =
-      new ThreadLocal<SimpleDateFormat>() {
-        protected SimpleDateFormat initialValue() {
-          return createTimestampFormat();
-        }
-      };
-
-  private static SimpleDateFormat createTimestampFormat() {
-    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
-    GregorianCalendar calendar =
-      new GregorianCalendar(TimeZone.getTimeZone("UTC"));
-    // We use Proleptic Gregorian Calendar (i.e., Gregorian calendar extends
-    // backwards to year one) for timestamp formating.
-    calendar.setGregorianChange(new Date(Long.MIN_VALUE));
-    sdf.setCalendar(calendar);
-    return sdf;
-  }
 
   private TimeUtil() {}
 
@@ -90,27 +67,11 @@ public class TimeUtil {
    * @return The string representation of the given timestamp.
    * @throws IllegalArgumentException if the given timestamp is not in the
    *         valid range.
+   * @deprecated Use {@link Timestamps#toString} instead.
    */
-  public static String toString(Timestamp timestamp)
-    throws IllegalArgumentException {
-    StringBuilder result = new StringBuilder();
-    // Format the seconds part.
-    if (timestamp.getSeconds() < TIMESTAMP_SECONDS_MIN
-        || timestamp.getSeconds() > TIMESTAMP_SECONDS_MAX) {
-      throw new IllegalArgumentException("Timestamp is out of range.");
-    }
-    Date date = new Date(timestamp.getSeconds() * MILLIS_PER_SECOND);
-    result.append(timestampFormat.get().format(date));
-    // Format the nanos part.
-    if (timestamp.getNanos() < 0 || timestamp.getNanos() >= NANOS_PER_SECOND) {
-      throw new IllegalArgumentException("Timestamp has invalid nanos value.");
-    }
-    if (timestamp.getNanos() != 0) {
-      result.append(".");
-      result.append(formatNanos(timestamp.getNanos()));
-    }
-    result.append("Z");
-    return result.toString();
+  @Deprecated
+  public static String toString(Timestamp timestamp) {
+    return Timestamps.toString(timestamp);
   }
 
   /**
@@ -123,59 +84,11 @@ public class TimeUtil {
    *
    * @return A Timestamp parsed from the string.
    * @throws ParseException if parsing fails.
+   * @deprecated Use {@link Timestamps#parse} instead.
    */
-
+  @Deprecated
   public static Timestamp parseTimestamp(String value) throws ParseException {
-    int dayOffset = value.indexOf('T');
-    if (dayOffset == -1) {
-      throw new ParseException(
-        "Failed to parse timestamp: invalid timestamp \"" + value + "\"", 0);
-    }
-    int timezoneOffsetPosition = value.indexOf('Z', dayOffset);
-    if (timezoneOffsetPosition == -1) {
-      timezoneOffsetPosition = value.indexOf('+', dayOffset);
-    }
-    if (timezoneOffsetPosition == -1) {
-      timezoneOffsetPosition = value.indexOf('-', dayOffset);
-    }
-    if (timezoneOffsetPosition == -1) {
-      throw new ParseException(
-        "Failed to parse timestamp: missing valid timezone offset.", 0);
-    }
-    // Parse seconds and nanos.
-    String timeValue = value.substring(0, timezoneOffsetPosition);
-    String secondValue = timeValue;
-    String nanoValue = "";
-    int pointPosition = timeValue.indexOf('.');
-    if (pointPosition != -1) {
-      secondValue = timeValue.substring(0, pointPosition);
-      nanoValue = timeValue.substring(pointPosition + 1);
-    }
-    Date date = timestampFormat.get().parse(secondValue);
-    long seconds = date.getTime() / MILLIS_PER_SECOND;
-    int nanos = nanoValue.isEmpty() ? 0 : parseNanos(nanoValue);
-    // Parse timezone offsets.
-    if (value.charAt(timezoneOffsetPosition) == 'Z') {
-      if (value.length() != timezoneOffsetPosition + 1) {
-        throw new ParseException(
-          "Failed to parse timestamp: invalid trailing data \""
-          + value.substring(timezoneOffsetPosition) + "\"", 0);
-      }
-    } else {
-      String offsetValue = value.substring(timezoneOffsetPosition + 1);
-      long offset = parseTimezoneOffset(offsetValue);
-      if (value.charAt(timezoneOffsetPosition) == '+') {
-        seconds -= offset;
-      } else {
-        seconds += offset;
-      }
-    }
-    try {
-      return normalizedTimestamp(seconds, nanos);
-    } catch (IllegalArgumentException e) {
-      throw new ParseException(
-        "Failed to parse timestmap: timestamp is out of range.", 0);
-    }
+    return Timestamps.parse(value);
   }
 
   /**
@@ -188,33 +101,11 @@ public class TimeUtil {
    * @return The string representation of the given duration.
    * @throws IllegalArgumentException if the given duration is not in the valid
    *         range.
+   * @deprecated Use {@link Durations#toString} instead.
    */
-  public static String toString(Duration duration)
-    throws IllegalArgumentException {
-    if (duration.getSeconds() < DURATION_SECONDS_MIN
-      || duration.getSeconds() > DURATION_SECONDS_MAX) {
-      throw new IllegalArgumentException("Duration is out of valid range.");
-    }
-    StringBuilder result = new StringBuilder();
-    long seconds = duration.getSeconds();
-    int nanos = duration.getNanos();
-    if (seconds < 0 || nanos < 0) {
-      if (seconds > 0 || nanos > 0) {
-        throw new IllegalArgumentException(
-            "Invalid duration: seconds value and nanos value must have the same"
-            + "sign.");
-      }
-      result.append("-");
-      seconds = -seconds;
-      nanos = -nanos;
-    }
-    result.append(seconds);
-    if (nanos != 0) {
-      result.append(".");
-      result.append(formatNanos(nanos));
-    }
-    result.append("s");
-    return result.toString();
+  @Deprecated
+  public static String toString(Duration duration) {
+    return Durations.toString(duration);
   }
 
   /**
@@ -222,54 +113,31 @@ public class TimeUtil {
    *
    * @return A Duration parsed from the string.
    * @throws ParseException if parsing fails.
+   * @deprecated Use {@link Durations#parse} instead.
    */
+  @Deprecated
   public static Duration parseDuration(String value) throws ParseException {
-    // Must ended with "s".
-    if (value.isEmpty() || value.charAt(value.length() - 1) != 's') {
-      throw new ParseException("Invalid duration string: " + value, 0);
-    }
-    boolean negative = false;
-    if (value.charAt(0) == '-') {
-      negative = true;
-      value = value.substring(1);
-    }
-    String secondValue = value.substring(0, value.length() - 1);
-    String nanoValue = "";
-    int pointPosition = secondValue.indexOf('.');
-    if (pointPosition != -1) {
-      nanoValue = secondValue.substring(pointPosition + 1);
-      secondValue = secondValue.substring(0, pointPosition);
-    }
-    long seconds = Long.parseLong(secondValue);
-    int nanos = nanoValue.isEmpty() ? 0 : parseNanos(nanoValue);
-    if (seconds < 0) {
-      throw new ParseException("Invalid duration string: " + value, 0);
-    }
-    if (negative) {
-      seconds = -seconds;
-      nanos = -nanos;
-    }
-    try {
-      return normalizedDuration(seconds, nanos);
-    } catch (IllegalArgumentException e) {
-      throw new ParseException("Duration value is out of range.", 0);
-    }
+    return Durations.parse(value);
   }
 
   /**
    * Create a Timestamp from the number of milliseconds elapsed from the epoch.
+   *
+   * @deprecated Use {@link Timestamps#fromMillis} instead.
    */
+  @Deprecated
   public static Timestamp createTimestampFromMillis(long milliseconds) {
-    return normalizedTimestamp(milliseconds / MILLIS_PER_SECOND,
-      (int) (milliseconds % MILLIS_PER_SECOND * NANOS_PER_MILLISECOND));
+    return Timestamps.fromMillis(milliseconds);
   }
 
   /**
    * Create a Duration from the number of milliseconds.
+   *
+   * @deprecated Use {@link Durations#fromMillis} instead.
    */
+  @Deprecated
   public static Duration createDurationFromMillis(long milliseconds) {
-    return normalizedDuration(milliseconds / MILLIS_PER_SECOND,
-      (int) (milliseconds % MILLIS_PER_SECOND * NANOS_PER_MILLISECOND));
+    return Durations.fromMillis(milliseconds);
   }
 
   /**
@@ -278,36 +146,44 @@ public class TimeUtil {
    * <p>The result will be rounded down to the nearest millisecond. E.g., if the
    * timestamp represents "1969-12-31T23:59:59.999999999Z", it will be rounded
    * to -1 millisecond.
+   *
+   * @deprecated Use {@link Timestamps#toMillis} instead.
    */
+  @Deprecated
   public static long toMillis(Timestamp timestamp) {
-    return timestamp.getSeconds() * MILLIS_PER_SECOND + timestamp.getNanos()
-      / NANOS_PER_MILLISECOND;
+    return Timestamps.toMillis(timestamp);
   }
 
   /**
    * Convert a Duration to the number of milliseconds.The result will be
    * rounded towards 0 to the nearest millisecond. E.g., if the duration
    * represents -1 nanosecond, it will be rounded to 0.
+   *
+   * @deprecated Use {@link Durations#toMillis} instead.
    */
+  @Deprecated
   public static long toMillis(Duration duration) {
-    return duration.getSeconds() * MILLIS_PER_SECOND + duration.getNanos()
-      / NANOS_PER_MILLISECOND;
+    return Durations.toMillis(duration);
   }
 
   /**
    * Create a Timestamp from the number of microseconds elapsed from the epoch.
+   *
+   * @deprecated Use {@link Timestamps#fromMicros} instead.
    */
+  @Deprecated
   public static Timestamp createTimestampFromMicros(long microseconds) {
-    return normalizedTimestamp(microseconds / MICROS_PER_SECOND,
-      (int) (microseconds % MICROS_PER_SECOND * NANOS_PER_MICROSECOND));
+    return Timestamps.fromMicros(microseconds);
   }
 
   /**
    * Create a Duration from the number of microseconds.
+   *
+   * @deprecated Use {@link Durations#fromMicros} instead.
    */
+  @Deprecated
   public static Duration createDurationFromMicros(long microseconds) {
-    return normalizedDuration(microseconds / MICROS_PER_SECOND,
-      (int) (microseconds % MICROS_PER_SECOND * NANOS_PER_MICROSECOND));
+    return Durations.fromMicros(microseconds);
   }
 
   /**
@@ -316,111 +192,141 @@ public class TimeUtil {
    * <p>The result will be rounded down to the nearest microsecond. E.g., if the
    * timestamp represents "1969-12-31T23:59:59.999999999Z", it will be rounded
    * to -1 millisecond.
+   *
+   * @deprecated Use {@link Timestamps#toMicros} instead.
    */
+  @Deprecated
   public static long toMicros(Timestamp timestamp) {
-    return timestamp.getSeconds() * MICROS_PER_SECOND + timestamp.getNanos()
-      / NANOS_PER_MICROSECOND;
+    return Timestamps.toMicros(timestamp);
   }
 
   /**
    * Convert a Duration to the number of microseconds.The result will be
    * rounded towards 0 to the nearest microseconds. E.g., if the duration
    * represents -1 nanosecond, it will be rounded to 0.
+   *
+   * @deprecated Use {@link Durations#toMicros} instead.
    */
+  @Deprecated
   public static long toMicros(Duration duration) {
-    return duration.getSeconds() * MICROS_PER_SECOND + duration.getNanos()
-      / NANOS_PER_MICROSECOND;
+    return Durations.toMicros(duration);
   }
 
   /**
    * Create a Timestamp from the number of nanoseconds elapsed from the epoch.
+   *
+   * @deprecated Use {@link Timestamps#fromNanos} instead.
    */
+  @Deprecated
   public static Timestamp createTimestampFromNanos(long nanoseconds) {
-    return normalizedTimestamp(nanoseconds / NANOS_PER_SECOND,
-      (int) (nanoseconds % NANOS_PER_SECOND));
+    return Timestamps.fromNanos(nanoseconds);
   }
 
   /**
    * Create a Duration from the number of nanoseconds.
+   *
+   * @deprecated Use {@link Durations#fromNanos} instead.
    */
+  @Deprecated
   public static Duration createDurationFromNanos(long nanoseconds) {
-    return normalizedDuration(nanoseconds / NANOS_PER_SECOND,
-      (int) (nanoseconds % NANOS_PER_SECOND));
+    return Durations.fromNanos(nanoseconds);
   }
 
   /**
    * Convert a Timestamp to the number of nanoseconds elapsed from the epoch.
+   *
+   * @deprecated Use {@link Timestamps#toNanos} instead.
    */
+  @Deprecated
   public static long toNanos(Timestamp timestamp) {
-    return timestamp.getSeconds() * NANOS_PER_SECOND + timestamp.getNanos();
+    return Timestamps.toNanos(timestamp);
   }
 
   /**
    * Convert a Duration to the number of nanoseconds.
+   *
+   * @deprecated Use {@link Durations#toNanos} instead.
    */
+  @Deprecated
   public static long toNanos(Duration duration) {
-    return duration.getSeconds() * NANOS_PER_SECOND + duration.getNanos();
+    return Durations.toNanos(duration);
   }
 
   /**
    * Get the current time.
+   *
+   * @deprecated Use {@code Timestamps.fromMillis(System.currentTimeMillis())} instead.
    */
+  @Deprecated
   public static Timestamp getCurrentTime() {
-    return createTimestampFromMillis(System.currentTimeMillis());
+    return Timestamps.fromMillis(System.currentTimeMillis());
   }
 
   /**
    * Get the epoch.
+   *
+   * @deprecated Use {@code Timestamps.fromMillis(0)} instead.
    */
+  @Deprecated
   public static Timestamp getEpoch() {
     return Timestamp.getDefaultInstance();
   }
 
   /**
    * Calculate the difference between two timestamps.
+   *
+   * @deprecated Use {@link Timestamps#between} instead.
    */
+  @Deprecated
   public static Duration distance(Timestamp from, Timestamp to) {
-    return normalizedDuration(to.getSeconds() - from.getSeconds(),
-      to.getNanos() - from.getNanos());
+    return Timestamps.between(from, to);
   }
 
   /**
    * Add a duration to a timestamp.
+   *
+   * @deprecated Use {@link Timestamps#add} instead.
    */
+  @Deprecated
   public static Timestamp add(Timestamp start, Duration length) {
-    return normalizedTimestamp(start.getSeconds() + length.getSeconds(),
-      start.getNanos() + length.getNanos());
+    return Timestamps.add(start, length);
   }
 
   /**
    * Subtract a duration from a timestamp.
+   *
+   * @deprecated Use {@link Timestamps#subtract} instead.
    */
+  @Deprecated
   public static Timestamp subtract(Timestamp start, Duration length) {
-    return normalizedTimestamp(start.getSeconds() - length.getSeconds(),
-      start.getNanos() - length.getNanos());
+    return Timestamps.subtract(start, length);
   }
 
   /**
    * Add two durations.
+   *
+   * @deprecated Use {@link Durations#add} instead.
    */
+  @Deprecated
   public static Duration add(Duration d1, Duration d2) {
-    return normalizedDuration(d1.getSeconds() + d2.getSeconds(),
-      d1.getNanos() + d2.getNanos());
+    return Durations.add(d1, d2);
   }
 
   /**
    * Subtract a duration from another.
+   *
+   * @deprecated Use {@link Durations#subtract} instead.
    */
+  @Deprecated
   public static Duration subtract(Duration d1, Duration d2) {
-    return normalizedDuration(d1.getSeconds() - d2.getSeconds(),
-      d1.getNanos() - d2.getNanos());
+    return Durations.subtract(d1, d2);
   }
 
   // Multiplications and divisions.
 
+  // TODO(kak): Delete this.
   public static Duration multiply(Duration duration, double times) {
-    double result = duration.getSeconds() * times + duration.getNanos() * times
-      / 1000000000.0;
+    double result = duration.getSeconds() * times + duration.getNanos() * times / 1000000000.0;
     if (result < Long.MIN_VALUE || result > Long.MAX_VALUE) {
       throw new IllegalArgumentException("Result is out of valid range.");
     }
@@ -428,50 +334,49 @@ public class TimeUtil {
     int nanos = (int) ((result - seconds) * 1000000000);
     return normalizedDuration(seconds, nanos);
   }
-  
+
+  // TODO(kak): Delete this.
   public static Duration divide(Duration duration, double value) {
     return multiply(duration, 1.0 / value);
   }
-  
+
+  // TODO(kak): Delete this.
   public static Duration multiply(Duration duration, long times) {
-    return createDurationFromBigInteger(
-      toBigInteger(duration).multiply(toBigInteger(times)));
+    return createDurationFromBigInteger(toBigInteger(duration).multiply(toBigInteger(times)));
   }
-  
+
+  // TODO(kak): Delete this.
   public static Duration divide(Duration duration, long times) {
-    return createDurationFromBigInteger(
-      toBigInteger(duration).divide(toBigInteger(times)));
+    return createDurationFromBigInteger(toBigInteger(duration).divide(toBigInteger(times)));
   }
-  
+
+  // TODO(kak): Delete this.
   public static long divide(Duration d1, Duration d2) {
     return toBigInteger(d1).divide(toBigInteger(d2)).longValue();
   }
-  
+
+  // TODO(kak): Delete this.
   public static Duration remainder(Duration d1, Duration d2) {
-    return createDurationFromBigInteger(
-      toBigInteger(d1).remainder(toBigInteger(d2)));
+    return createDurationFromBigInteger(toBigInteger(d1).remainder(toBigInteger(d2)));
   }
-  
+
   private static final BigInteger NANOS_PER_SECOND_BIG_INTEGER =
       new BigInteger(String.valueOf(NANOS_PER_SECOND));
-  
+
   private static BigInteger toBigInteger(Duration duration) {
     return toBigInteger(duration.getSeconds())
-      .multiply(NANOS_PER_SECOND_BIG_INTEGER)
-      .add(toBigInteger(duration.getNanos()));
+        .multiply(NANOS_PER_SECOND_BIG_INTEGER)
+        .add(toBigInteger(duration.getNanos()));
   }
-  
+
   private static BigInteger toBigInteger(long value) {
     return new BigInteger(String.valueOf(value));
   }
-  
+
   private static Duration createDurationFromBigInteger(BigInteger value) {
-    long seconds = value.divide(
-      new BigInteger(String.valueOf(NANOS_PER_SECOND))).longValue();
-    int nanos = value.remainder(
-      new BigInteger(String.valueOf(NANOS_PER_SECOND))).intValue();
+    long seconds = value.divide(new BigInteger(String.valueOf(NANOS_PER_SECOND))).longValue();
+    int nanos = value.remainder(new BigInteger(String.valueOf(NANOS_PER_SECOND))).intValue();
     return normalizedDuration(seconds, nanos);
-    
   }
 
   private static Duration normalizedDuration(long seconds, int nanos) {
@@ -491,59 +396,5 @@ public class TimeUtil {
       throw new IllegalArgumentException("Duration is out of valid range.");
     }
     return Duration.newBuilder().setSeconds(seconds).setNanos(nanos).build();
-  }
-
-  private static Timestamp normalizedTimestamp(long seconds, int nanos) {
-    if (nanos <= -NANOS_PER_SECOND || nanos >= NANOS_PER_SECOND) {
-      seconds += nanos / NANOS_PER_SECOND;
-      nanos %= NANOS_PER_SECOND;
-    }
-    if (nanos < 0) {
-      nanos += NANOS_PER_SECOND;
-      seconds -= 1;
-    }
-    if (seconds < TIMESTAMP_SECONDS_MIN || seconds > TIMESTAMP_SECONDS_MAX) {
-      throw new IllegalArgumentException("Timestamp is out of valid range.");
-    }
-    return Timestamp.newBuilder().setSeconds(seconds).setNanos(nanos).build();
-  }
-
-  /**
-   * Format the nano part of a timestamp or a duration.
-   */
-  private static String formatNanos(int nanos) {
-    assert nanos >= 1 && nanos <= 999999999;
-    // Determine whether to use 3, 6, or 9 digits for the nano part.
-    if (nanos % NANOS_PER_MILLISECOND == 0) {
-      return String.format("%1$03d", nanos / NANOS_PER_MILLISECOND);
-    } else if (nanos % NANOS_PER_MICROSECOND == 0) {
-      return String.format("%1$06d", nanos / NANOS_PER_MICROSECOND);
-    } else {
-      return String.format("%1$09d", nanos);
-    }
-  }
-
-  private static int parseNanos(String value) throws ParseException {
-    int result = 0;
-    for (int i = 0; i < 9; ++i) {
-      result = result * 10;
-      if (i < value.length()) {
-        if (value.charAt(i) < '0' || value.charAt(i) > '9') {
-          throw new ParseException("Invalid nanosecnds.", 0);
-        }
-        result += value.charAt(i) - '0';
-      }
-    }
-    return result;
-  }
-
-  private static long parseTimezoneOffset(String value) throws ParseException {
-    int pos = value.indexOf(':');
-    if (pos == -1) {
-      throw new ParseException("Invalid offset value: " + value, 0);
-    }
-    String hours = value.substring(0, pos);
-    String minutes = value.substring(pos + 1);
-    return (Long.parseLong(hours) * 60 + Long.parseLong(minutes)) * 60;
   }
 }

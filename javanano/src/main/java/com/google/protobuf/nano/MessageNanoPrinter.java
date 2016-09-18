@@ -156,7 +156,7 @@ public final class MessageNanoPrinter {
                     } catch (NoSuchMethodException e) {
                         continue;
                     }
-                    // If hazzer does't exist or returns false, no need to continue
+                    // If hazzer doesn't exist or returns false, no need to continue
                     if (!(Boolean) hazzer.invoke(object)) {
                         continue;
                     }

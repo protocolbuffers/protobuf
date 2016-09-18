@@ -93,6 +93,12 @@ static void CopyWorker(const void *key, const void *value, void *context) {
   [copied release];
 }
 
+// Direct access is use for speed, to avoid even internally declaring things
+// read/write, etc. The warning is enabled in the project to ensure code calling
+// protos can turn on -Wdirect-ivar-access without issues.
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdirect-ivar-access"
+
 - (id)copyWithZone:(NSZone *)zone {
   GPBUnknownFieldSet *result = [[GPBUnknownFieldSet allocWithZone:zone] init];
   if (fields_) {
@@ -148,7 +154,7 @@ static void CopyWorker(const void *key, const void *value, void *context) {
 }
 
 - (NSArray *)sortedFields {
-  if (!fields_) return nil;
+  if (!fields_) return [NSArray array];
   size_t count = CFDictionaryGetCount(fields_);
   ssize_t keys[count];
   GPBUnknownField *values[count];
@@ -353,6 +359,7 @@ static void GPBUnknownFieldSetMergeUnknownFields(const void *key,
 }
 
 - (BOOL)mergeFieldFrom:(int32_t)tag input:(GPBCodedInputStream *)input {
+  NSAssert(GPBWireFormatIsValidTag(tag), @"Got passed an invalid tag");
   int32_t number = GPBWireFormatGetTagFieldNumber(tag);
   GPBCodedInputStreamState *state = &input->state_;
   switch (GPBWireFormatGetTagWireType(tag)) {
@@ -419,5 +426,7 @@ static void GPBUnknownFieldSetMergeUnknownFields(const void *key,
     tags[i] = (int32_t)keys[i];
   }
 }
+
+#pragma clang diagnostic pop
 
 @end

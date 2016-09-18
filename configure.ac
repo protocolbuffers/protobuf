@@ -4,15 +4,20 @@
 AC_PREREQ(2.59)
 
 # Note:  If you change the version, you must also update it in:
-# * java/pom.xml
-# * python/setup.py
+# * Protobuf.podspec
+# * csharp/Google.Protobuf.Tools.nuspec
+# * csharp/src/*/AssemblyInfo.cs
+# * csharp/src/Google.Protobuf/Google.Protobuf.nuspec
+# * java/*/pom.xml
+# * python/google/protobuf/__init__.py
+# * protoc-artifacts/pom.xml
 # * src/google/protobuf/stubs/common.h
 # * src/Makefile.am (Update -version-info for LDFLAGS if needed)
 #
 # In the SVN trunk, the version should always be the next anticipated release
 # version with the "-pre" suffix.  (We used to use "-SNAPSHOT" but this pushed
 # the size of one file name in the dist tarfile over the 99-char limit.)
-AC_INIT([Protocol Buffers],[3.0.0-beta-2],[protobuf@googlegroups.com],[protobuf])
+AC_INIT([Protocol Buffers],[3.0.2],[protobuf@googlegroups.com],[protobuf])
 
 AM_MAINTAINER_MODE([enable])
 

@@ -120,21 +120,21 @@ final class FieldSet<FieldDescriptorType extends
   public boolean isImmutable() {
     return isImmutable;
   }
-  
+
   @Override
   public boolean equals(Object o) {
     if (this == o) {
       return true;
     }
-    
+
     if (!(o instanceof FieldSet)) {
       return false;
     }
-    
+
     FieldSet<?> other = (FieldSet<?>) o;
-    return other.fields.equals(other.fields);
+    return fields.equals(other.fields);
   }
-  
+
   @Override
   public int hashCode() {
     return fields.hashCode();
@@ -493,7 +493,7 @@ final class FieldSet<FieldDescriptorType extends
   }
 
   /**
-   * Like {@link Message.Builder#mergeFrom(Message)}, but merges from another 
+   * Like {@link Message.Builder#mergeFrom(Message)}, but merges from another
    * {@link FieldSet}.
    */
   public void mergeFrom(final FieldSet<FieldDescriptorType> other) {
@@ -638,10 +638,11 @@ final class FieldSet<FieldDescriptorType extends
    *               {@link Message#getField(Descriptors.FieldDescriptor)} for
    *               this field.
    */
-  private static void writeElement(final CodedOutputStream output,
-                                   final WireFormat.FieldType type,
-                                   final int number,
-                                   final Object value) throws IOException {
+  static void writeElement(
+      final CodedOutputStream output,
+      final WireFormat.FieldType type,
+      final int number,
+      final Object value) throws IOException {
     // Special case for groups, which need a start and end tag; other fields
     // can just use writeTag() and writeFieldNoTag().
     if (type == WireFormat.FieldType.GROUP) {
@@ -804,9 +805,8 @@ final class FieldSet<FieldDescriptorType extends
    *               {@link Message#getField(Descriptors.FieldDescriptor)} for
    *               this field.
    */
-  private static int computeElementSize(
-      final WireFormat.FieldType type,
-      final int number, final Object value) {
+  static int computeElementSize(
+      final WireFormat.FieldType type, final int number, final Object value) {
     int tagSize = CodedOutputStream.computeTagSize(number);
     if (type == WireFormat.FieldType.GROUP) {
       // Only count the end group tag for proto2 messages as for proto1 the end

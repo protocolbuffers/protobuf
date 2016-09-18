@@ -51,6 +51,9 @@ namespace io {
   class ZeroCopyInputStream;
   class ZeroCopyOutputStream;
 }
+namespace internal {
+  class WireFormatLite;
+}
 
 // Interface to light weight protocol messages.
 //
@@ -78,7 +81,7 @@ namespace io {
 class LIBPROTOBUF_EXPORT MessageLite {
  public:
   inline MessageLite() {}
-  virtual ~MessageLite();
+  virtual ~MessageLite() {}
 
   // Basic Operations ------------------------------------------------
 
@@ -249,10 +252,11 @@ class LIBPROTOBUF_EXPORT MessageLite {
   virtual void SerializeWithCachedSizes(
       io::CodedOutputStream* output) const = 0;
 
-  // Like SerializeWithCachedSizes, but writes directly to *target, returning
-  // a pointer to the byte immediately after the last byte written.  "target"
-  // must point at a byte array of at least ByteSize() bytes.
-  virtual uint8* SerializeWithCachedSizesToArray(uint8* target) const;
+  // A version of SerializeWithCachedSizesToArray, below, that does
+  // not guarantee deterministic serialization.
+  virtual uint8* SerializeWithCachedSizesToArray(uint8* target) const {
+    return InternalSerializeWithCachedSizesToArray(false, target);
+  }
 
   // Returns the result of the last call to ByteSize().  An embedded message's
   // size is needed both to serialize it (because embedded messages are
@@ -267,7 +271,22 @@ class LIBPROTOBUF_EXPORT MessageLite {
   // method.)
   virtual int GetCachedSize() const = 0;
 
+  // Functions below here are not part of the public interface.  It isn't
+  // enforced, but they should be treated as private, and will be private
+  // at some future time.  Unfortunately the implementation of the "friend"
+  // keyword in GCC is broken at the moment, but we expect it will be fixed.
+
+  // Like SerializeWithCachedSizes, but writes directly to *target, returning
+  // a pointer to the byte immediately after the last byte written.  "target"
+  // must point at a byte array of at least ByteSize() bytes.  If deterministic
+  // is true then we use deterministic serialization, e.g., map keys are sorted.
+  // FOR INTERNAL USE ONLY!
+  virtual uint8* InternalSerializeWithCachedSizesToArray(bool deterministic,
+                                                         uint8* target) const;
+
  private:
+  friend class internal::WireFormatLite;
+
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(MessageLite);
 };
 

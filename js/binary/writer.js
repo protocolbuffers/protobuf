@@ -717,11 +717,19 @@ jspb.BinaryWriter.prototype.writeBytes = function(field, value) {
 
 /**
  * Writes a message to the buffer.
- * @template MessageType
  * @param {number} field The field number.
  * @param {?MessageType} value The message to write.
- * @param {!jspb.WriterFunction} writerCallback Will be invoked with the value
- *     to write and the writer to write it with.
+ * @param {function(MessageTypeNonNull, !jspb.BinaryWriter)} writerCallback
+ *     Will be invoked with the value to write and the writer to write it with.
+ * @template MessageType
+ * Use go/closure-ttl to declare a non-nullable version of MessageType.  Replace
+ * the null in blah|null with none.  This is necessary because the compiler will
+ * infer MessageType to be nullable if the value parameter is nullable.
+ * @template MessageTypeNonNull :=
+ *     cond(isUnknown(MessageType), unknown(),
+ *       mapunion(MessageType, (X) =>
+ *         cond(eq(X, 'null'), none(), X)))
+ * =:
  */
 jspb.BinaryWriter.prototype.writeMessage = function(
     field, value, writerCallback) {
@@ -735,12 +743,20 @@ jspb.BinaryWriter.prototype.writeMessage = function(
 /**
  * Writes a group message to the buffer.
  *
- * @template MessageType
  * @param {number} field The field number.
  * @param {?MessageType} value The message to write, wrapped with START_GROUP /
  *     END_GROUP tags. Will be a no-op if 'value' is null.
- * @param {!jspb.WriterFunction} writerCallback Will be invoked with the value
- *     to write and the writer to write it with.
+ * @param {function(MessageTypeNonNull, !jspb.BinaryWriter)} writerCallback
+ *     Will be invoked with the value to write and the writer to write it with.
+ * @template MessageType
+ * Use go/closure-ttl to declare a non-nullable version of MessageType.  Replace
+ * the null in blah|null with none.  This is necessary because the compiler will
+ * infer MessageType to be nullable if the value parameter is nullable.
+ * @template MessageTypeNonNull :=
+ *     cond(isUnknown(MessageType), unknown(),
+ *       mapunion(MessageType, (X) =>
+ *         cond(eq(X, 'null'), none(), X)))
+ * =:
  */
 jspb.BinaryWriter.prototype.writeGroup = function(
     field, value, writerCallback) {
@@ -1122,8 +1138,8 @@ jspb.BinaryWriter.prototype.writeRepeatedBytes = function(field, value) {
  * @param {number} field The field number.
  * @param {?Array.<MessageType>} value The array of messages to
  *    write.
- * @param {!jspb.WriterFunction} writerCallback Will be invoked with the value
- *     to write and the writer to write it with.
+ * @param {function(MessageType, !jspb.BinaryWriter)} writerCallback
+ *     Will be invoked with the value to write and the writer to write it with.
  */
 jspb.BinaryWriter.prototype.writeRepeatedMessage = function(
     field, value, writerCallback) {
@@ -1142,8 +1158,8 @@ jspb.BinaryWriter.prototype.writeRepeatedMessage = function(
  * @param {number} field The field number.
  * @param {?Array.<MessageType>} value The array of messages to
  *    write.
- * @param {!jspb.WriterFunction} writerCallback Will be invoked with the value
- *     to write and the writer to write it with.
+ * @param {function(MessageType, !jspb.BinaryWriter)} writerCallback
+ *     Will be invoked with the value to write and the writer to write it with.
  */
 jspb.BinaryWriter.prototype.writeRepeatedGroup = function(
     field, value, writerCallback) {

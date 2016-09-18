@@ -57,6 +57,37 @@ size_t native_slot_size(upb_fieldtype_t type) {
   }
 }
 
+static VALUE value_from_default(const upb_fielddef *field) {
+  switch (upb_fielddef_type(field)) {
+    case UPB_TYPE_FLOAT:   return DBL2NUM(upb_fielddef_defaultfloat(field));
+    case UPB_TYPE_DOUBLE:  return DBL2NUM(upb_fielddef_defaultdouble(field));
+    case UPB_TYPE_BOOL:
+      return upb_fielddef_defaultbool(field) ? Qtrue : Qfalse;
+    case UPB_TYPE_MESSAGE: return Qnil;
+    case UPB_TYPE_ENUM: {
+      const upb_enumdef *enumdef = upb_fielddef_enumsubdef(field);
+      int32_t num = upb_fielddef_defaultint32(field);
+      const char *label = upb_enumdef_iton(enumdef, num);
+      if (label) {
+        return ID2SYM(rb_intern(label));
+      } else {
+        return INT2NUM(num);
+      }
+    }
+    case UPB_TYPE_INT32:   return INT2NUM(upb_fielddef_defaultint32(field));
+    case UPB_TYPE_INT64:   return LL2NUM(upb_fielddef_defaultint64(field));;
+    case UPB_TYPE_UINT32:  return UINT2NUM(upb_fielddef_defaultuint32(field));
+    case UPB_TYPE_UINT64:  return ULL2NUM(upb_fielddef_defaultuint64(field));
+    case UPB_TYPE_STRING:
+    case UPB_TYPE_BYTES: {
+      size_t size;
+      const char *str = upb_fielddef_defaultstr(field, &size);
+      return rb_str_new(str, size);
+    }
+    default: return Qnil;
+  }
+}
+
 static bool is_ruby_num(VALUE value) {
   return (TYPE(value) == T_FLOAT ||
           TYPE(value) == T_FIXNUM ||
@@ -86,25 +117,24 @@ void native_slot_check_int_range_precision(upb_fieldtype_t type, VALUE val) {
   }
 }
 
-void native_slot_validate_string_encoding(upb_fieldtype_t type, VALUE value) {
-  bool bad_encoding = false;
-  rb_encoding* string_encoding = rb_enc_from_index(ENCODING_GET(value));
-  if (type == UPB_TYPE_STRING) {
-    bad_encoding =
-        string_encoding != kRubyStringUtf8Encoding &&
-        string_encoding != kRubyStringASCIIEncoding;
-  } else {
-    bad_encoding =
-        string_encoding != kRubyString8bitEncoding;
+VALUE native_slot_encode_and_freeze_string(upb_fieldtype_t type, VALUE value) {
+  rb_encoding* desired_encoding = (type == UPB_TYPE_STRING) ?
+      kRubyStringUtf8Encoding : kRubyString8bitEncoding;
+  VALUE desired_encoding_value = rb_enc_from_encoding(desired_encoding);
+
+  // Note: this will not duplicate underlying string data unless necessary.
+  value = rb_str_encode(value, desired_encoding_value, 0, Qnil);
+
+  if (type == UPB_TYPE_STRING &&
+      rb_enc_str_coderange(value) == ENC_CODERANGE_BROKEN) {
+    rb_raise(rb_eEncodingError, "String is invalid UTF-8");
   }
-  // Check that encoding is UTF-8 or ASCII (for string fields) or ASCII-8BIT
-  // (for bytes fields).
-  if (bad_encoding) {
-    rb_raise(rb_eTypeError, "Encoding for '%s' fields must be %s (was %s)",
-             (type == UPB_TYPE_STRING) ? "string" : "bytes",
-             (type == UPB_TYPE_STRING) ? "UTF-8 or ASCII" : "ASCII-8BIT",
-             rb_enc_name(string_encoding));
-  }
+
+  // Ensure the data remains valid.  Since we called #encode a moment ago,
+  // this does not freeze the string the user assigned.
+  rb_obj_freeze(value);
+
+  return value;
 }
 
 void native_slot_set(upb_fieldtype_t type, VALUE type_class,
@@ -150,8 +180,8 @@ void native_slot_set_value_and_case(upb_fieldtype_t type, VALUE type_class,
       if (CLASS_OF(value) != rb_cString) {
         rb_raise(rb_eTypeError, "Invalid argument for string field.");
       }
-      native_slot_validate_string_encoding(type, value);
-      DEREF(memory, VALUE) = value;
+
+      DEREF(memory, VALUE) = native_slot_encode_and_freeze_string(type, value);
       break;
     }
     case UPB_TYPE_MESSAGE: {
@@ -537,7 +567,7 @@ VALUE layout_get(MessageLayout* layout,
 
   if (upb_fielddef_containingoneof(field)) {
     if (*oneof_case != upb_fielddef_number(field)) {
-      return Qnil;
+      return value_from_default(field);
     }
     return native_slot_get(upb_fielddef_type(field),
                            field_type_class(field),

@@ -466,7 +466,8 @@ void WireFormatLite::WriteGroupMaybeToArray(int field_number,
   const int size = value.GetCachedSize();
   uint8* target = output->GetDirectBufferForNBytesAndAdvance(size);
   if (target != NULL) {
-    uint8* end = value.SerializeWithCachedSizesToArray(target);
+    uint8* end = value.InternalSerializeWithCachedSizesToArray(
+        output->IsSerializationDeterminstic(), target);
     GOOGLE_DCHECK_EQ(end - target, size);
   } else {
     value.SerializeWithCachedSizes(output);
@@ -482,7 +483,8 @@ void WireFormatLite::WriteMessageMaybeToArray(int field_number,
   output->WriteVarint32(size);
   uint8* target = output->GetDirectBufferForNBytesAndAdvance(size);
   if (target != NULL) {
-    uint8* end = value.SerializeWithCachedSizesToArray(target);
+    uint8* end = value.InternalSerializeWithCachedSizesToArray(
+        output->IsSerializationDeterminstic(), target);
     GOOGLE_DCHECK_EQ(end - target, size);
   } else {
     value.SerializeWithCachedSizes(output);

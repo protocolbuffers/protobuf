@@ -78,7 +78,7 @@ void SetCommonFieldVariables(const FieldDescriptor* descriptor,
   (*variables)["deprecation"] = descriptor->options().deprecated()
       ? " PROTOBUF_DEPRECATED" : "";
   (*variables)["deprecated_attr"] = descriptor->options().deprecated()
-      ? "PROTOBUF_DEPRECATED_ATTR " : "";
+      ? "GOOGLE_PROTOBUF_DEPRECATED_ATTR " : "";
 
   (*variables)["cppget"] = "Get";
 

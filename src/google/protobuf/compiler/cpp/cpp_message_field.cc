@@ -520,8 +520,8 @@ void MessageFieldGenerator::
 GenerateSerializeWithCachedSizesToArray(io::Printer* printer) const {
   printer->Print(variables_,
     "target = ::google::protobuf::internal::WireFormatLite::\n"
-    "  Write$declared_type$NoVirtualToArray(\n"
-    "    $number$, *$non_null_ptr_to_name$, target);\n");
+    "  InternalWrite$declared_type$NoVirtualToArray(\n"
+    "    $number$, *$non_null_ptr_to_name$, false, target);\n");
 }
 
 void MessageFieldGenerator::
@@ -1033,8 +1033,8 @@ GenerateSerializeWithCachedSizesToArray(io::Printer* printer) const {
   printer->Print(variables_,
     "for (unsigned int i = 0, n = this->$name$_size(); i < n; i++) {\n"
     "  target = ::google::protobuf::internal::WireFormatLite::\n"
-    "    Write$declared_type$NoVirtualToArray(\n"
-    "      $number$, this->$name$(i), target);\n"
+    "    InternalWrite$declared_type$NoVirtualToArray(\n"
+    "      $number$, this->$name$(i), false, target);\n"
     "}\n");
 }
 

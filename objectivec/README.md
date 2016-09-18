@@ -123,8 +123,8 @@ never included when the message is encoded.
 
 The Objective C classes/enums can be used from Swift code.
 
-Objective C Generator Options
------------------------------
+Objective C Generator Proto File Options
+----------------------------------------
 
 **objc_class_prefix=\<prefix\>** (no default)
 
@@ -132,6 +132,42 @@ Since Objective C uses a global namespace for all of its classes, there can
 be collisions. This option provides a prefix that will be added to the Enums
 and Objects (for messages) generated from the proto. Convention is to base
 the prefix on the package the proto is in.
+
+Objective C Generator `protoc` Options
+--------------------------------------
+
+When generating Objective C code, `protoc` supports a `--objc_opt` argument; the
+argument is comma-delimited name/value pairs (_key=value,key2=value2_). The
+_keys_ are used to change the behavior during generation. The currently
+supported keys are:
+
+  * `generate_for_named_framework`: The `value` used for this key will be used
+    when generating the `#import` statements in the generated code.  Instead
+    of being plain `#import "some/path/file.pbobjc.h"` lines, they will be
+    framework based, i.e. - `#import <VALUE/file.pbobjc.h>`.
+
+    _NOTE:_ If this is used with `named_framework_to_proto_path_mappings_path`,
+    then this is effectively the _default_ to use for everything that wasn't
+    mapped by the other.
+
+  * `named_framework_to_proto_path_mappings_path`: The `value` used for this key
+    is a path to a file containing the listing of framework names and proto
+    files. The generator uses this to decide if another proto file referenced
+    should use a framework style import vs. a user level import
+    (`#import <FRAMEWORK/file.pbobjc.h>` vs `#import "dir/file.pbobjc.h"`).
+
+    The format of the file is:
+      * An entry is a line of `frameworkName: file.proto, dir/file2.proto`.
+      * Comments start with `#`.
+      * A comment can go on a line after an entry.
+        (i.e. - `frameworkName: file.proto # comment`)
+
+    Any number of files can be listed for a framework, just separate them with
+    commas.
+
+    There can be multiple lines listing the same frameworkName incase it has a
+    lot of proto files included in it; and having multiple lines makes things
+    easier to read.
 
 Contributing
 ------------

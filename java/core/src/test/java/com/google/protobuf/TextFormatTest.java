@@ -522,15 +522,16 @@ public class TextFormatTest extends TestCase {
       "optional_string: \"ueoauaoe\n" +
       "optional_int32: 123");
     assertParseError(
-      "1:2: Extension \"nosuchext\" not found in the ExtensionRegistry.",
+      "1:2: Input contains unknown fields and/or extensions:\n" +
+      "1:2:\tprotobuf_unittest.TestAllTypes.[nosuchext]",
       "[nosuchext]: 123");
     assertParseError(
       "1:20: Extension \"protobuf_unittest.optional_int32_extension\" does " +
         "not extend message type \"protobuf_unittest.TestAllTypes\".",
       "[protobuf_unittest.optional_int32_extension]: 123");
     assertParseError(
-      "1:1: Message type \"protobuf_unittest.TestAllTypes\" has no field " +
-        "named \"nosuchfield\".",
+      "1:1: Input contains unknown fields and/or extensions:\n" +
+      "1:1:\tprotobuf_unittest.TestAllTypes.nosuchfield",
       "nosuchfield: 123");
     assertParseError(
       "1:21: Expected \">\".",

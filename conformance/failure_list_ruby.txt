@@ -58,7 +58,12 @@ JsonInput.EnumFieldNumericValueZero.ProtobufOutput
 JsonInput.EnumFieldUnknownValue.Validator
 JsonInput.FieldMask.JsonOutput
 JsonInput.FieldMask.ProtobufOutput
+JsonInput.FieldNameInLowerCamelCase.Validator
 JsonInput.FieldNameInSnakeCase.JsonOutput
+JsonInput.FieldNameInSnakeCase.ProtobufOutput
+JsonInput.FieldNameWithDoubleUnderscores.JsonOutput
+JsonInput.FieldNameWithDoubleUnderscores.ProtobufOutput
+JsonInput.FieldNameWithDoubleUnderscores.Validator
 JsonInput.FieldNameWithMixedCases.JsonOutput
 JsonInput.FieldNameWithMixedCases.ProtobufOutput
 JsonInput.FieldNameWithMixedCases.Validator
@@ -103,6 +108,14 @@ JsonInput.MessageMapField.JsonOutput
 JsonInput.MessageMapField.ProtobufOutput
 JsonInput.MessageRepeatedField.JsonOutput
 JsonInput.MessageRepeatedField.ProtobufOutput
+JsonInput.OneofZeroDouble.JsonOutput
+JsonInput.OneofZeroDouble.ProtobufOutput
+JsonInput.OneofZeroFloat.JsonOutput
+JsonInput.OneofZeroFloat.ProtobufOutput
+JsonInput.OneofZeroUint32.JsonOutput
+JsonInput.OneofZeroUint32.ProtobufOutput
+JsonInput.OneofZeroUint64.JsonOutput
+JsonInput.OneofZeroUint64.ProtobufOutput
 JsonInput.OptionalBoolWrapper.JsonOutput
 JsonInput.OptionalBoolWrapper.ProtobufOutput
 JsonInput.OptionalBytesWrapper.JsonOutput
@@ -145,6 +158,7 @@ JsonInput.RepeatedUint32Wrapper.JsonOutput
 JsonInput.RepeatedUint32Wrapper.ProtobufOutput
 JsonInput.RepeatedUint64Wrapper.JsonOutput
 JsonInput.RepeatedUint64Wrapper.ProtobufOutput
+JsonInput.StringEndsWithEscapeChar
 JsonInput.StringFieldNotAString
 JsonInput.StringFieldSurrogateInWrongOrder
 JsonInput.StringFieldSurrogatePair.JsonOutput

@@ -457,20 +457,48 @@ class LIBPROTOBUF_EXPORT WireFormatLite {
   INL static uint8* WriteBytesToArray(
     field_number, const string& value, output);
 
-  INL static uint8* WriteGroupToArray(
-      field_number, const MessageLite& value, output);
-  INL static uint8* WriteMessageToArray(
-      field_number, const MessageLite& value, output);
+  // Whether to serialize deterministically (e.g., map keys are
+  // sorted) is a property of a CodedOutputStream, and in the process
+  // of serialization, the "ToArray" variants may be invoked.  But they don't
+  // have a CodedOutputStream available, so they get an additional parameter
+  // telling them whether to serialize deterministically.
+  INL static uint8* InternalWriteGroupToArray(
+      field_number, const MessageLite& value, bool deterministic, output);
+  INL static uint8* InternalWriteMessageToArray(
+      field_number, const MessageLite& value, bool deterministic, output);
 
   // Like above, but de-virtualize the call to SerializeWithCachedSizes().  The
   // pointer must point at an instance of MessageType, *not* a subclass (or
   // the subclass must not override SerializeWithCachedSizes()).
   template<typename MessageType>
+  INL static uint8* InternalWriteGroupNoVirtualToArray(
+    field_number, const MessageType& value, bool deterministic, output);
+  template<typename MessageType>
+  INL static uint8* InternalWriteMessageNoVirtualToArray(
+    field_number, const MessageType& value, bool deterministic, output);
+
+  // For backward-compatibility, the last four methods also have versions
+  // that are non-deterministic always.
+  INL static uint8* WriteGroupToArray(
+      field_number, const MessageLite& value, output) {
+    return InternalWriteGroupToArray(field_number_arg, value, false, target);
+  }
+  INL static uint8* WriteMessageToArray(
+      field_number, const MessageLite& value, output) {
+    return InternalWriteMessageToArray(field_number_arg, value, false, target);
+  }
+  template<typename MessageType>
   INL static uint8* WriteGroupNoVirtualToArray(
-    field_number, const MessageType& value, output);
+      field_number, const MessageType& value, output) {
+    return InternalWriteGroupNoVirtualToArray(field_number_arg, value, false,
+                                              target);
+  }
   template<typename MessageType>
   INL static uint8* WriteMessageNoVirtualToArray(
-    field_number, const MessageType& value, output);
+      field_number, const MessageType& value, output) {
+    return InternalWriteMessageNoVirtualToArray(field_number_arg, value, false,
+                                                target);
+  }
 
 #undef output
 #undef input

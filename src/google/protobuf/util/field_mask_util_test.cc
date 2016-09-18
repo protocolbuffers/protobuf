@@ -349,6 +349,10 @@ TEST(FieldMaskUtilTest, MergeMessage) {
     dst.Clear();                                             \
     FieldMaskUtil::MergeMessageTo(src, mask, options, &dst); \
     EXPECT_EQ(tmp.DebugString(), dst.DebugString());         \
+    src.clear_##field_name();                                \
+    tmp.clear_##field_name();                                \
+    FieldMaskUtil::MergeMessageTo(src, mask, options, &dst); \
+    EXPECT_EQ(tmp.DebugString(), dst.DebugString());         \
   }
   TEST_MERGE_ONE_PRIMITIVE_FIELD(optional_int32)
   TEST_MERGE_ONE_PRIMITIVE_FIELD(optional_int64)
@@ -482,6 +486,117 @@ TEST(FieldMaskUtilTest, MergeMessage) {
   FieldMaskUtil::MergeMessageTo(nested_src, mask, options, &nested_dst);
   ASSERT_EQ(1, nested_dst.payload().repeated_int32_size());
   EXPECT_EQ(1234, nested_dst.payload().repeated_int32(0));
+}
+
+TEST(FieldMaskUtilTest, TrimMessage) {
+#define TEST_TRIM_ONE_PRIMITIVE_FIELD(field_name)    \
+  {                                                  \
+    TestAllTypes msg;                                \
+    TestUtil::SetAllFields(&msg);                    \
+    TestAllTypes tmp;                                \
+    tmp.set_##field_name(msg.field_name());          \
+    FieldMask mask;                                  \
+    mask.add_paths(#field_name);                     \
+    FieldMaskUtil::TrimMessage(mask, &msg);          \
+    EXPECT_EQ(tmp.DebugString(), msg.DebugString()); \
+  }
+  TEST_TRIM_ONE_PRIMITIVE_FIELD(optional_int32)
+  TEST_TRIM_ONE_PRIMITIVE_FIELD(optional_int64)
+  TEST_TRIM_ONE_PRIMITIVE_FIELD(optional_uint32)
+  TEST_TRIM_ONE_PRIMITIVE_FIELD(optional_uint64)
+  TEST_TRIM_ONE_PRIMITIVE_FIELD(optional_sint32)
+  TEST_TRIM_ONE_PRIMITIVE_FIELD(optional_sint64)
+  TEST_TRIM_ONE_PRIMITIVE_FIELD(optional_fixed32)
+  TEST_TRIM_ONE_PRIMITIVE_FIELD(optional_fixed64)
+  TEST_TRIM_ONE_PRIMITIVE_FIELD(optional_sfixed32)
+  TEST_TRIM_ONE_PRIMITIVE_FIELD(optional_sfixed64)
+  TEST_TRIM_ONE_PRIMITIVE_FIELD(optional_float)
+  TEST_TRIM_ONE_PRIMITIVE_FIELD(optional_double)
+  TEST_TRIM_ONE_PRIMITIVE_FIELD(optional_bool)
+  TEST_TRIM_ONE_PRIMITIVE_FIELD(optional_string)
+  TEST_TRIM_ONE_PRIMITIVE_FIELD(optional_bytes)
+  TEST_TRIM_ONE_PRIMITIVE_FIELD(optional_nested_enum)
+  TEST_TRIM_ONE_PRIMITIVE_FIELD(optional_foreign_enum)
+  TEST_TRIM_ONE_PRIMITIVE_FIELD(optional_import_enum)
+#undef TEST_TRIM_ONE_PRIMITIVE_FIELD
+
+#define TEST_TRIM_ONE_FIELD(field_name)              \
+  {                                                  \
+    TestAllTypes msg;                                \
+    TestUtil::SetAllFields(&msg);                    \
+    TestAllTypes tmp;                                \
+    *tmp.mutable_##field_name() = msg.field_name();  \
+    FieldMask mask;                                  \
+    mask.add_paths(#field_name);                     \
+    FieldMaskUtil::TrimMessage(mask, &msg);          \
+    EXPECT_EQ(tmp.DebugString(), msg.DebugString()); \
+  }
+  TEST_TRIM_ONE_FIELD(optional_nested_message)
+  TEST_TRIM_ONE_FIELD(optional_foreign_message)
+  TEST_TRIM_ONE_FIELD(optional_import_message)
+
+  TEST_TRIM_ONE_FIELD(repeated_int32)
+  TEST_TRIM_ONE_FIELD(repeated_int64)
+  TEST_TRIM_ONE_FIELD(repeated_uint32)
+  TEST_TRIM_ONE_FIELD(repeated_uint64)
+  TEST_TRIM_ONE_FIELD(repeated_sint32)
+  TEST_TRIM_ONE_FIELD(repeated_sint64)
+  TEST_TRIM_ONE_FIELD(repeated_fixed32)
+  TEST_TRIM_ONE_FIELD(repeated_fixed64)
+  TEST_TRIM_ONE_FIELD(repeated_sfixed32)
+  TEST_TRIM_ONE_FIELD(repeated_sfixed64)
+  TEST_TRIM_ONE_FIELD(repeated_float)
+  TEST_TRIM_ONE_FIELD(repeated_double)
+  TEST_TRIM_ONE_FIELD(repeated_bool)
+  TEST_TRIM_ONE_FIELD(repeated_string)
+  TEST_TRIM_ONE_FIELD(repeated_bytes)
+  TEST_TRIM_ONE_FIELD(repeated_nested_message)
+  TEST_TRIM_ONE_FIELD(repeated_foreign_message)
+  TEST_TRIM_ONE_FIELD(repeated_import_message)
+  TEST_TRIM_ONE_FIELD(repeated_nested_enum)
+  TEST_TRIM_ONE_FIELD(repeated_foreign_enum)
+  TEST_TRIM_ONE_FIELD(repeated_import_enum)
+#undef TEST_TRIM_ONE_FIELD
+
+  // Test trim nested fields.
+  NestedTestAllTypes nested_msg;
+  nested_msg.mutable_child()->mutable_payload()->set_optional_int32(1234);
+  nested_msg.mutable_child()
+      ->mutable_child()
+      ->mutable_payload()
+      ->set_optional_int32(5678);
+  NestedTestAllTypes trimmed_msg(nested_msg);
+  FieldMask mask;
+  FieldMaskUtil::FromString("child.payload", &mask);
+  FieldMaskUtil::TrimMessage(mask, &trimmed_msg);
+  EXPECT_EQ(1234, trimmed_msg.child().payload().optional_int32());
+  EXPECT_EQ(0, trimmed_msg.child().child().payload().optional_int32());
+
+  trimmed_msg = nested_msg;
+  FieldMaskUtil::FromString("child.child.payload", &mask);
+  FieldMaskUtil::TrimMessage(mask, &trimmed_msg);
+  EXPECT_EQ(0, trimmed_msg.child().payload().optional_int32());
+  EXPECT_EQ(5678, trimmed_msg.child().child().payload().optional_int32());
+
+  trimmed_msg = nested_msg;
+  FieldMaskUtil::FromString("child", &mask);
+  FieldMaskUtil::TrimMessage(mask, &trimmed_msg);
+  EXPECT_EQ(1234, trimmed_msg.child().payload().optional_int32());
+  EXPECT_EQ(5678, trimmed_msg.child().child().payload().optional_int32());
+
+  trimmed_msg = nested_msg;
+  FieldMaskUtil::FromString("child.child", &mask);
+  FieldMaskUtil::TrimMessage(mask, &trimmed_msg);
+  EXPECT_EQ(0, trimmed_msg.child().payload().optional_int32());
+  EXPECT_EQ(5678, trimmed_msg.child().child().payload().optional_int32());
+
+  // Verify than an empty FieldMask trims nothing
+  TestAllTypes all_types_msg;
+  TestUtil::SetAllFields(&all_types_msg);
+  TestAllTypes trimmed_all_types(all_types_msg);
+  FieldMask empty_mask;
+  FieldMaskUtil::TrimMessage(empty_mask, &trimmed_all_types);
+  EXPECT_EQ(trimmed_all_types.DebugString(), all_types_msg.DebugString());
 }
 
 

@@ -62,8 +62,6 @@ namespace protobuf {
 using internal::WireFormat;
 using internal::ReflectionOps;
 
-Message::~Message() {}
-
 void Message::MergeFrom(const Message& from) {
   const Descriptor* descriptor = GetDescriptor();
   GOOGLE_CHECK_EQ(from.GetDescriptor(), descriptor)

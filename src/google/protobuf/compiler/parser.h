@@ -71,7 +71,7 @@ class LIBPROTOBUF_EXPORT Parser {
   // it.  Returns true if no errors occurred, false otherwise.
   bool Parse(io::Tokenizer* input, FileDescriptorProto* file);
 
-  // Optional fetaures:
+  // Optional features:
 
   // DEPRECATED:  New code should use the SourceCodeInfo embedded in the
   //   FileDescriptorProto.

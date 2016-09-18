@@ -10,7 +10,6 @@ using scg = global::System.Collections.Generic;
 namespace Google.Protobuf.WellKnownTypes {
 
   /// <summary>Holder for reflection information generated from google/protobuf/any.proto</summary>
-  [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
   public static partial class AnyReflection {
 
     #region Descriptor
@@ -64,6 +63,16 @@ namespace Google.Protobuf.WellKnownTypes {
   ///        foo = any.unpack(Foo.class);
   ///      }
   ///
+  ///   Example 3: Pack and unpack a message in Python.
+  ///
+  ///      foo = Foo(...)
+  ///      any = Any()
+  ///      any.Pack(foo)
+  ///      ...
+  ///      if any.Is(Foo.DESCRIPTOR):
+  ///        any.Unpack(foo)
+  ///        ...
+  ///
   ///  The pack methods provided by protobuf library will by default use
   ///  'type.googleapis.com/full.type.name' as the type URL and the unpack
   ///  methods only use the fully qualified type name after the last '/'
@@ -98,30 +107,35 @@ namespace Google.Protobuf.WellKnownTypes {
   ///        "value": "1.212s"
   ///      }
   /// </summary>
-  [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
   public sealed partial class Any : pb::IMessage<Any> {
     private static readonly pb::MessageParser<Any> _parser = new pb::MessageParser<Any>(() => new Any());
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<Any> Parser { get { return _parser; } }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
       get { return global::Google.Protobuf.WellKnownTypes.AnyReflection.Descriptor.MessageTypes[0]; }
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     pbr::MessageDescriptor pb::IMessage.Descriptor {
       get { return Descriptor; }
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public Any() {
       OnConstruction();
     }
 
     partial void OnConstruction();
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public Any(Any other) : this() {
       typeUrl_ = other.typeUrl_;
       value_ = other.value_;
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public Any Clone() {
       return new Any(this);
     }
@@ -133,10 +147,10 @@ namespace Google.Protobuf.WellKnownTypes {
     ///  A URL/resource name whose content describes the type of the
     ///  serialized protocol buffer message.
     ///
-    ///  For URLs which use the schema `http`, `https`, or no schema, the
+    ///  For URLs which use the scheme `http`, `https`, or no scheme, the
     ///  following restrictions and interpretations apply:
     ///
-    ///  * If no schema is provided, `https` is assumed.
+    ///  * If no scheme is provided, `https` is assumed.
     ///  * The last segment of the URL's path must represent the fully
     ///    qualified name of the type (as in `path/google.protobuf.Duration`).
     ///    The name should be in a canonical form (e.g., leading "." is
@@ -149,9 +163,10 @@ namespace Google.Protobuf.WellKnownTypes {
     ///    on changes to types. (Use versioned type names to manage
     ///    breaking changes.)
     ///
-    ///  Schemas other than `http`, `https` (or the empty schema) might be
+    ///  Schemes other than `http`, `https` (or the empty scheme) might be
     ///  used with implementation specific semantics.
     /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public string TypeUrl {
       get { return typeUrl_; }
       set {
@@ -165,6 +180,7 @@ namespace Google.Protobuf.WellKnownTypes {
     /// <summary>
     ///  Must be a valid serialized protocol buffer of the above specified type.
     /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public pb::ByteString Value {
       get { return value_; }
       set {
@@ -172,10 +188,12 @@ namespace Google.Protobuf.WellKnownTypes {
       }
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as Any);
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public bool Equals(Any other) {
       if (ReferenceEquals(other, null)) {
         return false;
@@ -188,6 +206,7 @@ namespace Google.Protobuf.WellKnownTypes {
       return true;
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override int GetHashCode() {
       int hash = 1;
       if (TypeUrl.Length != 0) hash ^= TypeUrl.GetHashCode();
@@ -195,10 +214,12 @@ namespace Google.Protobuf.WellKnownTypes {
       return hash;
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override string ToString() {
       return pb::JsonFormatter.ToDiagnosticString(this);
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
       if (TypeUrl.Length != 0) {
         output.WriteRawTag(10);
@@ -210,6 +231,7 @@ namespace Google.Protobuf.WellKnownTypes {
       }
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
       int size = 0;
       if (TypeUrl.Length != 0) {
@@ -221,6 +243,7 @@ namespace Google.Protobuf.WellKnownTypes {
       return size;
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(Any other) {
       if (other == null) {
         return;
@@ -233,6 +256,7 @@ namespace Google.Protobuf.WellKnownTypes {
       }
     }
 
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(pb::CodedInputStream input) {
       uint tag;
       while ((tag = input.ReadTag()) != 0) {

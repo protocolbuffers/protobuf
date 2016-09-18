@@ -65,12 +65,13 @@
 #include <gtest/gtest.h>
 
 
-// Disable the whole test when we use tcmalloc for "draconian" heap checks, in
-// which case tcmalloc will print warnings that fail the plugin tests.
-#if !GOOGLE_PROTOBUF_HEAP_CHECK_DRACONIAN
 namespace google {
 namespace protobuf {
 namespace compiler {
+
+// Disable the whole test when we use tcmalloc for "draconian" heap checks, in
+// which case tcmalloc will print warnings that fail the plugin tests.
+#if !GOOGLE_PROTOBUF_HEAP_CHECK_DRACONIAN
 
 #if defined(_WIN32)
 #ifndef STDIN_FILENO
@@ -718,6 +719,11 @@ TEST_F(CommandLineInterfaceTest, TrailingBackslash) {
   ExpectGenerated("test_generator", "", "foo.proto", "Foo");
 }
 
+TEST_F(CommandLineInterfaceTest, Win32ErrorMessage) {
+  EXPECT_EQ("The system cannot find the file specified.\r\n",
+    Subprocess::Win32ErrorMessage(ERROR_FILE_NOT_FOUND));
+}
+
 #endif  // defined(_WIN32) || defined(__CYGWIN__)
 
 TEST_F(CommandLineInterfaceTest, PathLookup) {
@@ -783,6 +789,21 @@ TEST_F(CommandLineInterfaceTest, NonRootMapping) {
 
   ExpectNoErrors();
   ExpectGenerated("test_generator", "", "bar/foo.proto", "Foo");
+}
+
+TEST_F(CommandLineInterfaceTest, PathWithEqualsSign) {
+  // Test setting up a search path which happens to have '=' in it.
+
+  CreateTempDir("with=sign");
+  CreateTempFile("with=sign/foo.proto",
+    "syntax = \"proto2\";\n"
+    "message Foo {}\n");
+
+  Run("protocol_compiler --test_out=$tmpdir "
+      "--proto_path=$tmpdir/with=sign foo.proto");
+
+  ExpectNoErrors();
+  ExpectGenerated("test_generator", "", "foo.proto", "Foo");
 }
 
 TEST_F(CommandLineInterfaceTest, MultipleGenerators) {

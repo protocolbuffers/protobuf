@@ -795,6 +795,73 @@ TEST(GeneratedMessageReflectionTest, ReleaseOneofMessageTest) {
   EXPECT_TRUE(released == NULL);
 }
 
+TEST(GeneratedMessageReflectionTest, ArenaReleaseMessageTest) {
+  ::google::protobuf::Arena arena;
+  unittest::TestAllTypes* message =
+      ::google::protobuf::Arena::CreateMessage<unittest::TestAllTypes>(&arena);
+  TestUtil::ReflectionTester reflection_tester(
+      unittest::TestAllTypes::descriptor());
+
+  // When nothing is set, we expect all released messages to be NULL.
+  reflection_tester.ExpectMessagesReleasedViaReflection(
+      message, TestUtil::ReflectionTester::IS_NULL);
+
+  // After fields are set we should get non-NULL releases.
+  reflection_tester.SetAllFieldsViaReflection(message);
+  reflection_tester.ExpectMessagesReleasedViaReflection(
+      message, TestUtil::ReflectionTester::NOT_NULL);
+
+  // After Clear() we may or may not get a message from ReleaseMessage().
+  // This is implementation specific.
+  reflection_tester.SetAllFieldsViaReflection(message);
+  message->Clear();
+  reflection_tester.ExpectMessagesReleasedViaReflection(
+      message, TestUtil::ReflectionTester::CAN_BE_NULL);
+}
+
+TEST(GeneratedMessageReflectionTest, ArenaReleaseExtensionMessageTest) {
+  ::google::protobuf::Arena arena;
+  unittest::TestAllExtensions* message =
+      ::google::protobuf::Arena::CreateMessage<unittest::TestAllExtensions>(&arena);
+  TestUtil::ReflectionTester reflection_tester(
+      unittest::TestAllExtensions::descriptor());
+
+  // When nothing is set, we expect all released messages to be NULL.
+  reflection_tester.ExpectMessagesReleasedViaReflection(
+      message, TestUtil::ReflectionTester::IS_NULL);
+
+  // After fields are set we should get non-NULL releases.
+  reflection_tester.SetAllFieldsViaReflection(message);
+  reflection_tester.ExpectMessagesReleasedViaReflection(
+      message, TestUtil::ReflectionTester::NOT_NULL);
+
+  // After Clear() we may or may not get a message from ReleaseMessage().
+  // This is implementation specific.
+  reflection_tester.SetAllFieldsViaReflection(message);
+  message->Clear();
+  reflection_tester.ExpectMessagesReleasedViaReflection(
+      message, TestUtil::ReflectionTester::CAN_BE_NULL);
+}
+
+TEST(GeneratedMessageReflectionTest, ArenaReleaseOneofMessageTest) {
+  ::google::protobuf::Arena arena;
+  unittest::TestOneof2* message =
+      ::google::protobuf::Arena::CreateMessage<unittest::TestOneof2>(&arena);
+  TestUtil::ReflectionTester::SetOneofViaReflection(message);
+
+  const Descriptor* descriptor = unittest::TestOneof2::descriptor();
+  const Reflection* reflection = message->GetReflection();
+  Message* released = reflection->ReleaseMessage(
+      message, descriptor->FindFieldByName("foo_lazy_message"));
+
+  EXPECT_TRUE(released != NULL);
+  delete released;
+
+  released = reflection->ReleaseMessage(
+      message, descriptor->FindFieldByName("foo_lazy_message"));
+  EXPECT_TRUE(released == NULL);
+}
+
 #ifdef PROTOBUF_HAS_DEATH_TEST
 
 TEST(GeneratedMessageReflectionTest, UsageErrors) {

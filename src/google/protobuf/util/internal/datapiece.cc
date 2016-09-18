@@ -329,9 +329,8 @@ bool DataPiece::DecodeBase64(StringPiece src, string* dest) const {
       // WebSafeBase64Escape does no padding by default.
       WebSafeBase64Escape(*dest, &encoded);
       // Remove trailing padding '=' characters before comparison.
-      StringPiece src_no_padding(src, 0, src.ends_with("=")
-                                             ? src.find_last_not_of('=') + 1
-                                             : src.length());
+      StringPiece src_no_padding = StringPiece(src).substr(
+          0, src.ends_with("=") ? src.find_last_not_of('=') + 1 : src.length());
       return encoded == src_no_padding;
     }
     return true;
@@ -343,15 +342,34 @@ bool DataPiece::DecodeBase64(StringPiece src, string* dest) const {
       Base64Escape(
           reinterpret_cast<const unsigned char*>(dest->data()), dest->length(),
           &encoded, false);
-      StringPiece src_no_padding(src, 0, src.ends_with("=")
-                                             ? src.find_last_not_of('=') + 1
-                                             : src.length());
+      StringPiece src_no_padding = StringPiece(src).substr(
+          0, src.ends_with("=") ? src.find_last_not_of('=') + 1 : src.length());
       return encoded == src_no_padding;
     }
     return true;
   }
 
   return false;
+}
+
+void DataPiece::InternalCopy(const DataPiece& other) {
+  type_ = other.type_;
+  switch (type_) {
+    case TYPE_INT32:
+    case TYPE_INT64:
+    case TYPE_UINT32:
+    case TYPE_UINT64:
+    case TYPE_DOUBLE:
+    case TYPE_FLOAT:
+    case TYPE_BOOL:
+    case TYPE_ENUM:
+    case TYPE_NULL:
+    case TYPE_BYTES:
+    case TYPE_STRING: {
+      str_ = other.str_;
+      break;
+    }
+  }
 }
 
 }  // namespace converter

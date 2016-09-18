@@ -64,6 +64,10 @@ class EnumValue;
 namespace protobuf {
 namespace util {
 namespace converter {
+
+// Size of "type.googleapis.com"
+static const int64 kTypeUrlSize = 19;
+
 // Finds the tech option identified by option_name. Parses the boolean value and
 // returns it.
 // When the option with the given name is not found, default_value is returned.

@@ -45,6 +45,7 @@ option java_package = "com.google.protobuf";
 option java_outer_classname = "DescriptorProtos";
 option csharp_namespace = "Google.Protobuf.Reflection";
 option objc_class_prefix = "GPB";
+option java_generate_equals_and_hash = true;
 
 // descriptor.proto must be optimized for speed because reflection-based
 // algorithms don't work during bootstrapping.
@@ -202,6 +203,7 @@ message FieldDescriptorProto {
 // Describes a oneof.
 message OneofDescriptorProto {
   optional string name = 1;
+  optional OneofOptions options = 2;
 }
 
 // Describes an enum type.
@@ -531,6 +533,14 @@ message FieldOptions {
   optional bool weak = 10 [default=false];
 
 
+  // The parser stores options it doesn't recognize here. See above.
+  repeated UninterpretedOption uninterpreted_option = 999;
+
+  // Clients can define custom options in extensions of this message. See above.
+  extensions 1000 to max;
+}
+
+message OneofOptions {
   // The parser stores options it doesn't recognize here. See above.
   repeated UninterpretedOption uninterpreted_option = 999;
 

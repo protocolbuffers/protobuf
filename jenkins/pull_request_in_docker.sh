@@ -55,7 +55,9 @@ parallel --results $LOG_OUTPUT_DIR --joblog $OUTPUT_DIR/joblog $TEST_SCRIPT ::: 
   javanano_oracle7 \
   python \
   python_cpp \
-  ruby21 \
+  ruby_all \
+  javascript \
+  golang \
   || true  # Process test results even if tests fail.
 
 cat $OUTPUT_DIR/joblog

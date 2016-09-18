@@ -133,12 +133,7 @@ Arena::Block* Arena::NewBlock(void* me, Block* my_last_block, size_t n,
   Block* b = reinterpret_cast<Block*>(options_.block_alloc(size));
   b->pos = kHeaderSize + n;
   b->size = size;
-  if (b->avail() == 0) {
-    // Do not attempt to reuse this block.
-    b->owner = NULL;
-  } else {
-    b->owner = me;
-  }
+  b->owner = me;
 #ifdef ADDRESS_SANITIZER
   // Poison the rest of the block for ASAN. It was unpoisoned by the underlying
   // malloc but it's not yet usable until we return it as part of an allocation.
@@ -223,9 +218,7 @@ void* Arena::SlowAlloc(size_t n) {
   }
   b = NewBlock(me, b, n, options_.start_block_size, options_.max_block_size);
   AddBlock(b);
-  if (b->owner == me) {  // If this block can be reused (see NewBlock()).
-    SetThreadCacheBlock(b);
-  }
+  SetThreadCacheBlock(b);
   return reinterpret_cast<char*>(b) + kHeaderSize;
 }
 

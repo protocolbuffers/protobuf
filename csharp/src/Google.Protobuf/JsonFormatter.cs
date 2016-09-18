@@ -274,7 +274,6 @@ namespace Google.Protobuf
         }
 
         // Converted from src/google/protobuf/util/internal/utility.cc ToCamelCase
-        // TODO: Use the new field in FieldDescriptor.
         internal static string ToCamelCase(string input)
         {
             bool capitalizeNext = false;
@@ -305,6 +304,7 @@ namespace Google.Protobuf
                         (!wasCap || (i + 1 < input.Length && char.IsLower(input[i + 1]))))
                     {
                         firstWord = false;
+                        result.Append(input[i]);
                     }
                     else
                     {
@@ -320,8 +320,16 @@ namespace Google.Protobuf
                         result.Append(char.ToUpperInvariant(input[i]));
                         continue;
                     }
+                    else
+                    {
+                        result.Append(input[i]);
+                        continue;
+                    }
                 }
-                result.Append(input[i]);
+                else
+                {
+                    result.Append(char.ToLowerInvariant(input[i]));
+                }
             }
             return result.ToString();
         }
@@ -377,8 +385,16 @@ namespace Google.Protobuf
                     throw new ArgumentException("Invalid field type");
             }
         }
-        
-        private void WriteValue(TextWriter writer, object value)
+
+        /// <summary>
+        /// Writes a single value to the given writer as JSON. Only types understood by
+        /// Protocol Buffers can be written in this way. This method is only exposed for
+        /// advanced use cases; most users should be using <see cref="Format(IMessage)"/>
+        /// or <see cref="Format(IMessage, TextWriter)"/>.
+        /// </summary>
+        /// <param name="writer">The writer to write the value to. Must not be null.</param>
+        /// <param name="value">The value to write. May be null.</param>
+        public void WriteValue(TextWriter writer, object value)
         {
             if (value == null)
             {
@@ -447,15 +463,7 @@ namespace Google.Protobuf
             }
             else if (value is IMessage)
             {
-                IMessage message = (IMessage) value;
-                if (message.Descriptor.IsWellKnownType)
-                {
-                    WriteWellKnownTypeValue(writer, message.Descriptor, value);
-                }
-                else
-                {
-                    WriteMessage(writer, (IMessage)value);
-                }
+                Format((IMessage)value, writer);
             }
             else
             {
@@ -567,7 +575,7 @@ namespace Google.Protobuf
 
             string typeUrl = (string) value.Descriptor.Fields[Any.TypeUrlFieldNumber].Accessor.GetValue(value);
             ByteString data = (ByteString) value.Descriptor.Fields[Any.ValueFieldNumber].Accessor.GetValue(value);
-            string typeName = GetTypeName(typeUrl);
+            string typeName = Any.GetTypeName(typeUrl);
             MessageDescriptor descriptor = settings.TypeRegistry.Find(typeName);
             if (descriptor == null)
             {
@@ -608,17 +616,7 @@ namespace Google.Protobuf
             writer.Write(data.ToBase64());
             writer.Write('"');
             writer.Write(" }");
-        }
-
-        internal static string GetTypeName(String typeUrl)
-        {
-            string[] parts = typeUrl.Split('/');
-            if (parts.Length != 2 || parts[0] != TypeUrlPrefix)
-            {
-                throw new InvalidProtocolBufferException($"Invalid type url: {typeUrl}");
-            }
-            return parts[1];
-        }
+        }        
 
         private void WriteStruct(TextWriter writer, IMessage message)
         {
@@ -731,20 +729,6 @@ namespace Google.Protobuf
                 first = false;
             }
             writer.Write(first ? "}" : " }");
-        }
-
-        /// <summary>
-        /// Returns whether or not a singular value can be represented in JSON.
-        /// Currently only relevant for enums, where unknown values can't be represented.
-        /// For repeated/map fields, this always returns true.
-        /// </summary>
-        private bool CanWriteSingleValue(object value)
-        {
-            if (value is System.Enum)
-            {
-                return System.Enum.IsDefined(value.GetType(), value);
-            }
-            return true;
         }
 
         /// <summary>
@@ -909,6 +893,16 @@ namespace Google.Protobuf
                 return originalName;
             }
 
+#if DOTNET35
+            // TODO: Consider adding functionality to TypeExtensions to avoid this difference.
+            private static Dictionary<object, string> GetNameMapping(System.Type enumType) =>
+                enumType.GetFields(BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Static)
+                    .ToDictionary(f => f.GetValue(null),
+                                  f => (f.GetCustomAttributes(typeof(OriginalNameAttribute), false)
+                                        .FirstOrDefault() as OriginalNameAttribute)
+                                        // If the attribute hasn't been applied, fall back to the name of the field.
+                                        ?.Name ?? f.Name);
+#else
             private static Dictionary<object, string> GetNameMapping(System.Type enumType) =>
                 enumType.GetTypeInfo().DeclaredFields
                     .Where(f => f.IsStatic)
@@ -917,6 +911,7 @@ namespace Google.Protobuf
                                         .FirstOrDefault()
                                         // If the attribute hasn't been applied, fall back to the name of the field.
                                         ?.Name ?? f.Name);
+#endif
         }
     }
 }

@@ -43,6 +43,7 @@ class Descriptor;
 class FileDescriptor;
 class EnumDescriptor;
 class OneofDescriptor;
+class ServiceDescriptor;
 
 namespace python {
 
@@ -89,9 +90,16 @@ PyObject* NewFileEnumTypesByName(const FileDescriptor* descriptor);
 
 PyObject* NewFileExtensionsByName(const FileDescriptor* descriptor);
 
+PyObject* NewFileServicesByName(const FileDescriptor* descriptor);
+
 PyObject* NewFileDependencies(const FileDescriptor* descriptor);
 PyObject* NewFilePublicDependencies(const FileDescriptor* descriptor);
 }  // namespace file_descriptor
+
+namespace service_descriptor {
+PyObject* NewServiceMethodsSeq(const ServiceDescriptor* descriptor);
+PyObject* NewServiceMethodsByName(const ServiceDescriptor* descriptor);
+}  // namespace service_descriptor
 
 
 }  // namespace python

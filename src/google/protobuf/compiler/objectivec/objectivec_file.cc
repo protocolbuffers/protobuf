@@ -37,23 +37,129 @@
 #include <google/protobuf/io/zero_copy_stream_impl.h>
 #include <google/protobuf/stubs/stl_util.h>
 #include <google/protobuf/stubs/strutil.h>
+#include <algorithm> // std::find()
+#include <iostream>
 #include <sstream>
+
+// NOTE: src/google/protobuf/compiler/plugin.cc makes use of cerr for some
+// error cases, so it seems to be ok to use as a back door for errors.
 
 namespace google {
 namespace protobuf {
-
-// This is also found in GPBBootstrap.h, and needs to be kept in sync.  It
-// is the version check done to ensure generated code works with the current
-// runtime being used.
-const int32 GOOGLE_PROTOBUF_OBJC_GEN_VERSION = 30001;
-
 namespace compiler {
 namespace objectivec {
+
+namespace {
+
+// This is also found in GPBBootstrap.h, and needs to be kept in sync.
+const int32 GOOGLE_PROTOBUF_OBJC_VERSION = 30002;
+
+const char* kHeaderExtension = ".pbobjc.h";
+
+// Checks if a message contains any extension definitions (on the message or
+// a nested message under it).
+bool MessageContainsExtensions(const Descriptor* message) {
+  if (message->extension_count() > 0) {
+    return true;
+  }
+  for (int i = 0; i < message->nested_type_count(); i++) {
+    if (MessageContainsExtensions(message->nested_type(i))) {
+      return true;
+    }
+  }
+  return false;
+}
+
+// Checks if the file contains any extensions definitions (at the root or
+// nested under a message).
+bool FileContainsExtensions(const FileDescriptor* file) {
+  if (file->extension_count() > 0) {
+    return true;
+  }
+  for (int i = 0; i < file->message_type_count(); i++) {
+    if (MessageContainsExtensions(file->message_type(i))) {
+      return true;
+    }
+  }
+  return false;
+}
+
+// Helper for CollectMinimalFileDepsContainingExtensionsWorker that marks all
+// deps as visited and prunes them from the needed files list.
+void PruneFileAndDepsMarkingAsVisited(
+    const FileDescriptor* file,
+    vector<const FileDescriptor*>* files,
+    set<const FileDescriptor*>* files_visited) {
+  vector<const FileDescriptor*>::iterator iter =
+      std::find(files->begin(), files->end(), file);
+  if (iter != files->end()) {
+    files->erase(iter);
+  }
+  files_visited->insert(file);
+  for (int i = 0; i < file->dependency_count(); i++) {
+    PruneFileAndDepsMarkingAsVisited(file->dependency(i), files, files_visited);
+  }
+}
+
+// Helper for CollectMinimalFileDepsContainingExtensions.
+void CollectMinimalFileDepsContainingExtensionsWorker(
+    const FileDescriptor* file,
+    vector<const FileDescriptor*>* files,
+    set<const FileDescriptor*>* files_visited) {
+  if (files_visited->find(file) != files_visited->end()) {
+    return;
+  }
+  files_visited->insert(file);
+
+  if (FileContainsExtensions(file)) {
+    files->push_back(file);
+    for (int i = 0; i < file->dependency_count(); i++) {
+      const FileDescriptor* dep = file->dependency(i);
+      PruneFileAndDepsMarkingAsVisited(dep, files, files_visited);
+    }
+  } else {
+    for (int i = 0; i < file->dependency_count(); i++) {
+      const FileDescriptor* dep = file->dependency(i);
+      CollectMinimalFileDepsContainingExtensionsWorker(dep, files,
+                                                       files_visited);
+    }
+  }
+}
+
+// Collect the deps of the given file that contain extensions. This can be used to
+// create the chain of roots that need to be wired together.
+//
+// NOTE: If any changes are made to this and the supporting functions, you will
+// need to manually validate what the generated code is for the test files:
+//   objectivec/Tests/unittest_extension_chain_*.proto
+// There are comments about what the expected code should be line and limited
+// testing objectivec/Tests/GPBUnittestProtos2.m around compilation (#imports
+// specifically).
+void CollectMinimalFileDepsContainingExtensions(
+    const FileDescriptor* file,
+    vector<const FileDescriptor*>* files) {
+  set<const FileDescriptor*> files_visited;
+  for (int i = 0; i < file->dependency_count(); i++) {
+    const FileDescriptor* dep = file->dependency(i);
+    CollectMinimalFileDepsContainingExtensionsWorker(dep, files,
+                                                     &files_visited);
+  }
+}
+
+bool IsDirectDependency(const FileDescriptor* dep, const FileDescriptor* file) {
+  for (int i = 0; i < file->dependency_count(); i++) {
+    if (dep == file->dependency(i)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+}  // namespace
 
 FileGenerator::FileGenerator(const FileDescriptor *file, const Options& options)
     : file_(file),
       root_class_name_(FileClassName(file)),
-      is_public_dep_(false),
       options_(options) {
   for (int i = 0; i < file_->enum_type_count(); i++) {
     EnumGenerator *generator = new EnumGenerator(file_->enum_type(i));
@@ -72,8 +178,6 @@ FileGenerator::FileGenerator(const FileDescriptor *file, const Options& options)
 }
 
 FileGenerator::~FileGenerator() {
-  STLDeleteContainerPointers(dependency_generators_.begin(),
-                             dependency_generators_.end());
   STLDeleteContainerPointers(enum_generators_.begin(), enum_generators_.end());
   STLDeleteContainerPointers(message_generators_.begin(),
                              message_generators_.end());
@@ -82,36 +186,40 @@ FileGenerator::~FileGenerator() {
 }
 
 void FileGenerator::GenerateHeader(io::Printer *printer) {
-  printer->Print(
-      "// Generated by the protocol buffer compiler.  DO NOT EDIT!\n"
-      "// source: $filename$\n"
-      "\n",
-      "filename", file_->name());
-
-  printer->Print(
-      "#import \"GPBProtocolBuffers.h\"\n"
-      "\n");
+  PrintFileRuntimePreamble(printer, "GPBProtocolBuffers.h");
 
   // Add some verification that the generated code matches the source the
   // code is being compiled with.
+  // NOTE: This captures the raw numeric values at the time the generator was
+  // compiled, since that will be the versions for the ObjC runtime at that
+  // time.  The constants in the generated code will then get their values at
+  // at compile time (so checking against the headers being used to compile).
   printer->Print(
-      "#if GOOGLE_PROTOBUF_OBJC_GEN_VERSION != $protoc_gen_objc_version$\n"
-      "#error This file was generated by a different version of protoc which is incompatible with your Protocol Buffer library sources.\n"
+      "#if GOOGLE_PROTOBUF_OBJC_VERSION < $google_protobuf_objc_version$\n"
+      "#error This file was generated by a newer version of protoc which is incompatible with your Protocol Buffer library sources.\n"
+      "#endif\n"
+      "#if $google_protobuf_objc_version$ < GOOGLE_PROTOBUF_OBJC_MIN_SUPPORTED_VERSION\n"
+      "#error This file was generated by an older version of protoc which is incompatible with your Protocol Buffer library sources.\n"
       "#endif\n"
       "\n",
-      "protoc_gen_objc_version",
-      SimpleItoa(GOOGLE_PROTOBUF_OBJC_GEN_VERSION));
+      "google_protobuf_objc_version", SimpleItoa(GOOGLE_PROTOBUF_OBJC_VERSION));
 
-  const vector<FileGenerator *> &dependency_generators = DependencyGenerators();
-  for (vector<FileGenerator *>::const_iterator iter =
-           dependency_generators.begin();
-       iter != dependency_generators.end(); ++iter) {
-    if ((*iter)->IsPublicDependency()) {
-      printer->Print("#import \"$header$.pbobjc.h\"\n",
-                     "header", (*iter)->Path());
+  // #import any headers for "public imports" in the proto file.
+  {
+    ImportWriter import_writer(
+        options_.generate_for_named_framework,
+        options_.named_framework_to_proto_path_mappings_path);
+    const string header_extension(kHeaderExtension);
+    for (int i = 0; i < file_->public_dependency_count(); i++) {
+      import_writer.AddFile(file_->public_dependency(i), header_extension);
     }
+    import_writer.Print(printer);
   }
 
+  // Note:
+  //  deprecated-declarations suppression is only needed if some place in this
+  //    proto file is something deprecated or if it references something from
+  //    another file that is deprecated.
   printer->Print(
       "// @@protoc_insertion_point(imports)\n"
       "\n"
@@ -154,14 +262,16 @@ void FileGenerator::GenerateHeader(io::Printer *printer) {
   printer->Print(
       "#pragma mark - $root_class_name$\n"
       "\n"
-      "/// Exposes the extension registry for this file.\n"
-      "///\n"
-      "/// The base class provides:\n"
-      "/// @code\n"
-      "///   + (GPBExtensionRegistry *)extensionRegistry;\n"
-      "/// @endcode\n"
-      "/// which is a @c GPBExtensionRegistry that includes all the extensions defined by\n"
-      "/// this file and all files that it depends on.\n"
+      "/**\n"
+      " * Exposes the extension registry for this file.\n"
+      " *\n"
+      " * The base class provides:\n"
+      " * @code\n"
+      " *   + (GPBExtensionRegistry *)extensionRegistry;\n"
+      " * @endcode\n"
+      " * which is a @c GPBExtensionRegistry that includes all the extensions defined by\n"
+      " * this file and all files that it depends on.\n"
+      " **/\n"
       "@interface $root_class_name$ : GPBRootObject\n"
       "@end\n"
       "\n",
@@ -198,80 +308,114 @@ void FileGenerator::GenerateHeader(io::Printer *printer) {
 }
 
 void FileGenerator::GenerateSource(io::Printer *printer) {
-  printer->Print(
-      "// Generated by the protocol buffer compiler.  DO NOT EDIT!\n"
-      "// source: $filename$\n"
-      "\n",
-      "filename", file_->name());
+  // #import the runtime support.
+  PrintFileRuntimePreamble(printer, "GPBProtocolBuffers_RuntimeSupport.h");
 
-  string header_file = Path() + ".pbobjc.h";
-  printer->Print(
-      "#import \"GPBProtocolBuffers_RuntimeSupport.h\"\n"
-      "#import \"$header_file$\"\n",
-      "header_file", header_file);
-  const vector<FileGenerator *> &dependency_generators =
-      DependencyGenerators();
-  for (vector<FileGenerator *>::const_iterator iter =
-           dependency_generators.begin();
-       iter != dependency_generators.end(); ++iter) {
-    if (!(*iter)->IsPublicDependency()) {
-      printer->Print("#import \"$header$.pbobjc.h\"\n",
-                     "header", (*iter)->Path());
+  vector<const FileDescriptor*> deps_with_extensions;
+  CollectMinimalFileDepsContainingExtensions(file_, &deps_with_extensions);
+
+  {
+    ImportWriter import_writer(
+        options_.generate_for_named_framework,
+        options_.named_framework_to_proto_path_mappings_path);
+    const string header_extension(kHeaderExtension);
+
+    // #import the header for this proto file.
+    import_writer.AddFile(file_, header_extension);
+
+    // #import the headers for anything that a plain dependency of this proto
+    // file (that means they were just an include, not a "public" include).
+    set<string> public_import_names;
+    for (int i = 0; i < file_->public_dependency_count(); i++) {
+      public_import_names.insert(file_->public_dependency(i)->name());
+    }
+    for (int i = 0; i < file_->dependency_count(); i++) {
+      const FileDescriptor *dep = file_->dependency(i);
+      bool public_import = (public_import_names.count(dep->name()) != 0);
+      if (!public_import) {
+        import_writer.AddFile(dep, header_extension);
+      }
+    }
+
+    // If any indirect dependency provided extensions, it needs to be directly
+    // imported so it can get merged into the root's extensions registry.
+    // See the Note by CollectMinimalFileDepsContainingExtensions before
+    // changing this.
+    for (vector<const FileDescriptor *>::iterator iter =
+             deps_with_extensions.begin();
+         iter != deps_with_extensions.end(); ++iter) {
+      if (!IsDirectDependency(*iter, file_)) {
+        import_writer.AddFile(*iter, header_extension);
+      }
+    }
+
+    import_writer.Print(printer);
+  }
+
+  bool includes_oneof = false;
+  for (vector<MessageGenerator *>::iterator iter = message_generators_.begin();
+       iter != message_generators_.end(); ++iter) {
+    if ((*iter)->IncludesOneOfDefinition()) {
+      includes_oneof = true;
+      break;
     }
   }
+
+  // Note:
+  //  deprecated-declarations suppression is only needed if some place in this
+  //    proto file is something deprecated or if it references something from
+  //    another file that is deprecated.
   printer->Print(
       "// @@protoc_insertion_point(imports)\n"
       "\n"
       "#pragma clang diagnostic push\n"
-      "#pragma clang diagnostic ignored \"-Wdeprecated-declarations\"\n"
-      "\n");
+      "#pragma clang diagnostic ignored \"-Wdeprecated-declarations\"\n");
+  if (includes_oneof) {
+    // The generated code for oneof's uses direct ivar access, suppress the
+    // warning incase developer turn that on in the context they compile the
+    // generated code.
+    printer->Print(
+        "#pragma clang diagnostic ignored \"-Wdirect-ivar-access\"\n");
+  }
 
   printer->Print(
+      "\n"
       "#pragma mark - $root_class_name$\n"
       "\n"
       "@implementation $root_class_name$\n\n",
       "root_class_name", root_class_name_);
 
-  // Generate the extension initialization structures for the top level and
-  // any nested messages.
-  ostringstream extensions_stringstream;
-  if (file_->extension_count() + file_->message_type_count() > 0) {
-    io::OstreamOutputStream extensions_outputstream(&extensions_stringstream);
-    io::Printer extensions_printer(&extensions_outputstream, '$');
-    for (vector<ExtensionGenerator *>::iterator iter =
-             extension_generators_.begin();
-         iter != extension_generators_.end(); ++iter) {
-      (*iter)->GenerateStaticVariablesInitialization(&extensions_printer);
-    }
-    for (vector<MessageGenerator *>::iterator iter =
-             message_generators_.begin();
-         iter != message_generators_.end(); ++iter) {
-      (*iter)->GenerateStaticVariablesInitialization(&extensions_printer);
-    }
-    extensions_stringstream.flush();
-  }
+  const bool file_contains_extensions = FileContainsExtensions(file_);
 
   // If there were any extensions or this file has any dependencies, output
   // a registry to override to create the file specific registry.
-  const string& extensions_str = extensions_stringstream.str();
-  if (extensions_str.length() > 0 || file_->dependency_count() > 0) {
+  if (file_contains_extensions || !deps_with_extensions.empty()) {
     printer->Print(
         "+ (GPBExtensionRegistry*)extensionRegistry {\n"
         "  // This is called by +initialize so there is no need to worry\n"
         "  // about thread safety and initialization of registry.\n"
         "  static GPBExtensionRegistry* registry = nil;\n"
         "  if (!registry) {\n"
-        "    GPBDebugCheckRuntimeVersion();\n"
+        "    GPB_DEBUG_CHECK_RUNTIME_VERSIONS();\n"
         "    registry = [[GPBExtensionRegistry alloc] init];\n");
 
     printer->Indent();
     printer->Indent();
 
-    if (extensions_str.length() > 0) {
+    if (file_contains_extensions) {
       printer->Print(
           "static GPBExtensionDescription descriptions[] = {\n");
       printer->Indent();
-      printer->Print(extensions_str.c_str());
+      for (vector<ExtensionGenerator *>::iterator iter =
+               extension_generators_.begin();
+           iter != extension_generators_.end(); ++iter) {
+        (*iter)->GenerateStaticVariablesInitialization(printer);
+      }
+      for (vector<MessageGenerator *>::iterator iter =
+               message_generators_.begin();
+           iter != message_generators_.end(); ++iter) {
+        (*iter)->GenerateStaticVariablesInitialization(printer);
+      }
       printer->Outdent();
       printer->Print(
           "};\n"
@@ -284,14 +428,21 @@ void FileGenerator::GenerateSource(io::Printer *printer) {
           "}\n");
     }
 
-    const vector<FileGenerator *> &dependency_generators =
-        DependencyGenerators();
-    for (vector<FileGenerator *>::const_iterator iter =
-             dependency_generators.begin();
-         iter != dependency_generators.end(); ++iter) {
+    if (deps_with_extensions.empty()) {
       printer->Print(
-          "[registry addExtensions:[$dependency$ extensionRegistry]];\n",
-          "dependency", (*iter)->RootClassName());
+          "// None of the imports (direct or indirect) defined extensions, so no need to add\n"
+          "// them to this registry.\n");
+    } else {
+      printer->Print(
+          "// Merge in the imports (direct or indirect) that defined extensions.\n");
+      for (vector<const FileDescriptor *>::iterator iter =
+               deps_with_extensions.begin();
+           iter != deps_with_extensions.end(); ++iter) {
+        const string root_class_name(FileClassName((*iter)));
+        printer->Print(
+            "[registry addExtensions:[$dependency$ extensionRegistry]];\n",
+            "dependency", root_class_name);
+      }
     }
 
     printer->Outdent();
@@ -300,27 +451,39 @@ void FileGenerator::GenerateSource(io::Printer *printer) {
     printer->Print(
         "  }\n"
         "  return registry;\n"
-        "}\n"
-        "\n");
+        "}\n");
+  } else {
+    if (file_->dependency_count() > 0) {
+      printer->Print(
+          "// No extensions in the file and none of the imports (direct or indirect)\n"
+          "// defined extensions, so no need to generate +extensionRegistry.\n");
+    } else {
+      printer->Print(
+          "// No extensions in the file and no imports, so no need to generate\n"
+          "// +extensionRegistry.\n");
+    }
   }
 
-  printer->Print("@end\n\n");
+  printer->Print("\n@end\n\n");
 
   // File descriptor only needed if there are messages to use it.
   if (message_generators_.size() > 0) {
-    string syntax;
+    map<string, string> vars;
+    vars["root_class_name"] = root_class_name_;
+    vars["package"] = file_->package();
+    vars["objc_prefix"] = FileClassPrefix(file_);
     switch (file_->syntax()) {
       case FileDescriptor::SYNTAX_UNKNOWN:
-        syntax = "GPBFileSyntaxUnknown";
+        vars["syntax"] = "GPBFileSyntaxUnknown";
         break;
       case FileDescriptor::SYNTAX_PROTO2:
-        syntax = "GPBFileSyntaxProto2";
+        vars["syntax"] = "GPBFileSyntaxProto2";
         break;
       case FileDescriptor::SYNTAX_PROTO3:
-        syntax = "GPBFileSyntaxProto3";
+        vars["syntax"] = "GPBFileSyntaxProto3";
         break;
     }
-    printer->Print(
+    printer->Print(vars,
         "#pragma mark - $root_class_name$_FileDescriptor\n"
         "\n"
         "static GPBFileDescriptor *$root_class_name$_FileDescriptor(void) {\n"
@@ -328,16 +491,24 @@ void FileGenerator::GenerateSource(io::Printer *printer) {
         "  // about thread safety of the singleton.\n"
         "  static GPBFileDescriptor *descriptor = NULL;\n"
         "  if (!descriptor) {\n"
-        "    GPBDebugCheckRuntimeVersion();\n"
-        "    descriptor = [[GPBFileDescriptor alloc] initWithPackage:@\"$package$\"\n"
-        "                                                     syntax:$syntax$];\n"
+        "    GPB_DEBUG_CHECK_RUNTIME_VERSIONS();\n");
+    if (vars["objc_prefix"].size() > 0) {
+      printer->Print(
+          vars,
+          "    descriptor = [[GPBFileDescriptor alloc] initWithPackage:@\"$package$\"\n"
+          "                                                 objcPrefix:@\"$objc_prefix$\"\n"
+          "                                                     syntax:$syntax$];\n");
+    } else {
+      printer->Print(
+          vars,
+          "    descriptor = [[GPBFileDescriptor alloc] initWithPackage:@\"$package$\"\n"
+          "                                                     syntax:$syntax$];\n");
+    }
+    printer->Print(
         "  }\n"
         "  return descriptor;\n"
         "}\n"
-        "\n",
-        "root_class_name", root_class_name_,
-        "package", file_->package(),
-        "syntax", syntax);
+        "\n");
   }
 
   for (vector<EnumGenerator *>::iterator iter = enum_generators_.begin();
@@ -356,24 +527,35 @@ void FileGenerator::GenerateSource(io::Printer *printer) {
     "// @@protoc_insertion_point(global_scope)\n");
 }
 
-const string FileGenerator::Path() const { return FilePath(file_); }
+// Helper to print the import of the runtime support at the top of generated
+// files. This currently only supports the runtime coming from a framework
+// as defined by the official CocoaPod.
+void FileGenerator::PrintFileRuntimePreamble(
+    io::Printer* printer, const string& header_to_import) const {
+  printer->Print(
+      "// Generated by the protocol buffer compiler.  DO NOT EDIT!\n"
+      "// source: $filename$\n"
+      "\n",
+      "filename", file_->name());
 
-const vector<FileGenerator *> &FileGenerator::DependencyGenerators() {
-  if (file_->dependency_count() != dependency_generators_.size()) {
-    set<string> public_import_names;
-    for (int i = 0; i < file_->public_dependency_count(); i++) {
-      public_import_names.insert(file_->public_dependency(i)->name());
-    }
-    for (int i = 0; i < file_->dependency_count(); i++) {
-      FileGenerator *generator =
-          new FileGenerator(file_->dependency(i), options_);
-      const string& name = file_->dependency(i)->name();
-      bool public_import = (public_import_names.count(name) != 0);
-      generator->SetIsPublicDependency(public_import);
-      dependency_generators_.push_back(generator);
-    }
-  }
-  return dependency_generators_;
+  const string framework_name(ProtobufLibraryFrameworkName);
+  const string cpp_symbol(ProtobufFrameworkImportSymbol(framework_name));
+  printer->Print(
+      "// This CPP symbol can be defined to use imports that match up to the framework\n"
+      "// imports needed when using CocoaPods.\n"
+      "#if !defined($cpp_symbol$)\n"
+      " #define $cpp_symbol$ 0\n"
+      "#endif\n"
+      "\n"
+      "#if $cpp_symbol$\n"
+      " #import <$framework_name$/$header$>\n"
+      "#else\n"
+      " #import \"$header$\"\n"
+      "#endif\n"
+      "\n",
+      "cpp_symbol", cpp_symbol,
+      "header", header_to_import,
+      "framework_name", framework_name);
 }
 
 }  // namespace objectivec

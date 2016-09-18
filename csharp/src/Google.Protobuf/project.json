@@ -1,0 +1,65 @@
+{
+  "version": "3.0.2",
+  "title": "Google Protocol Buffers",
+  "description": "See project site for more info.",
+  "authors": [ "Google Inc." ],
+  "copyright": "Copyright 2015, Google Inc.",
+
+  "packOptions": {
+    "summary": "C# runtime library for Protocol Buffers - Google's data interchange format.",
+    "tags": [ "Protocol", "Buffers", "Binary", "Serialization", "Format", "Google", "proto", "proto3" ],
+    "owners": [ "protobuf-packages" ],
+    "licenseUrl": "https://github.com/google/protobuf/blob/master/LICENSE",
+    "projectUrl": "https://github.com/google/protobuf",
+    "releaseNotes": "C# proto3 support",
+    "requireLicenseAcceptance": false,
+    "repository": {
+      "url": "https://github.com/nodatime/nodatime.git"
+    }
+  },
+
+  "buildOptions": {
+    "debugType": "portable",
+    "keyFile": "../../keys/Google.Protobuf.snk",
+    "xmlDoc": true
+  },
+
+  "configurations": {
+    "Debug": {
+      "buildOptions": {
+        "define": [ "DEBUG", "TRACE" ]
+      }
+    },
+    "Release": {
+      "buildOptions": {
+        "define": [ "RELEASE", "TRACE" ],
+        "optimize": true
+      }
+    }
+  },
+
+  "frameworks": {
+    // This target allows the package to be installed in a .NET 4.5+
+    // project without asking for myriad other dependencies.
+    "net45": {
+    },
+    "netstandard1.0": {
+      "dependencies": {
+        "System.Collections": "4.0.11",
+        "System.Diagnostics.Debug": "4.0.11",
+        "System.Globalization": "4.0.11",
+        "System.IO": "4.1.0",
+        "System.Linq": "4.1.0",
+        "System.Linq.Expressions": "4.1.0",
+        "System.ObjectModel": "4.0.12",
+        "System.Reflection": "4.1.0",
+        "System.Reflection.Extensions": "4.0.1",
+        "System.Runtime": "4.1.0",
+        "System.Runtime.Extensions": "4.1.0",
+        "System.Text.Encoding": "4.0.11",
+        "System.Text.RegularExpressions": "4.1.0",
+        "System.Threading": "4.0.11"
+      }
+    }
+  }
+}

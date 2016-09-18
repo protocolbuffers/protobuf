@@ -17,12 +17,114 @@ protoc_outputs =                                               \
   conformance.pb.h
 
 other_language_protoc_outputs =                                \
-  conformance.rb                                               \
-  com/google/protobuf/conformance/Conformance.java             \
-  lite/com/google/protobuf/conformance/Conformance.java        \
   conformance_pb2.py                                           \
   Conformance.pbobjc.h                                         \
-  Conformance.pbobjc.m
+  Conformance.pbobjc.m                                         \
+  conformance_pb.rb                                            \
+  com/google/protobuf/Any.java                                 \
+  com/google/protobuf/AnyOrBuilder.java                        \
+  com/google/protobuf/AnyProto.java                            \
+  com/google/protobuf/BoolValue.java                           \
+  com/google/protobuf/BoolValueOrBuilder.java                  \
+  com/google/protobuf/BytesValue.java                          \
+  com/google/protobuf/BytesValueOrBuilder.java                 \
+  com/google/protobuf/conformance/Conformance.java             \
+  com/google/protobuf/DoubleValue.java                         \
+  com/google/protobuf/DoubleValueOrBuilder.java                \
+  com/google/protobuf/Duration.java                            \
+  com/google/protobuf/DurationOrBuilder.java                   \
+  com/google/protobuf/DurationProto.java                       \
+  com/google/protobuf/FieldMask.java                           \
+  com/google/protobuf/FieldMaskOrBuilder.java                  \
+  com/google/protobuf/FieldMaskProto.java                      \
+  com/google/protobuf/FloatValue.java                          \
+  com/google/protobuf/FloatValueOrBuilder.java                 \
+  com/google/protobuf/Int32Value.java                          \
+  com/google/protobuf/Int32ValueOrBuilder.java                 \
+  com/google/protobuf/Int64Value.java                          \
+  com/google/protobuf/Int64ValueOrBuilder.java                 \
+  com/google/protobuf/ListValue.java                           \
+  com/google/protobuf/ListValueOrBuilder.java                  \
+  com/google/protobuf/NullValue.java                           \
+  com/google/protobuf/StringValue.java                         \
+  com/google/protobuf/StringValueOrBuilder.java                \
+  com/google/protobuf/Struct.java                              \
+  com/google/protobuf/StructOrBuilder.java                     \
+  com/google/protobuf/StructProto.java                         \
+  com/google/protobuf/Timestamp.java                           \
+  com/google/protobuf/TimestampOrBuilder.java                  \
+  com/google/protobuf/TimestampProto.java                      \
+  com/google/protobuf/UInt32Value.java                         \
+  com/google/protobuf/UInt32ValueOrBuilder.java                \
+  com/google/protobuf/UInt64Value.java                         \
+  com/google/protobuf/UInt64ValueOrBuilder.java                \
+  com/google/protobuf/Value.java                               \
+  com/google/protobuf/ValueOrBuilder.java                      \
+  com/google/protobuf/WrappersProto.java                       \
+  google/protobuf/any.pb.cc                                    \
+  google/protobuf/any.pb.h                                     \
+  google/protobuf/any.rb                                       \
+  google/protobuf/any_pb2.py                                   \
+  google/protobuf/duration.pb.cc                               \
+  google/protobuf/duration.pb.h                                \
+  google/protobuf/duration.rb                                  \
+  google/protobuf/duration_pb2.py                              \
+  google/protobuf/field_mask.pb.cc                             \
+  google/protobuf/field_mask.pb.h                              \
+  google/protobuf/field_mask.rb                                \
+  google/protobuf/field_mask_pb2.py                            \
+  google/protobuf/struct.pb.cc                                 \
+  google/protobuf/struct.pb.h                                  \
+  google/protobuf/struct.rb                                    \
+  google/protobuf/struct_pb2.py                                \
+  google/protobuf/timestamp.pb.cc                              \
+  google/protobuf/timestamp.pb.h                               \
+  google/protobuf/timestamp.rb                                 \
+  google/protobuf/timestamp_pb2.py                             \
+  google/protobuf/wrappers.pb.cc                               \
+  google/protobuf/wrappers.pb.h                                \
+  google/protobuf/wrappers.rb                                  \
+  google/protobuf/wrappers_pb2.py
+  # lite/com/google/protobuf/Any.java                            \
+  # lite/com/google/protobuf/AnyOrBuilder.java                   \
+  # lite/com/google/protobuf/AnyProto.java                       \
+  # lite/com/google/protobuf/BoolValue.java                      \
+  # lite/com/google/protobuf/BoolValueOrBuilder.java             \
+  # lite/com/google/protobuf/BytesValue.java                     \
+  # lite/com/google/protobuf/BytesValueOrBuilder.java            \
+  # lite/com/google/protobuf/conformance/Conformance.java        \
+  # lite/com/google/protobuf/DoubleValue.java                    \
+  # lite/com/google/protobuf/DoubleValueOrBuilder.java           \
+  # lite/com/google/protobuf/Duration.java                       \
+  # lite/com/google/protobuf/DurationOrBuilder.java              \
+  # lite/com/google/protobuf/DurationProto.java                  \
+  # lite/com/google/protobuf/FieldMask.java                      \
+  # lite/com/google/protobuf/FieldMaskOrBuilder.java             \
+  # lite/com/google/protobuf/FieldMaskProto.java                 \
+  # lite/com/google/protobuf/FloatValue.java                     \
+  # lite/com/google/protobuf/FloatValueOrBuilder.java            \
+  # lite/com/google/protobuf/Int32Value.java                     \
+  # lite/com/google/protobuf/Int32ValueOrBuilder.java            \
+  # lite/com/google/protobuf/Int64Value.java                     \
+  # lite/com/google/protobuf/Int64ValueOrBuilder.java            \
+  # lite/com/google/protobuf/ListValue.java                      \
+  # lite/com/google/protobuf/ListValueOrBuilder.java             \
+  # lite/com/google/protobuf/NullValue.java                      \
+  # lite/com/google/protobuf/StringValue.java                    \
+  # lite/com/google/protobuf/StringValueOrBuilder.java           \
+  # lite/com/google/protobuf/Struct.java                         \
+  # lite/com/google/protobuf/StructOrBuilder.java                \
+  # lite/com/google/protobuf/StructProto.java                    \
+  # lite/com/google/protobuf/Timestamp.java                      \
+  # lite/com/google/protobuf/TimestampOrBuilder.java             \
+  # lite/com/google/protobuf/TimestampProto.java                 \
+  # lite/com/google/protobuf/UInt32Value.java                    \
+  # lite/com/google/protobuf/UInt32ValueOrBuilder.java           \
+  # lite/com/google/protobuf/UInt64Value.java                    \
+  # lite/com/google/protobuf/UInt64ValueOrBuilder.java           \
+  # lite/com/google/protobuf/Value.java                          \
+  # lite/com/google/protobuf/ValueOrBuilder.java                 \
+  # lite/com/google/protobuf/WrappersProto.java
 
 bin_PROGRAMS = conformance-test-runner conformance-cpp
 
@@ -90,7 +192,7 @@ if USE_EXTERNAL_PROTOC
 protoc_middleman: $(conformance_protoc_inputs) $(well_known_type_protoc_inputs)
 	$(PROTOC) -I$(srcdir) -I$(top_srcdir) --cpp_out=. --java_out=. --ruby_out=. --objc_out=. --python_out=. $(conformance_protoc_inputs)
 	$(PROTOC) -I$(srcdir) -I$(top_srcdir) --cpp_out=. --java_out=. --ruby_out=. --python_out=. $(well_known_type_protoc_inputs)
-	$(PROTOC) -I$(srcdir) -I$(top_srcdir) --java_out=lite:lite $(conformance_protoc_inputs) $(well_known_type_protoc_inputs)
+	## $(PROTOC) -I$(srcdir) -I$(top_srcdir) --java_out=lite:lite $(conformance_protoc_inputs) $(well_known_type_protoc_inputs)
 	touch protoc_middleman
 
 else
@@ -101,8 +203,8 @@ else
 protoc_middleman: $(top_srcdir)/src/protoc$(EXEEXT) $(conformance_protoc_inputs) $(well_known_type_protoc_inputs)
 	oldpwd=`pwd` && ( cd $(srcdir) && $$oldpwd/../src/protoc$(EXEEXT) -I. -I$(top_srcdir)/src --cpp_out=$$oldpwd --java_out=$$oldpwd --ruby_out=$$oldpwd --objc_out=$$oldpwd --python_out=$$oldpwd $(conformance_protoc_inputs) )
 	oldpwd=`pwd` && ( cd $(srcdir) && $$oldpwd/../src/protoc$(EXEEXT) -I. -I$(top_srcdir)/src --cpp_out=$$oldpwd --java_out=$$oldpwd --ruby_out=$$oldpwd --python_out=$$oldpwd $(well_known_type_protoc_inputs) )
-	@mkdir -p lite
-	oldpwd=`pwd` && ( cd $(srcdir) && $$oldpwd/../src/protoc$(EXEEXT) -I. -I$(top_srcdir)/src --java_out=lite:$$oldpwd/lite $(conformance_protoc_inputs) $(well_known_type_protoc_inputs) )
+	## @mkdir -p lite
+	## oldpwd=`pwd` && ( cd $(srcdir) && $$oldpwd/../src/protoc$(EXEEXT) -I. -I$(top_srcdir)/src --java_out=lite:$$oldpwd/lite $(conformance_protoc_inputs) $(well_known_type_protoc_inputs) )
 	touch protoc_middleman
 
 endif
@@ -144,7 +246,7 @@ conformance-java-lite: javac_middleman_lite
 conformance-csharp: $(other_language_protoc_outputs)
 	@echo "Writing shortcut script conformance-csharp..."
 	@echo '#! /bin/sh' > conformance-csharp
-	@echo 'mono ../csharp/src/Google.Protobuf.Conformance/bin/Release/Google.Protobuf.Conformance.exe "$$@"' >> conformance-csharp
+	@echo 'dotnet ../csharp/src/Google.Protobuf.Conformance/bin/Release/netcoreapp1.0/Google.Protobuf.Conformance.dll "$$@"' >> conformance-csharp
 	@chmod +x conformance-csharp
 
 # Targets for actually running tests.
@@ -166,10 +268,10 @@ test_ruby: protoc_middleman conformance-test-runner $(other_language_protoc_outp
 # These depend on library paths being properly set up.  The easiest way to
 # run them is to just use "tox" from the python dir.
 test_python: protoc_middleman conformance-test-runner
-	./conformance-test-runner --failure_list failure_list_python.txt $(CONFORMANCE_PYTHON_EXTRA_FAILURES) ./conformance_python.py
+	./conformance-test-runner --failure_list failure_list_python.txt ./conformance_python.py
 
 test_python_cpp: protoc_middleman conformance-test-runner
-	./conformance-test-runner --failure_list failure_list_python_cpp.txt $(CONFORMANCE_PYTHON_EXTRA_FAILURES) ./conformance_python.py
+	./conformance-test-runner --failure_list failure_list_python_cpp.txt ./conformance_python.py
 
 if OBJC_CONFORMANCE_TEST
 

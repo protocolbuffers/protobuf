@@ -34,6 +34,7 @@
  * @author mwr@google.com (Mark Rawling)
  */
 
+goog.provide('jspb.ExtensionFieldBinaryInfo');
 goog.provide('jspb.ExtensionFieldInfo');
 goog.provide('jspb.Message');
 
@@ -41,6 +42,7 @@ goog.require('goog.array');
 goog.require('goog.asserts');
 goog.require('goog.crypt.base64');
 goog.require('goog.json');
+goog.require('jspb.Map');
 
 // Not needed in compilation units that have no protos with xids.
 goog.forwardDeclare('xid.String');
@@ -83,19 +85,12 @@ goog.forwardDeclare('xid.String');
  * @param {?function(new: jspb.Message, Array=)} ctor
  * @param {?function((boolean|undefined),!jspb.Message):!Object} toObjectFn
  * @param {number} isRepeated
- * @param {?function(number,?)=} opt_binaryReaderFn
- * @param {?function(number,?)|function(number,?,?,?,?,?)=} opt_binaryWriterFn
- * @param {?function(?,?)=} opt_binaryMessageSerializeFn
- * @param {?function(?,?)=} opt_binaryMessageDeserializeFn
- * @param {?boolean=} opt_isPacked
  * @constructor
  * @struct
  * @template T
  */
 jspb.ExtensionFieldInfo = function(fieldNumber, fieldName, ctor, toObjectFn,
-    isRepeated, opt_binaryReaderFn, opt_binaryWriterFn,
-    opt_binaryMessageSerializeFn, opt_binaryMessageDeserializeFn,
-    opt_isPacked) {
+    isRepeated) {
   /** @const */
   this.fieldIndex = fieldNumber;
   /** @const */
@@ -105,19 +100,36 @@ jspb.ExtensionFieldInfo = function(fieldNumber, fieldName, ctor, toObjectFn,
   /** @const */
   this.toObjectFn = toObjectFn;
   /** @const */
-  this.binaryReaderFn = opt_binaryReaderFn;
-  /** @const */
-  this.binaryWriterFn = opt_binaryWriterFn;
-  /** @const */
-  this.binaryMessageSerializeFn = opt_binaryMessageSerializeFn;
-  /** @const */
-  this.binaryMessageDeserializeFn = opt_binaryMessageDeserializeFn;
-  /** @const */
   this.isRepeated = isRepeated;
-  /** @const */
-  this.isPacked = opt_isPacked;
 };
 
+/**
+ * Stores binary-related information for a single extension field.
+ * @param {!jspb.ExtensionFieldInfo<T>} fieldInfo
+ * @param {?function(number,?)=} binaryReaderFn
+ * @param {?function(number,?)|function(number,?,?,?,?,?)=} binaryWriterFn
+ * @param {?function(?,?)=} opt_binaryMessageSerializeFn
+ * @param {?function(?,?)=} opt_binaryMessageDeserializeFn
+ * @param {?boolean=} opt_isPacked
+ * @constructor
+ * @struct
+ * @template T
+ */
+jspb.ExtensionFieldBinaryInfo = function(fieldInfo, binaryReaderFn, binaryWriterFn,
+    binaryMessageSerializeFn, binaryMessageDeserializeFn, isPacked) {
+  /** @const */
+  this.fieldInfo = fieldInfo;
+  /** @const */
+  this.binaryReaderFn = binaryReaderFn;
+  /** @const */
+  this.binaryWriterFn = binaryWriterFn;
+  /** @const */
+  this.binaryMessageSerializeFn = binaryMessageSerializeFn;
+  /** @const */
+  this.binaryMessageDeserializeFn = binaryMessageDeserializeFn;
+  /** @const */
+  this.isPacked = isPacked;
+};
 
 /**
  * @return {boolean} Does this field represent a sub Message?
@@ -371,7 +383,8 @@ jspb.Message.materializeExtensionObject_ = function(msg, suggestedPivot) {
     // the object is not an array, since arrays are valid field values.
     // NOTE(lukestebbing): We avoid looking at .length to avoid a JIT bug
     // in Safari on iOS 8. See the description of CL/86511464 for details.
-    if (obj && typeof obj == 'object' && !goog.isArray(obj)) {
+    if (obj && typeof obj == 'object' && !goog.isArray(obj) &&
+       !(jspb.Message.SUPPORTS_UINT8ARRAY_ && obj instanceof Uint8Array)) {
       msg.pivot_ = foundIndex - msg.arrayIndexOffset_;
       msg.extensionObject_ = obj;
       return;
@@ -489,11 +502,13 @@ jspb.Message.toObjectExtension = function(proto, obj, extensions,
 jspb.Message.serializeBinaryExtensions = function(proto, writer, extensions,
     getExtensionFn) {
   for (var fieldNumber in extensions) {
-    var fieldInfo = extensions[fieldNumber];
+    var binaryFieldInfo = extensions[fieldNumber];
+    var fieldInfo = binaryFieldInfo.fieldInfo;
+
     // The old codegen doesn't add the extra fields to ExtensionFieldInfo, so we
     // need to gracefully error-out here rather than produce a null dereference
     // below.
-    if (!fieldInfo.binaryWriterFn) {
+    if (!binaryFieldInfo.binaryWriterFn) {
       throw new Error('Message extension present that was generated ' +
                       'without binary serialization support');
     }
@@ -506,16 +521,17 @@ jspb.Message.serializeBinaryExtensions = function(proto, writer, extensions,
         // message may require binary support, so we can *only* catch this error
         // here, at runtime (and this decoupled codegen is the whole point of
         // extensions!).
-        if (fieldInfo.binaryMessageSerializeFn) {
-          fieldInfo.binaryWriterFn.call(writer, fieldInfo.fieldIndex,
-              value, fieldInfo.binaryMessageSerializeFn);
+        if (binaryFieldInfo.binaryMessageSerializeFn) {
+          binaryFieldInfo.binaryWriterFn.call(writer, fieldInfo.fieldIndex,
+              value, binaryFieldInfo.binaryMessageSerializeFn);
         } else {
           throw new Error('Message extension present holding submessage ' +
                           'without binary support enabled, and message is ' +
                           'being serialized to binary format');
         }
       } else {
-        fieldInfo.binaryWriterFn.call(writer, fieldInfo.fieldIndex, value);
+        binaryFieldInfo.binaryWriterFn.call(
+            writer, fieldInfo.fieldIndex, value);
       }
     }
   }
@@ -533,12 +549,13 @@ jspb.Message.serializeBinaryExtensions = function(proto, writer, extensions,
  */
 jspb.Message.readBinaryExtension = function(msg, reader, extensions,
     getExtensionFn, setExtensionFn) {
-  var fieldInfo = extensions[reader.getFieldNumber()];
-  if (!fieldInfo) {
+  var binaryFieldInfo = extensions[reader.getFieldNumber()];
+  var fieldInfo = binaryFieldInfo.fieldInfo;
+  if (!binaryFieldInfo) {
     reader.skipField();
     return;
   }
-  if (!fieldInfo.binaryReaderFn) {
+  if (!binaryFieldInfo.binaryReaderFn) {
     throw new Error('Deserializing extension whose generated code does not ' +
                     'support binary format');
   }
@@ -546,14 +563,14 @@ jspb.Message.readBinaryExtension = function(msg, reader, extensions,
   var value;
   if (fieldInfo.isMessageType()) {
     value = new fieldInfo.ctor();
-    fieldInfo.binaryReaderFn.call(
-        reader, value, fieldInfo.binaryMessageDeserializeFn);
+    binaryFieldInfo.binaryReaderFn.call(
+        reader, value, binaryFieldInfo.binaryMessageDeserializeFn);
   } else {
     // All other types.
-    value = fieldInfo.binaryReaderFn.call(reader);
+    value = binaryFieldInfo.binaryReaderFn.call(reader);
   }
 
-  if (fieldInfo.isRepeated && !fieldInfo.isPacked) {
+  if (fieldInfo.isRepeated && !binaryFieldInfo.isPacked) {
     var currentList = getExtensionFn.call(msg, fieldInfo);
     if (!currentList) {
       setExtensionFn.call(msg, fieldInfo, [value]);
@@ -733,6 +750,46 @@ jspb.Message.getFieldProto3 = function(msg, fieldNumber, defaultValue) {
     return defaultValue;
   } else {
     return value;
+  }
+};
+
+
+/**
+ * Gets the value of a map field, lazily creating the map container if
+ * necessary.
+ *
+ * This should only be called from generated code, because it requires knowledge
+ * of serialization/parsing callbacks (which are required by the map at
+ * construction time, and the map may be constructed here).
+ *
+ * @template K, V
+ * @param {!jspb.Message} msg
+ * @param {number} fieldNumber
+ * @param {boolean|undefined} noLazyCreate
+ * @param {?=} opt_valueCtor
+ * @return {!jspb.Map<K, V>|undefined}
+ * @protected
+ */
+jspb.Message.getMapField = function(msg, fieldNumber, noLazyCreate,
+    opt_valueCtor) {
+  if (!msg.wrappers_) {
+    msg.wrappers_ = {};
+  }
+  // If we already have a map in the map wrappers, return that.
+  if (fieldNumber in msg.wrappers_) {
+    return msg.wrappers_[fieldNumber];
+  } else if (noLazyCreate) {
+    return undefined;
+  } else {
+    // Wrap the underlying elements array with a Map.
+    var arr = jspb.Message.getField(msg, fieldNumber);
+    if (!arr) {
+      arr = [];
+      jspb.Message.setField(msg, fieldNumber, arr);
+    }
+    return msg.wrappers_[fieldNumber] =
+        new jspb.Map(
+            /** @type {!Array<!Array<!Object>>} */ (arr), opt_valueCtor);
   }
 };
 
@@ -953,12 +1010,45 @@ jspb.Message.toMap = function(
 
 
 /**
+ * Syncs all map fields' contents back to their underlying arrays.
+ * @private
+ */
+jspb.Message.prototype.syncMapFields_ = function() {
+  // This iterates over submessage, map, and repeated fields, which is intended.
+  // Submessages can contain maps which also need to be synced.
+  //
+  // There is a lot of opportunity for optimization here.  For example we could
+  // statically determine that some messages have no submessages with maps and
+  // optimize this method away for those just by generating one extra static
+  // boolean per message type.
+  if (this.wrappers_) {
+    for (var fieldNumber in this.wrappers_) {
+      var val = this.wrappers_[fieldNumber];
+      if (goog.isArray(val)) {
+        for (var i = 0; i < val.length; i++) {
+          if (val[i]) {
+            val[i].toArray();
+          }
+        }
+      } else {
+        // Works for submessages and maps.
+        if (val) {
+          val.toArray();
+        }
+      }
+    }
+  }
+};
+
+
+/**
  * Returns the internal array of this proto.
  * <p>Note: If you use this array to construct a second proto, the content
  * would then be partially shared between the two protos.
  * @return {!Array} The proto represented as an array.
  */
 jspb.Message.prototype.toArray = function() {
+  this.syncMapFields_();
   return this.array;
 };
 
@@ -972,6 +1062,7 @@ jspb.Message.prototype.toArray = function() {
  * @override
  */
 jspb.Message.prototype.toString = function() {
+  this.syncMapFields_();
   return this.array.toString();
 };
 
@@ -1292,6 +1383,9 @@ jspb.Message.clone_ = function(obj) {
       }
     }
     return clonedArray;
+  }
+  if (jspb.Message.SUPPORTS_UINT8ARRAY_ && obj instanceof Uint8Array) {
+    return new Uint8Array(obj);
   }
   var clone = {};
   for (var key in obj) {

@@ -30,6 +30,7 @@
 
 #include <stdarg.h>
 #include <string>
+#include <fstream>
 
 #include "conformance.pb.h"
 #include "conformance_test.h"
@@ -271,11 +272,16 @@ void ConformanceTestSuite::RunValidInputTest(
   TestAllTypes test_message;
 
   switch (response.result_case()) {
+    case ConformanceResponse::RESULT_NOT_SET:
+      ReportFailure(test_name, request, response,
+                    "Response didn't have any field in the Response.");
+      return;
+
     case ConformanceResponse::kParseError:
     case ConformanceResponse::kRuntimeError:
     case ConformanceResponse::kSerializeError:
       ReportFailure(test_name, request, response,
-                    "Failed to parse JSON input or produce JSON output.");
+                    "Failed to parse input or produce output.");
       return;
 
     case ConformanceResponse::kSkipped:
@@ -394,6 +400,17 @@ void ConformanceTestSuite::RunValidJsonTest(
 void ConformanceTestSuite::RunValidJsonTestWithProtobufInput(
     const string& test_name, const TestAllTypes& input,
     const string& equivalent_text_format) {
+  RunValidInputTest("ProtobufInput." + test_name + ".JsonOutput",
+                    input.SerializeAsString(), conformance::PROTOBUF,
+                    equivalent_text_format, conformance::JSON);
+}
+
+void ConformanceTestSuite::RunValidProtobufTest(
+    const string& test_name, const TestAllTypes& input,
+    const string& equivalent_text_format) {
+  RunValidInputTest("ProtobufInput." + test_name + ".ProtobufOutput",
+                    input.SerializeAsString(), conformance::PROTOBUF,
+                    equivalent_text_format, conformance::PROTOBUF);
   RunValidInputTest("ProtobufInput." + test_name + ".JsonOutput",
                     input.SerializeAsString(), conformance::PROTOBUF,
                     equivalent_text_format, conformance::JSON);
@@ -575,24 +592,41 @@ void ConformanceTestSuite::TestPrematureEOFForType(FieldDescriptor::Type type) {
   }
 }
 
-void ConformanceTestSuite::SetFailureList(const vector<string>& failure_list) {
+void ConformanceTestSuite::SetFailureList(const string& filename,
+                                          const vector<string>& failure_list) {
+  failure_list_filename_ = filename;
   expected_to_fail_.clear();
   std::copy(failure_list.begin(), failure_list.end(),
             std::inserter(expected_to_fail_, expected_to_fail_.end()));
 }
 
 bool ConformanceTestSuite::CheckSetEmpty(const set<string>& set_to_check,
-                                         const char* msg) {
+                                         const std::string& write_to_file,
+                                         const std::string& msg) {
   if (set_to_check.empty()) {
     return true;
   } else {
     StringAppendF(&output_, "\n");
-    StringAppendF(&output_, "%s:\n", msg);
+    StringAppendF(&output_, "%s\n\n", msg.c_str());
     for (set<string>::const_iterator iter = set_to_check.begin();
          iter != set_to_check.end(); ++iter) {
       StringAppendF(&output_, "  %s\n", iter->c_str());
     }
     StringAppendF(&output_, "\n");
+
+    if (!write_to_file.empty()) {
+      std::ofstream os(write_to_file);
+      if (os) {
+        for (set<string>::const_iterator iter = set_to_check.begin();
+             iter != set_to_check.end(); ++iter) {
+          os << *iter << "\n";
+        }
+      } else {
+        StringAppendF(&output_, "Failed to open file: %s\n",
+                      write_to_file.c_str());
+      }
+    }
+
     return false;
   }
 }
@@ -620,18 +654,22 @@ bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
   RunValidJsonTest("HelloWorld", "{\"optionalString\":\"Hello, World!\"}",
                    "optional_string: 'Hello, World!'");
 
+  // NOTE: The spec for JSON support is still being sorted out, these may not
+  // all be correct.
   // Test field name conventions.
   RunValidJsonTest(
       "FieldNameInSnakeCase",
       R"({
         "fieldname1": 1,
         "fieldName2": 2,
-        "FieldName3": 3
+        "fieldName3": 3,
+        "fieldName4": 4
       })",
       R"(
         fieldname1: 1
         field_name2: 2
         _field_name3: 3
+        field__name4_: 4
       )");
   RunValidJsonTest(
       "FieldNameWithNumbers",
@@ -661,6 +699,24 @@ bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
         FIELD_NAME11: 11
         FIELD_name12: 12
       )");
+  RunValidJsonTest(
+      "FieldNameWithDoubleUnderscores",
+      R"({
+        "fieldName13": 13,
+        "fieldName14": 14,
+        "fieldName15": 15,
+        "fieldName16": 16,
+        "fieldName17": 17,
+        "fieldName18": 18
+      })",
+      R"(
+        __field_name13: 13
+        __Field_name14: 14
+        field__name15: 15
+        field__Name16: 16
+        field_name17__: 17
+        Field_name18__: 18
+      )");
   // Using the original proto field name in JSON is also allowed.
   RunValidJsonTest(
       "OriginalProtoFieldName",
@@ -668,6 +724,7 @@ bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
         "fieldname1": 1,
         "field_name2": 2,
         "_field_name3": 3,
+        "field__name4_": 4,
         "field0name5": 5,
         "field_0_name6": 6,
         "fieldName7": 7,
@@ -675,12 +732,19 @@ bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
         "field_Name9": 9,
         "Field_Name10": 10,
         "FIELD_NAME11": 11,
-        "FIELD_name12": 12
+        "FIELD_name12": 12,
+        "__field_name13": 13,
+        "__Field_name14": 14,
+        "field__name15": 15,
+        "field__Name16": 16,
+        "field_name17__": 17,
+        "Field_name18__": 18
       })",
       R"(
         fieldname1: 1
         field_name2: 2
         _field_name3: 3
+        field__name4_: 4
         field0name5: 5
         field_0_name6: 6
         fieldName7: 7
@@ -689,12 +753,22 @@ bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
         Field_Name10: 10
         FIELD_NAME11: 11
         FIELD_name12: 12
+        __field_name13: 13
+        __Field_name14: 14
+        field__name15: 15
+        field__Name16: 16
+        field_name17__: 17
+        Field_name18__: 18
       )");
   // Field names can be escaped.
   RunValidJsonTest(
       "FieldNameEscaped",
       R"({"fieldn\u0061me1": 1})",
       "fieldname1: 1");
+  // String ends with escape character.
+  ExpectParseFailureForJson(
+      "StringEndsWithEscapeChar",
+      "{\"optionalString\": \"abc\\");
   // Field names must be quoted (or it's not valid JSON).
   ExpectParseFailureForJson(
       "FieldNameNotQuoted",
@@ -703,6 +777,17 @@ bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
   ExpectParseFailureForJson(
       "TrailingCommaInAnObject",
       R"({"fieldname1":1,})");
+  ExpectParseFailureForJson(
+      "TrailingCommaInAnObjectWithSpace",
+      R"({"fieldname1":1 ,})");
+  ExpectParseFailureForJson(
+      "TrailingCommaInAnObjectWithSpaceCommaSpace",
+      R"({"fieldname1":1 , })");
+  ExpectParseFailureForJson(
+      "TrailingCommaInAnObjectWithNewlines",
+      R"({
+        "fieldname1":1,
+      })");
   // JSON doesn't support comments.
   ExpectParseFailureForJson(
       "JsonWithComments",
@@ -710,6 +795,42 @@ bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
         // This is a comment.
         "fieldname1": 1
       })");
+  // JSON spec says whitespace doesn't matter, so try a few spacings to be sure.
+  RunValidJsonTest(
+      "OneLineNoSpaces",
+      "{\"optionalInt32\":1,\"optionalInt64\":2}",
+      R"(
+        optional_int32: 1
+        optional_int64: 2
+      )");
+  RunValidJsonTest(
+      "OneLineWithSpaces",
+      "{ \"optionalInt32\" : 1 , \"optionalInt64\" : 2 }",
+      R"(
+        optional_int32: 1
+        optional_int64: 2
+      )");
+  RunValidJsonTest(
+      "MultilineNoSpaces",
+      "{\n\"optionalInt32\"\n:\n1\n,\n\"optionalInt64\"\n:\n2\n}",
+      R"(
+        optional_int32: 1
+        optional_int64: 2
+      )");
+  RunValidJsonTest(
+      "MultilineWithSpaces",
+      "{\n  \"optionalInt32\"  :  1\n  ,\n  \"optionalInt64\"  :  2\n}\n",
+      R"(
+        optional_int32: 1
+        optional_int64: 2
+      )");
+  // Missing comma between key/value pairs.
+  ExpectParseFailureForJson(
+      "MissingCommaOneLine",
+      "{ \"optionalInt32\": 1 \"optionalInt64\": 2 }");
+  ExpectParseFailureForJson(
+      "MissingCommaMultiline",
+      "{\n  \"optionalInt32\": 1\n  \"optionalInt64\": 2\n}");
   // Duplicated field names are not allowed.
   ExpectParseFailureForJson(
       "FieldNameDuplicate",
@@ -729,18 +850,22 @@ bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
         "optionalNestedMessage": {a: 1},
         "optional_nested_message": {}
       })");
+  // NOTE: The spec for JSON support is still being sorted out, these may not
+  // all be correct.
   // Serializers should use lowerCamelCase by default.
   RunValidJsonTestWithValidator(
       "FieldNameInLowerCamelCase",
       R"({
         "fieldname1": 1,
         "fieldName2": 2,
-        "FieldName3": 3
+        "fieldName3": 3,
+        "fieldName4": 4
       })",
       [](const Json::Value& value) {
         return value.isMember("fieldname1") &&
             value.isMember("fieldName2") &&
-            value.isMember("FieldName3");
+            value.isMember("fieldName3") &&
+            value.isMember("fieldName4");
       });
   RunValidJsonTestWithValidator(
       "FieldNameWithNumbers",
@@ -770,6 +895,24 @@ bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
             value.isMember("fIELDNAME11") &&
             value.isMember("fIELDName12");
       });
+  RunValidJsonTestWithValidator(
+      "FieldNameWithDoubleUnderscores",
+      R"({
+        "fieldName13": 13,
+        "fieldName14": 14,
+        "fieldName15": 15,
+        "fieldName16": 16,
+        "fieldName17": 17,
+        "fieldName18": 18
+      })",
+      [](const Json::Value& value) {
+        return value.isMember("fieldName13") &&
+            value.isMember("fieldName14") &&
+            value.isMember("fieldName15") &&
+            value.isMember("fieldName16") &&
+            value.isMember("fieldName17") &&
+            value.isMember("fieldName18");
+      });
 
   // Integer fields.
   RunValidJsonTest(
@@ -796,18 +939,26 @@ bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
       "Uint64FieldMaxValue",
       R"({"optionalUint64": "18446744073709551615"})",
       "optional_uint64: 18446744073709551615");
+  // While not the largest Int64, this is the largest
+  // Int64 which can be exactly represented within an
+  // IEEE-754 64-bit float, which is the expected level
+  // of interoperability guarantee. Larger values may
+  // work in some implementations, but should not be
+  // relied upon.
   RunValidJsonTest(
       "Int64FieldMaxValueNotQuoted",
-      R"({"optionalInt64": 9223372036854775807})",
-      "optional_int64: 9223372036854775807");
+      R"({"optionalInt64": 9223372036854774784})",
+      "optional_int64: 9223372036854774784");
   RunValidJsonTest(
       "Int64FieldMinValueNotQuoted",
       R"({"optionalInt64": -9223372036854775808})",
       "optional_int64: -9223372036854775808");
+  // Largest interoperable Uint64; see comment above
+  // for Int64FieldMaxValueNotQuoted.
   RunValidJsonTest(
       "Uint64FieldMaxValueNotQuoted",
-      R"({"optionalUint64": 18446744073709551615})",
-      "optional_uint64: 18446744073709551615");
+      R"({"optionalUint64": 18446744073709549568})",
+      "optional_uint64: 18446744073709549568");
   // Values can be represented as JSON strings.
   RunValidJsonTest(
       "Int32FieldStringValue",
@@ -1199,6 +1350,64 @@ bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
   ExpectParseFailureForJson(
       "OneofFieldDuplicate",
       R"({"oneofUint32": 1, "oneofString": "test"})");
+  // Ensure zero values for oneof make it out/backs.
+  {
+    TestAllTypes message;
+    message.set_oneof_uint32(0);
+    RunValidProtobufTest(
+        "OneofZeroUint32", message, "oneof_uint32: 0");
+    message.mutable_oneof_nested_message()->set_a(0);
+    RunValidProtobufTest(
+        "OneofZeroMessage", message, "oneof_nested_message: {}");
+    message.set_oneof_string("");
+    RunValidProtobufTest(
+        "OneofZeroString", message, "oneof_string: \"\"");
+    message.set_oneof_bytes("");
+    RunValidProtobufTest(
+        "OneofZeroBytes", message, "oneof_bytes: \"\"");
+    message.set_oneof_bool(false);
+    RunValidProtobufTest(
+        "OneofZeroBool", message, "oneof_bool: false");
+    message.set_oneof_uint64(0);
+    RunValidProtobufTest(
+        "OneofZeroUint64", message, "oneof_uint64: 0");
+    message.set_oneof_float(0.0f);
+    RunValidProtobufTest(
+        "OneofZeroFloat", message, "oneof_float: 0");
+    message.set_oneof_double(0.0);
+    RunValidProtobufTest(
+        "OneofZeroDouble", message, "oneof_double: 0");
+    message.set_oneof_enum(TestAllTypes::FOO);
+    RunValidProtobufTest(
+        "OneofZeroEnum", message, "oneof_enum: FOO");
+  }
+  RunValidJsonTest(
+      "OneofZeroUint32",
+      R"({"oneofUint32": 0})", "oneof_uint32: 0");
+  RunValidJsonTest(
+      "OneofZeroMessage",
+      R"({"oneofNestedMessage": {}})", "oneof_nested_message: {}");
+  RunValidJsonTest(
+      "OneofZeroString",
+      R"({"oneofString": ""})", "oneof_string: \"\"");
+  RunValidJsonTest(
+      "OneofZeroBytes",
+      R"({"oneofBytes": ""})", "oneof_bytes: \"\"");
+  RunValidJsonTest(
+      "OneofZeroBool",
+      R"({"oneofBool": false})", "oneof_bool: false");
+  RunValidJsonTest(
+      "OneofZeroUint64",
+      R"({"oneofUint64": 0})", "oneof_uint64: 0");
+  RunValidJsonTest(
+      "OneofZeroFloat",
+      R"({"oneofFloat": 0.0})", "oneof_float: 0");
+  RunValidJsonTest(
+      "OneofZeroDouble",
+      R"({"oneofDouble": 0.0})", "oneof_double: 0");
+  RunValidJsonTest(
+      "OneofZeroEnum",
+      R"({"oneofEnum":"FOO"})", "oneof_enum: FOO");
 
   // Repeated fields.
   RunValidJsonTest(
@@ -1255,6 +1464,15 @@ bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
   ExpectParseFailureForJson(
       "RepeatedFieldTrailingComma",
       R"({"repeatedInt32": [1, 2, 3, 4,]})");
+  ExpectParseFailureForJson(
+      "RepeatedFieldTrailingCommaWithSpace",
+      "{\"repeatedInt32\": [1, 2, 3, 4 ,]}");
+  ExpectParseFailureForJson(
+      "RepeatedFieldTrailingCommaWithSpaceCommaSpace",
+      "{\"repeatedInt32\": [1, 2, 3, 4 , ]}");
+  ExpectParseFailureForJson(
+      "RepeatedFieldTrailingCommaWithNewlines",
+      "{\"repeatedInt32\": [\n  1,\n  2,\n  3,\n  4,\n]}");
 
   // Map fields.
   RunValidJsonTest(
@@ -1372,6 +1590,18 @@ bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
   ExpectParseFailureForJson(
       "MapFieldValueIsNull",
       R"({"mapInt32Int32": {"0": null}})");
+
+  // http://www.rfc-editor.org/rfc/rfc7159.txt says strings have to use double
+  // quotes.
+  ExpectParseFailureForJson(
+      "StringFieldSingleQuoteKey",
+      R"({'optionalString': "Hello world!"})");
+  ExpectParseFailureForJson(
+      "StringFieldSingleQuoteValue",
+      R"({"optionalString": 'Hello world!'})");
+  ExpectParseFailureForJson(
+      "StringFieldSingleQuoteBoth",
+      R"({'optionalString': 'Hello world!'})");
 
   // Wrapper types.
   RunValidJsonTest(
@@ -1965,27 +2195,34 @@ bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
       )");
 
   bool ok = true;
-  if (!CheckSetEmpty(expected_to_fail_,
+  if (!CheckSetEmpty(expected_to_fail_, "nonexistent_tests.txt",
                      "These tests were listed in the failure list, but they "
-                     "don't exist.  Remove them from the failure list")) {
+                     "don't exist.  Remove them from the failure list by "
+                     "running:\n"
+                     "  ./update_failure_list.py " + failure_list_filename_ +
+                     " --remove nonexistent_tests.txt")) {
     ok = false;
   }
-  if (!CheckSetEmpty(unexpected_failing_tests_,
+  if (!CheckSetEmpty(unexpected_failing_tests_, "failing_tests.txt",
                      "These tests failed.  If they can't be fixed right now, "
                      "you can add them to the failure list so the overall "
-                     "suite can succeed")) {
+                     "suite can succeed.  Add them to the failure list by "
+                     "running:\n"
+                     "  ./update_failure_list.py " + failure_list_filename_ +
+                     " --add failing_tests.txt")) {
+    ok = false;
+  }
+  if (!CheckSetEmpty(unexpected_succeeding_tests_, "succeeding_tests.txt",
+                     "These tests succeeded, even though they were listed in "
+                     "the failure list.  Remove them from the failure list "
+                     "by running:\n"
+                     "  ./update_failure_list.py " + failure_list_filename_ +
+                     " --remove succeeding_tests.txt")) {
     ok = false;
   }
 
-  // Sometimes the testee may be fixed before we update the failure list (e.g.,
-  // the testee is from a different component). We warn about this case but
-  // don't consider it an overall test failure.
-  CheckSetEmpty(unexpected_succeeding_tests_,
-                "These tests succeeded, even though they were listed in "
-                "the failure list.  Remove them from the failure list");
-
   if (verbose_) {
-    CheckSetEmpty(skipped_,
+    CheckSetEmpty(skipped_, "",
                   "These tests were skipped (probably because support for some "
                   "features is not implemented)");
   }

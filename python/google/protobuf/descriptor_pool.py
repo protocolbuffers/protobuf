@@ -394,6 +394,11 @@ class DescriptorPool(object):
               desc_proto_prefix, desc_proto.name, scope)
           file_descriptor.message_types_by_name[desc_proto.name] = desc
 
+        for index, service_proto in enumerate(file_proto.service):
+          file_descriptor.services_by_name[service_proto.name] = (
+              self._MakeServiceDescriptor(service_proto, index, scope,
+                                          file_proto.package, file_descriptor))
+
       self.Add(file_proto)
       self._file_descriptors[file_proto.name] = file_descriptor
 
@@ -441,7 +446,7 @@ class DescriptorPool(object):
         for index, extension in enumerate(desc_proto.extension)]
     oneofs = [
         descriptor.OneofDescriptor(desc.name, '.'.join((desc_name, desc.name)),
-                                   index, None, [])
+                                   index, None, [], desc.options)
         for index, desc in enumerate(desc_proto.oneof_decl)]
     extension_ranges = [(r.start, r.end) for r in desc_proto.extension_range]
     if extension_ranges:
@@ -678,6 +683,64 @@ class DescriptorPool(object):
         number=value_proto.number,
         options=value_proto.options,
         type=None)
+
+  def _MakeServiceDescriptor(self, service_proto, service_index, scope,
+                             package, file_desc):
+    """Make a protobuf ServiceDescriptor given a ServiceDescriptorProto.
+
+    Args:
+      service_proto: The descriptor_pb2.ServiceDescriptorProto protobuf message.
+      service_index: The index of the service in the File.
+      scope: Dict mapping short and full symbols to message and enum types.
+      package: Optional package name for the new message EnumDescriptor.
+      file_desc: The file containing the service descriptor.
+
+    Returns:
+      The added descriptor.
+    """
+
+    if package:
+      service_name = '.'.join((package, service_proto.name))
+    else:
+      service_name = service_proto.name
+
+    methods = [self._MakeMethodDescriptor(method_proto, service_name, package,
+                                          scope, index)
+               for index, method_proto in enumerate(service_proto.method)]
+    desc = descriptor.ServiceDescriptor(name=service_proto.name,
+                                        full_name=service_name,
+                                        index=service_index,
+                                        methods=methods,
+                                        options=service_proto.options,
+                                        file=file_desc)
+    return desc
+
+  def _MakeMethodDescriptor(self, method_proto, service_name, package, scope,
+                            index):
+    """Creates a method descriptor from a MethodDescriptorProto.
+
+    Args:
+      method_proto: The proto describing the method.
+      service_name: The name of the containing service.
+      package: Optional package name to look up for types.
+      scope: Scope containing available types.
+      index: Index of the method in the service.
+
+    Returns:
+      An initialized MethodDescriptor object.
+    """
+    full_name = '.'.join((service_name, method_proto.name))
+    input_type = self._GetTypeFromScope(
+        package, method_proto.input_type, scope)
+    output_type = self._GetTypeFromScope(
+        package, method_proto.output_type, scope)
+    return descriptor.MethodDescriptor(name=method_proto.name,
+                                       full_name=full_name,
+                                       index=index,
+                                       containing_service=None,
+                                       input_type=input_type,
+                                       output_type=output_type,
+                                       options=method_proto.options)
 
   def _ExtractSymbols(self, descriptors):
     """Pulls out all the symbols from descriptor protos.

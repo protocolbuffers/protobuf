@@ -39,6 +39,7 @@ import "google/protobuf/wrappers.proto";
 import "google/protobuf/struct.proto";
 import "google/protobuf/any.proto";
 import "google/protobuf/field_mask.proto";
+import "google/protobuf/unittest.proto";
 
 enum EnumType {
   FOO = 0;
@@ -173,4 +174,8 @@ message TestBoolValue {
 
 message TestCustomJsonName {
   int32 value = 1 [json_name = "@value"];
+}
+
+message TestExtensions {
+  .protobuf_unittest.TestAllExtensions extensions = 1;
 }

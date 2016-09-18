@@ -54,7 +54,7 @@ VALUE noleak_rb_str_cat(VALUE rb_str, const char *str, long len) {
 static const void* newhandlerdata(upb_handlers* h, uint32_t ofs) {
   size_t* hd_ofs = ALLOC(size_t);
   *hd_ofs = ofs;
-  upb_handlers_addcleanup(h, hd_ofs, free);
+  upb_handlers_addcleanup(h, hd_ofs, xfree);
   return hd_ofs;
 }
 
@@ -69,7 +69,7 @@ static const void *newsubmsghandlerdata(upb_handlers* h, uint32_t ofs,
   submsg_handlerdata_t *hd = ALLOC(submsg_handlerdata_t);
   hd->ofs = ofs;
   hd->md = upb_fielddef_msgsubdef(f);
-  upb_handlers_addcleanup(h, hd, free);
+  upb_handlers_addcleanup(h, hd, xfree);
   return hd;
 }
 
@@ -99,7 +99,7 @@ static const void *newoneofhandlerdata(upb_handlers *h,
   } else {
     hd->md = NULL;
   }
-  upb_handlers_addcleanup(h, hd, free);
+  upb_handlers_addcleanup(h, hd, xfree);
   return hd;
 }
 
@@ -135,7 +135,7 @@ static void* appendstr_handler(void *closure,
   VALUE ary = (VALUE)closure;
   VALUE str = rb_str_new2("");
   rb_enc_associate(str, kRubyStringUtf8Encoding);
-  RepeatedField_push(ary, str);
+  RepeatedField_push_native(ary, &str);
   return (void*)str;
 }
 
@@ -146,7 +146,7 @@ static void* appendbytes_handler(void *closure,
   VALUE ary = (VALUE)closure;
   VALUE str = rb_str_new2("");
   rb_enc_associate(str, kRubyString8bitEncoding);
-  RepeatedField_push(ary, str);
+  RepeatedField_push_native(ary, &str);
   return (void*)str;
 }
 
@@ -180,6 +180,23 @@ static size_t stringdata_handler(void* closure, const void* hd,
   VALUE rb_str = (VALUE)closure;
   noleak_rb_str_cat(rb_str, str, len);
   return len;
+}
+
+static bool stringdata_end_handler(void* closure, const void* hd) {
+  MessageHeader* msg = closure;
+  const size_t *ofs = hd;
+  VALUE rb_str = DEREF(msg, *ofs, VALUE);
+  rb_obj_freeze(rb_str);
+  return true;
+}
+
+static bool appendstring_end_handler(void* closure, const void* hd) {
+  VALUE ary = (VALUE)closure;
+  int size = RepeatedField_size(ary);
+  VALUE* last = RepeatedField_index_native(ary, size - 1);
+  VALUE rb_str = *last;
+  rb_obj_freeze(rb_str);
+  return true;
 }
 
 // Appends a submessage to a repeated field (a regular Ruby array for now).
@@ -238,9 +255,53 @@ typedef struct {
 // value into the map.
 typedef struct {
   VALUE map;
+  const map_handlerdata_t* handlerdata;
   char key_storage[NATIVE_SLOT_MAX_SIZE];
   char value_storage[NATIVE_SLOT_MAX_SIZE];
 } map_parse_frame_t;
+
+static void MapParseFrame_mark(void* _self) {
+  map_parse_frame_t* frame = _self;
+
+  // This shouldn't strictly be necessary since this should be rooted by the
+  // message itself, but it can't hurt.
+  rb_gc_mark(frame->map);
+
+  native_slot_mark(frame->handlerdata->key_field_type, &frame->key_storage);
+  native_slot_mark(frame->handlerdata->value_field_type, &frame->value_storage);
+}
+
+void MapParseFrame_free(void* self) {
+  xfree(self);
+}
+
+rb_data_type_t MapParseFrame_type = {
+  "MapParseFrame",
+  { MapParseFrame_mark, MapParseFrame_free, NULL },
+};
+
+// Array of Ruby objects wrapping map_parse_frame_t.
+// We don't allow multiple concurrent decodes, so we assume that this global
+// variable is specific to the "current" decode.
+VALUE map_parse_frames;
+
+static map_parse_frame_t* map_push_frame(VALUE map,
+                                         const map_handlerdata_t* handlerdata) {
+  map_parse_frame_t* frame = ALLOC(map_parse_frame_t);
+  frame->handlerdata = handlerdata;
+  frame->map = map;
+  native_slot_init(handlerdata->key_field_type, &frame->key_storage);
+  native_slot_init(handlerdata->value_field_type, &frame->value_storage);
+
+  rb_ary_push(map_parse_frames,
+              TypedData_Wrap_Struct(rb_cObject, &MapParseFrame_type, frame));
+
+  return frame;
+}
+
+static void map_pop_frame() {
+  rb_ary_pop(map_parse_frames);
+}
 
 // Handler to begin a map entry: allocates a temporary frame. This is the
 // 'startsubmsg' handler on the msgdef that contains the map field.
@@ -249,13 +310,7 @@ static void *startmapentry_handler(void *closure, const void *hd) {
   const map_handlerdata_t* mapdata = hd;
   VALUE map_rb = DEREF(msg, mapdata->ofs, VALUE);
 
-  map_parse_frame_t* frame = ALLOC(map_parse_frame_t);
-  frame->map = map_rb;
-
-  native_slot_init(mapdata->key_field_type, &frame->key_storage);
-  native_slot_init(mapdata->value_field_type, &frame->value_storage);
-
-  return frame;
+  return map_push_frame(map_rb, mapdata);
 }
 
 // Handler to end a map entry: inserts the value defined during the message into
@@ -281,7 +336,7 @@ static bool endmap_handler(void *closure, const void *hd, upb_status* s) {
       &frame->value_storage);
 
   Map_index_set(frame->map, key, value);
-  free(frame);
+  map_pop_frame();
 
   return true;
 }
@@ -360,6 +415,13 @@ static void *oneofbytes_handler(void *closure,
   return (void*)str;
 }
 
+static bool oneofstring_end_handler(void* closure, const void* hd) {
+  MessageHeader* msg = closure;
+  const oneof_handlerdata_t *oneofdata = hd;
+  rb_obj_freeze(DEREF(msg, oneofdata->ofs, VALUE));
+  return true;
+}
+
 // Handler for a submessage field in a oneof.
 static void *oneofsubmsg_handler(void *closure,
                                  const void *hd) {
@@ -426,6 +488,7 @@ static void add_handlers_for_repeated_field(upb_handlers *h,
                                appendbytes_handler : appendstr_handler,
                                NULL);
       upb_handlers_setstring(h, f, stringdata_handler, NULL);
+      upb_handlers_setendstr(h, f, appendstring_end_handler, NULL);
       break;
     }
     case UPB_TYPE_MESSAGE: {
@@ -462,6 +525,7 @@ static void add_handlers_for_singular_field(upb_handlers *h,
                                is_bytes ? bytes_handler : str_handler,
                                &attr);
       upb_handlers_setstring(h, f, stringdata_handler, &attr);
+      upb_handlers_setendstr(h, f, stringdata_end_handler, &attr);
       upb_handlerattr_uninit(&attr);
       break;
     }
@@ -484,7 +548,7 @@ static void add_handlers_for_mapfield(upb_handlers* h,
   map_handlerdata_t* hd = new_map_handlerdata(offset, map_msgdef, desc);
   upb_handlerattr attr = UPB_HANDLERATTR_INITIALIZER;
 
-  upb_handlers_addcleanup(h, hd, free);
+  upb_handlers_addcleanup(h, hd, xfree);
   upb_handlerattr_sethandlerdata(&attr, hd);
   upb_handlers_setstartsubmsg(h, fielddef, startmapentry_handler, &attr);
   upb_handlerattr_uninit(&attr);
@@ -499,7 +563,7 @@ static void add_handlers_for_mapentry(const upb_msgdef* msgdef,
   map_handlerdata_t* hd = new_map_handlerdata(0, msgdef, desc);
   upb_handlerattr attr = UPB_HANDLERATTR_INITIALIZER;
 
-  upb_handlers_addcleanup(h, hd, free);
+  upb_handlers_addcleanup(h, hd, xfree);
   upb_handlerattr_sethandlerdata(&attr, hd);
   upb_handlers_setendmsg(h, endmap_handler, &attr);
 
@@ -546,6 +610,7 @@ static void add_handlers_for_oneof_field(upb_handlers *h,
                                oneofbytes_handler : oneofstr_handler,
                                &attr);
       upb_handlers_setstring(h, f, stringdata_handler, NULL);
+      upb_handlers_setendstr(h, f, oneofstring_end_handler, &attr);
       break;
     }
     case UPB_TYPE_MESSAGE: {
@@ -710,6 +775,10 @@ VALUE Message_decode(VALUE klass, VALUE data) {
   msg_rb = rb_class_new_instance(0, NULL, msgklass);
   TypedData_Get_Struct(msg_rb, MessageHeader, &Message_type, msg);
 
+  // We generally expect this to be clear already, but clear it in case parsing
+  // previously got interrupted somehow.
+  rb_ary_clear(map_parse_frames);
+
   {
     const upb_pbdecodermethod* method = msgdef_decodermethod(desc);
     const upb_handlers* h = upb_pbdecodermethod_desthandlers(method);
@@ -753,6 +822,10 @@ VALUE Message_decode_json(VALUE klass, VALUE data) {
 
   msg_rb = rb_class_new_instance(0, NULL, msgklass);
   TypedData_Get_Struct(msg_rb, MessageHeader, &Message_type, msg);
+
+  // We generally expect this to be clear already, but clear it in case parsing
+  // previously got interrupted somehow.
+  rb_ary_clear(map_parse_frames);
 
   {
     const upb_json_parsermethod* method = msgdef_jsonparsermethod(desc);
@@ -863,9 +936,13 @@ static void putstr(VALUE str, const upb_fielddef *f, upb_sink *sink) {
 
   assert(BUILTIN_TYPE(str) == RUBY_T_STRING);
 
-  // Ensure that the string has the correct encoding. We also check at field-set
-  // time, but the user may have mutated the string object since then.
-  native_slot_validate_string_encoding(upb_fielddef_type(f), str);
+  // We should be guaranteed that the string has the correct encoding because
+  // we ensured this at assignment time and then froze the string.
+  if (upb_fielddef_type(f) == UPB_TYPE_STRING) {
+    assert(rb_enc_from_index(ENCODING_GET(value)) == kRubyStringUtf8Encoding);
+  } else {
+    assert(rb_enc_from_index(ENCODING_GET(value)) == kRubyString8bitEncoding);
+  }
 
   upb_sink_startstr(sink, getsel(f, UPB_HANDLER_STARTSTR), RSTRING_LEN(str),
                     &subsink);

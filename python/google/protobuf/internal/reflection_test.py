@@ -636,7 +636,7 @@ class ReflectionTest(unittest.TestCase):
     if struct.calcsize('L') == 4:
       # Python only has signed ints, so 32-bit python can't fit an uint32
       # in an int.
-      TestGetAndDeserialize('optional_uint32', 1 << 31, long)
+      TestGetAndDeserialize('optional_uint32', 1 << 31, integer_64)
     else:
       # 64-bit python can fit uint32 inside an int
       TestGetAndDeserialize('optional_uint32', 1 << 31, int)
@@ -972,6 +972,7 @@ class ReflectionTest(unittest.TestCase):
     proto.repeated_nested_message.add(bb=23)
     self.assertEqual(1, len(proto.repeated_nested_message))
     self.assertEqual(23, proto.repeated_nested_message[0].bb)
+    self.assertRaises(TypeError, proto.repeated_nested_message.add, 23)
 
   def testRepeatedCompositeRemove(self):
     proto = unittest_pb2.TestAllTypes()

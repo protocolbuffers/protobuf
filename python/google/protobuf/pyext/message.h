@@ -53,8 +53,8 @@ class DescriptorPool;
 class MessageFactory;
 
 #ifdef _SHARED_PTR_H
-using shared_ptr;
-using std::std::string;
+using std::shared_ptr;
+using std::string;
 #else
 using internal::shared_ptr;
 #endif
@@ -237,7 +237,9 @@ PyObject* HasFieldByDescriptor(
 PyObject* HasField(CMessage* self, PyObject* arg);
 
 // Initializes values of fields on a newly constructed message.
-int InitAttributes(CMessage* self, PyObject* kwargs);
+// Note that positional arguments are disallowed: 'args' must be NULL or the
+// empty tuple.
+int InitAttributes(CMessage* self, PyObject* args, PyObject* kwargs);
 
 PyObject* MergeFrom(CMessage* self, PyObject* arg);
 
@@ -268,6 +270,8 @@ int AssureWritable(CMessage* self);
 // The returned pool is suitable for finding fields and building submessages,
 // even in the case of extensions.
 PyDescriptorPool* GetDescriptorPoolForMessage(CMessage* message);
+
+PyObject* SetAllowOversizeProtos(PyObject* m, PyObject* arg);
 
 }  // namespace cmessage
 
@@ -353,6 +357,8 @@ bool CheckFieldBelongsToMessage(const FieldDescriptor* field_descriptor,
                                 const Message* message);
 
 extern PyObject* PickleError_class;
+
+bool InitProto2MessageModule(PyObject *m);
 
 }  // namespace python
 }  // namespace protobuf

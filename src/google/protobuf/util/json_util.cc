@@ -74,7 +74,7 @@ util::Status BinaryToJsonStream(TypeResolver* resolver,
                                   const string& type_url,
                                   io::ZeroCopyInputStream* binary_input,
                                   io::ZeroCopyOutputStream* json_output,
-                                  const JsonOptions& options) {
+                                  const JsonPrintOptions& options) {
   io::CodedInputStream in_stream(binary_input);
   google::protobuf::Type type;
   RETURN_IF_ERROR(resolver->ResolveMessageType(type_url, &type));
@@ -95,7 +95,7 @@ util::Status BinaryToJsonString(TypeResolver* resolver,
                                   const string& type_url,
                                   const string& binary_input,
                                   string* json_output,
-                                  const JsonOptions& options) {
+                                  const JsonPrintOptions& options) {
   io::ArrayInputStream input_stream(binary_input.data(), binary_input.size());
   io::StringOutputStream output_stream(json_output);
   return BinaryToJsonStream(resolver, type_url, &input_stream, &output_stream,
@@ -141,13 +141,17 @@ class StatusErrorListener : public converter::ErrorListener {
 util::Status JsonToBinaryStream(TypeResolver* resolver,
                                   const string& type_url,
                                   io::ZeroCopyInputStream* json_input,
-                                  io::ZeroCopyOutputStream* binary_output) {
+                                  io::ZeroCopyOutputStream* binary_output,
+                                  const JsonParseOptions& options) {
   google::protobuf::Type type;
   RETURN_IF_ERROR(resolver->ResolveMessageType(type_url, &type));
   internal::ZeroCopyStreamByteSink sink(binary_output);
   StatusErrorListener listener;
+  converter::ProtoStreamObjectWriter::Options proto_writer_options;
+  proto_writer_options.ignore_unknown_fields = options.ignore_unknown_fields;
   converter::ProtoStreamObjectWriter proto_writer(resolver, type, &sink,
-                                                  &listener);
+                                                  &listener,
+                                                  proto_writer_options);
 
   converter::JsonStreamParser parser(&proto_writer);
   const void* buffer;
@@ -165,10 +169,72 @@ util::Status JsonToBinaryStream(TypeResolver* resolver,
 util::Status JsonToBinaryString(TypeResolver* resolver,
                                   const string& type_url,
                                   const string& json_input,
-                                  string* binary_output) {
+                                  string* binary_output,
+                                  const JsonParseOptions& options) {
   io::ArrayInputStream input_stream(json_input.data(), json_input.size());
   io::StringOutputStream output_stream(binary_output);
-  return JsonToBinaryStream(resolver, type_url, &input_stream, &output_stream);
+  return JsonToBinaryStream(
+      resolver, type_url, &input_stream, &output_stream, options);
+}
+
+namespace {
+const char* kTypeUrlPrefix = "type.googleapis.com";
+TypeResolver* generated_type_resolver_ = NULL;
+GOOGLE_PROTOBUF_DECLARE_ONCE(generated_type_resolver_init_);
+
+string GetTypeUrl(const Message& message) {
+  return string(kTypeUrlPrefix) + "/" + message.GetDescriptor()->full_name();
+}
+
+void DeleteGeneratedTypeResolver() { delete generated_type_resolver_; }
+
+void InitGeneratedTypeResolver() {
+  generated_type_resolver_ = NewTypeResolverForDescriptorPool(
+      kTypeUrlPrefix, DescriptorPool::generated_pool());
+  ::google::protobuf::internal::OnShutdown(&DeleteGeneratedTypeResolver);
+}
+
+TypeResolver* GetGeneratedTypeResolver() {
+  ::google::protobuf::GoogleOnceInit(&generated_type_resolver_init_, &InitGeneratedTypeResolver);
+  return generated_type_resolver_;
+}
+}  // namespace
+
+util::Status MessageToJsonString(const Message& message, string* output,
+                                   const JsonOptions& options) {
+  const DescriptorPool* pool = message.GetDescriptor()->file()->pool();
+  TypeResolver* resolver =
+      pool == DescriptorPool::generated_pool()
+          ? GetGeneratedTypeResolver()
+          : NewTypeResolverForDescriptorPool(kTypeUrlPrefix, pool);
+  util::Status result =
+      BinaryToJsonString(resolver, GetTypeUrl(message),
+                         message.SerializeAsString(), output, options);
+  if (pool != DescriptorPool::generated_pool()) {
+    delete resolver;
+  }
+  return result;
+}
+
+util::Status JsonStringToMessage(const string& input, Message* message,
+                                   const JsonParseOptions& options) {
+  const DescriptorPool* pool = message->GetDescriptor()->file()->pool();
+  TypeResolver* resolver =
+      pool == DescriptorPool::generated_pool()
+          ? GetGeneratedTypeResolver()
+          : NewTypeResolverForDescriptorPool(kTypeUrlPrefix, pool);
+  string binary;
+  util::Status result = JsonToBinaryString(
+      resolver, GetTypeUrl(*message), input, &binary, options);
+  if (result.ok() && !message->ParseFromString(binary)) {
+    result =
+        util::Status(util::error::INVALID_ARGUMENT,
+                       "JSON transcoder produced invalid protobuf output.");
+  }
+  if (pool != DescriptorPool::generated_pool()) {
+    delete resolver;
+  }
+  return result;
 }
 
 }  // namespace util

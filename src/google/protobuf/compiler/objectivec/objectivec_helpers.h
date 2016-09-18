@@ -28,6 +28,8 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+// Helper functions for generating ObjectiveC code.
+
 #ifndef GOOGLE_PROTOBUF_COMPILER_OBJECTIVEC_HELPERS_H__
 #define GOOGLE_PROTOBUF_COMPILER_OBJECTIVEC_HELPERS_H__
 
@@ -46,6 +48,8 @@ namespace objectivec {
 struct Options {
   Options();
   string expected_prefixes_path;
+  string generate_for_named_framework;
+  string named_framework_to_proto_path_mappings_path;
 };
 
 // Escape C++ trigraphs by escaping question marks to "\?".
@@ -53,6 +57,9 @@ string EscapeTrigraphs(const string& to_escape);
 
 // Strips ".proto" or ".protodevel" from the end of a filename.
 string StripProto(const string& filename);
+
+// Remove white space from either end of a StringPiece.
+void StringPieceTrimWhitespace(StringPiece* input);
 
 // Returns true if the name requires a ns_returns_not_retained attribute applied
 // to it.
@@ -62,14 +69,16 @@ bool IsRetainedName(const string& name);
 // handling under ARC.
 bool IsInitName(const string& name);
 
-// Gets the name of the file we're going to generate (sans the .pb.h
-// extension).  This does not include the path to that file.
-string FileName(const FileDescriptor* file);
+// Gets the objc_class_prefix.
+string FileClassPrefix(const FileDescriptor* file);
 
 // Gets the path of the file we're going to generate (sans the .pb.h
 // extension).  The path will be dependent on the objectivec package
 // declared in the proto package.
 string FilePath(const FileDescriptor* file);
+
+// Just like FilePath(), but without the directory part.
+string FilePathBasename(const FileDescriptor* file);
 
 // Gets the name of the root class we'll generate in the file.  This class
 // is not meant for external consumption, but instead contains helpers that
@@ -79,6 +88,7 @@ string FileClassName(const FileDescriptor* file);
 // These return the fully-qualified class name corresponding to the given
 // descriptor.
 string ClassName(const Descriptor* descriptor);
+string ClassName(const Descriptor* descriptor, string* out_suffix_added);
 string EnumName(const EnumDescriptor* descriptor);
 
 // Returns the fully-qualified name of the enum value corresponding to the
@@ -133,6 +143,12 @@ enum ObjectiveCType {
   OBJECTIVECTYPE_MESSAGE
 };
 
+enum FlagType {
+  FLAGTYPE_DESCRIPTOR_INITIALIZATION,
+  FLAGTYPE_EXTENSION,
+  FLAGTYPE_FIELD
+};
+
 template<class TDescriptor>
 string GetOptionalDeprecatedAttribute(const TDescriptor* descriptor, bool preSpace = true, bool postNewline = false) {
   if (descriptor->options().deprecated()) {
@@ -164,23 +180,36 @@ string GPBGenericValueFieldName(const FieldDescriptor* field);
 string DefaultValue(const FieldDescriptor* field);
 bool HasNonZeroDefaultValue(const FieldDescriptor* field);
 
-string BuildFlagsString(const vector<string>& strings);
+string BuildFlagsString(const FlagType type, const vector<string>& strings);
 
-// Builds a HeaderDoc style comment out of the comments in the .proto file.
-string BuildCommentsString(const SourceLocation& location);
+// Builds HeaderDoc/appledoc style comments out of the comments in the .proto
+// file.
+string BuildCommentsString(const SourceLocation& location,
+                           bool prefer_single_line);
 
-// Checks the prefix for a given file and outputs any warnings needed, if
-// there are flat out errors, then out_error is filled in and the result is
-// false.
-bool ValidateObjCClassPrefix(const FileDescriptor* file,
-                             const Options& generation_options,
-                             string* out_error);
+// The name the commonly used by the library when built as a framework.
+// This lines up to the name used in the CocoaPod.
+extern const char* const ProtobufLibraryFrameworkName;
+// Returns the CPP symbol name to use as the gate for framework style imports
+// for the given framework name to use.
+string ProtobufFrameworkImportSymbol(const string& framework_name);
+
+// Checks if the file is one of the proto's bundled with the library.
+bool IsProtobufLibraryBundledProtoFile(const FileDescriptor* file);
+
+// Checks the prefix for the given files and outputs any warnings as needed. If
+// there are flat out errors, then out_error is filled in with the first error
+// and the result is false.
+bool ValidateObjCClassPrefixes(const vector<const FileDescriptor*>& files,
+                               const Options& generation_options,
+                               string* out_error);
 
 // Generate decode data needed for ObjC's GPBDecodeTextFormatName() to transform
 // the input into the expected output.
 class LIBPROTOC_EXPORT TextFormatDecodeData {
  public:
-  TextFormatDecodeData() {}
+  TextFormatDecodeData();
+  ~TextFormatDecodeData();
 
   void AddString(int32 key, const string& input_for_decode,
                  const string& desired_output);
@@ -195,6 +224,54 @@ class LIBPROTOC_EXPORT TextFormatDecodeData {
 
   typedef std::pair<int32, string> DataEntry;
   vector<DataEntry> entries_;
+};
+
+// Helper for parsing simple files.
+class LIBPROTOC_EXPORT LineConsumer {
+ public:
+  LineConsumer();
+  virtual ~LineConsumer();
+  virtual bool ConsumeLine(const StringPiece& line, string* out_error) = 0;
+};
+
+bool ParseSimpleFile(
+    const string& path, LineConsumer* line_consumer, string* out_error);
+
+
+// Helper class for parsing framework import mappings and generating
+// import statements.
+class LIBPROTOC_EXPORT ImportWriter {
+ public:
+  ImportWriter(const string& generate_for_named_framework,
+               const string& named_framework_to_proto_path_mappings_path);
+  ~ImportWriter();
+
+  void AddFile(const FileDescriptor* file, const string& header_extension);
+  void Print(io::Printer *printer) const;
+
+ private:
+  class ProtoFrameworkCollector : public LineConsumer {
+   public:
+    ProtoFrameworkCollector(map<string, string>* inout_proto_file_to_framework_name)
+        : map_(inout_proto_file_to_framework_name) {}
+
+    virtual bool ConsumeLine(const StringPiece& line, string* out_error);
+
+   private:
+    map<string, string>* map_;
+  };
+
+  void ParseFrameworkMappings();
+
+  const string generate_for_named_framework_;
+  const string named_framework_to_proto_path_mappings_path_;
+  map<string, string> proto_file_to_framework_name_;
+  bool need_to_parse_mapping_file_;
+
+  vector<string> protobuf_framework_imports_;
+  vector<string> protobuf_non_framework_imports_;
+  vector<string> other_framework_imports_;
+  vector<string> other_imports_;
 };
 
 }  // namespace objectivec

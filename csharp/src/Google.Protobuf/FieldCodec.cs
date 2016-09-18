@@ -347,7 +347,8 @@ namespace Google.Protobuf
     public sealed class FieldCodec<T>
     {
         private static readonly T DefaultDefault;
-        private static readonly bool TypeSupportsPacking = typeof(T).IsValueType() && Nullable.GetUnderlyingType(typeof(T)) == null;
+        // Only non-nullable value types support packing. This is the simplest way of detecting that.
+        private static readonly bool TypeSupportsPacking = default(T) != null;
 
         static FieldCodec()
         {

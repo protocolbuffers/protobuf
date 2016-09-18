@@ -31,6 +31,7 @@
 #ifndef GOOGLE_PROTOBUF_MAP_ENTRY_LITE_H__
 #define GOOGLE_PROTOBUF_MAP_ENTRY_LITE_H__
 
+#include <assert.h>
 #include <google/protobuf/map_type_handler.h>
 #include <google/protobuf/wire_format_lite_inl.h>
 
@@ -53,6 +54,38 @@ class MapFieldLite;
 
 namespace protobuf {
 namespace internal {
+
+// MoveHelper::Move is used to set *dest.  It copies *src, or moves it (in
+// the C++11 sense), or swaps it. *src is left in a sane state for
+// subsequent destruction, but shouldn't be used for anything.
+template <bool is_enum, bool is_message, bool is_stringlike, typename T>
+struct MoveHelper {  // primitives
+  static void Move(T* src, T* dest) { *dest = *src; }
+};
+
+template <bool is_message, bool is_stringlike, typename T>
+struct MoveHelper<true, is_message, is_stringlike, T> {  // enums
+  static void Move(T* src, T* dest) { *dest = *src; }
+  // T is an enum here, so allow conversions to and from int.
+  static void Move(T* src, int* dest) { *dest = static_cast<int>(*src); }
+  static void Move(int* src, T* dest) { *dest = static_cast<T>(*src); }
+};
+
+template <bool is_stringlike, typename T>
+struct MoveHelper<false, true, is_stringlike, T> {  // messages
+  static void Move(T* src, T* dest) { dest->Swap(src); }
+};
+
+template <typename T>
+struct MoveHelper<false, false, true, T> {  // strings and similar
+  static void Move(T* src, T* dest) {
+#if __cplusplus >= 201103L
+    *dest = std::move(*src);
+#else
+    dest->swap(*src);
+#endif
+  }
+};
 
 // MapEntryLite is used to implement parsing and serialization of map for lite
 // runtime.
@@ -180,10 +213,16 @@ class MapEntryLite : public MessageLite {
     ValueTypeHandler::Write(kValueFieldNumber, value(), output);
   }
 
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const {
-    output = KeyTypeHandler::WriteToArray(kKeyFieldNumber, key(), output);
-    output = ValueTypeHandler::WriteToArray(kValueFieldNumber, value(), output);
+  ::google::protobuf::uint8* InternalSerializeWithCachedSizesToArray(bool deterministic,
+                                                   ::google::protobuf::uint8* output) const {
+    output = KeyTypeHandler::InternalWriteToArray(kKeyFieldNumber, key(),
+                                                  deterministic, output);
+    output = ValueTypeHandler::InternalWriteToArray(kValueFieldNumber, value(),
+                                                    deterministic, output);
     return output;
+  }
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const {
+    return InternalSerializeWithCachedSizesToArray(false, output);
   }
 
   int GetCachedSize() const {
@@ -270,6 +309,108 @@ class MapEntryLite : public MessageLite {
                                                 default_enum_value> >(
         arena, key, value);
   }
+
+  // Parsing using MergePartialFromCodedStream, above, is not as
+  // efficient as it could be.  This helper class provides a speedier way.
+  template <typename MapField, typename Map>
+  class Parser {
+   public:
+    explicit Parser(MapField* mf) : mf_(mf), map_(mf->MutableMap()) {}
+
+    // This does what the typical MergePartialFromCodedStream() is expected to
+    // do, with the additional side-effect that if successful (i.e., if true is
+    // going to be its return value) it inserts the key-value pair into map_.
+    bool MergePartialFromCodedStream(::google::protobuf::io::CodedInputStream* input) {
+      // Look for the expected thing: a key and then a value.  If it fails,
+      // invoke the enclosing class's MergePartialFromCodedStream, or return
+      // false if that would be pointless.
+      if (input->ExpectTag(kKeyTag)) {
+        if (!KeyTypeHandler::Read(input, &key_)) {
+          return false;
+        }
+        // Peek at the next byte to see if it is kValueTag.  If not, bail out.
+        const void* data;
+        int size;
+        input->GetDirectBufferPointerInline(&data, &size);
+        // We could use memcmp here, but we don't bother. The tag is one byte.
+        assert(kTagSize == 1);
+        if (size > 0 && *reinterpret_cast<const char*>(data) == kValueTag) {
+          typename Map::size_type size = map_->size();
+          value_ptr_ = &(*map_)[key_];
+          if (GOOGLE_PREDICT_TRUE(size != map_->size())) {
+            // We created a new key-value pair.  Fill in the value.
+            typedef
+                typename MapIf<ValueTypeHandler::kIsEnum, int*, Value*>::type T;
+            input->Skip(kTagSize);  // Skip kValueTag.
+            if (!ValueTypeHandler::Read(input,
+                                        reinterpret_cast<T>(value_ptr_))) {
+              map_->erase(key_);  // Failure! Undo insertion.
+              return false;
+            }
+            if (input->ExpectAtEnd()) return true;
+            return ReadBeyondKeyValuePair(input);
+          }
+        }
+      } else {
+        key_ = Key();
+      }
+
+      entry_.reset(mf_->NewEntry());
+      *entry_->mutable_key() = key_;
+      if (!entry_->MergePartialFromCodedStream(input)) return false;
+      return UseKeyAndValueFromEntry();
+    }
+
+    const Key& key() const { return key_; }
+    const Value& value() const { return *value_ptr_; }
+
+   private:
+    bool UseKeyAndValueFromEntry() GOOGLE_ATTRIBUTE_COLD {
+      // Update key_ in case we need it later (because key() is called).
+      // This is potentially inefficient, especially if the key is
+      // expensive to copy (e.g., a long string), but this is a cold
+      // path, so it's not a big deal.
+      key_ = entry_->key();
+      value_ptr_ = &(*map_)[key_];
+      MoveHelper<ValueTypeHandler::kIsEnum,
+                 ValueTypeHandler::kIsMessage,
+                 ValueTypeHandler::kWireType ==
+                 WireFormatLite::WIRETYPE_LENGTH_DELIMITED,
+                 Value>::Move(entry_->mutable_value(), value_ptr_);
+      if (entry_->GetArena() != NULL) entry_.release();
+      return true;
+    }
+
+    // After reading a key and value successfully, and inserting that data
+    // into map_, we are not at the end of the input.  This is unusual, but
+    // allowed by the spec.
+    bool ReadBeyondKeyValuePair(::google::protobuf::io::CodedInputStream* input)
+        GOOGLE_ATTRIBUTE_COLD {
+      typedef MoveHelper<KeyTypeHandler::kIsEnum,
+                         KeyTypeHandler::kIsMessage,
+                         KeyTypeHandler::kWireType ==
+                         WireFormatLite::WIRETYPE_LENGTH_DELIMITED,
+                         Key> KeyMover;
+      typedef MoveHelper<ValueTypeHandler::kIsEnum,
+                         ValueTypeHandler::kIsMessage,
+                         ValueTypeHandler::kWireType ==
+                         WireFormatLite::WIRETYPE_LENGTH_DELIMITED,
+                         Value> ValueMover;
+      entry_.reset(mf_->NewEntry());
+      ValueMover::Move(value_ptr_, entry_->mutable_value());
+      map_->erase(key_);
+      KeyMover::Move(&key_, entry_->mutable_key());
+      if (!entry_->MergePartialFromCodedStream(input)) return false;
+      return UseKeyAndValueFromEntry();
+    }
+
+    MapField* const mf_;
+    Map* const map_;
+    Key key_;
+    Value* value_ptr_;
+    // On the fast path entry_ is not used.
+    google::protobuf::scoped_ptr<MapEntryLite> entry_;
+  };
 
  protected:
   void set_has_key() { _has_bits_[0] |= 0x00000001u; }
@@ -392,6 +533,32 @@ class MapEntryLite : public MessageLite {
   friend class internal::MapFieldLite;
 
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(MapEntryLite);
+};
+
+// Helpers for deterministic serialization =============================
+
+// This struct can be used with any generic sorting algorithm.  If the Key
+// type is relatively small and easy to copy then copying Keys into an
+// array of SortItems can be beneficial.  Then all the data the sorting
+// algorithm needs to touch is in that one array.
+template <typename Key, typename PtrToKeyValuePair> struct SortItem {
+  SortItem() {}
+  explicit SortItem(PtrToKeyValuePair p) : first(p->first), second(p) {}
+
+  Key first;
+  PtrToKeyValuePair second;
+};
+
+template <typename T> struct CompareByFirstField {
+  bool operator()(const T& a, const T& b) const {
+    return a.first < b.first;
+  }
+};
+
+template <typename T> struct CompareByDerefFirst {
+  bool operator()(const T& a, const T& b) const {
+    return a->first < b->first;
+  }
 };
 
 }  // namespace internal

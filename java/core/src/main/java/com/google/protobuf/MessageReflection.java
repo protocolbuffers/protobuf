@@ -364,7 +364,6 @@ class MessageReflection {
      * Finishes the merge and returns the underlying object.
      */
     Object finish();
-    
   }
 
   static class BuilderAdapter implements MergeTarget {
@@ -549,7 +548,6 @@ class MessageReflection {
     public Object finish() {
       return builder.buildPartial();
     }
-    
   }
 
 
@@ -713,7 +711,6 @@ class MessageReflection {
       throw new UnsupportedOperationException(
           "finish() called on FieldSet object");
     }
-    
   }
 
   /**

@@ -78,10 +78,6 @@ typedef struct GPBMessage_Storage *GPBMessage_StoragePtr;
 // returns nil if the extension is not set)
 - (id)getExistingExtension:(GPBExtensionDescriptor *)extension;
 
-// Returns an array of GPBExtensionDescriptor* for all the extensions currently
-// in use on the message.  They are sorted by field number.
-- (NSArray *)sortedExtensionsInUse;
-
 // Parses a message of this type from the input and merges it with this
 // message.
 //
@@ -110,9 +106,12 @@ CF_EXTERN_C_BEGIN
 
 // Call this before using the readOnlySemaphore_. This ensures it is created only once.
 NS_INLINE void GPBPrepareReadOnlySemaphore(GPBMessage *self) {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdirect-ivar-access"
   dispatch_once(&self->readOnlySemaphoreCreationOnce_, ^{
     self->readOnlySemaphore_ = dispatch_semaphore_create(1);
   });
+#pragma clang diagnostic pop
 }
 
 // Returns a new instance that was automatically created by |autocreator| for

@@ -45,7 +45,7 @@ import java.util.Map.Entry;
  *
  * <p>The locations of primary fields values are retrieved by {@code getLocation} or
  * {@code getLocations}.  The locations of sub message values are within nested
- * {@code TextFormatParseInfoTree}s and are retrieve by {@getNestedTree} or {code @getNestedTrees}.
+ * {@code TextFormatParseInfoTree}s and are retrieve by {@code getNestedTree} or {@code getNestedTrees}.
  *
  * <p>The {@code TextFormatParseInfoTree} is created by a Builder.
  */
@@ -197,7 +197,7 @@ public class TextFormatParseInfoTree {
      * Set for a sub message.
      *
      * <p>A new builder is created for a sub message. The builder that is returned is a new builder.
-     * The return is <emph>not</emph> the invoked {@code builder.getBuilderForSubMessageField}.
+     * The return is <em>not</em> the invoked {@code builder.getBuilderForSubMessageField}.
      *
      * @param fieldDescriptor the field whose value is the submessage
      * @return a new Builder for the sub message

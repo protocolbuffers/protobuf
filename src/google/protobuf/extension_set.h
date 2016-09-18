@@ -273,6 +273,8 @@ class LIBPROTOBUF_EXPORT ExtensionSet {
 
   MessageLite* ReleaseMessage(const FieldDescriptor* descriptor,
                               MessageFactory* factory);
+  MessageLite* UnsafeArenaReleaseMessage(const FieldDescriptor* descriptor,
+                                         MessageFactory* factory);
 #undef desc
   ::google::protobuf::Arena* GetArenaNoVirtual() const { return arena_; }
 
@@ -403,12 +405,21 @@ class LIBPROTOBUF_EXPORT ExtensionSet {
   // serialized extensions.
   //
   // Returns a pointer past the last written byte.
-  uint8* SerializeWithCachedSizesToArray(int start_field_number,
-                                         int end_field_number,
-                                         uint8* target) const;
+  uint8* InternalSerializeWithCachedSizesToArray(int start_field_number,
+                                                 int end_field_number,
+                                                 bool deterministic,
+                                                 uint8* target) const;
 
   // Like above but serializes in MessageSet format.
   void SerializeMessageSetWithCachedSizes(io::CodedOutputStream* output) const;
+  uint8* InternalSerializeMessageSetWithCachedSizesToArray(bool deterministic,
+                                                           uint8* target) const;
+
+  // For backward-compatibility, versions of two of the above methods that
+  // are never forced to serialize deterministically.
+  uint8* SerializeWithCachedSizesToArray(int start_field_number,
+                                         int end_field_number,
+                                         uint8* target) const;
   uint8* SerializeMessageSetWithCachedSizesToArray(uint8* target) const;
 
   // Returns the total serialized size of all the extensions.
@@ -456,6 +467,13 @@ class LIBPROTOBUF_EXPORT ExtensionSet {
     virtual void WriteMessage(int number,
                               io::CodedOutputStream* output) const = 0;
     virtual uint8* WriteMessageToArray(int number, uint8* target) const = 0;
+    virtual uint8* InternalWriteMessageToArray(int number, bool,
+                                               uint8* target) const {
+      // TODO(gpike): make this pure virtual. This is a placeholder because we
+      // need to update third_party/upb, for example.
+      return WriteMessageToArray(number, target);
+    }
+
    private:
     GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(LazyMessageExtension);
   };
@@ -522,14 +540,16 @@ class LIBPROTOBUF_EXPORT ExtensionSet {
     void SerializeFieldWithCachedSizes(
         int number,
         io::CodedOutputStream* output) const;
-    uint8* SerializeFieldWithCachedSizesToArray(
+    uint8* InternalSerializeFieldWithCachedSizesToArray(
         int number,
+        bool deterministic,
         uint8* target) const;
     void SerializeMessageSetItemWithCachedSizes(
         int number,
         io::CodedOutputStream* output) const;
-    uint8* SerializeMessageSetItemWithCachedSizesToArray(
+    uint8* InternalSerializeMessageSetItemWithCachedSizesToArray(
         int number,
+        bool deterministic,
         uint8* target) const;
     int ByteSize(int number) const;
     int MessageSetItemByteSize(int number) const;
@@ -538,6 +558,7 @@ class LIBPROTOBUF_EXPORT ExtensionSet {
     void Free();
     int SpaceUsedExcludingSelf() const;
   };
+  typedef std::map<int, Extension> ExtensionMap;
 
 
   // Merges existing Extension from other_extension
@@ -608,7 +629,7 @@ class LIBPROTOBUF_EXPORT ExtensionSet {
   // only contain a small number of extensions whereas hash_map is optimized
   // for 100 elements or more.  Also, we want AppendToList() to order fields
   // by field number.
-  std::map<int, Extension> extensions_;
+  ExtensionMap extensions_;
   ::google::protobuf::Arena* arena_;
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(ExtensionSet);
 };
@@ -980,9 +1001,20 @@ class MessageTypeTraits {
                                   MutableType message, ExtensionSet* set) {
     set->SetAllocatedMessage(number, field_type, NULL, message);
   }
+  static inline void UnsafeArenaSetAllocated(int number, FieldType field_type,
+                                             MutableType message,
+                                             ExtensionSet* set) {
+    set->UnsafeArenaSetAllocatedMessage(number, field_type, NULL, message);
+  }
   static inline MutableType Release(int number, FieldType /* field_type */,
                                     ExtensionSet* set) {
     return static_cast<Type*>(set->ReleaseMessage(
+        number, Type::default_instance()));
+  }
+  static inline MutableType UnsafeArenaRelease(int number,
+                                               FieldType /* field_type */,
+                                               ExtensionSet* set) {
+    return static_cast<Type*>(set->UnsafeArenaReleaseMessage(
         number, Type::default_instance()));
   }
 };
@@ -1178,11 +1210,31 @@ class ExtensionIdentifier {
   template <typename _proto_TypeTraits,                                       \
             ::google::protobuf::internal::FieldType _field_type,                        \
             bool _is_packed>                                                  \
+  inline void UnsafeArenaSetAllocatedExtension(                               \
+      const ::google::protobuf::internal::ExtensionIdentifier<                          \
+        CLASSNAME, _proto_TypeTraits, _field_type, _is_packed>& id,           \
+      typename _proto_TypeTraits::Singular::MutableType value) {              \
+    _proto_TypeTraits::UnsafeArenaSetAllocated(id.number(), _field_type,      \
+                                               value, &_extensions_);         \
+  }                                                                           \
+  template <typename _proto_TypeTraits,                                       \
+            ::google::protobuf::internal::FieldType _field_type,                        \
+            bool _is_packed>                                                  \
   inline typename _proto_TypeTraits::Singular::MutableType ReleaseExtension(  \
       const ::google::protobuf::internal::ExtensionIdentifier<                          \
         CLASSNAME, _proto_TypeTraits, _field_type, _is_packed>& id) {         \
     return _proto_TypeTraits::Release(id.number(), _field_type,               \
                                       &_extensions_);                         \
+  }                                                                           \
+  template <typename _proto_TypeTraits,                                       \
+            ::google::protobuf::internal::FieldType _field_type,                        \
+            bool _is_packed>                                                  \
+  inline typename _proto_TypeTraits::Singular::MutableType                    \
+      UnsafeArenaReleaseExtension(                                            \
+          const ::google::protobuf::internal::ExtensionIdentifier<                      \
+            CLASSNAME, _proto_TypeTraits, _field_type, _is_packed>& id) {     \
+    return _proto_TypeTraits::UnsafeArenaRelease(id.number(), _field_type,    \
+                                                 &_extensions_);              \
   }                                                                           \
                                                                               \
   /* Repeated accessors */                                                    \

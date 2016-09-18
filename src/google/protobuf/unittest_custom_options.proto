@@ -69,6 +69,10 @@ extend google.protobuf.FieldOptions {
   optional int32 field_opt2 = 7753913 [default=42];
 }
 
+extend google.protobuf.OneofOptions {
+  optional int32 oneof_opt1 = 7740111;
+}
+
 extend google.protobuf.EnumOptions {
   optional sfixed32 enum_opt1 = 7753576;
 }
@@ -99,6 +103,11 @@ message TestMessageWithCustomOptions {
 
   optional string field1 = 1 [ctype=CORD,
                               (field_opt1)=8765432109];
+
+  oneof AnOneof {
+    option (oneof_opt1) = -99;
+    int32 oneof_field = 2;
+  }
 
   enum AnEnum {
     option (enum_opt1) = -789;

@@ -60,7 +60,6 @@ EnumGenerator::~EnumGenerator() {
 
 void EnumGenerator::Generate(io::Printer* printer) {
   WriteEnumDocComment(printer, descriptor_);
-  WriteGeneratedCodeAttributes(printer);
   printer->Print("$access_level$ enum $name$ {\n",
                  "access_level", class_access_level(),
                  "name", descriptor_->name());
@@ -69,9 +68,7 @@ void EnumGenerator::Generate(io::Printer* printer) {
   for (int i = 0; i < descriptor_->value_count(); i++) {
       WriteEnumValueDocComment(printer, descriptor_->value(i));
       string original_name = descriptor_->value(i)->name();
-      string name = options()->legacy_enum_values
-          ? descriptor_->value(i)->name()
-          : GetEnumValueName(descriptor_->name(), descriptor_->value(i)->name());
+      string name = GetEnumValueName(descriptor_->name(), descriptor_->value(i)->name());
       // Make sure we don't get any duplicate names due to prefix removal.
       while (!used_names.insert(name).second) {
         // It's possible we'll end up giving this warning multiple times, but that's better than not at all.

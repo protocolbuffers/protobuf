@@ -128,6 +128,24 @@ inline Atomic64 NoBarrier_CompareAndSwap(volatile Atomic64* ptr,
   return old_value;
 }
 
+inline Atomic64 NoBarrier_AtomicIncrement(volatile Atomic64* ptr,
+                                          Atomic64 increment) {
+  return __atomic_add_fetch(ptr, increment, __ATOMIC_RELAXED);
+}
+
+inline void NoBarrier_Store(volatile Atomic64* ptr, Atomic64 value) {
+  __atomic_store_n(ptr, value, __ATOMIC_RELAXED);
+}
+
+inline Atomic64 NoBarrier_AtomicExchange(volatile Atomic64* ptr,
+                                         Atomic64 new_value) {
+  return __atomic_exchange_n(ptr, new_value, __ATOMIC_RELAXED);
+}
+
+inline Atomic64 NoBarrier_Load(volatile const Atomic64* ptr) {
+  return __atomic_load_n(ptr, __ATOMIC_RELAXED);
+}
+
 #endif // defined(__LP64__)
 
 }  // namespace internal

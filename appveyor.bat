@@ -10,7 +10,7 @@ goto :error
 echo Building C++
 mkdir build_msvc
 cd build_msvc
-cmake -G "%generator%" -Dprotobuf_BUILD_SHARED_LIBS=%BUILD_DLL% ../cmake
+cmake -G "%generator%" -Dprotobuf_BUILD_SHARED_LIBS=%BUILD_DLL% -Dprotobuf_UNICODE=%UNICODE% ../cmake
 msbuild protobuf.sln /p:Platform=%vcplatform% /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll" || goto error
 cd %configuration%
 tests.exe || goto error
@@ -19,9 +19,12 @@ goto :EOF
 :build_csharp
 echo Building C#
 cd csharp\src
-nuget restore
-msbuild Google.Protobuf.sln /p:Platform="Any CPU" /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll" || goto error
-nunit-console Google.Protobuf.Test\bin\%configuration%\Google.Protobuf.Test.dll || goto error
+dotnet restore
+dotnet build -c %configuration% Google.Protobuf Google.Protobuf.Test Google.Protobuf.Conformance || goto error
+
+echo Testing C#
+dotnet test -c %configuration% Google.Protobuf.Test || goto error
+
 goto :EOF
 
 :error
