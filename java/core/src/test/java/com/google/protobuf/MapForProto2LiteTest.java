@@ -35,15 +35,13 @@ import map_lite_test.MapForProto2TestProto.TestMap;
 import map_lite_test.MapForProto2TestProto.TestMap.MessageValue;
 import map_lite_test.MapForProto2TestProto.TestMapOrBuilder;
 import map_lite_test.MapForProto2TestProto.TestUnknownEnumValue;
-
-import junit.framework.TestCase;
-
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import junit.framework.TestCase;
 
 /**
  * Unit tests for map fields.

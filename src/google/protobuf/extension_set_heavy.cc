@@ -749,7 +749,7 @@ void ExtensionSet::Extension::SerializeMessageSetItemWithCachedSizes(
   output->WriteTag(WireFormatLite::kMessageSetItemEndTag);
 }
 
-int ExtensionSet::Extension::MessageSetItemByteSize(int number) const {
+size_t ExtensionSet::Extension::MessageSetItemByteSize(int number) const {
   if (type != WireFormatLite::TYPE_MESSAGE || is_repeated) {
     // Not a valid MessageSet extension, but compute the byte size for it the
     // normal way.
@@ -758,13 +758,13 @@ int ExtensionSet::Extension::MessageSetItemByteSize(int number) const {
 
   if (is_cleared) return 0;
 
-  int our_size = WireFormatLite::kMessageSetItemTagsSize;
+  size_t our_size = WireFormatLite::kMessageSetItemTagsSize;
 
   // type_id
   our_size += io::CodedOutputStream::VarintSize32(number);
 
   // message
-  int message_size = 0;
+  size_t message_size = 0;
   if (is_lazy) {
     message_size = lazymessage_value->ByteSize();
   } else {
@@ -785,8 +785,8 @@ void ExtensionSet::SerializeMessageSetWithCachedSizes(
   }
 }
 
-int ExtensionSet::MessageSetByteSize() const {
-  int total_size = 0;
+size_t ExtensionSet::MessageSetByteSize() const {
+  size_t total_size = 0;
 
   for (ExtensionMap::const_iterator iter = extensions_.begin();
        iter != extensions_.end(); ++iter) {

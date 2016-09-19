@@ -265,6 +265,24 @@ TEST(MessageTest, CheckOverflow) {
   EXPECT_FALSE(message.AppendToCord(&serialized));
 }
 
+TEST(MessageTest, CheckBigOverflow) {
+  unittest::TestAllTypes message;
+  // Create a message with size just over 4GB. We should be able to detect this
+  // too, even though it will make a plain "int" wrap back to a positive number.
+  const string data(1024, 'x');
+  Cord one_megabyte;
+  for (int i = 0; i < 1024; i++) {
+    one_megabyte.Append(data);
+  }
+
+  for (int i = 0; i < 4 * 1024 + 1; ++i) {
+    message.add_repeated_cord()->CopyFrom(one_megabyte);
+  }
+
+  Cord serialized;
+  EXPECT_FALSE(message.AppendToCord(&serialized));
+}
+
 #endif  // PROTOBUF_HAS_DEATH_TEST
 
 namespace {
@@ -272,6 +290,12 @@ namespace {
 class NegativeByteSize : public unittest::TestRequired {
  public:
   virtual int ByteSize() const { return -1; }
+
+  // The implementation of ByteSizeLong() from MessageLite, to simulate what
+  // would happen if TestRequired *hadn't* overridden it already.
+  virtual size_t ByteSizeLong() const {
+    return static_cast<unsigned int>(ByteSize());
+  }
 };
 
 }  // namespace
@@ -317,6 +341,18 @@ TEST(MessageTest, ParseFailsOnInvalidMessageEnd) {
 
   // The byte is an endgroup tag, but we aren't parsing a group.
   EXPECT_FALSE(message.ParseFromArray("\014", 1));
+}
+
+// Regression test for b/23630858
+TEST(MessageTest, MessageIsStillValidAfterParseFails) {
+  unittest::TestAllTypes message;
+
+  // 9 0xFFs for the "optional_uint64" field.
+  string invalid_data = "\x20\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF";
+
+  EXPECT_FALSE(message.ParseFromString(invalid_data));
+  message.Clear();
+  EXPECT_EQ(0, message.optional_uint64());
 }
 
 namespace {

@@ -88,8 +88,8 @@ string StripProto(const string& filename) {
 // Returns the Python module name expected for a given .proto filename.
 string ModuleName(const string& filename) {
   string basename = StripProto(filename);
-  StripString(&basename, "-", '_');
-  StripString(&basename, "/", '.');
+  ReplaceCharacters(&basename, "-", '_');
+  ReplaceCharacters(&basename, "/", '.');
   return basename + "_pb2";
 }
 
@@ -320,7 +320,7 @@ bool Generator::Generate(const FileDescriptor* file,
   file_ = file;
   string module_name = ModuleName(file->name());
   string filename = module_name;
-  StripString(&filename, ".", '/');
+  ReplaceCharacters(&filename, ".", '/');
   filename += ".py";
 
   FileDescriptorProto fdp;
@@ -425,6 +425,15 @@ void Generator::PrintFileDescriptor() const {
     printer_->Print(",\ndependencies=[");
     for (int i = 0; i < file_->dependency_count(); ++i) {
       string module_alias = ModuleAlias(file_->dependency(i)->name());
+      printer_->Print("$module_alias$.DESCRIPTOR,", "module_alias",
+                      module_alias);
+    }
+    printer_->Print("]");
+  }
+  if (file_->public_dependency_count() > 0) {
+    printer_->Print(",\npublic_dependencies=[");
+    for (int i = 0; i < file_->public_dependency_count(); ++i) {
+      string module_alias = ModuleAlias(file_->public_dependency(i)->name());
       printer_->Print("$module_alias$.DESCRIPTOR,", "module_alias",
                       module_alias);
     }
@@ -1094,6 +1103,8 @@ void Generator::PrintFieldDescriptor(
   m["default_value"] = StringifyDefaultValue(field);
   m["is_extension"] = is_extension ? "True" : "False";
   m["options"] = OptionsValue("FieldOptions", options_string);
+  m["json_name"] = field.has_json_name() ?
+      ", json_name='" + field.json_name() + "'": "";
   // We always set message_type and enum_type to None at this point, and then
   // these fields in correctly after all referenced descriptors have been
   // defined and/or imported (see FixForeignFieldsInDescriptors()).
@@ -1104,7 +1115,7 @@ void Generator::PrintFieldDescriptor(
     "  has_default_value=$has_default_value$, default_value=$default_value$,\n"
     "  message_type=None, enum_type=None, containing_type=None,\n"
     "  is_extension=$is_extension$, extension_scope=None,\n"
-    "  options=$options$)";
+    "  options=$options$$json_name$)";
   printer_->Print(m, field_descriptor_decl);
 }
 

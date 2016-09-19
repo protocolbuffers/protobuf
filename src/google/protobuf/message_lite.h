@@ -239,12 +239,13 @@ class LIBPROTOBUF_EXPORT MessageLite {
   bool AppendPartialToString(string* output) const;
 
   // Computes the serialized size of the message.  This recursively calls
-  // ByteSize() on all embedded messages.  If a subclass does not override
-  // this, it MUST override SetCachedSize().
+  // ByteSize() on all embedded messages.  Subclasses MUST override either
+  // ByteSize() or ByteSizeLong() (overriding both is fine).
   //
   // ByteSize() is generally linear in the number of fields defined for the
   // proto.
-  virtual int ByteSize() const = 0;
+  virtual int ByteSize() const { return ByteSizeLong(); }
+  virtual size_t ByteSizeLong() const;
 
   // Serializes the message without recomputing the size.  The message must
   // not have changed since the last call to ByteSize(); if it has, the results

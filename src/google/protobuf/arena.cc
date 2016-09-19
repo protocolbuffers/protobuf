@@ -30,6 +30,9 @@
 
 #include <google/protobuf/arena.h>
 
+#include <algorithm>
+#include <limits>
+
 
 #ifdef ADDRESS_SANITIZER
 #include <sanitizer/asan_interface.h>
@@ -125,10 +128,9 @@ Arena::Block* Arena::NewBlock(void* me, Block* my_last_block, size_t n,
   } else {
     size = start_block_size;
   }
-  if (n > size - kHeaderSize) {
-    // TODO(sanjay): Check if n + kHeaderSize would overflow
-    size = kHeaderSize + n;
-  }
+  // Verify that n + kHeaderSize won't overflow.
+  GOOGLE_CHECK_LE(n, std::numeric_limits<size_t>::max() - kHeaderSize);
+  size = std::max(size, kHeaderSize + n);
 
   Block* b = reinterpret_cast<Block*>(options_.block_alloc(size));
   b->pos = kHeaderSize + n;

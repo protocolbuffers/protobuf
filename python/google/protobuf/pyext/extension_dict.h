@@ -86,49 +86,6 @@ namespace extension_dict {
 // Builds an Extensions dict for a specific message.
 ExtensionDict* NewExtensionDict(CMessage *parent);
 
-// Gets the number of extension values in this ExtensionDict as a python object.
-//
-// Returns a new reference.
-PyObject* len(ExtensionDict* self);
-
-// Releases extensions referenced outside this dictionary to keep outside
-// references alive.
-//
-// Returns 0 on success, -1 on failure.
-int ReleaseExtension(ExtensionDict* self,
-                     PyObject* extension,
-                     const FieldDescriptor* descriptor);
-
-// Gets an extension from the dict for the given extension descriptor.
-//
-// Returns a new reference.
-PyObject* subscript(ExtensionDict* self, PyObject* key);
-
-// Assigns a value to an extension in the dict. Can only be used for singular
-// simple types.
-//
-// Returns 0 on success, -1 on failure.
-int ass_subscript(ExtensionDict* self, PyObject* key, PyObject* value);
-
-// Clears an extension from the dict. Will release the extension if there
-// is still an external reference left to it.
-//
-// Returns None on success.
-PyObject* ClearExtension(ExtensionDict* self,
-                                       PyObject* extension);
-
-// Gets an extension from the dict given the extension name as opposed to
-// descriptor.
-//
-// Returns a new reference.
-PyObject* _FindExtensionByName(ExtensionDict* self, PyObject* name);
-
-// Gets an extension from the dict given the extension field number as
-// opposed to descriptor.
-//
-// Returns a new reference.
-PyObject* _FindExtensionByNumber(ExtensionDict* self, PyObject* number);
-
 }  // namespace extension_dict
 }  // namespace python
 }  // namespace protobuf

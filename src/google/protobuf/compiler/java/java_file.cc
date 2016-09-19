@@ -189,8 +189,6 @@ void MaybeRestartJavaMethod(io::Printer* printer,
     *bytecode_estimate = 0;
   }
 }
-
-
 }  // namespace
 
 FileGenerator::FileGenerator(const FileDescriptor* file, const Options& options,

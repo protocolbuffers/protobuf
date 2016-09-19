@@ -103,7 +103,10 @@ jspb.Map.prototype.toArray = function() {
       var m = this.map_;
       for (var p in m) {
         if (Object.prototype.hasOwnProperty.call(m, p)) {
-          m[p].valueWrapper.toArray();
+          var valueWrapper = /** @type {?jspb.Message} */ (m[p].valueWrapper);
+          if (valueWrapper) {
+            valueWrapper.toArray();
+          }
         }
       }
     }
@@ -343,13 +346,13 @@ jspb.Map.prototype.has = function(key) {
  * number.
  * @param {number} fieldNumber
  * @param {!jspb.BinaryWriter} writer
- * @param {function(this:jspb.BinaryWriter,number,K)=} keyWriterFn
+ * @param {!function(this:jspb.BinaryWriter,number,K)} keyWriterFn
  *     The method on BinaryWriter that writes type K to the stream.
- * @param {function(this:jspb.BinaryWriter,number,V)|
- *         function(this:jspb.BinaryReader,V,?)=} valueWriterFn
+ * @param {!function(this:jspb.BinaryWriter,number,V)|
+ *          function(this:jspb.BinaryReader,V,?)} valueWriterFn
  *     The method on BinaryWriter that writes type V to the stream.  May be
  *     writeMessage, in which case the second callback arg form is used.
- * @param {?function(V,!jspb.BinaryWriter)=} opt_valueWriterCallback
+ * @param {function(V,!jspb.BinaryWriter)=} opt_valueWriterCallback
  *    The BinaryWriter serialization callback for type V, if V is a message
  *    type.
  */
@@ -376,14 +379,15 @@ jspb.Map.prototype.serializeBinary = function(
  * Read one key/value message from the given BinaryReader. Compatible as the
  * `reader` callback parameter to jspb.BinaryReader.readMessage, to be called
  * when a key/value pair submessage is encountered.
+ * @template K, V
  * @param {!jspb.Map} map
  * @param {!jspb.BinaryReader} reader
- * @param {function(this:jspb.BinaryReader):K=} keyReaderFn
+ * @param {!function(this:jspb.BinaryReader):K} keyReaderFn
  *     The method on BinaryReader that reads type K from the stream.
  *
- * @param {function(this:jspb.BinaryReader):V|
- *         function(this:jspb.BinaryReader,V,
- *                  function(V,!jspb.BinaryReader))=} valueReaderFn
+ * @param {!function(this:jspb.BinaryReader):V|
+ *          function(this:jspb.BinaryReader,V,
+ *                  function(V,!jspb.BinaryReader))} valueReaderFn
  *    The method on BinaryReader that reads type V from the stream. May be
  *    readMessage, in which case the second callback arg form is used.
  *

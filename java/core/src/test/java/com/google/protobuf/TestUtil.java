@@ -232,12 +232,10 @@ import protobuf_unittest.UnittestProto.TestOneof2;
 import protobuf_unittest.UnittestProto.TestPackedExtensions;
 import protobuf_unittest.UnittestProto.TestPackedTypes;
 import protobuf_unittest.UnittestProto.TestUnpackedTypes;
-
-import junit.framework.Assert;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import junit.framework.Assert;
 
 /**
  * Contains methods for setting all fields of {@code TestAllTypes} to
@@ -257,6 +255,13 @@ public final class TestUtil {
   /** Helper to convert a String to ByteString. */
   static ByteString toBytes(String str) {
     return ByteString.copyFrom(str.getBytes(Internal.UTF_8));
+  }
+
+  /**
+   * Dirties the message by resetting the momoized serialized size.
+   */
+  public static void resetMemoizedSize(AbstractMessage message) {
+    message.memoizedSize = -1;
   }
 
   /**

@@ -33,11 +33,11 @@
 #include <Python.h>
 
 #include <google/protobuf/descriptor.pb.h>
-#include <google/protobuf/dynamic_message.h>
 #include <google/protobuf/pyext/descriptor.h>
 #include <google/protobuf/pyext/descriptor_database.h>
 #include <google/protobuf/pyext/descriptor_pool.h>
 #include <google/protobuf/pyext/message.h>
+#include <google/protobuf/pyext/message_factory.h>
 #include <google/protobuf/pyext/scoped_pyobject_ptr.h>
 
 #if PY_MAJOR_VERSION >= 3
@@ -73,17 +73,15 @@ static PyDescriptorPool* _CreateDescriptorPool() {
   cpool->underlay = NULL;
   cpool->database = NULL;
 
-  DynamicMessageFactory* message_factory = new DynamicMessageFactory();
-  // This option might be the default some day.
-  message_factory->SetDelegateToGeneratedFactory(true);
-  cpool->message_factory = message_factory;
-
-  // TODO(amauryfa): Rewrite the SymbolDatabase in C so that it uses the same
-  // storage.
-  cpool->classes_by_descriptor =
-      new PyDescriptorPool::ClassesByMessageMap();
   cpool->descriptor_options =
       new hash_map<const void*, PyObject *>();
+
+  cpool->py_message_factory = message_factory::NewMessageFactory(
+      &PyMessageFactory_Type, cpool);
+  if (cpool->py_message_factory == NULL) {
+    Py_DECREF(cpool);
+    return NULL;
+  }
 
   return cpool;
 }
@@ -151,20 +149,14 @@ static PyObject* New(PyTypeObject* type,
 }
 
 static void Dealloc(PyDescriptorPool* self) {
-  typedef PyDescriptorPool::ClassesByMessageMap::iterator iterator;
   descriptor_pool_map.erase(self->pool);
-  for (iterator it = self->classes_by_descriptor->begin();
-       it != self->classes_by_descriptor->end(); ++it) {
-    Py_DECREF(it->second);
-  }
-  delete self->classes_by_descriptor;
+  Py_CLEAR(self->py_message_factory);
   for (hash_map<const void*, PyObject*>::iterator it =
            self->descriptor_options->begin();
        it != self->descriptor_options->end(); ++it) {
     Py_DECREF(it->second);
   }
   delete self->descriptor_options;
-  delete self->message_factory;
   delete self->database;
   delete self->pool;
   Py_TYPE(self)->tp_free(reinterpret_cast<PyObject*>(self));
@@ -188,35 +180,8 @@ PyObject* FindMessageByName(PyDescriptorPool* self, PyObject* arg) {
   return PyMessageDescriptor_FromDescriptor(message_descriptor);
 }
 
-// Add a message class to our database.
-int RegisterMessageClass(PyDescriptorPool* self,
-                         const Descriptor* message_descriptor,
-                         CMessageClass* message_class) {
-  Py_INCREF(message_class);
-  typedef PyDescriptorPool::ClassesByMessageMap::iterator iterator;
-  std::pair<iterator, bool> ret = self->classes_by_descriptor->insert(
-      std::make_pair(message_descriptor, message_class));
-  if (!ret.second) {
-    // Update case: DECREF the previous value.
-    Py_DECREF(ret.first->second);
-    ret.first->second = message_class;
-  }
-  return 0;
-}
 
-// Retrieve the message class added to our database.
-CMessageClass* GetMessageClass(PyDescriptorPool* self,
-                               const Descriptor* message_descriptor) {
-  typedef PyDescriptorPool::ClassesByMessageMap::iterator iterator;
-  iterator ret = self->classes_by_descriptor->find(message_descriptor);
-  if (ret == self->classes_by_descriptor->end()) {
-    PyErr_Format(PyExc_TypeError, "No message class registered for '%s'",
-                 message_descriptor->full_name().c_str());
-    return NULL;
-  } else {
-    return ret->second;
-  }
-}
+
 
 PyObject* FindFileByName(PyDescriptorPool* self, PyObject* arg) {
   Py_ssize_t name_size;
@@ -228,11 +193,9 @@ PyObject* FindFileByName(PyDescriptorPool* self, PyObject* arg) {
   const FileDescriptor* file_descriptor =
       self->pool->FindFileByName(string(name, name_size));
   if (file_descriptor == NULL) {
-    PyErr_Format(PyExc_KeyError, "Couldn't find file %.200s",
-                 name);
+    PyErr_Format(PyExc_KeyError, "Couldn't find file %.200s", name);
     return NULL;
   }
-
   return PyFileDescriptor_FromDescriptor(file_descriptor);
 }
 

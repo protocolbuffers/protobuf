@@ -120,6 +120,10 @@ class RepeatedField {
 
   const Element& Get(int index) const;
   Element* Mutable(int index);
+
+  const Element& operator[](int index) const { return Get(index); }
+  Element& operator[](int index) { return *Mutable(index); }
+
   void Set(int index, const Element& value);
   void Add(const Element& value);
   Element* Add();
@@ -134,6 +138,7 @@ class RepeatedField {
 
   void Clear();
   void MergeFrom(const RepeatedField& other);
+  void UnsafeMergeFrom(const RepeatedField& other);
   void CopyFrom(const RepeatedField& other);
 
   // Reserve space to expand the field to at least the given size.  If the
@@ -284,7 +289,12 @@ class RepeatedField {
         e->Element::~Element();
       }
       if (rep->arena == NULL) {
-        delete[] reinterpret_cast<char*>(rep);
+#if defined(__GXX_DELETE_WITH_SIZE__) || defined(__cpp_sized_deallocation)
+        const size_t bytes = size * sizeof(*e) + kRepHeaderSize;
+        ::operator delete(static_cast<void*>(rep), bytes);
+#else
+        ::operator delete(static_cast<void*>(rep));
+#endif
       }
     }
   }
@@ -742,6 +752,9 @@ class RepeatedPtrField : public internal::RepeatedPtrFieldBase {
   Element* Mutable(int index);
   Element* Add();
 
+  const Element& operator[](int index) const { return Get(index); }
+  Element& operator[](int index) { return *Mutable(index); }
+
   // Remove the last element in the array.
   // Ownership of the element is retained by the array.
   void RemoveLast();
@@ -753,6 +766,7 @@ class RepeatedPtrField : public internal::RepeatedPtrFieldBase {
 
   void Clear();
   void MergeFrom(const RepeatedPtrField& other);
+  void UnsafeMergeFrom(const RepeatedPtrField& other) { MergeFrom(other); }
   void CopyFrom(const RepeatedPtrField& other);
 
   // Reserve space to expand the field to at least the given size.  This only
@@ -1138,14 +1152,19 @@ inline void RepeatedField<Element>::Clear() {
 }
 
 template <typename Element>
-inline void RepeatedField<Element>::MergeFrom(const RepeatedField& other) {
-  GOOGLE_CHECK_NE(&other, this);
+inline void RepeatedField<Element>::UnsafeMergeFrom(const RepeatedField& other) {
   if (other.current_size_ != 0) {
     Reserve(current_size_ + other.current_size_);
     CopyArray(rep_->elements + current_size_,
               other.rep_->elements, other.current_size_);
     current_size_ += other.current_size_;
   }
+}
+
+template <typename Element>
+inline void RepeatedField<Element>::MergeFrom(const RepeatedField& other) {
+  GOOGLE_CHECK_NE(&other, this);
+  UnsafeMergeFrom(other);
 }
 
 template <typename Element>
@@ -1265,13 +1284,12 @@ void RepeatedField<Element>::Reserve(int new_size) {
            (std::numeric_limits<size_t>::max() - kRepHeaderSize) /
            sizeof(Element))
       << "Requested size is too large to fit into size_t.";
+  size_t bytes = kRepHeaderSize + sizeof(Element) * new_size;
   if (arena == NULL) {
-    rep_ = reinterpret_cast<Rep*>(
-        new char[kRepHeaderSize + sizeof(Element) * new_size]);
+    rep_ = static_cast<Rep*>(::operator new(bytes));
   } else {
     rep_ = reinterpret_cast<Rep*>(
-            ::google::protobuf::Arena::CreateArray<char>(arena,
-                kRepHeaderSize + sizeof(Element) * new_size));
+            ::google::protobuf::Arena::CreateArray<char>(arena, bytes));
   }
   rep_->arena = arena;
   int old_total_size = total_size_;
@@ -1363,7 +1381,12 @@ void RepeatedPtrFieldBase::Destroy() {
     for (int i = 0; i < n; i++) {
       TypeHandler::Delete(cast<TypeHandler>(elements[i]), NULL);
     }
-    delete[] reinterpret_cast<char*>(rep_);
+#if defined(__GXX_DELETE_WITH_SIZE__) || defined(__cpp_sized_deallocation)
+    const size_t size = total_size_ * sizeof(elements[0]) + kRepHeaderSize;
+    ::operator delete(static_cast<void*>(rep_), size);
+#else
+    ::operator delete(static_cast<void*>(rep_));
+#endif
   }
   rep_ = NULL;
 }

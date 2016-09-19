@@ -62,7 +62,7 @@ using internal::shared_ptr;
 namespace python {
 
 struct ExtensionDict;
-struct PyDescriptorPool;
+struct PyMessageFactory;
 
 typedef struct CMessage {
   PyObject_HEAD;
@@ -112,6 +112,9 @@ typedef struct CMessage {
   // Similar to composite_fields, acting as a cache, but also contains the
   // required extension dict logic.
   ExtensionDict* extensions;
+
+  // Implements the "weakref" protocol for this object.
+  PyObject* weakreflist;
 } CMessage;
 
 extern PyTypeObject CMessage_Type;
@@ -132,14 +135,11 @@ struct CMessageClass {
   // Owned reference, used to keep the pointer above alive.
   PyObject* py_message_descriptor;
 
-  // The Python DescriptorPool used to create the class. It is needed to resolve
+  // The Python MessageFactory used to create the class. It is needed to resolve
   // fields descriptors, including extensions fields; its C++ MessageFactory is
   // used to instantiate submessages.
-  // This can be different from DESCRIPTOR.file.pool, in the case of a custom
-  // DescriptorPool which defines new extensions.
-  // We own the reference, because it's important to keep the descriptors and
-  // factory alive.
-  PyDescriptorPool* py_descriptor_pool;
+  // We own the reference, because it's important to keep the factory alive.
+  PyMessageFactory* py_message_factory;
 
   PyObject* AsPyObject() {
     return reinterpret_cast<PyObject*>(this);
@@ -153,14 +153,6 @@ namespace cmessage {
 // pointers to the C++ objects.
 // The caller must fill self->message, self->owner and eventually self->parent.
 CMessage* NewEmptyMessage(CMessageClass* type);
-
-// Release a submessage from its proto tree, making it a new top-level messgae.
-// A new message will be created if this is a read-only default instance.
-//
-// Corresponds to reflection api method ReleaseMessage.
-int ReleaseSubMessage(CMessage* self,
-                      const FieldDescriptor* field_descriptor,
-                      CMessage* child_cmessage);
 
 // Retrieves the C++ descriptor of a Python Extension descriptor.
 // On error, return NULL with an exception set.
@@ -262,14 +254,13 @@ int SetOwner(CMessage* self, const shared_ptr<Message>& new_owner);
 
 int AssureWritable(CMessage* self);
 
-// Returns the "best" DescriptorPool for the given message.
-// This is often equivalent to message.DESCRIPTOR.pool, but not always, when
-// the message class was created from a MessageFactory using a custom pool which
-// uses the generated pool as an underlay.
+// Returns the message factory for the given message.
+// This is equivalent to message.MESSAGE_FACTORY
 //
-// The returned pool is suitable for finding fields and building submessages,
+// The returned factory is suitable for finding fields and building submessages,
 // even in the case of extensions.
-PyDescriptorPool* GetDescriptorPoolForMessage(CMessage* message);
+// Returns a *borrowed* reference, and never fails because we pass a CMessage.
+PyMessageFactory* GetFactoryForMessage(CMessage* message);
 
 PyObject* SetAllowOversizeProtos(PyObject* m, PyObject* arg);
 

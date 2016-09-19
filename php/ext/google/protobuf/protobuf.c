@@ -1,3 +1,33 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2008 Google Inc.  All rights reserved.
+// https://developers.google.com/protocol-buffers/
+//
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are
+// met:
+//
+//     * Redistributions of source code must retain the above copyright
+// notice, this list of conditions and the following disclaimer.
+//     * Redistributions in binary form must reproduce the above
+// copyright notice, this list of conditions and the following disclaimer
+// in the documentation and/or other materials provided with the
+// distribution.
+//     * Neither the name of Google Inc. nor the names of its
+// contributors may be used to endorse or promote products derived from
+// this software without specific prior written permission.
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
 #include "protobuf.h"
 
 #include <zend_hash.h>
@@ -5,56 +35,81 @@
 ZEND_DECLARE_MODULE_GLOBALS(protobuf)
 static PHP_GINIT_FUNCTION(protobuf);
 static PHP_GSHUTDOWN_FUNCTION(protobuf);
+static PHP_RINIT_FUNCTION(protobuf);
+static PHP_RSHUTDOWN_FUNCTION(protobuf);
+static PHP_MINIT_FUNCTION(protobuf);
+static PHP_MSHUTDOWN_FUNCTION(protobuf);
 
-// -----------------------------------------------------------------------------
 // Global map from upb {msg,enum}defs to wrapper Descriptor/EnumDescriptor
 // instances.
+static HashTable* upb_def_to_php_obj_map;
+// Global map from message/enum's php class entry to corresponding wrapper
+// Descriptor/EnumDescriptor instances.
+static HashTable* ce_to_php_obj_map;
+
+// -----------------------------------------------------------------------------
+// Global maps.
 // -----------------------------------------------------------------------------
 
-void add_def_obj(const void* def, zval* value) {
-  uint nIndex = (ulong)def & PROTOBUF_G(upb_def_to_php_obj_map).nTableMask;
+static void add_to_table(HashTable* t, const void* def, void* value) {
+  uint nIndex = (ulong)def & t->nTableMask;
 
   zval* pDest = NULL;
-  Z_ADDREF_P(value);
-  zend_hash_index_update(&PROTOBUF_G(upb_def_to_php_obj_map), (zend_ulong)def,
-                         &value, sizeof(zval*), &pDest);
+  zend_hash_index_update(t, (zend_ulong)def, &value, sizeof(zval*), &pDest);
 }
 
-zval* get_def_obj(const void* def) {
-  zval** value;
-  if (zend_hash_index_find(&PROTOBUF_G(upb_def_to_php_obj_map), (zend_ulong)def,
-                           &value) == FAILURE) {
+static void* get_from_table(const HashTable* t, const void* def) {
+  void** value;
+  if (zend_hash_index_find(t, (zend_ulong)def, (void**)&value) == FAILURE) {
     zend_error(E_ERROR, "PHP object not found for given definition.\n");
     return NULL;
   }
   return *value;
 }
 
+static void add_to_list(HashTable* t, void* value) {
+  zval* pDest = NULL;
+  zend_hash_next_index_insert(t, &value, sizeof(void*), &pDest);
+}
+
+void add_def_obj(const void* def, zval* value) {
+  Z_ADDREF_P(value);
+  add_to_table(upb_def_to_php_obj_map, def, value);
+}
+
+zval* get_def_obj(const void* def) {
+  return (zval*)get_from_table(upb_def_to_php_obj_map, def);
+}
+
+void add_ce_obj(const void* ce, zval* value) {
+  Z_ADDREF_P(value);
+  add_to_table(ce_to_php_obj_map, ce, value);
+}
+
+zval* get_ce_obj(const void* ce) {
+  return (zval*)get_from_table(ce_to_php_obj_map, ce);
+}
+
 // -----------------------------------------------------------------------------
 // Utilities.
 // -----------------------------------------------------------------------------
 
-// define the function(s) we want to add
 zend_function_entry protobuf_functions[] = {
-  ZEND_FE(get_generated_pool, NULL)
   ZEND_FE_END
 };
 
-// "protobuf_functions" refers to the struct defined above
-// we'll be filling in more of this later: you can use this to specify
-// globals, php.ini info, startup and teardown functions, etc.
 zend_module_entry protobuf_module_entry = {
   STANDARD_MODULE_HEADER,
-  PHP_PROTOBUF_EXTNAME, // extension name
-  protobuf_functions,   // function list
-  PHP_MINIT(protobuf),  // process startup
-  NULL,  // process shutdown
-  NULL,  // request startup
-  NULL,  // request shutdown
-  NULL,  // extension info
+  PHP_PROTOBUF_EXTNAME,     // extension name
+  protobuf_functions,       // function list
+  PHP_MINIT(protobuf),      // process startup
+  PHP_MSHUTDOWN(protobuf),  // process shutdown
+  PHP_RINIT(protobuf),      // request shutdown
+  PHP_RSHUTDOWN(protobuf),  // request shutdown
+  NULL,                 // extension info
   PHP_PROTOBUF_VERSION, // extension version
   PHP_MODULE_GLOBALS(protobuf),  // globals descriptor
-  PHP_GINIT(protobuf), // globals ctor
+  PHP_GINIT(protobuf),  // globals ctor
   PHP_GSHUTDOWN(protobuf),  // globals dtor
   NULL,  // post deactivate
   STANDARD_MODULE_PROPERTIES_EX
@@ -65,25 +120,48 @@ ZEND_GET_MODULE(protobuf)
 
 // global variables
 static PHP_GINIT_FUNCTION(protobuf) {
-  protobuf_globals->generated_pool = NULL;
-  generated_pool = NULL;
-  protobuf_globals->message_handlers = NULL;
-  zend_hash_init(&protobuf_globals->upb_def_to_php_obj_map, 16, NULL,
-                 ZVAL_PTR_DTOR, 0);
 }
 
 static PHP_GSHUTDOWN_FUNCTION(protobuf) {
-  if (protobuf_globals->generated_pool != NULL) {
-    FREE_ZVAL(protobuf_globals->generated_pool);
-  }
-  if (protobuf_globals->message_handlers != NULL) {
-    FREE(protobuf_globals->message_handlers);
-  }
-  zend_hash_destroy(&protobuf_globals->upb_def_to_php_obj_map);
 }
 
-PHP_MINIT_FUNCTION(protobuf) {
+static PHP_RINIT_FUNCTION(protobuf) {
+  ALLOC_HASHTABLE(upb_def_to_php_obj_map);
+  zend_hash_init(upb_def_to_php_obj_map, 16, NULL, ZVAL_PTR_DTOR, 0);
+
+  ALLOC_HASHTABLE(ce_to_php_obj_map);
+  zend_hash_init(ce_to_php_obj_map, 16, NULL, ZVAL_PTR_DTOR, 0);
+
+  generated_pool = NULL;
+  generated_pool_php = NULL;
+}
+
+static PHP_RSHUTDOWN_FUNCTION(protobuf) {
+  zend_hash_destroy(upb_def_to_php_obj_map);
+  FREE_HASHTABLE(upb_def_to_php_obj_map);
+
+  zend_hash_destroy(ce_to_php_obj_map);
+  FREE_HASHTABLE(ce_to_php_obj_map);
+
+  if (generated_pool_php != NULL) {
+    zval_dtor(generated_pool_php);
+    FREE_ZVAL(generated_pool_php);
+  }
+}
+
+static PHP_MINIT_FUNCTION(protobuf) {
+  map_field_init(TSRMLS_C);
+  repeated_field_init(TSRMLS_C);
+  gpb_type_init(TSRMLS_C);
+  message_init(TSRMLS_C);
   descriptor_pool_init(TSRMLS_C);
   descriptor_init(TSRMLS_C);
-  message_builder_context_init(TSRMLS_C);
+  enum_descriptor_init(TSRMLS_C);
+  util_init(TSRMLS_C);
+}
+
+static PHP_MSHUTDOWN_FUNCTION(protobuf) {
+  PEFREE(message_handlers);
+  PEFREE(repeated_field_handlers);
+  PEFREE(map_field_handlers);
 }

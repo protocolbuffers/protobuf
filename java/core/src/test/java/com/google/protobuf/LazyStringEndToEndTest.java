@@ -32,10 +32,8 @@ package com.google.protobuf;
 
 
 import protobuf_unittest.UnittestProto;
-
-import junit.framework.TestCase;
-
 import java.io.IOException;
+import junit.framework.TestCase;
 
 /**
  * Tests to make sure the lazy conversion of UTF8-encoded byte arrays to

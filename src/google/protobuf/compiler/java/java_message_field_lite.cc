@@ -145,6 +145,7 @@ GenerateInterfaceMembers(io::Printer* printer) const {
 
 void ImmutableMessageFieldLiteGenerator::
 GenerateMembers(io::Printer* printer) const {
+
   printer->Print(variables_,
     "private $type$ $name$_;\n");
   PrintExtraFieldInfo(variables_, printer);

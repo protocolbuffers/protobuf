@@ -81,12 +81,15 @@ using util::Status;
 // For each test we split the input string on every possible character to ensure
 // the parser is able to handle arbitrarily split input for all cases. We also
 // do a final test of the entire test case one character at a time.
+//
+// It is verified that expected calls to the mocked objects are in sequence.
 class JsonStreamParserTest : public ::testing::Test {
  protected:
   JsonStreamParserTest() : mock_(), ow_(&mock_) {}
   virtual ~JsonStreamParserTest() {}
 
-  util::Status RunTest(StringPiece json, int split, bool coerce_utf8 = false) {
+  util::Status RunTest(StringPiece json, int split, bool coerce_utf8 = false,
+                       bool allow_empty_null = false) {
     JsonStreamParser parser(&mock_);
 
     // Special case for split == length, test parsing one character at a time.
@@ -116,8 +119,10 @@ class JsonStreamParserTest : public ::testing::Test {
     return result;
   }
 
-  void DoTest(StringPiece json, int split, bool coerce_utf8 = false) {
-    util::Status result = RunTest(json, split, coerce_utf8);
+  void DoTest(StringPiece json, int split, bool coerce_utf8 = false,
+              bool allow_empty_null = false) {
+    util::Status result =
+        RunTest(json, split, coerce_utf8, allow_empty_null);
     if (!result.ok()) {
       GOOGLE_LOG(WARNING) << result;
     }
@@ -125,14 +130,16 @@ class JsonStreamParserTest : public ::testing::Test {
   }
 
   void DoErrorTest(StringPiece json, int split, StringPiece error_prefix,
-                   bool coerce_utf8 = false) {
-    util::Status result = RunTest(json, split, coerce_utf8);
+                   bool coerce_utf8 = false, bool allow_empty_null = false) {
+    util::Status result =
+        RunTest(json, split, coerce_utf8, allow_empty_null);
     EXPECT_EQ(util::error::INVALID_ARGUMENT, result.error_code());
     StringPiece error_message(result.error_message());
     EXPECT_EQ(error_prefix, error_message.substr(0, error_prefix.size()));
   }
 
 
+  ::testing::InSequence in_sequence_;
   MockObjectWriter mock_;
   ExpectingObjectWriter ow_;
 };
@@ -334,6 +341,7 @@ TEST_F(JsonStreamParserTest, ArrayValues) {
     DoTest(str, i);
   }
 }
+
 
 // - object containing array, object, value (true, false, null, num, string)
 TEST_F(JsonStreamParserTest, ObjectValues) {

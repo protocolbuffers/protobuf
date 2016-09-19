@@ -55,15 +55,15 @@ import protobuf_unittest.UnittestProto.ForeignMessage;
 import protobuf_unittest.UnittestProto.TestAllExtensions;
 import protobuf_unittest.UnittestProto.TestAllTypes;
 import protobuf_unittest.UnittestProto.TestExtremeDefaultValues;
+import protobuf_unittest.UnittestProto.TestJsonName;
 import protobuf_unittest.UnittestProto.TestMultipleExtensionRanges;
 import protobuf_unittest.UnittestProto.TestRequired;
 import protobuf_unittest.UnittestProto.TestReservedFields;
 import protobuf_unittest.UnittestProto.TestService;
-import junit.framework.TestCase;
-
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import junit.framework.TestCase;
 
 /**
  * Unit test for {@link Descriptors}.
@@ -804,5 +804,16 @@ public class DescriptorsTest extends TestCase {
         .build();
     Descriptors.FileDescriptor.buildFrom(
         fileDescriptorProto, new FileDescriptor[0]);
+  }
+
+  public void testFieldJsonName() throws Exception {
+    Descriptor d = TestJsonName.getDescriptor();
+    assertEquals(6, d.getFields().size());
+    assertEquals("fieldName1", d.getFields().get(0).getJsonName());
+    assertEquals("fieldName2", d.getFields().get(1).getJsonName());
+    assertEquals("FieldName3", d.getFields().get(2).getJsonName());
+    assertEquals("FieldName4", d.getFields().get(3).getJsonName());
+    assertEquals("FIELDNAME5", d.getFields().get(4).getJsonName());
+    assertEquals("@type", d.getFields().get(5).getJsonName());
   }
 }

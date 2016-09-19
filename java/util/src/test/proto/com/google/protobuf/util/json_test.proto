@@ -195,6 +195,7 @@ message TestStruct {
 
 message TestAny {
   google.protobuf.Any any_value = 1;
+  map<string, google.protobuf.Any> any_map = 2;
 }
 
 message TestCustomJsonName {

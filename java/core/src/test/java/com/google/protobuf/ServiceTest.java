@@ -42,14 +42,12 @@ import protobuf_unittest.UnittestProto.FooResponse;
 import protobuf_unittest.UnittestProto.TestAllTypes;
 import protobuf_unittest.UnittestProto.TestService;
 
+import java.util.HashSet;
+import java.util.Set;
 import junit.framework.TestCase;
-
 import org.easymock.classextension.EasyMock;
 import org.easymock.IArgumentMatcher;
 import org.easymock.classextension.IMocksControl;
-
-import java.util.HashSet;
-import java.util.Set;
 
 /**
  * Tests services and stubs.
@@ -270,6 +268,8 @@ public class ServiceTest extends TestCase {
     assertEquals("Foo",
         file.getServices().get(0).getMethods().get(0).getName());
   }
+
+
 
   // =================================================================
 

@@ -65,6 +65,7 @@ ProtoStreamObjectWriter::ProtoStreamObjectWriter(
       current_(NULL),
       options_(options) {
   set_ignore_unknown_fields(options_.ignore_unknown_fields);
+  set_use_lower_camel_for_enums(options_.use_lower_camel_for_enums);
 }
 
 ProtoStreamObjectWriter::ProtoStreamObjectWriter(
@@ -192,17 +193,11 @@ ProtoStreamObjectWriter::AnyWriter::~AnyWriter() {}
 void ProtoStreamObjectWriter::AnyWriter::StartObject(StringPiece name) {
   ++depth_;
   // If an object writer is absent, that means we have not called StartAny()
-  // before reaching here. This is an invalid state. StartAny() gets called
-  // whenever we see an "@type" being rendered (see AnyWriter::RenderDataPiece).
+  // before reaching here, which happens when we have data before the "@type"
+  // field.
   if (ow_ == NULL) {
-    // Make sure we are not already in an invalid state. This avoids making
-    // multiple unnecessary InvalidValue calls.
-    if (!invalid_) {
-      parent_->InvalidValue("Any",
-                            StrCat("Missing or invalid @type for any field in ",
-                                   parent_->master_type_.name()));
-      invalid_ = true;
-    }
+    // Save data before the "@type" field for later replay.
+    uninterpreted_events_.push_back(Event(Event::START_OBJECT, name));
   } else if (is_well_known_type_ && depth_ == 1) {
     // For well-known types, the only other field besides "@type" should be a
     // "value" field.
@@ -222,10 +217,15 @@ void ProtoStreamObjectWriter::AnyWriter::StartObject(StringPiece name) {
 
 bool ProtoStreamObjectWriter::AnyWriter::EndObject() {
   --depth_;
-  // As long as depth_ >= 0, we know we haven't reached the end of Any.
-  // Propagate these EndObject() calls to the contained ow_. For regular
-  // message types, we propagate the end of Any as well.
-  if (ow_ != NULL && (depth_ >= 0 || !is_well_known_type_)) {
+  if (ow_ == NULL) {
+    if (depth_ >= 0) {
+      // Save data before the "@type" field for later replay.
+      uninterpreted_events_.push_back(Event(Event::END_OBJECT));
+    }
+  } else if (depth_ >= 0 || !is_well_known_type_) {
+    // As long as depth_ >= 0, we know we haven't reached the end of Any.
+    // Propagate these EndObject() calls to the contained ow_. For regular
+    // message types, we propagate the end of Any as well.
     ow_->EndObject();
   }
   // A negative depth_ implies that we have reached the end of Any
@@ -239,14 +239,9 @@ bool ProtoStreamObjectWriter::AnyWriter::EndObject() {
 
 void ProtoStreamObjectWriter::AnyWriter::StartList(StringPiece name) {
   ++depth_;
-  // We expect ow_ to be present as this call only makes sense inside an Any.
   if (ow_ == NULL) {
-    if (!invalid_) {
-      parent_->InvalidValue("Any",
-                            StrCat("Missing or invalid @type for any field in ",
-                                   parent_->master_type_.name()));
-      invalid_ = true;
-    }
+    // Save data before the "@type" field for later replay.
+    uninterpreted_events_.push_back(Event(Event::START_LIST, name));
   } else if (is_well_known_type_ && depth_ == 1) {
     if (name != "value" && !invalid_) {
       parent_->InvalidValue("Any",
@@ -265,8 +260,10 @@ void ProtoStreamObjectWriter::AnyWriter::EndList() {
     GOOGLE_LOG(DFATAL) << "Mismatched EndList found, should not be possible";
     depth_ = 0;
   }
-  // We don't write an error on the close, only on the open
-  if (ow_ != NULL) {
+  if (ow_ == NULL) {
+    // Save data before the "@type" field for later replay.
+    uninterpreted_events_.push_back(Event(Event::END_LIST));
+  } else {
     ow_->EndList();
   }
 }
@@ -278,12 +275,8 @@ void ProtoStreamObjectWriter::AnyWriter::RenderDataPiece(
   if (depth_ == 0 && ow_ == NULL && name == "@type") {
     StartAny(value);
   } else if (ow_ == NULL) {
-    if (!invalid_) {
-      parent_->InvalidValue("Any",
-                            StrCat("Missing or invalid @type for any field in ",
-                                   parent_->master_type_.name()));
-      invalid_ = true;
-    }
+    // Save data before the "@type" field.
+    uninterpreted_events_.push_back(Event(name, value));
   } else if (depth_ == 0 && is_well_known_type_) {
     if (name != "value" && !invalid_) {
       parent_->InvalidValue("Any",
@@ -293,7 +286,7 @@ void ProtoStreamObjectWriter::AnyWriter::RenderDataPiece(
     if (well_known_type_render_ == NULL) {
       // Only Any and Struct don't have a special type render but both of
       // them expect a JSON object (i.e., a StartObject() call).
-      if (!invalid_) {
+      if (value.type() != DataPiece::TYPE_NULL && !invalid_) {
         parent_->InvalidValue("Any", "Expect a JSON object.");
         invalid_ = true;
       }
@@ -358,19 +351,70 @@ void ProtoStreamObjectWriter::AnyWriter::StartAny(const DataPiece& value) {
   if (!is_well_known_type_) {
     ow_->StartObject("");
   }
+
+  // Now we know the proto type and can interpret all data fields we gathered
+  // before the "@type" field.
+  for (int i = 0; i < uninterpreted_events_.size(); ++i) {
+    uninterpreted_events_[i].Replay(this);
+  }
 }
 
 void ProtoStreamObjectWriter::AnyWriter::WriteAny() {
   if (ow_ == NULL) {
-    // If we had no object writer, we never got any content, so just return
-    // immediately, which is equivalent to writing an empty Any.
-    return;
+    if (uninterpreted_events_.empty()) {
+      // We never got any content, so just return immediately, which is
+      // equivalent to writing an empty Any.
+      return;
+    } else {
+      // There are uninterpreted data, but we never got a "@type" field.
+      if (!invalid_) {
+        parent_->InvalidValue("Any", StrCat("Missing @type for any field in ",
+                                            parent_->master_type_.name()));
+        invalid_ = true;
+      }
+      return;
+    }
   }
   // Render the type_url and value fields directly to the stream.
   // type_url has tag 1 and value has tag 2.
   WireFormatLite::WriteString(1, type_url_, parent_->stream());
   if (!data_.empty()) {
     WireFormatLite::WriteBytes(2, data_, parent_->stream());
+  }
+}
+
+void ProtoStreamObjectWriter::AnyWriter::Event::Replay(
+    AnyWriter* writer) const {
+  switch (type_) {
+    case START_OBJECT:
+      writer->StartObject(name_);
+      break;
+    case END_OBJECT:
+      writer->EndObject();
+      break;
+    case START_LIST:
+      writer->StartList(name_);
+      break;
+    case END_LIST:
+      writer->EndList();
+      break;
+    case RENDER_DATA_PIECE:
+      writer->RenderDataPiece(name_, value_);
+      break;
+  }
+}
+
+void ProtoStreamObjectWriter::AnyWriter::Event::DeepCopy() {
+  // DataPiece only contains a string reference. To make sure the referenced
+  // string value stays valid, we make a copy of the string value and update
+  // DataPiece to reference our own copy.
+  if (value_.type() == DataPiece::TYPE_STRING) {
+    value_.str().AppendToString(&value_storage_);
+    value_ = DataPiece(value_storage_, value_.use_strict_base64_decoding());
+  } else if (value_.type() == DataPiece::TYPE_BYTES) {
+    value_storage_ = value_.ToBytes().ValueOrDie();
+    value_ =
+        DataPiece(value_storage_, true, value_.use_strict_base64_decoding());
   }
 }
 
@@ -867,6 +911,7 @@ Status ProtoStreamObjectWriter::RenderStructValue(ProtoStreamObjectWriter* ow,
 
 Status ProtoStreamObjectWriter::RenderTimestamp(ProtoStreamObjectWriter* ow,
                                                 const DataPiece& data) {
+  if (data.type() == DataPiece::TYPE_NULL) return Status::OK;
   if (data.type() != DataPiece::TYPE_STRING) {
     return Status(INVALID_ARGUMENT,
                   StrCat("Invalid data type for timestamp, value is ",
@@ -897,6 +942,7 @@ static inline util::Status RenderOneFieldPath(ProtoStreamObjectWriter* ow,
 
 Status ProtoStreamObjectWriter::RenderFieldMask(ProtoStreamObjectWriter* ow,
                                                 const DataPiece& data) {
+  if (data.type() == DataPiece::TYPE_NULL) return Status::OK;
   if (data.type() != DataPiece::TYPE_STRING) {
     return Status(INVALID_ARGUMENT,
                   StrCat("Invalid data type for field mask, value is ",
@@ -913,6 +959,7 @@ Status ProtoStreamObjectWriter::RenderFieldMask(ProtoStreamObjectWriter* ow,
 
 Status ProtoStreamObjectWriter::RenderDuration(ProtoStreamObjectWriter* ow,
                                                const DataPiece& data) {
+  if (data.type() == DataPiece::TYPE_NULL) return Status::OK;
   if (data.type() != DataPiece::TYPE_STRING) {
     return Status(INVALID_ARGUMENT,
                   StrCat("Invalid data type for duration, value is ",
@@ -962,6 +1009,7 @@ Status ProtoStreamObjectWriter::RenderDuration(ProtoStreamObjectWriter* ow,
 
 Status ProtoStreamObjectWriter::RenderWrapperType(ProtoStreamObjectWriter* ow,
                                                   const DataPiece& data) {
+  if (data.type() == DataPiece::TYPE_NULL) return Status::OK;
   ow->ProtoWriter::RenderDataPiece("value", data);
   return Status::OK;
 }
@@ -1049,13 +1097,18 @@ ProtoStreamObjectWriter* ProtoStreamObjectWriter::RenderDataPiece(
   // Check if the field is of special type. Render it accordingly if so.
   const TypeRenderer* type_renderer = FindTypeRenderer(field->type_url());
   if (type_renderer != NULL) {
-    Push(name, Item::MESSAGE, false, false);
-    status = (*type_renderer)(this, data);
-    if (!status.ok()) {
-      InvalidValue(field->type_url(),
-                   StrCat("Field '", name, "', ", status.error_message()));
+    // Pass through null value only for google.protobuf.Value. For other
+    // types we ignore null value just like for regular field types.
+    if (data.type() != DataPiece::TYPE_NULL ||
+        field->type_url() == kStructValueTypeUrl) {
+      Push(name, Item::MESSAGE, false, false);
+      status = (*type_renderer)(this, data);
+      if (!status.ok()) {
+        InvalidValue(field->type_url(),
+                     StrCat("Field '", name, "', ", status.error_message()));
+      }
+      Pop();
     }
-    Pop();
     return this;
   }
 
