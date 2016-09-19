@@ -42,15 +42,16 @@
 #include <google/protobuf/io/zero_copy_stream_impl_lite.h>
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/util/internal/expecting_objectwriter.h>
+#include <google/protobuf/util/internal/testdata/anys.pb.h>
 #include <google/protobuf/util/internal/testdata/books.pb.h>
 #include <google/protobuf/util/internal/testdata/field_mask.pb.h>
+#include <google/protobuf/util/internal/testdata/maps.pb.h>
+#include <google/protobuf/util/internal/testdata/proto3.pb.h>
+#include <google/protobuf/util/internal/testdata/struct.pb.h>
+#include <google/protobuf/util/internal/testdata/timestamp_duration.pb.h>
 #include <google/protobuf/util/internal/type_info_test_helper.h>
 #include <google/protobuf/util/internal/constants.h>
 #include <google/protobuf/stubs/strutil.h>
-#include <google/protobuf/util/internal/testdata/anys.pb.h>
-#include <google/protobuf/util/internal/testdata/maps.pb.h>
-#include <google/protobuf/util/internal/testdata/struct.pb.h>
-#include <google/protobuf/util/internal/testdata/timestamp_duration.pb.h>
 #include <gtest/gtest.h>
 
 
@@ -66,24 +67,24 @@ using google::protobuf::Message;
 using google::protobuf::io::ArrayInputStream;
 using google::protobuf::io::CodedInputStream;
 using util::Status;
+using google::protobuf::testing::AnyM;
+using google::protobuf::testing::AnyOut;
 using google::protobuf::testing::Author;
 using google::protobuf::testing::BadAuthor;
 using google::protobuf::testing::BadNestedBook;
 using google::protobuf::testing::Book;
-using google::protobuf::testing::Cyclic;
 using google::protobuf::testing::Book_Label;
+using google::protobuf::testing::Cyclic;
+using google::protobuf::testing::FieldMaskTest;
+using google::protobuf::testing::MapOut;
+using google::protobuf::testing::MapOutWireFormat;
 using google::protobuf::testing::NestedBook;
+using google::protobuf::testing::NestedFieldMask;
 using google::protobuf::testing::PackedPrimitive;
 using google::protobuf::testing::Primitive;
-using google::protobuf::testing::more_author;
-using google::protobuf::testing::maps::MapOut;
-using google::protobuf::testing::maps::MapOutWireFormat;
-using google::protobuf::testing::timestampduration::TimestampDuration;
-using google::protobuf::testing::anys::AnyOut;
-using google::protobuf::testing::anys::AnyM;
-using google::protobuf::testing::FieldMaskTest;
-using google::protobuf::testing::NestedFieldMask;
-using google::protobuf::testing::structs::StructType;
+using google::protobuf::testing::Proto3Message;
+using google::protobuf::testing::StructType;
+using google::protobuf::testing::TimestampDuration;
 using ::testing::_;
 
 
@@ -101,7 +102,7 @@ class ProtostreamObjectSourceTest
         mock_(),
         ow_(&mock_),
         use_lower_camel_for_enums_(false) {
-    helper_.ResetTypeInfo(Book::descriptor());
+    helper_.ResetTypeInfo(Book::descriptor(), Proto3Message::descriptor());
   }
 
   virtual ~ProtostreamObjectSourceTest() {}
@@ -493,6 +494,15 @@ TEST_P(ProtostreamObjectSourceTest, EnumCaseIsUnchangedByDefault) {
   DoTest(book, Book::descriptor());
 }
 
+TEST_P(ProtostreamObjectSourceTest, UnknownEnum) {
+  Proto3Message message;
+  message.set_enum_value(static_cast<Proto3Message::NestedEnum>(1234));
+  ow_.StartObject("")
+      ->RenderInt32("enumValue", 1234)
+      ->EndObject();
+  DoTest(message, Proto3Message::descriptor());
+}
+
 TEST_P(ProtostreamObjectSourceTest, CyclicMessageDepthTest) {
   Cyclic cyclic;
   cyclic.set_m_int(123);
@@ -679,7 +689,7 @@ INSTANTIATE_TEST_CASE_P(DifferentTypeInfoSourceTest,
 // This is the example expected output.
 // {
 //   "any": {
-//     "@type": "type.googleapis.com/google.protobuf.testing.anys.AnyM"
+//     "@type": "type.googleapis.com/google.protobuf.testing.AnyM"
 //     "foo": "foovalue"
 //   }
 // }
@@ -694,7 +704,7 @@ TEST_P(ProtostreamObjectSourceAnysTest, BasicAny) {
   ow_.StartObject("")
       ->StartObject("any")
       ->RenderString("@type",
-                     "type.googleapis.com/google.protobuf.testing.anys.AnyM")
+                     "type.googleapis.com/google.protobuf.testing.AnyM")
       ->RenderString("foo", "foovalue")
       ->EndObject()
       ->EndObject();
@@ -708,8 +718,7 @@ TEST_P(ProtostreamObjectSourceAnysTest, RecursiveAny) {
   any->set_type_url("type.googleapis.com/google.protobuf.Any");
 
   ::google::protobuf::Any nested_any;
-  nested_any.set_type_url(
-      "type.googleapis.com/google.protobuf.testing.anys.AnyM");
+  nested_any.set_type_url("type.googleapis.com/google.protobuf.testing.AnyM");
 
   AnyM m;
   m.set_foo("foovalue");
@@ -722,7 +731,7 @@ TEST_P(ProtostreamObjectSourceAnysTest, RecursiveAny) {
       ->RenderString("@type", "type.googleapis.com/google.protobuf.Any")
       ->StartObject("value")
       ->RenderString("@type",
-                     "type.googleapis.com/google.protobuf.testing.anys.AnyM")
+                     "type.googleapis.com/google.protobuf.testing.AnyM")
       ->RenderString("foo", "foovalue")
       ->EndObject()
       ->EndObject()
@@ -741,7 +750,7 @@ TEST_P(ProtostreamObjectSourceAnysTest, DoubleRecursiveAny) {
 
   ::google::protobuf::Any second_nested_any;
   second_nested_any.set_type_url(
-      "type.googleapis.com/google.protobuf.testing.anys.AnyM");
+      "type.googleapis.com/google.protobuf.testing.AnyM");
 
   AnyM m;
   m.set_foo("foovalue");
@@ -756,7 +765,7 @@ TEST_P(ProtostreamObjectSourceAnysTest, DoubleRecursiveAny) {
       ->RenderString("@type", "type.googleapis.com/google.protobuf.Any")
       ->StartObject("value")
       ->RenderString("@type",
-                     "type.googleapis.com/google.protobuf.testing.anys.AnyM")
+                     "type.googleapis.com/google.protobuf.testing.AnyM")
       ->RenderString("foo", "foovalue")
       ->EndObject()
       ->EndObject()
@@ -999,6 +1008,19 @@ TEST_P(ProtostreamObjectSourceTimestampTest, InvalidDurationAboveMaxTest) {
 
   Status status = ExecuteTest(out, TimestampDuration::descriptor());
   EXPECT_EQ(util::error::INTERNAL, status.error_code());
+}
+
+TEST_P(ProtostreamObjectSourceTimestampTest, TimestampDurationDefaultValue) {
+  TimestampDuration out;
+  out.mutable_ts()->set_seconds(0);
+  out.mutable_dur()->set_seconds(0);
+
+  ow_.StartObject("")
+      ->RenderString("ts", "1970-01-01T00:00:00Z")
+      ->RenderString("dur", "0s")
+      ->EndObject();
+
+  DoTest(out, TimestampDuration::descriptor());
 }
 
 }  // namespace converter

@@ -79,8 +79,12 @@ template<typename T> void arena_destruct_object(void* object) {
 template<typename T> void arena_delete_object(void* object) {
   delete reinterpret_cast<T*>(object);
 }
-inline void arena_free(void* object, size_t /* size */) {
-  free(object);
+inline void arena_free(void* object, size_t size) {
+#if defined(__GXX_DELETE_WITH_SIZE__) || defined(__cpp_sized_deallocation)
+  ::operator delete(object, size);
+#else
+  ::operator delete(object);
+#endif
 }
 
 }  // namespace internal
@@ -144,7 +148,7 @@ struct ArenaOptions {
         max_block_size(kDefaultMaxBlockSize),
         initial_block(NULL),
         initial_block_size(0),
-        block_alloc(&malloc),
+        block_alloc(&::operator new),
         block_dealloc(&internal::arena_free),
         on_arena_init(NULL),
         on_arena_reset(NULL),
@@ -454,7 +458,7 @@ class LIBPROTOBUF_EXPORT Arena {
 
   // Combines SpaceAllocated and SpaceUsed. Returns a pair of
   // <space_allocated, space_used>.
-  GOOGLE_ATTRIBUTE_NOINLINE pair<uint64, uint64> SpaceAllocatedAndUsed() const;
+  GOOGLE_ATTRIBUTE_NOINLINE std::pair<uint64, uint64> SpaceAllocatedAndUsed() const;
 
   // Frees all storage allocated by this arena after calling destructors
   // registered with OwnDestructor() and freeing objects registered with Own().
@@ -608,6 +612,7 @@ class LIBPROTOBUF_EXPORT Arena {
                    const T>(static_cast<const T*>(0))) == sizeof(char) ||
                 google::protobuf::internal::has_trivial_destructor<T>::value> {};
 
+ private:
   // CreateMessage<T> requires that T supports arenas, but this private method
   // works whether or not T supports arenas. These are not exposed to user code
   // as it can cause confusing API usages, and end up having double free in

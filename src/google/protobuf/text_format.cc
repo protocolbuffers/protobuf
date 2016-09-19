@@ -393,6 +393,16 @@ class TextFormat::Parser::ParserImpl {
       DO(ConsumeAnyValue(full_type_name,
                          message->GetDescriptor()->file()->pool(),
                          &serialized_value));
+      if (singular_overwrite_policy_ == FORBID_SINGULAR_OVERWRITES) {
+        // Fail if any_type_url_field has already been specified.
+        if ((!any_type_url_field->is_repeated() &&
+             reflection->HasField(*message, any_type_url_field)) ||
+            (!any_value_field->is_repeated() &&
+             reflection->HasField(*message, any_value_field))) {
+          ReportError("Non-repeated Any specified multiple times.");
+          return false;
+        }
+      }
       reflection->SetString(
           message, any_type_url_field,
           string(prefix + full_type_name));
@@ -515,18 +525,21 @@ class TextFormat::Parser::ParserImpl {
     }
 
     if (field->is_repeated() && TryConsume("[")) {
-      // Short repeated format, e.g.  "foo: [1, 2, 3]"
-      while (true) {
-        if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
-          // Perform special handling for embedded message types.
-          DO(ConsumeFieldMessage(message, reflection, field));
-        } else {
-          DO(ConsumeFieldValue(message, reflection, field));
+      // Short repeated format, e.g.  "foo: [1, 2, 3]".
+      if (!TryConsume("]")) {
+        // "foo: []" is treated as empty.
+        while (true) {
+          if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
+            // Perform special handling for embedded message types.
+            DO(ConsumeFieldMessage(message, reflection, field));
+          } else {
+            DO(ConsumeFieldValue(message, reflection, field));
+          }
+          if (TryConsume("]")) {
+            break;
+          }
+          DO(Consume(","));
         }
-        if (TryConsume("]")) {
-          break;
-        }
-        DO(Consume(","));
       }
     } else if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
       DO(ConsumeFieldMessage(message, reflection, field));

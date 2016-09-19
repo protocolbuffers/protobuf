@@ -557,26 +557,29 @@ DefaultValueObjectWriter* DefaultValueObjectWriter::EndList() {
 void DefaultValueObjectWriter::RenderDataPiece(StringPiece name,
                                                const DataPiece& data) {
   MaybePopulateChildrenOfAny(current_);
-  util::StatusOr<string> data_string = data.ToString();
   if (current_->type() != NULL && current_->type()->name() == kAnyType &&
-      name == "@type" && data_string.ok()) {
-    const string& string_value = data_string.ValueOrDie();
-    // If the type of current_ is "Any" and its "@type" field is being set here,
-    // sets the type of current_ to be the type specified by the "@type".
-    util::StatusOr<const google::protobuf::Type*> found_type =
-        typeinfo_->ResolveTypeUrl(string_value);
-    if (!found_type.ok()) {
-      GOOGLE_LOG(WARNING) << "Failed to resolve type '" << string_value << "'.";
-    } else {
-      current_->set_type(found_type.ValueOrDie());
-    }
-    current_->set_is_any(true);
-    // If the "@type" field is placed after other fields, we should populate
-    // other children of primitive type now. Otherwise, we should wait until the
-    // first value field is rendered before we populate the children, because
-    // the "value" field of a Any message could be omitted.
-    if (current_->number_of_children() > 1 && current_->type() != NULL) {
-      current_->PopulateChildren(typeinfo_);
+      name == "@type") {
+    util::StatusOr<string> data_string = data.ToString();
+    if (data_string.ok()) {
+      const string& string_value = data_string.ValueOrDie();
+      // If the type of current_ is "Any" and its "@type" field is being set
+      // here, sets the type of current_ to be the type specified by the
+      // "@type".
+      util::StatusOr<const google::protobuf::Type*> found_type =
+          typeinfo_->ResolveTypeUrl(string_value);
+      if (!found_type.ok()) {
+        GOOGLE_LOG(WARNING) << "Failed to resolve type '" << string_value << "'.";
+      } else {
+        current_->set_type(found_type.ValueOrDie());
+      }
+      current_->set_is_any(true);
+      // If the "@type" field is placed after other fields, we should populate
+      // other children of primitive type now. Otherwise, we should wait until
+      // the first value field is rendered before we populate the children,
+      // because the "value" field of a Any message could be omitted.
+      if (current_->number_of_children() > 1 && current_->type() != NULL) {
+        current_->PopulateChildren(typeinfo_);
+      }
     }
   }
   Node* child = current_->FindChild(name);

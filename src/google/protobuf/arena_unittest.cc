@@ -151,8 +151,6 @@ class MustBeConstructedWithOneThroughEight {
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(MustBeConstructedWithOneThroughEight);
 };
 
-}  // namespace
-
 TEST(ArenaTest, ArenaConstructable) {
   EXPECT_TRUE(Arena::is_arena_constructable<TestAllTypes>::type::value);
   EXPECT_TRUE(Arena::is_arena_constructable<const TestAllTypes>::type::value);
@@ -893,6 +891,24 @@ TEST(ArenaTest, UnsafeArenaRelease) {
   delete s;
 }
 
+TEST(ArenaTest, OneofMerge) {
+  Arena arena;
+  TestAllTypes* message0 = Arena::CreateMessage<TestAllTypes>(&arena);
+  TestAllTypes* message1 = Arena::CreateMessage<TestAllTypes>(&arena);
+
+  message0->unsafe_arena_set_allocated_oneof_string(new string("x"));
+  ASSERT_TRUE(message0->has_oneof_string());
+  message1->unsafe_arena_set_allocated_oneof_string(new string("y"));
+  ASSERT_TRUE(message1->has_oneof_string());
+  EXPECT_EQ("x", message0->oneof_string());
+  EXPECT_EQ("y", message1->oneof_string());
+  message0->MergeFrom(*message1);
+  EXPECT_EQ("y", message0->oneof_string());
+  EXPECT_EQ("y", message1->oneof_string());
+  delete message0->unsafe_arena_release_oneof_string();
+  delete message1->unsafe_arena_release_oneof_string();
+}
+
 TEST(ArenaTest, ArenaOneofReflection) {
   Arena arena;
   TestAllTypes* message = Arena::CreateMessage<TestAllTypes>(&arena);
@@ -923,7 +939,6 @@ TEST(ArenaTest, ArenaOneofReflection) {
   delete submsg;
 }
 
-namespace {
 void TestSwapRepeatedField(Arena* arena1, Arena* arena2) {
   // Test "safe" (copying) semantics for direct Swap() on RepeatedPtrField
   // between arenas.
@@ -962,7 +977,6 @@ void TestSwapRepeatedField(Arena* arena1, Arena* arena2) {
     EXPECT_EQ(i, field2.Get(i).optional_int32());
   }
 }
-}  // namespace
 
 TEST(ArenaTest, SwapRepeatedField) {
   Arena arena;
@@ -1104,8 +1118,6 @@ TEST(ArenaTest, MutableMessageReflection) {
 #endif  // !GOOGLE_PROTOBUF_NO_RTTI
 
 
-namespace {
-
 void FillArenaAwareFields(TestAllTypes* message) {
   string test_string = "hello world";
   message->set_optional_int32(42);
@@ -1122,8 +1134,6 @@ void FillArenaAwareFields(TestAllTypes* message) {
   // No repeated string: not yet arena-aware.
   message->add_repeated_nested_message()->set_bb(42);
   message->mutable_optional_lazy_message()->set_bb(42);
-}
-
 }
 
 // Test: no allocations occur on heap while touching all supported field types.
@@ -1196,9 +1206,7 @@ TEST(ArenaTest, RepeatedFieldWithNonPODType) {
 }
 
 // Align n to next multiple of 8
-namespace {
 uint64 Align8(uint64 n) { return (n + 7) & -8; }
-}  // namespace
 
 TEST(ArenaTest, SpaceAllocated_and_Used) {
   ArenaOptions options;
@@ -1246,6 +1254,22 @@ TEST(ArenaTest, Alignment) {
   for (int i = 0; i < 200; i++) {
     void* p = ::google::protobuf::Arena::CreateArray<char>(&arena, i);
     GOOGLE_CHECK_EQ(reinterpret_cast<uintptr_t>(p) % 8, 0) << i << ": " << p;
+  }
+}
+
+TEST(ArenaTest, BlockSizeSmallerThanAllocation) {
+  for (size_t i = 0; i <= 8; ++i) {
+    ::google::protobuf::ArenaOptions opt;
+    opt.start_block_size = opt.max_block_size = i;
+    ::google::protobuf::Arena arena(opt);
+
+    *::google::protobuf::Arena::Create<int64>(&arena) = 42;
+    EXPECT_GE(arena.SpaceAllocated(), 8);
+    EXPECT_EQ(8, arena.SpaceUsed());
+
+    *::google::protobuf::Arena::Create<int64>(&arena) = 42;
+    EXPECT_GE(arena.SpaceAllocated(), 16);
+    EXPECT_EQ(16, arena.SpaceUsed());
   }
 }
 
@@ -1349,5 +1373,7 @@ TEST(ArenaTest, ArenaHooksSanity) {
   EXPECT_EQ(1, ArenaHooksTestUtil::num_destruct);
 }
 
+
+}  // namespace
 }  // namespace protobuf
 }  // namespace google

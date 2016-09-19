@@ -34,6 +34,7 @@ namespace protobuf {
 
 // Internal implementation detail -- do not call these.
 void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2ftimestamp_2eproto();
+void LIBPROTOBUF_EXPORT protobuf_InitDefaults_google_2fprotobuf_2ftimestamp_2eproto();
 void protobuf_AssignDesc_google_2fprotobuf_2ftimestamp_2eproto();
 void protobuf_ShutdownFile_google_2fprotobuf_2ftimestamp_2eproto();
 
@@ -60,6 +61,10 @@ class LIBPROTOBUF_EXPORT Timestamp : public ::google::protobuf::Message /* @@pro
   static const ::google::protobuf::Descriptor* descriptor();
   static const Timestamp& default_instance();
 
+  static inline const Timestamp* internal_default_instance() {
+    return &default_instance_.get();
+  }
+
   void UnsafeArenaSwap(Timestamp* other);
   void Swap(Timestamp* other);
 
@@ -75,7 +80,7 @@ class LIBPROTOBUF_EXPORT Timestamp : public ::google::protobuf::Message /* @@pro
   void Clear();
   bool IsInitialized() const;
 
-  int ByteSize() const;
+  size_t ByteSizeLong() const;
   bool MergePartialFromCodedStream(
       ::google::protobuf::io::CodedInputStream* input);
   void SerializeWithCachedSizes(
@@ -91,6 +96,7 @@ class LIBPROTOBUF_EXPORT Timestamp : public ::google::protobuf::Message /* @@pro
   void SharedDtor();
   void SetCachedSize(int size) const;
   void InternalSwap(Timestamp* other);
+  void UnsafeMergeFrom(const Timestamp& from);
   protected:
   explicit Timestamp(::google::protobuf::Arena* arena);
   private:
@@ -130,16 +136,16 @@ class LIBPROTOBUF_EXPORT Timestamp : public ::google::protobuf::Message /* @@pro
   friend class ::google::protobuf::Arena;
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
-  bool _is_default_instance_;
   ::google::protobuf::int64 seconds_;
   ::google::protobuf::int32 nanos_;
   mutable int _cached_size_;
-  friend void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2ftimestamp_2eproto();
+  friend void LIBPROTOBUF_EXPORT protobuf_InitDefaults_google_2fprotobuf_2ftimestamp_2eproto_impl();
+  friend void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2ftimestamp_2eproto_impl();
   friend void protobuf_AssignDesc_google_2fprotobuf_2ftimestamp_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2ftimestamp_2eproto();
 
   void InitAsDefaultInstance();
-  static Timestamp* default_instance_;
+  static ::google::protobuf::internal::ExplicitlyConstructed<Timestamp> default_instance_;
 };
 // ===================================================================
 

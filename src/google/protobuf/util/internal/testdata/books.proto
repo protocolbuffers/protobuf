@@ -31,6 +31,10 @@
 // Author: sven@google.com (Sven Mawson)
 //
 // Sample protos for testing.
+
+// Some of the older enums don't use CAPITALS_WITH_UNDERSCORES for testing.
+// LINT: LEGACY_NAMES
+
 syntax = "proto2";
 
 package google.protobuf.testing;
@@ -60,6 +64,7 @@ message Book {
     FICTION = 1;
     KIDS = 2;
     ACTION_AND_ADVENTURE = 3;
+    arts_and_photography = 4;
   }
   optional Type type = 11;
 

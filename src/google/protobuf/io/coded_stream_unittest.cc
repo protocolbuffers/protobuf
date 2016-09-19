@@ -58,6 +58,7 @@
 #define ULL(x) GOOGLE_ULONGLONG(x)
 
 namespace google {
+
 namespace protobuf {
 namespace io {
 namespace {

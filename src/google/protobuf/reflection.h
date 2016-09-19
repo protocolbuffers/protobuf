@@ -80,6 +80,12 @@ class RepeatedFieldRef<
 
   typedef IteratorType iterator;
   typedef IteratorType const_iterator;
+  typedef T value_type;
+  typedef T& reference;
+  typedef const T& const_reference;
+  typedef int size_type;
+  typedef ptrdiff_t difference_type;
+
   iterator begin() const {
     return iterator(data_, accessor_, true);
   }
@@ -202,11 +208,18 @@ class RepeatedFieldRef<
 
   typedef IteratorType iterator;
   typedef IteratorType const_iterator;
+  typedef T value_type;
+  typedef T& reference;
+  typedef const T& const_reference;
+  typedef int size_type;
+  typedef ptrdiff_t difference_type;
+
   iterator begin() const {
     return iterator(data_, accessor_, true, NewMessage());
   }
   iterator end() const {
-    return iterator(data_, accessor_, false, NewMessage());
+    // The end iterator must not be dereferenced, no need for scratch space.
+    return iterator(data_, accessor_, false, NULL);
   }
 
  private:
@@ -428,13 +441,13 @@ class RepeatedFieldRefIterator
  public:
   // Constructor for non-message fields.
   RepeatedFieldRefIterator(const void* data,
-                           const RepeatedFieldAccessor* accessor,
-                           bool begin)
-      : data_(data), accessor_(accessor),
-        iterator_(begin ? accessor->BeginIterator(data) :
-                          accessor->EndIterator(data)),
-        scratch_space_(new AccessorValueType) {
-  }
+                           const RepeatedFieldAccessor* accessor, bool begin)
+      : data_(data),
+        accessor_(accessor),
+        iterator_(begin ? accessor->BeginIterator(data)
+                        : accessor->EndIterator(data)),
+        // The end iterator must not be dereferenced, no need for scratch space.
+        scratch_space_(begin ? new AccessorValueType : NULL) {}
   // Constructor for message fields.
   RepeatedFieldRefIterator(const void* data,
                            const RepeatedFieldAccessor* accessor,

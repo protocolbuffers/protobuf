@@ -136,6 +136,13 @@ class FieldGenerator {
   // GenerateMergeFrom method.
   virtual void GenerateMergingCode(io::Printer* printer) const = 0;
 
+  // The same, but the generated code may or may not check the possibility that
+  // the two objects being merged have the same address.  To be safe, callers
+  // should avoid calling this unless they know the objects are different.
+  virtual void GenerateUnsafeMergingCode(io::Printer* printer) const {
+    GenerateMergingCode(printer);
+  }
+
   // Generate lines of code (statements, not declarations) which swaps
   // this field and the corresponding field of another message, which
   // is stored in the generated code variable "other". This is used to

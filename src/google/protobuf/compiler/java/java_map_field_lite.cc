@@ -765,14 +765,14 @@ GenerateParsingCode(io::Printer* printer) const {
     printer->Print(
         variables_,
         "com.google.protobuf.ByteString bytes = input.readBytes();\n"
-        "java.util.Map.Entry<$type_parameters$> $name$ =\n"
+        "java.util.Map.Entry<$type_parameters$> $name$__ =\n"
         "    $default_entry$.parseEntry(bytes, extensionRegistry);\n");
     printer->Print(
         variables_,
-        "if ($value_enum_type$.forNumber($name$.getValue()) == null) {\n"
+        "if ($value_enum_type$.forNumber($name$__.getValue()) == null) {\n"
         "  super.mergeLengthDelimitedField($number$, bytes);\n"
         "} else {\n"
-        "  $name$_.put($name$);\n"
+        "  $name$_.put($name$__);\n"
         "}\n");
   } else {
     printer->Print(

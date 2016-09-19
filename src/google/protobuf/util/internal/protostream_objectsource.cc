@@ -288,6 +288,8 @@ StatusOr<uint32> ProtoStreamObjectSource::RenderMap(
             return Status(util::error::INTERNAL, "Invalid map entry.");
           }
           ASSIGN_OR_RETURN(map_key, MapKeyDefaultValueAsString(*key_field));
+          // Key is empty, force it to render as empty (for string values).
+          ow->empty_name_ok_for_next_key();
         }
         RETURN_IF_ERROR(RenderField(field, map_key, ow));
       } else {
@@ -857,7 +859,8 @@ Status ProtoStreamObjectSource::RenderNonMessageField(
       // up.
       const google::protobuf::Enum* en =
           typeinfo_->GetEnumByTypeUrl(field->type_url());
-      // Lookup the name of the enum, and render that. Skips unknown enums.
+      // Lookup the name of the enum, and render that. Unknown enum values
+      // are printed as integers.
       if (en != NULL) {
         const google::protobuf::EnumValue* enum_value =
             FindEnumValueByNumber(*en, buffer32);
@@ -866,9 +869,11 @@ Status ProtoStreamObjectSource::RenderNonMessageField(
             ow->RenderString(field_name, ToCamelCase(enum_value->name()));
           else
             ow->RenderString(field_name, enum_value->name());
+        } else {
+          ow->RenderInt32(field_name, buffer32);
         }
       } else {
-        GOOGLE_LOG(INFO) << "Unknown enum skipped: " << field->type_url();
+        ow->RenderInt32(field_name, buffer32);
       }
       break;
     }
@@ -1099,6 +1104,8 @@ const google::protobuf::EnumValue* FindEnumValueByNumber(
 // TODO(skarvaje): Look into optimizing this by not doing computation on
 // double.
 const string FormatNanos(uint32 nanos) {
+  if (nanos == 0) return "";
+
   const char* format =
       (nanos % 1000 != 0) ? "%.9f" : (nanos % 1000000 != 0) ? "%.6f" : "%.3f";
   string formatted =
