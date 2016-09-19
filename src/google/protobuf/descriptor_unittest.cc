@@ -773,9 +773,9 @@ TEST_F(DescriptorTest, FieldFullName) {
 TEST_F(DescriptorTest, FieldJsonName) {
   EXPECT_EQ("fieldName1", message4_->field(0)->json_name());
   EXPECT_EQ("fieldName2", message4_->field(1)->json_name());
-  EXPECT_EQ("fieldName3", message4_->field(2)->json_name());
-  EXPECT_EQ("fieldName4", message4_->field(3)->json_name());
-  EXPECT_EQ("fIELDNAME5", message4_->field(4)->json_name());
+  EXPECT_EQ("FieldName3", message4_->field(2)->json_name());
+  EXPECT_EQ("FieldName4", message4_->field(3)->json_name());
+  EXPECT_EQ("FIELDNAME5", message4_->field(4)->json_name());
   EXPECT_EQ("@type", message4_->field(5)->json_name());
 
   DescriptorProto proto;
@@ -793,10 +793,20 @@ TEST_F(DescriptorTest, FieldJsonName) {
   ASSERT_EQ(6, proto.field_size());
   EXPECT_EQ("fieldName1", proto.field(0).json_name());
   EXPECT_EQ("fieldName2", proto.field(1).json_name());
-  EXPECT_EQ("fieldName3", proto.field(2).json_name());
-  EXPECT_EQ("fieldName4", proto.field(3).json_name());
-  EXPECT_EQ("fIELDNAME5", proto.field(4).json_name());
+  EXPECT_EQ("FieldName3", proto.field(2).json_name());
+  EXPECT_EQ("FieldName4", proto.field(3).json_name());
+  EXPECT_EQ("FIELDNAME5", proto.field(4).json_name());
   EXPECT_EQ("@type", proto.field(5).json_name());
+
+  // Test generated descriptor.
+  const Descriptor* generated = protobuf_unittest::TestJsonName::descriptor();
+  ASSERT_EQ(6, generated->field_count());
+  EXPECT_EQ("fieldName1", generated->field(0)->json_name());
+  EXPECT_EQ("fieldName2", generated->field(1)->json_name());
+  EXPECT_EQ("FieldName3", generated->field(2)->json_name());
+  EXPECT_EQ("FieldName4", generated->field(3)->json_name());
+  EXPECT_EQ("FIELDNAME5", generated->field(4)->json_name());
+  EXPECT_EQ("@type", generated->field(5)->json_name());
 }
 
 TEST_F(DescriptorTest, FieldFile) {
@@ -5551,6 +5561,60 @@ TEST_F(ValidationErrorTest, MapEntryConflictsWithEnum) {
       "\"Foo\".\n"
       "foo.proto: Foo: NAME: Expanded map entry type FooMapEntry conflicts "
       "with an existing enum type.\n");
+}
+
+TEST_F(ValidationErrorTest, EnumValuesConflictWhenPrefixesStripped) {
+  BuildFileWithErrors(
+      "name: 'foo.proto' "
+      "enum_type {"
+      "  name: 'FooEnum' "
+      "  value { name: 'FOO_ENUM_BAZ' number: 0 }"
+      "  value { name: 'BAZ' number: 1 }"
+      "}",
+      "foo.proto: BAZ: NAME: When enum name is stripped and label is "
+      "PascalCased (Baz), this value label conflicts with FOO_ENUM_BAZ\n");
+
+  BuildFileWithErrors(
+      "name: 'foo.proto' "
+      "enum_type {"
+      "  name: 'FooEnum' "
+      "  value { name: 'FOOENUM_BAZ' number: 0 }"
+      "  value { name: 'BAZ' number: 1 }"
+      "}",
+      "foo.proto: BAZ: NAME: When enum name is stripped and label is "
+      "PascalCased (Baz), this value label conflicts with FOOENUM_BAZ\n");
+
+  BuildFileWithErrors(
+      "name: 'foo.proto' "
+      "enum_type {"
+      "  name: 'FooEnum' "
+      "  value { name: 'FOO_ENUM_BAR_BAZ' number: 0 }"
+      "  value { name: 'BAR__BAZ' number: 1 }"
+      "}",
+      "foo.proto: BAR__BAZ: NAME: When enum name is stripped and label is "
+      "PascalCased (BarBaz), this value label conflicts with "
+      "FOO_ENUM_BAR_BAZ\n");
+
+  BuildFileWithErrors(
+      "name: 'foo.proto' "
+      "enum_type {"
+      "  name: 'FooEnum' "
+      "  value { name: 'FOO_ENUM__BAR_BAZ' number: 0 }"
+      "  value { name: 'BAR_BAZ' number: 1 }"
+      "}",
+      "foo.proto: BAR_BAZ: NAME: When enum name is stripped and label is "
+      "PascalCased (BarBaz), this value label conflicts with "
+      "FOO_ENUM__BAR_BAZ\n");
+
+  // This isn't an error because the underscore will cause the PascalCase to
+  // differ by case (BarBaz vs. Barbaz).
+  BuildFile(
+      "name: 'foo.proto' "
+      "enum_type {"
+      "  name: 'FooEnum' "
+      "  value { name: 'BAR_BAZ' number: 0 }"
+      "  value { name: 'BARBAZ' number: 1 }"
+      "}");
 }
 
 TEST_F(ValidationErrorTest, MapEntryConflictsWithOneof) {

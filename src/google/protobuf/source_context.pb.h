@@ -34,6 +34,7 @@ namespace protobuf {
 
 // Internal implementation detail -- do not call these.
 void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2fsource_5fcontext_2eproto();
+void LIBPROTOBUF_EXPORT protobuf_InitDefaults_google_2fprotobuf_2fsource_5fcontext_2eproto();
 void protobuf_AssignDesc_google_2fprotobuf_2fsource_5fcontext_2eproto();
 void protobuf_ShutdownFile_google_2fprotobuf_2fsource_5fcontext_2eproto();
 
@@ -56,6 +57,10 @@ class LIBPROTOBUF_EXPORT SourceContext : public ::google::protobuf::Message /* @
   static const ::google::protobuf::Descriptor* descriptor();
   static const SourceContext& default_instance();
 
+  static inline const SourceContext* internal_default_instance() {
+    return &default_instance_.get();
+  }
+
   void Swap(SourceContext* other);
 
   // implements Message ----------------------------------------------
@@ -70,7 +75,7 @@ class LIBPROTOBUF_EXPORT SourceContext : public ::google::protobuf::Message /* @
   void Clear();
   bool IsInitialized() const;
 
-  int ByteSize() const;
+  size_t ByteSizeLong() const;
   bool MergePartialFromCodedStream(
       ::google::protobuf::io::CodedInputStream* input);
   void SerializeWithCachedSizes(
@@ -86,6 +91,7 @@ class LIBPROTOBUF_EXPORT SourceContext : public ::google::protobuf::Message /* @
   void SharedDtor();
   void SetCachedSize(int size) const;
   void InternalSwap(SourceContext* other);
+  void UnsafeMergeFrom(const SourceContext& from);
   private:
   inline ::google::protobuf::Arena* GetArenaNoVirtual() const {
     return _internal_metadata_.arena();
@@ -116,15 +122,15 @@ class LIBPROTOBUF_EXPORT SourceContext : public ::google::protobuf::Message /* @
  private:
 
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
-  bool _is_default_instance_;
   ::google::protobuf::internal::ArenaStringPtr file_name_;
   mutable int _cached_size_;
-  friend void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2fsource_5fcontext_2eproto();
+  friend void LIBPROTOBUF_EXPORT protobuf_InitDefaults_google_2fprotobuf_2fsource_5fcontext_2eproto_impl();
+  friend void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2fsource_5fcontext_2eproto_impl();
   friend void protobuf_AssignDesc_google_2fprotobuf_2fsource_5fcontext_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fsource_5fcontext_2eproto();
 
   void InitAsDefaultInstance();
-  static SourceContext* default_instance_;
+  static ::google::protobuf::internal::ExplicitlyConstructed<SourceContext> default_instance_;
 };
 // ===================================================================
 

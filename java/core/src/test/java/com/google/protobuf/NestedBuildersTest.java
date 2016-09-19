@@ -32,11 +32,9 @@ package com.google.protobuf;
 
 import protobuf_unittest.Vehicle;
 import protobuf_unittest.Wheel;
-
-import junit.framework.TestCase;
-
 import java.util.ArrayList;
 import java.util.List;
+import junit.framework.TestCase;
 
 /**
  * Test cases that exercise end-to-end use cases involving

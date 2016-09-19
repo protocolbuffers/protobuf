@@ -47,6 +47,7 @@
 #include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/stubs/stl_util.h>
+#include <google/protobuf/stubs/port.h>
 
 
 namespace google {
@@ -902,46 +903,18 @@ bool CodedOutputStream::Refresh() {
   }
 }
 
-int CodedOutputStream::VarintSize32Fallback(uint32 value) {
-  if (value < (1 << 7)) {
-    return 1;
-  } else if (value < (1 << 14)) {
-    return 2;
-  } else if (value < (1 << 21)) {
-    return 3;
-  } else if (value < (1 << 28)) {
-    return 4;
-  } else {
-    return 5;
-  }
+size_t CodedOutputStream::VarintSize32Fallback(uint32 value) {
+  GOOGLE_DCHECK_NE(0, value);  // This is enforced by our caller.
+
+  return 1 + Bits::Log2FloorNonZero(value) / 7;
 }
 
-int CodedOutputStream::VarintSize64(uint64 value) {
-  if (value < (1ull << 35)) {
-    if (value < (1ull << 7)) {
-      return 1;
-    } else if (value < (1ull << 14)) {
-      return 2;
-    } else if (value < (1ull << 21)) {
-      return 3;
-    } else if (value < (1ull << 28)) {
-      return 4;
-    } else {
-      return 5;
-    }
-  } else {
-    if (value < (1ull << 42)) {
-      return 6;
-    } else if (value < (1ull << 49)) {
-      return 7;
-    } else if (value < (1ull << 56)) {
-      return 8;
-    } else if (value < (1ull << 63)) {
-      return 9;
-    } else {
-      return 10;
-    }
+size_t CodedOutputStream::VarintSize64(uint64 value) {
+  if (value < (1 << 7)) {
+    return 1;
   }
+
+  return 1 + Bits::Log2FloorNonZero64(value) / 7;
 }
 
 uint8* CodedOutputStream::WriteStringWithSizeToArray(const string& str,

@@ -69,6 +69,7 @@
 #undef PACKAGE  // autoheader #defines this.  :(
 
 namespace google {
+
 namespace protobuf {
 
 const FieldDescriptor::CppType
@@ -164,6 +165,15 @@ const int FieldDescriptor::kLastReservedNumber;
 
 namespace {
 
+// Note:  I distrust ctype.h due to locales.
+char ToUpper(char ch) {
+  return (ch >= 'a' && ch <= 'z') ? (ch - 'a' + 'A') : ch;
+}
+
+char ToLower(char ch) {
+  return (ch >= 'A' && ch <= 'Z') ? (ch - 'A' + 'a') : ch;
+}
+
 string ToCamelCase(const string& input, bool lower_first) {
   bool capitalize_next = !lower_first;
   string result;
@@ -173,12 +183,7 @@ string ToCamelCase(const string& input, bool lower_first) {
     if (input[i] == '_') {
       capitalize_next = true;
     } else if (capitalize_next) {
-      // Note:  I distrust ctype.h due to locales.
-      if ('a' <= input[i] && input[i] <= 'z') {
-        result.push_back(input[i] - 'a' + 'A');
-      } else {
-        result.push_back(input[i]);
-      }
+      result.push_back(ToUpper(input[i]));
       capitalize_next = false;
     } else {
       result.push_back(input[i]);
@@ -186,12 +191,115 @@ string ToCamelCase(const string& input, bool lower_first) {
   }
 
   // Lower-case the first letter.
-  if (lower_first && !result.empty() && 'A' <= result[0] && result[0] <= 'Z') {
-      result[0] = result[0] - 'A' + 'a';
+  if (lower_first && !result.empty()) {
+    result[0] = ToLower(result[0]);
   }
 
   return result;
 }
+
+string ToJsonName(const string& input) {
+  bool capitalize_next = false;
+  string result;
+  result.reserve(input.size());
+
+  for (int i = 0; i < input.size(); i++) {
+    if (input[i] == '_') {
+      capitalize_next = true;
+    } else if (capitalize_next) {
+      result.push_back(ToUpper(input[i]));
+      capitalize_next = false;
+    } else {
+      result.push_back(input[i]);
+    }
+  }
+
+  return result;
+}
+
+string EnumValueToPascalCase(const string& input) {
+  bool next_upper = true;
+  string result;
+  result.reserve(input.size());
+
+  for (int i = 0; i < input.size(); i++) {
+    if (input[i] == '_') {
+      next_upper = true;
+    } else {
+      if (next_upper) {
+        result.push_back(ToUpper(input[i]));
+      } else {
+        result.push_back(ToLower(input[i]));
+      }
+      next_upper = false;
+    }
+  }
+
+  return result;
+}
+
+// Class to remove an enum prefix from enum values.
+class PrefixRemover {
+ public:
+  PrefixRemover(StringPiece prefix) {
+    // Strip underscores and lower-case the prefix.
+    for (int i = 0; i < prefix.size(); i++) {
+      if (prefix[i] != '_') {
+        prefix_ += ascii_tolower(prefix[i]);
+      }
+    }
+  }
+
+  // Tries to remove the enum prefix from this enum value.
+  // If this is not possible, returns the input verbatim.
+  string MaybeRemove(StringPiece str) {
+    // We can't just lowercase and strip str and look for a prefix.
+    // We need to properly recognize the difference between:
+    //
+    //   enum Foo {
+    //     FOO_BAR_BAZ = 0;
+    //     FOO_BARBAZ = 1;
+    //   }
+    //
+    // This is acceptable (though perhaps not advisable) because even when
+    // we PascalCase, these two will still be distinct (BarBaz vs. Barbaz).
+    size_t i, j;
+
+    // Skip past prefix_ in str if we can.
+    for (i = 0, j = 0; i < str.size() && j < prefix_.size(); i++) {
+      if (str[i] == '_') {
+        continue;
+      }
+
+      if (ascii_tolower(str[i]) != prefix_[j++]) {
+        return str.as_string();
+      }
+    }
+
+    // If we didn't make it through the prefix, we've failed to strip the
+    // prefix.
+    if (j < prefix_.size()) {
+      return str.as_string();
+    }
+
+    // Skip underscores between prefix and further characters.
+    while (i < str.size() && str[i] == '_') {
+      i++;
+    }
+
+    // Enum label can't be the empty string.
+    if (i == str.size()) {
+      return str.as_string();
+    }
+
+    // We successfully stripped the prefix.
+    str.remove_prefix(i);
+    return str.as_string();
+  }
+
+ private:
+  string prefix_;
+};
 
 // A DescriptorPool contains a bunch of hash_maps to implement the
 // various Find*By*() methods.  Since hashtable lookups are O(1), it's
@@ -2390,6 +2498,17 @@ void FieldDescriptor::DebugString(int depth,
     strings::SubstituteAndAppend(contents, " [default = $0",
                                  DefaultValueAsString(true));
   }
+  if (has_json_name_) {
+    if (!bracketed) {
+      bracketed = true;
+      contents->append("[");
+    } else {
+      contents->append(", ");
+    }
+    contents->append("json_name = \"");
+    contents->append(CEscape(json_name()));
+    contents->append("\"");
+  }
 
   string formatted_options;
   if (FormatBracketedOptions(depth, options(), &formatted_options)) {
@@ -2980,6 +3099,8 @@ class DescriptorBuilder {
   void BuildOneof(const OneofDescriptorProto& proto,
                   Descriptor* parent,
                   OneofDescriptor* result);
+  void CheckEnumValueUniqueness(const EnumDescriptorProto& proto,
+                                const EnumDescriptor* result);
   void BuildEnum(const EnumDescriptorProto& proto,
                  const Descriptor* parent,
                  EnumDescriptor* result);
@@ -4232,7 +4353,7 @@ void DescriptorBuilder::BuildFieldOrExtension(const FieldDescriptorProto& proto,
     result->json_name_ = tables_->AllocateString(proto.json_name());
   } else {
     result->has_json_name_ = false;
-    result->json_name_ = result->camelcase_name_;
+    result->json_name_ = tables_->AllocateString(ToJsonName(proto.name()));
   }
 
   // Some compilers do not allow static_cast directly between two enum types,
@@ -4540,6 +4661,61 @@ void DescriptorBuilder::BuildOneof(const OneofDescriptorProto& proto,
             proto, Symbol(result));
 }
 
+void DescriptorBuilder::CheckEnumValueUniqueness(
+    const EnumDescriptorProto& proto, const EnumDescriptor* result) {
+
+  // Check that enum labels are still unique when we remove the enum prefix from
+  // values that have it.
+  //
+  // This will fail for something like:
+  //
+  //   enum MyEnum {
+  //     MY_ENUM_FOO = 0;
+  //     FOO = 1;
+  //   }
+  //
+  // By enforcing this reasonable constraint, we allow code generators to strip
+  // the prefix and/or PascalCase it without creating conflicts.  This can lead
+  // to much nicer language-specific enums like:
+  //
+  //   enum NameType {
+  //     FirstName = 1,
+  //     LastName = 2,
+  //   }
+  //
+  // Instead of:
+  //
+  //   enum NameType {
+  //     NAME_TYPE_FIRST_NAME = 1,
+  //     NAME_TYPE_LAST_NAME = 2,
+  //   }
+  PrefixRemover remover(result->name());
+  map<string, const google::protobuf::EnumValueDescriptor*> values;
+  for (int i = 0; i < result->value_count(); i++) {
+    const google::protobuf::EnumValueDescriptor* value = result->value(i);
+    string stripped =
+        EnumValueToPascalCase(remover.MaybeRemove(value->name()));
+    std::pair<map<string, const google::protobuf::EnumValueDescriptor*>::iterator, bool>
+        insert_result = values.insert(std::make_pair(stripped, value));
+    bool inserted = insert_result.second;
+
+    // We don't throw the error if the two conflicting symbols are identical, or
+    // if they map to the same number.  In the former case, the normal symbol
+    // duplication error will fire so we don't need to (and its error message
+    // will make more sense). We allow the latter case so users can create
+    // aliases which add or remove the prefix (code generators that do prefix
+    // stripping should de-dup the labels in this case).
+    if (!inserted && insert_result.first->second->name() != value->name() &&
+        insert_result.first->second->number() != value->number()) {
+      AddError(value->full_name(), proto.value(i),
+               DescriptorPool::ErrorCollector::NAME,
+               "When enum name is stripped and label is PascalCased (" +
+                   stripped + "), this value label conflicts with " +
+                   values[stripped]->name());
+    }
+  }
+}
+
 void DescriptorBuilder::BuildEnum(const EnumDescriptorProto& proto,
                                   const Descriptor* parent,
                                   EnumDescriptor* result) {
@@ -4567,6 +4743,8 @@ void DescriptorBuilder::BuildEnum(const EnumDescriptorProto& proto,
   }
 
   BUILD_ARRAY(proto, result, value, BuildEnumValue, result);
+
+  CheckEnumValueUniqueness(proto, result);
 
   // Copy options.
   if (!proto.has_options()) {
@@ -5254,7 +5432,6 @@ void DescriptorBuilder::ValidateProto3Enum(
   }
 }
 
-
 void DescriptorBuilder::ValidateMessageOptions(Descriptor* message,
                                                const DescriptorProto& proto) {
   VALIDATE_OPTIONS_FROM_ARRAY(message, field, Field);
@@ -5275,7 +5452,6 @@ void DescriptorBuilder::ValidateMessageOptions(Descriptor* message,
                               max_extension_range));
     }
   }
-
 }
 
 void DescriptorBuilder::ValidateFieldOptions(FieldDescriptor* field,

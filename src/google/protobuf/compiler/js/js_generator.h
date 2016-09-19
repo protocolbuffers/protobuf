@@ -36,6 +36,8 @@
 #include <string>
 #include <set>
 
+#include <google/protobuf/stubs/logging.h>
+#include <google/protobuf/stubs/common.h>
 #include <google/protobuf/compiler/code_generator.h>
 
 namespace google {
@@ -53,43 +55,74 @@ namespace compiler {
 namespace js {
 
 struct GeneratorOptions {
-  // Add a `goog.requires()` call for each enum type used. If not set, a forward
-  // declaration with `goog.forwardDeclare` is produced instead.
-  bool add_require_for_enums;
-  // Set this as a test-only module via `goog.setTestOnly();`.
-  bool testonly;
   // Output path.
   string output_dir;
   // Namespace prefix.
   string namespace_prefix;
+  // Enable binary-format support?
+  bool binary;
+  // What style of imports should be used.
+  enum ImportStyle {
+    kImportClosure,   // goog.require()
+    kImportCommonJs,  // require()
+    kImportBrowser,   // no import statements
+    kImportEs6,       // import { member } from ''
+  } import_style;
+
+  GeneratorOptions()
+      : output_dir("."),
+        namespace_prefix(""),
+        binary(false),
+        import_style(kImportClosure),
+        add_require_for_enums(false),
+        testonly(false),
+        library(""),
+        error_on_name_conflict(false),
+        broken_proto3_semantics(false),
+        extension(".js"),
+        one_output_file_per_input_file(false) {}
+
+  bool ParseFromOptions(
+      const vector< pair< string, string > >& options,
+      string* error);
+
+  // Returns the file name extension to use for generated code.
+  string GetFileNameExtension() const {
+    return import_style == kImportClosure ? extension : "_pb.js";
+  }
+
+  enum OutputMode {
+    // Create an output file for each input .proto file.
+    kOneOutputFilePerInputFile,
+    // Create an output file for each type.
+    kOneOutputFilePerType,
+    // Put everything in a single file named by the library option.
+    kEverythingInOneFile,
+  };
+
+  // Indicates how to output the generated code based on the provided options.
+  OutputMode output_mode() const;
+
+  // The remaining options are only relevant when we are using kImportClosure.
+
+  // Add a `goog.requires()` call for each enum type used. If not set, a
+  // forward declaration with `goog.forwardDeclare` is produced instead.
+  bool add_require_for_enums;
+  // Set this as a test-only module via `goog.setTestOnly();`.
+  bool testonly;
   // Create a library with name <name>_lib.js rather than a separate .js file
   // per type?
   string library;
   // Error if there are two types that would generate the same output file?
   bool error_on_name_conflict;
-  // Enable binary-format support?
-  bool binary;
-  // What style of imports should be used.
-  enum ImportStyle {
-    IMPORT_CLOSURE,    // goog.require()
-    IMPORT_COMMONJS,   // require()
-    IMPORT_BROWSER,    // no import statements
-    IMPORT_ES6,        // import { member } from ''
-  } import_style;
-
-  GeneratorOptions()
-      : add_require_for_enums(false),
-        testonly(false),
-        output_dir("."),
-        namespace_prefix(""),
-        library(""),
-        error_on_name_conflict(false),
-        binary(false),
-        import_style(IMPORT_CLOSURE) {}
-
-  bool ParseFromOptions(
-      const vector< pair< string, string > >& options,
-      string* error);
+  // Preserve the broken proto3 semantics from the old codegen? This amounts
+  // to using proto2 field presence semantics even for proto3 files. DO NOT
+  // USE except for migrating legacy code.
+  bool broken_proto3_semantics;
+  // The extension to use for output file names.
+  string extension;
+  // Create a separate output file for each input file?
+  bool one_output_file_per_input_file;
 };
 
 // CodeGenerator implementation which generates a JavaScript source file and
@@ -207,6 +240,11 @@ class LIBPROTOC_EXPORT Generator : public CodeGenerator {
                                io::Printer* printer,
                                const FileDescriptor* file) const;
 
+  void GenerateFieldValueExpression(io::Printer* printer,
+                                    const char* obj_reference,
+                                    const FieldDescriptor* field,
+                                    bool use_default) const;
+
   // Generate definition for one class.
   void GenerateClass(const GeneratorOptions& options,
                      io::Printer* printer,
@@ -275,6 +313,17 @@ class LIBPROTOC_EXPORT Generator : public CodeGenerator {
   void GenerateExtension(const GeneratorOptions& options,
                          io::Printer* printer,
                          const FieldDescriptor* field) const;
+
+  // Generate addFoo() method for repeated primitive fields.
+  void GenerateRepeatedPrimitiveHelperMethods(const GeneratorOptions& options,
+                                              io::Printer* printer,
+                                              const FieldDescriptor* field,
+                                              bool untyped) const;
+
+  // Generate addFoo() method for repeated message fields.
+  void GenerateRepeatedMessageHelperMethods(const GeneratorOptions& options,
+                                            io::Printer* printer,
+                                            const FieldDescriptor* field) const;
 
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(Generator);
 };

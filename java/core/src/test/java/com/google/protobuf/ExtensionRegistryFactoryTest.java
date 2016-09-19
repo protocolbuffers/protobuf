@@ -32,26 +32,24 @@ package com.google.protobuf;
 
 import protobuf_unittest.NonNestedExtension;
 import protobuf_unittest.NonNestedExtensionLite;
-
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
-
 import java.lang.reflect.Method;
 import java.net.URLClassLoader;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
 
 /**
  * Tests for {@link ExtensionRegistryFactory} and the {@link ExtensionRegistry} instances it
  * creates.
- * 
+ *
  * <p>This test simulates the runtime behaviour of the ExtensionRegistryFactory by delegating test
  * definitions to two inner classes {@link InnerTest} and {@link InnerLiteTest}, the latter of
  * which is executed using a custom ClassLoader, simulating the ProtoLite environment.
- * 
+ *
  * <p>The test mechanism employed here is based on the pattern in
  * {@code com.google.common.util.concurrent.AbstractFutureFallbackAtomicHelperTest}
  */
@@ -68,6 +66,7 @@ public class ExtensionRegistryFactoryTest extends TestCase {
     void testEmpty();
     void testIsFullRegistry();
     void testAdd();
+    void testAdd_immutable();
   }
 
   /**
@@ -125,6 +124,29 @@ public class ExtensionRegistryFactoryTest extends TestCase {
       assertNotNull("Extension is registered in masqueraded full registry",
           fullRegistry2.findImmutableExtensionByName("protobuf_unittest.nonNestedExtension"));
     }
+
+    @Override
+    public void testAdd_immutable() {
+      ExtensionRegistryLite registry1 = ExtensionRegistryLite.newInstance().getUnmodifiable();
+      try {
+        NonNestedExtensionLite.registerAllExtensions(registry1);
+        fail();
+      } catch (UnsupportedOperationException expected) {}
+      try {
+        registry1.add(NonNestedExtensionLite.nonNestedExtensionLite);
+        fail();
+      } catch (UnsupportedOperationException expected) {}
+
+      ExtensionRegistryLite registry2 = ExtensionRegistryLite.newInstance().getUnmodifiable();
+      try {
+        NonNestedExtension.registerAllExtensions((ExtensionRegistry) registry2);
+        fail();
+      } catch (IllegalArgumentException expected) {}
+      try {
+        registry2.add(NonNestedExtension.nonNestedExtension);
+        fail();
+      } catch (IllegalArgumentException expected) {}
+    }
   }
 
   /**
@@ -162,12 +184,21 @@ public class ExtensionRegistryFactoryTest extends TestCase {
               NonNestedExtensionLite.MessageLiteToBeExtended.getDefaultInstance(), 1);
       assertNotNull("Extension is registered in Lite registry", extension);
     }
+
+    @Override
+    public void testAdd_immutable() {
+      ExtensionRegistryLite registry = ExtensionRegistryLite.newInstance().getUnmodifiable();
+      try {
+        NonNestedExtensionLite.registerAllExtensions(registry);
+        fail();
+      } catch (UnsupportedOperationException expected) {}
+    }
   }
 
   /**
    * Defines a suite of tests which the JUnit3 runner retrieves by reflection.
    */
-  public static Test suite() { 
+  public static Test suite() {
     TestSuite suite = new TestSuite();
     for (Method method : RegistryTests.class.getMethods()) {
       suite.addTest(TestSuite.createTest(ExtensionRegistryFactoryTest.class, method.getName()));

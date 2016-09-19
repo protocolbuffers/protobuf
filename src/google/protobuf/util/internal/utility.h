@@ -136,6 +136,10 @@ const google::protobuf::Field* FindFieldInTypeOrNull(
 const google::protobuf::Field* FindJsonFieldInTypeOrNull(
     const google::protobuf::Type* type, StringPiece json_name);
 
+// Similar to FindFieldInTypeOrNull, but this looks up fields by number.
+const google::protobuf::Field* FindFieldInTypeByNumberOrNull(
+    const google::protobuf::Type* type, int32 number);
+
 // Finds and returns the EnumValue identified by enum_name in the passed tech
 // Enum object. Returns NULL if none found.
 const google::protobuf::EnumValue* FindEnumValueByNameOrNull(
@@ -145,6 +149,13 @@ const google::protobuf::EnumValue* FindEnumValueByNameOrNull(
 // Enum object. Returns NULL if none found.
 const google::protobuf::EnumValue* FindEnumValueByNumberOrNull(
     const google::protobuf::Enum* enum_type, int32 value);
+
+// Finds and returns the EnumValue identified by enum_name without underscore in
+// the passed tech Enum object. Returns NULL if none found.
+// For Ex. if enum_name is ACTIONANDADVENTURE it can get accepted if
+// EnumValue's name is action_and_adventure or ACTION_AND_ADVENTURE.
+const google::protobuf::EnumValue* FindEnumValueByNameWithoutUnderscoreOrNull(
+    const google::protobuf::Enum* enum_type, StringPiece enum_name);
 
 // Converts input to camel-case and returns it.
 LIBPROTOBUF_EXPORT string ToCamelCase(const StringPiece input);

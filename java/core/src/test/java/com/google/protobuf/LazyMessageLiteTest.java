@@ -34,10 +34,8 @@ import protobuf_unittest.LazyFieldsLite.LazyExtension;
 import protobuf_unittest.LazyFieldsLite.LazyInnerMessageLite;
 import protobuf_unittest.LazyFieldsLite.LazyMessageLite;
 import protobuf_unittest.LazyFieldsLite.LazyNestedInnerMessageLite;
-
-import junit.framework.TestCase;
-
 import java.util.ArrayList;
+import junit.framework.TestCase;
 
 /**
  * Unit test for messages with lazy fields.

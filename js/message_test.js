@@ -269,7 +269,7 @@ describe('Message test suite', function() {
     assertFalse(response.hasEnumField());
   });
 
-  it('testMessageRegistration', function() {
+  it('testMessageRegistration', /** @suppress {visibility} */ function() {
     // goog.require(SomeResponse) will include its library, which will in
     // turn add SomeResponse to the message registry.
     assertEquals(jspb.Message.registry_['res'], proto.jspb.test.SomeResponse);
@@ -297,47 +297,9 @@ describe('Message test suite', function() {
     var expected = [,,, [], []];
     expected[0] = expected[1] = expected[2] = undefined;
     assertObjectEquals(expected, foo.toArray());
-
-    // Test set(null). We could deprecated this in favor of clear(), but
-    // it's also convenient to have.
-    data = ['str', true, [11], [[22], [33]], ['s1', 's2']];
-    foo = new proto.jspb.test.OptionalFields(data);
-    foo.setAString(null);
-    foo.setABool(null);
-    foo.setANestedMessage(null);
-    foo.setARepeatedMessageList(null);
-    foo.setARepeatedStringList(null);
-    assertEquals('', foo.getAString());
-    assertEquals(false, foo.getABool());
-    assertNull(foo.getANestedMessage());
-    assertFalse(foo.hasAString());
-    assertFalse(foo.hasABool());
-    assertObjectEquals([], foo.getARepeatedMessageList());
-    assertObjectEquals([], foo.getARepeatedStringList());
-    assertObjectEquals([null, null, null, [], []], foo.toArray());
-
-    // Test set(undefined). Again, not something we really need, and not
-    // supported directly by our typing, but it should 'do the right thing'.
-    data = ['str', true, [11], [[22], [33]], ['s1', 's2']];
-    foo = new proto.jspb.test.OptionalFields(data);
-    foo.setAString(undefined);
-    foo.setABool(undefined);
-    foo.setANestedMessage(undefined);
-    foo.setARepeatedMessageList(undefined);
-    foo.setARepeatedStringList(undefined);
-    assertEquals('', foo.getAString());
-    assertEquals(false, foo.getABool());
-    assertUndefined(foo.getANestedMessage());
-    assertFalse(foo.hasAString());
-    assertFalse(foo.hasABool());
-    assertObjectEquals([], foo.getARepeatedMessageList());
-    assertObjectEquals([], foo.getARepeatedStringList());
-    expected = [,,, [], []];
-    expected[0] = expected[1] = expected[2] = undefined;
-    assertObjectEquals(expected, foo.toArray());
   });
 
-  it('testDifferenceRawObject', function() {
+  it('testDifferenceRawObject', /** @suppress {visibility} */ function() {
     var p1 = new proto.jspb.test.HasExtensions(['hi', 'diff', {}]);
     var p2 = new proto.jspb.test.HasExtensions(['hi', 'what',
                                                {1000: 'unique'}]);
@@ -477,7 +439,7 @@ describe('Message test suite', function() {
     var extension = new proto.jspb.test.CloneExtension();
     extension.setExt('e1');
     original.setExtension(proto.jspb.test.IsExtension.extField, extension);
-    var clone = original.cloneMessage();
+    var clone = original.clone();
     assertArrayEquals(['v1',, ['x1', ['y1', 'z1']],,
       [['x2', ['y2', 'z2']], ['x3', ['y3', 'z3']]], bytes1,, { 100: [, 'e1'] }],
         clone.toArray());
@@ -712,11 +674,12 @@ describe('Message test suite', function() {
     assertArrayEquals([1, 2, 3, {1: 'hi'}], msg.toArray());
   });
 
-  it('testExtendedMessageEnsureObject', function() {
-    var data = new proto.jspb.test.HasExtensions(['str1',
-        {'a_key': 'an_object'}]);
-    assertEquals('an_object', data.extensionObject_['a_key']);
-  });
+  it('testExtendedMessageEnsureObject',
+     /** @suppress {visibility} */ function() {
+       var data =
+           new proto.jspb.test.HasExtensions(['str1', {'a_key': 'an_object'}]);
+       assertEquals('an_object', data.extensionObject_['a_key']);
+     });
 
   it('testToObject_hasExtensionField', function() {
     var data = new proto.jspb.test.HasExtensions(['str1', {100: ['ext1']}]);

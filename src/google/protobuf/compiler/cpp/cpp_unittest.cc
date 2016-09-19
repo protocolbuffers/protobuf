@@ -129,12 +129,12 @@ TEST(GeneratedDescriptorTest, IdenticalDescriptors) {
 
   // Test that descriptors are generated correctly by converting them to
   // FileDescriptorProtos and comparing.
-  FileDescriptorProto generated_decsriptor_proto, parsed_descriptor_proto;
-  generated_descriptor->CopyTo(&generated_decsriptor_proto);
+  FileDescriptorProto generated_descriptor_proto, parsed_descriptor_proto;
+  generated_descriptor->CopyTo(&generated_descriptor_proto);
   parsed_descriptor->CopyTo(&parsed_descriptor_proto);
 
   EXPECT_EQ(parsed_descriptor_proto.DebugString(),
-            generated_decsriptor_proto.DebugString());
+            generated_descriptor_proto.DebugString());
 }
 
 #if !defined(GOOGLE_PROTOBUF_CMAKE_BUILD) && !defined(_MSC_VER)

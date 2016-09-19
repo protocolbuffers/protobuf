@@ -271,10 +271,10 @@ class LIBPROTOBUF_EXPORT Message : public MessageLite {
   bool ParsePartialFromFileDescriptor(int file_descriptor);
   // Parse a protocol buffer from a C++ istream.  If successful, the entire
   // input will be consumed.
-  bool ParseFromIstream(istream* input);
+  bool ParseFromIstream(std::istream* input);
   // Like ParseFromIstream(), but accepts messages that are missing
   // required fields.
-  bool ParsePartialFromIstream(istream* input);
+  bool ParsePartialFromIstream(std::istream* input);
 
   // Serialize the message and write it to the given file descriptor.  All
   // required fields must be set.
@@ -283,9 +283,9 @@ class LIBPROTOBUF_EXPORT Message : public MessageLite {
   bool SerializePartialToFileDescriptor(int file_descriptor) const;
   // Serialize the message and write it to the given C++ ostream.  All
   // required fields must be set.
-  bool SerializeToOstream(ostream* output) const;
+  bool SerializeToOstream(std::ostream* output) const;
   // Like SerializeToOstream(), but allows missing required fields.
-  bool SerializePartialToOstream(ostream* output) const;
+  bool SerializePartialToOstream(std::ostream* output) const;
 
 
   // Reflection-based methods ----------------------------------------
@@ -297,7 +297,7 @@ class LIBPROTOBUF_EXPORT Message : public MessageLite {
   virtual bool IsInitialized() const;
   virtual void CheckTypeAndMergeFrom(const MessageLite& other);
   virtual bool MergePartialFromCodedStream(io::CodedInputStream* input);
-  virtual int ByteSize() const;
+  virtual size_t ByteSizeLong() const;
   virtual void SerializeWithCachedSizes(io::CodedOutputStream* output) const;
 
  private:

@@ -796,7 +796,7 @@ TEST(ExtensionSetTest, SpaceUsedExcludingSelf) {
     }                                                                          \
     int expected_size = sizeof(cpptype) * (16 -                                \
         kMinRepeatedFieldAllocationSize) + empty_repeated_field_size;          \
-    EXPECT_EQ(expected_size, message.SpaceUsed()) << #type;                    \
+    EXPECT_LE(expected_size, message.SpaceUsed()) << #type;                    \
   } while (0)
 
   TEST_REPEATED_EXTENSIONS_SPACE_USED(int32   , int32 , 101);

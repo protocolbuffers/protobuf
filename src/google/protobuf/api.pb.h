@@ -36,6 +36,7 @@ namespace protobuf {
 
 // Internal implementation detail -- do not call these.
 void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2fapi_2eproto();
+void LIBPROTOBUF_EXPORT protobuf_InitDefaults_google_2fprotobuf_2fapi_2eproto();
 void protobuf_AssignDesc_google_2fprotobuf_2fapi_2eproto();
 void protobuf_ShutdownFile_google_2fprotobuf_2fapi_2eproto();
 
@@ -60,6 +61,10 @@ class LIBPROTOBUF_EXPORT Api : public ::google::protobuf::Message /* @@protoc_in
   static const ::google::protobuf::Descriptor* descriptor();
   static const Api& default_instance();
 
+  static inline const Api* internal_default_instance() {
+    return &default_instance_.get();
+  }
+
   void Swap(Api* other);
 
   // implements Message ----------------------------------------------
@@ -74,7 +79,7 @@ class LIBPROTOBUF_EXPORT Api : public ::google::protobuf::Message /* @@protoc_in
   void Clear();
   bool IsInitialized() const;
 
-  int ByteSize() const;
+  size_t ByteSizeLong() const;
   bool MergePartialFromCodedStream(
       ::google::protobuf::io::CodedInputStream* input);
   void SerializeWithCachedSizes(
@@ -90,6 +95,7 @@ class LIBPROTOBUF_EXPORT Api : public ::google::protobuf::Message /* @@protoc_in
   void SharedDtor();
   void SetCachedSize(int size) const;
   void InternalSwap(Api* other);
+  void UnsafeMergeFrom(const Api& from);
   private:
   inline ::google::protobuf::Arena* GetArenaNoVirtual() const {
     return _internal_metadata_.arena();
@@ -182,21 +188,21 @@ class LIBPROTOBUF_EXPORT Api : public ::google::protobuf::Message /* @@protoc_in
  private:
 
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
-  bool _is_default_instance_;
-  ::google::protobuf::internal::ArenaStringPtr name_;
   ::google::protobuf::RepeatedPtrField< ::google::protobuf::Method > methods_;
   ::google::protobuf::RepeatedPtrField< ::google::protobuf::Option > options_;
+  ::google::protobuf::RepeatedPtrField< ::google::protobuf::Mixin > mixins_;
+  ::google::protobuf::internal::ArenaStringPtr name_;
   ::google::protobuf::internal::ArenaStringPtr version_;
   ::google::protobuf::SourceContext* source_context_;
-  ::google::protobuf::RepeatedPtrField< ::google::protobuf::Mixin > mixins_;
   int syntax_;
   mutable int _cached_size_;
-  friend void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2fapi_2eproto();
+  friend void LIBPROTOBUF_EXPORT protobuf_InitDefaults_google_2fprotobuf_2fapi_2eproto_impl();
+  friend void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2fapi_2eproto_impl();
   friend void protobuf_AssignDesc_google_2fprotobuf_2fapi_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fapi_2eproto();
 
   void InitAsDefaultInstance();
-  static Api* default_instance_;
+  static ::google::protobuf::internal::ExplicitlyConstructed<Api> default_instance_;
 };
 // -------------------------------------------------------------------
 
@@ -215,6 +221,10 @@ class LIBPROTOBUF_EXPORT Method : public ::google::protobuf::Message /* @@protoc
   static const ::google::protobuf::Descriptor* descriptor();
   static const Method& default_instance();
 
+  static inline const Method* internal_default_instance() {
+    return &default_instance_.get();
+  }
+
   void Swap(Method* other);
 
   // implements Message ----------------------------------------------
@@ -229,7 +239,7 @@ class LIBPROTOBUF_EXPORT Method : public ::google::protobuf::Message /* @@protoc
   void Clear();
   bool IsInitialized() const;
 
-  int ByteSize() const;
+  size_t ByteSizeLong() const;
   bool MergePartialFromCodedStream(
       ::google::protobuf::io::CodedInputStream* input);
   void SerializeWithCachedSizes(
@@ -245,6 +255,7 @@ class LIBPROTOBUF_EXPORT Method : public ::google::protobuf::Message /* @@protoc
   void SharedDtor();
   void SetCachedSize(int size) const;
   void InternalSwap(Method* other);
+  void UnsafeMergeFrom(const Method& from);
   private:
   inline ::google::protobuf::Arena* GetArenaNoVirtual() const {
     return _internal_metadata_.arena();
@@ -327,21 +338,21 @@ class LIBPROTOBUF_EXPORT Method : public ::google::protobuf::Message /* @@protoc
  private:
 
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
-  bool _is_default_instance_;
+  ::google::protobuf::RepeatedPtrField< ::google::protobuf::Option > options_;
   ::google::protobuf::internal::ArenaStringPtr name_;
   ::google::protobuf::internal::ArenaStringPtr request_type_url_;
   ::google::protobuf::internal::ArenaStringPtr response_type_url_;
   bool request_streaming_;
   bool response_streaming_;
   int syntax_;
-  ::google::protobuf::RepeatedPtrField< ::google::protobuf::Option > options_;
   mutable int _cached_size_;
-  friend void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2fapi_2eproto();
+  friend void LIBPROTOBUF_EXPORT protobuf_InitDefaults_google_2fprotobuf_2fapi_2eproto_impl();
+  friend void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2fapi_2eproto_impl();
   friend void protobuf_AssignDesc_google_2fprotobuf_2fapi_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fapi_2eproto();
 
   void InitAsDefaultInstance();
-  static Method* default_instance_;
+  static ::google::protobuf::internal::ExplicitlyConstructed<Method> default_instance_;
 };
 // -------------------------------------------------------------------
 
@@ -360,6 +371,10 @@ class LIBPROTOBUF_EXPORT Mixin : public ::google::protobuf::Message /* @@protoc_
   static const ::google::protobuf::Descriptor* descriptor();
   static const Mixin& default_instance();
 
+  static inline const Mixin* internal_default_instance() {
+    return &default_instance_.get();
+  }
+
   void Swap(Mixin* other);
 
   // implements Message ----------------------------------------------
@@ -374,7 +389,7 @@ class LIBPROTOBUF_EXPORT Mixin : public ::google::protobuf::Message /* @@protoc_
   void Clear();
   bool IsInitialized() const;
 
-  int ByteSize() const;
+  size_t ByteSizeLong() const;
   bool MergePartialFromCodedStream(
       ::google::protobuf::io::CodedInputStream* input);
   void SerializeWithCachedSizes(
@@ -390,6 +405,7 @@ class LIBPROTOBUF_EXPORT Mixin : public ::google::protobuf::Message /* @@protoc_
   void SharedDtor();
   void SetCachedSize(int size) const;
   void InternalSwap(Mixin* other);
+  void UnsafeMergeFrom(const Mixin& from);
   private:
   inline ::google::protobuf::Arena* GetArenaNoVirtual() const {
     return _internal_metadata_.arena();
@@ -431,16 +447,16 @@ class LIBPROTOBUF_EXPORT Mixin : public ::google::protobuf::Message /* @@protoc_
  private:
 
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
-  bool _is_default_instance_;
   ::google::protobuf::internal::ArenaStringPtr name_;
   ::google::protobuf::internal::ArenaStringPtr root_;
   mutable int _cached_size_;
-  friend void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2fapi_2eproto();
+  friend void LIBPROTOBUF_EXPORT protobuf_InitDefaults_google_2fprotobuf_2fapi_2eproto_impl();
+  friend void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2fapi_2eproto_impl();
   friend void protobuf_AssignDesc_google_2fprotobuf_2fapi_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fapi_2eproto();
 
   void InitAsDefaultInstance();
-  static Mixin* default_instance_;
+  static ::google::protobuf::internal::ExplicitlyConstructed<Mixin> default_instance_;
 };
 // ===================================================================
 
@@ -600,7 +616,7 @@ inline void Api::set_allocated_version(::std::string* version) {
 
 // optional .google.protobuf.SourceContext source_context = 5;
 inline bool Api::has_source_context() const {
-  return !_is_default_instance_ && source_context_ != NULL;
+  return this != internal_default_instance() && source_context_ != NULL;
 }
 inline void Api::clear_source_context() {
   if (GetArenaNoVirtual() == NULL && source_context_ != NULL) delete source_context_;
@@ -608,7 +624,8 @@ inline void Api::clear_source_context() {
 }
 inline const ::google::protobuf::SourceContext& Api::source_context() const {
   // @@protoc_insertion_point(field_get:google.protobuf.Api.source_context)
-  return source_context_ != NULL ? *source_context_ : *default_instance_->source_context_;
+  return source_context_ != NULL ? *source_context_
+                         : *::google::protobuf::SourceContext::internal_default_instance();
 }
 inline ::google::protobuf::SourceContext* Api::mutable_source_context() {
   

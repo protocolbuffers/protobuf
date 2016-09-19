@@ -766,6 +766,8 @@ class MakeDescriptorTest(unittest.TestCase):
                      'Foo2.Sub.bar_field')
     self.assertEqual(result.nested_types[0].fields[0].enum_type,
                      result.nested_types[0].enum_types[0])
+    self.assertFalse(result.has_options)
+    self.assertFalse(result.fields[0].has_options)
 
   def testMakeDescriptorWithUnsignedIntField(self):
     file_descriptor_proto = descriptor_pb2.FileDescriptorProto()
@@ -817,6 +819,23 @@ class MakeDescriptorTest(unittest.TestCase):
     for index in range(len(camelcase_names)):
       self.assertEqual(result.fields[index].camelcase_name,
                        camelcase_names[index])
+
+  def testJsonName(self):
+    descriptor_proto = descriptor_pb2.DescriptorProto()
+    descriptor_proto.name = 'TestJsonName'
+    names = ['field_name', 'fieldName', 'FieldName',
+             '_field_name', 'FIELD_NAME', 'json_name']
+    json_names = ['fieldName', 'fieldName', 'FieldName',
+                  'FieldName', 'FIELDNAME', '@type']
+    for index in range(len(names)):
+      field = descriptor_proto.field.add()
+      field.number = index + 1
+      field.name = names[index]
+    field.json_name = '@type'
+    result = descriptor.MakeDescriptor(descriptor_proto)
+    for index in range(len(json_names)):
+      self.assertEqual(result.fields[index].json_name,
+                       json_names[index])
 
 
 if __name__ == '__main__':

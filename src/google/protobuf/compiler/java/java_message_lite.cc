@@ -179,6 +179,7 @@ void ImmutableMessageLiteGenerator::Generate(io::Printer* printer) {
   MaybePrintGeneratedAnnotation(context_, printer, descriptor_,
                                 /* immutable = */ true);
 
+
   // The builder_type stores the super type name of the nested Builder class.
   string builder_type;
   if (descriptor_->extension_range_count() > 0) {
@@ -202,7 +203,6 @@ void ImmutableMessageLiteGenerator::Generate(io::Printer* printer) {
     builder_type = "com.google.protobuf.GeneratedMessageLite.Builder";
   }
   printer->Indent();
-
 
   GenerateConstructor(printer);
 
@@ -748,7 +748,7 @@ void ImmutableMessageLiteGenerator::GenerateDynamicMethodIsInitialized(
         case FieldDescriptor::LABEL_REPEATED:
           if (IsMapEntry(field->message_type())) {
             printer->Print(
-              "for ($type$ item : get$name$().values()) {\n"
+              "for ($type$ item : get$name$Map().values()) {\n"
               "  if (!item.isInitialized()) {\n"
               "    if (shouldMemoize) {\n"
               "      memoizedIsInitialized = 0;\n"

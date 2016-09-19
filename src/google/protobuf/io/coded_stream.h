@@ -784,17 +784,17 @@ class LIBPROTOBUF_EXPORT CodedOutputStream {
                                                         uint8* target);
 
   // Returns the number of bytes needed to encode the given value as a varint.
-  static int VarintSize32(uint32 value);
+  static size_t VarintSize32(uint32 value);
   // Returns the number of bytes needed to encode the given value as a varint.
-  static int VarintSize64(uint64 value);
+  static size_t VarintSize64(uint64 value);
 
   // If negative, 10 bytes.  Otheriwse, same as VarintSize32().
-  static int VarintSize32SignExtended(int32 value);
+  static size_t VarintSize32SignExtended(int32 value);
 
   // Compile-time equivalent of VarintSize32().
   template <uint32 Value>
   struct StaticVarintSize32 {
-    static const int value =
+    static const size_t value =
         (Value < (1 << 7))
             ? 1
             : (Value < (1 << 14))
@@ -890,7 +890,7 @@ class LIBPROTOBUF_EXPORT CodedOutputStream {
   GOOGLE_ATTRIBUTE_ALWAYS_INLINE static uint8* WriteVarint64ToArrayInline(
       uint64 value, uint8* target);
 
-  static int VarintSize32Fallback(uint32 value);
+  static size_t VarintSize32Fallback(uint32 value);
 
   // See above.  Other projects may use "friend" to allow them to call this.
   static void SetDefaultSerializationDeterministic() {
@@ -1225,7 +1225,7 @@ inline uint8* CodedOutputStream::WriteTagToArray(
   return WriteVarint32ToArray(value, target);
 }
 
-inline int CodedOutputStream::VarintSize32(uint32 value) {
+inline size_t CodedOutputStream::VarintSize32(uint32 value) {
   if (value < (1 << 7)) {
     return 1;
   } else  {
@@ -1233,7 +1233,7 @@ inline int CodedOutputStream::VarintSize32(uint32 value) {
   }
 }
 
-inline int CodedOutputStream::VarintSize32SignExtended(int32 value) {
+inline size_t CodedOutputStream::VarintSize32SignExtended(int32 value) {
   if (value < 0) {
     return 10;     // TODO(kenton):  Make this a symbolic constant.
   } else {
