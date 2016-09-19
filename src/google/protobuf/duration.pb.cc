@@ -219,7 +219,7 @@ void Duration::Clear() {
 #endif
 
 #define ZR_(first, last) do {\
-  ::memset(&first, 0, \
+  ::memset(&(first), 0,\
            ZR_HELPER_(last) - ZR_HELPER_(first) + sizeof(last));\
 } while (0)
 
@@ -308,6 +308,7 @@ void Duration::SerializeWithCachedSizes(
 
 ::google::protobuf::uint8* Duration::InternalSerializeWithCachedSizesToArray(
     bool deterministic, ::google::protobuf::uint8* target) const {
+  (void)deterministic; // Unused
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.Duration)
   // optional int64 seconds = 1;
   if (this->seconds() != 0) {

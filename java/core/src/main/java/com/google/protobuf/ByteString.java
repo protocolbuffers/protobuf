@@ -52,9 +52,9 @@ import java.util.NoSuchElementException;
 
 /**
  * Immutable sequence of bytes.  Substring is supported by sharing the reference
- * to the immutable underlying bytes, as with {@link String}.  Concatenation is
- * likewise supported without copying (long strings) by building a tree of
- * pieces in {@link RopeByteString}.
+ * to the immutable underlying bytes.  Concatenation is likewise supported
+ * without copying (long strings) by building a tree of pieces in
+ * {@link RopeByteString}.
  * <p>
  * Like {@link String}, the contents of a {@link ByteString} can never be
  * observed to change, not even in the presence of a data race or incorrect

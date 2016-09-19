@@ -227,7 +227,7 @@ PHP_METHOD(Message, readOneof) {
   zval** cache_ptr = &(msg->std.properties_table)[property_cache_index];
 
   layout_get(msg->descriptor->layout, message_data(msg), field,
-             return_value_ptr TSRMLS_CC);
+             &return_value TSRMLS_CC);
 }
 
 PHP_METHOD(Message, writeOneof) {

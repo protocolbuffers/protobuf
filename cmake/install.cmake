@@ -110,7 +110,7 @@ install(EXPORT protobuf-targets
   NAMESPACE protobuf::
   COMPONENT protobuf-export)
 
-install(DIRECTORY ${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_CMAKEDIR}/
+install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_INSTALL_CMAKEDIR}/
   DESTINATION "${CMAKE_INSTALL_CMAKEDIR}"
   COMPONENT protobuf-export
   PATTERN protobuf-targets.cmake EXCLUDE

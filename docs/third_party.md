@@ -36,6 +36,7 @@ These are projects we know about implementing Protocol Buffers for other program
 * Erlang: http://piqi.org/
 * Erlang: https://code.google.com/p/protoc-gen-erl/
 * Erlang: https://github.com/basho/erlang_protobuffs
+* Erlang: https://github.com/tomas-abrahamsson/gpb
 * Go: https://github.com/golang/protobuf (Google-official implementation)
 * Go: http://code.google.com/p/goprotobuf/
 * Go: https://github.com/akunspy/gopbuf
@@ -63,6 +64,7 @@ These are projects we know about implementing Protocol Buffers for other program
 * OCaml: http://piqi.org/
 * Perl: http://groups.google.com/group/protobuf-perl
 * Perl: http://search.cpan.org/perldoc?Google::ProtocolBuffers
+* Perl: https://metacpan.org/pod/Google::ProtocolBuffers::Dynamic
 * Perl/XS: http://code.google.com/p/protobuf-perlxs/
 * PHP: http://code.google.com/p/pb4php/
 * PHP: https://github.com/allegro/php-protobuf/

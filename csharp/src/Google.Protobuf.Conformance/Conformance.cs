@@ -34,7 +34,7 @@ namespace Conformance {
             "IAEoCUgAEhkKD3NlcmlhbGl6ZV9lcnJvchgGIAEoCUgAEhcKDXJ1bnRpbWVf",
             "ZXJyb3IYAiABKAlIABIaChBwcm90b2J1Zl9wYXlsb2FkGAMgASgMSAASFgoM",
             "anNvbl9wYXlsb2FkGAQgASgJSAASEQoHc2tpcHBlZBgFIAEoCUgAQggKBnJl",
-            "c3VsdCLVMgoMVGVzdEFsbFR5cGVzEhYKDm9wdGlvbmFsX2ludDMyGAEgASgF",
+            "c3VsdCKCNQoMVGVzdEFsbFR5cGVzEhYKDm9wdGlvbmFsX2ludDMyGAEgASgF",
             "EhYKDm9wdGlvbmFsX2ludDY0GAIgASgDEhcKD29wdGlvbmFsX3VpbnQzMhgD",
             "IAEoDRIXCg9vcHRpb25hbF91aW50NjQYBCABKAQSFwoPb3B0aW9uYWxfc2lu",
             "dDMyGAUgASgREhcKD29wdGlvbmFsX3NpbnQ2NBgGIAEoEhIYChBvcHRpb25h",
@@ -102,93 +102,100 @@ namespace Conformance {
             "TWFwU3RyaW5nRm9yZWlnbkVudW1FbnRyeRIWCgxvbmVvZl91aW50MzIYbyAB",
             "KA1IABJHChRvbmVvZl9uZXN0ZWRfbWVzc2FnZRhwIAEoCzInLmNvbmZvcm1h",
             "bmNlLlRlc3RBbGxUeXBlcy5OZXN0ZWRNZXNzYWdlSAASFgoMb25lb2Zfc3Ry",
-            "aW5nGHEgASgJSAASFQoLb25lb2ZfYnl0ZXMYciABKAxIABI6ChVvcHRpb25h",
-            "bF9ib29sX3dyYXBwZXIYyQEgASgLMhouZ29vZ2xlLnByb3RvYnVmLkJvb2xW",
-            "YWx1ZRI8ChZvcHRpb25hbF9pbnQzMl93cmFwcGVyGMoBIAEoCzIbLmdvb2ds",
-            "ZS5wcm90b2J1Zi5JbnQzMlZhbHVlEjwKFm9wdGlvbmFsX2ludDY0X3dyYXBw",
-            "ZXIYywEgASgLMhsuZ29vZ2xlLnByb3RvYnVmLkludDY0VmFsdWUSPgoXb3B0",
-            "aW9uYWxfdWludDMyX3dyYXBwZXIYzAEgASgLMhwuZ29vZ2xlLnByb3RvYnVm",
-            "LlVJbnQzMlZhbHVlEj4KF29wdGlvbmFsX3VpbnQ2NF93cmFwcGVyGM0BIAEo",
-            "CzIcLmdvb2dsZS5wcm90b2J1Zi5VSW50NjRWYWx1ZRI8ChZvcHRpb25hbF9m",
-            "bG9hdF93cmFwcGVyGM4BIAEoCzIbLmdvb2dsZS5wcm90b2J1Zi5GbG9hdFZh",
-            "bHVlEj4KF29wdGlvbmFsX2RvdWJsZV93cmFwcGVyGM8BIAEoCzIcLmdvb2ds",
-            "ZS5wcm90b2J1Zi5Eb3VibGVWYWx1ZRI+ChdvcHRpb25hbF9zdHJpbmdfd3Jh",
-            "cHBlchjQASABKAsyHC5nb29nbGUucHJvdG9idWYuU3RyaW5nVmFsdWUSPAoW",
-            "b3B0aW9uYWxfYnl0ZXNfd3JhcHBlchjRASABKAsyGy5nb29nbGUucHJvdG9i",
-            "dWYuQnl0ZXNWYWx1ZRI6ChVyZXBlYXRlZF9ib29sX3dyYXBwZXIY0wEgAygL",
-            "MhouZ29vZ2xlLnByb3RvYnVmLkJvb2xWYWx1ZRI8ChZyZXBlYXRlZF9pbnQz",
-            "Ml93cmFwcGVyGNQBIAMoCzIbLmdvb2dsZS5wcm90b2J1Zi5JbnQzMlZhbHVl",
-            "EjwKFnJlcGVhdGVkX2ludDY0X3dyYXBwZXIY1QEgAygLMhsuZ29vZ2xlLnBy",
-            "b3RvYnVmLkludDY0VmFsdWUSPgoXcmVwZWF0ZWRfdWludDMyX3dyYXBwZXIY",
-            "1gEgAygLMhwuZ29vZ2xlLnByb3RvYnVmLlVJbnQzMlZhbHVlEj4KF3JlcGVh",
-            "dGVkX3VpbnQ2NF93cmFwcGVyGNcBIAMoCzIcLmdvb2dsZS5wcm90b2J1Zi5V",
-            "SW50NjRWYWx1ZRI8ChZyZXBlYXRlZF9mbG9hdF93cmFwcGVyGNgBIAMoCzIb",
-            "Lmdvb2dsZS5wcm90b2J1Zi5GbG9hdFZhbHVlEj4KF3JlcGVhdGVkX2RvdWJs",
-            "ZV93cmFwcGVyGNkBIAMoCzIcLmdvb2dsZS5wcm90b2J1Zi5Eb3VibGVWYWx1",
-            "ZRI+ChdyZXBlYXRlZF9zdHJpbmdfd3JhcHBlchjaASADKAsyHC5nb29nbGUu",
-            "cHJvdG9idWYuU3RyaW5nVmFsdWUSPAoWcmVwZWF0ZWRfYnl0ZXNfd3JhcHBl",
-            "chjbASADKAsyGy5nb29nbGUucHJvdG9idWYuQnl0ZXNWYWx1ZRI1ChFvcHRp",
-            "b25hbF9kdXJhdGlvbhitAiABKAsyGS5nb29nbGUucHJvdG9idWYuRHVyYXRp",
-            "b24SNwoSb3B0aW9uYWxfdGltZXN0YW1wGK4CIAEoCzIaLmdvb2dsZS5wcm90",
-            "b2J1Zi5UaW1lc3RhbXASOAoTb3B0aW9uYWxfZmllbGRfbWFzaxivAiABKAsy",
-            "Gi5nb29nbGUucHJvdG9idWYuRmllbGRNYXNrEjEKD29wdGlvbmFsX3N0cnVj",
-            "dBiwAiABKAsyFy5nb29nbGUucHJvdG9idWYuU3RydWN0EisKDG9wdGlvbmFs",
-            "X2FueRixAiABKAsyFC5nb29nbGUucHJvdG9idWYuQW55Ei8KDm9wdGlvbmFs",
-            "X3ZhbHVlGLICIAEoCzIWLmdvb2dsZS5wcm90b2J1Zi5WYWx1ZRI1ChFyZXBl",
-            "YXRlZF9kdXJhdGlvbhi3AiADKAsyGS5nb29nbGUucHJvdG9idWYuRHVyYXRp",
-            "b24SNwoScmVwZWF0ZWRfdGltZXN0YW1wGLgCIAMoCzIaLmdvb2dsZS5wcm90",
-            "b2J1Zi5UaW1lc3RhbXASNwoScmVwZWF0ZWRfZmllbGRtYXNrGLkCIAMoCzIa",
-            "Lmdvb2dsZS5wcm90b2J1Zi5GaWVsZE1hc2sSMQoPcmVwZWF0ZWRfc3RydWN0",
-            "GMQCIAMoCzIXLmdvb2dsZS5wcm90b2J1Zi5TdHJ1Y3QSKwoMcmVwZWF0ZWRf",
-            "YW55GLsCIAMoCzIULmdvb2dsZS5wcm90b2J1Zi5BbnkSLwoOcmVwZWF0ZWRf",
-            "dmFsdWUYvAIgAygLMhYuZ29vZ2xlLnByb3RvYnVmLlZhbHVlEhMKCmZpZWxk",
-            "bmFtZTEYkQMgASgFEhQKC2ZpZWxkX25hbWUyGJIDIAEoBRIVCgxfZmllbGRf",
-            "bmFtZTMYkwMgASgFEhYKDWZpZWxkX19uYW1lNF8YlAMgASgFEhQKC2ZpZWxk",
-            "MG5hbWU1GJUDIAEoBRIWCg1maWVsZF8wX25hbWU2GJYDIAEoBRITCgpmaWVs",
-            "ZE5hbWU3GJcDIAEoBRITCgpGaWVsZE5hbWU4GJgDIAEoBRIUCgtmaWVsZF9O",
-            "YW1lORiZAyABKAUSFQoMRmllbGRfTmFtZTEwGJoDIAEoBRIVCgxGSUVMRF9O",
-            "QU1FMTEYmwMgASgFEhUKDEZJRUxEX25hbWUxMhicAyABKAUaSgoNTmVzdGVk",
-            "TWVzc2FnZRIJCgFhGAEgASgFEi4KC2NvcmVjdXJzaXZlGAIgASgLMhkuY29u",
-            "Zm9ybWFuY2UuVGVzdEFsbFR5cGVzGjQKEk1hcEludDMySW50MzJFbnRyeRIL",
-            "CgNrZXkYASABKAUSDQoFdmFsdWUYAiABKAU6AjgBGjQKEk1hcEludDY0SW50",
-            "NjRFbnRyeRILCgNrZXkYASABKAMSDQoFdmFsdWUYAiABKAM6AjgBGjYKFE1h",
-            "cFVpbnQzMlVpbnQzMkVudHJ5EgsKA2tleRgBIAEoDRINCgV2YWx1ZRgCIAEo",
-            "DToCOAEaNgoUTWFwVWludDY0VWludDY0RW50cnkSCwoDa2V5GAEgASgEEg0K",
-            "BXZhbHVlGAIgASgEOgI4ARo2ChRNYXBTaW50MzJTaW50MzJFbnRyeRILCgNr",
-            "ZXkYASABKBESDQoFdmFsdWUYAiABKBE6AjgBGjYKFE1hcFNpbnQ2NFNpbnQ2",
-            "NEVudHJ5EgsKA2tleRgBIAEoEhINCgV2YWx1ZRgCIAEoEjoCOAEaOAoWTWFw",
-            "Rml4ZWQzMkZpeGVkMzJFbnRyeRILCgNrZXkYASABKAcSDQoFdmFsdWUYAiAB",
-            "KAc6AjgBGjgKFk1hcEZpeGVkNjRGaXhlZDY0RW50cnkSCwoDa2V5GAEgASgG",
-            "Eg0KBXZhbHVlGAIgASgGOgI4ARo6ChhNYXBTZml4ZWQzMlNmaXhlZDMyRW50",
-            "cnkSCwoDa2V5GAEgASgPEg0KBXZhbHVlGAIgASgPOgI4ARo6ChhNYXBTZml4",
-            "ZWQ2NFNmaXhlZDY0RW50cnkSCwoDa2V5GAEgASgQEg0KBXZhbHVlGAIgASgQ",
-            "OgI4ARo0ChJNYXBJbnQzMkZsb2F0RW50cnkSCwoDa2V5GAEgASgFEg0KBXZh",
-            "bHVlGAIgASgCOgI4ARo1ChNNYXBJbnQzMkRvdWJsZUVudHJ5EgsKA2tleRgB",
-            "IAEoBRINCgV2YWx1ZRgCIAEoAToCOAEaMgoQTWFwQm9vbEJvb2xFbnRyeRIL",
-            "CgNrZXkYASABKAgSDQoFdmFsdWUYAiABKAg6AjgBGjYKFE1hcFN0cmluZ1N0",
-            "cmluZ0VudHJ5EgsKA2tleRgBIAEoCRINCgV2YWx1ZRgCIAEoCToCOAEaNQoT",
-            "TWFwU3RyaW5nQnl0ZXNFbnRyeRILCgNrZXkYASABKAkSDQoFdmFsdWUYAiAB",
-            "KAw6AjgBGmYKG01hcFN0cmluZ05lc3RlZE1lc3NhZ2VFbnRyeRILCgNrZXkY",
-            "ASABKAkSNgoFdmFsdWUYAiABKAsyJy5jb25mb3JtYW5jZS5UZXN0QWxsVHlw",
-            "ZXMuTmVzdGVkTWVzc2FnZToCOAEaWwocTWFwU3RyaW5nRm9yZWlnbk1lc3Nh",
-            "Z2VFbnRyeRILCgNrZXkYASABKAkSKgoFdmFsdWUYAiABKAsyGy5jb25mb3Jt",
-            "YW5jZS5Gb3JlaWduTWVzc2FnZToCOAEaYAoYTWFwU3RyaW5nTmVzdGVkRW51",
-            "bUVudHJ5EgsKA2tleRgBIAEoCRIzCgV2YWx1ZRgCIAEoDjIkLmNvbmZvcm1h",
-            "bmNlLlRlc3RBbGxUeXBlcy5OZXN0ZWRFbnVtOgI4ARpVChlNYXBTdHJpbmdG",
-            "b3JlaWduRW51bUVudHJ5EgsKA2tleRgBIAEoCRInCgV2YWx1ZRgCIAEoDjIY",
-            "LmNvbmZvcm1hbmNlLkZvcmVpZ25FbnVtOgI4ASI5CgpOZXN0ZWRFbnVtEgcK",
-            "A0ZPTxAAEgcKA0JBUhABEgcKA0JBWhACEhAKA05FRxD///////////8BQg0K",
-            "C29uZW9mX2ZpZWxkIhsKDkZvcmVpZ25NZXNzYWdlEgkKAWMYASABKAUqNQoK",
-            "V2lyZUZvcm1hdBIPCgtVTlNQRUNJRklFRBAAEgwKCFBST1RPQlVGEAESCAoE",
-            "SlNPThACKkAKC0ZvcmVpZ25FbnVtEg8KC0ZPUkVJR05fRk9PEAASDwoLRk9S",
-            "RUlHTl9CQVIQARIPCgtGT1JFSUdOX0JBWhACQiEKH2NvbS5nb29nbGUucHJv",
-            "dG9idWYuY29uZm9ybWFuY2ViBnByb3RvMw=="));
+            "aW5nGHEgASgJSAASFQoLb25lb2ZfYnl0ZXMYciABKAxIABIUCgpvbmVvZl9i",
+            "b29sGHMgASgISAASFgoMb25lb2ZfdWludDY0GHQgASgESAASFQoLb25lb2Zf",
+            "ZmxvYXQYdSABKAJIABIWCgxvbmVvZl9kb3VibGUYdiABKAFIABI6CgpvbmVv",
+            "Zl9lbnVtGHcgASgOMiQuY29uZm9ybWFuY2UuVGVzdEFsbFR5cGVzLk5lc3Rl",
+            "ZEVudW1IABI6ChVvcHRpb25hbF9ib29sX3dyYXBwZXIYyQEgASgLMhouZ29v",
+            "Z2xlLnByb3RvYnVmLkJvb2xWYWx1ZRI8ChZvcHRpb25hbF9pbnQzMl93cmFw",
+            "cGVyGMoBIAEoCzIbLmdvb2dsZS5wcm90b2J1Zi5JbnQzMlZhbHVlEjwKFm9w",
+            "dGlvbmFsX2ludDY0X3dyYXBwZXIYywEgASgLMhsuZ29vZ2xlLnByb3RvYnVm",
+            "LkludDY0VmFsdWUSPgoXb3B0aW9uYWxfdWludDMyX3dyYXBwZXIYzAEgASgL",
+            "MhwuZ29vZ2xlLnByb3RvYnVmLlVJbnQzMlZhbHVlEj4KF29wdGlvbmFsX3Vp",
+            "bnQ2NF93cmFwcGVyGM0BIAEoCzIcLmdvb2dsZS5wcm90b2J1Zi5VSW50NjRW",
+            "YWx1ZRI8ChZvcHRpb25hbF9mbG9hdF93cmFwcGVyGM4BIAEoCzIbLmdvb2ds",
+            "ZS5wcm90b2J1Zi5GbG9hdFZhbHVlEj4KF29wdGlvbmFsX2RvdWJsZV93cmFw",
+            "cGVyGM8BIAEoCzIcLmdvb2dsZS5wcm90b2J1Zi5Eb3VibGVWYWx1ZRI+Chdv",
+            "cHRpb25hbF9zdHJpbmdfd3JhcHBlchjQASABKAsyHC5nb29nbGUucHJvdG9i",
+            "dWYuU3RyaW5nVmFsdWUSPAoWb3B0aW9uYWxfYnl0ZXNfd3JhcHBlchjRASAB",
+            "KAsyGy5nb29nbGUucHJvdG9idWYuQnl0ZXNWYWx1ZRI6ChVyZXBlYXRlZF9i",
+            "b29sX3dyYXBwZXIY0wEgAygLMhouZ29vZ2xlLnByb3RvYnVmLkJvb2xWYWx1",
+            "ZRI8ChZyZXBlYXRlZF9pbnQzMl93cmFwcGVyGNQBIAMoCzIbLmdvb2dsZS5w",
+            "cm90b2J1Zi5JbnQzMlZhbHVlEjwKFnJlcGVhdGVkX2ludDY0X3dyYXBwZXIY",
+            "1QEgAygLMhsuZ29vZ2xlLnByb3RvYnVmLkludDY0VmFsdWUSPgoXcmVwZWF0",
+            "ZWRfdWludDMyX3dyYXBwZXIY1gEgAygLMhwuZ29vZ2xlLnByb3RvYnVmLlVJ",
+            "bnQzMlZhbHVlEj4KF3JlcGVhdGVkX3VpbnQ2NF93cmFwcGVyGNcBIAMoCzIc",
+            "Lmdvb2dsZS5wcm90b2J1Zi5VSW50NjRWYWx1ZRI8ChZyZXBlYXRlZF9mbG9h",
+            "dF93cmFwcGVyGNgBIAMoCzIbLmdvb2dsZS5wcm90b2J1Zi5GbG9hdFZhbHVl",
+            "Ej4KF3JlcGVhdGVkX2RvdWJsZV93cmFwcGVyGNkBIAMoCzIcLmdvb2dsZS5w",
+            "cm90b2J1Zi5Eb3VibGVWYWx1ZRI+ChdyZXBlYXRlZF9zdHJpbmdfd3JhcHBl",
+            "chjaASADKAsyHC5nb29nbGUucHJvdG9idWYuU3RyaW5nVmFsdWUSPAoWcmVw",
+            "ZWF0ZWRfYnl0ZXNfd3JhcHBlchjbASADKAsyGy5nb29nbGUucHJvdG9idWYu",
+            "Qnl0ZXNWYWx1ZRI1ChFvcHRpb25hbF9kdXJhdGlvbhitAiABKAsyGS5nb29n",
+            "bGUucHJvdG9idWYuRHVyYXRpb24SNwoSb3B0aW9uYWxfdGltZXN0YW1wGK4C",
+            "IAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASOAoTb3B0aW9uYWxf",
+            "ZmllbGRfbWFzaxivAiABKAsyGi5nb29nbGUucHJvdG9idWYuRmllbGRNYXNr",
+            "EjEKD29wdGlvbmFsX3N0cnVjdBiwAiABKAsyFy5nb29nbGUucHJvdG9idWYu",
+            "U3RydWN0EisKDG9wdGlvbmFsX2FueRixAiABKAsyFC5nb29nbGUucHJvdG9i",
+            "dWYuQW55Ei8KDm9wdGlvbmFsX3ZhbHVlGLICIAEoCzIWLmdvb2dsZS5wcm90",
+            "b2J1Zi5WYWx1ZRI1ChFyZXBlYXRlZF9kdXJhdGlvbhi3AiADKAsyGS5nb29n",
+            "bGUucHJvdG9idWYuRHVyYXRpb24SNwoScmVwZWF0ZWRfdGltZXN0YW1wGLgC",
+            "IAMoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASNwoScmVwZWF0ZWRf",
+            "ZmllbGRtYXNrGLkCIAMoCzIaLmdvb2dsZS5wcm90b2J1Zi5GaWVsZE1hc2sS",
+            "MQoPcmVwZWF0ZWRfc3RydWN0GMQCIAMoCzIXLmdvb2dsZS5wcm90b2J1Zi5T",
+            "dHJ1Y3QSKwoMcmVwZWF0ZWRfYW55GLsCIAMoCzIULmdvb2dsZS5wcm90b2J1",
+            "Zi5BbnkSLwoOcmVwZWF0ZWRfdmFsdWUYvAIgAygLMhYuZ29vZ2xlLnByb3Rv",
+            "YnVmLlZhbHVlEhMKCmZpZWxkbmFtZTEYkQMgASgFEhQKC2ZpZWxkX25hbWUy",
+            "GJIDIAEoBRIVCgxfZmllbGRfbmFtZTMYkwMgASgFEhYKDWZpZWxkX19uYW1l",
+            "NF8YlAMgASgFEhQKC2ZpZWxkMG5hbWU1GJUDIAEoBRIWCg1maWVsZF8wX25h",
+            "bWU2GJYDIAEoBRITCgpmaWVsZE5hbWU3GJcDIAEoBRITCgpGaWVsZE5hbWU4",
+            "GJgDIAEoBRIUCgtmaWVsZF9OYW1lORiZAyABKAUSFQoMRmllbGRfTmFtZTEw",
+            "GJoDIAEoBRIVCgxGSUVMRF9OQU1FMTEYmwMgASgFEhUKDEZJRUxEX25hbWUx",
+            "MhicAyABKAUSFwoOX19maWVsZF9uYW1lMTMYnQMgASgFEhcKDl9fRmllbGRf",
+            "bmFtZTE0GJ4DIAEoBRIWCg1maWVsZF9fbmFtZTE1GJ8DIAEoBRIWCg1maWVs",
+            "ZF9fTmFtZTE2GKADIAEoBRIXCg5maWVsZF9uYW1lMTdfXxihAyABKAUSFwoO",
+            "RmllbGRfbmFtZTE4X18YogMgASgFGkoKDU5lc3RlZE1lc3NhZ2USCQoBYRgB",
+            "IAEoBRIuCgtjb3JlY3Vyc2l2ZRgCIAEoCzIZLmNvbmZvcm1hbmNlLlRlc3RB",
+            "bGxUeXBlcxo0ChJNYXBJbnQzMkludDMyRW50cnkSCwoDa2V5GAEgASgFEg0K",
+            "BXZhbHVlGAIgASgFOgI4ARo0ChJNYXBJbnQ2NEludDY0RW50cnkSCwoDa2V5",
+            "GAEgASgDEg0KBXZhbHVlGAIgASgDOgI4ARo2ChRNYXBVaW50MzJVaW50MzJF",
+            "bnRyeRILCgNrZXkYASABKA0SDQoFdmFsdWUYAiABKA06AjgBGjYKFE1hcFVp",
+            "bnQ2NFVpbnQ2NEVudHJ5EgsKA2tleRgBIAEoBBINCgV2YWx1ZRgCIAEoBDoC",
+            "OAEaNgoUTWFwU2ludDMyU2ludDMyRW50cnkSCwoDa2V5GAEgASgREg0KBXZh",
+            "bHVlGAIgASgROgI4ARo2ChRNYXBTaW50NjRTaW50NjRFbnRyeRILCgNrZXkY",
+            "ASABKBISDQoFdmFsdWUYAiABKBI6AjgBGjgKFk1hcEZpeGVkMzJGaXhlZDMy",
+            "RW50cnkSCwoDa2V5GAEgASgHEg0KBXZhbHVlGAIgASgHOgI4ARo4ChZNYXBG",
+            "aXhlZDY0Rml4ZWQ2NEVudHJ5EgsKA2tleRgBIAEoBhINCgV2YWx1ZRgCIAEo",
+            "BjoCOAEaOgoYTWFwU2ZpeGVkMzJTZml4ZWQzMkVudHJ5EgsKA2tleRgBIAEo",
+            "DxINCgV2YWx1ZRgCIAEoDzoCOAEaOgoYTWFwU2ZpeGVkNjRTZml4ZWQ2NEVu",
+            "dHJ5EgsKA2tleRgBIAEoEBINCgV2YWx1ZRgCIAEoEDoCOAEaNAoSTWFwSW50",
+            "MzJGbG9hdEVudHJ5EgsKA2tleRgBIAEoBRINCgV2YWx1ZRgCIAEoAjoCOAEa",
+            "NQoTTWFwSW50MzJEb3VibGVFbnRyeRILCgNrZXkYASABKAUSDQoFdmFsdWUY",
+            "AiABKAE6AjgBGjIKEE1hcEJvb2xCb29sRW50cnkSCwoDa2V5GAEgASgIEg0K",
+            "BXZhbHVlGAIgASgIOgI4ARo2ChRNYXBTdHJpbmdTdHJpbmdFbnRyeRILCgNr",
+            "ZXkYASABKAkSDQoFdmFsdWUYAiABKAk6AjgBGjUKE01hcFN0cmluZ0J5dGVz",
+            "RW50cnkSCwoDa2V5GAEgASgJEg0KBXZhbHVlGAIgASgMOgI4ARpmChtNYXBT",
+            "dHJpbmdOZXN0ZWRNZXNzYWdlRW50cnkSCwoDa2V5GAEgASgJEjYKBXZhbHVl",
+            "GAIgASgLMicuY29uZm9ybWFuY2UuVGVzdEFsbFR5cGVzLk5lc3RlZE1lc3Nh",
+            "Z2U6AjgBGlsKHE1hcFN0cmluZ0ZvcmVpZ25NZXNzYWdlRW50cnkSCwoDa2V5",
+            "GAEgASgJEioKBXZhbHVlGAIgASgLMhsuY29uZm9ybWFuY2UuRm9yZWlnbk1l",
+            "c3NhZ2U6AjgBGmAKGE1hcFN0cmluZ05lc3RlZEVudW1FbnRyeRILCgNrZXkY",
+            "ASABKAkSMwoFdmFsdWUYAiABKA4yJC5jb25mb3JtYW5jZS5UZXN0QWxsVHlw",
+            "ZXMuTmVzdGVkRW51bToCOAEaVQoZTWFwU3RyaW5nRm9yZWlnbkVudW1FbnRy",
+            "eRILCgNrZXkYASABKAkSJwoFdmFsdWUYAiABKA4yGC5jb25mb3JtYW5jZS5G",
+            "b3JlaWduRW51bToCOAEiOQoKTmVzdGVkRW51bRIHCgNGT08QABIHCgNCQVIQ",
+            "ARIHCgNCQVoQAhIQCgNORUcQ////////////AUINCgtvbmVvZl9maWVsZCIb",
+            "Cg5Gb3JlaWduTWVzc2FnZRIJCgFjGAEgASgFKjUKCldpcmVGb3JtYXQSDwoL",
+            "VU5TUEVDSUZJRUQQABIMCghQUk9UT0JVRhABEggKBEpTT04QAipACgtGb3Jl",
+            "aWduRW51bRIPCgtGT1JFSUdOX0ZPTxAAEg8KC0ZPUkVJR05fQkFSEAESDwoL",
+            "Rk9SRUlHTl9CQVoQAkIhCh9jb20uZ29vZ2xlLnByb3RvYnVmLmNvbmZvcm1h",
+            "bmNlYgZwcm90bzM="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::Google.Protobuf.WellKnownTypes.AnyReflection.Descriptor, global::Google.Protobuf.WellKnownTypes.DurationReflection.Descriptor, global::Google.Protobuf.WellKnownTypes.FieldMaskReflection.Descriptor, global::Google.Protobuf.WellKnownTypes.StructReflection.Descriptor, global::Google.Protobuf.WellKnownTypes.TimestampReflection.Descriptor, global::Google.Protobuf.WellKnownTypes.WrappersReflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(new[] {typeof(global::Conformance.WireFormat), typeof(global::Conformance.ForeignEnum), }, new pbr::GeneratedClrTypeInfo[] {
             new pbr::GeneratedClrTypeInfo(typeof(global::Conformance.ConformanceRequest), global::Conformance.ConformanceRequest.Parser, new[]{ "ProtobufPayload", "JsonPayload", "RequestedOutputFormat" }, new[]{ "Payload" }, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Conformance.ConformanceResponse), global::Conformance.ConformanceResponse.Parser, new[]{ "ParseError", "SerializeError", "RuntimeError", "ProtobufPayload", "JsonPayload", "Skipped" }, new[]{ "Result" }, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Conformance.TestAllTypes), global::Conformance.TestAllTypes.Parser, new[]{ "OptionalInt32", "OptionalInt64", "OptionalUint32", "OptionalUint64", "OptionalSint32", "OptionalSint64", "OptionalFixed32", "OptionalFixed64", "OptionalSfixed32", "OptionalSfixed64", "OptionalFloat", "OptionalDouble", "OptionalBool", "OptionalString", "OptionalBytes", "OptionalNestedMessage", "OptionalForeignMessage", "OptionalNestedEnum", "OptionalForeignEnum", "OptionalStringPiece", "OptionalCord", "RecursiveMessage", "RepeatedInt32", "RepeatedInt64", "RepeatedUint32", "RepeatedUint64", "RepeatedSint32", "RepeatedSint64", "RepeatedFixed32", "RepeatedFixed64", "RepeatedSfixed32", "RepeatedSfixed64", "RepeatedFloat", "RepeatedDouble", "RepeatedBool", "RepeatedString", "RepeatedBytes", "RepeatedNestedMessage", "RepeatedForeignMessage", "RepeatedNestedEnum", "RepeatedForeignEnum", "RepeatedStringPiece", "RepeatedCord", "MapInt32Int32", "MapInt64Int64", "MapUint32Uint32", "MapUint64Uint64", "MapSint32Sint32", "MapSint64Sint64", "MapFixed32Fixed32", "MapFixed64Fixed64", "MapSfixed32Sfixed32", "MapSfixed64Sfixed64", "MapInt32Float", "MapInt32Double", "MapBoolBool", "MapStringString", "MapStringBytes", "MapStringNestedMessage", "MapStringForeignMessage", "MapStringNestedEnum", "MapStringForeignEnum", "OneofUint32", "OneofNestedMessage", "OneofString", "OneofBytes", "OptionalBoolWrapper", "OptionalInt32Wrapper", "OptionalInt64Wrapper", "OptionalUint32Wrapper", "OptionalUint64Wrapper", "OptionalFloatWrapper", "OptionalDoubleWrapper", "OptionalStringWrapper", "OptionalBytesWrapper", "RepeatedBoolWrapper", "RepeatedInt32Wrapper", "RepeatedInt64Wrapper", "RepeatedUint32Wrapper", "RepeatedUint64Wrapper", "RepeatedFloatWrapper", "RepeatedDoubleWrapper", "RepeatedStringWrapper", "RepeatedBytesWrapper", "OptionalDuration", "OptionalTimestamp", "OptionalFieldMask", "OptionalStruct", "OptionalAny", "OptionalValue", "RepeatedDuration", "RepeatedTimestamp", "RepeatedFieldmask", "RepeatedStruct", "RepeatedAny", "RepeatedValue", "Fieldname1", "FieldName2", "FieldName3", "FieldName4", "Field0Name5", "Field0Name6", "FieldName7", "FieldName8", "FieldName9", "FieldName10", "FIELDNAME11", "FIELDName12" }, new[]{ "OneofField" }, new[]{ typeof(global::Conformance.TestAllTypes.Types.NestedEnum) }, new pbr::GeneratedClrTypeInfo[] { new pbr::GeneratedClrTypeInfo(typeof(global::Conformance.TestAllTypes.Types.NestedMessage), global::Conformance.TestAllTypes.Types.NestedMessage.Parser, new[]{ "A", "Corecursive" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Conformance.TestAllTypes), global::Conformance.TestAllTypes.Parser, new[]{ "OptionalInt32", "OptionalInt64", "OptionalUint32", "OptionalUint64", "OptionalSint32", "OptionalSint64", "OptionalFixed32", "OptionalFixed64", "OptionalSfixed32", "OptionalSfixed64", "OptionalFloat", "OptionalDouble", "OptionalBool", "OptionalString", "OptionalBytes", "OptionalNestedMessage", "OptionalForeignMessage", "OptionalNestedEnum", "OptionalForeignEnum", "OptionalStringPiece", "OptionalCord", "RecursiveMessage", "RepeatedInt32", "RepeatedInt64", "RepeatedUint32", "RepeatedUint64", "RepeatedSint32", "RepeatedSint64", "RepeatedFixed32", "RepeatedFixed64", "RepeatedSfixed32", "RepeatedSfixed64", "RepeatedFloat", "RepeatedDouble", "RepeatedBool", "RepeatedString", "RepeatedBytes", "RepeatedNestedMessage", "RepeatedForeignMessage", "RepeatedNestedEnum", "RepeatedForeignEnum", "RepeatedStringPiece", "RepeatedCord", "MapInt32Int32", "MapInt64Int64", "MapUint32Uint32", "MapUint64Uint64", "MapSint32Sint32", "MapSint64Sint64", "MapFixed32Fixed32", "MapFixed64Fixed64", "MapSfixed32Sfixed32", "MapSfixed64Sfixed64", "MapInt32Float", "MapInt32Double", "MapBoolBool", "MapStringString", "MapStringBytes", "MapStringNestedMessage", "MapStringForeignMessage", "MapStringNestedEnum", "MapStringForeignEnum", "OneofUint32", "OneofNestedMessage", "OneofString", "OneofBytes", "OneofBool", "OneofUint64", "OneofFloat", "OneofDouble", "OneofEnum", "OptionalBoolWrapper", "OptionalInt32Wrapper", "OptionalInt64Wrapper", "OptionalUint32Wrapper", "OptionalUint64Wrapper", "OptionalFloatWrapper", "OptionalDoubleWrapper", "OptionalStringWrapper", "OptionalBytesWrapper", "RepeatedBoolWrapper", "RepeatedInt32Wrapper", "RepeatedInt64Wrapper", "RepeatedUint32Wrapper", "RepeatedUint64Wrapper", "RepeatedFloatWrapper", "RepeatedDoubleWrapper", "RepeatedStringWrapper", "RepeatedBytesWrapper", "OptionalDuration", "OptionalTimestamp", "OptionalFieldMask", "OptionalStruct", "OptionalAny", "OptionalValue", "RepeatedDuration", "RepeatedTimestamp", "RepeatedFieldmask", "RepeatedStruct", "RepeatedAny", "RepeatedValue", "Fieldname1", "FieldName2", "FieldName3", "FieldName4", "Field0Name5", "Field0Name6", "FieldName7", "FieldName8", "FieldName9", "FieldName10", "FIELDNAME11", "FIELDName12", "FieldName13", "FieldName14", "FieldName15", "FieldName16", "FieldName17", "FieldName18" }, new[]{ "OneofField" }, new[]{ typeof(global::Conformance.TestAllTypes.Types.NestedEnum) }, new pbr::GeneratedClrTypeInfo[] { new pbr::GeneratedClrTypeInfo(typeof(global::Conformance.TestAllTypes.Types.NestedMessage), global::Conformance.TestAllTypes.Types.NestedMessage.Parser, new[]{ "A", "Corecursive" }, null, null, null),
             null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, }),
             new pbr::GeneratedClrTypeInfo(typeof(global::Conformance.ForeignMessage), global::Conformance.ForeignMessage.Parser, new[]{ "C" }, null, null, null)
           }));
@@ -890,6 +897,12 @@ namespace Conformance {
       fieldName10_ = other.fieldName10_;
       fIELDNAME11_ = other.fIELDNAME11_;
       fIELDName12_ = other.fIELDName12_;
+      FieldName13_ = other.FieldName13_;
+      FieldName14_ = other.FieldName14_;
+      fieldName15_ = other.fieldName15_;
+      fieldName16_ = other.fieldName16_;
+      fieldName17_ = other.fieldName17_;
+      fieldName18_ = other.fieldName18_;
       switch (other.OneofFieldCase) {
         case OneofFieldOneofCase.OneofUint32:
           OneofUint32 = other.OneofUint32;
@@ -902,6 +915,21 @@ namespace Conformance {
           break;
         case OneofFieldOneofCase.OneofBytes:
           OneofBytes = other.OneofBytes;
+          break;
+        case OneofFieldOneofCase.OneofBool:
+          OneofBool = other.OneofBool;
+          break;
+        case OneofFieldOneofCase.OneofUint64:
+          OneofUint64 = other.OneofUint64;
+          break;
+        case OneofFieldOneofCase.OneofFloat:
+          OneofFloat = other.OneofFloat;
+          break;
+        case OneofFieldOneofCase.OneofDouble:
+          OneofDouble = other.OneofDouble;
+          break;
+        case OneofFieldOneofCase.OneofEnum:
+          OneofEnum = other.OneofEnum;
           break;
       }
 
@@ -1607,6 +1635,61 @@ namespace Conformance {
       }
     }
 
+    /// <summary>Field number for the "oneof_bool" field.</summary>
+    public const int OneofBoolFieldNumber = 115;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool OneofBool {
+      get { return oneofFieldCase_ == OneofFieldOneofCase.OneofBool ? (bool) oneofField_ : false; }
+      set {
+        oneofField_ = value;
+        oneofFieldCase_ = OneofFieldOneofCase.OneofBool;
+      }
+    }
+
+    /// <summary>Field number for the "oneof_uint64" field.</summary>
+    public const int OneofUint64FieldNumber = 116;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public ulong OneofUint64 {
+      get { return oneofFieldCase_ == OneofFieldOneofCase.OneofUint64 ? (ulong) oneofField_ : 0UL; }
+      set {
+        oneofField_ = value;
+        oneofFieldCase_ = OneofFieldOneofCase.OneofUint64;
+      }
+    }
+
+    /// <summary>Field number for the "oneof_float" field.</summary>
+    public const int OneofFloatFieldNumber = 117;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public float OneofFloat {
+      get { return oneofFieldCase_ == OneofFieldOneofCase.OneofFloat ? (float) oneofField_ : 0F; }
+      set {
+        oneofField_ = value;
+        oneofFieldCase_ = OneofFieldOneofCase.OneofFloat;
+      }
+    }
+
+    /// <summary>Field number for the "oneof_double" field.</summary>
+    public const int OneofDoubleFieldNumber = 118;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public double OneofDouble {
+      get { return oneofFieldCase_ == OneofFieldOneofCase.OneofDouble ? (double) oneofField_ : 0D; }
+      set {
+        oneofField_ = value;
+        oneofFieldCase_ = OneofFieldOneofCase.OneofDouble;
+      }
+    }
+
+    /// <summary>Field number for the "oneof_enum" field.</summary>
+    public const int OneofEnumFieldNumber = 119;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::Conformance.TestAllTypes.Types.NestedEnum OneofEnum {
+      get { return oneofFieldCase_ == OneofFieldOneofCase.OneofEnum ? (global::Conformance.TestAllTypes.Types.NestedEnum) oneofField_ : 0; }
+      set {
+        oneofField_ = value;
+        oneofFieldCase_ = OneofFieldOneofCase.OneofEnum;
+      }
+    }
+
     /// <summary>Field number for the "optional_bool_wrapper" field.</summary>
     public const int OptionalBoolWrapperFieldNumber = 201;
     private static readonly pb::FieldCodec<bool?> _single_optionalBoolWrapper_codec = pb::FieldCodec.ForStructWrapper<bool>(1610);
@@ -1939,6 +2022,7 @@ namespace Conformance {
     private int fieldname1_;
     /// <summary>
     ///  Test field-name-to-JSON-name convention.
+    ///  (protobuf says names can be any valid C/C++ identifier.)
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int Fieldname1 {
@@ -2069,6 +2153,72 @@ namespace Conformance {
       }
     }
 
+    /// <summary>Field number for the "__field_name13" field.</summary>
+    public const int FieldName13FieldNumber = 413;
+    private int FieldName13_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int FieldName13 {
+      get { return FieldName13_; }
+      set {
+        FieldName13_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "__Field_name14" field.</summary>
+    public const int FieldName14FieldNumber = 414;
+    private int FieldName14_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int FieldName14 {
+      get { return FieldName14_; }
+      set {
+        FieldName14_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "field__name15" field.</summary>
+    public const int FieldName15FieldNumber = 415;
+    private int fieldName15_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int FieldName15 {
+      get { return fieldName15_; }
+      set {
+        fieldName15_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "field__Name16" field.</summary>
+    public const int FieldName16FieldNumber = 416;
+    private int fieldName16_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int FieldName16 {
+      get { return fieldName16_; }
+      set {
+        fieldName16_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "field_name17__" field.</summary>
+    public const int FieldName17FieldNumber = 417;
+    private int fieldName17_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int FieldName17 {
+      get { return fieldName17_; }
+      set {
+        fieldName17_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "Field_name18__" field.</summary>
+    public const int FieldName18FieldNumber = 418;
+    private int fieldName18_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int FieldName18 {
+      get { return fieldName18_; }
+      set {
+        fieldName18_ = value;
+      }
+    }
+
     private object oneofField_;
     /// <summary>Enum of possible cases for the "oneof_field" oneof.</summary>
     public enum OneofFieldOneofCase {
@@ -2077,6 +2227,11 @@ namespace Conformance {
       OneofNestedMessage = 112,
       OneofString = 113,
       OneofBytes = 114,
+      OneofBool = 115,
+      OneofUint64 = 116,
+      OneofFloat = 117,
+      OneofDouble = 118,
+      OneofEnum = 119,
     }
     private OneofFieldOneofCase oneofFieldCase_ = OneofFieldOneofCase.None;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -2169,6 +2324,11 @@ namespace Conformance {
       if (!object.Equals(OneofNestedMessage, other.OneofNestedMessage)) return false;
       if (OneofString != other.OneofString) return false;
       if (OneofBytes != other.OneofBytes) return false;
+      if (OneofBool != other.OneofBool) return false;
+      if (OneofUint64 != other.OneofUint64) return false;
+      if (OneofFloat != other.OneofFloat) return false;
+      if (OneofDouble != other.OneofDouble) return false;
+      if (OneofEnum != other.OneofEnum) return false;
       if (OptionalBoolWrapper != other.OptionalBoolWrapper) return false;
       if (OptionalInt32Wrapper != other.OptionalInt32Wrapper) return false;
       if (OptionalInt64Wrapper != other.OptionalInt64Wrapper) return false;
@@ -2211,6 +2371,12 @@ namespace Conformance {
       if (FieldName10 != other.FieldName10) return false;
       if (FIELDNAME11 != other.FIELDNAME11) return false;
       if (FIELDName12 != other.FIELDName12) return false;
+      if (FieldName13 != other.FieldName13) return false;
+      if (FieldName14 != other.FieldName14) return false;
+      if (FieldName15 != other.FieldName15) return false;
+      if (FieldName16 != other.FieldName16) return false;
+      if (FieldName17 != other.FieldName17) return false;
+      if (FieldName18 != other.FieldName18) return false;
       if (OneofFieldCase != other.OneofFieldCase) return false;
       return true;
     }
@@ -2284,6 +2450,11 @@ namespace Conformance {
       if (oneofFieldCase_ == OneofFieldOneofCase.OneofNestedMessage) hash ^= OneofNestedMessage.GetHashCode();
       if (oneofFieldCase_ == OneofFieldOneofCase.OneofString) hash ^= OneofString.GetHashCode();
       if (oneofFieldCase_ == OneofFieldOneofCase.OneofBytes) hash ^= OneofBytes.GetHashCode();
+      if (oneofFieldCase_ == OneofFieldOneofCase.OneofBool) hash ^= OneofBool.GetHashCode();
+      if (oneofFieldCase_ == OneofFieldOneofCase.OneofUint64) hash ^= OneofUint64.GetHashCode();
+      if (oneofFieldCase_ == OneofFieldOneofCase.OneofFloat) hash ^= OneofFloat.GetHashCode();
+      if (oneofFieldCase_ == OneofFieldOneofCase.OneofDouble) hash ^= OneofDouble.GetHashCode();
+      if (oneofFieldCase_ == OneofFieldOneofCase.OneofEnum) hash ^= OneofEnum.GetHashCode();
       if (optionalBoolWrapper_ != null) hash ^= OptionalBoolWrapper.GetHashCode();
       if (optionalInt32Wrapper_ != null) hash ^= OptionalInt32Wrapper.GetHashCode();
       if (optionalInt64Wrapper_ != null) hash ^= OptionalInt64Wrapper.GetHashCode();
@@ -2326,6 +2497,12 @@ namespace Conformance {
       if (FieldName10 != 0) hash ^= FieldName10.GetHashCode();
       if (FIELDNAME11 != 0) hash ^= FIELDNAME11.GetHashCode();
       if (FIELDName12 != 0) hash ^= FIELDName12.GetHashCode();
+      if (FieldName13 != 0) hash ^= FieldName13.GetHashCode();
+      if (FieldName14 != 0) hash ^= FieldName14.GetHashCode();
+      if (FieldName15 != 0) hash ^= FieldName15.GetHashCode();
+      if (FieldName16 != 0) hash ^= FieldName16.GetHashCode();
+      if (FieldName17 != 0) hash ^= FieldName17.GetHashCode();
+      if (FieldName18 != 0) hash ^= FieldName18.GetHashCode();
       hash ^= (int) oneofFieldCase_;
       return hash;
     }
@@ -2481,6 +2658,26 @@ namespace Conformance {
         output.WriteRawTag(146, 7);
         output.WriteBytes(OneofBytes);
       }
+      if (oneofFieldCase_ == OneofFieldOneofCase.OneofBool) {
+        output.WriteRawTag(152, 7);
+        output.WriteBool(OneofBool);
+      }
+      if (oneofFieldCase_ == OneofFieldOneofCase.OneofUint64) {
+        output.WriteRawTag(160, 7);
+        output.WriteUInt64(OneofUint64);
+      }
+      if (oneofFieldCase_ == OneofFieldOneofCase.OneofFloat) {
+        output.WriteRawTag(173, 7);
+        output.WriteFloat(OneofFloat);
+      }
+      if (oneofFieldCase_ == OneofFieldOneofCase.OneofDouble) {
+        output.WriteRawTag(177, 7);
+        output.WriteDouble(OneofDouble);
+      }
+      if (oneofFieldCase_ == OneofFieldOneofCase.OneofEnum) {
+        output.WriteRawTag(184, 7);
+        output.WriteEnum((int) OneofEnum);
+      }
       if (optionalBoolWrapper_ != null) {
         _single_optionalBoolWrapper_codec.WriteTagAndValue(output, OptionalBoolWrapper);
       }
@@ -2594,6 +2791,30 @@ namespace Conformance {
       if (FIELDName12 != 0) {
         output.WriteRawTag(224, 25);
         output.WriteInt32(FIELDName12);
+      }
+      if (FieldName13 != 0) {
+        output.WriteRawTag(232, 25);
+        output.WriteInt32(FieldName13);
+      }
+      if (FieldName14 != 0) {
+        output.WriteRawTag(240, 25);
+        output.WriteInt32(FieldName14);
+      }
+      if (FieldName15 != 0) {
+        output.WriteRawTag(248, 25);
+        output.WriteInt32(FieldName15);
+      }
+      if (FieldName16 != 0) {
+        output.WriteRawTag(128, 26);
+        output.WriteInt32(FieldName16);
+      }
+      if (FieldName17 != 0) {
+        output.WriteRawTag(136, 26);
+        output.WriteInt32(FieldName17);
+      }
+      if (FieldName18 != 0) {
+        output.WriteRawTag(144, 26);
+        output.WriteInt32(FieldName18);
       }
     }
 
@@ -2718,6 +2939,21 @@ namespace Conformance {
       if (oneofFieldCase_ == OneofFieldOneofCase.OneofBytes) {
         size += 2 + pb::CodedOutputStream.ComputeBytesSize(OneofBytes);
       }
+      if (oneofFieldCase_ == OneofFieldOneofCase.OneofBool) {
+        size += 2 + 1;
+      }
+      if (oneofFieldCase_ == OneofFieldOneofCase.OneofUint64) {
+        size += 2 + pb::CodedOutputStream.ComputeUInt64Size(OneofUint64);
+      }
+      if (oneofFieldCase_ == OneofFieldOneofCase.OneofFloat) {
+        size += 2 + 4;
+      }
+      if (oneofFieldCase_ == OneofFieldOneofCase.OneofDouble) {
+        size += 2 + 8;
+      }
+      if (oneofFieldCase_ == OneofFieldOneofCase.OneofEnum) {
+        size += 2 + pb::CodedOutputStream.ComputeEnumSize((int) OneofEnum);
+      }
       if (optionalBoolWrapper_ != null) {
         size += _single_optionalBoolWrapper_codec.CalculateSizeWithTag(OptionalBoolWrapper);
       }
@@ -2813,6 +3049,24 @@ namespace Conformance {
       }
       if (FIELDName12 != 0) {
         size += 2 + pb::CodedOutputStream.ComputeInt32Size(FIELDName12);
+      }
+      if (FieldName13 != 0) {
+        size += 2 + pb::CodedOutputStream.ComputeInt32Size(FieldName13);
+      }
+      if (FieldName14 != 0) {
+        size += 2 + pb::CodedOutputStream.ComputeInt32Size(FieldName14);
+      }
+      if (FieldName15 != 0) {
+        size += 2 + pb::CodedOutputStream.ComputeInt32Size(FieldName15);
+      }
+      if (FieldName16 != 0) {
+        size += 2 + pb::CodedOutputStream.ComputeInt32Size(FieldName16);
+      }
+      if (FieldName17 != 0) {
+        size += 2 + pb::CodedOutputStream.ComputeInt32Size(FieldName17);
+      }
+      if (FieldName18 != 0) {
+        size += 2 + pb::CodedOutputStream.ComputeInt32Size(FieldName18);
       }
       return size;
     }
@@ -3069,6 +3323,24 @@ namespace Conformance {
       if (other.FIELDName12 != 0) {
         FIELDName12 = other.FIELDName12;
       }
+      if (other.FieldName13 != 0) {
+        FieldName13 = other.FieldName13;
+      }
+      if (other.FieldName14 != 0) {
+        FieldName14 = other.FieldName14;
+      }
+      if (other.FieldName15 != 0) {
+        FieldName15 = other.FieldName15;
+      }
+      if (other.FieldName16 != 0) {
+        FieldName16 = other.FieldName16;
+      }
+      if (other.FieldName17 != 0) {
+        FieldName17 = other.FieldName17;
+      }
+      if (other.FieldName18 != 0) {
+        FieldName18 = other.FieldName18;
+      }
       switch (other.OneofFieldCase) {
         case OneofFieldOneofCase.OneofUint32:
           OneofUint32 = other.OneofUint32;
@@ -3081,6 +3353,21 @@ namespace Conformance {
           break;
         case OneofFieldOneofCase.OneofBytes:
           OneofBytes = other.OneofBytes;
+          break;
+        case OneofFieldOneofCase.OneofBool:
+          OneofBool = other.OneofBool;
+          break;
+        case OneofFieldOneofCase.OneofUint64:
+          OneofUint64 = other.OneofUint64;
+          break;
+        case OneofFieldOneofCase.OneofFloat:
+          OneofFloat = other.OneofFloat;
+          break;
+        case OneofFieldOneofCase.OneofDouble:
+          OneofDouble = other.OneofDouble;
+          break;
+        case OneofFieldOneofCase.OneofEnum:
+          OneofEnum = other.OneofEnum;
           break;
       }
 
@@ -3387,6 +3674,27 @@ namespace Conformance {
             OneofBytes = input.ReadBytes();
             break;
           }
+          case 920: {
+            OneofBool = input.ReadBool();
+            break;
+          }
+          case 928: {
+            OneofUint64 = input.ReadUInt64();
+            break;
+          }
+          case 941: {
+            OneofFloat = input.ReadFloat();
+            break;
+          }
+          case 945: {
+            OneofDouble = input.ReadDouble();
+            break;
+          }
+          case 952: {
+            oneofField_ = input.ReadEnum();
+            oneofFieldCase_ = OneofFieldOneofCase.OneofEnum;
+            break;
+          }
           case 1610: {
             bool? value = _single_optionalBoolWrapper_codec.Read(input);
             if (optionalBoolWrapper_ == null || value != false) {
@@ -3598,6 +3906,30 @@ namespace Conformance {
           }
           case 3296: {
             FIELDName12 = input.ReadInt32();
+            break;
+          }
+          case 3304: {
+            FieldName13 = input.ReadInt32();
+            break;
+          }
+          case 3312: {
+            FieldName14 = input.ReadInt32();
+            break;
+          }
+          case 3320: {
+            FieldName15 = input.ReadInt32();
+            break;
+          }
+          case 3328: {
+            FieldName16 = input.ReadInt32();
+            break;
+          }
+          case 3336: {
+            FieldName17 = input.ReadInt32();
+            break;
+          }
+          case 3344: {
+            FieldName18 = input.ReadInt32();
             break;
           }
         }

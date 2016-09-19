@@ -40,8 +40,7 @@
 
 #ifndef OPENSOURCE_PROTOBUF_CPP_BOOTSTRAP
 #include <google/protobuf/compiler/javanano/javanano_generator.h>
-// TODO(teboring): Add it back when php implementation is ready
-// #include <google/protobuf/compiler/php/php_generator.h>
+#include <google/protobuf/compiler/php/php_generator.h>
 #include <google/protobuf/compiler/ruby/ruby_generator.h>
 #include <google/protobuf/compiler/csharp/csharp_generator.h>
 #include <google/protobuf/compiler/objectivec/objectivec_generator.h>
@@ -77,11 +76,10 @@ int main(int argc, char* argv[]) {
   cli.RegisterGenerator("--javanano_out", &javanano_generator,
                         "Generate Java Nano source file.");
 
-  // TODO(teboring): Add it back when php implementation is ready
   // PHP
-  // google::protobuf::compiler::php::Generator php_generator;
-  // cli.RegisterGenerator("--php_out", &php_generator,
-  //                      "Generate PHP source file.");
+  google::protobuf::compiler::php::Generator php_generator;
+  cli.RegisterGenerator("--php_out", &php_generator,
+                        "Generate PHP source file.");
 
   // Ruby
   google::protobuf::compiler::ruby::Generator rb_generator;

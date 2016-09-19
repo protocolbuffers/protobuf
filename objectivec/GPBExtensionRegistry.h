@@ -35,45 +35,50 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-/// A table of known extensions, searchable by name or field number.  When
-/// parsing a protocol message that might have extensions, you must provide a
-/// @c GPBExtensionRegistry in which you have registered any extensions that you
-/// want to be able to parse. Otherwise, those extensions will just be treated
-/// like unknown fields.
-///
-/// The @c *Root classes provide @c +extensionRegistry for the extensions defined
-/// in a given file *and* all files it imports. You can also create a
-/// @c GPBExtensionRegistry, and merge those registries to handle parsing
-/// extensions defined from non overlapping files.
-///
-/// @code
-/// GPBExtensionRegistry *registry =
-///     [[[MyProtoFileRoot extensionRegistry] copy] autorelease];
-/// [registry addExtension:[OtherMessage neededExtension];  // Not in MyProtoFile
-/// NSError *parseError = nil;
-/// MyMessage *msg = [MyMessage parseData:data
-///                     extensionRegistry:registry
-///                                 error:&parseError];
-/// @endcode
+/**
+ * A table of known extensions, searchable by name or field number.  When
+ * parsing a protocol message that might have extensions, you must provide a
+ * GPBExtensionRegistry in which you have registered any extensions that you
+ * want to be able to parse. Otherwise, those extensions will just be treated
+ * like unknown fields.
+ *
+ * The *Root classes provide `+extensionRegistry` for the extensions defined
+ * in a given file *and* all files it imports. You can also create a
+ * GPBExtensionRegistry, and merge those registries to handle parsing
+ * extensions defined from non overlapping files.
+ *
+ * ```
+ * GPBExtensionRegistry *registry = [[MyProtoFileRoot extensionRegistry] copy];
+ * [registry addExtension:[OtherMessage neededExtension]]; // Not in MyProtoFile
+ * NSError *parseError;
+ * MyMessage *msg = [MyMessage parseData:data extensionRegistry:registry error:&parseError];
+ * ```
+ **/
 @interface GPBExtensionRegistry : NSObject<NSCopying>
 
-/// Add the given @c GPBExtensionDescriptor to this registry.
-///
-/// @param extension The extension description to add.
+/**
+ * Adds the given GPBExtensionDescriptor to this registry.
+ *
+ * @param extension The extension description to add.
+ **/
 - (void)addExtension:(GPBExtensionDescriptor *)extension;
 
-/// Adds all the extensions from another registry to this registry.
-///
-/// @param registry The registry to merge into this registry.
+/**
+ * Adds all the extensions from another registry to this registry.
+ *
+ * @param registry The registry to merge into this registry.
+ **/
 - (void)addExtensions:(GPBExtensionRegistry *)registry;
 
-/// Looks for the extension registered for the given field number on a given
-/// @c GPBDescriptor.
-///
-/// @param descriptor  The descriptor to look for a registered extension on.
-/// @param fieldNumber The field number of an extension to look for.
-///
-/// @return The registered @c GPBExtensionDescripto or nil if none was found.
+/**
+ * Looks for the extension registered for the given field number on a given
+ * GPBDescriptor.
+ *
+ * @param descriptor  The descriptor to look for a registered extension on.
+ * @param fieldNumber The field number of the extension to look for.
+ *
+ * @return The registered GPBExtensionDescriptor or nil if none was found.
+ **/
 - (nullable GPBExtensionDescriptor *)extensionForDescriptor:(GPBDescriptor *)descriptor
                                                 fieldNumber:(NSInteger)fieldNumber;
 

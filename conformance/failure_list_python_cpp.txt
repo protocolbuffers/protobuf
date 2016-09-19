@@ -13,6 +13,8 @@ Recommended.JsonInput.DoubleFieldNegativeInfinityNotQuoted
 Recommended.JsonInput.FloatFieldInfinityNotQuoted
 Recommended.JsonInput.FloatFieldNanNotQuoted
 Recommended.JsonInput.FloatFieldNegativeInfinityNotQuoted
+Recommended.JsonInput.OneofZeroMessage.JsonOutput
+Recommended.JsonInput.OneofZeroMessage.ProtobufOutput
 Required.JsonInput.BytesFieldInvalidBase64Characters
 Required.JsonInput.DoubleFieldTooSmall
 Required.JsonInput.EnumFieldUnknownValue.Validator

@@ -612,6 +612,7 @@ void Type::SerializeWithCachedSizes(
 
 ::google::protobuf::uint8* Type::InternalSerializeWithCachedSizesToArray(
     bool deterministic, ::google::protobuf::uint8* target) const {
+  (void)deterministic; // Unused
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.Type)
   // optional string name = 1;
   if (this->name().size() > 0) {
@@ -1263,7 +1264,7 @@ void Field::Clear() {
 #endif
 
 #define ZR_(first, last) do {\
-  ::memset(&first, 0, \
+  ::memset(&(first), 0,\
            ZR_HELPER_(last) - ZR_HELPER_(first) + sizeof(last));\
 } while (0)
 
@@ -1552,6 +1553,7 @@ void Field::SerializeWithCachedSizes(
 
 ::google::protobuf::uint8* Field::InternalSerializeWithCachedSizesToArray(
     bool deterministic, ::google::protobuf::uint8* target) const {
+  (void)deterministic; // Unused
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.Field)
   // optional .google.protobuf.Field.Kind kind = 1;
   if (this->kind() != 0) {
@@ -2484,6 +2486,7 @@ void Enum::SerializeWithCachedSizes(
 
 ::google::protobuf::uint8* Enum::InternalSerializeWithCachedSizesToArray(
     bool deterministic, ::google::protobuf::uint8* target) const {
+  (void)deterministic; // Unused
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.Enum)
   // optional string name = 1;
   if (this->name().size() > 0) {
@@ -3067,6 +3070,7 @@ void EnumValue::SerializeWithCachedSizes(
 
 ::google::protobuf::uint8* EnumValue::InternalSerializeWithCachedSizesToArray(
     bool deterministic, ::google::protobuf::uint8* target) const {
+  (void)deterministic; // Unused
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.EnumValue)
   // optional string name = 1;
   if (this->name().size() > 0) {
@@ -3541,6 +3545,7 @@ void Option::SerializeWithCachedSizes(
 
 ::google::protobuf::uint8* Option::InternalSerializeWithCachedSizesToArray(
     bool deterministic, ::google::protobuf::uint8* target) const {
+  (void)deterministic; // Unused
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.Option)
   // optional string name = 1;
   if (this->name().size() > 0) {

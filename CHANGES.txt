@@ -1,3 +1,23 @@
+2016-09-06 version 3.0.2 (C++/Java/Python/Ruby/Objective-C/C#/JavaScript/Lite)
+  General
+  * Various bug fixes.
+
+  Objective C
+  * Fix for oneofs in proto3 syntax files where fields were set to the zero
+    value.
+  * Fix for embedded null character in strings.
+  * CocoaDocs support
+
+  Ruby
+  * Fixed memory corruption bug in parsing that could occur under GC pressure.
+
+  Javascript
+  * jspb.Map is now properly exported to CommonJS modules.
+
+  C#
+  * Removed legacy_enum_values flag.
+
+
 2016-07-27 version 3.0.0 (C++/Java/Python/Ruby/Objective-C/C#/JavaScript/Lite)
   General
   * This log only contains changes since the beta-4 release. Summarized change

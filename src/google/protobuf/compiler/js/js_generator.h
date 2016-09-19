@@ -28,6 +28,8 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+// Generates JavaScript code for a given .proto file.
+
 #ifndef GOOGLE_PROTOBUF_COMPILER_JS_GENERATOR_H__
 #define GOOGLE_PROTOBUF_COMPILER_JS_GENERATOR_H__
 
@@ -123,6 +125,10 @@ struct GeneratorOptions {
   bool one_output_file_per_input_file;
 };
 
+// CodeGenerator implementation which generates a JavaScript source file and
+// header.  If you create your own protocol compiler binary and you want it to
+// support JavaScript output, you can do so by registering an instance of this
+// CodeGenerator with the CommandLineInterface in your main() function.
 class LIBPROTOC_EXPORT Generator : public CodeGenerator {
  public:
   Generator() {}

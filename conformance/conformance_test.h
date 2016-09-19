@@ -169,6 +169,9 @@ class ConformanceTestSuite {
                                          ConformanceLevel level,
                                          const conformance::TestAllTypes& input,
                                          const string& equivalent_text_format);
+  void RunValidProtobufTest(const string& test_name,
+                            const conformance::TestAllTypes& input,
+                            const string& equivalent_text_format);
 
   typedef std::function<bool(const Json::Value&)> Validator;
   void RunValidJsonTestWithValidator(const string& test_name,

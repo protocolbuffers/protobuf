@@ -28,6 +28,12 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+// This file defines the map container and its helpers to support protobuf maps.
+//
+// The Map and MapIterator types are provided by this header file.
+// Please avoid using other types defined here, unless they are public
+// types within Map or MapIterator, such as Map::value_type.
+
 #ifndef GOOGLE_PROTOBUF_MAP_H__
 #define GOOGLE_PROTOBUF_MAP_H__
 
@@ -50,9 +56,6 @@
 namespace google {
 namespace protobuf {
 
-// The Map and MapIterator types are provided by this header file.
-// Please avoid using other types defined here, unless they are public
-// types within Map or MapIterator, such as Map::value_type.
 template <typename Key, typename T>
 class Map;
 

@@ -27,6 +27,9 @@
 
 @implementation GPBAnyRoot
 
+// No extensions in the file and no imports, so no need to generate
+// +extensionRegistry.
+
 @end
 
 #pragma mark - GPBAnyRoot_FileDescriptor
@@ -36,8 +39,9 @@ static GPBFileDescriptor *GPBAnyRoot_FileDescriptor(void) {
   // about thread safety of the singleton.
   static GPBFileDescriptor *descriptor = NULL;
   if (!descriptor) {
-    GPBDebugCheckRuntimeVersion();
+    GPB_DEBUG_CHECK_RUNTIME_VERSIONS();
     descriptor = [[GPBFileDescriptor alloc] initWithPackage:@"google.protobuf"
+                                                 objcPrefix:@"GPB"
                                                      syntax:GPBFileSyntaxProto3];
   }
   return descriptor;
@@ -68,7 +72,7 @@ typedef struct GPBAny__storage_ {
         .number = GPBAny_FieldNumber_TypeURL,
         .hasIndex = 0,
         .offset = (uint32_t)offsetof(GPBAny__storage_, typeURL),
-        .flags = GPBFieldOptional | GPBFieldTextFormatNameCustom,
+        .flags = (GPBFieldFlags)(GPBFieldOptional | GPBFieldTextFormatNameCustom),
         .dataType = GPBDataTypeString,
       },
       {
@@ -88,7 +92,7 @@ typedef struct GPBAny__storage_ {
                                         fields:fields
                                     fieldCount:(uint32_t)(sizeof(fields) / sizeof(GPBMessageFieldDescription))
                                    storageSize:sizeof(GPBAny__storage_)
-                                         flags:0];
+                                         flags:GPBDescriptorInitializationFlag_None];
 #if !GPBOBJC_SKIP_MESSAGE_TEXTFORMAT_EXTRAS
     static const char *extraTextFormatInfo =
         "\001\001\004\241!!\000";

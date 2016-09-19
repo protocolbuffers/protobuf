@@ -534,6 +534,7 @@ objectivec_EXTRA_DIST=                                                       \
   objectivec/Tests/GPBTestUtilities.h                                        \
   objectivec/Tests/GPBTestUtilities.m                                        \
   objectivec/Tests/GPBUnittestProtos.m                                       \
+  objectivec/Tests/GPBUnittestProtos2.m                                      \
   objectivec/Tests/GPBUnknownFieldSetTest.m                                  \
   objectivec/Tests/GPBUtilitiesTests.m                                       \
   objectivec/Tests/GPBWellKnownTypesTest.m                                   \
@@ -555,6 +556,13 @@ objectivec_EXTRA_DIST=                                                       \
   objectivec/Tests/text_format_map_unittest_data.txt                          \
   objectivec/Tests/text_format_unittest_data.txt                              \
   objectivec/Tests/unittest_cycle.proto                                       \
+  objectivec/Tests/unittest_extension_chain_a.proto                           \
+  objectivec/Tests/unittest_extension_chain_b.proto                           \
+  objectivec/Tests/unittest_extension_chain_c.proto                           \
+  objectivec/Tests/unittest_extension_chain_d.proto                           \
+  objectivec/Tests/unittest_extension_chain_e.proto                           \
+  objectivec/Tests/unittest_extension_chain_f.proto                           \
+  objectivec/Tests/unittest_extension_chain_g.proto                           \
   objectivec/Tests/unittest_objc.proto                                        \
   objectivec/Tests/unittest_objc_startup.proto                                \
   objectivec/Tests/unittest_runtime_proto2.proto                              \
@@ -682,6 +690,7 @@ ruby_EXTRA_DIST=                                                             \
   ruby/google-protobuf.gemspec                                               \
   ruby/lib/google/protobuf/message_exts.rb                                   \
   ruby/lib/google/protobuf/repeated_field.rb                                 \
+  ruby/lib/google/protobuf/well_known_types.rb                               \
   ruby/lib/google/protobuf.rb                                                \
   ruby/pom.xml                                                               \
   ruby/src/main/java/com/google/protobuf/jruby/RubyBuilder.java              \
@@ -708,6 +717,7 @@ ruby_EXTRA_DIST=                                                             \
   ruby/tests/generated_code.proto                                            \
   ruby/tests/test_import.proto                                               \
   ruby/tests/generated_code_test.rb                                          \
+  ruby/tests/well_known_types_test.rb                                        \
   ruby/travis-test.sh
 
 js_EXTRA_DIST=                              \

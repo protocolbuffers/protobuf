@@ -31,18 +31,8 @@
 
 @implementation GPBApiRoot
 
-+ (GPBExtensionRegistry*)extensionRegistry {
-  // This is called by +initialize so there is no need to worry
-  // about thread safety and initialization of registry.
-  static GPBExtensionRegistry* registry = nil;
-  if (!registry) {
-    GPBDebugCheckRuntimeVersion();
-    registry = [[GPBExtensionRegistry alloc] init];
-    [registry addExtensions:[GPBSourceContextRoot extensionRegistry]];
-    [registry addExtensions:[GPBTypeRoot extensionRegistry]];
-  }
-  return registry;
-}
+// No extensions in the file and none of the imports (direct or indirect)
+// defined extensions, so no need to generate +extensionRegistry.
 
 @end
 
@@ -53,8 +43,9 @@ static GPBFileDescriptor *GPBApiRoot_FileDescriptor(void) {
   // about thread safety of the singleton.
   static GPBFileDescriptor *descriptor = NULL;
   if (!descriptor) {
-    GPBDebugCheckRuntimeVersion();
+    GPB_DEBUG_CHECK_RUNTIME_VERSIONS();
     descriptor = [[GPBFileDescriptor alloc] initWithPackage:@"google.protobuf"
+                                                 objcPrefix:@"GPB"
                                                      syntax:GPBFileSyntaxProto3];
   }
   return descriptor;
@@ -149,7 +140,7 @@ typedef struct GPBApi__storage_ {
         .number = GPBApi_FieldNumber_Syntax,
         .hasIndex = 3,
         .offset = (uint32_t)offsetof(GPBApi__storage_, syntax),
-        .flags = GPBFieldOptional | GPBFieldHasEnumDescriptor,
+        .flags = (GPBFieldFlags)(GPBFieldOptional | GPBFieldHasEnumDescriptor),
         .dataType = GPBDataTypeEnum,
       },
     };
@@ -160,7 +151,7 @@ typedef struct GPBApi__storage_ {
                                         fields:fields
                                     fieldCount:(uint32_t)(sizeof(fields) / sizeof(GPBMessageFieldDescription))
                                    storageSize:sizeof(GPBApi__storage_)
-                                         flags:0];
+                                         flags:GPBDescriptorInitializationFlag_None];
     NSAssert(descriptor == nil, @"Startup recursed!");
     descriptor = localDescriptor;
   }
@@ -223,7 +214,7 @@ typedef struct GPBMethod__storage_ {
         .number = GPBMethod_FieldNumber_RequestTypeURL,
         .hasIndex = 1,
         .offset = (uint32_t)offsetof(GPBMethod__storage_, requestTypeURL),
-        .flags = GPBFieldOptional | GPBFieldTextFormatNameCustom,
+        .flags = (GPBFieldFlags)(GPBFieldOptional | GPBFieldTextFormatNameCustom),
         .dataType = GPBDataTypeString,
       },
       {
@@ -241,7 +232,7 @@ typedef struct GPBMethod__storage_ {
         .number = GPBMethod_FieldNumber_ResponseTypeURL,
         .hasIndex = 4,
         .offset = (uint32_t)offsetof(GPBMethod__storage_, responseTypeURL),
-        .flags = GPBFieldOptional | GPBFieldTextFormatNameCustom,
+        .flags = (GPBFieldFlags)(GPBFieldOptional | GPBFieldTextFormatNameCustom),
         .dataType = GPBDataTypeString,
       },
       {
@@ -268,7 +259,7 @@ typedef struct GPBMethod__storage_ {
         .number = GPBMethod_FieldNumber_Syntax,
         .hasIndex = 7,
         .offset = (uint32_t)offsetof(GPBMethod__storage_, syntax),
-        .flags = GPBFieldOptional | GPBFieldHasEnumDescriptor,
+        .flags = (GPBFieldFlags)(GPBFieldOptional | GPBFieldHasEnumDescriptor),
         .dataType = GPBDataTypeEnum,
       },
     };
@@ -279,7 +270,7 @@ typedef struct GPBMethod__storage_ {
                                         fields:fields
                                     fieldCount:(uint32_t)(sizeof(fields) / sizeof(GPBMessageFieldDescription))
                                    storageSize:sizeof(GPBMethod__storage_)
-                                         flags:0];
+                                         flags:GPBDescriptorInitializationFlag_None];
 #if !GPBOBJC_SKIP_MESSAGE_TEXTFORMAT_EXTRAS
     static const char *extraTextFormatInfo =
         "\002\002\007\244\241!!\000\004\010\244\241!!\000";
@@ -350,7 +341,7 @@ typedef struct GPBMixin__storage_ {
                                         fields:fields
                                     fieldCount:(uint32_t)(sizeof(fields) / sizeof(GPBMessageFieldDescription))
                                    storageSize:sizeof(GPBMixin__storage_)
-                                         flags:0];
+                                         flags:GPBDescriptorInitializationFlag_None];
     NSAssert(descriptor == nil, @"Startup recursed!");
     descriptor = localDescriptor;
   }

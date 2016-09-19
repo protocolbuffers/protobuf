@@ -2494,7 +2494,7 @@ GenerateClear(io::Printer* printer) {
       "  &reinterpret_cast<$classname$*>(16)->f)\n"
       "#endif\n\n"
       "#define ZR_(first, last) do {\\\n"
-      "  ::memset(&first, 0, \\\n"
+      "  ::memset(&(first), 0,\\\n"
       "           ZR_HELPER_(last) - ZR_HELPER_(first) + sizeof(last));\\\n"
       "} while (0)\n\n";
   for (int i = 0; i < runs_of_fields_.size(); i++) {
@@ -3031,7 +3031,7 @@ GenerateMergeFromCodedStream(io::Printer* printer) {
     // on the CodedOutputStream.
     printer->Print(
       "  ::google::protobuf::io::LazyStringOutputStream unknown_fields_string(\n"
-      "      ::google::protobuf::internal::NewPermanentCallback(\n"
+      "      ::google::protobuf::NewPermanentCallback(\n"
       "          &MutableUnknownFieldsFor$classname$, this));\n"
       "  ::google::protobuf::io::CodedOutputStream unknown_fields_stream(\n"
       "      &unknown_fields_string, false);\n",
@@ -3503,6 +3503,7 @@ GenerateSerializeWithCachedSizesToArray(io::Printer* printer) {
     "classname", classname_);
   printer->Indent();
 
+  printer->Print("(void)deterministic; // Unused\n");
   printer->Print(
     "// @@protoc_insertion_point(serialize_to_array_start:$full_name$)\n",
     "full_name", descriptor_->full_name());

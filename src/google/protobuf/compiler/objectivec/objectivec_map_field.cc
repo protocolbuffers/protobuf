@@ -115,7 +115,7 @@ MapFieldGenerator::MapFieldGenerator(const FieldDescriptor* descriptor,
   if (value_field_flags.find("GPBFieldHasEnumDescriptor") != string::npos) {
     field_flags.push_back("GPBFieldHasEnumDescriptor");
   }
-  variables_["fieldflags"] = BuildFlagsString(field_flags);
+  variables_["fieldflags"] = BuildFlagsString(FLAGTYPE_FIELD, field_flags);
 
   ObjectiveCType value_objc_type = GetObjectiveCType(value_descriptor);
   const bool value_is_object_type =

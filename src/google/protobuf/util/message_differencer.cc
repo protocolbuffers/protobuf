@@ -1389,8 +1389,7 @@ bool MessageDifferencer::MatchRepeatedFieldIndices(
       // doesn't necessarily imply Compare(b, c). Therefore a naive greedy
       // algorithm will fail to find a maximum matching.
       // Here we use the argumenting path algorithm.
-      MaximumMatcher::NodeMatchCallback* callback =
-          ::google::protobuf::internal::NewPermanentCallback(
+      MaximumMatcher::NodeMatchCallback* callback = NewPermanentCallback(
               this, &MessageDifferencer::IsMatch,
               repeated_field, key_comparator,
               &message1, &message2, parent_fields);

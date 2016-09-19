@@ -285,11 +285,16 @@ void ConformanceTestSuite::RunValidInputTest(
   TestAllTypes test_message;
 
   switch (response.result_case()) {
+    case ConformanceResponse::RESULT_NOT_SET:
+      ReportFailure(test_name, request, response,
+                    "Response didn't have any field in the Response.");
+      return;
+
     case ConformanceResponse::kParseError:
     case ConformanceResponse::kRuntimeError:
     case ConformanceResponse::kSerializeError:
-      ReportFailure(test_name, level, request, response,
-                    "Failed to parse JSON input or produce JSON output.");
+      ReportFailure(test_name, request, response,
+                    "Failed to parse input or produce output.");
       return;
 
     case ConformanceResponse::kSkipped:
@@ -415,6 +420,17 @@ void ConformanceTestSuite::RunValidJsonTestWithProtobufInput(
       ConformanceLevelToString(level) + ".ProtobufInput." + test_name +
       ".JsonOutput", level, input.SerializeAsString(), conformance::PROTOBUF,
       equivalent_text_format, conformance::JSON);
+}
+
+void ConformanceTestSuite::RunValidProtobufTest(
+    const string& test_name, const TestAllTypes& input,
+    const string& equivalent_text_format) {
+  RunValidInputTest("ProtobufInput." + test_name + ".ProtobufOutput",
+                    input.SerializeAsString(), conformance::PROTOBUF,
+                    equivalent_text_format, conformance::PROTOBUF);
+  RunValidInputTest("ProtobufInput." + test_name + ".JsonOutput",
+                    input.SerializeAsString(), conformance::PROTOBUF,
+                    equivalent_text_format, conformance::JSON);
 }
 
 // According to proto3 JSON specification, JSON serializers follow more strict
@@ -661,18 +677,22 @@ bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
                    "{\"optionalString\":\"Hello, World!\"}",
                    "optional_string: 'Hello, World!'");
 
+  // NOTE: The spec for JSON support is still being sorted out, these may not
+  // all be correct.
   // Test field name conventions.
   RunValidJsonTest(
       "FieldNameInSnakeCase", REQUIRED,
       R"({
         "fieldname1": 1,
         "fieldName2": 2,
-        "FieldName3": 3
+        "fieldName3": 3,
+        "fieldName4": 4
       })",
       R"(
         fieldname1: 1
         field_name2: 2
         _field_name3: 3
+        field__name4_: 4
       )");
   RunValidJsonTest(
       "FieldNameWithNumbers", REQUIRED,
@@ -702,6 +722,24 @@ bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
         FIELD_NAME11: 11
         FIELD_name12: 12
       )");
+  RunValidJsonTest(
+      "FieldNameWithDoubleUnderscores",
+      R"({
+        "fieldName13": 13,
+        "fieldName14": 14,
+        "fieldName15": 15,
+        "fieldName16": 16,
+        "fieldName17": 17,
+        "fieldName18": 18
+      })",
+      R"(
+        __field_name13: 13
+        __Field_name14: 14
+        field__name15: 15
+        field__Name16: 16
+        field_name17__: 17
+        Field_name18__: 18
+      )");
   // Using the original proto field name in JSON is also allowed.
   RunValidJsonTest(
       "OriginalProtoFieldName", REQUIRED,
@@ -709,6 +747,7 @@ bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
         "fieldname1": 1,
         "field_name2": 2,
         "_field_name3": 3,
+        "field__name4_": 4,
         "field0name5": 5,
         "field_0_name6": 6,
         "fieldName7": 7,
@@ -716,12 +755,19 @@ bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
         "field_Name9": 9,
         "Field_Name10": 10,
         "FIELD_NAME11": 11,
-        "FIELD_name12": 12
+        "FIELD_name12": 12,
+        "__field_name13": 13,
+        "__Field_name14": 14,
+        "field__name15": 15,
+        "field__Name16": 16,
+        "field_name17__": 17,
+        "Field_name18__": 18
       })",
       R"(
         fieldname1: 1
         field_name2: 2
         _field_name3: 3
+        field__name4_: 4
         field0name5: 5
         field_0_name6: 6
         fieldName7: 7
@@ -730,12 +776,22 @@ bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
         Field_Name10: 10
         FIELD_NAME11: 11
         FIELD_name12: 12
+        __field_name13: 13
+        __Field_name14: 14
+        field__name15: 15
+        field__Name16: 16
+        field_name17__: 17
+        Field_name18__: 18
       )");
   // Field names can be escaped.
   RunValidJsonTest(
       "FieldNameEscaped", REQUIRED,
       R"({"fieldn\u0061me1": 1})",
       "fieldname1: 1");
+  // String ends with escape character.
+  ExpectParseFailureForJson(
+      "StringEndsWithEscapeChar",
+      "{\"optionalString\": \"abc\\");
   // Field names must be quoted (or it's not valid JSON).
   ExpectParseFailureForJson(
       "FieldNameNotQuoted", RECOMMENDED,
@@ -744,6 +800,17 @@ bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
   ExpectParseFailureForJson(
       "TrailingCommaInAnObject", RECOMMENDED,
       R"({"fieldname1":1,})");
+  ExpectParseFailureForJson(
+      "TrailingCommaInAnObjectWithSpace",
+      R"({"fieldname1":1 ,})");
+  ExpectParseFailureForJson(
+      "TrailingCommaInAnObjectWithSpaceCommaSpace",
+      R"({"fieldname1":1 , })");
+  ExpectParseFailureForJson(
+      "TrailingCommaInAnObjectWithNewlines",
+      R"({
+        "fieldname1":1,
+      })");
   // JSON doesn't support comments.
   ExpectParseFailureForJson(
       "JsonWithComments", RECOMMENDED,
@@ -751,6 +818,42 @@ bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
         // This is a comment.
         "fieldname1": 1
       })");
+  // JSON spec says whitespace doesn't matter, so try a few spacings to be sure.
+  RunValidJsonTest(
+      "OneLineNoSpaces",
+      "{\"optionalInt32\":1,\"optionalInt64\":2}",
+      R"(
+        optional_int32: 1
+        optional_int64: 2
+      )");
+  RunValidJsonTest(
+      "OneLineWithSpaces",
+      "{ \"optionalInt32\" : 1 , \"optionalInt64\" : 2 }",
+      R"(
+        optional_int32: 1
+        optional_int64: 2
+      )");
+  RunValidJsonTest(
+      "MultilineNoSpaces",
+      "{\n\"optionalInt32\"\n:\n1\n,\n\"optionalInt64\"\n:\n2\n}",
+      R"(
+        optional_int32: 1
+        optional_int64: 2
+      )");
+  RunValidJsonTest(
+      "MultilineWithSpaces",
+      "{\n  \"optionalInt32\"  :  1\n  ,\n  \"optionalInt64\"  :  2\n}\n",
+      R"(
+        optional_int32: 1
+        optional_int64: 2
+      )");
+  // Missing comma between key/value pairs.
+  ExpectParseFailureForJson(
+      "MissingCommaOneLine",
+      "{ \"optionalInt32\": 1 \"optionalInt64\": 2 }");
+  ExpectParseFailureForJson(
+      "MissingCommaMultiline",
+      "{\n  \"optionalInt32\": 1\n  \"optionalInt64\": 2\n}");
   // Duplicated field names are not allowed.
   ExpectParseFailureForJson(
       "FieldNameDuplicate", RECOMMENDED,
@@ -770,18 +873,22 @@ bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
         "optionalNestedMessage": {a: 1},
         "optional_nested_message": {}
       })");
+  // NOTE: The spec for JSON support is still being sorted out, these may not
+  // all be correct.
   // Serializers should use lowerCamelCase by default.
   RunValidJsonTestWithValidator(
       "FieldNameInLowerCamelCase", REQUIRED,
       R"({
         "fieldname1": 1,
         "fieldName2": 2,
-        "FieldName3": 3
+        "fieldName3": 3,
+        "fieldName4": 4
       })",
       [](const Json::Value& value) {
         return value.isMember("fieldname1") &&
             value.isMember("fieldName2") &&
-            value.isMember("FieldName3");
+            value.isMember("fieldName3") &&
+            value.isMember("fieldName4");
       });
   RunValidJsonTestWithValidator(
       "FieldNameWithNumbers", REQUIRED,
@@ -810,6 +917,24 @@ bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
             value.isMember("FieldName10") &&
             value.isMember("FIELDNAME11") &&
             value.isMember("FIELDName12");
+      });
+  RunValidJsonTestWithValidator(
+      "FieldNameWithDoubleUnderscores",
+      R"({
+        "fieldName13": 13,
+        "fieldName14": 14,
+        "fieldName15": 15,
+        "fieldName16": 16,
+        "fieldName17": 17,
+        "fieldName18": 18
+      })",
+      [](const Json::Value& value) {
+        return value.isMember("fieldName13") &&
+            value.isMember("fieldName14") &&
+            value.isMember("fieldName15") &&
+            value.isMember("fieldName16") &&
+            value.isMember("fieldName17") &&
+            value.isMember("fieldName18");
       });
 
   // Integer fields.
@@ -1245,6 +1370,64 @@ bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
   ExpectParseFailureForJson(
       "OneofFieldDuplicate", REQUIRED,
       R"({"oneofUint32": 1, "oneofString": "test"})");
+  // Ensure zero values for oneof make it out/backs.
+  {
+    TestAllTypes message;
+    message.set_oneof_uint32(0);
+    RunValidProtobufTest(
+        "OneofZeroUint32", message, "oneof_uint32: 0");
+    message.mutable_oneof_nested_message()->set_a(0);
+    RunValidProtobufTest(
+        "OneofZeroMessage", message, "oneof_nested_message: {}");
+    message.set_oneof_string("");
+    RunValidProtobufTest(
+        "OneofZeroString", message, "oneof_string: \"\"");
+    message.set_oneof_bytes("");
+    RunValidProtobufTest(
+        "OneofZeroBytes", message, "oneof_bytes: \"\"");
+    message.set_oneof_bool(false);
+    RunValidProtobufTest(
+        "OneofZeroBool", message, "oneof_bool: false");
+    message.set_oneof_uint64(0);
+    RunValidProtobufTest(
+        "OneofZeroUint64", message, "oneof_uint64: 0");
+    message.set_oneof_float(0.0f);
+    RunValidProtobufTest(
+        "OneofZeroFloat", message, "oneof_float: 0");
+    message.set_oneof_double(0.0);
+    RunValidProtobufTest(
+        "OneofZeroDouble", message, "oneof_double: 0");
+    message.set_oneof_enum(TestAllTypes::FOO);
+    RunValidProtobufTest(
+        "OneofZeroEnum", message, "oneof_enum: FOO");
+  }
+  RunValidJsonTest(
+      "OneofZeroUint32",
+      R"({"oneofUint32": 0})", "oneof_uint32: 0");
+  RunValidJsonTest(
+      "OneofZeroMessage",
+      R"({"oneofNestedMessage": {}})", "oneof_nested_message: {}");
+  RunValidJsonTest(
+      "OneofZeroString",
+      R"({"oneofString": ""})", "oneof_string: \"\"");
+  RunValidJsonTest(
+      "OneofZeroBytes",
+      R"({"oneofBytes": ""})", "oneof_bytes: \"\"");
+  RunValidJsonTest(
+      "OneofZeroBool",
+      R"({"oneofBool": false})", "oneof_bool: false");
+  RunValidJsonTest(
+      "OneofZeroUint64",
+      R"({"oneofUint64": 0})", "oneof_uint64: 0");
+  RunValidJsonTest(
+      "OneofZeroFloat",
+      R"({"oneofFloat": 0.0})", "oneof_float: 0");
+  RunValidJsonTest(
+      "OneofZeroDouble",
+      R"({"oneofDouble": 0.0})", "oneof_double: 0");
+  RunValidJsonTest(
+      "OneofZeroEnum",
+      R"({"oneofEnum":"FOO"})", "oneof_enum: FOO");
 
   // Repeated fields.
   RunValidJsonTest(
@@ -1301,6 +1484,15 @@ bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
   ExpectParseFailureForJson(
       "RepeatedFieldTrailingComma", RECOMMENDED,
       R"({"repeatedInt32": [1, 2, 3, 4,]})");
+  ExpectParseFailureForJson(
+      "RepeatedFieldTrailingCommaWithSpace",
+      "{\"repeatedInt32\": [1, 2, 3, 4 ,]}");
+  ExpectParseFailureForJson(
+      "RepeatedFieldTrailingCommaWithSpaceCommaSpace",
+      "{\"repeatedInt32\": [1, 2, 3, 4 , ]}");
+  ExpectParseFailureForJson(
+      "RepeatedFieldTrailingCommaWithNewlines",
+      "{\"repeatedInt32\": [\n  1,\n  2,\n  3,\n  4,\n]}");
 
   // Map fields.
   RunValidJsonTest(
@@ -1418,6 +1610,18 @@ bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
   ExpectParseFailureForJson(
       "MapFieldValueIsNull", RECOMMENDED,
       R"({"mapInt32Int32": {"0": null}})");
+
+  // http://www.rfc-editor.org/rfc/rfc7159.txt says strings have to use double
+  // quotes.
+  ExpectParseFailureForJson(
+      "StringFieldSingleQuoteKey",
+      R"({'optionalString': "Hello world!"})");
+  ExpectParseFailureForJson(
+      "StringFieldSingleQuoteValue",
+      R"({"optionalString": 'Hello world!'})");
+  ExpectParseFailureForJson(
+      "StringFieldSingleQuoteBoth",
+      R"({'optionalString': 'Hello world!'})");
 
   // Wrapper types.
   RunValidJsonTest(

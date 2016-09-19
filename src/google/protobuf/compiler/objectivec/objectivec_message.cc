@@ -331,7 +331,7 @@ void MessageGenerator::GenerateMessageHeader(io::Printer* printer) {
   string message_comments;
   SourceLocation location;
   if (descriptor_->GetSourceLocation(&location)) {
-    message_comments = BuildCommentsString(location);
+    message_comments = BuildCommentsString(location, false);
   } else {
     message_comments = "";
   }
@@ -521,7 +521,8 @@ void MessageGenerator::GenerateSource(io::Printer* printer) {
     if (descriptor_->options().message_set_wire_format()) {
       init_flags.push_back("GPBDescriptorInitializationFlag_WireFormat");
     }
-    vars["init_flags"] = BuildFlagsString(init_flags);
+    vars["init_flags"] = BuildFlagsString(FLAGTYPE_DESCRIPTOR_INITIALIZATION,
+                                          init_flags);
 
     printer->Print(
         vars,
@@ -578,6 +579,19 @@ void MessageGenerator::GenerateSource(io::Printer* printer) {
           "    };\n"
           "    [localDescriptor setupExtensionRanges:ranges\n"
           "                                    count:(uint32_t)(sizeof(ranges) / sizeof(GPBExtensionRange))];\n");
+    }
+    if (descriptor_->containing_type() != NULL) {
+      string parent_class_name = ClassName(descriptor_->containing_type());
+      printer->Print(
+          "    [localDescriptor setupContainingMessageClassName:GPBStringifySymbol($parent_name$)];\n",
+          "parent_name", parent_class_name);
+    }
+    string suffix_added;
+    ClassName(descriptor_, &suffix_added);
+    if (suffix_added.size() > 0) {
+      printer->Print(
+          "    [localDescriptor setupMessageClassNameSuffix:@\"$suffix$\"];\n",
+          "suffix", suffix_added);
     }
     printer->Print(
         "    NSAssert(descriptor == nil, @\"Startup recursed!\");\n"

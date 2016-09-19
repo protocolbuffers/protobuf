@@ -164,8 +164,8 @@
         <configuration>
           <instructions>
             <Bundle-DocURL>https://developers.google.com/protocol-buffers/</Bundle-DocURL>
-            <Bundle-SymbolicName>com.google.protobuf</Bundle-SymbolicName>
-            <Export-Package>com.google.protobuf;version=3.0.0-alpha-7</Export-Package>
+            <Bundle-SymbolicName>com.google.protobuf.nano</Bundle-SymbolicName>
+            <Export-Package>com.google.protobuf.nano;version=3.0.0-alpha-7</Export-Package>
           </instructions>
         </configuration>
       </plugin>
