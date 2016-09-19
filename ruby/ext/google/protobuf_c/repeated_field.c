@@ -447,9 +447,8 @@ VALUE RepeatedField_eq(VALUE _self, VALUE _other) {
  */
 VALUE RepeatedField_hash(VALUE _self) {
   RepeatedField* self = ruby_to_RepeatedField(_self);
-
-  VALUE hash = LL2NUM(0);
-
+  st_index_t h = rb_hash_start(0);
+  VALUE hash_sym = rb_intern("hash");
   upb_fieldtype_t field_type = self->field_type;
   VALUE field_type_class = self->field_type_class;
   size_t elem_size = native_slot_size(field_type);
@@ -457,12 +456,11 @@ VALUE RepeatedField_hash(VALUE _self) {
   for (int i = 0; i < self->size; i++, off += elem_size) {
     void* mem = ((uint8_t *)self->elements) + off;
     VALUE elem = native_slot_get(field_type, field_type_class, mem);
-    hash = rb_funcall(hash, rb_intern("<<"), 1, INT2NUM(2));
-    hash = rb_funcall(hash, rb_intern("^"), 1,
-                      rb_funcall(elem, rb_intern("hash"), 0));
+    h = rb_hash_uint(h, NUM2LONG(rb_funcall(elem, hash_sym, 0)));
   }
+  h = rb_hash_end(h);
 
-  return hash;
+  return INT2FIX(h);
 }
 
 /*
