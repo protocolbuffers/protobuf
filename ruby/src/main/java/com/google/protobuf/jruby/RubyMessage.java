@@ -41,6 +41,8 @@ import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.jruby.util.ByteList;
 
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -164,8 +166,21 @@ public class RubyMessage extends RubyObject {
      */
     @JRubyMethod
     public IRubyObject hash(ThreadContext context) {
-        int hashCode = System.identityHashCode(this);
-        return context.runtime.newFixnum(hashCode);
+        try {
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            for (RubyMap map : maps.values()) {
+                digest.update((byte) map.hashCode());
+            }
+            for (RubyRepeatedField repeatedField : repeatedFields.values()) {
+                digest.update((byte) repeatedFields.hashCode());
+            }
+            for (IRubyObject field : fields.values()) {
+                digest.update((byte) field.hashCode());
+            }
+            return context.runtime.newString(new ByteList(digest.digest()));
+        } catch (NoSuchAlgorithmException ignore) {
+            return context.runtime.newFixnum(System.identityHashCode(this));
+        }
     }
 
     /*
