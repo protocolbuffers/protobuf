@@ -115,6 +115,7 @@ nobase_include_HEADERS =                                        \
   google/protobuf/generated_enum_util.h                         \
   google/protobuf/generated_message_reflection.h                \
   google/protobuf/generated_message_util.h                      \
+  google/protobuf/has_bits.h                                    \
   google/protobuf/map_entry.h                                   \
   google/protobuf/map_entry_lite.h                              \
   google/protobuf/map_field.h                                   \
