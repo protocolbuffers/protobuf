@@ -30,10 +30,14 @@
 
 goog.require('goog.testing.asserts');
 goog.require('goog.userAgent');
+
+// CommonJS-LoadFromFile: testbinary_pb proto.jspb.test
 goog.require('proto.jspb.test.MapValueEnum');
 goog.require('proto.jspb.test.MapValueMessage');
-goog.require('proto.jspb.test.MapValueMessageNoBinary');
 goog.require('proto.jspb.test.TestMapFields');
+
+// CommonJS-LoadFromFile: test_pb proto.jspb.test
+goog.require('proto.jspb.test.MapValueMessageNoBinary');
 goog.require('proto.jspb.test.TestMapFieldsNoBinary');
 
 /**
@@ -258,64 +262,6 @@ function makeTests(msgInfo, submessageCtor, suffix) {
     });
   }
 
-
-  /**
-   * Tests serialization and deserialization in JSPB format.
-   */
-  it('testJSPBFormat' + suffix, function() {
-    var msg = new msgInfo.constructor();
-    fillMapFields(msg);
-    var serialized = msg.serialize();
-    var decoded = msgInfo.deserialize(serialized);
-    checkMapFields(decoded);
-  });
-
-  /**
-   * Tests serialization and deserialization in JSPB format, when there is
-   * a submessage that also contains map entries.  This tests recursive
-   * sync.
-   */
-  it('testJSPBFormatNested' + suffix, function() {
-    var submsg = new msgInfo.constructor();
-    var mapValue = new msgInfo.constructor();
-    var msg = new msgInfo.constructor();
-
-    msg.getMapStringTestmapfieldsMap().set('test', mapValue);
-    msg.setTestMapFields(submsg);
-
-    fillMapFields(submsg);
-    fillMapFields(msg);
-    fillMapFields(mapValue);
-
-    var serialized = msg.serialize();
-
-    var decoded = msgInfo.deserialize(serialized);
-    checkMapFields(decoded);
-
-    var decodedSubmsg = decoded.getTestMapFields();
-    assertNotNull(decodedSubmsg);
-    checkMapFields(decodedSubmsg);
-
-    var decodedMapValue = decoded.getMapStringTestmapfieldsMap().get('test');
-    assertNotNull(decodedMapValue);
-    checkMapFields(decodedMapValue);
-  });
-
-  /**
-   * Tests toObject()/fromObject().
-   */
-  it('testToFromObject' + suffix, function() {
-    var msg = new msgInfo.constructor();
-    fillMapFields(msg);
-    var obj = msg.toObject();
-    var decoded = msgInfo.fromObject(obj);
-    checkMapFields(decoded);
-    obj = msgInfo.deserialize(msg.serialize()).toObject();
-    decoded = msgInfo.fromObject(obj);
-    checkMapFields(decoded);
-  });
-
-
   /**
    * Exercises the lazy map<->underlying array sync.
    */
@@ -346,14 +292,10 @@ function makeTests(msgInfo, submessageCtor, suffix) {
 describe('mapsTest', function() {
   makeTests({
     constructor: proto.jspb.test.TestMapFields,
-    fromObject: proto.jspb.test.TestMapFields.fromObject,
-    deserialize: proto.jspb.test.TestMapFields.deserialize,
     deserializeBinary: proto.jspb.test.TestMapFields.deserializeBinary
   }, proto.jspb.test.MapValueMessage, "_Binary");
   makeTests({
     constructor: proto.jspb.test.TestMapFieldsNoBinary,
-    fromObject: proto.jspb.test.TestMapFieldsNoBinary.fromObject,
-    deserialize: proto.jspb.test.TestMapFieldsNoBinary.deserialize,
     deserializeBinary: null
   }, proto.jspb.test.MapValueMessageNoBinary, "_NoBinary");
 });
