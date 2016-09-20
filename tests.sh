@@ -35,7 +35,9 @@ internal_build_cpp() {
 build_cpp() {
   internal_build_cpp
   make check -j2
-  cd conformance && make test_cpp && cd ..
+  pushd conformance
+  make test_cpp
+  popd
 
   # Verify benchmarking code can build successfully.
   git submodule init

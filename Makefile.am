@@ -617,6 +617,7 @@ python_EXTRA_DIST=                                                           \
   python/google/protobuf/internal/symbol_database_test.py                    \
   python/google/protobuf/internal/test_bad_identifiers.proto                 \
   python/google/protobuf/internal/test_util.py                               \
+  python/google/protobuf/internal/testing_refleaks.py                        \
   python/google/protobuf/internal/text_encoding_test.py                      \
   python/google/protobuf/internal/text_format_test.py                        \
   python/google/protobuf/internal/type_checkers.py                           \
@@ -648,6 +649,8 @@ python_EXTRA_DIST=                                                           \
   python/google/protobuf/pyext/map_container.h                               \
   python/google/protobuf/pyext/message.cc                                    \
   python/google/protobuf/pyext/message.h                                     \
+  python/google/protobuf/pyext/message_factory.cc                            \
+  python/google/protobuf/pyext/message_factory.h                             \
   python/google/protobuf/pyext/message_module.cc                             \
   python/google/protobuf/pyext/proto2_api_test.proto                         \
   python/google/protobuf/pyext/python.proto                                  \
@@ -748,6 +751,7 @@ js_EXTRA_DIST=                              \
   js/gulpfile.js                            \
   js/jasmine.json                           \
   js/map.js                                 \
+  js/maps_test.js                           \
   js/message.js                             \
   js/message_test.js                        \
   js/node_loader.js                         \
