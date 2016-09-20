@@ -44,11 +44,11 @@ if RUBY_PLATFORM == "java"
     raise ArgumentError, "maven needs to be installed"
   end
   task :clean do
-    system("mvn clean")
+    system("mvn --batch-mode clean")
   end
 
   task :compile do
-    system("mvn package")
+    system("mvn --batch-mode package")
   end
 else
   Rake::ExtensionTask.new("protobuf_c", spec) do |ext|
