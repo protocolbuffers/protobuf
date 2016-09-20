@@ -170,6 +170,7 @@ class ConformanceTestSuite {
                                          const conformance::TestAllTypes& input,
                                          const string& equivalent_text_format);
   void RunValidProtobufTest(const string& test_name,
+                            ConformanceLevel level,
                             const conformance::TestAllTypes& input,
                             const string& equivalent_text_format);
 

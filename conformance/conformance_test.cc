@@ -286,14 +286,14 @@ void ConformanceTestSuite::RunValidInputTest(
 
   switch (response.result_case()) {
     case ConformanceResponse::RESULT_NOT_SET:
-      ReportFailure(test_name, request, response,
+      ReportFailure(test_name, level, request, response,
                     "Response didn't have any field in the Response.");
       return;
 
     case ConformanceResponse::kParseError:
     case ConformanceResponse::kRuntimeError:
     case ConformanceResponse::kSerializeError:
-      ReportFailure(test_name, request, response,
+      ReportFailure(test_name, level, request, response,
                     "Failed to parse input or produce output.");
       return;
 
@@ -423,12 +423,12 @@ void ConformanceTestSuite::RunValidJsonTestWithProtobufInput(
 }
 
 void ConformanceTestSuite::RunValidProtobufTest(
-    const string& test_name, const TestAllTypes& input,
+    const string& test_name, ConformanceLevel level, const TestAllTypes& input,
     const string& equivalent_text_format) {
-  RunValidInputTest("ProtobufInput." + test_name + ".ProtobufOutput",
+  RunValidInputTest("ProtobufInput." + test_name + ".ProtobufOutput", level,
                     input.SerializeAsString(), conformance::PROTOBUF,
                     equivalent_text_format, conformance::PROTOBUF);
-  RunValidInputTest("ProtobufInput." + test_name + ".JsonOutput",
+  RunValidInputTest("ProtobufInput." + test_name + ".JsonOutput", level,
                     input.SerializeAsString(), conformance::PROTOBUF,
                     equivalent_text_format, conformance::JSON);
 }
@@ -723,7 +723,7 @@ bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
         FIELD_name12: 12
       )");
   RunValidJsonTest(
-      "FieldNameWithDoubleUnderscores",
+      "FieldNameWithDoubleUnderscores", RECOMMENDED,
       R"({
         "fieldName13": 13,
         "fieldName14": 14,
@@ -790,7 +790,7 @@ bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
       "fieldname1: 1");
   // String ends with escape character.
   ExpectParseFailureForJson(
-      "StringEndsWithEscapeChar",
+      "StringEndsWithEscapeChar", RECOMMENDED,
       "{\"optionalString\": \"abc\\");
   // Field names must be quoted (or it's not valid JSON).
   ExpectParseFailureForJson(
@@ -801,13 +801,13 @@ bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
       "TrailingCommaInAnObject", RECOMMENDED,
       R"({"fieldname1":1,})");
   ExpectParseFailureForJson(
-      "TrailingCommaInAnObjectWithSpace",
+      "TrailingCommaInAnObjectWithSpace", RECOMMENDED,
       R"({"fieldname1":1 ,})");
   ExpectParseFailureForJson(
-      "TrailingCommaInAnObjectWithSpaceCommaSpace",
+      "TrailingCommaInAnObjectWithSpaceCommaSpace", RECOMMENDED,
       R"({"fieldname1":1 , })");
   ExpectParseFailureForJson(
-      "TrailingCommaInAnObjectWithNewlines",
+      "TrailingCommaInAnObjectWithNewlines", RECOMMENDED,
       R"({
         "fieldname1":1,
       })");
@@ -820,28 +820,28 @@ bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
       })");
   // JSON spec says whitespace doesn't matter, so try a few spacings to be sure.
   RunValidJsonTest(
-      "OneLineNoSpaces",
+      "OneLineNoSpaces", RECOMMENDED,
       "{\"optionalInt32\":1,\"optionalInt64\":2}",
       R"(
         optional_int32: 1
         optional_int64: 2
       )");
   RunValidJsonTest(
-      "OneLineWithSpaces",
+      "OneLineWithSpaces", RECOMMENDED,
       "{ \"optionalInt32\" : 1 , \"optionalInt64\" : 2 }",
       R"(
         optional_int32: 1
         optional_int64: 2
       )");
   RunValidJsonTest(
-      "MultilineNoSpaces",
+      "MultilineNoSpaces", RECOMMENDED,
       "{\n\"optionalInt32\"\n:\n1\n,\n\"optionalInt64\"\n:\n2\n}",
       R"(
         optional_int32: 1
         optional_int64: 2
       )");
   RunValidJsonTest(
-      "MultilineWithSpaces",
+      "MultilineWithSpaces", RECOMMENDED,
       "{\n  \"optionalInt32\"  :  1\n  ,\n  \"optionalInt64\"  :  2\n}\n",
       R"(
         optional_int32: 1
@@ -849,10 +849,10 @@ bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
       )");
   // Missing comma between key/value pairs.
   ExpectParseFailureForJson(
-      "MissingCommaOneLine",
+      "MissingCommaOneLine", RECOMMENDED,
       "{ \"optionalInt32\": 1 \"optionalInt64\": 2 }");
   ExpectParseFailureForJson(
-      "MissingCommaMultiline",
+      "MissingCommaMultiline", RECOMMENDED,
       "{\n  \"optionalInt32\": 1\n  \"optionalInt64\": 2\n}");
   // Duplicated field names are not allowed.
   ExpectParseFailureForJson(
@@ -919,7 +919,7 @@ bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
             value.isMember("FIELDName12");
       });
   RunValidJsonTestWithValidator(
-      "FieldNameWithDoubleUnderscores",
+      "FieldNameWithDoubleUnderscores", RECOMMENDED,
       R"({
         "fieldName13": 13,
         "fieldName14": 14,
@@ -1375,58 +1375,58 @@ bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
     TestAllTypes message;
     message.set_oneof_uint32(0);
     RunValidProtobufTest(
-        "OneofZeroUint32", message, "oneof_uint32: 0");
+        "OneofZeroUint32", RECOMMENDED, message, "oneof_uint32: 0");
     message.mutable_oneof_nested_message()->set_a(0);
     RunValidProtobufTest(
-        "OneofZeroMessage", message, "oneof_nested_message: {}");
+        "OneofZeroMessage", RECOMMENDED, message, "oneof_nested_message: {}");
     message.set_oneof_string("");
     RunValidProtobufTest(
-        "OneofZeroString", message, "oneof_string: \"\"");
+        "OneofZeroString", RECOMMENDED, message, "oneof_string: \"\"");
     message.set_oneof_bytes("");
     RunValidProtobufTest(
-        "OneofZeroBytes", message, "oneof_bytes: \"\"");
+        "OneofZeroBytes", RECOMMENDED, message, "oneof_bytes: \"\"");
     message.set_oneof_bool(false);
     RunValidProtobufTest(
-        "OneofZeroBool", message, "oneof_bool: false");
+        "OneofZeroBool", RECOMMENDED, message, "oneof_bool: false");
     message.set_oneof_uint64(0);
     RunValidProtobufTest(
-        "OneofZeroUint64", message, "oneof_uint64: 0");
+        "OneofZeroUint64", RECOMMENDED, message, "oneof_uint64: 0");
     message.set_oneof_float(0.0f);
     RunValidProtobufTest(
-        "OneofZeroFloat", message, "oneof_float: 0");
+        "OneofZeroFloat", RECOMMENDED, message, "oneof_float: 0");
     message.set_oneof_double(0.0);
     RunValidProtobufTest(
-        "OneofZeroDouble", message, "oneof_double: 0");
+        "OneofZeroDouble", RECOMMENDED, message, "oneof_double: 0");
     message.set_oneof_enum(TestAllTypes::FOO);
     RunValidProtobufTest(
-        "OneofZeroEnum", message, "oneof_enum: FOO");
+        "OneofZeroEnum", RECOMMENDED, message, "oneof_enum: FOO");
   }
   RunValidJsonTest(
-      "OneofZeroUint32",
+      "OneofZeroUint32", RECOMMENDED,
       R"({"oneofUint32": 0})", "oneof_uint32: 0");
   RunValidJsonTest(
-      "OneofZeroMessage",
+      "OneofZeroMessage", RECOMMENDED,
       R"({"oneofNestedMessage": {}})", "oneof_nested_message: {}");
   RunValidJsonTest(
-      "OneofZeroString",
+      "OneofZeroString", RECOMMENDED,
       R"({"oneofString": ""})", "oneof_string: \"\"");
   RunValidJsonTest(
-      "OneofZeroBytes",
+      "OneofZeroBytes", RECOMMENDED,
       R"({"oneofBytes": ""})", "oneof_bytes: \"\"");
   RunValidJsonTest(
-      "OneofZeroBool",
+      "OneofZeroBool", RECOMMENDED,
       R"({"oneofBool": false})", "oneof_bool: false");
   RunValidJsonTest(
-      "OneofZeroUint64",
+      "OneofZeroUint64", RECOMMENDED,
       R"({"oneofUint64": 0})", "oneof_uint64: 0");
   RunValidJsonTest(
-      "OneofZeroFloat",
+      "OneofZeroFloat", RECOMMENDED,
       R"({"oneofFloat": 0.0})", "oneof_float: 0");
   RunValidJsonTest(
-      "OneofZeroDouble",
+      "OneofZeroDouble", RECOMMENDED,
       R"({"oneofDouble": 0.0})", "oneof_double: 0");
   RunValidJsonTest(
-      "OneofZeroEnum",
+      "OneofZeroEnum", RECOMMENDED,
       R"({"oneofEnum":"FOO"})", "oneof_enum: FOO");
 
   // Repeated fields.
@@ -1485,13 +1485,13 @@ bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
       "RepeatedFieldTrailingComma", RECOMMENDED,
       R"({"repeatedInt32": [1, 2, 3, 4,]})");
   ExpectParseFailureForJson(
-      "RepeatedFieldTrailingCommaWithSpace",
+      "RepeatedFieldTrailingCommaWithSpace", RECOMMENDED,
       "{\"repeatedInt32\": [1, 2, 3, 4 ,]}");
   ExpectParseFailureForJson(
-      "RepeatedFieldTrailingCommaWithSpaceCommaSpace",
+      "RepeatedFieldTrailingCommaWithSpaceCommaSpace", RECOMMENDED,
       "{\"repeatedInt32\": [1, 2, 3, 4 , ]}");
   ExpectParseFailureForJson(
-      "RepeatedFieldTrailingCommaWithNewlines",
+      "RepeatedFieldTrailingCommaWithNewlines", RECOMMENDED,
       "{\"repeatedInt32\": [\n  1,\n  2,\n  3,\n  4,\n]}");
 
   // Map fields.
@@ -1614,13 +1614,13 @@ bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
   // http://www.rfc-editor.org/rfc/rfc7159.txt says strings have to use double
   // quotes.
   ExpectParseFailureForJson(
-      "StringFieldSingleQuoteKey",
+      "StringFieldSingleQuoteKey", RECOMMENDED,
       R"({'optionalString': "Hello world!"})");
   ExpectParseFailureForJson(
-      "StringFieldSingleQuoteValue",
+      "StringFieldSingleQuoteValue", RECOMMENDED,
       R"({"optionalString": 'Hello world!'})");
   ExpectParseFailureForJson(
-      "StringFieldSingleQuoteBoth",
+      "StringFieldSingleQuoteBoth", RECOMMENDED,
       R"({'optionalString': 'Hello world!'})");
 
   // Wrapper types.
