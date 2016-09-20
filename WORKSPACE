@@ -44,7 +44,7 @@ bind(
 
 maven_jar(
     name = "gson_maven",
-    artifact = "com.google.code.gson:gson:2.3",
+    artifact = "com.google.code.gson:gson:2.7",
 )
 
 bind(
