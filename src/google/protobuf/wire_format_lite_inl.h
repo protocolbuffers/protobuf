@@ -251,7 +251,7 @@ inline bool WireFormatLite::ReadRepeatedFixedSizePrimitive(
     uint32 tag,
     io::CodedInputStream* input,
     RepeatedField<CType>* values) {
-  GOOGLE_DCHECK_EQ(UInt32Size(tag), tag_size);
+  GOOGLE_DCHECK_EQ(UInt32Size(tag), static_cast<size_t>(tag_size));
   CType value;
   if (!ReadPrimitive<CType, DeclaredType>(input, &value))
     return false;
