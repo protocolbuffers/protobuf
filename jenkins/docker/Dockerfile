@@ -115,7 +115,7 @@ RUN cd /tmp && \
   cd protobuf && \
   ./autogen.sh && \
   ./configure && \
-  make -j6 && \
+  make -j7 && \
   cd java && \
   $MVN install dependency:go-offline -Dmaven.repo.local=$MAVEN_REPO && \
   cd ../javanano && \
