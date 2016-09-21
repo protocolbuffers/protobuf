@@ -23,9 +23,9 @@ namespace Google.Protobuf.WellKnownTypes {
       byte[] descriptorData = global::System.Convert.FromBase64String(
           string.Concat(
             "CiBnb29nbGUvcHJvdG9idWYvZmllbGRfbWFzay5wcm90bxIPZ29vZ2xlLnBy",
-            "b3RvYnVmIhoKCUZpZWxkTWFzaxINCgVwYXRocxgBIAMoCUJRChNjb20uZ29v",
-            "Z2xlLnByb3RvYnVmQg5GaWVsZE1hc2tQcm90b1ABoAEBogIDR1BCqgIeR29v",
-            "Z2xlLlByb3RvYnVmLldlbGxLbm93blR5cGVzYgZwcm90bzM="));
+            "b3RvYnVmIhoKCUZpZWxkTWFzaxINCgVwYXRocxgBIAMoCUJOChNjb20uZ29v",
+            "Z2xlLnByb3RvYnVmQg5GaWVsZE1hc2tQcm90b1ABogIDR1BCqgIeR29vZ2xl",
+            "LlByb3RvYnVmLldlbGxLbm93blR5cGVzYgZwcm90bzM="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { },
           new pbr::GeneratedClrTypeInfo(null, new pbr::GeneratedClrTypeInfo[] {
@@ -79,7 +79,7 @@ namespace Google.Protobuf.WellKnownTypes {
   ///      }
   ///
   ///  A repeated field is not allowed except at the last position of a
-  ///  field mask.
+  ///  paths string.
   ///
   ///  If a FieldMask object is not present in a get operation, the
   ///  operation applies to all fields (as if a FieldMask of all fields
@@ -106,8 +106,8 @@ namespace Google.Protobuf.WellKnownTypes {
   ///
   ///  If a repeated field is specified for an update operation, the existing
   ///  repeated values in the target resource will be overwritten by the new values.
-  ///  Note that a repeated field is only allowed in the last position of a field
-  ///  mask.
+  ///  Note that a repeated field is only allowed in the last position of a `paths`
+  ///  string.
   ///
   ///  If a sub-message is specified in the last position of the field mask for an
   ///  update operation, then the existing sub-message in the target resource is
