@@ -177,7 +177,7 @@ nobase_include_HEADERS =                                        \
 lib_LTLIBRARIES = libprotobuf-lite.la libprotobuf.la libprotoc.la
 
 libprotobuf_lite_la_LIBADD = $(PTHREAD_LIBS)
-libprotobuf_lite_la_LDFLAGS = -version-info 10:0:0 -export-dynamic -no-undefined
+libprotobuf_lite_la_LDFLAGS = -version-info 11:0:0 -export-dynamic -no-undefined
 libprotobuf_lite_la_SOURCES =                                  \
   google/protobuf/stubs/atomicops_internals_x86_gcc.cc         \
   google/protobuf/stubs/atomicops_internals_x86_msvc.cc        \

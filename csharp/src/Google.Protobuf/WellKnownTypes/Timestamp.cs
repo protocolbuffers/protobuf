@@ -24,10 +24,10 @@ namespace Google.Protobuf.WellKnownTypes {
           string.Concat(
             "Ch9nb29nbGUvcHJvdG9idWYvdGltZXN0YW1wLnByb3RvEg9nb29nbGUucHJv",
             "dG9idWYiKwoJVGltZXN0YW1wEg8KB3NlY29uZHMYASABKAMSDQoFbmFub3MY",
-            "AiABKAVCgQEKE2NvbS5nb29nbGUucHJvdG9idWZCDlRpbWVzdGFtcFByb3Rv",
-            "UAFaK2dpdGh1Yi5jb20vZ29sYW5nL3Byb3RvYnVmL3B0eXBlcy90aW1lc3Rh",
-            "bXCgAQH4AQGiAgNHUEKqAh5Hb29nbGUuUHJvdG9idWYuV2VsbEtub3duVHlw",
-            "ZXNiBnByb3RvMw=="));
+            "AiABKAVCfgoTY29tLmdvb2dsZS5wcm90b2J1ZkIOVGltZXN0YW1wUHJvdG9Q",
+            "AVorZ2l0aHViLmNvbS9nb2xhbmcvcHJvdG9idWYvcHR5cGVzL3RpbWVzdGFt",
+            "cPgBAaICA0dQQqoCHkdvb2dsZS5Qcm90b2J1Zi5XZWxsS25vd25UeXBlc2IG",
+            "cHJvdG8z"));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { },
           new pbr::GeneratedClrTypeInfo(null, new pbr::GeneratedClrTypeInfo[] {
@@ -87,10 +87,8 @@ namespace Google.Protobuf.WellKnownTypes {
   ///
   ///  Example 5: Compute Timestamp from current time in Python.
   ///
-  ///      now = time.time()
-  ///      seconds = int(now)
-  ///      nanos = int((now - seconds) * 10**9)
-  ///      timestamp = Timestamp(seconds=seconds, nanos=nanos)
+  ///      timestamp = Timestamp()
+  ///      timestamp.GetCurrentTime()
   /// </summary>
   public sealed partial class Timestamp : pb::IMessage<Timestamp> {
     private static readonly pb::MessageParser<Timestamp> _parser = new pb::MessageParser<Timestamp>(() => new Timestamp());
@@ -130,7 +128,7 @@ namespace Google.Protobuf.WellKnownTypes {
     private long seconds_;
     /// <summary>
     ///  Represents seconds of UTC time since Unix epoch
-    ///  1970-01-01T00:00:00Z. Must be from from 0001-01-01T00:00:00Z to
+    ///  1970-01-01T00:00:00Z. Must be from 0001-01-01T00:00:00Z to
     ///  9999-12-31T23:59:59Z inclusive.
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
