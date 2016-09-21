@@ -2850,13 +2850,9 @@ void Generator::GenerateClassDeserializeBinaryField(
     }
 
     if (field->is_repeated() && !field->is_packed()) {
-      // Repeated fields receive a |value| one at at a time; append to array
-      // returned by get$name$(). Annoyingly, we have to call 'set' after
-      // changing the array.
-      printer->Print("      msg.get$name$().push(value);\n", "name",
-                     JSGetterName(options, field));
-      printer->Print("      msg.set$name$(msg.get$name$());\n", "name",
-                     JSGetterName(options, field));
+      printer->Print(
+          "      msg.add$name$(value);\n", "name",
+          JSGetterName(options, field, BYTES_DEFAULT, /* drop_list = */ true));
     } else {
       // Singular fields, and packed repeated fields, receive a |value| either
       // as the field's value or as the array of all the field's values; set
