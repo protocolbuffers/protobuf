@@ -276,6 +276,6 @@ test_python_cpp: protoc_middleman conformance-test-runner
 if OBJC_CONFORMANCE_TEST
 
 test_objc: protoc_middleman conformance-test-runner conformance-objc
-	./conformance-test-runner --enforce_recomemnded --failure_list failure_list_objc.txt ./conformance-objc
+	./conformance-test-runner --enforce_recommended --failure_list failure_list_objc.txt ./conformance-objc
 
 endif
