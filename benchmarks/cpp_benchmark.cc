@@ -89,10 +89,31 @@ class WrappingCounter {
 };
 
 template <class T>
-class ArenaParseFixture : public Fixture {
+class ParseNewFixture : public Fixture {
  public:
-  ArenaParseFixture(const BenchmarkDataset& dataset)
-      : Fixture(dataset, "_parse_arena") {}
+  ParseNewFixture(const BenchmarkDataset& dataset)
+      : Fixture(dataset, "_parse_new") {}
+
+  virtual void BenchmarkCase(benchmark::State& state) {
+    WrappingCounter i(payloads_.size());
+    size_t total = 0;
+
+    while (state.KeepRunning()) {
+      T m;
+      const std::string& payload = payloads_[i.Next()];
+      total += payload.size();
+      m.ParseFromString(payload);
+    }
+
+    state.SetBytesProcessed(total);
+  }
+};
+
+template <class T>
+class ParseNewArenaFixture : public Fixture {
+ public:
+  ParseNewArenaFixture(const BenchmarkDataset& dataset)
+      : Fixture(dataset, "_parse_newarena") {}
 
   virtual void BenchmarkCase(benchmark::State& state) {
     WrappingCounter i(payloads_.size());
@@ -110,36 +131,37 @@ class ArenaParseFixture : public Fixture {
   }
 };
 
-class NoArenaParseFixture : public Fixture {
+template <class T>
+class ParseReuseFixture : public Fixture {
  public:
-  NoArenaParseFixture(const BenchmarkDataset& dataset)
-      : Fixture(dataset, "_parse_noarena") {}
+  ParseReuseFixture(const BenchmarkDataset& dataset)
+      : Fixture(dataset, "_parse_reuse") {}
 
   virtual void BenchmarkCase(benchmark::State& state) {
-    Message* m = prototype_->New();
+    T m;
     WrappingCounter i(payloads_.size());
     size_t total = 0;
 
     while (state.KeepRunning()) {
       const std::string& payload = payloads_[i.Next()];
       total += payload.size();
-      m->ParseFromString(payload);
+      m.ParseFromString(payload);
     }
 
     state.SetBytesProcessed(total);
-    delete m;
   }
 };
 
+template <class T>
 class SerializeFixture : public Fixture {
  public:
   SerializeFixture(const BenchmarkDataset& dataset)
       : Fixture(dataset, "_serialize") {}
 
   virtual void BenchmarkCase(benchmark::State& state) {
-    std::vector<Message*> messages;
+    std::vector<T*> messages;
     for (size_t i = 0; i < payloads_.size(); i++) {
-      messages.push_back(prototype_->New());
+      messages.push_back(new T);
       messages.back()->ParseFromString(payloads_[i]);
     }
 
@@ -171,30 +193,32 @@ std::string ReadFile(const std::string& name) {
                      std::istreambuf_iterator<char>());
 }
 
+template <class T>
+void RegisterBenchmarksForType(const BenchmarkDataset& dataset) {
+  ::benchmark::internal::RegisterBenchmarkInternal(
+      new ParseNewFixture<T>(dataset));
+  ::benchmark::internal::RegisterBenchmarkInternal(
+      new ParseReuseFixture<T>(dataset));
+  ::benchmark::internal::RegisterBenchmarkInternal(
+      new ParseNewArenaFixture<T>(dataset));
+  ::benchmark::internal::RegisterBenchmarkInternal(
+      new SerializeFixture<T>(dataset));
+}
+
 void RegisterBenchmarks(const std::string& dataset_bytes) {
   BenchmarkDataset dataset;
   GOOGLE_CHECK(dataset.ParseFromString(dataset_bytes));
 
-  ::benchmark::internal::RegisterBenchmarkInternal(
-      new NoArenaParseFixture(dataset));
-
-  // Arena requires compile-time symbol to create message.
   if (dataset.message_name() == "benchmarks.proto3.GoogleMessage1") {
-    ::benchmark::internal::RegisterBenchmarkInternal(
-        new ArenaParseFixture<benchmarks::proto3::GoogleMessage1>(dataset));
+    RegisterBenchmarksForType<benchmarks::proto3::GoogleMessage1>(dataset);
   } else if (dataset.message_name() == "benchmarks.proto2.GoogleMessage1") {
-    ::benchmark::internal::RegisterBenchmarkInternal(
-        new ArenaParseFixture<benchmarks::proto2::GoogleMessage1>(dataset));
+    RegisterBenchmarksForType<benchmarks::proto2::GoogleMessage1>(dataset);
   } else if (dataset.message_name() == "benchmarks.proto2.GoogleMessage2") {
-    ::benchmark::internal::RegisterBenchmarkInternal(
-        new ArenaParseFixture<benchmarks::proto2::GoogleMessage2>(dataset));
+    RegisterBenchmarksForType<benchmarks::proto2::GoogleMessage2>(dataset);
   } else {
     std::cerr << "Unknown message type: " << dataset.message_name();
     exit(1);
   }
-
-  ::benchmark::internal::RegisterBenchmarkInternal(
-      new SerializeFixture(dataset));
 }
 
 int main(int argc, char *argv[]) {
