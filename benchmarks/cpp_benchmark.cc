@@ -156,31 +156,35 @@ template <class T>
 class SerializeFixture : public Fixture {
  public:
   SerializeFixture(const BenchmarkDataset& dataset)
-      : Fixture(dataset, "_serialize") {}
+      : Fixture(dataset, "_serialize") {
+    for (size_t i = 0; i < payloads_.size(); i++) {
+      message_.push_back(new T);
+      message_.back()->ParseFromString(payloads_[i]);
+    }
+  }
+
+  ~SerializeFixture() {
+    for (size_t i = 0; i < message_.size(); i++) {
+      delete message_[i];
+    }
+  }
 
   virtual void BenchmarkCase(benchmark::State& state) {
-    std::vector<T*> messages;
-    for (size_t i = 0; i < payloads_.size(); i++) {
-      messages.push_back(new T);
-      messages.back()->ParseFromString(payloads_[i]);
-    }
-
     size_t total = 0;
     std::string str;
     WrappingCounter i(payloads_.size());
 
     while (state.KeepRunning()) {
       str.clear();
-      messages[i.Next()]->SerializeToString(&str);
+      message_[i.Next()]->SerializeToString(&str);
       total += str.size();
     }
 
     state.SetBytesProcessed(total);
-
-    for (size_t i = 0; i < messages.size(); i++) {
-      delete messages[i];
-    }
   }
+
+ private:
+  std::vector<T*> message_;
 };
 
 std::string ReadFile(const std::string& name) {
