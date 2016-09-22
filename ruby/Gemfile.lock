@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    google-protobuf (3.1.0.alpha.1.0)
+    google-protobuf (3.1.0)
 
 GEM
   remote: https://rubygems.org/
