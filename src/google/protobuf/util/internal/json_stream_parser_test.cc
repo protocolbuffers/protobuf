@@ -318,15 +318,15 @@ TEST_F(JsonStreamParserTest, ObjectKeyTypes) {
 // - array containing array, object, values (true, false, null, num, string)
 TEST_F(JsonStreamParserTest, ArrayValues) {
   StringPiece str =
-      "[true, false, null, 'a string', \"another string\", [22, -127, 45.3, "
+      "[true, false, null, 'a', \"an\", [22, -127, 45.3, "
       "-1056.4, 11779497823553162765], {'key': true}]";
   for (int i = 0; i <= str.length(); ++i) {
     ow_.StartList("")
         ->RenderBool("", true)
         ->RenderBool("", false)
         ->RenderNull("")
-        ->RenderString("", "a string")
-        ->RenderString("", "another string")
+        ->RenderString("", "a")
+        ->RenderString("", "an")
         ->StartList("")
         ->RenderUint64("", 22)
         ->RenderInt64("", -127)
