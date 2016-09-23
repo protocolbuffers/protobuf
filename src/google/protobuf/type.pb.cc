@@ -173,10 +173,15 @@ void protobuf_RegisterTypes(const ::std::string&) {
 }  // namespace
 
 void protobuf_ShutdownFile_google_2fprotobuf_2ftype_2eproto() {
+  Type::default_instance_.Shutdown();
   delete Type_reflection_;
+  Field::default_instance_.Shutdown();
   delete Field_reflection_;
+  Enum::default_instance_.Shutdown();
   delete Enum_reflection_;
+  EnumValue::default_instance_.Shutdown();
   delete EnumValue_reflection_;
+  Option::default_instance_.Shutdown();
   delete Option_reflection_;
 }
 
@@ -390,7 +395,9 @@ void Type::SharedDtor() {
   }
 
   name_.Destroy(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), arena);
-  delete source_context_;
+  if (this != &default_instance_.get()) {
+    delete source_context_;
+  }
 }
 
 void Type::ArenaDtor(void* object) {
@@ -2295,7 +2302,9 @@ void Enum::SharedDtor() {
   }
 
   name_.Destroy(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), arena);
-  delete source_context_;
+  if (this != &default_instance_.get()) {
+    delete source_context_;
+  }
 }
 
 void Enum::ArenaDtor(void* object) {
@@ -3424,7 +3433,9 @@ void Option::SharedDtor() {
   }
 
   name_.Destroy(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), arena);
-  delete value_;
+  if (this != &default_instance_.get()) {
+    delete value_;
+  }
 }
 
 void Option::ArenaDtor(void* object) {

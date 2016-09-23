@@ -84,6 +84,12 @@ class ExplicitlyConstructed {
   }
 
   bool IsInitialized() { return init_; }
+  void Shutdown() {
+    if (init_) {
+      init_ = false;
+      get_mutable()->~T();
+    }
+  }
 
   const T& get() const { return reinterpret_cast<const T&>(union_); }
   T* get_mutable() { return reinterpret_cast<T*>(&union_); }
