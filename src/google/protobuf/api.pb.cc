@@ -121,11 +121,11 @@ void protobuf_RegisterTypes(const ::std::string&) {
 }  // namespace
 
 void protobuf_ShutdownFile_google_2fprotobuf_2fapi_2eproto() {
-  Api::default_instance_.Shutdown();
+  Api_default_instance_.Shutdown();
   delete Api_reflection_;
-  Method::default_instance_.Shutdown();
+  Method_default_instance_.Shutdown();
   delete Method_reflection_;
-  Mixin::default_instance_.Shutdown();
+  Mixin_default_instance_.Shutdown();
   delete Mixin_reflection_;
 }
 
@@ -135,14 +135,14 @@ void protobuf_InitDefaults_google_2fprotobuf_2fapi_2eproto_impl() {
   ::google::protobuf::protobuf_InitDefaults_google_2fprotobuf_2fsource_5fcontext_2eproto();
   ::google::protobuf::protobuf_InitDefaults_google_2fprotobuf_2ftype_2eproto();
   ::google::protobuf::internal::GetEmptyString();
-  Api::default_instance_.DefaultConstruct();
+  Api_default_instance_.DefaultConstruct();
   ::google::protobuf::internal::GetEmptyString();
-  Method::default_instance_.DefaultConstruct();
+  Method_default_instance_.DefaultConstruct();
   ::google::protobuf::internal::GetEmptyString();
-  Mixin::default_instance_.DefaultConstruct();
-  Api::default_instance_.get_mutable()->InitAsDefaultInstance();
-  Method::default_instance_.get_mutable()->InitAsDefaultInstance();
-  Mixin::default_instance_.get_mutable()->InitAsDefaultInstance();
+  Mixin_default_instance_.DefaultConstruct();
+  Api_default_instance_.get_mutable()->InitAsDefaultInstance();
+  Method_default_instance_.get_mutable()->InitAsDefaultInstance();
+  Mixin_default_instance_.get_mutable()->InitAsDefaultInstance();
 }
 
 GOOGLE_PROTOBUF_DECLARE_ONCE(protobuf_InitDefaults_google_2fprotobuf_2fapi_2eproto_once_);
@@ -250,7 +250,7 @@ Api::~Api() {
 void Api::SharedDtor() {
   name_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   version_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  if (this != &default_instance_.get()) {
+  if (this != &Api_default_instance_.get()) {
     delete source_context_;
   }
 }
@@ -270,7 +270,7 @@ const Api& Api::default_instance() {
   return *internal_default_instance();
 }
 
-::google::protobuf::internal::ExplicitlyConstructed<Api> Api::default_instance_;
+::google::protobuf::internal::ExplicitlyConstructed<Api> Api_default_instance_;
 
 Api* Api::New(::google::protobuf::Arena* arena) const {
   Api* n = new Api;
@@ -948,6 +948,9 @@ void Api::set_syntax(::google::protobuf::Syntax value) {
   // @@protoc_insertion_point(field_set:google.protobuf.Api.syntax)
 }
 
+inline const Api* Api::internal_default_instance() {
+  return &Api_default_instance_.get();
+}
 #endif  // PROTOBUF_INLINE_NOT_IN_HEADERS
 
 // ===================================================================
@@ -1015,7 +1018,7 @@ const Method& Method::default_instance() {
   return *internal_default_instance();
 }
 
-::google::protobuf::internal::ExplicitlyConstructed<Method> Method::default_instance_;
+::google::protobuf::internal::ExplicitlyConstructed<Method> Method_default_instance_;
 
 Method* Method::New(::google::protobuf::Arena* arena) const {
   Method* n = new Method;
@@ -1679,6 +1682,9 @@ void Method::set_syntax(::google::protobuf::Syntax value) {
   // @@protoc_insertion_point(field_set:google.protobuf.Method.syntax)
 }
 
+inline const Method* Method::internal_default_instance() {
+  return &Method_default_instance_.get();
+}
 #endif  // PROTOBUF_INLINE_NOT_IN_HEADERS
 
 // ===================================================================
@@ -1737,7 +1743,7 @@ const Mixin& Mixin::default_instance() {
   return *internal_default_instance();
 }
 
-::google::protobuf::internal::ExplicitlyConstructed<Mixin> Mixin::default_instance_;
+::google::protobuf::internal::ExplicitlyConstructed<Mixin> Mixin_default_instance_;
 
 Mixin* Mixin::New(::google::protobuf::Arena* arena) const {
   Mixin* n = new Mixin;
@@ -2063,6 +2069,9 @@ void Mixin::set_allocated_root(::std::string* root) {
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.Mixin.root)
 }
 
+inline const Mixin* Mixin::internal_default_instance() {
+  return &Mixin_default_instance_.get();
+}
 #endif  // PROTOBUF_INLINE_NOT_IN_HEADERS
 
 // @@protoc_insertion_point(namespace_scope)

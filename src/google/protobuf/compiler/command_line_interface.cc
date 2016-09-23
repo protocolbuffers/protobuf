@@ -1179,14 +1179,12 @@ CommandLineInterface::InterpretArgument(const string& name,
     if (direct_dependencies_explicitly_set_) {
       std::cerr << name << " may only be passed once. To specify multiple "
                            "direct dependencies, pass them all as a single "
-                           "parameter separated by '"
-                << kPathSeparator << "'." << std::endl;
+                           "parameter separated by ':'." << std::endl;
       return PARSE_ARGUMENT_FAIL;
     }
 
     direct_dependencies_explicitly_set_ = true;
-    vector<string> direct = Split(
-        value, kPathSeparator, true);
+    vector<string> direct = Split(value, ":", true);
     GOOGLE_DCHECK(direct_dependencies_.empty());
     direct_dependencies_.insert(direct.begin(), direct.end());
 

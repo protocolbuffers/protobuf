@@ -61,9 +61,7 @@ class LIBPROTOBUF_EXPORT Api : public ::google::protobuf::Message /* @@protoc_in
   static const ::google::protobuf::Descriptor* descriptor();
   static const Api& default_instance();
 
-  static inline const Api* internal_default_instance() {
-    return &default_instance_.get();
-  }
+  static const Api* internal_default_instance();
 
   void Swap(Api* other);
 
@@ -202,8 +200,9 @@ class LIBPROTOBUF_EXPORT Api : public ::google::protobuf::Message /* @@protoc_in
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fapi_2eproto();
 
   void InitAsDefaultInstance();
-  static ::google::protobuf::internal::ExplicitlyConstructed<Api> default_instance_;
 };
+extern ::google::protobuf::internal::ExplicitlyConstructed<Api> Api_default_instance_;
+
 // -------------------------------------------------------------------
 
 class LIBPROTOBUF_EXPORT Method : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.Method) */ {
@@ -221,9 +220,7 @@ class LIBPROTOBUF_EXPORT Method : public ::google::protobuf::Message /* @@protoc
   static const ::google::protobuf::Descriptor* descriptor();
   static const Method& default_instance();
 
-  static inline const Method* internal_default_instance() {
-    return &default_instance_.get();
-  }
+  static const Method* internal_default_instance();
 
   void Swap(Method* other);
 
@@ -352,8 +349,9 @@ class LIBPROTOBUF_EXPORT Method : public ::google::protobuf::Message /* @@protoc
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fapi_2eproto();
 
   void InitAsDefaultInstance();
-  static ::google::protobuf::internal::ExplicitlyConstructed<Method> default_instance_;
 };
+extern ::google::protobuf::internal::ExplicitlyConstructed<Method> Method_default_instance_;
+
 // -------------------------------------------------------------------
 
 class LIBPROTOBUF_EXPORT Mixin : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.Mixin) */ {
@@ -371,9 +369,7 @@ class LIBPROTOBUF_EXPORT Mixin : public ::google::protobuf::Message /* @@protoc_
   static const ::google::protobuf::Descriptor* descriptor();
   static const Mixin& default_instance();
 
-  static inline const Mixin* internal_default_instance() {
-    return &default_instance_.get();
-  }
+  static const Mixin* internal_default_instance();
 
   void Swap(Mixin* other);
 
@@ -456,8 +452,9 @@ class LIBPROTOBUF_EXPORT Mixin : public ::google::protobuf::Message /* @@protoc_
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fapi_2eproto();
 
   void InitAsDefaultInstance();
-  static ::google::protobuf::internal::ExplicitlyConstructed<Mixin> default_instance_;
 };
+extern ::google::protobuf::internal::ExplicitlyConstructed<Mixin> Mixin_default_instance_;
+
 // ===================================================================
 
 
@@ -697,6 +694,9 @@ inline void Api::set_syntax(::google::protobuf::Syntax value) {
   // @@protoc_insertion_point(field_set:google.protobuf.Api.syntax)
 }
 
+inline const Api* Api::internal_default_instance() {
+  return &Api_default_instance_.get();
+}
 // -------------------------------------------------------------------
 
 // Method
@@ -905,6 +905,9 @@ inline void Method::set_syntax(::google::protobuf::Syntax value) {
   // @@protoc_insertion_point(field_set:google.protobuf.Method.syntax)
 }
 
+inline const Method* Method::internal_default_instance() {
+  return &Method_default_instance_.get();
+}
 // -------------------------------------------------------------------
 
 // Mixin
@@ -997,6 +1000,9 @@ inline void Mixin::set_allocated_root(::std::string* root) {
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.Mixin.root)
 }
 
+inline const Mixin* Mixin::internal_default_instance() {
+  return &Mixin_default_instance_.get();
+}
 #endif  // !PROTOBUF_INLINE_NOT_IN_HEADERS
 // -------------------------------------------------------------------
 

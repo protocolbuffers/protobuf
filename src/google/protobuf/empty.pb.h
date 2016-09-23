@@ -61,9 +61,7 @@ class LIBPROTOBUF_EXPORT Empty : public ::google::protobuf::Message /* @@protoc_
   static const ::google::protobuf::Descriptor* descriptor();
   static const Empty& default_instance();
 
-  static inline const Empty* internal_default_instance() {
-    return &default_instance_.get();
-  }
+  static const Empty* internal_default_instance();
 
   void UnsafeArenaSwap(Empty* other);
   void Swap(Empty* other);
@@ -131,8 +129,9 @@ class LIBPROTOBUF_EXPORT Empty : public ::google::protobuf::Message /* @@protoc_
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fempty_2eproto();
 
   void InitAsDefaultInstance();
-  static ::google::protobuf::internal::ExplicitlyConstructed<Empty> default_instance_;
 };
+extern ::google::protobuf::internal::ExplicitlyConstructed<Empty> Empty_default_instance_;
+
 // ===================================================================
 
 
@@ -141,6 +140,9 @@ class LIBPROTOBUF_EXPORT Empty : public ::google::protobuf::Message /* @@protoc_
 #if !PROTOBUF_INLINE_NOT_IN_HEADERS
 // Empty
 
+inline const Empty* Empty::internal_default_instance() {
+  return &Empty_default_instance_.get();
+}
 #endif  // !PROTOBUF_INLINE_NOT_IN_HEADERS
 
 // @@protoc_insertion_point(namespace_scope)

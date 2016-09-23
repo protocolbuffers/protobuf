@@ -57,9 +57,7 @@ class LIBPROTOBUF_EXPORT FieldMask : public ::google::protobuf::Message /* @@pro
   static const ::google::protobuf::Descriptor* descriptor();
   static const FieldMask& default_instance();
 
-  static inline const FieldMask* internal_default_instance() {
-    return &default_instance_.get();
-  }
+  static const FieldMask* internal_default_instance();
 
   void Swap(FieldMask* other);
 
@@ -135,8 +133,9 @@ class LIBPROTOBUF_EXPORT FieldMask : public ::google::protobuf::Message /* @@pro
   friend void protobuf_ShutdownFile_google_2fprotobuf_2ffield_5fmask_2eproto();
 
   void InitAsDefaultInstance();
-  static ::google::protobuf::internal::ExplicitlyConstructed<FieldMask> default_instance_;
 };
+extern ::google::protobuf::internal::ExplicitlyConstructed<FieldMask> FieldMask_default_instance_;
+
 // ===================================================================
 
 
@@ -200,6 +199,9 @@ FieldMask::mutable_paths() {
   return &paths_;
 }
 
+inline const FieldMask* FieldMask::internal_default_instance() {
+  return &FieldMask_default_instance_.get();
+}
 #endif  // !PROTOBUF_INLINE_NOT_IN_HEADERS
 
 // @@protoc_insertion_point(namespace_scope)

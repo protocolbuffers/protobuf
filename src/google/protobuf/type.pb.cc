@@ -173,15 +173,15 @@ void protobuf_RegisterTypes(const ::std::string&) {
 }  // namespace
 
 void protobuf_ShutdownFile_google_2fprotobuf_2ftype_2eproto() {
-  Type::default_instance_.Shutdown();
+  Type_default_instance_.Shutdown();
   delete Type_reflection_;
-  Field::default_instance_.Shutdown();
+  Field_default_instance_.Shutdown();
   delete Field_reflection_;
-  Enum::default_instance_.Shutdown();
+  Enum_default_instance_.Shutdown();
   delete Enum_reflection_;
-  EnumValue::default_instance_.Shutdown();
+  EnumValue_default_instance_.Shutdown();
   delete EnumValue_reflection_;
-  Option::default_instance_.Shutdown();
+  Option_default_instance_.Shutdown();
   delete Option_reflection_;
 }
 
@@ -191,20 +191,20 @@ void protobuf_InitDefaults_google_2fprotobuf_2ftype_2eproto_impl() {
   ::google::protobuf::protobuf_InitDefaults_google_2fprotobuf_2fany_2eproto();
   ::google::protobuf::protobuf_InitDefaults_google_2fprotobuf_2fsource_5fcontext_2eproto();
   ::google::protobuf::internal::GetEmptyString();
-  Type::default_instance_.DefaultConstruct();
+  Type_default_instance_.DefaultConstruct();
   ::google::protobuf::internal::GetEmptyString();
-  Field::default_instance_.DefaultConstruct();
+  Field_default_instance_.DefaultConstruct();
   ::google::protobuf::internal::GetEmptyString();
-  Enum::default_instance_.DefaultConstruct();
+  Enum_default_instance_.DefaultConstruct();
   ::google::protobuf::internal::GetEmptyString();
-  EnumValue::default_instance_.DefaultConstruct();
+  EnumValue_default_instance_.DefaultConstruct();
   ::google::protobuf::internal::GetEmptyString();
-  Option::default_instance_.DefaultConstruct();
-  Type::default_instance_.get_mutable()->InitAsDefaultInstance();
-  Field::default_instance_.get_mutable()->InitAsDefaultInstance();
-  Enum::default_instance_.get_mutable()->InitAsDefaultInstance();
-  EnumValue::default_instance_.get_mutable()->InitAsDefaultInstance();
-  Option::default_instance_.get_mutable()->InitAsDefaultInstance();
+  Option_default_instance_.DefaultConstruct();
+  Type_default_instance_.get_mutable()->InitAsDefaultInstance();
+  Field_default_instance_.get_mutable()->InitAsDefaultInstance();
+  Enum_default_instance_.get_mutable()->InitAsDefaultInstance();
+  EnumValue_default_instance_.get_mutable()->InitAsDefaultInstance();
+  Option_default_instance_.get_mutable()->InitAsDefaultInstance();
 }
 
 GOOGLE_PROTOBUF_DECLARE_ONCE(protobuf_InitDefaults_google_2fprotobuf_2ftype_2eproto_once_);
@@ -395,7 +395,7 @@ void Type::SharedDtor() {
   }
 
   name_.Destroy(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), arena);
-  if (this != &default_instance_.get()) {
+  if (this != &Type_default_instance_.get()) {
     delete source_context_;
   }
 }
@@ -421,7 +421,7 @@ const Type& Type::default_instance() {
   return *internal_default_instance();
 }
 
-::google::protobuf::internal::ExplicitlyConstructed<Type> Type::default_instance_;
+::google::protobuf::internal::ExplicitlyConstructed<Type> Type_default_instance_;
 
 Type* Type::New(::google::protobuf::Arena* arena) const {
   return ::google::protobuf::Arena::CreateMessage<Type>(arena);
@@ -1077,6 +1077,9 @@ void Type::set_syntax(::google::protobuf::Syntax value) {
   // @@protoc_insertion_point(field_set:google.protobuf.Type.syntax)
 }
 
+inline const Type* Type::internal_default_instance() {
+  return &Type_default_instance_.get();
+}
 #endif  // PROTOBUF_INLINE_NOT_IN_HEADERS
 
 // ===================================================================
@@ -1251,7 +1254,7 @@ const Field& Field::default_instance() {
   return *internal_default_instance();
 }
 
-::google::protobuf::internal::ExplicitlyConstructed<Field> Field::default_instance_;
+::google::protobuf::internal::ExplicitlyConstructed<Field> Field_default_instance_;
 
 Field* Field::New(::google::protobuf::Arena* arena) const {
   return ::google::protobuf::Arena::CreateMessage<Field>(arena);
@@ -2206,6 +2209,9 @@ void Field::unsafe_arena_set_allocated_default_value(
   // @@protoc_insertion_point(field_unsafe_arena_set_allocated:google.protobuf.Field.default_value)
 }
 
+inline const Field* Field::internal_default_instance() {
+  return &Field_default_instance_.get();
+}
 #endif  // PROTOBUF_INLINE_NOT_IN_HEADERS
 
 // ===================================================================
@@ -2302,7 +2308,7 @@ void Enum::SharedDtor() {
   }
 
   name_.Destroy(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), arena);
-  if (this != &default_instance_.get()) {
+  if (this != &Enum_default_instance_.get()) {
     delete source_context_;
   }
 }
@@ -2328,7 +2334,7 @@ const Enum& Enum::default_instance() {
   return *internal_default_instance();
 }
 
-::google::protobuf::internal::ExplicitlyConstructed<Enum> Enum::default_instance_;
+::google::protobuf::internal::ExplicitlyConstructed<Enum> Enum_default_instance_;
 
 Enum* Enum::New(::google::protobuf::Arena* arena) const {
   return ::google::protobuf::Arena::CreateMessage<Enum>(arena);
@@ -2878,6 +2884,9 @@ void Enum::set_syntax(::google::protobuf::Syntax value) {
   // @@protoc_insertion_point(field_set:google.protobuf.Enum.syntax)
 }
 
+inline const Enum* Enum::internal_default_instance() {
+  return &Enum_default_instance_.get();
+}
 #endif  // PROTOBUF_INLINE_NOT_IN_HEADERS
 
 // ===================================================================
@@ -2958,7 +2967,7 @@ const EnumValue& EnumValue::default_instance() {
   return *internal_default_instance();
 }
 
-::google::protobuf::internal::ExplicitlyConstructed<EnumValue> EnumValue::default_instance_;
+::google::protobuf::internal::ExplicitlyConstructed<EnumValue> EnumValue_default_instance_;
 
 EnumValue* EnumValue::New(::google::protobuf::Arena* arena) const {
   return ::google::protobuf::Arena::CreateMessage<EnumValue>(arena);
@@ -3343,6 +3352,9 @@ EnumValue::options() const {
   return options_;
 }
 
+inline const EnumValue* EnumValue::internal_default_instance() {
+  return &EnumValue_default_instance_.get();
+}
 #endif  // PROTOBUF_INLINE_NOT_IN_HEADERS
 
 // ===================================================================
@@ -3433,7 +3445,7 @@ void Option::SharedDtor() {
   }
 
   name_.Destroy(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), arena);
-  if (this != &default_instance_.get()) {
+  if (this != &Option_default_instance_.get()) {
     delete value_;
   }
 }
@@ -3459,7 +3471,7 @@ const Option& Option::default_instance() {
   return *internal_default_instance();
 }
 
-::google::protobuf::internal::ExplicitlyConstructed<Option> Option::default_instance_;
+::google::protobuf::internal::ExplicitlyConstructed<Option> Option_default_instance_;
 
 Option* Option::New(::google::protobuf::Arena* arena) const {
   return ::google::protobuf::Arena::CreateMessage<Option>(arena);
@@ -3809,6 +3821,9 @@ const ::google::protobuf::Any& Option::value() const {
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.Option.value)
 }
 
+inline const Option* Option::internal_default_instance() {
+  return &Option_default_instance_.get();
+}
 #endif  // PROTOBUF_INLINE_NOT_IN_HEADERS
 
 // @@protoc_insertion_point(namespace_scope)

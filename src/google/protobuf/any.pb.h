@@ -58,9 +58,7 @@ class LIBPROTOBUF_EXPORT Any : public ::google::protobuf::Message /* @@protoc_in
   static const ::google::protobuf::Descriptor* descriptor();
   static const Any& default_instance();
 
-  static inline const Any* internal_default_instance() {
-    return &default_instance_.get();
-  }
+  static const Any* internal_default_instance();
 
   // implements Any -----------------------------------------------
 
@@ -154,8 +152,9 @@ class LIBPROTOBUF_EXPORT Any : public ::google::protobuf::Message /* @@protoc_in
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fany_2eproto();
 
   void InitAsDefaultInstance();
-  static ::google::protobuf::internal::ExplicitlyConstructed<Any> default_instance_;
 };
+extern ::google::protobuf::internal::ExplicitlyConstructed<Any> Any_default_instance_;
+
 // ===================================================================
 
 
@@ -252,6 +251,9 @@ inline void Any::set_allocated_value(::std::string* value) {
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.Any.value)
 }
 
+inline const Any* Any::internal_default_instance() {
+  return &Any_default_instance_.get();
+}
 #endif  // !PROTOBUF_INLINE_NOT_IN_HEADERS
 
 // @@protoc_insertion_point(namespace_scope)
