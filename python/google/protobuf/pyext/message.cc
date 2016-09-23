@@ -2831,13 +2831,6 @@ static Message* MutableCProtoInsidePyProtoImpl(PyObject* msg) {
   return cmsg->message;
 }
 
-static const char module_docstring[] =
-"python-proto2 is a module that can be used to enhance proto2 Python API\n"
-"performance.\n"
-"\n"
-"It provides access to the protocol buffers C++ reflection API that\n"
-"implements the basic protocol buffer functions.";
-
 void InitGlobals() {
   // TODO(gps): Check all return values in this function for NULL and propagate
   // the error (MemoryError) on up to result in an import failure.  These should

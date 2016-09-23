@@ -38,9 +38,13 @@ If sys.gettotalrefcount() is not available (because Python was built without
 the Py_DEBUG option), then this module is a no-op and tests will run normally.
 """
 
-import copy_reg
 import gc
 import sys
+
+try:
+  import copy_reg as copyreg  #PY26
+except ImportError:
+  import copyreg
 
 try:
   import unittest2 as unittest  #PY26
@@ -74,7 +78,7 @@ class ReferenceLeakCheckerTestCase(unittest.TestCase):
     # python_message.py registers all Message classes to some pickle global
     # registry, which makes the classes immortal.
     # We save a copy of this registry, and reset it before we could references.
-    self._saved_pickle_registry = copy_reg.dispatch_table.copy()
+    self._saved_pickle_registry = copyreg.dispatch_table.copy()
 
     # Run the test twice, to warm up the instance attributes.
     super(ReferenceLeakCheckerTestCase, self).run(result=result)
@@ -97,8 +101,8 @@ class ReferenceLeakCheckerTestCase(unittest.TestCase):
       result.addError(self, sys.exc_info())
 
   def _getRefcounts(self):
-    copy_reg.dispatch_table.clear()
-    copy_reg.dispatch_table.update(self._saved_pickle_registry)
+    copyreg.dispatch_table.clear()
+    copyreg.dispatch_table.update(self._saved_pickle_registry)
     # It is sometimes necessary to gc.collect() multiple times, to ensure
     # that all objects can be collected.
     gc.collect()
