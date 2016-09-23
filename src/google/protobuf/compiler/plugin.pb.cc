@@ -114,8 +114,11 @@ void protobuf_RegisterTypes(const ::std::string&) {
 }  // namespace
 
 void protobuf_ShutdownFile_google_2fprotobuf_2fcompiler_2fplugin_2eproto() {
+  CodeGeneratorRequest::default_instance_.Shutdown();
   delete CodeGeneratorRequest_reflection_;
+  CodeGeneratorResponse::default_instance_.Shutdown();
   delete CodeGeneratorResponse_reflection_;
+  CodeGeneratorResponse_File::default_instance_.Shutdown();
   delete CodeGeneratorResponse_File_reflection_;
 }
 

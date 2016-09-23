@@ -70,6 +70,7 @@ void protobuf_RegisterTypes(const ::std::string&) {
 }  // namespace
 
 void protobuf_ShutdownFile_google_2fprotobuf_2fsource_5fcontext_2eproto() {
+  SourceContext::default_instance_.Shutdown();
   delete SourceContext_reflection_;
 }
 

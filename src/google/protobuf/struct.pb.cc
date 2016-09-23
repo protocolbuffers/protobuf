@@ -137,9 +137,12 @@ void protobuf_RegisterTypes(const ::std::string&) {
 }  // namespace
 
 void protobuf_ShutdownFile_google_2fprotobuf_2fstruct_2eproto() {
+  Struct::default_instance_.Shutdown();
   delete Struct_reflection_;
+  Value::default_instance_.Shutdown();
   delete Value_default_oneof_instance_;
   delete Value_reflection_;
+  ListValue::default_instance_.Shutdown();
   delete ListValue_reflection_;
 }
 

@@ -70,6 +70,7 @@ void protobuf_RegisterTypes(const ::std::string&) {
 }  // namespace
 
 void protobuf_ShutdownFile_google_2fprotobuf_2ffield_5fmask_2eproto() {
+  FieldMask::default_instance_.Shutdown();
   delete FieldMask_reflection_;
 }
 

@@ -1815,6 +1815,9 @@ GenerateDefaultInstanceInitializer(io::Printer* printer) {
 
 void MessageGenerator::
 GenerateShutdownCode(io::Printer* printer) {
+  printer->Print(
+      "$classname$::default_instance_.Shutdown();\n",
+      "classname", classname_);
   if (HasDescriptorMethods(descriptor_->file(), options_)) {
     if (descriptor_->oneof_decl_count() > 0) {
       printer->Print(
@@ -2151,6 +2154,7 @@ GenerateSharedDestructorCode(io::Printer* printer) {
   // TODO(kenton):  If we make unset messages point at default instances
   //   instead of NULL, then it would make sense to move this code into
   //   MessageFieldGenerator::GenerateDestructorCode().
+  bool need_delete_message_field = false;
   for (int i = 0; i < descriptor_->field_count(); i++) {
     const FieldDescriptor* field = descriptor_->field(i);
 
@@ -2158,9 +2162,20 @@ GenerateSharedDestructorCode(io::Printer* printer) {
         field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
       // Skip oneof members
       if (!field->containing_oneof()) {
+        if (!need_delete_message_field) {
+          need_delete_message_field = true;
+          printer->Print(
+              "if (this != &default_instance_.get()) {\n");
+          printer->Indent();
+        }
         printer->Print("delete $name$_;\n", "name", FieldName(field));
       }
     }
+  }
+  if (need_delete_message_field) {
+    printer->Outdent();
+    printer->Print(
+        "}\n");
   }
 
   printer->Outdent();
