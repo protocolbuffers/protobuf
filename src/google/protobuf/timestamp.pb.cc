@@ -71,15 +71,15 @@ void protobuf_RegisterTypes(const ::std::string&) {
 }  // namespace
 
 void protobuf_ShutdownFile_google_2fprotobuf_2ftimestamp_2eproto() {
-  Timestamp::default_instance_.Shutdown();
+  Timestamp_default_instance_.Shutdown();
   delete Timestamp_reflection_;
 }
 
 void protobuf_InitDefaults_google_2fprotobuf_2ftimestamp_2eproto_impl() {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
 
-  Timestamp::default_instance_.DefaultConstruct();
-  Timestamp::default_instance_.get_mutable()->InitAsDefaultInstance();
+  Timestamp_default_instance_.DefaultConstruct();
+  Timestamp_default_instance_.get_mutable()->InitAsDefaultInstance();
 }
 
 GOOGLE_PROTOBUF_DECLARE_ONCE(protobuf_InitDefaults_google_2fprotobuf_2ftimestamp_2eproto_once_);
@@ -200,7 +200,7 @@ const Timestamp& Timestamp::default_instance() {
   return *internal_default_instance();
 }
 
-::google::protobuf::internal::ExplicitlyConstructed<Timestamp> Timestamp::default_instance_;
+::google::protobuf::internal::ExplicitlyConstructed<Timestamp> Timestamp_default_instance_;
 
 Timestamp* Timestamp::New(::google::protobuf::Arena* arena) const {
   return ::google::protobuf::Arena::CreateMessage<Timestamp>(arena);
@@ -465,6 +465,9 @@ void Timestamp::set_nanos(::google::protobuf::int32 value) {
   // @@protoc_insertion_point(field_set:google.protobuf.Timestamp.nanos)
 }
 
+inline const Timestamp* Timestamp::internal_default_instance() {
+  return &Timestamp_default_instance_.get();
+}
 #endif  // PROTOBUF_INLINE_NOT_IN_HEADERS
 
 // @@protoc_insertion_point(namespace_scope)

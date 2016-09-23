@@ -61,9 +61,7 @@ class LIBPROTOBUF_EXPORT Duration : public ::google::protobuf::Message /* @@prot
   static const ::google::protobuf::Descriptor* descriptor();
   static const Duration& default_instance();
 
-  static inline const Duration* internal_default_instance() {
-    return &default_instance_.get();
-  }
+  static const Duration* internal_default_instance();
 
   void UnsafeArenaSwap(Duration* other);
   void Swap(Duration* other);
@@ -145,8 +143,9 @@ class LIBPROTOBUF_EXPORT Duration : public ::google::protobuf::Message /* @@prot
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fduration_2eproto();
 
   void InitAsDefaultInstance();
-  static ::google::protobuf::internal::ExplicitlyConstructed<Duration> default_instance_;
 };
+extern ::google::protobuf::internal::ExplicitlyConstructed<Duration> Duration_default_instance_;
+
 // ===================================================================
 
 
@@ -183,6 +182,9 @@ inline void Duration::set_nanos(::google::protobuf::int32 value) {
   // @@protoc_insertion_point(field_set:google.protobuf.Duration.nanos)
 }
 
+inline const Duration* Duration::internal_default_instance() {
+  return &Duration_default_instance_.get();
+}
 #endif  // !PROTOBUF_INLINE_NOT_IN_HEADERS
 
 // @@protoc_insertion_point(namespace_scope)

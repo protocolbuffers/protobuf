@@ -71,7 +71,7 @@ void protobuf_RegisterTypes(const ::std::string&) {
 }  // namespace
 
 void protobuf_ShutdownFile_google_2fprotobuf_2fany_2eproto() {
-  Any::default_instance_.Shutdown();
+  Any_default_instance_.Shutdown();
   delete Any_reflection_;
 }
 
@@ -79,8 +79,8 @@ void protobuf_InitDefaults_google_2fprotobuf_2fany_2eproto_impl() {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
 
   ::google::protobuf::internal::GetEmptyString();
-  Any::default_instance_.DefaultConstruct();
-  Any::default_instance_.get_mutable()->InitAsDefaultInstance();
+  Any_default_instance_.DefaultConstruct();
+  Any_default_instance_.get_mutable()->InitAsDefaultInstance();
 }
 
 GOOGLE_PROTOBUF_DECLARE_ONCE(protobuf_InitDefaults_google_2fprotobuf_2fany_2eproto_once_);
@@ -196,7 +196,7 @@ const Any& Any::default_instance() {
   return *internal_default_instance();
 }
 
-::google::protobuf::internal::ExplicitlyConstructed<Any> Any::default_instance_;
+::google::protobuf::internal::ExplicitlyConstructed<Any> Any_default_instance_;
 
 Any* Any::New(::google::protobuf::Arena* arena) const {
   Any* n = new Any;
@@ -510,6 +510,9 @@ void Any::set_allocated_value(::std::string* value) {
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.Any.value)
 }
 
+inline const Any* Any::internal_default_instance() {
+  return &Any_default_instance_.get();
+}
 #endif  // PROTOBUF_INLINE_NOT_IN_HEADERS
 
 // @@protoc_insertion_point(namespace_scope)

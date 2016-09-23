@@ -69,9 +69,7 @@ class LIBPROTOBUF_EXPORT DoubleValue : public ::google::protobuf::Message /* @@p
   static const ::google::protobuf::Descriptor* descriptor();
   static const DoubleValue& default_instance();
 
-  static inline const DoubleValue* internal_default_instance() {
-    return &default_instance_.get();
-  }
+  static const DoubleValue* internal_default_instance();
 
   void UnsafeArenaSwap(DoubleValue* other);
   void Swap(DoubleValue* other);
@@ -146,8 +144,9 @@ class LIBPROTOBUF_EXPORT DoubleValue : public ::google::protobuf::Message /* @@p
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fwrappers_2eproto();
 
   void InitAsDefaultInstance();
-  static ::google::protobuf::internal::ExplicitlyConstructed<DoubleValue> default_instance_;
 };
+extern ::google::protobuf::internal::ExplicitlyConstructed<DoubleValue> DoubleValue_default_instance_;
+
 // -------------------------------------------------------------------
 
 class LIBPROTOBUF_EXPORT FloatValue : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.FloatValue) */ {
@@ -169,9 +168,7 @@ class LIBPROTOBUF_EXPORT FloatValue : public ::google::protobuf::Message /* @@pr
   static const ::google::protobuf::Descriptor* descriptor();
   static const FloatValue& default_instance();
 
-  static inline const FloatValue* internal_default_instance() {
-    return &default_instance_.get();
-  }
+  static const FloatValue* internal_default_instance();
 
   void UnsafeArenaSwap(FloatValue* other);
   void Swap(FloatValue* other);
@@ -246,8 +243,9 @@ class LIBPROTOBUF_EXPORT FloatValue : public ::google::protobuf::Message /* @@pr
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fwrappers_2eproto();
 
   void InitAsDefaultInstance();
-  static ::google::protobuf::internal::ExplicitlyConstructed<FloatValue> default_instance_;
 };
+extern ::google::protobuf::internal::ExplicitlyConstructed<FloatValue> FloatValue_default_instance_;
+
 // -------------------------------------------------------------------
 
 class LIBPROTOBUF_EXPORT Int64Value : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.Int64Value) */ {
@@ -269,9 +267,7 @@ class LIBPROTOBUF_EXPORT Int64Value : public ::google::protobuf::Message /* @@pr
   static const ::google::protobuf::Descriptor* descriptor();
   static const Int64Value& default_instance();
 
-  static inline const Int64Value* internal_default_instance() {
-    return &default_instance_.get();
-  }
+  static const Int64Value* internal_default_instance();
 
   void UnsafeArenaSwap(Int64Value* other);
   void Swap(Int64Value* other);
@@ -346,8 +342,9 @@ class LIBPROTOBUF_EXPORT Int64Value : public ::google::protobuf::Message /* @@pr
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fwrappers_2eproto();
 
   void InitAsDefaultInstance();
-  static ::google::protobuf::internal::ExplicitlyConstructed<Int64Value> default_instance_;
 };
+extern ::google::protobuf::internal::ExplicitlyConstructed<Int64Value> Int64Value_default_instance_;
+
 // -------------------------------------------------------------------
 
 class LIBPROTOBUF_EXPORT UInt64Value : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.UInt64Value) */ {
@@ -369,9 +366,7 @@ class LIBPROTOBUF_EXPORT UInt64Value : public ::google::protobuf::Message /* @@p
   static const ::google::protobuf::Descriptor* descriptor();
   static const UInt64Value& default_instance();
 
-  static inline const UInt64Value* internal_default_instance() {
-    return &default_instance_.get();
-  }
+  static const UInt64Value* internal_default_instance();
 
   void UnsafeArenaSwap(UInt64Value* other);
   void Swap(UInt64Value* other);
@@ -446,8 +441,9 @@ class LIBPROTOBUF_EXPORT UInt64Value : public ::google::protobuf::Message /* @@p
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fwrappers_2eproto();
 
   void InitAsDefaultInstance();
-  static ::google::protobuf::internal::ExplicitlyConstructed<UInt64Value> default_instance_;
 };
+extern ::google::protobuf::internal::ExplicitlyConstructed<UInt64Value> UInt64Value_default_instance_;
+
 // -------------------------------------------------------------------
 
 class LIBPROTOBUF_EXPORT Int32Value : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.Int32Value) */ {
@@ -469,9 +465,7 @@ class LIBPROTOBUF_EXPORT Int32Value : public ::google::protobuf::Message /* @@pr
   static const ::google::protobuf::Descriptor* descriptor();
   static const Int32Value& default_instance();
 
-  static inline const Int32Value* internal_default_instance() {
-    return &default_instance_.get();
-  }
+  static const Int32Value* internal_default_instance();
 
   void UnsafeArenaSwap(Int32Value* other);
   void Swap(Int32Value* other);
@@ -546,8 +540,9 @@ class LIBPROTOBUF_EXPORT Int32Value : public ::google::protobuf::Message /* @@pr
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fwrappers_2eproto();
 
   void InitAsDefaultInstance();
-  static ::google::protobuf::internal::ExplicitlyConstructed<Int32Value> default_instance_;
 };
+extern ::google::protobuf::internal::ExplicitlyConstructed<Int32Value> Int32Value_default_instance_;
+
 // -------------------------------------------------------------------
 
 class LIBPROTOBUF_EXPORT UInt32Value : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.UInt32Value) */ {
@@ -569,9 +564,7 @@ class LIBPROTOBUF_EXPORT UInt32Value : public ::google::protobuf::Message /* @@p
   static const ::google::protobuf::Descriptor* descriptor();
   static const UInt32Value& default_instance();
 
-  static inline const UInt32Value* internal_default_instance() {
-    return &default_instance_.get();
-  }
+  static const UInt32Value* internal_default_instance();
 
   void UnsafeArenaSwap(UInt32Value* other);
   void Swap(UInt32Value* other);
@@ -646,8 +639,9 @@ class LIBPROTOBUF_EXPORT UInt32Value : public ::google::protobuf::Message /* @@p
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fwrappers_2eproto();
 
   void InitAsDefaultInstance();
-  static ::google::protobuf::internal::ExplicitlyConstructed<UInt32Value> default_instance_;
 };
+extern ::google::protobuf::internal::ExplicitlyConstructed<UInt32Value> UInt32Value_default_instance_;
+
 // -------------------------------------------------------------------
 
 class LIBPROTOBUF_EXPORT BoolValue : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.BoolValue) */ {
@@ -669,9 +663,7 @@ class LIBPROTOBUF_EXPORT BoolValue : public ::google::protobuf::Message /* @@pro
   static const ::google::protobuf::Descriptor* descriptor();
   static const BoolValue& default_instance();
 
-  static inline const BoolValue* internal_default_instance() {
-    return &default_instance_.get();
-  }
+  static const BoolValue* internal_default_instance();
 
   void UnsafeArenaSwap(BoolValue* other);
   void Swap(BoolValue* other);
@@ -746,8 +738,9 @@ class LIBPROTOBUF_EXPORT BoolValue : public ::google::protobuf::Message /* @@pro
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fwrappers_2eproto();
 
   void InitAsDefaultInstance();
-  static ::google::protobuf::internal::ExplicitlyConstructed<BoolValue> default_instance_;
 };
+extern ::google::protobuf::internal::ExplicitlyConstructed<BoolValue> BoolValue_default_instance_;
+
 // -------------------------------------------------------------------
 
 class LIBPROTOBUF_EXPORT StringValue : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.StringValue) */ {
@@ -769,9 +762,7 @@ class LIBPROTOBUF_EXPORT StringValue : public ::google::protobuf::Message /* @@p
   static const ::google::protobuf::Descriptor* descriptor();
   static const StringValue& default_instance();
 
-  static inline const StringValue* internal_default_instance() {
-    return &default_instance_.get();
-  }
+  static const StringValue* internal_default_instance();
 
   void UnsafeArenaSwap(StringValue* other);
   void Swap(StringValue* other);
@@ -854,8 +845,9 @@ class LIBPROTOBUF_EXPORT StringValue : public ::google::protobuf::Message /* @@p
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fwrappers_2eproto();
 
   void InitAsDefaultInstance();
-  static ::google::protobuf::internal::ExplicitlyConstructed<StringValue> default_instance_;
 };
+extern ::google::protobuf::internal::ExplicitlyConstructed<StringValue> StringValue_default_instance_;
+
 // -------------------------------------------------------------------
 
 class LIBPROTOBUF_EXPORT BytesValue : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.BytesValue) */ {
@@ -877,9 +869,7 @@ class LIBPROTOBUF_EXPORT BytesValue : public ::google::protobuf::Message /* @@pr
   static const ::google::protobuf::Descriptor* descriptor();
   static const BytesValue& default_instance();
 
-  static inline const BytesValue* internal_default_instance() {
-    return &default_instance_.get();
-  }
+  static const BytesValue* internal_default_instance();
 
   void UnsafeArenaSwap(BytesValue* other);
   void Swap(BytesValue* other);
@@ -962,8 +952,9 @@ class LIBPROTOBUF_EXPORT BytesValue : public ::google::protobuf::Message /* @@pr
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fwrappers_2eproto();
 
   void InitAsDefaultInstance();
-  static ::google::protobuf::internal::ExplicitlyConstructed<BytesValue> default_instance_;
 };
+extern ::google::protobuf::internal::ExplicitlyConstructed<BytesValue> BytesValue_default_instance_;
+
 // ===================================================================
 
 
@@ -986,6 +977,9 @@ inline void DoubleValue::set_value(double value) {
   // @@protoc_insertion_point(field_set:google.protobuf.DoubleValue.value)
 }
 
+inline const DoubleValue* DoubleValue::internal_default_instance() {
+  return &DoubleValue_default_instance_.get();
+}
 // -------------------------------------------------------------------
 
 // FloatValue
@@ -1004,6 +998,9 @@ inline void FloatValue::set_value(float value) {
   // @@protoc_insertion_point(field_set:google.protobuf.FloatValue.value)
 }
 
+inline const FloatValue* FloatValue::internal_default_instance() {
+  return &FloatValue_default_instance_.get();
+}
 // -------------------------------------------------------------------
 
 // Int64Value
@@ -1022,6 +1019,9 @@ inline void Int64Value::set_value(::google::protobuf::int64 value) {
   // @@protoc_insertion_point(field_set:google.protobuf.Int64Value.value)
 }
 
+inline const Int64Value* Int64Value::internal_default_instance() {
+  return &Int64Value_default_instance_.get();
+}
 // -------------------------------------------------------------------
 
 // UInt64Value
@@ -1040,6 +1040,9 @@ inline void UInt64Value::set_value(::google::protobuf::uint64 value) {
   // @@protoc_insertion_point(field_set:google.protobuf.UInt64Value.value)
 }
 
+inline const UInt64Value* UInt64Value::internal_default_instance() {
+  return &UInt64Value_default_instance_.get();
+}
 // -------------------------------------------------------------------
 
 // Int32Value
@@ -1058,6 +1061,9 @@ inline void Int32Value::set_value(::google::protobuf::int32 value) {
   // @@protoc_insertion_point(field_set:google.protobuf.Int32Value.value)
 }
 
+inline const Int32Value* Int32Value::internal_default_instance() {
+  return &Int32Value_default_instance_.get();
+}
 // -------------------------------------------------------------------
 
 // UInt32Value
@@ -1076,6 +1082,9 @@ inline void UInt32Value::set_value(::google::protobuf::uint32 value) {
   // @@protoc_insertion_point(field_set:google.protobuf.UInt32Value.value)
 }
 
+inline const UInt32Value* UInt32Value::internal_default_instance() {
+  return &UInt32Value_default_instance_.get();
+}
 // -------------------------------------------------------------------
 
 // BoolValue
@@ -1094,6 +1103,9 @@ inline void BoolValue::set_value(bool value) {
   // @@protoc_insertion_point(field_set:google.protobuf.BoolValue.value)
 }
 
+inline const BoolValue* BoolValue::internal_default_instance() {
+  return &BoolValue_default_instance_.get();
+}
 // -------------------------------------------------------------------
 
 // StringValue
@@ -1164,6 +1176,9 @@ inline void StringValue::unsafe_arena_set_allocated_value(
   // @@protoc_insertion_point(field_unsafe_arena_set_allocated:google.protobuf.StringValue.value)
 }
 
+inline const StringValue* StringValue::internal_default_instance() {
+  return &StringValue_default_instance_.get();
+}
 // -------------------------------------------------------------------
 
 // BytesValue
@@ -1234,6 +1249,9 @@ inline void BytesValue::unsafe_arena_set_allocated_value(
   // @@protoc_insertion_point(field_unsafe_arena_set_allocated:google.protobuf.BytesValue.value)
 }
 
+inline const BytesValue* BytesValue::internal_default_instance() {
+  return &BytesValue_default_instance_.get();
+}
 #endif  // !PROTOBUF_INLINE_NOT_IN_HEADERS
 // -------------------------------------------------------------------
 

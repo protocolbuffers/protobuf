@@ -137,12 +137,12 @@ void protobuf_RegisterTypes(const ::std::string&) {
 }  // namespace
 
 void protobuf_ShutdownFile_google_2fprotobuf_2fstruct_2eproto() {
-  Struct::default_instance_.Shutdown();
+  Struct_default_instance_.Shutdown();
   delete Struct_reflection_;
-  Value::default_instance_.Shutdown();
+  Value_default_instance_.Shutdown();
   delete Value_default_oneof_instance_;
   delete Value_reflection_;
-  ListValue::default_instance_.Shutdown();
+  ListValue_default_instance_.Shutdown();
   delete ListValue_reflection_;
 }
 
@@ -150,14 +150,14 @@ void protobuf_InitDefaults_google_2fprotobuf_2fstruct_2eproto_impl() {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
 
   ::google::protobuf::internal::GetEmptyString();
-  Struct::default_instance_.DefaultConstruct();
+  Struct_default_instance_.DefaultConstruct();
   ::google::protobuf::internal::GetEmptyString();
-  Value::default_instance_.DefaultConstruct();
+  Value_default_instance_.DefaultConstruct();
   Value_default_oneof_instance_ = new ValueOneofInstance();
-  ListValue::default_instance_.DefaultConstruct();
-  Struct::default_instance_.get_mutable()->InitAsDefaultInstance();
-  Value::default_instance_.get_mutable()->InitAsDefaultInstance();
-  ListValue::default_instance_.get_mutable()->InitAsDefaultInstance();
+  ListValue_default_instance_.DefaultConstruct();
+  Struct_default_instance_.get_mutable()->InitAsDefaultInstance();
+  Value_default_instance_.get_mutable()->InitAsDefaultInstance();
+  ListValue_default_instance_.get_mutable()->InitAsDefaultInstance();
 }
 
 GOOGLE_PROTOBUF_DECLARE_ONCE(protobuf_InitDefaults_google_2fprotobuf_2fstruct_2eproto_once_);
@@ -304,7 +304,7 @@ const Struct& Struct::default_instance() {
   return *internal_default_instance();
 }
 
-::google::protobuf::internal::ExplicitlyConstructed<Struct> Struct::default_instance_;
+::google::protobuf::internal::ExplicitlyConstructed<Struct> Struct_default_instance_;
 
 Struct* Struct::New(::google::protobuf::Arena* arena) const {
   return ::google::protobuf::Arena::CreateMessage<Struct>(arena);
@@ -630,6 +630,9 @@ Struct::mutable_fields() {
   return fields_.MutableMap();
 }
 
+inline const Struct* Struct::internal_default_instance() {
+  return &Struct_default_instance_.get();
+}
 #endif  // PROTOBUF_INLINE_NOT_IN_HEADERS
 
 // ===================================================================
@@ -721,7 +724,7 @@ const Value& Value::default_instance() {
   return *internal_default_instance();
 }
 
-::google::protobuf::internal::ExplicitlyConstructed<Value> Value::default_instance_;
+::google::protobuf::internal::ExplicitlyConstructed<Value> Value_default_instance_;
 
 Value* Value::New(::google::protobuf::Arena* arena) const {
   return ::google::protobuf::Arena::CreateMessage<Value>(arena);
@@ -1527,6 +1530,9 @@ void Value::clear_has_kind() {
 Value::KindCase Value::kind_case() const {
   return Value::KindCase(_oneof_case_[0]);
 }
+inline const Value* Value::internal_default_instance() {
+  return &Value_default_instance_.get();
+}
 #endif  // PROTOBUF_INLINE_NOT_IN_HEADERS
 
 // ===================================================================
@@ -1602,7 +1608,7 @@ const ListValue& ListValue::default_instance() {
   return *internal_default_instance();
 }
 
-::google::protobuf::internal::ExplicitlyConstructed<ListValue> ListValue::default_instance_;
+::google::protobuf::internal::ExplicitlyConstructed<ListValue> ListValue_default_instance_;
 
 ListValue* ListValue::New(::google::protobuf::Arena* arena) const {
   return ::google::protobuf::Arena::CreateMessage<ListValue>(arena);
@@ -1820,6 +1826,9 @@ ListValue::values() const {
   return values_;
 }
 
+inline const ListValue* ListValue::internal_default_instance() {
+  return &ListValue_default_instance_.get();
+}
 #endif  // PROTOBUF_INLINE_NOT_IN_HEADERS
 
 // @@protoc_insertion_point(namespace_scope)

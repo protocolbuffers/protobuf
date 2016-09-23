@@ -86,9 +86,7 @@ class LIBPROTOBUF_EXPORT Struct : public ::google::protobuf::Message /* @@protoc
   static const ::google::protobuf::Descriptor* descriptor();
   static const Struct& default_instance();
 
-  static inline const Struct* internal_default_instance() {
-    return &default_instance_.get();
-  }
+  static const Struct* internal_default_instance();
 
   void UnsafeArenaSwap(Struct* other);
   void Swap(Struct* other);
@@ -177,8 +175,9 @@ class LIBPROTOBUF_EXPORT Struct : public ::google::protobuf::Message /* @@protoc
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fstruct_2eproto();
 
   void InitAsDefaultInstance();
-  static ::google::protobuf::internal::ExplicitlyConstructed<Struct> default_instance_;
 };
+extern ::google::protobuf::internal::ExplicitlyConstructed<Struct> Struct_default_instance_;
+
 // -------------------------------------------------------------------
 
 class LIBPROTOBUF_EXPORT Value : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.Value) */ {
@@ -210,9 +209,7 @@ class LIBPROTOBUF_EXPORT Value : public ::google::protobuf::Message /* @@protoc_
     KIND_NOT_SET = 0,
   };
 
-  static inline const Value* internal_default_instance() {
-    return &default_instance_.get();
-  }
+  static const Value* internal_default_instance();
 
   void UnsafeArenaSwap(Value* other);
   void Swap(Value* other);
@@ -382,8 +379,9 @@ class LIBPROTOBUF_EXPORT Value : public ::google::protobuf::Message /* @@protoc_
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fstruct_2eproto();
 
   void InitAsDefaultInstance();
-  static ::google::protobuf::internal::ExplicitlyConstructed<Value> default_instance_;
 };
+extern ::google::protobuf::internal::ExplicitlyConstructed<Value> Value_default_instance_;
+
 // -------------------------------------------------------------------
 
 class LIBPROTOBUF_EXPORT ListValue : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.ListValue) */ {
@@ -405,9 +403,7 @@ class LIBPROTOBUF_EXPORT ListValue : public ::google::protobuf::Message /* @@pro
   static const ::google::protobuf::Descriptor* descriptor();
   static const ListValue& default_instance();
 
-  static inline const ListValue* internal_default_instance() {
-    return &default_instance_.get();
-  }
+  static const ListValue* internal_default_instance();
 
   void UnsafeArenaSwap(ListValue* other);
   void Swap(ListValue* other);
@@ -488,8 +484,9 @@ class LIBPROTOBUF_EXPORT ListValue : public ::google::protobuf::Message /* @@pro
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fstruct_2eproto();
 
   void InitAsDefaultInstance();
-  static ::google::protobuf::internal::ExplicitlyConstructed<ListValue> default_instance_;
 };
+extern ::google::protobuf::internal::ExplicitlyConstructed<ListValue> ListValue_default_instance_;
+
 // ===================================================================
 
 
@@ -516,6 +513,9 @@ Struct::mutable_fields() {
   return fields_.MutableMap();
 }
 
+inline const Struct* Struct::internal_default_instance() {
+  return &Struct_default_instance_.get();
+}
 // -------------------------------------------------------------------
 
 // Value
@@ -901,6 +901,9 @@ inline void Value::clear_has_kind() {
 inline Value::KindCase Value::kind_case() const {
   return Value::KindCase(_oneof_case_[0]);
 }
+inline const Value* Value::internal_default_instance() {
+  return &Value_default_instance_.get();
+}
 // -------------------------------------------------------------------
 
 // ListValue
@@ -935,6 +938,9 @@ ListValue::values() const {
   return values_;
 }
 
+inline const ListValue* ListValue::internal_default_instance() {
+  return &ListValue_default_instance_.get();
+}
 #endif  // !PROTOBUF_INLINE_NOT_IN_HEADERS
 // -------------------------------------------------------------------
 
