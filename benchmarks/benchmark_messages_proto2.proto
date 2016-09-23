@@ -8,6 +8,8 @@ option java_package = "com.google.protobuf.benchmarks";
 // This is the default, but we specify it here explicitly.
 option optimize_for = SPEED;
 
+option cc_enable_arenas = true;
+
 message GoogleMessage1 {
   required string field1 = 1;
   optional string field9 = 9;

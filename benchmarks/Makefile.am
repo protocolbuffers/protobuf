@@ -16,7 +16,9 @@ benchmarks_protoc_outputs_proto2 =                             \
   benchmark_messages_proto2.pb.cc                              \
   benchmark_messages_proto2.pb.h
 
-bin_PROGRAMS = generate-datasets
+AM_CXXFLAGS = $(NO_OPT_CXXFLAGS) $(PROTOBUF_OPT_FLAG) -Wall -Wwrite-strings -Woverloaded-virtual -Wno-sign-compare
+
+bin_PROGRAMS = generate-datasets cpp-benchmark
 
 generate_datasets_LDADD = $(top_srcdir)/src/libprotobuf.la
 generate_datasets_SOURCES = generate_datasets.cc
@@ -29,6 +31,13 @@ nodist_generate_datasets_SOURCES =                             \
 # so a direct "make test_cpp" could fail if parallel enough.
 # See: https://www.gnu.org/software/automake/manual/html_node/Built-Sources-Example.html#Recording-Dependencies-manually
 generate_datasets-generate_datasets.$(OBJEXT): benchmarks.pb.h
+
+cpp_benchmark_LDADD = $(top_srcdir)/src/libprotobuf.la $(top_srcdir)/third_party/benchmark/src/libbenchmark.a
+cpp_benchmark_SOURCES = cpp_benchmark.cc
+cpp_benchmark_CPPFLAGS = -I$(top_srcdir)/src -I$(srcdir) -I$(top_srcdir)/third_party/benchmark/include
+nodist_cpp_benchmark_SOURCES =                             \
+  $(benchmarks_protoc_outputs)                                 \
+  $(benchmarks_protoc_outputs_proto2)
 
 $(benchmarks_protoc_outputs): protoc_middleman
 $(benchmarks_protoc_outputs_proto2): protoc_middleman2
