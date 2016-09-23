@@ -20,16 +20,16 @@ environment:
 test: off
 
 install:
-  - ps: Start-FileDownload https://github.com/google/googlemock/archive/release-1.7.0.zip
+  - curl -L -o release-1.7.0.zip https://github.com/google/googlemock/archive/release-1.7.0.zip
   - 7z x release-1.7.0.zip
   - del /Q release-1.7.0.zip
   - rename googlemock-release-1.7.0 gmock
-  - ps: Start-FileDownload https://github.com/google/googletest/archive/release-1.7.0.zip
+  - curl -L -o release-1.7.0.zip "https://github.com/google/googletest/archive/release-1.7.0.zip"
   - 7z x release-1.7.0.zip
   - del /Q release-1.7.0.zip
   - rename googletest-release-1.7.0 gtest
   - move gtest gmock
-  - ps: Start-FileDownload https://go.microsoft.com/fwlink/?LinkID=809122 -FileName dotnetsdk.exe
+  - curl -L -o dotnetsdk.exe "https://go.microsoft.com/fwlink/?LinkID=809122"
   - dotnetsdk.exe /install /quiet /norestart
 
 before_build:
