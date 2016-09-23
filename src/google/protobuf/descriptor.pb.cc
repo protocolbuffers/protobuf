@@ -622,30 +622,55 @@ void protobuf_RegisterTypes(const ::std::string&) {
 }  // namespace
 
 void protobuf_ShutdownFile_google_2fprotobuf_2fdescriptor_2eproto() {
+  FileDescriptorSet::default_instance_.Shutdown();
   delete FileDescriptorSet_reflection_;
+  FileDescriptorProto::default_instance_.Shutdown();
   delete FileDescriptorProto_reflection_;
+  DescriptorProto::default_instance_.Shutdown();
   delete DescriptorProto_reflection_;
+  DescriptorProto_ExtensionRange::default_instance_.Shutdown();
   delete DescriptorProto_ExtensionRange_reflection_;
+  DescriptorProto_ReservedRange::default_instance_.Shutdown();
   delete DescriptorProto_ReservedRange_reflection_;
+  FieldDescriptorProto::default_instance_.Shutdown();
   delete FieldDescriptorProto_reflection_;
+  OneofDescriptorProto::default_instance_.Shutdown();
   delete OneofDescriptorProto_reflection_;
+  EnumDescriptorProto::default_instance_.Shutdown();
   delete EnumDescriptorProto_reflection_;
+  EnumValueDescriptorProto::default_instance_.Shutdown();
   delete EnumValueDescriptorProto_reflection_;
+  ServiceDescriptorProto::default_instance_.Shutdown();
   delete ServiceDescriptorProto_reflection_;
+  MethodDescriptorProto::default_instance_.Shutdown();
   delete MethodDescriptorProto_reflection_;
+  FileOptions::default_instance_.Shutdown();
   delete FileOptions_reflection_;
+  MessageOptions::default_instance_.Shutdown();
   delete MessageOptions_reflection_;
+  FieldOptions::default_instance_.Shutdown();
   delete FieldOptions_reflection_;
+  OneofOptions::default_instance_.Shutdown();
   delete OneofOptions_reflection_;
+  EnumOptions::default_instance_.Shutdown();
   delete EnumOptions_reflection_;
+  EnumValueOptions::default_instance_.Shutdown();
   delete EnumValueOptions_reflection_;
+  ServiceOptions::default_instance_.Shutdown();
   delete ServiceOptions_reflection_;
+  MethodOptions::default_instance_.Shutdown();
   delete MethodOptions_reflection_;
+  UninterpretedOption::default_instance_.Shutdown();
   delete UninterpretedOption_reflection_;
+  UninterpretedOption_NamePart::default_instance_.Shutdown();
   delete UninterpretedOption_NamePart_reflection_;
+  SourceCodeInfo::default_instance_.Shutdown();
   delete SourceCodeInfo_reflection_;
+  SourceCodeInfo_Location::default_instance_.Shutdown();
   delete SourceCodeInfo_Location_reflection_;
+  GeneratedCodeInfo::default_instance_.Shutdown();
   delete GeneratedCodeInfo_reflection_;
+  GeneratedCodeInfo_Annotation::default_instance_.Shutdown();
   delete GeneratedCodeInfo_Annotation_reflection_;
 }
 
@@ -1231,8 +1256,10 @@ void FileDescriptorProto::SharedDtor() {
   name_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   package_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   syntax_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  delete options_;
-  delete source_code_info_;
+  if (this != &default_instance_.get()) {
+    delete options_;
+    delete source_code_info_;
+  }
 }
 
 void FileDescriptorProto::SetCachedSize(int size) const {
@@ -3137,7 +3164,9 @@ DescriptorProto::~DescriptorProto() {
 
 void DescriptorProto::SharedDtor() {
   name_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  delete options_;
+  if (this != &default_instance_.get()) {
+    delete options_;
+  }
 }
 
 void DescriptorProto::SetCachedSize(int size) const {
@@ -4380,7 +4409,9 @@ void FieldDescriptorProto::SharedDtor() {
   extendee_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   default_value_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   json_name_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  delete options_;
+  if (this != &default_instance_.get()) {
+    delete options_;
+  }
 }
 
 void FieldDescriptorProto::SetCachedSize(int size) const {
@@ -5511,7 +5542,9 @@ OneofDescriptorProto::~OneofDescriptorProto() {
 
 void OneofDescriptorProto::SharedDtor() {
   name_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  delete options_;
+  if (this != &default_instance_.get()) {
+    delete options_;
+  }
 }
 
 void OneofDescriptorProto::SetCachedSize(int size) const {
@@ -5932,7 +5965,9 @@ EnumDescriptorProto::~EnumDescriptorProto() {
 
 void EnumDescriptorProto::SharedDtor() {
   name_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  delete options_;
+  if (this != &default_instance_.get()) {
+    delete options_;
+  }
 }
 
 void EnumDescriptorProto::SetCachedSize(int size) const {
@@ -6429,7 +6464,9 @@ EnumValueDescriptorProto::~EnumValueDescriptorProto() {
 
 void EnumValueDescriptorProto::SharedDtor() {
   name_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  delete options_;
+  if (this != &default_instance_.get()) {
+    delete options_;
+  }
 }
 
 void EnumValueDescriptorProto::SetCachedSize(int size) const {
@@ -6911,7 +6948,9 @@ ServiceDescriptorProto::~ServiceDescriptorProto() {
 
 void ServiceDescriptorProto::SharedDtor() {
   name_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  delete options_;
+  if (this != &default_instance_.get()) {
+    delete options_;
+  }
 }
 
 void ServiceDescriptorProto::SetCachedSize(int size) const {
@@ -7416,7 +7455,9 @@ void MethodDescriptorProto::SharedDtor() {
   name_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   input_type_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   output_type_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  delete options_;
+  if (this != &default_instance_.get()) {
+    delete options_;
+  }
 }
 
 void MethodDescriptorProto::SetCachedSize(int size) const {

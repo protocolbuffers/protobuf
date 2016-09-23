@@ -222,14 +222,23 @@ void protobuf_RegisterTypes(const ::std::string&) {
 }  // namespace
 
 void protobuf_ShutdownFile_google_2fprotobuf_2fwrappers_2eproto() {
+  DoubleValue::default_instance_.Shutdown();
   delete DoubleValue_reflection_;
+  FloatValue::default_instance_.Shutdown();
   delete FloatValue_reflection_;
+  Int64Value::default_instance_.Shutdown();
   delete Int64Value_reflection_;
+  UInt64Value::default_instance_.Shutdown();
   delete UInt64Value_reflection_;
+  Int32Value::default_instance_.Shutdown();
   delete Int32Value_reflection_;
+  UInt32Value::default_instance_.Shutdown();
   delete UInt32Value_reflection_;
+  BoolValue::default_instance_.Shutdown();
   delete BoolValue_reflection_;
+  StringValue::default_instance_.Shutdown();
   delete StringValue_reflection_;
+  BytesValue::default_instance_.Shutdown();
   delete BytesValue_reflection_;
 }
 

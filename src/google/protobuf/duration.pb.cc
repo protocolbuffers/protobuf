@@ -71,6 +71,7 @@ void protobuf_RegisterTypes(const ::std::string&) {
 }  // namespace
 
 void protobuf_ShutdownFile_google_2fprotobuf_2fduration_2eproto() {
+  Duration::default_instance_.Shutdown();
   delete Duration_reflection_;
 }
 

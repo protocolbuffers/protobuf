@@ -121,8 +121,11 @@ void protobuf_RegisterTypes(const ::std::string&) {
 }  // namespace
 
 void protobuf_ShutdownFile_google_2fprotobuf_2fapi_2eproto() {
+  Api::default_instance_.Shutdown();
   delete Api_reflection_;
+  Method::default_instance_.Shutdown();
   delete Method_reflection_;
+  Mixin::default_instance_.Shutdown();
   delete Mixin_reflection_;
 }
 
@@ -247,7 +250,9 @@ Api::~Api() {
 void Api::SharedDtor() {
   name_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   version_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  delete source_context_;
+  if (this != &default_instance_.get()) {
+    delete source_context_;
+  }
 }
 
 void Api::SetCachedSize(int size) const {

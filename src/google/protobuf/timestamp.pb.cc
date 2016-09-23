@@ -71,6 +71,7 @@ void protobuf_RegisterTypes(const ::std::string&) {
 }  // namespace
 
 void protobuf_ShutdownFile_google_2fprotobuf_2ftimestamp_2eproto() {
+  Timestamp::default_instance_.Shutdown();
   delete Timestamp_reflection_;
 }
 
