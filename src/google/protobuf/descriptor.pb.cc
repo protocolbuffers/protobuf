@@ -313,10 +313,11 @@ void protobuf_AssignDesc_google_2fprotobuf_2fdescriptor_2eproto() {
       sizeof(MethodDescriptorProto),
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(MethodDescriptorProto, _internal_metadata_));
   FileOptions_descriptor_ = file->message_type(9);
-  static const int FileOptions_offsets_[14] = {
+  static const int FileOptions_offsets_[15] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FileOptions, java_package_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FileOptions, java_outer_classname_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FileOptions, java_multiple_files_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FileOptions, java_generate_equals_and_hash_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FileOptions, java_string_check_utf8_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FileOptions, optimize_for_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FileOptions, go_package_),
@@ -791,73 +792,74 @@ void protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto_impl() {
     "\n\013output_type\030\003 \001(\t\022/\n\007options\030\004 \001(\0132\036.g"
     "oogle.protobuf.MethodOptions\022\037\n\020client_s"
     "treaming\030\005 \001(\010:\005false\022\037\n\020server_streamin"
-    "g\030\006 \001(\010:\005false\"\331\004\n\013FileOptions\022\024\n\014java_p"
+    "g\030\006 \001(\010:\005false\"\204\005\n\013FileOptions\022\024\n\014java_p"
     "ackage\030\001 \001(\t\022\034\n\024java_outer_classname\030\010 \001"
-    "(\t\022\"\n\023java_multiple_files\030\n \001(\010:\005false\022%"
-    "\n\026java_string_check_utf8\030\033 \001(\010:\005false\022F\n"
-    "\014optimize_for\030\t \001(\0162).google.protobuf.Fi"
-    "leOptions.OptimizeMode:\005SPEED\022\022\n\ngo_pack"
-    "age\030\013 \001(\t\022\"\n\023cc_generic_services\030\020 \001(\010:\005"
-    "false\022$\n\025java_generic_services\030\021 \001(\010:\005fa"
-    "lse\022\"\n\023py_generic_services\030\022 \001(\010:\005false\022"
-    "\031\n\ndeprecated\030\027 \001(\010:\005false\022\037\n\020cc_enable_"
-    "arenas\030\037 \001(\010:\005false\022\031\n\021objc_class_prefix"
-    "\030$ \001(\t\022\030\n\020csharp_namespace\030% \001(\t\022C\n\024unin"
-    "terpreted_option\030\347\007 \003(\0132$.google.protobu"
-    "f.UninterpretedOption\":\n\014OptimizeMode\022\t\n"
-    "\005SPEED\020\001\022\r\n\tCODE_SIZE\020\002\022\020\n\014LITE_RUNTIME\020"
-    "\003*\t\010\350\007\020\200\200\200\200\002J\004\010&\020\'\"\354\001\n\016MessageOptions\022&\n"
-    "\027message_set_wire_format\030\001 \001(\010:\005false\022.\n"
-    "\037no_standard_descriptor_accessor\030\002 \001(\010:\005"
-    "false\022\031\n\ndeprecated\030\003 \001(\010:\005false\022\021\n\tmap_"
-    "entry\030\007 \001(\010\022C\n\024uninterpreted_option\030\347\007 \003"
-    "(\0132$.google.protobuf.UninterpretedOption"
-    "*\t\010\350\007\020\200\200\200\200\002J\004\010\010\020\t\"\236\003\n\014FieldOptions\022:\n\005ct"
-    "ype\030\001 \001(\0162#.google.protobuf.FieldOptions"
-    ".CType:\006STRING\022\016\n\006packed\030\002 \001(\010\022\?\n\006jstype"
-    "\030\006 \001(\0162$.google.protobuf.FieldOptions.JS"
-    "Type:\tJS_NORMAL\022\023\n\004lazy\030\005 \001(\010:\005false\022\031\n\n"
-    "deprecated\030\003 \001(\010:\005false\022\023\n\004weak\030\n \001(\010:\005f"
+    "(\t\022\"\n\023java_multiple_files\030\n \001(\010:\005false\022)"
+    "\n\035java_generate_equals_and_hash\030\024 \001(\010B\002\030"
+    "\001\022%\n\026java_string_check_utf8\030\033 \001(\010:\005false"
+    "\022F\n\014optimize_for\030\t \001(\0162).google.protobuf"
+    ".FileOptions.OptimizeMode:\005SPEED\022\022\n\ngo_p"
+    "ackage\030\013 \001(\t\022\"\n\023cc_generic_services\030\020 \001("
+    "\010:\005false\022$\n\025java_generic_services\030\021 \001(\010:"
+    "\005false\022\"\n\023py_generic_services\030\022 \001(\010:\005fal"
+    "se\022\031\n\ndeprecated\030\027 \001(\010:\005false\022\037\n\020cc_enab"
+    "le_arenas\030\037 \001(\010:\005false\022\031\n\021objc_class_pre"
+    "fix\030$ \001(\t\022\030\n\020csharp_namespace\030% \001(\t\022C\n\024u"
+    "ninterpreted_option\030\347\007 \003(\0132$.google.prot"
+    "obuf.UninterpretedOption\":\n\014OptimizeMode"
+    "\022\t\n\005SPEED\020\001\022\r\n\tCODE_SIZE\020\002\022\020\n\014LITE_RUNTI"
+    "ME\020\003*\t\010\350\007\020\200\200\200\200\002J\004\010&\020\'\"\354\001\n\016MessageOptions"
+    "\022&\n\027message_set_wire_format\030\001 \001(\010:\005false"
+    "\022.\n\037no_standard_descriptor_accessor\030\002 \001("
+    "\010:\005false\022\031\n\ndeprecated\030\003 \001(\010:\005false\022\021\n\tm"
+    "ap_entry\030\007 \001(\010\022C\n\024uninterpreted_option\030\347"
+    "\007 \003(\0132$.google.protobuf.UninterpretedOpt"
+    "ion*\t\010\350\007\020\200\200\200\200\002J\004\010\010\020\t\"\236\003\n\014FieldOptions\022:\n"
+    "\005ctype\030\001 \001(\0162#.google.protobuf.FieldOpti"
+    "ons.CType:\006STRING\022\016\n\006packed\030\002 \001(\010\022\?\n\006jst"
+    "ype\030\006 \001(\0162$.google.protobuf.FieldOptions"
+    ".JSType:\tJS_NORMAL\022\023\n\004lazy\030\005 \001(\010:\005false\022"
+    "\031\n\ndeprecated\030\003 \001(\010:\005false\022\023\n\004weak\030\n \001(\010"
+    ":\005false\022C\n\024uninterpreted_option\030\347\007 \003(\0132$"
+    ".google.protobuf.UninterpretedOption\"/\n\005"
+    "CType\022\n\n\006STRING\020\000\022\010\n\004CORD\020\001\022\020\n\014STRING_PI"
+    "ECE\020\002\"5\n\006JSType\022\r\n\tJS_NORMAL\020\000\022\r\n\tJS_STR"
+    "ING\020\001\022\r\n\tJS_NUMBER\020\002*\t\010\350\007\020\200\200\200\200\002J\004\010\004\020\005\"^\n"
+    "\014OneofOptions\022C\n\024uninterpreted_option\030\347\007"
+    " \003(\0132$.google.protobuf.UninterpretedOpti"
+    "on*\t\010\350\007\020\200\200\200\200\002\"\215\001\n\013EnumOptions\022\023\n\013allow_a"
+    "lias\030\002 \001(\010\022\031\n\ndeprecated\030\003 \001(\010:\005false\022C\n"
+    "\024uninterpreted_option\030\347\007 \003(\0132$.google.pr"
+    "otobuf.UninterpretedOption*\t\010\350\007\020\200\200\200\200\002\"}\n"
+    "\020EnumValueOptions\022\031\n\ndeprecated\030\001 \001(\010:\005f"
     "alse\022C\n\024uninterpreted_option\030\347\007 \003(\0132$.go"
-    "ogle.protobuf.UninterpretedOption\"/\n\005CTy"
-    "pe\022\n\n\006STRING\020\000\022\010\n\004CORD\020\001\022\020\n\014STRING_PIECE"
-    "\020\002\"5\n\006JSType\022\r\n\tJS_NORMAL\020\000\022\r\n\tJS_STRING"
-    "\020\001\022\r\n\tJS_NUMBER\020\002*\t\010\350\007\020\200\200\200\200\002J\004\010\004\020\005\"^\n\014On"
-    "eofOptions\022C\n\024uninterpreted_option\030\347\007 \003("
-    "\0132$.google.protobuf.UninterpretedOption*"
-    "\t\010\350\007\020\200\200\200\200\002\"\215\001\n\013EnumOptions\022\023\n\013allow_alia"
-    "s\030\002 \001(\010\022\031\n\ndeprecated\030\003 \001(\010:\005false\022C\n\024un"
-    "interpreted_option\030\347\007 \003(\0132$.google.proto"
-    "buf.UninterpretedOption*\t\010\350\007\020\200\200\200\200\002\"}\n\020En"
-    "umValueOptions\022\031\n\ndeprecated\030\001 \001(\010:\005fals"
-    "e\022C\n\024uninterpreted_option\030\347\007 \003(\0132$.googl"
-    "e.protobuf.UninterpretedOption*\t\010\350\007\020\200\200\200\200"
-    "\002\"{\n\016ServiceOptions\022\031\n\ndeprecated\030! \001(\010:"
-    "\005false\022C\n\024uninterpreted_option\030\347\007 \003(\0132$."
-    "google.protobuf.UninterpretedOption*\t\010\350\007"
-    "\020\200\200\200\200\002\"z\n\rMethodOptions\022\031\n\ndeprecated\030! "
-    "\001(\010:\005false\022C\n\024uninterpreted_option\030\347\007 \003("
-    "\0132$.google.protobuf.UninterpretedOption*"
-    "\t\010\350\007\020\200\200\200\200\002\"\236\002\n\023UninterpretedOption\022;\n\004na"
-    "me\030\002 \003(\0132-.google.protobuf.Uninterpreted"
-    "Option.NamePart\022\030\n\020identifier_value\030\003 \001("
-    "\t\022\032\n\022positive_int_value\030\004 \001(\004\022\032\n\022negativ"
-    "e_int_value\030\005 \001(\003\022\024\n\014double_value\030\006 \001(\001\022"
-    "\024\n\014string_value\030\007 \001(\014\022\027\n\017aggregate_value"
-    "\030\010 \001(\t\0323\n\010NamePart\022\021\n\tname_part\030\001 \002(\t\022\024\n"
-    "\014is_extension\030\002 \002(\010\"\325\001\n\016SourceCodeInfo\022:"
-    "\n\010location\030\001 \003(\0132(.google.protobuf.Sourc"
-    "eCodeInfo.Location\032\206\001\n\010Location\022\020\n\004path\030"
-    "\001 \003(\005B\002\020\001\022\020\n\004span\030\002 \003(\005B\002\020\001\022\030\n\020leading_c"
-    "omments\030\003 \001(\t\022\031\n\021trailing_comments\030\004 \001(\t"
-    "\022!\n\031leading_detached_comments\030\006 \003(\t\"\247\001\n\021"
-    "GeneratedCodeInfo\022A\n\nannotation\030\001 \003(\0132-."
-    "google.protobuf.GeneratedCodeInfo.Annota"
-    "tion\032O\n\nAnnotation\022\020\n\004path\030\001 \003(\005B\002\020\001\022\023\n\013"
-    "source_file\030\002 \001(\t\022\r\n\005begin\030\003 \001(\005\022\013\n\003end\030"
-    "\004 \001(\005BX\n\023com.google.protobufB\020Descriptor"
-    "ProtosH\001Z\ndescriptor\242\002\003GPB\252\002\032Google.Prot"
-    "obuf.Reflection", 5255);
+    "ogle.protobuf.UninterpretedOption*\t\010\350\007\020\200"
+    "\200\200\200\002\"{\n\016ServiceOptions\022\031\n\ndeprecated\030! \001"
+    "(\010:\005false\022C\n\024uninterpreted_option\030\347\007 \003(\013"
+    "2$.google.protobuf.UninterpretedOption*\t"
+    "\010\350\007\020\200\200\200\200\002\"z\n\rMethodOptions\022\031\n\ndeprecated"
+    "\030! \001(\010:\005false\022C\n\024uninterpreted_option\030\347\007"
+    " \003(\0132$.google.protobuf.UninterpretedOpti"
+    "on*\t\010\350\007\020\200\200\200\200\002\"\236\002\n\023UninterpretedOption\022;\n"
+    "\004name\030\002 \003(\0132-.google.protobuf.Uninterpre"
+    "tedOption.NamePart\022\030\n\020identifier_value\030\003"
+    " \001(\t\022\032\n\022positive_int_value\030\004 \001(\004\022\032\n\022nega"
+    "tive_int_value\030\005 \001(\003\022\024\n\014double_value\030\006 \001"
+    "(\001\022\024\n\014string_value\030\007 \001(\014\022\027\n\017aggregate_va"
+    "lue\030\010 \001(\t\0323\n\010NamePart\022\021\n\tname_part\030\001 \002(\t"
+    "\022\024\n\014is_extension\030\002 \002(\010\"\325\001\n\016SourceCodeInf"
+    "o\022:\n\010location\030\001 \003(\0132(.google.protobuf.So"
+    "urceCodeInfo.Location\032\206\001\n\010Location\022\020\n\004pa"
+    "th\030\001 \003(\005B\002\020\001\022\020\n\004span\030\002 \003(\005B\002\020\001\022\030\n\020leadin"
+    "g_comments\030\003 \001(\t\022\031\n\021trailing_comments\030\004 "
+    "\001(\t\022!\n\031leading_detached_comments\030\006 \003(\t\"\247"
+    "\001\n\021GeneratedCodeInfo\022A\n\nannotation\030\001 \003(\013"
+    "2-.google.protobuf.GeneratedCodeInfo.Ann"
+    "otation\032O\n\nAnnotation\022\020\n\004path\030\001 \003(\005B\002\020\001\022"
+    "\023\n\013source_file\030\002 \001(\t\022\r\n\005begin\030\003 \001(\005\022\013\n\003e"
+    "nd\030\004 \001(\005BX\n\023com.google.protobufB\020Descrip"
+    "torProtosH\001Z\ndescriptor\242\002\003GPB\252\002\032Google.P"
+    "rotobuf.Reflection", 5298);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "google/protobuf/descriptor.proto", &protobuf_RegisterTypes);
   ::google::protobuf::internal::OnShutdown(&protobuf_ShutdownFile_google_2fprotobuf_2fdescriptor_2eproto);
@@ -8174,6 +8176,7 @@ const int FileOptions::OptimizeMode_ARRAYSIZE;
 const int FileOptions::kJavaPackageFieldNumber;
 const int FileOptions::kJavaOuterClassnameFieldNumber;
 const int FileOptions::kJavaMultipleFilesFieldNumber;
+const int FileOptions::kJavaGenerateEqualsAndHashFieldNumber;
 const int FileOptions::kJavaStringCheckUtf8FieldNumber;
 const int FileOptions::kOptimizeForFieldNumber;
 const int FileOptions::kGoPackageFieldNumber;
@@ -8275,7 +8278,7 @@ void FileOptions::Clear() {
 } while (0)
 
   if (_has_bits_[0 / 32] & 255u) {
-    ZR_(java_multiple_files_, java_generic_services_);
+    ZR_(java_multiple_files_, cc_generic_services_);
     if (has_java_package()) {
       java_package_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
     }
@@ -8287,8 +8290,8 @@ void FileOptions::Clear() {
       go_package_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
     }
   }
-  if (_has_bits_[8 / 32] & 7936u) {
-    ZR_(py_generic_services_, cc_enable_arenas_);
+  if (_has_bits_[8 / 32] & 16128u) {
+    ZR_(java_generic_services_, cc_enable_arenas_);
     if (has_objc_class_prefix()) {
       objc_class_prefix_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
     }
@@ -8440,6 +8443,21 @@ bool FileOptions::MergePartialFromCodedStream(
           DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
                    bool, ::google::protobuf::internal::WireFormatLite::TYPE_BOOL>(
                  input, &py_generic_services_)));
+        } else {
+          goto handle_unusual;
+        }
+        if (input->ExpectTag(160)) goto parse_java_generate_equals_and_hash;
+        break;
+      }
+
+      // optional bool java_generate_equals_and_hash = 20 [deprecated = true];
+      case 20: {
+        if (tag == 160) {
+         parse_java_generate_equals_and_hash:
+          set_has_java_generate_equals_and_hash();
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   bool, ::google::protobuf::internal::WireFormatLite::TYPE_BOOL>(
+                 input, &java_generate_equals_and_hash_)));
         } else {
           goto handle_unusual;
         }
@@ -8629,6 +8647,11 @@ void FileOptions::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormatLite::WriteBool(18, this->py_generic_services(), output);
   }
 
+  // optional bool java_generate_equals_and_hash = 20 [deprecated = true];
+  if (has_java_generate_equals_and_hash()) {
+    ::google::protobuf::internal::WireFormatLite::WriteBool(20, this->java_generate_equals_and_hash(), output);
+  }
+
   // optional bool deprecated = 23 [default = false];
   if (has_deprecated()) {
     ::google::protobuf::internal::WireFormatLite::WriteBool(23, this->deprecated(), output);
@@ -8744,6 +8767,11 @@ void FileOptions::SerializeWithCachedSizes(
     target = ::google::protobuf::internal::WireFormatLite::WriteBoolToArray(18, this->py_generic_services(), target);
   }
 
+  // optional bool java_generate_equals_and_hash = 20 [deprecated = true];
+  if (has_java_generate_equals_and_hash()) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteBoolToArray(20, this->java_generate_equals_and_hash(), target);
+  }
+
   // optional bool deprecated = 23 [default = false];
   if (has_deprecated()) {
     target = ::google::protobuf::internal::WireFormatLite::WriteBoolToArray(23, this->deprecated(), target);
@@ -8824,6 +8852,11 @@ size_t FileOptions::ByteSizeLong() const {
       total_size += 1 + 1;
     }
 
+    // optional bool java_generate_equals_and_hash = 20 [deprecated = true];
+    if (has_java_generate_equals_and_hash()) {
+      total_size += 2 + 1;
+    }
+
     // optional bool java_string_check_utf8 = 27 [default = false];
     if (has_java_string_check_utf8()) {
       total_size += 2 + 1;
@@ -8847,13 +8880,13 @@ size_t FileOptions::ByteSizeLong() const {
       total_size += 2 + 1;
     }
 
+  }
+  if (_has_bits_[8 / 32] & 16128u) {
     // optional bool java_generic_services = 17 [default = false];
     if (has_java_generic_services()) {
       total_size += 2 + 1;
     }
 
-  }
-  if (_has_bits_[8 / 32] & 7936u) {
     // optional bool py_generic_services = 18 [default = false];
     if (has_py_generic_services()) {
       total_size += 2 + 1;
@@ -8948,6 +8981,9 @@ void FileOptions::UnsafeMergeFrom(const FileOptions& from) {
     if (from.has_java_multiple_files()) {
       set_java_multiple_files(from.java_multiple_files());
     }
+    if (from.has_java_generate_equals_and_hash()) {
+      set_java_generate_equals_and_hash(from.java_generate_equals_and_hash());
+    }
     if (from.has_java_string_check_utf8()) {
       set_java_string_check_utf8(from.java_string_check_utf8());
     }
@@ -8961,11 +8997,11 @@ void FileOptions::UnsafeMergeFrom(const FileOptions& from) {
     if (from.has_cc_generic_services()) {
       set_cc_generic_services(from.cc_generic_services());
     }
+  }
+  if (from._has_bits_[8 / 32] & (0xffu << (8 % 32))) {
     if (from.has_java_generic_services()) {
       set_java_generic_services(from.java_generic_services());
     }
-  }
-  if (from._has_bits_[8 / 32] & (0xffu << (8 % 32))) {
     if (from.has_py_generic_services()) {
       set_py_generic_services(from.py_generic_services());
     }
@@ -9023,6 +9059,7 @@ void FileOptions::InternalSwap(FileOptions* other) {
   java_package_.Swap(&other->java_package_);
   java_outer_classname_.Swap(&other->java_outer_classname_);
   std::swap(java_multiple_files_, other->java_multiple_files_);
+  std::swap(java_generate_equals_and_hash_, other->java_generate_equals_and_hash_);
   std::swap(java_string_check_utf8_, other->java_string_check_utf8_);
   std::swap(optimize_for_, other->optimize_for_);
   go_package_.Swap(&other->go_package_);
@@ -9183,15 +9220,39 @@ void FileOptions::set_java_multiple_files(bool value) {
   // @@protoc_insertion_point(field_set:google.protobuf.FileOptions.java_multiple_files)
 }
 
-// optional bool java_string_check_utf8 = 27 [default = false];
-bool FileOptions::has_java_string_check_utf8() const {
+// optional bool java_generate_equals_and_hash = 20 [deprecated = true];
+bool FileOptions::has_java_generate_equals_and_hash() const {
   return (_has_bits_[0] & 0x00000008u) != 0;
 }
-void FileOptions::set_has_java_string_check_utf8() {
+void FileOptions::set_has_java_generate_equals_and_hash() {
   _has_bits_[0] |= 0x00000008u;
 }
-void FileOptions::clear_has_java_string_check_utf8() {
+void FileOptions::clear_has_java_generate_equals_and_hash() {
   _has_bits_[0] &= ~0x00000008u;
+}
+void FileOptions::clear_java_generate_equals_and_hash() {
+  java_generate_equals_and_hash_ = false;
+  clear_has_java_generate_equals_and_hash();
+}
+bool FileOptions::java_generate_equals_and_hash() const {
+  // @@protoc_insertion_point(field_get:google.protobuf.FileOptions.java_generate_equals_and_hash)
+  return java_generate_equals_and_hash_;
+}
+void FileOptions::set_java_generate_equals_and_hash(bool value) {
+  set_has_java_generate_equals_and_hash();
+  java_generate_equals_and_hash_ = value;
+  // @@protoc_insertion_point(field_set:google.protobuf.FileOptions.java_generate_equals_and_hash)
+}
+
+// optional bool java_string_check_utf8 = 27 [default = false];
+bool FileOptions::has_java_string_check_utf8() const {
+  return (_has_bits_[0] & 0x00000010u) != 0;
+}
+void FileOptions::set_has_java_string_check_utf8() {
+  _has_bits_[0] |= 0x00000010u;
+}
+void FileOptions::clear_has_java_string_check_utf8() {
+  _has_bits_[0] &= ~0x00000010u;
 }
 void FileOptions::clear_java_string_check_utf8() {
   java_string_check_utf8_ = false;
@@ -9209,13 +9270,13 @@ void FileOptions::set_java_string_check_utf8(bool value) {
 
 // optional .google.protobuf.FileOptions.OptimizeMode optimize_for = 9 [default = SPEED];
 bool FileOptions::has_optimize_for() const {
-  return (_has_bits_[0] & 0x00000010u) != 0;
+  return (_has_bits_[0] & 0x00000020u) != 0;
 }
 void FileOptions::set_has_optimize_for() {
-  _has_bits_[0] |= 0x00000010u;
+  _has_bits_[0] |= 0x00000020u;
 }
 void FileOptions::clear_has_optimize_for() {
-  _has_bits_[0] &= ~0x00000010u;
+  _has_bits_[0] &= ~0x00000020u;
 }
 void FileOptions::clear_optimize_for() {
   optimize_for_ = 1;
@@ -9234,13 +9295,13 @@ void FileOptions::set_optimize_for(::google::protobuf::FileOptions_OptimizeMode 
 
 // optional string go_package = 11;
 bool FileOptions::has_go_package() const {
-  return (_has_bits_[0] & 0x00000020u) != 0;
+  return (_has_bits_[0] & 0x00000040u) != 0;
 }
 void FileOptions::set_has_go_package() {
-  _has_bits_[0] |= 0x00000020u;
+  _has_bits_[0] |= 0x00000040u;
 }
 void FileOptions::clear_has_go_package() {
-  _has_bits_[0] &= ~0x00000020u;
+  _has_bits_[0] &= ~0x00000040u;
 }
 void FileOptions::clear_go_package() {
   go_package_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
@@ -9288,13 +9349,13 @@ void FileOptions::set_allocated_go_package(::std::string* go_package) {
 
 // optional bool cc_generic_services = 16 [default = false];
 bool FileOptions::has_cc_generic_services() const {
-  return (_has_bits_[0] & 0x00000040u) != 0;
+  return (_has_bits_[0] & 0x00000080u) != 0;
 }
 void FileOptions::set_has_cc_generic_services() {
-  _has_bits_[0] |= 0x00000040u;
+  _has_bits_[0] |= 0x00000080u;
 }
 void FileOptions::clear_has_cc_generic_services() {
-  _has_bits_[0] &= ~0x00000040u;
+  _has_bits_[0] &= ~0x00000080u;
 }
 void FileOptions::clear_cc_generic_services() {
   cc_generic_services_ = false;
@@ -9312,13 +9373,13 @@ void FileOptions::set_cc_generic_services(bool value) {
 
 // optional bool java_generic_services = 17 [default = false];
 bool FileOptions::has_java_generic_services() const {
-  return (_has_bits_[0] & 0x00000080u) != 0;
+  return (_has_bits_[0] & 0x00000100u) != 0;
 }
 void FileOptions::set_has_java_generic_services() {
-  _has_bits_[0] |= 0x00000080u;
+  _has_bits_[0] |= 0x00000100u;
 }
 void FileOptions::clear_has_java_generic_services() {
-  _has_bits_[0] &= ~0x00000080u;
+  _has_bits_[0] &= ~0x00000100u;
 }
 void FileOptions::clear_java_generic_services() {
   java_generic_services_ = false;
@@ -9336,13 +9397,13 @@ void FileOptions::set_java_generic_services(bool value) {
 
 // optional bool py_generic_services = 18 [default = false];
 bool FileOptions::has_py_generic_services() const {
-  return (_has_bits_[0] & 0x00000100u) != 0;
+  return (_has_bits_[0] & 0x00000200u) != 0;
 }
 void FileOptions::set_has_py_generic_services() {
-  _has_bits_[0] |= 0x00000100u;
+  _has_bits_[0] |= 0x00000200u;
 }
 void FileOptions::clear_has_py_generic_services() {
-  _has_bits_[0] &= ~0x00000100u;
+  _has_bits_[0] &= ~0x00000200u;
 }
 void FileOptions::clear_py_generic_services() {
   py_generic_services_ = false;
@@ -9360,13 +9421,13 @@ void FileOptions::set_py_generic_services(bool value) {
 
 // optional bool deprecated = 23 [default = false];
 bool FileOptions::has_deprecated() const {
-  return (_has_bits_[0] & 0x00000200u) != 0;
+  return (_has_bits_[0] & 0x00000400u) != 0;
 }
 void FileOptions::set_has_deprecated() {
-  _has_bits_[0] |= 0x00000200u;
+  _has_bits_[0] |= 0x00000400u;
 }
 void FileOptions::clear_has_deprecated() {
-  _has_bits_[0] &= ~0x00000200u;
+  _has_bits_[0] &= ~0x00000400u;
 }
 void FileOptions::clear_deprecated() {
   deprecated_ = false;
@@ -9384,13 +9445,13 @@ void FileOptions::set_deprecated(bool value) {
 
 // optional bool cc_enable_arenas = 31 [default = false];
 bool FileOptions::has_cc_enable_arenas() const {
-  return (_has_bits_[0] & 0x00000400u) != 0;
+  return (_has_bits_[0] & 0x00000800u) != 0;
 }
 void FileOptions::set_has_cc_enable_arenas() {
-  _has_bits_[0] |= 0x00000400u;
+  _has_bits_[0] |= 0x00000800u;
 }
 void FileOptions::clear_has_cc_enable_arenas() {
-  _has_bits_[0] &= ~0x00000400u;
+  _has_bits_[0] &= ~0x00000800u;
 }
 void FileOptions::clear_cc_enable_arenas() {
   cc_enable_arenas_ = false;
@@ -9408,13 +9469,13 @@ void FileOptions::set_cc_enable_arenas(bool value) {
 
 // optional string objc_class_prefix = 36;
 bool FileOptions::has_objc_class_prefix() const {
-  return (_has_bits_[0] & 0x00000800u) != 0;
+  return (_has_bits_[0] & 0x00001000u) != 0;
 }
 void FileOptions::set_has_objc_class_prefix() {
-  _has_bits_[0] |= 0x00000800u;
+  _has_bits_[0] |= 0x00001000u;
 }
 void FileOptions::clear_has_objc_class_prefix() {
-  _has_bits_[0] &= ~0x00000800u;
+  _has_bits_[0] &= ~0x00001000u;
 }
 void FileOptions::clear_objc_class_prefix() {
   objc_class_prefix_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
@@ -9462,13 +9523,13 @@ void FileOptions::set_allocated_objc_class_prefix(::std::string* objc_class_pref
 
 // optional string csharp_namespace = 37;
 bool FileOptions::has_csharp_namespace() const {
-  return (_has_bits_[0] & 0x00001000u) != 0;
+  return (_has_bits_[0] & 0x00002000u) != 0;
 }
 void FileOptions::set_has_csharp_namespace() {
-  _has_bits_[0] |= 0x00001000u;
+  _has_bits_[0] |= 0x00002000u;
 }
 void FileOptions::clear_has_csharp_namespace() {
-  _has_bits_[0] &= ~0x00001000u;
+  _has_bits_[0] &= ~0x00002000u;
 }
 void FileOptions::clear_csharp_namespace() {
   csharp_namespace_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
