@@ -69,15 +69,15 @@ void protobuf_RegisterTypes(const ::std::string&) {
 }  // namespace
 
 void protobuf_ShutdownFile_google_2fprotobuf_2fempty_2eproto() {
-  Empty::default_instance_.Shutdown();
+  Empty_default_instance_.Shutdown();
   delete Empty_reflection_;
 }
 
 void protobuf_InitDefaults_google_2fprotobuf_2fempty_2eproto_impl() {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
 
-  Empty::default_instance_.DefaultConstruct();
-  Empty::default_instance_.get_mutable()->InitAsDefaultInstance();
+  Empty_default_instance_.DefaultConstruct();
+  Empty_default_instance_.get_mutable()->InitAsDefaultInstance();
 }
 
 GOOGLE_PROTOBUF_DECLARE_ONCE(protobuf_InitDefaults_google_2fprotobuf_2fempty_2eproto_once_);
@@ -193,7 +193,7 @@ const Empty& Empty::default_instance() {
   return *internal_default_instance();
 }
 
-::google::protobuf::internal::ExplicitlyConstructed<Empty> Empty::default_instance_;
+::google::protobuf::internal::ExplicitlyConstructed<Empty> Empty_default_instance_;
 
 Empty* Empty::New(::google::protobuf::Arena* arena) const {
   return ::google::protobuf::Arena::CreateMessage<Empty>(arena);
@@ -333,6 +333,9 @@ void Empty::InternalSwap(Empty* other) {
 #if PROTOBUF_INLINE_NOT_IN_HEADERS
 // Empty
 
+inline const Empty* Empty::internal_default_instance() {
+  return &Empty_default_instance_.get();
+}
 #endif  // PROTOBUF_INLINE_NOT_IN_HEADERS
 
 // @@protoc_insertion_point(namespace_scope)

@@ -622,124 +622,124 @@ void protobuf_RegisterTypes(const ::std::string&) {
 }  // namespace
 
 void protobuf_ShutdownFile_google_2fprotobuf_2fdescriptor_2eproto() {
-  FileDescriptorSet::default_instance_.Shutdown();
+  FileDescriptorSet_default_instance_.Shutdown();
   delete FileDescriptorSet_reflection_;
-  FileDescriptorProto::default_instance_.Shutdown();
+  FileDescriptorProto_default_instance_.Shutdown();
   delete FileDescriptorProto_reflection_;
-  DescriptorProto::default_instance_.Shutdown();
+  DescriptorProto_default_instance_.Shutdown();
   delete DescriptorProto_reflection_;
-  DescriptorProto_ExtensionRange::default_instance_.Shutdown();
+  DescriptorProto_ExtensionRange_default_instance_.Shutdown();
   delete DescriptorProto_ExtensionRange_reflection_;
-  DescriptorProto_ReservedRange::default_instance_.Shutdown();
+  DescriptorProto_ReservedRange_default_instance_.Shutdown();
   delete DescriptorProto_ReservedRange_reflection_;
-  FieldDescriptorProto::default_instance_.Shutdown();
+  FieldDescriptorProto_default_instance_.Shutdown();
   delete FieldDescriptorProto_reflection_;
-  OneofDescriptorProto::default_instance_.Shutdown();
+  OneofDescriptorProto_default_instance_.Shutdown();
   delete OneofDescriptorProto_reflection_;
-  EnumDescriptorProto::default_instance_.Shutdown();
+  EnumDescriptorProto_default_instance_.Shutdown();
   delete EnumDescriptorProto_reflection_;
-  EnumValueDescriptorProto::default_instance_.Shutdown();
+  EnumValueDescriptorProto_default_instance_.Shutdown();
   delete EnumValueDescriptorProto_reflection_;
-  ServiceDescriptorProto::default_instance_.Shutdown();
+  ServiceDescriptorProto_default_instance_.Shutdown();
   delete ServiceDescriptorProto_reflection_;
-  MethodDescriptorProto::default_instance_.Shutdown();
+  MethodDescriptorProto_default_instance_.Shutdown();
   delete MethodDescriptorProto_reflection_;
-  FileOptions::default_instance_.Shutdown();
+  FileOptions_default_instance_.Shutdown();
   delete FileOptions_reflection_;
-  MessageOptions::default_instance_.Shutdown();
+  MessageOptions_default_instance_.Shutdown();
   delete MessageOptions_reflection_;
-  FieldOptions::default_instance_.Shutdown();
+  FieldOptions_default_instance_.Shutdown();
   delete FieldOptions_reflection_;
-  OneofOptions::default_instance_.Shutdown();
+  OneofOptions_default_instance_.Shutdown();
   delete OneofOptions_reflection_;
-  EnumOptions::default_instance_.Shutdown();
+  EnumOptions_default_instance_.Shutdown();
   delete EnumOptions_reflection_;
-  EnumValueOptions::default_instance_.Shutdown();
+  EnumValueOptions_default_instance_.Shutdown();
   delete EnumValueOptions_reflection_;
-  ServiceOptions::default_instance_.Shutdown();
+  ServiceOptions_default_instance_.Shutdown();
   delete ServiceOptions_reflection_;
-  MethodOptions::default_instance_.Shutdown();
+  MethodOptions_default_instance_.Shutdown();
   delete MethodOptions_reflection_;
-  UninterpretedOption::default_instance_.Shutdown();
+  UninterpretedOption_default_instance_.Shutdown();
   delete UninterpretedOption_reflection_;
-  UninterpretedOption_NamePart::default_instance_.Shutdown();
+  UninterpretedOption_NamePart_default_instance_.Shutdown();
   delete UninterpretedOption_NamePart_reflection_;
-  SourceCodeInfo::default_instance_.Shutdown();
+  SourceCodeInfo_default_instance_.Shutdown();
   delete SourceCodeInfo_reflection_;
-  SourceCodeInfo_Location::default_instance_.Shutdown();
+  SourceCodeInfo_Location_default_instance_.Shutdown();
   delete SourceCodeInfo_Location_reflection_;
-  GeneratedCodeInfo::default_instance_.Shutdown();
+  GeneratedCodeInfo_default_instance_.Shutdown();
   delete GeneratedCodeInfo_reflection_;
-  GeneratedCodeInfo_Annotation::default_instance_.Shutdown();
+  GeneratedCodeInfo_Annotation_default_instance_.Shutdown();
   delete GeneratedCodeInfo_Annotation_reflection_;
 }
 
 void protobuf_InitDefaults_google_2fprotobuf_2fdescriptor_2eproto_impl() {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
 
-  FileDescriptorSet::default_instance_.DefaultConstruct();
+  FileDescriptorSet_default_instance_.DefaultConstruct();
   ::google::protobuf::internal::GetEmptyString();
-  FileDescriptorProto::default_instance_.DefaultConstruct();
+  FileDescriptorProto_default_instance_.DefaultConstruct();
   ::google::protobuf::internal::GetEmptyString();
-  DescriptorProto::default_instance_.DefaultConstruct();
-  DescriptorProto_ExtensionRange::default_instance_.DefaultConstruct();
-  DescriptorProto_ReservedRange::default_instance_.DefaultConstruct();
+  DescriptorProto_default_instance_.DefaultConstruct();
+  DescriptorProto_ExtensionRange_default_instance_.DefaultConstruct();
+  DescriptorProto_ReservedRange_default_instance_.DefaultConstruct();
   ::google::protobuf::internal::GetEmptyString();
-  FieldDescriptorProto::default_instance_.DefaultConstruct();
+  FieldDescriptorProto_default_instance_.DefaultConstruct();
   ::google::protobuf::internal::GetEmptyString();
-  OneofDescriptorProto::default_instance_.DefaultConstruct();
+  OneofDescriptorProto_default_instance_.DefaultConstruct();
   ::google::protobuf::internal::GetEmptyString();
-  EnumDescriptorProto::default_instance_.DefaultConstruct();
+  EnumDescriptorProto_default_instance_.DefaultConstruct();
   ::google::protobuf::internal::GetEmptyString();
-  EnumValueDescriptorProto::default_instance_.DefaultConstruct();
+  EnumValueDescriptorProto_default_instance_.DefaultConstruct();
   ::google::protobuf::internal::GetEmptyString();
-  ServiceDescriptorProto::default_instance_.DefaultConstruct();
+  ServiceDescriptorProto_default_instance_.DefaultConstruct();
   ::google::protobuf::internal::GetEmptyString();
-  MethodDescriptorProto::default_instance_.DefaultConstruct();
+  MethodDescriptorProto_default_instance_.DefaultConstruct();
   ::google::protobuf::internal::GetEmptyString();
-  FileOptions::default_instance_.DefaultConstruct();
-  MessageOptions::default_instance_.DefaultConstruct();
-  FieldOptions::default_instance_.DefaultConstruct();
-  OneofOptions::default_instance_.DefaultConstruct();
-  EnumOptions::default_instance_.DefaultConstruct();
-  EnumValueOptions::default_instance_.DefaultConstruct();
-  ServiceOptions::default_instance_.DefaultConstruct();
-  MethodOptions::default_instance_.DefaultConstruct();
+  FileOptions_default_instance_.DefaultConstruct();
+  MessageOptions_default_instance_.DefaultConstruct();
+  FieldOptions_default_instance_.DefaultConstruct();
+  OneofOptions_default_instance_.DefaultConstruct();
+  EnumOptions_default_instance_.DefaultConstruct();
+  EnumValueOptions_default_instance_.DefaultConstruct();
+  ServiceOptions_default_instance_.DefaultConstruct();
+  MethodOptions_default_instance_.DefaultConstruct();
   ::google::protobuf::internal::GetEmptyString();
-  UninterpretedOption::default_instance_.DefaultConstruct();
+  UninterpretedOption_default_instance_.DefaultConstruct();
   ::google::protobuf::internal::GetEmptyString();
-  UninterpretedOption_NamePart::default_instance_.DefaultConstruct();
-  SourceCodeInfo::default_instance_.DefaultConstruct();
+  UninterpretedOption_NamePart_default_instance_.DefaultConstruct();
+  SourceCodeInfo_default_instance_.DefaultConstruct();
   ::google::protobuf::internal::GetEmptyString();
-  SourceCodeInfo_Location::default_instance_.DefaultConstruct();
-  GeneratedCodeInfo::default_instance_.DefaultConstruct();
+  SourceCodeInfo_Location_default_instance_.DefaultConstruct();
+  GeneratedCodeInfo_default_instance_.DefaultConstruct();
   ::google::protobuf::internal::GetEmptyString();
-  GeneratedCodeInfo_Annotation::default_instance_.DefaultConstruct();
-  FileDescriptorSet::default_instance_.get_mutable()->InitAsDefaultInstance();
-  FileDescriptorProto::default_instance_.get_mutable()->InitAsDefaultInstance();
-  DescriptorProto::default_instance_.get_mutable()->InitAsDefaultInstance();
-  DescriptorProto_ExtensionRange::default_instance_.get_mutable()->InitAsDefaultInstance();
-  DescriptorProto_ReservedRange::default_instance_.get_mutable()->InitAsDefaultInstance();
-  FieldDescriptorProto::default_instance_.get_mutable()->InitAsDefaultInstance();
-  OneofDescriptorProto::default_instance_.get_mutable()->InitAsDefaultInstance();
-  EnumDescriptorProto::default_instance_.get_mutable()->InitAsDefaultInstance();
-  EnumValueDescriptorProto::default_instance_.get_mutable()->InitAsDefaultInstance();
-  ServiceDescriptorProto::default_instance_.get_mutable()->InitAsDefaultInstance();
-  MethodDescriptorProto::default_instance_.get_mutable()->InitAsDefaultInstance();
-  FileOptions::default_instance_.get_mutable()->InitAsDefaultInstance();
-  MessageOptions::default_instance_.get_mutable()->InitAsDefaultInstance();
-  FieldOptions::default_instance_.get_mutable()->InitAsDefaultInstance();
-  OneofOptions::default_instance_.get_mutable()->InitAsDefaultInstance();
-  EnumOptions::default_instance_.get_mutable()->InitAsDefaultInstance();
-  EnumValueOptions::default_instance_.get_mutable()->InitAsDefaultInstance();
-  ServiceOptions::default_instance_.get_mutable()->InitAsDefaultInstance();
-  MethodOptions::default_instance_.get_mutable()->InitAsDefaultInstance();
-  UninterpretedOption::default_instance_.get_mutable()->InitAsDefaultInstance();
-  UninterpretedOption_NamePart::default_instance_.get_mutable()->InitAsDefaultInstance();
-  SourceCodeInfo::default_instance_.get_mutable()->InitAsDefaultInstance();
-  SourceCodeInfo_Location::default_instance_.get_mutable()->InitAsDefaultInstance();
-  GeneratedCodeInfo::default_instance_.get_mutable()->InitAsDefaultInstance();
-  GeneratedCodeInfo_Annotation::default_instance_.get_mutable()->InitAsDefaultInstance();
+  GeneratedCodeInfo_Annotation_default_instance_.DefaultConstruct();
+  FileDescriptorSet_default_instance_.get_mutable()->InitAsDefaultInstance();
+  FileDescriptorProto_default_instance_.get_mutable()->InitAsDefaultInstance();
+  DescriptorProto_default_instance_.get_mutable()->InitAsDefaultInstance();
+  DescriptorProto_ExtensionRange_default_instance_.get_mutable()->InitAsDefaultInstance();
+  DescriptorProto_ReservedRange_default_instance_.get_mutable()->InitAsDefaultInstance();
+  FieldDescriptorProto_default_instance_.get_mutable()->InitAsDefaultInstance();
+  OneofDescriptorProto_default_instance_.get_mutable()->InitAsDefaultInstance();
+  EnumDescriptorProto_default_instance_.get_mutable()->InitAsDefaultInstance();
+  EnumValueDescriptorProto_default_instance_.get_mutable()->InitAsDefaultInstance();
+  ServiceDescriptorProto_default_instance_.get_mutable()->InitAsDefaultInstance();
+  MethodDescriptorProto_default_instance_.get_mutable()->InitAsDefaultInstance();
+  FileOptions_default_instance_.get_mutable()->InitAsDefaultInstance();
+  MessageOptions_default_instance_.get_mutable()->InitAsDefaultInstance();
+  FieldOptions_default_instance_.get_mutable()->InitAsDefaultInstance();
+  OneofOptions_default_instance_.get_mutable()->InitAsDefaultInstance();
+  EnumOptions_default_instance_.get_mutable()->InitAsDefaultInstance();
+  EnumValueOptions_default_instance_.get_mutable()->InitAsDefaultInstance();
+  ServiceOptions_default_instance_.get_mutable()->InitAsDefaultInstance();
+  MethodOptions_default_instance_.get_mutable()->InitAsDefaultInstance();
+  UninterpretedOption_default_instance_.get_mutable()->InitAsDefaultInstance();
+  UninterpretedOption_NamePart_default_instance_.get_mutable()->InitAsDefaultInstance();
+  SourceCodeInfo_default_instance_.get_mutable()->InitAsDefaultInstance();
+  SourceCodeInfo_Location_default_instance_.get_mutable()->InitAsDefaultInstance();
+  GeneratedCodeInfo_default_instance_.get_mutable()->InitAsDefaultInstance();
+  GeneratedCodeInfo_Annotation_default_instance_.get_mutable()->InitAsDefaultInstance();
 }
 
 GOOGLE_PROTOBUF_DECLARE_ONCE(protobuf_InitDefaults_google_2fprotobuf_2fdescriptor_2eproto_once_);
@@ -963,7 +963,7 @@ const FileDescriptorSet& FileDescriptorSet::default_instance() {
   return *internal_default_instance();
 }
 
-::google::protobuf::internal::ExplicitlyConstructed<FileDescriptorSet> FileDescriptorSet::default_instance_;
+::google::protobuf::internal::ExplicitlyConstructed<FileDescriptorSet> FileDescriptorSet_default_instance_;
 
 FileDescriptorSet* FileDescriptorSet::New(::google::protobuf::Arena* arena) const {
   FileDescriptorSet* n = new FileDescriptorSet;
@@ -1197,6 +1197,9 @@ FileDescriptorSet::file() const {
   return file_;
 }
 
+inline const FileDescriptorSet* FileDescriptorSet::internal_default_instance() {
+  return &FileDescriptorSet_default_instance_.get();
+}
 #endif  // PROTOBUF_INLINE_NOT_IN_HEADERS
 
 // ===================================================================
@@ -1256,7 +1259,7 @@ void FileDescriptorProto::SharedDtor() {
   name_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   package_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   syntax_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  if (this != &default_instance_.get()) {
+  if (this != &FileDescriptorProto_default_instance_.get()) {
     delete options_;
     delete source_code_info_;
   }
@@ -1277,7 +1280,7 @@ const FileDescriptorProto& FileDescriptorProto::default_instance() {
   return *internal_default_instance();
 }
 
-::google::protobuf::internal::ExplicitlyConstructed<FileDescriptorProto> FileDescriptorProto::default_instance_;
+::google::protobuf::internal::ExplicitlyConstructed<FileDescriptorProto> FileDescriptorProto_default_instance_;
 
 FileDescriptorProto* FileDescriptorProto::New(::google::protobuf::Arena* arena) const {
   FileDescriptorProto* n = new FileDescriptorProto;
@@ -2498,6 +2501,9 @@ void FileDescriptorProto::set_allocated_syntax(::std::string* syntax) {
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.FileDescriptorProto.syntax)
 }
 
+inline const FileDescriptorProto* FileDescriptorProto::internal_default_instance() {
+  return &FileDescriptorProto_default_instance_.get();
+}
 #endif  // PROTOBUF_INLINE_NOT_IN_HEADERS
 
 // ===================================================================
@@ -2554,7 +2560,7 @@ const DescriptorProto_ExtensionRange& DescriptorProto_ExtensionRange::default_in
   return *internal_default_instance();
 }
 
-::google::protobuf::internal::ExplicitlyConstructed<DescriptorProto_ExtensionRange> DescriptorProto_ExtensionRange::default_instance_;
+::google::protobuf::internal::ExplicitlyConstructed<DescriptorProto_ExtensionRange> DescriptorProto_ExtensionRange_default_instance_;
 
 DescriptorProto_ExtensionRange* DescriptorProto_ExtensionRange::New(::google::protobuf::Arena* arena) const {
   DescriptorProto_ExtensionRange* n = new DescriptorProto_ExtensionRange;
@@ -2862,7 +2868,7 @@ const DescriptorProto_ReservedRange& DescriptorProto_ReservedRange::default_inst
   return *internal_default_instance();
 }
 
-::google::protobuf::internal::ExplicitlyConstructed<DescriptorProto_ReservedRange> DescriptorProto_ReservedRange::default_instance_;
+::google::protobuf::internal::ExplicitlyConstructed<DescriptorProto_ReservedRange> DescriptorProto_ReservedRange_default_instance_;
 
 DescriptorProto_ReservedRange* DescriptorProto_ReservedRange::New(::google::protobuf::Arena* arena) const {
   DescriptorProto_ReservedRange* n = new DescriptorProto_ReservedRange;
@@ -3164,7 +3170,7 @@ DescriptorProto::~DescriptorProto() {
 
 void DescriptorProto::SharedDtor() {
   name_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  if (this != &default_instance_.get()) {
+  if (this != &DescriptorProto_default_instance_.get()) {
     delete options_;
   }
 }
@@ -3184,7 +3190,7 @@ const DescriptorProto& DescriptorProto::default_instance() {
   return *internal_default_instance();
 }
 
-::google::protobuf::internal::ExplicitlyConstructed<DescriptorProto> DescriptorProto::default_instance_;
+::google::protobuf::internal::ExplicitlyConstructed<DescriptorProto> DescriptorProto_default_instance_;
 
 DescriptorProto* DescriptorProto::New(::google::protobuf::Arena* arena) const {
   DescriptorProto* n = new DescriptorProto;
@@ -3851,6 +3857,9 @@ void DescriptorProto_ExtensionRange::set_end(::google::protobuf::int32 value) {
   // @@protoc_insertion_point(field_set:google.protobuf.DescriptorProto.ExtensionRange.end)
 }
 
+inline const DescriptorProto_ExtensionRange* DescriptorProto_ExtensionRange::internal_default_instance() {
+  return &DescriptorProto_ExtensionRange_default_instance_.get();
+}
 // -------------------------------------------------------------------
 
 // DescriptorProto_ReservedRange
@@ -3903,6 +3912,9 @@ void DescriptorProto_ReservedRange::set_end(::google::protobuf::int32 value) {
   // @@protoc_insertion_point(field_set:google.protobuf.DescriptorProto.ReservedRange.end)
 }
 
+inline const DescriptorProto_ReservedRange* DescriptorProto_ReservedRange::internal_default_instance() {
+  return &DescriptorProto_ReservedRange_default_instance_.get();
+}
 // -------------------------------------------------------------------
 
 // DescriptorProto
@@ -4271,6 +4283,9 @@ DescriptorProto::mutable_reserved_name() {
   return &reserved_name_;
 }
 
+inline const DescriptorProto* DescriptorProto::internal_default_instance() {
+  return &DescriptorProto_default_instance_.get();
+}
 #endif  // PROTOBUF_INLINE_NOT_IN_HEADERS
 
 // ===================================================================
@@ -4409,7 +4424,7 @@ void FieldDescriptorProto::SharedDtor() {
   extendee_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   default_value_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   json_name_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  if (this != &default_instance_.get()) {
+  if (this != &FieldDescriptorProto_default_instance_.get()) {
     delete options_;
   }
 }
@@ -4429,7 +4444,7 @@ const FieldDescriptorProto& FieldDescriptorProto::default_instance() {
   return *internal_default_instance();
 }
 
-::google::protobuf::internal::ExplicitlyConstructed<FieldDescriptorProto> FieldDescriptorProto::default_instance_;
+::google::protobuf::internal::ExplicitlyConstructed<FieldDescriptorProto> FieldDescriptorProto_default_instance_;
 
 FieldDescriptorProto* FieldDescriptorProto::New(::google::protobuf::Arena* arena) const {
   FieldDescriptorProto* n = new FieldDescriptorProto;
@@ -5500,6 +5515,9 @@ void FieldDescriptorProto::set_allocated_options(::google::protobuf::FieldOption
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.FieldDescriptorProto.options)
 }
 
+inline const FieldDescriptorProto* FieldDescriptorProto::internal_default_instance() {
+  return &FieldDescriptorProto_default_instance_.get();
+}
 #endif  // PROTOBUF_INLINE_NOT_IN_HEADERS
 
 // ===================================================================
@@ -5542,7 +5560,7 @@ OneofDescriptorProto::~OneofDescriptorProto() {
 
 void OneofDescriptorProto::SharedDtor() {
   name_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  if (this != &default_instance_.get()) {
+  if (this != &OneofDescriptorProto_default_instance_.get()) {
     delete options_;
   }
 }
@@ -5562,7 +5580,7 @@ const OneofDescriptorProto& OneofDescriptorProto::default_instance() {
   return *internal_default_instance();
 }
 
-::google::protobuf::internal::ExplicitlyConstructed<OneofDescriptorProto> OneofDescriptorProto::default_instance_;
+::google::protobuf::internal::ExplicitlyConstructed<OneofDescriptorProto> OneofDescriptorProto_default_instance_;
 
 OneofDescriptorProto* OneofDescriptorProto::New(::google::protobuf::Arena* arena) const {
   OneofDescriptorProto* n = new OneofDescriptorProto;
@@ -5922,6 +5940,9 @@ void OneofDescriptorProto::set_allocated_options(::google::protobuf::OneofOption
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.OneofDescriptorProto.options)
 }
 
+inline const OneofDescriptorProto* OneofDescriptorProto::internal_default_instance() {
+  return &OneofDescriptorProto_default_instance_.get();
+}
 #endif  // PROTOBUF_INLINE_NOT_IN_HEADERS
 
 // ===================================================================
@@ -5965,7 +5986,7 @@ EnumDescriptorProto::~EnumDescriptorProto() {
 
 void EnumDescriptorProto::SharedDtor() {
   name_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  if (this != &default_instance_.get()) {
+  if (this != &EnumDescriptorProto_default_instance_.get()) {
     delete options_;
   }
 }
@@ -5985,7 +6006,7 @@ const EnumDescriptorProto& EnumDescriptorProto::default_instance() {
   return *internal_default_instance();
 }
 
-::google::protobuf::internal::ExplicitlyConstructed<EnumDescriptorProto> EnumDescriptorProto::default_instance_;
+::google::protobuf::internal::ExplicitlyConstructed<EnumDescriptorProto> EnumDescriptorProto_default_instance_;
 
 EnumDescriptorProto* EnumDescriptorProto::New(::google::protobuf::Arena* arena) const {
   EnumDescriptorProto* n = new EnumDescriptorProto;
@@ -6420,6 +6441,9 @@ void EnumDescriptorProto::set_allocated_options(::google::protobuf::EnumOptions*
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.EnumDescriptorProto.options)
 }
 
+inline const EnumDescriptorProto* EnumDescriptorProto::internal_default_instance() {
+  return &EnumDescriptorProto_default_instance_.get();
+}
 #endif  // PROTOBUF_INLINE_NOT_IN_HEADERS
 
 // ===================================================================
@@ -6464,7 +6488,7 @@ EnumValueDescriptorProto::~EnumValueDescriptorProto() {
 
 void EnumValueDescriptorProto::SharedDtor() {
   name_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  if (this != &default_instance_.get()) {
+  if (this != &EnumValueDescriptorProto_default_instance_.get()) {
     delete options_;
   }
 }
@@ -6484,7 +6508,7 @@ const EnumValueDescriptorProto& EnumValueDescriptorProto::default_instance() {
   return *internal_default_instance();
 }
 
-::google::protobuf::internal::ExplicitlyConstructed<EnumValueDescriptorProto> EnumValueDescriptorProto::default_instance_;
+::google::protobuf::internal::ExplicitlyConstructed<EnumValueDescriptorProto> EnumValueDescriptorProto_default_instance_;
 
 EnumValueDescriptorProto* EnumValueDescriptorProto::New(::google::protobuf::Arena* arena) const {
   EnumValueDescriptorProto* n = new EnumValueDescriptorProto;
@@ -6905,6 +6929,9 @@ void EnumValueDescriptorProto::set_allocated_options(::google::protobuf::EnumVal
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.EnumValueDescriptorProto.options)
 }
 
+inline const EnumValueDescriptorProto* EnumValueDescriptorProto::internal_default_instance() {
+  return &EnumValueDescriptorProto_default_instance_.get();
+}
 #endif  // PROTOBUF_INLINE_NOT_IN_HEADERS
 
 // ===================================================================
@@ -6948,7 +6975,7 @@ ServiceDescriptorProto::~ServiceDescriptorProto() {
 
 void ServiceDescriptorProto::SharedDtor() {
   name_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  if (this != &default_instance_.get()) {
+  if (this != &ServiceDescriptorProto_default_instance_.get()) {
     delete options_;
   }
 }
@@ -6968,7 +6995,7 @@ const ServiceDescriptorProto& ServiceDescriptorProto::default_instance() {
   return *internal_default_instance();
 }
 
-::google::protobuf::internal::ExplicitlyConstructed<ServiceDescriptorProto> ServiceDescriptorProto::default_instance_;
+::google::protobuf::internal::ExplicitlyConstructed<ServiceDescriptorProto> ServiceDescriptorProto_default_instance_;
 
 ServiceDescriptorProto* ServiceDescriptorProto::New(::google::protobuf::Arena* arena) const {
   ServiceDescriptorProto* n = new ServiceDescriptorProto;
@@ -7403,6 +7430,9 @@ void ServiceDescriptorProto::set_allocated_options(::google::protobuf::ServiceOp
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.ServiceDescriptorProto.options)
 }
 
+inline const ServiceDescriptorProto* ServiceDescriptorProto::internal_default_instance() {
+  return &ServiceDescriptorProto_default_instance_.get();
+}
 #endif  // PROTOBUF_INLINE_NOT_IN_HEADERS
 
 // ===================================================================
@@ -7455,7 +7485,7 @@ void MethodDescriptorProto::SharedDtor() {
   name_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   input_type_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   output_type_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  if (this != &default_instance_.get()) {
+  if (this != &MethodDescriptorProto_default_instance_.get()) {
     delete options_;
   }
 }
@@ -7475,7 +7505,7 @@ const MethodDescriptorProto& MethodDescriptorProto::default_instance() {
   return *internal_default_instance();
 }
 
-::google::protobuf::internal::ExplicitlyConstructed<MethodDescriptorProto> MethodDescriptorProto::default_instance_;
+::google::protobuf::internal::ExplicitlyConstructed<MethodDescriptorProto> MethodDescriptorProto_default_instance_;
 
 MethodDescriptorProto* MethodDescriptorProto::New(::google::protobuf::Arena* arena) const {
   MethodDescriptorProto* n = new MethodDescriptorProto;
@@ -8186,6 +8216,9 @@ void MethodDescriptorProto::set_server_streaming(bool value) {
   // @@protoc_insertion_point(field_set:google.protobuf.MethodDescriptorProto.server_streaming)
 }
 
+inline const MethodDescriptorProto* MethodDescriptorProto::internal_default_instance() {
+  return &MethodDescriptorProto_default_instance_.get();
+}
 #endif  // PROTOBUF_INLINE_NOT_IN_HEADERS
 
 // ===================================================================
@@ -8289,7 +8322,7 @@ const FileOptions& FileOptions::default_instance() {
   return *internal_default_instance();
 }
 
-::google::protobuf::internal::ExplicitlyConstructed<FileOptions> FileOptions::default_instance_;
+::google::protobuf::internal::ExplicitlyConstructed<FileOptions> FileOptions_default_instance_;
 
 FileOptions* FileOptions::New(::google::protobuf::Arena* arena) const {
   FileOptions* n = new FileOptions;
@@ -9646,6 +9679,9 @@ FileOptions::uninterpreted_option() const {
   return uninterpreted_option_;
 }
 
+inline const FileOptions* FileOptions::internal_default_instance() {
+  return &FileOptions_default_instance_.get();
+}
 #endif  // PROTOBUF_INLINE_NOT_IN_HEADERS
 
 // ===================================================================
@@ -9705,7 +9741,7 @@ const MessageOptions& MessageOptions::default_instance() {
   return *internal_default_instance();
 }
 
-::google::protobuf::internal::ExplicitlyConstructed<MessageOptions> MessageOptions::default_instance_;
+::google::protobuf::internal::ExplicitlyConstructed<MessageOptions> MessageOptions_default_instance_;
 
 MessageOptions* MessageOptions::New(::google::protobuf::Arena* arena) const {
   MessageOptions* n = new MessageOptions;
@@ -10218,6 +10254,9 @@ MessageOptions::uninterpreted_option() const {
   return uninterpreted_option_;
 }
 
+inline const MessageOptions* MessageOptions::internal_default_instance() {
+  return &MessageOptions_default_instance_.get();
+}
 #endif  // PROTOBUF_INLINE_NOT_IN_HEADERS
 
 // ===================================================================
@@ -10325,7 +10364,7 @@ const FieldOptions& FieldOptions::default_instance() {
   return *internal_default_instance();
 }
 
-::google::protobuf::internal::ExplicitlyConstructed<FieldOptions> FieldOptions::default_instance_;
+::google::protobuf::internal::ExplicitlyConstructed<FieldOptions> FieldOptions_default_instance_;
 
 FieldOptions* FieldOptions::New(::google::protobuf::Arena* arena) const {
   FieldOptions* n = new FieldOptions;
@@ -10972,6 +11011,9 @@ FieldOptions::uninterpreted_option() const {
   return uninterpreted_option_;
 }
 
+inline const FieldOptions* FieldOptions::internal_default_instance() {
+  return &FieldOptions_default_instance_.get();
+}
 #endif  // PROTOBUF_INLINE_NOT_IN_HEADERS
 
 // ===================================================================
@@ -11025,7 +11067,7 @@ const OneofOptions& OneofOptions::default_instance() {
   return *internal_default_instance();
 }
 
-::google::protobuf::internal::ExplicitlyConstructed<OneofOptions> OneofOptions::default_instance_;
+::google::protobuf::internal::ExplicitlyConstructed<OneofOptions> OneofOptions_default_instance_;
 
 OneofOptions* OneofOptions::New(::google::protobuf::Arena* arena) const {
   OneofOptions* n = new OneofOptions;
@@ -11281,6 +11323,9 @@ OneofOptions::uninterpreted_option() const {
   return uninterpreted_option_;
 }
 
+inline const OneofOptions* OneofOptions::internal_default_instance() {
+  return &OneofOptions_default_instance_.get();
+}
 #endif  // PROTOBUF_INLINE_NOT_IN_HEADERS
 
 // ===================================================================
@@ -11338,7 +11383,7 @@ const EnumOptions& EnumOptions::default_instance() {
   return *internal_default_instance();
 }
 
-::google::protobuf::internal::ExplicitlyConstructed<EnumOptions> EnumOptions::default_instance_;
+::google::protobuf::internal::ExplicitlyConstructed<EnumOptions> EnumOptions_default_instance_;
 
 EnumOptions* EnumOptions::New(::google::protobuf::Arena* arena) const {
   EnumOptions* n = new EnumOptions;
@@ -11735,6 +11780,9 @@ EnumOptions::uninterpreted_option() const {
   return uninterpreted_option_;
 }
 
+inline const EnumOptions* EnumOptions::internal_default_instance() {
+  return &EnumOptions_default_instance_.get();
+}
 #endif  // PROTOBUF_INLINE_NOT_IN_HEADERS
 
 // ===================================================================
@@ -11790,7 +11838,7 @@ const EnumValueOptions& EnumValueOptions::default_instance() {
   return *internal_default_instance();
 }
 
-::google::protobuf::internal::ExplicitlyConstructed<EnumValueOptions> EnumValueOptions::default_instance_;
+::google::protobuf::internal::ExplicitlyConstructed<EnumValueOptions> EnumValueOptions_default_instance_;
 
 EnumValueOptions* EnumValueOptions::New(::google::protobuf::Arena* arena) const {
   EnumValueOptions* n = new EnumValueOptions;
@@ -12107,6 +12155,9 @@ EnumValueOptions::uninterpreted_option() const {
   return uninterpreted_option_;
 }
 
+inline const EnumValueOptions* EnumValueOptions::internal_default_instance() {
+  return &EnumValueOptions_default_instance_.get();
+}
 #endif  // PROTOBUF_INLINE_NOT_IN_HEADERS
 
 // ===================================================================
@@ -12162,7 +12213,7 @@ const ServiceOptions& ServiceOptions::default_instance() {
   return *internal_default_instance();
 }
 
-::google::protobuf::internal::ExplicitlyConstructed<ServiceOptions> ServiceOptions::default_instance_;
+::google::protobuf::internal::ExplicitlyConstructed<ServiceOptions> ServiceOptions_default_instance_;
 
 ServiceOptions* ServiceOptions::New(::google::protobuf::Arena* arena) const {
   ServiceOptions* n = new ServiceOptions;
@@ -12479,6 +12530,9 @@ ServiceOptions::uninterpreted_option() const {
   return uninterpreted_option_;
 }
 
+inline const ServiceOptions* ServiceOptions::internal_default_instance() {
+  return &ServiceOptions_default_instance_.get();
+}
 #endif  // PROTOBUF_INLINE_NOT_IN_HEADERS
 
 // ===================================================================
@@ -12534,7 +12588,7 @@ const MethodOptions& MethodOptions::default_instance() {
   return *internal_default_instance();
 }
 
-::google::protobuf::internal::ExplicitlyConstructed<MethodOptions> MethodOptions::default_instance_;
+::google::protobuf::internal::ExplicitlyConstructed<MethodOptions> MethodOptions_default_instance_;
 
 MethodOptions* MethodOptions::New(::google::protobuf::Arena* arena) const {
   MethodOptions* n = new MethodOptions;
@@ -12851,6 +12905,9 @@ MethodOptions::uninterpreted_option() const {
   return uninterpreted_option_;
 }
 
+inline const MethodOptions* MethodOptions::internal_default_instance() {
+  return &MethodOptions_default_instance_.get();
+}
 #endif  // PROTOBUF_INLINE_NOT_IN_HEADERS
 
 // ===================================================================
@@ -12908,7 +12965,7 @@ const UninterpretedOption_NamePart& UninterpretedOption_NamePart::default_instan
   return *internal_default_instance();
 }
 
-::google::protobuf::internal::ExplicitlyConstructed<UninterpretedOption_NamePart> UninterpretedOption_NamePart::default_instance_;
+::google::protobuf::internal::ExplicitlyConstructed<UninterpretedOption_NamePart> UninterpretedOption_NamePart_default_instance_;
 
 UninterpretedOption_NamePart* UninterpretedOption_NamePart::New(::google::protobuf::Arena* arena) const {
   UninterpretedOption_NamePart* n = new UninterpretedOption_NamePart;
@@ -13241,7 +13298,7 @@ const UninterpretedOption& UninterpretedOption::default_instance() {
   return *internal_default_instance();
 }
 
-::google::protobuf::internal::ExplicitlyConstructed<UninterpretedOption> UninterpretedOption::default_instance_;
+::google::protobuf::internal::ExplicitlyConstructed<UninterpretedOption> UninterpretedOption_default_instance_;
 
 UninterpretedOption* UninterpretedOption::New(::google::protobuf::Arena* arena) const {
   UninterpretedOption* n = new UninterpretedOption;
@@ -13803,6 +13860,9 @@ void UninterpretedOption_NamePart::set_is_extension(bool value) {
   // @@protoc_insertion_point(field_set:google.protobuf.UninterpretedOption.NamePart.is_extension)
 }
 
+inline const UninterpretedOption_NamePart* UninterpretedOption_NamePart::internal_default_instance() {
+  return &UninterpretedOption_NamePart_default_instance_.get();
+}
 // -------------------------------------------------------------------
 
 // UninterpretedOption
@@ -14071,6 +14131,9 @@ void UninterpretedOption::set_allocated_aggregate_value(::std::string* aggregate
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.UninterpretedOption.aggregate_value)
 }
 
+inline const UninterpretedOption* UninterpretedOption::internal_default_instance() {
+  return &UninterpretedOption_default_instance_.get();
+}
 #endif  // PROTOBUF_INLINE_NOT_IN_HEADERS
 
 // ===================================================================
@@ -14132,7 +14195,7 @@ const SourceCodeInfo_Location& SourceCodeInfo_Location::default_instance() {
   return *internal_default_instance();
 }
 
-::google::protobuf::internal::ExplicitlyConstructed<SourceCodeInfo_Location> SourceCodeInfo_Location::default_instance_;
+::google::protobuf::internal::ExplicitlyConstructed<SourceCodeInfo_Location> SourceCodeInfo_Location_default_instance_;
 
 SourceCodeInfo_Location* SourceCodeInfo_Location::New(::google::protobuf::Arena* arena) const {
   SourceCodeInfo_Location* n = new SourceCodeInfo_Location;
@@ -14630,7 +14693,7 @@ const SourceCodeInfo& SourceCodeInfo::default_instance() {
   return *internal_default_instance();
 }
 
-::google::protobuf::internal::ExplicitlyConstructed<SourceCodeInfo> SourceCodeInfo::default_instance_;
+::google::protobuf::internal::ExplicitlyConstructed<SourceCodeInfo> SourceCodeInfo_default_instance_;
 
 SourceCodeInfo* SourceCodeInfo::New(::google::protobuf::Arena* arena) const {
   SourceCodeInfo* n = new SourceCodeInfo;
@@ -15056,6 +15119,9 @@ SourceCodeInfo_Location::mutable_leading_detached_comments() {
   return &leading_detached_comments_;
 }
 
+inline const SourceCodeInfo_Location* SourceCodeInfo_Location::internal_default_instance() {
+  return &SourceCodeInfo_Location_default_instance_.get();
+}
 // -------------------------------------------------------------------
 
 // SourceCodeInfo
@@ -15090,6 +15156,9 @@ SourceCodeInfo::location() const {
   return location_;
 }
 
+inline const SourceCodeInfo* SourceCodeInfo::internal_default_instance() {
+  return &SourceCodeInfo_default_instance_.get();
+}
 #endif  // PROTOBUF_INLINE_NOT_IN_HEADERS
 
 // ===================================================================
@@ -15150,7 +15219,7 @@ const GeneratedCodeInfo_Annotation& GeneratedCodeInfo_Annotation::default_instan
   return *internal_default_instance();
 }
 
-::google::protobuf::internal::ExplicitlyConstructed<GeneratedCodeInfo_Annotation> GeneratedCodeInfo_Annotation::default_instance_;
+::google::protobuf::internal::ExplicitlyConstructed<GeneratedCodeInfo_Annotation> GeneratedCodeInfo_Annotation_default_instance_;
 
 GeneratedCodeInfo_Annotation* GeneratedCodeInfo_Annotation::New(::google::protobuf::Arena* arena) const {
   GeneratedCodeInfo_Annotation* n = new GeneratedCodeInfo_Annotation;
@@ -15574,7 +15643,7 @@ const GeneratedCodeInfo& GeneratedCodeInfo::default_instance() {
   return *internal_default_instance();
 }
 
-::google::protobuf::internal::ExplicitlyConstructed<GeneratedCodeInfo> GeneratedCodeInfo::default_instance_;
+::google::protobuf::internal::ExplicitlyConstructed<GeneratedCodeInfo> GeneratedCodeInfo_default_instance_;
 
 GeneratedCodeInfo* GeneratedCodeInfo::New(::google::protobuf::Arena* arena) const {
   GeneratedCodeInfo* n = new GeneratedCodeInfo;
@@ -15909,6 +15978,9 @@ void GeneratedCodeInfo_Annotation::set_end(::google::protobuf::int32 value) {
   // @@protoc_insertion_point(field_set:google.protobuf.GeneratedCodeInfo.Annotation.end)
 }
 
+inline const GeneratedCodeInfo_Annotation* GeneratedCodeInfo_Annotation::internal_default_instance() {
+  return &GeneratedCodeInfo_Annotation_default_instance_.get();
+}
 // -------------------------------------------------------------------
 
 // GeneratedCodeInfo
@@ -15943,6 +16015,9 @@ GeneratedCodeInfo::annotation() const {
   return annotation_;
 }
 
+inline const GeneratedCodeInfo* GeneratedCodeInfo::internal_default_instance() {
+  return &GeneratedCodeInfo_default_instance_.get();
+}
 #endif  // PROTOBUF_INLINE_NOT_IN_HEADERS
 
 // @@protoc_insertion_point(namespace_scope)

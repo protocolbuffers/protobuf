@@ -150,9 +150,7 @@ class LIBPROTOBUF_EXPORT Type : public ::google::protobuf::Message /* @@protoc_i
   static const ::google::protobuf::Descriptor* descriptor();
   static const Type& default_instance();
 
-  static inline const Type* internal_default_instance() {
-    return &default_instance_.get();
-  }
+  static const Type* internal_default_instance();
 
   void UnsafeArenaSwap(Type* other);
   void Swap(Type* other);
@@ -302,8 +300,9 @@ class LIBPROTOBUF_EXPORT Type : public ::google::protobuf::Message /* @@protoc_i
   friend void protobuf_ShutdownFile_google_2fprotobuf_2ftype_2eproto();
 
   void InitAsDefaultInstance();
-  static ::google::protobuf::internal::ExplicitlyConstructed<Type> default_instance_;
 };
+extern ::google::protobuf::internal::ExplicitlyConstructed<Type> Type_default_instance_;
+
 // -------------------------------------------------------------------
 
 class LIBPROTOBUF_EXPORT Field : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.Field) */ {
@@ -325,9 +324,7 @@ class LIBPROTOBUF_EXPORT Field : public ::google::protobuf::Message /* @@protoc_
   static const ::google::protobuf::Descriptor* descriptor();
   static const Field& default_instance();
 
-  static inline const Field* internal_default_instance() {
-    return &default_instance_.get();
-  }
+  static const Field* internal_default_instance();
 
   void UnsafeArenaSwap(Field* other);
   void Swap(Field* other);
@@ -593,8 +590,9 @@ class LIBPROTOBUF_EXPORT Field : public ::google::protobuf::Message /* @@protoc_
   friend void protobuf_ShutdownFile_google_2fprotobuf_2ftype_2eproto();
 
   void InitAsDefaultInstance();
-  static ::google::protobuf::internal::ExplicitlyConstructed<Field> default_instance_;
 };
+extern ::google::protobuf::internal::ExplicitlyConstructed<Field> Field_default_instance_;
+
 // -------------------------------------------------------------------
 
 class LIBPROTOBUF_EXPORT Enum : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.Enum) */ {
@@ -616,9 +614,7 @@ class LIBPROTOBUF_EXPORT Enum : public ::google::protobuf::Message /* @@protoc_i
   static const ::google::protobuf::Descriptor* descriptor();
   static const Enum& default_instance();
 
-  static inline const Enum* internal_default_instance() {
-    return &default_instance_.get();
-  }
+  static const Enum* internal_default_instance();
 
   void UnsafeArenaSwap(Enum* other);
   void Swap(Enum* other);
@@ -751,8 +747,9 @@ class LIBPROTOBUF_EXPORT Enum : public ::google::protobuf::Message /* @@protoc_i
   friend void protobuf_ShutdownFile_google_2fprotobuf_2ftype_2eproto();
 
   void InitAsDefaultInstance();
-  static ::google::protobuf::internal::ExplicitlyConstructed<Enum> default_instance_;
 };
+extern ::google::protobuf::internal::ExplicitlyConstructed<Enum> Enum_default_instance_;
+
 // -------------------------------------------------------------------
 
 class LIBPROTOBUF_EXPORT EnumValue : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.EnumValue) */ {
@@ -774,9 +771,7 @@ class LIBPROTOBUF_EXPORT EnumValue : public ::google::protobuf::Message /* @@pro
   static const ::google::protobuf::Descriptor* descriptor();
   static const EnumValue& default_instance();
 
-  static inline const EnumValue* internal_default_instance() {
-    return &default_instance_.get();
-  }
+  static const EnumValue* internal_default_instance();
 
   void UnsafeArenaSwap(EnumValue* other);
   void Swap(EnumValue* other);
@@ -879,8 +874,9 @@ class LIBPROTOBUF_EXPORT EnumValue : public ::google::protobuf::Message /* @@pro
   friend void protobuf_ShutdownFile_google_2fprotobuf_2ftype_2eproto();
 
   void InitAsDefaultInstance();
-  static ::google::protobuf::internal::ExplicitlyConstructed<EnumValue> default_instance_;
 };
+extern ::google::protobuf::internal::ExplicitlyConstructed<EnumValue> EnumValue_default_instance_;
+
 // -------------------------------------------------------------------
 
 class LIBPROTOBUF_EXPORT Option : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.Option) */ {
@@ -902,9 +898,7 @@ class LIBPROTOBUF_EXPORT Option : public ::google::protobuf::Message /* @@protoc
   static const ::google::protobuf::Descriptor* descriptor();
   static const Option& default_instance();
 
-  static inline const Option* internal_default_instance() {
-    return &default_instance_.get();
-  }
+  static const Option* internal_default_instance();
 
   void UnsafeArenaSwap(Option* other);
   void Swap(Option* other);
@@ -1004,8 +998,9 @@ class LIBPROTOBUF_EXPORT Option : public ::google::protobuf::Message /* @@protoc
   friend void protobuf_ShutdownFile_google_2fprotobuf_2ftype_2eproto();
 
   void InitAsDefaultInstance();
-  static ::google::protobuf::internal::ExplicitlyConstructed<Option> default_instance_;
 };
+extern ::google::protobuf::internal::ExplicitlyConstructed<Option> Option_default_instance_;
+
 // ===================================================================
 
 
@@ -1260,6 +1255,9 @@ inline void Type::set_syntax(::google::protobuf::Syntax value) {
   // @@protoc_insertion_point(field_set:google.protobuf.Type.syntax)
 }
 
+inline const Type* Type::internal_default_instance() {
+  return &Type_default_instance_.get();
+}
 // -------------------------------------------------------------------
 
 // Field
@@ -1628,6 +1626,9 @@ inline void Field::unsafe_arena_set_allocated_default_value(
   // @@protoc_insertion_point(field_unsafe_arena_set_allocated:google.protobuf.Field.default_value)
 }
 
+inline const Field* Field::internal_default_instance() {
+  return &Field_default_instance_.get();
+}
 // -------------------------------------------------------------------
 
 // Enum
@@ -1823,6 +1824,9 @@ inline void Enum::set_syntax(::google::protobuf::Syntax value) {
   // @@protoc_insertion_point(field_set:google.protobuf.Enum.syntax)
 }
 
+inline const Enum* Enum::internal_default_instance() {
+  return &Enum_default_instance_.get();
+}
 // -------------------------------------------------------------------
 
 // EnumValue
@@ -1937,6 +1941,9 @@ EnumValue::options() const {
   return options_;
 }
 
+inline const EnumValue* EnumValue::internal_default_instance() {
+  return &EnumValue_default_instance_.get();
+}
 // -------------------------------------------------------------------
 
 // Option
@@ -2058,6 +2065,9 @@ inline  void Option::set_allocated_value(::google::protobuf::Any* value) {
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.Option.value)
 }
 
+inline const Option* Option::internal_default_instance() {
+  return &Option_default_instance_.get();
+}
 #endif  // !PROTOBUF_INLINE_NOT_IN_HEADERS
 // -------------------------------------------------------------------
 

@@ -61,9 +61,7 @@ class LIBPROTOBUF_EXPORT Timestamp : public ::google::protobuf::Message /* @@pro
   static const ::google::protobuf::Descriptor* descriptor();
   static const Timestamp& default_instance();
 
-  static inline const Timestamp* internal_default_instance() {
-    return &default_instance_.get();
-  }
+  static const Timestamp* internal_default_instance();
 
   void UnsafeArenaSwap(Timestamp* other);
   void Swap(Timestamp* other);
@@ -145,8 +143,9 @@ class LIBPROTOBUF_EXPORT Timestamp : public ::google::protobuf::Message /* @@pro
   friend void protobuf_ShutdownFile_google_2fprotobuf_2ftimestamp_2eproto();
 
   void InitAsDefaultInstance();
-  static ::google::protobuf::internal::ExplicitlyConstructed<Timestamp> default_instance_;
 };
+extern ::google::protobuf::internal::ExplicitlyConstructed<Timestamp> Timestamp_default_instance_;
+
 // ===================================================================
 
 
@@ -183,6 +182,9 @@ inline void Timestamp::set_nanos(::google::protobuf::int32 value) {
   // @@protoc_insertion_point(field_set:google.protobuf.Timestamp.nanos)
 }
 
+inline const Timestamp* Timestamp::internal_default_instance() {
+  return &Timestamp_default_instance_.get();
+}
 #endif  // !PROTOBUF_INLINE_NOT_IN_HEADERS
 
 // @@protoc_insertion_point(namespace_scope)

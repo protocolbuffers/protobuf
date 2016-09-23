@@ -114,11 +114,11 @@ void protobuf_RegisterTypes(const ::std::string&) {
 }  // namespace
 
 void protobuf_ShutdownFile_google_2fprotobuf_2fcompiler_2fplugin_2eproto() {
-  CodeGeneratorRequest::default_instance_.Shutdown();
+  CodeGeneratorRequest_default_instance_.Shutdown();
   delete CodeGeneratorRequest_reflection_;
-  CodeGeneratorResponse::default_instance_.Shutdown();
+  CodeGeneratorResponse_default_instance_.Shutdown();
   delete CodeGeneratorResponse_reflection_;
-  CodeGeneratorResponse_File::default_instance_.Shutdown();
+  CodeGeneratorResponse_File_default_instance_.Shutdown();
   delete CodeGeneratorResponse_File_reflection_;
 }
 
@@ -127,14 +127,14 @@ void protobuf_InitDefaults_google_2fprotobuf_2fcompiler_2fplugin_2eproto_impl() 
 
   ::google::protobuf::protobuf_InitDefaults_google_2fprotobuf_2fdescriptor_2eproto();
   ::google::protobuf::internal::GetEmptyString();
-  CodeGeneratorRequest::default_instance_.DefaultConstruct();
+  CodeGeneratorRequest_default_instance_.DefaultConstruct();
   ::google::protobuf::internal::GetEmptyString();
-  CodeGeneratorResponse::default_instance_.DefaultConstruct();
+  CodeGeneratorResponse_default_instance_.DefaultConstruct();
   ::google::protobuf::internal::GetEmptyString();
-  CodeGeneratorResponse_File::default_instance_.DefaultConstruct();
-  CodeGeneratorRequest::default_instance_.get_mutable()->InitAsDefaultInstance();
-  CodeGeneratorResponse::default_instance_.get_mutable()->InitAsDefaultInstance();
-  CodeGeneratorResponse_File::default_instance_.get_mutable()->InitAsDefaultInstance();
+  CodeGeneratorResponse_File_default_instance_.DefaultConstruct();
+  CodeGeneratorRequest_default_instance_.get_mutable()->InitAsDefaultInstance();
+  CodeGeneratorResponse_default_instance_.get_mutable()->InitAsDefaultInstance();
+  CodeGeneratorResponse_File_default_instance_.get_mutable()->InitAsDefaultInstance();
 }
 
 GOOGLE_PROTOBUF_DECLARE_ONCE(protobuf_InitDefaults_google_2fprotobuf_2fcompiler_2fplugin_2eproto_once_);
@@ -242,7 +242,7 @@ const CodeGeneratorRequest& CodeGeneratorRequest::default_instance() {
   return *internal_default_instance();
 }
 
-::google::protobuf::internal::ExplicitlyConstructed<CodeGeneratorRequest> CodeGeneratorRequest::default_instance_;
+::google::protobuf::internal::ExplicitlyConstructed<CodeGeneratorRequest> CodeGeneratorRequest_default_instance_;
 
 CodeGeneratorRequest* CodeGeneratorRequest::New(::google::protobuf::Arena* arena) const {
   CodeGeneratorRequest* n = new CodeGeneratorRequest;
@@ -691,6 +691,9 @@ CodeGeneratorRequest::proto_file() const {
   return proto_file_;
 }
 
+inline const CodeGeneratorRequest* CodeGeneratorRequest::internal_default_instance() {
+  return &CodeGeneratorRequest_default_instance_.get();
+}
 #endif  // PROTOBUF_INLINE_NOT_IN_HEADERS
 
 // ===================================================================
@@ -752,7 +755,7 @@ const CodeGeneratorResponse_File& CodeGeneratorResponse_File::default_instance()
   return *internal_default_instance();
 }
 
-::google::protobuf::internal::ExplicitlyConstructed<CodeGeneratorResponse_File> CodeGeneratorResponse_File::default_instance_;
+::google::protobuf::internal::ExplicitlyConstructed<CodeGeneratorResponse_File> CodeGeneratorResponse_File_default_instance_;
 
 CodeGeneratorResponse_File* CodeGeneratorResponse_File::New(::google::protobuf::Arena* arena) const {
   CodeGeneratorResponse_File* n = new CodeGeneratorResponse_File;
@@ -1128,7 +1131,7 @@ const CodeGeneratorResponse& CodeGeneratorResponse::default_instance() {
   return *internal_default_instance();
 }
 
-::google::protobuf::internal::ExplicitlyConstructed<CodeGeneratorResponse> CodeGeneratorResponse::default_instance_;
+::google::protobuf::internal::ExplicitlyConstructed<CodeGeneratorResponse> CodeGeneratorResponse_default_instance_;
 
 CodeGeneratorResponse* CodeGeneratorResponse::New(::google::protobuf::Arena* arena) const {
   CodeGeneratorResponse* n = new CodeGeneratorResponse;
@@ -1548,6 +1551,9 @@ void CodeGeneratorResponse_File::set_allocated_content(::std::string* content) {
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.compiler.CodeGeneratorResponse.File.content)
 }
 
+inline const CodeGeneratorResponse_File* CodeGeneratorResponse_File::internal_default_instance() {
+  return &CodeGeneratorResponse_File_default_instance_.get();
+}
 // -------------------------------------------------------------------
 
 // CodeGeneratorResponse
@@ -1636,6 +1642,9 @@ CodeGeneratorResponse::file() const {
   return file_;
 }
 
+inline const CodeGeneratorResponse* CodeGeneratorResponse::internal_default_instance() {
+  return &CodeGeneratorResponse_default_instance_.get();
+}
 #endif  // PROTOBUF_INLINE_NOT_IN_HEADERS
 
 // @@protoc_insertion_point(namespace_scope)

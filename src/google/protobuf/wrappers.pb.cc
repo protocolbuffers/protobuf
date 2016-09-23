@@ -222,49 +222,49 @@ void protobuf_RegisterTypes(const ::std::string&) {
 }  // namespace
 
 void protobuf_ShutdownFile_google_2fprotobuf_2fwrappers_2eproto() {
-  DoubleValue::default_instance_.Shutdown();
+  DoubleValue_default_instance_.Shutdown();
   delete DoubleValue_reflection_;
-  FloatValue::default_instance_.Shutdown();
+  FloatValue_default_instance_.Shutdown();
   delete FloatValue_reflection_;
-  Int64Value::default_instance_.Shutdown();
+  Int64Value_default_instance_.Shutdown();
   delete Int64Value_reflection_;
-  UInt64Value::default_instance_.Shutdown();
+  UInt64Value_default_instance_.Shutdown();
   delete UInt64Value_reflection_;
-  Int32Value::default_instance_.Shutdown();
+  Int32Value_default_instance_.Shutdown();
   delete Int32Value_reflection_;
-  UInt32Value::default_instance_.Shutdown();
+  UInt32Value_default_instance_.Shutdown();
   delete UInt32Value_reflection_;
-  BoolValue::default_instance_.Shutdown();
+  BoolValue_default_instance_.Shutdown();
   delete BoolValue_reflection_;
-  StringValue::default_instance_.Shutdown();
+  StringValue_default_instance_.Shutdown();
   delete StringValue_reflection_;
-  BytesValue::default_instance_.Shutdown();
+  BytesValue_default_instance_.Shutdown();
   delete BytesValue_reflection_;
 }
 
 void protobuf_InitDefaults_google_2fprotobuf_2fwrappers_2eproto_impl() {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
 
-  DoubleValue::default_instance_.DefaultConstruct();
-  FloatValue::default_instance_.DefaultConstruct();
-  Int64Value::default_instance_.DefaultConstruct();
-  UInt64Value::default_instance_.DefaultConstruct();
-  Int32Value::default_instance_.DefaultConstruct();
-  UInt32Value::default_instance_.DefaultConstruct();
-  BoolValue::default_instance_.DefaultConstruct();
+  DoubleValue_default_instance_.DefaultConstruct();
+  FloatValue_default_instance_.DefaultConstruct();
+  Int64Value_default_instance_.DefaultConstruct();
+  UInt64Value_default_instance_.DefaultConstruct();
+  Int32Value_default_instance_.DefaultConstruct();
+  UInt32Value_default_instance_.DefaultConstruct();
+  BoolValue_default_instance_.DefaultConstruct();
   ::google::protobuf::internal::GetEmptyString();
-  StringValue::default_instance_.DefaultConstruct();
+  StringValue_default_instance_.DefaultConstruct();
   ::google::protobuf::internal::GetEmptyString();
-  BytesValue::default_instance_.DefaultConstruct();
-  DoubleValue::default_instance_.get_mutable()->InitAsDefaultInstance();
-  FloatValue::default_instance_.get_mutable()->InitAsDefaultInstance();
-  Int64Value::default_instance_.get_mutable()->InitAsDefaultInstance();
-  UInt64Value::default_instance_.get_mutable()->InitAsDefaultInstance();
-  Int32Value::default_instance_.get_mutable()->InitAsDefaultInstance();
-  UInt32Value::default_instance_.get_mutable()->InitAsDefaultInstance();
-  BoolValue::default_instance_.get_mutable()->InitAsDefaultInstance();
-  StringValue::default_instance_.get_mutable()->InitAsDefaultInstance();
-  BytesValue::default_instance_.get_mutable()->InitAsDefaultInstance();
+  BytesValue_default_instance_.DefaultConstruct();
+  DoubleValue_default_instance_.get_mutable()->InitAsDefaultInstance();
+  FloatValue_default_instance_.get_mutable()->InitAsDefaultInstance();
+  Int64Value_default_instance_.get_mutable()->InitAsDefaultInstance();
+  UInt64Value_default_instance_.get_mutable()->InitAsDefaultInstance();
+  Int32Value_default_instance_.get_mutable()->InitAsDefaultInstance();
+  UInt32Value_default_instance_.get_mutable()->InitAsDefaultInstance();
+  BoolValue_default_instance_.get_mutable()->InitAsDefaultInstance();
+  StringValue_default_instance_.get_mutable()->InitAsDefaultInstance();
+  BytesValue_default_instance_.get_mutable()->InitAsDefaultInstance();
 }
 
 GOOGLE_PROTOBUF_DECLARE_ONCE(protobuf_InitDefaults_google_2fprotobuf_2fwrappers_2eproto_once_);
@@ -389,7 +389,7 @@ const DoubleValue& DoubleValue::default_instance() {
   return *internal_default_instance();
 }
 
-::google::protobuf::internal::ExplicitlyConstructed<DoubleValue> DoubleValue::default_instance_;
+::google::protobuf::internal::ExplicitlyConstructed<DoubleValue> DoubleValue_default_instance_;
 
 DoubleValue* DoubleValue::New(::google::protobuf::Arena* arena) const {
   return ::google::protobuf::Arena::CreateMessage<DoubleValue>(arena);
@@ -582,6 +582,9 @@ void DoubleValue::set_value(double value) {
   // @@protoc_insertion_point(field_set:google.protobuf.DoubleValue.value)
 }
 
+inline const DoubleValue* DoubleValue::internal_default_instance() {
+  return &DoubleValue_default_instance_.get();
+}
 #endif  // PROTOBUF_INLINE_NOT_IN_HEADERS
 
 // ===================================================================
@@ -657,7 +660,7 @@ const FloatValue& FloatValue::default_instance() {
   return *internal_default_instance();
 }
 
-::google::protobuf::internal::ExplicitlyConstructed<FloatValue> FloatValue::default_instance_;
+::google::protobuf::internal::ExplicitlyConstructed<FloatValue> FloatValue_default_instance_;
 
 FloatValue* FloatValue::New(::google::protobuf::Arena* arena) const {
   return ::google::protobuf::Arena::CreateMessage<FloatValue>(arena);
@@ -850,6 +853,9 @@ void FloatValue::set_value(float value) {
   // @@protoc_insertion_point(field_set:google.protobuf.FloatValue.value)
 }
 
+inline const FloatValue* FloatValue::internal_default_instance() {
+  return &FloatValue_default_instance_.get();
+}
 #endif  // PROTOBUF_INLINE_NOT_IN_HEADERS
 
 // ===================================================================
@@ -925,7 +931,7 @@ const Int64Value& Int64Value::default_instance() {
   return *internal_default_instance();
 }
 
-::google::protobuf::internal::ExplicitlyConstructed<Int64Value> Int64Value::default_instance_;
+::google::protobuf::internal::ExplicitlyConstructed<Int64Value> Int64Value_default_instance_;
 
 Int64Value* Int64Value::New(::google::protobuf::Arena* arena) const {
   return ::google::protobuf::Arena::CreateMessage<Int64Value>(arena);
@@ -1120,6 +1126,9 @@ void Int64Value::set_value(::google::protobuf::int64 value) {
   // @@protoc_insertion_point(field_set:google.protobuf.Int64Value.value)
 }
 
+inline const Int64Value* Int64Value::internal_default_instance() {
+  return &Int64Value_default_instance_.get();
+}
 #endif  // PROTOBUF_INLINE_NOT_IN_HEADERS
 
 // ===================================================================
@@ -1195,7 +1204,7 @@ const UInt64Value& UInt64Value::default_instance() {
   return *internal_default_instance();
 }
 
-::google::protobuf::internal::ExplicitlyConstructed<UInt64Value> UInt64Value::default_instance_;
+::google::protobuf::internal::ExplicitlyConstructed<UInt64Value> UInt64Value_default_instance_;
 
 UInt64Value* UInt64Value::New(::google::protobuf::Arena* arena) const {
   return ::google::protobuf::Arena::CreateMessage<UInt64Value>(arena);
@@ -1390,6 +1399,9 @@ void UInt64Value::set_value(::google::protobuf::uint64 value) {
   // @@protoc_insertion_point(field_set:google.protobuf.UInt64Value.value)
 }
 
+inline const UInt64Value* UInt64Value::internal_default_instance() {
+  return &UInt64Value_default_instance_.get();
+}
 #endif  // PROTOBUF_INLINE_NOT_IN_HEADERS
 
 // ===================================================================
@@ -1465,7 +1477,7 @@ const Int32Value& Int32Value::default_instance() {
   return *internal_default_instance();
 }
 
-::google::protobuf::internal::ExplicitlyConstructed<Int32Value> Int32Value::default_instance_;
+::google::protobuf::internal::ExplicitlyConstructed<Int32Value> Int32Value_default_instance_;
 
 Int32Value* Int32Value::New(::google::protobuf::Arena* arena) const {
   return ::google::protobuf::Arena::CreateMessage<Int32Value>(arena);
@@ -1660,6 +1672,9 @@ void Int32Value::set_value(::google::protobuf::int32 value) {
   // @@protoc_insertion_point(field_set:google.protobuf.Int32Value.value)
 }
 
+inline const Int32Value* Int32Value::internal_default_instance() {
+  return &Int32Value_default_instance_.get();
+}
 #endif  // PROTOBUF_INLINE_NOT_IN_HEADERS
 
 // ===================================================================
@@ -1735,7 +1750,7 @@ const UInt32Value& UInt32Value::default_instance() {
   return *internal_default_instance();
 }
 
-::google::protobuf::internal::ExplicitlyConstructed<UInt32Value> UInt32Value::default_instance_;
+::google::protobuf::internal::ExplicitlyConstructed<UInt32Value> UInt32Value_default_instance_;
 
 UInt32Value* UInt32Value::New(::google::protobuf::Arena* arena) const {
   return ::google::protobuf::Arena::CreateMessage<UInt32Value>(arena);
@@ -1930,6 +1945,9 @@ void UInt32Value::set_value(::google::protobuf::uint32 value) {
   // @@protoc_insertion_point(field_set:google.protobuf.UInt32Value.value)
 }
 
+inline const UInt32Value* UInt32Value::internal_default_instance() {
+  return &UInt32Value_default_instance_.get();
+}
 #endif  // PROTOBUF_INLINE_NOT_IN_HEADERS
 
 // ===================================================================
@@ -2005,7 +2023,7 @@ const BoolValue& BoolValue::default_instance() {
   return *internal_default_instance();
 }
 
-::google::protobuf::internal::ExplicitlyConstructed<BoolValue> BoolValue::default_instance_;
+::google::protobuf::internal::ExplicitlyConstructed<BoolValue> BoolValue_default_instance_;
 
 BoolValue* BoolValue::New(::google::protobuf::Arena* arena) const {
   return ::google::protobuf::Arena::CreateMessage<BoolValue>(arena);
@@ -2198,6 +2216,9 @@ void BoolValue::set_value(bool value) {
   // @@protoc_insertion_point(field_set:google.protobuf.BoolValue.value)
 }
 
+inline const BoolValue* BoolValue::internal_default_instance() {
+  return &BoolValue_default_instance_.get();
+}
 #endif  // PROTOBUF_INLINE_NOT_IN_HEADERS
 
 // ===================================================================
@@ -2274,7 +2295,7 @@ const StringValue& StringValue::default_instance() {
   return *internal_default_instance();
 }
 
-::google::protobuf::internal::ExplicitlyConstructed<StringValue> StringValue::default_instance_;
+::google::protobuf::internal::ExplicitlyConstructed<StringValue> StringValue_default_instance_;
 
 StringValue* StringValue::New(::google::protobuf::Arena* arena) const {
   return ::google::protobuf::Arena::CreateMessage<StringValue>(arena);
@@ -2534,6 +2555,9 @@ void StringValue::unsafe_arena_set_allocated_value(
   // @@protoc_insertion_point(field_unsafe_arena_set_allocated:google.protobuf.StringValue.value)
 }
 
+inline const StringValue* StringValue::internal_default_instance() {
+  return &StringValue_default_instance_.get();
+}
 #endif  // PROTOBUF_INLINE_NOT_IN_HEADERS
 
 // ===================================================================
@@ -2610,7 +2634,7 @@ const BytesValue& BytesValue::default_instance() {
   return *internal_default_instance();
 }
 
-::google::protobuf::internal::ExplicitlyConstructed<BytesValue> BytesValue::default_instance_;
+::google::protobuf::internal::ExplicitlyConstructed<BytesValue> BytesValue_default_instance_;
 
 BytesValue* BytesValue::New(::google::protobuf::Arena* arena) const {
   return ::google::protobuf::Arena::CreateMessage<BytesValue>(arena);
@@ -2858,6 +2882,9 @@ void BytesValue::unsafe_arena_set_allocated_value(
   // @@protoc_insertion_point(field_unsafe_arena_set_allocated:google.protobuf.BytesValue.value)
 }
 
+inline const BytesValue* BytesValue::internal_default_instance() {
+  return &BytesValue_default_instance_.get();
+}
 #endif  // PROTOBUF_INLINE_NOT_IN_HEADERS
 
 // @@protoc_insertion_point(namespace_scope)

@@ -71,15 +71,15 @@ void protobuf_RegisterTypes(const ::std::string&) {
 }  // namespace
 
 void protobuf_ShutdownFile_google_2fprotobuf_2fduration_2eproto() {
-  Duration::default_instance_.Shutdown();
+  Duration_default_instance_.Shutdown();
   delete Duration_reflection_;
 }
 
 void protobuf_InitDefaults_google_2fprotobuf_2fduration_2eproto_impl() {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
 
-  Duration::default_instance_.DefaultConstruct();
-  Duration::default_instance_.get_mutable()->InitAsDefaultInstance();
+  Duration_default_instance_.DefaultConstruct();
+  Duration_default_instance_.get_mutable()->InitAsDefaultInstance();
 }
 
 GOOGLE_PROTOBUF_DECLARE_ONCE(protobuf_InitDefaults_google_2fprotobuf_2fduration_2eproto_once_);
@@ -200,7 +200,7 @@ const Duration& Duration::default_instance() {
   return *internal_default_instance();
 }
 
-::google::protobuf::internal::ExplicitlyConstructed<Duration> Duration::default_instance_;
+::google::protobuf::internal::ExplicitlyConstructed<Duration> Duration_default_instance_;
 
 Duration* Duration::New(::google::protobuf::Arena* arena) const {
   return ::google::protobuf::Arena::CreateMessage<Duration>(arena);
@@ -465,6 +465,9 @@ void Duration::set_nanos(::google::protobuf::int32 value) {
   // @@protoc_insertion_point(field_set:google.protobuf.Duration.nanos)
 }
 
+inline const Duration* Duration::internal_default_instance() {
+  return &Duration_default_instance_.get();
+}
 #endif  // PROTOBUF_INLINE_NOT_IN_HEADERS
 
 // @@protoc_insertion_point(namespace_scope)

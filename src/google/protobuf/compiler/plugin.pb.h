@@ -69,9 +69,7 @@ class LIBPROTOC_EXPORT CodeGeneratorRequest : public ::google::protobuf::Message
   static const ::google::protobuf::Descriptor* descriptor();
   static const CodeGeneratorRequest& default_instance();
 
-  static inline const CodeGeneratorRequest* internal_default_instance() {
-    return &default_instance_.get();
-  }
+  static const CodeGeneratorRequest* internal_default_instance();
 
   void Swap(CodeGeneratorRequest* other);
 
@@ -176,8 +174,9 @@ class LIBPROTOC_EXPORT CodeGeneratorRequest : public ::google::protobuf::Message
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fcompiler_2fplugin_2eproto();
 
   void InitAsDefaultInstance();
-  static ::google::protobuf::internal::ExplicitlyConstructed<CodeGeneratorRequest> default_instance_;
 };
+extern ::google::protobuf::internal::ExplicitlyConstructed<CodeGeneratorRequest> CodeGeneratorRequest_default_instance_;
+
 // -------------------------------------------------------------------
 
 class LIBPROTOC_EXPORT CodeGeneratorResponse_File : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.compiler.CodeGeneratorResponse.File) */ {
@@ -203,9 +202,7 @@ class LIBPROTOC_EXPORT CodeGeneratorResponse_File : public ::google::protobuf::M
   static const ::google::protobuf::Descriptor* descriptor();
   static const CodeGeneratorResponse_File& default_instance();
 
-  static inline const CodeGeneratorResponse_File* internal_default_instance() {
-    return &default_instance_.get();
-  }
+  static const CodeGeneratorResponse_File* internal_default_instance();
 
   void Swap(CodeGeneratorResponse_File* other);
 
@@ -310,8 +307,9 @@ class LIBPROTOC_EXPORT CodeGeneratorResponse_File : public ::google::protobuf::M
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fcompiler_2fplugin_2eproto();
 
   void InitAsDefaultInstance();
-  static ::google::protobuf::internal::ExplicitlyConstructed<CodeGeneratorResponse_File> default_instance_;
 };
+extern ::google::protobuf::internal::ExplicitlyConstructed<CodeGeneratorResponse_File> CodeGeneratorResponse_File_default_instance_;
+
 // -------------------------------------------------------------------
 
 class LIBPROTOC_EXPORT CodeGeneratorResponse : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.compiler.CodeGeneratorResponse) */ {
@@ -337,9 +335,7 @@ class LIBPROTOC_EXPORT CodeGeneratorResponse : public ::google::protobuf::Messag
   static const ::google::protobuf::Descriptor* descriptor();
   static const CodeGeneratorResponse& default_instance();
 
-  static inline const CodeGeneratorResponse* internal_default_instance() {
-    return &default_instance_.get();
-  }
+  static const CodeGeneratorResponse* internal_default_instance();
 
   void Swap(CodeGeneratorResponse* other);
 
@@ -429,8 +425,9 @@ class LIBPROTOC_EXPORT CodeGeneratorResponse : public ::google::protobuf::Messag
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fcompiler_2fplugin_2eproto();
 
   void InitAsDefaultInstance();
-  static ::google::protobuf::internal::ExplicitlyConstructed<CodeGeneratorResponse> default_instance_;
 };
+extern ::google::protobuf::internal::ExplicitlyConstructed<CodeGeneratorResponse> CodeGeneratorResponse_default_instance_;
+
 // ===================================================================
 
 
@@ -578,6 +575,9 @@ CodeGeneratorRequest::proto_file() const {
   return proto_file_;
 }
 
+inline const CodeGeneratorRequest* CodeGeneratorRequest::internal_default_instance() {
+  return &CodeGeneratorRequest_default_instance_.get();
+}
 // -------------------------------------------------------------------
 
 // CodeGeneratorResponse_File
@@ -744,6 +744,9 @@ inline void CodeGeneratorResponse_File::set_allocated_content(::std::string* con
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.compiler.CodeGeneratorResponse.File.content)
 }
 
+inline const CodeGeneratorResponse_File* CodeGeneratorResponse_File::internal_default_instance() {
+  return &CodeGeneratorResponse_File_default_instance_.get();
+}
 // -------------------------------------------------------------------
 
 // CodeGeneratorResponse
@@ -832,6 +835,9 @@ CodeGeneratorResponse::file() const {
   return file_;
 }
 
+inline const CodeGeneratorResponse* CodeGeneratorResponse::internal_default_instance() {
+  return &CodeGeneratorResponse_default_instance_.get();
+}
 #endif  // !PROTOBUF_INLINE_NOT_IN_HEADERS
 // -------------------------------------------------------------------
 

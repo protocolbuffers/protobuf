@@ -70,7 +70,7 @@ void protobuf_RegisterTypes(const ::std::string&) {
 }  // namespace
 
 void protobuf_ShutdownFile_google_2fprotobuf_2fsource_5fcontext_2eproto() {
-  SourceContext::default_instance_.Shutdown();
+  SourceContext_default_instance_.Shutdown();
   delete SourceContext_reflection_;
 }
 
@@ -78,8 +78,8 @@ void protobuf_InitDefaults_google_2fprotobuf_2fsource_5fcontext_2eproto_impl() {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
 
   ::google::protobuf::internal::GetEmptyString();
-  SourceContext::default_instance_.DefaultConstruct();
-  SourceContext::default_instance_.get_mutable()->InitAsDefaultInstance();
+  SourceContext_default_instance_.DefaultConstruct();
+  SourceContext_default_instance_.get_mutable()->InitAsDefaultInstance();
 }
 
 GOOGLE_PROTOBUF_DECLARE_ONCE(protobuf_InitDefaults_google_2fprotobuf_2fsource_5fcontext_2eproto_once_);
@@ -177,7 +177,7 @@ const SourceContext& SourceContext::default_instance() {
   return *internal_default_instance();
 }
 
-::google::protobuf::internal::ExplicitlyConstructed<SourceContext> SourceContext::default_instance_;
+::google::protobuf::internal::ExplicitlyConstructed<SourceContext> SourceContext_default_instance_;
 
 SourceContext* SourceContext::New(::google::protobuf::Arena* arena) const {
   SourceContext* n = new SourceContext;
@@ -408,6 +408,9 @@ void SourceContext::set_allocated_file_name(::std::string* file_name) {
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.SourceContext.file_name)
 }
 
+inline const SourceContext* SourceContext::internal_default_instance() {
+  return &SourceContext_default_instance_.get();
+}
 #endif  // PROTOBUF_INLINE_NOT_IN_HEADERS
 
 // @@protoc_insertion_point(namespace_scope)

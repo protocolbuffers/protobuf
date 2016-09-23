@@ -57,9 +57,7 @@ class LIBPROTOBUF_EXPORT SourceContext : public ::google::protobuf::Message /* @
   static const ::google::protobuf::Descriptor* descriptor();
   static const SourceContext& default_instance();
 
-  static inline const SourceContext* internal_default_instance() {
-    return &default_instance_.get();
-  }
+  static const SourceContext* internal_default_instance();
 
   void Swap(SourceContext* other);
 
@@ -130,8 +128,9 @@ class LIBPROTOBUF_EXPORT SourceContext : public ::google::protobuf::Message /* @
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fsource_5fcontext_2eproto();
 
   void InitAsDefaultInstance();
-  static ::google::protobuf::internal::ExplicitlyConstructed<SourceContext> default_instance_;
 };
+extern ::google::protobuf::internal::ExplicitlyConstructed<SourceContext> SourceContext_default_instance_;
+
 // ===================================================================
 
 
@@ -184,6 +183,9 @@ inline void SourceContext::set_allocated_file_name(::std::string* file_name) {
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.SourceContext.file_name)
 }
 
+inline const SourceContext* SourceContext::internal_default_instance() {
+  return &SourceContext_default_instance_.get();
+}
 #endif  // !PROTOBUF_INLINE_NOT_IN_HEADERS
 
 // @@protoc_insertion_point(namespace_scope)

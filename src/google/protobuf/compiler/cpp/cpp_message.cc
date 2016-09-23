@@ -1101,9 +1101,7 @@ GenerateClassDefinition(io::Printer* printer) {
   // TODO(gerbens) make this private, while still granting other protos access.
   printer->Print(
       vars,
-      "static inline const $classname$* internal_default_instance() {\n"
-      "  return &default_instance_.get();\n"
-      "}\n"
+      "static const $classname$* internal_default_instance();\n"
       "\n");
 
 
@@ -1501,12 +1499,22 @@ GenerateClassDefinition(io::Printer* printer) {
     "shutdownfilename", GlobalShutdownFileName(descriptor_->file()->name()));
 
   printer->Print(
-      "void InitAsDefaultInstance();\n"
-      "static ::google::protobuf::internal::ExplicitlyConstructed<$classname$> default_instance_;\n",
+      "void InitAsDefaultInstance();\n",
       "classname", classname_);
 
   printer->Outdent();
-  printer->Print("};");
+  printer->Print("};\n");
+
+  // This should ideally be put into the class scope, but Visual Studio just
+  // refuses to compile it and complains about "use of undefined XXX":
+  //   https://ci.appveyor.com/project/protobuf/protobuf/build/1.0.2673/job/nrdf4tb9dau0sck5
+  // A program as simple as "struct X { enum { value = sizeof(X) }; };" will
+  // trigger the same error.
+  printer->Print(
+      "extern ::google::protobuf::internal::ExplicitlyConstructed<$classname$> "
+      "$classname$_default_instance_;\n",
+      "classname", classname_);
+
   GOOGLE_DCHECK(!need_to_emit_cached_size);
 }
 
@@ -1557,6 +1565,12 @@ GenerateInlineMethods(io::Printer* printer, bool is_inline) {
         "_oneof_case_[$oneof_index$]);\n"
         "}\n");
   }
+
+  printer->Print(
+      "inline const $classname$* $classname$::internal_default_instance() {\n"
+      "  return &$classname$_default_instance_.get();\n"
+      "}\n",
+      "classname", classname_);
 }
 
 void MessageGenerator::
@@ -1774,7 +1788,7 @@ GenerateDefaultInstanceAllocator(io::Printer* printer) {
   // Construct the default instance.  We can't call InitAsDefaultInstance() yet
   // because we need to make sure all default instances that this one might
   // depend on are constructed first.
-  printer->Print("$classname$::default_instance_.DefaultConstruct();\n",
+  printer->Print("$classname$_default_instance_.DefaultConstruct();\n",
                  "classname", classname_);
 
   if ((descriptor_->oneof_decl_count() > 0) &&
@@ -1794,7 +1808,7 @@ GenerateDefaultInstanceAllocator(io::Printer* printer) {
 void MessageGenerator::
 GenerateDefaultInstanceInitializer(io::Printer* printer) {
   printer->Print(
-      "$classname$::default_instance_.get_mutable()->InitAsDefaultInstance();"
+      "$classname$_default_instance_.get_mutable()->InitAsDefaultInstance();"
       "\n",
       "classname", classname_);
 
@@ -1816,7 +1830,7 @@ GenerateDefaultInstanceInitializer(io::Printer* printer) {
 void MessageGenerator::
 GenerateShutdownCode(io::Printer* printer) {
   printer->Print(
-      "$classname$::default_instance_.Shutdown();\n",
+      "$classname$_default_instance_.Shutdown();\n",
       "classname", classname_);
   if (HasDescriptorMethods(descriptor_->file(), options_)) {
     if (descriptor_->oneof_decl_count() > 0) {
@@ -2165,7 +2179,8 @@ GenerateSharedDestructorCode(io::Printer* printer) {
         if (!need_delete_message_field) {
           need_delete_message_field = true;
           printer->Print(
-              "if (this != &default_instance_.get()) {\n");
+              "if (this != &$classname$_default_instance_.get()) {\n",
+              "classname", classname_);
           printer->Indent();
         }
         printer->Print("delete $name$_;\n", "name", FieldName(field));
@@ -2422,7 +2437,7 @@ GenerateStructors(io::Printer* printer) {
   printer->Print(
       "\n"
       "::google::protobuf::internal::ExplicitlyConstructed<$classname$> "
-      "$classname$::default_instance_;\n"
+      "$classname$_default_instance_;\n"
       "\n",
       "classname", classname_);
 

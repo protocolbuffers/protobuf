@@ -70,7 +70,7 @@ void protobuf_RegisterTypes(const ::std::string&) {
 }  // namespace
 
 void protobuf_ShutdownFile_google_2fprotobuf_2ffield_5fmask_2eproto() {
-  FieldMask::default_instance_.Shutdown();
+  FieldMask_default_instance_.Shutdown();
   delete FieldMask_reflection_;
 }
 
@@ -78,8 +78,8 @@ void protobuf_InitDefaults_google_2fprotobuf_2ffield_5fmask_2eproto_impl() {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
 
   ::google::protobuf::internal::GetEmptyString();
-  FieldMask::default_instance_.DefaultConstruct();
-  FieldMask::default_instance_.get_mutable()->InitAsDefaultInstance();
+  FieldMask_default_instance_.DefaultConstruct();
+  FieldMask_default_instance_.get_mutable()->InitAsDefaultInstance();
 }
 
 GOOGLE_PROTOBUF_DECLARE_ONCE(protobuf_InitDefaults_google_2fprotobuf_2ffield_5fmask_2eproto_once_);
@@ -175,7 +175,7 @@ const FieldMask& FieldMask::default_instance() {
   return *internal_default_instance();
 }
 
-::google::protobuf::internal::ExplicitlyConstructed<FieldMask> FieldMask::default_instance_;
+::google::protobuf::internal::ExplicitlyConstructed<FieldMask> FieldMask_default_instance_;
 
 FieldMask* FieldMask::New(::google::protobuf::Arena* arena) const {
   FieldMask* n = new FieldMask;
@@ -417,6 +417,9 @@ FieldMask::mutable_paths() {
   return &paths_;
 }
 
+inline const FieldMask* FieldMask::internal_default_instance() {
+  return &FieldMask_default_instance_.get();
+}
 #endif  // PROTOBUF_INLINE_NOT_IN_HEADERS
 
 // @@protoc_insertion_point(namespace_scope)
