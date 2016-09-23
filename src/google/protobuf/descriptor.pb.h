@@ -2082,6 +2082,13 @@ class LIBPROTOBUF_EXPORT FileOptions : public ::google::protobuf::Message /* @@p
   bool java_multiple_files() const;
   void set_java_multiple_files(bool value);
 
+  // optional bool java_generate_equals_and_hash = 20 [deprecated = true];
+  GOOGLE_PROTOBUF_DEPRECATED_ATTR bool has_java_generate_equals_and_hash() const;
+  GOOGLE_PROTOBUF_DEPRECATED_ATTR void clear_java_generate_equals_and_hash();
+  GOOGLE_PROTOBUF_DEPRECATED_ATTR static const int kJavaGenerateEqualsAndHashFieldNumber = 20;
+  GOOGLE_PROTOBUF_DEPRECATED_ATTR bool java_generate_equals_and_hash() const;
+  GOOGLE_PROTOBUF_DEPRECATED_ATTR void set_java_generate_equals_and_hash(bool value);
+
   // optional bool java_string_check_utf8 = 27 [default = false];
   bool has_java_string_check_utf8() const;
   void clear_java_string_check_utf8();
@@ -2188,6 +2195,8 @@ class LIBPROTOBUF_EXPORT FileOptions : public ::google::protobuf::Message /* @@p
   inline void clear_has_java_outer_classname();
   inline void set_has_java_multiple_files();
   inline void clear_has_java_multiple_files();
+  inline void set_has_java_generate_equals_and_hash();
+  inline void clear_has_java_generate_equals_and_hash();
   inline void set_has_java_string_check_utf8();
   inline void clear_has_java_string_check_utf8();
   inline void set_has_optimize_for();
@@ -2221,6 +2230,7 @@ class LIBPROTOBUF_EXPORT FileOptions : public ::google::protobuf::Message /* @@p
   ::google::protobuf::internal::ArenaStringPtr objc_class_prefix_;
   ::google::protobuf::internal::ArenaStringPtr csharp_namespace_;
   bool java_multiple_files_;
+  bool java_generate_equals_and_hash_;
   bool java_string_check_utf8_;
   bool cc_generic_services_;
   bool java_generic_services_;
@@ -6292,15 +6302,39 @@ inline void FileOptions::set_java_multiple_files(bool value) {
   // @@protoc_insertion_point(field_set:google.protobuf.FileOptions.java_multiple_files)
 }
 
-// optional bool java_string_check_utf8 = 27 [default = false];
-inline bool FileOptions::has_java_string_check_utf8() const {
+// optional bool java_generate_equals_and_hash = 20 [deprecated = true];
+inline bool FileOptions::has_java_generate_equals_and_hash() const {
   return (_has_bits_[0] & 0x00000008u) != 0;
 }
-inline void FileOptions::set_has_java_string_check_utf8() {
+inline void FileOptions::set_has_java_generate_equals_and_hash() {
   _has_bits_[0] |= 0x00000008u;
 }
-inline void FileOptions::clear_has_java_string_check_utf8() {
+inline void FileOptions::clear_has_java_generate_equals_and_hash() {
   _has_bits_[0] &= ~0x00000008u;
+}
+inline void FileOptions::clear_java_generate_equals_and_hash() {
+  java_generate_equals_and_hash_ = false;
+  clear_has_java_generate_equals_and_hash();
+}
+inline bool FileOptions::java_generate_equals_and_hash() const {
+  // @@protoc_insertion_point(field_get:google.protobuf.FileOptions.java_generate_equals_and_hash)
+  return java_generate_equals_and_hash_;
+}
+inline void FileOptions::set_java_generate_equals_and_hash(bool value) {
+  set_has_java_generate_equals_and_hash();
+  java_generate_equals_and_hash_ = value;
+  // @@protoc_insertion_point(field_set:google.protobuf.FileOptions.java_generate_equals_and_hash)
+}
+
+// optional bool java_string_check_utf8 = 27 [default = false];
+inline bool FileOptions::has_java_string_check_utf8() const {
+  return (_has_bits_[0] & 0x00000010u) != 0;
+}
+inline void FileOptions::set_has_java_string_check_utf8() {
+  _has_bits_[0] |= 0x00000010u;
+}
+inline void FileOptions::clear_has_java_string_check_utf8() {
+  _has_bits_[0] &= ~0x00000010u;
 }
 inline void FileOptions::clear_java_string_check_utf8() {
   java_string_check_utf8_ = false;
@@ -6318,13 +6352,13 @@ inline void FileOptions::set_java_string_check_utf8(bool value) {
 
 // optional .google.protobuf.FileOptions.OptimizeMode optimize_for = 9 [default = SPEED];
 inline bool FileOptions::has_optimize_for() const {
-  return (_has_bits_[0] & 0x00000010u) != 0;
+  return (_has_bits_[0] & 0x00000020u) != 0;
 }
 inline void FileOptions::set_has_optimize_for() {
-  _has_bits_[0] |= 0x00000010u;
+  _has_bits_[0] |= 0x00000020u;
 }
 inline void FileOptions::clear_has_optimize_for() {
-  _has_bits_[0] &= ~0x00000010u;
+  _has_bits_[0] &= ~0x00000020u;
 }
 inline void FileOptions::clear_optimize_for() {
   optimize_for_ = 1;
@@ -6343,13 +6377,13 @@ inline void FileOptions::set_optimize_for(::google::protobuf::FileOptions_Optimi
 
 // optional string go_package = 11;
 inline bool FileOptions::has_go_package() const {
-  return (_has_bits_[0] & 0x00000020u) != 0;
+  return (_has_bits_[0] & 0x00000040u) != 0;
 }
 inline void FileOptions::set_has_go_package() {
-  _has_bits_[0] |= 0x00000020u;
+  _has_bits_[0] |= 0x00000040u;
 }
 inline void FileOptions::clear_has_go_package() {
-  _has_bits_[0] &= ~0x00000020u;
+  _has_bits_[0] &= ~0x00000040u;
 }
 inline void FileOptions::clear_go_package() {
   go_package_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
@@ -6397,13 +6431,13 @@ inline void FileOptions::set_allocated_go_package(::std::string* go_package) {
 
 // optional bool cc_generic_services = 16 [default = false];
 inline bool FileOptions::has_cc_generic_services() const {
-  return (_has_bits_[0] & 0x00000040u) != 0;
+  return (_has_bits_[0] & 0x00000080u) != 0;
 }
 inline void FileOptions::set_has_cc_generic_services() {
-  _has_bits_[0] |= 0x00000040u;
+  _has_bits_[0] |= 0x00000080u;
 }
 inline void FileOptions::clear_has_cc_generic_services() {
-  _has_bits_[0] &= ~0x00000040u;
+  _has_bits_[0] &= ~0x00000080u;
 }
 inline void FileOptions::clear_cc_generic_services() {
   cc_generic_services_ = false;
@@ -6421,13 +6455,13 @@ inline void FileOptions::set_cc_generic_services(bool value) {
 
 // optional bool java_generic_services = 17 [default = false];
 inline bool FileOptions::has_java_generic_services() const {
-  return (_has_bits_[0] & 0x00000080u) != 0;
+  return (_has_bits_[0] & 0x00000100u) != 0;
 }
 inline void FileOptions::set_has_java_generic_services() {
-  _has_bits_[0] |= 0x00000080u;
+  _has_bits_[0] |= 0x00000100u;
 }
 inline void FileOptions::clear_has_java_generic_services() {
-  _has_bits_[0] &= ~0x00000080u;
+  _has_bits_[0] &= ~0x00000100u;
 }
 inline void FileOptions::clear_java_generic_services() {
   java_generic_services_ = false;
@@ -6445,13 +6479,13 @@ inline void FileOptions::set_java_generic_services(bool value) {
 
 // optional bool py_generic_services = 18 [default = false];
 inline bool FileOptions::has_py_generic_services() const {
-  return (_has_bits_[0] & 0x00000100u) != 0;
+  return (_has_bits_[0] & 0x00000200u) != 0;
 }
 inline void FileOptions::set_has_py_generic_services() {
-  _has_bits_[0] |= 0x00000100u;
+  _has_bits_[0] |= 0x00000200u;
 }
 inline void FileOptions::clear_has_py_generic_services() {
-  _has_bits_[0] &= ~0x00000100u;
+  _has_bits_[0] &= ~0x00000200u;
 }
 inline void FileOptions::clear_py_generic_services() {
   py_generic_services_ = false;
@@ -6469,13 +6503,13 @@ inline void FileOptions::set_py_generic_services(bool value) {
 
 // optional bool deprecated = 23 [default = false];
 inline bool FileOptions::has_deprecated() const {
-  return (_has_bits_[0] & 0x00000200u) != 0;
+  return (_has_bits_[0] & 0x00000400u) != 0;
 }
 inline void FileOptions::set_has_deprecated() {
-  _has_bits_[0] |= 0x00000200u;
+  _has_bits_[0] |= 0x00000400u;
 }
 inline void FileOptions::clear_has_deprecated() {
-  _has_bits_[0] &= ~0x00000200u;
+  _has_bits_[0] &= ~0x00000400u;
 }
 inline void FileOptions::clear_deprecated() {
   deprecated_ = false;
@@ -6493,13 +6527,13 @@ inline void FileOptions::set_deprecated(bool value) {
 
 // optional bool cc_enable_arenas = 31 [default = false];
 inline bool FileOptions::has_cc_enable_arenas() const {
-  return (_has_bits_[0] & 0x00000400u) != 0;
+  return (_has_bits_[0] & 0x00000800u) != 0;
 }
 inline void FileOptions::set_has_cc_enable_arenas() {
-  _has_bits_[0] |= 0x00000400u;
+  _has_bits_[0] |= 0x00000800u;
 }
 inline void FileOptions::clear_has_cc_enable_arenas() {
-  _has_bits_[0] &= ~0x00000400u;
+  _has_bits_[0] &= ~0x00000800u;
 }
 inline void FileOptions::clear_cc_enable_arenas() {
   cc_enable_arenas_ = false;
@@ -6517,13 +6551,13 @@ inline void FileOptions::set_cc_enable_arenas(bool value) {
 
 // optional string objc_class_prefix = 36;
 inline bool FileOptions::has_objc_class_prefix() const {
-  return (_has_bits_[0] & 0x00000800u) != 0;
+  return (_has_bits_[0] & 0x00001000u) != 0;
 }
 inline void FileOptions::set_has_objc_class_prefix() {
-  _has_bits_[0] |= 0x00000800u;
+  _has_bits_[0] |= 0x00001000u;
 }
 inline void FileOptions::clear_has_objc_class_prefix() {
-  _has_bits_[0] &= ~0x00000800u;
+  _has_bits_[0] &= ~0x00001000u;
 }
 inline void FileOptions::clear_objc_class_prefix() {
   objc_class_prefix_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
@@ -6571,13 +6605,13 @@ inline void FileOptions::set_allocated_objc_class_prefix(::std::string* objc_cla
 
 // optional string csharp_namespace = 37;
 inline bool FileOptions::has_csharp_namespace() const {
-  return (_has_bits_[0] & 0x00001000u) != 0;
+  return (_has_bits_[0] & 0x00002000u) != 0;
 }
 inline void FileOptions::set_has_csharp_namespace() {
-  _has_bits_[0] |= 0x00001000u;
+  _has_bits_[0] |= 0x00002000u;
 }
 inline void FileOptions::clear_has_csharp_namespace() {
-  _has_bits_[0] &= ~0x00001000u;
+  _has_bits_[0] &= ~0x00002000u;
 }
 inline void FileOptions::clear_csharp_namespace() {
   csharp_namespace_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
