@@ -305,10 +305,8 @@ message FileOptions {
   // top-level extensions defined in the file.
   optional bool java_multiple_files = 10 [default=false];
 
-  // BEGIN PROTOBUF-OPENSOURCE
-  // // This option does nothing.
-  // optional bool java_generate_equals_and_hash = 20 [deprecated=true];
-  // END PROTOBUF-OPENSOURCE
+  // This option does nothing.
+  optional bool java_generate_equals_and_hash = 20 [deprecated=true];
 
   // If set true, then the Java2 code generator will generate code that
   // throws an exception whenever an attempt is made to assign a non-UTF-8
