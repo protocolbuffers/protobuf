@@ -315,18 +315,28 @@ TEST_F(JsonStreamParserTest, ObjectKeyTypes) {
   }
 }
 
-// - array containing array, object, values (true, false, null, num, string)
-TEST_F(JsonStreamParserTest, ArrayValues) {
+// - array containing primitive values (true, false, null, num, string)
+TEST_F(JsonStreamParserTest, ArrayPrimitiveValues) {
   StringPiece str =
-      "[true, false, null, 'a', \"an\", [22, -127, 45.3, "
-      "-1056.4, 11779497823553162765], {'key': true}]";
+      "[true, false, null, 'one', \"two\"]";
   for (int i = 0; i <= str.length(); ++i) {
     ow_.StartList("")
         ->RenderBool("", true)
         ->RenderBool("", false)
         ->RenderNull("")
-        ->RenderString("", "a")
-        ->RenderString("", "an")
+        ->RenderString("", "one")
+        ->RenderString("", "two")
+        ->EndList();
+    DoTest(str, i);
+  }
+}
+
+// - array containing array, object
+TEST_F(JsonStreamParserTest, ArrayComplexValues) {
+  StringPiece str =
+      "[[22, -127, 45.3, -1056.4, 11779497823553162765], {'key': true}]";
+  for (int i = 0; i <= str.length(); ++i) {
+    ow_.StartList("")
         ->StartList("")
         ->RenderUint64("", 22)
         ->RenderInt64("", -127)
