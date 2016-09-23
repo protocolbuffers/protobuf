@@ -40,7 +40,7 @@ namespace google {
 namespace protobuf {
 namespace python {
 
-class PyMessageFactory;
+struct PyMessageFactory;
 
 // The (meta) type of all Messages classes.
 struct CMessageClass;

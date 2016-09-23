@@ -63,7 +63,10 @@ except ImportError:
   # nothing like hermetic Python. This means lesser control on the system and
   # the six.moves package may be missing (is missing on 20150321 on gMac). Be
   # extra conservative and try to load the old replacement if it fails.
-  import copy_reg as copyreg
+  try:
+    import copy_reg as copyreg  #PY26
+  except ImportError:
+    import copyreg
 
 # We use "as" to avoid name collisions with variables.
 from google.protobuf.internal import containers

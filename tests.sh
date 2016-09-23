@@ -297,8 +297,6 @@ build_python() {
 build_python_cpp() {
   internal_build_cpp
   internal_install_python_deps
-  export LD_LIBRARY_PATH=../src/.libs # for Linux
-  export DYLD_LIBRARY_PATH=../src/.libs # for OS X
   cd python
   # Only test Python 2.6/3.x on Linux
   if [ $(uname -s) == "Linux" ]; then
