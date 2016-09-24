@@ -73,6 +73,49 @@ Some remapping will still be required, though, to avoid collisions between
 generated properties and the names of methods and properties defined in the base
 protocol/implementation of messages.
 
+### Collisions with fundamental types
+
+The Swift standard library also has a large number of types that are present in
+the global namespace (due to an implicit import of the `Swift` module). Some
+are very frequently used types (`Int`, `String`, `Array`, `Dictionary`), and
+there are many less frequently used ones as well. (Rather than list them
+exhaustively here, we direct readers to [swiftdoc.org](http://swiftdoc.org/)
+for a full list across Swift versions.) Any of these could be the source of a
+collision where a message or enum with the same name could cause confusion, or
+potentially override the Swift symbol in unexpected ways.
+
+For types nested inside packages, the message/enum name itself does not pose an
+issue, because it will always be prefixed by the package path
+(`Some_Package_Int`) or a custom prefix (`SPInt`). However, there is still the
+potential for collisions among nested messages/enums, messages/enums that are
+not in a package, or the very unfortunate case where a package-prefixed name
+might still collide with a Swift type.
+
+In these scenarios, we will append `Message` to message types and `Enum` to
+enum types if the package-prefixed name would collide with an existing Swift
+type. For example, the following proto:
+
+```protobuf
+message Foo {
+  message CollectionType {
+    repeated string values = 1;
+  }
+}
+```
+
+would translate to the following Swift code:
+
+```swift
+struct Foo: ProtoMessage {
+  struct CollectionTypeMessage: ProtoMessage {
+    var valuesArray: [String]
+  }
+}
+```
+
+Notice that the `CollectionType` message has had its name changed to avoid a
+collision with Swift's `CollectionType` protocol.
+
 # Features of Protocol Buffers
 
 This section describes how the features of the protocol buffer syntaxes (proto2
@@ -95,13 +138,13 @@ unique type symbol emitted in the generated binary.
 
 Users are likely to balk at the ugliness of underscore-delimited names for every
 generated type. To improve upon this situation, we will add a new string file
-level option, `swift_package_typealias`, that can be added to `.proto` files.
-When present, this will cause `typealias`es to be added to the generated Swift
-messages that replace the package name prefix with the provided string. For
-example, the following `.proto` file:
+level option, `swift_proto_package_prefix`, that can be added to `.proto` files.
+When present, this will cause the package portion of the top-level type names
+to be replaced with the provided string. For example, the following `.proto`
+file:
 
 ```protobuf
-option swift_package_typealias = "FBP";
+option swift_proto_package_prefix = "FBP";
 package foo.bar;
 
 message Baz {
@@ -112,17 +155,10 @@ message Baz {
 would generate the following Swift source:
 
 ```swift
-public struct Foo_Bar_Baz {
+public struct FBPBaz {
   // Message fields and other methods
 }
-
-typealias FBPBaz = Foo_Bar_Baz
 ```
-
-It should be noted that this type alias is recorded in the generated
-`.swiftmodule` so that code importing the module can refer to it, but it does
-not cause a new symbol to be generated in the compiled binary (i.e., we do not
-risk compiled size bloat by adding `typealias`es for every type).
 
 Other strategies to handle packages that were considered and rejected can be
 found in [Appendix A](#appendix-a-rejected-strategies-to-handle-packages).
@@ -137,65 +173,127 @@ lets users treat messages polymorphically. Any shared method implementations
 that do not differ between individual messages can be implemented in a protocol
 extension.
 
-The backing storage itself for fields of a message will be managed by a
-`ProtoFieldStorage` type that uses an internal dictionary keyed by field number,
-and whose values are the value of the field with that number (up-cast to Swift’s
-`Any` type). This class will provide type-safe getters and setters so that
-generated messages can manipulate this storage, and core serialization logic
-will live here as well. Furthermore, factoring the storage out into a separate
-type, rather than inlining the fields as stored properties in the message
-itself, lets us implement copy-on-write efficiently to support passing around
-large messages. (Furthermore, because the messages themselves are value types,
-inlining fields is not possible if the fields are submessages of the same type,
-or a type that eventually includes a submessage of the same type.)
+The user-facing API for a `ProtoMessage` will be as follows:
 
-### Required fields (proto2 only)
+```swift
+public protocol ProtoMessage {
 
-Required fields in proto2 messages seem like they could be naturally represented
-by non-optional properties in Swift, but this presents some problems/concerns.
+  var serializedSize: Int { get }
 
-Serialization APIs permit partial serialization, which allows required fields to
-remain unset. Furthermore, other language APIs still provide `has*` and `clear*`
-methods for required fields, and knowing whether a property has a value when the
-message is in memory is still useful.
+  init()
+  init(data: NSData) throws
 
-For example, an e-mail draft message may have the “to” address required on the
-wire, but when the user constructs it in memory, it doesn’t make sense to force
-a value until they provide one. We only want to force a value to be present when
-the message is serialized to the wire. Using non-optional properties prevents
-this use case, and makes client usage awkward because the user would be forced
-to select a sentinel or placeholder value for any required fields at the time
-the message was created.
+  mutating func merge(fromData data: NSData) throws
 
-### Default values
+  func data() throws -> NSData
+  func write(toOutputStream stream: NSOutputStream) throws
 
-In proto2, fields can have a default value specified that may be a value other
-than the default value for its corresponding language type (for example, a
-default value of 5 instead of 0 for an integer). When reading a field that is
-not explicitly set, the user expects to get that value. This makes Swift
-optionals (i.e., `Foo?`) unsuitable for fields in general. Unfortunately, we
-cannot implement our own “enhanced optional” type without severely complicating
-usage (Swift’s use of type inference and its lack of implicit conversions would
-require manual unwrapping of every property value).
+  // Public only as an implementation detail:
 
-Instead, we can use **implicitly unwrapped optionals.** For example, a property
-generated for a field of type `int32` would have Swift type `Int32!`. These
-properties would behave with the following characteristics, which mirror the
-nil-resettable properties used elsewhere in Apple’s SDKs (for example,
-`UIView.tintColor`):
+  mutating func merge(fromCodedInputStream stream: CodedInputStream) throws
+  func write(toCodedOutputStream stream: CodedOutputStream) throws
+}
+```
 
-*   Assigning a non-nil value to a property sets the field to that value.
-*   Assigning nil to a property clears the field (its internal representation is
-    nilled out).
-*   Reading the value of a property returns its value if it is set, or returns
-    its default value if it is not set. Reading a property never returns nil.
+The methods listed at the end are public only as an implementation detail,
+because the generated code will be implemented in terms of them to read and
+write the proto wire format. Users should never need to call them directly or
+use the coded stream types. The remaining methods and initializers are
+implemented in a protocol extension in terms of those coded stream methods.
 
-The final point in the list above implies that the optional cannot be checked to
-determine if the field is set to a value other than its default: it will never
-be nil. Instead, we must provide `has*` methods for each field to allow the user
-to check this. These methods will be public in proto2. In proto3, these methods
-will be private (if generated at all), since the user can test the returned
-value against the zero value for that type.
+Conformance to `Equatable`, `Hashable`, and `CustomDebugStringConvertible` are
+also desirable but not currently shown, to focus on a small API intended for
+mobile clients. The implementations and generation of those methods are fairly
+straightforward, but it should be noted that generating equality and hashability
+for very large messages that are not likely to use those features would add
+significant bloat to an application. (Mirrors could be investigated as a way of
+reducing this duplication using a visitor pattern, albeit with some performance
+trade-offs.)
+
+### Fields
+
+Fields in a message will be represented as non-optional properties. We explored
+using optionals (regular and implicitly unwrapped), but determined that they
+were unsuitable; protocol buffer users expect to receive default values, not
+`nil`, when retrieving fields, and this is more important in proto2 where fields
+can have explicit non-zero defaults. Implicitly unwrapped computed properties
+could mitigate the `clear` situation by treating assignment of `nil` as clearing
+the field, but we would still need to create a `has` method because the property
+getter would never return nil (it would always return the default value, and
+there would be no way to distinguish "not set" from "explicitly set to the
+default value"). In that sense, having the property be optional seems misleading
+to users.
+
+In proto2, each field will have associated `has` and `clear` methods that let
+clients test whether a field has been explicitly set and to clear its value,
+respectively.
+
+In proto3, we can skip generation of `has` and `clear` methods, with the
+expectation that users will use the zero/empty value of the appropriate type to
+test for presence or clear the field. The exception to this is message fields,
+where we should still provide those methods since comparing against the empty
+message could be costly for large types. (One caveat: we must preserve the last
+set case of a oneof field even if it is set to the zero/empty value.)
+
+It is our hope that a new form of resettable properties will be added to Swift
+that lets us encode the `has` and `clear` concepts directly in the property
+instead of creating parallel methods. Some community members have already
+drafted or sent proposals for review that would benefit our designs:
+
+*   [SE-0030: Property Behaviors]
+    (https://github.com/apple/swift-evolution/blob/master/proposals/0030-property-behavior-decls.md)
+*   [Drafted: Resettable Properties]
+    (https://github.com/patters/swift-evolution/blob/master/proposals/0000-resettable-properties.md)
+
+Lastly, we note some name transformations that we would apply to fields:
+
+* Repeated fields will have `Array` appended to their names. This is because
+  there is a trend in some messages to name repeated fields with the singular
+  version of the name (`descriptor.proto` in particular does this), and
+  `foo.name.append(bar)` looks potentially like appending a string to another
+  string whereas `foo.nameArray.append(bar)` is much clearer.
+* If a field name would collide with one of the properties or methods in
+  `ProtoMessage`'s public interface, we append `Field` to its name.
+
+### Backing storage
+
+Data for fields in a message may be stored in various ways to maximize
+performance. In particular, we note the following:
+
+* Message fields must be hoisted into a nested storage `class` inside the
+  message because structs in Swift cannot be directly or indirectly recursive.
+  Computed propeties on the struct will provide getters and setters that make
+  this transparent.
+
+* Repeated fields and maps can be stored properties on the message struct
+  itself. They already implement copy-on-write, and letting users touch them
+  without indirection avoids creating unnecessary copies that could lead to
+  poor performance.
+
+* Primitive fields can either be stored properties on the message struct itself
+  or hoisted into the storage class to provide copy-on-write functionality in
+  the same style as Swift's collection types. If hoisted, computer properties
+  will again be used to make this transparent.
+
+To the last point, we can tune messages heuristically with different storage
+models as long as we keep the public interface the same. For example, a small
+message with only a few primitive fields might be most efficient represented
+as a simple struct with stored properties. On the other hand, a message with a
+very large number of primitive fields might benefit from copy-on-write
+behavior.
+
+We do not currently make any judgments about when to apply these heuristics;
+rather, we simply note that the decisions can be made and will evaluate
+benchmarks in the future to guide those decisions.
+
+We examined other approaches intended to reduce code size (such as using a
+dictionary to store the fields, keyed by number), but the performance in early
+experimentation was found to significantly overshadow the code size benefits,
+especially when working with repeated fields (because appending a value to an
+array would involve retrieving it from the dictionary but leaving the original
+there, appending a value to the retrieved one, which created a copy because the
+storage was no longer uniquely referenced, then setting the new array back into
+the dictionary, discarding the original).
 
 ### Autocreation of nested messages
 
@@ -294,19 +392,19 @@ would be represented in Swift as
 
 ```swift
 public struct Foo: ProtoMessage {
-  public var bar: Bar! {
+  public var bar: Bar {
     get { ... }
     set { ... }
   }
 }
 ```
 
-If the user explicitly sets `bar` to nil, or if it was never set when read from
-the wire, retrieving the value of `bar` would return a default, statically
+If the user explicitly clears `bar`, or if it was never set when read from
+the wire, retrieving the value of `bar` would return the default, statically
 allocated instance of `Bar` containing default values for its fields. This
-achieves the desired behavior for default values in the same way that scalar
-fields are designed, and also allows users to deep-drill into complex object
-graphs to get or set fields without checking for nil at each step.
+achieves the desired behavior for reading default values in the same way that
+scalar fields are designed, and also allows users to deep-drill into complex
+object graphs to get or set fields without checking for nil at each step.
 
 ## Enum fields
 
@@ -329,17 +427,11 @@ enum ContentType {
 would become this Swift enum:
 
 ```swift
-public enum ContentType: Int32, NilLiteralConvertible {
+public enum ContentType: Int32 {
   case text = 0
   case image = 1
-
-  public init(nilLiteral: ()) {
-    self = .text
-  }
 }
 ```
-
-See below for the discussion about `NilLiteralConvertible`.
 
 ### proto3 enums
 
@@ -358,16 +450,12 @@ enum ContentType {
 would become this Swift enum:
 
 ```swift
-public enum ContentType: RawRepresentable, NilLiteralConvertible {
+public enum ContentType: RawRepresentable {
   case text
   case image
   case UNKNOWN_VALUE(Int32)
 
   public typealias RawValue = Int32
-
-  public init(nilLiteral: ()) {
-    self = .text
-  }
 
   public init(rawValue: RawValue) {
     switch rawValue {
@@ -397,75 +485,6 @@ Using this approach, proto3 consumers must always have a default case or handle
 the `.UNKNOWN_VALUE` case to satisfy case exhaustion in a switch statement; the
 Swift compiler considers it an error if switch statements are not exhaustive.
 
-### NilLiteralConvertible conformance
-
-This is required to clean up the usage of enum-typed properties in switch
-statements. Unlike other field types, enum properties cannot be
-implicitly-unwrapped optionals without requiring that uses in switch statements
-be explicitly unwrapped. For example, if we consider a message with the enum
-above, this usage will fail to compile:
-
-```swift
-// Without NilLiteralConvertible conformance on ContentType
-public struct SomeMessage: ProtoMessage {
-  public var contentType: ContentType! { ... }
-}
-
-// ERROR: no case named text or image
-switch someMessage.contentType {
-  case .text: { ... }
-  case .image: { ... }
-}
-```
-
-Even though our implementation guarantees that `contentType` will never be nil,
-if it is an optional type, its cases would be `some` and `none`, not the cases
-of the underlying enum type. In order to use it in this context, the user must
-write `someMessage.contentType!` in their switch statement.
-
-Making the enum itself `NilLiteralConvertible` permits us to make the property
-non-optional, so the user can still set it to nil to clear it (i.e., reset it to
-its default value), while eliminating the need to explicitly unwrap it in a
-switch statement.
-
-```swift
-// With NilLiteralConvertible conformance on ContentType
-public struct SomeMessage: ProtoMessage {
-  // Note that the property type is no longer optional
-  public var contentType: ContentType { ... }
-}
-
-// OK: Compiles and runs as expected
-switch someMessage.contentType {
-  case .text: { ... }
-  case .image: { ... }
-}
-
-// The enum can be reset to its default value this way
-someMessage.contentType = nil
-```
-
-One minor oddity with this approach is that nil will be auto-converted to the
-default value of the enum in any context, not just field assignment. In other
-words, this is valid:
-
-```swift
-func foo(contentType: ContentType) { ... }
-foo(nil) // Inside foo, contentType == .text
-```
-
-That being said, the advantage of being able to simultaneously support
-nil-resettability and switch-without-unwrapping outweighs this side effect,
-especially if appropriately documented. It is our hope that a new form of
-resettable properties will be added to Swift that eliminates this inconsistency.
-Some community members have already drafted or sent proposals for review that
-would benefit our designs:
-
-*   [SE-0030: Property Behaviors]
-    (https://github.com/apple/swift-evolution/blob/master/proposals/0030-property-behavior-decls.md)
-*   [Drafted: Resettable Properties]
-    (https://github.com/patters/swift-evolution/blob/master/proposals/0000-resettable-properties.md)
-
 ### Enum aliases
 
 The `allow_alias` option in protobuf slightly complicates the use of Swift enums
@@ -484,7 +503,7 @@ enum Foo {
 will be represented in Swift as:
 
 ```swift
-public enum Foo: Int32, NilLiteralConvertible {
+public enum Foo: Int32 {
   case bar = 0
   static public let baz = bar
 
@@ -545,16 +564,14 @@ for the fields themselves:
 
 ```swift
 public struct MyMessage: ProtoMessage {
-  public enum Record: NilLiteralConvertible {
+  public enum Record {
     case name(String)
     case idNumber(Int32)
     case NOT_SET
-
-    public init(nilLiteral: ()) { self = .NOT_SET }
   }
 
   // This is the "Swifty" way of accessing the value
-  public var record: Record { ... }
+  public var record_oneofCase: Record { ... }
 
   // Direct access to the underlying fields
   public var name: String! { ... }
@@ -566,7 +583,7 @@ This makes both usage patterns possible:
 
 ```swift
 // Usage 1: Case-based dispatch
-switch message.record {
+switch message.record_oneofCase {
   case .name(let name):
     // Do something with name if it was explicitly set
   case .idNumber(let id):
@@ -582,10 +599,6 @@ switch message.record {
 let myLabel = UILabel()
 myLabel.text = message.name
 ```
-
-As with proto enums, the generated `oneof` enum conforms to
-`NilLiteralConvertible` to avoid switch statement issues. Setting the property
-to nil will clear it (i.e., reset it to `NOT_SET`).
 
 ## Unknown Fields (proto2 only)
 
