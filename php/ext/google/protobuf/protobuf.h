@@ -37,7 +37,7 @@
 #include "upb.h"
 
 #define PHP_PROTOBUF_EXTNAME "protobuf"
-#define PHP_PROTOBUF_VERSION "0.01"
+#define PHP_PROTOBUF_VERSION "3.1.0a1"
 
 // -----------------------------------------------------------------------------
 // Forward Declaration
