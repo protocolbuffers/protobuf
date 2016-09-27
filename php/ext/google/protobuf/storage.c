@@ -210,7 +210,8 @@ CASE(ENUM,   LONG,   uint32_t)
       return;
     }
     default:
-      return EG(uninitialized_zval_ptr);
+      EG(uninitialized_zval_ptr);
+      return;
   }
 }
 
@@ -245,7 +246,8 @@ void native_slot_get_default(upb_fieldtype_t type, zval** cache TSRMLS_DC) {
       return;
     }
     default:
-      return EG(uninitialized_zval_ptr);
+      EG(uninitialized_zval_ptr);
+      return;
   }
 }
 
@@ -305,6 +307,7 @@ const zend_class_entry* field_type_class(const upb_fielddef* field) {
     EnumDescriptor* desc = zend_object_store_get_object(desc_php TSRMLS_CC);
     return desc->klass;
   }
+  return NULL;
 }
 
 // -----------------------------------------------------------------------------
@@ -515,7 +518,7 @@ void layout_set(MessageLayout* layout, MessageHeader* header, const upb_fielddef
     // zval in properties table first.
     switch (type) {
       case UPB_TYPE_MESSAGE: {
-        upb_msgdef* msg = upb_fielddef_msgsubdef(field);
+        const upb_msgdef* msg = upb_fielddef_msgsubdef(field);
         zval* desc_php = get_def_obj(msg);
         Descriptor* desc = zend_object_store_get_object(desc_php TSRMLS_CC);
         ce = desc->klass;
@@ -549,7 +552,7 @@ void layout_set(MessageLayout* layout, MessageHeader* header, const upb_fielddef
     upb_fieldtype_t type = upb_fielddef_type(field);
     zend_class_entry *ce = NULL;
     if (type == UPB_TYPE_MESSAGE) {
-      upb_msgdef* msg = upb_fielddef_msgsubdef(field);
+      const upb_msgdef* msg = upb_fielddef_msgsubdef(field);
       zval* desc_php = get_def_obj(msg);
       Descriptor* desc = zend_object_store_get_object(desc_php TSRMLS_CC);
       ce = desc->klass;

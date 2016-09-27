@@ -418,7 +418,7 @@ static void map_slot_key(upb_fieldtype_t type, const void* from, char** keyval,
     *keyval = Z_STRVAL_P(key_php);
     *length = Z_STRLEN_P(key_php);
   } else {
-    *keyval = from;
+    *keyval = (char*)from;
     *length = native_slot_size(type);
   }
 }
@@ -470,7 +470,7 @@ static bool endmap_handler(void *closure, const void *hd, upb_status* s) {
 
   Map *map = (Map *)zend_object_store_get_object(frame->map TSRMLS_CC);
 
-  const char* keyval = NULL;
+  char* keyval = NULL;
   upb_value v;
   size_t length;
 
@@ -970,11 +970,11 @@ static void putmap(zval* map, const upb_fielddef* f, upb_sink* sink,
 
     // Serialize key.
     const char *key = map_iter_key(&it, &len);
-    put_optional_value(key, len, key_field, depth + 1, &entry_sink);
+    put_optional_value((void*)key, len, key_field, depth + 1, &entry_sink);
 
     // Serialize value.
     upb_value value = map_iter_value(&it, &len);
-    put_optional_value(raw_value(upb_value_memory(&value), value_field),
+    put_optional_value((void*)raw_value(upb_value_memory(&value), value_field),
                        raw_value_len(upb_value_memory(&value), len, value_field),
                        value_field, depth + 1, &entry_sink);
 
