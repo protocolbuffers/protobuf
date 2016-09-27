@@ -96,7 +96,7 @@ static void message_set_property(zval* object, zval* member, zval* value,
     zend_error(E_USER_ERROR, "Unknown field: %s", Z_STRVAL_P(member));
   }
 
-  layout_set(self->descriptor->layout, self, field, value);
+  layout_set(self->descriptor->layout, self, field, value TSRMLS_CC);
 }
 
 static zval* message_get_property(zval* object, zval* member, int type,
