@@ -260,3 +260,11 @@ enum MapValueEnumNoBinary {
 message MapValueMessageNoBinary {
   optional int32 foo = 1;
 }
+
+message Deeply {
+  message Nested {
+    message Message {
+      optional int32 count = 1;
+    }
+  }
+}
