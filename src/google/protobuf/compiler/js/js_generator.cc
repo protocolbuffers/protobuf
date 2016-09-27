@@ -208,28 +208,28 @@ string GetPath(const GeneratorOptions& options,
   }
 }
 
-// Forward declare, so that GetPrefix can call this method,
-// which in turn, calls GetPrefix.
-string GetPath(const GeneratorOptions& options,
-               const Descriptor* descriptor);
+// Returns the name of the message with a leading dot and taking into account
+// nesting, for example ".OuterMessage.InnerMessage", or returns empty if
+// descriptor is null. This function does not handle namespacing, only message
+// nesting.
+string GetNestedMessageName(const Descriptor* descriptor) {
+  if (descriptor == NULL) {
+    return "";
+  }
+  return StripPrefixString(descriptor->full_name(),
+                           descriptor->file()->package());
+}
 
 // Returns the path prefix for a message or enumeration that
 // lives under the given file and containing type.
 string GetPrefix(const GeneratorOptions& options,
                  const FileDescriptor* file_descriptor,
                  const Descriptor* containing_type) {
-  string prefix = "";
-
-  if (containing_type == NULL) {
-    prefix = GetPath(options, file_descriptor);
-  } else {
-    prefix = GetPath(options, containing_type);
-  }
-
+  string prefix = GetPath(options, file_descriptor) +
+      GetNestedMessageName(containing_type);
   if (!prefix.empty()) {
     prefix += ".";
   }
-
   return prefix;
 }
 
@@ -277,7 +277,9 @@ string MaybeCrossFileRef(const GeneratorOptions& options,
       from_file != to_message->file()) {
     // Cross-file ref in CommonJS needs to use the module alias instead of
     // the global name.
-    return ModuleAlias(to_message->file()->name()) + "." + to_message->name();
+    return ModuleAlias(to_message->file()->name()) +
+        GetNestedMessageName(to_message->containing_type()) +
+        "." + to_message->name();
   } else {
     // Within a single file we use a full name.
     return GetPath(options, to_message);

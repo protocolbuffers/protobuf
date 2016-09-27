@@ -1040,4 +1040,18 @@ describe('Message test suite', function() {
     assertNan(message.getDefaultDoubleField());
   });
 
+  // Verify that we can successfully use a field referring to a nested message
+  // from a different .proto file.
+  it('testForeignNestedMessage', function() {
+    var msg = new proto.jspb.test.ForeignNestedFieldMessage();
+    var nested = new proto.jspb.test.Deeply.Nested.Message();
+    nested.setCount(5);
+    msg.setDeeplyNestedMessage(nested);
+
+    // After a serialization-deserialization round trip we should get back the
+    // same data we started with.
+    var serialized = msg.serializeBinary();
+    var deserialized = proto.jspb.test.ForeignNestedFieldMessage.deserializeBinary(serialized);
+    assertEquals(5, deserialized.getDeeplyNestedMessage().getCount());
+  });
 });
