@@ -755,6 +755,18 @@ jspb.Message.getFieldWithDefault = function(msg, fieldNumber, defaultValue) {
 
 
 /**
+ * Alias for getFieldWithDefault used by older generated code.
+ * @template T
+ * @param {!jspb.Message} msg A jspb proto.
+ * @param {number} fieldNumber The field number.
+ * @param {T} defaultValue The default value.
+ * @return {T} The field's value.
+ * @protected
+ */
+jspb.Message.getFieldProto3 = jspb.Message.getFieldWithDefault;
+
+
+/**
  * Gets the value of a map field, lazily creating the map container if
  * necessary.
  *
