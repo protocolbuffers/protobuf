@@ -1,7 +1,7 @@
 
 benchmarks_protoc_inputs =                                     \
   benchmarks.proto                                             \
-  $(top_srcdir)/src/google/protobuf/test_messages_proto3.proto
+  benchmark_messages_proto3.proto
 
 benchmarks_protoc_inputs_proto2 =                              \
   benchmark_messages_proto2.proto
@@ -9,8 +9,8 @@ benchmarks_protoc_inputs_proto2 =                              \
 benchmarks_protoc_outputs =                                    \
   benchmarks.pb.cc                                             \
   benchmarks.pb.h                                              \
-  google/protobuf/test_messages_proto3.pb.cc                   \
-  google/protobuf/test_messages_proto3.pb.h
+  benchmark_messages_proto3.pb.cc                              \
+  benchmark_messages_proto3.pb.h
 
 benchmarks_protoc_outputs_proto2 =                             \
   benchmark_messages_proto2.pb.cc                              \

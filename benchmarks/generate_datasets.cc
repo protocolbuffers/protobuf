@@ -106,8 +106,7 @@ std::string ReadFile(const std::string& name) {
 }
 
 int main() {
-  WriteFile("google_message1_proto3",
-            "protobuf_test_messages.proto3.GoogleMessage1",
+  WriteFile("google_message1_proto3", "benchmarks.proto3.GoogleMessage1",
             ReadFile("google_message1.dat"));
   WriteFile("google_message1_proto2", "benchmarks.proto2.GoogleMessage1",
             ReadFile("google_message1.dat"));
