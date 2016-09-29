@@ -10,6 +10,7 @@ Gem::Specification.new do |s|
   s.require_paths = ["lib"]
   s.files       = Dir.glob('lib/**/*.rb')
   if RUBY_PLATFORM == "java"
+    s.platform  = "java"
     s.files     += ["lib/google/protobuf_java.jar"]
   else
     s.files     += Dir.glob('ext/**/*')
