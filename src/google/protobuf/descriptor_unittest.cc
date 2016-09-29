@@ -5565,6 +5565,7 @@ TEST_F(ValidationErrorTest, MapEntryConflictsWithEnum) {
 
 TEST_F(ValidationErrorTest, EnumValuesConflictWhenPrefixesStripped) {
   BuildFileWithErrors(
+      "syntax: 'proto3'"
       "name: 'foo.proto' "
       "enum_type {"
       "  name: 'FooEnum' "
@@ -5572,9 +5573,11 @@ TEST_F(ValidationErrorTest, EnumValuesConflictWhenPrefixesStripped) {
       "  value { name: 'BAZ' number: 1 }"
       "}",
       "foo.proto: BAZ: NAME: When enum name is stripped and label is "
-      "PascalCased (Baz), this value label conflicts with FOO_ENUM_BAZ\n");
+      "PascalCased (Baz), this value label conflicts with FOO_ENUM_BAZ. This "
+      "will make the proto fail to compile for some languages, such as C#.\n");
 
   BuildFileWithErrors(
+      "syntax: 'proto3'"
       "name: 'foo.proto' "
       "enum_type {"
       "  name: 'FooEnum' "
@@ -5582,9 +5585,11 @@ TEST_F(ValidationErrorTest, EnumValuesConflictWhenPrefixesStripped) {
       "  value { name: 'BAZ' number: 1 }"
       "}",
       "foo.proto: BAZ: NAME: When enum name is stripped and label is "
-      "PascalCased (Baz), this value label conflicts with FOOENUM_BAZ\n");
+      "PascalCased (Baz), this value label conflicts with FOOENUM_BAZ. This "
+      "will make the proto fail to compile for some languages, such as C#.\n");
 
   BuildFileWithErrors(
+      "syntax: 'proto3'"
       "name: 'foo.proto' "
       "enum_type {"
       "  name: 'FooEnum' "
@@ -5593,9 +5598,11 @@ TEST_F(ValidationErrorTest, EnumValuesConflictWhenPrefixesStripped) {
       "}",
       "foo.proto: BAR__BAZ: NAME: When enum name is stripped and label is "
       "PascalCased (BarBaz), this value label conflicts with "
-      "FOO_ENUM_BAR_BAZ\n");
+      "FOO_ENUM_BAR_BAZ. This "
+      "will make the proto fail to compile for some languages, such as C#.\n");
 
   BuildFileWithErrors(
+      "syntax: 'proto3'"
       "name: 'foo.proto' "
       "enum_type {"
       "  name: 'FooEnum' "
@@ -5604,11 +5611,13 @@ TEST_F(ValidationErrorTest, EnumValuesConflictWhenPrefixesStripped) {
       "}",
       "foo.proto: BAR_BAZ: NAME: When enum name is stripped and label is "
       "PascalCased (BarBaz), this value label conflicts with "
-      "FOO_ENUM__BAR_BAZ\n");
+      "FOO_ENUM__BAR_BAZ. This "
+      "will make the proto fail to compile for some languages, such as C#.\n");
 
   // This isn't an error because the underscore will cause the PascalCase to
   // differ by case (BarBaz vs. Barbaz).
   BuildFile(
+      "syntax: 'proto3'"
       "name: 'foo.proto' "
       "enum_type {"
       "  name: 'FooEnum' "
