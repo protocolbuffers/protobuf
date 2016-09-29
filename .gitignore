@@ -79,7 +79,8 @@ src/**/*.log
 src/**/*.trs
 
 # JavaBuild output.
-java/target
+java/core/target
+java/util/target
 javanano/target
 
 # Windows native output.
@@ -135,3 +136,11 @@ php/ext/google/protobuf/configure.in
 php/ext/google/protobuf/mkinstalldirs
 php/ext/google/protobuf/run-tests.php
 vendor/
+
+# JavaScript artifacts
+js/commonjs_out/
+js/deps.js
+js/google-protobuf.js
+js/google/
+js/node_modules/
+js/testproto_libs.js
