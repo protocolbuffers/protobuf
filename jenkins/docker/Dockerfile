@@ -14,25 +14,29 @@ RUN echo 'deb http://ppa.launchpad.net/fkrull/deadsnakes/ubuntu trusty main' > /
   apt-key adv --keyserver keyserver.ubuntu.com --recv-keys DB82666C
 
 # Apt source for Oracle Java.
-run echo 'deb http://ppa.launchpad.net/webupd8team/java/ubuntu trusty main' > /etc/apt/sources.list.d/webupd8team-java-trusty.list && \
+RUN echo 'deb http://ppa.launchpad.net/webupd8team/java/ubuntu trusty main' > /etc/apt/sources.list.d/webupd8team-java-trusty.list && \
   apt-key adv --keyserver keyserver.ubuntu.com --recv-keys EEA14886 && \
   echo "oracle-java7-installer shared/accepted-oracle-license-v1-1 select true" | debconf-set-selections
 
 # Apt source for Mono
-run echo "deb http://download.mono-project.com/repo/debian wheezy main" | tee /etc/apt/sources.list.d/mono-xamarin.list && \
+RUN echo "deb http://download.mono-project.com/repo/debian wheezy main" | tee /etc/apt/sources.list.d/mono-xamarin.list && \
   echo "deb http://download.mono-project.com/repo/debian wheezy-libjpeg62-compat main" | tee -a /etc/apt/sources.list.d/mono-xamarin.list && \
   apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF
 
+# Apt source for php
+RUN echo "deb http://ppa.launchpad.net/ondrej/php/ubuntu trusty main" | tee /etc/apt/sources.list.d/various-php.list && \
+  apt-key adv --keyserver keyserver.ubuntu.com --recv-keys F4FCBB07
+
 # Install dotnet SDK based on https://www.microsoft.com/net/core#debian
 # (Ubuntu instructions need apt to support https)
-RUN apt-get update && apt-get install -y curl libunwind8 gettext && \
-  curl -sSL -o dotnet.tar.gz https://go.microsoft.com/fwlink/?LinkID=809130 && \
+RUN apt-get update && apt-get install -y --force-yes curl libunwind8 gettext && \
+  curl -sSL -o dotnet.tar.gz https://go.microsoft.com/fwlink/?LinkID=809130 &&  \
   mkdir -p /opt/dotnet && tar zxf dotnet.tar.gz -C /opt/dotnet && \
   ln -s /opt/dotnet/dotnet /usr/local/bin
 
 # Install dependencies.  We start with the basic ones require to build protoc
 # and the C++ build
-RUN apt-get update && apt-get install -y \
+RUN apt-get clean && apt-get update && apt-get install -y --force-yes \
   autoconf \
   autotools-dev \
   build-essential \
@@ -73,6 +77,18 @@ RUN apt-get update && apt-get install -y \
   ruby \
   # -- For C++ benchmarks --
   cmake \
+  # -- For PHP --
+  php5.5     \
+  php5.5-dev \
+  php5.5-xml \
+  php5.6     \
+  php5.6-dev \
+  php5.6-xml \
+  php7.0     \
+  php7.0-dev \
+  php7.0-xml \
+  phpunit    \
+  valgrind   \
   && apt-get clean
 
 ##################
@@ -124,6 +140,30 @@ RUN cd /tmp && \
   $MVN install dependency:go-offline -Dmaven.repo.local=$MAVEN_REPO
 
 ##################
+# PHP dependencies.
+RUN php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
+RUN php composer-setup.php
+RUN mv composer.phar /usr/bin/composer
+RUN php -r "unlink('composer-setup.php');"
+RUN cd /tmp && \
+  cd protobuf && \
+  ln -sfn /usr/bin/php5.5 /usr/bin/php && \
+  ln -sfn /usr/bin/php-config5.5 /usr/bin/php-config && \
+  ln -sfn /usr/bin/phpize5.5 /usr/bin/phpize && \
+  composer install && \
+  mv vendor /usr/local/vendor-5.5 && \
+  ln -sfn /usr/bin/php5.6 /usr/bin/php && \
+  ln -sfn /usr/bin/php-config5.6 /usr/bin/php-config && \
+  ln -sfn /usr/bin/phpize5.6 /usr/bin/phpize && \
+  composer install && \
+  mv vendor /usr/local/vendor-5.6 && \
+  ln -sfn /usr/bin/php7.0 /usr/bin/php && \
+  ln -sfn /usr/bin/php-config7.0 /usr/bin/php-config && \
+  ln -sfn /usr/bin/phpize7.0 /usr/bin/phpize && \
+  composer install && \
+  mv vendor /usr/local/vendor-7.0
+
+##################
 # Go dependencies.
 RUN apt-get install -y  \
   # -- For go -- \
@@ -131,7 +171,7 @@ RUN apt-get install -y  \
 
 ##################
 # Javascript dependencies.
-Run apt-get install -y \
+RUN apt-get install -y \
   # -- For javascript -- \
   npm
 
