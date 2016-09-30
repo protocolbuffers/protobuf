@@ -58,6 +58,12 @@ parallel --results $LOG_OUTPUT_DIR --joblog $OUTPUT_DIR/joblog $TEST_SCRIPT ::: 
   ruby_all \
   javascript \
   golang \
+  php5.5 \
+  php5.6 \
+  php7.0 \
+  php5.5_c \
+  php5.6_c \
+  php7.0_c \
   || true  # Process test results even if tests fail.
 
 cat $OUTPUT_DIR/joblog
