@@ -334,52 +334,62 @@ build_javascript() {
   cd js && npm install && npm test && cd ..
 }
 
+use_php() {
+  VERSION=$1
+  PHP=`which php`
+  PHP_CONFIG=`which php-config`
+  PHPIZE=`which phpize`
+  rm $PHP
+  rm $PHP_CONFIG
+  rm $PHPIZE
+  cp "/usr/bin/php$VERSION" $PHP
+  cp "/usr/bin/php-config$VERSION" $PHP_CONFIG
+  cp "/usr/bin/phpize$VERSION" $PHPIZE
+}
+
 build_php5.5_c() {
-  ln -sfn /usr/bin/php5.5 /usr/bin/php
-  ln -sfn /usr/bin/php-config5.5 /usr/bin/php-config
-  ln -sfn /usr/bin/phpize5.5 /usr/bin/phpize
+  use_php 5.5
   cd php/tests && /bin/bash ./test.sh && cd ../..
 }
 
 build_php5.5() {
-  ln -sfn /usr/bin/php5.5 /usr/bin/php
-  ln -sfn /usr/bin/php-config5.5 /usr/bin/php-config
-  ln -sfn /usr/bin/phpize5.5 /usr/bin/phpize
+  use_php 5.5
   rm -rf vendor
   cp -r /usr/local/vendor-5.5 vendor
   ./vendor/bin/phpunit
 }
 
 build_php5.6_c() {
-  ln -sfn /usr/bin/php5.6 /usr/bin/php
-  ln -sfn /usr/bin/php-config5.6 /usr/bin/php-config
-  ln -sfn /usr/bin/phpize5.6 /usr/bin/phpize
+  use_php 5.6
   cd php/tests && /bin/bash ./test.sh && cd ../..
 }
 
 build_php5.6() {
-  ln -sfn /usr/bin/php5.6 /usr/bin/php
-  ln -sfn /usr/bin/php-config5.6 /usr/bin/php-config
-  ln -sfn /usr/bin/phpize5.6 /usr/bin/phpize
+  use_php 5.6
   rm -rf vendor
   cp -r /usr/local/vendor-5.6 vendor
   ./vendor/bin/phpunit
 }
 
 build_php7.0_c() {
-  ln -sfn /usr/bin/php7.0 /usr/bin/php
-  ln -sfn /usr/bin/php-config7.0 /usr/bin/php-config
-  ln -sfn /usr/bin/phpize7.0 /usr/bin/phpize
+  use_php 7.0
   cd php/tests && /bin/bash ./test.sh && cd ../..
 }
 
 build_php7.0() {
-  ln -sfn /usr/bin/php7.0 /usr/bin/php
-  ln -sfn /usr/bin/php-config7.0 /usr/bin/php-config
-  ln -sfn /usr/bin/phpize7.0 /usr/bin/phpize
+  use_php 7.0
   rm -rf vendor
   cp -r /usr/local/vendor-7.0 vendor
   ./vendor/bin/phpunit
+}
+
+build_php_all() {
+  build_php5.5
+  build_php5.6
+  build_php7.0
+  build_php5.5_c
+  build_php5.6_c
+  # build_php7.0_c
 }
 
 # Note: travis currently does not support testing more than one language so the
@@ -418,7 +428,8 @@ Usage: $0 { cpp |
             php5.6   |
             php5.6_c |
             php7.0   |
-            php7.0_c)
+            php7.0_c |
+            php_all)
 "
   exit 1
 fi
