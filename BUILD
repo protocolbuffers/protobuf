@@ -316,6 +316,7 @@ cc_library(
         "src/google/protobuf/compiler/objectivec/objectivec_message_field.cc",
         "src/google/protobuf/compiler/objectivec/objectivec_oneof.cc",
         "src/google/protobuf/compiler/objectivec/objectivec_primitive_field.cc",
+	"src/google/protobuf/compiler/php/php_generator.cc",
         "src/google/protobuf/compiler/plugin.cc",
         "src/google/protobuf/compiler/plugin.pb.cc",
         "src/google/protobuf/compiler/python/python_generator.cc",
