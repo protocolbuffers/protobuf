@@ -187,6 +187,44 @@ csharp_EXTRA_DIST=                                                           \
   csharp/src/packages/repositories.config
 
 java_EXTRA_DIST=                                                                   \
+  java/core/src/main/java/com/google/protobuf/AllocatedBuffer.java \
+  java/core/src/main/java/com/google/protobuf/BinaryProtocolUtil.java \
+  java/core/src/main/java/com/google/protobuf/BinaryReader.java \
+  java/core/src/main/java/com/google/protobuf/BinaryWriter.java \
+  java/core/src/main/java/com/google/protobuf/BufferAllocator.java \
+  java/core/src/main/java/com/google/protobuf/FieldInfo.java \
+  java/core/src/main/java/com/google/protobuf/Int2ObjectHashMap.java \
+  java/core/src/main/java/com/google/protobuf/MessageInfo.java \
+  java/core/src/main/java/com/google/protobuf/MessageInfoFactory.java \
+  java/core/src/main/java/com/google/protobuf/Protobuf.java \
+  java/core/src/main/java/com/google/protobuf/ProtobufLists.java \
+  java/core/src/main/java/com/google/protobuf/Reader.java \
+  java/core/src/main/java/com/google/protobuf/Schema.java \
+  java/core/src/main/java/com/google/protobuf/SchemaFactory.java \
+  java/core/src/main/java/com/google/protobuf/SchemaUtil.java \
+  java/core/src/main/java/com/google/protobuf/Writer.java \
+  java/core/src/main/java/com/google/protobuf/DescriptorMessageInfoFactory.java \
+  java/core/src/main/java/com/google/protobuf/AbstractProto2LiteSchema.java \
+  java/core/src/main/java/com/google/protobuf/AbstractProto2Schema.java \
+  java/core/src/main/java/com/google/protobuf/AbstractProto2StandardSchema.java \
+  java/core/src/main/java/com/google/protobuf/AbstractProto3LiteSchema.java \
+  java/core/src/main/java/com/google/protobuf/AbstractProto3Schema.java \
+  java/core/src/main/java/com/google/protobuf/AbstractProto3StandardSchema.java \
+  java/core/src/main/java/com/google/protobuf/Proto2LiteLookupSchema.java \
+  java/core/src/main/java/com/google/protobuf/Proto2LiteTableSchema.java \
+  java/core/src/main/java/com/google/protobuf/Proto2LookupSchema.java \
+  java/core/src/main/java/com/google/protobuf/Proto2Manifest.java \
+  java/core/src/main/java/com/google/protobuf/Proto2SchemaFactory.java \
+  java/core/src/main/java/com/google/protobuf/Proto2TableSchema.java \
+  java/core/src/main/java/com/google/protobuf/Proto3LiteLookupSchema.java \
+  java/core/src/main/java/com/google/protobuf/Proto3LiteTableSchema.java \
+  java/core/src/main/java/com/google/protobuf/Proto3LookupSchema.java \
+  java/core/src/main/java/com/google/protobuf/Proto3Manifest.java \
+  java/core/src/main/java/com/google/protobuf/Proto3SchemaFactory.java \
+  java/core/src/main/java/com/google/protobuf/Proto3TableSchema.java \
+  java/core/src/main/java/com/google/protobuf/ProtoSyntax.java \
+  java/core/src/main/java/com/google/protobuf/FieldType.java \
+  java/core/src/main/java/com/google/protobuf/JavaType.java \
   java/README.md                                                                   \
   java/core/generate-sources-build.xml                                             \
   java/core/generate-test-sources-build.xml                                        \

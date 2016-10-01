@@ -28,6 +28,7 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+
 package com.google.protobuf;
 
 import java.io.ByteArrayInputStream;
@@ -52,9 +53,9 @@ import java.util.NoSuchElementException;
 
 /**
  * Immutable sequence of bytes.  Substring is supported by sharing the reference
- * to the immutable underlying bytes.  Concatenation is likewise supported
- * without copying (long strings) by building a tree of pieces in
- * {@link RopeByteString}.
+ * to the immutable underlying bytes, as with {@link String}.  Concatenation is
+ * likewise supported without copying (long strings) by building a tree of
+ * pieces in {@link RopeByteString}.
  * <p>
  * Like {@link String}, the contents of a {@link ByteString} can never be
  * observed to change, not even in the presence of a data race or incorrect
@@ -691,6 +692,16 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
    */
   abstract void writeTo(ByteOutput byteOutput) throws IOException;
 
+  /**
+   * This method behaves exactly the same as {@link #writeTo(ByteOutput)} unless the {@link
+   * ByteString} is a rope. For ropes, the leaf nodes are written in reverse order to the {@code
+   * byteOutput}.
+   *
+   * @param byteOutput the output target to receive the bytes
+   * @throws IOException if an I/O error occurs
+   * @see UnsafeByteOperations#unsafeWriteToReverse(ByteString, ByteOutput)
+   */
+  abstract void writeToReverse(ByteOutput byteOutput) throws IOException;
 
   /**
    * Constructs a read-only {@code java.nio.ByteBuffer} whose content
@@ -833,6 +844,10 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
       return true;
     }
 
+    @Override
+    void writeToReverse(ByteOutput byteOutput) throws IOException {
+      writeTo(byteOutput);
+    }
 
     /**
      * Check equality of the substring of given length of this object starting at
