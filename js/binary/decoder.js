@@ -905,12 +905,12 @@ jspb.BinaryDecoder.prototype.readString = function(length) {
   var bytes = this.bytes_;
   var cursor = this.cursor_;
   var end = cursor + length;
-  var codepoints = [];
+  var codeUnits = [];
 
   while (cursor < end) {
     var c = bytes[cursor++];
     if (c < 128) { // Regular 7-bit ASCII.
-      codepoints.push(c);
+      codeUnits.push(c);
     } else if (c < 192) {
       // UTF-8 continuation mark. We are out of sync. This
       // might happen if we attempted to read a character
@@ -918,11 +918,11 @@ jspb.BinaryDecoder.prototype.readString = function(length) {
       continue;
     } else if (c < 224) { // UTF-8 with two bytes.
       var c2 = bytes[cursor++];
-      codepoints.push(((c & 31) << 6) | (c2 & 63));
+      codeUnits.push(((c & 31) << 6) | (c2 & 63));
     } else if (c < 240) { // UTF-8 with three bytes.
       var c2 = bytes[cursor++];
       var c3 = bytes[cursor++];
-      codepoints.push(((c & 15) << 12) | ((c2 & 63) << 6) | (c3 & 63));
+      codeUnits.push(((c & 15) << 12) | ((c2 & 63) << 6) | (c3 & 63));
     } else if (c < 248) { // UTF-8 with 4 bytes.
       var c2 = bytes[cursor++];
       var c3 = bytes[cursor++];
@@ -932,20 +932,17 @@ jspb.BinaryDecoder.prototype.readString = function(length) {
       var codepoint = ((c & 7) << 18) | ((c2 & 63) << 12) | ((c3 & 63) << 6) | (c4 & 63);
       // Surrogates formula from wikipedia.
       // 1. Subtract 0x10000 from codepoint
-      codepoint -= 65536;
+      codepoint -= 0x10000;
       // 2. Split this into the high 10-bit value and the low 10-bit value
-      var low = codepoint & 1023;
-      var high = (codepoint >> 10) & 1023;
       // 3. Add 0xD800 to the high value to form the high surrogate
-      high += 55296;
       // 4. Add 0xDC00 to the low value to form the low surrogate:
-      low += 56320;
-      codepoints.push(high);
-      codepoints.push(low);
+      var low = (codepoint & 1023) + 0xDC00;
+      var high = ((codepoint >> 10) & 1023) + 0xD800;
+      codeUnits.push(high, low)
     }
   }
 
-  var result = String.fromCodePoint.apply(null, codepoints);
+  var result = String.fromCharCode.apply(null, codeUnits);
   this.cursor_ = cursor;
   return result;
 };
