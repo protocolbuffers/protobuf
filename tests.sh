@@ -347,11 +347,6 @@ use_php() {
   cp "/usr/bin/phpize$VERSION" $PHPIZE
 }
 
-build_php5.5_c() {
-  use_php 5.5
-  cd php/tests && /bin/bash ./test.sh && cd ../..
-}
-
 build_php5.5() {
   use_php 5.5
   rm -rf vendor
@@ -359,8 +354,18 @@ build_php5.5() {
   ./vendor/bin/phpunit
 }
 
-build_php5.6_c() {
-  use_php 5.6
+build_php5.5_c() {
+  use_php 5.5
+  cd php/tests && /bin/bash ./test.sh && cd ../..
+}
+build_php5.5_c() {
+  use_php 5.5
+  cd php/tests && /bin/bash ./test.sh && cd ../..
+}
+
+build_php5.5_mac() {
+  curl -s https://php-osx.liip.ch/install.sh | bash -s 5.5
+  export PATH="/usr/local/php5-5.5.38-20160831-100002/bin:$PATH"
   cd php/tests && /bin/bash ./test.sh && cd ../..
 }
 
@@ -371,8 +376,8 @@ build_php5.6() {
   ./vendor/bin/phpunit
 }
 
-build_php7.0_c() {
-  use_php 7.0
+build_php5.6_c() {
+  use_php 5.6
   cd php/tests && /bin/bash ./test.sh && cd ../..
 }
 
@@ -381,6 +386,11 @@ build_php7.0() {
   rm -rf vendor
   cp -r /usr/local/vendor-7.0 vendor
   ./vendor/bin/phpunit
+}
+
+build_php7.0_c() {
+  use_php 7.0
+  cd php/tests && /bin/bash ./test.sh && cd ../..
 }
 
 build_php_all() {
