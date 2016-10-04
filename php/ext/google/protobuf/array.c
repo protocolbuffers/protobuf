@@ -160,7 +160,8 @@ static void repeated_field_write_dimension(zval *object, zval *offset,
   unsigned char memory[NATIVE_SLOT_MAX_SIZE];
   memset(memory, 0, NATIVE_SLOT_MAX_SIZE);
 
-  if (!native_slot_set(intern->type, intern->msg_ce, memory, value)) {
+  if (!native_slot_set(intern->type, intern->msg_ce, memory, value
+		       TSRMLS_CC)) {
     return;
   }
 

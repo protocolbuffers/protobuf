@@ -964,7 +964,7 @@ static void putmap(zval* map, const upb_fielddef* f, upb_sink* sink,
   key_field = map_field_key(f);
   value_field = map_field_value(f);
 
-  for (map_begin(map, &it); !map_done(&it); map_next(&it)) {
+  for (map_begin(map, &it TSRMLS_CC); !map_done(&it); map_next(&it)) {
     upb_status status;
 
     upb_sink entry_sink;
