@@ -88,7 +88,7 @@ void* upb_value_memory(upb_value* v) {
 static bool table_key(Map* self, zval* key,
                       char* buf,
                       const char** out_key,
-                      size_t* out_length) {
+                      size_t* out_length TSRMLS_DC) {
   switch (self->key_type) {
     case UPB_TYPE_STRING:
       if (!protobuf_convert_to_string(key)) {
@@ -108,7 +108,7 @@ static bool table_key(Map* self, zval* key,
     if (!protobuf_convert_to_##type(key, &type##_value)) {            \
       return false;                                                   \
     }                                                                 \
-    native_slot_set(self->key_type, NULL, buf, key);                  \
+    native_slot_set(self->key_type, NULL, buf, key TSRMLS_CC);        \
     *out_key = buf;                                                   \
     *out_length = native_slot_size(self->key_type);                   \
     break;                                                            \
@@ -248,7 +248,7 @@ void map_field_create_with_type(zend_class_entry *ce, const upb_fielddef *field,
   const upb_fielddef *value_field = map_field_value(field);
   intern->key_type = upb_fielddef_type(key_field);
   intern->value_type = upb_fielddef_type(value_field);
-  intern->msg_ce = field_type_class(value_field);
+  intern->msg_ce = field_type_class(value_field TSRMLS_CC);
 }
 
 static void map_field_free_element(void *object) {
@@ -270,7 +270,7 @@ static bool *map_field_read_dimension(zval *object, zval *key, int type,
 #ifndef NDEBUG
   v.ctype = UPB_CTYPE_UINT64;
 #endif
-  if (!table_key(intern, key, keybuf, &keyval, &length)) {
+  if (!table_key(intern, key, keybuf, &keyval, &length TSRMLS_CC)) {
     return false;
   }
 
@@ -303,13 +303,14 @@ static bool map_field_write_dimension(zval *object, zval *key,
   size_t length = 0;
   upb_value v;
   void* mem;
-  if (!table_key(intern, key, keybuf, &keyval, &length)) {
+  if (!table_key(intern, key, keybuf, &keyval, &length TSRMLS_CC)) {
     return false;
   }
 
   mem = upb_value_memory(&v);
   memset(mem, 0, native_slot_size(intern->value_type));
-  if(!native_slot_set(intern->value_type, intern->msg_ce, mem, value)) {
+  if (!native_slot_set(intern->value_type, intern->msg_ce, mem, value
+		      TSRMLS_CC)) {
     return false;
   }
 #ifndef NDEBUG
@@ -333,7 +334,7 @@ static bool map_field_unset_dimension(zval *object, zval *key TSRMLS_DC) {
   const char* keyval = NULL;
   size_t length = 0;
   upb_value v;
-  if (!table_key(intern, key, keybuf, &keyval, &length)) {
+  if (!table_key(intern, key, keybuf, &keyval, &length TSRMLS_CC)) {
     return false;
   }
 #ifndef NDEBUG
@@ -396,7 +397,7 @@ PHP_METHOD(MapField, offsetExists) {
 #ifndef NDEBUG
   v.ctype = UPB_CTYPE_UINT64;
 #endif
-  if (!table_key(intern, key, keybuf, &keyval, &length)) {
+  if (!table_key(intern, key, keybuf, &keyval, &length TSRMLS_CC)) {
     return false;
   }
 
@@ -446,7 +447,7 @@ PHP_METHOD(MapField, count) {
 // Map Iterator
 // -----------------------------------------------------------------------------
 
-void map_begin(zval *map_php, MapIter *iter) {
+void map_begin(zval *map_php, MapIter *iter TSRMLS_DC) {
   Map *self = UNBOX(Map, map_php);
   map_begin_internal(self, iter);
 }
