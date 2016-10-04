@@ -89,6 +89,7 @@ RUN apt-get clean && apt-get update && apt-get install -y --force-yes \
   php7.0-xml \
   phpunit    \
   valgrind   \
+  libxml2-dev \
   && apt-get clean
 
 ##################
@@ -162,6 +163,11 @@ RUN cd /tmp && \
   ln -sfn /usr/bin/phpize7.0 /usr/bin/phpize && \
   composer install && \
   mv vendor /usr/local/vendor-7.0
+RUN wget http://am1.php.net/get/php-5.5.38.tar.bz2/from/this/mirror
+RUN mv mirror php-5.5.38.tar.bz2
+RUN tar -xvf php-5.5.38.tar.bz2
+RUN cd php-5.5.38 && ./configure --enable-maintainer-zts --prefix=/usr/local/php-5.5-zts && \
+    make && make install
 
 ##################
 # Go dependencies.
