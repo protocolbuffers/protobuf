@@ -347,6 +347,16 @@ use_php() {
   cp "/usr/bin/phpize$VERSION" $PHPIZE
 }
 
+use_php_zts() {
+  VERSION=$1
+  PHP=`which php`
+  PHP_CONFIG=`which php-config`
+  PHPIZE=`which phpize`
+  ln -sfn "/usr/local/php-${VERSION}-zts/bin/php" $PHP
+  ln -sfn "/usr/local/php-${VERSION}-zts/bin/php-config" $PHP_CONFIG
+  ln -sfn "/usr/local/php-${VERSION}-zts/bin/phpize" $PHPIZE
+}
+
 build_php5.5() {
   use_php 5.5
   rm -rf vendor
@@ -358,14 +368,15 @@ build_php5.5_c() {
   use_php 5.5
   cd php/tests && /bin/bash ./test.sh && cd ../..
 }
-build_php5.5_c() {
-  use_php 5.5
-  cd php/tests && /bin/bash ./test.sh && cd ../..
-}
 
 build_php5.5_mac() {
   curl -s https://php-osx.liip.ch/install.sh | bash -s 5.5
   export PATH="/usr/local/php5-5.5.38-20160831-100002/bin:$PATH"
+  cd php/tests && /bin/bash ./test.sh && cd ../..
+}
+
+build_php5.5_zts_c() {
+  use_php_zts 5.5
   cd php/tests && /bin/bash ./test.sh && cd ../..
 }
 
@@ -400,6 +411,7 @@ build_php_all() {
   build_php5.5_c
   build_php5.6_c
   # build_php7.0_c
+  build_php5.5_zts_c
 }
 
 # Note: travis currently does not support testing more than one language so the
