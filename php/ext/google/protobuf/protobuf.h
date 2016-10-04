@@ -233,11 +233,12 @@ struct MessageHeader {
 };
 
 MessageLayout* create_layout(const upb_msgdef* msgdef);
-void layout_init(MessageLayout* layout, void* storage, zval** properties_table);
+void layout_init(MessageLayout* layout, void* storage, zval** properties_table
+		 TSRMLS_DC);
 zval* layout_get(MessageLayout* layout, const void* storage,
                  const upb_fielddef* field, zval** cache TSRMLS_DC);
 void layout_set(MessageLayout* layout, MessageHeader* header,
-                const upb_fielddef* field, zval* val);
+                const upb_fielddef* field, zval* val TSRMLS_DC);
 void free_layout(MessageLayout* layout);
 
 PHP_METHOD(Message, readOneof);
@@ -293,7 +294,7 @@ PHP_METHOD(Util, checkRepeatedField);
 
 size_t native_slot_size(upb_fieldtype_t type);
 bool native_slot_set(upb_fieldtype_t type, const zend_class_entry* klass,
-                     void* memory, zval* value);
+                     void* memory, zval* value TSRMLS_DC);
 void native_slot_init(upb_fieldtype_t type, void* memory, zval** cache);
 // For each property, in order to avoid conversion between the zval object and
 // the actual data type during parsing/serialization, the containing message
@@ -325,7 +326,7 @@ typedef struct {
   upb_strtable_iter it;
 } MapIter;
 
-void map_begin(zval* self, MapIter* iter);
+void map_begin(zval* self, MapIter* iter TSRMLS_DC);
 void map_next(MapIter* iter);
 bool map_done(MapIter* iter);
 const char* map_iter_key(MapIter* iter, int* len);
@@ -377,10 +378,10 @@ void repeated_field_create_with_type(zend_class_entry* ce,
                                      zval** repeated_field TSRMLS_DC);
 // Return the element at the index position from the repeated field. There is
 // not restriction on the type of stored elements.
-void *repeated_field_index_native(RepeatedField *intern, int index);
+void *repeated_field_index_native(RepeatedField *intern, int index TSRMLS_DC);
 // Add the element to the end of the repeated field. There is not restriction on
 // the type of stored elements.
-void repeated_field_push_native(RepeatedField *intern, void *value);
+void repeated_field_push_native(RepeatedField *intern, void *value TSRMLS_DC);
 
 PHP_METHOD(RepeatedField, __construct);
 PHP_METHOD(RepeatedField, append);
@@ -411,7 +412,7 @@ typedef struct {
 // -----------------------------------------------------------------------------
 
 upb_fieldtype_t to_fieldtype(upb_descriptortype_t type);
-const zend_class_entry *field_type_class(const upb_fielddef *field);
+const zend_class_entry *field_type_class(const upb_fielddef *field TSRMLS_DC);
 
 // -----------------------------------------------------------------------------
 // Utilities.

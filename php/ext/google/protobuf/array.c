@@ -160,7 +160,8 @@ static void repeated_field_write_dimension(zval *object, zval *offset,
   unsigned char memory[NATIVE_SLOT_MAX_SIZE];
   memset(memory, 0, NATIVE_SLOT_MAX_SIZE);
 
-  if (!native_slot_set(intern->type, intern->msg_ce, memory, value)) {
+  if (!native_slot_set(intern->type, intern->msg_ce, memory, value
+		       TSRMLS_CC)) {
     return;
   }
 
@@ -192,7 +193,7 @@ static HashTable *repeated_field_get_gc(zval *object, zval ***table,
 // C RepeatedField Utilities
 // -----------------------------------------------------------------------------
 
-void *repeated_field_index_native(RepeatedField *intern, int index) {
+void *repeated_field_index_native(RepeatedField *intern, int index TSRMLS_DC) {
   HashTable *ht = HASH_OF(intern->array);
   void *value;
 
