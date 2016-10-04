@@ -672,7 +672,6 @@ python_EXTRA_DIST=                                                           \
 
 ruby_EXTRA_DIST=                                                             \
   ruby/Gemfile                                                               \
-  ruby/Gemfile.lock                                                          \
   ruby/.gitignore                                                            \
   ruby/README.md                                                             \
   ruby/Rakefile                                                              \
