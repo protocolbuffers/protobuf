@@ -377,6 +377,7 @@ build_php5.5_mac() {
 
 build_php5.5_zts_c() {
   use_php_zts 5.5
+  wget https://phar.phpunit.de/phpunit-old.phar -O /usr/bin/phpunit
   cd php/tests && /bin/bash ./test.sh && cd ../..
 }
 

@@ -199,8 +199,9 @@ static void *startseq_handler(void* closure, const void* hd) {
 // Handlers that append primitive values to a repeated field.
 #define DEFINE_APPEND_HANDLER(type, ctype)                             \
   static bool append##type##_handler(void* closure, const void* hd,    \
-                                     ctype val TSRMLS_DC) {            \
+                                     ctype val) {                      \
     zval* array = (zval*)closure;                                      \
+    TSRMLS_FETCH();                                                    \
     RepeatedField* intern =                                            \
         (RepeatedField*)zend_object_store_get_object(array TSRMLS_CC); \
     repeated_field_push_native(intern, &val TSRMLS_CC);                \
@@ -218,8 +219,9 @@ DEFINE_APPEND_HANDLER(double, double)
 // Appends a string to a repeated field.
 static void* appendstr_handler(void *closure,
                                const void *hd,
-                               size_t size_hint TSRMLS_DC) {
+                               size_t size_hint) {
   zval* array = (zval*)closure;
+  TSRMLS_FETCH();
   RepeatedField* intern =
       (RepeatedField*)zend_object_store_get_object(array TSRMLS_CC);
 
@@ -234,8 +236,9 @@ static void* appendstr_handler(void *closure,
 // Appends a 'bytes' string to a repeated field.
 static void* appendbytes_handler(void *closure,
                                  const void *hd,
-                                 size_t size_hint TSRMLS_DC) {
+                                 size_t size_hint) {
   zval* array = (zval*)closure;
+  TSRMLS_FETCH();
   RepeatedField* intern =
       (RepeatedField*)zend_object_store_get_object(array TSRMLS_CC);
 
@@ -296,8 +299,9 @@ static size_t stringdata_handler(void* closure, const void* hd,
 }
 
 // Appends a submessage to a repeated field.
-static void *appendsubmsg_handler(void *closure, const void *hd TSRMLS_DC) {
+static void *appendsubmsg_handler(void *closure, const void *hd) {
   zval* array = (zval*)closure;
+  TSRMLS_FETCH();
   RepeatedField* intern =
       (RepeatedField*)zend_object_store_get_object(array TSRMLS_CC);
 
@@ -319,10 +323,11 @@ static void *appendsubmsg_handler(void *closure, const void *hd TSRMLS_DC) {
 }
 
 // Sets a non-repeated submessage field in a message.
-static void *submsg_handler(void *closure, const void *hd TSRMLS_DC) {
+static void *submsg_handler(void *closure, const void *hd) {
   MessageHeader* msg = closure;
   const submsg_handlerdata_t* submsgdata = hd;
   zval* subdesc_php = get_def_obj((void*)submsgdata->md);
+  TSRMLS_FETCH();
   Descriptor* subdesc = zend_object_store_get_object(subdesc_php TSRMLS_CC);
   zend_class_entry* subklass = subdesc->klass;
   zval* submsg_php;
@@ -465,11 +470,11 @@ static void *startmapentry_handler(void *closure, const void *hd) {
 
 // Handler to end a map entry: inserts the value defined during the message into
 // the map. This is the 'endmsg' handler on the map entry msgdef.
-static bool endmap_handler(void *closure, const void *hd, upb_status* s
-			   TSRMLS_DC) {
+static bool endmap_handler(void* closure, const void* hd, upb_status* s) {
   map_parse_frame_t* frame = closure;
   const map_handlerdata_t* mapdata = hd;
 
+  TSRMLS_FETCH();
   Map *map = (Map *)zend_object_store_get_object(frame->map TSRMLS_CC);
 
   const char* keyval = NULL;
@@ -575,12 +580,12 @@ static void *oneofbytes_handler(void *closure,
 }
 
 // Handler for a submessage field in a oneof.
-static void *oneofsubmsg_handler(void *closure,
-                                 const void *hd TSRMLS_DC) {
+static void* oneofsubmsg_handler(void* closure, const void* hd) {
   MessageHeader* msg = closure;
   const oneof_handlerdata_t *oneofdata = hd;
   uint32_t oldcase = DEREF(msg, oneofdata->case_ofs, uint32_t);
   zval* subdesc_php = get_def_obj((void*)oneofdata->md);
+  TSRMLS_FETCH();
   Descriptor* subdesc = zend_object_store_get_object(subdesc_php TSRMLS_CC);
   zend_class_entry* subklass = subdesc->klass;
   zval* submsg_php;
@@ -773,9 +778,10 @@ static void add_handlers_for_oneof_field(upb_handlers *h,
   upb_handlerattr_uninit(&attr);
 }
 
-static void add_handlers_for_message(const void *closure, upb_handlers *h
-				     TSRMLS_DC) {
+static void add_handlers_for_message(const void* closure,
+                                     upb_handlers* h) {
   const upb_msgdef* msgdef = upb_handlers_msgdef(h);
+  TSRMLS_FETCH();
   Descriptor* desc = (Descriptor*)zend_object_store_get_object(
       get_def_obj((void*)msgdef) TSRMLS_CC);
   upb_msg_field_iter i;
