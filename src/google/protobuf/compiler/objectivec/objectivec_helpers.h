@@ -87,8 +87,8 @@ string FileClassName(const FileDescriptor* file);
 
 // These return the fully-qualified class name corresponding to the given
 // descriptor.
-string ClassName(const Descriptor* descriptor);
-string ClassName(const Descriptor* descriptor, string* out_suffix_added);
+string LIBPROTOC_EXPORT ClassName(const Descriptor* descriptor);
+string LIBPROTOC_EXPORT ClassName(const Descriptor* descriptor, string* out_suffix_added);
 string EnumName(const EnumDescriptor* descriptor);
 
 // Returns the fully-qualified name of the enum value corresponding to the
@@ -189,13 +189,13 @@ string BuildCommentsString(const SourceLocation& location,
 
 // The name the commonly used by the library when built as a framework.
 // This lines up to the name used in the CocoaPod.
-extern const char* const ProtobufLibraryFrameworkName;
+extern LIBPROTOC_EXPORT const char* const ProtobufLibraryFrameworkName;
 // Returns the CPP symbol name to use as the gate for framework style imports
 // for the given framework name to use.
 string ProtobufFrameworkImportSymbol(const string& framework_name);
 
 // Checks if the file is one of the proto's bundled with the library.
-bool IsProtobufLibraryBundledProtoFile(const FileDescriptor* file);
+bool LIBPROTOC_EXPORT IsProtobufLibraryBundledProtoFile(const FileDescriptor* file);
 
 // Checks the prefix for the given files and outputs any warnings as needed. If
 // there are flat out errors, then out_error is filled in with the first error
