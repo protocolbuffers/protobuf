@@ -36,7 +36,6 @@ option csharp_namespace = "Google.Protobuf.WellKnownTypes";
 option java_package = "com.google.protobuf";
 option java_outer_classname = "SourceContextProto";
 option java_multiple_files = true;
-option java_generate_equals_and_hash = true;
 option objc_class_prefix = "GPB";
 
 // `SourceContext` represents information about the source of a

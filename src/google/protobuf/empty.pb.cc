@@ -83,10 +83,10 @@ void protobuf_AddDesc_google_2fprotobuf_2fempty_2eproto() {
 
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
     "\n\033google/protobuf/empty.proto\022\017google.pr"
-    "otobuf\"\007\n\005EmptyBy\n\023com.google.protobufB\n"
+    "otobuf\"\007\n\005EmptyBv\n\023com.google.protobufB\n"
     "EmptyProtoP\001Z\'github.com/golang/protobuf"
-    "/ptypes/empty\240\001\001\370\001\001\242\002\003GPB\252\002\036Google.Proto"
-    "buf.WellKnownTypesb\006proto3", 186);
+    "/ptypes/empty\370\001\001\242\002\003GPB\252\002\036Google.Protobuf"
+    ".WellKnownTypesb\006proto3", 183);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "google/protobuf/empty.proto", &protobuf_RegisterTypes);
   Empty::default_instance_ = new Empty();

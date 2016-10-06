@@ -837,9 +837,9 @@ void protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto() {
     ".protobuf.GeneratedCodeInfo.Annotation\032O"
     "\n\nAnnotation\022\020\n\004path\030\001 \003(\005B\002\020\001\022\023\n\013source"
     "_file\030\002 \001(\t\022\r\n\005begin\030\003 \001(\005\022\013\n\003end\030\004 \001(\005B"
-    "[\n\023com.google.protobufB\020DescriptorProtos"
-    "H\001Z\ndescriptor\240\001\001\242\002\003GPB\252\002\032Google.Protobu"
-    "f.Reflection", 5292);
+    "X\n\023com.google.protobufB\020DescriptorProtos"
+    "H\001Z\ndescriptor\242\002\003GPB\252\002\032Google.Protobuf.R"
+    "eflection", 5289);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "google/protobuf/descriptor.proto", &protobuf_RegisterTypes);
   FileDescriptorSet::default_instance_ = new FileDescriptorSet();
