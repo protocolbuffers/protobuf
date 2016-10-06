@@ -54,6 +54,7 @@ csharp_EXTRA_DIST=                                                           \
   csharp/Google.Protobuf.Tools.nuspec                                        \
   csharp/README.md                                                           \
   csharp/build_packages.bat                                                  \
+  csharp/build_tools.sh                                                      \
   csharp/buildall.sh                                                         \
   csharp/generate_protos.sh                                                  \
   csharp/keys/Google.Protobuf.public.snk                                     \
