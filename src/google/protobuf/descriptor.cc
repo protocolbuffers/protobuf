@@ -165,29 +165,37 @@ const int FieldDescriptor::kLastReservedNumber;
 namespace {
 
 string ToCamelCase(const string& input, bool lower_first) {
-  bool capitalize_next = !lower_first;
   string result;
   result.reserve(input.size());
 
-  for (int i = 0; i < input.size(); i++) {
-    if (input[i] == '_') {
-      capitalize_next = true;
-    } else if (capitalize_next) {
-      // Note:  I distrust ctype.h due to locales.
-      if ('a' <= input[i] && input[i] <= 'z') {
-        result.push_back(input[i] - 'a' + 'A');
-      } else {
-        result.push_back(input[i]);
-      }
-      capitalize_next = false;
-    } else {
-      result.push_back(input[i]);
-    }
+  string::const_iterator it = input.begin();
+  // Upper-case the first letter.
+  if (!lower_first && !input.empty() && 'a' <= input[0] && input[0] <= 'z')
+  {
+    result.push_back(input[0] - 'a' + 'A');
+    ++it;
   }
-
   // Lower-case the first letter.
-  if (lower_first && !result.empty() && 'A' <= result[0] && result[0] <= 'Z') {
-      result[0] = result[0] - 'A' + 'a';
+  else if (lower_first && !input.empty() && 'A' <= input[0] && input[0] <= 'Z')
+  {
+    result.push_back(input[0] - 'A' + 'a');
+    ++it;
+  }
+  
+  for (; it != input.end(); ++it) {
+    if ((*it) == '_') {
+      ++it;
+      if (it == input.end())
+        break ;
+      // Note:  I distrust ctype.h due to locales.
+      if ('a' <= (*it) && (*it) <= 'z') {
+        result.push_back((*it) - 'a' + 'A');
+      } else {
+        result.push_back((*it));
+      }
+    } else {
+      result.push_back((*it));
+    }
   }
 
   return result;
@@ -653,8 +661,9 @@ DescriptorPool::Tables::~Tables() {
   // Note that the deletion order is important, since the destructors of some
   // messages may refer to objects in allocations_.
   STLDeleteElements(&messages_);
-  for (int i = 0; i < allocations_.size(); i++) {
-    operator delete(allocations_[i]);
+  vector<void *>::iterator it = allocations_.begin();
+  for (; it != allocations_.end(); ++it) {
+    operator delete((*it));
   }
   STLDeleteElements(&strings_);
   STLDeleteElements(&file_tables_);
@@ -719,20 +728,28 @@ void DescriptorPool::Tables::RollbackToLastCheckpoint() {
   GOOGLE_DCHECK(!checkpoints_.empty());
   const CheckPoint& checkpoint = checkpoints_.back();
 
-  for (int i = checkpoint.pending_symbols_before_checkpoint;
-       i < symbols_after_checkpoint_.size();
-       i++) {
-    symbols_by_name_.erase(symbols_after_checkpoint_[i]);
+  vector<const char*>::const_iterator it;
+  it = symbols_after_checkpoint_.begin();
+  std::advance(it, checkpoint.pending_symbols_before_checkpoint);
+  for (;
+       it != symbols_after_checkpoint_.end();
+       ++it) {
+    symbols_by_name_.erase((*it));
   }
-  for (int i = checkpoint.pending_files_before_checkpoint;
-       i < files_after_checkpoint_.size();
-       i++) {
-    files_by_name_.erase(files_after_checkpoint_[i]);
+  it = files_after_checkpoint_.begin();
+  std::advance(it, checkpoint.pending_files_before_checkpoint);
+  for (;
+       it != files_after_checkpoint_.end();
+       ++it) {
+    files_by_name_.erase((*it));
   }
-  for (int i = checkpoint.pending_extensions_before_checkpoint;
-       i < extensions_after_checkpoint_.size();
-       i++) {
-    extensions_.erase(extensions_after_checkpoint_[i]);
+  vector<DescriptorIntPair>::const_iterator it_ext;
+  it_ext = extensions_after_checkpoint_.begin();
+  std::advance(it_ext, checkpoint.pending_extensions_before_checkpoint);
+  for (;
+       it_ext != extensions_after_checkpoint_.end();
+       ++it_ext) {
+    extensions_.erase((*it_ext));
   }
 
   symbols_after_checkpoint_.resize(
@@ -749,10 +766,13 @@ void DescriptorPool::Tables::RollbackToLastCheckpoint() {
   STLDeleteContainerPointers(
       file_tables_.begin() + checkpoint.file_tables_before_checkpoint,
       file_tables_.end());
-  for (int i = checkpoint.allocations_before_checkpoint;
-       i < allocations_.size();
-       i++) {
-    operator delete(allocations_[i]);
+  vector<void *>::const_iterator it_alloc;
+  it_alloc = allocations_.begin();
+  std::advance(it_alloc, checkpoint.allocations_before_checkpoint);
+  for (;
+       it_alloc != allocations_.end();
+       ++it_alloc) {
+    operator delete((*it_alloc));
   }
 
   strings_.resize(checkpoint.strings_before_checkpoint);
