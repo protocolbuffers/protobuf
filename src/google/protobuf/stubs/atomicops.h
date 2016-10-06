@@ -216,6 +216,8 @@ Atomic64 Release_Load(volatile const Atomic64* ptr);
 #include <google/protobuf/stubs/atomicops_internals_pnacl.h>
 #elif defined(GOOGLE_PROTOBUF_ARCH_PPC)
 #include <google/protobuf/stubs/atomicops_internals_ppc_gcc.h>
+#elif defined(GOOGLE_PROTOBUF_ARCH_S390)
+#include <google/protobuf/stubs/atomicops_internals_s390_gcc.h>
 #elif (((__GNUC__ == 4) && (__GNUC_MINOR__ >= 7)) || (__GNUC__ > 4))
 #include <google/protobuf/stubs/atomicops_internals_generic_gcc.h>
 #elif defined(__clang__)
