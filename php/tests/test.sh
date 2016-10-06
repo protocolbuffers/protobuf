@@ -24,9 +24,4 @@ done
 # Make sure to run the memory test in debug mode.
 php -dextension=../ext/google/protobuf/modules/protobuf.so memory_leak_test.php
 
-php --version
-which php
-pwd
-ls
-ls -l `which php`
 USE_ZEND_ALLOC=0 valgrind --leak-check=yes php -dextension=../ext/google/protobuf/modules/protobuf.so memory_leak_test.php
