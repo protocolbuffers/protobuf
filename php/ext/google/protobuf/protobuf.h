@@ -70,14 +70,6 @@ typedef struct MapField MapField;
 ZEND_BEGIN_MODULE_GLOBALS(protobuf)
 ZEND_END_MODULE_GLOBALS(protobuf)
 
-ZEND_DECLARE_MODULE_GLOBALS(protobuf)
-
-#ifdef ZTS
-#define PROTOBUF_G(v) TSRMG(protobuf_globals_id, zend_protobuf_globals*, v)
-#else
-#define PROTOBUF_G(v) (protobuf_globals.v)
-#endif
-
 // Init module and PHP classes.
 void descriptor_init(TSRMLS_D);
 void enum_descriptor_init(TSRMLS_D);
@@ -347,6 +339,7 @@ void* upb_value_memory(upb_value* v);
 
 // These operate on a map field (i.e., a repeated field of submessages whose
 // submessage type is a map-entry msgdef).
+bool is_map_field(const upb_fielddef* field);
 const upb_fielddef* map_field_key(const upb_fielddef* field);
 const upb_fielddef* map_field_value(const upb_fielddef* field);
 

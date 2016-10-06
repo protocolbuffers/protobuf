@@ -33,6 +33,7 @@
 #include <Zend/zend_interfaces.h>
 
 #include "protobuf.h"
+#include "utf8.h"
 
 ZEND_BEGIN_ARG_INFO_EX(arginfo_offsetGet, 0, 0, 1)
   ZEND_ARG_INFO(0, index)
@@ -152,7 +153,7 @@ static zend_function_entry map_field_methods[] = {
 zend_class_entry* map_field_type;
 zend_object_handlers* map_field_handlers;
 
-static map_begin_internal(Map *map, MapIter *iter) {
+static void map_begin_internal(Map *map, MapIter *iter) {
   iter->self = map;
   upb_strtable_begin(&iter->it, &map->table);
 }
@@ -258,8 +259,8 @@ static void map_field_free_element(void *object) {
 // MapField Handlers
 // -----------------------------------------------------------------------------
 
-static bool *map_field_read_dimension(zval *object, zval *key, int type,
-                                      zval **retval TSRMLS_DC) {
+static bool map_field_read_dimension(zval *object, zval *key, int type,
+                                     zval **retval TSRMLS_DC) {
   Map *intern =
       (Map *)zend_object_store_get_object(object TSRMLS_CC);
 
@@ -398,7 +399,7 @@ PHP_METHOD(MapField, offsetExists) {
   v.ctype = UPB_CTYPE_UINT64;
 #endif
   if (!table_key(intern, key, keybuf, &keyval, &length TSRMLS_CC)) {
-    return false;
+    RETURN_BOOL(false);
   }
 
   RETURN_BOOL(upb_strtable_lookup2(&intern->table, keyval, length, &v));
@@ -434,7 +435,7 @@ PHP_METHOD(MapField, offsetUnset) {
 
 PHP_METHOD(MapField, count) {
   Map *intern =
-      (MapField *)zend_object_store_get_object(getThis() TSRMLS_CC);
+      (Map *)zend_object_store_get_object(getThis() TSRMLS_CC);
 
   if (zend_parse_parameters_none() == FAILURE) {
     return;

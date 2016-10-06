@@ -369,12 +369,6 @@ build_php5.5_c() {
   cd php/tests && /bin/bash ./test.sh && cd ../..
 }
 
-build_php5.5_mac() {
-  curl -s https://php-osx.liip.ch/install.sh | bash -s 5.5
-  export PATH="/usr/local/php5-5.5.38-20160831-100002/bin:$PATH"
-  cd php/tests && /bin/bash ./test.sh && cd ../..
-}
-
 build_php5.5_zts_c() {
   use_php_zts 5.5
   wget https://phar.phpunit.de/phpunit-old.phar -O /usr/bin/phpunit
@@ -390,6 +384,25 @@ build_php5.6() {
 
 build_php5.6_c() {
   use_php 5.6
+  cd php/tests && /bin/bash ./test.sh && cd ../..
+}
+
+build_php5.6_mac() {
+  # Install PHP
+  curl -s https://php-osx.liip.ch/install.sh | bash -s 5.6
+  export PATH="/usr/local/php5-5.6.25-20160831-101628/bin:$PATH"
+
+  # Install phpunit
+  curl https://phar.phpunit.de/phpunit.phar -L -o phpunit.phar
+  chmod +x phpunit.phar
+  sudo mv phpunit.phar /usr/local/bin/phpunit
+
+  # Install valgrind
+  echo "#! /bin/bash" > valgrind
+  chmod ug+x valgrind
+  sudo mv valgrind /usr/local/bin/valgrind
+
+  # Test
   cd php/tests && /bin/bash ./test.sh && cd ../..
 }
 

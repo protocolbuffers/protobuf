@@ -58,7 +58,7 @@ bool is_structurally_valid_utf8(const char* buf, int len) {
       return false;
     }
     for (j = i + 1; j < i + offset; j++) {
-      if (buf[j] & 0xc0 != 0x80) {
+      if ((buf[j] & 0xc0) != 0x80) {
         return false;
       }
     }

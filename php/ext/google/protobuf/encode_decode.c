@@ -29,6 +29,7 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "protobuf.h"
+#include "utf8.h"
 
 /* stringsink *****************************************************************/
 
@@ -416,7 +417,8 @@ static void map_slot_uninit(void* memory, upb_fieldtype_t type) {
   }
 }
 
-static void map_slot_key(upb_fieldtype_t type, const void* from, char** keyval,
+static void map_slot_key(upb_fieldtype_t type, const void* from,
+                         const char** keyval,
                          size_t* length) {
   if (type == UPB_TYPE_STRING) {
     zval* key_php = **(zval***)from;
@@ -891,7 +893,7 @@ static upb_selector_t getsel(const upb_fielddef* f, upb_handlertype_t type) {
   return ret;
 }
 
-static void put_optional_value(void* memory, int len, const upb_fielddef* f,
+static void put_optional_value(const void* memory, int len, const upb_fielddef* f,
                                int depth, upb_sink* sink TSRMLS_DC) {
   assert(upb_fielddef_label(f) == UPB_LABEL_OPTIONAL);
 
