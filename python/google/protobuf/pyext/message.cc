@@ -1928,6 +1928,7 @@ static PyObject* MergeFromString(CMessage* self, PyObject* arg) {
     input.SetTotalBytesLimit(INT_MAX, INT_MAX);
   }
   PyDescriptorPool* pool = GetDescriptorPoolForMessage(self);
+  input.SetTotalBytesLimit(data_length, data_length);
   input.SetExtensionRegistry(pool->pool, pool->message_factory);
   bool success = self->message->MergePartialFromCodedStream(&input);
   if (success) {
