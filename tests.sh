@@ -28,7 +28,8 @@ internal_build_cpp() {
   fi
 
   ./autogen.sh
-  ./configure
+  ./configure CXXFLAGS="-fPIC"  # -fPIC is needed for python cpp test.
+                                # See python/setup.py for more details
   make -j2
 }
 
