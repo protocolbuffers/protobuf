@@ -318,7 +318,8 @@ PHP_METHOD(DescriptorPool, internalAddGeneratedFile) {
     add_def_obj(desc->def_type_lower, desc_php);                               \
     /* Unlike other messages, MapEntry is shared by all map fields and doesn't \
      * have generated PHP class.*/                                             \
-    if (upb_def_type(def) == UPB_DEF_MSG && upb_msgdef_mapentry(def)) {        \
+    if (upb_def_type(def) == UPB_DEF_MSG &&                                    \
+        upb_msgdef_mapentry(upb_downcast_msgdef(def))) {                       \
       break;                                                                   \
     }                                                                          \
     /* Prepend '.' to package name to make it absolute. */                     \

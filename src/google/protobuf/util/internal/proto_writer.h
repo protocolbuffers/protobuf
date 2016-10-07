@@ -148,6 +148,10 @@ class LIBPROTOBUF_EXPORT ProtoWriter : public StructuredObjectWriter {
     ignore_unknown_fields_ = ignore_unknown_fields;
   }
 
+  void set_use_lower_camel_for_enums(bool use_lower_camel_for_enums) {
+    use_lower_camel_for_enums_ = use_lower_camel_for_enums;
+  }
+
  protected:
   class LIBPROTOBUF_EXPORT ProtoElement : public BaseElement, public LocationTrackerInterface {
    public:
@@ -307,6 +311,10 @@ class LIBPROTOBUF_EXPORT ProtoWriter : public StructuredObjectWriter {
 
   // If true, don't report unknown field names to the listener.
   bool ignore_unknown_fields_;
+
+  // If true, check if enum name in camel case or without underscore matches the
+  // field name.
+  bool use_lower_camel_for_enums_;
 
   // Variable for internal state processing:
   // element_    : the current element.

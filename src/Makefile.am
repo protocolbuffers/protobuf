@@ -115,6 +115,7 @@ nobase_include_HEADERS =                                        \
   google/protobuf/generated_enum_util.h                         \
   google/protobuf/generated_message_reflection.h                \
   google/protobuf/generated_message_util.h                      \
+  google/protobuf/has_bits.h                                    \
   google/protobuf/map_entry.h                                   \
   google/protobuf/map_entry_lite.h                              \
   google/protobuf/map_field.h                                   \
@@ -176,7 +177,7 @@ nobase_include_HEADERS =                                        \
 lib_LTLIBRARIES = libprotobuf-lite.la libprotobuf.la libprotoc.la
 
 libprotobuf_lite_la_LIBADD = $(PTHREAD_LIBS)
-libprotobuf_lite_la_LDFLAGS = -version-info 10:0:0 -export-dynamic -no-undefined
+libprotobuf_lite_la_LDFLAGS = -version-info 11:0:0 -export-dynamic -no-undefined
 libprotobuf_lite_la_SOURCES =                                  \
   google/protobuf/stubs/atomicops_internals_x86_gcc.cc         \
   google/protobuf/stubs/atomicops_internals_x86_msvc.cc        \
@@ -217,7 +218,7 @@ libprotobuf_lite_la_SOURCES =                                  \
   google/protobuf/io/zero_copy_stream_impl_lite.cc
 
 libprotobuf_la_LIBADD = $(PTHREAD_LIBS)
-libprotobuf_la_LDFLAGS = -version-info 10:0:0 -export-dynamic -no-undefined
+libprotobuf_la_LDFLAGS = -version-info 11:0:0 -export-dynamic -no-undefined
 libprotobuf_la_SOURCES =                                       \
   $(libprotobuf_lite_la_SOURCES)                               \
   google/protobuf/any.pb.cc                                    \
@@ -301,7 +302,7 @@ libprotobuf_la_SOURCES =                                       \
 nodist_libprotobuf_la_SOURCES = $(nodist_libprotobuf_lite_la_SOURCES)
 
 libprotoc_la_LIBADD = $(PTHREAD_LIBS) libprotobuf.la
-libprotoc_la_LDFLAGS = -version-info 10:0:0 -export-dynamic -no-undefined
+libprotoc_la_LDFLAGS = -version-info 11:0:0 -export-dynamic -no-undefined
 libprotoc_la_SOURCES =                                         \
   google/protobuf/compiler/code_generator.cc                   \
   google/protobuf/compiler/command_line_interface.cc           \
@@ -526,8 +527,10 @@ protoc_inputs =                                                   \
   google/protobuf/util/internal/testdata/field_mask.proto         \
   google/protobuf/util/internal/testdata/maps.proto               \
   google/protobuf/util/internal/testdata/oneofs.proto             \
+  google/protobuf/util/internal/testdata/proto3.proto             \
   google/protobuf/util/internal/testdata/struct.proto             \
   google/protobuf/util/internal/testdata/timestamp_duration.proto \
+  google/protobuf/util/internal/testdata/wrappers.proto           \
   google/protobuf/util/json_format_proto3.proto                   \
   google/protobuf/util/message_differencer_unittest.proto         \
   google/protobuf/compiler/cpp/cpp_test_large_enum_value.proto
@@ -643,10 +646,14 @@ protoc_outputs =                                                  \
   google/protobuf/util/internal/testdata/maps.pb.h                \
   google/protobuf/util/internal/testdata/oneofs.pb.cc             \
   google/protobuf/util/internal/testdata/oneofs.pb.h              \
+  google/protobuf/util/internal/testdata/proto3.pb.cc             \
+  google/protobuf/util/internal/testdata/proto3.pb.h              \
   google/protobuf/util/internal/testdata/struct.pb.cc             \
   google/protobuf/util/internal/testdata/struct.pb.h              \
   google/protobuf/util/internal/testdata/timestamp_duration.pb.cc \
   google/protobuf/util/internal/testdata/timestamp_duration.pb.h  \
+  google/protobuf/util/internal/testdata/wrappers.pb.cc           \
+  google/protobuf/util/internal/testdata/wrappers.pb.h            \
   google/protobuf/util/json_format_proto3.pb.cc                   \
   google/protobuf/util/json_format_proto3.pb.h                    \
   google/protobuf/util/message_differencer_unittest.pb.cc         \

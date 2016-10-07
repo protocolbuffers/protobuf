@@ -106,17 +106,17 @@ jspb.ExtensionFieldInfo = function(fieldNumber, fieldName, ctor, toObjectFn,
 /**
  * Stores binary-related information for a single extension field.
  * @param {!jspb.ExtensionFieldInfo<T>} fieldInfo
- * @param {?function(number,?)=} binaryReaderFn
- * @param {?function(number,?)|function(number,?,?,?,?,?)=} binaryWriterFn
- * @param {?function(?,?)=} opt_binaryMessageSerializeFn
- * @param {?function(?,?)=} opt_binaryMessageDeserializeFn
- * @param {?boolean=} opt_isPacked
+ * @param {!function(number,?)} binaryReaderFn
+ * @param {!function(number,?)|function(number,?,?,?,?,?)} binaryWriterFn
+ * @param {function(?,?)=} opt_binaryMessageSerializeFn
+ * @param {function(?,?)=} opt_binaryMessageDeserializeFn
+ * @param {boolean=} opt_isPacked
  * @constructor
  * @struct
  * @template T
  */
 jspb.ExtensionFieldBinaryInfo = function(fieldInfo, binaryReaderFn, binaryWriterFn,
-    binaryMessageSerializeFn, binaryMessageDeserializeFn, isPacked) {
+    opt_binaryMessageSerializeFn, opt_binaryMessageDeserializeFn, opt_isPacked) {
   /** @const */
   this.fieldInfo = fieldInfo;
   /** @const */
@@ -124,11 +124,11 @@ jspb.ExtensionFieldBinaryInfo = function(fieldInfo, binaryReaderFn, binaryWriter
   /** @const */
   this.binaryWriterFn = binaryWriterFn;
   /** @const */
-  this.binaryMessageSerializeFn = binaryMessageSerializeFn;
+  this.binaryMessageSerializeFn = opt_binaryMessageSerializeFn;
   /** @const */
-  this.binaryMessageDeserializeFn = binaryMessageDeserializeFn;
+  this.binaryMessageDeserializeFn = opt_binaryMessageDeserializeFn;
   /** @const */
-  this.isPacked = isPacked;
+  this.isPacked = opt_isPacked;
 };
 
 /**
@@ -744,7 +744,7 @@ jspb.Message.assertConsistentTypes_ = function(array) {
  * @return {T} The field's value.
  * @protected
  */
-jspb.Message.getFieldProto3 = function(msg, fieldNumber, defaultValue) {
+jspb.Message.getFieldWithDefault = function(msg, fieldNumber, defaultValue) {
   var value = jspb.Message.getField(msg, fieldNumber);
   if (value == null) {
     return defaultValue;
@@ -752,6 +752,18 @@ jspb.Message.getFieldProto3 = function(msg, fieldNumber, defaultValue) {
     return value;
   }
 };
+
+
+/**
+ * Alias for getFieldWithDefault used by older generated code.
+ * @template T
+ * @param {!jspb.Message} msg A jspb proto.
+ * @param {number} fieldNumber The field number.
+ * @param {T} defaultValue The default value.
+ * @return {T} The field's value.
+ * @protected
+ */
+jspb.Message.getFieldProto3 = jspb.Message.getFieldWithDefault;
 
 
 /**
@@ -806,6 +818,24 @@ jspb.Message.setField = function(msg, fieldNumber, value) {
     msg.array[jspb.Message.getIndex_(msg, fieldNumber)] = value;
   } else {
     msg.extensionObject_[fieldNumber] = value;
+  }
+};
+
+
+/**
+ * Adds a value to a repeated, primitive field.
+ * @param {!jspb.Message} msg A jspb proto.
+ * @param {number} fieldNumber The field number.
+ * @param {string|number|boolean|!Uint8Array} value New value
+ * @param {number=} opt_index Index where to put new value.
+ * @protected
+ */
+jspb.Message.addToRepeatedField = function(msg, fieldNumber, value, opt_index) {
+  var arr = jspb.Message.getField(msg, fieldNumber);
+  if (opt_index != undefined) {
+    arr.splice(opt_index, 0, value);
+  } else {
+    arr.push(value);
   }
 };
 
@@ -907,6 +937,24 @@ jspb.Message.getWrapperField = function(msg, ctor, fieldNumber, opt_required) {
  * @protected
  */
 jspb.Message.getRepeatedWrapperField = function(msg, ctor, fieldNumber) {
+  jspb.Message.wrapRepeatedField_(msg, ctor, fieldNumber);
+  var val = msg.wrappers_[fieldNumber];
+  if (val == jspb.Message.EMPTY_LIST_SENTINEL_) {
+    val = msg.wrappers_[fieldNumber] = [];
+  }
+  return /** @type {!Array<!jspb.Message>} */ (val);
+};
+
+
+/**
+ * Wraps underlying array into proto message representation if it wasn't done
+ * before.
+ * @param {!jspb.Message} msg A jspb proto.
+ * @param {function(new:jspb.Message, ?Array)} ctor Constructor for the field.
+ * @param {number} fieldNumber The field number.
+ * @private
+ */
+jspb.Message.wrapRepeatedField_ = function(msg, ctor, fieldNumber) {
   if (!msg.wrappers_) {
     msg.wrappers_ = {};
   }
@@ -917,11 +965,6 @@ jspb.Message.getRepeatedWrapperField = function(msg, ctor, fieldNumber) {
     }
     msg.wrappers_[fieldNumber] = wrappers;
   }
-  var val = msg.wrappers_[fieldNumber];
-  if (val == jspb.Message.EMPTY_LIST_SENTINEL_) {
-    val = msg.wrappers_[fieldNumber] = [];
-  }
-  return /** @type {Array<!jspb.Message>} */ (val);
 };
 
 
@@ -977,6 +1020,48 @@ jspb.Message.setRepeatedWrapperField = function(msg, fieldNumber, value) {
   }
   msg.wrappers_[fieldNumber] = value;
   jspb.Message.setField(msg, fieldNumber, data);
+};
+
+
+/**
+ * Add a message to a repeated proto field.
+ * @param {!jspb.Message} msg A jspb proto.
+ * @param {number} fieldNumber The field number.
+ * @param {T_CHILD|undefined} value Proto that will be added to the
+ *     repeated field.
+ * @param {function(new:T_CHILD, ?Array=)} ctor The constructor of the
+ *     message type.
+ * @param {number|undefined} index Index at which to insert the value.
+ * @return {T_CHILD_NOT_UNDEFINED} proto that was inserted to the repeated field
+ * @template MessageType
+ * Use go/closure-ttl to declare a non-undefined version of T_CHILD. Replace the
+ * undefined in blah|undefined with none. This is necessary because the compiler
+ * will infer T_CHILD to be |undefined.
+ * @template T_CHILD
+ * @template T_CHILD_NOT_UNDEFINED :=
+ *     cond(isUnknown(T_CHILD), unknown(),
+ *       mapunion(T_CHILD, (X) =>
+ *         cond(eq(X, 'undefined'), none(), X)))
+ * =:
+ * @protected
+ */
+jspb.Message.addToRepeatedWrapperField = function(
+    msg, fieldNumber, value, ctor, index) {
+  jspb.Message.wrapRepeatedField_(msg, ctor, fieldNumber);
+  var wrapperArray = msg.wrappers_[fieldNumber];
+  if (!wrapperArray) {
+    wrapperArray = msg.wrappers_[fieldNumber] = [];
+  }
+  var insertedValue = value ? value : new ctor();
+  var array = jspb.Message.getField(msg, fieldNumber);
+  if (index != undefined) {
+    wrapperArray.splice(index, 0, insertedValue);
+    array.splice(index, 0, insertedValue.toArray());
+  } else {
+    wrapperArray.push(insertedValue);
+    array.push(insertedValue.toArray());
+  }
+  return insertedValue;
 };
 
 
@@ -1114,32 +1199,39 @@ jspb.Message.prototype.getExtension = function(fieldInfo) {
  * @param {jspb.ExtensionFieldInfo} fieldInfo Specifies the field to set.
  * @param {jspb.Message|string|Uint8Array|number|boolean|Array?} value The value
  *     to set.
+ * @return {THIS} For chaining
+ * @this {THIS}
+ * @template THIS
  */
 jspb.Message.prototype.setExtension = function(fieldInfo, value) {
-  if (!this.wrappers_) {
-    this.wrappers_ = {};
+  // Cast self, since the inferred THIS is unknown inside the function body.
+  // https://github.com/google/closure-compiler/issues/1411#issuecomment-232442220
+  var self = /** @type {!jspb.Message} */ (this);
+  if (!self.wrappers_) {
+    self.wrappers_ = {};
   }
-  jspb.Message.maybeInitEmptyExtensionObject_(this);
+  jspb.Message.maybeInitEmptyExtensionObject_(self);
   var fieldNumber = fieldInfo.fieldIndex;
   if (fieldInfo.isRepeated) {
     value = value || [];
     if (fieldInfo.isMessageType()) {
-      this.wrappers_[fieldNumber] = value;
-      this.extensionObject_[fieldNumber] = goog.array.map(
+      self.wrappers_[fieldNumber] = value;
+      self.extensionObject_[fieldNumber] = goog.array.map(
           /** @type {Array<jspb.Message>} */ (value), function(msg) {
         return msg.toArray();
       });
     } else {
-      this.extensionObject_[fieldNumber] = value;
+      self.extensionObject_[fieldNumber] = value;
     }
   } else {
     if (fieldInfo.isMessageType()) {
-      this.wrappers_[fieldNumber] = value;
-      this.extensionObject_[fieldNumber] = value ? value.toArray() : value;
+      self.wrappers_[fieldNumber] = value;
+      self.extensionObject_[fieldNumber] = value ? value.toArray() : value;
     } else {
-      this.extensionObject_[fieldNumber] = value;
+      self.extensionObject_[fieldNumber] = value;
     }
   }
+  return self;
 };
 
 
@@ -1308,7 +1400,30 @@ jspb.Message.compareFields = function(field1, field2) {
 
 
 /**
- * Static clone function. NOTE: A type-safe method called "cloneMessage" exists
+ * Templated, type-safe cloneMessage definition.
+ * @return {THIS}
+ * @this {THIS}
+ * @template THIS
+ */
+jspb.Message.prototype.cloneMessage = function() {
+  return jspb.Message.cloneMessage(/** @type {!jspb.Message} */ (this));
+};
+
+/**
+ * Alias clone to cloneMessage. goog.object.unsafeClone uses clone to
+ * efficiently copy objects. Without this alias, copying jspb messages comes
+ * with a large performance penalty.
+ * @return {THIS}
+ * @this {THIS}
+ * @template THIS
+ */
+jspb.Message.prototype.clone = function() {
+  return jspb.Message.cloneMessage(/** @type {!jspb.Message} */ (this));
+};
+
+/**
+ * Static clone function. NOTE: A type-safe method called "cloneMessage"
+ * exists
  * on each generated JsPb class. Do not call this function directly.
  * @param {!jspb.Message} msg A message to clone.
  * @return {!jspb.Message} A deep clone of the given message.
@@ -1429,3 +1544,4 @@ jspb.Message.registry_ = {};
  * @type {!Object.<number, jspb.ExtensionFieldInfo>}
  */
 jspb.Message.messageSetExtensions = {};
+jspb.Message.messageSetExtensionsBinary = {};

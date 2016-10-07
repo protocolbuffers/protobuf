@@ -44,12 +44,10 @@ import protobuf_unittest.UnittestProto.TestOneofBackwardsCompatible;
 import protobuf_unittest.UnittestProto.TestPackedExtensions;
 import protobuf_unittest.UnittestProto.TestPackedTypes;
 import proto2_wireformat_unittest.UnittestMsetWireFormat.TestMessageSet;
-
-import junit.framework.TestCase;
-
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.util.List;
+import junit.framework.TestCase;
 
 /**
  * Tests related to parsing and serialization.

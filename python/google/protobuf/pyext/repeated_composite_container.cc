@@ -364,7 +364,7 @@ static int SortPythonMessages(RepeatedCompositeContainer* self,
   ScopedPyObjectPtr m(PyObject_GetAttrString(self->child_messages, "sort"));
   if (m == NULL)
     return -1;
-  if (PyObject_Call(m.get(), args, kwds) == NULL)
+  if (ScopedPyObjectPtr(PyObject_Call(m.get(), args, kwds)) == NULL)
     return -1;
   if (self->message != NULL) {
     ReorderAttached(self);

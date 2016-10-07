@@ -55,7 +55,7 @@ namespace Google.Protobuf.WellKnownTypes {
             "IjsKBk9wdGlvbhIMCgRuYW1lGAEgASgJEiMKBXZhbHVlGAIgASgLMhQuZ29v",
             "Z2xlLnByb3RvYnVmLkFueSouCgZTeW50YXgSEQoNU1lOVEFYX1BST1RPMhAA",
             "EhEKDVNZTlRBWF9QUk9UTzMQAUJMChNjb20uZ29vZ2xlLnByb3RvYnVmQglU",
-            "eXBlUHJvdG9QAaABAaICA0dQQqoCHkdvb2dsZS5Qcm90b2J1Zi5XZWxsS25v",
+            "eXBlUHJvdG9QAfgBAaICA0dQQqoCHkdvb2dsZS5Qcm90b2J1Zi5XZWxsS25v",
             "d25UeXBlc2IGcHJvdG8z"));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::Google.Protobuf.WellKnownTypes.AnyReflection.Descriptor, global::Google.Protobuf.WellKnownTypes.SourceContextReflection.Descriptor, },

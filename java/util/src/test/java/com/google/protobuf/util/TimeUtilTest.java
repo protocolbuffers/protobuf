@@ -32,14 +32,11 @@ package com.google.protobuf.util;
 
 import com.google.protobuf.Duration;
 import com.google.protobuf.Timestamp;
-
-import junit.framework.TestCase;
-
-import org.junit.Assert;
-
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
+import junit.framework.TestCase;
+import org.junit.Assert;
 
 /** Unit tests for {@link TimeUtil}. */
 public class TimeUtilTest extends TestCase {

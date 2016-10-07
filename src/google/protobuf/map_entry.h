@@ -158,8 +158,8 @@ class MapEntry : public MapEntryBase {
     return entry_lite_.MergePartialFromCodedStream(input);
   }
 
-  int ByteSize() const {
-    return entry_lite_.ByteSize();
+  size_t ByteSizeLong() const {
+    return entry_lite_.ByteSizeLong();
   }
 
   void SerializeWithCachedSizes(::google::protobuf::io::CodedOutputStream* output) const {

@@ -5,7 +5,7 @@
 # dependent projects use the :git notation to refer to the library.
 Pod::Spec.new do |s|
   s.name     = 'Protobuf'
-  s.version  = '3.0.2'
+  s.version  = '3.1.0'
   s.summary  = 'Protocol Buffers v.3 runtime library for Objective-C.'
   s.homepage = 'https://github.com/google/protobuf'
   s.license  = 'New BSD'

@@ -259,7 +259,8 @@ StatusOr<string> DataPiece::ToBytes() const {
   }
 }
 
-StatusOr<int> DataPiece::ToEnum(const google::protobuf::Enum* enum_type) const {
+StatusOr<int> DataPiece::ToEnum(const google::protobuf::Enum* enum_type,
+                                bool use_lower_camel_for_enums) const {
   if (type_ == TYPE_NULL) return google::protobuf::NULL_VALUE;
 
   if (type_ == TYPE_STRING) {
@@ -268,20 +269,34 @@ StatusOr<int> DataPiece::ToEnum(const google::protobuf::Enum* enum_type) const {
     const google::protobuf::EnumValue* value =
         FindEnumValueByNameOrNull(enum_type, enum_name);
     if (value != NULL) return value->number();
+
+    // Check if int version of enum is sent as string.
+    StatusOr<int32> int_value = ToInt32();
+    if (int_value.ok()) {
+      if (const google::protobuf::EnumValue* enum_value =
+              FindEnumValueByNumberOrNull(enum_type, int_value.ValueOrDie())) {
+        return enum_value->number();
+      }
+    }
+
     // Next try a normalized name.
     for (string::iterator it = enum_name.begin(); it != enum_name.end(); ++it) {
       *it = *it == '-' ? '_' : ascii_toupper(*it);
     }
     value = FindEnumValueByNameOrNull(enum_type, enum_name);
     if (value != NULL) return value->number();
-  } else {
-    StatusOr<int32> value = ToInt32();
-    if (value.ok()) {
-      if (const google::protobuf::EnumValue* enum_value =
-              FindEnumValueByNumberOrNull(enum_type, value.ValueOrDie())) {
-        return enum_value->number();
-      }
+
+    // If use_lower_camel_for_enums is true try with enum name without
+    // underscore. This will also accept camel case names as the enum_name has
+    // been normalized before.
+    if (use_lower_camel_for_enums) {
+      value = FindEnumValueByNameWithoutUnderscoreOrNull(enum_type, enum_name);
+      if (value != NULL) return value->number();
     }
+  } else {
+    // We don't need to check whether the value is actually declared in the
+    // enum because we preserve unknown enum values as well.
+    return ToInt32();
   }
   return InvalidArgument(
       ValueAsStringOrDefault("Cannot find enum with given value."));
@@ -354,6 +369,7 @@ bool DataPiece::DecodeBase64(StringPiece src, string* dest) const {
 
 void DataPiece::InternalCopy(const DataPiece& other) {
   type_ = other.type_;
+  use_strict_base64_decoding_ = other.use_strict_base64_decoding_;
   switch (type_) {
     case TYPE_INT32:
     case TYPE_INT64:

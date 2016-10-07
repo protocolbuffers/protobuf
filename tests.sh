@@ -28,7 +28,8 @@ internal_build_cpp() {
   fi
 
   ./autogen.sh
-  ./configure
+  ./configure CXXFLAGS="-fPIC"  # -fPIC is needed for python cpp test.
+                                # See python/setup.py for more details
   make -j2
 }
 
@@ -334,6 +335,100 @@ build_javascript() {
   cd js && npm install && npm test && cd ..
 }
 
+use_php() {
+  VERSION=$1
+  PHP=`which php`
+  PHP_CONFIG=`which php-config`
+  PHPIZE=`which phpize`
+  rm $PHP
+  rm $PHP_CONFIG
+  rm $PHPIZE
+  cp "/usr/bin/php$VERSION" $PHP
+  cp "/usr/bin/php-config$VERSION" $PHP_CONFIG
+  cp "/usr/bin/phpize$VERSION" $PHPIZE
+}
+
+use_php_zts() {
+  VERSION=$1
+  PHP=`which php`
+  PHP_CONFIG=`which php-config`
+  PHPIZE=`which phpize`
+  ln -sfn "/usr/local/php-${VERSION}-zts/bin/php" $PHP
+  ln -sfn "/usr/local/php-${VERSION}-zts/bin/php-config" $PHP_CONFIG
+  ln -sfn "/usr/local/php-${VERSION}-zts/bin/phpize" $PHPIZE
+}
+
+build_php5.5() {
+  use_php 5.5
+  rm -rf vendor
+  cp -r /usr/local/vendor-5.5 vendor
+  ./vendor/bin/phpunit
+}
+
+build_php5.5_c() {
+  use_php 5.5
+  cd php/tests && /bin/bash ./test.sh && cd ../..
+}
+
+build_php5.5_zts_c() {
+  use_php_zts 5.5
+  wget https://phar.phpunit.de/phpunit-old.phar -O /usr/bin/phpunit
+  cd php/tests && /bin/bash ./test.sh && cd ../..
+}
+
+build_php5.6() {
+  use_php 5.6
+  rm -rf vendor
+  cp -r /usr/local/vendor-5.6 vendor
+  ./vendor/bin/phpunit
+}
+
+build_php5.6_c() {
+  use_php 5.6
+  cd php/tests && /bin/bash ./test.sh && cd ../..
+}
+
+build_php5.6_mac() {
+  # Install PHP
+  curl -s https://php-osx.liip.ch/install.sh | bash -s 5.6
+  export PATH="/usr/local/php5-5.6.25-20160831-101628/bin:$PATH"
+
+  # Install phpunit
+  curl https://phar.phpunit.de/phpunit.phar -L -o phpunit.phar
+  chmod +x phpunit.phar
+  sudo mv phpunit.phar /usr/local/bin/phpunit
+
+  # Install valgrind
+  echo "#! /bin/bash" > valgrind
+  chmod ug+x valgrind
+  sudo mv valgrind /usr/local/bin/valgrind
+
+  # Test
+  cd php/tests && /bin/bash ./test.sh && cd ../..
+}
+
+build_php7.0() {
+  use_php 7.0
+  rm -rf vendor
+  cp -r /usr/local/vendor-7.0 vendor
+  ./vendor/bin/phpunit
+}
+
+build_php7.0_c() {
+  use_php 7.0
+  cd php/tests && /bin/bash ./test.sh && cd ../..
+}
+
+build_php_all() {
+  build_php5.5
+  build_php5.6
+  build_php7.0
+  build_php5.5_c
+  build_php5.6_c
+  # build_php7.0_c
+  build_php5.5_zts_c
+}
+
 # Note: travis currently does not support testing more than one language so the
 # .travis.yml cheats and claims to only be cpp.  If they add multiple language
 # support, this should probably get updated to install steps and/or
@@ -364,7 +459,14 @@ Usage: $0 { cpp |
             ruby21 |
             ruby22 |
             jruby |
-            ruby_all)
+            ruby_all |
+            php5.5   |
+            php5.5_c |
+            php5.6   |
+            php5.6_c |
+            php7.0   |
+            php7.0_c |
+            php_all)
 "
   exit 1
 fi

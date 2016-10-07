@@ -35,9 +35,9 @@ namespace Google.Protobuf.WellKnownTypes {
             "ChFyZXNwb25zZV90eXBlX3VybBgEIAEoCRIaChJyZXNwb25zZV9zdHJlYW1p",
             "bmcYBSABKAgSKAoHb3B0aW9ucxgGIAMoCzIXLmdvb2dsZS5wcm90b2J1Zi5P",
             "cHRpb24SJwoGc3ludGF4GAcgASgOMhcuZ29vZ2xlLnByb3RvYnVmLlN5bnRh",
-            "eCIjCgVNaXhpbhIMCgRuYW1lGAEgASgJEgwKBHJvb3QYAiABKAlCSwoTY29t",
-            "Lmdvb2dsZS5wcm90b2J1ZkIIQXBpUHJvdG9QAaABAaICA0dQQqoCHkdvb2ds",
-            "ZS5Qcm90b2J1Zi5XZWxsS25vd25UeXBlc2IGcHJvdG8z"));
+            "eCIjCgVNaXhpbhIMCgRuYW1lGAEgASgJEgwKBHJvb3QYAiABKAlCSAoTY29t",
+            "Lmdvb2dsZS5wcm90b2J1ZkIIQXBpUHJvdG9QAaICA0dQQqoCHkdvb2dsZS5Q",
+            "cm90b2J1Zi5XZWxsS25vd25UeXBlc2IGcHJvdG8z"));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::Google.Protobuf.WellKnownTypes.SourceContextReflection.Descriptor, global::Google.Protobuf.WellKnownTypes.TypeReflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(null, new pbr::GeneratedClrTypeInfo[] {

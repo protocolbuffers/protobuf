@@ -6,15 +6,15 @@
  <description>https://developers.google.com/protocol-buffers/</description>
  <lead>
   <name>Bo Yang</name>
-  <user>teboring</user>
+  <user>stanleycheung</user>
   <email>protobuf-opensource@google.com</email>
   <active>yes</active>
  </lead>
- <date>2016-09-02</date>
+ <date>2016-09-23</date>
  <time>16:06:07</time>
  <version>
-  <release>3.1.0</release>
-  <api>3.1.0</api>
+  <release>3.1.0a1</release>
+  <api>3.1.0a1</api>
  </version>
  <stability>
   <release>alpha</release>
@@ -45,7 +45,7 @@ First alpha release.
  <dependencies>
   <required>
    <php>
-    <min>5.6.0</min>
+    <min>5.5.9</min>
    </php>
    <pearinstaller>
     <min>1.4.0</min>
@@ -57,14 +57,15 @@ First alpha release.
  <changelog>
   <release>
    <version>
-    <release>3.1.0</release>
-    <api>3.1.0</api>
+    <release>3.1.0a1</release>
+    <api>3.1.0a1</api>
    </version>
    <stability>
     <release>alpha</release>
     <api>alpha</api>
    </stability>
-   <date>2016-09-02</date>
+   <date>2016-09-23</date>
+   <time>16:06:07</time>
    <license uri="http://www.opensource.org/licenses/bsd-license.php">New BSD License</license>
    <notes>
 First alpha release

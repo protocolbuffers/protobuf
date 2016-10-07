@@ -214,7 +214,6 @@ bool protobuf_convert_to_bool(zval* from, int8_t* to) {
       } else {
         *to = 1;
       }
-      STR_FREE(strval);
     } break;
     default: {
       zend_error(E_USER_ERROR, "Given value cannot be converted to bool.");

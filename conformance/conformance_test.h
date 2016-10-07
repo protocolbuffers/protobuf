@@ -91,7 +91,7 @@ class ConformanceTestRunner {
 //
 class ConformanceTestSuite {
  public:
-  ConformanceTestSuite() : verbose_(false) {}
+  ConformanceTestSuite() : verbose_(false), enforce_recommended_(false) {}
 
   void SetVerbose(bool verbose) { verbose_ = verbose; }
 
@@ -104,6 +104,18 @@ class ConformanceTestSuite {
   void SetFailureList(const std::string& filename,
                       const std::vector<std::string>& failure_list);
 
+  // Whether to require the testee to pass RECOMMENDED tests. By default failing
+  // a RECOMMENDED test case will not fail the entire suite but will only
+  // generated a warning. If this flag is set to true, RECOMMENDED tests will
+  // be treated the same way as REQUIRED tests and failing a RECOMMENDED test
+  // case will cause the entire test suite to fail as well. An implementation
+  // can enable this if it wants to be strictly conforming to protobuf spec.
+  // See the comments about ConformanceLevel below to learn more about the
+  // difference between REQUIRED and RECOMMENDED test cases.
+  void SetEnforceRecommended(bool value) {
+    enforce_recommended_ = value;
+  }
+
   // Run all the conformance tests against the given test runner.
   // Test output will be stored in "output".
   //
@@ -113,8 +125,27 @@ class ConformanceTestSuite {
   bool RunSuite(ConformanceTestRunner* runner, std::string* output);
 
  private:
+  // Test cases are classified into a few categories:
+  //   REQUIRED: the test case must be passed for an implementation to be
+  //             interoperable with other implementations. For example, a
+  //             parser implementaiton must accept both packed and unpacked
+  //             form of repeated primitive fields.
+  //   RECOMMENDED: the test case is not required for the implementation to
+  //                be interoperable with other implementations, but is
+  //                recommended for best performance and compatibility. For
+  //                example, a proto3 serializer should serialize repeated
+  //                primitive fields in packed form, but an implementation
+  //                failing to do so will still be able to communicate with
+  //                other implementations.
+  enum ConformanceLevel {
+    REQUIRED = 0,
+    RECOMMENDED = 1,
+  };
+  string ConformanceLevelToString(ConformanceLevel level);
+
   void ReportSuccess(const std::string& test_name);
   void ReportFailure(const string& test_name,
+                     ConformanceLevel level,
                      const conformance::ConformanceRequest& request,
                      const conformance::ConformanceResponse& response,
                      const char* fmt, ...);
@@ -124,31 +155,42 @@ class ConformanceTestSuite {
   void RunTest(const std::string& test_name,
                const conformance::ConformanceRequest& request,
                conformance::ConformanceResponse* response);
-  void RunValidInputTest(const string& test_name, const string& input,
+  void RunValidInputTest(const string& test_name,
+                         ConformanceLevel level,
+                         const string& input,
                          conformance::WireFormat input_format,
                          const string& equivalent_text_format,
                          conformance::WireFormat requested_output);
-  void RunValidJsonTest(const string& test_name, const string& input_json,
+  void RunValidJsonTest(const string& test_name,
+                        ConformanceLevel level,
+                        const string& input_json,
                         const string& equivalent_text_format);
   void RunValidJsonTestWithProtobufInput(const string& test_name,
+                                         ConformanceLevel level,
                                          const conformance::TestAllTypes& input,
                                          const string& equivalent_text_format);
   void RunValidProtobufTest(const string& test_name,
+                            ConformanceLevel level,
                             const conformance::TestAllTypes& input,
                             const string& equivalent_text_format);
 
   typedef std::function<bool(const Json::Value&)> Validator;
   void RunValidJsonTestWithValidator(const string& test_name,
+                                     ConformanceLevel level,
                                      const string& input_json,
                                      const Validator& validator);
   void ExpectParseFailureForJson(const string& test_name,
+                                 ConformanceLevel level,
                                  const string& input_json);
   void ExpectSerializeFailureForJson(const string& test_name,
+                                     ConformanceLevel level,
                                      const string& text_format);
   void ExpectParseFailureForProto(const std::string& proto,
-                                  const std::string& test_name);
+                                  const std::string& test_name,
+                                  ConformanceLevel level);
   void ExpectHardParseFailureForProto(const std::string& proto,
-                                      const std::string& test_name);
+                                      const std::string& test_name,
+                                      ConformanceLevel level);
   void TestPrematureEOFForType(google::protobuf::FieldDescriptor::Type type);
   bool CheckSetEmpty(const set<string>& set_to_check,
                      const std::string& write_to_file, const std::string& msg);
@@ -156,6 +198,7 @@ class ConformanceTestSuite {
   int successes_;
   int expected_failures_;
   bool verbose_;
+  bool enforce_recommended_;
   std::string output_;
   std::string failure_list_filename_;
 

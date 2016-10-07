@@ -52,14 +52,13 @@ void protobuf_AssignDesc_google_2fprotobuf_2fcompiler_2fplugin_2eproto() {
   CodeGeneratorRequest_reflection_ =
     ::google::protobuf::internal::GeneratedMessageReflection::NewGeneratedMessageReflection(
       CodeGeneratorRequest_descriptor_,
-      CodeGeneratorRequest::default_instance_,
+      CodeGeneratorRequest::internal_default_instance(),
       CodeGeneratorRequest_offsets_,
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(CodeGeneratorRequest, _has_bits_[0]),
+      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(CodeGeneratorRequest, _has_bits_),
       -1,
       -1,
       sizeof(CodeGeneratorRequest),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(CodeGeneratorRequest, _internal_metadata_),
-      -1);
+      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(CodeGeneratorRequest, _internal_metadata_));
   CodeGeneratorResponse_descriptor_ = file->message_type(1);
   static const int CodeGeneratorResponse_offsets_[2] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(CodeGeneratorResponse, error_),
@@ -68,14 +67,13 @@ void protobuf_AssignDesc_google_2fprotobuf_2fcompiler_2fplugin_2eproto() {
   CodeGeneratorResponse_reflection_ =
     ::google::protobuf::internal::GeneratedMessageReflection::NewGeneratedMessageReflection(
       CodeGeneratorResponse_descriptor_,
-      CodeGeneratorResponse::default_instance_,
+      CodeGeneratorResponse::internal_default_instance(),
       CodeGeneratorResponse_offsets_,
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(CodeGeneratorResponse, _has_bits_[0]),
+      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(CodeGeneratorResponse, _has_bits_),
       -1,
       -1,
       sizeof(CodeGeneratorResponse),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(CodeGeneratorResponse, _internal_metadata_),
-      -1);
+      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(CodeGeneratorResponse, _internal_metadata_));
   CodeGeneratorResponse_File_descriptor_ = CodeGeneratorResponse_descriptor_->nested_type(0);
   static const int CodeGeneratorResponse_File_offsets_[3] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(CodeGeneratorResponse_File, name_),
@@ -85,20 +83,19 @@ void protobuf_AssignDesc_google_2fprotobuf_2fcompiler_2fplugin_2eproto() {
   CodeGeneratorResponse_File_reflection_ =
     ::google::protobuf::internal::GeneratedMessageReflection::NewGeneratedMessageReflection(
       CodeGeneratorResponse_File_descriptor_,
-      CodeGeneratorResponse_File::default_instance_,
+      CodeGeneratorResponse_File::internal_default_instance(),
       CodeGeneratorResponse_File_offsets_,
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(CodeGeneratorResponse_File, _has_bits_[0]),
+      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(CodeGeneratorResponse_File, _has_bits_),
       -1,
       -1,
       sizeof(CodeGeneratorResponse_File),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(CodeGeneratorResponse_File, _internal_metadata_),
-      -1);
+      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(CodeGeneratorResponse_File, _internal_metadata_));
 }
 
 namespace {
 
 GOOGLE_PROTOBUF_DECLARE_ONCE(protobuf_AssignDescriptors_once_);
-inline void protobuf_AssignDescriptorsOnce() {
+void protobuf_AssignDescriptorsOnce() {
   ::google::protobuf::GoogleOnceInit(&protobuf_AssignDescriptors_once_,
                  &protobuf_AssignDesc_google_2fprotobuf_2fcompiler_2fplugin_2eproto);
 }
@@ -107,32 +104,48 @@ void protobuf_RegisterTypes(const ::std::string&) GOOGLE_ATTRIBUTE_COLD;
 void protobuf_RegisterTypes(const ::std::string&) {
   protobuf_AssignDescriptorsOnce();
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
-      CodeGeneratorRequest_descriptor_, &CodeGeneratorRequest::default_instance());
+      CodeGeneratorRequest_descriptor_, CodeGeneratorRequest::internal_default_instance());
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
-      CodeGeneratorResponse_descriptor_, &CodeGeneratorResponse::default_instance());
+      CodeGeneratorResponse_descriptor_, CodeGeneratorResponse::internal_default_instance());
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
-      CodeGeneratorResponse_File_descriptor_, &CodeGeneratorResponse_File::default_instance());
+      CodeGeneratorResponse_File_descriptor_, CodeGeneratorResponse_File::internal_default_instance());
 }
 
 }  // namespace
 
 void protobuf_ShutdownFile_google_2fprotobuf_2fcompiler_2fplugin_2eproto() {
-  delete CodeGeneratorRequest::default_instance_;
+  CodeGeneratorRequest_default_instance_.Shutdown();
   delete CodeGeneratorRequest_reflection_;
-  delete CodeGeneratorResponse::default_instance_;
+  CodeGeneratorResponse_default_instance_.Shutdown();
   delete CodeGeneratorResponse_reflection_;
-  delete CodeGeneratorResponse_File::default_instance_;
+  CodeGeneratorResponse_File_default_instance_.Shutdown();
   delete CodeGeneratorResponse_File_reflection_;
 }
 
-void protobuf_AddDesc_google_2fprotobuf_2fcompiler_2fplugin_2eproto() GOOGLE_ATTRIBUTE_COLD;
-void protobuf_AddDesc_google_2fprotobuf_2fcompiler_2fplugin_2eproto() {
-  static bool already_here = false;
-  if (already_here) return;
-  already_here = true;
+void protobuf_InitDefaults_google_2fprotobuf_2fcompiler_2fplugin_2eproto_impl() {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
 
-  ::google::protobuf::protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto();
+  ::google::protobuf::protobuf_InitDefaults_google_2fprotobuf_2fdescriptor_2eproto();
+  ::google::protobuf::internal::GetEmptyString();
+  CodeGeneratorRequest_default_instance_.DefaultConstruct();
+  ::google::protobuf::internal::GetEmptyString();
+  CodeGeneratorResponse_default_instance_.DefaultConstruct();
+  ::google::protobuf::internal::GetEmptyString();
+  CodeGeneratorResponse_File_default_instance_.DefaultConstruct();
+  CodeGeneratorRequest_default_instance_.get_mutable()->InitAsDefaultInstance();
+  CodeGeneratorResponse_default_instance_.get_mutable()->InitAsDefaultInstance();
+  CodeGeneratorResponse_File_default_instance_.get_mutable()->InitAsDefaultInstance();
+}
+
+GOOGLE_PROTOBUF_DECLARE_ONCE(protobuf_InitDefaults_google_2fprotobuf_2fcompiler_2fplugin_2eproto_once_);
+void protobuf_InitDefaults_google_2fprotobuf_2fcompiler_2fplugin_2eproto() {
+  ::google::protobuf::GoogleOnceInit(&protobuf_InitDefaults_google_2fprotobuf_2fcompiler_2fplugin_2eproto_once_,
+                 &protobuf_InitDefaults_google_2fprotobuf_2fcompiler_2fplugin_2eproto_impl);
+}
+void protobuf_AddDesc_google_2fprotobuf_2fcompiler_2fplugin_2eproto_impl() {
+  GOOGLE_PROTOBUF_VERIFY_VERSION;
+
+  protobuf_InitDefaults_google_2fprotobuf_2fcompiler_2fplugin_2eproto();
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
     "\n%google/protobuf/compiler/plugin.proto\022"
     "\030google.protobuf.compiler\032 google/protob"
@@ -148,21 +161,31 @@ void protobuf_AddDesc_google_2fprotobuf_2fcompiler_2fplugin_2eproto() {
     "rotosZ\tplugin_go", 456);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "google/protobuf/compiler/plugin.proto", &protobuf_RegisterTypes);
-  CodeGeneratorRequest::default_instance_ = new CodeGeneratorRequest();
-  CodeGeneratorResponse::default_instance_ = new CodeGeneratorResponse();
-  CodeGeneratorResponse_File::default_instance_ = new CodeGeneratorResponse_File();
-  CodeGeneratorRequest::default_instance_->InitAsDefaultInstance();
-  CodeGeneratorResponse::default_instance_->InitAsDefaultInstance();
-  CodeGeneratorResponse_File::default_instance_->InitAsDefaultInstance();
+  ::google::protobuf::protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto();
   ::google::protobuf::internal::OnShutdown(&protobuf_ShutdownFile_google_2fprotobuf_2fcompiler_2fplugin_2eproto);
 }
 
+GOOGLE_PROTOBUF_DECLARE_ONCE(protobuf_AddDesc_google_2fprotobuf_2fcompiler_2fplugin_2eproto_once_);
+void protobuf_AddDesc_google_2fprotobuf_2fcompiler_2fplugin_2eproto() {
+  ::google::protobuf::GoogleOnceInit(&protobuf_AddDesc_google_2fprotobuf_2fcompiler_2fplugin_2eproto_once_,
+                 &protobuf_AddDesc_google_2fprotobuf_2fcompiler_2fplugin_2eproto_impl);
+}
 // Force AddDescriptors() to be called at static initialization time.
 struct StaticDescriptorInitializer_google_2fprotobuf_2fcompiler_2fplugin_2eproto {
   StaticDescriptorInitializer_google_2fprotobuf_2fcompiler_2fplugin_2eproto() {
     protobuf_AddDesc_google_2fprotobuf_2fcompiler_2fplugin_2eproto();
   }
 } static_descriptor_initializer_google_2fprotobuf_2fcompiler_2fplugin_2eproto_;
+
+namespace {
+
+static void MergeFromFail(int line) GOOGLE_ATTRIBUTE_COLD GOOGLE_ATTRIBUTE_NORETURN;
+static void MergeFromFail(int line) {
+  ::google::protobuf::internal::MergeFromFail(__FILE__, line);
+}
+
+}  // namespace
+
 
 // ===================================================================
 
@@ -174,6 +197,7 @@ const int CodeGeneratorRequest::kProtoFileFieldNumber;
 
 CodeGeneratorRequest::CodeGeneratorRequest()
   : ::google::protobuf::Message(), _internal_metadata_(NULL) {
+  if (this != internal_default_instance()) protobuf_InitDefaults_google_2fprotobuf_2fcompiler_2fplugin_2eproto();
   SharedCtor();
   // @@protoc_insertion_point(constructor:google.protobuf.compiler.CodeGeneratorRequest)
 }
@@ -185,15 +209,13 @@ CodeGeneratorRequest::CodeGeneratorRequest(const CodeGeneratorRequest& from)
   : ::google::protobuf::Message(),
     _internal_metadata_(NULL) {
   SharedCtor();
-  MergeFrom(from);
+  UnsafeMergeFrom(from);
   // @@protoc_insertion_point(copy_constructor:google.protobuf.compiler.CodeGeneratorRequest)
 }
 
 void CodeGeneratorRequest::SharedCtor() {
-  ::google::protobuf::internal::GetEmptyString();
   _cached_size_ = 0;
   parameter_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  ::memset(_has_bits_, 0, sizeof(_has_bits_));
 }
 
 CodeGeneratorRequest::~CodeGeneratorRequest() {
@@ -203,8 +225,6 @@ CodeGeneratorRequest::~CodeGeneratorRequest() {
 
 void CodeGeneratorRequest::SharedDtor() {
   parameter_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  if (this != default_instance_) {
-  }
 }
 
 void CodeGeneratorRequest::SetCachedSize(int size) const {
@@ -218,11 +238,11 @@ const ::google::protobuf::Descriptor* CodeGeneratorRequest::descriptor() {
 }
 
 const CodeGeneratorRequest& CodeGeneratorRequest::default_instance() {
-  if (default_instance_ == NULL) protobuf_AddDesc_google_2fprotobuf_2fcompiler_2fplugin_2eproto();
-  return *default_instance_;
+  protobuf_InitDefaults_google_2fprotobuf_2fcompiler_2fplugin_2eproto();
+  return *internal_default_instance();
 }
 
-CodeGeneratorRequest* CodeGeneratorRequest::default_instance_ = NULL;
+::google::protobuf::internal::ExplicitlyConstructed<CodeGeneratorRequest> CodeGeneratorRequest_default_instance_;
 
 CodeGeneratorRequest* CodeGeneratorRequest::New(::google::protobuf::Arena* arena) const {
   CodeGeneratorRequest* n = new CodeGeneratorRequest;
@@ -239,7 +259,7 @@ void CodeGeneratorRequest::Clear() {
   }
   file_to_generate_.Clear();
   proto_file_.Clear();
-  ::memset(_has_bits_, 0, sizeof(_has_bits_));
+  _has_bits_.Clear();
   if (_internal_metadata_.have_unknown_fields()) {
     mutable_unknown_fields()->Clear();
   }
@@ -406,9 +426,9 @@ void CodeGeneratorRequest::SerializeWithCachedSizes(
   return target;
 }
 
-int CodeGeneratorRequest::ByteSize() const {
+size_t CodeGeneratorRequest::ByteSizeLong() const {
 // @@protoc_insertion_point(message_byte_size_start:google.protobuf.compiler.CodeGeneratorRequest)
-  int total_size = 0;
+  size_t total_size = 0;
 
   // optional string parameter = 2;
   if (has_parameter()) {
@@ -418,18 +438,22 @@ int CodeGeneratorRequest::ByteSize() const {
   }
 
   // repeated string file_to_generate = 1;
-  total_size += 1 * this->file_to_generate_size();
+  total_size += 1 *
+      ::google::protobuf::internal::FromIntSize(this->file_to_generate_size());
   for (int i = 0; i < this->file_to_generate_size(); i++) {
     total_size += ::google::protobuf::internal::WireFormatLite::StringSize(
       this->file_to_generate(i));
   }
 
   // repeated .google.protobuf.FileDescriptorProto proto_file = 15;
-  total_size += 1 * this->proto_file_size();
-  for (int i = 0; i < this->proto_file_size(); i++) {
-    total_size +=
-      ::google::protobuf::internal::WireFormatLite::MessageSizeNoVirtual(
-        this->proto_file(i));
+  {
+    unsigned int count = this->proto_file_size();
+    total_size += 1UL * count;
+    for (unsigned int i = 0; i < count; i++) {
+      total_size +=
+        ::google::protobuf::internal::WireFormatLite::MessageSizeNoVirtual(
+          this->proto_file(i));
+    }
   }
 
   if (_internal_metadata_.have_unknown_fields()) {
@@ -437,18 +461,17 @@ int CodeGeneratorRequest::ByteSize() const {
       ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
         unknown_fields());
   }
+  int cached_size = ::google::protobuf::internal::ToCachedSize(total_size);
   GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
-  _cached_size_ = total_size;
+  _cached_size_ = cached_size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
   return total_size;
 }
 
 void CodeGeneratorRequest::MergeFrom(const ::google::protobuf::Message& from) {
 // @@protoc_insertion_point(generalized_merge_from_start:google.protobuf.compiler.CodeGeneratorRequest)
-  if (GOOGLE_PREDICT_FALSE(&from == this)) {
-    ::google::protobuf::internal::MergeFromFail(__FILE__, __LINE__);
-  }
-  const CodeGeneratorRequest* source = 
+  if (GOOGLE_PREDICT_FALSE(&from == this)) MergeFromFail(__LINE__);
+  const CodeGeneratorRequest* source =
       ::google::protobuf::internal::DynamicCastToGenerated<const CodeGeneratorRequest>(
           &from);
   if (source == NULL) {
@@ -456,16 +479,22 @@ void CodeGeneratorRequest::MergeFrom(const ::google::protobuf::Message& from) {
     ::google::protobuf::internal::ReflectionOps::Merge(from, this);
   } else {
   // @@protoc_insertion_point(generalized_merge_from_cast_success:google.protobuf.compiler.CodeGeneratorRequest)
-    MergeFrom(*source);
+    UnsafeMergeFrom(*source);
   }
 }
 
 void CodeGeneratorRequest::MergeFrom(const CodeGeneratorRequest& from) {
 // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.compiler.CodeGeneratorRequest)
-  if (GOOGLE_PREDICT_FALSE(&from == this)) {
-    ::google::protobuf::internal::MergeFromFail(__FILE__, __LINE__);
+  if (GOOGLE_PREDICT_TRUE(&from != this)) {
+    UnsafeMergeFrom(from);
+  } else {
+    MergeFromFail(__LINE__);
   }
-  file_to_generate_.MergeFrom(from.file_to_generate_);
+}
+
+void CodeGeneratorRequest::UnsafeMergeFrom(const CodeGeneratorRequest& from) {
+  GOOGLE_DCHECK(&from != this);
+  file_to_generate_.UnsafeMergeFrom(from.file_to_generate_);
   proto_file_.MergeFrom(from.proto_file_);
   if (from._has_bits_[1 / 32] & (0xffu << (1 % 32))) {
     if (from.has_parameter()) {
@@ -474,7 +503,8 @@ void CodeGeneratorRequest::MergeFrom(const CodeGeneratorRequest& from) {
     }
   }
   if (from._internal_metadata_.have_unknown_fields()) {
-    mutable_unknown_fields()->MergeFrom(from.unknown_fields());
+    ::google::protobuf::UnknownFieldSet::MergeToInternalMetdata(
+      from.unknown_fields(), &_internal_metadata_);
   }
 }
 
@@ -489,7 +519,7 @@ void CodeGeneratorRequest::CopyFrom(const CodeGeneratorRequest& from) {
 // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.compiler.CodeGeneratorRequest)
   if (&from == this) return;
   Clear();
-  MergeFrom(from);
+  UnsafeMergeFrom(from);
 }
 
 bool CodeGeneratorRequest::IsInitialized() const {
@@ -529,49 +559,49 @@ int CodeGeneratorRequest::file_to_generate_size() const {
 void CodeGeneratorRequest::clear_file_to_generate() {
   file_to_generate_.Clear();
 }
- const ::std::string& CodeGeneratorRequest::file_to_generate(int index) const {
+const ::std::string& CodeGeneratorRequest::file_to_generate(int index) const {
   // @@protoc_insertion_point(field_get:google.protobuf.compiler.CodeGeneratorRequest.file_to_generate)
   return file_to_generate_.Get(index);
 }
- ::std::string* CodeGeneratorRequest::mutable_file_to_generate(int index) {
+::std::string* CodeGeneratorRequest::mutable_file_to_generate(int index) {
   // @@protoc_insertion_point(field_mutable:google.protobuf.compiler.CodeGeneratorRequest.file_to_generate)
   return file_to_generate_.Mutable(index);
 }
- void CodeGeneratorRequest::set_file_to_generate(int index, const ::std::string& value) {
+void CodeGeneratorRequest::set_file_to_generate(int index, const ::std::string& value) {
   // @@protoc_insertion_point(field_set:google.protobuf.compiler.CodeGeneratorRequest.file_to_generate)
   file_to_generate_.Mutable(index)->assign(value);
 }
- void CodeGeneratorRequest::set_file_to_generate(int index, const char* value) {
+void CodeGeneratorRequest::set_file_to_generate(int index, const char* value) {
   file_to_generate_.Mutable(index)->assign(value);
   // @@protoc_insertion_point(field_set_char:google.protobuf.compiler.CodeGeneratorRequest.file_to_generate)
 }
- void CodeGeneratorRequest::set_file_to_generate(int index, const char* value, size_t size) {
+void CodeGeneratorRequest::set_file_to_generate(int index, const char* value, size_t size) {
   file_to_generate_.Mutable(index)->assign(
     reinterpret_cast<const char*>(value), size);
   // @@protoc_insertion_point(field_set_pointer:google.protobuf.compiler.CodeGeneratorRequest.file_to_generate)
 }
- ::std::string* CodeGeneratorRequest::add_file_to_generate() {
+::std::string* CodeGeneratorRequest::add_file_to_generate() {
   // @@protoc_insertion_point(field_add_mutable:google.protobuf.compiler.CodeGeneratorRequest.file_to_generate)
   return file_to_generate_.Add();
 }
- void CodeGeneratorRequest::add_file_to_generate(const ::std::string& value) {
+void CodeGeneratorRequest::add_file_to_generate(const ::std::string& value) {
   file_to_generate_.Add()->assign(value);
   // @@protoc_insertion_point(field_add:google.protobuf.compiler.CodeGeneratorRequest.file_to_generate)
 }
- void CodeGeneratorRequest::add_file_to_generate(const char* value) {
+void CodeGeneratorRequest::add_file_to_generate(const char* value) {
   file_to_generate_.Add()->assign(value);
   // @@protoc_insertion_point(field_add_char:google.protobuf.compiler.CodeGeneratorRequest.file_to_generate)
 }
- void CodeGeneratorRequest::add_file_to_generate(const char* value, size_t size) {
+void CodeGeneratorRequest::add_file_to_generate(const char* value, size_t size) {
   file_to_generate_.Add()->assign(reinterpret_cast<const char*>(value), size);
   // @@protoc_insertion_point(field_add_pointer:google.protobuf.compiler.CodeGeneratorRequest.file_to_generate)
 }
- const ::google::protobuf::RepeatedPtrField< ::std::string>&
+const ::google::protobuf::RepeatedPtrField< ::std::string>&
 CodeGeneratorRequest::file_to_generate() const {
   // @@protoc_insertion_point(field_list:google.protobuf.compiler.CodeGeneratorRequest.file_to_generate)
   return file_to_generate_;
 }
- ::google::protobuf::RepeatedPtrField< ::std::string>*
+::google::protobuf::RepeatedPtrField< ::std::string>*
 CodeGeneratorRequest::mutable_file_to_generate() {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.compiler.CodeGeneratorRequest.file_to_generate)
   return &file_to_generate_;
@@ -591,37 +621,37 @@ void CodeGeneratorRequest::clear_parameter() {
   parameter_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   clear_has_parameter();
 }
- const ::std::string& CodeGeneratorRequest::parameter() const {
+const ::std::string& CodeGeneratorRequest::parameter() const {
   // @@protoc_insertion_point(field_get:google.protobuf.compiler.CodeGeneratorRequest.parameter)
   return parameter_.GetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
- void CodeGeneratorRequest::set_parameter(const ::std::string& value) {
+void CodeGeneratorRequest::set_parameter(const ::std::string& value) {
   set_has_parameter();
   parameter_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
   // @@protoc_insertion_point(field_set:google.protobuf.compiler.CodeGeneratorRequest.parameter)
 }
- void CodeGeneratorRequest::set_parameter(const char* value) {
+void CodeGeneratorRequest::set_parameter(const char* value) {
   set_has_parameter();
   parameter_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
   // @@protoc_insertion_point(field_set_char:google.protobuf.compiler.CodeGeneratorRequest.parameter)
 }
- void CodeGeneratorRequest::set_parameter(const char* value, size_t size) {
+void CodeGeneratorRequest::set_parameter(const char* value, size_t size) {
   set_has_parameter();
   parameter_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
       ::std::string(reinterpret_cast<const char*>(value), size));
   // @@protoc_insertion_point(field_set_pointer:google.protobuf.compiler.CodeGeneratorRequest.parameter)
 }
- ::std::string* CodeGeneratorRequest::mutable_parameter() {
+::std::string* CodeGeneratorRequest::mutable_parameter() {
   set_has_parameter();
   // @@protoc_insertion_point(field_mutable:google.protobuf.compiler.CodeGeneratorRequest.parameter)
   return parameter_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
- ::std::string* CodeGeneratorRequest::release_parameter() {
+::std::string* CodeGeneratorRequest::release_parameter() {
   // @@protoc_insertion_point(field_release:google.protobuf.compiler.CodeGeneratorRequest.parameter)
   clear_has_parameter();
   return parameter_.ReleaseNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
- void CodeGeneratorRequest::set_allocated_parameter(::std::string* parameter) {
+void CodeGeneratorRequest::set_allocated_parameter(::std::string* parameter) {
   if (parameter != NULL) {
     set_has_parameter();
   } else {
@@ -661,6 +691,9 @@ CodeGeneratorRequest::proto_file() const {
   return proto_file_;
 }
 
+inline const CodeGeneratorRequest* CodeGeneratorRequest::internal_default_instance() {
+  return &CodeGeneratorRequest_default_instance_.get();
+}
 #endif  // PROTOBUF_INLINE_NOT_IN_HEADERS
 
 // ===================================================================
@@ -673,6 +706,7 @@ const int CodeGeneratorResponse_File::kContentFieldNumber;
 
 CodeGeneratorResponse_File::CodeGeneratorResponse_File()
   : ::google::protobuf::Message(), _internal_metadata_(NULL) {
+  if (this != internal_default_instance()) protobuf_InitDefaults_google_2fprotobuf_2fcompiler_2fplugin_2eproto();
   SharedCtor();
   // @@protoc_insertion_point(constructor:google.protobuf.compiler.CodeGeneratorResponse.File)
 }
@@ -684,17 +718,15 @@ CodeGeneratorResponse_File::CodeGeneratorResponse_File(const CodeGeneratorRespon
   : ::google::protobuf::Message(),
     _internal_metadata_(NULL) {
   SharedCtor();
-  MergeFrom(from);
+  UnsafeMergeFrom(from);
   // @@protoc_insertion_point(copy_constructor:google.protobuf.compiler.CodeGeneratorResponse.File)
 }
 
 void CodeGeneratorResponse_File::SharedCtor() {
-  ::google::protobuf::internal::GetEmptyString();
   _cached_size_ = 0;
   name_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   insertion_point_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   content_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  ::memset(_has_bits_, 0, sizeof(_has_bits_));
 }
 
 CodeGeneratorResponse_File::~CodeGeneratorResponse_File() {
@@ -706,8 +738,6 @@ void CodeGeneratorResponse_File::SharedDtor() {
   name_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   insertion_point_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   content_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  if (this != default_instance_) {
-  }
 }
 
 void CodeGeneratorResponse_File::SetCachedSize(int size) const {
@@ -721,11 +751,11 @@ const ::google::protobuf::Descriptor* CodeGeneratorResponse_File::descriptor() {
 }
 
 const CodeGeneratorResponse_File& CodeGeneratorResponse_File::default_instance() {
-  if (default_instance_ == NULL) protobuf_AddDesc_google_2fprotobuf_2fcompiler_2fplugin_2eproto();
-  return *default_instance_;
+  protobuf_InitDefaults_google_2fprotobuf_2fcompiler_2fplugin_2eproto();
+  return *internal_default_instance();
 }
 
-CodeGeneratorResponse_File* CodeGeneratorResponse_File::default_instance_ = NULL;
+::google::protobuf::internal::ExplicitlyConstructed<CodeGeneratorResponse_File> CodeGeneratorResponse_File_default_instance_;
 
 CodeGeneratorResponse_File* CodeGeneratorResponse_File::New(::google::protobuf::Arena* arena) const {
   CodeGeneratorResponse_File* n = new CodeGeneratorResponse_File;
@@ -748,7 +778,7 @@ void CodeGeneratorResponse_File::Clear() {
       content_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
     }
   }
-  ::memset(_has_bits_, 0, sizeof(_has_bits_));
+  _has_bits_.Clear();
   if (_internal_metadata_.have_unknown_fields()) {
     mutable_unknown_fields()->Clear();
   }
@@ -921,9 +951,9 @@ void CodeGeneratorResponse_File::SerializeWithCachedSizes(
   return target;
 }
 
-int CodeGeneratorResponse_File::ByteSize() const {
+size_t CodeGeneratorResponse_File::ByteSizeLong() const {
 // @@protoc_insertion_point(message_byte_size_start:google.protobuf.compiler.CodeGeneratorResponse.File)
-  int total_size = 0;
+  size_t total_size = 0;
 
   if (_has_bits_[0 / 32] & 7u) {
     // optional string name = 1;
@@ -953,18 +983,17 @@ int CodeGeneratorResponse_File::ByteSize() const {
       ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
         unknown_fields());
   }
+  int cached_size = ::google::protobuf::internal::ToCachedSize(total_size);
   GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
-  _cached_size_ = total_size;
+  _cached_size_ = cached_size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
   return total_size;
 }
 
 void CodeGeneratorResponse_File::MergeFrom(const ::google::protobuf::Message& from) {
 // @@protoc_insertion_point(generalized_merge_from_start:google.protobuf.compiler.CodeGeneratorResponse.File)
-  if (GOOGLE_PREDICT_FALSE(&from == this)) {
-    ::google::protobuf::internal::MergeFromFail(__FILE__, __LINE__);
-  }
-  const CodeGeneratorResponse_File* source = 
+  if (GOOGLE_PREDICT_FALSE(&from == this)) MergeFromFail(__LINE__);
+  const CodeGeneratorResponse_File* source =
       ::google::protobuf::internal::DynamicCastToGenerated<const CodeGeneratorResponse_File>(
           &from);
   if (source == NULL) {
@@ -972,15 +1001,21 @@ void CodeGeneratorResponse_File::MergeFrom(const ::google::protobuf::Message& fr
     ::google::protobuf::internal::ReflectionOps::Merge(from, this);
   } else {
   // @@protoc_insertion_point(generalized_merge_from_cast_success:google.protobuf.compiler.CodeGeneratorResponse.File)
-    MergeFrom(*source);
+    UnsafeMergeFrom(*source);
   }
 }
 
 void CodeGeneratorResponse_File::MergeFrom(const CodeGeneratorResponse_File& from) {
 // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.compiler.CodeGeneratorResponse.File)
-  if (GOOGLE_PREDICT_FALSE(&from == this)) {
-    ::google::protobuf::internal::MergeFromFail(__FILE__, __LINE__);
+  if (GOOGLE_PREDICT_TRUE(&from != this)) {
+    UnsafeMergeFrom(from);
+  } else {
+    MergeFromFail(__LINE__);
   }
+}
+
+void CodeGeneratorResponse_File::UnsafeMergeFrom(const CodeGeneratorResponse_File& from) {
+  GOOGLE_DCHECK(&from != this);
   if (from._has_bits_[0 / 32] & (0xffu << (0 % 32))) {
     if (from.has_name()) {
       set_has_name();
@@ -996,7 +1031,8 @@ void CodeGeneratorResponse_File::MergeFrom(const CodeGeneratorResponse_File& fro
     }
   }
   if (from._internal_metadata_.have_unknown_fields()) {
-    mutable_unknown_fields()->MergeFrom(from.unknown_fields());
+    ::google::protobuf::UnknownFieldSet::MergeToInternalMetdata(
+      from.unknown_fields(), &_internal_metadata_);
   }
 }
 
@@ -1011,7 +1047,7 @@ void CodeGeneratorResponse_File::CopyFrom(const CodeGeneratorResponse_File& from
 // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.compiler.CodeGeneratorResponse.File)
   if (&from == this) return;
   Clear();
-  MergeFrom(from);
+  UnsafeMergeFrom(from);
 }
 
 bool CodeGeneratorResponse_File::IsInitialized() const {
@@ -1050,6 +1086,7 @@ const int CodeGeneratorResponse::kFileFieldNumber;
 
 CodeGeneratorResponse::CodeGeneratorResponse()
   : ::google::protobuf::Message(), _internal_metadata_(NULL) {
+  if (this != internal_default_instance()) protobuf_InitDefaults_google_2fprotobuf_2fcompiler_2fplugin_2eproto();
   SharedCtor();
   // @@protoc_insertion_point(constructor:google.protobuf.compiler.CodeGeneratorResponse)
 }
@@ -1061,15 +1098,13 @@ CodeGeneratorResponse::CodeGeneratorResponse(const CodeGeneratorResponse& from)
   : ::google::protobuf::Message(),
     _internal_metadata_(NULL) {
   SharedCtor();
-  MergeFrom(from);
+  UnsafeMergeFrom(from);
   // @@protoc_insertion_point(copy_constructor:google.protobuf.compiler.CodeGeneratorResponse)
 }
 
 void CodeGeneratorResponse::SharedCtor() {
-  ::google::protobuf::internal::GetEmptyString();
   _cached_size_ = 0;
   error_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  ::memset(_has_bits_, 0, sizeof(_has_bits_));
 }
 
 CodeGeneratorResponse::~CodeGeneratorResponse() {
@@ -1079,8 +1114,6 @@ CodeGeneratorResponse::~CodeGeneratorResponse() {
 
 void CodeGeneratorResponse::SharedDtor() {
   error_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  if (this != default_instance_) {
-  }
 }
 
 void CodeGeneratorResponse::SetCachedSize(int size) const {
@@ -1094,11 +1127,11 @@ const ::google::protobuf::Descriptor* CodeGeneratorResponse::descriptor() {
 }
 
 const CodeGeneratorResponse& CodeGeneratorResponse::default_instance() {
-  if (default_instance_ == NULL) protobuf_AddDesc_google_2fprotobuf_2fcompiler_2fplugin_2eproto();
-  return *default_instance_;
+  protobuf_InitDefaults_google_2fprotobuf_2fcompiler_2fplugin_2eproto();
+  return *internal_default_instance();
 }
 
-CodeGeneratorResponse* CodeGeneratorResponse::default_instance_ = NULL;
+::google::protobuf::internal::ExplicitlyConstructed<CodeGeneratorResponse> CodeGeneratorResponse_default_instance_;
 
 CodeGeneratorResponse* CodeGeneratorResponse::New(::google::protobuf::Arena* arena) const {
   CodeGeneratorResponse* n = new CodeGeneratorResponse;
@@ -1114,7 +1147,7 @@ void CodeGeneratorResponse::Clear() {
     error_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   }
   file_.Clear();
-  ::memset(_has_bits_, 0, sizeof(_has_bits_));
+  _has_bits_.Clear();
   if (_internal_metadata_.have_unknown_fields()) {
     mutable_unknown_fields()->Clear();
   }
@@ -1241,9 +1274,9 @@ void CodeGeneratorResponse::SerializeWithCachedSizes(
   return target;
 }
 
-int CodeGeneratorResponse::ByteSize() const {
+size_t CodeGeneratorResponse::ByteSizeLong() const {
 // @@protoc_insertion_point(message_byte_size_start:google.protobuf.compiler.CodeGeneratorResponse)
-  int total_size = 0;
+  size_t total_size = 0;
 
   // optional string error = 1;
   if (has_error()) {
@@ -1253,11 +1286,14 @@ int CodeGeneratorResponse::ByteSize() const {
   }
 
   // repeated .google.protobuf.compiler.CodeGeneratorResponse.File file = 15;
-  total_size += 1 * this->file_size();
-  for (int i = 0; i < this->file_size(); i++) {
-    total_size +=
-      ::google::protobuf::internal::WireFormatLite::MessageSizeNoVirtual(
-        this->file(i));
+  {
+    unsigned int count = this->file_size();
+    total_size += 1UL * count;
+    for (unsigned int i = 0; i < count; i++) {
+      total_size +=
+        ::google::protobuf::internal::WireFormatLite::MessageSizeNoVirtual(
+          this->file(i));
+    }
   }
 
   if (_internal_metadata_.have_unknown_fields()) {
@@ -1265,18 +1301,17 @@ int CodeGeneratorResponse::ByteSize() const {
       ::google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(
         unknown_fields());
   }
+  int cached_size = ::google::protobuf::internal::ToCachedSize(total_size);
   GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
-  _cached_size_ = total_size;
+  _cached_size_ = cached_size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
   return total_size;
 }
 
 void CodeGeneratorResponse::MergeFrom(const ::google::protobuf::Message& from) {
 // @@protoc_insertion_point(generalized_merge_from_start:google.protobuf.compiler.CodeGeneratorResponse)
-  if (GOOGLE_PREDICT_FALSE(&from == this)) {
-    ::google::protobuf::internal::MergeFromFail(__FILE__, __LINE__);
-  }
-  const CodeGeneratorResponse* source = 
+  if (GOOGLE_PREDICT_FALSE(&from == this)) MergeFromFail(__LINE__);
+  const CodeGeneratorResponse* source =
       ::google::protobuf::internal::DynamicCastToGenerated<const CodeGeneratorResponse>(
           &from);
   if (source == NULL) {
@@ -1284,15 +1319,21 @@ void CodeGeneratorResponse::MergeFrom(const ::google::protobuf::Message& from) {
     ::google::protobuf::internal::ReflectionOps::Merge(from, this);
   } else {
   // @@protoc_insertion_point(generalized_merge_from_cast_success:google.protobuf.compiler.CodeGeneratorResponse)
-    MergeFrom(*source);
+    UnsafeMergeFrom(*source);
   }
 }
 
 void CodeGeneratorResponse::MergeFrom(const CodeGeneratorResponse& from) {
 // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.compiler.CodeGeneratorResponse)
-  if (GOOGLE_PREDICT_FALSE(&from == this)) {
-    ::google::protobuf::internal::MergeFromFail(__FILE__, __LINE__);
+  if (GOOGLE_PREDICT_TRUE(&from != this)) {
+    UnsafeMergeFrom(from);
+  } else {
+    MergeFromFail(__LINE__);
   }
+}
+
+void CodeGeneratorResponse::UnsafeMergeFrom(const CodeGeneratorResponse& from) {
+  GOOGLE_DCHECK(&from != this);
   file_.MergeFrom(from.file_);
   if (from._has_bits_[0 / 32] & (0xffu << (0 % 32))) {
     if (from.has_error()) {
@@ -1301,7 +1342,8 @@ void CodeGeneratorResponse::MergeFrom(const CodeGeneratorResponse& from) {
     }
   }
   if (from._internal_metadata_.have_unknown_fields()) {
-    mutable_unknown_fields()->MergeFrom(from.unknown_fields());
+    ::google::protobuf::UnknownFieldSet::MergeToInternalMetdata(
+      from.unknown_fields(), &_internal_metadata_);
   }
 }
 
@@ -1316,7 +1358,7 @@ void CodeGeneratorResponse::CopyFrom(const CodeGeneratorResponse& from) {
 // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.compiler.CodeGeneratorResponse)
   if (&from == this) return;
   Clear();
-  MergeFrom(from);
+  UnsafeMergeFrom(from);
 }
 
 bool CodeGeneratorResponse::IsInitialized() const {
@@ -1361,37 +1403,37 @@ void CodeGeneratorResponse_File::clear_name() {
   name_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   clear_has_name();
 }
- const ::std::string& CodeGeneratorResponse_File::name() const {
+const ::std::string& CodeGeneratorResponse_File::name() const {
   // @@protoc_insertion_point(field_get:google.protobuf.compiler.CodeGeneratorResponse.File.name)
   return name_.GetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
- void CodeGeneratorResponse_File::set_name(const ::std::string& value) {
+void CodeGeneratorResponse_File::set_name(const ::std::string& value) {
   set_has_name();
   name_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
   // @@protoc_insertion_point(field_set:google.protobuf.compiler.CodeGeneratorResponse.File.name)
 }
- void CodeGeneratorResponse_File::set_name(const char* value) {
+void CodeGeneratorResponse_File::set_name(const char* value) {
   set_has_name();
   name_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
   // @@protoc_insertion_point(field_set_char:google.protobuf.compiler.CodeGeneratorResponse.File.name)
 }
- void CodeGeneratorResponse_File::set_name(const char* value, size_t size) {
+void CodeGeneratorResponse_File::set_name(const char* value, size_t size) {
   set_has_name();
   name_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
       ::std::string(reinterpret_cast<const char*>(value), size));
   // @@protoc_insertion_point(field_set_pointer:google.protobuf.compiler.CodeGeneratorResponse.File.name)
 }
- ::std::string* CodeGeneratorResponse_File::mutable_name() {
+::std::string* CodeGeneratorResponse_File::mutable_name() {
   set_has_name();
   // @@protoc_insertion_point(field_mutable:google.protobuf.compiler.CodeGeneratorResponse.File.name)
   return name_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
- ::std::string* CodeGeneratorResponse_File::release_name() {
+::std::string* CodeGeneratorResponse_File::release_name() {
   // @@protoc_insertion_point(field_release:google.protobuf.compiler.CodeGeneratorResponse.File.name)
   clear_has_name();
   return name_.ReleaseNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
- void CodeGeneratorResponse_File::set_allocated_name(::std::string* name) {
+void CodeGeneratorResponse_File::set_allocated_name(::std::string* name) {
   if (name != NULL) {
     set_has_name();
   } else {
@@ -1415,37 +1457,37 @@ void CodeGeneratorResponse_File::clear_insertion_point() {
   insertion_point_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   clear_has_insertion_point();
 }
- const ::std::string& CodeGeneratorResponse_File::insertion_point() const {
+const ::std::string& CodeGeneratorResponse_File::insertion_point() const {
   // @@protoc_insertion_point(field_get:google.protobuf.compiler.CodeGeneratorResponse.File.insertion_point)
   return insertion_point_.GetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
- void CodeGeneratorResponse_File::set_insertion_point(const ::std::string& value) {
+void CodeGeneratorResponse_File::set_insertion_point(const ::std::string& value) {
   set_has_insertion_point();
   insertion_point_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
   // @@protoc_insertion_point(field_set:google.protobuf.compiler.CodeGeneratorResponse.File.insertion_point)
 }
- void CodeGeneratorResponse_File::set_insertion_point(const char* value) {
+void CodeGeneratorResponse_File::set_insertion_point(const char* value) {
   set_has_insertion_point();
   insertion_point_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
   // @@protoc_insertion_point(field_set_char:google.protobuf.compiler.CodeGeneratorResponse.File.insertion_point)
 }
- void CodeGeneratorResponse_File::set_insertion_point(const char* value, size_t size) {
+void CodeGeneratorResponse_File::set_insertion_point(const char* value, size_t size) {
   set_has_insertion_point();
   insertion_point_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
       ::std::string(reinterpret_cast<const char*>(value), size));
   // @@protoc_insertion_point(field_set_pointer:google.protobuf.compiler.CodeGeneratorResponse.File.insertion_point)
 }
- ::std::string* CodeGeneratorResponse_File::mutable_insertion_point() {
+::std::string* CodeGeneratorResponse_File::mutable_insertion_point() {
   set_has_insertion_point();
   // @@protoc_insertion_point(field_mutable:google.protobuf.compiler.CodeGeneratorResponse.File.insertion_point)
   return insertion_point_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
- ::std::string* CodeGeneratorResponse_File::release_insertion_point() {
+::std::string* CodeGeneratorResponse_File::release_insertion_point() {
   // @@protoc_insertion_point(field_release:google.protobuf.compiler.CodeGeneratorResponse.File.insertion_point)
   clear_has_insertion_point();
   return insertion_point_.ReleaseNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
- void CodeGeneratorResponse_File::set_allocated_insertion_point(::std::string* insertion_point) {
+void CodeGeneratorResponse_File::set_allocated_insertion_point(::std::string* insertion_point) {
   if (insertion_point != NULL) {
     set_has_insertion_point();
   } else {
@@ -1469,37 +1511,37 @@ void CodeGeneratorResponse_File::clear_content() {
   content_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   clear_has_content();
 }
- const ::std::string& CodeGeneratorResponse_File::content() const {
+const ::std::string& CodeGeneratorResponse_File::content() const {
   // @@protoc_insertion_point(field_get:google.protobuf.compiler.CodeGeneratorResponse.File.content)
   return content_.GetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
- void CodeGeneratorResponse_File::set_content(const ::std::string& value) {
+void CodeGeneratorResponse_File::set_content(const ::std::string& value) {
   set_has_content();
   content_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
   // @@protoc_insertion_point(field_set:google.protobuf.compiler.CodeGeneratorResponse.File.content)
 }
- void CodeGeneratorResponse_File::set_content(const char* value) {
+void CodeGeneratorResponse_File::set_content(const char* value) {
   set_has_content();
   content_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
   // @@protoc_insertion_point(field_set_char:google.protobuf.compiler.CodeGeneratorResponse.File.content)
 }
- void CodeGeneratorResponse_File::set_content(const char* value, size_t size) {
+void CodeGeneratorResponse_File::set_content(const char* value, size_t size) {
   set_has_content();
   content_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
       ::std::string(reinterpret_cast<const char*>(value), size));
   // @@protoc_insertion_point(field_set_pointer:google.protobuf.compiler.CodeGeneratorResponse.File.content)
 }
- ::std::string* CodeGeneratorResponse_File::mutable_content() {
+::std::string* CodeGeneratorResponse_File::mutable_content() {
   set_has_content();
   // @@protoc_insertion_point(field_mutable:google.protobuf.compiler.CodeGeneratorResponse.File.content)
   return content_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
- ::std::string* CodeGeneratorResponse_File::release_content() {
+::std::string* CodeGeneratorResponse_File::release_content() {
   // @@protoc_insertion_point(field_release:google.protobuf.compiler.CodeGeneratorResponse.File.content)
   clear_has_content();
   return content_.ReleaseNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
- void CodeGeneratorResponse_File::set_allocated_content(::std::string* content) {
+void CodeGeneratorResponse_File::set_allocated_content(::std::string* content) {
   if (content != NULL) {
     set_has_content();
   } else {
@@ -1509,6 +1551,9 @@ void CodeGeneratorResponse_File::clear_content() {
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.compiler.CodeGeneratorResponse.File.content)
 }
 
+inline const CodeGeneratorResponse_File* CodeGeneratorResponse_File::internal_default_instance() {
+  return &CodeGeneratorResponse_File_default_instance_.get();
+}
 // -------------------------------------------------------------------
 
 // CodeGeneratorResponse
@@ -1527,37 +1572,37 @@ void CodeGeneratorResponse::clear_error() {
   error_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   clear_has_error();
 }
- const ::std::string& CodeGeneratorResponse::error() const {
+const ::std::string& CodeGeneratorResponse::error() const {
   // @@protoc_insertion_point(field_get:google.protobuf.compiler.CodeGeneratorResponse.error)
   return error_.GetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
- void CodeGeneratorResponse::set_error(const ::std::string& value) {
+void CodeGeneratorResponse::set_error(const ::std::string& value) {
   set_has_error();
   error_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
   // @@protoc_insertion_point(field_set:google.protobuf.compiler.CodeGeneratorResponse.error)
 }
- void CodeGeneratorResponse::set_error(const char* value) {
+void CodeGeneratorResponse::set_error(const char* value) {
   set_has_error();
   error_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
   // @@protoc_insertion_point(field_set_char:google.protobuf.compiler.CodeGeneratorResponse.error)
 }
- void CodeGeneratorResponse::set_error(const char* value, size_t size) {
+void CodeGeneratorResponse::set_error(const char* value, size_t size) {
   set_has_error();
   error_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
       ::std::string(reinterpret_cast<const char*>(value), size));
   // @@protoc_insertion_point(field_set_pointer:google.protobuf.compiler.CodeGeneratorResponse.error)
 }
- ::std::string* CodeGeneratorResponse::mutable_error() {
+::std::string* CodeGeneratorResponse::mutable_error() {
   set_has_error();
   // @@protoc_insertion_point(field_mutable:google.protobuf.compiler.CodeGeneratorResponse.error)
   return error_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
- ::std::string* CodeGeneratorResponse::release_error() {
+::std::string* CodeGeneratorResponse::release_error() {
   // @@protoc_insertion_point(field_release:google.protobuf.compiler.CodeGeneratorResponse.error)
   clear_has_error();
   return error_.ReleaseNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
- void CodeGeneratorResponse::set_allocated_error(::std::string* error) {
+void CodeGeneratorResponse::set_allocated_error(::std::string* error) {
   if (error != NULL) {
     set_has_error();
   } else {
@@ -1597,6 +1642,9 @@ CodeGeneratorResponse::file() const {
   return file_;
 }
 
+inline const CodeGeneratorResponse* CodeGeneratorResponse::internal_default_instance() {
+  return &CodeGeneratorResponse_default_instance_.get();
+}
 #endif  // PROTOBUF_INLINE_NOT_IN_HEADERS
 
 // @@protoc_insertion_point(namespace_scope)

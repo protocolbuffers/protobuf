@@ -30,19 +30,29 @@
 
 package com.google.protobuf.util;
 
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.math.IntMath.checkedAdd;
+import static com.google.common.math.IntMath.checkedSubtract;
+import static com.google.common.math.LongMath.checkedAdd;
+import static com.google.common.math.LongMath.checkedMultiply;
+import static com.google.common.math.LongMath.checkedSubtract;
+
+import com.google.common.collect.ComparisonChain;
 import com.google.protobuf.Duration;
 import com.google.protobuf.Timestamp;
-
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.TimeZone;
 
 /**
- * Utilities to help create/manipulate {@code protobuf/timestamp.proto}.
+ * Utilities to help create/manipulate {@code protobuf/timestamp.proto}. All operations throw an
+ * {@link IllegalArgumentException} if the input(s) are not {@linkplain #isValid(Timestamp) valid}.
  */
 public final class Timestamps {
+
   // Timestamp for "0001-01-01T00:00:00Z"
   static final long TIMESTAMP_SECONDS_MIN = -62135596800L;
 
@@ -55,10 +65,19 @@ public final class Timestamps {
   static final long MILLIS_PER_SECOND = 1000;
   static final long MICROS_PER_SECOND = 1000000;
 
-  // TODO(kak): Do we want to expose Timestamp constants for MAX/MIN?
+  /** A constant holding the minimum valid {@link Timestamp}, {@code 0001-01-01T00:00:00Z}. */
+  public static final Timestamp MIN_VALUE =
+      Timestamp.newBuilder().setSeconds(TIMESTAMP_SECONDS_MIN).setNanos(0).build();
+
+  /**
+   * A constant holding the maximum valid {@link Timestamp}, {@code 9999-12-31T23:59:59.999999999Z}.
+   */
+  public static final Timestamp MAX_VALUE =
+      Timestamp.newBuilder().setSeconds(TIMESTAMP_SECONDS_MAX).setNanos(999999999).build();
 
   private static final ThreadLocal<SimpleDateFormat> timestampFormat =
       new ThreadLocal<SimpleDateFormat>() {
+        @Override
         protected SimpleDateFormat initialValue() {
           return createTimestampFormat();
         }
@@ -76,28 +95,50 @@ public final class Timestamps {
 
   private Timestamps() {}
 
+  private static final Comparator<Timestamp> COMPARATOR =
+      new Comparator<Timestamp>() {
+        @Override
+        public int compare(Timestamp t1, Timestamp t2) {
+          checkValid(t1);
+          checkValid(t2);
+
+          return ComparisonChain.start()
+              .compare(t1.getSeconds(), t2.getSeconds())
+              .compare(t1.getNanos(), t2.getNanos())
+              .result();
+        }
+      };
+
+  /**
+   * Returns a {@link Comparator} for {@link Timestamp}s which sorts in increasing chronological
+   * order. Nulls and invalid {@link Timestamp}s are not allowed (see {@link #isValid}).
+   */
+  public static Comparator<Timestamp> comparator() {
+    return COMPARATOR;
+  }
+
   /**
    * Returns true if the given {@link Timestamp} is valid. The {@code seconds} value must be in the
    * range [-62,135,596,800, +253,402,300,799] (i.e., between 0001-01-01T00:00:00Z and
    * 9999-12-31T23:59:59Z). The {@code nanos} value must be in the range [0, +999,999,999].
    *
-   * <p>Note: Negative second values with fractions must still have non-negative nanos value that
-   * counts forward in time.
+   * <p><b>Note:</b> Negative second values with fractional seconds must still have non-negative
+   * nanos values that count forward in time.
    */
   public static boolean isValid(Timestamp timestamp) {
     return isValid(timestamp.getSeconds(), timestamp.getNanos());
   }
 
   /**
-   * Returns true if the given number of seconds and nanos is a valid {@link Timestamp}. The
-   * {@code seconds} value must be in the range [-62,135,596,800, +253,402,300,799] (i.e., between
+   * Returns true if the given number of seconds and nanos is a valid {@link Timestamp}. The {@code
+   * seconds} value must be in the range [-62,135,596,800, +253,402,300,799] (i.e., between
    * 0001-01-01T00:00:00Z and 9999-12-31T23:59:59Z). The {@code nanos} value must be in the range
    * [0, +999,999,999].
    *
-   * <p>Note: Negative second values with fractions must still have non-negative nanos value that
-   * counts forward in time.
+   * <p><b>Note:</b> Negative second values with fractional seconds must still have non-negative
+   * nanos values that count forward in time.
    */
-  public static boolean isValid(long seconds, long nanos) {
+  public static boolean isValid(long seconds, int nanos) {
     if (seconds < TIMESTAMP_SECONDS_MIN || seconds > TIMESTAMP_SECONDS_MAX) {
       return false;
     }
@@ -107,37 +148,37 @@ public final class Timestamps {
     return true;
   }
 
-  /**
-   * Throws an {@link IllegalArgumentException} if the given seconds/nanos are not
-   * a valid {@link Timestamp}.
-   */
-  private static void checkValid(long seconds, int nanos) {
-    if (!isValid(seconds, nanos)) {
-      throw new IllegalArgumentException(String.format(
-          "Timestamp is not valid. See proto definition for valid values. "
-          + "Seconds (%s) must be in range [-62,135,596,800, +253,402,300,799]."
-          + "Nanos (%s) must be in range [0, +999,999,999].",
-          seconds, nanos));
-    }
+  /** Throws an {@link IllegalArgumentException} if the given {@link Timestamp} is not valid. */
+  public static Timestamp checkValid(Timestamp timestamp) {
+    long seconds = timestamp.getSeconds();
+    int nanos = timestamp.getNanos();
+    checkArgument(
+        isValid(seconds, nanos),
+        "Timestamp is not valid. See proto definition for valid values. "
+            + "Seconds (%s) must be in range [-62,135,596,800, +253,402,300,799]. "
+            + "Nanos (%s) must be in range [0, +999,999,999].",
+        seconds,
+        nanos);
+    return timestamp;
   }
 
   /**
-   * Convert Timestamp to RFC 3339 date string format. The output will always
-   * be Z-normalized and uses 3, 6 or 9 fractional digits as required to
-   * represent the exact value. Note that Timestamp can only represent time
-   * from 0001-01-01T00:00:00Z to 9999-12-31T23:59:59.999999999Z. See
+   * Convert Timestamp to RFC 3339 date string format. The output will always be Z-normalized and
+   * uses 3, 6 or 9 fractional digits as required to represent the exact value. Note that Timestamp
+   * can only represent time from 0001-01-01T00:00:00Z to 9999-12-31T23:59:59.999999999Z. See
    * https://www.ietf.org/rfc/rfc3339.txt
    *
    * <p>Example of generated format: "1972-01-01T10:00:20.021Z"
    *
    * @return The string representation of the given timestamp.
-   * @throws IllegalArgumentException if the given timestamp is not in the
-   *         valid range.
+   * @throws IllegalArgumentException if the given timestamp is not in the valid range.
    */
   public static String toString(Timestamp timestamp) {
+    checkValid(timestamp);
+
     long seconds = timestamp.getSeconds();
     int nanos = timestamp.getNanos();
-    checkValid(seconds, nanos);
+
     StringBuilder result = new StringBuilder();
     // Format the seconds part.
     Date date = new Date(seconds * MILLIS_PER_SECOND);
@@ -152,10 +193,9 @@ public final class Timestamps {
   }
 
   /**
-   * Parse from RFC 3339 date string to Timestamp. This method accepts all
-   * outputs of {@link #toString(Timestamp)} and it also accepts any fractional
-   * digits (or none) and any offset as long as they fit into nano-seconds
-   * precision.
+   * Parse from RFC 3339 date string to Timestamp. This method accepts all outputs of {@link
+   * #toString(Timestamp)} and it also accepts any fractional digits (or none) and any offset as
+   * long as they fit into nano-seconds precision.
    *
    * <p>Example of accepted format: "1972-01-01T10:00:20.021-05:00"
    *
@@ -210,13 +250,26 @@ public final class Timestamps {
     try {
       return normalizedTimestamp(seconds, nanos);
     } catch (IllegalArgumentException e) {
-      throw new ParseException("Failed to parse timestmap: timestamp is out of range.", 0);
+      throw new ParseException("Failed to parse timestamp: timestamp is out of range.", 0);
     }
   }
 
+  /** Create a Timestamp from the number of seconds elapsed from the epoch. */
+  public static Timestamp fromSeconds(long seconds) {
+    return normalizedTimestamp(seconds, 0);
+  }
+
   /**
-   * Create a Timestamp from the number of milliseconds elapsed from the epoch.
+   * Convert a Timestamp to the number of seconds elapsed from the epoch.
+   *
+   * <p>The result will be rounded down to the nearest second. E.g., if the timestamp represents
+   * "1969-12-31T23:59:59.999999999Z", it will be rounded to -1 second.
    */
+  public static long toSeconds(Timestamp timestamp) {
+    return checkValid(timestamp).getSeconds();
+  }
+
+  /** Create a Timestamp from the number of milliseconds elapsed from the epoch. */
   public static Timestamp fromMillis(long milliseconds) {
     return normalizedTimestamp(
         milliseconds / MILLIS_PER_SECOND,
@@ -226,18 +279,17 @@ public final class Timestamps {
   /**
    * Convert a Timestamp to the number of milliseconds elapsed from the epoch.
    *
-   * <p>The result will be rounded down to the nearest millisecond. E.g., if the
-   * timestamp represents "1969-12-31T23:59:59.999999999Z", it will be rounded
-   * to -1 millisecond.
+   * <p>The result will be rounded down to the nearest millisecond. E.g., if the timestamp
+   * represents "1969-12-31T23:59:59.999999999Z", it will be rounded to -1 millisecond.
    */
   public static long toMillis(Timestamp timestamp) {
-    return timestamp.getSeconds() * MILLIS_PER_SECOND
-        + timestamp.getNanos() / NANOS_PER_MILLISECOND;
+    checkValid(timestamp);
+    return checkedAdd(
+        checkedMultiply(timestamp.getSeconds(), MILLIS_PER_SECOND),
+        timestamp.getNanos() / NANOS_PER_MILLISECOND);
   }
 
-  /**
-   * Create a Timestamp from the number of microseconds elapsed from the epoch.
-   */
+  /** Create a Timestamp from the number of microseconds elapsed from the epoch. */
   public static Timestamp fromMicros(long microseconds) {
     return normalizedTimestamp(
         microseconds / MICROS_PER_SECOND,
@@ -247,65 +299,67 @@ public final class Timestamps {
   /**
    * Convert a Timestamp to the number of microseconds elapsed from the epoch.
    *
-   * <p>The result will be rounded down to the nearest microsecond. E.g., if the
-   * timestamp represents "1969-12-31T23:59:59.999999999Z", it will be rounded
-   * to -1 millisecond.
+   * <p>The result will be rounded down to the nearest microsecond. E.g., if the timestamp
+   * represents "1969-12-31T23:59:59.999999999Z", it will be rounded to -1 millisecond.
    */
   public static long toMicros(Timestamp timestamp) {
-    return timestamp.getSeconds() * MICROS_PER_SECOND
-        + timestamp.getNanos() / NANOS_PER_MICROSECOND;
+    checkValid(timestamp);
+    return checkedAdd(
+        checkedMultiply(timestamp.getSeconds(), MICROS_PER_SECOND),
+        timestamp.getNanos() / NANOS_PER_MICROSECOND);
   }
 
-  /**
-   * Create a Timestamp from the number of nanoseconds elapsed from the epoch.
-   */
+  /** Create a Timestamp from the number of nanoseconds elapsed from the epoch. */
   public static Timestamp fromNanos(long nanoseconds) {
     return normalizedTimestamp(
         nanoseconds / NANOS_PER_SECOND, (int) (nanoseconds % NANOS_PER_SECOND));
   }
 
-  /**
-   * Convert a Timestamp to the number of nanoseconds elapsed from the epoch.
-   */
+  /** Convert a Timestamp to the number of nanoseconds elapsed from the epoch. */
   public static long toNanos(Timestamp timestamp) {
-    return timestamp.getSeconds() * NANOS_PER_SECOND + timestamp.getNanos();
+    checkValid(timestamp);
+    return checkedAdd(
+        checkedMultiply(timestamp.getSeconds(), NANOS_PER_SECOND), timestamp.getNanos());
   }
 
-  /**
-   * Calculate the difference between two timestamps.
-   */
+  /** Calculate the difference between two timestamps. */
   public static Duration between(Timestamp from, Timestamp to) {
+    checkValid(from);
+    checkValid(to);
     return Durations.normalizedDuration(
-        to.getSeconds() - from.getSeconds(), to.getNanos() - from.getNanos());
+        checkedSubtract(to.getSeconds(), from.getSeconds()),
+        checkedSubtract(to.getNanos(), from.getNanos()));
   }
 
-  /**
-   * Add a duration to a timestamp.
-   */
+  /** Add a duration to a timestamp. */
   public static Timestamp add(Timestamp start, Duration length) {
+    checkValid(start);
+    Durations.checkValid(length);
     return normalizedTimestamp(
-        start.getSeconds() + length.getSeconds(), start.getNanos() + length.getNanos());
+        checkedAdd(start.getSeconds(), length.getSeconds()),
+        checkedAdd(start.getNanos(), length.getNanos()));
   }
 
-  /**
-   * Subtract a duration from a timestamp.
-   */
+  /** Subtract a duration from a timestamp. */
   public static Timestamp subtract(Timestamp start, Duration length) {
+    checkValid(start);
+    Durations.checkValid(length);
     return normalizedTimestamp(
-        start.getSeconds() - length.getSeconds(), start.getNanos() - length.getNanos());
+        checkedSubtract(start.getSeconds(), length.getSeconds()),
+        checkedSubtract(start.getNanos(), length.getNanos()));
   }
 
-  private static Timestamp normalizedTimestamp(long seconds, int nanos) {
+  static Timestamp normalizedTimestamp(long seconds, int nanos) {
     if (nanos <= -NANOS_PER_SECOND || nanos >= NANOS_PER_SECOND) {
-      seconds += nanos / NANOS_PER_SECOND;
+      seconds = checkedAdd(seconds, nanos / NANOS_PER_SECOND);
       nanos %= NANOS_PER_SECOND;
     }
     if (nanos < 0) {
-      nanos += NANOS_PER_SECOND;
-      seconds -= 1;
+      nanos += NANOS_PER_SECOND; // no overflow since nanos is negative (and we're adding)
+      seconds = checkedSubtract(seconds, 1);
     }
-    checkValid(seconds, nanos);
-    return Timestamp.newBuilder().setSeconds(seconds).setNanos(nanos).build();
+    Timestamp timestamp = Timestamp.newBuilder().setSeconds(seconds).setNanos(nanos).build();
+    return checkValid(timestamp);
   }
 
   private static long parseTimezoneOffset(String value) throws ParseException {
@@ -324,7 +378,7 @@ public final class Timestamps {
       result = result * 10;
       if (i < value.length()) {
         if (value.charAt(i) < '0' || value.charAt(i) > '9') {
-          throw new ParseException("Invalid nanosecnds.", 0);
+          throw new ParseException("Invalid nanoseconds.", 0);
         }
         result += value.charAt(i) - '0';
       }
@@ -332,11 +386,8 @@ public final class Timestamps {
     return result;
   }
 
-  /**
-   * Format the nano part of a timestamp or a duration.
-   */
+  /** Format the nano part of a timestamp or a duration. */
   static String formatNanos(int nanos) {
-    assert nanos >= 1 && nanos <= 999999999;
     // Determine whether to use 3, 6, or 9 digits for the nano part.
     if (nanos % NANOS_PER_MILLISECOND == 0) {
       return String.format("%1$03d", nanos / NANOS_PER_MILLISECOND);
