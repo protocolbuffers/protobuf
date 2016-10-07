@@ -55,7 +55,7 @@ static void add_to_table(HashTable* t, const void* def, void* value) {
   uint nIndex = (ulong)def & t->nTableMask;
 
   zval* pDest = NULL;
-  zend_hash_index_update(t, (zend_ulong)def, &value, sizeof(zval*), &pDest);
+  zend_hash_index_update(t, (zend_ulong)def, &value, sizeof(zval*), (void**)&pDest);
 }
 
 static void* get_from_table(const HashTable* t, const void* def) {
@@ -69,7 +69,7 @@ static void* get_from_table(const HashTable* t, const void* def) {
 
 static void add_to_list(HashTable* t, void* value) {
   zval* pDest = NULL;
-  zend_hash_next_index_insert(t, &value, sizeof(void*), &pDest);
+  zend_hash_next_index_insert(t, &value, sizeof(void*), (void**)&pDest);
 }
 
 void add_def_obj(const void* def, zval* value) {
@@ -134,6 +134,8 @@ static PHP_RINIT_FUNCTION(protobuf) {
 
   generated_pool = NULL;
   generated_pool_php = NULL;
+
+  return 0;
 }
 
 static PHP_RSHUTDOWN_FUNCTION(protobuf) {
@@ -147,6 +149,8 @@ static PHP_RSHUTDOWN_FUNCTION(protobuf) {
     zval_dtor(generated_pool_php);
     FREE_ZVAL(generated_pool_php);
   }
+
+  return 0;
 }
 
 static PHP_MINIT_FUNCTION(protobuf) {
@@ -158,10 +162,14 @@ static PHP_MINIT_FUNCTION(protobuf) {
   descriptor_init(TSRMLS_C);
   enum_descriptor_init(TSRMLS_C);
   util_init(TSRMLS_C);
+
+  return 0;
 }
 
 static PHP_MSHUTDOWN_FUNCTION(protobuf) {
   PEFREE(message_handlers);
   PEFREE(repeated_field_handlers);
   PEFREE(map_field_handlers);
+
+  return 0;
 }

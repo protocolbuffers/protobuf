@@ -52,6 +52,7 @@ from google.protobuf import unittest_mset_pb2
 from google.protobuf import unittest_pb2
 from google.protobuf import unittest_proto3_arena_pb2
 from google.protobuf.internal import api_implementation
+from google.protobuf.internal import any_test_pb2 as test_extend_any
 from google.protobuf.internal import test_util
 from google.protobuf.internal import message_set_extensions_pb2
 from google.protobuf import descriptor_pool
@@ -684,6 +685,21 @@ class Proto2Tests(TextFormatBase):
     self.assertEqual(23, message.message_set.Extensions[ext1].i)
     self.assertEqual('foo', message.message_set.Extensions[ext2].str)
 
+  def testExtensionInsideAnyMessage(self):
+    message = test_extend_any.TestAny()
+    text = ('value {\n'
+            '  [type.googleapis.com/google.protobuf.internal.TestAny] {\n'
+            '    [google.protobuf.internal.TestAnyExtension1.extension1] {\n'
+            '      i: 10\n'
+            '    }\n'
+            '  }\n'
+            '}\n')
+    text_format.Merge(text, message, descriptor_pool=descriptor_pool.Default())
+    self.CompareToGoldenText(
+        text_format.MessageToString(
+            message, descriptor_pool=descriptor_pool.Default()),
+        text)
+
   def testParseMessageByFieldNumber(self):
     message = unittest_pb2.TestAllTypes()
     text = ('34: 1\n' 'repeated_uint64: 2\n')
@@ -1184,7 +1200,8 @@ class TokenizerTest(unittest.TestCase):
             'ID7 : "aa\\"bb"\n\n\n\n ID8: {A:inf B:-inf C:true D:false}\n'
             'ID9: 22 ID10: -111111111111111111 ID11: -22\n'
             'ID12: 2222222222222222222 ID13: 1.23456f ID14: 1.2e+2f '
-            'false_bool:  0 true_BOOL:t \n true_bool1:  1 false_BOOL1:f ')
+            'false_bool:  0 true_BOOL:t \n true_bool1:  1 false_BOOL1:f '
+            'False_bool: False True_bool: True')
     tokenizer = text_format.Tokenizer(text.splitlines())
     methods = [(tokenizer.ConsumeIdentifier, 'identifier1'), ':',
                (tokenizer.ConsumeString, 'string1'),
@@ -1228,7 +1245,11 @@ class TokenizerTest(unittest.TestCase):
                (tokenizer.ConsumeIdentifier, 'true_bool1'), ':',
                (tokenizer.ConsumeBool, True),
                (tokenizer.ConsumeIdentifier, 'false_BOOL1'), ':',
-               (tokenizer.ConsumeBool, False)]
+               (tokenizer.ConsumeBool, False),
+               (tokenizer.ConsumeIdentifier, 'False_bool'), ':',
+               (tokenizer.ConsumeBool, False),
+               (tokenizer.ConsumeIdentifier, 'True_bool'), ':',
+               (tokenizer.ConsumeBool, True)]
 
     i = 0
     while not tokenizer.AtEnd():

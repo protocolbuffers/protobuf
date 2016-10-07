@@ -36,7 +36,6 @@ import "google/protobuf/unittest.proto";
 
 option java_package = "com.google.protobuf";
 option java_outer_classname = "FieldPresenceTestProto";
-option java_generate_equals_and_hash = true;
 
 message TestAllTypes {
   enum NestedEnum {

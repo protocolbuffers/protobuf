@@ -129,7 +129,8 @@ class SymbolDatabase(message_factory.MessageFactory):
 
     Only messages already created and registered will be returned; (this is the
     case for imported _pb2 modules)
-    But unlike MessageFactory, this version also returns nested messages.
+    But unlike MessageFactory, this version also returns already defined nested
+    messages, but does not register any message extensions.
 
     Args:
       files: The file names to extract messages from.

@@ -878,3 +878,11 @@ service TestService {
 message BarRequest  {}
 message BarResponse {}
 
+message TestJsonName {
+  optional int32 field_name1 = 1;
+  optional int32 fieldName2 = 2;
+  optional int32 FieldName3 = 3;
+  optional int32 _field_name4 = 4;
+  optional int32 FIELD_NAME5 = 5;
+  optional int32 field_name6 = 6 [json_name = "@type"];
+}

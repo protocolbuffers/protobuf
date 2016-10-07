@@ -228,13 +228,13 @@ def _BuildMessageFromTypeName(type_name, descriptor_pool):
     wasn't found matching type_name.
   """
   # pylint: disable=g-import-not-at-top
-  from google.protobuf import message_factory
-  factory = message_factory.MessageFactory(descriptor_pool)
+  from google.protobuf import symbol_database
+  database = symbol_database.Default()
   try:
     message_descriptor = descriptor_pool.FindMessageTypeByName(type_name)
   except KeyError:
     return None
-  message_type = factory.GetPrototype(message_descriptor)
+  message_type = database.GetPrototype(message_descriptor)
   return message_type()
 
 
@@ -317,8 +317,7 @@ class _Printer(object):
           # of this file to work around.
           #
           # TODO(haberman): refactor and optimize if this becomes an issue.
-          entry_submsg = field.message_type._concrete_class(key=key,
-                                                            value=value[key])
+          entry_submsg = value.GetEntryClass()(key=key, value=value[key])
           self.PrintField(field, entry_submsg)
       elif field.label == descriptor.FieldDescriptor.LABEL_REPEATED:
         for element in value:
@@ -749,8 +748,7 @@ class _Parser(object):
       if field.is_extension:
         sub_message = message.Extensions[field].add()
       elif is_map_entry:
-        # pylint: disable=protected-access
-        sub_message = field.message_type._concrete_class()
+        sub_message = getattr(message, field.name).GetEntryClass()()
       else:
         sub_message = getattr(message, field.name).add()
     else:
@@ -1448,9 +1446,9 @@ def ParseBool(text):
   Raises:
     ValueError: If text is not a valid boolean.
   """
-  if text in ('true', 't', '1'):
+  if text in ('true', 't', '1', 'True'):
     return True
-  elif text in ('false', 'f', '0'):
+  elif text in ('false', 'f', '0', 'False'):
     return False
   else:
     raise ValueError('Expected "true" or "false".')

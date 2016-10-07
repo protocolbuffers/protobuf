@@ -251,31 +251,31 @@ conformance-csharp: $(other_language_protoc_outputs)
 
 # Targets for actually running tests.
 test_cpp: protoc_middleman conformance-test-runner conformance-cpp
-	./conformance-test-runner --failure_list failure_list_cpp.txt ./conformance-cpp
+	./conformance-test-runner --enforce_recommended --failure_list failure_list_cpp.txt ./conformance-cpp
 
 test_java: protoc_middleman conformance-test-runner conformance-java
-	./conformance-test-runner --failure_list failure_list_java.txt ./conformance-java
+	./conformance-test-runner --enforce_recommended --failure_list failure_list_java.txt ./conformance-java
 
 test_java_lite: protoc_middleman conformance-test-runner conformance-java-lite
-	./conformance-test-runner ./conformance-java-lite
+	./conformance-test-runner --enforce_recommended ./conformance-java-lite
 
 test_csharp: protoc_middleman conformance-test-runner conformance-csharp
-	./conformance-test-runner --failure_list failure_list_csharp.txt ./conformance-csharp
+	./conformance-test-runner --enforce_recommended --failure_list failure_list_csharp.txt ./conformance-csharp
 
 test_ruby: protoc_middleman conformance-test-runner $(other_language_protoc_outputs)
-	RUBYLIB=../ruby/lib:. ./conformance-test-runner --failure_list failure_list_ruby.txt ./conformance_ruby.rb
+	RUBYLIB=../ruby/lib:. ./conformance-test-runner --enforce_recommended --failure_list failure_list_ruby.txt ./conformance_ruby.rb
 
 # These depend on library paths being properly set up.  The easiest way to
 # run them is to just use "tox" from the python dir.
 test_python: protoc_middleman conformance-test-runner
-	./conformance-test-runner --failure_list failure_list_python.txt ./conformance_python.py
+	./conformance-test-runner --enforce_recommended --failure_list failure_list_python.txt ./conformance_python.py
 
 test_python_cpp: protoc_middleman conformance-test-runner
-	./conformance-test-runner --failure_list failure_list_python_cpp.txt ./conformance_python.py
+	./conformance-test-runner --enforce_recommended --failure_list failure_list_python_cpp.txt ./conformance_python.py
 
 if OBJC_CONFORMANCE_TEST
 
 test_objc: protoc_middleman conformance-test-runner conformance-objc
-	./conformance-test-runner --failure_list failure_list_objc.txt ./conformance-objc
+	./conformance-test-runner --enforce_recommended --failure_list failure_list_objc.txt ./conformance-objc
 
 endif

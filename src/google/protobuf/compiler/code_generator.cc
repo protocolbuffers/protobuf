@@ -36,6 +36,7 @@
 
 #include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
+#include <google/protobuf/descriptor.h>
 #include <google/protobuf/stubs/strutil.h>
 
 namespace google {
@@ -43,6 +44,33 @@ namespace protobuf {
 namespace compiler {
 
 CodeGenerator::~CodeGenerator() {}
+
+bool CodeGenerator::GenerateAll(
+    const vector<const FileDescriptor*>& files,
+    const string& parameter,
+    GeneratorContext* generator_context,
+    string* error) const {
+  // Default implemenation is just to call the per file method, and prefix any
+  // error string with the file to provide context.
+  bool succeeded = true;
+  for (int i = 0; i < files.size(); i++) {
+    const FileDescriptor* file = files[i];
+    succeeded = Generate(file, parameter, generator_context, error);
+    if (!succeeded && error && error->empty()) {
+      *error = "Code generator returned false but provided no error "
+               "description.";
+    }
+    if (error && !error->empty()) {
+      *error = file->name() + ": " + *error;
+      break;
+    }
+    if (!succeeded) {
+      break;
+    }
+  }
+  return succeeded;
+}
+
 GeneratorContext::~GeneratorContext() {}
 
 io::ZeroCopyOutputStream*

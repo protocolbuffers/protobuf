@@ -251,7 +251,7 @@ inline bool WireFormatLite::ReadRepeatedFixedSizePrimitive(
     uint32 tag,
     io::CodedInputStream* input,
     RepeatedField<CType>* values) {
-  GOOGLE_DCHECK_EQ(UInt32Size(tag), tag_size);
+  GOOGLE_DCHECK_EQ(UInt32Size(tag), static_cast<size_t>(tag_size));
   CType value;
   if (!ReadPrimitive<CType, DeclaredType>(input, &value))
     return false;
@@ -810,62 +810,58 @@ inline uint8* WireFormatLite::InternalWriteMessageNoVirtualToArray(
 
 // ===================================================================
 
-inline int WireFormatLite::Int32Size(int32 value) {
+inline size_t WireFormatLite::Int32Size(int32 value) {
   return io::CodedOutputStream::VarintSize32SignExtended(value);
 }
-inline int WireFormatLite::Int64Size(int64 value) {
+inline size_t WireFormatLite::Int64Size(int64 value) {
   return io::CodedOutputStream::VarintSize64(static_cast<uint64>(value));
 }
-inline int WireFormatLite::UInt32Size(uint32 value) {
+inline size_t WireFormatLite::UInt32Size(uint32 value) {
   return io::CodedOutputStream::VarintSize32(value);
 }
-inline int WireFormatLite::UInt64Size(uint64 value) {
+inline size_t WireFormatLite::UInt64Size(uint64 value) {
   return io::CodedOutputStream::VarintSize64(value);
 }
-inline int WireFormatLite::SInt32Size(int32 value) {
+inline size_t WireFormatLite::SInt32Size(int32 value) {
   return io::CodedOutputStream::VarintSize32(ZigZagEncode32(value));
 }
-inline int WireFormatLite::SInt64Size(int64 value) {
+inline size_t WireFormatLite::SInt64Size(int64 value) {
   return io::CodedOutputStream::VarintSize64(ZigZagEncode64(value));
 }
-inline int WireFormatLite::EnumSize(int value) {
+inline size_t WireFormatLite::EnumSize(int value) {
   return io::CodedOutputStream::VarintSize32SignExtended(value);
 }
 
-inline int WireFormatLite::StringSize(const string& value) {
-  return static_cast<int>(
-      io::CodedOutputStream::VarintSize32(static_cast<uint32>(value.size())) +
-      value.size());
+inline size_t WireFormatLite::StringSize(const string& value) {
+  return LengthDelimitedSize(value.size());
 }
-inline int WireFormatLite::BytesSize(const string& value) {
-  return static_cast<int>(
-      io::CodedOutputStream::VarintSize32(static_cast<uint32>(value.size())) +
-      value.size());
+inline size_t WireFormatLite::BytesSize(const string& value) {
+  return LengthDelimitedSize(value.size());
 }
 
 
-inline int WireFormatLite::GroupSize(const MessageLite& value) {
-  return value.ByteSize();
+inline size_t WireFormatLite::GroupSize(const MessageLite& value) {
+  return value.ByteSizeLong();
 }
-inline int WireFormatLite::MessageSize(const MessageLite& value) {
-  return LengthDelimitedSize(value.ByteSize());
+inline size_t WireFormatLite::MessageSize(const MessageLite& value) {
+  return LengthDelimitedSize(value.ByteSizeLong());
 }
 
 // See comment on ReadGroupNoVirtual to understand the need for this template
 // parameter name.
 template<typename MessageType_WorkAroundCppLookupDefect>
-inline int WireFormatLite::GroupSizeNoVirtual(
+inline size_t WireFormatLite::GroupSizeNoVirtual(
     const MessageType_WorkAroundCppLookupDefect& value) {
-  return value.MessageType_WorkAroundCppLookupDefect::ByteSize();
+  return value.MessageType_WorkAroundCppLookupDefect::ByteSizeLong();
 }
 template<typename MessageType_WorkAroundCppLookupDefect>
-inline int WireFormatLite::MessageSizeNoVirtual(
+inline size_t WireFormatLite::MessageSizeNoVirtual(
     const MessageType_WorkAroundCppLookupDefect& value) {
   return LengthDelimitedSize(
-      value.MessageType_WorkAroundCppLookupDefect::ByteSize());
+      value.MessageType_WorkAroundCppLookupDefect::ByteSizeLong());
 }
 
-inline int WireFormatLite::LengthDelimitedSize(int length) {
+inline size_t WireFormatLite::LengthDelimitedSize(size_t length) {
   return io::CodedOutputStream::VarintSize32(length) + length;
 }
 

@@ -871,6 +871,92 @@ TEST_F(CommandLineInterfaceTest, AllowServicesHasService) {
   ExpectGenerated("test_generator", "", "foo.proto", "Foo");
 }
 
+TEST_F(CommandLineInterfaceTest, DirectDependencies_Missing_EmptyList) {
+  CreateTempFile("foo.proto",
+                 "syntax = \"proto2\";\n"
+                 "import \"bar.proto\";\n"
+                 "message Foo { optional Bar bar = 1; }");
+  CreateTempFile("bar.proto",
+                 "syntax = \"proto2\";\n"
+                 "message Bar { optional string text = 1; }");
+
+  Run("protocol_compiler --test_out=$tmpdir --proto_path=$tmpdir "
+      "--direct_dependencies= foo.proto");
+
+  ExpectErrorText(
+      "foo.proto: File is imported but not declared in --direct_dependencies: "
+      "bar.proto\n");
+}
+
+TEST_F(CommandLineInterfaceTest, DirectDependencies_Missing) {
+  CreateTempFile("foo.proto",
+                 "syntax = \"proto2\";\n"
+                 "import \"bar.proto\";\n"
+                 "import \"bla.proto\";\n"
+                 "message Foo { optional Bar bar = 1; optional Bla bla = 2; }");
+  CreateTempFile("bar.proto",
+                 "syntax = \"proto2\";\n"
+                 "message Bar { optional string text = 1; }");
+  CreateTempFile("bla.proto",
+                 "syntax = \"proto2\";\n"
+                 "message Bla { optional int64 number = 1; }");
+
+  Run("protocol_compiler --test_out=$tmpdir --proto_path=$tmpdir "
+      "--direct_dependencies=bla.proto foo.proto");
+
+  ExpectErrorText(
+      "foo.proto: File is imported but not declared in --direct_dependencies: "
+      "bar.proto\n");
+}
+
+TEST_F(CommandLineInterfaceTest, DirectDependencies_NoViolation) {
+  CreateTempFile("foo.proto",
+                 "syntax = \"proto2\";\n"
+                 "import \"bar.proto\";\n"
+                 "message Foo { optional Bar bar = 1; }");
+  CreateTempFile("bar.proto",
+                 "syntax = \"proto2\";\n"
+                 "message Bar { optional string text = 1; }");
+
+  Run("protocol_compiler --test_out=$tmpdir --proto_path=$tmpdir "
+      "--direct_dependencies=bar.proto foo.proto");
+
+  ExpectNoErrors();
+}
+
+TEST_F(CommandLineInterfaceTest, DirectDependencies_NoViolation_MultiImports) {
+  CreateTempFile("foo.proto",
+                 "syntax = \"proto2\";\n"
+                 "import \"bar.proto\";\n"
+                 "import \"bla.proto\";\n"
+                 "message Foo { optional Bar bar = 1; optional Bla bla = 2; }");
+  CreateTempFile("bar.proto",
+                 "syntax = \"proto2\";\n"
+                 "message Bar { optional string text = 1; }");
+  CreateTempFile("bla.proto",
+                 "syntax = \"proto2\";\n"
+                 "message Bla { optional int64 number = 1; }");
+
+  Run("protocol_compiler --test_out=$tmpdir --proto_path=$tmpdir "
+      "--direct_dependencies=bar.proto:bla.proto foo.proto");
+
+  ExpectNoErrors();
+}
+
+TEST_F(CommandLineInterfaceTest, DirectDependencies_ProvidedMultipleTimes) {
+  CreateTempFile("foo.proto",
+                 "syntax = \"proto2\";\n");
+
+  Run("protocol_compiler --test_out=$tmpdir --proto_path=$tmpdir "
+      "--direct_dependencies=bar.proto --direct_dependencies=bla.proto "
+      "foo.proto");
+
+  ExpectErrorText(
+      "--direct_dependencies may only be passed once. To specify multiple "
+      "direct dependencies, pass them all as a single parameter separated by "
+      "':'.\n");
+}
+
 TEST_F(CommandLineInterfaceTest, CwdRelativeInputs) {
   // Test that we can accept working-directory-relative input files.
 

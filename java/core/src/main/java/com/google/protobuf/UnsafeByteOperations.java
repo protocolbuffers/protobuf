@@ -67,16 +67,34 @@ public final class UnsafeByteOperations {
   /**
    * An unsafe operation that returns a {@link ByteString} that is backed by the provided buffer.
    *
+   * @param buffer the buffer to be wrapped
+   * @return a {@link ByteString} backed by the provided buffer
+   */
+  public static ByteString unsafeWrap(byte[] buffer) {
+    return ByteString.wrap(buffer);
+  }
+
+  /**
+   * An unsafe operation that returns a {@link ByteString} that is backed by a subregion of the
+   * provided buffer.
+   *
+   * @param buffer the buffer to be wrapped
+   * @param offset the offset of the wrapped region
+   * @param length the number of bytes of the wrapped region
+   * @return a {@link ByteString} backed by the provided buffer
+   */
+  public static ByteString unsafeWrap(byte[] buffer, int offset, int length) {
+    return ByteString.wrap(buffer, offset, length);
+  }
+
+  /**
+   * An unsafe operation that returns a {@link ByteString} that is backed by the provided buffer.
+   *
    * @param buffer the Java NIO buffer to be wrapped
    * @return a {@link ByteString} backed by the provided buffer
    */
   public static ByteString unsafeWrap(ByteBuffer buffer) {
-    if (buffer.hasArray()) {
-      final int offset = buffer.arrayOffset();
-      return ByteString.wrap(buffer.array(), offset + buffer.position(), buffer.remaining());
-    } else {
-      return new NioByteString(buffer);
-    }
+    return ByteString.wrap(buffer);
   }
 
   /**
@@ -98,4 +116,5 @@ public final class UnsafeByteOperations {
   public static void unsafeWriteTo(ByteString bytes, ByteOutput output) throws IOException {
     bytes.writeTo(output);
   }
+
 }

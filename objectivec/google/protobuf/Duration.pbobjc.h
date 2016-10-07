@@ -92,6 +92,12 @@ typedef GPB_ENUM(GPBDuration_FieldNumber) {
  *       end.seconds += 1;
  *       end.nanos -= 1000000000;
  *     }
+ *
+ * Example 3: Compute Duration from datetime.timedelta in Python.
+ *
+ *     td = datetime.timedelta(days=3, minutes=10)
+ *     duration = Duration()
+ *     duration.FromTimedelta(td)
  **/
 @interface GPBDuration : GPBMessage
 

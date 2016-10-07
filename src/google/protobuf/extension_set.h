@@ -423,10 +423,10 @@ class LIBPROTOBUF_EXPORT ExtensionSet {
   uint8* SerializeMessageSetWithCachedSizesToArray(uint8* target) const;
 
   // Returns the total serialized size of all the extensions.
-  int ByteSize() const;
+  size_t ByteSize() const;
 
   // Like ByteSize() but uses MessageSet format.
-  int MessageSetByteSize() const;
+  size_t MessageSetByteSize() const;
 
   // Returns (an estimate of) the total number of bytes used for storing the
   // extensions in memory, excluding sizeof(*this).  If the ExtensionSet is
@@ -551,8 +551,8 @@ class LIBPROTOBUF_EXPORT ExtensionSet {
         int number,
         bool deterministic,
         uint8* target) const;
-    int ByteSize(int number) const;
-    int MessageSetItemByteSize(int number) const;
+    size_t ByteSize(int number) const;
+    size_t MessageSetItemByteSize(int number) const;
     void Clear();
     int GetSize() const;
     void Free();

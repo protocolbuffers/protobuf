@@ -169,7 +169,7 @@ class LIBPROTOBUF_EXPORT DefaultFieldComparator : public FieldComparator {
   };
 
   // Defines the map to store the tolerances for floating point comparison.
-  typedef map<const FieldDescriptor*, Tolerance> ToleranceMap;
+  typedef std::map<const FieldDescriptor*, Tolerance> ToleranceMap;
 
   // The following methods get executed when CompareFields is called for the
   // basic types (instead of submessages). They return true on success. One

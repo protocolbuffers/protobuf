@@ -119,7 +119,7 @@ class MapEntryLite : public MessageLite {
       kKeyFieldNumber, KeyTypeHandler::kWireType);
   static const uint8 kValueTag = GOOGLE_PROTOBUF_WIRE_FORMAT_MAKE_TAG(
       kValueFieldNumber, ValueTypeHandler::kWireType);
-  static const int kTagSize = 1;
+  static const size_t kTagSize = 1;
 
  public:
   ~MapEntryLite() {
@@ -201,8 +201,8 @@ class MapEntryLite : public MessageLite {
     }
   }
 
-  int ByteSize() const {
-    int size = 0;
+  size_t ByteSizeLong() const {
+    size_t size = 0;
     size += has_key() ? kTagSize + KeyTypeHandler::ByteSize(key()) : 0;
     size += has_value() ? kTagSize + ValueTypeHandler::ByteSize(value()) : 0;
     return size;

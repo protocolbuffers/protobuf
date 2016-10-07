@@ -160,7 +160,7 @@ static void repeated_field_write_dimension(zval *object, zval *offset,
   unsigned char memory[NATIVE_SLOT_MAX_SIZE];
   memset(memory, 0, NATIVE_SLOT_MAX_SIZE);
 
-  if (!native_slot_set(intern->type, intern->msg_ce, memory, value)) {
+  if (!native_slot_set(intern->type, intern->msg_ce, memory, value TSRMLS_CC)) {
     return;
   }
 
@@ -169,7 +169,7 @@ static void repeated_field_write_dimension(zval *object, zval *offset,
   } else {
     if (protobuf_convert_to_uint64(offset, &index)) {
       if (!zend_hash_index_exists(ht, index)) {
-        zend_error(E_USER_ERROR, "Element at %d doesn't exist.\n", index);
+        zend_error(E_USER_ERROR, "Element at %llu doesn't exist.\n", index);
         return;
       }
     } else {
@@ -192,7 +192,7 @@ static HashTable *repeated_field_get_gc(zval *object, zval ***table,
 // C RepeatedField Utilities
 // -----------------------------------------------------------------------------
 
-void *repeated_field_index_native(RepeatedField *intern, int index) {
+void *repeated_field_index_native(RepeatedField *intern, int index TSRMLS_DC) {
   HashTable *ht = HASH_OF(intern->array);
   void *value;
 
@@ -222,7 +222,7 @@ void repeated_field_create_with_type(zend_class_entry *ce,
       zend_object_store_get_object(*repeated_field TSRMLS_CC);
   intern->type = upb_fielddef_type(field);
   if (intern->type == UPB_TYPE_MESSAGE) {
-    upb_msgdef *msg = upb_fielddef_msgsubdef(field);
+    const upb_msgdef *msg = upb_fielddef_msgsubdef(field);
     zval *desc_php = get_def_obj(msg);
     Descriptor *desc = zend_object_store_get_object(desc_php TSRMLS_CC);
     intern->msg_ce = desc->klass;
@@ -321,7 +321,7 @@ PHP_METHOD(RepeatedField, offsetGet) {
   HashTable *table = HASH_OF(intern->array);
 
   if (zend_hash_index_find(table, index, (void **)&memory) == FAILURE) {
-    zend_error(E_USER_ERROR, "Element at %d doesn't exist.\n", index);
+    zend_error(E_USER_ERROR, "Element at %ld doesn't exist.\n", index);
     return;
   }
 
@@ -365,7 +365,7 @@ PHP_METHOD(RepeatedField, offsetUnset) {
   // Only the element at the end of the array can be removed.
   if (index == -1 ||
       index != (zend_hash_num_elements(HASH_OF(intern->array)) - 1)) {
-    zend_error(E_USER_ERROR, "Cannot remove element at %d.\n", index);
+    zend_error(E_USER_ERROR, "Cannot remove element at %ld.\n", index);
     return;
   }
 

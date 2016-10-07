@@ -179,6 +179,10 @@ class LIBPROTOBUF_EXPORT JsonStreamParser {
   util::Status ParseTrue();
   util::Status ParseFalse();
   util::Status ParseNull();
+  util::Status ParseEmptyNull();
+
+  // Whether an empty-null is allowed in the current state.
+  bool IsEmptyNullAllowed(TokenType type);
 
   // Report a failure as a util::Status.
   util::Status ReportFailure(StringPiece message);
@@ -246,6 +250,10 @@ class LIBPROTOBUF_EXPORT JsonStreamParser {
 
   // Whether to allow non UTF-8 encoded input and replace invalid code points.
   bool coerce_to_utf8_;
+
+  // Whether allows empty string represented null array value or object entry
+  // value.
+  bool allow_empty_null_;
 
   GOOGLE_DISALLOW_IMPLICIT_CONSTRUCTORS(JsonStreamParser);
 };

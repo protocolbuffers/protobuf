@@ -496,7 +496,7 @@ describe('protoBinaryTest', function() {
     msg.setRepeatedBytesList([BYTES_B64, BYTES_B64]);
     assertGetters();
 
-    msg.setRepeatedBytesList(null);
+    msg.setRepeatedBytesList([]);
     assertEquals(0, msg.getRepeatedBytesList().length);
     assertEquals(0, msg.getRepeatedBytesList_asB64().length);
     assertEquals(0, msg.getRepeatedBytesList_asU8().length);

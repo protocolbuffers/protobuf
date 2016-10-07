@@ -32,14 +32,14 @@ package com.google.protobuf;
 
 import com.google.protobuf.Descriptors.FieldDescriptor;
 import map_test.MapForProto2TestProto.BizarroTestMap;
+import map_test.MapForProto2TestProto.ReservedAsMapField;
+import map_test.MapForProto2TestProto.ReservedAsMapFieldWithEnumValue;
 import map_test.MapForProto2TestProto.TestMap;
 import map_test.MapForProto2TestProto.TestMap.MessageValue;
 import map_test.MapForProto2TestProto.TestMap.MessageWithRequiredFields;
 import map_test.MapForProto2TestProto.TestMapOrBuilder;
 import map_test.MapForProto2TestProto.TestRecursiveMap;
 import map_test.MapForProto2TestProto.TestUnknownEnumValue;
-import junit.framework.TestCase;
-
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -47,6 +47,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import junit.framework.TestCase;
 
 /**
  * Unit tests for map fields in proto2 protos.
@@ -1141,6 +1142,11 @@ public class MapForProto2Test extends TestCase {
     Message mapEntry = (Message) message.getRepeatedField(
         message.getDescriptorForType().findFieldByName("map_field"), 0);
     assertEquals(2, mapEntry.getAllFields().size());
+  }
+
+  public void testReservedWordsFieldNames() {
+    ReservedAsMapField.newBuilder().build();
+    ReservedAsMapFieldWithEnumValue.newBuilder().build();
   }
 
   private static <K, V> Map<K, V> newMap(K key1, V value1) {

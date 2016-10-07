@@ -38,11 +38,9 @@ import protobuf_unittest.UnittestProto.TestEmptyMessage;
 import protobuf_unittest.UnittestProto.TestEmptyMessageWithExtensions;
 import protobuf_unittest.UnittestProto.TestPackedExtensions;
 import protobuf_unittest.UnittestProto.TestPackedTypes;
-
-import junit.framework.TestCase;
-
 import java.util.Arrays;
 import java.util.Map;
+import junit.framework.TestCase;
 
 /**
  * Tests related to unknown field handling.

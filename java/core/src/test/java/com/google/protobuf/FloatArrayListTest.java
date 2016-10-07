@@ -32,11 +32,10 @@ package com.google.protobuf;
 
 import static java.util.Arrays.asList;
 
-import junit.framework.TestCase;
-
 import java.util.Collections;
 import java.util.ConcurrentModificationException;
 import java.util.Iterator;
+import junit.framework.TestCase;
 
 /**
  * Tests for {@link FloatArrayList}.

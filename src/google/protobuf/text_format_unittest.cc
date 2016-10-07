@@ -157,7 +157,21 @@ TEST_F(TextFormatTest, ShortPrimitiveRepeateds) {
   TextFormat::Printer printer;
   printer.SetUseShortRepeatedPrimitives(true);
   string text;
-  printer.PrintToString(proto_, &text);
+  EXPECT_TRUE(printer.PrintToString(proto_, &text));
+
+  EXPECT_EQ("optional_int32: 123\n"
+            "repeated_int32: [456, 789]\n"
+            "repeated_string: \"foo\"\n"
+            "repeated_string: \"bar\"\n"
+            "repeated_nested_message {\n  bb: 2\n}\n"
+            "repeated_nested_message {\n  bb: 3\n}\n"
+            "repeated_nested_enum: [FOO, BAR]\n",
+            text);
+
+  // Verify that any existing data in the string is cleared when
+  // PrintToString() is called.
+  text = "just some data here...\n\nblah blah";
+  EXPECT_TRUE(printer.PrintToString(proto_, &text));
 
   EXPECT_EQ("optional_int32: 123\n"
             "repeated_int32: [456, 789]\n"
@@ -170,7 +184,7 @@ TEST_F(TextFormatTest, ShortPrimitiveRepeateds) {
 
   // Try in single-line mode.
   printer.SetSingleLineMode(true);
-  printer.PrintToString(proto_, &text);
+  EXPECT_TRUE(printer.PrintToString(proto_, &text));
 
   EXPECT_EQ("optional_int32: 123 "
             "repeated_int32: [456, 789] "
@@ -633,6 +647,87 @@ TEST_F(TextFormatTest, ParseShortRepeatedForm) {
       "repeated_nested_message: [ { bb: 1 }, { bb : 2 }]\n"
       // Repeated group
       "RepeatedGroup [{ a: 3 },{ a: 4 }]\n";
+
+  ASSERT_TRUE(TextFormat::ParseFromString(parse_string, &proto_));
+
+  ASSERT_EQ(3, proto_.repeated_int32_size());
+  EXPECT_EQ(1, proto_.repeated_int32(0));
+  EXPECT_EQ(456, proto_.repeated_int32(1));
+  EXPECT_EQ(789, proto_.repeated_int32(2));
+
+  ASSERT_EQ(3, proto_.repeated_nested_enum_size());
+  EXPECT_EQ(unittest::TestAllTypes::FOO, proto_.repeated_nested_enum(0));
+  EXPECT_EQ(unittest::TestAllTypes::BAR, proto_.repeated_nested_enum(1));
+  EXPECT_EQ(unittest::TestAllTypes::BAZ, proto_.repeated_nested_enum(2));
+
+  ASSERT_EQ(2, proto_.repeated_string_size());
+  EXPECT_EQ("foo", proto_.repeated_string(0));
+  EXPECT_EQ("bar", proto_.repeated_string(1));
+
+  ASSERT_EQ(2, proto_.repeated_nested_message_size());
+  EXPECT_EQ(1, proto_.repeated_nested_message(0).bb());
+  EXPECT_EQ(2, proto_.repeated_nested_message(1).bb());
+
+  ASSERT_EQ(2, proto_.repeatedgroup_size());
+  EXPECT_EQ(3, proto_.repeatedgroup(0).a());
+  EXPECT_EQ(4, proto_.repeatedgroup(1).a());
+}
+
+TEST_F(TextFormatTest, ParseShortRepeatedWithTrailingComma) {
+  string parse_string = "repeated_int32: [456,]\n";
+  ASSERT_FALSE(TextFormat::ParseFromString(parse_string, &proto_));
+  parse_string = "repeated_nested_enum: [  FOO , ]";
+  ASSERT_FALSE(TextFormat::ParseFromString(parse_string, &proto_));
+  parse_string = "repeated_string: [ \"foo\", ]";
+  ASSERT_FALSE(TextFormat::ParseFromString(parse_string, &proto_));
+  parse_string = "repeated_nested_message: [ { bb: 1 }, ]";
+  ASSERT_FALSE(TextFormat::ParseFromString(parse_string, &proto_));
+  parse_string = "RepeatedGroup [{ a: 3 },]\n";
+}
+
+TEST_F(TextFormatTest, ParseShortRepeatedEmpty) {
+  string parse_string =
+      "repeated_int32: []\n"
+      "repeated_nested_enum: []\n"
+      "repeated_string: []\n"
+      "repeated_nested_message: []\n"
+      "RepeatedGroup []\n";
+
+  ASSERT_TRUE(TextFormat::ParseFromString(parse_string, &proto_));
+
+  EXPECT_EQ(0, proto_.repeated_int32_size());
+  EXPECT_EQ(0, proto_.repeated_nested_enum_size());
+  EXPECT_EQ(0, proto_.repeated_string_size());
+  EXPECT_EQ(0, proto_.repeated_nested_message_size());
+  EXPECT_EQ(0, proto_.repeatedgroup_size());
+}
+
+TEST_F(TextFormatTest, ParseShortRepeatedConcatenatedWithEmpty) {
+  string parse_string =
+      // Starting with empty [] should have no impact.
+      "repeated_int32: []\n"
+      "repeated_nested_enum: []\n"
+      "repeated_string: []\n"
+      "repeated_nested_message: []\n"
+      "RepeatedGroup []\n"
+      // Mixed short-form and long-form are simply concatenated.
+      "repeated_int32: 1\n"
+      "repeated_int32: [456, 789]\n"
+      "repeated_nested_enum: [  FOO ,BAR, # comment\n"
+      "                         3]\n"
+      // Note that while the printer won't print repeated strings in short-form,
+      // the parser will accept them.
+      "repeated_string: [ \"foo\", 'bar' ]\n"
+      // Repeated message
+      "repeated_nested_message: [ { bb: 1 }, { bb : 2 }]\n"
+      // Repeated group
+      "RepeatedGroup [{ a: 3 },{ a: 4 }]\n"
+      // Adding empty [] should have no impact.
+      "repeated_int32: []\n"
+      "repeated_nested_enum: []\n"
+      "repeated_string: []\n"
+      "repeated_nested_message: []\n"
+      "RepeatedGroup []\n";
 
   ASSERT_TRUE(TextFormat::ParseFromString(parse_string, &proto_));
 

@@ -16,7 +16,8 @@ generation functionality.
 
 To use PHP runtime library requires:
 
-- PHP 5.5 or above.
+- C extension: PHP 5.5.x or 5.6.x.
+- PHP package: PHP 5.5, 5.6 or 7.
 
 ## Installation
 
@@ -94,6 +95,5 @@ Known Issues
 * Map fields may not be garbage-collected if there is cycle reference.
 * No debug information for messages in c extension.
 * HHVM not tested.
-* PHP 7.0 not tested.
-* C extension not tested on windows.
+* C extension not tested on windows, mac, php 7.0.
 * Message name cannot be Empty.
