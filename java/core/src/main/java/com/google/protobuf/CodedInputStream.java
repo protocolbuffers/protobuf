@@ -885,7 +885,8 @@ public final class CodedInputStream {
   private int sizeLimit = DEFAULT_SIZE_LIMIT;
 
   private static final int DEFAULT_RECURSION_LIMIT = 100;
-  private static final int DEFAULT_SIZE_LIMIT = 64 << 20;  // 64MB
+  // Integer.MAX_VALUE == ./src/google/protobuf/stubs/port.h:static const int32 kint32max = 0x7FFFFFFF;
+  private static final int DEFAULT_SIZE_LIMIT = Integer.MAX_VALUE;
   private static final int BUFFER_SIZE = 4096;
 
   private CodedInputStream(
