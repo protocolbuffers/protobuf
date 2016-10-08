@@ -8937,7 +8937,8 @@ bool FileOptions::IsInitialized() const {
 
   if (!::google::protobuf::internal::AllAreInitialized(this->uninterpreted_option())) return false;
 
-  if (!_extensions_.IsInitialized()) return false;  return true;
+  if (!_extensions_.IsInitialized()) return false;
+  return true;
 }
 
 void FileOptions::Swap(FileOptions* other) {
@@ -9902,7 +9903,8 @@ bool MessageOptions::IsInitialized() const {
 
   if (!::google::protobuf::internal::AllAreInitialized(this->uninterpreted_option())) return false;
 
-  if (!_extensions_.IsInitialized()) return false;  return true;
+  if (!_extensions_.IsInitialized()) return false;
+  return true;
 }
 
 void MessageOptions::Swap(MessageOptions* other) {
@@ -10601,7 +10603,8 @@ bool FieldOptions::IsInitialized() const {
 
   if (!::google::protobuf::internal::AllAreInitialized(this->uninterpreted_option())) return false;
 
-  if (!_extensions_.IsInitialized()) return false;  return true;
+  if (!_extensions_.IsInitialized()) return false;
+  return true;
 }
 
 void FieldOptions::Swap(FieldOptions* other) {
@@ -11052,7 +11055,8 @@ bool OneofOptions::IsInitialized() const {
 
   if (!::google::protobuf::internal::AllAreInitialized(this->uninterpreted_option())) return false;
 
-  if (!_extensions_.IsInitialized()) return false;  return true;
+  if (!_extensions_.IsInitialized()) return false;
+  return true;
 }
 
 void OneofOptions::Swap(OneofOptions* other) {
@@ -11446,7 +11450,8 @@ bool EnumOptions::IsInitialized() const {
 
   if (!::google::protobuf::internal::AllAreInitialized(this->uninterpreted_option())) return false;
 
-  if (!_extensions_.IsInitialized()) return false;  return true;
+  if (!_extensions_.IsInitialized()) return false;
+  return true;
 }
 
 void EnumOptions::Swap(EnumOptions* other) {
@@ -11833,7 +11838,8 @@ bool EnumValueOptions::IsInitialized() const {
 
   if (!::google::protobuf::internal::AllAreInitialized(this->uninterpreted_option())) return false;
 
-  if (!_extensions_.IsInitialized()) return false;  return true;
+  if (!_extensions_.IsInitialized()) return false;
+  return true;
 }
 
 void EnumValueOptions::Swap(EnumValueOptions* other) {
@@ -12195,7 +12201,8 @@ bool ServiceOptions::IsInitialized() const {
 
   if (!::google::protobuf::internal::AllAreInitialized(this->uninterpreted_option())) return false;
 
-  if (!_extensions_.IsInitialized()) return false;  return true;
+  if (!_extensions_.IsInitialized()) return false;
+  return true;
 }
 
 void ServiceOptions::Swap(ServiceOptions* other) {
@@ -12557,7 +12564,8 @@ bool MethodOptions::IsInitialized() const {
 
   if (!::google::protobuf::internal::AllAreInitialized(this->uninterpreted_option())) return false;
 
-  if (!_extensions_.IsInitialized()) return false;  return true;
+  if (!_extensions_.IsInitialized()) return false;
+  return true;
 }
 
 void MethodOptions::Swap(MethodOptions* other) {
