@@ -14,7 +14,7 @@ COPTS = [
     "-Wwrite-strings",
     "-Woverloaded-virtual",
     "-Wno-sign-compare",
-    "-Wno-error=unused-function",
+    "-Wno-unused-function",
 ]
 
 config_setting(
