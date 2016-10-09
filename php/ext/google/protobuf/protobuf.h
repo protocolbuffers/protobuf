@@ -70,8 +70,6 @@ typedef struct MapField MapField;
 ZEND_BEGIN_MODULE_GLOBALS(protobuf)
 ZEND_END_MODULE_GLOBALS(protobuf)
 
-ZEND_DECLARE_MODULE_GLOBALS(protobuf)
-
 #ifdef ZTS
 #define PROTOBUF_G(v) TSRMG(protobuf_globals_id, zend_protobuf_globals*, v)
 #else
