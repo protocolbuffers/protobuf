@@ -51,6 +51,7 @@
 #include <google/protobuf/descriptor.pb.h>
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/stubs/logging.h>
+#include <google/protobuf/stubs/port.h>
 #include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/util/message_differencer.h>
 #include <google/protobuf/descriptor.h>
@@ -73,6 +74,7 @@
   #define PyInt_FromSize_t PyLong_FromSize_t
   #define PyString_Check PyUnicode_Check
   #define PyString_FromString PyUnicode_FromString
+  #define PyString_InternFromString PyUnicode_InternFromString
   #define PyString_FromStringAndSize PyUnicode_FromStringAndSize
   #if PY_VERSION_HEX < 0x03030000
     #error "Python 3.0 - 3.2 are not supported."
@@ -516,13 +518,9 @@ int ForEachCompositeField(CMessage* self, Visitor visitor) {
 // ---------------------------------------------------------------------
 
 // Constants used for integer type range checking.
-PyObject* kPythonZero;
-PyObject* kint32min_py;
-PyObject* kint32max_py;
-PyObject* kuint32max_py;
-PyObject* kint64min_py;
-PyObject* kint64max_py;
-PyObject* kuint64max_py;
+// Constants used for CheckAndGetInteger
+// This is a field that ints have and floats do not.
+PyObject* kPythonIntField;
 
 PyObject* EncodeError_class;
 PyObject* DecodeError_class;
@@ -545,68 +543,84 @@ void FormatTypeError(PyObject* arg, char* expected_types) {
   }
 }
 
+void OutOfRangeError(PyObject* arg) {
+  PyObject *s = PyObject_Str(arg);
+  if (s) {
+    PyErr_Format(PyExc_ValueError,
+                 "Value out of range: %s",
+                 PyString_AsString(s));
+    Py_DECREF(s);
+  }
+}
+
 template<class T>
-bool CheckAndGetInteger(
-    PyObject* arg, T* value, PyObject* min, PyObject* max) {
-  bool is_long = PyLong_Check(arg);
+bool CheckAndGetInteger(PyObject* arg, T* value, T min, T max) {
+  PY_LONG_LONG result;
+  bool min_check;
 #if PY_MAJOR_VERSION < 3
-  if (!PyInt_Check(arg) && !is_long) {
-    FormatTypeError(arg, "int, long");
-    return false;
-  }
-  if (PyObject_Compare(min, arg) > 0 || PyObject_Compare(max, arg) < 0) {
-#else
-  if (!is_long) {
-    FormatTypeError(arg, "int");
-    return false;
-  }
-  if (PyObject_RichCompareBool(min, arg, Py_LE) != 1 ||
-      PyObject_RichCompareBool(max, arg, Py_GE) != 1) {
-#endif
-    if (!PyErr_Occurred()) {
-      PyObject *s = PyObject_Str(arg);
-      if (s) {
-        PyErr_Format(PyExc_ValueError,
-                     "Value out of range: %s",
-                     PyString_AsString(s));
-        Py_DECREF(s);
-      }
+  if GOOGLE_PREDICT_TRUE(PyInt_CheckExact(arg)) {
+    int64 int_result =  PyInt_AS_LONG(arg);
+    // Make sure we do a signed comparison.
+    if GOOGLE_PREDICT_FALSE(int_result < static_cast<int64>(min)
+                            || int_result > max) {
+      OutOfRangeError(arg);
+      return false;
+    } else {
+      *value = static_cast<T>(int_result);
+      return true;
     }
-    return false;
-  }
-#if PY_MAJOR_VERSION < 3
-  if (!is_long) {
-    *value = static_cast<T>(PyInt_AsLong(arg));
   } else  // NOLINT
 #endif
   {
-    if (min == kPythonZero) {
-      *value = static_cast<T>(PyLong_AsUnsignedLongLong(arg));
+    if (min == 0) {
+      // This will check if the value is < 0 and set an error so no min-checking
+      // is required.
+      result = PyLong_AsUnsignedLongLong(arg);
+      min_check = false;
     } else {
-      *value = static_cast<T>(PyLong_AsLongLong(arg));
+      result = PyLong_AsLongLong(arg);
+      min_check = result < min;
     }
   }
+
+  if GOOGLE_PREDICT_FALSE(
+        (result == -1 && PyErr_Occurred()) ||
+        (!PyLong_Check(arg) && !PyObject_HasAttr(arg, kPythonIntField))) {
+    if (PyErr_ExceptionMatches(PyExc_OverflowError)) {
+      // Replace it with the same ValueError as pure python.
+      PyErr_Clear();
+      OutOfRangeError(arg);
+    } else {
+      PyErr_Clear();
+      FormatTypeError(arg, "int, long");
+    }
+    return false;
+  }
+  if GOOGLE_PREDICT_FALSE(result > max || min_check) {
+    OutOfRangeError(arg);
+    return false;
+  }
+  *value = static_cast<T>(result);
   return true;
 }
 
 // These are referenced by repeated_scalar_container, and must
 // be explicitly instantiated.
 template bool CheckAndGetInteger<int32>(
-    PyObject*, int32*, PyObject*, PyObject*);
+    PyObject*, int32*, int32, int32);
 template bool CheckAndGetInteger<int64>(
-    PyObject*, int64*, PyObject*, PyObject*);
+    PyObject*, int64*, int64, int64);
 template bool CheckAndGetInteger<uint32>(
-    PyObject*, uint32*, PyObject*, PyObject*);
+    PyObject*, uint32*, uint32, uint32);
 template bool CheckAndGetInteger<uint64>(
-    PyObject*, uint64*, PyObject*, PyObject*);
+    PyObject*, uint64*, uint64, uint64);
 
 bool CheckAndGetDouble(PyObject* arg, double* value) {
-  if (!PyInt_Check(arg) && !PyLong_Check(arg) &&
-      !PyFloat_Check(arg)) {
+  *value = PyFloat_AsDouble(arg);
+  if GOOGLE_PREDICT_FALSE(*value == -1 && PyErr_Occurred()) {
     FormatTypeError(arg, "int, long, float");
     return false;
   }
-  *value = PyFloat_AsDouble(arg);
   return true;
 }
 
@@ -620,11 +634,11 @@ bool CheckAndGetFloat(PyObject* arg, float* value) {
 }
 
 bool CheckAndGetBool(PyObject* arg, bool* value) {
-  if (!PyInt_Check(arg) && !PyBool_Check(arg) && !PyLong_Check(arg)) {
+  *value = static_cast<bool>(PyInt_AsLong(arg));
+  if (PyErr_Occurred()) {
     FormatTypeError(arg, "int, long, bool");
     return false;
   }
-  *value = static_cast<bool>(PyInt_AsLong(arg));
   return true;
 }
 
@@ -961,20 +975,7 @@ int InternalDeleteRepeatedField(
   int min, max;
   length = reflection->FieldSize(*message, field_descriptor);
 
-  if (PyInt_Check(slice) || PyLong_Check(slice)) {
-    from = to = PyLong_AsLong(slice);
-    if (from < 0) {
-      from = to = length + from;
-    }
-    step = 1;
-    min = max = from;
-
-    // Range check.
-    if (from < 0 || from >= length) {
-      PyErr_Format(PyExc_IndexError, "list assignment index out of range");
-      return -1;
-    }
-  } else if (PySlice_Check(slice)) {
+  if (PySlice_Check(slice)) {
     from = to = step = slice_length = 0;
     PySlice_GetIndicesEx(
 #if PY_MAJOR_VERSION < 3
@@ -991,8 +992,23 @@ int InternalDeleteRepeatedField(
       max = from;
     }
   } else {
-    PyErr_SetString(PyExc_TypeError, "list indices must be integers");
-    return -1;
+    from = to = PyLong_AsLong(slice);
+    if (PyErr_Occurred()) {
+      PyErr_SetString(PyExc_TypeError, "list indices must be integers");
+      return -1;
+    }
+
+    if (from < 0) {
+      from = to = length + from;
+    }
+    step = 1;
+    min = max = from;
+
+    // Range check.
+    if (from < 0 || from >= length) {
+      PyErr_Format(PyExc_IndexError, "list assignment index out of range");
+      return -1;
+    }
   }
 
   Py_ssize_t i = from;
@@ -2833,13 +2849,9 @@ void InitGlobals() {
   // TODO(gps): Check all return values in this function for NULL and propagate
   // the error (MemoryError) on up to result in an import failure.  These should
   // also be freed and reset to NULL during finalization.
-  kPythonZero = PyInt_FromLong(0);
-  kint32min_py = PyInt_FromLong(kint32min);
-  kint32max_py = PyInt_FromLong(kint32max);
-  kuint32max_py = PyLong_FromLongLong(kuint32max);
-  kint64min_py = PyLong_FromLongLong(kint64min);
-  kint64max_py = PyLong_FromLongLong(kint64max);
-  kuint64max_py = PyLong_FromUnsignedLongLong(kuint64max);
+  // This is a field on integers but not floats. The other eligible ones are
+  // numerator and denominator.
+  kPythonIntField = PyString_InternFromString("__index__");
 
   kDESCRIPTOR = PyString_FromString("DESCRIPTOR");
   k_cdescriptor = PyString_FromString("_cdescriptor");
@@ -2967,7 +2979,7 @@ bool InitProto2MessageModule(PyObject *m) {
     PyObject* bases = PyTuple_New(1);
     PyTuple_SET_ITEM(bases, 0, mutable_mapping.get());
 
-    ScalarMapContainer_Type = 
+    ScalarMapContainer_Type =
         PyType_FromSpecWithBases(&ScalarMapContainer_Type_spec, bases);
     PyModule_AddObject(m, "ScalarMapContainer", ScalarMapContainer_Type);
 #else
@@ -2991,7 +3003,7 @@ bool InitProto2MessageModule(PyObject *m) {
 
 
 #if PY_MAJOR_VERSION >= 3
-    MessageMapContainer_Type = 
+    MessageMapContainer_Type =
         PyType_FromSpecWithBases(&MessageMapContainer_Type_spec, bases);
     PyModule_AddObject(m, "MessageMapContainer", MessageMapContainer_Type);
 #else
