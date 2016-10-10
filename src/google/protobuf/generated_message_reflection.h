@@ -231,6 +231,8 @@ class LIBPROTOBUF_EXPORT GeneratedMessageReflection : public Reflection {
                     int index1, int index2) const;
   void ListFields(const Message& message,
                   vector<const FieldDescriptor*>* output) const;
+  void ListExtensionFields(const Message& message,
+                           vector<const FieldDescriptor*>* output) const;
 
   int32  GetInt32 (const Message& message,
                    const FieldDescriptor* field) const;
