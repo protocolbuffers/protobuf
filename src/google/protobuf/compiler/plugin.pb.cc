@@ -44,9 +44,10 @@ void protobuf_AssignDesc_google_2fprotobuf_2fcompiler_2fplugin_2eproto() {
       "google/protobuf/compiler/plugin.proto");
   GOOGLE_CHECK(file != NULL);
   CodeGeneratorRequest_descriptor_ = file->message_type(0);
-  static const int CodeGeneratorRequest_offsets_[3] = {
+  static const int CodeGeneratorRequest_offsets_[4] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(CodeGeneratorRequest, file_to_generate_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(CodeGeneratorRequest, parameter_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(CodeGeneratorRequest, proto_path_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(CodeGeneratorRequest, proto_file_),
   };
   CodeGeneratorRequest_reflection_ =
@@ -136,16 +137,16 @@ void protobuf_AddDesc_google_2fprotobuf_2fcompiler_2fplugin_2eproto() {
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
     "\n%google/protobuf/compiler/plugin.proto\022"
     "\030google.protobuf.compiler\032 google/protob"
-    "uf/descriptor.proto\"}\n\024CodeGeneratorRequ"
-    "est\022\030\n\020file_to_generate\030\001 \003(\t\022\021\n\tparamet"
-    "er\030\002 \001(\t\0228\n\nproto_file\030\017 \003(\0132$.google.pr"
-    "otobuf.FileDescriptorProto\"\252\001\n\025CodeGener"
-    "atorResponse\022\r\n\005error\030\001 \001(\t\022B\n\004file\030\017 \003("
-    "\01324.google.protobuf.compiler.CodeGenerat"
-    "orResponse.File\032>\n\004File\022\014\n\004name\030\001 \001(\t\022\027\n"
-    "\017insertion_point\030\002 \001(\t\022\017\n\007content\030\017 \001(\tB"
-    "7\n\034com.google.protobuf.compilerB\014PluginP"
-    "rotosZ\tplugin_go", 456);
+    "uf/descriptor.proto\"\221\001\n\024CodeGeneratorReq"
+    "uest\022\030\n\020file_to_generate\030\001 \003(\t\022\021\n\tparame"
+    "ter\030\002 \001(\t\022\022\n\nproto_path\030\003 \003(\t\0228\n\nproto_f"
+    "ile\030\017 \003(\0132$.google.protobuf.FileDescript"
+    "orProto\"\252\001\n\025CodeGeneratorResponse\022\r\n\005err"
+    "or\030\001 \001(\t\022B\n\004file\030\017 \003(\01324.google.protobuf"
+    ".compiler.CodeGeneratorResponse.File\032>\n\004"
+    "File\022\014\n\004name\030\001 \001(\t\022\027\n\017insertion_point\030\002 "
+    "\001(\t\022\017\n\007content\030\017 \001(\tB7\n\034com.google.proto"
+    "buf.compilerB\014PluginProtosZ\tplugin_go", 477);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "google/protobuf/compiler/plugin.proto", &protobuf_RegisterTypes);
   CodeGeneratorRequest::default_instance_ = new CodeGeneratorRequest();
@@ -169,6 +170,7 @@ struct StaticDescriptorInitializer_google_2fprotobuf_2fcompiler_2fplugin_2eproto
 #if !defined(_MSC_VER) || _MSC_VER >= 1900
 const int CodeGeneratorRequest::kFileToGenerateFieldNumber;
 const int CodeGeneratorRequest::kParameterFieldNumber;
+const int CodeGeneratorRequest::kProtoPathFieldNumber;
 const int CodeGeneratorRequest::kProtoFileFieldNumber;
 #endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
@@ -238,6 +240,7 @@ void CodeGeneratorRequest::Clear() {
     parameter_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   }
   file_to_generate_.Clear();
+  proto_path_.Clear();
   proto_file_.Clear();
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
   if (_internal_metadata_.have_unknown_fields()) {
@@ -287,6 +290,25 @@ bool CodeGeneratorRequest::MergePartialFromCodedStream(
         } else {
           goto handle_unusual;
         }
+        if (input->ExpectTag(26)) goto parse_proto_path;
+        break;
+      }
+
+      // repeated string proto_path = 3;
+      case 3: {
+        if (tag == 26) {
+         parse_proto_path:
+          DO_(::google::protobuf::internal::WireFormatLite::ReadString(
+                input, this->add_proto_path()));
+          ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
+            this->proto_path(this->proto_path_size() - 1).data(),
+            this->proto_path(this->proto_path_size() - 1).length(),
+            ::google::protobuf::internal::WireFormat::PARSE,
+            "google.protobuf.compiler.CodeGeneratorRequest.proto_path");
+        } else {
+          goto handle_unusual;
+        }
+        if (input->ExpectTag(26)) goto parse_proto_path;
         if (input->ExpectTag(122)) goto parse_proto_file;
         break;
       }
@@ -353,6 +375,16 @@ void CodeGeneratorRequest::SerializeWithCachedSizes(
       2, this->parameter(), output);
   }
 
+  // repeated string proto_path = 3;
+  for (int i = 0; i < this->proto_path_size(); i++) {
+    ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
+      this->proto_path(i).data(), this->proto_path(i).length(),
+      ::google::protobuf::internal::WireFormat::SERIALIZE,
+      "google.protobuf.compiler.CodeGeneratorRequest.proto_path");
+    ::google::protobuf::internal::WireFormatLite::WriteString(
+      3, this->proto_path(i), output);
+  }
+
   // repeated .google.protobuf.FileDescriptorProto proto_file = 15;
   for (unsigned int i = 0, n = this->proto_file_size(); i < n; i++) {
     ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
@@ -391,6 +423,16 @@ void CodeGeneratorRequest::SerializeWithCachedSizes(
         2, this->parameter(), target);
   }
 
+  // repeated string proto_path = 3;
+  for (int i = 0; i < this->proto_path_size(); i++) {
+    ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
+      this->proto_path(i).data(), this->proto_path(i).length(),
+      ::google::protobuf::internal::WireFormat::SERIALIZE,
+      "google.protobuf.compiler.CodeGeneratorRequest.proto_path");
+    target = ::google::protobuf::internal::WireFormatLite::
+      WriteStringToArray(3, this->proto_path(i), target);
+  }
+
   // repeated .google.protobuf.FileDescriptorProto proto_file = 15;
   for (unsigned int i = 0, n = this->proto_file_size(); i < n; i++) {
     target = ::google::protobuf::internal::WireFormatLite::
@@ -422,6 +464,13 @@ int CodeGeneratorRequest::ByteSize() const {
   for (int i = 0; i < this->file_to_generate_size(); i++) {
     total_size += ::google::protobuf::internal::WireFormatLite::StringSize(
       this->file_to_generate(i));
+  }
+
+  // repeated string proto_path = 3;
+  total_size += 1 * this->proto_path_size();
+  for (int i = 0; i < this->proto_path_size(); i++) {
+    total_size += ::google::protobuf::internal::WireFormatLite::StringSize(
+      this->proto_path(i));
   }
 
   // repeated .google.protobuf.FileDescriptorProto proto_file = 15;
@@ -466,6 +515,7 @@ void CodeGeneratorRequest::MergeFrom(const CodeGeneratorRequest& from) {
     ::google::protobuf::internal::MergeFromFail(__FILE__, __LINE__);
   }
   file_to_generate_.MergeFrom(from.file_to_generate_);
+  proto_path_.MergeFrom(from.proto_path_);
   proto_file_.MergeFrom(from.proto_file_);
   if (from._has_bits_[1 / 32] & (0xffu << (1 % 32))) {
     if (from.has_parameter()) {
@@ -505,6 +555,7 @@ void CodeGeneratorRequest::Swap(CodeGeneratorRequest* other) {
 void CodeGeneratorRequest::InternalSwap(CodeGeneratorRequest* other) {
   file_to_generate_.UnsafeArenaSwap(&other->file_to_generate_);
   parameter_.Swap(&other->parameter_);
+  proto_path_.UnsafeArenaSwap(&other->proto_path_);
   proto_file_.UnsafeArenaSwap(&other->proto_file_);
   std::swap(_has_bits_[0], other->_has_bits_[0]);
   _internal_metadata_.Swap(&other->_internal_metadata_);
@@ -629,6 +680,60 @@ void CodeGeneratorRequest::clear_parameter() {
   }
   parameter_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), parameter);
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.compiler.CodeGeneratorRequest.parameter)
+}
+
+// repeated string proto_path = 3;
+int CodeGeneratorRequest::proto_path_size() const {
+  return proto_path_.size();
+}
+void CodeGeneratorRequest::clear_proto_path() {
+  proto_path_.Clear();
+}
+ const ::std::string& CodeGeneratorRequest::proto_path(int index) const {
+  // @@protoc_insertion_point(field_get:google.protobuf.compiler.CodeGeneratorRequest.proto_path)
+  return proto_path_.Get(index);
+}
+ ::std::string* CodeGeneratorRequest::mutable_proto_path(int index) {
+  // @@protoc_insertion_point(field_mutable:google.protobuf.compiler.CodeGeneratorRequest.proto_path)
+  return proto_path_.Mutable(index);
+}
+ void CodeGeneratorRequest::set_proto_path(int index, const ::std::string& value) {
+  // @@protoc_insertion_point(field_set:google.protobuf.compiler.CodeGeneratorRequest.proto_path)
+  proto_path_.Mutable(index)->assign(value);
+}
+ void CodeGeneratorRequest::set_proto_path(int index, const char* value) {
+  proto_path_.Mutable(index)->assign(value);
+  // @@protoc_insertion_point(field_set_char:google.protobuf.compiler.CodeGeneratorRequest.proto_path)
+}
+ void CodeGeneratorRequest::set_proto_path(int index, const char* value, size_t size) {
+  proto_path_.Mutable(index)->assign(
+    reinterpret_cast<const char*>(value), size);
+  // @@protoc_insertion_point(field_set_pointer:google.protobuf.compiler.CodeGeneratorRequest.proto_path)
+}
+ ::std::string* CodeGeneratorRequest::add_proto_path() {
+  return proto_path_.Add();
+}
+ void CodeGeneratorRequest::add_proto_path(const ::std::string& value) {
+  proto_path_.Add()->assign(value);
+  // @@protoc_insertion_point(field_add:google.protobuf.compiler.CodeGeneratorRequest.proto_path)
+}
+ void CodeGeneratorRequest::add_proto_path(const char* value) {
+  proto_path_.Add()->assign(value);
+  // @@protoc_insertion_point(field_add_char:google.protobuf.compiler.CodeGeneratorRequest.proto_path)
+}
+ void CodeGeneratorRequest::add_proto_path(const char* value, size_t size) {
+  proto_path_.Add()->assign(reinterpret_cast<const char*>(value), size);
+  // @@protoc_insertion_point(field_add_pointer:google.protobuf.compiler.CodeGeneratorRequest.proto_path)
+}
+ const ::google::protobuf::RepeatedPtrField< ::std::string>&
+CodeGeneratorRequest::proto_path() const {
+  // @@protoc_insertion_point(field_list:google.protobuf.compiler.CodeGeneratorRequest.proto_path)
+  return proto_path_;
+}
+ ::google::protobuf::RepeatedPtrField< ::std::string>*
+CodeGeneratorRequest::mutable_proto_path() {
+  // @@protoc_insertion_point(field_mutable_list:google.protobuf.compiler.CodeGeneratorRequest.proto_path)
+  return &proto_path_;
 }
 
 // repeated .google.protobuf.FileDescriptorProto proto_file = 15;
