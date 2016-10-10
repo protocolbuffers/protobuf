@@ -640,6 +640,10 @@ public class JsonFormat {
 
     /** Prints google.protobuf.Any */
     private void printAny(MessageOrBuilder message) throws IOException {
+      if (Any.getDefaultInstance().equals(message)) {
+        generator.print("{}");
+        return;
+      }
       Descriptor descriptor = message.getDescriptorForType();
       FieldDescriptor typeUrlField = descriptor.findFieldByName("type_url");
       FieldDescriptor valueField = descriptor.findFieldByName("value");
@@ -1235,6 +1239,9 @@ public class JsonFormat {
         throw new InvalidProtocolBufferException("Expect message object but got: " + json);
       }
       JsonObject object = (JsonObject) json;
+      if (object.entrySet().isEmpty()) {
+        return; // builder never modified, so it will end up building the default instance of Any
+      }
       JsonElement typeUrlElement = object.get("@type");
       if (typeUrlElement == null) {
         throw new InvalidProtocolBufferException("Missing type url when parsing: " + json);
@@ -1327,6 +1334,9 @@ public class JsonFormat {
         Message.Builder listBuilder = builder.newBuilderForField(field);
         merge(json, listBuilder);
         builder.setField(field, listBuilder.build());
+      } else if (json instanceof JsonNull) {
+        builder.setField(
+            type.findFieldByName("null_value"), NullValue.NULL_VALUE.getValueDescriptor());
       } else {
         throw new IllegalStateException("Unexpected json data: " + json);
       }
@@ -1620,11 +1630,6 @@ public class JsonFormat {
     }
 
     private ByteString parseBytes(JsonElement json) throws InvalidProtocolBufferException {
-      String encoded = json.getAsString();
-      if (encoded.length() % 4 != 0) {
-        throw new InvalidProtocolBufferException(
-            "Bytes field is not encoded in standard BASE64 with paddings: " + encoded);
-      }
       return ByteString.copyFrom(BaseEncoding.base64().decode(json.getAsString()));
     }
 

@@ -391,8 +391,10 @@ RELATIVE_TEST_PROTOS = [
     "google/protobuf/util/internal/testdata/field_mask.proto",
     "google/protobuf/util/internal/testdata/maps.proto",
     "google/protobuf/util/internal/testdata/oneofs.proto",
+    "google/protobuf/util/internal/testdata/proto3.proto",
     "google/protobuf/util/internal/testdata/struct.proto",
     "google/protobuf/util/internal/testdata/timestamp_duration.proto",
+    "google/protobuf/util/internal/testdata/wrappers.proto",
     "google/protobuf/util/json_format_proto3.proto",
     "google/protobuf/util/message_differencer_unittest.proto",
 ]

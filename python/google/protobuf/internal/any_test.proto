@@ -30,13 +30,21 @@
 
 // Author: jieluo@google.com (Jie Luo)
 
-syntax = "proto3";
+syntax = "proto2";
 
 package google.protobuf.internal;
 
 import "google/protobuf/any.proto";
 
 message TestAny {
-  google.protobuf.Any value = 1;
-  int32 int_value = 2;
+  optional google.protobuf.Any value = 1;
+  optional int32 int_value = 2;
+  extensions 10 to max;
+}
+
+message TestAnyExtension1 {
+  extend TestAny {
+    optional TestAnyExtension1 extension1 = 98418603;
+  }
+  optional int32 i = 15;
 }

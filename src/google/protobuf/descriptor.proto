@@ -45,7 +45,6 @@ option java_package = "com.google.protobuf";
 option java_outer_classname = "DescriptorProtos";
 option csharp_namespace = "Google.Protobuf.Reflection";
 option objc_class_prefix = "GPB";
-option java_generate_equals_and_hash = true;
 
 // descriptor.proto must be optimized for speed because reflection-based
 // algorithms don't work during bootstrapping.
@@ -306,19 +305,8 @@ message FileOptions {
   // top-level extensions defined in the file.
   optional bool java_multiple_files = 10 [default=false];
 
-  // If set true, then the Java code generator will generate equals() and
-  // hashCode() methods for all messages defined in the .proto file.
-  // This increases generated code size, potentially substantially for large
-  // protos, which may harm a memory-constrained application.
-  // - In the full runtime this is a speed optimization, as the
-  // AbstractMessage base class includes reflection-based implementations of
-  // these methods.
-  // - In the lite runtime, setting this option changes the semantics of
-  // equals() and hashCode() to more closely match those of the full runtime;
-  // the generated methods compute their results based on field values rather
-  // than object identity. (Implementations should not assume that hashcodes
-  // will be consistent across runtimes or versions of the protocol compiler.)
-  optional bool java_generate_equals_and_hash = 20 [default=false];
+  // This option does nothing.
+  optional bool java_generate_equals_and_hash = 20 [deprecated=true];
 
   // If set true, then the Java2 code generator will generate code that
   // throws an exception whenever an attempt is made to assign a non-UTF-8
@@ -448,6 +436,8 @@ message MessageOptions {
 
   // Clients can define custom options in extensions of this message. See above.
   extensions 1000 to max;
+
+  reserved 8;  // javalite_serializable
 }
 
 message FieldOptions {
@@ -470,7 +460,6 @@ message FieldOptions {
   // a single length-delimited blob. In proto3, only explicit setting it to
   // false will avoid using packed encoding.
   optional bool packed = 2;
-
 
   // The jstype option determines the JavaScript type used for values of the
   // field.  The option is permitted only for 64 bit integral and fixed types
@@ -512,7 +501,7 @@ message FieldOptions {
   //
   //
   // Note that implementations may choose not to check required fields within
-  // a lazy sub-message.  That is, calling IsInitialized() on the outher message
+  // a lazy sub-message.  That is, calling IsInitialized() on the outer message
   // may return true even if the inner message has missing required fields.
   // This is necessary because otherwise the inner message would have to be
   // parsed in order to perform the check, defeating the purpose of lazy
@@ -538,6 +527,8 @@ message FieldOptions {
 
   // Clients can define custom options in extensions of this message. See above.
   extensions 1000 to max;
+
+  reserved 4;  // removed jtype
 }
 
 message OneofOptions {

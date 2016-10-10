@@ -43,20 +43,19 @@ void protobuf_AssignDesc_google_2fprotobuf_2fsource_5fcontext_2eproto() {
   SourceContext_reflection_ =
     ::google::protobuf::internal::GeneratedMessageReflection::NewGeneratedMessageReflection(
       SourceContext_descriptor_,
-      SourceContext::default_instance_,
+      SourceContext::internal_default_instance(),
       SourceContext_offsets_,
       -1,
       -1,
       -1,
       sizeof(SourceContext),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SourceContext, _internal_metadata_),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SourceContext, _is_default_instance_));
+      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SourceContext, _internal_metadata_));
 }
 
 namespace {
 
 GOOGLE_PROTOBUF_DECLARE_ONCE(protobuf_AssignDescriptors_once_);
-inline void protobuf_AssignDescriptorsOnce() {
+void protobuf_AssignDescriptorsOnce() {
   ::google::protobuf::GoogleOnceInit(&protobuf_AssignDescriptors_once_,
                  &protobuf_AssignDesc_google_2fprotobuf_2fsource_5fcontext_2eproto);
 }
@@ -65,42 +64,65 @@ void protobuf_RegisterTypes(const ::std::string&) GOOGLE_ATTRIBUTE_COLD;
 void protobuf_RegisterTypes(const ::std::string&) {
   protobuf_AssignDescriptorsOnce();
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
-      SourceContext_descriptor_, &SourceContext::default_instance());
+      SourceContext_descriptor_, SourceContext::internal_default_instance());
 }
 
 }  // namespace
 
 void protobuf_ShutdownFile_google_2fprotobuf_2fsource_5fcontext_2eproto() {
-  delete SourceContext::default_instance_;
+  SourceContext_default_instance_.Shutdown();
   delete SourceContext_reflection_;
 }
 
-void protobuf_AddDesc_google_2fprotobuf_2fsource_5fcontext_2eproto() GOOGLE_ATTRIBUTE_COLD;
-void protobuf_AddDesc_google_2fprotobuf_2fsource_5fcontext_2eproto() {
-  static bool already_here = false;
-  if (already_here) return;
-  already_here = true;
+void protobuf_InitDefaults_google_2fprotobuf_2fsource_5fcontext_2eproto_impl() {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
 
+  ::google::protobuf::internal::GetEmptyString();
+  SourceContext_default_instance_.DefaultConstruct();
+  SourceContext_default_instance_.get_mutable()->InitAsDefaultInstance();
+}
+
+GOOGLE_PROTOBUF_DECLARE_ONCE(protobuf_InitDefaults_google_2fprotobuf_2fsource_5fcontext_2eproto_once_);
+void protobuf_InitDefaults_google_2fprotobuf_2fsource_5fcontext_2eproto() {
+  ::google::protobuf::GoogleOnceInit(&protobuf_InitDefaults_google_2fprotobuf_2fsource_5fcontext_2eproto_once_,
+                 &protobuf_InitDefaults_google_2fprotobuf_2fsource_5fcontext_2eproto_impl);
+}
+void protobuf_AddDesc_google_2fprotobuf_2fsource_5fcontext_2eproto_impl() {
+  GOOGLE_PROTOBUF_VERIFY_VERSION;
+
+  protobuf_InitDefaults_google_2fprotobuf_2fsource_5fcontext_2eproto();
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
     "\n$google/protobuf/source_context.proto\022\017"
     "google.protobuf\"\"\n\rSourceContext\022\021\n\tfile"
-    "_name\030\001 \001(\tBU\n\023com.google.protobufB\022Sour"
-    "ceContextProtoP\001\240\001\001\242\002\003GPB\252\002\036Google.Proto"
-    "buf.WellKnownTypesb\006proto3", 186);
+    "_name\030\001 \001(\tBR\n\023com.google.protobufB\022Sour"
+    "ceContextProtoP\001\242\002\003GPB\252\002\036Google.Protobuf"
+    ".WellKnownTypesb\006proto3", 183);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "google/protobuf/source_context.proto", &protobuf_RegisterTypes);
-  SourceContext::default_instance_ = new SourceContext();
-  SourceContext::default_instance_->InitAsDefaultInstance();
   ::google::protobuf::internal::OnShutdown(&protobuf_ShutdownFile_google_2fprotobuf_2fsource_5fcontext_2eproto);
 }
 
+GOOGLE_PROTOBUF_DECLARE_ONCE(protobuf_AddDesc_google_2fprotobuf_2fsource_5fcontext_2eproto_once_);
+void protobuf_AddDesc_google_2fprotobuf_2fsource_5fcontext_2eproto() {
+  ::google::protobuf::GoogleOnceInit(&protobuf_AddDesc_google_2fprotobuf_2fsource_5fcontext_2eproto_once_,
+                 &protobuf_AddDesc_google_2fprotobuf_2fsource_5fcontext_2eproto_impl);
+}
 // Force AddDescriptors() to be called at static initialization time.
 struct StaticDescriptorInitializer_google_2fprotobuf_2fsource_5fcontext_2eproto {
   StaticDescriptorInitializer_google_2fprotobuf_2fsource_5fcontext_2eproto() {
     protobuf_AddDesc_google_2fprotobuf_2fsource_5fcontext_2eproto();
   }
 } static_descriptor_initializer_google_2fprotobuf_2fsource_5fcontext_2eproto_;
+
+namespace {
+
+static void MergeFromFail(int line) GOOGLE_ATTRIBUTE_COLD GOOGLE_ATTRIBUTE_NORETURN;
+static void MergeFromFail(int line) {
+  ::google::protobuf::internal::MergeFromFail(__FILE__, line);
+}
+
+}  // namespace
+
 
 // ===================================================================
 
@@ -110,27 +132,25 @@ const int SourceContext::kFileNameFieldNumber;
 
 SourceContext::SourceContext()
   : ::google::protobuf::Message(), _internal_metadata_(NULL) {
+  if (this != internal_default_instance()) protobuf_InitDefaults_google_2fprotobuf_2fsource_5fcontext_2eproto();
   SharedCtor();
   // @@protoc_insertion_point(constructor:google.protobuf.SourceContext)
 }
 
 void SourceContext::InitAsDefaultInstance() {
-  _is_default_instance_ = true;
 }
 
 SourceContext::SourceContext(const SourceContext& from)
   : ::google::protobuf::Message(),
     _internal_metadata_(NULL) {
   SharedCtor();
-  MergeFrom(from);
+  UnsafeMergeFrom(from);
   // @@protoc_insertion_point(copy_constructor:google.protobuf.SourceContext)
 }
 
 void SourceContext::SharedCtor() {
-    _is_default_instance_ = false;
-  ::google::protobuf::internal::GetEmptyString();
-  _cached_size_ = 0;
   file_name_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  _cached_size_ = 0;
 }
 
 SourceContext::~SourceContext() {
@@ -140,8 +160,6 @@ SourceContext::~SourceContext() {
 
 void SourceContext::SharedDtor() {
   file_name_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  if (this != default_instance_) {
-  }
 }
 
 void SourceContext::SetCachedSize(int size) const {
@@ -155,11 +173,11 @@ const ::google::protobuf::Descriptor* SourceContext::descriptor() {
 }
 
 const SourceContext& SourceContext::default_instance() {
-  if (default_instance_ == NULL) protobuf_AddDesc_google_2fprotobuf_2fsource_5fcontext_2eproto();
-  return *default_instance_;
+  protobuf_InitDefaults_google_2fprotobuf_2fsource_5fcontext_2eproto();
+  return *internal_default_instance();
 }
 
-SourceContext* SourceContext::default_instance_ = NULL;
+::google::protobuf::internal::ExplicitlyConstructed<SourceContext> SourceContext_default_instance_;
 
 SourceContext* SourceContext::New(::google::protobuf::Arena* arena) const {
   SourceContext* n = new SourceContext;
@@ -256,9 +274,9 @@ void SourceContext::SerializeWithCachedSizes(
   return target;
 }
 
-int SourceContext::ByteSize() const {
+size_t SourceContext::ByteSizeLong() const {
 // @@protoc_insertion_point(message_byte_size_start:google.protobuf.SourceContext)
-  int total_size = 0;
+  size_t total_size = 0;
 
   // optional string file_name = 1;
   if (this->file_name().size() > 0) {
@@ -267,18 +285,17 @@ int SourceContext::ByteSize() const {
         this->file_name());
   }
 
+  int cached_size = ::google::protobuf::internal::ToCachedSize(total_size);
   GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
-  _cached_size_ = total_size;
+  _cached_size_ = cached_size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
   return total_size;
 }
 
 void SourceContext::MergeFrom(const ::google::protobuf::Message& from) {
 // @@protoc_insertion_point(generalized_merge_from_start:google.protobuf.SourceContext)
-  if (GOOGLE_PREDICT_FALSE(&from == this)) {
-    ::google::protobuf::internal::MergeFromFail(__FILE__, __LINE__);
-  }
-  const SourceContext* source = 
+  if (GOOGLE_PREDICT_FALSE(&from == this)) MergeFromFail(__LINE__);
+  const SourceContext* source =
       ::google::protobuf::internal::DynamicCastToGenerated<const SourceContext>(
           &from);
   if (source == NULL) {
@@ -286,15 +303,21 @@ void SourceContext::MergeFrom(const ::google::protobuf::Message& from) {
     ::google::protobuf::internal::ReflectionOps::Merge(from, this);
   } else {
   // @@protoc_insertion_point(generalized_merge_from_cast_success:google.protobuf.SourceContext)
-    MergeFrom(*source);
+    UnsafeMergeFrom(*source);
   }
 }
 
 void SourceContext::MergeFrom(const SourceContext& from) {
 // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.SourceContext)
-  if (GOOGLE_PREDICT_FALSE(&from == this)) {
-    ::google::protobuf::internal::MergeFromFail(__FILE__, __LINE__);
+  if (GOOGLE_PREDICT_TRUE(&from != this)) {
+    UnsafeMergeFrom(from);
+  } else {
+    MergeFromFail(__LINE__);
   }
+}
+
+void SourceContext::UnsafeMergeFrom(const SourceContext& from) {
+  GOOGLE_DCHECK(&from != this);
   if (from.file_name().size() > 0) {
 
     file_name_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.file_name_);
@@ -312,7 +335,7 @@ void SourceContext::CopyFrom(const SourceContext& from) {
 // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.SourceContext)
   if (&from == this) return;
   Clear();
-  MergeFrom(from);
+  UnsafeMergeFrom(from);
 }
 
 bool SourceContext::IsInitialized() const {
@@ -345,37 +368,37 @@ void SourceContext::InternalSwap(SourceContext* other) {
 void SourceContext::clear_file_name() {
   file_name_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
- const ::std::string& SourceContext::file_name() const {
+const ::std::string& SourceContext::file_name() const {
   // @@protoc_insertion_point(field_get:google.protobuf.SourceContext.file_name)
   return file_name_.GetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
- void SourceContext::set_file_name(const ::std::string& value) {
+void SourceContext::set_file_name(const ::std::string& value) {
   
   file_name_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
   // @@protoc_insertion_point(field_set:google.protobuf.SourceContext.file_name)
 }
- void SourceContext::set_file_name(const char* value) {
+void SourceContext::set_file_name(const char* value) {
   
   file_name_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
   // @@protoc_insertion_point(field_set_char:google.protobuf.SourceContext.file_name)
 }
- void SourceContext::set_file_name(const char* value, size_t size) {
+void SourceContext::set_file_name(const char* value, size_t size) {
   
   file_name_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
       ::std::string(reinterpret_cast<const char*>(value), size));
   // @@protoc_insertion_point(field_set_pointer:google.protobuf.SourceContext.file_name)
 }
- ::std::string* SourceContext::mutable_file_name() {
+::std::string* SourceContext::mutable_file_name() {
   
   // @@protoc_insertion_point(field_mutable:google.protobuf.SourceContext.file_name)
   return file_name_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
- ::std::string* SourceContext::release_file_name() {
+::std::string* SourceContext::release_file_name() {
   // @@protoc_insertion_point(field_release:google.protobuf.SourceContext.file_name)
   
   return file_name_.ReleaseNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
- void SourceContext::set_allocated_file_name(::std::string* file_name) {
+void SourceContext::set_allocated_file_name(::std::string* file_name) {
   if (file_name != NULL) {
     
   } else {
@@ -385,6 +408,9 @@ void SourceContext::clear_file_name() {
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.SourceContext.file_name)
 }
 
+inline const SourceContext* SourceContext::internal_default_instance() {
+  return &SourceContext_default_instance_.get();
+}
 #endif  // PROTOBUF_INLINE_NOT_IN_HEADERS
 
 // @@protoc_insertion_point(namespace_scope)

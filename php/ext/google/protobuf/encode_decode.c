@@ -29,6 +29,7 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "protobuf.h"
+#include "utf8.h"
 
 /* stringsink *****************************************************************/
 
@@ -201,9 +202,10 @@ static void *startseq_handler(void* closure, const void* hd) {
   static bool append##type##_handler(void* closure, const void* hd,    \
                                      ctype val) {                      \
     zval* array = (zval*)closure;                                      \
+    TSRMLS_FETCH();                                                    \
     RepeatedField* intern =                                            \
         (RepeatedField*)zend_object_store_get_object(array TSRMLS_CC); \
-    repeated_field_push_native(intern, &val);                          \
+    repeated_field_push_native(intern, &val TSRMLS_CC);                \
     return true;                                                       \
   }
 
@@ -220,6 +222,7 @@ static void* appendstr_handler(void *closure,
                                const void *hd,
                                size_t size_hint) {
   zval* array = (zval*)closure;
+  TSRMLS_FETCH();
   RepeatedField* intern =
       (RepeatedField*)zend_object_store_get_object(array TSRMLS_CC);
 
@@ -236,6 +239,7 @@ static void* appendbytes_handler(void *closure,
                                  const void *hd,
                                  size_t size_hint) {
   zval* array = (zval*)closure;
+  TSRMLS_FETCH();
   RepeatedField* intern =
       (RepeatedField*)zend_object_store_get_object(array TSRMLS_CC);
 
@@ -298,6 +302,7 @@ static size_t stringdata_handler(void* closure, const void* hd,
 // Appends a submessage to a repeated field.
 static void *appendsubmsg_handler(void *closure, const void *hd) {
   zval* array = (zval*)closure;
+  TSRMLS_FETCH();
   RepeatedField* intern =
       (RepeatedField*)zend_object_store_get_object(array TSRMLS_CC);
 
@@ -323,6 +328,7 @@ static void *submsg_handler(void *closure, const void *hd) {
   MessageHeader* msg = closure;
   const submsg_handlerdata_t* submsgdata = hd;
   zval* subdesc_php = get_def_obj((void*)submsgdata->md);
+  TSRMLS_FETCH();
   Descriptor* subdesc = zend_object_store_get_object(subdesc_php TSRMLS_CC);
   zend_class_entry* subklass = subdesc->klass;
   zval* submsg_php;
@@ -411,7 +417,8 @@ static void map_slot_uninit(void* memory, upb_fieldtype_t type) {
   }
 }
 
-static void map_slot_key(upb_fieldtype_t type, const void* from, char** keyval,
+static void map_slot_key(upb_fieldtype_t type, const void* from,
+                         const char** keyval,
                          size_t* length) {
   if (type == UPB_TYPE_STRING) {
     zval* key_php = **(zval***)from;
@@ -423,7 +430,8 @@ static void map_slot_key(upb_fieldtype_t type, const void* from, char** keyval,
   }
 }
 
-static void map_slot_value(upb_fieldtype_t type, const void* from, upb_value* v) {
+static void map_slot_value(upb_fieldtype_t type, const void* from,
+			   upb_value* v) {
   size_t len;
   void* to = upb_value_memory(v);
 #ifndef NDEBUG
@@ -464,10 +472,11 @@ static void *startmapentry_handler(void *closure, const void *hd) {
 
 // Handler to end a map entry: inserts the value defined during the message into
 // the map. This is the 'endmsg' handler on the map entry msgdef.
-static bool endmap_handler(void *closure, const void *hd, upb_status* s) {
+static bool endmap_handler(void* closure, const void* hd, upb_status* s) {
   map_parse_frame_t* frame = closure;
   const map_handlerdata_t* mapdata = hd;
 
+  TSRMLS_FETCH();
   Map *map = (Map *)zend_object_store_get_object(frame->map TSRMLS_CC);
 
   const char* keyval = NULL;
@@ -573,12 +582,12 @@ static void *oneofbytes_handler(void *closure,
 }
 
 // Handler for a submessage field in a oneof.
-static void *oneofsubmsg_handler(void *closure,
-                                 const void *hd) {
+static void* oneofsubmsg_handler(void* closure, const void* hd) {
   MessageHeader* msg = closure;
   const oneof_handlerdata_t *oneofdata = hd;
   uint32_t oldcase = DEREF(msg, oneofdata->case_ofs, uint32_t);
   zval* subdesc_php = get_def_obj((void*)oneofdata->md);
+  TSRMLS_FETCH();
   Descriptor* subdesc = zend_object_store_get_object(subdesc_php TSRMLS_CC);
   zend_class_entry* subklass = subdesc->klass;
   zval* submsg_php;
@@ -771,8 +780,10 @@ static void add_handlers_for_oneof_field(upb_handlers *h,
   upb_handlerattr_uninit(&attr);
 }
 
-static void add_handlers_for_message(const void *closure, upb_handlers *h) {
+static void add_handlers_for_message(const void* closure,
+                                     upb_handlers* h) {
   const upb_msgdef* msgdef = upb_handlers_msgdef(h);
+  TSRMLS_FETCH();
   Descriptor* desc = (Descriptor*)zend_object_store_get_object(
       get_def_obj((void*)msgdef) TSRMLS_CC);
   upb_msg_field_iter i;
@@ -860,7 +871,7 @@ static const upb_pbdecodermethod *msgdef_decodermethod(Descriptor* desc) {
 // -----------------------------------------------------------------------------
 
 static void putmsg(zval* msg, const Descriptor* desc, upb_sink* sink,
-                   int depth);
+                   int depth TSRMLS_DC);
 
 static void putstr(zval* str, const upb_fielddef* f, upb_sink* sink);
 
@@ -868,11 +879,12 @@ static void putrawstr(const char* str, int len, const upb_fielddef* f,
                       upb_sink* sink);
 
 static void putsubmsg(zval* submsg, const upb_fielddef* f, upb_sink* sink,
-                      int depth);
+                      int depth TSRMLS_DC);
 
 static void putarray(zval* array, const upb_fielddef* f, upb_sink* sink,
-                     int depth);
-static void putmap(zval* map, const upb_fielddef* f, upb_sink* sink, int depth);
+                     int depth TSRMLS_DC);
+static void putmap(zval* map, const upb_fielddef* f, upb_sink* sink, int depth
+		   TSRMLS_DC);
 
 static upb_selector_t getsel(const upb_fielddef* f, upb_handlertype_t type) {
   upb_selector_t ret;
@@ -881,8 +893,8 @@ static upb_selector_t getsel(const upb_fielddef* f, upb_handlertype_t type) {
   return ret;
 }
 
-static void put_optional_value(void* memory, int len, const upb_fielddef* f,
-                               int depth, upb_sink* sink) {
+static void put_optional_value(const void* memory, int len, const upb_fielddef* f,
+                               int depth, upb_sink* sink TSRMLS_DC) {
   assert(upb_fielddef_label(f) == UPB_LABEL_OPTIONAL);
 
   switch (upb_fielddef_type(f)) {
@@ -911,7 +923,7 @@ static void put_optional_value(void* memory, int len, const upb_fielddef* f,
       break;
     case UPB_TYPE_MESSAGE: {
       zval* submsg = *(zval**)memory;
-      putsubmsg(submsg, f, sink, depth);
+      putsubmsg(submsg, f, sink, depth TSRMLS_CC);
       break;
     }
     default:
@@ -943,7 +955,7 @@ static int raw_value_len(void* memory, int len, const upb_fielddef* f) {
 }
 
 static void putmap(zval* map, const upb_fielddef* f, upb_sink* sink,
-                   int depth) {
+                   int depth TSRMLS_DC) {
   Map* self;
   upb_sink subsink;
   const upb_fielddef* key_field;
@@ -960,7 +972,7 @@ static void putmap(zval* map, const upb_fielddef* f, upb_sink* sink,
   key_field = map_field_key(f);
   value_field = map_field_value(f);
 
-  for (map_begin(map, &it); !map_done(&it); map_next(&it)) {
+  for (map_begin(map, &it TSRMLS_CC); !map_done(&it); map_next(&it)) {
     upb_status status;
 
     upb_sink entry_sink;
@@ -970,13 +982,13 @@ static void putmap(zval* map, const upb_fielddef* f, upb_sink* sink,
 
     // Serialize key.
     const char *key = map_iter_key(&it, &len);
-    put_optional_value(key, len, key_field, depth + 1, &entry_sink);
+    put_optional_value(key, len, key_field, depth + 1, &entry_sink TSRMLS_CC);
 
     // Serialize value.
     upb_value value = map_iter_value(&it, &len);
     put_optional_value(raw_value(upb_value_memory(&value), value_field),
                        raw_value_len(upb_value_memory(&value), len, value_field),
-                       value_field, depth + 1, &entry_sink);
+                       value_field, depth + 1, &entry_sink TSRMLS_CC);
 
     upb_sink_endmsg(&entry_sink, &status);
     upb_sink_endsubmsg(&subsink, getsel(f, UPB_HANDLER_ENDSUBMSG));
@@ -986,7 +998,7 @@ static void putmap(zval* map, const upb_fielddef* f, upb_sink* sink,
 }
 
 static void putmsg(zval* msg_php, const Descriptor* desc, upb_sink* sink,
-                   int depth) {
+                   int depth TSRMLS_DC) {
   upb_msg_field_iter i;
   upb_status status;
 
@@ -1023,12 +1035,12 @@ static void putmsg(zval* msg_php, const Descriptor* desc, upb_sink* sink,
     if (is_map_field(f)) {
       zval* map = *DEREF(msg, offset, zval**);
       if (map != NULL) {
-        putmap(map, f, sink, depth);
+        putmap(map, f, sink, depth TSRMLS_CC);
       }
     } else if (upb_fielddef_isseq(f)) {
       zval* array = *DEREF(msg, offset, zval**);
       if (array != NULL) {
-        putarray(array, f, sink, depth);
+        putarray(array, f, sink, depth TSRMLS_CC);
       }
     } else if (upb_fielddef_isstring(f)) {
       zval* str = *DEREF(msg, offset, zval**);
@@ -1036,7 +1048,7 @@ static void putmsg(zval* msg_php, const Descriptor* desc, upb_sink* sink,
         putstr(str, f, sink);
       }
     } else if (upb_fielddef_issubmsg(f)) {
-      putsubmsg(*DEREF(msg, offset, zval**), f, sink, depth);
+      putsubmsg(*DEREF(msg, offset, zval**), f, sink, depth TSRMLS_CC);
     } else {
       upb_selector_t sel = getsel(f, upb_handlers_getprimitivehandlertype(f));
 
@@ -1113,7 +1125,7 @@ static void putrawstr(const char* str, int len, const upb_fielddef* f,
 }
 
 static void putsubmsg(zval* submsg, const upb_fielddef* f, upb_sink* sink,
-                      int depth) {
+                      int depth TSRMLS_DC) {
   upb_sink subsink;
 
   if (Z_TYPE_P(submsg) == IS_NULL) return;
@@ -1123,12 +1135,12 @@ static void putsubmsg(zval* submsg, const upb_fielddef* f, upb_sink* sink,
       (Descriptor*)zend_object_store_get_object(php_descriptor TSRMLS_CC);
 
   upb_sink_startsubmsg(sink, getsel(f, UPB_HANDLER_STARTSUBMSG), &subsink);
-  putmsg(submsg, subdesc, &subsink, depth + 1);
+  putmsg(submsg, subdesc, &subsink, depth + 1 TSRMLS_CC);
   upb_sink_endsubmsg(sink, getsel(f, UPB_HANDLER_ENDSUBMSG));
 }
 
 static void putarray(zval* array, const upb_fielddef* f, upb_sink* sink,
-                     int depth) {
+                     int depth TSRMLS_DC) {
   upb_sink subsink;
   upb_fieldtype_t type = upb_fielddef_type(f);
   upb_selector_t sel = 0;
@@ -1147,7 +1159,7 @@ static void putarray(zval* array, const upb_fielddef* f, upb_sink* sink,
   }
 
   for (i = 0; i < size; i++) {
-    void* memory = repeated_field_index_native(intern, i);
+    void* memory = repeated_field_index_native(intern, i TSRMLS_CC);
     switch (type) {
 #define T(upbtypeconst, upbtype, ctype)                      \
   case upbtypeconst:                                         \
@@ -1168,7 +1180,7 @@ static void putarray(zval* array, const upb_fielddef* f, upb_sink* sink,
         putstr(*((zval**)memory), f, &subsink);
         break;
       case UPB_TYPE_MESSAGE:
-        putsubmsg(*((zval**)memory), f, &subsink, depth);
+        putsubmsg(*((zval**)memory), f, &subsink, depth TSRMLS_CC);
         break;
 
 #undef T
@@ -1206,7 +1218,7 @@ PHP_METHOD(Message, encode) {
     stackenv_init(&se, "Error occurred during encoding: %s");
     encoder = upb_pb_encoder_create(&se.env, serialize_handlers, &sink.sink);
 
-    putmsg(getThis(), desc, upb_pb_encoder_input(encoder), 0);
+    putmsg(getThis(), desc, upb_pb_encoder_input(encoder), 0 TSRMLS_CC);
 
     RETVAL_STRINGL(sink.ptr, sink.len, 1);
 

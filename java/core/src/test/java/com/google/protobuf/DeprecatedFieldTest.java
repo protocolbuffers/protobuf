@@ -31,11 +31,9 @@
 package com.google.protobuf;
 
 import protobuf_unittest.UnittestProto.TestDeprecatedFields;
-
-import junit.framework.TestCase;
-
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Method;
+import junit.framework.TestCase;
 
 /**
  * Test field deprecation

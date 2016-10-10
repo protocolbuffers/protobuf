@@ -25,7 +25,7 @@ namespace Google.Protobuf.WellKnownTypes {
             "Ch5nb29nbGUvcHJvdG9idWYvZHVyYXRpb24ucHJvdG8SD2dvb2dsZS5wcm90",
             "b2J1ZiIqCghEdXJhdGlvbhIPCgdzZWNvbmRzGAEgASgDEg0KBW5hbm9zGAIg",
             "ASgFQnwKE2NvbS5nb29nbGUucHJvdG9idWZCDUR1cmF0aW9uUHJvdG9QAVoq",
-            "Z2l0aHViLmNvbS9nb2xhbmcvcHJvdG9idWYvcHR5cGVzL2R1cmF0aW9uoAEB",
+            "Z2l0aHViLmNvbS9nb2xhbmcvcHJvdG9idWYvcHR5cGVzL2R1cmF0aW9u+AEB",
             "ogIDR1BCqgIeR29vZ2xlLlByb3RvYnVmLldlbGxLbm93blR5cGVzYgZwcm90",
             "bzM="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
@@ -79,6 +79,12 @@ namespace Google.Protobuf.WellKnownTypes {
   ///        end.seconds += 1;
   ///        end.nanos -= 1000000000;
   ///      }
+  ///
+  ///  Example 3: Compute Duration from datetime.timedelta in Python.
+  ///
+  ///      td = datetime.timedelta(days=3, minutes=10)
+  ///      duration = Duration()
+  ///      duration.FromTimedelta(td)
   /// </summary>
   public sealed partial class Duration : pb::IMessage<Duration> {
     private static readonly pb::MessageParser<Duration> _parser = new pb::MessageParser<Duration>(() => new Duration());

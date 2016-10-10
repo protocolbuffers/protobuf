@@ -147,7 +147,7 @@ inline string StripSuffixString(const string& str, const string& suffix) {
 }
 
 // ----------------------------------------------------------------------
-// StripString
+// ReplaceCharacters
 //    Replaces any occurrence of the character 'remove' (or the characters
 //    in 'remove') with the character 'replacewith'.
 //    Good for keeping html characters or protocol characters (\t) out
@@ -155,6 +155,8 @@ inline string StripSuffixString(const string& str, const string& suffix) {
 // StripWhitespace
 //    Removes whitespaces from both ends of the given string.
 // ----------------------------------------------------------------------
+LIBPROTOBUF_EXPORT void ReplaceCharacters(string* s, const char* remove,
+                                          char replacewith);
 LIBPROTOBUF_EXPORT void StripString(string* s, const char* remove,
                                     char replacewith);
 

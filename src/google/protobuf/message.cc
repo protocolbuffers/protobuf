@@ -46,9 +46,9 @@
 #include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/io/zero_copy_stream_impl.h>
 #include <google/protobuf/descriptor.pb.h>
-#include <google/protobuf/map_field.h>
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/generated_message_util.h>
+#include <google/protobuf/map_field.h>
 #include <google/protobuf/reflection_ops.h>
 #include <google/protobuf/wire_format.h>
 #include <google/protobuf/stubs/strutil.h>
@@ -146,9 +146,9 @@ void Message::SerializeWithCachedSizes(
   WireFormat::SerializeWithCachedSizes(*this, GetCachedSize(), output);
 }
 
-int Message::ByteSize() const {
-  int size = WireFormat::ByteSize(*this);
-  SetCachedSize(size);
+size_t Message::ByteSizeLong() const {
+  size_t size = WireFormat::ByteSize(*this);
+  SetCachedSize(internal::ToCachedSize(size));
   return size;
 }
 
@@ -299,8 +299,8 @@ class GeneratedMessageFactory : public MessageFactory {
   hash_map<const char*, RegistrationFunc*,
            hash<const char*>, streq> file_map_;
 
-  // Initialized lazily, so requires locking.
   Mutex mutex_;
+  // Initialized lazily, so requires locking.
   hash_map<const Descriptor*, const Message*> type_map_;
 };
 

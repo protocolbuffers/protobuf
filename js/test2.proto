@@ -35,6 +35,8 @@ option java_multiple_files = true;
 
 package jspb.test;
 
+import "test.proto";
+
 message TestExtensionsMessage {
   optional int32 intfield = 1;
   extensions 100 to max;
@@ -51,4 +53,8 @@ message ExtensionMessage {
 extend TestExtensionsMessage {
   optional ExtensionMessage floating_msg_field = 101;
   optional string floating_str_field = 102;
+}
+
+message ForeignNestedFieldMessage {
+  optional Deeply.Nested.Message deeply_nested_message = 1;
 }

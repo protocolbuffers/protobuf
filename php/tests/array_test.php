@@ -789,26 +789,26 @@ class RepeatedFieldTest extends PHPUnit_Framework_TestCase
         $this->assertSame(1, count($arr));
     }
 
-      public function testInsertRemoval()
-      {
-          $arr = new RepeatedField(GPBType::INT32);
+    public function testInsertRemoval()
+    {
+        $arr = new RepeatedField(GPBType::INT32);
 
-          $arr []= 0;
-          $arr []= 1;
-          $arr []= 2;
-          $this->assertSame(3, count($arr));
+        $arr []= 0;
+        $arr []= 1;
+        $arr []= 2;
+        $this->assertSame(3, count($arr));
 
-          unset($arr[2]);
-          $this->assertSame(2, count($arr));
-          $this->assertSame(0, $arr[0]);
-          $this->assertSame(1, $arr[1]);
+        unset($arr[2]);
+        $this->assertSame(2, count($arr));
+        $this->assertSame(0, $arr[0]);
+        $this->assertSame(1, $arr[1]);
 
-          $arr [] = 3;
-          $this->assertSame(3, count($arr));
-          $this->assertSame(0, $arr[0]);
-          $this->assertSame(1, $arr[1]);
-          $this->assertSame(3, $arr[2]);
-      }
+        $arr [] = 3;
+        $this->assertSame(3, count($arr));
+        $this->assertSame(0, $arr[0]);
+        $this->assertSame(1, $arr[1]);
+        $this->assertSame(3, $arr[2]);
+    }
 
     /**
      * @expectedException PHPUnit_Framework_Error

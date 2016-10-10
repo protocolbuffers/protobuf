@@ -1,10 +1,5 @@
 #!/bin/bash
 
-# Compile protoc
-pushd ../../
-./autogen.sh && ./configure && make
-popd
-
 # Generate test file
 ../../src/protoc --php_out=. test.proto test_include.proto
 

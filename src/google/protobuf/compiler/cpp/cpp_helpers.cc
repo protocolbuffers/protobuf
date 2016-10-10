@@ -415,7 +415,8 @@ string DefaultValue(const FieldDescriptor* field) {
         CEscape(field->default_value_string())) +
         "\"";
     case FieldDescriptor::CPPTYPE_MESSAGE:
-      return FieldMessageTypeName(field) + "::default_instance()";
+      return "*" + FieldMessageTypeName(field) +
+             "::internal_default_instance()";
   }
   // Can't actually get here; make compiler happy.  (We could add a default
   // case above but then we wouldn't get the nice compiler warning when a
@@ -442,6 +443,10 @@ string FilenameIdentifier(const string& filename) {
 // Return the name of the AddDescriptors() function for a given file.
 string GlobalAddDescriptorsName(const string& filename) {
   return "protobuf_AddDesc_" + FilenameIdentifier(filename);
+}
+
+string GlobalInitDefaultsName(const string& filename) {
+  return "protobuf_InitDefaults_" + FilenameIdentifier(filename);
 }
 
 // Return the name of the AssignDescriptors() function for a given file.
@@ -498,40 +503,6 @@ bool StaticInitializersForced(const FileDescriptor* file,
     }
   }
   return false;
-}
-
-void PrintHandlingOptionalStaticInitializers(
-    const FileDescriptor* file, const Options& options, io::Printer* printer,
-    const char* with_static_init, const char* without_static_init,
-    const char* var1, const string& val1, const char* var2,
-    const string& val2) {
-  map<string, string> vars;
-  if (var1) {
-    vars[var1] = val1;
-  }
-  if (var2) {
-    vars[var2] = val2;
-  }
-  PrintHandlingOptionalStaticInitializers(
-      vars, file, options, printer, with_static_init, without_static_init);
-}
-
-void PrintHandlingOptionalStaticInitializers(const map<string, string>& vars,
-                                             const FileDescriptor* file,
-                                             const Options& options,
-                                             io::Printer* printer,
-                                             const char* with_static_init,
-                                             const char* without_static_init) {
-  if (StaticInitializersForced(file, options)) {
-    printer->Print(vars, with_static_init);
-  } else {
-    printer->Print(vars, (string(
-      "#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER\n") +
-      without_static_init +
-      "#else\n" +
-      with_static_init +
-      "#endif\n").c_str());
-  }
 }
 
 
