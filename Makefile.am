@@ -600,6 +600,8 @@ php_EXTRA_DIST=                                              \
   php/tests/test_include.pb.php                              \
   php/tests/map_field_test.php                               \
   php/tests/test_base.php                                    \
+  php/tests/test_no_namespace.proto                          \
+  php/tests/test_no_namespace.pb.php                         \
   php/tests/test_util.php                                    \
   php/tests/test.proto                                       \
   php/tests/test.pb.php                                      \
