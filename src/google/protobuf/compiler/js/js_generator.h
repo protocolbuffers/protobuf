@@ -33,6 +33,7 @@
 #ifndef GOOGLE_PROTOBUF_COMPILER_JS_GENERATOR_H__
 #define GOOGLE_PROTOBUF_COMPILER_JS_GENERATOR_H__
 
+#include <map>
 #include <string>
 #include <set>
 
@@ -69,6 +70,13 @@ struct GeneratorOptions {
   bool error_on_name_conflict;
   // Enable binary-format support?
   bool binary;
+  // The following option is only relevant for commonjs and
+  // potentially applicable es6 when that is implemented.  Parse an
+  // option like 'Mexample/foo.proto=bar'.  The corresponding
+  // require() statement will then become "require('bar')" rather than
+  // "require('example/foo_pb.js')".
+  map<string, string>* import_map;
+
   // What style of imports should be used.
   enum ImportStyle {
     IMPORT_CLOSURE,    // goog.require()
@@ -85,6 +93,7 @@ struct GeneratorOptions {
         library(""),
         error_on_name_conflict(false),
         binary(false),
+        import_map(new map<string, string>),
         import_style(IMPORT_CLOSURE) {}
 
   bool ParseFromOptions(

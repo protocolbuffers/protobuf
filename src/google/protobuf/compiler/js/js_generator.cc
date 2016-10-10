@@ -191,6 +191,7 @@ string ModuleAlias(const string& filename) {
   // exposed to users so we can change it later if we need to.
   string basename = StripProto(filename);
   StripString(&basename, "-", '$');
+  StripString(&basename, ".", '$'); // fixes #1745.
   StripString(&basename, "/", '_');
   return basename + "_pb";
 }
@@ -3016,6 +3017,24 @@ bool GeneratorOptions::ParseFromOptions(
         *error = "Unknown import style " + options[i].second + ", expected " +
                  "one of: closure, commonjs, browser, es6.";
       }
+    } else if (options[i].first.at(0) == 'M') {
+      string key = options[i].first.substr(1);
+      string val = options[i].second;
+      if (key.empty()) {
+        *error = "Missing importmap filename value (lhs).";
+        return false;
+      }
+      if (key.size() == StripProto(key).size()) {
+        *error = "The importmap filename value (" + key +
+                 ") should name a file having a .proto file suffix";
+        return false;
+      }
+      if (val.empty()) {
+        *error = "Missing importmap replacement operand value (rhs).";
+        return false;
+      }
+      import_map->insert(std::make_pair(key, val));
+      return true;
     } else {
       // Assume any other option is an output directory, as long as it is a bare
       // `key` rather than a `key=value` option.
@@ -3088,10 +3107,22 @@ void Generator::GenerateFile(const GeneratorOptions& options,
 
     for (int i = 0; i < file->dependency_count(); i++) {
       const string& name = file->dependency(i)->name();
+      string path = GetRootPath(file->name(), name) + GetJSFilename(name);
+      if (options.import_map->find(file->name()) != options.import_map->end() ) {
+        string replacement;
+        bool is_valid = EscapeJSString(options.import_map->at(file->name()),
+                                       &replacement);
+        if (!is_valid) {
+          GOOGLE_LOG(WARNING) << "Skipping replacement value of import_map file " << file->name()
+                              << " as it contained invalid UTF-8.";
+        } else {
+          path = replacement;
+        }
+      }
       printer->Print(
           "var $alias$ = require('$file$');\n",
           "alias", ModuleAlias(name),
-          "file", GetRootPath(file->name(), name) + GetJSFilename(name));
+          "file", path);
     }
   }
 
