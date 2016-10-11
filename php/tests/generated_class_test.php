@@ -1,6 +1,7 @@
 <?php
 
 require_once('test.pb.php');
+require_once('test_no_namespace.pb.php');
 require_once('test_util.php');
 
 use Google\Protobuf\Internal\RepeatedField;
@@ -553,5 +554,13 @@ class GeneratedClassTest extends PHPUnit_Framework_TestCase
         $this->assertSame(0.0, $m->getOneofFloat());
         $this->assertSame('', $m->getOneofString());
         $this->assertSame(1, $m->getOneofMessage()->getA());
+    }
+
+    #########################################################
+    # Test oneof field.
+    #########################################################
+
+    public function testMessageWithoutNamespace() {
+      $m = new NoNameSpace();
     }
 }
