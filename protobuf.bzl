@@ -62,6 +62,7 @@ def _proto_gen_impl(ctx):
   if ctx.attr.gen_py:
     args += ["--python_out=" + ctx.var["GENDIR"] + "/" + gen_dir]
 
+  inputs = srcs + deps
   if ctx.executable.plugin:
     plugin = ctx.executable.plugin
     lang = ctx.attr.plugin_language
@@ -75,10 +76,11 @@ def _proto_gen_impl(ctx):
       outdir = ",".join(ctx.attr.plugin_options) + ":" + outdir
     args += ["--plugin=protoc-gen-%s=%s" % (lang, plugin.path)]
     args += ["--%s_out=%s" % (lang, outdir)]
+    inputs += [plugin]
 
   if args:
     ctx.action(
-        inputs=srcs + deps,
+        inputs=inputs,
         outputs=ctx.outputs.outs,
         arguments=args + import_flags + [s.path for s in srcs],
         executable=ctx.executable.protoc,
