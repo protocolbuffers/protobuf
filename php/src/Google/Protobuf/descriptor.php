@@ -240,9 +240,13 @@ function getFullClassName(
     $class_name_without_package =
         implode('_', array_map('ucwords',
                                explode('.', $message_name_without_package)));
-    $classname =
-        implode('\\', array_map('ucwords', explode('.', $package))).
-        "\\".$class_name_without_package;
+    if ($package === "") {
+        $classname = $class_name_without_package;
+    } else {
+        $classname =
+            implode('\\', array_map('ucwords', explode('.', $package))).
+            "\\".$class_name_without_package;
+    }
 }
 
 class OneofDescriptor
