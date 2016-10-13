@@ -15,13 +15,20 @@ def _GenDir(ctx):
     return _GetPath(ctx, ctx.attr.includes[0])
   return _GetPath(ctx, ctx.label.package + '/' + ctx.attr.includes[0])
 
-def _CcOuts(srcs, use_grpc_plugin=False):
-  ret = [s[:-len(".proto")] + ".pb.h" for s in srcs] + \
-        [s[:-len(".proto")] + ".pb.cc" for s in srcs]
+def _CcHdrs(srcs, use_grpc_plugin=False):
+  ret = [s[:-len(".proto")] + ".pb.h" for s in srcs]
   if use_grpc_plugin:
-    ret += [s[:-len(".proto")] + ".grpc.pb.h" for s in srcs] + \
-           [s[:-len(".proto")] + ".grpc.pb.cc" for s in srcs]
+    ret += [s[:-len(".proto")] + ".grpc.pb.h" for s in srcs]
   return ret
+
+def _CcSrcs(srcs, use_grpc_plugin=False):
+  ret = [s[:-len(".proto")] + ".pb.cc" for s in srcs]
+  if use_grpc_plugin:
+    ret += [s[:-len(".proto")] + ".grpc.pb.cc" for s in srcs]
+  return ret
+
+def _CcOuts(srcs, use_grpc_plugin=False):
+  return _CcHdrs(srcs, use_grpc_plugin) + _CcSrcs(srcs, use_grpc_plugin)
 
 def _PyOuts(srcs):
   return [s[:-len(".proto")] + "_pb2.py" for s in srcs]
@@ -203,7 +210,9 @@ def cc_proto_library(
   if use_grpc_plugin:
     grpc_cpp_plugin = "//external:grpc_cpp_plugin"
 
-  outs = _CcOuts(srcs, use_grpc_plugin)
+  gen_srcs = _CcSrcs(srcs, use_grpc_plugin)
+  gen_hdrs = _CcHdrs(srcs, use_grpc_plugin)
+  outs = gen_srcs + gen_hdrs
 
   proto_gen(
       name=name + "_genproto",
@@ -225,7 +234,8 @@ def cc_proto_library(
 
   native.cc_library(
       name=name,
-      srcs=outs,
+      srcs=gen_srcs,
+      hdrs=gen_hdrs,
       deps=cc_libs + deps,
       includes=includes,
       **kargs)
