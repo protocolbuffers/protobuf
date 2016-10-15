@@ -130,7 +130,7 @@ There are miscellaneous other things you may find useful as a Protocol Buffers d
 * [Eclipse editor for protobuf (from Google)](http://code.google.com/p/protobuf-dt/)
 * [C++ Builder compatible protobuf](https://github.com/saadware/protobuf-cppbuilder)
 * Maven Protocol Compiler Plugin
-    * https://github.com/sergei-ivanov/maven-protoc-plugin/
+    * https://github.com/xolstice/protobuf-maven-plugin
     * http://igor-petruk.github.com/protobuf-maven-plugin/
     * http://code.google.com/p/maven-protoc-plugin/
     * https://github.com/os72/protoc-jar-maven-plugin
