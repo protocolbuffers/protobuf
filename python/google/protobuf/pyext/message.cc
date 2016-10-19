@@ -1905,7 +1905,11 @@ static PyObject* CopyFrom(CMessage* self, PyObject* arg) {
 // get OOM errors. The protobuf APIs do not provide any tools for processing
 // protobufs in chunks.  If you have protos this big you should break them up if
 // it is at all convenient to do so.
+#ifdef PROTOBUF_PYTHON_ALLOW_OVERSIZE_PROTOS
+static bool allow_oversize_protos = true;
+#else
 static bool allow_oversize_protos = false;
+#endif
 
 // Provide a method in the module to set allow_oversize_protos to a boolean
 // value. This method returns the newly value of allow_oversize_protos.
