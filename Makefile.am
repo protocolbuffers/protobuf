@@ -577,7 +577,6 @@ php_EXTRA_DIST=                                              \
   php/src/Google/Protobuf/Internal/DescriptorPool.php        \
   php/src/Google/Protobuf/Internal/OneofField.php            \
   php/src/Google/Protobuf/Internal/MapEntry.php              \
-  php/src/Google/Protobuf/Internal/Type.php                  \
   php/src/Google/Protobuf/Internal/InputStream.php           \
   php/src/Google/Protobuf/Internal/OutputStream.php          \
   php/src/Google/Protobuf/Internal/MessageBuilderContext.php \
