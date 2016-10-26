@@ -264,6 +264,8 @@ void AddDefaultProtoPaths(vector<pair<string, string> >* paths) {
 }
 
 string PluginName(const string& plugin_prefix, const string& directive) {
+  // Assuming the directive starts with "--" and ends with "_out" or "_opt",
+  // strip the "--" and "_out/_opt" and add the plugin prefix.
   return plugin_prefix + "gen-" + directive.substr(2, directive.size() - 6);
 }
 }  // namespace
@@ -1485,7 +1487,6 @@ bool CommandLineInterface::GenerateOutput(
           HasSuffixString(output_directive.name, "_out"))
         << "Bad name for plugin generator: " << output_directive.name;
 
-    // Strip the "--" and "_out" and add the plugin prefix.
     string plugin_name = PluginName(plugin_prefix_ , output_directive.name);
     string parameters = output_directive.parameter;
     if (!plugin_parameters_[plugin_name].empty()) {
