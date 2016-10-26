@@ -148,17 +148,40 @@ class GeneratedClassTest extends PHPUnit_Framework_TestCase
 
         // Set float.
         $m->setOptionalInt64(1.1);
-        $this->assertSame(1, $m->getOptionalInt64());
+        if (PHP_INT_SIZE == 4) {
+            $this->assertSame('1', $m->getOptionalInt64());
+        } else {
+            $this->assertSame(1, $m->getOptionalInt64());
+        }
 
         // Set string.
         $m->setOptionalInt64('2');
-        $this->assertSame(2, $m->getOptionalInt64());
+        if (PHP_INT_SIZE == 4) {
+            $this->assertSame('2', $m->getOptionalInt64());
+        } else {
+            $this->assertSame(2, $m->getOptionalInt64());
+        }
+
         $m->setOptionalInt64('3.1');
-        $this->assertSame(3, $m->getOptionalInt64());
+        if (PHP_INT_SIZE == 4) {
+            $this->assertSame('3', $m->getOptionalInt64());
+        } else {
+            $this->assertSame(3, $m->getOptionalInt64());
+        }
+
         $m->setOptionalInt64(MAX_INT64_STRING);
-        $this->assertSame(MAX_INT64, $m->getOptionalInt64());
+        if (PHP_INT_SIZE == 4) {
+            $this->assertSame(MAX_INT64_STRING, $m->getOptionalInt64());
+        } else {
+            $this->assertSame(MAX_INT64, $m->getOptionalInt64());
+        }
+
         $m->setOptionalInt64(MIN_INT64_STRING);
-        $this->assertEquals(MIN_INT64, $m->getOptionalInt64());
+        if (PHP_INT_SIZE == 4) {
+            $this->assertSame(MIN_INT64_STRING, $m->getOptionalInt64());
+        } else {
+            $this->assertSame(MIN_INT64, $m->getOptionalInt64());
+        }
     }
 
     /**
@@ -189,19 +212,41 @@ class GeneratedClassTest extends PHPUnit_Framework_TestCase
 
         // Set integer.
         $m->setOptionalUint64(MAX_UINT64);
-        $this->assertEquals(MAX_UINT64, $m->getOptionalUint64());
+        if (PHP_INT_SIZE == 4) {
+            $this->assertSame(MAX_UINT64_STRING, $m->getOptionalUint64());
+        } else {
+            $this->assertSame(MAX_UINT64, $m->getOptionalUint64());
+        }
 
         // Set float.
         $m->setOptionalUint64(1.1);
-        $this->assertSame(1, $m->getOptionalUint64());
+        if (PHP_INT_SIZE == 4) {
+            $this->assertSame('1', $m->getOptionalUint64());
+        } else {
+            $this->assertSame(1, $m->getOptionalUint64());
+        }
 
         // Set string.
         $m->setOptionalUint64('2');
-        $this->assertSame(2, $m->getOptionalUint64());
+        if (PHP_INT_SIZE == 4) {
+            $this->assertSame('2', $m->getOptionalUint64());
+        } else {
+            $this->assertSame(2, $m->getOptionalUint64());
+        }
+
         $m->setOptionalUint64('3.1');
-        $this->assertSame(3, $m->getOptionalUint64());
+        if (PHP_INT_SIZE == 4) {
+            $this->assertSame('3', $m->getOptionalUint64());
+        } else {
+            $this->assertSame(3, $m->getOptionalUint64());
+        }
+
         $m->setOptionalUint64(MAX_UINT64_STRING);
-        $this->assertEquals(MAX_UINT64, $m->getOptionalUint64());
+        if (PHP_INT_SIZE == 4) {
+            $this->assertSame(MAX_UINT64_STRING, $m->getOptionalUint64());
+        } else {
+            $this->assertSame(MAX_UINT64, $m->getOptionalUint64());
+        }
     }
 
     /**

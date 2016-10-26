@@ -90,8 +90,6 @@ class OutputStream
     public function writeRaw($data, $size)
     {
         if ($this->buffer_size < $size) {
-            var_dump($this->buffer_size);
-            var_dump($size);
             trigger_error("Output stream doesn't have enough buffer.");
             return false;
         }
@@ -107,15 +105,28 @@ class OutputStream
     private static function writeVarintToArray($value, &$buffer, $trim = false)
     {
         $current = 0;
-        if ($trim) {
-            $value &= 0xFFFFFFFF;
+
+        $high = 0;
+        $low = 0;
+        if (PHP_INT_SIZE == 4) {
+            GPBUtil::divideInt64ToInt32($value, $high, $low, $trim);
+        } else {
+            if ($trim) {
+                $low = $value & 0xFFFFFFFF;
+            } else {
+                $low = $value;
+            }
         }
-        while ($value >= 0x80 || $value < 0) {
-            $buffer[$current] = chr($value | 0x80);
+
+        while ($low >= 0x80 || $low < 0) {
+            $buffer[$current] = chr($low | 0x80);
             $value = ($value >> 7) & ~(0x7F << ((PHP_INT_SIZE << 3) - 7));
+            $carry = ($high & 0x7F) << ((PHP_INT_SIZE << 3) - 7);
+            $high = ($high >> 7) & ~(0x7F << ((PHP_INT_SIZE << 3) - 7));
+            $low = (($low >> 7) & ~(0x7F << ((PHP_INT_SIZE << 3) - 7)) | $carry);
             $current++;
         }
-        $buffer[$current] = chr($value);
+        $buffer[$current] = chr($low);
         return $current + 1;
     }
 
@@ -130,14 +141,24 @@ class OutputStream
 
     private static function writeLittleEndian64ToArray($value, &$buffer)
     {
-        $buffer[0] = chr($value & 0x000000FF);
-        $buffer[1] = chr(($value >> 8) & 0x000000FF);
-        $buffer[2] = chr(($value >> 16) & 0x000000FF);
-        $buffer[3] = chr(($value >> 24) & 0x000000FF);
-        $buffer[4] = chr(($value >> 32) & 0x000000FF);
-        $buffer[5] = chr(($value >> 40) & 0x000000FF);
-        $buffer[6] = chr(($value >> 48) & 0x000000FF);
-        $buffer[7] = chr(($value >> 56) & 0x000000FF);
+        $high = 0;
+        $low = 0;
+        if (PHP_INT_SIZE == 4) {
+            GPBUtil::divideInt64ToInt32($value, $high, $low);
+        } else {
+            $low = $value & 0xFFFFFFFF;
+            $high = ($value >> 32) & 0xFFFFFFFF;
+        }
+
+        $buffer[0] = chr($low & 0x000000FF);
+        $buffer[1] = chr(($low >> 8) & 0x000000FF);
+        $buffer[2] = chr(($low >> 16) & 0x000000FF);
+        $buffer[3] = chr(($low >> 24) & 0x000000FF);
+        $buffer[4] = chr($high & 0x000000FF);
+        $buffer[5] = chr(($high >> 8) & 0x000000FF);
+        $buffer[6] = chr(($high >> 16) & 0x000000FF);
+        $buffer[7] = chr(($high >> 24) & 0x000000FF);
         return 8;
     }
+
 }

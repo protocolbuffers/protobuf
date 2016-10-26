@@ -358,6 +358,16 @@ use_php_zts() {
   ln -sfn "/usr/local/php-${VERSION}-zts/bin/phpize" $PHPIZE
 }
 
+use_php_bc() {
+  VERSION=$1
+  PHP=`which php`
+  PHP_CONFIG=`which php-config`
+  PHPIZE=`which phpize`
+  ln -sfn "/usr/local/php-${VERSION}-bc/bin/php" $PHP
+  ln -sfn "/usr/local/php-${VERSION}-bc/bin/php-config" $PHP_CONFIG
+  ln -sfn "/usr/local/php-${VERSION}-bc/bin/phpize" $PHPIZE
+}
+
 build_php5.5() {
   use_php 5.5
   rm -rf vendor
@@ -374,6 +384,13 @@ build_php5.5_zts_c() {
   use_php_zts 5.5
   wget https://phar.phpunit.de/phpunit-old.phar -O /usr/bin/phpunit
   cd php/tests && /bin/bash ./test.sh && cd ../..
+}
+
+build_php5.5_32() {
+  use_php_bc 5.5
+  rm -rf vendor
+  cp -r /usr/local/vendor-5.5 vendor
+  ./vendor/bin/phpunit
 }
 
 build_php5.6() {
@@ -427,6 +444,10 @@ build_php_all() {
   build_php5.6_c
   # build_php7.0_c
   build_php5.5_zts_c
+}
+
+build_php_all_32() {
+  build_php5.5_32
 }
 
 # Note: travis currently does not support testing more than one language so the

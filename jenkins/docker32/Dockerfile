@@ -83,7 +83,9 @@ RUN wget http://am1.php.net/get/php-5.5.38.tar.bz2/from/this/mirror
 RUN mv mirror php-5.5.38.tar.bz2
 RUN tar -xvf php-5.5.38.tar.bz2
 RUN cd php-5.5.38 && ./configure --enable-maintainer-zts --prefix=/usr/local/php-5.5-zts && \
-    make && make install
+    make && make install && make clean && cd ..
+RUN cd php-5.5.38 && ./configure --enable-bcmath --prefix=/usr/local/php-5.5-bc && \
+    make && make install && make clean && cd ..
 
 ##################
 # Python dependencies

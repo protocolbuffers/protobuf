@@ -13,22 +13,28 @@ class TestBase extends PHPUnit_Framework_TestCase
 
     public function expectFields(TestMessage $m)
     {
-        $this->assertSame(-42,  $m->getOptionalInt32());
-        $this->assertSame(42,   $m->getOptionalUint32());
-        $this->assertSame(-43,  $m->getOptionalInt64());
-        $this->assertSame(43,   $m->getOptionalUint64());
         $this->assertSame(-44,  $m->getOptionalSint32());
-        $this->assertSame(-45,  $m->getOptionalSint64());
         $this->assertSame(46,   $m->getOptionalFixed32());
-        $this->assertSame(47,   $m->getOptionalFixed64());
         $this->assertSame(-46,  $m->getOptionalSfixed32());
-        $this->assertSame(-47,  $m->getOptionalSfixed64());
         $this->assertSame(1.5,  $m->getOptionalFloat());
         $this->assertSame(1.6,  $m->getOptionalDouble());
         $this->assertSame(true, $m->getOptionalBool());
         $this->assertSame('a',  $m->getOptionalString());
         $this->assertSame('b',  $m->getOptionalBytes());
         $this->assertSame(33,   $m->getOptionalMessage()->getA());
+        if (PHP_INT_SIZE == 4) {
+            $this->assertSame('-43',  $m->getOptionalInt64());
+            $this->assertSame('43',   $m->getOptionalUint64());
+            $this->assertSame('-45',  $m->getOptionalSint64());
+            $this->assertSame('47',   $m->getOptionalFixed64());
+            $this->assertSame('-47',  $m->getOptionalSfixed64());
+        } else {
+            $this->assertSame(-43,  $m->getOptionalInt64());
+            $this->assertSame(43,   $m->getOptionalUint64());
+            $this->assertSame(-45,  $m->getOptionalSint64());
+            $this->assertSame(47,   $m->getOptionalFixed64());
+            $this->assertSame(-47,  $m->getOptionalSfixed64());
+        }
 
         $this->assertEquals(-42,  $m->getRepeatedInt32()[0]);
         $this->assertEquals(42,   $m->getRepeatedUint32()[0]);
