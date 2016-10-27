@@ -873,9 +873,9 @@ class FileDescriptor(DescriptorBase):
       # FileDescriptor() is called from various places, not only from generated
       # files, to register dynamic proto files and messages.
       if serialized_pb:
-        # TODO(amauryfa): use the pool passed as argument. This will work only
-        # for C++-implemented DescriptorPools.
-        return _message.default_pool.AddSerializedFile(serialized_pb)
+        # Does this have to be changed to support non-C++ backends?
+        _pool = pool or _message.default_pool
+        return _pool.AddSerializedFile(serialized_pb)
       else:
         return super(FileDescriptor, cls).__new__(cls)
 
@@ -888,8 +888,11 @@ class FileDescriptor(DescriptorBase):
         options, serialized_options, 'FileOptions')
 
     if pool is None:
-      from google.protobuf import descriptor_pool
-      pool = descriptor_pool.Default()
+      if api_implementation.Type() == 'cpp':
+        pool = _message.default_pool
+      else:
+        from google.protobuf import descriptor_pool
+        pool = descriptor_pool.Default()
     self.pool = pool
     self.message_types_by_name = {}
     self.name = name
@@ -903,9 +906,8 @@ class FileDescriptor(DescriptorBase):
     self.dependencies = (dependencies or [])
     self.public_dependencies = (public_dependencies or [])
 
-    if (api_implementation.Type() == 'cpp' and
-        self.serialized_pb is not None):
-      _message.default_pool.AddSerializedFile(self.serialized_pb)
+    if self.serialized_pb is not None:
+      self.pool.AddSerializedFile(self.serialized_pb)
 
   def CopyToProto(self, proto):
     """Copies this to a descriptor_pb2.FileDescriptorProto.
