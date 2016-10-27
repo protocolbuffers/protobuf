@@ -218,22 +218,23 @@ CF_EXTERN_C_END
 - (size_t)position;
 
 /**
- * Pushes (rolls forward) the current limit by the specified amount of bytes.
+ * Moves the limit to the given byte offset starting at the current location.
  *
  * @exception GPBCodedInputStreamException If the requested bytes exceeed the
  *            current limit.
  *
- * @param byteLimit The number of bytes to push the current limit.
+ * @param byteLimit The number of bytes to move the limit, offset to the current
+ *                  location.
  *
- * @return The limit offset before applying the new limit.
+ * @return The limit offset before moving the new limit.
  */
 - (size_t)pushLimit:(size_t)byteLimit;
 
 /**
- * Pops (rolls back) the current limit by the requested amount of bytes.
+ * Moves the limit back to the offset as it was before calling pushLimit:.
  *
- * @param oldLimit The number of bytes to pop the current limit. Usually this is
- *                 the value returned by the pushLimit: method.
+ * @param oldLimit The number of bytes to move the current limit. Usually this
+ *                 is the value returned by the pushLimit: method.
  */
 - (void)popLimit:(size_t)oldLimit;
 
