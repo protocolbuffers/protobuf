@@ -906,7 +906,7 @@ class FileDescriptor(DescriptorBase):
     self.dependencies = (dependencies or [])
     self.public_dependencies = (public_dependencies or [])
 
-    if self.serialized_pb is not None:
+    if self.serialized_pb is not None and api_implementation.Type() == 'cpp':
       self.pool.AddSerializedFile(self.serialized_pb)
 
   def CopyToProto(self, proto):
