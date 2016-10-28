@@ -1766,6 +1766,12 @@ class Proto3Test(BaseTestCase):
     msg.map_int32_foreign_message[19].c = 128
     self.assertEqual(msg.ByteSize(), size + 1)
 
+  def testMapFieldConstruction(self):
+    msg1 = map_unittest_pb2.TestMap()
+    msg1.map_string_foreign_message['test'].c = 42
+    msg2 = map_unittest_pb2.TestMap(map_string_foreign_message=msg1.map_string_foreign_message)
+    self.assertEqual(42, msg2.map_string_foreign_message['test'].c)
+
   def testMergeFrom(self):
     msg = map_unittest_pb2.TestMap()
     msg.map_int32_int32[12] = 34
