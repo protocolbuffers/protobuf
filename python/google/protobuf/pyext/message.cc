@@ -1236,20 +1236,45 @@ int InitAttributes(CMessage* self, PyObject* args, PyObject* kwargs) {
       const FieldDescriptor* value_descriptor =
           descriptor->message_type()->FindFieldByName("value");
       if (value_descriptor->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
-        Py_ssize_t map_pos = 0;
-        PyObject* map_key;
-        PyObject* map_value;
-        while (PyDict_Next(value, &map_pos, &map_key, &map_value)) {
-          ScopedPyObjectPtr function_return;
-          function_return.reset(PyObject_GetItem(map.get(), map_key));
-          if (function_return.get() == NULL) {
+        if (PyDict_Check(value)) {
+          Py_ssize_t map_pos = 0;
+          PyObject* map_key;
+          PyObject* map_value;
+          while (PyDict_Next(value, &map_pos, &map_key, &map_value)) {
+            ScopedPyObjectPtr function_return;
+            function_return.reset(PyObject_GetItem(map.get(), map_key));
+            if (function_return.get() == NULL) {
+              return -1;
+            }
+            ScopedPyObjectPtr ok(PyObject_CallMethod(
+                function_return.get(), "MergeFrom", "O", map_value));
+            if (ok.get() == NULL) {
+              return -1;
+            }
+          }
+        } else if (PyObject_TypeCheck(value, MessageMapContainer_Type)) {
+          ScopedPyObjectPtr iter(PyObject_GetIter(value));
+          if (iter == NULL) {
+            PyErr_SetString(PyExc_TypeError, "Inexplicably non-iterable message map.");
             return -1;
           }
-          ScopedPyObjectPtr ok(PyObject_CallMethod(
-              function_return.get(), "MergeFrom", "O", map_value));
-          if (ok.get() == NULL) {
-            return -1;
+          ScopedPyObjectPtr next;
+          while ((next.reset(PyIter_Next(iter.get()))) != NULL) {
+            ScopedPyObjectPtr source_value(PyObject_GetItem(value, next.get()));
+            ScopedPyObjectPtr dest_value(PyObject_GetItem(map.get(), next.get()));
+            if (source_value.get() == NULL || dest_value.get() == NULL) {
+              return -1;
+            }
+            ScopedPyObjectPtr ok(PyObject_CallMethod(
+                dest_value.get(), "MergeFrom", "O", source_value.get()));
+            if (ok.get() == NULL) {
+              return -1;
+            }
           }
+        } else {
+          PyErr_Format(PyExc_TypeError, "Argument %s is not a dict or message map",
+                       PyString_AsString(name));
+          return -1;
         }
       } else {
         ScopedPyObjectPtr function_return;
