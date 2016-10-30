@@ -101,10 +101,11 @@ namespace Google.Protobuf.Collections
                 int length = input.ReadLength();
                 if (length > 0)
                 {
+                    EnsureSize(count + length);
                     int oldLimit = input.PushLimit(length);
                     while (!input.ReachedLimit)
                     {
-                        Add(reader(input));
+                        array[count++] = reader(input);
                     }
                     input.PopLimit(oldLimit);
                 }
