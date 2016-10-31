@@ -429,7 +429,7 @@ bool MaybeEmitDependency(const FileDescriptor* import,
     return true;
   } else {
     printer->Print(
-      "require '$name$'\n", "name", GetRequireName(import->name()));
+      "require_relative '$name$'\n", "name", GetRequireName(import->name()));
     return true;
   }
 }
