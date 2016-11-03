@@ -203,7 +203,11 @@ Atomic64 Release_Load(volatile const Atomic64* ptr);
 #if defined(GOOGLE_PROTOBUF_ARCH_IA32) || defined(GOOGLE_PROTOBUF_ARCH_X64)
 #include <google/protobuf/stubs/atomicops_internals_x86_gcc.h>
 #elif defined(GOOGLE_PROTOBUF_ARCH_ARM) && defined(__linux__)
+#if (((__GNUC__ == 4) && (__GNUC_MINOR__ >= 7)) || (__GNUC__ > 4))
+#include <google/protobuf/stubs/atomicops_internals_generic_gcc.h>
+#else
 #include <google/protobuf/stubs/atomicops_internals_arm_gcc.h>
+#endif
 #elif defined(GOOGLE_PROTOBUF_ARCH_AARCH64)
 #include <google/protobuf/stubs/atomicops_internals_arm64_gcc.h>
 #elif defined(GOOGLE_PROTOBUF_ARCH_ARM_QNX)
