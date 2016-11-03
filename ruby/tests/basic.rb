@@ -1189,7 +1189,7 @@ module BasicTest
     def test_respond_to
       msg = MapMessage.new
       assert msg.respond_to?(:map_string_int32)
-      assert_false msg.respond_to?(:map_string_int32)
+      assert_false msg.respond_to?(:bacon)
     end
   end
 end
