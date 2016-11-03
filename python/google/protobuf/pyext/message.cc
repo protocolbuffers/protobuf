@@ -1252,10 +1252,10 @@ int InitAttributes(CMessage* self, PyObject* args, PyObject* kwargs) {
               return -1;
             }
           }
-        } else if (PyObject_TypeCheck(value, MessageMapContainer_Type)) {
+        } else {
           ScopedPyObjectPtr iter(PyObject_GetIter(value));
           if (iter == NULL) {
-            PyErr_SetString(PyExc_TypeError, "Inexplicably non-iterable message map.");
+            PyErr_Format(PyExc_TypeError, "Argument %s is not iterable", PyString_AsString(name));
             return -1;
           }
           ScopedPyObjectPtr next;
@@ -1271,10 +1271,6 @@ int InitAttributes(CMessage* self, PyObject* args, PyObject* kwargs) {
               return -1;
             }
           }
-        } else {
-          PyErr_Format(PyExc_TypeError, "Argument %s is not a dict or message map",
-                       PyString_AsString(name));
-          return -1;
         }
       } else {
         ScopedPyObjectPtr function_return;
