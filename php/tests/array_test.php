@@ -65,6 +65,17 @@ class RepeatedFieldTest extends PHPUnit_Framework_TestCase
         $this->assertSame(3, $arr[6]);
         $arr [7]= MAX_INT32_STRING;
         $this->assertSame(MAX_INT32, $arr[7]);
+
+        // Test foreach.
+        $arr = new RepeatedField(GPBType::INT32);
+        for ($i = 0; $i < 3; $i++) {
+          $arr []= $i;
+        }
+        $i = 0;
+        foreach ($arr as $val) {
+          $this->assertSame($i++, $val);
+        }
+        $this->assertSame(3, $i);
     }
 
     /**

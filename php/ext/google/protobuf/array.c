@@ -54,6 +54,16 @@ static zend_function_entry repeated_field_methods[] = {
   PHP_ME(RepeatedField, offsetSet,    arginfo_offsetSet, ZEND_ACC_PUBLIC)
   PHP_ME(RepeatedField, offsetUnset,  arginfo_offsetGet, ZEND_ACC_PUBLIC)
   PHP_ME(RepeatedField, count,        arginfo_void,      ZEND_ACC_PUBLIC)
+  PHP_ME(RepeatedField, getIterator,  arginfo_void,      ZEND_ACC_PUBLIC)
+  ZEND_FE_END
+};
+
+static zend_function_entry repeated_field_iter_methods[] = {
+  PHP_ME(RepeatedFieldIter, rewind,      arginfo_void, ZEND_ACC_PUBLIC)
+  PHP_ME(RepeatedFieldIter, current,     arginfo_void, ZEND_ACC_PUBLIC)
+  PHP_ME(RepeatedFieldIter, key,         arginfo_void, ZEND_ACC_PUBLIC)
+  PHP_ME(RepeatedFieldIter, next,        arginfo_void, ZEND_ACC_PUBLIC)
+  PHP_ME(RepeatedFieldIter, valid,       arginfo_void, ZEND_ACC_PUBLIC)
   ZEND_FE_END
 };
 
@@ -70,11 +80,15 @@ static int repeated_field_has_dimension(zval *object, zval *offset TSRMLS_DC);
 static HashTable *repeated_field_get_gc(zval *object, zval ***table,
                                         int *n TSRMLS_DC);
 
+static zend_object_value repeated_field_iter_create(zend_class_entry *ce TSRMLS_DC);
+static void repeated_field_iter_free(void *object TSRMLS_DC);
+
 // -----------------------------------------------------------------------------
 // RepeatedField creation/desctruction
 // -----------------------------------------------------------------------------
 
 zend_class_entry* repeated_field_type;
+zend_class_entry* repeated_field_iter_type;
 zend_object_handlers* repeated_field_handlers;
 
 void repeated_field_init(TSRMLS_D) {
@@ -86,8 +100,8 @@ void repeated_field_init(TSRMLS_D) {
   repeated_field_type = zend_register_internal_class(&class_type TSRMLS_CC);
   repeated_field_type->create_object = repeated_field_create;
 
-  zend_class_implements(repeated_field_type TSRMLS_CC, 2, spl_ce_ArrayAccess,
-                        spl_ce_Countable);
+  zend_class_implements(repeated_field_type TSRMLS_CC, 3, spl_ce_ArrayAccess,
+                        zend_ce_aggregate, spl_ce_Countable);
 
   repeated_field_handlers = PEMALLOC(zend_object_handlers);
   memcpy(repeated_field_handlers, zend_get_std_object_handlers(),
@@ -385,4 +399,113 @@ PHP_METHOD(RepeatedField, count) {
   }
 
   RETURN_LONG(zend_hash_num_elements(HASH_OF(intern->array)));
+}
+
+/**
+ * Return the beginning iterator.
+ * This will also be called for: foreach($arr)
+ * @return object Beginning iterator.
+ */
+PHP_METHOD(RepeatedField, getIterator) {
+  zval *iter_php = NULL;
+  MAKE_STD_ZVAL(iter_php);
+  Z_TYPE_P(iter_php) = IS_OBJECT;
+  Z_OBJVAL_P(iter_php) = repeated_field_iter_type->create_object(
+      repeated_field_iter_type TSRMLS_CC);
+
+  RepeatedField *intern = zend_object_store_get_object(getThis() TSRMLS_CC);
+  RepeatedFieldIter *iter = zend_object_store_get_object(iter_php TSRMLS_CC);
+  iter->repeated_field = intern;
+  iter->position = 0;
+
+  RETURN_ZVAL(iter_php, 1, 1);
+}
+
+// -----------------------------------------------------------------------------
+// RepeatedFieldIter creation/desctruction
+// -----------------------------------------------------------------------------
+
+void repeated_field_iter_init(TSRMLS_D) {
+  zend_class_entry class_type;
+  const char* class_name = "Google\\Protobuf\\Internal\\RepeatedFieldIter";
+  INIT_CLASS_ENTRY_EX(class_type, class_name, strlen(class_name),
+                      repeated_field_iter_methods);
+
+  repeated_field_iter_type =
+      zend_register_internal_class(&class_type TSRMLS_CC);
+  repeated_field_iter_type->create_object = repeated_field_iter_create;
+
+  zend_class_implements(repeated_field_iter_type TSRMLS_CC, 1,
+                        zend_ce_iterator);
+}
+
+static zend_object_value repeated_field_iter_create(
+    zend_class_entry *ce TSRMLS_DC) {
+  zend_object_value retval = {0};
+  RepeatedFieldIter *intern;
+
+  intern = emalloc(sizeof(RepeatedFieldIter));
+  memset(intern, 0, sizeof(RepeatedFieldIter));
+
+  zend_object_std_init(&intern->std, ce TSRMLS_CC);
+  object_properties_init(&intern->std, ce);
+
+  intern->repeated_field = NULL;
+  intern->position = 0;
+
+  retval.handle = zend_objects_store_put(
+      intern, (zend_objects_store_dtor_t)zend_objects_destroy_object,
+      (zend_objects_free_object_storage_t)repeated_field_iter_free,
+      NULL TSRMLS_CC);
+  retval.handlers = zend_get_std_object_handlers();
+
+  return retval;
+}
+
+static void repeated_field_iter_free(void *object TSRMLS_DC) {
+  RepeatedFieldIter *intern = object;
+  zend_object_std_dtor(&intern->std TSRMLS_CC);
+  efree(object);
+}
+
+// -----------------------------------------------------------------------------
+// PHP RepeatedFieldIter Methods
+// -----------------------------------------------------------------------------
+
+PHP_METHOD(RepeatedFieldIter, rewind) {
+  RepeatedFieldIter *intern = zend_object_store_get_object(getThis() TSRMLS_CC);
+  intern->position = 0;
+}
+
+PHP_METHOD(RepeatedFieldIter, current) {
+  RepeatedFieldIter *intern = zend_object_store_get_object(getThis() TSRMLS_CC);
+  RepeatedField *repeated_field = intern->repeated_field;
+
+  long index;
+  void *memory;
+
+  HashTable *table = HASH_OF(repeated_field->array);
+
+  if (zend_hash_index_find(table, intern->position, (void **)&memory) ==
+      FAILURE) {
+    zend_error(E_USER_ERROR, "Element at %ld doesn't exist.\n", index);
+    return;
+  }
+  native_slot_get(repeated_field->type, memory, return_value_ptr TSRMLS_CC);
+}
+
+PHP_METHOD(RepeatedFieldIter, key) {
+  RepeatedFieldIter *intern = zend_object_store_get_object(getThis() TSRMLS_CC);
+  RETURN_LONG(intern->position);
+}
+
+PHP_METHOD(RepeatedFieldIter, next) {
+  RepeatedFieldIter *intern = zend_object_store_get_object(getThis() TSRMLS_CC);
+  ++intern->position;
+}
+
+PHP_METHOD(RepeatedFieldIter, valid) {
+  RepeatedFieldIter *intern = zend_object_store_get_object(getThis() TSRMLS_CC);
+  RETURN_BOOL(zend_hash_num_elements(HASH_OF(intern->repeated_field->array)) >
+              intern->position);
 }
