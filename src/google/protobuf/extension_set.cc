@@ -76,7 +76,7 @@ inline bool is_packable(WireFormatLite::WireType type) {
 }
 
 // Registry stuff.
-typedef hash_map<pair<const MessageLite*, int>,
+typedef hash_map<std::pair<const MessageLite*, int>,
                  ExtensionInfo> ExtensionRegistry;
 ExtensionRegistry* registry_ = NULL;
 GOOGLE_PROTOBUF_DECLARE_ONCE(registry_init_);
@@ -1371,7 +1371,7 @@ size_t ExtensionSet::ByteSize() const {
 bool ExtensionSet::MaybeNewExtension(int number,
                                      const FieldDescriptor* descriptor,
                                      Extension** result) {
-  pair<ExtensionMap::iterator, bool> insert_result =
+  std::pair<ExtensionMap::iterator, bool> insert_result =
       extensions_.insert(std::make_pair(number, Extension()));
   *result = &insert_result.first->second;
   (*result)->descriptor = descriptor;

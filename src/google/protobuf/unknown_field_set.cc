@@ -83,7 +83,7 @@ void UnknownFieldSet::ClearFallback() {
 void UnknownFieldSet::InternalMergeFrom(const UnknownFieldSet& other) {
   int other_field_count = other.field_count();
   if (other_field_count > 0) {
-    fields_ = new vector<UnknownField>();
+    fields_ = new std::vector<UnknownField>();
     for (int i = 0; i < other_field_count; i++) {
       fields_->push_back((*other.fields_)[i]);
       fields_->back().DeepCopy((*other.fields_)[i]);
@@ -94,7 +94,7 @@ void UnknownFieldSet::InternalMergeFrom(const UnknownFieldSet& other) {
 void UnknownFieldSet::MergeFrom(const UnknownFieldSet& other) {
   int other_field_count = other.field_count();
   if (other_field_count > 0) {
-    if (fields_ == NULL) fields_ = new vector<UnknownField>();
+    if (fields_ == NULL) fields_ = new std::vector<UnknownField>();
     for (int i = 0; i < other_field_count; i++) {
       fields_->push_back((*other.fields_)[i]);
       fields_->back().DeepCopy((*other.fields_)[i]);
@@ -107,7 +107,7 @@ void UnknownFieldSet::MergeFrom(const UnknownFieldSet& other) {
 void UnknownFieldSet::MergeFromAndDestroy(UnknownFieldSet* other) {
   int other_field_count = other->field_count();
   if (other_field_count > 0) {
-    if (fields_ == NULL) fields_ = new vector<UnknownField>();
+    if (fields_ == NULL) fields_ = new std::vector<UnknownField>();
     for (int i = 0; i < other_field_count; i++) {
       fields_->push_back((*other->fields_)[i]);
       (*other->fields_)[i].Reset();
@@ -155,7 +155,7 @@ void UnknownFieldSet::AddVarint(int number, uint64 value) {
   field.number_ = number;
   field.SetType(UnknownField::TYPE_VARINT);
   field.varint_ = value;
-  if (fields_ == NULL) fields_ = new vector<UnknownField>();
+  if (fields_ == NULL) fields_ = new std::vector<UnknownField>();
   fields_->push_back(field);
 }
 
@@ -164,7 +164,7 @@ void UnknownFieldSet::AddFixed32(int number, uint32 value) {
   field.number_ = number;
   field.SetType(UnknownField::TYPE_FIXED32);
   field.fixed32_ = value;
-  if (fields_ == NULL) fields_ = new vector<UnknownField>();
+  if (fields_ == NULL) fields_ = new std::vector<UnknownField>();
   fields_->push_back(field);
 }
 
@@ -173,7 +173,7 @@ void UnknownFieldSet::AddFixed64(int number, uint64 value) {
   field.number_ = number;
   field.SetType(UnknownField::TYPE_FIXED64);
   field.fixed64_ = value;
-  if (fields_ == NULL) fields_ = new vector<UnknownField>();
+  if (fields_ == NULL) fields_ = new std::vector<UnknownField>();
   fields_->push_back(field);
 }
 
@@ -182,7 +182,7 @@ string* UnknownFieldSet::AddLengthDelimited(int number) {
   field.number_ = number;
   field.SetType(UnknownField::TYPE_LENGTH_DELIMITED);
   field.length_delimited_.string_value_ = new string;
-  if (fields_ == NULL) fields_ = new vector<UnknownField>();
+  if (fields_ == NULL) fields_ = new std::vector<UnknownField>();
   fields_->push_back(field);
   return field.length_delimited_.string_value_;
 }
@@ -193,13 +193,13 @@ UnknownFieldSet* UnknownFieldSet::AddGroup(int number) {
   field.number_ = number;
   field.SetType(UnknownField::TYPE_GROUP);
   field.group_ = new UnknownFieldSet;
-  if (fields_ == NULL) fields_ = new vector<UnknownField>();
+  if (fields_ == NULL) fields_ = new std::vector<UnknownField>();
   fields_->push_back(field);
   return field.group_;
 }
 
 void UnknownFieldSet::AddField(const UnknownField& field) {
-  if (fields_ == NULL) fields_ = new vector<UnknownField>();
+  if (fields_ == NULL) fields_ = new std::vector<UnknownField>();
   fields_->push_back(field);
   fields_->back().DeepCopy(field);
 }

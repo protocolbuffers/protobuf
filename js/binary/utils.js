@@ -618,6 +618,16 @@ jspb.utils.decimalStringToHash64 = function(dec) {
 
 
 /**
+ * Converts a signed or unsigned decimal string into two 32-bit halves, and
+ * stores them in the temp variables listed above.
+ * @param {string} value The decimal string to convert.
+ */
+jspb.utils.splitDecimalString = function(value) {
+  jspb.utils.splitHash64(jspb.utils.decimalStringToHash64(value));
+};
+
+
+/**
  * Converts an 8-character hash string into its hexadecimal representation.
  * @param {string} hash
  * @return {string}

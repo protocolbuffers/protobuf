@@ -39,7 +39,6 @@ import com.google.protobuf.Internal.IntList;
 import com.google.protobuf.Internal.LongList;
 import com.google.protobuf.Internal.ProtobufList;
 import com.google.protobuf.WireFormat.FieldType;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectStreamException;
@@ -479,7 +478,6 @@ public abstract class GeneratedMessageLite<
         CodedInputStream input,
         ExtensionRegistryLite extensionRegistry,
         int tag) throws IOException {
-      int wireType = WireFormat.getTagWireType(tag);
       int fieldNumber = WireFormat.getTagFieldNumber(tag);
 
       // TODO(dweis): How much bytecode would be saved by not requiring the generated code to
@@ -487,6 +485,17 @@ public abstract class GeneratedMessageLite<
       GeneratedExtension<MessageType, ?> extension = extensionRegistry.findLiteExtensionByNumber(
           defaultInstance, fieldNumber);
 
+      return parseExtension(input, extensionRegistry, extension, tag, fieldNumber);
+    }
+
+    private boolean parseExtension(
+        CodedInputStream input,
+        ExtensionRegistryLite extensionRegistry,
+        GeneratedExtension<?, ?> extension,
+        int tag,
+        int fieldNumber)
+        throws IOException {
+      int wireType = WireFormat.getTagWireType(tag);
       boolean unknown = false;
       boolean packed = false;
       if (extension == null) {
@@ -508,7 +517,7 @@ public abstract class GeneratedMessageLite<
       if (unknown) {  // Unknown field or wrong wire type.  Skip.
         return parseUnknownField(tag, input);
       }
-
+      
       if (packed) {
         int length = input.readRawVarint32();
         int limit = input.pushLimit(length);
@@ -587,8 +596,146 @@ public abstract class GeneratedMessageLite<
                               extension.singularToFieldSetType(value));
         }
       }
-
       return true;
+    }
+    
+    /**
+     * Parse an unknown field or an extension. For use by generated code only.
+     *
+     * <p>For use by generated code only.
+     *
+     * @return {@code true} unless the tag is an end-group tag.
+     */
+    protected <MessageType extends MessageLite> boolean parseUnknownFieldAsMessageSet(
+        MessageType defaultInstance,
+        CodedInputStream input,
+        ExtensionRegistryLite extensionRegistry,
+        int tag)
+        throws IOException {
+
+      if (tag == WireFormat.MESSAGE_SET_ITEM_TAG) {
+        mergeMessageSetExtensionFromCodedStream(defaultInstance, input, extensionRegistry);
+        return true;
+      }
+
+      // TODO(dweis): Do we really want to support non message set wire format in message sets?
+      // Full runtime does... So we do for now.
+      int wireType = WireFormat.getTagWireType(tag);
+      if (wireType == WireFormat.WIRETYPE_LENGTH_DELIMITED) {
+        return parseUnknownField(defaultInstance, input, extensionRegistry, tag);
+      } else {
+        // TODO(dweis): Should we throw on invalid input? Full runtime does not...
+        return input.skipField(tag);
+      }
+    }
+
+    /**
+     * Merges the message set from the input stream; requires message set wire format.
+     * 
+     * @param defaultInstance the default instance of the containing message we are parsing in
+     * @param input the stream to parse from
+     * @param extensionRegistry the registry to use when parsing
+     */
+    private <MessageType extends MessageLite> void mergeMessageSetExtensionFromCodedStream(
+        MessageType defaultInstance,
+        CodedInputStream input,
+        ExtensionRegistryLite extensionRegistry)
+        throws IOException {
+      // The wire format for MessageSet is:
+      //   message MessageSet {
+      //     repeated group Item = 1 {
+      //       required int32 typeId = 2;
+      //       required bytes message = 3;
+      //     }
+      //   }
+      // "typeId" is the extension's field number.  The extension can only be
+      // a message type, where "message" contains the encoded bytes of that
+      // message.
+      //
+      // In practice, we will probably never see a MessageSet item in which
+      // the message appears before the type ID, or where either field does not
+      // appear exactly once.  However, in theory such cases are valid, so we
+      // should be prepared to accept them.
+
+      int typeId = 0;
+      ByteString rawBytes = null; // If we encounter "message" before "typeId"
+      GeneratedExtension<?, ?> extension = null;
+
+      // Read bytes from input, if we get it's type first then parse it eagerly,
+      // otherwise we store the raw bytes in a local variable.
+      while (true) {
+        final int tag = input.readTag();
+        if (tag == 0) {
+          break;
+        }
+
+        if (tag == WireFormat.MESSAGE_SET_TYPE_ID_TAG) {
+          typeId = input.readUInt32();
+          if (typeId != 0) {
+            extension = extensionRegistry.findLiteExtensionByNumber(defaultInstance, typeId);
+          }
+
+        } else if (tag == WireFormat.MESSAGE_SET_MESSAGE_TAG) {
+          if (typeId != 0) {
+            if (extension != null) {
+              // We already know the type, so we can parse directly from the
+              // input with no copying.  Hooray!
+              eagerlyMergeMessageSetExtension(input, extension, extensionRegistry, typeId);
+              rawBytes = null;
+              continue;
+            }
+          }
+          // We haven't seen a type ID yet or we want parse message lazily.
+          rawBytes = input.readBytes();
+
+        } else { // Unknown tag. Skip it.
+          if (!input.skipField(tag)) {
+            break; // End of group
+          }
+        }
+      }
+      input.checkLastTagWas(WireFormat.MESSAGE_SET_ITEM_END_TAG);
+
+      // Process the raw bytes.
+      if (rawBytes != null && typeId != 0) { // Zero is not a valid type ID.
+        if (extension != null) { // We known the type
+          mergeMessageSetExtensionFromBytes(rawBytes, extensionRegistry, extension);
+        } else { // We don't know how to parse this. Ignore it.
+          if (rawBytes != null) {
+            mergeLengthDelimitedField(typeId, rawBytes);
+          }
+        }
+      }
+    }
+
+    private void eagerlyMergeMessageSetExtension(
+        CodedInputStream input,
+        GeneratedExtension<?, ?> extension,
+        ExtensionRegistryLite extensionRegistry,
+        int typeId)
+        throws IOException {
+      int fieldNumber = typeId;
+      int tag = WireFormat.makeTag(typeId, WireFormat.WIRETYPE_LENGTH_DELIMITED);
+      parseExtension(input, extensionRegistry, extension, tag, fieldNumber);
+    }
+
+    private void mergeMessageSetExtensionFromBytes(
+        ByteString rawBytes,
+        ExtensionRegistryLite extensionRegistry,
+        GeneratedExtension<?, ?> extension)
+        throws IOException {
+      MessageLite.Builder subBuilder = null;
+      MessageLite existingValue = (MessageLite) extensions.getField(extension.descriptor);
+      if (existingValue != null) {
+        subBuilder = existingValue.toBuilder();
+      }
+      if (subBuilder == null) {
+        subBuilder = extension.getMessageDefaultInstance().newBuilderForType();
+      }
+      rawBytes.newCodedInput().readMessage(subBuilder, extensionRegistry);
+      MessageLite value = subBuilder.build();
+
+      extensions.setField(extension.descriptor, extension.singularToFieldSetType(value));
     }
 
     private void verifyExtensionContainingType(
@@ -805,14 +952,6 @@ public abstract class GeneratedMessageLite<
     public final <Type> Type getExtension(
         final ExtensionLite<MessageType, List<Type>> extension, final int index) {
       return instance.getExtension(extension, index);
-    }
-
-    // This is implemented here only to work around an apparent bug in the
-    // Java compiler and/or build system.  See bug #1898463.  The mere presence
-    // of this dummy clone() implementation makes it go away.
-    @Override
-    public BuilderType clone() {
-      return super.clone();
     }
 
     /** Set the value of an extension. */

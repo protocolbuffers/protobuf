@@ -622,7 +622,7 @@ class LIBPROTOBUF_EXPORT CodedInputStream {
   // Return the size of the buffer.
   int BufferSize() const;
 
-  static const int kDefaultTotalBytesLimit = 64 << 20;  // 64MB
+  static const int kDefaultTotalBytesLimit = INT_MAX;
 
   static const int kDefaultTotalBytesWarningThreshold = 32 << 20;  // 32MB
 
@@ -842,10 +842,10 @@ class LIBPROTOBUF_EXPORT CodedOutputStream {
     serialization_deterministic_override_ = value;
   }
   // See above.  Also, note that users of this CodedOutputStream may need to
-  // call IsSerializationDeterminstic() to serialize in the intended way.  This
+  // call IsSerializationDeterministic() to serialize in the intended way.  This
   // CodedOutputStream cannot enforce a desire for deterministic serialization
   // by itself.
-  bool IsSerializationDeterminstic() const {
+  bool IsSerializationDeterministic() const {
     return serialization_deterministic_is_overridden_ ?
         serialization_deterministic_override_ :
         default_serialization_deterministic_;

@@ -519,7 +519,7 @@ class LIBPROTOBUF_EXPORT Reflection {
   // will only be present when the new unknown-enum-value semantics are enabled
   // for a message.)
   virtual int GetEnumValue(
-      const Message& message, const FieldDescriptor* field) const;
+      const Message& message, const FieldDescriptor* field) const = 0;
 
   // See MutableMessage() for the meaning of the "factory" parameter.
   virtual const Message& GetMessage(const Message& message,
@@ -575,7 +575,7 @@ class LIBPROTOBUF_EXPORT Reflection {
   // messages with new unknown-enum-value semantics.
   virtual void SetEnumValue(Message* message,
                             const FieldDescriptor* field,
-                            int value) const;
+                            int value) const = 0;
 
   // Get a mutable pointer to a field with a message type.  If a MessageFactory
   // is provided, it will be used to construct instances of the sub-message;
@@ -646,7 +646,7 @@ class LIBPROTOBUF_EXPORT Reflection {
   // for a message.)
   virtual int GetRepeatedEnumValue(
       const Message& message,
-      const FieldDescriptor* field, int index) const;
+      const FieldDescriptor* field, int index) const = 0;
   virtual const Message& GetRepeatedMessage(
       const Message& message,
       const FieldDescriptor* field, int index) const = 0;
@@ -693,7 +693,7 @@ class LIBPROTOBUF_EXPORT Reflection {
   // messages with new unknown-enum-value semantics.
   virtual void SetRepeatedEnumValue(Message* message,
                                     const FieldDescriptor* field, int index,
-                                    int value) const;
+                                    int value) const = 0;
   // Get a mutable pointer to an element of a repeated field with a message
   // type.
   virtual Message* MutableRepeatedMessage(
@@ -729,7 +729,7 @@ class LIBPROTOBUF_EXPORT Reflection {
   // messages with new unknown-enum-value semantics.
   virtual void AddEnumValue(Message* message,
                             const FieldDescriptor* field,
-                            int value) const;
+                            int value) const = 0;
   // See MutableMessage() for comments on the "factory" parameter.
   virtual Message* AddMessage(Message* message,
                               const FieldDescriptor* field,

@@ -1230,7 +1230,7 @@ def _AddMergeFromMethod(cls):
     if not isinstance(msg, cls):
       raise TypeError(
           "Parameter to MergeFrom() must be instance of same class: "
-          "expected %s got %s." % (cls.__name__, type(msg).__name__))
+          'expected %s got %s.' % (cls.__name__, msg.__class__.__name__))
 
     assert msg is not self
     self._Modified()

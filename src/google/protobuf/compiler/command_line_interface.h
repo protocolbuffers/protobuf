@@ -56,9 +56,7 @@ class FileDescriptorProto;   // descriptor.pb.h
 template<typename T> class RepeatedPtrField;  // repeated_field.h
 
 }  // namespace protobuf
-}  // namespace google
 
-namespace google {
 namespace protobuf {
 namespace compiler {
 
@@ -240,24 +238,24 @@ class LIBPROTOC_EXPORT CommandLineInterface {
 
   // Generate the given output file from the given input.
   struct OutputDirective;  // see below
-  bool GenerateOutput(const vector<const FileDescriptor*>& parsed_files,
+  bool GenerateOutput(const std::vector<const FileDescriptor*>& parsed_files,
                       const OutputDirective& output_directive,
                       GeneratorContext* generator_context);
-  bool GeneratePluginOutput(const vector<const FileDescriptor*>& parsed_files,
-                            const string& plugin_name,
-                            const string& parameter,
-                            GeneratorContext* generator_context,
-                            string* error);
+  bool GeneratePluginOutput(
+      const std::vector<const FileDescriptor*>& parsed_files,
+      const string& plugin_name, const string& parameter,
+      GeneratorContext* generator_context, string* error);
 
   // Implements --encode and --decode.
   bool EncodeOrDecode(const DescriptorPool* pool);
 
   // Implements the --descriptor_set_out option.
-  bool WriteDescriptorSet(const vector<const FileDescriptor*> parsed_files);
+  bool WriteDescriptorSet(
+      const std::vector<const FileDescriptor*> parsed_files);
 
   // Implements the --dependency_out option
   bool GenerateDependencyManifestFile(
-      const vector<const FileDescriptor*>& parsed_files,
+      const std::vector<const FileDescriptor*>& parsed_files,
       const GeneratorContextMap& output_directories,
       DiskSourceTree* source_tree);
 
@@ -274,7 +272,7 @@ class LIBPROTOC_EXPORT CommandLineInterface {
       const FileDescriptor* file,
       bool include_json_name,
       bool include_source_code_info,
-      set<const FileDescriptor*>* already_seen,
+      std::set<const FileDescriptor*>* already_seen,
       RepeatedPtrField<FileDescriptorProto>* output);
 
   // Implements the --print_free_field_numbers. This function prints free field
@@ -308,14 +306,14 @@ class LIBPROTOC_EXPORT CommandLineInterface {
     CodeGenerator* generator;
     string help_text;
   };
-  typedef map<string, GeneratorInfo> GeneratorMap;
+  typedef std::map<string, GeneratorInfo> GeneratorMap;
   GeneratorMap generators_by_flag_name_;
   GeneratorMap generators_by_option_name_;
   // A map from generator names to the parameters specified using the option
   // flag. For example, if the user invokes the compiler with:
   //   protoc --foo_out=outputdir --foo_opt=enable_bar ...
   // Then there will be an entry ("--foo_out", "enable_bar") in this map.
-  map<string, string> generator_parameters_;
+  std::map<string, string> generator_parameters_;
 
   // See AllowPlugins().  If this is empty, plugins aren't allowed.
   string plugin_prefix_;
@@ -323,7 +321,7 @@ class LIBPROTOC_EXPORT CommandLineInterface {
   // Maps specific plugin names to files.  When executing a plugin, this map
   // is searched first to find the plugin executable.  If not found here, the
   // PATH (or other OS-specific search strategy) is searched.
-  map<string, string> plugins_;
+  std::map<string, string> plugins_;
 
   // Stuff parsed from command line.
   enum Mode {
@@ -349,12 +347,13 @@ class LIBPROTOC_EXPORT CommandLineInterface {
 
   ErrorFormat error_format_;
 
-  vector<pair<string, string> > proto_path_;  // Search path for proto files.
-  vector<string> input_files_;                // Names of the input proto files.
+  std::vector<std::pair<string, string> >
+      proto_path_;                   // Search path for proto files.
+  std::vector<string> input_files_;  // Names of the input proto files.
 
   // Names of proto files which are allowed to be imported. Used by build
   // systems to enforce depend-on-what-you-import.
-  set<string> direct_dependencies_;
+  std::set<string> direct_dependencies_;
   bool direct_dependencies_explicitly_set_;
 
   // output_directives_ lists all the files we are supposed to output and what
@@ -365,7 +364,7 @@ class LIBPROTOC_EXPORT CommandLineInterface {
     string parameter;
     string output_location;
   };
-  vector<OutputDirective> output_directives_;
+  std::vector<OutputDirective> output_directives_;
 
   // When using --encode or --decode, this names the type we are encoding or
   // decoding.  (Empty string indicates --decode_raw.)

@@ -550,11 +550,11 @@ jspb.Message.serializeBinaryExtensions = function(proto, writer, extensions,
 jspb.Message.readBinaryExtension = function(msg, reader, extensions,
     getExtensionFn, setExtensionFn) {
   var binaryFieldInfo = extensions[reader.getFieldNumber()];
-  var fieldInfo = binaryFieldInfo.fieldInfo;
   if (!binaryFieldInfo) {
     reader.skipField();
     return;
   }
+  var fieldInfo = binaryFieldInfo.fieldInfo;
   if (!binaryFieldInfo.binaryReaderFn) {
     throw new Error('Deserializing extension whose generated code does not ' +
                     'support binary format');
@@ -972,7 +972,8 @@ jspb.Message.wrapRepeatedField_ = function(msg, ctor, fieldNumber) {
  * Sets a proto field and syncs it to the backing array.
  * @param {!jspb.Message} msg A jspb proto.
  * @param {number} fieldNumber The field number.
- * @param {jspb.Message|undefined} value A new value for this proto field.
+ * @param {?jspb.Message|?jspb.Map|undefined} value A new value for this proto
+ * field.
  * @protected
  */
 jspb.Message.setWrapperField = function(msg, fieldNumber, value) {

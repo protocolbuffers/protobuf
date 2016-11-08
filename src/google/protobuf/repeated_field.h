@@ -61,8 +61,9 @@
 #include <google/protobuf/generated_message_util.h>
 #include <google/protobuf/message_lite.h>
 
-namespace google {
 
+// Forward-declare these so that we can make them friends.
+namespace google {
 namespace upb {
 namespace google_opensource {
 class GMR_Handlers;
@@ -104,7 +105,7 @@ inline int CalculateReserve(Iter begin, Iter end) {
 // not ever use a RepeatedField directly; they will use the get-by-index,
 // set-by-index, and add accessors that are generated for all repeated fields.
 template <typename Element>
-class RepeatedField {
+class RepeatedField PROTOBUF_FINAL {
  public:
   RepeatedField();
   explicit RepeatedField(Arena* arena);
@@ -138,7 +139,6 @@ class RepeatedField {
 
   void Clear();
   void MergeFrom(const RepeatedField& other);
-  void UnsafeMergeFrom(const RepeatedField& other);
   void CopyFrom(const RepeatedField& other);
 
   // Reserve space to expand the field to at least the given size.  If the
@@ -311,7 +311,7 @@ template <typename It, typename VoidPtr> class RepeatedPtrOverPtrsIterator;
 
 namespace internal {
 
-// This is a helper template to copy an array of elements effeciently when they
+// This is a helper template to copy an array of elements efficiently when they
 // have a trivial copy constructor, and correctly otherwise. This really
 // shouldn't be necessary, but our compiler doesn't optimize std::copy very
 // effectively.
@@ -733,7 +733,7 @@ class StringTypeHandler : public StringTypeHandlerBase {
 // RepeatedPtrField is like RepeatedField, but used for repeated strings or
 // Messages.
 template <typename Element>
-class RepeatedPtrField : public internal::RepeatedPtrFieldBase {
+class RepeatedPtrField PROTOBUF_FINAL : public internal::RepeatedPtrFieldBase {
  public:
   RepeatedPtrField();
   explicit RepeatedPtrField(::google::protobuf::Arena* arena);
@@ -766,7 +766,6 @@ class RepeatedPtrField : public internal::RepeatedPtrFieldBase {
 
   void Clear();
   void MergeFrom(const RepeatedPtrField& other);
-  void UnsafeMergeFrom(const RepeatedPtrField& other) { MergeFrom(other); }
   void CopyFrom(const RepeatedPtrField& other);
 
   // Reserve space to expand the field to at least the given size.  This only
@@ -1011,7 +1010,12 @@ inline RepeatedField<Element>::RepeatedField(const RepeatedField& other)
   : current_size_(0),
     total_size_(0),
     rep_(NULL) {
-  CopyFrom(other);
+  if (other.current_size_ != 0) {
+    Reserve(other.current_size_);
+    CopyArray(rep_->elements,
+              other.rep_->elements, other.current_size_);
+    current_size_ = other.current_size_;
+  }
 }
 
 template <typename Element>
@@ -1152,19 +1156,14 @@ inline void RepeatedField<Element>::Clear() {
 }
 
 template <typename Element>
-inline void RepeatedField<Element>::UnsafeMergeFrom(const RepeatedField& other) {
+inline void RepeatedField<Element>::MergeFrom(const RepeatedField& other) {
+  GOOGLE_DCHECK_NE(&other, this);
   if (other.current_size_ != 0) {
     Reserve(current_size_ + other.current_size_);
     CopyArray(rep_->elements + current_size_,
               other.rep_->elements, other.current_size_);
     current_size_ += other.current_size_;
   }
-}
-
-template <typename Element>
-inline void RepeatedField<Element>::MergeFrom(const RepeatedField& other) {
-  GOOGLE_CHECK_NE(&other, this);
-  UnsafeMergeFrom(other);
 }
 
 template <typename Element>
@@ -1806,7 +1805,7 @@ template <typename Element>
 inline RepeatedPtrField<Element>::RepeatedPtrField(
     const RepeatedPtrField& other)
   : RepeatedPtrFieldBase() {
-  CopyFrom(other);
+  MergeFrom(other);
 }
 
 template <typename Element>
