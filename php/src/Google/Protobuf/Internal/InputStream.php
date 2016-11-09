@@ -34,6 +34,24 @@ namespace Google\Protobuf\Internal;
 
 use Google\Protobuf\Internal\Uint64;
 
+function combineInt32ToInt64($high, $low)
+{
+    $isNeg = $high < 0;
+    if ($isNeg) {
+        $high = ~$high;
+        $low = ~$low;
+        $low++;
+        if (!$low) {
+            $high++;
+        }
+    }
+    $result = bcadd(bcmul($high, 4294967296), $low);
+    if ($isNeg) {
+      $result = bcsub(0, $result);
+    }
+    return $result;
+}
+
 class InputStream
 {
 
@@ -116,11 +134,23 @@ class InputStream
         if (!$this->readVarint64($var)) {
             return false;
         }
-        $var = $var->toInteger() & 0xFFFFFFFF;
-        // Convert large uint32 to int32.
-        if (PHP_INT_SIZE === 8 && ($var > 0x7FFFFFFF)) {
-            $var = $var | (0xFFFFFFFF << 32);
+
+        if (PHP_INT_SIZE == 4) {
+            $var = bcmod($var, 4294967296);
+        } else {
+            $var &= 0xFFFFFFFF;
         }
+
+        // Convert large uint32 to int32.
+        if ($var > 0x7FFFFFFF) {
+            if (PHP_INT_SIZE === 8) {
+                $var = $var | (0xFFFFFFFF << 32);
+            } else {
+                $var = bcsub($var, 4294967296);
+            }
+        }
+
+        $var = intval($var);
         return true;
     }
 
@@ -130,7 +160,8 @@ class InputStream
      */
     public function readVarint64(&$var)
     {
-        $result = new Uint64(0);
+        $high = 0;
+        $low = 0;
         $count = 0;
         $b = 0;
 
@@ -142,12 +173,27 @@ class InputStream
                 return false;
             }
             $b = ord($this->buffer[$this->current]);
-            $result->bitOr((new Uint64($b & 0x7F))->leftShift(7 * $count));
+            $bits = 7 * $count;
+            if ($bits >= 32) {
+                $high |= (($b & 0x7F) << ($bits - 32));
+            } else if ($bits > 25){
+                $high_bits = $bits - 25;
+                $low = ($low | (($b & 0x7F) << $bits)) & (int) 0xFFFFFFFF;
+                $high = $b & ((0x1 << $high_bits) -1);
+            } else {
+                $low |= (($b & 0x7F) << $bits);
+            }
+
             $this->advance(1);
             $count += 1;
         } while ($b & 0x80);
 
-        $var = $result;
+        if (PHP_INT_SIZE == 4) {
+            $var = combineInt32ToInt64($high, $low);
+        } else {
+            $var = ($high & 0xFFFFFFFF) << 32 |
+                   ($low & 0xFFFFFFFF);
+        }
         return true;
     }
 
@@ -161,7 +207,7 @@ class InputStream
         if (!$this->readVarint64($var)) {
             return false;
         }
-        $var = $var->toInteger();
+        $var = (int)$var;
         return true;
     }
 
@@ -197,7 +243,11 @@ class InputStream
             return false;
         }
         $high = unpack('V', $data)[1];
-        $var = Uint64::newValue($high, $low);
+        if (PHP_INT_SIZE == 4) {
+            $var = combineInt32ToInt64($high, $low);
+        } else {
+            $var = ($high << 32) | $low;
+        }
         return true;
     }
 

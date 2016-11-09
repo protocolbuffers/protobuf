@@ -144,14 +144,14 @@ class LIBPROTOC_EXPORT CommandLineInterface {
   //   plugin [--out=OUTDIR] [--parameter=PARAMETER] PROTO_FILES < DESCRIPTORS
   // --out indicates the output directory (as passed to the --foo_out
   // parameter); if omitted, the current directory should be used.  --parameter
-  // gives the generator parameter, if any was provided.  The PROTO_FILES list
-  // the .proto files which were given on the compiler command-line; these are
-  // the files for which the plugin is expected to generate output code.
-  // Finally, DESCRIPTORS is an encoded FileDescriptorSet (as defined in
-  // descriptor.proto).  This is piped to the plugin's stdin.  The set will
-  // include descriptors for all the files listed in PROTO_FILES as well as
-  // all files that they import.  The plugin MUST NOT attempt to read the
-  // PROTO_FILES directly -- it must use the FileDescriptorSet.
+  // gives the generator parameter, if any was provided (see below).  The
+  // PROTO_FILES list the .proto files which were given on the compiler
+  // command-line; these are the files for which the plugin is expected to
+  // generate output code.  Finally, DESCRIPTORS is an encoded FileDescriptorSet
+  // (as defined in descriptor.proto).  This is piped to the plugin's stdin.
+  // The set will include descriptors for all the files listed in PROTO_FILES as
+  // well as all files that they import.  The plugin MUST NOT attempt to read
+  // the PROTO_FILES directly -- it must use the FileDescriptorSet.
   //
   // The plugin should generate whatever files are necessary, as code generators
   // normally do.  It should write the names of all files it generates to
@@ -159,6 +159,13 @@ class LIBPROTOC_EXPORT CommandLineInterface {
   // names or relative to the current directory.  If any errors occur, error
   // messages should be written to stderr.  If an error is fatal, the plugin
   // should exit with a non-zero exit code.
+  //
+  // Plugins can have generator parameters similar to normal built-in
+  // generators. Extra generator parameters can be passed in via a matching
+  // "_opt" parameter. For example:
+  //   protoc --plug_out=enable_bar:outdir --plug_opt=enable_baz
+  // This will pass "enable_bar,enable_baz" as the parameter to the plugin.
+  //
   void AllowPlugins(const string& exe_name_prefix);
 
   // Run the Protocol Compiler with the given command-line parameters.
@@ -314,6 +321,8 @@ class LIBPROTOC_EXPORT CommandLineInterface {
   //   protoc --foo_out=outputdir --foo_opt=enable_bar ...
   // Then there will be an entry ("--foo_out", "enable_bar") in this map.
   std::map<string, string> generator_parameters_;
+  // Similar to generator_parameters_, but stores the parameters for plugins.
+  std::map<string, string> plugin_parameters_;
 
   // See AllowPlugins().  If this is empty, plugins aren't allowed.
   string plugin_prefix_;

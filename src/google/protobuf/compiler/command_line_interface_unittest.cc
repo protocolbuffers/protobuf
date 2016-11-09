@@ -653,6 +653,44 @@ TEST_F(CommandLineInterfaceTest, ExtraGeneratorParameters) {
       "test_generator", "baz,foo1,foo2,foo3", "foo.proto", "Foo", "b");
 }
 
+TEST_F(CommandLineInterfaceTest, ExtraPluginParameters) {
+  // Test that generator parameters specified with the option flag are
+  // correctly passed to the code generator.
+
+  CreateTempFile("foo.proto",
+    "syntax = \"proto2\";\n"
+    "message Foo {}\n");
+  // Create the "a" and "b" sub-directories.
+  CreateTempDir("a");
+  CreateTempDir("b");
+
+  Run("protocol_compiler "
+      "--plug_opt=foo1 "
+      "--plug_out=bar:$tmpdir/a "
+      "--plug_opt=foo2 "
+      "--plug_out=baz:$tmpdir/b "
+      "--plug_opt=foo3 "
+      "--proto_path=$tmpdir foo.proto");
+
+  ExpectNoErrors();
+  ExpectGenerated(
+      "test_plugin", "bar,foo1,foo2,foo3", "foo.proto", "Foo", "a");
+  ExpectGenerated(
+      "test_plugin", "baz,foo1,foo2,foo3", "foo.proto", "Foo", "b");
+}
+
+TEST_F(CommandLineInterfaceTest, UnrecognizedExtraParameters) {
+  CreateTempFile("foo.proto",
+    "syntax = \"proto2\";\n"
+    "message Foo {}\n");
+
+  Run("protocol_compiler --plug_out=TestParameter:$tmpdir "
+      "--unknown_plug_opt=Foo "
+      "--proto_path=$tmpdir foo.proto");
+
+  ExpectErrorSubstring("Unknown flag: --unknown_plug_opt");
+}
+
 TEST_F(CommandLineInterfaceTest, Insert) {
   // Test running a generator that inserts code into another's output.
 

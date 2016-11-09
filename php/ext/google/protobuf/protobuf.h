@@ -51,6 +51,7 @@ struct MessageField;
 struct MessageHeader;
 struct MessageLayout;
 struct RepeatedField;
+struct RepeatedFieldIter;
 struct MapField;
 
 typedef struct DescriptorPool DescriptorPool;
@@ -61,6 +62,7 @@ typedef struct MessageField MessageField;
 typedef struct MessageHeader MessageHeader;
 typedef struct MessageLayout MessageLayout;
 typedef struct RepeatedField RepeatedField;
+typedef struct RepeatedFieldIter RepeatedFieldIter;
 typedef struct MapField MapField;
 
 // -----------------------------------------------------------------------------
@@ -77,6 +79,7 @@ void descriptor_pool_init(TSRMLS_D);
 void gpb_type_init(TSRMLS_D);
 void map_field_init(TSRMLS_D);
 void repeated_field_init(TSRMLS_D);
+void repeated_field_iter_init(TSRMLS_D);
 void util_init(TSRMLS_D);
 void message_init(TSRMLS_D);
 
@@ -366,6 +369,12 @@ struct RepeatedField {
                                    // (for message field only).
 };
 
+struct RepeatedFieldIter {
+  zend_object std;
+  RepeatedField* repeated_field;
+  long position;
+};
+
 void repeated_field_create_with_type(zend_class_entry* ce,
                                      const upb_fielddef* field,
                                      zval** repeated_field TSRMLS_DC);
@@ -383,6 +392,13 @@ PHP_METHOD(RepeatedField, offsetGet);
 PHP_METHOD(RepeatedField, offsetSet);
 PHP_METHOD(RepeatedField, offsetUnset);
 PHP_METHOD(RepeatedField, count);
+PHP_METHOD(RepeatedField, getIterator);
+
+PHP_METHOD(RepeatedFieldIter, rewind);
+PHP_METHOD(RepeatedFieldIter, current);
+PHP_METHOD(RepeatedFieldIter, key);
+PHP_METHOD(RepeatedFieldIter, next);
+PHP_METHOD(RepeatedFieldIter, valid);
 
 // -----------------------------------------------------------------------------
 // Oneof Field.

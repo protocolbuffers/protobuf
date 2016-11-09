@@ -210,13 +210,11 @@ class Message
                 if (!GPBWire::readInt64($input, $value)) {
                     return false;
                 }
-                $value = $value->toInteger();
                 break;
             case GPBType::UINT64:
                 if (!GPBWire::readUint64($input, $value)) {
                     return false;
                 }
-                $value = $value->toInteger();
                 break;
             case GPBType::INT32:
                 if (!GPBWire::readInt32($input, $value)) {
@@ -227,7 +225,6 @@ class Message
                 if (!GPBWire::readFixed64($input, $value)) {
                     return false;
                 }
-                $value = $value->toInteger();
                 break;
             case GPBType::FIXED32:
                 if (!GPBWire::readFixed32($input, $value)) {
@@ -285,7 +282,6 @@ class Message
                 if (!GPBWire::readSfixed64($input, $value)) {
                     return false;
                 }
-                $value = $value->toInteger();
                 break;
             case GPBType::SINT32:
                 if (!GPBWire::readSint32($input, $value)) {
@@ -296,7 +292,6 @@ class Message
                 if (!GPBWire::readSint64($input, $value)) {
                     return false;
                 }
-                $value = $value->toInteger();
                 break;
             default:
                 user_error("Unsupported type.");

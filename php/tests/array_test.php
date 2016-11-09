@@ -65,6 +65,17 @@ class RepeatedFieldTest extends PHPUnit_Framework_TestCase
         $this->assertSame(3, $arr[6]);
         $arr [7]= MAX_INT32_STRING;
         $this->assertSame(MAX_INT32, $arr[7]);
+
+        // Test foreach.
+        $arr = new RepeatedField(GPBType::INT32);
+        for ($i = 0; $i < 3; $i++) {
+          $arr []= $i;
+        }
+        $i = 0;
+        foreach ($arr as $val) {
+          $this->assertSame($i++, $val);
+        }
+        $this->assertSame(3, $i);
     }
 
     /**
@@ -225,46 +236,68 @@ class RepeatedFieldTest extends PHPUnit_Framework_TestCase
 
         // Test append.
         $arr []= MAX_INT64;
-        $this->assertSame(MAX_INT64, $arr[0]);
         $arr []= MIN_INT64;
-        $this->assertEquals(MIN_INT64, $arr[1]);
-
         $arr []= 1.1;
-        $this->assertSame(1, $arr[2]);
-
         $arr []= '2';
-        $this->assertSame(2, $arr[3]);
         $arr []= '3.1';
-        $this->assertSame(3, $arr[4]);
         $arr []= MAX_INT64_STRING;
-        $this->assertSame(MAX_INT64, $arr[5]);
         $arr []= MIN_INT64_STRING;
-        $this->assertEquals(MIN_INT64, $arr[6]);
+        if (PHP_INT_SIZE == 4) {
+            $this->assertSame(MAX_INT64, $arr[0]);
+            $this->assertSame(MIN_INT64, $arr[1]);
+            $this->assertSame('1', $arr[2]);
+            $this->assertSame('2', $arr[3]);
+            $this->assertSame('3', $arr[4]);
+            $this->assertSame(MAX_INT64_STRING, $arr[5]);
+            $this->assertSame(MIN_INT64_STRING, $arr[6]);
+        } else {
+            $this->assertSame(MAX_INT64, $arr[0]);
+            $this->assertSame(MIN_INT64, $arr[1]);
+            $this->assertSame(1, $arr[2]);
+            $this->assertSame(2, $arr[3]);
+            $this->assertSame(3, $arr[4]);
+            $this->assertSame(MAX_INT64, $arr[5]);
+            $this->assertSame(MIN_INT64, $arr[6]);
+        }
+
 
         $this->assertEquals(7, count($arr));
 
         for ($i = 0; $i < count($arr); $i++) {
             $arr[$i] = 0;
-            $this->assertSame(0, $arr[$i]);
+            if (PHP_INT_SIZE == 4) {
+                $this->assertSame('0', $arr[$i]);
+            } else {
+                $this->assertSame(0, $arr[$i]);
+            }
         }
 
         // Test set.
         $arr [0]= MAX_INT64;
-        $this->assertSame(MAX_INT64, $arr[0]);
         $arr [1]= MIN_INT64;
-        $this->assertEquals(MIN_INT64, $arr[1]);
-
         $arr [2]= 1.1;
-        $this->assertSame(1, $arr[2]);
-
         $arr [3]= '2';
-        $this->assertSame(2, $arr[3]);
         $arr [4]= '3.1';
-        $this->assertSame(3, $arr[4]);
         $arr [5]= MAX_INT64_STRING;
-        $this->assertSame(MAX_INT64, $arr[5]);
         $arr [6]= MIN_INT64_STRING;
-        $this->assertEquals(MIN_INT64, $arr[6]);
+
+        if (PHP_INT_SIZE == 4) {
+            $this->assertSame(MAX_INT64_STRING, $arr[0]);
+            $this->assertSame(MIN_INT64_STRING, $arr[1]);
+            $this->assertSame('1', $arr[2]);
+            $this->assertSame('2', $arr[3]);
+            $this->assertSame('3', $arr[4]);
+            $this->assertSame(MAX_INT64_STRING, $arr[5]);
+            $this->assertEquals(MIN_INT64_STRING, $arr[6]);
+        } else {
+            $this->assertSame(MAX_INT64, $arr[0]);
+            $this->assertSame(MIN_INT64, $arr[1]);
+            $this->assertSame(1, $arr[2]);
+            $this->assertSame(2, $arr[3]);
+            $this->assertSame(3, $arr[4]);
+            $this->assertSame(MAX_INT64, $arr[5]);
+            $this->assertEquals(MIN_INT64, $arr[6]);
+        }
     }
 
     /**
@@ -315,38 +348,57 @@ class RepeatedFieldTest extends PHPUnit_Framework_TestCase
 
         // Test append.
         $arr []= MAX_UINT64;
-        $this->assertEquals(MAX_UINT64, $arr[0]);
-
         $arr []= 1.1;
-        $this->assertSame(1, $arr[1]);
-
         $arr []= '2';
-        $this->assertSame(2, $arr[2]);
         $arr []= '3.1';
-        $this->assertSame(3, $arr[3]);
         $arr []= MAX_UINT64_STRING;
-        $this->assertEquals(MAX_UINT64, $arr[4]);
 
-        $this->assertEquals(5, count($arr));
+        if (PHP_INT_SIZE == 4) {
+            $this->assertSame(MAX_UINT64_STRING, $arr[0]);
+            $this->assertSame('1', $arr[1]);
+            $this->assertSame('2', $arr[2]);
+            $this->assertSame('3', $arr[3]);
+            $this->assertSame(MAX_UINT64_STRING, $arr[4]);
+        } else {
+            $this->assertSame(MAX_UINT64, $arr[0]);
+            $this->assertSame(1, $arr[1]);
+            $this->assertSame(2, $arr[2]);
+            $this->assertSame(3, $arr[3]);
+            $this->assertSame(MAX_UINT64, $arr[4]);
+            $this->assertSame(5, count($arr));
+        }
+
+        $this->assertSame(5, count($arr));
 
         for ($i = 0; $i < count($arr); $i++) {
             $arr[$i] = 0;
-            $this->assertSame(0, $arr[$i]);
+            if (PHP_INT_SIZE == 4) {
+                $this->assertSame('0', $arr[$i]);
+            } else {
+                $this->assertSame(0, $arr[$i]);
+            }
         }
 
         // Test set.
         $arr [0]= MAX_UINT64;
-        $this->assertEquals(MAX_UINT64, $arr[0]);
-
         $arr [1]= 1.1;
-        $this->assertSame(1, $arr[1]);
-
         $arr [2]= '2';
-        $this->assertSame(2, $arr[2]);
         $arr [3]= '3.1';
-        $this->assertSame(3, $arr[3]);
         $arr [4]= MAX_UINT64_STRING;
-        $this->assertEquals(MAX_UINT64, $arr[4]);
+
+        if (PHP_INT_SIZE == 4) {
+            $this->assertSame(MAX_UINT64_STRING, $arr[0]);
+            $this->assertSame('1', $arr[1]);
+            $this->assertSame('2', $arr[2]);
+            $this->assertSame('3', $arr[3]);
+            $this->assertSame(MAX_UINT64_STRING, $arr[4]);
+        } else {
+            $this->assertSame(MAX_UINT64, $arr[0]);
+            $this->assertSame(1, $arr[1]);
+            $this->assertSame(2, $arr[2]);
+            $this->assertSame(3, $arr[3]);
+            $this->assertSame(MAX_UINT64, $arr[4]);
+        }
     }
 
     /**
