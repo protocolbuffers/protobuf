@@ -53,66 +53,66 @@ struct Options {
 };
 
 // Escape C++ trigraphs by escaping question marks to "\?".
-string EscapeTrigraphs(const string& to_escape);
+string LIBPROTOC_EXPORT EscapeTrigraphs(const string& to_escape);
 
 // Strips ".proto" or ".protodevel" from the end of a filename.
-string StripProto(const string& filename);
+string LIBPROTOC_EXPORT StripProto(const string& filename);
 
 // Remove white space from either end of a StringPiece.
-void StringPieceTrimWhitespace(StringPiece* input);
+void LIBPROTOC_EXPORT StringPieceTrimWhitespace(StringPiece* input);
 
 // Returns true if the name requires a ns_returns_not_retained attribute applied
 // to it.
-bool IsRetainedName(const string& name);
+bool LIBPROTOC_EXPORT IsRetainedName(const string& name);
 
 // Returns true if the name starts with "init" and will need to have special
 // handling under ARC.
-bool IsInitName(const string& name);
+bool LIBPROTOC_EXPORT IsInitName(const string& name);
 
 // Gets the objc_class_prefix.
-string FileClassPrefix(const FileDescriptor* file);
+string LIBPROTOC_EXPORT FileClassPrefix(const FileDescriptor* file);
 
 // Gets the path of the file we're going to generate (sans the .pb.h
 // extension).  The path will be dependent on the objectivec package
 // declared in the proto package.
-string FilePath(const FileDescriptor* file);
+string LIBPROTOC_EXPORT FilePath(const FileDescriptor* file);
 
 // Just like FilePath(), but without the directory part.
-string FilePathBasename(const FileDescriptor* file);
+string LIBPROTOC_EXPORT FilePathBasename(const FileDescriptor* file);
 
 // Gets the name of the root class we'll generate in the file.  This class
 // is not meant for external consumption, but instead contains helpers that
 // the rest of the classes need
-string FileClassName(const FileDescriptor* file);
+string LIBPROTOC_EXPORT FileClassName(const FileDescriptor* file);
 
 // These return the fully-qualified class name corresponding to the given
 // descriptor.
 string LIBPROTOC_EXPORT ClassName(const Descriptor* descriptor);
 string LIBPROTOC_EXPORT ClassName(const Descriptor* descriptor, string* out_suffix_added);
-string EnumName(const EnumDescriptor* descriptor);
+string LIBPROTOC_EXPORT EnumName(const EnumDescriptor* descriptor);
 
 // Returns the fully-qualified name of the enum value corresponding to the
 // the descriptor.
-string EnumValueName(const EnumValueDescriptor* descriptor);
+string LIBPROTOC_EXPORT EnumValueName(const EnumValueDescriptor* descriptor);
 
 // Returns the name of the enum value corresponding to the descriptor.
-string EnumValueShortName(const EnumValueDescriptor* descriptor);
+string LIBPROTOC_EXPORT EnumValueShortName(const EnumValueDescriptor* descriptor);
 
 // Reverse what an enum does.
-string UnCamelCaseEnumShortName(const string& name);
+string LIBPROTOC_EXPORT UnCamelCaseEnumShortName(const string& name);
 
 // Returns the name to use for the extension (used as the method off the file's
 // Root class).
-string ExtensionMethodName(const FieldDescriptor* descriptor);
+string LIBPROTOC_EXPORT ExtensionMethodName(const FieldDescriptor* descriptor);
 
 // Returns the transformed field name.
-string FieldName(const FieldDescriptor* field);
-string FieldNameCapitalized(const FieldDescriptor* field);
+string LIBPROTOC_EXPORT FieldName(const FieldDescriptor* field);
+string LIBPROTOC_EXPORT FieldNameCapitalized(const FieldDescriptor* field);
 
 // Returns the transformed oneof name.
-string OneofEnumName(const OneofDescriptor* descriptor);
-string OneofName(const OneofDescriptor* descriptor);
-string OneofNameCapitalized(const OneofDescriptor* descriptor);
+string LIBPROTOC_EXPORT OneofEnumName(const OneofDescriptor* descriptor);
+string LIBPROTOC_EXPORT OneofName(const OneofDescriptor* descriptor);
+string LIBPROTOC_EXPORT OneofNameCapitalized(const OneofDescriptor* descriptor);
 
 inline bool HasFieldPresence(const FileDescriptor* file) {
   return file->syntax() != FileDescriptor::SYNTAX_PROTO3;
@@ -127,7 +127,7 @@ inline bool IsMapEntryMessage(const Descriptor* descriptor) {
 }
 
 // Reverse of the above.
-string UnCamelCaseFieldName(const string& name, const FieldDescriptor* field);
+string LIBPROTOC_EXPORT UnCamelCaseFieldName(const string& name, const FieldDescriptor* field);
 
 enum ObjectiveCType {
   OBJECTIVECTYPE_INT32,
@@ -165,26 +165,26 @@ string GetOptionalDeprecatedAttribute(const TDescriptor* descriptor, bool preSpa
   }
 }
 
-string GetCapitalizedType(const FieldDescriptor* field);
+string LIBPROTOC_EXPORT GetCapitalizedType(const FieldDescriptor* field);
 
-ObjectiveCType GetObjectiveCType(FieldDescriptor::Type field_type);
+ObjectiveCType LIBPROTOC_EXPORT GetObjectiveCType(FieldDescriptor::Type field_type);
 
 inline ObjectiveCType GetObjectiveCType(const FieldDescriptor* field) {
   return GetObjectiveCType(field->type());
 }
 
-bool IsPrimitiveType(const FieldDescriptor* field);
-bool IsReferenceType(const FieldDescriptor* field);
+bool LIBPROTOC_EXPORT IsPrimitiveType(const FieldDescriptor* field);
+bool LIBPROTOC_EXPORT IsReferenceType(const FieldDescriptor* field);
 
-string GPBGenericValueFieldName(const FieldDescriptor* field);
-string DefaultValue(const FieldDescriptor* field);
-bool HasNonZeroDefaultValue(const FieldDescriptor* field);
+string LIBPROTOC_EXPORT GPBGenericValueFieldName(const FieldDescriptor* field);
+string LIBPROTOC_EXPORT DefaultValue(const FieldDescriptor* field);
+bool LIBPROTOC_EXPORT HasNonZeroDefaultValue(const FieldDescriptor* field);
 
-string BuildFlagsString(const FlagType type, const vector<string>& strings);
+string LIBPROTOC_EXPORT BuildFlagsString(const FlagType type, const vector<string>& strings);
 
 // Builds HeaderDoc/appledoc style comments out of the comments in the .proto
 // file.
-string BuildCommentsString(const SourceLocation& location,
+string LIBPROTOC_EXPORT BuildCommentsString(const SourceLocation& location,
                            bool prefer_single_line);
 
 // The name the commonly used by the library when built as a framework.
@@ -192,7 +192,7 @@ string BuildCommentsString(const SourceLocation& location,
 extern LIBPROTOC_EXPORT const char* const ProtobufLibraryFrameworkName;
 // Returns the CPP symbol name to use as the gate for framework style imports
 // for the given framework name to use.
-string ProtobufFrameworkImportSymbol(const string& framework_name);
+string LIBPROTOC_EXPORT ProtobufFrameworkImportSymbol(const string& framework_name);
 
 // Checks if the file is one of the proto's bundled with the library.
 bool LIBPROTOC_EXPORT IsProtobufLibraryBundledProtoFile(const FileDescriptor* file);
@@ -200,7 +200,7 @@ bool LIBPROTOC_EXPORT IsProtobufLibraryBundledProtoFile(const FileDescriptor* fi
 // Checks the prefix for the given files and outputs any warnings as needed. If
 // there are flat out errors, then out_error is filled in with the first error
 // and the result is false.
-bool ValidateObjCClassPrefixes(const vector<const FileDescriptor*>& files,
+bool LIBPROTOC_EXPORT ValidateObjCClassPrefixes(const vector<const FileDescriptor*>& files,
                                const Options& generation_options,
                                string* out_error);
 
@@ -234,7 +234,7 @@ class LIBPROTOC_EXPORT LineConsumer {
   virtual bool ConsumeLine(const StringPiece& line, string* out_error) = 0;
 };
 
-bool ParseSimpleFile(
+bool LIBPROTOC_EXPORT ParseSimpleFile(
     const string& path, LineConsumer* line_consumer, string* out_error);
 
 

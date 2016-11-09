@@ -89,7 +89,7 @@ string LIBPROTOC_EXPORT GetReflectionClassName(const FileDescriptor* descriptor)
 //    The file name to use as output file for given file descriptor. In case
 //    of failure, this function will return empty string and error parameter
 //    will contain the error message.
-string GetOutputFile(
+string LIBPROTOC_EXPORT GetOutputFile(
     const google::protobuf::FileDescriptor* descriptor,
     const string file_extension,
     const bool generate_directories,
