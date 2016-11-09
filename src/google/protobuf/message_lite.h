@@ -244,7 +244,7 @@ class LIBPROTOBUF_EXPORT MessageLite {
   //
   // ByteSize() is generally linear in the number of fields defined for the
   // proto.
-  virtual int ByteSize() const { return ByteSizeLong(); }
+  virtual int ByteSize() const { return static_cast<int>(ByteSizeLong()); }
   virtual size_t ByteSizeLong() const;
 
   // Serializes the message without recomputing the size.  The message must
