@@ -57,6 +57,7 @@ void WriteServiceDocComment(io::Printer* printer,
                             const ServiceDescriptor* service);
 void WriteMethodDocComment(io::Printer* printer,
                            const MethodDescriptor* method);
+void WriteDocComment(io::Printer* p, const string& comments);
 
 // Exposed for testing only.
 LIBPROTOC_EXPORT string EscapeJavadoc(const string& input);

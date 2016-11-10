@@ -102,10 +102,17 @@ string EscapeJavadoc(const string& input) {
   return result;
 }
 
-static void WriteDocCommentBodyForLocation(
-    io::Printer* printer, const SourceLocation& location) {
-  string comments = location.leading_comments.empty() ?
+template <typename DescriptorType>
+static string GetCommentsForDescriptor(const DescriptorType* descriptor) {
+  SourceLocation location;
+  if (descriptor->GetSourceLocation(&location)) {
+    return location.leading_comments.empty() ?
       location.trailing_comments : location.leading_comments;
+  }
+  return string();
+}
+
+static vector<string> GetDocLines(const string& comments) {
   if (!comments.empty()) {
     // TODO(kenton):  Ideally we should parse the comment text as Markdown and
     //   write it back as HTML, but this requires a Markdown parser.  For now
@@ -113,14 +120,30 @@ static void WriteDocCommentBodyForLocation(
 
     // If the comment itself contains block comment start or end markers,
     // HTML-escape them so that they don't accidentally close the doc comment.
-    comments = EscapeJavadoc(comments);
+    string escapedComments = EscapeJavadoc(comments);
 
-    vector<string> lines = Split(comments, "\n");
+    vector<string> lines = Split(escapedComments, "\n");
     while (!lines.empty() && lines.back().empty()) {
       lines.pop_back();
     }
+    return lines;
+  }
+  return vector<string>();
+}
 
-    printer->Print(" * <pre>\n");
+template <typename DescriptorType>
+static vector<string> GetDocLinesForDescriptor(const DescriptorType* descriptor) {
+  return GetDocLines(GetCommentsForDescriptor(descriptor));
+}
+
+static void WriteDocCommentBody(io::Printer* printer,
+                                const vector<string>& lines,
+                                bool surroundWithPreTag) {
+  if (!lines.empty()) {
+    if (surroundWithPreTag) {
+      printer->Print(" * <pre>\n");
+    }
+
     for (int i = 0; i < lines.size(); i++) {
       // Most lines should start with a space.  Watch out for lines that start
       // with a /, since putting that right after the leading asterisk will
@@ -131,18 +154,12 @@ static void WriteDocCommentBodyForLocation(
         printer->Print(" *$line$\n", "line", lines[i]);
       }
     }
-    printer->Print(
+
+    if (surroundWithPreTag) {
+      printer->Print(
         " * </pre>\n"
         " *\n");
-  }
-}
-
-template <typename DescriptorType>
-static void WriteDocCommentBody(
-    io::Printer* printer, const DescriptorType* descriptor) {
-  SourceLocation location;
-  if (descriptor->GetSourceLocation(&location)) {
-    WriteDocCommentBodyForLocation(printer, location);
+    }
   }
 }
 
@@ -162,9 +179,17 @@ static string FirstLineOf(const string& value) {
   return result;
 }
 
+void WriteDocComment(io::Printer* printer, const string& comments) {
+  printer->Print("/**\n");
+  vector<string> lines = GetDocLines(comments);
+  WriteDocCommentBody(printer, lines, false);
+  printer->Print(" */\n");
+}
+
 void WriteMessageDocComment(io::Printer* printer, const Descriptor* message) {
   printer->Print("/**\n");
-  WriteDocCommentBody(printer, message);
+  vector<string> lines = GetDocLinesForDescriptor(message);
+  WriteDocCommentBody(printer, lines, true);
   printer->Print(
     " * Protobuf type {@code $fullname$}\n"
     " */\n",
@@ -181,7 +206,8 @@ void WriteFieldDocComment(io::Printer* printer, const FieldDescriptor* field) {
   //   optional string foo = 5;
   // If the field is a group, the debug string might end with {.
   printer->Print("/**\n");
-  WriteDocCommentBody(printer, field);
+  vector<string> lines = GetDocLinesForDescriptor(field);
+  WriteDocCommentBody(printer, lines, true);
   printer->Print(
     " * <code>$def$</code>\n",
     "def", EscapeJavadoc(FirstLineOf(field->DebugString())));
@@ -190,7 +216,8 @@ void WriteFieldDocComment(io::Printer* printer, const FieldDescriptor* field) {
 
 void WriteEnumDocComment(io::Printer* printer, const EnumDescriptor* enum_) {
   printer->Print("/**\n");
-  WriteDocCommentBody(printer, enum_);
+  vector<string> lines = GetDocLinesForDescriptor(enum_);
+  WriteDocCommentBody(printer, lines, true);
   printer->Print(
     " * Protobuf enum {@code $fullname$}\n"
     " */\n",
@@ -200,7 +227,8 @@ void WriteEnumDocComment(io::Printer* printer, const EnumDescriptor* enum_) {
 void WriteEnumValueDocComment(io::Printer* printer,
                               const EnumValueDescriptor* value) {
   printer->Print("/**\n");
-  WriteDocCommentBody(printer, value);
+  vector<string> lines = GetDocLinesForDescriptor(value);
+  WriteDocCommentBody(printer, lines, true);
   printer->Print(
     " * <code>$def$</code>\n"
     " */\n",
@@ -210,7 +238,8 @@ void WriteEnumValueDocComment(io::Printer* printer,
 void WriteServiceDocComment(io::Printer* printer,
                             const ServiceDescriptor* service) {
   printer->Print("/**\n");
-  WriteDocCommentBody(printer, service);
+  vector<string> lines = GetDocLinesForDescriptor(service);
+  WriteDocCommentBody(printer, lines, true);
   printer->Print(
     " * Protobuf service {@code $fullname$}\n"
     " */\n",
@@ -220,7 +249,8 @@ void WriteServiceDocComment(io::Printer* printer,
 void WriteMethodDocComment(io::Printer* printer,
                            const MethodDescriptor* method) {
   printer->Print("/**\n");
-  WriteDocCommentBody(printer, method);
+  vector<string> lines = GetDocLinesForDescriptor(method);
+  WriteDocCommentBody(printer, lines, true);
   printer->Print(
     " * <code>$def$</code>\n"
     " */\n",

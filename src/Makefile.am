@@ -157,6 +157,7 @@ nobase_include_HEADERS =                                        \
   google/protobuf/compiler/cpp/cpp_generator.h                  \
   google/protobuf/compiler/csharp/csharp_generator.h            \
   google/protobuf/compiler/csharp/csharp_names.h                \
+  google/protobuf/compiler/java/java_doc_comment.h              \
   google/protobuf/compiler/java/java_generator.h                \
   google/protobuf/compiler/java/java_names.h                    \
   google/protobuf/compiler/javanano/javanano_generator.h        \
