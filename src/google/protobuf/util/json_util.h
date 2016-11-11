@@ -172,12 +172,15 @@ namespace internal {
 class LIBPROTOBUF_EXPORT ZeroCopyStreamByteSink : public strings::ByteSink {
  public:
   explicit ZeroCopyStreamByteSink(io::ZeroCopyOutputStream* stream)
-      : stream_(stream) {}
+      : stream_(stream), buffer_size_(0) {}
+  ~ZeroCopyStreamByteSink();
 
   virtual void Append(const char* bytes, size_t len);
 
  private:
   io::ZeroCopyOutputStream* stream_;
+  void* buffer_;
+  int buffer_size_;
 
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(ZeroCopyStreamByteSink);
 };
