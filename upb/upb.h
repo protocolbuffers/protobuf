@@ -51,20 +51,21 @@ template <int N> class InlinedEnvironment;
 #define UPB_NORETURN
 #endif
 
+#if __STDC_VERSION__ >= 199901L
+/* C99 versions. */
+#include <stdio.h>
+#define _upb_snprintf snprintf
+#define _upb_vsnprintf vsnprintf
+#define _upb_va_copy(a, b) va_copy(a, b)
+#elif defined __GNUC__
 /* A few hacky workarounds for functions not in C89.
  * For internal use only!
  * TODO(haberman): fix these by including our own implementations, or finding
  * another workaround.
  */
-#ifdef __GNUC__
 #define _upb_snprintf __builtin_snprintf
 #define _upb_vsnprintf __builtin_vsnprintf
 #define _upb_va_copy(a, b) __va_copy(a, b)
-#elif __STDC_VERSION__ >= 199901L
-/* C99 versions. */
-#define _upb_snprintf snprintf
-#define _upb_vsnprintf vsnprintf
-#define _upb_va_copy(a, b) va_copy(a, b)
 #else
 #error Need implementations of [v]snprintf and va_copy
 #endif
