@@ -32,6 +32,7 @@ syntax = "proto3";
 
 package google.protobuf;
 
+option go_package = "google.golang.org/genproto/protobuf/field_mask;field_mask";
 option csharp_namespace = "Google.Protobuf.WellKnownTypes";
 option java_package = "com.google.protobuf";
 option java_outer_classname = "FieldMaskProto";

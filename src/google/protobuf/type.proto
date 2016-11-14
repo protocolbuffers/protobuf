@@ -35,6 +35,7 @@ package google.protobuf;
 import "google/protobuf/any.proto";
 import "google/protobuf/source_context.proto";
 
+option go_package = "google.golang.org/genproto/protobuf/ptype;ptype";
 option csharp_namespace = "Google.Protobuf.WellKnownTypes";
 option cc_enable_arenas = true;
 option java_package = "com.google.protobuf";

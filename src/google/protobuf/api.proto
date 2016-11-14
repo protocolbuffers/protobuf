@@ -35,6 +35,7 @@ package google.protobuf;
 import "google/protobuf/source_context.proto";
 import "google/protobuf/type.proto";
 
+option go_package = "google.golang.org/genproto/protobuf/api;api";
 option csharp_namespace = "Google.Protobuf.WellKnownTypes";
 option java_package = "com.google.protobuf";
 option java_outer_classname = "ApiProto";
