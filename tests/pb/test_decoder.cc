@@ -111,7 +111,7 @@ using std::string;
 
 void vappendf(string* str, const char *format, va_list args) {
   va_list copy;
-  __va_copy(copy, args);
+  _upb_va_copy(copy, args);
 
   int count = vsnprintf(NULL, 0, format, args);
   if (count >= 0)
