@@ -28,7 +28,7 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include "google/protobuf/compiler/js/js_generator.h"
+#include <google/protobuf/compiler/js/js_generator.h>
 
 #include <assert.h>
 #include <algorithm>
