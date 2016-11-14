@@ -342,11 +342,11 @@ VALUE Message_deep_copy(VALUE _self) {
  * field is of a primitive type).
  */
 VALUE Message_eq(VALUE _self, VALUE _other) {
+  MessageHeader* self;
+  MessageHeader* other;
   if (TYPE(_self) != TYPE(_other)) {
     return Qfalse;
   }
-  MessageHeader* self;
-  MessageHeader* other;
   TypedData_Get_Struct(_self, MessageHeader, &Message_type, self);
   TypedData_Get_Struct(_other, MessageHeader, &Message_type, other);
 
