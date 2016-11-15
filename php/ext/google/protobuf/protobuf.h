@@ -39,6 +39,9 @@
 #define PHP_PROTOBUF_EXTNAME "protobuf"
 #define PHP_PROTOBUF_VERSION "3.1.0a1"
 
+#define MAX_LENGTH_OF_INT64 20
+#define SIZEOF_INT64 8
+
 // -----------------------------------------------------------------------------
 // Forward Declaration
 // ----------------------------------------------------------------------------

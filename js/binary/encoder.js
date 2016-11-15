@@ -452,19 +452,36 @@ jspb.BinaryEncoder.prototype.writeFixedHash64 = function(hash) {
  */
 jspb.BinaryEncoder.prototype.writeString = function(value) {
   var oldLength = this.buffer_.length;
-
-  // UTF16 to UTF8 conversion loop swiped from goog.crypt.stringToUtf8ByteArray.
+ 
   for (var i = 0; i < value.length; i++) {
+    
     var c = value.charCodeAt(i);
+
     if (c < 128) {
       this.buffer_.push(c);
     } else if (c < 2048) {
       this.buffer_.push((c >> 6) | 192);
       this.buffer_.push((c & 63) | 128);
-    } else {
-      this.buffer_.push((c >> 12) | 224);
-      this.buffer_.push(((c >> 6) & 63) | 128);
-      this.buffer_.push((c & 63) | 128);
+    } else if (c < 65536) {
+      // Look for surrogates
+      if (c >= 0xD800 && c <= 0xDBFF && i + 1 < value.length) {
+        var second = value.charCodeAt(i + 1);
+        if (second >= 0xDC00 && second <= 0xDFFF) { // low surrogate
+          // http://mathiasbynens.be/notes/javascript-encoding#surrogate-formulae
+          c = (c - 0xD800) * 0x400 + second - 0xDC00 + 0x10000;
+
+          this.buffer_.push((c >> 18) | 240);
+          this.buffer_.push(((c >> 12) & 63 ) | 128);
+          this.buffer_.push(((c >> 6) & 63) | 128);
+          this.buffer_.push((c & 63) | 128);
+          i++;
+        }
+      }
+      else {
+        this.buffer_.push((c >> 12) | 224);
+        this.buffer_.push(((c >> 6) & 63) | 128);
+        this.buffer_.push((c & 63) | 128);
+      }
     }
   }
 

@@ -196,7 +196,11 @@ Atomic64 Release_Load(volatile const Atomic64* ptr);
 
 // Apple.
 #elif defined(GOOGLE_PROTOBUF_OS_APPLE)
+#if __has_feature(cxx_atomic) || _GNUC_VER >= 407
+#include <google/protobuf/stubs/atomicops_internals_generic_c11_atomic.h>
+#else  // __has_feature(cxx_atomic) || _GNUC_VER >= 407
 #include <google/protobuf/stubs/atomicops_internals_macosx.h>
+#endif  // __has_feature(cxx_atomic) || _GNUC_VER >= 407
 
 // GCC.
 #elif defined(__GNUC__)
@@ -217,7 +221,7 @@ Atomic64 Release_Load(volatile const Atomic64* ptr);
 #elif defined(GOOGLE_PROTOBUF_ARCH_POWER)
 #include <google/protobuf/stubs/atomicops_internals_power.h>
 #elif defined(__native_client__)
-#include <google/protobuf/stubs/atomicops_internals_pnacl.h>
+#include <google/protobuf/stubs/atomicops_internals_generic_c11_atomic.h>
 #elif defined(GOOGLE_PROTOBUF_ARCH_PPC)
 #include <google/protobuf/stubs/atomicops_internals_ppc_gcc.h>
 #elif (((__GNUC__ == 4) && (__GNUC_MINOR__ >= 7)) || (__GNUC__ > 4))
