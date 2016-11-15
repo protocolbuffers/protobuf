@@ -30,8 +30,8 @@
 
 // This file is an internal atomic implementation, use atomicops.h instead.
 
-#ifndef GOOGLE_PROTOBUF_ATOMICOPS_INTERNALS_PNACL_H_
-#define GOOGLE_PROTOBUF_ATOMICOPS_INTERNALS_PNACL_H_
+#ifndef GOOGLE_PROTOBUF_ATOMICOPS_INTERNALS_GENERIC_C11_ATOMIC_H_
+#define GOOGLE_PROTOBUF_ATOMICOPS_INTERNALS_GENERIC_C11_ATOMIC_H_
 
 #include <atomic>
 
@@ -228,4 +228,4 @@ inline Atomic64 Release_Load(volatile const Atomic64* ptr) {
 }  // namespace protobuf
 }  // namespace google
 
-#endif  // GOOGLE_PROTOBUF_ATOMICOPS_INTERNALS_PNACL_H_
+#endif  // GOOGLE_PROTOBUF_ATOMICOPS_INTERNALS_GENERIC_C11_ATOMIC_H_

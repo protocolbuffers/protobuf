@@ -125,6 +125,16 @@ class Message
                 $oneof = $this->desc->getOneofDecl()[$field->getOneofIndex()];
                 $oneof_name = $oneof->getName();
                 $this->$oneof_name = new OneofField($oneof);
+            } else if ($field->getLabel() === GPBLabel::OPTIONAL && 
+                       PHP_INT_SIZE == 4) {
+                switch ($field->getType()) {
+                    case GPBType::INT64:
+                    case GPBType::UINT64:
+                    case GPBType::FIXED64:
+                    case GPBType::SFIXED64:
+                    case GPBType::SINT64:
+                        $this->$setter("0");
+                }
             }
         }
     }

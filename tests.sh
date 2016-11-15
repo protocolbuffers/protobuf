@@ -393,6 +393,12 @@ build_php5.5_32() {
   ./vendor/bin/phpunit
 }
 
+build_php5.5_c_32() {
+  use_php_bc 5.5
+  wget https://phar.phpunit.de/phpunit-old.phar -O /usr/bin/phpunit
+  cd php/tests && /bin/bash ./test.sh && cd ../..
+}
+
 build_php5.6() {
   use_php 5.6
   rm -rf vendor
@@ -449,6 +455,7 @@ build_php_all() {
 
 build_php_all_32() {
   build_php5.5_32
+  build_php5.5_c_32
 }
 
 # Note: travis currently does not support testing more than one language so the

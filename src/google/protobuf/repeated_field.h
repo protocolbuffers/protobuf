@@ -681,17 +681,7 @@ inline const Message& GenericTypeHandler<Message>::default_instance() {
   return *null;
 }
 
-
-// HACK:  If a class is declared as DLL-exported in MSVC, it insists on
-//   generating copies of all its methods -- even inline ones -- to include
-//   in the DLL.  But SpaceUsed() calls StringSpaceUsedExcludingSelf() which
-//   isn't in the lite library, therefore the lite library cannot link if
-//   StringTypeHandler is exported.  So, we factor out StringTypeHandlerBase,
-//   export that, then make StringTypeHandler be a subclass which is NOT
-//   exported.
-// TODO(kenton):  Now that StringSpaceUsedExcludingSelf() is in the lite
-//   library, this can be cleaned up.
-class LIBPROTOBUF_EXPORT StringTypeHandlerBase {
+class LIBPROTOBUF_EXPORT StringTypeHandler {
  public:
   typedef string Type;
 
@@ -718,10 +708,6 @@ class LIBPROTOBUF_EXPORT StringTypeHandlerBase {
   static inline const Type& default_instance() {
     return ::google::protobuf::internal::GetEmptyString();
   }
-};
-
-class StringTypeHandler : public StringTypeHandlerBase {
- public:
   static int SpaceUsed(const string& value)  {
     return static_cast<int>(sizeof(value)) + StringSpaceUsedExcludingSelf(value);
   }

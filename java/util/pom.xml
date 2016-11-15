@@ -79,12 +79,24 @@
         </executions>
       </plugin>
 
+      <!-- Add the generated test sources to the build -->
       <plugin>
-        <artifactId>maven-compiler-plugin</artifactId>
-        <configuration>
-          <!-- Add the generated test sources to the build -->
-          <generatedTestSourcesDirectory>${generated.testsources.dir}</generatedTestSourcesDirectory>
-        </configuration>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>build-helper-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>add-generated-test-sources</id>
+            <phase>generate-test-sources</phase>
+            <goals>
+              <goal>add-test-source</goal>
+            </goals>
+            <configuration>
+              <sources>
+                <source>${generated.testsources.dir}</source>
+              </sources>
+            </configuration>
+          </execution>
+        </executions>
       </plugin>
 
       <!-- Configure the OSGI bundle -->
