@@ -67,7 +67,6 @@ import com.google.protobuf.Timestamp;
 import com.google.protobuf.UInt32Value;
 import com.google.protobuf.UInt64Value;
 import com.google.protobuf.Value;
-
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
@@ -224,7 +223,7 @@ public class JsonFormat {
    * Creates a {@link Parser} with default configuration.
    */
   public static Parser parser() {
-    return new Parser(TypeRegistry.getEmptyTypeRegistry(), false);
+    return new Parser(TypeRegistry.getEmptyTypeRegistry(), false, Parser.DEFAULT_RECURSION_LIMIT);
   }
 
   /**
@@ -233,10 +232,15 @@ public class JsonFormat {
   public static class Parser {
     private final TypeRegistry registry;
     private final boolean ignoringUnknownFields;
+    private final int recursionLimit;
 
-    private Parser(TypeRegistry registry, boolean ignoreUnknownFields) {
+    // The default parsing recursion limit is aligned with the proto binary parser.
+    private static final int DEFAULT_RECURSION_LIMIT = 100;
+
+    private Parser(TypeRegistry registry, boolean ignoreUnknownFields, int recursionLimit) {
       this.registry = registry;
       this.ignoringUnknownFields = ignoreUnknownFields;
+      this.recursionLimit = recursionLimit;
     }
 
     /**
@@ -249,16 +253,15 @@ public class JsonFormat {
       if (this.registry != TypeRegistry.getEmptyTypeRegistry()) {
         throw new IllegalArgumentException("Only one registry is allowed.");
       }
-      return new Parser(registry, this.ignoringUnknownFields);
+      return new Parser(registry, ignoringUnknownFields, recursionLimit);
     }
 
     /**
-     * Creates a new {@link Parser} configured to not throw an exception
-     * when an unknown field is encountered. The new Parser clones all other
-     * configurations from this Parser.
+     * Creates a new {@link Parser} configured to not throw an exception when an unknown field is
+     * encountered. The new Parser clones all other configurations from this Parser.
      */
     public Parser ignoringUnknownFields() {
-      return new Parser(this.registry, true);
+      return new Parser(this.registry, true, recursionLimit);
     }
 
     /**
@@ -270,7 +273,7 @@ public class JsonFormat {
     public void merge(String json, Message.Builder builder) throws InvalidProtocolBufferException {
       // TODO(xiaofeng): Investigate the allocation overhead and optimize for
       // mobile.
-      new ParserImpl(registry, ignoringUnknownFields).merge(json, builder);
+      new ParserImpl(registry, ignoringUnknownFields, recursionLimit).merge(json, builder);
     }
 
     /**
@@ -283,7 +286,12 @@ public class JsonFormat {
     public void merge(Reader json, Message.Builder builder) throws IOException {
       // TODO(xiaofeng): Investigate the allocation overhead and optimize for
       // mobile.
-      new ParserImpl(registry, ignoringUnknownFields).merge(json, builder);
+      new ParserImpl(registry, ignoringUnknownFields, recursionLimit).merge(json, builder);
+    }
+
+    // For testing only.
+    Parser usingRecursionLimit(int recursionLimit) {
+      return new Parser(registry, ignoringUnknownFields, recursionLimit);
     }
   }
 
@@ -1040,11 +1048,15 @@ public class JsonFormat {
     private final TypeRegistry registry;
     private final JsonParser jsonParser;
     private final boolean ignoringUnknownFields;
+    private final int recursionLimit;
+    private int currentDepth;
 
-    ParserImpl(TypeRegistry registry, boolean ignoreUnknownFields) {
+    ParserImpl(TypeRegistry registry, boolean ignoreUnknownFields, int recursionLimit) {
       this.registry = registry;
       this.ignoringUnknownFields = ignoreUnknownFields;
       this.jsonParser = new JsonParser();
+      this.recursionLimit = recursionLimit;
+      this.currentDepth = 0;
     }
 
     void merge(Reader json, Message.Builder builder) throws IOException {
@@ -1715,8 +1727,13 @@ public class JsonFormat {
 
         case MESSAGE:
         case GROUP:
+          if (currentDepth >= recursionLimit) {
+            throw new InvalidProtocolBufferException("Hit recursion limit.");
+          }
+          ++currentDepth;
           Message.Builder subBuilder = builder.newBuilderForField(field);
           merge(json, subBuilder);
+          --currentDepth;
           return subBuilder.build();
 
         default:

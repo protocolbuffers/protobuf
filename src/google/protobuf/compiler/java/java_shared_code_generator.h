@@ -70,8 +70,9 @@ class SharedCodeGenerator {
   SharedCodeGenerator(const FileDescriptor* file, const Options& options);
   ~SharedCodeGenerator();
 
-  void Generate(GeneratorContext* generator_context, vector<string>* file_list,
-                vector<string>* annotation_file_list);
+  void Generate(GeneratorContext* generator_context,
+                std::vector<string>* file_list,
+                std::vector<string>* annotation_file_list);
 
   void GenerateDescriptors(io::Printer* printer);
 

@@ -108,7 +108,7 @@ void Context::InitializeFieldGeneratorInfoForMessage(
   for (int i = 0; i < message->nested_type_count(); ++i) {
     InitializeFieldGeneratorInfoForMessage(message->nested_type(i));
   }
-  vector<const FieldDescriptor*> fields;
+  std::vector<const FieldDescriptor*> fields;
   for (int i = 0; i < message->field_count(); ++i) {
     fields.push_back(message->field(i));
   }
@@ -124,11 +124,11 @@ void Context::InitializeFieldGeneratorInfoForMessage(
 }
 
 void Context::InitializeFieldGeneratorInfoForFields(
-    const vector<const FieldDescriptor*>& fields) {
+    const std::vector<const FieldDescriptor*>& fields) {
   // Find out all fields that conflict with some other field in the same
   // message.
-  vector<bool> is_conflict(fields.size());
-  vector<string> conflict_reason(fields.size());
+  std::vector<bool> is_conflict(fields.size());
+  std::vector<string> conflict_reason(fields.size());
   for (int i = 0; i < fields.size(); ++i) {
     const FieldDescriptor* field = fields[i];
     const string& name = UnderscoresToCapitalizedCamelCase(field);

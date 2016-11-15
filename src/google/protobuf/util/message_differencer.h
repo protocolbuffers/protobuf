@@ -821,7 +821,6 @@ class LIBPROTOBUF_EXPORT MessageDifferencer {
 
   FieldSet ignored_fields_;
 
-  bool compare_unknown_fields_;
   bool report_matches_;
 
   string* output_string_;

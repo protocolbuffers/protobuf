@@ -45,10 +45,10 @@ bool IsProto3Field(const FieldDescriptor* field_descriptor) {
 }
 
 void SetMessageVariables(const FieldDescriptor* descriptor,
-                         map<string, string>* variables,
+                         std::map<string, string>* variables,
                          const Options& options) {
   SetCommonFieldVariables(descriptor, variables, options);
-  (*variables)["type"] = FieldMessageTypeName(descriptor);
+  (*variables)["type"] = ClassName(descriptor->message_type(), false);
   (*variables)["stream_writer"] =
       (*variables)["declared_type"] +
       (HasFastArraySerialization(descriptor->message_type()->file(), options)
@@ -137,7 +137,7 @@ GenerateAccessorDeclarations(io::Printer* printer) const {
 void MapFieldGenerator::
 GenerateInlineAccessorDefinitions(io::Printer* printer,
                                   bool is_inline) const {
-  map<string, string> variables(variables_);
+  std::map<string, string> variables(variables_);
   variables["inline"] = is_inline ? "inline" : "";
   printer->Print(variables,
       "$inline$ const ::google::protobuf::Map< $key_cpp$, $val_cpp$ >&\n"
@@ -154,7 +154,7 @@ GenerateInlineAccessorDefinitions(io::Printer* printer,
 
 void MapFieldGenerator::
 GenerateClearingCode(io::Printer* printer) const {
-  map<string, string> variables(variables_);
+  std::map<string, string> variables(variables_);
   variables["this_message"] = dependent_field_ ? DependentBaseDownCast() : "";
   printer->Print(variables, "$this_message$$name$_.Clear();\n");
 }
@@ -173,11 +173,17 @@ void MapFieldGenerator::
 GenerateConstructorCode(io::Printer* printer) const {
   if (HasDescriptorMethods(descriptor_->file(), options_)) {
     printer->Print(variables_,
-        "$name$_.SetAssignDescriptorCallback(\n"
-        "    protobuf_AssignDescriptorsOnce);\n"
-        "$name$_.SetEntryDescriptor(\n"
-        "    &$type$_descriptor_);\n");
+                   "$name$_.SetAssignDescriptorCallback(\n"
+                   "    protobuf_AssignDescriptorsOnce);\n"
+                   "$name$_.SetEntryDescriptor(\n"
+                   "    &$type$_descriptor);\n");
   }
+}
+
+void MapFieldGenerator::
+GenerateCopyConstructorCode(io::Printer* printer) const {
+  GenerateConstructorCode(printer);
+  GenerateMergingCode(printer);
 }
 
 void MapFieldGenerator::
@@ -252,7 +258,7 @@ GenerateMergeFromCodedStream(io::Printer* printer) const {
 }
 
 static void GenerateSerializationLoop(io::Printer* printer,
-                                      const map<string, string>& variables,
+                                      const std::map<string, string>& variables,
                                       bool supports_arenas,
                                       const string& utf8_check,
                                       const string& loop_header,
@@ -291,17 +297,17 @@ static void GenerateSerializationLoop(io::Printer* printer,
 
 void MapFieldGenerator::
 GenerateSerializeWithCachedSizes(io::Printer* printer) const {
-  map<string, string> variables(variables_);
+  std::map<string, string> variables(variables_);
   variables["write_entry"] = "::google::protobuf::internal::WireFormatLite::Write" +
                              variables["stream_writer"] + "(\n            " +
                              variables["number"] + ", *entry, output)";
-  variables["deterministic"] = "output->IsSerializationDeterminstic()";
+  variables["deterministic"] = "output->IsSerializationDeterministic()";
   GenerateSerializeWithCachedSizes(printer, variables);
 }
 
 void MapFieldGenerator::
 GenerateSerializeWithCachedSizesToArray(io::Printer* printer) const {
-  map<string, string> variables(variables_);
+  std::map<string, string> variables(variables_);
   variables["write_entry"] =
       "target = ::google::protobuf::internal::WireFormatLite::\n"
       "                   InternalWrite" + variables["declared_type"] +
@@ -312,7 +318,7 @@ GenerateSerializeWithCachedSizesToArray(io::Printer* printer) const {
 }
 
 void MapFieldGenerator::GenerateSerializeWithCachedSizes(
-    io::Printer* printer, const map<string, string>& variables) const {
+    io::Printer* printer, const std::map<string, string>& variables) const {
   printer->Print(variables,
       "if (!this->$name$().empty()) {\n");
   printer->Indent();

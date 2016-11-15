@@ -30,6 +30,8 @@
 
 #include <google/protobuf/util/internal/utility.h>
 
+#include <algorithm>
+
 #include <google/protobuf/stubs/callback.h>
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/stubs/logging.h>
@@ -40,8 +42,6 @@
 #include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/stubs/map_util.h>
 #include <google/protobuf/stubs/mathlimits.h>
-
-#include <algorithm>
 
 namespace google {
 namespace protobuf {
@@ -324,7 +324,7 @@ string ToSnakeCase(StringPiece input) {
   return result;
 }
 
-set<string>* well_known_types_ = NULL;
+std::set<string>* well_known_types_ = NULL;
 GOOGLE_PROTOBUF_DECLARE_ONCE(well_known_types_init_);
 const char* well_known_types_name_array_[] = {
     "google.protobuf.Timestamp",   "google.protobuf.Duration",
@@ -337,7 +337,7 @@ const char* well_known_types_name_array_[] = {
 void DeleteWellKnownTypes() { delete well_known_types_; }
 
 void InitWellKnownTypes() {
-  well_known_types_ = new set<string>;
+  well_known_types_ = new std::set<string>;
   for (int i = 0; i < GOOGLE_ARRAYSIZE(well_known_types_name_array_); ++i) {
     well_known_types_->insert(well_known_types_name_array_[i]);
   }

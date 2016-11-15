@@ -24,11 +24,101 @@
 #include <google/protobuf/generated_message_util.h>
 #include <google/protobuf/metadata.h>
 #include <google/protobuf/message.h>
-#include <google/protobuf/repeated_field.h>
-#include <google/protobuf/extension_set.h>
+#include <google/protobuf/repeated_field.h>  // IWYU pragma: export
+#include <google/protobuf/extension_set.h>  // IWYU pragma: export
 #include <google/protobuf/unknown_field_set.h>
 #include <google/protobuf/descriptor.pb.h>
 // @@protoc_insertion_point(includes)
+namespace google {
+namespace protobuf {
+class DescriptorProto;
+extern ::google::protobuf::internal::ExplicitlyConstructed<
+    class DescriptorProto> _DescriptorProto_default_instance_;
+class DescriptorProto_ExtensionRange;
+extern ::google::protobuf::internal::ExplicitlyConstructed<
+    class DescriptorProto_ExtensionRange> _DescriptorProto_ExtensionRange_default_instance_;
+class DescriptorProto_ReservedRange;
+extern ::google::protobuf::internal::ExplicitlyConstructed<
+    class DescriptorProto_ReservedRange> _DescriptorProto_ReservedRange_default_instance_;
+class EnumDescriptorProto;
+extern ::google::protobuf::internal::ExplicitlyConstructed<
+    class EnumDescriptorProto> _EnumDescriptorProto_default_instance_;
+class EnumOptions;
+extern ::google::protobuf::internal::ExplicitlyConstructed<
+    class EnumOptions> _EnumOptions_default_instance_;
+class EnumValueDescriptorProto;
+extern ::google::protobuf::internal::ExplicitlyConstructed<
+    class EnumValueDescriptorProto> _EnumValueDescriptorProto_default_instance_;
+class EnumValueOptions;
+extern ::google::protobuf::internal::ExplicitlyConstructed<
+    class EnumValueOptions> _EnumValueOptions_default_instance_;
+class FieldDescriptorProto;
+extern ::google::protobuf::internal::ExplicitlyConstructed<
+    class FieldDescriptorProto> _FieldDescriptorProto_default_instance_;
+class FieldOptions;
+extern ::google::protobuf::internal::ExplicitlyConstructed<
+    class FieldOptions> _FieldOptions_default_instance_;
+class FileDescriptorProto;
+extern ::google::protobuf::internal::ExplicitlyConstructed<
+    class FileDescriptorProto> _FileDescriptorProto_default_instance_;
+class FileDescriptorSet;
+extern ::google::protobuf::internal::ExplicitlyConstructed<
+    class FileDescriptorSet> _FileDescriptorSet_default_instance_;
+class FileOptions;
+extern ::google::protobuf::internal::ExplicitlyConstructed<
+    class FileOptions> _FileOptions_default_instance_;
+class GeneratedCodeInfo;
+extern ::google::protobuf::internal::ExplicitlyConstructed<
+    class GeneratedCodeInfo> _GeneratedCodeInfo_default_instance_;
+class GeneratedCodeInfo_Annotation;
+extern ::google::protobuf::internal::ExplicitlyConstructed<
+    class GeneratedCodeInfo_Annotation> _GeneratedCodeInfo_Annotation_default_instance_;
+class MessageOptions;
+extern ::google::protobuf::internal::ExplicitlyConstructed<
+    class MessageOptions> _MessageOptions_default_instance_;
+class MethodDescriptorProto;
+extern ::google::protobuf::internal::ExplicitlyConstructed<
+    class MethodDescriptorProto> _MethodDescriptorProto_default_instance_;
+class MethodOptions;
+extern ::google::protobuf::internal::ExplicitlyConstructed<
+    class MethodOptions> _MethodOptions_default_instance_;
+class OneofDescriptorProto;
+extern ::google::protobuf::internal::ExplicitlyConstructed<
+    class OneofDescriptorProto> _OneofDescriptorProto_default_instance_;
+class OneofOptions;
+extern ::google::protobuf::internal::ExplicitlyConstructed<
+    class OneofOptions> _OneofOptions_default_instance_;
+class ServiceDescriptorProto;
+extern ::google::protobuf::internal::ExplicitlyConstructed<
+    class ServiceDescriptorProto> _ServiceDescriptorProto_default_instance_;
+class ServiceOptions;
+extern ::google::protobuf::internal::ExplicitlyConstructed<
+    class ServiceOptions> _ServiceOptions_default_instance_;
+class SourceCodeInfo;
+extern ::google::protobuf::internal::ExplicitlyConstructed<
+    class SourceCodeInfo> _SourceCodeInfo_default_instance_;
+class SourceCodeInfo_Location;
+extern ::google::protobuf::internal::ExplicitlyConstructed<
+    class SourceCodeInfo_Location> _SourceCodeInfo_Location_default_instance_;
+class UninterpretedOption;
+extern ::google::protobuf::internal::ExplicitlyConstructed<
+    class UninterpretedOption> _UninterpretedOption_default_instance_;
+class UninterpretedOption_NamePart;
+extern ::google::protobuf::internal::ExplicitlyConstructed<
+    class UninterpretedOption_NamePart> _UninterpretedOption_NamePart_default_instance_;
+namespace compiler {
+class CodeGeneratorRequest;
+extern ::google::protobuf::internal::ExplicitlyConstructed<
+    class CodeGeneratorRequest> _CodeGeneratorRequest_default_instance_;
+class CodeGeneratorResponse;
+extern ::google::protobuf::internal::ExplicitlyConstructed<
+    class CodeGeneratorResponse> _CodeGeneratorResponse_default_instance_;
+class CodeGeneratorResponse_File;
+extern ::google::protobuf::internal::ExplicitlyConstructed<
+    class CodeGeneratorResponse_File> _CodeGeneratorResponse_File_default_instance_;
+}  // namespace compiler
+}  // namespace protobuf
+}  // namespace google
 
 namespace google {
 namespace protobuf {
@@ -40,9 +130,6 @@ void LIBPROTOC_EXPORT protobuf_InitDefaults_google_2fprotobuf_2fcompiler_2fplugi
 void protobuf_AssignDesc_google_2fprotobuf_2fcompiler_2fplugin_2eproto();
 void protobuf_ShutdownFile_google_2fprotobuf_2fcompiler_2fplugin_2eproto();
 
-class CodeGeneratorRequest;
-class CodeGeneratorResponse;
-class CodeGeneratorResponse_File;
 
 // ===================================================================
 
@@ -69,49 +156,51 @@ class LIBPROTOC_EXPORT CodeGeneratorRequest : public ::google::protobuf::Message
   static const ::google::protobuf::Descriptor* descriptor();
   static const CodeGeneratorRequest& default_instance();
 
-  static const CodeGeneratorRequest* internal_default_instance();
+  static inline const CodeGeneratorRequest* internal_default_instance() {
+    return &_CodeGeneratorRequest_default_instance_.get();
+  }
 
   void Swap(CodeGeneratorRequest* other);
 
   // implements Message ----------------------------------------------
 
-  inline CodeGeneratorRequest* New() const { return New(NULL); }
+  inline CodeGeneratorRequest* New() const PROTOBUF_FINAL { return New(NULL); }
 
-  CodeGeneratorRequest* New(::google::protobuf::Arena* arena) const;
-  void CopyFrom(const ::google::protobuf::Message& from);
-  void MergeFrom(const ::google::protobuf::Message& from);
+  CodeGeneratorRequest* New(::google::protobuf::Arena* arena) const PROTOBUF_FINAL;
+  void CopyFrom(const ::google::protobuf::Message& from) PROTOBUF_FINAL;
+  void MergeFrom(const ::google::protobuf::Message& from) PROTOBUF_FINAL;
   void CopyFrom(const CodeGeneratorRequest& from);
   void MergeFrom(const CodeGeneratorRequest& from);
-  void Clear();
-  bool IsInitialized() const;
+  void Clear() PROTOBUF_FINAL;
+  bool IsInitialized() const PROTOBUF_FINAL;
 
-  size_t ByteSizeLong() const;
+  size_t ByteSizeLong() const PROTOBUF_FINAL;
   bool MergePartialFromCodedStream(
-      ::google::protobuf::io::CodedInputStream* input);
+      ::google::protobuf::io::CodedInputStream* input) PROTOBUF_FINAL;
   void SerializeWithCachedSizes(
-      ::google::protobuf::io::CodedOutputStream* output) const;
+      ::google::protobuf::io::CodedOutputStream* output) const PROTOBUF_FINAL;
   ::google::protobuf::uint8* InternalSerializeWithCachedSizesToArray(
-      bool deterministic, ::google::protobuf::uint8* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const {
+      bool deterministic, ::google::protobuf::uint8* target) const PROTOBUF_FINAL;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output)
+      const PROTOBUF_FINAL {
     return InternalSerializeWithCachedSizesToArray(false, output);
   }
-  int GetCachedSize() const { return _cached_size_; }
+  int GetCachedSize() const PROTOBUF_FINAL { return _cached_size_; }
   private:
   void SharedCtor();
   void SharedDtor();
-  void SetCachedSize(int size) const;
+  void SetCachedSize(int size) const PROTOBUF_FINAL;
   void InternalSwap(CodeGeneratorRequest* other);
-  void UnsafeMergeFrom(const CodeGeneratorRequest& from);
   private:
   inline ::google::protobuf::Arena* GetArenaNoVirtual() const {
-    return _internal_metadata_.arena();
+    return NULL;
   }
   inline void* MaybeArenaPtr() const {
-    return _internal_metadata_.raw_arena_ptr();
+    return NULL;
   }
   public:
 
-  ::google::protobuf::Metadata GetMetadata() const;
+  ::google::protobuf::Metadata GetMetadata() const PROTOBUF_FINAL;
 
   // nested types ----------------------------------------------------
 
@@ -159,8 +248,8 @@ class LIBPROTOC_EXPORT CodeGeneratorRequest : public ::google::protobuf::Message
 
   // @@protoc_insertion_point(class_scope:google.protobuf.compiler.CodeGeneratorRequest)
  private:
-  inline void set_has_parameter();
-  inline void clear_has_parameter();
+  void set_has_parameter();
+  void clear_has_parameter();
 
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
   ::google::protobuf::internal::HasBits<1> _has_bits_;
@@ -173,10 +262,7 @@ class LIBPROTOC_EXPORT CodeGeneratorRequest : public ::google::protobuf::Message
   friend void protobuf_AssignDesc_google_2fprotobuf_2fcompiler_2fplugin_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fcompiler_2fplugin_2eproto();
 
-  void InitAsDefaultInstance();
 };
-extern ::google::protobuf::internal::ExplicitlyConstructed<CodeGeneratorRequest> CodeGeneratorRequest_default_instance_;
-
 // -------------------------------------------------------------------
 
 class LIBPROTOC_EXPORT CodeGeneratorResponse_File : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.compiler.CodeGeneratorResponse.File) */ {
@@ -202,49 +288,51 @@ class LIBPROTOC_EXPORT CodeGeneratorResponse_File : public ::google::protobuf::M
   static const ::google::protobuf::Descriptor* descriptor();
   static const CodeGeneratorResponse_File& default_instance();
 
-  static const CodeGeneratorResponse_File* internal_default_instance();
+  static inline const CodeGeneratorResponse_File* internal_default_instance() {
+    return &_CodeGeneratorResponse_File_default_instance_.get();
+  }
 
   void Swap(CodeGeneratorResponse_File* other);
 
   // implements Message ----------------------------------------------
 
-  inline CodeGeneratorResponse_File* New() const { return New(NULL); }
+  inline CodeGeneratorResponse_File* New() const PROTOBUF_FINAL { return New(NULL); }
 
-  CodeGeneratorResponse_File* New(::google::protobuf::Arena* arena) const;
-  void CopyFrom(const ::google::protobuf::Message& from);
-  void MergeFrom(const ::google::protobuf::Message& from);
+  CodeGeneratorResponse_File* New(::google::protobuf::Arena* arena) const PROTOBUF_FINAL;
+  void CopyFrom(const ::google::protobuf::Message& from) PROTOBUF_FINAL;
+  void MergeFrom(const ::google::protobuf::Message& from) PROTOBUF_FINAL;
   void CopyFrom(const CodeGeneratorResponse_File& from);
   void MergeFrom(const CodeGeneratorResponse_File& from);
-  void Clear();
-  bool IsInitialized() const;
+  void Clear() PROTOBUF_FINAL;
+  bool IsInitialized() const PROTOBUF_FINAL;
 
-  size_t ByteSizeLong() const;
+  size_t ByteSizeLong() const PROTOBUF_FINAL;
   bool MergePartialFromCodedStream(
-      ::google::protobuf::io::CodedInputStream* input);
+      ::google::protobuf::io::CodedInputStream* input) PROTOBUF_FINAL;
   void SerializeWithCachedSizes(
-      ::google::protobuf::io::CodedOutputStream* output) const;
+      ::google::protobuf::io::CodedOutputStream* output) const PROTOBUF_FINAL;
   ::google::protobuf::uint8* InternalSerializeWithCachedSizesToArray(
-      bool deterministic, ::google::protobuf::uint8* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const {
+      bool deterministic, ::google::protobuf::uint8* target) const PROTOBUF_FINAL;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output)
+      const PROTOBUF_FINAL {
     return InternalSerializeWithCachedSizesToArray(false, output);
   }
-  int GetCachedSize() const { return _cached_size_; }
+  int GetCachedSize() const PROTOBUF_FINAL { return _cached_size_; }
   private:
   void SharedCtor();
   void SharedDtor();
-  void SetCachedSize(int size) const;
+  void SetCachedSize(int size) const PROTOBUF_FINAL;
   void InternalSwap(CodeGeneratorResponse_File* other);
-  void UnsafeMergeFrom(const CodeGeneratorResponse_File& from);
   private:
   inline ::google::protobuf::Arena* GetArenaNoVirtual() const {
-    return _internal_metadata_.arena();
+    return NULL;
   }
   inline void* MaybeArenaPtr() const {
-    return _internal_metadata_.raw_arena_ptr();
+    return NULL;
   }
   public:
 
-  ::google::protobuf::Metadata GetMetadata() const;
+  ::google::protobuf::Metadata GetMetadata() const PROTOBUF_FINAL;
 
   // nested types ----------------------------------------------------
 
@@ -288,12 +376,12 @@ class LIBPROTOC_EXPORT CodeGeneratorResponse_File : public ::google::protobuf::M
 
   // @@protoc_insertion_point(class_scope:google.protobuf.compiler.CodeGeneratorResponse.File)
  private:
-  inline void set_has_name();
-  inline void clear_has_name();
-  inline void set_has_insertion_point();
-  inline void clear_has_insertion_point();
-  inline void set_has_content();
-  inline void clear_has_content();
+  void set_has_name();
+  void clear_has_name();
+  void set_has_insertion_point();
+  void clear_has_insertion_point();
+  void set_has_content();
+  void clear_has_content();
 
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
   ::google::protobuf::internal::HasBits<1> _has_bits_;
@@ -306,10 +394,7 @@ class LIBPROTOC_EXPORT CodeGeneratorResponse_File : public ::google::protobuf::M
   friend void protobuf_AssignDesc_google_2fprotobuf_2fcompiler_2fplugin_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fcompiler_2fplugin_2eproto();
 
-  void InitAsDefaultInstance();
 };
-extern ::google::protobuf::internal::ExplicitlyConstructed<CodeGeneratorResponse_File> CodeGeneratorResponse_File_default_instance_;
-
 // -------------------------------------------------------------------
 
 class LIBPROTOC_EXPORT CodeGeneratorResponse : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.compiler.CodeGeneratorResponse) */ {
@@ -335,49 +420,51 @@ class LIBPROTOC_EXPORT CodeGeneratorResponse : public ::google::protobuf::Messag
   static const ::google::protobuf::Descriptor* descriptor();
   static const CodeGeneratorResponse& default_instance();
 
-  static const CodeGeneratorResponse* internal_default_instance();
+  static inline const CodeGeneratorResponse* internal_default_instance() {
+    return &_CodeGeneratorResponse_default_instance_.get();
+  }
 
   void Swap(CodeGeneratorResponse* other);
 
   // implements Message ----------------------------------------------
 
-  inline CodeGeneratorResponse* New() const { return New(NULL); }
+  inline CodeGeneratorResponse* New() const PROTOBUF_FINAL { return New(NULL); }
 
-  CodeGeneratorResponse* New(::google::protobuf::Arena* arena) const;
-  void CopyFrom(const ::google::protobuf::Message& from);
-  void MergeFrom(const ::google::protobuf::Message& from);
+  CodeGeneratorResponse* New(::google::protobuf::Arena* arena) const PROTOBUF_FINAL;
+  void CopyFrom(const ::google::protobuf::Message& from) PROTOBUF_FINAL;
+  void MergeFrom(const ::google::protobuf::Message& from) PROTOBUF_FINAL;
   void CopyFrom(const CodeGeneratorResponse& from);
   void MergeFrom(const CodeGeneratorResponse& from);
-  void Clear();
-  bool IsInitialized() const;
+  void Clear() PROTOBUF_FINAL;
+  bool IsInitialized() const PROTOBUF_FINAL;
 
-  size_t ByteSizeLong() const;
+  size_t ByteSizeLong() const PROTOBUF_FINAL;
   bool MergePartialFromCodedStream(
-      ::google::protobuf::io::CodedInputStream* input);
+      ::google::protobuf::io::CodedInputStream* input) PROTOBUF_FINAL;
   void SerializeWithCachedSizes(
-      ::google::protobuf::io::CodedOutputStream* output) const;
+      ::google::protobuf::io::CodedOutputStream* output) const PROTOBUF_FINAL;
   ::google::protobuf::uint8* InternalSerializeWithCachedSizesToArray(
-      bool deterministic, ::google::protobuf::uint8* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const {
+      bool deterministic, ::google::protobuf::uint8* target) const PROTOBUF_FINAL;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output)
+      const PROTOBUF_FINAL {
     return InternalSerializeWithCachedSizesToArray(false, output);
   }
-  int GetCachedSize() const { return _cached_size_; }
+  int GetCachedSize() const PROTOBUF_FINAL { return _cached_size_; }
   private:
   void SharedCtor();
   void SharedDtor();
-  void SetCachedSize(int size) const;
+  void SetCachedSize(int size) const PROTOBUF_FINAL;
   void InternalSwap(CodeGeneratorResponse* other);
-  void UnsafeMergeFrom(const CodeGeneratorResponse& from);
   private:
   inline ::google::protobuf::Arena* GetArenaNoVirtual() const {
-    return _internal_metadata_.arena();
+    return NULL;
   }
   inline void* MaybeArenaPtr() const {
-    return _internal_metadata_.raw_arena_ptr();
+    return NULL;
   }
   public:
 
-  ::google::protobuf::Metadata GetMetadata() const;
+  ::google::protobuf::Metadata GetMetadata() const PROTOBUF_FINAL;
 
   // nested types ----------------------------------------------------
 
@@ -411,8 +498,8 @@ class LIBPROTOC_EXPORT CodeGeneratorResponse : public ::google::protobuf::Messag
 
   // @@protoc_insertion_point(class_scope:google.protobuf.compiler.CodeGeneratorResponse)
  private:
-  inline void set_has_error();
-  inline void clear_has_error();
+  void set_has_error();
+  void clear_has_error();
 
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
   ::google::protobuf::internal::HasBits<1> _has_bits_;
@@ -424,10 +511,7 @@ class LIBPROTOC_EXPORT CodeGeneratorResponse : public ::google::protobuf::Messag
   friend void protobuf_AssignDesc_google_2fprotobuf_2fcompiler_2fplugin_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fcompiler_2fplugin_2eproto();
 
-  void InitAsDefaultInstance();
 };
-extern ::google::protobuf::internal::ExplicitlyConstructed<CodeGeneratorResponse> CodeGeneratorResponse_default_instance_;
-
 // ===================================================================
 
 
@@ -493,13 +577,13 @@ CodeGeneratorRequest::mutable_file_to_generate() {
 
 // optional string parameter = 2;
 inline bool CodeGeneratorRequest::has_parameter() const {
-  return (_has_bits_[0] & 0x00000002u) != 0;
+  return (_has_bits_[0] & 0x00000001u) != 0;
 }
 inline void CodeGeneratorRequest::set_has_parameter() {
-  _has_bits_[0] |= 0x00000002u;
+  _has_bits_[0] |= 0x00000001u;
 }
 inline void CodeGeneratorRequest::clear_has_parameter() {
-  _has_bits_[0] &= ~0x00000002u;
+  _has_bits_[0] &= ~0x00000001u;
 }
 inline void CodeGeneratorRequest::clear_parameter() {
   parameter_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
@@ -507,7 +591,7 @@ inline void CodeGeneratorRequest::clear_parameter() {
 }
 inline const ::std::string& CodeGeneratorRequest::parameter() const {
   // @@protoc_insertion_point(field_get:google.protobuf.compiler.CodeGeneratorRequest.parameter)
-  return parameter_.GetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  return parameter_.GetNoArena();
 }
 inline void CodeGeneratorRequest::set_parameter(const ::std::string& value) {
   set_has_parameter();
@@ -575,9 +659,6 @@ CodeGeneratorRequest::proto_file() const {
   return proto_file_;
 }
 
-inline const CodeGeneratorRequest* CodeGeneratorRequest::internal_default_instance() {
-  return &CodeGeneratorRequest_default_instance_.get();
-}
 // -------------------------------------------------------------------
 
 // CodeGeneratorResponse_File
@@ -598,7 +679,7 @@ inline void CodeGeneratorResponse_File::clear_name() {
 }
 inline const ::std::string& CodeGeneratorResponse_File::name() const {
   // @@protoc_insertion_point(field_get:google.protobuf.compiler.CodeGeneratorResponse.File.name)
-  return name_.GetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  return name_.GetNoArena();
 }
 inline void CodeGeneratorResponse_File::set_name(const ::std::string& value) {
   set_has_name();
@@ -652,7 +733,7 @@ inline void CodeGeneratorResponse_File::clear_insertion_point() {
 }
 inline const ::std::string& CodeGeneratorResponse_File::insertion_point() const {
   // @@protoc_insertion_point(field_get:google.protobuf.compiler.CodeGeneratorResponse.File.insertion_point)
-  return insertion_point_.GetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  return insertion_point_.GetNoArena();
 }
 inline void CodeGeneratorResponse_File::set_insertion_point(const ::std::string& value) {
   set_has_insertion_point();
@@ -706,7 +787,7 @@ inline void CodeGeneratorResponse_File::clear_content() {
 }
 inline const ::std::string& CodeGeneratorResponse_File::content() const {
   // @@protoc_insertion_point(field_get:google.protobuf.compiler.CodeGeneratorResponse.File.content)
-  return content_.GetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  return content_.GetNoArena();
 }
 inline void CodeGeneratorResponse_File::set_content(const ::std::string& value) {
   set_has_content();
@@ -744,9 +825,6 @@ inline void CodeGeneratorResponse_File::set_allocated_content(::std::string* con
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.compiler.CodeGeneratorResponse.File.content)
 }
 
-inline const CodeGeneratorResponse_File* CodeGeneratorResponse_File::internal_default_instance() {
-  return &CodeGeneratorResponse_File_default_instance_.get();
-}
 // -------------------------------------------------------------------
 
 // CodeGeneratorResponse
@@ -767,7 +845,7 @@ inline void CodeGeneratorResponse::clear_error() {
 }
 inline const ::std::string& CodeGeneratorResponse::error() const {
   // @@protoc_insertion_point(field_get:google.protobuf.compiler.CodeGeneratorResponse.error)
-  return error_.GetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  return error_.GetNoArena();
 }
 inline void CodeGeneratorResponse::set_error(const ::std::string& value) {
   set_has_error();
@@ -835,9 +913,6 @@ CodeGeneratorResponse::file() const {
   return file_;
 }
 
-inline const CodeGeneratorResponse* CodeGeneratorResponse::internal_default_instance() {
-  return &CodeGeneratorResponse_default_instance_.get();
-}
 #endif  // !PROTOBUF_INLINE_NOT_IN_HEADERS
 // -------------------------------------------------------------------
 
@@ -845,6 +920,7 @@ inline const CodeGeneratorResponse* CodeGeneratorResponse::internal_default_inst
 
 
 // @@protoc_insertion_point(namespace_scope)
+
 
 }  // namespace compiler
 }  // namespace protobuf

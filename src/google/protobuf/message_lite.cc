@@ -33,6 +33,8 @@
 //  Based on original Protocol Buffers design by
 //  Sanjay Ghemawat, Jeff Dean, and others.
 
+#include <climits>
+
 #include <google/protobuf/arena.h>
 #include <google/protobuf/generated_message_util.h>
 #include <google/protobuf/message_lite.h>
@@ -237,15 +239,11 @@ bool MessageLite::SerializeToCodedStream(io::CodedOutputStream* output) const {
   return SerializePartialToCodedStream(output);
 }
 
-size_t MessageLite::ByteSizeLong() const {
-  return internal::FromIntSize(ByteSize());
-}
-
 bool MessageLite::SerializePartialToCodedStream(
     io::CodedOutputStream* output) const {
   const size_t size = ByteSizeLong();  // Force size to be cached.
   if (size > INT_MAX) {
-    GOOGLE_LOG(ERROR) << "Exceeded maximum protobuf size of 2GB.";
+    GOOGLE_LOG(ERROR) << "Exceeded maximum protobuf size of 2GB: " << size;
     return false;
   }
 
@@ -294,7 +292,7 @@ bool MessageLite::AppendPartialToString(string* output) const {
   size_t old_size = output->size();
   size_t byte_size = ByteSizeLong();
   if (byte_size > INT_MAX) {
-    GOOGLE_LOG(ERROR) << "Exceeded maximum protobuf size of 2GB.";
+    GOOGLE_LOG(ERROR) << "Exceeded maximum protobuf size of 2GB: " << byte_size;
     return false;
   }
 

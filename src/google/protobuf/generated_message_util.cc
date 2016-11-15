@@ -51,9 +51,7 @@ double NaN() {
 ExplicitlyConstructed< ::std::string> fixed_address_empty_string;
 GOOGLE_PROTOBUF_DECLARE_ONCE(empty_string_once_init_);
 
-void DeleteEmptyString() {
-  GetEmptyStringAlreadyInited().~string();
-}
+void DeleteEmptyString() { fixed_address_empty_string.Shutdown(); }
 
 void InitEmptyString() {
   fixed_address_empty_string.DefaultConstruct();
@@ -73,10 +71,8 @@ int StringSpaceUsedExcludingSelf(const string& str) {
 
 
 
-void MergeFromFail(const char* file, int line) {
-  GOOGLE_CHECK(false) << file << ":" << line;
-  // Open-source GOOGLE_CHECK(false) is not NORETURN.
-  exit(1);
+void InitProtobufDefaults() {
+  GetEmptyString();
 }
 
 }  // namespace internal

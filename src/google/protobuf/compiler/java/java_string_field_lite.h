@@ -82,7 +82,7 @@ class ImmutableStringFieldLiteGenerator : public ImmutableFieldLiteGenerator {
 
  protected:
   const FieldDescriptor* descriptor_;
-  map<string, string> variables_;
+  std::map<string, string> variables_;
   const int messageBitIndex_;
   const int builderBitIndex_;
   Context* context_;
@@ -140,7 +140,7 @@ class RepeatedImmutableStringFieldLiteGenerator
 
  private:
   const FieldDescriptor* descriptor_;
-  map<string, string> variables_;
+  std::map<string, string> variables_;
   const int messageBitIndex_;
   const int builderBitIndex_;
   Context* context_;

@@ -46,7 +46,7 @@ namespace compiler {
 CodeGenerator::~CodeGenerator() {}
 
 bool CodeGenerator::GenerateAll(
-    const vector<const FileDescriptor*>& files,
+    const std::vector<const FileDescriptor*>& files,
     const string& parameter,
     GeneratorContext* generator_context,
     string* error) const {
@@ -85,18 +85,18 @@ io::ZeroCopyOutputStream* GeneratorContext::OpenForInsert(
 }
 
 void GeneratorContext::ListParsedFiles(
-    vector<const FileDescriptor*>* output) {
+    std::vector<const FileDescriptor*>* output) {
   GOOGLE_LOG(FATAL) << "This GeneratorContext does not support ListParsedFiles";
 }
 
 // Parses a set of comma-delimited name/value pairs.
 void ParseGeneratorParameter(const string& text,
-                             vector<pair<string, string> >* output) {
-  vector<string> parts = Split(text, ",", true);
+                             std::vector<std::pair<string, string> >* output) {
+  std::vector<string> parts = Split(text, ",", true);
 
   for (int i = 0; i < parts.size(); i++) {
     string::size_type equals_pos = parts[i].find_first_of('=');
-    pair<string, string> value;
+    std::pair<string, string> value;
     if (equals_pos == string::npos) {
       value.first = parts[i];
       value.second = "";

@@ -42,7 +42,6 @@ import static com.google.protobuf.util.Timestamps.NANOS_PER_MICROSECOND;
 import static com.google.protobuf.util.Timestamps.NANOS_PER_MILLISECOND;
 import static com.google.protobuf.util.Timestamps.NANOS_PER_SECOND;
 
-import com.google.common.collect.ComparisonChain;
 import com.google.protobuf.Duration;
 import java.text.ParseException;
 import java.util.Comparator;
@@ -71,11 +70,8 @@ public final class Durations {
         public int compare(Duration d1, Duration d2) {
           checkValid(d1);
           checkValid(d2);
-
-          return ComparisonChain.start()
-              .compare(d1.getSeconds(), d2.getSeconds())
-              .compare(d1.getNanos(), d2.getNanos())
-              .result();
+          int secDiff = Long.compare(d1.getSeconds(), d2.getSeconds());
+          return (secDiff != 0) ? secDiff : Integer.compare(d1.getNanos(), d2.getNanos());
         }
       };
 

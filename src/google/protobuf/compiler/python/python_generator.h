@@ -97,10 +97,10 @@ class LIBPROTOC_EXPORT Generator : public CodeGenerator {
 
   void PrintMessages() const;
   void PrintMessage(const Descriptor& message_descriptor, const string& prefix,
-                    vector<string>* to_register) const;
+                    std::vector<string>* to_register) const;
   void PrintNestedMessages(const Descriptor& containing_descriptor,
                            const string& prefix,
-                           vector<string>* to_register) const;
+                           std::vector<string>* to_register) const;
 
   void FixForeignFieldsInDescriptors() const;
   void FixForeignFieldsInDescriptor(
