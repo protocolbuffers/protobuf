@@ -941,7 +941,8 @@ jspb.BinaryDecoder.prototype.readString = function(length) {
       codeUnits.push(high, low)
     }
   }
-
+  // String.fromCharCode.apply is faster than manually appending characters on
+  // Chrome 25+, and generates no additional cons string garbage.
   var result = String.fromCharCode.apply(null, codeUnits);
   this.cursor_ = cursor;
   return result;
