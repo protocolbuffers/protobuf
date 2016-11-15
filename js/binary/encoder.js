@@ -426,17 +426,19 @@ jspb.BinaryEncoder.prototype.writeString = function(value) {
         if (second >= 0xDC00 && second <= 0xDFFF) { // low surrogate
           // http://mathiasbynens.be/notes/javascript-encoding#surrogate-formulae
           c = (c - 0xD800) * 0x400 + second - 0xDC00 + 0x10000;
+
+          this.buffer_.push((c >> 18) | 240);
+          this.buffer_.push(((c >> 12) & 63 ) | 128);
+          this.buffer_.push(((c >> 6) & 63) | 128);
+          this.buffer_.push((c & 63) | 128);
+          i++;
         }
       }
-      this.buffer_.push((c >> 12) | 224);
-      this.buffer_.push(((c >> 6) & 63) | 128);
-      this.buffer_.push((c & 63) | 128);
-    } else {
-      this.buffer_.push((c >> 18) | 240);
-      this.buffer_.push(((c >> 12) & 63 ) | 128);
-      this.buffer_.push(((c >> 6) & 63) | 128);
-      this.buffer_.push((c & 63) | 128);
-      i++;
+      else {
+        this.buffer_.push((c >> 12) | 224);
+        this.buffer_.push(((c >> 6) & 63) | 128);
+        this.buffer_.push((c & 63) | 128);
+      }
     }
   }
 
