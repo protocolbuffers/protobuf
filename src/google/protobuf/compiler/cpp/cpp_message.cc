@@ -1114,7 +1114,8 @@ GenerateClassDefinition(io::Printer* printer) {
   printer->Print(
       vars,
       "static inline const $classname$* internal_default_instance() {\n"
-      "  return &_$classname$_default_instance_.get();\n"
+      "  return reinterpret_cast<const $classname$*>(\n"
+      "             &_$classname$_default_instance_);\n"
       "}\n"
       "\n");
 
@@ -2509,11 +2510,7 @@ GenerateClear(io::Printer* printer) {
           have_enclosing_if = true;
         }
 
-        if (use_dependent_base_ && IsFieldDependent(field)) {
-          printer->Print("clear_$name$();\n", "name", fieldname);
-        } else {
-          generator.GenerateMessageClearingCode(printer);
-        }
+        generator.GenerateMessageClearingCode(printer);
 
         if (have_enclosing_if) {
           printer->Outdent();
@@ -2736,7 +2733,7 @@ GenerateMergeFrom(io::Printer* printer) {
       "void $classname$::MergeFrom(const $classname$& from) {\n"
       "// @@protoc_insertion_point(class_specific_merge_from_start:"
       "$full_name$)\n"
-      "  GOOGLE_DCHECK(&from != this);\n",
+      "  GOOGLE_DCHECK_NE(&from, this);\n",
       "classname", classname_, "full_name", descriptor_->full_name());
   printer->Indent();
 
@@ -2979,13 +2976,41 @@ GenerateMergeFromCodedStream(io::Printer* printer) {
       WireFormat::MakeTag(ordered_fields[descriptor_->field_count() - 1]);
   const int kCutoff0 = 127;               // fits in 1-byte varint
   const int kCutoff1 = (127 << 7) + 127;  // fits in 2-byte varint
+
+  // We need to capture the last tag when parsing if this is a Group type, as
+  // our caller will verify (via CodedInputStream::LastTagWas) that the correct
+  // closing tag was received.
+  bool capture_last_tag = false;
+  const Descriptor* parent = descriptor_->containing_type();
+  if (parent) {
+    for (int i = 0; i < parent->field_count(); i++) {
+      const FieldDescriptor* field = parent->field(i);
+      if (field->type() == FieldDescriptor::TYPE_GROUP &&
+          field->message_type() == descriptor_) {
+        capture_last_tag = true;
+        break;
+      }
+    }
+  }
+
+  for (int i = 0; i < descriptor_->file()->extension_count(); i++) {
+    const FieldDescriptor* field = descriptor_->file()->extension(i);
+    if (field->type() == FieldDescriptor::TYPE_GROUP &&
+        field->message_type() == descriptor_) {
+      capture_last_tag = true;
+      break;
+    }
+  }
+
   printer->Print("::std::pair< ::google::protobuf::uint32, bool> p = "
-                 "input->ReadTagWithCutoff($max$);\n"
+                 "input->ReadTagWithCutoff$lasttag$($max$);\n"
                  "tag = p.first;\n"
                  "if (!p.second) goto handle_unusual;\n",
                  "max", SimpleItoa(maxtag <= kCutoff0 ? kCutoff0 :
                                    (maxtag <= kCutoff1 ? kCutoff1 :
-                                    maxtag)));
+                                    maxtag)),
+                 "lasttag", !capture_last_tag ? "NoLastTag" : "");
+
   if (descriptor_->field_count() > 0) {
     // We don't even want to print the switch() if we have no fields because
     // MSVC dislikes switch() statements that contain only a default value.

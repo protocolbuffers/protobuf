@@ -32,90 +32,90 @@
 namespace google {
 namespace protobuf {
 class DescriptorProto;
-extern ::google::protobuf::internal::ExplicitlyConstructed<
-    class DescriptorProto> _DescriptorProto_default_instance_;
+class DescriptorProtoDefaultTypeInternal;
+extern DescriptorProtoDefaultTypeInternal _DescriptorProto_default_instance_;
 class DescriptorProto_ExtensionRange;
-extern ::google::protobuf::internal::ExplicitlyConstructed<
-    class DescriptorProto_ExtensionRange> _DescriptorProto_ExtensionRange_default_instance_;
+class DescriptorProto_ExtensionRangeDefaultTypeInternal;
+extern DescriptorProto_ExtensionRangeDefaultTypeInternal _DescriptorProto_ExtensionRange_default_instance_;
 class DescriptorProto_ReservedRange;
-extern ::google::protobuf::internal::ExplicitlyConstructed<
-    class DescriptorProto_ReservedRange> _DescriptorProto_ReservedRange_default_instance_;
+class DescriptorProto_ReservedRangeDefaultTypeInternal;
+extern DescriptorProto_ReservedRangeDefaultTypeInternal _DescriptorProto_ReservedRange_default_instance_;
 class EnumDescriptorProto;
-extern ::google::protobuf::internal::ExplicitlyConstructed<
-    class EnumDescriptorProto> _EnumDescriptorProto_default_instance_;
+class EnumDescriptorProtoDefaultTypeInternal;
+extern EnumDescriptorProtoDefaultTypeInternal _EnumDescriptorProto_default_instance_;
 class EnumOptions;
-extern ::google::protobuf::internal::ExplicitlyConstructed<
-    class EnumOptions> _EnumOptions_default_instance_;
+class EnumOptionsDefaultTypeInternal;
+extern EnumOptionsDefaultTypeInternal _EnumOptions_default_instance_;
 class EnumValueDescriptorProto;
-extern ::google::protobuf::internal::ExplicitlyConstructed<
-    class EnumValueDescriptorProto> _EnumValueDescriptorProto_default_instance_;
+class EnumValueDescriptorProtoDefaultTypeInternal;
+extern EnumValueDescriptorProtoDefaultTypeInternal _EnumValueDescriptorProto_default_instance_;
 class EnumValueOptions;
-extern ::google::protobuf::internal::ExplicitlyConstructed<
-    class EnumValueOptions> _EnumValueOptions_default_instance_;
+class EnumValueOptionsDefaultTypeInternal;
+extern EnumValueOptionsDefaultTypeInternal _EnumValueOptions_default_instance_;
 class FieldDescriptorProto;
-extern ::google::protobuf::internal::ExplicitlyConstructed<
-    class FieldDescriptorProto> _FieldDescriptorProto_default_instance_;
+class FieldDescriptorProtoDefaultTypeInternal;
+extern FieldDescriptorProtoDefaultTypeInternal _FieldDescriptorProto_default_instance_;
 class FieldOptions;
-extern ::google::protobuf::internal::ExplicitlyConstructed<
-    class FieldOptions> _FieldOptions_default_instance_;
+class FieldOptionsDefaultTypeInternal;
+extern FieldOptionsDefaultTypeInternal _FieldOptions_default_instance_;
 class FileDescriptorProto;
-extern ::google::protobuf::internal::ExplicitlyConstructed<
-    class FileDescriptorProto> _FileDescriptorProto_default_instance_;
+class FileDescriptorProtoDefaultTypeInternal;
+extern FileDescriptorProtoDefaultTypeInternal _FileDescriptorProto_default_instance_;
 class FileDescriptorSet;
-extern ::google::protobuf::internal::ExplicitlyConstructed<
-    class FileDescriptorSet> _FileDescriptorSet_default_instance_;
+class FileDescriptorSetDefaultTypeInternal;
+extern FileDescriptorSetDefaultTypeInternal _FileDescriptorSet_default_instance_;
 class FileOptions;
-extern ::google::protobuf::internal::ExplicitlyConstructed<
-    class FileOptions> _FileOptions_default_instance_;
+class FileOptionsDefaultTypeInternal;
+extern FileOptionsDefaultTypeInternal _FileOptions_default_instance_;
 class GeneratedCodeInfo;
-extern ::google::protobuf::internal::ExplicitlyConstructed<
-    class GeneratedCodeInfo> _GeneratedCodeInfo_default_instance_;
+class GeneratedCodeInfoDefaultTypeInternal;
+extern GeneratedCodeInfoDefaultTypeInternal _GeneratedCodeInfo_default_instance_;
 class GeneratedCodeInfo_Annotation;
-extern ::google::protobuf::internal::ExplicitlyConstructed<
-    class GeneratedCodeInfo_Annotation> _GeneratedCodeInfo_Annotation_default_instance_;
+class GeneratedCodeInfo_AnnotationDefaultTypeInternal;
+extern GeneratedCodeInfo_AnnotationDefaultTypeInternal _GeneratedCodeInfo_Annotation_default_instance_;
 class MessageOptions;
-extern ::google::protobuf::internal::ExplicitlyConstructed<
-    class MessageOptions> _MessageOptions_default_instance_;
+class MessageOptionsDefaultTypeInternal;
+extern MessageOptionsDefaultTypeInternal _MessageOptions_default_instance_;
 class MethodDescriptorProto;
-extern ::google::protobuf::internal::ExplicitlyConstructed<
-    class MethodDescriptorProto> _MethodDescriptorProto_default_instance_;
+class MethodDescriptorProtoDefaultTypeInternal;
+extern MethodDescriptorProtoDefaultTypeInternal _MethodDescriptorProto_default_instance_;
 class MethodOptions;
-extern ::google::protobuf::internal::ExplicitlyConstructed<
-    class MethodOptions> _MethodOptions_default_instance_;
+class MethodOptionsDefaultTypeInternal;
+extern MethodOptionsDefaultTypeInternal _MethodOptions_default_instance_;
 class OneofDescriptorProto;
-extern ::google::protobuf::internal::ExplicitlyConstructed<
-    class OneofDescriptorProto> _OneofDescriptorProto_default_instance_;
+class OneofDescriptorProtoDefaultTypeInternal;
+extern OneofDescriptorProtoDefaultTypeInternal _OneofDescriptorProto_default_instance_;
 class OneofOptions;
-extern ::google::protobuf::internal::ExplicitlyConstructed<
-    class OneofOptions> _OneofOptions_default_instance_;
+class OneofOptionsDefaultTypeInternal;
+extern OneofOptionsDefaultTypeInternal _OneofOptions_default_instance_;
 class ServiceDescriptorProto;
-extern ::google::protobuf::internal::ExplicitlyConstructed<
-    class ServiceDescriptorProto> _ServiceDescriptorProto_default_instance_;
+class ServiceDescriptorProtoDefaultTypeInternal;
+extern ServiceDescriptorProtoDefaultTypeInternal _ServiceDescriptorProto_default_instance_;
 class ServiceOptions;
-extern ::google::protobuf::internal::ExplicitlyConstructed<
-    class ServiceOptions> _ServiceOptions_default_instance_;
+class ServiceOptionsDefaultTypeInternal;
+extern ServiceOptionsDefaultTypeInternal _ServiceOptions_default_instance_;
 class SourceCodeInfo;
-extern ::google::protobuf::internal::ExplicitlyConstructed<
-    class SourceCodeInfo> _SourceCodeInfo_default_instance_;
+class SourceCodeInfoDefaultTypeInternal;
+extern SourceCodeInfoDefaultTypeInternal _SourceCodeInfo_default_instance_;
 class SourceCodeInfo_Location;
-extern ::google::protobuf::internal::ExplicitlyConstructed<
-    class SourceCodeInfo_Location> _SourceCodeInfo_Location_default_instance_;
+class SourceCodeInfo_LocationDefaultTypeInternal;
+extern SourceCodeInfo_LocationDefaultTypeInternal _SourceCodeInfo_Location_default_instance_;
 class UninterpretedOption;
-extern ::google::protobuf::internal::ExplicitlyConstructed<
-    class UninterpretedOption> _UninterpretedOption_default_instance_;
+class UninterpretedOptionDefaultTypeInternal;
+extern UninterpretedOptionDefaultTypeInternal _UninterpretedOption_default_instance_;
 class UninterpretedOption_NamePart;
-extern ::google::protobuf::internal::ExplicitlyConstructed<
-    class UninterpretedOption_NamePart> _UninterpretedOption_NamePart_default_instance_;
+class UninterpretedOption_NamePartDefaultTypeInternal;
+extern UninterpretedOption_NamePartDefaultTypeInternal _UninterpretedOption_NamePart_default_instance_;
 namespace compiler {
 class CodeGeneratorRequest;
-extern ::google::protobuf::internal::ExplicitlyConstructed<
-    class CodeGeneratorRequest> _CodeGeneratorRequest_default_instance_;
+class CodeGeneratorRequestDefaultTypeInternal;
+extern CodeGeneratorRequestDefaultTypeInternal _CodeGeneratorRequest_default_instance_;
 class CodeGeneratorResponse;
-extern ::google::protobuf::internal::ExplicitlyConstructed<
-    class CodeGeneratorResponse> _CodeGeneratorResponse_default_instance_;
+class CodeGeneratorResponseDefaultTypeInternal;
+extern CodeGeneratorResponseDefaultTypeInternal _CodeGeneratorResponse_default_instance_;
 class CodeGeneratorResponse_File;
-extern ::google::protobuf::internal::ExplicitlyConstructed<
-    class CodeGeneratorResponse_File> _CodeGeneratorResponse_File_default_instance_;
+class CodeGeneratorResponse_FileDefaultTypeInternal;
+extern CodeGeneratorResponse_FileDefaultTypeInternal _CodeGeneratorResponse_File_default_instance_;
 }  // namespace compiler
 }  // namespace protobuf
 }  // namespace google
@@ -125,15 +125,15 @@ namespace protobuf {
 namespace compiler {
 
 // Internal implementation detail -- do not call these.
-void LIBPROTOC_EXPORT protobuf_AddDesc_google_2fprotobuf_2fcompiler_2fplugin_2eproto();
-void LIBPROTOC_EXPORT protobuf_InitDefaults_google_2fprotobuf_2fcompiler_2fplugin_2eproto();
+void protobuf_AddDesc_google_2fprotobuf_2fcompiler_2fplugin_2eproto();
+void protobuf_InitDefaults_google_2fprotobuf_2fcompiler_2fplugin_2eproto();
 void protobuf_AssignDesc_google_2fprotobuf_2fcompiler_2fplugin_2eproto();
 void protobuf_ShutdownFile_google_2fprotobuf_2fcompiler_2fplugin_2eproto();
 
 
 // ===================================================================
 
-class LIBPROTOC_EXPORT CodeGeneratorRequest : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.compiler.CodeGeneratorRequest) */ {
+class CodeGeneratorRequest : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.compiler.CodeGeneratorRequest) */ {
  public:
   CodeGeneratorRequest();
   virtual ~CodeGeneratorRequest();
@@ -157,7 +157,8 @@ class LIBPROTOC_EXPORT CodeGeneratorRequest : public ::google::protobuf::Message
   static const CodeGeneratorRequest& default_instance();
 
   static inline const CodeGeneratorRequest* internal_default_instance() {
-    return &_CodeGeneratorRequest_default_instance_.get();
+    return reinterpret_cast<const CodeGeneratorRequest*>(
+               &_CodeGeneratorRequest_default_instance_);
   }
 
   void Swap(CodeGeneratorRequest* other);
@@ -257,15 +258,15 @@ class LIBPROTOC_EXPORT CodeGeneratorRequest : public ::google::protobuf::Message
   ::google::protobuf::RepeatedPtrField< ::std::string> file_to_generate_;
   ::google::protobuf::RepeatedPtrField< ::google::protobuf::FileDescriptorProto > proto_file_;
   ::google::protobuf::internal::ArenaStringPtr parameter_;
-  friend void LIBPROTOC_EXPORT protobuf_InitDefaults_google_2fprotobuf_2fcompiler_2fplugin_2eproto_impl();
-  friend void LIBPROTOC_EXPORT protobuf_AddDesc_google_2fprotobuf_2fcompiler_2fplugin_2eproto_impl();
+  friend void  protobuf_InitDefaults_google_2fprotobuf_2fcompiler_2fplugin_2eproto_impl();
+  friend void  protobuf_AddDesc_google_2fprotobuf_2fcompiler_2fplugin_2eproto_impl();
   friend void protobuf_AssignDesc_google_2fprotobuf_2fcompiler_2fplugin_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fcompiler_2fplugin_2eproto();
 
 };
 // -------------------------------------------------------------------
 
-class LIBPROTOC_EXPORT CodeGeneratorResponse_File : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.compiler.CodeGeneratorResponse.File) */ {
+class CodeGeneratorResponse_File : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.compiler.CodeGeneratorResponse.File) */ {
  public:
   CodeGeneratorResponse_File();
   virtual ~CodeGeneratorResponse_File();
@@ -289,7 +290,8 @@ class LIBPROTOC_EXPORT CodeGeneratorResponse_File : public ::google::protobuf::M
   static const CodeGeneratorResponse_File& default_instance();
 
   static inline const CodeGeneratorResponse_File* internal_default_instance() {
-    return &_CodeGeneratorResponse_File_default_instance_.get();
+    return reinterpret_cast<const CodeGeneratorResponse_File*>(
+               &_CodeGeneratorResponse_File_default_instance_);
   }
 
   void Swap(CodeGeneratorResponse_File* other);
@@ -389,15 +391,15 @@ class LIBPROTOC_EXPORT CodeGeneratorResponse_File : public ::google::protobuf::M
   ::google::protobuf::internal::ArenaStringPtr name_;
   ::google::protobuf::internal::ArenaStringPtr insertion_point_;
   ::google::protobuf::internal::ArenaStringPtr content_;
-  friend void LIBPROTOC_EXPORT protobuf_InitDefaults_google_2fprotobuf_2fcompiler_2fplugin_2eproto_impl();
-  friend void LIBPROTOC_EXPORT protobuf_AddDesc_google_2fprotobuf_2fcompiler_2fplugin_2eproto_impl();
+  friend void  protobuf_InitDefaults_google_2fprotobuf_2fcompiler_2fplugin_2eproto_impl();
+  friend void  protobuf_AddDesc_google_2fprotobuf_2fcompiler_2fplugin_2eproto_impl();
   friend void protobuf_AssignDesc_google_2fprotobuf_2fcompiler_2fplugin_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fcompiler_2fplugin_2eproto();
 
 };
 // -------------------------------------------------------------------
 
-class LIBPROTOC_EXPORT CodeGeneratorResponse : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.compiler.CodeGeneratorResponse) */ {
+class CodeGeneratorResponse : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.compiler.CodeGeneratorResponse) */ {
  public:
   CodeGeneratorResponse();
   virtual ~CodeGeneratorResponse();
@@ -421,7 +423,8 @@ class LIBPROTOC_EXPORT CodeGeneratorResponse : public ::google::protobuf::Messag
   static const CodeGeneratorResponse& default_instance();
 
   static inline const CodeGeneratorResponse* internal_default_instance() {
-    return &_CodeGeneratorResponse_default_instance_.get();
+    return reinterpret_cast<const CodeGeneratorResponse*>(
+               &_CodeGeneratorResponse_default_instance_);
   }
 
   void Swap(CodeGeneratorResponse* other);
@@ -506,8 +509,8 @@ class LIBPROTOC_EXPORT CodeGeneratorResponse : public ::google::protobuf::Messag
   mutable int _cached_size_;
   ::google::protobuf::RepeatedPtrField< ::google::protobuf::compiler::CodeGeneratorResponse_File > file_;
   ::google::protobuf::internal::ArenaStringPtr error_;
-  friend void LIBPROTOC_EXPORT protobuf_InitDefaults_google_2fprotobuf_2fcompiler_2fplugin_2eproto_impl();
-  friend void LIBPROTOC_EXPORT protobuf_AddDesc_google_2fprotobuf_2fcompiler_2fplugin_2eproto_impl();
+  friend void  protobuf_InitDefaults_google_2fprotobuf_2fcompiler_2fplugin_2eproto_impl();
+  friend void  protobuf_AddDesc_google_2fprotobuf_2fcompiler_2fplugin_2eproto_impl();
   friend void protobuf_AssignDesc_google_2fprotobuf_2fcompiler_2fplugin_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fcompiler_2fplugin_2eproto();
 

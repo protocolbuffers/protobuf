@@ -20,9 +20,12 @@
 namespace google {
 namespace protobuf {
 namespace compiler {
-::google::protobuf::internal::ExplicitlyConstructed<CodeGeneratorRequest> _CodeGeneratorRequest_default_instance_;
-::google::protobuf::internal::ExplicitlyConstructed<CodeGeneratorResponse_File> _CodeGeneratorResponse_File_default_instance_;
-::google::protobuf::internal::ExplicitlyConstructed<CodeGeneratorResponse> _CodeGeneratorResponse_default_instance_;
+class CodeGeneratorRequestDefaultTypeInternal : public ::google::protobuf::internal::ExplicitlyConstructed<CodeGeneratorRequest> {};
+CodeGeneratorRequestDefaultTypeInternal _CodeGeneratorRequest_default_instance_;
+class CodeGeneratorResponse_FileDefaultTypeInternal : public ::google::protobuf::internal::ExplicitlyConstructed<CodeGeneratorResponse_File> {};
+CodeGeneratorResponse_FileDefaultTypeInternal _CodeGeneratorResponse_File_default_instance_;
+class CodeGeneratorResponseDefaultTypeInternal : public ::google::protobuf::internal::ExplicitlyConstructed<CodeGeneratorResponse> {};
+CodeGeneratorResponseDefaultTypeInternal _CodeGeneratorResponse_default_instance_;
 
 namespace {
 
@@ -254,7 +257,7 @@ bool CodeGeneratorRequest::MergePartialFromCodedStream(
   ::google::protobuf::uint32 tag;
   // @@protoc_insertion_point(parse_start:google.protobuf.compiler.CodeGeneratorRequest)
   for (;;) {
-    ::std::pair< ::google::protobuf::uint32, bool> p = input->ReadTagWithCutoff(127);
+    ::std::pair< ::google::protobuf::uint32, bool> p = input->ReadTagWithCutoffNoLastTag(127);
     tag = p.first;
     if (!p.second) goto handle_unusual;
     switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
@@ -459,7 +462,7 @@ void CodeGeneratorRequest::MergeFrom(const ::google::protobuf::Message& from) {
 
 void CodeGeneratorRequest::MergeFrom(const CodeGeneratorRequest& from) {
 // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.compiler.CodeGeneratorRequest)
-  GOOGLE_DCHECK(&from != this);
+  GOOGLE_DCHECK_NE(&from, this);
   _internal_metadata_.MergeFrom(from._internal_metadata_);
   file_to_generate_.MergeFrom(from.file_to_generate_);
   proto_file_.MergeFrom(from.proto_file_);
@@ -751,7 +754,7 @@ bool CodeGeneratorResponse_File::MergePartialFromCodedStream(
   ::google::protobuf::uint32 tag;
   // @@protoc_insertion_point(parse_start:google.protobuf.compiler.CodeGeneratorResponse.File)
   for (;;) {
-    ::std::pair< ::google::protobuf::uint32, bool> p = input->ReadTagWithCutoff(127);
+    ::std::pair< ::google::protobuf::uint32, bool> p = input->ReadTagWithCutoffNoLastTag(127);
     tag = p.first;
     if (!p.second) goto handle_unusual;
     switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
@@ -963,7 +966,7 @@ void CodeGeneratorResponse_File::MergeFrom(const ::google::protobuf::Message& fr
 
 void CodeGeneratorResponse_File::MergeFrom(const CodeGeneratorResponse_File& from) {
 // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.compiler.CodeGeneratorResponse.File)
-  GOOGLE_DCHECK(&from != this);
+  GOOGLE_DCHECK_NE(&from, this);
   _internal_metadata_.MergeFrom(from._internal_metadata_);
   if (from._has_bits_[0 / 32] & 7u) {
     if (from.has_name()) {
@@ -1266,7 +1269,7 @@ bool CodeGeneratorResponse::MergePartialFromCodedStream(
   ::google::protobuf::uint32 tag;
   // @@protoc_insertion_point(parse_start:google.protobuf.compiler.CodeGeneratorResponse)
   for (;;) {
-    ::std::pair< ::google::protobuf::uint32, bool> p = input->ReadTagWithCutoff(127);
+    ::std::pair< ::google::protobuf::uint32, bool> p = input->ReadTagWithCutoffNoLastTag(127);
     tag = p.first;
     if (!p.second) goto handle_unusual;
     switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
@@ -1427,7 +1430,7 @@ void CodeGeneratorResponse::MergeFrom(const ::google::protobuf::Message& from) {
 
 void CodeGeneratorResponse::MergeFrom(const CodeGeneratorResponse& from) {
 // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.compiler.CodeGeneratorResponse)
-  GOOGLE_DCHECK(&from != this);
+  GOOGLE_DCHECK_NE(&from, this);
   _internal_metadata_.MergeFrom(from._internal_metadata_);
   file_.MergeFrom(from.file_);
   if (from.has_error()) {

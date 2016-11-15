@@ -283,8 +283,9 @@ void FileGenerator::GenerateSource(io::Printer* printer) {
   for (int i = 0; i < message_generators_.size(); i++) {
     if (IsMapEntryMessage(message_generators_[i]->descriptor_)) continue;
     printer->Print(
-        "::google::protobuf::internal::ExplicitlyConstructed<$classname$> "
-        "_$classname$_default_instance_;\n",
+        "class $classname$DefaultTypeInternal : "
+        "public ::google::protobuf::internal::ExplicitlyConstructed<$classname$> {};\n"
+        "$classname$DefaultTypeInternal _$classname$_default_instance_;\n",
         "classname", message_generators_[i]->classname_);
   }
 
@@ -416,11 +417,13 @@ class FileGenerator::ForwardDeclarations {
              it = classes_.begin(),
              end = classes_.end();
          it != end; ++it) {
-      printer->Print("class $classname$;\n", "classname", it->first);
+      printer->Print("class $classname$;\n"
+                     "class $classname$DefaultTypeInternal;\n",
+                     "classname", it->first);
       printer->Annotate("classname", it->second);
+
       printer->Print(
-          "extern ::google::protobuf::internal::ExplicitlyConstructed<\n"
-          "    class $classname$> _$classname$_default_instance_;\n",
+          "extern $classname$DefaultTypeInternal _$classname$_default_instance_;\n",
           "classname", it->first);
     }
     for (std::map<string, ForwardDeclarations *>::const_iterator
