@@ -257,6 +257,11 @@ static void convert_to_class_name_inplace(char *class_name,
   bool first_char = false;
   size_t pkg_name_len = package_name == NULL ? 0 : strlen(package_name);
 
+  // In php, class name cannot be Empty.
+  if (strcmp("google.protobuf.Empty", fullname) == 0) {
+    fullname = "google.protobuf.GPBEmpty";
+  }
+
   if (pkg_name_len == 0) {
     strcpy(class_name, fullname);
   } else {
@@ -330,9 +335,11 @@ PHP_METHOD(DescriptorPool, internalAddGeneratedFile) {
         upb_msgdef_mapentry(upb_downcast_msgdef(def))) {                       \
       break;                                                                   \
     }                                                                          \
-    /* Prepend '.' to package name to make it absolute. */                     \
+    /* Prepend '.' to package name to make it absolute. In the 5 additional    \
+     * bytes allocated, one for '.', one for trailing 0, and 3 for 'GPB' if    \
+     * given message is google.protobuf.Empty.*/                               \
     const char *fullname = upb_##def_type_lower##_fullname(def_type_lower);    \
-    char *klass_name = ecalloc(sizeof(char), 2 + strlen(fullname));            \
+    char *klass_name = ecalloc(sizeof(char), 5 + strlen(fullname));            \
     convert_to_class_name_inplace(klass_name, fullname,                        \
                                   upb_filedef_package(files[0]));              \
     zend_class_entry **pce;                                                    \

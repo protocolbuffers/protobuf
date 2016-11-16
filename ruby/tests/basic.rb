@@ -1181,5 +1181,15 @@ module BasicTest
       m2 = MapMessage.decode_json(MapMessage.encode_json(m))
       assert m == m2
     end
+
+    def test_comparison_with_arbitrary_object
+      assert_false MapMessage.new == nil
+    end
+
+    def test_respond_to
+      msg = MapMessage.new
+      assert msg.respond_to?(:map_string_int32)
+      assert_false msg.respond_to?(:bacon)
+    end
   end
 end
