@@ -33,6 +33,7 @@
 //  Based on original Protocol Buffers design by
 //  Sanjay Ghemawat, Jeff Dean, and others.
 
+#include <climits>
 #include <google/protobuf/arena.h>
 #include <google/protobuf/generated_message_util.h>
 #include <google/protobuf/message_lite.h>
