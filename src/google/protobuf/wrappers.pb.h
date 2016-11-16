@@ -64,12 +64,12 @@ namespace google {
 namespace protobuf {
 
 // Internal implementation detail -- do not call these.
-void protobuf_AddDesc_google_2fprotobuf_2fwrappers_2eproto();
-void protobuf_InitDefaults_google_2fprotobuf_2fwrappers_2eproto();
+void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2fwrappers_2eproto();
+void LIBPROTOBUF_EXPORT protobuf_InitDefaults_google_2fprotobuf_2fwrappers_2eproto();
 
 // ===================================================================
 
-class DoubleValue : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.DoubleValue) */ {
+class LIBPROTOBUF_EXPORT DoubleValue : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.DoubleValue) */ {
  public:
   DoubleValue();
   virtual ~DoubleValue();
@@ -162,15 +162,15 @@ class DoubleValue : public ::google::protobuf::Message /* @@protoc_insertion_poi
   typedef void DestructorSkippable_;
   double value_;
   mutable int _cached_size_;
-  friend void  protobuf_InitDefaults_google_2fprotobuf_2fwrappers_2eproto_impl();
-  friend void  protobuf_AddDesc_google_2fprotobuf_2fwrappers_2eproto_impl();
+  friend void LIBPROTOBUF_EXPORT protobuf_InitDefaults_google_2fprotobuf_2fwrappers_2eproto_impl();
+  friend void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2fwrappers_2eproto_impl();
   friend const ::google::protobuf::uint32* protobuf_Offsets_google_2fprotobuf_2fwrappers_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fwrappers_2eproto();
 
 };
 // -------------------------------------------------------------------
 
-class FloatValue : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.FloatValue) */ {
+class LIBPROTOBUF_EXPORT FloatValue : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.FloatValue) */ {
  public:
   FloatValue();
   virtual ~FloatValue();
@@ -263,15 +263,15 @@ class FloatValue : public ::google::protobuf::Message /* @@protoc_insertion_poin
   typedef void DestructorSkippable_;
   float value_;
   mutable int _cached_size_;
-  friend void  protobuf_InitDefaults_google_2fprotobuf_2fwrappers_2eproto_impl();
-  friend void  protobuf_AddDesc_google_2fprotobuf_2fwrappers_2eproto_impl();
+  friend void LIBPROTOBUF_EXPORT protobuf_InitDefaults_google_2fprotobuf_2fwrappers_2eproto_impl();
+  friend void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2fwrappers_2eproto_impl();
   friend const ::google::protobuf::uint32* protobuf_Offsets_google_2fprotobuf_2fwrappers_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fwrappers_2eproto();
 
 };
 // -------------------------------------------------------------------
 
-class Int64Value : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.Int64Value) */ {
+class LIBPROTOBUF_EXPORT Int64Value : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.Int64Value) */ {
  public:
   Int64Value();
   virtual ~Int64Value();
@@ -364,15 +364,15 @@ class Int64Value : public ::google::protobuf::Message /* @@protoc_insertion_poin
   typedef void DestructorSkippable_;
   ::google::protobuf::int64 value_;
   mutable int _cached_size_;
-  friend void  protobuf_InitDefaults_google_2fprotobuf_2fwrappers_2eproto_impl();
-  friend void  protobuf_AddDesc_google_2fprotobuf_2fwrappers_2eproto_impl();
+  friend void LIBPROTOBUF_EXPORT protobuf_InitDefaults_google_2fprotobuf_2fwrappers_2eproto_impl();
+  friend void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2fwrappers_2eproto_impl();
   friend const ::google::protobuf::uint32* protobuf_Offsets_google_2fprotobuf_2fwrappers_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fwrappers_2eproto();
 
 };
 // -------------------------------------------------------------------
 
-class UInt64Value : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.UInt64Value) */ {
+class LIBPROTOBUF_EXPORT UInt64Value : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.UInt64Value) */ {
  public:
   UInt64Value();
   virtual ~UInt64Value();
@@ -465,15 +465,15 @@ class UInt64Value : public ::google::protobuf::Message /* @@protoc_insertion_poi
   typedef void DestructorSkippable_;
   ::google::protobuf::uint64 value_;
   mutable int _cached_size_;
-  friend void  protobuf_InitDefaults_google_2fprotobuf_2fwrappers_2eproto_impl();
-  friend void  protobuf_AddDesc_google_2fprotobuf_2fwrappers_2eproto_impl();
+  friend void LIBPROTOBUF_EXPORT protobuf_InitDefaults_google_2fprotobuf_2fwrappers_2eproto_impl();
+  friend void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2fwrappers_2eproto_impl();
   friend const ::google::protobuf::uint32* protobuf_Offsets_google_2fprotobuf_2fwrappers_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fwrappers_2eproto();
 
 };
 // -------------------------------------------------------------------
 
-class Int32Value : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.Int32Value) */ {
+class LIBPROTOBUF_EXPORT Int32Value : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.Int32Value) */ {
  public:
   Int32Value();
   virtual ~Int32Value();
@@ -566,15 +566,15 @@ class Int32Value : public ::google::protobuf::Message /* @@protoc_insertion_poin
   typedef void DestructorSkippable_;
   ::google::protobuf::int32 value_;
   mutable int _cached_size_;
-  friend void  protobuf_InitDefaults_google_2fprotobuf_2fwrappers_2eproto_impl();
-  friend void  protobuf_AddDesc_google_2fprotobuf_2fwrappers_2eproto_impl();
+  friend void LIBPROTOBUF_EXPORT protobuf_InitDefaults_google_2fprotobuf_2fwrappers_2eproto_impl();
+  friend void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2fwrappers_2eproto_impl();
   friend const ::google::protobuf::uint32* protobuf_Offsets_google_2fprotobuf_2fwrappers_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fwrappers_2eproto();
 
 };
 // -------------------------------------------------------------------
 
-class UInt32Value : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.UInt32Value) */ {
+class LIBPROTOBUF_EXPORT UInt32Value : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.UInt32Value) */ {
  public:
   UInt32Value();
   virtual ~UInt32Value();
@@ -667,15 +667,15 @@ class UInt32Value : public ::google::protobuf::Message /* @@protoc_insertion_poi
   typedef void DestructorSkippable_;
   ::google::protobuf::uint32 value_;
   mutable int _cached_size_;
-  friend void  protobuf_InitDefaults_google_2fprotobuf_2fwrappers_2eproto_impl();
-  friend void  protobuf_AddDesc_google_2fprotobuf_2fwrappers_2eproto_impl();
+  friend void LIBPROTOBUF_EXPORT protobuf_InitDefaults_google_2fprotobuf_2fwrappers_2eproto_impl();
+  friend void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2fwrappers_2eproto_impl();
   friend const ::google::protobuf::uint32* protobuf_Offsets_google_2fprotobuf_2fwrappers_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fwrappers_2eproto();
 
 };
 // -------------------------------------------------------------------
 
-class BoolValue : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.BoolValue) */ {
+class LIBPROTOBUF_EXPORT BoolValue : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.BoolValue) */ {
  public:
   BoolValue();
   virtual ~BoolValue();
@@ -768,15 +768,15 @@ class BoolValue : public ::google::protobuf::Message /* @@protoc_insertion_point
   typedef void DestructorSkippable_;
   bool value_;
   mutable int _cached_size_;
-  friend void  protobuf_InitDefaults_google_2fprotobuf_2fwrappers_2eproto_impl();
-  friend void  protobuf_AddDesc_google_2fprotobuf_2fwrappers_2eproto_impl();
+  friend void LIBPROTOBUF_EXPORT protobuf_InitDefaults_google_2fprotobuf_2fwrappers_2eproto_impl();
+  friend void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2fwrappers_2eproto_impl();
   friend const ::google::protobuf::uint32* protobuf_Offsets_google_2fprotobuf_2fwrappers_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fwrappers_2eproto();
 
 };
 // -------------------------------------------------------------------
 
-class StringValue : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.StringValue) */ {
+class LIBPROTOBUF_EXPORT StringValue : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.StringValue) */ {
  public:
   StringValue();
   virtual ~StringValue();
@@ -877,15 +877,15 @@ class StringValue : public ::google::protobuf::Message /* @@protoc_insertion_poi
   typedef void DestructorSkippable_;
   ::google::protobuf::internal::ArenaStringPtr value_;
   mutable int _cached_size_;
-  friend void  protobuf_InitDefaults_google_2fprotobuf_2fwrappers_2eproto_impl();
-  friend void  protobuf_AddDesc_google_2fprotobuf_2fwrappers_2eproto_impl();
+  friend void LIBPROTOBUF_EXPORT protobuf_InitDefaults_google_2fprotobuf_2fwrappers_2eproto_impl();
+  friend void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2fwrappers_2eproto_impl();
   friend const ::google::protobuf::uint32* protobuf_Offsets_google_2fprotobuf_2fwrappers_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fwrappers_2eproto();
 
 };
 // -------------------------------------------------------------------
 
-class BytesValue : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.BytesValue) */ {
+class LIBPROTOBUF_EXPORT BytesValue : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.BytesValue) */ {
  public:
   BytesValue();
   virtual ~BytesValue();
@@ -986,8 +986,8 @@ class BytesValue : public ::google::protobuf::Message /* @@protoc_insertion_poin
   typedef void DestructorSkippable_;
   ::google::protobuf::internal::ArenaStringPtr value_;
   mutable int _cached_size_;
-  friend void  protobuf_InitDefaults_google_2fprotobuf_2fwrappers_2eproto_impl();
-  friend void  protobuf_AddDesc_google_2fprotobuf_2fwrappers_2eproto_impl();
+  friend void LIBPROTOBUF_EXPORT protobuf_InitDefaults_google_2fprotobuf_2fwrappers_2eproto_impl();
+  friend void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2fwrappers_2eproto_impl();
   friend const ::google::protobuf::uint32* protobuf_Offsets_google_2fprotobuf_2fwrappers_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fwrappers_2eproto();
 

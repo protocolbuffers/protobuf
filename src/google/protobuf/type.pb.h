@@ -61,8 +61,8 @@ namespace google {
 namespace protobuf {
 
 // Internal implementation detail -- do not call these.
-void protobuf_AddDesc_google_2fprotobuf_2ftype_2eproto();
-void protobuf_InitDefaults_google_2fprotobuf_2ftype_2eproto();
+void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2ftype_2eproto();
+void LIBPROTOBUF_EXPORT protobuf_InitDefaults_google_2fprotobuf_2ftype_2eproto();
 
 enum Field_Kind {
   Field_Kind_TYPE_UNKNOWN = 0,
@@ -87,12 +87,12 @@ enum Field_Kind {
   Field_Kind_Field_Kind_INT_MIN_SENTINEL_DO_NOT_USE_ = ::google::protobuf::kint32min,
   Field_Kind_Field_Kind_INT_MAX_SENTINEL_DO_NOT_USE_ = ::google::protobuf::kint32max
 };
-bool Field_Kind_IsValid(int value);
+LIBPROTOBUF_EXPORT bool Field_Kind_IsValid(int value);
 const Field_Kind Field_Kind_Kind_MIN = Field_Kind_TYPE_UNKNOWN;
 const Field_Kind Field_Kind_Kind_MAX = Field_Kind_TYPE_SINT64;
 const int Field_Kind_Kind_ARRAYSIZE = Field_Kind_Kind_MAX + 1;
 
-const ::google::protobuf::EnumDescriptor* Field_Kind_descriptor();
+LIBPROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor* Field_Kind_descriptor();
 inline const ::std::string& Field_Kind_Name(Field_Kind value) {
   return ::google::protobuf::internal::NameOfEnum(
     Field_Kind_descriptor(), value);
@@ -110,12 +110,12 @@ enum Field_Cardinality {
   Field_Cardinality_Field_Cardinality_INT_MIN_SENTINEL_DO_NOT_USE_ = ::google::protobuf::kint32min,
   Field_Cardinality_Field_Cardinality_INT_MAX_SENTINEL_DO_NOT_USE_ = ::google::protobuf::kint32max
 };
-bool Field_Cardinality_IsValid(int value);
+LIBPROTOBUF_EXPORT bool Field_Cardinality_IsValid(int value);
 const Field_Cardinality Field_Cardinality_Cardinality_MIN = Field_Cardinality_CARDINALITY_UNKNOWN;
 const Field_Cardinality Field_Cardinality_Cardinality_MAX = Field_Cardinality_CARDINALITY_REPEATED;
 const int Field_Cardinality_Cardinality_ARRAYSIZE = Field_Cardinality_Cardinality_MAX + 1;
 
-const ::google::protobuf::EnumDescriptor* Field_Cardinality_descriptor();
+LIBPROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor* Field_Cardinality_descriptor();
 inline const ::std::string& Field_Cardinality_Name(Field_Cardinality value) {
   return ::google::protobuf::internal::NameOfEnum(
     Field_Cardinality_descriptor(), value);
@@ -131,12 +131,12 @@ enum Syntax {
   Syntax_INT_MIN_SENTINEL_DO_NOT_USE_ = ::google::protobuf::kint32min,
   Syntax_INT_MAX_SENTINEL_DO_NOT_USE_ = ::google::protobuf::kint32max
 };
-bool Syntax_IsValid(int value);
+LIBPROTOBUF_EXPORT bool Syntax_IsValid(int value);
 const Syntax Syntax_MIN = SYNTAX_PROTO2;
 const Syntax Syntax_MAX = SYNTAX_PROTO3;
 const int Syntax_ARRAYSIZE = Syntax_MAX + 1;
 
-const ::google::protobuf::EnumDescriptor* Syntax_descriptor();
+LIBPROTOBUF_EXPORT const ::google::protobuf::EnumDescriptor* Syntax_descriptor();
 inline const ::std::string& Syntax_Name(Syntax value) {
   return ::google::protobuf::internal::NameOfEnum(
     Syntax_descriptor(), value);
@@ -148,7 +148,7 @@ inline bool Syntax_Parse(
 }
 // ===================================================================
 
-class Type : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.Type) */ {
+class LIBPROTOBUF_EXPORT Type : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.Type) */ {
  public:
   Type();
   virtual ~Type();
@@ -316,15 +316,15 @@ class Type : public ::google::protobuf::Message /* @@protoc_insertion_point(clas
   ::google::protobuf::SourceContext* source_context_;
   int syntax_;
   mutable int _cached_size_;
-  friend void  protobuf_InitDefaults_google_2fprotobuf_2ftype_2eproto_impl();
-  friend void  protobuf_AddDesc_google_2fprotobuf_2ftype_2eproto_impl();
+  friend void LIBPROTOBUF_EXPORT protobuf_InitDefaults_google_2fprotobuf_2ftype_2eproto_impl();
+  friend void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2ftype_2eproto_impl();
   friend const ::google::protobuf::uint32* protobuf_Offsets_google_2fprotobuf_2ftype_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2ftype_2eproto();
 
 };
 // -------------------------------------------------------------------
 
-class Field : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.Field) */ {
+class LIBPROTOBUF_EXPORT Field : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.Field) */ {
  public:
   Field();
   virtual ~Field();
@@ -608,15 +608,15 @@ class Field : public ::google::protobuf::Message /* @@protoc_insertion_point(cla
   ::google::protobuf::int32 oneof_index_;
   bool packed_;
   mutable int _cached_size_;
-  friend void  protobuf_InitDefaults_google_2fprotobuf_2ftype_2eproto_impl();
-  friend void  protobuf_AddDesc_google_2fprotobuf_2ftype_2eproto_impl();
+  friend void LIBPROTOBUF_EXPORT protobuf_InitDefaults_google_2fprotobuf_2ftype_2eproto_impl();
+  friend void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2ftype_2eproto_impl();
   friend const ::google::protobuf::uint32* protobuf_Offsets_google_2fprotobuf_2ftype_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2ftype_2eproto();
 
 };
 // -------------------------------------------------------------------
 
-class Enum : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.Enum) */ {
+class LIBPROTOBUF_EXPORT Enum : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.Enum) */ {
  public:
   Enum();
   virtual ~Enum();
@@ -767,15 +767,15 @@ class Enum : public ::google::protobuf::Message /* @@protoc_insertion_point(clas
   ::google::protobuf::SourceContext* source_context_;
   int syntax_;
   mutable int _cached_size_;
-  friend void  protobuf_InitDefaults_google_2fprotobuf_2ftype_2eproto_impl();
-  friend void  protobuf_AddDesc_google_2fprotobuf_2ftype_2eproto_impl();
+  friend void LIBPROTOBUF_EXPORT protobuf_InitDefaults_google_2fprotobuf_2ftype_2eproto_impl();
+  friend void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2ftype_2eproto_impl();
   friend const ::google::protobuf::uint32* protobuf_Offsets_google_2fprotobuf_2ftype_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2ftype_2eproto();
 
 };
 // -------------------------------------------------------------------
 
-class EnumValue : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.EnumValue) */ {
+class LIBPROTOBUF_EXPORT EnumValue : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.EnumValue) */ {
  public:
   EnumValue();
   virtual ~EnumValue();
@@ -896,15 +896,15 @@ class EnumValue : public ::google::protobuf::Message /* @@protoc_insertion_point
   ::google::protobuf::internal::ArenaStringPtr name_;
   ::google::protobuf::int32 number_;
   mutable int _cached_size_;
-  friend void  protobuf_InitDefaults_google_2fprotobuf_2ftype_2eproto_impl();
-  friend void  protobuf_AddDesc_google_2fprotobuf_2ftype_2eproto_impl();
+  friend void LIBPROTOBUF_EXPORT protobuf_InitDefaults_google_2fprotobuf_2ftype_2eproto_impl();
+  friend void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2ftype_2eproto_impl();
   friend const ::google::protobuf::uint32* protobuf_Offsets_google_2fprotobuf_2ftype_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2ftype_2eproto();
 
 };
 // -------------------------------------------------------------------
 
-class Option : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.Option) */ {
+class LIBPROTOBUF_EXPORT Option : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.Option) */ {
  public:
   Option();
   virtual ~Option();
@@ -1022,8 +1022,8 @@ class Option : public ::google::protobuf::Message /* @@protoc_insertion_point(cl
   ::google::protobuf::internal::ArenaStringPtr name_;
   ::google::protobuf::Any* value_;
   mutable int _cached_size_;
-  friend void  protobuf_InitDefaults_google_2fprotobuf_2ftype_2eproto_impl();
-  friend void  protobuf_AddDesc_google_2fprotobuf_2ftype_2eproto_impl();
+  friend void LIBPROTOBUF_EXPORT protobuf_InitDefaults_google_2fprotobuf_2ftype_2eproto_impl();
+  friend void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2ftype_2eproto_impl();
   friend const ::google::protobuf::uint32* protobuf_Offsets_google_2fprotobuf_2ftype_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2ftype_2eproto();
 

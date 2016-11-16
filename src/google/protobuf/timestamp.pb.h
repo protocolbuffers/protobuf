@@ -40,12 +40,12 @@ namespace google {
 namespace protobuf {
 
 // Internal implementation detail -- do not call these.
-void protobuf_AddDesc_google_2fprotobuf_2ftimestamp_2eproto();
-void protobuf_InitDefaults_google_2fprotobuf_2ftimestamp_2eproto();
+void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2ftimestamp_2eproto();
+void LIBPROTOBUF_EXPORT protobuf_InitDefaults_google_2fprotobuf_2ftimestamp_2eproto();
 
 // ===================================================================
 
-class Timestamp : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.Timestamp) */ {
+class LIBPROTOBUF_EXPORT Timestamp : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.Timestamp) */ {
  public:
   Timestamp();
   virtual ~Timestamp();
@@ -145,8 +145,8 @@ class Timestamp : public ::google::protobuf::Message /* @@protoc_insertion_point
   ::google::protobuf::int64 seconds_;
   ::google::protobuf::int32 nanos_;
   mutable int _cached_size_;
-  friend void  protobuf_InitDefaults_google_2fprotobuf_2ftimestamp_2eproto_impl();
-  friend void  protobuf_AddDesc_google_2fprotobuf_2ftimestamp_2eproto_impl();
+  friend void LIBPROTOBUF_EXPORT protobuf_InitDefaults_google_2fprotobuf_2ftimestamp_2eproto_impl();
+  friend void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2ftimestamp_2eproto_impl();
   friend const ::google::protobuf::uint32* protobuf_Offsets_google_2fprotobuf_2ftimestamp_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2ftimestamp_2eproto();
 

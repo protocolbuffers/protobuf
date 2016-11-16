@@ -40,12 +40,12 @@ namespace google {
 namespace protobuf {
 
 // Internal implementation detail -- do not call these.
-void protobuf_AddDesc_google_2fprotobuf_2fempty_2eproto();
-void protobuf_InitDefaults_google_2fprotobuf_2fempty_2eproto();
+void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2fempty_2eproto();
+void LIBPROTOBUF_EXPORT protobuf_InitDefaults_google_2fprotobuf_2fempty_2eproto();
 
 // ===================================================================
 
-class Empty : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.Empty) */ {
+class LIBPROTOBUF_EXPORT Empty : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.Empty) */ {
  public:
   Empty();
   virtual ~Empty();
@@ -131,8 +131,8 @@ class Empty : public ::google::protobuf::Message /* @@protoc_insertion_point(cla
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
   mutable int _cached_size_;
-  friend void  protobuf_InitDefaults_google_2fprotobuf_2fempty_2eproto_impl();
-  friend void  protobuf_AddDesc_google_2fprotobuf_2fempty_2eproto_impl();
+  friend void LIBPROTOBUF_EXPORT protobuf_InitDefaults_google_2fprotobuf_2fempty_2eproto_impl();
+  friend void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2fempty_2eproto_impl();
   friend const ::google::protobuf::uint32* protobuf_Offsets_google_2fprotobuf_2fempty_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fempty_2eproto();
 
