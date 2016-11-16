@@ -2229,16 +2229,48 @@ MapFieldBase* GeneratedMessageReflection::MapData(
   return MutableRaw<MapFieldBase>(message, field);
 }
 
+namespace {
+
+// Helper function to transform migration schema into reflection schema.
+ReflectionSchema MigrationToReflectionSchema(
+    const DefaultInstanceData* default_instance_data, const uint32* offsets,
+    MigrationSchema migration_schema) {
+  ReflectionSchema result;
+  result.default_instance_ = default_instance_data->default_instance;
+  // First 5 offsets are offsets to the special fields. The following offsets
+  // are the proto fields.
+  result.offsets_ = offsets + migration_schema.offsets_index + 4;
+  result.has_bit_indices_ = offsets + migration_schema.has_bit_indices_index;
+  result.has_bits_offset_ = offsets[migration_schema.offsets_index + 0];
+  result.metadata_offset_ = offsets[migration_schema.offsets_index + 1];
+  result.extensions_offset_ = offsets[migration_schema.offsets_index + 2];
+  result.default_oneof_instance_ = default_instance_data->default_oneof_instance;
+  result.oneof_case_offset_ = offsets[migration_schema.offsets_index + 3];
+  result.object_size_ = migration_schema.object_size;
+  return result;
+}
+
+ReflectionSchema MigrationToReflectionSchema(
+    const DefaultInstanceData* default_instance_data, const uint32* offsets,
+    ReflectionSchema schema) {
+  return schema;
+}
+
+template<typename Schema>
 class AssignDescriptorsHelper {
  public:
   AssignDescriptorsHelper(MessageFactory* factory,
                           Metadata* file_level_metadata,
                           const EnumDescriptor** file_level_enum_descriptors,
-                          const ReflectionSchema* schemas)
+                          const Schema* schemas,
+                          const DefaultInstanceData* default_instance_data,
+                          const uint32* offsets)
       : factory_(factory),
         file_level_metadata_(file_level_metadata),
         file_level_enum_descriptors_(file_level_enum_descriptors),
-        schemas_(schemas) {}
+        schemas_(schemas),
+        default_instance_data_(default_instance_data),
+        offsets_(offsets) {}
 
   void AssignMessageDescriptor(const Descriptor* descriptor) {
     for (int i = 0; i < descriptor->nested_type_count(); i++) {
@@ -2250,8 +2282,9 @@ class AssignDescriptorsHelper {
     if (!descriptor->options().map_entry()) {
       // Only set reflection for non map types.
       file_level_metadata_->reflection = new GeneratedMessageReflection(
-          descriptor, *schemas_, ::google::protobuf::DescriptorPool::generated_pool(),
-          factory_);
+          descriptor, MigrationToReflectionSchema(default_instance_data_++,
+                                                  offsets_, *schemas_),
+          ::google::protobuf::DescriptorPool::generated_pool(), factory_);
       for (int i = 0; i < descriptor->enum_type_count(); i++) {
         AssignEnumDescriptor(descriptor->enum_type(i));
       }
@@ -2269,8 +2302,44 @@ class AssignDescriptorsHelper {
   MessageFactory* factory_;
   Metadata* file_level_metadata_;
   const EnumDescriptor** file_level_enum_descriptors_;
-  const ReflectionSchema* schemas_;
+  const Schema* schemas_;
+  const DefaultInstanceData* default_instance_data_;
+  const uint32* offsets_;
 };
+
+}  // namespace
+
+void AssignDescriptors(
+    const string& filename, const MigrationSchema* schemas,
+    const DefaultInstanceData* default_instance_data, const uint32* offsets,
+    MessageFactory* factory,
+    // update the following descriptor arrays.
+    Metadata* file_level_metadata,
+    const EnumDescriptor** file_level_enum_descriptors,
+    const ServiceDescriptor** file_level_service_descriptors) {
+  const ::google::protobuf::FileDescriptor* file =
+      ::google::protobuf::DescriptorPool::generated_pool()->FindFileByName(filename);
+  GOOGLE_CHECK(file != NULL);
+
+  if (!factory) factory = MessageFactory::generated_factory();
+
+  AssignDescriptorsHelper<MigrationSchema> helper(factory, file_level_metadata,
+                                 file_level_enum_descriptors, schemas,
+                                 default_instance_data, offsets);
+
+  for (int i = 0; i < file->message_type_count(); i++) {
+    helper.AssignMessageDescriptor(file->message_type(i));
+  }
+
+  for (int i = 0; i < file->enum_type_count(); i++) {
+    helper.AssignEnumDescriptor(file->enum_type(i));
+  }
+  if (file->options().cc_generic_services()) {
+    for (int i = 0; i < file->service_count(); i++) {
+      file_level_service_descriptors[i] = file->service(i);
+    }
+  }
+}
 
 void AssignDescriptors(
     const string& filename, const ReflectionSchema* schemas,
@@ -2285,8 +2354,9 @@ void AssignDescriptors(
 
   if (!factory) factory = MessageFactory::generated_factory();
 
-  AssignDescriptorsHelper helper(factory, file_level_metadata,
-                                 file_level_enum_descriptors, schemas);
+  AssignDescriptorsHelper<ReflectionSchema> helper(factory, file_level_metadata,
+                                 file_level_enum_descriptors, schemas,
+                                 NULL, NULL);
 
   for (int i = 0; i < file->message_type_count(); i++) {
     helper.AssignMessageDescriptor(file->message_type(i));

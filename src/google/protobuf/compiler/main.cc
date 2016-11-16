@@ -60,7 +60,7 @@ int main(int argc, char* argv[]) {
 #ifndef OPENSOURCE_PROTOBUF_CPP_BOOTSTRAP
   // Proto2 Java
   google::protobuf::compiler::java::JavaGenerator java_generator;
-  cli.RegisterGenerator("--java_out", &java_generator,
+  cli.RegisterGenerator("--java_out", "--java_opt", &java_generator,
                         "Generate Java source file.");
 #endif  // !OPENSOURCE_PROTOBUF_CPP_BOOTSTRAP
 

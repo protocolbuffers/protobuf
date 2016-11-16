@@ -68,9 +68,6 @@ namespace protobuf {
 // Internal implementation detail -- do not call these.
 void protobuf_AddDesc_google_2fprotobuf_2fapi_2eproto();
 void protobuf_InitDefaults_google_2fprotobuf_2fapi_2eproto();
-void protobuf_AssignDesc_google_2fprotobuf_2fapi_2eproto();
-void protobuf_ShutdownFile_google_2fprotobuf_2fapi_2eproto();
-
 
 // ===================================================================
 
@@ -227,7 +224,7 @@ class Api : public ::google::protobuf::Message /* @@protoc_insertion_point(class
   mutable int _cached_size_;
   friend void  protobuf_InitDefaults_google_2fprotobuf_2fapi_2eproto_impl();
   friend void  protobuf_AddDesc_google_2fprotobuf_2fapi_2eproto_impl();
-  friend void protobuf_AssignDesc_google_2fprotobuf_2fapi_2eproto();
+  friend const ::google::protobuf::uint32* protobuf_Offsets_google_2fprotobuf_2fapi_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fapi_2eproto();
 
 };
@@ -376,7 +373,7 @@ class Method : public ::google::protobuf::Message /* @@protoc_insertion_point(cl
   mutable int _cached_size_;
   friend void  protobuf_InitDefaults_google_2fprotobuf_2fapi_2eproto_impl();
   friend void  protobuf_AddDesc_google_2fprotobuf_2fapi_2eproto_impl();
-  friend void protobuf_AssignDesc_google_2fprotobuf_2fapi_2eproto();
+  friend const ::google::protobuf::uint32* protobuf_Offsets_google_2fprotobuf_2fapi_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fapi_2eproto();
 
 };
@@ -479,7 +476,7 @@ class Mixin : public ::google::protobuf::Message /* @@protoc_insertion_point(cla
   mutable int _cached_size_;
   friend void  protobuf_InitDefaults_google_2fprotobuf_2fapi_2eproto_impl();
   friend void  protobuf_AddDesc_google_2fprotobuf_2fapi_2eproto_impl();
-  friend void protobuf_AssignDesc_google_2fprotobuf_2fapi_2eproto();
+  friend const ::google::protobuf::uint32* protobuf_Offsets_google_2fprotobuf_2fapi_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fapi_2eproto();
 
 };

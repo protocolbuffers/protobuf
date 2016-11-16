@@ -127,9 +127,6 @@ namespace compiler {
 // Internal implementation detail -- do not call these.
 void protobuf_AddDesc_google_2fprotobuf_2fcompiler_2fplugin_2eproto();
 void protobuf_InitDefaults_google_2fprotobuf_2fcompiler_2fplugin_2eproto();
-void protobuf_AssignDesc_google_2fprotobuf_2fcompiler_2fplugin_2eproto();
-void protobuf_ShutdownFile_google_2fprotobuf_2fcompiler_2fplugin_2eproto();
-
 
 // ===================================================================
 
@@ -260,7 +257,7 @@ class CodeGeneratorRequest : public ::google::protobuf::Message /* @@protoc_inse
   ::google::protobuf::internal::ArenaStringPtr parameter_;
   friend void  protobuf_InitDefaults_google_2fprotobuf_2fcompiler_2fplugin_2eproto_impl();
   friend void  protobuf_AddDesc_google_2fprotobuf_2fcompiler_2fplugin_2eproto_impl();
-  friend void protobuf_AssignDesc_google_2fprotobuf_2fcompiler_2fplugin_2eproto();
+  friend const ::google::protobuf::uint32* protobuf_Offsets_google_2fprotobuf_2fcompiler_2fplugin_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fcompiler_2fplugin_2eproto();
 
 };
@@ -393,7 +390,7 @@ class CodeGeneratorResponse_File : public ::google::protobuf::Message /* @@proto
   ::google::protobuf::internal::ArenaStringPtr content_;
   friend void  protobuf_InitDefaults_google_2fprotobuf_2fcompiler_2fplugin_2eproto_impl();
   friend void  protobuf_AddDesc_google_2fprotobuf_2fcompiler_2fplugin_2eproto_impl();
-  friend void protobuf_AssignDesc_google_2fprotobuf_2fcompiler_2fplugin_2eproto();
+  friend const ::google::protobuf::uint32* protobuf_Offsets_google_2fprotobuf_2fcompiler_2fplugin_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fcompiler_2fplugin_2eproto();
 
 };
@@ -511,7 +508,7 @@ class CodeGeneratorResponse : public ::google::protobuf::Message /* @@protoc_ins
   ::google::protobuf::internal::ArenaStringPtr error_;
   friend void  protobuf_InitDefaults_google_2fprotobuf_2fcompiler_2fplugin_2eproto_impl();
   friend void  protobuf_AddDesc_google_2fprotobuf_2fcompiler_2fplugin_2eproto_impl();
-  friend void protobuf_AssignDesc_google_2fprotobuf_2fcompiler_2fplugin_2eproto();
+  friend const ::google::protobuf::uint32* protobuf_Offsets_google_2fprotobuf_2fcompiler_2fplugin_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fcompiler_2fplugin_2eproto();
 
 };

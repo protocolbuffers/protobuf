@@ -115,9 +115,6 @@ namespace protobuf {
 // Internal implementation detail -- do not call these.
 void protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto();
 void protobuf_InitDefaults_google_2fprotobuf_2fdescriptor_2eproto();
-void protobuf_AssignDesc_google_2fprotobuf_2fdescriptor_2eproto();
-void protobuf_ShutdownFile_google_2fprotobuf_2fdescriptor_2eproto();
-
 
 enum FieldDescriptorProto_Type {
   FieldDescriptorProto_Type_TYPE_DOUBLE = 1,
@@ -351,7 +348,7 @@ class FileDescriptorSet : public ::google::protobuf::Message /* @@protoc_inserti
   ::google::protobuf::RepeatedPtrField< ::google::protobuf::FileDescriptorProto > file_;
   friend void  protobuf_InitDefaults_google_2fprotobuf_2fdescriptor_2eproto_impl();
   friend void  protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto_impl();
-  friend void protobuf_AssignDesc_google_2fprotobuf_2fdescriptor_2eproto();
+  friend const ::google::protobuf::uint32* protobuf_Offsets_google_2fprotobuf_2fdescriptor_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fdescriptor_2eproto();
 
 };
@@ -603,7 +600,7 @@ class FileDescriptorProto : public ::google::protobuf::Message /* @@protoc_inser
   ::google::protobuf::SourceCodeInfo* source_code_info_;
   friend void  protobuf_InitDefaults_google_2fprotobuf_2fdescriptor_2eproto_impl();
   friend void  protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto_impl();
-  friend void protobuf_AssignDesc_google_2fprotobuf_2fdescriptor_2eproto();
+  friend const ::google::protobuf::uint32* protobuf_Offsets_google_2fprotobuf_2fdescriptor_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fdescriptor_2eproto();
 
 };
@@ -711,7 +708,7 @@ class DescriptorProto_ExtensionRange : public ::google::protobuf::Message /* @@p
   ::google::protobuf::int32 end_;
   friend void  protobuf_InitDefaults_google_2fprotobuf_2fdescriptor_2eproto_impl();
   friend void  protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto_impl();
-  friend void protobuf_AssignDesc_google_2fprotobuf_2fdescriptor_2eproto();
+  friend const ::google::protobuf::uint32* protobuf_Offsets_google_2fprotobuf_2fdescriptor_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fdescriptor_2eproto();
 
 };
@@ -819,7 +816,7 @@ class DescriptorProto_ReservedRange : public ::google::protobuf::Message /* @@pr
   ::google::protobuf::int32 end_;
   friend void  protobuf_InitDefaults_google_2fprotobuf_2fdescriptor_2eproto_impl();
   friend void  protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto_impl();
-  friend void protobuf_AssignDesc_google_2fprotobuf_2fdescriptor_2eproto();
+  friend const ::google::protobuf::uint32* protobuf_Offsets_google_2fprotobuf_2fdescriptor_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fdescriptor_2eproto();
 
 };
@@ -1045,7 +1042,7 @@ class DescriptorProto : public ::google::protobuf::Message /* @@protoc_insertion
   ::google::protobuf::MessageOptions* options_;
   friend void  protobuf_InitDefaults_google_2fprotobuf_2fdescriptor_2eproto_impl();
   friend void  protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto_impl();
-  friend void protobuf_AssignDesc_google_2fprotobuf_2fdescriptor_2eproto();
+  friend const ::google::protobuf::uint32* protobuf_Offsets_google_2fprotobuf_2fdescriptor_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fdescriptor_2eproto();
 
 };
@@ -1346,7 +1343,7 @@ class FieldDescriptorProto : public ::google::protobuf::Message /* @@protoc_inse
   int type_;
   friend void  protobuf_InitDefaults_google_2fprotobuf_2fdescriptor_2eproto_impl();
   friend void  protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto_impl();
-  friend void protobuf_AssignDesc_google_2fprotobuf_2fdescriptor_2eproto();
+  friend const ::google::protobuf::uint32* protobuf_Offsets_google_2fprotobuf_2fdescriptor_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fdescriptor_2eproto();
 
 };
@@ -1461,7 +1458,7 @@ class OneofDescriptorProto : public ::google::protobuf::Message /* @@protoc_inse
   ::google::protobuf::OneofOptions* options_;
   friend void  protobuf_InitDefaults_google_2fprotobuf_2fdescriptor_2eproto_impl();
   friend void  protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto_impl();
-  friend void protobuf_AssignDesc_google_2fprotobuf_2fdescriptor_2eproto();
+  friend const ::google::protobuf::uint32* protobuf_Offsets_google_2fprotobuf_2fdescriptor_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fdescriptor_2eproto();
 
 };
@@ -1589,7 +1586,7 @@ class EnumDescriptorProto : public ::google::protobuf::Message /* @@protoc_inser
   ::google::protobuf::EnumOptions* options_;
   friend void  protobuf_InitDefaults_google_2fprotobuf_2fdescriptor_2eproto_impl();
   friend void  protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto_impl();
-  friend void protobuf_AssignDesc_google_2fprotobuf_2fdescriptor_2eproto();
+  friend const ::google::protobuf::uint32* protobuf_Offsets_google_2fprotobuf_2fdescriptor_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fdescriptor_2eproto();
 
 };
@@ -1714,7 +1711,7 @@ class EnumValueDescriptorProto : public ::google::protobuf::Message /* @@protoc_
   ::google::protobuf::int32 number_;
   friend void  protobuf_InitDefaults_google_2fprotobuf_2fdescriptor_2eproto_impl();
   friend void  protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto_impl();
-  friend void protobuf_AssignDesc_google_2fprotobuf_2fdescriptor_2eproto();
+  friend const ::google::protobuf::uint32* protobuf_Offsets_google_2fprotobuf_2fdescriptor_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fdescriptor_2eproto();
 
 };
@@ -1842,7 +1839,7 @@ class ServiceDescriptorProto : public ::google::protobuf::Message /* @@protoc_in
   ::google::protobuf::ServiceOptions* options_;
   friend void  protobuf_InitDefaults_google_2fprotobuf_2fdescriptor_2eproto_impl();
   friend void  protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto_impl();
-  friend void protobuf_AssignDesc_google_2fprotobuf_2fdescriptor_2eproto();
+  friend const ::google::protobuf::uint32* protobuf_Offsets_google_2fprotobuf_2fdescriptor_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fdescriptor_2eproto();
 
 };
@@ -2007,7 +2004,7 @@ class MethodDescriptorProto : public ::google::protobuf::Message /* @@protoc_ins
   bool server_streaming_;
   friend void  protobuf_InitDefaults_google_2fprotobuf_2fdescriptor_2eproto_impl();
   friend void  protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto_impl();
-  friend void protobuf_AssignDesc_google_2fprotobuf_2fdescriptor_2eproto();
+  friend const ::google::protobuf::uint32* protobuf_Offsets_google_2fprotobuf_2fdescriptor_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fdescriptor_2eproto();
 
 };
@@ -2304,7 +2301,7 @@ class FileOptions : public ::google::protobuf::Message /* @@protoc_insertion_poi
   int optimize_for_;
   friend void  protobuf_InitDefaults_google_2fprotobuf_2fdescriptor_2eproto_impl();
   friend void  protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto_impl();
-  friend void protobuf_AssignDesc_google_2fprotobuf_2fdescriptor_2eproto();
+  friend const ::google::protobuf::uint32* protobuf_Offsets_google_2fprotobuf_2fdescriptor_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fdescriptor_2eproto();
 
 };
@@ -2448,7 +2445,7 @@ class MessageOptions : public ::google::protobuf::Message /* @@protoc_insertion_
   bool map_entry_;
   friend void  protobuf_InitDefaults_google_2fprotobuf_2fdescriptor_2eproto_impl();
   friend void  protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto_impl();
-  friend void protobuf_AssignDesc_google_2fprotobuf_2fdescriptor_2eproto();
+  friend const ::google::protobuf::uint32* protobuf_Offsets_google_2fprotobuf_2fdescriptor_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fdescriptor_2eproto();
 
 };
@@ -2668,7 +2665,7 @@ class FieldOptions : public ::google::protobuf::Message /* @@protoc_insertion_po
   bool weak_;
   friend void  protobuf_InitDefaults_google_2fprotobuf_2fdescriptor_2eproto_impl();
   friend void  protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto_impl();
-  friend void protobuf_AssignDesc_google_2fprotobuf_2fdescriptor_2eproto();
+  friend const ::google::protobuf::uint32* protobuf_Offsets_google_2fprotobuf_2fdescriptor_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fdescriptor_2eproto();
 
 };
@@ -2772,7 +2769,7 @@ class OneofOptions : public ::google::protobuf::Message /* @@protoc_insertion_po
   ::google::protobuf::RepeatedPtrField< ::google::protobuf::UninterpretedOption > uninterpreted_option_;
   friend void  protobuf_InitDefaults_google_2fprotobuf_2fdescriptor_2eproto_impl();
   friend void  protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto_impl();
-  friend void protobuf_AssignDesc_google_2fprotobuf_2fdescriptor_2eproto();
+  friend const ::google::protobuf::uint32* protobuf_Offsets_google_2fprotobuf_2fdescriptor_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fdescriptor_2eproto();
 
 };
@@ -2896,7 +2893,7 @@ class EnumOptions : public ::google::protobuf::Message /* @@protoc_insertion_poi
   bool deprecated_;
   friend void  protobuf_InitDefaults_google_2fprotobuf_2fdescriptor_2eproto_impl();
   friend void  protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto_impl();
-  friend void protobuf_AssignDesc_google_2fprotobuf_2fdescriptor_2eproto();
+  friend const ::google::protobuf::uint32* protobuf_Offsets_google_2fprotobuf_2fdescriptor_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fdescriptor_2eproto();
 
 };
@@ -3010,7 +3007,7 @@ class EnumValueOptions : public ::google::protobuf::Message /* @@protoc_insertio
   bool deprecated_;
   friend void  protobuf_InitDefaults_google_2fprotobuf_2fdescriptor_2eproto_impl();
   friend void  protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto_impl();
-  friend void protobuf_AssignDesc_google_2fprotobuf_2fdescriptor_2eproto();
+  friend const ::google::protobuf::uint32* protobuf_Offsets_google_2fprotobuf_2fdescriptor_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fdescriptor_2eproto();
 
 };
@@ -3124,7 +3121,7 @@ class ServiceOptions : public ::google::protobuf::Message /* @@protoc_insertion_
   bool deprecated_;
   friend void  protobuf_InitDefaults_google_2fprotobuf_2fdescriptor_2eproto_impl();
   friend void  protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto_impl();
-  friend void protobuf_AssignDesc_google_2fprotobuf_2fdescriptor_2eproto();
+  friend const ::google::protobuf::uint32* protobuf_Offsets_google_2fprotobuf_2fdescriptor_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fdescriptor_2eproto();
 
 };
@@ -3276,7 +3273,7 @@ class MethodOptions : public ::google::protobuf::Message /* @@protoc_insertion_p
   int idempotency_level_;
   friend void  protobuf_InitDefaults_google_2fprotobuf_2fdescriptor_2eproto_impl();
   friend void  protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto_impl();
-  friend void protobuf_AssignDesc_google_2fprotobuf_2fdescriptor_2eproto();
+  friend const ::google::protobuf::uint32* protobuf_Offsets_google_2fprotobuf_2fdescriptor_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fdescriptor_2eproto();
 
 };
@@ -3392,7 +3389,7 @@ class UninterpretedOption_NamePart : public ::google::protobuf::Message /* @@pro
   bool is_extension_;
   friend void  protobuf_InitDefaults_google_2fprotobuf_2fdescriptor_2eproto_impl();
   friend void  protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto_impl();
-  friend void protobuf_AssignDesc_google_2fprotobuf_2fdescriptor_2eproto();
+  friend const ::google::protobuf::uint32* protobuf_Offsets_google_2fprotobuf_2fdescriptor_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fdescriptor_2eproto();
 
 };
@@ -3570,7 +3567,7 @@ class UninterpretedOption : public ::google::protobuf::Message /* @@protoc_inser
   double double_value_;
   friend void  protobuf_InitDefaults_google_2fprotobuf_2fdescriptor_2eproto_impl();
   friend void  protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto_impl();
-  friend void protobuf_AssignDesc_google_2fprotobuf_2fdescriptor_2eproto();
+  friend const ::google::protobuf::uint32* protobuf_Offsets_google_2fprotobuf_2fdescriptor_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fdescriptor_2eproto();
 
 };
@@ -3733,7 +3730,7 @@ class SourceCodeInfo_Location : public ::google::protobuf::Message /* @@protoc_i
   ::google::protobuf::internal::ArenaStringPtr trailing_comments_;
   friend void  protobuf_InitDefaults_google_2fprotobuf_2fdescriptor_2eproto_impl();
   friend void  protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto_impl();
-  friend void protobuf_AssignDesc_google_2fprotobuf_2fdescriptor_2eproto();
+  friend const ::google::protobuf::uint32* protobuf_Offsets_google_2fprotobuf_2fdescriptor_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fdescriptor_2eproto();
 
 };
@@ -3836,7 +3833,7 @@ class SourceCodeInfo : public ::google::protobuf::Message /* @@protoc_insertion_
   ::google::protobuf::RepeatedPtrField< ::google::protobuf::SourceCodeInfo_Location > location_;
   friend void  protobuf_InitDefaults_google_2fprotobuf_2fdescriptor_2eproto_impl();
   friend void  protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto_impl();
-  friend void protobuf_AssignDesc_google_2fprotobuf_2fdescriptor_2eproto();
+  friend const ::google::protobuf::uint32* protobuf_Offsets_google_2fprotobuf_2fdescriptor_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fdescriptor_2eproto();
 
 };
@@ -3973,7 +3970,7 @@ class GeneratedCodeInfo_Annotation : public ::google::protobuf::Message /* @@pro
   ::google::protobuf::int32 end_;
   friend void  protobuf_InitDefaults_google_2fprotobuf_2fdescriptor_2eproto_impl();
   friend void  protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto_impl();
-  friend void protobuf_AssignDesc_google_2fprotobuf_2fdescriptor_2eproto();
+  friend const ::google::protobuf::uint32* protobuf_Offsets_google_2fprotobuf_2fdescriptor_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fdescriptor_2eproto();
 
 };
@@ -4076,7 +4073,7 @@ class GeneratedCodeInfo : public ::google::protobuf::Message /* @@protoc_inserti
   ::google::protobuf::RepeatedPtrField< ::google::protobuf::GeneratedCodeInfo_Annotation > annotation_;
   friend void  protobuf_InitDefaults_google_2fprotobuf_2fdescriptor_2eproto_impl();
   friend void  protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto_impl();
-  friend void protobuf_AssignDesc_google_2fprotobuf_2fdescriptor_2eproto();
+  friend const ::google::protobuf::uint32* protobuf_Offsets_google_2fprotobuf_2fdescriptor_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fdescriptor_2eproto();
 
 };

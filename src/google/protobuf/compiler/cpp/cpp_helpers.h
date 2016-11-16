@@ -150,8 +150,8 @@ string GlobalAddDescriptorsName(const string& filename);
 // Return the name of the InitDefaults() function for a given file.
 string GlobalInitDefaultsName(const string& filename);
 
-// Return the name of the AssignDescriptors() function for a given file.
-string GlobalAssignDescriptorsName(const string& filename);
+// Return the name of the offset table function for a given file.
+string GlobalOffsetTableName(const string& filename);
 
 // Return the qualified C++ name for a file level symbol.
 string QualifiedFileLevelSymbol(const string& package, const string& name);

@@ -467,18 +467,10 @@ void FileGenerator::GenerateBuildDescriptors(io::Printer* printer) {
   if (HasDescriptorMethods(file_, options_)) {
     printer->Print(
         "\n"
-        "void $assigndescriptorsname$() GOOGLE_ATTRIBUTE_COLD;\n"
-        "void $assigndescriptorsname$() {\n",
-        "assigndescriptorsname", GlobalAssignDescriptorsName(file_->name()));
+        "const ::google::protobuf::uint32* $offsetfunname$() GOOGLE_ATTRIBUTE_COLD;\n"
+        "const ::google::protobuf::uint32* $offsetfunname$() {\n",
+        "offsetfunname", GlobalOffsetTableName(file_->name()));
     printer->Indent();
-
-    // Make sure the file has found its way into the pool.  If a descriptor
-    // is requested *during* static init then AddDescriptors() may not have
-    // been called yet, so we call it manually.  Note that it's fine if
-    // AddDescriptors() is called multiple times.
-    printer->Print(
-      "$adddescriptorsname$();\n",
-      "adddescriptorsname", GlobalAddDescriptorsName(file_->name()));
 
     printer->Print("static const ::google::protobuf::uint32 offsets[] = {\n");
     printer->Indent();
@@ -487,10 +479,15 @@ void FileGenerator::GenerateBuildDescriptors(io::Printer* printer) {
       pairs.push_back(message_generators_[i]->GenerateOffsets(printer));
     }
     printer->Outdent();
-    printer->Print("};\n");
+    printer->Outdent();
+    printer->Print(
+        "  };\n"
+        "  return offsets;\n"
+        "}\n"
+        "\n");
 
     printer->Print(
-        "static const ::google::protobuf::internal::ReflectionSchema schemas[] = {\n");
+        "static const ::google::protobuf::internal::MigrationSchema schemas[] = {\n");
     printer->Indent();
     {
       int offset = 0;
@@ -501,49 +498,75 @@ void FileGenerator::GenerateBuildDescriptors(io::Printer* printer) {
       }
     }
     printer->Outdent();
-    string message_factory = "NULL";
     printer->Print(
         "};\n"
-        "(void)offsets;  // suppress unused variable warning\n"
-        "::google::protobuf::MessageFactory* factory = $factory$;\n",
-        "factory", message_factory);
+        "\n"
+        "static const ::google::protobuf::internal::DefaultInstanceData "
+        "file_default_instances[] = {\n");
+    printer->Indent();
+    for (int i = 0; i < message_generators_.size(); i++) {
+      const Descriptor* descriptor = message_generators_[i]->descriptor_;
+      if (IsMapEntryMessage(descriptor)) continue;
 
-    printer->Print(
-        "AssignDescriptors(\n"
-        "    \"$filename$\", schemas, factory,\n"
-        "    $metadata$, $enum_descriptors$, $service_descriptors$);\n",
-        "filename", file_->name(), "metadata",
-        !message_generators_.empty() ? "file_level_metadata" : "NULL",
-        "enum_descriptors",
-        !enum_generators_.empty() ? "file_level_enum_descriptors" : "NULL",
-        "service_descriptors",
-        HasGenericServices(file_, options_) && file_->service_count() > 0
-            ? "file_level_service_descriptors"
-            : "NULL");
-
+      string oneof_default = "NULL";
+      if (message_generators_[i]->descriptor_->oneof_decl_count()) {
+        oneof_default =
+            "&" + ClassName(descriptor, false) + "_default_oneof_instance_";
+      }
+      printer->Print(
+          "{reinterpret_cast<const "
+          "::google::protobuf::Message*>(&_$classname$_default_instance_), "
+          "$oneof_default$},\n",
+          "classname", ClassName(descriptor, false), "oneof_default",
+          oneof_default);
+    }
     printer->Outdent();
     printer->Print(
-      "}\n"
-      "\n");
+        "};\n"
+        "\n");
 
     // ---------------------------------------------------------------
 
     // protobuf_AssignDescriptorsOnce():  The first time it is called, calls
     // AssignDescriptors().  All later times, waits for the first call to
     // complete and then returns.
+    string message_factory = "NULL";
     printer->Print(
         "namespace {\n"
         "\n"
-        "GOOGLE_PROTOBUF_DECLARE_ONCE(protobuf_AssignDescriptors_once_);\n"
+        "void protobuf_AssignDescriptors() {\n"
+        // Make sure the file has found its way into the pool.  If a descriptor
+        // is requested *during* static init then AddDescriptors() may not have
+        // been called yet, so we call it manually.  Note that it's fine if
+        // AddDescriptors() is called multiple times.
+        "  $adddescriptorsname$();\n"
+        "  ::google::protobuf::MessageFactory* factory = $factory$;\n"
+        "  AssignDescriptors(\n"
+        "      \"$filename$\", schemas, file_default_instances, "
+        "$offsetfunname$(), factory,\n"
+        "      $metadata$, $enum_descriptors$, $service_descriptors$);\n"
+        "}\n"
+        "\n"
         "void protobuf_AssignDescriptorsOnce() {\n"
-        "  ::google::protobuf::GoogleOnceInit(&protobuf_AssignDescriptors_once_,\n"
-        "                 &$assigndescriptorsname$);\n"
+        "  static GOOGLE_PROTOBUF_DECLARE_ONCE(once);\n"
+        "  ::google::protobuf::GoogleOnceInit(&once, &protobuf_AssignDescriptors);\n"
         "}\n"
         "\n",
-        "assigndescriptorsname", GlobalAssignDescriptorsName(file_->name()));
+        "adddescriptorsname", GlobalAddDescriptorsName(file_->name()),
+        "offsetfunname", GlobalOffsetTableName(file_->name()), "filename",
+        file_->name(), "metadata",
+        !message_generators_.empty() ? "file_level_metadata" : "NULL",
+        "enum_descriptors",
+        !enum_generators_.empty() ? "file_level_enum_descriptors" : "NULL",
+        "service_descriptors",
+        HasGenericServices(file_, options_) && file_->service_count() > 0
+            ? "file_level_service_descriptors"
+            : "NULL",
+        "factory", message_factory);
 
-    // protobuf_RegisterTypes():  Calls
-    // MessageFactory::InternalRegisterGeneratedType() for each message type.
+    // Only here because of useless string reference that we don't want in
+    // protobuf_AssignDescriptorsOnce, because that is called from all the
+    // GetMetadata member methods.
     printer->Print(
         "void protobuf_RegisterTypes(const ::std::string&) GOOGLE_ATTRIBUTE_COLD;\n"
         "void protobuf_RegisterTypes(const ::std::string&) {\n"
@@ -592,8 +615,8 @@ void FileGenerator::GenerateBuildDescriptors(io::Printer* printer) {
   // Now generate the InitDefaults() function.
   printer->Print(
       "void $initdefaultsname$_impl() {\n"
-      "  GOOGLE_PROTOBUF_VERIFY_VERSION;\n"
-      "\n",
+      "  GOOGLE_PROTOBUF_VERIFY_VERSION;\n\n"
+      "",
       // Vars.
       "initdefaultsname", GlobalInitDefaultsName(file_->name()));
 
@@ -631,10 +654,9 @@ void FileGenerator::GenerateBuildDescriptors(io::Printer* printer) {
   printer->Print(
       "}\n"
       "\n"
-      "GOOGLE_PROTOBUF_DECLARE_ONCE($initdefaultsname$_once_);\n"
       "void $initdefaultsname$() {\n"
-      "  ::google::protobuf::GoogleOnceInit(&$initdefaultsname$_once_,\n"
-      "                 &$initdefaultsname$_impl);\n"
+      "  static GOOGLE_PROTOBUF_DECLARE_ONCE(once);\n"
+      "  ::google::protobuf::GoogleOnceInit(&once, &$initdefaultsname$_impl);\n"
       "}\n",
       "initdefaultsname", GlobalInitDefaultsName(file_->name()));
 
@@ -643,8 +665,6 @@ void FileGenerator::GenerateBuildDescriptors(io::Printer* printer) {
   // Now generate the AddDescriptors() function.
   printer->Print(
       "void $adddescriptorsname$_impl() {\n"
-      "  GOOGLE_PROTOBUF_VERIFY_VERSION;\n"
-      "\n"
       "  $initdefaultsname$();\n",
       // Vars.
       "adddescriptorsname", GlobalAddDescriptorsName(file_->name()),
@@ -951,15 +971,6 @@ void FileGenerator::GenerateGlobalStateFunctionDeclarations(
       "adddescriptorsname", GlobalAddDescriptorsName(file_->name()),
       "dllexport_decl",
       options_.dllexport_decl.empty() ? "" : options_.dllexport_decl + " ");
-
-  printer->Print(
-    // Note that we don't put dllexport_decl on these because they are only
-    // called by the .pb.cc file in which they are defined.
-    "void $assigndescriptorsname$();\n"
-    "void $shutdownfilename$();\n"
-    "\n",
-    "assigndescriptorsname", GlobalAssignDescriptorsName(file_->name()),
-    "shutdownfilename", GlobalShutdownFileName(file_->name()));
 }
 
 void FileGenerator::GenerateMessageDefinitions(io::Printer* printer) {

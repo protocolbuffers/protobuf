@@ -127,6 +127,8 @@ class RepeatedField PROTOBUF_FINAL {
 
   void Set(int index, const Element& value);
   void Add(const Element& value);
+  // Appends a new element and return a pointer to it.
+  // The new element is uninitialized if |Element| is a POD type.
   Element* Add();
   // Remove the last element in the array.
   void RemoveLast();
@@ -149,6 +151,9 @@ class RepeatedField PROTOBUF_FINAL {
   void Truncate(int new_size);
 
   void AddAlreadyReserved(const Element& value);
+  // Appends a new element and return a pointer to it.
+  // The new element is uninitialized if |Element| is a POD type.
+  // Should be called only if Capacity() > Size().
   Element* AddAlreadyReserved();
   int Capacity() const;
 
@@ -859,10 +864,10 @@ class RepeatedPtrField PROTOBUF_FINAL : public internal::RepeatedPtrFieldBase {
   // RepeatedPtrField.
   // It is also useful in legacy code that uses temporary ownership to avoid
   // copies. Example:
-  // RepeatedPtrField<T> temp_field;
-  // temp_field.AddAllocated(new T);
-  // ... // Do something with temp_field
-  // temp_field.ExtractSubrange(0, temp_field.size(), NULL);
+  //   RepeatedPtrField<T> temp_field;
+  //   temp_field.AddAllocated(new T);
+  //   ... // Do something with temp_field
+  //   temp_field.ExtractSubrange(0, temp_field.size(), NULL);
   // If you put temp_field on the arena this fails, because the ownership
   // transfers to the arena at the "AddAllocated" call and is not released
   // anymore causing a double delete. UnsafeArenaAddAllocated prevents this.
@@ -944,17 +949,13 @@ class RepeatedPtrField PROTOBUF_FINAL : public internal::RepeatedPtrFieldBase {
     return GetArenaNoVirtual();
   }
 
- protected:
-  // Note:  RepeatedPtrField SHOULD NOT be subclassed by users.  We only
-  //   subclass it in one place as a hack for compatibility with proto1.  The
-  //   subclass needs to know about TypeHandler in order to call protected
-  //   methods on RepeatedPtrFieldBase.
+ private:
+  // Note:  RepeatedPtrField SHOULD NOT be subclassed by users.
   class TypeHandler;
 
   // Internal arena accessor expected by helpers in Arena.
   inline Arena* GetArenaNoVirtual() const;
 
- private:
   // Implementations for ExtractSubrange(). The copying behavior must be
   // included only if the type supports the necessary operations (e.g.,
   // MergeFrom()), so we must resolve this at compile time. ExtractSubrange()
@@ -2469,10 +2470,10 @@ AllocatedRepeatedPtrFieldBackInserter(
 // UnsafeArenaAddAllocated instead of AddAllocated.
 // This is slightly faster if that matters. It is also useful in legacy code
 // that uses temporary ownership to avoid copies. Example:
-// RepeatedPtrField<T> temp_field;
-// temp_field.AddAllocated(new T);
-// ... // Do something with temp_field
-// temp_field.ExtractSubrange(0, temp_field.size(), NULL);
+//   RepeatedPtrField<T> temp_field;
+//   temp_field.AddAllocated(new T);
+//   ... // Do something with temp_field
+//   temp_field.ExtractSubrange(0, temp_field.size(), NULL);
 // If you put temp_field on the arena this fails, because the ownership
 // transfers to the arena at the "AddAllocated" call and is not released anymore
 // causing a double delete. Using UnsafeArenaAddAllocated prevents this.

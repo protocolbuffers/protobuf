@@ -320,6 +320,52 @@ GenerateClearingCode(io::Printer* printer) const {
 }
 
 void StringFieldGenerator::
+GenerateMessageClearingCode(io::Printer* printer) const {
+  // Two-dimension specialization here: supporting arenas, field presence, or
+  // not, and default value is the empty string or not. Complexity here ensures
+  // the minimal number of branches / amount of extraneous code at runtime
+  // (given that the below methods are inlined one-liners)!
+
+  // If we have field presence, then the Clear() method of the protocol buffer
+  // will have checked that this field is set.  If so, we can avoid redundant
+  // checks against default_variable.
+  const bool must_be_present = HasFieldPresence(descriptor_->file());
+
+  if (must_be_present) {
+    printer->Print(variables_,
+      "GOOGLE_DCHECK(!$name$_.IsDefault($default_variable$));\n");
+  }
+
+  if (SupportsArenas(descriptor_)) {
+    if (descriptor_->default_value_string().empty()) {
+      printer->Print(variables_,
+        "$name$_.ClearToEmpty($default_variable$, GetArenaNoVirtual());\n");
+    } else {
+      printer->Print(variables_,
+        "$name$_.ClearToDefault($default_variable$, GetArenaNoVirtual());\n");
+    }
+  } else if (must_be_present) {
+    // When Arenas are disabled and field presence has been checked, we can
+    // safely treat the ArenaStringPtr as a string*.
+    if (descriptor_->default_value_string().empty()) {
+      printer->Print(variables_,
+        "(*$name$_.UnsafeRawStringPointer())->clear();\n");
+    } else {
+      printer->Print(variables_,
+        "(*$name$_.UnsafeRawStringPointer())->assign(*$default_variable$);\n");
+    }
+  } else {
+    if (descriptor_->default_value_string().empty()) {
+      printer->Print(variables_,
+        "$name$_.ClearToEmptyNoArena($default_variable$);\n");
+    } else {
+      printer->Print(variables_,
+        "$name$_.ClearToDefaultNoArena($default_variable$);\n");
+    }
+  }
+}
+
+void StringFieldGenerator::
 GenerateMergingCode(io::Printer* printer) const {
   if (SupportsArenas(descriptor_) || descriptor_->containing_oneof() != NULL) {
     // TODO(gpike): improve this
@@ -670,6 +716,11 @@ GenerateClearingCode(io::Printer* printer) const {
       "$this_message$$oneof_prefix$$name$_."
       "DestroyNoArena($default_variable$);\n");
   }
+}
+
+void StringOneofFieldGenerator::
+GenerateMessageClearingCode(io::Printer* printer) const {
+  return GenerateClearingCode(printer);
 }
 
 void StringOneofFieldGenerator::

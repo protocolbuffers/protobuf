@@ -1461,12 +1461,11 @@ GenerateClassDefinition(io::Printer* printer) {
                  GlobalAddDescriptorsName(descriptor_->file()->name()));
 
   printer->Print(
-    "friend void $assigndescriptorsname$();\n"
-    "friend void $shutdownfilename$();\n"
-    "\n",
-    "assigndescriptorsname",
-      GlobalAssignDescriptorsName(descriptor_->file()->name()),
-    "shutdownfilename", GlobalShutdownFileName(descriptor_->file()->name()));
+      "friend const ::google::protobuf::uint32* $offsetfunname$();\n"
+      "friend void $shutdownfilename$();\n"
+      "\n",
+      "offsetfunname", GlobalOffsetTableName(descriptor_->file()->name()),
+      "shutdownfilename", GlobalShutdownFileName(descriptor_->file()->name()));
 
   printer->Outdent();
   printer->Print("};");
@@ -1535,61 +1534,18 @@ GenerateDescriptorDeclarations(io::Printer* printer) {
 
 void MessageGenerator::GenerateSchema(io::Printer* printer, int offset,
                                       int has_offset) {
-  std::map<string, string> vars;
-  vars["classname"] = classname_;
-  vars["index"] = SimpleItoa(descriptor_->index());
-  vars["index_in_metadata"] = SimpleItoa(index_in_metadata_);
-  vars["offset"] = SimpleItoa(offset);
-  vars["has_bit_offsets"] = SimpleItoa(offset + has_offset);
-
   if (IsMapEntryMessage(descriptor_)) return;
 
-  printer->Print("{");
-  printer->Print(vars,
-                 " reinterpret_cast<const "
-                 "  ::google::protobuf::Message*>(&_$classname$_default_instance_),\n"
-                 "  offsets + $offset$,\n");
-  if (!HasFieldPresence(descriptor_->file())) {
-    // If we don't have field presence, then _has_bits_ does not exist.
-    printer->Print(vars,
-    "  NULL,\n"
-    "  -1,\n");
-  } else {
-    printer->Print(vars,
-                   "  offsets + $has_bit_offsets$,\n"
-                   "  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET($classname$, "
-                   "_has_bits_),\n");
-  }
+  std::map<string, string> vars;
+
+  vars["classname"] = classname_;
+  vars["offset"] = SimpleItoa(offset);
+  vars["has_bits_offsets"] = HasFieldPresence(descriptor_->file())
+                                 ? SimpleItoa(offset + has_offset)
+                                 : "-1";
 
   printer->Print(vars,
-                 "  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET("
-                 "$classname$, _internal_metadata_),\n");
-
-  if (descriptor_->extension_range_count() > 0) {
-    printer->Print(vars,
-      "  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET("
-      "$classname$, _extensions_),\n");
-  } else {
-    // No extensions.
-    printer->Print(vars,
-      "    -1,\n");
-  }
-
-  if (descriptor_->oneof_decl_count() > 0) {
-    printer->Print(vars,
-                   "  (&$classname$_default_oneof_instance_),\n"
-                   "  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET("
-                   "$classname$, _oneof_case_[0]),\n");
-  } else {
-    printer->Print(vars,
-                   "  NULL,\n"
-                   "  -1,\n");
-  }
-
-  printer->Print(vars,
-    "  sizeof($classname$),\n");
-
-  printer->Print("},\n");
+                 "{ $offset$, $has_bits_offsets$, sizeof($classname$)},\n");
 }
 
 void MessageGenerator::
@@ -1819,12 +1775,36 @@ std::pair<size_t, size_t> MessageGenerator::GenerateOffsets(
   std::map<string, string> variables;
   variables["classname"] = classname_;
 
-  const size_t offsets =
-      descriptor_->field_count() + descriptor_->oneof_decl_count();
-  size_t entries = offsets;
   if (HasFieldPresence(descriptor_->file())) {
-    entries += has_bit_indices_.size();
+    printer->Print(
+        variables,
+        "GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET($classname$, _has_bits_),\n");
+  } else {
+    printer->Print("~0u,  // no _has_bits_\n");
   }
+  printer->Print(variables,
+                 "GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET($classname$, "
+                 "_internal_metadata_),\n");
+  if (descriptor_->extension_range_count() > 0) {
+    printer->Print(
+        variables,
+        "GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET($classname$, _extensions_),\n");
+  } else {
+    printer->Print("~0u,  // no _extensions_\n");
+  }
+  if (descriptor_->oneof_decl_count() > 0) {
+    printer->Print(variables,
+                   "GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET($classname$, "
+                   "_oneof_case_[0]),\n");
+  } else {
+    printer->Print("~0u,  // no _oneof_case_\n");
+  }
+
+  const int kNumGenericOffsets = 4;  // the number of fixed offsets above
+  const size_t offsets = kNumGenericOffsets +
+                         descriptor_->field_count() +
+                         descriptor_->oneof_decl_count();
+  size_t entries = offsets;
   for (int i = 0; i < descriptor_->field_count(); i++) {
     const FieldDescriptor* field = descriptor_->field(i);
     if (field->containing_oneof()) {
@@ -1850,6 +1830,7 @@ std::pair<size_t, size_t> MessageGenerator::GenerateOffsets(
   }
 
   if (HasFieldPresence(descriptor_->file())) {
+    entries += has_bit_indices_.size();
     for (int i = 0; i < has_bit_indices_.size(); i++) {
       printer->Print("$index$,\n", "index", SimpleItoa(has_bit_indices_[i]));
     }

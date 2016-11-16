@@ -274,6 +274,10 @@ struct LIBPROTOBUF_EXPORT ArenaStringPtr {
     return &ptr_;
   }
 
+  inline bool IsDefault(const ::std::string* default_value) const {
+    return ptr_ == default_value;
+  }
+
  private:
   ::std::string* ptr_;
 

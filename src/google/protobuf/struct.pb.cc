@@ -42,11 +42,18 @@ struct ValueOneofInstance {
 }  // namespace
 
 
-void protobuf_AssignDesc_google_2fprotobuf_2fstruct_2eproto() GOOGLE_ATTRIBUTE_COLD;
-void protobuf_AssignDesc_google_2fprotobuf_2fstruct_2eproto() {
-  protobuf_AddDesc_google_2fprotobuf_2fstruct_2eproto();
+const ::google::protobuf::uint32* protobuf_Offsets_google_2fprotobuf_2fstruct_2eproto() GOOGLE_ATTRIBUTE_COLD;
+const ::google::protobuf::uint32* protobuf_Offsets_google_2fprotobuf_2fstruct_2eproto() {
   static const ::google::protobuf::uint32 offsets[] = {
+    ~0u,  // no _has_bits_
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Struct, _internal_metadata_),
+    ~0u,  // no _extensions_
+    ~0u,  // no _oneof_case_
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Struct, fields_),
+    ~0u,  // no _has_bits_
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Value, _internal_metadata_),
+    ~0u,  // no _extensions_
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Value, _oneof_case_[0]),
     PROTO2_GENERATED_DEFAULT_ONEOF_FIELD_OFFSET((&Value_default_oneof_instance_), null_value_),
     PROTO2_GENERATED_DEFAULT_ONEOF_FIELD_OFFSET((&Value_default_oneof_instance_), number_value_),
     PROTO2_GENERATED_DEFAULT_ONEOF_FIELD_OFFSET((&Value_default_oneof_instance_), string_value_),
@@ -54,53 +61,40 @@ void protobuf_AssignDesc_google_2fprotobuf_2fstruct_2eproto() {
     PROTO2_GENERATED_DEFAULT_ONEOF_FIELD_OFFSET((&Value_default_oneof_instance_), struct_value_),
     PROTO2_GENERATED_DEFAULT_ONEOF_FIELD_OFFSET((&Value_default_oneof_instance_), list_value_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Value, kind_),
+    ~0u,  // no _has_bits_
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ListValue, _internal_metadata_),
+    ~0u,  // no _extensions_
+    ~0u,  // no _oneof_case_
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ListValue, values_),
   };
-  static const ::google::protobuf::internal::ReflectionSchema schemas[] = {
-    { reinterpret_cast<const   ::google::protobuf::Message*>(&_Struct_default_instance_),
-      offsets + 0,
-      NULL,
-      -1,
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Struct, _internal_metadata_),
-        -1,
-      NULL,
-      -1,
-      sizeof(Struct),
-    },
-    { reinterpret_cast<const   ::google::protobuf::Message*>(&_Value_default_instance_),
-      offsets + 1,
-      NULL,
-      -1,
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Value, _internal_metadata_),
-        -1,
-      (&Value_default_oneof_instance_),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Value, _oneof_case_[0]),
-      sizeof(Value),
-    },
-    { reinterpret_cast<const   ::google::protobuf::Message*>(&_ListValue_default_instance_),
-      offsets + 8,
-      NULL,
-      -1,
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ListValue, _internal_metadata_),
-        -1,
-      NULL,
-      -1,
-      sizeof(ListValue),
-    },
-  };
-  (void)offsets;  // suppress unused variable warning
-  ::google::protobuf::MessageFactory* factory = NULL;
-  AssignDescriptors(
-      "google/protobuf/struct.proto", schemas, factory,
-      file_level_metadata, file_level_enum_descriptors, NULL);
+  return offsets;
 }
+
+static const ::google::protobuf::internal::MigrationSchema schemas[] = {
+  { 0, -1, sizeof(Struct)},
+  { 5, -1, sizeof(Value)},
+  { 16, -1, sizeof(ListValue)},
+};
+
+static const ::google::protobuf::internal::DefaultInstanceData file_default_instances[] = {
+  {reinterpret_cast<const ::google::protobuf::Message*>(&_Struct_default_instance_), NULL},
+  {reinterpret_cast<const ::google::protobuf::Message*>(&_Value_default_instance_), &Value_default_oneof_instance_},
+  {reinterpret_cast<const ::google::protobuf::Message*>(&_ListValue_default_instance_), NULL},
+};
 
 namespace {
 
-GOOGLE_PROTOBUF_DECLARE_ONCE(protobuf_AssignDescriptors_once_);
+void protobuf_AssignDescriptors() {
+  protobuf_AddDesc_google_2fprotobuf_2fstruct_2eproto();
+  ::google::protobuf::MessageFactory* factory = NULL;
+  AssignDescriptors(
+      "google/protobuf/struct.proto", schemas, file_default_instances, protobuf_Offsets_google_2fprotobuf_2fstruct_2eproto(), factory,
+      file_level_metadata, file_level_enum_descriptors, NULL);
+}
+
 void protobuf_AssignDescriptorsOnce() {
-  ::google::protobuf::GoogleOnceInit(&protobuf_AssignDescriptors_once_,
-                 &protobuf_AssignDesc_google_2fprotobuf_2fstruct_2eproto);
+  static GOOGLE_PROTOBUF_DECLARE_ONCE(once);
+  ::google::protobuf::GoogleOnceInit(&once, &protobuf_AssignDescriptors);
 }
 
 void protobuf_RegisterTypes(const ::std::string&) GOOGLE_ATTRIBUTE_COLD;
@@ -148,14 +142,11 @@ void protobuf_InitDefaults_google_2fprotobuf_2fstruct_2eproto_impl() {
       ::google::protobuf::ListValue::internal_default_instance());
 }
 
-GOOGLE_PROTOBUF_DECLARE_ONCE(protobuf_InitDefaults_google_2fprotobuf_2fstruct_2eproto_once_);
 void protobuf_InitDefaults_google_2fprotobuf_2fstruct_2eproto() {
-  ::google::protobuf::GoogleOnceInit(&protobuf_InitDefaults_google_2fprotobuf_2fstruct_2eproto_once_,
-                 &protobuf_InitDefaults_google_2fprotobuf_2fstruct_2eproto_impl);
+  static GOOGLE_PROTOBUF_DECLARE_ONCE(once);
+  ::google::protobuf::GoogleOnceInit(&once, &protobuf_InitDefaults_google_2fprotobuf_2fstruct_2eproto_impl);
 }
 void protobuf_AddDesc_google_2fprotobuf_2fstruct_2eproto_impl() {
-  GOOGLE_PROTOBUF_VERIFY_VERSION;
-
   protobuf_InitDefaults_google_2fprotobuf_2fstruct_2eproto();
   static const char descriptor[] = {
       "\n\034google/protobuf/struct.proto\022\017google.p"

@@ -42,9 +42,6 @@ namespace protobuf {
 // Internal implementation detail -- do not call these.
 void protobuf_AddDesc_google_2fprotobuf_2fsource_5fcontext_2eproto();
 void protobuf_InitDefaults_google_2fprotobuf_2fsource_5fcontext_2eproto();
-void protobuf_AssignDesc_google_2fprotobuf_2fsource_5fcontext_2eproto();
-void protobuf_ShutdownFile_google_2fprotobuf_2fsource_5fcontext_2eproto();
-
 
 // ===================================================================
 
@@ -133,7 +130,7 @@ class SourceContext : public ::google::protobuf::Message /* @@protoc_insertion_p
   mutable int _cached_size_;
   friend void  protobuf_InitDefaults_google_2fprotobuf_2fsource_5fcontext_2eproto_impl();
   friend void  protobuf_AddDesc_google_2fprotobuf_2fsource_5fcontext_2eproto_impl();
-  friend void protobuf_AssignDesc_google_2fprotobuf_2fsource_5fcontext_2eproto();
+  friend const ::google::protobuf::uint32* protobuf_Offsets_google_2fprotobuf_2fsource_5fcontext_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fsource_5fcontext_2eproto();
 
 };

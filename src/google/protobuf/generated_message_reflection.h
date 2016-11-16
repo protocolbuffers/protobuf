@@ -208,6 +208,23 @@ struct ReflectionSchema {
   int object_size_;
 };
 
+// Structs that the code generator emits directly to describe a message.
+// These should never used directly except to build a ReflectionSchema
+// object.
+//
+// EXPERIMENTAL: these are changing rapidly, and may completely disappear
+// or merge with ReflectionSchema.
+struct DefaultInstanceData {
+  const Message* default_instance;
+  const void* default_oneof_instance;
+};
+
+struct MigrationSchema {
+  int32 offsets_index;
+  int32 has_bit_indices_index;
+  int object_size;
+};
+
 // THIS CLASS IS NOT INTENDED FOR DIRECT USE.  It is intended for use
 // by generated code.  This class is just a big hack that reduces code
 // size.
@@ -719,6 +736,15 @@ T* DynamicCastToGenerated(Message* from) {
   const Message* message_const = from;
   return const_cast<T*>(DynamicCastToGenerated<const T>(message_const));
 }
+
+void AssignDescriptors(
+    const string& filename, const MigrationSchema* schemas,
+    const DefaultInstanceData* default_instance_data, const uint32* offsets,
+    MessageFactory* factory,
+    // update the following descriptor arrays.
+    Metadata* file_level_metadata,
+    const EnumDescriptor** file_level_enum_descriptors,
+    const ServiceDescriptor** file_level_service_descriptors);
 
 void AssignDescriptors(
     const string& filename, const ReflectionSchema* schemas,

@@ -450,8 +450,8 @@ string GlobalInitDefaultsName(const string& filename) {
 }
 
 // Return the name of the AssignDescriptors() function for a given file.
-string GlobalAssignDescriptorsName(const string& filename) {
-  return "protobuf_AssignDesc_" + FilenameIdentifier(filename);
+string GlobalOffsetTableName(const string& filename) {
+  return "protobuf_Offsets_" + FilenameIdentifier(filename);
 }
 
 // Return the name of the ShutdownFile() function for a given file.
