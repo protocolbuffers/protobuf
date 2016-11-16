@@ -92,7 +92,7 @@ Installation
    error:  "sem_init: Resource temporarily unavailable".  This appears
    to be a bug either in Cygwin or in Python:
      http://www.cygwin.com/ml/cygwin/2005-07/msg01378.html
-   We do not know if or when it might me fixed.  We also do not know
+   We do not know if or when it might be fixed.  We also do not know
    how likely it is that this bug will affect users in practice.
 
 5) Install:
