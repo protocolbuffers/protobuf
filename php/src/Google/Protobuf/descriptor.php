@@ -215,6 +215,18 @@ class Descriptor
         return $desc;
     }
 }
+
+function addPrefixIfSpecial(
+    $name,
+    $package)
+{
+    if ($name === "Empty" && $package === "google.protobuf") {
+        return "GPBEmpty";
+    } else {
+        return $name;
+    }
+}
+
 function getFullClassName(
     $proto,
     $containing,
@@ -224,7 +236,8 @@ function getFullClassName(
     &$fullname)
 {
     // Full name needs to start with '.'.
-    $message_name_without_package = $proto->getName();
+    $message_name_without_package =
+        addPrefixIfSpecial($proto->getName(), $package);
     if ($containing !== "") {
         $message_name_without_package =
             $containing . "." . $message_name_without_package;
