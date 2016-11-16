@@ -19,7 +19,8 @@
 
 namespace google {
 namespace protobuf {
-::google::protobuf::internal::ExplicitlyConstructed<SourceContext> _SourceContext_default_instance_;
+class SourceContextDefaultTypeInternal : public ::google::protobuf::internal::ExplicitlyConstructed<SourceContext> {};
+SourceContextDefaultTypeInternal _SourceContext_default_instance_;
 
 namespace {
 
@@ -192,7 +193,7 @@ bool SourceContext::MergePartialFromCodedStream(
   ::google::protobuf::uint32 tag;
   // @@protoc_insertion_point(parse_start:google.protobuf.SourceContext)
   for (;;) {
-    ::std::pair< ::google::protobuf::uint32, bool> p = input->ReadTagWithCutoff(127);
+    ::std::pair< ::google::protobuf::uint32, bool> p = input->ReadTagWithCutoffNoLastTag(127);
     tag = p.first;
     if (!p.second) goto handle_unusual;
     switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
@@ -302,7 +303,7 @@ void SourceContext::MergeFrom(const ::google::protobuf::Message& from) {
 
 void SourceContext::MergeFrom(const SourceContext& from) {
 // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.SourceContext)
-  GOOGLE_DCHECK(&from != this);
+  GOOGLE_DCHECK_NE(&from, this);
   _internal_metadata_.MergeFrom(from._internal_metadata_);
   if (from.file_name().size() > 0) {
 

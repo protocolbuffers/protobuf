@@ -31,32 +31,32 @@
 namespace google {
 namespace protobuf {
 class BoolValue;
-extern ::google::protobuf::internal::ExplicitlyConstructed<
-    class BoolValue> _BoolValue_default_instance_;
+class BoolValueDefaultTypeInternal;
+extern BoolValueDefaultTypeInternal _BoolValue_default_instance_;
 class BytesValue;
-extern ::google::protobuf::internal::ExplicitlyConstructed<
-    class BytesValue> _BytesValue_default_instance_;
+class BytesValueDefaultTypeInternal;
+extern BytesValueDefaultTypeInternal _BytesValue_default_instance_;
 class DoubleValue;
-extern ::google::protobuf::internal::ExplicitlyConstructed<
-    class DoubleValue> _DoubleValue_default_instance_;
+class DoubleValueDefaultTypeInternal;
+extern DoubleValueDefaultTypeInternal _DoubleValue_default_instance_;
 class FloatValue;
-extern ::google::protobuf::internal::ExplicitlyConstructed<
-    class FloatValue> _FloatValue_default_instance_;
+class FloatValueDefaultTypeInternal;
+extern FloatValueDefaultTypeInternal _FloatValue_default_instance_;
 class Int32Value;
-extern ::google::protobuf::internal::ExplicitlyConstructed<
-    class Int32Value> _Int32Value_default_instance_;
+class Int32ValueDefaultTypeInternal;
+extern Int32ValueDefaultTypeInternal _Int32Value_default_instance_;
 class Int64Value;
-extern ::google::protobuf::internal::ExplicitlyConstructed<
-    class Int64Value> _Int64Value_default_instance_;
+class Int64ValueDefaultTypeInternal;
+extern Int64ValueDefaultTypeInternal _Int64Value_default_instance_;
 class StringValue;
-extern ::google::protobuf::internal::ExplicitlyConstructed<
-    class StringValue> _StringValue_default_instance_;
+class StringValueDefaultTypeInternal;
+extern StringValueDefaultTypeInternal _StringValue_default_instance_;
 class UInt32Value;
-extern ::google::protobuf::internal::ExplicitlyConstructed<
-    class UInt32Value> _UInt32Value_default_instance_;
+class UInt32ValueDefaultTypeInternal;
+extern UInt32ValueDefaultTypeInternal _UInt32Value_default_instance_;
 class UInt64Value;
-extern ::google::protobuf::internal::ExplicitlyConstructed<
-    class UInt64Value> _UInt64Value_default_instance_;
+class UInt64ValueDefaultTypeInternal;
+extern UInt64ValueDefaultTypeInternal _UInt64Value_default_instance_;
 }  // namespace protobuf
 }  // namespace google
 
@@ -64,15 +64,15 @@ namespace google {
 namespace protobuf {
 
 // Internal implementation detail -- do not call these.
-void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2fwrappers_2eproto();
-void LIBPROTOBUF_EXPORT protobuf_InitDefaults_google_2fprotobuf_2fwrappers_2eproto();
+void protobuf_AddDesc_google_2fprotobuf_2fwrappers_2eproto();
+void protobuf_InitDefaults_google_2fprotobuf_2fwrappers_2eproto();
 void protobuf_AssignDesc_google_2fprotobuf_2fwrappers_2eproto();
 void protobuf_ShutdownFile_google_2fprotobuf_2fwrappers_2eproto();
 
 
 // ===================================================================
 
-class LIBPROTOBUF_EXPORT DoubleValue : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.DoubleValue) */ {
+class DoubleValue : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.DoubleValue) */ {
  public:
   DoubleValue();
   virtual ~DoubleValue();
@@ -94,7 +94,8 @@ class LIBPROTOBUF_EXPORT DoubleValue : public ::google::protobuf::Message /* @@p
   static const DoubleValue& default_instance();
 
   static inline const DoubleValue* internal_default_instance() {
-    return &_DoubleValue_default_instance_.get();
+    return reinterpret_cast<const DoubleValue*>(
+               &_DoubleValue_default_instance_);
   }
 
   void UnsafeArenaSwap(DoubleValue* other);
@@ -164,15 +165,15 @@ class LIBPROTOBUF_EXPORT DoubleValue : public ::google::protobuf::Message /* @@p
   typedef void DestructorSkippable_;
   double value_;
   mutable int _cached_size_;
-  friend void LIBPROTOBUF_EXPORT protobuf_InitDefaults_google_2fprotobuf_2fwrappers_2eproto_impl();
-  friend void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2fwrappers_2eproto_impl();
+  friend void  protobuf_InitDefaults_google_2fprotobuf_2fwrappers_2eproto_impl();
+  friend void  protobuf_AddDesc_google_2fprotobuf_2fwrappers_2eproto_impl();
   friend void protobuf_AssignDesc_google_2fprotobuf_2fwrappers_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fwrappers_2eproto();
 
 };
 // -------------------------------------------------------------------
 
-class LIBPROTOBUF_EXPORT FloatValue : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.FloatValue) */ {
+class FloatValue : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.FloatValue) */ {
  public:
   FloatValue();
   virtual ~FloatValue();
@@ -194,7 +195,8 @@ class LIBPROTOBUF_EXPORT FloatValue : public ::google::protobuf::Message /* @@pr
   static const FloatValue& default_instance();
 
   static inline const FloatValue* internal_default_instance() {
-    return &_FloatValue_default_instance_.get();
+    return reinterpret_cast<const FloatValue*>(
+               &_FloatValue_default_instance_);
   }
 
   void UnsafeArenaSwap(FloatValue* other);
@@ -264,15 +266,15 @@ class LIBPROTOBUF_EXPORT FloatValue : public ::google::protobuf::Message /* @@pr
   typedef void DestructorSkippable_;
   float value_;
   mutable int _cached_size_;
-  friend void LIBPROTOBUF_EXPORT protobuf_InitDefaults_google_2fprotobuf_2fwrappers_2eproto_impl();
-  friend void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2fwrappers_2eproto_impl();
+  friend void  protobuf_InitDefaults_google_2fprotobuf_2fwrappers_2eproto_impl();
+  friend void  protobuf_AddDesc_google_2fprotobuf_2fwrappers_2eproto_impl();
   friend void protobuf_AssignDesc_google_2fprotobuf_2fwrappers_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fwrappers_2eproto();
 
 };
 // -------------------------------------------------------------------
 
-class LIBPROTOBUF_EXPORT Int64Value : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.Int64Value) */ {
+class Int64Value : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.Int64Value) */ {
  public:
   Int64Value();
   virtual ~Int64Value();
@@ -294,7 +296,8 @@ class LIBPROTOBUF_EXPORT Int64Value : public ::google::protobuf::Message /* @@pr
   static const Int64Value& default_instance();
 
   static inline const Int64Value* internal_default_instance() {
-    return &_Int64Value_default_instance_.get();
+    return reinterpret_cast<const Int64Value*>(
+               &_Int64Value_default_instance_);
   }
 
   void UnsafeArenaSwap(Int64Value* other);
@@ -364,15 +367,15 @@ class LIBPROTOBUF_EXPORT Int64Value : public ::google::protobuf::Message /* @@pr
   typedef void DestructorSkippable_;
   ::google::protobuf::int64 value_;
   mutable int _cached_size_;
-  friend void LIBPROTOBUF_EXPORT protobuf_InitDefaults_google_2fprotobuf_2fwrappers_2eproto_impl();
-  friend void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2fwrappers_2eproto_impl();
+  friend void  protobuf_InitDefaults_google_2fprotobuf_2fwrappers_2eproto_impl();
+  friend void  protobuf_AddDesc_google_2fprotobuf_2fwrappers_2eproto_impl();
   friend void protobuf_AssignDesc_google_2fprotobuf_2fwrappers_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fwrappers_2eproto();
 
 };
 // -------------------------------------------------------------------
 
-class LIBPROTOBUF_EXPORT UInt64Value : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.UInt64Value) */ {
+class UInt64Value : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.UInt64Value) */ {
  public:
   UInt64Value();
   virtual ~UInt64Value();
@@ -394,7 +397,8 @@ class LIBPROTOBUF_EXPORT UInt64Value : public ::google::protobuf::Message /* @@p
   static const UInt64Value& default_instance();
 
   static inline const UInt64Value* internal_default_instance() {
-    return &_UInt64Value_default_instance_.get();
+    return reinterpret_cast<const UInt64Value*>(
+               &_UInt64Value_default_instance_);
   }
 
   void UnsafeArenaSwap(UInt64Value* other);
@@ -464,15 +468,15 @@ class LIBPROTOBUF_EXPORT UInt64Value : public ::google::protobuf::Message /* @@p
   typedef void DestructorSkippable_;
   ::google::protobuf::uint64 value_;
   mutable int _cached_size_;
-  friend void LIBPROTOBUF_EXPORT protobuf_InitDefaults_google_2fprotobuf_2fwrappers_2eproto_impl();
-  friend void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2fwrappers_2eproto_impl();
+  friend void  protobuf_InitDefaults_google_2fprotobuf_2fwrappers_2eproto_impl();
+  friend void  protobuf_AddDesc_google_2fprotobuf_2fwrappers_2eproto_impl();
   friend void protobuf_AssignDesc_google_2fprotobuf_2fwrappers_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fwrappers_2eproto();
 
 };
 // -------------------------------------------------------------------
 
-class LIBPROTOBUF_EXPORT Int32Value : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.Int32Value) */ {
+class Int32Value : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.Int32Value) */ {
  public:
   Int32Value();
   virtual ~Int32Value();
@@ -494,7 +498,8 @@ class LIBPROTOBUF_EXPORT Int32Value : public ::google::protobuf::Message /* @@pr
   static const Int32Value& default_instance();
 
   static inline const Int32Value* internal_default_instance() {
-    return &_Int32Value_default_instance_.get();
+    return reinterpret_cast<const Int32Value*>(
+               &_Int32Value_default_instance_);
   }
 
   void UnsafeArenaSwap(Int32Value* other);
@@ -564,15 +569,15 @@ class LIBPROTOBUF_EXPORT Int32Value : public ::google::protobuf::Message /* @@pr
   typedef void DestructorSkippable_;
   ::google::protobuf::int32 value_;
   mutable int _cached_size_;
-  friend void LIBPROTOBUF_EXPORT protobuf_InitDefaults_google_2fprotobuf_2fwrappers_2eproto_impl();
-  friend void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2fwrappers_2eproto_impl();
+  friend void  protobuf_InitDefaults_google_2fprotobuf_2fwrappers_2eproto_impl();
+  friend void  protobuf_AddDesc_google_2fprotobuf_2fwrappers_2eproto_impl();
   friend void protobuf_AssignDesc_google_2fprotobuf_2fwrappers_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fwrappers_2eproto();
 
 };
 // -------------------------------------------------------------------
 
-class LIBPROTOBUF_EXPORT UInt32Value : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.UInt32Value) */ {
+class UInt32Value : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.UInt32Value) */ {
  public:
   UInt32Value();
   virtual ~UInt32Value();
@@ -594,7 +599,8 @@ class LIBPROTOBUF_EXPORT UInt32Value : public ::google::protobuf::Message /* @@p
   static const UInt32Value& default_instance();
 
   static inline const UInt32Value* internal_default_instance() {
-    return &_UInt32Value_default_instance_.get();
+    return reinterpret_cast<const UInt32Value*>(
+               &_UInt32Value_default_instance_);
   }
 
   void UnsafeArenaSwap(UInt32Value* other);
@@ -664,15 +670,15 @@ class LIBPROTOBUF_EXPORT UInt32Value : public ::google::protobuf::Message /* @@p
   typedef void DestructorSkippable_;
   ::google::protobuf::uint32 value_;
   mutable int _cached_size_;
-  friend void LIBPROTOBUF_EXPORT protobuf_InitDefaults_google_2fprotobuf_2fwrappers_2eproto_impl();
-  friend void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2fwrappers_2eproto_impl();
+  friend void  protobuf_InitDefaults_google_2fprotobuf_2fwrappers_2eproto_impl();
+  friend void  protobuf_AddDesc_google_2fprotobuf_2fwrappers_2eproto_impl();
   friend void protobuf_AssignDesc_google_2fprotobuf_2fwrappers_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fwrappers_2eproto();
 
 };
 // -------------------------------------------------------------------
 
-class LIBPROTOBUF_EXPORT BoolValue : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.BoolValue) */ {
+class BoolValue : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.BoolValue) */ {
  public:
   BoolValue();
   virtual ~BoolValue();
@@ -694,7 +700,8 @@ class LIBPROTOBUF_EXPORT BoolValue : public ::google::protobuf::Message /* @@pro
   static const BoolValue& default_instance();
 
   static inline const BoolValue* internal_default_instance() {
-    return &_BoolValue_default_instance_.get();
+    return reinterpret_cast<const BoolValue*>(
+               &_BoolValue_default_instance_);
   }
 
   void UnsafeArenaSwap(BoolValue* other);
@@ -764,15 +771,15 @@ class LIBPROTOBUF_EXPORT BoolValue : public ::google::protobuf::Message /* @@pro
   typedef void DestructorSkippable_;
   bool value_;
   mutable int _cached_size_;
-  friend void LIBPROTOBUF_EXPORT protobuf_InitDefaults_google_2fprotobuf_2fwrappers_2eproto_impl();
-  friend void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2fwrappers_2eproto_impl();
+  friend void  protobuf_InitDefaults_google_2fprotobuf_2fwrappers_2eproto_impl();
+  friend void  protobuf_AddDesc_google_2fprotobuf_2fwrappers_2eproto_impl();
   friend void protobuf_AssignDesc_google_2fprotobuf_2fwrappers_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fwrappers_2eproto();
 
 };
 // -------------------------------------------------------------------
 
-class LIBPROTOBUF_EXPORT StringValue : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.StringValue) */ {
+class StringValue : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.StringValue) */ {
  public:
   StringValue();
   virtual ~StringValue();
@@ -794,7 +801,8 @@ class LIBPROTOBUF_EXPORT StringValue : public ::google::protobuf::Message /* @@p
   static const StringValue& default_instance();
 
   static inline const StringValue* internal_default_instance() {
-    return &_StringValue_default_instance_.get();
+    return reinterpret_cast<const StringValue*>(
+               &_StringValue_default_instance_);
   }
 
   void UnsafeArenaSwap(StringValue* other);
@@ -872,15 +880,15 @@ class LIBPROTOBUF_EXPORT StringValue : public ::google::protobuf::Message /* @@p
   typedef void DestructorSkippable_;
   ::google::protobuf::internal::ArenaStringPtr value_;
   mutable int _cached_size_;
-  friend void LIBPROTOBUF_EXPORT protobuf_InitDefaults_google_2fprotobuf_2fwrappers_2eproto_impl();
-  friend void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2fwrappers_2eproto_impl();
+  friend void  protobuf_InitDefaults_google_2fprotobuf_2fwrappers_2eproto_impl();
+  friend void  protobuf_AddDesc_google_2fprotobuf_2fwrappers_2eproto_impl();
   friend void protobuf_AssignDesc_google_2fprotobuf_2fwrappers_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fwrappers_2eproto();
 
 };
 // -------------------------------------------------------------------
 
-class LIBPROTOBUF_EXPORT BytesValue : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.BytesValue) */ {
+class BytesValue : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.BytesValue) */ {
  public:
   BytesValue();
   virtual ~BytesValue();
@@ -902,7 +910,8 @@ class LIBPROTOBUF_EXPORT BytesValue : public ::google::protobuf::Message /* @@pr
   static const BytesValue& default_instance();
 
   static inline const BytesValue* internal_default_instance() {
-    return &_BytesValue_default_instance_.get();
+    return reinterpret_cast<const BytesValue*>(
+               &_BytesValue_default_instance_);
   }
 
   void UnsafeArenaSwap(BytesValue* other);
@@ -980,8 +989,8 @@ class LIBPROTOBUF_EXPORT BytesValue : public ::google::protobuf::Message /* @@pr
   typedef void DestructorSkippable_;
   ::google::protobuf::internal::ArenaStringPtr value_;
   mutable int _cached_size_;
-  friend void LIBPROTOBUF_EXPORT protobuf_InitDefaults_google_2fprotobuf_2fwrappers_2eproto_impl();
-  friend void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2fwrappers_2eproto_impl();
+  friend void  protobuf_InitDefaults_google_2fprotobuf_2fwrappers_2eproto_impl();
+  friend void  protobuf_AddDesc_google_2fprotobuf_2fwrappers_2eproto_impl();
   friend void protobuf_AssignDesc_google_2fprotobuf_2fwrappers_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fwrappers_2eproto();
 

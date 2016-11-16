@@ -31,8 +31,8 @@
 namespace google {
 namespace protobuf {
 class Empty;
-extern ::google::protobuf::internal::ExplicitlyConstructed<
-    class Empty> _Empty_default_instance_;
+class EmptyDefaultTypeInternal;
+extern EmptyDefaultTypeInternal _Empty_default_instance_;
 }  // namespace protobuf
 }  // namespace google
 
@@ -40,15 +40,15 @@ namespace google {
 namespace protobuf {
 
 // Internal implementation detail -- do not call these.
-void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2fempty_2eproto();
-void LIBPROTOBUF_EXPORT protobuf_InitDefaults_google_2fprotobuf_2fempty_2eproto();
+void protobuf_AddDesc_google_2fprotobuf_2fempty_2eproto();
+void protobuf_InitDefaults_google_2fprotobuf_2fempty_2eproto();
 void protobuf_AssignDesc_google_2fprotobuf_2fempty_2eproto();
 void protobuf_ShutdownFile_google_2fprotobuf_2fempty_2eproto();
 
 
 // ===================================================================
 
-class LIBPROTOBUF_EXPORT Empty : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.Empty) */ {
+class Empty : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.Empty) */ {
  public:
   Empty();
   virtual ~Empty();
@@ -70,7 +70,8 @@ class LIBPROTOBUF_EXPORT Empty : public ::google::protobuf::Message /* @@protoc_
   static const Empty& default_instance();
 
   static inline const Empty* internal_default_instance() {
-    return &_Empty_default_instance_.get();
+    return reinterpret_cast<const Empty*>(
+               &_Empty_default_instance_);
   }
 
   void UnsafeArenaSwap(Empty* other);
@@ -133,8 +134,8 @@ class LIBPROTOBUF_EXPORT Empty : public ::google::protobuf::Message /* @@protoc_
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
   mutable int _cached_size_;
-  friend void LIBPROTOBUF_EXPORT protobuf_InitDefaults_google_2fprotobuf_2fempty_2eproto_impl();
-  friend void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2fempty_2eproto_impl();
+  friend void  protobuf_InitDefaults_google_2fprotobuf_2fempty_2eproto_impl();
+  friend void  protobuf_AddDesc_google_2fprotobuf_2fempty_2eproto_impl();
   friend void protobuf_AssignDesc_google_2fprotobuf_2fempty_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fempty_2eproto();
 

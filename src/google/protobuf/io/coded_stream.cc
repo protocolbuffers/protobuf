@@ -794,55 +794,12 @@ void CodedOutputStream::WriteVarint32SlowPath(uint32 value) {
   WriteRaw(bytes, size);
 }
 
-inline uint8* CodedOutputStream::WriteVarint64ToArrayInline(
-    uint64 value, uint8* target) {
-  if (value < (1u << 28)) {
-    return WriteVarint32ToArray(static_cast<uint32>(value), target);
-  } else {
-    // Rather than computing four subresults and or'ing each with 0x80,
-    // we can do two ors now.  (Doing one now wouldn't work.)
-    const uint32 x32 = static_cast<uint32>(value | (1 << 7) | (1 << 21));
-    const uint32 y32 = static_cast<uint32>(value | (1 << 14) | (1 << 28));
-    *target++ = static_cast<uint8>(x32);
-    *target++ = static_cast<uint8>(y32 >> 7);
-    *target++ = static_cast<uint8>(x32 >> 14);
-    *target++ = static_cast<uint8>(y32 >> 21);
-    if (value < (1ull << 35)) {
-      *target++ = static_cast<uint8>(value >> 28);
-      return target;
-    } else {
-      *target++ = static_cast<uint8>((value >> 28) | (1 << 7));
-      return WriteVarint32ToArray(value >> 35, target);
-    }
-  }
-}
-
-void CodedOutputStream::WriteVarint64(uint64 value) {
-  if (buffer_size_ >= kMaxVarintBytes) {
-    // Fast path:  We have enough bytes left in the buffer to guarantee that
-    // this write won't cross the end, so we can skip the checks.
-    uint8* target = buffer_;
-
-    uint8* end = WriteVarint64ToArrayInline(value, target);
-    int size = end - target;
-    Advance(size);
-  } else {
-    // Slow path:  This write might cross the end of the buffer, so we
-    // compose the bytes first then use WriteRaw().
-    uint8 bytes[kMaxVarintBytes];
-    int size = 0;
-    while (value > 0x7F) {
-      bytes[size++] = (static_cast<uint8>(value) & 0x7F) | 0x80;
-      value >>= 7;
-    }
-    bytes[size++] = static_cast<uint8>(value) & 0x7F;
-    WriteRaw(bytes, size);
-  }
-}
-
-uint8* CodedOutputStream::WriteVarint64ToArray(
-    uint64 value, uint8* target) {
-  return WriteVarint64ToArrayInline(value, target);
+void CodedOutputStream::WriteVarint64SlowPath(uint64 value) {
+  uint8 bytes[kMaxVarintBytes];
+  uint8* target = &bytes[0];
+  uint8* end = WriteVarint64ToArray(value, target);
+  int size = end - target;
+  WriteRaw(bytes, size);
 }
 
 bool CodedOutputStream::Refresh() {

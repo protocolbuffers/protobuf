@@ -487,19 +487,21 @@ GenerateClearingCode(io::Printer* printer) const {
 
 void MessageFieldGenerator::
 GenerateMessageClearingCode(io::Printer* printer) const {
-  map<string, string> variables(variables_);
-  variables["this_message"] = dependent_field_ ? DependentBaseDownCast() : "";
+  std::map<string, string> variables(variables_);
+  variables["type"] = FieldMessageTypeName(descriptor_);
+
   if (!HasFieldPresence(descriptor_->file())) {
     // If we don't have has-bits, message presence is indicated only by ptr !=
     // NULL. Thus on clear, we need to delete the object.
-    printer->Print(variables,
-      "if ($this_message$GetArenaNoVirtual() == NULL && "
-      "$this_message$$name$_ != NULL) delete $this_message$$name$_;\n"
-      "$this_message$$name$_ = NULL;\n");
+    printer->Print(variables_,
+      "if (GetArenaNoVirtual() == NULL && $name$_ != NULL) {\n"
+      "  delete $name$_;\n"
+      "}\n"
+      "$name$_ = NULL;\n");
   } else {
-    printer->Print(variables,
-      "GOOGLE_DCHECK($this_message$$name$_ != NULL);\n"
-      "$this_message$$name$_->$dependent_type$::Clear();\n");
+    printer->Print(variables_,
+      "GOOGLE_DCHECK($name$_ != NULL);\n"
+      "$name$_->$type$::Clear();\n");
   }
 }
 

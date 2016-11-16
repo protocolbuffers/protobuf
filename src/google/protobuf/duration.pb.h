@@ -31,8 +31,8 @@
 namespace google {
 namespace protobuf {
 class Duration;
-extern ::google::protobuf::internal::ExplicitlyConstructed<
-    class Duration> _Duration_default_instance_;
+class DurationDefaultTypeInternal;
+extern DurationDefaultTypeInternal _Duration_default_instance_;
 }  // namespace protobuf
 }  // namespace google
 
@@ -40,15 +40,15 @@ namespace google {
 namespace protobuf {
 
 // Internal implementation detail -- do not call these.
-void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2fduration_2eproto();
-void LIBPROTOBUF_EXPORT protobuf_InitDefaults_google_2fprotobuf_2fduration_2eproto();
+void protobuf_AddDesc_google_2fprotobuf_2fduration_2eproto();
+void protobuf_InitDefaults_google_2fprotobuf_2fduration_2eproto();
 void protobuf_AssignDesc_google_2fprotobuf_2fduration_2eproto();
 void protobuf_ShutdownFile_google_2fprotobuf_2fduration_2eproto();
 
 
 // ===================================================================
 
-class LIBPROTOBUF_EXPORT Duration : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.Duration) */ {
+class Duration : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.Duration) */ {
  public:
   Duration();
   virtual ~Duration();
@@ -70,7 +70,8 @@ class LIBPROTOBUF_EXPORT Duration : public ::google::protobuf::Message /* @@prot
   static const Duration& default_instance();
 
   static inline const Duration* internal_default_instance() {
-    return &_Duration_default_instance_.get();
+    return reinterpret_cast<const Duration*>(
+               &_Duration_default_instance_);
   }
 
   void UnsafeArenaSwap(Duration* other);
@@ -147,8 +148,8 @@ class LIBPROTOBUF_EXPORT Duration : public ::google::protobuf::Message /* @@prot
   ::google::protobuf::int64 seconds_;
   ::google::protobuf::int32 nanos_;
   mutable int _cached_size_;
-  friend void LIBPROTOBUF_EXPORT protobuf_InitDefaults_google_2fprotobuf_2fduration_2eproto_impl();
-  friend void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2fduration_2eproto_impl();
+  friend void  protobuf_InitDefaults_google_2fprotobuf_2fduration_2eproto_impl();
+  friend void  protobuf_AddDesc_google_2fprotobuf_2fduration_2eproto_impl();
   friend void protobuf_AssignDesc_google_2fprotobuf_2fduration_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fduration_2eproto();
 

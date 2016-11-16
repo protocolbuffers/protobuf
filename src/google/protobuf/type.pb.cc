@@ -19,11 +19,16 @@
 
 namespace google {
 namespace protobuf {
-::google::protobuf::internal::ExplicitlyConstructed<Type> _Type_default_instance_;
-::google::protobuf::internal::ExplicitlyConstructed<Field> _Field_default_instance_;
-::google::protobuf::internal::ExplicitlyConstructed<Enum> _Enum_default_instance_;
-::google::protobuf::internal::ExplicitlyConstructed<EnumValue> _EnumValue_default_instance_;
-::google::protobuf::internal::ExplicitlyConstructed<Option> _Option_default_instance_;
+class TypeDefaultTypeInternal : public ::google::protobuf::internal::ExplicitlyConstructed<Type> {};
+TypeDefaultTypeInternal _Type_default_instance_;
+class FieldDefaultTypeInternal : public ::google::protobuf::internal::ExplicitlyConstructed<Field> {};
+FieldDefaultTypeInternal _Field_default_instance_;
+class EnumDefaultTypeInternal : public ::google::protobuf::internal::ExplicitlyConstructed<Enum> {};
+EnumDefaultTypeInternal _Enum_default_instance_;
+class EnumValueDefaultTypeInternal : public ::google::protobuf::internal::ExplicitlyConstructed<EnumValue> {};
+EnumValueDefaultTypeInternal _EnumValue_default_instance_;
+class OptionDefaultTypeInternal : public ::google::protobuf::internal::ExplicitlyConstructed<Option> {};
+OptionDefaultTypeInternal _Option_default_instance_;
 
 namespace {
 
@@ -479,7 +484,9 @@ void Type::Clear() {
   oneofs_.Clear();
   options_.Clear();
   name_.ClearToEmpty(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), GetArenaNoVirtual());
-  if (GetArenaNoVirtual() == NULL && source_context_ != NULL) delete source_context_;
+  if (GetArenaNoVirtual() == NULL && source_context_ != NULL) {
+    delete source_context_;
+  }
   source_context_ = NULL;
   syntax_ = 0;
 }
@@ -490,7 +497,7 @@ bool Type::MergePartialFromCodedStream(
   ::google::protobuf::uint32 tag;
   // @@protoc_insertion_point(parse_start:google.protobuf.Type)
   for (;;) {
-    ::std::pair< ::google::protobuf::uint32, bool> p = input->ReadTagWithCutoff(127);
+    ::std::pair< ::google::protobuf::uint32, bool> p = input->ReadTagWithCutoffNoLastTag(127);
     tag = p.first;
     if (!p.second) goto handle_unusual;
     switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
@@ -781,7 +788,7 @@ void Type::MergeFrom(const ::google::protobuf::Message& from) {
 
 void Type::MergeFrom(const Type& from) {
 // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.Type)
-  GOOGLE_DCHECK(&from != this);
+  GOOGLE_DCHECK_NE(&from, this);
   _internal_metadata_.MergeFrom(from._internal_metadata_);
   fields_.MergeFrom(from.fields_);
   oneofs_.MergeFrom(from.oneofs_);
@@ -1235,7 +1242,7 @@ bool Field::MergePartialFromCodedStream(
   ::google::protobuf::uint32 tag;
   // @@protoc_insertion_point(parse_start:google.protobuf.Field)
   for (;;) {
-    ::std::pair< ::google::protobuf::uint32, bool> p = input->ReadTagWithCutoff(127);
+    ::std::pair< ::google::protobuf::uint32, bool> p = input->ReadTagWithCutoffNoLastTag(127);
     tag = p.first;
     if (!p.second) goto handle_unusual;
     switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
@@ -1663,7 +1670,7 @@ void Field::MergeFrom(const ::google::protobuf::Message& from) {
 
 void Field::MergeFrom(const Field& from) {
 // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.Field)
-  GOOGLE_DCHECK(&from != this);
+  GOOGLE_DCHECK_NE(&from, this);
   _internal_metadata_.MergeFrom(from._internal_metadata_);
   options_.MergeFrom(from.options_);
   if (from.name().size() > 0) {
@@ -2258,7 +2265,9 @@ void Enum::Clear() {
   enumvalue_.Clear();
   options_.Clear();
   name_.ClearToEmpty(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), GetArenaNoVirtual());
-  if (GetArenaNoVirtual() == NULL && source_context_ != NULL) delete source_context_;
+  if (GetArenaNoVirtual() == NULL && source_context_ != NULL) {
+    delete source_context_;
+  }
   source_context_ = NULL;
   syntax_ = 0;
 }
@@ -2269,7 +2278,7 @@ bool Enum::MergePartialFromCodedStream(
   ::google::protobuf::uint32 tag;
   // @@protoc_insertion_point(parse_start:google.protobuf.Enum)
   for (;;) {
-    ::std::pair< ::google::protobuf::uint32, bool> p = input->ReadTagWithCutoff(127);
+    ::std::pair< ::google::protobuf::uint32, bool> p = input->ReadTagWithCutoffNoLastTag(127);
     tag = p.first;
     if (!p.second) goto handle_unusual;
     switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
@@ -2516,7 +2525,7 @@ void Enum::MergeFrom(const ::google::protobuf::Message& from) {
 
 void Enum::MergeFrom(const Enum& from) {
 // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.Enum)
-  GOOGLE_DCHECK(&from != this);
+  GOOGLE_DCHECK_NE(&from, this);
   _internal_metadata_.MergeFrom(from._internal_metadata_);
   enumvalue_.MergeFrom(from.enumvalue_);
   options_.MergeFrom(from.options_);
@@ -2878,7 +2887,7 @@ bool EnumValue::MergePartialFromCodedStream(
   ::google::protobuf::uint32 tag;
   // @@protoc_insertion_point(parse_start:google.protobuf.EnumValue)
   for (;;) {
-    ::std::pair< ::google::protobuf::uint32, bool> p = input->ReadTagWithCutoff(127);
+    ::std::pair< ::google::protobuf::uint32, bool> p = input->ReadTagWithCutoffNoLastTag(127);
     tag = p.first;
     if (!p.second) goto handle_unusual;
     switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
@@ -3055,7 +3064,7 @@ void EnumValue::MergeFrom(const ::google::protobuf::Message& from) {
 
 void EnumValue::MergeFrom(const EnumValue& from) {
 // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.EnumValue)
-  GOOGLE_DCHECK(&from != this);
+  GOOGLE_DCHECK_NE(&from, this);
   _internal_metadata_.MergeFrom(from._internal_metadata_);
   options_.MergeFrom(from.options_);
   if (from.name().size() > 0) {
@@ -3357,7 +3366,9 @@ Option* Option::New(::google::protobuf::Arena* arena) const {
 void Option::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.Option)
   name_.ClearToEmpty(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), GetArenaNoVirtual());
-  if (GetArenaNoVirtual() == NULL && value_ != NULL) delete value_;
+  if (GetArenaNoVirtual() == NULL && value_ != NULL) {
+    delete value_;
+  }
   value_ = NULL;
 }
 
@@ -3367,7 +3378,7 @@ bool Option::MergePartialFromCodedStream(
   ::google::protobuf::uint32 tag;
   // @@protoc_insertion_point(parse_start:google.protobuf.Option)
   for (;;) {
-    ::std::pair< ::google::protobuf::uint32, bool> p = input->ReadTagWithCutoff(127);
+    ::std::pair< ::google::protobuf::uint32, bool> p = input->ReadTagWithCutoffNoLastTag(127);
     tag = p.first;
     if (!p.second) goto handle_unusual;
     switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
@@ -3508,7 +3519,7 @@ void Option::MergeFrom(const ::google::protobuf::Message& from) {
 
 void Option::MergeFrom(const Option& from) {
 // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.Option)
-  GOOGLE_DCHECK(&from != this);
+  GOOGLE_DCHECK_NE(&from, this);
   _internal_metadata_.MergeFrom(from._internal_metadata_);
   if (from.name().size() > 0) {
     set_name(from.name());

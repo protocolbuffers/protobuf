@@ -19,9 +19,12 @@
 
 namespace google {
 namespace protobuf {
-::google::protobuf::internal::ExplicitlyConstructed<Struct> _Struct_default_instance_;
-::google::protobuf::internal::ExplicitlyConstructed<Value> _Value_default_instance_;
-::google::protobuf::internal::ExplicitlyConstructed<ListValue> _ListValue_default_instance_;
+class StructDefaultTypeInternal : public ::google::protobuf::internal::ExplicitlyConstructed<Struct> {};
+StructDefaultTypeInternal _Struct_default_instance_;
+class ValueDefaultTypeInternal : public ::google::protobuf::internal::ExplicitlyConstructed<Value> {};
+ValueDefaultTypeInternal _Value_default_instance_;
+class ListValueDefaultTypeInternal : public ::google::protobuf::internal::ExplicitlyConstructed<ListValue> {};
+ListValueDefaultTypeInternal _ListValue_default_instance_;
 
 namespace {
 
@@ -307,7 +310,7 @@ bool Struct::MergePartialFromCodedStream(
   ::google::protobuf::uint32 tag;
   // @@protoc_insertion_point(parse_start:google.protobuf.Struct)
   for (;;) {
-    ::std::pair< ::google::protobuf::uint32, bool> p = input->ReadTagWithCutoff(127);
+    ::std::pair< ::google::protobuf::uint32, bool> p = input->ReadTagWithCutoffNoLastTag(127);
     tag = p.first;
     if (!p.second) goto handle_unusual;
     switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
@@ -531,7 +534,7 @@ void Struct::MergeFrom(const ::google::protobuf::Message& from) {
 
 void Struct::MergeFrom(const Struct& from) {
 // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.Struct)
-  GOOGLE_DCHECK(&from != this);
+  GOOGLE_DCHECK_NE(&from, this);
   _internal_metadata_.MergeFrom(from._internal_metadata_);
   fields_.MergeFrom(from.fields_);
 }
@@ -770,7 +773,7 @@ bool Value::MergePartialFromCodedStream(
   ::google::protobuf::uint32 tag;
   // @@protoc_insertion_point(parse_start:google.protobuf.Value)
   for (;;) {
-    ::std::pair< ::google::protobuf::uint32, bool> p = input->ReadTagWithCutoff(127);
+    ::std::pair< ::google::protobuf::uint32, bool> p = input->ReadTagWithCutoffNoLastTag(127);
     tag = p.first;
     if (!p.second) goto handle_unusual;
     switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
@@ -1037,7 +1040,7 @@ void Value::MergeFrom(const ::google::protobuf::Message& from) {
 
 void Value::MergeFrom(const Value& from) {
 // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.Value)
-  GOOGLE_DCHECK(&from != this);
+  GOOGLE_DCHECK_NE(&from, this);
   _internal_metadata_.MergeFrom(from._internal_metadata_);
   switch (from.kind_case()) {
     case kNullValue: {
@@ -1591,7 +1594,7 @@ bool ListValue::MergePartialFromCodedStream(
   ::google::protobuf::uint32 tag;
   // @@protoc_insertion_point(parse_start:google.protobuf.ListValue)
   for (;;) {
-    ::std::pair< ::google::protobuf::uint32, bool> p = input->ReadTagWithCutoff(127);
+    ::std::pair< ::google::protobuf::uint32, bool> p = input->ReadTagWithCutoffNoLastTag(127);
     tag = p.first;
     if (!p.second) goto handle_unusual;
     switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
@@ -1695,7 +1698,7 @@ void ListValue::MergeFrom(const ::google::protobuf::Message& from) {
 
 void ListValue::MergeFrom(const ListValue& from) {
 // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.ListValue)
-  GOOGLE_DCHECK(&from != this);
+  GOOGLE_DCHECK_NE(&from, this);
   _internal_metadata_.MergeFrom(from._internal_metadata_);
   values_.MergeFrom(from.values_);
 }

@@ -245,7 +245,7 @@ TEST_F(CodedStreamTest, EmptyInputBeforeEos) {
     int count_;
   } in;
   CodedInputStream input(&in);
-  input.ReadTag();
+  input.ReadTagNoLastTag();
   EXPECT_TRUE(input.ConsumedEntireMessage());
 }
 
@@ -1263,7 +1263,7 @@ TEST_F(CodedStreamTest, TotalBytesLimitNotValidMessageEnd) {
 
   // Read a tag.  Should fail, but report being a valid endpoint since it's
   // a regular limit.
-  EXPECT_EQ(0, coded_input.ReadTag());
+  EXPECT_EQ(0, coded_input.ReadTagNoLastTag());
   EXPECT_TRUE(coded_input.ConsumedEntireMessage());
 
   // Pop the limit.
@@ -1271,7 +1271,7 @@ TEST_F(CodedStreamTest, TotalBytesLimitNotValidMessageEnd) {
 
   // Read a tag.  Should fail, and report *not* being a valid endpoint, since
   // this time we're hitting the total bytes limit.
-  EXPECT_EQ(0, coded_input.ReadTag());
+  EXPECT_EQ(0, coded_input.ReadTagNoLastTag());
   EXPECT_FALSE(coded_input.ConsumedEntireMessage());
 }
 

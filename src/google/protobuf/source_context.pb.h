@@ -31,8 +31,8 @@
 namespace google {
 namespace protobuf {
 class SourceContext;
-extern ::google::protobuf::internal::ExplicitlyConstructed<
-    class SourceContext> _SourceContext_default_instance_;
+class SourceContextDefaultTypeInternal;
+extern SourceContextDefaultTypeInternal _SourceContext_default_instance_;
 }  // namespace protobuf
 }  // namespace google
 
@@ -40,15 +40,15 @@ namespace google {
 namespace protobuf {
 
 // Internal implementation detail -- do not call these.
-void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2fsource_5fcontext_2eproto();
-void LIBPROTOBUF_EXPORT protobuf_InitDefaults_google_2fprotobuf_2fsource_5fcontext_2eproto();
+void protobuf_AddDesc_google_2fprotobuf_2fsource_5fcontext_2eproto();
+void protobuf_InitDefaults_google_2fprotobuf_2fsource_5fcontext_2eproto();
 void protobuf_AssignDesc_google_2fprotobuf_2fsource_5fcontext_2eproto();
 void protobuf_ShutdownFile_google_2fprotobuf_2fsource_5fcontext_2eproto();
 
 
 // ===================================================================
 
-class LIBPROTOBUF_EXPORT SourceContext : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.SourceContext) */ {
+class SourceContext : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.SourceContext) */ {
  public:
   SourceContext();
   virtual ~SourceContext();
@@ -64,7 +64,8 @@ class LIBPROTOBUF_EXPORT SourceContext : public ::google::protobuf::Message /* @
   static const SourceContext& default_instance();
 
   static inline const SourceContext* internal_default_instance() {
-    return &_SourceContext_default_instance_.get();
+    return reinterpret_cast<const SourceContext*>(
+               &_SourceContext_default_instance_);
   }
 
   void Swap(SourceContext* other);
@@ -130,8 +131,8 @@ class LIBPROTOBUF_EXPORT SourceContext : public ::google::protobuf::Message /* @
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
   ::google::protobuf::internal::ArenaStringPtr file_name_;
   mutable int _cached_size_;
-  friend void LIBPROTOBUF_EXPORT protobuf_InitDefaults_google_2fprotobuf_2fsource_5fcontext_2eproto_impl();
-  friend void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2fsource_5fcontext_2eproto_impl();
+  friend void  protobuf_InitDefaults_google_2fprotobuf_2fsource_5fcontext_2eproto_impl();
+  friend void  protobuf_AddDesc_google_2fprotobuf_2fsource_5fcontext_2eproto_impl();
   friend void protobuf_AssignDesc_google_2fprotobuf_2fsource_5fcontext_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fsource_5fcontext_2eproto();
 

@@ -19,7 +19,8 @@
 
 namespace google {
 namespace protobuf {
-::google::protobuf::internal::ExplicitlyConstructed<Empty> _Empty_default_instance_;
+class EmptyDefaultTypeInternal : public ::google::protobuf::internal::ExplicitlyConstructed<Empty> {};
+EmptyDefaultTypeInternal _Empty_default_instance_;
 
 namespace {
 
@@ -198,7 +199,7 @@ bool Empty::MergePartialFromCodedStream(
   ::google::protobuf::uint32 tag;
   // @@protoc_insertion_point(parse_start:google.protobuf.Empty)
   for (;;) {
-    ::std::pair< ::google::protobuf::uint32, bool> p = input->ReadTagWithCutoff(127);
+    ::std::pair< ::google::protobuf::uint32, bool> p = input->ReadTagWithCutoffNoLastTag(127);
     tag = p.first;
     if (!p.second) goto handle_unusual;
   handle_unusual:
@@ -260,7 +261,7 @@ void Empty::MergeFrom(const ::google::protobuf::Message& from) {
 
 void Empty::MergeFrom(const Empty& from) {
 // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.Empty)
-  GOOGLE_DCHECK(&from != this);
+  GOOGLE_DCHECK_NE(&from, this);
   _internal_metadata_.MergeFrom(from._internal_metadata_);
 }
 

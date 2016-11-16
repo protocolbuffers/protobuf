@@ -355,7 +355,7 @@ bool EncodedDescriptorDatabase::FindNameOfFileContainingSymbol(
       FileDescriptorProto::kNameFieldNumber,
       internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED);
 
-  if (input.ReadTag() == kNameTag) {
+  if (input.ReadTagNoLastTag() == kNameTag) {
     // Success!
     return internal::WireFormatLite::ReadString(&input, output);
   } else {

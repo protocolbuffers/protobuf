@@ -19,7 +19,8 @@
 
 namespace google {
 namespace protobuf {
-::google::protobuf::internal::ExplicitlyConstructed<Duration> _Duration_default_instance_;
+class DurationDefaultTypeInternal : public ::google::protobuf::internal::ExplicitlyConstructed<Duration> {};
+DurationDefaultTypeInternal _Duration_default_instance_;
 
 namespace {
 
@@ -210,7 +211,7 @@ bool Duration::MergePartialFromCodedStream(
   ::google::protobuf::uint32 tag;
   // @@protoc_insertion_point(parse_start:google.protobuf.Duration)
   for (;;) {
-    ::std::pair< ::google::protobuf::uint32, bool> p = input->ReadTagWithCutoff(127);
+    ::std::pair< ::google::protobuf::uint32, bool> p = input->ReadTagWithCutoffNoLastTag(127);
     tag = p.first;
     if (!p.second) goto handle_unusual;
     switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
@@ -337,7 +338,7 @@ void Duration::MergeFrom(const ::google::protobuf::Message& from) {
 
 void Duration::MergeFrom(const Duration& from) {
 // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.Duration)
-  GOOGLE_DCHECK(&from != this);
+  GOOGLE_DCHECK_NE(&from, this);
   _internal_metadata_.MergeFrom(from._internal_metadata_);
   if (from.seconds() != 0) {
     set_seconds(from.seconds());

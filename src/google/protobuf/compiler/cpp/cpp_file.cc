@@ -417,13 +417,13 @@ class FileGenerator::ForwardDeclarations {
              it = classes_.begin(),
              end = classes_.end();
          it != end; ++it) {
-      printer->Print("class $classname$;\n"
-                     "class $classname$DefaultTypeInternal;\n",
+      printer->Print("class $classname$;\n",
                      "classname", it->first);
       printer->Annotate("classname", it->second);
 
       printer->Print(
-          "extern $classname$DefaultTypeInternal _$classname$_default_instance_;\n",
+          "class $classname$DefaultTypeInternal;\n"
+          "extern $classname$DefaultTypeInternal _$classname$_default_instance_;\n",  // NOLINT
           "classname", it->first);
     }
     for (std::map<string, ForwardDeclarations *>::const_iterator

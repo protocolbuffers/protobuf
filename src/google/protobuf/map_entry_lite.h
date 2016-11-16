@@ -171,7 +171,7 @@ class MapEntryLite : public MessageLite {
       // need to care whether the value is unknown enum;
       // 4) missing key/value: missed key/value will have default value. caller
       // should take this entry as if key/value is set to default value.
-      tag = input->ReadTag();
+      tag = input->ReadTagNoLastTag();
       switch (tag) {
         case kKeyTag:
           if (!KeyTypeHandler::Read(input, mutable_key())) {

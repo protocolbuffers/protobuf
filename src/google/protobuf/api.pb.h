@@ -33,32 +33,32 @@
 namespace google {
 namespace protobuf {
 class Api;
-extern ::google::protobuf::internal::ExplicitlyConstructed<
-    class Api> _Api_default_instance_;
+class ApiDefaultTypeInternal;
+extern ApiDefaultTypeInternal _Api_default_instance_;
 class Enum;
-extern ::google::protobuf::internal::ExplicitlyConstructed<
-    class Enum> _Enum_default_instance_;
+class EnumDefaultTypeInternal;
+extern EnumDefaultTypeInternal _Enum_default_instance_;
 class EnumValue;
-extern ::google::protobuf::internal::ExplicitlyConstructed<
-    class EnumValue> _EnumValue_default_instance_;
+class EnumValueDefaultTypeInternal;
+extern EnumValueDefaultTypeInternal _EnumValue_default_instance_;
 class Field;
-extern ::google::protobuf::internal::ExplicitlyConstructed<
-    class Field> _Field_default_instance_;
+class FieldDefaultTypeInternal;
+extern FieldDefaultTypeInternal _Field_default_instance_;
 class Method;
-extern ::google::protobuf::internal::ExplicitlyConstructed<
-    class Method> _Method_default_instance_;
+class MethodDefaultTypeInternal;
+extern MethodDefaultTypeInternal _Method_default_instance_;
 class Mixin;
-extern ::google::protobuf::internal::ExplicitlyConstructed<
-    class Mixin> _Mixin_default_instance_;
+class MixinDefaultTypeInternal;
+extern MixinDefaultTypeInternal _Mixin_default_instance_;
 class Option;
-extern ::google::protobuf::internal::ExplicitlyConstructed<
-    class Option> _Option_default_instance_;
+class OptionDefaultTypeInternal;
+extern OptionDefaultTypeInternal _Option_default_instance_;
 class SourceContext;
-extern ::google::protobuf::internal::ExplicitlyConstructed<
-    class SourceContext> _SourceContext_default_instance_;
+class SourceContextDefaultTypeInternal;
+extern SourceContextDefaultTypeInternal _SourceContext_default_instance_;
 class Type;
-extern ::google::protobuf::internal::ExplicitlyConstructed<
-    class Type> _Type_default_instance_;
+class TypeDefaultTypeInternal;
+extern TypeDefaultTypeInternal _Type_default_instance_;
 }  // namespace protobuf
 }  // namespace google
 
@@ -66,15 +66,15 @@ namespace google {
 namespace protobuf {
 
 // Internal implementation detail -- do not call these.
-void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2fapi_2eproto();
-void LIBPROTOBUF_EXPORT protobuf_InitDefaults_google_2fprotobuf_2fapi_2eproto();
+void protobuf_AddDesc_google_2fprotobuf_2fapi_2eproto();
+void protobuf_InitDefaults_google_2fprotobuf_2fapi_2eproto();
 void protobuf_AssignDesc_google_2fprotobuf_2fapi_2eproto();
 void protobuf_ShutdownFile_google_2fprotobuf_2fapi_2eproto();
 
 
 // ===================================================================
 
-class LIBPROTOBUF_EXPORT Api : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.Api) */ {
+class Api : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.Api) */ {
  public:
   Api();
   virtual ~Api();
@@ -90,7 +90,8 @@ class LIBPROTOBUF_EXPORT Api : public ::google::protobuf::Message /* @@protoc_in
   static const Api& default_instance();
 
   static inline const Api* internal_default_instance() {
-    return &_Api_default_instance_.get();
+    return reinterpret_cast<const Api*>(
+               &_Api_default_instance_);
   }
 
   void Swap(Api* other);
@@ -224,15 +225,15 @@ class LIBPROTOBUF_EXPORT Api : public ::google::protobuf::Message /* @@protoc_in
   ::google::protobuf::SourceContext* source_context_;
   int syntax_;
   mutable int _cached_size_;
-  friend void LIBPROTOBUF_EXPORT protobuf_InitDefaults_google_2fprotobuf_2fapi_2eproto_impl();
-  friend void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2fapi_2eproto_impl();
+  friend void  protobuf_InitDefaults_google_2fprotobuf_2fapi_2eproto_impl();
+  friend void  protobuf_AddDesc_google_2fprotobuf_2fapi_2eproto_impl();
   friend void protobuf_AssignDesc_google_2fprotobuf_2fapi_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fapi_2eproto();
 
 };
 // -------------------------------------------------------------------
 
-class LIBPROTOBUF_EXPORT Method : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.Method) */ {
+class Method : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.Method) */ {
  public:
   Method();
   virtual ~Method();
@@ -248,7 +249,8 @@ class LIBPROTOBUF_EXPORT Method : public ::google::protobuf::Message /* @@protoc
   static const Method& default_instance();
 
   static inline const Method* internal_default_instance() {
-    return &_Method_default_instance_.get();
+    return reinterpret_cast<const Method*>(
+               &_Method_default_instance_);
   }
 
   void Swap(Method* other);
@@ -372,15 +374,15 @@ class LIBPROTOBUF_EXPORT Method : public ::google::protobuf::Message /* @@protoc
   bool response_streaming_;
   int syntax_;
   mutable int _cached_size_;
-  friend void LIBPROTOBUF_EXPORT protobuf_InitDefaults_google_2fprotobuf_2fapi_2eproto_impl();
-  friend void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2fapi_2eproto_impl();
+  friend void  protobuf_InitDefaults_google_2fprotobuf_2fapi_2eproto_impl();
+  friend void  protobuf_AddDesc_google_2fprotobuf_2fapi_2eproto_impl();
   friend void protobuf_AssignDesc_google_2fprotobuf_2fapi_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fapi_2eproto();
 
 };
 // -------------------------------------------------------------------
 
-class LIBPROTOBUF_EXPORT Mixin : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.Mixin) */ {
+class Mixin : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.Mixin) */ {
  public:
   Mixin();
   virtual ~Mixin();
@@ -396,7 +398,8 @@ class LIBPROTOBUF_EXPORT Mixin : public ::google::protobuf::Message /* @@protoc_
   static const Mixin& default_instance();
 
   static inline const Mixin* internal_default_instance() {
-    return &_Mixin_default_instance_.get();
+    return reinterpret_cast<const Mixin*>(
+               &_Mixin_default_instance_);
   }
 
   void Swap(Mixin* other);
@@ -474,8 +477,8 @@ class LIBPROTOBUF_EXPORT Mixin : public ::google::protobuf::Message /* @@protoc_
   ::google::protobuf::internal::ArenaStringPtr name_;
   ::google::protobuf::internal::ArenaStringPtr root_;
   mutable int _cached_size_;
-  friend void LIBPROTOBUF_EXPORT protobuf_InitDefaults_google_2fprotobuf_2fapi_2eproto_impl();
-  friend void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2fapi_2eproto_impl();
+  friend void  protobuf_InitDefaults_google_2fprotobuf_2fapi_2eproto_impl();
+  friend void  protobuf_AddDesc_google_2fprotobuf_2fapi_2eproto_impl();
   friend void protobuf_AssignDesc_google_2fprotobuf_2fapi_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fapi_2eproto();
 

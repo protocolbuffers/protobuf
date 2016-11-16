@@ -31,8 +31,8 @@
 namespace google {
 namespace protobuf {
 class FieldMask;
-extern ::google::protobuf::internal::ExplicitlyConstructed<
-    class FieldMask> _FieldMask_default_instance_;
+class FieldMaskDefaultTypeInternal;
+extern FieldMaskDefaultTypeInternal _FieldMask_default_instance_;
 }  // namespace protobuf
 }  // namespace google
 
@@ -40,15 +40,15 @@ namespace google {
 namespace protobuf {
 
 // Internal implementation detail -- do not call these.
-void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2ffield_5fmask_2eproto();
-void LIBPROTOBUF_EXPORT protobuf_InitDefaults_google_2fprotobuf_2ffield_5fmask_2eproto();
+void protobuf_AddDesc_google_2fprotobuf_2ffield_5fmask_2eproto();
+void protobuf_InitDefaults_google_2fprotobuf_2ffield_5fmask_2eproto();
 void protobuf_AssignDesc_google_2fprotobuf_2ffield_5fmask_2eproto();
 void protobuf_ShutdownFile_google_2fprotobuf_2ffield_5fmask_2eproto();
 
 
 // ===================================================================
 
-class LIBPROTOBUF_EXPORT FieldMask : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.FieldMask) */ {
+class FieldMask : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.FieldMask) */ {
  public:
   FieldMask();
   virtual ~FieldMask();
@@ -64,7 +64,8 @@ class LIBPROTOBUF_EXPORT FieldMask : public ::google::protobuf::Message /* @@pro
   static const FieldMask& default_instance();
 
   static inline const FieldMask* internal_default_instance() {
-    return &_FieldMask_default_instance_.get();
+    return reinterpret_cast<const FieldMask*>(
+               &_FieldMask_default_instance_);
   }
 
   void Swap(FieldMask* other);
@@ -135,8 +136,8 @@ class LIBPROTOBUF_EXPORT FieldMask : public ::google::protobuf::Message /* @@pro
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
   ::google::protobuf::RepeatedPtrField< ::std::string> paths_;
   mutable int _cached_size_;
-  friend void LIBPROTOBUF_EXPORT protobuf_InitDefaults_google_2fprotobuf_2ffield_5fmask_2eproto_impl();
-  friend void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2ffield_5fmask_2eproto_impl();
+  friend void  protobuf_InitDefaults_google_2fprotobuf_2ffield_5fmask_2eproto_impl();
+  friend void  protobuf_AddDesc_google_2fprotobuf_2ffield_5fmask_2eproto_impl();
   friend void protobuf_AssignDesc_google_2fprotobuf_2ffield_5fmask_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2ffield_5fmask_2eproto();
 

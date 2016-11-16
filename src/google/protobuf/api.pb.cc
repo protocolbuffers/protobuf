@@ -19,9 +19,12 @@
 
 namespace google {
 namespace protobuf {
-::google::protobuf::internal::ExplicitlyConstructed<Api> _Api_default_instance_;
-::google::protobuf::internal::ExplicitlyConstructed<Method> _Method_default_instance_;
-::google::protobuf::internal::ExplicitlyConstructed<Mixin> _Mixin_default_instance_;
+class ApiDefaultTypeInternal : public ::google::protobuf::internal::ExplicitlyConstructed<Api> {};
+ApiDefaultTypeInternal _Api_default_instance_;
+class MethodDefaultTypeInternal : public ::google::protobuf::internal::ExplicitlyConstructed<Method> {};
+MethodDefaultTypeInternal _Method_default_instance_;
+class MixinDefaultTypeInternal : public ::google::protobuf::internal::ExplicitlyConstructed<Mixin> {};
+MixinDefaultTypeInternal _Mixin_default_instance_;
 
 namespace {
 
@@ -275,7 +278,9 @@ void Api::Clear() {
   mixins_.Clear();
   name_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   version_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  if (GetArenaNoVirtual() == NULL && source_context_ != NULL) delete source_context_;
+  if (GetArenaNoVirtual() == NULL && source_context_ != NULL) {
+    delete source_context_;
+  }
   source_context_ = NULL;
   syntax_ = 0;
 }
@@ -286,7 +291,7 @@ bool Api::MergePartialFromCodedStream(
   ::google::protobuf::uint32 tag;
   // @@protoc_insertion_point(parse_start:google.protobuf.Api)
   for (;;) {
-    ::std::pair< ::google::protobuf::uint32, bool> p = input->ReadTagWithCutoff(127);
+    ::std::pair< ::google::protobuf::uint32, bool> p = input->ReadTagWithCutoffNoLastTag(127);
     tag = p.first;
     if (!p.second) goto handle_unusual;
     switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
@@ -613,7 +618,7 @@ void Api::MergeFrom(const ::google::protobuf::Message& from) {
 
 void Api::MergeFrom(const Api& from) {
 // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.Api)
-  GOOGLE_DCHECK(&from != this);
+  GOOGLE_DCHECK_NE(&from, this);
   _internal_metadata_.MergeFrom(from._internal_metadata_);
   methods_.MergeFrom(from.methods_);
   options_.MergeFrom(from.options_);
@@ -1011,7 +1016,7 @@ bool Method::MergePartialFromCodedStream(
   ::google::protobuf::uint32 tag;
   // @@protoc_insertion_point(parse_start:google.protobuf.Method)
   for (;;) {
-    ::std::pair< ::google::protobuf::uint32, bool> p = input->ReadTagWithCutoff(127);
+    ::std::pair< ::google::protobuf::uint32, bool> p = input->ReadTagWithCutoffNoLastTag(127);
     tag = p.first;
     if (!p.second) goto handle_unusual;
     switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
@@ -1332,7 +1337,7 @@ void Method::MergeFrom(const ::google::protobuf::Message& from) {
 
 void Method::MergeFrom(const Method& from) {
 // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.Method)
-  GOOGLE_DCHECK(&from != this);
+  GOOGLE_DCHECK_NE(&from, this);
   _internal_metadata_.MergeFrom(from._internal_metadata_);
   options_.MergeFrom(from.options_);
   if (from.name().size() > 0) {
@@ -1687,7 +1692,7 @@ bool Mixin::MergePartialFromCodedStream(
   ::google::protobuf::uint32 tag;
   // @@protoc_insertion_point(parse_start:google.protobuf.Mixin)
   for (;;) {
-    ::std::pair< ::google::protobuf::uint32, bool> p = input->ReadTagWithCutoff(127);
+    ::std::pair< ::google::protobuf::uint32, bool> p = input->ReadTagWithCutoffNoLastTag(127);
     tag = p.first;
     if (!p.second) goto handle_unusual;
     switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
@@ -1840,7 +1845,7 @@ void Mixin::MergeFrom(const ::google::protobuf::Message& from) {
 
 void Mixin::MergeFrom(const Mixin& from) {
 // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.Mixin)
-  GOOGLE_DCHECK(&from != this);
+  GOOGLE_DCHECK_NE(&from, this);
   _internal_metadata_.MergeFrom(from._internal_metadata_);
   if (from.name().size() > 0) {
 

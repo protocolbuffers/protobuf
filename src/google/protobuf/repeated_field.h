@@ -681,7 +681,8 @@ inline const Message& GenericTypeHandler<Message>::default_instance() {
   return *null;
 }
 
-class LIBPROTOBUF_EXPORT StringTypeHandler {
+
+class StringTypeHandler {
  public:
   typedef string Type;
 
@@ -1291,7 +1292,7 @@ void RepeatedField<Element>::Reserve(int new_size) {
   Element* e = &rep_->elements[0];
   Element* limit = &rep_->elements[total_size_];
   for (; e < limit; e++) {
-    new (e) Element();
+    new (e) Element;
   }
   if (current_size_ > 0) {
     MoveArray(rep_->elements, old_rep->elements, current_size_);
