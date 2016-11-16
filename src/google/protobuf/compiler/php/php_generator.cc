@@ -70,6 +70,16 @@ void GenerateEnum(const google::protobuf::EnumDescriptor* en,
 void Indent(google::protobuf::io::Printer* printer);
 void Outdent(google::protobuf::io::Printer* printer);
 
+std::string MessagePrefix(const google::protobuf::Descriptor* message) {
+  // Empty cannot be php class name.
+  if (message->name() == "Empty" &&
+      message->file()->package() == "google.protobuf") {
+    return "GPB";
+  } else {
+    return "";
+  }
+}
+
 std::string MessageName(const google::protobuf::Descriptor* message,
                         bool is_descriptor) {
   string message_name = message->name();
@@ -78,6 +88,8 @@ std::string MessageName(const google::protobuf::Descriptor* message,
     message_name = descriptor->name() + '_' + message_name;
     descriptor = descriptor->containing_type();
   }
+  message_name = MessagePrefix(message) + message_name;
+
   return PhpName(message->file()->package(), is_descriptor) + '\\' +
          message_name;
 }
@@ -483,8 +495,10 @@ void GenerateMessage(const string& name_prefix,
     return;
   }
 
-  string message_name = name_prefix.empty()?
-      message->name() : name_prefix + "_" + message->name();
+  string message_name =
+      name_prefix.empty()
+          ? message->name()
+          : name_prefix + "_" + MessagePrefix(message) + message->name();
 
   printer->Print(
       "class @name@ extends \\Google\\Protobuf\\Internal\\Message\n"

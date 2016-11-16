@@ -177,8 +177,8 @@ static zend_object_value message_create(zend_class_entry* ce TSRMLS_DC) {
 
   zend_object_std_init(&msg->std, ce TSRMLS_CC);
   object_properties_init(&msg->std, ce);
-  layout_init(desc->layout, message_data(msg), msg->std.properties_table
-	      TSRMLS_CC);
+  layout_init(desc->layout, message_data(msg),
+              msg->std.properties_table TSRMLS_CC);
 
   return_value.handle = zend_objects_store_put(
       msg, (zend_objects_store_dtor_t)zend_objects_destroy_object, message_free,
