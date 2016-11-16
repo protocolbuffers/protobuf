@@ -154,7 +154,7 @@ template <class Type> bool AllAreInitialized(const Type& t) {
   return true;
 }
 
-void InitProtobufDefaults();
+LIBPROTOBUF_EXPORT void InitProtobufDefaults();
 
 // We compute sizes as size_t but cache them as int.  This function converts a
 // computed size to a cached size.  Since we don't proceed with serialization if

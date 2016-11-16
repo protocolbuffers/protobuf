@@ -737,7 +737,7 @@ T* DynamicCastToGenerated(Message* from) {
   return const_cast<T*>(DynamicCastToGenerated<const T>(message_const));
 }
 
-void AssignDescriptors(
+LIBPROTOBUF_EXPORT void AssignDescriptors(
     const string& filename, const MigrationSchema* schemas,
     const DefaultInstanceData* default_instance_data, const uint32* offsets,
     MessageFactory* factory,
@@ -746,7 +746,7 @@ void AssignDescriptors(
     const EnumDescriptor** file_level_enum_descriptors,
     const ServiceDescriptor** file_level_service_descriptors);
 
-void AssignDescriptors(
+LIBPROTOBUF_EXPORT void AssignDescriptors(
     const string& filename, const ReflectionSchema* schemas,
     MessageFactory* factory,
     // update the following descriptor arrays.
@@ -754,7 +754,7 @@ void AssignDescriptors(
     const EnumDescriptor** file_level_enum_descriptors,
     const ServiceDescriptor** file_level_service_descriptors);
 
-void RegisterAllTypes(const Metadata* file_level_metadata, int size);
+LIBPROTOBUF_EXPORT void RegisterAllTypes(const Metadata* file_level_metadata, int size);
 
 }  // namespace internal
 }  // namespace protobuf
