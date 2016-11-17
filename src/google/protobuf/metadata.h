@@ -166,7 +166,7 @@ class InternalMetadataWithArenaBase {
   }
 };
 
-class LIBPROTOBUF_EXPORT InternalMetadataWithArena
+class InternalMetadataWithArena
     : public InternalMetadataWithArenaBase<UnknownFieldSet,
                                            InternalMetadataWithArena> {
  public:
@@ -186,7 +186,7 @@ class LIBPROTOBUF_EXPORT InternalMetadataWithArena
     mutable_unknown_fields()->Clear();
   }
 
-  static const UnknownFieldSet& default_instance() {
+  static inline const UnknownFieldSet& default_instance() {
     return *UnknownFieldSet::default_instance();
   }
 };
@@ -194,7 +194,7 @@ class LIBPROTOBUF_EXPORT InternalMetadataWithArena
 // We store unknown fields as a string right now, because there is currently no
 // good interface for reading unknown fields into an ArenaString.  We may want
 // to revisit this to allow unknown fields to be parsed onto the Arena.
-class LIBPROTOBUF_EXPORT InternalMetadataWithArenaLite
+class InternalMetadataWithArenaLite
     : public InternalMetadataWithArenaBase<string,
                                            InternalMetadataWithArenaLite> {
  public:
@@ -215,7 +215,7 @@ class LIBPROTOBUF_EXPORT InternalMetadataWithArenaLite
     mutable_unknown_fields()->clear();
   }
 
-  static const string& default_instance() {
+  static inline const string& default_instance() {
     return GetEmptyStringAlreadyInited();
   }
 };
