@@ -2372,7 +2372,7 @@ void AssignDescriptors(
   }
 }
 
-void RegisterAllTypes(const Metadata* file_level_metadata, int size) {
+void RegisterAllTypesInternal(const Metadata* file_level_metadata, int size) {
   for (int i = 0; i < size; i++) {
     const GeneratedMessageReflection* reflection =
         static_cast<const GeneratedMessageReflection*>(
@@ -2384,6 +2384,10 @@ void RegisterAllTypes(const Metadata* file_level_metadata, int size) {
           reflection->schema_.default_instance_);
     }
   }
+}
+
+void RegisterAllTypes(const Metadata* file_level_metadata, int size) {
+  RegisterAllTypesInternal(file_level_metadata, size);
 }
 
 }  // namespace internal
