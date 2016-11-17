@@ -1,0 +1,5 @@
+syntax = "proto3";
+
+message NoNameSpace {
+  int32 a = 1;
+}

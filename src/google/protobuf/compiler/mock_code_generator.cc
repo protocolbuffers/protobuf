@@ -61,7 +61,7 @@ namespace compiler {
 // comma-separated string.
 string CommaSeparatedList(const std::vector<const FileDescriptor*> all_files) {
   std::vector<string> names;
-  for (int i = 0; i < all_files.size(); i++) {
+  for (size_t i = 0; i < all_files.size(); i++) {
     names.push_back(all_files[i]->name());
   }
   return Join(names, ",");
@@ -98,7 +98,7 @@ void MockCodeGenerator::ExpectGenerated(
   while (!lines.empty() && lines.back().empty()) {
     lines.pop_back();
   }
-  for (int i = 0; i < lines.size(); i++) {
+  for (size_t i = 0; i < lines.size(); i++) {
     lines[i] += "\n";
   }
 
@@ -115,7 +115,7 @@ void MockCodeGenerator::ExpectGenerated(
   EXPECT_EQ(kFirstInsertionPoint, lines[1 + insertion_list.size()]);
   EXPECT_EQ(kSecondInsertionPoint, lines[2 + insertion_list.size() * 2]);
 
-  for (int i = 0; i < insertion_list.size(); i++) {
+  for (size_t i = 0; i < insertion_list.size(); i++) {
     EXPECT_EQ(GetOutputFileContent(insertion_list[i], "first_insert",
                                    file, file, first_message_name),
               lines[1 + i]);
@@ -171,7 +171,7 @@ bool MockCodeGenerator::Generate(
     SplitStringUsing(StripPrefixString(parameter, "insert="),
                      ",", &insert_into);
 
-    for (int i = 0; i < insert_into.size(); i++) {
+    for (size_t i = 0; i < insert_into.size(); i++) {
       {
         google::protobuf::scoped_ptr<io::ZeroCopyOutputStream> output(context->OpenForInsert(
             GetOutputFileName(insert_into[i], file), kFirstInsertionPointName));

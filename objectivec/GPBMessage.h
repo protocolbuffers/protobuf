@@ -65,9 +65,18 @@ CF_EXTERN_C_END
 
 /**
  * Base class that each generated message subclasses from.
+ *
+ * @note While the class support NSSecureCoding, if the message has any
+ *       extensions, they will end up reloaded in @c unknownFields as there is
+ *       no way for the @c NSCoding plumbing to pass through a
+ *       @c GPBExtensionRegistry. To support extensions, instead of passing the
+ *       calls off to the Message, simple store the result of @c data, and then
+ *       when loading, fetch the data and use
+ *       @c +parseFromData:extensionRegistry:error: to provide an extension
+ *       registry.
  **/
 @interface GPBMessage : NSObject<NSSecureCoding, NSCopying>
- 
+
 // If you add an instance method/property to this class that may conflict with
 // fields declared in protos, you need to update objective_helpers.cc. The main
 // cases are methods that take no arguments, or setFoo:/hasFoo: type methods.

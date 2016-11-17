@@ -156,6 +156,7 @@ static PHP_RSHUTDOWN_FUNCTION(protobuf) {
 static PHP_MINIT_FUNCTION(protobuf) {
   map_field_init(TSRMLS_C);
   repeated_field_init(TSRMLS_C);
+  repeated_field_iter_init(TSRMLS_C);
   gpb_type_init(TSRMLS_C);
   message_init(TSRMLS_C);
   descriptor_pool_init(TSRMLS_C);

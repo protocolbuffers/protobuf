@@ -97,7 +97,7 @@ namespace Google.Protobuf.Reflection
             // We could trust the generated code and check whether the type of the property is
             // a MapField, but that feels a tad nasty.
             this.propertyName = propertyName;
-            JsonName =  Proto.JsonName == "" ? JsonFormatter.ToCamelCase(Proto.Name) : Proto.JsonName;
+            JsonName =  Proto.JsonName == "" ? JsonFormatter.ToJsonName(Proto.Name) : Proto.JsonName;
         }
     
 

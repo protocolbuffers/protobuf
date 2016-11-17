@@ -686,8 +686,7 @@ inline const Message& GenericTypeHandler<Message>::default_instance() {
   return *null;
 }
 
-
-class StringTypeHandler {
+class LIBPROTOBUF_EXPORT StringTypeHandler {
  public:
   typedef string Type;
 

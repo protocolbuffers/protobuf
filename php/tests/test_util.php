@@ -20,7 +20,7 @@ define('MAX_INT32', 2147483647);
 define('MAX_INT32_FLOAT', 2147483647.0);
 define('MAX_INT32_STRING', '2147483647');
 
-define('MIN_INT32', -2147483648);
+define('MIN_INT32', (int)-2147483648);
 define('MIN_INT32_FLOAT', -2147483648.0);
 define('MIN_INT32_STRING', '-2147483648');
 
@@ -28,22 +28,23 @@ define('MAX_UINT32', 4294967295);
 define('MAX_UINT32_FLOAT', 4294967295.0);
 define('MAX_UINT32_STRING', '4294967295');
 
-define('MIN_UINT32', -2147483648);
+define('MIN_UINT32', (int)-2147483648);
 define('MIN_UINT32_FLOAT', -2147483648.0);
 define('MIN_UINT32_STRING', '-2147483648');
 
-define('MAX_INT64', 9223372036854775807);
-define('MAX_INT64_STRING', '9223372036854775807');
-
-define('MIN_INT64_STRING', '-9223372036854775808');
-if (PHP_INT_SIZE === 8) {
-    define('MIN_INT64', -9223372036854775808);
-} else {
-    define('MIN_INT64', MIN_INT64_STRING);
-}
-
+define('MAX_INT64_STRING',  '9223372036854775807');
+define('MIN_INT64_STRING',  '-9223372036854775808');
 define('MAX_UINT64_STRING', '-9223372036854775808');
-define('MAX_UINT64', MAX_UINT64_STRING);
+
+if (PHP_INT_SIZE === 8) {
+    define('MAX_INT64',  (int)9223372036854775807);
+    define('MIN_INT64',  (int)-9223372036854775808);
+    define('MAX_UINT64', (int)-9223372036854775808);
+} else {
+    define('MAX_INT64', MAX_INT64_STRING);
+    define('MIN_INT64', MIN_INT64_STRING);
+    define('MAX_UINT64', MAX_UINT64_STRING);
+}
 
 class TestUtil
 {
@@ -129,16 +130,24 @@ class TestUtil
 
     public static function assertTestMessage(TestMessage $m)
     {
+        if (PHP_INT_SIZE == 4) {
+            assert('-43' === $m->getOptionalInt64());
+            assert('43'  === $m->getOptionalUint64());
+            assert('-45' === $m->getOptionalSint64());
+            assert('47'  === $m->getOptionalFixed64());
+            assert('-47' === $m->getOptionalSfixed64());
+        } else {
+            assert(-43 === $m->getOptionalInt64());
+            assert(43  === $m->getOptionalUint64());
+            assert(-45 === $m->getOptionalSint64());
+            assert(47  === $m->getOptionalFixed64());
+            assert(-47 === $m->getOptionalSfixed64());
+        }
         assert(-42 === $m->getOptionalInt32());
         assert(42  === $m->getOptionalUint32());
-        assert(-43 === $m->getOptionalInt64());
-        assert(43  === $m->getOptionalUint64());
         assert(-44 === $m->getOptionalSint32());
-        assert(-45 === $m->getOptionalSint64());
         assert(46  === $m->getOptionalFixed32());
-        assert(47  === $m->getOptionalFixed64());
         assert(-46 === $m->getOptionalSfixed32());
-        assert(-47 === $m->getOptionalSfixed64());
         assert(1.5 === $m->getOptionalFloat());
         assert(1.6 === $m->getOptionalDouble());
         assert(true=== $m->getOptionalBool());
@@ -147,16 +156,24 @@ class TestUtil
         assert(TestEnum::ONE === $m->getOptionalEnum());
         assert(33  === $m->getOptionalMessage()->getA());
 
+        if (PHP_INT_SIZE == 4) {
+            assert('-43' === $m->getRepeatedInt64()[0]);
+            assert('43'  === $m->getRepeatedUint64()[0]);
+            assert('-45' === $m->getRepeatedSint64()[0]);
+            assert('47'  === $m->getRepeatedFixed64()[0]);
+            assert('-47' === $m->getRepeatedSfixed64()[0]);
+        } else {
+            assert(-43 === $m->getRepeatedInt64()[0]);
+            assert(43  === $m->getRepeatedUint64()[0]);
+            assert(-45 === $m->getRepeatedSint64()[0]);
+            assert(47  === $m->getRepeatedFixed64()[0]);
+            assert(-47 === $m->getRepeatedSfixed64()[0]);
+        }
         assert(-42 === $m->getRepeatedInt32()[0]);
         assert(42  === $m->getRepeatedUint32()[0]);
-        assert(-43 === $m->getRepeatedInt64()[0]);
-        assert(43  === $m->getRepeatedUint64()[0]);
         assert(-44 === $m->getRepeatedSint32()[0]);
-        assert(-45 === $m->getRepeatedSint64()[0]);
         assert(46  === $m->getRepeatedFixed32()[0]);
-        assert(47  === $m->getRepeatedFixed64()[0]);
         assert(-46 === $m->getRepeatedSfixed32()[0]);
-        assert(-47 === $m->getRepeatedSfixed64()[0]);
         assert(1.5 === $m->getRepeatedFloat()[0]);
         assert(1.6 === $m->getRepeatedDouble()[0]);
         assert(true=== $m->getRepeatedBool()[0]);
@@ -165,16 +182,24 @@ class TestUtil
         assert(TestEnum::ZERO === $m->getRepeatedEnum()[0]);
         assert(34  === $m->getRepeatedMessage()[0]->getA());
 
+        if (PHP_INT_SIZE == 4) {
+            assert('-53' === $m->getRepeatedInt64()[1]);
+            assert('53'  === $m->getRepeatedUint64()[1]);
+            assert('-55' === $m->getRepeatedSint64()[1]);
+            assert('57'  === $m->getRepeatedFixed64()[1]);
+            assert('-57' === $m->getRepeatedSfixed64()[1]);
+        } else {
+            assert(-53 === $m->getRepeatedInt64()[1]);
+            assert(53  === $m->getRepeatedUint64()[1]);
+            assert(-55 === $m->getRepeatedSint64()[1]);
+            assert(57  === $m->getRepeatedFixed64()[1]);
+            assert(-57 === $m->getRepeatedSfixed64()[1]);
+        }
         assert(-52 === $m->getRepeatedInt32()[1]);
         assert(52  === $m->getRepeatedUint32()[1]);
-        assert(-53 === $m->getRepeatedInt64()[1]);
-        assert(53  === $m->getRepeatedUint64()[1]);
         assert(-54 === $m->getRepeatedSint32()[1]);
-        assert(-55 === $m->getRepeatedSint64()[1]);
         assert(56  === $m->getRepeatedFixed32()[1]);
-        assert(57  === $m->getRepeatedFixed64()[1]);
         assert(-56 === $m->getRepeatedSfixed32()[1]);
-        assert(-57 === $m->getRepeatedSfixed64()[1]);
         assert(2.5 === $m->getRepeatedFloat()[1]);
         assert(2.6 === $m->getRepeatedDouble()[1]);
         assert(false === $m->getRepeatedBool()[1]);
@@ -183,14 +208,21 @@ class TestUtil
         assert(TestEnum::ONE === $m->getRepeatedEnum()[1]);
         assert(35  === $m->getRepeatedMessage()[1]->getA());
 
+        if (PHP_INT_SIZE == 4) {
+            assert('-63' === $m->getMapInt64Int64()['-63']);
+            assert('63'  === $m->getMapUint64Uint64()['63']);
+            assert('-65' === $m->getMapSint64Sint64()['-65']);
+            assert('67'  === $m->getMapFixed64Fixed64()['67']);
+        } else {
+            assert(-63 === $m->getMapInt64Int64()[-63]);
+            assert(63  === $m->getMapUint64Uint64()[63]);
+            assert(-65 === $m->getMapSint64Sint64()[-65]);
+            assert(67  === $m->getMapFixed64Fixed64()[67]);
+        }
         assert(-62 === $m->getMapInt32Int32()[-62]);
-        assert(-63 === $m->getMapInt64Int64()[-63]);
         assert(62  === $m->getMapUint32Uint32()[62]);
-        assert(63  === $m->getMapUint64Uint64()[63]);
         assert(-64 === $m->getMapSint32Sint32()[-64]);
-        assert(-65 === $m->getMapSint64Sint64()[-65]);
         assert(66  === $m->getMapFixed32Fixed32()[66]);
-        assert(67  === $m->getMapFixed64Fixed64()[67]);
         assert(3.5 === $m->getMapInt32Float()[1]);
         assert(3.6 === $m->getMapInt32Double()[1]);
         assert(true === $m->getMapBoolBool()[true]);
@@ -325,24 +357,14 @@ class TestUtil
 
         assert(-42 === $m->getRepeatedInt32()[0]);
         assert(-52 === $m->getRepeatedInt32()[1]);
-        assert(-43 === $m->getRepeatedInt64()[0]);
-        assert(-53 === $m->getRepeatedInt64()[1]);
         assert(42  === $m->getRepeatedUint32()[0]);
         assert(52  === $m->getRepeatedUint32()[1]);
-        assert(43  === $m->getRepeatedUint64()[0]);
-        assert(53  === $m->getRepeatedUint64()[1]);
         assert(-44 === $m->getRepeatedSint32()[0]);
         assert(-54 === $m->getRepeatedSint32()[1]);
-        assert(-45 === $m->getRepeatedSint64()[0]);
-        assert(-55 === $m->getRepeatedSint64()[1]);
         assert(46  === $m->getRepeatedFixed32()[0]);
         assert(56  === $m->getRepeatedFixed32()[1]);
-        assert(47  === $m->getRepeatedFixed64()[0]);
-        assert(57  === $m->getRepeatedFixed64()[1]);
         assert(-46 === $m->getRepeatedSfixed32()[0]);
         assert(-56 === $m->getRepeatedSfixed32()[1]);
-        assert(-47 === $m->getRepeatedSfixed64()[0]);
-        assert(-57 === $m->getRepeatedSfixed64()[1]);
         assert(1.5 === $m->getRepeatedFloat()[0]);
         assert(2.5 === $m->getRepeatedFloat()[1]);
         assert(1.6 === $m->getRepeatedDouble()[0]);
@@ -351,6 +373,29 @@ class TestUtil
         assert(false === $m->getRepeatedBool()[1]);
         assert(TestEnum::ONE  === $m->getRepeatedEnum()[0]);
         assert(TestEnum::ZERO === $m->getRepeatedEnum()[1]);
+        if (PHP_INT_SIZE == 4) {
+            assert('-43' === $m->getRepeatedInt64()[0]);
+            assert('-53' === $m->getRepeatedInt64()[1]);
+            assert('43'  === $m->getRepeatedUint64()[0]);
+            assert('53'  === $m->getRepeatedUint64()[1]);
+            assert('-45' === $m->getRepeatedSint64()[0]);
+            assert('-55' === $m->getRepeatedSint64()[1]);
+            assert('47'  === $m->getRepeatedFixed64()[0]);
+            assert('57'  === $m->getRepeatedFixed64()[1]);
+            assert('-47' === $m->getRepeatedSfixed64()[0]);
+            assert('-57' === $m->getRepeatedSfixed64()[1]);
+        } else {
+            assert(-43 === $m->getRepeatedInt64()[0]);
+            assert(-53 === $m->getRepeatedInt64()[1]);
+            assert(43  === $m->getRepeatedUint64()[0]);
+            assert(53  === $m->getRepeatedUint64()[1]);
+            assert(-45 === $m->getRepeatedSint64()[0]);
+            assert(-55 === $m->getRepeatedSint64()[1]);
+            assert(47  === $m->getRepeatedFixed64()[0]);
+            assert(57  === $m->getRepeatedFixed64()[1]);
+            assert(-47 === $m->getRepeatedSfixed64()[0]);
+            assert(-57 === $m->getRepeatedSfixed64()[1]);
+        }
     }
 
     public static function getGoldenTestPackedMessage()

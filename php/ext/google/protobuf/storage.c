@@ -174,11 +174,31 @@ CASE(FLOAT,  DOUBLE, float)
 CASE(DOUBLE, DOUBLE, double)
 CASE(BOOL,   BOOL,   int8_t)
 CASE(INT32,  LONG,   int32_t)
-CASE(INT64,  LONG,   int64_t)
-CASE(UINT64, LONG,   uint64_t)
 CASE(ENUM,   LONG,   uint32_t)
 
 #undef CASE
+
+#if SIZEOF_LONG == 4
+#define CASE(upb_type, c_type)                        \
+    case UPB_TYPE_##upb_type: {                       \
+      SEPARATE_ZVAL_IF_NOT_REF(cache);                \
+      char buffer[MAX_LENGTH_OF_INT64];               \
+      sprintf(buffer, "%lld", DEREF(memory, c_type)); \
+      ZVAL_STRING(*cache, buffer, 1);                 \
+      return;                                         \
+    }
+#else
+#define CASE(upb_type, c_type)                        \
+    case UPB_TYPE_##upb_type: {                       \
+      SEPARATE_ZVAL_IF_NOT_REF(cache);                \
+      ZVAL_LONG(*cache, DEREF(memory, c_type));       \
+      return;                                         \
+    }
+#endif
+CASE(UINT64, uint64_t)
+CASE(INT64,  int64_t)
+#undef CASE
+
     case UPB_TYPE_UINT32: {
       // Prepend bit-1 for negative numbers, so that uint32 value will be
       // consistent on both 32-bit and 64-bit architectures.
