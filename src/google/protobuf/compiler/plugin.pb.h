@@ -127,9 +127,6 @@ namespace compiler {
 // Internal implementation detail -- do not call these.
 void LIBPROTOC_EXPORT protobuf_AddDesc_google_2fprotobuf_2fcompiler_2fplugin_2eproto();
 void LIBPROTOC_EXPORT protobuf_InitDefaults_google_2fprotobuf_2fcompiler_2fplugin_2eproto();
-void protobuf_AssignDesc_google_2fprotobuf_2fcompiler_2fplugin_2eproto();
-void protobuf_ShutdownFile_google_2fprotobuf_2fcompiler_2fplugin_2eproto();
-
 
 // ===================================================================
 
@@ -259,7 +256,7 @@ class LIBPROTOC_EXPORT CodeGeneratorRequest : public ::google::protobuf::Message
   ::google::protobuf::internal::ArenaStringPtr parameter_;
   friend void LIBPROTOC_EXPORT protobuf_InitDefaults_google_2fprotobuf_2fcompiler_2fplugin_2eproto_impl();
   friend void LIBPROTOC_EXPORT protobuf_AddDesc_google_2fprotobuf_2fcompiler_2fplugin_2eproto_impl();
-  friend void protobuf_AssignDesc_google_2fprotobuf_2fcompiler_2fplugin_2eproto();
+  friend const ::google::protobuf::uint32* protobuf_Offsets_google_2fprotobuf_2fcompiler_2fplugin_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fcompiler_2fplugin_2eproto();
 
 };
@@ -391,7 +388,7 @@ class LIBPROTOC_EXPORT CodeGeneratorResponse_File : public ::google::protobuf::M
   ::google::protobuf::internal::ArenaStringPtr content_;
   friend void LIBPROTOC_EXPORT protobuf_InitDefaults_google_2fprotobuf_2fcompiler_2fplugin_2eproto_impl();
   friend void LIBPROTOC_EXPORT protobuf_AddDesc_google_2fprotobuf_2fcompiler_2fplugin_2eproto_impl();
-  friend void protobuf_AssignDesc_google_2fprotobuf_2fcompiler_2fplugin_2eproto();
+  friend const ::google::protobuf::uint32* protobuf_Offsets_google_2fprotobuf_2fcompiler_2fplugin_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fcompiler_2fplugin_2eproto();
 
 };
@@ -508,7 +505,7 @@ class LIBPROTOC_EXPORT CodeGeneratorResponse : public ::google::protobuf::Messag
   ::google::protobuf::internal::ArenaStringPtr error_;
   friend void LIBPROTOC_EXPORT protobuf_InitDefaults_google_2fprotobuf_2fcompiler_2fplugin_2eproto_impl();
   friend void LIBPROTOC_EXPORT protobuf_AddDesc_google_2fprotobuf_2fcompiler_2fplugin_2eproto_impl();
-  friend void protobuf_AssignDesc_google_2fprotobuf_2fcompiler_2fplugin_2eproto();
+  friend const ::google::protobuf::uint32* protobuf_Offsets_google_2fprotobuf_2fcompiler_2fplugin_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fcompiler_2fplugin_2eproto();
 
 };

@@ -51,9 +51,6 @@ namespace protobuf {
 // Internal implementation detail -- do not call these.
 void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2fstruct_2eproto();
 void LIBPROTOBUF_EXPORT protobuf_InitDefaults_google_2fprotobuf_2fstruct_2eproto();
-void protobuf_AssignDesc_google_2fprotobuf_2fstruct_2eproto();
-void protobuf_ShutdownFile_google_2fprotobuf_2fstruct_2eproto();
-
 
 enum NullValue {
   NULL_VALUE = 0,
@@ -188,7 +185,7 @@ class LIBPROTOBUF_EXPORT Struct : public ::google::protobuf::Message /* @@protoc
   mutable int _cached_size_;
   friend void LIBPROTOBUF_EXPORT protobuf_InitDefaults_google_2fprotobuf_2fstruct_2eproto_impl();
   friend void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2fstruct_2eproto_impl();
-  friend void protobuf_AssignDesc_google_2fprotobuf_2fstruct_2eproto();
+  friend const ::google::protobuf::uint32* protobuf_Offsets_google_2fprotobuf_2fstruct_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fstruct_2eproto();
 
 };
@@ -393,7 +390,7 @@ class LIBPROTOBUF_EXPORT Value : public ::google::protobuf::Message /* @@protoc_
 
   friend void LIBPROTOBUF_EXPORT protobuf_InitDefaults_google_2fprotobuf_2fstruct_2eproto_impl();
   friend void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2fstruct_2eproto_impl();
-  friend void protobuf_AssignDesc_google_2fprotobuf_2fstruct_2eproto();
+  friend const ::google::protobuf::uint32* protobuf_Offsets_google_2fprotobuf_2fstruct_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fstruct_2eproto();
 
 };
@@ -499,7 +496,7 @@ class LIBPROTOBUF_EXPORT ListValue : public ::google::protobuf::Message /* @@pro
   mutable int _cached_size_;
   friend void LIBPROTOBUF_EXPORT protobuf_InitDefaults_google_2fprotobuf_2fstruct_2eproto_impl();
   friend void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2fstruct_2eproto_impl();
-  friend void protobuf_AssignDesc_google_2fprotobuf_2fstruct_2eproto();
+  friend const ::google::protobuf::uint32* protobuf_Offsets_google_2fprotobuf_2fstruct_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fstruct_2eproto();
 
 };

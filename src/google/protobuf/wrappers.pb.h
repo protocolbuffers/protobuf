@@ -66,9 +66,6 @@ namespace protobuf {
 // Internal implementation detail -- do not call these.
 void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2fwrappers_2eproto();
 void LIBPROTOBUF_EXPORT protobuf_InitDefaults_google_2fprotobuf_2fwrappers_2eproto();
-void protobuf_AssignDesc_google_2fprotobuf_2fwrappers_2eproto();
-void protobuf_ShutdownFile_google_2fprotobuf_2fwrappers_2eproto();
-
 
 // ===================================================================
 
@@ -166,7 +163,7 @@ class LIBPROTOBUF_EXPORT DoubleValue : public ::google::protobuf::Message /* @@p
   mutable int _cached_size_;
   friend void LIBPROTOBUF_EXPORT protobuf_InitDefaults_google_2fprotobuf_2fwrappers_2eproto_impl();
   friend void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2fwrappers_2eproto_impl();
-  friend void protobuf_AssignDesc_google_2fprotobuf_2fwrappers_2eproto();
+  friend const ::google::protobuf::uint32* protobuf_Offsets_google_2fprotobuf_2fwrappers_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fwrappers_2eproto();
 
 };
@@ -266,7 +263,7 @@ class LIBPROTOBUF_EXPORT FloatValue : public ::google::protobuf::Message /* @@pr
   mutable int _cached_size_;
   friend void LIBPROTOBUF_EXPORT protobuf_InitDefaults_google_2fprotobuf_2fwrappers_2eproto_impl();
   friend void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2fwrappers_2eproto_impl();
-  friend void protobuf_AssignDesc_google_2fprotobuf_2fwrappers_2eproto();
+  friend const ::google::protobuf::uint32* protobuf_Offsets_google_2fprotobuf_2fwrappers_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fwrappers_2eproto();
 
 };
@@ -366,7 +363,7 @@ class LIBPROTOBUF_EXPORT Int64Value : public ::google::protobuf::Message /* @@pr
   mutable int _cached_size_;
   friend void LIBPROTOBUF_EXPORT protobuf_InitDefaults_google_2fprotobuf_2fwrappers_2eproto_impl();
   friend void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2fwrappers_2eproto_impl();
-  friend void protobuf_AssignDesc_google_2fprotobuf_2fwrappers_2eproto();
+  friend const ::google::protobuf::uint32* protobuf_Offsets_google_2fprotobuf_2fwrappers_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fwrappers_2eproto();
 
 };
@@ -466,7 +463,7 @@ class LIBPROTOBUF_EXPORT UInt64Value : public ::google::protobuf::Message /* @@p
   mutable int _cached_size_;
   friend void LIBPROTOBUF_EXPORT protobuf_InitDefaults_google_2fprotobuf_2fwrappers_2eproto_impl();
   friend void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2fwrappers_2eproto_impl();
-  friend void protobuf_AssignDesc_google_2fprotobuf_2fwrappers_2eproto();
+  friend const ::google::protobuf::uint32* protobuf_Offsets_google_2fprotobuf_2fwrappers_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fwrappers_2eproto();
 
 };
@@ -566,7 +563,7 @@ class LIBPROTOBUF_EXPORT Int32Value : public ::google::protobuf::Message /* @@pr
   mutable int _cached_size_;
   friend void LIBPROTOBUF_EXPORT protobuf_InitDefaults_google_2fprotobuf_2fwrappers_2eproto_impl();
   friend void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2fwrappers_2eproto_impl();
-  friend void protobuf_AssignDesc_google_2fprotobuf_2fwrappers_2eproto();
+  friend const ::google::protobuf::uint32* protobuf_Offsets_google_2fprotobuf_2fwrappers_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fwrappers_2eproto();
 
 };
@@ -666,7 +663,7 @@ class LIBPROTOBUF_EXPORT UInt32Value : public ::google::protobuf::Message /* @@p
   mutable int _cached_size_;
   friend void LIBPROTOBUF_EXPORT protobuf_InitDefaults_google_2fprotobuf_2fwrappers_2eproto_impl();
   friend void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2fwrappers_2eproto_impl();
-  friend void protobuf_AssignDesc_google_2fprotobuf_2fwrappers_2eproto();
+  friend const ::google::protobuf::uint32* protobuf_Offsets_google_2fprotobuf_2fwrappers_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fwrappers_2eproto();
 
 };
@@ -766,7 +763,7 @@ class LIBPROTOBUF_EXPORT BoolValue : public ::google::protobuf::Message /* @@pro
   mutable int _cached_size_;
   friend void LIBPROTOBUF_EXPORT protobuf_InitDefaults_google_2fprotobuf_2fwrappers_2eproto_impl();
   friend void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2fwrappers_2eproto_impl();
-  friend void protobuf_AssignDesc_google_2fprotobuf_2fwrappers_2eproto();
+  friend const ::google::protobuf::uint32* protobuf_Offsets_google_2fprotobuf_2fwrappers_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fwrappers_2eproto();
 
 };
@@ -874,7 +871,7 @@ class LIBPROTOBUF_EXPORT StringValue : public ::google::protobuf::Message /* @@p
   mutable int _cached_size_;
   friend void LIBPROTOBUF_EXPORT protobuf_InitDefaults_google_2fprotobuf_2fwrappers_2eproto_impl();
   friend void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2fwrappers_2eproto_impl();
-  friend void protobuf_AssignDesc_google_2fprotobuf_2fwrappers_2eproto();
+  friend const ::google::protobuf::uint32* protobuf_Offsets_google_2fprotobuf_2fwrappers_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fwrappers_2eproto();
 
 };
@@ -982,7 +979,7 @@ class LIBPROTOBUF_EXPORT BytesValue : public ::google::protobuf::Message /* @@pr
   mutable int _cached_size_;
   friend void LIBPROTOBUF_EXPORT protobuf_InitDefaults_google_2fprotobuf_2fwrappers_2eproto_impl();
   friend void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2fwrappers_2eproto_impl();
-  friend void protobuf_AssignDesc_google_2fprotobuf_2fwrappers_2eproto();
+  friend const ::google::protobuf::uint32* protobuf_Offsets_google_2fprotobuf_2fwrappers_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fwrappers_2eproto();
 
 };

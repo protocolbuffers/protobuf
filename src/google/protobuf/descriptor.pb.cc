@@ -53,12 +53,19 @@ const ::google::protobuf::EnumDescriptor* file_level_enum_descriptors[6];
 }  // namespace
 
 
-void protobuf_AssignDesc_google_2fprotobuf_2fdescriptor_2eproto() GOOGLE_ATTRIBUTE_COLD;
-void protobuf_AssignDesc_google_2fprotobuf_2fdescriptor_2eproto() {
-  protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto();
+const ::google::protobuf::uint32* protobuf_Offsets_google_2fprotobuf_2fdescriptor_2eproto() GOOGLE_ATTRIBUTE_COLD;
+const ::google::protobuf::uint32* protobuf_Offsets_google_2fprotobuf_2fdescriptor_2eproto() {
   static const ::google::protobuf::uint32 offsets[] = {
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FileDescriptorSet, _has_bits_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FileDescriptorSet, _internal_metadata_),
+    ~0u,  // no _extensions_
+    ~0u,  // no _oneof_case_
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FileDescriptorSet, file_),
     0,
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FileDescriptorProto, _has_bits_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FileDescriptorProto, _internal_metadata_),
+    ~0u,  // no _extensions_
+    ~0u,  // no _oneof_case_
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FileDescriptorProto, name_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FileDescriptorProto, package_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FileDescriptorProto, dependency_),
@@ -83,14 +90,26 @@ void protobuf_AssignDesc_google_2fprotobuf_2fdescriptor_2eproto() {
     3,
     4,
     2,
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(DescriptorProto_ExtensionRange, _has_bits_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(DescriptorProto_ExtensionRange, _internal_metadata_),
+    ~0u,  // no _extensions_
+    ~0u,  // no _oneof_case_
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(DescriptorProto_ExtensionRange, start_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(DescriptorProto_ExtensionRange, end_),
     0,
     1,
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(DescriptorProto_ReservedRange, _has_bits_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(DescriptorProto_ReservedRange, _internal_metadata_),
+    ~0u,  // no _extensions_
+    ~0u,  // no _oneof_case_
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(DescriptorProto_ReservedRange, start_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(DescriptorProto_ReservedRange, end_),
     0,
     1,
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(DescriptorProto, _has_bits_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(DescriptorProto, _internal_metadata_),
+    ~0u,  // no _extensions_
+    ~0u,  // no _oneof_case_
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(DescriptorProto, name_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(DescriptorProto, field_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(DescriptorProto, extension_),
@@ -111,6 +130,10 @@ void protobuf_AssignDesc_google_2fprotobuf_2fdescriptor_2eproto() {
     1,
     8,
     9,
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FieldDescriptorProto, _has_bits_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FieldDescriptorProto, _internal_metadata_),
+    ~0u,  // no _extensions_
+    ~0u,  // no _oneof_case_
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FieldDescriptorProto, name_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FieldDescriptorProto, number_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FieldDescriptorProto, label_),
@@ -131,28 +154,48 @@ void protobuf_AssignDesc_google_2fprotobuf_2fdescriptor_2eproto() {
     7,
     4,
     5,
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(OneofDescriptorProto, _has_bits_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(OneofDescriptorProto, _internal_metadata_),
+    ~0u,  // no _extensions_
+    ~0u,  // no _oneof_case_
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(OneofDescriptorProto, name_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(OneofDescriptorProto, options_),
     0,
     1,
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(EnumDescriptorProto, _has_bits_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(EnumDescriptorProto, _internal_metadata_),
+    ~0u,  // no _extensions_
+    ~0u,  // no _oneof_case_
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(EnumDescriptorProto, name_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(EnumDescriptorProto, value_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(EnumDescriptorProto, options_),
     0,
     2,
     1,
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(EnumValueDescriptorProto, _has_bits_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(EnumValueDescriptorProto, _internal_metadata_),
+    ~0u,  // no _extensions_
+    ~0u,  // no _oneof_case_
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(EnumValueDescriptorProto, name_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(EnumValueDescriptorProto, number_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(EnumValueDescriptorProto, options_),
     0,
     2,
     1,
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ServiceDescriptorProto, _has_bits_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ServiceDescriptorProto, _internal_metadata_),
+    ~0u,  // no _extensions_
+    ~0u,  // no _oneof_case_
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ServiceDescriptorProto, name_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ServiceDescriptorProto, method_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ServiceDescriptorProto, options_),
     0,
     2,
     1,
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(MethodDescriptorProto, _has_bits_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(MethodDescriptorProto, _internal_metadata_),
+    ~0u,  // no _extensions_
+    ~0u,  // no _oneof_case_
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(MethodDescriptorProto, name_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(MethodDescriptorProto, input_type_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(MethodDescriptorProto, output_type_),
@@ -165,6 +208,10 @@ void protobuf_AssignDesc_google_2fprotobuf_2fdescriptor_2eproto() {
     3,
     4,
     5,
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FileOptions, _has_bits_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FileOptions, _internal_metadata_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FileOptions, _extensions_),
+    ~0u,  // no _oneof_case_
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FileOptions, java_package_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FileOptions, java_outer_classname_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FileOptions, java_multiple_files_),
@@ -195,6 +242,10 @@ void protobuf_AssignDesc_google_2fprotobuf_2fdescriptor_2eproto() {
     3,
     4,
     14,
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(MessageOptions, _has_bits_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(MessageOptions, _internal_metadata_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(MessageOptions, _extensions_),
+    ~0u,  // no _oneof_case_
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(MessageOptions, message_set_wire_format_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(MessageOptions, no_standard_descriptor_accessor_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(MessageOptions, deprecated_),
@@ -205,6 +256,10 @@ void protobuf_AssignDesc_google_2fprotobuf_2fdescriptor_2eproto() {
     2,
     3,
     4,
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FieldOptions, _has_bits_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FieldOptions, _internal_metadata_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FieldOptions, _extensions_),
+    ~0u,  // no _oneof_case_
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FieldOptions, ctype_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FieldOptions, packed_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FieldOptions, jstype_),
@@ -219,32 +274,60 @@ void protobuf_AssignDesc_google_2fprotobuf_2fdescriptor_2eproto() {
     4,
     5,
     6,
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(OneofOptions, _has_bits_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(OneofOptions, _internal_metadata_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(OneofOptions, _extensions_),
+    ~0u,  // no _oneof_case_
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(OneofOptions, uninterpreted_option_),
     0,
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(EnumOptions, _has_bits_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(EnumOptions, _internal_metadata_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(EnumOptions, _extensions_),
+    ~0u,  // no _oneof_case_
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(EnumOptions, allow_alias_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(EnumOptions, deprecated_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(EnumOptions, uninterpreted_option_),
     0,
     1,
     2,
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(EnumValueOptions, _has_bits_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(EnumValueOptions, _internal_metadata_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(EnumValueOptions, _extensions_),
+    ~0u,  // no _oneof_case_
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(EnumValueOptions, deprecated_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(EnumValueOptions, uninterpreted_option_),
     0,
     1,
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ServiceOptions, _has_bits_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ServiceOptions, _internal_metadata_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ServiceOptions, _extensions_),
+    ~0u,  // no _oneof_case_
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ServiceOptions, deprecated_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ServiceOptions, uninterpreted_option_),
     0,
     1,
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(MethodOptions, _has_bits_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(MethodOptions, _internal_metadata_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(MethodOptions, _extensions_),
+    ~0u,  // no _oneof_case_
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(MethodOptions, deprecated_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(MethodOptions, idempotency_level_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(MethodOptions, uninterpreted_option_),
     0,
     1,
     2,
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(UninterpretedOption_NamePart, _has_bits_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(UninterpretedOption_NamePart, _internal_metadata_),
+    ~0u,  // no _extensions_
+    ~0u,  // no _oneof_case_
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(UninterpretedOption_NamePart, name_part_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(UninterpretedOption_NamePart, is_extension_),
     0,
     1,
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(UninterpretedOption, _has_bits_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(UninterpretedOption, _internal_metadata_),
+    ~0u,  // no _extensions_
+    ~0u,  // no _oneof_case_
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(UninterpretedOption, name_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(UninterpretedOption, identifier_value_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(UninterpretedOption, positive_int_value_),
@@ -259,6 +342,10 @@ void protobuf_AssignDesc_google_2fprotobuf_2fdescriptor_2eproto() {
     5,
     1,
     2,
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SourceCodeInfo_Location, _has_bits_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SourceCodeInfo_Location, _internal_metadata_),
+    ~0u,  // no _extensions_
+    ~0u,  // no _oneof_case_
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SourceCodeInfo_Location, path_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SourceCodeInfo_Location, span_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SourceCodeInfo_Location, leading_comments_),
@@ -269,8 +356,16 @@ void protobuf_AssignDesc_google_2fprotobuf_2fdescriptor_2eproto() {
     0,
     1,
     4,
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SourceCodeInfo, _has_bits_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SourceCodeInfo, _internal_metadata_),
+    ~0u,  // no _extensions_
+    ~0u,  // no _oneof_case_
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SourceCodeInfo, location_),
     0,
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(GeneratedCodeInfo_Annotation, _has_bits_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(GeneratedCodeInfo_Annotation, _internal_metadata_),
+    ~0u,  // no _extensions_
+    ~0u,  // no _oneof_case_
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(GeneratedCodeInfo_Annotation, path_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(GeneratedCodeInfo_Annotation, source_file_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(GeneratedCodeInfo_Annotation, begin_),
@@ -279,274 +374,85 @@ void protobuf_AssignDesc_google_2fprotobuf_2fdescriptor_2eproto() {
     0,
     1,
     2,
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(GeneratedCodeInfo, _has_bits_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(GeneratedCodeInfo, _internal_metadata_),
+    ~0u,  // no _extensions_
+    ~0u,  // no _oneof_case_
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(GeneratedCodeInfo, annotation_),
     0,
   };
-  static const ::google::protobuf::internal::ReflectionSchema schemas[] = {
-    { reinterpret_cast<const   ::google::protobuf::Message*>(&_FileDescriptorSet_default_instance_),
-      offsets + 0,
-      offsets + 1,
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FileDescriptorSet, _has_bits_),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FileDescriptorSet, _internal_metadata_),
-        -1,
-      NULL,
-      -1,
-      sizeof(FileDescriptorSet),
-    },
-    { reinterpret_cast<const   ::google::protobuf::Message*>(&_FileDescriptorProto_default_instance_),
-      offsets + 2,
-      offsets + 14,
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FileDescriptorProto, _has_bits_),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FileDescriptorProto, _internal_metadata_),
-        -1,
-      NULL,
-      -1,
-      sizeof(FileDescriptorProto),
-    },
-    { reinterpret_cast<const   ::google::protobuf::Message*>(&_DescriptorProto_ExtensionRange_default_instance_),
-      offsets + 26,
-      offsets + 28,
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(DescriptorProto_ExtensionRange, _has_bits_),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(DescriptorProto_ExtensionRange, _internal_metadata_),
-        -1,
-      NULL,
-      -1,
-      sizeof(DescriptorProto_ExtensionRange),
-    },
-    { reinterpret_cast<const   ::google::protobuf::Message*>(&_DescriptorProto_ReservedRange_default_instance_),
-      offsets + 30,
-      offsets + 32,
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(DescriptorProto_ReservedRange, _has_bits_),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(DescriptorProto_ReservedRange, _internal_metadata_),
-        -1,
-      NULL,
-      -1,
-      sizeof(DescriptorProto_ReservedRange),
-    },
-    { reinterpret_cast<const   ::google::protobuf::Message*>(&_DescriptorProto_default_instance_),
-      offsets + 34,
-      offsets + 44,
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(DescriptorProto, _has_bits_),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(DescriptorProto, _internal_metadata_),
-        -1,
-      NULL,
-      -1,
-      sizeof(DescriptorProto),
-    },
-    { reinterpret_cast<const   ::google::protobuf::Message*>(&_FieldDescriptorProto_default_instance_),
-      offsets + 54,
-      offsets + 64,
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FieldDescriptorProto, _has_bits_),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FieldDescriptorProto, _internal_metadata_),
-        -1,
-      NULL,
-      -1,
-      sizeof(FieldDescriptorProto),
-    },
-    { reinterpret_cast<const   ::google::protobuf::Message*>(&_OneofDescriptorProto_default_instance_),
-      offsets + 74,
-      offsets + 76,
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(OneofDescriptorProto, _has_bits_),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(OneofDescriptorProto, _internal_metadata_),
-        -1,
-      NULL,
-      -1,
-      sizeof(OneofDescriptorProto),
-    },
-    { reinterpret_cast<const   ::google::protobuf::Message*>(&_EnumDescriptorProto_default_instance_),
-      offsets + 78,
-      offsets + 81,
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(EnumDescriptorProto, _has_bits_),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(EnumDescriptorProto, _internal_metadata_),
-        -1,
-      NULL,
-      -1,
-      sizeof(EnumDescriptorProto),
-    },
-    { reinterpret_cast<const   ::google::protobuf::Message*>(&_EnumValueDescriptorProto_default_instance_),
-      offsets + 84,
-      offsets + 87,
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(EnumValueDescriptorProto, _has_bits_),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(EnumValueDescriptorProto, _internal_metadata_),
-        -1,
-      NULL,
-      -1,
-      sizeof(EnumValueDescriptorProto),
-    },
-    { reinterpret_cast<const   ::google::protobuf::Message*>(&_ServiceDescriptorProto_default_instance_),
-      offsets + 90,
-      offsets + 93,
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ServiceDescriptorProto, _has_bits_),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ServiceDescriptorProto, _internal_metadata_),
-        -1,
-      NULL,
-      -1,
-      sizeof(ServiceDescriptorProto),
-    },
-    { reinterpret_cast<const   ::google::protobuf::Message*>(&_MethodDescriptorProto_default_instance_),
-      offsets + 96,
-      offsets + 102,
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(MethodDescriptorProto, _has_bits_),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(MethodDescriptorProto, _internal_metadata_),
-        -1,
-      NULL,
-      -1,
-      sizeof(MethodDescriptorProto),
-    },
-    { reinterpret_cast<const   ::google::protobuf::Message*>(&_FileOptions_default_instance_),
-      offsets + 108,
-      offsets + 123,
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FileOptions, _has_bits_),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FileOptions, _internal_metadata_),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FileOptions, _extensions_),
-      NULL,
-      -1,
-      sizeof(FileOptions),
-    },
-    { reinterpret_cast<const   ::google::protobuf::Message*>(&_MessageOptions_default_instance_),
-      offsets + 138,
-      offsets + 143,
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(MessageOptions, _has_bits_),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(MessageOptions, _internal_metadata_),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(MessageOptions, _extensions_),
-      NULL,
-      -1,
-      sizeof(MessageOptions),
-    },
-    { reinterpret_cast<const   ::google::protobuf::Message*>(&_FieldOptions_default_instance_),
-      offsets + 148,
-      offsets + 155,
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FieldOptions, _has_bits_),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FieldOptions, _internal_metadata_),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FieldOptions, _extensions_),
-      NULL,
-      -1,
-      sizeof(FieldOptions),
-    },
-    { reinterpret_cast<const   ::google::protobuf::Message*>(&_OneofOptions_default_instance_),
-      offsets + 162,
-      offsets + 163,
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(OneofOptions, _has_bits_),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(OneofOptions, _internal_metadata_),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(OneofOptions, _extensions_),
-      NULL,
-      -1,
-      sizeof(OneofOptions),
-    },
-    { reinterpret_cast<const   ::google::protobuf::Message*>(&_EnumOptions_default_instance_),
-      offsets + 164,
-      offsets + 167,
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(EnumOptions, _has_bits_),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(EnumOptions, _internal_metadata_),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(EnumOptions, _extensions_),
-      NULL,
-      -1,
-      sizeof(EnumOptions),
-    },
-    { reinterpret_cast<const   ::google::protobuf::Message*>(&_EnumValueOptions_default_instance_),
-      offsets + 170,
-      offsets + 172,
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(EnumValueOptions, _has_bits_),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(EnumValueOptions, _internal_metadata_),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(EnumValueOptions, _extensions_),
-      NULL,
-      -1,
-      sizeof(EnumValueOptions),
-    },
-    { reinterpret_cast<const   ::google::protobuf::Message*>(&_ServiceOptions_default_instance_),
-      offsets + 174,
-      offsets + 176,
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ServiceOptions, _has_bits_),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ServiceOptions, _internal_metadata_),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ServiceOptions, _extensions_),
-      NULL,
-      -1,
-      sizeof(ServiceOptions),
-    },
-    { reinterpret_cast<const   ::google::protobuf::Message*>(&_MethodOptions_default_instance_),
-      offsets + 178,
-      offsets + 181,
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(MethodOptions, _has_bits_),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(MethodOptions, _internal_metadata_),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(MethodOptions, _extensions_),
-      NULL,
-      -1,
-      sizeof(MethodOptions),
-    },
-    { reinterpret_cast<const   ::google::protobuf::Message*>(&_UninterpretedOption_NamePart_default_instance_),
-      offsets + 184,
-      offsets + 186,
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(UninterpretedOption_NamePart, _has_bits_),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(UninterpretedOption_NamePart, _internal_metadata_),
-        -1,
-      NULL,
-      -1,
-      sizeof(UninterpretedOption_NamePart),
-    },
-    { reinterpret_cast<const   ::google::protobuf::Message*>(&_UninterpretedOption_default_instance_),
-      offsets + 188,
-      offsets + 195,
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(UninterpretedOption, _has_bits_),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(UninterpretedOption, _internal_metadata_),
-        -1,
-      NULL,
-      -1,
-      sizeof(UninterpretedOption),
-    },
-    { reinterpret_cast<const   ::google::protobuf::Message*>(&_SourceCodeInfo_Location_default_instance_),
-      offsets + 202,
-      offsets + 207,
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SourceCodeInfo_Location, _has_bits_),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SourceCodeInfo_Location, _internal_metadata_),
-        -1,
-      NULL,
-      -1,
-      sizeof(SourceCodeInfo_Location),
-    },
-    { reinterpret_cast<const   ::google::protobuf::Message*>(&_SourceCodeInfo_default_instance_),
-      offsets + 212,
-      offsets + 213,
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SourceCodeInfo, _has_bits_),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SourceCodeInfo, _internal_metadata_),
-        -1,
-      NULL,
-      -1,
-      sizeof(SourceCodeInfo),
-    },
-    { reinterpret_cast<const   ::google::protobuf::Message*>(&_GeneratedCodeInfo_Annotation_default_instance_),
-      offsets + 214,
-      offsets + 218,
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(GeneratedCodeInfo_Annotation, _has_bits_),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(GeneratedCodeInfo_Annotation, _internal_metadata_),
-        -1,
-      NULL,
-      -1,
-      sizeof(GeneratedCodeInfo_Annotation),
-    },
-    { reinterpret_cast<const   ::google::protobuf::Message*>(&_GeneratedCodeInfo_default_instance_),
-      offsets + 222,
-      offsets + 223,
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(GeneratedCodeInfo, _has_bits_),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(GeneratedCodeInfo, _internal_metadata_),
-        -1,
-      NULL,
-      -1,
-      sizeof(GeneratedCodeInfo),
-    },
-  };
-  (void)offsets;  // suppress unused variable warning
-  ::google::protobuf::MessageFactory* factory = NULL;
-  AssignDescriptors(
-      "google/protobuf/descriptor.proto", schemas, factory,
-      file_level_metadata, file_level_enum_descriptors, NULL);
+  return offsets;
 }
+
+static const ::google::protobuf::internal::MigrationSchema schemas[] = {
+  { 0, 5, sizeof(FileDescriptorSet)},
+  { 6, 22, sizeof(FileDescriptorProto)},
+  { 34, 40, sizeof(DescriptorProto_ExtensionRange)},
+  { 42, 48, sizeof(DescriptorProto_ReservedRange)},
+  { 50, 64, sizeof(DescriptorProto)},
+  { 74, 88, sizeof(FieldDescriptorProto)},
+  { 98, 104, sizeof(OneofDescriptorProto)},
+  { 106, 113, sizeof(EnumDescriptorProto)},
+  { 116, 123, sizeof(EnumValueDescriptorProto)},
+  { 126, 133, sizeof(ServiceDescriptorProto)},
+  { 136, 146, sizeof(MethodDescriptorProto)},
+  { 152, 171, sizeof(FileOptions)},
+  { 186, 195, sizeof(MessageOptions)},
+  { 200, 211, sizeof(FieldOptions)},
+  { 218, 223, sizeof(OneofOptions)},
+  { 224, 231, sizeof(EnumOptions)},
+  { 234, 240, sizeof(EnumValueOptions)},
+  { 242, 248, sizeof(ServiceOptions)},
+  { 250, 257, sizeof(MethodOptions)},
+  { 260, 266, sizeof(UninterpretedOption_NamePart)},
+  { 268, 279, sizeof(UninterpretedOption)},
+  { 286, 295, sizeof(SourceCodeInfo_Location)},
+  { 300, 305, sizeof(SourceCodeInfo)},
+  { 306, 314, sizeof(GeneratedCodeInfo_Annotation)},
+  { 318, 323, sizeof(GeneratedCodeInfo)},
+};
+
+static const ::google::protobuf::internal::DefaultInstanceData file_default_instances[] = {
+  {reinterpret_cast<const ::google::protobuf::Message*>(&_FileDescriptorSet_default_instance_), NULL},
+  {reinterpret_cast<const ::google::protobuf::Message*>(&_FileDescriptorProto_default_instance_), NULL},
+  {reinterpret_cast<const ::google::protobuf::Message*>(&_DescriptorProto_ExtensionRange_default_instance_), NULL},
+  {reinterpret_cast<const ::google::protobuf::Message*>(&_DescriptorProto_ReservedRange_default_instance_), NULL},
+  {reinterpret_cast<const ::google::protobuf::Message*>(&_DescriptorProto_default_instance_), NULL},
+  {reinterpret_cast<const ::google::protobuf::Message*>(&_FieldDescriptorProto_default_instance_), NULL},
+  {reinterpret_cast<const ::google::protobuf::Message*>(&_OneofDescriptorProto_default_instance_), NULL},
+  {reinterpret_cast<const ::google::protobuf::Message*>(&_EnumDescriptorProto_default_instance_), NULL},
+  {reinterpret_cast<const ::google::protobuf::Message*>(&_EnumValueDescriptorProto_default_instance_), NULL},
+  {reinterpret_cast<const ::google::protobuf::Message*>(&_ServiceDescriptorProto_default_instance_), NULL},
+  {reinterpret_cast<const ::google::protobuf::Message*>(&_MethodDescriptorProto_default_instance_), NULL},
+  {reinterpret_cast<const ::google::protobuf::Message*>(&_FileOptions_default_instance_), NULL},
+  {reinterpret_cast<const ::google::protobuf::Message*>(&_MessageOptions_default_instance_), NULL},
+  {reinterpret_cast<const ::google::protobuf::Message*>(&_FieldOptions_default_instance_), NULL},
+  {reinterpret_cast<const ::google::protobuf::Message*>(&_OneofOptions_default_instance_), NULL},
+  {reinterpret_cast<const ::google::protobuf::Message*>(&_EnumOptions_default_instance_), NULL},
+  {reinterpret_cast<const ::google::protobuf::Message*>(&_EnumValueOptions_default_instance_), NULL},
+  {reinterpret_cast<const ::google::protobuf::Message*>(&_ServiceOptions_default_instance_), NULL},
+  {reinterpret_cast<const ::google::protobuf::Message*>(&_MethodOptions_default_instance_), NULL},
+  {reinterpret_cast<const ::google::protobuf::Message*>(&_UninterpretedOption_NamePart_default_instance_), NULL},
+  {reinterpret_cast<const ::google::protobuf::Message*>(&_UninterpretedOption_default_instance_), NULL},
+  {reinterpret_cast<const ::google::protobuf::Message*>(&_SourceCodeInfo_Location_default_instance_), NULL},
+  {reinterpret_cast<const ::google::protobuf::Message*>(&_SourceCodeInfo_default_instance_), NULL},
+  {reinterpret_cast<const ::google::protobuf::Message*>(&_GeneratedCodeInfo_Annotation_default_instance_), NULL},
+  {reinterpret_cast<const ::google::protobuf::Message*>(&_GeneratedCodeInfo_default_instance_), NULL},
+};
 
 namespace {
 
-GOOGLE_PROTOBUF_DECLARE_ONCE(protobuf_AssignDescriptors_once_);
+void protobuf_AssignDescriptors() {
+  protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto();
+  ::google::protobuf::MessageFactory* factory = NULL;
+  AssignDescriptors(
+      "google/protobuf/descriptor.proto", schemas, file_default_instances, protobuf_Offsets_google_2fprotobuf_2fdescriptor_2eproto(), factory,
+      file_level_metadata, file_level_enum_descriptors, NULL);
+}
+
 void protobuf_AssignDescriptorsOnce() {
-  ::google::protobuf::GoogleOnceInit(&protobuf_AssignDescriptors_once_,
-                 &protobuf_AssignDesc_google_2fprotobuf_2fdescriptor_2eproto);
+  static GOOGLE_PROTOBUF_DECLARE_ONCE(once);
+  ::google::protobuf::GoogleOnceInit(&once, &protobuf_AssignDescriptors);
 }
 
 void protobuf_RegisterTypes(const ::std::string&) GOOGLE_ATTRIBUTE_COLD;
@@ -659,14 +565,11 @@ void protobuf_InitDefaults_google_2fprotobuf_2fdescriptor_2eproto_impl() {
       ::google::protobuf::MethodOptions::internal_default_instance());
 }
 
-GOOGLE_PROTOBUF_DECLARE_ONCE(protobuf_InitDefaults_google_2fprotobuf_2fdescriptor_2eproto_once_);
 void protobuf_InitDefaults_google_2fprotobuf_2fdescriptor_2eproto() {
-  ::google::protobuf::GoogleOnceInit(&protobuf_InitDefaults_google_2fprotobuf_2fdescriptor_2eproto_once_,
-                 &protobuf_InitDefaults_google_2fprotobuf_2fdescriptor_2eproto_impl);
+  static GOOGLE_PROTOBUF_DECLARE_ONCE(once);
+  ::google::protobuf::GoogleOnceInit(&once, &protobuf_InitDefaults_google_2fprotobuf_2fdescriptor_2eproto_impl);
 }
 void protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto_impl() {
-  GOOGLE_PROTOBUF_VERIFY_VERSION;
-
   protobuf_InitDefaults_google_2fprotobuf_2fdescriptor_2eproto();
   static const char descriptor[] = {
       "\n google/protobuf/descriptor.proto\022\017goog"
@@ -1066,7 +969,7 @@ bool FileDescriptorSet::MergePartialFromCodedStream(
   ::google::protobuf::uint32 tag;
   // @@protoc_insertion_point(parse_start:google.protobuf.FileDescriptorSet)
   for (;;) {
-    ::std::pair< ::google::protobuf::uint32, bool> p = input->ReadTagWithCutoff(127);
+    ::std::pair< ::google::protobuf::uint32, bool> p = input->ReadTagWithCutoffNoLastTag(127);
     tag = p.first;
     if (!p.second) goto handle_unusual;
     switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
@@ -1184,7 +1087,7 @@ void FileDescriptorSet::MergeFrom(const ::google::protobuf::Message& from) {
 
 void FileDescriptorSet::MergeFrom(const FileDescriptorSet& from) {
 // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.FileDescriptorSet)
-  GOOGLE_DCHECK(&from != this);
+  GOOGLE_DCHECK_NE(&from, this);
   _internal_metadata_.MergeFrom(from._internal_metadata_);
   file_.MergeFrom(from.file_);
 }
@@ -1382,13 +1285,16 @@ void FileDescriptorProto::Clear() {
   extension_.Clear();
   if (_has_bits_[0 / 32] & 31u) {
     if (has_name()) {
-      name_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+      GOOGLE_DCHECK(!name_.IsDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited()));
+      (*name_.UnsafeRawStringPointer())->clear();
     }
     if (has_package()) {
-      package_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+      GOOGLE_DCHECK(!package_.IsDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited()));
+      (*package_.UnsafeRawStringPointer())->clear();
     }
     if (has_syntax()) {
-      syntax_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+      GOOGLE_DCHECK(!syntax_.IsDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited()));
+      (*syntax_.UnsafeRawStringPointer())->clear();
     }
     if (has_options()) {
       GOOGLE_DCHECK(options_ != NULL);
@@ -1409,7 +1315,7 @@ bool FileDescriptorProto::MergePartialFromCodedStream(
   ::google::protobuf::uint32 tag;
   // @@protoc_insertion_point(parse_start:google.protobuf.FileDescriptorProto)
   for (;;) {
-    ::std::pair< ::google::protobuf::uint32, bool> p = input->ReadTagWithCutoff(127);
+    ::std::pair< ::google::protobuf::uint32, bool> p = input->ReadTagWithCutoffNoLastTag(127);
     tag = p.first;
     if (!p.second) goto handle_unusual;
     switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
@@ -1957,7 +1863,7 @@ void FileDescriptorProto::MergeFrom(const ::google::protobuf::Message& from) {
 
 void FileDescriptorProto::MergeFrom(const FileDescriptorProto& from) {
 // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.FileDescriptorProto)
-  GOOGLE_DCHECK(&from != this);
+  GOOGLE_DCHECK_NE(&from, this);
   _internal_metadata_.MergeFrom(from._internal_metadata_);
   dependency_.MergeFrom(from.dependency_);
   public_dependency_.MergeFrom(from.public_dependency_);
@@ -2612,7 +2518,7 @@ bool DescriptorProto_ExtensionRange::MergePartialFromCodedStream(
   ::google::protobuf::uint32 tag;
   // @@protoc_insertion_point(parse_start:google.protobuf.DescriptorProto.ExtensionRange)
   for (;;) {
-    ::std::pair< ::google::protobuf::uint32, bool> p = input->ReadTagWithCutoff(127);
+    ::std::pair< ::google::protobuf::uint32, bool> p = input->ReadTagWithCutoffNoLastTag(127);
     tag = p.first;
     if (!p.second) goto handle_unusual;
     switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
@@ -2755,7 +2661,7 @@ void DescriptorProto_ExtensionRange::MergeFrom(const ::google::protobuf::Message
 
 void DescriptorProto_ExtensionRange::MergeFrom(const DescriptorProto_ExtensionRange& from) {
 // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.DescriptorProto.ExtensionRange)
-  GOOGLE_DCHECK(&from != this);
+  GOOGLE_DCHECK_NE(&from, this);
   _internal_metadata_.MergeFrom(from._internal_metadata_);
   if (from._has_bits_[0 / 32] & 3u) {
     if (from.has_start()) {
@@ -2935,7 +2841,7 @@ bool DescriptorProto_ReservedRange::MergePartialFromCodedStream(
   ::google::protobuf::uint32 tag;
   // @@protoc_insertion_point(parse_start:google.protobuf.DescriptorProto.ReservedRange)
   for (;;) {
-    ::std::pair< ::google::protobuf::uint32, bool> p = input->ReadTagWithCutoff(127);
+    ::std::pair< ::google::protobuf::uint32, bool> p = input->ReadTagWithCutoffNoLastTag(127);
     tag = p.first;
     if (!p.second) goto handle_unusual;
     switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
@@ -3078,7 +2984,7 @@ void DescriptorProto_ReservedRange::MergeFrom(const ::google::protobuf::Message&
 
 void DescriptorProto_ReservedRange::MergeFrom(const DescriptorProto_ReservedRange& from) {
 // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.DescriptorProto.ReservedRange)
-  GOOGLE_DCHECK(&from != this);
+  GOOGLE_DCHECK_NE(&from, this);
   _internal_metadata_.MergeFrom(from._internal_metadata_);
   if (from._has_bits_[0 / 32] & 3u) {
     if (from.has_start()) {
@@ -3280,7 +3186,8 @@ void DescriptorProto::Clear() {
   reserved_name_.Clear();
   if (_has_bits_[0 / 32] & 3u) {
     if (has_name()) {
-      name_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+      GOOGLE_DCHECK(!name_.IsDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited()));
+      (*name_.UnsafeRawStringPointer())->clear();
     }
     if (has_options()) {
       GOOGLE_DCHECK(options_ != NULL);
@@ -3297,7 +3204,7 @@ bool DescriptorProto::MergePartialFromCodedStream(
   ::google::protobuf::uint32 tag;
   // @@protoc_insertion_point(parse_start:google.protobuf.DescriptorProto)
   for (;;) {
-    ::std::pair< ::google::protobuf::uint32, bool> p = input->ReadTagWithCutoff(127);
+    ::std::pair< ::google::protobuf::uint32, bool> p = input->ReadTagWithCutoffNoLastTag(127);
     tag = p.first;
     if (!p.second) goto handle_unusual;
     switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
@@ -3757,7 +3664,7 @@ void DescriptorProto::MergeFrom(const ::google::protobuf::Message& from) {
 
 void DescriptorProto::MergeFrom(const DescriptorProto& from) {
 // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.DescriptorProto)
-  GOOGLE_DCHECK(&from != this);
+  GOOGLE_DCHECK_NE(&from, this);
   _internal_metadata_.MergeFrom(from._internal_metadata_);
   field_.MergeFrom(from.field_);
   extension_.MergeFrom(from.extension_);
@@ -4314,19 +4221,24 @@ void FieldDescriptorProto::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.FieldDescriptorProto)
   if (_has_bits_[0 / 32] & 63u) {
     if (has_name()) {
-      name_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+      GOOGLE_DCHECK(!name_.IsDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited()));
+      (*name_.UnsafeRawStringPointer())->clear();
     }
     if (has_type_name()) {
-      type_name_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+      GOOGLE_DCHECK(!type_name_.IsDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited()));
+      (*type_name_.UnsafeRawStringPointer())->clear();
     }
     if (has_extendee()) {
-      extendee_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+      GOOGLE_DCHECK(!extendee_.IsDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited()));
+      (*extendee_.UnsafeRawStringPointer())->clear();
     }
     if (has_default_value()) {
-      default_value_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+      GOOGLE_DCHECK(!default_value_.IsDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited()));
+      (*default_value_.UnsafeRawStringPointer())->clear();
     }
     if (has_json_name()) {
-      json_name_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+      GOOGLE_DCHECK(!json_name_.IsDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited()));
+      (*json_name_.UnsafeRawStringPointer())->clear();
     }
     if (has_options()) {
       GOOGLE_DCHECK(options_ != NULL);
@@ -4351,7 +4263,7 @@ bool FieldDescriptorProto::MergePartialFromCodedStream(
   ::google::protobuf::uint32 tag;
   // @@protoc_insertion_point(parse_start:google.protobuf.FieldDescriptorProto)
   for (;;) {
-    ::std::pair< ::google::protobuf::uint32, bool> p = input->ReadTagWithCutoff(127);
+    ::std::pair< ::google::protobuf::uint32, bool> p = input->ReadTagWithCutoffNoLastTag(127);
     tag = p.first;
     if (!p.second) goto handle_unusual;
     switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
@@ -4814,7 +4726,7 @@ void FieldDescriptorProto::MergeFrom(const ::google::protobuf::Message& from) {
 
 void FieldDescriptorProto::MergeFrom(const FieldDescriptorProto& from) {
 // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.FieldDescriptorProto)
-  GOOGLE_DCHECK(&from != this);
+  GOOGLE_DCHECK_NE(&from, this);
   _internal_metadata_.MergeFrom(from._internal_metadata_);
   if (from._has_bits_[0 / 32] & 255u) {
     if (from.has_name()) {
@@ -5399,7 +5311,8 @@ void OneofDescriptorProto::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.OneofDescriptorProto)
   if (_has_bits_[0 / 32] & 3u) {
     if (has_name()) {
-      name_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+      GOOGLE_DCHECK(!name_.IsDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited()));
+      (*name_.UnsafeRawStringPointer())->clear();
     }
     if (has_options()) {
       GOOGLE_DCHECK(options_ != NULL);
@@ -5416,7 +5329,7 @@ bool OneofDescriptorProto::MergePartialFromCodedStream(
   ::google::protobuf::uint32 tag;
   // @@protoc_insertion_point(parse_start:google.protobuf.OneofDescriptorProto)
   for (;;) {
-    ::std::pair< ::google::protobuf::uint32, bool> p = input->ReadTagWithCutoff(127);
+    ::std::pair< ::google::protobuf::uint32, bool> p = input->ReadTagWithCutoffNoLastTag(127);
     tag = p.first;
     if (!p.second) goto handle_unusual;
     switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
@@ -5573,7 +5486,7 @@ void OneofDescriptorProto::MergeFrom(const ::google::protobuf::Message& from) {
 
 void OneofDescriptorProto::MergeFrom(const OneofDescriptorProto& from) {
 // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.OneofDescriptorProto)
-  GOOGLE_DCHECK(&from != this);
+  GOOGLE_DCHECK_NE(&from, this);
   _internal_metadata_.MergeFrom(from._internal_metadata_);
   if (from._has_bits_[0 / 32] & 3u) {
     if (from.has_name()) {
@@ -5809,7 +5722,8 @@ void EnumDescriptorProto::Clear() {
   value_.Clear();
   if (_has_bits_[0 / 32] & 3u) {
     if (has_name()) {
-      name_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+      GOOGLE_DCHECK(!name_.IsDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited()));
+      (*name_.UnsafeRawStringPointer())->clear();
     }
     if (has_options()) {
       GOOGLE_DCHECK(options_ != NULL);
@@ -5826,7 +5740,7 @@ bool EnumDescriptorProto::MergePartialFromCodedStream(
   ::google::protobuf::uint32 tag;
   // @@protoc_insertion_point(parse_start:google.protobuf.EnumDescriptorProto)
   for (;;) {
-    ::std::pair< ::google::protobuf::uint32, bool> p = input->ReadTagWithCutoff(127);
+    ::std::pair< ::google::protobuf::uint32, bool> p = input->ReadTagWithCutoffNoLastTag(127);
     tag = p.first;
     if (!p.second) goto handle_unusual;
     switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
@@ -6020,7 +5934,7 @@ void EnumDescriptorProto::MergeFrom(const ::google::protobuf::Message& from) {
 
 void EnumDescriptorProto::MergeFrom(const EnumDescriptorProto& from) {
 // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.EnumDescriptorProto)
-  GOOGLE_DCHECK(&from != this);
+  GOOGLE_DCHECK_NE(&from, this);
   _internal_metadata_.MergeFrom(from._internal_metadata_);
   value_.MergeFrom(from.value_);
   if (from._has_bits_[0 / 32] & 3u) {
@@ -6289,7 +6203,8 @@ void EnumValueDescriptorProto::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.EnumValueDescriptorProto)
   if (_has_bits_[0 / 32] & 3u) {
     if (has_name()) {
-      name_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+      GOOGLE_DCHECK(!name_.IsDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited()));
+      (*name_.UnsafeRawStringPointer())->clear();
     }
     if (has_options()) {
       GOOGLE_DCHECK(options_ != NULL);
@@ -6307,7 +6222,7 @@ bool EnumValueDescriptorProto::MergePartialFromCodedStream(
   ::google::protobuf::uint32 tag;
   // @@protoc_insertion_point(parse_start:google.protobuf.EnumValueDescriptorProto)
   for (;;) {
-    ::std::pair< ::google::protobuf::uint32, bool> p = input->ReadTagWithCutoff(127);
+    ::std::pair< ::google::protobuf::uint32, bool> p = input->ReadTagWithCutoffNoLastTag(127);
     tag = p.first;
     if (!p.second) goto handle_unusual;
     switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
@@ -6494,7 +6409,7 @@ void EnumValueDescriptorProto::MergeFrom(const ::google::protobuf::Message& from
 
 void EnumValueDescriptorProto::MergeFrom(const EnumValueDescriptorProto& from) {
 // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.EnumValueDescriptorProto)
-  GOOGLE_DCHECK(&from != this);
+  GOOGLE_DCHECK_NE(&from, this);
   _internal_metadata_.MergeFrom(from._internal_metadata_);
   if (from._has_bits_[0 / 32] & 7u) {
     if (from.has_name()) {
@@ -6758,7 +6673,8 @@ void ServiceDescriptorProto::Clear() {
   method_.Clear();
   if (_has_bits_[0 / 32] & 3u) {
     if (has_name()) {
-      name_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+      GOOGLE_DCHECK(!name_.IsDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited()));
+      (*name_.UnsafeRawStringPointer())->clear();
     }
     if (has_options()) {
       GOOGLE_DCHECK(options_ != NULL);
@@ -6775,7 +6691,7 @@ bool ServiceDescriptorProto::MergePartialFromCodedStream(
   ::google::protobuf::uint32 tag;
   // @@protoc_insertion_point(parse_start:google.protobuf.ServiceDescriptorProto)
   for (;;) {
-    ::std::pair< ::google::protobuf::uint32, bool> p = input->ReadTagWithCutoff(127);
+    ::std::pair< ::google::protobuf::uint32, bool> p = input->ReadTagWithCutoffNoLastTag(127);
     tag = p.first;
     if (!p.second) goto handle_unusual;
     switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
@@ -6969,7 +6885,7 @@ void ServiceDescriptorProto::MergeFrom(const ::google::protobuf::Message& from) 
 
 void ServiceDescriptorProto::MergeFrom(const ServiceDescriptorProto& from) {
 // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.ServiceDescriptorProto)
-  GOOGLE_DCHECK(&from != this);
+  GOOGLE_DCHECK_NE(&from, this);
   _internal_metadata_.MergeFrom(from._internal_metadata_);
   method_.MergeFrom(from.method_);
   if (from._has_bits_[0 / 32] & 3u) {
@@ -7255,13 +7171,16 @@ void MethodDescriptorProto::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.MethodDescriptorProto)
   if (_has_bits_[0 / 32] & 15u) {
     if (has_name()) {
-      name_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+      GOOGLE_DCHECK(!name_.IsDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited()));
+      (*name_.UnsafeRawStringPointer())->clear();
     }
     if (has_input_type()) {
-      input_type_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+      GOOGLE_DCHECK(!input_type_.IsDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited()));
+      (*input_type_.UnsafeRawStringPointer())->clear();
     }
     if (has_output_type()) {
-      output_type_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+      GOOGLE_DCHECK(!output_type_.IsDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited()));
+      (*output_type_.UnsafeRawStringPointer())->clear();
     }
     if (has_options()) {
       GOOGLE_DCHECK(options_ != NULL);
@@ -7282,7 +7201,7 @@ bool MethodDescriptorProto::MergePartialFromCodedStream(
   ::google::protobuf::uint32 tag;
   // @@protoc_insertion_point(parse_start:google.protobuf.MethodDescriptorProto)
   for (;;) {
-    ::std::pair< ::google::protobuf::uint32, bool> p = input->ReadTagWithCutoff(127);
+    ::std::pair< ::google::protobuf::uint32, bool> p = input->ReadTagWithCutoffNoLastTag(127);
     tag = p.first;
     if (!p.second) goto handle_unusual;
     switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
@@ -7581,7 +7500,7 @@ void MethodDescriptorProto::MergeFrom(const ::google::protobuf::Message& from) {
 
 void MethodDescriptorProto::MergeFrom(const MethodDescriptorProto& from) {
 // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.MethodDescriptorProto)
-  GOOGLE_DCHECK(&from != this);
+  GOOGLE_DCHECK_NE(&from, this);
   _internal_metadata_.MergeFrom(from._internal_metadata_);
   if (from._has_bits_[0 / 32] & 63u) {
     if (from.has_name()) {
@@ -8026,19 +7945,24 @@ void FileOptions::Clear() {
   uninterpreted_option_.Clear();
   if (_has_bits_[0 / 32] & 31u) {
     if (has_java_package()) {
-      java_package_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+      GOOGLE_DCHECK(!java_package_.IsDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited()));
+      (*java_package_.UnsafeRawStringPointer())->clear();
     }
     if (has_java_outer_classname()) {
-      java_outer_classname_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+      GOOGLE_DCHECK(!java_outer_classname_.IsDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited()));
+      (*java_outer_classname_.UnsafeRawStringPointer())->clear();
     }
     if (has_go_package()) {
-      go_package_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+      GOOGLE_DCHECK(!go_package_.IsDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited()));
+      (*go_package_.UnsafeRawStringPointer())->clear();
     }
     if (has_objc_class_prefix()) {
-      objc_class_prefix_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+      GOOGLE_DCHECK(!objc_class_prefix_.IsDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited()));
+      (*objc_class_prefix_.UnsafeRawStringPointer())->clear();
     }
     if (has_csharp_namespace()) {
-      csharp_namespace_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+      GOOGLE_DCHECK(!csharp_namespace_.IsDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited()));
+      (*csharp_namespace_.UnsafeRawStringPointer())->clear();
     }
   }
   if (_has_bits_[0 / 32] & 224u) {
@@ -8060,7 +7984,7 @@ bool FileOptions::MergePartialFromCodedStream(
   ::google::protobuf::uint32 tag;
   // @@protoc_insertion_point(parse_start:google.protobuf.FileOptions)
   for (;;) {
-    ::std::pair< ::google::protobuf::uint32, bool> p = input->ReadTagWithCutoff(16383);
+    ::std::pair< ::google::protobuf::uint32, bool> p = input->ReadTagWithCutoffNoLastTag(16383);
     tag = p.first;
     if (!p.second) goto handle_unusual;
     switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
@@ -8672,7 +8596,7 @@ void FileOptions::MergeFrom(const ::google::protobuf::Message& from) {
 
 void FileOptions::MergeFrom(const FileOptions& from) {
 // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.FileOptions)
-  GOOGLE_DCHECK(&from != this);
+  GOOGLE_DCHECK_NE(&from, this);
   _extensions_.MergeFrom(from._extensions_);
   _internal_metadata_.MergeFrom(from._internal_metadata_);
   uninterpreted_option_.MergeFrom(from.uninterpreted_option_);
@@ -9392,7 +9316,7 @@ bool MessageOptions::MergePartialFromCodedStream(
   ::google::protobuf::uint32 tag;
   // @@protoc_insertion_point(parse_start:google.protobuf.MessageOptions)
   for (;;) {
-    ::std::pair< ::google::protobuf::uint32, bool> p = input->ReadTagWithCutoff(16383);
+    ::std::pair< ::google::protobuf::uint32, bool> p = input->ReadTagWithCutoffNoLastTag(16383);
     tag = p.first;
     if (!p.second) goto handle_unusual;
     switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
@@ -9639,7 +9563,7 @@ void MessageOptions::MergeFrom(const ::google::protobuf::Message& from) {
 
 void MessageOptions::MergeFrom(const MessageOptions& from) {
 // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.MessageOptions)
-  GOOGLE_DCHECK(&from != this);
+  GOOGLE_DCHECK_NE(&from, this);
   _extensions_.MergeFrom(from._extensions_);
   _internal_metadata_.MergeFrom(from._internal_metadata_);
   uninterpreted_option_.MergeFrom(from.uninterpreted_option_);
@@ -9923,7 +9847,7 @@ bool FieldOptions::MergePartialFromCodedStream(
   ::google::protobuf::uint32 tag;
   // @@protoc_insertion_point(parse_start:google.protobuf.FieldOptions)
   for (;;) {
-    ::std::pair< ::google::protobuf::uint32, bool> p = input->ReadTagWithCutoff(16383);
+    ::std::pair< ::google::protobuf::uint32, bool> p = input->ReadTagWithCutoffNoLastTag(16383);
     tag = p.first;
     if (!p.second) goto handle_unusual;
     switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
@@ -10242,7 +10166,7 @@ void FieldOptions::MergeFrom(const ::google::protobuf::Message& from) {
 
 void FieldOptions::MergeFrom(const FieldOptions& from) {
 // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.FieldOptions)
-  GOOGLE_DCHECK(&from != this);
+  GOOGLE_DCHECK_NE(&from, this);
   _extensions_.MergeFrom(from._extensions_);
   _internal_metadata_.MergeFrom(from._internal_metadata_);
   uninterpreted_option_.MergeFrom(from.uninterpreted_option_);
@@ -10569,7 +10493,7 @@ bool OneofOptions::MergePartialFromCodedStream(
   ::google::protobuf::uint32 tag;
   // @@protoc_insertion_point(parse_start:google.protobuf.OneofOptions)
   for (;;) {
-    ::std::pair< ::google::protobuf::uint32, bool> p = input->ReadTagWithCutoff(16383);
+    ::std::pair< ::google::protobuf::uint32, bool> p = input->ReadTagWithCutoffNoLastTag(16383);
     tag = p.first;
     if (!p.second) goto handle_unusual;
     switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
@@ -10702,7 +10626,7 @@ void OneofOptions::MergeFrom(const ::google::protobuf::Message& from) {
 
 void OneofOptions::MergeFrom(const OneofOptions& from) {
 // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.OneofOptions)
-  GOOGLE_DCHECK(&from != this);
+  GOOGLE_DCHECK_NE(&from, this);
   _extensions_.MergeFrom(from._extensions_);
   _internal_metadata_.MergeFrom(from._internal_metadata_);
   uninterpreted_option_.MergeFrom(from.uninterpreted_option_);
@@ -10868,7 +10792,7 @@ bool EnumOptions::MergePartialFromCodedStream(
   ::google::protobuf::uint32 tag;
   // @@protoc_insertion_point(parse_start:google.protobuf.EnumOptions)
   for (;;) {
-    ::std::pair< ::google::protobuf::uint32, bool> p = input->ReadTagWithCutoff(16383);
+    ::std::pair< ::google::protobuf::uint32, bool> p = input->ReadTagWithCutoffNoLastTag(16383);
     tag = p.first;
     if (!p.second) goto handle_unusual;
     switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
@@ -11059,7 +10983,7 @@ void EnumOptions::MergeFrom(const ::google::protobuf::Message& from) {
 
 void EnumOptions::MergeFrom(const EnumOptions& from) {
 // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.EnumOptions)
-  GOOGLE_DCHECK(&from != this);
+  GOOGLE_DCHECK_NE(&from, this);
   _extensions_.MergeFrom(from._extensions_);
   _internal_metadata_.MergeFrom(from._internal_metadata_);
   uninterpreted_option_.MergeFrom(from.uninterpreted_option_);
@@ -11276,7 +11200,7 @@ bool EnumValueOptions::MergePartialFromCodedStream(
   ::google::protobuf::uint32 tag;
   // @@protoc_insertion_point(parse_start:google.protobuf.EnumValueOptions)
   for (;;) {
-    ::std::pair< ::google::protobuf::uint32, bool> p = input->ReadTagWithCutoff(16383);
+    ::std::pair< ::google::protobuf::uint32, bool> p = input->ReadTagWithCutoffNoLastTag(16383);
     tag = p.first;
     if (!p.second) goto handle_unusual;
     switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
@@ -11437,7 +11361,7 @@ void EnumValueOptions::MergeFrom(const ::google::protobuf::Message& from) {
 
 void EnumValueOptions::MergeFrom(const EnumValueOptions& from) {
 // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.EnumValueOptions)
-  GOOGLE_DCHECK(&from != this);
+  GOOGLE_DCHECK_NE(&from, this);
   _extensions_.MergeFrom(from._extensions_);
   _internal_metadata_.MergeFrom(from._internal_metadata_);
   uninterpreted_option_.MergeFrom(from.uninterpreted_option_);
@@ -11624,7 +11548,7 @@ bool ServiceOptions::MergePartialFromCodedStream(
   ::google::protobuf::uint32 tag;
   // @@protoc_insertion_point(parse_start:google.protobuf.ServiceOptions)
   for (;;) {
-    ::std::pair< ::google::protobuf::uint32, bool> p = input->ReadTagWithCutoff(16383);
+    ::std::pair< ::google::protobuf::uint32, bool> p = input->ReadTagWithCutoffNoLastTag(16383);
     tag = p.first;
     if (!p.second) goto handle_unusual;
     switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
@@ -11785,7 +11709,7 @@ void ServiceOptions::MergeFrom(const ::google::protobuf::Message& from) {
 
 void ServiceOptions::MergeFrom(const ServiceOptions& from) {
 // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.ServiceOptions)
-  GOOGLE_DCHECK(&from != this);
+  GOOGLE_DCHECK_NE(&from, this);
   _extensions_.MergeFrom(from._extensions_);
   _internal_metadata_.MergeFrom(from._internal_metadata_);
   uninterpreted_option_.MergeFrom(from.uninterpreted_option_);
@@ -11979,7 +11903,7 @@ bool MethodOptions::MergePartialFromCodedStream(
   ::google::protobuf::uint32 tag;
   // @@protoc_insertion_point(parse_start:google.protobuf.MethodOptions)
   for (;;) {
-    ::std::pair< ::google::protobuf::uint32, bool> p = input->ReadTagWithCutoff(16383);
+    ::std::pair< ::google::protobuf::uint32, bool> p = input->ReadTagWithCutoffNoLastTag(16383);
     tag = p.first;
     if (!p.second) goto handle_unusual;
     switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
@@ -12178,7 +12102,7 @@ void MethodOptions::MergeFrom(const ::google::protobuf::Message& from) {
 
 void MethodOptions::MergeFrom(const MethodOptions& from) {
 // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.MethodOptions)
-  GOOGLE_DCHECK(&from != this);
+  GOOGLE_DCHECK_NE(&from, this);
   _extensions_.MergeFrom(from._extensions_);
   _internal_metadata_.MergeFrom(from._internal_metadata_);
   uninterpreted_option_.MergeFrom(from.uninterpreted_option_);
@@ -12388,7 +12312,8 @@ UninterpretedOption_NamePart* UninterpretedOption_NamePart::New(::google::protob
 void UninterpretedOption_NamePart::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.UninterpretedOption.NamePart)
   if (has_name_part()) {
-    name_part_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+    GOOGLE_DCHECK(!name_part_.IsDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited()));
+    (*name_part_.UnsafeRawStringPointer())->clear();
   }
   is_extension_ = false;
   _has_bits_.Clear();
@@ -12401,7 +12326,7 @@ bool UninterpretedOption_NamePart::MergePartialFromCodedStream(
   ::google::protobuf::uint32 tag;
   // @@protoc_insertion_point(parse_start:google.protobuf.UninterpretedOption.NamePart)
   for (;;) {
-    ::std::pair< ::google::protobuf::uint32, bool> p = input->ReadTagWithCutoff(127);
+    ::std::pair< ::google::protobuf::uint32, bool> p = input->ReadTagWithCutoffNoLastTag(127);
     tag = p.first;
     if (!p.second) goto handle_unusual;
     switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
@@ -12571,7 +12496,7 @@ void UninterpretedOption_NamePart::MergeFrom(const ::google::protobuf::Message& 
 
 void UninterpretedOption_NamePart::MergeFrom(const UninterpretedOption_NamePart& from) {
 // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.UninterpretedOption.NamePart)
-  GOOGLE_DCHECK(&from != this);
+  GOOGLE_DCHECK_NE(&from, this);
   _internal_metadata_.MergeFrom(from._internal_metadata_);
   if (from._has_bits_[0 / 32] & 3u) {
     if (from.has_name_part()) {
@@ -12796,13 +12721,16 @@ void UninterpretedOption::Clear() {
   name_.Clear();
   if (_has_bits_[0 / 32] & 7u) {
     if (has_identifier_value()) {
-      identifier_value_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+      GOOGLE_DCHECK(!identifier_value_.IsDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited()));
+      (*identifier_value_.UnsafeRawStringPointer())->clear();
     }
     if (has_string_value()) {
-      string_value_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+      GOOGLE_DCHECK(!string_value_.IsDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited()));
+      (*string_value_.UnsafeRawStringPointer())->clear();
     }
     if (has_aggregate_value()) {
-      aggregate_value_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+      GOOGLE_DCHECK(!aggregate_value_.IsDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited()));
+      (*aggregate_value_.UnsafeRawStringPointer())->clear();
     }
   }
   if (_has_bits_[0 / 32] & 56u) {
@@ -12819,7 +12747,7 @@ bool UninterpretedOption::MergePartialFromCodedStream(
   ::google::protobuf::uint32 tag;
   // @@protoc_insertion_point(parse_start:google.protobuf.UninterpretedOption)
   for (;;) {
-    ::std::pair< ::google::protobuf::uint32, bool> p = input->ReadTagWithCutoff(127);
+    ::std::pair< ::google::protobuf::uint32, bool> p = input->ReadTagWithCutoffNoLastTag(127);
     tag = p.first;
     if (!p.second) goto handle_unusual;
     switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
@@ -13144,7 +13072,7 @@ void UninterpretedOption::MergeFrom(const ::google::protobuf::Message& from) {
 
 void UninterpretedOption::MergeFrom(const UninterpretedOption& from) {
 // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.UninterpretedOption)
-  GOOGLE_DCHECK(&from != this);
+  GOOGLE_DCHECK_NE(&from, this);
   _internal_metadata_.MergeFrom(from._internal_metadata_);
   name_.MergeFrom(from.name_);
   if (from._has_bits_[0 / 32] & 63u) {
@@ -13566,10 +13494,12 @@ void SourceCodeInfo_Location::Clear() {
   leading_detached_comments_.Clear();
   if (_has_bits_[0 / 32] & 3u) {
     if (has_leading_comments()) {
-      leading_comments_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+      GOOGLE_DCHECK(!leading_comments_.IsDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited()));
+      (*leading_comments_.UnsafeRawStringPointer())->clear();
     }
     if (has_trailing_comments()) {
-      trailing_comments_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+      GOOGLE_DCHECK(!trailing_comments_.IsDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited()));
+      (*trailing_comments_.UnsafeRawStringPointer())->clear();
     }
   }
   _has_bits_.Clear();
@@ -13582,7 +13512,7 @@ bool SourceCodeInfo_Location::MergePartialFromCodedStream(
   ::google::protobuf::uint32 tag;
   // @@protoc_insertion_point(parse_start:google.protobuf.SourceCodeInfo.Location)
   for (;;) {
-    ::std::pair< ::google::protobuf::uint32, bool> p = input->ReadTagWithCutoff(127);
+    ::std::pair< ::google::protobuf::uint32, bool> p = input->ReadTagWithCutoffNoLastTag(127);
     tag = p.first;
     if (!p.second) goto handle_unusual;
     switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
@@ -13913,7 +13843,7 @@ void SourceCodeInfo_Location::MergeFrom(const ::google::protobuf::Message& from)
 
 void SourceCodeInfo_Location::MergeFrom(const SourceCodeInfo_Location& from) {
 // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.SourceCodeInfo.Location)
-  GOOGLE_DCHECK(&from != this);
+  GOOGLE_DCHECK_NE(&from, this);
   _internal_metadata_.MergeFrom(from._internal_metadata_);
   path_.MergeFrom(from.path_);
   span_.MergeFrom(from.span_);
@@ -14268,7 +14198,7 @@ bool SourceCodeInfo::MergePartialFromCodedStream(
   ::google::protobuf::uint32 tag;
   // @@protoc_insertion_point(parse_start:google.protobuf.SourceCodeInfo)
   for (;;) {
-    ::std::pair< ::google::protobuf::uint32, bool> p = input->ReadTagWithCutoff(127);
+    ::std::pair< ::google::protobuf::uint32, bool> p = input->ReadTagWithCutoffNoLastTag(127);
     tag = p.first;
     if (!p.second) goto handle_unusual;
     switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
@@ -14386,7 +14316,7 @@ void SourceCodeInfo::MergeFrom(const ::google::protobuf::Message& from) {
 
 void SourceCodeInfo::MergeFrom(const SourceCodeInfo& from) {
 // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.SourceCodeInfo)
-  GOOGLE_DCHECK(&from != this);
+  GOOGLE_DCHECK_NE(&from, this);
   _internal_metadata_.MergeFrom(from._internal_metadata_);
   location_.MergeFrom(from.location_);
 }
@@ -14537,7 +14467,8 @@ void GeneratedCodeInfo_Annotation::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.GeneratedCodeInfo.Annotation)
   path_.Clear();
   if (has_source_file()) {
-    source_file_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+    GOOGLE_DCHECK(!source_file_.IsDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited()));
+    (*source_file_.UnsafeRawStringPointer())->clear();
   }
   if (_has_bits_[0 / 32] & 6u) {
     ::memset(&begin_, 0, reinterpret_cast<char*>(&end_) -
@@ -14553,7 +14484,7 @@ bool GeneratedCodeInfo_Annotation::MergePartialFromCodedStream(
   ::google::protobuf::uint32 tag;
   // @@protoc_insertion_point(parse_start:google.protobuf.GeneratedCodeInfo.Annotation)
   for (;;) {
-    ::std::pair< ::google::protobuf::uint32, bool> p = input->ReadTagWithCutoff(127);
+    ::std::pair< ::google::protobuf::uint32, bool> p = input->ReadTagWithCutoffNoLastTag(127);
     tag = p.first;
     if (!p.second) goto handle_unusual;
     switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
@@ -14798,7 +14729,7 @@ void GeneratedCodeInfo_Annotation::MergeFrom(const ::google::protobuf::Message& 
 
 void GeneratedCodeInfo_Annotation::MergeFrom(const GeneratedCodeInfo_Annotation& from) {
 // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.GeneratedCodeInfo.Annotation)
-  GOOGLE_DCHECK(&from != this);
+  GOOGLE_DCHECK_NE(&from, this);
   _internal_metadata_.MergeFrom(from._internal_metadata_);
   path_.MergeFrom(from.path_);
   if (from._has_bits_[0 / 32] & 7u) {
@@ -15061,7 +14992,7 @@ bool GeneratedCodeInfo::MergePartialFromCodedStream(
   ::google::protobuf::uint32 tag;
   // @@protoc_insertion_point(parse_start:google.protobuf.GeneratedCodeInfo)
   for (;;) {
-    ::std::pair< ::google::protobuf::uint32, bool> p = input->ReadTagWithCutoff(127);
+    ::std::pair< ::google::protobuf::uint32, bool> p = input->ReadTagWithCutoffNoLastTag(127);
     tag = p.first;
     if (!p.second) goto handle_unusual;
     switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
@@ -15179,7 +15110,7 @@ void GeneratedCodeInfo::MergeFrom(const ::google::protobuf::Message& from) {
 
 void GeneratedCodeInfo::MergeFrom(const GeneratedCodeInfo& from) {
 // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.GeneratedCodeInfo)
-  GOOGLE_DCHECK(&from != this);
+  GOOGLE_DCHECK_NE(&from, this);
   _internal_metadata_.MergeFrom(from._internal_metadata_);
   annotation_.MergeFrom(from.annotation_);
 }

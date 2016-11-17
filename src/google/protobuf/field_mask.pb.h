@@ -42,9 +42,6 @@ namespace protobuf {
 // Internal implementation detail -- do not call these.
 void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2ffield_5fmask_2eproto();
 void LIBPROTOBUF_EXPORT protobuf_InitDefaults_google_2fprotobuf_2ffield_5fmask_2eproto();
-void protobuf_AssignDesc_google_2fprotobuf_2ffield_5fmask_2eproto();
-void protobuf_ShutdownFile_google_2fprotobuf_2ffield_5fmask_2eproto();
-
 
 // ===================================================================
 
@@ -137,7 +134,7 @@ class LIBPROTOBUF_EXPORT FieldMask : public ::google::protobuf::Message /* @@pro
   mutable int _cached_size_;
   friend void LIBPROTOBUF_EXPORT protobuf_InitDefaults_google_2fprotobuf_2ffield_5fmask_2eproto_impl();
   friend void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2ffield_5fmask_2eproto_impl();
-  friend void protobuf_AssignDesc_google_2fprotobuf_2ffield_5fmask_2eproto();
+  friend const ::google::protobuf::uint32* protobuf_Offsets_google_2fprotobuf_2ffield_5fmask_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2ffield_5fmask_2eproto();
 
 };

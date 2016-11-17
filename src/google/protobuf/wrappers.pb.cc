@@ -36,125 +36,95 @@ namespace {
 }  // namespace
 
 
-void protobuf_AssignDesc_google_2fprotobuf_2fwrappers_2eproto() GOOGLE_ATTRIBUTE_COLD;
-void protobuf_AssignDesc_google_2fprotobuf_2fwrappers_2eproto() {
-  protobuf_AddDesc_google_2fprotobuf_2fwrappers_2eproto();
+const ::google::protobuf::uint32* protobuf_Offsets_google_2fprotobuf_2fwrappers_2eproto() GOOGLE_ATTRIBUTE_COLD;
+const ::google::protobuf::uint32* protobuf_Offsets_google_2fprotobuf_2fwrappers_2eproto() {
   static const ::google::protobuf::uint32 offsets[] = {
+    ~0u,  // no _has_bits_
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(DoubleValue, _internal_metadata_),
+    ~0u,  // no _extensions_
+    ~0u,  // no _oneof_case_
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(DoubleValue, value_),
+    ~0u,  // no _has_bits_
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FloatValue, _internal_metadata_),
+    ~0u,  // no _extensions_
+    ~0u,  // no _oneof_case_
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FloatValue, value_),
+    ~0u,  // no _has_bits_
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Int64Value, _internal_metadata_),
+    ~0u,  // no _extensions_
+    ~0u,  // no _oneof_case_
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Int64Value, value_),
+    ~0u,  // no _has_bits_
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(UInt64Value, _internal_metadata_),
+    ~0u,  // no _extensions_
+    ~0u,  // no _oneof_case_
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(UInt64Value, value_),
+    ~0u,  // no _has_bits_
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Int32Value, _internal_metadata_),
+    ~0u,  // no _extensions_
+    ~0u,  // no _oneof_case_
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Int32Value, value_),
+    ~0u,  // no _has_bits_
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(UInt32Value, _internal_metadata_),
+    ~0u,  // no _extensions_
+    ~0u,  // no _oneof_case_
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(UInt32Value, value_),
+    ~0u,  // no _has_bits_
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(BoolValue, _internal_metadata_),
+    ~0u,  // no _extensions_
+    ~0u,  // no _oneof_case_
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(BoolValue, value_),
+    ~0u,  // no _has_bits_
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(StringValue, _internal_metadata_),
+    ~0u,  // no _extensions_
+    ~0u,  // no _oneof_case_
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(StringValue, value_),
+    ~0u,  // no _has_bits_
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(BytesValue, _internal_metadata_),
+    ~0u,  // no _extensions_
+    ~0u,  // no _oneof_case_
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(BytesValue, value_),
   };
-  static const ::google::protobuf::internal::ReflectionSchema schemas[] = {
-    { reinterpret_cast<const   ::google::protobuf::Message*>(&_DoubleValue_default_instance_),
-      offsets + 0,
-      NULL,
-      -1,
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(DoubleValue, _internal_metadata_),
-        -1,
-      NULL,
-      -1,
-      sizeof(DoubleValue),
-    },
-    { reinterpret_cast<const   ::google::protobuf::Message*>(&_FloatValue_default_instance_),
-      offsets + 1,
-      NULL,
-      -1,
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FloatValue, _internal_metadata_),
-        -1,
-      NULL,
-      -1,
-      sizeof(FloatValue),
-    },
-    { reinterpret_cast<const   ::google::protobuf::Message*>(&_Int64Value_default_instance_),
-      offsets + 2,
-      NULL,
-      -1,
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Int64Value, _internal_metadata_),
-        -1,
-      NULL,
-      -1,
-      sizeof(Int64Value),
-    },
-    { reinterpret_cast<const   ::google::protobuf::Message*>(&_UInt64Value_default_instance_),
-      offsets + 3,
-      NULL,
-      -1,
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(UInt64Value, _internal_metadata_),
-        -1,
-      NULL,
-      -1,
-      sizeof(UInt64Value),
-    },
-    { reinterpret_cast<const   ::google::protobuf::Message*>(&_Int32Value_default_instance_),
-      offsets + 4,
-      NULL,
-      -1,
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Int32Value, _internal_metadata_),
-        -1,
-      NULL,
-      -1,
-      sizeof(Int32Value),
-    },
-    { reinterpret_cast<const   ::google::protobuf::Message*>(&_UInt32Value_default_instance_),
-      offsets + 5,
-      NULL,
-      -1,
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(UInt32Value, _internal_metadata_),
-        -1,
-      NULL,
-      -1,
-      sizeof(UInt32Value),
-    },
-    { reinterpret_cast<const   ::google::protobuf::Message*>(&_BoolValue_default_instance_),
-      offsets + 6,
-      NULL,
-      -1,
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(BoolValue, _internal_metadata_),
-        -1,
-      NULL,
-      -1,
-      sizeof(BoolValue),
-    },
-    { reinterpret_cast<const   ::google::protobuf::Message*>(&_StringValue_default_instance_),
-      offsets + 7,
-      NULL,
-      -1,
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(StringValue, _internal_metadata_),
-        -1,
-      NULL,
-      -1,
-      sizeof(StringValue),
-    },
-    { reinterpret_cast<const   ::google::protobuf::Message*>(&_BytesValue_default_instance_),
-      offsets + 8,
-      NULL,
-      -1,
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(BytesValue, _internal_metadata_),
-        -1,
-      NULL,
-      -1,
-      sizeof(BytesValue),
-    },
-  };
-  (void)offsets;  // suppress unused variable warning
-  ::google::protobuf::MessageFactory* factory = NULL;
-  AssignDescriptors(
-      "google/protobuf/wrappers.proto", schemas, factory,
-      file_level_metadata, NULL, NULL);
+  return offsets;
 }
+
+static const ::google::protobuf::internal::MigrationSchema schemas[] = {
+  { 0, -1, sizeof(DoubleValue)},
+  { 5, -1, sizeof(FloatValue)},
+  { 10, -1, sizeof(Int64Value)},
+  { 15, -1, sizeof(UInt64Value)},
+  { 20, -1, sizeof(Int32Value)},
+  { 25, -1, sizeof(UInt32Value)},
+  { 30, -1, sizeof(BoolValue)},
+  { 35, -1, sizeof(StringValue)},
+  { 40, -1, sizeof(BytesValue)},
+};
+
+static const ::google::protobuf::internal::DefaultInstanceData file_default_instances[] = {
+  {reinterpret_cast<const ::google::protobuf::Message*>(&_DoubleValue_default_instance_), NULL},
+  {reinterpret_cast<const ::google::protobuf::Message*>(&_FloatValue_default_instance_), NULL},
+  {reinterpret_cast<const ::google::protobuf::Message*>(&_Int64Value_default_instance_), NULL},
+  {reinterpret_cast<const ::google::protobuf::Message*>(&_UInt64Value_default_instance_), NULL},
+  {reinterpret_cast<const ::google::protobuf::Message*>(&_Int32Value_default_instance_), NULL},
+  {reinterpret_cast<const ::google::protobuf::Message*>(&_UInt32Value_default_instance_), NULL},
+  {reinterpret_cast<const ::google::protobuf::Message*>(&_BoolValue_default_instance_), NULL},
+  {reinterpret_cast<const ::google::protobuf::Message*>(&_StringValue_default_instance_), NULL},
+  {reinterpret_cast<const ::google::protobuf::Message*>(&_BytesValue_default_instance_), NULL},
+};
 
 namespace {
 
-GOOGLE_PROTOBUF_DECLARE_ONCE(protobuf_AssignDescriptors_once_);
+void protobuf_AssignDescriptors() {
+  protobuf_AddDesc_google_2fprotobuf_2fwrappers_2eproto();
+  ::google::protobuf::MessageFactory* factory = NULL;
+  AssignDescriptors(
+      "google/protobuf/wrappers.proto", schemas, file_default_instances, protobuf_Offsets_google_2fprotobuf_2fwrappers_2eproto(), factory,
+      file_level_metadata, NULL, NULL);
+}
+
 void protobuf_AssignDescriptorsOnce() {
-  ::google::protobuf::GoogleOnceInit(&protobuf_AssignDescriptors_once_,
-                 &protobuf_AssignDesc_google_2fprotobuf_2fwrappers_2eproto);
+  static GOOGLE_PROTOBUF_DECLARE_ONCE(once);
+  ::google::protobuf::GoogleOnceInit(&once, &protobuf_AssignDescriptors);
 }
 
 void protobuf_RegisterTypes(const ::std::string&) GOOGLE_ATTRIBUTE_COLD;
@@ -201,14 +171,11 @@ void protobuf_InitDefaults_google_2fprotobuf_2fwrappers_2eproto_impl() {
   _BytesValue_default_instance_.DefaultConstruct();
 }
 
-GOOGLE_PROTOBUF_DECLARE_ONCE(protobuf_InitDefaults_google_2fprotobuf_2fwrappers_2eproto_once_);
 void protobuf_InitDefaults_google_2fprotobuf_2fwrappers_2eproto() {
-  ::google::protobuf::GoogleOnceInit(&protobuf_InitDefaults_google_2fprotobuf_2fwrappers_2eproto_once_,
-                 &protobuf_InitDefaults_google_2fprotobuf_2fwrappers_2eproto_impl);
+  static GOOGLE_PROTOBUF_DECLARE_ONCE(once);
+  ::google::protobuf::GoogleOnceInit(&once, &protobuf_InitDefaults_google_2fprotobuf_2fwrappers_2eproto_impl);
 }
 void protobuf_AddDesc_google_2fprotobuf_2fwrappers_2eproto_impl() {
-  GOOGLE_PROTOBUF_VERIFY_VERSION;
-
   protobuf_InitDefaults_google_2fprotobuf_2fwrappers_2eproto();
   static const char descriptor[] = {
       "\n\036google/protobuf/wrappers.proto\022\017google"
@@ -330,7 +297,7 @@ bool DoubleValue::MergePartialFromCodedStream(
   ::google::protobuf::uint32 tag;
   // @@protoc_insertion_point(parse_start:google.protobuf.DoubleValue)
   for (;;) {
-    ::std::pair< ::google::protobuf::uint32, bool> p = input->ReadTagWithCutoff(127);
+    ::std::pair< ::google::protobuf::uint32, bool> p = input->ReadTagWithCutoffNoLastTag(127);
     tag = p.first;
     if (!p.second) goto handle_unusual;
     switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
@@ -425,7 +392,7 @@ void DoubleValue::MergeFrom(const ::google::protobuf::Message& from) {
 
 void DoubleValue::MergeFrom(const DoubleValue& from) {
 // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.DoubleValue)
-  GOOGLE_DCHECK(&from != this);
+  GOOGLE_DCHECK_NE(&from, this);
   _internal_metadata_.MergeFrom(from._internal_metadata_);
   if (from.value() != 0) {
     set_value(from.value());
@@ -585,7 +552,7 @@ bool FloatValue::MergePartialFromCodedStream(
   ::google::protobuf::uint32 tag;
   // @@protoc_insertion_point(parse_start:google.protobuf.FloatValue)
   for (;;) {
-    ::std::pair< ::google::protobuf::uint32, bool> p = input->ReadTagWithCutoff(127);
+    ::std::pair< ::google::protobuf::uint32, bool> p = input->ReadTagWithCutoffNoLastTag(127);
     tag = p.first;
     if (!p.second) goto handle_unusual;
     switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
@@ -680,7 +647,7 @@ void FloatValue::MergeFrom(const ::google::protobuf::Message& from) {
 
 void FloatValue::MergeFrom(const FloatValue& from) {
 // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.FloatValue)
-  GOOGLE_DCHECK(&from != this);
+  GOOGLE_DCHECK_NE(&from, this);
   _internal_metadata_.MergeFrom(from._internal_metadata_);
   if (from.value() != 0) {
     set_value(from.value());
@@ -840,7 +807,7 @@ bool Int64Value::MergePartialFromCodedStream(
   ::google::protobuf::uint32 tag;
   // @@protoc_insertion_point(parse_start:google.protobuf.Int64Value)
   for (;;) {
-    ::std::pair< ::google::protobuf::uint32, bool> p = input->ReadTagWithCutoff(127);
+    ::std::pair< ::google::protobuf::uint32, bool> p = input->ReadTagWithCutoffNoLastTag(127);
     tag = p.first;
     if (!p.second) goto handle_unusual;
     switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
@@ -937,7 +904,7 @@ void Int64Value::MergeFrom(const ::google::protobuf::Message& from) {
 
 void Int64Value::MergeFrom(const Int64Value& from) {
 // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.Int64Value)
-  GOOGLE_DCHECK(&from != this);
+  GOOGLE_DCHECK_NE(&from, this);
   _internal_metadata_.MergeFrom(from._internal_metadata_);
   if (from.value() != 0) {
     set_value(from.value());
@@ -1097,7 +1064,7 @@ bool UInt64Value::MergePartialFromCodedStream(
   ::google::protobuf::uint32 tag;
   // @@protoc_insertion_point(parse_start:google.protobuf.UInt64Value)
   for (;;) {
-    ::std::pair< ::google::protobuf::uint32, bool> p = input->ReadTagWithCutoff(127);
+    ::std::pair< ::google::protobuf::uint32, bool> p = input->ReadTagWithCutoffNoLastTag(127);
     tag = p.first;
     if (!p.second) goto handle_unusual;
     switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
@@ -1194,7 +1161,7 @@ void UInt64Value::MergeFrom(const ::google::protobuf::Message& from) {
 
 void UInt64Value::MergeFrom(const UInt64Value& from) {
 // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.UInt64Value)
-  GOOGLE_DCHECK(&from != this);
+  GOOGLE_DCHECK_NE(&from, this);
   _internal_metadata_.MergeFrom(from._internal_metadata_);
   if (from.value() != 0) {
     set_value(from.value());
@@ -1354,7 +1321,7 @@ bool Int32Value::MergePartialFromCodedStream(
   ::google::protobuf::uint32 tag;
   // @@protoc_insertion_point(parse_start:google.protobuf.Int32Value)
   for (;;) {
-    ::std::pair< ::google::protobuf::uint32, bool> p = input->ReadTagWithCutoff(127);
+    ::std::pair< ::google::protobuf::uint32, bool> p = input->ReadTagWithCutoffNoLastTag(127);
     tag = p.first;
     if (!p.second) goto handle_unusual;
     switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
@@ -1451,7 +1418,7 @@ void Int32Value::MergeFrom(const ::google::protobuf::Message& from) {
 
 void Int32Value::MergeFrom(const Int32Value& from) {
 // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.Int32Value)
-  GOOGLE_DCHECK(&from != this);
+  GOOGLE_DCHECK_NE(&from, this);
   _internal_metadata_.MergeFrom(from._internal_metadata_);
   if (from.value() != 0) {
     set_value(from.value());
@@ -1611,7 +1578,7 @@ bool UInt32Value::MergePartialFromCodedStream(
   ::google::protobuf::uint32 tag;
   // @@protoc_insertion_point(parse_start:google.protobuf.UInt32Value)
   for (;;) {
-    ::std::pair< ::google::protobuf::uint32, bool> p = input->ReadTagWithCutoff(127);
+    ::std::pair< ::google::protobuf::uint32, bool> p = input->ReadTagWithCutoffNoLastTag(127);
     tag = p.first;
     if (!p.second) goto handle_unusual;
     switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
@@ -1708,7 +1675,7 @@ void UInt32Value::MergeFrom(const ::google::protobuf::Message& from) {
 
 void UInt32Value::MergeFrom(const UInt32Value& from) {
 // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.UInt32Value)
-  GOOGLE_DCHECK(&from != this);
+  GOOGLE_DCHECK_NE(&from, this);
   _internal_metadata_.MergeFrom(from._internal_metadata_);
   if (from.value() != 0) {
     set_value(from.value());
@@ -1868,7 +1835,7 @@ bool BoolValue::MergePartialFromCodedStream(
   ::google::protobuf::uint32 tag;
   // @@protoc_insertion_point(parse_start:google.protobuf.BoolValue)
   for (;;) {
-    ::std::pair< ::google::protobuf::uint32, bool> p = input->ReadTagWithCutoff(127);
+    ::std::pair< ::google::protobuf::uint32, bool> p = input->ReadTagWithCutoffNoLastTag(127);
     tag = p.first;
     if (!p.second) goto handle_unusual;
     switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
@@ -1963,7 +1930,7 @@ void BoolValue::MergeFrom(const ::google::protobuf::Message& from) {
 
 void BoolValue::MergeFrom(const BoolValue& from) {
 // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.BoolValue)
-  GOOGLE_DCHECK(&from != this);
+  GOOGLE_DCHECK_NE(&from, this);
   _internal_metadata_.MergeFrom(from._internal_metadata_);
   if (from.value() != 0) {
     set_value(from.value());
@@ -2128,7 +2095,7 @@ bool StringValue::MergePartialFromCodedStream(
   ::google::protobuf::uint32 tag;
   // @@protoc_insertion_point(parse_start:google.protobuf.StringValue)
   for (;;) {
-    ::std::pair< ::google::protobuf::uint32, bool> p = input->ReadTagWithCutoff(127);
+    ::std::pair< ::google::protobuf::uint32, bool> p = input->ReadTagWithCutoffNoLastTag(127);
     tag = p.first;
     if (!p.second) goto handle_unusual;
     switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
@@ -2238,7 +2205,7 @@ void StringValue::MergeFrom(const ::google::protobuf::Message& from) {
 
 void StringValue::MergeFrom(const StringValue& from) {
 // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.StringValue)
-  GOOGLE_DCHECK(&from != this);
+  GOOGLE_DCHECK_NE(&from, this);
   _internal_metadata_.MergeFrom(from._internal_metadata_);
   if (from.value().size() > 0) {
     set_value(from.value());
@@ -2455,7 +2422,7 @@ bool BytesValue::MergePartialFromCodedStream(
   ::google::protobuf::uint32 tag;
   // @@protoc_insertion_point(parse_start:google.protobuf.BytesValue)
   for (;;) {
-    ::std::pair< ::google::protobuf::uint32, bool> p = input->ReadTagWithCutoff(127);
+    ::std::pair< ::google::protobuf::uint32, bool> p = input->ReadTagWithCutoffNoLastTag(127);
     tag = p.first;
     if (!p.second) goto handle_unusual;
     switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
@@ -2553,7 +2520,7 @@ void BytesValue::MergeFrom(const ::google::protobuf::Message& from) {
 
 void BytesValue::MergeFrom(const BytesValue& from) {
 // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.BytesValue)
-  GOOGLE_DCHECK(&from != this);
+  GOOGLE_DCHECK_NE(&from, this);
   _internal_metadata_.MergeFrom(from._internal_metadata_);
   if (from.value().size() > 0) {
     set_value(from.value());

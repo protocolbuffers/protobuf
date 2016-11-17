@@ -63,9 +63,6 @@ namespace protobuf {
 // Internal implementation detail -- do not call these.
 void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2ftype_2eproto();
 void LIBPROTOBUF_EXPORT protobuf_InitDefaults_google_2fprotobuf_2ftype_2eproto();
-void protobuf_AssignDesc_google_2fprotobuf_2ftype_2eproto();
-void protobuf_ShutdownFile_google_2fprotobuf_2ftype_2eproto();
-
 
 enum Field_Kind {
   Field_Kind_TYPE_UNKNOWN = 0,
@@ -320,7 +317,7 @@ class LIBPROTOBUF_EXPORT Type : public ::google::protobuf::Message /* @@protoc_i
   mutable int _cached_size_;
   friend void LIBPROTOBUF_EXPORT protobuf_InitDefaults_google_2fprotobuf_2ftype_2eproto_impl();
   friend void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2ftype_2eproto_impl();
-  friend void protobuf_AssignDesc_google_2fprotobuf_2ftype_2eproto();
+  friend const ::google::protobuf::uint32* protobuf_Offsets_google_2fprotobuf_2ftype_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2ftype_2eproto();
 
 };
@@ -611,7 +608,7 @@ class LIBPROTOBUF_EXPORT Field : public ::google::protobuf::Message /* @@protoc_
   mutable int _cached_size_;
   friend void LIBPROTOBUF_EXPORT protobuf_InitDefaults_google_2fprotobuf_2ftype_2eproto_impl();
   friend void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2ftype_2eproto_impl();
-  friend void protobuf_AssignDesc_google_2fprotobuf_2ftype_2eproto();
+  friend const ::google::protobuf::uint32* protobuf_Offsets_google_2fprotobuf_2ftype_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2ftype_2eproto();
 
 };
@@ -769,7 +766,7 @@ class LIBPROTOBUF_EXPORT Enum : public ::google::protobuf::Message /* @@protoc_i
   mutable int _cached_size_;
   friend void LIBPROTOBUF_EXPORT protobuf_InitDefaults_google_2fprotobuf_2ftype_2eproto_impl();
   friend void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2ftype_2eproto_impl();
-  friend void protobuf_AssignDesc_google_2fprotobuf_2ftype_2eproto();
+  friend const ::google::protobuf::uint32* protobuf_Offsets_google_2fprotobuf_2ftype_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2ftype_2eproto();
 
 };
@@ -897,7 +894,7 @@ class LIBPROTOBUF_EXPORT EnumValue : public ::google::protobuf::Message /* @@pro
   mutable int _cached_size_;
   friend void LIBPROTOBUF_EXPORT protobuf_InitDefaults_google_2fprotobuf_2ftype_2eproto_impl();
   friend void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2ftype_2eproto_impl();
-  friend void protobuf_AssignDesc_google_2fprotobuf_2ftype_2eproto();
+  friend const ::google::protobuf::uint32* protobuf_Offsets_google_2fprotobuf_2ftype_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2ftype_2eproto();
 
 };
@@ -1022,7 +1019,7 @@ class LIBPROTOBUF_EXPORT Option : public ::google::protobuf::Message /* @@protoc
   mutable int _cached_size_;
   friend void LIBPROTOBUF_EXPORT protobuf_InitDefaults_google_2fprotobuf_2ftype_2eproto_impl();
   friend void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2ftype_2eproto_impl();
-  friend void protobuf_AssignDesc_google_2fprotobuf_2ftype_2eproto();
+  friend const ::google::protobuf::uint32* protobuf_Offsets_google_2fprotobuf_2ftype_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2ftype_2eproto();
 
 };

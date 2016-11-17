@@ -28,38 +28,40 @@ namespace {
 }  // namespace
 
 
-void protobuf_AssignDesc_google_2fprotobuf_2fany_2eproto() GOOGLE_ATTRIBUTE_COLD;
-void protobuf_AssignDesc_google_2fprotobuf_2fany_2eproto() {
-  protobuf_AddDesc_google_2fprotobuf_2fany_2eproto();
+const ::google::protobuf::uint32* protobuf_Offsets_google_2fprotobuf_2fany_2eproto() GOOGLE_ATTRIBUTE_COLD;
+const ::google::protobuf::uint32* protobuf_Offsets_google_2fprotobuf_2fany_2eproto() {
   static const ::google::protobuf::uint32 offsets[] = {
+    ~0u,  // no _has_bits_
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Any, _internal_metadata_),
+    ~0u,  // no _extensions_
+    ~0u,  // no _oneof_case_
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Any, type_url_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Any, value_),
   };
-  static const ::google::protobuf::internal::ReflectionSchema schemas[] = {
-    { reinterpret_cast<const   ::google::protobuf::Message*>(&_Any_default_instance_),
-      offsets + 0,
-      NULL,
-      -1,
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Any, _internal_metadata_),
-        -1,
-      NULL,
-      -1,
-      sizeof(Any),
-    },
-  };
-  (void)offsets;  // suppress unused variable warning
-  ::google::protobuf::MessageFactory* factory = NULL;
-  AssignDescriptors(
-      "google/protobuf/any.proto", schemas, factory,
-      file_level_metadata, NULL, NULL);
+  return offsets;
 }
+
+static const ::google::protobuf::internal::MigrationSchema schemas[] = {
+  { 0, -1, sizeof(Any)},
+};
+
+static const ::google::protobuf::internal::DefaultInstanceData file_default_instances[] = {
+  {reinterpret_cast<const ::google::protobuf::Message*>(&_Any_default_instance_), NULL},
+};
 
 namespace {
 
-GOOGLE_PROTOBUF_DECLARE_ONCE(protobuf_AssignDescriptors_once_);
+void protobuf_AssignDescriptors() {
+  protobuf_AddDesc_google_2fprotobuf_2fany_2eproto();
+  ::google::protobuf::MessageFactory* factory = NULL;
+  AssignDescriptors(
+      "google/protobuf/any.proto", schemas, file_default_instances, protobuf_Offsets_google_2fprotobuf_2fany_2eproto(), factory,
+      file_level_metadata, NULL, NULL);
+}
+
 void protobuf_AssignDescriptorsOnce() {
-  ::google::protobuf::GoogleOnceInit(&protobuf_AssignDescriptors_once_,
-                 &protobuf_AssignDesc_google_2fprotobuf_2fany_2eproto);
+  static GOOGLE_PROTOBUF_DECLARE_ONCE(once);
+  ::google::protobuf::GoogleOnceInit(&once, &protobuf_AssignDescriptors);
 }
 
 void protobuf_RegisterTypes(const ::std::string&) GOOGLE_ATTRIBUTE_COLD;
@@ -82,14 +84,11 @@ void protobuf_InitDefaults_google_2fprotobuf_2fany_2eproto_impl() {
   _Any_default_instance_.DefaultConstruct();
 }
 
-GOOGLE_PROTOBUF_DECLARE_ONCE(protobuf_InitDefaults_google_2fprotobuf_2fany_2eproto_once_);
 void protobuf_InitDefaults_google_2fprotobuf_2fany_2eproto() {
-  ::google::protobuf::GoogleOnceInit(&protobuf_InitDefaults_google_2fprotobuf_2fany_2eproto_once_,
-                 &protobuf_InitDefaults_google_2fprotobuf_2fany_2eproto_impl);
+  static GOOGLE_PROTOBUF_DECLARE_ONCE(once);
+  ::google::protobuf::GoogleOnceInit(&once, &protobuf_InitDefaults_google_2fprotobuf_2fany_2eproto_impl);
 }
 void protobuf_AddDesc_google_2fprotobuf_2fany_2eproto_impl() {
-  GOOGLE_PROTOBUF_VERIFY_VERSION;
-
   protobuf_InitDefaults_google_2fprotobuf_2fany_2eproto();
   static const char descriptor[] = {
       "\n\031google/protobuf/any.proto\022\017google.prot"
@@ -214,7 +213,7 @@ bool Any::MergePartialFromCodedStream(
   ::google::protobuf::uint32 tag;
   // @@protoc_insertion_point(parse_start:google.protobuf.Any)
   for (;;) {
-    ::std::pair< ::google::protobuf::uint32, bool> p = input->ReadTagWithCutoff(127);
+    ::std::pair< ::google::protobuf::uint32, bool> p = input->ReadTagWithCutoffNoLastTag(127);
     tag = p.first;
     if (!p.second) goto handle_unusual;
     switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
@@ -355,7 +354,7 @@ void Any::MergeFrom(const ::google::protobuf::Message& from) {
 
 void Any::MergeFrom(const Any& from) {
 // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.Any)
-  GOOGLE_DCHECK(&from != this);
+  GOOGLE_DCHECK_NE(&from, this);
   _internal_metadata_.MergeFrom(from._internal_metadata_);
   if (from.type_url().size() > 0) {
 
