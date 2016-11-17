@@ -1183,13 +1183,13 @@ module BasicTest
     end
 
     def test_comparison_with_arbitrary_object
-      assert_false MapMessage.new == nil
+      assert (MapMessage.new == nil) == false
     end
 
     def test_respond_to
       msg = MapMessage.new
       assert msg.respond_to?(:map_string_int32)
-      assert_false msg.respond_to?(:bacon)
+      assert msg.respond_to?(:bacon) == false
     end
   end
 end
