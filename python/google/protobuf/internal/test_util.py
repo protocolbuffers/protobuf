@@ -36,8 +36,9 @@ This is intentionally modeled on C++ code in
 
 __author__ = 'robinson@google.com (Will Robinson)'
 
+import numbers
+import operator
 import os.path
-
 import sys
 
 from google.protobuf import unittest_import_pb2
@@ -694,3 +695,154 @@ def SetAllUnpackedFields(message):
   message.unpacked_bool.extend([True, False])
   message.unpacked_enum.extend([unittest_pb2.FOREIGN_BAR,
                                 unittest_pb2.FOREIGN_BAZ])
+
+
+class NonStandardInteger(numbers.Integral):
+  """An integer object that does not subclass int.
+
+  This is used to verify that both C++ and regular proto systems can handle
+  integer others than int and long and that they handle them in predictable
+  ways.
+
+  NonStandardInteger is the minimal legal specification for a custom Integral.
+  As such, it does not support 0 < x < 5 and it is not hashable.
+
+  Note: This is added here instead of relying on numpy or a similar library with
+  custom integers to limit dependencies.
+  """
+
+  def __init__(self, val, error_string_on_conversion=None):
+    assert isinstance(val, numbers.Integral)
+    if isinstance(val, NonStandardInteger):
+      val = val.val
+    self.val = val
+    self.error_string_on_conversion = error_string_on_conversion
+
+  def __long__(self):
+    if self.error_string_on_conversion:
+      raise RuntimeError(self.error_string_on_conversion)
+    return long(self.val)
+
+  def __abs__(self):
+    return NonStandardInteger(operator.abs(self.val))
+
+  def __add__(self, y):
+    return NonStandardInteger(operator.add(self.val, y))
+
+  def __div__(self, y):
+    return NonStandardInteger(operator.div(self.val, y))
+
+  def __eq__(self, y):
+    return operator.eq(self.val, y)
+
+  def __floordiv__(self, y):
+    return NonStandardInteger(operator.floordiv(self.val, y))
+
+  def __truediv__(self, y):
+    return NonStandardInteger(operator.truediv(self.val, y))
+
+  def __invert__(self):
+    return NonStandardInteger(operator.invert(self.val))
+
+  def __mod__(self, y):
+    return NonStandardInteger(operator.mod(self.val, y))
+
+  def __mul__(self, y):
+    return NonStandardInteger(operator.mul(self.val, y))
+
+  def __neg__(self):
+    return NonStandardInteger(operator.neg(self.val))
+
+  def __pos__(self):
+    return NonStandardInteger(operator.pos(self.val))
+
+  def __pow__(self, y):
+    return NonStandardInteger(operator.pow(self.val, y))
+
+  def __trunc__(self):
+    return int(self.val)
+
+  def __radd__(self, y):
+    return NonStandardInteger(operator.add(y, self.val))
+
+  def __rdiv__(self, y):
+    return NonStandardInteger(operator.div(y, self.val))
+
+  def __rmod__(self, y):
+    return NonStandardInteger(operator.mod(y, self.val))
+
+  def __rmul__(self, y):
+    return NonStandardInteger(operator.mul(y, self.val))
+
+  def __rpow__(self, y):
+    return NonStandardInteger(operator.pow(y, self.val))
+
+  def __rfloordiv__(self, y):
+    return NonStandardInteger(operator.floordiv(y, self.val))
+
+  def __rtruediv__(self, y):
+    return NonStandardInteger(operator.truediv(y, self.val))
+
+  def __lshift__(self, y):
+    return NonStandardInteger(operator.lshift(self.val, y))
+
+  def __rshift__(self, y):
+    return NonStandardInteger(operator.rshift(self.val, y))
+
+  def __rlshift__(self, y):
+    return NonStandardInteger(operator.lshift(y, self.val))
+
+  def __rrshift__(self, y):
+    return NonStandardInteger(operator.rshift(y, self.val))
+
+  def __le__(self, y):
+    if isinstance(y, NonStandardInteger):
+      y = y.val
+    return operator.le(self.val, y)
+
+  def __lt__(self, y):
+    if isinstance(y, NonStandardInteger):
+      y = y.val
+    return operator.lt(self.val, y)
+
+  def __and__(self, y):
+    return NonStandardInteger(operator.and_(self.val, y))
+
+  def __or__(self, y):
+    return NonStandardInteger(operator.or_(self.val, y))
+
+  def __xor__(self, y):
+    return NonStandardInteger(operator.xor(self.val, y))
+
+  def __rand__(self, y):
+    return NonStandardInteger(operator.and_(y, self.val))
+
+  def __ror__(self, y):
+    return NonStandardInteger(operator.or_(y, self.val))
+
+  def __rxor__(self, y):
+    return NonStandardInteger(operator.xor(y, self.val))
+
+  def __bool__(self):
+    return self.val
+
+  def __nonzero__(self):
+    return self.val
+
+  def __ceil__(self):
+    return self
+
+  def __floor__(self):
+    return self
+
+  def __int__(self):
+    if self.error_string_on_conversion:
+      raise RuntimeError(self.error_string_on_conversion)
+    return int(self.val)
+
+  def __round__(self):
+    return self
+
+  def __repr__(self):
+    return 'NonStandardInteger(%s)' % self.val
+

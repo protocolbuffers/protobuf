@@ -30,8 +30,6 @@
 
 // Defines classes for field comparison.
 
-// Author: ksroka@google.com (Krzysztof Sroka)
-
 #ifndef GOOGLE_PROTOBUF_UTIL_FIELD_COMPARATOR_H__
 #define GOOGLE_PROTOBUF_UTIL_FIELD_COMPARATOR_H__
 

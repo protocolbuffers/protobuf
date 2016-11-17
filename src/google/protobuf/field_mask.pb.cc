@@ -19,12 +19,11 @@
 
 namespace google {
 namespace protobuf {
+::google::protobuf::internal::ExplicitlyConstructed<FieldMask> _FieldMask_default_instance_;
 
 namespace {
 
-const ::google::protobuf::Descriptor* FieldMask_descriptor_ = NULL;
-const ::google::protobuf::internal::GeneratedMessageReflection*
-  FieldMask_reflection_ = NULL;
+::google::protobuf::Metadata file_level_metadata[1];
 
 }  // namespace
 
@@ -32,24 +31,26 @@ const ::google::protobuf::internal::GeneratedMessageReflection*
 void protobuf_AssignDesc_google_2fprotobuf_2ffield_5fmask_2eproto() GOOGLE_ATTRIBUTE_COLD;
 void protobuf_AssignDesc_google_2fprotobuf_2ffield_5fmask_2eproto() {
   protobuf_AddDesc_google_2fprotobuf_2ffield_5fmask_2eproto();
-  const ::google::protobuf::FileDescriptor* file =
-    ::google::protobuf::DescriptorPool::generated_pool()->FindFileByName(
-      "google/protobuf/field_mask.proto");
-  GOOGLE_CHECK(file != NULL);
-  FieldMask_descriptor_ = file->message_type(0);
-  static const int FieldMask_offsets_[1] = {
+  static const ::google::protobuf::uint32 offsets[] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FieldMask, paths_),
   };
-  FieldMask_reflection_ =
-    ::google::protobuf::internal::GeneratedMessageReflection::NewGeneratedMessageReflection(
-      FieldMask_descriptor_,
-      FieldMask::internal_default_instance(),
-      FieldMask_offsets_,
+  static const ::google::protobuf::internal::ReflectionSchema schemas[] = {
+    { reinterpret_cast<const   ::google::protobuf::Message*>(&_FieldMask_default_instance_),
+      offsets + 0,
+      NULL,
       -1,
-      -1,
+      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FieldMask, _internal_metadata_),
+        -1,
+      NULL,
       -1,
       sizeof(FieldMask),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FieldMask, _internal_metadata_));
+    },
+  };
+  (void)offsets;  // suppress unused variable warning
+  ::google::protobuf::MessageFactory* factory = NULL;
+  AssignDescriptors(
+      "google/protobuf/field_mask.proto", schemas, factory,
+      file_level_metadata, NULL, NULL);
 }
 
 namespace {
@@ -63,23 +64,21 @@ void protobuf_AssignDescriptorsOnce() {
 void protobuf_RegisterTypes(const ::std::string&) GOOGLE_ATTRIBUTE_COLD;
 void protobuf_RegisterTypes(const ::std::string&) {
   protobuf_AssignDescriptorsOnce();
-  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
-      FieldMask_descriptor_, FieldMask::internal_default_instance());
+  ::google::protobuf::internal::RegisterAllTypes(file_level_metadata, 1);
 }
 
 }  // namespace
 
 void protobuf_ShutdownFile_google_2fprotobuf_2ffield_5fmask_2eproto() {
-  FieldMask_default_instance_.Shutdown();
-  delete FieldMask_reflection_;
+  _FieldMask_default_instance_.Shutdown();
+  delete file_level_metadata[0].reflection;
 }
 
 void protobuf_InitDefaults_google_2fprotobuf_2ffield_5fmask_2eproto_impl() {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
 
-  ::google::protobuf::internal::GetEmptyString();
-  FieldMask_default_instance_.DefaultConstruct();
-  FieldMask_default_instance_.get_mutable()->InitAsDefaultInstance();
+  ::google::protobuf::internal::InitProtobufDefaults();
+  _FieldMask_default_instance_.DefaultConstruct();
 }
 
 GOOGLE_PROTOBUF_DECLARE_ONCE(protobuf_InitDefaults_google_2fprotobuf_2ffield_5fmask_2eproto_once_);
@@ -91,12 +90,16 @@ void protobuf_AddDesc_google_2fprotobuf_2ffield_5fmask_2eproto_impl() {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
 
   protobuf_InitDefaults_google_2fprotobuf_2ffield_5fmask_2eproto();
+  static const char descriptor[] = {
+      "\n google/protobuf/field_mask.proto\022\017goog"
+      "le.protobuf\"\032\n\tFieldMask\022\r\n\005paths\030\001 \003(\tB"
+      "\211\001\n\023com.google.protobufB\016FieldMaskProtoP"
+      "\001Z9google.golang.org/genproto/protobuf/f"
+      "ield_mask;field_mask\242\002\003GPB\252\002\036Google.Prot"
+      "obuf.WellKnownTypesb\006proto3"
+  };
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
-    "\n google/protobuf/field_mask.proto\022\017goog"
-    "le.protobuf\"\032\n\tFieldMask\022\r\n\005paths\030\001 \003(\tB"
-    "N\n\023com.google.protobufB\016FieldMaskProtoP\001"
-    "\242\002\003GPB\252\002\036Google.Protobuf.WellKnownTypesb"
-    "\006proto3", 167);
+      descriptor, 227);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "google/protobuf/field_mask.proto", &protobuf_RegisterTypes);
   ::google::protobuf::internal::OnShutdown(&protobuf_ShutdownFile_google_2fprotobuf_2ffield_5fmask_2eproto);
@@ -114,16 +117,6 @@ struct StaticDescriptorInitializer_google_2fprotobuf_2ffield_5fmask_2eproto {
   }
 } static_descriptor_initializer_google_2fprotobuf_2ffield_5fmask_2eproto_;
 
-namespace {
-
-static void MergeFromFail(int line) GOOGLE_ATTRIBUTE_COLD GOOGLE_ATTRIBUTE_NORETURN;
-static void MergeFromFail(int line) {
-  ::google::protobuf::internal::MergeFromFail(__FILE__, line);
-}
-
-}  // namespace
-
-
 // ===================================================================
 
 #if !defined(_MSC_VER) || _MSC_VER >= 1900
@@ -132,19 +125,18 @@ const int FieldMask::kPathsFieldNumber;
 
 FieldMask::FieldMask()
   : ::google::protobuf::Message(), _internal_metadata_(NULL) {
-  if (this != internal_default_instance()) protobuf_InitDefaults_google_2fprotobuf_2ffield_5fmask_2eproto();
+  if (GOOGLE_PREDICT_TRUE(this != internal_default_instance())) {
+    protobuf_InitDefaults_google_2fprotobuf_2ffield_5fmask_2eproto();
+  }
   SharedCtor();
   // @@protoc_insertion_point(constructor:google.protobuf.FieldMask)
 }
-
-void FieldMask::InitAsDefaultInstance() {
-}
-
 FieldMask::FieldMask(const FieldMask& from)
   : ::google::protobuf::Message(),
-    _internal_metadata_(NULL) {
-  SharedCtor();
-  UnsafeMergeFrom(from);
+      _internal_metadata_(NULL),
+      paths_(from.paths_),
+      _cached_size_(0) {
+  _internal_metadata_.MergeFrom(from._internal_metadata_);
   // @@protoc_insertion_point(copy_constructor:google.protobuf.FieldMask)
 }
 
@@ -167,15 +159,13 @@ void FieldMask::SetCachedSize(int size) const {
 }
 const ::google::protobuf::Descriptor* FieldMask::descriptor() {
   protobuf_AssignDescriptorsOnce();
-  return FieldMask_descriptor_;
+  return file_level_metadata[0].descriptor;
 }
 
 const FieldMask& FieldMask::default_instance() {
   protobuf_InitDefaults_google_2fprotobuf_2ffield_5fmask_2eproto();
   return *internal_default_instance();
 }
-
-::google::protobuf::internal::ExplicitlyConstructed<FieldMask> FieldMask_default_instance_;
 
 FieldMask* FieldMask::New(::google::protobuf::Arena* arena) const {
   FieldMask* n = new FieldMask;
@@ -203,7 +193,6 @@ bool FieldMask::MergePartialFromCodedStream(
       // repeated string paths = 1;
       case 1: {
         if (tag == 10) {
-         parse_paths:
           DO_(::google::protobuf::internal::WireFormatLite::ReadString(
                 input, this->add_paths()));
           DO_(::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
@@ -214,8 +203,6 @@ bool FieldMask::MergePartialFromCodedStream(
         } else {
           goto handle_unusual;
         }
-        if (input->ExpectTag(10)) goto parse_paths;
-        if (input->ExpectAtEnd()) goto success;
         break;
       }
 
@@ -295,7 +282,7 @@ size_t FieldMask::ByteSizeLong() const {
 
 void FieldMask::MergeFrom(const ::google::protobuf::Message& from) {
 // @@protoc_insertion_point(generalized_merge_from_start:google.protobuf.FieldMask)
-  if (GOOGLE_PREDICT_FALSE(&from == this)) MergeFromFail(__LINE__);
+  GOOGLE_DCHECK_NE(&from, this);
   const FieldMask* source =
       ::google::protobuf::internal::DynamicCastToGenerated<const FieldMask>(
           &from);
@@ -304,22 +291,15 @@ void FieldMask::MergeFrom(const ::google::protobuf::Message& from) {
     ::google::protobuf::internal::ReflectionOps::Merge(from, this);
   } else {
   // @@protoc_insertion_point(generalized_merge_from_cast_success:google.protobuf.FieldMask)
-    UnsafeMergeFrom(*source);
+    MergeFrom(*source);
   }
 }
 
 void FieldMask::MergeFrom(const FieldMask& from) {
 // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.FieldMask)
-  if (GOOGLE_PREDICT_TRUE(&from != this)) {
-    UnsafeMergeFrom(from);
-  } else {
-    MergeFromFail(__LINE__);
-  }
-}
-
-void FieldMask::UnsafeMergeFrom(const FieldMask& from) {
   GOOGLE_DCHECK(&from != this);
-  paths_.UnsafeMergeFrom(from.paths_);
+  _internal_metadata_.MergeFrom(from._internal_metadata_);
+  paths_.MergeFrom(from.paths_);
 }
 
 void FieldMask::CopyFrom(const ::google::protobuf::Message& from) {
@@ -333,11 +313,10 @@ void FieldMask::CopyFrom(const FieldMask& from) {
 // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.FieldMask)
   if (&from == this) return;
   Clear();
-  UnsafeMergeFrom(from);
+  MergeFrom(from);
 }
 
 bool FieldMask::IsInitialized() const {
-
   return true;
 }
 
@@ -347,16 +326,12 @@ void FieldMask::Swap(FieldMask* other) {
 }
 void FieldMask::InternalSwap(FieldMask* other) {
   paths_.UnsafeArenaSwap(&other->paths_);
-  _internal_metadata_.Swap(&other->_internal_metadata_);
   std::swap(_cached_size_, other->_cached_size_);
 }
 
 ::google::protobuf::Metadata FieldMask::GetMetadata() const {
   protobuf_AssignDescriptorsOnce();
-  ::google::protobuf::Metadata metadata;
-  metadata.descriptor = FieldMask_descriptor_;
-  metadata.reflection = FieldMask_reflection_;
-  return metadata;
+  return file_level_metadata[0];
 }
 
 #if PROTOBUF_INLINE_NOT_IN_HEADERS
@@ -417,9 +392,6 @@ FieldMask::mutable_paths() {
   return &paths_;
 }
 
-inline const FieldMask* FieldMask::internal_default_instance() {
-  return &FieldMask_default_instance_.get();
-}
 #endif  // PROTOBUF_INLINE_NOT_IN_HEADERS
 
 // @@protoc_insertion_point(namespace_scope)

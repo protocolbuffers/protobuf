@@ -67,6 +67,7 @@
 #include <google/protobuf/compiler/importer.h>
 #include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/io/zero_copy_stream_impl.h>
+#include <google/protobuf/arena.h>
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/descriptor.pb.h>
 #include <google/protobuf/dynamic_message.h>
@@ -199,14 +200,14 @@ TEST(GeneratedMessageTest, FloatingPointDefaults) {
   EXPECT_EQ(-1.5f, extreme_default.negative_float());
   EXPECT_EQ(2.0e8f, extreme_default.large_float());
   EXPECT_EQ(-8e-28f, extreme_default.small_negative_float());
-  EXPECT_EQ(numeric_limits<double>::infinity(),
+  EXPECT_EQ(std::numeric_limits<double>::infinity(),
             extreme_default.inf_double());
-  EXPECT_EQ(-numeric_limits<double>::infinity(),
+  EXPECT_EQ(-std::numeric_limits<double>::infinity(),
             extreme_default.neg_inf_double());
   EXPECT_TRUE(extreme_default.nan_double() != extreme_default.nan_double());
-  EXPECT_EQ(numeric_limits<float>::infinity(),
+  EXPECT_EQ(std::numeric_limits<float>::infinity(),
             extreme_default.inf_float());
-  EXPECT_EQ(-numeric_limits<float>::infinity(),
+  EXPECT_EQ(-std::numeric_limits<float>::infinity(),
             extreme_default.neg_inf_float());
   EXPECT_TRUE(extreme_default.nan_float() != extreme_default.nan_float());
 }
@@ -518,6 +519,26 @@ TEST(GeneratedMessageTest, CopyConstructor) {
   TestUtil::ExpectAllFieldsSet(message2);
 }
 
+TEST(GeneratedMessageTest, CopyConstructorWithArenas) {
+  Arena arena;
+  unittest::TestAllTypes* message1 =
+      Arena::CreateMessage<unittest::TestAllTypes>(&arena);
+  TestUtil::SetAllFields(message1);
+
+  unittest::TestAllTypes message2_stack(*message1);
+  TestUtil::ExpectAllFieldsSet(message2_stack);
+
+  google::protobuf::scoped_ptr<unittest::TestAllTypes> message2_heap(
+      new unittest::TestAllTypes(*message1));
+  TestUtil::ExpectAllFieldsSet(*message2_heap);
+
+  arena.Reset();
+
+  // Verify that the copies are still intact.
+  TestUtil::ExpectAllFieldsSet(message2_stack);
+  TestUtil::ExpectAllFieldsSet(*message2_heap);
+}
+
 TEST(GeneratedMessageTest, CopyAssignmentOperator) {
   unittest::TestAllTypes message1;
   TestUtil::SetAllFields(&message1);
@@ -600,14 +621,16 @@ TEST(GeneratedMessageTest, NonEmptyMergeFrom) {
 #if !defined(PROTOBUF_TEST_NO_DESCRIPTORS) || \
     !defined(GOOGLE_PROTOBUF_NO_RTTI)
 #ifdef PROTOBUF_HAS_DEATH_TEST
+#ifndef NDEBUG
 
 TEST(GeneratedMessageTest, MergeFromSelf) {
   unittest::TestAllTypes message;
-  EXPECT_DEATH(message.MergeFrom(message), "Check failed:.*pb[.]cc");
+  EXPECT_DEATH(message.MergeFrom(message), "pb[.]cc.*Check failed:");
   EXPECT_DEATH(message.MergeFrom(implicit_cast<const Message&>(message)),
-               "Check failed:.*pb[.]cc");
+               "pb[.]cc.*Check failed:");
 }
 
+#endif  // NDEBUG
 #endif  // PROTOBUF_HAS_DEATH_TEST
 #endif  // !PROTOBUF_TEST_NO_DESCRIPTORS || !GOOGLE_PROTOBUF_NO_RTTI
 

@@ -150,8 +150,8 @@ string GlobalAddDescriptorsName(const string& filename);
 // Return the name of the InitDefaults() function for a given file.
 string GlobalInitDefaultsName(const string& filename);
 
-// Return the name of the AssignDescriptors() function for a given file.
-string GlobalAssignDescriptorsName(const string& filename);
+// Return the name of the offset table function for a given file.
+string GlobalOffsetTableName(const string& filename);
 
 // Return the qualified C++ name for a file level symbol.
 string QualifiedFileLevelSymbol(const string& package, const string& name);
@@ -269,13 +269,13 @@ bool IsWellKnownMessage(const FileDescriptor* descriptor);
 
 void GenerateUtf8CheckCodeForString(const FieldDescriptor* field,
                                     const Options& options, bool for_parse,
-                                    const map<string, string>& variables,
+                                    const std::map<string, string>& variables,
                                     const char* parameters,
                                     io::Printer* printer);
 
 void GenerateUtf8CheckCodeForCord(const FieldDescriptor* field,
                                   const Options& options, bool for_parse,
-                                  const map<string, string>& variables,
+                                  const std::map<string, string>& variables,
                                   const char* parameters, io::Printer* printer);
 
 inline ::google::protobuf::FileOptions_OptimizeMode GetOptimizeFor(

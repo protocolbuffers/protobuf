@@ -297,7 +297,7 @@ public final class DynamicMessage extends AbstractMessage {
         } catch (InvalidProtocolBufferException e) {
           throw e.setUnfinishedMessage(builder.buildPartial());
         } catch (IOException e) {
-          throw new InvalidProtocolBufferException(e.getMessage())
+          throw new InvalidProtocolBufferException(e)
               .setUnfinishedMessage(builder.buildPartial());
         }
         return builder.buildPartial();

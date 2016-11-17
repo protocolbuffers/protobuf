@@ -61,8 +61,9 @@
 #include <google/protobuf/generated_message_util.h>
 #include <google/protobuf/message_lite.h>
 
-namespace google {
 
+// Forward-declare these so that we can make them friends.
+namespace google {
 namespace upb {
 namespace google_opensource {
 class GMR_Handlers;
@@ -104,7 +105,7 @@ inline int CalculateReserve(Iter begin, Iter end) {
 // not ever use a RepeatedField directly; they will use the get-by-index,
 // set-by-index, and add accessors that are generated for all repeated fields.
 template <typename Element>
-class RepeatedField {
+class RepeatedField PROTOBUF_FINAL {
  public:
   RepeatedField();
   explicit RepeatedField(Arena* arena);
@@ -126,6 +127,8 @@ class RepeatedField {
 
   void Set(int index, const Element& value);
   void Add(const Element& value);
+  // Appends a new element and return a pointer to it.
+  // The new element is uninitialized if |Element| is a POD type.
   Element* Add();
   // Remove the last element in the array.
   void RemoveLast();
@@ -138,7 +141,6 @@ class RepeatedField {
 
   void Clear();
   void MergeFrom(const RepeatedField& other);
-  void UnsafeMergeFrom(const RepeatedField& other);
   void CopyFrom(const RepeatedField& other);
 
   // Reserve space to expand the field to at least the given size.  If the
@@ -149,6 +151,9 @@ class RepeatedField {
   void Truncate(int new_size);
 
   void AddAlreadyReserved(const Element& value);
+  // Appends a new element and return a pointer to it.
+  // The new element is uninitialized if |Element| is a POD type.
+  // Should be called only if Capacity() > Size().
   Element* AddAlreadyReserved();
   int Capacity() const;
 
@@ -311,7 +316,7 @@ template <typename It, typename VoidPtr> class RepeatedPtrOverPtrsIterator;
 
 namespace internal {
 
-// This is a helper template to copy an array of elements effeciently when they
+// This is a helper template to copy an array of elements efficiently when they
 // have a trivial copy constructor, and correctly otherwise. This really
 // shouldn't be necessary, but our compiler doesn't optimize std::copy very
 // effectively.
@@ -682,16 +687,7 @@ inline const Message& GenericTypeHandler<Message>::default_instance() {
 }
 
 
-// HACK:  If a class is declared as DLL-exported in MSVC, it insists on
-//   generating copies of all its methods -- even inline ones -- to include
-//   in the DLL.  But SpaceUsed() calls StringSpaceUsedExcludingSelf() which
-//   isn't in the lite library, therefore the lite library cannot link if
-//   StringTypeHandler is exported.  So, we factor out StringTypeHandlerBase,
-//   export that, then make StringTypeHandler be a subclass which is NOT
-//   exported.
-// TODO(kenton):  Now that StringSpaceUsedExcludingSelf() is in the lite
-//   library, this can be cleaned up.
-class LIBPROTOBUF_EXPORT StringTypeHandlerBase {
+class StringTypeHandler {
  public:
   typedef string Type;
 
@@ -718,10 +714,6 @@ class LIBPROTOBUF_EXPORT StringTypeHandlerBase {
   static inline const Type& default_instance() {
     return ::google::protobuf::internal::GetEmptyString();
   }
-};
-
-class StringTypeHandler : public StringTypeHandlerBase {
- public:
   static int SpaceUsed(const string& value)  {
     return static_cast<int>(sizeof(value)) + StringSpaceUsedExcludingSelf(value);
   }
@@ -733,7 +725,7 @@ class StringTypeHandler : public StringTypeHandlerBase {
 // RepeatedPtrField is like RepeatedField, but used for repeated strings or
 // Messages.
 template <typename Element>
-class RepeatedPtrField : public internal::RepeatedPtrFieldBase {
+class RepeatedPtrField PROTOBUF_FINAL : public internal::RepeatedPtrFieldBase {
  public:
   RepeatedPtrField();
   explicit RepeatedPtrField(::google::protobuf::Arena* arena);
@@ -766,7 +758,6 @@ class RepeatedPtrField : public internal::RepeatedPtrFieldBase {
 
   void Clear();
   void MergeFrom(const RepeatedPtrField& other);
-  void UnsafeMergeFrom(const RepeatedPtrField& other) { MergeFrom(other); }
   void CopyFrom(const RepeatedPtrField& other);
 
   // Reserve space to expand the field to at least the given size.  This only
@@ -873,10 +864,10 @@ class RepeatedPtrField : public internal::RepeatedPtrFieldBase {
   // RepeatedPtrField.
   // It is also useful in legacy code that uses temporary ownership to avoid
   // copies. Example:
-  // RepeatedPtrField<T> temp_field;
-  // temp_field.AddAllocated(new T);
-  // ... // Do something with temp_field
-  // temp_field.ExtractSubrange(0, temp_field.size(), NULL);
+  //   RepeatedPtrField<T> temp_field;
+  //   temp_field.AddAllocated(new T);
+  //   ... // Do something with temp_field
+  //   temp_field.ExtractSubrange(0, temp_field.size(), NULL);
   // If you put temp_field on the arena this fails, because the ownership
   // transfers to the arena at the "AddAllocated" call and is not released
   // anymore causing a double delete. UnsafeArenaAddAllocated prevents this.
@@ -958,17 +949,13 @@ class RepeatedPtrField : public internal::RepeatedPtrFieldBase {
     return GetArenaNoVirtual();
   }
 
- protected:
-  // Note:  RepeatedPtrField SHOULD NOT be subclassed by users.  We only
-  //   subclass it in one place as a hack for compatibility with proto1.  The
-  //   subclass needs to know about TypeHandler in order to call protected
-  //   methods on RepeatedPtrFieldBase.
+ private:
+  // Note:  RepeatedPtrField SHOULD NOT be subclassed by users.
   class TypeHandler;
 
   // Internal arena accessor expected by helpers in Arena.
   inline Arena* GetArenaNoVirtual() const;
 
- private:
   // Implementations for ExtractSubrange(). The copying behavior must be
   // included only if the type supports the necessary operations (e.g.,
   // MergeFrom()), so we must resolve this at compile time. ExtractSubrange()
@@ -1011,7 +998,12 @@ inline RepeatedField<Element>::RepeatedField(const RepeatedField& other)
   : current_size_(0),
     total_size_(0),
     rep_(NULL) {
-  CopyFrom(other);
+  if (other.current_size_ != 0) {
+    Reserve(other.current_size_);
+    CopyArray(rep_->elements,
+              other.rep_->elements, other.current_size_);
+    current_size_ = other.current_size_;
+  }
 }
 
 template <typename Element>
@@ -1152,19 +1144,14 @@ inline void RepeatedField<Element>::Clear() {
 }
 
 template <typename Element>
-inline void RepeatedField<Element>::UnsafeMergeFrom(const RepeatedField& other) {
+inline void RepeatedField<Element>::MergeFrom(const RepeatedField& other) {
+  GOOGLE_DCHECK_NE(&other, this);
   if (other.current_size_ != 0) {
     Reserve(current_size_ + other.current_size_);
     CopyArray(rep_->elements + current_size_,
               other.rep_->elements, other.current_size_);
     current_size_ += other.current_size_;
   }
-}
-
-template <typename Element>
-inline void RepeatedField<Element>::MergeFrom(const RepeatedField& other) {
-  GOOGLE_CHECK_NE(&other, this);
-  UnsafeMergeFrom(other);
 }
 
 template <typename Element>
@@ -1306,7 +1293,7 @@ void RepeatedField<Element>::Reserve(int new_size) {
   Element* e = &rep_->elements[0];
   Element* limit = &rep_->elements[total_size_];
   for (; e < limit; e++) {
-    new (e) Element();
+    new (e) Element;
   }
   if (current_size_ > 0) {
     MoveArray(rep_->elements, old_rep->elements, current_size_);
@@ -1806,7 +1793,7 @@ template <typename Element>
 inline RepeatedPtrField<Element>::RepeatedPtrField(
     const RepeatedPtrField& other)
   : RepeatedPtrFieldBase() {
-  CopyFrom(other);
+  MergeFrom(other);
 }
 
 template <typename Element>
@@ -2483,10 +2470,10 @@ AllocatedRepeatedPtrFieldBackInserter(
 // UnsafeArenaAddAllocated instead of AddAllocated.
 // This is slightly faster if that matters. It is also useful in legacy code
 // that uses temporary ownership to avoid copies. Example:
-// RepeatedPtrField<T> temp_field;
-// temp_field.AddAllocated(new T);
-// ... // Do something with temp_field
-// temp_field.ExtractSubrange(0, temp_field.size(), NULL);
+//   RepeatedPtrField<T> temp_field;
+//   temp_field.AddAllocated(new T);
+//   ... // Do something with temp_field
+//   temp_field.ExtractSubrange(0, temp_field.size(), NULL);
 // If you put temp_field on the arena this fails, because the ownership
 // transfers to the arena at the "AddAllocated" call and is not released anymore
 // causing a double delete. Using UnsafeArenaAddAllocated prevents this.

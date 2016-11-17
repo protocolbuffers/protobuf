@@ -122,7 +122,7 @@ Generate(io::Printer* printer) {
   }
 
   // oneof
-  map<string, string> vars;
+  std::map<string, string> vars;
   for (int i = 0; i < descriptor_->oneof_decl_count(); i++) {
     vars["oneof_name"] = context_->GetOneofGeneratorInfo(
         descriptor_->oneof_decl(i))->name;
@@ -225,7 +225,7 @@ GenerateDescriptorMethods(io::Printer* printer) {
       "fileclass", name_resolver_->GetImmutableClassName(descriptor_->file()),
       "identifier", UniqueFileScopeIdentifier(descriptor_));
   }
-  vector<const FieldDescriptor*> map_fields;
+  std::vector<const FieldDescriptor*> map_fields;
   for (int i = 0; i < descriptor_->field_count(); i++) {
     const FieldDescriptor* field = descriptor_->field(i);
     if (GetJavaType(field) == JAVATYPE_MESSAGE &&

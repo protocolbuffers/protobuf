@@ -156,7 +156,7 @@ const char kSmallTestFile[] =
 // couldn't).
 const GeneratedCodeInfo::Annotation* FindAnnotationOnPath(
     const GeneratedCodeInfo& info, const string& source_file,
-    const vector<int>& path) {
+    const std::vector<int>& path) {
   for (int i = 0; i < info.annotation_size(); ++i) {
     const GeneratedCodeInfo::Annotation* annotation = &info.annotation(i);
     if (annotation->source_file() != source_file ||
@@ -197,7 +197,7 @@ TEST_F(CppMetadataTest, CapturesEnumNames) {
   EXPECT_TRUE(
       CaptureMetadata("test.proto", &file, &pb_h, &info, NULL, NULL, NULL));
   EXPECT_EQ("Enum", file.enum_type(0).name());
-  vector<int> enum_path;
+  std::vector<int> enum_path;
   enum_path.push_back(FileDescriptorProto::kEnumTypeFieldNumber);
   enum_path.push_back(0);
   const GeneratedCodeInfo::Annotation* enum_annotation =
@@ -226,7 +226,7 @@ TEST_F(CppMetadataTest, CapturesMessageNames) {
   EXPECT_TRUE(
       CaptureMetadata("test.proto", &file, &pb_h, &info, NULL, NULL, NULL));
   EXPECT_EQ("Message", file.message_type(0).name());
-  vector<int> message_path;
+  std::vector<int> message_path;
   message_path.push_back(FileDescriptorProto::kMessageTypeFieldNumber);
   message_path.push_back(0);
   const GeneratedCodeInfo::Annotation* message_annotation =

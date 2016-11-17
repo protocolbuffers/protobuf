@@ -249,7 +249,7 @@ TEST(ArenaTest, Parsing) {
   arena_message->ParseFromString(original.SerializeAsString());
   TestUtil::ExpectAllFieldsSet(*arena_message);
 
-  // Test that string fields have null terminator bytes (earlier bug).
+  // Test that string fields have nul terminator bytes (earlier bug).
   EXPECT_EQ(strlen(original.optional_string().c_str()),
             strlen(arena_message->optional_string().c_str()));
 }
@@ -1152,6 +1152,13 @@ TEST(ArenaTest, NoHeapAllocationsTest) {
   }
 
   arena.Reset();
+}
+
+TEST(ArenaTest, ParseCorruptedString) {
+  TestAllTypes message;
+  TestUtil::SetAllFields(&message);
+  TestParseCorruptedString<TestAllTypes, true>(message);
+  TestParseCorruptedString<TestAllTypes, false>(message);
 }
 
 #ifndef GOOGLE_PROTOBUF_NO_RTTI

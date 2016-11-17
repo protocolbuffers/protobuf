@@ -36,7 +36,7 @@
 
 #ifdef ADDRESS_SANITIZER
 #include <sanitizer/asan_interface.h>
-#endif
+#endif  // ADDRESS_SANITIZER
 
 namespace google {
 namespace protobuf {
@@ -141,7 +141,7 @@ Arena::Block* Arena::NewBlock(void* me, Block* my_last_block, size_t n,
   // malloc but it's not yet usable until we return it as part of an allocation.
   ASAN_POISON_MEMORY_REGION(
       reinterpret_cast<char*>(b) + b->pos, b->size - b->pos);
-#endif
+#endif  // ADDRESS_SANITIZER
   return b;
 }
 
@@ -205,7 +205,7 @@ void* Arena::AllocFromBlock(Block* b, size_t n) {
   b->pos = p + n;
 #ifdef ADDRESS_SANITIZER
   ASAN_UNPOISON_MEMORY_REGION(reinterpret_cast<char*>(b) + p, n);
-#endif
+#endif  // ADDRESS_SANITIZER
   return reinterpret_cast<char*>(b) + p;
 }
 
@@ -244,7 +244,7 @@ uint64 Arena::SpaceUsed() const {
   return space_used;
 }
 
-pair<uint64, uint64> Arena::SpaceAllocatedAndUsed() const {
+std::pair<uint64, uint64> Arena::SpaceAllocatedAndUsed() const {
   uint64 allocated = 0;
   uint64 used = 0;
 
@@ -265,9 +265,19 @@ uint64 Arena::FreeBlocks() {
     space_allocated += (b->size);
     Block* next = b->next;
     if (next != NULL) {
+#ifdef ADDRESS_SANITIZER
+      // This memory was provided by the underlying allocator as unpoisoned, so
+      // return it in an unpoisoned state.
+      ASAN_UNPOISON_MEMORY_REGION(reinterpret_cast<char*>(b), b->size);
+#endif  // ADDRESS_SANITIZER
       options_.block_dealloc(b, b->size);
     } else {
       if (owns_first_block_) {
+#ifdef ADDRESS_SANITIZER
+        // This memory was provided by the underlying allocator as unpoisoned,
+        // so return it in an unpoisoned state.
+        ASAN_UNPOISON_MEMORY_REGION(reinterpret_cast<char*>(b), b->size);
+#endif  // ADDRESS_SANITIZER
         options_.block_dealloc(b, b->size);
       } else {
         // User passed in the first block, skip free'ing the memory.
