@@ -417,14 +417,15 @@ class FileGenerator::ForwardDeclarations {
              it = classes_.begin(),
              end = classes_.end();
          it != end; ++it) {
-      printer->Print("class $classname$;\n",
-                     "classname", it->first);
+      printer->Print("class $classname$;\n", "classname", it->first);
       printer->Annotate("classname", it->second);
 
       printer->Print(
           "class $classname$DefaultTypeInternal;\n"
-          "extern $classname$DefaultTypeInternal _$classname$_default_instance_;\n",  // NOLINT
-          "classname", it->first);
+          "extern $classname$DefaultTypeInternal "
+          "_$classname$_default_instance_;\n",  // NOLINT
+          "classname",
+          it->first);
     }
     for (std::map<string, ForwardDeclarations *>::const_iterator
              it = namespaces_.begin(),
@@ -465,65 +466,76 @@ void FileGenerator::GenerateBuildDescriptors(io::Printer* printer) {
   // and we only use AddDescriptors() to allocate default instances.
 
   if (HasDescriptorMethods(file_, options_)) {
-    printer->Print(
-        "\n"
-        "const ::google::protobuf::uint32* $offsetfunname$() GOOGLE_ATTRIBUTE_COLD;\n"
-        "const ::google::protobuf::uint32* $offsetfunname$() {\n",
-        "offsetfunname", GlobalOffsetTableName(file_->name()));
-    printer->Indent();
-
-    printer->Print("static const ::google::protobuf::uint32 offsets[] = {\n");
-    printer->Indent();
-    std::vector<std::pair<size_t, size_t> > pairs;
-    for (int i = 0; i < message_generators_.size(); i++) {
-      pairs.push_back(message_generators_[i]->GenerateOffsets(printer));
-    }
-    printer->Outdent();
-    printer->Outdent();
-    printer->Print(
-        "  };\n"
-        "  return offsets;\n"
-        "}\n"
-        "\n");
-
-    printer->Print(
-        "static const ::google::protobuf::internal::MigrationSchema schemas[] = {\n");
-    printer->Indent();
-    {
-      int offset = 0;
-      for (int i = 0; i < message_generators_.size(); i++) {
-        message_generators_[i]->GenerateSchema(printer, offset,
-                                               pairs[i].second);
-        offset += pairs[i].first;
-      }
-    }
-    printer->Outdent();
-    printer->Print(
-        "};\n"
-        "\n"
-        "static const ::google::protobuf::internal::DefaultInstanceData "
-        "file_default_instances[] = {\n");
-    printer->Indent();
-    for (int i = 0; i < message_generators_.size(); i++) {
-      const Descriptor* descriptor = message_generators_[i]->descriptor_;
-      if (IsMapEntryMessage(descriptor)) continue;
-
-      string oneof_default = "NULL";
-      if (message_generators_[i]->descriptor_->oneof_decl_count()) {
-        oneof_default =
-            "&" + ClassName(descriptor, false) + "_default_oneof_instance_";
-      }
+    if (message_generators_.size() != 0) {
       printer->Print(
-          "{reinterpret_cast<const "
-          "::google::protobuf::Message*>(&_$classname$_default_instance_), "
-          "$oneof_default$},\n",
-          "classname", ClassName(descriptor, false), "oneof_default",
-          oneof_default);
+          "\n"
+          "const ::google::protobuf::uint32* $offsetfunname$() GOOGLE_ATTRIBUTE_COLD;\n"
+          "const ::google::protobuf::uint32* $offsetfunname$() {\n",
+          "offsetfunname", GlobalOffsetTableName(file_->name()));
+      printer->Indent();
+
+      printer->Print("static const ::google::protobuf::uint32 offsets[] = {\n");
+      printer->Indent();
+      std::vector<std::pair<size_t, size_t> > pairs;
+      for (int i = 0; i < message_generators_.size(); i++) {
+        pairs.push_back(message_generators_[i]->GenerateOffsets(printer));
+      }
+      printer->Outdent();
+      printer->Outdent();
+      printer->Print(
+          "  };\n"
+          "  return offsets;\n"
+          "}\n"
+          "\n");
+
+      printer->Print(
+          "static const ::google::protobuf::internal::MigrationSchema schemas[] = {\n");
+      printer->Indent();
+      {
+        int offset = 0;
+        for (int i = 0; i < message_generators_.size(); i++) {
+          message_generators_[i]->GenerateSchema(printer, offset,
+                                                 pairs[i].second);
+          offset += pairs[i].first;
+        }
+      }
+      printer->Outdent();
+      printer->Print(
+          "};\n"
+          "\n"
+          "static const ::google::protobuf::internal::DefaultInstanceData "
+          "file_default_instances[] = {\n");
+      printer->Indent();
+      for (int i = 0; i < message_generators_.size(); i++) {
+        const Descriptor* descriptor = message_generators_[i]->descriptor_;
+        if (IsMapEntryMessage(descriptor)) continue;
+
+        string oneof_default = "NULL";
+        if (message_generators_[i]->descriptor_->oneof_decl_count()) {
+          oneof_default =
+              "&" + ClassName(descriptor, false) + "_default_oneof_instance_";
+        }
+        printer->Print(
+            "{reinterpret_cast<const "
+            "::google::protobuf::Message*>(&_$classname$_default_instance_), "
+            "$oneof_default$},\n",
+            "classname", ClassName(descriptor, false), "oneof_default",
+            oneof_default);
+      }
+      printer->Outdent();
+      printer->Print(
+          "};\n"
+          "\n");
+    } else {
+      // we still need these symbols to exist
+      printer->Print(
+          "inline ::google::protobuf::uint32* $offsetfunname$() { return NULL; }\n"
+          "static const ::google::protobuf::internal::MigrationSchema* schemas = NULL;\n"
+          "static const ::google::protobuf::internal::DefaultInstanceData* "
+          "file_default_instances = NULL;\n",
+          "offsetfunname",
+          GlobalOffsetTableName(file_->name()));
     }
-    printer->Outdent();
-    printer->Print(
-        "};\n"
-        "\n");
 
     // ---------------------------------------------------------------
 

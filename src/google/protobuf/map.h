@@ -654,7 +654,8 @@ class Map {
 
     // To support Visual Studio 2008
     size_type max_size() const {
-      return std::numeric_limits<size_type>::max();
+      // parentheses around (std::...:max) prevents macro warning of max()
+      return (std::numeric_limits<size_type>::max)();
     }
 
     // To support gcc-4.4, which does not properly
@@ -1084,8 +1085,9 @@ class Map {
         // index_of_first_non_null_, so we skip the code to update it.
         return InsertUniqueInTree(b, node);
       }
+      // parentheses around (std::min) prevents macro expansion of min(...)
       index_of_first_non_null_ =
-          std::min(index_of_first_non_null_, result.bucket_index_);
+          (std::min)(index_of_first_non_null_, result.bucket_index_);
       return result;
     }
 

@@ -632,7 +632,8 @@ class GeneratedMessageReflection PROTOBUF_FINAL : public Reflection {
       Message* message, const FieldDescriptor* field) const;
 
   friend inline  // inline so nobody can call this function.
-  void RegisterAllTypesInternal(const Metadata* file_level_metadata, int size);
+      void
+      RegisterAllTypesInternal(const Metadata* file_level_metadata, int size);
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(GeneratedMessageReflection);
 };
 

@@ -368,7 +368,7 @@ inline bool WireFormatLite::ReadPackedFixedSizePrimitive(
     bytes_limit = input->BytesUntilLimit();
   } else {
     // parentheses around (std::min) prevents macro expansion of min(...)
-    bytes_limit =  
+    bytes_limit =
         (std::min)(bytes_limit, static_cast<int64>(input->BytesUntilLimit()));
   }
   if (bytes_limit >= new_bytes) {
