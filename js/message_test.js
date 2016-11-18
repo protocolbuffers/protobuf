@@ -1049,13 +1049,7 @@ describe('Message test suite', function() {
     var nested = new proto.jspb.test.Deeply.Nested.Message();
     nested.setCount(5);
     msg.setDeeplyNestedMessage(nested);
-
-    // After a serialization-deserialization round trip we should get back the
-    // same data we started with.
-    var serialized = msg.toObject();
-    var deserialized =
-        proto.jspb.test.ForeignNestedFieldMessage.fromObject(serialized);
-    assertEquals(5, deserialized.getDeeplyNestedMessage().getCount());
+    assertEquals(5, msg.getDeeplyNestedMessage().getCount());
   });
 
 });
