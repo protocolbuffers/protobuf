@@ -249,7 +249,7 @@ struct MigrationSchema {
 //    of whatever type the individual field would be.  Strings and
 //    Messages use RepeatedPtrFields while everything else uses
 //    RepeatedFields.
-class GeneratedMessageReflection PROTOBUF_FINAL : public Reflection {
+class LIBPROTOBUF_EXPORT GeneratedMessageReflection PROTOBUF_FINAL : public Reflection {
  public:
   // Constructs a GeneratedMessageReflection.
   // Parameters:
