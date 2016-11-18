@@ -1,5 +1,3 @@
-# -*- mode: python; -*- PYTHON-PREPROCESSING-REQUIRED
-
 def _GetPath(ctx, path):
   if ctx.label.workspace_root:
     return ctx.label.workspace_root + '/' + path
@@ -230,7 +228,6 @@ def cc_proto_library(
       includes=includes,
       **kargs)
 
-
 def internal_gen_well_known_protos_java(srcs):
   """Bazel rule to generate the gen_well_known_protos_java genrule
 
@@ -253,7 +250,6 @@ def internal_gen_well_known_protos_java(srcs):
           " && mv $(@D)/wellknown.jar $(@D)/wellknown.srcjar",
     tools = [":protoc"],
   )
-
 
 def internal_copied_filegroup(name, srcs, strip_prefix, dest, **kwargs):
   """Macro to copy files to a different directory and then create a filegroup.
@@ -283,7 +279,6 @@ def internal_copied_filegroup(name, srcs, strip_prefix, dest, **kwargs):
       name = name,
       srcs = outs,
       **kwargs)
-
 
 def py_proto_library(
         name,

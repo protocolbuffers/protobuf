@@ -693,7 +693,7 @@ TEST_2D(TokenizerTest, DocComments, kDocCommentCases, kBlockSizes) {
   EXPECT_EQ("prev", tokenizer2.current().text);
 
   string prev_trailing_comments;
-  vector<string> detached_comments;
+  std::vector<string> detached_comments;
   string next_leading_comments;
   tokenizer.NextWithComments(&prev_trailing_comments, &detached_comments,
                              &next_leading_comments);

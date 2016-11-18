@@ -59,8 +59,8 @@ namespace compiler {
 
 // Returns the list of the names of files in all_files in the form of a
 // comma-separated string.
-string CommaSeparatedList(const vector<const FileDescriptor*> all_files) {
-  vector<string> names;
+string CommaSeparatedList(const std::vector<const FileDescriptor*> all_files) {
+  std::vector<string> names;
   for (int i = 0; i < all_files.size(); i++) {
     names.push_back(all_files[i]->name());
   }
@@ -92,7 +92,8 @@ void MockCodeGenerator::ExpectGenerated(
       File::GetContents(output_directory + "/" + GetOutputFileName(name, file),
                         &content, true));
 
-  vector<string> lines = Split(content, "\n", true);
+  std::vector<string> lines =
+      Split(content, "\n", true);
 
   while (!lines.empty() && lines.back().empty()) {
     lines.pop_back();
@@ -101,7 +102,7 @@ void MockCodeGenerator::ExpectGenerated(
     lines[i] += "\n";
   }
 
-  vector<string> insertion_list;
+  std::vector<string> insertion_list;
   if (!insertions.empty()) {
     SplitStringUsing(insertions, ",", &insertion_list);
   }
@@ -166,7 +167,7 @@ bool MockCodeGenerator::Generate(
   }
 
   if (HasPrefixString(parameter, "insert=")) {
-    vector<string> insert_into;
+    std::vector<string> insert_into;
     SplitStringUsing(StripPrefixString(parameter, "insert="),
                      ",", &insert_into);
 
@@ -230,7 +231,7 @@ string MockCodeGenerator::GetOutputFileContent(
     const string& parameter,
     const FileDescriptor* file,
     GeneratorContext *context) {
-  vector<const FileDescriptor*> all_files;
+  std::vector<const FileDescriptor*> all_files;
   context->ListParsedFiles(&all_files);
   return GetOutputFileContent(
       generator_name, parameter, file->name(),

@@ -176,6 +176,41 @@ public final class UnknownFieldSetLite {
   }
 
   /**
+   * Serializes the set and writes it to {@code output} using {@code MessageSet} wire format.
+   *
+   * <p>For use by generated code only.
+   */
+  public void writeAsMessageSetTo(CodedOutputStream output) throws IOException {
+    for (int i = 0; i < count; i++) {
+      int fieldNumber = WireFormat.getTagFieldNumber(tags[i]);
+      output.writeRawMessageSetExtension(fieldNumber, (ByteString) objects[i]);
+    }
+  }
+  
+  /**
+   * Get the number of bytes required to encode this field, including field
+   * number, using {@code MessageSet} wire format.
+   */
+  public int getSerializedSizeAsMessageSet() {
+    int size = memoizedSerializedSize;
+    if (size != -1) {
+      return size;
+    }
+    
+    size = 0;
+    for (int i = 0; i < count; i++) {
+      int tag = tags[i];
+      int fieldNumber = WireFormat.getTagFieldNumber(tag);
+      size += CodedOutputStream.computeRawMessageSetExtensionSize(
+          fieldNumber, (ByteString) objects[i]);
+    }
+    
+    memoizedSerializedSize = size;
+    
+    return size;
+  }
+
+  /**
    * Get the number of bytes required to encode this set.
    *
    * <p>For use by generated code only.
@@ -268,7 +303,8 @@ public final class UnknownFieldSetLite {
     }
   }
 
-  private void storeField(int tag, Object value) {
+  // Package private for unsafe experimental runtime.
+  void storeField(int tag, Object value) {
     ensureCapacity();
     
     tags[count] = tag;

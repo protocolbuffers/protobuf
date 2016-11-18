@@ -57,7 +57,7 @@ ImmutableExtensionLiteGenerator::ImmutableExtensionLiteGenerator(
 ImmutableExtensionLiteGenerator::~ImmutableExtensionLiteGenerator() {}
 
 void ImmutableExtensionLiteGenerator::Generate(io::Printer* printer) {
-  map<string, string> vars;
+  std::map<string, string> vars;
   const bool kUseImmutableNames = true;
   InitTemplateVars(descriptor_, scope_, kUseImmutableNames, name_resolver_,
                    &vars);

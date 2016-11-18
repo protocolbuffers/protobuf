@@ -685,7 +685,7 @@ bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
       R"({
         "fieldname1": 1,
         "fieldName2": 2,
-        "fieldName3": 3,
+        "FieldName3": 3,
         "fieldName4": 4
       })",
       R"(
@@ -725,12 +725,12 @@ bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
   RunValidJsonTest(
       "FieldNameWithDoubleUnderscores", RECOMMENDED,
       R"({
-        "fieldName13": 13,
-        "fieldName14": 14,
+        "FieldName13": 13,
+        "FieldName14": 14,
         "fieldName15": 15,
         "fieldName16": 16,
         "fieldName17": 17,
-        "fieldName18": 18
+        "FieldName18": 18
       })",
       R"(
         __field_name13: 13
@@ -873,21 +873,19 @@ bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
         "optionalNestedMessage": {a: 1},
         "optional_nested_message": {}
       })");
-  // NOTE: The spec for JSON support is still being sorted out, these may not
-  // all be correct.
   // Serializers should use lowerCamelCase by default.
   RunValidJsonTestWithValidator(
       "FieldNameInLowerCamelCase", REQUIRED,
       R"({
         "fieldname1": 1,
         "fieldName2": 2,
-        "fieldName3": 3,
+        "FieldName3": 3,
         "fieldName4": 4
       })",
       [](const Json::Value& value) {
         return value.isMember("fieldname1") &&
             value.isMember("fieldName2") &&
-            value.isMember("fieldName3") &&
+            value.isMember("FieldName3") &&
             value.isMember("fieldName4");
       });
   RunValidJsonTestWithValidator(
@@ -921,20 +919,20 @@ bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
   RunValidJsonTestWithValidator(
       "FieldNameWithDoubleUnderscores", RECOMMENDED,
       R"({
-        "fieldName13": 13,
-        "fieldName14": 14,
+        "FieldName13": 13,
+        "FieldName14": 14,
         "fieldName15": 15,
         "fieldName16": 16,
         "fieldName17": 17,
-        "fieldName18": 18
+        "FieldName18": 18
       })",
       [](const Json::Value& value) {
-        return value.isMember("fieldName13") &&
-            value.isMember("fieldName14") &&
+        return value.isMember("FieldName13") &&
+            value.isMember("FieldName14") &&
             value.isMember("fieldName15") &&
             value.isMember("fieldName16") &&
             value.isMember("fieldName17") &&
-            value.isMember("fieldName18");
+            value.isMember("FieldName18");
       });
 
   // Integer fields.

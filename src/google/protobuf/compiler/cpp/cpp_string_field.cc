@@ -46,20 +46,19 @@ namespace cpp {
 namespace {
 
 void SetStringVariables(const FieldDescriptor* descriptor,
-                        map<string, string>* variables,
+                        std::map<string, string>* variables,
                         const Options& options) {
   SetCommonFieldVariables(descriptor, variables, options);
   (*variables)["default"] = DefaultValue(descriptor);
   (*variables)["default_length"] =
       SimpleItoa(descriptor->default_value_string().length());
-  string default_variable_string =
+  string default_variable_string = "_default_" + FieldName(descriptor) + "_";
+  (*variables)["default_variable_name"] = default_variable_string;
+  (*variables)["default_variable"] =
       descriptor->default_value_string().empty()
           ? "&::google::protobuf::internal::GetEmptyStringAlreadyInited()"
-          : "_default_" + FieldName(descriptor) + "_";
-  (*variables)["default_variable"] = default_variable_string;
-  (*variables)["default_value_init"] =
-      descriptor->default_value_string().empty()
-      ? "" : "*" + default_variable_string;
+          : "&" + (*variables)["classname"] + "::" + default_variable_string +
+                ".get()";
   (*variables)["pointer_type"] =
       descriptor->type() == FieldDescriptor::TYPE_BYTES ? "void" : "char";
   // NOTE: Escaped here to unblock proto1->proto2 migration.
@@ -104,7 +103,9 @@ GeneratePrivateMembers(io::Printer* printer) const {
 void StringFieldGenerator::
 GenerateStaticMembers(io::Printer* printer) const {
   if (!descriptor_->default_value_string().empty()) {
-    printer->Print(variables_, "static ::std::string* $default_variable$;\n");
+    printer->Print(variables_,
+                   "static ::google::protobuf::internal::ExplicitlyConstructed< ::std::string>"
+                   " $default_variable_name$;\n");
   }
 }
 
@@ -165,117 +166,121 @@ GenerateAccessorDeclarations(io::Printer* printer) const {
 void StringFieldGenerator::
 GenerateInlineAccessorDefinitions(io::Printer* printer,
                                   bool is_inline) const {
-  map<string, string> variables(variables_);
+  std::map<string, string> variables(variables_);
   variables["inline"] = is_inline ? "inline " : "";
   if (SupportsArenas(descriptor_)) {
-    printer->Print(variables,
-      "$inline$const ::std::string& $classname$::$name$() const {\n"
-      "  // @@protoc_insertion_point(field_get:$full_name$)\n"
-      "  return $name$_.Get($default_variable$);\n"
-      "}\n"
-      "$inline$void $classname$::set_$name$(const ::std::string& value) {\n"
-      "  $set_hasbit$\n"
-      "  $name$_.Set($default_variable$, value, GetArenaNoVirtual());\n"
-      "  // @@protoc_insertion_point(field_set:$full_name$)\n"
-      "}\n"
-      "$inline$void $classname$::set_$name$(const char* value) {\n"
-      "  $set_hasbit$\n"
-      "  $name$_.Set($default_variable$, $string_piece$(value),\n"
-      "              GetArenaNoVirtual());\n"
-      "  // @@protoc_insertion_point(field_set_char:$full_name$)\n"
-      "}\n"
-      "$inline$"
-      "void $classname$::set_$name$(const $pointer_type$* value,\n"
-      "    size_t size) {\n"
-      "  $set_hasbit$\n"
-      "  $name$_.Set($default_variable$, $string_piece$(\n"
-      "      reinterpret_cast<const char*>(value), size), GetArenaNoVirtual());\n"
-      "  // @@protoc_insertion_point(field_set_pointer:$full_name$)\n"
-      "}\n"
-      "$inline$::std::string* $classname$::mutable_$name$() {\n"
-      "  $set_hasbit$\n"
-      "  // @@protoc_insertion_point(field_mutable:$full_name$)\n"
-      "  return $name$_.Mutable($default_variable$, GetArenaNoVirtual());\n"
-      "}\n"
-      "$inline$::std::string* $classname$::$release_name$() {\n"
-      "  // @@protoc_insertion_point(field_release:$full_name$)\n"
-      "  $clear_hasbit$\n"
-      "  return $name$_.Release($default_variable$, GetArenaNoVirtual());\n"
-      "}\n"
-      "$inline$::std::string* $classname$::unsafe_arena_release_$name$() {\n"
-      "  // @@protoc_insertion_point(field_unsafe_arena_release:$full_name$)\n"
-      "  GOOGLE_DCHECK(GetArenaNoVirtual() != NULL);\n"
-      "  $clear_hasbit$\n"
-      "  return $name$_.UnsafeArenaRelease($default_variable$,\n"
-      "      GetArenaNoVirtual());\n"
-      "}\n"
-      "$inline$void $classname$::set_allocated_$name$(::std::string* $name$) {\n"
-      "  if ($name$ != NULL) {\n"
-      "    $set_hasbit$\n"
-      "  } else {\n"
-      "    $clear_hasbit$\n"
-      "  }\n"
-      "  $name$_.SetAllocated($default_variable$, $name$,\n"
-      "      GetArenaNoVirtual());\n"
-      "  // @@protoc_insertion_point(field_set_allocated:$full_name$)\n"
-      "}\n"
-      "$inline$void $classname$::unsafe_arena_set_allocated_$name$(\n"
-      "    ::std::string* $name$) {\n"
-      "  GOOGLE_DCHECK(GetArenaNoVirtual() != NULL);\n"
-      "  if ($name$ != NULL) {\n"
-      "    $set_hasbit$\n"
-      "  } else {\n"
-      "    $clear_hasbit$\n"
-      "  }\n"
-      "  $name$_.UnsafeArenaSetAllocated($default_variable$,\n"
-      "      $name$, GetArenaNoVirtual());\n"
-      "  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:"
-      "$full_name$)\n"
-      "}\n");
+    printer->Print(
+        variables,
+        "$inline$const ::std::string& $classname$::$name$() const {\n"
+        "  // @@protoc_insertion_point(field_get:$full_name$)\n"
+        "  return $name$_.Get();\n"
+        "}\n"
+        "$inline$void $classname$::set_$name$(const ::std::string& value) {\n"
+        "  $set_hasbit$\n"
+        "  $name$_.Set($default_variable$, value, GetArenaNoVirtual());\n"
+        "  // @@protoc_insertion_point(field_set:$full_name$)\n"
+        "}\n"
+        "$inline$void $classname$::set_$name$(const char* value) {\n"
+        "  $set_hasbit$\n"
+        "  $name$_.Set($default_variable$, $string_piece$(value),\n"
+        "              GetArenaNoVirtual());\n"
+        "  // @@protoc_insertion_point(field_set_char:$full_name$)\n"
+        "}\n"
+        "$inline$"
+        "void $classname$::set_$name$(const $pointer_type$* value,\n"
+        "    size_t size) {\n"
+        "  $set_hasbit$\n"
+        "  $name$_.Set($default_variable$, $string_piece$(\n"
+        "      reinterpret_cast<const char*>(value), size), "
+        "GetArenaNoVirtual());\n"
+        "  // @@protoc_insertion_point(field_set_pointer:$full_name$)\n"
+        "}\n"
+        "$inline$::std::string* $classname$::mutable_$name$() {\n"
+        "  $set_hasbit$\n"
+        "  // @@protoc_insertion_point(field_mutable:$full_name$)\n"
+        "  return $name$_.Mutable($default_variable$, GetArenaNoVirtual());\n"
+        "}\n"
+        "$inline$::std::string* $classname$::$release_name$() {\n"
+        "  // @@protoc_insertion_point(field_release:$full_name$)\n"
+        "  $clear_hasbit$\n"
+        "  return $name$_.Release($default_variable$, GetArenaNoVirtual());\n"
+        "}\n"
+        "$inline$::std::string* $classname$::unsafe_arena_release_$name$() {\n"
+        "  // "
+        "@@protoc_insertion_point(field_unsafe_arena_release:$full_name$)\n"
+        "  GOOGLE_DCHECK(GetArenaNoVirtual() != NULL);\n"
+        "  $clear_hasbit$\n"
+        "  return $name$_.UnsafeArenaRelease($default_variable$,\n"
+        "      GetArenaNoVirtual());\n"
+        "}\n"
+        "$inline$void $classname$::set_allocated_$name$(::std::string* $name$) {\n"
+        "  if ($name$ != NULL) {\n"
+        "    $set_hasbit$\n"
+        "  } else {\n"
+        "    $clear_hasbit$\n"
+        "  }\n"
+        "  $name$_.SetAllocated($default_variable$, $name$,\n"
+        "      GetArenaNoVirtual());\n"
+        "  // @@protoc_insertion_point(field_set_allocated:$full_name$)\n"
+        "}\n"
+        "$inline$void $classname$::unsafe_arena_set_allocated_$name$(\n"
+        "    ::std::string* $name$) {\n"
+        "  GOOGLE_DCHECK(GetArenaNoVirtual() != NULL);\n"
+        "  if ($name$ != NULL) {\n"
+        "    $set_hasbit$\n"
+        "  } else {\n"
+        "    $clear_hasbit$\n"
+        "  }\n"
+        "  $name$_.UnsafeArenaSetAllocated($default_variable$,\n"
+        "      $name$, GetArenaNoVirtual());\n"
+        "  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:"
+        "$full_name$)\n"
+        "}\n");
   } else {
     // No-arena case.
-    printer->Print(variables,
-      "$inline$const ::std::string& $classname$::$name$() const {\n"
-      "  // @@protoc_insertion_point(field_get:$full_name$)\n"
-      "  return $name$_.GetNoArena($default_variable$);\n"
-      "}\n"
-      "$inline$void $classname$::set_$name$(const ::std::string& value) {\n"
-      "  $set_hasbit$\n"
-      "  $name$_.SetNoArena($default_variable$, value);\n"
-      "  // @@protoc_insertion_point(field_set:$full_name$)\n"
-      "}\n"
-      "$inline$void $classname$::set_$name$(const char* value) {\n"
-      "  $set_hasbit$\n"
-      "  $name$_.SetNoArena($default_variable$, $string_piece$(value));\n"
-      "  // @@protoc_insertion_point(field_set_char:$full_name$)\n"
-      "}\n"
-      "$inline$"
-      "void $classname$::set_$name$(const $pointer_type$* value, "
-      "size_t size) {\n"
-      "  $set_hasbit$\n"
-      "  $name$_.SetNoArena($default_variable$,\n"
-      "      $string_piece$(reinterpret_cast<const char*>(value), size));\n"
-      "  // @@protoc_insertion_point(field_set_pointer:$full_name$)\n"
-      "}\n"
-      "$inline$::std::string* $classname$::mutable_$name$() {\n"
-      "  $set_hasbit$\n"
-      "  // @@protoc_insertion_point(field_mutable:$full_name$)\n"
-      "  return $name$_.MutableNoArena($default_variable$);\n"
-      "}\n"
-      "$inline$::std::string* $classname$::$release_name$() {\n"
-      "  // @@protoc_insertion_point(field_release:$full_name$)\n"
-      "  $clear_hasbit$\n"
-      "  return $name$_.ReleaseNoArena($default_variable$);\n"
-      "}\n"
-      "$inline$void $classname$::set_allocated_$name$(::std::string* $name$) {\n"
-      "  if ($name$ != NULL) {\n"
-      "    $set_hasbit$\n"
-      "  } else {\n"
-      "    $clear_hasbit$\n"
-      "  }\n"
-      "  $name$_.SetAllocatedNoArena($default_variable$, $name$);\n"
-      "  // @@protoc_insertion_point(field_set_allocated:$full_name$)\n"
-      "}\n");
+    printer->Print(
+        variables,
+        "$inline$const ::std::string& $classname$::$name$() const {\n"
+        "  // @@protoc_insertion_point(field_get:$full_name$)\n"
+        "  return $name$_.GetNoArena();\n"
+        "}\n"
+        "$inline$void $classname$::set_$name$(const ::std::string& value) {\n"
+        "  $set_hasbit$\n"
+        "  $name$_.SetNoArena($default_variable$, value);\n"
+        "  // @@protoc_insertion_point(field_set:$full_name$)\n"
+        "}\n"
+        "$inline$void $classname$::set_$name$(const char* value) {\n"
+        "  $set_hasbit$\n"
+        "  $name$_.SetNoArena($default_variable$, $string_piece$(value));\n"
+        "  // @@protoc_insertion_point(field_set_char:$full_name$)\n"
+        "}\n"
+        "$inline$"
+        "void $classname$::set_$name$(const $pointer_type$* value, "
+        "size_t size) {\n"
+        "  $set_hasbit$\n"
+        "  $name$_.SetNoArena($default_variable$,\n"
+        "      $string_piece$(reinterpret_cast<const char*>(value), size));\n"
+        "  // @@protoc_insertion_point(field_set_pointer:$full_name$)\n"
+        "}\n"
+        "$inline$::std::string* $classname$::mutable_$name$() {\n"
+        "  $set_hasbit$\n"
+        "  // @@protoc_insertion_point(field_mutable:$full_name$)\n"
+        "  return $name$_.MutableNoArena($default_variable$);\n"
+        "}\n"
+        "$inline$::std::string* $classname$::$release_name$() {\n"
+        "  // @@protoc_insertion_point(field_release:$full_name$)\n"
+        "  $clear_hasbit$\n"
+        "  return $name$_.ReleaseNoArena($default_variable$);\n"
+        "}\n"
+        "$inline$void $classname$::set_allocated_$name$(::std::string* $name$) {\n"
+        "  if ($name$ != NULL) {\n"
+        "    $set_hasbit$\n"
+        "  } else {\n"
+        "    $clear_hasbit$\n"
+        "  }\n"
+        "  $name$_.SetAllocatedNoArena($default_variable$, $name$);\n"
+        "  // @@protoc_insertion_point(field_set_allocated:$full_name$)\n"
+        "}\n");
   }
 }
 
@@ -284,7 +289,8 @@ GenerateNonInlineAccessorDefinitions(io::Printer* printer) const {
   if (!descriptor_->default_value_string().empty()) {
     // Initialized in GenerateDefaultInstanceAllocator.
     printer->Print(variables_,
-      "::std::string* $classname$::$default_variable$ = NULL;\n");
+                   "::google::protobuf::internal::ExplicitlyConstructed< ::std::string> "
+                   "$classname$::$default_variable_name$;\n");
   }
 }
 
@@ -301,6 +307,52 @@ GenerateClearingCode(io::Printer* printer) const {
     } else {
       printer->Print(variables_,
         "$name$_.ClearToDefault($default_variable$, GetArenaNoVirtual());\n");
+    }
+  } else {
+    if (descriptor_->default_value_string().empty()) {
+      printer->Print(variables_,
+        "$name$_.ClearToEmptyNoArena($default_variable$);\n");
+    } else {
+      printer->Print(variables_,
+        "$name$_.ClearToDefaultNoArena($default_variable$);\n");
+    }
+  }
+}
+
+void StringFieldGenerator::
+GenerateMessageClearingCode(io::Printer* printer) const {
+  // Two-dimension specialization here: supporting arenas, field presence, or
+  // not, and default value is the empty string or not. Complexity here ensures
+  // the minimal number of branches / amount of extraneous code at runtime
+  // (given that the below methods are inlined one-liners)!
+
+  // If we have field presence, then the Clear() method of the protocol buffer
+  // will have checked that this field is set.  If so, we can avoid redundant
+  // checks against default_variable.
+  const bool must_be_present = HasFieldPresence(descriptor_->file());
+
+  if (must_be_present) {
+    printer->Print(variables_,
+      "GOOGLE_DCHECK(!$name$_.IsDefault($default_variable$));\n");
+  }
+
+  if (SupportsArenas(descriptor_)) {
+    if (descriptor_->default_value_string().empty()) {
+      printer->Print(variables_,
+        "$name$_.ClearToEmpty($default_variable$, GetArenaNoVirtual());\n");
+    } else {
+      printer->Print(variables_,
+        "$name$_.ClearToDefault($default_variable$, GetArenaNoVirtual());\n");
+    }
+  } else if (must_be_present) {
+    // When Arenas are disabled and field presence has been checked, we can
+    // safely treat the ArenaStringPtr as a string*.
+    if (descriptor_->default_value_string().empty()) {
+      printer->Print(variables_,
+        "(*$name$_.UnsafeRawStringPointer())->clear();\n");
+    } else {
+      printer->Print(variables_,
+        "(*$name$_.UnsafeRawStringPointer())->assign(*$default_variable$);\n");
     }
   } else {
     if (descriptor_->default_value_string().empty()) {
@@ -337,6 +389,34 @@ GenerateConstructorCode(io::Printer* printer) const {
 }
 
 void StringFieldGenerator::
+GenerateCopyConstructorCode(io::Printer* printer) const {
+  GenerateConstructorCode(printer);
+
+  if (HasFieldPresence(descriptor_->file())) {
+    printer->Print(variables_,
+        "if (from.has_$name$()) {\n");
+  } else {
+    printer->Print(variables_,
+        "if (from.$name$().size() > 0) {\n");
+  }
+
+  printer->Indent();
+
+  if (SupportsArenas(descriptor_) || descriptor_->containing_oneof() != NULL) {
+    // TODO(gpike): improve this
+    printer->Print(variables_,
+      "$name$_.Set($default_variable$, from.$name$(),\n"
+      "  GetArenaNoVirtual());\n");
+  } else {
+    printer->Print(variables_,
+      "$name$_.AssignWithDefault($default_variable$, from.$name$_);\n");
+  }
+
+  printer->Outdent();
+  printer->Print("}\n");
+}
+
+void StringFieldGenerator::
 GenerateDestructorCode(io::Printer* printer) const {
   if (SupportsArenas(descriptor_)) {
     // The variable |arena| is defined by the enclosing code.
@@ -353,8 +433,9 @@ void StringFieldGenerator::
 GenerateDefaultInstanceAllocator(io::Printer* printer) const {
   if (!descriptor_->default_value_string().empty()) {
     printer->Print(variables_,
-      "$classname$::$default_variable$ =\n"
-      "    new ::std::string($default$, $default_length$);\n");
+                   "$classname$::$default_variable_name$.DefaultConstruct();\n"
+                   "*$classname$::$default_variable_name$.get_mutable() = "
+                   "::std::string($default$, $default_length$);\n");
   }
 }
 
@@ -362,7 +443,7 @@ void StringFieldGenerator::
 GenerateShutdownCode(io::Printer* printer) const {
   if (!descriptor_->default_value_string().empty()) {
     printer->Print(variables_,
-      "delete $classname$::$default_variable$;\n");
+                   "$classname$::$default_variable_name$.Shutdown();\n");
   }
 }
 
@@ -427,185 +508,190 @@ StringOneofFieldGenerator::~StringOneofFieldGenerator() {}
 void StringOneofFieldGenerator::
 GenerateInlineAccessorDefinitions(io::Printer* printer,
                                   bool is_inline) const {
-  map<string, string> variables(variables_);
+  std::map<string, string> variables(variables_);
   variables["inline"] = is_inline ? "inline " : "";
   if (SupportsArenas(descriptor_)) {
-    printer->Print(variables,
-      "$inline$const ::std::string& $classname$::$name$() const {\n"
-      "  // @@protoc_insertion_point(field_get:$full_name$)\n"
-      "  if (has_$name$()) {\n"
-      "    return $oneof_prefix$$name$_.Get($default_variable$);\n"
-      "  }\n"
-      "  return *$default_variable$;\n"
-      "}\n"
-      "$inline$void $classname$::set_$name$(const ::std::string& value) {\n"
-      "  if (!has_$name$()) {\n"
-      "    clear_$oneof_name$();\n"
-      "    set_has_$name$();\n"
-      "    $oneof_prefix$$name$_.UnsafeSetDefault($default_variable$);\n"
-      "  }\n"
-      "  $oneof_prefix$$name$_.Set($default_variable$, value,\n"
-      "      GetArenaNoVirtual());\n"
-      "  // @@protoc_insertion_point(field_set:$full_name$)\n"
-      "}\n"
-      "$inline$void $classname$::set_$name$(const char* value) {\n"
-      "  if (!has_$name$()) {\n"
-      "    clear_$oneof_name$();\n"
-      "    set_has_$name$();\n"
-      "    $oneof_prefix$$name$_.UnsafeSetDefault($default_variable$);\n"
-      "  }\n"
-      "  $oneof_prefix$$name$_.Set($default_variable$,\n"
-      "      $string_piece$(value), GetArenaNoVirtual());\n"
-      "  // @@protoc_insertion_point(field_set_char:$full_name$)\n"
-      "}\n"
-      "$inline$"
-      "void $classname$::set_$name$(const $pointer_type$* value,\n"
-      "                             size_t size) {\n"
-      "  if (!has_$name$()) {\n"
-      "    clear_$oneof_name$();\n"
-      "    set_has_$name$();\n"
-      "    $oneof_prefix$$name$_.UnsafeSetDefault($default_variable$);\n"
-      "  }\n"
-      "  $oneof_prefix$$name$_.Set($default_variable$, $string_piece$(\n"
-      "      reinterpret_cast<const char*>(value), size),\n"
-      "      GetArenaNoVirtual());\n"
-      "  // @@protoc_insertion_point(field_set_pointer:$full_name$)\n"
-      "}\n"
-      "$inline$::std::string* $classname$::mutable_$name$() {\n"
-      "  if (!has_$name$()) {\n"
-      "    clear_$oneof_name$();\n"
-      "    set_has_$name$();\n"
-      "    $oneof_prefix$$name$_.UnsafeSetDefault($default_variable$);\n"
-      "  }\n"
-      "  return $oneof_prefix$$name$_.Mutable($default_variable$,\n"
-      "      GetArenaNoVirtual());\n"
-      "  // @@protoc_insertion_point(field_mutable:$full_name$)\n"
-      "}\n"
-      "$inline$::std::string* $classname$::$release_name$() {\n"
-      "  // @@protoc_insertion_point(field_release:$full_name$)\n"
-      "  if (has_$name$()) {\n"
-      "    clear_has_$oneof_name$();\n"
-      "    return $oneof_prefix$$name$_.Release($default_variable$,\n"
-      "        GetArenaNoVirtual());\n"
-      "  } else {\n"
-      "    return NULL;\n"
-      "  }\n"
-      "}\n"
-      "$inline$::std::string* $classname$::unsafe_arena_release_$name$() {\n"
-      "  // @@protoc_insertion_point(field_unsafe_arena_release:$full_name$)\n"
-      "  GOOGLE_DCHECK(GetArenaNoVirtual() != NULL);\n"
-      "  if (has_$name$()) {\n"
-      "    clear_has_$oneof_name$();\n"
-      "    return $oneof_prefix$$name$_.UnsafeArenaRelease(\n"
-      "        $default_variable$, GetArenaNoVirtual());\n"
-      "  } else {\n"
-      "    return NULL;\n"
-      "  }\n"
-      "}\n"
-      "$inline$void $classname$::set_allocated_$name$(::std::string* $name$) {\n"
-      "  if (!has_$name$()) {\n"
-      "    $oneof_prefix$$name$_.UnsafeSetDefault($default_variable$);\n"
-      "  }\n"
-      "  clear_$oneof_name$();\n"
-      "  if ($name$ != NULL) {\n"
-      "    set_has_$name$();\n"
-      "    $oneof_prefix$$name$_.SetAllocated($default_variable$, $name$,\n"
-      "        GetArenaNoVirtual());\n"
-      "  }\n"
-      "  // @@protoc_insertion_point(field_set_allocated:$full_name$)\n"
-      "}\n"
-      "$inline$void $classname$::unsafe_arena_set_allocated_$name$("
-      "::std::string* $name$) {\n"
-      "  GOOGLE_DCHECK(GetArenaNoVirtual() != NULL);\n"
-      "  if (!has_$name$()) {\n"
-      "    $oneof_prefix$$name$_.UnsafeSetDefault($default_variable$);\n"
-      "  }\n"
-      "  clear_$oneof_name$();\n"
-      "  if ($name$) {\n"
-      "    set_has_$name$();\n"
-      "    $oneof_prefix$$name$_.UnsafeArenaSetAllocated($default_variable$, "
-      "$name$, GetArenaNoVirtual());\n"
-      "  }\n"
-      "  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:"
-      "$full_name$)\n"
-      "}\n");
+    printer->Print(
+        variables,
+        "$inline$const ::std::string& $classname$::$name$() const {\n"
+        "  // @@protoc_insertion_point(field_get:$full_name$)\n"
+        "  if (has_$name$()) {\n"
+        "    return $oneof_prefix$$name$_.Get();\n"
+        "  }\n"
+        "  return *$default_variable$;\n"
+        "}\n"
+        "$inline$void $classname$::set_$name$(const ::std::string& value) {\n"
+        "  if (!has_$name$()) {\n"
+        "    clear_$oneof_name$();\n"
+        "    set_has_$name$();\n"
+        "    $oneof_prefix$$name$_.UnsafeSetDefault($default_variable$);\n"
+        "  }\n"
+        "  $oneof_prefix$$name$_.Set($default_variable$, value,\n"
+        "      GetArenaNoVirtual());\n"
+        "  // @@protoc_insertion_point(field_set:$full_name$)\n"
+        "}\n"
+        "$inline$void $classname$::set_$name$(const char* value) {\n"
+        "  if (!has_$name$()) {\n"
+        "    clear_$oneof_name$();\n"
+        "    set_has_$name$();\n"
+        "    $oneof_prefix$$name$_.UnsafeSetDefault($default_variable$);\n"
+        "  }\n"
+        "  $oneof_prefix$$name$_.Set($default_variable$,\n"
+        "      $string_piece$(value), GetArenaNoVirtual());\n"
+        "  // @@protoc_insertion_point(field_set_char:$full_name$)\n"
+        "}\n"
+        "$inline$"
+        "void $classname$::set_$name$(const $pointer_type$* value,\n"
+        "                             size_t size) {\n"
+        "  if (!has_$name$()) {\n"
+        "    clear_$oneof_name$();\n"
+        "    set_has_$name$();\n"
+        "    $oneof_prefix$$name$_.UnsafeSetDefault($default_variable$);\n"
+        "  }\n"
+        "  $oneof_prefix$$name$_.Set($default_variable$, $string_piece$(\n"
+        "      reinterpret_cast<const char*>(value), size),\n"
+        "      GetArenaNoVirtual());\n"
+        "  // @@protoc_insertion_point(field_set_pointer:$full_name$)\n"
+        "}\n"
+        "$inline$::std::string* $classname$::mutable_$name$() {\n"
+        "  if (!has_$name$()) {\n"
+        "    clear_$oneof_name$();\n"
+        "    set_has_$name$();\n"
+        "    $oneof_prefix$$name$_.UnsafeSetDefault($default_variable$);\n"
+        "  }\n"
+        "  return $oneof_prefix$$name$_.Mutable($default_variable$,\n"
+        "      GetArenaNoVirtual());\n"
+        "  // @@protoc_insertion_point(field_mutable:$full_name$)\n"
+        "}\n"
+        "$inline$::std::string* $classname$::$release_name$() {\n"
+        "  // @@protoc_insertion_point(field_release:$full_name$)\n"
+        "  if (has_$name$()) {\n"
+        "    clear_has_$oneof_name$();\n"
+        "    return $oneof_prefix$$name$_.Release($default_variable$,\n"
+        "        GetArenaNoVirtual());\n"
+        "  } else {\n"
+        "    return NULL;\n"
+        "  }\n"
+        "}\n"
+        "$inline$::std::string* $classname$::unsafe_arena_release_$name$() {\n"
+        "  // "
+        "@@protoc_insertion_point(field_unsafe_arena_release:$full_name$)\n"
+        "  GOOGLE_DCHECK(GetArenaNoVirtual() != NULL);\n"
+        "  if (has_$name$()) {\n"
+        "    clear_has_$oneof_name$();\n"
+        "    return $oneof_prefix$$name$_.UnsafeArenaRelease(\n"
+        "        $default_variable$, GetArenaNoVirtual());\n"
+        "  } else {\n"
+        "    return NULL;\n"
+        "  }\n"
+        "}\n"
+        "$inline$void $classname$::set_allocated_$name$(::std::string* $name$) {\n"
+        "  if (!has_$name$()) {\n"
+        "    $oneof_prefix$$name$_.UnsafeSetDefault($default_variable$);\n"
+        "  }\n"
+        "  clear_$oneof_name$();\n"
+        "  if ($name$ != NULL) {\n"
+        "    set_has_$name$();\n"
+        "    $oneof_prefix$$name$_.SetAllocated($default_variable$, $name$,\n"
+        "        GetArenaNoVirtual());\n"
+        "  }\n"
+        "  // @@protoc_insertion_point(field_set_allocated:$full_name$)\n"
+        "}\n"
+        "$inline$void $classname$::unsafe_arena_set_allocated_$name$("
+        "::std::string* $name$) {\n"
+        "  GOOGLE_DCHECK(GetArenaNoVirtual() != NULL);\n"
+        "  if (!has_$name$()) {\n"
+        "    $oneof_prefix$$name$_.UnsafeSetDefault($default_variable$);\n"
+        "  }\n"
+        "  clear_$oneof_name$();\n"
+        "  if ($name$) {\n"
+        "    set_has_$name$();\n"
+        "    $oneof_prefix$$name$_.UnsafeArenaSetAllocated($default_variable$, "
+        "$name$, GetArenaNoVirtual());\n"
+        "  }\n"
+        "  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:"
+        "$full_name$)\n"
+        "}\n");
   } else {
     // No-arena case.
-    printer->Print(variables,
-      "$inline$const ::std::string& $classname$::$name$() const {\n"
-      "  // @@protoc_insertion_point(field_get:$full_name$)\n"
-      "  if (has_$name$()) {\n"
-      "    return $oneof_prefix$$name$_.GetNoArena($default_variable$);\n"
-      "  }\n"
-      "  return *$default_variable$;\n"
-      "}\n"
-      "$inline$void $classname$::set_$name$(const ::std::string& value) {\n"
-      "  // @@protoc_insertion_point(field_set:$full_name$)\n"
-      "  if (!has_$name$()) {\n"
-      "    clear_$oneof_name$();\n"
-      "    set_has_$name$();\n"
-      "    $oneof_prefix$$name$_.UnsafeSetDefault($default_variable$);\n"
-      "  }\n"
-      "  $oneof_prefix$$name$_.SetNoArena($default_variable$, value);\n"
-      "  // @@protoc_insertion_point(field_set:$full_name$)\n"
-      "}\n"
-      "$inline$void $classname$::set_$name$(const char* value) {\n"
-      "  if (!has_$name$()) {\n"
-      "    clear_$oneof_name$();\n"
-      "    set_has_$name$();\n"
-      "    $oneof_prefix$$name$_.UnsafeSetDefault($default_variable$);\n"
-      "  }\n"
-      "  $oneof_prefix$$name$_.SetNoArena($default_variable$,\n"
-      "      $string_piece$(value));\n"
-      "  // @@protoc_insertion_point(field_set_char:$full_name$)\n"
-      "}\n"
-      "$inline$"
-      "void $classname$::set_$name$(const $pointer_type$* value, size_t size) {\n"
-      "  if (!has_$name$()) {\n"
-      "    clear_$oneof_name$();\n"
-      "    set_has_$name$();\n"
-      "    $oneof_prefix$$name$_.UnsafeSetDefault($default_variable$);\n"
-      "  }\n"
-      "  $oneof_prefix$$name$_.SetNoArena($default_variable$, $string_piece$(\n"
-      "      reinterpret_cast<const char*>(value), size));\n"
-      "  // @@protoc_insertion_point(field_set_pointer:$full_name$)\n"
-      "}\n"
-      "$inline$::std::string* $classname$::mutable_$name$() {\n"
-      "  if (!has_$name$()) {\n"
-      "    clear_$oneof_name$();\n"
-      "    set_has_$name$();\n"
-      "    $oneof_prefix$$name$_.UnsafeSetDefault($default_variable$);\n"
-      "  }\n"
-      "  // @@protoc_insertion_point(field_mutable:$full_name$)\n"
-      "  return $oneof_prefix$$name$_.MutableNoArena($default_variable$);\n"
-      "}\n"
-      "$inline$::std::string* $classname$::$release_name$() {\n"
-      "  // @@protoc_insertion_point(field_release:$full_name$)\n"
-      "  if (has_$name$()) {\n"
-      "    clear_has_$oneof_name$();\n"
-      "    return $oneof_prefix$$name$_.ReleaseNoArena($default_variable$);\n"
-      "  } else {\n"
-      "    return NULL;\n"
-      "  }\n"
-      "}\n"
-      "$inline$void $classname$::set_allocated_$name$(::std::string* $name$) {\n"
-      "  if (!has_$name$()) {\n"
-      "    $oneof_prefix$$name$_.UnsafeSetDefault($default_variable$);\n"
-      "  }\n"
-      "  clear_$oneof_name$();\n"
-      "  if ($name$ != NULL) {\n"
-      "    set_has_$name$();\n"
-      "    $oneof_prefix$$name$_.SetAllocatedNoArena($default_variable$,\n"
-      "        $name$);\n"
-      "  }\n"
-      "  // @@protoc_insertion_point(field_set_allocated:$full_name$)\n"
-      "}\n");
+    printer->Print(
+        variables,
+        "$inline$const ::std::string& $classname$::$name$() const {\n"
+        "  // @@protoc_insertion_point(field_get:$full_name$)\n"
+        "  if (has_$name$()) {\n"
+        "    return $oneof_prefix$$name$_.GetNoArena();\n"
+        "  }\n"
+        "  return *$default_variable$;\n"
+        "}\n"
+        "$inline$void $classname$::set_$name$(const ::std::string& value) {\n"
+        "  // @@protoc_insertion_point(field_set:$full_name$)\n"
+        "  if (!has_$name$()) {\n"
+        "    clear_$oneof_name$();\n"
+        "    set_has_$name$();\n"
+        "    $oneof_prefix$$name$_.UnsafeSetDefault($default_variable$);\n"
+        "  }\n"
+        "  $oneof_prefix$$name$_.SetNoArena($default_variable$, value);\n"
+        "  // @@protoc_insertion_point(field_set:$full_name$)\n"
+        "}\n"
+        "$inline$void $classname$::set_$name$(const char* value) {\n"
+        "  if (!has_$name$()) {\n"
+        "    clear_$oneof_name$();\n"
+        "    set_has_$name$();\n"
+        "    $oneof_prefix$$name$_.UnsafeSetDefault($default_variable$);\n"
+        "  }\n"
+        "  $oneof_prefix$$name$_.SetNoArena($default_variable$,\n"
+        "      $string_piece$(value));\n"
+        "  // @@protoc_insertion_point(field_set_char:$full_name$)\n"
+        "}\n"
+        "$inline$"
+        "void $classname$::set_$name$(const $pointer_type$* value, size_t "
+        "size) {\n"
+        "  if (!has_$name$()) {\n"
+        "    clear_$oneof_name$();\n"
+        "    set_has_$name$();\n"
+        "    $oneof_prefix$$name$_.UnsafeSetDefault($default_variable$);\n"
+        "  }\n"
+        "  $oneof_prefix$$name$_.SetNoArena($default_variable$, "
+        "$string_piece$(\n"
+        "      reinterpret_cast<const char*>(value), size));\n"
+        "  // @@protoc_insertion_point(field_set_pointer:$full_name$)\n"
+        "}\n"
+        "$inline$::std::string* $classname$::mutable_$name$() {\n"
+        "  if (!has_$name$()) {\n"
+        "    clear_$oneof_name$();\n"
+        "    set_has_$name$();\n"
+        "    $oneof_prefix$$name$_.UnsafeSetDefault($default_variable$);\n"
+        "  }\n"
+        "  // @@protoc_insertion_point(field_mutable:$full_name$)\n"
+        "  return $oneof_prefix$$name$_.MutableNoArena($default_variable$);\n"
+        "}\n"
+        "$inline$::std::string* $classname$::$release_name$() {\n"
+        "  // @@protoc_insertion_point(field_release:$full_name$)\n"
+        "  if (has_$name$()) {\n"
+        "    clear_has_$oneof_name$();\n"
+        "    return $oneof_prefix$$name$_.ReleaseNoArena($default_variable$);\n"
+        "  } else {\n"
+        "    return NULL;\n"
+        "  }\n"
+        "}\n"
+        "$inline$void $classname$::set_allocated_$name$(::std::string* $name$) {\n"
+        "  if (!has_$name$()) {\n"
+        "    $oneof_prefix$$name$_.UnsafeSetDefault($default_variable$);\n"
+        "  }\n"
+        "  clear_$oneof_name$();\n"
+        "  if ($name$ != NULL) {\n"
+        "    set_has_$name$();\n"
+        "    $oneof_prefix$$name$_.SetAllocatedNoArena($default_variable$,\n"
+        "        $name$);\n"
+        "  }\n"
+        "  // @@protoc_insertion_point(field_set_allocated:$full_name$)\n"
+        "}\n");
   }
 }
 
 void StringOneofFieldGenerator::
 GenerateClearingCode(io::Printer* printer) const {
-  map<string, string> variables(variables_);
+  std::map<string, string> variables(variables_);
   if (dependent_field_) {
     variables["this_message"] = DependentBaseDownCast();
     // This clearing code may be in the dependent base class. If the default
@@ -614,8 +700,9 @@ GenerateClearingCode(io::Printer* printer) const {
     // default value's global singleton instance. See SetStringVariables() for
     // possible values of default_variable.
     if (!descriptor_->default_value_string().empty()) {
-      variables["default_variable"] =
-          DependentBaseDownCast() + variables["default_variable"];
+      variables["default_variable"] = "&" + DependentBaseDownCast() +
+                                      variables["default_variable_name"] +
+                                      ".get()";
     }
   } else {
     variables["this_message"] = "";
@@ -632,15 +719,21 @@ GenerateClearingCode(io::Printer* printer) const {
 }
 
 void StringOneofFieldGenerator::
+GenerateMessageClearingCode(io::Printer* printer) const {
+  return GenerateClearingCode(printer);
+}
+
+void StringOneofFieldGenerator::
 GenerateSwappingCode(io::Printer* printer) const {
   // Don't print any swapping code. Swapping the union will swap this field.
 }
 
 void StringOneofFieldGenerator::
 GenerateConstructorCode(io::Printer* printer) const {
-  printer->Print(variables_,
-    "  $classname$_default_oneof_instance_->$name$_.UnsafeSetDefault("
-    "$default_variable$);\n");
+  printer->Print(
+      variables_,
+      "$classname$_default_oneof_instance_.$name$_.UnsafeSetDefault(\n"
+      "    $default_variable$);\n");
 }
 
 void StringOneofFieldGenerator::
@@ -733,7 +826,7 @@ GenerateAccessorDeclarations(io::Printer* printer) const {
 void RepeatedStringFieldGenerator::
 GenerateInlineAccessorDefinitions(io::Printer* printer,
                                   bool is_inline) const {
-  map<string, string> variables(variables_);
+  std::map<string, string> variables(variables_);
   variables["inline"] = is_inline ? "inline " : "";
   printer->Print(variables,
     "$inline$const ::std::string& $classname$::$name$(int index) const {\n"
@@ -800,11 +893,6 @@ GenerateMergingCode(io::Printer* printer) const {
 }
 
 void RepeatedStringFieldGenerator::
-GenerateUnsafeMergingCode(io::Printer* printer) const {
-  printer->Print(variables_, "$name$_.UnsafeMergeFrom(from.$name$_);\n");
-}
-
-void RepeatedStringFieldGenerator::
 GenerateSwappingCode(io::Printer* printer) const {
   printer->Print(variables_, "$name$_.UnsafeArenaSwap(&other->$name$_);\n");
 }
@@ -812,6 +900,11 @@ GenerateSwappingCode(io::Printer* printer) const {
 void RepeatedStringFieldGenerator::
 GenerateConstructorCode(io::Printer* printer) const {
   // Not needed for repeated fields.
+}
+
+void RepeatedStringFieldGenerator::
+GenerateCopyConstructorCode(io::Printer* printer) const {
+  printer->Print(variables_, "$name$_.CopyFrom(from.$name$_);");
 }
 
 void RepeatedStringFieldGenerator::

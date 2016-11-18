@@ -45,6 +45,7 @@
 // TODO(jasonh): Remove this once the compiler change to directly include this
 // is released to components.
 #include <google/protobuf/generated_enum_reflection.h>
+#include <google/protobuf/generated_message_util.h>
 #include <google/protobuf/message.h>
 #include <google/protobuf/metadata.h>
 #include <google/protobuf/unknown_field_set.h>
@@ -73,6 +74,157 @@ class GeneratedMessageReflection;
 // Defined in other files.
 class ExtensionSet;             // extension_set.h
 
+// This struct describes the internal layout of the message, hence this is
+// used to act on the message reflectively.
+//   default_instance:  The default instance of the message.  This is only
+//                  used to obtain pointers to default instances of embedded
+//                  messages, which GetMessage() will return if the particular
+//                  sub-message has not been initialized yet.  (Thus, all
+//                  embedded message fields *must* have non-NULL pointers
+//                  in the default instance.)
+//   offsets:       An array of ints giving the byte offsets.
+//                  For each oneof field, the offset is relative to the
+//                  default_oneof_instance. These can be computed at compile
+//                  time using the
+//                  PROTO2_GENERATED_DEFAULT_ONEOF_FIELD_OFFSET() macro.
+//                  For each none oneof field, the offset is related to
+//                  the start of the message object.  These can be computed
+//                  at compile time using the
+//                  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET() macro.
+//                  Besides offsets for all fields, this array also contains
+//                  offsets for oneof unions. The offset of the i-th oneof
+//                  union is offsets[descriptor->field_count() + i].
+//   has_bit_indices:  Mapping from field indexes to their index in the has
+//                  bit array.
+//   has_bits_offset:  Offset in the message of an array of uint32s of size
+//                  descriptor->field_count()/32, rounded up.  This is a
+//                  bitfield where each bit indicates whether or not the
+//                  corresponding field of the message has been initialized.
+//                  The bit for field index i is obtained by the expression:
+//                    has_bits[i / 32] & (1 << (i % 32))
+//   unknown_fields_offset:  Offset in the message of the UnknownFieldSet for
+//                  the message.
+//   extensions_offset:  Offset in the message of the ExtensionSet for the
+//                  message, or -1 if the message type has no extension
+//                  ranges.
+//   default_oneof_instance: The default instance of the oneofs. It is a
+//                  struct holding the default value of all oneof fields
+//                  for this message. It is only used to obtain pointers
+//                  to default instances of oneof fields, which Get
+//                  methods will return if the field is not set.
+//   oneof_case_offset:  Offset in the message of an array of uint32s of
+//                  size descriptor->oneof_decl_count().  Each uint32
+//                  indicates what field is set for each oneof.
+//   object_size:   The size of a message object of this type, as measured
+//                  by sizeof().
+//   arena_offset:  If a message doesn't have a unknown_field_set that stores
+//                  the arena, it must have a direct pointer to the arena.
+struct ReflectionSchema {
+ public:
+  // Size of a google::protobuf::Message object of this type.
+  uint32 GetObjectSize() const { return object_size_; }
+
+  // Offset of a non-oneof field.  Getting a field offset is slightly more
+  // efficient when we know statically that it is not a oneof field.
+  uint32 GetFieldOffsetNonOneof(const FieldDescriptor* field) const {
+    GOOGLE_DCHECK(!field->containing_oneof());
+    return offsets_[field->index()];
+  }
+
+  // Offset of any field.
+  uint32 GetFieldOffset(const FieldDescriptor* field) const {
+    if (field->containing_oneof()) {
+      size_t offset = field->containing_type()->field_count() +
+                      field->containing_oneof()->index();
+      return offsets_[offset];
+    } else {
+      return GetFieldOffsetNonOneof(field);
+    }
+  }
+
+  uint32 GetOneofCaseOffset(const OneofDescriptor* oneof_descriptor) const {
+    return oneof_case_offset_ + (oneof_descriptor->index() * sizeof(uint32));
+  }
+
+  bool HasHasbits() const { return has_bits_offset_ != -1; }
+
+  // Bit index within the bit array of hasbits.  Bit order is low-to-high.
+  uint32 HasBitIndex(const FieldDescriptor* field) const {
+    GOOGLE_DCHECK(HasHasbits());
+    return has_bit_indices_[field->index()];
+  }
+
+  // Byte offset of the hasbits array.
+  uint32 HasBitsOffset() const {
+    GOOGLE_DCHECK(HasHasbits());
+    return has_bits_offset_;
+  }
+
+  // The offset of the InternalMetadataWithArenaOffset member.
+  // For Lite this will actually be an InternalMetadataWithArenaOffsetLite.
+  // The schema doesn't contain enough information to distinguish between
+  // these two cases.
+  uint32 GetMetadataOffset() const {
+    return metadata_offset_;
+  }
+
+  // Whether this message has an ExtensionSet.
+  bool HasExtensionSet() const { return extensions_offset_ != -1; }
+
+  // The offset of the ExtensionSet in this message.
+  uint32 GetExtensionSetOffset() const {
+    GOOGLE_DCHECK(HasExtensionSet());
+    return extensions_offset_;
+  }
+
+  bool IsDefaultInstance(const Message& message) const {
+    return &message == default_instance_;
+  }
+
+  // Returns a pointer to the default value for this field.  The size and type
+  // of the underlying data depends on the field's type.
+  const void *GetFieldDefault(const FieldDescriptor* field) const {
+    return field->containing_oneof()
+               ? reinterpret_cast<const uint8*>(default_oneof_instance_) +
+                     offsets_[field->index()]
+               : reinterpret_cast<const uint8*>(default_instance_) +
+                     offsets_[field->index()];
+  }
+
+  // These members are intended to be private, but we cannot actually make them
+  // private because this prevents us from using aggregate initialization of
+  // them, ie.
+  //
+  //   ReflectionSchema schema = {a, b, c, d, e, ...};
+ // private:
+  const Message* default_instance_;
+  const uint32* offsets_;
+  const uint32* has_bit_indices_;
+  int has_bits_offset_;
+  int metadata_offset_;
+  int extensions_offset_;
+  const void* default_oneof_instance_;
+  int oneof_case_offset_;
+  int object_size_;
+};
+
+// Structs that the code generator emits directly to describe a message.
+// These should never used directly except to build a ReflectionSchema
+// object.
+//
+// EXPERIMENTAL: these are changing rapidly, and may completely disappear
+// or merge with ReflectionSchema.
+struct DefaultInstanceData {
+  const Message* default_instance;
+  const void* default_oneof_instance;
+};
+
+struct MigrationSchema {
+  int32 offsets_index;
+  int32 has_bit_indices_index;
+  int object_size;
+};
+
 // THIS CLASS IS NOT INTENDED FOR DIRECT USE.  It is intended for use
 // by generated code.  This class is just a big hack that reduces code
 // size.
@@ -97,108 +249,22 @@ class ExtensionSet;             // extension_set.h
 //    of whatever type the individual field would be.  Strings and
 //    Messages use RepeatedPtrFields while everything else uses
 //    RepeatedFields.
-class LIBPROTOBUF_EXPORT GeneratedMessageReflection : public Reflection {
+class GeneratedMessageReflection PROTOBUF_FINAL : public Reflection {
  public:
   // Constructs a GeneratedMessageReflection.
   // Parameters:
   //   descriptor:    The descriptor for the message type being implemented.
-  //   default_instance:  The default instance of the message.  This is only
-  //                  used to obtain pointers to default instances of embedded
-  //                  messages, which GetMessage() will return if the particular
-  //                  sub-message has not been initialized yet.  (Thus, all
-  //                  embedded message fields *must* have non-NULL pointers
-  //                  in the default instance.)
-  //   offsets:       An array of ints giving the byte offsets, relative to
-  //                  the start of the message object, of each field.  These can
-  //                  be computed at compile time using the
-  //                  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET() macro, defined
-  //                  below.
-  //   has_bits_offset:  Offset in the message of an array of uint32s of size
-  //                  descriptor->field_count()/32, rounded up.  This is a
-  //                  bitfield where each bit indicates whether or not the
-  //                  corresponding field of the message has been initialized.
-  //                  The bit for field index i is obtained by the expression:
-  //                    has_bits[i / 32] & (1 << (i % 32))
-  //   unknown_fields_offset:  Offset in the message of the UnknownFieldSet for
-  //                  the message.
-  //   extensions_offset:  Offset in the message of the ExtensionSet for the
-  //                  message, or -1 if the message type has no extension
-  //                  ranges.
+  //   schema:        The description of the internal guts of the message.
   //   pool:          DescriptorPool to search for extension definitions.  Only
   //                  used by FindKnownExtensionByName() and
   //                  FindKnownExtensionByNumber().
   //   factory:       MessageFactory to use to construct extension messages.
-  //   object_size:   The size of a message object of this type, as measured
-  //                  by sizeof().
   GeneratedMessageReflection(const Descriptor* descriptor,
-                             const Message* default_instance,
-                             const int offsets[], int has_bits_offset,
-                             int unknown_fields_offset, int extensions_offset,
+                             const ReflectionSchema& schema,
                              const DescriptorPool* pool,
-                             MessageFactory* factory, int object_size,
-                             int arena_offset);
+                             MessageFactory* factory);
 
-  // Similar with the construction above. Call this construction if the
-  // message has oneof definition.
-  // Parameters:
-  //   offsets:       An array of ints giving the byte offsets.
-  //                  For each oneof field, the offset is relative to the
-  //                  default_oneof_instance. These can be computed at compile
-  //                  time using the
-  //                  PROTO2_GENERATED_DEFAULT_ONEOF_FIELD_OFFSET() macro.
-  //                  For each none oneof field, the offset is related to
-  //                  the start of the message object.  These can be computed
-  //                  at compile time using the
-  //                  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET() macro.
-  //                  Besides offsets for all fields, this array also contains
-  //                  offsets for oneof unions. The offset of the i-th oneof
-  //                  union is offsets[descriptor->field_count() + i].
-  //   default_oneof_instance: The default instance of the oneofs. It is a
-  //                  struct holding the default value of all oneof fields
-  //                  for this message. It is only used to obtain pointers
-  //                  to default instances of oneof fields, which Get
-  //                  methods will return if the field is not set.
-  //   oneof_case_offset:  Offset in the message of an array of uint32s of
-  //                  size descriptor->oneof_decl_count().  Each uint32
-  //                  indicates what field is set for each oneof.
-  //   other parameters are the same with the construction above.
-  GeneratedMessageReflection(const Descriptor* descriptor,
-                             const Message* default_instance,
-                             const int offsets[], int has_bits_offset,
-                             int unknown_fields_offset, int extensions_offset,
-                             const void* default_oneof_instance,
-                             int oneof_case_offset, const DescriptorPool* pool,
-                             MessageFactory* factory, int object_size,
-                             int arena_offset);
   ~GeneratedMessageReflection();
-
-  // Shorter-to-call helpers for the above two constructions that work if the
-  // pool and factory are the usual, namely, DescriptorPool::generated_pool()
-  // and MessageFactory::generated_factory().
-
-  static GeneratedMessageReflection* NewGeneratedMessageReflection(
-      const Descriptor* descriptor,
-      const Message* default_instance,
-      const int offsets[],
-      int has_bits_offset,
-      int unknown_fields_offset,
-      int extensions_offset,
-      const void* default_oneof_instance,
-      int oneof_case_offset,
-      int object_size,
-      int arena_offset,
-      int is_default_instance_offset = -1);
-
-  static GeneratedMessageReflection* NewGeneratedMessageReflection(
-      const Descriptor* descriptor,
-      const Message* default_instance,
-      const int offsets[],
-      int has_bits_offset,
-      int unknown_fields_offset,
-      int extensions_offset,
-      int object_size,
-      int arena_offset,
-      int is_default_instance_offset = -1);
 
   // implements Reflection -------------------------------------------
 
@@ -424,36 +490,42 @@ class LIBPROTOBUF_EXPORT GeneratedMessageReflection : public Reflection {
 
  private:
   friend class GeneratedMessage;
+  friend class upb::google_opensource::GMR_Handlers;
+
+  const Descriptor* const descriptor_;
+  const ReflectionSchema schema_;
+  const DescriptorPool* const descriptor_pool_;
+  MessageFactory* const message_factory_;
 
   // To parse directly into a proto2 generated class, the class GMR_Handlers
   // needs access to member offsets and hasbits.
-  friend class upb::google_opensource::GMR_Handlers;
+  // upb still needs these.
+  // TODO(haberman) clean this up.
+  const Message* const default_instance_;
+  const void* const default_oneof_instance_;
+  const uint32* const offsets_;
+  const uint32* const has_bits_indices_;
+  const int has_bits_offset_;
+  const int oneof_case_offset_;
+  const int unknown_fields_offset_;
+  const int extensions_offset_;
+  const int arena_offset_;
+  const int object_size_;
 
-  const Descriptor* descriptor_;
-  const Message* default_instance_;
-  const void* default_oneof_instance_;
-  const int* offsets_;
-
-  int has_bits_offset_;
-  int oneof_case_offset_;
-  int unknown_fields_offset_;
-  int extensions_offset_;
-  int arena_offset_;
-  int object_size_;
-
-  const DescriptorPool* descriptor_pool_;
-  MessageFactory* message_factory_;
+  template <class T>
+  const T& GetRawNonOneof(const Message& message,
+                          const FieldDescriptor* field) const;
+  template <class T>
+  T* MutableRawNonOneof(Message* message, const FieldDescriptor* field) const;
 
   template <typename Type>
-  inline const Type& GetRaw(const Message& message,
+  const Type& GetRaw(const Message& message,
                             const FieldDescriptor* field) const;
   template <typename Type>
   inline Type* MutableRaw(Message* message,
                           const FieldDescriptor* field) const;
   template <typename Type>
   inline const Type& DefaultRaw(const FieldDescriptor* field) const;
-  template <typename Type>
-  inline const Type& DefaultOneofRaw(const FieldDescriptor* field) const;
 
   inline const uint32* GetHasBits(const Message& message) const;
   inline uint32* MutableHasBits(Message* message) const;
@@ -466,12 +538,12 @@ class LIBPROTOBUF_EXPORT GeneratedMessageReflection : public Reflection {
   inline const ExtensionSet& GetExtensionSet(const Message& message) const;
   inline ExtensionSet* MutableExtensionSet(Message* message) const;
   inline Arena* GetArena(Message* message) const;
-  inline const internal::InternalMetadataWithArena&
-      GetInternalMetadataWithArena(const Message& message) const;
-  inline internal::InternalMetadataWithArena*
-      MutableInternalMetadataWithArena(Message* message) const;
 
-  inline bool GetIsDefaultInstance(const Message& message) const;
+  inline const InternalMetadataWithArena& GetInternalMetadataWithArena(
+      const Message& message) const;
+
+  inline InternalMetadataWithArena*
+      MutableInternalMetadataWithArena(Message* message) const;
 
   inline bool HasBit(const Message& message,
                      const FieldDescriptor* field) const;
@@ -559,6 +631,9 @@ class LIBPROTOBUF_EXPORT GeneratedMessageReflection : public Reflection {
   internal::MapFieldBase* MapData(
       Message* message, const FieldDescriptor* field) const;
 
+  friend inline  // inline so nobody can call this function.
+      void
+      RegisterAllTypesInternal(const Metadata* file_level_metadata, int size);
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(GeneratedMessageReflection);
 };
 
@@ -592,7 +667,7 @@ class LIBPROTOBUF_EXPORT GeneratedMessageReflection : public Reflection {
 #endif
 
 #define PROTO2_GENERATED_DEFAULT_ONEOF_FIELD_OFFSET(ONEOF, FIELD)     \
-  static_cast<int>(                                                   \
+  static_cast< ::google::protobuf::uint32>(                                              \
       reinterpret_cast<const char*>(&(ONEOF->FIELD))                  \
       - reinterpret_cast<const char*>(ONEOF))
 
@@ -663,6 +738,25 @@ T* DynamicCastToGenerated(Message* from) {
   const Message* message_const = from;
   return const_cast<T*>(DynamicCastToGenerated<const T>(message_const));
 }
+
+LIBPROTOBUF_EXPORT void AssignDescriptors(
+    const string& filename, const MigrationSchema* schemas,
+    const DefaultInstanceData* default_instance_data, const uint32* offsets,
+    MessageFactory* factory,
+    // update the following descriptor arrays.
+    Metadata* file_level_metadata,
+    const EnumDescriptor** file_level_enum_descriptors,
+    const ServiceDescriptor** file_level_service_descriptors);
+
+LIBPROTOBUF_EXPORT void AssignDescriptors(
+    const string& filename, const ReflectionSchema* schemas,
+    MessageFactory* factory,
+    // update the following descriptor arrays.
+    Metadata* file_level_metadata,
+    const EnumDescriptor** file_level_enum_descriptors,
+    const ServiceDescriptor** file_level_service_descriptors);
+
+LIBPROTOBUF_EXPORT void RegisterAllTypes(const Metadata* file_level_metadata, int size);
 
 }  // namespace internal
 }  // namespace protobuf

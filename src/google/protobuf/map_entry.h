@@ -244,14 +244,19 @@ class MapEntry : public MapEntryBase {
   // to distinguish instances of the same MapEntry class.
   static MapEntry* CreateDefaultInstance(const Descriptor* descriptor) {
     MapEntry* entry = new MapEntry;
-    const Reflection* reflection = new GeneratedMessageReflection(
-        descriptor, entry, offsets_,
+    ReflectionSchema schema = {
+        entry,
+        offsets_,
+        has_bits_,
         GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(MapEntry, entry_lite_._has_bits_),
-        GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(MapEntry, _unknown_fields_), -1,
-        DescriptorPool::generated_pool(),
-        ::google::protobuf::MessageFactory::generated_factory(),
-        sizeof(MapEntry),
-        GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(MapEntry, _internal_metadata_));
+        GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(MapEntry, _internal_metadata_),
+        -1,
+        NULL,
+        -1,
+        sizeof(MapEntry)};
+    const Reflection* reflection = new GeneratedMessageReflection(
+        descriptor, schema, DescriptorPool::generated_pool(),
+        MessageFactory::generated_factory());
     entry->descriptor_ = descriptor;
     entry->reflection_ = reflection;
     entry->set_default_instance(entry);
@@ -278,8 +283,8 @@ class MapEntry : public MapEntryBase {
     entry_lite_.set_default_instance(&default_instance->entry_lite_);
   }
 
-  static int offsets_[2];
-  UnknownFieldSet _unknown_fields_;
+  static uint32 offsets_[2];
+  static uint32 has_bits_[2];
   InternalMetadataWithArena _internal_metadata_;
   MapEntry* default_instance_;
   EntryLiteType entry_lite_;
@@ -297,11 +302,16 @@ class MapEntry : public MapEntryBase {
 
 template <typename Key, typename Value, WireFormatLite::FieldType kKeyFieldType,
           WireFormatLite::FieldType kValueFieldType, int default_enum_value>
-int MapEntry<Key, Value, kKeyFieldType, kValueFieldType,
+uint32 MapEntry<Key, Value, kKeyFieldType, kValueFieldType,
              default_enum_value>::offsets_[2] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(MapEntry, entry_lite_.key_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(MapEntry, entry_lite_.value_),
 };
+
+template <typename Key, typename Value, WireFormatLite::FieldType kKeyFieldType,
+          WireFormatLite::FieldType kValueFieldType, int default_enum_value>
+uint32 MapEntry<Key, Value, kKeyFieldType, kValueFieldType,
+             default_enum_value>::has_bits_[2] = {0, 1};
 
 }  // namespace internal
 }  // namespace protobuf

@@ -59,17 +59,26 @@ class LIBPROTOBUF_EXPORT FieldMaskUtil {
   static bool ToJsonString(const FieldMask& mask, string* out);
   static bool FromJsonString(StringPiece str, FieldMask* out);
 
+  // Get the descriptors of the fields which the given path from the message
+  // descriptor traverses, if field_descriptors is not null.
+  // Return false if the path is not valid, and the content of field_descriptors
+  // is unspecified.
+  static bool GetFieldDescriptors(
+      const Descriptor* descriptor, StringPiece path,
+      std::vector<const FieldDescriptor*>* field_descriptors);
+
   // Checks whether the given path is valid for type T.
   template <typename T>
   static bool IsValidPath(StringPiece path) {
-    return InternalIsValidPath(T::descriptor(), path);
+    return GetFieldDescriptors(T::descriptor(), path, NULL);
   }
 
   // Checks whether the given FieldMask is valid for type T.
   template <typename T>
   static bool IsValidFieldMask(const FieldMask& mask) {
     for (int i = 0; i < mask.paths_size(); ++i) {
-      if (!InternalIsValidPath(T::descriptor(), mask.paths(i))) return false;
+      if (!GetFieldDescriptors(T::descriptor(), mask.paths(i), NULL))
+        return false;
     }
     return true;
   }
@@ -148,9 +157,6 @@ class LIBPROTOBUF_EXPORT FieldMaskUtil {
   // For example, "fooBar,bazQuz" will be converted to "foo_bar,baz_quz"
   // successfully.
   static bool CamelCaseToSnakeCase(StringPiece input, string* output);
-
-  static bool InternalIsValidPath(const Descriptor* descriptor,
-                                  StringPiece path);
 
   static void InternalGetFieldMaskForAllFields(const Descriptor* descriptor,
                                                FieldMask* out);

@@ -40,6 +40,8 @@
 
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/arena.h>
+#include <google/protobuf/arenastring.h>
+#include <google/protobuf/generated_message_util.h>
 #include <google/protobuf/unknown_field_set.h>
 
 namespace google {
@@ -56,30 +58,30 @@ namespace internal {
 // The tagged pointer uses the LSB to disambiguate cases, and uses bit 0 == 0 to
 // indicate an arena pointer and bit 0 == 1 to indicate a UFS+Arena-container
 // pointer.
-class LIBPROTOBUF_EXPORT InternalMetadataWithArena {
+template <class T, class Derived>
+class InternalMetadataWithArenaBase {
  public:
-  InternalMetadataWithArena() : ptr_(NULL) {}
-  explicit InternalMetadataWithArena(Arena* arena)
-      : ptr_ (arena) {}
+  InternalMetadataWithArenaBase() : ptr_(NULL) {}
+  explicit InternalMetadataWithArenaBase(Arena* arena) : ptr_(arena) {}
 
-  ~InternalMetadataWithArena() {
+  ~InternalMetadataWithArenaBase() {
     if (have_unknown_fields() && arena() == NULL) {
       delete PtrValue<Container>();
     }
     ptr_ = NULL;
   }
 
-  GOOGLE_ATTRIBUTE_ALWAYS_INLINE const UnknownFieldSet& unknown_fields() const {
+  GOOGLE_ATTRIBUTE_ALWAYS_INLINE const T& unknown_fields() const {
     if (GOOGLE_PREDICT_FALSE(have_unknown_fields())) {
-      return PtrValue<Container>()->unknown_fields_;
+      return PtrValue<Container>()->unknown_fields;
     } else {
-      return *UnknownFieldSet::default_instance();
+      return Derived::default_instance();
     }
   }
 
-  GOOGLE_ATTRIBUTE_ALWAYS_INLINE UnknownFieldSet* mutable_unknown_fields() {
+  GOOGLE_ATTRIBUTE_ALWAYS_INLINE T* mutable_unknown_fields() {
     if (GOOGLE_PREDICT_TRUE(have_unknown_fields())) {
-      return &PtrValue<Container>()->unknown_fields_;
+      return &PtrValue<Container>()->unknown_fields;
     } else {
       return mutable_unknown_fields_slow();
     }
@@ -87,7 +89,7 @@ class LIBPROTOBUF_EXPORT InternalMetadataWithArena {
 
   GOOGLE_ATTRIBUTE_ALWAYS_INLINE Arena* arena() const {
     if (GOOGLE_PREDICT_FALSE(have_unknown_fields())) {
-      return PtrValue<Container>()->arena_;
+      return PtrValue<Container>()->arena;
     } else {
       return PtrValue<Arena>();
     }
@@ -97,7 +99,7 @@ class LIBPROTOBUF_EXPORT InternalMetadataWithArena {
     return PtrTag() == kTagContainer;
   }
 
-  GOOGLE_ATTRIBUTE_ALWAYS_INLINE void Swap(InternalMetadataWithArena* other) {
+  GOOGLE_ATTRIBUTE_ALWAYS_INLINE void Swap(Derived* other) {
     // Semantics here are that we swap only the unknown fields, not the arena
     // pointer. We cannot simply swap ptr_ with other->ptr_ because we need to
     // maintain our own arena ptr. Also, our ptr_ and other's ptr_ may be in
@@ -105,7 +107,19 @@ class LIBPROTOBUF_EXPORT InternalMetadataWithArena {
     // cannot simply swap ptr_ and then restore the arena pointers. We reuse
     // UFS's swap implementation instead.
     if (have_unknown_fields() || other->have_unknown_fields()) {
-      mutable_unknown_fields()->Swap(other->mutable_unknown_fields());
+      static_cast<Derived*>(this)->DoSwap(other->mutable_unknown_fields());
+    }
+  }
+
+  GOOGLE_ATTRIBUTE_ALWAYS_INLINE void MergeFrom(const Derived& other) {
+    if (other.have_unknown_fields()) {
+      static_cast<Derived*>(this)->DoMergeFrom(other.unknown_fields());
+    }
+  }
+
+  GOOGLE_ATTRIBUTE_ALWAYS_INLINE void Clear() {
+    if (have_unknown_fields()) {
+      static_cast<Derived*>(this)->DoClear();
     }
   }
 
@@ -131,24 +145,78 @@ class LIBPROTOBUF_EXPORT InternalMetadataWithArena {
     return reinterpret_cast<intptr_t>(ptr_) & kPtrTagMask;
   }
 
-  template<typename T> T* PtrValue() const {
-    return reinterpret_cast<T*>(
+  template<typename U> U* PtrValue() const {
+    return reinterpret_cast<U*>(
         reinterpret_cast<intptr_t>(ptr_) & kPtrValueMask);
   }
 
   // If ptr_'s tag is kTagContainer, it points to an instance of this struct.
   struct Container {
-    UnknownFieldSet unknown_fields_;
-    Arena* arena_;
+    T unknown_fields;
+    Arena* arena;
   };
 
-  GOOGLE_ATTRIBUTE_NOINLINE UnknownFieldSet* mutable_unknown_fields_slow() {
+  GOOGLE_ATTRIBUTE_NOINLINE T* mutable_unknown_fields_slow() {
     Arena* my_arena = arena();
     Container* container = Arena::Create<Container>(my_arena);
     ptr_ = reinterpret_cast<void*>(
         reinterpret_cast<intptr_t>(container) | kTagContainer);
-    container->arena_ = my_arena;
-    return &(container->unknown_fields_);
+    container->arena = my_arena;
+    return &(container->unknown_fields);
+  }
+};
+
+class InternalMetadataWithArena
+    : public InternalMetadataWithArenaBase<UnknownFieldSet,
+                                           InternalMetadataWithArena> {
+ public:
+  InternalMetadataWithArena() {}
+  explicit InternalMetadataWithArena(Arena* arena)
+      : InternalMetadataWithArenaBase(arena) {}
+
+  void DoSwap(UnknownFieldSet* other) {
+    mutable_unknown_fields()->Swap(other);
+  }
+
+  void DoMergeFrom(const UnknownFieldSet& other) {
+    mutable_unknown_fields()->MergeFrom(other);
+  }
+
+  void DoClear() {
+    mutable_unknown_fields()->Clear();
+  }
+
+  static const UnknownFieldSet& default_instance() {
+    return *UnknownFieldSet::default_instance();
+  }
+};
+
+// We store unknown fields as a string right now, because there is currently no
+// good interface for reading unknown fields into an ArenaString.  We may want
+// to revisit this to allow unknown fields to be parsed onto the Arena.
+class InternalMetadataWithArenaLite
+    : public InternalMetadataWithArenaBase<string,
+                                           InternalMetadataWithArenaLite> {
+ public:
+  InternalMetadataWithArenaLite() {}
+
+  explicit InternalMetadataWithArenaLite(Arena* arena)
+      : InternalMetadataWithArenaBase(arena) {}
+
+  void DoSwap(string* other) {
+    mutable_unknown_fields()->swap(*other);
+  }
+
+  void DoMergeFrom(const string& other) {
+    mutable_unknown_fields()->append(other);
+  }
+
+  void DoClear() {
+    mutable_unknown_fields()->clear();
+  }
+
+  static const string& default_instance() {
+    return GetEmptyStringAlreadyInited();
   }
 };
 

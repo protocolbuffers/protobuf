@@ -243,7 +243,15 @@ class LIBPROTOBUF_EXPORT WireFormatLite {
 #define input  io::CodedInputStream*  input_arg
 #define output io::CodedOutputStream* output_arg
 #define field_number int field_number_arg
+#ifdef NDEBUG
 #define INL GOOGLE_ATTRIBUTE_ALWAYS_INLINE
+#else
+// Avoid excessive inlining in non-optimized builds. Without other optimizations
+// the inlining is not going to provide benefits anyway and the huge resulting
+// functions, especially in the proto-generated serialization functions, produce
+// stack frames so large that many tests run into stack overflows (b/32192897).
+#define INL
+#endif
 
   // Read fields, not including tags.  The assumption is that you already
   // read the tag to determine what field to read.

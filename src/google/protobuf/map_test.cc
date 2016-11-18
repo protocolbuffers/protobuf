@@ -298,7 +298,7 @@ TEST_P(MapImplTest, IteratorBasic) {
 
 template <typename Iterator>
 static int64 median(Iterator i0, Iterator i1) {
-  vector<int64> v(i0, i1);
+  std::vector<int64> v(i0, i1);
   std::nth_element(v.begin(), v.begin() + v.size() / 2, v.end());
   return v[v.size() / 2];
 }
@@ -334,7 +334,7 @@ TEST_P(MapImplTest, BeginIsFast) {
     GOOGLE_DCHECK_GE(last_key, 0);
     map[last_key] = last_key ^ 1;
   }
-  vector<int64> times;
+  std::vector<int64> times;
   // We're going to do map.erase(map.begin()) over and over again.  But,
   // just in case one iteration is fast compared to the granularity of
   // our time keeping, we measure kChunkSize iterations per outer-loop iter.
@@ -379,7 +379,7 @@ TEST_P(MapImplTest, HashFlood) {
   // 1024 (or 512 or 2048 or ...) entries.  This assumes that map_ uses powers
   // of 2 for table sizes, and that it's sufficient to "flood" with respect to
   // the low bits of the output of map_.hash_function().
-  vector<int64> times;
+  std::vector<int64> times;
   std::set<int>::iterator it = s.begin();
   int count = 0;
   do {
@@ -506,7 +506,7 @@ static void StressTestIterators(int n, bool test_old_style_proto2_maps) {
   // Finally, ensure erase(iterator) doesn't reorder anything, because that is
   // what its documentation says.
   m[last_key] = m[last_key ^ 999] = 0;
-  vector<Map<int, int>::iterator> v;
+  std::vector<Map<int, int>::iterator> v;
   v.reserve(m.size());
   int position_of_last_key = 0;
   for (Map<int, int>::iterator it = m.begin(); it != m.end(); ++it) {
@@ -563,7 +563,7 @@ TEST_P(MapImplTest, EraseRevalidates) {
   map_[3] = map_[13] = map_[20] = 0;
   const int initial_size = map_.size();
   EXPECT_EQ(3, initial_size);
-  vector<Map<int, int>::iterator> v;
+  std::vector<Map<int, int>::iterator> v;
   for (Map<int, int>::iterator it = map_.begin(); it != map_.end(); ++it) {
     v.push_back(it);
   }
@@ -2437,7 +2437,7 @@ TEST(GeneratedMapFieldReflectionTest, SwapFields) {
 
   MapTestUtil::SetMapFields(&message2);
 
-  vector<const FieldDescriptor*> fields;
+  std::vector<const FieldDescriptor*> fields;
   const Reflection* reflection = message1.GetReflection();
   reflection->ListFields(message2, &fields);
   reflection->SwapFields(&message1, &message2, fields);
@@ -2873,6 +2873,33 @@ TEST(WireFormatForMapFieldTest, MapParseHelpers) {
 // Deterministic Serialization Test ==========================================
 
 template <typename T>
+static string DeterministicSerializationWithSerializePartialToCodedStream(
+    const T& t) {
+  const int size = t.ByteSize();
+  string result(size, '\0');
+  io::ArrayOutputStream array_stream(string_as_array(&result), size);
+  io::CodedOutputStream output_stream(&array_stream);
+  output_stream.SetSerializationDeterministic(true);
+  t.SerializePartialToCodedStream(&output_stream);
+  EXPECT_FALSE(output_stream.HadError());
+  EXPECT_EQ(size, output_stream.ByteCount());
+  return result;
+}
+
+template <typename T>
+static string DeterministicSerializationWithSerializeToCodedStream(const T& t) {
+  const int size = t.ByteSize();
+  string result(size, '\0');
+  io::ArrayOutputStream array_stream(string_as_array(&result), size);
+  io::CodedOutputStream output_stream(&array_stream);
+  output_stream.SetSerializationDeterministic(true);
+  t.SerializeToCodedStream(&output_stream);
+  EXPECT_FALSE(output_stream.HadError());
+  EXPECT_EQ(size, output_stream.ByteCount());
+  return result;
+}
+
+template <typename T>
 static string DeterministicSerialization(const T& t) {
   const int size = t.ByteSize();
   string result(size, '\0');
@@ -2882,6 +2909,9 @@ static string DeterministicSerialization(const T& t) {
   t.SerializeWithCachedSizes(&output_stream);
   EXPECT_FALSE(output_stream.HadError());
   EXPECT_EQ(size, output_stream.ByteCount());
+  EXPECT_EQ(result, DeterministicSerializationWithSerializeToCodedStream(t));
+  EXPECT_EQ(result,
+            DeterministicSerializationWithSerializePartialToCodedStream(t));
   return result;
 }
 
@@ -2981,6 +3011,18 @@ TEST(TextFormatMapTest, Sorted) {
   tester.SetMapFieldsViaReflection(&message2);
   tester.SwapMapsViaReflection(&message2);
   EXPECT_EQ(message2.DebugString(), expected_text);
+}
+
+TEST(TextFormatMapTest, ParseCorruptedString) {
+  string serialized_message;
+  GOOGLE_CHECK_OK(File::GetContents(
+      TestSourceDir() +
+          "/google/protobuf/testdata/golden_message_maps",
+      &serialized_message, true));
+  protobuf_unittest::TestMaps message;
+  GOOGLE_CHECK(message.ParseFromString(serialized_message));
+  TestParseCorruptedString<protobuf_unittest::TestMaps, true>(message);
+  TestParseCorruptedString<protobuf_unittest::TestMaps, false>(message);
 }
 
 

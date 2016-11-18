@@ -234,7 +234,9 @@ message TestEndsWithBytes {
   optional bytes data = 2;
 }
 
+
 message TestMapFieldsNoBinary {
+
   map<string, string> map_string_string = 1;
   map<string, int32> map_string_int32 = 2;
   map<string, int64> map_string_int64 = 3;
@@ -252,12 +254,13 @@ message TestMapFieldsNoBinary {
 }
 
 enum MapValueEnumNoBinary {
-  MAP_VALUE_FOO_NOBINARY = 0;
-  MAP_VALUE_BAR_NOBINARY = 1;
-  MAP_VALUE_BAZ_NOBINARY = 2;
+  MAP_VALUE_FOO = 0;
+  MAP_VALUE_BAR = 1;
+  MAP_VALUE_BAZ = 2;
 }
 
 message MapValueMessageNoBinary {
+
   optional int32 foo = 1;
 }
 

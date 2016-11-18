@@ -656,7 +656,7 @@ bool ExtensionSet::ParseMessageSetItem(io::CodedInputStream* input,
   string message_data;
 
   while (true) {
-    const uint32 tag = input->ReadTag();
+    const uint32 tag = input->ReadTagNoLastTag();
     if (tag == 0) return false;
 
     switch (tag) {

@@ -19,85 +19,88 @@
 
 namespace google {
 namespace protobuf {
+class DurationDefaultTypeInternal : public ::google::protobuf::internal::ExplicitlyConstructed<Duration> {};
+DurationDefaultTypeInternal _Duration_default_instance_;
 
 namespace {
 
-const ::google::protobuf::Descriptor* Duration_descriptor_ = NULL;
-const ::google::protobuf::internal::GeneratedMessageReflection*
-  Duration_reflection_ = NULL;
+::google::protobuf::Metadata file_level_metadata[1];
 
 }  // namespace
 
 
-void protobuf_AssignDesc_google_2fprotobuf_2fduration_2eproto() GOOGLE_ATTRIBUTE_COLD;
-void protobuf_AssignDesc_google_2fprotobuf_2fduration_2eproto() {
-  protobuf_AddDesc_google_2fprotobuf_2fduration_2eproto();
-  const ::google::protobuf::FileDescriptor* file =
-    ::google::protobuf::DescriptorPool::generated_pool()->FindFileByName(
-      "google/protobuf/duration.proto");
-  GOOGLE_CHECK(file != NULL);
-  Duration_descriptor_ = file->message_type(0);
-  static const int Duration_offsets_[2] = {
+const ::google::protobuf::uint32* protobuf_Offsets_google_2fprotobuf_2fduration_2eproto() GOOGLE_ATTRIBUTE_COLD;
+const ::google::protobuf::uint32* protobuf_Offsets_google_2fprotobuf_2fduration_2eproto() {
+  static const ::google::protobuf::uint32 offsets[] = {
+    ~0u,  // no _has_bits_
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Duration, _internal_metadata_),
+    ~0u,  // no _extensions_
+    ~0u,  // no _oneof_case_
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Duration, seconds_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Duration, nanos_),
   };
-  Duration_reflection_ =
-    ::google::protobuf::internal::GeneratedMessageReflection::NewGeneratedMessageReflection(
-      Duration_descriptor_,
-      Duration::internal_default_instance(),
-      Duration_offsets_,
-      -1,
-      -1,
-      -1,
-      sizeof(Duration),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Duration, _internal_metadata_));
+  return offsets;
 }
+
+static const ::google::protobuf::internal::MigrationSchema schemas[] = {
+  { 0, -1, sizeof(Duration)},
+};
+
+static const ::google::protobuf::internal::DefaultInstanceData file_default_instances[] = {
+  {reinterpret_cast<const ::google::protobuf::Message*>(&_Duration_default_instance_), NULL},
+};
 
 namespace {
 
-GOOGLE_PROTOBUF_DECLARE_ONCE(protobuf_AssignDescriptors_once_);
+void protobuf_AssignDescriptors() {
+  protobuf_AddDesc_google_2fprotobuf_2fduration_2eproto();
+  ::google::protobuf::MessageFactory* factory = NULL;
+  AssignDescriptors(
+      "google/protobuf/duration.proto", schemas, file_default_instances, protobuf_Offsets_google_2fprotobuf_2fduration_2eproto(), factory,
+      file_level_metadata, NULL, NULL);
+}
+
 void protobuf_AssignDescriptorsOnce() {
-  ::google::protobuf::GoogleOnceInit(&protobuf_AssignDescriptors_once_,
-                 &protobuf_AssignDesc_google_2fprotobuf_2fduration_2eproto);
+  static GOOGLE_PROTOBUF_DECLARE_ONCE(once);
+  ::google::protobuf::GoogleOnceInit(&once, &protobuf_AssignDescriptors);
 }
 
 void protobuf_RegisterTypes(const ::std::string&) GOOGLE_ATTRIBUTE_COLD;
 void protobuf_RegisterTypes(const ::std::string&) {
   protobuf_AssignDescriptorsOnce();
-  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
-      Duration_descriptor_, Duration::internal_default_instance());
+  ::google::protobuf::internal::RegisterAllTypes(file_level_metadata, 1);
 }
 
 }  // namespace
 
 void protobuf_ShutdownFile_google_2fprotobuf_2fduration_2eproto() {
-  Duration_default_instance_.Shutdown();
-  delete Duration_reflection_;
+  _Duration_default_instance_.Shutdown();
+  delete file_level_metadata[0].reflection;
 }
 
 void protobuf_InitDefaults_google_2fprotobuf_2fduration_2eproto_impl() {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
 
-  Duration_default_instance_.DefaultConstruct();
-  Duration_default_instance_.get_mutable()->InitAsDefaultInstance();
+  ::google::protobuf::internal::InitProtobufDefaults();
+  _Duration_default_instance_.DefaultConstruct();
 }
 
-GOOGLE_PROTOBUF_DECLARE_ONCE(protobuf_InitDefaults_google_2fprotobuf_2fduration_2eproto_once_);
 void protobuf_InitDefaults_google_2fprotobuf_2fduration_2eproto() {
-  ::google::protobuf::GoogleOnceInit(&protobuf_InitDefaults_google_2fprotobuf_2fduration_2eproto_once_,
-                 &protobuf_InitDefaults_google_2fprotobuf_2fduration_2eproto_impl);
+  static GOOGLE_PROTOBUF_DECLARE_ONCE(once);
+  ::google::protobuf::GoogleOnceInit(&once, &protobuf_InitDefaults_google_2fprotobuf_2fduration_2eproto_impl);
 }
 void protobuf_AddDesc_google_2fprotobuf_2fduration_2eproto_impl() {
-  GOOGLE_PROTOBUF_VERIFY_VERSION;
-
   protobuf_InitDefaults_google_2fprotobuf_2fduration_2eproto();
+  static const char descriptor[] = {
+      "\n\036google/protobuf/duration.proto\022\017google"
+      ".protobuf\"*\n\010Duration\022\017\n\007seconds\030\001 \001(\003\022\r"
+      "\n\005nanos\030\002 \001(\005B|\n\023com.google.protobufB\rDu"
+      "rationProtoP\001Z*github.com/golang/protobu"
+      "f/ptypes/duration\370\001\001\242\002\003GPB\252\002\036Google.Prot"
+      "obuf.WellKnownTypesb\006proto3"
+  };
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
-    "\n\036google/protobuf/duration.proto\022\017google"
-    ".protobuf\"*\n\010Duration\022\017\n\007seconds\030\001 \001(\003\022\r"
-    "\n\005nanos\030\002 \001(\005B|\n\023com.google.protobufB\rDu"
-    "rationProtoP\001Z*github.com/golang/protobu"
-    "f/ptypes/duration\370\001\001\242\002\003GPB\252\002\036Google.Prot"
-    "obuf.WellKnownTypesb\006proto3", 227);
+      descriptor, 227);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "google/protobuf/duration.proto", &protobuf_RegisterTypes);
   ::google::protobuf::internal::OnShutdown(&protobuf_ShutdownFile_google_2fprotobuf_2fduration_2eproto);
@@ -115,16 +118,6 @@ struct StaticDescriptorInitializer_google_2fprotobuf_2fduration_2eproto {
   }
 } static_descriptor_initializer_google_2fprotobuf_2fduration_2eproto_;
 
-namespace {
-
-static void MergeFromFail(int line) GOOGLE_ATTRIBUTE_COLD GOOGLE_ATTRIBUTE_NORETURN;
-static void MergeFromFail(int line) {
-  ::google::protobuf::internal::MergeFromFail(__FILE__, line);
-}
-
-}  // namespace
-
-
 // ===================================================================
 
 #if !defined(_MSC_VER) || _MSC_VER >= 1900
@@ -134,7 +127,9 @@ const int Duration::kNanosFieldNumber;
 
 Duration::Duration()
   : ::google::protobuf::Message(), _internal_metadata_(NULL) {
-  if (this != internal_default_instance()) protobuf_InitDefaults_google_2fprotobuf_2fduration_2eproto();
+  if (GOOGLE_PREDICT_TRUE(this != internal_default_instance())) {
+    protobuf_InitDefaults_google_2fprotobuf_2fduration_2eproto();
+  }
   SharedCtor();
   // @@protoc_insertion_point(constructor:google.protobuf.Duration)
 }
@@ -148,15 +143,14 @@ Duration::Duration(::google::protobuf::Arena* arena)
   RegisterArenaDtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.Duration)
 }
-
-void Duration::InitAsDefaultInstance() {
-}
-
 Duration::Duration(const Duration& from)
   : ::google::protobuf::Message(),
-    _internal_metadata_(NULL) {
-  SharedCtor();
-  UnsafeMergeFrom(from);
+      _internal_metadata_(NULL),
+      _cached_size_(0) {
+  _internal_metadata_.MergeFrom(from._internal_metadata_);
+  ::memcpy(&seconds_, &from.seconds_,
+    reinterpret_cast<char*>(&nanos_) -
+    reinterpret_cast<char*>(&seconds_) + sizeof(nanos_));
   // @@protoc_insertion_point(copy_constructor:google.protobuf.Duration)
 }
 
@@ -192,7 +186,7 @@ void Duration::SetCachedSize(int size) const {
 }
 const ::google::protobuf::Descriptor* Duration::descriptor() {
   protobuf_AssignDescriptorsOnce();
-  return Duration_descriptor_;
+  return file_level_metadata[0].descriptor;
 }
 
 const Duration& Duration::default_instance() {
@@ -200,35 +194,14 @@ const Duration& Duration::default_instance() {
   return *internal_default_instance();
 }
 
-::google::protobuf::internal::ExplicitlyConstructed<Duration> Duration_default_instance_;
-
 Duration* Duration::New(::google::protobuf::Arena* arena) const {
   return ::google::protobuf::Arena::CreateMessage<Duration>(arena);
 }
 
 void Duration::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.Duration)
-#if defined(__clang__)
-#define ZR_HELPER_(f) \
-  _Pragma("clang diagnostic push") \
-  _Pragma("clang diagnostic ignored \"-Winvalid-offsetof\"") \
-  __builtin_offsetof(Duration, f) \
-  _Pragma("clang diagnostic pop")
-#else
-#define ZR_HELPER_(f) reinterpret_cast<char*>(\
-  &reinterpret_cast<Duration*>(16)->f)
-#endif
-
-#define ZR_(first, last) do {\
-  ::memset(&(first), 0,\
-           ZR_HELPER_(last) - ZR_HELPER_(first) + sizeof(last));\
-} while (0)
-
-  ZR_(seconds_, nanos_);
-
-#undef ZR_HELPER_
-#undef ZR_
-
+  ::memset(&seconds_, 0, reinterpret_cast<char*>(&nanos_) -
+    reinterpret_cast<char*>(&seconds_) + sizeof(nanos_));
 }
 
 bool Duration::MergePartialFromCodedStream(
@@ -237,11 +210,11 @@ bool Duration::MergePartialFromCodedStream(
   ::google::protobuf::uint32 tag;
   // @@protoc_insertion_point(parse_start:google.protobuf.Duration)
   for (;;) {
-    ::std::pair< ::google::protobuf::uint32, bool> p = input->ReadTagWithCutoff(127);
+    ::std::pair< ::google::protobuf::uint32, bool> p = input->ReadTagWithCutoffNoLastTag(127);
     tag = p.first;
     if (!p.second) goto handle_unusual;
     switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
-      // optional int64 seconds = 1;
+      // int64 seconds = 1;
       case 1: {
         if (tag == 8) {
 
@@ -251,14 +224,12 @@ bool Duration::MergePartialFromCodedStream(
         } else {
           goto handle_unusual;
         }
-        if (input->ExpectTag(16)) goto parse_nanos;
         break;
       }
 
-      // optional int32 nanos = 2;
+      // int32 nanos = 2;
       case 2: {
         if (tag == 16) {
-         parse_nanos:
 
           DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
                    ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
@@ -266,7 +237,6 @@ bool Duration::MergePartialFromCodedStream(
         } else {
           goto handle_unusual;
         }
-        if (input->ExpectAtEnd()) goto success;
         break;
       }
 
@@ -294,12 +264,12 @@ failure:
 void Duration::SerializeWithCachedSizes(
     ::google::protobuf::io::CodedOutputStream* output) const {
   // @@protoc_insertion_point(serialize_start:google.protobuf.Duration)
-  // optional int64 seconds = 1;
+  // int64 seconds = 1;
   if (this->seconds() != 0) {
     ::google::protobuf::internal::WireFormatLite::WriteInt64(1, this->seconds(), output);
   }
 
-  // optional int32 nanos = 2;
+  // int32 nanos = 2;
   if (this->nanos() != 0) {
     ::google::protobuf::internal::WireFormatLite::WriteInt32(2, this->nanos(), output);
   }
@@ -311,12 +281,12 @@ void Duration::SerializeWithCachedSizes(
     bool deterministic, ::google::protobuf::uint8* target) const {
   (void)deterministic; // Unused
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.Duration)
-  // optional int64 seconds = 1;
+  // int64 seconds = 1;
   if (this->seconds() != 0) {
     target = ::google::protobuf::internal::WireFormatLite::WriteInt64ToArray(1, this->seconds(), target);
   }
 
-  // optional int32 nanos = 2;
+  // int32 nanos = 2;
   if (this->nanos() != 0) {
     target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(2, this->nanos(), target);
   }
@@ -329,14 +299,14 @@ size_t Duration::ByteSizeLong() const {
 // @@protoc_insertion_point(message_byte_size_start:google.protobuf.Duration)
   size_t total_size = 0;
 
-  // optional int64 seconds = 1;
+  // int64 seconds = 1;
   if (this->seconds() != 0) {
     total_size += 1 +
       ::google::protobuf::internal::WireFormatLite::Int64Size(
         this->seconds());
   }
 
-  // optional int32 nanos = 2;
+  // int32 nanos = 2;
   if (this->nanos() != 0) {
     total_size += 1 +
       ::google::protobuf::internal::WireFormatLite::Int32Size(
@@ -352,7 +322,7 @@ size_t Duration::ByteSizeLong() const {
 
 void Duration::MergeFrom(const ::google::protobuf::Message& from) {
 // @@protoc_insertion_point(generalized_merge_from_start:google.protobuf.Duration)
-  if (GOOGLE_PREDICT_FALSE(&from == this)) MergeFromFail(__LINE__);
+  GOOGLE_DCHECK_NE(&from, this);
   const Duration* source =
       ::google::protobuf::internal::DynamicCastToGenerated<const Duration>(
           &from);
@@ -361,21 +331,14 @@ void Duration::MergeFrom(const ::google::protobuf::Message& from) {
     ::google::protobuf::internal::ReflectionOps::Merge(from, this);
   } else {
   // @@protoc_insertion_point(generalized_merge_from_cast_success:google.protobuf.Duration)
-    UnsafeMergeFrom(*source);
+    MergeFrom(*source);
   }
 }
 
 void Duration::MergeFrom(const Duration& from) {
 // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.Duration)
-  if (GOOGLE_PREDICT_TRUE(&from != this)) {
-    UnsafeMergeFrom(from);
-  } else {
-    MergeFromFail(__LINE__);
-  }
-}
-
-void Duration::UnsafeMergeFrom(const Duration& from) {
-  GOOGLE_DCHECK(&from != this);
+  GOOGLE_DCHECK_NE(&from, this);
+  _internal_metadata_.MergeFrom(from._internal_metadata_);
   if (from.seconds() != 0) {
     set_seconds(from.seconds());
   }
@@ -395,11 +358,10 @@ void Duration::CopyFrom(const Duration& from) {
 // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.Duration)
   if (&from == this) return;
   Clear();
-  UnsafeMergeFrom(from);
+  MergeFrom(from);
 }
 
 bool Duration::IsInitialized() const {
-
   return true;
 }
 
@@ -408,10 +370,13 @@ void Duration::Swap(Duration* other) {
   if (GetArenaNoVirtual() == other->GetArenaNoVirtual()) {
     InternalSwap(other);
   } else {
-    Duration temp;
-    temp.UnsafeMergeFrom(*this);
-    CopyFrom(*other);
-    other->CopyFrom(temp);
+    Duration* temp = New(GetArenaNoVirtual());
+    temp->MergeFrom(*other);
+    other->CopyFrom(*this);
+    InternalSwap(temp);
+    if (GetArenaNoVirtual() == NULL) {
+      delete temp;
+    }
   }
 }
 void Duration::UnsafeArenaSwap(Duration* other) {
@@ -422,22 +387,18 @@ void Duration::UnsafeArenaSwap(Duration* other) {
 void Duration::InternalSwap(Duration* other) {
   std::swap(seconds_, other->seconds_);
   std::swap(nanos_, other->nanos_);
-  _internal_metadata_.Swap(&other->_internal_metadata_);
   std::swap(_cached_size_, other->_cached_size_);
 }
 
 ::google::protobuf::Metadata Duration::GetMetadata() const {
   protobuf_AssignDescriptorsOnce();
-  ::google::protobuf::Metadata metadata;
-  metadata.descriptor = Duration_descriptor_;
-  metadata.reflection = Duration_reflection_;
-  return metadata;
+  return file_level_metadata[0];
 }
 
 #if PROTOBUF_INLINE_NOT_IN_HEADERS
 // Duration
 
-// optional int64 seconds = 1;
+// int64 seconds = 1;
 void Duration::clear_seconds() {
   seconds_ = GOOGLE_LONGLONG(0);
 }
@@ -451,7 +412,7 @@ void Duration::set_seconds(::google::protobuf::int64 value) {
   // @@protoc_insertion_point(field_set:google.protobuf.Duration.seconds)
 }
 
-// optional int32 nanos = 2;
+// int32 nanos = 2;
 void Duration::clear_nanos() {
   nanos_ = 0;
 }
@@ -465,9 +426,6 @@ void Duration::set_nanos(::google::protobuf::int32 value) {
   // @@protoc_insertion_point(field_set:google.protobuf.Duration.nanos)
 }
 
-inline const Duration* Duration::internal_default_instance() {
-  return &Duration_default_instance_.get();
-}
 #endif  // PROTOBUF_INLINE_NOT_IN_HEADERS
 
 // @@protoc_insertion_point(namespace_scope)
