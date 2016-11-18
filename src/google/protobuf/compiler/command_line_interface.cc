@@ -263,6 +263,12 @@ void AddDefaultProtoPaths(vector<pair<string, string> >* paths) {
     return;
   }
 }
+
+string PluginName(const string& plugin_prefix, const string& directive) {
+  // Assuming the directive starts with "--" and ends with "_out" or "_opt",
+  // strip the "--" and "_out/_opt" and add the plugin prefix.
+  return plugin_prefix + "gen-" + directive.substr(2, directive.size() - 6);
+}
 }  // namespace
 
 // A MultiFileErrorCollector that prints errors to stderr.
@@ -1008,6 +1014,18 @@ CommandLineInterface::ParseArguments(int argc, const char* const argv[]) {
       return status;
   }
 
+  // Make sure each plugin option has a matching plugin output.
+  for (map<string, string>::const_iterator i = plugin_parameters_.begin();
+       i != plugin_parameters_.end(); ++i) {
+    if (plugins_.find(i->first) == plugins_.end()) {
+      std::cerr << "Unknown flag: "
+                // strip prefix + "gen-" and add back "_opt"
+                << "--" + i->first.substr(plugin_prefix_.size() + 4) + "_opt"
+                << std::endl;
+      return PARSE_ARGUMENT_FAIL;
+    }
+  }
+
   // If no --proto_path was given, use the current working directory.
   if (proto_path_.empty()) {
     // Don't use make_pair as the old/default standard library on Solaris
@@ -1338,15 +1356,22 @@ CommandLineInterface::InterpretArgument(const string& name,
         (plugin_prefix_.empty() || !HasSuffixString(name, "_out"))) {
       // Check if it's a generator option flag.
       generator_info = FindOrNull(generators_by_option_name_, name);
-      if (generator_info == NULL) {
-        std::cerr << "Unknown flag: " << name << std::endl;
-        return PARSE_ARGUMENT_FAIL;
-      } else {
+      if (generator_info != NULL) {
         string* parameters = &generator_parameters_[generator_info->flag_name];
         if (!parameters->empty()) {
           parameters->append(",");
         }
         parameters->append(value);
+      } else if (HasPrefixString(name, "--") && HasSuffixString(name, "_opt")) {
+        string* parameters =
+            &plugin_parameters_[PluginName(plugin_prefix_, name)];
+        if (!parameters->empty()) {
+          parameters->append(",");
+        }
+        parameters->append(value);
+      } else {
+        std::cerr << "Unknown flag: " << name << std::endl;
+        return PARSE_ARGUMENT_FAIL;
       }
     } else {
       // It's an output flag.  Add it to the output directives.
@@ -1465,12 +1490,16 @@ bool CommandLineInterface::GenerateOutput(
           HasSuffixString(output_directive.name, "_out"))
         << "Bad name for plugin generator: " << output_directive.name;
 
-    // Strip the "--" and "_out" and add the plugin prefix.
-    string plugin_name = plugin_prefix_ + "gen-" +
-        output_directive.name.substr(2, output_directive.name.size() - 6);
-
+    string plugin_name = PluginName(plugin_prefix_ , output_directive.name);
+    string parameters = output_directive.parameter;
+    if (!plugin_parameters_[plugin_name].empty()) {
+      if (!parameters.empty()) {
+        parameters.append(",");
+      }
+      parameters.append(plugin_parameters_[plugin_name]);
+    }
     if (!GeneratePluginOutput(parsed_files, plugin_name,
-                              output_directive.parameter,
+                              parameters,
                               generator_context, &error)) {
       std::cerr << output_directive.name << ": " << error << std::endl;
       return false;

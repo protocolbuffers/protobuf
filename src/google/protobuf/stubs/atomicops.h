@@ -196,14 +196,22 @@ Atomic64 Release_Load(volatile const Atomic64* ptr);
 
 // Apple.
 #elif defined(GOOGLE_PROTOBUF_OS_APPLE)
+#if __has_feature(cxx_atomic) || _GNUC_VER >= 407
+#include <google/protobuf/stubs/atomicops_internals_generic_c11_atomic.h>
+#else  // __has_feature(cxx_atomic) || _GNUC_VER >= 407
 #include <google/protobuf/stubs/atomicops_internals_macosx.h>
+#endif  // __has_feature(cxx_atomic) || _GNUC_VER >= 407
 
 // GCC.
 #elif defined(__GNUC__)
 #if defined(GOOGLE_PROTOBUF_ARCH_IA32) || defined(GOOGLE_PROTOBUF_ARCH_X64)
 #include <google/protobuf/stubs/atomicops_internals_x86_gcc.h>
 #elif defined(GOOGLE_PROTOBUF_ARCH_ARM) && defined(__linux__)
+#if (((__GNUC__ == 4) && (__GNUC_MINOR__ >= 7)) || (__GNUC__ > 4))
+#include <google/protobuf/stubs/atomicops_internals_generic_gcc.h>
+#else
 #include <google/protobuf/stubs/atomicops_internals_arm_gcc.h>
+#endif
 #elif defined(GOOGLE_PROTOBUF_ARCH_AARCH64)
 #include <google/protobuf/stubs/atomicops_internals_arm64_gcc.h>
 #elif defined(GOOGLE_PROTOBUF_ARCH_ARM_QNX)
@@ -213,7 +221,7 @@ Atomic64 Release_Load(volatile const Atomic64* ptr);
 #elif defined(GOOGLE_PROTOBUF_ARCH_POWER)
 #include <google/protobuf/stubs/atomicops_internals_power.h>
 #elif defined(__native_client__)
-#include <google/protobuf/stubs/atomicops_internals_pnacl.h>
+#include <google/protobuf/stubs/atomicops_internals_generic_c11_atomic.h>
 #elif defined(GOOGLE_PROTOBUF_ARCH_PPC)
 #include <google/protobuf/stubs/atomicops_internals_ppc_gcc.h>
 #elif (((__GNUC__ == 4) && (__GNUC_MINOR__ >= 7)) || (__GNUC__ > 4))

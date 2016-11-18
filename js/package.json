@@ -22,5 +22,5 @@
     "url": "https://github.com/google/protobuf/tree/master/js"
   },
   "author": "Google Protocol Buffers Team",
-  "license": "Apache-2.0"
+  "license" : "BSD-3-Clause"
 }

@@ -21,7 +21,7 @@
   "dependencies": {
     "Google.Protobuf": { "target": "project" },
     "NUnit": "3.4.0",
-    "dotnet-test-nunit": "3.4.0-alpha-2",
+    "dotnet-test-nunit": "3.4.0-alpha-2"
   },
 
   "testRunner": "nunit",

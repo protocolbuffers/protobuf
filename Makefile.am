@@ -577,7 +577,6 @@ php_EXTRA_DIST=                                              \
   php/src/Google/Protobuf/Internal/DescriptorPool.php        \
   php/src/Google/Protobuf/Internal/OneofField.php            \
   php/src/Google/Protobuf/Internal/MapEntry.php              \
-  php/src/Google/Protobuf/Internal/Type.php                  \
   php/src/Google/Protobuf/Internal/InputStream.php           \
   php/src/Google/Protobuf/Internal/OutputStream.php          \
   php/src/Google/Protobuf/Internal/MessageBuilderContext.php \
@@ -600,6 +599,8 @@ php_EXTRA_DIST=                                              \
   php/tests/test_include.pb.php                              \
   php/tests/map_field_test.php                               \
   php/tests/test_base.php                                    \
+  php/tests/test_no_namespace.proto                          \
+  php/tests/test_no_namespace.pb.php                         \
   php/tests/test_util.php                                    \
   php/tests/test.proto                                       \
   php/tests/test.pb.php                                      \

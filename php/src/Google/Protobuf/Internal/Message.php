@@ -125,6 +125,16 @@ class Message
                 $oneof = $this->desc->getOneofDecl()[$field->getOneofIndex()];
                 $oneof_name = $oneof->getName();
                 $this->$oneof_name = new OneofField($oneof);
+            } else if ($field->getLabel() === GPBLabel::OPTIONAL && 
+                       PHP_INT_SIZE == 4) {
+                switch ($field->getType()) {
+                    case GPBType::INT64:
+                    case GPBType::UINT64:
+                    case GPBType::FIXED64:
+                    case GPBType::SFIXED64:
+                    case GPBType::SINT64:
+                        $this->$setter("0");
+                }
             }
         }
     }
@@ -210,13 +220,11 @@ class Message
                 if (!GPBWire::readInt64($input, $value)) {
                     return false;
                 }
-                $value = $value->toInteger();
                 break;
             case GPBType::UINT64:
                 if (!GPBWire::readUint64($input, $value)) {
                     return false;
                 }
-                $value = $value->toInteger();
                 break;
             case GPBType::INT32:
                 if (!GPBWire::readInt32($input, $value)) {
@@ -227,7 +235,6 @@ class Message
                 if (!GPBWire::readFixed64($input, $value)) {
                     return false;
                 }
-                $value = $value->toInteger();
                 break;
             case GPBType::FIXED32:
                 if (!GPBWire::readFixed32($input, $value)) {
@@ -285,7 +292,6 @@ class Message
                 if (!GPBWire::readSfixed64($input, $value)) {
                     return false;
                 }
-                $value = $value->toInteger();
                 break;
             case GPBType::SINT32:
                 if (!GPBWire::readSint32($input, $value)) {
@@ -296,7 +302,6 @@ class Message
                 if (!GPBWire::readSint64($input, $value)) {
                     return false;
                 }
-                $value = $value->toInteger();
                 break;
             default:
                 user_error("Unsupported type.");

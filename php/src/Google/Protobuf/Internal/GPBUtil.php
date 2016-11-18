@@ -37,6 +37,28 @@ use Google\Protobuf\Internal\RepeatedField;
 
 class GPBUtil
 {
+    public function divideInt64ToInt32($value, &$high, &$low, $trim = false)
+    {
+        $isNeg = (bccomp($value, 0) < 0);
+        if ($isNeg) {
+            $value = bcsub(0, $value);
+        }
+        $high = (int) bcdiv(bcadd($value, 1), 4294967296);
+        $low = (int) bcmod($value, 4294967296);
+        if ($isNeg) {
+            $high = ~$high;
+            $low = ~$low;
+            $low++;
+            if (!$low) {
+                $high++;
+            }
+        }
+
+        if ($trim) {
+            $high = 0;
+        }
+    }
+
 
     public static function checkString(&$var, $check_utf8)
     {
@@ -70,9 +92,14 @@ class GPBUtil
     public static function checkUint32(&$var)
     {
         if (is_numeric($var)) {
-            $var = intval($var);
             if (PHP_INT_SIZE === 8) {
+                $var = intval($var);
                 $var |= ((-(($var >> 31) & 0x1)) & ~0xFFFFFFFF);
+            } else {
+                if (bccomp($var, 0x7FFFFFFF) > 0) {
+                    $var = bcsub($var, "4294967296");
+                }
+                $var = (int) $var;
             }
         } else {
             trigger_error("Expect integer.", E_USER_ERROR);
@@ -82,7 +109,11 @@ class GPBUtil
     public static function checkInt64(&$var)
     {
         if (is_numeric($var)) {
-            $var = intval($var);
+            if (PHP_INT_SIZE == 8) {
+                $var = intval($var);
+            } else {
+                $var = bcdiv($var, 1, 0);
+            }
         } else {
             trigger_error("Expect integer.", E_USER_ERROR);
         }
@@ -91,7 +122,11 @@ class GPBUtil
     public static function checkUint64(&$var)
     {
         if (is_numeric($var)) {
-            $var = intval($var);
+            if (PHP_INT_SIZE == 8) {
+                $var = intval($var);
+            } else {
+                $var = bcdiv($var, 1, 0);
+            }
         } else {
             trigger_error("Expect integer.", E_USER_ERROR);
         }
