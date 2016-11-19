@@ -296,6 +296,7 @@ libprotobuf_la_SOURCES =                                       \
   google/protobuf/util/internal/utility.h                      \
   google/protobuf/util/json_util.cc                            \
   google/protobuf/util/message_differencer.cc                  \
+  google/protobuf/util/message_hasher.cc                       \
   google/protobuf/util/time_util.cc                            \
   google/protobuf/util/type_resolver_util.cc
 
