@@ -1050,6 +1050,13 @@ describe('Message test suite', function() {
     nested.setCount(5);
     msg.setDeeplyNestedMessage(nested);
     assertEquals(5, msg.getDeeplyNestedMessage().getCount());
+
+    // After a serialization-deserialization round trip we should get back the
+    // same data we started with.
+    var serialized = msg.serializeBinary();
+    var deserialized =
+        proto.jspb.test.ForeignNestedFieldMessage.deserializeBinary(serialized);
+    assertEquals(5, deserialized.getDeeplyNestedMessage().getCount());
   });
 
 });
