@@ -12,4 +12,5 @@
 export DOCKERFILE_DIR=jenkins/docker
 export DOCKER_RUN_SCRIPT=jenkins/pull_request_in_docker.sh
 export OUTPUT_DIR=testoutput
+export TEST_SET="csharp java_jdk7 javanano_jdk7 java_oracle7 javanano_oracle7 python python_cpp ruby_all javascript golang php_all"
 ./jenkins/build_and_run_docker.sh
