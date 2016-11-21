@@ -391,7 +391,7 @@ build_php5.6_c() {
 build_php5.6_mac() {
   # Install PHP
   curl -s https://php-osx.liip.ch/install.sh | bash -s 5.6
-  export PATH="/usr/local/php5-5.6.25-20160831-101628/bin:$PATH"
+  export PATH="/usr/local/php5/bin:$PATH"
 
   # Install phpunit
   curl https://phar.phpunit.de/phpunit.phar -L -o phpunit.phar
