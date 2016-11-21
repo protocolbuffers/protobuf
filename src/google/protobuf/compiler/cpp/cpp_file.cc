@@ -722,7 +722,7 @@ void FileGenerator::GenerateBuildDescriptors(io::Printer* printer) {
       "adddescriptorsname", GlobalAddDescriptorsName(file_->name()));
 
   if (!StaticInitializersForced(file_, options_)) {
-    printer->Print("#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER\n");
+    printer->Print("#ifndef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER\n");
   }
   printer->Print(
       // With static initializers.
