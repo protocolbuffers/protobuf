@@ -254,9 +254,9 @@ message TestMapFieldsNoBinary {
 }
 
 enum MapValueEnumNoBinary {
-  MAP_VALUE_FOO = 0;
-  MAP_VALUE_BAR = 1;
-  MAP_VALUE_BAZ = 2;
+  MAP_VALUE_FOO_NOBINARY = 0;
+  MAP_VALUE_BAR_NOBINARY = 1;
+  MAP_VALUE_BAZ_NOBINARY = 2;
 }
 
 message MapValueMessageNoBinary {
