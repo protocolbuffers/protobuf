@@ -290,7 +290,7 @@ FieldGeneratorMap<ImmutableFieldLiteGenerator>::~FieldGeneratorMap() {}
 
 void SetCommonFieldVariables(const FieldDescriptor* descriptor,
                              const FieldGeneratorInfo* info,
-                             map<string, string>* variables) {
+                             std::map<string, string>* variables) {
   (*variables)["field_name"] = descriptor->name();
   (*variables)["name"] = info->name;
   (*variables)["capitalized_name"] = info->capitalized_name;
@@ -301,7 +301,7 @@ void SetCommonFieldVariables(const FieldDescriptor* descriptor,
 
 void SetCommonOneofVariables(const FieldDescriptor* descriptor,
                              const OneofGeneratorInfo* info,
-                             map<string, string>* variables) {
+                             std::map<string, string>* variables) {
   (*variables)["oneof_name"] = info->name;
   (*variables)["oneof_capitalized_name"] = info->capitalized_name;
   (*variables)["oneof_index"] =
@@ -314,9 +314,9 @@ void SetCommonOneofVariables(const FieldDescriptor* descriptor,
       "Case_ == " + SimpleItoa(descriptor->number());
 }
 
-void PrintExtraFieldInfo(const map<string, string>& variables,
+void PrintExtraFieldInfo(const std::map<string, string>& variables,
                          io::Printer* printer) {
-  const map<string, string>::const_iterator it =
+  const std::map<string, string>::const_iterator it =
       variables.find("disambiguated_reason");
   if (it != variables.end() && !it->second.empty()) {
     printer->Print(

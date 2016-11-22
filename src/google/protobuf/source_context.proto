@@ -37,6 +37,7 @@ option java_package = "com.google.protobuf";
 option java_outer_classname = "SourceContextProto";
 option java_multiple_files = true;
 option objc_class_prefix = "GPB";
+option go_package = "google.golang.org/genproto/protobuf/source_context;source_context";
 
 // `SourceContext` represents information about the source of a
 // protobuf element, like the file in which it is defined.

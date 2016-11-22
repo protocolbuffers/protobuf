@@ -217,7 +217,7 @@ class CommandLineInterfaceTest : public testing::Test {
   string captured_stdout_;
 
   // Pointers which need to be deleted later.
-  vector<CodeGenerator*> mock_generators_to_delete_;
+  std::vector<CodeGenerator*> mock_generators_to_delete_;
 
   NullCodeGenerator* null_generator_;
 };
@@ -291,7 +291,7 @@ void CommandLineInterfaceTest::TearDown() {
 }
 
 void CommandLineInterfaceTest::Run(const string& command) {
-  vector<string> args = Split(command, " ", true);
+  std::vector<string> args = Split(command, " ", true);
 
   if (!disallow_plugins_) {
     cli_.AllowPlugins("prefix-");
@@ -653,44 +653,6 @@ TEST_F(CommandLineInterfaceTest, ExtraGeneratorParameters) {
       "test_generator", "baz,foo1,foo2,foo3", "foo.proto", "Foo", "b");
 }
 
-TEST_F(CommandLineInterfaceTest, ExtraPluginParameters) {
-  // Test that generator parameters specified with the option flag are
-  // correctly passed to the code generator.
-
-  CreateTempFile("foo.proto",
-    "syntax = \"proto2\";\n"
-    "message Foo {}\n");
-  // Create the "a" and "b" sub-directories.
-  CreateTempDir("a");
-  CreateTempDir("b");
-
-  Run("protocol_compiler "
-      "--plug_opt=foo1 "
-      "--plug_out=bar:$tmpdir/a "
-      "--plug_opt=foo2 "
-      "--plug_out=baz:$tmpdir/b "
-      "--plug_opt=foo3 "
-      "--proto_path=$tmpdir foo.proto");
-
-  ExpectNoErrors();
-  ExpectGenerated(
-      "test_plugin", "bar,foo1,foo2,foo3", "foo.proto", "Foo", "a");
-  ExpectGenerated(
-      "test_plugin", "baz,foo1,foo2,foo3", "foo.proto", "Foo", "b");
-}
-
-TEST_F(CommandLineInterfaceTest, UnrecognizedExtraParameters) {
-  CreateTempFile("foo.proto",
-    "syntax = \"proto2\";\n"
-    "message Foo {}\n");
-
-  Run("protocol_compiler --plug_out=TestParameter:$tmpdir "
-      "--unknown_plug_opt=Foo "
-      "--proto_path=$tmpdir foo.proto");
-
-  ExpectErrorSubstring("Unknown flag: --unknown_plug_opt");
-}
-
 TEST_F(CommandLineInterfaceTest, Insert) {
   // Test running a generator that inserts code into another's output.
 
@@ -759,7 +721,7 @@ TEST_F(CommandLineInterfaceTest, TrailingBackslash) {
 
 TEST_F(CommandLineInterfaceTest, Win32ErrorMessage) {
   EXPECT_EQ("The system cannot find the file specified.\r\n",
-    Subprocess::Win32ErrorMessage(ERROR_FILE_NOT_FOUND));
+            Subprocess::Win32ErrorMessage(ERROR_FILE_NOT_FOUND));
 }
 
 #endif  // defined(_WIN32) || defined(__CYGWIN__)
@@ -1856,7 +1818,7 @@ class EncodeDecodeTest : public testing::Test {
   enum ReturnCode { SUCCESS, ERROR };
 
   bool Run(const string& command) {
-    vector<string> args;
+    std::vector<string> args;
     args.push_back("protoc");
     SplitStringUsing(command, " ", &args);
     args.push_back("--proto_path=" + TestSourceDir());

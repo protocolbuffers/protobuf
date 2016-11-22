@@ -519,7 +519,7 @@ class LIBPROTOBUF_EXPORT Reflection {
   // will only be present when the new unknown-enum-value semantics are enabled
   // for a message.)
   virtual int GetEnumValue(
-      const Message& message, const FieldDescriptor* field) const;
+      const Message& message, const FieldDescriptor* field) const = 0;
 
   // See MutableMessage() for the meaning of the "factory" parameter.
   virtual const Message& GetMessage(const Message& message,
@@ -575,7 +575,7 @@ class LIBPROTOBUF_EXPORT Reflection {
   // messages with new unknown-enum-value semantics.
   virtual void SetEnumValue(Message* message,
                             const FieldDescriptor* field,
-                            int value) const;
+                            int value) const = 0;
 
   // Get a mutable pointer to a field with a message type.  If a MessageFactory
   // is provided, it will be used to construct instances of the sub-message;
@@ -646,7 +646,7 @@ class LIBPROTOBUF_EXPORT Reflection {
   // for a message.)
   virtual int GetRepeatedEnumValue(
       const Message& message,
-      const FieldDescriptor* field, int index) const;
+      const FieldDescriptor* field, int index) const = 0;
   virtual const Message& GetRepeatedMessage(
       const Message& message,
       const FieldDescriptor* field, int index) const = 0;
@@ -693,7 +693,7 @@ class LIBPROTOBUF_EXPORT Reflection {
   // messages with new unknown-enum-value semantics.
   virtual void SetRepeatedEnumValue(Message* message,
                                     const FieldDescriptor* field, int index,
-                                    int value) const;
+                                    int value) const = 0;
   // Get a mutable pointer to an element of a repeated field with a message
   // type.
   virtual Message* MutableRepeatedMessage(
@@ -729,7 +729,7 @@ class LIBPROTOBUF_EXPORT Reflection {
   // messages with new unknown-enum-value semantics.
   virtual void AddEnumValue(Message* message,
                             const FieldDescriptor* field,
-                            int value) const;
+                            int value) const = 0;
   // See MutableMessage() for comments on the "factory" parameter.
   virtual Message* AddMessage(Message* message,
                               const FieldDescriptor* field,
@@ -848,34 +848,31 @@ class LIBPROTOBUF_EXPORT Reflection {
   // downgrade to a compatible value or use the UnknownFieldSet if not. For
   // example:
   //
-  // int new_value = GetValueFromApplicationLogic();
-  // if (reflection->SupportsUnknownEnumValues()) {
+  //   int new_value = GetValueFromApplicationLogic();
+  //   if (reflection->SupportsUnknownEnumValues()) {
   //     reflection->SetEnumValue(message, field, new_value);
-  // } else {
+  //   } else {
   //     if (field_descriptor->enum_type()->
   //             FindValueByNumver(new_value) != NULL) {
-  //         reflection->SetEnumValue(message, field, new_value);
+  //       reflection->SetEnumValue(message, field, new_value);
   //     } else if (emit_unknown_enum_values) {
-  //         reflection->MutableUnknownFields(message)->AddVarint(
-  //             field->number(),
-  //             new_value);
+  //       reflection->MutableUnknownFields(message)->AddVarint(
+  //           field->number(), new_value);
   //     } else {
-  //         // convert value to a compatible/default value.
-  //         new_value = CompatibleDowngrade(new_value);
-  //         reflection->SetEnumValue(message, field, new_value);
+  //       // convert value to a compatible/default value.
+  //       new_value = CompatibleDowngrade(new_value);
+  //       reflection->SetEnumValue(message, field, new_value);
   //     }
-  // }
+  //   }
   virtual bool SupportsUnknownEnumValues() const { return false; }
 
   // Returns the MessageFactory associated with this message.  This can be
   // useful for determining if a message is a generated message or not, for
   // example:
-  //
-  // if (message->GetReflection()->GetMessageFactory() ==
-  //     google::protobuf::MessageFactory::generated_factory()) {
-  //   // This is a generated message.
-  // }
-  //
+  //   if (message->GetReflection()->GetMessageFactory() ==
+  //       google::protobuf::MessageFactory::generated_factory()) {
+  //     // This is a generated message.
+  //   }
   // It can also be used to create more messages of this type, though
   // Message::New() is an easier way to accomplish this.
   virtual MessageFactory* GetMessageFactory() const;

@@ -993,10 +993,14 @@ TEST_F(TextFormatTest, ParseExotic) {
   EXPECT_EQ(1.235E22  , message.repeated_double(4));
   EXPECT_EQ(1.235E-18 , message.repeated_double(5));
   EXPECT_EQ(123.456789, message.repeated_double(6));
-  EXPECT_EQ(message.repeated_double(7), numeric_limits<double>::infinity());
-  EXPECT_EQ(message.repeated_double(8), numeric_limits<double>::infinity());
-  EXPECT_EQ(message.repeated_double(9), -numeric_limits<double>::infinity());
-  EXPECT_EQ(message.repeated_double(10), -numeric_limits<double>::infinity());
+  EXPECT_EQ(message.repeated_double(7),
+            std::numeric_limits<double>::infinity());
+  EXPECT_EQ(message.repeated_double(8),
+            std::numeric_limits<double>::infinity());
+  EXPECT_EQ(message.repeated_double(9),
+            -std::numeric_limits<double>::infinity());
+  EXPECT_EQ(message.repeated_double(10),
+            -std::numeric_limits<double>::infinity());
   EXPECT_TRUE(MathLimits<double>::IsNaN(message.repeated_double(11)));
   EXPECT_TRUE(MathLimits<double>::IsNaN(message.repeated_double(12)));
 
@@ -1500,7 +1504,7 @@ TEST_F(TextFormatParserTest, ExplicitDelimiters) {
 }
 
 TEST_F(TextFormatParserTest, PrintErrorsToStderr) {
-  vector<string> errors;
+  std::vector<string> errors;
 
   {
     ScopedMemoryLog log;
@@ -1517,7 +1521,7 @@ TEST_F(TextFormatParserTest, PrintErrorsToStderr) {
 }
 
 TEST_F(TextFormatParserTest, FailsOnTokenizationError) {
-  vector<string> errors;
+  std::vector<string> errors;
 
   {
     ScopedMemoryLog log;
@@ -1576,7 +1580,7 @@ TEST_F(TextFormatMessageSetTest, Deserialize) {
     protobuf_unittest::TestMessageSetExtension2::message_set_extension).str());
 
   // Ensure that these are the only entries present.
-  vector<const FieldDescriptor*> descriptors;
+  std::vector<const FieldDescriptor*> descriptors;
   proto.message_set().GetReflection()->ListFields(
     proto.message_set(), &descriptors);
   EXPECT_EQ(2, descriptors.size());

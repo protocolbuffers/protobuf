@@ -10,7 +10,7 @@ configuration:
 environment:
   matrix:
     - language: cpp
-      BUILD_DLL: ON
+      BUILD_DLL: OFF
       UNICODE: ON
 
     - language: csharp

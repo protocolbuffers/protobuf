@@ -80,7 +80,7 @@ int FixedSize(FieldDescriptor::Type type) {
 }
 
 void SetPrimitiveVariables(const FieldDescriptor* descriptor,
-                           map<string, string>* variables,
+                           std::map<string, string>* variables,
                            const Options& options) {
   SetCommonFieldVariables(descriptor, variables, options);
   (*variables)["type"] = PrimitiveTypeName(descriptor->cpp_type());
@@ -122,7 +122,7 @@ GenerateAccessorDeclarations(io::Printer* printer) const {
 
 void PrimitiveFieldGenerator::
 GenerateInlineAccessorDefinitions(io::Printer* printer, bool is_inline) const {
-  map<string, string> variables(variables_);
+  std::map<string, string> variables(variables_);
   variables["inline"] = is_inline ? "inline " : "";
   printer->Print(variables,
     "$inline$$type$ $classname$::$name$() const {\n"
@@ -154,6 +154,11 @@ GenerateSwappingCode(io::Printer* printer) const {
 void PrimitiveFieldGenerator::
 GenerateConstructorCode(io::Printer* printer) const {
   printer->Print(variables_, "$name$_ = $default$;\n");
+}
+
+void PrimitiveFieldGenerator::
+GenerateCopyConstructorCode(io::Printer* printer) const {
+  printer->Print(variables_, "$name$_ = from.$name$_;\n");
 }
 
 void PrimitiveFieldGenerator::
@@ -206,7 +211,7 @@ PrimitiveOneofFieldGenerator::~PrimitiveOneofFieldGenerator() {}
 
 void PrimitiveOneofFieldGenerator::
 GenerateInlineAccessorDefinitions(io::Printer* printer, bool is_inline) const {
-  map<string, string> variables(variables_);
+  std::map<string, string> variables(variables_);
   variables["inline"] = is_inline ? "inline " : "";
   printer->Print(variables,
     "$inline$$type$ $classname$::$name$() const {\n"
@@ -240,7 +245,7 @@ void PrimitiveOneofFieldGenerator::
 GenerateConstructorCode(io::Printer* printer) const {
   printer->Print(
       variables_,
-      "  $classname$_default_oneof_instance_->$name$_ = $default$;\n");
+      "  $classname$_default_oneof_instance_.$name$_ = $default$;\n");
 }
 
 void PrimitiveOneofFieldGenerator::
@@ -297,7 +302,7 @@ GenerateAccessorDeclarations(io::Printer* printer) const {
 
 void RepeatedPrimitiveFieldGenerator::
 GenerateInlineAccessorDefinitions(io::Printer* printer, bool is_inline) const {
-  map<string, string> variables(variables_);
+  std::map<string, string> variables(variables_);
   variables["inline"] = is_inline ? "inline " : "";
   printer->Print(variables,
     "$inline$$type$ $classname$::$name$(int index) const {\n"
@@ -336,11 +341,6 @@ GenerateMergingCode(io::Printer* printer) const {
 }
 
 void RepeatedPrimitiveFieldGenerator::
-GenerateUnsafeMergingCode(io::Printer* printer) const {
-  printer->Print(variables_, "$name$_.UnsafeMergeFrom(from.$name$_);\n");
-}
-
-void RepeatedPrimitiveFieldGenerator::
 GenerateSwappingCode(io::Printer* printer) const {
   printer->Print(variables_, "$name$_.UnsafeArenaSwap(&other->$name$_);\n");
 }
@@ -348,6 +348,11 @@ GenerateSwappingCode(io::Printer* printer) const {
 void RepeatedPrimitiveFieldGenerator::
 GenerateConstructorCode(io::Printer* printer) const {
   // Not needed for repeated fields.
+}
+
+void RepeatedPrimitiveFieldGenerator::
+GenerateCopyConstructorCode(io::Printer* printer) const {
+  printer->Print(variables_, "$name$_.CopyFrom(from.$name$_);\n");
 }
 
 void RepeatedPrimitiveFieldGenerator::

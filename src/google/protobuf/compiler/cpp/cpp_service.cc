@@ -143,7 +143,7 @@ void ServiceGenerator::GenerateMethodSignatures(
     VirtualOrNon virtual_or_non, io::Printer* printer) {
   for (int i = 0; i < descriptor_->method_count(); i++) {
     const MethodDescriptor* method = descriptor_->method(i);
-    map<string, string> sub_vars;
+    std::map<string, string> sub_vars;
     sub_vars["name"] = method->name();
     sub_vars["input_type"] = ClassName(method->input_type(), true);
     sub_vars["output_type"] = ClassName(method->output_type(), true);
@@ -161,7 +161,7 @@ void ServiceGenerator::GenerateMethodSignatures(
 
 void ServiceGenerator::GenerateDescriptorInitializer(
     io::Printer* printer, int index) {
-  map<string, string> vars;
+  std::map<string, string> vars;
   vars["classname"] = descriptor_->name();
   vars["index"] = SimpleItoa(index);
 
@@ -172,19 +172,20 @@ void ServiceGenerator::GenerateDescriptorInitializer(
 // ===================================================================
 
 void ServiceGenerator::GenerateImplementation(io::Printer* printer) {
-  printer->Print(vars_,
-    "$classname$::~$classname$() {}\n"
-    "\n"
-    "const ::google::protobuf::ServiceDescriptor* $classname$::descriptor() {\n"
-    "  protobuf_AssignDescriptorsOnce();\n"
-    "  return $classname$_descriptor_;\n"
-    "}\n"
-    "\n"
-    "const ::google::protobuf::ServiceDescriptor* $classname$::GetDescriptor() {\n"
-    "  protobuf_AssignDescriptorsOnce();\n"
-    "  return $classname$_descriptor_;\n"
-    "}\n"
-    "\n");
+  vars_["index"] = SimpleItoa(index_in_metadata_);
+  printer->Print(
+      vars_,
+      "$classname$::~$classname$() {}\n"
+      "\n"
+      "const ::google::protobuf::ServiceDescriptor* $classname$::descriptor() {\n"
+      "  protobuf_AssignDescriptorsOnce();\n"
+      "  return file_level_service_descriptors[$index$];\n"
+      "}\n"
+      "\n"
+      "const ::google::protobuf::ServiceDescriptor* $classname$::GetDescriptor() {\n"
+      "  return descriptor();\n"
+      "}\n"
+      "\n");
 
   // Generate methods of the interface.
   GenerateNotImplementedMethods(printer);
@@ -212,7 +213,7 @@ void ServiceGenerator::GenerateImplementation(io::Printer* printer) {
 void ServiceGenerator::GenerateNotImplementedMethods(io::Printer* printer) {
   for (int i = 0; i < descriptor_->method_count(); i++) {
     const MethodDescriptor* method = descriptor_->method(i);
-    map<string, string> sub_vars;
+    std::map<string, string> sub_vars;
     sub_vars["classname"] = descriptor_->name();
     sub_vars["name"] = method->name();
     sub_vars["index"] = SimpleItoa(i);
@@ -232,18 +233,20 @@ void ServiceGenerator::GenerateNotImplementedMethods(io::Printer* printer) {
 }
 
 void ServiceGenerator::GenerateCallMethod(io::Printer* printer) {
-  printer->Print(vars_,
-    "void $classname$::CallMethod(const ::google::protobuf::MethodDescriptor* method,\n"
-    "                             ::google::protobuf::RpcController* controller,\n"
-    "                             const ::google::protobuf::Message* request,\n"
-    "                             ::google::protobuf::Message* response,\n"
-    "                             ::google::protobuf::Closure* done) {\n"
-    "  GOOGLE_DCHECK_EQ(method->service(), $classname$_descriptor_);\n"
-    "  switch(method->index()) {\n");
+  printer->Print(
+      vars_,
+      "void $classname$::CallMethod(const ::google::protobuf::MethodDescriptor* method,\n"
+      "                             ::google::protobuf::RpcController* controller,\n"
+      "                             const ::google::protobuf::Message* request,\n"
+      "                             ::google::protobuf::Message* response,\n"
+      "                             ::google::protobuf::Closure* done) {\n"
+      "  GOOGLE_DCHECK_EQ(method->service(), "
+      "file_level_service_descriptors[$index$]);\n"
+      "  switch(method->index()) {\n");
 
   for (int i = 0; i < descriptor_->method_count(); i++) {
     const MethodDescriptor* method = descriptor_->method(i);
-    map<string, string> sub_vars;
+    std::map<string, string> sub_vars;
     sub_vars["name"] = method->name();
     sub_vars["index"] = SimpleItoa(i);
     sub_vars["input_type"] = ClassName(method->input_type(), true);
@@ -289,7 +292,7 @@ void ServiceGenerator::GenerateGetPrototype(RequestOrResponse which,
     const Descriptor* type =
       (which == REQUEST) ? method->input_type() : method->output_type();
 
-    map<string, string> sub_vars;
+    std::map<string, string> sub_vars;
     sub_vars["index"] = SimpleItoa(i);
     sub_vars["type"] = ClassName(type, true);
 
@@ -312,7 +315,7 @@ void ServiceGenerator::GenerateGetPrototype(RequestOrResponse which,
 void ServiceGenerator::GenerateStubMethods(io::Printer* printer) {
   for (int i = 0; i < descriptor_->method_count(); i++) {
     const MethodDescriptor* method = descriptor_->method(i);
-    map<string, string> sub_vars;
+    std::map<string, string> sub_vars;
     sub_vars["classname"] = descriptor_->name();
     sub_vars["name"] = method->name();
     sub_vars["index"] = SimpleItoa(i);

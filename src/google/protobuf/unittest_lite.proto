@@ -163,6 +163,9 @@ message TestAllTypesLite {
     bytes oneof_bytes = 114;
     NestedMessage oneof_lazy_nested_message = 115 [lazy = true];
   }
+
+  // Tests toString for non-repeated fields with a list suffix
+  optional int32 deceptively_named_list = 116;
 }
 
 message ForeignMessageLite {
@@ -404,4 +407,35 @@ message V1MessageLite {
 message V2MessageLite {
     required int32 int_field = 1;
     optional V2EnumLite enum_field = 2 [ default = V2_FIRST ];
+}
+
+message TestHugeFieldNumbersLite {
+  optional int32 optional_int32 = 536870000;
+  optional int32 fixed_32 = 536870001;
+  repeated int32 repeated_int32 = 536870002 [packed = false];
+  repeated int32 packed_int32 = 536870003 [packed = true];
+
+  optional ForeignEnumLite optional_enum = 536870004;
+  optional string optional_string = 536870005;
+  optional bytes optional_bytes = 536870006;
+  optional ForeignMessageLite optional_message = 536870007;
+
+  optional group OptionalGroup = 536870008 {
+    optional int32 group_a = 536870009;
+  }
+
+  map<string, string> string_string_map = 536870010;
+
+  oneof oneof_field {
+    uint32 oneof_uint32 = 536870011;
+    TestAllTypesLite oneof_test_all_types = 536870012;
+    string oneof_string = 536870013;
+    bytes oneof_bytes = 536870014;
+  }
+
+  extensions  536860000 to 536869999;
+}
+
+extend TestHugeFieldNumbersLite {
+  optional TestAllTypesLite test_all_types_lite = 536860000;
 }

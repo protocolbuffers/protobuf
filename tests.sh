@@ -39,10 +39,10 @@ build_cpp() {
   cd conformance && make test_cpp && cd ..
 
   # Verify benchmarking code can build successfully.
-  git submodule init
-  git submodule update
-  cd third_party/benchmark && cmake -DCMAKE_BUILD_TYPE=Release && make && cd ../..
-  cd benchmarks && make && ./generate-datasets && cd ..
+  # git submodule init
+  # git submodule update
+  # cd third_party/benchmark && cmake -DCMAKE_BUILD_TYPE=Release && make && cd ../..
+  # cd benchmarks && make && ./generate-datasets && cd ..
 }
 
 build_cpp_distcheck() {

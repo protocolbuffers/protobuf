@@ -255,6 +255,9 @@ class LIBPROTOBUF_EXPORT JsonStreamParser {
   // value.
   bool allow_empty_null_;
 
+  // Whether allows out-of-range floating point numbers or reject them.
+  bool loose_float_number_conversion_;
+
   GOOGLE_DISALLOW_IMPLICIT_CONSTRUCTORS(JsonStreamParser);
 };
 
