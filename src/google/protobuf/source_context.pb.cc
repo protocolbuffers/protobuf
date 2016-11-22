@@ -94,9 +94,11 @@ void protobuf_AddDesc_google_2fprotobuf_2fsource_5fcontext_2eproto_impl() {
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
     "\n$google/protobuf/source_context.proto\022\017"
     "google.protobuf\"\"\n\rSourceContext\022\021\n\tfile"
-    "_name\030\001 \001(\tBR\n\023com.google.protobufB\022Sour"
-    "ceContextProtoP\001\242\002\003GPB\252\002\036Google.Protobuf"
-    ".WellKnownTypesb\006proto3", 183);
+    "_name\030\001 \001(\tB\225\001\n\023com.google.protobufB\022Sou"
+    "rceContextProtoP\001ZAgoogle.golang.org/gen"
+    "proto/protobuf/source_context;source_con"
+    "text\242\002\003GPB\252\002\036Google.Protobuf.WellKnownTy"
+    "pesb\006proto3", 251);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "google/protobuf/source_context.proto", &protobuf_RegisterTypes);
   ::google::protobuf::internal::OnShutdown(&protobuf_ShutdownFile_google_2fprotobuf_2fsource_5fcontext_2eproto);

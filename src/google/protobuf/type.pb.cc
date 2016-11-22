@@ -253,9 +253,10 @@ void protobuf_AddDesc_google_2fprotobuf_2ftype_2eproto_impl() {
     "\003 \003(\0132\027.google.protobuf.Option\";\n\006Option"
     "\022\014\n\004name\030\001 \001(\t\022#\n\005value\030\002 \001(\0132\024.google.p"
     "rotobuf.Any*.\n\006Syntax\022\021\n\rSYNTAX_PROTO2\020\000"
-    "\022\021\n\rSYNTAX_PROTO3\020\001BL\n\023com.google.protob"
-    "ufB\tTypeProtoP\001\370\001\001\242\002\003GPB\252\002\036Google.Protob"
-    "uf.WellKnownTypesb\006proto3", 1545);
+    "\022\021\n\rSYNTAX_PROTO3\020\001B}\n\023com.google.protob"
+    "ufB\tTypeProtoP\001Z/google.golang.org/genpr"
+    "oto/protobuf/ptype;ptype\370\001\001\242\002\003GPB\252\002\036Goog"
+    "le.Protobuf.WellKnownTypesb\006proto3", 1594);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "google/protobuf/type.proto", &protobuf_RegisterTypes);
   ::google::protobuf::protobuf_AddDesc_google_2fprotobuf_2fany_2eproto();
