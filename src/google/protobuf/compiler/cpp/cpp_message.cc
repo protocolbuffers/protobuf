@@ -2984,7 +2984,7 @@ GenerateMergeFromCodedStream(io::Printer* printer) {
   }
 
   printer->Print("::std::pair< ::google::protobuf::uint32, bool> p = "
-                 "input->ReadTagWithCutoff$lasttag$($max$);\n"
+                 "input->ReadTagWithCutoff$lasttag$($max$u);\n"
                  "tag = p.first;\n"
                  "if (!p.second) goto handle_unusual;\n",
                  "max", SimpleItoa(maxtag <= kCutoff0 ? kCutoff0 :
@@ -3037,7 +3037,7 @@ GenerateMergeFromCodedStream(io::Printer* printer) {
       const FieldGenerator& field_generator = field_generators_.get(field);
 
       // Emit code to parse the common, expected case.
-      printer->Print("if (tag == $commontag$) {\n",
+      printer->Print("if (tag == $commontag$u) {\n",
                      "commontag", SimpleItoa(WireFormat::MakeTag(field)));
 
       if (loops) {
@@ -3056,7 +3056,7 @@ GenerateMergeFromCodedStream(io::Printer* printer) {
       if (field->is_packed()) {
         internal::WireFormatLite::WireType wiretype =
             WireFormat::WireTypeForFieldType(field->type());
-        printer->Print("} else if (tag == $uncommontag$) {\n",
+        printer->Print("} else if (tag == $uncommontag$u) {\n",
                        "uncommontag", SimpleItoa(
                            internal::WireFormatLite::MakeTag(
                                field->number(), wiretype)));
@@ -3066,7 +3066,7 @@ GenerateMergeFromCodedStream(io::Printer* printer) {
       } else if (field->is_packable() && !field->is_packed()) {
         internal::WireFormatLite::WireType wiretype =
             internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED;
-        printer->Print("} else if (tag == $uncommontag$) {\n",
+        printer->Print("} else if (tag == $uncommontag$u) {\n",
                        "uncommontag", SimpleItoa(
                            internal::WireFormatLite::MakeTag(
                                field->number(), wiretype)));

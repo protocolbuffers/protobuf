@@ -230,7 +230,7 @@ GenerateMergeFromCodedStream(io::Printer* printer) const {
           "->AddLengthDelimited($number$, data);\n");
     } else {
       printer->Print(variables_,
-          "    unknown_fields_stream.WriteVarint32($tag$);\n"
+          "    unknown_fields_stream.WriteVarint32($tag$u);\n"
           "    unknown_fields_stream.WriteVarint32(data.size());\n"
           "    unknown_fields_stream.WriteString(data);\n");
     }

@@ -360,7 +360,7 @@ GenerateMergeFromCodedStream(io::Printer* printer) const {
   printer->Print(variables_,
     "DO_((::google::protobuf::internal::WireFormatLite::$repeated_reader$<\n"
     "         $type$, $wire_format_field_type$>(\n"
-    "       $tag_size$, $tag$, input, this->mutable_$name$())));\n");
+    "       $tag_size$, $tag$u, input, this->mutable_$name$())));\n");
 }
 
 void RepeatedPrimitiveFieldGenerator::

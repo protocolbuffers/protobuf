@@ -147,7 +147,7 @@ GenerateMergeFromCodedStream(io::Printer* printer) const {
     } else {
       printer->Print(
         "} else {\n"
-        "  unknown_fields_stream.WriteVarint32($tag$);\n"
+        "  unknown_fields_stream.WriteVarint32($tag$u);\n"
         "  unknown_fields_stream.WriteVarint32(value);\n",
         "tag", SimpleItoa(internal::WireFormat::MakeTag(descriptor_)));
     }
