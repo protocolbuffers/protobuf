@@ -66,7 +66,7 @@ bool JavaGenerator::Generate(const FileDescriptor* file,
   // parse generator options
 
 
-  vector<pair<string, string> > options;
+  std::vector<std::pair<string, string> > options;
   ParseGeneratorParameter(parameter, &options);
   Options file_options;
 
@@ -105,11 +105,11 @@ bool JavaGenerator::Generate(const FileDescriptor* file,
   // -----------------------------------------------------------------
 
 
-  vector<string> all_files;
-  vector<string> all_annotations;
+  std::vector<string> all_files;
+  std::vector<string> all_annotations;
 
 
-  vector<FileGenerator*> file_generators;
+  std::vector<FileGenerator*> file_generators;
   if (file_options.generate_immutable_code) {
     file_generators.push_back(new FileGenerator(file, file_options,
                                                 /* immutable = */ true));

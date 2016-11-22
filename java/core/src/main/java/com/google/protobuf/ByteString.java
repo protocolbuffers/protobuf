@@ -51,14 +51,12 @@ import java.util.List;
 import java.util.NoSuchElementException;
 
 /**
- * Immutable sequence of bytes.  Substring is supported by sharing the reference
- * to the immutable underlying bytes.  Concatenation is likewise supported
- * without copying (long strings) by building a tree of pieces in
- * {@link RopeByteString}.
- * <p>
- * Like {@link String}, the contents of a {@link ByteString} can never be
- * observed to change, not even in the presence of a data race or incorrect
- * API usage in the client code.
+ * Immutable sequence of bytes. Substring is supported by sharing the reference to the immutable
+ * underlying bytes. Concatenation is likewise supported without copying (long strings) by building
+ * a tree of pieces in {@link RopeByteString}.
+ *
+ * <p>Like {@link String}, the contents of a {@link ByteString} can never be observed to change, not
+ * even in the presence of a data race or incorrect API usage in the client code.
  *
  * @author crazybob@google.com Bob Lee
  * @author kenton@google.com Kenton Varda
@@ -565,7 +563,9 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
   // Create a balanced concatenation of the next "length" elements from the
   // iterable.
   private static ByteString balancedConcat(Iterator<ByteString> iterator, int length) {
-    assert length >= 1;
+    if (length < 1) {
+      throw new IllegalArgumentException(String.format("length (%s) must be >= 1", length));
+    }
     ByteString result;
     if (length == 1) {
       result = iterator.next();

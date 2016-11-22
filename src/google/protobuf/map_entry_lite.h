@@ -171,7 +171,7 @@ class MapEntryLite : public MessageLite {
       // need to care whether the value is unknown enum;
       // 4) missing key/value: missed key/value will have default value. caller
       // should take this entry as if key/value is set to default value.
-      tag = input->ReadTag();
+      tag = input->ReadTagNoLastTag();
       switch (tag) {
         case kKeyTag:
           if (!KeyTypeHandler::Read(input, mutable_key())) {
@@ -333,7 +333,7 @@ class MapEntryLite : public MessageLite {
         int size;
         input->GetDirectBufferPointerInline(&data, &size);
         // We could use memcmp here, but we don't bother. The tag is one byte.
-        assert(kTagSize == 1);
+        GOOGLE_COMPILE_ASSERT(kTagSize == 1, tag_size_error);
         if (size > 0 && *reinterpret_cast<const char*>(data) == kValueTag) {
           typename Map::size_type size = map_->size();
           value_ptr_ = &(*map_)[key_];
@@ -357,15 +357,17 @@ class MapEntryLite : public MessageLite {
 
       entry_.reset(mf_->NewEntry());
       *entry_->mutable_key() = key_;
-      if (!entry_->MergePartialFromCodedStream(input)) return false;
-      return UseKeyAndValueFromEntry();
+      const bool result = entry_->MergePartialFromCodedStream(input);
+      if (result) UseKeyAndValueFromEntry();
+      if (entry_->GetArena() != NULL) entry_.release();
+      return result;
     }
 
     const Key& key() const { return key_; }
     const Value& value() const { return *value_ptr_; }
 
    private:
-    bool UseKeyAndValueFromEntry() GOOGLE_ATTRIBUTE_COLD {
+    void UseKeyAndValueFromEntry() GOOGLE_ATTRIBUTE_COLD {
       // Update key_ in case we need it later (because key() is called).
       // This is potentially inefficient, especially if the key is
       // expensive to copy (e.g., a long string), but this is a cold
@@ -377,8 +379,6 @@ class MapEntryLite : public MessageLite {
                  ValueTypeHandler::kWireType ==
                  WireFormatLite::WIRETYPE_LENGTH_DELIMITED,
                  Value>::Move(entry_->mutable_value(), value_ptr_);
-      if (entry_->GetArena() != NULL) entry_.release();
-      return true;
     }
 
     // After reading a key and value successfully, and inserting that data
@@ -400,15 +400,18 @@ class MapEntryLite : public MessageLite {
       ValueMover::Move(value_ptr_, entry_->mutable_value());
       map_->erase(key_);
       KeyMover::Move(&key_, entry_->mutable_key());
-      if (!entry_->MergePartialFromCodedStream(input)) return false;
-      return UseKeyAndValueFromEntry();
+      const bool result = entry_->MergePartialFromCodedStream(input);
+      if (result) UseKeyAndValueFromEntry();
+      if (entry_->GetArena() != NULL) entry_.release();
+      return result;
     }
 
     MapField* const mf_;
     Map* const map_;
     Key key_;
     Value* value_ptr_;
-    // On the fast path entry_ is not used.
+    // On the fast path entry_ is not used.  And, when entry_ is used, it's set
+    // to mf_->NewEntry(), so in the arena case we must call entry_.release.
     google::protobuf::scoped_ptr<MapEntryLite> entry_;
   };
 

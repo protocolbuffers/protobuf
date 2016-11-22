@@ -101,6 +101,19 @@ public class LazyMessageLiteTest extends TestCase {
     assertEquals(119, outer.getRepeatedInner(0).getNum());
     assertEquals(122, outer.getRepeatedInner(1).getNum());
   }
+  
+  public void testRepeatedMutability() throws Exception {
+    LazyMessageLite outer = LazyMessageLite.newBuilder()
+        .addRepeatedInner(LazyInnerMessageLite.newBuilder().setNum(119))
+        .addRepeatedInner(LazyInnerMessageLite.newBuilder().setNum(122))
+        .build();
+    
+    outer = LazyMessageLite.parseFrom(outer.toByteArray());
+    try {
+      outer.getRepeatedInnerList().set(1, null);
+      fail();
+    } catch (UnsupportedOperationException expected) {}
+  }
 
   public void testAddAll() {
     ArrayList<LazyInnerMessageLite> inners = new ArrayList<LazyInnerMessageLite>();

@@ -169,7 +169,7 @@ struct FieldGeneratorInfo {
   string disambiguated_reason;
 };
 
-// Oneof information used in OneofFieldGeneartors.
+// Oneof information used in OneofFieldGenerators.
 struct OneofGeneratorInfo {
   string name;
   string capitalized_name;
@@ -178,15 +178,15 @@ struct OneofGeneratorInfo {
 // Set some common variables used in variable FieldGenerators.
 void SetCommonFieldVariables(const FieldDescriptor* descriptor,
                              const FieldGeneratorInfo* info,
-                             map<string, string>* variables);
+                             std::map<string, string>* variables);
 
 // Set some common oneof variables used in OneofFieldGenerators.
 void SetCommonOneofVariables(const FieldDescriptor* descriptor,
                              const OneofGeneratorInfo* info,
-                             map<string, string>* variables);
+                             std::map<string, string>* variables);
 
 // Print useful comments before a field's accessors.
-void PrintExtraFieldInfo(const map<string, string>& variables,
+void PrintExtraFieldInfo(const std::map<string, string>& variables,
                          io::Printer* printer);
 
 }  // namespace java

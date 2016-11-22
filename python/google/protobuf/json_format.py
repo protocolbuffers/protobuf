@@ -43,9 +43,9 @@ Simple usage example:
 __author__ = 'jieluo@google.com (Jie Luo)'
 
 try:
-    from collections import OrderedDict
+  from collections import OrderedDict
 except ImportError:
-    from ordereddict import OrderedDict  #PY26
+  from ordereddict import OrderedDict  #PY26
 import base64
 import json
 import math

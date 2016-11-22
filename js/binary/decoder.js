@@ -733,6 +733,24 @@ jspb.BinaryDecoder.prototype.readZigzagVarint64 = function() {
 
 
 /**
+ * Reads a signed, zigzag-encoded 64-bit varint from the binary stream and
+ * returns its valud as a string.
+ *
+ * Zigzag encoding is a modification of varint encoding that reduces the
+ * storage overhead for small negative integers - for more details on the
+ * format, see https://developers.google.com/protocol-buffers/docs/encoding
+ *
+ * @return {string} The decoded signed, zigzag-encoded 64-bit varint as a
+ * string.
+ */
+jspb.BinaryDecoder.prototype.readZigzagVarint64String = function() {
+  // TODO(haberman): write lossless 64-bit zig-zag math.
+  var value = this.readZigzagVarint64();
+  return value.toString();
+};
+
+
+/**
  * Reads a raw unsigned 8-bit integer from the binary stream.
  *
  * @return {number} The unsigned 8-bit integer read from the binary stream.
@@ -791,6 +809,20 @@ jspb.BinaryDecoder.prototype.readUint64 = function() {
 
 
 /**
+ * Reads a raw unsigned 64-bit integer from the binary stream. Note that since
+ * Javascript represents all numbers as double-precision floats, there will be
+ * precision lost if the absolute value of the integer is larger than 2^53.
+ *
+ * @return {string} The unsigned 64-bit integer read from the binary stream.
+ */
+jspb.BinaryDecoder.prototype.readUint64String = function() {
+  var bitsLow = this.readUint32();
+  var bitsHigh = this.readUint32();
+  return jspb.utils.joinUnsignedDecimalString(bitsLow, bitsHigh);
+};
+
+
+/**
  * Reads a raw signed 8-bit integer from the binary stream.
  *
  * @return {number} The signed 8-bit integer read from the binary stream.
@@ -845,6 +877,20 @@ jspb.BinaryDecoder.prototype.readInt64 = function() {
   var bitsLow = this.readUint32();
   var bitsHigh = this.readUint32();
   return jspb.utils.joinInt64(bitsLow, bitsHigh);
+};
+
+
+/**
+ * Reads a raw signed 64-bit integer from the binary stream and returns it as a
+ * string.
+ *
+ * @return {string} The signed 64-bit integer read from the binary stream.
+ *     Precision will be lost if the integer exceeds 2^53.
+ */
+jspb.BinaryDecoder.prototype.readInt64String = function() {
+  var bitsLow = this.readUint32();
+  var bitsHigh = this.readUint32();
+  return jspb.utils.joinSignedDecimalString(bitsLow, bitsHigh);
 };
 
 

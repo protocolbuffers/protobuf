@@ -45,6 +45,8 @@
 #include <google/protobuf/util/internal/object_writer.h>
 #include <google/protobuf/util/internal/json_escaping.h>
 #include <google/protobuf/stubs/strutil.h>
+#include <google/protobuf/stubs/mathlimits.h>
+
 
 namespace google {
 namespace protobuf {
@@ -108,7 +110,8 @@ JsonStreamParser::JsonStreamParser(ObjectWriter* ow)
       string_open_(0),
       chunk_storage_(),
       coerce_to_utf8_(false),
-      allow_empty_null_(false) {
+      allow_empty_null_(false),
+      loose_float_number_conversion_(false) {
   // Initialize the stack with a single value to be parsed.
   stack_.push(VALUE);
 }
@@ -531,6 +534,10 @@ util::Status JsonStreamParser::ParseNumberHelper(NumberResult* result) {
   if (floating) {
     if (!safe_strtod(number, &result->double_val)) {
       return ReportFailure("Unable to parse number.");
+    }
+    if (!loose_float_number_conversion_ &&
+        !MathLimits<double>::IsFinite(result->double_val)) {
+      return ReportFailure("Number exceeds the range of double.");
     }
     result->type = NumberResult::DOUBLE;
     p_.remove_prefix(index);

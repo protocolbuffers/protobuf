@@ -46,7 +46,7 @@ namespace cpp {
 namespace {
 
 void SetEnumVariables(const FieldDescriptor* descriptor,
-                      map<string, string>* variables,
+                      std::map<string, string>* variables,
                       const Options& options) {
   SetCommonFieldVariables(descriptor, variables, options);
   const EnumValueDescriptor* default_value = descriptor->default_value_enum();
@@ -82,7 +82,7 @@ GenerateAccessorDeclarations(io::Printer* printer) const {
 void EnumFieldGenerator::
 GenerateInlineAccessorDefinitions(io::Printer* printer,
                                   bool is_inline) const {
-  map<string, string> variables(variables_);
+  std::map<string, string> variables(variables_);
   variables["inline"] = is_inline ? "inline " : "";
   printer->Print(variables,
     "$inline$$type$ $classname$::$name$() const {\n"
@@ -119,6 +119,11 @@ GenerateSwappingCode(io::Printer* printer) const {
 void EnumFieldGenerator::
 GenerateConstructorCode(io::Printer* printer) const {
   printer->Print(variables_, "$name$_ = $default$;\n");
+}
+
+void EnumFieldGenerator::
+GenerateCopyConstructorCode(io::Printer* printer) const {
+  printer->Print(variables_, "$name$_ = from.$name$_;\n");
 }
 
 void EnumFieldGenerator::
@@ -186,7 +191,7 @@ EnumOneofFieldGenerator::~EnumOneofFieldGenerator() {}
 void EnumOneofFieldGenerator::
 GenerateInlineAccessorDefinitions(io::Printer* printer,
                                   bool is_inline) const {
-  map<string, string> variables(variables_);
+  std::map<string, string> variables(variables_);
   variables["inline"] = is_inline ? "inline " : "";
   printer->Print(variables,
     "$inline$$type$ $classname$::$name$() const {\n"
@@ -223,8 +228,9 @@ GenerateSwappingCode(io::Printer* printer) const {
 
 void EnumOneofFieldGenerator::
 GenerateConstructorCode(io::Printer* printer) const {
-  printer->Print(variables_,
-    "  $classname$_default_oneof_instance_->$name$_ = $default$;\n");
+  printer->Print(
+      variables_,
+      "  $classname$_default_oneof_instance_.$name$_ = $default$;\n");
 }
 
 // ===================================================================
@@ -262,7 +268,7 @@ GenerateAccessorDeclarations(io::Printer* printer) const {
 void RepeatedEnumFieldGenerator::
 GenerateInlineAccessorDefinitions(io::Printer* printer,
                                   bool is_inline) const {
-  map<string, string> variables(variables_);
+  std::map<string, string> variables(variables_);
   variables["inline"] = is_inline ? "inline " : "";
   printer->Print(variables,
     "$inline$$type$ $classname$::$name$(int index) const {\n"
@@ -308,11 +314,6 @@ GenerateClearingCode(io::Printer* printer) const {
 void RepeatedEnumFieldGenerator::
 GenerateMergingCode(io::Printer* printer) const {
   printer->Print(variables_, "$name$_.MergeFrom(from.$name$_);\n");
-}
-
-void RepeatedEnumFieldGenerator::
-GenerateUnsafeMergingCode(io::Printer* printer) const {
-  printer->Print(variables_, "$name$_.UnsafeMergeFrom(from.$name$_);\n");
 }
 
 void RepeatedEnumFieldGenerator::

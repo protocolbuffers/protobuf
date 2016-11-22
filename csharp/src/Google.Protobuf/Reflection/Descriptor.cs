@@ -120,9 +120,13 @@ namespace Google.Protobuf.Reflection {
             "COgHEICAgIACInsKDlNlcnZpY2VPcHRpb25zEhkKCmRlcHJlY2F0ZWQYISAB",
             "KAg6BWZhbHNlEkMKFHVuaW50ZXJwcmV0ZWRfb3B0aW9uGOcHIAMoCzIkLmdv",
             "b2dsZS5wcm90b2J1Zi5VbmludGVycHJldGVkT3B0aW9uKgkI6AcQgICAgAIi",
-            "egoNTWV0aG9kT3B0aW9ucxIZCgpkZXByZWNhdGVkGCEgASgIOgVmYWxzZRJD",
-            "ChR1bmludGVycHJldGVkX29wdGlvbhjnByADKAsyJC5nb29nbGUucHJvdG9i",
-            "dWYuVW5pbnRlcnByZXRlZE9wdGlvbioJCOgHEICAgIACIp4CChNVbmludGVy",
+            "rQIKDU1ldGhvZE9wdGlvbnMSGQoKZGVwcmVjYXRlZBghIAEoCDoFZmFsc2US",
+            "XwoRaWRlbXBvdGVuY3lfbGV2ZWwYIiABKA4yLy5nb29nbGUucHJvdG9idWYu",
+            "TWV0aG9kT3B0aW9ucy5JZGVtcG90ZW5jeUxldmVsOhNJREVNUE9URU5DWV9V",
+            "TktOT1dOEkMKFHVuaW50ZXJwcmV0ZWRfb3B0aW9uGOcHIAMoCzIkLmdvb2ds",
+            "ZS5wcm90b2J1Zi5VbmludGVycHJldGVkT3B0aW9uIlAKEElkZW1wb3RlbmN5",
+            "TGV2ZWwSFwoTSURFTVBPVEVOQ1lfVU5LTk9XThAAEhMKD05PX1NJREVfRUZG",
+            "RUNUUxABEg4KCklERU1QT1RFTlQQAioJCOgHEICAgIACIp4CChNVbmludGVy",
             "cHJldGVkT3B0aW9uEjsKBG5hbWUYAiADKAsyLS5nb29nbGUucHJvdG9idWYu",
             "VW5pbnRlcnByZXRlZE9wdGlvbi5OYW1lUGFydBIYChBpZGVudGlmaWVyX3Zh",
             "bHVlGAMgASgJEhoKEnBvc2l0aXZlX2ludF92YWx1ZRgEIAEoBBIaChJuZWdh",
@@ -160,7 +164,7 @@ namespace Google.Protobuf.Reflection {
             new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Reflection.EnumOptions), global::Google.Protobuf.Reflection.EnumOptions.Parser, new[]{ "AllowAlias", "Deprecated", "UninterpretedOption" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Reflection.EnumValueOptions), global::Google.Protobuf.Reflection.EnumValueOptions.Parser, new[]{ "Deprecated", "UninterpretedOption" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Reflection.ServiceOptions), global::Google.Protobuf.Reflection.ServiceOptions.Parser, new[]{ "Deprecated", "UninterpretedOption" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Reflection.MethodOptions), global::Google.Protobuf.Reflection.MethodOptions.Parser, new[]{ "Deprecated", "UninterpretedOption" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Reflection.MethodOptions), global::Google.Protobuf.Reflection.MethodOptions.Parser, new[]{ "Deprecated", "IdempotencyLevel", "UninterpretedOption" }, null, new[]{ typeof(global::Google.Protobuf.Reflection.MethodOptions.Types.IdempotencyLevel) }, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Reflection.UninterpretedOption), global::Google.Protobuf.Reflection.UninterpretedOption.Parser, new[]{ "Name", "IdentifierValue", "PositiveIntValue", "NegativeIntValue", "DoubleValue", "StringValue", "AggregateValue" }, null, null, new pbr::GeneratedClrTypeInfo[] { new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Reflection.UninterpretedOption.Types.NamePart), global::Google.Protobuf.Reflection.UninterpretedOption.Types.NamePart.Parser, new[]{ "NamePart_", "IsExtension" }, null, null, null)}),
             new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Reflection.SourceCodeInfo), global::Google.Protobuf.Reflection.SourceCodeInfo.Parser, new[]{ "Location" }, null, null, new pbr::GeneratedClrTypeInfo[] { new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Reflection.SourceCodeInfo.Types.Location), global::Google.Protobuf.Reflection.SourceCodeInfo.Types.Location.Parser, new[]{ "Path", "Span", "LeadingComments", "TrailingComments", "LeadingDetachedComments" }, null, null, null)}),
             new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Reflection.GeneratedCodeInfo), global::Google.Protobuf.Reflection.GeneratedCodeInfo.Parser, new[]{ "Annotation" }, null, null, new pbr::GeneratedClrTypeInfo[] { new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Reflection.GeneratedCodeInfo.Types.Annotation), global::Google.Protobuf.Reflection.GeneratedCodeInfo.Types.Annotation.Parser, new[]{ "Path", "SourceFile", "Begin", "End" }, null, null, null)})
@@ -1790,9 +1794,6 @@ namespace Google.Protobuf.Reflection {
         /// </summary>
         [pbr::OriginalName("LABEL_OPTIONAL")] Optional = 1,
         [pbr::OriginalName("LABEL_REQUIRED")] Required = 2,
-        /// <summary>
-        ///  TODO(sanjay): Should we add LABEL_MAP?
-        /// </summary>
         [pbr::OriginalName("LABEL_REPEATED")] Repeated = 3,
       }
 
@@ -4617,6 +4618,7 @@ namespace Google.Protobuf.Reflection {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public MethodOptions(MethodOptions other) : this() {
       deprecated_ = other.deprecated_;
+      idempotencyLevel_ = other.idempotencyLevel_;
       uninterpretedOption_ = other.uninterpretedOption_.Clone();
     }
 
@@ -4639,6 +4641,17 @@ namespace Google.Protobuf.Reflection {
       get { return deprecated_; }
       set {
         deprecated_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "idempotency_level" field.</summary>
+    public const int IdempotencyLevelFieldNumber = 34;
+    private global::Google.Protobuf.Reflection.MethodOptions.Types.IdempotencyLevel idempotencyLevel_ = 0;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::Google.Protobuf.Reflection.MethodOptions.Types.IdempotencyLevel IdempotencyLevel {
+      get { return idempotencyLevel_; }
+      set {
+        idempotencyLevel_ = value;
       }
     }
 
@@ -4669,6 +4682,7 @@ namespace Google.Protobuf.Reflection {
         return true;
       }
       if (Deprecated != other.Deprecated) return false;
+      if (IdempotencyLevel != other.IdempotencyLevel) return false;
       if(!uninterpretedOption_.Equals(other.uninterpretedOption_)) return false;
       return true;
     }
@@ -4677,6 +4691,7 @@ namespace Google.Protobuf.Reflection {
     public override int GetHashCode() {
       int hash = 1;
       if (Deprecated != false) hash ^= Deprecated.GetHashCode();
+      if (IdempotencyLevel != 0) hash ^= IdempotencyLevel.GetHashCode();
       hash ^= uninterpretedOption_.GetHashCode();
       return hash;
     }
@@ -4692,6 +4707,10 @@ namespace Google.Protobuf.Reflection {
         output.WriteRawTag(136, 2);
         output.WriteBool(Deprecated);
       }
+      if (IdempotencyLevel != 0) {
+        output.WriteRawTag(144, 2);
+        output.WriteEnum((int) IdempotencyLevel);
+      }
       uninterpretedOption_.WriteTo(output, _repeated_uninterpretedOption_codec);
     }
 
@@ -4700,6 +4719,9 @@ namespace Google.Protobuf.Reflection {
       int size = 0;
       if (Deprecated != false) {
         size += 2 + 1;
+      }
+      if (IdempotencyLevel != 0) {
+        size += 2 + pb::CodedOutputStream.ComputeEnumSize((int) IdempotencyLevel);
       }
       size += uninterpretedOption_.CalculateSize(_repeated_uninterpretedOption_codec);
       return size;
@@ -4712,6 +4734,9 @@ namespace Google.Protobuf.Reflection {
       }
       if (other.Deprecated != false) {
         Deprecated = other.Deprecated;
+      }
+      if (other.IdempotencyLevel != 0) {
+        IdempotencyLevel = other.IdempotencyLevel;
       }
       uninterpretedOption_.Add(other.uninterpretedOption_);
     }
@@ -4728,6 +4753,10 @@ namespace Google.Protobuf.Reflection {
             Deprecated = input.ReadBool();
             break;
           }
+          case 272: {
+            idempotencyLevel_ = (global::Google.Protobuf.Reflection.MethodOptions.Types.IdempotencyLevel) input.ReadEnum();
+            break;
+          }
           case 7994: {
             uninterpretedOption_.AddEntriesFrom(input, _repeated_uninterpretedOption_codec);
             break;
@@ -4735,6 +4764,30 @@ namespace Google.Protobuf.Reflection {
         }
       }
     }
+
+    #region Nested types
+    /// <summary>Container for nested types declared in the MethodOptions message type.</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static partial class Types {
+      /// <summary>
+      ///  Is this method side-effect-free (or safe in HTTP parlance), or idempotent,
+      ///  or neither? HTTP based RPC implementation may choose GET verb for safe
+      ///  methods, and PUT verb for idempotent methods instead of the default POST.
+      /// </summary>
+      internal enum IdempotencyLevel {
+        [pbr::OriginalName("IDEMPOTENCY_UNKNOWN")] IdempotencyUnknown = 0,
+        /// <summary>
+        ///  implies idempotent
+        /// </summary>
+        [pbr::OriginalName("NO_SIDE_EFFECTS")] NoSideEffects = 1,
+        /// <summary>
+        ///  idempotent, but may have side effects
+        /// </summary>
+        [pbr::OriginalName("IDEMPOTENT")] Idempotent = 2,
+      }
+
+    }
+    #endregion
 
   }
 

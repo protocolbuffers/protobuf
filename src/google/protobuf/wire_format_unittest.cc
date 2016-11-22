@@ -1138,7 +1138,7 @@ class Utf8ValidationTest : public ::testing::Test {
 TEST_F(Utf8ValidationTest, WriteInvalidUTF8String) {
   string wire_buffer;
   protobuf_unittest::OneString input;
-  vector<string> errors;
+  std::vector<string> errors;
   {
     ScopedMemoryLog log;
     WriteMessage(kInvalidUTF8String, &input, &wire_buffer);
@@ -1162,7 +1162,7 @@ TEST_F(Utf8ValidationTest, ReadInvalidUTF8String) {
   protobuf_unittest::OneString input;
   WriteMessage(kInvalidUTF8String, &input, &wire_buffer);
   protobuf_unittest::OneString output;
-  vector<string> errors;
+  std::vector<string> errors;
   {
     ScopedMemoryLog log;
     ReadMessage(wire_buffer, &output);
@@ -1185,7 +1185,7 @@ TEST_F(Utf8ValidationTest, ReadInvalidUTF8String) {
 TEST_F(Utf8ValidationTest, WriteValidUTF8String) {
   string wire_buffer;
   protobuf_unittest::OneString input;
-  vector<string> errors;
+  std::vector<string> errors;
   {
     ScopedMemoryLog log;
     WriteMessage(kValidUTF8String, &input, &wire_buffer);
@@ -1199,7 +1199,7 @@ TEST_F(Utf8ValidationTest, ReadValidUTF8String) {
   protobuf_unittest::OneString input;
   WriteMessage(kValidUTF8String, &input, &wire_buffer);
   protobuf_unittest::OneString output;
-  vector<string> errors;
+  std::vector<string> errors;
   {
     ScopedMemoryLog log;
     ReadMessage(wire_buffer, &output);
@@ -1213,7 +1213,7 @@ TEST_F(Utf8ValidationTest, ReadValidUTF8String) {
 TEST_F(Utf8ValidationTest, WriteArbitraryBytes) {
   string wire_buffer;
   protobuf_unittest::OneBytes input;
-  vector<string> errors;
+  std::vector<string> errors;
   {
     ScopedMemoryLog log;
     WriteMessage(kInvalidUTF8String, &input, &wire_buffer);
@@ -1227,7 +1227,7 @@ TEST_F(Utf8ValidationTest, ReadArbitraryBytes) {
   protobuf_unittest::OneBytes input;
   WriteMessage(kInvalidUTF8String, &input, &wire_buffer);
   protobuf_unittest::OneBytes output;
-  vector<string> errors;
+  std::vector<string> errors;
   {
     ScopedMemoryLog log;
     ReadMessage(wire_buffer, &output);
@@ -1245,7 +1245,7 @@ TEST_F(Utf8ValidationTest, ParseRepeatedString) {
   string wire_buffer = input.SerializeAsString();
 
   protobuf_unittest::MoreString output;
-  vector<string> errors;
+  std::vector<string> errors;
   {
     ScopedMemoryLog log;
     ReadMessage(wire_buffer, &output);
@@ -1264,7 +1264,7 @@ TEST_F(Utf8ValidationTest, ParseRepeatedString) {
 TEST_F(Utf8ValidationTest, OldVerifyUTF8String) {
   string data(kInvalidUTF8String);
 
-  vector<string> errors;
+  std::vector<string> errors;
   {
     ScopedMemoryLog log;
     WireFormat::VerifyUTF8String(data.data(), data.size(),

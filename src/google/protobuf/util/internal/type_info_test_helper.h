@@ -64,7 +64,7 @@ class TypeInfoTestHelper {
   explicit TypeInfoTestHelper(TypeInfoSource type) : type_(type) {}
 
   // Creates a TypeInfo object for the given set of descriptors.
-  void ResetTypeInfo(const vector<const Descriptor*>& descriptors);
+  void ResetTypeInfo(const std::vector<const Descriptor*>& descriptors);
 
   // Convinent overloads.
   void ResetTypeInfo(const Descriptor* descriptor);

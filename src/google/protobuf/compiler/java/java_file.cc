@@ -90,7 +90,7 @@ bool CollectExtensions(const Message& message,
   // There are unknown fields that could be extensions, thus this call fails.
   if (reflection->GetUnknownFields(message).field_count() > 0) return false;
 
-  vector<const FieldDescriptor*> fields;
+  std::vector<const FieldDescriptor*> fields;
   reflection->ListFields(message, &fields);
 
   for (int i = 0; i < fields.size(); i++) {
@@ -541,8 +541,8 @@ static void GenerateSibling(const string& package_dir,
                             const string& java_package,
                             const DescriptorClass* descriptor,
                             GeneratorContext* context,
-                            vector<string>* file_list, bool annotate_code,
-                            vector<string>* annotation_list,
+                            std::vector<string>* file_list, bool annotate_code,
+                            std::vector<string>* annotation_list,
                             const string& name_suffix,
                             GeneratorClass* generator,
                             void (GeneratorClass::*pfn)(io::Printer* printer)) {
@@ -581,8 +581,8 @@ static void GenerateSibling(const string& package_dir,
 
 void FileGenerator::GenerateSiblings(const string& package_dir,
                                      GeneratorContext* context,
-                                     vector<string>* file_list,
-                                     vector<string>* annotation_list) {
+                                     std::vector<string>* file_list,
+                                     std::vector<string>* annotation_list) {
   if (MultipleJavaFiles(file_, immutable_api_)) {
     for (int i = 0; i < file_->enum_type_count(); i++) {
       if (HasDescriptorMethods(file_, context_->EnforceLite())) {

@@ -36,6 +36,16 @@ import com.google.protobuf.Descriptors.EnumValueDescriptor;
 import com.google.protobuf.Descriptors.FieldDescriptor;
 import com.google.protobuf.Descriptors.FileDescriptor;
 import com.google.protobuf.Descriptors.OneofDescriptor;
+// In opensource protobuf, we have versioned this GeneratedMessageV3 class to GeneratedMessageV3V3 and
+// in the future may have GeneratedMessageV3V4 etc. This allows us to change some aspects of this
+// class without breaking binary compatibility with old generated code that still subclasses
+// the old GeneratedMessageV3 class. To allow these different GeneratedMessageV3V? classes to
+// interoperate (e.g., a GeneratedMessageV3V3 object has a message extension field whose class
+// type is GeneratedMessageV3V4), these classes still share a common parent class AbstarctMessage
+// and are using the same GeneratedMessage.GeneratedExtension class for extension definitions.
+// Since this class becomes GeneratedMessageV3V? in opensource, we have to add an import here
+// to be able to use GeneratedMessage.GeneratedExtension. The GeneratedExtension definition in
+// this file is also excluded from opensource to avoid conflict.
 import com.google.protobuf.GeneratedMessage.GeneratedExtension;
 
 import java.io.IOException;
@@ -1207,14 +1217,6 @@ public abstract class GeneratedMessageV3 extends AbstractMessage
       return super.clear();
     }
 
-    // This is implemented here only to work around an apparent bug in the
-    // Java compiler and/or build system.  See bug #1898463.  The mere presence
-    // of this clone() implementation makes it go away.
-    @Override
-    public BuilderType clone() {
-      return super.clone();
-    }
-
     private void ensureExtensionsIsMutable() {
       if (extensions.isImmutable()) {
         extensions = extensions.clone();
@@ -1610,6 +1612,7 @@ public abstract class GeneratedMessageV3 extends AbstractMessage
     FieldDescriptor getDescriptor();
   }
 
+
   // =================================================================
 
   /** Calls Class.getMethod and throws a RuntimeException if it fails. */
@@ -1705,11 +1708,6 @@ public abstract class GeneratedMessageV3 extends AbstractMessage
       initialized = false;
     }
 
-    private boolean isMapFieldEnabled(FieldDescriptor field) {
-      boolean result = true;
-      return result;
-    }
-
     /**
      * Ensures the field accessors are initialized. This method is thread-safe.
      *
@@ -1733,7 +1731,7 @@ public abstract class GeneratedMessageV3 extends AbstractMessage
           }
           if (field.isRepeated()) {
             if (field.getJavaType() == FieldDescriptor.JavaType.MESSAGE) {
-              if (field.isMapField() && isMapFieldEnabled(field)) {
+              if (field.isMapField()) {
                 fields[i] = new MapFieldAccessor(
                     field, camelCaseNames[i], messageClass, builderClass);
               } else {

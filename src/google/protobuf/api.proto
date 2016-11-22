@@ -40,6 +40,7 @@ option java_package = "com.google.protobuf";
 option java_outer_classname = "ApiProto";
 option java_multiple_files = true;
 option objc_class_prefix = "GPB";
+option go_package = "google.golang.org/genproto/protobuf/api;api";
 
 // Api is a light-weight descriptor for a protocol buffer service.
 message Api {

@@ -60,26 +60,26 @@ public class MapTest extends TestCase {
     builder.getMutableInt32ToInt32Field().put(1, 11);
     builder.getMutableInt32ToInt32Field().put(2, 22);
     builder.getMutableInt32ToInt32Field().put(3, 33);
-
+  //
     builder.getMutableInt32ToStringField().put(1, "11");
     builder.getMutableInt32ToStringField().put(2, "22");
     builder.getMutableInt32ToStringField().put(3, "33");
-
+  //
     builder.getMutableInt32ToBytesField().put(1, TestUtil.toBytes("11"));
     builder.getMutableInt32ToBytesField().put(2, TestUtil.toBytes("22"));
     builder.getMutableInt32ToBytesField().put(3, TestUtil.toBytes("33"));
-
+  //
     builder.getMutableInt32ToEnumField().put(1, TestMap.EnumValue.FOO);
     builder.getMutableInt32ToEnumField().put(2, TestMap.EnumValue.BAR);
     builder.getMutableInt32ToEnumField().put(3, TestMap.EnumValue.BAZ);
-
+  //
     builder.getMutableInt32ToMessageField().put(
         1, MessageValue.newBuilder().setValue(11).build());
     builder.getMutableInt32ToMessageField().put(
         2, MessageValue.newBuilder().setValue(22).build());
     builder.getMutableInt32ToMessageField().put(
         3, MessageValue.newBuilder().setValue(33).build());
-
+  //
     builder.getMutableStringToInt32Field().put("1", 11);
     builder.getMutableStringToInt32Field().put("2", 22);
     builder.getMutableStringToInt32Field().put("3", 33);
@@ -122,6 +122,7 @@ public class MapTest extends TestCase {
     setMapValuesUsingAccessors(usingAccessorsBuilder);
     TestMap usingAccessors = usingAccessorsBuilder.build();
     assertMapValuesSet(usingAccessors);
+
     assertEquals(usingAccessors, usingMutableMap);
   }
 
@@ -171,25 +172,25 @@ public class MapTest extends TestCase {
     builder.getMutableInt32ToInt32Field().put(1, 111);
     builder.getMutableInt32ToInt32Field().remove(2);
     builder.getMutableInt32ToInt32Field().put(4, 44);
-
+  //
     builder.getMutableInt32ToStringField().put(1, "111");
     builder.getMutableInt32ToStringField().remove(2);
     builder.getMutableInt32ToStringField().put(4, "44");
-
+  //
     builder.getMutableInt32ToBytesField().put(1, TestUtil.toBytes("111"));
     builder.getMutableInt32ToBytesField().remove(2);
     builder.getMutableInt32ToBytesField().put(4, TestUtil.toBytes("44"));
-
+  //
     builder.getMutableInt32ToEnumField().put(1, TestMap.EnumValue.BAR);
     builder.getMutableInt32ToEnumField().remove(2);
     builder.getMutableInt32ToEnumField().put(4, TestMap.EnumValue.QUX);
-
+  //
     builder.getMutableInt32ToMessageField().put(
         1, MessageValue.newBuilder().setValue(111).build());
     builder.getMutableInt32ToMessageField().remove(2);
     builder.getMutableInt32ToMessageField().put(
         4, MessageValue.newBuilder().setValue(44).build());
-
+  //
     builder.getMutableStringToInt32Field().put("1", 111);
     builder.getMutableStringToInt32Field().remove("2");
     builder.getMutableStringToInt32Field().put("4", 44);
@@ -232,8 +233,9 @@ public class MapTest extends TestCase {
     setMapValuesUsingAccessors(usingAccessorsBuilder);
     TestMap usingAccessors = usingAccessorsBuilder.build();
     assertMapValuesSet(usingAccessors);
-    assertEquals(usingAccessors, usingMutableMap);
 
+    assertEquals(usingAccessors, usingMutableMap);
+    //
     usingMutableMapBuilder = usingMutableMap.toBuilder();
     updateMapValuesUsingMutableMap(usingMutableMapBuilder);
     usingMutableMap = usingMutableMapBuilder.build();
@@ -337,7 +339,7 @@ public class MapTest extends TestCase {
     assertEquals(newMap(1, 2), builder.getInt32ToInt32Field());
     builder.getMutableInt32ToInt32Field().put(2, 3);
     assertEquals(newMap(1, 2, 2, 3), builder.getInt32ToInt32Field());
-
+  //
     Map<Integer, TestMap.EnumValue> enumMap = builder.getMutableInt32ToEnumField();
     enumMap.put(1, TestMap.EnumValue.BAR);
     assertEquals(newMap(1, TestMap.EnumValue.BAR), builder.build().getInt32ToEnumField());
@@ -352,7 +354,7 @@ public class MapTest extends TestCase {
     assertEquals(
         newMap(1, TestMap.EnumValue.BAR, 2, TestMap.EnumValue.FOO),
         builder.getInt32ToEnumField());
-
+  //
     Map<Integer, String> stringMap = builder.getMutableInt32ToStringField();
     stringMap.put(1, "1");
     assertEquals(newMap(1, "1"), builder.build().getInt32ToStringField());
@@ -363,11 +365,11 @@ public class MapTest extends TestCase {
       // expected
     }
     assertEquals(newMap(1, "1"), builder.getInt32ToStringField());
-    builder.getMutableInt32ToStringField().put(2, "2");
+    builder.putInt32ToStringField(2, "2");
     assertEquals(
         newMap(1, "1", 2, "2"),
         builder.getInt32ToStringField());
-
+  //
     Map<Integer, TestMap.MessageValue> messageMap = builder.getMutableInt32ToMessageField();
     messageMap.put(1, TestMap.MessageValue.getDefaultInstance());
     assertEquals(newMap(1, TestMap.MessageValue.getDefaultInstance()),
@@ -380,13 +382,13 @@ public class MapTest extends TestCase {
     }
     assertEquals(newMap(1, TestMap.MessageValue.getDefaultInstance()),
         builder.getInt32ToMessageField());
-    builder.getMutableInt32ToMessageField().put(2, TestMap.MessageValue.getDefaultInstance());
+    builder.putInt32ToMessageField(2, TestMap.MessageValue.getDefaultInstance());
     assertEquals(
         newMap(1, TestMap.MessageValue.getDefaultInstance(),
             2, TestMap.MessageValue.getDefaultInstance()),
         builder.getInt32ToMessageField());
   }
-
+  //
   public void testMutableMapLifecycle_collections() {
     TestMap.Builder builder = TestMap.newBuilder();
     Map<Integer, Integer> intMap = builder.getMutableInt32ToInt32Field();
@@ -433,18 +435,19 @@ public class MapTest extends TestCase {
     assertEquals(newMap(1, 2), builder.build().getInt32ToInt32Field());
   }
 
+
   public void testGettersAndSetters() throws Exception {
     TestMap.Builder builder = TestMap.newBuilder();
     TestMap message = builder.build();
     assertMapValuesCleared(message);
 
     builder = message.toBuilder();
-    setMapValuesUsingMutableMap(builder);
+    setMapValuesUsingAccessors(builder);
     message = builder.build();
     assertMapValuesSet(message);
 
     builder = message.toBuilder();
-    updateMapValuesUsingMutableMap(builder);
+    updateMapValuesUsingAccessors(builder);
     message = builder.build();
     assertMapValuesUpdated(message);
 
@@ -457,7 +460,7 @@ public class MapTest extends TestCase {
 
   public void testPutAll() throws Exception {
     TestMap.Builder sourceBuilder = TestMap.newBuilder();
-    setMapValuesUsingMutableMap(sourceBuilder);
+    setMapValuesUsingAccessors(sourceBuilder);
     TestMap source = sourceBuilder.build();
     assertMapValuesSet(source);
 
@@ -467,15 +470,16 @@ public class MapTest extends TestCase {
   }
 
   public void testPutAllForUnknownEnumValues() throws Exception {
-    TestMap.Builder sourceBuilder = TestMap.newBuilder();
-    sourceBuilder.getMutableInt32ToEnumFieldValue().put(0, 0);
-    sourceBuilder.getMutableInt32ToEnumFieldValue().put(1, 1);
-    sourceBuilder.getMutableInt32ToEnumFieldValue().put(2, 1000);  // unknown value.
-    TestMap source = sourceBuilder.build();
+    TestMap source = TestMap.newBuilder()
+        .putAllInt32ToEnumFieldValue(newMap(
+            0, 0,
+            1, 1,
+            2, 1000)) // unknown value.
+        .build();
 
-    TestMap.Builder destinationBuilder = TestMap.newBuilder();
-    destinationBuilder.putAllInt32ToEnumFieldValue(source.getInt32ToEnumFieldValue());
-    TestMap destination = destinationBuilder.build();
+    TestMap destination = TestMap.newBuilder()
+        .putAllInt32ToEnumFieldValue(source.getInt32ToEnumFieldValue())
+        .build();
 
     assertEquals(0, destination.getInt32ToEnumFieldValue().get(0).intValue());
     assertEquals(1, destination.getInt32ToEnumFieldValue().get(1).intValue());
@@ -542,14 +546,14 @@ public class MapTest extends TestCase {
 
   public void testSerializeAndParse() throws Exception {
     TestMap.Builder builder = TestMap.newBuilder();
-    setMapValuesUsingMutableMap(builder);
+    setMapValuesUsingAccessors(builder);
     TestMap message = builder.build();
     assertEquals(message.getSerializedSize(), message.toByteString().size());
     message = TestMap.parser().parseFrom(message.toByteString());
     assertMapValuesSet(message);
 
     builder = message.toBuilder();
-    updateMapValuesUsingMutableMap(builder);
+    updateMapValuesUsingAccessors(builder);
     message = builder.build();
     assertEquals(message.getSerializedSize(), message.toByteString().size());
     message = TestMap.parser().parseFrom(message.toByteString());
@@ -614,7 +618,7 @@ public class MapTest extends TestCase {
 
   public void testMergeFrom() throws Exception {
     TestMap.Builder builder = TestMap.newBuilder();
-    setMapValuesUsingMutableMap(builder);
+    setMapValuesUsingAccessors(builder);
     TestMap message = builder.build();
 
     TestMap.Builder other = TestMap.newBuilder();
@@ -628,23 +632,23 @@ public class MapTest extends TestCase {
 
     // We can't control the order of elements in a HashMap. The best we can do
     // here is to add elements in different order.
-    TestMap.Builder b1 = TestMap.newBuilder();
-    b1.getMutableInt32ToInt32Field().put(1, 2);
-    b1.getMutableInt32ToInt32Field().put(3, 4);
-    b1.getMutableInt32ToInt32Field().put(5, 6);
+    TestMap.Builder b1 = TestMap.newBuilder()
+        .putInt32ToInt32Field(1, 2)
+        .putInt32ToInt32Field(3, 4)
+        .putInt32ToInt32Field(5, 6);
     TestMap m1 = b1.build();
 
-    TestMap.Builder b2 = TestMap.newBuilder();
-    b2.getMutableInt32ToInt32Field().put(5, 6);
-    b2.getMutableInt32ToInt32Field().put(1, 2);
-    b2.getMutableInt32ToInt32Field().put(3, 4);
+    TestMap.Builder b2 = TestMap.newBuilder()
+        .putInt32ToInt32Field(5, 6)
+        .putInt32ToInt32Field(1, 2)
+        .putInt32ToInt32Field(3, 4);
     TestMap m2 = b2.build();
 
     assertEquals(m1, m2);
     assertEquals(m1.hashCode(), m2.hashCode());
 
     // Make sure we did compare map fields.
-    b2.getMutableInt32ToInt32Field().put(1, 0);
+    b2.putInt32ToInt32Field(1, 0);
     m2 = b2.build();
     assertFalse(m1.equals(m2));
     // Don't check m1.hashCode() != m2.hashCode() because it's not guaranteed
@@ -652,7 +656,7 @@ public class MapTest extends TestCase {
 
     // Regression test for b/18549190: if a map is a subset of the other map,
     // equals() should return false.
-    b2.getMutableInt32ToInt32Field().remove(1);
+    b2.removeInt32ToInt32Field(1);
     m2 = b2.build();
     assertFalse(m1.equals(m2));
     assertFalse(m2.equals(m1));
@@ -661,20 +665,19 @@ public class MapTest extends TestCase {
   public void testNestedBuilderOnChangeEventPropagation() {
     TestOnChangeEventPropagation.Builder parent =
         TestOnChangeEventPropagation.newBuilder();
-    parent.getOptionalMessageBuilder().getMutableInt32ToInt32Field().put(1, 2);
+    parent.getOptionalMessageBuilder().putInt32ToInt32Field(1, 2);
     TestOnChangeEventPropagation message = parent.build();
     assertEquals(2, message.getOptionalMessage().getInt32ToInt32Field().get(1).intValue());
 
     // Make a change using nested builder.
-    parent.getOptionalMessageBuilder().getMutableInt32ToInt32Field().put(1, 3);
+    parent.getOptionalMessageBuilder().putInt32ToInt32Field(1, 3);
 
     // Should be able to observe the change.
     message = parent.build();
     assertEquals(3, message.getOptionalMessage().getInt32ToInt32Field().get(1).intValue());
 
     // Make another change using mergeFrom()
-    TestMap.Builder other = TestMap.newBuilder();
-    other.getMutableInt32ToInt32Field().put(1, 4);
+    TestMap.Builder other = TestMap.newBuilder().putInt32ToInt32Field(1, 4);
     parent.getOptionalMessageBuilder().mergeFrom(other.build());
 
     // Should be able to observe the change.
@@ -697,8 +700,7 @@ public class MapTest extends TestCase {
     TestMap.Builder testMapBuilder = parentBuilder.getOptionalMessageBuilder();
 
     // Create a map entry message.
-    TestMap.Builder entryBuilder = TestMap.newBuilder();
-    entryBuilder.getMutableInt32ToInt32Field().put(1, 1);
+    TestMap.Builder entryBuilder = TestMap.newBuilder().putInt32ToInt32Field(1, 1);
 
     // Put the entry into the nested builder.
     testMapBuilder.addRepeatedField(
@@ -709,7 +711,7 @@ public class MapTest extends TestCase {
     assertEquals(1, message.getOptionalMessage().getInt32ToInt32Field().size());
 
     // Change the entry value.
-    entryBuilder.getMutableInt32ToInt32Field().put(1, 4);
+    entryBuilder.putInt32ToInt32Field(1, 4);
     testMapBuilder = parentBuilder.getOptionalMessageBuilder();
     testMapBuilder.setRepeatedField(
         intMapField, 0, entryBuilder.getRepeatedField(intMapField, 0));
@@ -796,13 +798,11 @@ public class MapTest extends TestCase {
 
   public void testReflectionApi() throws Exception {
     // In reflection API, map fields are just repeated message fields.
-    TestMap.Builder builder = TestMap.newBuilder();
-    builder.getMutableInt32ToInt32Field().put(1, 2);
-    builder.getMutableInt32ToInt32Field().put(3, 4);
-    builder.getMutableInt32ToMessageField().put(
-        11, MessageValue.newBuilder().setValue(22).build());
-    builder.getMutableInt32ToMessageField().put(
-        33, MessageValue.newBuilder().setValue(44).build());
+    TestMap.Builder builder = TestMap.newBuilder()
+        .putInt32ToInt32Field(1, 2)
+        .putInt32ToInt32Field(3, 4)
+        .putInt32ToMessageField(11, MessageValue.newBuilder().setValue(22).build())
+        .putInt32ToMessageField(33, MessageValue.newBuilder().setValue(44).build());
     TestMap message = builder.build();
 
     // Test getField(), getRepeatedFieldCount(), getRepeatedField().
@@ -872,7 +872,7 @@ public class MapTest extends TestCase {
 
   public void testTextFormat() throws Exception {
     TestMap.Builder builder = TestMap.newBuilder();
-    setMapValuesUsingMutableMap(builder);
+    setMapValuesUsingAccessors(builder);
     TestMap message = builder.build();
 
     String textData = TextFormat.printToString(message);
@@ -886,7 +886,7 @@ public class MapTest extends TestCase {
 
   public void testDynamicMessage() throws Exception {
     TestMap.Builder builder = TestMap.newBuilder();
-    setMapValuesUsingMutableMap(builder);
+    setMapValuesUsingAccessors(builder);
     TestMap message = builder.build();
 
     Message dynamicDefaultInstance =
@@ -931,10 +931,11 @@ public class MapTest extends TestCase {
   }
 
   public void testUnknownEnumValues() throws Exception {
-    TestMap.Builder builder = TestMap.newBuilder();
-    builder.getMutableInt32ToEnumFieldValue().put(0, 0);
-    builder.getMutableInt32ToEnumFieldValue().put(1, 1);
-    builder.getMutableInt32ToEnumFieldValue().put(2, 1000);  // unknown value.
+    TestMap.Builder builder = TestMap.newBuilder()
+        .putAllInt32ToEnumFieldValue(newMap(
+            0, 0,
+            1, 1,
+            2, 1000));  // unknown value.
     TestMap message = builder.build();
 
     assertEquals(TestMap.EnumValue.FOO,
@@ -957,7 +958,7 @@ public class MapTest extends TestCase {
     assertEquals(1000, builder.getInt32ToEnumFieldValue().get(2).intValue());
 
     // hashCode()/equals() should take unknown enum values into account.
-    builder.getMutableInt32ToEnumFieldValue().put(2, 1001);
+    builder.putAllInt32ToEnumFieldValue(newMap(2, 1001));
     TestMap message2 = builder.build();
     assertFalse(message.hashCode() == message2.hashCode());
     assertFalse(message.equals(message2));
@@ -971,15 +972,13 @@ public class MapTest extends TestCase {
     EnumDescriptor enumDescriptor = TestMap.EnumValue.getDescriptor();
     FieldDescriptor field = descriptor.findFieldByName("int32_to_enum_field");
 
-    Map<Integer, Integer> data = new HashMap<Integer, Integer>();
-    data.put(0, 0);
-    data.put(1, 1);
-    data.put(2, 1000);  // unknown value.
+    Map<Integer, Integer> data = newMap(
+        0, 0,
+        1, 1,
+        2, 1000); // unknown value
 
-    TestMap.Builder builder = TestMap.newBuilder();
-    for (Map.Entry<Integer, Integer> entry : data.entrySet()) {
-      builder.getMutableInt32ToEnumFieldValue().put(entry.getKey(), entry.getValue());
-    }
+    TestMap.Builder builder = TestMap.newBuilder()
+        .putAllInt32ToEnumFieldValue(data);
 
     // Try to read unknown enum values using reflection API.
     for (int i = 0; i < builder.getRepeatedFieldCount(field); i++) {
@@ -1003,7 +1002,7 @@ public class MapTest extends TestCase {
 
   public void testIterationOrder() throws Exception {
     TestMap.Builder builder = TestMap.newBuilder();
-    setMapValuesUsingMutableMap(builder);
+    setMapValuesUsingAccessors(builder);
     TestMap message = builder.build();
 
     assertEquals(Arrays.asList("1", "2", "3"),
@@ -1012,7 +1011,7 @@ public class MapTest extends TestCase {
 
   public void testGetMap() {
     TestMap.Builder builder = TestMap.newBuilder();
-    setMapValuesUsingMutableMap(builder);
+    setMapValuesUsingAccessors(builder);
     TestMap message = builder.build();
     assertEquals(
         message.getStringToInt32Field(),
@@ -1033,7 +1032,7 @@ public class MapTest extends TestCase {
 
   public void testContains() {
     TestMap.Builder builder = TestMap.newBuilder();
-    setMapValuesUsingMutableMap(builder);
+    setMapValuesUsingAccessors(builder);
     assertMapContainsSetValues(builder);
     assertMapContainsSetValues(builder.build());
   }
@@ -1074,7 +1073,7 @@ public class MapTest extends TestCase {
     TestMap.Builder builder = TestMap.newBuilder();
     assertMapCounts(0, builder);
 
-    setMapValuesUsingMutableMap(builder);
+    setMapValuesUsingAccessors(builder);
     assertMapCounts(3, builder);
 
     TestMap message = builder.build();
@@ -1269,7 +1268,7 @@ public class MapTest extends TestCase {
 
   public void testRemove() {
     TestMap.Builder builder = TestMap.newBuilder();
-    setMapValuesUsingMutableMap(builder);
+    setMapValuesUsingAccessors(builder);
     assertEquals(11, builder.getInt32ToInt32FieldOrThrow(1));
     for (int times = 0; times < 2; times++) {
       builder.removeInt32ToInt32Field(1);
@@ -1483,6 +1482,14 @@ public class MapTest extends TestCase {
     Map<K, V> map = new HashMap<K, V>();
     map.put(key1, value1);
     map.put(key2, value2);
+    return map;
+  }
+
+  private static <K, V> Map<K, V> newMap(K key1, V value1, K key2, V value2, K key3, V value3) {
+    Map<K, V> map = new HashMap<K, V>();
+    map.put(key1, value1);
+    map.put(key2, value2);
+    map.put(key3, value3);
     return map;
   }
 }

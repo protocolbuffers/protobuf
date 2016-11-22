@@ -100,6 +100,24 @@ jspb.BinaryEncoder.prototype.writeSplitVarint64 = function(lowBits, highBits) {
 
 
 /**
+ * Encodes a 64-bit integer in 32:32 split representation into its wire-format
+ * fixed representation and stores it in the buffer.
+ * @param {number} lowBits The low 32 bits of the int.
+ * @param {number} highBits The high 32 bits of the int.
+ */
+jspb.BinaryEncoder.prototype.writeSplitFixed64 = function(lowBits, highBits) {
+  goog.asserts.assert(lowBits == Math.floor(lowBits));
+  goog.asserts.assert(highBits == Math.floor(highBits));
+  goog.asserts.assert((lowBits >= 0) &&
+                      (lowBits < jspb.BinaryConstants.TWO_TO_32));
+  goog.asserts.assert((highBits >= 0) &&
+                      (highBits < jspb.BinaryConstants.TWO_TO_32));
+  this.writeUint32(lowBits);
+  this.writeUint32(highBits);
+};
+
+
+/**
  * Encodes a 32-bit unsigned integer into its wire-format varint representation
  * and stores it in the buffer.
  * @param {number} value The integer to convert.
@@ -204,6 +222,18 @@ jspb.BinaryEncoder.prototype.writeZigzagVarint64 = function(value) {
   jspb.utils.splitZigzag64(value);
   this.writeSplitVarint64(jspb.utils.split64Low,
                           jspb.utils.split64High);
+};
+
+
+/**
+ * Encodes a JavaScript decimal string into its wire-format, zigzag-encoded
+ * varint representation and stores it in the buffer. Integers not representable
+ * in 64 bits will be truncated.
+ * @param {string} value The integer to convert.
+ */
+jspb.BinaryEncoder.prototype.writeZigzagVarint64String = function(value) {
+  // TODO(haberman): write lossless 64-bit zig-zag math.
+  this.writeZigzagVarint64(parseInt(value, 10));
 };
 
 
@@ -314,8 +344,21 @@ jspb.BinaryEncoder.prototype.writeInt64 = function(value) {
   goog.asserts.assert((value >= -jspb.BinaryConstants.TWO_TO_63) &&
                       (value < jspb.BinaryConstants.TWO_TO_63));
   jspb.utils.splitInt64(value);
-  this.writeUint32(jspb.utils.split64Low);
-  this.writeUint32(jspb.utils.split64High);
+  this.writeSplitFixed64(jspb.utils.split64Low, jspb.utils.split64High);
+};
+
+
+/**
+ * Writes a 64-bit integer decimal strings to the buffer. Numbers outside the
+ * range [-2^63,2^63) will be truncated.
+ * @param {string} value The value to write.
+ */
+jspb.BinaryEncoder.prototype.writeInt64String = function(value) {
+  goog.asserts.assert(value == Math.floor(value));
+  goog.asserts.assert((value >= -jspb.BinaryConstants.TWO_TO_63) &&
+                      (value < jspb.BinaryConstants.TWO_TO_63));
+  jspb.utils.splitHash64(jspb.utils.decimalStringToHash64(value));
+  this.writeSplitFixed64(jspb.utils.split64Low, jspb.utils.split64High);
 };
 
 

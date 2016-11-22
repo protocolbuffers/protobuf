@@ -159,6 +159,27 @@ TEST(FieldMaskUtilTest, JsonStringFormat) {
   EXPECT_EQ("baz_quz", mask.paths(1));
 }
 
+TEST(FieldMaskUtilTest, GetFieldDescriptors) {
+  std::vector<const FieldDescriptor*> field_descriptors;
+  EXPECT_TRUE(FieldMaskUtil::GetFieldDescriptors(
+      TestAllTypes::descriptor(), "optional_int32", &field_descriptors));
+  EXPECT_EQ(1, field_descriptors.size());
+  EXPECT_EQ("optional_int32", field_descriptors[0]->name());
+  EXPECT_FALSE(FieldMaskUtil::GetFieldDescriptors(
+      TestAllTypes::descriptor(), "optional_nonexist", NULL));
+  EXPECT_TRUE(FieldMaskUtil::GetFieldDescriptors(TestAllTypes::descriptor(),
+                                                 "optional_nested_message.bb",
+                                                 &field_descriptors));
+  EXPECT_EQ(2, field_descriptors.size());
+  EXPECT_EQ("optional_nested_message", field_descriptors[0]->name());
+  EXPECT_EQ("bb", field_descriptors[1]->name());
+  EXPECT_FALSE(FieldMaskUtil::GetFieldDescriptors(
+      TestAllTypes::descriptor(), "optional_nested_message.nonexist", NULL));
+  // FieldMask cannot be used to specify sub-fields of a repeated message.
+  EXPECT_FALSE(FieldMaskUtil::GetFieldDescriptors(
+      TestAllTypes::descriptor(), "repeated_nested_message.bb", NULL));
+}
+
 TEST(FieldMaskUtilTest, TestIsVaildPath) {
   EXPECT_TRUE(FieldMaskUtil::IsValidPath<TestAllTypes>("optional_int32"));
   EXPECT_FALSE(FieldMaskUtil::IsValidPath<TestAllTypes>("optional_nonexist"));

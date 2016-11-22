@@ -59,8 +59,8 @@ SharedCodeGenerator::~SharedCodeGenerator() {
 }
 
 void SharedCodeGenerator::Generate(GeneratorContext* context,
-                                   vector<string>* file_list,
-                                   vector<string>* annotation_file_list) {
+                                   std::vector<string>* file_list,
+                                   std::vector<string>* annotation_file_list) {
   string java_package = FileJavaPackage(file_);
   string package_dir = JavaPackageToDir(java_package);
 
@@ -179,7 +179,7 @@ void SharedCodeGenerator::GenerateDescriptors(io::Printer* printer) {
 
   // -----------------------------------------------------------------
   // Find out all dependencies.
-  vector<pair<string, string> > dependencies;
+  std::vector<std::pair<string, string> > dependencies;
   for (int i = 0; i < file_->dependency_count(); i++) {
     if (ShouldIncludeDependency(file_->dependency(i))) {
       string filename = file_->dependency(i)->name();

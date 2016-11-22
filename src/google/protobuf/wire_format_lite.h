@@ -45,6 +45,16 @@
 #include <google/protobuf/message_lite.h>
 #include <google/protobuf/io/coded_stream.h>  // for CodedOutputStream::Varint32Size
 
+// Avoid conflict with iOS where <ConditionalMacros.h> #defines TYPE_BOOL.
+//
+// While there is no obvious reason why someone would still need the macro
+// TYPE_BOOL, it's possible to bring it back using push/pop_macro as follows.
+//
+// #pragma push_macro("TYPE_BOOL")
+// #include this header and/or all headers that need the macro to be undefined.
+// #pragma pop_macro("TYPE_BOOL")
+#undef TYPE_BOOL
+
 namespace google {
 
 namespace protobuf {
@@ -243,7 +253,15 @@ class LIBPROTOBUF_EXPORT WireFormatLite {
 #define input  io::CodedInputStream*  input_arg
 #define output io::CodedOutputStream* output_arg
 #define field_number int field_number_arg
+#ifdef NDEBUG
 #define INL GOOGLE_ATTRIBUTE_ALWAYS_INLINE
+#else
+// Avoid excessive inlining in non-optimized builds. Without other optimizations
+// the inlining is not going to provide benefits anyway and the huge resulting
+// functions, especially in the proto-generated serialization functions, produce
+// stack frames so large that many tests run into stack overflows (b/32192897).
+#define INL
+#endif
 
   // Read fields, not including tags.  The assumption is that you already
   // read the tag to determine what field to read.

@@ -47,7 +47,6 @@
 #include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/stubs/stl_util.h>
-#include <google/protobuf/stubs/port.h>
 
 
 namespace google {
@@ -550,9 +549,15 @@ bool CodedInputStream::ReadVarint64Slow(uint64* value) {
   uint32 b;
 
   do {
-    if (count == kMaxVarintBytes) return false;
+    if (count == kMaxVarintBytes) {
+      *value = 0;
+      return false;
+    }
     while (buffer_ == buffer_end_) {
-      if (!Refresh()) return false;
+      if (!Refresh()) {
+        *value = 0;
+        return false;
+      }
     }
     b = *buffer_;
     result |= static_cast<uint64>(b & 0x7F) << (7 * count);
@@ -602,13 +607,13 @@ bool CodedInputStream::Refresh() {
 
   if (total_bytes_warning_threshold_ >= 0 &&
       total_bytes_read_ >= total_bytes_warning_threshold_) {
-      GOOGLE_LOG(WARNING) << "Reading dangerously large protocol message.  If the "
-                      "message turns out to be larger than "
-                   << total_bytes_limit_ << " bytes, parsing will be halted "
-                      "for security reasons.  To increase the limit (or to "
-                      "disable these warnings), see "
-                      "CodedInputStream::SetTotalBytesLimit() in "
-                      "google/protobuf/io/coded_stream.h.";
+      GOOGLE_LOG(INFO) << "Reading dangerously large protocol message.  If the "
+                   "message turns out to be larger than "
+                << total_bytes_limit_ << " bytes, parsing will be halted "
+                   "for security reasons.  To increase the limit (or to "
+                   "disable these warnings), see "
+                   "CodedInputStream::SetTotalBytesLimit() in "
+                   "google/protobuf/io/coded_stream.h.";
 
     // Don't warn again for this stream, and print total size at the end.
     total_bytes_warning_threshold_ = -2;
@@ -789,104 +794,12 @@ void CodedOutputStream::WriteVarint32SlowPath(uint32 value) {
   WriteRaw(bytes, size);
 }
 
-inline uint8* CodedOutputStream::WriteVarint64ToArrayInline(
-    uint64 value, uint8* target) {
-  // Splitting into 32-bit pieces gives better performance on 32-bit
-  // processors.
-  uint32 part0 = static_cast<uint32>(value      );
-  uint32 part1 = static_cast<uint32>(value >> 28);
-  uint32 part2 = static_cast<uint32>(value >> 56);
-
-  int size;
-
-  // Here we can't really optimize for small numbers, since the value is
-  // split into three parts.  Cheking for numbers < 128, for instance,
-  // would require three comparisons, since you'd have to make sure part1
-  // and part2 are zero.  However, if the caller is using 64-bit integers,
-  // it is likely that they expect the numbers to often be very large, so
-  // we probably don't want to optimize for small numbers anyway.  Thus,
-  // we end up with a hardcoded binary search tree...
-  if (part2 == 0) {
-    if (part1 == 0) {
-      if (part0 < (1 << 14)) {
-        if (part0 < (1 << 7)) {
-          size = 1; goto size1;
-        } else {
-          size = 2; goto size2;
-        }
-      } else {
-        if (part0 < (1 << 21)) {
-          size = 3; goto size3;
-        } else {
-          size = 4; goto size4;
-        }
-      }
-    } else {
-      if (part1 < (1 << 14)) {
-        if (part1 < (1 << 7)) {
-          size = 5; goto size5;
-        } else {
-          size = 6; goto size6;
-        }
-      } else {
-        if (part1 < (1 << 21)) {
-          size = 7; goto size7;
-        } else {
-          size = 8; goto size8;
-        }
-      }
-    }
-  } else {
-    if (part2 < (1 << 7)) {
-      size = 9; goto size9;
-    } else {
-      size = 10; goto size10;
-    }
-  }
-
-  GOOGLE_LOG(FATAL) << "Can't get here.";
-
-  size10: target[9] = static_cast<uint8>((part2 >>  7) | 0x80);
-  size9 : target[8] = static_cast<uint8>((part2      ) | 0x80);
-  size8 : target[7] = static_cast<uint8>((part1 >> 21) | 0x80);
-  size7 : target[6] = static_cast<uint8>((part1 >> 14) | 0x80);
-  size6 : target[5] = static_cast<uint8>((part1 >>  7) | 0x80);
-  size5 : target[4] = static_cast<uint8>((part1      ) | 0x80);
-  size4 : target[3] = static_cast<uint8>((part0 >> 21) | 0x80);
-  size3 : target[2] = static_cast<uint8>((part0 >> 14) | 0x80);
-  size2 : target[1] = static_cast<uint8>((part0 >>  7) | 0x80);
-  size1 : target[0] = static_cast<uint8>((part0      ) | 0x80);
-
-  target[size-1] &= 0x7F;
-  return target + size;
-}
-
-void CodedOutputStream::WriteVarint64(uint64 value) {
-  if (buffer_size_ >= kMaxVarintBytes) {
-    // Fast path:  We have enough bytes left in the buffer to guarantee that
-    // this write won't cross the end, so we can skip the checks.
-    uint8* target = buffer_;
-
-    uint8* end = WriteVarint64ToArrayInline(value, target);
-    int size = end - target;
-    Advance(size);
-  } else {
-    // Slow path:  This write might cross the end of the buffer, so we
-    // compose the bytes first then use WriteRaw().
-    uint8 bytes[kMaxVarintBytes];
-    int size = 0;
-    while (value > 0x7F) {
-      bytes[size++] = (static_cast<uint8>(value) & 0x7F) | 0x80;
-      value >>= 7;
-    }
-    bytes[size++] = static_cast<uint8>(value) & 0x7F;
-    WriteRaw(bytes, size);
-  }
-}
-
-uint8* CodedOutputStream::WriteVarint64ToArray(
-    uint64 value, uint8* target) {
-  return WriteVarint64ToArrayInline(value, target);
+void CodedOutputStream::WriteVarint64SlowPath(uint64 value) {
+  uint8 bytes[kMaxVarintBytes];
+  uint8* target = &bytes[0];
+  uint8* end = WriteVarint64ToArray(value, target);
+  int size = end - target;
+  WriteRaw(bytes, size);
 }
 
 bool CodedOutputStream::Refresh() {
@@ -904,17 +817,22 @@ bool CodedOutputStream::Refresh() {
 }
 
 size_t CodedOutputStream::VarintSize32Fallback(uint32 value) {
+  // This computes floor(log2(value)) / 7 + 1
+  // Use an explicit multiplication to implement the divide of
+  // a number in the 1..31 range.
   GOOGLE_DCHECK_NE(0, value);  // This is enforced by our caller.
 
-  return 1 + Bits::Log2FloorNonZero(value) / 7;
+  uint32 log2value = Bits::Log2FloorNonZero(value);
+  return static_cast<size_t>((log2value * 9 + 73) / 64);
 }
 
 size_t CodedOutputStream::VarintSize64(uint64 value) {
-  if (value < (1 << 7)) {
-    return 1;
-  }
-
-  return 1 + Bits::Log2FloorNonZero64(value) / 7;
+  // This computes value == 0 ? 1 : floor(log2(value)) / 7 + 1
+  // Use an explicit multiplication to implement the divide of
+  // a number in the 1..63 range.
+  // Explicit OR 0x1 to avoid calling clz(0), which is undefined.
+  uint32 log2value = Bits::Log2FloorNonZero64(value | 0x1);
+  return static_cast<size_t>((log2value * 9 + 73) / 64);
 }
 
 uint8* CodedOutputStream::WriteStringWithSizeToArray(const string& str,

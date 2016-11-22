@@ -48,6 +48,7 @@
 #include <google/protobuf/test_util.h>
 #include <google/protobuf/unittest.pb.h>
 #include <google/protobuf/io/coded_stream.h>
+#include <google/protobuf/io/zero_copy_stream.h>
 #include <google/protobuf/io/zero_copy_stream_impl.h>
 #include <google/protobuf/descriptor.pb.h>
 #include <google/protobuf/descriptor.h>
@@ -182,7 +183,7 @@ TEST(MessageTest, ParseHelpers) {
 
 TEST(MessageTest, ParseFailsIfNotInitialized) {
   unittest::TestRequired message;
-  vector<string> errors;
+  std::vector<string> errors;
 
   {
     ScopedMemoryLog log;
@@ -286,28 +287,96 @@ TEST(MessageTest, CheckBigOverflow) {
 #endif  // PROTOBUF_HAS_DEATH_TEST
 
 namespace {
-
-class NegativeByteSize : public unittest::TestRequired {
+// An input stream that repeats a string's content for a number of times. It
+// helps us create a really large input without consuming too much memory. Used
+// to test the parsing behavior when the input size exceeds 2G or close to it.
+class RepeatedInputStream : public io::ZeroCopyInputStream {
  public:
-  virtual int ByteSize() const { return -1; }
+  RepeatedInputStream(const string& data, size_t count)
+      : data_(data), count_(count), position_(0), total_byte_count_(0) {}
 
-  // The implementation of ByteSizeLong() from MessageLite, to simulate what
-  // would happen if TestRequired *hadn't* overridden it already.
-  virtual size_t ByteSizeLong() const {
-    return static_cast<unsigned int>(ByteSize());
+  virtual bool Next(const void** data, int* size) {
+    if (position_ == data_.size()) {
+      if (--count_ == 0) {
+        return false;
+      }
+      position_ = 0;
+    }
+    *data = &data_[position_];
+    *size = static_cast<int>(data_.size() - position_);
+    position_ = data_.size();
+    total_byte_count_ += *size;
+    return true;
   }
-};
 
+  virtual void BackUp(int count) {
+    position_ -= static_cast<size_t>(count);
+    total_byte_count_ -= count;
+  }
+
+  virtual bool Skip(int count) {
+    while (count > 0) {
+      const void* data;
+      int size;
+      if (!Next(&data, &size)) {
+        break;
+      }
+      if (size >= count) {
+        BackUp(size - count);
+        return true;
+      } else {
+        count -= size;
+      }
+    }
+    return false;
+  }
+
+  virtual int64 ByteCount() const { return total_byte_count_; }
+
+ private:
+  string data_;
+  size_t count_;     // The number of strings that haven't been consuemd.
+  size_t position_;  // Position in the string for the next read.
+  int64 total_byte_count_;
+};
 }  // namespace
 
-TEST(MessageTest, SerializationFailsOnNegativeByteSize) {
-  NegativeByteSize message;
-  string string_output;
-  EXPECT_FALSE(message.AppendPartialToString(&string_output));
+TEST(MessageTest, TestParseMessagesCloseTo2G) {
+  // Create a message with a large string field.
+  string value = string(64 * 1024 * 1024, 'x');
+  protobuf_unittest::TestAllTypes message;
+  message.set_optional_string(value);
 
-  io::ArrayOutputStream coded_raw_output(NULL, 100);
-  io::CodedOutputStream coded_output(&coded_raw_output);
-  EXPECT_FALSE(message.SerializePartialToCodedStream(&coded_output));
+  // Repeat this message in the input stream to make the total input size
+  // close to 2G.
+  string data = message.SerializeAsString();
+  size_t count = static_cast<size_t>(kint32max) / data.size();
+  RepeatedInputStream input(data, count);
+
+  // The parsing should succeed.
+  protobuf_unittest::TestAllTypes result;
+  EXPECT_TRUE(result.ParseFromZeroCopyStream(&input));
+
+  // When there are multiple occurences of a singulr field, the last one
+  // should win.
+  EXPECT_EQ(value, result.optional_string());
+}
+
+TEST(MessageTest, TestParseMessagesOver2G) {
+  // Create a message with a large string field.
+  string value = string(64 * 1024 * 1024, 'x');
+  protobuf_unittest::TestAllTypes message;
+  message.set_optional_string(value);
+
+  // Repeat this message in the input stream to make the total input size
+  // larger than 2G.
+  string data = message.SerializeAsString();
+  size_t count = static_cast<size_t>(kint32max) / data.size() + 1;
+  RepeatedInputStream input(data, count);
+
+  // The parsing should fail.
+  protobuf_unittest::TestAllTypes result;
+  EXPECT_FALSE(result.ParseFromZeroCopyStream(&input));
 }
 
 TEST(MessageTest, BypassInitializationCheckOnSerialize) {
@@ -319,7 +388,7 @@ TEST(MessageTest, BypassInitializationCheckOnSerialize) {
 
 TEST(MessageTest, FindInitializationErrors) {
   unittest::TestRequired message;
-  vector<string> errors;
+  std::vector<string> errors;
   message.FindInitializationErrors(&errors);
   ASSERT_EQ(3, errors.size());
   EXPECT_EQ("a", errors[0]);
