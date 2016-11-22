@@ -269,7 +269,7 @@ class DescriptorPoolTest(unittest.TestCase):
     self.pool.AddExtensionDescriptor(another_field)
 
     extensions = self.pool.FindAllExtensions(factory1_message)
-    expected_extension_numbers = {one_more_field, another_field}
+    expected_extension_numbers = set([one_more_field, another_field])
     self.assertEqual(expected_extension_numbers, set(extensions))
     # Verify that mutating the returned list does not affect the pool.
     extensions.append('unexpected_element')
