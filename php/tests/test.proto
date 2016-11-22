@@ -134,3 +134,8 @@ message TestUnpackedMessage {
   repeated bool     repeated_bool     = 102 [packed = false];
   repeated TestEnum repeated_enum     = 103 [packed = false];
 }
+
+// /**/@<>&\{
+message TestPhpDoc {
+  int32 a = 1;
+}

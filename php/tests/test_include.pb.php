@@ -9,15 +9,27 @@ use Google\Protobuf\Internal\GPBType;
 use Google\Protobuf\Internal\RepeatedField;
 use Google\Protobuf\Internal\GPBUtil;
 
+/**
+ * Protobuf type <code>bar.TestInclude</code>
+ */
 class TestInclude extends \Google\Protobuf\Internal\Message
 {
+    /**
+     * <code>optional int32 a = 1;</code>
+     */
     private $a = 0;
 
+    /**
+     * <code>optional int32 a = 1;</code>
+     */
     public function getA()
     {
         return $this->a;
     }
 
+    /**
+     * <code>optional int32 a = 1;</code>
+     */
     public function setA($var)
     {
         GPBUtil::checkInt32($var);
