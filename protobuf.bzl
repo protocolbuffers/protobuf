@@ -304,6 +304,7 @@ def py_proto_library(
         include=None,
         default_runtime="//:protobuf_python",
         protoc="//:protoc",
+        use_grpc_plugin=False,
         **kargs):
   """Bazel rule to create a Python protobuf library from proto source files
 
@@ -323,6 +324,8 @@ def py_proto_library(
     default_runtime: the implicitly default runtime which will be depended on by
         the generated py_library target.
     protoc: the label of the protocol compiler to generate the sources.
+    use_grpc_plugin: a flag to indicate whether to call the Python C++ plugin
+        when processing the proto files.
     **kargs: other keyword arguments that are passed to cc_library.
 
   """
@@ -331,6 +334,13 @@ def py_proto_library(
   includes = []
   if include != None:
     includes = [include]
+
+  grpc_python_plugin = None
+  if use_grpc_plugin:
+    grpc_python_plugin = "//external:grpc_python_plugin"
+    # Note: Generated grpc code depends on Python grpc module. This dependency
+    # is not explicitly listed in py_libs. Instead, host system is assumed to
+    # have grpc installed.
 
   proto_gen(
       name=name + "_genproto",
@@ -341,6 +351,8 @@ def py_proto_library(
       gen_py=1,
       outs=outs,
       visibility=["//visibility:public"],
+      plugin=grpc_python_plugin,
+      plugin_language="grpc"
   )
 
   if default_runtime and not default_runtime in py_libs + deps:
