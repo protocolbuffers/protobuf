@@ -217,7 +217,7 @@ class CommandLineInterfaceTest : public testing::Test {
   string captured_stdout_;
 
   // Pointers which need to be deleted later.
-  vector<CodeGenerator*> mock_generators_to_delete_;
+  std::vector<CodeGenerator*> mock_generators_to_delete_;
 
   NullCodeGenerator* null_generator_;
 };
@@ -291,7 +291,7 @@ void CommandLineInterfaceTest::TearDown() {
 }
 
 void CommandLineInterfaceTest::Run(const string& command) {
-  vector<string> args = Split(command, " ", true);
+  std::vector<string> args = Split(command, " ", true);
 
   if (!disallow_plugins_) {
     cli_.AllowPlugins("prefix-");
@@ -759,7 +759,7 @@ TEST_F(CommandLineInterfaceTest, TrailingBackslash) {
 
 TEST_F(CommandLineInterfaceTest, Win32ErrorMessage) {
   EXPECT_EQ("The system cannot find the file specified.\r\n",
-    Subprocess::Win32ErrorMessage(ERROR_FILE_NOT_FOUND));
+            Subprocess::Win32ErrorMessage(ERROR_FILE_NOT_FOUND));
 }
 
 #endif  // defined(_WIN32) || defined(__CYGWIN__)
@@ -1856,7 +1856,7 @@ class EncodeDecodeTest : public testing::Test {
   enum ReturnCode { SUCCESS, ERROR };
 
   bool Run(const string& command) {
-    vector<string> args;
+    std::vector<string> args;
     args.push_back("protoc");
     SplitStringUsing(command, " ", &args);
     args.push_back("--proto_path=" + TestSourceDir());

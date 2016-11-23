@@ -51,8 +51,8 @@ this file*.
 __author__ = 'robinson@google.com (Will Robinson)'
 
 from io import BytesIO
-import sys
 import struct
+import sys
 import weakref
 
 import six
@@ -162,12 +162,10 @@ class GeneratedProtocolMessageType(type):
     """
     descriptor = dictionary[GeneratedProtocolMessageType._DESCRIPTOR_KEY]
     cls._decoders_by_tag = {}
-    cls._extensions_by_name = {}
-    cls._extensions_by_number = {}
     if (descriptor.has_options and
         descriptor.GetOptions().message_set_wire_format):
       cls._decoders_by_tag[decoder.MESSAGE_SET_ITEM_TAG] = (
-          decoder.MessageSetItemDecoder(cls._extensions_by_number), None)
+          decoder.MessageSetItemDecoder(descriptor), None)
 
     # Attach stuff to each FieldDescriptor for quick lookup later on.
     for field in descriptor.fields:
@@ -747,32 +745,21 @@ def _AddPropertiesForExtensions(descriptor, cls):
     constant_name = extension_name.upper() + "_FIELD_NUMBER"
     setattr(cls, constant_name, extension_field.number)
 
+  # TODO(amauryfa): Migrate all users of these attributes to functions like
+  #   pool.FindExtensionByNumber(descriptor).
+  if descriptor.file is not None:
+    # TODO(amauryfa): Use cls.MESSAGE_FACTORY.pool when available.
+    pool = descriptor.file.pool
+    cls._extensions_by_number = pool._extensions_by_number[descriptor]
+    cls._extensions_by_name = pool._extensions_by_name[descriptor]
 
 def _AddStaticMethods(cls):
   # TODO(robinson): This probably needs to be thread-safe(?)
   def RegisterExtension(extension_handle):
     extension_handle.containing_type = cls.DESCRIPTOR
+    # TODO(amauryfa): Use cls.MESSAGE_FACTORY.pool when available.
+    cls.DESCRIPTOR.file.pool.AddExtensionDescriptor(extension_handle)
     _AttachFieldHelpers(cls, extension_handle)
-
-    # Try to insert our extension, failing if an extension with the same number
-    # already exists.
-    actual_handle = cls._extensions_by_number.setdefault(
-        extension_handle.number, extension_handle)
-    if actual_handle is not extension_handle:
-      raise AssertionError(
-          'Extensions "%s" and "%s" both try to extend message type "%s" with '
-          'field number %d.' %
-          (extension_handle.full_name, actual_handle.full_name,
-           cls.DESCRIPTOR.full_name, extension_handle.number))
-
-    cls._extensions_by_name[extension_handle.full_name] = extension_handle
-
-    handle = extension_handle  # avoid line wrapping
-    if _IsMessageSetExtension(handle):
-      # MessageSet extension.  Also register under type name.
-      cls._extensions_by_name[
-          extension_handle.message_type.full_name] = extension_handle
-
   cls.RegisterExtension = staticmethod(RegisterExtension)
 
   def FromString(s):
@@ -1230,7 +1217,7 @@ def _AddMergeFromMethod(cls):
     if not isinstance(msg, cls):
       raise TypeError(
           "Parameter to MergeFrom() must be instance of same class: "
-          "expected %s got %s." % (cls.__name__, type(msg).__name__))
+          'expected %s got %s.' % (cls.__name__, msg.__class__.__name__))
 
     assert msg is not self
     self._Modified()

@@ -40,6 +40,7 @@
 #define GOOGLE_PROTOBUF_MESSAGE_LITE_H__
 
 #include <google/protobuf/stubs/common.h>
+#include <google/protobuf/stubs/logging.h>
 
 
 namespace google {
@@ -239,17 +240,22 @@ class LIBPROTOBUF_EXPORT MessageLite {
   bool AppendPartialToString(string* output) const;
 
   // Computes the serialized size of the message.  This recursively calls
-  // ByteSize() on all embedded messages.  Subclasses MUST override either
-  // ByteSize() or ByteSizeLong() (overriding both is fine).
+  // ByteSizeLong() on all embedded messages.
   //
-  // ByteSize() is generally linear in the number of fields defined for the
+  // ByteSizeLong() is generally linear in the number of fields defined for the
   // proto.
-  virtual int ByteSize() const { return static_cast<int>(ByteSizeLong()); }
-  virtual size_t ByteSizeLong() const;
+  virtual size_t ByteSizeLong() const = 0;
 
-  // Serializes the message without recomputing the size.  The message must
-  // not have changed since the last call to ByteSize(); if it has, the results
-  // are undefined.
+  // Legacy ByteSize() API.
+  int ByteSize() const {
+    size_t result = ByteSizeLong();
+    GOOGLE_DCHECK_LE(result, static_cast<size_t>(INT_MAX));
+    return static_cast<int>(result);
+  }
+
+  // Serializes the message without recomputing the size.  The message must not
+  // have changed since the last call to ByteSize(), and the value returned by
+  // ByteSize must be non-negative.  Otherwise the results are undefined.
   virtual void SerializeWithCachedSizes(
       io::CodedOutputStream* output) const = 0;
 

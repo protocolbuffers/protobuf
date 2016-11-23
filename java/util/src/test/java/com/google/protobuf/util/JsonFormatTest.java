@@ -57,12 +57,15 @@ import com.google.protobuf.util.JsonTestProto.TestDuration;
 import com.google.protobuf.util.JsonTestProto.TestFieldMask;
 import com.google.protobuf.util.JsonTestProto.TestMap;
 import com.google.protobuf.util.JsonTestProto.TestOneof;
+import com.google.protobuf.util.JsonTestProto.TestRecursive;
 import com.google.protobuf.util.JsonTestProto.TestStruct;
 import com.google.protobuf.util.JsonTestProto.TestTimestamp;
 import com.google.protobuf.util.JsonTestProto.TestWrappers;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.HashMap;
+import java.util.Map;
 import junit.framework.TestCase;
 
 public class JsonFormatTest extends TestCase {
@@ -216,7 +219,9 @@ public class JsonFormatTest extends TestCase {
 
     TestMap.Builder mapBuilder = TestMap.newBuilder();
     mapBuilder.putInt32ToEnumMapValue(1, 0);
-    mapBuilder.getMutableInt32ToEnumMapValue().put(2, 12345);
+    Map<Integer, Integer> mapWithInvalidValues = new HashMap<Integer, Integer>();
+    mapWithInvalidValues.put(2, 12345);
+    mapBuilder.putAllInt32ToEnumMapValue(mapWithInvalidValues);
     TestMap mapMessage = mapBuilder.build();
     assertEquals(
         "{\n"
@@ -1140,6 +1145,7 @@ public class JsonFormatTest extends TestCase {
       // Expected.
     }
   }
+
   public void testParserIgnoringUnknownFields() throws Exception {
     TestAllTypes.Builder builder = TestAllTypes.newBuilder();
     String json = "{\n" + "  \"unknownField\": \"XXX\"\n" + "}";
@@ -1357,5 +1363,35 @@ public class JsonFormatTest extends TestCase {
         builder);
     Any any = builder.build();
     assertEquals(0, any.getValue().size());
+  }
+
+  public void testRecursionLimit() throws Exception {
+    String input =
+        "{\n"
+            + "  \"nested\": {\n"
+            + "    \"nested\": {\n"
+            + "      \"nested\": {\n"
+            + "        \"nested\": {\n"
+            + "          \"value\": 1234\n"
+            + "        }\n"
+            + "      }\n"
+            + "    }\n"
+            + "  }\n"
+            + "}\n";
+
+    JsonFormat.Parser parser = JsonFormat.parser();
+    TestRecursive.Builder builder = TestRecursive.newBuilder();
+    parser.merge(input, builder);
+    TestRecursive message = builder.build();
+    assertEquals(1234, message.getNested().getNested().getNested().getNested().getValue());
+
+    parser = JsonFormat.parser().usingRecursionLimit(3);
+    builder = TestRecursive.newBuilder();
+    try {
+      parser.merge(input, builder);
+      fail("Exception is expected.");
+    } catch (InvalidProtocolBufferException e) {
+      // Expected.
+    }
   }
 }

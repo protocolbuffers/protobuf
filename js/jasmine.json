@@ -7,6 +7,9 @@
     "helpers": [
         "node_modules/google-closure-library/closure/goog/bootstrap/nodejs.js",
         "node_loader.js",
-        "deps.js"
+        "deps.js",
+        "google/protobuf/any.js",
+        "google/protobuf/struct.js",
+        "google/protobuf/timestamp.js"
     ]
 }

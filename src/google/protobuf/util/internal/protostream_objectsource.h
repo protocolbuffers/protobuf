@@ -294,6 +294,9 @@ class LIBPROTOBUF_EXPORT ProtoStreamObjectSource : public ObjectSource {
   // Whether to render unknown fields.
   bool render_unknown_fields_;
 
+  // Whether to add trailing zeros for timestamp and duration.
+  bool add_trailing_zeros_for_timestamp_and_duration_;
+
   GOOGLE_DISALLOW_IMPLICIT_CONSTRUCTORS(ProtoStreamObjectSource);
 };
 

@@ -642,10 +642,10 @@ def MessageDecoder(field_number, is_repeated, is_packed, key, new_default):
 
 MESSAGE_SET_ITEM_TAG = encoder.TagBytes(1, wire_format.WIRETYPE_START_GROUP)
 
-def MessageSetItemDecoder(extensions_by_number):
+def MessageSetItemDecoder(descriptor):
   """Returns a decoder for a MessageSet item.
 
-  The parameter is the _extensions_by_number map for the message class.
+  The parameter is the message Descriptor.
 
   The message set message looks like this:
     message MessageSet {
@@ -694,7 +694,7 @@ def MessageSetItemDecoder(extensions_by_number):
     if message_start == -1:
       raise _DecodeError('MessageSet item missing message.')
 
-    extension = extensions_by_number.get(type_id)
+    extension = message.Extensions._FindExtensionByNumber(type_id)
     if extension is not None:
       value = field_dict.get(extension)
       if value is None:

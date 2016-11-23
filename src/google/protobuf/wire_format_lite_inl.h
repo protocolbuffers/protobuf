@@ -274,8 +274,9 @@ inline bool WireFormatLite::ReadRepeatedFixedSizePrimitive(
     // The number of bytes each type occupies on the wire.
     const int per_value_size = tag_size + sizeof(value);
 
+    // parentheses around (std::min) prevents macro expansion of min(...)
     int elements_available =
-        std::min(values->Capacity() - values->size(), size / per_value_size);
+        (std::min)(values->Capacity() - values->size(), size / per_value_size);
     int num_read = 0;
     while (num_read < elements_available &&
            (buffer = io::CodedInputStream::ExpectTagFromArray(
@@ -366,8 +367,9 @@ inline bool WireFormatLite::ReadPackedFixedSizePrimitive(
   if (bytes_limit == -1) {
     bytes_limit = input->BytesUntilLimit();
   } else {
+    // parentheses around (std::min) prevents macro expansion of min(...)
     bytes_limit =
-        std::min(bytes_limit, static_cast<int64>(input->BytesUntilLimit()));
+        (std::min)(bytes_limit, static_cast<int64>(input->BytesUntilLimit()));
   }
   if (bytes_limit >= new_bytes) {
     // Fast-path that pre-allocates *values to the final size.
@@ -862,7 +864,12 @@ inline size_t WireFormatLite::MessageSizeNoVirtual(
 }
 
 inline size_t WireFormatLite::LengthDelimitedSize(size_t length) {
-  return io::CodedOutputStream::VarintSize32(length) + length;
+  // The static_cast here prevents an error in certain compiler configurations
+  // but is not technically correct--if length is too large to fit in a uint32
+  // then it will be silently truncated. We will need to fix this if we ever
+  // decide to start supporting serialized messages greater than 2 GiB in size.
+  return length + io::CodedOutputStream::VarintSize32(
+      static_cast<uint32>(length));
 }
 
 }  // namespace internal

@@ -99,12 +99,12 @@ class _MiniDecoder(object):
     return wire_format.UnpackTag(self.ReadVarint())
 
   def ReadFloat(self):
-    result = struct.unpack("<f", self._bytes[self._pos:self._pos+4])[0]
+    result = struct.unpack('<f', self._bytes[self._pos:self._pos+4])[0]
     self._pos += 4
     return result
 
   def ReadDouble(self):
-    result = struct.unpack("<d", self._bytes[self._pos:self._pos+8])[0]
+    result = struct.unpack('<d', self._bytes[self._pos:self._pos+8])[0]
     self._pos += 8
     return result
 
@@ -621,9 +621,15 @@ class ReflectionTest(BaseTestCase):
     self.assertRaises(TypeError, setattr, proto, 'optional_string', 10)
     self.assertRaises(TypeError, setattr, proto, 'optional_bytes', 10)
 
-  def testIntegerTypes(self):
+  def assertIntegerTypes(self, integer_fn):
+    """Verifies setting of scalar integers.
+
+    Args:
+      integer_fn: A function to wrap the integers that will be assigned.
+    """
     def TestGetAndDeserialize(field_name, value, expected_type):
       proto = unittest_pb2.TestAllTypes()
+      value = integer_fn(value)
       setattr(proto, field_name, value)
       self.assertIsInstance(getattr(proto, field_name), expected_type)
       proto2 = unittest_pb2.TestAllTypes()
@@ -635,7 +641,7 @@ class ReflectionTest(BaseTestCase):
     TestGetAndDeserialize('optional_uint32', 1 << 30, int)
     try:
       integer_64 = long
-    except NameError: # Python3
+    except NameError:  # Python3
       integer_64 = int
     if struct.calcsize('L') == 4:
       # Python only has signed ints, so 32-bit python can't fit an uint32
@@ -649,9 +655,33 @@ class ReflectionTest(BaseTestCase):
     TestGetAndDeserialize('optional_uint64', 1 << 30, integer_64)
     TestGetAndDeserialize('optional_uint64', 1 << 60, integer_64)
 
-  def testSingleScalarBoundsChecking(self):
+  def testIntegerTypes(self):
+    self.assertIntegerTypes(lambda x: x)
+
+  def testNonStandardIntegerTypes(self):
+    self.assertIntegerTypes(test_util.NonStandardInteger)
+
+  def testIllegalValuesForIntegers(self):
+    pb = unittest_pb2.TestAllTypes()
+
+    # Strings are illegal, even when the represent an integer.
+    with self.assertRaises(TypeError):
+      pb.optional_uint64 = '2'
+
+    # The exact error should propagate with a poorly written custom integer.
+    with self.assertRaisesRegexp(RuntimeError, 'my_error'):
+      pb.optional_uint64 = test_util.NonStandardInteger(5, 'my_error')
+
+  def assetIntegerBoundsChecking(self, integer_fn):
+    """Verifies bounds checking for scalar integer fields.
+
+    Args:
+      integer_fn: A function to wrap the integers that will be assigned.
+    """
     def TestMinAndMaxIntegers(field_name, expected_min, expected_max):
       pb = unittest_pb2.TestAllTypes()
+      expected_min = integer_fn(expected_min)
+      expected_max = integer_fn(expected_max)
       setattr(pb, field_name, expected_min)
       self.assertEqual(expected_min, getattr(pb, field_name))
       setattr(pb, field_name, expected_max)
@@ -663,10 +693,21 @@ class ReflectionTest(BaseTestCase):
     TestMinAndMaxIntegers('optional_uint32', 0, 0xffffffff)
     TestMinAndMaxIntegers('optional_int64', -(1 << 63), (1 << 63) - 1)
     TestMinAndMaxIntegers('optional_uint64', 0, 0xffffffffffffffff)
+    # A bit of white-box testing since -1 is an int and not a long in C++ and
+    # so goes down a different path.
+    pb = unittest_pb2.TestAllTypes()
+    with self.assertRaises(ValueError):
+      pb.optional_uint64 = integer_fn(-(1 << 63))
 
     pb = unittest_pb2.TestAllTypes()
-    pb.optional_nested_enum = 1
+    pb.optional_nested_enum = integer_fn(1)
     self.assertEqual(1, pb.optional_nested_enum)
+
+  def testSingleScalarBoundsChecking(self):
+    self.assetIntegerBoundsChecking(lambda x: x)
+
+  def testNonStandardSingleScalarBoundsChecking(self):
+    self.assetIntegerBoundsChecking(test_util.NonStandardInteger)
 
   def testRepeatedScalarTypeSafety(self):
     proto = unittest_pb2.TestAllTypes()
@@ -1187,12 +1228,18 @@ class ReflectionTest(BaseTestCase):
     self.assertTrue(not extendee_proto.HasExtension(extension))
 
   def testRegisteredExtensions(self):
-    self.assertTrue('protobuf_unittest.optional_int32_extension' in
-                    unittest_pb2.TestAllExtensions._extensions_by_name)
-    self.assertTrue(1 in unittest_pb2.TestAllExtensions._extensions_by_number)
+    pool = unittest_pb2.DESCRIPTOR.pool
+    self.assertTrue(
+        pool.FindExtensionByNumber(
+            unittest_pb2.TestAllExtensions.DESCRIPTOR, 1))
+    self.assertIs(
+        pool.FindExtensionByName(
+            'protobuf_unittest.optional_int32_extension').containing_type,
+        unittest_pb2.TestAllExtensions.DESCRIPTOR)
     # Make sure extensions haven't been registered into types that shouldn't
     # have any.
-    self.assertEqual(0, len(unittest_pb2.TestAllTypes._extensions_by_name))
+    self.assertEqual(0, len(
+        pool.FindAllExtensions(unittest_pb2.TestAllTypes.DESCRIPTOR)))
 
   # If message A directly contains message B, and
   # a.HasField('b') is currently False, then mutating any

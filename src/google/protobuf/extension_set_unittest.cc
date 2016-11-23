@@ -331,7 +331,7 @@ TEST(ExtensionSetTest, SwapExtension) {
   unittest::TestAllExtensions message2;
 
   TestUtil::SetAllExtensions(&message1);
-  vector<const FieldDescriptor*> fields;
+  std::vector<const FieldDescriptor*> fields;
 
   // Swap empty fields.
   const Reflection* reflection = message1.GetReflection();
@@ -363,7 +363,7 @@ TEST(ExtensionSetTest, SwapExtensionWithEmpty) {
   TestUtil::SetAllExtensions(&message3);
 
   const Reflection* reflection = message3.GetReflection();
-  vector<const FieldDescriptor*> fields;
+  std::vector<const FieldDescriptor*> fields;
   reflection->ListFields(message3, &fields);
 
   reflection->SwapFields(&message1, &message2, fields);
@@ -380,7 +380,7 @@ TEST(ExtensionSetTest, SwapExtensionBothFull) {
   TestUtil::SetAllExtensions(&message2);
 
   const Reflection* reflection = message1.GetReflection();
-  vector<const FieldDescriptor*> fields;
+  std::vector<const FieldDescriptor*> fields;
   reflection->ListFields(message1, &fields);
 
   reflection->SwapFields(&message1, &message2, fields);
@@ -490,7 +490,7 @@ TEST(ExtensionSetTest, SwapFieldsOfExtensionBothFullWithArena) {
   TestUtil::SetAllExtensions(message2);
 
   const Reflection* reflection = message1->GetReflection();
-  vector<const FieldDescriptor*> fields;
+  std::vector<const FieldDescriptor*> fields;
   reflection->ListFields(*message1, &fields);
   reflection->SwapFields(message1, message2, fields);
   TestUtil::ExpectAllExtensionsSet(*message1);
@@ -504,7 +504,7 @@ TEST(ExtensionSetTest, SwapExtensionWithSelf) {
 
   TestUtil::SetAllExtensions(&message1);
 
-  vector<const FieldDescriptor*> fields;
+  std::vector<const FieldDescriptor*> fields;
   const Reflection* reflection = message1.GetReflection();
   reflection->ListFields(message1, &fields);
   reflection->SwapFields(&message1, &message1, fields);

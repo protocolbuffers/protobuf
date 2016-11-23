@@ -305,7 +305,7 @@ class LIBPROTOBUF_EXPORT DiskSourceTree : public SourceTree {
                    const string& disk_path_param)
       : virtual_path(virtual_path_param), disk_path(disk_path_param) {}
   };
-  vector<Mapping> mappings_;
+  std::vector<Mapping> mappings_;
   string last_error_message_;
 
   // Like Open(), but returns the on-disk path in disk_file if disk_file is

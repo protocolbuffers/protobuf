@@ -45,7 +45,7 @@ namespace cpp {
 namespace {
 
 void SetMessageVariables(const FieldDescriptor* descriptor,
-                         map<string, string>* variables,
+                         std::map<string, string>* variables,
                          const Options& options) {
   SetCommonFieldVariables(descriptor, variables, options);
   (*variables)["type"] = FieldMessageTypeName(descriptor);
@@ -218,7 +218,7 @@ GenerateDependentInlineAccessorDefinitions(io::Printer* printer) const {
     return;
   }
 
-  map<string, string> variables(variables_);
+  std::map<string, string> variables(variables_);
   // For the CRTP base class, all mutation methods are dependent, and so
   // they must be in the header.
   variables["dependent_classname"] =
@@ -349,7 +349,7 @@ GenerateInlineAccessorDefinitions(io::Printer* printer,
     // for dependent fields we cannot access its internal_default_instance,
     // because the type is incomplete.
     // TODO(gerbens) deprecate dependent base class.
-    map<string, string> variables(variables_);
+    std::map<string, string> variables(variables_);
     variables["inline"] = is_inline ? "inline " : "";
     printer->Print(variables,
       "$inline$const $type$& $classname$::$name$() const {\n"
@@ -360,7 +360,7 @@ GenerateInlineAccessorDefinitions(io::Printer* printer,
     return;
   }
 
-  map<string, string> variables(variables_);
+  std::map<string, string> variables(variables_);
   variables["inline"] = is_inline ? "inline " : "";
   printer->Print(variables,
     "$inline$const $type$& $classname$::$name$() const {\n"
@@ -469,7 +469,7 @@ GenerateInlineAccessorDefinitions(io::Printer* printer,
 
 void MessageFieldGenerator::
 GenerateClearingCode(io::Printer* printer) const {
-  map<string, string> variables(variables_);
+  std::map<string, string> variables(variables_);
   variables["this_message"] = dependent_field_ ? DependentBaseDownCast() : "";
   if (!HasFieldPresence(descriptor_->file())) {
     // If we don't have has-bits, message presence is indicated only by ptr !=
@@ -486,6 +486,26 @@ GenerateClearingCode(io::Printer* printer) const {
 }
 
 void MessageFieldGenerator::
+GenerateMessageClearingCode(io::Printer* printer) const {
+  std::map<string, string> variables(variables_);
+  variables["type"] = FieldMessageTypeName(descriptor_);
+
+  if (!HasFieldPresence(descriptor_->file())) {
+    // If we don't have has-bits, message presence is indicated only by ptr !=
+    // NULL. Thus on clear, we need to delete the object.
+    printer->Print(variables_,
+      "if (GetArenaNoVirtual() == NULL && $name$_ != NULL) {\n"
+      "  delete $name$_;\n"
+      "}\n"
+      "$name$_ = NULL;\n");
+  } else {
+    printer->Print(variables_,
+      "GOOGLE_DCHECK($name$_ != NULL);\n"
+      "$name$_->$type$::Clear();\n");
+  }
+}
+
+void MessageFieldGenerator::
 GenerateMergingCode(io::Printer* printer) const {
   printer->Print(variables_,
     "mutable_$name$()->$type$::MergeFrom(from.$name$());\n");
@@ -497,8 +517,48 @@ GenerateSwappingCode(io::Printer* printer) const {
 }
 
 void MessageFieldGenerator::
+GenerateDestructorCode(io::Printer* printer) const {
+  // In google3 a default instance will never get deleted so we don't need to
+  // worry about that but in opensource protobuf default instances are deleted
+  // in shutdown process and we need to take special care when handling them.
+  printer->Print(variables_,
+    "if (this != internal_default_instance()) {\n"
+    "  delete $name$_;\n"
+    "}\n");
+}
+
+void MessageFieldGenerator::
 GenerateConstructorCode(io::Printer* printer) const {
   printer->Print(variables_, "$name$_ = NULL;\n");
+}
+
+void MessageFieldGenerator::
+GenerateCopyConstructorCode(io::Printer* printer) const {
+  // For non-Arena enabled messages, everything always goes on the heap.
+  //
+  // For Arena enabled messages, the logic is a bit more convoluted.
+  //
+  // In the copy constructor, we call InternalMetadataWithArena::MergeFrom,
+  // which does *not* copy the Arena pointer.  In the generated MergeFrom
+  // (see MessageFieldGenerator::GenerateMergingCode), we:
+  // -> copy the has bits (but this is done in bulk by a memcpy in the copy
+  //    constructor)
+  // -> check whether the destination field pointer is NULL (it will be, since
+  //    we're initializing it and would have called SharedCtor) and if so:
+  // -> call _slow_mutable_$name$(), which calls either
+  //    ::google::protobuf::Arena::CreateMessage<>(GetArenaNoVirtual()), or
+  //    ::google::protobuf::Arena::Create<>(GetArenaNoVirtual())
+  //
+  // At this point, GetArenaNoVirtual returns NULL since the Arena pointer
+  // wasn't copied, so both of these methods allocate the submessage on the
+  // heap.
+
+  printer->Print(variables_,
+    "if (from.has_$name$()) {\n"
+    "  $name$_ = new $type$(*from.$name$_);\n"
+    "} else {\n"
+    "  $name$_ = NULL;\n"
+    "}\n");
 }
 
 void MessageFieldGenerator::
@@ -581,7 +641,7 @@ GenerateDependentInlineAccessorDefinitions(io::Printer* printer) const {
   if (!dependent_base_) {
     return;
   }
-  map<string, string> variables(variables_);
+  std::map<string, string> variables(variables_);
   variables["inline"] = "inline ";
   variables["dependent_classname"] =
       DependentBaseClassTemplateName(descriptor_->containing_type()) + "<T>";
@@ -601,7 +661,7 @@ GenerateInlineAccessorDefinitions(io::Printer* printer,
   if (dependent_base_) {
     return;
   }
-  map<string, string> variables(variables_);
+  std::map<string, string> variables(variables_);
   variables["inline"] = is_inline ? "inline " : "";
   variables["dependent_classname"] = variables["classname"];
   variables["this_message"] = "";
@@ -615,16 +675,15 @@ GenerateInlineAccessorDefinitions(io::Printer* printer,
 
 void MessageOneofFieldGenerator::
 GenerateNonInlineAccessorDefinitions(io::Printer* printer) const {
-  map<string, string> variables(variables_);
+  std::map<string, string> variables(variables_);
   variables["field_member"] =
       variables["oneof_prefix"] + variables["name"] + "_";
 
   //printer->Print(variables,
 }
 
-void MessageOneofFieldGenerator::
-InternalGenerateInlineAccessorDefinitions(const map<string, string>& variables,
-                                          io::Printer* printer) const {
+void MessageOneofFieldGenerator::InternalGenerateInlineAccessorDefinitions(
+    const std::map<string, string>& variables, io::Printer* printer) const {
   printer->Print(variables,
     "$tmpl$"
     "$inline$ "
@@ -794,7 +853,7 @@ InternalGenerateInlineAccessorDefinitions(const map<string, string>& variables,
 
 void MessageOneofFieldGenerator::
 GenerateClearingCode(io::Printer* printer) const {
-  map<string, string> variables(variables_);
+  std::map<string, string> variables(variables_);
   variables["this_message"] = dependent_field_ ? DependentBaseDownCast() : "";
   if (SupportsArenas(descriptor_)) {
     printer->Print(variables,
@@ -808,8 +867,19 @@ GenerateClearingCode(io::Printer* printer) const {
 }
 
 void MessageOneofFieldGenerator::
+GenerateMessageClearingCode(io::Printer* printer) const {
+  GenerateClearingCode(printer);
+}
+
+void MessageOneofFieldGenerator::
 GenerateSwappingCode(io::Printer* printer) const {
   // Don't print any swapping code. Swapping the union will swap this field.
+}
+
+void MessageOneofFieldGenerator::
+GenerateDestructorCode(io::Printer* printer) const {
+  // We inherit from MessageFieldGenerator, so we need to override the default
+  // behavior.
 }
 
 void MessageOneofFieldGenerator::
@@ -884,7 +954,7 @@ GenerateDependentInlineAccessorDefinitions(io::Printer* printer) const {
   if (!dependent_field_) {
     return;
   }
-  map<string, string> variables(variables_);
+  std::map<string, string> variables(variables_);
   // For the CRTP base class, all mutation methods are dependent, and so
   // they must be in the header.
   variables["dependent_classname"] =
@@ -915,7 +985,6 @@ GenerateDependentInlineAccessorDefinitions(io::Printer* printer) const {
     "  return $this_message$$name$_.Add();\n"
     "}\n");
 
-
   if (dependent_getter_) {
     printer->Print(variables,
       "template <class T>\n"
@@ -939,7 +1008,7 @@ GenerateDependentInlineAccessorDefinitions(io::Printer* printer) const {
 void RepeatedMessageFieldGenerator::
 GenerateInlineAccessorDefinitions(io::Printer* printer,
                                   bool is_inline) const {
-  map<string, string> variables(variables_);
+  std::map<string, string> variables(variables_);
   variables["inline"] = is_inline ? "inline " : "";
 
   if (!dependent_getter_) {
@@ -989,7 +1058,7 @@ GenerateInlineAccessorDefinitions(io::Printer* printer,
 
 void RepeatedMessageFieldGenerator::
 GenerateClearingCode(io::Printer* printer) const {
-  map<string, string> variables(variables_);
+  std::map<string, string> variables(variables_);
   variables["this_message"] = dependent_field_ ? DependentBaseDownCast() : "";
   printer->Print(variables, "$this_message$$name$_.Clear();\n");
 }

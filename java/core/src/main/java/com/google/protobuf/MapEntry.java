@@ -109,7 +109,7 @@ public final class MapEntry<K, V> extends AbstractMessage {
     } catch (InvalidProtocolBufferException e) {
       throw e.setUnfinishedMessage(this);
     } catch (IOException e) {
-      throw new InvalidProtocolBufferException(e.getMessage()).setUnfinishedMessage(this);
+      throw new InvalidProtocolBufferException(e).setUnfinishedMessage(this);
     }
   }
 

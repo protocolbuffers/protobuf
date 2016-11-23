@@ -744,6 +744,20 @@ jspb.BinaryReader.prototype.readSint64 = function() {
 
 
 /**
+ * Reads a signed zigzag-encoded 64-bit integer field from the binary stream,
+ * or throws an error if the next field in the stream is not of the correct
+ * wire type.
+ *
+ * @return {string} The value of the signed 64-bit integer field as a decimal string.
+ */
+jspb.BinaryReader.prototype.readSint64String = function() {
+  goog.asserts.assert(
+      this.nextWireType_ == jspb.BinaryConstants.WireType.VARINT);
+  return this.decoder_.readZigzagVarint64String();
+};
+
+
+/**
  * Reads an unsigned 32-bit fixed-length integer fiield from the binary stream,
  * or throws an error if the next field in the stream is not of the correct
  * wire type.
@@ -772,11 +786,28 @@ jspb.BinaryReader.prototype.readFixed64 = function() {
 
 
 /**
+ * Reads a signed 64-bit integer field from the binary stream as a string, or
+ * throws an error if the next field in the stream is not of the correct wire
+ * type.
+ *
+ * Returns the value as a string.
+ *
+ * @return {string} The value of the unsigned 64-bit integer field as a decimal
+ * string.
+ */
+jspb.BinaryReader.prototype.readFixed64String = function() {
+  goog.asserts.assert(
+      this.nextWireType_ == jspb.BinaryConstants.WireType.FIXED64);
+  return this.decoder_.readUint64String();
+};
+
+
+/**
  * Reads a signed 32-bit fixed-length integer fiield from the binary stream, or
  * throws an error if the next field in the stream is not of the correct wire
  * type.
  *
- * @return {number} The value of the double field.
+ * @return {number} The value of the signed 32-bit integer field.
  */
 jspb.BinaryReader.prototype.readSfixed32 = function() {
   goog.asserts.assert(
@@ -786,16 +817,47 @@ jspb.BinaryReader.prototype.readSfixed32 = function() {
 
 
 /**
+ * Reads a signed 32-bit fixed-length integer fiield from the binary stream, or
+ * throws an error if the next field in the stream is not of the correct wire
+ * type.
+ *
+ * @return {string} The value of the signed 32-bit integer field as a decimal
+ * string.
+ */
+jspb.BinaryReader.prototype.readSfixed32String = function() {
+  goog.asserts.assert(
+      this.nextWireType_ == jspb.BinaryConstants.WireType.FIXED32);
+  return this.decoder_.readInt32().toString();
+};
+
+
+/**
  * Reads a signed 64-bit fixed-length integer fiield from the binary stream, or
  * throws an error if the next field in the stream is not of the correct wire
  * type.
  *
- * @return {number} The value of the float field.
+ * @return {number} The value of the sfixed64 field.
  */
 jspb.BinaryReader.prototype.readSfixed64 = function() {
   goog.asserts.assert(
       this.nextWireType_ == jspb.BinaryConstants.WireType.FIXED64);
   return this.decoder_.readInt64();
+};
+
+
+/**
+ * Reads a signed 64-bit fixed-length integer fiield from the binary stream, or
+ * throws an error if the next field in the stream is not of the correct wire
+ * type.
+ *
+ * Returns the value as a string.
+ *
+ * @return {string} The value of the sfixed64 field as a decimal string.
+ */
+jspb.BinaryReader.prototype.readSfixed64String = function() {
+  goog.asserts.assert(
+      this.nextWireType_ == jspb.BinaryConstants.WireType.FIXED64);
+  return this.decoder_.readInt64String();
 };
 
 
@@ -1028,6 +1090,16 @@ jspb.BinaryReader.prototype.readPackedSint64 = function() {
 
 
 /**
+ * Reads a packed sint64 field, which consists of a length header and a list of
+ * zigzag varints.  Returns a list of strings.
+ * @return {!Array.<string>}
+ */
+jspb.BinaryReader.prototype.readPackedSint64String = function() {
+  return this.readPackedField_(this.decoder_.readZigzagVarint64String);
+};
+
+
+/**
  * Reads a packed fixed32 field, which consists of a length header and a list
  * of unsigned 32-bit ints.
  * @return {!Array.<number>}
@@ -1048,6 +1120,16 @@ jspb.BinaryReader.prototype.readPackedFixed64 = function() {
 
 
 /**
+ * Reads a packed fixed64 field, which consists of a length header and a list
+ * of unsigned 64-bit ints.  Returns a list of strings.
+ * @return {!Array.<number>}
+ */
+jspb.BinaryReader.prototype.readPackedFixed64String = function() {
+  return this.readPackedField_(this.decoder_.readUint64String);
+};
+
+
+/**
  * Reads a packed sfixed32 field, which consists of a length header and a list
  * of 32-bit ints.
  * @return {!Array.<number>}
@@ -1064,6 +1146,16 @@ jspb.BinaryReader.prototype.readPackedSfixed32 = function() {
  */
 jspb.BinaryReader.prototype.readPackedSfixed64 = function() {
   return this.readPackedField_(this.decoder_.readInt64);
+};
+
+
+/**
+ * Reads a packed sfixed64 field, which consists of a length header and a list
+ * of 64-bit ints.  Returns a list of strings.
+ * @return {!Array.<string>}
+ */
+jspb.BinaryReader.prototype.readPackedSfixed64String = function() {
+  return this.readPackedField_(this.decoder_.readInt64String);
 };
 
 

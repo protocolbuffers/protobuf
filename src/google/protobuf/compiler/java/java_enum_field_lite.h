@@ -81,7 +81,7 @@ class ImmutableEnumFieldLiteGenerator : public ImmutableFieldLiteGenerator {
 
  protected:
   const FieldDescriptor* descriptor_;
-  map<string, string> variables_;
+  std::map<string, string> variables_;
   const int messageBitIndex_;
   const int builderBitIndex_;
   Context* context_;
@@ -142,7 +142,7 @@ class RepeatedImmutableEnumFieldLiteGenerator
 
  private:
   const FieldDescriptor* descriptor_;
-  map<string, string> variables_;
+  std::map<string, string> variables_;
   const int messageBitIndex_;
   const int builderBitIndex_;
   Context* context_;

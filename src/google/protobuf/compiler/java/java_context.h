@@ -95,11 +95,13 @@ class Context {
   void InitializeFieldGeneratorInfo(const FileDescriptor* file);
   void InitializeFieldGeneratorInfoForMessage(const Descriptor* message);
   void InitializeFieldGeneratorInfoForFields(
-      const vector<const FieldDescriptor*>& fields);
+      const std::vector<const FieldDescriptor*>& fields);
 
   google::protobuf::scoped_ptr<ClassNameResolver> name_resolver_;
-  map<const FieldDescriptor*, FieldGeneratorInfo> field_generator_info_map_;
-  map<const OneofDescriptor*, OneofGeneratorInfo> oneof_generator_info_map_;
+  std::map<const FieldDescriptor*, FieldGeneratorInfo>
+      field_generator_info_map_;
+  std::map<const OneofDescriptor*, OneofGeneratorInfo>
+      oneof_generator_info_map_;
   Options options_;
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(Context);
 };

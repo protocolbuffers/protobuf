@@ -157,7 +157,6 @@ message FieldDescriptorProto {
     LABEL_OPTIONAL      = 1;
     LABEL_REQUIRED      = 2;
     LABEL_REPEATED      = 3;
-    // TODO(sanjay): Should we add LABEL_MAP?
   };
 
   optional string name = 1;
@@ -431,13 +430,14 @@ message MessageOptions {
   // parser.
   optional bool map_entry = 7;
 
+  reserved 8;  // javalite_serializable
+
+
   // The parser stores options it doesn't recognize here. See above.
   repeated UninterpretedOption uninterpreted_option = 999;
 
   // Clients can define custom options in extensions of this message. See above.
   extensions 1000 to max;
-
-  reserved 8;  // javalite_serializable
 }
 
 message FieldOptions {
@@ -551,6 +551,7 @@ message EnumOptions {
   // is a formalization for deprecating enums.
   optional bool deprecated = 3 [default=false];
 
+
   // The parser stores options it doesn't recognize here. See above.
   repeated UninterpretedOption uninterpreted_option = 999;
 
@@ -604,6 +605,17 @@ message MethodOptions {
   // for the method, or it will be completely ignored; in the very least,
   // this is a formalization for deprecating methods.
   optional bool deprecated = 33 [default=false];
+
+  // Is this method side-effect-free (or safe in HTTP parlance), or idempotent,
+  // or neither? HTTP based RPC implementation may choose GET verb for safe
+  // methods, and PUT verb for idempotent methods instead of the default POST.
+  enum IdempotencyLevel {
+    IDEMPOTENCY_UNKNOWN = 0;
+    NO_SIDE_EFFECTS     = 1; // implies idempotent
+    IDEMPOTENT          = 2; // idempotent, but may have side effects
+  }
+  optional IdempotencyLevel idempotency_level =
+      34 [default=IDEMPOTENCY_UNKNOWN];
 
   // The parser stores options it doesn't recognize here. See above.
   repeated UninterpretedOption uninterpreted_option = 999;

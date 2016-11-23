@@ -268,11 +268,13 @@ TEST(RepeatedField, MergeFrom) {
 }
 
 #ifdef PROTOBUF_HAS_DEATH_TEST
+#ifndef NDEBUG
 TEST(RepeatedField, MergeFromSelf) {
   RepeatedField<int> me;
   me.Add(3);
   EXPECT_DEATH(me.MergeFrom(me), "");
 }
+#endif  // NDEBUG
 #endif  // PROTOBUF_HAS_DEATH_TEST
 
 TEST(RepeatedField, CopyFrom) {
@@ -344,7 +346,7 @@ TEST(RepeatedField, CopyConstruct) {
 }
 
 TEST(RepeatedField, IteratorConstruct) {
-  vector<int> values;
+  std::vector<int> values;
   values.push_back(1);
   values.push_back(2);
 
@@ -858,7 +860,7 @@ TEST(RepeatedPtrField, CopyConstruct) {
 }
 
 TEST(RepeatedPtrField, IteratorConstruct_String) {
-  vector<string> values;
+  std::vector<string> values;
   values.push_back("1");
   values.push_back("2");
 
@@ -875,7 +877,7 @@ TEST(RepeatedPtrField, IteratorConstruct_String) {
 
 TEST(RepeatedPtrField, IteratorConstruct_Proto) {
   typedef TestAllTypes::NestedMessage Nested;
-  vector<Nested> values;
+  std::vector<Nested> values;
   values.push_back(Nested());
   values.back().set_bb(1);
   values.push_back(Nested());
@@ -949,7 +951,7 @@ TEST(RepeatedPtrField, ExtractSubrange) {
     for (int num = 0; num <= sz; ++num) {
       for (int start = 0; start < sz - num; ++start) {
         for (int extra = 0; extra < 4; ++extra) {
-          vector<string*> subject;
+          std::vector<string*> subject;
 
           // Create an array with "sz" elements and "extra" cleared elements.
           RepeatedPtrField<string> field;
@@ -1511,7 +1513,7 @@ TEST_F(RepeatedFieldInsertionIteratorsTest, Nesteds) {
 
 TEST_F(RepeatedFieldInsertionIteratorsTest,
        AllocatedRepeatedPtrFieldWithStringIntData) {
-  vector<Nested*> data;
+  std::vector<Nested*> data;
   TestAllTypes goldenproto;
   for (int i = 0; i < 10; ++i) {
     Nested* new_data = new Nested;
@@ -1530,7 +1532,7 @@ TEST_F(RepeatedFieldInsertionIteratorsTest,
 
 TEST_F(RepeatedFieldInsertionIteratorsTest,
        AllocatedRepeatedPtrFieldWithString) {
-  vector<string*> data;
+  std::vector<string*> data;
   TestAllTypes goldenproto;
   for (int i = 0; i < 10; ++i) {
     string* new_data = new string;
@@ -1548,7 +1550,7 @@ TEST_F(RepeatedFieldInsertionIteratorsTest,
 
 TEST_F(RepeatedFieldInsertionIteratorsTest,
        UnsafeArenaAllocatedRepeatedPtrFieldWithStringIntData) {
-  vector<Nested*> data;
+  std::vector<Nested*> data;
   TestAllTypes goldenproto;
   for (int i = 0; i < 10; ++i) {
     Nested* new_data = new Nested;
@@ -1567,7 +1569,7 @@ TEST_F(RepeatedFieldInsertionIteratorsTest,
 
 TEST_F(RepeatedFieldInsertionIteratorsTest,
        UnsafeArenaAllocatedRepeatedPtrFieldWithString) {
-  vector<string*> data;
+  std::vector<string*> data;
   TestAllTypes goldenproto;
   for (int i = 0; i < 10; ++i) {
     string* new_data = new string;

@@ -251,11 +251,11 @@ TEST_F(JsonUtilTest, TestDynamicMessage) {
   EXPECT_EQ(ToJson(generated, options), ToJson(*message, options));
 }
 
-typedef pair<char*, int> Segment;
+typedef std::pair<char*, int> Segment;
 // A ZeroCopyOutputStream that writes to multiple buffers.
 class SegmentedZeroCopyOutputStream : public io::ZeroCopyOutputStream {
  public:
-  explicit SegmentedZeroCopyOutputStream(list<Segment> segments)
+  explicit SegmentedZeroCopyOutputStream(std::list<Segment> segments)
       : segments_(segments), last_segment_(static_cast<char*>(NULL), 0), byte_count_(0) {}
 
   virtual bool Next(void** buffer, int* length) {
@@ -281,7 +281,7 @@ class SegmentedZeroCopyOutputStream : public io::ZeroCopyOutputStream {
   virtual int64 ByteCount() const { return byte_count_; }
 
  private:
-  list<Segment> segments_;
+  std::list<Segment> segments_;
   Segment last_segment_;
   int64 byte_count_;
 };
@@ -299,7 +299,7 @@ TEST(ZeroCopyStreamByteSinkTest, TestAllInputOutputPatterns) {
   for (int split_pattern = 0; split_pattern < (1 << (kOutputBufferLength - 1));
        split_pattern += kSkippedPatternCount) {
     // Split the buffer into small segments according to the split_pattern.
-    list<Segment> segments;
+    std::list<Segment> segments;
     int segment_start = 0;
     for (int i = 0; i < kOutputBufferLength - 1; ++i) {
       if (split_pattern & (1 << i)) {

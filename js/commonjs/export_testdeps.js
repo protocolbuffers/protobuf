@@ -12,6 +12,7 @@ goog.require('jspb.arith.Int64');
 goog.require('jspb.arith.UInt64');
 goog.require('jspb.BinaryEncoder');
 goog.require('jspb.BinaryDecoder');
+goog.require('jspb.BinaryWriter');
 goog.require('jspb.utils');
 
 exports.goog = goog;

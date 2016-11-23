@@ -374,7 +374,7 @@ static int InitializeAndCopyToParentContainer(MapContainer* from,
     // A somewhat roundabout way of copying just one field from old_message to
     // new_message.  This is the best we can do with what Reflection gives us.
     Message* mutable_old = from->GetMutableMessage();
-    vector<const FieldDescriptor*> fields;
+    std::vector<const FieldDescriptor*> fields;
     fields.push_back(from->parent_field_descriptor);
 
     // Move the map field into the new message.

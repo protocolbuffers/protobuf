@@ -80,7 +80,7 @@ void SetMessageVariables(const FieldDescriptor* descriptor,
                          int builderBitIndex,
                          const FieldGeneratorInfo* info,
                          Context* context,
-                         map<string, string>* variables) {
+                         std::map<string, string>* variables) {
   SetCommonFieldVariables(descriptor, info, variables);
 
   ClassNameResolver* name_resolver = context->GetNameResolver();
