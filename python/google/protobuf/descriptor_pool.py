@@ -408,7 +408,7 @@ class DescriptorPool(object):
     Returns:
       A list of FieldDescriptor describing the extensions.
     """
-    return self._extensions_by_number[message_descriptor].values()
+    return list(self._extensions_by_number[message_descriptor].values())
 
   def _ConvertFileProtoToFileDescriptor(self, file_proto):
     """Creates a FileDescriptor from a proto or returns a cached copy.
