@@ -1412,7 +1412,7 @@ void CommandLineInterface::PrintHelpText() {
   std::cerr <<
 "Usage: " << executable_name_ << " [OPTION] PROTO_FILES\n"
 "Parse PROTO_FILES and generate output based on the options given:\n"
-"  -IPATH, --proto_path=PATH   Specify the directory in which to search for\n"
+"  -I=PATH, --proto_path=PATH   Specify the directory in which to search for\n"
 "                              imports.  May be specified multiple times;\n"
 "                              directories will be searched in order.  If not\n"
 "                              given, the current working directory is used.\n"
