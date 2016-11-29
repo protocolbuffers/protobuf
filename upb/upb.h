@@ -511,6 +511,7 @@ bool upb_arena_addcleanup(upb_arena *a, upb_cleanup_func *func, void *ud);
 size_t upb_arena_bytesallocated(const upb_arena *a);
 void upb_arena_setnextblocksize(upb_arena *a, size_t size);
 void upb_arena_setmaxblocksize(upb_arena *a, size_t size);
+UPB_INLINE upb_alloc *upb_arena_alloc(upb_arena *a) { return (upb_alloc*)a; }
 
 UPB_END_EXTERN_C
 
@@ -590,10 +591,6 @@ struct upb_arena {
   void *future1;
   void *future2;
 };
-
-UPB_BEGIN_EXTERN_C
-UPB_INLINE upb_alloc *upb_arena_alloc(upb_arena *a) { return &a->alloc; }
-UPB_END_EXTERN_C
 
 
 /* upb::Environment ***********************************************************/

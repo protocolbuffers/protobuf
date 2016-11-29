@@ -54,11 +54,13 @@ void *lupb_refcounted_check(lua_State *L, int narg, const char *type) {
   void *ud = lua_touserdata(L, narg);
   void *ret;
 
-  if (ud) {
-    memcpy(&ret, ud, sizeof(ret));
-    if (!ret) {
-      luaL_error(L, "called into dead object");
-    }
+  if (!ud) {
+    luaL_typerror(L, narg, "refcounted");
+  }
+
+  memcpy(&ret, ud, sizeof(ret));
+  if (!ret) {
+    luaL_error(L, "called into dead object");
   }
 
   luaL_checkudata(L, narg, type);
@@ -164,11 +166,13 @@ static const upb_def *lupb_def_check(lua_State *L, int narg) {
   void *ud, *ud2;
 
   ud = lua_touserdata(L, narg);
-  if (ud) {
-    memcpy(&ret, ud, sizeof(ret));
-    if (!ret) {
-      luaL_error(L, "called into dead object");
-    }
+  if (!ud) {
+    luaL_typerror(L, narg, "upb def");
+  }
+
+  memcpy(&ret, ud, sizeof(ret));
+  if (!ret) {
+    luaL_error(L, "called into dead object");
   }
 
   ud2 = luaL_testudata(L, narg, LUPB_MSGDEF);

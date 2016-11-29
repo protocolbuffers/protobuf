@@ -15,25 +15,6 @@ static size_t div_round_up(size_t n, size_t d) {
   return (n + d - 1) / d;
 }
 
-#if 0
-static void *alloc(void *p, size_t *ofs, size_t size, size_t n, size_t align) {
-  char *obj;
-
-  *ofs = align_up(*ofs, align);
-  obj = (char*)p + *ofs;
-  *ofs += n;
-  return *ofs <= size ? obj : NULL;
-}
-
-static void addsize(size_t *size, size_t mysize, size_t myalign) {
-  *size = align_up(*size, myalign);
-  *size += mysize;
-}
-
-static void upb_array_packedsize(const upb_array *arr, size_t *size);
-static void upb_map_packedsize(const upb_map *map, size_t *size);
-#endif
-
 bool upb_fieldtype_mapkeyok(upb_fieldtype_t type) {
   return type == UPB_TYPE_BOOL || type == UPB_TYPE_INT32 ||
          type == UPB_TYPE_UINT32 || type == UPB_TYPE_INT64 ||
@@ -95,46 +76,19 @@ static uint8_t upb_msg_fieldsize(const upb_fielddef *f) {
   }
 }
 
+/* TODO(haberman): this is broken right now because upb_msgval can contain
+ * a char* / size_t pair, which is too big for a upb_value.  To fix this
+ * we'll probably need to dynamically allocate a upb_msgval and store a
+ * pointer to that in the tables for extensions/maps. */
 static upb_value upb_toval(upb_msgval val) {
   upb_value ret;
-  memcpy(&ret, &val, sizeof(upb_msgval));
+  memcpy(&ret, &val, sizeof(upb_value));
   return ret;
 }
 
 static upb_msgval upb_msgval_fromval(upb_value val) {
   upb_msgval ret;
-  memcpy(&ret, &val, sizeof(upb_msgval));
-  return ret;
-}
-
-static upb_value upb_msgval_toval(upb_msgval val, upb_fieldtype_t type) {
-  upb_value ret;
-  UPB_UNUSED(type);
-  memcpy(&ret, &val, sizeof(upb_msgval));
-#ifndef NDEBUG
-  switch (type) {
-    case UPB_TYPE_FLOAT:
-      return upb_value_float(upb_msgval_getfloat(val));
-    case UPB_TYPE_DOUBLE:
-      return upb_value_double(upb_msgval_getdouble(val));
-    case UPB_TYPE_BOOL:
-      return upb_value_bool(upb_msgval_getbool(val));
-    case UPB_TYPE_STRING:
-    case UPB_TYPE_BYTES:
-      return upb_value_constptr(val.str.ptr);  /* TODO */
-    case UPB_TYPE_MESSAGE:
-      return upb_value_constptr(upb_msgval_getmsg(val));
-    case UPB_TYPE_ENUM:
-    case UPB_TYPE_INT32:
-      return upb_value_int32(upb_msgval_getint32(val));
-    case UPB_TYPE_UINT32:
-      return upb_value_uint32(upb_msgval_getuint32(val));
-    case UPB_TYPE_INT64:
-      return upb_value_int64(upb_msgval_getint64(val));
-    case UPB_TYPE_UINT64:
-      return upb_value_uint64(upb_msgval_getuint64(val));
-  }
-#endif
+  memcpy(&ret, &val, sizeof(upb_value));
   return ret;
 }
 
@@ -615,92 +569,6 @@ upb_alloc *upb_msg_alloc(const upb_msg *msg, const upb_msglayout *l) {
   return alloc;
 }
 
-#if 0
-void upb_msg_packedsize(const void *msg, const upb_msglayout *l, size_t *size) {
-  upb_msg_field_iter i;
-  upb_inttable *exttab;
-
-  if (!msg) {
-    return;
-  }
-
-  addsize(size, l->size, l->align);
-
-  exttab = upb_msg_trygetextdict(msg, l);
-  if (exttab) {
-    upb_inttable_packedsize(exttab, size);
-  }
-
-  /* TODO(haberman): should there be an easier (and maybe more efficient) way of
-   * iterating over only strings/submessages/repeated fields? */
-  for(upb_msg_field_begin(&i, l->msgdef);
-      !upb_msg_field_done(&i);
-      upb_msg_field_next(&i)) {
-    upb_fielddef *f = upb_msg_iter_field(&i);
-    if (upb_fielddef_isseq(f)) {
-      upb_array_packedsize(upb_msgval_getarr(upb_msg_get(msg, f, l)), size);
-    } else if (upb_fielddef_ismap(f)) {
-      upb_map_packedsize(upb_msgval_getmap(upb_msg_get(msg, f, l)), size);
-    } else if (upb_fielddef_issubmsg(f)) {
-      upb_msg_packedsize(upb_msgval_getmsg(upb_msg_get(msg, f, l)),
-                         upb_msglayout_sublayout(l, f), size);
-    } else if (upb_fielddef_isstring(f)) {
-      addsize(size, upb_msg_get(msg, f, l).str.len, 1);
-    }
-  }
-}
-
-void *upb_msg_pack(const void *msg, const upb_msglayout *l,
-                   void *p, size_t *ofs, size_t size) {
-  upb_msg_field_iter i;
-  void *packed_msg = alloc(p, ofs, size, l->size, l->align);
-  upb_inttable *exttab = upb_msg_trygetextdict(msg, l);
-
-  memcpy(packed_msg, msg, l->size);
-
-  if (exttab) {
-    upb_inttable *packed_exttab = upb_inttable_pack(exttab, p, ofs, size);
-
-    if (!packed_exttab) {
-      return NULL;
-    }
-
-    /* TODO(haberman): need to copy over repeated/submsg/string exts. */
-    DEREF(packed_msg, l->extdict_offset, upb_inttable*) = packed_exttab;
-  }
-
-  for(upb_msg_field_begin(&i, l->msgdef);
-      !upb_msg_field_done(&i);
-      upb_msg_field_next(&i)) {
-    upb_fielddef *f = upb_msg_iter_field(&i);
-    upb_msgval v;
-
-    if (upb_fielddef_isprimitive(f) && !upb_fielddef_isseq(f)) {
-      continue;
-    }
-
-    v = upb_msg_get(msg, f, l);
-
-    if (upb_fielddef_isseq(f)) {
-      v = upb_msgval_arr(upb_array_pack(upb_msgval_getarr(v), p, ofs, size));
-    } else if (upb_fielddef_ismap(f)) {
-      v = upb_msgval_map(upb_map_pack(upb_msgval_getmap(v), p, ofs, size));
-    } else if (upb_fielddef_issubmsg(f)) {
-      const upb_msglayout *sl = upb_msglayout_sublayout(l, f);
-      v = upb_msgval_msg(upb_msg_pack(upb_msgval_getmsg(v), sl, p, ofs, size));
-    } else if (upb_fielddef_isstring(f)) {
-      void *packed_str = alloc(p, ofs, size, v.str.len, 1);
-      memcpy(packed_str, v.str.ptr, v.str.len);
-      v = upb_msgval_str(packed_str, v.str.len);
-    }
-
-    upb_msg_set(packed_msg, f, v, l, NULL);
-  }
-
-  return packed_msg;
-}
-#endif
-
 bool upb_msg_has(const upb_msg *msg,
                  const upb_fielddef *f,
                  const upb_msglayout *l) {
@@ -827,17 +695,6 @@ void upb_array_free(upb_array *arr) {
   upb_free(arr->alloc, arr);
 }
 
-#if 0
-void upb_array_packedsize(const upb_array *arr, size_t *size) {
-  if (!arr) {
-    return;
-  }
-
-  addsize(size, sizeof(upb_array), upb_alignof(upb_array));
-  addsize(size, arr->len * arr->element_size, arr->element_size);
-}
-#endif
-
 size_t upb_array_size(const upb_array *arr) {
   return arr->len;
 }
@@ -947,17 +804,6 @@ size_t upb_map_sizeof(upb_fieldtype_t ktype, upb_fieldtype_t vtype) {
   return sizeof(upb_map);
 }
 
-#if 0
-void upb_map_packedsize(const upb_map *map, size_t *size) {
-  if (!map) {
-    return;
-  }
-
-  addsize(size, sizeof(upb_map), upb_alignof(upb_map));
-  upb_strtable_packedsize(&map->strtab, size);
-}
-#endif
-
 bool upb_map_init(upb_map *map, upb_fieldtype_t ktype, upb_fieldtype_t vtype,
                   upb_alloc *a) {
   upb_ctype_t vtabtype = upb_fieldtotabtype(vtype);
@@ -1028,7 +874,7 @@ bool upb_map_set(upb_map *map, upb_msgval key, upb_msgval val,
                  upb_msgval *removed) {
   const char *key_str;
   size_t key_len;
-  upb_value tabval = upb_msgval_toval(val, map->val_type);
+  upb_value tabval = upb_toval(val);
   upb_value removedtabval;
   upb_alloc *a = map->alloc;
 

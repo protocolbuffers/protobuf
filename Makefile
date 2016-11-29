@@ -33,7 +33,7 @@ all: lib tests tools/upbc lua python
 testall: test pythontest
 
 # Set this to have user-specific flags (especially things like -O0 and -g).
-USER_CPPFLAGS?=-O0 -g -ffunction-sections -fdata-sections -I/usr/include/lua5.2 -UNDEBUG
+USER_CPPFLAGS?=
 
 # Build with "make WITH_JIT=yes" (or anything besides "no") to enable the JIT.
 WITH_JIT=no
