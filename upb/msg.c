@@ -82,13 +82,15 @@ static uint8_t upb_msg_fieldsize(const upb_fielddef *f) {
  * pointer to that in the tables for extensions/maps. */
 static upb_value upb_toval(upb_msgval val) {
   upb_value ret;
-  memcpy(&ret, &val, sizeof(upb_value));
+  UPB_UNUSED(val);
+  memset(&ret, 0, sizeof(upb_value));  /* XXX */
   return ret;
 }
 
 static upb_msgval upb_msgval_fromval(upb_value val) {
   upb_msgval ret;
-  memcpy(&ret, &val, sizeof(upb_value));
+  UPB_UNUSED(val);
+  memset(&ret, 0, sizeof(upb_msgval));  /* XXX */
   return ret;
 }
 
