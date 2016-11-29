@@ -541,7 +541,8 @@ static void jitprimitive(jitcompiler *jc, opcode op,
   const int fastbytes = fastpath_bytes[vtype];
   upb_func *handler = gethandler(h, sel);
   upb_fieldtype_t ftype;
-  const upb_shim_data *data;
+  size_t offset;
+  int32_t hasbit;
 
   if (handler) {
     |1:
@@ -617,33 +618,32 @@ static void jitprimitive(jitcompiler *jc, opcode op,
     }
 
     /* Call callback (or specialize if we can). */
-    data = upb_shim_getdata(h, sel, &ftype);
-    if (data) {
+    if (upb_msg_getscalarhandlerdata(h, sel, &ftype, &offset, &hasbit)) {
       switch (ftype) {
         case UPB_TYPE_INT64:
         case UPB_TYPE_UINT64:
-          |  mov   [CLOSURE + data->offset], rdx
+          |  mov   [CLOSURE + offset], rdx
           break;
         case UPB_TYPE_INT32:
         case UPB_TYPE_UINT32:
         case UPB_TYPE_ENUM:
-          |  mov   [CLOSURE + data->offset], edx
+          |  mov   [CLOSURE + offset], edx
           break;
         case UPB_TYPE_DOUBLE:
-          |  movsd  qword [CLOSURE + data->offset], XMMARG1
+          |  movsd  qword [CLOSURE + offset], XMMARG1
           break;
         case UPB_TYPE_FLOAT:
-          |  movss  dword [CLOSURE + data->offset], XMMARG1
+          |  movss  dword [CLOSURE + offset], XMMARG1
           break;
         case UPB_TYPE_BOOL:
-          |  mov   [CLOSURE + data->offset], dl
+          |  mov   [CLOSURE + offset], dl
           break;
         case UPB_TYPE_STRING:
         case UPB_TYPE_BYTES:
         case UPB_TYPE_MESSAGE:
           UPB_ASSERT(false); break;
       }
-      |  sethas CLOSURE, data->hasbit
+      |  sethas CLOSURE, hasbit
     } else if (handler) {
       |  mov    ARG1_64, CLOSURE
       |  load_handler_data h, sel

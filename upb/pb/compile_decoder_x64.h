@@ -815,7 +815,8 @@ static void jitprimitive(jitcompiler *jc, opcode op,
   const int fastbytes = fastpath_bytes[vtype];
   upb_func *handler = gethandler(h, sel);
   upb_fieldtype_t ftype;
-  const upb_shim_data *data;
+  size_t offset;
+  int32_t hasbit;
 
   if (handler) {
     /*|1: */
@@ -826,63 +827,63 @@ static void jitprimitive(jitcompiler *jc, opcode op,
      } else {
     dasm_put(Dst, 1636, fastbytes);
      }
-# 549 "upb/pb/compile_decoder_x64.dasc"
+# 550 "upb/pb/compile_decoder_x64.dasc"
     /*|2: */
     dasm_put(Dst, 1652);
-# 550 "upb/pb/compile_decoder_x64.dasc"
+# 551 "upb/pb/compile_decoder_x64.dasc"
     switch (vtype) {
     case V32:
       /*|  call   ->decodev32_fallback */
       dasm_put(Dst, 1655);
-# 553 "upb/pb/compile_decoder_x64.dasc"
+# 554 "upb/pb/compile_decoder_x64.dasc"
       break;
     case V64:
       /*|  call   ->decodev64_fallback */
       dasm_put(Dst, 1659);
-# 556 "upb/pb/compile_decoder_x64.dasc"
+# 557 "upb/pb/compile_decoder_x64.dasc"
       break;
     case F32:
       /*|  call   ->decodef32_fallback */
       dasm_put(Dst, 1663);
-# 559 "upb/pb/compile_decoder_x64.dasc"
+# 560 "upb/pb/compile_decoder_x64.dasc"
       break;
     case F64:
       /*|  call   ->decodef64_fallback */
       dasm_put(Dst, 1667);
-# 562 "upb/pb/compile_decoder_x64.dasc"
+# 563 "upb/pb/compile_decoder_x64.dasc"
       break;
     case X: break;
     }
     /*|  jmp    >4 */
     dasm_put(Dst, 1671);
-# 566 "upb/pb/compile_decoder_x64.dasc"
+# 567 "upb/pb/compile_decoder_x64.dasc"
 
     /* Fast path decode; for when check_bytes bytes are available. */
     /*|3: */
     dasm_put(Dst, 1676);
-# 569 "upb/pb/compile_decoder_x64.dasc"
+# 570 "upb/pb/compile_decoder_x64.dasc"
     switch (op) {
     case OP_PARSE_SFIXED32:
     case OP_PARSE_FIXED32:
       /*|  mov    edx, dword [PTR] */
       dasm_put(Dst, 1679);
-# 573 "upb/pb/compile_decoder_x64.dasc"
+# 574 "upb/pb/compile_decoder_x64.dasc"
       break;
     case OP_PARSE_SFIXED64:
     case OP_PARSE_FIXED64:
       /*|  mov    rdx, qword [PTR] */
       dasm_put(Dst, 1682);
-# 577 "upb/pb/compile_decoder_x64.dasc"
+# 578 "upb/pb/compile_decoder_x64.dasc"
       break;
     case OP_PARSE_FLOAT:
       /*|  movss  xmm0, dword [PTR] */
       dasm_put(Dst, 1686);
-# 580 "upb/pb/compile_decoder_x64.dasc"
+# 581 "upb/pb/compile_decoder_x64.dasc"
       break;
     case OP_PARSE_DOUBLE:
       /*|  movsd  xmm0, qword [PTR] */
       dasm_put(Dst, 1692);
-# 583 "upb/pb/compile_decoder_x64.dasc"
+# 584 "upb/pb/compile_decoder_x64.dasc"
       break;
     default:
       /* Inline one byte of varint decoding. */
@@ -890,7 +891,7 @@ static void jitprimitive(jitcompiler *jc, opcode op,
       /*|  test   dl, dl */
       /*|  js     <2   // Fallback to slow path for >1 byte varint. */
       dasm_put(Dst, 1698);
-# 589 "upb/pb/compile_decoder_x64.dasc"
+# 590 "upb/pb/compile_decoder_x64.dasc"
       break;
     }
 
@@ -898,7 +899,7 @@ static void jitprimitive(jitcompiler *jc, opcode op,
     /* (only needed for a few types). */
     /*|4: */
     dasm_put(Dst, 1708);
-# 595 "upb/pb/compile_decoder_x64.dasc"
+# 596 "upb/pb/compile_decoder_x64.dasc"
     switch (op) {
     case OP_PARSE_SINT32:
       /* 32-bit zig-zag decode. */
@@ -908,7 +909,7 @@ static void jitprimitive(jitcompiler *jc, opcode op,
       /*|  neg    eax */
       /*|  xor    edx, eax */
       dasm_put(Dst, 1711);
-# 603 "upb/pb/compile_decoder_x64.dasc"
+# 604 "upb/pb/compile_decoder_x64.dasc"
       break;
     case OP_PARSE_SINT64:
       /* 64-bit zig-zag decode. */
@@ -918,47 +919,46 @@ static void jitprimitive(jitcompiler *jc, opcode op,
       /*|  neg    rax */
       /*|  xor    rdx, rax */
       dasm_put(Dst, 1725);
-# 611 "upb/pb/compile_decoder_x64.dasc"
+# 612 "upb/pb/compile_decoder_x64.dasc"
       break;
     case OP_PARSE_BOOL:
       /*|  test   rdx, rdx */
       /*|  setne  dl */
       dasm_put(Dst, 1744);
-# 615 "upb/pb/compile_decoder_x64.dasc"
+# 616 "upb/pb/compile_decoder_x64.dasc"
       break;
     default: break;
     }
 
     /* Call callback (or specialize if we can). */
-    data = upb_shim_getdata(h, sel, &ftype);
-    if (data) {
+    if (upb_msg_getscalarhandlerdata(h, sel, &ftype, &offset, &hasbit)) {
       switch (ftype) {
         case UPB_TYPE_INT64:
         case UPB_TYPE_UINT64:
-          /*|  mov   [CLOSURE + data->offset], rdx */
-          dasm_put(Dst, 1751, data->offset);
+          /*|  mov   [CLOSURE + offset], rdx */
+          dasm_put(Dst, 1751, offset);
 # 626 "upb/pb/compile_decoder_x64.dasc"
           break;
         case UPB_TYPE_INT32:
         case UPB_TYPE_UINT32:
         case UPB_TYPE_ENUM:
-          /*|  mov   [CLOSURE + data->offset], edx */
-          dasm_put(Dst, 1756, data->offset);
+          /*|  mov   [CLOSURE + offset], edx */
+          dasm_put(Dst, 1756, offset);
 # 631 "upb/pb/compile_decoder_x64.dasc"
           break;
         case UPB_TYPE_DOUBLE:
-          /*|  movsd  qword [CLOSURE + data->offset], XMMARG1 */
-          dasm_put(Dst, 1761, data->offset);
+          /*|  movsd  qword [CLOSURE + offset], XMMARG1 */
+          dasm_put(Dst, 1761, offset);
 # 634 "upb/pb/compile_decoder_x64.dasc"
           break;
         case UPB_TYPE_FLOAT:
-          /*|  movss  dword [CLOSURE + data->offset], XMMARG1 */
-          dasm_put(Dst, 1769, data->offset);
+          /*|  movss  dword [CLOSURE + offset], XMMARG1 */
+          dasm_put(Dst, 1769, offset);
 # 637 "upb/pb/compile_decoder_x64.dasc"
           break;
         case UPB_TYPE_BOOL:
-          /*|  mov   [CLOSURE + data->offset], dl */
-          dasm_put(Dst, 1777, data->offset);
+          /*|  mov   [CLOSURE + offset], dl */
+          dasm_put(Dst, 1777, offset);
 # 640 "upb/pb/compile_decoder_x64.dasc"
           break;
         case UPB_TYPE_STRING:
@@ -966,9 +966,9 @@ static void jitprimitive(jitcompiler *jc, opcode op,
         case UPB_TYPE_MESSAGE:
           UPB_ASSERT(false); break;
       }
-      /*|  sethas CLOSURE, data->hasbit */
-       if (data->hasbit >= 0) {
-      dasm_put(Dst, 1782, ((uint32_t)data->hasbit / 8), (1 << ((uint32_t)data->hasbit % 8)));
+      /*|  sethas CLOSURE, hasbit */
+       if (hasbit >= 0) {
+      dasm_put(Dst, 1782, ((uint32_t)hasbit / 8), (1 << ((uint32_t)hasbit % 8)));
        }
 # 647 "upb/pb/compile_decoder_x64.dasc"
     } else if (handler) {

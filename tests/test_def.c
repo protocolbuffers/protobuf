@@ -53,8 +53,9 @@ static upb_symtab *load_test_proto(void *owner) {
 
   files_ptr = files;
   while (*files_ptr) {
+    bool ok;
     ASSERT(!upb_filedef_isfrozen(*files_ptr));
-    bool ok = upb_symtab_addfile(s, *files_ptr, &status);
+    ok = upb_symtab_addfile(s, *files_ptr, &status);
     ASSERT(ok);
     ASSERT(upb_filedef_isfrozen(*files_ptr));
     upb_filedef_unref(*files_ptr, &files);

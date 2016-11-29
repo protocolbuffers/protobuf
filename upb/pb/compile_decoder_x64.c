@@ -9,10 +9,10 @@
 #include <stdio.h>
 #include <sys/mman.h>
 #include <unistd.h>
+#include "upb/msg.h"
 #include "upb/pb/decoder.h"
 #include "upb/pb/decoder.int.h"
 #include "upb/pb/varint.int.h"
-#include "upb/shim/shim.h"
 
 /* To debug the JIT:
  *
