@@ -12,10 +12,10 @@
 
 #include <map>
 
-#include "upb/def.h"
 #include "upb/bindings/googlepb/proto1.int.h"
+#include "upb/def.h"
 #include "upb/handlers.h"
-#include "upb/shim/shim.h"
+#include "upb/msg.h"
 #include "upb/sink.h"
 
 namespace {
@@ -593,8 +593,8 @@ case goog::FieldDescriptor::cpptype:                                           \
         SetStartRepeatedField<T>(proto2_f, r, f, h);
         CHKRET(h->SetValueHandler<T>(f, UpbMakeHandlerT(AppendPrimitive<T>)));
       } else {
-        CHKRET(upb::Shim::Set(h, f, GetOffset(proto2_f, r),
-                              GetHasbit(proto2_f, r)));
+        CHKRET(upb_msg_setscalarhandler(h, f, GetOffset(proto2_f, r),
+                                        GetHasbit(proto2_f, r)));
       }
     }
   }

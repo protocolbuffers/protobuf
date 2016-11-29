@@ -250,6 +250,8 @@ obj/upb/%.lo: upb/%.cc | $$(@D)/.
 
 # Regenerating the auto-generated files in upb/.
 upb/descriptor/descriptor.pb: upb/descriptor/descriptor.proto
+	$(E) PROTOC upb/descriptor/descriptor.proto
+	$(Q) protoc upb/descriptor/descriptor.proto -oupb/descriptor/descriptor.pb
 
 # "genfiles" includes Proto schemas we need for tests
 # For the moment we check in the *.upbdefs.* generated files so that people

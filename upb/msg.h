@@ -32,8 +32,13 @@
 #ifdef __cplusplus
 
 namespace upb {
-class MessageLayout;
+class Array;
+class Map;
+class MapIterator;
 class MessageFactory;
+class MessageLayout;
+class Visitor;
+class VisitorPlan;
 }
 
 #endif
@@ -110,6 +115,9 @@ typedef union {
   int64_t i64;
   uint32_t u32;
   uint64_t u64;
+  const upb_map* map;
+  const upb_msg* msg;
+  const upb_array* arr;
   const void* ptr;
   struct {
     const char *ptr;
@@ -137,10 +145,10 @@ ACCESSORS(int32,  i32, int32_t)
 ACCESSORS(int64,  i64, int64_t)
 ACCESSORS(uint32, u32, uint32_t)
 ACCESSORS(uint64, u64, uint64_t)
-ACCESSORS(map,    ptr, const upb_map*)
-ACCESSORS(msg,    ptr, const upb_msg*)
+ACCESSORS(map,    map, const upb_map*)
+ACCESSORS(msg,    msg, const upb_msg*)
 ACCESSORS(ptr,    ptr, const void*)
-ACCESSORS(arr,    ptr, const upb_array*)
+ACCESSORS(arr,    arr, const upb_array*)
 
 #undef ACCESSORS
 
