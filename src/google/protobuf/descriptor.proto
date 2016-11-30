@@ -366,6 +366,12 @@ message FileOptions {
   // Namespace for generated classes; defaults to the package.
   optional string csharp_namespace = 37;
 
+  // By default Swift generators will take the proto package and CamelCase it
+  // replacing '.' with underscore and use that to prefix the types/symbols
+  // defined. When this options is provided, they will use this value instead
+  // to prefix the types/symbols defined.
+  optional string swift_prefix = 39;
+
   // The parser stores options it doesn't recognize here. See above.
   repeated UninterpretedOption uninterpreted_option = 999;
 
