@@ -52,7 +52,7 @@ namespace Google.Protobuf.WellKnownTypes
         /// </remarks>
         /// <param name="paths">Paths in the field mask</param>
         /// <param name="diagnosticOnly">Determines the handling of non-normalized values</param>
-        /// <exception cref="InvalidOperationException">The represented duration is invalid, and <paramref name="diagnosticOnly"/> is <c>false</c>.</exception>
+        /// <exception cref="InvalidOperationException">The represented field mask is invalid, and <paramref name="diagnosticOnly"/> is <c>false</c>.</exception>
         internal static string ToJson(IList<string> paths, bool diagnosticOnly)
         {
             var firstInvalid = paths.FirstOrDefault(p => !ValidatePath(p));
@@ -60,10 +60,10 @@ namespace Google.Protobuf.WellKnownTypes
             {
                 var writer = new StringWriter();
 #if DOTNET35
-                var query = paths.Select(JsonFormatter.ToCamelCase);
+                var query = paths.Select(JsonFormatter.ToJsonName);
                 JsonFormatter.WriteString(writer, string.Join(",", query.ToArray()));
 #else
-                JsonFormatter.WriteString(writer, string.Join(",", paths.Select(JsonFormatter.ToCamelCase)));
+                JsonFormatter.WriteString(writer, string.Join(",", paths.Select(JsonFormatter.ToJsonName)));
 #endif
                 return writer.ToString();
             }
@@ -85,9 +85,9 @@ namespace Google.Protobuf.WellKnownTypes
         }
 
         /// <summary>
-        /// Camel-case converter with added strictness for field mask formatting.
+        /// Checks whether the given path is valid for a field mask.
         /// </summary>
-        /// <exception cref="InvalidOperationException">The field mask is invalid for JSON representation</exception>
+        /// <returns>true if the path is valid; false otherwise</returns>
         private static bool ValidatePath(string input)
         {
             for (int i = 0; i < input.Length; i++)

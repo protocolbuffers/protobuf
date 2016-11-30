@@ -2123,7 +2123,7 @@ public final class Descriptors {
           // Can't happen, because addPackage() only fails when the name
           // conflicts with a non-package, but we have not yet added any
           // non-packages at this point.
-          assert false;
+          throw new AssertionError(e);
         }
       }
     }

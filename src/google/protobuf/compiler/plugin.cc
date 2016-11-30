@@ -62,10 +62,10 @@ namespace compiler {
 
 class GeneratorResponseContext : public GeneratorContext {
  public:
-  GeneratorResponseContext(CodeGeneratorResponse* response,
-                           const vector<const FileDescriptor*>& parsed_files)
-      : response_(response),
-        parsed_files_(parsed_files) {}
+  GeneratorResponseContext(
+      CodeGeneratorResponse* response,
+      const std::vector<const FileDescriptor*>& parsed_files)
+      : response_(response), parsed_files_(parsed_files) {}
   virtual ~GeneratorResponseContext() {}
 
   // implements GeneratorContext --------------------------------------
@@ -84,13 +84,13 @@ class GeneratorResponseContext : public GeneratorContext {
     return new io::StringOutputStream(file->mutable_content());
   }
 
-  void ListParsedFiles(vector<const FileDescriptor*>* output) {
+  void ListParsedFiles(std::vector<const FileDescriptor*>* output) {
     *output = parsed_files_;
   }
 
  private:
   CodeGeneratorResponse* response_;
-  const vector<const FileDescriptor*>& parsed_files_;
+  const std::vector<const FileDescriptor*>& parsed_files_;
 };
 
 bool GenerateCode(const CodeGeneratorRequest& request,
@@ -105,7 +105,7 @@ bool GenerateCode(const CodeGeneratorRequest& request,
     }
   }
 
-  vector<const FileDescriptor*> parsed_files;
+  std::vector<const FileDescriptor*> parsed_files;
   for (int i = 0; i < request.file_to_generate_size(); i++) {
     parsed_files.push_back(pool.FindFileByName(request.file_to_generate(i)));
     if (parsed_files.back() == NULL) {

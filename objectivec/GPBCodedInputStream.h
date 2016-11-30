@@ -218,6 +218,27 @@ CF_EXTERN_C_END
 - (size_t)position;
 
 /**
+ * Moves the limit to the given byte offset starting at the current location.
+ *
+ * @exception GPBCodedInputStreamException If the requested bytes exceeed the
+ *            current limit.
+ *
+ * @param byteLimit The number of bytes to move the limit, offset to the current
+ *                  location.
+ *
+ * @return The limit offset before moving the new limit.
+ */
+- (size_t)pushLimit:(size_t)byteLimit;
+
+/**
+ * Moves the limit back to the offset as it was before calling pushLimit:.
+ *
+ * @param oldLimit The number of bytes to move the current limit. Usually this
+ *                 is the value returned by the pushLimit: method.
+ */
+- (void)popLimit:(size_t)oldLimit;
+
+/**
  * Verifies that the last call to -readTag returned the given tag value. This
  * is used to verify that a nested group ended with the correct end tag.
  *

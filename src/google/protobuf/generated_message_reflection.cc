@@ -44,6 +44,7 @@
 #include <google/protobuf/generated_message_util.h>
 #include <google/protobuf/map_field.h>
 #include <google/protobuf/repeated_field.h>
+// #include "google/protobuf/bridge/compatibility_mode_support.h"
 
 
 #define GOOGLE_PROTOBUF_HAS_ONEOF
@@ -83,6 +84,22 @@ inline bool SupportsArenas(const Descriptor* descriptor) {
 // a string field).
 
 namespace {
+
+template <class To>
+To* GetPointerAtOffset(Message* message, uint32 offset) {
+  return reinterpret_cast<To*>(reinterpret_cast<char*>(message) + offset);
+}
+
+template <class To>
+const To* GetConstPointerAtOffset(const Message* message, uint32 offset) {
+  return reinterpret_cast<const To*>(reinterpret_cast<const char*>(message) +
+                                     offset);
+}
+
+template <class To>
+const To& GetConstRefAtOffset(const Message& message, uint32 offset) {
+  return *GetConstPointerAtOffset<To>(&message, offset);
+}
 
 void ReportReflectionUsageError(
     const Descriptor* descriptor, const FieldDescriptor* field,
@@ -173,43 +190,25 @@ static void ReportReflectionUsageEnumTypeError(
 // ===================================================================
 
 GeneratedMessageReflection::GeneratedMessageReflection(
-    const Descriptor* descriptor, const Message* default_instance,
-    const int offsets[], int has_bits_offset, int unknown_fields_offset,
-    int extensions_offset, const DescriptorPool* descriptor_pool,
-    MessageFactory* factory, int object_size, int arena_offset)
+    const Descriptor* descriptor, const ReflectionSchema& schema,
+    const DescriptorPool* pool, MessageFactory* factory)
     : descriptor_(descriptor),
-      default_instance_(default_instance),
-      offsets_(offsets),
-      has_bits_offset_(has_bits_offset),
-      unknown_fields_offset_(unknown_fields_offset),
-      extensions_offset_(extensions_offset),
-      arena_offset_(arena_offset),
-      object_size_(object_size),
-      descriptor_pool_((descriptor_pool == NULL)
-                           ? DescriptorPool::generated_pool()
-                           : descriptor_pool),
-      message_factory_(factory) {}
-
-GeneratedMessageReflection::GeneratedMessageReflection(
-    const Descriptor* descriptor, const Message* default_instance,
-    const int offsets[], int has_bits_offset, int unknown_fields_offset,
-    int extensions_offset, const void* default_oneof_instance,
-    int oneof_case_offset, const DescriptorPool* descriptor_pool,
-    MessageFactory* factory, int object_size, int arena_offset)
-    : descriptor_(descriptor),
-      default_instance_(default_instance),
-      default_oneof_instance_(default_oneof_instance),
-      offsets_(offsets),
-      has_bits_offset_(has_bits_offset),
-      oneof_case_offset_(oneof_case_offset),
-      unknown_fields_offset_(unknown_fields_offset),
-      extensions_offset_(extensions_offset),
-      arena_offset_(arena_offset),
-      object_size_(object_size),
-      descriptor_pool_((descriptor_pool == NULL)
-                           ? DescriptorPool::generated_pool()
-                           : descriptor_pool),
-      message_factory_(factory) {}
+      schema_(schema),
+      descriptor_pool_((pool == NULL) ? DescriptorPool::generated_pool()
+                                      : pool),
+      message_factory_(factory),
+      // TODO(haberman) remove this when upb is using our table driven.
+      default_instance_(schema_.default_instance_),
+      default_oneof_instance_(schema_.default_oneof_instance_),
+      offsets_(schema_.offsets_),
+      has_bits_indices_(schema_.has_bit_indices_),
+      has_bits_offset_(schema_.has_bits_offset_),
+      oneof_case_offset_(schema_.oneof_case_offset_),
+      unknown_fields_offset_(-1),
+      extensions_offset_(schema_.extensions_offset_),
+      arena_offset_(schema_.metadata_offset_),
+      object_size_(schema_.object_size_) {
+}
 
 GeneratedMessageReflection::~GeneratedMessageReflection() {}
 
@@ -236,39 +235,33 @@ const UnknownFieldSet& GetEmptyUnknownFieldSet() {
 const UnknownFieldSet& GeneratedMessageReflection::GetUnknownFields(
     const Message& message) const {
   if (descriptor_->file()->syntax() == FileDescriptor::SYNTAX_PROTO3) {
+    // We have to ensure that any mutations made to the return value of
+    // MutableUnknownFields() are not reflected here.
     return GetEmptyUnknownFieldSet();
-  }
-  if (unknown_fields_offset_ == kUnknownFieldSetInMetadata) {
+  } else {
     return GetInternalMetadataWithArena(message).unknown_fields();
   }
-  const void* ptr = reinterpret_cast<const uint8*>(&message) +
-                    unknown_fields_offset_;
-  return *reinterpret_cast<const UnknownFieldSet*>(ptr);
 }
 
 UnknownFieldSet* GeneratedMessageReflection::MutableUnknownFields(
     Message* message) const {
-  if (unknown_fields_offset_ == kUnknownFieldSetInMetadata) {
-    return MutableInternalMetadataWithArena(message)->
-        mutable_unknown_fields();
-  }
-  void* ptr = reinterpret_cast<uint8*>(message) + unknown_fields_offset_;
-  return reinterpret_cast<UnknownFieldSet*>(ptr);
+  return MutableInternalMetadataWithArena(message)->mutable_unknown_fields();
 }
 
 int GeneratedMessageReflection::SpaceUsed(const Message& message) const {
   // object_size_ already includes the in-memory representation of each field
   // in the message, so we only need to account for additional memory used by
   // the fields.
-  int total_size = object_size_;
+  int total_size = schema_.GetObjectSize();
 
   total_size += GetUnknownFields(message).SpaceUsedExcludingSelf();
 
-  if (extensions_offset_ != -1) {
+  if (schema_.HasExtensionSet()) {
     total_size += GetExtensionSet(message).SpaceUsedExcludingSelf();
   }
 
-  for (int i = 0; i < descriptor_->field_count(); i++) {
+  const int field_count = descriptor_->field_count();
+  for (int i = 0; i < field_count; i++) {
     const FieldDescriptor* field = descriptor_->field(i);
 
     if (field->is_repeated()) {
@@ -337,9 +330,9 @@ int GeneratedMessageReflection::SpaceUsed(const Message& message) const {
               // the prototype. Only count the string if it has been changed
               // from the default value.
               const string* default_ptr =
-                  &DefaultRaw<ArenaStringPtr>(field).Get(NULL);
+                  &DefaultRaw<ArenaStringPtr>(field).Get();
               const string* ptr =
-                  &GetField<ArenaStringPtr>(message, field).Get(default_ptr);
+                  &GetField<ArenaStringPtr>(message, field).Get();
 
               if (ptr != default_ptr) {
                 // string fields are represented by just a pointer, so also
@@ -353,7 +346,7 @@ int GeneratedMessageReflection::SpaceUsed(const Message& message) const {
         }
 
         case FieldDescriptor::CPPTYPE_MESSAGE:
-          if (&message == default_instance_) {
+          if (schema_.IsDefaultInstance(message)) {
             // For singular fields, the prototype just stores a pointer to the
             // external type's prototype, so there is no extra memory usage.
           } else {
@@ -475,9 +468,9 @@ void GeneratedMessageReflection::SwapField(
                 string1->Swap(string2);
               } else {
                 const string* default_ptr =
-                    &DefaultRaw<ArenaStringPtr>(field).Get(NULL);
-                const string temp = string1->Get(default_ptr);
-                string1->Set(default_ptr, string2->Get(default_ptr), arena1);
+                    &DefaultRaw<ArenaStringPtr>(field).Get();
+                const string temp = string1->Get();
+                string1->Set(default_ptr, string2->Get(), arena1);
                 string2->Set(default_ptr, temp, arena2);
               }
             }
@@ -638,16 +631,16 @@ void GeneratedMessageReflection::Swap(
     // Slow copy path.
     // Use our arena as temp space, if available.
     Message* temp = message1->New(GetArena(message1));
-    temp->MergeFrom(*message1);
-    message1->CopyFrom(*message2);
-    message2->CopyFrom(*temp);
+    temp->MergeFrom(*message2);
+    message2->CopyFrom(*message1);
+    Swap(message1, temp);
     if (GetArena(message1) == NULL) {
       delete temp;
     }
     return;
   }
 
-  if (has_bits_offset_ != -1) {
+  if (schema_.HasHasbits()) {
     uint32* has_bits1 = MutableHasBits(message1);
     uint32* has_bits2 = MutableHasBits(message2);
     int has_bits_size = (descriptor_->field_count() + 31) / 32;
@@ -657,18 +650,20 @@ void GeneratedMessageReflection::Swap(
     }
   }
 
-  for (int i = 0; i < descriptor_->field_count(); i++) {
+  const int field_count = descriptor_->field_count();
+  for (int i = 0; i < field_count; i++) {
     const FieldDescriptor* field = descriptor_->field(i);
     if (!field->containing_oneof()) {
       SwapField(message1, message2, field);
     }
   }
 
-  for (int i = 0; i < descriptor_->oneof_decl_count(); i++) {
+  const int oneof_decl_count = descriptor_->oneof_decl_count();
+  for (int i = 0; i < oneof_decl_count; i++) {
     SwapOneofField(message1, message2, descriptor_->oneof_decl(i));
   }
 
-  if (extensions_offset_ != -1) {
+  if (schema_.HasExtensionSet()) {
     MutableExtensionSet(message1)->Swap(MutableExtensionSet(message2));
   }
 
@@ -678,7 +673,7 @@ void GeneratedMessageReflection::Swap(
 void GeneratedMessageReflection::SwapFields(
     Message* message1,
     Message* message2,
-    const vector<const FieldDescriptor*>& fields) const {
+    const std::vector<const FieldDescriptor*>& fields) const {
   if (message1 == message2) return;
 
   // TODO(kenton):  Other Reflection methods should probably check this too.
@@ -699,7 +694,8 @@ void GeneratedMessageReflection::SwapFields(
 
   std::set<int> swapped_oneof;
 
-  for (int i = 0; i < fields.size(); i++) {
+  const int fields_size = static_cast<int>(fields.size());
+  for (int i = 0; i < fields_size; i++) {
     const FieldDescriptor* field = fields[i];
     if (field->is_extension()) {
       MutableExtensionSet(message1)->SwapExtension(
@@ -821,9 +817,9 @@ void GeneratedMessageReflection::ClearField(
             default:  // TODO(kenton):  Support other string reps.
             case FieldOptions::STRING: {
               const string* default_ptr =
-                  &DefaultRaw<ArenaStringPtr>(field).Get(NULL);
-              MutableRaw<ArenaStringPtr>(message, field)->Destroy(default_ptr,
-                  GetArena(message));
+                  &DefaultRaw<ArenaStringPtr>(field).Get();
+              MutableRaw<ArenaStringPtr>(message, field)->SetAllocated(
+                  default_ptr, NULL, GetArena(message));
               break;
             }
           }
@@ -831,7 +827,7 @@ void GeneratedMessageReflection::ClearField(
         }
 
         case FieldDescriptor::CPPTYPE_MESSAGE:
-          if (has_bits_offset_ == -1) {
+          if (!schema_.HasHasbits()) {
             // Proto3 does not have has-bits and we need to set a message field
             // to NULL in order to indicate its un-presence.
             if (GetArena(message) == NULL) {
@@ -1008,28 +1004,35 @@ struct FieldNumberSorter {
   }
 };
 
-inline bool IsIndexInHasBitSet(const uint32* has_bit_set, uint32 index) {
-  return ((has_bit_set[index / 32] >> (index % 32)) & static_cast<uint32>(1))
-      != 0;
+inline bool IsIndexInHasBitSet(
+    const uint32* has_bit_set, uint32 has_bit_index) {
+  return ((has_bit_set[has_bit_index / 32] >> (has_bit_index % 32)) &
+          static_cast<uint32>(1)) != 0;
 }
 }  // namespace
 
 void GeneratedMessageReflection::ListFields(
     const Message& message,
-    vector<const FieldDescriptor*>* output) const {
+    std::vector<const FieldDescriptor*>* output) const {
   output->clear();
 
   // Optimization:  The default instance never has any fields set.
-  if (&message == default_instance_) return;
+  if (schema_.IsDefaultInstance(message)) return;
 
   // Optimization: Avoid calling GetHasBits() and HasOneofField() many times
-  // within the field loop.
-  const uint32* const has_bits = GetHasBits(message);
-  const uint32* const oneof_case_array = reinterpret_cast<const uint32*>(
-      reinterpret_cast<const uint8*>(&message) + oneof_case_offset_);
+  // within the field loop.  We allow this violation of ReflectionSchema
+  // encapsulation because this function takes a noticable about of CPU
+  // fleetwide and properly allowing this optimization through public interfaces
+  // seems more trouble than it is worth.
+  const uint32* const has_bits =
+      schema_.HasHasbits() ? GetHasBits(message) : NULL;
+  const uint32* const has_bits_indices = schema_.has_bit_indices_;
+  const uint32* const oneof_case_array =
+      &GetConstRefAtOffset<uint32>(message, schema_.oneof_case_offset_);
 
-  output->reserve(descriptor_->field_count());
-  for (int i = 0; i < descriptor_->field_count(); i++) {
+  const int field_count = descriptor_->field_count();
+  output->reserve(field_count);
+  for (int i = 0; i < field_count; i++) {
     const FieldDescriptor* field = descriptor_->field(i);
     if (field->is_repeated()) {
       if (FieldSize(message, field) > 0) {
@@ -1044,7 +1047,7 @@ void GeneratedMessageReflection::ListFields(
         }
       } else if (has_bits) {
         // Equivalent to: HasBit(message, field)
-        if (IsIndexInHasBitSet(has_bits, i)) {
+        if (IsIndexInHasBitSet(has_bits, has_bits_indices[i])) {
           output->push_back(field);
         }
       } else if (HasBit(message, field)) {  // Fall back on proto3-style HasBit.
@@ -1053,7 +1056,7 @@ void GeneratedMessageReflection::ListFields(
     }
   }
 
-  if (extensions_offset_ != -1) {
+  if (schema_.HasExtensionSet()) {
     GetExtensionSet(message).AppendToList(descriptor_, descriptor_pool_,
                                           output);
   }
@@ -1147,9 +1150,7 @@ string GeneratedMessageReflection::GetString(
     switch (field->options().ctype()) {
       default:  // TODO(kenton):  Support other string reps.
       case FieldOptions::STRING: {
-        const string* default_ptr =
-            &DefaultRaw<ArenaStringPtr>(field).Get(NULL);
-        return GetField<ArenaStringPtr>(message, field).Get(default_ptr);
+        return GetField<ArenaStringPtr>(message, field).Get();
       }
     }
 
@@ -1169,9 +1170,7 @@ const string& GeneratedMessageReflection::GetStringReference(
     switch (field->options().ctype()) {
       default:  // TODO(kenton):  Support other string reps.
       case FieldOptions::STRING: {
-        const string* default_ptr =
-            &DefaultRaw<ArenaStringPtr>(field).Get(NULL);
-        return GetField<ArenaStringPtr>(message, field).Get(default_ptr);
+        return GetField<ArenaStringPtr>(message, field).Get();
       }
     }
 
@@ -1192,8 +1191,7 @@ void GeneratedMessageReflection::SetString(
     switch (field->options().ctype()) {
       default:  // TODO(kenton):  Support other string reps.
       case FieldOptions::STRING: {
-        const string* default_ptr =
-            &DefaultRaw<ArenaStringPtr>(field).Get(NULL);
+        const string* default_ptr = &DefaultRaw<ArenaStringPtr>(field).Get();
         if (field->containing_oneof() && !HasOneofField(*message, field)) {
           ClearOneof(message, field->containing_oneof());
           MutableField<ArenaStringPtr>(message, field)->UnsafeSetDefault(
@@ -1727,11 +1725,10 @@ void* GeneratedMessageReflection::MutableRawRepeatedField(
   } else {
     // Trigger transform for MapField
     if (IsMapFieldInApi(field)) {
-      return reinterpret_cast<MapFieldBase*>(reinterpret_cast<uint8*>(message) +
-                                             offsets_[field->index()])
+      return MutableRawNonOneof<MapFieldBase>(message, field)
           ->MutableRepeatedField();
     }
-    return reinterpret_cast<uint8*>(message) + offsets_[field->index()];
+    return MutableRawNonOneof<void>(message, field);
   }
 }
 
@@ -1758,11 +1755,9 @@ const void* GeneratedMessageReflection::GetRawRepeatedField(
   } else {
     // Trigger transform for MapField
     if (IsMapFieldInApi(field)) {
-      return &(reinterpret_cast<const MapFieldBase*>(
-          reinterpret_cast<const uint8*>(&message) +
-          offsets_[field->index()])->GetRepeatedField());
+      return &(GetRawNonOneof<MapFieldBase>(message, field).GetRepeatedField());
     }
-    return reinterpret_cast<const uint8*>(&message) + offsets_[field->index()];
+    return &GetRawNonOneof<char>(message, field);
   }
 }
 
@@ -1844,7 +1839,7 @@ int GeneratedMessageReflection::MapSize(
 
 const FieldDescriptor* GeneratedMessageReflection::FindKnownExtensionByName(
     const string& name) const {
-  if (extensions_offset_ == -1) return NULL;
+  if (!schema_.HasExtensionSet()) return NULL;
 
   const FieldDescriptor* result = descriptor_pool_->FindExtensionByName(name);
   if (result != NULL && result->containing_type() == descriptor_) {
@@ -1856,7 +1851,8 @@ const FieldDescriptor* GeneratedMessageReflection::FindKnownExtensionByName(
     const Descriptor* type = descriptor_pool_->FindMessageTypeByName(name);
     if (type != NULL) {
       // Look for a matching extension in the foreign type's scope.
-      for (int i = 0; i < type->extension_count(); i++) {
+      const int type_extension_count = type->extension_count();
+      for (int i = 0; i < type_extension_count; i++) {
         const FieldDescriptor* extension = type->extension(i);
         if (extension->containing_type() == descriptor_ &&
             extension->type() == FieldDescriptor::TYPE_MESSAGE &&
@@ -1874,7 +1870,7 @@ const FieldDescriptor* GeneratedMessageReflection::FindKnownExtensionByName(
 
 const FieldDescriptor* GeneratedMessageReflection::FindKnownExtensionByNumber(
     int number) const {
-  if (extensions_offset_ == -1) return NULL;
+  if (!schema_.HasExtensionSet()) return NULL;
   return descriptor_pool_->FindExtensionByNumber(descriptor_, number);
 }
 
@@ -1887,202 +1883,176 @@ bool GeneratedMessageReflection::SupportsUnknownEnumValues() const {
 
 // These simple template accessors obtain pointers (or references) to
 // the given field.
+
+template <class Type>
+const Type& GeneratedMessageReflection::GetRawNonOneof(
+    const Message& message, const FieldDescriptor* field) const {
+  return GetConstRefAtOffset<Type>(message,
+                                   schema_.GetFieldOffsetNonOneof(field));
+}
+
+template <class Type>
+Type* GeneratedMessageReflection::MutableRawNonOneof(
+    Message* message, const FieldDescriptor* field) const {
+  return GetPointerAtOffset<Type>(message,
+                                  schema_.GetFieldOffsetNonOneof(field));
+}
+
 template <typename Type>
-inline const Type& GeneratedMessageReflection::GetRaw(
+const Type& GeneratedMessageReflection::GetRaw(
     const Message& message, const FieldDescriptor* field) const {
   if (field->containing_oneof() && !HasOneofField(message, field)) {
     return DefaultRaw<Type>(field);
   }
-  int index = field->containing_oneof() ?
-      descriptor_->field_count() + field->containing_oneof()->index() :
-      field->index();
-  const void* ptr = reinterpret_cast<const uint8*>(&message) +
-      offsets_[index];
-  return *reinterpret_cast<const Type*>(ptr);
+  return GetConstRefAtOffset<Type>(message, schema_.GetFieldOffset(field));
 }
 
 template <typename Type>
-inline Type* GeneratedMessageReflection::MutableRaw(
-    Message* message, const FieldDescriptor* field) const {
-  int index = field->containing_oneof() ?
-      descriptor_->field_count() + field->containing_oneof()->index() :
-      field->index();
-  void* ptr = reinterpret_cast<uint8*>(message) + offsets_[index];
-  return reinterpret_cast<Type*>(ptr);
+Type* GeneratedMessageReflection::MutableRaw(Message* message,
+                                   const FieldDescriptor* field) const {
+  return GetPointerAtOffset<Type>(message, schema_.GetFieldOffset(field));
 }
 
-template <typename Type>
-inline const Type& GeneratedMessageReflection::DefaultRaw(
-    const FieldDescriptor* field) const {
-  const void* ptr = field->containing_oneof() ?
-      reinterpret_cast<const uint8*>(default_oneof_instance_) +
-      offsets_[field->index()] :
-      reinterpret_cast<const uint8*>(default_instance_) +
-      offsets_[field->index()];
-  return *reinterpret_cast<const Type*>(ptr);
-}
 
 inline const uint32* GeneratedMessageReflection::GetHasBits(
     const Message& message) const {
-  if (has_bits_offset_ == -1) {  // proto3 with no has-bits.
-    return NULL;
-  }
-  const void* ptr = reinterpret_cast<const uint8*>(&message) + has_bits_offset_;
-  return reinterpret_cast<const uint32*>(ptr);
+  GOOGLE_DCHECK(schema_.HasHasbits());
+  return &GetConstRefAtOffset<uint32>(message, schema_.HasBitsOffset());
 }
+
 inline uint32* GeneratedMessageReflection::MutableHasBits(
     Message* message) const {
-  if (has_bits_offset_ == -1) {
-    return NULL;
-  }
-  void* ptr = reinterpret_cast<uint8*>(message) + has_bits_offset_;
-  return reinterpret_cast<uint32*>(ptr);
+  GOOGLE_DCHECK(schema_.HasHasbits());
+  return GetPointerAtOffset<uint32>(message, schema_.HasBitsOffset());
 }
 
 inline uint32 GeneratedMessageReflection::GetOneofCase(
-    const Message& message,
-    const OneofDescriptor* oneof_descriptor) const {
-  const void* ptr = reinterpret_cast<const uint8*>(&message)
-      + oneof_case_offset_;
-  return reinterpret_cast<const uint32*>(ptr)[oneof_descriptor->index()];
+    const Message& message, const OneofDescriptor* oneof_descriptor) const {
+  return GetConstRefAtOffset<uint32>(
+      message, schema_.GetOneofCaseOffset(oneof_descriptor));
 }
 
 inline uint32* GeneratedMessageReflection::MutableOneofCase(
-    Message* message,
-    const OneofDescriptor* oneof_descriptor) const {
-  void* ptr = reinterpret_cast<uint8*>(message) + oneof_case_offset_;
-  return &(reinterpret_cast<uint32*>(ptr)[oneof_descriptor->index()]);
+    Message* message, const OneofDescriptor* oneof_descriptor) const {
+  return GetPointerAtOffset<uint32>(
+      message, schema_.GetOneofCaseOffset(oneof_descriptor));
 }
 
 inline const ExtensionSet& GeneratedMessageReflection::GetExtensionSet(
     const Message& message) const {
-  GOOGLE_DCHECK_NE(extensions_offset_, -1);
-  const void* ptr = reinterpret_cast<const uint8*>(&message) +
-                    extensions_offset_;
-  return *reinterpret_cast<const ExtensionSet*>(ptr);
+  return GetConstRefAtOffset<ExtensionSet>(message,
+                                           schema_.GetExtensionSetOffset());
 }
+
 inline ExtensionSet* GeneratedMessageReflection::MutableExtensionSet(
     Message* message) const {
-  GOOGLE_DCHECK_NE(extensions_offset_, -1);
-  void* ptr = reinterpret_cast<uint8*>(message) + extensions_offset_;
-  return reinterpret_cast<ExtensionSet*>(ptr);
+  return GetPointerAtOffset<ExtensionSet>(message,
+                                          schema_.GetExtensionSetOffset());
 }
 
 inline Arena* GeneratedMessageReflection::GetArena(Message* message) const {
-  if (arena_offset_ == kNoArenaPointer) {
-    return NULL;
-  }
-
-  if (unknown_fields_offset_ == kUnknownFieldSetInMetadata) {
-    // zero-overhead arena pointer overloading UnknownFields
-    return GetInternalMetadataWithArena(*message).arena();
-  }
-
-  // Baseline case: message class has a dedicated arena pointer.
-  void* ptr = reinterpret_cast<uint8*>(message) + arena_offset_;
-  return *reinterpret_cast<Arena**>(ptr);
+  return GetInternalMetadataWithArena(*message).arena();
 }
 
 inline const InternalMetadataWithArena&
 GeneratedMessageReflection::GetInternalMetadataWithArena(
     const Message& message) const {
-  const void* ptr = reinterpret_cast<const uint8*>(&message) + arena_offset_;
-  return *reinterpret_cast<const InternalMetadataWithArena*>(ptr);
+  return GetConstRefAtOffset<InternalMetadataWithArena>(
+      message, schema_.GetMetadataOffset());
 }
 
 inline InternalMetadataWithArena*
 GeneratedMessageReflection::MutableInternalMetadataWithArena(
     Message* message) const {
-  void* ptr = reinterpret_cast<uint8*>(message) + arena_offset_;
-  return reinterpret_cast<InternalMetadataWithArena*>(ptr);
+  return GetPointerAtOffset<InternalMetadataWithArena>(
+      message, schema_.GetMetadataOffset());
 }
 
-inline bool
-GeneratedMessageReflection::GetIsDefaultInstance(
-    const Message& message) const {
-  return &message == default_instance_;
+template <typename Type>
+inline const Type& GeneratedMessageReflection::DefaultRaw(
+    const FieldDescriptor* field) const {
+  return *reinterpret_cast<const Type*>(schema_.GetFieldDefault(field));
 }
 
 // Simple accessors for manipulating has_bits_.
 inline bool GeneratedMessageReflection::HasBit(
     const Message& message, const FieldDescriptor* field) const {
-  if (has_bits_offset_ == -1) {
-    // proto3: no has-bits. All fields present except messages, which are
-    // present only if their message-field pointer is non-NULL.
-    if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
-      return !GetIsDefaultInstance(message) &&
-          GetRaw<const Message*>(message, field) != NULL;
-    } else {
-      // Non-message field (and non-oneof, since that was handled in HasField()
-      // before calling us), and singular (again, checked in HasField). So, this
-      // field must be a scalar.
-
-      // Scalar primitive (numeric or string/bytes) fields are present if
-      // their value is non-zero (numeric) or non-empty (string/bytes).  N.B.:
-      // we must use this definition here, rather than the "scalar fields
-      // always present" in the proto3 docs, because MergeFrom() semantics
-      // require presence as "present on wire", and reflection-based merge
-      // (which uses HasField()) needs to be consistent with this.
-      switch (field->cpp_type()) {
-        case FieldDescriptor::CPPTYPE_STRING:
-          switch (field->options().ctype()) {
-            default: {
-              const string* default_ptr =
-                  &DefaultRaw<ArenaStringPtr>(field).Get(NULL);
-              return GetField<ArenaStringPtr>(message, field).Get(
-                  default_ptr).size() > 0;
-            }
-          }
-          return false;
-        case FieldDescriptor::CPPTYPE_BOOL:
-          return GetRaw<bool>(message, field) != false;
-        case FieldDescriptor::CPPTYPE_INT32:
-          return GetRaw<int32>(message, field) != 0;
-        case FieldDescriptor::CPPTYPE_INT64:
-          return GetRaw<int64>(message, field) != 0;
-        case FieldDescriptor::CPPTYPE_UINT32:
-          return GetRaw<uint32>(message, field) != 0;
-        case FieldDescriptor::CPPTYPE_UINT64:
-          return GetRaw<uint64>(message, field) != 0;
-        case FieldDescriptor::CPPTYPE_FLOAT:
-          return GetRaw<float>(message, field) != 0.0;
-        case FieldDescriptor::CPPTYPE_DOUBLE:
-          return GetRaw<double>(message, field) != 0.0;
-        case FieldDescriptor::CPPTYPE_ENUM:
-          return GetRaw<int>(message, field) != 0;
-        case FieldDescriptor::CPPTYPE_MESSAGE:
-          // handled above; avoid warning
-          GOOGLE_LOG(FATAL) << "Reached impossible case in HasBit().";
-          break;
-      }
-    }
+  if (schema_.HasHasbits()) {
+    return IsIndexInHasBitSet(GetHasBits(message), schema_.HasBitIndex(field));
   }
-  return IsIndexInHasBitSet(GetHasBits(message), field->index());
+
+  // proto3: no has-bits. All fields present except messages, which are
+  // present only if their message-field pointer is non-NULL.
+  if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
+    return !schema_.IsDefaultInstance(message) &&
+        GetRaw<const Message*>(message, field) != NULL;
+  } else {
+    // Non-message field (and non-oneof, since that was handled in HasField()
+    // before calling us), and singular (again, checked in HasField). So, this
+    // field must be a scalar.
+
+    // Scalar primitive (numeric or string/bytes) fields are present if
+    // their value is non-zero (numeric) or non-empty (string/bytes).  N.B.:
+    // we must use this definition here, rather than the "scalar fields
+    // always present" in the proto3 docs, because MergeFrom() semantics
+    // require presence as "present on wire", and reflection-based merge
+    // (which uses HasField()) needs to be consistent with this.
+    switch (field->cpp_type()) {
+      case FieldDescriptor::CPPTYPE_STRING:
+        switch (field->options().ctype()) {
+          default: {
+            return GetField<ArenaStringPtr>(message, field).Get().size() > 0;
+          }
+        }
+        return false;
+      case FieldDescriptor::CPPTYPE_BOOL:
+        return GetRaw<bool>(message, field) != false;
+      case FieldDescriptor::CPPTYPE_INT32:
+        return GetRaw<int32>(message, field) != 0;
+      case FieldDescriptor::CPPTYPE_INT64:
+        return GetRaw<int64>(message, field) != 0;
+      case FieldDescriptor::CPPTYPE_UINT32:
+        return GetRaw<uint32>(message, field) != 0;
+      case FieldDescriptor::CPPTYPE_UINT64:
+        return GetRaw<uint64>(message, field) != 0;
+      case FieldDescriptor::CPPTYPE_FLOAT:
+        return GetRaw<float>(message, field) != 0.0;
+      case FieldDescriptor::CPPTYPE_DOUBLE:
+        return GetRaw<double>(message, field) != 0.0;
+      case FieldDescriptor::CPPTYPE_ENUM:
+        return GetRaw<int>(message, field) != 0;
+      case FieldDescriptor::CPPTYPE_MESSAGE:
+        // handled above; avoid warning
+        break;
+    }
+    GOOGLE_LOG(FATAL) << "Reached impossible case in HasBit().";
+    return false;
+  }
 }
 
 inline void GeneratedMessageReflection::SetBit(
     Message* message, const FieldDescriptor* field) const {
-  if (has_bits_offset_ == -1) {
+  if (!schema_.HasHasbits()) {
     return;
   }
-  const uint32 index = static_cast<uint32>(field->index());
+  const uint32 index = schema_.HasBitIndex(field);
   MutableHasBits(message)[index / 32] |=
       (static_cast<uint32>(1) << (index % 32));
 }
 
 inline void GeneratedMessageReflection::ClearBit(
     Message* message, const FieldDescriptor* field) const {
-  if (has_bits_offset_ == -1) {
+  if (!schema_.HasHasbits()) {
     return;
   }
-  const uint32 index = static_cast<uint32>(field->index());
+  const uint32 index = schema_.HasBitIndex(field);
   MutableHasBits(message)[index / 32] &=
       ~(static_cast<uint32>(1) << (index % 32));
 }
 
 inline void GeneratedMessageReflection::SwapBit(
     Message* message1, Message* message2, const FieldDescriptor* field) const {
-  if (has_bits_offset_ == -1) {
+  if (!schema_.HasHasbits()) {
     return;
   }
   bool temp_has_bit = HasBit(*message1, field);
@@ -2135,7 +2105,7 @@ inline void GeneratedMessageReflection::ClearOneof(
             default:  // TODO(kenton):  Support other string reps.
             case FieldOptions::STRING: {
               const string* default_ptr =
-                  &DefaultRaw<ArenaStringPtr>(field).Get(NULL);
+                  &DefaultRaw<ArenaStringPtr>(field).Get();
               MutableField<ArenaStringPtr>(message, field)->
                   Destroy(default_ptr, GetArena(message));
               break;
@@ -2247,7 +2217,7 @@ void* GeneratedMessageReflection::RepeatedFieldData(
     return MutableExtensionSet(message)->MutableRawRepeatedField(
         field->number(), field->type(), field->is_packed(), field);
   } else {
-    return reinterpret_cast<uint8*>(message) + offsets_[field->index()];
+    return MutableRawNonOneof<char>(message, field);
   }
 }
 
@@ -2259,42 +2229,165 @@ MapFieldBase* GeneratedMessageReflection::MapData(
   return MutableRaw<MapFieldBase>(message, field);
 }
 
-GeneratedMessageReflection*
-GeneratedMessageReflection::NewGeneratedMessageReflection(
-    const Descriptor* descriptor,
-    const Message* default_instance,
-    const int offsets[],
-    int has_bits_offset,
-    int unknown_fields_offset,
-    int extensions_offset,
-    const void* default_oneof_instance,
-    int oneof_case_offset,
-    int object_size,
-    int arena_offset,
-    int is_default_instance_offset) {
-  return new GeneratedMessageReflection(
-      descriptor, default_instance, offsets, has_bits_offset,
-      unknown_fields_offset, extensions_offset, default_oneof_instance,
-      oneof_case_offset, DescriptorPool::generated_pool(),
-      MessageFactory::generated_factory(), object_size, arena_offset);
+namespace {
+
+// Helper function to transform migration schema into reflection schema.
+ReflectionSchema MigrationToReflectionSchema(
+    const DefaultInstanceData* default_instance_data, const uint32* offsets,
+    MigrationSchema migration_schema) {
+  ReflectionSchema result;
+  result.default_instance_ = default_instance_data->default_instance;
+  // First 5 offsets are offsets to the special fields. The following offsets
+  // are the proto fields.
+  result.offsets_ = offsets + migration_schema.offsets_index + 4;
+  result.has_bit_indices_ = offsets + migration_schema.has_bit_indices_index;
+  result.has_bits_offset_ = offsets[migration_schema.offsets_index + 0];
+  result.metadata_offset_ = offsets[migration_schema.offsets_index + 1];
+  result.extensions_offset_ = offsets[migration_schema.offsets_index + 2];
+  result.default_oneof_instance_ = default_instance_data->default_oneof_instance;
+  result.oneof_case_offset_ = offsets[migration_schema.offsets_index + 3];
+  result.object_size_ = migration_schema.object_size;
+  return result;
 }
 
-GeneratedMessageReflection*
-GeneratedMessageReflection::NewGeneratedMessageReflection(
-    const Descriptor* descriptor,
-    const Message* default_instance,
-    const int offsets[],
-    int has_bits_offset,
-    int unknown_fields_offset,
-    int extensions_offset,
-    int object_size,
-    int arena_offset,
-    int is_default_instance_offset) {
-  return new GeneratedMessageReflection(
-      descriptor, default_instance, offsets, has_bits_offset,
-      unknown_fields_offset, extensions_offset,
-      DescriptorPool::generated_pool(), MessageFactory::generated_factory(),
-      object_size, arena_offset);
+ReflectionSchema MigrationToReflectionSchema(
+    const DefaultInstanceData* default_instance_data, const uint32* offsets,
+    ReflectionSchema schema) {
+  return schema;
+}
+
+template<typename Schema>
+class AssignDescriptorsHelper {
+ public:
+  AssignDescriptorsHelper(MessageFactory* factory,
+                          Metadata* file_level_metadata,
+                          const EnumDescriptor** file_level_enum_descriptors,
+                          const Schema* schemas,
+                          const DefaultInstanceData* default_instance_data,
+                          const uint32* offsets)
+      : factory_(factory),
+        file_level_metadata_(file_level_metadata),
+        file_level_enum_descriptors_(file_level_enum_descriptors),
+        schemas_(schemas),
+        default_instance_data_(default_instance_data),
+        offsets_(offsets) {}
+
+  void AssignMessageDescriptor(const Descriptor* descriptor) {
+    for (int i = 0; i < descriptor->nested_type_count(); i++) {
+      AssignMessageDescriptor(descriptor->nested_type(i));
+    }
+
+    file_level_metadata_->descriptor = descriptor;
+
+    if (!descriptor->options().map_entry()) {
+      // Only set reflection for non map types.
+      file_level_metadata_->reflection = new GeneratedMessageReflection(
+          descriptor, MigrationToReflectionSchema(default_instance_data_++,
+                                                  offsets_, *schemas_),
+          ::google::protobuf::DescriptorPool::generated_pool(), factory_);
+      for (int i = 0; i < descriptor->enum_type_count(); i++) {
+        AssignEnumDescriptor(descriptor->enum_type(i));
+      }
+      schemas_++;
+    }
+    file_level_metadata_++;
+  }
+
+  void AssignEnumDescriptor(const EnumDescriptor* descriptor) {
+    *file_level_enum_descriptors_ = descriptor;
+    file_level_enum_descriptors_++;
+  }
+
+ private:
+  MessageFactory* factory_;
+  Metadata* file_level_metadata_;
+  const EnumDescriptor** file_level_enum_descriptors_;
+  const Schema* schemas_;
+  const DefaultInstanceData* default_instance_data_;
+  const uint32* offsets_;
+};
+
+}  // namespace
+
+void AssignDescriptors(
+    const string& filename, const MigrationSchema* schemas,
+    const DefaultInstanceData* default_instance_data, const uint32* offsets,
+    MessageFactory* factory,
+    // update the following descriptor arrays.
+    Metadata* file_level_metadata,
+    const EnumDescriptor** file_level_enum_descriptors,
+    const ServiceDescriptor** file_level_service_descriptors) {
+  const ::google::protobuf::FileDescriptor* file =
+      ::google::protobuf::DescriptorPool::generated_pool()->FindFileByName(filename);
+  GOOGLE_CHECK(file != NULL);
+
+  if (!factory) factory = MessageFactory::generated_factory();
+
+  AssignDescriptorsHelper<MigrationSchema> helper(factory, file_level_metadata,
+                                 file_level_enum_descriptors, schemas,
+                                 default_instance_data, offsets);
+
+  for (int i = 0; i < file->message_type_count(); i++) {
+    helper.AssignMessageDescriptor(file->message_type(i));
+  }
+
+  for (int i = 0; i < file->enum_type_count(); i++) {
+    helper.AssignEnumDescriptor(file->enum_type(i));
+  }
+  if (file->options().cc_generic_services()) {
+    for (int i = 0; i < file->service_count(); i++) {
+      file_level_service_descriptors[i] = file->service(i);
+    }
+  }
+}
+
+void AssignDescriptors(
+    const string& filename, const ReflectionSchema* schemas,
+    MessageFactory* factory,
+    // update the following descriptor arrays.
+    Metadata* file_level_metadata,
+    const EnumDescriptor** file_level_enum_descriptors,
+    const ServiceDescriptor** file_level_service_descriptors) {
+  const ::google::protobuf::FileDescriptor* file =
+      ::google::protobuf::DescriptorPool::generated_pool()->FindFileByName(filename);
+  GOOGLE_CHECK(file != NULL);
+
+  if (!factory) factory = MessageFactory::generated_factory();
+
+  AssignDescriptorsHelper<ReflectionSchema> helper(factory, file_level_metadata,
+                                 file_level_enum_descriptors, schemas,
+                                 NULL, NULL);
+
+  for (int i = 0; i < file->message_type_count(); i++) {
+    helper.AssignMessageDescriptor(file->message_type(i));
+  }
+
+  for (int i = 0; i < file->enum_type_count(); i++) {
+    helper.AssignEnumDescriptor(file->enum_type(i));
+  }
+  if (file->options().cc_generic_services()) {
+    for (int i = 0; i < file->service_count(); i++) {
+      file_level_service_descriptors[i] = file->service(i);
+    }
+  }
+}
+
+void RegisterAllTypesInternal(const Metadata* file_level_metadata, int size) {
+  for (int i = 0; i < size; i++) {
+    const GeneratedMessageReflection* reflection =
+        static_cast<const GeneratedMessageReflection*>(
+           file_level_metadata[i].reflection);
+    if (reflection) {
+      // It's not a map type
+      ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
+          file_level_metadata[i].descriptor,
+          reflection->schema_.default_instance_);
+    }
+  }
+}
+
+void RegisterAllTypes(const Metadata* file_level_metadata, int size) {
+  RegisterAllTypesInternal(file_level_metadata, size);
 }
 
 }  // namespace internal

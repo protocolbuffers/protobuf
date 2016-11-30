@@ -248,87 +248,25 @@ namespace Google.Protobuf
             return !first;
         }
 
-        /// <summary>
-        /// Camel-case converter with added strictness for field mask formatting.
-        /// </summary>
-        /// <exception cref="InvalidOperationException">The field mask is invalid for JSON representation</exception>
-        private static string ToCamelCaseForFieldMask(string input)
+        // Converted from java/core/src/main/java/com/google/protobuf/Descriptors.java
+        internal static string ToJsonName(string name)
         {
-            for (int i = 0; i < input.Length; i++)
+            StringBuilder result = new StringBuilder(name.Length);
+            bool isNextUpperCase = false;
+            foreach (char ch in name)
             {
-                char c = input[i];
-                if (c >= 'A' && c <= 'Z')
+                if (ch == '_')
                 {
-                    throw new InvalidOperationException($"Invalid field mask to be converted to JSON: {input}");
+                    isNextUpperCase = true;
                 }
-                if (c == '_' && i < input.Length - 1)
+                else if (isNextUpperCase)
                 {
-                    char next = input[i + 1];
-                    if (next < 'a' || next > 'z')
-                    {
-                        throw new InvalidOperationException($"Invalid field mask to be converted to JSON: {input}");
-                    }
-                }
-            }
-            return ToCamelCase(input);
-        }
-
-        // Converted from src/google/protobuf/util/internal/utility.cc ToCamelCase
-        internal static string ToCamelCase(string input)
-        {
-            bool capitalizeNext = false;
-            bool wasCap = true;
-            bool isCap = false;
-            bool firstWord = true;
-            StringBuilder result = new StringBuilder(input.Length);
-
-            for (int i = 0; i < input.Length; i++, wasCap = isCap)
-            {
-                isCap = char.IsUpper(input[i]);
-                if (input[i] == '_')
-                {
-                    capitalizeNext = true;
-                    if (result.Length != 0)
-                    {
-                        firstWord = false;
-                    }
-                    continue;
-                }
-                else if (firstWord)
-                {
-                    // Consider when the current character B is capitalized,
-                    // first word ends when:
-                    // 1) following a lowercase:   "...aB..."
-                    // 2) followed by a lowercase: "...ABc..."
-                    if (result.Length != 0 && isCap &&
-                        (!wasCap || (i + 1 < input.Length && char.IsLower(input[i + 1]))))
-                    {
-                        firstWord = false;
-                        result.Append(input[i]);
-                    }
-                    else
-                    {
-                        result.Append(char.ToLowerInvariant(input[i]));
-                        continue;
-                    }
-                }
-                else if (capitalizeNext)
-                {
-                    capitalizeNext = false;
-                    if (char.IsLower(input[i]))
-                    {
-                        result.Append(char.ToUpperInvariant(input[i]));
-                        continue;
-                    }
-                    else
-                    {
-                        result.Append(input[i]);
-                        continue;
-                    }
+                    result.Append(char.ToUpperInvariant(ch));
+                    isNextUpperCase = false;
                 }
                 else
                 {
-                    result.Append(char.ToLowerInvariant(input[i]));
+                    result.Append(ch);
                 }
             }
             return result.ToString();

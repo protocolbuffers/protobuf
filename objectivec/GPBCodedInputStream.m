@@ -400,6 +400,14 @@ void GPBCodedInputStreamCheckLastTagWas(GPBCodedInputStreamState *state,
   return state_.bufferPos;
 }
 
+- (size_t)pushLimit:(size_t)byteLimit {
+  return GPBCodedInputStreamPushLimit(&state_, byteLimit);
+}
+
+- (void)popLimit:(size_t)oldLimit {
+  GPBCodedInputStreamPopLimit(&state_, oldLimit);
+}
+
 - (double)readDouble {
   return GPBCodedInputStreamReadDouble(&state_);
 }

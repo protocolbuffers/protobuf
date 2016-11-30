@@ -792,7 +792,7 @@ void WireFormat::SerializeWithCachedSizes(
   const Reflection* message_reflection = message.GetReflection();
   int expected_endpoint = output->ByteCount() + size;
 
-  vector<const FieldDescriptor*> fields;
+  std::vector<const FieldDescriptor*> fields;
   message_reflection->ListFields(message, &fields);
   for (int i = 0; i < fields.size(); i++) {
     SerializeFieldWithCachedSizes(fields[i], message, output);
@@ -970,7 +970,7 @@ size_t WireFormat::ByteSize(const Message& message) {
 
   size_t our_size = 0;
 
-  vector<const FieldDescriptor*> fields;
+  std::vector<const FieldDescriptor*> fields;
   message_reflection->ListFields(message, &fields);
   for (int i = 0; i < fields.size(); i++) {
     our_size += FieldByteSize(fields[i], message);

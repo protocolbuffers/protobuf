@@ -205,9 +205,14 @@ class MapFieldTest extends PHPUnit_Framework_TestCase {
 
         // Test integer argument.
         $arr[MAX_INT64] = MAX_INT64;
-        $this->assertSame(MAX_INT64, $arr[MAX_INT64]);
         $arr[MIN_INT64] = MIN_INT64;
-        $this->assertEquals(MIN_INT64, $arr[MIN_INT64]);
+        if (PHP_INT_SIZE == 4) {
+            $this->assertSame(MAX_INT64_STRING, $arr[MAX_INT64_STRING]);
+            $this->assertSame(MIN_INT64_STRING, $arr[MIN_INT64_STRING]);
+        } else {
+            $this->assertSame(MAX_INT64, $arr[MAX_INT64]);
+            $this->assertSame(MIN_INT64, $arr[MIN_INT64]);
+        }
         $this->assertEquals(2, count($arr));
         unset($arr[MAX_INT64]);
         unset($arr[MIN_INT64]);
@@ -215,20 +220,31 @@ class MapFieldTest extends PHPUnit_Framework_TestCase {
 
         // Test float argument.
         $arr[1.1] = 1.1;
-        $this->assertSame(1, $arr[1]);
+        if (PHP_INT_SIZE == 4) {
+            $this->assertSame('1', $arr['1']);
+        } else {
+            $this->assertSame(1, $arr[1]);
+        }
         $this->assertEquals(1, count($arr));
         unset($arr[1.1]);
         $this->assertEquals(0, count($arr));
 
         // Test string argument.
         $arr['2'] = '2';
-        $this->assertSame(2, $arr[2]);
         $arr['3.1'] = '3.1';
-        $this->assertSame(3, $arr[3]);
         $arr[MAX_INT64_STRING] = MAX_INT64_STRING;
-        $this->assertSame(MAX_INT64, $arr[MAX_INT64]);
         $arr[MIN_INT64_STRING] = MIN_INT64_STRING;
-        $this->assertEquals(MIN_INT64, $arr[MIN_INT64]);
+        if (PHP_INT_SIZE == 4) {
+            $this->assertSame('2', $arr['2']);
+            $this->assertSame('3', $arr['3']);
+            $this->assertSame(MAX_INT64_STRING, $arr[MAX_INT64_STRING]);
+            $this->assertSame(MIN_INT64_STRING, $arr[MIN_INT64_STRING]);
+        } else {
+            $this->assertSame(2, $arr[2]);
+            $this->assertSame(3, $arr[3]);
+            $this->assertSame(MAX_INT64, $arr[MAX_INT64]);
+            $this->assertSame(MIN_INT64, $arr[MIN_INT64]);
+        }
         $this->assertEquals(4, count($arr));
         unset($arr['2']);
         unset($arr['3.1']);
@@ -282,25 +298,41 @@ class MapFieldTest extends PHPUnit_Framework_TestCase {
 
         // Test integer argument.
         $arr[MAX_UINT64] = MAX_UINT64;
-        $this->assertEquals(MAX_UINT64, $arr[MAX_UINT64]);
+        if (PHP_INT_SIZE == 4) {
+            $this->assertSame(MAX_UINT64_STRING, $arr[MAX_UINT64_STRING]);
+        } else {
+            $this->assertSame(MAX_UINT64, $arr[MAX_UINT64]);
+        }
         $this->assertEquals(1, count($arr));
         unset($arr[MAX_UINT64]);
         $this->assertEquals(0, count($arr));
 
         // Test float argument.
         $arr[1.1] = 1.1;
-        $this->assertSame(1, $arr[1]);
+        if (PHP_INT_SIZE == 4) {
+            $this->assertSame('1', $arr['1']);
+        } else {
+            $this->assertSame(1, $arr[1]);
+        }
         $this->assertEquals(1, count($arr));
         unset($arr[1.1]);
         $this->assertEquals(0, count($arr));
 
         // Test string argument.
         $arr['2'] = '2';
-        $this->assertSame(2, $arr[2]);
         $arr['3.1'] = '3.1';
-        $this->assertSame(3, $arr[3]);
         $arr[MAX_UINT64_STRING] = MAX_UINT64_STRING;
-        $this->assertEquals(MAX_UINT64, $arr[MAX_UINT64]);
+
+        if (PHP_INT_SIZE == 4) {
+            $this->assertSame('2', $arr['2']);
+            $this->assertSame('3', $arr['3']);
+            $this->assertSame(MAX_UINT64_STRING, $arr[MAX_UINT64_STRING]);
+        } else {
+            $this->assertSame(2, $arr[2]);
+            $this->assertSame(3, $arr[3]);
+            $this->assertSame(MAX_UINT64, $arr[MAX_UINT64]);
+        }
+
         $this->assertEquals(3, count($arr));
         unset($arr['2']);
         unset($arr['3.1']);

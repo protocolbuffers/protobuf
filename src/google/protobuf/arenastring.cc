@@ -44,7 +44,7 @@ void ArenaStringPtr::AssignWithDefault(const ::std::string* default_value,
   const ::std::string* other = *value.UnsafeRawStringPointer();
   // If the pointers are the same then do nothing.
   if (me != other) {
-    SetNoArena(default_value, value.GetNoArena(default_value));
+    SetNoArena(default_value, value.GetNoArena());
   }
 }
 

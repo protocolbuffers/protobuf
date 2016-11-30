@@ -7,9 +7,6 @@ Recommended.JsonInput.DurationHas3FractionalDigits.Validator
 Recommended.JsonInput.DurationHas6FractionalDigits.Validator
 Recommended.JsonInput.DurationHas9FractionalDigits.Validator
 Recommended.JsonInput.DurationHasZeroFractionalDigit.Validator
-Recommended.JsonInput.FieldNameWithDoubleUnderscores.JsonOutput
-Recommended.JsonInput.FieldNameWithDoubleUnderscores.ProtobufOutput
-Recommended.JsonInput.FieldNameWithDoubleUnderscores.Validator
 Recommended.JsonInput.Int64FieldBeString.Validator
 Recommended.JsonInput.OneofZeroDouble.JsonOutput
 Recommended.JsonInput.OneofZeroDouble.ProtobufOutput
@@ -80,9 +77,6 @@ Required.JsonInput.EnumFieldNumericValueZero.ProtobufOutput
 Required.JsonInput.EnumFieldUnknownValue.Validator
 Required.JsonInput.FieldMask.JsonOutput
 Required.JsonInput.FieldMask.ProtobufOutput
-Required.JsonInput.FieldNameInLowerCamelCase.Validator
-Required.JsonInput.FieldNameInSnakeCase.JsonOutput
-Required.JsonInput.FieldNameInSnakeCase.ProtobufOutput
 Required.JsonInput.FloatFieldInfinity.JsonOutput
 Required.JsonInput.FloatFieldInfinity.ProtobufOutput
 Required.JsonInput.FloatFieldNan.JsonOutput

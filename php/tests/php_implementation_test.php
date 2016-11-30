@@ -9,14 +9,10 @@ use Foo\TestMessage_Sub;
 use Foo\TestPackedMessage;
 use Google\Protobuf\Internal\InputStream;
 use Google\Protobuf\Internal\FileDescriptorSet;
-use Google\Protobuf\Internal\GPBUtil;
-use Google\Protobuf\Internal\Int64;
-use Google\Protobuf\Internal\Uint64;
 use Google\Protobuf\Internal\GPBLabel;
 use Google\Protobuf\Internal\GPBType;
 use Google\Protobuf\Internal\GPBWire;
 use Google\Protobuf\Internal\OutputStream;
-use Google\Protobuf\Internal\RepeatedField;
 
 class ImplementationTest extends TestBase
 {
@@ -68,17 +64,17 @@ class ImplementationTest extends TestBase
         // Positive number.
         $input = new InputStream(hex2bin("01"));
         GPBWire::readInt64($input, $value);
-        $this->assertSame(1, $value->toInteger());
+        $this->assertEquals(1, $value);
 
         // Negative number.
         $input = new InputStream(hex2bin("ffffffffffffffffff01"));
         GPBWire::readInt64($input, $value);
-        $this->assertSame(-1, $value->toInteger());
+        $this->assertEquals(-1, $value);
 
         // Discard overflow bits.
         $input = new InputStream(hex2bin("ffffffffffffffffff0f"));
         GPBWire::readInt64($input, $value);
-        $this->assertSame(-1, $value->toInteger());
+        $this->assertEquals(-1, $value);
     }
 
     public function testReadUint64()
@@ -88,17 +84,17 @@ class ImplementationTest extends TestBase
         // Positive number.
         $input = new InputStream(hex2bin("01"));
         GPBWire::readUint64($input, $value);
-        $this->assertSame(1, $value->toInteger());
+        $this->assertEquals(1, $value);
 
         // Negative number.
         $input = new InputStream(hex2bin("FFFFFFFFFFFFFFFFFF01"));
         GPBWire::readUint64($input, $value);
-        $this->assertSame(-1, $value->toInteger());
+        $this->assertEquals(-1, $value);
 
         // Discard overflow bits.
         $input = new InputStream(hex2bin("FFFFFFFFFFFFFFFFFF0F"));
         GPBWire::readUint64($input, $value);
-        $this->assertSame(-1, $value->toInteger());
+        $this->assertEquals(-1, $value);
     }
 
     public function testReadSint32()
@@ -124,15 +120,15 @@ class ImplementationTest extends TestBase
 
         $input = new InputStream(hex2bin("00"));
         GPBWire::readSint64($input, $value);
-        $this->assertEquals(GPBUtil::Int64(0), $value);
+        $this->assertEquals(0, $value);
 
         $input = new InputStream(hex2bin("01"));
         GPBWire::readSint64($input, $value);
-        $this->assertEquals(GPBUtil::Int64(-1), $value);
+        $this->assertEquals(-1, $value);
 
         $input = new InputStream(hex2bin("02"));
         GPBWire::readSint64($input, $value);
-        $this->assertEquals(GPBUtil::Int64(1), $value);
+        $this->assertEquals(1, $value);
     }
 
     public function testReadFixed32()
@@ -148,7 +144,11 @@ class ImplementationTest extends TestBase
         $value = null;
         $input = new InputStream(hex2bin("1234567812345678"));
         GPBWire::readFixed64($input, $value);
-        $this->assertEquals(Uint64::newValue(0x78563412, 0x78563412), $value);
+        if (PHP_INT_SIZE == 4) {
+            $this->assertSame("8671175386481439762", $value);
+        } else {
+            $this->assertSame(0x7856341278563412, $value);
+        }
     }
 
     public function testReadSfixed32()
@@ -193,7 +193,11 @@ class ImplementationTest extends TestBase
         $value = null;
         $input = new InputStream(hex2bin("1234567812345678"));
         GPBWire::readSfixed64($input, $value);
-        $this->assertEquals(Int64::newValue(0x78563412, 0x78563412), $value);
+        if (PHP_INT_SIZE == 4) {
+            $this->assertSame("8671175386481439762", $value);
+        } else {
+            $this->assertSame(0x7856341278563412, $value);
+        }
     }
 
     public function testZigZagEncodeDecode()
@@ -214,43 +218,65 @@ class ImplementationTest extends TestBase
         $this->assertSame(0x3FFFFFFF,  GPBWire::zigZagDecode32(0x7FFFFFFE));
         $this->assertSame(-1073741824, GPBWire::zigZagDecode32(0x7FFFFFFF));
         $this->assertSame(0x7FFFFFFF,  GPBWire::zigZagDecode32(0xFFFFFFFE));
-        $this->assertSame(-2147483648, GPBWire::zigZagDecode32(0xFFFFFFFF));
+        $this->assertSame((int)-2147483648,GPBWire::zigZagDecode32(0xFFFFFFFF));
 
-        $this->assertEquals(GPBUtil::Uint64(0),
-                        GPBWire::zigZagEncode64(GPBUtil::Int64(0)));
-        $this->assertEquals(GPBUtil::Uint64(1),
-                        GPBWire::zigZagEncode64(GPBUtil::Int64(-1)));
-        $this->assertEquals(GPBUtil::Uint64(2),
-                        GPBWire::zigZagEncode64(GPBUtil::Int64(1)));
-        $this->assertEquals(GPBUtil::Uint64(3),
-                        GPBWire::zigZagEncode64(GPBUtil::Int64(-2)));
-        $this->assertEquals(
-        GPBUtil::Uint64(0x000000007FFFFFFE),
-        GPBWire::zigZagEncode64(GPBUtil::Int64(0x000000003FFFFFFF)));
-        $this->assertEquals(
-        GPBUtil::Uint64(0x000000007FFFFFFF),
-        GPBWire::zigZagEncode64(GPBUtil::Int64(0xFFFFFFFFC0000000)));
-        $this->assertEquals(
-        GPBUtil::Uint64(0x00000000FFFFFFFE),
-        GPBWire::zigZagEncode64(GPBUtil::Int64(0x000000007FFFFFFF)));
-        $this->assertEquals(
-        GPBUtil::Uint64(0x00000000FFFFFFFF),
-        GPBWire::zigZagEncode64(GPBUtil::Int64(0xFFFFFFFF80000000)));
-        $this->assertEquals(
-        Uint64::newValue(4294967295, 4294967294),
-        GPBWire::zigZagEncode64(GPBUtil::Int64(0x7FFFFFFFFFFFFFFF)));
-        $this->assertEquals(
-        Uint64::newValue(4294967295, 4294967295),
-        GPBWire::zigZagEncode64(GPBUtil::Int64(0x8000000000000000)));
+        if (PHP_INT_SIZE == 4) {
+            $this->assertSame('0', GPBWire::zigZagEncode64(0));
+            $this->assertSame('1', GPBWire::zigZagEncode64(-1));
+            $this->assertSame('2', GPBWire::zigZagEncode64(1));
+            $this->assertSame('3', GPBWire::zigZagEncode64(-2));
+            $this->assertSame(
+                '2147483646',  // 0x7FFFFFE
+                GPBWire::zigZagEncode64(0x3FFFFFFF));
+            $this->assertSame(
+                '2147483647',  // 0x7FFFFFF
+                GPBWire::zigZagEncode64(-1073741824));  // 0xFFFFFFFFC0000000
+            $this->assertSame(
+                '4294967294',                           // 0xFFFFFFFE
+                GPBWire::zigZagEncode64(2147483647));   // 0x7FFFFFFF
+            $this->assertSame(
+                '4294967295',                           // 0xFFFFFFFF
+                GPBWire::zigZagEncode64(-2147483648));  // 0xFFFFFFFF80000000
+            $this->assertSame(
+                '18446744073709551614',  // 0xFFFFFFFFFFFFFFFE
+                                         // 0x7FFFFFFFFFFFFFFF
+                GPBWire::zigZagEncode64("9223372036854775807"));
+            $this->assertSame(
+                '18446744073709551615',  // 0xFFFFFFFFFFFFFFFF
+                                         // 0x8000000000000000
+                GPBWire::zigZagEncode64("-9223372036854775808"));
 
-        $this->assertEquals(GPBUtil::Int64(0),
-                        GPBWire::zigZagDecode64(GPBUtil::Uint64(0)));
-        $this->assertEquals(GPBUtil::Int64(-1),
-                        GPBWire::zigZagDecode64(GPBUtil::Uint64(1)));
-        $this->assertEquals(GPBUtil::Int64(1),
-                        GPBWire::zigZagDecode64(GPBUtil::Uint64(2)));
-        $this->assertEquals(GPBUtil::Int64(-2),
-                        GPBWire::zigZagDecode64(GPBUtil::Uint64(3)));
+            $this->assertSame('0', GPBWire::zigZagDecode64(0));
+            $this->assertSame('-1', GPBWire::zigZagDecode64(1));
+            $this->assertSame('1', GPBWire::zigZagDecode64(2));
+            $this->assertSame('-2', GPBWire::zigZagDecode64(3));
+        } else {
+            $this->assertSame(0, GPBWire::zigZagEncode64(0));
+            $this->assertSame(1, GPBWire::zigZagEncode64(-1));
+            $this->assertSame(2, GPBWire::zigZagEncode64(1));
+            $this->assertSame(3, GPBWire::zigZagEncode64(-2));
+            $this->assertSame(0x7FFFFFFE, GPBWire::zigZagEncode64(0x3FFFFFFF));
+            $this->assertSame(
+                0x7FFFFFFF,
+                GPBWire::zigZagEncode64(0xFFFFFFFFC0000000));
+            $this->assertSame(
+                0xFFFFFFFE,
+                GPBWire::zigZagEncode64(0x7FFFFFFF));
+            $this->assertSame(
+                0xFFFFFFFF,
+                GPBWire::zigZagEncode64(0xFFFFFFFF80000000));
+            $this->assertSame(
+                -2,  // 0xFFFFFFFFFFFFFFFE
+                GPBWire::zigZagEncode64(0x7FFFFFFFFFFFFFFF));
+            $this->assertSame(
+                -1,  // 0xFFFFFFFFFFFFFFFF
+                GPBWire::zigZagEncode64(0x8000000000000000));
+
+            $this->assertSame(0, GPBWire::zigZagDecode64(0));
+            $this->assertSame(-1, GPBWire::zigZagDecode64(1));
+            $this->assertSame(1, GPBWire::zigZagDecode64(2));
+            $this->assertSame(-2, GPBWire::zigZagDecode64(3));
+        }
 
         // Round trip
         $this->assertSame(0, GPBWire::zigZagDecode32(GPBWire::zigZagEncode32(0)));
@@ -319,15 +345,27 @@ class ImplementationTest extends TestBase
         // Normal case.
         $input = new InputStream(hex2bin('808001'));
         $this->assertTrue($input->readVarint64($var));
-        $this->assertSame(16384, $var->toInteger());
+        if (PHP_INT_SIZE == 4) {
+            $this->assertSame('16384', $var);
+        } else {
+            $this->assertSame(16384, $var);
+        }
         $this->assertFalse($input->readVarint64($var));
 
         // Read two varint.
         $input = new InputStream(hex2bin('808001808002'));
         $this->assertTrue($input->readVarint64($var));
-        $this->assertSame(16384, $var->toInteger());
+        if (PHP_INT_SIZE == 4) {
+            $this->assertSame('16384', $var);
+        } else {
+            $this->assertSame(16384, $var);
+        }
         $this->assertTrue($input->readVarint64($var));
-        $this->assertSame(32768, $var->toInteger());
+        if (PHP_INT_SIZE == 4) {
+            $this->assertSame('32768', $var);
+        } else {
+            $this->assertSame(32768, $var);
+        }
         $this->assertFalse($input->readVarint64($var));
     }
 

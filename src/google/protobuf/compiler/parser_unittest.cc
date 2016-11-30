@@ -2218,7 +2218,7 @@ class SourceInfoTest : public ParserTest {
       const char* expected_leading_comments,
       const char* expected_trailing_comments,
       const char* expected_leading_detached_comments) {
-    pair<SpanMap::iterator, SpanMap::iterator> range =
+    std::pair<SpanMap::iterator, SpanMap::iterator> range =
         spans_.equal_range(SpanKey(descriptor_proto, field, index));
 
     if (start_marker == '\0') {
@@ -2229,8 +2229,8 @@ class SourceInfoTest : public ParserTest {
         return true;
       }
     } else {
-      pair<int, int> start_pos = FindOrDie(markers_, start_marker);
-      pair<int, int> end_pos = FindOrDie(markers_, end_marker);
+      std::pair<int, int> start_pos = FindOrDie(markers_, start_marker);
+      std::pair<int, int> end_pos = FindOrDie(markers_, end_marker);
 
       RepeatedField<int> expected_span;
       expected_span.Add(start_pos.first);
@@ -2295,9 +2295,9 @@ class SourceInfoTest : public ParserTest {
     }
   };
 
-  typedef multimap<SpanKey, const SourceCodeInfo::Location*> SpanMap;
+  typedef std::multimap<SpanKey, const SourceCodeInfo::Location*> SpanMap;
   SpanMap spans_;
-  map<char, pair<int, int> > markers_;
+  std::map<char, std::pair<int, int> > markers_;
   string text_without_markers_;
 
   void ExtractMarkers(const char* text) {

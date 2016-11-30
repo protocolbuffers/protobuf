@@ -89,7 +89,8 @@ class JsonStreamParserTest : public ::testing::Test {
   virtual ~JsonStreamParserTest() {}
 
   util::Status RunTest(StringPiece json, int split, bool coerce_utf8 = false,
-                       bool allow_empty_null = false) {
+                       bool allow_empty_null = false,
+                       bool loose_float_number_conversion = false) {
     JsonStreamParser parser(&mock_);
 
     // Special case for split == length, test parsing one character at a time.
@@ -120,9 +121,10 @@ class JsonStreamParserTest : public ::testing::Test {
   }
 
   void DoTest(StringPiece json, int split, bool coerce_utf8 = false,
-              bool allow_empty_null = false) {
-    util::Status result =
-        RunTest(json, split, coerce_utf8, allow_empty_null);
+              bool allow_empty_null = false,
+              bool loose_float_number_conversion = false) {
+    util::Status result = RunTest(json, split, coerce_utf8, allow_empty_null,
+                                  loose_float_number_conversion);
     if (!result.ok()) {
       GOOGLE_LOG(WARNING) << result;
     }
@@ -142,7 +144,7 @@ class JsonStreamParserTest : public ::testing::Test {
 #ifndef _MSC_VER
   // TODO(xiaofeng): We have to disable InSequence check for MSVC because it
   // causes stack overflow due to its use of a linked list that is desctructed
-  // recursively. 
+  // recursively.
   ::testing::InSequence in_sequence_;
 #endif  // !_MSC_VER
   MockObjectWriter mock_;
@@ -322,8 +324,7 @@ TEST_F(JsonStreamParserTest, ObjectKeyTypes) {
 
 // - array containing primitive values (true, false, null, num, string)
 TEST_F(JsonStreamParserTest, ArrayPrimitiveValues) {
-  StringPiece str =
-      "[true, false, null, 'one', \"two\"]";
+  StringPiece str = "[true, false, null, 'one', \"two\"]";
   for (int i = 0; i <= str.length(); ++i) {
     ow_.StartList("")
         ->RenderBool("", true)
@@ -710,17 +711,19 @@ TEST_F(JsonStreamParserTest, NegativeNumberTooBig) {
   }
 }
 
-/*
-TODO(sven): Fail parsing when parsing a double that is too large.
-
 TEST_F(JsonStreamParserTest, DoubleTooBig) {
-  StringPiece str = "[184464073709551232321616.45]";
+  StringPiece str = "[1.89769e+308]";
   for (int i = 0; i <= str.length(); ++i) {
     ow_.StartList("");
-    DoErrorTest(str, i, "Unable to parse number");
+    DoErrorTest(str, i, "Number exceeds the range of double.");
+  }
+  str = "[-1.89769e+308]";
+  for (int i = 0; i <= str.length(); ++i) {
+    ow_.StartList("");
+    DoErrorTest(str, i, "Number exceeds the range of double.");
   }
 }
-*/
+
 
 // invalid bare backslash.
 TEST_F(JsonStreamParserTest, UnfinishedEscape) {

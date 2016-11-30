@@ -284,29 +284,8 @@ public class LazyFieldLite {
       return;
     }
 
-    // At this point we have two fully parsed messages. We can't merge directly from one to the
-    // other because only generated builder code contains methods to mergeFrom another parsed
-    // message. We have to serialize one instance and then merge the bytes into the other. This may
-    // drop extensions from one of the messages if one of the values had an extension set on it
-    // directly.
-    //
-    // To mitigate this we prefer serializing a message that has an extension registry, and
-    // therefore a chance that all extensions set on it are in that registry.
-    //
-    // NOTE: The check for other.extensionRegistry not being null must come first because at this
-    // point in time if other.extensionRegistry is not null then this.extensionRegistry will not be
-    // null either.
-    if (other.extensionRegistry != null) {
-      setValue(mergeValueAndBytes(this.value, other.toByteString(), other.extensionRegistry));
-      return;
-    } else if (this.extensionRegistry != null) {
-      setValue(mergeValueAndBytes(other.value, this.toByteString(), this.extensionRegistry));
-      return;
-    } else {
-      // All extensions from the other message will be dropped because we have no registry.
-      setValue(mergeValueAndBytes(this.value, other.toByteString(), EMPTY_REGISTRY));
-      return;
-    }
+    // At this point we have two fully parsed messages.
+    setValue(this.value.toBuilder().mergeFrom(other.value).build());
   }
   
   /**

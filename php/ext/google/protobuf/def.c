@@ -250,28 +250,41 @@ PHP_METHOD(DescriptorPool, getGeneratedPool) {
   RETURN_ZVAL(generated_pool_php, 1, 0);
 }
 
-static void convert_to_class_name_inplace(char *proto_name,
-                                          size_t pkg_name_len) {
+static void convert_to_class_name_inplace(char *class_name,
+                                          const char* fullname,
+                                          const char* package_name) {
   size_t i;
   bool first_char = false;
+  size_t pkg_name_len = package_name == NULL ? 0 : strlen(package_name);
 
-  for (i = 0; i <= pkg_name_len + 1; i++) {
-    // PHP package uses camel case.
-    if (!first_char && proto_name[i] != '.') {
-      first_char = true;
-      proto_name[i] += 'A' - 'a';
-    }
-    // php packages are divided by '\'.
-    if (proto_name[i] == '.') {
-      first_char = false;
-      proto_name[i] = '\\';
+  // In php, class name cannot be Empty.
+  if (strcmp("google.protobuf.Empty", fullname) == 0) {
+    fullname = "google.protobuf.GPBEmpty";
+  }
+
+  if (pkg_name_len == 0) {
+    strcpy(class_name, fullname);
+  } else {
+    class_name[0] = '.';
+    strcpy(&class_name[1], fullname);
+    for (i = 0; i <= pkg_name_len + 1; i++) {
+      // PHP package uses camel case.
+      if (!first_char && class_name[i] != '.') {
+        first_char = true;
+        class_name[i] += 'A' - 'a';
+      }
+      // php packages are divided by '\'.
+      if (class_name[i] == '.') {
+        first_char = false;
+        class_name[i] = '\\';
+      }
     }
   }
 
   // Submessage is concatenated with its containing messages by '_'.
-  for (i = pkg_name_len; i < strlen(proto_name); i++) {
-    if (proto_name[i] == '.') {
-      proto_name[i] = '_';
+  for (i = pkg_name_len; i < strlen(class_name); i++) {
+    if (class_name[i] == '.') {
+      class_name[i] = '_';
     }
   }
 }
@@ -322,13 +335,13 @@ PHP_METHOD(DescriptorPool, internalAddGeneratedFile) {
         upb_msgdef_mapentry(upb_downcast_msgdef(def))) {                       \
       break;                                                                   \
     }                                                                          \
-    /* Prepend '.' to package name to make it absolute. */                     \
+    /* Prepend '.' to package name to make it absolute. In the 5 additional    \
+     * bytes allocated, one for '.', one for trailing 0, and 3 for 'GPB' if    \
+     * given message is google.protobuf.Empty.*/                               \
     const char *fullname = upb_##def_type_lower##_fullname(def_type_lower);    \
-    char *klass_name = ecalloc(sizeof(char), 2 + strlen(fullname));            \
-    klass_name[0] = '.';                                                       \
-    strcpy(&klass_name[1], fullname);                                          \
-    size_t pkg_name_len = strlen(upb_filedef_package(files[0]));               \
-    convert_to_class_name_inplace(klass_name, pkg_name_len);                   \
+    char *klass_name = ecalloc(sizeof(char), 5 + strlen(fullname));            \
+    convert_to_class_name_inplace(klass_name, fullname,                        \
+                                  upb_filedef_package(files[0]));              \
     zend_class_entry **pce;                                                    \
     if (zend_lookup_class(klass_name, strlen(klass_name), &pce TSRMLS_CC) ==   \
         FAILURE) {                                                             \

@@ -208,7 +208,7 @@ void ImmutableServiceGenerator::GenerateCallMethod(io::Printer* printer) {
 
   for (int i = 0; i < descriptor_->method_count(); i++) {
     const MethodDescriptor* method = descriptor_->method(i);
-    map<string, string> vars;
+    std::map<string, string> vars;
     vars["index"] = SimpleItoa(i);
     vars["method"] = UnderscoresToCamelCase(method);
     vars["input"] = name_resolver_->GetImmutableClassName(
@@ -255,7 +255,7 @@ void ImmutableServiceGenerator::GenerateCallBlockingMethod(
 
   for (int i = 0; i < descriptor_->method_count(); i++) {
     const MethodDescriptor* method = descriptor_->method(i);
-    map<string, string> vars;
+    std::map<string, string> vars;
     vars["index"] = SimpleItoa(i);
     vars["method"] = UnderscoresToCamelCase(method);
     vars["input"] = name_resolver_->GetImmutableClassName(
@@ -301,7 +301,7 @@ void ImmutableServiceGenerator::GenerateGetPrototype(RequestOrResponse which,
 
   for (int i = 0; i < descriptor_->method_count(); i++) {
     const MethodDescriptor* method = descriptor_->method(i);
-    map<string, string> vars;
+    std::map<string, string> vars;
     vars["index"] = SimpleItoa(i);
     vars["type"] = name_resolver_->GetImmutableClassName(
       (which == REQUEST) ? method->input_type() : method->output_type());
@@ -353,7 +353,7 @@ void ImmutableServiceGenerator::GenerateStub(io::Printer* printer) {
     printer->Print(" {\n");
     printer->Indent();
 
-    map<string, string> vars;
+    std::map<string, string> vars;
     vars["index"] = SimpleItoa(i);
     vars["output"] = GetOutput(method);
     printer->Print(vars,
@@ -417,7 +417,7 @@ void ImmutableServiceGenerator::GenerateBlockingStub(io::Printer* printer) {
     printer->Print(" {\n");
     printer->Indent();
 
-    map<string, string> vars;
+    std::map<string, string> vars;
     vars["index"] = SimpleItoa(i);
     vars["output"] = GetOutput(method);
     printer->Print(vars,
@@ -440,7 +440,7 @@ void ImmutableServiceGenerator::GenerateBlockingStub(io::Printer* printer) {
 void ImmutableServiceGenerator::GenerateMethodSignature(io::Printer* printer,
                                                const MethodDescriptor* method,
                                                IsAbstract is_abstract) {
-  map<string, string> vars;
+  std::map<string, string> vars;
   vars["name"] = UnderscoresToCamelCase(method);
   vars["input"] = name_resolver_->GetImmutableClassName(method->input_type());
   vars["output"] = GetOutput(method);
@@ -455,7 +455,7 @@ void ImmutableServiceGenerator::GenerateMethodSignature(io::Printer* printer,
 void ImmutableServiceGenerator::GenerateBlockingMethodSignature(
     io::Printer* printer,
     const MethodDescriptor* method) {
-  map<string, string> vars;
+  std::map<string, string> vars;
   vars["method"] = UnderscoresToCamelCase(method);
   vars["input"] = name_resolver_->GetImmutableClassName(method->input_type());
   vars["output"] = GetOutput(method);

@@ -33,11 +33,12 @@ package com.google.protobuf;
 import static java.lang.Math.max;
 import static java.lang.Math.min;
 
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.lang.ref.SoftReference;
+import java.lang.reflect.Field;
 import java.nio.ByteBuffer;
+import java.nio.channels.WritableByteChannel;
 
 /**
  * Utility class to provide efficient writing of {@link ByteBuffer}s to {@link OutputStream}s.
@@ -75,6 +76,12 @@ final class ByteBufferWriter {
       new ThreadLocal<SoftReference<byte[]>>();
 
   /**
+   * This is a hack for GAE, where {@code FileOutputStream} is unavailable.
+   */
+  private static final Class<?> FILE_OUTPUT_STREAM_CLASS = safeGetClass("java.io.FileOutputStream");
+  private static final long CHANNEL_FIELD_OFFSET = getChannelFieldOffset(FILE_OUTPUT_STREAM_CLASS);
+
+  /**
    * For testing purposes only. Clears the cached buffer to force a new allocation on the next
    * invocation.
    */
@@ -93,10 +100,7 @@ final class ByteBufferWriter {
         // Optimized write for array-backed buffers.
         // Note that we're taking the risk that a malicious OutputStream could modify the array.
         output.write(buffer.array(), buffer.arrayOffset() + buffer.position(), buffer.remaining());
-      } else if (output instanceof FileOutputStream) {
-        // Use a channel to write out the ByteBuffer. This will automatically empty the buffer.
-        ((FileOutputStream) output).getChannel().write(buffer);
-      } else {
+      } else if (!writeToChannel(buffer, output)){
         // Read all of the data from the buffer to an array.
         // TODO(nathanmittler): Consider performance improvements for other "known" stream types.
         final byte[] array = getOrCreateBuffer(buffer.remaining());
@@ -141,5 +145,41 @@ final class ByteBufferWriter {
 
   private static void setBuffer(byte[] value) {
     BUFFER.set(new SoftReference<byte[]>(value));
+  }
+
+  private static boolean writeToChannel(ByteBuffer buffer, OutputStream output) throws IOException {
+    if (CHANNEL_FIELD_OFFSET >= 0 && FILE_OUTPUT_STREAM_CLASS.isInstance(output)) {
+      // Use a channel to write out the ByteBuffer. This will automatically empty the buffer.
+      WritableByteChannel channel = null;
+      try {
+        channel = (WritableByteChannel) UnsafeUtil.getObject(output, CHANNEL_FIELD_OFFSET);
+      } catch (ClassCastException e) {
+        // Absorb.
+      }
+      if (channel != null) {
+        channel.write(buffer);
+        return true;
+      }
+    }
+    return false;
+  }
+
+  private static Class<?> safeGetClass(String className) {
+    try {
+      return Class.forName(className);
+    } catch (ClassNotFoundException e) {
+      return null;
+    }
+  }
+  private static long getChannelFieldOffset(Class<?> clazz) {
+    try {
+      if (clazz != null && UnsafeUtil.hasUnsafeArrayOperations()) {
+        Field field = clazz.getDeclaredField("channel");
+        return UnsafeUtil.objectFieldOffset(field);
+      }
+    } catch (Throwable e) {
+      // Absorb
+    }
+    return -1;
   }
 }

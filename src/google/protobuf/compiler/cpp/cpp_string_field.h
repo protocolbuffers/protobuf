@@ -58,9 +58,11 @@ class StringFieldGenerator : public FieldGenerator {
                                          bool is_inline) const;
   void GenerateNonInlineAccessorDefinitions(io::Printer* printer) const;
   void GenerateClearingCode(io::Printer* printer) const;
+  void GenerateMessageClearingCode(io::Printer* printer) const;
   void GenerateMergingCode(io::Printer* printer) const;
   void GenerateSwappingCode(io::Printer* printer) const;
   void GenerateConstructorCode(io::Printer* printer) const;
+  void GenerateCopyConstructorCode(io::Printer* printer) const;
   void GenerateDestructorCode(io::Printer* printer) const;
   void GenerateDefaultInstanceAllocator(io::Printer* printer) const;
   void GenerateShutdownCode(io::Printer* printer) const;
@@ -71,7 +73,7 @@ class StringFieldGenerator : public FieldGenerator {
 
  protected:
   const FieldDescriptor* descriptor_;
-  map<string, string> variables_;
+  std::map<string, string> variables_;
 
  private:
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(StringFieldGenerator);
@@ -87,6 +89,10 @@ class StringOneofFieldGenerator : public StringFieldGenerator {
   void GenerateInlineAccessorDefinitions(io::Printer* printer,
                                          bool is_inline) const;
   void GenerateClearingCode(io::Printer* printer) const;
+
+  // StringFieldGenerator, from which we inherit, overrides this so we need to
+  // override it as well.
+  void GenerateMessageClearingCode(io::Printer* printer) const;
   void GenerateSwappingCode(io::Printer* printer) const;
   void GenerateConstructorCode(io::Printer* printer) const;
   void GenerateDestructorCode(io::Printer* printer) const;
@@ -110,9 +116,9 @@ class RepeatedStringFieldGenerator : public FieldGenerator {
                                          bool is_inline) const;
   void GenerateClearingCode(io::Printer* printer) const;
   void GenerateMergingCode(io::Printer* printer) const;
-  void GenerateUnsafeMergingCode(io::Printer* printer) const;
   void GenerateSwappingCode(io::Printer* printer) const;
   void GenerateConstructorCode(io::Printer* printer) const;
+  void GenerateCopyConstructorCode(io::Printer* printer) const;
   void GenerateMergeFromCodedStream(io::Printer* printer) const;
   void GenerateSerializeWithCachedSizes(io::Printer* printer) const;
   void GenerateSerializeWithCachedSizesToArray(io::Printer* printer) const;
@@ -120,7 +126,7 @@ class RepeatedStringFieldGenerator : public FieldGenerator {
 
  private:
   const FieldDescriptor* descriptor_;
-  map<string, string> variables_;
+  std::map<string, string> variables_;
 
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(RepeatedStringFieldGenerator);
 };

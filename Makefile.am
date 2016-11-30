@@ -577,7 +577,6 @@ php_EXTRA_DIST=                                              \
   php/src/Google/Protobuf/Internal/DescriptorPool.php        \
   php/src/Google/Protobuf/Internal/OneofField.php            \
   php/src/Google/Protobuf/Internal/MapEntry.php              \
-  php/src/Google/Protobuf/Internal/Type.php                  \
   php/src/Google/Protobuf/Internal/InputStream.php           \
   php/src/Google/Protobuf/Internal/OutputStream.php          \
   php/src/Google/Protobuf/Internal/MessageBuilderContext.php \
@@ -600,10 +599,14 @@ php_EXTRA_DIST=                                              \
   php/tests/test_include.pb.php                              \
   php/tests/map_field_test.php                               \
   php/tests/test_base.php                                    \
+  php/tests/test_no_namespace.proto                          \
+  php/tests/test_no_namespace.pb.php                         \
   php/tests/test_util.php                                    \
   php/tests/test.proto                                       \
   php/tests/test.pb.php                                      \
   php/tests/memory_leak_test.php                             \
+  php/tests/google/protobuf/empty.pb.php                     \
+  php/tests/well_known_test.php                              \
   php/README.md                                              \
   php/ext/google/protobuf/utf8.h                             \
   php/ext/google/protobuf/message.c                          \
@@ -711,6 +714,7 @@ python_EXTRA_DIST=                                                           \
   python/google/protobuf/pyext/repeated_composite_container.h                \
   python/google/protobuf/pyext/repeated_scalar_container.cc                  \
   python/google/protobuf/pyext/repeated_scalar_container.h                   \
+  python/google/protobuf/pyext/safe_numerics.h                               \
   python/google/protobuf/pyext/scoped_pyobject_ptr.h                         \
   python/google/protobuf/reflection.py                                       \
   python/google/protobuf/service.py                                          \

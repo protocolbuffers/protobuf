@@ -190,7 +190,7 @@ void DefaultValueObjectWriter::RegisterFieldScrubCallBack(
 
 DefaultValueObjectWriter::Node::Node(
     const string& name, const google::protobuf::Type* type, NodeKind kind,
-    const DataPiece& data, bool is_placeholder, const vector<string>& path,
+    const DataPiece& data, bool is_placeholder, const std::vector<string>& path,
     bool suppress_empty_list, FieldScrubCallBack* field_scrub_callback)
     : name_(name),
       type_(type),
@@ -310,7 +310,7 @@ void DefaultValueObjectWriter::Node::PopulateChildren(
 
     // This code is checking if the field to be added to the tree should be
     // scrubbed or not by calling the field_scrub_callback_ callback function.
-    vector<string> path;
+    std::vector<string> path;
     if (!path_.empty()) {
       path.insert(path.begin(), path_.begin(), path_.end());
     }
@@ -466,7 +466,7 @@ DataPiece DefaultValueObjectWriter::CreateDefaultDataPieceForField(
 DefaultValueObjectWriter* DefaultValueObjectWriter::StartObject(
     StringPiece name) {
   if (current_ == NULL) {
-    vector<string> path;
+    std::vector<string> path;
     root_.reset(new Node(name.ToString(), &type_, OBJECT, DataPiece::NullData(),
                          false, path, suppress_empty_list_,
                          field_scrub_callback_.get()));
@@ -514,7 +514,7 @@ DefaultValueObjectWriter* DefaultValueObjectWriter::EndObject() {
 DefaultValueObjectWriter* DefaultValueObjectWriter::StartList(
     StringPiece name) {
   if (current_ == NULL) {
-    vector<string> path;
+    std::vector<string> path;
     root_.reset(new Node(name.ToString(), &type_, LIST, DataPiece::NullData(),
                          false, path, suppress_empty_list_,
                          field_scrub_callback_.get()));

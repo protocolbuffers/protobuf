@@ -293,7 +293,7 @@ class DiskSourceTreeTest : public testing::Test {
   DiskSourceTree source_tree_;
 
   // Paths of two on-disk directories to use during the test.
-  vector<string> dirnames_;
+  std::vector<string> dirnames_;
 };
 
 TEST_F(DiskSourceTreeTest, MapRoot) {

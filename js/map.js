@@ -131,6 +131,58 @@ jspb.Map.prototype.toArray = function() {
 
 
 /**
+ * Returns the map formatted as an array of key-value pairs, suitable for the
+ * toObject() form of a message.
+ *
+ * @param {boolean=} includeInstance Whether to include the JSPB instance for
+ *    transitional soy proto support: http://goto/soy-param-migration
+ * @param {!function((boolean|undefined),!V):!Object=} valueToObject
+ *    The static toObject() method, if V is a message type.
+ * @return {!Array<!Array<!Object>>}
+ */
+jspb.Map.prototype.toObject = function(includeInstance, valueToObject) {
+  var rawArray = this.toArray();
+  var entries = [];
+  for (var i = 0; i < rawArray.length; i++) {
+    var entry = this.map_[rawArray[i][0].toString()];
+    this.wrapEntry_(entry);
+    var valueWrapper = /** @type {!V|undefined} */ (entry.valueWrapper);
+    if (valueWrapper) {
+      goog.asserts.assert(valueToObject);
+      entries.push([entry.key, valueToObject(includeInstance, valueWrapper)]);
+    } else {
+      entries.push([entry.key, entry.value]);
+    }
+  }
+  return entries;
+};
+
+
+/**
+ * Returns a Map from the given array of key-value pairs when the values are of
+ * message type. The values in the array must match the format returned by their
+ * message type's toObject() method.
+ *
+ * @template K, V
+ * @param {!Array<!Array<!Object>>} entries
+ * @param {!function(new:V)|function(new:V,?)} valueCtor
+ *    The constructor for type V.
+ * @param {!function(!Object):V} valueFromObject
+ *    The fromObject function for type V.
+ * @return {!jspb.Map<K, V>}
+ */
+jspb.Map.fromObject = function(entries, valueCtor, valueFromObject) {
+  var result = new jspb.Map([], valueCtor);
+  for (var i = 0; i < entries.length; i++) {
+    var key = entries[i][0];
+    var value = valueFromObject(entries[i][1]);
+    result.set(key, value);
+  }
+  return result;
+};
+
+
+/**
  * Helper: return an iterator over an array.
  * @template T
  * @param {!Array<T>} arr the array
@@ -193,7 +245,7 @@ jspb.Map.prototype.del = function(key) {
  * to help out Angular 1.x users.  Still evaluating whether this is the best
  * option.
  *
- * @return {!Array<K|V>}
+ * @return {!Array<!Array<K|V>>}
  */
 jspb.Map.prototype.getEntryList = function() {
   var entries = [];

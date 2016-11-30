@@ -733,6 +733,24 @@ jspb.BinaryDecoder.prototype.readZigzagVarint64 = function() {
 
 
 /**
+ * Reads a signed, zigzag-encoded 64-bit varint from the binary stream and
+ * returns its valud as a string.
+ *
+ * Zigzag encoding is a modification of varint encoding that reduces the
+ * storage overhead for small negative integers - for more details on the
+ * format, see https://developers.google.com/protocol-buffers/docs/encoding
+ *
+ * @return {string} The decoded signed, zigzag-encoded 64-bit varint as a
+ * string.
+ */
+jspb.BinaryDecoder.prototype.readZigzagVarint64String = function() {
+  // TODO(haberman): write lossless 64-bit zig-zag math.
+  var value = this.readZigzagVarint64();
+  return value.toString();
+};
+
+
+/**
  * Reads a raw unsigned 8-bit integer from the binary stream.
  *
  * @return {number} The unsigned 8-bit integer read from the binary stream.
@@ -787,6 +805,20 @@ jspb.BinaryDecoder.prototype.readUint64 = function() {
   var bitsLow = this.readUint32();
   var bitsHigh = this.readUint32();
   return jspb.utils.joinUint64(bitsLow, bitsHigh);
+};
+
+
+/**
+ * Reads a raw unsigned 64-bit integer from the binary stream. Note that since
+ * Javascript represents all numbers as double-precision floats, there will be
+ * precision lost if the absolute value of the integer is larger than 2^53.
+ *
+ * @return {string} The unsigned 64-bit integer read from the binary stream.
+ */
+jspb.BinaryDecoder.prototype.readUint64String = function() {
+  var bitsLow = this.readUint32();
+  var bitsHigh = this.readUint32();
+  return jspb.utils.joinUnsignedDecimalString(bitsLow, bitsHigh);
 };
 
 
@@ -849,6 +881,20 @@ jspb.BinaryDecoder.prototype.readInt64 = function() {
 
 
 /**
+ * Reads a raw signed 64-bit integer from the binary stream and returns it as a
+ * string.
+ *
+ * @return {string} The signed 64-bit integer read from the binary stream.
+ *     Precision will be lost if the integer exceeds 2^53.
+ */
+jspb.BinaryDecoder.prototype.readInt64String = function() {
+  var bitsLow = this.readUint32();
+  var bitsHigh = this.readUint32();
+  return jspb.utils.joinSignedDecimalString(bitsLow, bitsHigh);
+};
+
+
+/**
  * Reads a 32-bit floating-point number from the binary stream, using the
  * temporary buffer to realign the data.
  *
@@ -895,11 +941,9 @@ jspb.BinaryDecoder.prototype.readEnum = function() {
 
 /**
  * Reads and parses a UTF-8 encoded unicode string from the stream.
- * The code is inspired by maps.vectortown.parse.StreamedDataViewReader, with
- * the exception that the implementation here does not get confused if it
- * encounters characters longer than three bytes. These characters are ignored
- * though, as they are extremely rare: three UTF-8 bytes cover virtually all
- * characters in common use (http://en.wikipedia.org/wiki/UTF-8).
+ * The code is inspired by maps.vectortown.parse.StreamedDataViewReader.
+ * Supports codepoints from U+0000 up to U+10FFFF. 
+ * (http://en.wikipedia.org/wiki/UTF-8).
  * @param {number} length The length of the string to read.
  * @return {string} The decoded string.
  */
@@ -907,30 +951,45 @@ jspb.BinaryDecoder.prototype.readString = function(length) {
   var bytes = this.bytes_;
   var cursor = this.cursor_;
   var end = cursor + length;
-  var chars = [];
+  var codeUnits = [];
 
   while (cursor < end) {
     var c = bytes[cursor++];
     if (c < 128) { // Regular 7-bit ASCII.
-      chars.push(c);
+      codeUnits.push(c);
     } else if (c < 192) {
       // UTF-8 continuation mark. We are out of sync. This
       // might happen if we attempted to read a character
-      // with more than three bytes.
+      // with more than four bytes.
       continue;
     } else if (c < 224) { // UTF-8 with two bytes.
       var c2 = bytes[cursor++];
-      chars.push(((c & 31) << 6) | (c2 & 63));
+      codeUnits.push(((c & 31) << 6) | (c2 & 63));
     } else if (c < 240) { // UTF-8 with three bytes.
       var c2 = bytes[cursor++];
       var c3 = bytes[cursor++];
-      chars.push(((c & 15) << 12) | ((c2 & 63) << 6) | (c3 & 63));
+      codeUnits.push(((c & 15) << 12) | ((c2 & 63) << 6) | (c3 & 63));
+    } else if (c < 248) { // UTF-8 with 4 bytes.
+      var c2 = bytes[cursor++];
+      var c3 = bytes[cursor++];
+      var c4 = bytes[cursor++];
+      // Characters written on 4 bytes have 21 bits for a codepoint. 
+      // We can't fit that on 16bit characters, so we use surrogates.
+      var codepoint = ((c & 7) << 18) | ((c2 & 63) << 12) | ((c3 & 63) << 6) | (c4 & 63);
+      // Surrogates formula from wikipedia.
+      // 1. Subtract 0x10000 from codepoint
+      codepoint -= 0x10000;
+      // 2. Split this into the high 10-bit value and the low 10-bit value
+      // 3. Add 0xD800 to the high value to form the high surrogate
+      // 4. Add 0xDC00 to the low value to form the low surrogate:
+      var low = (codepoint & 1023) + 0xDC00;
+      var high = ((codepoint >> 10) & 1023) + 0xD800;
+      codeUnits.push(high, low)
     }
   }
-
   // String.fromCharCode.apply is faster than manually appending characters on
   // Chrome 25+, and generates no additional cons string garbage.
-  var result = String.fromCharCode.apply(null, chars);
+  var result = String.fromCharCode.apply(null, codeUnits);
   this.cursor_ = cursor;
   return result;
 };

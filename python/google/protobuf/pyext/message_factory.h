@@ -82,14 +82,14 @@ PyMessageFactory* NewMessageFactory(PyTypeObject* type, PyDescriptorPool* pool);
 int RegisterMessageClass(PyMessageFactory* self,
                          const Descriptor* message_descriptor,
                          CMessageClass* message_class);
-
-// Retrieves the Python class registered with the given message descriptor.
-//
-// Returns a *borrowed* reference if found, otherwise returns NULL with an
-// exception set.
+// Retrieves the Python class registered with the given message descriptor, or
+// fail with a TypeError. Returns a *borrowed* reference.
 CMessageClass* GetMessageClass(PyMessageFactory* self,
                                const Descriptor* message_descriptor);
-
+// Retrieves the Python class registered with the given message descriptor.
+// The class is created if not done yet. Returns a *new* reference.
+CMessageClass* GetOrCreateMessageClass(PyMessageFactory* self,
+                                       const Descriptor* message_descriptor);
 }  // namespace message_factory
 
 // Initialize objects used by this module.

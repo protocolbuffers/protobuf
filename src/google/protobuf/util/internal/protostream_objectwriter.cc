@@ -1240,8 +1240,11 @@ bool ProtoStreamObjectWriter::IsMap(const google::protobuf::Field& field) {
 
   // TODO(xiaofeng): Unify option names.
   return GetBoolOptionOrDefault(field_type->options(),
-                                "google.protobuf.MessageOptions.map_entry", false) ||
-         GetBoolOptionOrDefault(field_type->options(), "map_entry", false);
+                                "google.protobuf.MessageOptions.map_entry",
+                                false) ||
+         GetBoolOptionOrDefault(field_type->options(), "map_entry", false) ||
+         GetBoolOptionOrDefault(field_type->options(),
+                                "proto2.MessageOptions.map_entry", false);
 }
 
 bool ProtoStreamObjectWriter::IsAny(const google::protobuf::Field& field) {
@@ -1266,3 +1269,4 @@ bool ProtoStreamObjectWriter::IsStructListValue(
 }  // namespace util
 }  // namespace protobuf
 }  // namespace google
+

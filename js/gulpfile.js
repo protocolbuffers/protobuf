@@ -24,7 +24,7 @@ var wellKnownTypes = [
 ];
 
 gulp.task('genproto_closure', function (cb) {
-  exec(protoc + ' --js_out=library=testproto_libs,binary:.  -I ../src -I . *.proto ../src/google/protobuf/descriptor.proto',
+  exec(protoc + ' --js_out=library=testproto_libs,binary:.  -I ../src -I . *.proto && ' + protoc + ' --js_out=one_output_file_per_input_file,binary:. -I ../src -I . ' + wellKnownTypes.join(' '),
        function (err, stdout, stderr) {
     console.log(stdout);
     console.log(stderr);
@@ -33,7 +33,7 @@ gulp.task('genproto_closure', function (cb) {
 });
 
 gulp.task('genproto_commonjs', function (cb) {
-  exec('mkdir -p commonjs_out && ' + protoc + ' --js_out=import_style=commonjs,binary:commonjs_out -I ../src -I commonjs -I . *.proto commonjs/test*/*.proto ../src/google/protobuf/descriptor.proto',
+  exec('mkdir -p commonjs_out && ' + protoc + ' --js_out=import_style=commonjs,binary:commonjs_out -I ../src -I commonjs -I . *.proto commonjs/test*/*.proto ' + wellKnownTypes.join(' '),
        function (err, stdout, stderr) {
     console.log(stdout);
     console.log(stderr);
@@ -42,7 +42,7 @@ gulp.task('genproto_commonjs', function (cb) {
 });
 
 gulp.task('genproto_commonjs_wellknowntypes', function (cb) {
-  exec('mkdir -p commonjs_out/node_modules/google-protobuf && ' + protoc + ' --js_out=import_style=commonjs,binary:commonjs_out/node_modules/google-protobuf -I ../src ../src/google/protobuf/descriptor.proto',
+  exec('mkdir -p commonjs_out/node_modules/google-protobuf && ' + protoc + ' --js_out=import_style=commonjs,binary:commonjs_out/node_modules/google-protobuf -I ../src ' + wellKnownTypes.join(' '),
        function (err, stdout, stderr) {
     console.log(stdout);
     console.log(stderr);

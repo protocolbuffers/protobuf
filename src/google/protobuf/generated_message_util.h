@@ -45,6 +45,14 @@
 #include <google/protobuf/stubs/once.h>
 #include <google/protobuf/has_bits.h>
 
+#ifndef PROTOBUF_FINAL
+#if __cplusplus >= 201103L
+#define PROTOBUF_FINAL final
+#else
+#define PROTOBUF_FINAL
+#endif
+#endif  // !PROTOBUF_FINAL
+
 namespace google {
 
 namespace protobuf {
@@ -91,7 +99,13 @@ class ExplicitlyConstructed {
     }
   }
 
-  const T& get() const { return reinterpret_cast<const T&>(union_); }
+#if __cplusplus >= 201103L
+  constexpr
+#endif
+      const T&
+      get() const {
+    return reinterpret_cast<const T&>(union_);
+  }
   T* get_mutable() { return reinterpret_cast<T*>(&union_); }
 
  private:
@@ -140,9 +154,7 @@ template <class Type> bool AllAreInitialized(const Type& t) {
   return true;
 }
 
-// Helper function to crash on merge failure.
-// Moved out of generated code to reduce binary size.
-LIBPROTOBUF_EXPORT void MergeFromFail(const char* file, int line) GOOGLE_ATTRIBUTE_NORETURN;
+LIBPROTOBUF_EXPORT void InitProtobufDefaults();
 
 // We compute sizes as size_t but cache them as int.  This function converts a
 // computed size to a cached size.  Since we don't proceed with serialization if

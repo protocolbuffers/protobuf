@@ -222,7 +222,7 @@ TEST(GeneratedMessageReflectionTest, SwapFields) {
   message2.set_optional_string("hello");
   message2.mutable_repeated_int64()->Add(30);
 
-  vector<const FieldDescriptor*> fields;
+  std::vector<const FieldDescriptor*> fields;
   const Descriptor* descriptor = message1.GetDescriptor();
   fields.push_back(descriptor->FindFieldByName("optional_double"));
   fields.push_back(descriptor->FindFieldByName("repeated_int32"));
@@ -255,7 +255,7 @@ TEST(GeneratedMessageReflectionTest, SwapFieldsAll) {
 
   TestUtil::SetAllFields(&message2);
 
-  vector<const FieldDescriptor*> fields;
+  std::vector<const FieldDescriptor*> fields;
   const Reflection* reflection = message1.GetReflection();
   reflection->ListFields(message2, &fields);
   reflection->SwapFields(&message1, &message2, fields);
@@ -270,7 +270,7 @@ TEST(GeneratedMessageReflectionTest, SwapFieldsAllExtension) {
 
   TestUtil::SetAllExtensions(&message1);
 
-  vector<const FieldDescriptor*> fields;
+  std::vector<const FieldDescriptor*> fields;
   const Reflection* reflection = message1.GetReflection();
   reflection->ListFields(message1, &fields);
   reflection->SwapFields(&message1, &message2, fields);
@@ -306,7 +306,7 @@ TEST(GeneratedMessageReflectionTest, SwapFieldsOneof) {
   unittest::TestOneof2 message1, message2;
   TestUtil::SetOneof1(&message1);
 
-  vector<const FieldDescriptor*> fields;
+  std::vector<const FieldDescriptor*> fields;
   const Descriptor* descriptor = message1.GetDescriptor();
   for (int i = 0; i < descriptor->field_count(); i++) {
     fields.push_back(descriptor->field(i));
@@ -608,7 +608,7 @@ TEST(GeneratedMessageReflectionTest, ListFieldsOneOf) {
   TestUtil::SetOneof1(&message);
 
   const Reflection* reflection = message.GetReflection();
-  vector<const FieldDescriptor*> fields;
+  std::vector<const FieldDescriptor*> fields;
   reflection->ListFields(message, &fields);
   EXPECT_EQ(4, fields.size());
 }

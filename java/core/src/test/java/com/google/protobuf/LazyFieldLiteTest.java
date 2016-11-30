@@ -31,7 +31,6 @@
 package com.google.protobuf;
 
 import static protobuf_unittest.UnittestProto.optionalInt32Extension;
-import static protobuf_unittest.UnittestProto.optionalInt64Extension;
 
 import protobuf_unittest.UnittestProto.TestAllExtensions;
 import protobuf_unittest.UnittestProto.TestAllTypes;
@@ -217,29 +216,6 @@ public class LazyFieldLiteTest extends TestCase {
     other = LazyFieldLite.fromValue(messageWithExtensions);
     field.merge(other);
     assertEquals(messageWithExtensions, field.getValue(TestAllExtensions.getDefaultInstance()));
-  }
-
-  public void testMergeMightLoseExtensions() throws Exception {
-    // Test that we don't know about the extensions when parsing.
-    TestAllExtensions message1 =
-        TestAllExtensions.newBuilder().setExtension(optionalInt32Extension, 1).build();
-    TestAllExtensions message2 =
-        TestAllExtensions.newBuilder().setExtension(optionalInt64Extension, 2L).build();
-
-    LazyFieldLite field = LazyFieldLite.fromValue(message1);
-    field.merge(LazyFieldLite.fromValue(message2));
-
-    // We lose the extensions from message 2 because we have to serialize it and then parse it
-    // again, using the empty registry this time.
-    TestAllExtensions value =
-        (TestAllExtensions) field.getValue(TestAllExtensions.getDefaultInstance());
-    assertTrue(value.hasExtension(optionalInt32Extension));
-    assertEquals(Integer.valueOf(1), value.getExtension(optionalInt32Extension));
-    assertFalse(value.hasExtension(optionalInt64Extension));
-
-    // The field is still there, it is just unknown.
-    assertTrue(value.getUnknownFields()
-        .hasField(optionalInt64Extension.getDescriptor().getNumber()));
   }
 
 

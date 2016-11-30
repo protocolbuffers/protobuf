@@ -1,5 +1,3 @@
-# -*- mode: python; -*- PYTHON-PREPROCESSING-REQUIRED
-
 def _GetPath(ctx, path):
   if ctx.label.workspace_root:
     return ctx.label.workspace_root + '/' + path
@@ -15,13 +13,20 @@ def _GenDir(ctx):
     return _GetPath(ctx, ctx.attr.includes[0])
   return _GetPath(ctx, ctx.label.package + '/' + ctx.attr.includes[0])
 
-def _CcOuts(srcs, use_grpc_plugin=False):
-  ret = [s[:-len(".proto")] + ".pb.h" for s in srcs] + \
-        [s[:-len(".proto")] + ".pb.cc" for s in srcs]
+def _CcHdrs(srcs, use_grpc_plugin=False):
+  ret = [s[:-len(".proto")] + ".pb.h" for s in srcs]
   if use_grpc_plugin:
-    ret += [s[:-len(".proto")] + ".grpc.pb.h" for s in srcs] + \
-           [s[:-len(".proto")] + ".grpc.pb.cc" for s in srcs]
+    ret += [s[:-len(".proto")] + ".grpc.pb.h" for s in srcs]
   return ret
+
+def _CcSrcs(srcs, use_grpc_plugin=False):
+  ret = [s[:-len(".proto")] + ".pb.cc" for s in srcs]
+  if use_grpc_plugin:
+    ret += [s[:-len(".proto")] + ".grpc.pb.cc" for s in srcs]
+  return ret
+
+def _CcOuts(srcs, use_grpc_plugin=False):
+  return _CcHdrs(srcs, use_grpc_plugin) + _CcSrcs(srcs, use_grpc_plugin)
 
 def _PyOuts(srcs):
   return [s[:-len(".proto")] + "_pb2.py" for s in srcs]
@@ -62,6 +67,7 @@ def _proto_gen_impl(ctx):
   if ctx.attr.gen_py:
     args += ["--python_out=" + ctx.var["GENDIR"] + "/" + gen_dir]
 
+  inputs = srcs + deps
   if ctx.executable.plugin:
     plugin = ctx.executable.plugin
     lang = ctx.attr.plugin_language
@@ -75,10 +81,11 @@ def _proto_gen_impl(ctx):
       outdir = ",".join(ctx.attr.plugin_options) + ":" + outdir
     args += ["--plugin=protoc-gen-%s=%s" % (lang, plugin.path)]
     args += ["--%s_out=%s" % (lang, outdir)]
+    inputs += [plugin]
 
   if args:
     ctx.action(
-        inputs=srcs + deps,
+        inputs=inputs,
         outputs=ctx.outputs.outs,
         arguments=args + import_flags + [s.path for s in srcs],
         executable=ctx.executable.protoc,
@@ -201,7 +208,9 @@ def cc_proto_library(
   if use_grpc_plugin:
     grpc_cpp_plugin = "//external:grpc_cpp_plugin"
 
-  outs = _CcOuts(srcs, use_grpc_plugin)
+  gen_srcs = _CcSrcs(srcs, use_grpc_plugin)
+  gen_hdrs = _CcHdrs(srcs, use_grpc_plugin)
+  outs = gen_srcs + gen_hdrs
 
   proto_gen(
       name=name + "_genproto",
@@ -223,11 +232,11 @@ def cc_proto_library(
 
   native.cc_library(
       name=name,
-      srcs=outs,
+      srcs=gen_srcs,
+      hdrs=gen_hdrs,
       deps=cc_libs + deps,
       includes=includes,
       **kargs)
-
 
 def internal_gen_well_known_protos_java(srcs):
   """Bazel rule to generate the gen_well_known_protos_java genrule
@@ -251,7 +260,6 @@ def internal_gen_well_known_protos_java(srcs):
           " && mv $(@D)/wellknown.jar $(@D)/wellknown.srcjar",
     tools = [":protoc"],
   )
-
 
 def internal_copied_filegroup(name, srcs, strip_prefix, dest, **kwargs):
   """Macro to copy files to a different directory and then create a filegroup.
@@ -282,7 +290,6 @@ def internal_copied_filegroup(name, srcs, strip_prefix, dest, **kwargs):
       srcs = outs,
       **kwargs)
 
-
 def py_proto_library(
         name,
         srcs=[],
@@ -292,6 +299,7 @@ def py_proto_library(
         include=None,
         default_runtime="//:protobuf_python",
         protoc="//:protoc",
+        use_grpc_plugin=False,
         **kargs):
   """Bazel rule to create a Python protobuf library from proto source files
 
@@ -311,6 +319,8 @@ def py_proto_library(
     default_runtime: the implicitly default runtime which will be depended on by
         the generated py_library target.
     protoc: the label of the protocol compiler to generate the sources.
+    use_grpc_plugin: a flag to indicate whether to call the Python C++ plugin
+        when processing the proto files.
     **kargs: other keyword arguments that are passed to cc_library.
 
   """
@@ -319,6 +329,13 @@ def py_proto_library(
   includes = []
   if include != None:
     includes = [include]
+
+  grpc_python_plugin = None
+  if use_grpc_plugin:
+    grpc_python_plugin = "//external:grpc_python_plugin"
+    # Note: Generated grpc code depends on Python grpc module. This dependency
+    # is not explicitly listed in py_libs. Instead, host system is assumed to
+    # have grpc installed.
 
   proto_gen(
       name=name + "_genproto",
@@ -329,6 +346,8 @@ def py_proto_library(
       gen_py=1,
       outs=outs,
       visibility=["//visibility:public"],
+      plugin=grpc_python_plugin,
+      plugin_language="grpc"
   )
 
   if default_runtime and not default_runtime in py_libs + deps:

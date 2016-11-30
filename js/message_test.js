@@ -73,10 +73,12 @@ goog.require('proto.jspb.test.TestGroup1');
 goog.require('proto.jspb.test.TestMessageWithOneof');
 goog.require('proto.jspb.test.TestReservedNames');
 goog.require('proto.jspb.test.TestReservedNamesExtension');
+goog.require('proto.jspb.test.Deeply.Nested.Message');
 
 // CommonJS-LoadFromFile: test2_pb proto.jspb.test
 goog.require('proto.jspb.test.ExtensionMessage');
 goog.require('proto.jspb.test.TestExtensionsMessage');
+goog.require('proto.jspb.test.ForeignNestedFieldMessage');
 
 
 
@@ -1047,11 +1049,14 @@ describe('Message test suite', function() {
     var nested = new proto.jspb.test.Deeply.Nested.Message();
     nested.setCount(5);
     msg.setDeeplyNestedMessage(nested);
+    assertEquals(5, msg.getDeeplyNestedMessage().getCount());
 
     // After a serialization-deserialization round trip we should get back the
     // same data we started with.
     var serialized = msg.serializeBinary();
-    var deserialized = proto.jspb.test.ForeignNestedFieldMessage.deserializeBinary(serialized);
+    var deserialized =
+        proto.jspb.test.ForeignNestedFieldMessage.deserializeBinary(serialized);
     assertEquals(5, deserialized.getDeeplyNestedMessage().getCount());
   });
+
 });
