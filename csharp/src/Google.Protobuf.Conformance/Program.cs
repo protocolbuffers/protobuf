@@ -32,7 +32,6 @@
 
 using Conformance;
 using Google.Protobuf.Reflection;
-using Google.Protobuf.TestProtos;
 using System;
 using System.IO;
 
@@ -82,17 +81,17 @@ namespace Google.Protobuf.Conformance
 
         private static ConformanceResponse PerformRequest(ConformanceRequest request, TypeRegistry typeRegistry)
         {
-            TestAllTypes message;
+            ProtobufTestMessages.Proto3.TestAllTypes message;
             try
             {
                 switch (request.PayloadCase)
                 {
                     case ConformanceRequest.PayloadOneofCase.JsonPayload:
                         var parser = new JsonParser(new JsonParser.Settings(20, typeRegistry));
-                        message = parser.Parse<TestAllTypes>(request.JsonPayload);
+                        message = parser.Parse<ProtobufTestMessages.Proto3.TestAllTypes>(request.JsonPayload);
                         break;
                     case ConformanceRequest.PayloadOneofCase.ProtobufPayload:
-                        message = TestAllTypes.Parser.ParseFrom(request.ProtobufPayload);
+                        message = ProtobufTestMessages.Proto3.TestAllTypes.Parser.ParseFrom(request.ProtobufPayload);
                         break;
                     default:
                         throw new Exception("Unsupported request payload: " + request.PayloadCase);
