@@ -2235,6 +2235,18 @@ class LIBPROTOBUF_EXPORT FileOptions : public ::google::protobuf::Message /* @@p
   ::std::string* release_csharp_namespace();
   void set_allocated_csharp_namespace(::std::string* csharp_namespace);
 
+  // optional string swift_prefix = 39;
+  bool has_swift_prefix() const;
+  void clear_swift_prefix();
+  static const int kSwiftPrefixFieldNumber = 39;
+  const ::std::string& swift_prefix() const;
+  void set_swift_prefix(const ::std::string& value);
+  void set_swift_prefix(const char* value);
+  void set_swift_prefix(const char* value, size_t size);
+  ::std::string* mutable_swift_prefix();
+  ::std::string* release_swift_prefix();
+  void set_allocated_swift_prefix(::std::string* swift_prefix);
+
   // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
   int uninterpreted_option_size() const;
   void clear_uninterpreted_option();
@@ -2278,6 +2290,8 @@ class LIBPROTOBUF_EXPORT FileOptions : public ::google::protobuf::Message /* @@p
   void clear_has_objc_class_prefix();
   void set_has_csharp_namespace();
   void clear_has_csharp_namespace();
+  void set_has_swift_prefix();
+  void clear_has_swift_prefix();
 
   ::google::protobuf::internal::ExtensionSet _extensions_;
 
@@ -2290,6 +2304,7 @@ class LIBPROTOBUF_EXPORT FileOptions : public ::google::protobuf::Message /* @@p
   ::google::protobuf::internal::ArenaStringPtr go_package_;
   ::google::protobuf::internal::ArenaStringPtr objc_class_prefix_;
   ::google::protobuf::internal::ArenaStringPtr csharp_namespace_;
+  ::google::protobuf::internal::ArenaStringPtr swift_prefix_;
   bool java_multiple_files_;
   bool java_generate_equals_and_hash_;
   bool java_string_check_utf8_;
@@ -6364,13 +6379,13 @@ inline void FileOptions::set_allocated_java_outer_classname(::std::string* java_
 
 // optional bool java_multiple_files = 10 [default = false];
 inline bool FileOptions::has_java_multiple_files() const {
-  return (_has_bits_[0] & 0x00000020u) != 0;
+  return (_has_bits_[0] & 0x00000040u) != 0;
 }
 inline void FileOptions::set_has_java_multiple_files() {
-  _has_bits_[0] |= 0x00000020u;
+  _has_bits_[0] |= 0x00000040u;
 }
 inline void FileOptions::clear_has_java_multiple_files() {
-  _has_bits_[0] &= ~0x00000020u;
+  _has_bits_[0] &= ~0x00000040u;
 }
 inline void FileOptions::clear_java_multiple_files() {
   java_multiple_files_ = false;
@@ -6388,13 +6403,13 @@ inline void FileOptions::set_java_multiple_files(bool value) {
 
 // optional bool java_generate_equals_and_hash = 20 [deprecated = true];
 inline bool FileOptions::has_java_generate_equals_and_hash() const {
-  return (_has_bits_[0] & 0x00000040u) != 0;
+  return (_has_bits_[0] & 0x00000080u) != 0;
 }
 inline void FileOptions::set_has_java_generate_equals_and_hash() {
-  _has_bits_[0] |= 0x00000040u;
+  _has_bits_[0] |= 0x00000080u;
 }
 inline void FileOptions::clear_has_java_generate_equals_and_hash() {
-  _has_bits_[0] &= ~0x00000040u;
+  _has_bits_[0] &= ~0x00000080u;
 }
 inline void FileOptions::clear_java_generate_equals_and_hash() {
   java_generate_equals_and_hash_ = false;
@@ -6412,13 +6427,13 @@ inline void FileOptions::set_java_generate_equals_and_hash(bool value) {
 
 // optional bool java_string_check_utf8 = 27 [default = false];
 inline bool FileOptions::has_java_string_check_utf8() const {
-  return (_has_bits_[0] & 0x00000080u) != 0;
+  return (_has_bits_[0] & 0x00000100u) != 0;
 }
 inline void FileOptions::set_has_java_string_check_utf8() {
-  _has_bits_[0] |= 0x00000080u;
+  _has_bits_[0] |= 0x00000100u;
 }
 inline void FileOptions::clear_has_java_string_check_utf8() {
-  _has_bits_[0] &= ~0x00000080u;
+  _has_bits_[0] &= ~0x00000100u;
 }
 inline void FileOptions::clear_java_string_check_utf8() {
   java_string_check_utf8_ = false;
@@ -6436,13 +6451,13 @@ inline void FileOptions::set_java_string_check_utf8(bool value) {
 
 // optional .google.protobuf.FileOptions.OptimizeMode optimize_for = 9 [default = SPEED];
 inline bool FileOptions::has_optimize_for() const {
-  return (_has_bits_[0] & 0x00002000u) != 0;
+  return (_has_bits_[0] & 0x00004000u) != 0;
 }
 inline void FileOptions::set_has_optimize_for() {
-  _has_bits_[0] |= 0x00002000u;
+  _has_bits_[0] |= 0x00004000u;
 }
 inline void FileOptions::clear_has_optimize_for() {
-  _has_bits_[0] &= ~0x00002000u;
+  _has_bits_[0] &= ~0x00004000u;
 }
 inline void FileOptions::clear_optimize_for() {
   optimize_for_ = 1;
@@ -6515,13 +6530,13 @@ inline void FileOptions::set_allocated_go_package(::std::string* go_package) {
 
 // optional bool cc_generic_services = 16 [default = false];
 inline bool FileOptions::has_cc_generic_services() const {
-  return (_has_bits_[0] & 0x00000100u) != 0;
+  return (_has_bits_[0] & 0x00000200u) != 0;
 }
 inline void FileOptions::set_has_cc_generic_services() {
-  _has_bits_[0] |= 0x00000100u;
+  _has_bits_[0] |= 0x00000200u;
 }
 inline void FileOptions::clear_has_cc_generic_services() {
-  _has_bits_[0] &= ~0x00000100u;
+  _has_bits_[0] &= ~0x00000200u;
 }
 inline void FileOptions::clear_cc_generic_services() {
   cc_generic_services_ = false;
@@ -6539,13 +6554,13 @@ inline void FileOptions::set_cc_generic_services(bool value) {
 
 // optional bool java_generic_services = 17 [default = false];
 inline bool FileOptions::has_java_generic_services() const {
-  return (_has_bits_[0] & 0x00000200u) != 0;
+  return (_has_bits_[0] & 0x00000400u) != 0;
 }
 inline void FileOptions::set_has_java_generic_services() {
-  _has_bits_[0] |= 0x00000200u;
+  _has_bits_[0] |= 0x00000400u;
 }
 inline void FileOptions::clear_has_java_generic_services() {
-  _has_bits_[0] &= ~0x00000200u;
+  _has_bits_[0] &= ~0x00000400u;
 }
 inline void FileOptions::clear_java_generic_services() {
   java_generic_services_ = false;
@@ -6563,13 +6578,13 @@ inline void FileOptions::set_java_generic_services(bool value) {
 
 // optional bool py_generic_services = 18 [default = false];
 inline bool FileOptions::has_py_generic_services() const {
-  return (_has_bits_[0] & 0x00000400u) != 0;
+  return (_has_bits_[0] & 0x00000800u) != 0;
 }
 inline void FileOptions::set_has_py_generic_services() {
-  _has_bits_[0] |= 0x00000400u;
+  _has_bits_[0] |= 0x00000800u;
 }
 inline void FileOptions::clear_has_py_generic_services() {
-  _has_bits_[0] &= ~0x00000400u;
+  _has_bits_[0] &= ~0x00000800u;
 }
 inline void FileOptions::clear_py_generic_services() {
   py_generic_services_ = false;
@@ -6587,13 +6602,13 @@ inline void FileOptions::set_py_generic_services(bool value) {
 
 // optional bool deprecated = 23 [default = false];
 inline bool FileOptions::has_deprecated() const {
-  return (_has_bits_[0] & 0x00000800u) != 0;
+  return (_has_bits_[0] & 0x00001000u) != 0;
 }
 inline void FileOptions::set_has_deprecated() {
-  _has_bits_[0] |= 0x00000800u;
+  _has_bits_[0] |= 0x00001000u;
 }
 inline void FileOptions::clear_has_deprecated() {
-  _has_bits_[0] &= ~0x00000800u;
+  _has_bits_[0] &= ~0x00001000u;
 }
 inline void FileOptions::clear_deprecated() {
   deprecated_ = false;
@@ -6611,13 +6626,13 @@ inline void FileOptions::set_deprecated(bool value) {
 
 // optional bool cc_enable_arenas = 31 [default = false];
 inline bool FileOptions::has_cc_enable_arenas() const {
-  return (_has_bits_[0] & 0x00001000u) != 0;
+  return (_has_bits_[0] & 0x00002000u) != 0;
 }
 inline void FileOptions::set_has_cc_enable_arenas() {
-  _has_bits_[0] |= 0x00001000u;
+  _has_bits_[0] |= 0x00002000u;
 }
 inline void FileOptions::clear_has_cc_enable_arenas() {
-  _has_bits_[0] &= ~0x00001000u;
+  _has_bits_[0] &= ~0x00002000u;
 }
 inline void FileOptions::clear_cc_enable_arenas() {
   cc_enable_arenas_ = false;
@@ -6739,6 +6754,60 @@ inline void FileOptions::set_allocated_csharp_namespace(::std::string* csharp_na
   }
   csharp_namespace_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), csharp_namespace);
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.FileOptions.csharp_namespace)
+}
+
+// optional string swift_prefix = 39;
+inline bool FileOptions::has_swift_prefix() const {
+  return (_has_bits_[0] & 0x00000020u) != 0;
+}
+inline void FileOptions::set_has_swift_prefix() {
+  _has_bits_[0] |= 0x00000020u;
+}
+inline void FileOptions::clear_has_swift_prefix() {
+  _has_bits_[0] &= ~0x00000020u;
+}
+inline void FileOptions::clear_swift_prefix() {
+  swift_prefix_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  clear_has_swift_prefix();
+}
+inline const ::std::string& FileOptions::swift_prefix() const {
+  // @@protoc_insertion_point(field_get:google.protobuf.FileOptions.swift_prefix)
+  return swift_prefix_.GetNoArena();
+}
+inline void FileOptions::set_swift_prefix(const ::std::string& value) {
+  set_has_swift_prefix();
+  swift_prefix_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
+  // @@protoc_insertion_point(field_set:google.protobuf.FileOptions.swift_prefix)
+}
+inline void FileOptions::set_swift_prefix(const char* value) {
+  set_has_swift_prefix();
+  swift_prefix_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
+  // @@protoc_insertion_point(field_set_char:google.protobuf.FileOptions.swift_prefix)
+}
+inline void FileOptions::set_swift_prefix(const char* value, size_t size) {
+  set_has_swift_prefix();
+  swift_prefix_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+      ::std::string(reinterpret_cast<const char*>(value), size));
+  // @@protoc_insertion_point(field_set_pointer:google.protobuf.FileOptions.swift_prefix)
+}
+inline ::std::string* FileOptions::mutable_swift_prefix() {
+  set_has_swift_prefix();
+  // @@protoc_insertion_point(field_mutable:google.protobuf.FileOptions.swift_prefix)
+  return swift_prefix_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline ::std::string* FileOptions::release_swift_prefix() {
+  // @@protoc_insertion_point(field_release:google.protobuf.FileOptions.swift_prefix)
+  clear_has_swift_prefix();
+  return swift_prefix_.ReleaseNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline void FileOptions::set_allocated_swift_prefix(::std::string* swift_prefix) {
+  if (swift_prefix != NULL) {
+    set_has_swift_prefix();
+  } else {
+    clear_has_swift_prefix();
+  }
+  swift_prefix_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), swift_prefix);
+  // @@protoc_insertion_point(field_set_allocated:google.protobuf.FileOptions.swift_prefix)
 }
 
 // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
