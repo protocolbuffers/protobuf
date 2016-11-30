@@ -32,6 +32,7 @@
 
 using Conformance;
 using Google.Protobuf.Reflection;
+using Google.Protobuf.TestProtos;
 using System;
 using System.IO;
 
