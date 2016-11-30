@@ -48,7 +48,7 @@ namespace Google.Protobuf.Conformance
             // This way we get the binary streams instead of readers/writers.
             var input = new BinaryReader(Console.OpenStandardInput());
             var output = new BinaryWriter(Console.OpenStandardOutput());
-            var typeRegistry = TypeRegistry.FromMessages(TestAllTypes.Descriptor);
+            var typeRegistry = TypeRegistry.FromMessages(ProtobufTestMessages.Proto3.TestAllTypes.Descriptor);
 
             int count = 0;
             while (RunTest(input, output, typeRegistry))

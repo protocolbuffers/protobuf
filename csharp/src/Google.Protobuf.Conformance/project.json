@@ -4,7 +4,8 @@
     "emitEntryPoint": true
   },
   "dependencies": {
-    "Google.Protobuf": { "target": "project" }
+    "Google.Protobuf": { "target": "project" },
+    "Google.Protobuf.Test": { "target": "project" }
   },
   "frameworks": {
     "netcoreapp1.0": {
