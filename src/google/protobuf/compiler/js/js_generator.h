@@ -68,12 +68,18 @@ struct GeneratorOptions {
     kImportBrowser,   // no import statements
     kImportEs6,       // import { member } from ''
   } import_style;
+  // Type to use for int64s by default.
+  enum Int64DefaultType {
+    kInt64Number,
+    kInt64String,
+  } int64_default_type;
 
   GeneratorOptions()
       : output_dir("."),
         namespace_prefix(""),
         binary(false),
         import_style(kImportClosure),
+        int64_default_type(kInt64Number),
         add_require_for_enums(false),
         testonly(false),
         library(""),
