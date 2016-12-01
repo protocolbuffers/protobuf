@@ -100,6 +100,7 @@ csharp_EXTRA_DIST=                                                           \
   csharp/src/Google.Protobuf.Test/TestCornerCases.cs                         \
   csharp/src/Google.Protobuf.Test/TestProtos/ForeignMessagePartial.cs        \
   csharp/src/Google.Protobuf.Test/TestProtos/MapUnittestProto3.cs            \
+  csharp/src/Google.Protobuf.Test/TestProtos/TestMessagesProto3.cs           \
   csharp/src/Google.Protobuf.Test/TestProtos/UnittestImportProto3.cs         \
   csharp/src/Google.Protobuf.Test/TestProtos/UnittestImportPublicProto3.cs   \
   csharp/src/Google.Protobuf.Test/TestProtos/UnittestIssues.cs               \
