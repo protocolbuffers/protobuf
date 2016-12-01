@@ -10,834 +10,1458 @@ use Google\Protobuf\Internal\GPBType;
 use Google\Protobuf\Internal\RepeatedField;
 use Google\Protobuf\Internal\GPBUtil;
 
+/**
+ * Protobuf type <code>foo.TestMessage</code>
+ */
 class TestMessage extends \Google\Protobuf\Internal\Message
 {
+    /**
+     * <pre>
+     * Singular
+     * </pre>
+     *
+     * <code>optional int32 optional_int32 = 1;</code>
+     */
     private $optional_int32 = 0;
+    /**
+     * <code>optional int64 optional_int64 = 2;</code>
+     */
     private $optional_int64 = 0;
+    /**
+     * <code>optional uint32 optional_uint32 = 3;</code>
+     */
     private $optional_uint32 = 0;
+    /**
+     * <code>optional uint64 optional_uint64 = 4;</code>
+     */
     private $optional_uint64 = 0;
+    /**
+     * <code>optional sint32 optional_sint32 = 5;</code>
+     */
     private $optional_sint32 = 0;
+    /**
+     * <code>optional sint64 optional_sint64 = 6;</code>
+     */
     private $optional_sint64 = 0;
+    /**
+     * <code>optional fixed32 optional_fixed32 = 7;</code>
+     */
     private $optional_fixed32 = 0;
+    /**
+     * <code>optional fixed64 optional_fixed64 = 8;</code>
+     */
     private $optional_fixed64 = 0;
+    /**
+     * <code>optional sfixed32 optional_sfixed32 = 9;</code>
+     */
     private $optional_sfixed32 = 0;
+    /**
+     * <code>optional sfixed64 optional_sfixed64 = 10;</code>
+     */
     private $optional_sfixed64 = 0;
+    /**
+     * <code>optional float optional_float = 11;</code>
+     */
     private $optional_float = 0.0;
+    /**
+     * <code>optional double optional_double = 12;</code>
+     */
     private $optional_double = 0.0;
+    /**
+     * <code>optional bool optional_bool = 13;</code>
+     */
     private $optional_bool = false;
+    /**
+     * <code>optional string optional_string = 14;</code>
+     */
     private $optional_string = '';
+    /**
+     * <code>optional bytes optional_bytes = 15;</code>
+     */
     private $optional_bytes = '';
+    /**
+     * <code>optional .foo.TestEnum optional_enum = 16;</code>
+     */
     private $optional_enum = 0;
+    /**
+     * <code>optional .foo.TestMessage.Sub optional_message = 17;</code>
+     */
     private $optional_message = null;
+    /**
+     * <code>optional .bar.TestInclude optional_included_message = 18;</code>
+     */
     private $optional_included_message = null;
+    /**
+     * <code>optional .foo.TestMessage recursive = 19;</code>
+     */
     private $recursive = null;
+    /**
+     * <pre>
+     * Repeated
+     * </pre>
+     *
+     * <code>repeated int32 repeated_int32 = 31;</code>
+     */
     private $repeated_int32;
+    /**
+     * <code>repeated int64 repeated_int64 = 32;</code>
+     */
     private $repeated_int64;
+    /**
+     * <code>repeated uint32 repeated_uint32 = 33;</code>
+     */
     private $repeated_uint32;
+    /**
+     * <code>repeated uint64 repeated_uint64 = 34;</code>
+     */
     private $repeated_uint64;
+    /**
+     * <code>repeated sint32 repeated_sint32 = 35;</code>
+     */
     private $repeated_sint32;
+    /**
+     * <code>repeated sint64 repeated_sint64 = 36;</code>
+     */
     private $repeated_sint64;
+    /**
+     * <code>repeated fixed32 repeated_fixed32 = 37;</code>
+     */
     private $repeated_fixed32;
+    /**
+     * <code>repeated fixed64 repeated_fixed64 = 38;</code>
+     */
     private $repeated_fixed64;
+    /**
+     * <code>repeated sfixed32 repeated_sfixed32 = 39;</code>
+     */
     private $repeated_sfixed32;
+    /**
+     * <code>repeated sfixed64 repeated_sfixed64 = 40;</code>
+     */
     private $repeated_sfixed64;
+    /**
+     * <code>repeated float repeated_float = 41;</code>
+     */
     private $repeated_float;
+    /**
+     * <code>repeated double repeated_double = 42;</code>
+     */
     private $repeated_double;
+    /**
+     * <code>repeated bool repeated_bool = 43;</code>
+     */
     private $repeated_bool;
+    /**
+     * <code>repeated string repeated_string = 44;</code>
+     */
     private $repeated_string;
+    /**
+     * <code>repeated bytes repeated_bytes = 45;</code>
+     */
     private $repeated_bytes;
+    /**
+     * <code>repeated .foo.TestEnum repeated_enum = 46;</code>
+     */
     private $repeated_enum;
+    /**
+     * <code>repeated .foo.TestMessage.Sub repeated_message = 47;</code>
+     */
     private $repeated_message;
+    /**
+     * <code>repeated .foo.TestMessage repeated_recursive = 48;</code>
+     */
     private $repeated_recursive;
+    /**
+     * <code>map&lt;int32, int32&gt; map_int32_int32 = 71;</code>
+     */
     private $map_int32_int32;
+    /**
+     * <code>map&lt;int64, int64&gt; map_int64_int64 = 72;</code>
+     */
     private $map_int64_int64;
+    /**
+     * <code>map&lt;uint32, uint32&gt; map_uint32_uint32 = 73;</code>
+     */
     private $map_uint32_uint32;
+    /**
+     * <code>map&lt;uint64, uint64&gt; map_uint64_uint64 = 74;</code>
+     */
     private $map_uint64_uint64;
+    /**
+     * <code>map&lt;sint32, sint32&gt; map_sint32_sint32 = 75;</code>
+     */
     private $map_sint32_sint32;
+    /**
+     * <code>map&lt;sint64, sint64&gt; map_sint64_sint64 = 76;</code>
+     */
     private $map_sint64_sint64;
+    /**
+     * <code>map&lt;fixed32, fixed32&gt; map_fixed32_fixed32 = 77;</code>
+     */
     private $map_fixed32_fixed32;
+    /**
+     * <code>map&lt;fixed64, fixed64&gt; map_fixed64_fixed64 = 78;</code>
+     */
     private $map_fixed64_fixed64;
+    /**
+     * <code>map&lt;sfixed32, sfixed32&gt; map_sfixed32_sfixed32 = 79;</code>
+     */
     private $map_sfixed32_sfixed32;
+    /**
+     * <code>map&lt;sfixed64, sfixed64&gt; map_sfixed64_sfixed64 = 80;</code>
+     */
     private $map_sfixed64_sfixed64;
+    /**
+     * <code>map&lt;int32, float&gt; map_int32_float = 81;</code>
+     */
     private $map_int32_float;
+    /**
+     * <code>map&lt;int32, double&gt; map_int32_double = 82;</code>
+     */
     private $map_int32_double;
+    /**
+     * <code>map&lt;bool, bool&gt; map_bool_bool = 83;</code>
+     */
     private $map_bool_bool;
+    /**
+     * <code>map&lt;string, string&gt; map_string_string = 84;</code>
+     */
     private $map_string_string;
+    /**
+     * <code>map&lt;int32, bytes&gt; map_int32_bytes = 85;</code>
+     */
     private $map_int32_bytes;
+    /**
+     * <code>map&lt;int32, .foo.TestEnum&gt; map_int32_enum = 86;</code>
+     */
     private $map_int32_enum;
+    /**
+     * <code>map&lt;int32, .foo.TestMessage.Sub&gt; map_int32_message = 87;</code>
+     */
     private $map_int32_message;
+    /**
+     * <code>map&lt;int32, .foo.TestMessage&gt; map_recursive = 88;</code>
+     */
     private $map_recursive;
     protected $my_oneof;
 
+    /**
+     * <pre>
+     * Singular
+     * </pre>
+     *
+     * <code>optional int32 optional_int32 = 1;</code>
+     */
     public function getOptionalInt32()
     {
         return $this->optional_int32;
     }
 
+    /**
+     * <pre>
+     * Singular
+     * </pre>
+     *
+     * <code>optional int32 optional_int32 = 1;</code>
+     */
     public function setOptionalInt32($var)
     {
         GPBUtil::checkInt32($var);
         $this->optional_int32 = $var;
     }
 
+    /**
+     * <code>optional int64 optional_int64 = 2;</code>
+     */
     public function getOptionalInt64()
     {
         return $this->optional_int64;
     }
 
+    /**
+     * <code>optional int64 optional_int64 = 2;</code>
+     */
     public function setOptionalInt64($var)
     {
         GPBUtil::checkInt64($var);
         $this->optional_int64 = $var;
     }
 
+    /**
+     * <code>optional uint32 optional_uint32 = 3;</code>
+     */
     public function getOptionalUint32()
     {
         return $this->optional_uint32;
     }
 
+    /**
+     * <code>optional uint32 optional_uint32 = 3;</code>
+     */
     public function setOptionalUint32($var)
     {
         GPBUtil::checkUint32($var);
         $this->optional_uint32 = $var;
     }
 
+    /**
+     * <code>optional uint64 optional_uint64 = 4;</code>
+     */
     public function getOptionalUint64()
     {
         return $this->optional_uint64;
     }
 
+    /**
+     * <code>optional uint64 optional_uint64 = 4;</code>
+     */
     public function setOptionalUint64($var)
     {
         GPBUtil::checkUint64($var);
         $this->optional_uint64 = $var;
     }
 
+    /**
+     * <code>optional sint32 optional_sint32 = 5;</code>
+     */
     public function getOptionalSint32()
     {
         return $this->optional_sint32;
     }
 
+    /**
+     * <code>optional sint32 optional_sint32 = 5;</code>
+     */
     public function setOptionalSint32($var)
     {
         GPBUtil::checkInt32($var);
         $this->optional_sint32 = $var;
     }
 
+    /**
+     * <code>optional sint64 optional_sint64 = 6;</code>
+     */
     public function getOptionalSint64()
     {
         return $this->optional_sint64;
     }
 
+    /**
+     * <code>optional sint64 optional_sint64 = 6;</code>
+     */
     public function setOptionalSint64($var)
     {
         GPBUtil::checkInt64($var);
         $this->optional_sint64 = $var;
     }
 
+    /**
+     * <code>optional fixed32 optional_fixed32 = 7;</code>
+     */
     public function getOptionalFixed32()
     {
         return $this->optional_fixed32;
     }
 
+    /**
+     * <code>optional fixed32 optional_fixed32 = 7;</code>
+     */
     public function setOptionalFixed32($var)
     {
         GPBUtil::checkUint32($var);
         $this->optional_fixed32 = $var;
     }
 
+    /**
+     * <code>optional fixed64 optional_fixed64 = 8;</code>
+     */
     public function getOptionalFixed64()
     {
         return $this->optional_fixed64;
     }
 
+    /**
+     * <code>optional fixed64 optional_fixed64 = 8;</code>
+     */
     public function setOptionalFixed64($var)
     {
         GPBUtil::checkUint64($var);
         $this->optional_fixed64 = $var;
     }
 
+    /**
+     * <code>optional sfixed32 optional_sfixed32 = 9;</code>
+     */
     public function getOptionalSfixed32()
     {
         return $this->optional_sfixed32;
     }
 
+    /**
+     * <code>optional sfixed32 optional_sfixed32 = 9;</code>
+     */
     public function setOptionalSfixed32($var)
     {
         GPBUtil::checkInt32($var);
         $this->optional_sfixed32 = $var;
     }
 
+    /**
+     * <code>optional sfixed64 optional_sfixed64 = 10;</code>
+     */
     public function getOptionalSfixed64()
     {
         return $this->optional_sfixed64;
     }
 
+    /**
+     * <code>optional sfixed64 optional_sfixed64 = 10;</code>
+     */
     public function setOptionalSfixed64($var)
     {
         GPBUtil::checkInt64($var);
         $this->optional_sfixed64 = $var;
     }
 
+    /**
+     * <code>optional float optional_float = 11;</code>
+     */
     public function getOptionalFloat()
     {
         return $this->optional_float;
     }
 
+    /**
+     * <code>optional float optional_float = 11;</code>
+     */
     public function setOptionalFloat($var)
     {
         GPBUtil::checkFloat($var);
         $this->optional_float = $var;
     }
 
+    /**
+     * <code>optional double optional_double = 12;</code>
+     */
     public function getOptionalDouble()
     {
         return $this->optional_double;
     }
 
+    /**
+     * <code>optional double optional_double = 12;</code>
+     */
     public function setOptionalDouble($var)
     {
         GPBUtil::checkDouble($var);
         $this->optional_double = $var;
     }
 
+    /**
+     * <code>optional bool optional_bool = 13;</code>
+     */
     public function getOptionalBool()
     {
         return $this->optional_bool;
     }
 
+    /**
+     * <code>optional bool optional_bool = 13;</code>
+     */
     public function setOptionalBool($var)
     {
         GPBUtil::checkBool($var);
         $this->optional_bool = $var;
     }
 
+    /**
+     * <code>optional string optional_string = 14;</code>
+     */
     public function getOptionalString()
     {
         return $this->optional_string;
     }
 
+    /**
+     * <code>optional string optional_string = 14;</code>
+     */
     public function setOptionalString($var)
     {
         GPBUtil::checkString($var, True);
         $this->optional_string = $var;
     }
 
+    /**
+     * <code>optional bytes optional_bytes = 15;</code>
+     */
     public function getOptionalBytes()
     {
         return $this->optional_bytes;
     }
 
+    /**
+     * <code>optional bytes optional_bytes = 15;</code>
+     */
     public function setOptionalBytes($var)
     {
         GPBUtil::checkString($var, False);
         $this->optional_bytes = $var;
     }
 
+    /**
+     * <code>optional .foo.TestEnum optional_enum = 16;</code>
+     */
     public function getOptionalEnum()
     {
         return $this->optional_enum;
     }
 
+    /**
+     * <code>optional .foo.TestEnum optional_enum = 16;</code>
+     */
     public function setOptionalEnum($var)
     {
         GPBUtil::checkEnum($var, \Foo\TestEnum::class);
         $this->optional_enum = $var;
     }
 
+    /**
+     * <code>optional .foo.TestMessage.Sub optional_message = 17;</code>
+     */
     public function getOptionalMessage()
     {
         return $this->optional_message;
     }
 
+    /**
+     * <code>optional .foo.TestMessage.Sub optional_message = 17;</code>
+     */
     public function setOptionalMessage(&$var)
     {
         GPBUtil::checkMessage($var, \Foo\TestMessage_Sub::class);
         $this->optional_message = $var;
     }
 
+    /**
+     * <code>optional .bar.TestInclude optional_included_message = 18;</code>
+     */
     public function getOptionalIncludedMessage()
     {
         return $this->optional_included_message;
     }
 
+    /**
+     * <code>optional .bar.TestInclude optional_included_message = 18;</code>
+     */
     public function setOptionalIncludedMessage(&$var)
     {
         GPBUtil::checkMessage($var, \Bar\TestInclude::class);
         $this->optional_included_message = $var;
     }
 
+    /**
+     * <code>optional .foo.TestMessage recursive = 19;</code>
+     */
     public function getRecursive()
     {
         return $this->recursive;
     }
 
+    /**
+     * <code>optional .foo.TestMessage recursive = 19;</code>
+     */
     public function setRecursive(&$var)
     {
         GPBUtil::checkMessage($var, \Foo\TestMessage::class);
         $this->recursive = $var;
     }
 
+    /**
+     * <pre>
+     * Repeated
+     * </pre>
+     *
+     * <code>repeated int32 repeated_int32 = 31;</code>
+     */
     public function getRepeatedInt32()
     {
         return $this->repeated_int32;
     }
 
+    /**
+     * <pre>
+     * Repeated
+     * </pre>
+     *
+     * <code>repeated int32 repeated_int32 = 31;</code>
+     */
     public function setRepeatedInt32(&$var)
     {
         GPBUtil::checkRepeatedField($var, GPBType::INT32);
         $this->repeated_int32 = $var;
     }
 
+    /**
+     * <code>repeated int64 repeated_int64 = 32;</code>
+     */
     public function getRepeatedInt64()
     {
         return $this->repeated_int64;
     }
 
+    /**
+     * <code>repeated int64 repeated_int64 = 32;</code>
+     */
     public function setRepeatedInt64(&$var)
     {
         GPBUtil::checkRepeatedField($var, GPBType::INT64);
         $this->repeated_int64 = $var;
     }
 
+    /**
+     * <code>repeated uint32 repeated_uint32 = 33;</code>
+     */
     public function getRepeatedUint32()
     {
         return $this->repeated_uint32;
     }
 
+    /**
+     * <code>repeated uint32 repeated_uint32 = 33;</code>
+     */
     public function setRepeatedUint32(&$var)
     {
         GPBUtil::checkRepeatedField($var, GPBType::UINT32);
         $this->repeated_uint32 = $var;
     }
 
+    /**
+     * <code>repeated uint64 repeated_uint64 = 34;</code>
+     */
     public function getRepeatedUint64()
     {
         return $this->repeated_uint64;
     }
 
+    /**
+     * <code>repeated uint64 repeated_uint64 = 34;</code>
+     */
     public function setRepeatedUint64(&$var)
     {
         GPBUtil::checkRepeatedField($var, GPBType::UINT64);
         $this->repeated_uint64 = $var;
     }
 
+    /**
+     * <code>repeated sint32 repeated_sint32 = 35;</code>
+     */
     public function getRepeatedSint32()
     {
         return $this->repeated_sint32;
     }
 
+    /**
+     * <code>repeated sint32 repeated_sint32 = 35;</code>
+     */
     public function setRepeatedSint32(&$var)
     {
         GPBUtil::checkRepeatedField($var, GPBType::SINT32);
         $this->repeated_sint32 = $var;
     }
 
+    /**
+     * <code>repeated sint64 repeated_sint64 = 36;</code>
+     */
     public function getRepeatedSint64()
     {
         return $this->repeated_sint64;
     }
 
+    /**
+     * <code>repeated sint64 repeated_sint64 = 36;</code>
+     */
     public function setRepeatedSint64(&$var)
     {
         GPBUtil::checkRepeatedField($var, GPBType::SINT64);
         $this->repeated_sint64 = $var;
     }
 
+    /**
+     * <code>repeated fixed32 repeated_fixed32 = 37;</code>
+     */
     public function getRepeatedFixed32()
     {
         return $this->repeated_fixed32;
     }
 
+    /**
+     * <code>repeated fixed32 repeated_fixed32 = 37;</code>
+     */
     public function setRepeatedFixed32(&$var)
     {
         GPBUtil::checkRepeatedField($var, GPBType::FIXED32);
         $this->repeated_fixed32 = $var;
     }
 
+    /**
+     * <code>repeated fixed64 repeated_fixed64 = 38;</code>
+     */
     public function getRepeatedFixed64()
     {
         return $this->repeated_fixed64;
     }
 
+    /**
+     * <code>repeated fixed64 repeated_fixed64 = 38;</code>
+     */
     public function setRepeatedFixed64(&$var)
     {
         GPBUtil::checkRepeatedField($var, GPBType::FIXED64);
         $this->repeated_fixed64 = $var;
     }
 
+    /**
+     * <code>repeated sfixed32 repeated_sfixed32 = 39;</code>
+     */
     public function getRepeatedSfixed32()
     {
         return $this->repeated_sfixed32;
     }
 
+    /**
+     * <code>repeated sfixed32 repeated_sfixed32 = 39;</code>
+     */
     public function setRepeatedSfixed32(&$var)
     {
         GPBUtil::checkRepeatedField($var, GPBType::SFIXED32);
         $this->repeated_sfixed32 = $var;
     }
 
+    /**
+     * <code>repeated sfixed64 repeated_sfixed64 = 40;</code>
+     */
     public function getRepeatedSfixed64()
     {
         return $this->repeated_sfixed64;
     }
 
+    /**
+     * <code>repeated sfixed64 repeated_sfixed64 = 40;</code>
+     */
     public function setRepeatedSfixed64(&$var)
     {
         GPBUtil::checkRepeatedField($var, GPBType::SFIXED64);
         $this->repeated_sfixed64 = $var;
     }
 
+    /**
+     * <code>repeated float repeated_float = 41;</code>
+     */
     public function getRepeatedFloat()
     {
         return $this->repeated_float;
     }
 
+    /**
+     * <code>repeated float repeated_float = 41;</code>
+     */
     public function setRepeatedFloat(&$var)
     {
         GPBUtil::checkRepeatedField($var, GPBType::FLOAT);
         $this->repeated_float = $var;
     }
 
+    /**
+     * <code>repeated double repeated_double = 42;</code>
+     */
     public function getRepeatedDouble()
     {
         return $this->repeated_double;
     }
 
+    /**
+     * <code>repeated double repeated_double = 42;</code>
+     */
     public function setRepeatedDouble(&$var)
     {
         GPBUtil::checkRepeatedField($var, GPBType::DOUBLE);
         $this->repeated_double = $var;
     }
 
+    /**
+     * <code>repeated bool repeated_bool = 43;</code>
+     */
     public function getRepeatedBool()
     {
         return $this->repeated_bool;
     }
 
+    /**
+     * <code>repeated bool repeated_bool = 43;</code>
+     */
     public function setRepeatedBool(&$var)
     {
         GPBUtil::checkRepeatedField($var, GPBType::BOOL);
         $this->repeated_bool = $var;
     }
 
+    /**
+     * <code>repeated string repeated_string = 44;</code>
+     */
     public function getRepeatedString()
     {
         return $this->repeated_string;
     }
 
+    /**
+     * <code>repeated string repeated_string = 44;</code>
+     */
     public function setRepeatedString(&$var)
     {
         GPBUtil::checkRepeatedField($var, GPBType::STRING);
         $this->repeated_string = $var;
     }
 
+    /**
+     * <code>repeated bytes repeated_bytes = 45;</code>
+     */
     public function getRepeatedBytes()
     {
         return $this->repeated_bytes;
     }
 
+    /**
+     * <code>repeated bytes repeated_bytes = 45;</code>
+     */
     public function setRepeatedBytes(&$var)
     {
         GPBUtil::checkRepeatedField($var, GPBType::BYTES);
         $this->repeated_bytes = $var;
     }
 
+    /**
+     * <code>repeated .foo.TestEnum repeated_enum = 46;</code>
+     */
     public function getRepeatedEnum()
     {
         return $this->repeated_enum;
     }
 
+    /**
+     * <code>repeated .foo.TestEnum repeated_enum = 46;</code>
+     */
     public function setRepeatedEnum(&$var)
     {
         GPBUtil::checkRepeatedField($var, GPBType::ENUM, Foo\TestEnum::class);
         $this->repeated_enum = $var;
     }
 
+    /**
+     * <code>repeated .foo.TestMessage.Sub repeated_message = 47;</code>
+     */
     public function getRepeatedMessage()
     {
         return $this->repeated_message;
     }
 
+    /**
+     * <code>repeated .foo.TestMessage.Sub repeated_message = 47;</code>
+     */
     public function setRepeatedMessage(&$var)
     {
         GPBUtil::checkRepeatedField($var, GPBType::MESSAGE, \Foo\TestMessage_Sub::class);
         $this->repeated_message = $var;
     }
 
+    /**
+     * <code>repeated .foo.TestMessage repeated_recursive = 48;</code>
+     */
     public function getRepeatedRecursive()
     {
         return $this->repeated_recursive;
     }
 
+    /**
+     * <code>repeated .foo.TestMessage repeated_recursive = 48;</code>
+     */
     public function setRepeatedRecursive(&$var)
     {
         GPBUtil::checkRepeatedField($var, GPBType::MESSAGE, \Foo\TestMessage::class);
         $this->repeated_recursive = $var;
     }
 
+    /**
+     * <code>optional int32 oneof_int32 = 51;</code>
+     */
     public function getOneofInt32()
     {
         return $this->readOneof(51);
     }
 
+    /**
+     * <code>optional int32 oneof_int32 = 51;</code>
+     */
     public function setOneofInt32($var)
     {
         GPBUtil::checkInt32($var);
         $this->writeOneof(51, $var);
     }
 
+    /**
+     * <code>optional int64 oneof_int64 = 52;</code>
+     */
     public function getOneofInt64()
     {
         return $this->readOneof(52);
     }
 
+    /**
+     * <code>optional int64 oneof_int64 = 52;</code>
+     */
     public function setOneofInt64($var)
     {
         GPBUtil::checkInt64($var);
         $this->writeOneof(52, $var);
     }
 
+    /**
+     * <code>optional uint32 oneof_uint32 = 53;</code>
+     */
     public function getOneofUint32()
     {
         return $this->readOneof(53);
     }
 
+    /**
+     * <code>optional uint32 oneof_uint32 = 53;</code>
+     */
     public function setOneofUint32($var)
     {
         GPBUtil::checkUint32($var);
         $this->writeOneof(53, $var);
     }
 
+    /**
+     * <code>optional uint64 oneof_uint64 = 54;</code>
+     */
     public function getOneofUint64()
     {
         return $this->readOneof(54);
     }
 
+    /**
+     * <code>optional uint64 oneof_uint64 = 54;</code>
+     */
     public function setOneofUint64($var)
     {
         GPBUtil::checkUint64($var);
         $this->writeOneof(54, $var);
     }
 
+    /**
+     * <code>optional uint32 oneof_sint32 = 55;</code>
+     */
     public function getOneofSint32()
     {
         return $this->readOneof(55);
     }
 
+    /**
+     * <code>optional uint32 oneof_sint32 = 55;</code>
+     */
     public function setOneofSint32($var)
     {
         GPBUtil::checkUint32($var);
         $this->writeOneof(55, $var);
     }
 
+    /**
+     * <code>optional uint64 oneof_sint64 = 56;</code>
+     */
     public function getOneofSint64()
     {
         return $this->readOneof(56);
     }
 
+    /**
+     * <code>optional uint64 oneof_sint64 = 56;</code>
+     */
     public function setOneofSint64($var)
     {
         GPBUtil::checkUint64($var);
         $this->writeOneof(56, $var);
     }
 
+    /**
+     * <code>optional uint32 oneof_fixed32 = 57;</code>
+     */
     public function getOneofFixed32()
     {
         return $this->readOneof(57);
     }
 
+    /**
+     * <code>optional uint32 oneof_fixed32 = 57;</code>
+     */
     public function setOneofFixed32($var)
     {
         GPBUtil::checkUint32($var);
         $this->writeOneof(57, $var);
     }
 
+    /**
+     * <code>optional uint64 oneof_fixed64 = 58;</code>
+     */
     public function getOneofFixed64()
     {
         return $this->readOneof(58);
     }
 
+    /**
+     * <code>optional uint64 oneof_fixed64 = 58;</code>
+     */
     public function setOneofFixed64($var)
     {
         GPBUtil::checkUint64($var);
         $this->writeOneof(58, $var);
     }
 
+    /**
+     * <code>optional uint32 oneof_sfixed32 = 59;</code>
+     */
     public function getOneofSfixed32()
     {
         return $this->readOneof(59);
     }
 
+    /**
+     * <code>optional uint32 oneof_sfixed32 = 59;</code>
+     */
     public function setOneofSfixed32($var)
     {
         GPBUtil::checkUint32($var);
         $this->writeOneof(59, $var);
     }
 
+    /**
+     * <code>optional uint64 oneof_sfixed64 = 60;</code>
+     */
     public function getOneofSfixed64()
     {
         return $this->readOneof(60);
     }
 
+    /**
+     * <code>optional uint64 oneof_sfixed64 = 60;</code>
+     */
     public function setOneofSfixed64($var)
     {
         GPBUtil::checkUint64($var);
         $this->writeOneof(60, $var);
     }
 
+    /**
+     * <code>optional double oneof_double = 61;</code>
+     */
     public function getOneofDouble()
     {
         return $this->readOneof(61);
     }
 
+    /**
+     * <code>optional double oneof_double = 61;</code>
+     */
     public function setOneofDouble($var)
     {
         GPBUtil::checkDouble($var);
         $this->writeOneof(61, $var);
     }
 
+    /**
+     * <code>optional float oneof_float = 62;</code>
+     */
     public function getOneofFloat()
     {
         return $this->readOneof(62);
     }
 
+    /**
+     * <code>optional float oneof_float = 62;</code>
+     */
     public function setOneofFloat($var)
     {
         GPBUtil::checkFloat($var);
         $this->writeOneof(62, $var);
     }
 
+    /**
+     * <code>optional bool oneof_bool = 63;</code>
+     */
     public function getOneofBool()
     {
         return $this->readOneof(63);
     }
 
+    /**
+     * <code>optional bool oneof_bool = 63;</code>
+     */
     public function setOneofBool($var)
     {
         GPBUtil::checkBool($var);
         $this->writeOneof(63, $var);
     }
 
+    /**
+     * <code>optional string oneof_string = 64;</code>
+     */
     public function getOneofString()
     {
         return $this->readOneof(64);
     }
 
+    /**
+     * <code>optional string oneof_string = 64;</code>
+     */
     public function setOneofString($var)
     {
         GPBUtil::checkString($var, True);
         $this->writeOneof(64, $var);
     }
 
+    /**
+     * <code>optional bytes oneof_bytes = 65;</code>
+     */
     public function getOneofBytes()
     {
         return $this->readOneof(65);
     }
 
+    /**
+     * <code>optional bytes oneof_bytes = 65;</code>
+     */
     public function setOneofBytes($var)
     {
         GPBUtil::checkString($var, False);
         $this->writeOneof(65, $var);
     }
 
+    /**
+     * <code>optional .foo.TestEnum oneof_enum = 66;</code>
+     */
     public function getOneofEnum()
     {
         return $this->readOneof(66);
     }
 
+    /**
+     * <code>optional .foo.TestEnum oneof_enum = 66;</code>
+     */
     public function setOneofEnum($var)
     {
         GPBUtil::checkEnum($var, \Foo\TestEnum::class);
         $this->writeOneof(66, $var);
     }
 
+    /**
+     * <code>optional .foo.TestMessage.Sub oneof_message = 67;</code>
+     */
     public function getOneofMessage()
     {
         return $this->readOneof(67);
     }
 
+    /**
+     * <code>optional .foo.TestMessage.Sub oneof_message = 67;</code>
+     */
     public function setOneofMessage(&$var)
     {
         GPBUtil::checkMessage($var, \Foo\TestMessage_Sub::class);
         $this->writeOneof(67, $var);
     }
 
+    /**
+     * <code>map&lt;int32, int32&gt; map_int32_int32 = 71;</code>
+     */
     public function getMapInt32Int32()
     {
         return $this->map_int32_int32;
     }
 
+    /**
+     * <code>map&lt;int32, int32&gt; map_int32_int32 = 71;</code>
+     */
     public function setMapInt32Int32(&$var)
     {
         $this->map_int32_int32 = $var;
     }
 
+    /**
+     * <code>map&lt;int64, int64&gt; map_int64_int64 = 72;</code>
+     */
     public function getMapInt64Int64()
     {
         return $this->map_int64_int64;
     }
 
+    /**
+     * <code>map&lt;int64, int64&gt; map_int64_int64 = 72;</code>
+     */
     public function setMapInt64Int64(&$var)
     {
         $this->map_int64_int64 = $var;
     }
 
+    /**
+     * <code>map&lt;uint32, uint32&gt; map_uint32_uint32 = 73;</code>
+     */
     public function getMapUint32Uint32()
     {
         return $this->map_uint32_uint32;
     }
 
+    /**
+     * <code>map&lt;uint32, uint32&gt; map_uint32_uint32 = 73;</code>
+     */
     public function setMapUint32Uint32(&$var)
     {
         $this->map_uint32_uint32 = $var;
     }
 
+    /**
+     * <code>map&lt;uint64, uint64&gt; map_uint64_uint64 = 74;</code>
+     */
     public function getMapUint64Uint64()
     {
         return $this->map_uint64_uint64;
     }
 
+    /**
+     * <code>map&lt;uint64, uint64&gt; map_uint64_uint64 = 74;</code>
+     */
     public function setMapUint64Uint64(&$var)
     {
         $this->map_uint64_uint64 = $var;
     }
 
+    /**
+     * <code>map&lt;sint32, sint32&gt; map_sint32_sint32 = 75;</code>
+     */
     public function getMapSint32Sint32()
     {
         return $this->map_sint32_sint32;
     }
 
+    /**
+     * <code>map&lt;sint32, sint32&gt; map_sint32_sint32 = 75;</code>
+     */
     public function setMapSint32Sint32(&$var)
     {
         $this->map_sint32_sint32 = $var;
     }
 
+    /**
+     * <code>map&lt;sint64, sint64&gt; map_sint64_sint64 = 76;</code>
+     */
     public function getMapSint64Sint64()
     {
         return $this->map_sint64_sint64;
     }
 
+    /**
+     * <code>map&lt;sint64, sint64&gt; map_sint64_sint64 = 76;</code>
+     */
     public function setMapSint64Sint64(&$var)
     {
         $this->map_sint64_sint64 = $var;
     }
 
+    /**
+     * <code>map&lt;fixed32, fixed32&gt; map_fixed32_fixed32 = 77;</code>
+     */
     public function getMapFixed32Fixed32()
     {
         return $this->map_fixed32_fixed32;
     }
 
+    /**
+     * <code>map&lt;fixed32, fixed32&gt; map_fixed32_fixed32 = 77;</code>
+     */
     public function setMapFixed32Fixed32(&$var)
     {
         $this->map_fixed32_fixed32 = $var;
     }
 
+    /**
+     * <code>map&lt;fixed64, fixed64&gt; map_fixed64_fixed64 = 78;</code>
+     */
     public function getMapFixed64Fixed64()
     {
         return $this->map_fixed64_fixed64;
     }
 
+    /**
+     * <code>map&lt;fixed64, fixed64&gt; map_fixed64_fixed64 = 78;</code>
+     */
     public function setMapFixed64Fixed64(&$var)
     {
         $this->map_fixed64_fixed64 = $var;
     }
 
+    /**
+     * <code>map&lt;sfixed32, sfixed32&gt; map_sfixed32_sfixed32 = 79;</code>
+     */
     public function getMapSfixed32Sfixed32()
     {
         return $this->map_sfixed32_sfixed32;
     }
 
+    /**
+     * <code>map&lt;sfixed32, sfixed32&gt; map_sfixed32_sfixed32 = 79;</code>
+     */
     public function setMapSfixed32Sfixed32(&$var)
     {
         $this->map_sfixed32_sfixed32 = $var;
     }
 
+    /**
+     * <code>map&lt;sfixed64, sfixed64&gt; map_sfixed64_sfixed64 = 80;</code>
+     */
     public function getMapSfixed64Sfixed64()
     {
         return $this->map_sfixed64_sfixed64;
     }
 
+    /**
+     * <code>map&lt;sfixed64, sfixed64&gt; map_sfixed64_sfixed64 = 80;</code>
+     */
     public function setMapSfixed64Sfixed64(&$var)
     {
         $this->map_sfixed64_sfixed64 = $var;
     }
 
+    /**
+     * <code>map&lt;int32, float&gt; map_int32_float = 81;</code>
+     */
     public function getMapInt32Float()
     {
         return $this->map_int32_float;
     }
 
+    /**
+     * <code>map&lt;int32, float&gt; map_int32_float = 81;</code>
+     */
     public function setMapInt32Float(&$var)
     {
         $this->map_int32_float = $var;
     }
 
+    /**
+     * <code>map&lt;int32, double&gt; map_int32_double = 82;</code>
+     */
     public function getMapInt32Double()
     {
         return $this->map_int32_double;
     }
 
+    /**
+     * <code>map&lt;int32, double&gt; map_int32_double = 82;</code>
+     */
     public function setMapInt32Double(&$var)
     {
         $this->map_int32_double = $var;
     }
 
+    /**
+     * <code>map&lt;bool, bool&gt; map_bool_bool = 83;</code>
+     */
     public function getMapBoolBool()
     {
         return $this->map_bool_bool;
     }
 
+    /**
+     * <code>map&lt;bool, bool&gt; map_bool_bool = 83;</code>
+     */
     public function setMapBoolBool(&$var)
     {
         $this->map_bool_bool = $var;
     }
 
+    /**
+     * <code>map&lt;string, string&gt; map_string_string = 84;</code>
+     */
     public function getMapStringString()
     {
         return $this->map_string_string;
     }
 
+    /**
+     * <code>map&lt;string, string&gt; map_string_string = 84;</code>
+     */
     public function setMapStringString(&$var)
     {
         $this->map_string_string = $var;
     }
 
+    /**
+     * <code>map&lt;int32, bytes&gt; map_int32_bytes = 85;</code>
+     */
     public function getMapInt32Bytes()
     {
         return $this->map_int32_bytes;
     }
 
+    /**
+     * <code>map&lt;int32, bytes&gt; map_int32_bytes = 85;</code>
+     */
     public function setMapInt32Bytes(&$var)
     {
         $this->map_int32_bytes = $var;
     }
 
+    /**
+     * <code>map&lt;int32, .foo.TestEnum&gt; map_int32_enum = 86;</code>
+     */
     public function getMapInt32Enum()
     {
         return $this->map_int32_enum;
     }
 
+    /**
+     * <code>map&lt;int32, .foo.TestEnum&gt; map_int32_enum = 86;</code>
+     */
     public function setMapInt32Enum(&$var)
     {
         $this->map_int32_enum = $var;
     }
 
+    /**
+     * <code>map&lt;int32, .foo.TestMessage.Sub&gt; map_int32_message = 87;</code>
+     */
     public function getMapInt32Message()
     {
         return $this->map_int32_message;
     }
 
+    /**
+     * <code>map&lt;int32, .foo.TestMessage.Sub&gt; map_int32_message = 87;</code>
+     */
     public function setMapInt32Message(&$var)
     {
         $this->map_int32_message = $var;
     }
 
+    /**
+     * <code>map&lt;int32, .foo.TestMessage&gt; map_recursive = 88;</code>
+     */
     public function getMapRecursive()
     {
         return $this->map_recursive;
     }
 
+    /**
+     * <code>map&lt;int32, .foo.TestMessage&gt; map_recursive = 88;</code>
+     */
     public function setMapRecursive(&$var)
     {
         $this->map_recursive = $var;
@@ -850,15 +1474,27 @@ class TestMessage extends \Google\Protobuf\Internal\Message
 
 }
 
+/**
+ * Protobuf type <code>foo.TestMessage.Sub</code>
+ */
 class TestMessage_Sub extends \Google\Protobuf\Internal\Message
 {
+    /**
+     * <code>optional int32 a = 1;</code>
+     */
     private $a = 0;
 
+    /**
+     * <code>optional int32 a = 1;</code>
+     */
     public function getA()
     {
         return $this->a;
     }
 
+    /**
+     * <code>optional int32 a = 1;</code>
+     */
     public function setA($var)
     {
         GPBUtil::checkInt32($var);
@@ -867,171 +1503,300 @@ class TestMessage_Sub extends \Google\Protobuf\Internal\Message
 
 }
 
+/**
+ * Protobuf type <code>foo.TestPackedMessage</code>
+ */
 class TestPackedMessage extends \Google\Protobuf\Internal\Message
 {
+    /**
+     * <code>repeated int32 repeated_int32 = 90 [packed = true];</code>
+     */
     private $repeated_int32;
+    /**
+     * <code>repeated int64 repeated_int64 = 91 [packed = true];</code>
+     */
     private $repeated_int64;
+    /**
+     * <code>repeated uint32 repeated_uint32 = 92 [packed = true];</code>
+     */
     private $repeated_uint32;
+    /**
+     * <code>repeated uint64 repeated_uint64 = 93 [packed = true];</code>
+     */
     private $repeated_uint64;
+    /**
+     * <code>repeated sint32 repeated_sint32 = 94 [packed = true];</code>
+     */
     private $repeated_sint32;
+    /**
+     * <code>repeated sint64 repeated_sint64 = 95 [packed = true];</code>
+     */
     private $repeated_sint64;
+    /**
+     * <code>repeated fixed32 repeated_fixed32 = 96 [packed = true];</code>
+     */
     private $repeated_fixed32;
+    /**
+     * <code>repeated fixed64 repeated_fixed64 = 97 [packed = true];</code>
+     */
     private $repeated_fixed64;
+    /**
+     * <code>repeated sfixed32 repeated_sfixed32 = 98 [packed = true];</code>
+     */
     private $repeated_sfixed32;
+    /**
+     * <code>repeated sfixed64 repeated_sfixed64 = 99 [packed = true];</code>
+     */
     private $repeated_sfixed64;
+    /**
+     * <code>repeated float repeated_float = 100 [packed = true];</code>
+     */
     private $repeated_float;
+    /**
+     * <code>repeated double repeated_double = 101 [packed = true];</code>
+     */
     private $repeated_double;
+    /**
+     * <code>repeated bool repeated_bool = 102 [packed = true];</code>
+     */
     private $repeated_bool;
+    /**
+     * <code>repeated .foo.TestEnum repeated_enum = 103 [packed = true];</code>
+     */
     private $repeated_enum;
 
+    /**
+     * <code>repeated int32 repeated_int32 = 90 [packed = true];</code>
+     */
     public function getRepeatedInt32()
     {
         return $this->repeated_int32;
     }
 
+    /**
+     * <code>repeated int32 repeated_int32 = 90 [packed = true];</code>
+     */
     public function setRepeatedInt32(&$var)
     {
         GPBUtil::checkRepeatedField($var, GPBType::INT32);
         $this->repeated_int32 = $var;
     }
 
+    /**
+     * <code>repeated int64 repeated_int64 = 91 [packed = true];</code>
+     */
     public function getRepeatedInt64()
     {
         return $this->repeated_int64;
     }
 
+    /**
+     * <code>repeated int64 repeated_int64 = 91 [packed = true];</code>
+     */
     public function setRepeatedInt64(&$var)
     {
         GPBUtil::checkRepeatedField($var, GPBType::INT64);
         $this->repeated_int64 = $var;
     }
 
+    /**
+     * <code>repeated uint32 repeated_uint32 = 92 [packed = true];</code>
+     */
     public function getRepeatedUint32()
     {
         return $this->repeated_uint32;
     }
 
+    /**
+     * <code>repeated uint32 repeated_uint32 = 92 [packed = true];</code>
+     */
     public function setRepeatedUint32(&$var)
     {
         GPBUtil::checkRepeatedField($var, GPBType::UINT32);
         $this->repeated_uint32 = $var;
     }
 
+    /**
+     * <code>repeated uint64 repeated_uint64 = 93 [packed = true];</code>
+     */
     public function getRepeatedUint64()
     {
         return $this->repeated_uint64;
     }
 
+    /**
+     * <code>repeated uint64 repeated_uint64 = 93 [packed = true];</code>
+     */
     public function setRepeatedUint64(&$var)
     {
         GPBUtil::checkRepeatedField($var, GPBType::UINT64);
         $this->repeated_uint64 = $var;
     }
 
+    /**
+     * <code>repeated sint32 repeated_sint32 = 94 [packed = true];</code>
+     */
     public function getRepeatedSint32()
     {
         return $this->repeated_sint32;
     }
 
+    /**
+     * <code>repeated sint32 repeated_sint32 = 94 [packed = true];</code>
+     */
     public function setRepeatedSint32(&$var)
     {
         GPBUtil::checkRepeatedField($var, GPBType::SINT32);
         $this->repeated_sint32 = $var;
     }
 
+    /**
+     * <code>repeated sint64 repeated_sint64 = 95 [packed = true];</code>
+     */
     public function getRepeatedSint64()
     {
         return $this->repeated_sint64;
     }
 
+    /**
+     * <code>repeated sint64 repeated_sint64 = 95 [packed = true];</code>
+     */
     public function setRepeatedSint64(&$var)
     {
         GPBUtil::checkRepeatedField($var, GPBType::SINT64);
         $this->repeated_sint64 = $var;
     }
 
+    /**
+     * <code>repeated fixed32 repeated_fixed32 = 96 [packed = true];</code>
+     */
     public function getRepeatedFixed32()
     {
         return $this->repeated_fixed32;
     }
 
+    /**
+     * <code>repeated fixed32 repeated_fixed32 = 96 [packed = true];</code>
+     */
     public function setRepeatedFixed32(&$var)
     {
         GPBUtil::checkRepeatedField($var, GPBType::FIXED32);
         $this->repeated_fixed32 = $var;
     }
 
+    /**
+     * <code>repeated fixed64 repeated_fixed64 = 97 [packed = true];</code>
+     */
     public function getRepeatedFixed64()
     {
         return $this->repeated_fixed64;
     }
 
+    /**
+     * <code>repeated fixed64 repeated_fixed64 = 97 [packed = true];</code>
+     */
     public function setRepeatedFixed64(&$var)
     {
         GPBUtil::checkRepeatedField($var, GPBType::FIXED64);
         $this->repeated_fixed64 = $var;
     }
 
+    /**
+     * <code>repeated sfixed32 repeated_sfixed32 = 98 [packed = true];</code>
+     */
     public function getRepeatedSfixed32()
     {
         return $this->repeated_sfixed32;
     }
 
+    /**
+     * <code>repeated sfixed32 repeated_sfixed32 = 98 [packed = true];</code>
+     */
     public function setRepeatedSfixed32(&$var)
     {
         GPBUtil::checkRepeatedField($var, GPBType::SFIXED32);
         $this->repeated_sfixed32 = $var;
     }
 
+    /**
+     * <code>repeated sfixed64 repeated_sfixed64 = 99 [packed = true];</code>
+     */
     public function getRepeatedSfixed64()
     {
         return $this->repeated_sfixed64;
     }
 
+    /**
+     * <code>repeated sfixed64 repeated_sfixed64 = 99 [packed = true];</code>
+     */
     public function setRepeatedSfixed64(&$var)
     {
         GPBUtil::checkRepeatedField($var, GPBType::SFIXED64);
         $this->repeated_sfixed64 = $var;
     }
 
+    /**
+     * <code>repeated float repeated_float = 100 [packed = true];</code>
+     */
     public function getRepeatedFloat()
     {
         return $this->repeated_float;
     }
 
+    /**
+     * <code>repeated float repeated_float = 100 [packed = true];</code>
+     */
     public function setRepeatedFloat(&$var)
     {
         GPBUtil::checkRepeatedField($var, GPBType::FLOAT);
         $this->repeated_float = $var;
     }
 
+    /**
+     * <code>repeated double repeated_double = 101 [packed = true];</code>
+     */
     public function getRepeatedDouble()
     {
         return $this->repeated_double;
     }
 
+    /**
+     * <code>repeated double repeated_double = 101 [packed = true];</code>
+     */
     public function setRepeatedDouble(&$var)
     {
         GPBUtil::checkRepeatedField($var, GPBType::DOUBLE);
         $this->repeated_double = $var;
     }
 
+    /**
+     * <code>repeated bool repeated_bool = 102 [packed = true];</code>
+     */
     public function getRepeatedBool()
     {
         return $this->repeated_bool;
     }
 
+    /**
+     * <code>repeated bool repeated_bool = 102 [packed = true];</code>
+     */
     public function setRepeatedBool(&$var)
     {
         GPBUtil::checkRepeatedField($var, GPBType::BOOL);
         $this->repeated_bool = $var;
     }
 
+    /**
+     * <code>repeated .foo.TestEnum repeated_enum = 103 [packed = true];</code>
+     */
     public function getRepeatedEnum()
     {
         return $this->repeated_enum;
     }
 
+    /**
+     * <code>repeated .foo.TestEnum repeated_enum = 103 [packed = true];</code>
+     */
     public function setRepeatedEnum(&$var)
     {
         GPBUtil::checkRepeatedField($var, GPBType::ENUM, Foo\TestEnum::class);
@@ -1040,171 +1805,304 @@ class TestPackedMessage extends \Google\Protobuf\Internal\Message
 
 }
 
+/**
+ * <pre>
+ * Need to be in sync with TestPackedMessage.
+ * </pre>
+ *
+ * Protobuf type <code>foo.TestUnpackedMessage</code>
+ */
 class TestUnpackedMessage extends \Google\Protobuf\Internal\Message
 {
+    /**
+     * <code>repeated int32 repeated_int32 = 90 [packed = false];</code>
+     */
     private $repeated_int32;
+    /**
+     * <code>repeated int64 repeated_int64 = 91 [packed = false];</code>
+     */
     private $repeated_int64;
+    /**
+     * <code>repeated uint32 repeated_uint32 = 92 [packed = false];</code>
+     */
     private $repeated_uint32;
+    /**
+     * <code>repeated uint64 repeated_uint64 = 93 [packed = false];</code>
+     */
     private $repeated_uint64;
+    /**
+     * <code>repeated sint32 repeated_sint32 = 94 [packed = false];</code>
+     */
     private $repeated_sint32;
+    /**
+     * <code>repeated sint64 repeated_sint64 = 95 [packed = false];</code>
+     */
     private $repeated_sint64;
+    /**
+     * <code>repeated fixed32 repeated_fixed32 = 96 [packed = false];</code>
+     */
     private $repeated_fixed32;
+    /**
+     * <code>repeated fixed64 repeated_fixed64 = 97 [packed = false];</code>
+     */
     private $repeated_fixed64;
+    /**
+     * <code>repeated sfixed32 repeated_sfixed32 = 98 [packed = false];</code>
+     */
     private $repeated_sfixed32;
+    /**
+     * <code>repeated sfixed64 repeated_sfixed64 = 99 [packed = false];</code>
+     */
     private $repeated_sfixed64;
+    /**
+     * <code>repeated float repeated_float = 100 [packed = false];</code>
+     */
     private $repeated_float;
+    /**
+     * <code>repeated double repeated_double = 101 [packed = false];</code>
+     */
     private $repeated_double;
+    /**
+     * <code>repeated bool repeated_bool = 102 [packed = false];</code>
+     */
     private $repeated_bool;
+    /**
+     * <code>repeated .foo.TestEnum repeated_enum = 103 [packed = false];</code>
+     */
     private $repeated_enum;
 
+    /**
+     * <code>repeated int32 repeated_int32 = 90 [packed = false];</code>
+     */
     public function getRepeatedInt32()
     {
         return $this->repeated_int32;
     }
 
+    /**
+     * <code>repeated int32 repeated_int32 = 90 [packed = false];</code>
+     */
     public function setRepeatedInt32(&$var)
     {
         GPBUtil::checkRepeatedField($var, GPBType::INT32);
         $this->repeated_int32 = $var;
     }
 
+    /**
+     * <code>repeated int64 repeated_int64 = 91 [packed = false];</code>
+     */
     public function getRepeatedInt64()
     {
         return $this->repeated_int64;
     }
 
+    /**
+     * <code>repeated int64 repeated_int64 = 91 [packed = false];</code>
+     */
     public function setRepeatedInt64(&$var)
     {
         GPBUtil::checkRepeatedField($var, GPBType::INT64);
         $this->repeated_int64 = $var;
     }
 
+    /**
+     * <code>repeated uint32 repeated_uint32 = 92 [packed = false];</code>
+     */
     public function getRepeatedUint32()
     {
         return $this->repeated_uint32;
     }
 
+    /**
+     * <code>repeated uint32 repeated_uint32 = 92 [packed = false];</code>
+     */
     public function setRepeatedUint32(&$var)
     {
         GPBUtil::checkRepeatedField($var, GPBType::UINT32);
         $this->repeated_uint32 = $var;
     }
 
+    /**
+     * <code>repeated uint64 repeated_uint64 = 93 [packed = false];</code>
+     */
     public function getRepeatedUint64()
     {
         return $this->repeated_uint64;
     }
 
+    /**
+     * <code>repeated uint64 repeated_uint64 = 93 [packed = false];</code>
+     */
     public function setRepeatedUint64(&$var)
     {
         GPBUtil::checkRepeatedField($var, GPBType::UINT64);
         $this->repeated_uint64 = $var;
     }
 
+    /**
+     * <code>repeated sint32 repeated_sint32 = 94 [packed = false];</code>
+     */
     public function getRepeatedSint32()
     {
         return $this->repeated_sint32;
     }
 
+    /**
+     * <code>repeated sint32 repeated_sint32 = 94 [packed = false];</code>
+     */
     public function setRepeatedSint32(&$var)
     {
         GPBUtil::checkRepeatedField($var, GPBType::SINT32);
         $this->repeated_sint32 = $var;
     }
 
+    /**
+     * <code>repeated sint64 repeated_sint64 = 95 [packed = false];</code>
+     */
     public function getRepeatedSint64()
     {
         return $this->repeated_sint64;
     }
 
+    /**
+     * <code>repeated sint64 repeated_sint64 = 95 [packed = false];</code>
+     */
     public function setRepeatedSint64(&$var)
     {
         GPBUtil::checkRepeatedField($var, GPBType::SINT64);
         $this->repeated_sint64 = $var;
     }
 
+    /**
+     * <code>repeated fixed32 repeated_fixed32 = 96 [packed = false];</code>
+     */
     public function getRepeatedFixed32()
     {
         return $this->repeated_fixed32;
     }
 
+    /**
+     * <code>repeated fixed32 repeated_fixed32 = 96 [packed = false];</code>
+     */
     public function setRepeatedFixed32(&$var)
     {
         GPBUtil::checkRepeatedField($var, GPBType::FIXED32);
         $this->repeated_fixed32 = $var;
     }
 
+    /**
+     * <code>repeated fixed64 repeated_fixed64 = 97 [packed = false];</code>
+     */
     public function getRepeatedFixed64()
     {
         return $this->repeated_fixed64;
     }
 
+    /**
+     * <code>repeated fixed64 repeated_fixed64 = 97 [packed = false];</code>
+     */
     public function setRepeatedFixed64(&$var)
     {
         GPBUtil::checkRepeatedField($var, GPBType::FIXED64);
         $this->repeated_fixed64 = $var;
     }
 
+    /**
+     * <code>repeated sfixed32 repeated_sfixed32 = 98 [packed = false];</code>
+     */
     public function getRepeatedSfixed32()
     {
         return $this->repeated_sfixed32;
     }
 
+    /**
+     * <code>repeated sfixed32 repeated_sfixed32 = 98 [packed = false];</code>
+     */
     public function setRepeatedSfixed32(&$var)
     {
         GPBUtil::checkRepeatedField($var, GPBType::SFIXED32);
         $this->repeated_sfixed32 = $var;
     }
 
+    /**
+     * <code>repeated sfixed64 repeated_sfixed64 = 99 [packed = false];</code>
+     */
     public function getRepeatedSfixed64()
     {
         return $this->repeated_sfixed64;
     }
 
+    /**
+     * <code>repeated sfixed64 repeated_sfixed64 = 99 [packed = false];</code>
+     */
     public function setRepeatedSfixed64(&$var)
     {
         GPBUtil::checkRepeatedField($var, GPBType::SFIXED64);
         $this->repeated_sfixed64 = $var;
     }
 
+    /**
+     * <code>repeated float repeated_float = 100 [packed = false];</code>
+     */
     public function getRepeatedFloat()
     {
         return $this->repeated_float;
     }
 
+    /**
+     * <code>repeated float repeated_float = 100 [packed = false];</code>
+     */
     public function setRepeatedFloat(&$var)
     {
         GPBUtil::checkRepeatedField($var, GPBType::FLOAT);
         $this->repeated_float = $var;
     }
 
+    /**
+     * <code>repeated double repeated_double = 101 [packed = false];</code>
+     */
     public function getRepeatedDouble()
     {
         return $this->repeated_double;
     }
 
+    /**
+     * <code>repeated double repeated_double = 101 [packed = false];</code>
+     */
     public function setRepeatedDouble(&$var)
     {
         GPBUtil::checkRepeatedField($var, GPBType::DOUBLE);
         $this->repeated_double = $var;
     }
 
+    /**
+     * <code>repeated bool repeated_bool = 102 [packed = false];</code>
+     */
     public function getRepeatedBool()
     {
         return $this->repeated_bool;
     }
 
+    /**
+     * <code>repeated bool repeated_bool = 102 [packed = false];</code>
+     */
     public function setRepeatedBool(&$var)
     {
         GPBUtil::checkRepeatedField($var, GPBType::BOOL);
         $this->repeated_bool = $var;
     }
 
+    /**
+     * <code>repeated .foo.TestEnum repeated_enum = 103 [packed = false];</code>
+     */
     public function getRepeatedEnum()
     {
         return $this->repeated_enum;
     }
 
+    /**
+     * <code>repeated .foo.TestEnum repeated_enum = 103 [packed = false];</code>
+     */
     public function setRepeatedEnum(&$var)
     {
         GPBUtil::checkRepeatedField($var, GPBType::ENUM, Foo\TestEnum::class);
@@ -1213,16 +2111,58 @@ class TestUnpackedMessage extends \Google\Protobuf\Internal\Message
 
 }
 
+/**
+ * <pre>
+ * /&#42;*&#47;&#64;&lt;&gt;&amp;&#92;{
+ * </pre>
+ *
+ * Protobuf type <code>foo.TestPhpDoc</code>
+ */
+class TestPhpDoc extends \Google\Protobuf\Internal\Message
+{
+    /**
+     * <code>optional int32 a = 1;</code>
+     */
+    private $a = 0;
+
+    /**
+     * <code>optional int32 a = 1;</code>
+     */
+    public function getA()
+    {
+        return $this->a;
+    }
+
+    /**
+     * <code>optional int32 a = 1;</code>
+     */
+    public function setA($var)
+    {
+        GPBUtil::checkInt32($var);
+        $this->a = $var;
+    }
+
+}
+
+/**
+ * Protobuf enum <code>foo.TestEnum</code>
+ */
 class TestEnum
 {
+    /**
+     * <code>ZERO = 0;</code>
+     */
     const ZERO = 0;
+    /**
+     * <code>ONE = 1;</code>
+     */
     const ONE = 1;
 }
 
 $pool = DescriptorPool::getGeneratedPool();
 
 $pool->internalAddGeneratedFile(hex2bin(
-    "0a83250a0a746573742e70726f746f1203666f6f1a12746573745f696e63" .
+    "0a9c250a0a746573742e70726f746f1203666f6f1a12746573745f696e63" .
     "6c7564652e70726f746f22be1d0a0b546573744d65737361676512160a0e" .
     "6f7074696f6e616c5f696e74333218012001280512160a0e6f7074696f6e" .
     "616c5f696e74363418022001280312170a0f6f7074696f6e616c5f75696e" .
@@ -1378,8 +2318,8 @@ $pool->internalAddGeneratedFile(hex2bin(
     "666c6f617418642003280242021000121b0a0f72657065617465645f646f" .
     "75626c651865200328014202100012190a0d72657065617465645f626f6f" .
     "6c1866200328084202100012280a0d72657065617465645f656e756d1867" .
-    "2003280e320d2e666f6f2e54657374456e756d420210002a1d0a08546573" .
-    "74456e756d12080a045a45524f100012070a034f4e451001620670726f74" .
-    "6f33"
+    "2003280e320d2e666f6f2e54657374456e756d4202100022170a0a546573" .
+    "74506870446f6312090a01611801200128052a1d0a0854657374456e756d" .
+    "12080a045a45524f100012070a034f4e451001620670726f746f33"
 ));
 
