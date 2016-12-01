@@ -62,6 +62,7 @@ other_language_protoc_outputs =                                \
   com/google/protobuf/Value.java                               \
   com/google/protobuf/ValueOrBuilder.java                      \
   com/google/protobuf/WrappersProto.java                       \
+  com/google/protobuf_test_messages/proto3/TestMessagesProto3.java \
   google/protobuf/any.pb.cc                                    \
   google/protobuf/any.pb.h                                     \
   google/protobuf/any.rb                                       \
@@ -78,6 +79,12 @@ other_language_protoc_outputs =                                \
   google/protobuf/struct.pb.h                                  \
   google/protobuf/struct.rb                                    \
   google/protobuf/struct_pb2.py                                \
+  google/protobuf/TestMessagesProto3.pbobjc.h                  \
+  google/protobuf/TestMessagesProto3.pbobjc.m                  \
+  google/protobuf/test_messages_proto3.pb.cc                   \
+  google/protobuf/test_messages_proto3.pb.h                    \
+  google/protobuf/test_messages_proto3_pb.rb                   \
+  google/protobuf/test_messages_proto3_pb2.py                  \
   google/protobuf/timestamp.pb.cc                              \
   google/protobuf/timestamp.pb.h                               \
   google/protobuf/timestamp.rb                                 \
@@ -174,7 +181,7 @@ if OBJC_CONFORMANCE_TEST
 bin_PROGRAMS += conformance-objc
 
 conformance_objc_SOURCES = conformance_objc.m ../objectivec/GPBProtocolBuffers.m
-nodist_conformance_objc_SOURCES = Conformance.pbobjc.m
+nodist_conformance_objc_SOURCES = Conformance.pbobjc.m google/protobuf/TestMessagesProto3.pbobjc.m
 # On travis, the build fails without the isysroot because whatever system
 # headers are being found don't include generics support for
 # NSArray/NSDictionary, the only guess is their image at one time had an odd
@@ -183,7 +190,7 @@ conformance_objc_CPPFLAGS = -I$(top_srcdir)/objectivec -isysroot `xcrun --sdk ma
 conformance_objc_LDFLAGS = -framework Foundation
 # Explicit dep beacuse BUILT_SOURCES are only done before a "make all/check"
 # so a direct "make test_objc" could fail if parallel enough.
-conformance_objc-conformance_objc.$(OBJEXT): Conformance.pbobjc.h
+conformance_objc-conformance_objc.$(OBJEXT): Conformance.pbobjc.h google/protobuf/TestMessagesProto3.pbobjc.h
 
 endif
 

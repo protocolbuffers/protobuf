@@ -31,6 +31,7 @@
 #import <Foundation/Foundation.h>
 
 #import "Conformance.pbobjc.h"
+#import "google/protobuf/TestMessagesProto3.pbobjc.h"
 
 static void Die(NSString *format, ...) __dead2;
 
