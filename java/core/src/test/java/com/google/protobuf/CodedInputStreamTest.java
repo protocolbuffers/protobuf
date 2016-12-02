@@ -30,8 +30,6 @@
 
 package com.google.protobuf;
 
-import static org.junit.Assert.assertArrayEquals;
-
 import protobuf_unittest.UnittestProto.BoolMessage;
 import protobuf_unittest.UnittestProto.Int32Message;
 import protobuf_unittest.UnittestProto.Int64Message;
@@ -442,6 +440,82 @@ public class CodedInputStreamTest extends TestCase {
       } catch (InvalidProtocolBufferException e) {
         // success.
       }
+    }
+  }
+
+  /**
+   * Test we can do messages that are up to CodedInputStream#DEFAULT_SIZE_LIMIT
+   * in size (2G or Integer#MAX_SIZE).
+   * @throws IOException
+   */
+  public void testParseMessagesCloseTo2G() throws IOException {
+    byte[] serializedMessage = getBigSerializedMessage();
+    // How many of these big messages do we need to take us near our 2G limit?
+    int count = Integer.MAX_VALUE / serializedMessage.length;
+    // Now make an inputstream that will fake a near 2G message of messages
+    // returning our big serialized message 'count' times.
+    InputStream is = new RepeatingInputStream(serializedMessage, count);
+    // Parse should succeed!
+    TestAllTypes.parseFrom(is);
+  }
+
+  /**
+   * Test there is an exception if a message exceeds
+   * CodedInputStream#DEFAULT_SIZE_LIMIT in size (2G or Integer#MAX_SIZE).
+   * @throws IOException
+   */
+  public void testParseMessagesOver2G() throws IOException {
+    byte[] serializedMessage = getBigSerializedMessage();
+    // How many of these big messages do we need to take us near our 2G limit?
+    int count = Integer.MAX_VALUE / serializedMessage.length;
+    // Now add one to take us over the limit
+    count++;
+    // Now make an inputstream that will fake a near 2G message of messages
+    // returning our big serialized message 'count' times.
+    InputStream is = new RepeatingInputStream(serializedMessage, count);
+    try {
+      TestAllTypes.parseFrom(is);
+      fail("Should have thrown an exception!");
+    } catch (InvalidProtocolBufferException e) {
+      assertTrue(e.getMessage().contains("too large"));
+    }
+  }
+
+  /*
+   * @return A serialized big message.
+   */
+  private static byte[] getBigSerializedMessage() {
+    byte[] value = new byte[16 * 1024 * 1024]; 
+    ByteString bsValue = ByteString.wrap(value);
+    return TestAllTypes.newBuilder().setOptionalBytes(bsValue).build().toByteArray();
+  }
+
+  /*
+   * An input stream that repeats a byte arrays' content a number of times.
+   * Simulates really large input without consuming loads of memory. Used above
+   * to test the parsing behavior when the input size exceeds 2G or close to it.
+   */
+  private static class RepeatingInputStream extends InputStream {
+    private final byte[] serializedMessage;
+    private final int count;
+    private int index = 0;
+    private int offset = 0;
+
+    RepeatingInputStream(byte[] serializedMessage, int count) {
+      this.serializedMessage = serializedMessage;
+      this.count = count;
+    }
+
+    @Override
+    public int read() throws IOException {
+      if (this.offset == this.serializedMessage.length) {
+        this.index++;
+        this.offset = 0;
+      }
+      if (this.index == this.count) {
+        return -1;
+      }
+      return this.serializedMessage[offset++];
     }
   }
 

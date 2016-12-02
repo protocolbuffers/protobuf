@@ -60,7 +60,8 @@ import java.util.List;
 public abstract class CodedInputStream {
   private static final int DEFAULT_BUFFER_SIZE = 4096;
   private static final int DEFAULT_RECURSION_LIMIT = 100;
-  private static final int DEFAULT_SIZE_LIMIT = 64 << 20; // 64MB
+  // Integer.MAX_VALUE == 0x7FFFFFF == INT_MAX from limits.h
+  private static final int DEFAULT_SIZE_LIMIT = Integer.MAX_VALUE;
 
   /** Visible for subclasses. See setRecursionLimit() */
   int recursionDepth;
@@ -2762,9 +2763,9 @@ public abstract class CodedInputStream {
         throw InvalidProtocolBufferException.negativeSize();
       }
 
-      // Verify that the message size so far has not exceeded sizeLimit.
+      // Integer-overflow-conscious check that the message size so far has not exceeded sizeLimit.
       int currentMessageSize = totalBytesRetired + pos + size;
-      if (currentMessageSize > sizeLimit) {
+      if (currentMessageSize - sizeLimit > 0) {
         throw InvalidProtocolBufferException.sizeLimitExceeded();
       }
 
