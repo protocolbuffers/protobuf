@@ -458,8 +458,8 @@ void free_layout(MessageLayout* layout) {
   FREE(layout);
 }
 
-void layout_init(MessageLayout* layout, void* storage, zval** properties_table
-		 TSRMLS_DC) {
+void layout_init(MessageLayout* layout, void* storage,
+                 zval** properties_table TSRMLS_DC) {
   int i;
   upb_msg_field_iter it;
   for (upb_msg_field_begin(&it, layout->msgdef), i = 0; !upb_msg_field_done(&it);
@@ -479,8 +479,8 @@ void layout_init(MessageLayout* layout, void* storage, zval** properties_table
       DEREF(memory, zval**) = property_ptr;
     } else if (upb_fielddef_label(field) == UPB_LABEL_REPEATED) {
       zval_ptr_dtor(property_ptr);
-      repeated_field_create_with_type(repeated_field_type, field, property_ptr
-				      TSRMLS_CC);
+      repeated_field_create_with_type(repeated_field_type, field,
+                                      property_ptr TSRMLS_CC);
       DEREF(memory, zval**) = property_ptr;
     } else {
       native_slot_init(upb_fielddef_type(field), memory, property_ptr);

@@ -148,7 +148,7 @@ RUN php composer-setup.php
 RUN mv composer.phar /usr/bin/composer
 RUN php -r "unlink('composer-setup.php');"
 RUN cd /tmp && \
-  cd protobuf && \
+  cd protobuf/php && \
   ln -sfn /usr/bin/php5.5 /usr/bin/php && \
   ln -sfn /usr/bin/php-config5.5 /usr/bin/php-config && \
   ln -sfn /usr/bin/phpize5.5 /usr/bin/phpize && \

@@ -1,7 +1,6 @@
 <?php
 
-require_once('test.pb.php');
-require_once('test_no_namespace.pb.php');
+require_once('generated/NoNameSpace.php');
 require_once('test_util.php');
 
 use Google\Protobuf\Internal\RepeatedField;

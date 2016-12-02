@@ -2,7 +2,15 @@
 
 # phpunit has memory leak by itself. Thus, it cannot be used to test memory leak.
 
-require_once('test.pb.php');
+require_once('generated/Bar/TestInclude.php');
+require_once('generated/Foo/TestEnum.php');
+require_once('generated/Foo/TestMessage.php');
+require_once('generated/Foo/TestMessage_Sub.php');
+require_once('generated/Foo/TestPackedMessage.php');
+require_once('generated/Foo/TestPhpDoc.php');
+require_once('generated/Foo/TestUnpackedMessage.php');
+require_once('generated/GPBMetadata/Proto/Test.php');
+require_once('generated/GPBMetadata/Proto/TestInclude.php');
 require_once('test_util.php');
 
 use Google\Protobuf\Internal\RepeatedField;

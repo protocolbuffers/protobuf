@@ -89,7 +89,7 @@ build_csharp() {
     echo "deb http://download.mono-project.com/repo/debian wheezy main" | sudo tee /etc/apt/sources.list.d/mono-xamarin.list
     sudo apt-get update -qq
     sudo apt-get install -qq mono-devel referenceassemblies-pcl nunit
-    
+
     # Then install the dotnet SDK as per Ubuntu 14.04 instructions on dot.net.
     sudo sh -c 'echo "deb [arch=amd64] https://apt-mo.trafficmanager.net/repos/dotnet-release/ trusty main" > /etc/apt/sources.list.d/dotnetdev.list'
     sudo apt-key adv --keyserver apt-mo.trafficmanager.net --recv-keys 417A0893
@@ -335,6 +335,19 @@ build_javascript() {
   cd js && npm install && npm test && cd ..
 }
 
+generate_php_test_proto() {
+  internal_build_cpp
+  pushd php/tests
+  # Generate test file
+  rm -rf generated
+  mkdir generated
+  ../../src/protoc --php_out=generated proto/test.proto proto/test_include.proto proto/test_no_namespace.proto
+  pushd ../../src
+  ./protoc --php_out=../php/tests/generated google/protobuf/empty.proto
+  popd
+  popd
+}
+
 use_php() {
   VERSION=$1
   PHP=`which php`
@@ -346,6 +359,7 @@ use_php() {
   cp "/usr/bin/php$VERSION" $PHP
   cp "/usr/bin/php-config$VERSION" $PHP_CONFIG
   cp "/usr/bin/phpize$VERSION" $PHPIZE
+  generate_php_test_proto
 }
 
 use_php_zts() {
@@ -356,6 +370,7 @@ use_php_zts() {
   ln -sfn "/usr/local/php-${VERSION}-zts/bin/php" $PHP
   ln -sfn "/usr/local/php-${VERSION}-zts/bin/php-config" $PHP_CONFIG
   ln -sfn "/usr/local/php-${VERSION}-zts/bin/phpize" $PHPIZE
+  generate_php_test_proto
 }
 
 use_php_bc() {
@@ -366,10 +381,12 @@ use_php_bc() {
   ln -sfn "/usr/local/php-${VERSION}-bc/bin/php" $PHP
   ln -sfn "/usr/local/php-${VERSION}-bc/bin/php-config" $PHP_CONFIG
   ln -sfn "/usr/local/php-${VERSION}-bc/bin/phpize" $PHPIZE
+  generate_php_test_proto
 }
 
 build_php5.5() {
   use_php 5.5
+  cd php
   rm -rf vendor
   cp -r /usr/local/vendor-5.5 vendor
   ./vendor/bin/phpunit
@@ -388,6 +405,7 @@ build_php5.5_zts_c() {
 
 build_php5.5_32() {
   use_php_bc 5.5
+  cd php
   rm -rf vendor
   cp -r /usr/local/vendor-5.5 vendor
   ./vendor/bin/phpunit
@@ -401,6 +419,7 @@ build_php5.5_c_32() {
 
 build_php5.6() {
   use_php 5.6
+  cd php
   rm -rf vendor
   cp -r /usr/local/vendor-5.6 vendor
   ./vendor/bin/phpunit
@@ -412,6 +431,7 @@ build_php5.6_c() {
 }
 
 build_php5.6_mac() {
+  generate_php_test_proto
   # Install PHP
   curl -s https://php-osx.liip.ch/install.sh | bash -s 5.6
   PHP_FOLDER=`find /usr/local -type d -name "php5-5.6*"`  # The folder name may change upon time
@@ -433,6 +453,7 @@ build_php5.6_mac() {
 
 build_php7.0() {
   use_php 7.0
+  cd php
   rm -rf vendor
   cp -r /usr/local/vendor-7.0 vendor
   ./vendor/bin/phpunit
