@@ -749,3 +749,10 @@ internal_protobuf_py_tests(
     ],
     deps = [":python_tests"],
 )
+
+proto_lang_toolchain(
+  name = "cc_toolchain",
+  runtime = ":protobuf",
+  command_line = "--cpp_out=$(OUT)",
+  visibility = ["//visibility:public"],
+)
