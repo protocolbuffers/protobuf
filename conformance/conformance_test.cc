@@ -34,11 +34,13 @@
 
 #include "conformance.pb.h"
 #include "conformance_test.h"
+#include "google/protobuf/test_messages_proto3.pb.h"
+
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/stubs/stringprintf.h>
 #include <google/protobuf/text_format.h>
-#include <google/protobuf/util/json_util.h>
 #include <google/protobuf/util/field_comparator.h>
+#include <google/protobuf/util/json_util.h>
 #include <google/protobuf/util/message_differencer.h>
 #include <google/protobuf/util/type_resolver_util.h>
 #include <google/protobuf/wire_format_lite.h>
@@ -47,7 +49,6 @@
 
 using conformance::ConformanceRequest;
 using conformance::ConformanceResponse;
-using conformance::TestAllTypes;
 using conformance::WireFormat;
 using google::protobuf::Descriptor;
 using google::protobuf::FieldDescriptor;
@@ -58,6 +59,7 @@ using google::protobuf::util::JsonToBinaryString;
 using google::protobuf::util::MessageDifferencer;
 using google::protobuf::util::NewTypeResolverForDescriptorPool;
 using google::protobuf::util::Status;
+using protobuf_test_messages::proto3::TestAllTypes;
 using std::string;
 
 namespace {
@@ -2040,13 +2042,13 @@ bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
       "Any", REQUIRED,
       R"({
         "optionalAny": {
-          "@type": "type.googleapis.com/conformance.TestAllTypes",
+          "@type": "type.googleapis.com/protobuf_test_messages.proto3.TestAllTypes",
           "optionalInt32": 12345
         }
       })",
       R"(
         optional_any: {
-          [type.googleapis.com/conformance.TestAllTypes] {
+          [type.googleapis.com/protobuf_test_messages.proto3.TestAllTypes] {
             optional_int32: 12345
           }
         }
@@ -2057,7 +2059,7 @@ bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
         "optionalAny": {
           "@type": "type.googleapis.com/google.protobuf.Any",
           "value": {
-            "@type": "type.googleapis.com/conformance.TestAllTypes",
+            "@type": "type.googleapis.com/protobuf_test_messages.proto3.TestAllTypes",
             "optionalInt32": 12345
           }
         }
@@ -2065,7 +2067,7 @@ bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
       R"(
         optional_any: {
           [type.googleapis.com/google.protobuf.Any] {
-            [type.googleapis.com/conformance.TestAllTypes] {
+            [type.googleapis.com/protobuf_test_messages.proto3.TestAllTypes] {
               optional_int32: 12345
             }
           }
@@ -2077,12 +2079,12 @@ bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
       R"({
         "optionalAny": {
           "optionalInt32": 12345,
-          "@type": "type.googleapis.com/conformance.TestAllTypes"
+          "@type": "type.googleapis.com/protobuf_test_messages.proto3.TestAllTypes"
         }
       })",
       R"(
         optional_any: {
-          [type.googleapis.com/conformance.TestAllTypes] {
+          [type.googleapis.com/protobuf_test_messages.proto3.TestAllTypes] {
             optional_int32: 12345
           }
         }

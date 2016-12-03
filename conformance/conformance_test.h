@@ -49,8 +49,13 @@
 namespace conformance {
 class ConformanceRequest;
 class ConformanceResponse;
-class TestAllTypes;
 }  // namespace conformance
+
+namespace protobuf_test_messages {
+namespace proto3 {
+class TestAllTypes;
+}  // namespace proto3
+}  // namespace protobuf_test_messages
 
 namespace google {
 namespace protobuf {
@@ -165,14 +170,16 @@ class ConformanceTestSuite {
                         ConformanceLevel level,
                         const string& input_json,
                         const string& equivalent_text_format);
-  void RunValidJsonTestWithProtobufInput(const string& test_name,
-                                         ConformanceLevel level,
-                                         const conformance::TestAllTypes& input,
-                                         const string& equivalent_text_format);
-  void RunValidProtobufTest(const string& test_name,
-                            ConformanceLevel level,
-                            const conformance::TestAllTypes& input,
-                            const string& equivalent_text_format);
+  void RunValidJsonTestWithProtobufInput(
+      const string& test_name,
+      ConformanceLevel level,
+      const protobuf_test_messages::proto3::TestAllTypes& input,
+      const string& equivalent_text_format);
+  void RunValidProtobufTest(
+      const string& test_name,
+      ConformanceLevel level,
+      const protobuf_test_messages::proto3::TestAllTypes& input,
+      const string& equivalent_text_format);
 
   typedef std::function<bool(const Json::Value&)> Validator;
   void RunValidJsonTestWithValidator(const string& test_name,

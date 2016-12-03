@@ -54,6 +54,11 @@ $PROTOC -Icsharp/protos --csharp_out=csharp/src/Google.Protobuf.Test \
     --csharp_opt=base_namespace=UnitTest.Issues \
     csharp/protos/unittest_issues.proto
 
+# Don't specify a base namespace at all; we just want to make sure the
+# results end up in TestProtos.
+$PROTOC -Isrc --csharp_out=csharp/src/Google.Protobuf.Test/TestProtos \
+    src/google/protobuf/test_messages_proto3.proto
+
 # AddressBook sample protos
 $PROTOC -Iexamples --csharp_out=csharp/src/AddressBook \
     examples/addressbook.proto

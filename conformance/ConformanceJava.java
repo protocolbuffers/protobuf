@@ -1,9 +1,10 @@
 import com.google.protobuf.ByteString;
 import com.google.protobuf.CodedInputStream;
-import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.conformance.Conformance;
-import com.google.protobuf.util.JsonFormat.TypeRegistry;
+import com.google.protobuf.InvalidProtocolBufferException;
+import com.google.protobuf_test_messages.proto3.TestMessagesProto3;
 import com.google.protobuf.util.JsonFormat;
+import com.google.protobuf.util.JsonFormat.TypeRegistry;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
@@ -53,27 +54,27 @@ class ConformanceJava {
   private enum BinaryDecoder {
     BYTE_STRING_DECODER() {
       @Override
-      public Conformance.TestAllTypes parse(ByteString bytes)
+      public TestMessagesProto3.TestAllTypes parse(ByteString bytes)
           throws InvalidProtocolBufferException {
-        return Conformance.TestAllTypes.parseFrom(bytes);
+        return TestMessagesProto3.TestAllTypes.parseFrom(bytes);
       }
     },
     BYTE_ARRAY_DECODER() {
       @Override
-      public Conformance.TestAllTypes parse(ByteString bytes)
+      public TestMessagesProto3.TestAllTypes parse(ByteString bytes)
           throws InvalidProtocolBufferException {
-        return Conformance.TestAllTypes.parseFrom(bytes.toByteArray());
+        return TestMessagesProto3.TestAllTypes.parseFrom(bytes.toByteArray());
       }
     },
     ARRAY_BYTE_BUFFER_DECODER() {
       @Override
-      public Conformance.TestAllTypes parse(ByteString bytes)
+      public TestMessagesProto3.TestAllTypes parse(ByteString bytes)
           throws InvalidProtocolBufferException {
         ByteBuffer buffer = ByteBuffer.allocate(bytes.size());
         bytes.copyTo(buffer);
         buffer.flip();
         try {
-          return Conformance.TestAllTypes.parseFrom(CodedInputStream.newInstance(buffer));
+          return TestMessagesProto3.TestAllTypes.parseFrom(CodedInputStream.newInstance(buffer));
         } catch (InvalidProtocolBufferException e) {
           throw e;
         } catch (IOException e) {
@@ -84,10 +85,10 @@ class ConformanceJava {
     },
     READONLY_ARRAY_BYTE_BUFFER_DECODER() {
       @Override
-      public Conformance.TestAllTypes parse(ByteString bytes)
+      public TestMessagesProto3.TestAllTypes parse(ByteString bytes)
           throws InvalidProtocolBufferException {
         try {
-          return Conformance.TestAllTypes.parseFrom(
+          return TestMessagesProto3.TestAllTypes.parseFrom(
               CodedInputStream.newInstance(bytes.asReadOnlyByteBuffer()));
         } catch (InvalidProtocolBufferException e) {
           throw e;
@@ -99,13 +100,13 @@ class ConformanceJava {
     },
     DIRECT_BYTE_BUFFER_DECODER() {
       @Override
-      public Conformance.TestAllTypes parse(ByteString bytes)
+      public TestMessagesProto3.TestAllTypes parse(ByteString bytes)
           throws InvalidProtocolBufferException {
         ByteBuffer buffer = ByteBuffer.allocateDirect(bytes.size());
         bytes.copyTo(buffer);
         buffer.flip();
         try {
-          return Conformance.TestAllTypes.parseFrom(CodedInputStream.newInstance(buffer));
+          return TestMessagesProto3.TestAllTypes.parseFrom(CodedInputStream.newInstance(buffer));
         } catch (InvalidProtocolBufferException e) {
           throw e;
         } catch (IOException e) {
@@ -116,13 +117,13 @@ class ConformanceJava {
     },
     READONLY_DIRECT_BYTE_BUFFER_DECODER() {
       @Override
-      public Conformance.TestAllTypes parse(ByteString bytes)
+      public TestMessagesProto3.TestAllTypes parse(ByteString bytes)
           throws InvalidProtocolBufferException {
         ByteBuffer buffer = ByteBuffer.allocateDirect(bytes.size());
         bytes.copyTo(buffer);
         buffer.flip();
         try {
-          return Conformance.TestAllTypes.parseFrom(
+          return TestMessagesProto3.TestAllTypes.parseFrom(
               CodedInputStream.newInstance(buffer.asReadOnlyBuffer()));
         } catch (InvalidProtocolBufferException e) {
           throw e;
@@ -134,10 +135,10 @@ class ConformanceJava {
     },
     INPUT_STREAM_DECODER() {
       @Override
-      public Conformance.TestAllTypes parse(ByteString bytes)
+      public TestMessagesProto3.TestAllTypes parse(ByteString bytes)
           throws InvalidProtocolBufferException {
         try {
-          return Conformance.TestAllTypes.parseFrom(bytes.newInput());
+          return TestMessagesProto3.TestAllTypes.parseFrom(bytes.newInput());
         } catch (InvalidProtocolBufferException e) {
           throw e;
         } catch (IOException e) {
@@ -147,14 +148,14 @@ class ConformanceJava {
       }
     };
 
-    public abstract Conformance.TestAllTypes parse(ByteString bytes)
+    public abstract TestMessagesProto3.TestAllTypes parse(ByteString bytes)
         throws InvalidProtocolBufferException;
   }
 
-  private Conformance.TestAllTypes parseBinary(ByteString bytes)
+  private TestMessagesProto3.TestAllTypes parseBinary(ByteString bytes)
       throws InvalidProtocolBufferException {
-    Conformance.TestAllTypes[] messages =
-        new Conformance.TestAllTypes[BinaryDecoder.values().length];
+    TestMessagesProto3.TestAllTypes[] messages =
+        new TestMessagesProto3.TestAllTypes[BinaryDecoder.values().length];
     InvalidProtocolBufferException[] exceptions =
         new InvalidProtocolBufferException[BinaryDecoder.values().length];
 
@@ -220,7 +221,7 @@ class ConformanceJava {
   }
 
   private Conformance.ConformanceResponse doTest(Conformance.ConformanceRequest request) {
-    Conformance.TestAllTypes testMessage;
+    TestMessagesProto3.TestAllTypes testMessage;
 
     switch (request.getPayloadCase()) {
       case PROTOBUF_PAYLOAD: {
@@ -233,7 +234,7 @@ class ConformanceJava {
       }
       case JSON_PAYLOAD: {
         try {
-          Conformance.TestAllTypes.Builder builder = Conformance.TestAllTypes.newBuilder();
+          TestMessagesProto3.TestAllTypes.Builder builder = TestMessagesProto3.TestAllTypes.newBuilder();
           JsonFormat.parser().usingTypeRegistry(typeRegistry)
               .merge(request.getJsonPayload(), builder);
           testMessage = builder.build();
@@ -299,7 +300,7 @@ class ConformanceJava {
 
   public void run() throws Exception {
     typeRegistry = TypeRegistry.newBuilder().add(
-        Conformance.TestAllTypes.getDescriptor()).build();
+        TestMessagesProto3.TestAllTypes.getDescriptor()).build();
     while (doTestIo()) {
       this.testCount++;
     }

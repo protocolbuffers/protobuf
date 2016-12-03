@@ -1,7 +1,8 @@
 ## Process this file with automake to produce Makefile.in
 
 conformance_protoc_inputs =                                    \
-  conformance.proto
+  conformance.proto                                            \
+  $(top_srcdir)/src/google/protobuf/test_messages_proto3.proto
 
 well_known_type_protoc_inputs =                                \
   $(top_srcdir)/src/google/protobuf/any.proto                  \
@@ -61,6 +62,7 @@ other_language_protoc_outputs =                                \
   com/google/protobuf/Value.java                               \
   com/google/protobuf/ValueOrBuilder.java                      \
   com/google/protobuf/WrappersProto.java                       \
+  com/google/protobuf_test_messages/proto3/TestMessagesProto3.java \
   google/protobuf/any.pb.cc                                    \
   google/protobuf/any.pb.h                                     \
   google/protobuf/any.rb                                       \
@@ -77,6 +79,12 @@ other_language_protoc_outputs =                                \
   google/protobuf/struct.pb.h                                  \
   google/protobuf/struct.rb                                    \
   google/protobuf/struct_pb2.py                                \
+  google/protobuf/TestMessagesProto3.pbobjc.h                  \
+  google/protobuf/TestMessagesProto3.pbobjc.m                  \
+  google/protobuf/test_messages_proto3.pb.cc                   \
+  google/protobuf/test_messages_proto3.pb.h                    \
+  google/protobuf/test_messages_proto3_pb.rb                   \
+  google/protobuf/test_messages_proto3_pb2.py                  \
   google/protobuf/timestamp.pb.cc                              \
   google/protobuf/timestamp.pb.h                               \
   google/protobuf/timestamp.rb                                 \
@@ -152,7 +160,7 @@ conformance_test_runner_SOURCES = conformance_test.h conformance_test.cc \
                                   conformance_test_runner.cc             \
                                   third_party/jsoncpp/json.h             \
                                   third_party/jsoncpp/jsoncpp.cpp
-nodist_conformance_test_runner_SOURCES = conformance.pb.cc
+nodist_conformance_test_runner_SOURCES = conformance.pb.cc google/protobuf/test_messages_proto3.pb.cc
 conformance_test_runner_CPPFLAGS = -I$(top_srcdir)/src -I$(srcdir)
 conformance_test_runner_CXXFLAGS = -std=c++11
 # Explicit deps beacuse BUILT_SOURCES are only done before a "make all/check"
@@ -162,7 +170,7 @@ conformance_test_runner-conformance_test_runner.$(OBJEXT): conformance.pb.h
 
 conformance_cpp_LDADD = $(top_srcdir)/src/libprotobuf.la
 conformance_cpp_SOURCES = conformance_cpp.cc
-nodist_conformance_cpp_SOURCES = conformance.pb.cc
+nodist_conformance_cpp_SOURCES = conformance.pb.cc google/protobuf/test_messages_proto3.pb.cc
 conformance_cpp_CPPFLAGS = -I$(top_srcdir)/src
 # Explicit dep beacuse BUILT_SOURCES are only done before a "make all/check"
 # so a direct "make test_cpp" could fail if parallel enough.
@@ -173,7 +181,7 @@ if OBJC_CONFORMANCE_TEST
 bin_PROGRAMS += conformance-objc
 
 conformance_objc_SOURCES = conformance_objc.m ../objectivec/GPBProtocolBuffers.m
-nodist_conformance_objc_SOURCES = Conformance.pbobjc.m
+nodist_conformance_objc_SOURCES = Conformance.pbobjc.m google/protobuf/TestMessagesProto3.pbobjc.m
 # On travis, the build fails without the isysroot because whatever system
 # headers are being found don't include generics support for
 # NSArray/NSDictionary, the only guess is their image at one time had an odd
@@ -182,7 +190,7 @@ conformance_objc_CPPFLAGS = -I$(top_srcdir)/objectivec -isysroot `xcrun --sdk ma
 conformance_objc_LDFLAGS = -framework Foundation
 # Explicit dep beacuse BUILT_SOURCES are only done before a "make all/check"
 # so a direct "make test_objc" could fail if parallel enough.
-conformance_objc-conformance_objc.$(OBJEXT): Conformance.pbobjc.h
+conformance_objc-conformance_objc.$(OBJEXT): Conformance.pbobjc.h google/protobuf/TestMessagesProto3.pbobjc.h
 
 endif
 
@@ -221,7 +229,7 @@ MAINTAINERCLEANFILES =   \
   Makefile.in
 
 javac_middleman: ConformanceJava.java protoc_middleman $(other_language_protoc_outputs)
-	jar=`ls ../java/util/target/*jar-with-dependencies.jar` && javac -classpath ../java/target/classes:$$jar ConformanceJava.java com/google/protobuf/conformance/Conformance.java
+	jar=`ls ../java/util/target/*jar-with-dependencies.jar` && javac -classpath ../java/target/classes:$$jar ConformanceJava.java com/google/protobuf/conformance/Conformance.java com/google/protobuf_test_messages/proto3/TestMessagesProto3.java
 	@touch javac_middleman
 
 conformance-java: javac_middleman
