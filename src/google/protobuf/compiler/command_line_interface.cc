@@ -1619,6 +1619,13 @@ bool CommandLineInterface::GeneratePluginOutput(
                               &already_seen, request.mutable_proto_file());
   }
 
+  google::protobuf::compiler::Version* version =
+      request.mutable_compiler_version();
+  version->set_major(GOOGLE_PROTOBUF_VERSION / 1000000);
+  version->set_minor(GOOGLE_PROTOBUF_VERSION / 1000 % 1000);
+  version->set_patch(GOOGLE_PROTOBUF_VERSION % 1000);
+  version->set_suffix(GOOGLE_PROTOBUF_VERSION_SUFFIX);
+
   // Invoke the plugin.
   Subprocess subprocess;
 

@@ -116,6 +116,9 @@ extern CodeGeneratorResponseDefaultTypeInternal _CodeGeneratorResponse_default_i
 class CodeGeneratorResponse_File;
 class CodeGeneratorResponse_FileDefaultTypeInternal;
 extern CodeGeneratorResponse_FileDefaultTypeInternal _CodeGeneratorResponse_File_default_instance_;
+class Version;
+class VersionDefaultTypeInternal;
+extern VersionDefaultTypeInternal _Version_default_instance_;
 }  // namespace compiler
 }  // namespace protobuf
 }  // namespace google
@@ -129,6 +132,139 @@ void LIBPROTOC_EXPORT protobuf_AddDesc_google_2fprotobuf_2fcompiler_2fplugin_2ep
 void LIBPROTOC_EXPORT protobuf_InitDefaults_google_2fprotobuf_2fcompiler_2fplugin_2eproto();
 
 // ===================================================================
+
+class LIBPROTOC_EXPORT Version : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.compiler.Version) */ {
+ public:
+  Version();
+  virtual ~Version();
+
+  Version(const Version& from);
+
+  inline Version& operator=(const Version& from) {
+    CopyFrom(from);
+    return *this;
+  }
+
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
+    return _internal_metadata_.unknown_fields();
+  }
+
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
+    return _internal_metadata_.mutable_unknown_fields();
+  }
+
+  static const ::google::protobuf::Descriptor* descriptor();
+  static const Version& default_instance();
+
+  static inline const Version* internal_default_instance() {
+    return reinterpret_cast<const Version*>(
+               &_Version_default_instance_);
+  }
+
+  void Swap(Version* other);
+
+  // implements Message ----------------------------------------------
+
+  inline Version* New() const PROTOBUF_FINAL { return New(NULL); }
+
+  Version* New(::google::protobuf::Arena* arena) const PROTOBUF_FINAL;
+  void CopyFrom(const ::google::protobuf::Message& from) PROTOBUF_FINAL;
+  void MergeFrom(const ::google::protobuf::Message& from) PROTOBUF_FINAL;
+  void CopyFrom(const Version& from);
+  void MergeFrom(const Version& from);
+  void Clear() PROTOBUF_FINAL;
+  bool IsInitialized() const PROTOBUF_FINAL;
+
+  size_t ByteSizeLong() const PROTOBUF_FINAL;
+  bool MergePartialFromCodedStream(
+      ::google::protobuf::io::CodedInputStream* input) PROTOBUF_FINAL;
+  void SerializeWithCachedSizes(
+      ::google::protobuf::io::CodedOutputStream* output) const PROTOBUF_FINAL;
+  ::google::protobuf::uint8* InternalSerializeWithCachedSizesToArray(
+      bool deterministic, ::google::protobuf::uint8* target) const PROTOBUF_FINAL;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output)
+      const PROTOBUF_FINAL {
+    return InternalSerializeWithCachedSizesToArray(false, output);
+  }
+  int GetCachedSize() const PROTOBUF_FINAL { return _cached_size_; }
+  private:
+  void SharedCtor();
+  void SharedDtor();
+  void SetCachedSize(int size) const PROTOBUF_FINAL;
+  void InternalSwap(Version* other);
+  private:
+  inline ::google::protobuf::Arena* GetArenaNoVirtual() const {
+    return NULL;
+  }
+  inline void* MaybeArenaPtr() const {
+    return NULL;
+  }
+  public:
+
+  ::google::protobuf::Metadata GetMetadata() const PROTOBUF_FINAL;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  // optional int32 major = 1;
+  bool has_major() const;
+  void clear_major();
+  static const int kMajorFieldNumber = 1;
+  ::google::protobuf::int32 major() const;
+  void set_major(::google::protobuf::int32 value);
+
+  // optional int32 minor = 2;
+  bool has_minor() const;
+  void clear_minor();
+  static const int kMinorFieldNumber = 2;
+  ::google::protobuf::int32 minor() const;
+  void set_minor(::google::protobuf::int32 value);
+
+  // optional int32 patch = 3;
+  bool has_patch() const;
+  void clear_patch();
+  static const int kPatchFieldNumber = 3;
+  ::google::protobuf::int32 patch() const;
+  void set_patch(::google::protobuf::int32 value);
+
+  // optional string suffix = 4;
+  bool has_suffix() const;
+  void clear_suffix();
+  static const int kSuffixFieldNumber = 4;
+  const ::std::string& suffix() const;
+  void set_suffix(const ::std::string& value);
+  void set_suffix(const char* value);
+  void set_suffix(const char* value, size_t size);
+  ::std::string* mutable_suffix();
+  ::std::string* release_suffix();
+  void set_allocated_suffix(::std::string* suffix);
+
+  // @@protoc_insertion_point(class_scope:google.protobuf.compiler.Version)
+ private:
+  void set_has_major();
+  void clear_has_major();
+  void set_has_minor();
+  void clear_has_minor();
+  void set_has_patch();
+  void clear_has_patch();
+  void set_has_suffix();
+  void clear_has_suffix();
+
+  ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
+  ::google::protobuf::internal::HasBits<1> _has_bits_;
+  mutable int _cached_size_;
+  ::google::protobuf::internal::ArenaStringPtr suffix_;
+  ::google::protobuf::int32 major_;
+  ::google::protobuf::int32 minor_;
+  ::google::protobuf::int32 patch_;
+  friend void LIBPROTOC_EXPORT protobuf_InitDefaults_google_2fprotobuf_2fcompiler_2fplugin_2eproto_impl();
+  friend void LIBPROTOC_EXPORT protobuf_AddDesc_google_2fprotobuf_2fcompiler_2fplugin_2eproto_impl();
+  friend const ::google::protobuf::uint32* protobuf_Offsets_google_2fprotobuf_2fcompiler_2fplugin_2eproto();
+  friend void protobuf_ShutdownFile_google_2fprotobuf_2fcompiler_2fplugin_2eproto();
+
+};
+// -------------------------------------------------------------------
 
 class LIBPROTOC_EXPORT CodeGeneratorRequest : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.compiler.CodeGeneratorRequest) */ {
  public:
@@ -244,10 +380,21 @@ class LIBPROTOC_EXPORT CodeGeneratorRequest : public ::google::protobuf::Message
   const ::google::protobuf::RepeatedPtrField< ::google::protobuf::FileDescriptorProto >&
       proto_file() const;
 
+  // optional .google.protobuf.compiler.Version compiler_version = 3;
+  bool has_compiler_version() const;
+  void clear_compiler_version();
+  static const int kCompilerVersionFieldNumber = 3;
+  const ::google::protobuf::compiler::Version& compiler_version() const;
+  ::google::protobuf::compiler::Version* mutable_compiler_version();
+  ::google::protobuf::compiler::Version* release_compiler_version();
+  void set_allocated_compiler_version(::google::protobuf::compiler::Version* compiler_version);
+
   // @@protoc_insertion_point(class_scope:google.protobuf.compiler.CodeGeneratorRequest)
  private:
   void set_has_parameter();
   void clear_has_parameter();
+  void set_has_compiler_version();
+  void clear_has_compiler_version();
 
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
   ::google::protobuf::internal::HasBits<1> _has_bits_;
@@ -255,6 +402,7 @@ class LIBPROTOC_EXPORT CodeGeneratorRequest : public ::google::protobuf::Message
   ::google::protobuf::RepeatedPtrField< ::std::string> file_to_generate_;
   ::google::protobuf::RepeatedPtrField< ::google::protobuf::FileDescriptorProto > proto_file_;
   ::google::protobuf::internal::ArenaStringPtr parameter_;
+  ::google::protobuf::compiler::Version* compiler_version_;
   friend void LIBPROTOC_EXPORT protobuf_InitDefaults_google_2fprotobuf_2fcompiler_2fplugin_2eproto_impl();
   friend void LIBPROTOC_EXPORT protobuf_AddDesc_google_2fprotobuf_2fcompiler_2fplugin_2eproto_impl();
   friend const ::google::protobuf::uint32* protobuf_Offsets_google_2fprotobuf_2fcompiler_2fplugin_2eproto();
@@ -518,6 +666,136 @@ class LIBPROTOC_EXPORT CodeGeneratorResponse : public ::google::protobuf::Messag
 // ===================================================================
 
 #if !PROTOBUF_INLINE_NOT_IN_HEADERS
+// Version
+
+// optional int32 major = 1;
+inline bool Version::has_major() const {
+  return (_has_bits_[0] & 0x00000002u) != 0;
+}
+inline void Version::set_has_major() {
+  _has_bits_[0] |= 0x00000002u;
+}
+inline void Version::clear_has_major() {
+  _has_bits_[0] &= ~0x00000002u;
+}
+inline void Version::clear_major() {
+  major_ = 0;
+  clear_has_major();
+}
+inline ::google::protobuf::int32 Version::major() const {
+  // @@protoc_insertion_point(field_get:google.protobuf.compiler.Version.major)
+  return major_;
+}
+inline void Version::set_major(::google::protobuf::int32 value) {
+  set_has_major();
+  major_ = value;
+  // @@protoc_insertion_point(field_set:google.protobuf.compiler.Version.major)
+}
+
+// optional int32 minor = 2;
+inline bool Version::has_minor() const {
+  return (_has_bits_[0] & 0x00000004u) != 0;
+}
+inline void Version::set_has_minor() {
+  _has_bits_[0] |= 0x00000004u;
+}
+inline void Version::clear_has_minor() {
+  _has_bits_[0] &= ~0x00000004u;
+}
+inline void Version::clear_minor() {
+  minor_ = 0;
+  clear_has_minor();
+}
+inline ::google::protobuf::int32 Version::minor() const {
+  // @@protoc_insertion_point(field_get:google.protobuf.compiler.Version.minor)
+  return minor_;
+}
+inline void Version::set_minor(::google::protobuf::int32 value) {
+  set_has_minor();
+  minor_ = value;
+  // @@protoc_insertion_point(field_set:google.protobuf.compiler.Version.minor)
+}
+
+// optional int32 patch = 3;
+inline bool Version::has_patch() const {
+  return (_has_bits_[0] & 0x00000008u) != 0;
+}
+inline void Version::set_has_patch() {
+  _has_bits_[0] |= 0x00000008u;
+}
+inline void Version::clear_has_patch() {
+  _has_bits_[0] &= ~0x00000008u;
+}
+inline void Version::clear_patch() {
+  patch_ = 0;
+  clear_has_patch();
+}
+inline ::google::protobuf::int32 Version::patch() const {
+  // @@protoc_insertion_point(field_get:google.protobuf.compiler.Version.patch)
+  return patch_;
+}
+inline void Version::set_patch(::google::protobuf::int32 value) {
+  set_has_patch();
+  patch_ = value;
+  // @@protoc_insertion_point(field_set:google.protobuf.compiler.Version.patch)
+}
+
+// optional string suffix = 4;
+inline bool Version::has_suffix() const {
+  return (_has_bits_[0] & 0x00000001u) != 0;
+}
+inline void Version::set_has_suffix() {
+  _has_bits_[0] |= 0x00000001u;
+}
+inline void Version::clear_has_suffix() {
+  _has_bits_[0] &= ~0x00000001u;
+}
+inline void Version::clear_suffix() {
+  suffix_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  clear_has_suffix();
+}
+inline const ::std::string& Version::suffix() const {
+  // @@protoc_insertion_point(field_get:google.protobuf.compiler.Version.suffix)
+  return suffix_.GetNoArena();
+}
+inline void Version::set_suffix(const ::std::string& value) {
+  set_has_suffix();
+  suffix_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
+  // @@protoc_insertion_point(field_set:google.protobuf.compiler.Version.suffix)
+}
+inline void Version::set_suffix(const char* value) {
+  set_has_suffix();
+  suffix_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
+  // @@protoc_insertion_point(field_set_char:google.protobuf.compiler.Version.suffix)
+}
+inline void Version::set_suffix(const char* value, size_t size) {
+  set_has_suffix();
+  suffix_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+      ::std::string(reinterpret_cast<const char*>(value), size));
+  // @@protoc_insertion_point(field_set_pointer:google.protobuf.compiler.Version.suffix)
+}
+inline ::std::string* Version::mutable_suffix() {
+  set_has_suffix();
+  // @@protoc_insertion_point(field_mutable:google.protobuf.compiler.Version.suffix)
+  return suffix_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline ::std::string* Version::release_suffix() {
+  // @@protoc_insertion_point(field_release:google.protobuf.compiler.Version.suffix)
+  clear_has_suffix();
+  return suffix_.ReleaseNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline void Version::set_allocated_suffix(::std::string* suffix) {
+  if (suffix != NULL) {
+    set_has_suffix();
+  } else {
+    clear_has_suffix();
+  }
+  suffix_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), suffix);
+  // @@protoc_insertion_point(field_set_allocated:google.protobuf.compiler.Version.suffix)
+}
+
+// -------------------------------------------------------------------
+
 // CodeGeneratorRequest
 
 // repeated string file_to_generate = 1;
@@ -657,6 +935,51 @@ inline const ::google::protobuf::RepeatedPtrField< ::google::protobuf::FileDescr
 CodeGeneratorRequest::proto_file() const {
   // @@protoc_insertion_point(field_list:google.protobuf.compiler.CodeGeneratorRequest.proto_file)
   return proto_file_;
+}
+
+// optional .google.protobuf.compiler.Version compiler_version = 3;
+inline bool CodeGeneratorRequest::has_compiler_version() const {
+  return (_has_bits_[0] & 0x00000002u) != 0;
+}
+inline void CodeGeneratorRequest::set_has_compiler_version() {
+  _has_bits_[0] |= 0x00000002u;
+}
+inline void CodeGeneratorRequest::clear_has_compiler_version() {
+  _has_bits_[0] &= ~0x00000002u;
+}
+inline void CodeGeneratorRequest::clear_compiler_version() {
+  if (compiler_version_ != NULL) compiler_version_->::google::protobuf::compiler::Version::Clear();
+  clear_has_compiler_version();
+}
+inline const ::google::protobuf::compiler::Version& CodeGeneratorRequest::compiler_version() const {
+  // @@protoc_insertion_point(field_get:google.protobuf.compiler.CodeGeneratorRequest.compiler_version)
+  return compiler_version_ != NULL ? *compiler_version_
+                         : *::google::protobuf::compiler::Version::internal_default_instance();
+}
+inline ::google::protobuf::compiler::Version* CodeGeneratorRequest::mutable_compiler_version() {
+  set_has_compiler_version();
+  if (compiler_version_ == NULL) {
+    compiler_version_ = new ::google::protobuf::compiler::Version;
+  }
+  // @@protoc_insertion_point(field_mutable:google.protobuf.compiler.CodeGeneratorRequest.compiler_version)
+  return compiler_version_;
+}
+inline ::google::protobuf::compiler::Version* CodeGeneratorRequest::release_compiler_version() {
+  // @@protoc_insertion_point(field_release:google.protobuf.compiler.CodeGeneratorRequest.compiler_version)
+  clear_has_compiler_version();
+  ::google::protobuf::compiler::Version* temp = compiler_version_;
+  compiler_version_ = NULL;
+  return temp;
+}
+inline void CodeGeneratorRequest::set_allocated_compiler_version(::google::protobuf::compiler::Version* compiler_version) {
+  delete compiler_version_;
+  compiler_version_ = compiler_version;
+  if (compiler_version) {
+    set_has_compiler_version();
+  } else {
+    clear_has_compiler_version();
+  }
+  // @@protoc_insertion_point(field_set_allocated:google.protobuf.compiler.CodeGeneratorRequest.compiler_version)
 }
 
 // -------------------------------------------------------------------
@@ -914,6 +1237,8 @@ CodeGeneratorResponse::file() const {
 }
 
 #endif  // !PROTOBUF_INLINE_NOT_IN_HEADERS
+// -------------------------------------------------------------------
+
 // -------------------------------------------------------------------
 
 // -------------------------------------------------------------------

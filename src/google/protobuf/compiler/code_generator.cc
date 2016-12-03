@@ -34,6 +34,7 @@
 
 #include <google/protobuf/compiler/code_generator.h>
 
+#include <google/protobuf/compiler/plugin.pb.h>
 #include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/descriptor.h>
@@ -87,6 +88,13 @@ io::ZeroCopyOutputStream* GeneratorContext::OpenForInsert(
 void GeneratorContext::ListParsedFiles(
     std::vector<const FileDescriptor*>* output) {
   GOOGLE_LOG(FATAL) << "This GeneratorContext does not support ListParsedFiles";
+}
+
+void GeneratorContext::GetCompilerVersion(Version* version) const {
+  version->set_major(GOOGLE_PROTOBUF_VERSION / 1000000);
+  version->set_minor(GOOGLE_PROTOBUF_VERSION / 1000 % 1000);
+  version->set_patch(GOOGLE_PROTOBUF_VERSION % 1000);
+  version->set_suffix(GOOGLE_PROTOBUF_VERSION_SUFFIX);
 }
 
 // Parses a set of comma-delimited name/value pairs.

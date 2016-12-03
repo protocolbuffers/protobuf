@@ -40,6 +40,7 @@
 #endif
 #include <vector>
 
+#include <google/protobuf/compiler/plugin.pb.h>
 #include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/testing/file.h>
@@ -159,6 +160,15 @@ bool MockCodeGenerator::Generate(
         file->message_type(i)->field(0)->CopyTo(&field_descriptor_proto);
         std::cerr << "Saw json_name: "
                   << field_descriptor_proto.has_json_name() << std::endl;
+        abort();
+      } else if (command == "ShowVersionNumber") {
+        Version compiler_version;
+        context->GetCompilerVersion(&compiler_version);
+        std::cerr << "Saw compiler_version: "
+                  << compiler_version.major() * 1000000 +
+                     compiler_version.minor() * 1000 +
+                     compiler_version.patch()
+                  << " " << compiler_version.suffix() << std::endl;
         abort();
       } else {
         GOOGLE_LOG(FATAL) << "Unknown MockCodeGenerator command: " << command;

@@ -98,6 +98,9 @@ namespace internal {
 // easier:  major * 10^6 + minor * 10^3 + micro
 #define GOOGLE_PROTOBUF_VERSION 3001000
 
+// A suffix string for alpha, beta or rc releases. Empty for stable releases.
+#define GOOGLE_PROTOBUF_VERSION_SUFFIX ""
+
 // The minimum library version which works with the current version of the
 // headers.
 #define GOOGLE_PROTOBUF_MIN_LIBRARY_VERSION 3001000
