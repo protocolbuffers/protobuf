@@ -51,6 +51,7 @@ namespace util {
 namespace converter {
 
 using google::protobuf::internal::WireFormatLite;
+using google::protobuf::io::StringOutputStream;
 using google::protobuf::io::CodedOutputStream;
 using util::error::INVALID_ARGUMENT;
 using util::Status;
@@ -70,8 +71,8 @@ ProtoWriter::ProtoWriter(TypeResolver* type_resolver,
       size_insert_(),
       output_(output),
       buffer_(),
-      adapter_(&buffer_),
-      stream_(new CodedOutputStream(&adapter_)),
+      adapter_(new StringOutputStream(&buffer_)),
+      stream_(new CodedOutputStream(adapter_.get())),
       listener_(listener),
       invalid_depth_(0),
       tracker_(new ObjectLocationTracker()) {}
@@ -89,8 +90,8 @@ ProtoWriter::ProtoWriter(const TypeInfo* typeinfo,
       size_insert_(),
       output_(output),
       buffer_(),
-      adapter_(&buffer_),
-      stream_(new CodedOutputStream(&adapter_)),
+      adapter_(new StringOutputStream(&buffer_)),
+      stream_(new CodedOutputStream(adapter_.get())),
       listener_(listener),
       invalid_depth_(0),
       tracker_(new ObjectLocationTracker()) {}
@@ -747,6 +748,8 @@ void ProtoWriter::WriteRootMessage() {
   // Calls the destructor of CodedOutputStream to remove any uninitialized
   // memory from the Cord before we read it.
   stream_.reset(NULL);
+  // Destroy the StringOutputStream to ensure we can access the buffer_.
+  adapter_.reset(NULL);
   const void* data;
   int length;
   google::protobuf::io::ArrayInputStream input_stream(buffer_.data(), buffer_.size());
@@ -782,7 +785,8 @@ void ProtoWriter::WriteRootMessage() {
     }
   }
   output_->Flush();
-  stream_.reset(new CodedOutputStream(&adapter_));
+  adapter_.reset(new StringOutputStream(&buffer_));
+  stream_.reset(new CodedOutputStream(adapter_.get()));
   done_ = true;
 }
 

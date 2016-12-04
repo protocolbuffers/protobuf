@@ -133,9 +133,7 @@ class LIBPROTOBUF_EXPORT StringOutputStream : public ZeroCopyOutputStream {
  public:
   // Create a StringOutputStream which appends bytes to the given string.
   // The string remains property of the caller, but it is mutated in arbitrary
-  // ways and MUST NOT be accessed in any way until you're done with the
-  // stream. Either be sure there's no further usage, or (safest) destroy the
-  // stream before using the contents.
+  // ways and MUST NOT be accessed in any way until the stream is destructed.
   //
   // Hint:  If you call target->reserve(n) before creating the stream,
   //   the first call to Next() will return at least n bytes of buffer
@@ -155,6 +153,7 @@ class LIBPROTOBUF_EXPORT StringOutputStream : public ZeroCopyOutputStream {
   static const int kMinimumSize = 16;
 
   string* target_;
+  int64 byte_count_; // number of bytes written till now
 
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(StringOutputStream);
 };

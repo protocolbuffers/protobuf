@@ -331,7 +331,7 @@ class LIBPROTOBUF_EXPORT ProtoWriter : public StructuredObjectWriter {
   // stream_  : wrapper for writing tags and other encodings in wire format.
   strings::ByteSink* output_;
   string buffer_;
-  google::protobuf::io::StringOutputStream adapter_;
+  google::protobuf::scoped_ptr<google::protobuf::io::StringOutputStream> adapter_;
   google::protobuf::scoped_ptr<google::protobuf::io::CodedOutputStream> stream_;
 
   // Variables for error tracking and reporting:

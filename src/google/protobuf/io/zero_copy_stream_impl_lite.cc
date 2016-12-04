@@ -150,22 +150,27 @@ int64 ArrayOutputStream::ByteCount() const {
 // ===================================================================
 
 StringOutputStream::StringOutputStream(string* target)
-  : target_(target) {
+  : target_(target), byte_count_((target_ != NULL) ? target_->size() : 0) {
 }
 
 StringOutputStream::~StringOutputStream() {
+  if (target_ != NULL) {
+    target_->resize(byte_count_);
+  }
 }
 
 bool StringOutputStream::Next(void** data, int* size) {
   GOOGLE_CHECK(target_ != NULL);
-  int old_size = target_->size();
+  int old_size, new_size;
+  old_size = new_size = target_->size();
 
   // Grow the string.
   if (old_size < target_->capacity()) {
     // Resize the string to match its capacity, since we can get away
     // without a memory allocation this way.
     STLStringResizeUninitialized(target_, target_->capacity());
-  } else {
+    new_size = target_->size();
+  } else if (byte_count_ == old_size) {
     // Size has reached capacity, try to double the size.
     if (old_size > std::numeric_limits<int>::max() / 2) {
       // Can not double the size otherwise it is going to cause integer
@@ -180,27 +185,30 @@ bool StringOutputStream::Next(void** data, int* size) {
         target_,
         std::max(old_size * 2,
                  kMinimumSize + 0));  // "+ 0" works around GCC4 weirdness.
+    new_size = target_->size();
   }
 
-  *data = mutable_string_data(target_) + old_size;
-  *size = target_->size() - old_size;
+  *data = mutable_string_data(target_) + byte_count_;
+  *size = new_size - byte_count_;
+  byte_count_ = new_size;
   return true;
 }
 
 void StringOutputStream::BackUp(int count) {
   GOOGLE_CHECK_GE(count, 0);
   GOOGLE_CHECK(target_ != NULL);
-  GOOGLE_CHECK_LE(count, target_->size());
-  target_->resize(target_->size() - count);
+  GOOGLE_CHECK_LE(count, byte_count_);
+  byte_count_ -= count;
 }
 
 int64 StringOutputStream::ByteCount() const {
   GOOGLE_CHECK(target_ != NULL);
-  return target_->size();
+  return byte_count_;
 }
 
 void StringOutputStream::SetString(string* target) {
   target_ = target;
+  byte_count_ = (target_ != NULL) ? target_->size() : 0;
 }
 
 // ===================================================================
