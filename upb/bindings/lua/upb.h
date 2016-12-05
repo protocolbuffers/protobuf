@@ -84,15 +84,6 @@ void lupb_pushuint32(lua_State *L, uint32_t val);
 void lupb_pushdouble(lua_State *L, double val);
 void lupb_pushfloat(lua_State *L, float val);
 
-/* Builds and returns a handlers object for populating a lupb_msg described by
- * the MessageDef at "narg".
- *
- * TODO(haberman): factor this so it doesn't have to take a lua_State.  We
- * should be able to generate message handlers for a upb_msgdef that can be used
- * across many Lua states, so we can shared JIT code across lua_States. */
-const upb_handlers *lupb_msg_newwritehandlers(lua_State *L, int narg,
-                                              const void *owner);
-
 /* Registers a type with the given name, methods, and metamethods.
  * If "refcount_gc" is true, adds a __gc metamethod that does an unref.
  * Refcounted types must be allocated with lupb_refcounted_push[new]wrapper. */

@@ -3,7 +3,9 @@
 **
 ** However it differs from other common representations like
 ** google::protobuf::Message in one key way: it does not prescribe any
-** ownership semantics, and it does not perform any memory management.
+** ownership between messages and submessages, and it relies on the
+** client to delete each message/submessage/array/map at the appropriate
+** time.
 **
 ** A client can access a upb::Message without knowing anything about
 ** ownership semantics, but to create or mutate a message a user needs
@@ -58,10 +60,12 @@ UPB_BEGIN_EXTERN_C
 
 /** upb_msglayout *************************************************************/
 
-/* Please note that map_entry messages (upb_msgdef_mapentry(m) == true) cannot
- * have layouts.  They can only be represented as upb_map, not as a message. */
+/* upb_msglayout represents the memory layout of a given upb_msgdef.  You get
+ * instances of this from a upb_msgfactory, and the factory always owns the
+ * msglayout. */
 
-/* Requires that upb_fielddef_issubmsg(upb_msglayout_msgdef(l)) == true.
+/* Get the msglayout for a submessage.  This requires that this field is a
+ * submessage, ie. upb_fielddef_issubmsg(upb_msglayout_msgdef(l)) == true.
  *
  * Since map entry messages don't have layouts, if upb_fielddef_ismap(f) == true
  * then this function will return the layout for the map's value.  It requires
@@ -69,35 +73,47 @@ UPB_BEGIN_EXTERN_C
 const upb_msglayout *upb_msglayout_sublayout(const upb_msglayout *l,
                                              const upb_fielddef *f);
 
+/* Returns the msgdef for this msglayout. */
 const upb_msgdef *upb_msglayout_msgdef(const upb_msglayout *l);
+
+
+/** upb_visitor ***************************************************************/
+
+/* upb_visitor will visit all the fields of a message and its submessages.  It
+ * uses a upb_visitorplan which you can obtain from a upb_msgfactory. */
+
+upb_visitor *upb_visitor_create(upb_env *e, const upb_visitorplan *vp,
+                                upb_sink *output);
+bool upb_visitor_visitmsg(upb_visitor *v, const void *msg);
 
 
 /** upb_msgfactory ************************************************************/
 
+/* A upb_msgfactory contains a cache of upb_msglayout, upb_handlers, and
+ * upb_visitorplan objects.  These are the objects necessary to represent,
+ * populate, and and visit upb_msg objects.
+ *
+ * These caches are all populated by upb_msgdef, and lazily created on demand.
+ */
+
+/* Creates and destroys a msgfactory, respectively.  The messages for this
+ * msgfactory must come from |symtab| (which should outlive the msgfactory). */
 upb_msgfactory *upb_msgfactory_new(const upb_symtab *symtab);
 void upb_msgfactory_free(upb_msgfactory *f);
 
-/* Requires:
+/* The functions to get cached objects, lazily creating them on demand.  These
+ * all require:
+ *
  * - m is in upb_msgfactory_symtab(f)
  * - upb_msgdef_mapentry(m) == false (since map messages can't have layouts).
  *
- * The returned layout will live for as long as the msgfactory does.
- */
+ * The returned objects will live for as long as the msgfactory does. */
 const upb_msglayout *upb_msgfactory_getlayout(const upb_msgfactory *f,
                                               const upb_msgdef *m);
-
-/* Returns handlers for populating a message with the given msgdef. */
 const upb_handlers *upb_msgfactory_getmergehandlers(const upb_msgfactory *f,
                                                     const upb_msgdef *m);
-
-/* Returns a plan for visiting the data and submessages of the given msgdef. */
 const upb_visitorplan *upb_visitorplan_new(const upb_msgfactory *f,
                                            const upb_msgdef *m);
-
-/* For actually visiting a message and its submessages. */
-upb_visitor *upb_visitor_create(upb_env *e, const upb_visitorplan *vp,
-                                upb_sink *output);
-bool upb_visitor_visitmsg(upb_visitor *v, const void *msg);
 
 
 /** upb_msgval ****************************************************************/
@@ -162,13 +178,37 @@ UPB_INLINE upb_msgval upb_msgval_str(const char *ptr, size_t len) {
 
 /** upb_msg *******************************************************************/
 
+/* A upb_msg represents a protobuf message.  It always corresponds to a specific
+ * upb_msglayout, which describes how it is laid out in memory.
+ *
+ * The message will have a fixed size, as returned by upb_msg_sizeof(), which
+ * will be used to store fixed-length fields.  The upb_msg may also allocate
+ * dynamic memory internally to store data such as:
+ *
+ * - extensions
+ * - unknown fields
+ */
+
+/* Returns the size of a message given this layout. */
 size_t upb_msg_sizeof(const upb_msglayout *l);
+
+/* upb_msg_init() / upb_msg_uninit() allow the user to use a pre-allocated
+ * block of memory as a message.  The block's size should be upb_msg_sizeof().
+ * upb_msg_uninit() must be called to release internally-allocated memory
+ * unless the allocator is an arena that does not require freeing.
+ *
+ * Please note that upb_msg_uninit() does *not* free any submessages, maps,
+ * or arrays referred to by this message's fields.  You must free them manually
+ * yourself. */
 void upb_msg_init(upb_msg *msg, const upb_msglayout *l, upb_alloc *a);
 void upb_msg_uninit(upb_msg *msg, const upb_msglayout *l);
 
+/* Like upb_msg_init() / upb_msg_uninit(), except the message's memory is
+ * allocated / freed from the given upb_alloc. */
 upb_msg *upb_msg_new(const upb_msglayout *l, upb_alloc *a);
 void upb_msg_free(upb_msg *msg, const upb_msglayout *l);
 
+/* Returns the upb_alloc for the given message. */
 upb_alloc *upb_msg_alloc(const upb_msg *msg, const upb_msglayout *l);
 
 /* Packs the tree of messages rooted at "msg" into a single hunk of memory,
@@ -240,6 +280,10 @@ bool upb_msg_clearoneof(upb_msg *msg,
 
 /** upb_array *****************************************************************/
 
+/* A upb_array stores data for a repeated field.  The memory management
+ * semantics are the same as upb_msg.  A upb_array allocates dynamic
+ * memory internally for the array elements. */
+
 size_t upb_array_sizeof(upb_fieldtype_t type);
 void upb_array_init(upb_array *arr, upb_fieldtype_t type, upb_alloc *a);
 void upb_array_uninit(upb_array *arr);
@@ -260,11 +304,11 @@ bool upb_array_set(upb_array *arr, size_t i, upb_msgval val);
 
 /** upb_map *******************************************************************/
 
-/* Stores data for a map field.  The map will internally allocate (and free, if
- * desired) all the internal storage used for the hash table or tree, using the
- * given allocator.  It will also copy and internally store the data for string
- * keys, but *not* for string or message *values*.  So the caller must ensure
- * that any string or message values outlive the map. */
+/* A upb_map stores data for a map field.  The memory management semantics are
+ * the same as upb_msg, with one notable exception.  upb_map will internally
+ * store a copy of all string keys, but *not* any string values or submessages.
+ * So you must ensure that any string or message values outlive the map, and you
+ * must delete them manually when they are no longer required. */
 
 size_t upb_map_sizeof(upb_fieldtype_t ktype, upb_fieldtype_t vtype);
 bool upb_map_init(upb_map *map, upb_fieldtype_t ktype, upb_fieldtype_t vtype,
