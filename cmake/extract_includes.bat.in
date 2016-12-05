@@ -29,6 +29,7 @@ copy ${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\compiler\java\java_gen
 copy ${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\compiler\java\java_names.h include\google\protobuf\compiler\java\java_names.h
 copy ${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\compiler\javanano\javanano_generator.h include\google\protobuf\compiler\javanano\javanano_generator.h
 copy ${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\compiler\js\js_generator.h include\google\protobuf\compiler\js\js_generator.h
+copy ${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\compiler\js\well_known_types_embed.h include\google\protobuf\compiler\js\well_known_types_embed.h
 copy ${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\compiler\objectivec\objectivec_generator.h include\google\protobuf\compiler\objectivec\objectivec_generator.h
 copy ${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\compiler\objectivec\objectivec_helpers.h include\google\protobuf\compiler\objectivec\objectivec_helpers.h
 copy ${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\compiler\parser.h include\google\protobuf\compiler\parser.h
