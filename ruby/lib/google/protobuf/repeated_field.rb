@@ -74,7 +74,7 @@ module Google
         :include?, :index, :inspect, :join,
         :pack, :permutation, :product, :pretty_print, :pretty_print_cycle,
         :rassoc, :repeated_combination, :repeated_permutation, :reverse,
-        :rindex, :rotate, :sample, :shuffle, :shelljoin, :slice,
+        :rindex, :rotate, :sample, :shuffle, :shelljoin,
         :to_s, :transpose, :uniq, :|
 
 
