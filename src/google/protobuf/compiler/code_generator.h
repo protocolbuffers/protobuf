@@ -50,6 +50,7 @@ namespace io { class ZeroCopyOutputStream; }
 class FileDescriptor;
 
 namespace compiler {
+class Version;
 
 // Defined in this file.
 class CodeGenerator;
@@ -142,6 +143,10 @@ class LIBPROTOC_EXPORT GeneratorContext {
   // in this run.  Useful for languages, such as Go, that treat files
   // differently when compiled as a set rather than individually.
   virtual void ListParsedFiles(std::vector<const FileDescriptor*>* output);
+
+  // Retrieves the version number of the protocol compiler associated with
+  // this GeneratorContext.
+  virtual void GetCompilerVersion(Version* version) const;
 
  private:
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(GeneratorContext);

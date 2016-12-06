@@ -57,6 +57,7 @@
 #include <google/protobuf/io/printer.h>
 #include <google/protobuf/unittest.pb.h>
 #include <google/protobuf/testing/file.h>
+#include <google/protobuf/stubs/stringprintf.h>
 #include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/stubs/substitute.h>
 
@@ -1580,6 +1581,21 @@ TEST_F(CommandLineInterfaceTest, PluginReceivesJsonName) {
   Run("protocol_compiler --plug_out=$tmpdir --proto_path=$tmpdir foo.proto");
 
   ExpectErrorSubstring("Saw json_name: 1");
+}
+
+TEST_F(CommandLineInterfaceTest, PluginReceivesCompilerVersion) {
+  CreateTempFile("foo.proto",
+    "syntax = \"proto2\";\n"
+    "message MockCodeGenerator_ShowVersionNumber {\n"
+    "  optional int32 value = 1;\n"
+    "}\n");
+
+  Run("protocol_compiler --plug_out=$tmpdir --proto_path=$tmpdir foo.proto");
+
+  ExpectErrorSubstring(
+      StringPrintf("Saw compiler_version: %d %s",
+                   GOOGLE_PROTOBUF_VERSION,
+                   GOOGLE_PROTOBUF_VERSION_SUFFIX));
 }
 
 TEST_F(CommandLineInterfaceTest, GeneratorPluginNotFound) {

@@ -63,9 +63,12 @@ namespace compiler {
 class GeneratorResponseContext : public GeneratorContext {
  public:
   GeneratorResponseContext(
+      const Version& compiler_version,
       CodeGeneratorResponse* response,
       const std::vector<const FileDescriptor*>& parsed_files)
-      : response_(response), parsed_files_(parsed_files) {}
+      : compiler_version_(compiler_version),
+        response_(response),
+        parsed_files_(parsed_files) {}
   virtual ~GeneratorResponseContext() {}
 
   // implements GeneratorContext --------------------------------------
@@ -88,7 +91,12 @@ class GeneratorResponseContext : public GeneratorContext {
     *output = parsed_files_;
   }
 
+  void GetCompilerVersion(Version* version) const {
+    *version = compiler_version_;
+  }
+
  private:
+  Version compiler_version_;
   CodeGeneratorResponse* response_;
   const std::vector<const FileDescriptor*>& parsed_files_;
 };
@@ -116,7 +124,8 @@ bool GenerateCode(const CodeGeneratorRequest& request,
     }
   }
 
-  GeneratorResponseContext context(response, parsed_files);
+  GeneratorResponseContext context(
+      request.compiler_version(), response, parsed_files);
 
   string error;
   bool succeeded = generator.GenerateAll(
