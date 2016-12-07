@@ -950,6 +950,12 @@ int lupb_msg_pushref(lua_State *L, int msgclass, void *msg) {
   return 1;
 }
 
+static int lupb_msg_gc(lua_State *L) {
+  lupb_msg *lmsg = lupb_msg_check(L, 1);
+  upb_msg_uninit(lmsg->msg, lmsg->lmsgclass->layout);
+  return 0;
+}
+
 /* lupb_msg Public API */
 
 /**
@@ -1053,6 +1059,7 @@ static int lupb_msg_newindex(lua_State *L) {
 }
 
 static const struct luaL_Reg lupb_msg_mm[] = {
+  {"__gc", lupb_msg_gc},
   {"__index", lupb_msg_index},
   {"__newindex", lupb_msg_newindex},
   {NULL, NULL}

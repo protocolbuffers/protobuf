@@ -720,6 +720,7 @@ static const struct luaL_Reg lupb_oneofdef_m[] = {
 };
 
 static const struct luaL_Reg lupb_oneofdef_mm[] = {
+  {"__gc", lupb_refcounted_gc},
   {"__len", lupb_oneofdef_len},
   {NULL, NULL}
 };
