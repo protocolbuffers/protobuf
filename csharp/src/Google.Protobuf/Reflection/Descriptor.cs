@@ -142,9 +142,10 @@ namespace Google.Protobuf.Reflection {
             "CmFubm90YXRpb24YASADKAsyLS5nb29nbGUucHJvdG9idWYuR2VuZXJhdGVk",
             "Q29kZUluZm8uQW5ub3RhdGlvbhpPCgpBbm5vdGF0aW9uEhAKBHBhdGgYASAD",
             "KAVCAhABEhMKC3NvdXJjZV9maWxlGAIgASgJEg0KBWJlZ2luGAMgASgFEgsK",
-            "A2VuZBgEIAEoBUJYChNjb20uZ29vZ2xlLnByb3RvYnVmQhBEZXNjcmlwdG9y",
-            "UHJvdG9zSAFaCmRlc2NyaXB0b3KiAgNHUEKqAhpHb29nbGUuUHJvdG9idWYu",
-            "UmVmbGVjdGlvbg=="));
+            "A2VuZBgEIAEoBUKMAQoTY29tLmdvb2dsZS5wcm90b2J1ZkIQRGVzY3JpcHRv",
+            "clByb3Rvc0gBWj5naXRodWIuY29tL2dvbGFuZy9wcm90b2J1Zi9wcm90b2Mt",
+            "Z2VuLWdvL2Rlc2NyaXB0b3I7ZGVzY3JpcHRvcqICA0dQQqoCGkdvb2dsZS5Q",
+            "cm90b2J1Zi5SZWZsZWN0aW9u"));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { },
           new pbr::GeneratedClrTypeInfo(null, new pbr::GeneratedClrTypeInfo[] {
