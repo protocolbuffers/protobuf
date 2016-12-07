@@ -108,11 +108,17 @@ string VersionString(int version) {
 // ===================================================================
 // emulates google3/base/logging.cc
 
+// If the minimum logging level is not set, we default to logging messages for
+// all levels.
+#ifndef GOOGLE_PROTOBUF_MIN_LOG_LEVEL
+#define GOOGLE_PROTOBUF_MIN_LOG_LEVEL LOGLEVEL_INFO
+#endif
+
 namespace internal {
+
 #if defined(__ANDROID__)
 inline void DefaultLogHandler(LogLevel level, const char* filename, int line,
                               const string& message) {
-#ifdef GOOGLE_PROTOBUF_MIN_LOG_LEVEL
   if (level < GOOGLE_PROTOBUF_MIN_LOG_LEVEL) {
     return;
   }
@@ -143,11 +149,14 @@ inline void DefaultLogHandler(LogLevel level, const char* filename, int line,
     __android_log_write(ANDROID_LOG_FATAL, "libprotobuf-native",
                         "terminating.\n");
   }
-#endif
 }
+
 #else
 void DefaultLogHandler(LogLevel level, const char* filename, int line,
                        const string& message) {
+  if (level < GOOGLE_PROTOBUF_MIN_LOG_LEVEL) {
+    return;
+  }
   static const char* level_names[] = { "INFO", "WARNING", "ERROR", "FATAL" };
 
   // We use fprintf() instead of cerr because we want this to work at static
