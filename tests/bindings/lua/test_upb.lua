@@ -576,10 +576,10 @@ function test_msg_primitives()
     }
 
     factory = upb.MessageFactory(symtab)
-    TestMessage = factory:get_message_class(symtab:lookup("TestMessage"))
+    TestMessage = factory:get_message_class("TestMessage")
     msg = TestMessage()
 
-    -- Defaults to nil
+    -- Defaults to zero
     assert_equal(0, msg.f)
 
     msg.f = 0
@@ -624,7 +624,7 @@ function test_msg_primitives()
   }
 
   factory = upb.MessageFactory(symtab)
-  TestMessage = factory:get_message_class(symtab:lookup("TestMessage"))
+  TestMessage = factory:get_message_class("TestMessage")
   msg = TestMessage()
 
   -- Unset member returns default value.
@@ -673,7 +673,7 @@ function test_msg_array()
   }
 
   factory = upb.MessageFactory(symtab)
-  TestMessage = factory:get_message_class(symtab:lookup("TestMessage"))
+  TestMessage = factory:get_message_class("TestMessage")
   msg = TestMessage()
 
   assert_nil(msg.i32_array)
@@ -711,8 +711,8 @@ function test_msg_submsg()
   }
 
   factory = upb.MessageFactory(symtab)
-  TestMessage = factory:get_message_class(symtab:lookup("TestMessage"))
-  SubMessage = factory:get_message_class(symtab:lookup("SubMessage"))
+  TestMessage = factory:get_message_class("TestMessage")
+  SubMessage = factory:get_message_class("SubMessage")
   msg = TestMessage()
 
   assert_nil(msg.submsg)

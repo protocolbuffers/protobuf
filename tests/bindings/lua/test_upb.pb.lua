@@ -25,7 +25,7 @@ local symtab = upb.SymbolTable{
 }
 
 local factory = upb.MessageFactory(symtab);
-local TestMessage = factory:get_message_class(symtab:lookup("TestMessage"))
+local TestMessage = factory:get_message_class("TestMessage")
 
 function test_decodermethod()
   local decoder = pb.MakeStringToMessageDecoder(TestMessage)
@@ -62,7 +62,7 @@ function test_parse_string()
   }
 
   local factory = upb.MessageFactory(symtab);
-  local TestMessage = factory:get_message_class(symtab:lookup("TestMessage"))
+  local TestMessage = factory:get_message_class("TestMessage")
 
   local binary_pb = "\010\005Hello"
   local decoder = pb.MakeStringToMessageDecoder(TestMessage)

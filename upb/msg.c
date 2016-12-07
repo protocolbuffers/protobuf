@@ -24,6 +24,7 @@ bool upb_fieldtype_mapkeyok(upb_fieldtype_t type) {
 void *upb_array_pack(const upb_array *arr, void *p, size_t *ofs, size_t size);
 void *upb_map_pack(const upb_map *map, void *p, size_t *ofs, size_t size);
 
+#define CHARPTR_AT(msg, ofs) ((char*)msg + ofs)
 
 /** upb_msgval ****************************************************************/
 
@@ -158,13 +159,11 @@ struct upb_msglayout {
   uint8_t align;
 };
 
-static void upb_msg_check(const upb_msglayout *l, const upb_fielddef *f) {
+static void upb_msg_checkfield(const upb_msglayout *l, const upb_fielddef *f) {
   UPB_ASSERT(l->msgdef == upb_fielddef_containingtype(f));
 }
 
 static void upb_msglayout_free(upb_msglayout *l) {
-  upb_gfree(l->offsets);
-  upb_gfree(l->hasbits);
   upb_gfree(l->default_msg);
   upb_gfree(l);
 }
@@ -193,27 +192,59 @@ static uint32_t upb_msglayout_hasbit(const upb_msglayout *l,
   return l->hasbits[upb_fielddef_index(f)];
 }
 
+static bool upb_msglayout_initdefault(upb_msglayout *l) {
+  const upb_msgdef *m = l->msgdef;
+  upb_msg_field_iter it;
+
+  if (upb_msgdef_syntax(m) == UPB_SYNTAX_PROTO2 && l->size) {
+    /* Allocate default message and set default values in it. */
+    l->default_msg = upb_gmalloc(l->size);
+    if (!l->default_msg) {
+      return false;
+    }
+
+    memset(l->default_msg, 0, l->size);
+
+    for (upb_msg_field_begin(&it, m); !upb_msg_field_done(&it);
+         upb_msg_field_next(&it)) {
+      const upb_fielddef* f = upb_msg_iter_field(&it);
+
+      if (upb_fielddef_containingoneof(f)) {
+        continue;
+      }
+
+      if (!upb_fielddef_isstring(f) &&
+          !upb_fielddef_issubmsg(f) &&
+          !upb_fielddef_isseq(f)) {
+        upb_msg_set(l->default_msg, f, upb_msgval_fromdefault(f), l);
+      }
+    }
+  }
+
+  return true;
+}
+
 static upb_msglayout *upb_msglayout_new(const upb_msgdef *m) {
   upb_msg_field_iter it;
   upb_msg_oneof_iter oit;
   upb_msglayout *l;
   size_t hasbit;
+  size_t array_size = upb_msgdef_numfields(m) + upb_msgdef_numoneofs(m);
 
-  l = upb_gmalloc(sizeof(*l));
+  if (upb_msgdef_syntax(m) == UPB_SYNTAX_PROTO2) {
+    array_size += upb_msgdef_numfields(m);  /* hasbits. */
+  }
+
+  l = upb_gmalloc(sizeof(*l) + (sizeof(uint32_t) * array_size));
   if (!l) return NULL;
 
   memset(l, 0, sizeof(*l));
 
   l->msgdef = m;
-
-  if (upb_msgdef_syntax(m) == UPB_SYNTAX_PROTO2) {
-    l->hasbits = upb_gmalloc(sizeof(*l->hasbits) * upb_msgdef_numfields(m));
-  }
-
-  l->offsets = upb_gmalloc(sizeof(*l->offsets) * upb_msgdef_numfields(m));
-  l->case_offsets =
-      upb_gmalloc(sizeof(*l->case_offsets) * upb_msgdef_numoneofs(m));
   l->align = 1;
+  l->offsets = (uint32_t*)CHARPTR_AT(l, sizeof(*l));
+  l->case_offsets = l->offsets + upb_msgdef_numfields(m);
+  l->hasbits = l->case_offsets + upb_msgdef_numoneofs(m);
 
   /* Allocate data offsets in three stages:
    *
@@ -289,36 +320,12 @@ static upb_msglayout *upb_msglayout_new(const upb_msgdef *m) {
    * alignment. */
   l->size = align_up(l->size, l->align);
 
-  if (upb_msgdef_syntax(m) == UPB_SYNTAX_PROTO2 && l->size) {
-    /* Allocate default message and set default values in it. */
-    l->default_msg = upb_gmalloc(l->size);
-    if (!l->default_msg) {
-      goto err;
-    }
-
-    memset(l->default_msg, 0, l->size);
-
-    for (upb_msg_field_begin(&it, m), hasbit = 0; !upb_msg_field_done(&it);
-         upb_msg_field_next(&it)) {
-      const upb_fielddef* f = upb_msg_iter_field(&it);
-
-      if (upb_fielddef_containingoneof(f)) {
-        continue;
-      }
-
-      if (!upb_fielddef_isstring(f) &&
-          !upb_fielddef_issubmsg(f) &&
-          !upb_fielddef_isseq(f)) {
-        upb_msg_set(l->default_msg, f, upb_msgval_fromdefault(f), l);
-      }
-    }
+  if (upb_msglayout_initdefault(l)) {
+    return l;
+  } else {
+    upb_msglayout_free(l);
+    return NULL;
   }
-
-  return l;
-
- err:
-  upb_msglayout_free(l);
-  return NULL;
 }
 
 
@@ -361,13 +368,17 @@ void upb_msgfactory_free(upb_msgfactory *f) {
   upb_gfree(f);
 }
 
+const upb_symtab *upb_msgfactory_symtab(const upb_msgfactory *f) {
+  return f->symtab;
+}
+
 /* Requires:
  * - m is in upb_msgfactory_symtab(f)
  * - upb_msgdef_mapentry(m) == false (since map messages can't have layouts).
  *
  * The returned layout will live for as long as the msgfactory does.
  */
-const upb_msglayout *upb_msgfactory_getlayout(const upb_msgfactory *f,
+const upb_msglayout *upb_msgfactory_getlayout(upb_msgfactory *f,
                                               const upb_msgdef *m) {
   upb_value v;
   UPB_ASSERT(upb_symtab_lookupmsg(f->symtab, upb_msgdef_fullname(m)) == m);
@@ -377,7 +388,6 @@ const upb_msglayout *upb_msgfactory_getlayout(const upb_msgfactory *f,
     UPB_ASSERT(upb_value_getptr(v));
     return upb_value_getptr(v);
   } else {
-    /* This method should be made thread-safe so the "const" is accurate. */
     upb_msgfactory *mutable_f = (void*)f;
     upb_msglayout *l = upb_msglayout_new(m);
     upb_inttable_insertptr(&mutable_f->layouts, m, upb_value_ptr(l));
@@ -406,7 +416,7 @@ void *upb_msg_startstr(void *msg, const void *hd, size_t size_hint) {
 }
 
 size_t upb_msg_str(void *msg, const void *hd, const char *ptr, size_t size,
-                 const upb_bufhandle *handle) {
+                   const upb_bufhandle *handle) {
   uint32_t ofs = (uintptr_t)hd;
   /* We pass NULL here because we know we can get away with it. */
   upb_alloc *alloc = upb_msg_alloc(msg, NULL);
@@ -430,7 +440,7 @@ size_t upb_msg_str(void *msg, const void *hd, const char *ptr, size_t size,
 }
 
 static void callback(const void *closure, upb_handlers *h) {
-  const upb_msgfactory *factory = closure;
+  upb_msgfactory *factory = (upb_msgfactory*)closure;
   const upb_msgdef *md = upb_handlers_msgdef(h);
   const upb_msglayout* layout = upb_msgfactory_getlayout(factory, md);
   upb_msg_field_iter i;
@@ -455,9 +465,8 @@ static void callback(const void *closure, upb_handlers *h) {
   }
 }
 
-const upb_handlers *upb_msgfactory_getmergehandlers(const upb_msgfactory *f,
+const upb_handlers *upb_msgfactory_getmergehandlers(upb_msgfactory *f,
                                                     const upb_msgdef *m) {
-  /* This method should be made thread-safe so the "const" is accurate. */
   upb_msgfactory *mutable_f = (void*)f;
 
   /* TODO(haberman): properly cache these. */
@@ -473,7 +482,6 @@ const upb_handlers *upb_msgfactory_getmergehandlers(const upb_msgfactory *f,
 /* If we always read/write as a consistent type to each address, this shouldn't
  * violate aliasing.
  */
-#define CHARPTR_AT(msg, ofs) ((char*)msg + ofs)
 #define DEREF(msg, ofs, type) *(type*)CHARPTR_AT(msg, ofs)
 
 static upb_inttable *upb_msg_trygetextdict(const upb_msg *msg,
@@ -575,7 +583,7 @@ bool upb_msg_has(const upb_msg *msg,
                  const upb_fielddef *f,
                  const upb_msglayout *l) {
   const upb_oneofdef *o;
-  upb_msg_check(l, f);
+  upb_msg_checkfield(l, f);
   UPB_ASSERT(upb_fielddef_haspresence(f));
 
   if (upb_fielddef_isextension(f)) {
@@ -596,7 +604,7 @@ bool upb_msg_has(const upb_msg *msg,
 
 upb_msgval upb_msg_get(const upb_msg *msg, const upb_fielddef *f,
                        const upb_msglayout *l) {
-  upb_msg_check(l, f);
+  upb_msg_checkfield(l, f);
 
   if (upb_fielddef_isextension(f)) {
     upb_inttable *ext_dict = upb_msg_trygetextdict(msg, l);
@@ -627,7 +635,7 @@ bool upb_msg_set(upb_msg *msg,
                  upb_msgval val,
                  const upb_msglayout *l) {
   upb_alloc *a = upb_msg_alloc(msg, l);
-  upb_msg_check(l, f);
+  upb_msg_checkfield(l, f);
 
   if (upb_fielddef_isextension(f)) {
     /* TODO(haberman): introduce table API that can do this in one call. */
@@ -882,6 +890,7 @@ bool upb_map_set(upb_map *map, upb_msgval key, upb_msgval val,
 
   upb_map_tokey(map->key_type, &key, &key_str, &key_len);
 
+  /* TODO(haberman): add overwrite operation to minimize number of lookups. */
   if (upb_strtable_lookup2(&map->strtab, key_str, key_len, NULL)) {
     upb_strtable_remove3(&map->strtab, key_str, key_len, &removedtabval, a);
     memcpy(&removed, &removedtabval, sizeof(removed));

@@ -256,10 +256,19 @@ static int lupb_msgfactory_new(lua_State *L) {
  * lupb_msgfactory_getmsgclass()
  *
  * Handles:
- *   MessageClass = factory.get_message_class(msgdef)
+ *   MessageClass = factory.get_message_class(message_name)
  */
 static int lupb_msgfactory_getmsgclass(lua_State *L) {
-  lupb_msgfactory_pushmsgclass(L, 1, lupb_msgdef_check(L, 2));
+  lupb_msgfactory *lfactory = lupb_msgfactory_check(L, 1);
+  const upb_symtab *symtab = upb_msgfactory_symtab(lfactory->factory);
+  const upb_msgdef *m = upb_symtab_lookupmsg(symtab, luaL_checkstring(L, 2));
+
+  if (!m) {
+    luaL_error(L, "No such message type: %s\n", lua_tostring(L, 2));
+  }
+
+  lupb_msgfactory_pushmsgclass(L, 1, m);
+
   return 1;
 }
 

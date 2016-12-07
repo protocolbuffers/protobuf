@@ -101,6 +101,8 @@ bool upb_visitor_visitmsg(upb_visitor *v, const void *msg);
 upb_msgfactory *upb_msgfactory_new(const upb_symtab *symtab);
 void upb_msgfactory_free(upb_msgfactory *f);
 
+const upb_symtab *upb_msgfactory_symtab(const upb_msgfactory *f);
+
 /* The functions to get cached objects, lazily creating them on demand.  These
  * all require:
  *
@@ -108,12 +110,12 @@ void upb_msgfactory_free(upb_msgfactory *f);
  * - upb_msgdef_mapentry(m) == false (since map messages can't have layouts).
  *
  * The returned objects will live for as long as the msgfactory does. */
-const upb_msglayout *upb_msgfactory_getlayout(const upb_msgfactory *f,
+const upb_msglayout *upb_msgfactory_getlayout(upb_msgfactory *f,
                                               const upb_msgdef *m);
-const upb_handlers *upb_msgfactory_getmergehandlers(const upb_msgfactory *f,
+const upb_handlers *upb_msgfactory_getmergehandlers(upb_msgfactory *f,
                                                     const upb_msgdef *m);
-const upb_visitorplan *upb_visitorplan_new(const upb_msgfactory *f,
-                                           const upb_msgdef *m);
+const upb_visitorplan *upb_msgfactory_getvisitorplan(const upb_msgfactory *f,
+                                                     const upb_msgdef *m);
 
 
 /** upb_msgval ****************************************************************/
@@ -354,8 +356,6 @@ void upb_mapiter_free(upb_mapiter *i, upb_alloc *a);
 void upb_mapiter_next(upb_mapiter *i);
 bool upb_mapiter_done(const upb_mapiter *i);
 
-/* For string keys, the value will be in upb_msgval_strkey(), *not*
- * upb_msgval_str(). */
 upb_msgval upb_mapiter_key(const upb_mapiter *i);
 upb_msgval upb_mapiter_value(const upb_mapiter *i);
 void upb_mapiter_setdone(upb_mapiter *i);
