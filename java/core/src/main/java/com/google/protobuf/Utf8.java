@@ -229,6 +229,16 @@ final class Utf8 {
     }
   }
 
+  private static int incompleteStateFor(ByteInput bytes, int index, int limit) {
+    int byte1 = bytes.read(index - 1);
+    switch (limit - index) {
+      case 0: return incompleteStateFor(byte1);
+      case 1: return incompleteStateFor(byte1, bytes.read(index));
+      case 2: return incompleteStateFor(byte1, bytes.read(index), bytes.read(index + 1));
+      default: throw new AssertionError();
+    }
+  }
+
   // These UTF-8 handling methods are copied from Guava's Utf8 class with a modification to throw
   // a protocol buffer local exception. This exception is then caught in CodedOutputStream so it can
   // fallback to more lenient behavior.
@@ -328,6 +338,24 @@ final class Utf8 {
    * @see Utf8#partialIsValidUtf8(int, byte[], int, int)
    */
   static int partialIsValidUtf8(int state, ByteBuffer buffer, int index, int limit) {
+    return processor.partialIsValidUtf8(state, buffer, index, limit);
+  }
+
+  /**
+   * Determines if the given {@link ByteInput} is a valid UTF-8 string.
+   *
+   * @param buffer the buffer to check.
+   */
+  static boolean isValidUtf8(ByteInput buffer, int index, int limit) {
+    return processor.isValidUtf8(buffer, index, limit);
+  }
+
+  /**
+   * Determines if the given {@link ByteInput} is a partially valid UTF-8 string.
+   *
+   * @param buffer the buffer to check.
+   */
+  static int partialIsValidUtf8(int state, ByteInput buffer, int index, int limit) {
     return processor.partialIsValidUtf8(state, buffer, index, limit);
   }
 
@@ -604,6 +632,169 @@ final class Utf8 {
               || buffer.get(index++) > (byte) 0xBF
               // byte4 trailing-byte test
               || buffer.get(index++) > (byte) 0xBF) {
+            return MALFORMED;
+          }
+        }
+      }
+    }
+
+    public boolean isValidUtf8(ByteInput buffer, int index, int limit) {
+      return partialIsValidUtf8(COMPLETE, buffer, index, limit) == COMPLETE;
+    }
+
+    int partialIsValidUtf8(int state, ByteInput bytes, int index, int limit) {
+      if (state != COMPLETE) {
+        // The previous decoding operation was incomplete (or malformed).
+        // We look for a well-formed sequence consisting of bytes from
+        // the previous decoding operation (stored in state) together
+        // with bytes from the array slice.
+        //
+        // We expect such "straddler characters" to be rare.
+
+        if (index >= limit) {  // No bytes? No progress.
+          return state;
+        }
+        int byte1 = (byte) state;
+        // byte1 is never ASCII.
+        if (byte1 < (byte) 0xE0) {
+          // two-byte form
+
+          // Simultaneously checks for illegal trailing-byte in
+          // leading position and overlong 2-byte form.
+          if (byte1 < (byte) 0xC2
+              // byte2 trailing-byte test
+              || bytes.read(index++) > (byte) 0xBF) {
+            return MALFORMED;
+          }
+        } else if (byte1 < (byte) 0xF0) {
+          // three-byte form
+
+          // Get byte2 from saved state or array
+          int byte2 = (byte) ~(state >> 8);
+          if (byte2 == 0) {
+            byte2 = bytes.read(index++);
+            if (index >= limit) {
+              return incompleteStateFor(byte1, byte2);
+            }
+          }
+          if (byte2 > (byte) 0xBF
+              // overlong? 5 most significant bits must not all be zero
+              || (byte1 == (byte) 0xE0 && byte2 < (byte) 0xA0)
+              // illegal surrogate codepoint?
+              || (byte1 == (byte) 0xED && byte2 >= (byte) 0xA0)
+              // byte3 trailing-byte test
+              || bytes.read(index++) > (byte) 0xBF) {
+            return MALFORMED;
+          }
+        } else {
+          // four-byte form
+
+          // Get byte2 and byte3 from saved state or array
+          int byte2 = (byte) ~(state >> 8);
+          int byte3 = 0;
+          if (byte2 == 0) {
+            byte2 = bytes.read(index++);
+            if (index >= limit) {
+              return incompleteStateFor(byte1, byte2);
+            }
+          } else {
+            byte3 = (byte) (state >> 16);
+          }
+          if (byte3 == 0) {
+            byte3 = bytes.read(index++);
+            if (index >= limit) {
+              return incompleteStateFor(byte1, byte2, byte3);
+            }
+          }
+
+          // If we were called with state == MALFORMED, then byte1 is 0xFF,
+          // which never occurs in well-formed UTF-8, and so we will return
+          // MALFORMED again below.
+
+          if (byte2 > (byte) 0xBF
+              // Check that 1 <= plane <= 16.  Tricky optimized form of:
+              // if (byte1 > (byte) 0xF4 ||
+              //     byte1 == (byte) 0xF0 && byte2 < (byte) 0x90 ||
+              //     byte1 == (byte) 0xF4 && byte2 > (byte) 0x8F)
+              || (((byte1 << 28) + (byte2 - (byte) 0x90)) >> 30) != 0
+              // byte3 trailing-byte test
+              || byte3 > (byte) 0xBF
+              // byte4 trailing-byte test
+              || bytes.read(index++) > (byte) 0xBF) {
+            return MALFORMED;
+          }
+        }
+      }
+
+      return partialIsValidUtf8(bytes, index, limit);
+    }
+
+    private static int partialIsValidUtf8(ByteInput bytes, int index, int limit) {
+      // Optimize for 100% ASCII (Hotspot loves small simple top-level loops like this).
+      // This simple loop stops when we encounter a byte >= 0x80 (i.e. non-ASCII).
+      while (index < limit && bytes.read(index) >= 0) {
+        index++;
+      }
+
+      return (index >= limit) ? COMPLETE : partialIsValidUtf8NonAscii(bytes, index, limit);
+    }
+
+    private static int partialIsValidUtf8NonAscii(ByteInput bytes, int index, int limit) {
+      for (;;) {
+        int byte1, byte2;
+
+        // Optimize for interior runs of ASCII bytes.
+        do {
+          if (index >= limit) {
+            return COMPLETE;
+          }
+        } while ((byte1 = bytes.read(index++)) >= 0);
+
+        if (byte1 < (byte) 0xE0) {
+          // two-byte form
+
+          if (index >= limit) {
+            // Incomplete sequence
+            return byte1;
+          }
+
+          // Simultaneously checks for illegal trailing-byte in
+          // leading position and overlong 2-byte form.
+          if (byte1 < (byte) 0xC2
+              || bytes.read(index++) > (byte) 0xBF) {
+            return MALFORMED;
+          }
+        } else if (byte1 < (byte) 0xF0) {
+          // three-byte form
+
+          if (index >= limit - 1) { // incomplete sequence
+            return incompleteStateFor(bytes, index, limit);
+          }
+          if ((byte2 = bytes.read(index++)) > (byte) 0xBF
+              // overlong? 5 most significant bits must not all be zero
+              || (byte1 == (byte) 0xE0 && byte2 < (byte) 0xA0)
+              // check for illegal surrogate codepoints
+              || (byte1 == (byte) 0xED && byte2 >= (byte) 0xA0)
+              // byte3 trailing-byte test
+              || bytes.read(index++) > (byte) 0xBF) {
+            return MALFORMED;
+          }
+        } else {
+          // four-byte form
+
+          if (index >= limit - 2) {  // incomplete sequence
+            return incompleteStateFor(bytes, index, limit);
+          }
+          if ((byte2 = bytes.read(index++)) > (byte) 0xBF
+              // Check that 1 <= plane <= 16.  Tricky optimized form of:
+              // if (byte1 > (byte) 0xF4 ||
+              //     byte1 == (byte) 0xF0 && byte2 < (byte) 0x90 ||
+              //     byte1 == (byte) 0xF4 && byte2 > (byte) 0x8F)
+              || (((byte1 << 28) + (byte2 - (byte) 0x90)) >> 30) != 0
+              // byte3 trailing-byte test
+              || bytes.read(index++) > (byte) 0xBF
+              // byte4 trailing-byte test
+              || bytes.read(index++) > (byte) 0xBF) {
             return MALFORMED;
           }
         }

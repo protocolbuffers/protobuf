@@ -76,6 +76,12 @@ public class CodedInputStreamTest extends TestCase {
       CodedInputStream newDecoder(byte[] data, int blockSize) {
         return CodedInputStream.newInstance(new SmallBlockInputStream(data, blockSize));
       }
+    },
+    BYTE_INPUT {
+      @Override
+      CodedInputStream newDecoder(byte[] data, int blockSize) {
+        return CodedInputStream.newInstance(new ByteInputImpl(data));
+      }
     };
 
     CodedInputStream newDecoder(byte[] data) {
@@ -83,6 +89,35 @@ public class CodedInputStreamTest extends TestCase {
     }
 
     abstract CodedInputStream newDecoder(byte[] data, int blockSize);
+  }
+
+  private static class ByteInputImpl extends ByteInput{
+    private byte[] data;
+
+    public ByteInputImpl(byte[] data){
+      this.data = data;
+    }
+
+    @Override
+    public byte read(int offset) {
+      return this.data[offset];
+    }
+
+    @Override
+    public int read(int offset, byte[] out, int outOffset, int len) {
+      System.arraycopy(this.data, offset, out, outOffset, len);
+      return len;
+    }
+
+    @Override
+    public void read(int offset, ByteBuffer out) {
+      out.put(this.data, offset, size() - offset);
+    }
+
+    @Override
+    public int size() {
+      return this.data.length;
+    }
   }
 
   /**

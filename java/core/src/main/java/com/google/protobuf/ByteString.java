@@ -339,6 +339,13 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
   }
 
   /**
+   * Wraps the given bytes into a {@code ByteString}. Intended for internal only usage.
+   */
+  static ByteString wrap(ByteInput buffer, int offset, int length) {
+    return new ByteInputByteString(buffer, offset, length);
+  }
+
+  /**
    * Copies the next {@code size} bytes from a {@code java.nio.ByteBuffer} into
    * a {@code ByteString}.
    *
