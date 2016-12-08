@@ -35,25 +35,25 @@ namespace google {
 namespace protobuf {
 class Any;
 class AnyDefaultTypeInternal;
-extern AnyDefaultTypeInternal _Any_default_instance_;
+LIBPROTOBUF_EXPORT extern AnyDefaultTypeInternal _Any_default_instance_;
 class Enum;
 class EnumDefaultTypeInternal;
-extern EnumDefaultTypeInternal _Enum_default_instance_;
+LIBPROTOBUF_EXPORT extern EnumDefaultTypeInternal _Enum_default_instance_;
 class EnumValue;
 class EnumValueDefaultTypeInternal;
-extern EnumValueDefaultTypeInternal _EnumValue_default_instance_;
+LIBPROTOBUF_EXPORT extern EnumValueDefaultTypeInternal _EnumValue_default_instance_;
 class Field;
 class FieldDefaultTypeInternal;
-extern FieldDefaultTypeInternal _Field_default_instance_;
+LIBPROTOBUF_EXPORT extern FieldDefaultTypeInternal _Field_default_instance_;
 class Option;
 class OptionDefaultTypeInternal;
-extern OptionDefaultTypeInternal _Option_default_instance_;
+LIBPROTOBUF_EXPORT extern OptionDefaultTypeInternal _Option_default_instance_;
 class SourceContext;
 class SourceContextDefaultTypeInternal;
-extern SourceContextDefaultTypeInternal _SourceContext_default_instance_;
+LIBPROTOBUF_EXPORT extern SourceContextDefaultTypeInternal _SourceContext_default_instance_;
 class Type;
 class TypeDefaultTypeInternal;
-extern TypeDefaultTypeInternal _Type_default_instance_;
+LIBPROTOBUF_EXPORT extern TypeDefaultTypeInternal _Type_default_instance_;
 }  // namespace protobuf
 }  // namespace google
 

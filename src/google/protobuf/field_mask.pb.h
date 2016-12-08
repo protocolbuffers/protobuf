@@ -32,7 +32,7 @@ namespace google {
 namespace protobuf {
 class FieldMask;
 class FieldMaskDefaultTypeInternal;
-extern FieldMaskDefaultTypeInternal _FieldMask_default_instance_;
+LIBPROTOBUF_EXPORT extern FieldMaskDefaultTypeInternal _FieldMask_default_instance_;
 }  // namespace protobuf
 }  // namespace google
 
