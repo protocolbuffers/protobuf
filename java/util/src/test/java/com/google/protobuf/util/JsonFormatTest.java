@@ -1267,6 +1267,23 @@ public class JsonFormatTest extends TestCase {
             + "  }\n"
             + "}",
         JsonFormat.printer().includingDefaultValueFields().print(mapMessage));
+
+    TestOneof oneofMessage = TestOneof.getDefaultInstance();
+    assertEquals("{\n}", JsonFormat.printer().print(oneofMessage));
+    assertEquals("{\n}", JsonFormat.printer().includingDefaultValueFields().print(oneofMessage));
+
+    oneofMessage = TestOneof.newBuilder().setOneofInt32(42).build();
+    assertEquals("{\n  \"oneofInt32\": 42\n}",
+        JsonFormat.printer().print(oneofMessage));
+    assertEquals("{\n  \"oneofInt32\": 42\n}",
+        JsonFormat.printer().includingDefaultValueFields().print(oneofMessage));
+
+    TestOneof.Builder oneofBuilder = TestOneof.newBuilder();
+    mergeFromJson("{\n" + "  \"oneofNullValue\": null \n" + "}", oneofBuilder);
+    oneofMessage = oneofBuilder.build();
+    assertEquals("{\n  \"oneofNullValue\": null\n}", JsonFormat.printer().print(oneofMessage));
+    assertEquals("{\n  \"oneofNullValue\": null\n}",
+        JsonFormat.printer().includingDefaultValueFields().print(oneofMessage));
   }
 
   public void testPreservingProtoFieldNames() throws Exception {
