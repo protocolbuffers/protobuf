@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-import 'test_include.proto';
+import 'proto/test_include.proto';
 
 package foo;
 

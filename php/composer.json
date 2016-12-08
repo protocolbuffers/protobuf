@@ -13,7 +13,11 @@
   },
   "autoload": {
     "psr-4": {
+      "Foo\\": "tests/generated/Foo",
+      "Bar\\": "tests/generated/Bar",
+      "Google\\Protobuf\\": "tests/generated/Google/Protobuf",
       "Google\\Protobuf\\Internal\\": "src/Google/Protobuf/Internal",
+      "GPBMetadata\\": "tests/generated/GPBMetadata",
       "GPBMetadata\\Google\\Protobuf\\Internal\\": "src/GPBMetadata/Google/Protobuf/Internal"
     },
     "files": [

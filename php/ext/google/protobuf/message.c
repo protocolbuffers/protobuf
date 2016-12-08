@@ -41,6 +41,7 @@ static  zend_function_entry message_methods[] = {
   PHP_ME(Message, decode, NULL, ZEND_ACC_PUBLIC)
   PHP_ME(Message, readOneof, NULL, ZEND_ACC_PROTECTED)
   PHP_ME(Message, writeOneof, NULL, ZEND_ACC_PROTECTED)
+  PHP_ME(Message, __construct, NULL, ZEND_ACC_PROTECTED)
   {NULL, NULL, NULL}
 };
 
@@ -209,6 +210,17 @@ void build_class_from_descriptor(zval* php_descriptor TSRMLS_DC) {
 // -----------------------------------------------------------------------------
 // PHP Methods
 // -----------------------------------------------------------------------------
+
+// At the first time the message is created, the class entry hasn't been
+// modified. As a result, the first created instance will be a normal zend
+// object. Here, we manually modify it to our message in such a case.
+PHP_METHOD(Message, __construct) {
+  if (Z_OBJVAL_P(getThis()).handlers != message_handlers) {
+    zend_class_entry* ce = Z_OBJCE_P(getThis());
+    zval_dtor(getThis());
+    Z_OBJVAL_P(getThis()) = message_create(ce TSRMLS_CC);
+  }
+}
 
 PHP_METHOD(Message, readOneof) {
   long index;

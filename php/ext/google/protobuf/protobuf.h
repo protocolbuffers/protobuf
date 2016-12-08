@@ -231,8 +231,8 @@ struct MessageHeader {
 };
 
 MessageLayout* create_layout(const upb_msgdef* msgdef);
-void layout_init(MessageLayout* layout, void* storage, zval** properties_table
-		 TSRMLS_DC);
+void layout_init(MessageLayout* layout, void* storage,
+                 zval** properties_table TSRMLS_DC);
 zval* layout_get(MessageLayout* layout, const void* storage,
                  const upb_fielddef* field, zval** cache TSRMLS_DC);
 void layout_set(MessageLayout* layout, MessageHeader* header,
@@ -241,6 +241,7 @@ void free_layout(MessageLayout* layout);
 
 PHP_METHOD(Message, readOneof);
 PHP_METHOD(Message, writeOneof);
+PHP_METHOD(Message, __construct);
 
 // -----------------------------------------------------------------------------
 // Encode / Decode.

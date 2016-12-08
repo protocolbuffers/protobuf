@@ -122,8 +122,7 @@ conformance/succeeding_tests.txt
 
 # php test output
 composer.lock
-php/tests/test.pb.php
-php/tests/test_include.pb.php
+php/tests/generated/
 php/ext/google/protobuf/.libs/
 php/ext/google/protobuf/Makefile.fragments
 php/ext/google/protobuf/Makefile.global
