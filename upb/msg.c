@@ -152,7 +152,7 @@ struct upb_msglayout {
   size_t size;
   size_t extdict_offset;
   void *default_msg;
-  uint32_t *offsets;
+  uint32_t *field_offsets;
   uint32_t *case_offsets;
   uint32_t *hasbits;
   bool has_extdict;
@@ -184,7 +184,7 @@ static size_t upb_msglayout_place(upb_msglayout *l, size_t size) {
 
 static uint32_t upb_msglayout_offset(const upb_msglayout *l,
                                      const upb_fielddef *f) {
-  return l->offsets[upb_fielddef_index(f)];
+  return l->field_offsets[upb_fielddef_index(f)];
 }
 
 static uint32_t upb_msglayout_hasbit(const upb_msglayout *l,
@@ -242,8 +242,8 @@ static upb_msglayout *upb_msglayout_new(const upb_msgdef *m) {
 
   l->msgdef = m;
   l->align = 1;
-  l->offsets = (uint32_t*)CHARPTR_AT(l, sizeof(*l));
-  l->case_offsets = l->offsets + upb_msgdef_numfields(m);
+  l->field_offsets = (uint32_t*)CHARPTR_AT(l, sizeof(*l));
+  l->case_offsets = l->field_offsets + upb_msgdef_numfields(m);
   l->hasbits = l->case_offsets + upb_msgdef_numoneofs(m);
 
   /* Allocate data offsets in three stages:
@@ -274,13 +274,15 @@ static upb_msglayout *upb_msglayout_new(const upb_msgdef *m) {
        upb_msg_field_next(&it)) {
     const upb_fielddef* f = upb_msg_iter_field(&it);
     size_t field_size = upb_msg_fieldsize(f);
+    size_t index = upb_fielddef_index(f);
+
 
     if (upb_fielddef_containingoneof(f)) {
       /* Oneofs are handled separately below. */
       continue;
     }
 
-    l->offsets[upb_fielddef_index(f)] = upb_msglayout_place(l, field_size);
+    l->field_offsets[index] = upb_msglayout_place(l, field_size);
   }
 
   /* Allocate oneof fields.  Each oneof field consists of a uint32 for the case
@@ -312,7 +314,7 @@ static upb_msglayout *upb_msglayout_new(const upb_msgdef *m) {
     for (upb_oneof_begin(&fit, oneof); !upb_oneof_done(&fit);
          upb_oneof_next(&fit)) {
       const upb_fielddef* f = upb_oneof_iter_field(&fit);
-      l->offsets[upb_fielddef_index(f)] = val_offset;
+      l->field_offsets[upb_fielddef_index(f)] = val_offset;
     }
   }
 
@@ -372,12 +374,6 @@ const upb_symtab *upb_msgfactory_symtab(const upb_msgfactory *f) {
   return f->symtab;
 }
 
-/* Requires:
- * - m is in upb_msgfactory_symtab(f)
- * - upb_msgdef_mapentry(m) == false (since map messages can't have layouts).
- *
- * The returned layout will live for as long as the msgfactory does.
- */
 const upb_msglayout *upb_msgfactory_getlayout(upb_msgfactory *f,
                                               const upb_msgdef *m) {
   upb_value v;
@@ -615,7 +611,7 @@ upb_msgval upb_msg_get(const upb_msg *msg, const upb_fielddef *f,
       return upb_msgval_fromdefault(f);
     }
   } else {
-    size_t ofs = l->offsets[upb_fielddef_index(f)];
+    size_t ofs = l->field_offsets[upb_fielddef_index(f)];
     const upb_oneofdef *o = upb_fielddef_containingoneof(f);
     upb_msgval ret;
 
@@ -646,7 +642,7 @@ bool upb_msg_set(upb_msg *msg,
       return false;
     }
   } else {
-    size_t ofs = l->offsets[upb_fielddef_index(f)];
+    size_t ofs = l->field_offsets[upb_fielddef_index(f)];
     const upb_oneofdef *o = upb_fielddef_containingoneof(f);
 
     if (o) {

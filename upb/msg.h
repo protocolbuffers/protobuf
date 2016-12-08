@@ -109,7 +109,10 @@ const upb_symtab *upb_msgfactory_symtab(const upb_msgfactory *f);
  * - m is in upb_msgfactory_symtab(f)
  * - upb_msgdef_mapentry(m) == false (since map messages can't have layouts).
  *
- * The returned objects will live for as long as the msgfactory does. */
+ * The returned objects will live for as long as the msgfactory does.
+ *
+ * TODO(haberman): consider making this thread-safe and take a const
+ * upb_msgfactory. */
 const upb_msglayout *upb_msgfactory_getlayout(upb_msgfactory *f,
                                               const upb_msgdef *m);
 const upb_handlers *upb_msgfactory_getmergehandlers(upb_msgfactory *f,
