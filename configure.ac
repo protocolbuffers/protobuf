@@ -178,6 +178,8 @@ case "$target_os" in
 esac
 AM_CONDITIONAL([OBJC_CONFORMANCE_TEST], [test $OBJC_CONFORMANCE_TEST = 1])
 
+AX_CXX_COMPILE_STDCXX([11], [noext], [optional])
+
 # HACK:  Make gmock's configure script pick up our copy of CFLAGS and CXXFLAGS,
 #   since the flags added by ACX_CHECK_SUNCC must be used when compiling gmock
 #   too.
