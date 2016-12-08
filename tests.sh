@@ -327,6 +327,8 @@ build_jruby() {
 build_ruby_all() {
   build_ruby21
   build_ruby22
+  # TODO(teboring): Disable jruby test temperarily for it randomly fails.
+  # https://grpc-testing.appspot.com/job/protobuf_pull_request/735/consoleFull.
   build_jruby
 }
 
@@ -386,10 +388,11 @@ use_php_bc() {
 
 build_php5.5() {
   use_php 5.5
-  cd php
+  pushd php
   rm -rf vendor
   cp -r /usr/local/vendor-5.5 vendor
   ./vendor/bin/phpunit
+  popd
 }
 
 build_php5.5_c() {
@@ -405,10 +408,11 @@ build_php5.5_zts_c() {
 
 build_php5.5_32() {
   use_php_bc 5.5
-  cd php
+  pushd php
   rm -rf vendor
   cp -r /usr/local/vendor-5.5 vendor
   ./vendor/bin/phpunit
+  popd
 }
 
 build_php5.5_c_32() {
@@ -419,10 +423,11 @@ build_php5.5_c_32() {
 
 build_php5.6() {
   use_php 5.6
-  cd php
+  pushd php
   rm -rf vendor
   cp -r /usr/local/vendor-5.6 vendor
   ./vendor/bin/phpunit
+  popd
 }
 
 build_php5.6_c() {
@@ -453,10 +458,11 @@ build_php5.6_mac() {
 
 build_php7.0() {
   use_php 7.0
-  cd php
+  pushd php
   rm -rf vendor
   cp -r /usr/local/vendor-7.0 vendor
   ./vendor/bin/phpunit
+  popd
 }
 
 build_php7.0_c() {
