@@ -45,6 +45,8 @@ OPTIONS:
          Skip the invoke of Xcode to test the runtime on OS X.
    --skip-objc-conformance
          Skip the Objective C conformance tests (run on OS X).
+   --xcode-quiet
+         Pass -quiet to xcodebuild.
 
 EOF
 }
@@ -83,6 +85,7 @@ DO_XCODE_OSX_TESTS=yes
 DO_XCODE_DEBUG=yes
 DO_XCODE_RELEASE=yes
 DO_OBJC_CONFORMANCE_TESTS=yes
+XCODE_QUIET=no
 while [[ $# != 0 ]]; do
   case "${1}" in
     -h | --help )
@@ -123,6 +126,9 @@ while [[ $# != 0 ]]; do
       ;;
     --skip-objc-conformance )
       DO_OBJC_CONFORMANCE_TESTS=no
+      ;;
+    --xcode-quiet )
+      XCODE_QUIET=yes
       ;;
     -*)
       echo "ERROR: Unknown option: ${1}" 1>&2
@@ -217,17 +223,21 @@ if ! objectivec/DevTools/pddm.py --dry-run objectivec/*.[hm] objectivec/Tests/*.
   exit 1
 fi
 
+readonly XCODE_VERSION_LINE="$(xcodebuild -version | grep Xcode\  )"
+readonly XCODE_VERSION="${XCODE_VERSION_LINE/Xcode /}"  # drop the prefix.
+
 if [[ "${DO_XCODE_IOS_TESTS}" == "yes" ]] ; then
   XCODEBUILD_TEST_BASE_IOS=(
     xcodebuild
       -project objectivec/ProtocolBuffers_iOS.xcodeproj
       -scheme ProtocolBuffers
   )
+  if [[ "${XCODE_QUIET}" == "yes" ]] ; then
+    XCODEBUILD_TEST_BASE_IOS+=( -quiet )
+  fi
   # Don't need to worry about form factors or retina/non retina;
   # just pick a mix of OS Versions and 32/64 bit.
   # NOTE: Different Xcode have different simulated hardware/os support.
-  readonly XCODE_VERSION_LINE="$(xcodebuild -version | grep Xcode\  )"
-  readonly XCODE_VERSION="${XCODE_VERSION_LINE/Xcode /}"  # drop the prefix.
   case "${XCODE_VERSION}" in
     6.* )
       echo "ERROR: Xcode 6.3/6.4 no longer supported for building, please use 8.0 or higher." 1>&2
@@ -245,6 +255,14 @@ if [[ "${DO_XCODE_IOS_TESTS}" == "yes" ]] ; then
           -destination "platform=iOS Simulator,name=iPhone 7,OS=10.0" # 64bit
           -destination "platform=iOS Simulator,name=iPad 2,OS=9.0" # 32bit
           -destination "platform=iOS Simulator,name=iPad Pro (9.7 inch),OS=10.0" # 64bit
+      )
+      ;;
+    8.1* )
+      XCODEBUILD_TEST_BASE_IOS+=(
+          -destination "platform=iOS Simulator,name=iPhone 4s,OS=8.1" # 32bit
+          -destination "platform=iOS Simulator,name=iPhone 7,OS=10.1" # 64bit
+          -destination "platform=iOS Simulator,name=iPad 2,OS=8.1" # 32bit
+          -destination "platform=iOS Simulator,name=iPad Pro (9.7 inch),OS=10.1" # 64bit
       )
       ;;
     * )
@@ -271,8 +289,9 @@ if [[ "${DO_XCODE_OSX_TESTS}" == "yes" ]] ; then
       # Since the ObjC 2.0 Runtime is required, 32bit OS X isn't supported.
       -destination "platform=OS X,arch=x86_64" # 64bit
   )
-  readonly XCODE_VERSION_LINE="$(xcodebuild -version | grep Xcode\  )"
-  readonly XCODE_VERSION="${XCODE_VERSION_LINE/Xcode /}"  # drop the prefix.
+  if [[ "${XCODE_QUIET}" == "yes" ]] ; then
+    XCODEBUILD_TEST_BASE_OSX+=( -quiet )
+  fi
   case "${XCODE_VERSION}" in
     6.* )
       echo "ERROR: Xcode 6.3/6.4 no longer supported for building, please use 8.0 or higher." 1>&2

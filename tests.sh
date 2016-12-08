@@ -89,7 +89,7 @@ build_csharp() {
     echo "deb http://download.mono-project.com/repo/debian wheezy main" | sudo tee /etc/apt/sources.list.d/mono-xamarin.list
     sudo apt-get update -qq
     sudo apt-get install -qq mono-devel referenceassemblies-pcl nunit
-    
+
     # Then install the dotnet SDK as per Ubuntu 14.04 instructions on dot.net.
     sudo sh -c 'echo "deb [arch=amd64] https://apt-mo.trafficmanager.net/repos/dotnet-release/ trusty main" > /etc/apt/sources.list.d/dotnetdev.list'
     sudo apt-key adv --keyserver apt-mo.trafficmanager.net --recv-keys 417A0893
