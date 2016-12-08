@@ -63,7 +63,7 @@ struct upb_descreader {
   upb_fielddef *f;
 };
 
-static char *upb_strndup(const char *buf, size_t n) {
+static char *upb_gstrndup(const char *buf, size_t n) {
   char *ret = upb_gmalloc(n + 1);
   if (!ret) return NULL;
   memcpy(ret, buf, n);
@@ -213,7 +213,7 @@ static size_t file_onname(void *closure, const void *hd, const char *buf,
   UPB_UNUSED(hd);
   UPB_UNUSED(handle);
 
-  name = upb_strndup(buf, n);
+  name = upb_gstrndup(buf, n);
   /* XXX: see comment at the top of the file. */
   ok = upb_filedef_setname(r->file, name, NULL);
   upb_gfree(name);
@@ -229,7 +229,7 @@ static size_t file_onpackage(void *closure, const void *hd, const char *buf,
   UPB_UNUSED(hd);
   UPB_UNUSED(handle);
 
-  package = upb_strndup(buf, n);
+  package = upb_gstrndup(buf, n);
   /* XXX: see comment at the top of the file. */
   upb_descreader_setscopename(r, package);
   ok = upb_filedef_setpackage(r->file, package, NULL);
@@ -301,7 +301,7 @@ static size_t enumval_onname(void *closure, const void *hd, const char *buf,
   UPB_UNUSED(handle);
   /* XXX: see comment at the top of the file. */
   upb_gfree(r->name);
-  r->name = upb_strndup(buf, n);
+  r->name = upb_gstrndup(buf, n);
   r->saw_name = true;
   return n;
 }
@@ -352,7 +352,7 @@ static bool enum_endmsg(void *closure, const void *hd, upb_status *status) {
 static size_t enum_onname(void *closure, const void *hd, const char *buf,
                           size_t n, const upb_bufhandle *handle) {
   upb_descreader *r = closure;
-  char *fullname = upb_strndup(buf, n);
+  char *fullname = upb_gstrndup(buf, n);
   UPB_UNUSED(hd);
   UPB_UNUSED(handle);
   /* XXX: see comment at the top of the file. */
@@ -520,7 +520,7 @@ static bool field_onnumber(void *closure, const void *hd, int32_t val) {
 static size_t field_onname(void *closure, const void *hd, const char *buf,
                            size_t n, const upb_bufhandle *handle) {
   upb_descreader *r = closure;
-  char *name = upb_strndup(buf, n);
+  char *name = upb_gstrndup(buf, n);
   UPB_UNUSED(hd);
   UPB_UNUSED(handle);
 
@@ -533,7 +533,7 @@ static size_t field_onname(void *closure, const void *hd, const char *buf,
 static size_t field_ontypename(void *closure, const void *hd, const char *buf,
                                size_t n, const upb_bufhandle *handle) {
   upb_descreader *r = closure;
-  char *name = upb_strndup(buf, n);
+  char *name = upb_gstrndup(buf, n);
   UPB_UNUSED(hd);
   UPB_UNUSED(handle);
 
@@ -546,7 +546,7 @@ static size_t field_ontypename(void *closure, const void *hd, const char *buf,
 static size_t field_onextendee(void *closure, const void *hd, const char *buf,
                                size_t n, const upb_bufhandle *handle) {
   upb_descreader *r = closure;
-  char *name = upb_strndup(buf, n);
+  char *name = upb_gstrndup(buf, n);
   UPB_UNUSED(hd);
   UPB_UNUSED(handle);
 
@@ -566,7 +566,7 @@ static size_t field_ondefaultval(void *closure, const void *hd, const char *buf,
    * type yet, so we save it as a string until the end of the field.
    * XXX: see comment at the top of the file. */
   upb_gfree(r->default_string);
-  r->default_string = upb_strndup(buf, n);
+  r->default_string = upb_gstrndup(buf, n);
   return n;
 }
 
@@ -587,7 +587,7 @@ static size_t oneof_name(void *closure, const void *hd, const char *buf,
   upb_descreader *r = closure;
   upb_descreader_frame *f = &r->stack[r->stack_len-1];
   upb_oneofdef *o = upb_descreader_getoneof(r, f->oneof_index++);
-  char *name_null_terminated = upb_strndup(buf, n);
+  char *name_null_terminated = upb_gstrndup(buf, n);
   bool ok = upb_oneofdef_setname(o, name_null_terminated, NULL);
   UPB_UNUSED(hd);
   UPB_UNUSED(handle);
@@ -624,7 +624,7 @@ static size_t msg_name(void *closure, const void *hd, const char *buf,
   upb_descreader *r = closure;
   upb_msgdef *m = upb_descreader_top(r);
   /* XXX: see comment at the top of the file. */
-  char *name = upb_strndup(buf, n);
+  char *name = upb_gstrndup(buf, n);
   UPB_UNUSED(hd);
   UPB_UNUSED(handle);
 

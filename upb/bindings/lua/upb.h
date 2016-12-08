@@ -8,6 +8,7 @@
 #include "lauxlib.h"
 #include "upb/def.h"
 #include "upb/handlers.h"
+#include "upb/msg.h"
 #include "upb/symtab.h"
 
 /* Lua 5.1/5.2 compatibility code. */
@@ -23,9 +24,13 @@
 
 void *luaL_testudata(lua_State *L, int ud, const char *tname);
 
+#define lupb_setfuncs(L, l) luaL_register(L, NULL, l)
+
 #elif LUA_VERSION_NUM == 502
 
 int luaL_typerror(lua_State *L, int narg, const char *tname);
+
+#define lupb_setfuncs(L, l) luaL_setfuncs(L, l, 0)
 
 #else
 #error Only Lua 5.1 and 5.2 are supported
@@ -69,6 +74,7 @@ uint32_t lupb_checkuint32(lua_State *L, int narg);
 double lupb_checkdouble(lua_State *L, int narg);
 float lupb_checkfloat(lua_State *L, int narg);
 bool lupb_checkbool(lua_State *L, int narg);
+const char *lupb_checkstring(lua_State *L, int narg, size_t *len);
 const char *lupb_checkname(lua_State *L, int narg);
 
 void lupb_pushint64(lua_State *L, int64_t val);
@@ -77,10 +83,21 @@ void lupb_pushuint64(lua_State *L, uint64_t val);
 void lupb_pushuint32(lua_State *L, uint32_t val);
 void lupb_pushdouble(lua_State *L, double val);
 void lupb_pushfloat(lua_State *L, float val);
-void lupb_pushbool(lua_State *L, bool val);
 
-/* Functions for getting/pushing wrappers to various types defined in the
- * core library. */
+/* Registers a type with the given name, methods, and metamethods.
+ * If "refcount_gc" is true, adds a __gc metamethod that does an unref.
+ * Refcounted types must be allocated with lupb_refcounted_push[new]wrapper. */
+void lupb_register_type(lua_State *L, const char *name, const luaL_Reg *m,
+                        const luaL_Reg *mm);
+
+/* Checks the given upb_status and throws a Lua error if it is not ok. */
+void lupb_checkstatus(lua_State *L, upb_status *s);
+
+
+/** From def.c. ***************************************************************/
+
+upb_fieldtype_t lupb_checkfieldtype(lua_State *L, int narg);
+
 void *lupb_refcounted_check(lua_State *L, int narg, const char *type);
 const upb_msgdef *lupb_msg_checkdef(lua_State *L, int narg);
 const upb_msgdef *lupb_msgdef_check(lua_State *L, int narg);
@@ -101,26 +118,22 @@ void lupb_symtab_pushwrapper(lua_State *L, const upb_symtab *s,
 void lupb_symtab_pushnewrapper(lua_State *L, const upb_symtab *s,
                                const void *ref_donor);
 
-/* For constructing a new message.  narg is the Lua value for the MessageDef
- * object. */
-void lupb_msg_pushnew(lua_State *L, int narg);
+void lupb_def_registertypes(lua_State *L);
 
-/* Builds and returns a handlers object for populating a lupb_msg described by
- * the MessageDef at "narg".
- *
- * TODO(haberman): factor this so it doesn't have to take a lua_State.  We
- * should be able to generate message handlers for a upb_msgdef that can be used
- * across many Lua states, so we can shared JIT code across lua_States. */
-const upb_handlers *lupb_msg_newwritehandlers(lua_State *L, int narg,
-                                              const void *owner);
+int lupb_refcounted_gc(lua_State *L);
 
-/* Registers a type with the given name, methods, and metamethods.
- * If "refcount_gc" is true, adds a __gc metamethod that does an unref.
- * Refcounted types must be allocated with lupb_refcounted_push[new]wrapper. */
-void lupb_register_type(lua_State *L, const char *name, const luaL_Reg *m,
-                        const luaL_Reg *mm, bool refcount_gc);
 
-/* Checks the given upb_status and throws a Lua error if it is not ok. */
-void lupb_checkstatus(lua_State *L, upb_status *s);
+/** From msg.c. ***************************************************************/
+
+struct lupb_msgclass;
+typedef struct lupb_msgclass lupb_msgclass;
+
+upb_arena *lupb_arena_check(lua_State *L, int narg);
+int lupb_arena_new(lua_State *L);
+int lupb_msg_pushref(lua_State *L, int msgclass, void *msg);
+
+const upb_msglayout *lupb_msgclass_getlayout(lua_State *L, int narg);
+const upb_handlers *lupb_msgclass_getmergehandlers(lua_State *L, int narg);
+void lupb_msg_registertypes(lua_State *L);
 
 #endif  /* UPB_LUA_UPB_H_ */

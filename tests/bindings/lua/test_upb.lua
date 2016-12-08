@@ -463,6 +463,7 @@ function test_numeric_array()
     array[1] = val
     assert_equal(val, array[1])
     assert_equal(1, #array)
+    assert_equal(val, array[1])
     -- Past the end of the array.
     assert_error_match("array index", function() return array[2] end)
 
@@ -513,7 +514,7 @@ function test_numeric_array()
   -- values as int32s.
   test_for_numeric_type(upb.TYPE_ENUM, 2^31 - 1, 2^31, -2^31 - 1, 5.1)
   test_for_numeric_type(upb.TYPE_INT64, 2^62, 2^63, -2^64, bad64)
-  test_for_numeric_type(upb.TYPE_FLOAT, 10^38)
+  test_for_numeric_type(upb.TYPE_FLOAT, 340282306073709652508363335590014353408)
   test_for_numeric_type(upb.TYPE_DOUBLE, 10^101)
 end
 
@@ -567,18 +568,19 @@ end
 
 function test_msg_primitives()
   local function test_for_numeric_type(upb_type, val, too_big, too_small, bad3)
-
-    msg = upb.Message(
-      upb.build_defs{
-        upb.MessageDef{full_name = "TestMessage", fields = {
-          upb.FieldDef{name = "f", number = 1, type = upb_type},
-          }
+    local symtab = upb.SymbolTable{
+      upb.MessageDef{full_name = "TestMessage", fields = {
+        upb.FieldDef{name = "f", number = 1, type = upb_type},
         }
       }
-    )
+    }
 
-    -- Defaults to nil
-    assert_nil(msg.f)
+    factory = upb.MessageFactory(symtab)
+    TestMessage = factory:get_message_class("TestMessage")
+    msg = TestMessage()
+
+    -- Defaults to zero
+    assert_equal(0, msg.f)
 
     msg.f = 0
     assert_equal(0, msg.f)
@@ -608,7 +610,7 @@ function test_msg_primitives()
     assert_error_match(errmsg, function() msg.f = array end)
   end
 
-  local msgdef = upb.build_defs{
+  local symtab = upb.SymbolTable{
     upb.MessageDef{full_name = "TestMessage", fields = {
       upb.FieldDef{name = "i32", number = 1, type = upb.TYPE_INT32},
       upb.FieldDef{name = "u32", number = 2, type = upb.TYPE_UINT32},
@@ -621,17 +623,18 @@ function test_msg_primitives()
     }
   }
 
-  msg = upb.Message(msgdef)
+  factory = upb.MessageFactory(symtab)
+  TestMessage = factory:get_message_class("TestMessage")
+  msg = TestMessage()
 
-  -- Unset member returns nil.  This is unlike C++/Java, but is more
-  -- Lua-like behavior.
-  assert_equal(nil, msg.i32)
-  assert_equal(nil, msg.u32)
-  assert_equal(nil, msg.i64)
-  assert_equal(nil, msg.u64)
-  assert_equal(nil, msg.dbl)
-  assert_equal(nil, msg.flt)
-  assert_equal(nil, msg.bool)
+  -- Unset member returns default value.
+  assert_equal(0, msg.i32)
+  assert_equal(0, msg.u32)
+  assert_equal(0, msg.i64)
+  assert_equal(0, msg.u64)
+  assert_equal(0, msg.dbl)
+  assert_equal(0, msg.flt)
+  assert_equal(false, msg.bool)
 
   -- Attempts to access non-existent fields fail.
   assert_error_match("no such field", function() msg.no_such = 1 end)
@@ -661,7 +664,7 @@ function test_msg_primitives()
 end
 
 function test_msg_array()
-  local msgdef = upb.build_defs{
+  local symtab = upb.SymbolTable{
     upb.MessageDef{full_name = "TestMessage", fields = {
       upb.FieldDef{name = "i32_array", number = 1, type = upb.TYPE_INT32,
                    label = upb.LABEL_REPEATED},
@@ -669,7 +672,9 @@ function test_msg_array()
     }
   }
 
-  msg = upb.Message(msgdef)
+  factory = upb.MessageFactory(symtab)
+  TestMessage = factory:get_message_class("TestMessage")
+  msg = TestMessage()
 
   assert_nil(msg.i32_array)
 
@@ -680,7 +685,7 @@ function test_msg_array()
   local function assign_int64()
     msg.i32_array = upb.Array(upb.TYPE_INT64)
   end
-  assert_error_match("Array type mismatch", assign_int64)
+  assert_error_match("Array had incorrect type", assign_int64)
 
   local arr = upb.Array(upb.TYPE_INT32)
   msg.i32_array = arr
@@ -696,7 +701,7 @@ function test_msg_array()
 end
 
 function test_msg_submsg()
-  local test_msgdef, submsg_msgdef = upb.build_defs{
+  local symtab = upb.SymbolTable{
     upb.MessageDef{full_name = "TestMessage", fields = {
       upb.FieldDef{name = "submsg", number = 1, type = upb.TYPE_MESSAGE,
                    subdef_name = ".SubMessage"},
@@ -705,17 +710,20 @@ function test_msg_submsg()
     upb.MessageDef{full_name = "SubMessage"}
   }
 
-  msg = upb.Message(test_msgdef)
+  factory = upb.MessageFactory(symtab)
+  TestMessage = factory:get_message_class("TestMessage")
+  SubMessage = factory:get_message_class("SubMessage")
+  msg = TestMessage()
 
   assert_nil(msg.submsg)
 
   -- Can't assign message of the wrong type.
   local function assign_int64()
-    msg.submsg = upb.Message(test_msgdef)
+    msg.submsg = TestMessage()
   end
-  assert_error_match("Message type mismatch", assign_int64)
+  assert_error_match("Message had incorrect type", assign_int64)
 
-  local sub = upb.Message(submsg_msgdef)
+  local sub = SubMessage()
   msg.submsg = sub
   assert_equal(sub, msg.submsg)
 
@@ -760,8 +768,8 @@ function test_finalizer()
       assert_error_match("called into dead object", function()
         t[3]:number()
       end)
-      assert_error_match("called into dead object",
-        function() t[4]:lookup()
+      assert_error_match("called into dead object", function()
+        t[4]:lookup()
       end)
     end)
     t = {

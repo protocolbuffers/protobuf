@@ -231,6 +231,10 @@ void upb_arena_uninit(upb_arena *a) {
 
     block = next;
   }
+
+  /* Protect against multiple-uninit. */
+  a->cleanup_head = NULL;
+  a->block_head = NULL;
 }
 
 bool upb_arena_addcleanup(upb_arena *a, upb_cleanup_func *func, void *ud) {

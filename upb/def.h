@@ -222,15 +222,19 @@ UPB_DECLARE_DEF_TYPE(upb::EnumDef, enumdef, ENUM)
  * types defined in descriptor.proto, which gives INT32 and SINT32 separate
  * types (we distinguish the two with the "integer encoding" enum below). */
 typedef enum {
-  UPB_TYPE_FLOAT    = 1,
-  UPB_TYPE_DOUBLE   = 2,
-  UPB_TYPE_BOOL     = 3,
-  UPB_TYPE_STRING   = 4,
-  UPB_TYPE_BYTES    = 5,
-  UPB_TYPE_MESSAGE  = 6,
-  UPB_TYPE_ENUM     = 7,  /* Enum values are int32. */
-  UPB_TYPE_INT32    = 8,
-  UPB_TYPE_UINT32   = 9,
+  /* Types stored in 1 byte. */
+  UPB_TYPE_BOOL     = 1,
+  /* Types stored in 4 bytes. */
+  UPB_TYPE_FLOAT    = 2,
+  UPB_TYPE_INT32    = 3,
+  UPB_TYPE_UINT32   = 4,
+  UPB_TYPE_ENUM     = 5,  /* Enum values are int32. */
+  /* Types stored as pointers (probably 4 or 8 bytes). */
+  UPB_TYPE_STRING   = 6,
+  UPB_TYPE_BYTES    = 7,
+  UPB_TYPE_MESSAGE  = 8,
+  /* Types stored as 8 bytes. */
+  UPB_TYPE_DOUBLE   = 9,
   UPB_TYPE_INT64    = 10,
   UPB_TYPE_UINT64   = 11
 } upb_fieldtype_t;
@@ -404,16 +408,10 @@ class upb::FieldDef {
   bool IsPrimitive() const;
   bool IsMap() const;
 
-  /* Whether this field must be able to explicitly represent presence:
+  /* Returns whether this field explicitly represents presence.
    *
-   * * This is always false for repeated fields (an empty repeated field is
-   *   equivalent to a repeated field with zero entries).
-   *
-   * * This is always true for submessages.
-   *
-   * * For other fields, it depends on the message (see
-   *   MessageDef::SetPrimitivesHavePresence())
-   */
+   * For proto2 messages: Returns true for any scalar (non-repeated) field.
+   * For proto3 messages: Returns true for scalar submessage or oneof fields. */
   bool HasPresence() const;
 
   /* How integers are encoded.  Only meaningful for integer types.
@@ -1151,6 +1149,7 @@ int32_t upb_enum_iter_number(upb_enum_iter *iter);
 
 UPB_END_EXTERN_C
 
+
 /* upb::OneofDef **************************************************************/
 
 typedef upb_inttable_iter upb_oneof_iter;
@@ -1270,10 +1269,11 @@ upb_oneofdef *upb_oneofdef_dup(const upb_oneofdef *o, const void *owner);
 UPB_REFCOUNTED_CMETHODS(upb_oneofdef, upb_oneofdef_upcast)
 
 const char *upb_oneofdef_name(const upb_oneofdef *o);
-bool upb_oneofdef_setname(upb_oneofdef *o, const char *name, upb_status *s);
-
 const upb_msgdef *upb_oneofdef_containingtype(const upb_oneofdef *o);
 int upb_oneofdef_numfields(const upb_oneofdef *o);
+uint32_t upb_oneofdef_index(const upb_oneofdef *o);
+
+bool upb_oneofdef_setname(upb_oneofdef *o, const char *name, upb_status *s);
 bool upb_oneofdef_addfield(upb_oneofdef *o, upb_fielddef *f,
                            const void *ref_donor,
                            upb_status *s);

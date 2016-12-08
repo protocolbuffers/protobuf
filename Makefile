@@ -150,8 +150,8 @@ make_objs_cc = $$(patsubst upb/$$(pc).cc,obj/upb/$$(pc).$(1),$$($$(call to_srcs,
 upb_SRCS = \
   upb/def.c \
   upb/handlers.c \
+  upb/msg.c \
   upb/refcounted.c \
-  upb/shim/shim.c \
   upb/symtab.c \
   upb/table.c \
   upb/upb.c \
@@ -250,6 +250,8 @@ obj/upb/%.lo: upb/%.cc | $$(@D)/.
 
 # Regenerating the auto-generated files in upb/.
 upb/descriptor/descriptor.pb: upb/descriptor/descriptor.proto
+	$(E) PROTOC upb/descriptor/descriptor.proto
+	$(Q) protoc upb/descriptor/descriptor.proto -oupb/descriptor/descriptor.pb
 
 # "genfiles" includes Proto schemas we need for tests
 # For the moment we check in the *.upbdefs.* generated files so that people
@@ -479,9 +481,9 @@ LUA_LIB_DEPS = \
   lib/libupb.descriptor_pic.a \
   lib/libupb_pic.a \
 
-upb/bindings/lua/upb_c.so: upb/bindings/lua/upb.c $(LUA_LIB_DEPS)
-	$(E) CC upb/bindings/lua/upb.c
-	$(Q) $(CC) $(OPT) $(CSTD) $(WARNFLAGS) $(CPPFLAGS) $(CFLAGS) -fpic -shared -o $@ $< $(LUA_LDFLAGS) $(LUA_LIB_DEPS)
+upb/bindings/lua/upb_c.so: upb/bindings/lua/upb.c upb/bindings/lua/def.c upb/bindings/lua/msg.c $(LUA_LIB_DEPS)
+	$(E) 'CC upb/bindings/lua/{upb,def,msg}.c'
+	$(Q) $(CC) $(OPT) $(CSTD) $(WARNFLAGS) $(CPPFLAGS) $(CFLAGS) -fpic -shared -o $@ $^ $(LUA_LDFLAGS)
 
 upb/bindings/lua/upb/table_c.so: upb/bindings/lua/upb/table.c lib/libupb_pic.a
 	$(E) CC upb/bindings/lua/upb/table.c

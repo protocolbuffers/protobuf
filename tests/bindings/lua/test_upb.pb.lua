@@ -11,7 +11,7 @@ else
   module("testupb_pb", lunit.testcase, package.seeall)
 end
 
-local primitive_types_msg = upb.build_defs{
+local symtab = upb.SymbolTable{
   upb.MessageDef{full_name = "TestMessage", fields = {
     upb.FieldDef{name = "i32", number = 1, type = upb.TYPE_INT32},
     upb.FieldDef{name = "u32", number = 2, type = upb.TYPE_UINT32},
@@ -24,13 +24,16 @@ local primitive_types_msg = upb.build_defs{
   }
 }
 
+local factory = upb.MessageFactory(symtab);
+local TestMessage = factory:get_message_class("TestMessage")
+
 function test_decodermethod()
-  local dm = pb.DecoderMethod(primitive_types_msg)
+  local decoder = pb.MakeStringToMessageDecoder(TestMessage)
 
   assert_error(
     function()
       -- Needs at least one argument to construct.
-      pb.DecoderMethod()
+      pb.MakeStringToMessageDecoder()
     end)
 end
 
@@ -39,8 +42,8 @@ function test_parse_primitive()
          "\008\128\128\128\128\002\016\128\128\128\128\004\024\128\128"
       .. "\128\128\128\128\128\002\032\128\128\128\128\128\128\128\001\041\000"
       .. "\000\000\000\000\000\248\063\053\000\000\096\064\056\001"
-  local dm = pb.DecoderMethod(primitive_types_msg)
-  msg = dm:parse(binary_pb)
+  local decoder = pb.MakeStringToMessageDecoder(TestMessage)
+  msg = decoder(binary_pb)
   assert_equal(536870912, msg.i32)
   assert_equal(1073741824, msg.u32)
   assert_equal(1125899906842624, msg.i64)
@@ -51,16 +54,19 @@ function test_parse_primitive()
 end
 
 function test_parse_string()
-  local msgdef = upb.build_defs{
+  local symtab = upb.SymbolTable{
     upb.MessageDef{full_name = "TestMessage", fields = {
       upb.FieldDef{name = "str", number = 1, type = upb.TYPE_STRING},
       }
     }
   }
 
+  local factory = upb.MessageFactory(symtab);
+  local TestMessage = factory:get_message_class("TestMessage")
+
   local binary_pb = "\010\005Hello"
-  local dm = pb.DecoderMethod(msgdef)
-  msg = dm:parse(binary_pb)
+  local decoder = pb.MakeStringToMessageDecoder(TestMessage)
+  msg = decoder(binary_pb)
   assert_equal("Hello", msg.str)
 end
 
