@@ -43,6 +43,8 @@
 #import "google/protobuf/UnittestArena.pbobjc.m"
 #import "google/protobuf/UnittestCustomOptions.pbobjc.m"
 #import "google/protobuf/UnittestCycle.pbobjc.m"
+#import "google/protobuf/UnittestDeprecated.pbobjc.m"
+#import "google/protobuf/UnittestDeprecatedFile.pbobjc.m"
 #import "google/protobuf/UnittestDropUnknownFields.pbobjc.m"
 #import "google/protobuf/UnittestEmbedOptimizeFor.pbobjc.m"
 #import "google/protobuf/UnittestEmpty.pbobjc.m"

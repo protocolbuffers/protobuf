@@ -558,6 +558,8 @@ objectivec_EXTRA_DIST=                                                       \
   objectivec/Tests/text_format_map_unittest_data.txt                          \
   objectivec/Tests/text_format_unittest_data.txt                              \
   objectivec/Tests/unittest_cycle.proto                                       \
+  objectivec/Tests/unittest_deprecated.proto                                  \
+  objectivec/Tests/unittest_deprecated_file.proto                             \
   objectivec/Tests/unittest_extension_chain_a.proto                           \
   objectivec/Tests/unittest_extension_chain_b.proto                           \
   objectivec/Tests/unittest_extension_chain_c.proto                           \
