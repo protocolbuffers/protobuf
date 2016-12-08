@@ -42,6 +42,8 @@
 #import "google/protobuf/Unittest.pbobjc.h"
 #import "google/protobuf/UnittestCustomOptions.pbobjc.h"
 #import "google/protobuf/UnittestCycle.pbobjc.h"
+#import "google/protobuf/UnittestDeprecated.pbobjc.h"
+#import "google/protobuf/UnittestDeprecatedFile.pbobjc.h"
 #import "google/protobuf/UnittestDropUnknownFields.pbobjc.h"
 #import "google/protobuf/UnittestEmbedOptimizeFor.pbobjc.h"
 #import "google/protobuf/UnittestEmpty.pbobjc.h"

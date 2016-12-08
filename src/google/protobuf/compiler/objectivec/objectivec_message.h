@@ -85,6 +85,7 @@ class MessageGenerator {
   const Descriptor* descriptor_;
   FieldGeneratorMap field_generators_;
   const string class_name_;
+  const string deprecated_attribute_;
   vector<ExtensionGenerator*> extension_generators_;
   vector<EnumGenerator*> enum_generators_;
   vector<MessageGenerator*> nested_message_generators_;

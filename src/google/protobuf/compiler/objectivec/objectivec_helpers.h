@@ -150,8 +150,18 @@ enum FlagType {
 };
 
 template<class TDescriptor>
-string GetOptionalDeprecatedAttribute(const TDescriptor* descriptor, bool preSpace = true, bool postNewline = false) {
-  if (descriptor->options().deprecated()) {
+string GetOptionalDeprecatedAttribute(
+    const TDescriptor* descriptor,
+    const FileDescriptor* file = NULL,
+    bool preSpace = true, bool postNewline = false) {
+  bool isDeprecated = descriptor->options().deprecated();
+  // The file is only passed when checking Messages & Enums, so those types
+  // get tagged. At the moment, it doesn't seem to make sense to tag every
+  // field or enum value with when the file is deprecated.
+  if (!isDeprecated && file) {
+    isDeprecated = file->options().deprecated();
+  }
+  if (isDeprecated) {
     string result = "DEPRECATED_ATTRIBUTE";
     if (preSpace) {
       result.insert(0, " ");
