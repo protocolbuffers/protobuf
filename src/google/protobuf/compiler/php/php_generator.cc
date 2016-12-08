@@ -214,9 +214,6 @@ std::string GeneratedMetadataFileName(const std::string& proto_file,
     result += UnderscoresToCamelCase(
         file_no_suffix.substr(start_index, first_index - start_index), true);
     result += "/";
-    GOOGLE_LOG(INFO) << start_index << "  " << first_index;
-    GOOGLE_LOG(INFO) << file_no_suffix.substr(start_index,
-                                              first_index - start_index);
     start_index = first_index + 1;
     first_index = file_no_suffix.find_first_of("/", start_index);
   }

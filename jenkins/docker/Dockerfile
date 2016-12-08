@@ -148,7 +148,11 @@ RUN php composer-setup.php
 RUN mv composer.phar /usr/bin/composer
 RUN php -r "unlink('composer-setup.php');"
 RUN cd /tmp && \
-  cd protobuf/php && \
+  rm -rf protobuf && \
+  git clone https://github.com/google/protobuf.git && \
+  cd protobuf && \
+  git reset 46ae90dc5e145b12fffa7e053a908a9f3e066286 && \
+  cd php && \
   ln -sfn /usr/bin/php5.5 /usr/bin/php && \
   ln -sfn /usr/bin/php-config5.5 /usr/bin/php-config && \
   ln -sfn /usr/bin/phpize5.5 /usr/bin/phpize && \
