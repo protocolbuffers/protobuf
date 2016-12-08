@@ -33,7 +33,7 @@ namespace google {
 namespace protobuf {
 class Any;
 class AnyDefaultTypeInternal;
-extern AnyDefaultTypeInternal _Any_default_instance_;
+LIBPROTOBUF_EXPORT extern AnyDefaultTypeInternal _Any_default_instance_;
 }  // namespace protobuf
 }  // namespace google
 

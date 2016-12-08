@@ -35,13 +35,13 @@ namespace google {
 namespace protobuf {
 class ListValue;
 class ListValueDefaultTypeInternal;
-extern ListValueDefaultTypeInternal _ListValue_default_instance_;
+LIBPROTOBUF_EXPORT extern ListValueDefaultTypeInternal _ListValue_default_instance_;
 class Struct;
 class StructDefaultTypeInternal;
-extern StructDefaultTypeInternal _Struct_default_instance_;
+LIBPROTOBUF_EXPORT extern StructDefaultTypeInternal _Struct_default_instance_;
 class Value;
 class ValueDefaultTypeInternal;
-extern ValueDefaultTypeInternal _Value_default_instance_;
+LIBPROTOBUF_EXPORT extern ValueDefaultTypeInternal _Value_default_instance_;
 }  // namespace protobuf
 }  // namespace google
 

@@ -32,31 +32,31 @@ namespace google {
 namespace protobuf {
 class BoolValue;
 class BoolValueDefaultTypeInternal;
-extern BoolValueDefaultTypeInternal _BoolValue_default_instance_;
+LIBPROTOBUF_EXPORT extern BoolValueDefaultTypeInternal _BoolValue_default_instance_;
 class BytesValue;
 class BytesValueDefaultTypeInternal;
-extern BytesValueDefaultTypeInternal _BytesValue_default_instance_;
+LIBPROTOBUF_EXPORT extern BytesValueDefaultTypeInternal _BytesValue_default_instance_;
 class DoubleValue;
 class DoubleValueDefaultTypeInternal;
-extern DoubleValueDefaultTypeInternal _DoubleValue_default_instance_;
+LIBPROTOBUF_EXPORT extern DoubleValueDefaultTypeInternal _DoubleValue_default_instance_;
 class FloatValue;
 class FloatValueDefaultTypeInternal;
-extern FloatValueDefaultTypeInternal _FloatValue_default_instance_;
+LIBPROTOBUF_EXPORT extern FloatValueDefaultTypeInternal _FloatValue_default_instance_;
 class Int32Value;
 class Int32ValueDefaultTypeInternal;
-extern Int32ValueDefaultTypeInternal _Int32Value_default_instance_;
+LIBPROTOBUF_EXPORT extern Int32ValueDefaultTypeInternal _Int32Value_default_instance_;
 class Int64Value;
 class Int64ValueDefaultTypeInternal;
-extern Int64ValueDefaultTypeInternal _Int64Value_default_instance_;
+LIBPROTOBUF_EXPORT extern Int64ValueDefaultTypeInternal _Int64Value_default_instance_;
 class StringValue;
 class StringValueDefaultTypeInternal;
-extern StringValueDefaultTypeInternal _StringValue_default_instance_;
+LIBPROTOBUF_EXPORT extern StringValueDefaultTypeInternal _StringValue_default_instance_;
 class UInt32Value;
 class UInt32ValueDefaultTypeInternal;
-extern UInt32ValueDefaultTypeInternal _UInt32Value_default_instance_;
+LIBPROTOBUF_EXPORT extern UInt32ValueDefaultTypeInternal _UInt32Value_default_instance_;
 class UInt64Value;
 class UInt64ValueDefaultTypeInternal;
-extern UInt64ValueDefaultTypeInternal _UInt64Value_default_instance_;
+LIBPROTOBUF_EXPORT extern UInt64ValueDefaultTypeInternal _UInt64Value_default_instance_;
 }  // namespace protobuf
 }  // namespace google
 
