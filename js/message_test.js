@@ -39,6 +39,9 @@ goog.require('goog.userAgent');
 // CommonJS-LoadFromFile: google-protobuf jspb
 goog.require('jspb.Message');
 
+// CommonJS-LoadFromFile: test8_pb proto.jspb.exttest.nested
+goog.require('proto.jspb.exttest.nested.TestOuterMessage');
+
 // CommonJS-LoadFromFile: test5_pb proto.jspb.exttest.beta
 goog.require('proto.jspb.exttest.beta.floatingStrField');
 
@@ -586,6 +589,14 @@ describe('Message test suite', function() {
     assertNotUndefined(proto.jspb.exttest.floatingMsgField);
     assertNotUndefined(proto.jspb.exttest.floatingMsgFieldTwo);
     assertNotUndefined(proto.jspb.exttest.beta.floatingStrField);
+  });
+
+  it('testNestedExtensions', function() {
+    var extendable = new proto.jspb.exttest.nested.TestNestedExtensionsMessage();
+    var extension = new proto.jspb.exttest.nested.TestOuterMessage.NestedExtensionMessage(['s1']);
+    extendable.setExtension(proto.jspb.exttest.nested.TestOuterMessage.innerExtension, extension);
+    assertObjectEquals(extension,
+        extendable.getExtension(proto.jspb.exttest.nested.TestOuterMessage.innerExtension));
   });
 
   it('testToObject_extendedObject', function() {
