@@ -38,11 +38,21 @@ build_cpp() {
   make check -j2
   cd conformance && make test_cpp && cd ..
 
-  # Verify benchmarking code can build successfully.
-  git submodule init
-  git submodule update
-  cd third_party/benchmark && cmake -DCMAKE_BUILD_TYPE=Release && make && cd ../..
-  cd benchmarks && make && ./generate-datasets && cd ..
+  # The benchmark code depends on cmake, so test if it is installed before
+  # trying to do the build.
+  # NOTE: The travis macOS images say they have cmake, but the xcode8.1 image
+  # appears to be missing it: https://github.com/travis-ci/travis-ci/issues/6996
+  if [[ $(type cmake 2>/dev/null) ]]; then
+    # Verify benchmarking code can build successfully.
+    git submodule init
+    git submodule update
+    cd third_party/benchmark && cmake -DCMAKE_BUILD_TYPE=Release && make && cd ../..
+    cd benchmarks && make && ./generate-datasets && cd ..
+  else
+    echo ""
+    echo "WARNING: Skipping validation of the bench marking code, cmake isn't installed."
+    echo ""
+  fi
 }
 
 build_cpp_distcheck() {
