@@ -495,6 +495,7 @@ bool Generator::Generate(
         return false;
       }
       require_all = true;
+    }
   }
 
   if (file->syntax() != FileDescriptor::SYNTAX_PROTO3) {
