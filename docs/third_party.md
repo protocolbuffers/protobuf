@@ -130,8 +130,8 @@ There are miscellaneous other things you may find useful as a Protocol Buffers d
 * [Oracle PL SQL plugin](http://code.google.com/p/protocol-buffer-plsql/)
 * [Eclipse editor for protobuf (from Google)](http://code.google.com/p/protobuf-dt/)
 * [C++ Builder compatible protobuf](https://github.com/saadware/protobuf-cppbuilder)
-* Maven Protocol Compiler Plugin
-    * https://github.com/sergei-ivanov/maven-protoc-plugin/
+* Maven Protobuf Compiler Plugin
+    * By xolstice.org ([Documentation](https://www.xolstice.org/protobuf-maven-plugin/)) ([Source](https://github.com/xolstice/protobuf-maven-plugin/)) [![Maven Central](https://img.shields.io/maven-central/v/org.xolstice.maven.plugins/protobuf-maven-plugin.svg)](https://repo1.maven.org/maven2/org/xolstice/maven/plugins/protobuf-maven-plugin/)
     * http://igor-petruk.github.com/protobuf-maven-plugin/
     * http://code.google.com/p/maven-protoc-plugin/
     * https://github.com/os72/protoc-jar-maven-plugin
