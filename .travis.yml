@@ -73,10 +73,6 @@ matrix:
     # we moved to an OS X image that is 10.11.
     - os: osx
       env: CONFIG=python_cpp
-    # This started failing with the OS X 10.12 / Xcode 8.1 image.
-    # https://github.com/google/protobuf/issues/2472
-    - os: osx
-      env: CONFIG=objectivec_cocoapods_integration
     # Mark the iOS test as flakey as xcodebuild some times fails to start the
     # iOS Simulator.
     - os: osx
