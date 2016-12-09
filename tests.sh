@@ -329,7 +329,7 @@ build_ruby_all() {
   build_ruby22
   # TODO(teboring): Disable jruby test temperarily for it randomly fails.
   # https://grpc-testing.appspot.com/job/protobuf_pull_request/735/consoleFull.
-  build_jruby
+  # build_jruby
 }
 
 build_javascript() {
