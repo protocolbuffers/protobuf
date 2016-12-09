@@ -34,7 +34,7 @@
 
 #include "conformance.pb.h"
 #include "conformance_test.h"
-#include "google/protobuf/test_messages_proto3.pb.h"
+#include <google/protobuf/test_messages_proto3.pb.h>
 
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/stubs/stringprintf.h>
