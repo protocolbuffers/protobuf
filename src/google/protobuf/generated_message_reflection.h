@@ -660,14 +660,14 @@ class LIBPROTOBUF_EXPORT GeneratedMessageReflection PROTOBUF_FINAL : public Refl
 // choose 16 rather than some other number just in case the compiler would
 // be confused by an unaligned pointer.
 #define GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(TYPE, FIELD)    \
-  static_cast<int>(                                           \
-      reinterpret_cast<const char*>(                          \
-          &reinterpret_cast<const TYPE*>(16)->FIELD) -        \
+  static_cast< ::google::protobuf::uint32>(                            \
+      reinterpret_cast<const char*>(                                   \
+          &reinterpret_cast<const TYPE*>(16)->FIELD) -                 \
       reinterpret_cast<const char*>(16))
 #endif
 
 #define PROTO2_GENERATED_DEFAULT_ONEOF_FIELD_OFFSET(ONEOF, FIELD)     \
-  static_cast< ::google::protobuf::uint32>(                                              \
+  static_cast< ::google::protobuf::uint32>(                           \
       reinterpret_cast<const char*>(&(ONEOF->FIELD))                  \
       - reinterpret_cast<const char*>(ONEOF))
 
