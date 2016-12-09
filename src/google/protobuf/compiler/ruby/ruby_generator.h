@@ -53,9 +53,6 @@ class LIBPROTOC_EXPORT Generator
       const string& parameter,
       GeneratorContext* generator_context,
       string* error) const;
-
- private:
-  bool require_all_ = false;
 };
 
 }  // namespace ruby
