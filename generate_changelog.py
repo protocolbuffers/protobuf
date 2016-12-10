@@ -57,6 +57,7 @@ previous = sys.argv[1]
 
 for language in languages:
   print(language.name)
+  sys.stdout.flush()
   os.system(("git log --pretty=oneline --abbrev-commit %s...HEAD %s | " +
              "sed -e 's/^/ - /'") % (previous, " ".join(language.pathspec)))
   print("")
