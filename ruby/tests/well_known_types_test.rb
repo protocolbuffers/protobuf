@@ -13,10 +13,15 @@ class TestWellKnownTypes < Test::Unit::TestCase
     assert_equal Time.at(12345), ts.to_time
     assert_equal 12345, ts.to_i
 
-    ts.from_time(Time.at(123456, 654321))
+    time = Time.at(123456, 654321)
+    ts.from_time(time)
     assert_equal 123456, ts.seconds
     assert_equal 654321000, ts.nanos
-    assert_equal Time.at(123456.654321), ts.to_time
+    assert_equal time, ts.to_time
+
+    time = Time.now
+    ts.from_time(time)
+    assert_equal time.to_f, ts.to_time.to_f
   end
 
   def test_duration

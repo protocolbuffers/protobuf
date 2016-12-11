@@ -80,7 +80,7 @@ module Google
       end
 
       def to_f
-        self.seconds + (self.nanos.to_f / 1_000_000_000)
+        self.seconds + (self.nanos.quo(1_000_000_000))
       end
     end
 
