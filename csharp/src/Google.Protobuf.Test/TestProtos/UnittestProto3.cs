@@ -199,7 +199,7 @@ namespace Google.Protobuf.TestProtos {
   }
 
   /// <summary>
-  ///  Test an enum that has multiple values with the same number.
+  /// Test an enum that has multiple values with the same number.
   /// </summary>
   public enum TestEnumWithDupValue {
     [pbr::OriginalName("TEST_ENUM_WITH_DUP_VALUE_UNSPECIFIED")] Unspecified = 0,
@@ -211,7 +211,7 @@ namespace Google.Protobuf.TestProtos {
   }
 
   /// <summary>
-  ///  Test an enum with large, unordered values.
+  /// Test an enum with large, unordered values.
   /// </summary>
   public enum TestSparseEnum {
     [pbr::OriginalName("TEST_SPARSE_ENUM_UNSPECIFIED")] Unspecified = 0,
@@ -221,8 +221,8 @@ namespace Google.Protobuf.TestProtos {
     [pbr::OriginalName("SPARSE_D")] SparseD = -15,
     [pbr::OriginalName("SPARSE_E")] SparseE = -53452,
     /// <summary>
-    ///  In proto3, value 0 must be the first one specified
-    ///  SPARSE_F = 0;
+    /// In proto3, value 0 must be the first one specified
+    /// SPARSE_F = 0;
     /// </summary>
     [pbr::OriginalName("SPARSE_G")] SparseG = 2,
   }
@@ -231,8 +231,8 @@ namespace Google.Protobuf.TestProtos {
 
   #region Messages
   /// <summary>
-  ///  This proto includes every type of field in both singular and repeated
-  ///  forms.
+  /// This proto includes every type of field in both singular and repeated
+  /// forms.
   /// </summary>
   public sealed partial class TestAllTypes : pb::IMessage<TestAllTypes> {
     private static readonly pb::MessageParser<TestAllTypes> _parser = new pb::MessageParser<TestAllTypes>(() => new TestAllTypes());
@@ -328,7 +328,7 @@ namespace Google.Protobuf.TestProtos {
     public const int SingleInt32FieldNumber = 1;
     private int singleInt32_;
     /// <summary>
-    ///  Singular
+    /// Singular
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int SingleInt32 {
@@ -562,7 +562,7 @@ namespace Google.Protobuf.TestProtos {
     public const int SinglePublicImportMessageFieldNumber = 26;
     private global::Google.Protobuf.TestProtos.PublicImportMessage singlePublicImportMessage_;
     /// <summary>
-    ///  Defined in unittest_import_public.proto
+    /// Defined in unittest_import_public.proto
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public global::Google.Protobuf.TestProtos.PublicImportMessage SinglePublicImportMessage {
@@ -578,7 +578,7 @@ namespace Google.Protobuf.TestProtos {
         = pb::FieldCodec.ForInt32(250);
     private readonly pbc::RepeatedField<int> repeatedInt32_ = new pbc::RepeatedField<int>();
     /// <summary>
-    ///  Repeated
+    /// Repeated
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public pbc::RepeatedField<int> RepeatedInt32 {
@@ -791,7 +791,7 @@ namespace Google.Protobuf.TestProtos {
         = pb::FieldCodec.ForMessage(434, global::Google.Protobuf.TestProtos.PublicImportMessage.Parser);
     private readonly pbc::RepeatedField<global::Google.Protobuf.TestProtos.PublicImportMessage> repeatedPublicImportMessage_ = new pbc::RepeatedField<global::Google.Protobuf.TestProtos.PublicImportMessage>();
     /// <summary>
-    ///  Defined in unittest_import_public.proto
+    /// Defined in unittest_import_public.proto
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public pbc::RepeatedField<global::Google.Protobuf.TestProtos.PublicImportMessage> RepeatedPublicImportMessage {
@@ -1593,7 +1593,7 @@ namespace Google.Protobuf.TestProtos {
         [pbr::OriginalName("BAR")] Bar = 2,
         [pbr::OriginalName("BAZ")] Baz = 3,
         /// <summary>
-        ///  Intentionally negative.
+        /// Intentionally negative.
         /// </summary>
         [pbr::OriginalName("NEG")] Neg = -1,
       }
@@ -1634,9 +1634,9 @@ namespace Google.Protobuf.TestProtos {
         public const int BbFieldNumber = 1;
         private int bb_;
         /// <summary>
-        ///  The field name "b" fails to compile in proto1 because it conflicts with
-        ///  a local variable named "b" in one of the generated methods.  Doh.
-        ///  This file needs to compile in proto1 to test backwards-compatibility.
+        /// The field name "b" fails to compile in proto1 because it conflicts with
+        /// a local variable named "b" in one of the generated methods.  Doh.
+        /// This file needs to compile in proto1 to test backwards-compatibility.
         /// </summary>
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public int Bb {
@@ -1726,7 +1726,7 @@ namespace Google.Protobuf.TestProtos {
   }
 
   /// <summary>
-  ///  This proto includes a recusively nested message.
+  /// This proto includes a recusively nested message.
   /// </summary>
   public sealed partial class NestedTestAllTypes : pb::IMessage<NestedTestAllTypes> {
     private static readonly pb::MessageParser<NestedTestAllTypes> _parser = new pb::MessageParser<NestedTestAllTypes>(() => new NestedTestAllTypes());
@@ -2024,8 +2024,8 @@ namespace Google.Protobuf.TestProtos {
   }
 
   /// <summary>
-  ///  Define these after TestAllTypes to make sure the compiler can handle
-  ///  that.
+  /// Define these after TestAllTypes to make sure the compiler can handle
+  /// that.
   /// </summary>
   public sealed partial class ForeignMessage : pb::IMessage<ForeignMessage> {
     private static readonly pb::MessageParser<ForeignMessage> _parser = new pb::MessageParser<ForeignMessage>(() => new ForeignMessage());
@@ -2234,7 +2234,7 @@ namespace Google.Protobuf.TestProtos {
   }
 
   /// <summary>
-  ///  Test that we can use NestedMessage from outside TestAllTypes.
+  /// Test that we can use NestedMessage from outside TestAllTypes.
   /// </summary>
   public sealed partial class TestForeignNested : pb::IMessage<TestForeignNested> {
     private static readonly pb::MessageParser<TestForeignNested> _parser = new pb::MessageParser<TestForeignNested>(() => new TestForeignNested());
@@ -2360,7 +2360,7 @@ namespace Google.Protobuf.TestProtos {
   }
 
   /// <summary>
-  ///  Test that really large tag numbers don't break anything.
+  /// Test that really large tag numbers don't break anything.
   /// </summary>
   public sealed partial class TestReallyLargeTagNumber : pb::IMessage<TestReallyLargeTagNumber> {
     private static readonly pb::MessageParser<TestReallyLargeTagNumber> _parser = new pb::MessageParser<TestReallyLargeTagNumber>(() => new TestReallyLargeTagNumber());
@@ -2399,8 +2399,8 @@ namespace Google.Protobuf.TestProtos {
     public const int AFieldNumber = 1;
     private int a_;
     /// <summary>
-    ///  The largest possible tag number is 2^28 - 1, since the wire format uses
-    ///  three bits to communicate wire type.
+    /// The largest possible tag number is 2^28 - 1, since the wire format uses
+    /// three bits to communicate wire type.
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int A {
@@ -2663,7 +2663,7 @@ namespace Google.Protobuf.TestProtos {
   }
 
   /// <summary>
-  ///  Test that mutual recursion works.
+  /// Test that mutual recursion works.
   /// </summary>
   public sealed partial class TestMutualRecursionA : pb::IMessage<TestMutualRecursionA> {
     private static readonly pb::MessageParser<TestMutualRecursionA> _parser = new pb::MessageParser<TestMutualRecursionA>(() => new TestMutualRecursionA());
@@ -2940,8 +2940,8 @@ namespace Google.Protobuf.TestProtos {
   }
 
   /// <summary>
-  ///  Test message with CamelCase field names.  This violates Protocol Buffer
-  ///  standard style.
+  /// Test message with CamelCase field names.  This violates Protocol Buffer
+  /// standard style.
   /// </summary>
   public sealed partial class TestCamelCaseFieldNames : pb::IMessage<TestCamelCaseFieldNames> {
     private static readonly pb::MessageParser<TestCamelCaseFieldNames> _parser = new pb::MessageParser<TestCamelCaseFieldNames>(() => new TestCamelCaseFieldNames());
@@ -3233,8 +3233,8 @@ namespace Google.Protobuf.TestProtos {
   }
 
   /// <summary>
-  ///  We list fields out of order, to ensure that we're using field number and not
-  ///  field index to determine serialization order.
+  /// We list fields out of order, to ensure that we're using field number and not
+  /// field index to determine serialization order.
   /// </summary>
   public sealed partial class TestFieldOrderings : pb::IMessage<TestFieldOrderings> {
     private static readonly pb::MessageParser<TestFieldOrderings> _parser = new pb::MessageParser<TestFieldOrderings>(() => new TestFieldOrderings());
@@ -3493,9 +3493,9 @@ namespace Google.Protobuf.TestProtos {
         public const int BbFieldNumber = 1;
         private int bb_;
         /// <summary>
-        ///  The field name "b" fails to compile in proto1 because it conflicts with
-        ///  a local variable named "b" in one of the generated methods.  Doh.
-        ///  This file needs to compile in proto1 to test backwards-compatibility.
+        /// The field name "b" fails to compile in proto1 because it conflicts with
+        /// a local variable named "b" in one of the generated methods.  Doh.
+        /// This file needs to compile in proto1 to test backwards-compatibility.
         /// </summary>
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public int Bb {
@@ -3718,7 +3718,7 @@ namespace Google.Protobuf.TestProtos {
   }
 
   /// <summary>
-  ///  Test String and Bytes: string is for valid UTF-8 strings
+  /// Test String and Bytes: string is for valid UTF-8 strings
   /// </summary>
   public sealed partial class OneString : pb::IMessage<OneString> {
     private static readonly pb::MessageParser<OneString> _parser = new pb::MessageParser<OneString>(() => new OneString());
@@ -4181,7 +4181,7 @@ namespace Google.Protobuf.TestProtos {
   }
 
   /// <summary>
-  ///  Test int32, uint32, int64, uint64, and bool are all compatible
+  /// Test int32, uint32, int64, uint64, and bool are all compatible
   /// </summary>
   public sealed partial class Int32Message : pb::IMessage<Int32Message> {
     private static readonly pb::MessageParser<Int32Message> _parser = new pb::MessageParser<Int32Message>(() => new Int32Message());
@@ -4769,7 +4769,7 @@ namespace Google.Protobuf.TestProtos {
   }
 
   /// <summary>
-  ///  Test oneofs.
+  /// Test oneofs.
   /// </summary>
   public sealed partial class TestOneof : pb::IMessage<TestOneof> {
     private static readonly pb::MessageParser<TestOneof> _parser = new pb::MessageParser<TestOneof>(() => new TestOneof());
@@ -5367,8 +5367,8 @@ namespace Google.Protobuf.TestProtos {
   }
 
   /// <summary>
-  ///  A message with the same fields as TestPackedTypes, but without packing. Used
-  ///  to test packed &lt;-> unpacked wire compatibility.
+  /// A message with the same fields as TestPackedTypes, but without packing. Used
+  /// to test packed &lt;-> unpacked wire compatibility.
   /// </summary>
   public sealed partial class TestUnpackedTypes : pb::IMessage<TestUnpackedTypes> {
     private static readonly pb::MessageParser<TestUnpackedTypes> _parser = new pb::MessageParser<TestUnpackedTypes>(() => new TestUnpackedTypes());
@@ -5796,9 +5796,9 @@ namespace Google.Protobuf.TestProtos {
         = pb::FieldCodec.ForFixed32(98);
     private readonly pbc::RepeatedField<uint> repeatedFixed32_ = new pbc::RepeatedField<uint>();
     /// <summary>
-    ///  Parsing repeated fixed size values used to fail. This message needs to be
-    ///  used in order to get a tag of the right size; all of the repeated fields
-    ///  in TestAllTypes didn't trigger the check.
+    /// Parsing repeated fixed size values used to fail. This message needs to be
+    /// used in order to get a tag of the right size; all of the repeated fields
+    /// in TestAllTypes didn't trigger the check.
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public pbc::RepeatedField<uint> RepeatedFixed32 {
@@ -5811,7 +5811,7 @@ namespace Google.Protobuf.TestProtos {
         = pb::FieldCodec.ForInt32(106);
     private readonly pbc::RepeatedField<int> repeatedInt32_ = new pbc::RepeatedField<int>();
     /// <summary>
-    ///  Check for a varint type, just for good measure.
+    /// Check for a varint type, just for good measure.
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public pbc::RepeatedField<int> RepeatedInt32 {
@@ -5824,7 +5824,7 @@ namespace Google.Protobuf.TestProtos {
         = pb::FieldCodec.ForFixed64(16370);
     private readonly pbc::RepeatedField<ulong> repeatedFixed64_ = new pbc::RepeatedField<ulong>();
     /// <summary>
-    ///  These have two-byte tags.
+    /// These have two-byte tags.
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public pbc::RepeatedField<ulong> RepeatedFixed64 {
@@ -5847,7 +5847,7 @@ namespace Google.Protobuf.TestProtos {
         = pb::FieldCodec.ForFloat(2097138);
     private readonly pbc::RepeatedField<float> repeatedFloat_ = new pbc::RepeatedField<float>();
     /// <summary>
-    ///  Three byte tags.
+    /// Three byte tags.
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public pbc::RepeatedField<float> RepeatedFloat {
@@ -6018,7 +6018,7 @@ namespace Google.Protobuf.TestProtos {
     public const int AFieldNumber = 1;
     private string a_ = "";
     /// <summary>
-    ///  */ &lt;- This should not close the generated doc comment
+    /// */ &lt;- This should not close the generated doc comment
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public string A {
@@ -6103,7 +6103,7 @@ namespace Google.Protobuf.TestProtos {
   }
 
   /// <summary>
-  ///  Test that RPC services work.
+  /// Test that RPC services work.
   /// </summary>
   public sealed partial class FooRequest : pb::IMessage<FooRequest> {
     private static readonly pb::MessageParser<FooRequest> _parser = new pb::MessageParser<FooRequest>(() => new FooRequest());

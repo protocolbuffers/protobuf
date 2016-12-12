@@ -43,7 +43,7 @@ namespace Google.Protobuf.Examples.AddressBook {
   }
   #region Messages
   /// <summary>
-  ///  [START messages]
+  /// [START messages]
   /// </summary>
   public sealed partial class Person : pb::IMessage<Person> {
     private static readonly pb::MessageParser<Person> _parser = new pb::MessageParser<Person>(() => new Person());
@@ -95,7 +95,7 @@ namespace Google.Protobuf.Examples.AddressBook {
     public const int IdFieldNumber = 2;
     private int id_;
     /// <summary>
-    ///  Unique ID number for this person.
+    /// Unique ID number for this person.
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int Id {
@@ -400,7 +400,7 @@ namespace Google.Protobuf.Examples.AddressBook {
   }
 
   /// <summary>
-  ///  Our address book file is just one of these.
+  /// Our address book file is just one of these.
   /// </summary>
   public sealed partial class AddressBook : pb::IMessage<AddressBook> {
     private static readonly pb::MessageParser<AddressBook> _parser = new pb::MessageParser<AddressBook>(() => new AddressBook());

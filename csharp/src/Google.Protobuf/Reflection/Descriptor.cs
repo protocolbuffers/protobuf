@@ -176,8 +176,8 @@ namespace Google.Protobuf.Reflection {
   }
   #region Messages
   /// <summary>
-  ///  The protocol compiler can output a FileDescriptorSet containing the .proto
-  ///  files it parses.
+  /// The protocol compiler can output a FileDescriptorSet containing the .proto
+  /// files it parses.
   /// </summary>
   internal sealed partial class FileDescriptorSet : pb::IMessage<FileDescriptorSet> {
     private static readonly pb::MessageParser<FileDescriptorSet> _parser = new pb::MessageParser<FileDescriptorSet>(() => new FileDescriptorSet());
@@ -289,7 +289,7 @@ namespace Google.Protobuf.Reflection {
   }
 
   /// <summary>
-  ///  Describes a complete .proto file.
+  /// Describes a complete .proto file.
   /// </summary>
   internal sealed partial class FileDescriptorProto : pb::IMessage<FileDescriptorProto> {
     private static readonly pb::MessageParser<FileDescriptorProto> _parser = new pb::MessageParser<FileDescriptorProto>(() => new FileDescriptorProto());
@@ -338,7 +338,7 @@ namespace Google.Protobuf.Reflection {
     public const int NameFieldNumber = 1;
     private string name_ = "";
     /// <summary>
-    ///  file name, relative to root of source tree
+    /// file name, relative to root of source tree
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public string Name {
@@ -352,7 +352,7 @@ namespace Google.Protobuf.Reflection {
     public const int PackageFieldNumber = 2;
     private string package_ = "";
     /// <summary>
-    ///  e.g. "foo", "foo.bar", etc.
+    /// e.g. "foo", "foo.bar", etc.
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public string Package {
@@ -368,7 +368,7 @@ namespace Google.Protobuf.Reflection {
         = pb::FieldCodec.ForString(26);
     private readonly pbc::RepeatedField<string> dependency_ = new pbc::RepeatedField<string>();
     /// <summary>
-    ///  Names of files imported by this file.
+    /// Names of files imported by this file.
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public pbc::RepeatedField<string> Dependency {
@@ -381,7 +381,7 @@ namespace Google.Protobuf.Reflection {
         = pb::FieldCodec.ForInt32(80);
     private readonly pbc::RepeatedField<int> publicDependency_ = new pbc::RepeatedField<int>();
     /// <summary>
-    ///  Indexes of the public imported files in the dependency list above.
+    /// Indexes of the public imported files in the dependency list above.
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public pbc::RepeatedField<int> PublicDependency {
@@ -394,8 +394,8 @@ namespace Google.Protobuf.Reflection {
         = pb::FieldCodec.ForInt32(88);
     private readonly pbc::RepeatedField<int> weakDependency_ = new pbc::RepeatedField<int>();
     /// <summary>
-    ///  Indexes of the weak imported files in the dependency list.
-    ///  For Google-internal migration only. Do not use.
+    /// Indexes of the weak imported files in the dependency list.
+    /// For Google-internal migration only. Do not use.
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public pbc::RepeatedField<int> WeakDependency {
@@ -408,7 +408,7 @@ namespace Google.Protobuf.Reflection {
         = pb::FieldCodec.ForMessage(34, global::Google.Protobuf.Reflection.DescriptorProto.Parser);
     private readonly pbc::RepeatedField<global::Google.Protobuf.Reflection.DescriptorProto> messageType_ = new pbc::RepeatedField<global::Google.Protobuf.Reflection.DescriptorProto>();
     /// <summary>
-    ///  All top-level definitions in this file.
+    /// All top-level definitions in this file.
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public pbc::RepeatedField<global::Google.Protobuf.Reflection.DescriptorProto> MessageType {
@@ -460,10 +460,10 @@ namespace Google.Protobuf.Reflection {
     public const int SourceCodeInfoFieldNumber = 9;
     private global::Google.Protobuf.Reflection.SourceCodeInfo sourceCodeInfo_;
     /// <summary>
-    ///  This field contains optional information about the original source code.
-    ///  You may safely remove this entire field without harming runtime
-    ///  functionality of the descriptors -- the information is needed only by
-    ///  development tools.
+    /// This field contains optional information about the original source code.
+    /// You may safely remove this entire field without harming runtime
+    /// functionality of the descriptors -- the information is needed only by
+    /// development tools.
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public global::Google.Protobuf.Reflection.SourceCodeInfo SourceCodeInfo {
@@ -477,8 +477,8 @@ namespace Google.Protobuf.Reflection {
     public const int SyntaxFieldNumber = 12;
     private string syntax_ = "";
     /// <summary>
-    ///  The syntax of the proto file.
-    ///  The supported values are "proto2" and "proto3".
+    /// The syntax of the proto file.
+    /// The supported values are "proto2" and "proto3".
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public string Syntax {
@@ -704,7 +704,7 @@ namespace Google.Protobuf.Reflection {
   }
 
   /// <summary>
-  ///  Describes a message type.
+  /// Describes a message type.
   /// </summary>
   internal sealed partial class DescriptorProto : pb::IMessage<DescriptorProto> {
     private static readonly pb::MessageParser<DescriptorProto> _parser = new pb::MessageParser<DescriptorProto>(() => new DescriptorProto());
@@ -845,8 +845,8 @@ namespace Google.Protobuf.Reflection {
         = pb::FieldCodec.ForString(82);
     private readonly pbc::RepeatedField<string> reservedName_ = new pbc::RepeatedField<string>();
     /// <summary>
-    ///  Reserved field names, which may not be used by fields in the same message.
-    ///  A given name may only be reserved once.
+    /// Reserved field names, which may not be used by fields in the same message.
+    /// A given name may only be reserved once.
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public pbc::RepeatedField<string> ReservedName {
@@ -1169,9 +1169,9 @@ namespace Google.Protobuf.Reflection {
       }
 
       /// <summary>
-      ///  Range of reserved tag numbers. Reserved tag numbers may not be used by
-      ///  fields or extension ranges in the same message. Reserved ranges may
-      ///  not overlap.
+      /// Range of reserved tag numbers. Reserved tag numbers may not be used by
+      /// fields or extension ranges in the same message. Reserved ranges may
+      /// not overlap.
       /// </summary>
       internal sealed partial class ReservedRange : pb::IMessage<ReservedRange> {
         private static readonly pb::MessageParser<ReservedRange> _parser = new pb::MessageParser<ReservedRange>(() => new ReservedRange());
@@ -1210,7 +1210,7 @@ namespace Google.Protobuf.Reflection {
         public const int StartFieldNumber = 1;
         private int start_;
         /// <summary>
-        ///  Inclusive.
+        /// Inclusive.
         /// </summary>
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public int Start {
@@ -1224,7 +1224,7 @@ namespace Google.Protobuf.Reflection {
         public const int EndFieldNumber = 2;
         private int end_;
         /// <summary>
-        ///  Exclusive.
+        /// Exclusive.
         /// </summary>
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public int End {
@@ -1330,7 +1330,7 @@ namespace Google.Protobuf.Reflection {
   }
 
   /// <summary>
-  ///  Describes a field within a message.
+  /// Describes a field within a message.
   /// </summary>
   internal sealed partial class FieldDescriptorProto : pb::IMessage<FieldDescriptorProto> {
     private static readonly pb::MessageParser<FieldDescriptorProto> _parser = new pb::MessageParser<FieldDescriptorProto>(() => new FieldDescriptorProto());
@@ -1410,8 +1410,8 @@ namespace Google.Protobuf.Reflection {
     public const int TypeFieldNumber = 5;
     private global::Google.Protobuf.Reflection.FieldDescriptorProto.Types.Type type_ = 0;
     /// <summary>
-    ///  If type_name is set, this need not be set.  If both this and type_name
-    ///  are set, this must be one of TYPE_ENUM, TYPE_MESSAGE or TYPE_GROUP.
+    /// If type_name is set, this need not be set.  If both this and type_name
+    /// are set, this must be one of TYPE_ENUM, TYPE_MESSAGE or TYPE_GROUP.
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public global::Google.Protobuf.Reflection.FieldDescriptorProto.Types.Type Type {
@@ -1425,11 +1425,11 @@ namespace Google.Protobuf.Reflection {
     public const int TypeNameFieldNumber = 6;
     private string typeName_ = "";
     /// <summary>
-    ///  For message and enum types, this is the name of the type.  If the name
-    ///  starts with a '.', it is fully-qualified.  Otherwise, C++-like scoping
-    ///  rules are used to find the type (i.e. first the nested types within this
-    ///  message are searched, then within the parent, on up to the root
-    ///  namespace).
+    /// For message and enum types, this is the name of the type.  If the name
+    /// starts with a '.', it is fully-qualified.  Otherwise, C++-like scoping
+    /// rules are used to find the type (i.e. first the nested types within this
+    /// message are searched, then within the parent, on up to the root
+    /// namespace).
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public string TypeName {
@@ -1443,8 +1443,8 @@ namespace Google.Protobuf.Reflection {
     public const int ExtendeeFieldNumber = 2;
     private string extendee_ = "";
     /// <summary>
-    ///  For extensions, this is the name of the type being extended.  It is
-    ///  resolved in the same manner as type_name.
+    /// For extensions, this is the name of the type being extended.  It is
+    /// resolved in the same manner as type_name.
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public string Extendee {
@@ -1458,11 +1458,11 @@ namespace Google.Protobuf.Reflection {
     public const int DefaultValueFieldNumber = 7;
     private string defaultValue_ = "";
     /// <summary>
-    ///  For numeric types, contains the original text representation of the value.
-    ///  For booleans, "true" or "false".
-    ///  For strings, contains the default text contents (not escaped in any way).
-    ///  For bytes, contains the C escaped value.  All bytes >= 128 are escaped.
-    ///  TODO(kenton):  Base-64 encode?
+    /// For numeric types, contains the original text representation of the value.
+    /// For booleans, "true" or "false".
+    /// For strings, contains the default text contents (not escaped in any way).
+    /// For bytes, contains the C escaped value.  All bytes >= 128 are escaped.
+    /// TODO(kenton):  Base-64 encode?
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public string DefaultValue {
@@ -1476,8 +1476,8 @@ namespace Google.Protobuf.Reflection {
     public const int OneofIndexFieldNumber = 9;
     private int oneofIndex_;
     /// <summary>
-    ///  If set, gives the index of a oneof in the containing type's oneof_decl
-    ///  list.  This field is a member of that oneof.
+    /// If set, gives the index of a oneof in the containing type's oneof_decl
+    /// list.  This field is a member of that oneof.
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int OneofIndex {
@@ -1491,10 +1491,10 @@ namespace Google.Protobuf.Reflection {
     public const int JsonNameFieldNumber = 10;
     private string jsonName_ = "";
     /// <summary>
-    ///  JSON name of this field. The value is set by protocol compiler. If the
-    ///  user has set a "json_name" option on this field, that option's value
-    ///  will be used. Otherwise, it's deduced from the field's name by converting
-    ///  it to camelCase.
+    /// JSON name of this field. The value is set by protocol compiler. If the
+    /// user has set a "json_name" option on this field, that option's value
+    /// will be used. Otherwise, it's deduced from the field's name by converting
+    /// it to camelCase.
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public string JsonName {
@@ -1743,20 +1743,20 @@ namespace Google.Protobuf.Reflection {
     public static partial class Types {
       internal enum Type {
         /// <summary>
-        ///  0 is reserved for errors.
-        ///  Order is weird for historical reasons.
+        /// 0 is reserved for errors.
+        /// Order is weird for historical reasons.
         /// </summary>
         [pbr::OriginalName("TYPE_DOUBLE")] Double = 1,
         [pbr::OriginalName("TYPE_FLOAT")] Float = 2,
         /// <summary>
-        ///  Not ZigZag encoded.  Negative numbers take 10 bytes.  Use TYPE_SINT64 if
-        ///  negative values are likely.
+        /// Not ZigZag encoded.  Negative numbers take 10 bytes.  Use TYPE_SINT64 if
+        /// negative values are likely.
         /// </summary>
         [pbr::OriginalName("TYPE_INT64")] Int64 = 3,
         [pbr::OriginalName("TYPE_UINT64")] Uint64 = 4,
         /// <summary>
-        ///  Not ZigZag encoded.  Negative numbers take 10 bytes.  Use TYPE_SINT32 if
-        ///  negative values are likely.
+        /// Not ZigZag encoded.  Negative numbers take 10 bytes.  Use TYPE_SINT32 if
+        /// negative values are likely.
         /// </summary>
         [pbr::OriginalName("TYPE_INT32")] Int32 = 5,
         [pbr::OriginalName("TYPE_FIXED64")] Fixed64 = 6,
@@ -1764,15 +1764,15 @@ namespace Google.Protobuf.Reflection {
         [pbr::OriginalName("TYPE_BOOL")] Bool = 8,
         [pbr::OriginalName("TYPE_STRING")] String = 9,
         /// <summary>
-        ///  Tag-delimited aggregate.
+        /// Tag-delimited aggregate.
         /// </summary>
         [pbr::OriginalName("TYPE_GROUP")] Group = 10,
         /// <summary>
-        ///  Length-delimited aggregate.
+        /// Length-delimited aggregate.
         /// </summary>
         [pbr::OriginalName("TYPE_MESSAGE")] Message = 11,
         /// <summary>
-        ///  New in version 2.
+        /// New in version 2.
         /// </summary>
         [pbr::OriginalName("TYPE_BYTES")] Bytes = 12,
         [pbr::OriginalName("TYPE_UINT32")] Uint32 = 13,
@@ -1780,18 +1780,18 @@ namespace Google.Protobuf.Reflection {
         [pbr::OriginalName("TYPE_SFIXED32")] Sfixed32 = 15,
         [pbr::OriginalName("TYPE_SFIXED64")] Sfixed64 = 16,
         /// <summary>
-        ///  Uses ZigZag encoding.
+        /// Uses ZigZag encoding.
         /// </summary>
         [pbr::OriginalName("TYPE_SINT32")] Sint32 = 17,
         /// <summary>
-        ///  Uses ZigZag encoding.
+        /// Uses ZigZag encoding.
         /// </summary>
         [pbr::OriginalName("TYPE_SINT64")] Sint64 = 18,
       }
 
       internal enum Label {
         /// <summary>
-        ///  0 is reserved for errors
+        /// 0 is reserved for errors
         /// </summary>
         [pbr::OriginalName("LABEL_OPTIONAL")] Optional = 1,
         [pbr::OriginalName("LABEL_REQUIRED")] Required = 2,
@@ -1804,7 +1804,7 @@ namespace Google.Protobuf.Reflection {
   }
 
   /// <summary>
-  ///  Describes a oneof.
+  /// Describes a oneof.
   /// </summary>
   internal sealed partial class OneofDescriptorProto : pb::IMessage<OneofDescriptorProto> {
     private static readonly pb::MessageParser<OneofDescriptorProto> _parser = new pb::MessageParser<OneofDescriptorProto>(() => new OneofDescriptorProto());
@@ -1958,7 +1958,7 @@ namespace Google.Protobuf.Reflection {
   }
 
   /// <summary>
-  ///  Describes an enum type.
+  /// Describes an enum type.
   /// </summary>
   internal sealed partial class EnumDescriptorProto : pb::IMessage<EnumDescriptorProto> {
     private static readonly pb::MessageParser<EnumDescriptorProto> _parser = new pb::MessageParser<EnumDescriptorProto>(() => new EnumDescriptorProto());
@@ -2132,7 +2132,7 @@ namespace Google.Protobuf.Reflection {
   }
 
   /// <summary>
-  ///  Describes a value within an enum.
+  /// Describes a value within an enum.
   /// </summary>
   internal sealed partial class EnumValueDescriptorProto : pb::IMessage<EnumValueDescriptorProto> {
     private static readonly pb::MessageParser<EnumValueDescriptorProto> _parser = new pb::MessageParser<EnumValueDescriptorProto>(() => new EnumValueDescriptorProto());
@@ -2314,7 +2314,7 @@ namespace Google.Protobuf.Reflection {
   }
 
   /// <summary>
-  ///  Describes a service.
+  /// Describes a service.
   /// </summary>
   internal sealed partial class ServiceDescriptorProto : pb::IMessage<ServiceDescriptorProto> {
     private static readonly pb::MessageParser<ServiceDescriptorProto> _parser = new pb::MessageParser<ServiceDescriptorProto>(() => new ServiceDescriptorProto());
@@ -2488,7 +2488,7 @@ namespace Google.Protobuf.Reflection {
   }
 
   /// <summary>
-  ///  Describes a method of a service.
+  /// Describes a method of a service.
   /// </summary>
   internal sealed partial class MethodDescriptorProto : pb::IMessage<MethodDescriptorProto> {
     private static readonly pb::MessageParser<MethodDescriptorProto> _parser = new pb::MessageParser<MethodDescriptorProto>(() => new MethodDescriptorProto());
@@ -2542,8 +2542,8 @@ namespace Google.Protobuf.Reflection {
     public const int InputTypeFieldNumber = 2;
     private string inputType_ = "";
     /// <summary>
-    ///  Input and output type names.  These are resolved in the same way as
-    ///  FieldDescriptorProto.type_name, but must refer to a message type.
+    /// Input and output type names.  These are resolved in the same way as
+    /// FieldDescriptorProto.type_name, but must refer to a message type.
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public string InputType {
@@ -2579,7 +2579,7 @@ namespace Google.Protobuf.Reflection {
     public const int ClientStreamingFieldNumber = 5;
     private bool clientStreaming_;
     /// <summary>
-    ///  Identifies if client streams multiple client messages
+    /// Identifies if client streams multiple client messages
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public bool ClientStreaming {
@@ -2593,7 +2593,7 @@ namespace Google.Protobuf.Reflection {
     public const int ServerStreamingFieldNumber = 6;
     private bool serverStreaming_;
     /// <summary>
-    ///  Identifies if server streams multiple server messages
+    /// Identifies if server streams multiple server messages
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public bool ServerStreaming {
@@ -2814,10 +2814,10 @@ namespace Google.Protobuf.Reflection {
     public const int JavaPackageFieldNumber = 1;
     private string javaPackage_ = "";
     /// <summary>
-    ///  Sets the Java package where classes generated from this .proto will be
-    ///  placed.  By default, the proto package is used, but this is often
-    ///  inappropriate because proto packages do not normally start with backwards
-    ///  domain names.
+    /// Sets the Java package where classes generated from this .proto will be
+    /// placed.  By default, the proto package is used, but this is often
+    /// inappropriate because proto packages do not normally start with backwards
+    /// domain names.
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public string JavaPackage {
@@ -2831,11 +2831,11 @@ namespace Google.Protobuf.Reflection {
     public const int JavaOuterClassnameFieldNumber = 8;
     private string javaOuterClassname_ = "";
     /// <summary>
-    ///  If set, all the classes from the .proto file are wrapped in a single
-    ///  outer class with the given name.  This applies to both Proto1
-    ///  (equivalent to the old "--one_java_file" option) and Proto2 (where
-    ///  a .proto always translates to a single class, but you may want to
-    ///  explicitly choose the class name).
+    /// If set, all the classes from the .proto file are wrapped in a single
+    /// outer class with the given name.  This applies to both Proto1
+    /// (equivalent to the old "--one_java_file" option) and Proto2 (where
+    /// a .proto always translates to a single class, but you may want to
+    /// explicitly choose the class name).
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public string JavaOuterClassname {
@@ -2849,12 +2849,12 @@ namespace Google.Protobuf.Reflection {
     public const int JavaMultipleFilesFieldNumber = 10;
     private bool javaMultipleFiles_;
     /// <summary>
-    ///  If set true, then the Java code generator will generate a separate .java
-    ///  file for each top-level message, enum, and service defined in the .proto
-    ///  file.  Thus, these types will *not* be nested inside the outer class
-    ///  named by java_outer_classname.  However, the outer class will still be
-    ///  generated to contain the file's getDescriptor() method as well as any
-    ///  top-level extensions defined in the file.
+    /// If set true, then the Java code generator will generate a separate .java
+    /// file for each top-level message, enum, and service defined in the .proto
+    /// file.  Thus, these types will *not* be nested inside the outer class
+    /// named by java_outer_classname.  However, the outer class will still be
+    /// generated to contain the file's getDescriptor() method as well as any
+    /// top-level extensions defined in the file.
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public bool JavaMultipleFiles {
@@ -2868,7 +2868,7 @@ namespace Google.Protobuf.Reflection {
     public const int JavaGenerateEqualsAndHashFieldNumber = 20;
     private bool javaGenerateEqualsAndHash_;
     /// <summary>
-    ///  This option does nothing.
+    /// This option does nothing.
     /// </summary>
     [global::System.ObsoleteAttribute]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -2883,12 +2883,12 @@ namespace Google.Protobuf.Reflection {
     public const int JavaStringCheckUtf8FieldNumber = 27;
     private bool javaStringCheckUtf8_;
     /// <summary>
-    ///  If set true, then the Java2 code generator will generate code that
-    ///  throws an exception whenever an attempt is made to assign a non-UTF-8
-    ///  byte sequence to a string field.
-    ///  Message reflection will do the same.
-    ///  However, an extension field still accepts non-UTF-8 byte sequences.
-    ///  This option has no effect on when used with the lite runtime.
+    /// If set true, then the Java2 code generator will generate code that
+    /// throws an exception whenever an attempt is made to assign a non-UTF-8
+    /// byte sequence to a string field.
+    /// Message reflection will do the same.
+    /// However, an extension field still accepts non-UTF-8 byte sequences.
+    /// This option has no effect on when used with the lite runtime.
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public bool JavaStringCheckUtf8 {
@@ -2913,11 +2913,11 @@ namespace Google.Protobuf.Reflection {
     public const int GoPackageFieldNumber = 11;
     private string goPackage_ = "";
     /// <summary>
-    ///  Sets the Go package where structs generated from this .proto will be
-    ///  placed. If omitted, the Go package will be derived from the following:
-    ///    - The basename of the package import path, if provided.
-    ///    - Otherwise, the package statement in the .proto file, if present.
-    ///    - Otherwise, the basename of the .proto file, without extension.
+    /// Sets the Go package where structs generated from this .proto will be
+    /// placed. If omitted, the Go package will be derived from the following:
+    ///   - The basename of the package import path, if provided.
+    ///   - Otherwise, the package statement in the .proto file, if present.
+    ///   - Otherwise, the basename of the .proto file, without extension.
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public string GoPackage {
@@ -2931,16 +2931,16 @@ namespace Google.Protobuf.Reflection {
     public const int CcGenericServicesFieldNumber = 16;
     private bool ccGenericServices_;
     /// <summary>
-    ///  Should generic services be generated in each language?  "Generic" services
-    ///  are not specific to any particular RPC system.  They are generated by the
-    ///  main code generators in each language (without additional plugins).
-    ///  Generic services were the only kind of service generation supported by
-    ///  early versions of google.protobuf.
+    /// Should generic services be generated in each language?  "Generic" services
+    /// are not specific to any particular RPC system.  They are generated by the
+    /// main code generators in each language (without additional plugins).
+    /// Generic services were the only kind of service generation supported by
+    /// early versions of google.protobuf.
     ///
-    ///  Generic services are now considered deprecated in favor of using plugins
-    ///  that generate code specific to your particular RPC system.  Therefore,
-    ///  these default to false.  Old code which depends on generic services should
-    ///  explicitly set them to true.
+    /// Generic services are now considered deprecated in favor of using plugins
+    /// that generate code specific to your particular RPC system.  Therefore,
+    /// these default to false.  Old code which depends on generic services should
+    /// explicitly set them to true.
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public bool CcGenericServices {
@@ -2976,10 +2976,10 @@ namespace Google.Protobuf.Reflection {
     public const int DeprecatedFieldNumber = 23;
     private bool deprecated_;
     /// <summary>
-    ///  Is this file deprecated?
-    ///  Depending on the target platform, this can emit Deprecated annotations
-    ///  for everything in the file, or it will be completely ignored; in the very
-    ///  least, this is a formalization for deprecating files.
+    /// Is this file deprecated?
+    /// Depending on the target platform, this can emit Deprecated annotations
+    /// for everything in the file, or it will be completely ignored; in the very
+    /// least, this is a formalization for deprecating files.
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public bool Deprecated {
@@ -2993,8 +2993,8 @@ namespace Google.Protobuf.Reflection {
     public const int CcEnableArenasFieldNumber = 31;
     private bool ccEnableArenas_;
     /// <summary>
-    ///  Enables the use of arenas for the proto messages in this file. This applies
-    ///  only to generated classes for C++.
+    /// Enables the use of arenas for the proto messages in this file. This applies
+    /// only to generated classes for C++.
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public bool CcEnableArenas {
@@ -3008,8 +3008,8 @@ namespace Google.Protobuf.Reflection {
     public const int ObjcClassPrefixFieldNumber = 36;
     private string objcClassPrefix_ = "";
     /// <summary>
-    ///  Sets the objective c class prefix which is prepended to all objective c
-    ///  generated classes from this .proto. There is no default.
+    /// Sets the objective c class prefix which is prepended to all objective c
+    /// generated classes from this .proto. There is no default.
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public string ObjcClassPrefix {
@@ -3023,7 +3023,7 @@ namespace Google.Protobuf.Reflection {
     public const int CsharpNamespaceFieldNumber = 37;
     private string csharpNamespace_ = "";
     /// <summary>
-    ///  Namespace for generated classes; defaults to the package.
+    /// Namespace for generated classes; defaults to the package.
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public string CsharpNamespace {
@@ -3037,10 +3037,10 @@ namespace Google.Protobuf.Reflection {
     public const int SwiftPrefixFieldNumber = 39;
     private string swiftPrefix_ = "";
     /// <summary>
-    ///  By default Swift generators will take the proto package and CamelCase it
-    ///  replacing '.' with underscore and use that to prefix the types/symbols
-    ///  defined. When this options is provided, they will use this value instead
-    ///  to prefix the types/symbols defined.
+    /// By default Swift generators will take the proto package and CamelCase it
+    /// replacing '.' with underscore and use that to prefix the types/symbols
+    /// defined. When this options is provided, they will use this value instead
+    /// to prefix the types/symbols defined.
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public string SwiftPrefix {
@@ -3056,7 +3056,7 @@ namespace Google.Protobuf.Reflection {
         = pb::FieldCodec.ForMessage(7994, global::Google.Protobuf.Reflection.UninterpretedOption.Parser);
     private readonly pbc::RepeatedField<global::Google.Protobuf.Reflection.UninterpretedOption> uninterpretedOption_ = new pbc::RepeatedField<global::Google.Protobuf.Reflection.UninterpretedOption>();
     /// <summary>
-    ///  The parser stores options it doesn't recognize here. See above.
+    /// The parser stores options it doesn't recognize here. See above.
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public pbc::RepeatedField<global::Google.Protobuf.Reflection.UninterpretedOption> UninterpretedOption {
@@ -3373,19 +3373,19 @@ namespace Google.Protobuf.Reflection {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static partial class Types {
       /// <summary>
-      ///  Generated classes can be optimized for speed or code size.
+      /// Generated classes can be optimized for speed or code size.
       /// </summary>
       internal enum OptimizeMode {
         /// <summary>
-        ///  Generate complete code for parsing, serialization,
+        /// Generate complete code for parsing, serialization,
         /// </summary>
         [pbr::OriginalName("SPEED")] Speed = 1,
         /// <summary>
-        ///  etc.
+        /// etc.
         /// </summary>
         [pbr::OriginalName("CODE_SIZE")] CodeSize = 2,
         /// <summary>
-        ///  Generate code using MessageLite and the lite runtime.
+        /// Generate code using MessageLite and the lite runtime.
         /// </summary>
         [pbr::OriginalName("LITE_RUNTIME")] LiteRuntime = 3,
       }
@@ -3435,24 +3435,24 @@ namespace Google.Protobuf.Reflection {
     public const int MessageSetWireFormatFieldNumber = 1;
     private bool messageSetWireFormat_;
     /// <summary>
-    ///  Set true to use the old proto1 MessageSet wire format for extensions.
-    ///  This is provided for backwards-compatibility with the MessageSet wire
-    ///  format.  You should not use this for any other reason:  It's less
-    ///  efficient, has fewer features, and is more complicated.
+    /// Set true to use the old proto1 MessageSet wire format for extensions.
+    /// This is provided for backwards-compatibility with the MessageSet wire
+    /// format.  You should not use this for any other reason:  It's less
+    /// efficient, has fewer features, and is more complicated.
     ///
-    ///  The message must be defined exactly as follows:
-    ///    message Foo {
-    ///      option message_set_wire_format = true;
-    ///      extensions 4 to max;
-    ///    }
-    ///  Note that the message cannot have any defined fields; MessageSets only
-    ///  have extensions.
+    /// The message must be defined exactly as follows:
+    ///   message Foo {
+    ///     option message_set_wire_format = true;
+    ///     extensions 4 to max;
+    ///   }
+    /// Note that the message cannot have any defined fields; MessageSets only
+    /// have extensions.
     ///
-    ///  All extensions of your type must be singular messages; e.g. they cannot
-    ///  be int32s, enums, or repeated messages.
+    /// All extensions of your type must be singular messages; e.g. they cannot
+    /// be int32s, enums, or repeated messages.
     ///
-    ///  Because this is an option, the above two restrictions are not enforced by
-    ///  the protocol compiler.
+    /// Because this is an option, the above two restrictions are not enforced by
+    /// the protocol compiler.
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public bool MessageSetWireFormat {
@@ -3466,9 +3466,9 @@ namespace Google.Protobuf.Reflection {
     public const int NoStandardDescriptorAccessorFieldNumber = 2;
     private bool noStandardDescriptorAccessor_;
     /// <summary>
-    ///  Disables the generation of the standard "descriptor()" accessor, which can
-    ///  conflict with a field of the same name.  This is meant to make migration
-    ///  from proto1 easier; new code should avoid fields named "descriptor".
+    /// Disables the generation of the standard "descriptor()" accessor, which can
+    /// conflict with a field of the same name.  This is meant to make migration
+    /// from proto1 easier; new code should avoid fields named "descriptor".
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public bool NoStandardDescriptorAccessor {
@@ -3482,10 +3482,10 @@ namespace Google.Protobuf.Reflection {
     public const int DeprecatedFieldNumber = 3;
     private bool deprecated_;
     /// <summary>
-    ///  Is this message deprecated?
-    ///  Depending on the target platform, this can emit Deprecated annotations
-    ///  for the message, or it will be completely ignored; in the very least,
-    ///  this is a formalization for deprecating messages.
+    /// Is this message deprecated?
+    /// Depending on the target platform, this can emit Deprecated annotations
+    /// for the message, or it will be completely ignored; in the very least,
+    /// this is a formalization for deprecating messages.
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public bool Deprecated {
@@ -3499,27 +3499,27 @@ namespace Google.Protobuf.Reflection {
     public const int MapEntryFieldNumber = 7;
     private bool mapEntry_;
     /// <summary>
-    ///  Whether the message is an automatically generated map entry type for the
-    ///  maps field.
+    /// Whether the message is an automatically generated map entry type for the
+    /// maps field.
     ///
-    ///  For maps fields:
-    ///      map&lt;KeyType, ValueType> map_field = 1;
-    ///  The parsed descriptor looks like:
-    ///      message MapFieldEntry {
-    ///          option map_entry = true;
-    ///          optional KeyType key = 1;
-    ///          optional ValueType value = 2;
-    ///      }
-    ///      repeated MapFieldEntry map_field = 1;
+    /// For maps fields:
+    ///     map&lt;KeyType, ValueType> map_field = 1;
+    /// The parsed descriptor looks like:
+    ///     message MapFieldEntry {
+    ///         option map_entry = true;
+    ///         optional KeyType key = 1;
+    ///         optional ValueType value = 2;
+    ///     }
+    ///     repeated MapFieldEntry map_field = 1;
     ///
-    ///  Implementations may choose not to generate the map_entry=true message, but
-    ///  use a native map in the target language to hold the keys and values.
-    ///  The reflection APIs in such implementions still need to work as
-    ///  if the field is a repeated message field.
+    /// Implementations may choose not to generate the map_entry=true message, but
+    /// use a native map in the target language to hold the keys and values.
+    /// The reflection APIs in such implementions still need to work as
+    /// if the field is a repeated message field.
     ///
-    ///  NOTE: Do not set the option in .proto files. Always use the maps syntax
-    ///  instead. The option should only be implicitly set by the proto compiler
-    ///  parser.
+    /// NOTE: Do not set the option in .proto files. Always use the maps syntax
+    /// instead. The option should only be implicitly set by the proto compiler
+    /// parser.
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public bool MapEntry {
@@ -3535,7 +3535,7 @@ namespace Google.Protobuf.Reflection {
         = pb::FieldCodec.ForMessage(7994, global::Google.Protobuf.Reflection.UninterpretedOption.Parser);
     private readonly pbc::RepeatedField<global::Google.Protobuf.Reflection.UninterpretedOption> uninterpretedOption_ = new pbc::RepeatedField<global::Google.Protobuf.Reflection.UninterpretedOption>();
     /// <summary>
-    ///  The parser stores options it doesn't recognize here. See above.
+    /// The parser stores options it doesn't recognize here. See above.
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public pbc::RepeatedField<global::Google.Protobuf.Reflection.UninterpretedOption> UninterpretedOption {
@@ -3715,10 +3715,10 @@ namespace Google.Protobuf.Reflection {
     public const int CtypeFieldNumber = 1;
     private global::Google.Protobuf.Reflection.FieldOptions.Types.CType ctype_ = 0;
     /// <summary>
-    ///  The ctype option instructs the C++ code generator to use a different
-    ///  representation of the field than it normally would.  See the specific
-    ///  options below.  This option is not yet implemented in the open source
-    ///  release -- sorry, we'll try to include it in a future version!
+    /// The ctype option instructs the C++ code generator to use a different
+    /// representation of the field than it normally would.  See the specific
+    /// options below.  This option is not yet implemented in the open source
+    /// release -- sorry, we'll try to include it in a future version!
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public global::Google.Protobuf.Reflection.FieldOptions.Types.CType Ctype {
@@ -3732,11 +3732,11 @@ namespace Google.Protobuf.Reflection {
     public const int PackedFieldNumber = 2;
     private bool packed_;
     /// <summary>
-    ///  The packed option can be enabled for repeated primitive fields to enable
-    ///  a more efficient representation on the wire. Rather than repeatedly
-    ///  writing the tag and type for each element, the entire array is encoded as
-    ///  a single length-delimited blob. In proto3, only explicit setting it to
-    ///  false will avoid using packed encoding.
+    /// The packed option can be enabled for repeated primitive fields to enable
+    /// a more efficient representation on the wire. Rather than repeatedly
+    /// writing the tag and type for each element, the entire array is encoded as
+    /// a single length-delimited blob. In proto3, only explicit setting it to
+    /// false will avoid using packed encoding.
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public bool Packed {
@@ -3750,15 +3750,15 @@ namespace Google.Protobuf.Reflection {
     public const int JstypeFieldNumber = 6;
     private global::Google.Protobuf.Reflection.FieldOptions.Types.JSType jstype_ = 0;
     /// <summary>
-    ///  The jstype option determines the JavaScript type used for values of the
-    ///  field.  The option is permitted only for 64 bit integral and fixed types
-    ///  (int64, uint64, sint64, fixed64, sfixed64).  By default these types are
-    ///  represented as JavaScript strings.  This avoids loss of precision that can
-    ///  happen when a large value is converted to a floating point JavaScript
-    ///  numbers.  Specifying JS_NUMBER for the jstype causes the generated
-    ///  JavaScript code to use the JavaScript "number" type instead of strings.
-    ///  This option is an enum to permit additional types to be added,
-    ///  e.g. goog.math.Integer.
+    /// The jstype option determines the JavaScript type used for values of the
+    /// field.  The option is permitted only for 64 bit integral and fixed types
+    /// (int64, uint64, sint64, fixed64, sfixed64).  By default these types are
+    /// represented as JavaScript strings.  This avoids loss of precision that can
+    /// happen when a large value is converted to a floating point JavaScript
+    /// numbers.  Specifying JS_NUMBER for the jstype causes the generated
+    /// JavaScript code to use the JavaScript "number" type instead of strings.
+    /// This option is an enum to permit additional types to be added,
+    /// e.g. goog.math.Integer.
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public global::Google.Protobuf.Reflection.FieldOptions.Types.JSType Jstype {
@@ -3772,33 +3772,33 @@ namespace Google.Protobuf.Reflection {
     public const int LazyFieldNumber = 5;
     private bool lazy_;
     /// <summary>
-    ///  Should this field be parsed lazily?  Lazy applies only to message-type
-    ///  fields.  It means that when the outer message is initially parsed, the
-    ///  inner message's contents will not be parsed but instead stored in encoded
-    ///  form.  The inner message will actually be parsed when it is first accessed.
+    /// Should this field be parsed lazily?  Lazy applies only to message-type
+    /// fields.  It means that when the outer message is initially parsed, the
+    /// inner message's contents will not be parsed but instead stored in encoded
+    /// form.  The inner message will actually be parsed when it is first accessed.
     ///
-    ///  This is only a hint.  Implementations are free to choose whether to use
-    ///  eager or lazy parsing regardless of the value of this option.  However,
-    ///  setting this option true suggests that the protocol author believes that
-    ///  using lazy parsing on this field is worth the additional bookkeeping
-    ///  overhead typically needed to implement it.
+    /// This is only a hint.  Implementations are free to choose whether to use
+    /// eager or lazy parsing regardless of the value of this option.  However,
+    /// setting this option true suggests that the protocol author believes that
+    /// using lazy parsing on this field is worth the additional bookkeeping
+    /// overhead typically needed to implement it.
     ///
-    ///  This option does not affect the public interface of any generated code;
-    ///  all method signatures remain the same.  Furthermore, thread-safety of the
-    ///  interface is not affected by this option; const methods remain safe to
-    ///  call from multiple threads concurrently, while non-const methods continue
-    ///  to require exclusive access.
+    /// This option does not affect the public interface of any generated code;
+    /// all method signatures remain the same.  Furthermore, thread-safety of the
+    /// interface is not affected by this option; const methods remain safe to
+    /// call from multiple threads concurrently, while non-const methods continue
+    /// to require exclusive access.
     ///
-    ///  Note that implementations may choose not to check required fields within
-    ///  a lazy sub-message.  That is, calling IsInitialized() on the outer message
-    ///  may return true even if the inner message has missing required fields.
-    ///  This is necessary because otherwise the inner message would have to be
-    ///  parsed in order to perform the check, defeating the purpose of lazy
-    ///  parsing.  An implementation which chooses not to check required fields
-    ///  must be consistent about it.  That is, for any particular sub-message, the
-    ///  implementation must either *always* check its required fields, or *never*
-    ///  check its required fields, regardless of whether or not the message has
-    ///  been parsed.
+    /// Note that implementations may choose not to check required fields within
+    /// a lazy sub-message.  That is, calling IsInitialized() on the outer message
+    /// may return true even if the inner message has missing required fields.
+    /// This is necessary because otherwise the inner message would have to be
+    /// parsed in order to perform the check, defeating the purpose of lazy
+    /// parsing.  An implementation which chooses not to check required fields
+    /// must be consistent about it.  That is, for any particular sub-message, the
+    /// implementation must either *always* check its required fields, or *never*
+    /// check its required fields, regardless of whether or not the message has
+    /// been parsed.
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public bool Lazy {
@@ -3812,10 +3812,10 @@ namespace Google.Protobuf.Reflection {
     public const int DeprecatedFieldNumber = 3;
     private bool deprecated_;
     /// <summary>
-    ///  Is this field deprecated?
-    ///  Depending on the target platform, this can emit Deprecated annotations
-    ///  for accessors, or it will be completely ignored; in the very least, this
-    ///  is a formalization for deprecating fields.
+    /// Is this field deprecated?
+    /// Depending on the target platform, this can emit Deprecated annotations
+    /// for accessors, or it will be completely ignored; in the very least, this
+    /// is a formalization for deprecating fields.
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public bool Deprecated {
@@ -3829,7 +3829,7 @@ namespace Google.Protobuf.Reflection {
     public const int WeakFieldNumber = 10;
     private bool weak_;
     /// <summary>
-    ///  For Google-internal migration only. Do not use.
+    /// For Google-internal migration only. Do not use.
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public bool Weak {
@@ -3845,7 +3845,7 @@ namespace Google.Protobuf.Reflection {
         = pb::FieldCodec.ForMessage(7994, global::Google.Protobuf.Reflection.UninterpretedOption.Parser);
     private readonly pbc::RepeatedField<global::Google.Protobuf.Reflection.UninterpretedOption> uninterpretedOption_ = new pbc::RepeatedField<global::Google.Protobuf.Reflection.UninterpretedOption>();
     /// <summary>
-    ///  The parser stores options it doesn't recognize here. See above.
+    /// The parser stores options it doesn't recognize here. See above.
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public pbc::RepeatedField<global::Google.Protobuf.Reflection.UninterpretedOption> UninterpretedOption {
@@ -4019,7 +4019,7 @@ namespace Google.Protobuf.Reflection {
     public static partial class Types {
       internal enum CType {
         /// <summary>
-        ///  Default mode.
+        /// Default mode.
         /// </summary>
         [pbr::OriginalName("STRING")] String = 0,
         [pbr::OriginalName("CORD")] Cord = 1,
@@ -4028,15 +4028,15 @@ namespace Google.Protobuf.Reflection {
 
       internal enum JSType {
         /// <summary>
-        ///  Use the default type.
+        /// Use the default type.
         /// </summary>
         [pbr::OriginalName("JS_NORMAL")] JsNormal = 0,
         /// <summary>
-        ///  Use JavaScript strings.
+        /// Use JavaScript strings.
         /// </summary>
         [pbr::OriginalName("JS_STRING")] JsString = 1,
         /// <summary>
-        ///  Use JavaScript numbers.
+        /// Use JavaScript numbers.
         /// </summary>
         [pbr::OriginalName("JS_NUMBER")] JsNumber = 2,
       }
@@ -4084,7 +4084,7 @@ namespace Google.Protobuf.Reflection {
         = pb::FieldCodec.ForMessage(7994, global::Google.Protobuf.Reflection.UninterpretedOption.Parser);
     private readonly pbc::RepeatedField<global::Google.Protobuf.Reflection.UninterpretedOption> uninterpretedOption_ = new pbc::RepeatedField<global::Google.Protobuf.Reflection.UninterpretedOption>();
     /// <summary>
-    ///  The parser stores options it doesn't recognize here. See above.
+    /// The parser stores options it doesn't recognize here. See above.
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public pbc::RepeatedField<global::Google.Protobuf.Reflection.UninterpretedOption> UninterpretedOption {
@@ -4196,8 +4196,8 @@ namespace Google.Protobuf.Reflection {
     public const int AllowAliasFieldNumber = 2;
     private bool allowAlias_;
     /// <summary>
-    ///  Set this option to true to allow mapping different tag names to the same
-    ///  value.
+    /// Set this option to true to allow mapping different tag names to the same
+    /// value.
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public bool AllowAlias {
@@ -4211,10 +4211,10 @@ namespace Google.Protobuf.Reflection {
     public const int DeprecatedFieldNumber = 3;
     private bool deprecated_;
     /// <summary>
-    ///  Is this enum deprecated?
-    ///  Depending on the target platform, this can emit Deprecated annotations
-    ///  for the enum, or it will be completely ignored; in the very least, this
-    ///  is a formalization for deprecating enums.
+    /// Is this enum deprecated?
+    /// Depending on the target platform, this can emit Deprecated annotations
+    /// for the enum, or it will be completely ignored; in the very least, this
+    /// is a formalization for deprecating enums.
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public bool Deprecated {
@@ -4230,7 +4230,7 @@ namespace Google.Protobuf.Reflection {
         = pb::FieldCodec.ForMessage(7994, global::Google.Protobuf.Reflection.UninterpretedOption.Parser);
     private readonly pbc::RepeatedField<global::Google.Protobuf.Reflection.UninterpretedOption> uninterpretedOption_ = new pbc::RepeatedField<global::Google.Protobuf.Reflection.UninterpretedOption>();
     /// <summary>
-    ///  The parser stores options it doesn't recognize here. See above.
+    /// The parser stores options it doesn't recognize here. See above.
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public pbc::RepeatedField<global::Google.Protobuf.Reflection.UninterpretedOption> UninterpretedOption {
@@ -4373,10 +4373,10 @@ namespace Google.Protobuf.Reflection {
     public const int DeprecatedFieldNumber = 1;
     private bool deprecated_;
     /// <summary>
-    ///  Is this enum value deprecated?
-    ///  Depending on the target platform, this can emit Deprecated annotations
-    ///  for the enum value, or it will be completely ignored; in the very least,
-    ///  this is a formalization for deprecating enum values.
+    /// Is this enum value deprecated?
+    /// Depending on the target platform, this can emit Deprecated annotations
+    /// for the enum value, or it will be completely ignored; in the very least,
+    /// this is a formalization for deprecating enum values.
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public bool Deprecated {
@@ -4392,7 +4392,7 @@ namespace Google.Protobuf.Reflection {
         = pb::FieldCodec.ForMessage(7994, global::Google.Protobuf.Reflection.UninterpretedOption.Parser);
     private readonly pbc::RepeatedField<global::Google.Protobuf.Reflection.UninterpretedOption> uninterpretedOption_ = new pbc::RepeatedField<global::Google.Protobuf.Reflection.UninterpretedOption>();
     /// <summary>
-    ///  The parser stores options it doesn't recognize here. See above.
+    /// The parser stores options it doesn't recognize here. See above.
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public pbc::RepeatedField<global::Google.Protobuf.Reflection.UninterpretedOption> UninterpretedOption {
@@ -4519,10 +4519,10 @@ namespace Google.Protobuf.Reflection {
     public const int DeprecatedFieldNumber = 33;
     private bool deprecated_;
     /// <summary>
-    ///  Is this service deprecated?
-    ///  Depending on the target platform, this can emit Deprecated annotations
-    ///  for the service, or it will be completely ignored; in the very least,
-    ///  this is a formalization for deprecating services.
+    /// Is this service deprecated?
+    /// Depending on the target platform, this can emit Deprecated annotations
+    /// for the service, or it will be completely ignored; in the very least,
+    /// this is a formalization for deprecating services.
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public bool Deprecated {
@@ -4538,7 +4538,7 @@ namespace Google.Protobuf.Reflection {
         = pb::FieldCodec.ForMessage(7994, global::Google.Protobuf.Reflection.UninterpretedOption.Parser);
     private readonly pbc::RepeatedField<global::Google.Protobuf.Reflection.UninterpretedOption> uninterpretedOption_ = new pbc::RepeatedField<global::Google.Protobuf.Reflection.UninterpretedOption>();
     /// <summary>
-    ///  The parser stores options it doesn't recognize here. See above.
+    /// The parser stores options it doesn't recognize here. See above.
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public pbc::RepeatedField<global::Google.Protobuf.Reflection.UninterpretedOption> UninterpretedOption {
@@ -4666,10 +4666,10 @@ namespace Google.Protobuf.Reflection {
     public const int DeprecatedFieldNumber = 33;
     private bool deprecated_;
     /// <summary>
-    ///  Is this method deprecated?
-    ///  Depending on the target platform, this can emit Deprecated annotations
-    ///  for the method, or it will be completely ignored; in the very least,
-    ///  this is a formalization for deprecating methods.
+    /// Is this method deprecated?
+    /// Depending on the target platform, this can emit Deprecated annotations
+    /// for the method, or it will be completely ignored; in the very least,
+    /// this is a formalization for deprecating methods.
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public bool Deprecated {
@@ -4696,7 +4696,7 @@ namespace Google.Protobuf.Reflection {
         = pb::FieldCodec.ForMessage(7994, global::Google.Protobuf.Reflection.UninterpretedOption.Parser);
     private readonly pbc::RepeatedField<global::Google.Protobuf.Reflection.UninterpretedOption> uninterpretedOption_ = new pbc::RepeatedField<global::Google.Protobuf.Reflection.UninterpretedOption>();
     /// <summary>
-    ///  The parser stores options it doesn't recognize here. See above.
+    /// The parser stores options it doesn't recognize here. See above.
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public pbc::RepeatedField<global::Google.Protobuf.Reflection.UninterpretedOption> UninterpretedOption {
@@ -4805,18 +4805,18 @@ namespace Google.Protobuf.Reflection {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static partial class Types {
       /// <summary>
-      ///  Is this method side-effect-free (or safe in HTTP parlance), or idempotent,
-      ///  or neither? HTTP based RPC implementation may choose GET verb for safe
-      ///  methods, and PUT verb for idempotent methods instead of the default POST.
+      /// Is this method side-effect-free (or safe in HTTP parlance), or idempotent,
+      /// or neither? HTTP based RPC implementation may choose GET verb for safe
+      /// methods, and PUT verb for idempotent methods instead of the default POST.
       /// </summary>
       internal enum IdempotencyLevel {
         [pbr::OriginalName("IDEMPOTENCY_UNKNOWN")] IdempotencyUnknown = 0,
         /// <summary>
-        ///  implies idempotent
+        /// implies idempotent
         /// </summary>
         [pbr::OriginalName("NO_SIDE_EFFECTS")] NoSideEffects = 1,
         /// <summary>
-        ///  idempotent, but may have side effects
+        /// idempotent, but may have side effects
         /// </summary>
         [pbr::OriginalName("IDEMPOTENT")] Idempotent = 2,
       }
@@ -4827,12 +4827,12 @@ namespace Google.Protobuf.Reflection {
   }
 
   /// <summary>
-  ///  A message representing a option the parser does not recognize. This only
-  ///  appears in options protos created by the compiler::Parser class.
-  ///  DescriptorPool resolves these when building Descriptor objects. Therefore,
-  ///  options protos in descriptor objects (e.g. returned by Descriptor::options(),
-  ///  or produced by Descriptor::CopyTo()) will never have UninterpretedOptions
-  ///  in them.
+  /// A message representing a option the parser does not recognize. This only
+  /// appears in options protos created by the compiler::Parser class.
+  /// DescriptorPool resolves these when building Descriptor objects. Therefore,
+  /// options protos in descriptor objects (e.g. returned by Descriptor::options(),
+  /// or produced by Descriptor::CopyTo()) will never have UninterpretedOptions
+  /// in them.
   /// </summary>
   internal sealed partial class UninterpretedOption : pb::IMessage<UninterpretedOption> {
     private static readonly pb::MessageParser<UninterpretedOption> _parser = new pb::MessageParser<UninterpretedOption>(() => new UninterpretedOption());
@@ -4886,8 +4886,8 @@ namespace Google.Protobuf.Reflection {
     public const int IdentifierValueFieldNumber = 3;
     private string identifierValue_ = "";
     /// <summary>
-    ///  The value of the uninterpreted option, in whatever type the tokenizer
-    ///  identified it as during parsing. Exactly one of these should be set.
+    /// The value of the uninterpreted option, in whatever type the tokenizer
+    /// identified it as during parsing. Exactly one of these should be set.
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public string IdentifierValue {
@@ -5118,11 +5118,11 @@ namespace Google.Protobuf.Reflection {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static partial class Types {
       /// <summary>
-      ///  The name of the uninterpreted option.  Each string represents a segment in
-      ///  a dot-separated name.  is_extension is true iff a segment represents an
-      ///  extension (denoted with parentheses in options specs in .proto files).
-      ///  E.g.,{ ["foo", false], ["bar.baz", true], ["qux", false] } represents
-      ///  "foo.(bar.baz).qux".
+      /// The name of the uninterpreted option.  Each string represents a segment in
+      /// a dot-separated name.  is_extension is true iff a segment represents an
+      /// extension (denoted with parentheses in options specs in .proto files).
+      /// E.g.,{ ["foo", false], ["bar.baz", true], ["qux", false] } represents
+      /// "foo.(bar.baz).qux".
       /// </summary>
       internal sealed partial class NamePart : pb::IMessage<NamePart> {
         private static readonly pb::MessageParser<NamePart> _parser = new pb::MessageParser<NamePart>(() => new NamePart());
@@ -5275,8 +5275,8 @@ namespace Google.Protobuf.Reflection {
   }
 
   /// <summary>
-  ///  Encapsulates information about the original source file from which a
-  ///  FileDescriptorProto was generated.
+  /// Encapsulates information about the original source file from which a
+  /// FileDescriptorProto was generated.
   /// </summary>
   internal sealed partial class SourceCodeInfo : pb::IMessage<SourceCodeInfo> {
     private static readonly pb::MessageParser<SourceCodeInfo> _parser = new pb::MessageParser<SourceCodeInfo>(() => new SourceCodeInfo());
@@ -5316,49 +5316,49 @@ namespace Google.Protobuf.Reflection {
         = pb::FieldCodec.ForMessage(10, global::Google.Protobuf.Reflection.SourceCodeInfo.Types.Location.Parser);
     private readonly pbc::RepeatedField<global::Google.Protobuf.Reflection.SourceCodeInfo.Types.Location> location_ = new pbc::RepeatedField<global::Google.Protobuf.Reflection.SourceCodeInfo.Types.Location>();
     /// <summary>
-    ///  A Location identifies a piece of source code in a .proto file which
-    ///  corresponds to a particular definition.  This information is intended
-    ///  to be useful to IDEs, code indexers, documentation generators, and similar
-    ///  tools.
+    /// A Location identifies a piece of source code in a .proto file which
+    /// corresponds to a particular definition.  This information is intended
+    /// to be useful to IDEs, code indexers, documentation generators, and similar
+    /// tools.
     ///
-    ///  For example, say we have a file like:
-    ///    message Foo {
-    ///      optional string foo = 1;
-    ///    }
-    ///  Let's look at just the field definition:
-    ///    optional string foo = 1;
-    ///    ^       ^^     ^^  ^  ^^^
-    ///    a       bc     de  f  ghi
-    ///  We have the following locations:
-    ///    span   path               represents
-    ///    [a,i)  [ 4, 0, 2, 0 ]     The whole field definition.
-    ///    [a,b)  [ 4, 0, 2, 0, 4 ]  The label (optional).
-    ///    [c,d)  [ 4, 0, 2, 0, 5 ]  The type (string).
-    ///    [e,f)  [ 4, 0, 2, 0, 1 ]  The name (foo).
-    ///    [g,h)  [ 4, 0, 2, 0, 3 ]  The number (1).
+    /// For example, say we have a file like:
+    ///   message Foo {
+    ///     optional string foo = 1;
+    ///   }
+    /// Let's look at just the field definition:
+    ///   optional string foo = 1;
+    ///   ^       ^^     ^^  ^  ^^^
+    ///   a       bc     de  f  ghi
+    /// We have the following locations:
+    ///   span   path               represents
+    ///   [a,i)  [ 4, 0, 2, 0 ]     The whole field definition.
+    ///   [a,b)  [ 4, 0, 2, 0, 4 ]  The label (optional).
+    ///   [c,d)  [ 4, 0, 2, 0, 5 ]  The type (string).
+    ///   [e,f)  [ 4, 0, 2, 0, 1 ]  The name (foo).
+    ///   [g,h)  [ 4, 0, 2, 0, 3 ]  The number (1).
     ///
-    ///  Notes:
-    ///  - A location may refer to a repeated field itself (i.e. not to any
-    ///    particular index within it).  This is used whenever a set of elements are
-    ///    logically enclosed in a single code segment.  For example, an entire
-    ///    extend block (possibly containing multiple extension definitions) will
-    ///    have an outer location whose path refers to the "extensions" repeated
-    ///    field without an index.
-    ///  - Multiple locations may have the same path.  This happens when a single
-    ///    logical declaration is spread out across multiple places.  The most
-    ///    obvious example is the "extend" block again -- there may be multiple
-    ///    extend blocks in the same scope, each of which will have the same path.
-    ///  - A location's span is not always a subset of its parent's span.  For
-    ///    example, the "extendee" of an extension declaration appears at the
-    ///    beginning of the "extend" block and is shared by all extensions within
-    ///    the block.
-    ///  - Just because a location's span is a subset of some other location's span
-    ///    does not mean that it is a descendent.  For example, a "group" defines
-    ///    both a type and a field in a single declaration.  Thus, the locations
-    ///    corresponding to the type and field and their components will overlap.
-    ///  - Code which tries to interpret locations should probably be designed to
-    ///    ignore those that it doesn't understand, as more types of locations could
-    ///    be recorded in the future.
+    /// Notes:
+    /// - A location may refer to a repeated field itself (i.e. not to any
+    ///   particular index within it).  This is used whenever a set of elements are
+    ///   logically enclosed in a single code segment.  For example, an entire
+    ///   extend block (possibly containing multiple extension definitions) will
+    ///   have an outer location whose path refers to the "extensions" repeated
+    ///   field without an index.
+    /// - Multiple locations may have the same path.  This happens when a single
+    ///   logical declaration is spread out across multiple places.  The most
+    ///   obvious example is the "extend" block again -- there may be multiple
+    ///   extend blocks in the same scope, each of which will have the same path.
+    /// - A location's span is not always a subset of its parent's span.  For
+    ///   example, the "extendee" of an extension declaration appears at the
+    ///   beginning of the "extend" block and is shared by all extensions within
+    ///   the block.
+    /// - Just because a location's span is a subset of some other location's span
+    ///   does not mean that it is a descendent.  For example, a "group" defines
+    ///   both a type and a field in a single declaration.  Thus, the locations
+    ///   corresponding to the type and field and their components will overlap.
+    /// - Code which tries to interpret locations should probably be designed to
+    ///   ignore those that it doesn't understand, as more types of locations could
+    ///   be recorded in the future.
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public pbc::RepeatedField<global::Google.Protobuf.Reflection.SourceCodeInfo.Types.Location> Location {
@@ -5476,29 +5476,29 @@ namespace Google.Protobuf.Reflection {
             = pb::FieldCodec.ForInt32(10);
         private readonly pbc::RepeatedField<int> path_ = new pbc::RepeatedField<int>();
         /// <summary>
-        ///  Identifies which part of the FileDescriptorProto was defined at this
-        ///  location.
+        /// Identifies which part of the FileDescriptorProto was defined at this
+        /// location.
         ///
-        ///  Each element is a field number or an index.  They form a path from
-        ///  the root FileDescriptorProto to the place where the definition.  For
-        ///  example, this path:
-        ///    [ 4, 3, 2, 7, 1 ]
-        ///  refers to:
-        ///    file.message_type(3)  // 4, 3
-        ///        .field(7)         // 2, 7
-        ///        .name()           // 1
-        ///  This is because FileDescriptorProto.message_type has field number 4:
-        ///    repeated DescriptorProto message_type = 4;
-        ///  and DescriptorProto.field has field number 2:
-        ///    repeated FieldDescriptorProto field = 2;
-        ///  and FieldDescriptorProto.name has field number 1:
-        ///    optional string name = 1;
+        /// Each element is a field number or an index.  They form a path from
+        /// the root FileDescriptorProto to the place where the definition.  For
+        /// example, this path:
+        ///   [ 4, 3, 2, 7, 1 ]
+        /// refers to:
+        ///   file.message_type(3)  // 4, 3
+        ///       .field(7)         // 2, 7
+        ///       .name()           // 1
+        /// This is because FileDescriptorProto.message_type has field number 4:
+        ///   repeated DescriptorProto message_type = 4;
+        /// and DescriptorProto.field has field number 2:
+        ///   repeated FieldDescriptorProto field = 2;
+        /// and FieldDescriptorProto.name has field number 1:
+        ///   optional string name = 1;
         ///
-        ///  Thus, the above path gives the location of a field name.  If we removed
-        ///  the last element:
-        ///    [ 4, 3, 2, 7 ]
-        ///  this path refers to the whole field declaration (from the beginning
-        ///  of the label to the terminating semicolon).
+        /// Thus, the above path gives the location of a field name.  If we removed
+        /// the last element:
+        ///   [ 4, 3, 2, 7 ]
+        /// this path refers to the whole field declaration (from the beginning
+        /// of the label to the terminating semicolon).
         /// </summary>
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public pbc::RepeatedField<int> Path {
@@ -5511,11 +5511,11 @@ namespace Google.Protobuf.Reflection {
             = pb::FieldCodec.ForInt32(18);
         private readonly pbc::RepeatedField<int> span_ = new pbc::RepeatedField<int>();
         /// <summary>
-        ///  Always has exactly three or four elements: start line, start column,
-        ///  end line (optional, otherwise assumed same as start line), end column.
-        ///  These are packed into a single field for efficiency.  Note that line
-        ///  and column numbers are zero-based -- typically you will want to add
-        ///  1 to each before displaying to a user.
+        /// Always has exactly three or four elements: start line, start column,
+        /// end line (optional, otherwise assumed same as start line), end column.
+        /// These are packed into a single field for efficiency.  Note that line
+        /// and column numbers are zero-based -- typically you will want to add
+        /// 1 to each before displaying to a user.
         /// </summary>
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public pbc::RepeatedField<int> Span {
@@ -5526,53 +5526,53 @@ namespace Google.Protobuf.Reflection {
         public const int LeadingCommentsFieldNumber = 3;
         private string leadingComments_ = "";
         /// <summary>
-        ///  If this SourceCodeInfo represents a complete declaration, these are any
-        ///  comments appearing before and after the declaration which appear to be
-        ///  attached to the declaration.
+        /// If this SourceCodeInfo represents a complete declaration, these are any
+        /// comments appearing before and after the declaration which appear to be
+        /// attached to the declaration.
         ///
-        ///  A series of line comments appearing on consecutive lines, with no other
-        ///  tokens appearing on those lines, will be treated as a single comment.
+        /// A series of line comments appearing on consecutive lines, with no other
+        /// tokens appearing on those lines, will be treated as a single comment.
         ///
-        ///  leading_detached_comments will keep paragraphs of comments that appear
-        ///  before (but not connected to) the current element. Each paragraph,
-        ///  separated by empty lines, will be one comment element in the repeated
-        ///  field.
+        /// leading_detached_comments will keep paragraphs of comments that appear
+        /// before (but not connected to) the current element. Each paragraph,
+        /// separated by empty lines, will be one comment element in the repeated
+        /// field.
         ///
-        ///  Only the comment content is provided; comment markers (e.g. //) are
-        ///  stripped out.  For block comments, leading whitespace and an asterisk
-        ///  will be stripped from the beginning of each line other than the first.
-        ///  Newlines are included in the output.
+        /// Only the comment content is provided; comment markers (e.g. //) are
+        /// stripped out.  For block comments, leading whitespace and an asterisk
+        /// will be stripped from the beginning of each line other than the first.
+        /// Newlines are included in the output.
         ///
-        ///  Examples:
+        /// Examples:
         ///
-        ///    optional int32 foo = 1;  // Comment attached to foo.
-        ///    // Comment attached to bar.
-        ///    optional int32 bar = 2;
+        ///   optional int32 foo = 1;  // Comment attached to foo.
+        ///   // Comment attached to bar.
+        ///   optional int32 bar = 2;
         ///
-        ///    optional string baz = 3;
-        ///    // Comment attached to baz.
-        ///    // Another line attached to baz.
+        ///   optional string baz = 3;
+        ///   // Comment attached to baz.
+        ///   // Another line attached to baz.
         ///
-        ///    // Comment attached to qux.
-        ///    //
-        ///    // Another line attached to qux.
-        ///    optional double qux = 4;
+        ///   // Comment attached to qux.
+        ///   //
+        ///   // Another line attached to qux.
+        ///   optional double qux = 4;
         ///
-        ///    // Detached comment for corge. This is not leading or trailing comments
-        ///    // to qux or corge because there are blank lines separating it from
-        ///    // both.
+        ///   // Detached comment for corge. This is not leading or trailing comments
+        ///   // to qux or corge because there are blank lines separating it from
+        ///   // both.
         ///
-        ///    // Detached comment for corge paragraph 2.
+        ///   // Detached comment for corge paragraph 2.
         ///
-        ///    optional string corge = 5;
-        ///    /* Block comment attached
-        ///     * to corge.  Leading asterisks
-        ///     * will be removed. */
-        ///    /* Block comment attached to
-        ///     * grault. */
-        ///    optional int32 grault = 6;
+        ///   optional string corge = 5;
+        ///   /* Block comment attached
+        ///    * to corge.  Leading asterisks
+        ///    * will be removed. */
+        ///   /* Block comment attached to
+        ///    * grault. */
+        ///   optional int32 grault = 6;
         ///
-        ///    // ignored detached comments.
+        ///   // ignored detached comments.
         /// </summary>
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public string LeadingComments {
@@ -5728,9 +5728,9 @@ namespace Google.Protobuf.Reflection {
   }
 
   /// <summary>
-  ///  Describes the relationship between generated code and its original source
-  ///  file. A GeneratedCodeInfo message is associated with only one generated
-  ///  source file, but may contain references to different source .proto files.
+  /// Describes the relationship between generated code and its original source
+  /// file. A GeneratedCodeInfo message is associated with only one generated
+  /// source file, but may contain references to different source .proto files.
   /// </summary>
   internal sealed partial class GeneratedCodeInfo : pb::IMessage<GeneratedCodeInfo> {
     private static readonly pb::MessageParser<GeneratedCodeInfo> _parser = new pb::MessageParser<GeneratedCodeInfo>(() => new GeneratedCodeInfo());
@@ -5770,8 +5770,8 @@ namespace Google.Protobuf.Reflection {
         = pb::FieldCodec.ForMessage(10, global::Google.Protobuf.Reflection.GeneratedCodeInfo.Types.Annotation.Parser);
     private readonly pbc::RepeatedField<global::Google.Protobuf.Reflection.GeneratedCodeInfo.Types.Annotation> annotation_ = new pbc::RepeatedField<global::Google.Protobuf.Reflection.GeneratedCodeInfo.Types.Annotation>();
     /// <summary>
-    ///  An Annotation connects some span of text in generated code to an element
-    ///  of its generating .proto file.
+    /// An Annotation connects some span of text in generated code to an element
+    /// of its generating .proto file.
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public pbc::RepeatedField<global::Google.Protobuf.Reflection.GeneratedCodeInfo.Types.Annotation> Annotation {
@@ -5888,8 +5888,8 @@ namespace Google.Protobuf.Reflection {
             = pb::FieldCodec.ForInt32(10);
         private readonly pbc::RepeatedField<int> path_ = new pbc::RepeatedField<int>();
         /// <summary>
-        ///  Identifies the element in the original source .proto file. This field
-        ///  is formatted the same as SourceCodeInfo.Location.path.
+        /// Identifies the element in the original source .proto file. This field
+        /// is formatted the same as SourceCodeInfo.Location.path.
         /// </summary>
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public pbc::RepeatedField<int> Path {
@@ -5900,7 +5900,7 @@ namespace Google.Protobuf.Reflection {
         public const int SourceFileFieldNumber = 2;
         private string sourceFile_ = "";
         /// <summary>
-        ///  Identifies the filesystem path to the original source .proto.
+        /// Identifies the filesystem path to the original source .proto.
         /// </summary>
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public string SourceFile {
@@ -5914,8 +5914,8 @@ namespace Google.Protobuf.Reflection {
         public const int BeginFieldNumber = 3;
         private int begin_;
         /// <summary>
-        ///  Identifies the starting offset in bytes in the generated code
-        ///  that relates to the identified object.
+        /// Identifies the starting offset in bytes in the generated code
+        /// that relates to the identified object.
         /// </summary>
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public int Begin {
@@ -5929,9 +5929,9 @@ namespace Google.Protobuf.Reflection {
         public const int EndFieldNumber = 4;
         private int end_;
         /// <summary>
-        ///  Identifies the ending offset in bytes in the generated code that
-        ///  relates to the identified offset. The end offset should be one past
-        ///  the last relevant byte (so the length of the text = end - begin).
+        /// Identifies the ending offset in bytes in the generated code that
+        /// relates to the identified offset. The end offset should be one past
+        /// the last relevant byte (so the length of the text = end - begin).
         /// </summary>
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public int End {

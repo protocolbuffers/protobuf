@@ -54,11 +54,11 @@ namespace Conformance {
 
   #region Messages
   /// <summary>
-  ///  Represents a single test case's input.  The testee should:
+  /// Represents a single test case's input.  The testee should:
   ///
-  ///    1. parse this proto (which should always succeed)
-  ///    2. parse the protobuf or JSON payload in "payload" (which may fail)
-  ///    3. if the parse succeeded, serialize the message in the requested format.
+  ///   1. parse this proto (which should always succeed)
+  ///   2. parse the protobuf or JSON payload in "payload" (which may fail)
+  ///   3. if the parse succeeded, serialize the message in the requested format.
   /// </summary>
   public sealed partial class ConformanceRequest : pb::IMessage<ConformanceRequest> {
     private static readonly pb::MessageParser<ConformanceRequest> _parser = new pb::MessageParser<ConformanceRequest>(() => new ConformanceRequest());
@@ -127,7 +127,7 @@ namespace Conformance {
     public const int RequestedOutputFormatFieldNumber = 3;
     private global::Conformance.WireFormat requestedOutputFormat_ = 0;
     /// <summary>
-    ///  Which format should the testee serialize its message to?
+    /// Which format should the testee serialize its message to?
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public global::Conformance.WireFormat RequestedOutputFormat {
@@ -268,7 +268,7 @@ namespace Conformance {
   }
 
   /// <summary>
-  ///  Represents a single test case's output.
+  /// Represents a single test case's output.
   /// </summary>
   public sealed partial class ConformanceResponse : pb::IMessage<ConformanceResponse> {
     private static readonly pb::MessageParser<ConformanceResponse> _parser = new pb::MessageParser<ConformanceResponse>(() => new ConformanceResponse());
@@ -325,11 +325,11 @@ namespace Conformance {
     /// <summary>Field number for the "parse_error" field.</summary>
     public const int ParseErrorFieldNumber = 1;
     /// <summary>
-    ///  This string should be set to indicate parsing failed.  The string can
-    ///  provide more information about the parse error if it is available.
+    /// This string should be set to indicate parsing failed.  The string can
+    /// provide more information about the parse error if it is available.
     ///
-    ///  Setting this string does not necessarily mean the testee failed the
-    ///  test.  Some of the test cases are intentionally invalid input.
+    /// Setting this string does not necessarily mean the testee failed the
+    /// test.  Some of the test cases are intentionally invalid input.
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public string ParseError {
@@ -343,9 +343,9 @@ namespace Conformance {
     /// <summary>Field number for the "serialize_error" field.</summary>
     public const int SerializeErrorFieldNumber = 6;
     /// <summary>
-    ///  If the input was successfully parsed but errors occurred when
-    ///  serializing it to the requested output format, set the error message in
-    ///  this field.
+    /// If the input was successfully parsed but errors occurred when
+    /// serializing it to the requested output format, set the error message in
+    /// this field.
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public string SerializeError {
@@ -359,9 +359,9 @@ namespace Conformance {
     /// <summary>Field number for the "runtime_error" field.</summary>
     public const int RuntimeErrorFieldNumber = 2;
     /// <summary>
-    ///  This should be set if some other error occurred.  This will always
-    ///  indicate that the test failed.  The string can provide more information
-    ///  about the failure.
+    /// This should be set if some other error occurred.  This will always
+    /// indicate that the test failed.  The string can provide more information
+    /// about the failure.
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public string RuntimeError {
@@ -375,8 +375,8 @@ namespace Conformance {
     /// <summary>Field number for the "protobuf_payload" field.</summary>
     public const int ProtobufPayloadFieldNumber = 3;
     /// <summary>
-    ///  If the input was successfully parsed and the requested output was
-    ///  protobuf, serialize it to protobuf and set it in this field.
+    /// If the input was successfully parsed and the requested output was
+    /// protobuf, serialize it to protobuf and set it in this field.
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public pb::ByteString ProtobufPayload {
@@ -390,8 +390,8 @@ namespace Conformance {
     /// <summary>Field number for the "json_payload" field.</summary>
     public const int JsonPayloadFieldNumber = 4;
     /// <summary>
-    ///  If the input was successfully parsed and the requested output was JSON,
-    ///  serialize to JSON and set it in this field.
+    /// If the input was successfully parsed and the requested output was JSON,
+    /// serialize to JSON and set it in this field.
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public string JsonPayload {
@@ -405,8 +405,8 @@ namespace Conformance {
     /// <summary>Field number for the "skipped" field.</summary>
     public const int SkippedFieldNumber = 5;
     /// <summary>
-    ///  For when the testee skipped the test, likely because a certain feature
-    ///  wasn't supported, like JSON input/output.
+    /// For when the testee skipped the test, likely because a certain feature
+    /// wasn't supported, like JSON input/output.
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public string Skipped {
