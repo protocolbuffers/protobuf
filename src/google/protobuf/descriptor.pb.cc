@@ -734,12 +734,13 @@ void protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto_impl() {
       "(\0132-.google.protobuf.GeneratedCodeInfo.A"
       "nnotation\032O\n\nAnnotation\022\020\n\004path\030\001 \003(\005B\002\020"
       "\001\022\023\n\013source_file\030\002 \001(\t\022\r\n\005begin\030\003 \001(\005\022\013\n"
-      "\003end\030\004 \001(\005BX\n\023com.google.protobufB\020Descr"
-      "iptorProtosH\001Z\ndescriptor\242\002\003GPB\252\002\032Google"
-      ".Protobuf.Reflection"
+      "\003end\030\004 \001(\005B\214\001\n\023com.google.protobufB\020Desc"
+      "riptorProtosH\001Z>github.com/golang/protob"
+      "uf/protoc-gen-go/descriptor;descriptor\242\002"
+      "\003GPB\252\002\032Google.Protobuf.Reflection"
   };
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
-      descriptor, 5500);
+      descriptor, 5553);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "google/protobuf/descriptor.proto", &protobuf_RegisterTypes);
   ::google::protobuf::internal::OnShutdown(&protobuf_ShutdownFile_google_2fprotobuf_2fdescriptor_2eproto);
