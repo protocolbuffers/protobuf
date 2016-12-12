@@ -293,10 +293,6 @@ struct lupb_msgclass {
   const lupb_msgfactory *lfactory;
 };
 
-/* Checks that the given object is a lupb_msg with the given lmsgclass. */
-static upb_msgval lupb_msg_typecheck(lua_State *L, int narg,
-                                     const lupb_msgclass *lmsgclass);
-
 /* Type-checks for assigning to a message field. */
 static upb_msgval lupb_array_typecheck(lua_State *L, int narg, int msg,
                                        const upb_fielddef *f);
@@ -307,7 +303,7 @@ static const lupb_msgclass *lupb_msg_getsubmsgclass(lua_State *L, int narg,
 static const lupb_msgclass *lupb_msg_msgclassfor(lua_State *L, int narg,
                                                  const upb_msgdef *md);
 
-lupb_msgclass *lupb_msgclass_check(lua_State *L, int narg) {
+const lupb_msgclass *lupb_msgclass_check(lua_State *L, int narg) {
   return luaL_checkudata(L, narg, LUPB_MSGCLASS);
 }
 
@@ -316,7 +312,7 @@ const upb_msglayout *lupb_msgclass_getlayout(lua_State *L, int narg) {
 }
 
 const upb_handlers *lupb_msgclass_getmergehandlers(lua_State *L, int narg) {
-  lupb_msgclass *lmsgclass = lupb_msgclass_check(L, narg);
+  const lupb_msgclass *lmsgclass = lupb_msgclass_check(L, narg);
   return upb_msgfactory_getmergehandlers(
       lmsgclass->lfactory->factory, upb_msglayout_msgdef(lmsgclass->layout));
 }
@@ -430,7 +426,7 @@ static upb_msgval lupb_tomsgval(lua_State *L, upb_fieldtype_t type, int narg,
     }
     case UPB_TYPE_MESSAGE:
       UPB_ASSERT(lmsgclass);
-      return lupb_msg_typecheck(L, narg, lmsgclass);
+      return upb_msgval_msg(lupb_msg_checkmsg(L, narg, lmsgclass));
   }
   UPB_UNREACHABLE();
 }
@@ -486,7 +482,7 @@ static void lupb_pushmsgval(lua_State *L, upb_fieldtype_t type,
 typedef struct {
   /* Only needed for array of message.  This wastes space in the non-message
    * case but simplifies the code.  Could optimize away if desired. */
-  lupb_msgclass *lmsgclass;
+  const lupb_msgclass *lmsgclass;
   upb_array *arr;
 } lupb_array;
 
@@ -550,7 +546,7 @@ static int lupb_array_gc(lua_State *L) {
 static int lupb_array_new(lua_State *L) {
   lupb_array *larray;
   upb_fieldtype_t type;
-  lupb_msgclass *lmsgclass = NULL;
+  const lupb_msgclass *lmsgclass = NULL;
 
   if (lua_type(L, 1) == LUA_TNUMBER) {
     type = lupb_checkfieldtype(L, 1);
@@ -691,7 +687,7 @@ static int lupb_map_new(lua_State *L) {
   lupb_map *lmap;
   upb_fieldtype_t key_type = lupb_checkfieldtype(L, 1);
   upb_fieldtype_t value_type;
-  lupb_msgclass *value_lmsgclass = NULL;
+  const lupb_msgclass *value_lmsgclass = NULL;
 
   if (lua_type(L, 2) == LUA_TNUMBER) {
     value_type = lupb_checkfieldtype(L, 2);
@@ -897,11 +893,11 @@ lupb_msg *lupb_msg_check(lua_State *L, int narg) {
   return msg;
 }
 
-static upb_msgval lupb_msg_typecheck(lua_State *L, int narg,
-                                     const lupb_msgclass *lmsgclass) {
-  lupb_msg *msg = lupb_msg_check(L, narg);
-  lupb_msgclass_typecheck(L, lmsgclass, msg->lmsgclass);
-  return upb_msgval_msg(msg);
+const upb_msg *lupb_msg_checkmsg(lua_State *L, int narg,
+                                 const lupb_msgclass *lmsgclass) {
+  lupb_msg *lmsg = lupb_msg_check(L, narg);
+  lupb_msgclass_typecheck(L, lmsgclass, lmsg->lmsgclass);
+  return lmsg->msg;
 }
 
 const upb_msgdef *lupb_msg_checkdef(lua_State *L, int narg) {
@@ -938,7 +934,7 @@ static const lupb_msgclass *lupb_msg_getsubmsgclass(lua_State *L, int narg,
 }
 
 int lupb_msg_pushref(lua_State *L, int msgclass, void *msg) {
-  lupb_msgclass *lmsgclass = lupb_msgclass_check(L, msgclass);
+  const lupb_msgclass *lmsgclass = lupb_msgclass_check(L, msgclass);
   lupb_msg *lmsg = lupb_newuserdata(L, sizeof(lupb_msg), LUPB_MSG);
 
   lmsg->lmsgclass = lmsgclass;
@@ -965,7 +961,7 @@ static int lupb_msg_gc(lua_State *L) {
  *   new_msg = MessageClass()
  */
 static int lupb_msg_pushnew(lua_State *L, int narg) {
-  lupb_msgclass *lmsgclass = lupb_msgclass_check(L, narg);
+  const lupb_msgclass *lmsgclass = lupb_msgclass_check(L, narg);
   size_t size = sizeof(lupb_msg) + upb_msg_sizeof(lmsgclass->layout);
   lupb_msg *lmsg = lupb_newuserdata(L, size, LUPB_MSG);
 

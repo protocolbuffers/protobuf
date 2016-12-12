@@ -99,7 +99,6 @@ void lupb_checkstatus(lua_State *L, upb_status *s);
 upb_fieldtype_t lupb_checkfieldtype(lua_State *L, int narg);
 
 void *lupb_refcounted_check(lua_State *L, int narg, const char *type);
-const upb_msgdef *lupb_msg_checkdef(lua_State *L, int narg);
 const upb_msgdef *lupb_msgdef_check(lua_State *L, int narg);
 const upb_enumdef *lupb_enumdef_check(lua_State *L, int narg);
 const upb_fielddef *lupb_fielddef_check(lua_State *L, int narg);
@@ -131,7 +130,10 @@ typedef struct lupb_msgclass lupb_msgclass;
 upb_arena *lupb_arena_check(lua_State *L, int narg);
 int lupb_arena_new(lua_State *L);
 int lupb_msg_pushref(lua_State *L, int msgclass, void *msg);
+const upb_msg *lupb_msg_checkmsg(lua_State *L, int narg,
+                                 const lupb_msgclass *lmsgclass);
 
+const lupb_msgclass *lupb_msgclass_check(lua_State *L, int narg);
 const upb_msglayout *lupb_msgclass_getlayout(lua_State *L, int narg);
 const upb_handlers *lupb_msgclass_getmergehandlers(lua_State *L, int narg);
 void lupb_msg_registertypes(lua_State *L);

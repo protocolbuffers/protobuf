@@ -43,7 +43,19 @@ function test_parse_primitive()
       .. "\128\128\128\128\128\002\032\128\128\128\128\128\128\128\001\041\000"
       .. "\000\000\000\000\000\248\063\053\000\000\096\064\056\001"
   local decoder = pb.MakeStringToMessageDecoder(TestMessage)
-  msg = decoder(binary_pb)
+  local encoder = pb.MakeMessageToStringEncoder(TestMessage)
+  collectgarbage()  -- ensure encoder/decoder GC-anchor what they need.
+  local msg = decoder(binary_pb)
+  assert_equal(536870912, msg.i32)
+  assert_equal(1073741824, msg.u32)
+  assert_equal(1125899906842624, msg.i64)
+  assert_equal(562949953421312, msg.u64)
+  assert_equal(1.5, msg.dbl)
+  assert_equal(3.5, msg.flt)
+  assert_equal(true, msg.bool)
+
+  local encoded = encoder(msg)
+  local msg2 = decoder(encoded)
   assert_equal(536870912, msg.i32)
   assert_equal(1073741824, msg.u32)
   assert_equal(1125899906842624, msg.i64)
