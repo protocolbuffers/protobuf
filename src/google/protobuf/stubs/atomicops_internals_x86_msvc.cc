@@ -44,7 +44,7 @@ namespace google {
 namespace protobuf {
 namespace internal {
 
-inline void MemoryBarrier() {
+inline void MemoryBarrierInternal() {
   // We use MemoryBarrier from WinNT.h
   ::MemoryBarrier();
 }
