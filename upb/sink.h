@@ -22,6 +22,7 @@
 
 #ifdef __cplusplus
 namespace upb {
+class BufferSink;
 class BufferSource;
 class BytesSink;
 class Sink;
@@ -212,6 +213,8 @@ struct upb_bufsrc {
   char dummy;
 #endif
 };
+
+UPB_BEGIN_EXTERN_C
 
 /* A class for accumulating output string data in a flat buffer. */
 
