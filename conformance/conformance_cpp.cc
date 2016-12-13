@@ -33,7 +33,7 @@
 #include <unistd.h>
 
 #include "conformance.pb.h"
-#include "google/protobuf/test_messages_proto3.pb.h"
+#include <google/protobuf/test_messages_proto3.pb.h>
 #include <google/protobuf/util/json_util.h>
 #include <google/protobuf/util/type_resolver_util.h>
 
