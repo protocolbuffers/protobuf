@@ -173,9 +173,9 @@ namespace Google.Protobuf.TestProtos {
   }
   #region Messages
   /// <summary>
-  ///  Test that we can include all well-known types.
-  ///  Each wrapper type is included separately, as languages
-  ///  map handle different wrappers in different ways.
+  /// Test that we can include all well-known types.
+  /// Each wrapper type is included separately, as languages
+  /// map handle different wrappers in different ways.
   /// </summary>
   public sealed partial class TestWellKnownTypes : pb::IMessage<TestWellKnownTypes> {
     private static readonly pb::MessageParser<TestWellKnownTypes> _parser = new pb::MessageParser<TestWellKnownTypes>(() => new TestWellKnownTypes());
@@ -438,7 +438,7 @@ namespace Google.Protobuf.TestProtos {
     public const int ValueFieldFieldNumber = 19;
     private global::Google.Protobuf.WellKnownTypes.Value valueField_;
     /// <summary>
-    ///  Part of struct, but useful to be able to test separately
+    /// Part of struct, but useful to be able to test separately
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public global::Google.Protobuf.WellKnownTypes.Value ValueField {
@@ -907,7 +907,7 @@ namespace Google.Protobuf.TestProtos {
   }
 
   /// <summary>
-  ///  A repeated field for each well-known type.
+  /// A repeated field for each well-known type.
   /// </summary>
   public sealed partial class RepeatedWellKnownTypes : pb::IMessage<RepeatedWellKnownTypes> {
     private static readonly pb::MessageParser<RepeatedWellKnownTypes> _parser = new pb::MessageParser<RepeatedWellKnownTypes>(() => new RepeatedWellKnownTypes());
@@ -1054,7 +1054,7 @@ namespace Google.Protobuf.TestProtos {
         = pb::FieldCodec.ForStructWrapper<double>(82);
     private readonly pbc::RepeatedField<double?> doubleField_ = new pbc::RepeatedField<double?>();
     /// <summary>
-    ///  These don't actually make a lot of sense, but they're not prohibited...
+    /// These don't actually make a lot of sense, but they're not prohibited...
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public pbc::RepeatedField<double?> DoubleField {
@@ -2079,9 +2079,9 @@ namespace Google.Protobuf.TestProtos {
   }
 
   /// <summary>
-  ///  A map field for each well-known type. We only
-  ///  need to worry about the value part of the map being the
-  ///  well-known types, as messages can't be map keys.
+  /// A map field for each well-known type. We only
+  /// need to worry about the value part of the map being the
+  /// well-known types, as messages can't be map keys.
   /// </summary>
   public sealed partial class MapWellKnownTypes : pb::IMessage<MapWellKnownTypes> {
     private static readonly pb::MessageParser<MapWellKnownTypes> _parser = new pb::MessageParser<MapWellKnownTypes>(() => new MapWellKnownTypes());

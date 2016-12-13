@@ -79,8 +79,8 @@ namespace UnitTest.Issues.TestProtos {
 
   #region Messages
   /// <summary>
-  ///  Issue 307: when generating doubly-nested types, any references
-  ///  should be of the form A.Types.B.Types.C.
+  /// Issue 307: when generating doubly-nested types, any references
+  /// should be of the form A.Types.B.Types.C.
   /// </summary>
   public sealed partial class Issue307 : pb::IMessage<Issue307> {
     private static readonly pb::MessageParser<Issue307> _parser = new pb::MessageParser<Issue307>(() => new Issue307());
@@ -859,7 +859,7 @@ namespace UnitTest.Issues.TestProtos {
   }
 
   /// <summary>
-  ///  Issue 45: http://code.google.com/p/protobuf-csharp-port/issues/detail?id=45
+  /// Issue 45: http://code.google.com/p/protobuf-csharp-port/issues/detail?id=45
   /// </summary>
   public sealed partial class ItemField : pb::IMessage<ItemField> {
     private static readonly pb::MessageParser<ItemField> _parser = new pb::MessageParser<ItemField>(() => new ItemField());
@@ -1126,7 +1126,7 @@ namespace UnitTest.Issues.TestProtos {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static partial class Types {
       /// <summary>
-      ///  Force a nested type called Types
+      /// Force a nested type called Types
       /// </summary>
       public sealed partial class SomeNestedType : pb::IMessage<SomeNestedType> {
         private static readonly pb::MessageParser<SomeNestedType> _parser = new pb::MessageParser<SomeNestedType>(() => new SomeNestedType());
@@ -1223,16 +1223,16 @@ namespace UnitTest.Issues.TestProtos {
   }
 
   /// <summary>
-  ///  These fields are deliberately not declared in numeric
-  ///  order, and the oneof fields aren't contiguous either.
-  ///  This allows for reasonably robust tests of JSON output
-  ///  ordering.
-  ///  TestFieldOrderings in unittest_proto3.proto is similar,
-  ///  but doesn't include oneofs.
-  ///  TODO: Consider adding oneofs to TestFieldOrderings, although
-  ///  that will require fixing other tests in multiple platforms.
-  ///  Alternatively, consider just adding this to
-  ///  unittest_proto3.proto if multiple platforms want it.
+  /// These fields are deliberately not declared in numeric
+  /// order, and the oneof fields aren't contiguous either.
+  /// This allows for reasonably robust tests of JSON output
+  /// ordering.
+  /// TestFieldOrderings in unittest_proto3.proto is similar,
+  /// but doesn't include oneofs.
+  /// TODO: Consider adding oneofs to TestFieldOrderings, although
+  /// that will require fixing other tests in multiple platforms.
+  /// Alternatively, consider just adding this to
+  /// unittest_proto3.proto if multiple platforms want it.
   /// </summary>
   public sealed partial class TestJsonFieldOrdering : pb::IMessage<TestJsonFieldOrdering> {
     private static readonly pb::MessageParser<TestJsonFieldOrdering> _parser = new pb::MessageParser<TestJsonFieldOrdering>(() => new TestJsonFieldOrdering());
@@ -1591,7 +1591,7 @@ namespace UnitTest.Issues.TestProtos {
     public const int NameFieldNumber = 1;
     private string name_ = "";
     /// <summary>
-    ///  Message for testing the effects for of the json_name option
+    /// Message for testing the effects for of the json_name option
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public string Name {
