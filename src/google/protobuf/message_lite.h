@@ -39,6 +39,7 @@
 #ifndef GOOGLE_PROTOBUF_MESSAGE_LITE_H__
 #define GOOGLE_PROTOBUF_MESSAGE_LITE_H__
 
+#include <climits>
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/stubs/logging.h>
 

@@ -32,6 +32,7 @@
 #include <cstdlib>
 #include <fstream>
 #include <iostream>
+#include <string>
 
 const char output_file[] = "well_known_types_embed.cc";
 

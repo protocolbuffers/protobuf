@@ -110,6 +110,7 @@
 #define GOOGLE_PROTOBUF_IO_CODED_STREAM_H__
 
 #include <assert.h>
+#include <climits>
 #include <string>
 #include <utility>
 #ifdef _MSC_VER
