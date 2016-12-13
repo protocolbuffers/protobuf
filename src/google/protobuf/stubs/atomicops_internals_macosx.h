@@ -73,7 +73,7 @@ inline Atomic32 Barrier_AtomicIncrement(volatile Atomic32* ptr,
   return OSAtomicAdd32Barrier(increment, const_cast<Atomic32*>(ptr));
 }
 
-inline void MemoryBarrier() {
+inline void MemoryBarrierInternal() {
   OSMemoryBarrier();
 }
 
@@ -103,11 +103,11 @@ inline void NoBarrier_Store(volatile Atomic32* ptr, Atomic32 value) {
 
 inline void Acquire_Store(volatile Atomic32* ptr, Atomic32 value) {
   *ptr = value;
-  MemoryBarrier();
+  MemoryBarrierInternal();
 }
 
 inline void Release_Store(volatile Atomic32* ptr, Atomic32 value) {
-  MemoryBarrier();
+  MemoryBarrierInternal();
   *ptr = value;
 }
 
@@ -117,12 +117,12 @@ inline Atomic32 NoBarrier_Load(volatile const Atomic32* ptr) {
 
 inline Atomic32 Acquire_Load(volatile const Atomic32* ptr) {
   Atomic32 value = *ptr;
-  MemoryBarrier();
+  MemoryBarrierInternal();
   return value;
 }
 
 inline Atomic32 Release_Load(volatile const Atomic32* ptr) {
-  MemoryBarrier();
+  MemoryBarrierInternal();
   return *ptr;
 }
 
@@ -193,11 +193,11 @@ inline void NoBarrier_Store(volatile Atomic64* ptr, Atomic64 value) {
 
 inline void Acquire_Store(volatile Atomic64* ptr, Atomic64 value) {
   *ptr = value;
-  MemoryBarrier();
+  MemoryBarrierInternal();
 }
 
 inline void Release_Store(volatile Atomic64* ptr, Atomic64 value) {
-  MemoryBarrier();
+  MemoryBarrierInternal();
   *ptr = value;
 }
 
@@ -207,12 +207,12 @@ inline Atomic64 NoBarrier_Load(volatile const Atomic64* ptr) {
 
 inline Atomic64 Acquire_Load(volatile const Atomic64* ptr) {
   Atomic64 value = *ptr;
-  MemoryBarrier();
+  MemoryBarrierInternal();
   return value;
 }
 
 inline Atomic64 Release_Load(volatile const Atomic64* ptr) {
-  MemoryBarrier();
+  MemoryBarrierInternal();
   return *ptr;
 }
 
