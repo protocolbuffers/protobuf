@@ -152,6 +152,7 @@ upb_SRCS = \
   upb/handlers.c \
   upb/msg.c \
   upb/refcounted.c \
+  upb/sink.c \
   upb/symtab.c \
   upb/table.c \
   upb/upb.c \
@@ -487,11 +488,11 @@ upb/bindings/lua/upb_c.so: upb/bindings/lua/upb.c upb/bindings/lua/def.c upb/bin
 
 upb/bindings/lua/upb/table_c.so: upb/bindings/lua/upb/table.c lib/libupb_pic.a
 	$(E) CC upb/bindings/lua/upb/table.c
-	$(Q) $(CC) $(OPT) $(CSTD) $(WARNFLAGS) $(CPPFLAGS) $(CFLAGS) -fpic -shared -o $@ $< $(LUA_LDFLAGS)
+	$(Q) $(CC) $(OPT) $(CSTD) $(WARNFLAGS) $(CPPFLAGS) $(CFLAGS) -fpic -shared -o $@ $^ $(LUA_LDFLAGS)
 
 upb/bindings/lua/upb/pb_c.so: upb/bindings/lua/upb/pb.c $(LUA_LIB_DEPS)
 	$(E) CC upb/bindings/lua/upb/pb.c
-	$(Q) $(CC) $(OPT) $(CSTD) $(WARNFLAGS) $(CPPFLAGS) $(CFLAGS) -fpic -shared -o $@ $< $(LUA_LDFLAGS)
+	$(Q) $(CC) $(OPT) $(CSTD) $(WARNFLAGS) $(CPPFLAGS) $(CFLAGS) -fpic -shared -o $@ $^ $(LUA_LDFLAGS)
 
 
 # Python extension #############################################################

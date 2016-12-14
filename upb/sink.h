@@ -22,12 +22,14 @@
 
 #ifdef __cplusplus
 namespace upb {
+class BufferSink;
 class BufferSource;
 class BytesSink;
 class Sink;
 }
 #endif
 
+UPB_DECLARE_TYPE(upb::BufferSink, upb_bufsink)
 UPB_DECLARE_TYPE(upb::BufferSource, upb_bufsrc)
 UPB_DECLARE_TYPE(upb::BytesSink, upb_bytessink)
 UPB_DECLARE_TYPE(upb::Sink, upb_sink)
@@ -214,6 +216,13 @@ struct upb_bufsrc {
 
 UPB_BEGIN_EXTERN_C
 
+/* A class for accumulating output string data in a flat buffer. */
+
+upb_bufsink *upb_bufsink_new(upb_env *env);
+void upb_bufsink_free(upb_bufsink *sink);
+upb_bytessink *upb_bufsink_sink(upb_bufsink *sink);
+const char *upb_bufsink_getdata(const upb_bufsink *sink, size_t *len);
+
 /* Inline definitions. */
 
 UPB_INLINE void upb_bytessink_reset(upb_bytessink *s, const upb_byteshandler *h,
@@ -263,23 +272,7 @@ UPB_INLINE bool upb_bytessink_end(upb_bytessink *s) {
                  &s->handler->table[UPB_ENDSTR_SELECTOR].attr));
 }
 
-UPB_INLINE bool upb_bufsrc_putbuf(const char *buf, size_t len,
-                                  upb_bytessink *sink) {
-  void *subc;
-  bool ret;
-  upb_bufhandle handle;
-  upb_bufhandle_init(&handle);
-  upb_bufhandle_setbuf(&handle, buf, 0);
-  ret = upb_bytessink_start(sink, len, &subc);
-  if (ret && len != 0) {
-    ret = (upb_bytessink_putbuf(sink, subc, buf, len, &handle) >= len);
-  }
-  if (ret) {
-    ret = upb_bytessink_end(sink);
-  }
-  upb_bufhandle_uninit(&handle);
-  return ret;
-}
+bool upb_bufsrc_putbuf(const char *buf, size_t len, upb_bytessink *sink);
 
 #define PUTVAL(type, ctype)                                                    \
   UPB_INLINE bool upb_sink_put##type(upb_sink *s, upb_selector_t sel,          \

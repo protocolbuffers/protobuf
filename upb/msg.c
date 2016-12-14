@@ -25,6 +25,8 @@ void *upb_array_pack(const upb_array *arr, void *p, size_t *ofs, size_t size);
 void *upb_map_pack(const upb_map *map, void *p, size_t *ofs, size_t size);
 
 #define CHARPTR_AT(msg, ofs) ((char*)msg + ofs)
+#define ENCODE_MAX_NESTING 64
+#define CHECK_RETURN(x) if (!(x)) { return false; }
 
 /** upb_msgval ****************************************************************/
 
@@ -148,6 +150,7 @@ static upb_msgval upb_msgval_fromdefault(const upb_fielddef *f) {
 /** upb_msglayout *************************************************************/
 
 struct upb_msglayout {
+  upb_msgfactory *factory;
   const upb_msgdef *msgdef;
   size_t size;
   size_t extdict_offset;
@@ -330,6 +333,10 @@ static upb_msglayout *upb_msglayout_new(const upb_msgdef *m) {
   }
 }
 
+upb_msgfactory *upb_msglayout_factory(const upb_msglayout *layout) {
+  return layout->factory;
+}
+
 
 /** upb_msgfactory ************************************************************/
 
@@ -388,6 +395,7 @@ const upb_msglayout *upb_msgfactory_getlayout(upb_msgfactory *f,
     upb_msglayout *l = upb_msglayout_new(m);
     upb_inttable_insertptr(&mutable_f->layouts, m, upb_value_ptr(l));
     UPB_ASSERT(l);
+    l->factory = f;
     return l;
   }
 }
@@ -470,6 +478,153 @@ const upb_handlers *upb_msgfactory_getmergehandlers(upb_msgfactory *f,
   upb_inttable_push(&mutable_f->mergehandlers, upb_value_constptr(ret));
 
   return ret;
+}
+
+const upb_visitorplan *upb_msgfactory_getvisitorplan(upb_msgfactory *f,
+                                                     const upb_handlers *h) {
+  const upb_msgdef *md = upb_handlers_msgdef(h);
+  return (const upb_visitorplan*)upb_msgfactory_getlayout(f, md);
+}
+
+
+/** upb_visitor ***************************************************************/
+
+struct upb_visitor {
+  const upb_msglayout *layout;
+  upb_sink *sink;
+};
+
+static upb_selector_t getsel(const upb_fielddef *f, upb_handlertype_t type) {
+  upb_selector_t ret;
+  bool ok = upb_handlers_getselector(f, type, &ret);
+  UPB_ASSERT(ok);
+  return ret;
+}
+
+static bool upb_visitor_hasfield(const upb_msg *msg, const upb_fielddef *f,
+                                 const upb_msglayout *layout) {
+  if (upb_fielddef_isseq(f)) {
+    return upb_msgval_getarr(upb_msg_get(msg, f, layout)) != NULL;
+  } else if (upb_msgdef_syntax(upb_fielddef_containingtype(f)) ==
+             UPB_SYNTAX_PROTO2) {
+    return upb_msg_has(msg, f, layout);
+  } else {
+    upb_msgval val = upb_msg_get(msg, f, layout);
+    switch (upb_fielddef_type(f)) {
+      case UPB_TYPE_FLOAT:
+        return upb_msgval_getfloat(val) != 0;
+      case UPB_TYPE_DOUBLE:
+        return upb_msgval_getdouble(val) != 0;
+      case UPB_TYPE_BOOL:
+        return upb_msgval_getbool(val);
+      case UPB_TYPE_ENUM:
+      case UPB_TYPE_INT32:
+        return upb_msgval_getint32(val) != 0;
+      case UPB_TYPE_UINT32:
+        return upb_msgval_getuint32(val) != 0;
+      case UPB_TYPE_INT64:
+        return upb_msgval_getint64(val) != 0;
+      case UPB_TYPE_UINT64:
+        return upb_msgval_getuint64(val) != 0;
+      case UPB_TYPE_STRING:
+      case UPB_TYPE_BYTES:
+        return upb_msgval_getstr(val) && upb_msgval_getstrlen(val) > 0;
+      case UPB_TYPE_MESSAGE:
+        return upb_msgval_getmsg(val) != NULL;
+    }
+    UPB_UNREACHABLE();
+  }
+}
+
+static bool upb_visitor_visitmsg2(const upb_msg *msg,
+                                  const upb_msglayout *layout, upb_sink *sink,
+                                  int depth) {
+  const upb_msgdef *md = upb_msglayout_msgdef(layout);
+  upb_msg_field_iter i;
+  upb_status status;
+
+  upb_sink_startmsg(sink);
+
+  /* Protect against cycles (possible because users may freely reassign message
+   * and repeated fields) by imposing a maximum recursion depth. */
+  if (depth > ENCODE_MAX_NESTING) {
+    return false;
+  }
+
+  for (upb_msg_field_begin(&i, md);
+       !upb_msg_field_done(&i);
+       upb_msg_field_next(&i)) {
+    upb_fielddef *f = upb_msg_iter_field(&i);
+    upb_msgval val;
+
+    if (!upb_visitor_hasfield(msg, f, layout)) {
+      continue;
+    }
+
+    val = upb_msg_get(msg, f, layout);
+
+    if (upb_fielddef_isseq(f)) {
+      const upb_array *arr = upb_msgval_getarr(val);
+      UPB_ASSERT(arr);
+      /* TODO: putary(ary, f, sink, depth);*/
+    } else if (upb_fielddef_issubmsg(f)) {
+      const upb_map *map = upb_msgval_getmap(val);
+      UPB_ASSERT(map);
+      /* TODO: putmap(map, f, sink, depth);*/
+    } else if (upb_fielddef_isstring(f)) {
+      /* TODO putstr(); */
+    } else {
+      upb_selector_t sel = getsel(f, upb_handlers_getprimitivehandlertype(f));
+      UPB_ASSERT(upb_fielddef_isprimitive(f));
+
+      switch (upb_fielddef_type(f)) {
+        case UPB_TYPE_FLOAT:
+          CHECK_RETURN(upb_sink_putfloat(sink, sel, upb_msgval_getfloat(val)));
+          break;
+        case UPB_TYPE_DOUBLE:
+          CHECK_RETURN(
+              upb_sink_putdouble(sink, sel, upb_msgval_getdouble(val)));
+          break;
+        case UPB_TYPE_BOOL:
+          CHECK_RETURN(upb_sink_putbool(sink, sel, upb_msgval_getbool(val)));
+          break;
+        case UPB_TYPE_ENUM:
+        case UPB_TYPE_INT32:
+          CHECK_RETURN(upb_sink_putint32(sink, sel, upb_msgval_getint32(val)));
+          break;
+        case UPB_TYPE_UINT32:
+          CHECK_RETURN(
+              upb_sink_putuint32(sink, sel, upb_msgval_getuint32(val)));
+          break;
+        case UPB_TYPE_INT64:
+          CHECK_RETURN(upb_sink_putint64(sink, sel, upb_msgval_getint64(val)));
+          break;
+        case UPB_TYPE_UINT64:
+          CHECK_RETURN(
+              upb_sink_putuint64(sink, sel, upb_msgval_getuint64(val)));
+          break;
+        case UPB_TYPE_STRING:
+        case UPB_TYPE_BYTES:
+        case UPB_TYPE_MESSAGE:
+          UPB_UNREACHABLE();
+      }
+    }
+  }
+
+  upb_sink_endmsg(sink, &status);
+  return true;
+}
+
+upb_visitor *upb_visitor_create(upb_env *e, const upb_visitorplan *vp,
+                                upb_sink *output) {
+  upb_visitor *visitor = upb_env_malloc(e, sizeof(*visitor));
+  visitor->layout = (const upb_msglayout*)vp;
+  visitor->sink = output;
+  return visitor;
+}
+
+bool upb_visitor_visitmsg(upb_visitor *visitor, const upb_msg *msg) {
+  return upb_visitor_visitmsg2(msg, visitor->layout, visitor->sink, 0);
 }
 
 

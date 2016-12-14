@@ -57,12 +57,17 @@ UPB_DECLARE_TYPE(upb::VisitorPlan, upb_visitorplan)
 
 UPB_BEGIN_EXTERN_C
 
+typedef void upb_msg;
+
 
 /** upb_msglayout *************************************************************/
 
 /* upb_msglayout represents the memory layout of a given upb_msgdef.  You get
  * instances of this from a upb_msgfactory, and the factory always owns the
  * msglayout. */
+
+/* Gets the factory for this layout */
+upb_msgfactory *upb_msglayout_factory(const upb_msglayout *l);
 
 /* Get the msglayout for a submessage.  This requires that this field is a
  * submessage, ie. upb_fielddef_issubmsg(upb_msglayout_msgdef(l)) == true.
@@ -84,7 +89,7 @@ const upb_msgdef *upb_msglayout_msgdef(const upb_msglayout *l);
 
 upb_visitor *upb_visitor_create(upb_env *e, const upb_visitorplan *vp,
                                 upb_sink *output);
-bool upb_visitor_visitmsg(upb_visitor *v, const void *msg);
+bool upb_visitor_visitmsg(upb_visitor *v, const upb_msg *msg);
 
 
 /** upb_msgfactory ************************************************************/
@@ -117,16 +122,14 @@ const upb_msglayout *upb_msgfactory_getlayout(upb_msgfactory *f,
                                               const upb_msgdef *m);
 const upb_handlers *upb_msgfactory_getmergehandlers(upb_msgfactory *f,
                                                     const upb_msgdef *m);
-const upb_visitorplan *upb_msgfactory_getvisitorplan(const upb_msgfactory *f,
-                                                     const upb_msgdef *m);
+const upb_visitorplan *upb_msgfactory_getvisitorplan(upb_msgfactory *f,
+                                                     const upb_handlers *h);
 
 
 /** upb_msgval ****************************************************************/
 
 /* A union representing all possible protobuf values.  Used for generic get/set
  * operations. */
-
-typedef void upb_msg;
 
 typedef union {
   bool b;
@@ -178,6 +181,14 @@ UPB_INLINE upb_msgval upb_msgval_str(const char *ptr, size_t len) {
   ret.str.ptr = ptr;
   ret.str.len = len;
   return ret;
+}
+
+UPB_INLINE const char* upb_msgval_getstr(upb_msgval val) {
+  return val.str.ptr;
+}
+
+UPB_INLINE size_t upb_msgval_getstrlen(upb_msgval val) {
+  return val.str.len;
 }
 
 
