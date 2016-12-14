@@ -62,7 +62,11 @@
  *
  * ```
  * GPB_ENUM_FWD_DECLARE(Foo_Enum)
- * @property (nonatomic) Foo_Enum value;
+ *
+ * @interface BarClass : NSObject
+ * @property (nonatomic) enum Foo_Enum value;
+ * - (void)bazMethod:(enum Foo_Enum):value;
+ * @end
  * ```
  **/
 #define GPB_ENUM_FWD_DECLARE(X) enum X : int32_t
