@@ -41,15 +41,10 @@
 #define GOOGLE_PROTOBUF_HAVE_HASH_MAP 1
 #define GOOGLE_PROTOBUF_HAVE_HASH_SET 1
 
-// Android
-#if defined(__ANDROID__)
-# undef GOOGLE_PROTOBUF_HAVE_HASH_MAP
-# undef GOOGLE_PROTOBUF_HAVE_HASH_MAP
-
 // Use C++11 unordered_{map|set} if available.
-#elif ((_LIBCPP_STD_VER >= 11) || \
-      (((__cplusplus >= 201103L) || defined(__GXX_EXPERIMENTAL_CXX0X)) && \
-      (__GLIBCXX__ > 20090421)))
+#if ((_LIBCPP_STD_VER >= 11) || \
+    (((__cplusplus >= 201103L) || defined(__GXX_EXPERIMENTAL_CXX0X)) && \
+    (__GLIBCXX__ > 20090421)))
 # define GOOGLE_PROTOBUF_HAS_CXX11_HASH
 
 // For XCode >= 4.6:  the compiler is clang with libc++.
