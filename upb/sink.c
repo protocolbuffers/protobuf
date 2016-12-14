@@ -39,6 +39,7 @@ static size_t upb_bufsink_string(void *_sink, const void *hd, const char *ptr,
   upb_bufsink *sink = _sink;
   size_t new_size = sink->size;
 
+  UPB_ASSERT(new_size > 0);
   UPB_UNUSED(hd);
   UPB_UNUSED(handle);
 

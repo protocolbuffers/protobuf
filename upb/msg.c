@@ -26,6 +26,7 @@ void *upb_map_pack(const upb_map *map, void *p, size_t *ofs, size_t size);
 
 #define CHARPTR_AT(msg, ofs) ((char*)msg + ofs)
 #define ENCODE_MAX_NESTING 64
+#define CHECK_RETURN(x) if (!(x)) { return false; }
 
 /** upb_msgval ****************************************************************/
 
@@ -502,8 +503,8 @@ static upb_selector_t getsel(const upb_fielddef *f, upb_handlertype_t type) {
 
 static bool upb_visitor_hasfield(const upb_msg *msg, const upb_fielddef *f,
                                  const upb_msglayout *layout) {
-  if (upb_fielddef_isseq(f) || upb_fielddef_issubmsg(f)) {
-    return upb_msgval_getptr(upb_msg_get(msg, f, layout)) != NULL;
+  if (upb_fielddef_isseq(f)) {
+    return upb_msgval_getarr(upb_msg_get(msg, f, layout)) != NULL;
   } else if (upb_msgdef_syntax(upb_fielddef_containingtype(f)) ==
              UPB_SYNTAX_PROTO2) {
     return upb_msg_has(msg, f, layout);
@@ -535,7 +536,7 @@ static bool upb_visitor_hasfield(const upb_msg *msg, const upb_fielddef *f,
   }
 }
 
-static void upb_visitor_visitmsg2(const upb_msg *msg,
+static bool upb_visitor_visitmsg2(const upb_msg *msg,
                                   const upb_msglayout *layout, upb_sink *sink,
                                   int depth) {
   const upb_msgdef *md = upb_msglayout_msgdef(layout);
@@ -547,7 +548,7 @@ static void upb_visitor_visitmsg2(const upb_msg *msg,
   /* Protect against cycles (possible because users may freely reassign message
    * and repeated fields) by imposing a maximum recursion depth. */
   if (depth > ENCODE_MAX_NESTING) {
-    return;
+    return false;
   }
 
   for (upb_msg_field_begin(&i, md);
@@ -578,26 +579,29 @@ static void upb_visitor_visitmsg2(const upb_msg *msg,
 
       switch (upb_fielddef_type(f)) {
         case UPB_TYPE_FLOAT:
-          upb_sink_putfloat(sink, sel, upb_msgval_getfloat(val));
+          CHECK_RETURN(upb_sink_putfloat(sink, sel, upb_msgval_getfloat(val)));
           break;
         case UPB_TYPE_DOUBLE:
-          upb_sink_putdouble(sink, sel, upb_msgval_getdouble(val));
+          CHECK_RETURN(
+              upb_sink_putdouble(sink, sel, upb_msgval_getdouble(val)));
           break;
         case UPB_TYPE_BOOL:
-          upb_sink_putbool(sink, sel, upb_msgval_getbool(val));
+          CHECK_RETURN(upb_sink_putbool(sink, sel, upb_msgval_getbool(val)));
           break;
         case UPB_TYPE_ENUM:
         case UPB_TYPE_INT32:
-          upb_sink_putint32(sink, sel, upb_msgval_getint32(val));
+          CHECK_RETURN(upb_sink_putint32(sink, sel, upb_msgval_getint32(val)));
           break;
         case UPB_TYPE_UINT32:
-          upb_sink_putuint32(sink, sel, upb_msgval_getuint32(val));
+          CHECK_RETURN(
+              upb_sink_putuint32(sink, sel, upb_msgval_getuint32(val)));
           break;
         case UPB_TYPE_INT64:
-          upb_sink_putint64(sink, sel, upb_msgval_getint64(val));
+          CHECK_RETURN(upb_sink_putint64(sink, sel, upb_msgval_getint64(val)));
           break;
         case UPB_TYPE_UINT64:
-          upb_sink_putuint64(sink, sel, upb_msgval_getuint64(val));
+          CHECK_RETURN(
+              upb_sink_putuint64(sink, sel, upb_msgval_getuint64(val)));
           break;
         case UPB_TYPE_STRING:
         case UPB_TYPE_BYTES:
@@ -608,6 +612,7 @@ static void upb_visitor_visitmsg2(const upb_msg *msg,
   }
 
   upb_sink_endmsg(sink, &status);
+  return true;
 }
 
 upb_visitor *upb_visitor_create(upb_env *e, const upb_visitorplan *vp,
@@ -619,8 +624,7 @@ upb_visitor *upb_visitor_create(upb_env *e, const upb_visitorplan *vp,
 }
 
 bool upb_visitor_visitmsg(upb_visitor *visitor, const upb_msg *msg) {
-  upb_visitor_visitmsg2(msg, visitor->layout, visitor->sink, 0);
-  return true;
+  return upb_visitor_visitmsg2(msg, visitor->layout, visitor->sink, 0);
 }
 
 
