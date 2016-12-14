@@ -132,8 +132,8 @@ string fixed32(void *data) { return string(static_cast<char*>(data), 4); }
 string fixed64(void *data) { return string(static_cast<char*>(data), 8); }
 
 string delim(const string& buf) { return cat(varint(buf.size()), buf); }
-string uint32(uint32_t u32) { return fixed32(&u32); }
-string uint64(uint64_t u64) { return fixed64(&u64); }
+string u32(uint32_t u32) { return fixed32(&u32); }
+string u64(uint64_t u64) { return fixed64(&u64); }
 string flt(float f) { return fixed32(&f); }
 string dbl(double d) { return fixed64(&d); }
 string zz32(int32_t x) { return varint(WireFormatLite::ZigZagEncode32(x)); }
@@ -149,16 +149,17 @@ string submsg(uint32_t fn, const string& buf) {
 
 #define UNKNOWN_FIELD 666
 
-uint32_t GetFieldNumberForType(FieldDescriptor::Type type, bool repeated) {
+const FieldDescriptor* GetFieldForType(FieldDescriptor::Type type,
+                                       bool repeated) {
   const Descriptor* d = TestAllTypes().GetDescriptor();
   for (int i = 0; i < d->field_count(); i++) {
     const FieldDescriptor* f = d->field(i);
     if (f->type() == type && f->is_repeated() == repeated) {
-      return f->number();
+      return f;
     }
   }
   GOOGLE_LOG(FATAL) << "Couldn't find field with type " << (int)type;
-  return 0;
+  return nullptr;
 }
 
 string UpperCase(string str) {
@@ -425,14 +426,22 @@ void ConformanceTestSuite::RunValidJsonTestWithProtobufInput(
 }
 
 void ConformanceTestSuite::RunValidProtobufTest(
+    const string& test_name, ConformanceLevel level,
+    const string& input_protobuf, const string& equivalent_text_format) {
+  RunValidInputTest(
+      ConformanceLevelToString(level) + ".ProtobufInput." + test_name +
+      ".ProtobufOutput", level, input_protobuf, conformance::PROTOBUF,
+      equivalent_text_format, conformance::PROTOBUF);
+  RunValidInputTest(
+      ConformanceLevelToString(level) + ".ProtobufInput." + test_name +
+      ".JsonOutput", level, input_protobuf, conformance::PROTOBUF,
+      equivalent_text_format, conformance::JSON);
+}
+
+void ConformanceTestSuite::RunValidProtobufTestWithMessage(
     const string& test_name, ConformanceLevel level, const TestAllTypes& input,
     const string& equivalent_text_format) {
-  RunValidInputTest("ProtobufInput." + test_name + ".ProtobufOutput", level,
-                    input.SerializeAsString(), conformance::PROTOBUF,
-                    equivalent_text_format, conformance::PROTOBUF);
-  RunValidInputTest("ProtobufInput." + test_name + ".JsonOutput", level,
-                    input.SerializeAsString(), conformance::PROTOBUF,
-                    equivalent_text_format, conformance::JSON);
+  RunValidProtobufTest(test_name, level, input.SerializeAsString(), equivalent_text_format);
 }
 
 // According to proto3 JSON specification, JSON serializers follow more strict
@@ -539,8 +548,8 @@ void ConformanceTestSuite::TestPrematureEOFForType(FieldDescriptor::Type type) {
     string("abc")       // 32BIT
   };
 
-  uint32_t fieldnum = GetFieldNumberForType(type, false);
-  uint32_t rep_fieldnum = GetFieldNumberForType(type, true);
+  const FieldDescriptor* field = GetFieldForType(type, false);
+  const FieldDescriptor* rep_field = GetFieldForType(type, true);
   WireFormatLite::WireType wire_type = WireFormatLite::WireTypeForFieldType(
       static_cast<WireFormatLite::FieldType>(type));
   const string& incomplete = incompletes[wire_type];
@@ -548,11 +557,11 @@ void ConformanceTestSuite::TestPrematureEOFForType(FieldDescriptor::Type type) {
       UpperCase(string(".") + FieldDescriptor::TypeName(type));
 
   ExpectParseFailureForProto(
-      tag(fieldnum, wire_type),
+      tag(field->number(), wire_type),
       "PrematureEofBeforeKnownNonRepeatedValue" + type_name, REQUIRED);
 
   ExpectParseFailureForProto(
-      tag(rep_fieldnum, wire_type),
+      tag(rep_field->number(), wire_type),
       "PrematureEofBeforeKnownRepeatedValue" + type_name, REQUIRED);
 
   ExpectParseFailureForProto(
@@ -560,11 +569,11 @@ void ConformanceTestSuite::TestPrematureEOFForType(FieldDescriptor::Type type) {
       "PrematureEofBeforeUnknownValue" + type_name, REQUIRED);
 
   ExpectParseFailureForProto(
-      cat( tag(fieldnum, wire_type), incomplete ),
+      cat( tag(field->number(), wire_type), incomplete ),
       "PrematureEofInsideKnownNonRepeatedValue" + type_name, REQUIRED);
 
   ExpectParseFailureForProto(
-      cat( tag(rep_fieldnum, wire_type), incomplete ),
+      cat( tag(rep_field->number(), wire_type), incomplete ),
       "PrematureEofInsideKnownRepeatedValue" + type_name, REQUIRED);
 
   ExpectParseFailureForProto(
@@ -573,12 +582,12 @@ void ConformanceTestSuite::TestPrematureEOFForType(FieldDescriptor::Type type) {
 
   if (wire_type == WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
     ExpectParseFailureForProto(
-        cat( tag(fieldnum, wire_type), varint(1) ),
+        cat( tag(field->number(), wire_type), varint(1) ),
         "PrematureEofInDelimitedDataForKnownNonRepeatedValue" + type_name,
         REQUIRED);
 
     ExpectParseFailureForProto(
-        cat( tag(rep_fieldnum, wire_type), varint(1) ),
+        cat( tag(rep_field->number(), wire_type), varint(1) ),
         "PrematureEofInDelimitedDataForKnownRepeatedValue" + type_name,
         REQUIRED);
 
@@ -593,7 +602,7 @@ void ConformanceTestSuite::TestPrematureEOFForType(FieldDescriptor::Type type) {
           cat( tag(WireFormatLite::TYPE_INT32, WireFormatLite::WIRETYPE_VARINT),
                 incompletes[WireFormatLite::WIRETYPE_VARINT] );
       ExpectHardParseFailureForProto(
-          cat( tag(fieldnum, WireFormatLite::WIRETYPE_LENGTH_DELIMITED),
+          cat( tag(field->number(), WireFormatLite::WIRETYPE_LENGTH_DELIMITED),
                varint(incomplete_submsg.size()),
                incomplete_submsg ),
           "PrematureEofInSubmessageValue" + type_name, REQUIRED);
@@ -603,17 +612,48 @@ void ConformanceTestSuite::TestPrematureEOFForType(FieldDescriptor::Type type) {
 
     // Packed region ends in the middle of a value.
     ExpectHardParseFailureForProto(
-        cat( tag(rep_fieldnum, WireFormatLite::WIRETYPE_LENGTH_DELIMITED),
-             varint(incomplete.size()),
-             incomplete ),
+        cat(tag(rep_field->number(), WireFormatLite::WIRETYPE_LENGTH_DELIMITED),
+            varint(incomplete.size()), incomplete),
         "PrematureEofInPackedFieldValue" + type_name, REQUIRED);
 
     // EOF in the middle of packed region.
     ExpectParseFailureForProto(
-        cat( tag(rep_fieldnum, WireFormatLite::WIRETYPE_LENGTH_DELIMITED),
-             varint(1) ),
+        cat(tag(rep_field->number(), WireFormatLite::WIRETYPE_LENGTH_DELIMITED),
+            varint(1)),
         "PrematureEofInPackedField" + type_name, REQUIRED);
   }
+}
+
+void ConformanceTestSuite::TestValidDataForType(
+    FieldDescriptor::Type type,
+    std::vector<std::pair<std::string, std::string>> values) {
+  const string type_name =
+      UpperCase(string(".") + FieldDescriptor::TypeName(type));
+  WireFormatLite::WireType wire_type = WireFormatLite::WireTypeForFieldType(
+      static_cast<WireFormatLite::FieldType>(type));
+  const FieldDescriptor* field = GetFieldForType(type, false);
+  const FieldDescriptor* rep_field = GetFieldForType(type, true);
+
+  RunValidProtobufTest("ValidDataScalar" + type_name, REQUIRED,
+                       cat(tag(field->number(), wire_type), values[0].first),
+                       field->name() + ": " + values[0].second);
+
+  string proto;
+  string text = field->name() + ": " + values.back().second;
+  for (size_t i = 0; i < values.size(); i++) {
+    proto += cat(tag(field->number(), wire_type), values[i].first);
+  }
+  RunValidProtobufTest("RepeatedScalarSelectsLast" + type_name, REQUIRED,
+                       proto, text);
+
+  proto.clear();
+  text.clear();
+
+  for (size_t i = 0; i < values.size(); i++) {
+    proto += cat(tag(rep_field->number(), wire_type), values[i].first);
+    text += rep_field->name() + ": " + values[i].second + " ";
+  }
+  RunValidProtobufTest("ValidDataRepeated" + type_name, REQUIRED, proto, text);
 }
 
 void ConformanceTestSuite::SetFailureList(const string& filename,
@@ -674,6 +714,86 @@ bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
     if (i == FieldDescriptor::TYPE_GROUP) continue;
     TestPrematureEOFForType(static_cast<FieldDescriptor::Type>(i));
   }
+
+  int64 kInt64Min = -9223372036854775808ULL;
+  int64 kInt64Max = 9223372036854775807ULL;
+  uint64 kUint64Max = 18446744073709551615ULL;
+  int32 kInt32Max = 2147483647;
+  int32 kInt32Min = -2147483648;
+  uint32 kUint32Max = 4294967295UL;
+
+  TestValidDataForType(FieldDescriptor::TYPE_DOUBLE, {
+    {dbl(0.1), "0.1"},
+    {dbl(1.7976931348623157e+308), "1.7976931348623157e+308"},
+    {dbl(2.22507385850720138309e-308), "2.22507385850720138309e-308"}
+  });
+  TestValidDataForType(FieldDescriptor::TYPE_FLOAT, {
+    {flt(0.1), "0.1"},
+    {flt(3.402823e+38), "3.402823e+38"},  // 3.40282347e+38
+    {flt(1.17549435e-38f), "1.17549435e-38"}
+  });
+  TestValidDataForType(FieldDescriptor::TYPE_INT64, {
+    {varint(12345), "12345"},
+    {varint(kInt64Max), std::to_string(kInt64Max)},
+    {varint(kInt64Min), std::to_string(kInt64Min)}
+  });
+  TestValidDataForType(FieldDescriptor::TYPE_UINT64, {
+    {varint(12345), "12345"},
+    {varint(kUint64Max), std::to_string(kUint64Max)},
+    {varint(0), "0"}
+  });
+  TestValidDataForType(FieldDescriptor::TYPE_INT32, {
+    {varint(12345), "12345"},
+    {varint(kInt32Max), std::to_string(kInt32Max)},
+    {varint(kInt32Min), std::to_string(kInt32Min)},
+  });
+  TestValidDataForType(FieldDescriptor::TYPE_UINT32, {
+    {varint(12345), "12345"},
+    {varint(kUint32Max), std::to_string(kUint32Max)},  // UINT32_MAX
+    {varint(0), "0"}
+  });
+  TestValidDataForType(FieldDescriptor::TYPE_FIXED64, {
+    {u64(12345), "12345"},
+    {u64(kUint64Max), std::to_string(kUint64Max)},
+    {u64(0), "0"}
+  });
+  TestValidDataForType(FieldDescriptor::TYPE_FIXED32, {
+    {u32(12345), "12345"},
+    {u32(kUint32Max), std::to_string(kUint32Max)},  // UINT32_MAX
+    {u32(0), "0"}
+  });
+  TestValidDataForType(FieldDescriptor::TYPE_SFIXED64, {
+    {u64(12345), "12345"},
+    {u64(kInt64Max), std::to_string(kInt64Max)},
+    {u64(kInt64Min), std::to_string(kInt64Min)}
+  });
+  TestValidDataForType(FieldDescriptor::TYPE_SFIXED32, {
+    {u32(12345), "12345"},
+    {u32(kInt32Max), std::to_string(kInt32Max)},
+    {u32(kInt32Min), std::to_string(kInt32Min)}
+  });
+  TestValidDataForType(FieldDescriptor::TYPE_BOOL, {
+    {varint(1), "true"},
+    {varint(0), "false"},
+    {varint(12345678), "true"}
+  });
+  TestValidDataForType(FieldDescriptor::TYPE_SINT32, {
+    {zz32(12345), "12345"},
+    {zz32(kInt32Max), std::to_string(kInt32Max)},
+    {zz32(kInt32Min), std::to_string(kInt32Min)}
+  });
+  TestValidDataForType(FieldDescriptor::TYPE_SINT64, {
+    {zz64(12345), "12345"},
+    {zz64(kInt64Max), std::to_string(kInt64Max)},
+    {zz64(kInt64Min), std::to_string(kInt64Min)}
+  });
+
+  // TODO(haberman):
+  // TestValidDataForType(FieldDescriptor::TYPE_STRING
+  // TestValidDataForType(FieldDescriptor::TYPE_GROUP
+  // TestValidDataForType(FieldDescriptor::TYPE_MESSAGE
+  // TestValidDataForType(FieldDescriptor::TYPE_BYTES
+  // TestValidDataForType(FieldDescriptor::TYPE_ENUM
 
   RunValidJsonTest("HelloWorld", REQUIRED,
                    "{\"optionalString\":\"Hello, World!\"}",
@@ -1374,31 +1494,31 @@ bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
   {
     TestAllTypes message;
     message.set_oneof_uint32(0);
-    RunValidProtobufTest(
+    RunValidProtobufTestWithMessage(
         "OneofZeroUint32", RECOMMENDED, message, "oneof_uint32: 0");
     message.mutable_oneof_nested_message()->set_a(0);
-    RunValidProtobufTest(
+    RunValidProtobufTestWithMessage(
         "OneofZeroMessage", RECOMMENDED, message, "oneof_nested_message: {}");
     message.set_oneof_string("");
-    RunValidProtobufTest(
+    RunValidProtobufTestWithMessage(
         "OneofZeroString", RECOMMENDED, message, "oneof_string: \"\"");
     message.set_oneof_bytes("");
-    RunValidProtobufTest(
+    RunValidProtobufTestWithMessage(
         "OneofZeroBytes", RECOMMENDED, message, "oneof_bytes: \"\"");
     message.set_oneof_bool(false);
-    RunValidProtobufTest(
+    RunValidProtobufTestWithMessage(
         "OneofZeroBool", RECOMMENDED, message, "oneof_bool: false");
     message.set_oneof_uint64(0);
-    RunValidProtobufTest(
+    RunValidProtobufTestWithMessage(
         "OneofZeroUint64", RECOMMENDED, message, "oneof_uint64: 0");
     message.set_oneof_float(0.0f);
-    RunValidProtobufTest(
+    RunValidProtobufTestWithMessage(
         "OneofZeroFloat", RECOMMENDED, message, "oneof_float: 0");
     message.set_oneof_double(0.0);
-    RunValidProtobufTest(
+    RunValidProtobufTestWithMessage(
         "OneofZeroDouble", RECOMMENDED, message, "oneof_double: 0");
     message.set_oneof_enum(TestAllTypes::FOO);
-    RunValidProtobufTest(
+    RunValidProtobufTestWithMessage(
         "OneofZeroEnum", RECOMMENDED, message, "oneof_enum: FOO");
   }
   RunValidJsonTest(
