@@ -143,3 +143,5 @@ js/google-protobuf.js
 js/google/
 js/node_modules/
 js/testproto_libs.js
+/nbproject/private/
+/nbproject/
