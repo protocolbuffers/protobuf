@@ -331,7 +331,15 @@ namespace Google.Protobuf
         /// </summary>
         public void CopyTo(byte[] array, int position)
         {
-            ByteArray.Copy(bytes, 0, array, position, bytes.Length);
+            CopyTo(array, position, 0, bytes.Length);
+        }
+
+        /// <summary>
+        /// Copies a subset of the byte array to the destination array provided at the offset specified.
+        /// </summary>
+        public void CopyTo(byte[] dest, int destOffset, int srcOffset, int length)
+        {
+            ByteArray.Copy(bytes, srcOffset, dest, destOffset, length);
         }
 
         /// <summary>
