@@ -122,6 +122,10 @@ class DescriptorPool
 
     public function getEnumDescriptorByProtoName($proto)
     {
+        if (!isset($this->proto_to_class[$proto])) {
+            return null;
+        }
+
         $klass = $this->proto_to_class[$proto];
         return $this->class_to_enum_desc[$klass];
     }
