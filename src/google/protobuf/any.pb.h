@@ -127,6 +127,9 @@ class LIBPROTOBUF_EXPORT Any : public ::google::protobuf::Message /* @@protoc_in
   static const int kTypeUrlFieldNumber = 1;
   const ::std::string& type_url() const;
   void set_type_url(const ::std::string& value);
+  #if LANG_CXX11
+  void set_type_url(::std::string&& value);
+  #endif
   void set_type_url(const char* value);
   void set_type_url(const char* value, size_t size);
   ::std::string* mutable_type_url();
@@ -138,6 +141,9 @@ class LIBPROTOBUF_EXPORT Any : public ::google::protobuf::Message /* @@protoc_in
   static const int kValueFieldNumber = 2;
   const ::std::string& value() const;
   void set_value(const ::std::string& value);
+  #if LANG_CXX11
+  void set_value(::std::string&& value);
+  #endif
   void set_value(const char* value);
   void set_value(const void* value, size_t size);
   ::std::string* mutable_value();
@@ -179,6 +185,14 @@ inline void Any::set_type_url(const ::std::string& value) {
   type_url_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
   // @@protoc_insertion_point(field_set:google.protobuf.Any.type_url)
 }
+#if LANG_CXX11
+inline void Any::set_type_url(::std::string&& value) {
+  
+  type_url_.SetNoArena(
+    &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
+  // @@protoc_insertion_point(field_set_rvalue:google.protobuf.Any.type_url)
+}
+#endif
 inline void Any::set_type_url(const char* value) {
   
   type_url_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
@@ -223,6 +237,14 @@ inline void Any::set_value(const ::std::string& value) {
   value_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
   // @@protoc_insertion_point(field_set:google.protobuf.Any.value)
 }
+#if LANG_CXX11
+inline void Any::set_value(::std::string&& value) {
+  
+  value_.SetNoArena(
+    &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
+  // @@protoc_insertion_point(field_set_rvalue:google.protobuf.Any.value)
+}
+#endif
 inline void Any::set_value(const char* value) {
   
   value_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));

@@ -234,6 +234,9 @@ class LIBPROTOC_EXPORT Version : public ::google::protobuf::Message /* @@protoc_
   static const int kSuffixFieldNumber = 4;
   const ::std::string& suffix() const;
   void set_suffix(const ::std::string& value);
+  #if LANG_CXX11
+  void set_suffix(::std::string&& value);
+  #endif
   void set_suffix(const char* value);
   void set_suffix(const char* value, size_t size);
   ::std::string* mutable_suffix();
@@ -362,6 +365,9 @@ class LIBPROTOC_EXPORT CodeGeneratorRequest : public ::google::protobuf::Message
   static const int kParameterFieldNumber = 2;
   const ::std::string& parameter() const;
   void set_parameter(const ::std::string& value);
+  #if LANG_CXX11
+  void set_parameter(::std::string&& value);
+  #endif
   void set_parameter(const char* value);
   void set_parameter(const char* value, size_t size);
   ::std::string* mutable_parameter();
@@ -491,6 +497,9 @@ class LIBPROTOC_EXPORT CodeGeneratorResponse_File : public ::google::protobuf::M
   static const int kNameFieldNumber = 1;
   const ::std::string& name() const;
   void set_name(const ::std::string& value);
+  #if LANG_CXX11
+  void set_name(::std::string&& value);
+  #endif
   void set_name(const char* value);
   void set_name(const char* value, size_t size);
   ::std::string* mutable_name();
@@ -503,6 +512,9 @@ class LIBPROTOC_EXPORT CodeGeneratorResponse_File : public ::google::protobuf::M
   static const int kInsertionPointFieldNumber = 2;
   const ::std::string& insertion_point() const;
   void set_insertion_point(const ::std::string& value);
+  #if LANG_CXX11
+  void set_insertion_point(::std::string&& value);
+  #endif
   void set_insertion_point(const char* value);
   void set_insertion_point(const char* value, size_t size);
   ::std::string* mutable_insertion_point();
@@ -515,6 +527,9 @@ class LIBPROTOC_EXPORT CodeGeneratorResponse_File : public ::google::protobuf::M
   static const int kContentFieldNumber = 15;
   const ::std::string& content() const;
   void set_content(const ::std::string& value);
+  #if LANG_CXX11
+  void set_content(::std::string&& value);
+  #endif
   void set_content(const char* value);
   void set_content(const char* value, size_t size);
   ::std::string* mutable_content();
@@ -626,6 +641,9 @@ class LIBPROTOC_EXPORT CodeGeneratorResponse : public ::google::protobuf::Messag
   static const int kErrorFieldNumber = 1;
   const ::std::string& error() const;
   void set_error(const ::std::string& value);
+  #if LANG_CXX11
+  void set_error(::std::string&& value);
+  #endif
   void set_error(const char* value);
   void set_error(const char* value, size_t size);
   ::std::string* mutable_error();
@@ -763,6 +781,14 @@ inline void Version::set_suffix(const ::std::string& value) {
   suffix_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
   // @@protoc_insertion_point(field_set:google.protobuf.compiler.Version.suffix)
 }
+#if LANG_CXX11
+inline void Version::set_suffix(::std::string&& value) {
+  set_has_suffix();
+  suffix_.SetNoArena(
+    &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
+  // @@protoc_insertion_point(field_set_rvalue:google.protobuf.compiler.Version.suffix)
+}
+#endif
 inline void Version::set_suffix(const char* value) {
   set_has_suffix();
   suffix_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
@@ -876,6 +902,14 @@ inline void CodeGeneratorRequest::set_parameter(const ::std::string& value) {
   parameter_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
   // @@protoc_insertion_point(field_set:google.protobuf.compiler.CodeGeneratorRequest.parameter)
 }
+#if LANG_CXX11
+inline void CodeGeneratorRequest::set_parameter(::std::string&& value) {
+  set_has_parameter();
+  parameter_.SetNoArena(
+    &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
+  // @@protoc_insertion_point(field_set_rvalue:google.protobuf.compiler.CodeGeneratorRequest.parameter)
+}
+#endif
 inline void CodeGeneratorRequest::set_parameter(const char* value) {
   set_has_parameter();
   parameter_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
@@ -1009,6 +1043,14 @@ inline void CodeGeneratorResponse_File::set_name(const ::std::string& value) {
   name_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
   // @@protoc_insertion_point(field_set:google.protobuf.compiler.CodeGeneratorResponse.File.name)
 }
+#if LANG_CXX11
+inline void CodeGeneratorResponse_File::set_name(::std::string&& value) {
+  set_has_name();
+  name_.SetNoArena(
+    &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
+  // @@protoc_insertion_point(field_set_rvalue:google.protobuf.compiler.CodeGeneratorResponse.File.name)
+}
+#endif
 inline void CodeGeneratorResponse_File::set_name(const char* value) {
   set_has_name();
   name_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
@@ -1063,6 +1105,14 @@ inline void CodeGeneratorResponse_File::set_insertion_point(const ::std::string&
   insertion_point_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
   // @@protoc_insertion_point(field_set:google.protobuf.compiler.CodeGeneratorResponse.File.insertion_point)
 }
+#if LANG_CXX11
+inline void CodeGeneratorResponse_File::set_insertion_point(::std::string&& value) {
+  set_has_insertion_point();
+  insertion_point_.SetNoArena(
+    &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
+  // @@protoc_insertion_point(field_set_rvalue:google.protobuf.compiler.CodeGeneratorResponse.File.insertion_point)
+}
+#endif
 inline void CodeGeneratorResponse_File::set_insertion_point(const char* value) {
   set_has_insertion_point();
   insertion_point_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
@@ -1117,6 +1167,14 @@ inline void CodeGeneratorResponse_File::set_content(const ::std::string& value) 
   content_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
   // @@protoc_insertion_point(field_set:google.protobuf.compiler.CodeGeneratorResponse.File.content)
 }
+#if LANG_CXX11
+inline void CodeGeneratorResponse_File::set_content(::std::string&& value) {
+  set_has_content();
+  content_.SetNoArena(
+    &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
+  // @@protoc_insertion_point(field_set_rvalue:google.protobuf.compiler.CodeGeneratorResponse.File.content)
+}
+#endif
 inline void CodeGeneratorResponse_File::set_content(const char* value) {
   set_has_content();
   content_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
@@ -1175,6 +1233,14 @@ inline void CodeGeneratorResponse::set_error(const ::std::string& value) {
   error_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
   // @@protoc_insertion_point(field_set:google.protobuf.compiler.CodeGeneratorResponse.error)
 }
+#if LANG_CXX11
+inline void CodeGeneratorResponse::set_error(::std::string&& value) {
+  set_has_error();
+  error_.SetNoArena(
+    &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
+  // @@protoc_insertion_point(field_set_rvalue:google.protobuf.compiler.CodeGeneratorResponse.error)
+}
+#endif
 inline void CodeGeneratorResponse::set_error(const char* value) {
   set_has_error();
   error_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));

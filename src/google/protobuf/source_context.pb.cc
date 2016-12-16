@@ -358,6 +358,14 @@ void SourceContext::set_file_name(const ::std::string& value) {
   file_name_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
   // @@protoc_insertion_point(field_set:google.protobuf.SourceContext.file_name)
 }
+#if LANG_CXX11
+void SourceContext::set_file_name(::std::string&& value) {
+  
+  file_name_.SetNoArena(
+    &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
+  // @@protoc_insertion_point(field_set_rvalue:google.protobuf.SourceContext.file_name)
+}
+#endif
 void SourceContext::set_file_name(const char* value) {
   
   file_name_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
