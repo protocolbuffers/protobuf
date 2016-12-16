@@ -90,6 +90,7 @@ def _proto_gen_impl(ctx):
         arguments=args + import_flags + [s.path for s in srcs],
         executable=ctx.executable.protoc,
         mnemonic="ProtoCompile",
+        use_default_shell_env=True,
     )
 
   return struct(
@@ -141,7 +142,7 @@ Args:
     compiler.
   plugin_language: the language of the generated sources
   plugin_options: a list of options to be passed to the plugin
-  gen_cc: generates C++ sources in addition to the ones from the plugin. 
+  gen_cc: generates C++ sources in addition to the ones from the plugin.
   gen_py: generates Python sources in addition to the ones from the plugin.
   outs: a list of labels of the expected outputs from the protocol compiler.
 """
