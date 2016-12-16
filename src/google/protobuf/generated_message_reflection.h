@@ -645,7 +645,7 @@ class LIBPROTOBUF_EXPORT GeneratedMessageReflection PROTOBUF_FINAL : public Refl
 // which the offsets of the direct fields of a class are non-constant.
 // Fields inherited from superclasses *can* have non-constant offsets,
 // but that's not what this macro will be used for.
-#if defined(__clang__)
+#if defined(__clang__) && (__clang_major__ >= 4 || __clang_major__ == 3 && __clang_minor__ >= 8)
 // For Clang we use __builtin_offsetof() and suppress the warning,
 // to avoid Control Flow Integrity and UBSan vptr sanitizers from
 // crashing while trying to validate the invalid reinterpet_casts.
