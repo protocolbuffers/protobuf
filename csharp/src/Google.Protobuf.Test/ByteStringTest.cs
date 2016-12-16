@@ -167,5 +167,18 @@ namespace Google.Protobuf
             // Optimization which also fixes issue 61.
             Assert.AreSame(ByteString.Empty, ByteString.FromBase64(""));
         }
+
+        [Test]
+        public void GetHashCode_Regression()
+        {
+            // We used to have an awful hash algorithm where only the last four
+            // bytes were relevant. This is a regression test for
+            // https://github.com/google/protobuf/issues/2511
+
+            ByteString b1 = ByteString.CopyFrom(100, 1, 2, 3, 4);
+            ByteString b2 = ByteString.CopyFrom(200, 1, 2, 3, 4);
+            Assert.AreNotEqual(b1.GetHashCode(), b2.GetHashCode());
+        }
+
     }
 }

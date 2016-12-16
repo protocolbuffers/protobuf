@@ -303,7 +303,7 @@ namespace Google.Protobuf
             int ret = 23;
             foreach (byte b in bytes)
             {
-                ret = (ret << 8) | b;
+                ret = (ret * 31) + b;
             }
             return ret;
         }
