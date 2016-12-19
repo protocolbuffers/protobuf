@@ -598,7 +598,7 @@ static void check_repeated_field_type(VALUE val, const upb_fielddef* field) {
   if (self->field_type == UPB_TYPE_MESSAGE ||
       self->field_type == UPB_TYPE_ENUM) {
     if (self->field_type_class !=
-        get_def_obj(upb_fielddef_subdef(field))) {
+        Descriptor_msgclass(get_def_obj(upb_fielddef_subdef(field)))) {
       rb_raise(rb_eTypeError,
                "Repeated field array has wrong message/enum class");
     }
