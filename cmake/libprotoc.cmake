@@ -94,6 +94,18 @@ set(libprotoc_files
   ${protobuf_source_dir}/src/google/protobuf/compiler/zip_writer.cc
 )
 
+set(js_well_known_types_sources,
+  ${protobuf_source_dir}/src/google/protobuf/compiler/js/well_known_types/any.js
+  ${protobuf_source_dir}/src/google/protobuf/compiler/js/well_known_types/struct.js
+  ${protobuf_source_dir}/src/google/protobuf/compiler/js/well_known_types/timestamp.js
+)
+add_executable(js_embed ${protobuf_source_dir}/src/google/protobuf/compiler/js/embed.cc)
+add_custom_command(
+  OUTPUT ${protobuf_source_dir}/src/google/protobuf/compiler/js/well_known_types_embed.cc
+  DEPENDS js_embed ${js_well_known_types_sources}
+  COMMAND js_embed ${js_well_known_types_sources} > ${protobuf_source_dir}/src/google/protobuf/compiler/js/well_known_types_embed.cc
+)
+
 add_library(libprotoc ${protobuf_SHARED_OR_STATIC}
   ${libprotoc_files})
 target_link_libraries(libprotoc libprotobuf)

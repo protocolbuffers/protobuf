@@ -48,7 +48,8 @@ static char ToDecimalDigit(int num) {
 static std::string CEscape(const std::string& str) {
   std::string dest;
 
-  for (unsigned char ch : str) {
+  for (int i = 0; i < str.size(); ++i) {
+    unsigned char ch = str[i];
     switch (ch) {
       case '\n': dest += "\\n"; break;
       case '\r': dest += "\\r"; break;
@@ -96,18 +97,16 @@ static void AddFile(const char* name, std::basic_ostream<char>* out) {
 }
 
 int main(int argc, char *argv[]) {
-  auto& out = std::cout;
-
-  out << "#include "
-         "\"google/protobuf/compiler/js/well_known_types_embed.h\"\n";
-  out << "struct FileToc well_known_types_js[] = {\n";
+  std::cout << "#include "
+               "\"google/protobuf/compiler/js/well_known_types_embed.h\"\n";
+  std::cout << "struct FileToc well_known_types_js[] = {\n";
 
   for (int i = 1; i < argc; i++) {
-    AddFile(argv[i], &out);
+    AddFile(argv[i], &std::cout);
   }
 
-  out << "  {NULL, NULL}  // Terminate the list.\n";
-  out << "};\n";
+  std::cout << "  {NULL, NULL}  // Terminate the list.\n";
+  std::cout << "};\n";
 
   return EXIT_SUCCESS;
 }

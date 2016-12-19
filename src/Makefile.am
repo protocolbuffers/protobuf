@@ -483,9 +483,19 @@ libprotoc_la_SOURCES =                                         \
   google/protobuf/compiler/csharp/csharp_wrapper_field.cc      \
   google/protobuf/compiler/csharp/csharp_wrapper_field.h
 
-bin_PROGRAMS = protoc
+bin_PROGRAMS = protoc js_embed
 protoc_LDADD = $(PTHREAD_LIBS) libprotobuf.la libprotoc.la
 protoc_SOURCES = google/protobuf/compiler/main.cc
+
+# The special JS code for the well-known types is linked into the compiler via
+# well_known_types_embed.cc, which is generated from .js source files.
+js_embed_SOURCES = google/protobuf/compiler/js/embed.cc
+js_well_known_types_sources =                                  \
+	google/protobuf/compiler/js/well_known_types/any.js          \
+	google/protobuf/compiler/js/well_known_types/struct.js       \
+	google/protobuf/compiler/js/well_known_types/timestamp.js
+google/protobuf/compiler/js/well_known_types_embed.cc: js_embed$(EXEEXT) $(js_well_known_types_sources)
+	./js_embed$(EXEEXT) $(js_well_known_types_sources) > $@
 
 # Tests ==============================================================
 
@@ -661,7 +671,7 @@ protoc_outputs =                                                  \
   google/protobuf/util/message_differencer_unittest.pb.cc         \
   google/protobuf/util/message_differencer_unittest.pb.h
 
-BUILT_SOURCES = $(protoc_outputs)
+BUILT_SOURCES = $(protoc_outputs) google/protobuf/compiler/js/well_known_types_embed.cc
 
 if USE_EXTERNAL_PROTOC
 
