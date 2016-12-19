@@ -214,4 +214,5 @@ target_link_libraries(lite-arena-test libprotobuf-lite gmock_main)
 
 add_custom_target(check
   COMMAND tests
+  DEPENDS tests test_plugin
   WORKING_DIRECTORY ${protobuf_source_dir})
