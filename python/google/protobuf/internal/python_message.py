@@ -56,17 +56,6 @@ import sys
 import weakref
 
 import six
-try:
-  import six.moves.copyreg as copyreg
-except ImportError:
-  # On some platforms, for example gMac, we run native Python because there is
-  # nothing like hermetic Python. This means lesser control on the system and
-  # the six.moves package may be missing (is missing on 20150321 on gMac). Be
-  # extra conservative and try to load the old replacement if it fails.
-  try:
-    import copy_reg as copyreg  #PY26
-  except ImportError:
-    import copyreg
 
 # We use "as" to avoid name collisions with variables.
 from google.protobuf.internal import containers
@@ -179,7 +168,6 @@ class GeneratedProtocolMessageType(type):
     _AddStaticMethods(cls)
     _AddMessageMethods(descriptor, cls)
     _AddPrivateHelperMethods(descriptor, cls)
-    copyreg.pickle(cls, lambda obj: (cls, (), obj.__getstate__()))
 
     superclass = super(GeneratedProtocolMessageType, cls)
     superclass.__init__(name, bases, dictionary)
@@ -1271,6 +1259,12 @@ def _AddWhichOneofMethod(message_descriptor, cls):
   cls.WhichOneof = WhichOneof
 
 
+def _AddReduceMethod(cls):
+  def __reduce__(self):  # pylint: disable=invalid-name
+    return (type(self), (), self.__getstate__())
+  cls.__reduce__ = __reduce__
+
+
 def _Clear(self):
   # Clear fields.
   self._fields = {}
@@ -1316,6 +1310,7 @@ def _AddMessageMethods(message_descriptor, cls):
   _AddIsInitializedMethod(message_descriptor, cls)
   _AddMergeFromMethod(cls)
   _AddWhichOneofMethod(message_descriptor, cls)
+  _AddReduceMethod(cls)
   # Adds methods which do not depend on cls.
   cls.Clear = _Clear
   cls.DiscardUnknownFields = _DiscardUnknownFields

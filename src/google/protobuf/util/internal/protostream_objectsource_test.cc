@@ -114,7 +114,7 @@ class ProtostreamObjectSourceTest
   }
 
   Status ExecuteTest(const Message& msg, const Descriptor* descriptor) {
-    ostringstream oss;
+    std::ostringstream oss;
     msg.SerializePartialToOstream(&oss);
     string proto = oss.str();
     ArrayInputStream arr_stream(proto.data(), proto.size());

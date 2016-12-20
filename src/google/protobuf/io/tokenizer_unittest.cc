@@ -199,8 +199,8 @@ struct SimpleTokenCase {
   Tokenizer::TokenType type;
 };
 
-inline ostream& operator<<(ostream& out,
-                           const SimpleTokenCase& test_case) {
+inline std::ostream& operator<<(std::ostream& out,
+                                const SimpleTokenCase& test_case) {
   return out << CEscape(test_case.input);
 }
 
@@ -333,8 +333,8 @@ struct MultiTokenCase {
                                 // needed.
 };
 
-inline ostream& operator<<(ostream& out,
-                           const MultiTokenCase& test_case) {
+inline std::ostream& operator<<(std::ostream& out,
+                                const MultiTokenCase& test_case) {
   return out << CEscape(test_case.input);
 }
 
@@ -520,8 +520,8 @@ struct DocCommentCase {
   const char* next_leading_comments;
 };
 
-inline ostream& operator<<(ostream& out,
-                           const DocCommentCase& test_case) {
+inline std::ostream& operator<<(std::ostream& out,
+                                const DocCommentCase& test_case) {
   return out << CEscape(test_case.input);
 }
 
@@ -860,8 +860,7 @@ struct ErrorCase {
   const char* errors;
 };
 
-inline ostream& operator<<(ostream& out,
-                           const ErrorCase& test_case) {
+inline std::ostream& operator<<(std::ostream& out, const ErrorCase& test_case) {
   return out << CEscape(test_case.input);
 }
 

@@ -197,6 +197,7 @@ class SmallSortedMap<K extends Comparable<K>, V> extends AbstractMap<K, V> {
         overflowEntries.entrySet();
   }
 
+
   @Override
   public int size() {
     return entryList.size() + overflowEntries.size();
@@ -355,6 +356,7 @@ class SmallSortedMap<K extends Comparable<K>, V> extends AbstractMap<K, V> {
     }
     return lazyEntrySet;
   }
+
 
   /**
    * @throws UnsupportedOperationException if {@link #makeImmutable()} has
@@ -525,6 +527,7 @@ class SmallSortedMap<K extends Comparable<K>, V> extends AbstractMap<K, V> {
     }
   }
 
+
   /**
    * Iterator implementation that switches from the entry array to the overflow
    * entries appropriately.
@@ -617,43 +620,43 @@ class SmallSortedMap<K extends Comparable<K>, V> extends AbstractMap<K, V> {
       return (Iterable<T>) ITERABLE;
     }
   }
-  
+
   @Override
   public boolean equals(Object o) {
     if (this == o) {
       return true;
     }
-    
+
     if (!(o instanceof SmallSortedMap)) {
       return super.equals(o);
     }
-    
+
     SmallSortedMap<?, ?> other = (SmallSortedMap<?, ?>) o;
     final int size = size();
     if (size != other.size()) {
       return false;
     }
-    
+
     // Best effort try to avoid allocating an entry set.
     final int numArrayEntries = getNumArrayEntries();
     if (numArrayEntries != other.getNumArrayEntries()) {
       return entrySet().equals(other.entrySet());
     }
-    
+
     for (int i = 0; i < numArrayEntries; i++) {
       if (!getArrayEntryAt(i).equals(other.getArrayEntryAt(i))) {
         return false;
       }
     }
-    
+
     if (numArrayEntries != size) {
       return overflowEntries.equals(other.overflowEntries);
     }
-    
-    
+
+
     return true;
   }
-  
+
   @Override
   public int hashCode() {
     int h = 0;

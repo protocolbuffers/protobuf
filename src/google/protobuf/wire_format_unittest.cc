@@ -1283,6 +1283,136 @@ TEST_F(Utf8ValidationTest, OldVerifyUTF8String) {
 }
 
 
+TEST(RepeatedVarint, Int32) {
+  RepeatedField<int32> v;
+
+  // Insert -2^n, 2^n and 2^n-1.
+  for (int n = 0; n < 10; n++) {
+    v.Add(-(1 << n));
+    v.Add(1 << n);
+    v.Add((1 << n) - 1);
+  }
+
+  // Check consistency with the scalar Int32Size.
+  size_t expected = 0;
+  for (int i = 0; i < v.size(); i++) {
+    expected += WireFormatLite::Int32Size(v[i]);
+  }
+
+  EXPECT_EQ(expected, WireFormatLite::Int32Size(v));
+}
+
+TEST(RepeatedVarint, Int64) {
+  RepeatedField<int64> v;
+
+  // Insert -2^n, 2^n and 2^n-1.
+  for (int n = 0; n < 10; n++) {
+    v.Add(-(1 << n));
+    v.Add(1 << n);
+    v.Add((1 << n) - 1);
+  }
+
+  // Check consistency with the scalar Int64Size.
+  size_t expected = 0;
+  for (int i = 0; i < v.size(); i++) {
+    expected += WireFormatLite::Int64Size(v[i]);
+  }
+
+  EXPECT_EQ(expected, WireFormatLite::Int64Size(v));
+}
+
+TEST(RepeatedVarint, SInt32) {
+  RepeatedField<int32> v;
+
+  // Insert -2^n, 2^n and 2^n-1.
+  for (int n = 0; n < 10; n++) {
+    v.Add(-(1 << n));
+    v.Add(1 << n);
+    v.Add((1 << n) - 1);
+  }
+
+  // Check consistency with the scalar SInt32Size.
+  size_t expected = 0;
+  for (int i = 0; i < v.size(); i++) {
+    expected += WireFormatLite::SInt32Size(v[i]);
+  }
+
+  EXPECT_EQ(expected, WireFormatLite::SInt32Size(v));
+}
+
+TEST(RepeatedVarint, SInt64) {
+  RepeatedField<int64> v;
+
+  // Insert -2^n, 2^n and 2^n-1.
+  for (int n = 0; n < 10; n++) {
+    v.Add(-(1 << n));
+    v.Add(1 << n);
+    v.Add((1 << n) - 1);
+  }
+
+  // Check consistency with the scalar SInt64Size.
+  size_t expected = 0;
+  for (int i = 0; i < v.size(); i++) {
+    expected += WireFormatLite::SInt64Size(v[i]);
+  }
+
+  EXPECT_EQ(expected, WireFormatLite::SInt64Size(v));
+}
+
+TEST(RepeatedVarint, UInt32) {
+  RepeatedField<uint32> v;
+
+  // Insert 2^n and 2^n-1.
+  for (int n = 0; n < 10; n++) {
+    v.Add(1 << n);
+    v.Add((1 << n) - 1);
+  }
+
+  // Check consistency with the scalar UInt32Size.
+  size_t expected = 0;
+  for (int i = 0; i < v.size(); i++) {
+    expected += WireFormatLite::UInt32Size(v[i]);
+  }
+
+  EXPECT_EQ(expected, WireFormatLite::UInt32Size(v));
+}
+
+TEST(RepeatedVarint, UInt64) {
+  RepeatedField<uint64> v;
+
+  // Insert 2^n and 2^n-1.
+  for (int n = 0; n < 10; n++) {
+    v.Add(1 << n);
+    v.Add((1 << n) - 1);
+  }
+
+  // Check consistency with the scalar UInt64Size.
+  size_t expected = 0;
+  for (int i = 0; i < v.size(); i++) {
+    expected += WireFormatLite::UInt64Size(v[i]);
+  }
+
+  EXPECT_EQ(expected, WireFormatLite::UInt64Size(v));
+}
+
+TEST(RepeatedVarint, Enum) {
+  RepeatedField<int> v;
+
+  // Insert 2^n and 2^n-1.
+  for (int n = 0; n < 10; n++) {
+    v.Add(1 << n);
+    v.Add((1 << n) - 1);
+  }
+
+  // Check consistency with the scalar EnumSize.
+  size_t expected = 0;
+  for (int i = 0; i < v.size(); i++) {
+    expected += WireFormatLite::EnumSize(v[i]);
+  }
+
+  EXPECT_EQ(expected, WireFormatLite::EnumSize(v));
+}
+
 }  // namespace
 }  // namespace internal
 }  // namespace protobuf

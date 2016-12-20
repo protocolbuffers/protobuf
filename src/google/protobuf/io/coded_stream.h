@@ -140,6 +140,8 @@ namespace protobuf {
 class DescriptorPool;
 class MessageFactory;
 
+namespace internal { void MapTestForceDeterministic(); }
+
 namespace io {
 
 // Defined in this file.
@@ -867,6 +869,10 @@ class LIBPROTOBUF_EXPORT CodedOutputStream {
         default_serialization_deterministic_;
   }
 
+  static bool IsDefaultSerializationDeterministic() {
+    return default_serialization_deterministic_;
+  }
+
  private:
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(CodedOutputStream);
 
@@ -900,6 +906,8 @@ class LIBPROTOBUF_EXPORT CodedOutputStream {
   static size_t VarintSize32Fallback(uint32 value);
 
   // See above.  Other projects may use "friend" to allow them to call this.
+  // Requires: no protocol buffer serialization in progress.
+  friend void ::google::protobuf::internal::MapTestForceDeterministic();
   static void SetDefaultSerializationDeterministic() {
     default_serialization_deterministic_ = true;
   }

@@ -270,10 +270,8 @@ bool FileOutputStream::CopyingFileOutputStream::Write(
 
 // ===================================================================
 
-IstreamInputStream::IstreamInputStream(istream* input, int block_size)
-  : copying_input_(input),
-    impl_(&copying_input_, block_size) {
-}
+IstreamInputStream::IstreamInputStream(std::istream* input, int block_size)
+    : copying_input_(input), impl_(&copying_input_, block_size) {}
 
 IstreamInputStream::~IstreamInputStream() {}
 
@@ -294,9 +292,8 @@ int64 IstreamInputStream::ByteCount() const {
 }
 
 IstreamInputStream::CopyingIstreamInputStream::CopyingIstreamInputStream(
-    istream* input)
-  : input_(input) {
-}
+    std::istream* input)
+    : input_(input) {}
 
 IstreamInputStream::CopyingIstreamInputStream::~CopyingIstreamInputStream() {}
 
@@ -312,10 +309,8 @@ int IstreamInputStream::CopyingIstreamInputStream::Read(
 
 // ===================================================================
 
-OstreamOutputStream::OstreamOutputStream(ostream* output, int block_size)
-  : copying_output_(output),
-    impl_(&copying_output_, block_size) {
-}
+OstreamOutputStream::OstreamOutputStream(std::ostream* output, int block_size)
+    : copying_output_(output), impl_(&copying_output_, block_size) {}
 
 OstreamOutputStream::~OstreamOutputStream() {
   impl_.Flush();
@@ -334,9 +329,8 @@ int64 OstreamOutputStream::ByteCount() const {
 }
 
 OstreamOutputStream::CopyingOstreamOutputStream::CopyingOstreamOutputStream(
-    ostream* output)
-  : output_(output) {
-}
+    std::ostream* output)
+    : output_(output) {}
 
 OstreamOutputStream::CopyingOstreamOutputStream::~CopyingOstreamOutputStream() {
 }

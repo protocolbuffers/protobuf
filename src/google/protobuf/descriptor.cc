@@ -4114,6 +4114,14 @@ const FileDescriptor* DescriptorBuilder::BuildFileImpl(
       dependency = pool_->underlay_->FindFileByName(proto.dependency(i));
     }
 
+    if (dependency == result) {
+      // Recursive import.  dependency/result is not fully initialized, and it's
+      // dangerous to try to do anything with it.  The recursive import error
+      // will be detected and reported in DescriptorBuilder::BuildFile().
+      tables_->RollbackToLastCheckpoint();
+      return NULL;
+    }
+
     if (dependency == NULL) {
       if (pool_->allow_unknown_ ||
           (!pool_->enforce_weak_ && weak_deps.find(i) != weak_deps.end())) {

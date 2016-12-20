@@ -77,7 +77,7 @@ TEST(MessageTest, SerializeHelpers) {
 
   protobuf_unittest::TestAllTypes message;
   TestUtil::SetAllFields(&message);
-  stringstream stream;
+  std::stringstream stream;
 
   string str1("foo");
   string str2("bar");
@@ -101,7 +101,7 @@ TEST(MessageTest, SerializeHelpers) {
 }
 
 TEST(MessageTest, SerializeToBrokenOstream) {
-  ofstream out;
+  std::ofstream out;
   protobuf_unittest::TestAllTypes message;
   message.set_optional_int32(123);
 
@@ -155,7 +155,7 @@ TEST(MessageTest, ParseHelpers) {
   {
     // Test ParseFromIstream.
     protobuf_unittest::TestAllTypes message;
-    stringstream stream(data);
+    std::stringstream stream(data);
     EXPECT_TRUE(message.ParseFromIstream(&stream));
     EXPECT_TRUE(stream.eof());
     TestUtil::ExpectAllFieldsSet(message);

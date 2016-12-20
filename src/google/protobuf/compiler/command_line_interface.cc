@@ -116,6 +116,9 @@ static const char* kPathSeparator = ";";
 static const char* kPathSeparator = ":";
 #endif
 
+static const char* kDefaultDirectDependenciesViolationMsg =
+    "File is imported but not declared in --direct_dependencies: %s";
+
 // Returns true if the text looks like a Windows-style absolute path, starting
 // with a drive letter.  Example:  "C:\foo".  TODO(kenton):  Share this with
 // copy in importer.cc?
@@ -276,12 +279,13 @@ class CommandLineInterface::ErrorPrinter : public MultiFileErrorCollector,
                                            public io::ErrorCollector {
  public:
   ErrorPrinter(ErrorFormat format, DiskSourceTree *tree = NULL)
-    : format_(format), tree_(tree) {}
+    : format_(format), tree_(tree), found_errors_(false) {}
   ~ErrorPrinter() {}
 
   // implements MultiFileErrorCollector ------------------------------
   void AddError(const string& filename, int line, int column,
                 const string& message) {
+    found_errors_ = true;
     AddErrorOrWarning(filename, line, column, message, "error", std::cerr);
   }
 
@@ -299,10 +303,12 @@ class CommandLineInterface::ErrorPrinter : public MultiFileErrorCollector,
     AddErrorOrWarning("input", line, column, message, "warning", std::clog);
   }
 
+  bool FoundErrors() const { return found_errors_; }
+
  private:
-  void AddErrorOrWarning(
-      const string& filename, int line, int column,
-      const string& message, const string& type, ostream& out) {
+  void AddErrorOrWarning(const string& filename, int line, int column,
+                         const string& message, const string& type,
+                         std::ostream& out) {
     // Print full path when running under MSVS
     string dfile;
     if (format_ == CommandLineInterface::ERROR_FORMAT_MSVS &&
@@ -337,6 +343,7 @@ class CommandLineInterface::ErrorPrinter : public MultiFileErrorCollector,
 
   const ErrorFormat format_;
   DiskSourceTree *tree_;
+  bool found_errors_;
 };
 
 // -------------------------------------------------------------------
@@ -708,14 +715,17 @@ CommandLineInterface::MemoryOutputStream::~MemoryOutputStream() {
 // ===================================================================
 
 CommandLineInterface::CommandLineInterface()
-  : mode_(MODE_COMPILE),
-    print_mode_(PRINT_NONE),
-    error_format_(ERROR_FORMAT_GCC),
-    direct_dependencies_explicitly_set_(false),
-    imports_in_descriptor_set_(false),
-    source_info_in_descriptor_set_(false),
-    disallow_services_(false),
-    inputs_are_proto_path_relative_(false) {}
+    : mode_(MODE_COMPILE),
+      print_mode_(PRINT_NONE),
+      error_format_(ERROR_FORMAT_GCC),
+      direct_dependencies_explicitly_set_(false),
+      direct_dependencies_violation_msg_(
+          kDefaultDirectDependenciesViolationMsg),
+      imports_in_descriptor_set_(false),
+      source_info_in_descriptor_set_(false),
+      disallow_services_(false),
+      inputs_are_proto_path_relative_(false) {
+}
 CommandLineInterface::~CommandLineInterface() {}
 
 void CommandLineInterface::RegisterGenerator(const string& flag_name,
@@ -800,10 +810,11 @@ int CommandLineInterface::Run(int argc, const char* const argv[]) {
         if (direct_dependencies_.find(parsed_file->dependency(i)->name()) ==
             direct_dependencies_.end()) {
           indirect_imports = true;
-          cerr << parsed_file->name()
-               << ": File is imported but not declared in "
-               << "--direct_dependencies: "
-               << parsed_file->dependency(i)->name() << std::endl;
+          cerr << parsed_file->name() << ": "
+               << StringReplace(direct_dependencies_violation_msg_, "%s",
+                                parsed_file->dependency(i)->name(),
+                                true /* replace_all */)
+               << std::endl;
         }
       }
       if (indirect_imports) {
@@ -895,6 +906,10 @@ int CommandLineInterface::Run(int argc, const char* const argv[]) {
     }
   }
 
+  if (error_collector.FoundErrors()) {
+    return 1;
+  }
+
   if (mode_ == MODE_PRINT) {
     switch (print_mode_) {
       case PRINT_FREE_FIELDS:
@@ -924,6 +939,7 @@ void CommandLineInterface::Clear() {
   proto_path_.clear();
   input_files_.clear();
   direct_dependencies_.clear();
+  direct_dependencies_violation_msg_ = kDefaultDirectDependenciesViolationMsg;
   output_directives_.clear();
   codec_type_.clear();
   descriptor_set_name_.clear();
@@ -1208,6 +1224,9 @@ CommandLineInterface::InterpretArgument(const string& name,
         value, ":", true);
     GOOGLE_DCHECK(direct_dependencies_.empty());
     direct_dependencies_.insert(direct.begin(), direct.end());
+
+  } else if (name == "--direct_dependencies_violation_msg") {
+    direct_dependencies_violation_msg_ = value;
 
   } else if (name == "-o" || name == "--descriptor_set_out") {
     if (!descriptor_set_name_.empty()) {

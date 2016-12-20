@@ -107,11 +107,6 @@ class ExtensionSet;             // extension_set.h
 //   extensions_offset:  Offset in the message of the ExtensionSet for the
 //                  message, or -1 if the message type has no extension
 //                  ranges.
-//   default_oneof_instance: The default instance of the oneofs. It is a
-//                  struct holding the default value of all oneof fields
-//                  for this message. It is only used to obtain pointers
-//                  to default instances of oneof fields, which Get
-//                  methods will return if the field is not set.
 //   oneof_case_offset:  Offset in the message of an array of uint32s of
 //                  size descriptor->oneof_decl_count().  Each uint32
 //                  indicates what field is set for each oneof.
@@ -160,8 +155,8 @@ struct ReflectionSchema {
     return has_bits_offset_;
   }
 
-  // The offset of the InternalMetadataWithArenaOffset member.
-  // For Lite this will actually be an InternalMetadataWithArenaOffsetLite.
+  // The offset of the InternalMetadataWithArena member.
+  // For Lite this will actually be an InternalMetadataWithArenaLite.
   // The schema doesn't contain enough information to distinguish between
   // these two cases.
   uint32 GetMetadataOffset() const {
@@ -177,6 +172,10 @@ struct ReflectionSchema {
     return extensions_offset_;
   }
 
+  // The off set of WeakFieldMap when the message contains weak fields.
+  // The default is 0 for now.
+  int GetWeakFieldMapOffset() const { return weak_field_map_offset_; }
+
   bool IsDefaultInstance(const Message& message) const {
     return &message == default_instance_;
   }
@@ -184,10 +183,7 @@ struct ReflectionSchema {
   // Returns a pointer to the default value for this field.  The size and type
   // of the underlying data depends on the field's type.
   const void *GetFieldDefault(const FieldDescriptor* field) const {
-    return field->containing_oneof()
-               ? reinterpret_cast<const uint8*>(default_oneof_instance_) +
-                     offsets_[field->index()]
-               : reinterpret_cast<const uint8*>(default_instance_) +
+    return reinterpret_cast<const uint8*>(default_instance_) +
                      offsets_[field->index()];
   }
 
@@ -203,9 +199,9 @@ struct ReflectionSchema {
   int has_bits_offset_;
   int metadata_offset_;
   int extensions_offset_;
-  const void* default_oneof_instance_;
   int oneof_case_offset_;
   int object_size_;
+  int weak_field_map_offset_;
 };
 
 // Structs that the code generator emits directly to describe a message.
@@ -214,11 +210,6 @@ struct ReflectionSchema {
 //
 // EXPERIMENTAL: these are changing rapidly, and may completely disappear
 // or merge with ReflectionSchema.
-struct DefaultInstanceData {
-  const Message* default_instance;
-  const void* default_oneof_instance;
-};
-
 struct MigrationSchema {
   int32 offsets_index;
   int32 has_bit_indices_index;
@@ -249,7 +240,8 @@ struct MigrationSchema {
 //    of whatever type the individual field would be.  Strings and
 //    Messages use RepeatedPtrFields while everything else uses
 //    RepeatedFields.
-class LIBPROTOBUF_EXPORT GeneratedMessageReflection PROTOBUF_FINAL : public Reflection {
+class LIBPROTOBUF_EXPORT GeneratedMessageReflection PROTOBUF_FINAL
+    : public Reflection {
  public:
   // Constructs a GeneratedMessageReflection.
   // Parameters:
@@ -497,21 +489,6 @@ class LIBPROTOBUF_EXPORT GeneratedMessageReflection PROTOBUF_FINAL : public Refl
   const DescriptorPool* const descriptor_pool_;
   MessageFactory* const message_factory_;
 
-  // To parse directly into a proto2 generated class, the class GMR_Handlers
-  // needs access to member offsets and hasbits.
-  // upb still needs these.
-  // TODO(haberman) clean this up.
-  const Message* const default_instance_;
-  const void* const default_oneof_instance_;
-  const uint32* const offsets_;
-  const uint32* const has_bits_indices_;
-  const int has_bits_offset_;
-  const int oneof_case_offset_;
-  const int unknown_fields_offset_;
-  const int extensions_offset_;
-  const int arena_offset_;
-  const int object_size_;
-
   template <class T>
   const T& GetRawNonOneof(const Message& message,
                           const FieldDescriptor* field) const;
@@ -741,15 +718,7 @@ T* DynamicCastToGenerated(Message* from) {
 
 LIBPROTOBUF_EXPORT void AssignDescriptors(
     const string& filename, const MigrationSchema* schemas,
-    const DefaultInstanceData* default_instance_data, const uint32* offsets,
-    MessageFactory* factory,
-    // update the following descriptor arrays.
-    Metadata* file_level_metadata,
-    const EnumDescriptor** file_level_enum_descriptors,
-    const ServiceDescriptor** file_level_service_descriptors);
-
-LIBPROTOBUF_EXPORT void AssignDescriptors(
-    const string& filename, const ReflectionSchema* schemas,
+    const Message* const* default_instances_, const uint32* offsets,
     MessageFactory* factory,
     // update the following descriptor arrays.
     Metadata* file_level_metadata,

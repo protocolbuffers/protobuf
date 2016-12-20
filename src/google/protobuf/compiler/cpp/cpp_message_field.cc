@@ -487,9 +487,6 @@ GenerateClearingCode(io::Printer* printer) const {
 
 void MessageFieldGenerator::
 GenerateMessageClearingCode(io::Printer* printer) const {
-  std::map<string, string> variables(variables_);
-  variables["type"] = FieldMessageTypeName(descriptor_);
-
   if (!HasFieldPresence(descriptor_->file())) {
     // If we don't have has-bits, message presence is indicated only by ptr !=
     // NULL. Thus on clear, we need to delete the object.
@@ -1034,7 +1031,6 @@ GenerateInlineAccessorDefinitions(io::Printer* printer,
       "  return $name$_.Add();\n"
       "}\n");
   }
-
 
   if (!dependent_field_) {
     printer->Print(variables,

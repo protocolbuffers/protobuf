@@ -449,14 +449,17 @@ class LIBPROTOBUF_EXPORT Arena {
     }
   }
 
-  // Returns the total space used by the arena, which is the sums of the sizes
-  // of the underlying blocks. The total space used may not include the new
-  // blocks that are allocated by this arena from other threads concurrently
-  // with the call to this method.
-  GOOGLE_ATTRIBUTE_NOINLINE uint64 SpaceAllocated() const;
-  // As above, but does not include any free space in underlying blocks.
+  // Returns the total space allocated by the arena, which is the sum of the
+  // sizes of the underlying blocks. This method is relatively fast; a counter
+  // is kept as blocks are allocated.
+  uint64 SpaceAllocated() const;
+  // Returns the total space used by the arena. Similar to SpaceAllocated but
+  // does not include free space and block overhead. The total space returned
+  // may not include space used by other threads executing concurrently with
+  // the call to this method.
   GOOGLE_ATTRIBUTE_NOINLINE uint64 SpaceUsed() const;
-
+  // DEPRECATED. Please use SpaceAllocated() and SpaceUsed().
+  //
   // Combines SpaceAllocated and SpaceUsed. Returns a pair of
   // <space_allocated, space_used>.
   GOOGLE_ATTRIBUTE_NOINLINE std::pair<uint64, uint64> SpaceAllocatedAndUsed() const;
@@ -884,8 +887,9 @@ class LIBPROTOBUF_EXPORT Arena {
 
   int64 lifecycle_id_;  // Unique for each arena. Changes on Reset().
 
-  google::protobuf::internal::AtomicWord blocks_;  // Head of linked list of all allocated blocks
-  google::protobuf::internal::AtomicWord hint_;    // Fast thread-local block access
+  google::protobuf::internal::AtomicWord blocks_;       // Head of linked list of all allocated blocks
+  google::protobuf::internal::AtomicWord hint_;         // Fast thread-local block access
+  uint64 space_allocated_;  // Sum of sizes of all allocated blocks.
 
   // Node contains the ptr of the object to be cleaned up and the associated
   // cleanup function ptr.
@@ -899,7 +903,7 @@ class LIBPROTOBUF_EXPORT Arena {
                              // ptrs and cleanup methods.
 
   bool owns_first_block_;    // Indicates that arena owns the first block
-  Mutex blocks_lock_;
+  mutable Mutex blocks_lock_;
 
   void AddBlock(Block* b);
   // Access must be synchronized, either by blocks_lock_ or by being called from

@@ -928,10 +928,10 @@ void ImmutableMessageLiteGenerator::GenerateDynamicMethodMergeFromStream(
       "com.google.protobuf.CodedInputStream input =\n"
       "    (com.google.protobuf.CodedInputStream) arg0;\n"
       "com.google.protobuf.ExtensionRegistryLite extensionRegistry =\n"
-      "    (com.google.protobuf.ExtensionRegistryLite) arg1;\n"
+      "    (com.google.protobuf.ExtensionRegistryLite) arg1;\n");
+  printer->Print(
       "try {\n");
   printer->Indent();
-
   printer->Print(
     "boolean done = false;\n"
     "while (!done) {\n");
