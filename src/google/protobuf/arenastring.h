@@ -210,6 +210,16 @@ struct LIBPROTOBUF_EXPORT ArenaStringPtr {
     }
   }
 
+#if LANG_CXX11
+  void SetNoArena(const ::std::string* default_value, ::std::string&& value) {
+    if (IsDefault(default_value)) {
+      ptr_ = new ::std::string(std::move(value));
+    } else {
+      *ptr_ = std::move(value);
+    }
+  }
+#endif
+
   void AssignWithDefault(const ::std::string* default_value, ArenaStringPtr value);
 
   inline const ::std::string& GetNoArena() const { return *ptr_; }

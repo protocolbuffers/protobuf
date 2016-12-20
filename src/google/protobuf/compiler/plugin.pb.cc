@@ -651,6 +651,14 @@ void Version::set_suffix(const ::std::string& value) {
   suffix_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
   // @@protoc_insertion_point(field_set:google.protobuf.compiler.Version.suffix)
 }
+#if LANG_CXX11
+void Version::set_suffix(::std::string&& value) {
+  set_has_suffix();
+  suffix_.SetNoArena(
+    &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
+  // @@protoc_insertion_point(field_set_rvalue:google.protobuf.compiler.Version.suffix)
+}
+#endif
 void Version::set_suffix(const char* value) {
   set_has_suffix();
   suffix_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
@@ -1158,6 +1166,14 @@ void CodeGeneratorRequest::set_parameter(const ::std::string& value) {
   parameter_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
   // @@protoc_insertion_point(field_set:google.protobuf.compiler.CodeGeneratorRequest.parameter)
 }
+#if LANG_CXX11
+void CodeGeneratorRequest::set_parameter(::std::string&& value) {
+  set_has_parameter();
+  parameter_.SetNoArena(
+    &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
+  // @@protoc_insertion_point(field_set_rvalue:google.protobuf.compiler.CodeGeneratorRequest.parameter)
+}
+#endif
 void CodeGeneratorRequest::set_parameter(const char* value) {
   set_has_parameter();
   parameter_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
@@ -1662,6 +1678,14 @@ void CodeGeneratorResponse_File::set_name(const ::std::string& value) {
   name_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
   // @@protoc_insertion_point(field_set:google.protobuf.compiler.CodeGeneratorResponse.File.name)
 }
+#if LANG_CXX11
+void CodeGeneratorResponse_File::set_name(::std::string&& value) {
+  set_has_name();
+  name_.SetNoArena(
+    &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
+  // @@protoc_insertion_point(field_set_rvalue:google.protobuf.compiler.CodeGeneratorResponse.File.name)
+}
+#endif
 void CodeGeneratorResponse_File::set_name(const char* value) {
   set_has_name();
   name_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
@@ -1716,6 +1740,14 @@ void CodeGeneratorResponse_File::set_insertion_point(const ::std::string& value)
   insertion_point_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
   // @@protoc_insertion_point(field_set:google.protobuf.compiler.CodeGeneratorResponse.File.insertion_point)
 }
+#if LANG_CXX11
+void CodeGeneratorResponse_File::set_insertion_point(::std::string&& value) {
+  set_has_insertion_point();
+  insertion_point_.SetNoArena(
+    &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
+  // @@protoc_insertion_point(field_set_rvalue:google.protobuf.compiler.CodeGeneratorResponse.File.insertion_point)
+}
+#endif
 void CodeGeneratorResponse_File::set_insertion_point(const char* value) {
   set_has_insertion_point();
   insertion_point_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
@@ -1770,6 +1802,14 @@ void CodeGeneratorResponse_File::set_content(const ::std::string& value) {
   content_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
   // @@protoc_insertion_point(field_set:google.protobuf.compiler.CodeGeneratorResponse.File.content)
 }
+#if LANG_CXX11
+void CodeGeneratorResponse_File::set_content(::std::string&& value) {
+  set_has_content();
+  content_.SetNoArena(
+    &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
+  // @@protoc_insertion_point(field_set_rvalue:google.protobuf.compiler.CodeGeneratorResponse.File.content)
+}
+#endif
 void CodeGeneratorResponse_File::set_content(const char* value) {
   set_has_content();
   content_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
@@ -2117,6 +2157,14 @@ void CodeGeneratorResponse::set_error(const ::std::string& value) {
   error_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
   // @@protoc_insertion_point(field_set:google.protobuf.compiler.CodeGeneratorResponse.error)
 }
+#if LANG_CXX11
+void CodeGeneratorResponse::set_error(::std::string&& value) {
+  set_has_error();
+  error_.SetNoArena(
+    &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
+  // @@protoc_insertion_point(field_set_rvalue:google.protobuf.compiler.CodeGeneratorResponse.error)
+}
+#endif
 void CodeGeneratorResponse::set_error(const char* value) {
   set_has_error();
   error_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
