@@ -221,9 +221,8 @@ class MapEntryLite : public MessageLite {
                                                     deterministic, output);
     return output;
   }
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const {
-    return InternalSerializeWithCachedSizesToArray(false, output);
-  }
+
+  // Don't override SerializeWithCachedSizesToArray.  Use MessageLite's.
 
   int GetCachedSize() const {
     int size = 0;

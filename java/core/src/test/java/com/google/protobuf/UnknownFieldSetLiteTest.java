@@ -53,6 +53,14 @@ public class UnknownFieldSetLiteTest extends TestCase {
     assertEquals(ByteString.EMPTY, toByteString(unknownFields));
   }
 
+  public void testEmptyInstance() {
+    UnknownFieldSetLite instance = UnknownFieldSetLite.newInstance();
+
+    assertEquals(0, instance.getSerializedSize());
+    assertEquals(ByteString.EMPTY, toByteString(instance));
+    assertEquals(UnknownFieldSetLite.getDefaultInstance(), instance);
+  }
+
   public void testMergeFieldFrom() throws IOException {
     Foo foo = Foo.newBuilder()
       .setValue(2)

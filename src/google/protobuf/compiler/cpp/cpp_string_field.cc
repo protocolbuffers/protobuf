@@ -141,7 +141,16 @@ GenerateAccessorDeclarations(io::Printer* printer) const {
 
   printer->Print(variables_,
     "$deprecated_attr$const ::std::string& $name$() const;\n"
-    "$deprecated_attr$void set_$name$(const ::std::string& value);\n"
+    "$deprecated_attr$void set_$name$(const ::std::string& value);\n");
+
+  if (!SupportsArenas(descriptor_)) {
+    printer->Print(variables_,
+      "#if LANG_CXX11\n"
+      "$deprecated_attr$void set_$name$(::std::string&& value);\n"
+      "#endif\n");
+  }
+
+  printer->Print(variables_,
     "$deprecated_attr$void set_$name$(const char* value);\n"
     "$deprecated_attr$void set_$name$(const $pointer_type$* value, size_t size)"
                  ";\n"
@@ -249,6 +258,14 @@ GenerateInlineAccessorDefinitions(io::Printer* printer,
         "  $name$_.SetNoArena($default_variable$, value);\n"
         "  // @@protoc_insertion_point(field_set:$full_name$)\n"
         "}\n"
+        "#if LANG_CXX11\n"
+        "$inline$void $classname$::set_$name$(::std::string&& value) {\n"
+        "  $set_hasbit$\n"
+        "  $name$_.SetNoArena(\n"
+        "    $default_variable$, std::move(value));\n"
+        "  // @@protoc_insertion_point(field_set_rvalue:$full_name$)\n"
+        "}\n"
+        "#endif\n"
         "$inline$void $classname$::set_$name$(const char* value) {\n"
         "  $set_hasbit$\n"
         "  $name$_.SetNoArena($default_variable$, $string_piece$(value));\n"
@@ -633,6 +650,19 @@ GenerateInlineAccessorDefinitions(io::Printer* printer,
         "  $oneof_prefix$$name$_.SetNoArena($default_variable$, value);\n"
         "  // @@protoc_insertion_point(field_set:$full_name$)\n"
         "}\n"
+        "#if LANG_CXX11\n"
+        "$inline$void $classname$::set_$name$(::std::string&& value) {\n"
+        "  // @@protoc_insertion_point(field_set:$full_name$)\n"
+        "  if (!has_$name$()) {\n"
+        "    clear_$oneof_name$();\n"
+        "    set_has_$name$();\n"
+        "    $oneof_prefix$$name$_.UnsafeSetDefault($default_variable$);\n"
+        "  }\n"
+        "  $oneof_prefix$$name$_.SetNoArena(\n"
+        "    $default_variable$, std::move(value));\n"
+        "  // @@protoc_insertion_point(field_set_rvalue:$full_name$)\n"
+        "}\n"
+        "#endif\n"
         "$inline$void $classname$::set_$name$(const char* value) {\n"
         "  if (!has_$name$()) {\n"
         "    clear_$oneof_name$();\n"
@@ -732,7 +762,7 @@ void StringOneofFieldGenerator::
 GenerateConstructorCode(io::Printer* printer) const {
   printer->Print(
       variables_,
-      "$classname$_default_oneof_instance_.$name$_.UnsafeSetDefault(\n"
+      "_$classname$_default_instance_.$name$_.UnsafeSetDefault(\n"
       "    $default_variable$);\n");
 }
 
@@ -808,9 +838,7 @@ GenerateAccessorDeclarations(io::Printer* printer) const {
     "$deprecated_attr$void add_$name$(const ::std::string& value);\n"
     "$deprecated_attr$void add_$name$(const char* value);\n"
     "$deprecated_attr$void add_$name$(const $pointer_type$* value, size_t size)"
-                 ";\n");
-
-  printer->Print(variables_,
+                 ";\n"
     "$deprecated_attr$const ::google::protobuf::RepeatedPtrField< ::std::string>& $name$() "
                  "const;\n"
     "$deprecated_attr$::google::protobuf::RepeatedPtrField< ::std::string>* mutable_$name$()"
@@ -868,8 +896,7 @@ GenerateInlineAccessorDefinitions(io::Printer* printer,
     "$classname$::add_$name$(const $pointer_type$* value, size_t size) {\n"
     "  $name$_.Add()->assign(reinterpret_cast<const char*>(value), size);\n"
     "  // @@protoc_insertion_point(field_add_pointer:$full_name$)\n"
-    "}\n");
-  printer->Print(variables,
+    "}\n"
     "$inline$const ::google::protobuf::RepeatedPtrField< ::std::string>&\n"
     "$classname$::$name$() const {\n"
     "  // @@protoc_insertion_point(field_list:$full_name$)\n"

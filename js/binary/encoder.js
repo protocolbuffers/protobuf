@@ -452,9 +452,9 @@ jspb.BinaryEncoder.prototype.writeFixedHash64 = function(hash) {
  */
 jspb.BinaryEncoder.prototype.writeString = function(value) {
   var oldLength = this.buffer_.length;
- 
+
   for (var i = 0; i < value.length; i++) {
-    
+
     var c = value.charCodeAt(i);
 
     if (c < 128) {

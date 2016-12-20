@@ -2342,8 +2342,10 @@ PyObject* InternalGetSubMessage(
   const Message& sub_message = reflection->GetMessage(
       *self->message, field_descriptor, factory->message_factory);
 
-  CMessageClass* message_class = message_factory::GetMessageClass(
+  CMessageClass* message_class = message_factory::GetOrCreateMessageClass(
       factory, field_descriptor->message_type());
+  ScopedPyObjectPtr message_class_handler(
+      reinterpret_cast<PyObject*>(message_class));
   if (message_class == NULL) {
     return NULL;
   }

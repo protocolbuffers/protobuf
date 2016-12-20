@@ -19,6 +19,7 @@
 #error regenerate this file with a newer version of protoc.
 #endif
 
+#include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/arena.h>
 #include <google/protobuf/arenastring.h>
 #include <google/protobuf/generated_message_util.h>
@@ -39,9 +40,16 @@ extern SourceContextDefaultTypeInternal _SourceContext_default_instance_;
 namespace google {
 namespace protobuf {
 
+namespace protobuf_google_2fprotobuf_2fsource_5fcontext_2eproto {
 // Internal implementation detail -- do not call these.
-void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2fsource_5fcontext_2eproto();
-void LIBPROTOBUF_EXPORT protobuf_InitDefaults_google_2fprotobuf_2fsource_5fcontext_2eproto();
+struct LIBPROTOBUF_EXPORT TableStruct {
+  static const ::google::protobuf::uint32 offsets[];
+  static void InitDefaultsImpl();
+  static void Shutdown();
+};
+void LIBPROTOBUF_EXPORT AddDescriptors();
+void LIBPROTOBUF_EXPORT InitDefaults();
+}  // namespace protobuf_google_2fprotobuf_2fsource_5fcontext_2eproto
 
 // ===================================================================
 
@@ -88,7 +96,8 @@ class LIBPROTOBUF_EXPORT SourceContext : public ::google::protobuf::Message /* @
       bool deterministic, ::google::protobuf::uint8* target) const PROTOBUF_FINAL;
   ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output)
       const PROTOBUF_FINAL {
-    return InternalSerializeWithCachedSizesToArray(false, output);
+    return InternalSerializeWithCachedSizesToArray(
+        ::google::protobuf::io::CodedOutputStream::IsDefaultSerializationDeterministic(), output);
   }
   int GetCachedSize() const PROTOBUF_FINAL { return _cached_size_; }
   private:
@@ -116,6 +125,9 @@ class LIBPROTOBUF_EXPORT SourceContext : public ::google::protobuf::Message /* @
   static const int kFileNameFieldNumber = 1;
   const ::std::string& file_name() const;
   void set_file_name(const ::std::string& value);
+  #if LANG_CXX11
+  void set_file_name(::std::string&& value);
+  #endif
   void set_file_name(const char* value);
   void set_file_name(const char* value, size_t size);
   ::std::string* mutable_file_name();
@@ -128,11 +140,7 @@ class LIBPROTOBUF_EXPORT SourceContext : public ::google::protobuf::Message /* @
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
   ::google::protobuf::internal::ArenaStringPtr file_name_;
   mutable int _cached_size_;
-  friend void LIBPROTOBUF_EXPORT protobuf_InitDefaults_google_2fprotobuf_2fsource_5fcontext_2eproto_impl();
-  friend void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2fsource_5fcontext_2eproto_impl();
-  friend const ::google::protobuf::uint32* protobuf_Offsets_google_2fprotobuf_2fsource_5fcontext_2eproto();
-  friend void protobuf_ShutdownFile_google_2fprotobuf_2fsource_5fcontext_2eproto();
-
+  friend struct LIBPROTOBUF_EXPORT protobuf_google_2fprotobuf_2fsource_5fcontext_2eproto::TableStruct;
 };
 // ===================================================================
 
@@ -155,6 +163,14 @@ inline void SourceContext::set_file_name(const ::std::string& value) {
   file_name_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
   // @@protoc_insertion_point(field_set:google.protobuf.SourceContext.file_name)
 }
+#if LANG_CXX11
+inline void SourceContext::set_file_name(::std::string&& value) {
+  
+  file_name_.SetNoArena(
+    &::google::protobuf::internal::GetEmptyStringAlreadyInited(), std::move(value));
+  // @@protoc_insertion_point(field_set_rvalue:google.protobuf.SourceContext.file_name)
+}
+#endif
 inline void SourceContext::set_file_name(const char* value) {
   
   file_name_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));

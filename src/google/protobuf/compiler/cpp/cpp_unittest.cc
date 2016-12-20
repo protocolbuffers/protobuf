@@ -53,6 +53,7 @@
 #include <vector>
 
 #include <google/protobuf/unittest.pb.h>
+#include <google/protobuf/unittest_no_arena.pb.h>
 #include <google/protobuf/unittest_optimize_for.pb.h>
 #include <google/protobuf/unittest_embed_optimize_for.pb.h>
 #if !defined(GOOGLE_PROTOBUF_CMAKE_BUILD) && !defined(_MSC_VER)
@@ -419,6 +420,51 @@ TEST(GeneratedMessageTest, StringCharStarLength) {
   message.set_repeated_string(0, "wxyz", 2);
   EXPECT_EQ("wx", message.repeated_string(0));
 }
+
+#if LANG_CXX11
+TEST(GeneratedMessageTest, StringMove) {
+  // Verify that we trigger the move behavior on a scalar setter.
+  protobuf_unittest_no_arena::TestAllTypes message;
+  {
+    string tmp(32, 'a');
+
+    const char* old_data = tmp.data();
+    message.set_optional_string(std::move(tmp));
+    const char* new_data = message.optional_string().data();
+
+    EXPECT_EQ(old_data, new_data);
+    EXPECT_EQ(string(32, 'a'), message.optional_string());
+
+    string tmp2(32, 'b');
+    old_data = tmp2.data();
+    message.set_optional_string(std::move(tmp2));
+    new_data = message.optional_string().data();
+
+    EXPECT_EQ(old_data, new_data);
+    EXPECT_EQ(string(32, 'b'), message.optional_string());
+  }
+
+  // Verify that we trigger the move behavior on a oneof setter.
+  {
+    string tmp(32, 'a');
+
+    const char* old_data = tmp.data();
+    message.set_oneof_string(std::move(tmp));
+    const char* new_data = message.oneof_string().data();
+
+    EXPECT_EQ(old_data, new_data);
+    EXPECT_EQ(string(32, 'a'), message.oneof_string());
+
+    string tmp2(32, 'b');
+    old_data = tmp2.data();
+    message.set_oneof_string(std::move(tmp2));
+    new_data = message.oneof_string().data();
+
+    EXPECT_EQ(old_data, new_data);
+    EXPECT_EQ(string(32, 'b'), message.oneof_string());
+  }
+}
+#endif
 
 
 TEST(GeneratedMessageTest, CopyFrom) {

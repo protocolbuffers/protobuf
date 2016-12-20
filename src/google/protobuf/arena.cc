@@ -62,6 +62,7 @@ void Arena::Init() {
   lifecycle_id_ = lifecycle_id_generator_.GetNext();
   blocks_ = 0;
   hint_ = 0;
+  space_allocated_ = 0;
   owns_first_block_ = true;
   cleanup_list_ = 0;
 
@@ -157,6 +158,7 @@ void Arena::AddBlockInternal(Block* b) {
     // Direct future allocations to this block.
     google::protobuf::internal::Release_Store(&hint_, reinterpret_cast<google::protobuf::internal::AtomicWord>(b));
   }
+  space_allocated_ += b->size;
 }
 
 void Arena::AddListNode(void* elem, void (*cleanup)(void*)) {
@@ -225,13 +227,8 @@ void* Arena::SlowAlloc(size_t n) {
 }
 
 uint64 Arena::SpaceAllocated() const {
-  uint64 space_allocated = 0;
-  Block* b = reinterpret_cast<Block*>(google::protobuf::internal::NoBarrier_Load(&blocks_));
-  while (b != NULL) {
-    space_allocated += (b->size);
-    b = b->next;
-  }
-  return space_allocated;
+  MutexLock l(&blocks_lock_);
+  return space_allocated_;
 }
 
 uint64 Arena::SpaceUsed() const {
@@ -245,16 +242,7 @@ uint64 Arena::SpaceUsed() const {
 }
 
 std::pair<uint64, uint64> Arena::SpaceAllocatedAndUsed() const {
-  uint64 allocated = 0;
-  uint64 used = 0;
-
-  Block* b = reinterpret_cast<Block*>(google::protobuf::internal::NoBarrier_Load(&blocks_));
-  while (b != NULL) {
-    allocated += b->size;
-    used += (b->pos - kHeaderSize);
-    b = b->next;
-  }
-  return std::make_pair(allocated, used);
+  return std::make_pair(SpaceAllocated(), SpaceUsed());
 }
 
 uint64 Arena::FreeBlocks() {
@@ -288,6 +276,7 @@ uint64 Arena::FreeBlocks() {
   }
   blocks_ = 0;
   hint_ = 0;
+  space_allocated_ = 0;
   if (!owns_first_block_) {
     // Make the first block that was passed in through ArenaOptions
     // available for reuse.

@@ -46,7 +46,7 @@
 #include <google/protobuf/has_bits.h>
 
 #ifndef PROTOBUF_FINAL
-#if __cplusplus >= 201103L
+#if LANG_CXX11
 #define PROTOBUF_FINAL final
 #else
 #define PROTOBUF_FINAL
@@ -99,7 +99,7 @@ class ExplicitlyConstructed {
     }
   }
 
-#if __cplusplus >= 201103L
+#if LANG_CXX11
   constexpr
 #endif
       const T&

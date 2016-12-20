@@ -19,6 +19,7 @@
 #error regenerate this file with a newer version of protoc.
 #endif
 
+#include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/arena.h>
 #include <google/protobuf/arenastring.h>
 #include <google/protobuf/generated_message_util.h>
@@ -40,9 +41,16 @@ extern AnyDefaultTypeInternal _Any_default_instance_;
 namespace google {
 namespace protobuf {
 
+namespace protobuf_google_2fprotobuf_2fany_2eproto {
 // Internal implementation detail -- do not call these.
-void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2fany_2eproto();
-void LIBPROTOBUF_EXPORT protobuf_InitDefaults_google_2fprotobuf_2fany_2eproto();
+struct LIBPROTOBUF_EXPORT TableStruct {
+  static const ::google::protobuf::uint32 offsets[];
+  static void InitDefaultsImpl();
+  static void Shutdown();
+};
+void LIBPROTOBUF_EXPORT AddDescriptors();
+void LIBPROTOBUF_EXPORT InitDefaults();
+}  // namespace protobuf_google_2fprotobuf_2fany_2eproto
 
 // ===================================================================
 
@@ -99,7 +107,8 @@ class LIBPROTOBUF_EXPORT Any : public ::google::protobuf::Message /* @@protoc_in
       bool deterministic, ::google::protobuf::uint8* target) const PROTOBUF_FINAL;
   ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output)
       const PROTOBUF_FINAL {
-    return InternalSerializeWithCachedSizesToArray(false, output);
+    return InternalSerializeWithCachedSizesToArray(
+        ::google::protobuf::io::CodedOutputStream::IsDefaultSerializationDeterministic(), output);
   }
   int GetCachedSize() const PROTOBUF_FINAL { return _cached_size_; }
   private:
@@ -127,6 +136,9 @@ class LIBPROTOBUF_EXPORT Any : public ::google::protobuf::Message /* @@protoc_in
   static const int kTypeUrlFieldNumber = 1;
   const ::std::string& type_url() const;
   void set_type_url(const ::std::string& value);
+  #if LANG_CXX11
+  void set_type_url(::std::string&& value);
+  #endif
   void set_type_url(const char* value);
   void set_type_url(const char* value, size_t size);
   ::std::string* mutable_type_url();
@@ -138,6 +150,9 @@ class LIBPROTOBUF_EXPORT Any : public ::google::protobuf::Message /* @@protoc_in
   static const int kValueFieldNumber = 2;
   const ::std::string& value() const;
   void set_value(const ::std::string& value);
+  #if LANG_CXX11
+  void set_value(::std::string&& value);
+  #endif
   void set_value(const char* value);
   void set_value(const void* value, size_t size);
   ::std::string* mutable_value();
@@ -152,11 +167,7 @@ class LIBPROTOBUF_EXPORT Any : public ::google::protobuf::Message /* @@protoc_in
   ::google::protobuf::internal::ArenaStringPtr value_;
   mutable int _cached_size_;
   ::google::protobuf::internal::AnyMetadata _any_metadata_;
-  friend void LIBPROTOBUF_EXPORT protobuf_InitDefaults_google_2fprotobuf_2fany_2eproto_impl();
-  friend void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2fany_2eproto_impl();
-  friend const ::google::protobuf::uint32* protobuf_Offsets_google_2fprotobuf_2fany_2eproto();
-  friend void protobuf_ShutdownFile_google_2fprotobuf_2fany_2eproto();
-
+  friend struct LIBPROTOBUF_EXPORT protobuf_google_2fprotobuf_2fany_2eproto::TableStruct;
 };
 // ===================================================================
 
@@ -179,6 +190,14 @@ inline void Any::set_type_url(const ::std::string& value) {
   type_url_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
   // @@protoc_insertion_point(field_set:google.protobuf.Any.type_url)
 }
+#if LANG_CXX11
+inline void Any::set_type_url(::std::string&& value) {
+  
+  type_url_.SetNoArena(
+    &::google::protobuf::internal::GetEmptyStringAlreadyInited(), std::move(value));
+  // @@protoc_insertion_point(field_set_rvalue:google.protobuf.Any.type_url)
+}
+#endif
 inline void Any::set_type_url(const char* value) {
   
   type_url_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
@@ -223,6 +242,14 @@ inline void Any::set_value(const ::std::string& value) {
   value_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
   // @@protoc_insertion_point(field_set:google.protobuf.Any.value)
 }
+#if LANG_CXX11
+inline void Any::set_value(::std::string&& value) {
+  
+  value_.SetNoArena(
+    &::google::protobuf::internal::GetEmptyStringAlreadyInited(), std::move(value));
+  // @@protoc_insertion_point(field_set_rvalue:google.protobuf.Any.value)
+}
+#endif
 inline void Any::set_value(const char* value) {
   
   value_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));

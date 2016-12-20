@@ -251,7 +251,6 @@ class MapEntry : public MapEntryBase {
         GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(MapEntry, entry_lite_._has_bits_),
         GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(MapEntry, _internal_metadata_),
         -1,
-        NULL,
         -1,
         sizeof(MapEntry)};
     const Reflection* reflection = new GeneratedMessageReflection(

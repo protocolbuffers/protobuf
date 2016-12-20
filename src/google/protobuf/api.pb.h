@@ -19,6 +19,7 @@
 #error regenerate this file with a newer version of protoc.
 #endif
 
+#include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/arena.h>
 #include <google/protobuf/arenastring.h>
 #include <google/protobuf/generated_message_util.h>
@@ -65,9 +66,16 @@ extern TypeDefaultTypeInternal _Type_default_instance_;
 namespace google {
 namespace protobuf {
 
+namespace protobuf_google_2fprotobuf_2fapi_2eproto {
 // Internal implementation detail -- do not call these.
-void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2fapi_2eproto();
-void LIBPROTOBUF_EXPORT protobuf_InitDefaults_google_2fprotobuf_2fapi_2eproto();
+struct LIBPROTOBUF_EXPORT TableStruct {
+  static const ::google::protobuf::uint32 offsets[];
+  static void InitDefaultsImpl();
+  static void Shutdown();
+};
+void LIBPROTOBUF_EXPORT AddDescriptors();
+void LIBPROTOBUF_EXPORT InitDefaults();
+}  // namespace protobuf_google_2fprotobuf_2fapi_2eproto
 
 // ===================================================================
 
@@ -114,7 +122,8 @@ class LIBPROTOBUF_EXPORT Api : public ::google::protobuf::Message /* @@protoc_in
       bool deterministic, ::google::protobuf::uint8* target) const PROTOBUF_FINAL;
   ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output)
       const PROTOBUF_FINAL {
-    return InternalSerializeWithCachedSizesToArray(false, output);
+    return InternalSerializeWithCachedSizesToArray(
+        ::google::protobuf::io::CodedOutputStream::IsDefaultSerializationDeterministic(), output);
   }
   int GetCachedSize() const PROTOBUF_FINAL { return _cached_size_; }
   private:
@@ -136,17 +145,6 @@ class LIBPROTOBUF_EXPORT Api : public ::google::protobuf::Message /* @@protoc_in
   // nested types ----------------------------------------------------
 
   // accessors -------------------------------------------------------
-
-  // string name = 1;
-  void clear_name();
-  static const int kNameFieldNumber = 1;
-  const ::std::string& name() const;
-  void set_name(const ::std::string& value);
-  void set_name(const char* value);
-  void set_name(const char* value, size_t size);
-  ::std::string* mutable_name();
-  ::std::string* release_name();
-  void set_allocated_name(::std::string* name);
 
   // repeated .google.protobuf.Method methods = 2;
   int methods_size() const;
@@ -172,11 +170,40 @@ class LIBPROTOBUF_EXPORT Api : public ::google::protobuf::Message /* @@protoc_in
   const ::google::protobuf::RepeatedPtrField< ::google::protobuf::Option >&
       options() const;
 
+  // repeated .google.protobuf.Mixin mixins = 6;
+  int mixins_size() const;
+  void clear_mixins();
+  static const int kMixinsFieldNumber = 6;
+  const ::google::protobuf::Mixin& mixins(int index) const;
+  ::google::protobuf::Mixin* mutable_mixins(int index);
+  ::google::protobuf::Mixin* add_mixins();
+  ::google::protobuf::RepeatedPtrField< ::google::protobuf::Mixin >*
+      mutable_mixins();
+  const ::google::protobuf::RepeatedPtrField< ::google::protobuf::Mixin >&
+      mixins() const;
+
+  // string name = 1;
+  void clear_name();
+  static const int kNameFieldNumber = 1;
+  const ::std::string& name() const;
+  void set_name(const ::std::string& value);
+  #if LANG_CXX11
+  void set_name(::std::string&& value);
+  #endif
+  void set_name(const char* value);
+  void set_name(const char* value, size_t size);
+  ::std::string* mutable_name();
+  ::std::string* release_name();
+  void set_allocated_name(::std::string* name);
+
   // string version = 4;
   void clear_version();
   static const int kVersionFieldNumber = 4;
   const ::std::string& version() const;
   void set_version(const ::std::string& value);
+  #if LANG_CXX11
+  void set_version(::std::string&& value);
+  #endif
   void set_version(const char* value);
   void set_version(const char* value, size_t size);
   ::std::string* mutable_version();
@@ -191,18 +218,6 @@ class LIBPROTOBUF_EXPORT Api : public ::google::protobuf::Message /* @@protoc_in
   ::google::protobuf::SourceContext* mutable_source_context();
   ::google::protobuf::SourceContext* release_source_context();
   void set_allocated_source_context(::google::protobuf::SourceContext* source_context);
-
-  // repeated .google.protobuf.Mixin mixins = 6;
-  int mixins_size() const;
-  void clear_mixins();
-  static const int kMixinsFieldNumber = 6;
-  const ::google::protobuf::Mixin& mixins(int index) const;
-  ::google::protobuf::Mixin* mutable_mixins(int index);
-  ::google::protobuf::Mixin* add_mixins();
-  ::google::protobuf::RepeatedPtrField< ::google::protobuf::Mixin >*
-      mutable_mixins();
-  const ::google::protobuf::RepeatedPtrField< ::google::protobuf::Mixin >&
-      mixins() const;
 
   // .google.protobuf.Syntax syntax = 7;
   void clear_syntax();
@@ -222,11 +237,7 @@ class LIBPROTOBUF_EXPORT Api : public ::google::protobuf::Message /* @@protoc_in
   ::google::protobuf::SourceContext* source_context_;
   int syntax_;
   mutable int _cached_size_;
-  friend void LIBPROTOBUF_EXPORT protobuf_InitDefaults_google_2fprotobuf_2fapi_2eproto_impl();
-  friend void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2fapi_2eproto_impl();
-  friend const ::google::protobuf::uint32* protobuf_Offsets_google_2fprotobuf_2fapi_2eproto();
-  friend void protobuf_ShutdownFile_google_2fprotobuf_2fapi_2eproto();
-
+  friend struct LIBPROTOBUF_EXPORT protobuf_google_2fprotobuf_2fapi_2eproto::TableStruct;
 };
 // -------------------------------------------------------------------
 
@@ -273,7 +284,8 @@ class LIBPROTOBUF_EXPORT Method : public ::google::protobuf::Message /* @@protoc
       bool deterministic, ::google::protobuf::uint8* target) const PROTOBUF_FINAL;
   ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output)
       const PROTOBUF_FINAL {
-    return InternalSerializeWithCachedSizesToArray(false, output);
+    return InternalSerializeWithCachedSizesToArray(
+        ::google::protobuf::io::CodedOutputStream::IsDefaultSerializationDeterministic(), output);
   }
   int GetCachedSize() const PROTOBUF_FINAL { return _cached_size_; }
   private:
@@ -296,51 +308,6 @@ class LIBPROTOBUF_EXPORT Method : public ::google::protobuf::Message /* @@protoc
 
   // accessors -------------------------------------------------------
 
-  // string name = 1;
-  void clear_name();
-  static const int kNameFieldNumber = 1;
-  const ::std::string& name() const;
-  void set_name(const ::std::string& value);
-  void set_name(const char* value);
-  void set_name(const char* value, size_t size);
-  ::std::string* mutable_name();
-  ::std::string* release_name();
-  void set_allocated_name(::std::string* name);
-
-  // string request_type_url = 2;
-  void clear_request_type_url();
-  static const int kRequestTypeUrlFieldNumber = 2;
-  const ::std::string& request_type_url() const;
-  void set_request_type_url(const ::std::string& value);
-  void set_request_type_url(const char* value);
-  void set_request_type_url(const char* value, size_t size);
-  ::std::string* mutable_request_type_url();
-  ::std::string* release_request_type_url();
-  void set_allocated_request_type_url(::std::string* request_type_url);
-
-  // bool request_streaming = 3;
-  void clear_request_streaming();
-  static const int kRequestStreamingFieldNumber = 3;
-  bool request_streaming() const;
-  void set_request_streaming(bool value);
-
-  // string response_type_url = 4;
-  void clear_response_type_url();
-  static const int kResponseTypeUrlFieldNumber = 4;
-  const ::std::string& response_type_url() const;
-  void set_response_type_url(const ::std::string& value);
-  void set_response_type_url(const char* value);
-  void set_response_type_url(const char* value, size_t size);
-  ::std::string* mutable_response_type_url();
-  ::std::string* release_response_type_url();
-  void set_allocated_response_type_url(::std::string* response_type_url);
-
-  // bool response_streaming = 5;
-  void clear_response_streaming();
-  static const int kResponseStreamingFieldNumber = 5;
-  bool response_streaming() const;
-  void set_response_streaming(bool value);
-
   // repeated .google.protobuf.Option options = 6;
   int options_size() const;
   void clear_options();
@@ -352,6 +319,60 @@ class LIBPROTOBUF_EXPORT Method : public ::google::protobuf::Message /* @@protoc
       mutable_options();
   const ::google::protobuf::RepeatedPtrField< ::google::protobuf::Option >&
       options() const;
+
+  // string name = 1;
+  void clear_name();
+  static const int kNameFieldNumber = 1;
+  const ::std::string& name() const;
+  void set_name(const ::std::string& value);
+  #if LANG_CXX11
+  void set_name(::std::string&& value);
+  #endif
+  void set_name(const char* value);
+  void set_name(const char* value, size_t size);
+  ::std::string* mutable_name();
+  ::std::string* release_name();
+  void set_allocated_name(::std::string* name);
+
+  // string request_type_url = 2;
+  void clear_request_type_url();
+  static const int kRequestTypeUrlFieldNumber = 2;
+  const ::std::string& request_type_url() const;
+  void set_request_type_url(const ::std::string& value);
+  #if LANG_CXX11
+  void set_request_type_url(::std::string&& value);
+  #endif
+  void set_request_type_url(const char* value);
+  void set_request_type_url(const char* value, size_t size);
+  ::std::string* mutable_request_type_url();
+  ::std::string* release_request_type_url();
+  void set_allocated_request_type_url(::std::string* request_type_url);
+
+  // string response_type_url = 4;
+  void clear_response_type_url();
+  static const int kResponseTypeUrlFieldNumber = 4;
+  const ::std::string& response_type_url() const;
+  void set_response_type_url(const ::std::string& value);
+  #if LANG_CXX11
+  void set_response_type_url(::std::string&& value);
+  #endif
+  void set_response_type_url(const char* value);
+  void set_response_type_url(const char* value, size_t size);
+  ::std::string* mutable_response_type_url();
+  ::std::string* release_response_type_url();
+  void set_allocated_response_type_url(::std::string* response_type_url);
+
+  // bool request_streaming = 3;
+  void clear_request_streaming();
+  static const int kRequestStreamingFieldNumber = 3;
+  bool request_streaming() const;
+  void set_request_streaming(bool value);
+
+  // bool response_streaming = 5;
+  void clear_response_streaming();
+  static const int kResponseStreamingFieldNumber = 5;
+  bool response_streaming() const;
+  void set_response_streaming(bool value);
 
   // .google.protobuf.Syntax syntax = 7;
   void clear_syntax();
@@ -371,11 +392,7 @@ class LIBPROTOBUF_EXPORT Method : public ::google::protobuf::Message /* @@protoc
   bool response_streaming_;
   int syntax_;
   mutable int _cached_size_;
-  friend void LIBPROTOBUF_EXPORT protobuf_InitDefaults_google_2fprotobuf_2fapi_2eproto_impl();
-  friend void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2fapi_2eproto_impl();
-  friend const ::google::protobuf::uint32* protobuf_Offsets_google_2fprotobuf_2fapi_2eproto();
-  friend void protobuf_ShutdownFile_google_2fprotobuf_2fapi_2eproto();
-
+  friend struct LIBPROTOBUF_EXPORT protobuf_google_2fprotobuf_2fapi_2eproto::TableStruct;
 };
 // -------------------------------------------------------------------
 
@@ -422,7 +439,8 @@ class LIBPROTOBUF_EXPORT Mixin : public ::google::protobuf::Message /* @@protoc_
       bool deterministic, ::google::protobuf::uint8* target) const PROTOBUF_FINAL;
   ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output)
       const PROTOBUF_FINAL {
-    return InternalSerializeWithCachedSizesToArray(false, output);
+    return InternalSerializeWithCachedSizesToArray(
+        ::google::protobuf::io::CodedOutputStream::IsDefaultSerializationDeterministic(), output);
   }
   int GetCachedSize() const PROTOBUF_FINAL { return _cached_size_; }
   private:
@@ -450,6 +468,9 @@ class LIBPROTOBUF_EXPORT Mixin : public ::google::protobuf::Message /* @@protoc_
   static const int kNameFieldNumber = 1;
   const ::std::string& name() const;
   void set_name(const ::std::string& value);
+  #if LANG_CXX11
+  void set_name(::std::string&& value);
+  #endif
   void set_name(const char* value);
   void set_name(const char* value, size_t size);
   ::std::string* mutable_name();
@@ -461,6 +482,9 @@ class LIBPROTOBUF_EXPORT Mixin : public ::google::protobuf::Message /* @@protoc_
   static const int kRootFieldNumber = 2;
   const ::std::string& root() const;
   void set_root(const ::std::string& value);
+  #if LANG_CXX11
+  void set_root(::std::string&& value);
+  #endif
   void set_root(const char* value);
   void set_root(const char* value, size_t size);
   ::std::string* mutable_root();
@@ -474,11 +498,7 @@ class LIBPROTOBUF_EXPORT Mixin : public ::google::protobuf::Message /* @@protoc_
   ::google::protobuf::internal::ArenaStringPtr name_;
   ::google::protobuf::internal::ArenaStringPtr root_;
   mutable int _cached_size_;
-  friend void LIBPROTOBUF_EXPORT protobuf_InitDefaults_google_2fprotobuf_2fapi_2eproto_impl();
-  friend void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2fapi_2eproto_impl();
-  friend const ::google::protobuf::uint32* protobuf_Offsets_google_2fprotobuf_2fapi_2eproto();
-  friend void protobuf_ShutdownFile_google_2fprotobuf_2fapi_2eproto();
-
+  friend struct LIBPROTOBUF_EXPORT protobuf_google_2fprotobuf_2fapi_2eproto::TableStruct;
 };
 // ===================================================================
 
@@ -501,6 +521,14 @@ inline void Api::set_name(const ::std::string& value) {
   name_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
   // @@protoc_insertion_point(field_set:google.protobuf.Api.name)
 }
+#if LANG_CXX11
+inline void Api::set_name(::std::string&& value) {
+  
+  name_.SetNoArena(
+    &::google::protobuf::internal::GetEmptyStringAlreadyInited(), std::move(value));
+  // @@protoc_insertion_point(field_set_rvalue:google.protobuf.Api.name)
+}
+#endif
 inline void Api::set_name(const char* value) {
   
   name_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
@@ -605,6 +633,14 @@ inline void Api::set_version(const ::std::string& value) {
   version_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
   // @@protoc_insertion_point(field_set:google.protobuf.Api.version)
 }
+#if LANG_CXX11
+inline void Api::set_version(::std::string&& value) {
+  
+  version_.SetNoArena(
+    &::google::protobuf::internal::GetEmptyStringAlreadyInited(), std::move(value));
+  // @@protoc_insertion_point(field_set_rvalue:google.protobuf.Api.version)
+}
+#endif
 inline void Api::set_version(const char* value) {
   
   version_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
@@ -736,6 +772,14 @@ inline void Method::set_name(const ::std::string& value) {
   name_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
   // @@protoc_insertion_point(field_set:google.protobuf.Method.name)
 }
+#if LANG_CXX11
+inline void Method::set_name(::std::string&& value) {
+  
+  name_.SetNoArena(
+    &::google::protobuf::internal::GetEmptyStringAlreadyInited(), std::move(value));
+  // @@protoc_insertion_point(field_set_rvalue:google.protobuf.Method.name)
+}
+#endif
 inline void Method::set_name(const char* value) {
   
   name_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
@@ -780,6 +824,14 @@ inline void Method::set_request_type_url(const ::std::string& value) {
   request_type_url_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
   // @@protoc_insertion_point(field_set:google.protobuf.Method.request_type_url)
 }
+#if LANG_CXX11
+inline void Method::set_request_type_url(::std::string&& value) {
+  
+  request_type_url_.SetNoArena(
+    &::google::protobuf::internal::GetEmptyStringAlreadyInited(), std::move(value));
+  // @@protoc_insertion_point(field_set_rvalue:google.protobuf.Method.request_type_url)
+}
+#endif
 inline void Method::set_request_type_url(const char* value) {
   
   request_type_url_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
@@ -838,6 +890,14 @@ inline void Method::set_response_type_url(const ::std::string& value) {
   response_type_url_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
   // @@protoc_insertion_point(field_set:google.protobuf.Method.response_type_url)
 }
+#if LANG_CXX11
+inline void Method::set_response_type_url(::std::string&& value) {
+  
+  response_type_url_.SetNoArena(
+    &::google::protobuf::internal::GetEmptyStringAlreadyInited(), std::move(value));
+  // @@protoc_insertion_point(field_set_rvalue:google.protobuf.Method.response_type_url)
+}
+#endif
 inline void Method::set_response_type_url(const char* value) {
   
   response_type_url_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
@@ -944,6 +1004,14 @@ inline void Mixin::set_name(const ::std::string& value) {
   name_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
   // @@protoc_insertion_point(field_set:google.protobuf.Mixin.name)
 }
+#if LANG_CXX11
+inline void Mixin::set_name(::std::string&& value) {
+  
+  name_.SetNoArena(
+    &::google::protobuf::internal::GetEmptyStringAlreadyInited(), std::move(value));
+  // @@protoc_insertion_point(field_set_rvalue:google.protobuf.Mixin.name)
+}
+#endif
 inline void Mixin::set_name(const char* value) {
   
   name_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
@@ -988,6 +1056,14 @@ inline void Mixin::set_root(const ::std::string& value) {
   root_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
   // @@protoc_insertion_point(field_set:google.protobuf.Mixin.root)
 }
+#if LANG_CXX11
+inline void Mixin::set_root(::std::string&& value) {
+  
+  root_.SetNoArena(
+    &::google::protobuf::internal::GetEmptyStringAlreadyInited(), std::move(value));
+  // @@protoc_insertion_point(field_set_rvalue:google.protobuf.Mixin.root)
+}
+#endif
 inline void Mixin::set_root(const char* value) {
   
   root_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
