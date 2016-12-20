@@ -56,7 +56,8 @@ clean-local:
 
 CLEANFILES = $(protoc_outputs) unittest_proto_middleman \
              testzip.jar testzip.list testzip.proto testzip.zip \
-             no_warning_test.cc
+             no_warning_test.cc \
+             google/protobuf/compiler/js/well_known_types_embed.cc
 
 MAINTAINERCLEANFILES =   \
   Makefile.in
