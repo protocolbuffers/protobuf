@@ -494,8 +494,10 @@ js_well_known_types_sources =                                  \
 	google/protobuf/compiler/js/well_known_types/any.js          \
 	google/protobuf/compiler/js/well_known_types/struct.js       \
 	google/protobuf/compiler/js/well_known_types/timestamp.js
+# We have to cd to $(srcdir) so that out-of-tree builds work properly.
 google/protobuf/compiler/js/well_known_types_embed.cc: js_embed$(EXEEXT) $(js_well_known_types_sources)
-	./js_embed$(EXEEXT) $(js_well_known_types_sources) > $@
+	oldpwd=`pwd` && cd $(srcdir) && \
+	$$oldpwd/js_embed$(EXEEXT) $(js_well_known_types_sources) > $$oldpwd/$@
 
 # Tests ==============================================================
 
@@ -549,6 +551,7 @@ protoc_inputs =                                                   \
 
 EXTRA_DIST =                                                   \
   $(protoc_inputs)                                             \
+  $(js_well_known_types_sources)                               \
   solaris/libstdc++.la                                         \
   google/protobuf/io/gzip_stream.h                             \
   google/protobuf/io/gzip_stream_unittest.sh                   \
