@@ -98,12 +98,21 @@ const std::vector<const FieldDescriptor*>& MessageGenerator::fields_by_number() 
   return fields_by_number_;
 }
 
+void MessageGenerator::AddDeprecatedFlag(io::Printer* printer) {
+  if (descriptor_->options().deprecated())
+  {
+    printer->Print("[global::System.ObsoleteAttribute]\n");
+  }
+}
+
 void MessageGenerator::Generate(io::Printer* printer) {
   map<string, string> vars;
   vars["class_name"] = class_name();
   vars["access_level"] = class_access_level();
 
   WriteMessageDocComment(printer, descriptor_);
+  AddDeprecatedFlag(printer);
+  
   printer->Print(
     vars,
     "$access_level$ sealed partial class $class_name$ : pb::IMessage<$class_name$> {\n");
@@ -115,6 +124,7 @@ void MessageGenerator::Generate(io::Printer* printer) {
 	  "private static readonly pb::MessageParser<$class_name$> _parser = new pb::MessageParser<$class_name$>(() => new $class_name$());\n");
 
   WriteGeneratedCodeAttributes(printer);
+
   printer->Print(
 	  vars,
 	  "public static pb::MessageParser<$class_name$> Parser { get { return _parser; } }\n\n");

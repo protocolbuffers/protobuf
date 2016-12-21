@@ -126,6 +126,16 @@ void FieldGeneratorBase::AddDeprecatedFlag(io::Printer* printer) {
   {
     printer->Print("[global::System.ObsoleteAttribute]\n");
   }
+  else 
+  {
+    if (descriptor_->type() == FieldDescriptor::TYPE_MESSAGE) 
+    {
+      if (descriptor_->message_type()->options().deprecated())
+      {
+        printer->Print("[global::System.ObsoleteAttribute]\n");
+      }
+    }
+  }
 }
 
 void FieldGeneratorBase::AddPublicMemberAttributes(io::Printer* printer) {
