@@ -1661,18 +1661,6 @@ void MessageGenerator::
 GenerateClassMethods(io::Printer* printer) {
   if (IsMapEntryMessage(descriptor_)) return;
 
-  // mutable_unknown_fields wrapper function for LazyStringOutputStream
-  // callback.
-  if (PreserveUnknownFields(descriptor_) &&
-      !UseUnknownFieldSet(descriptor_->file(), options_)) {
-    printer->Print(
-        "static ::std::string* MutableUnknownFieldsFor$classname$(\n"
-        "    $classname$* ptr) {\n"
-        "  return ptr->mutable_unknown_fields();\n"
-        "}\n"
-        "\n",
-        "classname", classname_);
-  }
   if (IsAnyMessage(descriptor_)) {
     printer->Print(
       "void $classname$::PackFrom(const ::google::protobuf::Message& message) {\n"
@@ -2936,8 +2924,8 @@ GenerateMergeFromCodedStream(io::Printer* printer) {
     // on the CodedOutputStream.
     printer->Print(
       "  ::google::protobuf::io::LazyStringOutputStream unknown_fields_string(\n"
-      "      NewPermanentCallback(\n"
-      "          &MutableUnknownFieldsFor$classname$, this));\n"
+      "      ::google::protobuf::NewPermanentCallback(&_internal_metadata_,\n"
+      "          &::google::protobuf::internal::InternalMetadataWithArenaLite::mutable_unknown_fields));\n"
       "  ::google::protobuf::io::CodedOutputStream unknown_fields_stream(\n"
       "      &unknown_fields_string, false);\n",
       "classname", classname_);
