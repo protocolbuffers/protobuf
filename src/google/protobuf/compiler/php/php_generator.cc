@@ -45,8 +45,7 @@ using google::protobuf::internal::scoped_ptr;
 const std::string kDescriptorFile = "google/protobuf/descriptor.proto";
 const std::string kEmptyFile = "google/protobuf/empty.proto";
 const std::string kEmptyMetadataFile = "GPBMetadata/Google/Protobuf/GPBEmpty.php";
-const std::string kDescriptorMetadataFile =
-    "GPBMetadata/Google/Protobuf/Internal/Descriptor.php";
+const std::string kDescriptorMetadataFile = "GPBMetadata/Google/Protobuf/Internal/Descriptor.php";
 const std::string kDescriptorDirName = "Google/Protobuf/Internal";
 const std::string kDescriptorPackageName = "Google\\Protobuf\\Internal";
 
@@ -67,6 +66,8 @@ std::string TypeName(FieldDescriptor* field);
 std::string UnderscoresToCamelCase(const string& name, bool cap_first_letter);
 std::string EscapeDollor(const string& to_escape);
 std::string BinaryToHex(const string& binary);
+void GenerateServiceDocComment(io::Printer* printer, const ServiceDescriptor* service);
+void GenerateMethodDocComment(io::Printer* printer, const MethodDescriptor * method);
 void Indent(io::Printer* printer);
 void Outdent(io::Printer* printer);
 void GenerateMessageDocComment(io::Printer* printer, const Descriptor* message);
@@ -235,6 +236,7 @@ std::string GeneratedMessageFileName(const Descriptor* message,
   }
   return result + ".php";
 }
+
 
 std::string GeneratedEnumFileName(const EnumDescriptor* en,
                                   bool is_descriptor) {
@@ -884,12 +886,63 @@ void GenerateMessageFile(const FileDescriptor* file, const Descriptor* message,
   }
 }
 
+void GenerateServiceFile(const FileDescriptor* file, const ServiceDescriptor* service, bool is_descriptor,
+                         GeneratorContext* generator_context)
+{
+
+  std::string filename = PhpName(service->file()->package(), is_descriptor) + "\\" + service->name();
+  for (int i = 0; i < filename.size(); i++) {
+    if (filename[i] == '\\') {
+      filename[i] = '/';
+    }
+  }
+  filename += ".php";
+
+
+  scoped_ptr<io::ZeroCopyOutputStream> output(generator_context->Open(filename));
+  io::Printer printer(output.get(), '^');
+
+  printer.Print("<?php\n");
+
+  std::string fullname = FilenameToClassname(filename);
+  int last_index = fullname.find_last_of("\\");
+
+  if (!file->package().empty()) {
+    printer.Print(
+            "namespace ^name^;\n\n",
+            "name", fullname.substr(0, last_index));
+  }
+
+
+
+  GenerateServiceDocComment(&printer, service);
+
+  printer.Print("interface ^name^ {\n\n", "name", service->name());
+  Indent(&printer);
+  for (int i = 0; i < service->method_count(); i++) {
+    const MethodDescriptor * method = service->method(i);
+
+    GenerateMethodDocComment(&printer, method);
+
+    printer.Print(
+            "public function ^function_name^(^message_name^ $request);\n\n",
+            "function_name", UnderscoresToCamelCase(method->name(), false),
+            "message_name", UnderscoresToCamelCase(method->input_type()->name(), true)
+    );
+  }
+  Outdent(&printer);
+  printer.Print("}\n");
+}
+
 void GenerateFile(const FileDescriptor* file, bool is_descriptor,
                   GeneratorContext* generator_context) {
   GenerateMetadataFile(file, is_descriptor, generator_context);
   for (int i = 0; i < file->message_type_count(); i++) {
     GenerateMessageFile(file, file->message_type(i), is_descriptor,
                         generator_context);
+  }
+  for(int i = 0; i < file->service_count(); i++) {
+    GenerateServiceFile(file, file->service(i), is_descriptor, generator_context);
   }
   for (int i = 0; i < file->enum_type_count(); i++) {
     GenerateEnumFile(file, file->enum_type(i), is_descriptor,
@@ -1018,6 +1071,29 @@ void GenerateMessageDocComment(io::Printer* printer,
     " * Protobuf type <code>^fullname^</code>\n"
     " */\n",
     "fullname", EscapePhpdoc(message->full_name()));
+}
+
+void GenerateServiceDocComment(io::Printer* printer,
+                               const ServiceDescriptor* service) {
+  printer->Print("/**\n");
+  GenerateDocCommentBody(printer, service);
+  printer->Print(
+          " * Protobuf type <code>^fullname^</code>\n"
+                  " */\n",
+          "fullname", EscapePhpdoc(service->full_name()));
+}
+
+void GenerateMethodDocComment(io::Printer* printer, const MethodDescriptor * method) {
+  printer->Print("/**\n");
+  GenerateDocCommentBody(printer, method);
+  printer->Print(
+          " * Protobuf type <code>^fullname^</code>\n *\n",
+          "fullname", EscapePhpdoc(method->full_name())
+  );
+  printer->Print(
+          " * @return ^method_name^\n */\n",
+          "method_name", method->output_type()->name()
+  );
 }
 
 void GenerateFieldDocComment(io::Printer* printer,
