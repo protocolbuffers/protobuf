@@ -289,6 +289,18 @@ void FileGenerator::GenerateSource(io::Printer* printer) {
         "classname", message_generators_[i]->classname_);
   }
 
+  for (int i = 0; i < message_generators_.size(); i++) {
+    message_generators_[i]->index_in_metadata_ = i;
+  }
+  for (int i = 0; i < enum_generators_.size(); i++) {
+    enum_generators_[i]->index_in_metadata_ = i;
+  }
+  if (HasGenericServices(file_, options_)) {
+    for (int i = 0; i < service_generators_.size(); i++) {
+      service_generators_[i]->index_in_metadata_ = i;
+    }
+  }
+
   if (HasDescriptorMethods(file_, options_)) {
     printer->Print(
       "\n"
@@ -313,16 +325,7 @@ void FileGenerator::GenerateSource(io::Printer* printer) {
     }
 
     for (int i = 0; i < message_generators_.size(); i++) {
-      message_generators_[i]->index_in_metadata_ = i;
       message_generators_[i]->GenerateDescriptorDeclarations(printer);
-    }
-    for (int i = 0; i < enum_generators_.size(); i++) {
-      enum_generators_[i]->index_in_metadata_ = i;
-    }
-    if (HasGenericServices(file_, options_)) {
-      for (int i = 0; i < service_generators_.size(); i++) {
-        service_generators_[i]->index_in_metadata_ = i;
-      }
     }
 
     printer->Print(
