@@ -13,11 +13,11 @@
   },
   "autoload": {
     "psr-4": {
-      "Google\\Protobuf\\Internal\\": "src/Google/Protobuf/Internal",
-      "GPBMetadata\\Google\\Protobuf\\Internal\\": "src/GPBMetadata/Google/Protobuf/Internal"
+      "Google\\Protobuf\\Internal\\": "php/src/Google/Protobuf/Internal",
+      "GPBMetadata\\Google\\Protobuf\\Internal\\": "php/src/GPBMetadata/Google/Protobuf/Internal"
     },
     "files": [
-      "src/Google/Protobuf/descriptor.php"
+      "php/src/Google/Protobuf/descriptor.php"
     ]
   }
 }
