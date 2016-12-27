@@ -48,7 +48,7 @@ static char ToDecimalDigit(int num) {
 static std::string CEscape(const std::string& str) {
   std::string dest;
 
-  for (int i = 0; i < str.size(); ++i) {
+  for (size_t i = 0; i < str.size(); ++i) {
     unsigned char ch = str[i];
     switch (ch) {
       case '\n': dest += "\\n"; break;
