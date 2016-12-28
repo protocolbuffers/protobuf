@@ -1766,6 +1766,9 @@ namespace Google.Protobuf.Reflection {
         [pbr::OriginalName("TYPE_STRING")] String = 9,
         /// <summary>
         /// Tag-delimited aggregate.
+        /// Group type is deprecated and not supported in proto3. However, Proto3
+        /// implementations should still be able to parse the group wire format and
+        /// treat group fields as unknown fields.
         /// </summary>
         [pbr::OriginalName("TYPE_GROUP")] Group = 10,
         /// <summary>
