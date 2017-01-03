@@ -60,6 +60,7 @@ AC_ARG_WITH([protoc],
 # Checks for programs.
 AC_PROG_CC
 AC_PROG_CXX
+AC_PROG_CXX_FOR_BUILD
 AC_LANG([C++])
 ACX_USE_SYSTEM_EXTENSIONS
 m4_ifdef([AM_PROG_AR], [AM_PROG_AR])
