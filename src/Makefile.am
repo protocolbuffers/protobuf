@@ -484,13 +484,16 @@ libprotoc_la_SOURCES =                                         \
   google/protobuf/compiler/csharp/csharp_wrapper_field.cc      \
   google/protobuf/compiler/csharp/csharp_wrapper_field.h
 
-bin_PROGRAMS = protoc js_embed
+bin_PROGRAMS = protoc
 protoc_LDADD = $(PTHREAD_LIBS) libprotobuf.la libprotoc.la
 protoc_SOURCES = google/protobuf/compiler/main.cc
 
 # The special JS code for the well-known types is linked into the compiler via
-# well_known_types_embed.cc, which is generated from .js source files.
-js_embed_SOURCES = google/protobuf/compiler/js/embed.cc
+# well_known_types_embed.cc, which is generated from .js source files. We have
+# to build the js_embed binary using $(CXX_FOR_BUILD) so that it is executable
+# on the build machine in a cross-compilation setup.
+js_embed$(EXEEXT): google/protobuf/compiler/js/embed.cc
+	$(CXX_FOR_BUILD) -o $@ $<
 js_well_known_types_sources =                                  \
 	google/protobuf/compiler/js/well_known_types/any.js          \
 	google/protobuf/compiler/js/well_known_types/struct.js       \
