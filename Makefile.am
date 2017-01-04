@@ -186,6 +186,7 @@ csharp_EXTRA_DIST=                                                           \
   csharp/src/Google.Protobuf/WellKnownTypes/WrappersPartial.cs               \
   csharp/src/Google.Protobuf/WireFormat.cs                                   \
   csharp/src/Google.Protobuf/project.json                                    \
+  csharp/src/global.json                                                     \
   csharp/src/packages/repositories.config
 
 java_EXTRA_DIST=                                                                   \
