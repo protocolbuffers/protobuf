@@ -1082,6 +1082,20 @@
   [repeatedStringArray release];
 }
 
+- (void)testSetOverAutocreatedArrayAndSetAgain {
+  // Ensure when dealing with replacing an array it is handled being either
+  // an autocreated one or a straight NSArray.
+
+  // The real test here is that nothing crashes while doing the work.
+  TestAllTypes *message = [TestAllTypes message];
+  [message.repeatedStringArray addObject:@"foo"];
+  XCTAssertEqual(message.repeatedStringArray_Count, (NSUInteger)1);
+  message.repeatedStringArray = [NSMutableArray arrayWithObjects:@"bar", @"bar2", nil];
+  XCTAssertEqual(message.repeatedStringArray_Count, (NSUInteger)2);
+  message.repeatedStringArray = [NSMutableArray arrayWithObject:@"baz"];
+  XCTAssertEqual(message.repeatedStringArray_Count, (NSUInteger)1);
+}
+
 - (void)testReplaceAutocreatedArray {
   // Replacing array should orphan the old one and cause its creator to become
   // visible.
@@ -1279,6 +1293,23 @@
   XCTAssertNil(strToStr->_autocreator);
   [iToI release];
   [strToStr release];
+}
+
+- (void)testSetOverAutocreatedMapAndSetAgain {
+  // Ensure when dealing with replacing a map it is handled being either
+  // an autocreated one or a straight NSDictionary.
+
+  // The real test here is that nothing crashes while doing the work.
+  TestRecursiveMessageWithRepeatedField *message =
+      [TestRecursiveMessageWithRepeatedField message];
+  message.strToStr[@"foo"] = @"bar";
+  XCTAssertEqual(message.strToStr_Count, (NSUInteger)1);
+  message.strToStr =
+      [NSMutableDictionary dictionaryWithObjectsAndKeys:@"bar", @"key1", @"baz", @"key2", nil];
+  XCTAssertEqual(message.strToStr_Count, (NSUInteger)2);
+  message.strToStr =
+      [NSMutableDictionary dictionaryWithObject:@"baz" forKey:@"mumble"];
+  XCTAssertEqual(message.strToStr_Count, (NSUInteger)1);
 }
 
 - (void)testReplaceAutocreatedMap {

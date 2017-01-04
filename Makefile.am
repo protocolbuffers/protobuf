@@ -525,6 +525,7 @@ objectivec_EXTRA_DIST=                                                       \
   objectivec/Tests/GPBDictionaryTests+String.m                               \
   objectivec/Tests/GPBDictionaryTests+UInt32.m                               \
   objectivec/Tests/GPBDictionaryTests+UInt64.m                               \
+  objectivec/Tests/GPBDictionaryTests.m                                      \
   objectivec/Tests/GPBDictionaryTests.pddm                                   \
   objectivec/Tests/GPBMessageTests+Merge.m                                   \
   objectivec/Tests/GPBMessageTests+Runtime.m                                 \

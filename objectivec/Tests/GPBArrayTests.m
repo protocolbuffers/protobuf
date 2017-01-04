@@ -32,6 +32,7 @@
 #import <XCTest/XCTest.h>
 
 #import "GPBArray.h"
+#import "GPBArray_PackagePrivate.h"
 
 #import "GPBTestUtilities.h"
 
@@ -3432,6 +3433,178 @@ static BOOL TestingEnum_IsValidValue2(int32_t value) {
   XCTAssertEqual(array.count, 404U);
   [array removeAll];
   XCTAssertEqual(array.count, 0U);
+  [array release];
+}
+
+@end
+
+#pragma mark - GPBAutocreatedArray Tests
+
+// These are hand written tests to double check some behaviors of the
+// GPBAutocreatedArray.
+
+// NOTE: GPBAutocreatedArray is private to the library, users of the library
+// should never have to directly deal with this class.
+
+@interface GPBAutocreatedArrayTests : XCTestCase
+@end
+
+@implementation GPBAutocreatedArrayTests
+
+- (void)testEquality {
+  GPBAutocreatedArray *array = [[GPBAutocreatedArray alloc] init];
+
+  XCTAssertTrue([array isEqual:@[]]);
+  XCTAssertTrue([array isEqualToArray:@[]]);
+
+  XCTAssertFalse([array isEqual:@[ @"foo" ]]);
+  XCTAssertFalse([array isEqualToArray:@[ @"foo" ]]);
+
+  [array addObject:@"foo"];
+
+  XCTAssertFalse([array isEqual:@[]]);
+  XCTAssertFalse([array isEqualToArray:@[]]);
+  XCTAssertTrue([array isEqual:@[ @"foo" ]]);
+  XCTAssertTrue([array isEqualToArray:@[ @"foo" ]]);
+  XCTAssertFalse([array isEqual:@[ @"bar" ]]);
+  XCTAssertFalse([array isEqualToArray:@[ @"bar" ]]);
+
+  GPBAutocreatedArray *array2 = [[GPBAutocreatedArray alloc] init];
+
+  XCTAssertFalse([array isEqual:array2]);
+  XCTAssertFalse([array isEqualToArray:array2]);
+
+  [array2 addObject:@"bar"];
+  XCTAssertFalse([array isEqual:array2]);
+  XCTAssertFalse([array isEqualToArray:array2]);
+
+  [array2 replaceObjectAtIndex:0 withObject:@"foo"];
+  XCTAssertTrue([array isEqual:array2]);
+  XCTAssertTrue([array isEqualToArray:array2]);
+
+  [array2 release];
+  [array release];
+}
+
+- (void)testCopy {
+  {
+    GPBAutocreatedArray *array = [[GPBAutocreatedArray alloc] init];
+
+    NSArray *cpy = [array copy];
+    XCTAssertTrue(cpy != array); // Ptr compare
+    XCTAssertTrue([cpy isKindOfClass:[NSArray class]]);
+    XCTAssertFalse([cpy isKindOfClass:[GPBAutocreatedArray class]]);
+    XCTAssertEqual(cpy.count, (NSUInteger)0);
+
+    NSArray *cpy2 = [array copy];
+    XCTAssertTrue(cpy2 != array); // Ptr compare
+    // Can't compare cpy and cpy2 because NSArray has a singleton empty
+    // array it uses, so the ptrs are the same.
+    XCTAssertTrue([cpy2 isKindOfClass:[NSArray class]]);
+    XCTAssertFalse([cpy2 isKindOfClass:[GPBAutocreatedArray class]]);
+    XCTAssertEqual(cpy2.count, (NSUInteger)0);
+
+    [cpy2 release];
+    [cpy release];
+    [array release];
+  }
+
+  {
+    GPBAutocreatedArray *array = [[GPBAutocreatedArray alloc] init];
+
+    NSMutableArray *cpy = [array mutableCopy];
+    XCTAssertTrue(cpy != array); // Ptr compare
+    XCTAssertTrue([cpy isKindOfClass:[NSMutableArray class]]);
+    XCTAssertFalse([cpy isKindOfClass:[GPBAutocreatedArray class]]);
+    XCTAssertEqual(cpy.count, (NSUInteger)0);
+
+    NSMutableArray *cpy2 = [array mutableCopy];
+    XCTAssertTrue(cpy2 != array); // Ptr compare
+    XCTAssertTrue(cpy2 != cpy); // Ptr compare
+    XCTAssertTrue([cpy2 isKindOfClass:[NSMutableArray class]]);
+    XCTAssertFalse([cpy2 isKindOfClass:[GPBAutocreatedArray class]]);
+    XCTAssertEqual(cpy2.count, (NSUInteger)0);
+
+    [cpy2 release];
+    [cpy release];
+    [array release];
+  }
+
+  {
+    GPBAutocreatedArray *array = [[GPBAutocreatedArray alloc] init];
+    [array addObject:@"foo"];
+    [array addObject:@"bar"];
+
+    NSArray *cpy = [array copy];
+    XCTAssertTrue(cpy != array); // Ptr compare
+    XCTAssertTrue([cpy isKindOfClass:[NSArray class]]);
+    XCTAssertFalse([cpy isKindOfClass:[GPBAutocreatedArray class]]);
+    XCTAssertEqual(cpy.count, (NSUInteger)2);
+    XCTAssertEqualObjects(cpy[0], @"foo");
+    XCTAssertEqualObjects(cpy[1], @"bar");
+
+    NSArray *cpy2 = [array copy];
+    XCTAssertTrue(cpy2 != array); // Ptr compare
+    XCTAssertTrue(cpy2 != cpy); // Ptr compare
+    XCTAssertTrue([cpy2 isKindOfClass:[NSArray class]]);
+    XCTAssertFalse([cpy2 isKindOfClass:[GPBAutocreatedArray class]]);
+    XCTAssertEqual(cpy2.count, (NSUInteger)2);
+    XCTAssertEqualObjects(cpy2[0], @"foo");
+    XCTAssertEqualObjects(cpy2[1], @"bar");
+
+    [cpy2 release];
+    [cpy release];
+    [array release];
+  }
+
+  {
+    GPBAutocreatedArray *array = [[GPBAutocreatedArray alloc] init];
+    [array addObject:@"foo"];
+    [array addObject:@"bar"];
+
+    NSMutableArray *cpy = [array mutableCopy];
+    XCTAssertTrue(cpy != array); // Ptr compare
+    XCTAssertTrue([cpy isKindOfClass:[NSArray class]]);
+    XCTAssertFalse([cpy isKindOfClass:[GPBAutocreatedArray class]]);
+    XCTAssertEqual(cpy.count, (NSUInteger)2);
+    XCTAssertEqualObjects(cpy[0], @"foo");
+    XCTAssertEqualObjects(cpy[1], @"bar");
+
+    NSMutableArray *cpy2 = [array mutableCopy];
+    XCTAssertTrue(cpy2 != array); // Ptr compare
+    XCTAssertTrue(cpy2 != cpy); // Ptr compare
+    XCTAssertTrue([cpy2 isKindOfClass:[NSArray class]]);
+    XCTAssertFalse([cpy2 isKindOfClass:[GPBAutocreatedArray class]]);
+    XCTAssertEqual(cpy2.count, (NSUInteger)2);
+    XCTAssertEqualObjects(cpy2[0], @"foo");
+    XCTAssertEqualObjects(cpy2[1], @"bar");
+
+    [cpy2 release];
+    [cpy release];
+    [array release];
+  }
+}
+
+- (void)testIndexedSubscriptSupport {
+  // The base NSArray/NSMutableArray behaviors for *IndexedSubscript methods
+  // should still work via the methods that one has to override to make an
+  // NSMutableArray subclass.  i.e. - this should "just work" and if these
+  // crash/fail, then something is wrong in how NSMutableArray is subclassed.
+
+  GPBAutocreatedArray *array = [[GPBAutocreatedArray alloc] init];
+
+  [array addObject:@"foo"];
+  [array addObject:@"bar"];
+  XCTAssertEqual(array.count, (NSUInteger)2);
+  XCTAssertEqualObjects(array[0], @"foo");
+  XCTAssertEqualObjects(array[1], @"bar");
+  array[0] = @"foo2";
+  array[2] = @"baz";
+  XCTAssertEqual(array.count, (NSUInteger)3);
+  XCTAssertEqualObjects(array[0], @"foo2");
+  XCTAssertEqualObjects(array[1], @"bar");
+  XCTAssertEqualObjects(array[2], @"baz");
+
   [array release];
 }
 
