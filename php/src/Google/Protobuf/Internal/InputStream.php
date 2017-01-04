@@ -160,10 +160,11 @@ class InputStream
      */
     public function readVarint64(&$var)
     {
+        $count = 0;
+
         if (PHP_INT_SIZE == 4) {
             $high = 0;
             $low = 0;
-            $count = 0;
             $b = 0;
 
             do {
@@ -195,10 +196,18 @@ class InputStream
             $shift = 0;
 
             do {
+                if ($this->current === $this->buffer_end) {
+                    return false;
+                }
+                if ($count === self::MAX_VARINT_BYTES) {
+                    return false;
+                }
+
                 $byte = ord($this->buffer[$this->current]);
                 $result |= ($byte & 0x7f) << $shift;
                 $shift += 7;
                 $this->advance(1);
+                $count += 1;
             } while ($byte > 0x7f);
 
             $var = $result;
