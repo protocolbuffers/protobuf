@@ -2519,14 +2519,14 @@ static BOOL ArrayDefault_IsValidValue(int32_t value) {
 
 - (id)copyWithZone:(NSZone *)zone {
   if (_array == nil) {
-    _array = [[NSMutableArray alloc] init];
+    return [[NSMutableArray allocWithZone:zone] init];
   }
   return [_array copyWithZone:zone];
 }
 
 - (id)mutableCopyWithZone:(NSZone *)zone {
   if (_array == nil) {
-    _array = [[NSMutableArray alloc] init];
+    return [[NSMutableArray allocWithZone:zone] init];
   }
   return [_array mutableCopyWithZone:zone];
 }

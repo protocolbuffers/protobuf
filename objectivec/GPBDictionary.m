@@ -13579,22 +13579,26 @@ void GPBDictionaryReadEntry(id mapDictionary,
 
 - (id)copyWithZone:(NSZone *)zone {
   if (_dictionary == nil) {
-    _dictionary = [[NSMutableDictionary alloc] init];
+    return [[NSMutableDictionary allocWithZone:zone] init];
   }
   return [_dictionary copyWithZone:zone];
 }
 
 - (id)mutableCopyWithZone:(NSZone *)zone {
   if (_dictionary == nil) {
-    _dictionary = [[NSMutableDictionary alloc] init];
+    return [[NSMutableDictionary allocWithZone:zone] init];
   }
   return [_dictionary mutableCopyWithZone:zone];
 }
 
+// Not really needed, but subscripting is likely common enough it doesn't hurt
+// to ensure it goes directly to the real NSMutableDictionary.
 - (id)objectForKeyedSubscript:(id)key {
   return [_dictionary objectForKeyedSubscript:key];
 }
 
+// Not really needed, but subscripting is likely common enough it doesn't hurt
+// to ensure it goes directly to the real NSMutableDictionary.
 - (void)setObject:(id)obj forKeyedSubscript:(id<NSCopying>)key {
   if (_dictionary == nil) {
     _dictionary = [[NSMutableDictionary alloc] init];
