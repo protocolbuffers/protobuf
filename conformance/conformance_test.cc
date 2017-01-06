@@ -761,9 +761,9 @@ bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
     {longvarint(12345, 7), "12345"},
     {varint(kInt32Max), std::to_string(kInt32Max)},
     {varint(kInt32Min), std::to_string(kInt32Min)},
-    {varint(1L << 33), std::to_string(static_cast<int32>(1L << 33))},
-    {varint((1L << 33) - 1),
-     std::to_string(static_cast<int32>((1L << 33) - 1))},
+    {varint(1LL << 33), std::to_string(static_cast<int32>(1LL << 33))},
+    {varint((1LL << 33) - 1),
+     std::to_string(static_cast<int32>((1LL << 33) - 1))},
   });
   TestValidDataForType(FieldDescriptor::TYPE_UINT32, {
     {varint(12345), "12345"},
@@ -771,9 +771,9 @@ bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
     {longvarint(12345, 7), "12345"},
     {varint(kUint32Max), std::to_string(kUint32Max)},  // UINT32_MAX
     {varint(0), "0"},
-    {varint(1L << 33), std::to_string(static_cast<uint32>(1L << 33))},
-    {varint((1L << 33) - 1),
-     std::to_string(static_cast<uint32>((1L << 33) - 1))},
+    {varint(1LL << 33), std::to_string(static_cast<uint32>(1LL << 33))},
+    {varint((1LL << 33) - 1),
+     std::to_string(static_cast<uint32>((1LL << 33) - 1))},
   });
   TestValidDataForType(FieldDescriptor::TYPE_FIXED64, {
     {u64(12345), "12345"},
