@@ -57,7 +57,8 @@ clean-local:
 CLEANFILES = $(protoc_outputs) unittest_proto_middleman \
              testzip.jar testzip.list testzip.proto testzip.zip \
              no_warning_test.cc \
-             google/protobuf/compiler/js/well_known_types_embed.cc
+             google/protobuf/compiler/js/well_known_types_embed.cc \
+             js_embed$(EXEEXT)
 
 MAINTAINERCLEANFILES =   \
   Makefile.in
@@ -492,7 +493,7 @@ protoc_SOURCES = google/protobuf/compiler/main.cc
 # well_known_types_embed.cc, which is generated from .js source files. We have
 # to build the js_embed binary using $(CXX_FOR_BUILD) so that it is executable
 # on the build machine in a cross-compilation setup.
-js_embed$(EXEEXT): google/protobuf/compiler/js/embed.cc
+js_embed$(EXEEXT): $(srcdir)/google/protobuf/compiler/js/embed.cc
 	$(CXX_FOR_BUILD) -o $@ $<
 js_well_known_types_sources =                                  \
 	google/protobuf/compiler/js/well_known_types/any.js          \
@@ -575,6 +576,7 @@ EXTRA_DIST =                                                   \
   google/protobuf/package_info.h                               \
   google/protobuf/io/package_info.h                            \
   google/protobuf/util/package_info.h                          \
+  google/protobuf/compiler/js/embed.cc                         \
   google/protobuf/compiler/ruby/ruby_generated_code.proto      \
   google/protobuf/compiler/ruby/ruby_generated_code_pb.rb      \
   google/protobuf/compiler/package_info.h                      \
