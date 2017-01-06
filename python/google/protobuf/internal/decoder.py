@@ -131,8 +131,11 @@ def _VarintDecoder(mask, result_type):
   return DecodeVarint
 
 
-def _SignedVarintDecoder(mask, result_type):
+def _SignedVarintDecoder(bits, result_type):
   """Like _VarintDecoder() but decodes signed values."""
+
+  signbit = 1 << (bits - 1)
+  mask = (1 << bits) - 1
 
   def DecodeVarint(buffer, pos):
     result = 0
@@ -142,11 +145,8 @@ def _SignedVarintDecoder(mask, result_type):
       result |= ((b & 0x7f) << shift)
       pos += 1
       if not (b & 0x80):
-        if result > 0x7fffffffffffffff:
-          result -= (1 << 64)
-          result |= ~mask
-        else:
-          result &= mask
+        result &= mask
+        result = (result ^ signbit) - signbit
         result = result_type(result)
         return (result, pos)
       shift += 7
@@ -159,11 +159,11 @@ def _SignedVarintDecoder(mask, result_type):
 # (e.g. the C++ implementation) simpler.
 
 _DecodeVarint = _VarintDecoder((1 << 64) - 1, long)
-_DecodeSignedVarint = _SignedVarintDecoder((1 << 64) - 1, long)
+_DecodeSignedVarint = _SignedVarintDecoder(64, long)
 
 # Use these versions for values which must be limited to 32 bits.
 _DecodeVarint32 = _VarintDecoder((1 << 32) - 1, int)
-_DecodeSignedVarint32 = _SignedVarintDecoder((1 << 32) - 1, int)
+_DecodeSignedVarint32 = _SignedVarintDecoder(32, int)
 
 
 def ReadTag(buffer, pos):
