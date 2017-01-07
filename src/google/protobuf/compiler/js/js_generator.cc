@@ -1865,7 +1865,19 @@ void Generator::GenerateClass(const GeneratorOptions& options,
     // objects.
     GenerateClassDeserializeBinary(options, printer, desc);
     GenerateClassSerializeBinary(options, printer, desc);
+  }
 
+  // Recurse on nested types. These must come *before* the extension-field
+  // info generation in GenerateClassRegistration so that extensions that 
+  // reference nested types proceed the definitions of the nested types.
+  for (int i = 0; i < desc->enum_type_count(); i++) {
+    GenerateEnum(options, printer, desc->enum_type(i));
+  }
+  for (int i = 0; i < desc->nested_type_count(); i++) {
+    GenerateClass(options, printer, desc->nested_type(i));
+  }
+
+  if (!NamespaceOnly(desc)) {
     GenerateClassRegistration(options, printer, desc);
     GenerateClassFields(options, printer, desc);
     if (IsExtendable(desc) && desc->full_name() != "google.protobuf.bridge.MessageSet") {
@@ -1879,13 +1891,6 @@ void Generator::GenerateClass(const GeneratorOptions& options,
     }
   }
 
-  // Recurse on nested types.
-  for (int i = 0; i < desc->enum_type_count(); i++) {
-    GenerateEnum(options, printer, desc->enum_type(i));
-  }
-  for (int i = 0; i < desc->nested_type_count(); i++) {
-    GenerateClass(options, printer, desc->nested_type(i));
-  }
 }
 
 void Generator::GenerateClassConstructor(const GeneratorOptions& options,
