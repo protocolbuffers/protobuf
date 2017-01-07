@@ -592,7 +592,7 @@ class Map {
     MapAllocator(const MapAllocator<X>& allocator)
         : arena_(allocator.arena()) {}
 
-    pointer allocate(size_type n, const_pointer hint = 0) {
+    pointer allocate(size_type n, const void* hint = 0) {
       // If arena is not given, malloc needs to be called which doesn't
       // construct element object.
       if (arena_ == NULL) {
