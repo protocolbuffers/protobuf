@@ -109,13 +109,18 @@ string cat(const string& a, const string& b,
 // The maximum number of bytes that it takes to encode a 64-bit varint.
 #define VARINT_MAX_LEN 10
 
-size_t vencode64(uint64_t val, char *buf) {
+size_t vencode64(uint64_t val, int over_encoded_bytes, char *buf) {
   if (val == 0) { buf[0] = 0; return 1; }
   size_t i = 0;
   while (val) {
     uint8_t byte = val & 0x7fU;
     val >>= 7;
-    if (val) byte |= 0x80U;
+    if (val || over_encoded_bytes) byte |= 0x80U;
+    buf[i++] = byte;
+  }
+  while (over_encoded_bytes--) {
+    assert(i < 10);
+    uint8_t byte = over_encoded_bytes ? 0x80 : 0;
     buf[i++] = byte;
   }
   return i;
@@ -123,7 +128,15 @@ size_t vencode64(uint64_t val, char *buf) {
 
 string varint(uint64_t x) {
   char buf[VARINT_MAX_LEN];
-  size_t len = vencode64(x, buf);
+  size_t len = vencode64(x, 0, buf);
+  return string(buf, len);
+}
+
+// Encodes a varint that is |extra| bytes longer than it needs to be, but still
+// valid.
+string longvarint(uint64_t x, int extra) {
+  char buf[VARINT_MAX_LEN];
+  size_t len = vencode64(x, extra, buf);
   return string(buf, len);
 }
 
@@ -744,13 +757,23 @@ bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
   });
   TestValidDataForType(FieldDescriptor::TYPE_INT32, {
     {varint(12345), "12345"},
+    {longvarint(12345, 2), "12345"},
+    {longvarint(12345, 7), "12345"},
     {varint(kInt32Max), std::to_string(kInt32Max)},
     {varint(kInt32Min), std::to_string(kInt32Min)},
+    {varint(1LL << 33), std::to_string(static_cast<int32>(1LL << 33))},
+    {varint((1LL << 33) - 1),
+     std::to_string(static_cast<int32>((1LL << 33) - 1))},
   });
   TestValidDataForType(FieldDescriptor::TYPE_UINT32, {
     {varint(12345), "12345"},
+    {longvarint(12345, 2), "12345"},
+    {longvarint(12345, 7), "12345"},
     {varint(kUint32Max), std::to_string(kUint32Max)},  // UINT32_MAX
-    {varint(0), "0"}
+    {varint(0), "0"},
+    {varint(1LL << 33), std::to_string(static_cast<uint32>(1LL << 33))},
+    {varint((1LL << 33) - 1),
+     std::to_string(static_cast<uint32>((1LL << 33) - 1))},
   });
   TestValidDataForType(FieldDescriptor::TYPE_FIXED64, {
     {u64(12345), "12345"},
