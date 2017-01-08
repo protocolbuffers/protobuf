@@ -46,6 +46,9 @@ function combineInt32ToInt64($high, $low)
         }
     }
     $result = bcadd(bcmul($high, 4294967296), $low);
+    if ($low < 0) {
+        $result = bcadd($result, 4294967296);
+    }
     if ($isNeg) {
       $result = bcsub(0, $result);
     }
@@ -179,9 +182,9 @@ class InputStream
                 if ($bits >= 32) {
                     $high |= (($b & 0x7F) << ($bits - 32));
                 } else if ($bits > 25){
-                    $high_bits = $bits - 25;
-                    $low = ($low | (($b & 0x7F) << $bits)) & (int) 0xFFFFFFFF;
-                    $high = $b & ((0x1 << $high_bits) -1);
+                    // $bits is 28 in this case.
+                    $low |= (($b & 0x7F) << 28);
+                    $high = ($b & 0x7F) >> 4;
                 } else {
                     $low |= (($b & 0x7F) << $bits);
                 }
