@@ -715,7 +715,8 @@ CommandLineInterface::CommandLineInterface()
     imports_in_descriptor_set_(false),
     source_info_in_descriptor_set_(false),
     disallow_services_(false),
-    inputs_are_proto_path_relative_(false) {}
+    inputs_are_proto_path_relative_(false),
+    write_to_stdout(false) {}
 CommandLineInterface::~CommandLineInterface() {}
 
 void CommandLineInterface::RegisterGenerator(const string& flag_name,
@@ -1333,6 +1334,8 @@ CommandLineInterface::InterpretArgument(const string& name,
 
     plugins_[plugin_name] = path;
 
+  } else if (name == "--stdout") {
+    write_to_stdout = value == "true";
   } else if (name == "--print_free_field_numbers") {
     if (mode_ != MODE_COMPILE) {
       std::cerr << "Cannot use " << name
@@ -1646,31 +1649,46 @@ bool CommandLineInterface::GeneratePluginOutput(
   google::protobuf::scoped_ptr<io::ZeroCopyOutputStream> current_output;
   for (int i = 0; i < response.file_size(); i++) {
     const CodeGeneratorResponse::File& output_file = response.file(i);
+    if(!write_to_stdout) {
+      if (!output_file.insertion_point().empty()) {
+        // Open a file for insert.
+        // We reset current_output to NULL first so that the old file is closed
+        // before the new one is opened.
+        current_output.reset();
+        current_output.reset(generator_context->OpenForInsert(
+            output_file.name(), output_file.insertion_point()));
+      } else if (!output_file.name().empty()) {
+        // Starting a new file.  Open it.
+        // We reset current_output to NULL first so that the old file is closed
+        // before the new one is opened.
+        current_output.reset();
+        current_output.reset(generator_context->Open(output_file.name()));
+      } else if (current_output == NULL) {
+        *error = strings::Substitute(
+          "$0: First file chunk returned by plugin did not specify a file name.",
+          plugin_name);
+        return false;
+      }
 
-    if (!output_file.insertion_point().empty()) {
-      // Open a file for insert.
-      // We reset current_output to NULL first so that the old file is closed
-      // before the new one is opened.
-      current_output.reset();
-      current_output.reset(generator_context->OpenForInsert(
-          output_file.name(), output_file.insertion_point()));
-    } else if (!output_file.name().empty()) {
-      // Starting a new file.  Open it.
-      // We reset current_output to NULL first so that the old file is closed
-      // before the new one is opened.
-      current_output.reset();
-      current_output.reset(generator_context->Open(output_file.name()));
-    } else if (current_output == NULL) {
-      *error = strings::Substitute(
-        "$0: First file chunk returned by plugin did not specify a file name.",
-        plugin_name);
-      return false;
+      // Use CodedOutputStream for convenience; otherwise we'd need to provide
+      // our own buffer-copying loop.
+      io::CodedOutputStream writer(current_output.get());
+      writer.WriteString(output_file.content());
+    } else {
+      // Generate to stdout
+      string header = "Generating file to stdout: ";  
+      int hLineSize = header.length() + output_file.name().length();
+      string hLine = "";
+      for(int j = 0; j < hLineSize; j++){
+        hLine += "-";
+      }
+
+      // Write header and generate file contents to stdout
+      cout << hLine << endl << hLine << endl;
+      cout << header + output_file.name() << endl;
+      cout << hLine << endl << hLine << endl;
+      cout << output_file.content() << endl;
     }
-
-    // Use CodedOutputStream for convenience; otherwise we'd need to provide
-    // our own buffer-copying loop.
-    io::CodedOutputStream writer(current_output.get());
-    writer.WriteString(output_file.content());
   }
 
   // Check for errors.
