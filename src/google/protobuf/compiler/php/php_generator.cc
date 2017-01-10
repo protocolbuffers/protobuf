@@ -71,8 +71,7 @@ void GenerateMethodDocComment(io::Printer* printer, const MethodDescriptor * met
 void Indent(io::Printer* printer);
 void Outdent(io::Printer* printer);
 void GenerateMessageDocComment(io::Printer* printer, const Descriptor* message);
-void GenerateFieldDocComment(io::Printer* printer,
-                             const FieldDescriptor* field);
+void GenerateFieldDocComment(io::Printer* printer, const FieldDescriptor* field, const string& doc_option);
 void GenerateEnumDocComment(io::Printer* printer, const EnumDescriptor* enum_);
 void GenerateEnumValueDocComment(io::Printer* printer,
                                  const EnumValueDescriptor* value);
@@ -372,7 +371,7 @@ void Outdent(io::Printer* printer) {
 void GenerateField(const FieldDescriptor* field, io::Printer* printer,
                    bool is_descriptor) {
   if (field->is_repeated()) {
-    GenerateFieldDocComment(printer, field);
+    GenerateFieldDocComment(printer, field, "var");
     printer->Print(
         "private $^name^;\n",
         "name", field->name());
@@ -380,7 +379,7 @@ void GenerateField(const FieldDescriptor* field, io::Printer* printer,
     // Oneof fields are handled by GenerateOneofField.
     return;
   } else {
-    GenerateFieldDocComment(printer, field);
+    GenerateFieldDocComment(printer, field, "var");
     printer->Print(
         "private $^name^ = ^default^;\n",
         "name", field->name(),
@@ -408,7 +407,7 @@ void GenerateFieldAccessor(const FieldDescriptor* field, bool is_descriptor,
 
   // Generate getter.
   if (oneof != NULL) {
-    GenerateFieldDocComment(printer, field);
+    GenerateFieldDocComment(printer, field, "return");
     printer->Print(
         "public function get^camel_name^()\n"
         "{\n"
@@ -417,7 +416,7 @@ void GenerateFieldAccessor(const FieldDescriptor* field, bool is_descriptor,
         "camel_name", UnderscoresToCamelCase(field->name(), true),
         "number", IntToString(field->number()));
   } else {
-    GenerateFieldDocComment(printer, field);
+    GenerateFieldDocComment(printer, field, "return");
     printer->Print(
         "public function get^camel_name^()\n"
         "{\n"
@@ -428,14 +427,12 @@ void GenerateFieldAccessor(const FieldDescriptor* field, bool is_descriptor,
   }
 
   // Generate setter.
-  GenerateFieldDocComment(printer, field);
+  GenerateFieldDocComment(printer, field, "param");
   printer->Print(
-      "public function set^camel_name^(^var^)\n"
+      "public function set^camel_name^($var)\n"
       "{\n",
-      "camel_name", UnderscoresToCamelCase(field->name(), true),
-      "var", (field->is_repeated() ||
-              field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) ?
-             "&$var": "$var");
+      "camel_name", UnderscoresToCamelCase(field->name(), true)
+  );
 
   Indent(printer);
 
@@ -1102,8 +1099,7 @@ void GenerateMethodDocComment(io::Printer* printer, const MethodDescriptor * met
   );
 }
 
-void GenerateFieldDocComment(io::Printer* printer,
-                             const FieldDescriptor* field) {
+void GenerateFieldDocComment(io::Printer* printer, const FieldDescriptor* field, const string& doc_option) {
   // In theory we should have slightly different comments for setters, getters,
   // etc., but in practice everyone already knows the difference between these
   // so it's redundant information.
@@ -1117,6 +1113,50 @@ void GenerateFieldDocComment(io::Printer* printer,
   printer->Print(
     " * <code>^def^</code>\n",
     "def", EscapePhpdoc(FirstLineOf(field->DebugString())));
+
+
+  string property_type;
+  switch(field->type()) {
+    case FieldDescriptor::TYPE_MESSAGE:
+      property_type = field->message_type()->name();
+
+      break;
+    case FieldDescriptor::TYPE_ENUM:
+      property_type =  field->enum_type()->full_name();
+      break;
+    case FieldDescriptor::TYPE_INT32:
+    case FieldDescriptor::TYPE_INT64:
+    case FieldDescriptor::TYPE_UINT32:
+    case FieldDescriptor::TYPE_UINT64:
+    case FieldDescriptor::TYPE_SFIXED32:
+    case FieldDescriptor::TYPE_SFIXED64:
+      property_type = "int";
+          break;
+    case FieldDescriptor::TYPE_BOOL:
+      property_type = "bool";
+      break;
+    case FieldDescriptor::TYPE_STRING:
+      property_type = "string";
+      break;
+    case FieldDescriptor::TYPE_FLOAT:
+    case FieldDescriptor::TYPE_DOUBLE:
+      property_type = "float";
+      break;
+    default:
+      property_type = "";
+  }
+
+  if (field->is_repeated()) {
+    property_type +="[]";
+  }
+
+  printer->Print(
+          " * @^doc_option^ ^type^ ^var^\n",
+          "doc_option", doc_option,
+          "type", property_type,
+          "var", doc_option == "var" ? "" : "$var"
+  );
+
   printer->Print(" */\n");
 }
 
