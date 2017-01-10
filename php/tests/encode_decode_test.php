@@ -167,4 +167,10 @@ class EncodeDecodeTest extends TestBase
             $this->assertEquals($original, $msg->getOptionalInt64());
         }
     }
+
+    public function testDecodeFieldNonExist() {
+        $data = hex2bin('c80501');
+        $m = new TestMessage();
+        $m->decode($data);
+    }
 }
