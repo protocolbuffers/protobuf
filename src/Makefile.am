@@ -401,7 +401,6 @@ libprotoc_la_SOURCES =                                         \
   google/protobuf/compiler/java/java_string_field_lite.h       \
   google/protobuf/compiler/java/java_doc_comment.cc            \
   google/protobuf/compiler/java/java_doc_comment.h             \
-  google/protobuf/compiler/js/embed.cc                         \
   google/protobuf/compiler/js/js_generator.cc                  \
   google/protobuf/compiler/js/well_known_types_embed.cc        \
   google/protobuf/compiler/javanano/javanano_enum.cc           \
