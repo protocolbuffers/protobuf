@@ -99,8 +99,7 @@ const std::vector<const FieldDescriptor*>& MessageGenerator::fields_by_number() 
 }
 
 void MessageGenerator::AddDeprecatedFlag(io::Printer* printer) {
-  if (descriptor_->options().deprecated())
-  {
+  if (descriptor_->options().deprecated()) {
     printer->Print("[global::System.ObsoleteAttribute]\n");
   }
 }
