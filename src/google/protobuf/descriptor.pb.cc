@@ -1607,13 +1607,13 @@ void FileDescriptorProto::SerializeWithCachedSizes(
   }
 
   // repeated int32 public_dependency = 10;
-  for (int i = 0; i < this->public_dependency_size(); i++) {
+  for (int i = 0, n = this->public_dependency_size(); i < n; i++) {
     ::google::protobuf::internal::WireFormatLite::WriteInt32(
       10, this->public_dependency(i), output);
   }
 
   // repeated int32 weak_dependency = 11;
-  for (int i = 0; i < this->weak_dependency_size(); i++) {
+  for (int i = 0, n = this->weak_dependency_size(); i < n; i++) {
     ::google::protobuf::internal::WireFormatLite::WriteInt32(
       11, this->weak_dependency(i), output);
   }
@@ -1714,13 +1714,13 @@ void FileDescriptorProto::SerializeWithCachedSizes(
   }
 
   // repeated int32 public_dependency = 10;
-  for (int i = 0; i < this->public_dependency_size(); i++) {
+  for (int i = 0, n = this->public_dependency_size(); i < n; i++) {
     target = ::google::protobuf::internal::WireFormatLite::
       WriteInt32ToArray(10, this->public_dependency(i), target);
   }
 
   // repeated int32 weak_dependency = 11;
-  for (int i = 0; i < this->weak_dependency_size(); i++) {
+  for (int i = 0, n = this->weak_dependency_size(); i < n; i++) {
     target = ::google::protobuf::internal::WireFormatLite::
       WriteInt32ToArray(11, this->weak_dependency(i), target);
   }
@@ -13966,7 +13966,7 @@ void SourceCodeInfo_Location::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormatLite::WriteTag(1, ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED, output);
     output->WriteVarint32(_path_cached_byte_size_);
   }
-  for (int i = 0; i < this->path_size(); i++) {
+  for (int i = 0, n = this->path_size(); i < n; i++) {
     ::google::protobuf::internal::WireFormatLite::WriteInt32NoTag(
       this->path(i), output);
   }
@@ -13976,7 +13976,7 @@ void SourceCodeInfo_Location::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormatLite::WriteTag(2, ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED, output);
     output->WriteVarint32(_span_cached_byte_size_);
   }
-  for (int i = 0; i < this->span_size(); i++) {
+  for (int i = 0, n = this->span_size(); i < n; i++) {
     ::google::protobuf::internal::WireFormatLite::WriteInt32NoTag(
       this->span(i), output);
   }
@@ -14031,7 +14031,7 @@ void SourceCodeInfo_Location::SerializeWithCachedSizes(
     target = ::google::protobuf::io::CodedOutputStream::WriteVarint32ToArray(
       _path_cached_byte_size_, target);
   }
-  for (int i = 0; i < this->path_size(); i++) {
+  for (int i = 0, n = this->path_size(); i < n; i++) {
     target = ::google::protobuf::internal::WireFormatLite::
       WriteInt32NoTagToArray(this->path(i), target);
   }
@@ -14045,7 +14045,7 @@ void SourceCodeInfo_Location::SerializeWithCachedSizes(
     target = ::google::protobuf::io::CodedOutputStream::WriteVarint32ToArray(
       _span_cached_byte_size_, target);
   }
-  for (int i = 0; i < this->span_size(); i++) {
+  for (int i = 0, n = this->span_size(); i < n; i++) {
     target = ::google::protobuf::internal::WireFormatLite::
       WriteInt32NoTagToArray(this->span(i), target);
   }
@@ -14925,7 +14925,7 @@ void GeneratedCodeInfo_Annotation::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormatLite::WriteTag(1, ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED, output);
     output->WriteVarint32(_path_cached_byte_size_);
   }
-  for (int i = 0; i < this->path_size(); i++) {
+  for (int i = 0, n = this->path_size(); i < n; i++) {
     ::google::protobuf::internal::WireFormatLite::WriteInt32NoTag(
       this->path(i), output);
   }
@@ -14970,7 +14970,7 @@ void GeneratedCodeInfo_Annotation::SerializeWithCachedSizes(
     target = ::google::protobuf::io::CodedOutputStream::WriteVarint32ToArray(
       _path_cached_byte_size_, target);
   }
-  for (int i = 0; i < this->path_size(); i++) {
+  for (int i = 0, n = this->path_size(); i < n; i++) {
     target = ::google::protobuf::internal::WireFormatLite::
       WriteInt32NoTagToArray(this->path(i), target);
   }
