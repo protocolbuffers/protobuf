@@ -436,7 +436,7 @@ GenerateSerializeWithCachedSizes(io::Printer* printer) const {
       "}\n");
   }
   printer->Print(variables_,
-      "for (int i = 0; i < this->$name$_size(); i++) {\n");
+      "for (int i = 0, n = this->$name$_size(); i < n; i++) {\n");
   if (descriptor_->is_packed()) {
     printer->Print(variables_,
       "  ::google::protobuf::internal::WireFormatLite::WriteEnumNoTag(\n"
@@ -464,7 +464,7 @@ GenerateSerializeWithCachedSizesToArray(io::Printer* printer) const {
       "}\n");
   }
   printer->Print(variables_,
-      "for (int i = 0; i < this->$name$_size(); i++) {\n");
+      "for (int i = 0, n = this->$name$_size(); i < n; i++) {\n");
   if (descriptor_->is_packed()) {
     printer->Print(variables_,
       "  target = ::google::protobuf::internal::WireFormatLite::WriteEnumNoTagToArray(\n"
