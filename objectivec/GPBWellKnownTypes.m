@@ -50,15 +50,6 @@ static int32_t SecondsAndNanosFromTimeIntervalSince1970(NSTimeInterval time,
                                                         int64_t *outSeconds) {
   NSTimeInterval seconds;
   NSTimeInterval nanos = modf(time, &seconds);
-
-  // Per Timestamp.proto, nanos is non-negative and "Negative second values with
-  // fractions must still have non-negative nanos values that count forward in
-  // time. Must be from 0 to 999,999,999 inclusive."
-  if (nanos < 0) {
-    --seconds;
-    nanos = 1.0 + nanos;
-  }
-
   nanos *= 1e9;
   *outSeconds = (int64_t)seconds;
   return (int32_t)nanos;
