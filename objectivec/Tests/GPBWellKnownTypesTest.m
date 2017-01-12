@@ -46,39 +46,54 @@ static const NSTimeInterval kTimeAccuracy = 1e-9;
 @implementation WellKnownTypesTest
 
 - (void)testTimeStamp {
-  // Test Creation.
-  NSDate *date = [NSDate date];
-  GPBTimestamp *timeStamp = [[GPBTimestamp alloc] initWithDate:date];
-  NSDate *timeStampDate = timeStamp.date;
+  // Test a pre-Unix epoch date with fractional seconds.
+  NSTimeInterval interval = -428027599.0 + -483999967/1e9;
+  NSDate *preEpochDate = [NSDate dateWithTimeIntervalSince1970:interval];
+  NSDate *now = [NSDate date];
+  NSDate *future = [NSDate dateWithTimeIntervalSinceNow:kFutureOffsetInterval];
+  NSArray *datesToTest = @[preEpochDate, now, future];
 
-  // Comparing timeIntervals instead of directly comparing dates because date
-  // equality requires the time intervals to be exactly the same, and the
-  // timeintervals go through a bit of floating point error as they are
-  // converted back and forth from the internal representation.
-  XCTAssertEqualWithAccuracy(date.timeIntervalSince1970,
-                             timeStampDate.timeIntervalSince1970,
-                             kTimeAccuracy);
+  for (NSDate *date in datesToTest) {
+    // Test Creation.
+    GPBTimestamp *timeStamp = [[GPBTimestamp alloc] initWithDate:date];
+    NSDate *timeStampDate = timeStamp.date;
 
-  NSTimeInterval time = [date timeIntervalSince1970];
-  GPBTimestamp *timeStamp2 =
-      [[GPBTimestamp alloc] initWithTimeIntervalSince1970:time];
-  NSTimeInterval durationTime = timeStamp2.timeIntervalSince1970;
-  XCTAssertEqualWithAccuracy(time, durationTime, kTimeAccuracy);
-  [timeStamp release];
+    XCTAssertGreaterThanOrEqual(timeStamp.nanos, 0,
+                                @"|nanos| must be >= 0. Failing date: %@", date);
+    XCTAssertLessThan(timeStamp.nanos, 1e9, @"|nanos| must be < 1e9. Failing date: %@", date);
 
-  // Test Mutation.
-  date = [NSDate dateWithTimeIntervalSinceNow:kFutureOffsetInterval];
-  timeStamp2.date = date;
-  timeStampDate = timeStamp2.date;
-  XCTAssertEqualWithAccuracy(date.timeIntervalSince1970,
-                             timeStampDate.timeIntervalSince1970,
-                             kTimeAccuracy);
+    // Comparing timeIntervals instead of directly comparing dates because date
+    // equality requires the time intervals to be exactly the same, and the
+    // timeintervals go through a bit of floating point error as they are
+    // converted back and forth from the internal representation.
+    XCTAssertEqualWithAccuracy(date.timeIntervalSince1970,
+                               timeStampDate.timeIntervalSince1970,
+                               kTimeAccuracy,
+                               @"Failing date: %@", date);
 
-  time = date.timeIntervalSince1970;
-  timeStamp2.timeIntervalSince1970 = time;
-  durationTime = timeStamp2.timeIntervalSince1970;
-  XCTAssertEqualWithAccuracy(time, durationTime, kTimeAccuracy);
-  [timeStamp2 release];
+    NSTimeInterval time = [date timeIntervalSince1970];
+    GPBTimestamp *timeStamp2 =
+        [[GPBTimestamp alloc] initWithTimeIntervalSince1970:time];
+    NSTimeInterval durationTime = timeStamp2.timeIntervalSince1970;
+    XCTAssertEqualWithAccuracy(time, durationTime, kTimeAccuracy, @"Failing date: %@", date);
+    [timeStamp release];
+    [timeStamp2 release];
+
+    // Test Mutation.
+    GPBTimestamp *timeStamp3 = [[GPBTimestamp alloc] init];
+    timeStamp3.date = date;
+    timeStampDate = timeStamp3.date;
+    XCTAssertEqualWithAccuracy(date.timeIntervalSince1970,
+                               timeStampDate.timeIntervalSince1970,
+                               kTimeAccuracy,
+                               @"Failing date: %@", date);
+
+    time = date.timeIntervalSince1970;
+    timeStamp3.timeIntervalSince1970 = time;
+    durationTime = timeStamp3.timeIntervalSince1970;
+    XCTAssertEqualWithAccuracy(time, durationTime, kTimeAccuracy, @"Failing date: %@", date);
+    [timeStamp3 release];
+  }
 }
 
 - (void)testDuration {
