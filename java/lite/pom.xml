@@ -88,17 +88,21 @@
             <include>**/AbstractProtobufList.java</include>
             <include>**/BooleanArrayList.java</include>
             <include>**/ByteString.java</include>
+            <include>**/ByteOutput.java</include>
             <include>**/CodedInputStream.java</include>
             <include>**/CodedOutputStream.java</include>
             <include>**/DoubleArrayList.java</include>
+            <include>**/ExperimentalApi.java</include>
             <include>**/ExtensionLite.java</include>
             <include>**/ExtensionRegistryLite.java</include>
+            <include>**/ExtensionRegistryFactory.java</include>
             <include>**/FieldSet.java</include>
             <include>**/FloatArrayList.java</include>
             <include>**/GeneratedMessageLite.java</include>
             <include>**/IntArrayList.java</include>
             <include>**/Internal.java</include>
             <include>**/InvalidProtocolBufferException.java</include>
+            <include>**/LazyField.java</include>
             <include>**/LazyFieldLite.java</include>
             <include>**/LazyStringArrayList.java</include>
             <include>**/LazyStringList.java</include>
@@ -120,6 +124,7 @@
             <include>**/UnknownFieldSetLite.java</include>
             <include>**/UnmodifiableLazyStringList.java</include>
             <include>**/UnsafeByteOperations.java</include>
+            <include>**/UnsafeUtil.java</include>
             <include>**/Utf8.java</include>
             <include>**/WireFormat.java</include>
           </includes>
