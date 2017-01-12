@@ -69,6 +69,8 @@ class MessageGenerator : public SourceGeneratorBase {
 
   bool HasNestedGeneratedTypes();
 
+  void AddDeprecatedFlag(io::Printer* printer);
+  
   std::string class_name();
   std::string full_class_name();
 

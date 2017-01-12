@@ -122,8 +122,10 @@ void FieldGeneratorBase::GenerateCodecCode(io::Printer* printer) {
 }
 
 void FieldGeneratorBase::AddDeprecatedFlag(io::Printer* printer) {
-  if (descriptor_->options().deprecated())
-  {
+  if (descriptor_->options().deprecated()) {
+    printer->Print("[global::System.ObsoleteAttribute]\n");
+  } else if (descriptor_->type() == FieldDescriptor::TYPE_MESSAGE &&
+           descriptor_->message_type()->options().deprecated()) {
     printer->Print("[global::System.ObsoleteAttribute]\n");
   }
 }
