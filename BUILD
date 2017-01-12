@@ -527,6 +527,58 @@ internal_gen_well_known_protos_java(
 )
 
 java_library(
+    name = "protobuf_java_lite",
+    srcs = [
+        "java/core/src/main/java/com/google/protobuf/AbstractMessageLite.java",
+        "java/core/src/main/java/com/google/protobuf/AbstractParser.java",
+        "java/core/src/main/java/com/google/protobuf/AbstractProtobufList.java",
+        "java/core/src/main/java/com/google/protobuf/BooleanArrayList.java",
+        "java/core/src/main/java/com/google/protobuf/ByteBufferWriter.java",
+        "java/core/src/main/java/com/google/protobuf/ByteOutput.java",
+        "java/core/src/main/java/com/google/protobuf/ByteString.java",
+        "java/core/src/main/java/com/google/protobuf/CodedInputStream.java",
+        "java/core/src/main/java/com/google/protobuf/CodedOutputStream.java",
+        "java/core/src/main/java/com/google/protobuf/DoubleArrayList.java",
+        "java/core/src/main/java/com/google/protobuf/ExperimentalApi.java",
+        "java/core/src/main/java/com/google/protobuf/ExtensionLite.java",
+        "java/core/src/main/java/com/google/protobuf/ExtensionRegistryFactory.java",
+        "java/core/src/main/java/com/google/protobuf/ExtensionRegistryLite.java",
+        "java/core/src/main/java/com/google/protobuf/FieldSet.java",
+        "java/core/src/main/java/com/google/protobuf/FloatArrayList.java",
+        "java/core/src/main/java/com/google/protobuf/GeneratedMessageLite.java",
+        "java/core/src/main/java/com/google/protobuf/IntArrayList.java",
+        "java/core/src/main/java/com/google/protobuf/Internal.java",
+        "java/core/src/main/java/com/google/protobuf/InvalidProtocolBufferException.java",
+        "java/core/src/main/java/com/google/protobuf/LazyField.java",
+        "java/core/src/main/java/com/google/protobuf/LazyFieldLite.java",
+        "java/core/src/main/java/com/google/protobuf/LazyStringArrayList.java",
+        "java/core/src/main/java/com/google/protobuf/LazyStringList.java",
+        "java/core/src/main/java/com/google/protobuf/LongArrayList.java",
+        "java/core/src/main/java/com/google/protobuf/MapEntryLite.java",
+        "java/core/src/main/java/com/google/protobuf/MapFieldLite.java",
+        "java/core/src/main/java/com/google/protobuf/MessageLite.java",
+        "java/core/src/main/java/com/google/protobuf/MessageLiteOrBuilder.java",
+        "java/core/src/main/java/com/google/protobuf/MessageLiteToString.java",
+        "java/core/src/main/java/com/google/protobuf/MutabilityOracle.java",
+        "java/core/src/main/java/com/google/protobuf/NioByteString.java",
+        "java/core/src/main/java/com/google/protobuf/Parser.java",
+        "java/core/src/main/java/com/google/protobuf/ProtobufArrayList.java",
+        "java/core/src/main/java/com/google/protobuf/ProtocolStringList.java",
+        "java/core/src/main/java/com/google/protobuf/RopeByteString.java",
+        "java/core/src/main/java/com/google/protobuf/SmallSortedMap.java",
+        "java/core/src/main/java/com/google/protobuf/TextFormatEscaper.java",
+        "java/core/src/main/java/com/google/protobuf/UninitializedMessageException.java",
+        "java/core/src/main/java/com/google/protobuf/UnknownFieldSetLite.java",
+        "java/core/src/main/java/com/google/protobuf/UnmodifiableLazyStringList.java",
+        "java/core/src/main/java/com/google/protobuf/UnsafeByteOperations.java",
+        "java/core/src/main/java/com/google/protobuf/UnsafeUtil.java",
+        "java/core/src/main/java/com/google/protobuf/Utf8.java",
+        "java/core/src/main/java/com/google/protobuf/WireFormat.java",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+java_library(
     name = "protobuf_java",
     srcs = glob([
         "java/core/src/main/java/com/google/protobuf/*.java",
@@ -541,12 +593,32 @@ java_library(
     srcs = glob([
         "java/util/src/main/java/com/google/protobuf/util/*.java",
     ]),
+    visibility = ["//visibility:public"],
     deps = [
         "protobuf_java",
         "//external:gson",
         "//external:guava",
     ],
+)
+
+cc_binary(
+    name = "protoc-gen-javalite",
+    srcs = [
+        "src/google/protobuf/compiler/java/java_lite_main.cc",
+    ],
+    copts = select({
+        ":ios_armv7": IOS_ARM_COPTS,
+        ":ios_armv7s": IOS_ARM_COPTS,
+        ":ios_arm64": IOS_ARM_COPTS,
+        "//conditions:default": COPTS,
+    }),
+    includes = ["src/"],
+    linkopts = LINK_OPTS,
     visibility = ["//visibility:public"],
+    deps = [
+        ":protobuf",
+        ":protoc_lib",
+    ],
 )
 
 ################################################################################
@@ -567,8 +639,8 @@ py_library(
             "python/google/protobuf/internal/test_util.py",
         ],
     ),
-    srcs_version = "PY2AND3",
     imports = ["python"],
+    srcs_version = "PY2AND3",
 )
 
 cc_binary(
@@ -633,8 +705,8 @@ config_setting(
 internal_copied_filegroup(
     name = "protos_python",
     srcs = WELL_KNOWN_PROTOS,
-    strip_prefix = "src",
     dest = "python",
+    strip_prefix = "src",
 )
 
 # TODO(dzc): Remove this once py_proto_library can have labels in srcs, in
@@ -656,7 +728,7 @@ py_proto_library(
     protoc = ":protoc",
     py_libs = [
         ":python_srcs",
-        "//external:six"
+        "//external:six",
     ],
     srcs_version = "PY2AND3",
     visibility = ["//visibility:public"],
@@ -670,13 +742,14 @@ py_proto_library(
 internal_copied_filegroup(
     name = "protos_python_test",
     srcs = LITE_TEST_PROTOS + TEST_PROTOS,
-    strip_prefix = "src",
     dest = "python",
+    strip_prefix = "src",
 )
 
 # TODO(dzc): Remove this once py_proto_library can have labels in srcs, in
 # which case we can simply add :protos_python_test in srcs.
 COPIED_LITE_TEST_PROTOS = ["python/" + s for s in RELATIVE_LITE_TEST_PROTOS]
+
 COPIED_TEST_PROTOS = ["python/" + s for s in RELATIVE_TEST_PROTOS]
 
 py_proto_library(
