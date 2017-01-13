@@ -172,7 +172,8 @@ class InternalMetadataWithArena
  public:
   InternalMetadataWithArena() {}
   explicit InternalMetadataWithArena(Arena* arena)
-      : InternalMetadataWithArenaBase(arena) {}
+      : InternalMetadataWithArenaBase<UnknownFieldSet,
+                                           InternalMetadataWithArena>(arena) {}
 
   void DoSwap(UnknownFieldSet* other) {
     mutable_unknown_fields()->Swap(other);
@@ -201,7 +202,8 @@ class InternalMetadataWithArenaLite
   InternalMetadataWithArenaLite() {}
 
   explicit InternalMetadataWithArenaLite(Arena* arena)
-      : InternalMetadataWithArenaBase(arena) {}
+      : InternalMetadataWithArenaBase<string,
+                                           InternalMetadataWithArenaLite>(arena) {}
 
   void DoSwap(string* other) {
     mutable_unknown_fields()->swap(*other);
