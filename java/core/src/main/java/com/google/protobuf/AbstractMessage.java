@@ -328,7 +328,7 @@ public abstract class AbstractMessage
       extends AbstractMessageLite.Builder
       implements Message.Builder {
     // The compiler produces an error if this is not declared explicitly.
-    /** Method isn't abstact to bypass Java 1.6 compiler issue. */
+    // Method isn't abstract to bypass Java 1.6 compiler issue http://bugs.java.com/view_bug.do?bug_id=6908259
     @Override
     public BuilderType clone() {
       throw new UnsupportedOperationException("clone() should be implemented in subclasses.");
