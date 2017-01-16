@@ -81,41 +81,44 @@ class Message
                 switch ($value_field->getType()) {
                     case GPBType::MESSAGE:
                     case GPBType::GROUP:
-                        $this->$setter(
-                            new MapField(
-                                $key_field->getType(),
-                                $value_field->getType(),
-                                $value_field->getMessageType()->getClass()));
+                        $map_field = new MapField(
+                            $key_field->getType(),
+                            $value_field->getType(),
+                            $value_field->getMessageType()->getClass());
+                        $this->$setter($map_field);
                         break;
                     case GPBType::ENUM:
-                        $this->$setter(
-                            new MapField(
-                                $key_field->getType(),
-                                $value_field->getType(),
-                                $value_field->getEnumType()->getClass()));
+                        $map_field = new MapField(
+                            $key_field->getType(),
+                            $value_field->getType(),
+                            $value_field->getEnumType()->getClass());
+                        $this->$setter($map_field);
                         break;
                     default:
-                        $this->$setter(new MapField($key_field->getType(),
-                                                    $value_field->getType()));
+                        $map_field = new MapField(
+                            $key_field->getType(),
+                            $value_field->getType());
+                        $this->$setter($map_field);
                         break;
                 }
             } else if ($field->getLabel() === GPBLabel::REPEATED) {
                 switch ($field->getType()) {
                     case GPBType::MESSAGE:
                     case GPBType::GROUP:
-                        $this->$setter(
-                            new RepeatedField(
-                                $field->getType(),
-                                $field->getMessageType()->getClass()));
+                        $repeated_field = new RepeatedField(
+                            $field->getType(),
+                            $field->getMessageType()->getClass());
+                        $this->$setter($repeated_field);
                         break;
                     case GPBType::ENUM:
-                        $this->$setter(
-                            new RepeatedField(
-                                $field->getType(),
-                                $field->getEnumType()->getClass()));
+                        $repeated_field = new RepeatedField(
+                            $field->getType(),
+                            $field->getEnumType()->getClass());
+                        $this->$setter($repeated_field);
                         break;
                     default:
-                        $this->$setter(new RepeatedField($field->getType()));
+                        $repeated_field = new RepeatedField($field->getType());
+                        $this->$setter($repeated_field);
                         break;
                 }
             } else if ($field->getOneofIndex() !== -1) {

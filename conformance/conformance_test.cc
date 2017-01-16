@@ -183,6 +183,7 @@ void ConformanceTestSuite::ReportSuccess(const string& test_name) {
 }
 
 void ConformanceTestSuite::ReportFailure(const string& test_name,
+                                         ConformanceLevel level,
                                          const ConformanceRequest& request,
                                          const ConformanceResponse& response,
                                          const char* fmt, ...) {
@@ -190,6 +191,8 @@ void ConformanceTestSuite::ReportFailure(const string& test_name,
     expected_failures_++;
     if (!verbose_)
       return;
+  } else if (level == RECOMMENDED && !enforce_recommended_) {
+    StringAppendF(&output_, "WARNING, test=%s: ", test_name.c_str());
   } else {
     StringAppendF(&output_, "ERROR, test=%s: ", test_name.c_str());
     unexpected_failing_tests_.insert(test_name);
@@ -212,6 +215,15 @@ void ConformanceTestSuite::ReportSkip(const string& test_name,
                   response.ShortDebugString().c_str());
   }
   skipped_.insert(test_name);
+}
+
+string ConformanceTestSuite::ConformanceLevelToString(ConformanceLevel level) {
+  switch (level) {
+    case REQUIRED: return "Required";
+    case RECOMMENDED: return "Recommended";
+  }
+  GOOGLE_LOG(FATAL) << "Unknown value: " << level;
+  return "";
 }
 
 void ConformanceTestSuite::RunTest(const string& test_name,
@@ -241,8 +253,9 @@ void ConformanceTestSuite::RunTest(const string& test_name,
 }
 
 void ConformanceTestSuite::RunValidInputTest(
-    const string& test_name, const string& input, WireFormat input_format,
-    const string& equivalent_text_format, WireFormat requested_output) {
+    const string& test_name, ConformanceLevel level, const string& input,
+    WireFormat input_format, const string& equivalent_text_format,
+    WireFormat requested_output) {
   TestAllTypes reference_message;
   GOOGLE_CHECK(
       TextFormat::ParseFromString(equivalent_text_format, &reference_message))
@@ -273,14 +286,14 @@ void ConformanceTestSuite::RunValidInputTest(
 
   switch (response.result_case()) {
     case ConformanceResponse::RESULT_NOT_SET:
-      ReportFailure(test_name, request, response,
+      ReportFailure(test_name, level, request, response,
                     "Response didn't have any field in the Response.");
       return;
 
     case ConformanceResponse::kParseError:
     case ConformanceResponse::kRuntimeError:
     case ConformanceResponse::kSerializeError:
-      ReportFailure(test_name, request, response,
+      ReportFailure(test_name, level, request, response,
                     "Failed to parse input or produce output.");
       return;
 
@@ -291,7 +304,7 @@ void ConformanceTestSuite::RunValidInputTest(
     case ConformanceResponse::kJsonPayload: {
       if (requested_output != conformance::JSON) {
         ReportFailure(
-            test_name, request, response,
+            test_name, level, request, response,
             "Test was asked for protobuf output but provided JSON instead.");
         return;
       }
@@ -300,13 +313,13 @@ void ConformanceTestSuite::RunValidInputTest(
           JsonToBinaryString(type_resolver_.get(), type_url_,
                              response.json_payload(), &binary_protobuf);
       if (!status.ok()) {
-        ReportFailure(test_name, request, response,
+        ReportFailure(test_name, level, request, response,
                       "JSON output we received from test was unparseable.");
         return;
       }
 
       if (!test_message.ParseFromString(binary_protobuf)) {
-        ReportFailure(test_name, request, response,
+        ReportFailure(test_name, level, request, response,
                       "INTERNAL ERROR: internal JSON->protobuf transcode "
                       "yielded unparseable proto.");
         return;
@@ -318,13 +331,13 @@ void ConformanceTestSuite::RunValidInputTest(
     case ConformanceResponse::kProtobufPayload: {
       if (requested_output != conformance::PROTOBUF) {
         ReportFailure(
-            test_name, request, response,
+            test_name, level, request, response,
             "Test was asked for JSON output but provided protobuf instead.");
         return;
       }
 
       if (!test_message.ParseFromString(response.protobuf_payload())) {
-        ReportFailure(test_name, request, response,
+        ReportFailure(test_name, level, request, response,
                       "Protobuf output we received from test was unparseable.");
         return;
       }
@@ -347,7 +360,7 @@ void ConformanceTestSuite::RunValidInputTest(
   if (differencer.Compare(reference_message, test_message)) {
     ReportSuccess(test_name);
   } else {
-    ReportFailure(test_name, request, response,
+    ReportFailure(test_name, level, request, response,
                   "Output was not equivalent to reference message: %s.",
                   differences.c_str());
   }
@@ -355,11 +368,12 @@ void ConformanceTestSuite::RunValidInputTest(
 
 // Expect that this precise protobuf will cause a parse error.
 void ConformanceTestSuite::ExpectParseFailureForProto(
-    const string& proto, const string& test_name) {
+    const string& proto, const string& test_name, ConformanceLevel level) {
   ConformanceRequest request;
   ConformanceResponse response;
   request.set_protobuf_payload(proto);
-  string effective_test_name = "ProtobufInput." + test_name;
+  string effective_test_name = ConformanceLevelToString(level) +
+      ".ProtobufInput." + test_name;
 
   // We don't expect output, but if the program erroneously accepts the protobuf
   // we let it send its response as this.  We must not leave it unspecified.
@@ -371,7 +385,7 @@ void ConformanceTestSuite::ExpectParseFailureForProto(
   } else if (response.result_case() == ConformanceResponse::kSkipped) {
     ReportSkip(effective_test_name, request, response);
   } else {
-    ReportFailure(effective_test_name, request, response,
+    ReportFailure(effective_test_name, level, request, response,
                   "Should have failed to parse, but didn't.");
   }
 }
@@ -382,36 +396,39 @@ void ConformanceTestSuite::ExpectParseFailureForProto(
 //
 // TODO(haberman): implement the second of these.
 void ConformanceTestSuite::ExpectHardParseFailureForProto(
-    const string& proto, const string& test_name) {
-  return ExpectParseFailureForProto(proto, test_name);
+    const string& proto, const string& test_name, ConformanceLevel level) {
+  return ExpectParseFailureForProto(proto, test_name, level);
 }
 
 void ConformanceTestSuite::RunValidJsonTest(
-    const string& test_name, const string& input_json,
+    const string& test_name, ConformanceLevel level, const string& input_json,
     const string& equivalent_text_format) {
-  RunValidInputTest("JsonInput." + test_name + ".ProtobufOutput", input_json,
-                    conformance::JSON, equivalent_text_format,
-                    conformance::PROTOBUF);
-  RunValidInputTest("JsonInput." + test_name + ".JsonOutput", input_json,
-                    conformance::JSON, equivalent_text_format,
-                    conformance::JSON);
+  RunValidInputTest(
+      ConformanceLevelToString(level) + ".JsonInput." + test_name +
+      ".ProtobufOutput", level, input_json, conformance::JSON,
+      equivalent_text_format, conformance::PROTOBUF);
+  RunValidInputTest(
+      ConformanceLevelToString(level) + ".JsonInput." + test_name +
+      ".JsonOutput", level, input_json, conformance::JSON,
+      equivalent_text_format, conformance::JSON);
 }
 
 void ConformanceTestSuite::RunValidJsonTestWithProtobufInput(
-    const string& test_name, const TestAllTypes& input,
+    const string& test_name, ConformanceLevel level, const TestAllTypes& input,
     const string& equivalent_text_format) {
-  RunValidInputTest("ProtobufInput." + test_name + ".JsonOutput",
-                    input.SerializeAsString(), conformance::PROTOBUF,
-                    equivalent_text_format, conformance::JSON);
+  RunValidInputTest(
+      ConformanceLevelToString(level) + ".ProtobufInput." + test_name +
+      ".JsonOutput", level, input.SerializeAsString(), conformance::PROTOBUF,
+      equivalent_text_format, conformance::JSON);
 }
 
 void ConformanceTestSuite::RunValidProtobufTest(
-    const string& test_name, const TestAllTypes& input,
+    const string& test_name, ConformanceLevel level, const TestAllTypes& input,
     const string& equivalent_text_format) {
-  RunValidInputTest("ProtobufInput." + test_name + ".ProtobufOutput",
+  RunValidInputTest("ProtobufInput." + test_name + ".ProtobufOutput", level,
                     input.SerializeAsString(), conformance::PROTOBUF,
                     equivalent_text_format, conformance::PROTOBUF);
-  RunValidInputTest("ProtobufInput." + test_name + ".JsonOutput",
+  RunValidInputTest("ProtobufInput." + test_name + ".JsonOutput", level,
                     input.SerializeAsString(), conformance::PROTOBUF,
                     equivalent_text_format, conformance::JSON);
 }
@@ -422,14 +439,15 @@ void ConformanceTestSuite::RunValidProtobufTest(
 // method allows strict checking on a proto3 JSON serializer by inspecting
 // the JSON output directly.
 void ConformanceTestSuite::RunValidJsonTestWithValidator(
-    const string& test_name, const string& input_json,
+    const string& test_name, ConformanceLevel level, const string& input_json,
     const Validator& validator) {
   ConformanceRequest request;
   ConformanceResponse response;
   request.set_json_payload(input_json);
   request.set_requested_output_format(conformance::JSON);
 
-  string effective_test_name = "JsonInput." + test_name + ".Validator";
+  string effective_test_name = ConformanceLevelToString(level) +
+      ".JsonInput." + test_name + ".Validator";
 
   RunTest(effective_test_name, request, &response);
 
@@ -439,7 +457,7 @@ void ConformanceTestSuite::RunValidJsonTestWithValidator(
   }
 
   if (response.result_case() != ConformanceResponse::kJsonPayload) {
-    ReportFailure(effective_test_name, request, response,
+    ReportFailure(effective_test_name, level, request, response,
                   "Expected JSON payload but got type %d.",
                   response.result_case());
     return;
@@ -447,13 +465,13 @@ void ConformanceTestSuite::RunValidJsonTestWithValidator(
   Json::Reader reader;
   Json::Value value;
   if (!reader.parse(response.json_payload(), value)) {
-    ReportFailure(effective_test_name, request, response,
+    ReportFailure(effective_test_name, level, request, response,
                   "JSON payload cannot be parsed as valid JSON: %s",
                   reader.getFormattedErrorMessages().c_str());
     return;
   }
   if (!validator(value)) {
-    ReportFailure(effective_test_name, request, response,
+    ReportFailure(effective_test_name, level, request, response,
                   "JSON payload validation failed.");
     return;
   }
@@ -461,11 +479,12 @@ void ConformanceTestSuite::RunValidJsonTestWithValidator(
 }
 
 void ConformanceTestSuite::ExpectParseFailureForJson(
-    const string& test_name, const string& input_json) {
+    const string& test_name, ConformanceLevel level, const string& input_json) {
   ConformanceRequest request;
   ConformanceResponse response;
   request.set_json_payload(input_json);
-  string effective_test_name = "JsonInput." + test_name;
+  string effective_test_name =
+      ConformanceLevelToString(level) + ".JsonInput." + test_name;
 
   // We don't expect output, but if the program erroneously accepts the protobuf
   // we let it send its response as this.  We must not leave it unspecified.
@@ -477,13 +496,13 @@ void ConformanceTestSuite::ExpectParseFailureForJson(
   } else if (response.result_case() == ConformanceResponse::kSkipped) {
     ReportSkip(effective_test_name, request, response);
   } else {
-    ReportFailure(effective_test_name, request, response,
+    ReportFailure(effective_test_name, level, request, response,
                   "Should have failed to parse, but didn't.");
   }
 }
 
 void ConformanceTestSuite::ExpectSerializeFailureForJson(
-    const string& test_name, const string& text_format) {
+    const string& test_name, ConformanceLevel level, const string& text_format) {
   TestAllTypes payload_message;
   GOOGLE_CHECK(
       TextFormat::ParseFromString(text_format, &payload_message))
@@ -492,7 +511,8 @@ void ConformanceTestSuite::ExpectSerializeFailureForJson(
   ConformanceRequest request;
   ConformanceResponse response;
   request.set_protobuf_payload(payload_message.SerializeAsString());
-  string effective_test_name = test_name + ".JsonOutput";
+  string effective_test_name =
+      ConformanceLevelToString(level) + "." + test_name + ".JsonOutput";
   request.set_requested_output_format(conformance::JSON);
 
   RunTest(effective_test_name, request, &response);
@@ -501,7 +521,7 @@ void ConformanceTestSuite::ExpectSerializeFailureForJson(
   } else if (response.result_case() == ConformanceResponse::kSkipped) {
     ReportSkip(effective_test_name, request, response);
   } else {
-    ReportFailure(effective_test_name, request, response,
+    ReportFailure(effective_test_name, level, request, response,
                   "Should have failed to serialize, but didn't.");
   }
 }
@@ -527,41 +547,43 @@ void ConformanceTestSuite::TestPrematureEOFForType(FieldDescriptor::Type type) {
 
   ExpectParseFailureForProto(
       tag(fieldnum, wire_type),
-      "PrematureEofBeforeKnownNonRepeatedValue" + type_name);
+      "PrematureEofBeforeKnownNonRepeatedValue" + type_name, REQUIRED);
 
   ExpectParseFailureForProto(
       tag(rep_fieldnum, wire_type),
-      "PrematureEofBeforeKnownRepeatedValue" + type_name);
+      "PrematureEofBeforeKnownRepeatedValue" + type_name, REQUIRED);
 
   ExpectParseFailureForProto(
       tag(UNKNOWN_FIELD, wire_type),
-      "PrematureEofBeforeUnknownValue" + type_name);
+      "PrematureEofBeforeUnknownValue" + type_name, REQUIRED);
 
   ExpectParseFailureForProto(
       cat( tag(fieldnum, wire_type), incomplete ),
-      "PrematureEofInsideKnownNonRepeatedValue" + type_name);
+      "PrematureEofInsideKnownNonRepeatedValue" + type_name, REQUIRED);
 
   ExpectParseFailureForProto(
       cat( tag(rep_fieldnum, wire_type), incomplete ),
-      "PrematureEofInsideKnownRepeatedValue" + type_name);
+      "PrematureEofInsideKnownRepeatedValue" + type_name, REQUIRED);
 
   ExpectParseFailureForProto(
       cat( tag(UNKNOWN_FIELD, wire_type), incomplete ),
-      "PrematureEofInsideUnknownValue" + type_name);
+      "PrematureEofInsideUnknownValue" + type_name, REQUIRED);
 
   if (wire_type == WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
     ExpectParseFailureForProto(
         cat( tag(fieldnum, wire_type), varint(1) ),
-        "PrematureEofInDelimitedDataForKnownNonRepeatedValue" + type_name);
+        "PrematureEofInDelimitedDataForKnownNonRepeatedValue" + type_name,
+        REQUIRED);
 
     ExpectParseFailureForProto(
         cat( tag(rep_fieldnum, wire_type), varint(1) ),
-        "PrematureEofInDelimitedDataForKnownRepeatedValue" + type_name);
+        "PrematureEofInDelimitedDataForKnownRepeatedValue" + type_name,
+        REQUIRED);
 
     // EOF in the middle of delimited data for unknown value.
     ExpectParseFailureForProto(
         cat( tag(UNKNOWN_FIELD, wire_type), varint(1) ),
-        "PrematureEofInDelimitedDataForUnknownValue" + type_name);
+        "PrematureEofInDelimitedDataForUnknownValue" + type_name, REQUIRED);
 
     if (type == FieldDescriptor::TYPE_MESSAGE) {
       // Submessage ends in the middle of a value.
@@ -572,7 +594,7 @@ void ConformanceTestSuite::TestPrematureEOFForType(FieldDescriptor::Type type) {
           cat( tag(fieldnum, WireFormatLite::WIRETYPE_LENGTH_DELIMITED),
                varint(incomplete_submsg.size()),
                incomplete_submsg ),
-          "PrematureEofInSubmessageValue" + type_name);
+          "PrematureEofInSubmessageValue" + type_name, REQUIRED);
     }
   } else if (type != FieldDescriptor::TYPE_GROUP) {
     // Non-delimited, non-group: eligible for packing.
@@ -582,13 +604,13 @@ void ConformanceTestSuite::TestPrematureEOFForType(FieldDescriptor::Type type) {
         cat( tag(rep_fieldnum, WireFormatLite::WIRETYPE_LENGTH_DELIMITED),
              varint(incomplete.size()),
              incomplete ),
-        "PrematureEofInPackedFieldValue" + type_name);
+        "PrematureEofInPackedFieldValue" + type_name, REQUIRED);
 
     // EOF in the middle of packed region.
     ExpectParseFailureForProto(
         cat( tag(rep_fieldnum, WireFormatLite::WIRETYPE_LENGTH_DELIMITED),
              varint(1) ),
-        "PrematureEofInPackedField" + type_name);
+        "PrematureEofInPackedField" + type_name, REQUIRED);
   }
 }
 
@@ -651,14 +673,15 @@ bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
     TestPrematureEOFForType(static_cast<FieldDescriptor::Type>(i));
   }
 
-  RunValidJsonTest("HelloWorld", "{\"optionalString\":\"Hello, World!\"}",
+  RunValidJsonTest("HelloWorld", REQUIRED,
+                   "{\"optionalString\":\"Hello, World!\"}",
                    "optional_string: 'Hello, World!'");
 
   // NOTE: The spec for JSON support is still being sorted out, these may not
   // all be correct.
   // Test field name conventions.
   RunValidJsonTest(
-      "FieldNameInSnakeCase",
+      "FieldNameInSnakeCase", REQUIRED,
       R"({
         "fieldname1": 1,
         "fieldName2": 2,
@@ -672,7 +695,7 @@ bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
         field__name4_: 4
       )");
   RunValidJsonTest(
-      "FieldNameWithNumbers",
+      "FieldNameWithNumbers", REQUIRED,
       R"({
         "field0name5": 5,
         "field0Name6": 6
@@ -682,14 +705,14 @@ bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
         field_0_name6: 6
       )");
   RunValidJsonTest(
-      "FieldNameWithMixedCases",
+      "FieldNameWithMixedCases", REQUIRED,
       R"({
         "fieldName7": 7,
-        "fieldName8": 8,
+        "FieldName8": 8,
         "fieldName9": 9,
-        "fieldName10": 10,
-        "fIELDNAME11": 11,
-        "fIELDName12": 12
+        "FieldName10": 10,
+        "FIELDNAME11": 11,
+        "FIELDName12": 12
       })",
       R"(
         fieldName7: 7
@@ -700,7 +723,7 @@ bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
         FIELD_name12: 12
       )");
   RunValidJsonTest(
-      "FieldNameWithDoubleUnderscores",
+      "FieldNameWithDoubleUnderscores", RECOMMENDED,
       R"({
         "fieldName13": 13,
         "fieldName14": 14,
@@ -719,7 +742,7 @@ bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
       )");
   // Using the original proto field name in JSON is also allowed.
   RunValidJsonTest(
-      "OriginalProtoFieldName",
+      "OriginalProtoFieldName", REQUIRED,
       R"({
         "fieldname1": 1,
         "field_name2": 2,
@@ -762,63 +785,63 @@ bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
       )");
   // Field names can be escaped.
   RunValidJsonTest(
-      "FieldNameEscaped",
+      "FieldNameEscaped", REQUIRED,
       R"({"fieldn\u0061me1": 1})",
       "fieldname1: 1");
   // String ends with escape character.
   ExpectParseFailureForJson(
-      "StringEndsWithEscapeChar",
+      "StringEndsWithEscapeChar", RECOMMENDED,
       "{\"optionalString\": \"abc\\");
   // Field names must be quoted (or it's not valid JSON).
   ExpectParseFailureForJson(
-      "FieldNameNotQuoted",
+      "FieldNameNotQuoted", RECOMMENDED,
       "{fieldname1: 1}");
   // Trailing comma is not allowed (not valid JSON).
   ExpectParseFailureForJson(
-      "TrailingCommaInAnObject",
+      "TrailingCommaInAnObject", RECOMMENDED,
       R"({"fieldname1":1,})");
   ExpectParseFailureForJson(
-      "TrailingCommaInAnObjectWithSpace",
+      "TrailingCommaInAnObjectWithSpace", RECOMMENDED,
       R"({"fieldname1":1 ,})");
   ExpectParseFailureForJson(
-      "TrailingCommaInAnObjectWithSpaceCommaSpace",
+      "TrailingCommaInAnObjectWithSpaceCommaSpace", RECOMMENDED,
       R"({"fieldname1":1 , })");
   ExpectParseFailureForJson(
-      "TrailingCommaInAnObjectWithNewlines",
+      "TrailingCommaInAnObjectWithNewlines", RECOMMENDED,
       R"({
         "fieldname1":1,
       })");
   // JSON doesn't support comments.
   ExpectParseFailureForJson(
-      "JsonWithComments",
+      "JsonWithComments", RECOMMENDED,
       R"({
         // This is a comment.
         "fieldname1": 1
       })");
   // JSON spec says whitespace doesn't matter, so try a few spacings to be sure.
   RunValidJsonTest(
-      "OneLineNoSpaces",
+      "OneLineNoSpaces", RECOMMENDED,
       "{\"optionalInt32\":1,\"optionalInt64\":2}",
       R"(
         optional_int32: 1
         optional_int64: 2
       )");
   RunValidJsonTest(
-      "OneLineWithSpaces",
+      "OneLineWithSpaces", RECOMMENDED,
       "{ \"optionalInt32\" : 1 , \"optionalInt64\" : 2 }",
       R"(
         optional_int32: 1
         optional_int64: 2
       )");
   RunValidJsonTest(
-      "MultilineNoSpaces",
+      "MultilineNoSpaces", RECOMMENDED,
       "{\n\"optionalInt32\"\n:\n1\n,\n\"optionalInt64\"\n:\n2\n}",
       R"(
         optional_int32: 1
         optional_int64: 2
       )");
   RunValidJsonTest(
-      "MultilineWithSpaces",
+      "MultilineWithSpaces", RECOMMENDED,
       "{\n  \"optionalInt32\"  :  1\n  ,\n  \"optionalInt64\"  :  2\n}\n",
       R"(
         optional_int32: 1
@@ -826,26 +849,26 @@ bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
       )");
   // Missing comma between key/value pairs.
   ExpectParseFailureForJson(
-      "MissingCommaOneLine",
+      "MissingCommaOneLine", RECOMMENDED,
       "{ \"optionalInt32\": 1 \"optionalInt64\": 2 }");
   ExpectParseFailureForJson(
-      "MissingCommaMultiline",
+      "MissingCommaMultiline", RECOMMENDED,
       "{\n  \"optionalInt32\": 1\n  \"optionalInt64\": 2\n}");
   // Duplicated field names are not allowed.
   ExpectParseFailureForJson(
-      "FieldNameDuplicate",
+      "FieldNameDuplicate", RECOMMENDED,
       R"({
         "optionalNestedMessage": {a: 1},
         "optionalNestedMessage": {}
       })");
   ExpectParseFailureForJson(
-      "FieldNameDuplicateDifferentCasing1",
+      "FieldNameDuplicateDifferentCasing1", RECOMMENDED,
       R"({
         "optional_nested_message": {a: 1},
         "optionalNestedMessage": {}
       })");
   ExpectParseFailureForJson(
-      "FieldNameDuplicateDifferentCasing2",
+      "FieldNameDuplicateDifferentCasing2", RECOMMENDED,
       R"({
         "optionalNestedMessage": {a: 1},
         "optional_nested_message": {}
@@ -854,7 +877,7 @@ bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
   // all be correct.
   // Serializers should use lowerCamelCase by default.
   RunValidJsonTestWithValidator(
-      "FieldNameInLowerCamelCase",
+      "FieldNameInLowerCamelCase", REQUIRED,
       R"({
         "fieldname1": 1,
         "fieldName2": 2,
@@ -868,7 +891,7 @@ bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
             value.isMember("fieldName4");
       });
   RunValidJsonTestWithValidator(
-      "FieldNameWithNumbers",
+      "FieldNameWithNumbers", REQUIRED,
       R"({
         "field0name5": 5,
         "field0Name6": 6
@@ -878,25 +901,25 @@ bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
             value.isMember("field0Name6");
       });
   RunValidJsonTestWithValidator(
-      "FieldNameWithMixedCases",
+      "FieldNameWithMixedCases", REQUIRED,
       R"({
         "fieldName7": 7,
-        "fieldName8": 8,
+        "FieldName8": 8,
         "fieldName9": 9,
-        "fieldName10": 10,
-        "fIELDNAME11": 11,
-        "fIELDName12": 12
+        "FieldName10": 10,
+        "FIELDNAME11": 11,
+        "FIELDName12": 12
       })",
       [](const Json::Value& value) {
         return value.isMember("fieldName7") &&
-            value.isMember("fieldName8") &&
+            value.isMember("FieldName8") &&
             value.isMember("fieldName9") &&
-            value.isMember("fieldName10") &&
-            value.isMember("fIELDNAME11") &&
-            value.isMember("fIELDName12");
+            value.isMember("FieldName10") &&
+            value.isMember("FIELDNAME11") &&
+            value.isMember("FIELDName12");
       });
   RunValidJsonTestWithValidator(
-      "FieldNameWithDoubleUnderscores",
+      "FieldNameWithDoubleUnderscores", RECOMMENDED,
       R"({
         "fieldName13": 13,
         "fieldName14": 14,
@@ -916,27 +939,27 @@ bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
 
   // Integer fields.
   RunValidJsonTest(
-      "Int32FieldMaxValue",
+      "Int32FieldMaxValue", REQUIRED,
       R"({"optionalInt32": 2147483647})",
       "optional_int32: 2147483647");
   RunValidJsonTest(
-      "Int32FieldMinValue",
+      "Int32FieldMinValue", REQUIRED,
       R"({"optionalInt32": -2147483648})",
       "optional_int32: -2147483648");
   RunValidJsonTest(
-      "Uint32FieldMaxValue",
+      "Uint32FieldMaxValue", REQUIRED,
       R"({"optionalUint32": 4294967295})",
       "optional_uint32: 4294967295");
   RunValidJsonTest(
-      "Int64FieldMaxValue",
+      "Int64FieldMaxValue", REQUIRED,
       R"({"optionalInt64": "9223372036854775807"})",
       "optional_int64: 9223372036854775807");
   RunValidJsonTest(
-      "Int64FieldMinValue",
+      "Int64FieldMinValue", REQUIRED,
       R"({"optionalInt64": "-9223372036854775808"})",
       "optional_int64: -9223372036854775808");
   RunValidJsonTest(
-      "Uint64FieldMaxValue",
+      "Uint64FieldMaxValue", REQUIRED,
       R"({"optionalUint64": "18446744073709551615"})",
       "optional_uint64: 18446744073709551615");
   // While not the largest Int64, this is the largest
@@ -946,127 +969,127 @@ bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
   // work in some implementations, but should not be
   // relied upon.
   RunValidJsonTest(
-      "Int64FieldMaxValueNotQuoted",
+      "Int64FieldMaxValueNotQuoted", REQUIRED,
       R"({"optionalInt64": 9223372036854774784})",
       "optional_int64: 9223372036854774784");
   RunValidJsonTest(
-      "Int64FieldMinValueNotQuoted",
+      "Int64FieldMinValueNotQuoted", REQUIRED,
       R"({"optionalInt64": -9223372036854775808})",
       "optional_int64: -9223372036854775808");
   // Largest interoperable Uint64; see comment above
   // for Int64FieldMaxValueNotQuoted.
   RunValidJsonTest(
-      "Uint64FieldMaxValueNotQuoted",
+      "Uint64FieldMaxValueNotQuoted", REQUIRED,
       R"({"optionalUint64": 18446744073709549568})",
       "optional_uint64: 18446744073709549568");
   // Values can be represented as JSON strings.
   RunValidJsonTest(
-      "Int32FieldStringValue",
+      "Int32FieldStringValue", REQUIRED,
       R"({"optionalInt32": "2147483647"})",
       "optional_int32: 2147483647");
   RunValidJsonTest(
-      "Int32FieldStringValueEscaped",
+      "Int32FieldStringValueEscaped", REQUIRED,
       R"({"optionalInt32": "2\u003147483647"})",
       "optional_int32: 2147483647");
 
   // Parsers reject out-of-bound integer values.
   ExpectParseFailureForJson(
-      "Int32FieldTooLarge",
+      "Int32FieldTooLarge", REQUIRED,
       R"({"optionalInt32": 2147483648})");
   ExpectParseFailureForJson(
-      "Int32FieldTooSmall",
+      "Int32FieldTooSmall", REQUIRED,
       R"({"optionalInt32": -2147483649})");
   ExpectParseFailureForJson(
-      "Uint32FieldTooLarge",
+      "Uint32FieldTooLarge", REQUIRED,
       R"({"optionalUint32": 4294967296})");
   ExpectParseFailureForJson(
-      "Int64FieldTooLarge",
+      "Int64FieldTooLarge", REQUIRED,
       R"({"optionalInt64": "9223372036854775808"})");
   ExpectParseFailureForJson(
-      "Int64FieldTooSmall",
+      "Int64FieldTooSmall", REQUIRED,
       R"({"optionalInt64": "-9223372036854775809"})");
   ExpectParseFailureForJson(
-      "Uint64FieldTooLarge",
+      "Uint64FieldTooLarge", REQUIRED,
       R"({"optionalUint64": "18446744073709551616"})");
   // Parser reject non-integer numeric values as well.
   ExpectParseFailureForJson(
-      "Int32FieldNotInteger",
+      "Int32FieldNotInteger", REQUIRED,
       R"({"optionalInt32": 0.5})");
   ExpectParseFailureForJson(
-      "Uint32FieldNotInteger",
+      "Uint32FieldNotInteger", REQUIRED,
       R"({"optionalUint32": 0.5})");
   ExpectParseFailureForJson(
-      "Int64FieldNotInteger",
+      "Int64FieldNotInteger", REQUIRED,
       R"({"optionalInt64": "0.5"})");
   ExpectParseFailureForJson(
-      "Uint64FieldNotInteger",
+      "Uint64FieldNotInteger", REQUIRED,
       R"({"optionalUint64": "0.5"})");
 
   // Integers but represented as float values are accepted.
   RunValidJsonTest(
-      "Int32FieldFloatTrailingZero",
+      "Int32FieldFloatTrailingZero", REQUIRED,
       R"({"optionalInt32": 100000.000})",
       "optional_int32: 100000");
   RunValidJsonTest(
-      "Int32FieldExponentialFormat",
+      "Int32FieldExponentialFormat", REQUIRED,
       R"({"optionalInt32": 1e5})",
       "optional_int32: 100000");
   RunValidJsonTest(
-      "Int32FieldMaxFloatValue",
+      "Int32FieldMaxFloatValue", REQUIRED,
       R"({"optionalInt32": 2.147483647e9})",
       "optional_int32: 2147483647");
   RunValidJsonTest(
-      "Int32FieldMinFloatValue",
+      "Int32FieldMinFloatValue", REQUIRED,
       R"({"optionalInt32": -2.147483648e9})",
       "optional_int32: -2147483648");
   RunValidJsonTest(
-      "Uint32FieldMaxFloatValue",
+      "Uint32FieldMaxFloatValue", REQUIRED,
       R"({"optionalUint32": 4.294967295e9})",
       "optional_uint32: 4294967295");
 
   // Parser reject non-numeric values.
   ExpectParseFailureForJson(
-      "Int32FieldNotNumber",
+      "Int32FieldNotNumber", REQUIRED,
       R"({"optionalInt32": "3x3"})");
   ExpectParseFailureForJson(
-      "Uint32FieldNotNumber",
+      "Uint32FieldNotNumber", REQUIRED,
       R"({"optionalUint32": "3x3"})");
   ExpectParseFailureForJson(
-      "Int64FieldNotNumber",
+      "Int64FieldNotNumber", REQUIRED,
       R"({"optionalInt64": "3x3"})");
   ExpectParseFailureForJson(
-      "Uint64FieldNotNumber",
+      "Uint64FieldNotNumber", REQUIRED,
       R"({"optionalUint64": "3x3"})");
   // JSON does not allow "+" on numric values.
   ExpectParseFailureForJson(
-      "Int32FieldPlusSign",
+      "Int32FieldPlusSign", REQUIRED,
       R"({"optionalInt32": +1})");
   // JSON doesn't allow leading 0s.
   ExpectParseFailureForJson(
-      "Int32FieldLeadingZero",
+      "Int32FieldLeadingZero", REQUIRED,
       R"({"optionalInt32": 01})");
   ExpectParseFailureForJson(
-      "Int32FieldNegativeWithLeadingZero",
+      "Int32FieldNegativeWithLeadingZero", REQUIRED,
       R"({"optionalInt32": -01})");
   // String values must follow the same syntax rule. Specifically leading
   // or traling spaces are not allowed.
   ExpectParseFailureForJson(
-      "Int32FieldLeadingSpace",
+      "Int32FieldLeadingSpace", REQUIRED,
       R"({"optionalInt32": " 1"})");
   ExpectParseFailureForJson(
-      "Int32FieldTrailingSpace",
+      "Int32FieldTrailingSpace", REQUIRED,
       R"({"optionalInt32": "1 "})");
 
   // 64-bit values are serialized as strings.
   RunValidJsonTestWithValidator(
-      "Int64FieldBeString",
+      "Int64FieldBeString", RECOMMENDED,
       R"({"optionalInt64": 1})",
       [](const Json::Value& value) {
         return value["optionalInt64"].type() == Json::stringValue &&
             value["optionalInt64"].asString() == "1";
       });
   RunValidJsonTestWithValidator(
-      "Uint64FieldBeString",
+      "Uint64FieldBeString", RECOMMENDED,
       R"({"optionalUint64": 1})",
       [](const Json::Value& value) {
         return value["optionalUint64"].type() == Json::stringValue &&
@@ -1075,73 +1098,73 @@ bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
 
   // Bool fields.
   RunValidJsonTest(
-      "BoolFieldTrue",
+      "BoolFieldTrue", REQUIRED,
       R"({"optionalBool":true})",
       "optional_bool: true");
   RunValidJsonTest(
-      "BoolFieldFalse",
+      "BoolFieldFalse", REQUIRED,
       R"({"optionalBool":false})",
       "optional_bool: false");
 
   // Other forms are not allowed.
   ExpectParseFailureForJson(
-      "BoolFieldIntegerZero",
+      "BoolFieldIntegerZero", RECOMMENDED,
       R"({"optionalBool":0})");
   ExpectParseFailureForJson(
-      "BoolFieldIntegerOne",
+      "BoolFieldIntegerOne", RECOMMENDED,
       R"({"optionalBool":1})");
   ExpectParseFailureForJson(
-      "BoolFieldCamelCaseTrue",
+      "BoolFieldCamelCaseTrue", RECOMMENDED,
       R"({"optionalBool":True})");
   ExpectParseFailureForJson(
-      "BoolFieldCamelCaseFalse",
+      "BoolFieldCamelCaseFalse", RECOMMENDED,
       R"({"optionalBool":False})");
   ExpectParseFailureForJson(
-      "BoolFieldAllCapitalTrue",
+      "BoolFieldAllCapitalTrue", RECOMMENDED,
       R"({"optionalBool":TRUE})");
   ExpectParseFailureForJson(
-      "BoolFieldAllCapitalFalse",
+      "BoolFieldAllCapitalFalse", RECOMMENDED,
       R"({"optionalBool":FALSE})");
   ExpectParseFailureForJson(
-      "BoolFieldDoubleQuotedTrue",
+      "BoolFieldDoubleQuotedTrue", RECOMMENDED,
       R"({"optionalBool":"true"})");
   ExpectParseFailureForJson(
-      "BoolFieldDoubleQuotedFalse",
+      "BoolFieldDoubleQuotedFalse", RECOMMENDED,
       R"({"optionalBool":"false"})");
 
   // Float fields.
   RunValidJsonTest(
-      "FloatFieldMinPositiveValue",
+      "FloatFieldMinPositiveValue", REQUIRED,
       R"({"optionalFloat": 1.175494e-38})",
       "optional_float: 1.175494e-38");
   RunValidJsonTest(
-      "FloatFieldMaxNegativeValue",
+      "FloatFieldMaxNegativeValue", REQUIRED,
       R"({"optionalFloat": -1.175494e-38})",
       "optional_float: -1.175494e-38");
   RunValidJsonTest(
-      "FloatFieldMaxPositiveValue",
+      "FloatFieldMaxPositiveValue", REQUIRED,
       R"({"optionalFloat": 3.402823e+38})",
       "optional_float: 3.402823e+38");
   RunValidJsonTest(
-      "FloatFieldMinNegativeValue",
+      "FloatFieldMinNegativeValue", REQUIRED,
       R"({"optionalFloat": 3.402823e+38})",
       "optional_float: 3.402823e+38");
   // Values can be quoted.
   RunValidJsonTest(
-      "FloatFieldQuotedValue",
+      "FloatFieldQuotedValue", REQUIRED,
       R"({"optionalFloat": "1"})",
       "optional_float: 1");
   // Special values.
   RunValidJsonTest(
-      "FloatFieldNan",
+      "FloatFieldNan", REQUIRED,
       R"({"optionalFloat": "NaN"})",
       "optional_float: nan");
   RunValidJsonTest(
-      "FloatFieldInfinity",
+      "FloatFieldInfinity", REQUIRED,
       R"({"optionalFloat": "Infinity"})",
       "optional_float: inf");
   RunValidJsonTest(
-      "FloatFieldNegativeInfinity",
+      "FloatFieldNegativeInfinity", REQUIRED,
       R"({"optionalFloat": "-Infinity"})",
       "optional_float: -inf");
   // Non-cannonical Nan will be correctly normalized.
@@ -1152,68 +1175,68 @@ bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
     message.set_optional_float(
         WireFormatLite::DecodeFloat(0x7FA12345));
     RunValidJsonTestWithProtobufInput(
-        "FloatFieldNormalizeQuietNan", message,
+        "FloatFieldNormalizeQuietNan", REQUIRED, message,
         "optional_float: nan");
     // IEEE floating-point standard 64-bit signaling NaN:
     //   1111 1111 1xxx xxxx xxxx xxxx xxxx xxxx
     message.set_optional_float(
         WireFormatLite::DecodeFloat(0xFFB54321));
     RunValidJsonTestWithProtobufInput(
-        "FloatFieldNormalizeSignalingNan", message,
+        "FloatFieldNormalizeSignalingNan", REQUIRED, message,
         "optional_float: nan");
   }
 
   // Special values must be quoted.
   ExpectParseFailureForJson(
-      "FloatFieldNanNotQuoted",
+      "FloatFieldNanNotQuoted", RECOMMENDED,
       R"({"optionalFloat": NaN})");
   ExpectParseFailureForJson(
-      "FloatFieldInfinityNotQuoted",
+      "FloatFieldInfinityNotQuoted", RECOMMENDED,
       R"({"optionalFloat": Infinity})");
   ExpectParseFailureForJson(
-      "FloatFieldNegativeInfinityNotQuoted",
+      "FloatFieldNegativeInfinityNotQuoted", RECOMMENDED,
       R"({"optionalFloat": -Infinity})");
   // Parsers should reject out-of-bound values.
   ExpectParseFailureForJson(
-      "FloatFieldTooSmall",
+      "FloatFieldTooSmall", REQUIRED,
       R"({"optionalFloat": -3.502823e+38})");
   ExpectParseFailureForJson(
-      "FloatFieldTooLarge",
+      "FloatFieldTooLarge", REQUIRED,
       R"({"optionalFloat": 3.502823e+38})");
 
   // Double fields.
   RunValidJsonTest(
-      "DoubleFieldMinPositiveValue",
+      "DoubleFieldMinPositiveValue", REQUIRED,
       R"({"optionalDouble": 2.22507e-308})",
       "optional_double: 2.22507e-308");
   RunValidJsonTest(
-      "DoubleFieldMaxNegativeValue",
+      "DoubleFieldMaxNegativeValue", REQUIRED,
       R"({"optionalDouble": -2.22507e-308})",
       "optional_double: -2.22507e-308");
   RunValidJsonTest(
-      "DoubleFieldMaxPositiveValue",
+      "DoubleFieldMaxPositiveValue", REQUIRED,
       R"({"optionalDouble": 1.79769e+308})",
       "optional_double: 1.79769e+308");
   RunValidJsonTest(
-      "DoubleFieldMinNegativeValue",
+      "DoubleFieldMinNegativeValue", REQUIRED,
       R"({"optionalDouble": -1.79769e+308})",
       "optional_double: -1.79769e+308");
   // Values can be quoted.
   RunValidJsonTest(
-      "DoubleFieldQuotedValue",
+      "DoubleFieldQuotedValue", REQUIRED,
       R"({"optionalDouble": "1"})",
       "optional_double: 1");
   // Speical values.
   RunValidJsonTest(
-      "DoubleFieldNan",
+      "DoubleFieldNan", REQUIRED,
       R"({"optionalDouble": "NaN"})",
       "optional_double: nan");
   RunValidJsonTest(
-      "DoubleFieldInfinity",
+      "DoubleFieldInfinity", REQUIRED,
       R"({"optionalDouble": "Infinity"})",
       "optional_double: inf");
   RunValidJsonTest(
-      "DoubleFieldNegativeInfinity",
+      "DoubleFieldNegativeInfinity", REQUIRED,
       R"({"optionalDouble": "-Infinity"})",
       "optional_double: -inf");
   // Non-cannonical Nan will be correctly normalized.
@@ -1222,55 +1245,55 @@ bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
     message.set_optional_double(
         WireFormatLite::DecodeDouble(0x7FFA123456789ABCLL));
     RunValidJsonTestWithProtobufInput(
-        "DoubleFieldNormalizeQuietNan", message,
+        "DoubleFieldNormalizeQuietNan", REQUIRED, message,
         "optional_double: nan");
     message.set_optional_double(
         WireFormatLite::DecodeDouble(0xFFFBCBA987654321LL));
     RunValidJsonTestWithProtobufInput(
-        "DoubleFieldNormalizeSignalingNan", message,
+        "DoubleFieldNormalizeSignalingNan", REQUIRED, message,
         "optional_double: nan");
   }
 
   // Special values must be quoted.
   ExpectParseFailureForJson(
-      "DoubleFieldNanNotQuoted",
+      "DoubleFieldNanNotQuoted", RECOMMENDED,
       R"({"optionalDouble": NaN})");
   ExpectParseFailureForJson(
-      "DoubleFieldInfinityNotQuoted",
+      "DoubleFieldInfinityNotQuoted", RECOMMENDED,
       R"({"optionalDouble": Infinity})");
   ExpectParseFailureForJson(
-      "DoubleFieldNegativeInfinityNotQuoted",
+      "DoubleFieldNegativeInfinityNotQuoted", RECOMMENDED,
       R"({"optionalDouble": -Infinity})");
 
   // Parsers should reject out-of-bound values.
   ExpectParseFailureForJson(
-      "DoubleFieldTooSmall",
+      "DoubleFieldTooSmall", REQUIRED,
       R"({"optionalDouble": -1.89769e+308})");
   ExpectParseFailureForJson(
-      "DoubleFieldTooLarge",
+      "DoubleFieldTooLarge", REQUIRED,
       R"({"optionalDouble": +1.89769e+308})");
 
   // Enum fields.
   RunValidJsonTest(
-      "EnumField",
+      "EnumField", REQUIRED,
       R"({"optionalNestedEnum": "FOO"})",
       "optional_nested_enum: FOO");
   // Enum values must be represented as strings.
   ExpectParseFailureForJson(
-      "EnumFieldNotQuoted",
+      "EnumFieldNotQuoted", REQUIRED,
       R"({"optionalNestedEnum": FOO})");
   // Numeric values are allowed.
   RunValidJsonTest(
-      "EnumFieldNumericValueZero",
+      "EnumFieldNumericValueZero", REQUIRED,
       R"({"optionalNestedEnum": 0})",
       "optional_nested_enum: FOO");
   RunValidJsonTest(
-      "EnumFieldNumericValueNonZero",
+      "EnumFieldNumericValueNonZero", REQUIRED,
       R"({"optionalNestedEnum": 1})",
       "optional_nested_enum: BAR");
   // Unknown enum values are represented as numeric values.
   RunValidJsonTestWithValidator(
-      "EnumFieldUnknownValue",
+      "EnumFieldUnknownValue", REQUIRED,
       R"({"optionalNestedEnum": 123})",
       [](const Json::Value& value) {
         return value["optionalNestedEnum"].type() == Json::intValue &&
@@ -1279,244 +1302,241 @@ bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
 
   // String fields.
   RunValidJsonTest(
-      "StringField",
+      "StringField", REQUIRED,
       R"({"optionalString": "Hello world!"})",
       "optional_string: \"Hello world!\"");
   RunValidJsonTest(
-      "StringFieldUnicode",
+      "StringFieldUnicode", REQUIRED,
       // Google in Chinese.
       R"({"optionalString": "谷歌"})",
       R"(optional_string: "谷歌")");
   RunValidJsonTest(
-      "StringFieldEscape",
+      "StringFieldEscape", REQUIRED,
       R"({"optionalString": "\"\\\/\b\f\n\r\t"})",
       R"(optional_string: "\"\\/\b\f\n\r\t")");
   RunValidJsonTest(
-      "StringFieldUnicodeEscape",
+      "StringFieldUnicodeEscape", REQUIRED,
       R"({"optionalString": "\u8C37\u6B4C"})",
       R"(optional_string: "谷歌")");
   RunValidJsonTest(
-      "StringFieldUnicodeEscapeWithLowercaseHexLetters",
+      "StringFieldUnicodeEscapeWithLowercaseHexLetters", REQUIRED,
       R"({"optionalString": "\u8c37\u6b4c"})",
       R"(optional_string: "谷歌")");
   RunValidJsonTest(
-      "StringFieldSurrogatePair",
+      "StringFieldSurrogatePair", REQUIRED,
       // The character is an emoji: grinning face with smiling eyes. 😁
       R"({"optionalString": "\uD83D\uDE01"})",
       R"(optional_string: "\xF0\x9F\x98\x81")");
 
   // Unicode escapes must start with "\u" (lowercase u).
   ExpectParseFailureForJson(
-      "StringFieldUppercaseEscapeLetter",
+      "StringFieldUppercaseEscapeLetter", RECOMMENDED,
       R"({"optionalString": "\U8C37\U6b4C"})");
   ExpectParseFailureForJson(
-      "StringFieldInvalidEscape",
+      "StringFieldInvalidEscape", RECOMMENDED,
       R"({"optionalString": "\uXXXX\u6B4C"})");
   ExpectParseFailureForJson(
-      "StringFieldUnterminatedEscape",
+      "StringFieldUnterminatedEscape", RECOMMENDED,
       R"({"optionalString": "\u8C3"})");
   ExpectParseFailureForJson(
-      "StringFieldUnpairedHighSurrogate",
+      "StringFieldUnpairedHighSurrogate", RECOMMENDED,
       R"({"optionalString": "\uD800"})");
   ExpectParseFailureForJson(
-      "StringFieldUnpairedLowSurrogate",
+      "StringFieldUnpairedLowSurrogate", RECOMMENDED,
       R"({"optionalString": "\uDC00"})");
   ExpectParseFailureForJson(
-      "StringFieldSurrogateInWrongOrder",
+      "StringFieldSurrogateInWrongOrder", RECOMMENDED,
       R"({"optionalString": "\uDE01\uD83D"})");
   ExpectParseFailureForJson(
-      "StringFieldNotAString",
+      "StringFieldNotAString", REQUIRED,
       R"({"optionalString": 12345})");
 
   // Bytes fields.
   RunValidJsonTest(
-      "BytesField",
+      "BytesField", REQUIRED,
       R"({"optionalBytes": "AQI="})",
       R"(optional_bytes: "\x01\x02")");
   ExpectParseFailureForJson(
-      "BytesFieldNoPadding",
-      R"({"optionalBytes": "AQI"})");
-  ExpectParseFailureForJson(
-      "BytesFieldInvalidBase64Characters",
+      "BytesFieldInvalidBase64Characters", REQUIRED,
       R"({"optionalBytes": "-_=="})");
 
   // Message fields.
   RunValidJsonTest(
-      "MessageField",
+      "MessageField", REQUIRED,
       R"({"optionalNestedMessage": {"a": 1234}})",
       "optional_nested_message: {a: 1234}");
 
   // Oneof fields.
   ExpectParseFailureForJson(
-      "OneofFieldDuplicate",
+      "OneofFieldDuplicate", REQUIRED,
       R"({"oneofUint32": 1, "oneofString": "test"})");
   // Ensure zero values for oneof make it out/backs.
   {
     TestAllTypes message;
     message.set_oneof_uint32(0);
     RunValidProtobufTest(
-        "OneofZeroUint32", message, "oneof_uint32: 0");
+        "OneofZeroUint32", RECOMMENDED, message, "oneof_uint32: 0");
     message.mutable_oneof_nested_message()->set_a(0);
     RunValidProtobufTest(
-        "OneofZeroMessage", message, "oneof_nested_message: {}");
+        "OneofZeroMessage", RECOMMENDED, message, "oneof_nested_message: {}");
     message.set_oneof_string("");
     RunValidProtobufTest(
-        "OneofZeroString", message, "oneof_string: \"\"");
+        "OneofZeroString", RECOMMENDED, message, "oneof_string: \"\"");
     message.set_oneof_bytes("");
     RunValidProtobufTest(
-        "OneofZeroBytes", message, "oneof_bytes: \"\"");
+        "OneofZeroBytes", RECOMMENDED, message, "oneof_bytes: \"\"");
     message.set_oneof_bool(false);
     RunValidProtobufTest(
-        "OneofZeroBool", message, "oneof_bool: false");
+        "OneofZeroBool", RECOMMENDED, message, "oneof_bool: false");
     message.set_oneof_uint64(0);
     RunValidProtobufTest(
-        "OneofZeroUint64", message, "oneof_uint64: 0");
+        "OneofZeroUint64", RECOMMENDED, message, "oneof_uint64: 0");
     message.set_oneof_float(0.0f);
     RunValidProtobufTest(
-        "OneofZeroFloat", message, "oneof_float: 0");
+        "OneofZeroFloat", RECOMMENDED, message, "oneof_float: 0");
     message.set_oneof_double(0.0);
     RunValidProtobufTest(
-        "OneofZeroDouble", message, "oneof_double: 0");
+        "OneofZeroDouble", RECOMMENDED, message, "oneof_double: 0");
     message.set_oneof_enum(TestAllTypes::FOO);
     RunValidProtobufTest(
-        "OneofZeroEnum", message, "oneof_enum: FOO");
+        "OneofZeroEnum", RECOMMENDED, message, "oneof_enum: FOO");
   }
   RunValidJsonTest(
-      "OneofZeroUint32",
+      "OneofZeroUint32", RECOMMENDED,
       R"({"oneofUint32": 0})", "oneof_uint32: 0");
   RunValidJsonTest(
-      "OneofZeroMessage",
+      "OneofZeroMessage", RECOMMENDED,
       R"({"oneofNestedMessage": {}})", "oneof_nested_message: {}");
   RunValidJsonTest(
-      "OneofZeroString",
+      "OneofZeroString", RECOMMENDED,
       R"({"oneofString": ""})", "oneof_string: \"\"");
   RunValidJsonTest(
-      "OneofZeroBytes",
+      "OneofZeroBytes", RECOMMENDED,
       R"({"oneofBytes": ""})", "oneof_bytes: \"\"");
   RunValidJsonTest(
-      "OneofZeroBool",
+      "OneofZeroBool", RECOMMENDED,
       R"({"oneofBool": false})", "oneof_bool: false");
   RunValidJsonTest(
-      "OneofZeroUint64",
+      "OneofZeroUint64", RECOMMENDED,
       R"({"oneofUint64": 0})", "oneof_uint64: 0");
   RunValidJsonTest(
-      "OneofZeroFloat",
+      "OneofZeroFloat", RECOMMENDED,
       R"({"oneofFloat": 0.0})", "oneof_float: 0");
   RunValidJsonTest(
-      "OneofZeroDouble",
+      "OneofZeroDouble", RECOMMENDED,
       R"({"oneofDouble": 0.0})", "oneof_double: 0");
   RunValidJsonTest(
-      "OneofZeroEnum",
+      "OneofZeroEnum", RECOMMENDED,
       R"({"oneofEnum":"FOO"})", "oneof_enum: FOO");
 
   // Repeated fields.
   RunValidJsonTest(
-      "PrimitiveRepeatedField",
+      "PrimitiveRepeatedField", REQUIRED,
       R"({"repeatedInt32": [1, 2, 3, 4]})",
       "repeated_int32: [1, 2, 3, 4]");
   RunValidJsonTest(
-      "EnumRepeatedField",
+      "EnumRepeatedField", REQUIRED,
       R"({"repeatedNestedEnum": ["FOO", "BAR", "BAZ"]})",
       "repeated_nested_enum: [FOO, BAR, BAZ]");
   RunValidJsonTest(
-      "StringRepeatedField",
+      "StringRepeatedField", REQUIRED,
       R"({"repeatedString": ["Hello", "world"]})",
       R"(repeated_string: ["Hello", "world"])");
   RunValidJsonTest(
-      "BytesRepeatedField",
+      "BytesRepeatedField", REQUIRED,
       R"({"repeatedBytes": ["AAEC", "AQI="]})",
       R"(repeated_bytes: ["\x00\x01\x02", "\x01\x02"])");
   RunValidJsonTest(
-      "MessageRepeatedField",
+      "MessageRepeatedField", REQUIRED,
       R"({"repeatedNestedMessage": [{"a": 1234}, {"a": 5678}]})",
       "repeated_nested_message: {a: 1234}"
       "repeated_nested_message: {a: 5678}");
 
   // Repeated field elements are of incorrect type.
   ExpectParseFailureForJson(
-      "RepeatedFieldWrongElementTypeExpectingIntegersGotBool",
+      "RepeatedFieldWrongElementTypeExpectingIntegersGotBool", REQUIRED,
       R"({"repeatedInt32": [1, false, 3, 4]})");
   ExpectParseFailureForJson(
-      "RepeatedFieldWrongElementTypeExpectingIntegersGotString",
+      "RepeatedFieldWrongElementTypeExpectingIntegersGotString", REQUIRED,
       R"({"repeatedInt32": [1, 2, "name", 4]})");
   ExpectParseFailureForJson(
-      "RepeatedFieldWrongElementTypeExpectingIntegersGotMessage",
+      "RepeatedFieldWrongElementTypeExpectingIntegersGotMessage", REQUIRED,
       R"({"repeatedInt32": [1, 2, 3, {"a": 4}]})");
   ExpectParseFailureForJson(
-      "RepeatedFieldWrongElementTypeExpectingStringsGotInt",
+      "RepeatedFieldWrongElementTypeExpectingStringsGotInt", REQUIRED,
       R"({"repeatedString": ["1", 2, "3", "4"]})");
   ExpectParseFailureForJson(
-      "RepeatedFieldWrongElementTypeExpectingStringsGotBool",
+      "RepeatedFieldWrongElementTypeExpectingStringsGotBool", REQUIRED,
       R"({"repeatedString": ["1", "2", false, "4"]})");
   ExpectParseFailureForJson(
-      "RepeatedFieldWrongElementTypeExpectingStringsGotMessage",
+      "RepeatedFieldWrongElementTypeExpectingStringsGotMessage", REQUIRED,
       R"({"repeatedString": ["1", 2, "3", {"a": 4}]})");
   ExpectParseFailureForJson(
-      "RepeatedFieldWrongElementTypeExpectingMessagesGotInt",
+      "RepeatedFieldWrongElementTypeExpectingMessagesGotInt", REQUIRED,
       R"({"repeatedNestedMessage": [{"a": 1}, 2]})");
   ExpectParseFailureForJson(
-      "RepeatedFieldWrongElementTypeExpectingMessagesGotBool",
+      "RepeatedFieldWrongElementTypeExpectingMessagesGotBool", REQUIRED,
       R"({"repeatedNestedMessage": [{"a": 1}, false]})");
   ExpectParseFailureForJson(
-      "RepeatedFieldWrongElementTypeExpectingMessagesGotString",
+      "RepeatedFieldWrongElementTypeExpectingMessagesGotString", REQUIRED,
       R"({"repeatedNestedMessage": [{"a": 1}, "2"]})");
   // Trailing comma in the repeated field is not allowed.
   ExpectParseFailureForJson(
-      "RepeatedFieldTrailingComma",
+      "RepeatedFieldTrailingComma", RECOMMENDED,
       R"({"repeatedInt32": [1, 2, 3, 4,]})");
   ExpectParseFailureForJson(
-      "RepeatedFieldTrailingCommaWithSpace",
+      "RepeatedFieldTrailingCommaWithSpace", RECOMMENDED,
       "{\"repeatedInt32\": [1, 2, 3, 4 ,]}");
   ExpectParseFailureForJson(
-      "RepeatedFieldTrailingCommaWithSpaceCommaSpace",
+      "RepeatedFieldTrailingCommaWithSpaceCommaSpace", RECOMMENDED,
       "{\"repeatedInt32\": [1, 2, 3, 4 , ]}");
   ExpectParseFailureForJson(
-      "RepeatedFieldTrailingCommaWithNewlines",
+      "RepeatedFieldTrailingCommaWithNewlines", RECOMMENDED,
       "{\"repeatedInt32\": [\n  1,\n  2,\n  3,\n  4,\n]}");
 
   // Map fields.
   RunValidJsonTest(
-      "Int32MapField",
+      "Int32MapField", REQUIRED,
       R"({"mapInt32Int32": {"1": 2, "3": 4}})",
       "map_int32_int32: {key: 1 value: 2}"
       "map_int32_int32: {key: 3 value: 4}");
   ExpectParseFailureForJson(
-      "Int32MapFieldKeyNotQuoted",
+      "Int32MapFieldKeyNotQuoted", RECOMMENDED,
       R"({"mapInt32Int32": {1: 2, 3: 4}})");
   RunValidJsonTest(
-      "Uint32MapField",
+      "Uint32MapField", REQUIRED,
       R"({"mapUint32Uint32": {"1": 2, "3": 4}})",
       "map_uint32_uint32: {key: 1 value: 2}"
       "map_uint32_uint32: {key: 3 value: 4}");
   ExpectParseFailureForJson(
-      "Uint32MapFieldKeyNotQuoted",
+      "Uint32MapFieldKeyNotQuoted", RECOMMENDED,
       R"({"mapUint32Uint32": {1: 2, 3: 4}})");
   RunValidJsonTest(
-      "Int64MapField",
+      "Int64MapField", REQUIRED,
       R"({"mapInt64Int64": {"1": 2, "3": 4}})",
       "map_int64_int64: {key: 1 value: 2}"
       "map_int64_int64: {key: 3 value: 4}");
   ExpectParseFailureForJson(
-      "Int64MapFieldKeyNotQuoted",
+      "Int64MapFieldKeyNotQuoted", RECOMMENDED,
       R"({"mapInt64Int64": {1: 2, 3: 4}})");
   RunValidJsonTest(
-      "Uint64MapField",
+      "Uint64MapField", REQUIRED,
       R"({"mapUint64Uint64": {"1": 2, "3": 4}})",
       "map_uint64_uint64: {key: 1 value: 2}"
       "map_uint64_uint64: {key: 3 value: 4}");
   ExpectParseFailureForJson(
-      "Uint64MapFieldKeyNotQuoted",
+      "Uint64MapFieldKeyNotQuoted", RECOMMENDED,
       R"({"mapUint64Uint64": {1: 2, 3: 4}})");
   RunValidJsonTest(
-      "BoolMapField",
+      "BoolMapField", REQUIRED,
       R"({"mapBoolBool": {"true": true, "false": false}})",
       "map_bool_bool: {key: true value: true}"
       "map_bool_bool: {key: false value: false}");
   ExpectParseFailureForJson(
-      "BoolMapFieldKeyNotQuoted",
+      "BoolMapFieldKeyNotQuoted", RECOMMENDED,
       R"({"mapBoolBool": {true: true, false: false}})");
   RunValidJsonTest(
-      "MessageMapField",
+      "MessageMapField", REQUIRED,
       R"({
         "mapStringNestedMessage": {
           "hello": {"a": 1234},
@@ -1535,21 +1555,21 @@ bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
       )");
   // Since Map keys are represented as JSON strings, escaping should be allowed.
   RunValidJsonTest(
-      "Int32MapEscapedKey",
+      "Int32MapEscapedKey", REQUIRED,
       R"({"mapInt32Int32": {"\u0031": 2}})",
       "map_int32_int32: {key: 1 value: 2}");
   RunValidJsonTest(
-      "Int64MapEscapedKey",
+      "Int64MapEscapedKey", REQUIRED,
       R"({"mapInt64Int64": {"\u0031": 2}})",
       "map_int64_int64: {key: 1 value: 2}");
   RunValidJsonTest(
-      "BoolMapEscapedKey",
+      "BoolMapEscapedKey", REQUIRED,
       R"({"mapBoolBool": {"tr\u0075e": true}})",
       "map_bool_bool: {key: true value: true}");
 
   // "null" is accepted for all fields types.
   RunValidJsonTest(
-      "AllFieldAcceptNull",
+      "AllFieldAcceptNull", REQUIRED,
       R"({
         "optionalInt32": null,
         "optionalInt64": null,
@@ -1577,71 +1597,71 @@ bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
 
   // Repeated field elements cannot be null.
   ExpectParseFailureForJson(
-      "RepeatedFieldPrimitiveElementIsNull",
+      "RepeatedFieldPrimitiveElementIsNull", RECOMMENDED,
       R"({"repeatedInt32": [1, null, 2]})");
   ExpectParseFailureForJson(
-      "RepeatedFieldMessageElementIsNull",
+      "RepeatedFieldMessageElementIsNull", RECOMMENDED,
       R"({"repeatedNestedMessage": [{"a":1}, null, {"a":2}]})");
   // Map field keys cannot be null.
   ExpectParseFailureForJson(
-      "MapFieldKeyIsNull",
+      "MapFieldKeyIsNull", RECOMMENDED,
       R"({"mapInt32Int32": {null: 1}})");
   // Map field values cannot be null.
   ExpectParseFailureForJson(
-      "MapFieldValueIsNull",
+      "MapFieldValueIsNull", RECOMMENDED,
       R"({"mapInt32Int32": {"0": null}})");
 
   // http://www.rfc-editor.org/rfc/rfc7159.txt says strings have to use double
   // quotes.
   ExpectParseFailureForJson(
-      "StringFieldSingleQuoteKey",
+      "StringFieldSingleQuoteKey", RECOMMENDED,
       R"({'optionalString': "Hello world!"})");
   ExpectParseFailureForJson(
-      "StringFieldSingleQuoteValue",
+      "StringFieldSingleQuoteValue", RECOMMENDED,
       R"({"optionalString": 'Hello world!'})");
   ExpectParseFailureForJson(
-      "StringFieldSingleQuoteBoth",
+      "StringFieldSingleQuoteBoth", RECOMMENDED,
       R"({'optionalString': 'Hello world!'})");
 
   // Wrapper types.
   RunValidJsonTest(
-      "OptionalBoolWrapper",
+      "OptionalBoolWrapper", REQUIRED,
       R"({"optionalBoolWrapper": false})",
       "optional_bool_wrapper: {value: false}");
   RunValidJsonTest(
-      "OptionalInt32Wrapper",
+      "OptionalInt32Wrapper", REQUIRED,
       R"({"optionalInt32Wrapper": 0})",
       "optional_int32_wrapper: {value: 0}");
   RunValidJsonTest(
-      "OptionalUint32Wrapper",
+      "OptionalUint32Wrapper", REQUIRED,
       R"({"optionalUint32Wrapper": 0})",
       "optional_uint32_wrapper: {value: 0}");
   RunValidJsonTest(
-      "OptionalInt64Wrapper",
+      "OptionalInt64Wrapper", REQUIRED,
       R"({"optionalInt64Wrapper": 0})",
       "optional_int64_wrapper: {value: 0}");
   RunValidJsonTest(
-      "OptionalUint64Wrapper",
+      "OptionalUint64Wrapper", REQUIRED,
       R"({"optionalUint64Wrapper": 0})",
       "optional_uint64_wrapper: {value: 0}");
   RunValidJsonTest(
-      "OptionalFloatWrapper",
+      "OptionalFloatWrapper", REQUIRED,
       R"({"optionalFloatWrapper": 0})",
       "optional_float_wrapper: {value: 0}");
   RunValidJsonTest(
-      "OptionalDoubleWrapper",
+      "OptionalDoubleWrapper", REQUIRED,
       R"({"optionalDoubleWrapper": 0})",
       "optional_double_wrapper: {value: 0}");
   RunValidJsonTest(
-      "OptionalStringWrapper",
+      "OptionalStringWrapper", REQUIRED,
       R"({"optionalStringWrapper": ""})",
       R"(optional_string_wrapper: {value: ""})");
   RunValidJsonTest(
-      "OptionalBytesWrapper",
+      "OptionalBytesWrapper", REQUIRED,
       R"({"optionalBytesWrapper": ""})",
       R"(optional_bytes_wrapper: {value: ""})");
   RunValidJsonTest(
-      "OptionalWrapperTypesWithNonDefaultValue",
+      "OptionalWrapperTypesWithNonDefaultValue", REQUIRED,
       R"({
         "optionalBoolWrapper": true,
         "optionalInt32Wrapper": 1,
@@ -1665,56 +1685,56 @@ bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
         optional_bytes_wrapper: {value: "\x01\x02"}
       )");
   RunValidJsonTest(
-      "RepeatedBoolWrapper",
+      "RepeatedBoolWrapper", REQUIRED,
       R"({"repeatedBoolWrapper": [true, false]})",
       "repeated_bool_wrapper: {value: true}"
       "repeated_bool_wrapper: {value: false}");
   RunValidJsonTest(
-      "RepeatedInt32Wrapper",
+      "RepeatedInt32Wrapper", REQUIRED,
       R"({"repeatedInt32Wrapper": [0, 1]})",
       "repeated_int32_wrapper: {value: 0}"
       "repeated_int32_wrapper: {value: 1}");
   RunValidJsonTest(
-      "RepeatedUint32Wrapper",
+      "RepeatedUint32Wrapper", REQUIRED,
       R"({"repeatedUint32Wrapper": [0, 1]})",
       "repeated_uint32_wrapper: {value: 0}"
       "repeated_uint32_wrapper: {value: 1}");
   RunValidJsonTest(
-      "RepeatedInt64Wrapper",
+      "RepeatedInt64Wrapper", REQUIRED,
       R"({"repeatedInt64Wrapper": [0, 1]})",
       "repeated_int64_wrapper: {value: 0}"
       "repeated_int64_wrapper: {value: 1}");
   RunValidJsonTest(
-      "RepeatedUint64Wrapper",
+      "RepeatedUint64Wrapper", REQUIRED,
       R"({"repeatedUint64Wrapper": [0, 1]})",
       "repeated_uint64_wrapper: {value: 0}"
       "repeated_uint64_wrapper: {value: 1}");
   RunValidJsonTest(
-      "RepeatedFloatWrapper",
+      "RepeatedFloatWrapper", REQUIRED,
       R"({"repeatedFloatWrapper": [0, 1]})",
       "repeated_float_wrapper: {value: 0}"
       "repeated_float_wrapper: {value: 1}");
   RunValidJsonTest(
-      "RepeatedDoubleWrapper",
+      "RepeatedDoubleWrapper", REQUIRED,
       R"({"repeatedDoubleWrapper": [0, 1]})",
       "repeated_double_wrapper: {value: 0}"
       "repeated_double_wrapper: {value: 1}");
   RunValidJsonTest(
-      "RepeatedStringWrapper",
+      "RepeatedStringWrapper", REQUIRED,
       R"({"repeatedStringWrapper": ["", "AQI="]})",
       R"(
         repeated_string_wrapper: {value: ""}
         repeated_string_wrapper: {value: "AQI="}
       )");
   RunValidJsonTest(
-      "RepeatedBytesWrapper",
+      "RepeatedBytesWrapper", REQUIRED,
       R"({"repeatedBytesWrapper": ["", "AQI="]})",
       R"(
         repeated_bytes_wrapper: {value: ""}
         repeated_bytes_wrapper: {value: "\x01\x02"}
       )");
   RunValidJsonTest(
-      "WrapperTypesWithNullValue",
+      "WrapperTypesWithNullValue", REQUIRED,
       R"({
         "optionalBoolWrapper": null,
         "optionalInt32Wrapper": null,
@@ -1739,55 +1759,55 @@ bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
 
   // Duration
   RunValidJsonTest(
-      "DurationMinValue",
+      "DurationMinValue", REQUIRED,
       R"({"optionalDuration": "-315576000000.999999999s"})",
       "optional_duration: {seconds: -315576000000 nanos: -999999999}");
   RunValidJsonTest(
-      "DurationMaxValue",
+      "DurationMaxValue", REQUIRED,
       R"({"optionalDuration": "315576000000.999999999s"})",
       "optional_duration: {seconds: 315576000000 nanos: 999999999}");
   RunValidJsonTest(
-      "DurationRepeatedValue",
+      "DurationRepeatedValue", REQUIRED,
       R"({"repeatedDuration": ["1.5s", "-1.5s"]})",
       "repeated_duration: {seconds: 1 nanos: 500000000}"
       "repeated_duration: {seconds: -1 nanos: -500000000}");
 
   ExpectParseFailureForJson(
-      "DurationMissingS",
+      "DurationMissingS", REQUIRED,
       R"({"optionalDuration": "1"})");
   ExpectParseFailureForJson(
-      "DurationJsonInputTooSmall",
+      "DurationJsonInputTooSmall", REQUIRED,
       R"({"optionalDuration": "-315576000001.000000000s"})");
   ExpectParseFailureForJson(
-      "DurationJsonInputTooLarge",
+      "DurationJsonInputTooLarge", REQUIRED,
       R"({"optionalDuration": "315576000001.000000000s"})");
   ExpectSerializeFailureForJson(
-      "DurationProtoInputTooSmall",
+      "DurationProtoInputTooSmall", REQUIRED,
       "optional_duration: {seconds: -315576000001 nanos: 0}");
   ExpectSerializeFailureForJson(
-      "DurationProtoInputTooLarge",
+      "DurationProtoInputTooLarge", REQUIRED,
       "optional_duration: {seconds: 315576000001 nanos: 0}");
 
   RunValidJsonTestWithValidator(
-      "DurationHasZeroFractionalDigit",
+      "DurationHasZeroFractionalDigit", RECOMMENDED,
       R"({"optionalDuration": "1.000000000s"})",
       [](const Json::Value& value) {
         return value["optionalDuration"].asString() == "1s";
       });
   RunValidJsonTestWithValidator(
-      "DurationHas3FractionalDigits",
+      "DurationHas3FractionalDigits", RECOMMENDED,
       R"({"optionalDuration": "1.010000000s"})",
       [](const Json::Value& value) {
         return value["optionalDuration"].asString() == "1.010s";
       });
   RunValidJsonTestWithValidator(
-      "DurationHas6FractionalDigits",
+      "DurationHas6FractionalDigits", RECOMMENDED,
       R"({"optionalDuration": "1.000010000s"})",
       [](const Json::Value& value) {
         return value["optionalDuration"].asString() == "1.000010s";
       });
   RunValidJsonTestWithValidator(
-      "DurationHas9FractionalDigits",
+      "DurationHas9FractionalDigits", RECOMMENDED,
       R"({"optionalDuration": "1.000000010s"})",
       [](const Json::Value& value) {
         return value["optionalDuration"].asString() == "1.000000010s";
@@ -1795,15 +1815,15 @@ bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
 
   // Timestamp
   RunValidJsonTest(
-      "TimestampMinValue",
+      "TimestampMinValue", REQUIRED,
       R"({"optionalTimestamp": "0001-01-01T00:00:00Z"})",
       "optional_timestamp: {seconds: -62135596800}");
   RunValidJsonTest(
-      "TimestampMaxValue",
+      "TimestampMaxValue", REQUIRED,
       R"({"optionalTimestamp": "9999-12-31T23:59:59.999999999Z"})",
       "optional_timestamp: {seconds: 253402300799 nanos: 999999999}");
   RunValidJsonTest(
-      "TimestampRepeatedValue",
+      "TimestampRepeatedValue", REQUIRED,
       R"({
         "repeatedTimestamp": [
           "0001-01-01T00:00:00Z",
@@ -1813,68 +1833,68 @@ bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
       "repeated_timestamp: {seconds: -62135596800}"
       "repeated_timestamp: {seconds: 253402300799 nanos: 999999999}");
   RunValidJsonTest(
-      "TimestampWithPositiveOffset",
+      "TimestampWithPositiveOffset", REQUIRED,
       R"({"optionalTimestamp": "1970-01-01T08:00:00+08:00"})",
       "optional_timestamp: {seconds: 0}");
   RunValidJsonTest(
-      "TimestampWithNegativeOffset",
+      "TimestampWithNegativeOffset", REQUIRED,
       R"({"optionalTimestamp": "1969-12-31T16:00:00-08:00"})",
       "optional_timestamp: {seconds: 0}");
 
   ExpectParseFailureForJson(
-      "TimestampJsonInputTooSmall",
+      "TimestampJsonInputTooSmall", REQUIRED,
       R"({"optionalTimestamp": "0000-01-01T00:00:00Z"})");
   ExpectParseFailureForJson(
-      "TimestampJsonInputTooLarge",
+      "TimestampJsonInputTooLarge", REQUIRED,
       R"({"optionalTimestamp": "10000-01-01T00:00:00Z"})");
   ExpectParseFailureForJson(
-      "TimestampJsonInputMissingZ",
+      "TimestampJsonInputMissingZ", REQUIRED,
       R"({"optionalTimestamp": "0001-01-01T00:00:00"})");
   ExpectParseFailureForJson(
-      "TimestampJsonInputMissingT",
+      "TimestampJsonInputMissingT", REQUIRED,
       R"({"optionalTimestamp": "0001-01-01 00:00:00Z"})");
   ExpectParseFailureForJson(
-      "TimestampJsonInputLowercaseZ",
+      "TimestampJsonInputLowercaseZ", REQUIRED,
       R"({"optionalTimestamp": "0001-01-01T00:00:00z"})");
   ExpectParseFailureForJson(
-      "TimestampJsonInputLowercaseT",
+      "TimestampJsonInputLowercaseT", REQUIRED,
       R"({"optionalTimestamp": "0001-01-01t00:00:00Z"})");
   ExpectSerializeFailureForJson(
-      "TimestampProtoInputTooSmall",
+      "TimestampProtoInputTooSmall", REQUIRED,
       "optional_timestamp: {seconds: -62135596801}");
   ExpectSerializeFailureForJson(
-      "TimestampProtoInputTooLarge",
+      "TimestampProtoInputTooLarge", REQUIRED,
       "optional_timestamp: {seconds: 253402300800}");
   RunValidJsonTestWithValidator(
-      "TimestampZeroNormalized",
+      "TimestampZeroNormalized", RECOMMENDED,
       R"({"optionalTimestamp": "1969-12-31T16:00:00-08:00"})",
       [](const Json::Value& value) {
         return value["optionalTimestamp"].asString() ==
             "1970-01-01T00:00:00Z";
       });
   RunValidJsonTestWithValidator(
-      "TimestampHasZeroFractionalDigit",
+      "TimestampHasZeroFractionalDigit", RECOMMENDED,
       R"({"optionalTimestamp": "1970-01-01T00:00:00.000000000Z"})",
       [](const Json::Value& value) {
         return value["optionalTimestamp"].asString() ==
             "1970-01-01T00:00:00Z";
       });
   RunValidJsonTestWithValidator(
-      "TimestampHas3FractionalDigits",
+      "TimestampHas3FractionalDigits", RECOMMENDED,
       R"({"optionalTimestamp": "1970-01-01T00:00:00.010000000Z"})",
       [](const Json::Value& value) {
         return value["optionalTimestamp"].asString() ==
             "1970-01-01T00:00:00.010Z";
       });
   RunValidJsonTestWithValidator(
-      "TimestampHas6FractionalDigits",
+      "TimestampHas6FractionalDigits", RECOMMENDED,
       R"({"optionalTimestamp": "1970-01-01T00:00:00.000010000Z"})",
       [](const Json::Value& value) {
         return value["optionalTimestamp"].asString() ==
             "1970-01-01T00:00:00.000010Z";
       });
   RunValidJsonTestWithValidator(
-      "TimestampHas9FractionalDigits",
+      "TimestampHas9FractionalDigits", RECOMMENDED,
       R"({"optionalTimestamp": "1970-01-01T00:00:00.000000010Z"})",
       [](const Json::Value& value) {
         return value["optionalTimestamp"].asString() ==
@@ -1883,25 +1903,25 @@ bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
 
   // FieldMask
   RunValidJsonTest(
-      "FieldMask",
+      "FieldMask", REQUIRED,
       R"({"optionalFieldMask": "foo,barBaz"})",
       R"(optional_field_mask: {paths: "foo" paths: "bar_baz"})");
   ExpectParseFailureForJson(
-      "FieldMaskInvalidCharacter",
+      "FieldMaskInvalidCharacter", RECOMMENDED,
       R"({"optionalFieldMask": "foo,bar_bar"})");
   ExpectSerializeFailureForJson(
-      "FieldMaskPathsDontRoundTrip",
+      "FieldMaskPathsDontRoundTrip", RECOMMENDED,
       R"(optional_field_mask: {paths: "fooBar"})");
   ExpectSerializeFailureForJson(
-      "FieldMaskNumbersDontRoundTrip",
+      "FieldMaskNumbersDontRoundTrip", RECOMMENDED,
       R"(optional_field_mask: {paths: "foo_3_bar"})");
   ExpectSerializeFailureForJson(
-      "FieldMaskTooManyUnderscore",
+      "FieldMaskTooManyUnderscore", RECOMMENDED,
       R"(optional_field_mask: {paths: "foo__bar"})");
 
   // Struct
   RunValidJsonTest(
-      "Struct",
+      "Struct", REQUIRED,
       R"({
         "optionalStruct": {
           "nullValue": null,
@@ -1967,27 +1987,27 @@ bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
       )");
   // Value
   RunValidJsonTest(
-      "ValueAcceptInteger",
+      "ValueAcceptInteger", REQUIRED,
       R"({"optionalValue": 1})",
       "optional_value: { number_value: 1}");
   RunValidJsonTest(
-      "ValueAcceptFloat",
+      "ValueAcceptFloat", REQUIRED,
       R"({"optionalValue": 1.5})",
       "optional_value: { number_value: 1.5}");
   RunValidJsonTest(
-      "ValueAcceptBool",
+      "ValueAcceptBool", REQUIRED,
       R"({"optionalValue": false})",
       "optional_value: { bool_value: false}");
   RunValidJsonTest(
-      "ValueAcceptNull",
+      "ValueAcceptNull", REQUIRED,
       R"({"optionalValue": null})",
       "optional_value: { null_value: NULL_VALUE}");
   RunValidJsonTest(
-      "ValueAcceptString",
+      "ValueAcceptString", REQUIRED,
       R"({"optionalValue": "hello"})",
       R"(optional_value: { string_value: "hello"})");
   RunValidJsonTest(
-      "ValueAcceptList",
+      "ValueAcceptList", REQUIRED,
       R"({"optionalValue": [0, "hello"]})",
       R"(
         optional_value: {
@@ -2002,7 +2022,7 @@ bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
         }
       )");
   RunValidJsonTest(
-      "ValueAcceptObject",
+      "ValueAcceptObject", REQUIRED,
       R"({"optionalValue": {"value": 1}})",
       R"(
         optional_value: {
@@ -2019,7 +2039,7 @@ bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
 
   // Any
   RunValidJsonTest(
-      "Any",
+      "Any", REQUIRED,
       R"({
         "optionalAny": {
           "@type": "type.googleapis.com/conformance.TestAllTypes",
@@ -2034,7 +2054,7 @@ bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
         }
       )");
   RunValidJsonTest(
-      "AnyNested",
+      "AnyNested", REQUIRED,
       R"({
         "optionalAny": {
           "@type": "type.googleapis.com/google.protobuf.Any",
@@ -2055,7 +2075,7 @@ bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
       )");
   // The special "@type" tag is not required to appear first.
   RunValidJsonTest(
-      "AnyUnorderedTypeTag",
+      "AnyUnorderedTypeTag", REQUIRED,
       R"({
         "optionalAny": {
           "optionalInt32": 12345,
@@ -2071,7 +2091,7 @@ bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
       )");
   // Well-known types in Any.
   RunValidJsonTest(
-      "AnyWithInt32ValueWrapper",
+      "AnyWithInt32ValueWrapper", REQUIRED,
       R"({
         "optionalAny": {
           "@type": "type.googleapis.com/google.protobuf.Int32Value",
@@ -2086,7 +2106,7 @@ bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
         }
       )");
   RunValidJsonTest(
-      "AnyWithDuration",
+      "AnyWithDuration", REQUIRED,
       R"({
         "optionalAny": {
           "@type": "type.googleapis.com/google.protobuf.Duration",
@@ -2102,7 +2122,7 @@ bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
         }
       )");
   RunValidJsonTest(
-      "AnyWithTimestamp",
+      "AnyWithTimestamp", REQUIRED,
       R"({
         "optionalAny": {
           "@type": "type.googleapis.com/google.protobuf.Timestamp",
@@ -2118,7 +2138,7 @@ bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
         }
       )");
   RunValidJsonTest(
-      "AnyWithFieldMask",
+      "AnyWithFieldMask", REQUIRED,
       R"({
         "optionalAny": {
           "@type": "type.googleapis.com/google.protobuf.FieldMask",
@@ -2133,7 +2153,7 @@ bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
         }
       )");
   RunValidJsonTest(
-      "AnyWithStruct",
+      "AnyWithStruct", REQUIRED,
       R"({
         "optionalAny": {
           "@type": "type.googleapis.com/google.protobuf.Struct",
@@ -2155,7 +2175,7 @@ bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
         }
       )");
   RunValidJsonTest(
-      "AnyWithValueForJsonObject",
+      "AnyWithValueForJsonObject", REQUIRED,
       R"({
         "optionalAny": {
           "@type": "type.googleapis.com/google.protobuf.Value",
@@ -2179,7 +2199,7 @@ bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
         }
       )");
   RunValidJsonTest(
-      "AnyWithValueForInteger",
+      "AnyWithValueForInteger", REQUIRED,
       R"({
         "optionalAny": {
           "@type": "type.googleapis.com/google.protobuf.Value",

@@ -36,39 +36,6 @@
 #import "GPBUtilities.h"
 #import "GPBWireFormat.h"
 
-#pragma mark CFDictionaryKeyCallBacks
-
-// We use a custom dictionary here because our keys are numbers and
-// conversion back and forth from NSNumber was costing us performance.
-// If/when we move to C++ this could be done using a std::map and some
-// careful retain/release calls.
-
-static const void *GPBUnknownFieldSetKeyRetain(CFAllocatorRef allocator,
-                                               const void *value) {
-#pragma unused(allocator)
-  return value;
-}
-
-static void GPBUnknownFieldSetKeyRelease(CFAllocatorRef allocator,
-                                         const void *value) {
-#pragma unused(allocator)
-#pragma unused(value)
-}
-
-static CFStringRef GPBUnknownFieldSetCopyKeyDescription(const void *value) {
-  return CFStringCreateWithFormat(kCFAllocatorDefault, NULL, CFSTR("%d"),
-                                  (int)value);
-}
-
-static Boolean GPBUnknownFieldSetKeyEqual(const void *value1,
-                                          const void *value2) {
-  return value1 == value2;
-}
-
-static CFHashCode GPBUnknownFieldSetKeyHash(const void *value) {
-  return (CFHashCode)value;
-}
-
 #pragma mark Helpers
 
 static void checkNumber(int32_t number) {
@@ -291,13 +258,9 @@ static void GPBUnknownFieldSetSerializedSizeAsMessageSet(const void *key,
   int32_t number = [field number];
   checkNumber(number);
   if (!fields_) {
-    CFDictionaryKeyCallBacks keyCallBacks = {
-        // See description above for reason for using custom dictionary.
-        0, GPBUnknownFieldSetKeyRetain, GPBUnknownFieldSetKeyRelease,
-        GPBUnknownFieldSetCopyKeyDescription, GPBUnknownFieldSetKeyEqual,
-        GPBUnknownFieldSetKeyHash,
-    };
-    fields_ = CFDictionaryCreateMutable(kCFAllocatorDefault, 0, &keyCallBacks,
+    // Use a custom dictionary here because the keys are numbers and conversion
+    // back and forth from NSNumber isn't worth the cost.
+    fields_ = CFDictionaryCreateMutable(kCFAllocatorDefault, 0, NULL,
                                         &kCFTypeDictionaryValueCallBacks);
   }
   ssize_t key = number;

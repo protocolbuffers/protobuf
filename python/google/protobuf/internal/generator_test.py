@@ -227,7 +227,8 @@ class GeneratorTest(unittest.TestCase):
                      [unittest_import_pb2.DESCRIPTOR])
     self.assertEqual(unittest_import_pb2.DESCRIPTOR.dependencies,
                      [unittest_import_public_pb2.DESCRIPTOR])
-
+    self.assertEqual(unittest_import_pb2.DESCRIPTOR.public_dependencies,
+                     [unittest_import_public_pb2.DESCRIPTOR])
   def testNoGenericServices(self):
     self.assertTrue(hasattr(unittest_no_generic_services_pb2, "TestMessage"))
     self.assertTrue(hasattr(unittest_no_generic_services_pb2, "FOO"))

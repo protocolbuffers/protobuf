@@ -171,13 +171,6 @@ class _NestedDescriptorBase(DescriptorBase):
     self._serialized_start = serialized_start
     self._serialized_end = serialized_end
 
-  def GetTopLevelContainingType(self):
-    """Returns the root if this is a nested type, or itself if its the root."""
-    desc = self
-    while desc.containing_type is not None:
-      desc = desc.containing_type
-    return desc
-
   def CopyToProto(self, proto):
     """Copies this to the matching proto in descriptor_pb2.
 
@@ -497,7 +490,7 @@ class FieldDescriptor(DescriptorBase):
     def __new__(cls, name, full_name, index, number, type, cpp_type, label,
                 default_value, message_type, enum_type, containing_type,
                 is_extension, extension_scope, options=None,
-                has_default_value=True, containing_oneof=None):
+                has_default_value=True, containing_oneof=None, json_name=None):
       _message.Message._CheckCalledFromGeneratedFile()
       if is_extension:
         return _message.default_pool.FindExtensionByName(full_name)
@@ -507,7 +500,7 @@ class FieldDescriptor(DescriptorBase):
   def __init__(self, name, full_name, index, number, type, cpp_type, label,
                default_value, message_type, enum_type, containing_type,
                is_extension, extension_scope, options=None,
-               has_default_value=True, containing_oneof=None):
+               has_default_value=True, containing_oneof=None, json_name=None):
     """The arguments are as described in the description of FieldDescriptor
     attributes above.
 
@@ -519,6 +512,10 @@ class FieldDescriptor(DescriptorBase):
     self.name = name
     self.full_name = full_name
     self._camelcase_name = None
+    if json_name is None:
+      self.json_name = _ToJsonName(name)
+    else:
+      self.json_name = json_name
     self.index = index
     self.number = number
     self.type = type
@@ -894,6 +891,31 @@ def _ToCamelCase(name):
   return ''.join(result)
 
 
+def _OptionsOrNone(descriptor_proto):
+  """Returns the value of the field `options`, or None if it is not set."""
+  if descriptor_proto.HasField('options'):
+    return descriptor_proto.options
+  else:
+    return None
+
+
+def _ToJsonName(name):
+  """Converts name to Json name and returns it."""
+  capitalize_next = False
+  result = []
+
+  for c in name:
+    if c == '_':
+      capitalize_next = True
+    elif capitalize_next:
+      result.append(c.upper())
+      capitalize_next = False
+    else:
+      result += c
+
+  return ''.join(result)
+
+
 def MakeDescriptor(desc_proto, package='', build_file_if_cpp=True,
                    syntax=None):
   """Make a protobuf Descriptor given a DescriptorProto protobuf.
@@ -970,6 +992,10 @@ def MakeDescriptor(desc_proto, package='', build_file_if_cpp=True,
     full_name = '.'.join(full_message_name + [field_proto.name])
     enum_desc = None
     nested_desc = None
+    if field_proto.json_name:
+      json_name = field_proto.json_name
+    else:
+      json_name = None
     if field_proto.HasField('type_name'):
       type_name = field_proto.type_name
       full_type_name = '.'.join(full_message_name +
@@ -984,10 +1010,11 @@ def MakeDescriptor(desc_proto, package='', build_file_if_cpp=True,
         field_proto.number, field_proto.type,
         FieldDescriptor.ProtoTypeToCppProtoType(field_proto.type),
         field_proto.label, None, nested_desc, enum_desc, None, False, None,
-        options=field_proto.options, has_default_value=False)
+        options=_OptionsOrNone(field_proto), has_default_value=False,
+        json_name=json_name)
     fields.append(field)
 
   desc_name = '.'.join(full_message_name)
   return Descriptor(desc_proto.name, desc_name, None, None, fields,
                     list(nested_types.values()), list(enum_types.values()), [],
-                    options=desc_proto.options)
+                    options=_OptionsOrNone(desc_proto))

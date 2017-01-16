@@ -58,14 +58,16 @@ void** RepeatedPtrFieldBase::InternalExtend(int extend_amount) {
            (std::numeric_limits<size_t>::max() - kRepHeaderSize) /
            sizeof(old_rep->elements[0]))
       << "Requested size is too large to fit into size_t.";
+  size_t bytes = kRepHeaderSize + sizeof(old_rep->elements[0]) * new_size;
   if (arena == NULL) {
-    rep_ = reinterpret_cast<Rep*>(
-        new char[kRepHeaderSize + sizeof(old_rep->elements[0]) * new_size]);
+    rep_ = reinterpret_cast<Rep*>(::operator new(bytes));
   } else {
     rep_ = reinterpret_cast<Rep*>(
-        ::google::protobuf::Arena::CreateArray<char>(arena,
-            kRepHeaderSize + sizeof(old_rep->elements[0]) * new_size));
+        ::google::protobuf::Arena::CreateArray<char>(arena, bytes));
   }
+#if defined(__GXX_DELETE_WITH_SIZE__) || defined(__cpp_sized_deallocation)
+  const int old_total_size = total_size_;
+#endif
   total_size_ = new_size;
   if (old_rep && old_rep->allocated_size > 0) {
     memcpy(rep_->elements, old_rep->elements,
@@ -75,7 +77,13 @@ void** RepeatedPtrFieldBase::InternalExtend(int extend_amount) {
     rep_->allocated_size = 0;
   }
   if (arena == NULL) {
-    delete [] reinterpret_cast<char*>(old_rep);
+#if defined(__GXX_DELETE_WITH_SIZE__) || defined(__cpp_sized_deallocation)
+    const size_t old_size =
+        old_total_size * sizeof(rep_->elements[0]) + kRepHeaderSize;
+    ::operator delete(static_cast<void*>(old_rep), old_size);
+#else
+    ::operator delete(static_cast<void*>(old_rep));
+#endif
   }
   return &rep_->elements[current_size_];
 }

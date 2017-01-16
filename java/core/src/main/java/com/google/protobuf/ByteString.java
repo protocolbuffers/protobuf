@@ -52,9 +52,9 @@ import java.util.NoSuchElementException;
 
 /**
  * Immutable sequence of bytes.  Substring is supported by sharing the reference
- * to the immutable underlying bytes, as with {@link String}.  Concatenation is
- * likewise supported without copying (long strings) by building a tree of
- * pieces in {@link RopeByteString}.
+ * to the immutable underlying bytes.  Concatenation is likewise supported
+ * without copying (long strings) by building a tree of pieces in
+ * {@link RopeByteString}.
  * <p>
  * Like {@link String}, the contents of a {@link ByteString} can never be
  * observed to change, not even in the presence of a data race or incorrect
@@ -308,6 +308,18 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
    */
   public static ByteString copyFrom(byte[] bytes) {
     return copyFrom(bytes, 0, bytes.length);
+  }
+
+  /**
+   * Wraps the given bytes into a {@code ByteString}. Intended for internal only usage.
+   */
+  static ByteString wrap(ByteBuffer buffer) {
+    if (buffer.hasArray()) {
+      final int offset = buffer.arrayOffset();
+      return ByteString.wrap(buffer.array(), offset + buffer.position(), buffer.remaining());
+    } else {
+      return new NioByteString(buffer);
+    }
   }
 
   /**
@@ -679,6 +691,7 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
    */
   abstract void writeTo(ByteOutput byteOutput) throws IOException;
 
+
   /**
    * Constructs a read-only {@code java.nio.ByteBuffer} whose content
    * is equal to the contents of this byte string.
@@ -819,6 +832,7 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
     protected final boolean isBalanced() {
       return true;
     }
+
 
     /**
      * Check equality of the substring of given length of this object starting at

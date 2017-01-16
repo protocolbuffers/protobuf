@@ -67,7 +67,7 @@ def do_test(request):
     elif request.WhichOneof('payload') == 'json_payload':
       try:
         json_format.Parse(request.json_payload, test_message)
-      except json_format.ParseError as e:
+      except Exception as e:
         response.parse_error = str(e)
         return response
 
@@ -81,7 +81,11 @@ def do_test(request):
       response.protobuf_payload = test_message.SerializeToString()
 
     elif request.requested_output_format == conformance_pb2.JSON:
-      response.json_payload = json_format.MessageToJson(test_message)
+      try:
+        response.json_payload = json_format.MessageToJson(test_message)
+      except Exception as e:
+        response.serialize_error = str(e)
+        return response
 
   except Exception as e:
     response.runtime_error = str(e)

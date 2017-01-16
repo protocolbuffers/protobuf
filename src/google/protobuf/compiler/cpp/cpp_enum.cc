@@ -260,7 +260,7 @@ void EnumGenerator::GenerateMethods(io::Printer* printer) {
 
   printer->Print(vars,
     "bool $classname$_IsValid(int value) {\n"
-    "  switch(value) {\n");
+    "  switch (value) {\n");
 
   // Multiple values may have the same number.  Make sure we only cover
   // each number once by first constructing a set containing all valid

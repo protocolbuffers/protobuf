@@ -32,7 +32,6 @@ syntax = "proto2";
 
 
 option java_outer_classname = "MapForProto2TestProto";
-option java_generate_equals_and_hash = true;
 
 message TestMap {
   message MessageValue {
@@ -80,6 +79,42 @@ message BizarroTestMap {
   map<string, bytes> int32_to_enum_field = 4; // different key and value types
   map<string, bytes> int32_to_message_field = 5; // different key and value types
   map<string, bytes> string_to_int32_field = 6;  // same key type, different value
+}
+
+// Used to test that java reserved words can be used as protobuf field names
+// Not all reserved words are tested (to avoid bloat) but instead an arbitrary
+// subset of them chosen to cover various keyword categories like
+// type, modifier, declaration, etc.
+message ReservedAsMapField {
+  map<string, uint32> if = 1;
+  map<string, uint32> const = 2;
+  map<string, uint32> private = 3;
+  map<string, uint32> class = 4;
+  map<string, uint32> int = 5;
+  map<string, uint32> void = 6;
+  map<string, uint32> string = 7; // These are also proto keywords
+  map<string, uint32> package = 8;
+  map<string, uint32> enum = 9; // Most recent Java reserved word
+  map<string, uint32> null = 10;
+  // null is not a 'reserved word' per se but as a literal needs similar care
+}
+
+message ReservedAsMapFieldWithEnumValue {
+  enum SampleEnum {
+    A = 0;
+    B = 1;
+  }
+  map<string, SampleEnum> if = 1;
+  map<string, SampleEnum> const = 2;
+  map<string, SampleEnum> private = 3;
+  map<string, SampleEnum> class = 4;
+  map<string, SampleEnum> int = 5;
+  map<string, SampleEnum> void = 6;
+  map<string, SampleEnum> string = 7; // These are also proto keywords
+  map<string, SampleEnum> package = 8;
+  map<string, SampleEnum> enum = 9; // Most recent Java reserved word
+  map<string, SampleEnum> null = 10;
+  // null is not a 'reserved word' per se but as a literal needs similar care
 }
 package map_for_proto2_lite_test;
 option java_package = "map_lite_test";

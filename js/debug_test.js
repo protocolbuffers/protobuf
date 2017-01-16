@@ -65,7 +65,7 @@ describe('debugTest', function() {
       'aBoolean': true
     }, jspb.debug.dump(message));
 
-    message.setAString(undefined);
+    message.clearAString();
 
     assertObjectEquals({
       $name: 'proto.jspb.test.Simple1',

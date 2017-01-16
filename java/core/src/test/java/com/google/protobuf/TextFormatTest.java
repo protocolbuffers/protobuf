@@ -42,11 +42,9 @@ import protobuf_unittest.UnittestProto.TestAllTypes.NestedMessage;
 import protobuf_unittest.UnittestProto.TestEmptyMessage;
 import protobuf_unittest.UnittestProto.TestOneof2;
 import proto2_wireformat_unittest.UnittestMsetWireFormat.TestMessageSet;
-
-import junit.framework.TestCase;
-
 import java.io.StringReader;
 import java.util.List;
+import junit.framework.TestCase;
 
 /**
  * Test case for {@link TextFormat}.
@@ -992,10 +990,35 @@ public class TextFormatTest extends TestCase {
     assertParseSuccessWithOverwriteForbidden("repeated_nested_message [{ bb: 1 }, { bb: 2 }]\n");
   }
 
+  public void testParseShortRepeatedFormOfEmptyRepeatedFields() throws Exception {
+    assertParseSuccessWithOverwriteForbidden("repeated_foreign_enum: []");
+    assertParseSuccessWithOverwriteForbidden("repeated_int32: []\n");
+    assertParseSuccessWithOverwriteForbidden("RepeatedGroup []\n");
+    assertParseSuccessWithOverwriteForbidden("repeated_nested_message []\n");
+  }
+
+  public void testParseShortRepeatedFormWithTrailingComma() throws Exception {
+    assertParseErrorWithOverwriteForbidden(
+        "1:38: Expected identifier. Found \']\'",
+        "repeated_foreign_enum: [FOREIGN_FOO, ]\n");
+    assertParseErrorWithOverwriteForbidden(
+        "1:22: Couldn't parse integer: For input string: \"]\"",
+        "repeated_int32: [ 1, ]\n");
+    assertParseErrorWithOverwriteForbidden(
+        "1:25: Expected \"{\".",
+        "RepeatedGroup [{ a: 1 },]\n");
+    assertParseErrorWithOverwriteForbidden(
+        "1:37: Expected \"{\".",
+        "repeated_nested_message [{ bb: 1 }, ]\n");
+  }
+
   public void testParseShortRepeatedFormOfNonRepeatedFields() throws Exception {
     assertParseErrorWithOverwriteForbidden(
         "1:17: Couldn't parse integer: For input string: \"[\"",
         "optional_int32: [1]\n");
+    assertParseErrorWithOverwriteForbidden(
+        "1:17: Couldn't parse integer: For input string: \"[\"",
+        "optional_int32: []\n");
   }
 
   // =======================================================================

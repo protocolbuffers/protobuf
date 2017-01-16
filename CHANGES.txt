@@ -1,3 +1,83 @@
+2016-09-23 version 3.1.0 (C++/Java/Python/PHP/Ruby/Objective-C/C#/JavaScript/Lite)
+  General
+  * Proto3 support in PHP (alpha).
+  * Various bug fixes.
+
+  C++
+  * Added MessageLite::ByteSizeLong() that’s equivalent to
+    MessageLite::ByteSize() but returns the value in size_t. Useful to check
+    whether a message is over the 2G size limit that protobuf can support.
+  * Moved default_instances to global variables. This allows default_instance
+    addresses to be known at compile time.
+  * Adding missing generic gcc 64-bit atomicops.
+  * Restore New*Callback into google::protobuf namespace since these are used
+    by the service stubs code
+  * JSON support.
+    * Fixed some conformance issues.
+  * Fixed a JSON serialization bug for bytes fields.
+
+  Java
+  * Fixed a bug in TextFormat that doesn’t accept empty repeated fields (i.e.,
+    “field: [ ]”).
+  * JSON support
+    * Fixed JsonFormat to do correct snake_case-to-camelCase conversion for
+      non-style-conforming field names.
+    * Fixed JsonFormat to parse empty Any message correctly.
+    * Added an option to JsonFormat.Parser to ignore unknown fields.
+  * Experimental API
+    * Added UnsafeByteOperations.unsafeWrap(byte[]) to wrap a byte array into
+      ByteString without copy.
+
+  Python
+  * JSON support
+    * Fixed some conformance issues.
+
+  PHP (Alpha)
+  * We have added the proto3 support for PHP via both a pure PHP package and a
+    native c extension. The pure PHP package is intended to provide usability
+    to wider range of PHP platforms, while the c extension is intended to
+    provide higher performance. Both implementations provide the same runtime
+    APIs and share the same generated code. Users don’t need to re-generate
+    code for the same proto definition when they want to switch the
+    implementation later. The pure PHP package is included in the php/src
+    directory, and the c extension is included in the php/ext directory. 
+   
+    Both implementations provide idiomatic PHP APIs:
+    * All messages and enums are defined as PHP classes.
+    * All message fields can only be accessed via getter/setter.
+    * Both repeated field elements and map elements are stored in containers
+      that act like a normal PHP array.
+  
+    Unlike several existing third-party PHP implementations for protobuf, our
+    implementations are built on a "strongly-typed" philosophy: message fields
+    and array/map containers will throw exceptions eagerly when values of the
+    incorrect type (not including those that can be type converted, e.g.,
+    double <-> integer <-> numeric string) are inserted.
+  
+    Currently, pure PHP runtime supports php5.5, 5.6 and 7 on linux. C
+    extension runtime supports php5.5 and 5.6 on linux.
+  
+    See php/README.md for more details about installment. See
+    https://developers.google.com/protocol-buffers/docs/phptutorial for more
+    details about APIs.
+
+  Objective-C
+  * Helpers are now provided for working the the Any well known type (see
+    GPBWellKnownTypes.h for the api additions).
+  * Some improvements in startup code (especially when extensions aren’t used).
+
+  Javascript
+  * Fixed missing import of jspb.Map
+  * Fixed valueWriterFn variable name
+
+  Ruby
+  * Fixed hash computation for JRuby's RubyMessage
+  * Make sure map parsing frames are GC-rooted.
+  * Added API support for well-known types.
+
+  C#
+  * Removed check on dependency in the C# reflection API.
+
 2016-09-06 version 3.0.2 (C++/Java/Python/Ruby/Objective-C/C#/JavaScript/Lite)
   General
   * Various bug fixes.

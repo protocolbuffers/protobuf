@@ -32,11 +32,9 @@ package com.google.protobuf;
 
 import protobuf_unittest.UnittestProto.TestAllTypes;
 import protobuf_unittest.UnittestProto.TestAllTypesOrBuilder;
-
-import junit.framework.TestCase;
-
 import java.util.Collections;
 import java.util.List;
+import junit.framework.TestCase;
 
 /**
  * Tests for {@link RepeatedFieldBuilderV3}. This tests basic functionality.

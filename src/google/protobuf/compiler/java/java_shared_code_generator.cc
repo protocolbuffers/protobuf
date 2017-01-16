@@ -119,7 +119,6 @@ void SharedCodeGenerator::Generate(GeneratorContext* context,
   }
 }
 
-
 void SharedCodeGenerator::GenerateDescriptors(io::Printer* printer) {
   // Embed the descriptor.  We simply serialize the entire FileDescriptorProto
   // and embed it as a string literal, which is parsed and built into real
@@ -133,7 +132,6 @@ void SharedCodeGenerator::GenerateDescriptors(io::Printer* printer) {
   // embedded raw, which is what we want.
   FileDescriptorProto file_proto;
   file_->CopyTo(&file_proto);
-
 
   string file_data;
   file_proto.SerializeToString(&file_data);
