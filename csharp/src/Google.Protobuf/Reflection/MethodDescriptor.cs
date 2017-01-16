@@ -67,6 +67,11 @@ namespace Google.Protobuf.Reflection
         /// </value>
         public bool IsServerStreaming { get { return proto.ServerStreaming; } }
 
+        /// <summary>
+        /// The (possibly empty) set of custom options for this method.
+        /// </summary>
+        public CustomOptions CustomOptions => Proto.Options?.CustomOptions ?? CustomOptions.Empty;
+
         internal MethodDescriptor(MethodDescriptorProto proto, FileDescriptor file,
                                   ServiceDescriptor parent, int index)
             : base(file, parent.FullName + "." + proto.Name, index)

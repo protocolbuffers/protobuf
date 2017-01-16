@@ -221,6 +221,11 @@ namespace Google.Protobuf.Reflection
             File.DescriptorPool.FindSymbol<T>(FullName + "." + name);
 
         /// <summary>
+        /// The (possibly empty) set of custom options for this message.
+        /// </summary>
+        public CustomOptions CustomOptions => Proto.Options?.CustomOptions ?? CustomOptions.Empty;
+
+        /// <summary>
         /// Looks up and cross-links all fields and nested types.
         /// </summary>
         internal void CrossLink()
