@@ -66,5 +66,10 @@ namespace Google.Protobuf.Reflection
         /// Returns the enum descriptor that this value is part of.
         /// </summary>
         public EnumDescriptor EnumDescriptor { get { return enumDescriptor; } }
+
+        /// <summary>
+        /// The (possibly empty) set of custom options for this enum value.
+        /// </summary>
+        public CustomOptions CustomOptions => Proto.Options?.CustomOptions ?? CustomOptions.Empty;
     }
 }

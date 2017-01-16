@@ -151,6 +151,12 @@ void MessageGenerator::Generate(io::Printer* printer) {
     "  get { return Descriptor; }\n"
     "}\n"
     "\n");
+  // CustomOptions property, only for options messages
+  if (IsDescriptorOptionMessage(descriptor_)) {
+    printer->Print(
+      "internal CustomOptions CustomOptions{ get; private set; } = CustomOptions.Empty;\n"
+       "\n");
+  }
 
   // Parameterless constructor and partial OnConstruction method.
   WriteGeneratedCodeAttributes(printer);
@@ -475,10 +481,18 @@ void MessageGenerator::GenerateMergingMethods(io::Printer* printer) {
     "  switch(tag) {\n");
   printer->Indent();
   printer->Indent();
-  printer->Print(
-    "default:\n"
-    "  input.SkipLastField();\n" // We're not storing the data, but we still need to consume it.
-    "  break;\n");
+  // Option messages need to store unknown fields so that options can be parsed later.
+  if (IsDescriptorOptionMessage(descriptor_)) {
+	printer->Print(
+      "default:\n"
+      "  CustomOptions = CustomOptions.ReadOrSkipUnknownField(input);\n"
+      "  break;\n");
+  } else {
+    printer->Print(
+      "default:\n"
+      "  input.SkipLastField();\n" // We're not storing the data, but we still need to consume it.
+      "  break;\n");
+  }
   for (int i = 0; i < fields_by_number().size(); i++) {
     const FieldDescriptor* field = fields_by_number()[i];
     internal::WireFormatLite::WireType wt =
