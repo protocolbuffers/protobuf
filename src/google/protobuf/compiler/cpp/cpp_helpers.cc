@@ -459,6 +459,10 @@ string GlobalShutdownFileName(const string& filename) {
   return "protobuf_ShutdownFile_" + FilenameIdentifier(filename);
 }
 
+string FileLevelNamespace(const string& filename) {
+  return "protobuf_" + FilenameIdentifier(filename);
+}
+
 // Return the qualified C++ name for a file level symbol.
 string QualifiedFileLevelSymbol(const string& package, const string& name) {
   if (package.empty()) {

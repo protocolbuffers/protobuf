@@ -471,6 +471,82 @@ void FileGenerator::GenerateBuildDescriptors(io::Printer* printer) {
   // In optimize_for = LITE_RUNTIME mode, we don't generate AssignDescriptors()
   // and we only use AddDescriptors() to allocate default instances.
 
+  // TODO(ckennelly): Gate this with the same options flag to enable
+  // table-driven parsing.
+
+  printer->Print(
+      "\n"
+      "namespace $file_namespace$ {\n"
+      "\n",
+      "file_namespace", FileLevelNamespace(file_->name()));
+
+  printer->Print("PROTOBUF_CONSTEXPR_VAR ::google::protobuf::internal::ParseTableField\n"
+                 "    const TableStruct::entries[] = {\n");
+  printer->Indent();
+
+  std::vector<size_t> entries;
+  size_t count = 0;
+  for (int i = 0; i < message_generators_.size(); i++) {
+    size_t value = message_generators_[i]->GenerateParseOffsets(printer);
+    entries.push_back(value);
+    count += value;
+  }
+
+  // We need these arrays to exist, and MSVC does not like empty arrays.
+  if (count == 0) {
+    printer->Print("{0, 0, 0, ::google::protobuf::internal::kInvalidMask, 0, 0},\n");
+  }
+
+  printer->Outdent();
+  printer->Print(
+      "};\n"
+      "\n"
+      "PROTOBUF_CONSTEXPR_VAR ::google::protobuf::internal::AuxillaryParseTableField\n"
+      "    const TableStruct::aux[] = {\n");
+  printer->Indent();
+
+  std::vector<size_t> aux_entries;
+  count = 0;
+  for (int i = 0; i < message_generators_.size(); i++) {
+    size_t value = message_generators_[i]->GenerateParseAuxTable(printer);
+    aux_entries.push_back(value);
+    count += value;
+  }
+
+  if (count == 0) {
+    printer->Print("::google::protobuf::internal::AuxillaryParseTableField(),\n");
+  }
+
+  printer->Outdent();
+  printer->Print(
+      "};\n"
+      "PROTOBUF_CONSTEXPR_VAR ::google::protobuf::internal::ParseTable\n"
+      "    const TableStruct::schema[] = {\n");
+  printer->Indent();
+
+  size_t offset = 0;
+  size_t aux_offset = 0;
+  for (int i = 0; i < message_generators_.size(); i++) {
+    message_generators_[i]->GenerateParseTable(printer, offset, aux_offset);
+    offset += entries[i];
+    aux_offset += aux_entries[i];
+  }
+
+  if (message_generators_.empty()) {
+    printer->Print("{ NULL, NULL, 0, -1, -1, false },\n");
+  }
+
+  printer->Outdent();
+  printer->Print(
+      "};\n"
+      "\n");
+
+  printer->Print(
+      "\n"
+      "}  // namespace $file_namespace$\n"
+      "\n",
+      "file_namespace", FileLevelNamespace(file_->name()));
+
   if (HasDescriptorMethods(file_, options_)) {
     if (!message_generators_.empty()) {
       printer->Print(
@@ -884,10 +960,12 @@ void FileGenerator::GenerateLibraryIncludes(io::Printer* printer) {
 
   // OK, it's now safe to #include other files.
   printer->Print(
-    "#include <google/protobuf/arena.h>\n"
-    "#include <google/protobuf/arenastring.h>\n"
-    "#include <google/protobuf/generated_message_util.h>\n"
-    "#include <google/protobuf/metadata.h>\n");
+      "#include <google/protobuf/io/coded_stream.h>\n"
+      "#include <google/protobuf/arena.h>\n"
+      "#include <google/protobuf/arenastring.h>\n"
+      "#include <google/protobuf/generated_message_table_driven.h>\n"
+      "#include <google/protobuf/generated_message_util.h>\n"
+      "#include <google/protobuf/metadata.h>\n");
 
   if (!message_generators_.empty()) {
     if (HasDescriptorMethods(file_, options_)) {
@@ -984,9 +1062,18 @@ void FileGenerator::GenerateGlobalStateFunctionDeclarations(
       "\n"
       "// Internal implementation detail -- do not call these.\n"
       "void $dllexport_decl$$adddescriptorsname$();\n"
-      "void $dllexport_decl$$initdefaultsname$();\n",
+      "void $dllexport_decl$$initdefaultsname$();\n"
+      "namespace $file_namespace$ {\n"
+      "struct $dllexport_decl$TableStruct {\n"
+      "  static const ::google::protobuf::internal::ParseTableField entries[];\n"
+      "  static const ::google::protobuf::internal::AuxillaryParseTableField aux[];\n"
+      "  static const ::google::protobuf::internal::ParseTable schema[];\n"
+      "  static const ::google::protobuf::uint32 offsets[];\n"
+      "};\n"
+      "}  // namespace $file_namespace$\n",
       "initdefaultsname", GlobalInitDefaultsName(file_->name()),
       "adddescriptorsname", GlobalAddDescriptorsName(file_->name()),
+      "file_namespace", FileLevelNamespace(file_->name()),
       "dllexport_decl",
       options_.dllexport_decl.empty() ? "" : options_.dllexport_decl + " ");
 }

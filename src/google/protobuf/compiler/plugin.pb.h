@@ -19,8 +19,10 @@
 #error regenerate this file with a newer version of protoc.
 #endif
 
+#include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/arena.h>
 #include <google/protobuf/arenastring.h>
+#include <google/protobuf/generated_message_table_driven.h>
 #include <google/protobuf/generated_message_util.h>
 #include <google/protobuf/metadata.h>
 #include <google/protobuf/message.h>
@@ -130,6 +132,14 @@ namespace compiler {
 // Internal implementation detail -- do not call these.
 void LIBPROTOC_EXPORT protobuf_AddDesc_google_2fprotobuf_2fcompiler_2fplugin_2eproto();
 void LIBPROTOC_EXPORT protobuf_InitDefaults_google_2fprotobuf_2fcompiler_2fplugin_2eproto();
+namespace protobuf_google_2fprotobuf_2fcompiler_2fplugin_2eproto {
+struct LIBPROTOC_EXPORT TableStruct {
+  static const ::google::protobuf::internal::ParseTableField entries[];
+  static const ::google::protobuf::internal::AuxillaryParseTableField aux[];
+  static const ::google::protobuf::internal::ParseTable schema[];
+  static const ::google::protobuf::uint32 offsets[];
+};
+}  // namespace protobuf_google_2fprotobuf_2fcompiler_2fplugin_2eproto
 
 // ===================================================================
 
@@ -160,6 +170,8 @@ class LIBPROTOC_EXPORT Version : public ::google::protobuf::Message /* @@protoc_
     return reinterpret_cast<const Version*>(
                &_Version_default_instance_);
   }
+  static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
+    0;
 
   void Swap(Version* other);
 
@@ -263,6 +275,7 @@ class LIBPROTOC_EXPORT Version : public ::google::protobuf::Message /* @@protoc_
   ::google::protobuf::int32 patch_;
   friend void LIBPROTOC_EXPORT protobuf_InitDefaults_google_2fprotobuf_2fcompiler_2fplugin_2eproto_impl();
   friend void LIBPROTOC_EXPORT protobuf_AddDesc_google_2fprotobuf_2fcompiler_2fplugin_2eproto_impl();
+  friend struct LIBPROTOC_EXPORT protobuf_google_2fprotobuf_2fcompiler_2fplugin_2eproto::TableStruct;
   friend const ::google::protobuf::uint32* protobuf_Offsets_google_2fprotobuf_2fcompiler_2fplugin_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fcompiler_2fplugin_2eproto();
 
@@ -296,6 +309,8 @@ class LIBPROTOC_EXPORT CodeGeneratorRequest : public ::google::protobuf::Message
     return reinterpret_cast<const CodeGeneratorRequest*>(
                &_CodeGeneratorRequest_default_instance_);
   }
+  static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
+    1;
 
   void Swap(CodeGeneratorRequest* other);
 
@@ -411,6 +426,7 @@ class LIBPROTOC_EXPORT CodeGeneratorRequest : public ::google::protobuf::Message
   ::google::protobuf::compiler::Version* compiler_version_;
   friend void LIBPROTOC_EXPORT protobuf_InitDefaults_google_2fprotobuf_2fcompiler_2fplugin_2eproto_impl();
   friend void LIBPROTOC_EXPORT protobuf_AddDesc_google_2fprotobuf_2fcompiler_2fplugin_2eproto_impl();
+  friend struct LIBPROTOC_EXPORT protobuf_google_2fprotobuf_2fcompiler_2fplugin_2eproto::TableStruct;
   friend const ::google::protobuf::uint32* protobuf_Offsets_google_2fprotobuf_2fcompiler_2fplugin_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fcompiler_2fplugin_2eproto();
 
@@ -444,6 +460,8 @@ class LIBPROTOC_EXPORT CodeGeneratorResponse_File : public ::google::protobuf::M
     return reinterpret_cast<const CodeGeneratorResponse_File*>(
                &_CodeGeneratorResponse_File_default_instance_);
   }
+  static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
+    2;
 
   void Swap(CodeGeneratorResponse_File* other);
 
@@ -553,6 +571,7 @@ class LIBPROTOC_EXPORT CodeGeneratorResponse_File : public ::google::protobuf::M
   ::google::protobuf::internal::ArenaStringPtr content_;
   friend void LIBPROTOC_EXPORT protobuf_InitDefaults_google_2fprotobuf_2fcompiler_2fplugin_2eproto_impl();
   friend void LIBPROTOC_EXPORT protobuf_AddDesc_google_2fprotobuf_2fcompiler_2fplugin_2eproto_impl();
+  friend struct LIBPROTOC_EXPORT protobuf_google_2fprotobuf_2fcompiler_2fplugin_2eproto::TableStruct;
   friend const ::google::protobuf::uint32* protobuf_Offsets_google_2fprotobuf_2fcompiler_2fplugin_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fcompiler_2fplugin_2eproto();
 
@@ -586,6 +605,8 @@ class LIBPROTOC_EXPORT CodeGeneratorResponse : public ::google::protobuf::Messag
     return reinterpret_cast<const CodeGeneratorResponse*>(
                &_CodeGeneratorResponse_default_instance_);
   }
+  static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
+    3;
 
   void Swap(CodeGeneratorResponse* other);
 
@@ -674,6 +695,7 @@ class LIBPROTOC_EXPORT CodeGeneratorResponse : public ::google::protobuf::Messag
   ::google::protobuf::internal::ArenaStringPtr error_;
   friend void LIBPROTOC_EXPORT protobuf_InitDefaults_google_2fprotobuf_2fcompiler_2fplugin_2eproto_impl();
   friend void LIBPROTOC_EXPORT protobuf_AddDesc_google_2fprotobuf_2fcompiler_2fplugin_2eproto_impl();
+  friend struct LIBPROTOC_EXPORT protobuf_google_2fprotobuf_2fcompiler_2fplugin_2eproto::TableStruct;
   friend const ::google::protobuf::uint32* protobuf_Offsets_google_2fprotobuf_2fcompiler_2fplugin_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fcompiler_2fplugin_2eproto();
 

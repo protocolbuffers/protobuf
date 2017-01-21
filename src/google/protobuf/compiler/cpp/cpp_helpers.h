@@ -153,6 +153,10 @@ string GlobalInitDefaultsName(const string& filename);
 // Return the name of the offset table function for a given file.
 string GlobalOffsetTableName(const string& filename);
 
+// For each .proto file generates a unique namespace. In this namespace global
+// definitions are put to prevent collisions.
+string FileLevelNamespace(const string& filename);
+
 // Return the qualified C++ name for a file level symbol.
 string QualifiedFileLevelSymbol(const string& package, const string& name);
 
