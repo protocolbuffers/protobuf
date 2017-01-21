@@ -207,65 +207,28 @@ static upb_msgdef *upb_msgdef_newnamed(const char *name, void *owner) {
   return m;
 }
 
-static upb_enumdef *upb_enumdef_newnamed(const char *name, void *owner) {
-  upb_enumdef *e = upb_enumdef_new(owner);
-  upb_enumdef_setfullname(e, name, NULL);
-  return e;
-}
-
-static void test_replacement() {
+static void test_replacement_fails() {
+  bool ok;
   upb_symtab *s = upb_symtab_new(&s);
-  upb_enumdef *e2;
-  upb_msgdef *m2;
-  upb_enumdef *e;
   upb_status status = UPB_STATUS_INIT;
-  upb_def *newdefs[3];
-  upb_def *newdefs2[1];
-  const upb_msgdef *m3;
+  upb_def *newdefs[2];
 
   upb_msgdef *m = upb_msgdef_newnamed("MyMessage", &s);
-  upb_msgdef_addfield(m, newfield("field1", 1, UPB_TYPE_ENUM,
-                                  UPB_LABEL_OPTIONAL, ".MyEnum", &s),
-                      &s, NULL);
-  m2 = upb_msgdef_newnamed("MyMessage2", &s);
-  e = upb_enumdef_newnamed("MyEnum", &s);
-  ASSERT_STATUS(upb_enumdef_addval(e, "VAL1", 1, &status), &status);
+  upb_msgdef *m2 = upb_msgdef_newnamed("MyMessage", &s);
 
   newdefs[0] = upb_msgdef_upcast_mutable(m);
   newdefs[1] = upb_msgdef_upcast_mutable(m2);
-  newdefs[2] = upb_enumdef_upcast_mutable(e);
-  ASSERT_STATUS(upb_symtab_add(s, newdefs, 3, &s, &status), &status);
+  ok = upb_symtab_add(s, newdefs, 2, &s, &status);
+  ASSERT(ok == false);
 
-  /* Try adding a new definition of MyEnum, MyMessage should get replaced with
-   * a new version. */
-  e2 = upb_enumdef_newnamed("MyEnum", &s);
-  ASSERT_STATUS(upb_enumdef_addval(e2, "VAL1", 1, &status), &status);
-  newdefs2[0] = upb_enumdef_upcast_mutable(e2);
-  ASSERT_STATUS(upb_symtab_add(s, newdefs2, 1, &s, &status), &status);
+  /* Adding just one is ok. */
+  ASSERT_STATUS(upb_symtab_add(s, newdefs, 1, &s, &status), &status);
 
-  m3 = upb_symtab_lookupmsg(s, "MyMessage");
-  ASSERT(m3);
-  /* Must be different because it points to MyEnum which was replaced. */
-  ASSERT(m3 != m);
+  /* Adding a conflicting one is not ok. */
+  newdefs[0] = upb_msgdef_upcast_mutable(m2);
+  ok = upb_symtab_add(s, newdefs, 1, &s, &status);
+  ASSERT(ok == false);
 
-  m3 = upb_symtab_lookupmsg(s, "MyMessage2");
-  /* Should be the same because it was not replaced, nor were any defs that
-   * are reachable from it. */
-  ASSERT(m3 == m2);
-
-  upb_symtab_free(s);
-}
-
-static void test_cycles_in_replacement() {
-  upb_symtab *s = upb_symtab_new(&s);
-  upb_msgdef *m = upb_msgdef_newnamed("M", &s);
-  upb_status status = UPB_STATUS_INIT;
-
-  upb_msgdef_addfield(m, newfield("m", 1, UPB_TYPE_MESSAGE,
-                                  UPB_LABEL_OPTIONAL, ".M", &s),
-                      &s, NULL);
-  ASSERT_STATUS(upb_symtab_add(s, (upb_def**)&m, 1, &s, &status), &status);
-  ASSERT_STATUS(upb_symtab_add(s, NULL, 0, &s, &status), &status);
   upb_symtab_free(s);
 }
 
@@ -365,7 +328,6 @@ static void test_partial_freeze() {
 
 static void test_descriptor_flags() {
   upb_msgdef *m = upb_msgdef_new(&m);
-  upb_msgdef *m2;
   upb_status s = UPB_STATUS_INIT;
 
   ASSERT(upb_msgdef_mapentry(m) == false);
@@ -373,10 +335,7 @@ static void test_descriptor_flags() {
   ASSERT(upb_ok(&s));
   upb_msgdef_setmapentry(m, true);
   ASSERT(upb_msgdef_mapentry(m) == true);
-  m2 = upb_msgdef_dup(m, &m2);
-  ASSERT(upb_msgdef_mapentry(m2) == true);
   upb_msgdef_unref(m, &m);
-  upb_msgdef_unref(m2, &m2);
 }
 
 static void test_mapentry_check() {
@@ -482,8 +441,7 @@ int run_tests(int argc, char *argv[]) {
   test_symbol_resolution();
   test_fielddef();
   test_fielddef_unref();
-  test_replacement();
-  test_cycles_in_replacement();
+  test_replacement_fails();
   test_freeze_free();
   test_partial_freeze();
   test_noreftracking();
