@@ -9,7 +9,6 @@
 #include "upb/def.h"
 #include "upb/handlers.h"
 #include "upb/msg.h"
-#include "upb/symtab.h"
 
 /* Lua 5.1/5.2 compatibility code. */
 #if LUA_VERSION_NUM == 501

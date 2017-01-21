@@ -22,7 +22,7 @@
 #define UPB_GLUE_H
 
 #include <stdbool.h>
-#include "upb/symtab.h"
+#include "upb/def.h"
 
 #ifdef __cplusplus
 #include <vector>

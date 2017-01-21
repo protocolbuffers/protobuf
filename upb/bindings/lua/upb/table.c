@@ -22,7 +22,6 @@
 #include "upb/bindings/lua/upb.h"
 #include "upb/def.h"
 #include "upb/structdefs.int.h"
-#include "upb/symtab.h"
 #include "upb/table.int.h"
 
 static void lupbtable_setnum(lua_State *L, int tab, const char *key,

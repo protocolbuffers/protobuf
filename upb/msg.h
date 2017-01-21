@@ -29,7 +29,6 @@
 #include "upb/def.h"
 #include "upb/handlers.h"
 #include "upb/sink.h"
-#include "upb/symtab.h"
 
 #ifdef __cplusplus
 
