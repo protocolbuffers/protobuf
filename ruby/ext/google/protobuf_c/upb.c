@@ -5126,7 +5126,7 @@ static bool upb_resolve_dfs(const upb_def *def, upb_strtable *addtab,
     const upb_msgdef *m;
 
     UPB_ASSERT(upb_def_isfrozen(def));
-    if (def->type == UPB_DEF_FIELD) continue;
+    if (def->type != UPB_DEF_MSG && def->type != UPB_DEF_ENUM) continue;
     if (upb_strtable_lookup(addtab, upb_def_fullname(def), &v)) {
       need_dup = true;
     }
@@ -5161,7 +5161,7 @@ static bool upb_resolve_dfs(const upb_def *def, upb_strtable *addtab,
     do {
       const char *name;
 
-      if (def->type == UPB_DEF_FIELD) continue;
+      if (def->type != UPB_DEF_MSG && def->type != UPB_DEF_ENUM) continue;
       name = upb_def_fullname(def);
       if (!upb_strtable_lookup(addtab, name, NULL)) {
         upb_def *newdef = upb_def_dup(def, new_owner);

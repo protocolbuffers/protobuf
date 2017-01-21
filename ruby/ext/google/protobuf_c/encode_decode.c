@@ -939,9 +939,9 @@ static void putstr(VALUE str, const upb_fielddef *f, upb_sink *sink) {
   // We should be guaranteed that the string has the correct encoding because
   // we ensured this at assignment time and then froze the string.
   if (upb_fielddef_type(f) == UPB_TYPE_STRING) {
-    assert(rb_enc_from_index(ENCODING_GET(value)) == kRubyStringUtf8Encoding);
+    assert(rb_enc_from_index(ENCODING_GET(str)) == kRubyStringUtf8Encoding);
   } else {
-    assert(rb_enc_from_index(ENCODING_GET(value)) == kRubyString8bitEncoding);
+    assert(rb_enc_from_index(ENCODING_GET(str)) == kRubyString8bitEncoding);
   }
 
   upb_sink_startstr(sink, getsel(f, UPB_HANDLER_STARTSTR), RSTRING_LEN(str),
