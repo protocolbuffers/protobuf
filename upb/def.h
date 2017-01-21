@@ -44,8 +44,7 @@ UPB_DECLARE_DERIVED_TYPE(upb::OneofDef, upb::RefCounted, upb_oneofdef,
                          upb_refcounted)
 UPB_DECLARE_DERIVED_TYPE(upb::FileDef, upb::RefCounted, upb_filedef,
                          upb_refcounted)
-UPB_DECLARE_DERIVED_TYPE(upb::SymbolTable, upb::RefCounted,
-                         upb_symtab, upb_refcounted)
+UPB_DECLARE_TYPE(upb::SymbolTable, upb_symtab)
 
 
 /* The maximum message depth that the type graph can have.  This is a resource
@@ -1434,10 +1433,8 @@ class upb::SymbolTable {
  public:
   /* Returns a new symbol table with a single ref owned by "owner."
    * Returns NULL if memory allocation failed. */
-  static reffed_ptr<SymbolTable> New();
-
-  /* Include RefCounted base methods. */
-  UPB_REFCOUNTED_CPPMETHODS
+  static SymbolTable* New();
+  static void Free(upb::SymbolTable* table);
 
   /* For all lookup functions, the returned pointer is not owned by the
    * caller; it may be invalidated by any non-const call or unref of the
@@ -1527,11 +1524,8 @@ UPB_BEGIN_EXTERN_C
 
 /* Native C API. */
 
-/* Include refcounted methods like upb_symtab_ref(). */
-UPB_REFCOUNTED_CMETHODS(upb_symtab, upb_symtab_upcast)
-
-upb_symtab *upb_symtab_new(const void *owner);
-void upb_symtab_freeze(upb_symtab *s);
+upb_symtab *upb_symtab_new();
+void upb_symtab_free(upb_symtab* s);
 const upb_def *upb_symtab_resolve(const upb_symtab *s, const char *base,
                                   const char *sym);
 const upb_def *upb_symtab_lookup(const upb_symtab *s, const char *sym);
@@ -1562,13 +1556,11 @@ UPB_END_EXTERN_C
 #ifdef __cplusplus
 /* C++ inline wrappers. */
 namespace upb {
-inline reffed_ptr<SymbolTable> SymbolTable::New() {
-  upb_symtab *s = upb_symtab_new(&s);
-  return reffed_ptr<SymbolTable>(s, &s);
+inline SymbolTable* SymbolTable::New() {
+  return upb_symtab_new();
 }
-
-inline void SymbolTable::Freeze() {
-  return upb_symtab_freeze(this);
+inline void SymbolTable::Free(SymbolTable* s) {
+  upb_symtab_free(s);
 }
 inline const Def *SymbolTable::Resolve(const char *base,
                                        const char *sym) const {

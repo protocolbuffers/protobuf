@@ -1090,50 +1090,35 @@ static const struct luaL_Reg lupb_filedef_m[] = {
 
 /* lupb_symtab ****************************************************************/
 
-/* Inherits a ref on the symtab.
- * Checks that narg is a proper lupb_symtab object.  If it is, leaves its
- * metatable on the stack for cache lookups/updates. */
-const upb_symtab *lupb_symtab_check(lua_State *L, int narg) {
-  return lupb_refcounted_check(L, narg, LUPB_SYMTAB);
-}
+typedef struct {
+  upb_symtab *symtab;
+} lupb_symtab;
 
-static upb_symtab *lupb_symtab_checkmutable(lua_State *L, int narg) {
-  const upb_symtab *s = lupb_symtab_check(L, narg);
-  if (upb_symtab_isfrozen(s))
-    luaL_error(L, "not allowed on frozen value");
-  return (upb_symtab*)s;
-}
-
-void lupb_symtab_pushwrapper(lua_State *L, const upb_symtab *s,
-                             const void *ref_donor) {
-  lupb_refcounted_pushwrapper(L, upb_symtab_upcast(s), LUPB_SYMTAB, ref_donor,
-                              sizeof(void *));
-}
-
-void lupb_symtab_pushnewrapper(lua_State *L, const upb_symtab *s,
-                               const void *ref_donor) {
-  lupb_refcounted_pushnewrapper(L, upb_symtab_upcast(s), LUPB_SYMTAB,
-                                ref_donor);
+upb_symtab *lupb_symtab_check(lua_State *L, int narg) {
+  lupb_symtab *lsymtab = luaL_checkudata(L, narg, LUPB_SYMTAB);
+  if (!lsymtab->symtab) {
+    luaL_error(L, "called into dead object");
+  }
+  return lsymtab->symtab;
 }
 
 static int lupb_symtab_new(lua_State *L) {
-  upb_symtab *s = upb_symtab_new(&s);
-  lupb_symtab_pushnewrapper(L, s, &s);
+  lupb_symtab *lsymtab = lua_newuserdata(L, sizeof(*lsymtab));
+  lsymtab->symtab = upb_symtab_new();
+  luaL_getmetatable(L, LUPB_SYMTAB);
+  lua_setmetatable(L, -2);
   return 1;
 }
 
-static int lupb_symtab_freeze(lua_State *L) {
-  upb_symtab_freeze(lupb_symtab_checkmutable(L, 1));
+static int lupb_symtab_gc(lua_State *L) {
+  lupb_symtab *lsymtab = luaL_checkudata(L, 1, LUPB_SYMTAB);
+  upb_symtab_free(lsymtab->symtab);
+  lsymtab->symtab = NULL;
   return 0;
 }
 
-static int lupb_symtab_isfrozen(lua_State *L) {
-  lua_pushboolean(L, upb_symtab_isfrozen(lupb_symtab_check(L, 1)));
-  return 1;
-}
-
 static int lupb_symtab_add(lua_State *L) {
-  upb_symtab *s = lupb_symtab_checkmutable(L, 1);
+  upb_symtab *s = lupb_symtab_check(L, 1);
   int n;
   upb_def **defs;
 
@@ -1161,7 +1146,7 @@ static int lupb_symtab_add(lua_State *L) {
 }
 
 static int lupb_symtab_addfile(lua_State *L) {
-  upb_symtab *s = lupb_symtab_checkmutable(L, 1);
+  upb_symtab *s = lupb_symtab_check(L, 1);
   upb_filedef *f = lupb_filedef_checkmutable(L, 2);
   CHK(upb_symtab_addfile(s, f, &status));
   return 0;
@@ -1201,14 +1186,12 @@ static const struct luaL_Reg lupb_symtab_m[] = {
   {"add", lupb_symtab_add},
   {"add_file", lupb_symtab_addfile},
   {"defs", lupb_symtab_defs},
-  {"freeze", lupb_symtab_freeze},
-  {"is_frozen", lupb_symtab_isfrozen},
   {"lookup", lupb_symtab_lookup},
   {NULL, NULL}
 };
 
 static const struct luaL_Reg lupb_symtab_mm[] = {
-  {"__gc", lupb_refcounted_gc},
+  {"__gc", lupb_symtab_gc},
   {NULL, NULL}
 };
 

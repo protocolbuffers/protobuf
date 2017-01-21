@@ -401,17 +401,6 @@ function test_symtab()
   local msgdef3 = symtab:lookup("ContainingMessage2")
   assert_not_nil(msgdef3)
   assert_equal(msgdef3:field("field5"):subdef(), msgdef2)
-
-  -- Freeze the symtab and verify that mutating operations are not allowed.
-  assert_false(symtab:is_frozen())
-  symtab:freeze()
-  assert_true(symtab:is_frozen())
-  assert_error_match("frozen", function() symtab:freeze() end)
-  assert_error_match("frozen", function()
-    symtab:add{
-      upb.MessageDef{full_name = "Foo"}
-    }
-  end)
 end
 
 function test_symtab_add_extension()

@@ -2142,8 +2142,7 @@ bool upb_filedef_adddep(upb_filedef *f, const upb_filedef *dep) {
   }
 }
 
-static void upb_symtab_free(upb_refcounted *r) {
-  upb_symtab *s = (upb_symtab*)r;
+void upb_symtab_free(upb_symtab *s) {
   upb_strtable_iter i;
   upb_strtable_begin(&i, &s->symtab);
   for (; !upb_strtable_done(&i); upb_strtable_next(&i)) {
@@ -2154,30 +2153,14 @@ static void upb_symtab_free(upb_refcounted *r) {
   upb_gfree(s);
 }
 
-upb_symtab *upb_symtab_new(const void *owner) {
-  static const struct upb_refcounted_vtbl vtbl = {NULL, &upb_symtab_free};
-
+upb_symtab *upb_symtab_new() {
   upb_symtab *s = upb_gmalloc(sizeof(*s));
   if (!s) {
     return NULL;
   }
 
-  upb_refcounted_init(upb_symtab_upcast_mutable(s), &vtbl, owner);
   upb_strtable_init(&s->symtab, UPB_CTYPE_PTR);
   return s;
-}
-
-void upb_symtab_freeze(upb_symtab *s) {
-  upb_refcounted *r;
-  bool ok;
-
-  UPB_ASSERT(!upb_symtab_isfrozen(s));
-  r = upb_symtab_upcast_mutable(s);
-  /* The symtab does not take ref2's (see refcounted.h) on the defs, because
-   * defs cannot refer back to the table and therefore cannot create cycles.  So
-   * 0 will suffice for maxdepth here. */
-  ok = upb_refcounted_freeze(&r, 1, NULL, 0);
-  UPB_ASSERT(ok);
 }
 
 const upb_def *upb_symtab_lookup(const upb_symtab *s, const char *sym) {
@@ -2352,7 +2335,6 @@ static bool symtab_add(upb_symtab *s, upb_def *const*defs, size_t n,
     return true;
   }
 
-  UPB_ASSERT(!upb_symtab_isfrozen(s));
   if (!upb_strtable_init(&addtab, UPB_CTYPE_PTR)) {
     upb_status_seterrmsg(status, "out of memory");
     return false;

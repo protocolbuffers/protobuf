@@ -13,13 +13,13 @@
 const char *descriptor_file;
 
 static void test_empty_symtab() {
-  upb_symtab *s = upb_symtab_new(&s);
+  upb_symtab *s = upb_symtab_new();
   upb_symtab_iter i;
   for (upb_symtab_begin(&i, s, UPB_DEF_ANY); !upb_symtab_done(&i);
        upb_symtab_next(&i)) {
     ASSERT(false);  /* Should not get here. */
   }
-  upb_symtab_unref(s, &s);
+  upb_symtab_free(s);
 }
 
 static void test_noreftracking() {
@@ -39,8 +39,8 @@ static void test_noreftracking() {
   upb_msgdef_unref(md, &md);
 }
 
-static upb_symtab *load_test_proto(void *owner) {
-  upb_symtab *s = upb_symtab_new(owner);
+static upb_symtab *load_test_proto() {
+  upb_symtab *s = upb_symtab_new();
   upb_status status = UPB_STATUS_INIT;
   size_t len;
   char *data = upb_readfile(descriptor_file, &len);
@@ -64,15 +64,12 @@ static upb_symtab *load_test_proto(void *owner) {
 
   upb_gfree(files);
 
-  ASSERT(!upb_symtab_isfrozen(s));
-  upb_symtab_freeze(s);
-  ASSERT(upb_symtab_isfrozen(s));
   return s;
 }
 
 static void test_cycles() {
   bool ok;
-  upb_symtab *s = load_test_proto(&s);
+  upb_symtab *s = load_test_proto();
   const upb_msgdef *m;
   const upb_fielddef *f;
   const upb_def *def;
@@ -84,7 +81,7 @@ static void test_cycles() {
   upb_def_ref(def, &def);
   ASSERT(def);
   ASSERT(upb_def_isfrozen(def));
-  upb_symtab_unref(s, &s);
+  upb_symtab_free(s);
 
   /* Message A has only one subfield: "optional B b = 1". */
   m = upb_downcast_msgdef(def);
@@ -162,7 +159,7 @@ static void test_symbol_resolution() {
   upb_msgdef_unref(m3, &m3);
   upb_msgdef_unref(m2, &m2);
   upb_msgdef_unref(m1, &m1);
-  upb_symtab_unref(symtab, &symtab);
+  upb_symtab_free(symtab);
 }
 
 static void test_fielddef_unref() {
@@ -173,7 +170,7 @@ static void test_fielddef_unref() {
   upb_fielddef_ref(f, &f);
 
   /* Unref symtab; now fielddef is the only thing keeping the msgdef alive. */
-  upb_symtab_unref(s, &s);
+  upb_symtab_free(s);
   /* Check that md is still alive. */
   ok = strcmp(upb_msgdef_fullname(md), "A") == 0;
   ASSERT(ok);
@@ -256,7 +253,7 @@ static void test_replacement() {
    * are reachable from it. */
   ASSERT(m3 == m2);
 
-  upb_symtab_unref(s, &s);
+  upb_symtab_free(s);
 }
 
 static void test_cycles_in_replacement() {
@@ -269,7 +266,7 @@ static void test_cycles_in_replacement() {
                       &s, NULL);
   ASSERT_STATUS(upb_symtab_add(s, (upb_def**)&m, 1, &s, &status), &status);
   ASSERT_STATUS(upb_symtab_add(s, NULL, 0, &s, &status), &status);
-  upb_symtab_unref(s, &s);
+  upb_symtab_free(s);
 }
 
 static void test_freeze_free() {
@@ -413,7 +410,7 @@ static void test_mapentry_check() {
   upb_symtab_add(symtab, defs, 2, NULL, &s);
   ASSERT(upb_ok(&s));
 
-  upb_symtab_unref(symtab, &symtab);
+  upb_symtab_free(symtab);
   upb_msgdef_unref(subm, &subm);
   upb_msgdef_unref(m, &m);
 }
@@ -470,7 +467,7 @@ static void test_oneofs() {
   lookup_field = upb_oneofdef_ntofz(o, "field1");
   ASSERT(lookup_field != NULL && upb_fielddef_number(lookup_field) == 1);
 
-  upb_symtab_unref(symtab, &symtab);
+  upb_symtab_free(symtab);
   upb_oneofdef_unref(o, &o);
 }
 

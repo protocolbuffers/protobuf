@@ -350,7 +350,6 @@ upb_msgfactory *upb_msgfactory_new(const upb_symtab *symtab) {
   upb_msgfactory *ret = upb_gmalloc(sizeof(*ret));
 
   ret->symtab = symtab;
-  upb_symtab_ref(ret->symtab, &ret->symtab);
   upb_inttable_init(&ret->layouts, UPB_CTYPE_PTR);
   upb_inttable_init(&ret->mergehandlers, UPB_CTYPE_CONSTPTR);
 
@@ -373,7 +372,6 @@ void upb_msgfactory_free(upb_msgfactory *f) {
 
   upb_inttable_uninit(&f->layouts);
   upb_inttable_uninit(&f->mergehandlers);
-  upb_symtab_unref(f->symtab, &f->symtab);
   upb_gfree(f);
 }
 

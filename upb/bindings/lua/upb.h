@@ -101,7 +101,7 @@ void *lupb_refcounted_check(lua_State *L, int narg, const char *type);
 const upb_msgdef *lupb_msgdef_check(lua_State *L, int narg);
 const upb_enumdef *lupb_enumdef_check(lua_State *L, int narg);
 const upb_fielddef *lupb_fielddef_check(lua_State *L, int narg);
-const upb_symtab *lupb_symtab_check(lua_State *L, int narg);
+upb_symtab *lupb_symtab_check(lua_State *L, int narg);
 
 void lupb_refcounted_pushnewrapper(lua_State *L, const upb_refcounted *obj,
                                    const char *type, const void *ref_donor);
