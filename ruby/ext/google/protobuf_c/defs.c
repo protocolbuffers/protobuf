@@ -101,7 +101,7 @@ void DescriptorPool_mark(void* _self) {
 
 void DescriptorPool_free(void* _self) {
   DescriptorPool* self = _self;
-  upb_symtab_unref(self->symtab, &self->symtab);
+  upb_symtab_free(self->symtab);
   xfree(self);
 }
 
@@ -113,7 +113,7 @@ void DescriptorPool_free(void* _self) {
  */
 VALUE DescriptorPool_alloc(VALUE klass) {
   DescriptorPool* self = ALLOC(DescriptorPool);
-  self->symtab = upb_symtab_new(&self->symtab);
+  self->symtab = upb_symtab_new();
   return TypedData_Wrap_Struct(klass, &_DescriptorPool_type, self);
 }
 
