@@ -153,7 +153,6 @@ upb_SRCS = \
   upb/msg.c \
   upb/refcounted.c \
   upb/sink.c \
-  upb/symtab.c \
   upb/table.c \
   upb/upb.c \
 
