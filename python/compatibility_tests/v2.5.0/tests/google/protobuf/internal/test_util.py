@@ -567,9 +567,9 @@ def GoldenFile(filename):
   # Search up the directory tree looking for the C++ protobuf source code.
   path = '.'
   while os.path.exists(path):
-    if os.path.exists(os.path.join(path, 'src/google/protobuf')):
+    if os.path.exists(os.path.join(path, 'tests/google/protobuf/internal')):
       # Found it.  Load the golden file from the testdata directory.
-      full_path = os.path.join(path, 'src/google/protobuf/testdata', filename)
+      full_path = os.path.join(path, 'tests/google/protobuf/internal', filename)
       return open(full_path, 'rb')
     path = os.path.join(path, '..')
 
