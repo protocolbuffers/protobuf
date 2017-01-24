@@ -220,6 +220,7 @@ static void test_replacement_fails() {
   newdefs[1] = upb_msgdef_upcast_mutable(m2);
   ok = upb_symtab_add(s, newdefs, 2, &s, &status);
   ASSERT(ok == false);
+  upb_status_clear(&status);
 
   /* Adding just one is ok. */
   ASSERT_STATUS(upb_symtab_add(s, newdefs, 1, &s, &status), &status);
