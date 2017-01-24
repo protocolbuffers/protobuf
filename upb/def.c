@@ -2237,15 +2237,9 @@ static bool symtab_add(upb_symtab *s, upb_def *const*defs, size_t n,
   for (i = 0; i < add_n; i++) {
     upb_def *def = (upb_def*)add_objs[i];
     const char *name = upb_def_fullname(def);
-    upb_value v;
     bool success;
-
-    if (upb_strtable_remove(&s->symtab, name, &v)) {
-      const upb_def *def = upb_value_getptr(v);
-      upb_def_unref(def, s);
-    }
     success = upb_strtable_insert(&s->symtab, name, upb_value_ptr(def));
-    UPB_ASSERT(success == true);
+    UPB_ASSERT(success);
   }
   upb_gfree(add_defs);
   return true;
