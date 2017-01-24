@@ -44,8 +44,7 @@ UPB_DECLARE_DERIVED_TYPE(upb::OneofDef, upb::RefCounted, upb_oneofdef,
                          upb_refcounted)
 UPB_DECLARE_DERIVED_TYPE(upb::FileDef, upb::RefCounted, upb_filedef,
                          upb_refcounted)
-UPB_DECLARE_DERIVED_TYPE(upb::SymbolTable, upb::RefCounted,
-                         upb_symtab, upb_refcounted)
+UPB_DECLARE_TYPE(upb::SymbolTable, upb_symtab)
 
 
 /* The maximum message depth that the type graph can have.  This is a resource
@@ -79,8 +78,6 @@ typedef enum {
 class upb::Def {
  public:
   typedef upb_deftype_t Type;
-
-  Def* Dup(const void *owner) const;
 
   /* upb::RefCounted methods like Ref()/Unref(). */
   UPB_REFCOUNTED_CPPMETHODS
@@ -126,9 +123,6 @@ class upb::Def {
 #endif  /* __cplusplus */
 
 UPB_BEGIN_EXTERN_C
-
-/* Native C API. */
-upb_def *upb_def_dup(const upb_def *def, const void *owner);
 
 /* Include upb_refcounted methods like upb_def_ref()/upb_def_unref(). */
 UPB_REFCOUNTED_CMETHODS(upb_def, upb_def_upcast)
@@ -318,13 +312,6 @@ class upb::FieldDef {
 
   /* Returns NULL if memory allocation failed. */
   static reffed_ptr<FieldDef> New();
-
-  /* Duplicates the given field, returning NULL if memory allocation failed.
-   * When a fielddef is duplicated, the subdef (if any) is made symbolic if it
-   * wasn't already.  If the subdef is set but has no name (which is possible
-   * since msgdefs are not required to have a name) the new fielddef's subdef
-   * will be unset. */
-  FieldDef* Dup(const void* owner) const;
 
   /* upb::RefCounted methods like Ref()/Unref(). */
   UPB_REFCOUNTED_CPPMETHODS
@@ -574,7 +561,6 @@ UPB_BEGIN_EXTERN_C
 
 /* Native C API. */
 upb_fielddef *upb_fielddef_new(const void *owner);
-upb_fielddef *upb_fielddef_dup(const upb_fielddef *f, const void *owner);
 
 /* Include upb_refcounted methods like upb_fielddef_ref(). */
 UPB_REFCOUNTED_CMETHODS(upb_fielddef, upb_fielddef_upcast2)
@@ -784,16 +770,6 @@ class upb::MessageDef {
     return FindOneofByName(str.c_str(), str.size());
   }
 
-  /* Returns a new msgdef that is a copy of the given msgdef (and a copy of all
-   * the fields) but with any references to submessages broken and replaced
-   * with just the name of the submessage.  Returns NULL if memory allocation
-   * failed.
-   *
-   * TODO(haberman): which is more useful, keeping fields resolved or
-   * unresolving them?  If there's no obvious answer, Should this functionality
-   * just be moved into symtab.c? */
-  MessageDef* Dup(const void* owner) const;
-
   /* Is this message a map entry? */
   void setmapentry(bool map_entry);
   bool mapentry() const;
@@ -927,7 +903,6 @@ UPB_REFCOUNTED_CMETHODS(upb_msgdef, upb_msgdef_upcast2)
 
 bool upb_msgdef_freeze(upb_msgdef *m, upb_status *status);
 
-upb_msgdef *upb_msgdef_dup(const upb_msgdef *m, const void *owner);
 const char *upb_msgdef_fullname(const upb_msgdef *m);
 const char *upb_msgdef_name(const upb_msgdef *m);
 int upb_msgdef_numoneofs(const upb_msgdef *m);
@@ -1077,10 +1052,6 @@ class upb::EnumDef {
    * first one that was added. */
   const char* FindValueByNumber(int32_t num) const;
 
-  /* Returns a new EnumDef with all the same values.  The new EnumDef will be
-   * owned by the given owner. */
-  EnumDef* Dup(const void* owner) const;
-
   /* Iteration over name/value pairs.  The order is undefined.
    * Adding an enum val invalidates any iterators.
    *
@@ -1108,7 +1079,6 @@ UPB_BEGIN_EXTERN_C
 
 /* Native C API. */
 upb_enumdef *upb_enumdef_new(const void *owner);
-upb_enumdef *upb_enumdef_dup(const upb_enumdef *e, const void *owner);
 
 /* Include upb_refcounted methods like upb_enumdef_ref(). */
 UPB_REFCOUNTED_CMETHODS(upb_enumdef, upb_enumdef_upcast2)
@@ -1218,10 +1188,6 @@ class upb::OneofDef {
   /* Looks up by tag number. */
   const FieldDef* FindFieldByNumber(uint32_t num) const;
 
-  /* Returns a new OneofDef with all the same fields. The OneofDef will be owned
-   * by the given owner. */
-  OneofDef* Dup(const void* owner) const;
-
   /* Iteration over fields.  The order is undefined. */
   class iterator : public std::iterator<std::forward_iterator_tag, FieldDef*> {
    public:
@@ -1267,7 +1233,6 @@ UPB_BEGIN_EXTERN_C
 
 /* Native C API. */
 upb_oneofdef *upb_oneofdef_new(const void *owner);
-upb_oneofdef *upb_oneofdef_dup(const upb_oneofdef *o, const void *owner);
 
 /* Include upb_refcounted methods like upb_oneofdef_ref(). */
 UPB_REFCOUNTED_CMETHODS(upb_oneofdef, upb_oneofdef_upcast)
@@ -1434,10 +1399,8 @@ class upb::SymbolTable {
  public:
   /* Returns a new symbol table with a single ref owned by "owner."
    * Returns NULL if memory allocation failed. */
-  static reffed_ptr<SymbolTable> New();
-
-  /* Include RefCounted base methods. */
-  UPB_REFCOUNTED_CPPMETHODS
+  static SymbolTable* New();
+  static void Free(upb::SymbolTable* table);
 
   /* For all lookup functions, the returned pointer is not owned by the
    * caller; it may be invalidated by any non-const call or unref of the
@@ -1475,20 +1438,11 @@ class upb::SymbolTable {
    * you ask for an iterator of MessageDef the iterated elements are strongly
    * typed as MessageDef*. */
 
-  /* Adds the given mutable defs to the symtab, resolving all symbols
-   * (including enum default values) and finalizing the defs.  Only one def per
-   * name may be in the list, but defs can replace existing defs in the symtab.
+  /* Adds the given mutable defs to the symtab, resolving all symbols (including
+   * enum default values) and finalizing the defs.  Only one def per name may be
+   * in the list, and the defs may not duplicate any name already in the symtab.
    * All defs must have a name -- anonymous defs are not allowed.  Anonymous
    * defs can still be frozen by calling upb_def_freeze() directly.
-   *
-   * Any existing defs that can reach defs that are being replaced will
-   * themselves be replaced also, so that the resulting set of defs is fully
-   * consistent.
-   *
-   * This logic implemented in this method is a convenience; ultimately it
-   * calls some combination of upb_fielddef_setsubdef(), upb_def_dup(), and
-   * upb_freeze(), any of which the client could call themself.  However, since
-   * the logic for doing so is nontrivial, we provide it here.
    *
    * The entire operation either succeeds or fails.  If the operation fails,
    * the symtab is unchanged, false is returned, and status indicates the
@@ -1499,13 +1453,7 @@ class upb::SymbolTable {
    * leave the defs themselves partially resolved.  Does this matter?  If so we
    * could do a prepass that ensures that all symbols are resolvable and bail
    * if not, so we don't mutate anything until we know the operation will
-   * succeed.
-   *
-   * TODO(haberman): since the defs must be mutable, refining a frozen def
-   * requires making mutable copies of the entire tree.  This is wasteful if
-   * only a few messages are changing.  We may want to add a way of adding a
-   * tree of frozen defs to the symtab (perhaps an alternate constructor where
-   * you pass the root of the tree?) */
+   * succeed. */
   bool Add(Def*const* defs, size_t n, void* ref_donor, Status* status);
 
   bool Add(const std::vector<Def*>& defs, void *owner, Status* status) {
@@ -1527,11 +1475,8 @@ UPB_BEGIN_EXTERN_C
 
 /* Native C API. */
 
-/* Include refcounted methods like upb_symtab_ref(). */
-UPB_REFCOUNTED_CMETHODS(upb_symtab, upb_symtab_upcast)
-
-upb_symtab *upb_symtab_new(const void *owner);
-void upb_symtab_freeze(upb_symtab *s);
+upb_symtab *upb_symtab_new();
+void upb_symtab_free(upb_symtab* s);
 const upb_def *upb_symtab_resolve(const upb_symtab *s, const char *base,
                                   const char *sym);
 const upb_def *upb_symtab_lookup(const upb_symtab *s, const char *sym);
@@ -1562,13 +1507,11 @@ UPB_END_EXTERN_C
 #ifdef __cplusplus
 /* C++ inline wrappers. */
 namespace upb {
-inline reffed_ptr<SymbolTable> SymbolTable::New() {
-  upb_symtab *s = upb_symtab_new(&s);
-  return reffed_ptr<SymbolTable>(s, &s);
+inline SymbolTable* SymbolTable::New() {
+  return upb_symtab_new();
 }
-
-inline void SymbolTable::Freeze() {
-  return upb_symtab_freeze(this);
+inline void SymbolTable::Free(SymbolTable* s) {
+  upb_symtab_free(s);
 }
 inline const Def *SymbolTable::Resolve(const char *base,
                                        const char *sym) const {
@@ -1600,9 +1543,6 @@ UPB_INLINE const char* upb_safecstr(const std::string& str) {
 /* Inline C++ wrappers. */
 namespace upb {
 
-inline Def* Def::Dup(const void* owner) const {
-  return upb_def_dup(this, owner);
-}
 inline Def::Type Def::def_type() const { return upb_def_type(this); }
 inline const char* Def::full_name() const { return upb_def_fullname(this); }
 inline const char* Def::name() const { return upb_def_name(this); }
@@ -1651,9 +1591,6 @@ inline FieldDef::IntegerFormat FieldDef::ConvertIntegerFormat(int32_t val) {
 inline reffed_ptr<FieldDef> FieldDef::New() {
   upb_fielddef *f = upb_fielddef_new(&f);
   return reffed_ptr<FieldDef>(f, &f);
-}
-inline FieldDef* FieldDef::Dup(const void* owner) const {
-  return upb_fielddef_dup(this, owner);
 }
 inline const char* FieldDef::full_name() const {
   return upb_fielddef_fullname(this);
@@ -1894,9 +1831,6 @@ inline const OneofDef* MessageDef::FindOneofByName(const char* name,
                                                    size_t len) const {
   return upb_msgdef_ntoo(this, name, len);
 }
-inline MessageDef* MessageDef::Dup(const void *owner) const {
-  return upb_msgdef_dup(this, owner);
-}
 inline void MessageDef::setmapentry(bool map_entry) {
   upb_msgdef_setmapentry(this, map_entry);
 }
@@ -2065,9 +1999,6 @@ inline bool EnumDef::FindValueByName(const char* name, int32_t *num) const {
 }
 inline const char* EnumDef::FindValueByNumber(int32_t num) const {
   return upb_enumdef_iton(this, num);
-}
-inline EnumDef* EnumDef::Dup(const void* owner) const {
-  return upb_enumdef_dup(this, owner);
 }
 
 inline EnumDef::Iterator::Iterator(const EnumDef* e) {

@@ -401,53 +401,6 @@ function test_symtab()
   local msgdef3 = symtab:lookup("ContainingMessage2")
   assert_not_nil(msgdef3)
   assert_equal(msgdef3:field("field5"):subdef(), msgdef2)
-
-  -- Freeze the symtab and verify that mutating operations are not allowed.
-  assert_false(symtab:is_frozen())
-  symtab:freeze()
-  assert_true(symtab:is_frozen())
-  assert_error_match("frozen", function() symtab:freeze() end)
-  assert_error_match("frozen", function()
-    symtab:add{
-      upb.MessageDef{full_name = "Foo"}
-    }
-  end)
-end
-
-function test_symtab_add_extension()
-  -- Adding an extension at the same time as the extendee.
-  local symtab = upb.SymbolTable{
-    upb.MessageDef{full_name = "M1"},
-    upb.FieldDef{name = "extension1", is_extension = true, number = 1,
-                 type = upb.TYPE_INT32, containing_type_name = "M1"}
-  }
-
-  local m1 = symtab:lookup("M1")
-  assert_not_nil(m1)
-  assert_equal(1, #m1)
-
-  local f1 = m1:field("extension1")
-  assert_not_nil(f1)
-  assert_true(f1:is_extension())
-  assert_true(f1:is_frozen())
-  assert_equal(1, f1:number())
-
-  -- Adding an extension to an existing extendee.
-  symtab:add{
-    upb.FieldDef{name = "extension2", is_extension = true, number = 2,
-                 type = upb.TYPE_INT32, containing_type_name = "M1"}
-  }
-
-  local m1_2 = symtab:lookup("M1")
-  assert_not_nil(m1_2)
-  assert_true(m1 ~= m1_2)
-  assert_equal(2, #m1_2)
-
-  local f2 = m1_2:field("extension2")
-  assert_not_nil(f2)
-  assert_true(f2:is_extension())
-  assert_true(f2:is_frozen())
-  assert_equal(2, f2:number())
 end
 
 function test_numeric_array()

@@ -122,22 +122,6 @@ bool upb_def_setfullname(upb_def *def, const char *fullname, upb_status *s) {
 
 const upb_filedef *upb_def_file(const upb_def *d) { return d->file; }
 
-upb_def *upb_def_dup(const upb_def *def, const void *o) {
-  switch (def->type) {
-    case UPB_DEF_MSG:
-      return upb_msgdef_upcast_mutable(
-          upb_msgdef_dup(upb_downcast_msgdef(def), o));
-    case UPB_DEF_FIELD:
-      return upb_fielddef_upcast_mutable(
-          upb_fielddef_dup(upb_downcast_fielddef(def), o));
-    case UPB_DEF_ENUM:
-      return upb_enumdef_upcast_mutable(
-          upb_enumdef_dup(upb_downcast_enumdef(def), o));
-    default:
-      UPB_UNREACHABLE();
-  }
-}
-
 static bool upb_def_init(upb_def *def, upb_deftype_t type,
                          const struct upb_refcounted_vtbl *vtbl,
                          const void *owner) {
@@ -394,13 +378,14 @@ bool _upb_def_validate(upb_def *const*defs, size_t n, upb_status *s) {
     } else if (def->type == UPB_DEF_FIELD) {
       upb_status_seterrmsg(s, "standalone fielddefs can not be frozen");
       goto err;
-    } else if (def->type == UPB_DEF_ENUM) {
-      if (!upb_validate_enumdef(upb_dyncast_enumdef(def), s)) {
-        goto err;
-      }
     } else {
       /* Set now to detect transitive closure in the second pass. */
       def->came_from_user = true;
+
+      if (def->type == UPB_DEF_ENUM &&
+          !upb_validate_enumdef(upb_dyncast_enumdef(def), s)) {
+        goto err;
+      }
     }
   }
 
@@ -491,21 +476,6 @@ err1:
 err2:
   upb_gfree(e);
   return NULL;
-}
-
-upb_enumdef *upb_enumdef_dup(const upb_enumdef *e, const void *owner) {
-  upb_enum_iter i;
-  upb_enumdef *new_e = upb_enumdef_new(owner);
-  if (!new_e) return NULL;
-  for(upb_enum_begin(&i, e); !upb_enum_done(&i); upb_enum_next(&i)) {
-    bool success = upb_enumdef_addval(
-        new_e, upb_enum_iter_name(&i),upb_enum_iter_number(&i), NULL);
-    if (!success) {
-      upb_enumdef_unref(new_e, owner);
-      return NULL;
-    }
-  }
-  return new_e;
 }
 
 bool upb_enumdef_freeze(upb_enumdef *e, upb_status *status) {
@@ -740,42 +710,6 @@ upb_fielddef *upb_fielddef_new(const void *o) {
    *   be an optimal default for signed integers. */
   f->intfmt = UPB_INTFMT_VARIABLE;
   return f;
-}
-
-upb_fielddef *upb_fielddef_dup(const upb_fielddef *f, const void *owner) {
-  const char *srcname;
-  upb_fielddef *newf = upb_fielddef_new(owner);
-  if (!newf) return NULL;
-  upb_fielddef_settype(newf, upb_fielddef_type(f));
-  upb_fielddef_setlabel(newf, upb_fielddef_label(f));
-  upb_fielddef_setnumber(newf, upb_fielddef_number(f), NULL);
-  upb_fielddef_setname(newf, upb_fielddef_name(f), NULL);
-  if (f->default_is_string && f->defaultval.bytes) {
-    str_t *s = f->defaultval.bytes;
-    upb_fielddef_setdefaultstr(newf, s->str, s->len, NULL);
-  } else {
-    newf->default_is_string = f->default_is_string;
-    newf->defaultval = f->defaultval;
-  }
-
-  if (f->subdef_is_symbolic) {
-    srcname = f->sub.name;  /* Might be NULL. */
-  } else {
-    srcname = f->sub.def ? upb_def_fullname(f->sub.def) : NULL;
-  }
-  if (srcname) {
-    char *newname = upb_gmalloc(strlen(f->sub.def->fullname) + 2);
-    if (!newname) {
-      upb_fielddef_unref(newf, owner);
-      return NULL;
-    }
-    strcpy(newname, ".");
-    strcat(newname, f->sub.def->fullname);
-    upb_fielddef_setsubdefname(newf, newname, NULL);
-    upb_gfree(newname);
-  }
-
-  return newf;
 }
 
 bool upb_fielddef_typeisset(const upb_fielddef *f) {
@@ -1457,42 +1391,6 @@ err2:
   return NULL;
 }
 
-upb_msgdef *upb_msgdef_dup(const upb_msgdef *m, const void *owner) {
-  bool ok;
-  upb_msg_field_iter i;
-  upb_msg_oneof_iter o;
-
-  upb_msgdef *newm = upb_msgdef_new(owner);
-  if (!newm) return NULL;
-  ok = upb_def_setfullname(upb_msgdef_upcast_mutable(newm),
-                           upb_def_fullname(upb_msgdef_upcast(m)),
-                           NULL);
-  newm->map_entry = m->map_entry;
-  newm->syntax = m->syntax;
-  UPB_ASSERT(ok);
-  for(upb_msg_field_begin(&i, m);
-      !upb_msg_field_done(&i);
-      upb_msg_field_next(&i)) {
-    upb_fielddef *f = upb_fielddef_dup(upb_msg_iter_field(&i), &f);
-    /* Fields in oneofs are dup'd below. */
-    if (upb_fielddef_containingoneof(f)) continue;
-    if (!f || !upb_msgdef_addfield(newm, f, &f, NULL)) {
-      upb_msgdef_unref(newm, owner);
-      return NULL;
-    }
-  }
-  for(upb_msg_oneof_begin(&o, m);
-      !upb_msg_oneof_done(&o);
-      upb_msg_oneof_next(&o)) {
-    upb_oneofdef *f = upb_oneofdef_dup(upb_msg_iter_oneof(&o), &f);
-    if (!f || !upb_msgdef_addoneof(newm, f, &f, NULL)) {
-      upb_msgdef_unref(newm, owner);
-      return NULL;
-    }
-  }
-  return newm;
-}
-
 bool upb_msgdef_freeze(upb_msgdef *m, upb_status *status) {
   upb_def *d = upb_msgdef_upcast_mutable(m);
   return upb_def_freeze(&d, 1, status);
@@ -1791,23 +1689,6 @@ err1:
 err2:
   upb_gfree(o);
   return NULL;
-}
-
-upb_oneofdef *upb_oneofdef_dup(const upb_oneofdef *o, const void *owner) {
-  bool ok;
-  upb_oneof_iter i;
-  upb_oneofdef *newo = upb_oneofdef_new(owner);
-  if (!newo) return NULL;
-  ok = upb_oneofdef_setname(newo, upb_oneofdef_name(o), NULL);
-  UPB_ASSERT(ok);
-  for (upb_oneof_begin(&i, o); !upb_oneof_done(&i); upb_oneof_next(&i)) {
-    upb_fielddef *f = upb_fielddef_dup(upb_oneof_iter_field(&i), &f);
-    if (!f || !upb_oneofdef_addfield(newo, f, &f, NULL)) {
-      upb_oneofdef_unref(newo, owner);
-      return NULL;
-    }
-  }
-  return newo;
 }
 
 const char *upb_oneofdef_name(const upb_oneofdef *o) { return o->name; }
@@ -2142,8 +2023,7 @@ bool upb_filedef_adddep(upb_filedef *f, const upb_filedef *dep) {
   }
 }
 
-static void upb_symtab_free(upb_refcounted *r) {
-  upb_symtab *s = (upb_symtab*)r;
+void upb_symtab_free(upb_symtab *s) {
   upb_strtable_iter i;
   upb_strtable_begin(&i, &s->symtab);
   for (; !upb_strtable_done(&i); upb_strtable_next(&i)) {
@@ -2154,30 +2034,14 @@ static void upb_symtab_free(upb_refcounted *r) {
   upb_gfree(s);
 }
 
-upb_symtab *upb_symtab_new(const void *owner) {
-  static const struct upb_refcounted_vtbl vtbl = {NULL, &upb_symtab_free};
-
+upb_symtab *upb_symtab_new() {
   upb_symtab *s = upb_gmalloc(sizeof(*s));
   if (!s) {
     return NULL;
   }
 
-  upb_refcounted_init(upb_symtab_upcast_mutable(s), &vtbl, owner);
   upb_strtable_init(&s->symtab, UPB_CTYPE_PTR);
   return s;
-}
-
-void upb_symtab_freeze(upb_symtab *s) {
-  upb_refcounted *r;
-  bool ok;
-
-  UPB_ASSERT(!upb_symtab_isfrozen(s));
-  r = upb_symtab_upcast_mutable(s);
-  /* The symtab does not take ref2's (see refcounted.h) on the defs, because
-   * defs cannot refer back to the table and therefore cannot create cycles.  So
-   * 0 will suffice for maxdepth here. */
-  ok = upb_refcounted_freeze(&r, 1, NULL, 0);
-  UPB_ASSERT(ok);
 }
 
 const upb_def *upb_symtab_lookup(const upb_symtab *s, const char *sym) {
@@ -2226,115 +2090,7 @@ const upb_def *upb_symtab_resolve(const upb_symtab *s, const char *base,
   return ret;
 }
 
-/* Starts a depth-first traversal at "def", recursing into any subdefs
- * (ie. submessage types).  Adds duplicates of existing defs to addtab
- * wherever necessary, so that the resulting symtab will be consistent once
- * addtab is added.
- *
- * More specifically, if any def D is found in the DFS that:
- *
- *   1. can reach a def that is being replaced by something in addtab, AND
- *
- *   2. is not itself being replaced already (ie. this name doesn't already
- *      exist in addtab)
- *
- * ...then a duplicate (new copy) of D will be added to addtab.
- *
- * Returns true if this happened for any def reachable from "def."
- *
- * It is slightly tricky to do this correctly in the presence of cycles.  If we
- * detect that our DFS has hit a cycle, we might not yet know if any SCCs on
- * our stack can reach a def in addtab or not.  Once we figure this out, that
- * answer needs to apply to *all* defs in these SCCs, even if we visited them
- * already.  So a straight up one-pass cycle-detecting DFS won't work.
- *
- * To work around this problem, we traverse each SCC (which we already
- * computed, since these defs are frozen) as a single node.  We first compute
- * whether the SCC as a whole can reach any def in addtab, then we dup (or not)
- * the entire SCC.  This requires breaking the encapsulation of upb_refcounted,
- * since that is where we get the data about what SCC we are in. */
-static bool upb_resolve_dfs(const upb_def *def, upb_strtable *addtab,
-                            const void *new_owner, upb_inttable *seen,
-                            upb_status *s) {
-  upb_value v;
-  bool need_dup;
-  const upb_def *base;
-  const void* memoize_key;
-
-  /* Memoize results of this function for efficiency (since we're traversing a
-   * DAG this is not needed to limit the depth of the search).
-   *
-   * We memoize by SCC instead of by individual def. */
-  memoize_key = def->base.group;
-
-  if (upb_inttable_lookupptr(seen, memoize_key, &v))
-    return upb_value_getbool(v);
-
-  /* Visit submessages for all messages in the SCC. */
-  need_dup = false;
-  base = def;
-  do {
-    upb_value v;
-    const upb_msgdef *m;
-
-    UPB_ASSERT(upb_def_isfrozen(def));
-    if (def->type == UPB_DEF_FIELD) continue;
-    if (upb_strtable_lookup(addtab, upb_def_fullname(def), &v)) {
-      need_dup = true;
-    }
-
-    /* For messages, continue the recursion by visiting all subdefs, but only
-     * ones in different SCCs. */
-    m = upb_dyncast_msgdef(def);
-    if (m) {
-      upb_msg_field_iter i;
-      for(upb_msg_field_begin(&i, m);
-          !upb_msg_field_done(&i);
-          upb_msg_field_next(&i)) {
-        upb_fielddef *f = upb_msg_iter_field(&i);
-        const upb_def *subdef;
-
-        if (!upb_fielddef_hassubdef(f)) continue;
-        subdef = upb_fielddef_subdef(f);
-
-        /* Skip subdefs in this SCC. */
-        if (def->base.group == subdef->base.group) continue;
-
-        /* |= to avoid short-circuit; we need its side-effects. */
-        need_dup |= upb_resolve_dfs(subdef, addtab, new_owner, seen, s);
-        if (!upb_ok(s)) return false;
-      }
-    }
-  } while ((def = (upb_def*)def->base.next) != base);
-
-  if (need_dup) {
-    /* Dup all defs in this SCC that don't already have entries in addtab. */
-    def = base;
-    do {
-      const char *name;
-
-      if (def->type == UPB_DEF_FIELD) continue;
-      name = upb_def_fullname(def);
-      if (!upb_strtable_lookup(addtab, name, NULL)) {
-        upb_def *newdef = upb_def_dup(def, new_owner);
-        if (!newdef) goto oom;
-        newdef->came_from_user = false;
-        if (!upb_strtable_insert(addtab, name, upb_value_ptr(newdef)))
-          goto oom;
-      }
-    } while ((def = (upb_def*)def->base.next) != base);
-  }
-
-  upb_inttable_insertptr(seen, memoize_key, upb_value_bool(need_dup));
-  return need_dup;
-
-oom:
-  upb_status_seterrmsg(s, "out of memory");
-  return false;
-}
-
-/* TODO(haberman): we need a lot more testing of error conditions.
- * The came_from_user stuff in particular is not tested. */
+/* TODO(haberman): we need a lot more testing of error conditions. */
 static bool symtab_add(upb_symtab *s, upb_def *const*defs, size_t n,
                        void *ref_donor, upb_refcounted *freeze_also,
                        upb_status *status) {
@@ -2346,13 +2102,11 @@ static bool symtab_add(upb_symtab *s, upb_def *const*defs, size_t n,
   upb_def **add_defs = NULL;
   size_t add_objs_size;
   upb_strtable addtab;
-  upb_inttable seen;
 
   if (n == 0 && !freeze_also) {
     return true;
   }
 
-  UPB_ASSERT(!upb_symtab_isfrozen(s));
   if (!upb_strtable_init(&addtab, UPB_CTYPE_PTR)) {
     upb_status_seterrmsg(status, "out of memory");
     return false;
@@ -2390,73 +2144,22 @@ static bool symtab_add(upb_symtab *s, upb_def *const*defs, size_t n,
         upb_status_seterrf(status, "Conflicting defs named '%s'", fullname);
         goto err;
       }
-      /* We need this to back out properly, because if there is a failure we
-       * need to donate the ref back to the caller. */
-      def->came_from_user = true;
-      upb_def_donateref(def, ref_donor, s);
-      if (!upb_strtable_insert(&addtab, fullname, upb_value_ptr(def)))
-        goto oom_err;
-    }
-  }
-
-  /* Add standalone fielddefs (ie. extensions) to the appropriate messages.
-   * If the appropriate message only exists in the existing symtab, duplicate
-   * it so we have a mutable copy we can add the fields to. */
-  for (i = 0; i < n; i++) {
-    upb_def *def = defs[i];
-    upb_fielddef *f = upb_dyncast_fielddef_mutable(def);
-    const char *msgname;
-    upb_value v;
-    upb_msgdef *m;
-
-    if (!f) continue;
-    msgname = upb_fielddef_containingtypename(f);
-    /* We validated this earlier in this function. */
-    UPB_ASSERT(msgname);
-
-    /* If the extendee name is absolutely qualified, move past the initial ".".
-     * TODO(haberman): it is not obvious what it would mean if this was not
-     * absolutely qualified. */
-    if (msgname[0] == '.') {
-      msgname++;
-    }
-
-    if (upb_strtable_lookup(&addtab, msgname, &v)) {
-      /* Extendee is in the set of defs the user asked us to add. */
-      m = upb_value_getptr(v);
-    } else {
-      /* Need to find and dup the extendee from the existing symtab. */
-      const upb_msgdef *frozen_m = upb_symtab_lookupmsg(s, msgname);
-      if (!frozen_m) {
-        upb_status_seterrf(status,
-                           "Tried to extend message %s that does not exist "
-                           "in this SymbolTable.",
-                           msgname);
+      if (upb_strtable_lookup(&s->symtab, fullname, NULL)) {
+        upb_status_seterrf(status, "Symtab already has a def named '%s'",
+                           fullname);
         goto err;
       }
-      m = upb_msgdef_dup(frozen_m, s);
-      if (!m) goto oom_err;
-      if (!upb_strtable_insert(&addtab, msgname, upb_value_ptr(m))) {
-        upb_msgdef_unref(m, s);
+      if (!upb_strtable_insert(&addtab, fullname, upb_value_ptr(def)))
         goto oom_err;
-      }
+      upb_def_donateref(def, ref_donor, s);
     }
 
-    if (!upb_msgdef_addfield(m, f, ref_donor, status)) {
+    if (upb_dyncast_fielddef_mutable(def)) {
+      /* TODO(haberman): allow adding extensions attached to files. */
+      upb_status_seterrf(status, "Can't add extensions to symtab.\n");
       goto err;
     }
   }
-
-  /* Add dups of any existing def that can reach a def with the same name as
-   * anything in our "add" set. */
-  if (!upb_inttable_init(&seen, UPB_CTYPE_BOOL)) goto oom_err;
-  upb_strtable_begin(&iter, &s->symtab);
-  for (; !upb_strtable_done(&iter); upb_strtable_next(&iter)) {
-    upb_def *def = upb_value_getptr(upb_strtable_iter_value(&iter));
-    upb_resolve_dfs(def, &addtab, s, &seen, status);
-    if (!upb_ok(status)) goto err;
-  }
-  upb_inttable_uninit(&seen);
 
   /* Now using the table, resolve symbolic references for subdefs. */
   upb_strtable_begin(&iter, &addtab);
@@ -2535,15 +2238,9 @@ static bool symtab_add(upb_symtab *s, upb_def *const*defs, size_t n,
   for (i = 0; i < add_n; i++) {
     upb_def *def = (upb_def*)add_objs[i];
     const char *name = upb_def_fullname(def);
-    upb_value v;
     bool success;
-
-    if (upb_strtable_remove(&s->symtab, name, &v)) {
-      const upb_def *def = upb_value_getptr(v);
-      upb_def_unref(def, s);
-    }
     success = upb_strtable_insert(&s->symtab, name, upb_value_ptr(def));
-    UPB_ASSERT(success == true);
+    UPB_ASSERT(success);
   }
   upb_gfree(add_defs);
   return true;
@@ -2551,18 +2248,11 @@ static bool symtab_add(upb_symtab *s, upb_def *const*defs, size_t n,
 oom_err:
   upb_status_seterrmsg(status, "out of memory");
 err: {
-    /* For defs the user passed in, we need to donate the refs back.  For defs
-     * we dup'd, we need to just unref them. */
+    /* We need to donate the refs back. */
     upb_strtable_begin(&iter, &addtab);
     for (; !upb_strtable_done(&iter); upb_strtable_next(&iter)) {
       upb_def *def = upb_value_getptr(upb_strtable_iter_value(&iter));
-      bool came_from_user = def->came_from_user;
-      def->came_from_user = false;
-      if (came_from_user) {
-        upb_def_donateref(def, s, ref_donor);
-      } else {
-        upb_def_unref(def, s);
-      }
+      upb_def_donateref(def, s, ref_donor);
     }
   }
   upb_strtable_uninit(&addtab);

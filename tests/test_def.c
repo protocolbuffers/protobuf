@@ -13,13 +13,13 @@
 const char *descriptor_file;
 
 static void test_empty_symtab() {
-  upb_symtab *s = upb_symtab_new(&s);
+  upb_symtab *s = upb_symtab_new();
   upb_symtab_iter i;
   for (upb_symtab_begin(&i, s, UPB_DEF_ANY); !upb_symtab_done(&i);
        upb_symtab_next(&i)) {
     ASSERT(false);  /* Should not get here. */
   }
-  upb_symtab_unref(s, &s);
+  upb_symtab_free(s);
 }
 
 static void test_noreftracking() {
@@ -39,8 +39,8 @@ static void test_noreftracking() {
   upb_msgdef_unref(md, &md);
 }
 
-static upb_symtab *load_test_proto(void *owner) {
-  upb_symtab *s = upb_symtab_new(owner);
+static upb_symtab *load_test_proto() {
+  upb_symtab *s = upb_symtab_new();
   upb_status status = UPB_STATUS_INIT;
   size_t len;
   char *data = upb_readfile(descriptor_file, &len);
@@ -64,15 +64,12 @@ static upb_symtab *load_test_proto(void *owner) {
 
   upb_gfree(files);
 
-  ASSERT(!upb_symtab_isfrozen(s));
-  upb_symtab_freeze(s);
-  ASSERT(upb_symtab_isfrozen(s));
   return s;
 }
 
 static void test_cycles() {
   bool ok;
-  upb_symtab *s = load_test_proto(&s);
+  upb_symtab *s = load_test_proto();
   const upb_msgdef *m;
   const upb_fielddef *f;
   const upb_def *def;
@@ -84,7 +81,7 @@ static void test_cycles() {
   upb_def_ref(def, &def);
   ASSERT(def);
   ASSERT(upb_def_isfrozen(def));
-  upb_symtab_unref(s, &s);
+  upb_symtab_free(s);
 
   /* Message A has only one subfield: "optional B b = 1". */
   m = upb_downcast_msgdef(def);
@@ -162,18 +159,18 @@ static void test_symbol_resolution() {
   upb_msgdef_unref(m3, &m3);
   upb_msgdef_unref(m2, &m2);
   upb_msgdef_unref(m1, &m1);
-  upb_symtab_unref(symtab, &symtab);
+  upb_symtab_free(symtab);
 }
 
 static void test_fielddef_unref() {
   bool ok;
-  upb_symtab *s = load_test_proto(&s);
+  upb_symtab *s = load_test_proto();
   const upb_msgdef *md = upb_symtab_lookupmsg(s, "A");
   const upb_fielddef *f = upb_msgdef_itof(md, 1);
   upb_fielddef_ref(f, &f);
 
   /* Unref symtab; now fielddef is the only thing keeping the msgdef alive. */
-  upb_symtab_unref(s, &s);
+  upb_symtab_free(s);
   /* Check that md is still alive. */
   ok = strcmp(upb_msgdef_fullname(md), "A") == 0;
   ASSERT(ok);
@@ -210,66 +207,30 @@ static upb_msgdef *upb_msgdef_newnamed(const char *name, void *owner) {
   return m;
 }
 
-static upb_enumdef *upb_enumdef_newnamed(const char *name, void *owner) {
-  upb_enumdef *e = upb_enumdef_new(owner);
-  upb_enumdef_setfullname(e, name, NULL);
-  return e;
-}
-
-static void test_replacement() {
+static void test_replacement_fails() {
+  bool ok;
   upb_symtab *s = upb_symtab_new(&s);
-  upb_enumdef *e2;
-  upb_msgdef *m2;
-  upb_enumdef *e;
   upb_status status = UPB_STATUS_INIT;
-  upb_def *newdefs[3];
-  upb_def *newdefs2[1];
-  const upb_msgdef *m3;
+  upb_def *newdefs[2];
 
   upb_msgdef *m = upb_msgdef_newnamed("MyMessage", &s);
-  upb_msgdef_addfield(m, newfield("field1", 1, UPB_TYPE_ENUM,
-                                  UPB_LABEL_OPTIONAL, ".MyEnum", &s),
-                      &s, NULL);
-  m2 = upb_msgdef_newnamed("MyMessage2", &s);
-  e = upb_enumdef_newnamed("MyEnum", &s);
-  ASSERT_STATUS(upb_enumdef_addval(e, "VAL1", 1, &status), &status);
+  upb_msgdef *m2 = upb_msgdef_newnamed("MyMessage", &s);
 
   newdefs[0] = upb_msgdef_upcast_mutable(m);
   newdefs[1] = upb_msgdef_upcast_mutable(m2);
-  newdefs[2] = upb_enumdef_upcast_mutable(e);
-  ASSERT_STATUS(upb_symtab_add(s, newdefs, 3, &s, &status), &status);
+  ok = upb_symtab_add(s, newdefs, 2, &s, &status);
+  ASSERT(ok == false);
+  upb_status_clear(&status);
 
-  /* Try adding a new definition of MyEnum, MyMessage should get replaced with
-   * a new version. */
-  e2 = upb_enumdef_newnamed("MyEnum", &s);
-  ASSERT_STATUS(upb_enumdef_addval(e2, "VAL1", 1, &status), &status);
-  newdefs2[0] = upb_enumdef_upcast_mutable(e2);
-  ASSERT_STATUS(upb_symtab_add(s, newdefs2, 1, &s, &status), &status);
+  /* Adding just one is ok. */
+  ASSERT_STATUS(upb_symtab_add(s, newdefs, 1, &s, &status), &status);
 
-  m3 = upb_symtab_lookupmsg(s, "MyMessage");
-  ASSERT(m3);
-  /* Must be different because it points to MyEnum which was replaced. */
-  ASSERT(m3 != m);
+  /* Adding a conflicting one is not ok. */
+  newdefs[0] = upb_msgdef_upcast_mutable(m2);
+  ok = upb_symtab_add(s, newdefs, 1, &s, &status);
+  ASSERT(ok == false);
 
-  m3 = upb_symtab_lookupmsg(s, "MyMessage2");
-  /* Should be the same because it was not replaced, nor were any defs that
-   * are reachable from it. */
-  ASSERT(m3 == m2);
-
-  upb_symtab_unref(s, &s);
-}
-
-static void test_cycles_in_replacement() {
-  upb_symtab *s = upb_symtab_new(&s);
-  upb_msgdef *m = upb_msgdef_newnamed("M", &s);
-  upb_status status = UPB_STATUS_INIT;
-
-  upb_msgdef_addfield(m, newfield("m", 1, UPB_TYPE_MESSAGE,
-                                  UPB_LABEL_OPTIONAL, ".M", &s),
-                      &s, NULL);
-  ASSERT_STATUS(upb_symtab_add(s, (upb_def**)&m, 1, &s, &status), &status);
-  ASSERT_STATUS(upb_symtab_add(s, NULL, 0, &s, &status), &status);
-  upb_symtab_unref(s, &s);
+  upb_symtab_free(s);
 }
 
 static void test_freeze_free() {
@@ -368,7 +329,6 @@ static void test_partial_freeze() {
 
 static void test_descriptor_flags() {
   upb_msgdef *m = upb_msgdef_new(&m);
-  upb_msgdef *m2;
   upb_status s = UPB_STATUS_INIT;
 
   ASSERT(upb_msgdef_mapentry(m) == false);
@@ -376,10 +336,7 @@ static void test_descriptor_flags() {
   ASSERT(upb_ok(&s));
   upb_msgdef_setmapentry(m, true);
   ASSERT(upb_msgdef_mapentry(m) == true);
-  m2 = upb_msgdef_dup(m, &m2);
-  ASSERT(upb_msgdef_mapentry(m2) == true);
   upb_msgdef_unref(m, &m);
-  upb_msgdef_unref(m2, &m2);
 }
 
 static void test_mapentry_check() {
@@ -413,7 +370,7 @@ static void test_mapentry_check() {
   upb_symtab_add(symtab, defs, 2, NULL, &s);
   ASSERT(upb_ok(&s));
 
-  upb_symtab_unref(symtab, &symtab);
+  upb_symtab_free(symtab);
   upb_msgdef_unref(subm, &subm);
   upb_msgdef_unref(m, &m);
 }
@@ -470,7 +427,7 @@ static void test_oneofs() {
   lookup_field = upb_oneofdef_ntofz(o, "field1");
   ASSERT(lookup_field != NULL && upb_fielddef_number(lookup_field) == 1);
 
-  upb_symtab_unref(symtab, &symtab);
+  upb_symtab_free(symtab);
   upb_oneofdef_unref(o, &o);
 }
 
@@ -485,8 +442,7 @@ int run_tests(int argc, char *argv[]) {
   test_symbol_resolution();
   test_fielddef();
   test_fielddef_unref();
-  test_replacement();
-  test_cycles_in_replacement();
+  test_replacement_fails();
   test_freeze_free();
   test_partial_freeze();
   test_noreftracking();

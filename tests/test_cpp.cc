@@ -154,15 +154,12 @@ static void TestSymbolTable(const char *descriptor_file) {
     exit(1);
   }
 
-  upb::reffed_ptr<upb::SymbolTable> s(upb::SymbolTable::New());
+  upb::SymbolTable* s = upb::SymbolTable::New();
 
   for (size_t i = 0; i < files.size(); i++) {
     ASSERT(s->AddFile(files[i].get(), &status));
   }
 
-  ASSERT(!s->IsFrozen());
-  s->Freeze();
-  ASSERT(s->IsFrozen());
   upb::reffed_ptr<const upb::MessageDef> md(s->LookupMessage("C"));
   ASSERT(md.get());
 
@@ -180,6 +177,7 @@ static void TestSymbolTable(const char *descriptor_file) {
 #endif
 
   ASSERT(md.get());
+  upb::SymbolTable::Free(s);
 }
 
 static void TestCasts1() {
