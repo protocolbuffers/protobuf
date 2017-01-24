@@ -164,7 +164,7 @@ static void test_symbol_resolution() {
 
 static void test_fielddef_unref() {
   bool ok;
-  upb_symtab *s = load_test_proto(&s);
+  upb_symtab *s = load_test_proto();
   const upb_msgdef *md = upb_symtab_lookupmsg(s, "A");
   const upb_fielddef *f = upb_msgdef_itof(md, 1);
   upb_fielddef_ref(f, &f);

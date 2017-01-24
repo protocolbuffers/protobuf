@@ -378,13 +378,14 @@ bool _upb_def_validate(upb_def *const*defs, size_t n, upb_status *s) {
     } else if (def->type == UPB_DEF_FIELD) {
       upb_status_seterrmsg(s, "standalone fielddefs can not be frozen");
       goto err;
-    } else if (def->type == UPB_DEF_ENUM) {
-      if (!upb_validate_enumdef(upb_dyncast_enumdef(def), s)) {
-        goto err;
-      }
     } else {
       /* Set now to detect transitive closure in the second pass. */
       def->came_from_user = true;
+
+      if (def->type == UPB_DEF_ENUM &&
+          !upb_validate_enumdef(upb_dyncast_enumdef(def), s)) {
+        goto err;
+      }
     }
   }
 
