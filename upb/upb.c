@@ -104,7 +104,7 @@ upb_alloc upb_alloc_global = {&upb_global_allocfunc};
 /* Be conservative and choose 16 in case anyone is using SSE. */
 static const size_t maxalign = 16;
 
-static size_t align_up(size_t size) {
+static size_t align_up_max(size_t size) {
   return ((size + maxalign - 1) / maxalign) * maxalign;
 }
 
@@ -128,7 +128,7 @@ static void upb_arena_addblock(upb_arena *a, void *ptr, size_t size,
 
   block->next = a->block_head;
   block->size = size;
-  block->used = align_up(sizeof(mem_block));
+  block->used = align_up_max(sizeof(mem_block));
   block->owned = owned;
 
   a->block_head = block;
@@ -161,7 +161,7 @@ static void *upb_arena_doalloc(upb_alloc *alloc, void *ptr, size_t oldsize,
     return NULL;  /* We are an arena, don't need individual frees. */
   }
 
-  size = align_up(size);
+  size = align_up_max(size);
 
   /* TODO(haberman): special-case if this is a realloc of the last alloc? */
 

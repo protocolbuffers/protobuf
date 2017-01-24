@@ -107,6 +107,17 @@ ndebug_script() {
   make test
 }
 
+# Tests the amalgamated build (this ensures that the different .c files
+# don't have symbols or macros that conflict with each other.
+amalgamated_install() {
+  :
+}
+amalgamated_script() {
+  # Override of USER_CPPFLAGS removes -UNDEBUG.
+  export USER_CPPFLAGS="-UNDEBUG"
+  make amalgamated
+}
+
 # A run that executes with coverage support and uploads to coveralls.io
 coverage_install() {
   sudo apt-get update -qq
@@ -145,6 +156,7 @@ if [ "$1" == "local" ]; then
   run_config "lua"
   run_config "ndebug"
   run_config "genfiles"
+  run_config "amalgamated"
   exit
 fi
 

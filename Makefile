@@ -534,3 +534,7 @@ amalgamate: upb.c upb.h
 upb.c upb.h: $(AMALGAMATE_SRCS)
 	$(E) AMALGAMATE $@
 	$(Q) ./tools/amalgamate.py "" "" $^
+
+amalgamated: upb.c upb.h
+	$(E) CC upb.c
+	$(Q) $(CC) -o upb.o -c upb.c $(WARNFLAGS)

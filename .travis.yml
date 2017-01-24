@@ -21,3 +21,4 @@ env:
     - UPB_TRAVIS_BUILD=ndebug
     - UPB_TRAVIS_BUILD=coverage
     - UPB_TRAVIS_BUILD=genfiles
+    - UPB_TRAVIS_BUILD=amalgamated

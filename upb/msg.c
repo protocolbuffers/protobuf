@@ -26,7 +26,7 @@ void *upb_map_pack(const upb_map *map, void *p, size_t *ofs, size_t size);
 
 #define CHARPTR_AT(msg, ofs) ((char*)msg + ofs)
 #define ENCODE_MAX_NESTING 64
-#define CHECK_RETURN(x) if (!(x)) { return false; }
+#define CHECK_TRUE(x) if (!(x)) { return false; }
 
 /** upb_msgval ****************************************************************/
 
@@ -492,7 +492,7 @@ struct upb_visitor {
   upb_sink *sink;
 };
 
-static upb_selector_t getsel(const upb_fielddef *f, upb_handlertype_t type) {
+static upb_selector_t getsel2(const upb_fielddef *f, upb_handlertype_t type) {
   upb_selector_t ret;
   bool ok = upb_handlers_getselector(f, type, &ret);
   UPB_ASSERT(ok);
@@ -572,34 +572,31 @@ static bool upb_visitor_visitmsg2(const upb_msg *msg,
     } else if (upb_fielddef_isstring(f)) {
       /* TODO putstr(); */
     } else {
-      upb_selector_t sel = getsel(f, upb_handlers_getprimitivehandlertype(f));
+      upb_selector_t sel = getsel2(f, upb_handlers_getprimitivehandlertype(f));
       UPB_ASSERT(upb_fielddef_isprimitive(f));
 
       switch (upb_fielddef_type(f)) {
         case UPB_TYPE_FLOAT:
-          CHECK_RETURN(upb_sink_putfloat(sink, sel, upb_msgval_getfloat(val)));
+          CHECK_TRUE(upb_sink_putfloat(sink, sel, upb_msgval_getfloat(val)));
           break;
         case UPB_TYPE_DOUBLE:
-          CHECK_RETURN(
-              upb_sink_putdouble(sink, sel, upb_msgval_getdouble(val)));
+          CHECK_TRUE(upb_sink_putdouble(sink, sel, upb_msgval_getdouble(val)));
           break;
         case UPB_TYPE_BOOL:
-          CHECK_RETURN(upb_sink_putbool(sink, sel, upb_msgval_getbool(val)));
+          CHECK_TRUE(upb_sink_putbool(sink, sel, upb_msgval_getbool(val)));
           break;
         case UPB_TYPE_ENUM:
         case UPB_TYPE_INT32:
-          CHECK_RETURN(upb_sink_putint32(sink, sel, upb_msgval_getint32(val)));
+          CHECK_TRUE(upb_sink_putint32(sink, sel, upb_msgval_getint32(val)));
           break;
         case UPB_TYPE_UINT32:
-          CHECK_RETURN(
-              upb_sink_putuint32(sink, sel, upb_msgval_getuint32(val)));
+          CHECK_TRUE(upb_sink_putuint32(sink, sel, upb_msgval_getuint32(val)));
           break;
         case UPB_TYPE_INT64:
-          CHECK_RETURN(upb_sink_putint64(sink, sel, upb_msgval_getint64(val)));
+          CHECK_TRUE(upb_sink_putint64(sink, sel, upb_msgval_getint64(val)));
           break;
         case UPB_TYPE_UINT64:
-          CHECK_RETURN(
-              upb_sink_putuint64(sink, sel, upb_msgval_getuint64(val)));
+          CHECK_TRUE(upb_sink_putuint64(sink, sel, upb_msgval_getuint64(val)));
           break;
         case UPB_TYPE_STRING:
         case UPB_TYPE_BYTES:
