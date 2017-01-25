@@ -84,8 +84,8 @@ NS_ASSUME_NONNULL_BEGIN
  *
  * @return A newly instanced dictionary with the keys and values in it.
  **/
-+ (instancetype)dictionaryWithUInt32s:(const uint32_t [])values
-                              forKeys:(const uint32_t [])keys
++ (instancetype)dictionaryWithUInt32s:(const uint32_t [__nullable])values
+                              forKeys:(const uint32_t [__nullable])keys
                                 count:(NSUInteger)count;
 
 /**
@@ -117,8 +117,8 @@ NS_ASSUME_NONNULL_BEGIN
  *
  * @return A newly initialized dictionary with a copy of the values and keys.
  **/
-- (instancetype)initWithUInt32s:(const uint32_t [])values
-                        forKeys:(const uint32_t [])keys
+- (instancetype)initWithUInt32s:(const uint32_t [__nullable])values
+                        forKeys:(const uint32_t [__nullable])keys
                           count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
 
 /**
@@ -228,8 +228,8 @@ NS_ASSUME_NONNULL_BEGIN
  *
  * @return A newly instanced dictionary with the keys and values in it.
  **/
-+ (instancetype)dictionaryWithInt32s:(const int32_t [])values
-                             forKeys:(const uint32_t [])keys
++ (instancetype)dictionaryWithInt32s:(const int32_t [__nullable])values
+                             forKeys:(const uint32_t [__nullable])keys
                                count:(NSUInteger)count;
 
 /**
@@ -261,8 +261,8 @@ NS_ASSUME_NONNULL_BEGIN
  *
  * @return A newly initialized dictionary with a copy of the values and keys.
  **/
-- (instancetype)initWithInt32s:(const int32_t [])values
-                       forKeys:(const uint32_t [])keys
+- (instancetype)initWithInt32s:(const int32_t [__nullable])values
+                       forKeys:(const uint32_t [__nullable])keys
                          count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
 
 /**
@@ -372,8 +372,8 @@ NS_ASSUME_NONNULL_BEGIN
  *
  * @return A newly instanced dictionary with the keys and values in it.
  **/
-+ (instancetype)dictionaryWithUInt64s:(const uint64_t [])values
-                              forKeys:(const uint32_t [])keys
++ (instancetype)dictionaryWithUInt64s:(const uint64_t [__nullable])values
+                              forKeys:(const uint32_t [__nullable])keys
                                 count:(NSUInteger)count;
 
 /**
@@ -405,8 +405,8 @@ NS_ASSUME_NONNULL_BEGIN
  *
  * @return A newly initialized dictionary with a copy of the values and keys.
  **/
-- (instancetype)initWithUInt64s:(const uint64_t [])values
-                        forKeys:(const uint32_t [])keys
+- (instancetype)initWithUInt64s:(const uint64_t [__nullable])values
+                        forKeys:(const uint32_t [__nullable])keys
                           count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
 
 /**
@@ -516,8 +516,8 @@ NS_ASSUME_NONNULL_BEGIN
  *
  * @return A newly instanced dictionary with the keys and values in it.
  **/
-+ (instancetype)dictionaryWithInt64s:(const int64_t [])values
-                             forKeys:(const uint32_t [])keys
++ (instancetype)dictionaryWithInt64s:(const int64_t [__nullable])values
+                             forKeys:(const uint32_t [__nullable])keys
                                count:(NSUInteger)count;
 
 /**
@@ -549,8 +549,8 @@ NS_ASSUME_NONNULL_BEGIN
  *
  * @return A newly initialized dictionary with a copy of the values and keys.
  **/
-- (instancetype)initWithInt64s:(const int64_t [])values
-                       forKeys:(const uint32_t [])keys
+- (instancetype)initWithInt64s:(const int64_t [__nullable])values
+                       forKeys:(const uint32_t [__nullable])keys
                          count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
 
 /**
@@ -660,8 +660,8 @@ NS_ASSUME_NONNULL_BEGIN
  *
  * @return A newly instanced dictionary with the keys and values in it.
  **/
-+ (instancetype)dictionaryWithBools:(const BOOL [])values
-                            forKeys:(const uint32_t [])keys
++ (instancetype)dictionaryWithBools:(const BOOL [__nullable])values
+                            forKeys:(const uint32_t [__nullable])keys
                               count:(NSUInteger)count;
 
 /**
@@ -693,8 +693,8 @@ NS_ASSUME_NONNULL_BEGIN
  *
  * @return A newly initialized dictionary with a copy of the values and keys.
  **/
-- (instancetype)initWithBools:(const BOOL [])values
-                      forKeys:(const uint32_t [])keys
+- (instancetype)initWithBools:(const BOOL [__nullable])values
+                      forKeys:(const uint32_t [__nullable])keys
                         count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
 
 /**
@@ -804,8 +804,8 @@ NS_ASSUME_NONNULL_BEGIN
  *
  * @return A newly instanced dictionary with the keys and values in it.
  **/
-+ (instancetype)dictionaryWithFloats:(const float [])values
-                             forKeys:(const uint32_t [])keys
++ (instancetype)dictionaryWithFloats:(const float [__nullable])values
+                             forKeys:(const uint32_t [__nullable])keys
                                count:(NSUInteger)count;
 
 /**
@@ -837,8 +837,8 @@ NS_ASSUME_NONNULL_BEGIN
  *
  * @return A newly initialized dictionary with a copy of the values and keys.
  **/
-- (instancetype)initWithFloats:(const float [])values
-                       forKeys:(const uint32_t [])keys
+- (instancetype)initWithFloats:(const float [__nullable])values
+                       forKeys:(const uint32_t [__nullable])keys
                          count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
 
 /**
@@ -948,8 +948,8 @@ NS_ASSUME_NONNULL_BEGIN
  *
  * @return A newly instanced dictionary with the keys and values in it.
  **/
-+ (instancetype)dictionaryWithDoubles:(const double [])values
-                              forKeys:(const uint32_t [])keys
++ (instancetype)dictionaryWithDoubles:(const double [__nullable])values
+                              forKeys:(const uint32_t [__nullable])keys
                                 count:(NSUInteger)count;
 
 /**
@@ -981,8 +981,8 @@ NS_ASSUME_NONNULL_BEGIN
  *
  * @return A newly initialized dictionary with a copy of the values and keys.
  **/
-- (instancetype)initWithDoubles:(const double [])values
-                        forKeys:(const uint32_t [])keys
+- (instancetype)initWithDoubles:(const double [__nullable])values
+                        forKeys:(const uint32_t [__nullable])keys
                           count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
 
 /**
@@ -1107,8 +1107,8 @@ NS_ASSUME_NONNULL_BEGIN
  * @return A newly instanced dictionary with the keys and values in it.
  **/
 + (instancetype)dictionaryWithValidationFunction:(nullable GPBEnumValidationFunc)func
-                                       rawValues:(const int32_t [])values
-                                         forKeys:(const uint32_t [])keys
+                                       rawValues:(const int32_t [__nullable])values
+                                         forKeys:(const uint32_t [__nullable])keys
                                            count:(NSUInteger)count;
 
 /**
@@ -1153,8 +1153,8 @@ NS_ASSUME_NONNULL_BEGIN
  * @return A newly initialized dictionary with the keys and values in it.
  **/
 - (instancetype)initWithValidationFunction:(nullable GPBEnumValidationFunc)func
-                                 rawValues:(const int32_t [])values
-                                   forKeys:(const uint32_t [])keys
+                                 rawValues:(const int32_t [__nullable])values
+                                   forKeys:(const uint32_t [__nullable])keys
                                      count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
 
 /**
@@ -1318,8 +1318,8 @@ NS_ASSUME_NONNULL_BEGIN
  *
  * @return A newly instanced dictionary with the keys and values in it.
  **/
-+ (instancetype)dictionaryWithObjects:(const ObjectType GPB_UNSAFE_UNRETAINED [])objects
-                              forKeys:(const uint32_t [])keys
++ (instancetype)dictionaryWithObjects:(const ObjectType __nonnull GPB_UNSAFE_UNRETAINED [__nullable])objects
+                              forKeys:(const uint32_t [__nullable])keys
                                 count:(NSUInteger)count;
 
 /**
@@ -1351,8 +1351,8 @@ NS_ASSUME_NONNULL_BEGIN
  *
  * @return A newly initialized dictionary with a copy of the values and keys.
  **/
-- (instancetype)initWithObjects:(const ObjectType GPB_UNSAFE_UNRETAINED [])objects
-                        forKeys:(const uint32_t [])keys
+- (instancetype)initWithObjects:(const ObjectType __nonnull GPB_UNSAFE_UNRETAINED [__nullable])objects
+                        forKeys:(const uint32_t [__nullable])keys
                           count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
 
 /**
@@ -1461,8 +1461,8 @@ NS_ASSUME_NONNULL_BEGIN
  *
  * @return A newly instanced dictionary with the keys and values in it.
  **/
-+ (instancetype)dictionaryWithUInt32s:(const uint32_t [])values
-                              forKeys:(const int32_t [])keys
++ (instancetype)dictionaryWithUInt32s:(const uint32_t [__nullable])values
+                              forKeys:(const int32_t [__nullable])keys
                                 count:(NSUInteger)count;
 
 /**
@@ -1494,8 +1494,8 @@ NS_ASSUME_NONNULL_BEGIN
  *
  * @return A newly initialized dictionary with a copy of the values and keys.
  **/
-- (instancetype)initWithUInt32s:(const uint32_t [])values
-                        forKeys:(const int32_t [])keys
+- (instancetype)initWithUInt32s:(const uint32_t [__nullable])values
+                        forKeys:(const int32_t [__nullable])keys
                           count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
 
 /**
@@ -1605,8 +1605,8 @@ NS_ASSUME_NONNULL_BEGIN
  *
  * @return A newly instanced dictionary with the keys and values in it.
  **/
-+ (instancetype)dictionaryWithInt32s:(const int32_t [])values
-                             forKeys:(const int32_t [])keys
++ (instancetype)dictionaryWithInt32s:(const int32_t [__nullable])values
+                             forKeys:(const int32_t [__nullable])keys
                                count:(NSUInteger)count;
 
 /**
@@ -1638,8 +1638,8 @@ NS_ASSUME_NONNULL_BEGIN
  *
  * @return A newly initialized dictionary with a copy of the values and keys.
  **/
-- (instancetype)initWithInt32s:(const int32_t [])values
-                       forKeys:(const int32_t [])keys
+- (instancetype)initWithInt32s:(const int32_t [__nullable])values
+                       forKeys:(const int32_t [__nullable])keys
                          count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
 
 /**
@@ -1749,8 +1749,8 @@ NS_ASSUME_NONNULL_BEGIN
  *
  * @return A newly instanced dictionary with the keys and values in it.
  **/
-+ (instancetype)dictionaryWithUInt64s:(const uint64_t [])values
-                              forKeys:(const int32_t [])keys
++ (instancetype)dictionaryWithUInt64s:(const uint64_t [__nullable])values
+                              forKeys:(const int32_t [__nullable])keys
                                 count:(NSUInteger)count;
 
 /**
@@ -1782,8 +1782,8 @@ NS_ASSUME_NONNULL_BEGIN
  *
  * @return A newly initialized dictionary with a copy of the values and keys.
  **/
-- (instancetype)initWithUInt64s:(const uint64_t [])values
-                        forKeys:(const int32_t [])keys
+- (instancetype)initWithUInt64s:(const uint64_t [__nullable])values
+                        forKeys:(const int32_t [__nullable])keys
                           count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
 
 /**
@@ -1893,8 +1893,8 @@ NS_ASSUME_NONNULL_BEGIN
  *
  * @return A newly instanced dictionary with the keys and values in it.
  **/
-+ (instancetype)dictionaryWithInt64s:(const int64_t [])values
-                             forKeys:(const int32_t [])keys
++ (instancetype)dictionaryWithInt64s:(const int64_t [__nullable])values
+                             forKeys:(const int32_t [__nullable])keys
                                count:(NSUInteger)count;
 
 /**
@@ -1926,8 +1926,8 @@ NS_ASSUME_NONNULL_BEGIN
  *
  * @return A newly initialized dictionary with a copy of the values and keys.
  **/
-- (instancetype)initWithInt64s:(const int64_t [])values
-                       forKeys:(const int32_t [])keys
+- (instancetype)initWithInt64s:(const int64_t [__nullable])values
+                       forKeys:(const int32_t [__nullable])keys
                          count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
 
 /**
@@ -2037,8 +2037,8 @@ NS_ASSUME_NONNULL_BEGIN
  *
  * @return A newly instanced dictionary with the keys and values in it.
  **/
-+ (instancetype)dictionaryWithBools:(const BOOL [])values
-                            forKeys:(const int32_t [])keys
++ (instancetype)dictionaryWithBools:(const BOOL [__nullable])values
+                            forKeys:(const int32_t [__nullable])keys
                               count:(NSUInteger)count;
 
 /**
@@ -2070,8 +2070,8 @@ NS_ASSUME_NONNULL_BEGIN
  *
  * @return A newly initialized dictionary with a copy of the values and keys.
  **/
-- (instancetype)initWithBools:(const BOOL [])values
-                      forKeys:(const int32_t [])keys
+- (instancetype)initWithBools:(const BOOL [__nullable])values
+                      forKeys:(const int32_t [__nullable])keys
                         count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
 
 /**
@@ -2181,8 +2181,8 @@ NS_ASSUME_NONNULL_BEGIN
  *
  * @return A newly instanced dictionary with the keys and values in it.
  **/
-+ (instancetype)dictionaryWithFloats:(const float [])values
-                             forKeys:(const int32_t [])keys
++ (instancetype)dictionaryWithFloats:(const float [__nullable])values
+                             forKeys:(const int32_t [__nullable])keys
                                count:(NSUInteger)count;
 
 /**
@@ -2214,8 +2214,8 @@ NS_ASSUME_NONNULL_BEGIN
  *
  * @return A newly initialized dictionary with a copy of the values and keys.
  **/
-- (instancetype)initWithFloats:(const float [])values
-                       forKeys:(const int32_t [])keys
+- (instancetype)initWithFloats:(const float [__nullable])values
+                       forKeys:(const int32_t [__nullable])keys
                          count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
 
 /**
@@ -2325,8 +2325,8 @@ NS_ASSUME_NONNULL_BEGIN
  *
  * @return A newly instanced dictionary with the keys and values in it.
  **/
-+ (instancetype)dictionaryWithDoubles:(const double [])values
-                              forKeys:(const int32_t [])keys
++ (instancetype)dictionaryWithDoubles:(const double [__nullable])values
+                              forKeys:(const int32_t [__nullable])keys
                                 count:(NSUInteger)count;
 
 /**
@@ -2358,8 +2358,8 @@ NS_ASSUME_NONNULL_BEGIN
  *
  * @return A newly initialized dictionary with a copy of the values and keys.
  **/
-- (instancetype)initWithDoubles:(const double [])values
-                        forKeys:(const int32_t [])keys
+- (instancetype)initWithDoubles:(const double [__nullable])values
+                        forKeys:(const int32_t [__nullable])keys
                           count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
 
 /**
@@ -2484,8 +2484,8 @@ NS_ASSUME_NONNULL_BEGIN
  * @return A newly instanced dictionary with the keys and values in it.
  **/
 + (instancetype)dictionaryWithValidationFunction:(nullable GPBEnumValidationFunc)func
-                                       rawValues:(const int32_t [])values
-                                         forKeys:(const int32_t [])keys
+                                       rawValues:(const int32_t [__nullable])values
+                                         forKeys:(const int32_t [__nullable])keys
                                            count:(NSUInteger)count;
 
 /**
@@ -2530,8 +2530,8 @@ NS_ASSUME_NONNULL_BEGIN
  * @return A newly initialized dictionary with the keys and values in it.
  **/
 - (instancetype)initWithValidationFunction:(nullable GPBEnumValidationFunc)func
-                                 rawValues:(const int32_t [])values
-                                   forKeys:(const int32_t [])keys
+                                 rawValues:(const int32_t [__nullable])values
+                                   forKeys:(const int32_t [__nullable])keys
                                      count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
 
 /**
@@ -2695,8 +2695,8 @@ NS_ASSUME_NONNULL_BEGIN
  *
  * @return A newly instanced dictionary with the keys and values in it.
  **/
-+ (instancetype)dictionaryWithObjects:(const ObjectType GPB_UNSAFE_UNRETAINED [])objects
-                              forKeys:(const int32_t [])keys
++ (instancetype)dictionaryWithObjects:(const ObjectType __nonnull GPB_UNSAFE_UNRETAINED [__nullable])objects
+                              forKeys:(const int32_t [__nullable])keys
                                 count:(NSUInteger)count;
 
 /**
@@ -2728,8 +2728,8 @@ NS_ASSUME_NONNULL_BEGIN
  *
  * @return A newly initialized dictionary with a copy of the values and keys.
  **/
-- (instancetype)initWithObjects:(const ObjectType GPB_UNSAFE_UNRETAINED [])objects
-                        forKeys:(const int32_t [])keys
+- (instancetype)initWithObjects:(const ObjectType __nonnull GPB_UNSAFE_UNRETAINED [__nullable])objects
+                        forKeys:(const int32_t [__nullable])keys
                           count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
 
 /**
@@ -2838,8 +2838,8 @@ NS_ASSUME_NONNULL_BEGIN
  *
  * @return A newly instanced dictionary with the keys and values in it.
  **/
-+ (instancetype)dictionaryWithUInt32s:(const uint32_t [])values
-                              forKeys:(const uint64_t [])keys
++ (instancetype)dictionaryWithUInt32s:(const uint32_t [__nullable])values
+                              forKeys:(const uint64_t [__nullable])keys
                                 count:(NSUInteger)count;
 
 /**
@@ -2871,8 +2871,8 @@ NS_ASSUME_NONNULL_BEGIN
  *
  * @return A newly initialized dictionary with a copy of the values and keys.
  **/
-- (instancetype)initWithUInt32s:(const uint32_t [])values
-                        forKeys:(const uint64_t [])keys
+- (instancetype)initWithUInt32s:(const uint32_t [__nullable])values
+                        forKeys:(const uint64_t [__nullable])keys
                           count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
 
 /**
@@ -2982,8 +2982,8 @@ NS_ASSUME_NONNULL_BEGIN
  *
  * @return A newly instanced dictionary with the keys and values in it.
  **/
-+ (instancetype)dictionaryWithInt32s:(const int32_t [])values
-                             forKeys:(const uint64_t [])keys
++ (instancetype)dictionaryWithInt32s:(const int32_t [__nullable])values
+                             forKeys:(const uint64_t [__nullable])keys
                                count:(NSUInteger)count;
 
 /**
@@ -3015,8 +3015,8 @@ NS_ASSUME_NONNULL_BEGIN
  *
  * @return A newly initialized dictionary with a copy of the values and keys.
  **/
-- (instancetype)initWithInt32s:(const int32_t [])values
-                       forKeys:(const uint64_t [])keys
+- (instancetype)initWithInt32s:(const int32_t [__nullable])values
+                       forKeys:(const uint64_t [__nullable])keys
                          count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
 
 /**
@@ -3126,8 +3126,8 @@ NS_ASSUME_NONNULL_BEGIN
  *
  * @return A newly instanced dictionary with the keys and values in it.
  **/
-+ (instancetype)dictionaryWithUInt64s:(const uint64_t [])values
-                              forKeys:(const uint64_t [])keys
++ (instancetype)dictionaryWithUInt64s:(const uint64_t [__nullable])values
+                              forKeys:(const uint64_t [__nullable])keys
                                 count:(NSUInteger)count;
 
 /**
@@ -3159,8 +3159,8 @@ NS_ASSUME_NONNULL_BEGIN
  *
  * @return A newly initialized dictionary with a copy of the values and keys.
  **/
-- (instancetype)initWithUInt64s:(const uint64_t [])values
-                        forKeys:(const uint64_t [])keys
+- (instancetype)initWithUInt64s:(const uint64_t [__nullable])values
+                        forKeys:(const uint64_t [__nullable])keys
                           count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
 
 /**
@@ -3270,8 +3270,8 @@ NS_ASSUME_NONNULL_BEGIN
  *
  * @return A newly instanced dictionary with the keys and values in it.
  **/
-+ (instancetype)dictionaryWithInt64s:(const int64_t [])values
-                             forKeys:(const uint64_t [])keys
++ (instancetype)dictionaryWithInt64s:(const int64_t [__nullable])values
+                             forKeys:(const uint64_t [__nullable])keys
                                count:(NSUInteger)count;
 
 /**
@@ -3303,8 +3303,8 @@ NS_ASSUME_NONNULL_BEGIN
  *
  * @return A newly initialized dictionary with a copy of the values and keys.
  **/
-- (instancetype)initWithInt64s:(const int64_t [])values
-                       forKeys:(const uint64_t [])keys
+- (instancetype)initWithInt64s:(const int64_t [__nullable])values
+                       forKeys:(const uint64_t [__nullable])keys
                          count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
 
 /**
@@ -3414,8 +3414,8 @@ NS_ASSUME_NONNULL_BEGIN
  *
  * @return A newly instanced dictionary with the keys and values in it.
  **/
-+ (instancetype)dictionaryWithBools:(const BOOL [])values
-                            forKeys:(const uint64_t [])keys
++ (instancetype)dictionaryWithBools:(const BOOL [__nullable])values
+                            forKeys:(const uint64_t [__nullable])keys
                               count:(NSUInteger)count;
 
 /**
@@ -3447,8 +3447,8 @@ NS_ASSUME_NONNULL_BEGIN
  *
  * @return A newly initialized dictionary with a copy of the values and keys.
  **/
-- (instancetype)initWithBools:(const BOOL [])values
-                      forKeys:(const uint64_t [])keys
+- (instancetype)initWithBools:(const BOOL [__nullable])values
+                      forKeys:(const uint64_t [__nullable])keys
                         count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
 
 /**
@@ -3558,8 +3558,8 @@ NS_ASSUME_NONNULL_BEGIN
  *
  * @return A newly instanced dictionary with the keys and values in it.
  **/
-+ (instancetype)dictionaryWithFloats:(const float [])values
-                             forKeys:(const uint64_t [])keys
++ (instancetype)dictionaryWithFloats:(const float [__nullable])values
+                             forKeys:(const uint64_t [__nullable])keys
                                count:(NSUInteger)count;
 
 /**
@@ -3591,8 +3591,8 @@ NS_ASSUME_NONNULL_BEGIN
  *
  * @return A newly initialized dictionary with a copy of the values and keys.
  **/
-- (instancetype)initWithFloats:(const float [])values
-                       forKeys:(const uint64_t [])keys
+- (instancetype)initWithFloats:(const float [__nullable])values
+                       forKeys:(const uint64_t [__nullable])keys
                          count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
 
 /**
@@ -3702,8 +3702,8 @@ NS_ASSUME_NONNULL_BEGIN
  *
  * @return A newly instanced dictionary with the keys and values in it.
  **/
-+ (instancetype)dictionaryWithDoubles:(const double [])values
-                              forKeys:(const uint64_t [])keys
++ (instancetype)dictionaryWithDoubles:(const double [__nullable])values
+                              forKeys:(const uint64_t [__nullable])keys
                                 count:(NSUInteger)count;
 
 /**
@@ -3735,8 +3735,8 @@ NS_ASSUME_NONNULL_BEGIN
  *
  * @return A newly initialized dictionary with a copy of the values and keys.
  **/
-- (instancetype)initWithDoubles:(const double [])values
-                        forKeys:(const uint64_t [])keys
+- (instancetype)initWithDoubles:(const double [__nullable])values
+                        forKeys:(const uint64_t [__nullable])keys
                           count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
 
 /**
@@ -3861,8 +3861,8 @@ NS_ASSUME_NONNULL_BEGIN
  * @return A newly instanced dictionary with the keys and values in it.
  **/
 + (instancetype)dictionaryWithValidationFunction:(nullable GPBEnumValidationFunc)func
-                                       rawValues:(const int32_t [])values
-                                         forKeys:(const uint64_t [])keys
+                                       rawValues:(const int32_t [__nullable])values
+                                         forKeys:(const uint64_t [__nullable])keys
                                            count:(NSUInteger)count;
 
 /**
@@ -3907,8 +3907,8 @@ NS_ASSUME_NONNULL_BEGIN
  * @return A newly initialized dictionary with the keys and values in it.
  **/
 - (instancetype)initWithValidationFunction:(nullable GPBEnumValidationFunc)func
-                                 rawValues:(const int32_t [])values
-                                   forKeys:(const uint64_t [])keys
+                                 rawValues:(const int32_t [__nullable])values
+                                   forKeys:(const uint64_t [__nullable])keys
                                      count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
 
 /**
@@ -4072,8 +4072,8 @@ NS_ASSUME_NONNULL_BEGIN
  *
  * @return A newly instanced dictionary with the keys and values in it.
  **/
-+ (instancetype)dictionaryWithObjects:(const ObjectType GPB_UNSAFE_UNRETAINED [])objects
-                              forKeys:(const uint64_t [])keys
++ (instancetype)dictionaryWithObjects:(const ObjectType __nonnull GPB_UNSAFE_UNRETAINED [__nullable])objects
+                              forKeys:(const uint64_t [__nullable])keys
                                 count:(NSUInteger)count;
 
 /**
@@ -4105,8 +4105,8 @@ NS_ASSUME_NONNULL_BEGIN
  *
  * @return A newly initialized dictionary with a copy of the values and keys.
  **/
-- (instancetype)initWithObjects:(const ObjectType GPB_UNSAFE_UNRETAINED [])objects
-                        forKeys:(const uint64_t [])keys
+- (instancetype)initWithObjects:(const ObjectType __nonnull GPB_UNSAFE_UNRETAINED [__nullable])objects
+                        forKeys:(const uint64_t [__nullable])keys
                           count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
 
 /**
@@ -4215,8 +4215,8 @@ NS_ASSUME_NONNULL_BEGIN
  *
  * @return A newly instanced dictionary with the keys and values in it.
  **/
-+ (instancetype)dictionaryWithUInt32s:(const uint32_t [])values
-                              forKeys:(const int64_t [])keys
++ (instancetype)dictionaryWithUInt32s:(const uint32_t [__nullable])values
+                              forKeys:(const int64_t [__nullable])keys
                                 count:(NSUInteger)count;
 
 /**
@@ -4248,8 +4248,8 @@ NS_ASSUME_NONNULL_BEGIN
  *
  * @return A newly initialized dictionary with a copy of the values and keys.
  **/
-- (instancetype)initWithUInt32s:(const uint32_t [])values
-                        forKeys:(const int64_t [])keys
+- (instancetype)initWithUInt32s:(const uint32_t [__nullable])values
+                        forKeys:(const int64_t [__nullable])keys
                           count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
 
 /**
@@ -4359,8 +4359,8 @@ NS_ASSUME_NONNULL_BEGIN
  *
  * @return A newly instanced dictionary with the keys and values in it.
  **/
-+ (instancetype)dictionaryWithInt32s:(const int32_t [])values
-                             forKeys:(const int64_t [])keys
++ (instancetype)dictionaryWithInt32s:(const int32_t [__nullable])values
+                             forKeys:(const int64_t [__nullable])keys
                                count:(NSUInteger)count;
 
 /**
@@ -4392,8 +4392,8 @@ NS_ASSUME_NONNULL_BEGIN
  *
  * @return A newly initialized dictionary with a copy of the values and keys.
  **/
-- (instancetype)initWithInt32s:(const int32_t [])values
-                       forKeys:(const int64_t [])keys
+- (instancetype)initWithInt32s:(const int32_t [__nullable])values
+                       forKeys:(const int64_t [__nullable])keys
                          count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
 
 /**
@@ -4503,8 +4503,8 @@ NS_ASSUME_NONNULL_BEGIN
  *
  * @return A newly instanced dictionary with the keys and values in it.
  **/
-+ (instancetype)dictionaryWithUInt64s:(const uint64_t [])values
-                              forKeys:(const int64_t [])keys
++ (instancetype)dictionaryWithUInt64s:(const uint64_t [__nullable])values
+                              forKeys:(const int64_t [__nullable])keys
                                 count:(NSUInteger)count;
 
 /**
@@ -4536,8 +4536,8 @@ NS_ASSUME_NONNULL_BEGIN
  *
  * @return A newly initialized dictionary with a copy of the values and keys.
  **/
-- (instancetype)initWithUInt64s:(const uint64_t [])values
-                        forKeys:(const int64_t [])keys
+- (instancetype)initWithUInt64s:(const uint64_t [__nullable])values
+                        forKeys:(const int64_t [__nullable])keys
                           count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
 
 /**
@@ -4647,8 +4647,8 @@ NS_ASSUME_NONNULL_BEGIN
  *
  * @return A newly instanced dictionary with the keys and values in it.
  **/
-+ (instancetype)dictionaryWithInt64s:(const int64_t [])values
-                             forKeys:(const int64_t [])keys
++ (instancetype)dictionaryWithInt64s:(const int64_t [__nullable])values
+                             forKeys:(const int64_t [__nullable])keys
                                count:(NSUInteger)count;
 
 /**
@@ -4680,8 +4680,8 @@ NS_ASSUME_NONNULL_BEGIN
  *
  * @return A newly initialized dictionary with a copy of the values and keys.
  **/
-- (instancetype)initWithInt64s:(const int64_t [])values
-                       forKeys:(const int64_t [])keys
+- (instancetype)initWithInt64s:(const int64_t [__nullable])values
+                       forKeys:(const int64_t [__nullable])keys
                          count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
 
 /**
@@ -4791,8 +4791,8 @@ NS_ASSUME_NONNULL_BEGIN
  *
  * @return A newly instanced dictionary with the keys and values in it.
  **/
-+ (instancetype)dictionaryWithBools:(const BOOL [])values
-                            forKeys:(const int64_t [])keys
++ (instancetype)dictionaryWithBools:(const BOOL [__nullable])values
+                            forKeys:(const int64_t [__nullable])keys
                               count:(NSUInteger)count;
 
 /**
@@ -4824,8 +4824,8 @@ NS_ASSUME_NONNULL_BEGIN
  *
  * @return A newly initialized dictionary with a copy of the values and keys.
  **/
-- (instancetype)initWithBools:(const BOOL [])values
-                      forKeys:(const int64_t [])keys
+- (instancetype)initWithBools:(const BOOL [__nullable])values
+                      forKeys:(const int64_t [__nullable])keys
                         count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
 
 /**
@@ -4935,8 +4935,8 @@ NS_ASSUME_NONNULL_BEGIN
  *
  * @return A newly instanced dictionary with the keys and values in it.
  **/
-+ (instancetype)dictionaryWithFloats:(const float [])values
-                             forKeys:(const int64_t [])keys
++ (instancetype)dictionaryWithFloats:(const float [__nullable])values
+                             forKeys:(const int64_t [__nullable])keys
                                count:(NSUInteger)count;
 
 /**
@@ -4968,8 +4968,8 @@ NS_ASSUME_NONNULL_BEGIN
  *
  * @return A newly initialized dictionary with a copy of the values and keys.
  **/
-- (instancetype)initWithFloats:(const float [])values
-                       forKeys:(const int64_t [])keys
+- (instancetype)initWithFloats:(const float [__nullable])values
+                       forKeys:(const int64_t [__nullable])keys
                          count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
 
 /**
@@ -5079,8 +5079,8 @@ NS_ASSUME_NONNULL_BEGIN
  *
  * @return A newly instanced dictionary with the keys and values in it.
  **/
-+ (instancetype)dictionaryWithDoubles:(const double [])values
-                              forKeys:(const int64_t [])keys
++ (instancetype)dictionaryWithDoubles:(const double [__nullable])values
+                              forKeys:(const int64_t [__nullable])keys
                                 count:(NSUInteger)count;
 
 /**
@@ -5112,8 +5112,8 @@ NS_ASSUME_NONNULL_BEGIN
  *
  * @return A newly initialized dictionary with a copy of the values and keys.
  **/
-- (instancetype)initWithDoubles:(const double [])values
-                        forKeys:(const int64_t [])keys
+- (instancetype)initWithDoubles:(const double [__nullable])values
+                        forKeys:(const int64_t [__nullable])keys
                           count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
 
 /**
@@ -5238,8 +5238,8 @@ NS_ASSUME_NONNULL_BEGIN
  * @return A newly instanced dictionary with the keys and values in it.
  **/
 + (instancetype)dictionaryWithValidationFunction:(nullable GPBEnumValidationFunc)func
-                                       rawValues:(const int32_t [])values
-                                         forKeys:(const int64_t [])keys
+                                       rawValues:(const int32_t [__nullable])values
+                                         forKeys:(const int64_t [__nullable])keys
                                            count:(NSUInteger)count;
 
 /**
@@ -5284,8 +5284,8 @@ NS_ASSUME_NONNULL_BEGIN
  * @return A newly initialized dictionary with the keys and values in it.
  **/
 - (instancetype)initWithValidationFunction:(nullable GPBEnumValidationFunc)func
-                                 rawValues:(const int32_t [])values
-                                   forKeys:(const int64_t [])keys
+                                 rawValues:(const int32_t [__nullable])values
+                                   forKeys:(const int64_t [__nullable])keys
                                      count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
 
 /**
@@ -5449,8 +5449,8 @@ NS_ASSUME_NONNULL_BEGIN
  *
  * @return A newly instanced dictionary with the keys and values in it.
  **/
-+ (instancetype)dictionaryWithObjects:(const ObjectType GPB_UNSAFE_UNRETAINED [])objects
-                              forKeys:(const int64_t [])keys
++ (instancetype)dictionaryWithObjects:(const ObjectType __nonnull GPB_UNSAFE_UNRETAINED [__nullable])objects
+                              forKeys:(const int64_t [__nullable])keys
                                 count:(NSUInteger)count;
 
 /**
@@ -5482,8 +5482,8 @@ NS_ASSUME_NONNULL_BEGIN
  *
  * @return A newly initialized dictionary with a copy of the values and keys.
  **/
-- (instancetype)initWithObjects:(const ObjectType GPB_UNSAFE_UNRETAINED [])objects
-                        forKeys:(const int64_t [])keys
+- (instancetype)initWithObjects:(const ObjectType __nonnull GPB_UNSAFE_UNRETAINED [__nullable])objects
+                        forKeys:(const int64_t [__nullable])keys
                           count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
 
 /**
@@ -5592,8 +5592,8 @@ NS_ASSUME_NONNULL_BEGIN
  *
  * @return A newly instanced dictionary with the keys and values in it.
  **/
-+ (instancetype)dictionaryWithUInt32s:(const uint32_t [])values
-                              forKeys:(const BOOL [])keys
++ (instancetype)dictionaryWithUInt32s:(const uint32_t [__nullable])values
+                              forKeys:(const BOOL [__nullable])keys
                                 count:(NSUInteger)count;
 
 /**
@@ -5625,8 +5625,8 @@ NS_ASSUME_NONNULL_BEGIN
  *
  * @return A newly initialized dictionary with a copy of the values and keys.
  **/
-- (instancetype)initWithUInt32s:(const uint32_t [])values
-                        forKeys:(const BOOL [])keys
+- (instancetype)initWithUInt32s:(const uint32_t [__nullable])values
+                        forKeys:(const BOOL [__nullable])keys
                           count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
 
 /**
@@ -5736,8 +5736,8 @@ NS_ASSUME_NONNULL_BEGIN
  *
  * @return A newly instanced dictionary with the keys and values in it.
  **/
-+ (instancetype)dictionaryWithInt32s:(const int32_t [])values
-                             forKeys:(const BOOL [])keys
++ (instancetype)dictionaryWithInt32s:(const int32_t [__nullable])values
+                             forKeys:(const BOOL [__nullable])keys
                                count:(NSUInteger)count;
 
 /**
@@ -5769,8 +5769,8 @@ NS_ASSUME_NONNULL_BEGIN
  *
  * @return A newly initialized dictionary with a copy of the values and keys.
  **/
-- (instancetype)initWithInt32s:(const int32_t [])values
-                       forKeys:(const BOOL [])keys
+- (instancetype)initWithInt32s:(const int32_t [__nullable])values
+                       forKeys:(const BOOL [__nullable])keys
                          count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
 
 /**
@@ -5880,8 +5880,8 @@ NS_ASSUME_NONNULL_BEGIN
  *
  * @return A newly instanced dictionary with the keys and values in it.
  **/
-+ (instancetype)dictionaryWithUInt64s:(const uint64_t [])values
-                              forKeys:(const BOOL [])keys
++ (instancetype)dictionaryWithUInt64s:(const uint64_t [__nullable])values
+                              forKeys:(const BOOL [__nullable])keys
                                 count:(NSUInteger)count;
 
 /**
@@ -5913,8 +5913,8 @@ NS_ASSUME_NONNULL_BEGIN
  *
  * @return A newly initialized dictionary with a copy of the values and keys.
  **/
-- (instancetype)initWithUInt64s:(const uint64_t [])values
-                        forKeys:(const BOOL [])keys
+- (instancetype)initWithUInt64s:(const uint64_t [__nullable])values
+                        forKeys:(const BOOL [__nullable])keys
                           count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
 
 /**
@@ -6024,8 +6024,8 @@ NS_ASSUME_NONNULL_BEGIN
  *
  * @return A newly instanced dictionary with the keys and values in it.
  **/
-+ (instancetype)dictionaryWithInt64s:(const int64_t [])values
-                             forKeys:(const BOOL [])keys
++ (instancetype)dictionaryWithInt64s:(const int64_t [__nullable])values
+                             forKeys:(const BOOL [__nullable])keys
                                count:(NSUInteger)count;
 
 /**
@@ -6057,8 +6057,8 @@ NS_ASSUME_NONNULL_BEGIN
  *
  * @return A newly initialized dictionary with a copy of the values and keys.
  **/
-- (instancetype)initWithInt64s:(const int64_t [])values
-                       forKeys:(const BOOL [])keys
+- (instancetype)initWithInt64s:(const int64_t [__nullable])values
+                       forKeys:(const BOOL [__nullable])keys
                          count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
 
 /**
@@ -6168,8 +6168,8 @@ NS_ASSUME_NONNULL_BEGIN
  *
  * @return A newly instanced dictionary with the keys and values in it.
  **/
-+ (instancetype)dictionaryWithBools:(const BOOL [])values
-                            forKeys:(const BOOL [])keys
++ (instancetype)dictionaryWithBools:(const BOOL [__nullable])values
+                            forKeys:(const BOOL [__nullable])keys
                               count:(NSUInteger)count;
 
 /**
@@ -6201,8 +6201,8 @@ NS_ASSUME_NONNULL_BEGIN
  *
  * @return A newly initialized dictionary with a copy of the values and keys.
  **/
-- (instancetype)initWithBools:(const BOOL [])values
-                      forKeys:(const BOOL [])keys
+- (instancetype)initWithBools:(const BOOL [__nullable])values
+                      forKeys:(const BOOL [__nullable])keys
                         count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
 
 /**
@@ -6312,8 +6312,8 @@ NS_ASSUME_NONNULL_BEGIN
  *
  * @return A newly instanced dictionary with the keys and values in it.
  **/
-+ (instancetype)dictionaryWithFloats:(const float [])values
-                             forKeys:(const BOOL [])keys
++ (instancetype)dictionaryWithFloats:(const float [__nullable])values
+                             forKeys:(const BOOL [__nullable])keys
                                count:(NSUInteger)count;
 
 /**
@@ -6345,8 +6345,8 @@ NS_ASSUME_NONNULL_BEGIN
  *
  * @return A newly initialized dictionary with a copy of the values and keys.
  **/
-- (instancetype)initWithFloats:(const float [])values
-                       forKeys:(const BOOL [])keys
+- (instancetype)initWithFloats:(const float [__nullable])values
+                       forKeys:(const BOOL [__nullable])keys
                          count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
 
 /**
@@ -6456,8 +6456,8 @@ NS_ASSUME_NONNULL_BEGIN
  *
  * @return A newly instanced dictionary with the keys and values in it.
  **/
-+ (instancetype)dictionaryWithDoubles:(const double [])values
-                              forKeys:(const BOOL [])keys
++ (instancetype)dictionaryWithDoubles:(const double [__nullable])values
+                              forKeys:(const BOOL [__nullable])keys
                                 count:(NSUInteger)count;
 
 /**
@@ -6489,8 +6489,8 @@ NS_ASSUME_NONNULL_BEGIN
  *
  * @return A newly initialized dictionary with a copy of the values and keys.
  **/
-- (instancetype)initWithDoubles:(const double [])values
-                        forKeys:(const BOOL [])keys
+- (instancetype)initWithDoubles:(const double [__nullable])values
+                        forKeys:(const BOOL [__nullable])keys
                           count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
 
 /**
@@ -6615,8 +6615,8 @@ NS_ASSUME_NONNULL_BEGIN
  * @return A newly instanced dictionary with the keys and values in it.
  **/
 + (instancetype)dictionaryWithValidationFunction:(nullable GPBEnumValidationFunc)func
-                                       rawValues:(const int32_t [])values
-                                         forKeys:(const BOOL [])keys
+                                       rawValues:(const int32_t [__nullable])values
+                                         forKeys:(const BOOL [__nullable])keys
                                            count:(NSUInteger)count;
 
 /**
@@ -6661,8 +6661,8 @@ NS_ASSUME_NONNULL_BEGIN
  * @return A newly initialized dictionary with the keys and values in it.
  **/
 - (instancetype)initWithValidationFunction:(nullable GPBEnumValidationFunc)func
-                                 rawValues:(const int32_t [])values
-                                   forKeys:(const BOOL [])keys
+                                 rawValues:(const int32_t [__nullable])values
+                                   forKeys:(const BOOL [__nullable])keys
                                      count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
 
 /**
@@ -6826,8 +6826,8 @@ NS_ASSUME_NONNULL_BEGIN
  *
  * @return A newly instanced dictionary with the keys and values in it.
  **/
-+ (instancetype)dictionaryWithObjects:(const ObjectType GPB_UNSAFE_UNRETAINED [])objects
-                              forKeys:(const BOOL [])keys
++ (instancetype)dictionaryWithObjects:(const ObjectType __nonnull GPB_UNSAFE_UNRETAINED [__nullable])objects
+                              forKeys:(const BOOL [__nullable])keys
                                 count:(NSUInteger)count;
 
 /**
@@ -6859,8 +6859,8 @@ NS_ASSUME_NONNULL_BEGIN
  *
  * @return A newly initialized dictionary with a copy of the values and keys.
  **/
-- (instancetype)initWithObjects:(const ObjectType GPB_UNSAFE_UNRETAINED [])objects
-                        forKeys:(const BOOL [])keys
+- (instancetype)initWithObjects:(const ObjectType __nonnull GPB_UNSAFE_UNRETAINED [__nullable])objects
+                        forKeys:(const BOOL [__nullable])keys
                           count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
 
 /**
@@ -6969,8 +6969,8 @@ NS_ASSUME_NONNULL_BEGIN
  *
  * @return A newly instanced dictionary with the keys and values in it.
  **/
-+ (instancetype)dictionaryWithUInt32s:(const uint32_t [])values
-                              forKeys:(const NSString * GPB_UNSAFE_UNRETAINED [])keys
++ (instancetype)dictionaryWithUInt32s:(const uint32_t [__nullable])values
+                              forKeys:(const NSString * __nonnull GPB_UNSAFE_UNRETAINED [__nullable])keys
                                 count:(NSUInteger)count;
 
 /**
@@ -7002,8 +7002,8 @@ NS_ASSUME_NONNULL_BEGIN
  *
  * @return A newly initialized dictionary with a copy of the values and keys.
  **/
-- (instancetype)initWithUInt32s:(const uint32_t [])values
-                        forKeys:(const NSString * GPB_UNSAFE_UNRETAINED [])keys
+- (instancetype)initWithUInt32s:(const uint32_t [__nullable])values
+                        forKeys:(const NSString * __nonnull GPB_UNSAFE_UNRETAINED [__nullable])keys
                           count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
 
 /**
@@ -7113,8 +7113,8 @@ NS_ASSUME_NONNULL_BEGIN
  *
  * @return A newly instanced dictionary with the keys and values in it.
  **/
-+ (instancetype)dictionaryWithInt32s:(const int32_t [])values
-                             forKeys:(const NSString * GPB_UNSAFE_UNRETAINED [])keys
++ (instancetype)dictionaryWithInt32s:(const int32_t [__nullable])values
+                             forKeys:(const NSString * __nonnull GPB_UNSAFE_UNRETAINED [__nullable])keys
                                count:(NSUInteger)count;
 
 /**
@@ -7146,8 +7146,8 @@ NS_ASSUME_NONNULL_BEGIN
  *
  * @return A newly initialized dictionary with a copy of the values and keys.
  **/
-- (instancetype)initWithInt32s:(const int32_t [])values
-                       forKeys:(const NSString * GPB_UNSAFE_UNRETAINED [])keys
+- (instancetype)initWithInt32s:(const int32_t [__nullable])values
+                       forKeys:(const NSString * __nonnull GPB_UNSAFE_UNRETAINED [__nullable])keys
                          count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
 
 /**
@@ -7257,8 +7257,8 @@ NS_ASSUME_NONNULL_BEGIN
  *
  * @return A newly instanced dictionary with the keys and values in it.
  **/
-+ (instancetype)dictionaryWithUInt64s:(const uint64_t [])values
-                              forKeys:(const NSString * GPB_UNSAFE_UNRETAINED [])keys
++ (instancetype)dictionaryWithUInt64s:(const uint64_t [__nullable])values
+                              forKeys:(const NSString * __nonnull GPB_UNSAFE_UNRETAINED [__nullable])keys
                                 count:(NSUInteger)count;
 
 /**
@@ -7290,8 +7290,8 @@ NS_ASSUME_NONNULL_BEGIN
  *
  * @return A newly initialized dictionary with a copy of the values and keys.
  **/
-- (instancetype)initWithUInt64s:(const uint64_t [])values
-                        forKeys:(const NSString * GPB_UNSAFE_UNRETAINED [])keys
+- (instancetype)initWithUInt64s:(const uint64_t [__nullable])values
+                        forKeys:(const NSString * __nonnull GPB_UNSAFE_UNRETAINED [__nullable])keys
                           count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
 
 /**
@@ -7401,8 +7401,8 @@ NS_ASSUME_NONNULL_BEGIN
  *
  * @return A newly instanced dictionary with the keys and values in it.
  **/
-+ (instancetype)dictionaryWithInt64s:(const int64_t [])values
-                             forKeys:(const NSString * GPB_UNSAFE_UNRETAINED [])keys
++ (instancetype)dictionaryWithInt64s:(const int64_t [__nullable])values
+                             forKeys:(const NSString * __nonnull GPB_UNSAFE_UNRETAINED [__nullable])keys
                                count:(NSUInteger)count;
 
 /**
@@ -7434,8 +7434,8 @@ NS_ASSUME_NONNULL_BEGIN
  *
  * @return A newly initialized dictionary with a copy of the values and keys.
  **/
-- (instancetype)initWithInt64s:(const int64_t [])values
-                       forKeys:(const NSString * GPB_UNSAFE_UNRETAINED [])keys
+- (instancetype)initWithInt64s:(const int64_t [__nullable])values
+                       forKeys:(const NSString * __nonnull GPB_UNSAFE_UNRETAINED [__nullable])keys
                          count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
 
 /**
@@ -7545,8 +7545,8 @@ NS_ASSUME_NONNULL_BEGIN
  *
  * @return A newly instanced dictionary with the keys and values in it.
  **/
-+ (instancetype)dictionaryWithBools:(const BOOL [])values
-                            forKeys:(const NSString * GPB_UNSAFE_UNRETAINED [])keys
++ (instancetype)dictionaryWithBools:(const BOOL [__nullable])values
+                            forKeys:(const NSString * __nonnull GPB_UNSAFE_UNRETAINED [__nullable])keys
                               count:(NSUInteger)count;
 
 /**
@@ -7578,8 +7578,8 @@ NS_ASSUME_NONNULL_BEGIN
  *
  * @return A newly initialized dictionary with a copy of the values and keys.
  **/
-- (instancetype)initWithBools:(const BOOL [])values
-                      forKeys:(const NSString * GPB_UNSAFE_UNRETAINED [])keys
+- (instancetype)initWithBools:(const BOOL [__nullable])values
+                      forKeys:(const NSString * __nonnull GPB_UNSAFE_UNRETAINED [__nullable])keys
                         count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
 
 /**
@@ -7689,8 +7689,8 @@ NS_ASSUME_NONNULL_BEGIN
  *
  * @return A newly instanced dictionary with the keys and values in it.
  **/
-+ (instancetype)dictionaryWithFloats:(const float [])values
-                             forKeys:(const NSString * GPB_UNSAFE_UNRETAINED [])keys
++ (instancetype)dictionaryWithFloats:(const float [__nullable])values
+                             forKeys:(const NSString * __nonnull GPB_UNSAFE_UNRETAINED [__nullable])keys
                                count:(NSUInteger)count;
 
 /**
@@ -7722,8 +7722,8 @@ NS_ASSUME_NONNULL_BEGIN
  *
  * @return A newly initialized dictionary with a copy of the values and keys.
  **/
-- (instancetype)initWithFloats:(const float [])values
-                       forKeys:(const NSString * GPB_UNSAFE_UNRETAINED [])keys
+- (instancetype)initWithFloats:(const float [__nullable])values
+                       forKeys:(const NSString * __nonnull GPB_UNSAFE_UNRETAINED [__nullable])keys
                          count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
 
 /**
@@ -7833,8 +7833,8 @@ NS_ASSUME_NONNULL_BEGIN
  *
  * @return A newly instanced dictionary with the keys and values in it.
  **/
-+ (instancetype)dictionaryWithDoubles:(const double [])values
-                              forKeys:(const NSString * GPB_UNSAFE_UNRETAINED [])keys
++ (instancetype)dictionaryWithDoubles:(const double [__nullable])values
+                              forKeys:(const NSString * __nonnull GPB_UNSAFE_UNRETAINED [__nullable])keys
                                 count:(NSUInteger)count;
 
 /**
@@ -7866,8 +7866,8 @@ NS_ASSUME_NONNULL_BEGIN
  *
  * @return A newly initialized dictionary with a copy of the values and keys.
  **/
-- (instancetype)initWithDoubles:(const double [])values
-                        forKeys:(const NSString * GPB_UNSAFE_UNRETAINED [])keys
+- (instancetype)initWithDoubles:(const double [__nullable])values
+                        forKeys:(const NSString * __nonnull GPB_UNSAFE_UNRETAINED [__nullable])keys
                           count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
 
 /**
@@ -7992,8 +7992,8 @@ NS_ASSUME_NONNULL_BEGIN
  * @return A newly instanced dictionary with the keys and values in it.
  **/
 + (instancetype)dictionaryWithValidationFunction:(nullable GPBEnumValidationFunc)func
-                                       rawValues:(const int32_t [])values
-                                         forKeys:(const NSString * GPB_UNSAFE_UNRETAINED [])keys
+                                       rawValues:(const int32_t [__nullable])values
+                                         forKeys:(const NSString * __nonnull GPB_UNSAFE_UNRETAINED [__nullable])keys
                                            count:(NSUInteger)count;
 
 /**
@@ -8038,8 +8038,8 @@ NS_ASSUME_NONNULL_BEGIN
  * @return A newly initialized dictionary with the keys and values in it.
  **/
 - (instancetype)initWithValidationFunction:(nullable GPBEnumValidationFunc)func
-                                 rawValues:(const int32_t [])values
-                                   forKeys:(const NSString * GPB_UNSAFE_UNRETAINED [])keys
+                                 rawValues:(const int32_t [__nullable])values
+                                   forKeys:(const NSString * __nonnull GPB_UNSAFE_UNRETAINED [__nullable])keys
                                      count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
 
 /**
@@ -8218,7 +8218,7 @@ NS_ASSUME_NONNULL_END
 //%PDDM-DEFINE ARRAY_ARG_MODIFIEREnum()
 // Nothing
 //%PDDM-DEFINE ARRAY_ARG_MODIFIEROBJECT()
-//%GPB_UNSAFE_UNRETAINED ##
+//%__nonnull GPB_UNSAFE_UNRETAINED ##
 //%PDDM-DEFINE DICTIONARY_CLASS_DECLPOD(KEY_NAME, VALUE_NAME, VALUE_TYPE)
 //%GPB##KEY_NAME##VALUE_NAME##Dictionary
 //%PDDM-DEFINE DICTIONARY_CLASS_DECLEnum(KEY_NAME, VALUE_NAME, VALUE_TYPE)
@@ -8264,8 +8264,8 @@ NS_ASSUME_NONNULL_END
 //% * 
 //% * @return A newly instanced dictionary with the keys and values in it.
 //% **/
-//%+ (instancetype)dictionaryWith##VNAME##s:(const VALUE_TYPE ARRAY_ARG_MODIFIER##VHELPER()[])##VNAME_VAR##s
-//%                      ##VNAME$S##  forKeys:(const KEY_TYPE##KisP$S##KisP ARRAY_ARG_MODIFIER##KHELPER()[])keys
+//%+ (instancetype)dictionaryWith##VNAME##s:(const VALUE_TYPE ARRAY_ARG_MODIFIER##VHELPER()[__nullable])##VNAME_VAR##s
+//%                      ##VNAME$S##  forKeys:(const KEY_TYPE##KisP$S##KisP ARRAY_ARG_MODIFIER##KHELPER()[__nullable])keys
 //%                      ##VNAME$S##    count:(NSUInteger)count;
 //%
 //%/**
@@ -8297,8 +8297,8 @@ NS_ASSUME_NONNULL_END
 //% * 
 //% * @return A newly initialized dictionary with a copy of the values and keys.
 //% **/
-//%- (instancetype)initWith##VNAME##s:(const VALUE_TYPE ARRAY_ARG_MODIFIER##VHELPER()[])##VNAME_VAR##s
-//%                ##VNAME$S##  forKeys:(const KEY_TYPE##KisP$S##KisP ARRAY_ARG_MODIFIER##KHELPER()[])keys
+//%- (instancetype)initWith##VNAME##s:(const VALUE_TYPE ARRAY_ARG_MODIFIER##VHELPER()[__nullable])##VNAME_VAR##s
+//%                ##VNAME$S##  forKeys:(const KEY_TYPE##KisP$S##KisP ARRAY_ARG_MODIFIER##KHELPER()[__nullable])keys
 //%                ##VNAME$S##    count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
 //%
 //%/**
@@ -8390,8 +8390,8 @@ NS_ASSUME_NONNULL_END
 //% * @return A newly instanced dictionary with the keys and values in it.
 //% **/
 //%+ (instancetype)dictionaryWithValidationFunction:(nullable GPBEnumValidationFunc)func
-//%                                       rawValues:(const VALUE_TYPE ARRAY_ARG_MODIFIER##VHELPER()[])values
-//%                                         forKeys:(const KEY_TYPE##KisP$S##KisP ARRAY_ARG_MODIFIER##KHELPER()[])keys
+//%                                       rawValues:(const VALUE_TYPE ARRAY_ARG_MODIFIER##VHELPER()[__nullable])values
+//%                                         forKeys:(const KEY_TYPE##KisP$S##KisP ARRAY_ARG_MODIFIER##KHELPER()[__nullable])keys
 //%                                           count:(NSUInteger)count;
 //%
 //%/**
@@ -8436,8 +8436,8 @@ NS_ASSUME_NONNULL_END
 //% * @return A newly initialized dictionary with the keys and values in it.
 //% **/
 //%- (instancetype)initWithValidationFunction:(nullable GPBEnumValidationFunc)func
-//%                                 rawValues:(const VALUE_TYPE ARRAY_ARG_MODIFIER##VHELPER()[])values
-//%                                   forKeys:(const KEY_TYPE##KisP$S##KisP ARRAY_ARG_MODIFIER##KHELPER()[])keys
+//%                                 rawValues:(const VALUE_TYPE ARRAY_ARG_MODIFIER##VHELPER()[__nullable])values
+//%                                   forKeys:(const KEY_TYPE##KisP$S##KisP ARRAY_ARG_MODIFIER##KHELPER()[__nullable])keys
 //%                                     count:(NSUInteger)count NS_DESIGNATED_INITIALIZER;
 //%
 //%/**
