@@ -573,23 +573,28 @@ class GeneratedClassTest extends PHPUnit_Framework_TestCase
     public function testOneofField() {
         $m = new TestMessage();
 
+        $this->assertSame("", $m->getMyOneof());
+
         $m->setOneofInt32(1);
         $this->assertSame(1, $m->getOneofInt32());
         $this->assertSame(0.0, $m->getOneofFloat());
         $this->assertSame('', $m->getOneofString());
         $this->assertSame(NULL, $m->getOneofMessage());
+        $this->assertSame("oneof_int32", $m->getMyOneof());
 
         $m->setOneofFloat(2.0);
         $this->assertSame(0, $m->getOneofInt32());
         $this->assertSame(2.0, $m->getOneofFloat());
         $this->assertSame('', $m->getOneofString());
         $this->assertSame(NULL, $m->getOneofMessage());
+        $this->assertSame("oneof_float", $m->getMyOneof());
 
         $m->setOneofString('abc');
         $this->assertSame(0, $m->getOneofInt32());
         $this->assertSame(0.0, $m->getOneofFloat());
         $this->assertSame('abc', $m->getOneofString());
         $this->assertSame(NULL, $m->getOneofMessage());
+        $this->assertSame("oneof_string", $m->getMyOneof());
 
         $sub_m = new TestMessage_Sub();
         $sub_m->setA(1);
@@ -598,6 +603,7 @@ class GeneratedClassTest extends PHPUnit_Framework_TestCase
         $this->assertSame(0.0, $m->getOneofFloat());
         $this->assertSame('', $m->getOneofString());
         $this->assertSame(1, $m->getOneofMessage()->getA());
+        $this->assertSame("oneof_message", $m->getMyOneof());
     }
 
     #########################################################

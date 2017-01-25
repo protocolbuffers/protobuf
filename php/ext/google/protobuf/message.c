@@ -41,6 +41,7 @@ static  zend_function_entry message_methods[] = {
   PHP_ME(Message, decode, NULL, ZEND_ACC_PUBLIC)
   PHP_ME(Message, readOneof, NULL, ZEND_ACC_PROTECTED)
   PHP_ME(Message, writeOneof, NULL, ZEND_ACC_PROTECTED)
+  PHP_ME(Message, whichOneof, NULL, ZEND_ACC_PROTECTED)
   PHP_ME(Message, __construct, NULL, ZEND_ACC_PROTECTED)
   {NULL, NULL, NULL}
 };
@@ -257,4 +258,23 @@ PHP_METHOD(Message, writeOneof) {
   const upb_fielddef* field = upb_msgdef_itof(msg->descriptor->msgdef, index);
 
   layout_set(msg->descriptor->layout, msg, field, value TSRMLS_CC);
+}
+
+PHP_METHOD(Message, whichOneof) {
+  char* oneof_name;
+  int length;
+
+  if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &oneof_name,
+                            &length) == FAILURE) {
+    return;
+  }
+
+  MessageHeader* msg =
+      (MessageHeader*)zend_object_store_get_object(getThis() TSRMLS_CC);
+
+  const upb_oneofdef* oneof =
+      upb_msgdef_ntoo(msg->descriptor->msgdef, oneof_name, length);
+  const char* oneof_case_name = layout_get_oneof_case(
+      msg->descriptor->layout, message_data(msg), oneof TSRMLS_CC);
+  RETURN_STRING(oneof_case_name, 1);
 }

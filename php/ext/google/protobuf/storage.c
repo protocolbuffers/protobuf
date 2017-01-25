@@ -527,7 +527,7 @@ zval* layout_get(MessageLayout* layout, const void* storage,
 }
 
 void layout_set(MessageLayout* layout, MessageHeader* header,
-		const upb_fielddef* field, zval* val TSRMLS_DC) {
+                const upb_fielddef* field, zval* val TSRMLS_DC) {
   void* storage = message_data(header);
   void* memory = slot_memory(layout, storage, field);
   uint32_t* oneof_case = slot_oneof_case(layout, storage, field);
@@ -581,4 +581,23 @@ void layout_set(MessageLayout* layout, MessageHeader* header,
     }
     native_slot_set(type, ce, value_memory(field, memory), val TSRMLS_CC);
   }
+}
+
+const char* layout_get_oneof_case(MessageLayout* layout, const void* storage,
+                                  const upb_oneofdef* oneof TSRMLS_DC) {
+  upb_oneof_iter i;
+  const upb_fielddef* first_field;
+
+  // Oneof is guaranteed to have at least one field. Get the first field.
+  for(upb_oneof_begin(&i, oneof); !upb_oneof_done(&i); upb_oneof_next(&i)) {
+    first_field = upb_oneof_iter_field(&i);
+    break;
+  }
+
+  uint32_t* oneof_case = slot_oneof_case(layout, storage, first_field);
+  if (*oneof_case == 0) {
+    return "";
+  }
+  const upb_fielddef* field = upb_oneofdef_itof(oneof, *oneof_case);
+  return upb_fielddef_name(field);
 }

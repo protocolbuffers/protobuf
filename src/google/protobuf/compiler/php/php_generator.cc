@@ -864,7 +864,7 @@ void GenerateMessageFile(const FileDescriptor* file, const Descriptor* message,
     printer.Print(
       "public function get^camel_name^()\n"
       "{\n"
-      "    return $this->^name^;\n"
+      "    return $this->whichOneof(\"^name^\");\n"
       "}\n\n",
       "camel_name", UnderscoresToCamelCase(oneof->name(), true), "name",
       oneof->name());

@@ -237,10 +237,13 @@ zval* layout_get(MessageLayout* layout, const void* storage,
                  const upb_fielddef* field, zval** cache TSRMLS_DC);
 void layout_set(MessageLayout* layout, MessageHeader* header,
                 const upb_fielddef* field, zval* val TSRMLS_DC);
+const char* layout_get_oneof_case(MessageLayout* layout, const void* storage,
+                                  const upb_oneofdef* oneof TSRMLS_DC);
 void free_layout(MessageLayout* layout);
 
 PHP_METHOD(Message, readOneof);
 PHP_METHOD(Message, writeOneof);
+PHP_METHOD(Message, whichOneof);
 PHP_METHOD(Message, __construct);
 
 // -----------------------------------------------------------------------------
