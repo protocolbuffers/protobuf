@@ -467,7 +467,7 @@ void InitAllowedProto3Extendee() {
   allowed_proto3_extendees_ = new std::set<string>;
   const char* kOptionNames[] = {
       "FileOptions",      "MessageOptions", "FieldOptions", "EnumOptions",
-      "EnumValueOptions", "ServiceOptions", "MethodOptions"};
+      "EnumValueOptions", "ServiceOptions", "MethodOptions", "OneofOptions"};
   for (int i = 0; i < GOOGLE_ARRAYSIZE(kOptionNames); ++i) {
     // descriptor.proto has a different package name in opensource. We allow
     // both so the opensource protocol compiler can also compile internal
