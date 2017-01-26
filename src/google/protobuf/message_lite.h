@@ -40,6 +40,7 @@
 #define GOOGLE_PROTOBUF_MESSAGE_LITE_H__
 
 #include <climits>
+#include <string>
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/stubs/logging.h>
 
@@ -166,10 +167,10 @@ class LIBPROTOBUF_EXPORT MessageLite {
   // format, matching the encoding output by MessageLite::SerializeToString().
   // If you'd like to convert a human-readable string into a protocol buffer
   // object, see google::protobuf::TextFormat::ParseFromString().
-  bool ParseFromString(const string& data);
+  bool ParseFromString(const std::string& data);
   // Like ParseFromString(), but accepts messages that are missing
   // required fields.
-  bool ParsePartialFromString(const string& data);
+  bool ParsePartialFromString(const std::string& data);
   // Parse a protocol buffer contained in an array of bytes.
   bool ParseFromArray(const void* data, int size);
   // Like ParseFromArray(), but accepts messages that are missing

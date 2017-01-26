@@ -139,7 +139,7 @@ LIBPROTOBUF_EXPORT inline const ::std::string& GetEmptyString() {
   return GetEmptyStringAlreadyInited();
 }
 
-LIBPROTOBUF_EXPORT int StringSpaceUsedExcludingSelf(const string& str);
+LIBPROTOBUF_EXPORT int StringSpaceUsedExcludingSelf(const std::string& str);
 
 
 // True if IsInitialized() is true for all elements of t.  Type is expected
