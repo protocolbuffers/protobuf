@@ -357,11 +357,11 @@ void EncodeFixedSizeValue(uint64 v, uint8* dest) {
   WireFormatLite::WriteFixed64NoTagToArray(v, dest);
 }
 
-void EncodeSFixedSizeValue(int32 v, uint8* dest) {
+void EncodeFixedSizeValue(int32 v, uint8* dest) {
   WireFormatLite::WriteSFixed32NoTagToArray(v, dest);
 }
 
-void EncodeSFixedSizeValue(int64 v, uint8* dest) {
+void EncodeFixedSizeValue(int64 v, uint8* dest) {
   WireFormatLite::WriteSFixed64NoTagToArray(v, dest);
 }
 
