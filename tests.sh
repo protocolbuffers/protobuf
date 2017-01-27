@@ -62,7 +62,8 @@ build_cpp_distcheck() {
 
   # List all files that should be included in the distribution package.
   git ls-files | grep "^\(java\|python\|objectivec\|csharp\|js\|ruby\|php\|cmake\|examples\)" |\
-      grep -v ".gitignore" | grep -v "java/compatibility_tests" > dist.lst
+    grep -v ".gitignore" | grep -v "java/compatibility_tests" |\
+    grep -v "python/compatibility_tests" > dist.lst
   # Unzip the dist tar file.
   DIST=`ls *.tar.gz`
   tar -xf $DIST
@@ -311,6 +312,16 @@ build_python_cpp() {
   cd ..
 }
 
+build_python_compatibility() {
+  internal_build_cpp
+  # Use the unit-tests extraced from 2.5.0 to test the compatibilty.
+  cd python/compatibility_tests/v2.5.0
+  # Test between 2.5.0 and the current version.
+  ./test.sh 2.5.0
+  # Test between 3.0.0-beta-1 and the current version.
+  ./test.sh 3.0.0-beta-1
+}
+
 build_ruby21() {
   internal_build_cpp  # For conformance tests.
   cd ruby && bash travis-test.sh ruby-2.1 && cd ..
@@ -513,6 +524,7 @@ Usage: $0 { cpp |
             objectivec_cocoapods_integration |
             python |
             python_cpp |
+            python_compatibility |
             ruby21 |
             ruby22 |
             jruby |
