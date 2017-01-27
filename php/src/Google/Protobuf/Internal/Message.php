@@ -163,6 +163,17 @@ class Message
         $oneof_field->setNumber($number);
     }
 
+    protected function whichOneof($oneof_name)
+    {
+        $oneof_field = $this->$oneof_name;
+        $number = $oneof_field->getNumber();
+        if ($number == 0) {
+          return "";
+        }
+        $field = $this->desc->getFieldByNumber($number);
+        return $field->getName();
+    }
+
     /**
      * @ignore
      */
