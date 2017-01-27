@@ -2976,8 +2976,7 @@ GenerateMergeFromCodedStream(io::Printer* printer) {
 
   printer->Print("::std::pair< ::google::protobuf::uint32, bool> p = "
                  "input->ReadTagWithCutoff$lasttag$($max$u);\n"
-                 "tag = p.first;\n"
-                 "if (!p.second) goto handle_unusual;\n",
+                 "tag = p.first;\n",
                  "max", SimpleItoa(maxtag <= kCutoff0 ? kCutoff0 :
                                    (maxtag <= kCutoff1 ? kCutoff1 :
                                     maxtag)),
@@ -2999,10 +2998,13 @@ GenerateMergeFromCodedStream(io::Printer* printer) {
     // inserts branches that may fail (especially for real world protos that
     // interleave--in field number order--hot and cold fields).  Loadtests
     // confirmed that removing this optimization is performance neutral.
-    printer->Print("switch (::google::protobuf::internal::WireFormatLite::"
+    printer->Print("if (!p.second) goto handle_unusual;\n"
+                   "switch (::google::protobuf::internal::WireFormatLite::"
                    "GetTagFieldNumber(tag)) {\n");
 
     printer->Indent();
+
+    printer->Print("case 0: goto success;\n");
 
     // Find repeated messages and groups now, to simplify what follows.
     hash_set<int> fields_with_parse_loop;
@@ -3085,19 +3087,23 @@ GenerateMergeFromCodedStream(io::Printer* printer) {
     }
 
     printer->Print("default: {\n");
+    printer->Print("handle_unusual:\n");
     printer->Indent();
+    printer->Print(
+      "if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==\n"
+      "    ::google::protobuf::internal::WireFormatLite::WIRETYPE_END_GROUP) {\n"
+      "  goto success;\n"
+      "}\n");
+  } else {  // descriptor_->field_count() == 0
+    // If tag is 0 or an end-group tag, then this must be the end of the
+    // message.
+    printer->Print(
+      "if (tag == 0 ||\n"
+      "    ::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==\n"
+      "    ::google::protobuf::internal::WireFormatLite::WIRETYPE_END_GROUP) {\n"
+      "  goto success;\n"
+      "}\n");
   }
-
-  printer->Outdent();
-  printer->Print("handle_unusual:\n");
-  printer->Indent();
-  // If tag is 0 or an end-group tag then this must be the end of the message.
-  printer->Print(
-    "if (tag == 0 ||\n"
-    "    ::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==\n"
-    "    ::google::protobuf::internal::WireFormatLite::WIRETYPE_END_GROUP) {\n"
-    "  goto success;\n"
-    "}\n");
 
   // Handle extension ranges.
   if (descriptor_->extension_range_count() > 0) {
