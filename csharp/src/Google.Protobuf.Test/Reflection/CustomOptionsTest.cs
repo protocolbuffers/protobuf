@@ -50,6 +50,7 @@ namespace Google.Protobuf.Test.Reflection
         FileOpt1 = 7736974,
         MessageOpt1 = 7739036,
         FieldOpt1 = 7740936,
+        OneofOpt1 = 7740111,
         EnumOpt1 = 7753576,
         EnumValueOpt1 = 1560678,
         ServiceOpt1 = 7887650,
@@ -196,6 +197,9 @@ namespace Google.Protobuf.Test.Reflection
 
             var fieldOptions = TestMessageWithCustomOptions.Descriptor.Fields["field1"] .CustomOptions;
             AssertOption(8765432109UL, fieldOptions.TryGetFixed64, FieldOpt1);
+
+            var oneofOptions = TestMessageWithCustomOptions.Descriptor.Oneofs[0].CustomOptions;
+            AssertOption(-99, oneofOptions.TryGetInt32, OneofOpt1);
 
             var enumOptions = TestMessageWithCustomOptions.Descriptor.EnumTypes[0].CustomOptions;
             AssertOption(-789, enumOptions.TryGetSFixed32, EnumOpt1);

@@ -68,10 +68,9 @@ extend google.protobuf.FieldOptions {
   fixed64 field_opt1 = 7740936;
 }
 
-// See https://github.com/google/protobuf/issues/2316
-// extend google.protobuf.OneofOptions {
-//   int32 oneof_opt1 = 7740111;
-// }
+extend google.protobuf.OneofOptions {
+  int32 oneof_opt1 = 7740111;
+}
 
 extend google.protobuf.EnumOptions {
   sfixed32 enum_opt1 = 7753576;
@@ -106,8 +105,7 @@ message TestMessageWithCustomOptions {
                               (field_opt1)=8765432109];
 
   oneof AnOneof {
-// See https://github.com/google/protobuf/issues/2316
-//    option (oneof_opt1) = -99;
+    option (oneof_opt1) = -99;
     int32 oneof_field = 2;
   }
 
