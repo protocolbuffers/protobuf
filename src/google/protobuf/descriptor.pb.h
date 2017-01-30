@@ -19,8 +19,10 @@
 #error regenerate this file with a newer version of protoc.
 #endif
 
+#include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/arena.h>
 #include <google/protobuf/arenastring.h>
+#include <google/protobuf/generated_message_table_driven.h>
 #include <google/protobuf/generated_message_util.h>
 #include <google/protobuf/metadata.h>
 #include <google/protobuf/message.h>
@@ -115,6 +117,14 @@ namespace protobuf {
 // Internal implementation detail -- do not call these.
 void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto();
 void LIBPROTOBUF_EXPORT protobuf_InitDefaults_google_2fprotobuf_2fdescriptor_2eproto();
+namespace protobuf_google_2fprotobuf_2fdescriptor_2eproto {
+struct LIBPROTOBUF_EXPORT TableStruct {
+  static const ::google::protobuf::internal::ParseTableField entries[];
+  static const ::google::protobuf::internal::AuxillaryParseTableField aux[];
+  static const ::google::protobuf::internal::ParseTable schema[];
+  static const ::google::protobuf::uint32 offsets[];
+};
+}  // namespace protobuf_google_2fprotobuf_2fdescriptor_2eproto
 
 enum FieldDescriptorProto_Type {
   FieldDescriptorProto_Type_TYPE_DOUBLE = 1,
@@ -280,6 +290,8 @@ class LIBPROTOBUF_EXPORT FileDescriptorSet : public ::google::protobuf::Message 
     return reinterpret_cast<const FileDescriptorSet*>(
                &_FileDescriptorSet_default_instance_);
   }
+  static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
+    0;
 
   void Swap(FileDescriptorSet* other);
 
@@ -348,6 +360,7 @@ class LIBPROTOBUF_EXPORT FileDescriptorSet : public ::google::protobuf::Message 
   ::google::protobuf::RepeatedPtrField< ::google::protobuf::FileDescriptorProto > file_;
   friend void LIBPROTOBUF_EXPORT protobuf_InitDefaults_google_2fprotobuf_2fdescriptor_2eproto_impl();
   friend void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto_impl();
+  friend struct LIBPROTOBUF_EXPORT protobuf_google_2fprotobuf_2fdescriptor_2eproto::TableStruct;
   friend const ::google::protobuf::uint32* protobuf_Offsets_google_2fprotobuf_2fdescriptor_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fdescriptor_2eproto();
 
@@ -381,6 +394,8 @@ class LIBPROTOBUF_EXPORT FileDescriptorProto : public ::google::protobuf::Messag
     return reinterpret_cast<const FileDescriptorProto*>(
                &_FileDescriptorProto_default_instance_);
   }
+  static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
+    1;
 
   void Swap(FileDescriptorProto* other);
 
@@ -609,6 +624,7 @@ class LIBPROTOBUF_EXPORT FileDescriptorProto : public ::google::protobuf::Messag
   ::google::protobuf::SourceCodeInfo* source_code_info_;
   friend void LIBPROTOBUF_EXPORT protobuf_InitDefaults_google_2fprotobuf_2fdescriptor_2eproto_impl();
   friend void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto_impl();
+  friend struct LIBPROTOBUF_EXPORT protobuf_google_2fprotobuf_2fdescriptor_2eproto::TableStruct;
   friend const ::google::protobuf::uint32* protobuf_Offsets_google_2fprotobuf_2fdescriptor_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fdescriptor_2eproto();
 
@@ -642,6 +658,8 @@ class LIBPROTOBUF_EXPORT DescriptorProto_ExtensionRange : public ::google::proto
     return reinterpret_cast<const DescriptorProto_ExtensionRange*>(
                &_DescriptorProto_ExtensionRange_default_instance_);
   }
+  static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
+    2;
 
   void Swap(DescriptorProto_ExtensionRange* other);
 
@@ -717,6 +735,7 @@ class LIBPROTOBUF_EXPORT DescriptorProto_ExtensionRange : public ::google::proto
   ::google::protobuf::int32 end_;
   friend void LIBPROTOBUF_EXPORT protobuf_InitDefaults_google_2fprotobuf_2fdescriptor_2eproto_impl();
   friend void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto_impl();
+  friend struct LIBPROTOBUF_EXPORT protobuf_google_2fprotobuf_2fdescriptor_2eproto::TableStruct;
   friend const ::google::protobuf::uint32* protobuf_Offsets_google_2fprotobuf_2fdescriptor_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fdescriptor_2eproto();
 
@@ -750,6 +769,8 @@ class LIBPROTOBUF_EXPORT DescriptorProto_ReservedRange : public ::google::protob
     return reinterpret_cast<const DescriptorProto_ReservedRange*>(
                &_DescriptorProto_ReservedRange_default_instance_);
   }
+  static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
+    3;
 
   void Swap(DescriptorProto_ReservedRange* other);
 
@@ -825,6 +846,7 @@ class LIBPROTOBUF_EXPORT DescriptorProto_ReservedRange : public ::google::protob
   ::google::protobuf::int32 end_;
   friend void LIBPROTOBUF_EXPORT protobuf_InitDefaults_google_2fprotobuf_2fdescriptor_2eproto_impl();
   friend void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto_impl();
+  friend struct LIBPROTOBUF_EXPORT protobuf_google_2fprotobuf_2fdescriptor_2eproto::TableStruct;
   friend const ::google::protobuf::uint32* protobuf_Offsets_google_2fprotobuf_2fdescriptor_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fdescriptor_2eproto();
 
@@ -858,6 +880,8 @@ class LIBPROTOBUF_EXPORT DescriptorProto : public ::google::protobuf::Message /*
     return reinterpret_cast<const DescriptorProto*>(
                &_DescriptorProto_default_instance_);
   }
+  static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
+    4;
 
   void Swap(DescriptorProto* other);
 
@@ -1054,6 +1078,7 @@ class LIBPROTOBUF_EXPORT DescriptorProto : public ::google::protobuf::Message /*
   ::google::protobuf::MessageOptions* options_;
   friend void LIBPROTOBUF_EXPORT protobuf_InitDefaults_google_2fprotobuf_2fdescriptor_2eproto_impl();
   friend void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto_impl();
+  friend struct LIBPROTOBUF_EXPORT protobuf_google_2fprotobuf_2fdescriptor_2eproto::TableStruct;
   friend const ::google::protobuf::uint32* protobuf_Offsets_google_2fprotobuf_2fdescriptor_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fdescriptor_2eproto();
 
@@ -1087,6 +1112,8 @@ class LIBPROTOBUF_EXPORT FieldDescriptorProto : public ::google::protobuf::Messa
     return reinterpret_cast<const FieldDescriptorProto*>(
                &_FieldDescriptorProto_default_instance_);
   }
+  static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
+    5;
 
   void Swap(FieldDescriptorProto* other);
 
@@ -1370,6 +1397,7 @@ class LIBPROTOBUF_EXPORT FieldDescriptorProto : public ::google::protobuf::Messa
   int type_;
   friend void LIBPROTOBUF_EXPORT protobuf_InitDefaults_google_2fprotobuf_2fdescriptor_2eproto_impl();
   friend void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto_impl();
+  friend struct LIBPROTOBUF_EXPORT protobuf_google_2fprotobuf_2fdescriptor_2eproto::TableStruct;
   friend const ::google::protobuf::uint32* protobuf_Offsets_google_2fprotobuf_2fdescriptor_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fdescriptor_2eproto();
 
@@ -1403,6 +1431,8 @@ class LIBPROTOBUF_EXPORT OneofDescriptorProto : public ::google::protobuf::Messa
     return reinterpret_cast<const OneofDescriptorProto*>(
                &_OneofDescriptorProto_default_instance_);
   }
+  static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
+    6;
 
   void Swap(OneofDescriptorProto* other);
 
@@ -1488,6 +1518,7 @@ class LIBPROTOBUF_EXPORT OneofDescriptorProto : public ::google::protobuf::Messa
   ::google::protobuf::OneofOptions* options_;
   friend void LIBPROTOBUF_EXPORT protobuf_InitDefaults_google_2fprotobuf_2fdescriptor_2eproto_impl();
   friend void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto_impl();
+  friend struct LIBPROTOBUF_EXPORT protobuf_google_2fprotobuf_2fdescriptor_2eproto::TableStruct;
   friend const ::google::protobuf::uint32* protobuf_Offsets_google_2fprotobuf_2fdescriptor_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fdescriptor_2eproto();
 
@@ -1521,6 +1552,8 @@ class LIBPROTOBUF_EXPORT EnumDescriptorProto : public ::google::protobuf::Messag
     return reinterpret_cast<const EnumDescriptorProto*>(
                &_EnumDescriptorProto_default_instance_);
   }
+  static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
+    7;
 
   void Swap(EnumDescriptorProto* other);
 
@@ -1619,6 +1652,7 @@ class LIBPROTOBUF_EXPORT EnumDescriptorProto : public ::google::protobuf::Messag
   ::google::protobuf::EnumOptions* options_;
   friend void LIBPROTOBUF_EXPORT protobuf_InitDefaults_google_2fprotobuf_2fdescriptor_2eproto_impl();
   friend void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto_impl();
+  friend struct LIBPROTOBUF_EXPORT protobuf_google_2fprotobuf_2fdescriptor_2eproto::TableStruct;
   friend const ::google::protobuf::uint32* protobuf_Offsets_google_2fprotobuf_2fdescriptor_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fdescriptor_2eproto();
 
@@ -1652,6 +1686,8 @@ class LIBPROTOBUF_EXPORT EnumValueDescriptorProto : public ::google::protobuf::M
     return reinterpret_cast<const EnumValueDescriptorProto*>(
                &_EnumValueDescriptorProto_default_instance_);
   }
+  static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
+    8;
 
   void Swap(EnumValueDescriptorProto* other);
 
@@ -1747,6 +1783,7 @@ class LIBPROTOBUF_EXPORT EnumValueDescriptorProto : public ::google::protobuf::M
   ::google::protobuf::int32 number_;
   friend void LIBPROTOBUF_EXPORT protobuf_InitDefaults_google_2fprotobuf_2fdescriptor_2eproto_impl();
   friend void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto_impl();
+  friend struct LIBPROTOBUF_EXPORT protobuf_google_2fprotobuf_2fdescriptor_2eproto::TableStruct;
   friend const ::google::protobuf::uint32* protobuf_Offsets_google_2fprotobuf_2fdescriptor_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fdescriptor_2eproto();
 
@@ -1780,6 +1817,8 @@ class LIBPROTOBUF_EXPORT ServiceDescriptorProto : public ::google::protobuf::Mes
     return reinterpret_cast<const ServiceDescriptorProto*>(
                &_ServiceDescriptorProto_default_instance_);
   }
+  static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
+    9;
 
   void Swap(ServiceDescriptorProto* other);
 
@@ -1878,6 +1917,7 @@ class LIBPROTOBUF_EXPORT ServiceDescriptorProto : public ::google::protobuf::Mes
   ::google::protobuf::ServiceOptions* options_;
   friend void LIBPROTOBUF_EXPORT protobuf_InitDefaults_google_2fprotobuf_2fdescriptor_2eproto_impl();
   friend void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto_impl();
+  friend struct LIBPROTOBUF_EXPORT protobuf_google_2fprotobuf_2fdescriptor_2eproto::TableStruct;
   friend const ::google::protobuf::uint32* protobuf_Offsets_google_2fprotobuf_2fdescriptor_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fdescriptor_2eproto();
 
@@ -1911,6 +1951,8 @@ class LIBPROTOBUF_EXPORT MethodDescriptorProto : public ::google::protobuf::Mess
     return reinterpret_cast<const MethodDescriptorProto*>(
                &_MethodDescriptorProto_default_instance_);
   }
+  static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
+    10;
 
   void Swap(MethodDescriptorProto* other);
 
@@ -2052,6 +2094,7 @@ class LIBPROTOBUF_EXPORT MethodDescriptorProto : public ::google::protobuf::Mess
   bool server_streaming_;
   friend void LIBPROTOBUF_EXPORT protobuf_InitDefaults_google_2fprotobuf_2fdescriptor_2eproto_impl();
   friend void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto_impl();
+  friend struct LIBPROTOBUF_EXPORT protobuf_google_2fprotobuf_2fdescriptor_2eproto::TableStruct;
   friend const ::google::protobuf::uint32* protobuf_Offsets_google_2fprotobuf_2fdescriptor_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fdescriptor_2eproto();
 
@@ -2085,6 +2128,8 @@ class LIBPROTOBUF_EXPORT FileOptions : public ::google::protobuf::Message /* @@p
     return reinterpret_cast<const FileOptions*>(
                &_FileOptions_default_instance_);
   }
+  static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
+    11;
 
   void Swap(FileOptions* other);
 
@@ -2382,6 +2427,7 @@ class LIBPROTOBUF_EXPORT FileOptions : public ::google::protobuf::Message /* @@p
   int optimize_for_;
   friend void LIBPROTOBUF_EXPORT protobuf_InitDefaults_google_2fprotobuf_2fdescriptor_2eproto_impl();
   friend void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto_impl();
+  friend struct LIBPROTOBUF_EXPORT protobuf_google_2fprotobuf_2fdescriptor_2eproto::TableStruct;
   friend const ::google::protobuf::uint32* protobuf_Offsets_google_2fprotobuf_2fdescriptor_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fdescriptor_2eproto();
 
@@ -2415,6 +2461,8 @@ class LIBPROTOBUF_EXPORT MessageOptions : public ::google::protobuf::Message /* 
     return reinterpret_cast<const MessageOptions*>(
                &_MessageOptions_default_instance_);
   }
+  static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
+    12;
 
   void Swap(MessageOptions* other);
 
@@ -2526,6 +2574,7 @@ class LIBPROTOBUF_EXPORT MessageOptions : public ::google::protobuf::Message /* 
   bool map_entry_;
   friend void LIBPROTOBUF_EXPORT protobuf_InitDefaults_google_2fprotobuf_2fdescriptor_2eproto_impl();
   friend void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto_impl();
+  friend struct LIBPROTOBUF_EXPORT protobuf_google_2fprotobuf_2fdescriptor_2eproto::TableStruct;
   friend const ::google::protobuf::uint32* protobuf_Offsets_google_2fprotobuf_2fdescriptor_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fdescriptor_2eproto();
 
@@ -2559,6 +2608,8 @@ class LIBPROTOBUF_EXPORT FieldOptions : public ::google::protobuf::Message /* @@
     return reinterpret_cast<const FieldOptions*>(
                &_FieldOptions_default_instance_);
   }
+  static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
+    13;
 
   void Swap(FieldOptions* other);
 
@@ -2746,6 +2797,7 @@ class LIBPROTOBUF_EXPORT FieldOptions : public ::google::protobuf::Message /* @@
   bool weak_;
   friend void LIBPROTOBUF_EXPORT protobuf_InitDefaults_google_2fprotobuf_2fdescriptor_2eproto_impl();
   friend void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto_impl();
+  friend struct LIBPROTOBUF_EXPORT protobuf_google_2fprotobuf_2fdescriptor_2eproto::TableStruct;
   friend const ::google::protobuf::uint32* protobuf_Offsets_google_2fprotobuf_2fdescriptor_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fdescriptor_2eproto();
 
@@ -2779,6 +2831,8 @@ class LIBPROTOBUF_EXPORT OneofOptions : public ::google::protobuf::Message /* @@
     return reinterpret_cast<const OneofOptions*>(
                &_OneofOptions_default_instance_);
   }
+  static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
+    14;
 
   void Swap(OneofOptions* other);
 
@@ -2850,6 +2904,7 @@ class LIBPROTOBUF_EXPORT OneofOptions : public ::google::protobuf::Message /* @@
   ::google::protobuf::RepeatedPtrField< ::google::protobuf::UninterpretedOption > uninterpreted_option_;
   friend void LIBPROTOBUF_EXPORT protobuf_InitDefaults_google_2fprotobuf_2fdescriptor_2eproto_impl();
   friend void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto_impl();
+  friend struct LIBPROTOBUF_EXPORT protobuf_google_2fprotobuf_2fdescriptor_2eproto::TableStruct;
   friend const ::google::protobuf::uint32* protobuf_Offsets_google_2fprotobuf_2fdescriptor_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fdescriptor_2eproto();
 
@@ -2883,6 +2938,8 @@ class LIBPROTOBUF_EXPORT EnumOptions : public ::google::protobuf::Message /* @@p
     return reinterpret_cast<const EnumOptions*>(
                &_EnumOptions_default_instance_);
   }
+  static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
+    15;
 
   void Swap(EnumOptions* other);
 
@@ -2974,6 +3031,7 @@ class LIBPROTOBUF_EXPORT EnumOptions : public ::google::protobuf::Message /* @@p
   bool deprecated_;
   friend void LIBPROTOBUF_EXPORT protobuf_InitDefaults_google_2fprotobuf_2fdescriptor_2eproto_impl();
   friend void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto_impl();
+  friend struct LIBPROTOBUF_EXPORT protobuf_google_2fprotobuf_2fdescriptor_2eproto::TableStruct;
   friend const ::google::protobuf::uint32* protobuf_Offsets_google_2fprotobuf_2fdescriptor_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fdescriptor_2eproto();
 
@@ -3007,6 +3065,8 @@ class LIBPROTOBUF_EXPORT EnumValueOptions : public ::google::protobuf::Message /
     return reinterpret_cast<const EnumValueOptions*>(
                &_EnumValueOptions_default_instance_);
   }
+  static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
+    16;
 
   void Swap(EnumValueOptions* other);
 
@@ -3088,6 +3148,7 @@ class LIBPROTOBUF_EXPORT EnumValueOptions : public ::google::protobuf::Message /
   bool deprecated_;
   friend void LIBPROTOBUF_EXPORT protobuf_InitDefaults_google_2fprotobuf_2fdescriptor_2eproto_impl();
   friend void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto_impl();
+  friend struct LIBPROTOBUF_EXPORT protobuf_google_2fprotobuf_2fdescriptor_2eproto::TableStruct;
   friend const ::google::protobuf::uint32* protobuf_Offsets_google_2fprotobuf_2fdescriptor_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fdescriptor_2eproto();
 
@@ -3121,6 +3182,8 @@ class LIBPROTOBUF_EXPORT ServiceOptions : public ::google::protobuf::Message /* 
     return reinterpret_cast<const ServiceOptions*>(
                &_ServiceOptions_default_instance_);
   }
+  static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
+    17;
 
   void Swap(ServiceOptions* other);
 
@@ -3202,6 +3265,7 @@ class LIBPROTOBUF_EXPORT ServiceOptions : public ::google::protobuf::Message /* 
   bool deprecated_;
   friend void LIBPROTOBUF_EXPORT protobuf_InitDefaults_google_2fprotobuf_2fdescriptor_2eproto_impl();
   friend void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto_impl();
+  friend struct LIBPROTOBUF_EXPORT protobuf_google_2fprotobuf_2fdescriptor_2eproto::TableStruct;
   friend const ::google::protobuf::uint32* protobuf_Offsets_google_2fprotobuf_2fdescriptor_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fdescriptor_2eproto();
 
@@ -3235,6 +3299,8 @@ class LIBPROTOBUF_EXPORT MethodOptions : public ::google::protobuf::Message /* @
     return reinterpret_cast<const MethodOptions*>(
                &_MethodOptions_default_instance_);
   }
+  static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
+    18;
 
   void Swap(MethodOptions* other);
 
@@ -3354,6 +3420,7 @@ class LIBPROTOBUF_EXPORT MethodOptions : public ::google::protobuf::Message /* @
   int idempotency_level_;
   friend void LIBPROTOBUF_EXPORT protobuf_InitDefaults_google_2fprotobuf_2fdescriptor_2eproto_impl();
   friend void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto_impl();
+  friend struct LIBPROTOBUF_EXPORT protobuf_google_2fprotobuf_2fdescriptor_2eproto::TableStruct;
   friend const ::google::protobuf::uint32* protobuf_Offsets_google_2fprotobuf_2fdescriptor_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fdescriptor_2eproto();
 
@@ -3387,6 +3454,8 @@ class LIBPROTOBUF_EXPORT UninterpretedOption_NamePart : public ::google::protobu
     return reinterpret_cast<const UninterpretedOption_NamePart*>(
                &_UninterpretedOption_NamePart_default_instance_);
   }
+  static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
+    19;
 
   void Swap(UninterpretedOption_NamePart* other);
 
@@ -3473,6 +3542,7 @@ class LIBPROTOBUF_EXPORT UninterpretedOption_NamePart : public ::google::protobu
   bool is_extension_;
   friend void LIBPROTOBUF_EXPORT protobuf_InitDefaults_google_2fprotobuf_2fdescriptor_2eproto_impl();
   friend void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto_impl();
+  friend struct LIBPROTOBUF_EXPORT protobuf_google_2fprotobuf_2fdescriptor_2eproto::TableStruct;
   friend const ::google::protobuf::uint32* protobuf_Offsets_google_2fprotobuf_2fdescriptor_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fdescriptor_2eproto();
 
@@ -3506,6 +3576,8 @@ class LIBPROTOBUF_EXPORT UninterpretedOption : public ::google::protobuf::Messag
     return reinterpret_cast<const UninterpretedOption*>(
                &_UninterpretedOption_default_instance_);
   }
+  static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
+    20;
 
   void Swap(UninterpretedOption* other);
 
@@ -3660,6 +3732,7 @@ class LIBPROTOBUF_EXPORT UninterpretedOption : public ::google::protobuf::Messag
   double double_value_;
   friend void LIBPROTOBUF_EXPORT protobuf_InitDefaults_google_2fprotobuf_2fdescriptor_2eproto_impl();
   friend void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto_impl();
+  friend struct LIBPROTOBUF_EXPORT protobuf_google_2fprotobuf_2fdescriptor_2eproto::TableStruct;
   friend const ::google::protobuf::uint32* protobuf_Offsets_google_2fprotobuf_2fdescriptor_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fdescriptor_2eproto();
 
@@ -3693,6 +3766,8 @@ class LIBPROTOBUF_EXPORT SourceCodeInfo_Location : public ::google::protobuf::Me
     return reinterpret_cast<const SourceCodeInfo_Location*>(
                &_SourceCodeInfo_Location_default_instance_);
   }
+  static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
+    21;
 
   void Swap(SourceCodeInfo_Location* other);
 
@@ -3829,6 +3904,7 @@ class LIBPROTOBUF_EXPORT SourceCodeInfo_Location : public ::google::protobuf::Me
   ::google::protobuf::internal::ArenaStringPtr trailing_comments_;
   friend void LIBPROTOBUF_EXPORT protobuf_InitDefaults_google_2fprotobuf_2fdescriptor_2eproto_impl();
   friend void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto_impl();
+  friend struct LIBPROTOBUF_EXPORT protobuf_google_2fprotobuf_2fdescriptor_2eproto::TableStruct;
   friend const ::google::protobuf::uint32* protobuf_Offsets_google_2fprotobuf_2fdescriptor_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fdescriptor_2eproto();
 
@@ -3862,6 +3938,8 @@ class LIBPROTOBUF_EXPORT SourceCodeInfo : public ::google::protobuf::Message /* 
     return reinterpret_cast<const SourceCodeInfo*>(
                &_SourceCodeInfo_default_instance_);
   }
+  static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
+    22;
 
   void Swap(SourceCodeInfo* other);
 
@@ -3932,6 +4010,7 @@ class LIBPROTOBUF_EXPORT SourceCodeInfo : public ::google::protobuf::Message /* 
   ::google::protobuf::RepeatedPtrField< ::google::protobuf::SourceCodeInfo_Location > location_;
   friend void LIBPROTOBUF_EXPORT protobuf_InitDefaults_google_2fprotobuf_2fdescriptor_2eproto_impl();
   friend void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto_impl();
+  friend struct LIBPROTOBUF_EXPORT protobuf_google_2fprotobuf_2fdescriptor_2eproto::TableStruct;
   friend const ::google::protobuf::uint32* protobuf_Offsets_google_2fprotobuf_2fdescriptor_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fdescriptor_2eproto();
 
@@ -3965,6 +4044,8 @@ class LIBPROTOBUF_EXPORT GeneratedCodeInfo_Annotation : public ::google::protobu
     return reinterpret_cast<const GeneratedCodeInfo_Annotation*>(
                &_GeneratedCodeInfo_Annotation_default_instance_);
   }
+  static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
+    23;
 
   void Swap(GeneratedCodeInfo_Annotation* other);
 
@@ -4072,6 +4153,7 @@ class LIBPROTOBUF_EXPORT GeneratedCodeInfo_Annotation : public ::google::protobu
   ::google::protobuf::int32 end_;
   friend void LIBPROTOBUF_EXPORT protobuf_InitDefaults_google_2fprotobuf_2fdescriptor_2eproto_impl();
   friend void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto_impl();
+  friend struct LIBPROTOBUF_EXPORT protobuf_google_2fprotobuf_2fdescriptor_2eproto::TableStruct;
   friend const ::google::protobuf::uint32* protobuf_Offsets_google_2fprotobuf_2fdescriptor_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fdescriptor_2eproto();
 
@@ -4105,6 +4187,8 @@ class LIBPROTOBUF_EXPORT GeneratedCodeInfo : public ::google::protobuf::Message 
     return reinterpret_cast<const GeneratedCodeInfo*>(
                &_GeneratedCodeInfo_default_instance_);
   }
+  static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
+    24;
 
   void Swap(GeneratedCodeInfo* other);
 
@@ -4175,6 +4259,7 @@ class LIBPROTOBUF_EXPORT GeneratedCodeInfo : public ::google::protobuf::Message 
   ::google::protobuf::RepeatedPtrField< ::google::protobuf::GeneratedCodeInfo_Annotation > annotation_;
   friend void LIBPROTOBUF_EXPORT protobuf_InitDefaults_google_2fprotobuf_2fdescriptor_2eproto_impl();
   friend void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto_impl();
+  friend struct LIBPROTOBUF_EXPORT protobuf_google_2fprotobuf_2fdescriptor_2eproto::TableStruct;
   friend const ::google::protobuf::uint32* protobuf_Offsets_google_2fprotobuf_2fdescriptor_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2fdescriptor_2eproto();
 

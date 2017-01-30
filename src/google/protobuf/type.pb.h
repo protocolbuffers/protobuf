@@ -19,8 +19,10 @@
 #error regenerate this file with a newer version of protoc.
 #endif
 
+#include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/arena.h>
 #include <google/protobuf/arenastring.h>
+#include <google/protobuf/generated_message_table_driven.h>
 #include <google/protobuf/generated_message_util.h>
 #include <google/protobuf/metadata.h>
 #include <google/protobuf/message.h>
@@ -63,6 +65,14 @@ namespace protobuf {
 // Internal implementation detail -- do not call these.
 void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2ftype_2eproto();
 void LIBPROTOBUF_EXPORT protobuf_InitDefaults_google_2fprotobuf_2ftype_2eproto();
+namespace protobuf_google_2fprotobuf_2ftype_2eproto {
+struct LIBPROTOBUF_EXPORT TableStruct {
+  static const ::google::protobuf::internal::ParseTableField entries[];
+  static const ::google::protobuf::internal::AuxillaryParseTableField aux[];
+  static const ::google::protobuf::internal::ParseTable schema[];
+  static const ::google::protobuf::uint32 offsets[];
+};
+}  // namespace protobuf_google_2fprotobuf_2ftype_2eproto
 
 enum Field_Kind {
   Field_Kind_TYPE_UNKNOWN = 0,
@@ -173,6 +183,8 @@ class LIBPROTOBUF_EXPORT Type : public ::google::protobuf::Message /* @@protoc_i
     return reinterpret_cast<const Type*>(
                &_Type_default_instance_);
   }
+  static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
+    0;
 
   void UnsafeArenaSwap(Type* other);
   void Swap(Type* other);
@@ -318,6 +330,7 @@ class LIBPROTOBUF_EXPORT Type : public ::google::protobuf::Message /* @@protoc_i
   mutable int _cached_size_;
   friend void LIBPROTOBUF_EXPORT protobuf_InitDefaults_google_2fprotobuf_2ftype_2eproto_impl();
   friend void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2ftype_2eproto_impl();
+  friend struct LIBPROTOBUF_EXPORT protobuf_google_2fprotobuf_2ftype_2eproto::TableStruct;
   friend const ::google::protobuf::uint32* protobuf_Offsets_google_2fprotobuf_2ftype_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2ftype_2eproto();
 
@@ -349,6 +362,8 @@ class LIBPROTOBUF_EXPORT Field : public ::google::protobuf::Message /* @@protoc_
     return reinterpret_cast<const Field*>(
                &_Field_default_instance_);
   }
+  static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
+    1;
 
   void UnsafeArenaSwap(Field* other);
   void Swap(Field* other);
@@ -610,6 +625,7 @@ class LIBPROTOBUF_EXPORT Field : public ::google::protobuf::Message /* @@protoc_
   mutable int _cached_size_;
   friend void LIBPROTOBUF_EXPORT protobuf_InitDefaults_google_2fprotobuf_2ftype_2eproto_impl();
   friend void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2ftype_2eproto_impl();
+  friend struct LIBPROTOBUF_EXPORT protobuf_google_2fprotobuf_2ftype_2eproto::TableStruct;
   friend const ::google::protobuf::uint32* protobuf_Offsets_google_2fprotobuf_2ftype_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2ftype_2eproto();
 
@@ -641,6 +657,8 @@ class LIBPROTOBUF_EXPORT Enum : public ::google::protobuf::Message /* @@protoc_i
     return reinterpret_cast<const Enum*>(
                &_Enum_default_instance_);
   }
+  static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
+    2;
 
   void UnsafeArenaSwap(Enum* other);
   void Swap(Enum* other);
@@ -769,6 +787,7 @@ class LIBPROTOBUF_EXPORT Enum : public ::google::protobuf::Message /* @@protoc_i
   mutable int _cached_size_;
   friend void LIBPROTOBUF_EXPORT protobuf_InitDefaults_google_2fprotobuf_2ftype_2eproto_impl();
   friend void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2ftype_2eproto_impl();
+  friend struct LIBPROTOBUF_EXPORT protobuf_google_2fprotobuf_2ftype_2eproto::TableStruct;
   friend const ::google::protobuf::uint32* protobuf_Offsets_google_2fprotobuf_2ftype_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2ftype_2eproto();
 
@@ -800,6 +819,8 @@ class LIBPROTOBUF_EXPORT EnumValue : public ::google::protobuf::Message /* @@pro
     return reinterpret_cast<const EnumValue*>(
                &_EnumValue_default_instance_);
   }
+  static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
+    3;
 
   void UnsafeArenaSwap(EnumValue* other);
   void Swap(EnumValue* other);
@@ -898,6 +919,7 @@ class LIBPROTOBUF_EXPORT EnumValue : public ::google::protobuf::Message /* @@pro
   mutable int _cached_size_;
   friend void LIBPROTOBUF_EXPORT protobuf_InitDefaults_google_2fprotobuf_2ftype_2eproto_impl();
   friend void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2ftype_2eproto_impl();
+  friend struct LIBPROTOBUF_EXPORT protobuf_google_2fprotobuf_2ftype_2eproto::TableStruct;
   friend const ::google::protobuf::uint32* protobuf_Offsets_google_2fprotobuf_2ftype_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2ftype_2eproto();
 
@@ -929,6 +951,8 @@ class LIBPROTOBUF_EXPORT Option : public ::google::protobuf::Message /* @@protoc
     return reinterpret_cast<const Option*>(
                &_Option_default_instance_);
   }
+  static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
+    4;
 
   void UnsafeArenaSwap(Option* other);
   void Swap(Option* other);
@@ -1024,6 +1048,7 @@ class LIBPROTOBUF_EXPORT Option : public ::google::protobuf::Message /* @@protoc
   mutable int _cached_size_;
   friend void LIBPROTOBUF_EXPORT protobuf_InitDefaults_google_2fprotobuf_2ftype_2eproto_impl();
   friend void LIBPROTOBUF_EXPORT protobuf_AddDesc_google_2fprotobuf_2ftype_2eproto_impl();
+  friend struct LIBPROTOBUF_EXPORT protobuf_google_2fprotobuf_2ftype_2eproto::TableStruct;
   friend const ::google::protobuf::uint32* protobuf_Offsets_google_2fprotobuf_2ftype_2eproto();
   friend void protobuf_ShutdownFile_google_2fprotobuf_2ftype_2eproto();
 

@@ -48,7 +48,8 @@ struct Options {
         proto_h(false),
         allow_import_public(true),
         annotate_headers(false),
-        enforce_lite(false) {}
+        enforce_lite(false),
+        table_driven_parsing(false) {}
 
   string dllexport_decl;
   bool safe_boundary_check;
@@ -56,6 +57,7 @@ struct Options {
   bool allow_import_public;
   bool annotate_headers;
   bool enforce_lite;
+  bool table_driven_parsing;
   string annotation_pragma_name;
   string annotation_guard_name;
 };

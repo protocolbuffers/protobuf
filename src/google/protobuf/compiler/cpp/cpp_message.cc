@@ -32,6 +32,8 @@
 //  Based on original Protocol Buffers design by
 //  Sanjay Ghemawat, Jeff Dean, and others.
 
+#include <google/protobuf/compiler/cpp/cpp_message.h>
+
 #include <algorithm>
 #include <google/protobuf/stubs/hash.h>
 #include <map>
@@ -41,16 +43,18 @@
 #endif
 #include <utility>
 #include <vector>
-#include <google/protobuf/compiler/cpp/cpp_message.h>
-#include <google/protobuf/compiler/cpp/cpp_field.h>
+
 #include <google/protobuf/compiler/cpp/cpp_enum.h>
 #include <google/protobuf/compiler/cpp/cpp_extension.h>
+#include <google/protobuf/compiler/cpp/cpp_field.h>
 #include <google/protobuf/compiler/cpp/cpp_helpers.h>
-#include <google/protobuf/stubs/strutil.h>
-#include <google/protobuf/io/printer.h>
 #include <google/protobuf/io/coded_stream.h>
-#include <google/protobuf/wire_format.h>
+#include <google/protobuf/io/printer.h>
 #include <google/protobuf/descriptor.pb.h>
+#include <google/protobuf/generated_message_table_driven.h>
+#include <google/protobuf/wire_format.h>
+#include <google/protobuf/stubs/strutil.h>
+#include <google/protobuf/stubs/substitute.h>
 
 
 namespace google {
@@ -495,6 +499,70 @@ bool HasPrivateHasMethod(const FieldDescriptor* field) {
 }
 
 
+bool TableDrivenEnabled(const Descriptor* descriptor, const Options& options) {
+  if (!options.table_driven_parsing) {
+    return false;
+  }
+
+  // Consider table-driven parsing.  We only do this if:
+  // - There are no extensions
+  if (descriptor->extension_range_count() != 0) {
+    return false;
+  }
+
+  // - We are not using the lite library.
+  if (!HasDescriptorMethods(descriptor->file(), options)) {
+    return false;
+  }
+
+  // - We have has_bits for fields.  This avoids a check on every field we set
+  //   when are present (the common case).
+  if (!HasFieldPresence(descriptor->file())) {
+    return false;
+  }
+
+  const double table_sparseness = 0.5;
+  int max_field_number = 0;
+  for (int i = 0; i < descriptor->field_count(); i++) {
+    const FieldDescriptor* field = descriptor->field(i);
+    if (max_field_number < field->number()) {
+      max_field_number = field->number();
+    }
+
+    // - There are no map fields.
+    if (field->is_map()) {
+      return false;
+    }
+
+    // - There are no oneof fields.
+    if (field->containing_oneof()) {
+      return false;
+    }
+
+    // - There are no weak fields.
+    if (field->options().weak()) {
+      return false;
+    }
+  }
+
+  // - There range of field numbers is "small"
+  if (max_field_number >= (2 << 14)) {
+    return false;
+  }
+
+  // - Field numbers are relatively dense within the actual number of fields
+  if (max_field_number * table_sparseness >= descriptor->field_count()) {
+    return false;
+  }
+
+  // - This is not a MapEntryMessage.
+  if (IsMapEntryMessage(descriptor)) {
+    return false;
+  }
+
+  return true;
+}
+
 }  // anonymous namespace
 
 // ===================================================================
@@ -576,6 +644,8 @@ MessageGenerator::MessageGenerator(const Descriptor* descriptor,
     // Always make oneofs dependent.
     use_dependent_base_ = true;
   }
+
+  table_driven_ = TableDrivenEnabled(descriptor_, options_);
 }
 
 MessageGenerator::~MessageGenerator() {}
@@ -598,6 +668,7 @@ void MessageGenerator::Flatten(std::vector<MessageGenerator*>* list) {
   for (int i = 0; i < descriptor_->nested_type_count(); i++) {
     nested_generators_[i]->Flatten(list);
   }
+  index_in_file_messages_ = list->size();
   list->push_back(this);
 }
 
@@ -1111,12 +1182,15 @@ GenerateClassDefinition(io::Printer* printer) {
   }
 
   // TODO(gerbens) make this private, while still granting other protos access.
+  vars["message_index"] = SimpleItoa(index_in_file_messages_);
   printer->Print(
       vars,
       "static inline const $classname$* internal_default_instance() {\n"
       "  return reinterpret_cast<const $classname$*>(\n"
       "             &_$classname$_default_instance_);\n"
       "}\n"
+      "static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =\n"
+      "  $message_index$;\n"
       "\n");
 
 
@@ -1460,12 +1534,21 @@ GenerateClassDefinition(io::Printer* printer) {
                  "adddescriptorsname",
                  GlobalAddDescriptorsName(descriptor_->file()->name()));
 
+  // The TableStruct struct needs access to the private parts, in order to
+  // construct the offsets of all members.
+  //
+  // Some InitDefault and Shutdown are defined as static member functions of
+  // TableStruct such that they are also allowed to access private members.
   printer->Print(
+      "friend struct $dllexport_decl$ $file_namespace$::TableStruct;\n"
       "friend const ::google::protobuf::uint32* $offsetfunname$();\n"
       "friend void $shutdownfilename$();\n"
       "\n",
+      // Vars.
       "offsetfunname", GlobalOffsetTableName(descriptor_->file()->name()),
-      "shutdownfilename", GlobalShutdownFileName(descriptor_->file()->name()));
+      "shutdownfilename", GlobalShutdownFileName(descriptor_->file()->name()),
+      "dllexport_decl", options_.dllexport_decl,
+      "file_namespace", FileLevelNamespace(descriptor_->file()->name()));
 
   printer->Outdent();
   printer->Print("};");
@@ -1530,6 +1613,61 @@ GenerateDescriptorDeclarations(io::Printer* printer) {
 
     printer->Print("} $name$_default_oneof_instance_;\n", "name", classname_);
   }
+}
+
+bool MessageGenerator::GenerateParseTable(io::Printer* printer, size_t offset,
+                                          size_t aux_offset) {
+  if (!table_driven_) {
+    printer->Print("{ NULL, NULL, 0, -1, -1, false },\n");
+    return false;
+  }
+
+  std::map<string, string> vars;
+
+  vars["classname"] = classname_;
+  vars["offset"] = SimpleItoa(offset);
+  vars["aux_offset"] = SimpleItoa(aux_offset);
+
+  int max_field_number = 0;
+  for (int i = 0; i < descriptor_->field_count(); i++) {
+    const FieldDescriptor* field = descriptor_->field(i);
+    if (max_field_number < field->number()) {
+      max_field_number = field->number();
+    }
+  }
+
+  vars["max_field_number"] = SimpleItoa(max_field_number);
+
+  printer->Print("{\n");
+  printer->Indent();
+
+  printer->Print(vars,
+      "TableStruct::entries + $offset$,\n"
+      "TableStruct::aux + $aux_offset$,\n"
+      "$max_field_number$,\n");
+
+  if (!HasFieldPresence(descriptor_->file())) {
+    // If we don't have field presence, then _has_bits_ does not exist.
+    printer->Print(vars, "-1,\n");
+  } else {
+    printer->Print(vars,
+      "PROTO2_GENERATED_MESSAGE_FIELD_OFFSET(\n"
+      "  $classname$, _has_bits_),\n");
+  }
+
+  printer->Print(vars,
+    "PROTO2_GENERATED_MESSAGE_FIELD_OFFSET(\n"
+    "  $classname$, _internal_metadata_),\n");
+
+  if (UseUnknownFieldSet(descriptor_->file(), options_)) {
+    printer->Print(vars, "true,\n");
+  } else {
+    printer->Print(vars, "false,\n");
+  }
+
+  printer->Outdent();
+  printer->Print("},\n");
+  return true;
 }
 
 void MessageGenerator::GenerateSchema(io::Printer* printer, int offset,
@@ -1755,6 +1893,173 @@ GenerateClassMethods(io::Printer* printer) {
       "type_name", descriptor_->full_name());
   }
 
+}
+
+size_t MessageGenerator::GenerateParseOffsets(io::Printer* printer) {
+  if (!table_driven_) {
+    return 0;
+  }
+
+  // Field "0" is special:  We use it in our switch statement of processing
+  // types to handle the successful end tag case.
+  printer->Print("{0, 0, 0, ::google::protobuf::internal::kInvalidMask, 0, 0},\n");
+  int last_field_number = 1;
+
+  std::vector<const FieldDescriptor*> ordered_fields =
+      SortFieldsByNumber(descriptor_);
+
+  for (int i = 0; i < descriptor_->field_count(); i++) {
+    const FieldDescriptor* field = ordered_fields[i];
+    GOOGLE_CHECK_GE(field->number(), last_field_number);
+
+    for (; last_field_number < field->number(); last_field_number++) {
+      printer->Print(
+          "{ 0, 0, ::google::protobuf::internal::kInvalidMask,\n"
+          "  ::google::protobuf::internal::kInvalidMask, 0, 0 },\n");
+    }
+    last_field_number++;
+
+    unsigned char normal_wiretype, packed_wiretype, processing_type;
+    normal_wiretype = WireFormat::WireTypeForFieldType(field->type());
+
+    if (field->is_packable()) {
+      packed_wiretype = WireFormatLite::WIRETYPE_LENGTH_DELIMITED;
+    } else {
+      packed_wiretype = internal::kNotPackedMask;
+    }
+
+    processing_type = static_cast<unsigned>(field->type()) |
+                      static_cast<unsigned>(
+                          field->is_repeated() ?  internal::kRepeatedMask : 0);
+
+    const unsigned char tag_size =
+      WireFormat::TagSize(field->number(), field->type());
+
+    map<string, string> vars;
+    vars["classname"] = classname_;
+    vars["name"] = FieldName(field);
+    vars["has"] = SimpleItoa(has_bit_indices_[field->index()]);
+    vars["nwtype"] = SimpleItoa(normal_wiretype);
+    vars["pwtype"] = SimpleItoa(packed_wiretype);
+    vars["ptype"] = SimpleItoa(processing_type);
+    vars["tag_size"] = SimpleItoa(tag_size);
+
+    printer->Print(vars,
+      "{\n"
+      "  PROTO2_GENERATED_MESSAGE_FIELD_OFFSET(\n"
+      "    $classname$, $name$_),\n"
+      "  static_cast< ::google::protobuf::uint32>($has$),\n"
+      "  $nwtype$, $pwtype$, $ptype$, $tag_size$\n"
+      "},\n");
+  }
+
+  return last_field_number;
+}
+
+size_t MessageGenerator::GenerateParseAuxTable(io::Printer* printer) {
+  if (!table_driven_) {
+    return 0;
+  }
+
+  std::vector<const FieldDescriptor*> ordered_fields =
+      SortFieldsByNumber(descriptor_);
+
+  printer->Print("::google::protobuf::internal::AuxillaryParseTableField(),\n");
+  int last_field_number = 1;
+  for (int i = 0; i < descriptor_->field_count(); i++) {
+    const FieldDescriptor* field = ordered_fields[i];
+
+    GOOGLE_CHECK_GE(field->number(), last_field_number);
+    for (; last_field_number < field->number(); last_field_number++) {
+      printer->Print("::google::protobuf::internal::AuxillaryParseTableField(),\n");
+    }
+
+    map<string, string> vars;
+    SetCommonFieldVariables(field, &vars, options_);
+
+    FieldOptions::CType ctype;
+    switch (field->cpp_type()) {
+      case FieldDescriptor::CPPTYPE_ENUM:
+        vars["type"] = ClassName(field->enum_type(), true);
+        printer->Print(vars, "{enum_aux{$type$_IsValid, \"$type$\" }},\n");
+        last_field_number++;
+        break;
+      case FieldDescriptor::CPPTYPE_MESSAGE: {
+        std::vector<string> package_parts;
+
+        const Descriptor* outer = field->message_type();
+        while (outer->containing_type() != NULL) {
+          outer = outer->containing_type();
+        }
+
+        package_parts = Split(
+            outer->full_name(), ".", true);
+        // outer->full_name() contains the class itself.  Remove it as it is
+        // used in the name of the default instance variable.
+        GOOGLE_DCHECK_NE(package_parts.size(), 0);
+        package_parts.back().clear();
+
+        vars["classname"] = ClassName(field->message_type(), false);
+        vars["ns"] = Join(package_parts, "::");
+        vars["type"] = FieldMessageTypeName(field);
+        vars["file_namespace"] = FileLevelNamespace(outer->file()->name());
+
+        printer->Print(vars,
+            "{message_aux{\n"
+            "  &::$ns$_$classname$_default_instance_,\n");
+
+        bool dont_emit_table =
+            !TableDrivenEnabled(field->message_type(), options_);
+
+        if (dont_emit_table) {
+          printer->Print("  NULL,\n");
+        } else {
+          printer->Print(vars,
+              "  ::$ns$$file_namespace$::TableStruct::schema +\n"
+              "    ::$ns$$classname$::kIndexInFileMessages,\n");
+        }
+
+        printer->Print("}},\n");
+        last_field_number++;
+        break;
+      }
+      case FieldDescriptor::CPPTYPE_STRING:
+        ctype = EffectiveStringCType(field);
+        switch (ctype) {
+          case FieldOptions::STRING:
+            vars["default"] =
+                field->default_value_string().empty()
+                  ? "&::google::protobuf::internal::fixed_address_empty_string"
+                  : "&" + classname_ + "::_default_" + FieldName(field) + "_";
+            break;
+          case FieldOptions::CORD:
+          case FieldOptions::STRING_PIECE:
+            vars["default"] =
+                "\"" + CEscape(field->default_value_string()) + "\"";
+            break;
+        }
+        vars["ctype"] = SimpleItoa(ctype);
+        vars["full_name"] = field->full_name();
+        vars["strict"] =
+          field->file()->syntax() == FileDescriptor::SYNTAX_PROTO3
+          ? "true" : "false";
+        vars["type"] = field->full_name();
+        printer->Print(vars,
+            "{string_aux{\n"
+            "  $default$,\n"
+            "  \"$full_name$\",\n"
+            "  $ctype$,\n"
+            "  $strict$,\n"
+            "  \"$type$\"\n"
+            "}},\n");
+        last_field_number++;
+        break;
+      default:
+        break;
+    }
+  }
+
+  return last_field_number;
 }
 
 std::pair<size_t, size_t> MessageGenerator::GenerateOffsets(
@@ -2910,12 +3215,35 @@ GenerateMergeFromCodedStream(io::Printer* printer) {
     return;
   }
 
+  std::vector<const FieldDescriptor*> ordered_fields =
+      SortFieldsByNumber(descriptor_);
+
   printer->Print(
     "bool $classname$::MergePartialFromCodedStream(\n"
-    "    ::google::protobuf::io::CodedInputStream* input) {\n"
-    "#define DO_(EXPRESSION) if (!GOOGLE_PREDICT_TRUE(EXPRESSION)) goto failure\n"
-    "  ::google::protobuf::uint32 tag;\n",
+    "    ::google::protobuf::io::CodedInputStream* input) {\n",
     "classname", classname_);
+
+  if (table_driven_) {
+    printer->Indent();
+
+    printer->Print(
+        "return ::google::protobuf::internal::MergePartialFromCodedStream(\n"
+        "    this,\n"
+        "    $file_namespace$::TableStruct::schema[\n"
+        "      $classname$::kIndexInFileMessages],\n"
+        "    input);\n",
+        "classname", classname_,
+        "file_namespace", FileLevelNamespace(descriptor_->file()->name()));
+
+    printer->Outdent();
+
+    printer->Print("}\n");
+    return;
+  }
+
+  printer->Print(
+    "#define DO_(EXPRESSION) if (!GOOGLE_PREDICT_TRUE(EXPRESSION)) goto failure\n"
+    "  ::google::protobuf::uint32 tag;\n");
 
   if (PreserveUnknownFields(descriptor_) &&
       !UseUnknownFieldSet(descriptor_->file(), options_)) {
@@ -2939,8 +3267,6 @@ GenerateMergeFromCodedStream(io::Printer* printer) {
   printer->Print("for (;;) {\n");
   printer->Indent();
 
-  std::vector<const FieldDescriptor*> ordered_fields =
-      SortFieldsByNumber(descriptor_);
   uint32 maxtag = descriptor_->field_count() == 0 ? 0 :
       WireFormat::MakeTag(ordered_fields[descriptor_->field_count() - 1]);
   const int kCutoff0 = 127;               // fits in 1-byte varint

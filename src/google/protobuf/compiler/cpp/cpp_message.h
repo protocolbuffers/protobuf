@@ -122,6 +122,15 @@ class MessageGenerator {
   void GenerateDependentFieldAccessorDefinitions(io::Printer* printer);
   void GenerateFieldAccessorDefinitions(io::Printer* printer, bool is_inline);
 
+  // Generate the table-driven parsing array.  Returns the number of entries
+  // generated.
+  size_t GenerateParseOffsets(io::Printer* printer);
+  size_t GenerateParseAuxTable(io::Printer* printer);
+  // Generates a ParseTable entry.  Returns whether the proto uses table-driven
+  // parsing.
+  bool GenerateParseTable(io::Printer* printer, size_t offset,
+                          size_t aux_offset);
+
   // Generate the field offsets array.  Returns the a pair of the total numer
   // of entries generated and the index of the first has_bit entry.
   std::pair<size_t, size_t> GenerateOffsets(io::Printer* printer);
@@ -206,8 +215,11 @@ class MessageGenerator {
   google::protobuf::scoped_array<google::protobuf::scoped_ptr<ExtensionGenerator> > extension_generators_;
   int num_required_fields_;
   bool use_dependent_base_;
+  // table_driven_ indicates the generated message uses table-driven parsing.
+  bool table_driven_;
 
   int index_in_metadata_;
+  int index_in_file_messages_;
 
   friend class FileGenerator;
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(MessageGenerator);
