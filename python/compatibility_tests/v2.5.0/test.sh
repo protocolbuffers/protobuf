@@ -92,16 +92,10 @@ python setup.py test
 # Test A.3:
 #   proto set 1: use old version
 #   proto set 2 which may import protos in set 1: use new version
-# Compatiblility test fail if the old verison is less than 3.0.0-alpha-1.
-# Because module name aliases was added in v3.0.0-alpha-1 instead of
-# fully-qualified module names to refer to dependencies: dot was replaced
-# with _dot_.
-if [ "$(printf "$OLD_VERSION\n3.0.0" | sort -V | head -n 1 )" = "3.0.0" ]; then
-  cp old_protoc protoc_1
-  cp ../../../src/protoc protoc_2
-  python setup.py build
-  python setup.py test
-fi
+cp old_protoc protoc_1
+cp ../../../src/protoc protoc_2
+python setup.py build
+python setup.py test
 
 rm google -r -f
 rm build -r -f
