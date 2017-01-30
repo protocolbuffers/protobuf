@@ -404,7 +404,7 @@ void Parser::LocationRecorder::RecordLegacyLocation(const Message* descriptor,
 
 void Parser::LocationRecorder::AttachComments(
     string* leading, string* trailing,
-    vector<string>* detached_comments) const {
+    vector<string>* detached_comments) {
   GOOGLE_CHECK(!location_->has_leading_comments());
   GOOGLE_CHECK(!location_->has_trailing_comments());
 
