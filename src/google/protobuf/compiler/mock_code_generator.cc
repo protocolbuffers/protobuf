@@ -165,9 +165,9 @@ bool MockCodeGenerator::Generate(
         Version compiler_version;
         context->GetCompilerVersion(&compiler_version);
         std::cerr << "Saw compiler_version: "
-                  << compiler_version.major() * 1000000 +
-                     compiler_version.minor() * 1000 +
-                     compiler_version.patch()
+                  << compiler_version._major() * 1000000 +
+                     compiler_version._minor() * 1000 +
+                     compiler_version._patch()
                   << " " << compiler_version.suffix() << std::endl;
         abort();
       } else {
