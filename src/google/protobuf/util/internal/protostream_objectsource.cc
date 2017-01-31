@@ -1024,15 +1024,8 @@ bool ProtoStreamObjectSource::IsMap(
     const google::protobuf::Field& field) const {
   const google::protobuf::Type* field_type =
       typeinfo_->GetTypeByTypeUrl(field.type_url());
-
-  // TODO(xiaofeng): Unify option names.
   return field.kind() == google::protobuf::Field_Kind_TYPE_MESSAGE &&
-         (GetBoolOptionOrDefault(field_type->options(),
-                                 "google.protobuf.MessageOptions.map_entry",
-                                 false) ||
-          GetBoolOptionOrDefault(field_type->options(), "map_entry", false) ||
-          GetBoolOptionOrDefault(field_type->options(),
-                                 "proto2.MessageOptions.map_entry", false));
+         google::protobuf::util::converter::IsMap(field, *field_type);
 }
 
 std::pair<int64, int32> ProtoStreamObjectSource::ReadSecondsAndNanos(
@@ -1128,4 +1121,3 @@ const string FormatNanos(uint32 nanos, bool with_trailing_zeros) {
 }  // namespace util
 }  // namespace protobuf
 }  // namespace google
-

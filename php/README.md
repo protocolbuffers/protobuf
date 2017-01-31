@@ -80,8 +80,6 @@ protoc --php_out=out_dir test.proto
 
 ## Usage
 
-For general guide:
-  https://developers.google.com/protocol-buffers/phptutorial/
 For generated code:
   https://developers.google.com/protocol-buffers/docs/reference/php-generated
 

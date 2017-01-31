@@ -49,6 +49,8 @@ void SetMessageVariables(const FieldDescriptor* descriptor,
                          const Options& options) {
   SetCommonFieldVariables(descriptor, variables, options);
   (*variables)["type"] = ClassName(descriptor->message_type(), false);
+  (*variables)["file_namespace"] =
+      FileLevelNamespace(descriptor->file()->name());
   (*variables)["stream_writer"] =
       (*variables)["declared_type"] +
       (HasFastArraySerialization(descriptor->message_type()->file(), options)
@@ -174,7 +176,7 @@ GenerateConstructorCode(io::Printer* printer) const {
   if (HasDescriptorMethods(descriptor_->file(), options_)) {
     printer->Print(variables_,
                    "$name$_.SetAssignDescriptorCallback(\n"
-                   "    protobuf_AssignDescriptorsOnce);\n"
+                   "    $file_namespace$::protobuf_AssignDescriptorsOnce);\n"
                    "$name$_.SetEntryDescriptor(\n"
                    "    &$type$_descriptor);\n");
   }

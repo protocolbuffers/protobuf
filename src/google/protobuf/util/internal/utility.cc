@@ -356,23 +356,25 @@ bool IsValidBoolString(const string& bool_string) {
 
 bool IsMap(const google::protobuf::Field& field,
            const google::protobuf::Type& type) {
-  return (
-      field.cardinality() ==
-          google::protobuf::Field_Cardinality_CARDINALITY_REPEATED &&
-      (GetBoolOptionOrDefault(
-           type.options(), "google.protobuf.MessageOptions.map_entry", false) ||
-       GetBoolOptionOrDefault(type.options(), "proto2.MessageOptions.map_entry",
-                              false)));
+  return field.cardinality() ==
+             google::protobuf::Field_Cardinality_CARDINALITY_REPEATED &&
+         (GetBoolOptionOrDefault(type.options(), "map_entry", false) ||
+          GetBoolOptionOrDefault(type.options(),
+                                 "google.protobuf.MessageOptions.map_entry", false) ||
+          GetBoolOptionOrDefault(type.options(),
+                                 "google.protobuf.MessageOptions.map_entry",
+                                 false));
 }
 
 bool IsMessageSetWireFormat(const google::protobuf::Type& type) {
-  return (
-      GetBoolOptionOrDefault(
-          type.options(),
-          "google.protobuf.MessageOptions.message_set_wire_format", false) ||
-      GetBoolOptionOrDefault(type.options(),
-                             "proto2.MessageOptions.message_set_wire_format",
-                             false));
+  return GetBoolOptionOrDefault(type.options(), "message_set_wire_format",
+                                false) ||
+         GetBoolOptionOrDefault(type.options(),
+                                "google.protobuf.MessageOptions.message_set_wire_format",
+                                false) ||
+         GetBoolOptionOrDefault(
+             type.options(),
+             "google.protobuf.MessageOptions.message_set_wire_format", false);
 }
 
 string DoubleAsString(double value) {
@@ -412,4 +414,3 @@ bool SafeStrToFloat(StringPiece str, float* value) {
 }  // namespace util
 }  // namespace protobuf
 }  // namespace google
-

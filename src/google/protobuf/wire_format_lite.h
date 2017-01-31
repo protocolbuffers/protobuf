@@ -42,6 +42,7 @@
 
 #include <string>
 #include <google/protobuf/stubs/common.h>
+#include <google/protobuf/repeated_field.h>
 #include <google/protobuf/message_lite.h>
 #include <google/protobuf/io/coded_stream.h>  // for CodedOutputStream::Varint32Size
 
@@ -379,6 +380,15 @@ class LIBPROTOBUF_EXPORT WireFormatLite {
   INL static void WriteBoolNoTag    (bool value, output);
   INL static void WriteEnumNoTag    (int value, output);
 
+  // Write array of primitive fields, without tags
+  static void WriteFloatArray   (const float* a, int n, output);
+  static void WriteDoubleArray  (const double* a, int n, output);
+  static void WriteFixed32Array (const uint32* a, int n, output);
+  static void WriteFixed64Array (const uint64* a, int n, output);
+  static void WriteSFixed32Array(const int32* a, int n, output);
+  static void WriteSFixed64Array(const int64* a, int n, output);
+  static void WriteBoolArray    (const bool* a, int n, output);
+
   // Write fields, including tags.
   static void WriteInt32   (field_number,  int32 value, output);
   static void WriteInt64   (field_number,  int64 value, output);
@@ -526,6 +536,14 @@ class LIBPROTOBUF_EXPORT WireFormatLite {
   static inline size_t SInt32Size  ( int32 value);
   static inline size_t SInt64Size  ( int64 value);
   static inline size_t EnumSize    (   int value);
+
+  static        size_t Int32Size (const RepeatedField< int32>& value);
+  static inline size_t Int64Size (const RepeatedField< int64>& value);
+  static        size_t UInt32Size(const RepeatedField<uint32>& value);
+  static inline size_t UInt64Size(const RepeatedField<uint64>& value);
+  static        size_t SInt32Size(const RepeatedField< int32>& value);
+  static inline size_t SInt64Size(const RepeatedField< int64>& value);
+  static        size_t EnumSize  (const RepeatedField<   int>& value);
 
   // These types always have the same size.
   static const size_t kFixed32Size  = 4;

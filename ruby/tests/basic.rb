@@ -667,6 +667,13 @@ module BasicTest
       end
     end
 
+    def test_map_corruption
+      # This pattern led to a crash in a previous version of upb/protobuf.
+      m = MapMessage.new(map_string_int32: { "aaa" => 1 })
+      m.map_string_int32['podid'] = 2
+      m.map_string_int32['aaa'] = 3
+    end
+
     def test_map_encode_decode
       m = MapMessage.new(
         :map_string_int32 => {"a" => 1, "b" => 2},

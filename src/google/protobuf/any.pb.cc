@@ -19,8 +19,11 @@
 
 namespace google {
 namespace protobuf {
-class AnyDefaultTypeInternal : public ::google::protobuf::internal::ExplicitlyConstructed<Any> {};
-AnyDefaultTypeInternal _Any_default_instance_;
+class AnyDefaultTypeInternal : public ::google::protobuf::internal::ExplicitlyConstructed<Any> {
+} _Any_default_instance_;
+
+namespace protobuf_google_2fprotobuf_2fany_2eproto {
+
 
 namespace {
 
@@ -28,35 +31,30 @@ namespace {
 
 }  // namespace
 
-
-const ::google::protobuf::uint32* protobuf_Offsets_google_2fprotobuf_2fany_2eproto() GOOGLE_ATTRIBUTE_COLD;
-const ::google::protobuf::uint32* protobuf_Offsets_google_2fprotobuf_2fany_2eproto() {
-  static const ::google::protobuf::uint32 offsets[] = {
-    ~0u,  // no _has_bits_
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Any, _internal_metadata_),
-    ~0u,  // no _extensions_
-    ~0u,  // no _oneof_case_
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Any, type_url_),
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Any, value_),
-  };
-  return offsets;
-}
+const ::google::protobuf::uint32 TableStruct::offsets[] = {
+  ~0u,  // no _has_bits_
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Any, _internal_metadata_),
+  ~0u,  // no _extensions_
+  ~0u,  // no _oneof_case_
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Any, type_url_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Any, value_),
+};
 
 static const ::google::protobuf::internal::MigrationSchema schemas[] = {
   { 0, -1, sizeof(Any)},
 };
 
-static const ::google::protobuf::internal::DefaultInstanceData file_default_instances[] = {
-  {reinterpret_cast<const ::google::protobuf::Message*>(&_Any_default_instance_), NULL},
+static ::google::protobuf::Message const * const file_default_instances[] = {
+  reinterpret_cast<const ::google::protobuf::Message*>(&_Any_default_instance_),
 };
 
 namespace {
 
 void protobuf_AssignDescriptors() {
-  protobuf_AddDesc_google_2fprotobuf_2fany_2eproto();
+  AddDescriptors();
   ::google::protobuf::MessageFactory* factory = NULL;
   AssignDescriptors(
-      "google/protobuf/any.proto", schemas, file_default_instances, protobuf_Offsets_google_2fprotobuf_2fany_2eproto(), factory,
+      "google/protobuf/any.proto", schemas, file_default_instances, TableStruct::offsets, factory,
       file_level_metadata, NULL, NULL);
 }
 
@@ -73,24 +71,24 @@ void protobuf_RegisterTypes(const ::std::string&) {
 
 }  // namespace
 
-void protobuf_ShutdownFile_google_2fprotobuf_2fany_2eproto() {
+void TableStruct::Shutdown() {
   _Any_default_instance_.Shutdown();
   delete file_level_metadata[0].reflection;
 }
 
-void protobuf_InitDefaults_google_2fprotobuf_2fany_2eproto_impl() {
+void TableStruct::InitDefaultsImpl() {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
 
   ::google::protobuf::internal::InitProtobufDefaults();
   _Any_default_instance_.DefaultConstruct();
 }
 
-void protobuf_InitDefaults_google_2fprotobuf_2fany_2eproto() {
+void InitDefaults() {
   static GOOGLE_PROTOBUF_DECLARE_ONCE(once);
-  ::google::protobuf::GoogleOnceInit(&once, &protobuf_InitDefaults_google_2fprotobuf_2fany_2eproto_impl);
+  ::google::protobuf::GoogleOnceInit(&once, &TableStruct::InitDefaultsImpl);
 }
-void protobuf_AddDesc_google_2fprotobuf_2fany_2eproto_impl() {
-  protobuf_InitDefaults_google_2fprotobuf_2fany_2eproto();
+void AddDescriptorsImpl() {
+  InitDefaults();
   static const char descriptor[] = {
       "\n\031google/protobuf/any.proto\022\017google.prot"
       "obuf\"&\n\003Any\022\020\n\010type_url\030\001 \001(\t\022\r\n\005value\030\002"
@@ -103,20 +101,22 @@ void protobuf_AddDesc_google_2fprotobuf_2fany_2eproto_impl() {
       descriptor, 205);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "google/protobuf/any.proto", &protobuf_RegisterTypes);
-  ::google::protobuf::internal::OnShutdown(&protobuf_ShutdownFile_google_2fprotobuf_2fany_2eproto);
+  ::google::protobuf::internal::OnShutdown(&TableStruct::Shutdown);
 }
 
-GOOGLE_PROTOBUF_DECLARE_ONCE(protobuf_AddDesc_google_2fprotobuf_2fany_2eproto_once_);
-void protobuf_AddDesc_google_2fprotobuf_2fany_2eproto() {
-  ::google::protobuf::GoogleOnceInit(&protobuf_AddDesc_google_2fprotobuf_2fany_2eproto_once_,
-                 &protobuf_AddDesc_google_2fprotobuf_2fany_2eproto_impl);
+void AddDescriptors() {
+  static GOOGLE_PROTOBUF_DECLARE_ONCE(once);
+  ::google::protobuf::GoogleOnceInit(&once, &AddDescriptorsImpl);
 }
 // Force AddDescriptors() to be called at static initialization time.
-struct StaticDescriptorInitializer_google_2fprotobuf_2fany_2eproto {
-  StaticDescriptorInitializer_google_2fprotobuf_2fany_2eproto() {
-    protobuf_AddDesc_google_2fprotobuf_2fany_2eproto();
+struct StaticDescriptorInitializer {
+  StaticDescriptorInitializer() {
+    AddDescriptors();
   }
-} static_descriptor_initializer_google_2fprotobuf_2fany_2eproto_;
+} static_descriptor_initializer;
+
+}  // namespace protobuf_google_2fprotobuf_2fany_2eproto
+
 
 // ===================================================================
 
@@ -141,7 +141,7 @@ const int Any::kValueFieldNumber;
 Any::Any()
   : ::google::protobuf::Message(), _internal_metadata_(NULL), _any_metadata_(&type_url_, &value_) {
   if (GOOGLE_PREDICT_TRUE(this != internal_default_instance())) {
-    protobuf_InitDefaults_google_2fprotobuf_2fany_2eproto();
+    protobuf_google_2fprotobuf_2fany_2eproto::InitDefaults();
   }
   SharedCtor();
   // @@protoc_insertion_point(constructor:google.protobuf.Any)
@@ -185,12 +185,12 @@ void Any::SetCachedSize(int size) const {
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
 }
 const ::google::protobuf::Descriptor* Any::descriptor() {
-  protobuf_AssignDescriptorsOnce();
-  return file_level_metadata[0].descriptor;
+  protobuf_google_2fprotobuf_2fany_2eproto::protobuf_AssignDescriptorsOnce();
+  return protobuf_google_2fprotobuf_2fany_2eproto::file_level_metadata[0].descriptor;
 }
 
 const Any& Any::default_instance() {
-  protobuf_InitDefaults_google_2fprotobuf_2fany_2eproto();
+  protobuf_google_2fprotobuf_2fany_2eproto::InitDefaults();
   return *internal_default_instance();
 }
 
@@ -289,7 +289,7 @@ void Any::SerializeWithCachedSizes(
 
 ::google::protobuf::uint8* Any::InternalSerializeWithCachedSizesToArray(
     bool deterministic, ::google::protobuf::uint8* target) const {
-  (void)deterministic; // Unused
+  (void)deterministic;  // Unused
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.Any)
   // string type_url = 1;
   if (this->type_url().size() > 0) {
@@ -396,8 +396,8 @@ void Any::InternalSwap(Any* other) {
 }
 
 ::google::protobuf::Metadata Any::GetMetadata() const {
-  protobuf_AssignDescriptorsOnce();
-  return file_level_metadata[0];
+  protobuf_google_2fprotobuf_2fany_2eproto::protobuf_AssignDescriptorsOnce();
+  return protobuf_google_2fprotobuf_2fany_2eproto::file_level_metadata[0];
 }
 
 #if PROTOBUF_INLINE_NOT_IN_HEADERS

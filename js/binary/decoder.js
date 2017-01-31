@@ -942,7 +942,7 @@ jspb.BinaryDecoder.prototype.readEnum = function() {
 /**
  * Reads and parses a UTF-8 encoded unicode string from the stream.
  * The code is inspired by maps.vectortown.parse.StreamedDataViewReader.
- * Supports codepoints from U+0000 up to U+10FFFF. 
+ * Supports codepoints from U+0000 up to U+10FFFF.
  * (http://en.wikipedia.org/wiki/UTF-8).
  * @param {number} length The length of the string to read.
  * @return {string} The decoded string.
@@ -984,7 +984,7 @@ jspb.BinaryDecoder.prototype.readString = function(length) {
       // 4. Add 0xDC00 to the low value to form the low surrogate:
       var low = (codepoint & 1023) + 0xDC00;
       var high = ((codepoint >> 10) & 1023) + 0xD800;
-      codeUnits.push(high, low)
+      codeUnits.push(high, low);
     }
   }
   // String.fromCharCode.apply is faster than manually appending characters on

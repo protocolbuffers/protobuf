@@ -454,7 +454,6 @@ class BigEndian {
   }
 };
 
-
 }  // namespace protobuf
 }  // namespace google
 

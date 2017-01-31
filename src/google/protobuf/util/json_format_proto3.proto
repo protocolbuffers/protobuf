@@ -32,6 +32,8 @@ syntax = "proto3";
 
 package proto3;
 
+option java_package = "com.google.protobuf.util";
+option java_outer_classname = "JsonFormatProto3";
 
 import "google/protobuf/duration.proto";
 import "google/protobuf/timestamp.proto";

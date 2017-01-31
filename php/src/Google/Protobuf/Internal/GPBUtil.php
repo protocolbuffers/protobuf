@@ -43,8 +43,15 @@ class GPBUtil
         if ($isNeg) {
             $value = bcsub(0, $value);
         }
+
         $high = (int) bcdiv(bcadd($value, 1), 4294967296);
-        $low = (int) bcmod($value, 4294967296);
+        $low = bcmod($value, 4294967296);
+        if (bccomp($low, 2147483647) > 0) {
+            $low = (int) bcsub($low, 4294967296);
+        } else {
+            $low = (int) $low;
+        }
+
         if ($isNeg) {
             $high = ~$high;
             $low = ~$low;

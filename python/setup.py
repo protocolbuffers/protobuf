@@ -5,6 +5,7 @@ import glob
 import os
 import subprocess
 import sys
+import platform
 
 # We must use setuptools, not distutils, because we need to use the
 # namespace_packages option for the "google" package.
@@ -188,6 +189,12 @@ if __name__ == '__main__':
 
     if "clang" in os.popen('$CC --version 2> /dev/null').read():
       extra_compile_args.append('-Wno-shorten-64-to-32')
+
+    v, _, _ = platform.mac_ver()
+    if v:
+      v = float('.'.join(v.split('.')[:2]))
+      if v >= 10.12:
+        extra_compile_args.append('-std=c++11')
 
     if warnings_as_errors in sys.argv:
       extra_compile_args.append('-Werror')

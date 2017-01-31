@@ -101,6 +101,7 @@ class CommandLineInterfaceTest : public testing::Test {
   // command is automatically split on spaces, and the string "$tmpdir"
   // is replaced with TestTempDir().
   void Run(const string& command);
+  void RunWithArgs(vector<string> args);
 
   // -----------------------------------------------------------------
   // Methods to set up the test (called before Run()).
@@ -292,8 +293,10 @@ void CommandLineInterfaceTest::TearDown() {
 }
 
 void CommandLineInterfaceTest::Run(const string& command) {
-  std::vector<string> args = Split(command, " ", true);
+  RunWithArgs(Split(command, " ", true));
+}
 
+void CommandLineInterfaceTest::RunWithArgs(vector<string> args) {
   if (!disallow_plugins_) {
     cli_.AllowPlugins("prefix-");
 #ifndef GOOGLE_THIRD_PARTY_PROTOBUF
@@ -996,6 +999,27 @@ TEST_F(CommandLineInterfaceTest, DirectDependencies_ProvidedMultipleTimes) {
       "':'.\n");
 }
 
+TEST_F(CommandLineInterfaceTest, DirectDependencies_CustomErrorMessage) {
+  CreateTempFile("foo.proto",
+                 "syntax = \"proto2\";\n"
+                 "import \"bar.proto\";\n"
+                 "message Foo { optional Bar bar = 1; }");
+  CreateTempFile("bar.proto",
+                 "syntax = \"proto2\";\n"
+                 "message Bar { optional string text = 1; }");
+
+  vector<string> commands;
+  commands.push_back("protocol_compiler");
+  commands.push_back("--test_out=$tmpdir");
+  commands.push_back("--proto_path=$tmpdir");
+  commands.push_back("--direct_dependencies=");
+  commands.push_back("--direct_dependencies_violation_msg=Bla \"%s\" Bla");
+  commands.push_back("foo.proto");
+  RunWithArgs(commands);
+
+  ExpectErrorText("foo.proto: Bla \"bar.proto\" Bla\n");
+}
+
 TEST_F(CommandLineInterfaceTest, CwdRelativeInputs) {
   // Test that we can accept working-directory-relative input files.
 
@@ -1281,6 +1305,19 @@ TEST_F(CommandLineInterfaceTest, ParseErrorsMultipleFiles) {
     "baz.proto: Import \"bar.proto\" was not found or had errors.\n"
     "foo.proto: Import \"bar.proto\" was not found or had errors.\n"
     "foo.proto: Import \"baz.proto\" was not found or had errors.\n");
+}
+
+TEST_F(CommandLineInterfaceTest, RecursiveImportFails) {
+  // Create a proto file that imports itself.
+  CreateTempFile("foo.proto",
+    "syntax = \"proto2\";\n"
+    "import \"foo.proto\";\n");
+
+  Run("protocol_compiler --test_out=$tmpdir "
+      "--proto_path=$tmpdir foo.proto");
+
+  ExpectErrorSubstring(
+    "foo.proto: File recursively imports itself: foo.proto -> foo.proto\n");
 }
 
 TEST_F(CommandLineInterfaceTest, InputNotFoundError) {

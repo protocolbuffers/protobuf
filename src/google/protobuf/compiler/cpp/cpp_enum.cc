@@ -251,13 +251,15 @@ void EnumGenerator::GenerateMethods(io::Printer* printer) {
   vars["classname"] = classname_;
   vars["index_in_metadata"] = SimpleItoa(index_in_metadata_);
   vars["constexpr"] = options_.proto_h ? "constexpr " : "";
+  vars["file_namespace"] = FileLevelNamespace(descriptor_->file()->name());
 
   if (HasDescriptorMethods(descriptor_->file(), options_)) {
     printer->Print(
         vars,
         "const ::google::protobuf::EnumDescriptor* $classname$_descriptor() {\n"
-        "  protobuf_AssignDescriptorsOnce();\n"
-        "  return file_level_enum_descriptors[$index_in_metadata$];\n"
+        "  $file_namespace$::protobuf_AssignDescriptorsOnce();\n"
+        "  return "
+        "$file_namespace$::file_level_enum_descriptors[$index_in_metadata$];\n"
         "}\n");
   }
 

@@ -505,6 +505,7 @@ MessageGenerator::MessageGenerator(const Descriptor* descriptor,
       classname_(ClassName(descriptor, false)),
       options_(options),
       field_generators_(descriptor, options),
+      max_has_bit_index_(0),
       nested_generators_(new google::protobuf::scoped_ptr<
           MessageGenerator>[descriptor->nested_type_count()]),
       enum_generators_(
@@ -523,7 +524,7 @@ MessageGenerator::MessageGenerator(const Descriptor* descriptor,
   OptimizePadding(&optimized_order_, options_);
 
   if (HasFieldPresence(descriptor_->file())) {
-    int has_bit_index = 0;
+    // We use -1 as a sentinel.
     has_bit_indices_.resize(descriptor_->field_count(), -1);
     for (int i = 0; i < optimized_order_.size(); i++) {
       const FieldDescriptor* field = optimized_order_[i];
@@ -532,19 +533,7 @@ MessageGenerator::MessageGenerator(const Descriptor* descriptor,
         continue;
       }
 
-      has_bit_indices_[field->index()] = has_bit_index;
-      has_bit_index++;
-    }
-
-    // Assign fields that do not use has bits to be at the end.  This can be
-    // removed once we shrink the has bits we assign.
-    //
-    // TODO(ckennelly):  Shrink the has bits for these fields.
-    for (int i = 0; i < descriptor_->field_count(); i++) {
-      const FieldDescriptor* field = descriptor_->field(i);
-      if (has_bit_indices_[field->index()] < 0) {
-        has_bit_indices_[field->index()] = has_bit_index++;
-      }
+      has_bit_indices_[field->index()] = max_has_bit_index_++;
     }
   }
 
@@ -581,9 +570,8 @@ MessageGenerator::MessageGenerator(const Descriptor* descriptor,
 MessageGenerator::~MessageGenerator() {}
 
 size_t MessageGenerator::HasBitsSize() const {
-  // TODO(jieluo) - Optimize _has_bits_ for repeated and oneof fields.
-  size_t sizeof_has_bits = (descriptor_->field_count() + 31) / 32 * 4;
-  if (descriptor_->field_count() == 0) {
+  size_t sizeof_has_bits = (max_has_bit_index_ + 31) / 32 * 4;
+  if (sizeof_has_bits == 0) {
     // Zero-size arrays aren't technically allowed, and MSVC in particular
     // doesn't like them.  We still need to declare these arrays to make
     // other code compile.  Since this is an uncommon case, we'll just declare
@@ -642,8 +630,28 @@ GenerateDependentFieldAccessorDeclarations(io::Printer* printer) {
 
 void MessageGenerator::
 GenerateFieldAccessorDeclarations(io::Printer* printer) {
+  // optimized_fields_ does not contain fields where
+  //    field->containing_oneof() != NULL
+  // so we need to iterate over those as well.
+  //
+  // We place the non-oneof fields in optimized_order_, as that controls the
+  // order of the _has_bits_ entries and we want GDB's pretty printers to be
+  // able to infer these indices from the k[FIELDNAME]FieldNumber order.
+  std::vector<const FieldDescriptor*> ordered_fields;
+  ordered_fields.reserve(descriptor_->field_count());
+
+  ordered_fields.insert(
+      ordered_fields.begin(), optimized_order_.begin(), optimized_order_.end());
   for (int i = 0; i < descriptor_->field_count(); i++) {
     const FieldDescriptor* field = descriptor_->field(i);
+    if (field->containing_oneof() == NULL) {
+      continue;
+    }
+    ordered_fields.push_back(field);
+  }
+
+  for (int i = 0; i < ordered_fields.size(); i++) {
+    const FieldDescriptor* field = ordered_fields[i];
 
     PrintFieldComment(printer, field);
 
@@ -1191,12 +1199,14 @@ GenerateClassDefinition(io::Printer* printer) {
     }
     if (HasFastArraySerialization(descriptor_->file(), options_)) {
       printer->Print(
-        "::google::protobuf::uint8* InternalSerializeWithCachedSizesToArray(\n"
-        "    bool deterministic, ::google::protobuf::uint8* target) const PROTOBUF_FINAL;\n"
-        "::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output)\n"
-        "    const PROTOBUF_FINAL {\n"
-        "  return InternalSerializeWithCachedSizesToArray(false, output);\n"
-        "}\n");
+          "::google::protobuf::uint8* InternalSerializeWithCachedSizesToArray(\n"
+          "    bool deterministic, ::google::protobuf::uint8* target) const PROTOBUF_FINAL;\n"
+          "::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output)\n"
+          "    const PROTOBUF_FINAL {\n"
+          "  return InternalSerializeWithCachedSizesToArray(\n"
+          "      ::google::protobuf::io::CodedOutputStream::"
+          "IsDefaultSerializationDeterministic(), output);\n"
+          "}\n");
     }
   }
 
@@ -1447,25 +1457,15 @@ GenerateClassDefinition(io::Printer* printer) {
       "::google::protobuf::internal::AnyMetadata _any_metadata_;\n");
   }
 
-  // Declare AddDescriptors(), BuildDescriptors(), and ShutdownFile() as
-  // friends so that they can access private static variables like
-  // default_instance_ and reflection_.
-  printer->Print("friend void $dllexport_decl$ $initdefaultsname$_impl();\n",
-                 // Vars.
-                 "dllexport_decl", options_.dllexport_decl, "initdefaultsname",
-                 GlobalInitDefaultsName(descriptor_->file()->name()));
-  printer->Print("friend void $dllexport_decl$ $adddescriptorsname$_impl();\n",
-                 // Vars.
-                 "dllexport_decl", options_.dllexport_decl,
-                 "adddescriptorsname",
-                 GlobalAddDescriptorsName(descriptor_->file()->name()));
-
+  // The TableStruct struct needs access to the private parts, in order to
+  // construct the offsets of all members.
+  // Some InitDefault and Shutdown are defined as static member functions of
+  // TableStruct such that they are also allowed to access private members.
   printer->Print(
-      "friend const ::google::protobuf::uint32* $offsetfunname$();\n"
-      "friend void $shutdownfilename$();\n"
-      "\n",
-      "offsetfunname", GlobalOffsetTableName(descriptor_->file()->name()),
-      "shutdownfilename", GlobalShutdownFileName(descriptor_->file()->name()));
+      "friend struct $dllexport_decl$ $file_namespace$::TableStruct;\n",
+      // Vars.
+      "dllexport_decl", options_.dllexport_decl, "file_namespace",
+      FileLevelNamespace(descriptor_->file()->name()));
 
   printer->Outdent();
   printer->Print("};");
@@ -1510,15 +1510,13 @@ GenerateInlineMethods(io::Printer* printer, bool is_inline) {
 }
 
 void MessageGenerator::
-GenerateDescriptorDeclarations(io::Printer* printer) {
+GenerateExtraDefaultFields(io::Printer* printer) {
   // Generate oneof default instance for reflection usage.
   if (descriptor_->oneof_decl_count() > 0) {
-    printer->Print("struct $name$OneofInstance {\n",
-                   "name", classname_);
+    printer->Print("public:\n");
     for (int i = 0; i < descriptor_->oneof_decl_count(); i++) {
       for (int j = 0; j < descriptor_->oneof_decl(i)->field_count(); j++) {
         const FieldDescriptor* field = descriptor_->oneof_decl(i)->field(j);
-        printer->Print("  ");
         if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE ||
             (field->cpp_type() == FieldDescriptor::CPPTYPE_STRING &&
              EffectiveStringCType(field) != FieldOptions::STRING)) {
@@ -1527,8 +1525,6 @@ GenerateDescriptorDeclarations(io::Printer* printer) {
         field_generators_.get(field).GeneratePrivateMembers(printer);
       }
     }
-
-    printer->Print("} $name$_default_oneof_instance_;\n", "name", classname_);
   }
 }
 
@@ -1555,6 +1551,7 @@ GenerateTypeRegistrations(io::Printer* printer) {
     std::map<string, string> vars;
     CollectMapInfo(descriptor_, &vars);
     vars["classname"] = classname_;
+    vars["file_namespace"] = FileLevelNamespace(descriptor_->file()->name());
 
     const FieldDescriptor* val = descriptor_->FindFieldByName("value");
     if (descriptor_->file()->syntax() == FileDescriptor::SYNTAX_PROTO2 &&
@@ -1570,7 +1567,8 @@ GenerateTypeRegistrations(io::Printer* printer) {
     printer->Print(
         vars,
         "const ::google::protobuf::Descriptor* $classname$_descriptor = "
-        "file_level_metadata[$index_in_metadata$].descriptor;\n"
+        "$file_namespace$::file_level_metadata[$index_in_metadata$].descriptor;"
+        "\n"
         "::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(\n"
         "      $classname$_descriptor,\n"
         "      ::google::protobuf::internal::MapEntry<\n"
@@ -1620,7 +1618,7 @@ GenerateDefaultInstanceInitializer(io::Printer* printer) {
          HasDescriptorMethods(descriptor_->file(), options_))) {
       string name;
       if (field->containing_oneof()) {
-        name = classname_ + "_default_oneof_instance_.";
+        name = "_" + classname_ + "_default_instance_.";
       } else {
         name = "_" + classname_ + "_default_instance_.get_mutable()->";
       }
@@ -1740,11 +1738,12 @@ GenerateClassMethods(io::Printer* printer) {
   if (HasDescriptorMethods(descriptor_->file(), options_)) {
     printer->Print(
         "::google::protobuf::Metadata $classname$::GetMetadata() const {\n"
-        "  protobuf_AssignDescriptorsOnce();\n"
-        "  return file_level_metadata[$index$];\n"
+        "  $file_namespace$::protobuf_AssignDescriptorsOnce();\n"
+        "  return $file_namespace$::file_level_metadata[$index$];\n"
         "}\n"
         "\n",
-        "classname", classname_, "index", SimpleItoa(index_in_metadata_));
+        "classname", classname_, "index", SimpleItoa(index_in_metadata_),
+        "file_namespace", FileLevelNamespace(descriptor_->file()->name()));
   } else {
     printer->Print(
       "::std::string $classname$::GetTypeName() const {\n"
@@ -1798,7 +1797,7 @@ std::pair<size_t, size_t> MessageGenerator::GenerateOffsets(
     if (field->containing_oneof()) {
       printer->Print(
           "PROTO2_GENERATED_DEFAULT_ONEOF_FIELD_OFFSET("
-          "(&$classname$_default_oneof_instance_), $name$_),\n",
+          "(&_$classname$_default_instance_), $name$_),\n",
           "classname", classname_, "name", FieldName(field));
     } else {
       printer->Print(
@@ -1820,7 +1819,9 @@ std::pair<size_t, size_t> MessageGenerator::GenerateOffsets(
   if (HasFieldPresence(descriptor_->file())) {
     entries += has_bit_indices_.size();
     for (int i = 0; i < has_bit_indices_.size(); i++) {
-      printer->Print("$index$,\n", "index", SimpleItoa(has_bit_indices_[i]));
+      const string index = has_bit_indices_[i] >= 0 ?
+        SimpleItoa(has_bit_indices_[i]) : "~0u";
+      printer->Print("$index$,\n", "index", index);
     }
   }
 
@@ -1849,9 +1850,10 @@ GenerateSharedConstructorCode(io::Printer* printer) {
         IsMapEntryMessage(descriptor_->nested_type(i))) {
       printer->Print(
           "const ::google::protobuf::Descriptor*& $type$_descriptor = "
-          "file_level_metadata[$index$].descriptor;\n",
+          "$file_namespace$::file_level_metadata[$index$].descriptor;\n",
           "type", ClassName(descriptor_->nested_type(i), false), "index",
-          SimpleItoa(nested_generators_[i]->index_in_metadata_));
+          SimpleItoa(nested_generators_[i]->index_in_metadata_),
+          "file_namespace", FileLevelNamespace(descriptor_->file()->name()));
     }
   }
 
@@ -2086,14 +2088,14 @@ GenerateStructors(io::Printer* printer) {
       "$classname$::$classname$()\n"
       "  : $superclass$()$initializer$ {\n"
       "  if (GOOGLE_PREDICT_TRUE(this != internal_default_instance())) {\n"
-      "    $initdefaultsname$();\n"
+      "    $file_namespace$::InitDefaults();\n"
       "  }\n"
       "  SharedCtor();\n"
       "  // @@protoc_insertion_point(constructor:$full_name$)\n"
       "}\n",
       "classname", classname_, "superclass", superclass, "full_name",
       descriptor_->full_name(), "initializer", initializer_null,
-      "initdefaultsname", GlobalInitDefaultsName(descriptor_->file()->name()));
+      "file_namespace", FileLevelNamespace(descriptor_->file()->name()));
 
   if (SupportsArenas(descriptor_)) {
     printer->Print(
@@ -2102,7 +2104,7 @@ GenerateStructors(io::Printer* printer) {
         // When arenas are used it's safe to assume we have finished
         // static init time (protos with arenas are unsafe during static init)
         "#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER\n"
-        "  $initdefaultsname$();\n"
+        "  $file_namespace$::InitDefaults();\n"
         "#endif  // GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER\n"
         "  SharedCtor();\n"
         "  RegisterArenaDtor(arena);\n"
@@ -2110,8 +2112,7 @@ GenerateStructors(io::Printer* printer) {
         "}\n",
         "initializer", initializer_with_arena, "classname", classname_,
         "superclass", superclass, "full_name", descriptor_->full_name(),
-        "initdefaultsname",
-        GlobalInitDefaultsName(descriptor_->file()->name()));
+        "file_namespace", FileLevelNamespace(descriptor_->file()->name()));
   }
 
   // Generate the copy constructor.
@@ -2182,9 +2183,10 @@ GenerateStructors(io::Printer* printer) {
         IsMapEntryMessage(descriptor_->nested_type(i))) {
       printer->Print(
           "const ::google::protobuf::Descriptor*& $type$_descriptor = "
-          "file_level_metadata[$index$].descriptor;\n",
+          "$file_namespace$::file_level_metadata[$index$].descriptor;\n",
           "type", ClassName(descriptor_->nested_type(i), false), "index",
-          SimpleItoa(nested_generators_[i]->index_in_metadata_));
+          SimpleItoa(nested_generators_[i]->index_in_metadata_),
+          "file_namespace", FileLevelNamespace(descriptor_->file()->name()));
     }
   }
 
@@ -2265,20 +2267,21 @@ GenerateStructors(io::Printer* printer) {
       !descriptor_->options().no_standard_descriptor_accessor()) {
     printer->Print(
         "const ::google::protobuf::Descriptor* $classname$::descriptor() {\n"
-        "  protobuf_AssignDescriptorsOnce();\n"
-        "  return file_level_metadata[$index$].descriptor;\n"
+        "  $file_namespace$::protobuf_AssignDescriptorsOnce();\n"
+        "  return $file_namespace$::file_level_metadata[$index$].descriptor;\n"
         "}\n"
         "\n",
-        "index", SimpleItoa(index_in_metadata_), "classname", classname_);
+        "index", SimpleItoa(index_in_metadata_), "classname", classname_,
+        "file_namespace", FileLevelNamespace(descriptor_->file()->name()));
   }
 
   printer->Print(
       "const $classname$& $classname$::default_instance() {\n"
-      "  $initdefaultsname$();\n"
+      "  $file_namespace$::InitDefaults();\n"
       "  return *internal_default_instance();\n"
       "}\n\n",
-      "classname", classname_, "initdefaultsname",
-      GlobalInitDefaultsName(descriptor_->file()->name()));
+      "classname", classname_, "file_namespace",
+      FileLevelNamespace(descriptor_->file()->name()));
 
   if (SupportsArenas(descriptor_)) {
     printer->Print(
@@ -2630,7 +2633,7 @@ GenerateSwap(io::Printer* printer) {
     }
 
     if (HasFieldPresence(descriptor_->file())) {
-      for (int i = 0; i < (descriptor_->field_count() + 31) / 32; ++i) {
+      for (int i = 0; i < HasBitsSize() / 4; ++i) {
         printer->Print("std::swap(_has_bits_[$i$], other->_has_bits_[$i$]);\n",
                        "i", SimpleItoa(i));
       }
@@ -3260,7 +3263,7 @@ void MessageGenerator::GenerateSerializeOneExtensionRange(
   if (to_array) {
     printer->Print(vars,
       "target = _extensions_.InternalSerializeWithCachedSizesToArray(\n"
-      "    $start$, $end$, false, target);\n\n");
+      "    $start$, $end$, deterministic, target);\n\n");
   } else {
     printer->Print(vars,
       "_extensions_.SerializeWithCachedSizes(\n"
@@ -3335,7 +3338,7 @@ GenerateSerializeWithCachedSizesToArray(io::Printer* printer) {
     "classname", classname_);
   printer->Indent();
 
-  printer->Print("(void)deterministic; // Unused\n");
+  printer->Print("(void)deterministic;  // Unused\n");
   printer->Print(
     "// @@protoc_insertion_point(serialize_to_array_start:$full_name$)\n",
     "full_name", descriptor_->full_name());

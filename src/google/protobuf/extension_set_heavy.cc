@@ -35,6 +35,7 @@
 // Contains methods defined in extension_set.h which cannot be part of the
 // lite library because they use descriptors or reflection.
 
+#include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/io/zero_copy_stream_impl_lite.h>
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/extension_set.h>
@@ -413,12 +414,16 @@ uint8* ExtensionSet::SerializeWithCachedSizesToArray(int start_field_number,
                                                      int end_field_number,
                                                      uint8* target) const {
   return InternalSerializeWithCachedSizesToArray(
-      start_field_number, end_field_number, false, target);
+      start_field_number, end_field_number,
+      google::protobuf::io::CodedOutputStream::IsDefaultSerializationDeterministic(),
+      target);
 }
 
 uint8* ExtensionSet::SerializeMessageSetWithCachedSizesToArray(
     uint8* target) const {
-  return InternalSerializeMessageSetWithCachedSizesToArray(false, target);
+  return InternalSerializeMessageSetWithCachedSizesToArray(
+      google::protobuf::io::CodedOutputStream::IsDefaultSerializationDeterministic(),
+      target);
 }
 
 uint8* ExtensionSet::InternalSerializeWithCachedSizesToArray(
@@ -587,11 +592,12 @@ ExtensionSet::Extension::InternalSerializeMessageSetItemWithCachedSizesToArray(
       WireFormatLite::kMessageSetTypeIdNumber, number, target);
   // Write message.
   if (is_lazy) {
-    target = lazymessage_value->WriteMessageToArray(
-        WireFormatLite::kMessageSetMessageNumber, target);
+    target = lazymessage_value->InternalWriteMessageToArray(
+        WireFormatLite::kMessageSetMessageNumber, deterministic, target);
   } else {
-    target = WireFormatLite::WriteMessageToArray(
-        WireFormatLite::kMessageSetMessageNumber, *message_value, target);
+    target = WireFormatLite::InternalWriteMessageToArray(
+        WireFormatLite::kMessageSetMessageNumber, *message_value, deterministic,
+        target);
   }
   // End group.
   target = io::CodedOutputStream::WriteTagToArray(

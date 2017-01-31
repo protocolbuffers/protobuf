@@ -46,6 +46,7 @@ ServiceGenerator::ServiceGenerator(const ServiceDescriptor* descriptor,
                                    const Options& options)
   : descriptor_(descriptor) {
   vars_["classname"] = descriptor_->name();
+  vars_["file_namespace"] = FileLevelNamespace(descriptor_->file()->name());
   vars_["full_name"] = descriptor_->full_name();
   if (options.dllexport_decl.empty()) {
     vars_["dllexport"] = "";
@@ -178,8 +179,8 @@ void ServiceGenerator::GenerateImplementation(io::Printer* printer) {
       "$classname$::~$classname$() {}\n"
       "\n"
       "const ::google::protobuf::ServiceDescriptor* $classname$::descriptor() {\n"
-      "  protobuf_AssignDescriptorsOnce();\n"
-      "  return file_level_service_descriptors[$index$];\n"
+      "  $file_namespace$::protobuf_AssignDescriptorsOnce();\n"
+      "  return $file_namespace$::file_level_service_descriptors[$index$];\n"
       "}\n"
       "\n"
       "const ::google::protobuf::ServiceDescriptor* $classname$::GetDescriptor() {\n"
@@ -241,7 +242,7 @@ void ServiceGenerator::GenerateCallMethod(io::Printer* printer) {
       "                             ::google::protobuf::Message* response,\n"
       "                             ::google::protobuf::Closure* done) {\n"
       "  GOOGLE_DCHECK_EQ(method->service(), "
-      "file_level_service_descriptors[$index$]);\n"
+      "$file_namespace$::file_level_service_descriptors[$index$]);\n"
       "  switch(method->index()) {\n");
 
   for (int i = 0; i < descriptor_->method_count(); i++) {

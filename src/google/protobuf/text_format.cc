@@ -1646,54 +1646,6 @@ void TextFormat::Printer::PrintFieldValueToString(
   PrintFieldValue(message, message.GetReflection(), field, index, generator);
 }
 
-class MapEntryMessageComparator {
- public:
-  explicit MapEntryMessageComparator(const Descriptor* descriptor)
-      : field_(descriptor->field(0)) {}
-
-  bool operator()(const Message* a, const Message* b) {
-    const Reflection* reflection = a->GetReflection();
-    switch (field_->cpp_type()) {
-      case FieldDescriptor::CPPTYPE_BOOL: {
-          bool first = reflection->GetBool(*a, field_);
-          bool second = reflection->GetBool(*b, field_);
-          return first < second;
-      }
-      case FieldDescriptor::CPPTYPE_INT32: {
-          int32 first = reflection->GetInt32(*a, field_);
-          int32 second = reflection->GetInt32(*b, field_);
-          return first < second;
-      }
-      case FieldDescriptor::CPPTYPE_INT64: {
-          int64 first = reflection->GetInt64(*a, field_);
-          int64 second = reflection->GetInt64(*b, field_);
-          return first < second;
-      }
-      case FieldDescriptor::CPPTYPE_UINT32: {
-          uint32 first = reflection->GetUInt32(*a, field_);
-          uint32 second = reflection->GetUInt32(*b, field_);
-          return first < second;
-      }
-      case FieldDescriptor::CPPTYPE_UINT64: {
-          uint64 first = reflection->GetUInt64(*a, field_);
-          uint64 second = reflection->GetUInt64(*b, field_);
-          return first < second;
-      }
-      case FieldDescriptor::CPPTYPE_STRING: {
-          string first = reflection->GetString(*a, field_);
-          string second = reflection->GetString(*b, field_);
-          return first < second;
-      }
-      default:
-        GOOGLE_LOG(DFATAL) << "Invalid key for map field.";
-        return true;
-    }
-  }
-
- private:
-  const FieldDescriptor* field_;
-};
-
 void TextFormat::Printer::PrintField(const Message& message,
                                      const Reflection* reflection,
                                      const FieldDescriptor* field,
@@ -1714,19 +1666,10 @@ void TextFormat::Printer::PrintField(const Message& message,
     count = 1;
   }
 
-  std::vector<const Message*> sorted_map_field;
-  if (field->is_map()) {
-    const RepeatedPtrField<Message>& map_field =
-        reflection->GetRepeatedPtrField<Message>(message, field);
-    for (RepeatedPtrField<Message>::const_pointer_iterator it =
-             map_field.pointer_begin();
-         it != map_field.pointer_end(); ++it) {
-      sorted_map_field.push_back(*it);
-    }
-
-    MapEntryMessageComparator comparator(field->message_type());
-    std::stable_sort(sorted_map_field.begin(), sorted_map_field.end(),
-                     comparator);
+  std::vector<const Message*> map_entries;
+  const bool is_map = field->is_map();
+  if (is_map) {
+    map_entries = DynamicMapSorter::Sort(message, count, reflection, field);
   }
 
   for (int j = 0; j < count; ++j) {
@@ -1739,9 +1682,8 @@ void TextFormat::Printer::PrintField(const Message& message,
           custom_printers_, field, default_field_value_printer_.get());
       const Message& sub_message =
           field->is_repeated()
-              ? (field->is_map()
-                     ? *sorted_map_field[j]
-                     : reflection->GetRepeatedMessage(message, field, j))
+              ? (is_map ? *map_entries[j]
+                        : reflection->GetRepeatedMessage(message, field, j))
               : reflection->GetMessage(message, field);
       generator.Print(
           printer->PrintMessageStart(

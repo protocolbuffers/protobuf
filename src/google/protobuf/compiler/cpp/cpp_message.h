@@ -91,9 +91,8 @@ class MessageGenerator {
 
   // Source file stuff.
 
-  // Generate code which declares all the global descriptor pointers which
-  // will be initialized by the methods below.
-  void GenerateDescriptorDeclarations(io::Printer* printer);
+  // Generate extra fields
+  void GenerateExtraDefaultFields(io::Printer* printer);
 
   // Generate code that calls MessageFactory::InternalRegisterGeneratedMessage()
   // for all types.
@@ -201,6 +200,7 @@ class MessageGenerator {
   // optimized_order_ excludes oneof fields.
   std::vector<const FieldDescriptor *> optimized_order_;
   std::vector<int> has_bit_indices_;
+  int max_has_bit_index_;
   google::protobuf::scoped_array<google::protobuf::scoped_ptr<MessageGenerator> > nested_generators_;
   google::protobuf::scoped_array<google::protobuf::scoped_ptr<EnumGenerator> > enum_generators_;
   google::protobuf::scoped_array<google::protobuf::scoped_ptr<ExtensionGenerator> > extension_generators_;

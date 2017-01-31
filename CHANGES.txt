@@ -1,3 +1,75 @@
+2017-01-23 version 3.2.0 (C++/Java/Python/PHP/Ruby/Objective-C/C#/JavaScript/Lite)
+  General
+  * Added protoc version number to protoc plugin protocol. It can be used by
+    protoc plugin to detect which version of protoc is used with the plugin and
+    mitigate known problems in certain version of protoc.
+
+  C++
+  * The default parsing byte size limit has been raised from 64MB to 2GB.
+  * Added rvalue setters for non-arena string fields.
+  * Enabled debug logging for Android.
+  * Fixed a double-free problem when using Reflection::SetAllocatedMessage()
+    with extension fields.
+  * Fixed several deterministic serialization bugs:
+    * MessageLite::SerializeAsString() now respects the global deterministic
+      serialization flag.
+    * Extension fields are serialized deterministically as well.  Fixed protocol
+      compiler to correctly report importing-self as an error.
+  * Fixed FileDescriptor::DebugString() to print custom options correctly.
+  * Various performance/codesize optimizations and cleanups.
+
+  Java
+  * The default parsing byte size limit has been raised from 64MB to 2GB.
+  * Added recursion limit when parsing JSON.
+  * Fixed a bug that enumType.getDescriptor().getOptions() doesn't have custom
+    options.
+  * Fixed generated code to support field numbers up to 2^29-1.
+
+  Python
+  * You can now assign NumPy scalars/arrays (np.int32, np.int64) to protobuf
+    fields, and assigning other numeric types has been optimized for
+    performance.
+  * Pure-Python: message types are now garbage-collectable.
+  * Python/C++: a lot of internal cleanup/refactoring.
+
+  PHP (Alpha)
+  * For 64-bit integers type (int64/uint64/sfixed64/fixed64/sint64), use PHP
+    integer on 64-bit environment and PHP string on 32-bit environment.
+  * PHP generated code also conforms to PSR-4 now.
+  * Fixed ZTS build for c extension.
+  * Fixed c extension build on Mac.
+  * Fixed c extension build on 32-bit linux.
+  * Fixed the bug that message without namespace is not found in the descriptor
+    pool. (#2240)
+  * Fixed the bug that repeated field is not iterable in c extension.
+  * Message names Empty will be converted to GPBEmpty in generated code.
+  * Added phpdoc in generated files.
+  * The released API is almost stable. Unless there is large problem, we won't
+    change it. See
+    https://developers.google.com/protocol-buffers/docs/reference/php-generated
+    for more details.
+
+  Objective-C
+  * Added support for push/pop of the stream limit on CodedInputStream for
+    anyone doing manual parsing.
+
+  C#
+  * No changes.
+
+  Ruby
+  * Message objects now support #respond_to? for field getters/setters.
+  * You can now compare “message == non_message_object” and it will return false
+    instead of throwing an exception.
+  * JRuby: fixed #hashCode to properly reflect the values in the message.
+
+  Javascript
+  * Deserialization of repeated fields no longer has quadratic performance
+    behavior.
+  * UTF-8 encoding/decoding now properly supports high codepoints.
+  * Added convenience methods for some well-known types: Any, Struct, and
+    Timestamp. These make it easier to convert data between native JavaScript
+    types and the well-known protobuf types.
+
 2016-09-23 version 3.1.0 (C++/Java/Python/PHP/Ruby/Objective-C/C#/JavaScript/Lite)
   General
   * Proto3 support in PHP (alpha).
@@ -40,23 +112,23 @@
     APIs and share the same generated code. Users don’t need to re-generate
     code for the same proto definition when they want to switch the
     implementation later. The pure PHP package is included in the php/src
-    directory, and the c extension is included in the php/ext directory. 
-   
+    directory, and the c extension is included in the php/ext directory.
+
     Both implementations provide idiomatic PHP APIs:
     * All messages and enums are defined as PHP classes.
     * All message fields can only be accessed via getter/setter.
     * Both repeated field elements and map elements are stored in containers
       that act like a normal PHP array.
-  
+
     Unlike several existing third-party PHP implementations for protobuf, our
     implementations are built on a "strongly-typed" philosophy: message fields
     and array/map containers will throw exceptions eagerly when values of the
     incorrect type (not including those that can be type converted, e.g.,
     double <-> integer <-> numeric string) are inserted.
-  
+
     Currently, pure PHP runtime supports php5.5, 5.6 and 7 on linux. C
     extension runtime supports php5.5 and 5.6 on linux.
-  
+
     See php/README.md for more details about installment. See
     https://developers.google.com/protocol-buffers/docs/phptutorial for more
     details about APIs.

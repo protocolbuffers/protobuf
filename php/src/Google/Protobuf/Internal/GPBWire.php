@@ -437,34 +437,65 @@ class GPBWire
 
     public static function varint64Size($value)
     {
-        if ($value < 0) {
-            return 10;
+        if (PHP_INT_SIZE == 4) {
+            if (bccomp($value, 0) < 0) {
+                return 10;
+            }    
+            if (bccomp($value, 1 << 7) < 0) {
+                return 1;
+            }
+            if (bccomp($value, 1 << 14) < 0) {
+                return 2;
+            }
+            if (bccomp($value, 1 << 21) < 0) {
+                return 3;
+            }
+            if (bccomp($value, 1 << 28) < 0) {
+                return 4;
+            }
+            if (bccomp($value, '34359738368') < 0) {
+                return 5;
+            }
+            if (bccomp($value, '4398046511104') < 0) {
+                return 6;
+            }
+            if (bccomp($value, '562949953421312') < 0) {
+                return 7;
+            }
+            if (bccomp($value, '72057594037927936') < 0) {
+                return 8;
+            }
+            return 9;
+        } else {
+            if ($value < 0) {
+                return 10;
+            }    
+            if ($value < (1 <<  7)) {
+                return 1;
+            }
+            if ($value < (1 << 14)) {
+                return 2;
+            }
+            if ($value < (1 << 21)) {
+                return 3;
+            }
+            if ($value < (1 << 28)) {
+                return 4;
+            }
+            if ($value < (1 << 35)) {
+                return 5;
+            }
+            if ($value < (1 << 42)) {
+                return 6;
+            }
+            if ($value < (1 << 49)) {
+                return 7;
+            }
+            if ($value < (1 << 56)) {
+                return 8;
+            }
+            return 9;
         }
-        if ($value < (1 <<  7)) {
-            return 1;
-        }
-        if ($value < (1 << 14)) {
-            return 2;
-        }
-        if ($value < (1 << 21)) {
-            return 3;
-        }
-        if ($value < (1 << 28)) {
-            return 4;
-        }
-        if ($value < (1 << 35)) {
-            return 5;
-        }
-        if ($value < (1 << 42)) {
-            return 6;
-        }
-        if ($value < (1 << 49)) {
-            return 7;
-        }
-        if ($value < (1 << 56)) {
-            return 8;
-        }
-        return 9;
     }
 
     public static function serializeFieldToStream(
