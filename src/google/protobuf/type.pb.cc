@@ -957,6 +957,12 @@ void Type::set_oneofs(int index, const ::std::string& value) {
   // @@protoc_insertion_point(field_set:google.protobuf.Type.oneofs)
   oneofs_.Mutable(index)->assign(value);
 }
+#if LANG_CXX11
+void Type::set_oneofs(int index, ::std::string&& value) {
+  // @@protoc_insertion_point(field_set:google.protobuf.Type.oneofs)
+  oneofs_.Mutable(index)->assign(std::move(value));
+}
+#endif
 void Type::set_oneofs(int index, const char* value) {
   oneofs_.Mutable(index)->assign(value);
   // @@protoc_insertion_point(field_set_char:google.protobuf.Type.oneofs)
@@ -974,6 +980,12 @@ void Type::add_oneofs(const ::std::string& value) {
   oneofs_.Add()->assign(value);
   // @@protoc_insertion_point(field_add:google.protobuf.Type.oneofs)
 }
+#if LANG_CXX11
+void Type::add_oneofs(::std::string&& value) {
+  oneofs_.Add()->assign(std::move(value));
+  // @@protoc_insertion_point(field_add:google.protobuf.Type.oneofs)
+}
+#endif
 void Type::add_oneofs(const char* value) {
   oneofs_.Add()->assign(value);
   // @@protoc_insertion_point(field_add_char:google.protobuf.Type.oneofs)

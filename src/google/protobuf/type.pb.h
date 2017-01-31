@@ -254,10 +254,16 @@ class LIBPROTOBUF_EXPORT Type : public ::google::protobuf::Message /* @@protoc_i
   const ::std::string& oneofs(int index) const;
   ::std::string* mutable_oneofs(int index);
   void set_oneofs(int index, const ::std::string& value);
+  #if LANG_CXX11
+  void set_oneofs(int index, ::std::string&& value);
+  #endif
   void set_oneofs(int index, const char* value);
   void set_oneofs(int index, const char* value, size_t size);
   ::std::string* add_oneofs();
   void add_oneofs(const ::std::string& value);
+  #if LANG_CXX11
+  void add_oneofs(::std::string&& value);
+  #endif
   void add_oneofs(const char* value);
   void add_oneofs(const char* value, size_t size);
   const ::google::protobuf::RepeatedPtrField< ::std::string>& oneofs() const;
@@ -1144,6 +1150,12 @@ inline void Type::set_oneofs(int index, const ::std::string& value) {
   // @@protoc_insertion_point(field_set:google.protobuf.Type.oneofs)
   oneofs_.Mutable(index)->assign(value);
 }
+#if LANG_CXX11
+inline void Type::set_oneofs(int index, ::std::string&& value) {
+  // @@protoc_insertion_point(field_set:google.protobuf.Type.oneofs)
+  oneofs_.Mutable(index)->assign(std::move(value));
+}
+#endif
 inline void Type::set_oneofs(int index, const char* value) {
   oneofs_.Mutable(index)->assign(value);
   // @@protoc_insertion_point(field_set_char:google.protobuf.Type.oneofs)
@@ -1161,6 +1173,12 @@ inline void Type::add_oneofs(const ::std::string& value) {
   oneofs_.Add()->assign(value);
   // @@protoc_insertion_point(field_add:google.protobuf.Type.oneofs)
 }
+#if LANG_CXX11
+inline void Type::add_oneofs(::std::string&& value) {
+  oneofs_.Add()->assign(std::move(value));
+  // @@protoc_insertion_point(field_add:google.protobuf.Type.oneofs)
+}
+#endif
 inline void Type::add_oneofs(const char* value) {
   oneofs_.Add()->assign(value);
   // @@protoc_insertion_point(field_add_char:google.protobuf.Type.oneofs)

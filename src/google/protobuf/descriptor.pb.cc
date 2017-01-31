@@ -2113,6 +2113,12 @@ void FileDescriptorProto::set_dependency(int index, const ::std::string& value) 
   // @@protoc_insertion_point(field_set:google.protobuf.FileDescriptorProto.dependency)
   dependency_.Mutable(index)->assign(value);
 }
+#if LANG_CXX11
+void FileDescriptorProto::set_dependency(int index, ::std::string&& value) {
+  // @@protoc_insertion_point(field_set:google.protobuf.FileDescriptorProto.dependency)
+  dependency_.Mutable(index)->assign(std::move(value));
+}
+#endif
 void FileDescriptorProto::set_dependency(int index, const char* value) {
   dependency_.Mutable(index)->assign(value);
   // @@protoc_insertion_point(field_set_char:google.protobuf.FileDescriptorProto.dependency)
@@ -2130,6 +2136,12 @@ void FileDescriptorProto::add_dependency(const ::std::string& value) {
   dependency_.Add()->assign(value);
   // @@protoc_insertion_point(field_add:google.protobuf.FileDescriptorProto.dependency)
 }
+#if LANG_CXX11
+void FileDescriptorProto::add_dependency(::std::string&& value) {
+  dependency_.Add()->assign(std::move(value));
+  // @@protoc_insertion_point(field_add:google.protobuf.FileDescriptorProto.dependency)
+}
+#endif
 void FileDescriptorProto::add_dependency(const char* value) {
   dependency_.Add()->assign(value);
   // @@protoc_insertion_point(field_add_char:google.protobuf.FileDescriptorProto.dependency)
@@ -4120,6 +4132,12 @@ void DescriptorProto::set_reserved_name(int index, const ::std::string& value) {
   // @@protoc_insertion_point(field_set:google.protobuf.DescriptorProto.reserved_name)
   reserved_name_.Mutable(index)->assign(value);
 }
+#if LANG_CXX11
+void DescriptorProto::set_reserved_name(int index, ::std::string&& value) {
+  // @@protoc_insertion_point(field_set:google.protobuf.DescriptorProto.reserved_name)
+  reserved_name_.Mutable(index)->assign(std::move(value));
+}
+#endif
 void DescriptorProto::set_reserved_name(int index, const char* value) {
   reserved_name_.Mutable(index)->assign(value);
   // @@protoc_insertion_point(field_set_char:google.protobuf.DescriptorProto.reserved_name)
@@ -4137,6 +4155,12 @@ void DescriptorProto::add_reserved_name(const ::std::string& value) {
   reserved_name_.Add()->assign(value);
   // @@protoc_insertion_point(field_add:google.protobuf.DescriptorProto.reserved_name)
 }
+#if LANG_CXX11
+void DescriptorProto::add_reserved_name(::std::string&& value) {
+  reserved_name_.Add()->assign(std::move(value));
+  // @@protoc_insertion_point(field_add:google.protobuf.DescriptorProto.reserved_name)
+}
+#endif
 void DescriptorProto::add_reserved_name(const char* value) {
   reserved_name_.Add()->assign(value);
   // @@protoc_insertion_point(field_add_char:google.protobuf.DescriptorProto.reserved_name)
@@ -14438,6 +14462,12 @@ void SourceCodeInfo_Location::set_leading_detached_comments(int index, const ::s
   // @@protoc_insertion_point(field_set:google.protobuf.SourceCodeInfo.Location.leading_detached_comments)
   leading_detached_comments_.Mutable(index)->assign(value);
 }
+#if LANG_CXX11
+void SourceCodeInfo_Location::set_leading_detached_comments(int index, ::std::string&& value) {
+  // @@protoc_insertion_point(field_set:google.protobuf.SourceCodeInfo.Location.leading_detached_comments)
+  leading_detached_comments_.Mutable(index)->assign(std::move(value));
+}
+#endif
 void SourceCodeInfo_Location::set_leading_detached_comments(int index, const char* value) {
   leading_detached_comments_.Mutable(index)->assign(value);
   // @@protoc_insertion_point(field_set_char:google.protobuf.SourceCodeInfo.Location.leading_detached_comments)
@@ -14455,6 +14485,12 @@ void SourceCodeInfo_Location::add_leading_detached_comments(const ::std::string&
   leading_detached_comments_.Add()->assign(value);
   // @@protoc_insertion_point(field_add:google.protobuf.SourceCodeInfo.Location.leading_detached_comments)
 }
+#if LANG_CXX11
+void SourceCodeInfo_Location::add_leading_detached_comments(::std::string&& value) {
+  leading_detached_comments_.Add()->assign(std::move(value));
+  // @@protoc_insertion_point(field_add:google.protobuf.SourceCodeInfo.Location.leading_detached_comments)
+}
+#endif
 void SourceCodeInfo_Location::add_leading_detached_comments(const char* value) {
   leading_detached_comments_.Add()->assign(value);
   // @@protoc_insertion_point(field_add_char:google.protobuf.SourceCodeInfo.Location.leading_detached_comments)
