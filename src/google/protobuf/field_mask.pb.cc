@@ -232,7 +232,7 @@ void FieldMask::SerializeWithCachedSizes(
     ::google::protobuf::io::CodedOutputStream* output) const {
   // @@protoc_insertion_point(serialize_start:google.protobuf.FieldMask)
   // repeated string paths = 1;
-  for (int i = 0; i < this->paths_size(); i++) {
+  for (int i = 0, n = this->paths_size(); i < n; i++) {
     ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
       this->paths(i).data(), this->paths(i).length(),
       ::google::protobuf::internal::WireFormatLite::SERIALIZE,
@@ -249,7 +249,7 @@ void FieldMask::SerializeWithCachedSizes(
   (void)deterministic;  // Unused
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.FieldMask)
   // repeated string paths = 1;
-  for (int i = 0; i < this->paths_size(); i++) {
+  for (int i = 0, n = this->paths_size(); i < n; i++) {
     ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
       this->paths(i).data(), this->paths(i).length(),
       ::google::protobuf::internal::WireFormatLite::SERIALIZE,
@@ -269,7 +269,7 @@ size_t FieldMask::ByteSizeLong() const {
   // repeated string paths = 1;
   total_size += 1 *
       ::google::protobuf::internal::FromIntSize(this->paths_size());
-  for (int i = 0; i < this->paths_size(); i++) {
+  for (int i = 0, n = this->paths_size(); i < n; i++) {
     total_size += ::google::protobuf::internal::WireFormatLite::StringSize(
       this->paths(i));
   }

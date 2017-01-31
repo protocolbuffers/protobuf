@@ -613,7 +613,7 @@ void Type::SerializeWithCachedSizes(
   }
 
   // repeated string oneofs = 3;
-  for (int i = 0; i < this->oneofs_size(); i++) {
+  for (int i = 0, n = this->oneofs_size(); i < n; i++) {
     ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
       this->oneofs(i).data(), this->oneofs(i).length(),
       ::google::protobuf::internal::WireFormatLite::SERIALIZE,
@@ -666,7 +666,7 @@ void Type::SerializeWithCachedSizes(
   }
 
   // repeated string oneofs = 3;
-  for (int i = 0; i < this->oneofs_size(); i++) {
+  for (int i = 0, n = this->oneofs_size(); i < n; i++) {
     ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
       this->oneofs(i).data(), this->oneofs(i).length(),
       ::google::protobuf::internal::WireFormatLite::SERIALIZE,
@@ -717,7 +717,7 @@ size_t Type::ByteSizeLong() const {
   // repeated string oneofs = 3;
   total_size += 1 *
       ::google::protobuf::internal::FromIntSize(this->oneofs_size());
-  for (int i = 0; i < this->oneofs_size(); i++) {
+  for (int i = 0, n = this->oneofs_size(); i < n; i++) {
     total_size += ::google::protobuf::internal::WireFormatLite::StringSize(
       this->oneofs(i));
   }

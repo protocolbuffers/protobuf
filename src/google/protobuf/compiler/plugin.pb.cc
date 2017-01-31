@@ -887,7 +887,7 @@ void CodeGeneratorRequest::SerializeWithCachedSizes(
     ::google::protobuf::io::CodedOutputStream* output) const {
   // @@protoc_insertion_point(serialize_start:google.protobuf.compiler.CodeGeneratorRequest)
   // repeated string file_to_generate = 1;
-  for (int i = 0; i < this->file_to_generate_size(); i++) {
+  for (int i = 0, n = this->file_to_generate_size(); i < n; i++) {
     ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
       this->file_to_generate(i).data(), this->file_to_generate(i).length(),
       ::google::protobuf::internal::WireFormat::SERIALIZE,
@@ -930,7 +930,7 @@ void CodeGeneratorRequest::SerializeWithCachedSizes(
   (void)deterministic;  // Unused
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.compiler.CodeGeneratorRequest)
   // repeated string file_to_generate = 1;
-  for (int i = 0; i < this->file_to_generate_size(); i++) {
+  for (int i = 0, n = this->file_to_generate_size(); i < n; i++) {
     ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
       this->file_to_generate(i).data(), this->file_to_generate(i).length(),
       ::google::protobuf::internal::WireFormat::SERIALIZE,
@@ -984,7 +984,7 @@ size_t CodeGeneratorRequest::ByteSizeLong() const {
   // repeated string file_to_generate = 1;
   total_size += 1 *
       ::google::protobuf::internal::FromIntSize(this->file_to_generate_size());
-  for (int i = 0; i < this->file_to_generate_size(); i++) {
+  for (int i = 0, n = this->file_to_generate_size(); i < n; i++) {
     total_size += ::google::protobuf::internal::WireFormatLite::StringSize(
       this->file_to_generate(i));
   }
