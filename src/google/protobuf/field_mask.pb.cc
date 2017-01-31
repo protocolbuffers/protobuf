@@ -356,6 +356,12 @@ void FieldMask::set_paths(int index, const ::std::string& value) {
   // @@protoc_insertion_point(field_set:google.protobuf.FieldMask.paths)
   paths_.Mutable(index)->assign(value);
 }
+#if LANG_CXX11
+void FieldMask::set_paths(int index, ::std::string&& value) {
+  // @@protoc_insertion_point(field_set:google.protobuf.FieldMask.paths)
+  paths_.Mutable(index)->assign(std::move(value));
+}
+#endif
 void FieldMask::set_paths(int index, const char* value) {
   paths_.Mutable(index)->assign(value);
   // @@protoc_insertion_point(field_set_char:google.protobuf.FieldMask.paths)
@@ -373,6 +379,12 @@ void FieldMask::add_paths(const ::std::string& value) {
   paths_.Add()->assign(value);
   // @@protoc_insertion_point(field_add:google.protobuf.FieldMask.paths)
 }
+#if LANG_CXX11
+void FieldMask::add_paths(::std::string&& value) {
+  paths_.Add()->assign(std::move(value));
+  // @@protoc_insertion_point(field_add:google.protobuf.FieldMask.paths)
+}
+#endif
 void FieldMask::add_paths(const char* value) {
   paths_.Add()->assign(value);
   // @@protoc_insertion_point(field_add_char:google.protobuf.FieldMask.paths)

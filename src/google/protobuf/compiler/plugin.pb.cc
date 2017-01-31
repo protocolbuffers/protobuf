@@ -1107,6 +1107,12 @@ void CodeGeneratorRequest::set_file_to_generate(int index, const ::std::string& 
   // @@protoc_insertion_point(field_set:google.protobuf.compiler.CodeGeneratorRequest.file_to_generate)
   file_to_generate_.Mutable(index)->assign(value);
 }
+#if LANG_CXX11
+void CodeGeneratorRequest::set_file_to_generate(int index, ::std::string&& value) {
+  // @@protoc_insertion_point(field_set:google.protobuf.compiler.CodeGeneratorRequest.file_to_generate)
+  file_to_generate_.Mutable(index)->assign(std::move(value));
+}
+#endif
 void CodeGeneratorRequest::set_file_to_generate(int index, const char* value) {
   file_to_generate_.Mutable(index)->assign(value);
   // @@protoc_insertion_point(field_set_char:google.protobuf.compiler.CodeGeneratorRequest.file_to_generate)
@@ -1124,6 +1130,12 @@ void CodeGeneratorRequest::add_file_to_generate(const ::std::string& value) {
   file_to_generate_.Add()->assign(value);
   // @@protoc_insertion_point(field_add:google.protobuf.compiler.CodeGeneratorRequest.file_to_generate)
 }
+#if LANG_CXX11
+void CodeGeneratorRequest::add_file_to_generate(::std::string&& value) {
+  file_to_generate_.Add()->assign(std::move(value));
+  // @@protoc_insertion_point(field_add:google.protobuf.compiler.CodeGeneratorRequest.file_to_generate)
+}
+#endif
 void CodeGeneratorRequest::add_file_to_generate(const char* value) {
   file_to_generate_.Add()->assign(value);
   // @@protoc_insertion_point(field_add_char:google.protobuf.compiler.CodeGeneratorRequest.file_to_generate)
