@@ -175,6 +175,22 @@ goog.define('jspb.Message.GENERATE_FROM_OBJECT', !goog.DISALLOW_TEST_ONLY_CODE);
 
 
 /**
+ * @define {boolean} Whether to generate toString methods for objects. Turn
+ *     this off if you do use toString in your project and want to trim it from
+ *     compiled JS.
+ */
+goog.define('jspb.Message.GENERATE_TO_STRING', true);
+
+
+/**
+ * @define {boolean} Whether arrays passed to initialize() can be assumed to be
+ *     local (e.g. not from another iframe) and thus safely classified with
+ *     instanceof Array.
+ */
+goog.define('jspb.Message.ASSUME_LOCAL_ARRAYS', false);
+
+
+/**
  * @define {boolean} Turning on this flag does NOT change the behavior of JSPB
  *     and only affects private internal state. It may, however, break some
  *     tests that use naive deeply-equals algorithms, because using a proto
@@ -364,6 +380,18 @@ jspb.Message.EMPTY_LIST_SENTINEL_ = goog.DEBUG && Object.freeze ?
 
 
 /**
+ * Returns true if the provided argument is an array.
+ * @param {*} o The object to classify as array or not.
+ * @return {boolean} True if the provided object is an array.
+ * @private
+ */
+jspb.Message.isArray_ = function(o) {
+  return jspb.Message.ASSUME_LOCAL_ARRAYS ? o instanceof Array :
+                                            goog.isArray(o);
+};
+
+
+/**
  * Ensures that the array contains an extension object if necessary.
  * If the array contains an extension object in its last position, then the
  * object is kept in place and its position is used as the pivot.  If not, then
@@ -383,8 +411,8 @@ jspb.Message.materializeExtensionObject_ = function(msg, suggestedPivot) {
     // the object is not an array, since arrays are valid field values.
     // NOTE(lukestebbing): We avoid looking at .length to avoid a JIT bug
     // in Safari on iOS 8. See the description of CL/86511464 for details.
-    if (obj && typeof obj == 'object' && !goog.isArray(obj) &&
-       !(jspb.Message.SUPPORTS_UINT8ARRAY_ && obj instanceof Uint8Array)) {
+    if (obj && typeof obj == 'object' && !jspb.Message.isArray_(obj) &&
+        !(jspb.Message.SUPPORTS_UINT8ARRAY_ && obj instanceof Uint8Array)) {
       msg.pivot_ = foundIndex - msg.arrayIndexOffset_;
       msg.extensionObject_ = obj;
       return;
@@ -1140,6 +1168,7 @@ jspb.Message.prototype.toArray = function() {
 
 
 
+if (jspb.Message.GENERATE_TO_STRING) {
 
 /**
  * Creates a string representation of the internal data array of this proto.
@@ -1152,6 +1181,7 @@ jspb.Message.prototype.toString = function() {
   return this.array.toString();
 };
 
+}
 
 /**
  * Gets the value of the extension field from the extended object.

@@ -48,9 +48,10 @@
 #include <google/protobuf/stubs/shared_ptr.h>
 #endif
 
-#include <google/protobuf/descriptor.h>
 #include <google/protobuf/test_util.h>
 #include <google/protobuf/unittest.pb.h>
+#include <google/protobuf/arena.h>
+#include <google/protobuf/descriptor.h>
 
 #include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
@@ -519,6 +520,41 @@ TEST(GeneratedMessageReflectionTest, SetAllocatedMessageTest) {
       &to_message, TestUtil::ReflectionTester::IS_NULL);
 }
 
+TEST(GeneratedMessageReflectionTest, SetAllocatedMessageOnArenaTest) {
+  unittest::TestAllTypes from_message1;
+  unittest::TestAllTypes from_message2;
+  ::google::protobuf::Arena arena;
+  unittest::TestAllTypes* to_message =
+      ::google::protobuf::Arena::CreateMessage<unittest::TestAllTypes>(&arena);
+  TestUtil::ReflectionTester reflection_tester(
+    unittest::TestAllTypes::descriptor());
+  reflection_tester.SetAllFieldsViaReflection(&from_message1);
+  reflection_tester.SetAllFieldsViaReflection(&from_message2);
+
+  // Before moving fields, we expect the nested messages to be NULL.
+  reflection_tester.ExpectMessagesReleasedViaReflection(
+      to_message, TestUtil::ReflectionTester::IS_NULL);
+
+  // After fields are moved we should get non-NULL releases.
+  reflection_tester.SetAllocatedOptionalMessageFieldsToMessageViaReflection(
+      &from_message1, to_message);
+  reflection_tester.ExpectMessagesReleasedViaReflection(
+      to_message, TestUtil::ReflectionTester::NOT_NULL);
+
+  // Another move to make sure that we can SetAllocated several times.
+  reflection_tester.SetAllocatedOptionalMessageFieldsToMessageViaReflection(
+      &from_message2, to_message);
+  reflection_tester.ExpectMessagesReleasedViaReflection(
+      to_message, TestUtil::ReflectionTester::NOT_NULL);
+
+  // After SetAllocatedOptionalMessageFieldsToNullViaReflection() we expect the
+  // releases to be NULL again.
+  reflection_tester.SetAllocatedOptionalMessageFieldsToNullViaReflection(
+      to_message);
+  reflection_tester.ExpectMessagesReleasedViaReflection(
+      to_message, TestUtil::ReflectionTester::IS_NULL);
+}
+
 TEST(GeneratedMessageReflectionTest, SetAllocatedExtensionMessageTest) {
   unittest::TestAllExtensions from_message1;
   unittest::TestAllExtensions from_message2;
@@ -550,6 +586,41 @@ TEST(GeneratedMessageReflectionTest, SetAllocatedExtensionMessageTest) {
       &to_message);
   reflection_tester.ExpectMessagesReleasedViaReflection(
       &to_message, TestUtil::ReflectionTester::IS_NULL);
+}
+
+TEST(GeneratedMessageReflectionTest, SetAllocatedExtensionMessageOnArenaTest) {
+  ::google::protobuf::Arena arena;
+  unittest::TestAllExtensions* to_message =
+      ::google::protobuf::Arena::CreateMessage<unittest::TestAllExtensions>(&arena);
+  unittest::TestAllExtensions from_message1;
+  unittest::TestAllExtensions from_message2;
+  TestUtil::ReflectionTester reflection_tester(
+    unittest::TestAllExtensions::descriptor());
+  reflection_tester.SetAllFieldsViaReflection(&from_message1);
+  reflection_tester.SetAllFieldsViaReflection(&from_message2);
+
+  // Before moving fields, we expect the nested messages to be NULL.
+  reflection_tester.ExpectMessagesReleasedViaReflection(
+      to_message, TestUtil::ReflectionTester::IS_NULL);
+
+  // After fields are moved we should get non-NULL releases.
+  reflection_tester.SetAllocatedOptionalMessageFieldsToMessageViaReflection(
+      &from_message1, to_message);
+  reflection_tester.ExpectMessagesReleasedViaReflection(
+      to_message, TestUtil::ReflectionTester::NOT_NULL);
+
+  // Another move to make sure that we can SetAllocated several times.
+  reflection_tester.SetAllocatedOptionalMessageFieldsToMessageViaReflection(
+      &from_message2, to_message);
+  reflection_tester.ExpectMessagesReleasedViaReflection(
+      to_message, TestUtil::ReflectionTester::NOT_NULL);
+
+  // After SetAllocatedOptionalMessageFieldsToNullViaReflection() we expect the
+  // releases to be NULL again.
+  reflection_tester.SetAllocatedOptionalMessageFieldsToNullViaReflection(
+      to_message);
+  reflection_tester.ExpectMessagesReleasedViaReflection(
+      to_message, TestUtil::ReflectionTester::IS_NULL);
 }
 
 TEST(GeneratedMessageReflectionTest, AddRepeatedMessage) {
@@ -722,6 +793,59 @@ TEST(GeneratedMessageReflectionTest, SetAllocatedOneofMessageTest) {
   EXPECT_EQ(&sub_message2, released);
   delete released;
 }
+
+TEST(GeneratedMessageReflectionTest, SetAllocatedOneofMessageOnArenaTest) {
+  unittest::TestOneof2 from_message1;
+  unittest::TestOneof2 from_message2;
+  ::google::protobuf::Arena arena;
+  unittest::TestOneof2* to_message =
+      ::google::protobuf::Arena::CreateMessage<unittest::TestOneof2>(&arena);
+  const Descriptor* descriptor = unittest::TestOneof2::descriptor();
+  const Reflection* reflection = to_message->GetReflection();
+
+  Message* released = reflection->ReleaseMessage(
+      to_message, descriptor->FindFieldByName("foo_lazy_message"));
+  EXPECT_TRUE(released == NULL);
+  released = reflection->ReleaseMessage(
+      to_message, descriptor->FindFieldByName("foo_message"));
+  EXPECT_TRUE(released == NULL);
+
+  TestUtil::ReflectionTester::SetOneofViaReflection(&from_message1);
+  TestUtil::ReflectionTester::ExpectOneofSetViaReflection(from_message1);
+
+  TestUtil::ReflectionTester::
+      SetAllocatedOptionalMessageFieldsToMessageViaReflection(
+          &from_message1, to_message);
+  const Message& sub_message = reflection->GetMessage(
+      *to_message, descriptor->FindFieldByName("foo_lazy_message"));
+  released = reflection->ReleaseMessage(
+      to_message, descriptor->FindFieldByName("foo_lazy_message"));
+  EXPECT_TRUE(released != NULL);
+  // Since sub_message is arena allocated, releasing it results in copying it
+  // into new heap-allocated memory.
+  EXPECT_NE(&sub_message, released);
+  delete released;
+
+  TestUtil::ReflectionTester::SetOneofViaReflection(&from_message2);
+
+  reflection->MutableMessage(
+      &from_message2, descriptor->FindFieldByName("foo_message"));
+
+  TestUtil::ReflectionTester::
+      SetAllocatedOptionalMessageFieldsToMessageViaReflection(
+          &from_message2, to_message);
+
+  const Message& sub_message2 = reflection->GetMessage(
+      *to_message, descriptor->FindFieldByName("foo_message"));
+  released = reflection->ReleaseMessage(
+      to_message, descriptor->FindFieldByName("foo_message"));
+  EXPECT_TRUE(released != NULL);
+  // Since sub_message2 is arena allocated, releasing it results in copying it
+  // into new heap-allocated memory.
+  EXPECT_NE(&sub_message2, released);
+  delete released;
+}
+
 
 TEST(GeneratedMessageReflectionTest, ReleaseMessageTest) {
   unittest::TestAllTypes message;

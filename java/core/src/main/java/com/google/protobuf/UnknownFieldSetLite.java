@@ -186,10 +186,11 @@ public final class UnknownFieldSetLite {
       output.writeRawMessageSetExtension(fieldNumber, (ByteString) objects[i]);
     }
   }
-  
+
+
   /**
-   * Get the number of bytes required to encode this field, including field
-   * number, using {@code MessageSet} wire format.
+   * Get the number of bytes required to encode this field, including field number, using {@code
+   * MessageSet} wire format.
    */
   public int getSerializedSizeAsMessageSet() {
     int size = memoizedSerializedSize;
@@ -251,6 +252,24 @@ public final class UnknownFieldSetLite {
     
     return size;
   }
+  
+  private static boolean equals(int[] tags1, int[] tags2, int count) {
+    for (int i = 0; i < count; ++i) {
+      if (tags1[i] != tags2[i]) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  private static boolean equals(Object[] objects1, Object[] objects2, int count) {
+    for (int i = 0; i < count; ++i) {
+      if (!objects1[i].equals(objects2[i])) {
+        return false;
+      }
+    }
+    return true;
+  }
 
   @Override
   public boolean equals(Object obj) {
@@ -268,9 +287,8 @@ public final class UnknownFieldSetLite {
     
     UnknownFieldSetLite other = (UnknownFieldSetLite) obj;    
     if (count != other.count
-        // TODO(dweis): Only have to compare up to count but at worst 2x worse than we need to do.
-        || !Arrays.equals(tags, other.tags)
-        || !Arrays.deepEquals(objects, other.objects)) {
+        || !equals(tags, other.tags, count)
+        || !equals(objects, other.objects, count)) {
       return false;
     }
 

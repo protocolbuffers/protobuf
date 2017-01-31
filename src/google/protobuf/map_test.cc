@@ -91,6 +91,10 @@ using google::protobuf::unittest::TestRecursiveMapMessage;
 namespace protobuf {
 namespace internal {
 
+void MapTestForceDeterministic() {
+  ::google::protobuf::io::CodedOutputStream::SetDefaultSerializationDeterministic();
+}
+
 // Map API Test =====================================================
 
 // Parameterized tests on whether to use old style maps.
@@ -2844,7 +2848,7 @@ TEST(WireFormatForMapFieldTest, MapParseHelpers) {
   {
     // Test ParseFromIstream.
     protobuf_unittest::TestMap message;
-    stringstream stream(data);
+    std::stringstream stream(data);
     EXPECT_TRUE(message.ParseFromIstream(&stream));
     EXPECT_TRUE(stream.eof());
     MapTestUtil::ExpectMapFieldsSet(message);

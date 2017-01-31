@@ -83,7 +83,7 @@ public final class MapFieldLite<K, V> extends LinkedHashMap<K, V> {
 
   @Override public void clear() {
     ensureMutable();
-    clear();
+    super.clear();
   }
 
   @Override public V put(K key, V value) {

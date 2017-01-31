@@ -762,7 +762,7 @@ void StringOneofFieldGenerator::
 GenerateConstructorCode(io::Printer* printer) const {
   printer->Print(
       variables_,
-      "$classname$_default_oneof_instance_.$name$_.UnsafeSetDefault(\n"
+      "_$classname$_default_instance_.$name$_.UnsafeSetDefault(\n"
       "    $default_variable$);\n");
 }
 
@@ -838,9 +838,7 @@ GenerateAccessorDeclarations(io::Printer* printer) const {
     "$deprecated_attr$void add_$name$(const ::std::string& value);\n"
     "$deprecated_attr$void add_$name$(const char* value);\n"
     "$deprecated_attr$void add_$name$(const $pointer_type$* value, size_t size)"
-                 ";\n");
-
-  printer->Print(variables_,
+                 ";\n"
     "$deprecated_attr$const ::google::protobuf::RepeatedPtrField< ::std::string>& $name$() "
                  "const;\n"
     "$deprecated_attr$::google::protobuf::RepeatedPtrField< ::std::string>* mutable_$name$()"
@@ -898,8 +896,7 @@ GenerateInlineAccessorDefinitions(io::Printer* printer,
     "$classname$::add_$name$(const $pointer_type$* value, size_t size) {\n"
     "  $name$_.Add()->assign(reinterpret_cast<const char*>(value), size);\n"
     "  // @@protoc_insertion_point(field_add_pointer:$full_name$)\n"
-    "}\n");
-  printer->Print(variables,
+    "}\n"
     "$inline$const ::google::protobuf::RepeatedPtrField< ::std::string>&\n"
     "$classname$::$name$() const {\n"
     "  // @@protoc_insertion_point(field_list:$full_name$)\n"

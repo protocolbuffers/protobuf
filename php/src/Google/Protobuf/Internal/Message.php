@@ -186,17 +186,22 @@ class Message
             case GPBType::FLOAT:
                 return 0.0;
             case GPBType::UINT32:
-            case GPBType::UINT64:
             case GPBType::INT32:
-            case GPBType::INT64:
             case GPBType::FIXED32:
-            case GPBType::FIXED64:
             case GPBType::SFIXED32:
-            case GPBType::SFIXED64:
             case GPBType::SINT32:
-            case GPBType::SINT64:
             case GPBType::ENUM:
                 return 0;
+            case GPBType::INT64:
+            case GPBType::UINT64:
+            case GPBType::FIXED64:
+            case GPBType::SFIXED64:
+            case GPBType::SINT64:
+                if (PHP_INT_SIZE === 4) {
+                    return '0';
+                } else {
+                    return 0;
+                }
             case GPBType::BOOL:
                 return false;
             case GPBType::STRING:
@@ -405,6 +410,11 @@ class Message
 
             $number = GPBWire::getTagFieldNumber($tag);
             $field = $this->desc->getFieldByNumber($number);
+
+            // Check whether we retrieved a known field
+            if ($field === NULL) {
+              continue;
+            }
 
             if (!$this->parseFieldFromStream($tag, $input, $field)) {
                 return false;

@@ -1,6 +1,7 @@
 <?php
 
-require_once('generated/NoNameSpace.php');
+require_once('generated/NoNameSpaceEnum.php');
+require_once('generated/NoNameSpaceMessage.php');
 require_once('test_util.php');
 
 use Google\Protobuf\Internal\RepeatedField;
@@ -607,10 +608,14 @@ class GeneratedClassTest extends PHPUnit_Framework_TestCase
     }
 
     #########################################################
-    # Test oneof field.
+    # Test message/enum without namespace.
     #########################################################
 
     public function testMessageWithoutNamespace() {
-      $m = new NoNameSpace();
+      $m = new NoNameSpaceMessage();
+    }
+
+    public function testEnumWithoutNamespace() {
+      $m = new NoNameSpaceEnum();
     }
 }

@@ -1533,8 +1533,9 @@ class Map {
 
   // Lookup
   size_type count(const key_type& key) const {
-    if (find(key) != end()) assert(key == find(key)->first);
-    return find(key) == end() ? 0 : 1;
+    const_iterator it = find(key);
+    GOOGLE_DCHECK(it == end() || key == it->first);
+    return it == end() ? 0 : 1;
   }
   const_iterator find(const key_type& key) const {
     return old_style_ ? const_iterator(deprecated_elements_->find(key))

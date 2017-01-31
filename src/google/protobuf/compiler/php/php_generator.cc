@@ -757,12 +757,15 @@ void GenerateEnumFile(const FileDescriptor* file, const EnumDescriptor* en,
   std::string fullname = FilenameToClassname(filename);
   int lastindex = fullname.find_last_of("\\");
 
-  GenerateEnumDocComment(&printer, en);
-  if (lastindex != string::npos) {
+  if (!file->package().empty()) {
     printer.Print(
         "namespace ^name^;\n\n",
         "name", fullname.substr(0, lastindex));
+  }
 
+  GenerateEnumDocComment(&printer, en);
+
+  if (lastindex != string::npos) {
     printer.Print(
         "class ^name^\n"
         "{\n",

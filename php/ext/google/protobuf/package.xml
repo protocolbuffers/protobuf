@@ -10,11 +10,11 @@
   <email>protobuf-opensource@google.com</email>
   <active>yes</active>
  </lead>
- <date>2016-09-23</date>
+ <date>2017-01-13</date>
  <time>16:06:07</time>
  <version>
-  <release>3.1.0a1</release>
-  <api>3.1.0a1</api>
+  <release>3.2.0a1</release>
+  <api>3.2.0a1</api>
  </version>
  <stability>
   <release>alpha</release>
@@ -22,7 +22,7 @@
  </stability>
  <license uri="http://www.opensource.org/licenses/bsd-license.php">New BSD License</license>
  <notes>
-First alpha release.
+Second alpha release.
  </notes>
  <contents>
   <dir baseinstalldir="/" name="/">
@@ -69,6 +69,22 @@ First alpha release.
    <license uri="http://www.opensource.org/licenses/bsd-license.php">New BSD License</license>
    <notes>
 First alpha release
+   </notes>
+  </release>
+  <release>
+   <version>
+    <release>3.2.0a1</release>
+    <api>3.2.0a1</api>
+   </version>
+   <stability>
+    <release>alpha</release>
+    <api>alpha</api>
+   </stability>
+   <date>2017-01-13</date>
+   <time>16:06:07</time>
+   <license uri="http://www.opensource.org/licenses/bsd-license.php">New BSD License</license>
+   <notes>
+Second alpha release.
    </notes>
   </release>
  </changelog>

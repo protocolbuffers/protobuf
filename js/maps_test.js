@@ -288,6 +288,50 @@ function makeTests(msgInfo, submessageCtor, suffix) {
     var a = msg.toArray();
     assertEquals(a[0], entries);  // retains original reference
   });
+
+  /**
+   * Returns IteratorIterables for entries(), keys() and values().
+   */
+  it('testIteratorIterables' + suffix, function() {
+    var msg = new msgInfo.constructor();
+    var m = msg.getMapStringStringMap();
+    m.set('key1', 'value1');
+    m.set('key2', 'value2');
+    var entryIterator = m.entries();
+    assertElementsEquals(entryIterator.next().value, ['key1', 'value1']);
+    assertElementsEquals(entryIterator.next().value, ['key2', 'value2']);
+    assertEquals(entryIterator.next().done, true);
+
+    if (typeof(Symbol) != 'undefined') {
+      var entryIterable = m.entries()[Symbol.iterator]();
+      assertElementsEquals(entryIterable.next().value, ['key1', 'value1']);
+      assertElementsEquals(entryIterable.next().value, ['key2', 'value2']);
+      assertEquals(entryIterable.next().done, true);
+    }
+
+    var keyIterator = m.keys();
+    assertEquals(keyIterator.next().value, 'key1');
+    assertEquals(keyIterator.next().value, 'key2');
+    assertEquals(keyIterator.next().done, true);
+
+    if (typeof(Symbol) != 'undefined') {
+      var keyIterable = m.keys()[Symbol.iterator]();
+      assertEquals(keyIterable.next().value, 'key1');
+      assertEquals(keyIterable.next().value, 'key2');
+      assertEquals(keyIterable.next().done, true);
+    }
+    var valueIterator = m.values();
+    assertEquals(valueIterator.next().value, 'value1');
+    assertEquals(valueIterator.next().value, 'value2');
+    assertEquals(valueIterator.next().done, true);
+
+    if (typeof(Symbol) != 'undefined') {
+      var valueIterable = m.values()[Symbol.iterator]();
+      assertEquals(valueIterable.next().value, 'value1');
+      assertEquals(valueIterable.next().value, 'value2');
+      assertEquals(valueIterable.next().done, true);
+    }
+  });
 }
 
 describe('mapsTest', function() {

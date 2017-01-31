@@ -73,12 +73,6 @@ const string& NameOfEnum(const EnumDescriptor* descriptor, int value) {
   return (d == NULL ? GetEmptyString() : d->name());
 }
 
-namespace {
-inline bool SupportsArenas(const Descriptor* descriptor) {
-  return descriptor->file()->options().cc_enable_arenas();
-}
-}  // anonymous namespace
-
 // ===================================================================
 // Helpers for reporting usage errors (e.g. trying to use GetInt32() on
 // a string field).
@@ -196,18 +190,7 @@ GeneratedMessageReflection::GeneratedMessageReflection(
       schema_(schema),
       descriptor_pool_((pool == NULL) ? DescriptorPool::generated_pool()
                                       : pool),
-      message_factory_(factory),
-      // TODO(haberman) remove this when upb is using our table driven.
-      default_instance_(schema_.default_instance_),
-      default_oneof_instance_(schema_.default_oneof_instance_),
-      offsets_(schema_.offsets_),
-      has_bits_indices_(schema_.has_bit_indices_),
-      has_bits_offset_(schema_.has_bits_offset_),
-      oneof_case_offset_(schema_.oneof_case_offset_),
-      unknown_fields_offset_(-1),
-      extensions_offset_(schema_.extensions_offset_),
-      arena_offset_(schema_.metadata_offset_),
-      object_size_(schema_.object_size_) {
+      message_factory_(factory) {
 }
 
 GeneratedMessageReflection::~GeneratedMessageReflection() {}
@@ -643,7 +626,17 @@ void GeneratedMessageReflection::Swap(
   if (schema_.HasHasbits()) {
     uint32* has_bits1 = MutableHasBits(message1);
     uint32* has_bits2 = MutableHasBits(message2);
-    int has_bits_size = (descriptor_->field_count() + 31) / 32;
+
+    int fields_with_has_bits = 0;
+    for (int i = 0; i < descriptor_->field_count(); i++) {
+      const FieldDescriptor* field = descriptor_->field(i);
+      if (field->is_repeated() || field->containing_oneof()) {
+        continue;
+      }
+      fields_with_has_bits++;
+    }
+
+    int has_bits_size = (fields_with_has_bits + 31) / 32;
 
     for (int i = 0; i < has_bits_size; i++) {
       std::swap(has_bits1[i], has_bits2[i]);
@@ -711,8 +704,11 @@ void GeneratedMessageReflection::SwapFields(
         swapped_oneof.insert(oneof_index);
         SwapOneofField(message1, message2, field->containing_oneof());
       } else {
-        // Swap has bit.
-        SwapBit(message1, message2, field);
+        // Swap has bit for non-repeated fields.  We have already checked for
+        // oneof already.
+        if (!field->is_repeated()) {
+          SwapBit(message1, message2, field);
+        }
         // Swap field.
         SwapField(message1, message2, field);
       }
@@ -1006,6 +1002,7 @@ struct FieldNumberSorter {
 
 inline bool IsIndexInHasBitSet(
     const uint32* has_bit_set, uint32 has_bit_index) {
+  GOOGLE_DCHECK_NE(has_bit_index, ~0u);
   return ((has_bit_set[has_bit_index / 32] >> (has_bit_index % 32)) &
           static_cast<uint32>(1)) != 0;
 }
@@ -1511,7 +1508,7 @@ void GeneratedMessageReflection::UnsafeArenaSetAllocatedMessage(
   USAGE_CHECK_ALL(SetAllocatedMessage, SINGULAR, MESSAGE);
 
   if (field->is_extension()) {
-    MutableExtensionSet(message)->SetAllocatedMessage(
+    MutableExtensionSet(message)->UnsafeArenaSetAllocatedMessage(
         field->number(), field->type(), field, sub_message);
   } else {
     if (field->containing_oneof()) {
@@ -1579,7 +1576,9 @@ Message* GeneratedMessageReflection::UnsafeArenaReleaseMessage(
         MutableExtensionSet(message)->UnsafeArenaReleaseMessage(field,
                                                                 factory));
   } else {
-    ClearBit(message, field);
+    if (!(field->is_repeated() || field->containing_oneof())) {
+      ClearBit(message, field);
+    }
     if (field->containing_oneof()) {
       if (HasOneofField(*message, field)) {
         *MutableOneofCase(message, field->containing_oneof()) = 0;
@@ -2233,10 +2232,10 @@ namespace {
 
 // Helper function to transform migration schema into reflection schema.
 ReflectionSchema MigrationToReflectionSchema(
-    const DefaultInstanceData* default_instance_data, const uint32* offsets,
+    const Message* const* default_instance, const uint32* offsets,
     MigrationSchema migration_schema) {
   ReflectionSchema result;
-  result.default_instance_ = default_instance_data->default_instance;
+  result.default_instance_ = *default_instance;
   // First 5 offsets are offsets to the special fields. The following offsets
   // are the proto fields.
   result.offsets_ = offsets + migration_schema.offsets_index + 4;
@@ -2244,16 +2243,10 @@ ReflectionSchema MigrationToReflectionSchema(
   result.has_bits_offset_ = offsets[migration_schema.offsets_index + 0];
   result.metadata_offset_ = offsets[migration_schema.offsets_index + 1];
   result.extensions_offset_ = offsets[migration_schema.offsets_index + 2];
-  result.default_oneof_instance_ = default_instance_data->default_oneof_instance;
   result.oneof_case_offset_ = offsets[migration_schema.offsets_index + 3];
   result.object_size_ = migration_schema.object_size;
+  result.weak_field_map_offset_ = 0;
   return result;
-}
-
-ReflectionSchema MigrationToReflectionSchema(
-    const DefaultInstanceData* default_instance_data, const uint32* offsets,
-    ReflectionSchema schema) {
-  return schema;
 }
 
 template<typename Schema>
@@ -2263,7 +2256,7 @@ class AssignDescriptorsHelper {
                           Metadata* file_level_metadata,
                           const EnumDescriptor** file_level_enum_descriptors,
                           const Schema* schemas,
-                          const DefaultInstanceData* default_instance_data,
+                          const Message* const* default_instance_data,
                           const uint32* offsets)
       : factory_(factory),
         file_level_metadata_(file_level_metadata),
@@ -2303,7 +2296,7 @@ class AssignDescriptorsHelper {
   Metadata* file_level_metadata_;
   const EnumDescriptor** file_level_enum_descriptors_;
   const Schema* schemas_;
-  const DefaultInstanceData* default_instance_data_;
+  const Message* const * default_instance_data_;
   const uint32* offsets_;
 };
 
@@ -2311,7 +2304,7 @@ class AssignDescriptorsHelper {
 
 void AssignDescriptors(
     const string& filename, const MigrationSchema* schemas,
-    const DefaultInstanceData* default_instance_data, const uint32* offsets,
+    const Message* const* default_instances_, const uint32* offsets,
     MessageFactory* factory,
     // update the following descriptor arrays.
     Metadata* file_level_metadata,
@@ -2325,38 +2318,7 @@ void AssignDescriptors(
 
   AssignDescriptorsHelper<MigrationSchema> helper(factory, file_level_metadata,
                                  file_level_enum_descriptors, schemas,
-                                 default_instance_data, offsets);
-
-  for (int i = 0; i < file->message_type_count(); i++) {
-    helper.AssignMessageDescriptor(file->message_type(i));
-  }
-
-  for (int i = 0; i < file->enum_type_count(); i++) {
-    helper.AssignEnumDescriptor(file->enum_type(i));
-  }
-  if (file->options().cc_generic_services()) {
-    for (int i = 0; i < file->service_count(); i++) {
-      file_level_service_descriptors[i] = file->service(i);
-    }
-  }
-}
-
-void AssignDescriptors(
-    const string& filename, const ReflectionSchema* schemas,
-    MessageFactory* factory,
-    // update the following descriptor arrays.
-    Metadata* file_level_metadata,
-    const EnumDescriptor** file_level_enum_descriptors,
-    const ServiceDescriptor** file_level_service_descriptors) {
-  const ::google::protobuf::FileDescriptor* file =
-      ::google::protobuf::DescriptorPool::generated_pool()->FindFileByName(filename);
-  GOOGLE_CHECK(file != NULL);
-
-  if (!factory) factory = MessageFactory::generated_factory();
-
-  AssignDescriptorsHelper<ReflectionSchema> helper(factory, file_level_metadata,
-                                 file_level_enum_descriptors, schemas,
-                                 NULL, NULL);
+                                 default_instances_, offsets);
 
   for (int i = 0; i < file->message_type_count(); i++) {
     helper.AssignMessageDescriptor(file->message_type(i));

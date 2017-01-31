@@ -139,7 +139,11 @@ message FieldDescriptorProto {
     TYPE_FIXED32        = 7;
     TYPE_BOOL           = 8;
     TYPE_STRING         = 9;
-    TYPE_GROUP          = 10;  // Tag-delimited aggregate.
+    // Tag-delimited aggregate.
+    // Group type is deprecated and not supported in proto3. However, Proto3
+    // implementations should still be able to parse the group wire format and
+    // treat group fields as unknown fields.
+    TYPE_GROUP          = 10;
     TYPE_MESSAGE        = 11;  // Length-delimited aggregate.
 
     // New in version 2.

@@ -229,6 +229,7 @@ uint8* MessageLite::InternalSerializeWithCachedSizesToArray(
   int size = GetCachedSize();
   io::ArrayOutputStream out(target, size);
   io::CodedOutputStream coded_out(&out);
+  coded_out.SetSerializationDeterministic(deterministic);
   SerializeWithCachedSizes(&coded_out);
   GOOGLE_CHECK(!coded_out.HadError());
   return target + size;

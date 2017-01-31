@@ -126,6 +126,8 @@ PyObject* subscript(ExtensionDict* self, PyObject* key) {
       CMessageClass* message_class = message_factory::GetOrCreateMessageClass(
           cmessage::GetFactoryForMessage(self->parent),
           descriptor->message_type());
+      ScopedPyObjectPtr message_class_handler(
+        reinterpret_cast<PyObject*>(message_class));
       if (message_class == NULL) {
         return NULL;
       }

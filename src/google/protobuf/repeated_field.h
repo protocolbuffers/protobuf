@@ -686,7 +686,8 @@ inline const Message& GenericTypeHandler<Message>::default_instance() {
   return *null;
 }
 
-class LIBPROTOBUF_EXPORT StringTypeHandler {
+
+class StringTypeHandler {
  public:
   typedef string Type;
 
@@ -983,13 +984,13 @@ inline RepeatedField<Element>::RepeatedField(Arena* arena)
   : current_size_(0),
     total_size_(0),
     rep_(NULL) {
- // In case arena is NULL, then we do not create rep_, as code has an invariant
- // `rep_ == NULL then arena == NULL`.
- if (arena != NULL) {
-  rep_ = reinterpret_cast<Rep*>(
-      ::google::protobuf::Arena::CreateArray<char>(arena, kRepHeaderSize));
-  rep_->arena = arena;
- }
+  // In case arena is NULL, then we do not create rep_, as code has an invariant
+  // `rep_ == NULL then arena == NULL`.
+  if (arena != NULL) {
+    rep_ = reinterpret_cast<Rep*>(
+        ::google::protobuf::Arena::CreateArray<char>(arena, kRepHeaderSize));
+    rep_->arena = arena;
+  }
 }
 
 template <typename Element>

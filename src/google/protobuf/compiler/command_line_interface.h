@@ -365,6 +365,10 @@ class LIBPROTOC_EXPORT CommandLineInterface {
   std::set<string> direct_dependencies_;
   bool direct_dependencies_explicitly_set_;
 
+  // If there's a violation of depend-on-what-you-import, this string will be
+  // presented to the user. "%s" will be replaced with the violating import.
+  string direct_dependencies_violation_msg_;
+
   // output_directives_ lists all the files we are supposed to output and what
   // generator to use for each.
   struct OutputDirective {

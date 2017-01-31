@@ -853,7 +853,7 @@ class LIBPROTOBUF_EXPORT Reflection {
   //     reflection->SetEnumValue(message, field, new_value);
   //   } else {
   //     if (field_descriptor->enum_type()->
-  //             FindValueByNumver(new_value) != NULL) {
+  //             FindValueByNumber(new_value) != NULL) {
   //       reflection->SetEnumValue(message, field, new_value);
   //     } else if (emit_unknown_enum_values) {
   //       reflection->MutableUnknownFields(message)->AddVarint(

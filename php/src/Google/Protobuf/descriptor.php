@@ -155,7 +155,11 @@ class Descriptor
 
     public function getFieldByNumber($number)
     {
+      if (!isset($this->field[$number])) {
+        return NULL;
+      } else {
         return $this->field[$number];
+      }
     }
 
     public function setClass($klass)

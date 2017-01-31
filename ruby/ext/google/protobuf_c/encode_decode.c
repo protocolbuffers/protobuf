@@ -514,7 +514,7 @@ static void add_handlers_for_singular_field(upb_handlers *h,
     case UPB_TYPE_INT64:
     case UPB_TYPE_UINT64:
     case UPB_TYPE_DOUBLE:
-      upb_shim_set(h, f, offset, -1);
+      upb_msg_setscalarhandler(h, f, offset, -1);
       break;
     case UPB_TYPE_STRING:
     case UPB_TYPE_BYTES: {
@@ -925,7 +925,7 @@ static void putmsg(VALUE msg, const Descriptor* desc,
 static upb_selector_t getsel(const upb_fielddef *f, upb_handlertype_t type) {
   upb_selector_t ret;
   bool ok = upb_handlers_getselector(f, type, &ret);
-  UPB_ASSERT_VAR(ok, ok);
+  UPB_ASSERT(ok);
   return ret;
 }
 
@@ -939,9 +939,9 @@ static void putstr(VALUE str, const upb_fielddef *f, upb_sink *sink) {
   // We should be guaranteed that the string has the correct encoding because
   // we ensured this at assignment time and then froze the string.
   if (upb_fielddef_type(f) == UPB_TYPE_STRING) {
-    assert(rb_enc_from_index(ENCODING_GET(value)) == kRubyStringUtf8Encoding);
+    assert(rb_enc_from_index(ENCODING_GET(str)) == kRubyStringUtf8Encoding);
   } else {
-    assert(rb_enc_from_index(ENCODING_GET(value)) == kRubyString8bitEncoding);
+    assert(rb_enc_from_index(ENCODING_GET(str)) == kRubyString8bitEncoding);
   }
 
   upb_sink_startstr(sink, getsel(f, UPB_HANDLER_STARTSTR), RSTRING_LEN(str),
