@@ -1561,7 +1561,7 @@ void FileDescriptorProto::SerializeWithCachedSizes(
   }
 
   // repeated string dependency = 3;
-  for (int i = 0; i < this->dependency_size(); i++) {
+  for (int i = 0, n = this->dependency_size(); i < n; i++) {
     ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
       this->dependency(i).data(), this->dependency(i).length(),
       ::google::protobuf::internal::WireFormat::SERIALIZE,
@@ -1662,7 +1662,7 @@ void FileDescriptorProto::SerializeWithCachedSizes(
   }
 
   // repeated string dependency = 3;
-  for (int i = 0; i < this->dependency_size(); i++) {
+  for (int i = 0, n = this->dependency_size(); i < n; i++) {
     ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
       this->dependency(i).data(), this->dependency(i).length(),
       ::google::protobuf::internal::WireFormat::SERIALIZE,
@@ -1756,7 +1756,7 @@ size_t FileDescriptorProto::ByteSizeLong() const {
   // repeated string dependency = 3;
   total_size += 1 *
       ::google::protobuf::internal::FromIntSize(this->dependency_size());
-  for (int i = 0; i < this->dependency_size(); i++) {
+  for (int i = 0, n = this->dependency_size(); i < n; i++) {
     total_size += ::google::protobuf::internal::WireFormatLite::StringSize(
       this->dependency(i));
   }
@@ -3470,7 +3470,7 @@ void DescriptorProto::SerializeWithCachedSizes(
   }
 
   // repeated string reserved_name = 10;
-  for (int i = 0; i < this->reserved_name_size(); i++) {
+  for (int i = 0, n = this->reserved_name_size(); i < n; i++) {
     ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
       this->reserved_name(i).data(), this->reserved_name(i).length(),
       ::google::protobuf::internal::WireFormat::SERIALIZE,
@@ -3558,7 +3558,7 @@ void DescriptorProto::SerializeWithCachedSizes(
   }
 
   // repeated string reserved_name = 10;
-  for (int i = 0; i < this->reserved_name_size(); i++) {
+  for (int i = 0, n = this->reserved_name_size(); i < n; i++) {
     ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
       this->reserved_name(i).data(), this->reserved_name(i).length(),
       ::google::protobuf::internal::WireFormat::SERIALIZE,
@@ -3664,7 +3664,7 @@ size_t DescriptorProto::ByteSizeLong() const {
   // repeated string reserved_name = 10;
   total_size += 1 *
       ::google::protobuf::internal::FromIntSize(this->reserved_name_size());
-  for (int i = 0; i < this->reserved_name_size(); i++) {
+  for (int i = 0, n = this->reserved_name_size(); i < n; i++) {
     total_size += ::google::protobuf::internal::WireFormatLite::StringSize(
       this->reserved_name(i));
   }
@@ -14002,7 +14002,7 @@ void SourceCodeInfo_Location::SerializeWithCachedSizes(
   }
 
   // repeated string leading_detached_comments = 6;
-  for (int i = 0; i < this->leading_detached_comments_size(); i++) {
+  for (int i = 0, n = this->leading_detached_comments_size(); i < n; i++) {
     ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
       this->leading_detached_comments(i).data(), this->leading_detached_comments(i).length(),
       ::google::protobuf::internal::WireFormat::SERIALIZE,
@@ -14073,7 +14073,7 @@ void SourceCodeInfo_Location::SerializeWithCachedSizes(
   }
 
   // repeated string leading_detached_comments = 6;
-  for (int i = 0; i < this->leading_detached_comments_size(); i++) {
+  for (int i = 0, n = this->leading_detached_comments_size(); i < n; i++) {
     ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
       this->leading_detached_comments(i).data(), this->leading_detached_comments(i).length(),
       ::google::protobuf::internal::WireFormat::SERIALIZE,
@@ -14132,7 +14132,7 @@ size_t SourceCodeInfo_Location::ByteSizeLong() const {
   // repeated string leading_detached_comments = 6;
   total_size += 1 *
       ::google::protobuf::internal::FromIntSize(this->leading_detached_comments_size());
-  for (int i = 0; i < this->leading_detached_comments_size(); i++) {
+  for (int i = 0, n = this->leading_detached_comments_size(); i < n; i++) {
     total_size += ::google::protobuf::internal::WireFormatLite::StringSize(
       this->leading_detached_comments(i));
   }
