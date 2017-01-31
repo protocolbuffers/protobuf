@@ -121,6 +121,12 @@ conformance/lite/
 conformance/nonexistent_tests.txt
 conformance/protoc_middleman
 conformance/succeeding_tests.txt
+conformance/Conformance/
+conformance/GPBMetadata/
+conformance/Google/
+conformance/Protobuf_test_messages/
+conformance/conformance-php
+conformance/conformance-php-c
 
 # php test output
 composer.lock

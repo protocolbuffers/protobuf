@@ -405,17 +405,26 @@ build_php5.5() {
   cp -r /usr/local/vendor-5.5 vendor
   ./vendor/bin/phpunit
   popd
+  pushd conformance
+  make test_php
+  popd
 }
 
 build_php5.5_c() {
   use_php 5.5
   cd php/tests && /bin/bash ./test.sh && cd ../..
+  pushd conformance
+  make test_php_c
+  popd
 }
 
 build_php5.5_zts_c() {
   use_php_zts 5.5
   wget https://phar.phpunit.de/phpunit-old.phar -O /usr/bin/phpunit
   cd php/tests && /bin/bash ./test.sh && cd ../..
+  pushd conformance
+  make test_php_c
+  popd
 }
 
 build_php5.5_32() {
@@ -425,12 +434,19 @@ build_php5.5_32() {
   cp -r /usr/local/vendor-5.5 vendor
   ./vendor/bin/phpunit
   popd
+  # TODO(teboring): Add conformance test.
+  # pushd conformance
+  # make test_php
+  # popd
 }
 
 build_php5.5_c_32() {
   use_php_bc 5.5
   wget https://phar.phpunit.de/phpunit-old.phar -O /usr/bin/phpunit
   cd php/tests && /bin/bash ./test.sh && cd ../..
+  pushd conformance
+  make test_php_c
+  popd
 }
 
 build_php5.6() {
@@ -440,11 +456,17 @@ build_php5.6() {
   cp -r /usr/local/vendor-5.6 vendor
   ./vendor/bin/phpunit
   popd
+  pushd conformance
+  make test_php
+  popd
 }
 
 build_php5.6_c() {
   use_php 5.6
   cd php/tests && /bin/bash ./test.sh && cd ../..
+  pushd conformance
+  make test_php_c
+  popd
 }
 
 build_php5.6_mac() {
@@ -466,6 +488,9 @@ build_php5.6_mac() {
 
   # Test
   cd php/tests && /bin/bash ./test.sh && cd ../..
+  pushd conformance
+  make test_php_c
+  popd
 }
 
 build_php7.0() {
@@ -475,11 +500,17 @@ build_php7.0() {
   cp -r /usr/local/vendor-7.0 vendor
   ./vendor/bin/phpunit
   popd
+  pushd conformance
+  make test_php
+  popd
 }
 
 build_php7.0_c() {
   use_php 7.0
   cd php/tests && /bin/bash ./test.sh && cd ../..
+  pushd conformance
+  make test_php_c
+  popd
 }
 
 build_php_all() {

@@ -92,7 +92,40 @@ other_language_protoc_outputs =                                \
   google/protobuf/wrappers.pb.cc                               \
   google/protobuf/wrappers.pb.h                                \
   google/protobuf/wrappers.rb                                  \
-  google/protobuf/wrappers_pb2.py
+  google/protobuf/wrappers_pb2.py                              \
+  Conformance/ConformanceRequest.php                           \
+  Conformance/ConformanceResponse.php                          \
+  Conformance/WireFormat.php                                   \
+  GPBMetadata/Conformance.php                                  \
+  GPBMetadata/Google/Protobuf/Any.php                          \
+  GPBMetadata/Google/Protobuf/Duration.php                     \
+  GPBMetadata/Google/Protobuf/FieldMask.php                    \
+  GPBMetadata/Google/Protobuf/Struct.php                       \
+  GPBMetadata/Google/Protobuf/TestMessagesProto3.php           \
+  GPBMetadata/Google/Protobuf/Timestamp.php                    \
+  GPBMetadata/Google/Protobuf/Wrappers.php                     \
+  Google/Protobuf/Any.php                                      \
+  Google/Protobuf/BoolValue.php                                \
+  Google/Protobuf/BytesValue.php                               \
+  Google/Protobuf/DoubleValue.php                              \
+  Google/Protobuf/Duration.php                                 \
+  Google/Protobuf/FieldMask.php                                \
+  Google/Protobuf/FloatValue.php                               \
+  Google/Protobuf/Int32Value.php                               \
+  Google/Protobuf/Int64Value.php                               \
+  Google/Protobuf/ListValue.php                                \
+  Google/Protobuf/NullValue.php                                \
+  Google/Protobuf/StringValue.php                              \
+  Google/Protobuf/Struct.php                                   \
+  Google/Protobuf/Timestamp.php                                \
+  Google/Protobuf/UInt32Value.php                              \
+  Google/Protobuf/UInt64Value.php                              \
+  Google/Protobuf/Value.php                                    \
+  Protobuf_test_messages/Proto3/ForeignEnum.php                \
+  Protobuf_test_messages/Proto3/ForeignMessage.php             \
+  Protobuf_test_messages/Proto3/TestAllTypes_NestedEnum.php    \
+  Protobuf_test_messages/Proto3/TestAllTypes_NestedMessage.php \
+  Protobuf_test_messages/Proto3/TestAllTypes.php
   # lite/com/google/protobuf/Any.java                            \
   # lite/com/google/protobuf/AnyOrBuilder.java                   \
   # lite/com/google/protobuf/AnyProto.java                       \
@@ -146,6 +179,7 @@ EXTRA_DIST =                  \
   conformance.proto           \
   conformance_python.py       \
   conformance_ruby.rb         \
+  conformance_php.php         \
   failure_list_cpp.txt        \
   failure_list_csharp.txt     \
   failure_list_java.txt       \
@@ -153,7 +187,9 @@ EXTRA_DIST =                  \
   failure_list_python.txt     \
   failure_list_python_cpp.txt \
   failure_list_python-post26.txt \
-  failure_list_ruby.txt
+  failure_list_ruby.txt       \
+  failure_list_php.txt        \
+  failure_list_php_c.txt
 
 conformance_test_runner_LDADD = $(top_srcdir)/src/libprotobuf.la
 conformance_test_runner_SOURCES = conformance_test.h conformance_test.cc \
@@ -198,8 +234,8 @@ if USE_EXTERNAL_PROTOC
 
 # Some implementations include pre-generated versions of well-known types.
 protoc_middleman: $(conformance_protoc_inputs) $(well_known_type_protoc_inputs)
-	$(PROTOC) -I$(srcdir) -I$(top_srcdir) --cpp_out=. --java_out=. --ruby_out=. --objc_out=. --python_out=. $(conformance_protoc_inputs)
-	$(PROTOC) -I$(srcdir) -I$(top_srcdir) --cpp_out=. --java_out=. --ruby_out=. --python_out=. $(well_known_type_protoc_inputs)
+	$(PROTOC) -I$(srcdir) -I$(top_srcdir) --cpp_out=. --java_out=. --ruby_out=. --objc_out=. --python_out=. --php_out=. $(conformance_protoc_inputs)
+	$(PROTOC) -I$(srcdir) -I$(top_srcdir) --cpp_out=. --java_out=. --ruby_out=. --python_out=. --php_out=. $(well_known_type_protoc_inputs)
 	## $(PROTOC) -I$(srcdir) -I$(top_srcdir) --java_out=lite:lite $(conformance_protoc_inputs) $(well_known_type_protoc_inputs)
 	touch protoc_middleman
 
@@ -209,8 +245,8 @@ else
 # relative to srcdir, which may not be the same as the current directory when
 # building out-of-tree.
 protoc_middleman: $(top_srcdir)/src/protoc$(EXEEXT) $(conformance_protoc_inputs) $(well_known_type_protoc_inputs)
-	oldpwd=`pwd` && ( cd $(srcdir) && $$oldpwd/../src/protoc$(EXEEXT) -I. -I$(top_srcdir)/src --cpp_out=$$oldpwd --java_out=$$oldpwd --ruby_out=$$oldpwd --objc_out=$$oldpwd --python_out=$$oldpwd $(conformance_protoc_inputs) )
-	oldpwd=`pwd` && ( cd $(srcdir) && $$oldpwd/../src/protoc$(EXEEXT) -I. -I$(top_srcdir)/src --cpp_out=$$oldpwd --java_out=$$oldpwd --ruby_out=$$oldpwd --python_out=$$oldpwd $(well_known_type_protoc_inputs) )
+	oldpwd=`pwd` && ( cd $(srcdir) && $$oldpwd/../src/protoc$(EXEEXT) -I. -I$(top_srcdir)/src --cpp_out=$$oldpwd --java_out=$$oldpwd --ruby_out=$$oldpwd --objc_out=$$oldpwd --python_out=$$oldpwd --php_out=$$oldpwd $(conformance_protoc_inputs) )
+	oldpwd=`pwd` && ( cd $(srcdir) && $$oldpwd/../src/protoc$(EXEEXT) -I. -I$(top_srcdir)/src --cpp_out=$$oldpwd --java_out=$$oldpwd --ruby_out=$$oldpwd --python_out=$$oldpwd --php_out=$$oldpwd $(well_known_type_protoc_inputs) )
 	## @mkdir -p lite
 	## oldpwd=`pwd` && ( cd $(srcdir) && $$oldpwd/../src/protoc$(EXEEXT) -I. -I$(top_srcdir)/src --java_out=lite:$$oldpwd/lite $(conformance_protoc_inputs) $(well_known_type_protoc_inputs) )
 	touch protoc_middleman
@@ -223,7 +259,7 @@ $(other_language_protoc_outputs): protoc_middleman
 
 BUILT_SOURCES = $(protoc_outputs) $(other_language_protoc_outputs)
 
-CLEANFILES = $(protoc_outputs) protoc_middleman javac_middleman conformance-java javac_middleman_lite conformance-java-lite conformance-csharp $(other_language_protoc_outputs)
+CLEANFILES = $(protoc_outputs) protoc_middleman javac_middleman conformance-java javac_middleman_lite conformance-java-lite conformance-csharp conformance-php conformance-php-c $(other_language_protoc_outputs)
 
 MAINTAINERCLEANFILES =   \
   Makefile.in
@@ -257,6 +293,18 @@ conformance-csharp: $(other_language_protoc_outputs)
 	@echo 'dotnet ../csharp/src/Google.Protobuf.Conformance/bin/Release/netcoreapp1.0/Google.Protobuf.Conformance.dll "$$@"' >> conformance-csharp
 	@chmod +x conformance-csharp
 
+conformance-php:
+	@echo "Writing shortcut script conformance-php..."
+	@echo '#! /bin/sh' > conformance-php
+	@echo 'php  ./conformance_php.php' >> conformance-php
+	@chmod +x conformance-php
+
+conformance-php-c:
+	@echo "Writing shortcut script conformance-php-c..."
+	@echo '#! /bin/sh' > conformance-php-c
+	@echo 'php -dextension=../php/ext/google/protobuf/modules/protobuf.so ./conformance_php.php' >> conformance-php-c
+	@chmod +x conformance-php-c
+
 # Targets for actually running tests.
 test_cpp: protoc_middleman conformance-test-runner conformance-cpp
 	./conformance-test-runner --enforce_recommended --failure_list failure_list_cpp.txt ./conformance-cpp
@@ -272,6 +320,12 @@ test_csharp: protoc_middleman conformance-test-runner conformance-csharp
 
 test_ruby: protoc_middleman conformance-test-runner $(other_language_protoc_outputs)
 	RUBYLIB=../ruby/lib:. ./conformance-test-runner --enforce_recommended --failure_list failure_list_ruby.txt ./conformance_ruby.rb
+
+test_php: protoc_middleman conformance-test-runner conformance-php $(other_language_protoc_outputs)
+	./conformance-test-runner --enforce_recommended --failure_list failure_list_php.txt ./conformance-php
+
+test_php_c: protoc_middleman conformance-test-runner conformance-php-c $(other_language_protoc_outputs)
+	./conformance-test-runner --enforce_recommended --failure_list failure_list_php_c.txt ./conformance-php-c
 
 # These depend on library paths being properly set up.  The easiest way to
 # run them is to just use "tox" from the python dir.
