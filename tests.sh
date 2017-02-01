@@ -121,24 +121,50 @@ build_csharp() {
   cd conformance && make test_csharp && cd ..
 }
 
-build_golang() {
+use_golang() {
+  version=$1
+
   # Go build needs `protoc`.
   internal_build_cpp
   # Add protoc to the path so that the examples build finds it.
   export PATH="`pwd`/src:$PATH"
 
-  # Install Go and the Go protobuf compiler plugin.
-  on_travis sudo apt-get update -qq
-  on_travis sudo apt-get install -qq golang
+  # Install Go.
+  mkdir -p "${HOME}/bin"
+  curl -sL -o "${HOME}/bin/gimme" https://raw.githubusercontent.com/travis-ci/gimme/master/gimme
+  chmod +x "${HOME}/bin/gimme"
+  export PATH="${HOME}/bin:${PATH}"
 
+  gimme "${version}"
+  source "${HOME}/.gimme/envs/go${version}.env"
+}
+
+build_golang() {
+  # Install the Go protobuf compiler plugin.
   export GOPATH="$HOME/gocode"
   mkdir -p "$GOPATH/src/github.com/google"
   rm -f "$GOPATH/src/github.com/google/protobuf"
   ln -s "`pwd`" "$GOPATH/src/github.com/google/protobuf"
   export PATH="$GOPATH/bin:$PATH"
-  go get github.com/golang/protobuf/protoc-gen-go
+  go get -u github.com/golang/protobuf/protoc-gen-go
+  go get -u google.golang.org/genproto/protobuf
 
-  cd examples && make gotest && cd ..
+  # Build and run the Go examples tests.
+  (
+  cd examples
+  make gotest
+  )
+
+  # Build and run the Go conformance tests
+  (
+  cd conformance
+  make test_go
+  )
+}
+
+build_golang_1_7() {
+  use_golang 1.7
+  build_golang
 }
 
 use_java() {
@@ -512,6 +538,7 @@ if [ "$#" -ne 1 ]; then
 Usage: $0 { cpp |
             cpp_distcheck |
             csharp |
+            golang_1_7 |
             java_jdk7 |
             java_oracle7 |
             java_compatibility |

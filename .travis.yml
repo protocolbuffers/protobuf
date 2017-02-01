@@ -14,7 +14,7 @@ script:
 env:
   - CONFIG=cpp
   - CONFIG=cpp_distcheck
-  - CONFIG=golang
+  - CONFIG=golang_1_7
   - CONFIG=java_jdk7
   - CONFIG=java_oracle7
   - CONFIG=javanano_jdk7
@@ -44,10 +44,6 @@ matrix:
       env: CONFIG=javanano_jdk7
     - os: osx
       env: CONFIG=javanano_oracle7
-    # Requires installing golang, currently travis.sh is doing that with apt-get
-    # which doesn't work on OS X.
-    - os: osx
-      env: CONFIG=golang
   include:
     # The dotnet environment requires Ubuntu 14.04 or 16.04. This
     # configuration is effectively an "extra" one, outside the

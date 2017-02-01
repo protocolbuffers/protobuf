@@ -104,8 +104,10 @@ Pods/
 # Comformance test output
 conformance/.libs/
 conformance/com/
+conformance/conformance/
 conformance/conformance-cpp
 conformance/conformance-csharp
+conformance/conformance-go
 conformance/conformance-java
 conformance/conformance-objc
 conformance/conformance-test-runner
@@ -120,6 +122,7 @@ conformance/javac_middleman
 conformance/lite/
 conformance/nonexistent_tests.txt
 conformance/protoc_middleman
+conformance/protoc_middleman_go
 conformance/succeeding_tests.txt
 
 # php test output
