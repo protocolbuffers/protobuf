@@ -96,7 +96,7 @@ NS_ASSUME_NONNULL_BEGIN
  *
  * @return A newly initialized GPBInt32Array with a copy of the values.
  **/
-- (instancetype)initWithValues:(const int32_t [])values
+- (instancetype)initWithValues:(const int32_t [__nullable])values
                          count:(NSUInteger)count;
 
 /**
@@ -161,7 +161,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @param values The values to add to this array.
  * @param count  The number of elements to add.
  **/
-- (void)addValues:(const int32_t [])values count:(NSUInteger)count;
+- (void)addValues:(const int32_t [__nullable])values count:(NSUInteger)count;
 
 /**
  * Adds the values from the given array to this array.
@@ -268,7 +268,7 @@ NS_ASSUME_NONNULL_BEGIN
  *
  * @return A newly initialized GPBUInt32Array with a copy of the values.
  **/
-- (instancetype)initWithValues:(const uint32_t [])values
+- (instancetype)initWithValues:(const uint32_t [__nullable])values
                          count:(NSUInteger)count;
 
 /**
@@ -333,7 +333,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @param values The values to add to this array.
  * @param count  The number of elements to add.
  **/
-- (void)addValues:(const uint32_t [])values count:(NSUInteger)count;
+- (void)addValues:(const uint32_t [__nullable])values count:(NSUInteger)count;
 
 /**
  * Adds the values from the given array to this array.
@@ -440,7 +440,7 @@ NS_ASSUME_NONNULL_BEGIN
  *
  * @return A newly initialized GPBInt64Array with a copy of the values.
  **/
-- (instancetype)initWithValues:(const int64_t [])values
+- (instancetype)initWithValues:(const int64_t [__nullable])values
                          count:(NSUInteger)count;
 
 /**
@@ -505,7 +505,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @param values The values to add to this array.
  * @param count  The number of elements to add.
  **/
-- (void)addValues:(const int64_t [])values count:(NSUInteger)count;
+- (void)addValues:(const int64_t [__nullable])values count:(NSUInteger)count;
 
 /**
  * Adds the values from the given array to this array.
@@ -612,7 +612,7 @@ NS_ASSUME_NONNULL_BEGIN
  *
  * @return A newly initialized GPBUInt64Array with a copy of the values.
  **/
-- (instancetype)initWithValues:(const uint64_t [])values
+- (instancetype)initWithValues:(const uint64_t [__nullable])values
                          count:(NSUInteger)count;
 
 /**
@@ -677,7 +677,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @param values The values to add to this array.
  * @param count  The number of elements to add.
  **/
-- (void)addValues:(const uint64_t [])values count:(NSUInteger)count;
+- (void)addValues:(const uint64_t [__nullable])values count:(NSUInteger)count;
 
 /**
  * Adds the values from the given array to this array.
@@ -784,7 +784,7 @@ NS_ASSUME_NONNULL_BEGIN
  *
  * @return A newly initialized GPBFloatArray with a copy of the values.
  **/
-- (instancetype)initWithValues:(const float [])values
+- (instancetype)initWithValues:(const float [__nullable])values
                          count:(NSUInteger)count;
 
 /**
@@ -849,7 +849,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @param values The values to add to this array.
  * @param count  The number of elements to add.
  **/
-- (void)addValues:(const float [])values count:(NSUInteger)count;
+- (void)addValues:(const float [__nullable])values count:(NSUInteger)count;
 
 /**
  * Adds the values from the given array to this array.
@@ -956,7 +956,7 @@ NS_ASSUME_NONNULL_BEGIN
  *
  * @return A newly initialized GPBDoubleArray with a copy of the values.
  **/
-- (instancetype)initWithValues:(const double [])values
+- (instancetype)initWithValues:(const double [__nullable])values
                          count:(NSUInteger)count;
 
 /**
@@ -1021,7 +1021,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @param values The values to add to this array.
  * @param count  The number of elements to add.
  **/
-- (void)addValues:(const double [])values count:(NSUInteger)count;
+- (void)addValues:(const double [__nullable])values count:(NSUInteger)count;
 
 /**
  * Adds the values from the given array to this array.
@@ -1128,7 +1128,7 @@ NS_ASSUME_NONNULL_BEGIN
  *
  * @return A newly initialized GPBBoolArray with a copy of the values.
  **/
-- (instancetype)initWithValues:(const BOOL [])values
+- (instancetype)initWithValues:(const BOOL [__nullable])values
                          count:(NSUInteger)count;
 
 /**
@@ -1193,7 +1193,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @param values The values to add to this array.
  * @param count  The number of elements to add.
  **/
-- (void)addValues:(const BOOL [])values count:(NSUInteger)count;
+- (void)addValues:(const BOOL [__nullable])values count:(NSUInteger)count;
 
 /**
  * Adds the values from the given array to this array.
@@ -1325,7 +1325,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @return A newly initialized GPBEnumArray with a copy of the values.
  **/
 - (instancetype)initWithValidationFunction:(nullable GPBEnumValidationFunc)func
-                                 rawValues:(const int32_t [])values
+                                 rawValues:(const int32_t [__nullable])values
                                      count:(NSUInteger)count;
 
 /**
@@ -1435,7 +1435,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @param values The values to add to this array.
  * @param count  The number of elements to add.
  **/
-- (void)addValues:(const int32_t [])values count:(NSUInteger)count;
+- (void)addValues:(const int32_t [__nullable])values count:(NSUInteger)count;
 
 
 /**
@@ -1486,7 +1486,7 @@ NS_ASSUME_NONNULL_BEGIN
  * @param values Array containing the raw enum values to add to this array.
  * @param count  The number of raw values to add.
  **/
-- (void)addRawValues:(const int32_t [])values count:(NSUInteger)count;
+- (void)addRawValues:(const int32_t [__nullable])values count:(NSUInteger)count;
 
 /**
  * Inserts a raw enum value at the given index.
@@ -1613,7 +1613,7 @@ NS_ASSUME_NONNULL_END
 //% *
 //% * @return A newly initialized GPB##NAME##Array with a copy of the values.
 //% **/
-//%- (instancetype)initWithValues:(const TYPE [])values
+//%- (instancetype)initWithValues:(const TYPE [__nullable])values
 //%                         count:(NSUInteger)count;
 //%
 //%/**
@@ -1730,7 +1730,7 @@ NS_ASSUME_NONNULL_END
 //% * @return A newly initialized GPB##NAME##Array with a copy of the values.
 //% **/
 //%- (instancetype)initWithValidationFunction:(nullable GPBEnumValidationFunc)func
-//%                                 rawValues:(const TYPE [])values
+//%                                 rawValues:(const TYPE [__nullable])values
 //%                                     count:(NSUInteger)count;
 //%
 //%/**
@@ -1849,7 +1849,7 @@ NS_ASSUME_NONNULL_END
 //% * @param values The values to add to this array.
 //% * @param count  The number of elements to add.
 //% **/
-//%- (void)addValues:(const TYPE [])values count:(NSUInteger)count;
+//%- (void)addValues:(const TYPE [__nullable])values count:(NSUInteger)count;
 //%
 //%ARRAY_EXTRA_MUTABLE_METHODS1_##HELPER_NAME(NAME, TYPE)
 //%/**
@@ -1939,7 +1939,7 @@ NS_ASSUME_NONNULL_END
 //% * @param values Array containing the raw enum values to add to this array.
 //% * @param count  The number of raw values to add.
 //% **/
-//%- (void)addRawValues:(const TYPE [])values count:(NSUInteger)count;
+//%- (void)addRawValues:(const TYPE [__nullable])values count:(NSUInteger)count;
 //%
 //%/**
 //% * Inserts a raw enum value at the given index.
