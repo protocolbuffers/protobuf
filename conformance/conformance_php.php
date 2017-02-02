@@ -45,9 +45,19 @@ function doTest($request)
     $test_message = new \Protobuf_test_messages\Proto3\TestAllTypes();
     $response = new \Conformance\ConformanceResponse();
     if ($request->getPayload() == "protobuf_payload") {
-      $test_message->encode($request->getProtobufPayload());
+      try {
+          $test_message->decode($request->getProtobufPayload());
+      } catch (Exception $e) {
+          $response->setParseError($e->getMessage());
+          return $response;
+      }
     } elseif ($request->getPayload() == "json_payload") {
-      // TODO(teboring): Implmement json decoding.
+      try {
+          $test_message->jsonDecode($request->getJsonPayload());
+      } catch (Exception $e) {
+          $response->setParseError($e->getMessage());
+          return $response;
+      }
     } else {
       trigger_error("Request didn't have payload.", E_USER_ERROR);
     }
@@ -57,7 +67,7 @@ function doTest($request)
     } elseif ($request->getRequestedOutputFormat() == WireFormat::PROTOBUF) {
       $response->setProtobufPayload($test_message->encode());
     } elseif ($request->getRequestedOutputFormat() == WireFormat::JSON) {
-      // TODO(teboring): Implmement json encoding.
+      $response->setJsonPayload($test_message->jsonEncode());
     }
 
     return $response;

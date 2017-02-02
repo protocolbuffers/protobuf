@@ -30,6 +30,7 @@
 
 #include <php.h>
 #include <stdlib.h>
+#include <ext/json/php_json.h>
 
 #include "protobuf.h"
 
@@ -39,6 +40,8 @@ zend_object_handlers* message_handlers;
 static  zend_function_entry message_methods[] = {
   PHP_ME(Message, encode, NULL, ZEND_ACC_PUBLIC)
   PHP_ME(Message, decode, NULL, ZEND_ACC_PUBLIC)
+  PHP_ME(Message, jsonEncode, NULL, ZEND_ACC_PUBLIC)
+  PHP_ME(Message, jsonDecode, NULL, ZEND_ACC_PUBLIC)
   PHP_ME(Message, readOneof, NULL, ZEND_ACC_PROTECTED)
   PHP_ME(Message, writeOneof, NULL, ZEND_ACC_PROTECTED)
   PHP_ME(Message, whichOneof, NULL, ZEND_ACC_PROTECTED)
@@ -54,6 +57,8 @@ static zval* message_get_property(zval* object, zval* member, int type,
                                   const zend_literal* key TSRMLS_DC);
 static zval** message_get_property_ptr_ptr(zval* object, zval* member, int type,
                                            const zend_literal* key TSRMLS_DC);
+static HashTable* message_get_properties(zval* object TSRMLS_DC);
+static HashTable* message_get_gc(zval* object, zval*** table, int* n TSRMLS_DC);
 
 static zend_object_value message_create(zend_class_entry* ce TSRMLS_DC);
 static void message_free(void* object TSRMLS_DC);
@@ -74,6 +79,8 @@ void message_init(TSRMLS_D) {
   message_handlers->write_property = message_set_property;
   message_handlers->read_property = message_get_property;
   message_handlers->get_property_ptr_ptr = message_get_property_ptr_ptr;
+  message_handlers->get_properties = message_get_properties;
+  message_handlers->get_gc = message_get_gc;
 }
 
 static void message_set_property(zval* object, zval* member, zval* value,
@@ -142,6 +149,17 @@ static zval* message_get_property(zval* object, zval* member, int type,
 static zval** message_get_property_ptr_ptr(zval* object, zval* member, int type,
                                            const zend_literal* key TSRMLS_DC) {
   return NULL;
+}
+
+static HashTable* message_get_properties(zval* object TSRMLS_DC) {
+  return NULL;
+}
+
+static HashTable* message_get_gc(zval* object, zval*** table, int* n TSRMLS_DC) {
+    zend_object* zobj = Z_OBJ_P(object);
+    *table = zobj->properties_table;
+    *n = zobj->ce->default_properties_count;
+    return NULL;
 }
 
 // -----------------------------------------------------------------------------

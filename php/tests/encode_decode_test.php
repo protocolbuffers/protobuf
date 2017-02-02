@@ -168,9 +168,22 @@ class EncodeDecodeTest extends TestBase
         }
     }
 
-    public function testDecodeFieldNonExist() {
+    public function testDecodeFieldNonExist()
+    {
         $data = hex2bin('c80501');
         $m = new TestMessage();
         $m->decode($data);
     }
+
+    # TODO(teboring): Add test back when php implementation is ready for json
+    # encode/decode.
+    # public function testJsonEncode()
+    # {
+    #     $from = new TestMessage();
+    #     $this->setFields($from);
+    #     $data = $from->jsonEncode();
+    #     $to = new TestMessage();
+    #     $to->jsonDecode($data);
+    #     $this->expectFields($to);
+    # }
 }
