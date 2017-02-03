@@ -816,25 +816,6 @@ bool CodedOutputStream::Refresh() {
   }
 }
 
-size_t CodedOutputStream::VarintSize32Fallback(uint32 value) {
-  // This computes floor(log2(value)) / 7 + 1
-  // Use an explicit multiplication to implement the divide of
-  // a number in the 1..31 range.
-  GOOGLE_DCHECK_NE(0, value);  // This is enforced by our caller.
-
-  uint32 log2value = Bits::Log2FloorNonZero(value);
-  return static_cast<size_t>((log2value * 9 + 73) / 64);
-}
-
-size_t CodedOutputStream::VarintSize64(uint64 value) {
-  // This computes value == 0 ? 1 : floor(log2(value)) / 7 + 1
-  // Use an explicit multiplication to implement the divide of
-  // a number in the 1..63 range.
-  // Explicit OR 0x1 to avoid calling clz(0), which is undefined.
-  uint32 log2value = Bits::Log2FloorNonZero64(value | 0x1);
-  return static_cast<size_t>((log2value * 9 + 73) / 64);
-}
-
 uint8* CodedOutputStream::WriteStringWithSizeToArray(const string& str,
                                                      uint8* target) {
   GOOGLE_DCHECK_LE(str.size(), kuint32max);
