@@ -391,6 +391,16 @@ class LIBPROTOBUF_EXPORT Parser {
                   const LocationRecorder& containing_type_location,
                   const FileDescriptorProto* containing_file);
 
+  // Parse a "nullable" declaration.  The caller is responsible for setting
+  // oneof_decl->label() since it will have had to parse the label before it
+  // knew it was parsing a oneof.
+  bool ParseNullableField(OneofDescriptorProto* oneof_decl,
+                  DescriptorProto* containing_type,
+                  int oneof_index,
+                  const LocationRecorder& oneof_location,
+                  const LocationRecorder& containing_type_location,
+                  const FileDescriptorProto* containing_file);
+
   // Parse a single enum value within an enum block.
   bool ParseEnumConstant(EnumValueDescriptorProto* enum_value,
                          const LocationRecorder& enum_value_location,

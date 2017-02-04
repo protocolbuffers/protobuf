@@ -306,7 +306,9 @@ const ::google::protobuf::uint32 TableStruct::offsets[] = {
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(OneofOptions, _extensions_),
   ~0u,  // no _oneof_case_
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(OneofOptions, uninterpreted_option_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(OneofOptions, nullable_),
   ~0u,
+  0,
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(EnumOptions, _has_bits_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(EnumOptions, _internal_metadata_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(EnumOptions, _extensions_),
@@ -424,17 +426,17 @@ static const ::google::protobuf::internal::MigrationSchema schemas[] = {
   { 152, 172, sizeof(FileOptions)},
   { 188, 197, sizeof(MessageOptions)},
   { 202, 213, sizeof(FieldOptions)},
-  { 220, 225, sizeof(OneofOptions)},
-  { 226, 233, sizeof(EnumOptions)},
-  { 236, 242, sizeof(EnumValueOptions)},
-  { 244, 250, sizeof(ServiceOptions)},
-  { 252, 259, sizeof(MethodOptions)},
-  { 262, 268, sizeof(UninterpretedOption_NamePart)},
-  { 270, 281, sizeof(UninterpretedOption)},
-  { 288, 297, sizeof(SourceCodeInfo_Location)},
-  { 302, 307, sizeof(SourceCodeInfo)},
-  { 308, 316, sizeof(GeneratedCodeInfo_Annotation)},
-  { 320, 325, sizeof(GeneratedCodeInfo)},
+  { 220, 226, sizeof(OneofOptions)},
+  { 228, 235, sizeof(EnumOptions)},
+  { 238, 244, sizeof(EnumValueOptions)},
+  { 246, 252, sizeof(ServiceOptions)},
+  { 254, 261, sizeof(MethodOptions)},
+  { 264, 270, sizeof(UninterpretedOption_NamePart)},
+  { 272, 283, sizeof(UninterpretedOption)},
+  { 290, 299, sizeof(SourceCodeInfo_Location)},
+  { 304, 309, sizeof(SourceCodeInfo)},
+  { 310, 318, sizeof(GeneratedCodeInfo_Annotation)},
+  { 322, 327, sizeof(GeneratedCodeInfo)},
 };
 
 static ::google::protobuf::Message const * const file_default_instances[] = {
@@ -695,50 +697,51 @@ void AddDescriptorsImpl() {
       "ninterpretedOption\"/\n\005CType\022\n\n\006STRING\020\000\022"
       "\010\n\004CORD\020\001\022\020\n\014STRING_PIECE\020\002\"5\n\006JSType\022\r\n"
       "\tJS_NORMAL\020\000\022\r\n\tJS_STRING\020\001\022\r\n\tJS_NUMBER"
-      "\020\002*\t\010\350\007\020\200\200\200\200\002J\004\010\004\020\005\"^\n\014OneofOptions\022C\n\024u"
+      "\020\002*\t\010\350\007\020\200\200\200\200\002J\004\010\004\020\005\"p\n\014OneofOptions\022C\n\024u"
       "ninterpreted_option\030\347\007 \003(\0132$.google.prot"
-      "obuf.UninterpretedOption*\t\010\350\007\020\200\200\200\200\002\"\215\001\n\013"
-      "EnumOptions\022\023\n\013allow_alias\030\002 \001(\010\022\031\n\ndepr"
-      "ecated\030\003 \001(\010:\005false\022C\n\024uninterpreted_opt"
-      "ion\030\347\007 \003(\0132$.google.protobuf.Uninterpret"
-      "edOption*\t\010\350\007\020\200\200\200\200\002\"}\n\020EnumValueOptions\022"
-      "\031\n\ndeprecated\030\001 \001(\010:\005false\022C\n\024uninterpre"
-      "ted_option\030\347\007 \003(\0132$.google.protobuf.Unin"
-      "terpretedOption*\t\010\350\007\020\200\200\200\200\002\"{\n\016ServiceOpt"
-      "ions\022\031\n\ndeprecated\030! \001(\010:\005false\022C\n\024unint"
+      "obuf.UninterpretedOption\022\020\n\010nullable\030\001 \001"
+      "(\010*\t\010\350\007\020\200\200\200\200\002\"\215\001\n\013EnumOptions\022\023\n\013allow_a"
+      "lias\030\002 \001(\010\022\031\n\ndeprecated\030\003 \001(\010:\005false\022C\n"
+      "\024uninterpreted_option\030\347\007 \003(\0132$.google.pr"
+      "otobuf.UninterpretedOption*\t\010\350\007\020\200\200\200\200\002\"}\n"
+      "\020EnumValueOptions\022\031\n\ndeprecated\030\001 \001(\010:\005f"
+      "alse\022C\n\024uninterpreted_option\030\347\007 \003(\0132$.go"
+      "ogle.protobuf.UninterpretedOption*\t\010\350\007\020\200"
+      "\200\200\200\002\"{\n\016ServiceOptions\022\031\n\ndeprecated\030! \001"
+      "(\010:\005false\022C\n\024uninterpreted_option\030\347\007 \003(\013"
+      "2$.google.protobuf.UninterpretedOption*\t"
+      "\010\350\007\020\200\200\200\200\002\"\255\002\n\rMethodOptions\022\031\n\ndeprecate"
+      "d\030! \001(\010:\005false\022_\n\021idempotency_level\030\" \001("
+      "\0162/.google.protobuf.MethodOptions.Idempo"
+      "tencyLevel:\023IDEMPOTENCY_UNKNOWN\022C\n\024unint"
       "erpreted_option\030\347\007 \003(\0132$.google.protobuf"
-      ".UninterpretedOption*\t\010\350\007\020\200\200\200\200\002\"\255\002\n\rMeth"
-      "odOptions\022\031\n\ndeprecated\030! \001(\010:\005false\022_\n\021"
-      "idempotency_level\030\" \001(\0162/.google.protobu"
-      "f.MethodOptions.IdempotencyLevel:\023IDEMPO"
-      "TENCY_UNKNOWN\022C\n\024uninterpreted_option\030\347\007"
-      " \003(\0132$.google.protobuf.UninterpretedOpti"
-      "on\"P\n\020IdempotencyLevel\022\027\n\023IDEMPOTENCY_UN"
-      "KNOWN\020\000\022\023\n\017NO_SIDE_EFFECTS\020\001\022\016\n\nIDEMPOTE"
-      "NT\020\002*\t\010\350\007\020\200\200\200\200\002\"\236\002\n\023UninterpretedOption\022"
-      ";\n\004name\030\002 \003(\0132-.google.protobuf.Uninterp"
-      "retedOption.NamePart\022\030\n\020identifier_value"
-      "\030\003 \001(\t\022\032\n\022positive_int_value\030\004 \001(\004\022\032\n\022ne"
-      "gative_int_value\030\005 \001(\003\022\024\n\014double_value\030\006"
-      " \001(\001\022\024\n\014string_value\030\007 \001(\014\022\027\n\017aggregate_"
-      "value\030\010 \001(\t\0323\n\010NamePart\022\021\n\tname_part\030\001 \002"
-      "(\t\022\024\n\014is_extension\030\002 \002(\010\"\325\001\n\016SourceCodeI"
-      "nfo\022:\n\010location\030\001 \003(\0132(.google.protobuf."
-      "SourceCodeInfo.Location\032\206\001\n\010Location\022\020\n\004"
-      "path\030\001 \003(\005B\002\020\001\022\020\n\004span\030\002 \003(\005B\002\020\001\022\030\n\020lead"
-      "ing_comments\030\003 \001(\t\022\031\n\021trailing_comments\030"
-      "\004 \001(\t\022!\n\031leading_detached_comments\030\006 \003(\t"
-      "\"\247\001\n\021GeneratedCodeInfo\022A\n\nannotation\030\001 \003"
-      "(\0132-.google.protobuf.GeneratedCodeInfo.A"
-      "nnotation\032O\n\nAnnotation\022\020\n\004path\030\001 \003(\005B\002\020"
-      "\001\022\023\n\013source_file\030\002 \001(\t\022\r\n\005begin\030\003 \001(\005\022\013\n"
-      "\003end\030\004 \001(\005B\214\001\n\023com.google.protobufB\020Desc"
-      "riptorProtosH\001Z>github.com/golang/protob"
-      "uf/protoc-gen-go/descriptor;descriptor\242\002"
-      "\003GPB\252\002\032Google.Protobuf.Reflection"
+      ".UninterpretedOption\"P\n\020IdempotencyLevel"
+      "\022\027\n\023IDEMPOTENCY_UNKNOWN\020\000\022\023\n\017NO_SIDE_EFF"
+      "ECTS\020\001\022\016\n\nIDEMPOTENT\020\002*\t\010\350\007\020\200\200\200\200\002\"\236\002\n\023Un"
+      "interpretedOption\022;\n\004name\030\002 \003(\0132-.google"
+      ".protobuf.UninterpretedOption.NamePart\022\030"
+      "\n\020identifier_value\030\003 \001(\t\022\032\n\022positive_int"
+      "_value\030\004 \001(\004\022\032\n\022negative_int_value\030\005 \001(\003"
+      "\022\024\n\014double_value\030\006 \001(\001\022\024\n\014string_value\030\007"
+      " \001(\014\022\027\n\017aggregate_value\030\010 \001(\t\0323\n\010NamePar"
+      "t\022\021\n\tname_part\030\001 \002(\t\022\024\n\014is_extension\030\002 \002"
+      "(\010\"\325\001\n\016SourceCodeInfo\022:\n\010location\030\001 \003(\0132"
+      "(.google.protobuf.SourceCodeInfo.Locatio"
+      "n\032\206\001\n\010Location\022\020\n\004path\030\001 \003(\005B\002\020\001\022\020\n\004span"
+      "\030\002 \003(\005B\002\020\001\022\030\n\020leading_comments\030\003 \001(\t\022\031\n\021"
+      "trailing_comments\030\004 \001(\t\022!\n\031leading_detac"
+      "hed_comments\030\006 \003(\t\"\247\001\n\021GeneratedCodeInfo"
+      "\022A\n\nannotation\030\001 \003(\0132-.google.protobuf.G"
+      "eneratedCodeInfo.Annotation\032O\n\nAnnotatio"
+      "n\022\020\n\004path\030\001 \003(\005B\002\020\001\022\023\n\013source_file\030\002 \001(\t"
+      "\022\r\n\005begin\030\003 \001(\005\022\013\n\003end\030\004 \001(\005B\214\001\n\023com.goo"
+      "gle.protobufB\020DescriptorProtosH\001Z>github"
+      ".com/golang/protobuf/protoc-gen-go/descr"
+      "iptor;descriptor\242\002\003GPB\252\002\032Google.Protobuf"
+      ".Reflection"
   };
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
-      descriptor, 5553);
+      descriptor, 5571);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "google/protobuf/descriptor.proto", &protobuf_RegisterTypes);
   ::google::protobuf::internal::OnShutdown(&TableStruct::Shutdown);
@@ -10733,6 +10736,7 @@ FieldOptions::uninterpreted_option() const {
 
 #if !defined(_MSC_VER) || _MSC_VER >= 1900
 const int OneofOptions::kUninterpretedOptionFieldNumber;
+const int OneofOptions::kNullableFieldNumber;
 #endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
 OneofOptions::OneofOptions()
@@ -10751,11 +10755,13 @@ OneofOptions::OneofOptions(const OneofOptions& from)
       uninterpreted_option_(from.uninterpreted_option_) {
   _internal_metadata_.MergeFrom(from._internal_metadata_);
   _extensions_.MergeFrom(from._extensions_);
+  nullable_ = from.nullable_;
   // @@protoc_insertion_point(copy_constructor:google.protobuf.OneofOptions)
 }
 
 void OneofOptions::SharedCtor() {
   _cached_size_ = 0;
+  nullable_ = false;
 }
 
 OneofOptions::~OneofOptions() {
@@ -10793,6 +10799,7 @@ void OneofOptions::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.OneofOptions)
   _extensions_.Clear();
   uninterpreted_option_.Clear();
+  nullable_ = false;
   _has_bits_.Clear();
   _internal_metadata_.Clear();
 }
@@ -10807,6 +10814,19 @@ bool OneofOptions::MergePartialFromCodedStream(
     tag = p.first;
     if (!p.second) goto handle_unusual;
     switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
+      // optional bool nullable = 1;
+      case 1: {
+        if (tag == 8u) {
+          set_has_nullable();
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   bool, ::google::protobuf::internal::WireFormatLite::TYPE_BOOL>(
+                 input, &nullable_)));
+        } else {
+          goto handle_unusual;
+        }
+        break;
+      }
+
       // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
       case 999: {
         if (tag == 7994u) {
@@ -10850,6 +10870,11 @@ failure:
 void OneofOptions::SerializeWithCachedSizes(
     ::google::protobuf::io::CodedOutputStream* output) const {
   // @@protoc_insertion_point(serialize_start:google.protobuf.OneofOptions)
+  // optional bool nullable = 1;
+  if (has_nullable()) {
+    ::google::protobuf::internal::WireFormatLite::WriteBool(1, this->nullable(), output);
+  }
+
   // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
   for (unsigned int i = 0, n = this->uninterpreted_option_size(); i < n; i++) {
     ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
@@ -10871,6 +10896,11 @@ void OneofOptions::SerializeWithCachedSizes(
     bool deterministic, ::google::protobuf::uint8* target) const {
   (void)deterministic;  // Unused
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.OneofOptions)
+  // optional bool nullable = 1;
+  if (has_nullable()) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteBoolToArray(1, this->nullable(), target);
+  }
+
   // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
   for (unsigned int i = 0, n = this->uninterpreted_option_size(); i < n; i++) {
     target = ::google::protobuf::internal::WireFormatLite::
@@ -10912,6 +10942,11 @@ size_t OneofOptions::ByteSizeLong() const {
     }
   }
 
+  // optional bool nullable = 1;
+  if (has_nullable()) {
+    total_size += 1 + 1;
+  }
+
   int cached_size = ::google::protobuf::internal::ToCachedSize(total_size);
   GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
   _cached_size_ = cached_size;
@@ -10940,6 +10975,9 @@ void OneofOptions::MergeFrom(const OneofOptions& from) {
   _extensions_.MergeFrom(from._extensions_);
   _internal_metadata_.MergeFrom(from._internal_metadata_);
   uninterpreted_option_.MergeFrom(from.uninterpreted_option_);
+  if (from.has_nullable()) {
+    set_nullable(from.nullable());
+  }
 }
 
 void OneofOptions::CopyFrom(const ::google::protobuf::Message& from) {
@@ -10971,6 +11009,7 @@ void OneofOptions::Swap(OneofOptions* other) {
 }
 void OneofOptions::InternalSwap(OneofOptions* other) {
   uninterpreted_option_.UnsafeArenaSwap(&other->uninterpreted_option_);
+  std::swap(nullable_, other->nullable_);
   std::swap(_has_bits_[0], other->_has_bits_[0]);
   _internal_metadata_.Swap(&other->_internal_metadata_);
   std::swap(_cached_size_, other->_cached_size_);
@@ -11013,6 +11052,30 @@ const ::google::protobuf::RepeatedPtrField< ::google::protobuf::UninterpretedOpt
 OneofOptions::uninterpreted_option() const {
   // @@protoc_insertion_point(field_list:google.protobuf.OneofOptions.uninterpreted_option)
   return uninterpreted_option_;
+}
+
+// optional bool nullable = 1;
+bool OneofOptions::has_nullable() const {
+  return (_has_bits_[0] & 0x00000001u) != 0;
+}
+void OneofOptions::set_has_nullable() {
+  _has_bits_[0] |= 0x00000001u;
+}
+void OneofOptions::clear_has_nullable() {
+  _has_bits_[0] &= ~0x00000001u;
+}
+void OneofOptions::clear_nullable() {
+  nullable_ = false;
+  clear_has_nullable();
+}
+bool OneofOptions::nullable() const {
+  // @@protoc_insertion_point(field_get:google.protobuf.OneofOptions.nullable)
+  return nullable_;
+}
+void OneofOptions::set_nullable(bool value) {
+  set_has_nullable();
+  nullable_ = value;
+  // @@protoc_insertion_point(field_set:google.protobuf.OneofOptions.nullable)
 }
 
 #endif  // PROTOBUF_INLINE_NOT_IN_HEADERS

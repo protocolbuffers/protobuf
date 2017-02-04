@@ -2805,6 +2805,13 @@ bool FieldDescriptor::is_packed() const {
   }
 }
 
+bool OneofDescriptor::is_nullable() const {
+  if (file_->syntax() == FileDescriptor::SYNTAX_PROTO3) {
+    return options_ == NULL || !options_->has_nullable() || options_->nullable();
+  }
+  return false;
+}
+
 bool Descriptor::GetSourceLocation(SourceLocation* out_location) const {
   std::vector<int> path;
   GetLocationPath(&path);
@@ -4721,6 +4728,7 @@ void DescriptorBuilder::BuildOneof(const OneofDescriptorProto& proto,
   // We need to fill these in later.
   result->field_count_ = 0;
   result->fields_ = NULL;
+  result->file_ = file_;
 
   // Copy options.
   if (!proto.has_options()) {
