@@ -123,20 +123,21 @@ template <int N> class InlinedEnvironment;
 #define UPB_NORETURN
 #endif
 
+#if __STDC_VERSION__ >= 199901L || __cplusplus >= 201103L
+/* C99/C++11 versions. */
+#include <stdio.h>
+#define _upb_snprintf snprintf
+#define _upb_vsnprintf vsnprintf
+#define _upb_va_copy(a, b) va_copy(a, b)
+#elif defined __GNUC__
 /* A few hacky workarounds for functions not in C89.
  * For internal use only!
  * TODO(haberman): fix these by including our own implementations, or finding
  * another workaround.
  */
-#ifdef __GNUC__
 #define _upb_snprintf __builtin_snprintf
 #define _upb_vsnprintf __builtin_vsnprintf
 #define _upb_va_copy(a, b) __va_copy(a, b)
-#elif __STDC_VERSION__ >= 199901L
-/* C99 versions. */
-#define _upb_snprintf snprintf
-#define _upb_vsnprintf vsnprintf
-#define _upb_va_copy(a, b) va_copy(a, b)
 #else
 #error Need implementations of [v]snprintf and va_copy
 #endif
@@ -279,6 +280,12 @@ template <int N> class InlinedEnvironment;
 /* UPB_ASSERT_DEBUGVAR(): assert that uses functions or variables that only
  * exist in debug mode.  This turns into regular assert. */
 #define UPB_ASSERT_DEBUGVAR(expr) assert(expr)
+
+#ifdef __GNUC__
+#define UPB_UNREACHABLE() do { assert(0); __builtin_unreachable(); } while(0)
+#else
+#define UPB_UNREACHABLE() do { assert(0); } while(0)
+#endif
 
 /* Generic function type. */
 typedef void upb_func();
@@ -513,17 +520,18 @@ struct upb_alloc {
 };
 
 UPB_INLINE void *upb_malloc(upb_alloc *alloc, size_t size) {
-  UPB_ASSERT(size > 0);
+  UPB_ASSERT(alloc);
   return alloc->func(alloc, NULL, 0, size);
 }
 
 UPB_INLINE void *upb_realloc(upb_alloc *alloc, void *ptr, size_t oldsize,
                              size_t size) {
-  UPB_ASSERT(size > 0);
+  UPB_ASSERT(alloc);
   return alloc->func(alloc, ptr, oldsize, size);
 }
 
 UPB_INLINE void upb_free(upb_alloc *alloc, void *ptr) {
+  assert(alloc);
   alloc->func(alloc, ptr, 0, 0);
 }
 
@@ -572,11 +580,11 @@ UPB_BEGIN_EXTERN_C
 void upb_arena_init(upb_arena *a);
 void upb_arena_init2(upb_arena *a, void *mem, size_t n, upb_alloc *alloc);
 void upb_arena_uninit(upb_arena *a);
-upb_alloc *upb_arena_alloc(upb_arena *a);
 bool upb_arena_addcleanup(upb_arena *a, upb_cleanup_func *func, void *ud);
 size_t upb_arena_bytesallocated(const upb_arena *a);
 void upb_arena_setnextblocksize(upb_arena *a, size_t size);
 void upb_arena_setmaxblocksize(upb_arena *a, size_t size);
+UPB_INLINE upb_alloc *upb_arena_alloc(upb_arena *a) { return (upb_alloc*)a; }
 
 UPB_END_EXTERN_C
 
@@ -807,7 +815,9 @@ typedef enum {
   UPB_CTYPE_CSTR     = 6,
   UPB_CTYPE_PTR      = 7,
   UPB_CTYPE_CONSTPTR = 8,
-  UPB_CTYPE_FPTR     = 9
+  UPB_CTYPE_FPTR     = 9,
+  UPB_CTYPE_FLOAT    = 10,
+  UPB_CTYPE_DOUBLE   = 11
 } upb_ctype_t;
 
 typedef struct {
@@ -881,6 +891,29 @@ FUNCS(constptr, constptr,     const void*,  uintptr_t,  UPB_CTYPE_CONSTPTR)
 FUNCS(fptr,     fptr,         upb_func*,    uintptr_t,  UPB_CTYPE_FPTR)
 
 #undef FUNCS
+
+UPB_INLINE void upb_value_setfloat(upb_value *val, float cval) {
+  memcpy(&val->val, &cval, sizeof(cval));
+  SET_TYPE(val->ctype, UPB_CTYPE_FLOAT);
+}
+
+UPB_INLINE void upb_value_setdouble(upb_value *val, double cval) {
+  memcpy(&val->val, &cval, sizeof(cval));
+  SET_TYPE(val->ctype, UPB_CTYPE_DOUBLE);
+}
+
+UPB_INLINE upb_value upb_value_float(float cval) {
+  upb_value ret;
+  upb_value_setfloat(&ret, cval);
+  return ret;
+}
+
+UPB_INLINE upb_value upb_value_double(double cval) {
+  upb_value ret;
+  upb_value_setdouble(&ret, cval);
+  return ret;
+}
+
 #undef SET_TYPE
 
 
@@ -1122,6 +1155,13 @@ size_t upb_inttable_count(const upb_inttable *t);
 UPB_INLINE size_t upb_strtable_count(const upb_strtable *t) {
   return t->t.count;
 }
+
+void upb_inttable_packedsize(const upb_inttable *t, size_t *size);
+void upb_strtable_packedsize(const upb_strtable *t, size_t *size);
+upb_inttable *upb_inttable_pack(const upb_inttable *t, void *p, size_t *ofs,
+                                size_t size);
+upb_strtable *upb_strtable_pack(const upb_strtable *t, void *p, size_t *ofs,
+                                size_t size);
 
 /* Inserts the given key into the hashtable with the given value.  The key must
  * not already exist in the hash table.  For string tables, the key must be
@@ -1669,6 +1709,7 @@ class FieldDef;
 class FileDef;
 class MessageDef;
 class OneofDef;
+class SymbolTable;
 }
 #endif
 
@@ -1677,6 +1718,8 @@ UPB_DECLARE_DERIVED_TYPE(upb::OneofDef, upb::RefCounted, upb_oneofdef,
                          upb_refcounted)
 UPB_DECLARE_DERIVED_TYPE(upb::FileDef, upb::RefCounted, upb_filedef,
                          upb_refcounted)
+UPB_DECLARE_TYPE(upb::SymbolTable, upb_symtab)
+
 
 /* The maximum message depth that the type graph can have.  This is a resource
  * limit for the C stack since we sometimes need to recursively traverse the
@@ -1709,8 +1752,6 @@ typedef enum {
 class upb::Def {
  public:
   typedef upb_deftype_t Type;
-
-  Def* Dup(const void *owner) const;
 
   /* upb::RefCounted methods like Ref()/Unref(). */
   UPB_REFCOUNTED_CPPMETHODS
@@ -1756,9 +1797,6 @@ class upb::Def {
 #endif  /* __cplusplus */
 
 UPB_BEGIN_EXTERN_C
-
-/* Native C API. */
-upb_def *upb_def_dup(const upb_def *def, const void *owner);
 
 /* Include upb_refcounted methods like upb_def_ref()/upb_def_unref(). */
 UPB_REFCOUNTED_CMETHODS(upb_def, upb_def_upcast)
@@ -1856,15 +1894,19 @@ UPB_DECLARE_DEF_TYPE(upb::EnumDef, enumdef, ENUM)
  * types defined in descriptor.proto, which gives INT32 and SINT32 separate
  * types (we distinguish the two with the "integer encoding" enum below). */
 typedef enum {
-  UPB_TYPE_FLOAT    = 1,
-  UPB_TYPE_DOUBLE   = 2,
-  UPB_TYPE_BOOL     = 3,
-  UPB_TYPE_STRING   = 4,
-  UPB_TYPE_BYTES    = 5,
-  UPB_TYPE_MESSAGE  = 6,
-  UPB_TYPE_ENUM     = 7,  /* Enum values are int32. */
-  UPB_TYPE_INT32    = 8,
-  UPB_TYPE_UINT32   = 9,
+  /* Types stored in 1 byte. */
+  UPB_TYPE_BOOL     = 1,
+  /* Types stored in 4 bytes. */
+  UPB_TYPE_FLOAT    = 2,
+  UPB_TYPE_INT32    = 3,
+  UPB_TYPE_UINT32   = 4,
+  UPB_TYPE_ENUM     = 5,  /* Enum values are int32. */
+  /* Types stored as pointers (probably 4 or 8 bytes). */
+  UPB_TYPE_STRING   = 6,
+  UPB_TYPE_BYTES    = 7,
+  UPB_TYPE_MESSAGE  = 8,
+  /* Types stored as 8 bytes. */
+  UPB_TYPE_DOUBLE   = 9,
   UPB_TYPE_INT64    = 10,
   UPB_TYPE_UINT64   = 11
 } upb_fieldtype_t;
@@ -1944,13 +1986,6 @@ class upb::FieldDef {
 
   /* Returns NULL if memory allocation failed. */
   static reffed_ptr<FieldDef> New();
-
-  /* Duplicates the given field, returning NULL if memory allocation failed.
-   * When a fielddef is duplicated, the subdef (if any) is made symbolic if it
-   * wasn't already.  If the subdef is set but has no name (which is possible
-   * since msgdefs are not required to have a name) the new fielddef's subdef
-   * will be unset. */
-  FieldDef* Dup(const void* owner) const;
 
   /* upb::RefCounted methods like Ref()/Unref(). */
   UPB_REFCOUNTED_CPPMETHODS
@@ -2038,16 +2073,10 @@ class upb::FieldDef {
   bool IsPrimitive() const;
   bool IsMap() const;
 
-  /* Whether this field must be able to explicitly represent presence:
+  /* Returns whether this field explicitly represents presence.
    *
-   * * This is always false for repeated fields (an empty repeated field is
-   *   equivalent to a repeated field with zero entries).
-   *
-   * * This is always true for submessages.
-   *
-   * * For other fields, it depends on the message (see
-   *   MessageDef::SetPrimitivesHavePresence())
-   */
+   * For proto2 messages: Returns true for any scalar (non-repeated) field.
+   * For proto3 messages: Returns true for scalar submessage or oneof fields. */
   bool HasPresence() const;
 
   /* How integers are encoded.  Only meaningful for integer types.
@@ -2206,7 +2235,6 @@ UPB_BEGIN_EXTERN_C
 
 /* Native C API. */
 upb_fielddef *upb_fielddef_new(const void *owner);
-upb_fielddef *upb_fielddef_dup(const upb_fielddef *f, const void *owner);
 
 /* Include upb_refcounted methods like upb_fielddef_ref(). */
 UPB_REFCOUNTED_CMETHODS(upb_fielddef, upb_fielddef_upcast2)
@@ -2416,16 +2444,6 @@ class upb::MessageDef {
     return FindOneofByName(str.c_str(), str.size());
   }
 
-  /* Returns a new msgdef that is a copy of the given msgdef (and a copy of all
-   * the fields) but with any references to submessages broken and replaced
-   * with just the name of the submessage.  Returns NULL if memory allocation
-   * failed.
-   *
-   * TODO(haberman): which is more useful, keeping fields resolved or
-   * unresolving them?  If there's no obvious answer, Should this functionality
-   * just be moved into symtab.c? */
-  MessageDef* Dup(const void* owner) const;
-
   /* Is this message a map entry? */
   void setmapentry(bool map_entry);
   bool mapentry() const;
@@ -2559,7 +2577,6 @@ UPB_REFCOUNTED_CMETHODS(upb_msgdef, upb_msgdef_upcast2)
 
 bool upb_msgdef_freeze(upb_msgdef *m, upb_status *status);
 
-upb_msgdef *upb_msgdef_dup(const upb_msgdef *m, const void *owner);
 const char *upb_msgdef_fullname(const upb_msgdef *m);
 const char *upb_msgdef_name(const upb_msgdef *m);
 int upb_msgdef_numoneofs(const upb_msgdef *m);
@@ -2709,10 +2726,6 @@ class upb::EnumDef {
    * first one that was added. */
   const char* FindValueByNumber(int32_t num) const;
 
-  /* Returns a new EnumDef with all the same values.  The new EnumDef will be
-   * owned by the given owner. */
-  EnumDef* Dup(const void* owner) const;
-
   /* Iteration over name/value pairs.  The order is undefined.
    * Adding an enum val invalidates any iterators.
    *
@@ -2740,7 +2753,6 @@ UPB_BEGIN_EXTERN_C
 
 /* Native C API. */
 upb_enumdef *upb_enumdef_new(const void *owner);
-upb_enumdef *upb_enumdef_dup(const upb_enumdef *e, const void *owner);
 
 /* Include upb_refcounted methods like upb_enumdef_ref(). */
 UPB_REFCOUNTED_CMETHODS(upb_enumdef, upb_enumdef_upcast2)
@@ -2784,6 +2796,7 @@ const char *upb_enum_iter_name(upb_enum_iter *iter);
 int32_t upb_enum_iter_number(upb_enum_iter *iter);
 
 UPB_END_EXTERN_C
+
 
 /* upb::OneofDef **************************************************************/
 
@@ -2849,10 +2862,6 @@ class upb::OneofDef {
   /* Looks up by tag number. */
   const FieldDef* FindFieldByNumber(uint32_t num) const;
 
-  /* Returns a new OneofDef with all the same fields. The OneofDef will be owned
-   * by the given owner. */
-  OneofDef* Dup(const void* owner) const;
-
   /* Iteration over fields.  The order is undefined. */
   class iterator : public std::iterator<std::forward_iterator_tag, FieldDef*> {
    public:
@@ -2898,16 +2907,16 @@ UPB_BEGIN_EXTERN_C
 
 /* Native C API. */
 upb_oneofdef *upb_oneofdef_new(const void *owner);
-upb_oneofdef *upb_oneofdef_dup(const upb_oneofdef *o, const void *owner);
 
 /* Include upb_refcounted methods like upb_oneofdef_ref(). */
 UPB_REFCOUNTED_CMETHODS(upb_oneofdef, upb_oneofdef_upcast)
 
 const char *upb_oneofdef_name(const upb_oneofdef *o);
-bool upb_oneofdef_setname(upb_oneofdef *o, const char *name, upb_status *s);
-
 const upb_msgdef *upb_oneofdef_containingtype(const upb_oneofdef *o);
 int upb_oneofdef_numfields(const upb_oneofdef *o);
+uint32_t upb_oneofdef_index(const upb_oneofdef *o);
+
+bool upb_oneofdef_setname(upb_oneofdef *o, const char *name, upb_status *s);
 bool upb_oneofdef_addfield(upb_oneofdef *o, upb_fielddef *f,
                            const void *ref_donor,
                            upb_status *s);
@@ -3051,6 +3060,153 @@ UPB_INLINE upb_def *upb_filedef_mutabledef(upb_filedef *f, int i) {
 
 UPB_END_EXTERN_C
 
+typedef struct {
+ UPB_PRIVATE_FOR_CPP
+  upb_strtable_iter iter;
+  upb_deftype_t type;
+} upb_symtab_iter;
+
+#ifdef __cplusplus
+
+/* Non-const methods in upb::SymbolTable are NOT thread-safe. */
+class upb::SymbolTable {
+ public:
+  /* Returns a new symbol table with a single ref owned by "owner."
+   * Returns NULL if memory allocation failed. */
+  static SymbolTable* New();
+  static void Free(upb::SymbolTable* table);
+
+  /* For all lookup functions, the returned pointer is not owned by the
+   * caller; it may be invalidated by any non-const call or unref of the
+   * SymbolTable!  To protect against this, take a ref if desired. */
+
+  /* Freezes the symbol table: prevents further modification of it.
+   * After the Freeze() operation is successful, the SymbolTable must only be
+   * accessed via a const pointer.
+   *
+   * Unlike with upb::MessageDef/upb::EnumDef/etc, freezing a SymbolTable is not
+   * a necessary step in using a SymbolTable.  If you have no need for it to be
+   * immutable, there is no need to freeze it ever.  However sometimes it is
+   * useful, and SymbolTables that are statically compiled into the binary are
+   * always frozen by nature. */
+  void Freeze();
+
+  /* Resolves the given symbol using the rules described in descriptor.proto,
+   * namely:
+   *
+   *    If the name starts with a '.', it is fully-qualified.  Otherwise,
+   *    C++-like scoping rules are used to find the type (i.e. first the nested
+   *    types within this message are searched, then within the parent, on up
+   *    to the root namespace).
+   *
+   * If not found, returns NULL. */
+  const Def* Resolve(const char* base, const char* sym) const;
+
+  /* Finds an entry in the symbol table with this exact name.  If not found,
+   * returns NULL. */
+  const Def* Lookup(const char *sym) const;
+  const MessageDef* LookupMessage(const char *sym) const;
+  const EnumDef* LookupEnum(const char *sym) const;
+
+  /* TODO: introduce a C++ iterator, but make it nice and templated so that if
+   * you ask for an iterator of MessageDef the iterated elements are strongly
+   * typed as MessageDef*. */
+
+  /* Adds the given mutable defs to the symtab, resolving all symbols (including
+   * enum default values) and finalizing the defs.  Only one def per name may be
+   * in the list, and the defs may not duplicate any name already in the symtab.
+   * All defs must have a name -- anonymous defs are not allowed.  Anonymous
+   * defs can still be frozen by calling upb_def_freeze() directly.
+   *
+   * The entire operation either succeeds or fails.  If the operation fails,
+   * the symtab is unchanged, false is returned, and status indicates the
+   * error.  The caller passes a ref on all defs to the symtab (even if the
+   * operation fails).
+   *
+   * TODO(haberman): currently failure will leave the symtab unchanged, but may
+   * leave the defs themselves partially resolved.  Does this matter?  If so we
+   * could do a prepass that ensures that all symbols are resolvable and bail
+   * if not, so we don't mutate anything until we know the operation will
+   * succeed. */
+  bool Add(Def*const* defs, size_t n, void* ref_donor, Status* status);
+
+  bool Add(const std::vector<Def*>& defs, void *owner, Status* status) {
+    return Add((Def*const*)&defs[0], defs.size(), owner, status);
+  }
+
+  /* Resolves all subdefs for messages in this file and attempts to freeze the
+   * file.  If this succeeds, adds all the symbols to this SymbolTable
+   * (replacing any existing ones with the same names). */
+  bool AddFile(FileDef* file, Status* s);
+
+ private:
+  UPB_DISALLOW_POD_OPS(SymbolTable, upb::SymbolTable)
+};
+
+#endif  /* __cplusplus */
+
+UPB_BEGIN_EXTERN_C
+
+/* Native C API. */
+
+upb_symtab *upb_symtab_new();
+void upb_symtab_free(upb_symtab* s);
+const upb_def *upb_symtab_resolve(const upb_symtab *s, const char *base,
+                                  const char *sym);
+const upb_def *upb_symtab_lookup(const upb_symtab *s, const char *sym);
+const upb_msgdef *upb_symtab_lookupmsg(const upb_symtab *s, const char *sym);
+const upb_enumdef *upb_symtab_lookupenum(const upb_symtab *s, const char *sym);
+bool upb_symtab_add(upb_symtab *s, upb_def *const*defs, size_t n,
+                    void *ref_donor, upb_status *status);
+bool upb_symtab_addfile(upb_symtab *s, upb_filedef *file, upb_status* status);
+
+/* upb_symtab_iter i;
+ * for(upb_symtab_begin(&i, s, type); !upb_symtab_done(&i);
+ *     upb_symtab_next(&i)) {
+ *   const upb_def *def = upb_symtab_iter_def(&i);
+ *    // ...
+ * }
+ *
+ * For C we don't have separate iterators for const and non-const.
+ * It is the caller's responsibility to cast the upb_fielddef* to
+ * const if the upb_msgdef* is const. */
+void upb_symtab_begin(upb_symtab_iter *iter, const upb_symtab *s,
+                      upb_deftype_t type);
+void upb_symtab_next(upb_symtab_iter *iter);
+bool upb_symtab_done(const upb_symtab_iter *iter);
+const upb_def *upb_symtab_iter_def(const upb_symtab_iter *iter);
+
+UPB_END_EXTERN_C
+
+#ifdef __cplusplus
+/* C++ inline wrappers. */
+namespace upb {
+inline SymbolTable* SymbolTable::New() {
+  return upb_symtab_new();
+}
+inline void SymbolTable::Free(SymbolTable* s) {
+  upb_symtab_free(s);
+}
+inline const Def *SymbolTable::Resolve(const char *base,
+                                       const char *sym) const {
+  return upb_symtab_resolve(this, base, sym);
+}
+inline const Def* SymbolTable::Lookup(const char *sym) const {
+  return upb_symtab_lookup(this, sym);
+}
+inline const MessageDef *SymbolTable::LookupMessage(const char *sym) const {
+  return upb_symtab_lookupmsg(this, sym);
+}
+inline bool SymbolTable::Add(
+    Def*const* defs, size_t n, void* ref_donor, Status* status) {
+  return upb_symtab_add(this, (upb_def*const*)defs, n, ref_donor, status);
+}
+inline bool SymbolTable::AddFile(FileDef* file, Status* s) {
+  return upb_symtab_addfile(this, file, s);
+}
+}  /* namespace upb */
+#endif
+
 #ifdef __cplusplus
 
 UPB_INLINE const char* upb_safecstr(const std::string& str) {
@@ -3061,9 +3217,6 @@ UPB_INLINE const char* upb_safecstr(const std::string& str) {
 /* Inline C++ wrappers. */
 namespace upb {
 
-inline Def* Def::Dup(const void* owner) const {
-  return upb_def_dup(this, owner);
-}
 inline Def::Type Def::def_type() const { return upb_def_type(this); }
 inline const char* Def::full_name() const { return upb_def_fullname(this); }
 inline const char* Def::name() const { return upb_def_name(this); }
@@ -3112,9 +3265,6 @@ inline FieldDef::IntegerFormat FieldDef::ConvertIntegerFormat(int32_t val) {
 inline reffed_ptr<FieldDef> FieldDef::New() {
   upb_fielddef *f = upb_fielddef_new(&f);
   return reffed_ptr<FieldDef>(f, &f);
-}
-inline FieldDef* FieldDef::Dup(const void* owner) const {
-  return upb_fielddef_dup(this, owner);
 }
 inline const char* FieldDef::full_name() const {
   return upb_fielddef_fullname(this);
@@ -3355,9 +3505,6 @@ inline const OneofDef* MessageDef::FindOneofByName(const char* name,
                                                    size_t len) const {
   return upb_msgdef_ntoo(this, name, len);
 }
-inline MessageDef* MessageDef::Dup(const void *owner) const {
-  return upb_msgdef_dup(this, owner);
-}
 inline void MessageDef::setmapentry(bool map_entry) {
   upb_msgdef_setmapentry(this, map_entry);
 }
@@ -3526,9 +3673,6 @@ inline bool EnumDef::FindValueByName(const char* name, int32_t *num) const {
 }
 inline const char* EnumDef::FindValueByNumber(int32_t num) const {
   return upb_enumdef_iton(this, num);
-}
-inline EnumDef* EnumDef::Dup(const void* owner) const {
-  return upb_enumdef_dup(this, owner);
 }
 
 inline EnumDef::Iterator::Iterator(const EnumDef* e) {
@@ -3836,6 +3980,7 @@ extern const struct upb_refcounted_vtbl upb_enumdef_vtbl;
 struct upb_oneofdef {
   upb_refcounted base;
 
+  uint32_t index;  /* Index within oneofs. */
   const char *name;
   upb_strtable ntof;
   upb_inttable itof;
@@ -3845,7 +3990,7 @@ struct upb_oneofdef {
 extern const struct upb_refcounted_vtbl upb_oneofdef_vtbl;
 
 #define UPB_ONEOFDEF_INIT(name, ntof, itof, refs, ref2s) \
-  { UPB_REFCOUNT_INIT(&upb_oneofdef_vtbl, refs, ref2s), name, ntof, itof }
+  { UPB_REFCOUNT_INIT(&upb_oneofdef_vtbl, refs, ref2s), 0, name, ntof, itof }
 
 
 /* upb_symtab *****************************************************************/
@@ -5832,12 +5977,14 @@ inline BytesHandler::~BytesHandler() {}
 
 #ifdef __cplusplus
 namespace upb {
+class BufferSink;
 class BufferSource;
 class BytesSink;
 class Sink;
 }
 #endif
 
+UPB_DECLARE_TYPE(upb::BufferSink, upb_bufsink)
 UPB_DECLARE_TYPE(upb::BufferSource, upb_bufsrc)
 UPB_DECLARE_TYPE(upb::BytesSink, upb_bytessink)
 UPB_DECLARE_TYPE(upb::Sink, upb_sink)
@@ -6024,6 +6171,13 @@ struct upb_bufsrc {
 
 UPB_BEGIN_EXTERN_C
 
+/* A class for accumulating output string data in a flat buffer. */
+
+upb_bufsink *upb_bufsink_new(upb_env *env);
+void upb_bufsink_free(upb_bufsink *sink);
+upb_bytessink *upb_bufsink_sink(upb_bufsink *sink);
+const char *upb_bufsink_getdata(const upb_bufsink *sink, size_t *len);
+
 /* Inline definitions. */
 
 UPB_INLINE void upb_bytessink_reset(upb_bytessink *s, const upb_byteshandler *h,
@@ -6073,23 +6227,7 @@ UPB_INLINE bool upb_bytessink_end(upb_bytessink *s) {
                  &s->handler->table[UPB_ENDSTR_SELECTOR].attr));
 }
 
-UPB_INLINE bool upb_bufsrc_putbuf(const char *buf, size_t len,
-                                  upb_bytessink *sink) {
-  void *subc;
-  bool ret;
-  upb_bufhandle handle;
-  upb_bufhandle_init(&handle);
-  upb_bufhandle_setbuf(&handle, buf, 0);
-  ret = upb_bytessink_start(sink, len, &subc);
-  if (ret && len != 0) {
-    ret = (upb_bytessink_putbuf(sink, subc, buf, len, &handle) >= len);
-  }
-  if (ret) {
-    ret = upb_bytessink_end(sink);
-  }
-  upb_bufhandle_uninit(&handle);
-  return ret;
-}
+bool upb_bufsrc_putbuf(const char *buf, size_t len, upb_bytessink *sink);
 
 #define PUTVAL(type, ctype)                                                    \
   UPB_INLINE bool upb_sink_put##type(upb_sink *s, upb_selector_t sel,          \
@@ -6337,267 +6475,407 @@ inline bool BufferSource::PutBuffer(const char *buf, size_t len,
 
 #endif
 /*
-** For handlers that do very tiny, very simple operations, the function call
-** overhead of calling a handler can be significant.  This file allows the
-** user to define handlers that do something very simple like store the value
-** to memory and/or set a hasbit.  JIT compilers can then special-case these
-** handlers and emit specialized code for them instead of actually calling the
-** handler.
+** upb::Message is a representation for protobuf messages.
 **
-** The functionality is very simple/limited right now but may expand to be able
-** to call another function.
-*/
+** However it differs from other common representations like
+** google::protobuf::Message in one key way: it does not prescribe any
+** ownership between messages and submessages, and it relies on the
+** client to delete each message/submessage/array/map at the appropriate
+** time.
+**
+** A client can access a upb::Message without knowing anything about
+** ownership semantics, but to create or mutate a message a user needs
+** to implement the memory management themselves.
+**
+** Currently all messages, arrays, and maps store a upb_alloc* internally.
+** Mutating operations use this when they require dynamically-allocated
+** memory.  We could potentially eliminate this size overhead later by
+** letting the user flip a bit on the factory that prevents this from
+** being stored.  The user would then need to use separate functions where
+** the upb_alloc* is passed explicitly.  However for handlers to populate
+** such structures, they would need a place to store this upb_alloc* during
+** parsing; upb_handlers don't currently have a good way to accommodate this.
+**
+** TODO: UTF-8 checking?
+**/
 
-#ifndef UPB_SHIM_H
-#define UPB_SHIM_H
+#ifndef UPB_MSG_H_
+#define UPB_MSG_H_
 
-
-typedef struct {
-  size_t offset;
-  int32_t hasbit;
-} upb_shim_data;
 
 #ifdef __cplusplus
 
 namespace upb {
-
-struct Shim {
-  typedef upb_shim_data Data;
-
-  /* Sets a handler for the given field that writes the value to the given
-   * offset and, if hasbit >= 0, sets a bit at the given bit offset.  Returns
-   * true if the handler was set successfully. */
-  static bool Set(Handlers *h, const FieldDef *f, size_t ofs, int32_t hasbit);
-
-  /* If this handler is a shim, returns the corresponding upb::Shim::Data and
-   * stores the type in "type".  Otherwise returns NULL. */
-  static const Data* GetData(const Handlers* h, Handlers::Selector s,
-                             FieldDef::Type* type);
-};
-
-}  /* namespace upb */
+class Array;
+class Map;
+class MapIterator;
+class MessageFactory;
+class MessageLayout;
+class Visitor;
+class VisitorPlan;
+}
 
 #endif
+
+UPB_DECLARE_TYPE(upb::MessageFactory, upb_msgfactory)
+UPB_DECLARE_TYPE(upb::MessageLayout, upb_msglayout)
+UPB_DECLARE_TYPE(upb::Array, upb_array)
+UPB_DECLARE_TYPE(upb::Map, upb_map)
+UPB_DECLARE_TYPE(upb::MapIterator, upb_mapiter)
+UPB_DECLARE_TYPE(upb::Visitor, upb_visitor)
+UPB_DECLARE_TYPE(upb::VisitorPlan, upb_visitorplan)
+
+/* TODO(haberman): C++ accessors */
 
 UPB_BEGIN_EXTERN_C
 
-/* C API. */
-bool upb_shim_set(upb_handlers *h, const upb_fielddef *f, size_t offset,
-                  int32_t hasbit);
-const upb_shim_data *upb_shim_getdata(const upb_handlers *h, upb_selector_t s,
-                                      upb_fieldtype_t *type);
-
-UPB_END_EXTERN_C
-
-#ifdef __cplusplus
-/* C++ Wrappers. */
-namespace upb {
-inline bool Shim::Set(Handlers* h, const FieldDef* f, size_t ofs,
-                      int32_t hasbit) {
-  return upb_shim_set(h, f, ofs, hasbit);
-}
-inline const Shim::Data* Shim::GetData(const Handlers* h, Handlers::Selector s,
-                                       FieldDef::Type* type) {
-  return upb_shim_getdata(h, s, type);
-}
-}  /* namespace upb */
-#endif
-
-#endif  /* UPB_SHIM_H */
-/*
-** upb::SymbolTable (upb_symtab)
-**
-** A symtab (symbol table) stores a name->def map of upb_defs.  Clients could
-** always create such tables themselves, but upb_symtab has logic for resolving
-** symbolic references, and in particular, for keeping a whole set of consistent
-** defs when replacing some subset of those defs.  This logic is nontrivial.
-**
-** This is a mixed C/C++ interface that offers a full API to both languages.
-** See the top-level README for more information.
-*/
-
-#ifndef UPB_SYMTAB_H_
-#define UPB_SYMTAB_H_
+typedef void upb_msg;
 
 
-#ifdef __cplusplus
-#include <vector>
-namespace upb { class SymbolTable; }
-#endif
+/** upb_msglayout *************************************************************/
 
-UPB_DECLARE_DERIVED_TYPE(upb::SymbolTable, upb::RefCounted,
-                         upb_symtab, upb_refcounted)
+/* upb_msglayout represents the memory layout of a given upb_msgdef.  You get
+ * instances of this from a upb_msgfactory, and the factory always owns the
+ * msglayout. */
 
-typedef struct {
- UPB_PRIVATE_FOR_CPP
-  upb_strtable_iter iter;
-  upb_deftype_t type;
-} upb_symtab_iter;
+/* Gets the factory for this layout */
+upb_msgfactory *upb_msglayout_factory(const upb_msglayout *l);
 
-#ifdef __cplusplus
+/* Get the msglayout for a submessage.  This requires that this field is a
+ * submessage, ie. upb_fielddef_issubmsg(upb_msglayout_msgdef(l)) == true.
+ *
+ * Since map entry messages don't have layouts, if upb_fielddef_ismap(f) == true
+ * then this function will return the layout for the map's value.  It requires
+ * that the value type of the map field is a submessage. */
+const upb_msglayout *upb_msglayout_sublayout(const upb_msglayout *l,
+                                             const upb_fielddef *f);
 
-/* Non-const methods in upb::SymbolTable are NOT thread-safe. */
-class upb::SymbolTable {
- public:
-  /* Returns a new symbol table with a single ref owned by "owner."
-   * Returns NULL if memory allocation failed. */
-  static reffed_ptr<SymbolTable> New();
+/* Returns the msgdef for this msglayout. */
+const upb_msgdef *upb_msglayout_msgdef(const upb_msglayout *l);
 
-  /* Include RefCounted base methods. */
-  UPB_REFCOUNTED_CPPMETHODS
 
-  /* For all lookup functions, the returned pointer is not owned by the
-   * caller; it may be invalidated by any non-const call or unref of the
-   * SymbolTable!  To protect against this, take a ref if desired. */
+/** upb_visitor ***************************************************************/
 
-  /* Freezes the symbol table: prevents further modification of it.
-   * After the Freeze() operation is successful, the SymbolTable must only be
-   * accessed via a const pointer.
-   *
-   * Unlike with upb::MessageDef/upb::EnumDef/etc, freezing a SymbolTable is not
-   * a necessary step in using a SymbolTable.  If you have no need for it to be
-   * immutable, there is no need to freeze it ever.  However sometimes it is
-   * useful, and SymbolTables that are statically compiled into the binary are
-   * always frozen by nature. */
-  void Freeze();
+/* upb_visitor will visit all the fields of a message and its submessages.  It
+ * uses a upb_visitorplan which you can obtain from a upb_msgfactory. */
 
-  /* Resolves the given symbol using the rules described in descriptor.proto,
-   * namely:
-   *
-   *    If the name starts with a '.', it is fully-qualified.  Otherwise,
-   *    C++-like scoping rules are used to find the type (i.e. first the nested
-   *    types within this message are searched, then within the parent, on up
-   *    to the root namespace).
-   *
-   * If not found, returns NULL. */
-  const Def* Resolve(const char* base, const char* sym) const;
+upb_visitor *upb_visitor_create(upb_env *e, const upb_visitorplan *vp,
+                                upb_sink *output);
+bool upb_visitor_visitmsg(upb_visitor *v, const upb_msg *msg);
 
-  /* Finds an entry in the symbol table with this exact name.  If not found,
-   * returns NULL. */
-  const Def* Lookup(const char *sym) const;
-  const MessageDef* LookupMessage(const char *sym) const;
-  const EnumDef* LookupEnum(const char *sym) const;
 
-  /* TODO: introduce a C++ iterator, but make it nice and templated so that if
-   * you ask for an iterator of MessageDef the iterated elements are strongly
-   * typed as MessageDef*. */
+/** upb_msgfactory ************************************************************/
 
-  /* Adds the given mutable defs to the symtab, resolving all symbols
-   * (including enum default values) and finalizing the defs.  Only one def per
-   * name may be in the list, but defs can replace existing defs in the symtab.
-   * All defs must have a name -- anonymous defs are not allowed.  Anonymous
-   * defs can still be frozen by calling upb_def_freeze() directly.
-   *
-   * Any existing defs that can reach defs that are being replaced will
-   * themselves be replaced also, so that the resulting set of defs is fully
-   * consistent.
-   *
-   * This logic implemented in this method is a convenience; ultimately it
-   * calls some combination of upb_fielddef_setsubdef(), upb_def_dup(), and
-   * upb_freeze(), any of which the client could call themself.  However, since
-   * the logic for doing so is nontrivial, we provide it here.
-   *
-   * The entire operation either succeeds or fails.  If the operation fails,
-   * the symtab is unchanged, false is returned, and status indicates the
-   * error.  The caller passes a ref on all defs to the symtab (even if the
-   * operation fails).
-   *
-   * TODO(haberman): currently failure will leave the symtab unchanged, but may
-   * leave the defs themselves partially resolved.  Does this matter?  If so we
-   * could do a prepass that ensures that all symbols are resolvable and bail
-   * if not, so we don't mutate anything until we know the operation will
-   * succeed.
-   *
-   * TODO(haberman): since the defs must be mutable, refining a frozen def
-   * requires making mutable copies of the entire tree.  This is wasteful if
-   * only a few messages are changing.  We may want to add a way of adding a
-   * tree of frozen defs to the symtab (perhaps an alternate constructor where
-   * you pass the root of the tree?) */
-  bool Add(Def*const* defs, size_t n, void* ref_donor, Status* status);
+/* A upb_msgfactory contains a cache of upb_msglayout, upb_handlers, and
+ * upb_visitorplan objects.  These are the objects necessary to represent,
+ * populate, and and visit upb_msg objects.
+ *
+ * These caches are all populated by upb_msgdef, and lazily created on demand.
+ */
 
-  bool Add(const std::vector<Def*>& defs, void *owner, Status* status) {
-    return Add((Def*const*)&defs[0], defs.size(), owner, status);
+/* Creates and destroys a msgfactory, respectively.  The messages for this
+ * msgfactory must come from |symtab| (which should outlive the msgfactory). */
+upb_msgfactory *upb_msgfactory_new(const upb_symtab *symtab);
+void upb_msgfactory_free(upb_msgfactory *f);
+
+const upb_symtab *upb_msgfactory_symtab(const upb_msgfactory *f);
+
+/* The functions to get cached objects, lazily creating them on demand.  These
+ * all require:
+ *
+ * - m is in upb_msgfactory_symtab(f)
+ * - upb_msgdef_mapentry(m) == false (since map messages can't have layouts).
+ *
+ * The returned objects will live for as long as the msgfactory does.
+ *
+ * TODO(haberman): consider making this thread-safe and take a const
+ * upb_msgfactory. */
+const upb_msglayout *upb_msgfactory_getlayout(upb_msgfactory *f,
+                                              const upb_msgdef *m);
+const upb_handlers *upb_msgfactory_getmergehandlers(upb_msgfactory *f,
+                                                    const upb_msgdef *m);
+const upb_visitorplan *upb_msgfactory_getvisitorplan(upb_msgfactory *f,
+                                                     const upb_handlers *h);
+
+
+/** upb_msgval ****************************************************************/
+
+/* A union representing all possible protobuf values.  Used for generic get/set
+ * operations. */
+
+typedef union {
+  bool b;
+  float flt;
+  double dbl;
+  int32_t i32;
+  int64_t i64;
+  uint32_t u32;
+  uint64_t u64;
+  const upb_map* map;
+  const upb_msg* msg;
+  const upb_array* arr;
+  const void* ptr;
+  struct {
+    const char *ptr;
+    size_t len;
+  } str;
+} upb_msgval;
+
+#define ACCESSORS(name, membername, ctype) \
+  UPB_INLINE ctype upb_msgval_get ## name(upb_msgval v) { \
+    return v.membername; \
+  } \
+  UPB_INLINE void upb_msgval_set ## name(upb_msgval *v, ctype cval) { \
+    v->membername = cval; \
+  } \
+  UPB_INLINE upb_msgval upb_msgval_ ## name(ctype v) { \
+    upb_msgval ret; \
+    ret.membername = v; \
+    return ret; \
   }
 
-  /* Resolves all subdefs for messages in this file and attempts to freeze the
-   * file.  If this succeeds, adds all the symbols to this SymbolTable
-   * (replacing any existing ones with the same names). */
-  bool AddFile(FileDef* file, Status* s);
+ACCESSORS(bool,   b,   bool)
+ACCESSORS(float,  flt, float)
+ACCESSORS(double, dbl, double)
+ACCESSORS(int32,  i32, int32_t)
+ACCESSORS(int64,  i64, int64_t)
+ACCESSORS(uint32, u32, uint32_t)
+ACCESSORS(uint64, u64, uint64_t)
+ACCESSORS(map,    map, const upb_map*)
+ACCESSORS(msg,    msg, const upb_msg*)
+ACCESSORS(ptr,    ptr, const void*)
+ACCESSORS(arr,    arr, const upb_array*)
 
- private:
-  UPB_DISALLOW_POD_OPS(SymbolTable, upb::SymbolTable)
-};
+#undef ACCESSORS
 
-#endif  /* __cplusplus */
+UPB_INLINE upb_msgval upb_msgval_str(const char *ptr, size_t len) {
+  upb_msgval ret;
+  ret.str.ptr = ptr;
+  ret.str.len = len;
+  return ret;
+}
 
-UPB_BEGIN_EXTERN_C
+UPB_INLINE const char* upb_msgval_getstr(upb_msgval val) {
+  return val.str.ptr;
+}
 
-/* Native C API. */
+UPB_INLINE size_t upb_msgval_getstrlen(upb_msgval val) {
+  return val.str.len;
+}
 
-/* Include refcounted methods like upb_symtab_ref(). */
-UPB_REFCOUNTED_CMETHODS(upb_symtab, upb_symtab_upcast)
 
-upb_symtab *upb_symtab_new(const void *owner);
-void upb_symtab_freeze(upb_symtab *s);
-const upb_def *upb_symtab_resolve(const upb_symtab *s, const char *base,
-                                  const char *sym);
-const upb_def *upb_symtab_lookup(const upb_symtab *s, const char *sym);
-const upb_msgdef *upb_symtab_lookupmsg(const upb_symtab *s, const char *sym);
-const upb_enumdef *upb_symtab_lookupenum(const upb_symtab *s, const char *sym);
-bool upb_symtab_add(upb_symtab *s, upb_def *const*defs, size_t n,
-                    void *ref_donor, upb_status *status);
-bool upb_symtab_addfile(upb_symtab *s, upb_filedef *file, upb_status* status);
+/** upb_msg *******************************************************************/
 
-/* upb_symtab_iter i;
- * for(upb_symtab_begin(&i, s, type); !upb_symtab_done(&i);
- *     upb_symtab_next(&i)) {
- *   const upb_def *def = upb_symtab_iter_def(&i);
- *    // ...
- * }
+/* A upb_msg represents a protobuf message.  It always corresponds to a specific
+ * upb_msglayout, which describes how it is laid out in memory.
  *
- * For C we don't have separate iterators for const and non-const.
- * It is the caller's responsibility to cast the upb_fielddef* to
- * const if the upb_msgdef* is const. */
-void upb_symtab_begin(upb_symtab_iter *iter, const upb_symtab *s,
-                      upb_deftype_t type);
-void upb_symtab_next(upb_symtab_iter *iter);
-bool upb_symtab_done(const upb_symtab_iter *iter);
-const upb_def *upb_symtab_iter_def(const upb_symtab_iter *iter);
+ * The message will have a fixed size, as returned by upb_msg_sizeof(), which
+ * will be used to store fixed-length fields.  The upb_msg may also allocate
+ * dynamic memory internally to store data such as:
+ *
+ * - extensions
+ * - unknown fields
+ */
+
+/* Returns the size of a message given this layout. */
+size_t upb_msg_sizeof(const upb_msglayout *l);
+
+/* upb_msg_init() / upb_msg_uninit() allow the user to use a pre-allocated
+ * block of memory as a message.  The block's size should be upb_msg_sizeof().
+ * upb_msg_uninit() must be called to release internally-allocated memory
+ * unless the allocator is an arena that does not require freeing.
+ *
+ * Please note that upb_msg_uninit() does *not* free any submessages, maps,
+ * or arrays referred to by this message's fields.  You must free them manually
+ * yourself. */
+void upb_msg_init(upb_msg *msg, const upb_msglayout *l, upb_alloc *a);
+void upb_msg_uninit(upb_msg *msg, const upb_msglayout *l);
+
+/* Like upb_msg_init() / upb_msg_uninit(), except the message's memory is
+ * allocated / freed from the given upb_alloc. */
+upb_msg *upb_msg_new(const upb_msglayout *l, upb_alloc *a);
+void upb_msg_free(upb_msg *msg, const upb_msglayout *l);
+
+/* Returns the upb_alloc for the given message. */
+upb_alloc *upb_msg_alloc(const upb_msg *msg, const upb_msglayout *l);
+
+/* Packs the tree of messages rooted at "msg" into a single hunk of memory,
+ * allocated from the given allocator. */
+void *upb_msg_pack(const upb_msg *msg, const upb_msglayout *l,
+                   void *p, size_t *ofs, size_t size);
+
+/* Read-only message API.  Can be safely called by anyone. */
+
+/* Returns the value associated with this field:
+ *   - for scalar fields (including strings), the value directly.
+ *   - return upb_msg*, or upb_map* for msg/map.
+ *     If the field is unset for these field types, returns NULL.
+ *
+ * TODO(haberman): should we let users store cached array/map/msg
+ * pointers here for fields that are unset?  Could be useful for the
+ * strongly-owned submessage model (ie. generated C API that doesn't use
+ * arenas).
+ */
+upb_msgval upb_msg_get(const upb_msg *msg,
+                       const upb_fielddef *f,
+                       const upb_msglayout *l);
+
+/* May only be called for fields where upb_fielddef_haspresence(f) == true. */
+bool upb_msg_has(const upb_msg *msg,
+                 const upb_fielddef *f,
+                 const upb_msglayout *l);
+
+/* Returns NULL if no field in the oneof is set. */
+const upb_fielddef *upb_msg_getoneofcase(const upb_msg *msg,
+                                         const upb_oneofdef *o,
+                                         const upb_msglayout *l);
+
+/* Returns true if any field in the oneof is set. */
+bool upb_msg_hasoneof(const upb_msg *msg,
+                      const upb_oneofdef *o,
+                      const upb_msglayout *l);
+
+
+/* Mutable message API.  May only be called by the owner of the message who
+ * knows its ownership scheme and how to keep it consistent. */
+
+/* Sets the given field to the given value.  Does not perform any memory
+ * management: if you overwrite a pointer to a msg/array/map/string without
+ * cleaning it up (or using an arena) it will leak.
+ */
+bool upb_msg_set(upb_msg *msg,
+                 const upb_fielddef *f,
+                 upb_msgval val,
+                 const upb_msglayout *l);
+
+/* For a primitive field, set it back to its default. For repeated, string, and
+ * submessage fields set it back to NULL.  This could involve releasing some
+ * internal memory (for example, from an extension dictionary), but it is not
+ * recursive in any way and will not recover any memory that may be used by
+ * arrays/maps/strings/msgs that this field may have pointed to.
+ */
+bool upb_msg_clearfield(upb_msg *msg,
+                        const upb_fielddef *f,
+                        const upb_msglayout *l);
+
+/* Clears all fields in the oneof such that none of them are set. */
+bool upb_msg_clearoneof(upb_msg *msg,
+                        const upb_oneofdef *o,
+                        const upb_msglayout *l);
+
+/* TODO(haberman): copyfrom()/mergefrom()? */
+
+
+/** upb_array *****************************************************************/
+
+/* A upb_array stores data for a repeated field.  The memory management
+ * semantics are the same as upb_msg.  A upb_array allocates dynamic
+ * memory internally for the array elements. */
+
+size_t upb_array_sizeof(upb_fieldtype_t type);
+void upb_array_init(upb_array *arr, upb_fieldtype_t type, upb_alloc *a);
+void upb_array_uninit(upb_array *arr);
+upb_array *upb_array_new(upb_fieldtype_t type, upb_alloc *a);
+void upb_array_free(upb_array *arr);
+
+/* Read-only interface.  Safe for anyone to call. */
+
+size_t upb_array_size(const upb_array *arr);
+upb_fieldtype_t upb_array_type(const upb_array *arr);
+upb_msgval upb_array_get(const upb_array *arr, size_t i);
+
+/* Write interface.  May only be called by the message's owner who can enforce
+ * its memory management invariants. */
+
+bool upb_array_set(upb_array *arr, size_t i, upb_msgval val);
+
+
+/** upb_map *******************************************************************/
+
+/* A upb_map stores data for a map field.  The memory management semantics are
+ * the same as upb_msg, with one notable exception.  upb_map will internally
+ * store a copy of all string keys, but *not* any string values or submessages.
+ * So you must ensure that any string or message values outlive the map, and you
+ * must delete them manually when they are no longer required. */
+
+size_t upb_map_sizeof(upb_fieldtype_t ktype, upb_fieldtype_t vtype);
+bool upb_map_init(upb_map *map, upb_fieldtype_t ktype, upb_fieldtype_t vtype,
+                  upb_alloc *a);
+void upb_map_uninit(upb_map *map);
+upb_map *upb_map_new(upb_fieldtype_t ktype, upb_fieldtype_t vtype, upb_alloc *a);
+void upb_map_free(upb_map *map);
+
+/* Read-only interface.  Safe for anyone to call. */
+
+size_t upb_map_size(const upb_map *map);
+upb_fieldtype_t upb_map_keytype(const upb_map *map);
+upb_fieldtype_t upb_map_valuetype(const upb_map *map);
+bool upb_map_get(const upb_map *map, upb_msgval key, upb_msgval *val);
+
+/* Write interface.  May only be called by the message's owner who can enforce
+ * its memory management invariants. */
+
+/* Sets or overwrites an entry in the map.  Return value indicates whether
+ * the operation succeeded or failed with OOM, and also whether an existing
+ * key was replaced or not. */
+bool upb_map_set(upb_map *map,
+                 upb_msgval key, upb_msgval val,
+                 upb_msgval *valremoved);
+
+/* Deletes an entry in the map.  Returns true if the key was present. */
+bool upb_map_del(upb_map *map, upb_msgval key);
+
+
+/** upb_mapiter ***************************************************************/
+
+/* For iterating over a map.  Map iterators are invalidated by mutations to the
+ * map, but an invalidated iterator will never return junk or crash the process.
+ * An invalidated iterator may return entries that were already returned though,
+ * and if you keep invalidating the iterator during iteration, the program may
+ * enter an infinite loop. */
+
+size_t upb_mapiter_sizeof();
+
+void upb_mapiter_begin(upb_mapiter *i, const upb_map *t);
+upb_mapiter *upb_mapiter_new(const upb_map *t, upb_alloc *a);
+void upb_mapiter_free(upb_mapiter *i, upb_alloc *a);
+void upb_mapiter_next(upb_mapiter *i);
+bool upb_mapiter_done(const upb_mapiter *i);
+
+upb_msgval upb_mapiter_key(const upb_mapiter *i);
+upb_msgval upb_mapiter_value(const upb_mapiter *i);
+void upb_mapiter_setdone(upb_mapiter *i);
+bool upb_mapiter_isequal(const upb_mapiter *i1, const upb_mapiter *i2);
+
+
+/** Handlers ******************************************************************/
+
+/* These are the handlers used internally by upb_msgfactory_getmergehandlers().
+ * They write scalar data to a known offset from the message pointer.
+ *
+ * These would be trivial for anyone to implement themselves, but it's better
+ * to use these because some JITs will recognize and specialize these instead
+ * of actually calling the function. */
+
+/* Sets a handler for the given primitive field that will write the data at the
+ * given offset.  If hasbit > 0, also sets a hasbit at the given bit offset
+ * (addressing each byte low to high). */
+bool upb_msg_setscalarhandler(upb_handlers *h,
+                              const upb_fielddef *f,
+                              size_t offset,
+                              int32_t hasbit);
+
+/* If the given handler is a msghandlers_primitive field, returns true and sets
+ * *type, *offset and *hasbit.  Otherwise returns false. */
+bool upb_msg_getscalarhandlerdata(const upb_handlers *h,
+                                  upb_selector_t s,
+                                  upb_fieldtype_t *type,
+                                  size_t *offset,
+                                  int32_t *hasbit);
 
 UPB_END_EXTERN_C
 
-#ifdef __cplusplus
-/* C++ inline wrappers. */
-namespace upb {
-inline reffed_ptr<SymbolTable> SymbolTable::New() {
-  upb_symtab *s = upb_symtab_new(&s);
-  return reffed_ptr<SymbolTable>(s, &s);
-}
-
-inline void SymbolTable::Freeze() {
-  return upb_symtab_freeze(this);
-}
-inline const Def *SymbolTable::Resolve(const char *base,
-                                       const char *sym) const {
-  return upb_symtab_resolve(this, base, sym);
-}
-inline const Def* SymbolTable::Lookup(const char *sym) const {
-  return upb_symtab_lookup(this, sym);
-}
-inline const MessageDef *SymbolTable::LookupMessage(const char *sym) const {
-  return upb_symtab_lookupmsg(this, sym);
-}
-inline bool SymbolTable::Add(
-    Def*const* defs, size_t n, void* ref_donor, Status* status) {
-  return upb_symtab_add(this, (upb_def*const*)defs, n, ref_donor, status);
-}
-inline bool SymbolTable::AddFile(FileDef* file, Status* s) {
-  return upb_symtab_addfile(this, file, s);
-}
-}  /* namespace upb */
-#endif
-
-#endif  /* UPB_SYMTAB_H_ */
+#endif /* UPB_MSG_H_ */
 /*
 ** upb::descriptor::Reader (upb_descreader)
 **
