@@ -393,7 +393,7 @@ class Message
     public function decode($data)
     {
         $input = new InputStream($data);
-        $this->parseFromStream($input);
+        return $this->parseFromStream($input);
     }
 
     /**
