@@ -675,7 +675,7 @@ static void add_handlers_for_singular_field(upb_handlers *h,
     case UPB_TYPE_INT64:
     case UPB_TYPE_UINT64:
     case UPB_TYPE_DOUBLE:
-      upb_shim_set(h, f, offset, -1);
+      upb_msg_setscalarhandler(h, f, offset, -1);
       break;
     case UPB_TYPE_STRING:
     case UPB_TYPE_BYTES: {

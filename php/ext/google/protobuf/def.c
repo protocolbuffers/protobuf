@@ -209,14 +209,14 @@ static void init_generated_pool_once(TSRMLS_D) {
 
 static void descriptor_pool_init_c_instance(DescriptorPool *pool TSRMLS_DC) {
   zend_object_std_init(&pool->std, descriptor_pool_type TSRMLS_CC);
-  pool->symtab = upb_symtab_new(&pool->symtab);
+  pool->symtab = upb_symtab_new();
 
   ALLOC_HASHTABLE(pool->pending_list);
   zend_hash_init(pool->pending_list, 1, NULL, ZVAL_PTR_DTOR, 0);
 }
 
 static void descriptor_pool_free_c(DescriptorPool *pool TSRMLS_DC) {
-  upb_symtab_unref(pool->symtab, &pool->symtab);
+  upb_symtab_free(pool->symtab);
 
   zend_hash_destroy(pool->pending_list);
   FREE_HASHTABLE(pool->pending_list);
