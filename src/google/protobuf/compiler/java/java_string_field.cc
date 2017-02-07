@@ -65,6 +65,7 @@ void SetPrimitiveVariables(const FieldDescriptor* descriptor,
                            std::map<string, string>* variables) {
   SetCommonFieldVariables(descriptor, info, variables);
 
+  (*variables)["full_name"] = descriptor->full_name();
   (*variables)["empty_list"] = "com.google.protobuf.LazyStringArrayList.EMPTY";
 
   (*variables)["default"] = ImmutableDefaultValue(descriptor, name_resolver);
@@ -328,6 +329,7 @@ GenerateBuilderMembers(io::Printer* printer) const {
     "  $set_has_field_bit_builder$\n"
     "  $name$_ = value;\n"
     "  $on_changed$\n"
+    "// @@protoc_insertion_point(builder_field_set:$full_name$)\n"
     "  return this;\n"
     "}\n");
   printer->Annotate("{", "}", descriptor_);
@@ -342,6 +344,7 @@ GenerateBuilderMembers(io::Printer* printer) const {
     "  $name$_ = getDefaultInstance().get$capitalized_name$();\n");
   printer->Print(variables_,
     "  $on_changed$\n"
+    "// @@protoc_insertion_point(builder_field_clear:$full_name$)\n"
     "  return this;\n"
     "}\n");
 
@@ -359,6 +362,7 @@ GenerateBuilderMembers(io::Printer* printer) const {
     "  $set_has_field_bit_builder$\n"
     "  $name$_ = value;\n"
     "  $on_changed$\n"
+    "// @@protoc_insertion_point(builder_field_setBytes:$full_name$)\n"
     "  return this;\n"
     "}\n");
 }
@@ -621,6 +625,7 @@ GenerateBuilderMembers(io::Printer* printer) const {
     "  $set_oneof_case_message$;\n"
     "  $oneof_name$_ = value;\n"
     "  $on_changed$\n"
+    "// @@protoc_insertion_point(builder_field_set:$full_name$)\n"
     "  return this;\n"
     "}\n");
   printer->Annotate("{", "}", descriptor_);
@@ -632,6 +637,7 @@ GenerateBuilderMembers(io::Printer* printer) const {
     "    $oneof_name$_ = null;\n"
     "    $on_changed$\n"
     "  }\n"
+    "// @@protoc_insertion_point(builder_field_clear:$full_name$)\n"
     "  return this;\n"
     "}\n");
   printer->Annotate("{", "}", descriptor_);
@@ -650,6 +656,7 @@ GenerateBuilderMembers(io::Printer* printer) const {
     "  $set_oneof_case_message$;\n"
     "  $oneof_name$_ = value;\n"
     "  $on_changed$\n"
+    "// @@protoc_insertion_point(builder_field_setBytes:$full_name$)\n"
     "  return this;\n"
     "}\n");
 }
@@ -849,6 +856,7 @@ GenerateBuilderMembers(io::Printer* printer) const {
     "  ensure$capitalized_name$IsMutable();\n"
     "  $name$_.set(index, value);\n"
     "  $on_changed$\n"
+    "// @@protoc_insertion_point(builder_field_setIndex:$full_name$)\n"
     "  return this;\n"
     "}\n");
   printer->Annotate("{", "}", descriptor_);
@@ -860,6 +868,7 @@ GenerateBuilderMembers(io::Printer* printer) const {
     "  ensure$capitalized_name$IsMutable();\n"
     "  $name$_.add(value);\n"
     "  $on_changed$\n"
+    "// @@protoc_insertion_point(builder_field_add:$full_name$)\n"
     "  return this;\n"
     "}\n");
   printer->Annotate("{", "}", descriptor_);
@@ -871,6 +880,7 @@ GenerateBuilderMembers(io::Printer* printer) const {
     "  com.google.protobuf.AbstractMessageLite.Builder.addAll(\n"
     "      values, $name$_);\n"
     "  $on_changed$\n"
+    "// @@protoc_insertion_point(builder_field_addAll:$full_name$)\n"
     "  return this;\n"
     "}\n");
   printer->Annotate("{", "}", descriptor_);
@@ -880,6 +890,7 @@ GenerateBuilderMembers(io::Printer* printer) const {
     "  $name$_ = $empty_list$;\n"
     "  $clear_mutable_bit_builder$;\n"
     "  $on_changed$\n"
+    "// @@protoc_insertion_point(builder_field_clear:$full_name$)\n"
     "  return this;\n"
     "}\n");
   printer->Annotate("{", "}", descriptor_);
@@ -898,6 +909,7 @@ GenerateBuilderMembers(io::Printer* printer) const {
     "  ensure$capitalized_name$IsMutable();\n"
     "  $name$_.add(value);\n"
     "  $on_changed$\n"
+    "// @@protoc_insertion_point(builder_field_addBytes:$full_name$)\n"
     "  return this;\n"
     "}\n");
 }

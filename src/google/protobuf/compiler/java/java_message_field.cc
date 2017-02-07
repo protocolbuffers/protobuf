@@ -59,6 +59,7 @@ void SetMessageVariables(const FieldDescriptor* descriptor,
                          std::map<string, string>* variables) {
   SetCommonFieldVariables(descriptor, info, variables);
 
+  (*variables)["full_name"] = descriptor->full_name();
   (*variables)["type"] =
       name_resolver->GetImmutableClassName(descriptor->message_type());
   (*variables)["mutable_type"] =
@@ -305,6 +306,7 @@ GenerateBuilderMembers(io::Printer* printer) const {
     "$name$Builder_.setMessage(value);\n",
 
     "$set_has_field_bit_builder$\n"
+    "// @@protoc_insertion_point(builder_field_set:$full_name$)\n"
     "return this;\n");
 
   // Field.Builder setField(Field.Builder builderForValue)
@@ -319,6 +321,7 @@ GenerateBuilderMembers(io::Printer* printer) const {
     "$name$Builder_.setMessage(builderForValue.build());\n",
 
     "$set_has_field_bit_builder$\n"
+    "// @@protoc_insertion_point(builder_field_set:$full_name$)\n"
     "return this;\n");
 
   // Field.Builder mergeField(Field value)
@@ -999,6 +1002,7 @@ GenerateBuilderMembers(io::Printer* printer) const {
     "$name$_.set(index, value);\n"
     "$on_changed$\n",
     "$name$Builder_.setMessage(index, value);\n",
+    "// @@protoc_insertion_point(builder_field_setIndex:$full_name$)\n"
     "return this;\n");
 
   // Builder setRepeatedField(int index, Field.Builder builderForValue)
@@ -1013,6 +1017,7 @@ GenerateBuilderMembers(io::Printer* printer) const {
 
     "$name$Builder_.setMessage(index, builderForValue.build());\n",
 
+    "// @@protoc_insertion_point(builder_field_setBuilderIndex:$full_name$)\n"
     "return this;\n");
 
   // Builder addRepeatedField(Field value)
@@ -1030,6 +1035,7 @@ GenerateBuilderMembers(io::Printer* printer) const {
 
     "$name$Builder_.addMessage(value);\n",
 
+    "// @@protoc_insertion_point(builder_field_add:$full_name$)\n"
     "return this;\n");
 
   // Builder addRepeatedField(int index, Field value)
@@ -1047,6 +1053,7 @@ GenerateBuilderMembers(io::Printer* printer) const {
 
     "$name$Builder_.addMessage(index, value);\n",
 
+    "// @@protoc_insertion_point(builder_field_addIndex:$full_name$)\n"
     "return this;\n");
 
   // Builder addRepeatedField(Field.Builder builderForValue)
@@ -1061,6 +1068,7 @@ GenerateBuilderMembers(io::Printer* printer) const {
 
     "$name$Builder_.addMessage(builderForValue.build());\n",
 
+    "// @@protoc_insertion_point(builder_field_addBuilder:$full_name$)\n"
     "return this;\n");
 
   // Builder addRepeatedField(int index, Field.Builder builderForValue)
@@ -1075,6 +1083,7 @@ GenerateBuilderMembers(io::Printer* printer) const {
 
     "$name$Builder_.addMessage(index, builderForValue.build());\n",
 
+    "// @@protoc_insertion_point(builder_field_addBuilderIndex:$full_name$)\n"
     "return this;\n");
 
   // Builder addAllRepeatedField(Iterable<Field> values)
@@ -1090,6 +1099,7 @@ GenerateBuilderMembers(io::Printer* printer) const {
 
     "$name$Builder_.addAllMessages(values);\n",
 
+    "// @@protoc_insertion_point(builder_field_addAll:$full_name$)\n"
     "return this;\n");
 
   // Builder clearAllRepeatedField()
@@ -1103,6 +1113,7 @@ GenerateBuilderMembers(io::Printer* printer) const {
 
     "$name$Builder_.clear();\n",
 
+    "// @@protoc_insertion_point(builder_field_clear:$full_name$)\n"
     "return this;\n");
 
   // Builder removeRepeatedField(int index)
@@ -1116,6 +1127,7 @@ GenerateBuilderMembers(io::Printer* printer) const {
 
     "$name$Builder_.remove(index);\n",
 
+    "// @@protoc_insertion_point(builder_field_removeIndex:$full_name$)\n"
     "return this;\n");
 
   WriteFieldDocComment(printer, descriptor_);
