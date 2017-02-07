@@ -8195,19 +8195,19 @@ NS_ASSUME_NONNULL_END
 //%PDDM-DEFINE VALUE_FOR_KEY_POD(KEY_TYPE, VALUE_TYPE, VNAME)
 //%/**
 //% * Gets the value for the given key.
-//% * 
+//% *
 //% * @param value Pointer into which the value will be set, if found.
 //% * @param key   Key under which the value is stored, if present.
-//% * 
+//% *
 //% * @return YES if the key was found and the value was copied, NO otherwise.
 //% **/
 //%- (BOOL)get##VNAME##:(nullable VALUE_TYPE *)value forKey:(KEY_TYPE)key;
 //%PDDM-DEFINE VALUE_FOR_KEY_OBJECT(KEY_TYPE, VALUE_TYPE, VNAME)
 //%/**
 //% * Fetches the object stored under the given key.
-//% * 
+//% *
 //% * @param key Key under which the value is stored, if present.
-//% * 
+//% *
 //% * @return The object if found, nil otherwise.
 //% **/
 //%- (VALUE_TYPE)objectForKey:(KEY_TYPE)key;
@@ -8231,7 +8231,7 @@ NS_ASSUME_NONNULL_END
 //%/**
 //% * Class used for map fields of <##KEY_TYPE##, ##VALUE_TYPE##>
 //% * values. This performs better than boxing into NSNumbers in NSDictionaries.
-//% * 
+//% *
 //% * @note This class is not meant to be subclassed.
 //% **/
 //%@interface DICTIONARY_CLASS_DECL##VHELPER(KEY_NAME, VALUE_NAME, VALUE_TYPE) : NSObject <NSCopying>
@@ -8246,10 +8246,10 @@ NS_ASSUME_NONNULL_END
 //%
 //%/**
 //% * Creates and initializes a dictionary with the single entry given.
-//% * 
+//% *
 //% * @param ##VNAME_VAR     The value to be placed in the dictionary.
 //% * @param key ##VNAME_VAR$S## The key under which to store the value.
-//% * 
+//% *
 //% * @return A newly instanced dictionary with the key and value in it.
 //% **/
 //%+ (instancetype)dictionaryWith##VNAME##:(VALUE_TYPE)##VNAME_VAR
@@ -8257,11 +8257,11 @@ NS_ASSUME_NONNULL_END
 //%
 //%/**
 //% * Creates and initializes a dictionary with the entries given.
-//% * 
+//% *
 //% * @param ##VNAME_VAR##s      The values to be placed in the dictionary.
 //% * @param keys ##VNAME_VAR$S##  The keys under which to store the values.
 //% * @param count ##VNAME_VAR$S## The number of entries to store in the dictionary.
-//% * 
+//% *
 //% * @return A newly instanced dictionary with the keys and values in it.
 //% **/
 //%+ (instancetype)dictionaryWith##VNAME##s:(const VALUE_TYPE ARRAY_ARG_MODIFIER##VHELPER()[__nullable])##VNAME_VAR##s
@@ -8271,9 +8271,9 @@ NS_ASSUME_NONNULL_END
 //%/**
 //% * Creates and initializes a dictionary with the entries from the given.
 //% * dictionary.
-//% * 
+//% *
 //% * @param dictionary Dictionary containing the entries to add to the dictionary.
-//% * 
+//% *
 //% * @return A newly instanced dictionary with the entries from the given
 //% *         dictionary in it.
 //% **/
@@ -8281,20 +8281,20 @@ NS_ASSUME_NONNULL_END
 //%
 //%/**
 //% * Creates and initializes a dictionary with the given capacity.
-//% * 
+//% *
 //% * @param numItems Capacity needed for the dictionary.
-//% * 
+//% *
 //% * @return A newly instanced dictionary with the given capacity.
 //% **/
 //%+ (instancetype)dictionaryWithCapacity:(NSUInteger)numItems;
 //%
 //%/**
 //% * Initializes this dictionary, copying the given values and keys.
-//% * 
+//% *
 //% * @param ##VNAME_VAR##s      The values to be placed in this dictionary.
 //% * @param keys ##VNAME_VAR$S##  The keys under which to store the values.
 //% * @param count ##VNAME_VAR$S## The number of elements to copy into the dictionary.
-//% * 
+//% *
 //% * @return A newly initialized dictionary with a copy of the values and keys.
 //% **/
 //%- (instancetype)initWith##VNAME##s:(const VALUE_TYPE ARRAY_ARG_MODIFIER##VHELPER()[__nullable])##VNAME_VAR##s
@@ -8303,18 +8303,18 @@ NS_ASSUME_NONNULL_END
 //%
 //%/**
 //% * Initializes this dictionary, copying the entries from the given dictionary.
-//% * 
+//% *
 //% * @param dictionary Dictionary containing the entries to add to this dictionary.
-//% * 
+//% *
 //% * @return A newly initialized dictionary with the entries of the given dictionary.
 //% **/
 //%- (instancetype)initWithDictionary:(GPB##KEY_NAME##VALUE_NAME##Dictionary *)dictionary;
 //%
 //%/**
 //% * Initializes this dictionary with the requested capacity.
-//% * 
+//% *
 //% * @param numItems Number of items needed for this dictionary.
-//% * 
+//% *
 //% * @return A newly initialized dictionary with the requested capacity.
 //% **/
 //%- (instancetype)initWithCapacity:(NSUInteger)numItems;
@@ -8323,7 +8323,7 @@ NS_ASSUME_NONNULL_END
 //%
 //%/**
 //% * Adds the keys and values from another dictionary.
-//% * 
+//% *
 //% * @param otherDictionary Dictionary containing entries to be added to this
 //% *                        dictionary.
 //% **/
@@ -8342,7 +8342,7 @@ NS_ASSUME_NONNULL_END
 //%/**
 //% * Class used for map fields of <##KEY_TYPE##, ##VALUE_TYPE##>
 //% * values. This performs better than boxing into NSNumbers in NSDictionaries.
-//% * 
+//% *
 //% * @note This class is not meant to be subclassed.
 //% **/
 //%@interface GPB##KEY_NAME##VALUE_NAME##Dictionary : NSObject <NSCopying>
@@ -8359,20 +8359,20 @@ NS_ASSUME_NONNULL_END
 //%
 //%/**
 //% * Creates and initializes a dictionary with the given validation function.
-//% * 
+//% *
 //% * @param func The enum validation function for the dictionary.
-//% * 
+//% *
 //% * @return A newly instanced dictionary.
 //% **/
 //%+ (instancetype)dictionaryWithValidationFunction:(nullable GPBEnumValidationFunc)func;
 //%
 //%/**
 //% * Creates and initializes a dictionary with the single entry given.
-//% * 
+//% *
 //% * @param func     The enum validation function for the dictionary.
 //% * @param rawValue The raw enum value to be placed in the dictionary.
 //% * @param key      The key under which to store the value.
-//% * 
+//% *
 //% * @return A newly instanced dictionary with the key and value in it.
 //% **/
 //%+ (instancetype)dictionaryWithValidationFunction:(nullable GPBEnumValidationFunc)func
@@ -8381,12 +8381,12 @@ NS_ASSUME_NONNULL_END
 //%
 //%/**
 //% * Creates and initializes a dictionary with the entries given.
-//% * 
+//% *
 //% * @param func   The enum validation function for the dictionary.
 //% * @param values The raw enum values values to be placed in the dictionary.
 //% * @param keys   The keys under which to store the values.
 //% * @param count  The number of entries to store in the dictionary.
-//% * 
+//% *
 //% * @return A newly instanced dictionary with the keys and values in it.
 //% **/
 //%+ (instancetype)dictionaryWithValidationFunction:(nullable GPBEnumValidationFunc)func
@@ -8397,9 +8397,9 @@ NS_ASSUME_NONNULL_END
 //%/**
 //% * Creates and initializes a dictionary with the entries from the given.
 //% * dictionary.
-//% * 
+//% *
 //% * @param dictionary Dictionary containing the entries to add to the dictionary.
-//% * 
+//% *
 //% * @return A newly instanced dictionary with the entries from the given
 //% *         dictionary in it.
 //% **/
@@ -8407,10 +8407,10 @@ NS_ASSUME_NONNULL_END
 //%
 //%/**
 //% * Creates and initializes a dictionary with the given capacity.
-//% * 
+//% *
 //% * @param func     The enum validation function for the dictionary.
 //% * @param numItems Capacity needed for the dictionary.
-//% * 
+//% *
 //% * @return A newly instanced dictionary with the given capacity.
 //% **/
 //%+ (instancetype)dictionaryWithValidationFunction:(nullable GPBEnumValidationFunc)func
@@ -8418,21 +8418,21 @@ NS_ASSUME_NONNULL_END
 //%
 //%/**
 //% * Initializes a dictionary with the given validation function.
-//% * 
+//% *
 //% * @param func The enum validation function for the dictionary.
-//% * 
+//% *
 //% * @return A newly initialized dictionary.
 //% **/
 //%- (instancetype)initWithValidationFunction:(nullable GPBEnumValidationFunc)func;
 //%
 //%/**
 //% * Initializes a dictionary with the entries given.
-//% * 
+//% *
 //% * @param func   The enum validation function for the dictionary.
 //% * @param values The raw enum values values to be placed in the dictionary.
 //% * @param keys   The keys under which to store the values.
 //% * @param count  The number of entries to store in the dictionary.
-//% * 
+//% *
 //% * @return A newly initialized dictionary with the keys and values in it.
 //% **/
 //%- (instancetype)initWithValidationFunction:(nullable GPBEnumValidationFunc)func
@@ -8443,9 +8443,9 @@ NS_ASSUME_NONNULL_END
 //%/**
 //% * Initializes a dictionary with the entries from the given.
 //% * dictionary.
-//% * 
+//% *
 //% * @param dictionary Dictionary containing the entries to add to the dictionary.
-//% * 
+//% *
 //% * @return A newly initialized dictionary with the entries from the given
 //% *         dictionary in it.
 //% **/
@@ -8453,10 +8453,10 @@ NS_ASSUME_NONNULL_END
 //%
 //%/**
 //% * Initializes a dictionary with the given capacity.
-//% * 
+//% *
 //% * @param func     The enum validation function for the dictionary.
 //% * @param numItems Capacity needed for the dictionary.
-//% * 
+//% *
 //% * @return A newly initialized dictionary with the given capacity.
 //% **/
 //%- (instancetype)initWithValidationFunction:(nullable GPBEnumValidationFunc)func
@@ -8470,23 +8470,23 @@ NS_ASSUME_NONNULL_END
 //%
 //%/**
 //% * Gets the raw enum value for the given key.
-//% * 
+//% *
 //% * @note This method bypass the validationFunc to enable the access of values that
 //% *       were not known at the time the binary was compiled.
-//% * 
+//% *
 //% * @param rawValue Pointer into which the value will be set, if found.
 //% * @param key      Key under which the value is stored, if present.
-//% * 
+//% *
 //% * @return YES if the key was found and the value was copied, NO otherwise.
 //% **/
 //%- (BOOL)getRawValue:(nullable VALUE_TYPE *)rawValue forKey:(KEY_TYPE##KisP$S##KisP)key;
 //%
 //%/**
 //% * Enumerates the keys and values on this dictionary with the given block.
-//% * 
+//% *
 //% * @note This method bypass the validationFunc to enable the access of values that
 //% *       were not known at the time the binary was compiled.
-//% * 
+//% *
 //% * @param block The block to enumerate with.
 //% *   **key**:      The key for the current entry.
 //% *   **rawValue**: The value for the current entry
@@ -8497,10 +8497,10 @@ NS_ASSUME_NONNULL_END
 //%
 //%/**
 //% * Adds the keys and raw enum values from another dictionary.
-//% * 
+//% *
 //% * @note This method bypass the validationFunc to enable the setting of values that
 //% *       were not known at the time the binary was compiled.
-//% * 
+//% *
 //% * @param otherDictionary Dictionary containing entries to be added to this
 //% *                        dictionary.
 //% **/
@@ -8521,7 +8521,7 @@ NS_ASSUME_NONNULL_END
 //%
 //%/**
 //% * Enumerates the keys and values on this dictionary with the given block.
-//% * 
+//% *
 //% * @param block The block to enumerate with.
 //% *   **key**: ##VNAME_VAR$S##  The key for the current entry.
 //% *   **VNAME_VAR**:      The value for the current entry
@@ -8533,7 +8533,7 @@ NS_ASSUME_NONNULL_END
 //%PDDM-DEFINE DICTIONARY_MUTABLE_INTERFACE(KEY_NAME, KEY_TYPE, KisP, VALUE_NAME, VALUE_TYPE, VHELPER, VNAME, VNAME_VAR)
 //%/**
 //% * Sets the value for the given key.
-//% * 
+//% *
 //% * @param ##VNAME_VAR     The value to set.
 //% * @param key ##VNAME_VAR$S## The key under which to store the value.
 //% **/
@@ -8541,7 +8541,7 @@ NS_ASSUME_NONNULL_END
 //%DICTIONARY_EXTRA_MUTABLE_METHODS_##VHELPER(KEY_NAME, KEY_TYPE, KisP, VALUE_NAME, VALUE_TYPE)
 //%/**
 //% * Removes the entry for the given key.
-//% * 
+//% *
 //% * @param aKey Key to be removed from this dictionary.
 //% **/
 //%- (void)remove##VNAME##ForKey:(KEY_TYPE##KisP$S##KisP)aKey;
@@ -8559,10 +8559,10 @@ NS_ASSUME_NONNULL_END
 //%
 //%/**
 //% * Sets the raw enum value for the given key.
-//% * 
+//% *
 //% * @note This method bypass the validationFunc to enable the setting of values that
 //% *       were not known at the time the binary was compiled.
-//% * 
+//% *
 //% * @param rawValue The raw enum value to set.
 //% * @param key      The key under which to store the raw enum value.
 //% **/
