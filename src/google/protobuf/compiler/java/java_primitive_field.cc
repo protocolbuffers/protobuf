@@ -64,6 +64,7 @@ void SetPrimitiveVariables(const FieldDescriptor* descriptor,
                            std::map<string, string>* variables) {
   SetCommonFieldVariables(descriptor, info, variables);
 
+  (*variables)["containing_type_name"] = descriptor->containing_type()->name();
   (*variables)["type"] = PrimitiveTypeName(GetJavaType(descriptor));
   (*variables)["boxed_type"] = BoxedPrimitiveTypeName(GetJavaType(descriptor));
   (*variables)["field_type"] = (*variables)["type"];
@@ -224,11 +225,13 @@ GenerateBuilderMembers(io::Printer* printer) const {
   WriteFieldDocComment(printer, descriptor_);
   printer->Print(variables_,
     "$deprecation$public Builder set$capitalized_name$($type$ value) {\n"
+    "  //@@protoc_insertion_point(field_modifier_scope_before:$containing_type_name$.set$capitalized_name$)\n"
     "$null_check$"
     "  $set_has_field_bit_builder$\n"
     "  $name$_ = value;\n"
     "  $on_changed$\n"
     "  return this;\n"
+    "  //@@protoc_insertion_point(field_modifier_scope_after:$containing_type_name$.set$capitalized_name$)\n"
     "}\n");
 
   WriteFieldDocComment(printer, descriptor_);
@@ -480,21 +483,25 @@ GenerateBuilderMembers(io::Printer* printer) const {
   printer->Print(variables_,
     "$deprecation$public Builder set$capitalized_name$($type$ value) {\n"
     "$null_check$"
+    "  //@@protoc_insertion_point(field_modifier_scope_before:$containing_type_name$.set$capitalized_name$)\n"
     "  $set_oneof_case_message$;\n"
     "  $oneof_name$_ = value;\n"
     "  $on_changed$\n"
     "  return this;\n"
+    "  //@@protoc_insertion_point(field_modifier_scope_after:$containing_type_name$.set$capitalized_name$)\n"
     "}\n");
 
   WriteFieldDocComment(printer, descriptor_);
   printer->Print(variables_,
     "$deprecation$public Builder clear$capitalized_name$() {\n"
+    "  //@@protoc_insertion_point(field_modifier_scope_before:$containing_type_name$.clear$capitalized_name$)\n"
     "  if ($has_oneof_case_message$) {\n"
     "    $clear_oneof_case_message$;\n"
     "    $oneof_name$_ = null;\n"
     "    $on_changed$\n"
     "  }\n"
     "  return this;\n"
+    "  //@@protoc_insertion_point(field_modifier_scope_after:$containing_type_name$.clear$capitalized_name$)\n"
     "}\n");
 }
 
@@ -653,38 +660,46 @@ GenerateBuilderMembers(io::Printer* printer) const {
   printer->Print(variables_,
     "$deprecation$public Builder set$capitalized_name$(\n"
     "    int index, $type$ value) {\n"
+    "  //@@protoc_insertion_point(field_modifier_scope_before:$containing_type_name$.set$capitalized_name$)\n"
     "$null_check$"
     "  ensure$capitalized_name$IsMutable();\n"
     "  $name$_.set(index, value);\n"
     "  $on_changed$\n"
     "  return this;\n"
+    "  //@@protoc_insertion_point(field_modifier_scope_after:$containing_type_name$.set$capitalized_name$)\n"
     "}\n");
   WriteFieldDocComment(printer, descriptor_);
   printer->Print(variables_,
     "$deprecation$public Builder add$capitalized_name$($type$ value) {\n"
+    "  //@@protoc_insertion_point(field_modifier_scope_before:$containing_type_name$.add$capitalized_name$)\n"
     "$null_check$"
     "  ensure$capitalized_name$IsMutable();\n"
     "  $name$_.add(value);\n"
     "  $on_changed$\n"
     "  return this;\n"
+    "  //@@protoc_insertion_point(field_modifier_scope_after:$containing_type_name$.add$capitalized_name$)\n"
     "}\n");
   WriteFieldDocComment(printer, descriptor_);
   printer->Print(variables_,
     "$deprecation$public Builder addAll$capitalized_name$(\n"
     "    java.lang.Iterable<? extends $boxed_type$> values) {\n"
+    "  //@@protoc_insertion_point(field_modifier_scope_before:$containing_type_name$.addAll$capitalized_name$)\n"
     "  ensure$capitalized_name$IsMutable();\n"
     "  com.google.protobuf.AbstractMessageLite.Builder.addAll(\n"
     "      values, $name$_);\n"
     "  $on_changed$\n"
     "  return this;\n"
+    "  //@@protoc_insertion_point(field_modifier_scope_after:$containing_type_name$.addAll$capitalized_name$)\n"
     "}\n");
   WriteFieldDocComment(printer, descriptor_);
   printer->Print(variables_,
     "$deprecation$public Builder clear$capitalized_name$() {\n"
+    "  //@@protoc_insertion_point(field_modifier_scope_before:$containing_type_name$.clear$capitalized_name$)\n"
     "  $name$_ = $empty_list$;\n"
     "  $clear_mutable_bit_builder$;\n"
     "  $on_changed$\n"
     "  return this;\n"
+    "  //@@protoc_insertion_point(field_modifier_scope_after:$containing_type_name$.clear$capitalized_name$)\n"
     "}\n");
 }
 

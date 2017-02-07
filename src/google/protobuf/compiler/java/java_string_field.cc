@@ -65,6 +65,7 @@ void SetPrimitiveVariables(const FieldDescriptor* descriptor,
                            std::map<string, string>* variables) {
   SetCommonFieldVariables(descriptor, info, variables);
 
+  (*variables)["containing_type_name"] = descriptor->containing_type()->name();
   (*variables)["empty_list"] = "com.google.protobuf.LazyStringArrayList.EMPTY";
 
   (*variables)["default"] = ImmutableDefaultValue(descriptor, name_resolver);
@@ -318,15 +319,18 @@ GenerateBuilderMembers(io::Printer* printer) const {
   printer->Print(variables_,
     "$deprecation$public Builder set$capitalized_name$(\n"
     "    java.lang.String value) {\n"
+    "  //@@protoc_insertion_point(field_modifier_scope_before:$containing_type_name$.set$capitalized_name$)\n"
     "$null_check$"
     "  $set_has_field_bit_builder$\n"
     "  $name$_ = value;\n"
     "  $on_changed$\n"
     "  return this;\n"
+    "  //@@protoc_insertion_point(field_modifier_scope_after:$containing_type_name$.set$capitalized_name$)\n"
     "}\n");
   WriteFieldDocComment(printer, descriptor_);
   printer->Print(variables_,
     "$deprecation$public Builder clear$capitalized_name$() {\n"
+    "  //@@protoc_insertion_point(field_modifier_scope_before:$containing_type_name$.clear$capitalized_name$)\n"
     "  $clear_has_field_bit_builder$\n");
   // The default value is not a simple literal so we want to avoid executing
   // it multiple times.  Instead, get the default out of the default instance.
@@ -335,12 +339,14 @@ GenerateBuilderMembers(io::Printer* printer) const {
   printer->Print(variables_,
     "  $on_changed$\n"
     "  return this;\n"
+    "  //@@protoc_insertion_point(field_modifier_scope_after:$containing_type_name$.clear$capitalized_name$)\n"
     "}\n");
 
   WriteFieldDocComment(printer, descriptor_);
   printer->Print(variables_,
     "$deprecation$public Builder set$capitalized_name$Bytes(\n"
     "    com.google.protobuf.ByteString value) {\n"
+    "  //@@protoc_insertion_point(field_modifier_scope_before:$containing_type_name$.set$capitalized_name$Bytes)\n"
     "$null_check$");
   if (CheckUtf8(descriptor_)) {
     printer->Print(variables_,
@@ -351,6 +357,7 @@ GenerateBuilderMembers(io::Printer* printer) const {
     "  $name$_ = value;\n"
     "  $on_changed$\n"
     "  return this;\n"
+    "  //@@protoc_insertion_point(field_modifier_scope_after:$containing_type_name$.set$capitalized_name$Bytes)\n"
     "}\n");
 }
 
@@ -602,27 +609,32 @@ GenerateBuilderMembers(io::Printer* printer) const {
   printer->Print(variables_,
     "$deprecation$public Builder set$capitalized_name$(\n"
     "    java.lang.String value) {\n"
+    "  //@@protoc_insertion_point(field_modifier_scope_before:$containing_type_name$.set$capitalized_name$)\n"
     "$null_check$"
     "  $set_oneof_case_message$;\n"
     "  $oneof_name$_ = value;\n"
     "  $on_changed$\n"
     "  return this;\n"
+    "  //@@protoc_insertion_point(field_modifier_scope_after:$containing_type_name$.set$capitalized_name$)\n"
     "}\n");
   WriteFieldDocComment(printer, descriptor_);
   printer->Print(variables_,
     "$deprecation$public Builder clear$capitalized_name$() {\n"
+    "  //@@protoc_insertion_point(field_modifier_scope_before:$containing_type_name$.clear$capitalized_name$)\n"
     "  if ($has_oneof_case_message$) {\n"
     "    $clear_oneof_case_message$;\n"
     "    $oneof_name$_ = null;\n"
     "    $on_changed$\n"
     "  }\n"
     "  return this;\n"
+    "  //@@protoc_insertion_point(field_modifier_scope_after:$containing_type_name$.clear$capitalized_name$)\n"
     "}\n");
 
   WriteFieldDocComment(printer, descriptor_);
   printer->Print(variables_,
     "$deprecation$public Builder set$capitalized_name$Bytes(\n"
     "    com.google.protobuf.ByteString value) {\n"
+    "  //@@protoc_insertion_point(field_modifier_scope_before:$containing_type_name$.set$capitalized_name$Bytes)\n"
     "$null_check$");
   if (CheckUtf8(descriptor_)) {
     printer->Print(variables_,
@@ -633,6 +645,7 @@ GenerateBuilderMembers(io::Printer* printer) const {
     "  $oneof_name$_ = value;\n"
     "  $on_changed$\n"
     "  return this;\n"
+    "  //@@protoc_insertion_point(field_modifier_scope_after:$containing_type_name$.set$capitalized_name$Bytes)\n"
     "}\n");
 }
 
@@ -817,45 +830,54 @@ GenerateBuilderMembers(io::Printer* printer) const {
   printer->Print(variables_,
     "$deprecation$public Builder set$capitalized_name$(\n"
     "    int index, java.lang.String value) {\n"
+    "  //@@protoc_insertion_point(field_modifier_scope_before:$containing_type_name$.set$capitalized_name$)\n"
     "$null_check$"
     "  ensure$capitalized_name$IsMutable();\n"
     "  $name$_.set(index, value);\n"
     "  $on_changed$\n"
     "  return this;\n"
+    "  //@@protoc_insertion_point(field_modifier_scope_after:$containing_type_name$.set$capitalized_name$)\n"
     "}\n");
   WriteFieldDocComment(printer, descriptor_);
   printer->Print(variables_,
     "$deprecation$public Builder add$capitalized_name$(\n"
     "    java.lang.String value) {\n"
+    "  //@@protoc_insertion_point(field_modifier_scope_before:$containing_type_name$.add$capitalized_name$)\n"
     "$null_check$"
     "  ensure$capitalized_name$IsMutable();\n"
     "  $name$_.add(value);\n"
     "  $on_changed$\n"
     "  return this;\n"
+    "  //@@protoc_insertion_point(field_modifier_scope_after:$containing_type_name$.add$capitalized_name$)\n"
     "}\n");
   WriteFieldDocComment(printer, descriptor_);
   printer->Print(variables_,
     "$deprecation$public Builder addAll$capitalized_name$(\n"
     "    java.lang.Iterable<java.lang.String> values) {\n"
+    "  //@@protoc_insertion_point(field_modifier_scope_before:$containing_type_name$.addAll$capitalized_name$)\n"
     "  ensure$capitalized_name$IsMutable();\n"
     "  com.google.protobuf.AbstractMessageLite.Builder.addAll(\n"
     "      values, $name$_);\n"
     "  $on_changed$\n"
     "  return this;\n"
+    "  //@@protoc_insertion_point(field_modifier_scope_after:$containing_type_name$.addAll$capitalized_name$)\n"
     "}\n");
   WriteFieldDocComment(printer, descriptor_);
   printer->Print(variables_,
     "$deprecation$public Builder clear$capitalized_name$() {\n"
+    "  //@@protoc_insertion_point(field_modifier_scope_before:$containing_type_name$.clear$capitalized_name$)\n"
     "  $name$_ = $empty_list$;\n"
     "  $clear_mutable_bit_builder$;\n"
     "  $on_changed$\n"
     "  return this;\n"
+    "  //@@protoc_insertion_point(field_modifier_scope_after:$containing_type_name$.clear$capitalized_name$)\n"
     "}\n");
 
   WriteFieldDocComment(printer, descriptor_);
   printer->Print(variables_,
     "$deprecation$public Builder add$capitalized_name$Bytes(\n"
     "    com.google.protobuf.ByteString value) {\n"
+    "  //@@protoc_insertion_point(field_modifier_scope_before:$containing_type_name$.add$capitalized_name$Bytes)\n"
     "$null_check$");
   if (CheckUtf8(descriptor_)) {
     printer->Print(variables_,
@@ -866,6 +888,7 @@ GenerateBuilderMembers(io::Printer* printer) const {
     "  $name$_.add(value);\n"
     "  $on_changed$\n"
     "  return this;\n"
+    "  //@@protoc_insertion_point(field_modifier_scope_after:$containing_type_name$.add$capitalized_name$Bytes)\n"
     "}\n");
 }
 
