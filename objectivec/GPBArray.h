@@ -1574,7 +1574,7 @@ NS_ASSUME_NONNULL_END
 //%
 //%/**
 //% * Creates and initializes a GPB##NAME##Array with the single element given.
-//% * 
+//% *
 //% * @param value The value to be placed in the array.
 //% *
 //% * @return A newly instanced GPB##NAME##Array with value in it.
@@ -1600,7 +1600,7 @@ NS_ASSUME_NONNULL_END
 //% **/
 //%+ (instancetype)arrayWithCapacity:(NSUInteger)count;
 //%
-//%/** 
+//%/**
 //% * @return A newly initialized and empty GPB##NAME##Array.
 //% **/
 //%- (instancetype)init NS_DESIGNATED_INITIALIZER;
@@ -1773,7 +1773,7 @@ NS_ASSUME_NONNULL_END
 //%
 //%/**
 //% * Enumerates the values on this array with the given block.
-//% * 
+//% *
 //% * @param block The block to enumerate with.
 //% *   **value**: The current value being enumerated.
 //% *   **idx**:   The index of the current value.
@@ -1827,7 +1827,7 @@ NS_ASSUME_NONNULL_END
 //% * Enumerates the values on this array with the given block.
 //% *
 //% * @param opts  Options to control the enumeration.
-//% * @param block The block to enumerate with. 
+//% * @param block The block to enumerate with.
 //% *   **value**: The current value being enumerated.
 //% *   **idx**:   The index of the current value.
 //% *   **stop**:  A pointer to a boolean that when set stops the enumeration.
