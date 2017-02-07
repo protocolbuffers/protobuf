@@ -29,6 +29,10 @@
 #include <google/protobuf/extension_set.h>  // IWYU pragma: export
 #include <google/protobuf/unknown_field_set.h>
 #include <google/protobuf/descriptor.pb.h>
+
+#undef major
+#undef minor
+
 // @@protoc_insertion_point(includes)
 namespace google {
 namespace protobuf {
