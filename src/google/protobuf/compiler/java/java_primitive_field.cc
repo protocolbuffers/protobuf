@@ -64,6 +64,7 @@ void SetPrimitiveVariables(const FieldDescriptor* descriptor,
                            std::map<string, string>* variables) {
   SetCommonFieldVariables(descriptor, info, variables);
 
+  (*variables)["containing_type_name"] = descriptor->containing_type()->name();
   (*variables)["type"] = PrimitiveTypeName(GetJavaType(descriptor));
   (*variables)["boxed_type"] = BoxedPrimitiveTypeName(GetJavaType(descriptor));
   (*variables)["field_type"] = (*variables)["type"];
@@ -224,6 +225,7 @@ GenerateBuilderMembers(io::Printer* printer) const {
   WriteFieldDocComment(printer, descriptor_);
   printer->Print(variables_,
     "$deprecation$public Builder set$capitalized_name$($type$ value) {\n"
+    "  //@@protoc_insertion_point(setter_scope:$containing_type_name$.set$capitalized_name$)\n"
     "$null_check$"
     "  $set_has_field_bit_builder$\n"
     "  $name$_ = value;\n"
@@ -480,6 +482,7 @@ GenerateBuilderMembers(io::Printer* printer) const {
   printer->Print(variables_,
     "$deprecation$public Builder set$capitalized_name$($type$ value) {\n"
     "$null_check$"
+    "  //@@protoc_insertion_point(setter_scope:$containing_type_name$.set$capitalized_name$)\n"
     "  $set_oneof_case_message$;\n"
     "  $oneof_name$_ = value;\n"
     "  $on_changed$\n"
@@ -653,6 +656,7 @@ GenerateBuilderMembers(io::Printer* printer) const {
   printer->Print(variables_,
     "$deprecation$public Builder set$capitalized_name$(\n"
     "    int index, $type$ value) {\n"
+    "  //@@protoc_insertion_point(setter_scope:$containing_type_name$.set$capitalized_name$)\n"
     "$null_check$"
     "  ensure$capitalized_name$IsMutable();\n"
     "  $name$_.set(index, value);\n"

@@ -65,6 +65,7 @@ void SetPrimitiveVariables(const FieldDescriptor* descriptor,
                            std::map<string, string>* variables) {
   SetCommonFieldVariables(descriptor, info, variables);
 
+  (*variables)["containing_type_name"] = descriptor->containing_type()->name();
   (*variables)["empty_list"] = "com.google.protobuf.LazyStringArrayList.EMPTY";
 
   (*variables)["default"] = ImmutableDefaultValue(descriptor, name_resolver);
@@ -318,6 +319,7 @@ GenerateBuilderMembers(io::Printer* printer) const {
   printer->Print(variables_,
     "$deprecation$public Builder set$capitalized_name$(\n"
     "    java.lang.String value) {\n"
+    "  //@@protoc_insertion_point(setter_scope:$containing_type_name$.set$capitalized_name$)\n"
     "$null_check$"
     "  $set_has_field_bit_builder$\n"
     "  $name$_ = value;\n"
@@ -341,6 +343,7 @@ GenerateBuilderMembers(io::Printer* printer) const {
   printer->Print(variables_,
     "$deprecation$public Builder set$capitalized_name$Bytes(\n"
     "    com.google.protobuf.ByteString value) {\n"
+    "  //@@protoc_insertion_point(setter_scope:$containing_type_name$.set$capitalized_name$Bytes)\n"
     "$null_check$");
   if (CheckUtf8(descriptor_)) {
     printer->Print(variables_,
@@ -602,6 +605,7 @@ GenerateBuilderMembers(io::Printer* printer) const {
   printer->Print(variables_,
     "$deprecation$public Builder set$capitalized_name$(\n"
     "    java.lang.String value) {\n"
+    "  //@@protoc_insertion_point(setter_scope:$containing_type_name$.set$capitalized_name$)\n"
     "$null_check$"
     "  $set_oneof_case_message$;\n"
     "  $oneof_name$_ = value;\n"
@@ -623,6 +627,7 @@ GenerateBuilderMembers(io::Printer* printer) const {
   printer->Print(variables_,
     "$deprecation$public Builder set$capitalized_name$Bytes(\n"
     "    com.google.protobuf.ByteString value) {\n"
+    "  //@@protoc_insertion_point(setter_scope:$containing_type_name$.set$capitalized_name$Bytes)\n"
     "$null_check$");
   if (CheckUtf8(descriptor_)) {
     printer->Print(variables_,
@@ -817,6 +822,7 @@ GenerateBuilderMembers(io::Printer* printer) const {
   printer->Print(variables_,
     "$deprecation$public Builder set$capitalized_name$(\n"
     "    int index, java.lang.String value) {\n"
+    "  //@@protoc_insertion_point(setter_scope:$containing_type_name$.set$capitalized_name$)\n"
     "$null_check$"
     "  ensure$capitalized_name$IsMutable();\n"
     "  $name$_.set(index, value);\n"
