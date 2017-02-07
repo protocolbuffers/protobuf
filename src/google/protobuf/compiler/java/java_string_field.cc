@@ -65,6 +65,11 @@ void SetPrimitiveVariables(const FieldDescriptor* descriptor,
                            std::map<string, string>* variables) {
   SetCommonFieldVariables(descriptor, info, variables);
 
+  if(descriptor->containing_type() != NULL) {
+    (*variables)["containing_type_full_name"] = descriptor->containing_type()->full_name();
+  } else {
+    (*variables)["containing_type_full_name"] = descriptor->full_name();
+  }
   (*variables)["empty_list"] = "com.google.protobuf.LazyStringArrayList.EMPTY";
 
   (*variables)["default"] = ImmutableDefaultValue(descriptor, name_resolver);
@@ -322,6 +327,7 @@ GenerateBuilderMembers(io::Printer* printer) const {
     "  $set_has_field_bit_builder$\n"
     "  $name$_ = value;\n"
     "  $on_changed$\n"
+    "  //@@protoc_insertion_point(builder_field_modifier_scope_after:$containing_type_full_name$.set$capitalized_name$)\n"
     "  return this;\n"
     "}\n");
   WriteFieldDocComment(printer, descriptor_);
@@ -334,6 +340,7 @@ GenerateBuilderMembers(io::Printer* printer) const {
     "  $name$_ = getDefaultInstance().get$capitalized_name$();\n");
   printer->Print(variables_,
     "  $on_changed$\n"
+    "  //@@protoc_insertion_point(builder_field_modifier_scope_after:$containing_type_full_name$.clear$capitalized_name$)\n"
     "  return this;\n"
     "}\n");
 
@@ -341,7 +348,7 @@ GenerateBuilderMembers(io::Printer* printer) const {
   printer->Print(variables_,
     "$deprecation$public Builder set$capitalized_name$Bytes(\n"
     "    com.google.protobuf.ByteString value) {\n"
-    "$null_check$");
+    "  $null_check$");
   if (CheckUtf8(descriptor_)) {
     printer->Print(variables_,
       "  checkByteStringIsUtf8(value);\n");
@@ -350,6 +357,7 @@ GenerateBuilderMembers(io::Printer* printer) const {
     "  $set_has_field_bit_builder$\n"
     "  $name$_ = value;\n"
     "  $on_changed$\n"
+    "  //@@protoc_insertion_point(builder_field_modifier_scope_after:$containing_type_full_name$.set$capitalized_name$Bytes)\n"
     "  return this;\n"
     "}\n");
 }
@@ -606,6 +614,7 @@ GenerateBuilderMembers(io::Printer* printer) const {
     "  $set_oneof_case_message$;\n"
     "  $oneof_name$_ = value;\n"
     "  $on_changed$\n"
+    "  //@@protoc_insertion_point(builder_field_modifier_scope_after:$containing_type_full_name$.set$capitalized_name$)\n"
     "  return this;\n"
     "}\n");
   WriteFieldDocComment(printer, descriptor_);
@@ -616,6 +625,7 @@ GenerateBuilderMembers(io::Printer* printer) const {
     "    $oneof_name$_ = null;\n"
     "    $on_changed$\n"
     "  }\n"
+    "  //@@protoc_insertion_point(builder_field_modifier_scope_after:$containing_type_full_name$.clear$capitalized_name$)\n"
     "  return this;\n"
     "}\n");
 
@@ -632,6 +642,7 @@ GenerateBuilderMembers(io::Printer* printer) const {
     "  $set_oneof_case_message$;\n"
     "  $oneof_name$_ = value;\n"
     "  $on_changed$\n"
+    "  //@@protoc_insertion_point(builder_field_modifier_scope_after:$containing_type_full_name$.set$capitalized_name$Bytes)\n"
     "  return this;\n"
     "}\n");
 }
@@ -821,6 +832,7 @@ GenerateBuilderMembers(io::Printer* printer) const {
     "  ensure$capitalized_name$IsMutable();\n"
     "  $name$_.set(index, value);\n"
     "  $on_changed$\n"
+    "  //@@protoc_insertion_point(builder_field_modifier_scope_after:$containing_type_full_name$.setIndex$capitalized_name$)\n"
     "  return this;\n"
     "}\n");
   WriteFieldDocComment(printer, descriptor_);
@@ -831,6 +843,7 @@ GenerateBuilderMembers(io::Printer* printer) const {
     "  ensure$capitalized_name$IsMutable();\n"
     "  $name$_.add(value);\n"
     "  $on_changed$\n"
+    "  //@@protoc_insertion_point(builder_field_modifier_scope_after:$containing_type_full_name$.add$capitalized_name$)\n"
     "  return this;\n"
     "}\n");
   WriteFieldDocComment(printer, descriptor_);
@@ -841,6 +854,7 @@ GenerateBuilderMembers(io::Printer* printer) const {
     "  com.google.protobuf.AbstractMessageLite.Builder.addAll(\n"
     "      values, $name$_);\n"
     "  $on_changed$\n"
+    "  //@@protoc_insertion_point(builder_field_modifier_scope_after:$containing_type_full_name$.addAll$capitalized_name$)\n"
     "  return this;\n"
     "}\n");
   WriteFieldDocComment(printer, descriptor_);
@@ -849,6 +863,7 @@ GenerateBuilderMembers(io::Printer* printer) const {
     "  $name$_ = $empty_list$;\n"
     "  $clear_mutable_bit_builder$;\n"
     "  $on_changed$\n"
+    "  //@@protoc_insertion_point(builder_field_modifier_scope_after:$containing_type_full_name$.clear$capitalized_name$)\n"
     "  return this;\n"
     "}\n");
 
@@ -865,6 +880,7 @@ GenerateBuilderMembers(io::Printer* printer) const {
     "  ensure$capitalized_name$IsMutable();\n"
     "  $name$_.add(value);\n"
     "  $on_changed$\n"
+    "  //@@protoc_insertion_point(builder_field_modifier_scope_after:$containing_type_full_name$.add$capitalized_name$Bytes)\n"
     "  return this;\n"
     "}\n");
 }
