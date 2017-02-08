@@ -345,7 +345,7 @@ bool Api::MergePartialFromCodedStream(
       // .google.protobuf.SourceContext source_context = 5;
       case 5: {
         if (tag == 42u) {
-          DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtual(
+          DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtualNoRecursionDepth(
                input, mutable_source_context()));
         } else {
           goto handle_unusual;

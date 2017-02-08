@@ -58,6 +58,16 @@ void SetMessageVariables(const FieldDescriptor* descriptor,
       (HasFastArraySerialization(descriptor->message_type()->file(), options)
            ? "MaybeToArray"
            : "");
+  bool contains_submessages = false;
+  const Descriptor* type = descriptor->message_type();
+  for (int i = 0; i < type->field_count(); i++) {
+    contains_submessages |=
+        type->field(i)->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE;
+  }
+  contains_submessages |= type->extension_range_count() > 0;
+  (*variables)["no_recursion"] =
+      contains_submessages ? "" : "NoRecursionDepth";
+
   // NOTE: Escaped here to unblock proto1->proto2 migration.
   // TODO(liujisi): Extend this to apply for other conflicting methods.
   (*variables)["release_name"] =
@@ -562,11 +572,13 @@ void MessageFieldGenerator::
 GenerateMergeFromCodedStream(io::Printer* printer) const {
   if (descriptor_->type() == FieldDescriptor::TYPE_MESSAGE) {
     printer->Print(variables_,
-      "DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtual(\n"
+      "DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtual"
+        "$no_recursion$(\n"
       "     input, mutable_$name$()));\n");
   } else {
     printer->Print(variables_,
-      "DO_(::google::protobuf::internal::WireFormatLite::ReadGroupNoVirtual(\n"
+      "DO_(::google::protobuf::internal::WireFormatLite::ReadGroupNoVirtual"
+        "$no_recursion$(\n"
       "      $number$, input, mutable_$name$()));\n");
   }
 }

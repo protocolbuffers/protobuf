@@ -544,7 +544,7 @@ bool Type::MergePartialFromCodedStream(
       // .google.protobuf.SourceContext source_context = 5;
       case 5: {
         if (tag == 42u) {
-          DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtual(
+          DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtualNoRecursionDepth(
                input, mutable_source_context()));
         } else {
           goto handle_unusual;
@@ -2309,7 +2309,7 @@ bool Enum::MergePartialFromCodedStream(
       // .google.protobuf.SourceContext source_context = 4;
       case 4: {
         if (tag == 34u) {
-          DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtual(
+          DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtualNoRecursionDepth(
                input, mutable_source_context()));
         } else {
           goto handle_unusual;
@@ -3383,7 +3383,7 @@ bool Option::MergePartialFromCodedStream(
       // .google.protobuf.Any value = 2;
       case 2: {
         if (tag == 18u) {
-          DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtual(
+          DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtualNoRecursionDepth(
                input, mutable_value()));
         } else {
           goto handle_unusual;

@@ -832,7 +832,7 @@ bool CodeGeneratorRequest::MergePartialFromCodedStream(
       // optional .google.protobuf.compiler.Version compiler_version = 3;
       case 3: {
         if (tag == 26u) {
-          DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtual(
+          DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtualNoRecursionDepth(
                input, mutable_compiler_version()));
         } else {
           goto handle_unusual;
