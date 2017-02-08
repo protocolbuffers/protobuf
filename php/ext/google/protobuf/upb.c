@@ -10759,7 +10759,7 @@ static size_t encode_strbuf(void *c, const void *hd, const char *buf,
 T(double,   double,   dbl2uint64,   encode_fixed64)
 T(float,    float,    flt2uint32,   encode_fixed32)
 T(int64,    int64_t,  uint64_t,     encode_varint)
-T(int32,    int32_t,  uint32_t,     encode_varint)
+T(int32,    int32_t,  int64_t,      encode_varint)
 T(fixed64,  uint64_t, uint64_t,     encode_fixed64)
 T(fixed32,  uint32_t, uint32_t,     encode_fixed32)
 T(bool,     bool,     bool,         encode_varint)
