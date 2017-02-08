@@ -70,7 +70,6 @@ class InputStream
     private $total_bytes_read;
 
     const MAX_VARINT_BYTES = 10;
-    const MAX_VARINT32_BYTES = 5;
     const DEFAULT_RECURSION_LIMIT = 100;
     const DEFAULT_TOTAL_BYTES_LIMIT = 33554432; // 32 << 20, 32MB
 

@@ -403,10 +403,14 @@ class GPBWire
         return self::varint32Size($tag);
     }
 
-    public static function varint32Size($value)
+    public static function varint32Size($value, $sign_extended = false)
     {
         if ($value < 0) {
-            return 5;
+            if ($sign_extended) {
+                return 10;
+            } else {
+                return 5;
+            }
         }
         if ($value < (1 <<  7)) {
             return 1;
