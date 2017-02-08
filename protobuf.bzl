@@ -263,10 +263,11 @@ def internal_gen_well_known_protos_java(srcs):
     srcs: the well known protos
   """
   root = Label("%s//protobuf_java" % (REPOSITORY_NAME)).workspace_root
+  pkg = PACKAGE_NAME + "/" if PACKAGE_NAME else ""
   if root == "":
-    include = " -Isrc "
+    include = " -I%ssrc " % pkg
   else:
-    include = " -I%s/src " % root
+    include = " -I%s/%ssrc " % (root, pkg)
   native.genrule(
     name = "gen_well_known_protos_java",
     srcs = srcs,
