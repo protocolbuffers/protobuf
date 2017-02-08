@@ -398,9 +398,21 @@ static void descriptor_free_c(Descriptor *self TSRMLS_DC) {
   if (self->fill_method) {
     upb_pbdecodermethod_unref(self->fill_method, &self->fill_method);
   }
+  if (self->json_fill_method) {
+    upb_json_parsermethod_unref(self->json_fill_method,
+                                &self->json_fill_method);
+  }
   if (self->pb_serialize_handlers) {
     upb_handlers_unref(self->pb_serialize_handlers,
                        &self->pb_serialize_handlers);
+  }
+  if (self->json_serialize_handlers) {
+    upb_handlers_unref(self->json_serialize_handlers,
+                       &self->json_serialize_handlers);
+  }
+  if (self->json_serialize_handlers_preserve) {
+    upb_handlers_unref(self->json_serialize_handlers_preserve,
+                       &self->json_serialize_handlers_preserve);
   }
 }
 
@@ -411,7 +423,10 @@ static void descriptor_init_c_instance(Descriptor *desc TSRMLS_DC) {
   desc->klass = NULL;
   desc->fill_handlers = NULL;
   desc->fill_method = NULL;
+  desc->json_fill_method = NULL;
   desc->pb_serialize_handlers = NULL;
+  desc->json_serialize_handlers = NULL;
+  desc->json_serialize_handlers_preserve = NULL;
 }
 
 // -----------------------------------------------------------------------------

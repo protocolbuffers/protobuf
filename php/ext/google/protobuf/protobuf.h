@@ -122,7 +122,10 @@ struct Descriptor {
   zend_class_entry* klass;  // begins as NULL
   const upb_handlers* fill_handlers;
   const upb_pbdecodermethod* fill_method;
+  const upb_json_parsermethod* json_fill_method;
   const upb_handlers* pb_serialize_handlers;
+  const upb_handlers* json_serialize_handlers;
+  const upb_handlers* json_serialize_handlers_preserve;
 };
 
 extern zend_class_entry* descriptor_type;
@@ -261,6 +264,8 @@ const upb_pbdecodermethod *new_fillmsg_decodermethod(Descriptor *desc,
 
 PHP_METHOD(Message, encode);
 PHP_METHOD(Message, decode);
+PHP_METHOD(Message, jsonEncode);
+PHP_METHOD(Message, jsonDecode);
 
 // -----------------------------------------------------------------------------
 // Type check / conversion.

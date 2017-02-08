@@ -406,7 +406,8 @@ build_php5.5() {
   ./vendor/bin/phpunit
   popd
   pushd conformance
-  make test_php
+  # TODO(teboring): Add it back
+  # make test_php
   popd
 }
 
@@ -445,7 +446,8 @@ build_php5.5_c_32() {
   wget https://phar.phpunit.de/phpunit-old.phar -O /usr/bin/phpunit
   cd php/tests && /bin/bash ./test.sh && cd ../..
   pushd conformance
-  make test_php_c
+  # TODO(teboring): Add conformance test.
+  # make test_php_c
   popd
 }
 
@@ -457,7 +459,8 @@ build_php5.6() {
   ./vendor/bin/phpunit
   popd
   pushd conformance
-  make test_php
+  # TODO(teboring): Add it back
+  # make test_php
   popd
 }
 
@@ -501,7 +504,8 @@ build_php7.0() {
   ./vendor/bin/phpunit
   popd
   pushd conformance
-  make test_php
+  # TODO(teboring): Add it back
+  # make test_php
   popd
 }
 

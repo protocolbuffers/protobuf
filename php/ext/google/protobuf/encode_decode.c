@@ -103,6 +103,7 @@ static void stackenv_uninit(stackenv* se);
 
 // Callback invoked by upb if any error occurs during parsing or serialization.
 static bool env_error_func(void* ud, const upb_status* status) {
+    char err_msg[100] = "";
     stackenv* se = ud;
     // Free the env -- zend_error will longjmp up the stack past the
     // encode/decode function so it would not otherwise have been freed.
@@ -110,7 +111,9 @@ static bool env_error_func(void* ud, const upb_status* status) {
 
     // TODO(teboring): have a way to verify that this is actually a parse error,
     // instead of just throwing "parse error" unconditionally.
-    zend_error(E_ERROR, se->php_error_template, upb_status_errmsg(status));
+    sprintf(err_msg, se->php_error_template, upb_status_errmsg(status));
+    TSRMLS_FETCH();
+    zend_throw_exception(NULL, err_msg, 0 TSRMLS_CC);
     // Never reached.
     return false;
 }
@@ -866,6 +869,14 @@ static const upb_pbdecodermethod *msgdef_decodermethod(Descriptor* desc) {
   return desc->fill_method;
 }
 
+static const upb_json_parsermethod *msgdef_jsonparsermethod(Descriptor* desc) {
+  if (desc->json_fill_method == NULL) {
+    desc->json_fill_method =
+        upb_json_parsermethod_new(desc->msgdef, &desc->json_fill_method);
+  }
+  return desc->json_fill_method;
+}
+
 // -----------------------------------------------------------------------------
 // Serializing.
 // -----------------------------------------------------------------------------
@@ -883,8 +894,8 @@ static void putsubmsg(zval* submsg, const upb_fielddef* f, upb_sink* sink,
 
 static void putarray(zval* array, const upb_fielddef* f, upb_sink* sink,
                      int depth TSRMLS_DC);
-static void putmap(zval* map, const upb_fielddef* f, upb_sink* sink, int depth
-		   TSRMLS_DC);
+static void putmap(zval* map, const upb_fielddef* f, upb_sink* sink,
+                   int depth TSRMLS_DC);
 
 static upb_selector_t getsel(const upb_fielddef* f, upb_handlertype_t type) {
   upb_selector_t ret;
@@ -961,10 +972,13 @@ static void putmap(zval* map, const upb_fielddef* f, upb_sink* sink,
   const upb_fielddef* key_field;
   const upb_fielddef* value_field;
   MapIter it;
-  int len;
+  int len, size;
 
-  if (map == NULL) return;
-  self = UNBOX(Map, map);
+  assert(map != NULL);
+  Map* intern =
+      (Map*)zend_object_store_get_object(map TSRMLS_CC);
+  size = upb_strtable_count(&intern->table);
+  if (size == 0) return;
 
   upb_sink_startseq(sink, getsel(f, UPB_HANDLER_STARTSEQ), &subsink);
 
@@ -1197,6 +1211,25 @@ static const upb_handlers* msgdef_pb_serialize_handlers(Descriptor* desc) {
   return desc->pb_serialize_handlers;
 }
 
+static const upb_handlers* msgdef_json_serialize_handlers(
+    Descriptor* desc, bool preserve_proto_fieldnames) {
+  if (preserve_proto_fieldnames) {
+    if (desc->json_serialize_handlers == NULL) {
+      desc->json_serialize_handlers =
+          upb_json_printer_newhandlers(
+              desc->msgdef, true, &desc->json_serialize_handlers);
+    }
+    return desc->json_serialize_handlers;
+  } else {
+    if (desc->json_serialize_handlers_preserve == NULL) {
+      desc->json_serialize_handlers_preserve =
+          upb_json_printer_newhandlers(
+              desc->msgdef, false, &desc->json_serialize_handlers_preserve);
+    }
+    return desc->json_serialize_handlers_preserve;
+  }
+}
+
 // -----------------------------------------------------------------------------
 // PHP encode/decode methods
 // -----------------------------------------------------------------------------
@@ -1251,6 +1284,72 @@ PHP_METHOD(Message, decode) {
     upb_sink_reset(&sink, h, msg);
     decoder = upb_pbdecoder_create(&se.env, method, &sink);
     upb_bufsrc_putbuf(data, data_len, upb_pbdecoder_input(decoder));
+
+    stackenv_uninit(&se);
+  }
+}
+
+PHP_METHOD(Message, jsonEncode) {
+  zval* php_descriptor = get_ce_obj(Z_OBJCE_P(getThis()));
+  Descriptor* desc =
+      (Descriptor*)zend_object_store_get_object(php_descriptor TSRMLS_CC);
+
+  zend_bool preserve_proto_fieldnames = false;
+  if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "|b",
+                            &preserve_proto_fieldnames) == FAILURE) {
+    return;
+  }
+
+  stringsink sink;
+  stringsink_init(&sink);
+
+  {
+    const upb_handlers* serialize_handlers =
+        msgdef_json_serialize_handlers(desc, preserve_proto_fieldnames);
+    upb_json_printer* printer;
+    stackenv se;
+
+    stackenv_init(&se, "Error occurred during encoding: %s");
+    printer = upb_json_printer_create(&se.env, serialize_handlers, &sink.sink);
+
+    putmsg(getThis(), desc, upb_json_printer_input(printer), 0 TSRMLS_CC);
+
+    RETVAL_STRINGL(sink.ptr, sink.len, 1);
+
+    stackenv_uninit(&se);
+    stringsink_uninit(&sink);
+  }
+}
+
+PHP_METHOD(Message, jsonDecode) {
+  zval* php_descriptor = get_ce_obj(Z_OBJCE_P(getThis()));
+  Descriptor* desc =
+      (Descriptor*)zend_object_store_get_object(php_descriptor TSRMLS_CC);
+  MessageHeader* msg = zend_object_store_get_object(getThis() TSRMLS_CC);
+
+  char *data = NULL;
+  int data_len;
+  if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &data, &data_len) ==
+      FAILURE) {
+    return;
+  }
+
+  // TODO(teboring): Check and respect string encoding. If not UTF-8, we need to
+  // convert, because string handlers pass data directly to message string
+  // fields.
+
+  // TODO(teboring): Clear message.
+
+  {
+    const upb_json_parsermethod* method = msgdef_jsonparsermethod(desc);
+    stackenv se;
+    upb_sink sink;
+    upb_json_parser* parser;
+    stackenv_init(&se, "Error occurred during parsing: %s");
+
+    upb_sink_reset(&sink, get_fill_handlers(desc), msg);
+    parser = upb_json_parser_create(&se.env, method, &sink);
+    upb_bufsrc_putbuf(data, data_len, upb_json_parser_input(parser));
 
     stackenv_uninit(&se);
   }

@@ -482,6 +482,7 @@ void layout_init(MessageLayout* layout, void* storage,
       repeated_field_create_with_type(repeated_field_type, field,
                                       property_ptr TSRMLS_CC);
       DEREF(memory, zval**) = property_ptr;
+      property_ptr = NULL;
     } else {
       native_slot_init(upb_fielddef_type(field), memory, property_ptr);
     }
