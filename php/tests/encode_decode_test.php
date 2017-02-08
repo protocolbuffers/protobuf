@@ -190,6 +190,27 @@ class EncodeDecodeTest extends TestBase
         $m->mergeFromString($data);
     }
 
+    public function testEncodeNegativeInt32()
+    {
+        $m = new TestMessage();
+        $m->setOptionalInt32(-1);
+        $data = $m->encode();
+        $this->assertSame("08ffffffffffffffffff01", bin2hex($data));
+    }
+
+    public function testDecodeNegativeInt32()
+    {
+        $m = new TestMessage();
+        $this->assertEquals(0, $m->getOptionalInt32());
+        $m->decode(hex2bin("08ffffffffffffffffff01"));
+        $this->assertEquals(-1, $m->getOptionalInt32());
+
+        $m = new TestMessage();
+        $this->assertEquals(0, $m->getOptionalInt32());
+        $m->decode(hex2bin("08ffffffff0f"));
+        $this->assertEquals(-1, $m->getOptionalInt32());
+    }
+
     # TODO(teboring): Add test back when php implementation is ready for json
     # encode/decode.
     # public function testJsonEncode()

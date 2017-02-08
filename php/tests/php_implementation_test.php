@@ -469,6 +469,11 @@ class ImplementationTest extends TestBase
         $output = new OutputStream(3);
         $output->writeVarint32(16384);
         $this->assertSame(hex2bin('808001'), $output->getData());
+
+        // Negative numbers are padded to be compatible with int64.
+        $output = new OutputStream(10);
+        $output->writeVarint32(-43);
+        $this->assertSame(hex2bin('D5FFFFFFFFFFFFFFFF01'), $output->getData());
     }
 
     public function testWriteVarint64()
@@ -496,13 +501,13 @@ class ImplementationTest extends TestBase
     {
         $m = new TestMessage();
         TestUtil::setTestMessage($m);
-        $this->assertSame(481, $m->byteSize());
+        $this->assertSame(506, $m->byteSize());
     }
 
     public function testPackedByteSize()
     {
         $m = new TestPackedMessage();
         TestUtil::setTestPackedMessage($m);
-        $this->assertSame(156, $m->byteSize());
+        $this->assertSame(166, $m->byteSize());
     }
 }
