@@ -83,7 +83,6 @@ copy ${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\stubs\atomicops_intern
 copy ${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\stubs\atomicops_internals_atomicword_compat.h include\google\protobuf\stubs\atomicops_internals_atomicword_compat.h
 copy ${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\stubs\atomicops_internals_generic_c11_atomic.h include\google\protobuf\stubs\atomicops_internals_generic_c11_atomic.h
 copy ${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\stubs\atomicops_internals_generic_gcc.h include\google\protobuf\stubs\atomicops_internals_generic_gcc.h
-copy ${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\stubs\atomicops_internals_macosx.h include\google\protobuf\stubs\atomicops_internals_macosx.h
 copy ${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\stubs\atomicops_internals_mips_gcc.h include\google\protobuf\stubs\atomicops_internals_mips_gcc.h
 copy ${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\stubs\atomicops_internals_power.h include\google\protobuf\stubs\atomicops_internals_power.h
 copy ${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\stubs\atomicops_internals_ppc_gcc.h include\google\protobuf\stubs\atomicops_internals_ppc_gcc.h
