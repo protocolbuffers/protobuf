@@ -445,10 +445,10 @@ build_php5.5_c_32() {
   use_php_bc 5.5
   wget https://phar.phpunit.de/phpunit-old.phar -O /usr/bin/phpunit
   cd php/tests && /bin/bash ./test.sh && cd ../..
-  pushd conformance
   # TODO(teboring): Add conformance test.
+  # pushd conformance
   # make test_php_c
-  popd
+  # popd
 }
 
 build_php5.6() {

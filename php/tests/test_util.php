@@ -118,6 +118,8 @@ class TestUtil
         $m->getMapSint64Sint64()[-65] = -65;
         $m->getMapFixed32Fixed32()[66] = 66;
         $m->getMapFixed64Fixed64()[67] = 67;
+        $m->getMapSfixed32Sfixed32()[-68] = -68;
+        $m->getMapSfixed64Sfixed64()[-69] = -69;
         $m->getMapInt32Float()[1] = 3.5;
         $m->getMapInt32Double()[1] = 3.6;
         $m->getMapBoolBool()[true] = true;
@@ -213,16 +215,19 @@ class TestUtil
             assert('63'  === $m->getMapUint64Uint64()['63']);
             assert('-65' === $m->getMapSint64Sint64()['-65']);
             assert('67'  === $m->getMapFixed64Fixed64()['67']);
+            assert('-69'  === $m->getMapSfixed64Sfixed64()['-69']);
         } else {
             assert(-63 === $m->getMapInt64Int64()[-63]);
             assert(63  === $m->getMapUint64Uint64()[63]);
             assert(-65 === $m->getMapSint64Sint64()[-65]);
             assert(67  === $m->getMapFixed64Fixed64()[67]);
+            assert(-69  === $m->getMapSfixed64Sfixed64()[-69]);
         }
         assert(-62 === $m->getMapInt32Int32()[-62]);
         assert(62  === $m->getMapUint32Uint32()[62]);
         assert(-64 === $m->getMapSint32Sint32()[-64]);
         assert(66  === $m->getMapFixed32Fixed32()[66]);
+        assert(-68  === $m->getMapSfixed32Sfixed32()[-68]);
         assert(3.5 === $m->getMapInt32Float()[1]);
         assert(3.6 === $m->getMapInt32Double()[1]);
         assert(true === $m->getMapBoolBool()[true]);
@@ -296,6 +301,8 @@ class TestUtil
             "E20406088101108101" .
             "EA040A0D420000001542000000" .
             "F20412094300000000000000114300000000000000" .
+            "FA040A0DBCFFFFFF15BCFFFFFF" .
+            "82051209BBFFFFFFFFFFFFFF11BBFFFFFFFFFFFFFF" .
             "8A050708011500006040" .
             "92050B080111CDCCCCCCCCCC0C40" .
             "9A050408011001" .

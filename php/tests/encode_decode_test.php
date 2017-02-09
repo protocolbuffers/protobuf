@@ -22,7 +22,8 @@ class EncodeDecodeTest extends TestBase
         $this->expectFields($from);
 
         $data = $from->encode();
-        $this->assertSame(TestUtil::getGoldenTestMessage(), $data);
+        $this->assertSame(bin2hex(TestUtil::getGoldenTestMessage()),
+                          bin2hex($data));
     }
 
     public function testDecode()

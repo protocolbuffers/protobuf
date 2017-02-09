@@ -248,11 +248,28 @@ void native_slot_get_default(upb_fieldtype_t type, zval** cache TSRMLS_DC) {
     CASE(DOUBLE, DOUBLE)
     CASE(BOOL, BOOL)
     CASE(INT32, LONG)
-    CASE(INT64, LONG)
     CASE(UINT32, LONG)
-    CASE(UINT64, LONG)
     CASE(ENUM, LONG)
 
+#undef CASE
+
+#if SIZEOF_LONG == 4
+#define CASE(upb_type)                                \
+    case UPB_TYPE_##upb_type: {                       \
+      SEPARATE_ZVAL_IF_NOT_REF(cache);                \
+      ZVAL_STRING(*cache, "0", 1);                    \
+      return;                                         \
+    }
+#else
+#define CASE(upb_type)                                \
+    case UPB_TYPE_##upb_type: {                       \
+      SEPARATE_ZVAL_IF_NOT_REF(cache);                \
+      ZVAL_LONG(*cache, 0);                           \
+      return;                                         \
+    }
+#endif
+CASE(UINT64)
+CASE(INT64)
 #undef CASE
 
     case UPB_TYPE_STRING:

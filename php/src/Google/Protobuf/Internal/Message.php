@@ -125,7 +125,7 @@ class Message
                 $oneof = $this->desc->getOneofDecl()[$field->getOneofIndex()];
                 $oneof_name = $oneof->getName();
                 $this->$oneof_name = new OneofField($oneof);
-            } else if ($field->getLabel() === GPBLabel::OPTIONAL && 
+            } else if ($field->getLabel() === GPBLabel::OPTIONAL &&
                        PHP_INT_SIZE == 4) {
                 switch ($field->getType()) {
                     case GPBType::INT64:
@@ -379,6 +379,115 @@ class Message
         }
 
         return true;
+    }
+
+    /**
+     * Clear all containing fields.
+     * @return null.
+     */
+    public function clear()
+    {
+        foreach ($this->desc->getField() as $field) {
+            $setter = $field->getSetter();
+            if ($field->isMap()) {
+                $message_type = $field->getMessageType();
+                $key_field = $message_type->getFieldByNumber(1);
+                $value_field = $message_type->getFieldByNumber(2);
+                switch ($value_field->getType()) {
+                    case GPBType::MESSAGE:
+                    case GPBType::GROUP:
+                        $map_field = new MapField(
+                            $key_field->getType(),
+                            $value_field->getType(),
+                            $value_field->getMessageType()->getClass());
+                        $this->$setter($map_field);
+                        break;
+                    case GPBType::ENUM:
+                        $map_field = new MapField(
+                            $key_field->getType(),
+                            $value_field->getType(),
+                            $value_field->getEnumType()->getClass());
+                        $this->$setter($map_field);
+                        break;
+                    default:
+                        $map_field = new MapField(
+                            $key_field->getType(),
+                            $value_field->getType());
+                        $this->$setter($map_field);
+                        break;
+                }
+            } else if ($field->getLabel() === GPBLabel::REPEATED) {
+                switch ($field->getType()) {
+                    case GPBType::MESSAGE:
+                    case GPBType::GROUP:
+                        $repeated_field = new RepeatedField(
+                            $field->getType(),
+                            $field->getMessageType()->getClass());
+                        $this->$setter($repeated_field);
+                        break;
+                    case GPBType::ENUM:
+                        $repeated_field = new RepeatedField(
+                            $field->getType(),
+                            $field->getEnumType()->getClass());
+                        $this->$setter($repeated_field);
+                        break;
+                    default:
+                        $repeated_field = new RepeatedField($field->getType());
+                        $this->$setter($repeated_field);
+                        break;
+                }
+            } else if ($field->getOneofIndex() !== -1) {
+                $oneof = $this->desc->getOneofDecl()[$field->getOneofIndex()];
+                $oneof_name = $oneof->getName();
+                $this->$oneof_name = new OneofField($oneof);
+            } else if ($field->getLabel() === GPBLabel::OPTIONAL) {
+                switch ($field->getType()) {
+                    case GPBType::DOUBLE   :
+                    case GPBType::FLOAT    :
+                        $this->$setter(0.0);
+                        break;
+                    case GPBType::INT32    :
+                    case GPBType::FIXED32  :
+                    case GPBType::UINT32   :
+                    case GPBType::SFIXED32 :
+                    case GPBType::SINT32   :
+                    case GPBType::ENUM     :
+                        $this->$setter(0);
+                        break;
+                    case GPBType::BOOL     :
+                        $this->$setter(false);
+                        break;
+                    case GPBType::STRING   :
+                    case GPBType::BYTES    :
+                        $this->$setter("");
+                        break;
+                    case GPBType::GROUP    :
+                    case GPBType::MESSAGE  :
+                        $null = null;
+                        $this->$setter($null);
+                        break;
+                }
+                if (PHP_INT_SIZE == 4) {
+                    switch ($field->getType()) {
+                        case GPBType::INT64:
+                        case GPBType::UINT64:
+                        case GPBType::FIXED64:
+                        case GPBType::SFIXED64:
+                        case GPBType::SINT64:
+                            $this->$setter("0");
+                    }
+                } else {
+                    switch ($field->getType()) {
+                        case GPBType::INT64:
+                        case GPBType::UINT64:
+                        case GPBType::FIXED64:
+                        case GPBType::SFIXED64:
+                        case GPBType::SINT64:
+                            $this->$setter(0);
+                    }
+                }
+            }
+        }
     }
 
     /**
