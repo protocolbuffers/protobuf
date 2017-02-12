@@ -244,6 +244,7 @@ const char* layout_get_oneof_case(MessageLayout* layout, const void* storage,
                                   const upb_oneofdef* oneof TSRMLS_DC);
 void free_layout(MessageLayout* layout);
 
+PHP_METHOD(Message, clear);
 PHP_METHOD(Message, readOneof);
 PHP_METHOD(Message, writeOneof);
 PHP_METHOD(Message, whichOneof);

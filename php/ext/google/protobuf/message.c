@@ -38,6 +38,7 @@ static zend_class_entry* message_type;
 zend_object_handlers* message_handlers;
 
 static  zend_function_entry message_methods[] = {
+  PHP_ME(Message, clear, NULL, ZEND_ACC_PUBLIC)
   PHP_ME(Message, encode, NULL, ZEND_ACC_PUBLIC)
   PHP_ME(Message, decode, NULL, ZEND_ACC_PUBLIC)
   PHP_ME(Message, jsonEncode, NULL, ZEND_ACC_PUBLIC)
@@ -239,6 +240,24 @@ PHP_METHOD(Message, __construct) {
     zval_dtor(getThis());
     Z_OBJVAL_P(getThis()) = message_create(ce TSRMLS_CC);
   }
+}
+
+PHP_METHOD(Message, clear) {
+  MessageHeader* msg =
+      (MessageHeader*)zend_object_store_get_object(getThis() TSRMLS_CC);
+  Descriptor* desc = msg->descriptor;
+  zend_class_entry* ce = desc->klass;
+  int i;
+
+  for (i = 0; i < msg->std.ce->default_properties_count; i++) {
+    zval_ptr_dtor(&msg->std.properties_table[i]);
+  }
+  efree(msg->std.properties_table);
+
+  zend_object_std_init(&msg->std, ce TSRMLS_CC);
+  object_properties_init(&msg->std, ce);
+  layout_init(desc->layout, message_data(msg),
+              msg->std.properties_table TSRMLS_CC);
 }
 
 PHP_METHOD(Message, readOneof) {
