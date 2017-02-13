@@ -63,7 +63,7 @@ build_cpp_distcheck() {
   # List all files that should be included in the distribution package.
   git ls-files | grep "^\(java\|python\|objectivec\|csharp\|js\|ruby\|php\|cmake\|examples\)" |\
     grep -v ".gitignore" | grep -v "java/compatibility_tests" |\
-    grep -v "python/compatibility_tests" > dist.lst
+    grep -v "python/compatibility_tests" | grep -v "csharp/compatibility_tests" > dist.lst
   # Unzip the dist tar file.
   DIST=`ls *.tar.gz`
   tar -xf $DIST
@@ -119,6 +119,9 @@ build_csharp() {
   (cd csharp/src; dotnet restore)
   csharp/buildall.sh
   cd conformance && make test_csharp && cd ..
+
+  # Run csharp compatibility test between 3.0.0 and the current version.
+  csharp/compatibility_tests/v3.0.0/test.sh 3.0.0
 }
 
 build_golang() {
