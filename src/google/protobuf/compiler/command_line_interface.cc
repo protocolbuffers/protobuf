@@ -1031,15 +1031,33 @@ CommandLineInterface::ParseArguments(int argc, const char* const argv[]) {
   }
 
   // Make sure each plugin option has a matching plugin output.
+  bool foundUnknownPluginOption = false;
   for (map<string, string>::const_iterator i = plugin_parameters_.begin();
        i != plugin_parameters_.end(); ++i) {
-    if (plugins_.find(i->first) == plugins_.end()) {
+    if (plugins_.find(i->first) != plugins_.end()) {
+      continue;
+    }
+    bool foundImplicitPlugin = false;
+    for (std::vector<OutputDirective>::const_iterator j = output_directives_.cbegin();
+         j != output_directives_.cend(); ++j) {
+      if (j->generator == NULL) {
+        string plugin_name = PluginName(plugin_prefix_ , j->name);
+        if (plugin_name == i->first) {
+          foundImplicitPlugin = true;
+          break;
+        }
+      }
+    }
+    if (!foundImplicitPlugin) {
       std::cerr << "Unknown flag: "
                 // strip prefix + "gen-" and add back "_opt"
                 << "--" + i->first.substr(plugin_prefix_.size() + 4) + "_opt"
                 << std::endl;
-      return PARSE_ARGUMENT_FAIL;
+      foundUnknownPluginOption = true;
     }
+  }
+  if (foundUnknownPluginOption) {
+    return PARSE_ARGUMENT_FAIL;
   }
 
   // If no --proto_path was given, use the current working directory.
