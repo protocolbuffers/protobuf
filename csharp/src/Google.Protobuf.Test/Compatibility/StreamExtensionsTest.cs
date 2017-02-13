@@ -30,43 +30,38 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #endregion
 
-using System.Reflection;
-
-namespace Google.Protobuf.Compatibility
-{
-    /// <summary>
-    /// Extension methods for <see cref="PropertyInfo"/>, effectively providing
-    /// the familiar members from previous desktop framework versions while
-    /// targeting the newer releases, .NET Core etc.
-    /// </summary>
-    internal static class PropertyInfoExtensions
-    {
-        /// <summary>
-        /// Returns the public getter of a property, or null if there is no such getter
-        /// (either because it's read-only, or the getter isn't public).
-        /// </summary>
-        internal static MethodInfo GetGetMethod(this PropertyInfo target)
-        {
 #if NET35
-            var method = target.GetGetMethod();
-#else
-            var method = target.GetMethod;
-#endif
-            return method != null && method.IsPublic ? method : null;
+using System;
+using System.IO;
+using NUnit.Framework;
+using Google.Protobuf.Compatibility;
+
+namespace Google.Protobuf.Test.Compatibility
+{
+    public class StreamExtensionsTest
+    {
+        [Test]
+        public void CopyToNullArgument()
+        {
+            var memoryStream = new MemoryStream();
+            Assert.Throws<ArgumentNullException>(() => memoryStream.CopyTo(null));
         }
 
-        /// <summary>
-        /// Returns the public setter of a property, or null if there is no such setter
-        /// (either because it's write-only, or the setter isn't public).
-        /// </summary>
-        internal static MethodInfo GetSetMethod(this PropertyInfo target)
+        [Test]
+        public void CopyToTest()
         {
-#if NET35
-            var method = target.GetSetMethod();
-#else
-            var method = target.SetMethod;
-#endif
-            return method != null && method.IsPublic ? method : null;
+            byte[] bytesToStream = new byte[] { 0x31, 0x08, 0xFF, 0x00 };
+            Stream source = new MemoryStream(bytesToStream);
+            Stream destination = new MemoryStream((int)source.Length);
+            source.CopyTo(destination);
+            destination.Seek(0, SeekOrigin.Begin);
+
+            Assert.AreEqual(0x31, destination.ReadByte());
+            Assert.AreEqual(0x08, destination.ReadByte());
+            Assert.AreEqual(0xFF, destination.ReadByte());
+            Assert.AreEqual(0x00, destination.ReadByte());
+            Assert.AreEqual(-1, destination.ReadByte());
         }
     }
 }
+#endif

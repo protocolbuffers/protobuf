@@ -30,43 +30,37 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #endregion
 
-using System.Reflection;
+#if NET35
+using System;
+using System.IO;
 
 namespace Google.Protobuf.Compatibility
 {
     /// <summary>
-    /// Extension methods for <see cref="PropertyInfo"/>, effectively providing
-    /// the familiar members from previous desktop framework versions while
-    /// targeting the newer releases, .NET Core etc.
+    /// Extension methods for <see cref="Stream"/> in order to provide
+    /// backwards compatibility with .NET 3.5
     /// </summary>
-    internal static class PropertyInfoExtensions
+    public static class StreamExtensions
     {
-        /// <summary>
-        /// Returns the public getter of a property, or null if there is no such getter
-        /// (either because it's read-only, or the getter isn't public).
-        /// </summary>
-        internal static MethodInfo GetGetMethod(this PropertyInfo target)
-        {
-#if NET35
-            var method = target.GetGetMethod();
-#else
-            var method = target.GetMethod;
-#endif
-            return method != null && method.IsPublic ? method : null;
-        }
+        // 81920 seems to be the default buffer size used in .NET 4.5.1
+        private const int BUFFER_SIZE = 81920;
 
         /// <summary>
-        /// Returns the public setter of a property, or null if there is no such setter
-        /// (either because it's write-only, or the setter isn't public).
+        /// Write the contents of the current stream to the destination stream
         /// </summary>
-        internal static MethodInfo GetSetMethod(this PropertyInfo target)
+        public static void CopyTo(this Stream source, Stream destination)
         {
-#if NET35
-            var method = target.GetSetMethod();
-#else
-            var method = target.SetMethod;
-#endif
-            return method != null && method.IsPublic ? method : null;
+            if (destination == null)
+            {
+                throw new ArgumentNullException(nameof(destination));
+            }
+
+            byte[] buffer = new byte[BUFFER_SIZE];
+            int numBytesRead;
+            while ((numBytesRead = source.Read(buffer, 0, buffer.Length)) > 0) {
+                destination.Write(buffer, 0, numBytesRead);
+            }
         }
     }
 }
+#endif
