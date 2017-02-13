@@ -689,10 +689,36 @@ TEST_F(CommandLineInterfaceTest, UnrecognizedExtraParameters) {
     "message Foo {}\n");
 
   Run("protocol_compiler --plug_out=TestParameter:$tmpdir "
+      "--unknown_plug_a_opt=Foo "
+      "--unknown_plug_b_opt=Bar "
+      "--proto_path=$tmpdir foo.proto");
+
+  ExpectErrorSubstring("Unknown flag: --unknown_plug_a_opt");
+  ExpectErrorSubstring("Unknown flag: --unknown_plug_b_opt");
+}
+
+TEST_F(CommandLineInterfaceTest, ExtraPluginParametersForOutParameters) {
+  // This doesn't rely on the plugin having been registred and instead that
+  // the existence of --[name]_out is enough to make the --[name]_opt valid.
+  // However, running out of process plugins found via the search path (i.e. -
+  // not pre registered with --plugin) isn't support in this test suite, so we
+  // list the options pre/post the _out directive, and then include _opt that
+  // will be unknown, and confirm the failure output is about the expected
+  // unknown directive, which means the other were accepted.
+  // NOTE: UnrecognizedExtraParameters confirms that if two unknown _opt
+  // directives appear, they both are reported.
+
+  CreateTempFile("foo.proto",
+    "syntax = \"proto2\";\n"
+    "message Foo {}\n");
+
+  Run("protocol_compiler --plug_out=TestParameter:$tmpdir "
+      "--xyz_opt=foo=bar --xyz_out=$tmpdir "
+      "--abc_out=$tmpdir --abc_opt=foo=bar "
       "--unknown_plug_opt=Foo "
       "--proto_path=$tmpdir foo.proto");
 
-  ExpectErrorSubstring("Unknown flag: --unknown_plug_opt");
+  ExpectErrorText("Unknown flag: --unknown_plug_opt\n");
 }
 
 TEST_F(CommandLineInterfaceTest, Insert) {
