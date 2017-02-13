@@ -34,7 +34,7 @@ using System;
 using System.Text;
 using NUnit.Framework;
 using System.IO;
-#if !DOTNET35
+#if !NET35
 using System.Threading.Tasks;
 #endif
 
@@ -196,7 +196,7 @@ namespace Google.Protobuf
             Assert.AreEqual(expected, actual, $"{expected.ToBase64()} != {actual.ToBase64()}");
         }
 
-#if !DOTNET35
+#if !NET35
         [Test]
         public async Task FromStreamAsync_Seekable()
         {

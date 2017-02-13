@@ -59,7 +59,7 @@ namespace Google.Protobuf.WellKnownTypes
             if (firstInvalid == null)
             {
                 var writer = new StringWriter();
-#if DOTNET35
+#if NET35
                 var query = paths.Select(JsonFormatter.ToJsonName);
                 JsonFormatter.WriteString(writer, string.Join(",", query.ToArray()));
 #else

@@ -47,7 +47,7 @@ namespace Google.Protobuf.Collections
     /// </remarks>
     /// <typeparam name="T">The element type of the repeated field.</typeparam>
     public sealed class RepeatedField<T> : IList<T>, IList, IDeepCloneable<RepeatedField<T>>, IEquatable<RepeatedField<T>>
-#if !DOTNET35
+#if !NET35
         , IReadOnlyList<T>
 #endif
     {
