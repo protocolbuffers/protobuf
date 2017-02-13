@@ -36,6 +36,7 @@
 #include <google/protobuf/io/zero_copy_stream.h>
 #include <google/protobuf/descriptor_database.h>
 #include <google/protobuf/dynamic_message.h>
+#include <google/protobuf/util/internal/testdata/maps.pb.h>
 #include <google/protobuf/util/json_format_proto3.pb.h>
 #include <google/protobuf/util/type_resolver.h>
 #include <google/protobuf/util/type_resolver_util.h>
@@ -50,6 +51,7 @@ using proto3::FOO;
 using proto3::BAR;
 using proto3::TestMessage;
 using proto3::TestMap;
+using testing::MapIn;
 
 static const char kTypeUrlPrefix[] = "type.googleapis.com";
 
@@ -62,7 +64,7 @@ static string GetTypeUrl(const Descriptor* message) {
 // only cover some very basic cases to make sure the wrappers have forwarded
 // parameters to the underlying implementation correctly. More detailed
 // tests are contained in the //net/proto2/util/converter directory.
-class JsonUtilTest : public testing::Test {
+class JsonUtilTest : public ::testing::Test {
  protected:
   JsonUtilTest() {
   }
@@ -192,6 +194,17 @@ TEST_F(JsonUtilTest, ParseMap) {
   JsonParseOptions parse_options;
   EXPECT_EQ("{\"stringMap\":{\"hello\":1234}}", ToJson(message, print_options));
   TestMap other;
+  ASSERT_TRUE(FromJson(ToJson(message, print_options), &other, parse_options));
+  EXPECT_EQ(message.DebugString(), other.DebugString());
+}
+
+TEST_F(JsonUtilTest, ParsePrimitiveMapIn) {
+  MapIn message;
+  JsonPrintOptions print_options;
+  print_options.always_print_primitive_fields = true;
+  JsonParseOptions parse_options;
+  EXPECT_EQ("{\"other\":\"\",\"things\":[],\"mapInput\":{}}", ToJson(message, print_options));
+  MapIn other;
   ASSERT_TRUE(FromJson(ToJson(message, print_options), &other, parse_options));
   EXPECT_EQ(message.DebugString(), other.DebugString());
 }
