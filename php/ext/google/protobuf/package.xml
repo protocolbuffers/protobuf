@@ -13,8 +13,8 @@
  <date>2017-01-13</date>
  <time>16:06:07</time>
  <version>
-  <release>3.2.0a1rc2</release>
-  <api>3.2.0a1rc2</api>
+  <release>3.2.0a1</release>
+  <api>3.2.0a1</api>
  </version>
  <stability>
   <release>alpha</release>
@@ -73,8 +73,8 @@ First alpha release
   </release>
   <release>
    <version>
-    <release>3.2.0a1rc2</release>
-    <api>3.2.0a1rc2</api>
+    <release>3.2.0a1</release>
+    <api>3.2.0a1</api>
    </version>
    <stability>
     <release>alpha</release>

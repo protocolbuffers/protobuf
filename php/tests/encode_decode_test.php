@@ -22,7 +22,8 @@ class EncodeDecodeTest extends TestBase
         $this->expectFields($from);
 
         $data = $from->encode();
-        $this->assertSame(TestUtil::getGoldenTestMessage(), $data);
+        $this->assertSame(bin2hex(TestUtil::getGoldenTestMessage()),
+                          bin2hex($data));
     }
 
     public function testDecode()
@@ -172,5 +173,26 @@ class EncodeDecodeTest extends TestBase
         $data = hex2bin('c80501');
         $m = new TestMessage();
         $m->decode($data);
+    }
+
+    public function testEncodeNegativeInt32()
+    {
+        $m = new TestMessage();
+        $m->setOptionalInt32(-1);
+        $data = $m->encode();
+        $this->assertSame("08ffffffffffffffffff01", bin2hex($data));
+    }
+
+    public function testDecodeNegativeInt32()
+    {
+        $m = new TestMessage();
+        $this->assertEquals(0, $m->getOptionalInt32());
+        $m->decode(hex2bin("08ffffffffffffffffff01"));
+        $this->assertEquals(-1, $m->getOptionalInt32());
+
+        $m = new TestMessage();
+        $this->assertEquals(0, $m->getOptionalInt32());
+        $m->decode(hex2bin("08ffffffff0f"));
+        $this->assertEquals(-1, $m->getOptionalInt32());
     }
 }
