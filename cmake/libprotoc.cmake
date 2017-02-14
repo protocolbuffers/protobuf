@@ -94,7 +94,7 @@ set(libprotoc_files
   ${protobuf_source_dir}/src/google/protobuf/compiler/zip_writer.cc
 )
 
-set(js_well_known_types_sources,
+set(js_well_known_types_sources
   ${protobuf_source_dir}/src/google/protobuf/compiler/js/well_known_types/any.js
   ${protobuf_source_dir}/src/google/protobuf/compiler/js/well_known_types/struct.js
   ${protobuf_source_dir}/src/google/protobuf/compiler/js/well_known_types/timestamp.js
