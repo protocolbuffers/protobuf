@@ -46,6 +46,16 @@
 #include <google/protobuf/message_lite.h>
 #include <google/protobuf/io/coded_stream.h>  // for CodedOutputStream::Varint32Size
 
+// Avoid conflict with iOS where <ConditionalMacros.h> #defines TYPE_BOOL.
+//
+// If some one needs the macro TYPE_BOOL in a file that includes this header, it's
+// possible to bring it back using push/pop_macro as follows.
+//
+// #pragma push_macro("TYPE_BOOL")
+// #include this header and/or all headers that need the macro to be undefined.
+// #pragma pop_macro("TYPE_BOOL")
+#undef TYPE_BOOL
+
 namespace google {
 
 namespace protobuf {
