@@ -903,8 +903,6 @@ class LIBPROTOBUF_EXPORT CodedOutputStream {
   void WriteVarint32SlowPath(uint32 value);
   void WriteVarint64SlowPath(uint64 value);
 
-  static size_t VarintSize32Fallback(uint32 value);
-
   // See above.  Other projects may use "friend" to allow them to call this.
   // Requires: no protocol buffer serialization in progress.
   friend void ::google::protobuf::internal::MapTestForceDeterministic();
@@ -1290,11 +1288,23 @@ inline uint8* CodedOutputStream::WriteTagToArray(
 }
 
 inline size_t CodedOutputStream::VarintSize32(uint32 value) {
-  if (value < (1 << 7)) {
-    return 1;
-  } else  {
-    return VarintSize32Fallback(value);
-  }
+  // This computes value == 0 ? 1 : floor(log2(value)) / 7 + 1
+  // Use an explicit multiplication to implement the divide of
+  // a number in the 1..31 range.
+  // Explicit OR 0x1 to avoid calling Bits::Log2FloorNonZero(0), which is
+  // undefined.
+  uint32 log2value = Bits::Log2FloorNonZero(value | 0x1);
+  return static_cast<size_t>((log2value * 9 + 73) / 64);
+}
+
+inline size_t CodedOutputStream::VarintSize64(uint64 value) {
+  // This computes value == 0 ? 1 : floor(log2(value)) / 7 + 1
+  // Use an explicit multiplication to implement the divide of
+  // a number in the 1..63 range.
+  // Explicit OR 0x1 to avoid calling Bits::Log2FloorNonZero(0), which is
+  // undefined.
+  uint32 log2value = Bits::Log2FloorNonZero64(value | 0x1);
+  return static_cast<size_t>((log2value * 9 + 73) / 64);
 }
 
 inline size_t CodedOutputStream::VarintSize32SignExtended(int32 value) {
