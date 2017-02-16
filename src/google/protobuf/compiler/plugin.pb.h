@@ -356,10 +356,16 @@ class LIBPROTOC_EXPORT CodeGeneratorRequest : public ::google::protobuf::Message
   const ::std::string& file_to_generate(int index) const;
   ::std::string* mutable_file_to_generate(int index);
   void set_file_to_generate(int index, const ::std::string& value);
+  #if LANG_CXX11
+  void set_file_to_generate(int index, ::std::string&& value);
+  #endif
   void set_file_to_generate(int index, const char* value);
   void set_file_to_generate(int index, const char* value, size_t size);
   ::std::string* add_file_to_generate();
   void add_file_to_generate(const ::std::string& value);
+  #if LANG_CXX11
+  void add_file_to_generate(::std::string&& value);
+  #endif
   void add_file_to_generate(const char* value);
   void add_file_to_generate(const char* value, size_t size);
   const ::google::protobuf::RepeatedPtrField< ::std::string>& file_to_generate() const;
@@ -839,6 +845,12 @@ inline void CodeGeneratorRequest::set_file_to_generate(int index, const ::std::s
   // @@protoc_insertion_point(field_set:google.protobuf.compiler.CodeGeneratorRequest.file_to_generate)
   file_to_generate_.Mutable(index)->assign(value);
 }
+#if LANG_CXX11
+inline void CodeGeneratorRequest::set_file_to_generate(int index, ::std::string&& value) {
+  // @@protoc_insertion_point(field_set:google.protobuf.compiler.CodeGeneratorRequest.file_to_generate)
+  file_to_generate_.Mutable(index)->assign(std::move(value));
+}
+#endif
 inline void CodeGeneratorRequest::set_file_to_generate(int index, const char* value) {
   file_to_generate_.Mutable(index)->assign(value);
   // @@protoc_insertion_point(field_set_char:google.protobuf.compiler.CodeGeneratorRequest.file_to_generate)
@@ -856,6 +868,12 @@ inline void CodeGeneratorRequest::add_file_to_generate(const ::std::string& valu
   file_to_generate_.Add()->assign(value);
   // @@protoc_insertion_point(field_add:google.protobuf.compiler.CodeGeneratorRequest.file_to_generate)
 }
+#if LANG_CXX11
+inline void CodeGeneratorRequest::add_file_to_generate(::std::string&& value) {
+  file_to_generate_.Add()->assign(std::move(value));
+  // @@protoc_insertion_point(field_add:google.protobuf.compiler.CodeGeneratorRequest.file_to_generate)
+}
+#endif
 inline void CodeGeneratorRequest::add_file_to_generate(const char* value) {
   file_to_generate_.Add()->assign(value);
   // @@protoc_insertion_point(field_add_char:google.protobuf.compiler.CodeGeneratorRequest.file_to_generate)

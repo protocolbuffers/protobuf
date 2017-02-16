@@ -423,6 +423,11 @@ class LIBPROTOBUF_EXPORT RepeatedPtrFieldBase {
   void Delete(int index);
   template <typename TypeHandler>
   typename TypeHandler::Type* Add(typename TypeHandler::Type* prototype = NULL);
+#if LANG_CXX11
+  template <typename TypeHandler>
+  void Add(typename TypeHandler::Type&& value,
+           std::enable_if<TypeHandler::Moveable>* dummy = NULL);
+#endif
 
   template <typename TypeHandler>
   void RemoveLast();
@@ -575,6 +580,9 @@ template <typename GenericType>
 class GenericTypeHandler {
  public:
   typedef GenericType Type;
+#if LANG_CXX11
+  static const bool Moveable = false;
+#endif
   static inline GenericType* New(Arena* arena) {
     return ::google::protobuf::Arena::CreateMaybeMessage<Type>(
         arena, static_cast<GenericType*>(0));
@@ -690,10 +698,20 @@ inline const Message& GenericTypeHandler<Message>::default_instance() {
 class StringTypeHandler {
  public:
   typedef string Type;
+#if LANG_CXX11
+  static const bool Moveable =
+      std::is_move_constructible<Type>::value &&
+      std::is_move_assignable<Type>::value;
+#endif
 
   static inline string* New(Arena* arena) {
     return Arena::Create<string>(arena);
   }
+#if LANG_CXX11
+  static inline string* New(Arena* arena, std::string&& value) {
+    return Arena::Create<string>(arena, std::move(value));
+  }
+#endif
   static inline string* NewFromPrototype(const string*,
                                          ::google::protobuf::Arena* arena) {
     return New(arena);
@@ -743,6 +761,9 @@ class RepeatedPtrField PROTOBUF_FINAL : public internal::RepeatedPtrFieldBase {
   const Element& Get(int index) const;
   Element* Mutable(int index);
   Element* Add();
+#if LANG_CXX11
+  void Add(Element&& value);
+#endif
 
   const Element& operator[](int index) const { return Get(index); }
   Element& operator[](int index) { return *Mutable(index); }
@@ -1451,6 +1472,25 @@ inline typename TypeHandler::Type* RepeatedPtrFieldBase::Add(
   return result;
 }
 
+#if LANG_CXX11
+template <typename TypeHandler>
+inline void RepeatedPtrFieldBase::Add(
+    typename TypeHandler::Type&& value,
+    std::enable_if<TypeHandler::Moveable>*) {
+  if (rep_ != NULL && current_size_ < rep_->allocated_size) {
+    cast<TypeHandler>(rep_->elements[current_size_++]) = std::move(value);
+  }
+  if (!rep_ || rep_->allocated_size == total_size_) {
+    Reserve(total_size_ + 1);
+  }
+  ++rep_->allocated_size;
+  typename TypeHandler::Type* result =
+      TypeHandler::New(arena_, std::move(value));
+  rep_->elements[current_size_++] = result;
+  return result;
+}
+#endif
+
 template <typename TypeHandler>
 inline void RepeatedPtrFieldBase::RemoveLast() {
   GOOGLE_DCHECK_GT(current_size_, 0);
@@ -1847,6 +1887,13 @@ template <typename Element>
 inline Element* RepeatedPtrField<Element>::Add() {
   return RepeatedPtrFieldBase::Add<TypeHandler>();
 }
+
+#if LANG_CXX11
+template <typename Element>
+inline void RepeatedPtrField<Element>::Add(Element&& value) {
+  RepeatedPtrFieldBase::Add<TypeHandler>(std::move(value));
+}
+#endif
 
 template <typename Element>
 inline void RepeatedPtrField<Element>::RemoveLast() {

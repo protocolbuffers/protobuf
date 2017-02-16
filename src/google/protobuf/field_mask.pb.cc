@@ -192,7 +192,8 @@ bool FieldMask::MergePartialFromCodedStream(
     switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
       // repeated string paths = 1;
       case 1: {
-        if (tag == 10u) {
+        if (static_cast<::google::protobuf::uint8>(tag) ==
+            static_cast<::google::protobuf::uint8>(10u)) {
           DO_(::google::protobuf::internal::WireFormatLite::ReadString(
                 input, this->add_paths()));
           DO_(::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
@@ -231,7 +232,7 @@ void FieldMask::SerializeWithCachedSizes(
     ::google::protobuf::io::CodedOutputStream* output) const {
   // @@protoc_insertion_point(serialize_start:google.protobuf.FieldMask)
   // repeated string paths = 1;
-  for (int i = 0; i < this->paths_size(); i++) {
+  for (int i = 0, n = this->paths_size(); i < n; i++) {
     ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
       this->paths(i).data(), this->paths(i).length(),
       ::google::protobuf::internal::WireFormatLite::SERIALIZE,
@@ -248,7 +249,7 @@ void FieldMask::SerializeWithCachedSizes(
   (void)deterministic;  // Unused
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.FieldMask)
   // repeated string paths = 1;
-  for (int i = 0; i < this->paths_size(); i++) {
+  for (int i = 0, n = this->paths_size(); i < n; i++) {
     ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
       this->paths(i).data(), this->paths(i).length(),
       ::google::protobuf::internal::WireFormatLite::SERIALIZE,
@@ -268,7 +269,7 @@ size_t FieldMask::ByteSizeLong() const {
   // repeated string paths = 1;
   total_size += 1 *
       ::google::protobuf::internal::FromIntSize(this->paths_size());
-  for (int i = 0; i < this->paths_size(); i++) {
+  for (int i = 0, n = this->paths_size(); i < n; i++) {
     total_size += ::google::protobuf::internal::WireFormatLite::StringSize(
       this->paths(i));
   }
@@ -356,6 +357,12 @@ void FieldMask::set_paths(int index, const ::std::string& value) {
   // @@protoc_insertion_point(field_set:google.protobuf.FieldMask.paths)
   paths_.Mutable(index)->assign(value);
 }
+#if LANG_CXX11
+void FieldMask::set_paths(int index, ::std::string&& value) {
+  // @@protoc_insertion_point(field_set:google.protobuf.FieldMask.paths)
+  paths_.Mutable(index)->assign(std::move(value));
+}
+#endif
 void FieldMask::set_paths(int index, const char* value) {
   paths_.Mutable(index)->assign(value);
   // @@protoc_insertion_point(field_set_char:google.protobuf.FieldMask.paths)
@@ -373,6 +380,12 @@ void FieldMask::add_paths(const ::std::string& value) {
   paths_.Add()->assign(value);
   // @@protoc_insertion_point(field_add:google.protobuf.FieldMask.paths)
 }
+#if LANG_CXX11
+void FieldMask::add_paths(::std::string&& value) {
+  paths_.Add()->assign(std::move(value));
+  // @@protoc_insertion_point(field_add:google.protobuf.FieldMask.paths)
+}
+#endif
 void FieldMask::add_paths(const char* value) {
   paths_.Add()->assign(value);
   // @@protoc_insertion_point(field_add_char:google.protobuf.FieldMask.paths)
