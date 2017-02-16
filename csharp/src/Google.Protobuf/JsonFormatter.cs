@@ -835,6 +835,9 @@ namespace Google.Protobuf
             // TODO: Consider adding functionality to TypeExtensions to avoid this difference.
             private static Dictionary<object, string> GetNameMapping(System.Type enumType) =>
                 enumType.GetFields(BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Static)
+                    .Where(f => (f.GetCustomAttributes(typeof(OriginalNameAttribute), false)
+                                 .FirstOrDefault() as OriginalNameAttribute)
+                                 ?.PreferredAlias ?? true)
                     .ToDictionary(f => f.GetValue(null),
                                   f => (f.GetCustomAttributes(typeof(OriginalNameAttribute), false)
                                         .FirstOrDefault() as OriginalNameAttribute)
@@ -844,6 +847,8 @@ namespace Google.Protobuf
             private static Dictionary<object, string> GetNameMapping(System.Type enumType) =>
                 enumType.GetTypeInfo().DeclaredFields
                     .Where(f => f.IsStatic)
+                    .Where(f => f.GetCustomAttributes<OriginalNameAttribute>()
+                                 .FirstOrDefault()?.PreferredAlias ?? true)
                     .ToDictionary(f => f.GetValue(null),
                                   f => f.GetCustomAttributes<OriginalNameAttribute>()
                                         .FirstOrDefault()

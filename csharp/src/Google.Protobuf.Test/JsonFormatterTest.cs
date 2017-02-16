@@ -67,6 +67,18 @@ namespace Google.Protobuf
         }
 
         [Test]
+        public void EnumAllowAlias()
+        {
+            var message = new TestEnumAllowAlias
+            {
+                Value = TestEnumWithDupValue.Foo2,
+            };
+            var actualText = JsonFormatter.Default.Format(message);
+            var expectedText = "{ 'value': 'FOO1' }";
+            AssertJson(expectedText, actualText);
+        }
+
+        [Test]
         public void AllSingleFields()
         {
             var message = new TestAllTypes

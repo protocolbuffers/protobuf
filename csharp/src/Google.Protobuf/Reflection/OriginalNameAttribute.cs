@@ -47,12 +47,19 @@ namespace Google.Protobuf.Reflection
         public string Name { get; set; }
 
         /// <summary>
+        /// If the name is preferred in the .proto file.
+        /// </summary>
+        public bool PreferredAlias { get; set; }
+
+        /// <summary>
         /// Constructs a new attribute instance for the given name.
         /// </summary>
         /// <param name="name">The name of the element in the .proto file.</param>
         public OriginalNameAttribute(string name)
         {
             Name = ProtoPreconditions.CheckNotNull(name, nameof(name));
+            PreferredAlias = true;
         }
+	
     }
 }
