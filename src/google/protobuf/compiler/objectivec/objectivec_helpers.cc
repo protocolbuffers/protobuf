@@ -980,13 +980,13 @@ namespace {
 
 class ExpectedPrefixesCollector : public LineConsumer {
  public:
-  ExpectedPrefixesCollector(map<string, string>* inout_package_to_prefix_map)
+  ExpectedPrefixesCollector(std::map<string, string>* inout_package_to_prefix_map)
       : prefix_map_(inout_package_to_prefix_map) {}
 
   virtual bool ConsumeLine(const StringPiece& line, string* out_error);
 
  private:
-  map<string, string>* prefix_map_;
+  std::map<string, string>* prefix_map_;
 };
 
 bool ExpectedPrefixesCollector::ConsumeLine(
@@ -1009,7 +1009,7 @@ bool ExpectedPrefixesCollector::ConsumeLine(
 }
 
 bool LoadExpectedPackagePrefixes(const Options &generation_options,
-                                 map<string, string>* prefix_map,
+                                 std::map<string, string>* prefix_map,
                                  string* out_error) {
   if (generation_options.expected_prefixes_path.empty()) {
     return true;
@@ -1023,7 +1023,7 @@ bool LoadExpectedPackagePrefixes(const Options &generation_options,
 bool ValidateObjCClassPrefix(
     const FileDescriptor* file,
     const string& expected_prefixes_path,
-    const map<string, string>& expected_package_prefixes,
+    const std::map<string, string>& expected_package_prefixes,
     string* out_error) {
   const string prefix = file->options().objc_class_prefix();
   const string package = file->package();
@@ -1033,7 +1033,7 @@ bool ValidateObjCClassPrefix(
 
   // Check: Error - See if there was an expected prefix for the package and
   // report if it doesn't match (wrong or missing).
-  map<string, string>::const_iterator package_match =
+  std::map<string, string>::const_iterator package_match =
       expected_package_prefixes.find(package);
   if (package_match != expected_package_prefixes.end()) {
     // There was an entry, and...
@@ -1082,7 +1082,7 @@ bool ValidateObjCClassPrefix(
 
   // Look for any other package that uses the same prefix.
   string other_package_for_prefix;
-  for (map<string, string>::const_iterator i = expected_package_prefixes.begin();
+  for (std::map<string, string>::const_iterator i = expected_package_prefixes.begin();
        i != expected_package_prefixes.end(); ++i) {
     if (i->second == prefix) {
       other_package_for_prefix = i->first;
@@ -1150,7 +1150,7 @@ bool ValidateObjCClassPrefixes(const vector<const FileDescriptor*>& files,
                                const Options& generation_options,
                                string* out_error) {
   // Load the expected package prefixes, if available, to validate against.
-  map<string, string> expected_package_prefixes;
+  std::map<string, string> expected_package_prefixes;
   if (!LoadExpectedPackagePrefixes(generation_options,
                                    &expected_package_prefixes,
                                    out_error)) {
@@ -1519,7 +1519,7 @@ void ImportWriter::AddFile(const FileDescriptor* file,
     ParseFrameworkMappings();
   }
 
-  map<string, string>::iterator proto_lookup =
+  std::map<string, string>::iterator proto_lookup =
       proto_file_to_framework_name_.find(file->name());
   if (proto_lookup != proto_file_to_framework_name_.end()) {
     other_framework_imports_.push_back(
@@ -1640,7 +1640,7 @@ bool ImportWriter::ProtoFrameworkCollector::ConsumeLine(
     StringPiece proto_file(proto_file_list, start, offset - start);
     StringPieceTrimWhitespace(&proto_file);
     if (proto_file.size() != 0) {
-      map<string, string>::iterator existing_entry =
+      std::map<string, string>::iterator existing_entry =
           map_->find(proto_file.ToString());
       if (existing_entry != map_->end()) {
         cerr << "warning: duplicate proto file reference, replacing framework entry for '"
