@@ -160,6 +160,29 @@ TEST_F(JsonUtilTest, TestDefaultValues) {
       ToJson(m, options));
 }
 
+TEST_F(JsonUtilTest, TestAlwaysPrintEnumsAsInts) {
+  TestMessage orig;
+  orig.set_enum_value(proto3::EnumType::BAR);
+  orig.add_repeated_enum_value(proto3::EnumType::FOO);
+  orig.add_repeated_enum_value(proto3::EnumType::BAR);
+
+  JsonPrintOptions print_options;
+  print_options.always_print_enums_as_ints = true;
+
+  string expected_json =
+    "{\"enumValue\":1,\"repeatedEnumValue\":[0,1]}";
+  EXPECT_EQ(expected_json, ToJson(orig, print_options));
+
+  TestMessage parsed;
+  JsonParseOptions parse_options;
+  ASSERT_TRUE(FromJson(expected_json, &parsed, parse_options));
+
+  EXPECT_EQ(proto3::EnumType::BAR, parsed.enum_value());
+  EXPECT_EQ(2, parsed.repeated_enum_value_size());
+  EXPECT_EQ(proto3::EnumType::FOO, parsed.repeated_enum_value(0));
+  EXPECT_EQ(proto3::EnumType::BAR, parsed.repeated_enum_value(1));
+}
+
 TEST_F(JsonUtilTest, ParseMessage) {
   // Some random message but good enough to verify that the parsing warpper
   // functions are working properly.

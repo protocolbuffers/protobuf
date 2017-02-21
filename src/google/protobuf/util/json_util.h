@@ -61,9 +61,13 @@ struct JsonPrintOptions {
   // set to 0 will be omitted. Set this flag to true will override the default
   // behavior and print primitive fields regardless of their values.
   bool always_print_primitive_fields;
+  // Whether to always print enums as ints. By default they are rendered as
+  // strings.
+  bool always_print_enums_as_ints;
 
   JsonPrintOptions() : add_whitespace(false),
-                       always_print_primitive_fields(false) {
+                       always_print_primitive_fields(false),
+                       always_print_enums_as_ints(false) {
   }
 };
 

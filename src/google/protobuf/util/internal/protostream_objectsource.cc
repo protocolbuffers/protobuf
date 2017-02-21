@@ -120,6 +120,7 @@ ProtoStreamObjectSource::ProtoStreamObjectSource(
       own_typeinfo_(true),
       type_(type),
       use_lower_camel_for_enums_(false),
+      use_ints_for_enums_(false),
       recursion_depth_(0),
       max_recursion_depth_(kDefaultMaxRecursionDepth),
       render_unknown_fields_(false),
@@ -135,6 +136,7 @@ ProtoStreamObjectSource::ProtoStreamObjectSource(
       own_typeinfo_(false),
       type_(type),
       use_lower_camel_for_enums_(false),
+      use_ints_for_enums_(false),
       recursion_depth_(0),
       max_recursion_depth_(kDefaultMaxRecursionDepth),
       render_unknown_fields_(false),
@@ -855,6 +857,12 @@ Status ProtoStreamObjectSource::RenderNonMessageField(
       // If the field represents an explicit NULL value, render null.
       if (field->type_url() == kStructNullValueTypeUrl) {
         ow->RenderNull(field_name);
+        break;
+      }
+
+      // No need to lookup enum type if we need to render int.
+      if (use_ints_for_enums_) {
+        ow->RenderInt32(field_name, buffer32);
         break;
       }
 
