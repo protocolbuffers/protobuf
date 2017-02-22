@@ -32,8 +32,7 @@ Building
 ========
 
 Open the `src/Google.Protobuf.sln` solution in Visual Studio 2015 or
-later. You should be able to run the NUnit test from Test Explorer
-(you might need to install NUnit Visual Studio add-in).
+later.
 
 Although *users* of this project are only expected to have Visual
 Studio 2012 or later, *developers* of the library are required to
@@ -41,6 +40,57 @@ have Visual Studio 2015 or later, as the library uses C# 6 features
 in its implementation. These features have no impact when using the
 compiled code - they're only relevant when building the
 `Google.Protobuf` assembly.
+
+Testing
+=======
+
+The unit tests use [NUnit 3](https://github.com/nunit/nunit). Vanilla NUnit doesn't 
+support .NET Core, so to run the tests you'll need to use 
+[dotnet-test-nunit](https://github.com/nunit/dotnet-test-nunit). 
+`dotnet-test-nunit` can also run tests for .NET 4.5+, so to run the tests 
+for both .NET Core and .NET 4.5, you can simply open the 
+`Package Manager Console` in Visual Studio and execute:
+```
+dotnet test Google.Protobuf.Test
+```
+
+.NET 3.5
+========
+
+We don't officially support .NET 3.5. However, there has been some effort 
+to make enabling .NET 3.5 support relatively painless in case you require it. 
+There's no guarantee that this will continue in the future, so rely on .NET 
+3.5 support at your peril.
+
+To enable .NET 3.5 support:
+
+1. Modify [src/Google.Protobuf/project.json](src/Google.Protobuf/project.json) to add `"net35": {}` to `"frameworks"`.
+2. Modify [src/Google.Protobuf.Test/project.json](src/Google.Protobuf/project.json):
+  1. Add `"net35": {}` to `"frameworks"`.
+  2. `dotnet-test-nunit` doesn't support .NET 3.5, so remove it from 
+  the project-wide `"dependencies"` and add it to the framework-specific 
+  dependencies under `"net451"` and `"netcoreapp1.0"`.
+
+Note that `dotnet-test-nunit` doesn't support .NET 3.5. You can instead run the 
+tests with [NUnit 3 console](https://github.com/nunit/nunit-console) 
+by running something like: 
+```
+nunit3-console.exe "Google.Protobuf.Test\bin\Debug\net35\win7-x64\Google.Protobuf.Test.dll" --inprocess
+```
+
+The exact path may differ depending on your environment (e.g., the `win7-x64` 
+directory may be called something else). The `--inprocess` flag seems to be a 
+necessary workaround for a bug in NUnit; otherwise, you'll receive 
+an error "Exception has been thrown by the target of an invocation" 
+([possibly related issue](https://github.com/nunit/nunit/issues/1480)).
+
+If you still want to run the .NET 4.5 and .NET Core tests, you can do so by 
+specifying the framework when using `dotnet-test-nunit`, i.e. from 
+`Package Manager Console` in Visual Studio:
+```
+dotnet test Google.Protobuf.Test --framework netcoreapp1.0
+dotnet test Google.Protobuf.Test --framework net451
+```
 
 History of C# protobufs
 =======================
