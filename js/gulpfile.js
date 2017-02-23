@@ -59,10 +59,21 @@ gulp.task('genproto_wellknowntypes', function (cb) {
   });
 });
 
+function getClosureBuilderCommand(exportsFile, outputFile) {
+  return './node_modules/google-closure-library/closure/bin/build/closurebuilder.py ' +
+  '--root node_modules ' +
+  '-o compiled ' +
+  '--compiler_jar node_modules/google-closure-compiler/compiler.jar ' +
+  '-i ' + exportsFile + ' ' +
+  'map.js message.js binary/arith.js binary/constants.js binary/decoder.js ' +
+  'binary/encoder.js binary/reader.js binary/utils.js binary/writer.js ' +
+  exportsFile  + ' > ' + outputFile;
+}
+
 gulp.task('dist', ['genproto_wellknowntypes'], function (cb) {
   // TODO(haberman): minify this more aggressively.
   // Will require proper externs/exports.
-  exec('./node_modules/google-closure-library/closure/bin/calcdeps.py -i message.js -i binary/reader.js -i binary/writer.js -i commonjs/export.js -p . -p node_modules/google-closure-library/closure -o compiled --compiler_jar node_modules/google-closure-compiler/compiler.jar > google-protobuf.js',
+  exec(getClosureBuilderCommand('commonjs/export.js', 'google-protobuf.js'),
        function (err, stdout, stderr) {
     console.log(stdout);
     console.log(stderr);
@@ -71,7 +82,10 @@ gulp.task('dist', ['genproto_wellknowntypes'], function (cb) {
 });
 
 gulp.task('commonjs_asserts', function (cb) {
-  exec('mkdir -p commonjs_out/test_node_modules && ./node_modules/google-closure-library/closure/bin/calcdeps.py -i commonjs/export_asserts.js -p . -p node_modules/google-closure-library/closure -o compiled --compiler_jar node_modules/google-closure-compiler/compiler.jar > commonjs_out/test_node_modules/closure_asserts_commonjs.js',
+  exec('mkdir -p commonjs_out/test_node_modules && ' +
+       getClosureBuilderCommand(
+           'commonjs/export_asserts.js',
+           'commonjs_out/test_node_modules/closure_asserts_commonjs.js'),
        function (err, stdout, stderr) {
     console.log(stdout);
     console.log(stderr);
@@ -80,7 +94,10 @@ gulp.task('commonjs_asserts', function (cb) {
 });
 
 gulp.task('commonjs_testdeps', function (cb) {
-  exec('mkdir -p commonjs_out/test_node_modules && ./node_modules/google-closure-library/closure/bin/calcdeps.py -i commonjs/export_testdeps.js -p . -p node_modules/google-closure-library/closure -o compiled --compiler_jar node_modules/google-closure-compiler/compiler.jar > commonjs_out/test_node_modules/testdeps_commonjs.js',
+  exec('mkdir -p commonjs_out/test_node_modules && ' +
+       getClosureBuilderCommand(
+           'commonjs/export_testdeps.js',
+           'commonjs_out/test_node_modules/testdeps_commonjs.js'),
        function (err, stdout, stderr) {
     console.log(stdout);
     console.log(stderr);
