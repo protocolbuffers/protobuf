@@ -3004,20 +3004,8 @@ GenerateMergeFromCodedStream(io::Printer* printer) {
 
     printer->Indent();
 
-    // Find repeated messages and groups now, to simplify what follows.
-    hash_set<int> fields_with_parse_loop;
     for (int i = 0; i < ordered_fields.size(); i++) {
       const FieldDescriptor* field = ordered_fields[i];
-      if (field->is_repeated() &&
-          (field->type() == FieldDescriptor::TYPE_MESSAGE ||
-           field->type() == FieldDescriptor::TYPE_GROUP)) {
-        fields_with_parse_loop.insert(i);
-      }
-    }
-
-    for (int i = 0; i < ordered_fields.size(); i++) {
-      const FieldDescriptor* field = ordered_fields[i];
-      const bool loops = fields_with_parse_loop.count(i) > 0;
 
       PrintFieldComment(printer, field);
 
@@ -3031,10 +3019,6 @@ GenerateMergeFromCodedStream(io::Printer* printer) {
       printer->Print("if (static_cast<::google::protobuf::uint8>(tag) ==\n"
                      "    static_cast<::google::protobuf::uint8>($commontag$u)) {\n",
                      "commontag", SimpleItoa(WireFormat::MakeTag(field)));
-
-      if (loops) {
-        printer->Print("  DO_(input->IncrementRecursionDepth());\n");
-      }
 
       printer->Indent();
       if (field->is_packed()) {
@@ -3073,12 +3057,6 @@ GenerateMergeFromCodedStream(io::Printer* printer) {
         "} else {\n"
         "  goto handle_unusual;\n"
         "}\n");
-
-      // For repeated messages/groups, we need to decrement recursion depth.
-      if (loops) {
-        printer->Print(
-            "input->UnsafeDecrementRecursionDepth();\n");
-      }
 
       printer->Print(
         "break;\n");
