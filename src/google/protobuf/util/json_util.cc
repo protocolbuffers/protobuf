@@ -49,22 +49,25 @@ namespace protobuf {
 namespace util {
 
 namespace internal {
+ZeroCopyStreamByteSink::~ZeroCopyStreamByteSink() {
+  stream_->BackUp(buffer_size_);
+}
+
 void ZeroCopyStreamByteSink::Append(const char* bytes, size_t len) {
-  while (len > 0) {
-    void* buffer;
-    int length;
-    if (!stream_->Next(&buffer, &length)) {
-      // There isn't a way for ByteSink to report errors.
+  while (true) {
+    if (len <= buffer_size_) {
+      memcpy(buffer_, bytes, len);
+      buffer_ = static_cast<char*>(buffer_) + len;
+      buffer_size_ -= len;
       return;
     }
-    if (len < length) {
-      memcpy(buffer, bytes, len);
-      stream_->BackUp(length - len);
-      break;
-    } else {
-      memcpy(buffer, bytes, length);
-      bytes += length;
-      len -= length;
+    memcpy(buffer_, bytes, buffer_size_);
+    bytes += buffer_size_;
+    len -= buffer_size_;
+    if (!stream_->Next(&buffer_, &buffer_size_)) {
+      // There isn't a way for ByteSink to report errors.
+      buffer_size_ = 0;
+      return;
     }
   }
 }
