@@ -27,7 +27,7 @@ config_setting(
 # Android builds do not need to link in a separate pthread library.
 LINK_OPTS = select({
     ":android": [],
-    "//conditions:default": ["-lpthread"],
+    "//conditions:default": ["-lpthread", "-lm"],
 })
 
 load(
