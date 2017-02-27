@@ -104,6 +104,7 @@ namespace Google.Protobuf.WellKnownTypes {
       get { return name_; }
       set {
         name_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+        //@@protoc_insertion_point(field_modifier_scope_after:google.protobuf.Api.setName)
       }
     }
 
@@ -163,6 +164,7 @@ namespace Google.Protobuf.WellKnownTypes {
       get { return version_; }
       set {
         version_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+        //@@protoc_insertion_point(field_modifier_scope_after:google.protobuf.Api.setVersion)
       }
     }
 
@@ -205,9 +207,11 @@ namespace Google.Protobuf.WellKnownTypes {
       get { return syntax_; }
       set {
         syntax_ = value;
+        //@@protoc_insertion_point(field_modifier_scope_after:google.protobuf.Api.setSyntax)
       }
     }
 
+    //@@protoc_insertion_point(class_scope:google.protobuf.Api)
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as Api);
@@ -251,6 +255,7 @@ namespace Google.Protobuf.WellKnownTypes {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+      //@@protoc_insertion_point(write_to_scope_begin:google.protobuf.Api)
       if (Name.Length != 0) {
         output.WriteRawTag(10);
         output.WriteString(Name);
@@ -415,6 +420,7 @@ namespace Google.Protobuf.WellKnownTypes {
       get { return name_; }
       set {
         name_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+        //@@protoc_insertion_point(field_modifier_scope_after:google.protobuf.Method.setName)
       }
     }
 
@@ -429,6 +435,7 @@ namespace Google.Protobuf.WellKnownTypes {
       get { return requestTypeUrl_; }
       set {
         requestTypeUrl_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+        //@@protoc_insertion_point(field_modifier_scope_after:google.protobuf.Method.setRequestTypeUrl)
       }
     }
 
@@ -443,6 +450,7 @@ namespace Google.Protobuf.WellKnownTypes {
       get { return requestStreaming_; }
       set {
         requestStreaming_ = value;
+        //@@protoc_insertion_point(field_modifier_scope_after:google.protobuf.Method.setRequestStreaming)
       }
     }
 
@@ -457,6 +465,7 @@ namespace Google.Protobuf.WellKnownTypes {
       get { return responseTypeUrl_; }
       set {
         responseTypeUrl_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+        //@@protoc_insertion_point(field_modifier_scope_after:google.protobuf.Method.setResponseTypeUrl)
       }
     }
 
@@ -471,6 +480,7 @@ namespace Google.Protobuf.WellKnownTypes {
       get { return responseStreaming_; }
       set {
         responseStreaming_ = value;
+        //@@protoc_insertion_point(field_modifier_scope_after:google.protobuf.Method.setResponseStreaming)
       }
     }
 
@@ -498,9 +508,11 @@ namespace Google.Protobuf.WellKnownTypes {
       get { return syntax_; }
       set {
         syntax_ = value;
+        //@@protoc_insertion_point(field_modifier_scope_after:google.protobuf.Method.setSyntax)
       }
     }
 
+    //@@protoc_insertion_point(class_scope:google.protobuf.Method)
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as Method);
@@ -544,6 +556,7 @@ namespace Google.Protobuf.WellKnownTypes {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+      //@@protoc_insertion_point(write_to_scope_begin:google.protobuf.Method)
       if (Name.Length != 0) {
         output.WriteRawTag(10);
         output.WriteString(Name);
@@ -787,6 +800,7 @@ namespace Google.Protobuf.WellKnownTypes {
       get { return name_; }
       set {
         name_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+        //@@protoc_insertion_point(field_modifier_scope_after:google.protobuf.Mixin.setName)
       }
     }
 
@@ -802,9 +816,11 @@ namespace Google.Protobuf.WellKnownTypes {
       get { return root_; }
       set {
         root_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+        //@@protoc_insertion_point(field_modifier_scope_after:google.protobuf.Mixin.setRoot)
       }
     }
 
+    //@@protoc_insertion_point(class_scope:google.protobuf.Mixin)
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as Mixin);
@@ -838,6 +854,7 @@ namespace Google.Protobuf.WellKnownTypes {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+      //@@protoc_insertion_point(write_to_scope_begin:google.protobuf.Mixin)
       if (Name.Length != 0) {
         output.WriteRawTag(10);
         output.WriteString(Name);

@@ -90,9 +90,11 @@ namespace Google.Protobuf.TestProtos {
       get { return d_; }
       set {
         d_ = value;
+        //@@protoc_insertion_point(field_modifier_scope_after:protobuf_unittest_import.ImportMessage.setD)
       }
     }
 
+    //@@protoc_insertion_point(class_scope:protobuf_unittest_import.ImportMessage)
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as ImportMessage);
@@ -124,6 +126,7 @@ namespace Google.Protobuf.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+      //@@protoc_insertion_point(write_to_scope_begin:protobuf_unittest_import.ImportMessage)
       if (D != 0) {
         output.WriteRawTag(8);
         output.WriteInt32(D);

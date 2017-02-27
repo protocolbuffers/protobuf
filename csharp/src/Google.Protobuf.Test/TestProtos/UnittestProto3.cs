@@ -338,6 +338,7 @@ namespace Google.Protobuf.TestProtos {
       get { return singleInt32_; }
       set {
         singleInt32_ = value;
+        //@@protoc_insertion_point(field_modifier_scope_after:protobuf_unittest.TestAllTypes.setSingleInt32)
       }
     }
 
@@ -349,6 +350,7 @@ namespace Google.Protobuf.TestProtos {
       get { return singleInt64_; }
       set {
         singleInt64_ = value;
+        //@@protoc_insertion_point(field_modifier_scope_after:protobuf_unittest.TestAllTypes.setSingleInt64)
       }
     }
 
@@ -360,6 +362,7 @@ namespace Google.Protobuf.TestProtos {
       get { return singleUint32_; }
       set {
         singleUint32_ = value;
+        //@@protoc_insertion_point(field_modifier_scope_after:protobuf_unittest.TestAllTypes.setSingleUint32)
       }
     }
 
@@ -371,6 +374,7 @@ namespace Google.Protobuf.TestProtos {
       get { return singleUint64_; }
       set {
         singleUint64_ = value;
+        //@@protoc_insertion_point(field_modifier_scope_after:protobuf_unittest.TestAllTypes.setSingleUint64)
       }
     }
 
@@ -382,6 +386,7 @@ namespace Google.Protobuf.TestProtos {
       get { return singleSint32_; }
       set {
         singleSint32_ = value;
+        //@@protoc_insertion_point(field_modifier_scope_after:protobuf_unittest.TestAllTypes.setSingleSint32)
       }
     }
 
@@ -393,6 +398,7 @@ namespace Google.Protobuf.TestProtos {
       get { return singleSint64_; }
       set {
         singleSint64_ = value;
+        //@@protoc_insertion_point(field_modifier_scope_after:protobuf_unittest.TestAllTypes.setSingleSint64)
       }
     }
 
@@ -404,6 +410,7 @@ namespace Google.Protobuf.TestProtos {
       get { return singleFixed32_; }
       set {
         singleFixed32_ = value;
+        //@@protoc_insertion_point(field_modifier_scope_after:protobuf_unittest.TestAllTypes.setSingleFixed32)
       }
     }
 
@@ -415,6 +422,7 @@ namespace Google.Protobuf.TestProtos {
       get { return singleFixed64_; }
       set {
         singleFixed64_ = value;
+        //@@protoc_insertion_point(field_modifier_scope_after:protobuf_unittest.TestAllTypes.setSingleFixed64)
       }
     }
 
@@ -426,6 +434,7 @@ namespace Google.Protobuf.TestProtos {
       get { return singleSfixed32_; }
       set {
         singleSfixed32_ = value;
+        //@@protoc_insertion_point(field_modifier_scope_after:protobuf_unittest.TestAllTypes.setSingleSfixed32)
       }
     }
 
@@ -437,6 +446,7 @@ namespace Google.Protobuf.TestProtos {
       get { return singleSfixed64_; }
       set {
         singleSfixed64_ = value;
+        //@@protoc_insertion_point(field_modifier_scope_after:protobuf_unittest.TestAllTypes.setSingleSfixed64)
       }
     }
 
@@ -448,6 +458,7 @@ namespace Google.Protobuf.TestProtos {
       get { return singleFloat_; }
       set {
         singleFloat_ = value;
+        //@@protoc_insertion_point(field_modifier_scope_after:protobuf_unittest.TestAllTypes.setSingleFloat)
       }
     }
 
@@ -459,6 +470,7 @@ namespace Google.Protobuf.TestProtos {
       get { return singleDouble_; }
       set {
         singleDouble_ = value;
+        //@@protoc_insertion_point(field_modifier_scope_after:protobuf_unittest.TestAllTypes.setSingleDouble)
       }
     }
 
@@ -470,6 +482,7 @@ namespace Google.Protobuf.TestProtos {
       get { return singleBool_; }
       set {
         singleBool_ = value;
+        //@@protoc_insertion_point(field_modifier_scope_after:protobuf_unittest.TestAllTypes.setSingleBool)
       }
     }
 
@@ -481,6 +494,7 @@ namespace Google.Protobuf.TestProtos {
       get { return singleString_; }
       set {
         singleString_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+        //@@protoc_insertion_point(field_modifier_scope_after:protobuf_unittest.TestAllTypes.setSingleString)
       }
     }
 
@@ -492,6 +506,7 @@ namespace Google.Protobuf.TestProtos {
       get { return singleBytes_; }
       set {
         singleBytes_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+        //@@protoc_insertion_point(field_modifier_scope_after:protobuf_unittest.TestAllTypes.setSingleBytes)
       }
     }
 
@@ -536,6 +551,7 @@ namespace Google.Protobuf.TestProtos {
       get { return singleNestedEnum_; }
       set {
         singleNestedEnum_ = value;
+        //@@protoc_insertion_point(field_modifier_scope_after:protobuf_unittest.TestAllTypes.setSingleNestedEnum)
       }
     }
 
@@ -547,6 +563,7 @@ namespace Google.Protobuf.TestProtos {
       get { return singleForeignEnum_; }
       set {
         singleForeignEnum_ = value;
+        //@@protoc_insertion_point(field_modifier_scope_after:protobuf_unittest.TestAllTypes.setSingleForeignEnum)
       }
     }
 
@@ -558,6 +575,7 @@ namespace Google.Protobuf.TestProtos {
       get { return singleImportEnum_; }
       set {
         singleImportEnum_ = value;
+        //@@protoc_insertion_point(field_modifier_scope_after:protobuf_unittest.TestAllTypes.setSingleImportEnum)
       }
     }
 
@@ -866,6 +884,7 @@ namespace Google.Protobuf.TestProtos {
       oneofField_ = null;
     }
 
+    //@@protoc_insertion_point(class_scope:protobuf_unittest.TestAllTypes)
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as TestAllTypes);
@@ -993,6 +1012,7 @@ namespace Google.Protobuf.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+      //@@protoc_insertion_point(write_to_scope_begin:protobuf_unittest.TestAllTypes)
       if (SingleInt32 != 0) {
         output.WriteRawTag(8);
         output.WriteInt32(SingleInt32);
@@ -1646,9 +1666,11 @@ namespace Google.Protobuf.TestProtos {
           get { return bb_; }
           set {
             bb_ = value;
+            //@@protoc_insertion_point(field_modifier_scope_after:protobuf_unittest.TestAllTypes.NestedMessage.setBb)
           }
         }
 
+        //@@protoc_insertion_point(class_scope:protobuf_unittest.TestAllTypes.NestedMessage)
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public override bool Equals(object other) {
           return Equals(other as NestedMessage);
@@ -1680,6 +1702,7 @@ namespace Google.Protobuf.TestProtos {
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public void WriteTo(pb::CodedOutputStream output) {
+          //@@protoc_insertion_point(write_to_scope_begin:protobuf_unittest.TestAllTypes.NestedMessage)
           if (Bb != 0) {
             output.WriteRawTag(8);
             output.WriteInt32(Bb);
@@ -1797,6 +1820,7 @@ namespace Google.Protobuf.TestProtos {
       get { return repeatedChild_; }
     }
 
+    //@@protoc_insertion_point(class_scope:protobuf_unittest.NestedTestAllTypes)
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as NestedTestAllTypes);
@@ -1832,6 +1856,7 @@ namespace Google.Protobuf.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+      //@@protoc_insertion_point(write_to_scope_begin:protobuf_unittest.NestedTestAllTypes)
       if (child_ != null) {
         output.WriteRawTag(10);
         output.WriteMessage(Child);
@@ -1949,9 +1974,11 @@ namespace Google.Protobuf.TestProtos {
       get { return deprecatedInt32_; }
       set {
         deprecatedInt32_ = value;
+        //@@protoc_insertion_point(field_modifier_scope_after:protobuf_unittest.TestDeprecatedFields.setDeprecatedInt32)
       }
     }
 
+    //@@protoc_insertion_point(class_scope:protobuf_unittest.TestDeprecatedFields)
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as TestDeprecatedFields);
@@ -1983,6 +2010,7 @@ namespace Google.Protobuf.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+      //@@protoc_insertion_point(write_to_scope_begin:protobuf_unittest.TestDeprecatedFields)
       if (DeprecatedInt32 != 0) {
         output.WriteRawTag(8);
         output.WriteInt32(DeprecatedInt32);
@@ -2070,9 +2098,11 @@ namespace Google.Protobuf.TestProtos {
       get { return c_; }
       set {
         c_ = value;
+        //@@protoc_insertion_point(field_modifier_scope_after:protobuf_unittest.ForeignMessage.setC)
       }
     }
 
+    //@@protoc_insertion_point(class_scope:protobuf_unittest.ForeignMessage)
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as ForeignMessage);
@@ -2104,6 +2134,7 @@ namespace Google.Protobuf.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+      //@@protoc_insertion_point(write_to_scope_begin:protobuf_unittest.ForeignMessage)
       if (C != 0) {
         output.WriteRawTag(8);
         output.WriteInt32(C);
@@ -2178,6 +2209,7 @@ namespace Google.Protobuf.TestProtos {
       return new TestReservedFields(this);
     }
 
+    //@@protoc_insertion_point(class_scope:protobuf_unittest.TestReservedFields)
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as TestReservedFields);
@@ -2207,6 +2239,7 @@ namespace Google.Protobuf.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+      //@@protoc_insertion_point(write_to_scope_begin:protobuf_unittest.TestReservedFields)
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -2282,6 +2315,7 @@ namespace Google.Protobuf.TestProtos {
       }
     }
 
+    //@@protoc_insertion_point(class_scope:protobuf_unittest.TestForeignNested)
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as TestForeignNested);
@@ -2313,6 +2347,7 @@ namespace Google.Protobuf.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+      //@@protoc_insertion_point(write_to_scope_begin:protobuf_unittest.TestForeignNested)
       if (foreignNested_ != null) {
         output.WriteRawTag(10);
         output.WriteMessage(ForeignNested);
@@ -2410,6 +2445,7 @@ namespace Google.Protobuf.TestProtos {
       get { return a_; }
       set {
         a_ = value;
+        //@@protoc_insertion_point(field_modifier_scope_after:protobuf_unittest.TestReallyLargeTagNumber.setA)
       }
     }
 
@@ -2421,9 +2457,11 @@ namespace Google.Protobuf.TestProtos {
       get { return bb_; }
       set {
         bb_ = value;
+        //@@protoc_insertion_point(field_modifier_scope_after:protobuf_unittest.TestReallyLargeTagNumber.setBb)
       }
     }
 
+    //@@protoc_insertion_point(class_scope:protobuf_unittest.TestReallyLargeTagNumber)
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as TestReallyLargeTagNumber);
@@ -2457,6 +2495,7 @@ namespace Google.Protobuf.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+      //@@protoc_insertion_point(write_to_scope_begin:protobuf_unittest.TestReallyLargeTagNumber)
       if (A != 0) {
         output.WriteRawTag(8);
         output.WriteInt32(A);
@@ -2566,9 +2605,11 @@ namespace Google.Protobuf.TestProtos {
       get { return i_; }
       set {
         i_ = value;
+        //@@protoc_insertion_point(field_modifier_scope_after:protobuf_unittest.TestRecursiveMessage.setI)
       }
     }
 
+    //@@protoc_insertion_point(class_scope:protobuf_unittest.TestRecursiveMessage)
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as TestRecursiveMessage);
@@ -2602,6 +2643,7 @@ namespace Google.Protobuf.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+      //@@protoc_insertion_point(write_to_scope_begin:protobuf_unittest.TestRecursiveMessage)
       if (a_ != null) {
         output.WriteRawTag(10);
         output.WriteMessage(A);
@@ -2711,6 +2753,7 @@ namespace Google.Protobuf.TestProtos {
       }
     }
 
+    //@@protoc_insertion_point(class_scope:protobuf_unittest.TestMutualRecursionA)
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as TestMutualRecursionA);
@@ -2742,6 +2785,7 @@ namespace Google.Protobuf.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+      //@@protoc_insertion_point(write_to_scope_begin:protobuf_unittest.TestMutualRecursionA)
       if (bb_ != null) {
         output.WriteRawTag(10);
         output.WriteMessage(Bb);
@@ -2843,9 +2887,11 @@ namespace Google.Protobuf.TestProtos {
       get { return optionalInt32_; }
       set {
         optionalInt32_ = value;
+        //@@protoc_insertion_point(field_modifier_scope_after:protobuf_unittest.TestMutualRecursionB.setOptionalInt32)
       }
     }
 
+    //@@protoc_insertion_point(class_scope:protobuf_unittest.TestMutualRecursionB)
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as TestMutualRecursionB);
@@ -2879,6 +2925,7 @@ namespace Google.Protobuf.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+      //@@protoc_insertion_point(write_to_scope_begin:protobuf_unittest.TestMutualRecursionB)
       if (a_ != null) {
         output.WriteRawTag(10);
         output.WriteMessage(A);
@@ -2982,9 +3029,11 @@ namespace Google.Protobuf.TestProtos {
       get { return value_; }
       set {
         value_ = value;
+        //@@protoc_insertion_point(field_modifier_scope_after:protobuf_unittest.TestEnumAllowAlias.setValue)
       }
     }
 
+    //@@protoc_insertion_point(class_scope:protobuf_unittest.TestEnumAllowAlias)
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as TestEnumAllowAlias);
@@ -3016,6 +3065,7 @@ namespace Google.Protobuf.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+      //@@protoc_insertion_point(write_to_scope_begin:protobuf_unittest.TestEnumAllowAlias)
       if (Value != 0) {
         output.WriteRawTag(8);
         output.WriteEnum((int) Value);
@@ -3110,6 +3160,7 @@ namespace Google.Protobuf.TestProtos {
       get { return primitiveField_; }
       set {
         primitiveField_ = value;
+        //@@protoc_insertion_point(field_modifier_scope_after:protobuf_unittest.TestCamelCaseFieldNames.setPrimitiveField)
       }
     }
 
@@ -3121,6 +3172,7 @@ namespace Google.Protobuf.TestProtos {
       get { return stringField_; }
       set {
         stringField_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+        //@@protoc_insertion_point(field_modifier_scope_after:protobuf_unittest.TestCamelCaseFieldNames.setStringField)
       }
     }
 
@@ -3132,6 +3184,7 @@ namespace Google.Protobuf.TestProtos {
       get { return enumField_; }
       set {
         enumField_ = value;
+        //@@protoc_insertion_point(field_modifier_scope_after:protobuf_unittest.TestCamelCaseFieldNames.setEnumField)
       }
     }
 
@@ -3186,6 +3239,7 @@ namespace Google.Protobuf.TestProtos {
       get { return repeatedMessageField_; }
     }
 
+    //@@protoc_insertion_point(class_scope:protobuf_unittest.TestCamelCaseFieldNames)
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as TestCamelCaseFieldNames);
@@ -3231,6 +3285,7 @@ namespace Google.Protobuf.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+      //@@protoc_insertion_point(write_to_scope_begin:protobuf_unittest.TestCamelCaseFieldNames)
       if (PrimitiveField != 0) {
         output.WriteRawTag(8);
         output.WriteInt32(PrimitiveField);
@@ -3399,6 +3454,7 @@ namespace Google.Protobuf.TestProtos {
       get { return myString_; }
       set {
         myString_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+        //@@protoc_insertion_point(field_modifier_scope_after:protobuf_unittest.TestFieldOrderings.setMyString)
       }
     }
 
@@ -3410,6 +3466,7 @@ namespace Google.Protobuf.TestProtos {
       get { return myInt_; }
       set {
         myInt_ = value;
+        //@@protoc_insertion_point(field_modifier_scope_after:protobuf_unittest.TestFieldOrderings.setMyInt)
       }
     }
 
@@ -3421,6 +3478,7 @@ namespace Google.Protobuf.TestProtos {
       get { return myFloat_; }
       set {
         myFloat_ = value;
+        //@@protoc_insertion_point(field_modifier_scope_after:protobuf_unittest.TestFieldOrderings.setMyFloat)
       }
     }
 
@@ -3435,6 +3493,7 @@ namespace Google.Protobuf.TestProtos {
       }
     }
 
+    //@@protoc_insertion_point(class_scope:protobuf_unittest.TestFieldOrderings)
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as TestFieldOrderings);
@@ -3472,6 +3531,7 @@ namespace Google.Protobuf.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+      //@@protoc_insertion_point(write_to_scope_begin:protobuf_unittest.TestFieldOrderings)
       if (MyInt != 0L) {
         output.WriteRawTag(8);
         output.WriteInt64(MyInt);
@@ -3606,6 +3666,7 @@ namespace Google.Protobuf.TestProtos {
           get { return oo_; }
           set {
             oo_ = value;
+            //@@protoc_insertion_point(field_modifier_scope_after:protobuf_unittest.TestFieldOrderings.NestedMessage.setOo)
           }
         }
 
@@ -3622,9 +3683,11 @@ namespace Google.Protobuf.TestProtos {
           get { return bb_; }
           set {
             bb_ = value;
+            //@@protoc_insertion_point(field_modifier_scope_after:protobuf_unittest.TestFieldOrderings.NestedMessage.setBb)
           }
         }
 
+        //@@protoc_insertion_point(class_scope:protobuf_unittest.TestFieldOrderings.NestedMessage)
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public override bool Equals(object other) {
           return Equals(other as NestedMessage);
@@ -3658,6 +3721,7 @@ namespace Google.Protobuf.TestProtos {
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public void WriteTo(pb::CodedOutputStream output) {
+          //@@protoc_insertion_point(write_to_scope_begin:protobuf_unittest.TestFieldOrderings.NestedMessage)
           if (Bb != 0) {
             output.WriteRawTag(8);
             output.WriteInt32(Bb);
@@ -3760,9 +3824,11 @@ namespace Google.Protobuf.TestProtos {
       get { return sparseEnum_; }
       set {
         sparseEnum_ = value;
+        //@@protoc_insertion_point(field_modifier_scope_after:protobuf_unittest.SparseEnumMessage.setSparseEnum)
       }
     }
 
+    //@@protoc_insertion_point(class_scope:protobuf_unittest.SparseEnumMessage)
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as SparseEnumMessage);
@@ -3794,6 +3860,7 @@ namespace Google.Protobuf.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+      //@@protoc_insertion_point(write_to_scope_begin:protobuf_unittest.SparseEnumMessage)
       if (SparseEnum != 0) {
         output.WriteRawTag(8);
         output.WriteEnum((int) SparseEnum);
@@ -3880,9 +3947,11 @@ namespace Google.Protobuf.TestProtos {
       get { return data_; }
       set {
         data_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+        //@@protoc_insertion_point(field_modifier_scope_after:protobuf_unittest.OneString.setData)
       }
     }
 
+    //@@protoc_insertion_point(class_scope:protobuf_unittest.OneString)
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as OneString);
@@ -3914,6 +3983,7 @@ namespace Google.Protobuf.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+      //@@protoc_insertion_point(write_to_scope_begin:protobuf_unittest.OneString)
       if (Data.Length != 0) {
         output.WriteRawTag(10);
         output.WriteString(Data);
@@ -3999,6 +4069,7 @@ namespace Google.Protobuf.TestProtos {
       get { return data_; }
     }
 
+    //@@protoc_insertion_point(class_scope:protobuf_unittest.MoreString)
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as MoreString);
@@ -4030,6 +4101,7 @@ namespace Google.Protobuf.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+      //@@protoc_insertion_point(write_to_scope_begin:protobuf_unittest.MoreString)
       data_.WriteTo(output, _repeated_data_codec);
     }
 
@@ -4106,9 +4178,11 @@ namespace Google.Protobuf.TestProtos {
       get { return data_; }
       set {
         data_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+        //@@protoc_insertion_point(field_modifier_scope_after:protobuf_unittest.OneBytes.setData)
       }
     }
 
+    //@@protoc_insertion_point(class_scope:protobuf_unittest.OneBytes)
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as OneBytes);
@@ -4140,6 +4214,7 @@ namespace Google.Protobuf.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+      //@@protoc_insertion_point(write_to_scope_begin:protobuf_unittest.OneBytes)
       if (Data.Length != 0) {
         output.WriteRawTag(10);
         output.WriteBytes(Data);
@@ -4223,9 +4298,11 @@ namespace Google.Protobuf.TestProtos {
       get { return data_; }
       set {
         data_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+        //@@protoc_insertion_point(field_modifier_scope_after:protobuf_unittest.MoreBytes.setData)
       }
     }
 
+    //@@protoc_insertion_point(class_scope:protobuf_unittest.MoreBytes)
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as MoreBytes);
@@ -4257,6 +4334,7 @@ namespace Google.Protobuf.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+      //@@protoc_insertion_point(write_to_scope_begin:protobuf_unittest.MoreBytes)
       if (Data.Length != 0) {
         output.WriteRawTag(10);
         output.WriteBytes(Data);
@@ -4343,9 +4421,11 @@ namespace Google.Protobuf.TestProtos {
       get { return data_; }
       set {
         data_ = value;
+        //@@protoc_insertion_point(field_modifier_scope_after:protobuf_unittest.Int32Message.setData)
       }
     }
 
+    //@@protoc_insertion_point(class_scope:protobuf_unittest.Int32Message)
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as Int32Message);
@@ -4377,6 +4457,7 @@ namespace Google.Protobuf.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+      //@@protoc_insertion_point(write_to_scope_begin:protobuf_unittest.Int32Message)
       if (Data != 0) {
         output.WriteRawTag(8);
         output.WriteInt32(Data);
@@ -4460,9 +4541,11 @@ namespace Google.Protobuf.TestProtos {
       get { return data_; }
       set {
         data_ = value;
+        //@@protoc_insertion_point(field_modifier_scope_after:protobuf_unittest.Uint32Message.setData)
       }
     }
 
+    //@@protoc_insertion_point(class_scope:protobuf_unittest.Uint32Message)
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as Uint32Message);
@@ -4494,6 +4577,7 @@ namespace Google.Protobuf.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+      //@@protoc_insertion_point(write_to_scope_begin:protobuf_unittest.Uint32Message)
       if (Data != 0) {
         output.WriteRawTag(8);
         output.WriteUInt32(Data);
@@ -4577,9 +4661,11 @@ namespace Google.Protobuf.TestProtos {
       get { return data_; }
       set {
         data_ = value;
+        //@@protoc_insertion_point(field_modifier_scope_after:protobuf_unittest.Int64Message.setData)
       }
     }
 
+    //@@protoc_insertion_point(class_scope:protobuf_unittest.Int64Message)
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as Int64Message);
@@ -4611,6 +4697,7 @@ namespace Google.Protobuf.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+      //@@protoc_insertion_point(write_to_scope_begin:protobuf_unittest.Int64Message)
       if (Data != 0L) {
         output.WriteRawTag(8);
         output.WriteInt64(Data);
@@ -4694,9 +4781,11 @@ namespace Google.Protobuf.TestProtos {
       get { return data_; }
       set {
         data_ = value;
+        //@@protoc_insertion_point(field_modifier_scope_after:protobuf_unittest.Uint64Message.setData)
       }
     }
 
+    //@@protoc_insertion_point(class_scope:protobuf_unittest.Uint64Message)
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as Uint64Message);
@@ -4728,6 +4817,7 @@ namespace Google.Protobuf.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+      //@@protoc_insertion_point(write_to_scope_begin:protobuf_unittest.Uint64Message)
       if (Data != 0UL) {
         output.WriteRawTag(8);
         output.WriteUInt64(Data);
@@ -4811,9 +4901,11 @@ namespace Google.Protobuf.TestProtos {
       get { return data_; }
       set {
         data_ = value;
+        //@@protoc_insertion_point(field_modifier_scope_after:protobuf_unittest.BoolMessage.setData)
       }
     }
 
+    //@@protoc_insertion_point(class_scope:protobuf_unittest.BoolMessage)
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as BoolMessage);
@@ -4845,6 +4937,7 @@ namespace Google.Protobuf.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+      //@@protoc_insertion_point(write_to_scope_begin:protobuf_unittest.BoolMessage)
       if (Data != false) {
         output.WriteRawTag(8);
         output.WriteBool(Data);
@@ -4987,6 +5080,7 @@ namespace Google.Protobuf.TestProtos {
       foo_ = null;
     }
 
+    //@@protoc_insertion_point(class_scope:protobuf_unittest.TestOneof)
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as TestOneof);
@@ -5024,6 +5118,7 @@ namespace Google.Protobuf.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+      //@@protoc_insertion_point(write_to_scope_begin:protobuf_unittest.TestOneof)
       if (fooCase_ == FooOneofCase.FooInt) {
         output.WriteRawTag(8);
         output.WriteInt32(FooInt);
@@ -5288,6 +5383,7 @@ namespace Google.Protobuf.TestProtos {
       get { return packedEnum_; }
     }
 
+    //@@protoc_insertion_point(class_scope:protobuf_unittest.TestPackedTypes)
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as TestPackedTypes);
@@ -5345,6 +5441,7 @@ namespace Google.Protobuf.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+      //@@protoc_insertion_point(write_to_scope_begin:protobuf_unittest.TestPackedTypes)
       packedInt32_.WriteTo(output, _repeated_packedInt32_codec);
       packedInt64_.WriteTo(output, _repeated_packedInt64_codec);
       packedUint32_.WriteTo(output, _repeated_packedUint32_codec);
@@ -5675,6 +5772,7 @@ namespace Google.Protobuf.TestProtos {
       get { return unpackedEnum_; }
     }
 
+    //@@protoc_insertion_point(class_scope:protobuf_unittest.TestUnpackedTypes)
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as TestUnpackedTypes);
@@ -5732,6 +5830,7 @@ namespace Google.Protobuf.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+      //@@protoc_insertion_point(write_to_scope_begin:protobuf_unittest.TestUnpackedTypes)
       unpackedInt32_.WriteTo(output, _repeated_unpackedInt32_codec);
       unpackedInt64_.WriteTo(output, _repeated_unpackedInt64_codec);
       unpackedUint32_.WriteTo(output, _repeated_unpackedUint32_codec);
@@ -5984,6 +6083,7 @@ namespace Google.Protobuf.TestProtos {
       get { return repeatedUint64_; }
     }
 
+    //@@protoc_insertion_point(class_scope:protobuf_unittest.TestRepeatedScalarDifferentTagSizes)
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as TestRepeatedScalarDifferentTagSizes);
@@ -6025,6 +6125,7 @@ namespace Google.Protobuf.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+      //@@protoc_insertion_point(write_to_scope_begin:protobuf_unittest.TestRepeatedScalarDifferentTagSizes)
       repeatedFixed32_.WriteTo(output, _repeated_repeatedFixed32_codec);
       repeatedInt32_.WriteTo(output, _repeated_repeatedInt32_codec);
       repeatedFixed64_.WriteTo(output, _repeated_repeatedFixed64_codec);
@@ -6145,9 +6246,11 @@ namespace Google.Protobuf.TestProtos {
       get { return a_; }
       set {
         a_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+        //@@protoc_insertion_point(field_modifier_scope_after:protobuf_unittest.TestCommentInjectionMessage.setA)
       }
     }
 
+    //@@protoc_insertion_point(class_scope:protobuf_unittest.TestCommentInjectionMessage)
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as TestCommentInjectionMessage);
@@ -6179,6 +6282,7 @@ namespace Google.Protobuf.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+      //@@protoc_insertion_point(write_to_scope_begin:protobuf_unittest.TestCommentInjectionMessage)
       if (A.Length != 0) {
         output.WriteRawTag(10);
         output.WriteString(A);
@@ -6256,6 +6360,7 @@ namespace Google.Protobuf.TestProtos {
       return new FooRequest(this);
     }
 
+    //@@protoc_insertion_point(class_scope:protobuf_unittest.FooRequest)
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as FooRequest);
@@ -6285,6 +6390,7 @@ namespace Google.Protobuf.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+      //@@protoc_insertion_point(write_to_scope_begin:protobuf_unittest.FooRequest)
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -6345,6 +6451,7 @@ namespace Google.Protobuf.TestProtos {
       return new FooResponse(this);
     }
 
+    //@@protoc_insertion_point(class_scope:protobuf_unittest.FooResponse)
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as FooResponse);
@@ -6374,6 +6481,7 @@ namespace Google.Protobuf.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+      //@@protoc_insertion_point(write_to_scope_begin:protobuf_unittest.FooResponse)
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -6434,6 +6542,7 @@ namespace Google.Protobuf.TestProtos {
       return new FooClientMessage(this);
     }
 
+    //@@protoc_insertion_point(class_scope:protobuf_unittest.FooClientMessage)
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as FooClientMessage);
@@ -6463,6 +6572,7 @@ namespace Google.Protobuf.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+      //@@protoc_insertion_point(write_to_scope_begin:protobuf_unittest.FooClientMessage)
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -6523,6 +6633,7 @@ namespace Google.Protobuf.TestProtos {
       return new FooServerMessage(this);
     }
 
+    //@@protoc_insertion_point(class_scope:protobuf_unittest.FooServerMessage)
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as FooServerMessage);
@@ -6552,6 +6663,7 @@ namespace Google.Protobuf.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+      //@@protoc_insertion_point(write_to_scope_begin:protobuf_unittest.FooServerMessage)
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -6612,6 +6724,7 @@ namespace Google.Protobuf.TestProtos {
       return new BarRequest(this);
     }
 
+    //@@protoc_insertion_point(class_scope:protobuf_unittest.BarRequest)
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as BarRequest);
@@ -6641,6 +6754,7 @@ namespace Google.Protobuf.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+      //@@protoc_insertion_point(write_to_scope_begin:protobuf_unittest.BarRequest)
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -6701,6 +6815,7 @@ namespace Google.Protobuf.TestProtos {
       return new BarResponse(this);
     }
 
+    //@@protoc_insertion_point(class_scope:protobuf_unittest.BarResponse)
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as BarResponse);
@@ -6730,6 +6845,7 @@ namespace Google.Protobuf.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+      //@@protoc_insertion_point(write_to_scope_begin:protobuf_unittest.BarResponse)
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
