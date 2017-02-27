@@ -451,8 +451,8 @@ struct ShutdownRepeatedFieldRegister {
 
 namespace internal {
 template<>
-#if defined(_MSC_VER) && (_MSC_VER >= 1900)
-// Note: force noinline to workaround MSVC 2015 compiler bug, issue #240
+#if defined(_MSC_VER) && (_MSC_VER >= 1800)
+// Note: force noinline to workaround MSVC compiler bug with /Zc:inline, issue #240
 GOOGLE_ATTRIBUTE_NOINLINE
 #endif
 Message* GenericTypeHandler<Message>::NewFromPrototype(
@@ -460,8 +460,8 @@ Message* GenericTypeHandler<Message>::NewFromPrototype(
   return prototype->New(arena);
 }
 template<>
-#if defined(_MSC_VER) && (_MSC_VER >= 1900)
-// Note: force noinline to workaround MSVC 2015 compiler bug, issue #240
+#if defined(_MSC_VER) && (_MSC_VER >= 1800)
+// Note: force noinline to workaround MSVC compiler bug with /Zc:inline, issue #240
 GOOGLE_ATTRIBUTE_NOINLINE
 #endif
 google::protobuf::Arena* GenericTypeHandler<Message>::GetArena(
@@ -469,8 +469,8 @@ google::protobuf::Arena* GenericTypeHandler<Message>::GetArena(
   return value->GetArena();
 }
 template<>
-#if defined(_MSC_VER) && (_MSC_VER >= 1900)
-// Note: force noinline to workaround MSVC 2015 compiler bug, issue #240
+#if defined(_MSC_VER) && (_MSC_VER >= 1800)
+// Note: force noinline to workaround MSVC compiler bug with /Zc:inline, issue #240
 GOOGLE_ATTRIBUTE_NOINLINE
 #endif
 void* GenericTypeHandler<Message>::GetMaybeArenaPointer(
