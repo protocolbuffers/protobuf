@@ -151,6 +151,7 @@ extern zend_class_entry* enum_descriptor_type;
 // -----------------------------------------------------------------------------
 
 void* message_data(void* msg);
+void message_create_with_type(zend_class_entry* ce, zval** message TSRMLS_DC);
 
 // Build PHP class for given descriptor. Instead of building from scratch, this
 // function modifies existing class which has been partially defined in PHP
@@ -240,11 +241,14 @@ zval* layout_get(MessageLayout* layout, const void* storage,
                  const upb_fielddef* field, zval** cache TSRMLS_DC);
 void layout_set(MessageLayout* layout, MessageHeader* header,
                 const upb_fielddef* field, zval* val TSRMLS_DC);
+void layout_merge(MessageLayout* layout, MessageHeader* from,
+                  MessageHeader* to TSRMLS_DC);
 const char* layout_get_oneof_case(MessageLayout* layout, const void* storage,
                                   const upb_oneofdef* oneof TSRMLS_DC);
 void free_layout(MessageLayout* layout);
 
 PHP_METHOD(Message, clear);
+PHP_METHOD(Message, mergeFrom);
 PHP_METHOD(Message, readOneof);
 PHP_METHOD(Message, writeOneof);
 PHP_METHOD(Message, whichOneof);

@@ -43,6 +43,7 @@ static  zend_function_entry message_methods[] = {
   PHP_ME(Message, decode, NULL, ZEND_ACC_PUBLIC)
   PHP_ME(Message, jsonEncode, NULL, ZEND_ACC_PUBLIC)
   PHP_ME(Message, jsonDecode, NULL, ZEND_ACC_PUBLIC)
+  PHP_ME(Message, mergeFrom, NULL, ZEND_ACC_PUBLIC)
   PHP_ME(Message, readOneof, NULL, ZEND_ACC_PROTECTED)
   PHP_ME(Message, writeOneof, NULL, ZEND_ACC_PROTECTED)
   PHP_ME(Message, whichOneof, NULL, ZEND_ACC_PROTECTED)
@@ -209,6 +210,13 @@ static zend_object_value message_create(zend_class_entry* ce TSRMLS_DC) {
   return return_value;
 }
 
+void message_create_with_type(zend_class_entry* ce, zval** message TSRMLS_DC) {
+  MAKE_STD_ZVAL(*message);
+  Z_TYPE_PP(message) = IS_OBJECT;
+  Z_OBJVAL_PP(message) = ce->create_object(ce TSRMLS_CC);
+  Z_DELREF_PP(message);
+}
+
 void build_class_from_descriptor(zval* php_descriptor TSRMLS_DC) {
   Descriptor* desc = UNBOX(Descriptor, php_descriptor);
 
@@ -258,6 +266,26 @@ PHP_METHOD(Message, clear) {
   object_properties_init(&msg->std, ce);
   layout_init(desc->layout, message_data(msg),
               msg->std.properties_table TSRMLS_CC);
+}
+
+PHP_METHOD(Message, mergeFrom) {
+  zval* value;
+  if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "O", &value,
+                            message_type) == FAILURE) {
+    return;
+  }
+
+  MessageHeader* from =
+      (MessageHeader*)zend_object_store_get_object(value TSRMLS_CC);
+  MessageHeader* to =
+      (MessageHeader*)zend_object_store_get_object(getThis() TSRMLS_CC);
+
+  if(from->descriptor != to->descriptor) {
+    zend_error(E_USER_ERROR, "Cannot merge messages with different class.");
+    return;
+  }
+
+  layout_merge(from->descriptor->layout, from, to TSRMLS_CC);
 }
 
 PHP_METHOD(Message, readOneof) {

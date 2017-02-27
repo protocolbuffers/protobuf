@@ -79,3 +79,8 @@ $data = $m->encode();
 $n = new TestMessage();
 $n->decode($data);
 assert(1 === $n->getOneofMessage()->getA());
+
+$from = new TestMessage();
+$to = new TestMessage();
+TestUtil::setTestMessage($from);
+$to->mergeFrom($from);

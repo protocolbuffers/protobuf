@@ -434,7 +434,7 @@ static void map_slot_key(upb_fieldtype_t type, const void* from,
 }
 
 static void map_slot_value(upb_fieldtype_t type, const void* from,
-			   upb_value* v) {
+                           upb_value* v) {
   size_t len;
   void* to = upb_value_memory(v);
 #ifndef NDEBUG
