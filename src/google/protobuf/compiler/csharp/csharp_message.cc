@@ -106,6 +106,7 @@ void MessageGenerator::AddDeprecatedFlag(io::Printer* printer) {
 
 void MessageGenerator::Generate(io::Printer* printer) {
   map<string, string> vars;
+  vars["full_name"] = descriptor_->full_name();
   vars["class_name"] = class_name();
   vars["access_level"] = class_access_level();
 
@@ -227,6 +228,7 @@ void MessageGenerator::Generate(io::Printer* printer) {
       "}\n\n");
   }
 
+  printer->Print(vars, "//@@protoc_insertion_point(class_scope:$full_name$)\n");
   // Standard methods
   GenerateFrameworkMethods(printer);
   GenerateMessageSerializationMethods(printer);
@@ -396,10 +398,13 @@ void MessageGenerator::GenerateFrameworkMethods(io::Printer* printer) {
 }
 
 void MessageGenerator::GenerateMessageSerializationMethods(io::Printer* printer) {
+  map<string, string> vars;
+  vars["full_name"] = descriptor_->full_name();
   WriteGeneratedCodeAttributes(printer);
   printer->Print(
       "public void WriteTo(pb::CodedOutputStream output) {\n");
   printer->Indent();
+  printer->Print(vars, "//@@protoc_insertion_point(write_to_scope_begin:$full_name$)\n");
 
   // Serialize all the fields
   for (int i = 0; i < fields_by_number().size(); i++) {

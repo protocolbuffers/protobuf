@@ -134,6 +134,7 @@ namespace Conformance {
       get { return requestedOutputFormat_; }
       set {
         requestedOutputFormat_ = value;
+        //@@protoc_insertion_point(field_modifier_scope_after:conformance.ConformanceRequest.setRequestedOutputFormat)
       }
     }
 
@@ -156,6 +157,7 @@ namespace Conformance {
       payload_ = null;
     }
 
+    //@@protoc_insertion_point(class_scope:conformance.ConformanceRequest)
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as ConformanceRequest);
@@ -193,6 +195,7 @@ namespace Conformance {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+      //@@protoc_insertion_point(write_to_scope_begin:conformance.ConformanceRequest)
       if (payloadCase_ == PayloadOneofCase.ProtobufPayload) {
         output.WriteRawTag(10);
         output.WriteBytes(ProtobufPayload);
@@ -440,6 +443,7 @@ namespace Conformance {
       result_ = null;
     }
 
+    //@@protoc_insertion_point(class_scope:conformance.ConformanceResponse)
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as ConformanceResponse);
@@ -483,6 +487,7 @@ namespace Conformance {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+      //@@protoc_insertion_point(write_to_scope_begin:conformance.ConformanceResponse)
       if (resultCase_ == ResultOneofCase.ParseError) {
         output.WriteRawTag(10);
         output.WriteString(ParseError);

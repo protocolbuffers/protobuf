@@ -113,6 +113,7 @@ namespace UnitTest.Issues.TestProtos {
       return new Issue307(this);
     }
 
+    //@@protoc_insertion_point(class_scope:unittest_issues.Issue307)
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as Issue307);
@@ -142,6 +143,7 @@ namespace UnitTest.Issues.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+      //@@protoc_insertion_point(write_to_scope_begin:unittest_issues.Issue307)
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -204,6 +206,7 @@ namespace UnitTest.Issues.TestProtos {
           return new NestedOnce(this);
         }
 
+        //@@protoc_insertion_point(class_scope:unittest_issues.Issue307.NestedOnce)
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public override bool Equals(object other) {
           return Equals(other as NestedOnce);
@@ -233,6 +236,7 @@ namespace UnitTest.Issues.TestProtos {
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public void WriteTo(pb::CodedOutputStream output) {
+          //@@protoc_insertion_point(write_to_scope_begin:unittest_issues.Issue307.NestedOnce)
         }
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -295,6 +299,7 @@ namespace UnitTest.Issues.TestProtos {
               return new NestedTwice(this);
             }
 
+            //@@protoc_insertion_point(class_scope:unittest_issues.Issue307.NestedOnce.NestedTwice)
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
             public override bool Equals(object other) {
               return Equals(other as NestedTwice);
@@ -324,6 +329,7 @@ namespace UnitTest.Issues.TestProtos {
 
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
             public void WriteTo(pb::CodedOutputStream output) {
+              //@@protoc_insertion_point(write_to_scope_begin:unittest_issues.Issue307.NestedOnce.NestedTwice)
             }
 
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -405,6 +411,7 @@ namespace UnitTest.Issues.TestProtos {
       get { return value_; }
       set {
         value_ = value;
+        //@@protoc_insertion_point(field_modifier_scope_after:unittest_issues.NegativeEnumMessage.setValue)
       }
     }
 
@@ -428,6 +435,7 @@ namespace UnitTest.Issues.TestProtos {
       get { return packedValues_; }
     }
 
+    //@@protoc_insertion_point(class_scope:unittest_issues.NegativeEnumMessage)
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as NegativeEnumMessage);
@@ -463,6 +471,7 @@ namespace UnitTest.Issues.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+      //@@protoc_insertion_point(write_to_scope_begin:unittest_issues.NegativeEnumMessage)
       if (Value != 0) {
         output.WriteRawTag(8);
         output.WriteEnum((int) Value);
@@ -553,6 +562,7 @@ namespace UnitTest.Issues.TestProtos {
       return new DeprecatedChild(this);
     }
 
+    //@@protoc_insertion_point(class_scope:unittest_issues.DeprecatedChild)
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as DeprecatedChild);
@@ -582,6 +592,7 @@ namespace UnitTest.Issues.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+      //@@protoc_insertion_point(write_to_scope_begin:unittest_issues.DeprecatedChild)
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -657,6 +668,7 @@ namespace UnitTest.Issues.TestProtos {
       get { return primitiveValue_; }
       set {
         primitiveValue_ = value;
+        //@@protoc_insertion_point(field_modifier_scope_after:unittest_issues.DeprecatedFieldsMessage.setPrimitiveValue)
       }
     }
 
@@ -703,6 +715,7 @@ namespace UnitTest.Issues.TestProtos {
       get { return enumValue_; }
       set {
         enumValue_ = value;
+        //@@protoc_insertion_point(field_modifier_scope_after:unittest_issues.DeprecatedFieldsMessage.setEnumValue)
       }
     }
 
@@ -717,6 +730,7 @@ namespace UnitTest.Issues.TestProtos {
       get { return enumArray_; }
     }
 
+    //@@protoc_insertion_point(class_scope:unittest_issues.DeprecatedFieldsMessage)
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as DeprecatedFieldsMessage);
@@ -758,6 +772,7 @@ namespace UnitTest.Issues.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+      //@@protoc_insertion_point(write_to_scope_begin:unittest_issues.DeprecatedFieldsMessage)
       if (PrimitiveValue != 0) {
         output.WriteRawTag(8);
         output.WriteInt32(PrimitiveValue);
@@ -901,9 +916,11 @@ namespace UnitTest.Issues.TestProtos {
       get { return item_; }
       set {
         item_ = value;
+        //@@protoc_insertion_point(field_modifier_scope_after:unittest_issues.ItemField.setItem)
       }
     }
 
+    //@@protoc_insertion_point(class_scope:unittest_issues.ItemField)
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as ItemField);
@@ -935,6 +952,7 @@ namespace UnitTest.Issues.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+      //@@protoc_insertion_point(write_to_scope_begin:unittest_issues.ItemField)
       if (Item != 0) {
         output.WriteRawTag(8);
         output.WriteInt32(Item);
@@ -1019,6 +1037,7 @@ namespace UnitTest.Issues.TestProtos {
       get { return types_; }
       set {
         types_ = value;
+        //@@protoc_insertion_point(field_modifier_scope_after:unittest_issues.ReservedNames.setTypes_)
       }
     }
 
@@ -1030,9 +1049,11 @@ namespace UnitTest.Issues.TestProtos {
       get { return descriptor_; }
       set {
         descriptor_ = value;
+        //@@protoc_insertion_point(field_modifier_scope_after:unittest_issues.ReservedNames.setDescriptor_)
       }
     }
 
+    //@@protoc_insertion_point(class_scope:unittest_issues.ReservedNames)
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as ReservedNames);
@@ -1066,6 +1087,7 @@ namespace UnitTest.Issues.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+      //@@protoc_insertion_point(write_to_scope_begin:unittest_issues.ReservedNames)
       if (Types_ != 0) {
         output.WriteRawTag(8);
         output.WriteInt32(Types_);
@@ -1159,6 +1181,7 @@ namespace UnitTest.Issues.TestProtos {
           return new SomeNestedType(this);
         }
 
+        //@@protoc_insertion_point(class_scope:unittest_issues.ReservedNames.SomeNestedType)
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public override bool Equals(object other) {
           return Equals(other as SomeNestedType);
@@ -1188,6 +1211,7 @@ namespace UnitTest.Issues.TestProtos {
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public void WriteTo(pb::CodedOutputStream output) {
+          //@@protoc_insertion_point(write_to_scope_begin:unittest_issues.ReservedNames.SomeNestedType)
         }
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -1293,6 +1317,7 @@ namespace UnitTest.Issues.TestProtos {
       get { return plainInt32_; }
       set {
         plainInt32_ = value;
+        //@@protoc_insertion_point(field_modifier_scope_after:unittest_issues.TestJsonFieldOrdering.setPlainInt32)
       }
     }
 
@@ -1326,6 +1351,7 @@ namespace UnitTest.Issues.TestProtos {
       get { return plainString_; }
       set {
         plainString_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+        //@@protoc_insertion_point(field_modifier_scope_after:unittest_issues.TestJsonFieldOrdering.setPlainString)
       }
     }
 
@@ -1389,6 +1415,7 @@ namespace UnitTest.Issues.TestProtos {
       o2_ = null;
     }
 
+    //@@protoc_insertion_point(class_scope:unittest_issues.TestJsonFieldOrdering)
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as TestJsonFieldOrdering);
@@ -1434,6 +1461,7 @@ namespace UnitTest.Issues.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+      //@@protoc_insertion_point(write_to_scope_begin:unittest_issues.TestJsonFieldOrdering)
       if (PlainString.Length != 0) {
         output.WriteRawTag(10);
         output.WriteString(PlainString);
@@ -1598,6 +1626,7 @@ namespace UnitTest.Issues.TestProtos {
       get { return name_; }
       set {
         name_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+        //@@protoc_insertion_point(field_modifier_scope_after:unittest_issues.TestJsonName.setName)
       }
     }
 
@@ -1609,6 +1638,7 @@ namespace UnitTest.Issues.TestProtos {
       get { return description_; }
       set {
         description_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+        //@@protoc_insertion_point(field_modifier_scope_after:unittest_issues.TestJsonName.setDescription)
       }
     }
 
@@ -1620,9 +1650,11 @@ namespace UnitTest.Issues.TestProtos {
       get { return guid_; }
       set {
         guid_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+        //@@protoc_insertion_point(field_modifier_scope_after:unittest_issues.TestJsonName.setGuid)
       }
     }
 
+    //@@protoc_insertion_point(class_scope:unittest_issues.TestJsonName)
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as TestJsonName);
@@ -1658,6 +1690,7 @@ namespace UnitTest.Issues.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+      //@@protoc_insertion_point(write_to_scope_begin:unittest_issues.TestJsonName)
       if (Name.Length != 0) {
         output.WriteRawTag(10);
         output.WriteString(Name);

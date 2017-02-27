@@ -49,11 +49,17 @@ namespace compiler {
 namespace csharp {
 
 PrimitiveFieldGenerator::PrimitiveFieldGenerator(
-    const FieldDescriptor* descriptor, int fieldOrdinal, const Options *options)
+    const FieldDescriptor* descriptor, int fieldOrdinal, const Options* options)
     : FieldGeneratorBase(descriptor, fieldOrdinal, options) {
   // TODO(jonskeet): Make this cleaner...
   is_value_type = descriptor->type() != FieldDescriptor::TYPE_STRING
       && descriptor->type() != FieldDescriptor::TYPE_BYTES;
+
+  if (descriptor->containing_type() != NULL) {
+    variables_["containing_type_full_name"] = descriptor->containing_type()->full_name();
+  } else {
+    variables_["containing_type_full_name"] = descriptor->full_name();
+  }
   if (!is_value_type) {
     variables_["has_property_check"] = variables_["property_name"] + ".Length != 0";
     variables_["other_has_property_check"] = "other." + variables_["property_name"] + ".Length != 0";
@@ -87,6 +93,8 @@ void PrimitiveFieldGenerator::GenerateMembers(io::Printer* printer) {
       "    $name$_ = pb::ProtoPreconditions.CheckNotNull(value, \"value\");\n");
   }
   printer->Print(
+    variables_,
+    "    //@@protoc_insertion_point(field_modifier_scope_after:$containing_type_full_name$.set$property_name$)\n"
     "  }\n"
     "}\n");
 }

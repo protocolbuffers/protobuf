@@ -285,6 +285,7 @@ namespace Google.Protobuf.WellKnownTypes {
       get { return paths_; }
     }
 
+    //@@protoc_insertion_point(class_scope:google.protobuf.FieldMask)
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as FieldMask);
@@ -316,6 +317,7 @@ namespace Google.Protobuf.WellKnownTypes {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+      //@@protoc_insertion_point(write_to_scope_begin:google.protobuf.FieldMask)
       paths_.WriteTo(output, _repeated_paths_codec);
     }
 

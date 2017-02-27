@@ -86,9 +86,11 @@ namespace Google.Protobuf.WellKnownTypes {
       get { return fileName_; }
       set {
         fileName_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+        //@@protoc_insertion_point(field_modifier_scope_after:google.protobuf.SourceContext.setFileName)
       }
     }
 
+    //@@protoc_insertion_point(class_scope:google.protobuf.SourceContext)
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as SourceContext);
@@ -120,6 +122,7 @@ namespace Google.Protobuf.WellKnownTypes {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+      //@@protoc_insertion_point(write_to_scope_begin:google.protobuf.SourceContext)
       if (FileName.Length != 0) {
         output.WriteRawTag(10);
         output.WriteString(FileName);
