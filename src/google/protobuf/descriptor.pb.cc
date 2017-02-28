@@ -1006,13 +1006,11 @@ bool FileDescriptorSet::MergePartialFromCodedStream(
       case 1: {
         if (static_cast<::google::protobuf::uint8>(tag) ==
             static_cast<::google::protobuf::uint8>(10u)) {
-          DO_(input->IncrementRecursionDepth());
-          DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtualNoRecursionDepth(
+          DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtual(
                 input, add_file()));
         } else {
           goto handle_unusual;
         }
-        input->UnsafeDecrementRecursionDepth();
         break;
       }
 
@@ -1402,13 +1400,11 @@ bool FileDescriptorProto::MergePartialFromCodedStream(
       case 4: {
         if (static_cast<::google::protobuf::uint8>(tag) ==
             static_cast<::google::protobuf::uint8>(34u)) {
-          DO_(input->IncrementRecursionDepth());
-          DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtualNoRecursionDepth(
+          DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtual(
                 input, add_message_type()));
         } else {
           goto handle_unusual;
         }
-        input->UnsafeDecrementRecursionDepth();
         break;
       }
 
@@ -1416,13 +1412,11 @@ bool FileDescriptorProto::MergePartialFromCodedStream(
       case 5: {
         if (static_cast<::google::protobuf::uint8>(tag) ==
             static_cast<::google::protobuf::uint8>(42u)) {
-          DO_(input->IncrementRecursionDepth());
-          DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtualNoRecursionDepth(
+          DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtual(
                 input, add_enum_type()));
         } else {
           goto handle_unusual;
         }
-        input->UnsafeDecrementRecursionDepth();
         break;
       }
 
@@ -1430,13 +1424,11 @@ bool FileDescriptorProto::MergePartialFromCodedStream(
       case 6: {
         if (static_cast<::google::protobuf::uint8>(tag) ==
             static_cast<::google::protobuf::uint8>(50u)) {
-          DO_(input->IncrementRecursionDepth());
-          DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtualNoRecursionDepth(
+          DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtual(
                 input, add_service()));
         } else {
           goto handle_unusual;
         }
-        input->UnsafeDecrementRecursionDepth();
         break;
       }
 
@@ -1444,13 +1436,11 @@ bool FileDescriptorProto::MergePartialFromCodedStream(
       case 7: {
         if (static_cast<::google::protobuf::uint8>(tag) ==
             static_cast<::google::protobuf::uint8>(58u)) {
-          DO_(input->IncrementRecursionDepth());
-          DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtualNoRecursionDepth(
+          DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtual(
                 input, add_extension()));
         } else {
           goto handle_unusual;
         }
-        input->UnsafeDecrementRecursionDepth();
         break;
       }
 
@@ -3304,13 +3294,11 @@ bool DescriptorProto::MergePartialFromCodedStream(
       case 2: {
         if (static_cast<::google::protobuf::uint8>(tag) ==
             static_cast<::google::protobuf::uint8>(18u)) {
-          DO_(input->IncrementRecursionDepth());
-          DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtualNoRecursionDepth(
+          DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtual(
                 input, add_field()));
         } else {
           goto handle_unusual;
         }
-        input->UnsafeDecrementRecursionDepth();
         break;
       }
 
@@ -3318,13 +3306,11 @@ bool DescriptorProto::MergePartialFromCodedStream(
       case 3: {
         if (static_cast<::google::protobuf::uint8>(tag) ==
             static_cast<::google::protobuf::uint8>(26u)) {
-          DO_(input->IncrementRecursionDepth());
-          DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtualNoRecursionDepth(
+          DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtual(
                 input, add_nested_type()));
         } else {
           goto handle_unusual;
         }
-        input->UnsafeDecrementRecursionDepth();
         break;
       }
 
@@ -3332,13 +3318,11 @@ bool DescriptorProto::MergePartialFromCodedStream(
       case 4: {
         if (static_cast<::google::protobuf::uint8>(tag) ==
             static_cast<::google::protobuf::uint8>(34u)) {
-          DO_(input->IncrementRecursionDepth());
-          DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtualNoRecursionDepth(
+          DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtual(
                 input, add_enum_type()));
         } else {
           goto handle_unusual;
         }
-        input->UnsafeDecrementRecursionDepth();
         break;
       }
 
@@ -3346,13 +3330,11 @@ bool DescriptorProto::MergePartialFromCodedStream(
       case 5: {
         if (static_cast<::google::protobuf::uint8>(tag) ==
             static_cast<::google::protobuf::uint8>(42u)) {
-          DO_(input->IncrementRecursionDepth());
-          DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtualNoRecursionDepth(
+          DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtual(
                 input, add_extension_range()));
         } else {
           goto handle_unusual;
         }
-        input->UnsafeDecrementRecursionDepth();
         break;
       }
 
@@ -3360,13 +3342,11 @@ bool DescriptorProto::MergePartialFromCodedStream(
       case 6: {
         if (static_cast<::google::protobuf::uint8>(tag) ==
             static_cast<::google::protobuf::uint8>(50u)) {
-          DO_(input->IncrementRecursionDepth());
-          DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtualNoRecursionDepth(
+          DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtual(
                 input, add_extension()));
         } else {
           goto handle_unusual;
         }
-        input->UnsafeDecrementRecursionDepth();
         break;
       }
 
@@ -3386,13 +3366,11 @@ bool DescriptorProto::MergePartialFromCodedStream(
       case 8: {
         if (static_cast<::google::protobuf::uint8>(tag) ==
             static_cast<::google::protobuf::uint8>(66u)) {
-          DO_(input->IncrementRecursionDepth());
-          DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtualNoRecursionDepth(
+          DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtual(
                 input, add_oneof_decl()));
         } else {
           goto handle_unusual;
         }
-        input->UnsafeDecrementRecursionDepth();
         break;
       }
 
@@ -3400,13 +3378,11 @@ bool DescriptorProto::MergePartialFromCodedStream(
       case 9: {
         if (static_cast<::google::protobuf::uint8>(tag) ==
             static_cast<::google::protobuf::uint8>(74u)) {
-          DO_(input->IncrementRecursionDepth());
-          DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtualNoRecursionDepth(
+          DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtual(
                 input, add_reserved_range()));
         } else {
           goto handle_unusual;
         }
-        input->UnsafeDecrementRecursionDepth();
         break;
       }
 
@@ -5930,13 +5906,11 @@ bool EnumDescriptorProto::MergePartialFromCodedStream(
       case 2: {
         if (static_cast<::google::protobuf::uint8>(tag) ==
             static_cast<::google::protobuf::uint8>(18u)) {
-          DO_(input->IncrementRecursionDepth());
-          DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtualNoRecursionDepth(
+          DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtual(
                 input, add_value()));
         } else {
           goto handle_unusual;
         }
-        input->UnsafeDecrementRecursionDepth();
         break;
       }
 
@@ -6903,13 +6877,11 @@ bool ServiceDescriptorProto::MergePartialFromCodedStream(
       case 2: {
         if (static_cast<::google::protobuf::uint8>(tag) ==
             static_cast<::google::protobuf::uint8>(18u)) {
-          DO_(input->IncrementRecursionDepth());
-          DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtualNoRecursionDepth(
+          DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtual(
                 input, add_method()));
         } else {
           goto handle_unusual;
         }
-        input->UnsafeDecrementRecursionDepth();
         break;
       }
 
@@ -8459,13 +8431,11 @@ bool FileOptions::MergePartialFromCodedStream(
       case 999: {
         if (static_cast<::google::protobuf::uint8>(tag) ==
             static_cast<::google::protobuf::uint8>(7994u)) {
-          DO_(input->IncrementRecursionDepth());
-          DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtualNoRecursionDepth(
+          DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtual(
                 input, add_uninterpreted_option()));
         } else {
           goto handle_unusual;
         }
-        input->UnsafeDecrementRecursionDepth();
         break;
       }
 
@@ -9786,13 +9756,11 @@ bool MessageOptions::MergePartialFromCodedStream(
       case 999: {
         if (static_cast<::google::protobuf::uint8>(tag) ==
             static_cast<::google::protobuf::uint8>(7994u)) {
-          DO_(input->IncrementRecursionDepth());
-          DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtualNoRecursionDepth(
+          DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtual(
                 input, add_uninterpreted_option()));
         } else {
           goto handle_unusual;
         }
-        input->UnsafeDecrementRecursionDepth();
         break;
       }
 
@@ -10360,13 +10328,11 @@ bool FieldOptions::MergePartialFromCodedStream(
       case 999: {
         if (static_cast<::google::protobuf::uint8>(tag) ==
             static_cast<::google::protobuf::uint8>(7994u)) {
-          DO_(input->IncrementRecursionDepth());
-          DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtualNoRecursionDepth(
+          DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtual(
                 input, add_uninterpreted_option()));
         } else {
           goto handle_unusual;
         }
-        input->UnsafeDecrementRecursionDepth();
         break;
       }
 
@@ -10919,13 +10885,11 @@ bool OneofOptions::MergePartialFromCodedStream(
       case 999: {
         if (static_cast<::google::protobuf::uint8>(tag) ==
             static_cast<::google::protobuf::uint8>(7994u)) {
-          DO_(input->IncrementRecursionDepth());
-          DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtualNoRecursionDepth(
+          DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtual(
                 input, add_uninterpreted_option()));
         } else {
           goto handle_unusual;
         }
-        input->UnsafeDecrementRecursionDepth();
         break;
       }
 
@@ -11247,13 +11211,11 @@ bool EnumOptions::MergePartialFromCodedStream(
       case 999: {
         if (static_cast<::google::protobuf::uint8>(tag) ==
             static_cast<::google::protobuf::uint8>(7994u)) {
-          DO_(input->IncrementRecursionDepth());
-          DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtualNoRecursionDepth(
+          DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtual(
                 input, add_uninterpreted_option()));
         } else {
           goto handle_unusual;
         }
-        input->UnsafeDecrementRecursionDepth();
         break;
       }
 
@@ -11644,13 +11606,11 @@ bool EnumValueOptions::MergePartialFromCodedStream(
       case 999: {
         if (static_cast<::google::protobuf::uint8>(tag) ==
             static_cast<::google::protobuf::uint8>(7994u)) {
-          DO_(input->IncrementRecursionDepth());
-          DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtualNoRecursionDepth(
+          DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtual(
                 input, add_uninterpreted_option()));
         } else {
           goto handle_unusual;
         }
-        input->UnsafeDecrementRecursionDepth();
         break;
       }
 
@@ -11994,13 +11954,11 @@ bool ServiceOptions::MergePartialFromCodedStream(
       case 999: {
         if (static_cast<::google::protobuf::uint8>(tag) ==
             static_cast<::google::protobuf::uint8>(7994u)) {
-          DO_(input->IncrementRecursionDepth());
-          DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtualNoRecursionDepth(
+          DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtual(
                 input, add_uninterpreted_option()));
         } else {
           goto handle_unusual;
         }
-        input->UnsafeDecrementRecursionDepth();
         break;
       }
 
@@ -12370,13 +12328,11 @@ bool MethodOptions::MergePartialFromCodedStream(
       case 999: {
         if (static_cast<::google::protobuf::uint8>(tag) ==
             static_cast<::google::protobuf::uint8>(7994u)) {
-          DO_(input->IncrementRecursionDepth());
-          DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtualNoRecursionDepth(
+          DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtual(
                 input, add_uninterpreted_option()));
         } else {
           goto handle_unusual;
         }
-        input->UnsafeDecrementRecursionDepth();
         break;
       }
 
@@ -13194,13 +13150,11 @@ bool UninterpretedOption::MergePartialFromCodedStream(
       case 2: {
         if (static_cast<::google::protobuf::uint8>(tag) ==
             static_cast<::google::protobuf::uint8>(18u)) {
-          DO_(input->IncrementRecursionDepth());
-          DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtualNoRecursionDepth(
+          DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtual(
                 input, add_name()));
         } else {
           goto handle_unusual;
         }
-        input->UnsafeDecrementRecursionDepth();
         break;
       }
 
@@ -14703,13 +14657,11 @@ bool SourceCodeInfo::MergePartialFromCodedStream(
       case 1: {
         if (static_cast<::google::protobuf::uint8>(tag) ==
             static_cast<::google::protobuf::uint8>(10u)) {
-          DO_(input->IncrementRecursionDepth());
-          DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtualNoRecursionDepth(
+          DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtual(
                 input, add_location()));
         } else {
           goto handle_unusual;
         }
-        input->UnsafeDecrementRecursionDepth();
         break;
       }
 
@@ -15507,13 +15459,11 @@ bool GeneratedCodeInfo::MergePartialFromCodedStream(
       case 1: {
         if (static_cast<::google::protobuf::uint8>(tag) ==
             static_cast<::google::protobuf::uint8>(10u)) {
-          DO_(input->IncrementRecursionDepth());
-          DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtualNoRecursionDepth(
+          DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtual(
                 input, add_annotation()));
         } else {
           goto handle_unusual;
         }
-        input->UnsafeDecrementRecursionDepth();
         break;
       }
 

@@ -1078,13 +1078,11 @@ void RepeatedMessageFieldGenerator::
 GenerateMergeFromCodedStream(io::Printer* printer) const {
   if (descriptor_->type() == FieldDescriptor::TYPE_MESSAGE) {
     printer->Print(variables_,
-      "DO_(::google::protobuf::internal::WireFormatLite::"
-      "ReadMessageNoVirtualNoRecursionDepth(\n"
+      "DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtual(\n"
       "      input, add_$name$()));\n");
   } else {
     printer->Print(variables_,
-      "DO_(::google::protobuf::internal::WireFormatLite::"
-      "ReadGroupNoVirtualNoRecursionDepth(\n"
+      "DO_(::google::protobuf::internal::WireFormatLite::ReadGroupNoVirtual(\n"
       "      $number$, input, add_$name$()));\n");
   }
 }

@@ -308,7 +308,6 @@ bool Struct::MergePartialFromCodedStream(
       case 1: {
         if (static_cast<::google::protobuf::uint8>(tag) ==
             static_cast<::google::protobuf::uint8>(10u)) {
-          DO_(input->IncrementRecursionDepth());
           Struct_FieldsEntry::Parser< ::google::protobuf::internal::MapField<
               ::std::string, ::google::protobuf::Value,
               ::google::protobuf::internal::WireFormatLite::TYPE_STRING,
@@ -324,7 +323,6 @@ bool Struct::MergePartialFromCodedStream(
         } else {
           goto handle_unusual;
         }
-        input->UnsafeDecrementRecursionDepth();
         break;
       }
 
@@ -1599,13 +1597,11 @@ bool ListValue::MergePartialFromCodedStream(
       case 1: {
         if (static_cast<::google::protobuf::uint8>(tag) ==
             static_cast<::google::protobuf::uint8>(10u)) {
-          DO_(input->IncrementRecursionDepth());
-          DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtualNoRecursionDepth(
+          DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtual(
                 input, add_values()));
         } else {
           goto handle_unusual;
         }
-        input->UnsafeDecrementRecursionDepth();
         break;
       }
 
