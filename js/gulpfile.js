@@ -23,8 +23,26 @@ var wellKnownTypes = [
   '../src/google/protobuf/wrappers.proto',
 ];
 
-gulp.task('genproto_closure', function (cb) {
-  exec(protoc + ' --js_out=library=testproto_libs,binary:.  -I ../src -I . *.proto && ' + protoc + ' --js_out=one_output_file_per_input_file,binary:. -I ../src -I . ' + wellKnownTypes.join(' '),
+var group1Protos = [
+  'data.proto',
+  'test3.proto',
+  'test5.proto',
+  'commonjs/test6/test6.proto',
+  'test8.proto',
+  'testbinary.proto',
+  'testempty.proto',
+  'test.proto',
+];
+
+var group2Protos = [
+  'proto3_test.proto',
+  'test2.proto',
+  'test4.proto',
+  'commonjs/test7/test7.proto',
+];
+
+gulp.task('genproto_well_known_types_closure', function (cb) {
+  exec(protoc + ' --js_out=one_output_file_per_input_file,binary:. -I ../src -I . ' + wellKnownTypes.join(' '),
        function (err, stdout, stderr) {
     console.log(stdout);
     console.log(stderr);
@@ -32,8 +50,44 @@ gulp.task('genproto_closure', function (cb) {
   });
 });
 
-gulp.task('genproto_commonjs', function (cb) {
-  exec('mkdir -p commonjs_out && ' + protoc + ' --js_out=import_style=commonjs,binary:commonjs_out -I ../src -I commonjs -I . *.proto commonjs/test*/*.proto ' + wellKnownTypes.join(' '),
+gulp.task('genproto_group1_closure', function (cb) {
+  exec(protoc + ' --js_out=library=testproto_libs1,binary:.  -I ../src -I . ' + group1Protos.join(' '),
+       function (err, stdout, stderr) {
+    console.log(stdout);
+    console.log(stderr);
+    cb(err);
+  });
+});
+
+gulp.task('genproto_group2_closure', function (cb) {
+  exec(protoc + ' --js_out=library=testproto_libs2,binary:.  -I ../src -I . -I commonjs ' + group2Protos.join(' '),
+       function (err, stdout, stderr) {
+    console.log(stdout);
+    console.log(stderr);
+    cb(err);
+  });
+});
+
+gulp.task('genproto_well_known_types_commonjs', function (cb) {
+  exec('mkdir -p commonjs_out && ' + protoc + ' --js_out=import_style=commonjs,binary:commonjs_out -I ../src ' + wellKnownTypes.join(' '),
+       function (err, stdout, stderr) {
+    console.log(stdout);
+    console.log(stderr);
+    cb(err);
+  });
+});
+
+gulp.task('genproto_group1_commonjs', function (cb) {
+  exec('mkdir -p commonjs_out && ' + protoc + ' --js_out=import_style=commonjs,binary:commonjs_out -I ../src -I commonjs -I . ' + group1Protos.join(' '),
+       function (err, stdout, stderr) {
+    console.log(stdout);
+    console.log(stderr);
+    cb(err);
+  });
+});
+
+gulp.task('genproto_group2_commonjs', function (cb) {
+  exec('mkdir -p commonjs_out && ' + protoc + ' --js_out=import_style=commonjs,binary:commonjs_out -I ../src -I commonjs -I . ' + group2Protos.join(' '),
        function (err, stdout, stderr) {
     console.log(stdout);
     console.log(stderr);
@@ -105,7 +159,7 @@ gulp.task('commonjs_testdeps', function (cb) {
   });
 });
 
-gulp.task('make_commonjs_out', ['dist', 'genproto_commonjs', 'genproto_commonjs_wellknowntypes', 'commonjs_asserts', 'commonjs_testdeps'], function (cb) {
+gulp.task('make_commonjs_out', ['dist', 'genproto_well_known_types_commonjs', 'genproto_group1_commonjs', 'genproto_group2_commonjs', 'genproto_commonjs_wellknowntypes', 'commonjs_asserts', 'commonjs_testdeps'], function (cb) {
   // TODO(haberman): minify this more aggressively.
   // Will require proper externs/exports.
   var cmd = "mkdir -p commonjs_out/binary && mkdir -p commonjs_out/test_node_modules && ";
@@ -128,8 +182,8 @@ gulp.task('make_commonjs_out', ['dist', 'genproto_commonjs', 'genproto_commonjs_
   });
 });
 
-gulp.task('deps', ['genproto_closure'], function (cb) {
-  exec('./node_modules/google-closure-library/closure/bin/build/depswriter.py *.js binary/*.js > deps.js',
+gulp.task('deps', ['genproto_well_known_types_closure', 'genproto_group1_closure', 'genproto_group2_closure'], function (cb) {
+  exec('./node_modules/google-closure-library/closure/bin/build/depswriter.py binary/arith.js binary/constants.js binary/decoder.js binary/encoder.js binary/reader.js binary/utils.js binary/writer.js debug.js map.js message.js node_loader.js test_bootstrap.js > deps.js',
        function (err, stdout, stderr) {
     console.log(stdout);
     console.log(stderr);
@@ -137,7 +191,7 @@ gulp.task('deps', ['genproto_closure'], function (cb) {
   });
 });
 
-gulp.task('test_closure', ['genproto_closure', 'deps'], function (cb) {
+gulp.task('test_closure', ['genproto_well_known_types_closure', 'genproto_group1_closure', 'genproto_group2_closure', 'deps'], function (cb) {
   exec('JASMINE_CONFIG_PATH=jasmine.json ./node_modules/.bin/jasmine',
        function (err, stdout, stderr) {
     console.log(stdout);
