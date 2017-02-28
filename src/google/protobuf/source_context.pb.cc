@@ -198,8 +198,8 @@ bool SourceContext::MergePartialFromCodedStream(
     switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
       // string file_name = 1;
       case 1: {
-        if (static_cast<::google::protobuf::uint8>(tag) ==
-            static_cast<::google::protobuf::uint8>(10u)) {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(10u)) {
           DO_(::google::protobuf::internal::WireFormatLite::ReadString(
                 input, this->mutable_file_name()));
           DO_(::google::protobuf::internal::WireFormatLite::VerifyUtf8String(

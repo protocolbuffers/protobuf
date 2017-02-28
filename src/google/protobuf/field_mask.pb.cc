@@ -192,8 +192,8 @@ bool FieldMask::MergePartialFromCodedStream(
     switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
       // repeated string paths = 1;
       case 1: {
-        if (static_cast<::google::protobuf::uint8>(tag) ==
-            static_cast<::google::protobuf::uint8>(10u)) {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(10u)) {
           DO_(::google::protobuf::internal::WireFormatLite::ReadString(
                 input, this->add_paths()));
           DO_(::google::protobuf::internal::WireFormatLite::VerifyUtf8String(

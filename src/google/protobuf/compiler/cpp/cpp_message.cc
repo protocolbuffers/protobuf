@@ -3028,8 +3028,8 @@ GenerateMergeFromCodedStream(io::Printer* printer) {
       const FieldGenerator& field_generator = field_generators_.get(field);
 
       // Emit code to parse the common, expected case.
-      printer->Print("if (static_cast<::google::protobuf::uint8>(tag) ==\n"
-                     "    static_cast<::google::protobuf::uint8>($commontag$u)) {\n",
+      printer->Print("if (static_cast< ::google::protobuf::uint8>(tag) ==\n"
+                     "    static_cast< ::google::protobuf::uint8>($commontag$u)) {\n",
                      "commontag", SimpleItoa(WireFormat::MakeTag(field)));
 
       if (loops) {
@@ -3048,8 +3048,8 @@ GenerateMergeFromCodedStream(io::Printer* printer) {
       if (field->is_packed()) {
         internal::WireFormatLite::WireType wiretype =
             WireFormat::WireTypeForFieldType(field->type());
-        printer->Print("} else if (static_cast<::google::protobuf::uint8>(tag) ==\n"
-                       "           static_cast<::google::protobuf::uint8>($uncommontag$u)) {\n",
+        printer->Print("} else if (static_cast< ::google::protobuf::uint8>(tag) ==\n"
+                       "           static_cast< ::google::protobuf::uint8>($uncommontag$u)) {\n",
                        "uncommontag", SimpleItoa(
                            internal::WireFormatLite::MakeTag(
                                field->number(), wiretype)));
@@ -3059,8 +3059,8 @@ GenerateMergeFromCodedStream(io::Printer* printer) {
       } else if (field->is_packable() && !field->is_packed()) {
         internal::WireFormatLite::WireType wiretype =
             internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED;
-        printer->Print("} else if (static_cast<::google::protobuf::uint8>(tag) ==\n"
-                       "           static_cast<::google::protobuf::uint8>($uncommontag$u)) {\n",
+        printer->Print("} else if (static_cast< ::google::protobuf::uint8>(tag) ==\n"
+                       "           static_cast< ::google::protobuf::uint8>($uncommontag$u)) {\n",
                        "uncommontag", SimpleItoa(
                            internal::WireFormatLite::MakeTag(
                                field->number(), wiretype)));

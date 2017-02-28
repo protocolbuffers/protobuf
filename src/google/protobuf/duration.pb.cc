@@ -216,8 +216,8 @@ bool Duration::MergePartialFromCodedStream(
     switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
       // int64 seconds = 1;
       case 1: {
-        if (static_cast<::google::protobuf::uint8>(tag) ==
-            static_cast<::google::protobuf::uint8>(8u)) {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(8u)) {
 
           DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
                    ::google::protobuf::int64, ::google::protobuf::internal::WireFormatLite::TYPE_INT64>(
@@ -230,8 +230,8 @@ bool Duration::MergePartialFromCodedStream(
 
       // int32 nanos = 2;
       case 2: {
-        if (static_cast<::google::protobuf::uint8>(tag) ==
-            static_cast<::google::protobuf::uint8>(16u)) {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(16u)) {
 
           DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
                    ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(

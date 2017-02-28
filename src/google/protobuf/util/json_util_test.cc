@@ -162,9 +162,9 @@ TEST_F(JsonUtilTest, TestDefaultValues) {
 
 TEST_F(JsonUtilTest, TestAlwaysPrintEnumsAsInts) {
   TestMessage orig;
-  orig.set_enum_value(proto3::EnumType::BAR);
-  orig.add_repeated_enum_value(proto3::EnumType::FOO);
-  orig.add_repeated_enum_value(proto3::EnumType::BAR);
+  orig.set_enum_value(proto3::BAR);
+  orig.add_repeated_enum_value(proto3::FOO);
+  orig.add_repeated_enum_value(proto3::BAR);
 
   JsonPrintOptions print_options;
   print_options.always_print_enums_as_ints = true;
@@ -177,10 +177,10 @@ TEST_F(JsonUtilTest, TestAlwaysPrintEnumsAsInts) {
   JsonParseOptions parse_options;
   ASSERT_TRUE(FromJson(expected_json, &parsed, parse_options));
 
-  EXPECT_EQ(proto3::EnumType::BAR, parsed.enum_value());
+  EXPECT_EQ(proto3::BAR, parsed.enum_value());
   EXPECT_EQ(2, parsed.repeated_enum_value_size());
-  EXPECT_EQ(proto3::EnumType::FOO, parsed.repeated_enum_value(0));
-  EXPECT_EQ(proto3::EnumType::BAR, parsed.repeated_enum_value(1));
+  EXPECT_EQ(proto3::FOO, parsed.repeated_enum_value(0));
+  EXPECT_EQ(proto3::BAR, parsed.repeated_enum_value(1));
 }
 
 TEST_F(JsonUtilTest, ParseMessage) {
