@@ -671,6 +671,98 @@ inline uint8* WireFormatLite::WriteEnumNoTagToArray(int value,
   return io::CodedOutputStream::WriteVarint32SignExtendedToArray(value, target);
 }
 
+template<typename T>
+inline uint8* WireFormatLite::WritePrimitiveNoTagToArray(
+      const RepeatedField<T>& value,
+      uint8* (*Writer)(T, uint8*), uint8* target) {
+  const int n = value.size();
+  GOOGLE_DCHECK_GT(n, 0);
+
+  const T* ii = value.unsafe_data();
+  int i = 0;
+  do {
+    target = Writer(ii[i], target);
+  } while (++i < n);
+
+  return target;
+}
+
+template<typename T>
+inline uint8* WireFormatLite::WriteFixedNoTagToArray(
+      const RepeatedField<T>& value,
+      uint8* (*Writer)(T, uint8*), uint8* target) {
+#if defined(PROTOBUF_LITTLE_ENDIAN)
+  (void) Writer;
+
+  const int n = value.size();
+  GOOGLE_DCHECK_GT(n, 0);
+
+  const T* ii = value.unsafe_data();
+  const int bytes = n * sizeof(ii[0]);
+  memcpy(target, ii, bytes);
+  return target + bytes;
+#else
+  return WritePrimitiveNoTagToArray(value, Writer, target);
+#endif
+}
+
+inline uint8* WireFormatLite::WriteInt32NoTagToArray(
+    const RepeatedField< int32>& value, uint8* target) {
+  return WritePrimitiveNoTagToArray(value, WriteInt32NoTagToArray, target);
+}
+inline uint8* WireFormatLite::WriteInt64NoTagToArray(
+    const RepeatedField< int64>& value, uint8* target) {
+  return WritePrimitiveNoTagToArray(value, WriteInt64NoTagToArray, target);
+}
+inline uint8* WireFormatLite::WriteUInt32NoTagToArray(
+    const RepeatedField<uint32>& value, uint8* target) {
+  return WritePrimitiveNoTagToArray(value, WriteUInt32NoTagToArray, target);
+}
+inline uint8* WireFormatLite::WriteUInt64NoTagToArray(
+    const RepeatedField<uint64>& value, uint8* target) {
+  return WritePrimitiveNoTagToArray(value, WriteUInt64NoTagToArray, target);
+}
+inline uint8* WireFormatLite::WriteSInt32NoTagToArray(
+    const RepeatedField< int32>& value, uint8* target) {
+  return WritePrimitiveNoTagToArray(value, WriteSInt32NoTagToArray, target);
+}
+inline uint8* WireFormatLite::WriteSInt64NoTagToArray(
+    const RepeatedField< int64>& value, uint8* target) {
+  return WritePrimitiveNoTagToArray(value, WriteSInt64NoTagToArray, target);
+}
+inline uint8* WireFormatLite::WriteFixed32NoTagToArray(
+    const RepeatedField<uint32>& value, uint8* target) {
+  return WriteFixedNoTagToArray(value, WriteFixed32NoTagToArray, target);
+}
+inline uint8* WireFormatLite::WriteFixed64NoTagToArray(
+    const RepeatedField<uint64>& value, uint8* target) {
+  return WriteFixedNoTagToArray(value, WriteFixed64NoTagToArray, target);
+}
+inline uint8* WireFormatLite::WriteSFixed32NoTagToArray(
+    const RepeatedField< int32>& value, uint8* target) {
+  return WriteFixedNoTagToArray(value, WriteSFixed32NoTagToArray, target);
+}
+inline uint8* WireFormatLite::WriteSFixed64NoTagToArray(
+    const RepeatedField< int64>& value, uint8* target) {
+  return WriteFixedNoTagToArray(value, WriteSFixed64NoTagToArray, target);
+}
+inline uint8* WireFormatLite::WriteFloatNoTagToArray(
+    const RepeatedField< float>& value, uint8* target) {
+  return WriteFixedNoTagToArray(value, WriteFloatNoTagToArray, target);
+}
+inline uint8* WireFormatLite::WriteDoubleNoTagToArray(
+    const RepeatedField<double>& value, uint8* target) {
+  return WriteFixedNoTagToArray(value, WriteDoubleNoTagToArray, target);
+}
+inline uint8* WireFormatLite::WriteBoolNoTagToArray(
+    const RepeatedField<  bool>& value, uint8* target) {
+  return WritePrimitiveNoTagToArray(value, WriteBoolNoTagToArray, target);
+}
+inline uint8* WireFormatLite::WriteEnumNoTagToArray(
+    const RepeatedField<   int>& value, uint8* target) {
+  return WritePrimitiveNoTagToArray(value, WriteEnumNoTagToArray, target);
+}
+
 inline uint8* WireFormatLite::WriteInt32ToArray(int field_number,
                                                 int32 value,
                                                 uint8* target) {
@@ -754,6 +846,86 @@ inline uint8* WireFormatLite::WriteEnumToArray(int field_number,
                                                uint8* target) {
   target = WriteTagToArray(field_number, WIRETYPE_VARINT, target);
   return WriteEnumNoTagToArray(value, target);
+}
+
+template<typename T>
+inline uint8* WireFormatLite::WritePrimitiveToArray(
+    int field_number,
+    const RepeatedField<T>& value,
+    uint8* (*Writer)(int, T, uint8*), uint8* target) {
+  const int n = value.size();
+  if (n == 0) {
+    return target;
+  }
+
+  const T* ii = value.unsafe_data();
+  int i = 0;
+  do {
+    target = Writer(field_number, ii[i], target);
+  } while (++i < n);
+
+  return target;
+}
+
+inline uint8* WireFormatLite::WriteInt32ToArray(
+    int field_number, const RepeatedField< int32>& value, uint8* target) {
+  return WritePrimitiveToArray(field_number, value, WriteInt32ToArray, target);
+}
+inline uint8* WireFormatLite::WriteInt64ToArray(
+    int field_number, const RepeatedField< int64>& value, uint8* target) {
+  return WritePrimitiveToArray(field_number, value, WriteInt64ToArray, target);
+}
+inline uint8* WireFormatLite::WriteUInt32ToArray(
+    int field_number, const RepeatedField<uint32>& value, uint8* target) {
+  return WritePrimitiveToArray(field_number, value, WriteUInt32ToArray, target);
+}
+inline uint8* WireFormatLite::WriteUInt64ToArray(
+    int field_number, const RepeatedField<uint64>& value, uint8* target) {
+  return WritePrimitiveToArray(field_number, value, WriteUInt64ToArray, target);
+}
+inline uint8* WireFormatLite::WriteSInt32ToArray(
+    int field_number, const RepeatedField< int32>& value, uint8* target) {
+  return WritePrimitiveToArray(field_number, value, WriteSInt32ToArray, target);
+}
+inline uint8* WireFormatLite::WriteSInt64ToArray(
+    int field_number, const RepeatedField< int64>& value, uint8* target) {
+  return WritePrimitiveToArray(field_number, value, WriteSInt64ToArray, target);
+}
+inline uint8* WireFormatLite::WriteFixed32ToArray(
+    int field_number, const RepeatedField<uint32>& value, uint8* target) {
+  return WritePrimitiveToArray(
+      field_number, value, WriteFixed32ToArray, target);
+}
+inline uint8* WireFormatLite::WriteFixed64ToArray(
+    int field_number, const RepeatedField<uint64>& value, uint8* target) {
+  return WritePrimitiveToArray(
+      field_number, value, WriteFixed64ToArray, target);
+}
+inline uint8* WireFormatLite::WriteSFixed32ToArray(
+    int field_number, const RepeatedField< int32>& value, uint8* target) {
+  return WritePrimitiveToArray(
+      field_number, value, WriteSFixed32ToArray, target);
+}
+inline uint8* WireFormatLite::WriteSFixed64ToArray(
+    int field_number, const RepeatedField< int64>& value, uint8* target) {
+  return WritePrimitiveToArray(
+      field_number, value, WriteSFixed64ToArray, target);
+}
+inline uint8* WireFormatLite::WriteFloatToArray(
+    int field_number, const RepeatedField< float>& value, uint8* target) {
+  return WritePrimitiveToArray(field_number, value, WriteFloatToArray, target);
+}
+inline uint8* WireFormatLite::WriteDoubleToArray(
+    int field_number, const RepeatedField<double>& value, uint8* target) {
+  return WritePrimitiveToArray(field_number, value, WriteDoubleToArray, target);
+}
+inline uint8* WireFormatLite::WriteBoolToArray(
+    int field_number, const RepeatedField<  bool>& value, uint8* target) {
+  return WritePrimitiveToArray(field_number, value, WriteBoolToArray, target);
+}
+inline uint8* WireFormatLite::WriteEnumToArray(
+    int field_number, const RepeatedField<   int>& value, uint8* target) {
+  return WritePrimitiveToArray(field_number, value, WriteEnumToArray, target);
 }
 
 inline uint8* WireFormatLite::WriteStringToArray(int field_number,

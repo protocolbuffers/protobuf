@@ -465,6 +465,45 @@ class LIBPROTOBUF_EXPORT WireFormatLite {
   INL static uint8* WriteBoolNoTagToArray    (bool value, output);
   INL static uint8* WriteEnumNoTagToArray    (int value, output);
 
+  // Write fields, without tags.  These require that value.size() > 0.
+  template<typename T>
+  INL static uint8* WritePrimitiveNoTagToArray(
+      const RepeatedField<T>& value,
+      uint8* (*Writer)(T, uint8*), uint8* target);
+  template<typename T>
+  INL static uint8* WriteFixedNoTagToArray(
+      const RepeatedField<T>& value,
+      uint8* (*Writer)(T, uint8*), uint8* target);
+
+  INL static uint8* WriteInt32NoTagToArray(
+      const RepeatedField< int32>& value, output);
+  INL static uint8* WriteInt64NoTagToArray(
+      const RepeatedField< int64>& value, output);
+  INL static uint8* WriteUInt32NoTagToArray(
+      const RepeatedField<uint32>& value, output);
+  INL static uint8* WriteUInt64NoTagToArray(
+      const RepeatedField<uint64>& value, output);
+  INL static uint8* WriteSInt32NoTagToArray(
+      const RepeatedField< int32>& value, output);
+  INL static uint8* WriteSInt64NoTagToArray(
+      const RepeatedField< int64>& value, output);
+  INL static uint8* WriteFixed32NoTagToArray(
+      const RepeatedField<uint32>& value, output);
+  INL static uint8* WriteFixed64NoTagToArray(
+      const RepeatedField<uint64>& value, output);
+  INL static uint8* WriteSFixed32NoTagToArray(
+      const RepeatedField< int32>& value, output);
+  INL static uint8* WriteSFixed64NoTagToArray(
+      const RepeatedField< int64>& value, output);
+  INL static uint8* WriteFloatNoTagToArray(
+      const RepeatedField< float>& value, output);
+  INL static uint8* WriteDoubleNoTagToArray(
+      const RepeatedField<double>& value, output);
+  INL static uint8* WriteBoolNoTagToArray(
+      const RepeatedField<  bool>& value, output);
+  INL static uint8* WriteEnumNoTagToArray(
+      const RepeatedField<   int>& value, output);
+
   // Write fields, including tags.
   INL static uint8* WriteInt32ToArray(field_number, int32 value, output);
   INL static uint8* WriteInt64ToArray(field_number, int64 value, output);
@@ -480,6 +519,41 @@ class LIBPROTOBUF_EXPORT WireFormatLite {
   INL static uint8* WriteDoubleToArray(field_number, double value, output);
   INL static uint8* WriteBoolToArray(field_number, bool value, output);
   INL static uint8* WriteEnumToArray(field_number, int value, output);
+
+  template<typename T>
+  INL static uint8* WritePrimitiveToArray(
+      field_number,
+      const RepeatedField<T>& value,
+      uint8* (*Writer)(int, T, uint8*), uint8* target);
+
+  INL static uint8* WriteInt32ToArray(
+      field_number, const RepeatedField< int32>& value, output);
+  INL static uint8* WriteInt64ToArray(
+      field_number, const RepeatedField< int64>& value, output);
+  INL static uint8* WriteUInt32ToArray(
+      field_number, const RepeatedField<uint32>& value, output);
+  INL static uint8* WriteUInt64ToArray(
+      field_number, const RepeatedField<uint64>& value, output);
+  INL static uint8* WriteSInt32ToArray(
+      field_number, const RepeatedField< int32>& value, output);
+  INL static uint8* WriteSInt64ToArray(
+      field_number, const RepeatedField< int64>& value, output);
+  INL static uint8* WriteFixed32ToArray(
+      field_number, const RepeatedField<uint32>& value, output);
+  INL static uint8* WriteFixed64ToArray(
+      field_number, const RepeatedField<uint64>& value, output);
+  INL static uint8* WriteSFixed32ToArray(
+      field_number, const RepeatedField< int32>& value, output);
+  INL static uint8* WriteSFixed64ToArray(
+      field_number, const RepeatedField< int64>& value, output);
+  INL static uint8* WriteFloatToArray(
+      field_number, const RepeatedField< float>& value, output);
+  INL static uint8* WriteDoubleToArray(
+      field_number, const RepeatedField<double>& value, output);
+  INL static uint8* WriteBoolToArray(
+      field_number, const RepeatedField<  bool>& value, output);
+  INL static uint8* WriteEnumToArray(
+      field_number, const RepeatedField<   int>& value, output);
 
   INL static uint8* WriteStringToArray(
     field_number, const string& value, output);

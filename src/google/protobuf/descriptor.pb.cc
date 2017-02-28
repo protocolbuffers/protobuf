@@ -1729,16 +1729,12 @@ void FileDescriptorProto::SerializeWithCachedSizes(
   }
 
   // repeated int32 public_dependency = 10;
-  for (int i = 0, n = this->public_dependency_size(); i < n; i++) {
-    target = ::google::protobuf::internal::WireFormatLite::
-      WriteInt32ToArray(10, this->public_dependency(i), target);
-  }
+  target = ::google::protobuf::internal::WireFormatLite::
+    WriteInt32ToArray(10, this->public_dependency_, target);
 
   // repeated int32 weak_dependency = 11;
-  for (int i = 0, n = this->weak_dependency_size(); i < n; i++) {
-    target = ::google::protobuf::internal::WireFormatLite::
-      WriteInt32ToArray(11, this->weak_dependency(i), target);
-  }
+  target = ::google::protobuf::internal::WireFormatLite::
+    WriteInt32ToArray(11, this->weak_dependency_, target);
 
   // optional string syntax = 12;
   if (has_syntax()) {
@@ -14165,10 +14161,8 @@ void SourceCodeInfo_Location::SerializeWithCachedSizes(
       target);
     target = ::google::protobuf::io::CodedOutputStream::WriteVarint32ToArray(
       _path_cached_byte_size_, target);
-  }
-  for (int i = 0, n = this->path_size(); i < n; i++) {
     target = ::google::protobuf::internal::WireFormatLite::
-      WriteInt32NoTagToArray(this->path(i), target);
+      WriteInt32NoTagToArray(this->path_, target);
   }
 
   // repeated int32 span = 2 [packed = true];
@@ -14179,10 +14173,8 @@ void SourceCodeInfo_Location::SerializeWithCachedSizes(
       target);
     target = ::google::protobuf::io::CodedOutputStream::WriteVarint32ToArray(
       _span_cached_byte_size_, target);
-  }
-  for (int i = 0, n = this->span_size(); i < n; i++) {
     target = ::google::protobuf::internal::WireFormatLite::
-      WriteInt32NoTagToArray(this->span(i), target);
+      WriteInt32NoTagToArray(this->span_, target);
   }
 
   // optional string leading_comments = 3;
@@ -15122,10 +15114,8 @@ void GeneratedCodeInfo_Annotation::SerializeWithCachedSizes(
       target);
     target = ::google::protobuf::io::CodedOutputStream::WriteVarint32ToArray(
       _path_cached_byte_size_, target);
-  }
-  for (int i = 0, n = this->path_size(); i < n; i++) {
     target = ::google::protobuf::internal::WireFormatLite::
-      WriteInt32NoTagToArray(this->path(i), target);
+      WriteInt32NoTagToArray(this->path_, target);
   }
 
   // optional string source_file = 2;
