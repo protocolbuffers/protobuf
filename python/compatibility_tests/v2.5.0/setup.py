@@ -64,7 +64,7 @@ if __name__ == '__main__':
       url='https://developers.google.com/protocol-buffers/',
       maintainer='protobuf@googlegroups.com',
       maintainer_email='protobuf@googlegroups.com',
-      license='New BSD License',
+      license='3-Clause BSD License',
       classifiers=[
         "Programming Language :: Python",
         "Programming Language :: Python :: 2",

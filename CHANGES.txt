@@ -1381,7 +1381,7 @@
 2008-09-29 version 2.0.2:
 
   General
-  * License changed from Apache 2.0 to New BSD.
+  * License changed from Apache 2.0 to 3-Clause BSD.
   * It is now possible to define custom "options", which are basically
     annotations which may be placed on definitions in a .proto file.
     For example, you might define a field option called "foo" like so:
