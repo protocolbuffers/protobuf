@@ -1004,8 +1004,8 @@ bool FileDescriptorSet::MergePartialFromCodedStream(
     switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
       // repeated .google.protobuf.FileDescriptorProto file = 1;
       case 1: {
-        if (static_cast<::google::protobuf::uint8>(tag) ==
-            static_cast<::google::protobuf::uint8>(10u)) {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(10u)) {
           DO_(input->IncrementRecursionDepth());
           DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtualNoRecursionDepth(
                 input, add_file()));
@@ -1351,8 +1351,8 @@ bool FileDescriptorProto::MergePartialFromCodedStream(
     switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
       // optional string name = 1;
       case 1: {
-        if (static_cast<::google::protobuf::uint8>(tag) ==
-            static_cast<::google::protobuf::uint8>(10u)) {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(10u)) {
           DO_(::google::protobuf::internal::WireFormatLite::ReadString(
                 input, this->mutable_name()));
           ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
@@ -1367,8 +1367,8 @@ bool FileDescriptorProto::MergePartialFromCodedStream(
 
       // optional string package = 2;
       case 2: {
-        if (static_cast<::google::protobuf::uint8>(tag) ==
-            static_cast<::google::protobuf::uint8>(18u)) {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(18u)) {
           DO_(::google::protobuf::internal::WireFormatLite::ReadString(
                 input, this->mutable_package()));
           ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
@@ -1383,8 +1383,8 @@ bool FileDescriptorProto::MergePartialFromCodedStream(
 
       // repeated string dependency = 3;
       case 3: {
-        if (static_cast<::google::protobuf::uint8>(tag) ==
-            static_cast<::google::protobuf::uint8>(26u)) {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(26u)) {
           DO_(::google::protobuf::internal::WireFormatLite::ReadString(
                 input, this->add_dependency()));
           ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
@@ -1400,8 +1400,8 @@ bool FileDescriptorProto::MergePartialFromCodedStream(
 
       // repeated .google.protobuf.DescriptorProto message_type = 4;
       case 4: {
-        if (static_cast<::google::protobuf::uint8>(tag) ==
-            static_cast<::google::protobuf::uint8>(34u)) {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(34u)) {
           DO_(input->IncrementRecursionDepth());
           DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtualNoRecursionDepth(
                 input, add_message_type()));
@@ -1414,8 +1414,8 @@ bool FileDescriptorProto::MergePartialFromCodedStream(
 
       // repeated .google.protobuf.EnumDescriptorProto enum_type = 5;
       case 5: {
-        if (static_cast<::google::protobuf::uint8>(tag) ==
-            static_cast<::google::protobuf::uint8>(42u)) {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(42u)) {
           DO_(input->IncrementRecursionDepth());
           DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtualNoRecursionDepth(
                 input, add_enum_type()));
@@ -1428,8 +1428,8 @@ bool FileDescriptorProto::MergePartialFromCodedStream(
 
       // repeated .google.protobuf.ServiceDescriptorProto service = 6;
       case 6: {
-        if (static_cast<::google::protobuf::uint8>(tag) ==
-            static_cast<::google::protobuf::uint8>(50u)) {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(50u)) {
           DO_(input->IncrementRecursionDepth());
           DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtualNoRecursionDepth(
                 input, add_service()));
@@ -1442,8 +1442,8 @@ bool FileDescriptorProto::MergePartialFromCodedStream(
 
       // repeated .google.protobuf.FieldDescriptorProto extension = 7;
       case 7: {
-        if (static_cast<::google::protobuf::uint8>(tag) ==
-            static_cast<::google::protobuf::uint8>(58u)) {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(58u)) {
           DO_(input->IncrementRecursionDepth());
           DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtualNoRecursionDepth(
                 input, add_extension()));
@@ -1456,8 +1456,8 @@ bool FileDescriptorProto::MergePartialFromCodedStream(
 
       // optional .google.protobuf.FileOptions options = 8;
       case 8: {
-        if (static_cast<::google::protobuf::uint8>(tag) ==
-            static_cast<::google::protobuf::uint8>(66u)) {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(66u)) {
           DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtual(
                input, mutable_options()));
         } else {
@@ -1468,8 +1468,8 @@ bool FileDescriptorProto::MergePartialFromCodedStream(
 
       // optional .google.protobuf.SourceCodeInfo source_code_info = 9;
       case 9: {
-        if (static_cast<::google::protobuf::uint8>(tag) ==
-            static_cast<::google::protobuf::uint8>(74u)) {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(74u)) {
           DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtual(
                input, mutable_source_code_info()));
         } else {
@@ -1480,13 +1480,13 @@ bool FileDescriptorProto::MergePartialFromCodedStream(
 
       // repeated int32 public_dependency = 10;
       case 10: {
-        if (static_cast<::google::protobuf::uint8>(tag) ==
-            static_cast<::google::protobuf::uint8>(80u)) {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(80u)) {
           DO_((::google::protobuf::internal::WireFormatLite::ReadRepeatedPrimitive<
                    ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
                  1, 80u, input, this->mutable_public_dependency())));
-        } else if (static_cast<::google::protobuf::uint8>(tag) ==
-                   static_cast<::google::protobuf::uint8>(82u)) {
+        } else if (static_cast< ::google::protobuf::uint8>(tag) ==
+                   static_cast< ::google::protobuf::uint8>(82u)) {
           DO_((::google::protobuf::internal::WireFormatLite::ReadPackedPrimitiveNoInline<
                    ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
                  input, this->mutable_public_dependency())));
@@ -1498,13 +1498,13 @@ bool FileDescriptorProto::MergePartialFromCodedStream(
 
       // repeated int32 weak_dependency = 11;
       case 11: {
-        if (static_cast<::google::protobuf::uint8>(tag) ==
-            static_cast<::google::protobuf::uint8>(88u)) {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(88u)) {
           DO_((::google::protobuf::internal::WireFormatLite::ReadRepeatedPrimitive<
                    ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
                  1, 88u, input, this->mutable_weak_dependency())));
-        } else if (static_cast<::google::protobuf::uint8>(tag) ==
-                   static_cast<::google::protobuf::uint8>(90u)) {
+        } else if (static_cast< ::google::protobuf::uint8>(tag) ==
+                   static_cast< ::google::protobuf::uint8>(90u)) {
           DO_((::google::protobuf::internal::WireFormatLite::ReadPackedPrimitiveNoInline<
                    ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
                  input, this->mutable_weak_dependency())));
@@ -1516,8 +1516,8 @@ bool FileDescriptorProto::MergePartialFromCodedStream(
 
       // optional string syntax = 12;
       case 12: {
-        if (static_cast<::google::protobuf::uint8>(tag) ==
-            static_cast<::google::protobuf::uint8>(98u)) {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(98u)) {
           DO_(::google::protobuf::internal::WireFormatLite::ReadString(
                 input, this->mutable_syntax()));
           ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
@@ -2596,8 +2596,8 @@ bool DescriptorProto_ExtensionRange::MergePartialFromCodedStream(
     switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
       // optional int32 start = 1;
       case 1: {
-        if (static_cast<::google::protobuf::uint8>(tag) ==
-            static_cast<::google::protobuf::uint8>(8u)) {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(8u)) {
           set_has_start();
           DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
                    ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
@@ -2610,8 +2610,8 @@ bool DescriptorProto_ExtensionRange::MergePartialFromCodedStream(
 
       // optional int32 end = 2;
       case 2: {
-        if (static_cast<::google::protobuf::uint8>(tag) ==
-            static_cast<::google::protobuf::uint8>(16u)) {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(16u)) {
           set_has_end();
           DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
                    ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
@@ -2921,8 +2921,8 @@ bool DescriptorProto_ReservedRange::MergePartialFromCodedStream(
     switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
       // optional int32 start = 1;
       case 1: {
-        if (static_cast<::google::protobuf::uint8>(tag) ==
-            static_cast<::google::protobuf::uint8>(8u)) {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(8u)) {
           set_has_start();
           DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
                    ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
@@ -2935,8 +2935,8 @@ bool DescriptorProto_ReservedRange::MergePartialFromCodedStream(
 
       // optional int32 end = 2;
       case 2: {
-        if (static_cast<::google::protobuf::uint8>(tag) ==
-            static_cast<::google::protobuf::uint8>(16u)) {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(16u)) {
           set_has_end();
           DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
                    ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
@@ -3286,8 +3286,8 @@ bool DescriptorProto::MergePartialFromCodedStream(
     switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
       // optional string name = 1;
       case 1: {
-        if (static_cast<::google::protobuf::uint8>(tag) ==
-            static_cast<::google::protobuf::uint8>(10u)) {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(10u)) {
           DO_(::google::protobuf::internal::WireFormatLite::ReadString(
                 input, this->mutable_name()));
           ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
@@ -3302,8 +3302,8 @@ bool DescriptorProto::MergePartialFromCodedStream(
 
       // repeated .google.protobuf.FieldDescriptorProto field = 2;
       case 2: {
-        if (static_cast<::google::protobuf::uint8>(tag) ==
-            static_cast<::google::protobuf::uint8>(18u)) {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(18u)) {
           DO_(input->IncrementRecursionDepth());
           DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtualNoRecursionDepth(
                 input, add_field()));
@@ -3316,8 +3316,8 @@ bool DescriptorProto::MergePartialFromCodedStream(
 
       // repeated .google.protobuf.DescriptorProto nested_type = 3;
       case 3: {
-        if (static_cast<::google::protobuf::uint8>(tag) ==
-            static_cast<::google::protobuf::uint8>(26u)) {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(26u)) {
           DO_(input->IncrementRecursionDepth());
           DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtualNoRecursionDepth(
                 input, add_nested_type()));
@@ -3330,8 +3330,8 @@ bool DescriptorProto::MergePartialFromCodedStream(
 
       // repeated .google.protobuf.EnumDescriptorProto enum_type = 4;
       case 4: {
-        if (static_cast<::google::protobuf::uint8>(tag) ==
-            static_cast<::google::protobuf::uint8>(34u)) {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(34u)) {
           DO_(input->IncrementRecursionDepth());
           DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtualNoRecursionDepth(
                 input, add_enum_type()));
@@ -3344,8 +3344,8 @@ bool DescriptorProto::MergePartialFromCodedStream(
 
       // repeated .google.protobuf.DescriptorProto.ExtensionRange extension_range = 5;
       case 5: {
-        if (static_cast<::google::protobuf::uint8>(tag) ==
-            static_cast<::google::protobuf::uint8>(42u)) {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(42u)) {
           DO_(input->IncrementRecursionDepth());
           DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtualNoRecursionDepth(
                 input, add_extension_range()));
@@ -3358,8 +3358,8 @@ bool DescriptorProto::MergePartialFromCodedStream(
 
       // repeated .google.protobuf.FieldDescriptorProto extension = 6;
       case 6: {
-        if (static_cast<::google::protobuf::uint8>(tag) ==
-            static_cast<::google::protobuf::uint8>(50u)) {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(50u)) {
           DO_(input->IncrementRecursionDepth());
           DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtualNoRecursionDepth(
                 input, add_extension()));
@@ -3372,8 +3372,8 @@ bool DescriptorProto::MergePartialFromCodedStream(
 
       // optional .google.protobuf.MessageOptions options = 7;
       case 7: {
-        if (static_cast<::google::protobuf::uint8>(tag) ==
-            static_cast<::google::protobuf::uint8>(58u)) {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(58u)) {
           DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtual(
                input, mutable_options()));
         } else {
@@ -3384,8 +3384,8 @@ bool DescriptorProto::MergePartialFromCodedStream(
 
       // repeated .google.protobuf.OneofDescriptorProto oneof_decl = 8;
       case 8: {
-        if (static_cast<::google::protobuf::uint8>(tag) ==
-            static_cast<::google::protobuf::uint8>(66u)) {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(66u)) {
           DO_(input->IncrementRecursionDepth());
           DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtualNoRecursionDepth(
                 input, add_oneof_decl()));
@@ -3398,8 +3398,8 @@ bool DescriptorProto::MergePartialFromCodedStream(
 
       // repeated .google.protobuf.DescriptorProto.ReservedRange reserved_range = 9;
       case 9: {
-        if (static_cast<::google::protobuf::uint8>(tag) ==
-            static_cast<::google::protobuf::uint8>(74u)) {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(74u)) {
           DO_(input->IncrementRecursionDepth());
           DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtualNoRecursionDepth(
                 input, add_reserved_range()));
@@ -3412,8 +3412,8 @@ bool DescriptorProto::MergePartialFromCodedStream(
 
       // repeated string reserved_name = 10;
       case 10: {
-        if (static_cast<::google::protobuf::uint8>(tag) ==
-            static_cast<::google::protobuf::uint8>(82u)) {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(82u)) {
           DO_(::google::protobuf::internal::WireFormatLite::ReadString(
                 input, this->add_reserved_name()));
           ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
@@ -4375,8 +4375,8 @@ bool FieldDescriptorProto::MergePartialFromCodedStream(
     switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
       // optional string name = 1;
       case 1: {
-        if (static_cast<::google::protobuf::uint8>(tag) ==
-            static_cast<::google::protobuf::uint8>(10u)) {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(10u)) {
           DO_(::google::protobuf::internal::WireFormatLite::ReadString(
                 input, this->mutable_name()));
           ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
@@ -4391,8 +4391,8 @@ bool FieldDescriptorProto::MergePartialFromCodedStream(
 
       // optional string extendee = 2;
       case 2: {
-        if (static_cast<::google::protobuf::uint8>(tag) ==
-            static_cast<::google::protobuf::uint8>(18u)) {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(18u)) {
           DO_(::google::protobuf::internal::WireFormatLite::ReadString(
                 input, this->mutable_extendee()));
           ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
@@ -4407,8 +4407,8 @@ bool FieldDescriptorProto::MergePartialFromCodedStream(
 
       // optional int32 number = 3;
       case 3: {
-        if (static_cast<::google::protobuf::uint8>(tag) ==
-            static_cast<::google::protobuf::uint8>(24u)) {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(24u)) {
           set_has_number();
           DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
                    ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
@@ -4421,8 +4421,8 @@ bool FieldDescriptorProto::MergePartialFromCodedStream(
 
       // optional .google.protobuf.FieldDescriptorProto.Label label = 4;
       case 4: {
-        if (static_cast<::google::protobuf::uint8>(tag) ==
-            static_cast<::google::protobuf::uint8>(32u)) {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(32u)) {
           int value;
           DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
                    int, ::google::protobuf::internal::WireFormatLite::TYPE_ENUM>(
@@ -4440,8 +4440,8 @@ bool FieldDescriptorProto::MergePartialFromCodedStream(
 
       // optional .google.protobuf.FieldDescriptorProto.Type type = 5;
       case 5: {
-        if (static_cast<::google::protobuf::uint8>(tag) ==
-            static_cast<::google::protobuf::uint8>(40u)) {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(40u)) {
           int value;
           DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
                    int, ::google::protobuf::internal::WireFormatLite::TYPE_ENUM>(
@@ -4459,8 +4459,8 @@ bool FieldDescriptorProto::MergePartialFromCodedStream(
 
       // optional string type_name = 6;
       case 6: {
-        if (static_cast<::google::protobuf::uint8>(tag) ==
-            static_cast<::google::protobuf::uint8>(50u)) {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(50u)) {
           DO_(::google::protobuf::internal::WireFormatLite::ReadString(
                 input, this->mutable_type_name()));
           ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
@@ -4475,8 +4475,8 @@ bool FieldDescriptorProto::MergePartialFromCodedStream(
 
       // optional string default_value = 7;
       case 7: {
-        if (static_cast<::google::protobuf::uint8>(tag) ==
-            static_cast<::google::protobuf::uint8>(58u)) {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(58u)) {
           DO_(::google::protobuf::internal::WireFormatLite::ReadString(
                 input, this->mutable_default_value()));
           ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
@@ -4491,8 +4491,8 @@ bool FieldDescriptorProto::MergePartialFromCodedStream(
 
       // optional .google.protobuf.FieldOptions options = 8;
       case 8: {
-        if (static_cast<::google::protobuf::uint8>(tag) ==
-            static_cast<::google::protobuf::uint8>(66u)) {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(66u)) {
           DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtual(
                input, mutable_options()));
         } else {
@@ -4503,8 +4503,8 @@ bool FieldDescriptorProto::MergePartialFromCodedStream(
 
       // optional int32 oneof_index = 9;
       case 9: {
-        if (static_cast<::google::protobuf::uint8>(tag) ==
-            static_cast<::google::protobuf::uint8>(72u)) {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(72u)) {
           set_has_oneof_index();
           DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
                    ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
@@ -4517,8 +4517,8 @@ bool FieldDescriptorProto::MergePartialFromCodedStream(
 
       // optional string json_name = 10;
       case 10: {
-        if (static_cast<::google::protobuf::uint8>(tag) ==
-            static_cast<::google::protobuf::uint8>(82u)) {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(82u)) {
           DO_(::google::protobuf::internal::WireFormatLite::ReadString(
                 input, this->mutable_json_name()));
           ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
@@ -5491,8 +5491,8 @@ bool OneofDescriptorProto::MergePartialFromCodedStream(
     switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
       // optional string name = 1;
       case 1: {
-        if (static_cast<::google::protobuf::uint8>(tag) ==
-            static_cast<::google::protobuf::uint8>(10u)) {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(10u)) {
           DO_(::google::protobuf::internal::WireFormatLite::ReadString(
                 input, this->mutable_name()));
           ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
@@ -5507,8 +5507,8 @@ bool OneofDescriptorProto::MergePartialFromCodedStream(
 
       // optional .google.protobuf.OneofOptions options = 2;
       case 2: {
-        if (static_cast<::google::protobuf::uint8>(tag) ==
-            static_cast<::google::protobuf::uint8>(18u)) {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(18u)) {
           DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtual(
                input, mutable_options()));
         } else {
@@ -5912,8 +5912,8 @@ bool EnumDescriptorProto::MergePartialFromCodedStream(
     switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
       // optional string name = 1;
       case 1: {
-        if (static_cast<::google::protobuf::uint8>(tag) ==
-            static_cast<::google::protobuf::uint8>(10u)) {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(10u)) {
           DO_(::google::protobuf::internal::WireFormatLite::ReadString(
                 input, this->mutable_name()));
           ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
@@ -5928,8 +5928,8 @@ bool EnumDescriptorProto::MergePartialFromCodedStream(
 
       // repeated .google.protobuf.EnumValueDescriptorProto value = 2;
       case 2: {
-        if (static_cast<::google::protobuf::uint8>(tag) ==
-            static_cast<::google::protobuf::uint8>(18u)) {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(18u)) {
           DO_(input->IncrementRecursionDepth());
           DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtualNoRecursionDepth(
                 input, add_value()));
@@ -5942,8 +5942,8 @@ bool EnumDescriptorProto::MergePartialFromCodedStream(
 
       // optional .google.protobuf.EnumOptions options = 3;
       case 3: {
-        if (static_cast<::google::protobuf::uint8>(tag) ==
-            static_cast<::google::protobuf::uint8>(26u)) {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(26u)) {
           DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtual(
                input, mutable_options()));
         } else {
@@ -6405,8 +6405,8 @@ bool EnumValueDescriptorProto::MergePartialFromCodedStream(
     switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
       // optional string name = 1;
       case 1: {
-        if (static_cast<::google::protobuf::uint8>(tag) ==
-            static_cast<::google::protobuf::uint8>(10u)) {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(10u)) {
           DO_(::google::protobuf::internal::WireFormatLite::ReadString(
                 input, this->mutable_name()));
           ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
@@ -6421,8 +6421,8 @@ bool EnumValueDescriptorProto::MergePartialFromCodedStream(
 
       // optional int32 number = 2;
       case 2: {
-        if (static_cast<::google::protobuf::uint8>(tag) ==
-            static_cast<::google::protobuf::uint8>(16u)) {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(16u)) {
           set_has_number();
           DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
                    ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
@@ -6435,8 +6435,8 @@ bool EnumValueDescriptorProto::MergePartialFromCodedStream(
 
       // optional .google.protobuf.EnumValueOptions options = 3;
       case 3: {
-        if (static_cast<::google::protobuf::uint8>(tag) ==
-            static_cast<::google::protobuf::uint8>(26u)) {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(26u)) {
           DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtual(
                input, mutable_options()));
         } else {
@@ -6885,8 +6885,8 @@ bool ServiceDescriptorProto::MergePartialFromCodedStream(
     switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
       // optional string name = 1;
       case 1: {
-        if (static_cast<::google::protobuf::uint8>(tag) ==
-            static_cast<::google::protobuf::uint8>(10u)) {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(10u)) {
           DO_(::google::protobuf::internal::WireFormatLite::ReadString(
                 input, this->mutable_name()));
           ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
@@ -6901,8 +6901,8 @@ bool ServiceDescriptorProto::MergePartialFromCodedStream(
 
       // repeated .google.protobuf.MethodDescriptorProto method = 2;
       case 2: {
-        if (static_cast<::google::protobuf::uint8>(tag) ==
-            static_cast<::google::protobuf::uint8>(18u)) {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(18u)) {
           DO_(input->IncrementRecursionDepth());
           DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtualNoRecursionDepth(
                 input, add_method()));
@@ -6915,8 +6915,8 @@ bool ServiceDescriptorProto::MergePartialFromCodedStream(
 
       // optional .google.protobuf.ServiceOptions options = 3;
       case 3: {
-        if (static_cast<::google::protobuf::uint8>(tag) ==
-            static_cast<::google::protobuf::uint8>(26u)) {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(26u)) {
           DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtual(
                input, mutable_options()));
         } else {
@@ -7406,8 +7406,8 @@ bool MethodDescriptorProto::MergePartialFromCodedStream(
     switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
       // optional string name = 1;
       case 1: {
-        if (static_cast<::google::protobuf::uint8>(tag) ==
-            static_cast<::google::protobuf::uint8>(10u)) {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(10u)) {
           DO_(::google::protobuf::internal::WireFormatLite::ReadString(
                 input, this->mutable_name()));
           ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
@@ -7422,8 +7422,8 @@ bool MethodDescriptorProto::MergePartialFromCodedStream(
 
       // optional string input_type = 2;
       case 2: {
-        if (static_cast<::google::protobuf::uint8>(tag) ==
-            static_cast<::google::protobuf::uint8>(18u)) {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(18u)) {
           DO_(::google::protobuf::internal::WireFormatLite::ReadString(
                 input, this->mutable_input_type()));
           ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
@@ -7438,8 +7438,8 @@ bool MethodDescriptorProto::MergePartialFromCodedStream(
 
       // optional string output_type = 3;
       case 3: {
-        if (static_cast<::google::protobuf::uint8>(tag) ==
-            static_cast<::google::protobuf::uint8>(26u)) {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(26u)) {
           DO_(::google::protobuf::internal::WireFormatLite::ReadString(
                 input, this->mutable_output_type()));
           ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
@@ -7454,8 +7454,8 @@ bool MethodDescriptorProto::MergePartialFromCodedStream(
 
       // optional .google.protobuf.MethodOptions options = 4;
       case 4: {
-        if (static_cast<::google::protobuf::uint8>(tag) ==
-            static_cast<::google::protobuf::uint8>(34u)) {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(34u)) {
           DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtual(
                input, mutable_options()));
         } else {
@@ -7466,8 +7466,8 @@ bool MethodDescriptorProto::MergePartialFromCodedStream(
 
       // optional bool client_streaming = 5 [default = false];
       case 5: {
-        if (static_cast<::google::protobuf::uint8>(tag) ==
-            static_cast<::google::protobuf::uint8>(40u)) {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(40u)) {
           set_has_client_streaming();
           DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
                    bool, ::google::protobuf::internal::WireFormatLite::TYPE_BOOL>(
@@ -7480,8 +7480,8 @@ bool MethodDescriptorProto::MergePartialFromCodedStream(
 
       // optional bool server_streaming = 6 [default = false];
       case 6: {
-        if (static_cast<::google::protobuf::uint8>(tag) ==
-            static_cast<::google::protobuf::uint8>(48u)) {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(48u)) {
           set_has_server_streaming();
           DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
                    bool, ::google::protobuf::internal::WireFormatLite::TYPE_BOOL>(
@@ -8230,8 +8230,8 @@ bool FileOptions::MergePartialFromCodedStream(
     switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
       // optional string java_package = 1;
       case 1: {
-        if (static_cast<::google::protobuf::uint8>(tag) ==
-            static_cast<::google::protobuf::uint8>(10u)) {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(10u)) {
           DO_(::google::protobuf::internal::WireFormatLite::ReadString(
                 input, this->mutable_java_package()));
           ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
@@ -8246,8 +8246,8 @@ bool FileOptions::MergePartialFromCodedStream(
 
       // optional string java_outer_classname = 8;
       case 8: {
-        if (static_cast<::google::protobuf::uint8>(tag) ==
-            static_cast<::google::protobuf::uint8>(66u)) {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(66u)) {
           DO_(::google::protobuf::internal::WireFormatLite::ReadString(
                 input, this->mutable_java_outer_classname()));
           ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
@@ -8262,8 +8262,8 @@ bool FileOptions::MergePartialFromCodedStream(
 
       // optional .google.protobuf.FileOptions.OptimizeMode optimize_for = 9 [default = SPEED];
       case 9: {
-        if (static_cast<::google::protobuf::uint8>(tag) ==
-            static_cast<::google::protobuf::uint8>(72u)) {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(72u)) {
           int value;
           DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
                    int, ::google::protobuf::internal::WireFormatLite::TYPE_ENUM>(
@@ -8281,8 +8281,8 @@ bool FileOptions::MergePartialFromCodedStream(
 
       // optional bool java_multiple_files = 10 [default = false];
       case 10: {
-        if (static_cast<::google::protobuf::uint8>(tag) ==
-            static_cast<::google::protobuf::uint8>(80u)) {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(80u)) {
           set_has_java_multiple_files();
           DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
                    bool, ::google::protobuf::internal::WireFormatLite::TYPE_BOOL>(
@@ -8295,8 +8295,8 @@ bool FileOptions::MergePartialFromCodedStream(
 
       // optional string go_package = 11;
       case 11: {
-        if (static_cast<::google::protobuf::uint8>(tag) ==
-            static_cast<::google::protobuf::uint8>(90u)) {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(90u)) {
           DO_(::google::protobuf::internal::WireFormatLite::ReadString(
                 input, this->mutable_go_package()));
           ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
@@ -8311,8 +8311,8 @@ bool FileOptions::MergePartialFromCodedStream(
 
       // optional bool cc_generic_services = 16 [default = false];
       case 16: {
-        if (static_cast<::google::protobuf::uint8>(tag) ==
-            static_cast<::google::protobuf::uint8>(128u)) {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(128u)) {
           set_has_cc_generic_services();
           DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
                    bool, ::google::protobuf::internal::WireFormatLite::TYPE_BOOL>(
@@ -8325,8 +8325,8 @@ bool FileOptions::MergePartialFromCodedStream(
 
       // optional bool java_generic_services = 17 [default = false];
       case 17: {
-        if (static_cast<::google::protobuf::uint8>(tag) ==
-            static_cast<::google::protobuf::uint8>(136u)) {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(136u)) {
           set_has_java_generic_services();
           DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
                    bool, ::google::protobuf::internal::WireFormatLite::TYPE_BOOL>(
@@ -8339,8 +8339,8 @@ bool FileOptions::MergePartialFromCodedStream(
 
       // optional bool py_generic_services = 18 [default = false];
       case 18: {
-        if (static_cast<::google::protobuf::uint8>(tag) ==
-            static_cast<::google::protobuf::uint8>(144u)) {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(144u)) {
           set_has_py_generic_services();
           DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
                    bool, ::google::protobuf::internal::WireFormatLite::TYPE_BOOL>(
@@ -8353,8 +8353,8 @@ bool FileOptions::MergePartialFromCodedStream(
 
       // optional bool java_generate_equals_and_hash = 20 [deprecated = true];
       case 20: {
-        if (static_cast<::google::protobuf::uint8>(tag) ==
-            static_cast<::google::protobuf::uint8>(160u)) {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(160u)) {
           set_has_java_generate_equals_and_hash();
           DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
                    bool, ::google::protobuf::internal::WireFormatLite::TYPE_BOOL>(
@@ -8367,8 +8367,8 @@ bool FileOptions::MergePartialFromCodedStream(
 
       // optional bool deprecated = 23 [default = false];
       case 23: {
-        if (static_cast<::google::protobuf::uint8>(tag) ==
-            static_cast<::google::protobuf::uint8>(184u)) {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(184u)) {
           set_has_deprecated();
           DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
                    bool, ::google::protobuf::internal::WireFormatLite::TYPE_BOOL>(
@@ -8381,8 +8381,8 @@ bool FileOptions::MergePartialFromCodedStream(
 
       // optional bool java_string_check_utf8 = 27 [default = false];
       case 27: {
-        if (static_cast<::google::protobuf::uint8>(tag) ==
-            static_cast<::google::protobuf::uint8>(216u)) {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(216u)) {
           set_has_java_string_check_utf8();
           DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
                    bool, ::google::protobuf::internal::WireFormatLite::TYPE_BOOL>(
@@ -8395,8 +8395,8 @@ bool FileOptions::MergePartialFromCodedStream(
 
       // optional bool cc_enable_arenas = 31 [default = false];
       case 31: {
-        if (static_cast<::google::protobuf::uint8>(tag) ==
-            static_cast<::google::protobuf::uint8>(248u)) {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(248u)) {
           set_has_cc_enable_arenas();
           DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
                    bool, ::google::protobuf::internal::WireFormatLite::TYPE_BOOL>(
@@ -8409,8 +8409,8 @@ bool FileOptions::MergePartialFromCodedStream(
 
       // optional string objc_class_prefix = 36;
       case 36: {
-        if (static_cast<::google::protobuf::uint8>(tag) ==
-            static_cast<::google::protobuf::uint8>(290u)) {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(290u)) {
           DO_(::google::protobuf::internal::WireFormatLite::ReadString(
                 input, this->mutable_objc_class_prefix()));
           ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
@@ -8425,8 +8425,8 @@ bool FileOptions::MergePartialFromCodedStream(
 
       // optional string csharp_namespace = 37;
       case 37: {
-        if (static_cast<::google::protobuf::uint8>(tag) ==
-            static_cast<::google::protobuf::uint8>(298u)) {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(298u)) {
           DO_(::google::protobuf::internal::WireFormatLite::ReadString(
                 input, this->mutable_csharp_namespace()));
           ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
@@ -8441,8 +8441,8 @@ bool FileOptions::MergePartialFromCodedStream(
 
       // optional string swift_prefix = 39;
       case 39: {
-        if (static_cast<::google::protobuf::uint8>(tag) ==
-            static_cast<::google::protobuf::uint8>(314u)) {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(314u)) {
           DO_(::google::protobuf::internal::WireFormatLite::ReadString(
                 input, this->mutable_swift_prefix()));
           ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
@@ -8457,8 +8457,8 @@ bool FileOptions::MergePartialFromCodedStream(
 
       // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
       case 999: {
-        if (static_cast<::google::protobuf::uint8>(tag) ==
-            static_cast<::google::protobuf::uint8>(7994u)) {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(7994u)) {
           DO_(input->IncrementRecursionDepth());
           DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtualNoRecursionDepth(
                 input, add_uninterpreted_option()));
@@ -9728,8 +9728,8 @@ bool MessageOptions::MergePartialFromCodedStream(
     switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
       // optional bool message_set_wire_format = 1 [default = false];
       case 1: {
-        if (static_cast<::google::protobuf::uint8>(tag) ==
-            static_cast<::google::protobuf::uint8>(8u)) {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(8u)) {
           set_has_message_set_wire_format();
           DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
                    bool, ::google::protobuf::internal::WireFormatLite::TYPE_BOOL>(
@@ -9742,8 +9742,8 @@ bool MessageOptions::MergePartialFromCodedStream(
 
       // optional bool no_standard_descriptor_accessor = 2 [default = false];
       case 2: {
-        if (static_cast<::google::protobuf::uint8>(tag) ==
-            static_cast<::google::protobuf::uint8>(16u)) {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(16u)) {
           set_has_no_standard_descriptor_accessor();
           DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
                    bool, ::google::protobuf::internal::WireFormatLite::TYPE_BOOL>(
@@ -9756,8 +9756,8 @@ bool MessageOptions::MergePartialFromCodedStream(
 
       // optional bool deprecated = 3 [default = false];
       case 3: {
-        if (static_cast<::google::protobuf::uint8>(tag) ==
-            static_cast<::google::protobuf::uint8>(24u)) {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(24u)) {
           set_has_deprecated();
           DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
                    bool, ::google::protobuf::internal::WireFormatLite::TYPE_BOOL>(
@@ -9770,8 +9770,8 @@ bool MessageOptions::MergePartialFromCodedStream(
 
       // optional bool map_entry = 7;
       case 7: {
-        if (static_cast<::google::protobuf::uint8>(tag) ==
-            static_cast<::google::protobuf::uint8>(56u)) {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(56u)) {
           set_has_map_entry();
           DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
                    bool, ::google::protobuf::internal::WireFormatLite::TYPE_BOOL>(
@@ -9784,8 +9784,8 @@ bool MessageOptions::MergePartialFromCodedStream(
 
       // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
       case 999: {
-        if (static_cast<::google::protobuf::uint8>(tag) ==
-            static_cast<::google::protobuf::uint8>(7994u)) {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(7994u)) {
           DO_(input->IncrementRecursionDepth());
           DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtualNoRecursionDepth(
                 input, add_uninterpreted_option()));
@@ -10264,8 +10264,8 @@ bool FieldOptions::MergePartialFromCodedStream(
     switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
       // optional .google.protobuf.FieldOptions.CType ctype = 1 [default = STRING];
       case 1: {
-        if (static_cast<::google::protobuf::uint8>(tag) ==
-            static_cast<::google::protobuf::uint8>(8u)) {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(8u)) {
           int value;
           DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
                    int, ::google::protobuf::internal::WireFormatLite::TYPE_ENUM>(
@@ -10283,8 +10283,8 @@ bool FieldOptions::MergePartialFromCodedStream(
 
       // optional bool packed = 2;
       case 2: {
-        if (static_cast<::google::protobuf::uint8>(tag) ==
-            static_cast<::google::protobuf::uint8>(16u)) {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(16u)) {
           set_has_packed();
           DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
                    bool, ::google::protobuf::internal::WireFormatLite::TYPE_BOOL>(
@@ -10297,8 +10297,8 @@ bool FieldOptions::MergePartialFromCodedStream(
 
       // optional bool deprecated = 3 [default = false];
       case 3: {
-        if (static_cast<::google::protobuf::uint8>(tag) ==
-            static_cast<::google::protobuf::uint8>(24u)) {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(24u)) {
           set_has_deprecated();
           DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
                    bool, ::google::protobuf::internal::WireFormatLite::TYPE_BOOL>(
@@ -10311,8 +10311,8 @@ bool FieldOptions::MergePartialFromCodedStream(
 
       // optional bool lazy = 5 [default = false];
       case 5: {
-        if (static_cast<::google::protobuf::uint8>(tag) ==
-            static_cast<::google::protobuf::uint8>(40u)) {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(40u)) {
           set_has_lazy();
           DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
                    bool, ::google::protobuf::internal::WireFormatLite::TYPE_BOOL>(
@@ -10325,8 +10325,8 @@ bool FieldOptions::MergePartialFromCodedStream(
 
       // optional .google.protobuf.FieldOptions.JSType jstype = 6 [default = JS_NORMAL];
       case 6: {
-        if (static_cast<::google::protobuf::uint8>(tag) ==
-            static_cast<::google::protobuf::uint8>(48u)) {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(48u)) {
           int value;
           DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
                    int, ::google::protobuf::internal::WireFormatLite::TYPE_ENUM>(
@@ -10344,8 +10344,8 @@ bool FieldOptions::MergePartialFromCodedStream(
 
       // optional bool weak = 10 [default = false];
       case 10: {
-        if (static_cast<::google::protobuf::uint8>(tag) ==
-            static_cast<::google::protobuf::uint8>(80u)) {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(80u)) {
           set_has_weak();
           DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
                    bool, ::google::protobuf::internal::WireFormatLite::TYPE_BOOL>(
@@ -10358,8 +10358,8 @@ bool FieldOptions::MergePartialFromCodedStream(
 
       // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
       case 999: {
-        if (static_cast<::google::protobuf::uint8>(tag) ==
-            static_cast<::google::protobuf::uint8>(7994u)) {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(7994u)) {
           DO_(input->IncrementRecursionDepth());
           DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtualNoRecursionDepth(
                 input, add_uninterpreted_option()));
@@ -10917,8 +10917,8 @@ bool OneofOptions::MergePartialFromCodedStream(
     switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
       // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
       case 999: {
-        if (static_cast<::google::protobuf::uint8>(tag) ==
-            static_cast<::google::protobuf::uint8>(7994u)) {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(7994u)) {
           DO_(input->IncrementRecursionDepth());
           DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtualNoRecursionDepth(
                 input, add_uninterpreted_option()));
@@ -11217,8 +11217,8 @@ bool EnumOptions::MergePartialFromCodedStream(
     switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
       // optional bool allow_alias = 2;
       case 2: {
-        if (static_cast<::google::protobuf::uint8>(tag) ==
-            static_cast<::google::protobuf::uint8>(16u)) {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(16u)) {
           set_has_allow_alias();
           DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
                    bool, ::google::protobuf::internal::WireFormatLite::TYPE_BOOL>(
@@ -11231,8 +11231,8 @@ bool EnumOptions::MergePartialFromCodedStream(
 
       // optional bool deprecated = 3 [default = false];
       case 3: {
-        if (static_cast<::google::protobuf::uint8>(tag) ==
-            static_cast<::google::protobuf::uint8>(24u)) {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(24u)) {
           set_has_deprecated();
           DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
                    bool, ::google::protobuf::internal::WireFormatLite::TYPE_BOOL>(
@@ -11245,8 +11245,8 @@ bool EnumOptions::MergePartialFromCodedStream(
 
       // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
       case 999: {
-        if (static_cast<::google::protobuf::uint8>(tag) ==
-            static_cast<::google::protobuf::uint8>(7994u)) {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(7994u)) {
           DO_(input->IncrementRecursionDepth());
           DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtualNoRecursionDepth(
                 input, add_uninterpreted_option()));
@@ -11628,8 +11628,8 @@ bool EnumValueOptions::MergePartialFromCodedStream(
     switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
       // optional bool deprecated = 1 [default = false];
       case 1: {
-        if (static_cast<::google::protobuf::uint8>(tag) ==
-            static_cast<::google::protobuf::uint8>(8u)) {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(8u)) {
           set_has_deprecated();
           DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
                    bool, ::google::protobuf::internal::WireFormatLite::TYPE_BOOL>(
@@ -11642,8 +11642,8 @@ bool EnumValueOptions::MergePartialFromCodedStream(
 
       // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
       case 999: {
-        if (static_cast<::google::protobuf::uint8>(tag) ==
-            static_cast<::google::protobuf::uint8>(7994u)) {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(7994u)) {
           DO_(input->IncrementRecursionDepth());
           DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtualNoRecursionDepth(
                 input, add_uninterpreted_option()));
@@ -11978,8 +11978,8 @@ bool ServiceOptions::MergePartialFromCodedStream(
     switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
       // optional bool deprecated = 33 [default = false];
       case 33: {
-        if (static_cast<::google::protobuf::uint8>(tag) ==
-            static_cast<::google::protobuf::uint8>(264u)) {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(264u)) {
           set_has_deprecated();
           DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
                    bool, ::google::protobuf::internal::WireFormatLite::TYPE_BOOL>(
@@ -11992,8 +11992,8 @@ bool ServiceOptions::MergePartialFromCodedStream(
 
       // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
       case 999: {
-        if (static_cast<::google::protobuf::uint8>(tag) ==
-            static_cast<::google::protobuf::uint8>(7994u)) {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(7994u)) {
           DO_(input->IncrementRecursionDepth());
           DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtualNoRecursionDepth(
                 input, add_uninterpreted_option()));
@@ -12335,8 +12335,8 @@ bool MethodOptions::MergePartialFromCodedStream(
     switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
       // optional bool deprecated = 33 [default = false];
       case 33: {
-        if (static_cast<::google::protobuf::uint8>(tag) ==
-            static_cast<::google::protobuf::uint8>(264u)) {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(264u)) {
           set_has_deprecated();
           DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
                    bool, ::google::protobuf::internal::WireFormatLite::TYPE_BOOL>(
@@ -12349,8 +12349,8 @@ bool MethodOptions::MergePartialFromCodedStream(
 
       // optional .google.protobuf.MethodOptions.IdempotencyLevel idempotency_level = 34 [default = IDEMPOTENCY_UNKNOWN];
       case 34: {
-        if (static_cast<::google::protobuf::uint8>(tag) ==
-            static_cast<::google::protobuf::uint8>(272u)) {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(272u)) {
           int value;
           DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
                    int, ::google::protobuf::internal::WireFormatLite::TYPE_ENUM>(
@@ -12368,8 +12368,8 @@ bool MethodOptions::MergePartialFromCodedStream(
 
       // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
       case 999: {
-        if (static_cast<::google::protobuf::uint8>(tag) ==
-            static_cast<::google::protobuf::uint8>(7994u)) {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(7994u)) {
           DO_(input->IncrementRecursionDepth());
           DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtualNoRecursionDepth(
                 input, add_uninterpreted_option()));
@@ -12761,8 +12761,8 @@ bool UninterpretedOption_NamePart::MergePartialFromCodedStream(
     switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
       // required string name_part = 1;
       case 1: {
-        if (static_cast<::google::protobuf::uint8>(tag) ==
-            static_cast<::google::protobuf::uint8>(10u)) {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(10u)) {
           DO_(::google::protobuf::internal::WireFormatLite::ReadString(
                 input, this->mutable_name_part()));
           ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
@@ -12777,8 +12777,8 @@ bool UninterpretedOption_NamePart::MergePartialFromCodedStream(
 
       // required bool is_extension = 2;
       case 2: {
-        if (static_cast<::google::protobuf::uint8>(tag) ==
-            static_cast<::google::protobuf::uint8>(16u)) {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(16u)) {
           set_has_is_extension();
           DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
                    bool, ::google::protobuf::internal::WireFormatLite::TYPE_BOOL>(
@@ -13192,8 +13192,8 @@ bool UninterpretedOption::MergePartialFromCodedStream(
     switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
       // repeated .google.protobuf.UninterpretedOption.NamePart name = 2;
       case 2: {
-        if (static_cast<::google::protobuf::uint8>(tag) ==
-            static_cast<::google::protobuf::uint8>(18u)) {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(18u)) {
           DO_(input->IncrementRecursionDepth());
           DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtualNoRecursionDepth(
                 input, add_name()));
@@ -13206,8 +13206,8 @@ bool UninterpretedOption::MergePartialFromCodedStream(
 
       // optional string identifier_value = 3;
       case 3: {
-        if (static_cast<::google::protobuf::uint8>(tag) ==
-            static_cast<::google::protobuf::uint8>(26u)) {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(26u)) {
           DO_(::google::protobuf::internal::WireFormatLite::ReadString(
                 input, this->mutable_identifier_value()));
           ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
@@ -13222,8 +13222,8 @@ bool UninterpretedOption::MergePartialFromCodedStream(
 
       // optional uint64 positive_int_value = 4;
       case 4: {
-        if (static_cast<::google::protobuf::uint8>(tag) ==
-            static_cast<::google::protobuf::uint8>(32u)) {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(32u)) {
           set_has_positive_int_value();
           DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
                    ::google::protobuf::uint64, ::google::protobuf::internal::WireFormatLite::TYPE_UINT64>(
@@ -13236,8 +13236,8 @@ bool UninterpretedOption::MergePartialFromCodedStream(
 
       // optional int64 negative_int_value = 5;
       case 5: {
-        if (static_cast<::google::protobuf::uint8>(tag) ==
-            static_cast<::google::protobuf::uint8>(40u)) {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(40u)) {
           set_has_negative_int_value();
           DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
                    ::google::protobuf::int64, ::google::protobuf::internal::WireFormatLite::TYPE_INT64>(
@@ -13250,8 +13250,8 @@ bool UninterpretedOption::MergePartialFromCodedStream(
 
       // optional double double_value = 6;
       case 6: {
-        if (static_cast<::google::protobuf::uint8>(tag) ==
-            static_cast<::google::protobuf::uint8>(49u)) {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(49u)) {
           set_has_double_value();
           DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
                    double, ::google::protobuf::internal::WireFormatLite::TYPE_DOUBLE>(
@@ -13264,8 +13264,8 @@ bool UninterpretedOption::MergePartialFromCodedStream(
 
       // optional bytes string_value = 7;
       case 7: {
-        if (static_cast<::google::protobuf::uint8>(tag) ==
-            static_cast<::google::protobuf::uint8>(58u)) {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(58u)) {
           DO_(::google::protobuf::internal::WireFormatLite::ReadBytes(
                 input, this->mutable_string_value()));
         } else {
@@ -13276,8 +13276,8 @@ bool UninterpretedOption::MergePartialFromCodedStream(
 
       // optional string aggregate_value = 8;
       case 8: {
-        if (static_cast<::google::protobuf::uint8>(tag) ==
-            static_cast<::google::protobuf::uint8>(66u)) {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(66u)) {
           DO_(::google::protobuf::internal::WireFormatLite::ReadString(
                 input, this->mutable_aggregate_value()));
           ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
@@ -13988,13 +13988,13 @@ bool SourceCodeInfo_Location::MergePartialFromCodedStream(
     switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
       // repeated int32 path = 1 [packed = true];
       case 1: {
-        if (static_cast<::google::protobuf::uint8>(tag) ==
-            static_cast<::google::protobuf::uint8>(10u)) {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(10u)) {
           DO_((::google::protobuf::internal::WireFormatLite::ReadPackedPrimitive<
                    ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
                  input, this->mutable_path())));
-        } else if (static_cast<::google::protobuf::uint8>(tag) ==
-                   static_cast<::google::protobuf::uint8>(8u)) {
+        } else if (static_cast< ::google::protobuf::uint8>(tag) ==
+                   static_cast< ::google::protobuf::uint8>(8u)) {
           DO_((::google::protobuf::internal::WireFormatLite::ReadRepeatedPrimitiveNoInline<
                    ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
                  1, 10u, input, this->mutable_path())));
@@ -14006,13 +14006,13 @@ bool SourceCodeInfo_Location::MergePartialFromCodedStream(
 
       // repeated int32 span = 2 [packed = true];
       case 2: {
-        if (static_cast<::google::protobuf::uint8>(tag) ==
-            static_cast<::google::protobuf::uint8>(18u)) {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(18u)) {
           DO_((::google::protobuf::internal::WireFormatLite::ReadPackedPrimitive<
                    ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
                  input, this->mutable_span())));
-        } else if (static_cast<::google::protobuf::uint8>(tag) ==
-                   static_cast<::google::protobuf::uint8>(16u)) {
+        } else if (static_cast< ::google::protobuf::uint8>(tag) ==
+                   static_cast< ::google::protobuf::uint8>(16u)) {
           DO_((::google::protobuf::internal::WireFormatLite::ReadRepeatedPrimitiveNoInline<
                    ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
                  1, 18u, input, this->mutable_span())));
@@ -14024,8 +14024,8 @@ bool SourceCodeInfo_Location::MergePartialFromCodedStream(
 
       // optional string leading_comments = 3;
       case 3: {
-        if (static_cast<::google::protobuf::uint8>(tag) ==
-            static_cast<::google::protobuf::uint8>(26u)) {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(26u)) {
           DO_(::google::protobuf::internal::WireFormatLite::ReadString(
                 input, this->mutable_leading_comments()));
           ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
@@ -14040,8 +14040,8 @@ bool SourceCodeInfo_Location::MergePartialFromCodedStream(
 
       // optional string trailing_comments = 4;
       case 4: {
-        if (static_cast<::google::protobuf::uint8>(tag) ==
-            static_cast<::google::protobuf::uint8>(34u)) {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(34u)) {
           DO_(::google::protobuf::internal::WireFormatLite::ReadString(
                 input, this->mutable_trailing_comments()));
           ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
@@ -14056,8 +14056,8 @@ bool SourceCodeInfo_Location::MergePartialFromCodedStream(
 
       // repeated string leading_detached_comments = 6;
       case 6: {
-        if (static_cast<::google::protobuf::uint8>(tag) ==
-            static_cast<::google::protobuf::uint8>(50u)) {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(50u)) {
           DO_(::google::protobuf::internal::WireFormatLite::ReadString(
                 input, this->add_leading_detached_comments()));
           ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
@@ -14701,8 +14701,8 @@ bool SourceCodeInfo::MergePartialFromCodedStream(
     switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
       // repeated .google.protobuf.SourceCodeInfo.Location location = 1;
       case 1: {
-        if (static_cast<::google::protobuf::uint8>(tag) ==
-            static_cast<::google::protobuf::uint8>(10u)) {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(10u)) {
           DO_(input->IncrementRecursionDepth());
           DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtualNoRecursionDepth(
                 input, add_location()));
@@ -14988,13 +14988,13 @@ bool GeneratedCodeInfo_Annotation::MergePartialFromCodedStream(
     switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
       // repeated int32 path = 1 [packed = true];
       case 1: {
-        if (static_cast<::google::protobuf::uint8>(tag) ==
-            static_cast<::google::protobuf::uint8>(10u)) {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(10u)) {
           DO_((::google::protobuf::internal::WireFormatLite::ReadPackedPrimitive<
                    ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
                  input, this->mutable_path())));
-        } else if (static_cast<::google::protobuf::uint8>(tag) ==
-                   static_cast<::google::protobuf::uint8>(8u)) {
+        } else if (static_cast< ::google::protobuf::uint8>(tag) ==
+                   static_cast< ::google::protobuf::uint8>(8u)) {
           DO_((::google::protobuf::internal::WireFormatLite::ReadRepeatedPrimitiveNoInline<
                    ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
                  1, 10u, input, this->mutable_path())));
@@ -15006,8 +15006,8 @@ bool GeneratedCodeInfo_Annotation::MergePartialFromCodedStream(
 
       // optional string source_file = 2;
       case 2: {
-        if (static_cast<::google::protobuf::uint8>(tag) ==
-            static_cast<::google::protobuf::uint8>(18u)) {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(18u)) {
           DO_(::google::protobuf::internal::WireFormatLite::ReadString(
                 input, this->mutable_source_file()));
           ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
@@ -15022,8 +15022,8 @@ bool GeneratedCodeInfo_Annotation::MergePartialFromCodedStream(
 
       // optional int32 begin = 3;
       case 3: {
-        if (static_cast<::google::protobuf::uint8>(tag) ==
-            static_cast<::google::protobuf::uint8>(24u)) {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(24u)) {
           set_has_begin();
           DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
                    ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
@@ -15036,8 +15036,8 @@ bool GeneratedCodeInfo_Annotation::MergePartialFromCodedStream(
 
       // optional int32 end = 4;
       case 4: {
-        if (static_cast<::google::protobuf::uint8>(tag) ==
-            static_cast<::google::protobuf::uint8>(32u)) {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(32u)) {
           set_has_end();
           DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
                    ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
@@ -15505,8 +15505,8 @@ bool GeneratedCodeInfo::MergePartialFromCodedStream(
     switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
       // repeated .google.protobuf.GeneratedCodeInfo.Annotation annotation = 1;
       case 1: {
-        if (static_cast<::google::protobuf::uint8>(tag) ==
-            static_cast<::google::protobuf::uint8>(10u)) {
+        if (static_cast< ::google::protobuf::uint8>(tag) ==
+            static_cast< ::google::protobuf::uint8>(10u)) {
           DO_(input->IncrementRecursionDepth());
           DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtualNoRecursionDepth(
                 input, add_annotation()));

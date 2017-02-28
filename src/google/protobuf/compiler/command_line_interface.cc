@@ -1038,8 +1038,8 @@ CommandLineInterface::ParseArguments(int argc, const char* const argv[]) {
       continue;
     }
     bool foundImplicitPlugin = false;
-    for (std::vector<OutputDirective>::const_iterator j = output_directives_.cbegin();
-         j != output_directives_.cend(); ++j) {
+    for (std::vector<OutputDirective>::const_iterator j = output_directives_.begin();
+         j != output_directives_.end(); ++j) {
       if (j->generator == NULL) {
         string plugin_name = PluginName(plugin_prefix_ , j->name);
         if (plugin_name == i->first) {
