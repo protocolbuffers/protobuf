@@ -20,7 +20,7 @@
   <release>alpha</release>
   <api>alpha</api>
  </stability>
- <license uri="http://www.opensource.org/licenses/bsd-license.php">New BSD License</license>
+ <license uri="https://opensource.org/licenses/BSD-3-Clause">3-Clause BSD License</license>
  <notes>
 Second alpha release.
  </notes>
@@ -66,7 +66,7 @@ Second alpha release.
    </stability>
    <date>2016-09-23</date>
    <time>16:06:07</time>
-   <license uri="http://www.opensource.org/licenses/bsd-license.php">New BSD License</license>
+   <license uri="https://opensource.org/licenses/BSD-3-Clause">3-Clause BSD License</license>
    <notes>
 First alpha release
    </notes>
@@ -82,7 +82,7 @@ First alpha release
    </stability>
    <date>2017-01-13</date>
    <time>16:06:07</time>
-   <license uri="http://www.opensource.org/licenses/bsd-license.php">New BSD License</license>
+   <license uri="https://opensource.org/licenses/BSD-3-Clause">3-Clause BSD License</license>
    <notes>
 Second alpha release.
    </notes>
