@@ -40,6 +40,7 @@
 
 #define GOOGLE_PROTOBUF_HAVE_HASH_MAP 1
 #define GOOGLE_PROTOBUF_HAVE_HASH_SET 1
+#define GOOGLE_PROTOBUF_HAVE_64BIT_HASH 1
 
 // Use C++11 unordered_{map|set} if available.
 #if ((_LIBCPP_STD_VER >= 11) || \
@@ -90,6 +91,10 @@
 #  define GOOGLE_PROTOBUF_HASH_MAP_CLASS hash_map
 #  include <hash_set>
 #  define GOOGLE_PROTOBUF_HASH_SET_CLASS hash_set
+# endif
+
+# if __GNUC__ == 4 && __GNUC__MINOR__ <= 1
+#  undef GOOGLE_PROTOBUF_HAVE_64BIT_HASH
 # endif
 
 // Version checks for MSC.
