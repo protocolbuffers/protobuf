@@ -1039,9 +1039,12 @@ GenerateClassDefinition(io::Printer* printer) {
 
   printer->Print(vars,
     "$classname$();\n"
-    "virtual ~$classname$();\n"
-    "\n"
+    "$classname$($classname$&& from) : $classname$() {\n"
+    "  Swap(&from);\n"
+    "}\n"
     "$classname$(const $classname$& from);\n"
+    "\n"
+    "virtual ~$classname$();\n"
     "\n"
     "inline $classname$& operator=(const $classname$& from) {\n"
     "  CopyFrom(from);\n"
