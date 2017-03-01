@@ -90,6 +90,7 @@ message TestMessage {
 
   message Sub {
     int32 a = 1;
+    repeated int32 b = 2;
   }
 
   // Reserved for non-existing field test.

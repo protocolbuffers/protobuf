@@ -106,6 +106,7 @@ void repeated_field_init(TSRMLS_D) {
   repeated_field_handlers = PEMALLOC(zend_object_handlers);
   memcpy(repeated_field_handlers, zend_get_std_object_handlers(),
          sizeof(zend_object_handlers));
+  repeated_field_handlers->write_dimension = repeated_field_write_dimension;
   repeated_field_handlers->get_gc = repeated_field_get_gc;
 }
 

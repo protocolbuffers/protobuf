@@ -310,8 +310,8 @@ static bool map_field_write_dimension(zval *object, zval *key,
 
   mem = upb_value_memory(&v);
   memset(mem, 0, native_slot_size(intern->value_type));
-  if (!native_slot_set(intern->value_type, intern->msg_ce, mem, value
-		      TSRMLS_CC)) {
+  if (!native_slot_set(intern->value_type, intern->msg_ce, mem,
+                       value TSRMLS_CC)) {
     return false;
   }
 #ifndef NDEBUG
