@@ -3152,8 +3152,17 @@ static void ResolveIvarSet(GPBFieldDescriptor *field,
   if (result.impToAdd) {
     const char *encoding =
         GPBMessageEncodingForSelector(result.encodingSelector, YES);
-    BOOL methodAdded = class_addMethod(descriptor.messageClass, sel,
-                                       result.impToAdd, encoding);
+    Class msgClass = descriptor.messageClass;
+    BOOL methodAdded = class_addMethod(msgClass, sel, result.impToAdd, encoding);
+    // class_addMethod() is documented as also failing if the method was already
+    // added; so we check if the method is already there and return success so
+    // the method dispatch will still happen.  Why would it already be added?
+    // Two threads could cause the same method to be bound at the same time,
+    // but only one will actually bind it; the other still needs to return true
+    // so things will dispatch.
+    if (!methodAdded) {
+      methodAdded = GPBClassHasSel(msgClass, sel);
+    }
     return methodAdded;
   }
   return [super resolveInstanceMethod:sel];

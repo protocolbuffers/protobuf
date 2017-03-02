@@ -184,11 +184,10 @@ static id ExtensionForName(id self, SEL _cmd) {
   dispatch_semaphore_wait(gExtensionSingletonDictionarySemaphore,
                           DISPATCH_TIME_FOREVER);
   id extension = (id)CFDictionaryGetValue(gExtensionSingletonDictionary, key);
-  if (extension) {
-    // The method is getting wired in to the class, so no need to keep it in
-    // the dictionary.
-    CFDictionaryRemoveValue(gExtensionSingletonDictionary, key);
-  }
+  // We can't remove the key from the dictionary here (as an optimization),
+  // two threads could have gone into +resolveClassMethod: for the same method,
+  // and ended up here; there's no way to ensure both return YES without letting
+  // both try to wire in the method.
   dispatch_semaphore_signal(gExtensionSingletonDictionarySemaphore);
   return extension;
 }
@@ -212,9 +211,17 @@ BOOL GPBResolveExtensionClassMethod(Class self, SEL sel) {
 #pragma unused(obj)
       return extension;
     });
-    if (class_addMethod(metaClass, sel, imp, encoding)) {
-      return YES;
+    BOOL methodAdded = class_addMethod(metaClass, sel, imp, encoding);
+    // class_addMethod() is documented as also failing if the method was already
+    // added; so we check if the method is already there and return success so
+    // the method dispatch will still happen.  Why would it already be added?
+    // Two threads could cause the same method to be bound at the same time,
+    // but only one will actually bind it; the other still needs to return true
+    // so things will dispatch.
+    if (!methodAdded) {
+      methodAdded = GPBClassHasSel(metaClass, sel);
     }
+    return methodAdded;
   }
   return NO;
 }
