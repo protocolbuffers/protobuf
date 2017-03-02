@@ -5,6 +5,10 @@
  * the google-protobuf.js file that we build at distribution time.
  */
 
+// Include a dummy provide statement so that closurebuilder.py does not skip over this
+// file.
+goog.provide('jspb.Export');
+
 goog.require('goog.object');
 goog.require('jspb.BinaryReader');
 goog.require('jspb.BinaryWriter');
