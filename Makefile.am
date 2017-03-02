@@ -775,6 +775,15 @@ ruby_EXTRA_DIST=                                                             \
   ruby/.gitignore                                                            \
   ruby/README.md                                                             \
   ruby/Rakefile                                                              \
+  ruby/compatibility_tests/v3.0.0/tests/test_import.proto                    \
+  ruby/compatibility_tests/v3.0.0/tests/stress.rb                            \
+  ruby/compatibility_tests/v3.0.0/tests/repeated_field_test.rb               \
+  ruby/compatibility_tests/v3.0.0/tests/generated_code_test.rb               \
+  ruby/compatibility_tests/v3.0.0/tests/generated_code.proto                 \
+  ruby/compatibility_tests/v3.0.0/tests/basic.rb                             \
+  ruby/compatibility_tests/v3.0.0/test.sh                                    \
+  ruby/compatibility_tests/v3.0.0/Rakefile                                   \
+  ruby/compatibility_tests/v3.0.0/README.md                                  \
   ruby/ext/google/protobuf_c/defs.c                                          \
   ruby/ext/google/protobuf_c/encode_decode.c                                 \
   ruby/ext/google/protobuf_c/extconf.rb                                      \
