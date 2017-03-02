@@ -1774,6 +1774,25 @@ NSString *GPBDecodeTextFormatName(const uint8_t *decodeData, int32_t key,
 
 #pragma clang diagnostic pop
 
+BOOL GPBClassHasSel(Class aClass, SEL sel) {
+  // NOTE: We have to use class_copyMethodList, all other runtime method
+  // lookups actually also resolve the method implementation and this
+  // is called from within those methods.
+
+  BOOL result = NO;
+  unsigned int methodCount = 0;
+  Method *methodList = class_copyMethodList(aClass, &methodCount);
+  for (unsigned int i = 0; i < methodCount; ++i) {
+    SEL methodSelector = method_getName(methodList[i]);
+    if (methodSelector == sel) {
+      result = YES;
+      break;
+    }
+  }
+  free(methodList);
+  return result;
+}
+
 #pragma mark - GPBMessageSignatureProtocol
 
 // A series of selectors that are used solely to get @encoding values
