@@ -342,7 +342,7 @@ GenerateMergingCode(io::Printer* printer) const {
 
 void RepeatedPrimitiveFieldGenerator::
 GenerateSwappingCode(io::Printer* printer) const {
-  printer->Print(variables_, "$name$_.UnsafeArenaSwap(&other->$name$_);\n");
+  printer->Print(variables_, "$name$_.InternalSwap(&other->$name$_);\n");
 }
 
 void RepeatedPrimitiveFieldGenerator::

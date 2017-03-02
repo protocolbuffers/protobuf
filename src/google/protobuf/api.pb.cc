@@ -660,9 +660,9 @@ void Api::Swap(Api* other) {
   InternalSwap(other);
 }
 void Api::InternalSwap(Api* other) {
-  methods_.UnsafeArenaSwap(&other->methods_);
-  options_.UnsafeArenaSwap(&other->options_);
-  mixins_.UnsafeArenaSwap(&other->mixins_);
+  methods_.InternalSwap(&other->methods_);
+  options_.InternalSwap(&other->options_);
+  mixins_.InternalSwap(&other->mixins_);
   name_.Swap(&other->name_);
   version_.Swap(&other->version_);
   std::swap(source_context_, other->source_context_);
@@ -1407,7 +1407,7 @@ void Method::Swap(Method* other) {
   InternalSwap(other);
 }
 void Method::InternalSwap(Method* other) {
-  options_.UnsafeArenaSwap(&other->options_);
+  options_.InternalSwap(&other->options_);
   name_.Swap(&other->name_);
   request_type_url_.Swap(&other->request_type_url_);
   response_type_url_.Swap(&other->response_type_url_);

@@ -326,7 +326,7 @@ void FieldMask::Swap(FieldMask* other) {
   InternalSwap(other);
 }
 void FieldMask::InternalSwap(FieldMask* other) {
-  paths_.UnsafeArenaSwap(&other->paths_);
+  paths_.InternalSwap(&other->paths_);
   std::swap(_cached_size_, other->_cached_size_);
 }
 

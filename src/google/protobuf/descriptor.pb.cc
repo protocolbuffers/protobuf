@@ -1146,7 +1146,7 @@ void FileDescriptorSet::Swap(FileDescriptorSet* other) {
   InternalSwap(other);
 }
 void FileDescriptorSet::InternalSwap(FileDescriptorSet* other) {
-  file_.UnsafeArenaSwap(&other->file_);
+  file_.InternalSwap(&other->file_);
   std::swap(_has_bits_[0], other->_has_bits_[0]);
   _internal_metadata_.Swap(&other->_internal_metadata_);
   std::swap(_cached_size_, other->_cached_size_);
@@ -1960,13 +1960,13 @@ void FileDescriptorProto::Swap(FileDescriptorProto* other) {
   InternalSwap(other);
 }
 void FileDescriptorProto::InternalSwap(FileDescriptorProto* other) {
-  dependency_.UnsafeArenaSwap(&other->dependency_);
-  public_dependency_.UnsafeArenaSwap(&other->public_dependency_);
-  weak_dependency_.UnsafeArenaSwap(&other->weak_dependency_);
-  message_type_.UnsafeArenaSwap(&other->message_type_);
-  enum_type_.UnsafeArenaSwap(&other->enum_type_);
-  service_.UnsafeArenaSwap(&other->service_);
-  extension_.UnsafeArenaSwap(&other->extension_);
+  dependency_.InternalSwap(&other->dependency_);
+  public_dependency_.InternalSwap(&other->public_dependency_);
+  weak_dependency_.InternalSwap(&other->weak_dependency_);
+  message_type_.InternalSwap(&other->message_type_);
+  enum_type_.InternalSwap(&other->enum_type_);
+  service_.InternalSwap(&other->service_);
+  extension_.InternalSwap(&other->extension_);
   name_.Swap(&other->name_);
   package_.Swap(&other->package_);
   syntax_.Swap(&other->syntax_);
@@ -3802,14 +3802,14 @@ void DescriptorProto::Swap(DescriptorProto* other) {
   InternalSwap(other);
 }
 void DescriptorProto::InternalSwap(DescriptorProto* other) {
-  field_.UnsafeArenaSwap(&other->field_);
-  extension_.UnsafeArenaSwap(&other->extension_);
-  nested_type_.UnsafeArenaSwap(&other->nested_type_);
-  enum_type_.UnsafeArenaSwap(&other->enum_type_);
-  extension_range_.UnsafeArenaSwap(&other->extension_range_);
-  oneof_decl_.UnsafeArenaSwap(&other->oneof_decl_);
-  reserved_range_.UnsafeArenaSwap(&other->reserved_range_);
-  reserved_name_.UnsafeArenaSwap(&other->reserved_name_);
+  field_.InternalSwap(&other->field_);
+  extension_.InternalSwap(&other->extension_);
+  nested_type_.InternalSwap(&other->nested_type_);
+  enum_type_.InternalSwap(&other->enum_type_);
+  extension_range_.InternalSwap(&other->extension_range_);
+  oneof_decl_.InternalSwap(&other->oneof_decl_);
+  reserved_range_.InternalSwap(&other->reserved_range_);
+  reserved_name_.InternalSwap(&other->reserved_name_);
   name_.Swap(&other->name_);
   std::swap(options_, other->options_);
   std::swap(_has_bits_[0], other->_has_bits_[0]);
@@ -6144,7 +6144,7 @@ void EnumDescriptorProto::Swap(EnumDescriptorProto* other) {
   InternalSwap(other);
 }
 void EnumDescriptorProto::InternalSwap(EnumDescriptorProto* other) {
-  value_.UnsafeArenaSwap(&other->value_);
+  value_.InternalSwap(&other->value_);
   name_.Swap(&other->name_);
   std::swap(options_, other->options_);
   std::swap(_has_bits_[0], other->_has_bits_[0]);
@@ -7117,7 +7117,7 @@ void ServiceDescriptorProto::Swap(ServiceDescriptorProto* other) {
   InternalSwap(other);
 }
 void ServiceDescriptorProto::InternalSwap(ServiceDescriptorProto* other) {
-  method_.UnsafeArenaSwap(&other->method_);
+  method_.InternalSwap(&other->method_);
   name_.Swap(&other->name_);
   std::swap(options_, other->options_);
   std::swap(_has_bits_[0], other->_has_bits_[0]);
@@ -8984,7 +8984,7 @@ void FileOptions::Swap(FileOptions* other) {
   InternalSwap(other);
 }
 void FileOptions::InternalSwap(FileOptions* other) {
-  uninterpreted_option_.UnsafeArenaSwap(&other->uninterpreted_option_);
+  uninterpreted_option_.InternalSwap(&other->uninterpreted_option_);
   java_package_.Swap(&other->java_package_);
   java_outer_classname_.Swap(&other->java_outer_classname_);
   go_package_.Swap(&other->go_package_);
@@ -10022,7 +10022,7 @@ void MessageOptions::Swap(MessageOptions* other) {
   InternalSwap(other);
 }
 void MessageOptions::InternalSwap(MessageOptions* other) {
-  uninterpreted_option_.UnsafeArenaSwap(&other->uninterpreted_option_);
+  uninterpreted_option_.InternalSwap(&other->uninterpreted_option_);
   std::swap(message_set_wire_format_, other->message_set_wire_format_);
   std::swap(no_standard_descriptor_accessor_, other->no_standard_descriptor_accessor_);
   std::swap(deprecated_, other->deprecated_);
@@ -10638,7 +10638,7 @@ void FieldOptions::Swap(FieldOptions* other) {
   InternalSwap(other);
 }
 void FieldOptions::InternalSwap(FieldOptions* other) {
-  uninterpreted_option_.UnsafeArenaSwap(&other->uninterpreted_option_);
+  uninterpreted_option_.InternalSwap(&other->uninterpreted_option_);
   std::swap(ctype_, other->ctype_);
   std::swap(jstype_, other->jstype_);
   std::swap(packed_, other->packed_);
@@ -11079,7 +11079,7 @@ void OneofOptions::Swap(OneofOptions* other) {
   InternalSwap(other);
 }
 void OneofOptions::InternalSwap(OneofOptions* other) {
-  uninterpreted_option_.UnsafeArenaSwap(&other->uninterpreted_option_);
+  uninterpreted_option_.InternalSwap(&other->uninterpreted_option_);
   std::swap(_has_bits_[0], other->_has_bits_[0]);
   _internal_metadata_.Swap(&other->_internal_metadata_);
   std::swap(_cached_size_, other->_cached_size_);
@@ -11447,7 +11447,7 @@ void EnumOptions::Swap(EnumOptions* other) {
   InternalSwap(other);
 }
 void EnumOptions::InternalSwap(EnumOptions* other) {
-  uninterpreted_option_.UnsafeArenaSwap(&other->uninterpreted_option_);
+  uninterpreted_option_.InternalSwap(&other->uninterpreted_option_);
   std::swap(allow_alias_, other->allow_alias_);
   std::swap(deprecated_, other->deprecated_);
   std::swap(_has_bits_[0], other->_has_bits_[0]);
@@ -11822,7 +11822,7 @@ void EnumValueOptions::Swap(EnumValueOptions* other) {
   InternalSwap(other);
 }
 void EnumValueOptions::InternalSwap(EnumValueOptions* other) {
-  uninterpreted_option_.UnsafeArenaSwap(&other->uninterpreted_option_);
+  uninterpreted_option_.InternalSwap(&other->uninterpreted_option_);
   std::swap(deprecated_, other->deprecated_);
   std::swap(_has_bits_[0], other->_has_bits_[0]);
   _internal_metadata_.Swap(&other->_internal_metadata_);
@@ -12172,7 +12172,7 @@ void ServiceOptions::Swap(ServiceOptions* other) {
   InternalSwap(other);
 }
 void ServiceOptions::InternalSwap(ServiceOptions* other) {
-  uninterpreted_option_.UnsafeArenaSwap(&other->uninterpreted_option_);
+  uninterpreted_option_.InternalSwap(&other->uninterpreted_option_);
   std::swap(deprecated_, other->deprecated_);
   std::swap(_has_bits_[0], other->_has_bits_[0]);
   _internal_metadata_.Swap(&other->_internal_metadata_);
@@ -12573,7 +12573,7 @@ void MethodOptions::Swap(MethodOptions* other) {
   InternalSwap(other);
 }
 void MethodOptions::InternalSwap(MethodOptions* other) {
-  uninterpreted_option_.UnsafeArenaSwap(&other->uninterpreted_option_);
+  uninterpreted_option_.InternalSwap(&other->uninterpreted_option_);
   std::swap(deprecated_, other->deprecated_);
   std::swap(idempotency_level_, other->idempotency_level_);
   std::swap(_has_bits_[0], other->_has_bits_[0]);
@@ -13570,7 +13570,7 @@ void UninterpretedOption::Swap(UninterpretedOption* other) {
   InternalSwap(other);
 }
 void UninterpretedOption::InternalSwap(UninterpretedOption* other) {
-  name_.UnsafeArenaSwap(&other->name_);
+  name_.InternalSwap(&other->name_);
   identifier_value_.Swap(&other->identifier_value_);
   string_value_.Swap(&other->string_value_);
   aggregate_value_.Swap(&other->aggregate_value_);
@@ -14352,9 +14352,9 @@ void SourceCodeInfo_Location::Swap(SourceCodeInfo_Location* other) {
   InternalSwap(other);
 }
 void SourceCodeInfo_Location::InternalSwap(SourceCodeInfo_Location* other) {
-  path_.UnsafeArenaSwap(&other->path_);
-  span_.UnsafeArenaSwap(&other->span_);
-  leading_detached_comments_.UnsafeArenaSwap(&other->leading_detached_comments_);
+  path_.InternalSwap(&other->path_);
+  span_.InternalSwap(&other->span_);
+  leading_detached_comments_.InternalSwap(&other->leading_detached_comments_);
   leading_comments_.Swap(&other->leading_comments_);
   trailing_comments_.Swap(&other->trailing_comments_);
   std::swap(_has_bits_[0], other->_has_bits_[0]);
@@ -14842,7 +14842,7 @@ void SourceCodeInfo::Swap(SourceCodeInfo* other) {
   InternalSwap(other);
 }
 void SourceCodeInfo::InternalSwap(SourceCodeInfo* other) {
-  location_.UnsafeArenaSwap(&other->location_);
+  location_.InternalSwap(&other->location_);
   std::swap(_has_bits_[0], other->_has_bits_[0]);
   _internal_metadata_.Swap(&other->_internal_metadata_);
   std::swap(_cached_size_, other->_cached_size_);
@@ -15268,7 +15268,7 @@ void GeneratedCodeInfo_Annotation::Swap(GeneratedCodeInfo_Annotation* other) {
   InternalSwap(other);
 }
 void GeneratedCodeInfo_Annotation::InternalSwap(GeneratedCodeInfo_Annotation* other) {
-  path_.UnsafeArenaSwap(&other->path_);
+  path_.InternalSwap(&other->path_);
   source_file_.Swap(&other->source_file_);
   std::swap(begin_, other->begin_);
   std::swap(end_, other->end_);
@@ -15646,7 +15646,7 @@ void GeneratedCodeInfo::Swap(GeneratedCodeInfo* other) {
   InternalSwap(other);
 }
 void GeneratedCodeInfo::InternalSwap(GeneratedCodeInfo* other) {
-  annotation_.UnsafeArenaSwap(&other->annotation_);
+  annotation_.InternalSwap(&other->annotation_);
   std::swap(_has_bits_[0], other->_has_bits_[0]);
   _internal_metadata_.Swap(&other->_internal_metadata_);
   std::swap(_cached_size_, other->_cached_size_);

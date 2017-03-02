@@ -1739,7 +1739,7 @@ void ListValue::UnsafeArenaSwap(ListValue* other) {
   InternalSwap(other);
 }
 void ListValue::InternalSwap(ListValue* other) {
-  values_.UnsafeArenaSwap(&other->values_);
+  values_.InternalSwap(&other->values_);
   std::swap(_cached_size_, other->_cached_size_);
 }
 
