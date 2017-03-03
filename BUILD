@@ -181,6 +181,13 @@ cc_library(
     deps = [":protobuf_lite"],
 )
 
+cc_library(
+    name = "protobuf_headers",
+    hdrs = glob(["src/**/*.h"]),
+    includes = ["src/"],
+    visibility = ["//visibility:public"],
+)
+
 objc_library(
     name = "protobuf_objc",
     hdrs = ["objectivec/GPBProtocolBuffers.h"],
