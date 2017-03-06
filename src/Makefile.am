@@ -783,6 +783,7 @@ protobuf_test_SOURCES =                                        \
   google/protobuf/compiler/objectivec/objectivec_helpers_unittest.cc \
   google/protobuf/compiler/python/python_plugin_unittest.cc    \
   google/protobuf/compiler/ruby/ruby_generator_unittest.cc     \
+  google/protobuf/compiler/csharp/csharp_bootstrap_unittest.cc \
   google/protobuf/compiler/csharp/csharp_generator_unittest.cc \
   google/protobuf/util/field_comparator_test.cc                \
   google/protobuf/util/field_mask_util_test.cc                 \
