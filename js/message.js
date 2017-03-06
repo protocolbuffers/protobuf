@@ -497,7 +497,7 @@ jspb.Message.toObjectExtension = function(proto, obj, extensions,
   for (var fieldNumber in extensions) {
     var fieldInfo = extensions[fieldNumber];
     var value = getExtensionFn.call(proto, fieldInfo);
-    if (value) {
+    if (goog.isDefAndNotNull(value)) {
       for (var name in fieldInfo.fieldName) {
         if (fieldInfo.fieldName.hasOwnProperty(name)) {
           break; // the compiled field name
@@ -541,7 +541,7 @@ jspb.Message.serializeBinaryExtensions = function(proto, writer, extensions,
                       'without binary serialization support');
     }
     var value = getExtensionFn.call(proto, fieldInfo);
-    if (value) {
+    if (goog.isDefAndNotNull(value)) {
       if (fieldInfo.isMessageType()) {
         // If the message type of the extension was generated without binary
         // support, there may not be a binary message serializer function, and

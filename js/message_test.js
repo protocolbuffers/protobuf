@@ -693,10 +693,11 @@ describe('Message test suite', function() {
      });
 
   it('testToObject_hasExtensionField', function() {
-    var data = new proto.jspb.test.HasExtensions(['str1', {100: ['ext1']}]);
+    var data = new proto.jspb.test.HasExtensions(['str1', {100: ['ext1'], 102: ''}]);
     var obj = data.toObject();
     assertEquals('str1', obj.str1);
     assertEquals('ext1', obj.extField.ext1);
+    assertEquals('', obj.str);
   });
 
   it('testGetExtension', function() {

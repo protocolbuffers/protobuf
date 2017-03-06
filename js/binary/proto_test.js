@@ -283,8 +283,7 @@ function checkAllFields(original, copy) {
  * @param {!proto.jspb.test.TestExtendable} msg
  */
 function checkExtensions(msg) {
-  assertEquals(-42,
-      msg.getExtension(proto.jspb.test.extendOptionalInt32));
+  assertEquals(0, msg.getExtension(proto.jspb.test.extendOptionalInt32));
   assertEquals(-0x7fffffff00000000,
       msg.getExtension(proto.jspb.test.extendOptionalInt64));
   assertEquals(0x80000000,
@@ -512,8 +511,7 @@ describe('protoBinaryTest', function() {
    * @param {proto.jspb.test.TestExtendable} msg
    */
   function fillExtensions(msg) {
-    msg.setExtension(
-        proto.jspb.test.extendOptionalInt32, -42);
+    msg.setExtension(proto.jspb.test.extendOptionalInt32, 0);
     msg.setExtension(
         proto.jspb.test.extendOptionalInt64, -0x7fffffff00000000);
     msg.setExtension(
