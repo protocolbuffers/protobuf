@@ -358,7 +358,7 @@ class Bits {
 #endif
   }
 
-  static uint64 Log2FloorNonZero64(uint64 n) {
+  static uint32 Log2FloorNonZero64(uint64 n) {
 #if defined(__GNUC__)
   return 63 ^ __builtin_clzll(n);
 #else

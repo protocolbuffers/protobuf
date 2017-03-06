@@ -253,18 +253,22 @@ void ImmutableMessageGenerator::GenerateInterface(io::Printer* printer) {
                                 /* immutable = */ true, "OrBuilder");
   if (descriptor_->extension_range_count() > 0) {
     printer->Print(
-        "public interface $classname$OrBuilder$idend$ extends\n"
+        "$deprecation$public interface $classname$OrBuilder$idend$ extends\n"
         "    $extra_interfaces$\n"
         "    com.google.protobuf.GeneratedMessage$ver$.\n"
         "        ExtendableMessageOrBuilder<$classname$> {\n",
+        "deprecation", descriptor_->options().deprecated() ?
+            "@java.lang.Deprecated " : "",
         "extra_interfaces", ExtraMessageOrBuilderInterfaces(descriptor_),
         "classname", descriptor_->name(),
         "idend", "", "ver", GeneratedCodeVersionSuffix());
   } else {
     printer->Print(
-        "public interface $classname$OrBuilder$idend$ extends\n"
+        "$deprecation$public interface $classname$OrBuilder$idend$ extends\n"
         "    $extra_interfaces$\n"
         "    com.google.protobuf.MessageOrBuilder {\n",
+        "deprecation", descriptor_->options().deprecated() ?
+            "@java.lang.Deprecated " : "",
         "extra_interfaces", ExtraMessageOrBuilderInterfaces(descriptor_),
         "classname", descriptor_->name(),
         "idend", "");
@@ -304,6 +308,8 @@ void ImmutableMessageGenerator::Generate(io::Printer* printer) {
   variables["classname"] = descriptor_->name();
   variables["extra_interfaces"] = ExtraMessageInterfaces(descriptor_);
   variables["ver"] = GeneratedCodeVersionSuffix();
+  variables["deprecation"] = descriptor_->options().deprecated()
+      ? "@java.lang.Deprecated " : "";
 
   WriteMessageDocComment(printer, descriptor_);
   MaybePrintGeneratedAnnotation(context_, printer, descriptor_,
@@ -312,8 +318,9 @@ void ImmutableMessageGenerator::Generate(io::Printer* printer) {
   // The builder_type stores the super type name of the nested Builder class.
   string builder_type;
   if (descriptor_->extension_range_count() > 0) {
-    printer->Print(variables,
-                   "public $static$final class $classname$ extends\n");
+    printer->Print(
+        variables,
+        "$deprecation$public $static$final class $classname$ extends\n");
     printer->Annotate("classname", descriptor_);
     printer->Print(
         variables,
@@ -326,8 +333,9 @@ void ImmutableMessageGenerator::Generate(io::Printer* printer) {
         name_resolver_->GetImmutableClassName(descriptor_),
         GeneratedCodeVersionSuffix());
   } else {
-    printer->Print(variables,
-                   "public $static$final class $classname$ extends\n");
+    printer->Print(
+        variables,
+        "$deprecation$public $static$final class $classname$ extends\n");
     printer->Annotate("classname", descriptor_);
     printer->Print(variables,
       "    com.google.protobuf.GeneratedMessage$ver$ implements\n"

@@ -58,7 +58,7 @@ class DescriptorPool
     public function internalAddGeneratedFile($data)
     {
         $files = new FileDescriptorSet();
-        $files->decode($data);
+        $files->mergeFromString($data);
         $file = FileDescriptor::buildFromProto($files->getFile()[0]);
 
         foreach ($file->getMessageType() as &$desc) {

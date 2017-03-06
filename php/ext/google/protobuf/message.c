@@ -39,8 +39,8 @@ zend_object_handlers* message_handlers;
 
 static  zend_function_entry message_methods[] = {
   PHP_ME(Message, clear, NULL, ZEND_ACC_PUBLIC)
-  PHP_ME(Message, encode, NULL, ZEND_ACC_PUBLIC)
-  PHP_ME(Message, decode, NULL, ZEND_ACC_PUBLIC)
+  PHP_ME(Message, serializeToString, NULL, ZEND_ACC_PUBLIC)
+  PHP_ME(Message, mergeFromString, NULL, ZEND_ACC_PUBLIC)
   PHP_ME(Message, jsonEncode, NULL, ZEND_ACC_PUBLIC)
   PHP_ME(Message, jsonDecode, NULL, ZEND_ACC_PUBLIC)
   PHP_ME(Message, mergeFrom, NULL, ZEND_ACC_PUBLIC)

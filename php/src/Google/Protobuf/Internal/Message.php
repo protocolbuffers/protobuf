@@ -562,12 +562,14 @@ class Message
      * Parses a protocol buffer contained in a string.
      *
      * This function takes a string in the (non-human-readable) binary wire
-     * format, matching the encoding output by encode().
+     * format, matching the encoding output by serializeToString().
+     * See mergeFrom() for merging behavior, if the field is already set in the
+     * specified message.
      *
      * @param string $data Binary protobuf data.
      * @return bool Return true on success.
      */
-    public function decode($data)
+    public function mergeFromString($data)
     {
         $input = new InputStream($data);
         $this->parseFromStream($input);
@@ -714,7 +716,7 @@ class Message
      * Serialize the message to string.
      * @return string Serialized binary protobuf data.
      */
-    public function encode()
+    public function serializeToString()
     {
         $output = new OutputStream($this->byteSize());
         $this->serializeToStream($output);

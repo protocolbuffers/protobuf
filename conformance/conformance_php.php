@@ -46,7 +46,7 @@ function doTest($request)
     $response = new \Conformance\ConformanceResponse();
     if ($request->getPayload() == "protobuf_payload") {
       try {
-          $test_message->decode($request->getProtobufPayload());
+          $test_message->mergeFromString($request->getProtobufPayload());
       } catch (Exception $e) {
           $response->setParseError($e->getMessage());
           return $response;
@@ -65,7 +65,7 @@ function doTest($request)
     if ($request->getRequestedOutputFormat() == WireFormat::UNSPECIFIED) {
       trigger_error("Unspecified output format.", E_USER_ERROR);
     } elseif ($request->getRequestedOutputFormat() == WireFormat::PROTOBUF) {
-      $response->setProtobufPayload($test_message->encode());
+      $response->setProtobufPayload($test_message->serializeToString());
     } elseif ($request->getRequestedOutputFormat() == WireFormat::JSON) {
       $response->setJsonPayload($test_message->jsonEncode());
     }
@@ -89,11 +89,11 @@ function doTestIO()
     }
 
     $request = new \Conformance\ConformanceRequest();
-    $request->decode($serialized_request);
+    $request->mergeFromString($serialized_request);
 
     $response = doTest($request);
 
-    $serialized_response = $response->encode();
+    $serialized_response = $response->serializeToString();
     fwrite(STDOUT, pack("V", strlen($serialized_response)));
     fwrite(STDOUT, $serialized_response);
 
