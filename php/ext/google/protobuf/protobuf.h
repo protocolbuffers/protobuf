@@ -267,8 +267,8 @@ PHP_METHOD(Message, __construct);
 const upb_pbdecodermethod *new_fillmsg_decodermethod(Descriptor *desc,
                                                      const void *owner);
 
-PHP_METHOD(Message, encode);
-PHP_METHOD(Message, decode);
+PHP_METHOD(Message, serializeToString);
+PHP_METHOD(Message, mergeFromString);
 PHP_METHOD(Message, jsonEncode);
 PHP_METHOD(Message, jsonDecode);
 

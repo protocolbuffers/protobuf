@@ -290,14 +290,14 @@ class ImplementationTest extends TestBase
     public function testDecode()
     {
         $m = new TestMessage();
-        $m->decode(TestUtil::getGoldenTestMessage());
+        $m->mergeFromString(TestUtil::getGoldenTestMessage());
         TestUtil::assertTestMessage($m);
     }
 
     public function testDescriptorDecode()
     {
         $file_desc_set = new FileDescriptorSet();
-        $file_desc_set->decode(hex2bin(
+        $file_desc_set->mergeFromString(hex2bin(
             "0a3b0a12746573745f696e636c7564652e70726f746f120362617222180a" .
             "0b54657374496e636c75646512090a0161180120012805620670726f746f33"));
 
