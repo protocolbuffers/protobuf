@@ -1487,7 +1487,6 @@ inline void RepeatedPtrFieldBase::Add(
   typename TypeHandler::Type* result =
       TypeHandler::New(arena_, std::move(value));
   rep_->elements[current_size_++] = result;
-  return result;
 }
 #endif
 
