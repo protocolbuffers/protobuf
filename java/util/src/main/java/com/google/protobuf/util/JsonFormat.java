@@ -796,6 +796,13 @@ public class JsonFormat {
               continue;
             }
           }
+          final OneofDescriptor containingOneof = field.getContainingOneof();
+          if (containingOneof != null) {
+            final FieldDescriptor fieldDescriptorSetInOneOf = message.getOneofFieldDescriptor(containingOneof);
+            if (fieldDescriptorSetInOneOf == null || fieldDescriptorSetInOneOf != field) {
+              continue;
+            }
+          }
           fieldsToPrint.put(field, message.getField(field));
         }
       } else {
