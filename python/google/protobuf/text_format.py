@@ -469,7 +469,7 @@ def Merge(text,
     ParseError: On text parsing problems.
   """
   return MergeLines(
-      text.split('\n'),
+      re.findall('(?:[^\"\n]|(?:\"(?:[^\"]|[\n])*\"))*\n?', text),
       message,
       allow_unknown_extension,
       allow_field_number,
@@ -935,7 +935,7 @@ class Tokenizer(object):
       r'[a-zA-Z_][0-9a-zA-Z_+-]*',  # an identifier
       r'([0-9+-]|(\.[0-9]))[0-9a-zA-Z_.+-]*',  # a number
   ] + [  # quoted str for each quote mark
-      r'{qt}([^{qt}\n\\]|\\.)*({qt}|\\?$)'.format(qt=mark) for mark in _QUOTES
+      r'{qt}([^{qt}\\]|\\.)*({qt}|\\?$)'.format(qt=mark) for mark in _QUOTES
   ]))
 
   _IDENTIFIER = re.compile(r'[^\d\W]\w*')
