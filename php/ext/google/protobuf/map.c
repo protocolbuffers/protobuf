@@ -146,6 +146,11 @@ static zend_function_entry map_field_methods[] = {
   ZEND_FE_END
 };
 
+// Forward declare static functions.
+
+static bool map_field_write_dimension(zval *object, zval *key,
+                                      zval *value TSRMLS_DC);
+
 // -----------------------------------------------------------------------------
 // MapField creation/desctruction
 // -----------------------------------------------------------------------------
@@ -183,6 +188,7 @@ void map_field_init(TSRMLS_D) {
   map_field_handlers = PEMALLOC(zend_object_handlers);
   memcpy(map_field_handlers, zend_get_std_object_handlers(),
          sizeof(zend_object_handlers));
+  map_field_handlers->write_dimension = map_field_write_dimension;
   map_field_handlers->get_gc = map_field_get_gc;
 }
 
@@ -235,7 +241,18 @@ void map_field_free(void *object TSRMLS_DC) {
   efree(object);
 }
 
-void map_field_create_with_type(zend_class_entry *ce, const upb_fielddef *field,
+void map_field_create_with_field(zend_class_entry *ce, const upb_fielddef *field,
+                                zval **map_field TSRMLS_DC) {
+  const upb_fielddef *key_field = map_field_key(field);
+  const upb_fielddef *value_field = map_field_value(field);
+  map_field_create_with_type(
+      ce, upb_fielddef_type(key_field), upb_fielddef_type(value_field),
+      field_type_class(value_field TSRMLS_CC), map_field);
+}
+
+void map_field_create_with_type(zend_class_entry *ce, upb_fieldtype_t key_type,
+                                upb_fieldtype_t value_type,
+                                const zend_class_entry *msg_ce,
                                 zval **map_field TSRMLS_DC) {
   MAKE_STD_ZVAL(*map_field);
   Z_TYPE_PP(map_field) = IS_OBJECT;
@@ -245,11 +262,9 @@ void map_field_create_with_type(zend_class_entry *ce, const upb_fielddef *field,
   Map* intern =
       (Map*)zend_object_store_get_object(*map_field TSRMLS_CC);
 
-  const upb_fielddef *key_field = map_field_key(field);
-  const upb_fielddef *value_field = map_field_value(field);
-  intern->key_type = upb_fielddef_type(key_field);
-  intern->value_type = upb_fielddef_type(value_field);
-  intern->msg_ce = field_type_class(value_field TSRMLS_CC);
+  intern->key_type = key_type;
+  intern->value_type = value_type;
+  intern->msg_ce = msg_ce;
 }
 
 static void map_field_free_element(void *object) {

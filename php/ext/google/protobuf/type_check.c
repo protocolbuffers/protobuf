@@ -51,6 +51,13 @@ ZEND_BEGIN_ARG_INFO_EX(arg_check_repeated, 0, 0, 2)
   ZEND_ARG_INFO(0, klass)
 ZEND_END_ARG_INFO()
 
+ZEND_BEGIN_ARG_INFO_EX(arg_check_map, 0, 0, 3)
+  ZEND_ARG_INFO(1, val)
+  ZEND_ARG_INFO(0, key_type)
+  ZEND_ARG_INFO(0, value_type)
+  ZEND_ARG_INFO(0, klass)
+ZEND_END_ARG_INFO()
+
 static zend_function_entry util_methods[] = {
   PHP_ME(Util, checkInt32,  arg_check_optional, ZEND_ACC_PUBLIC|ZEND_ACC_STATIC)
   PHP_ME(Util, checkUint32, arg_check_optional, ZEND_ACC_PUBLIC|ZEND_ACC_STATIC)
@@ -63,6 +70,7 @@ static zend_function_entry util_methods[] = {
   PHP_ME(Util, checkString, arg_check_optional, ZEND_ACC_PUBLIC|ZEND_ACC_STATIC)
   PHP_ME(Util, checkBytes,  arg_check_optional, ZEND_ACC_PUBLIC|ZEND_ACC_STATIC)
   PHP_ME(Util, checkMessage, arg_check_message, ZEND_ACC_PUBLIC|ZEND_ACC_STATIC)
+  PHP_ME(Util, checkMapField,    arg_check_map, ZEND_ACC_PUBLIC|ZEND_ACC_STATIC)
   PHP_ME(Util, checkRepeatedField, arg_check_repeated,
          ZEND_ACC_PUBLIC|ZEND_ACC_STATIC)
   ZEND_FE_END
@@ -411,20 +419,112 @@ PHP_METHOD(Util, checkRepeatedField) {
   zval* val;
   long type;
   const zend_class_entry* klass = NULL;
-  if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "Ol|C", &val,
-                            repeated_field_type, &type, &klass) == FAILURE) {
+  if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "zl|C", &val, &type,
+                            &klass) == FAILURE) {
     return;
   }
 
-  RepeatedField *intern =
-      (RepeatedField *)zend_object_store_get_object(val TSRMLS_CC);
-  if (to_fieldtype(type) != intern->type) {
+  if (Z_TYPE_P(val) == IS_ARRAY) {
+    HashTable* table = Z_ARRVAL_P(val);
+    HashPosition pointer;
+    void* memory;
+    zval* repeated_field;
+
+    repeated_field_create_with_type(repeated_field_type, to_fieldtype(type),
+                                    klass, &repeated_field TSRMLS_CC);
+    RepeatedField* intern =
+        (RepeatedField*)zend_object_store_get_object(repeated_field TSRMLS_CC);
+
+    for (zend_hash_internal_pointer_reset_ex(table, &pointer);
+         zend_hash_get_current_data_ex(table, (void**)&memory, &pointer) ==
+         SUCCESS;
+         zend_hash_move_forward_ex(table, &pointer)) {
+      repeated_field_handlers->write_dimension(repeated_field, NULL, *(zval**)memory);
+    }
+
+    Z_DELREF_P(repeated_field);
+    RETURN_ZVAL(repeated_field, 1, 0);
+
+  } else if (Z_TYPE_P(val) == IS_OBJECT) {
+    if (!instanceof_function(Z_OBJCE_P(val), repeated_field_type TSRMLS_CC)) {
+      zend_error(E_USER_ERROR, "Given value is not an instance of %s.",
+                 repeated_field_type->name);
+      return;
+    }
+    RepeatedField* intern =
+        (RepeatedField*)zend_object_store_get_object(val TSRMLS_CC);
+    if (to_fieldtype(type) != intern->type) {
+      zend_error(E_USER_ERROR, "Incorrect repeated field type.");
+      return;
+    }
+    if (klass != NULL && intern->msg_ce != klass) {
+      zend_error(E_USER_ERROR,
+                 "Expect a repeated field of %s, but %s is given.", klass->name,
+                 intern->msg_ce->name);
+      return;
+    }
+    RETURN_ZVAL(val, 1, 0);
+  } else {
     zend_error(E_USER_ERROR, "Incorrect repeated field type.");
     return;
   }
-  if (klass != NULL && intern->msg_ce != klass) {
-    zend_error(E_USER_ERROR, "Expect a repeated field of %s, but %s is given.",
-               klass->name, intern->msg_ce->name);
+
+}
+
+PHP_METHOD(Util, checkMapField) {
+  zval* val;
+  long key_type, value_type;
+  const zend_class_entry* klass = NULL;
+  if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "zll|C", &val, &key_type,
+                            &value_type, &klass) == FAILURE) {
+    return;
+  }
+
+  if (Z_TYPE_P(val) == IS_ARRAY) {
+    HashTable* table = Z_ARRVAL_P(val);
+    HashPosition pointer;
+    zval key, *map_field;
+    void* value;
+
+    map_field_create_with_type(map_field_type, to_fieldtype(key_type),
+                               to_fieldtype(value_type), klass,
+                               &map_field TSRMLS_CC);
+    Map* intern =
+        (Map*)zend_object_store_get_object(map_field TSRMLS_CC);
+
+    for (zend_hash_internal_pointer_reset_ex(table, &pointer);
+         zend_hash_get_current_data_ex(table, (void**)&value, &pointer) ==
+         SUCCESS;
+         zend_hash_move_forward_ex(table, &pointer)) {
+      zend_hash_get_current_key_zval_ex(table, &key, &pointer);
+      map_field_handlers->write_dimension(map_field, &key, *(zval**)value);
+    }
+
+    Z_DELREF_P(map_field);
+    RETURN_ZVAL(map_field, 1, 0);
+  } else if (Z_TYPE_P(val) == IS_OBJECT) {
+    if (!instanceof_function(Z_OBJCE_P(val), map_field_type TSRMLS_CC)) {
+      zend_error(E_USER_ERROR, "Given value is not an instance of %s.",
+                 map_field_type->name);
+      return;
+    }
+    Map* intern = (Map*)zend_object_store_get_object(val TSRMLS_CC);
+    if (to_fieldtype(key_type) != intern->key_type) {
+      zend_error(E_USER_ERROR, "Incorrect map field key type.");
+      return;
+    }
+    if (to_fieldtype(value_type) != intern->value_type) {
+      zend_error(E_USER_ERROR, "Incorrect map field value type.");
+      return;
+    }
+    if (klass != NULL && intern->msg_ce != klass) {
+      zend_error(E_USER_ERROR, "Expect a map field of %s, but %s is given.",
+                 klass->name, intern->msg_ce->name);
+      return;
+    }
+    RETURN_ZVAL(val, 1, 0);
+  } else {
+    zend_error(E_USER_ERROR, "Incorrect map field type.");
     return;
   }
 }
