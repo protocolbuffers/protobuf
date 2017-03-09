@@ -65,10 +65,16 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 import junit.framework.TestCase;
 
 public class JsonFormatTest extends TestCase {
+  public JsonFormatTest() {
+    // Test that locale does not affect JsonFormat.
+    Locale.setDefault(Locale.forLanguageTag("hi-IN"));
+  }
+
   private void setAllFields(TestAllTypes.Builder builder) {
     builder.setOptionalInt32(1234);
     builder.setOptionalInt64(1234567890123456789L);
