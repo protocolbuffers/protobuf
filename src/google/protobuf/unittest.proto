@@ -191,6 +191,10 @@ message TestDeprecatedFields {
   optional int32 deprecated_int32 = 1 [deprecated=true];
 }
 
+message TestDeprecatedMessage {
+  option deprecated = true;
+}
+
 // Define these after TestAllTypes to make sure the compiler can handle
 // that.
 message ForeignMessage {
