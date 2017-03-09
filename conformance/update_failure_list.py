@@ -57,7 +57,7 @@ for remove_file in (args.remove_list or []):
   with open(remove_file) as f:
     for line in f:
       if line in add_set:
-        raise "Asked to both add and remove test: " + line
+        raise Exception("Asked to both add and remove test: " + line)
       remove_set.add(line.strip())
 
 add_list = sorted(add_set, reverse=True)
