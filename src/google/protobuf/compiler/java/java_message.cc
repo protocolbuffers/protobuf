@@ -1431,6 +1431,7 @@ void ImmutableMessageGenerator::GenerateAnyMethods(io::Printer* printer) {
     "\n"
     "private volatile com.google.protobuf.Message cachedUnpackValue;\n"
     "\n"
+    "@java.lang.SuppressWarnings(\"unchecked\")\n"
     "public <T extends com.google.protobuf.Message> T unpack(\n"
     "    java.lang.Class<T> clazz)\n"
     "    throws com.google.protobuf.InvalidProtocolBufferException {\n"
