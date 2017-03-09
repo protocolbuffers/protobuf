@@ -103,7 +103,7 @@ add_executable(js_embed ${protobuf_source_dir}/src/google/protobuf/compiler/js/e
 add_custom_command(
   OUTPUT ${protobuf_source_dir}/src/google/protobuf/compiler/js/well_known_types_embed.cc
   DEPENDS js_embed ${js_well_known_types_sources}
-  COMMAND js_embed ${js_well_known_types_sources} > ${protobuf_source_dir}/src/google/protobuf/compiler/js/well_known_types_embed.cc
+  COMMAND ${CMAKE_CURRENT_BINARY_DIR}/js_embed ${js_well_known_types_sources} > ${protobuf_source_dir}/src/google/protobuf/compiler/js/well_known_types_embed.cc
 )
 
 add_library(libprotoc ${protobuf_SHARED_OR_STATIC}
