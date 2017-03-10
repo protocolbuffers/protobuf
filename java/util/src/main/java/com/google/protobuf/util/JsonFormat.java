@@ -35,6 +35,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
+import com.google.gson.JsonIOException;
 import com.google.gson.JsonNull;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
@@ -1067,9 +1068,23 @@ public class JsonFormat {
     }
 
     void merge(Reader json, Message.Builder builder) throws IOException {
-      JsonReader reader = new JsonReader(json);
-      reader.setLenient(false);
-      merge(jsonParser.parse(reader), builder);
+      try {
+        JsonReader reader = new JsonReader(json);
+        reader.setLenient(false);
+        merge(jsonParser.parse(reader), builder);
+      } catch (InvalidProtocolBufferException e) {
+        throw e;
+      } catch (JsonIOException e) {
+        // Unwrap IOException.
+        if (e.getCause() instanceof IOException) {
+          throw (IOException) e.getCause();
+        } else {
+          throw new InvalidProtocolBufferException(e.getMessage());
+        }
+      } catch (Exception e) {
+        // We convert all exceptions from JSON parsing to our own exceptions.
+        throw new InvalidProtocolBufferException(e.getMessage());
+      }
     }
 
     void merge(String json, Message.Builder builder) throws InvalidProtocolBufferException {
