@@ -34,8 +34,8 @@
 // generated automatically at build time.
 //
 // If this test fails, run the script
-// "generate_descriptor_proto.sh" and add
-// csharp/src/Google.Protobuf/Reflection/Descriptor.cs to your changelist.
+// "generate_descriptor_proto.sh" and add the changed files under
+// csharp/src/ to your changelist.
 
 #include <map>
 
@@ -91,7 +91,8 @@ class MockGeneratorContext : public GeneratorContext {
     string actual_contents;
     GOOGLE_CHECK_OK(
         File::GetContents(TestSourceDir() + "/" + physical_filename,
-                          &actual_contents, true));
+                          &actual_contents, true))
+        << "Unable to get " << physical_filename;
     EXPECT_TRUE(actual_contents == *expected_contents)
       << physical_filename << " needs to be regenerated.  Please run "
          "generate_descriptor_proto.sh. Then add this file "
@@ -112,26 +113,80 @@ class MockGeneratorContext : public GeneratorContext {
   std::map<string, string*> files_;
 };
 
+class GenerateAndTest {
+ public:
+  GenerateAndTest() {}
+  void Run(const FileDescriptor* proto_file, string file1, string file2) {
+    ASSERT_TRUE(proto_file != NULL) << TestSourceDir();
+    ASSERT_TRUE(generator_.Generate(proto_file, parameter_,
+                                    &context_, &error_));
+    context_.ExpectFileMatches(file1, file2);
+  }
+  void SetParameter(string parameter) {
+    parameter_ = parameter;
+  }
+
+ private:
+  Generator generator_;
+  MockGeneratorContext context_;
+  string error_;
+  string parameter_;
+};
+
 TEST(CsharpBootstrapTest, GeneratedCsharpDescriptorMatches) {
   MockErrorCollector error_collector;
   DiskSourceTree source_tree;
-  source_tree.MapPath("", TestSourceDir());
   Importer importer(&source_tree, &error_collector);
-  const FileDescriptor* proto_file =
-    importer.Import("google/protobuf/descriptor.proto");
+  GenerateAndTest generate_test;
+
+  generate_test.SetParameter("base_namespace=Google.Protobuf");
+  source_tree.MapPath("", TestSourceDir());
+  generate_test.Run(importer.Import("google/protobuf/descriptor.proto"),
+                    "Reflection/Descriptor.cs",
+                    "../csharp/src/Google.Protobuf/Reflection/Descriptor.cs");
+  generate_test.Run(importer.Import("google/protobuf/any.proto"),
+                    "WellKnownTypes/Any.cs",
+                    "../csharp/src/Google.Protobuf/WellKnownTypes/Any.cs");
+  generate_test.Run(importer.Import("google/protobuf/api.proto"),
+                    "WellKnownTypes/Api.cs",
+                    "../csharp/src/Google.Protobuf/WellKnownTypes/Api.cs");
+  generate_test.Run(importer.Import("google/protobuf/duration.proto"),
+                    "WellKnownTypes/Duration.cs",
+                    "../csharp/src/Google.Protobuf/WellKnownTypes/Duration.cs");
+  generate_test.Run(importer.Import("google/protobuf/empty.proto"),
+                    "WellKnownTypes/Empty.cs",
+                    "../csharp/src/Google.Protobuf/WellKnownTypes/Empty.cs");
+  generate_test.Run(importer.Import("google/protobuf/field_mask.proto"),
+                    "WellKnownTypes/FieldMask.cs",
+                    "../csharp/src/Google.Protobuf/WellKnownTypes/FieldMask.cs");
+  generate_test.Run(importer.Import("google/protobuf/source_context.proto"),
+                    "WellKnownTypes/SourceContext.cs",
+                    "../csharp/src/Google.Protobuf/WellKnownTypes/SourceContext.cs");
+  generate_test.Run(importer.Import("google/protobuf/struct.proto"),
+                    "WellKnownTypes/Struct.cs",
+                    "../csharp/src/Google.Protobuf/WellKnownTypes/Struct.cs");
+  generate_test.Run(importer.Import("google/protobuf/timestamp.proto"),
+                    "WellKnownTypes/Timestamp.cs",
+                    "../csharp/src/Google.Protobuf/WellKnownTypes/Timestamp.cs");
+  generate_test.Run(importer.Import("google/protobuf/type.proto"),
+                    "WellKnownTypes/Type.cs",
+                    "../csharp/src/Google.Protobuf/WellKnownTypes/Type.cs");
+  generate_test.Run(importer.Import("google/protobuf/wrappers.proto"),
+                    "WellKnownTypes/Wrappers.cs",
+                    "../csharp/src/Google.Protobuf/WellKnownTypes/Wrappers.cs");
+
+  generate_test.SetParameter("");
+  source_tree.MapPath("", TestSourceDir() + "/../examples");
+  generate_test.Run(importer.Import("addressbook.proto"),
+                    "Addressbook.cs",
+                    "../csharp/src/AddressBook/Addressbook.cs");
+
+  source_tree.MapPath("", TestSourceDir() + "/../conformance");
+  generate_test.Run(importer.Import("conformance.proto"),
+                    "Conformance.cs",
+                    "../csharp/src/Google.Protobuf.Conformance/Conformance.cs");
+
   EXPECT_EQ("", error_collector.text_);
-  ASSERT_TRUE(proto_file != NULL);
-
-  Generator generator;
-  MockGeneratorContext context;
-  string error;
-  string parameter = "base_namespace=Google.Protobuf";
-  ASSERT_TRUE(generator.Generate(proto_file, parameter,
-                                 &context, &error));
-
-  context.ExpectFileMatches(
-      "Reflection/Descriptor.cs",
-      "../csharp/src/Google.Protobuf/Reflection/Descriptor.cs");
 }
 
 }  // namespace
