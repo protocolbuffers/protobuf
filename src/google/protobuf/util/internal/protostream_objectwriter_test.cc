@@ -74,6 +74,8 @@ using google::protobuf::testing::Primitive;
 using google::protobuf::testing::Proto3Message;
 using google::protobuf::testing::Publisher;
 using google::protobuf::testing::StructType;
+using google::protobuf::testing::TestJsonName1;
+using google::protobuf::testing::TestJsonName2;
 using google::protobuf::testing::TimestampDuration;
 using google::protobuf::testing::ValueWrapper;
 using google::protobuf::testing::oneofs::OneOfsRequest;
@@ -269,6 +271,26 @@ TEST_P(ProtoStreamObjectWriterTest, CustomJsonName) {
       ->EndObject()
       ->EndObject();
   CheckOutput(book);
+}
+
+// Test that two messages can have different fields mapped to the same JSON
+// name. See: https://github.com/google/protobuf/issues/1415
+TEST_P(ProtoStreamObjectWriterTest, ConflictingJsonName) {
+  ResetTypeInfo(TestJsonName1::descriptor());
+  TestJsonName1 message1;
+  message1.set_one_value(12345);
+  ow_->StartObject("")
+      ->RenderInt32("value", 12345)
+      ->EndObject();
+  CheckOutput(message1);
+
+  ResetTypeInfo(TestJsonName2::descriptor());
+  TestJsonName2 message2;
+  message2.set_another_value(12345);
+  ow_->StartObject("")
+      ->RenderInt32("value", 12345)
+      ->EndObject();
+  CheckOutput(message2);
 }
 
 TEST_P(ProtoStreamObjectWriterTest, IntEnumValuesAreAccepted) {
