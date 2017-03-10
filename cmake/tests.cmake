@@ -17,6 +17,7 @@ add_library(gmock STATIC
   ${protobuf_source_dir}/gmock/src/gmock-all.cc
   ${protobuf_source_dir}/gmock/gtest/src/gtest-all.cc
 )
+target_link_libraries(gmock ${CMAKE_THREAD_LIBS_INIT})
 add_library(gmock_main STATIC ${protobuf_source_dir}/gmock/src/gmock_main.cc)
 target_link_libraries(gmock_main gmock)
 
