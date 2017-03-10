@@ -100,6 +100,7 @@ public class MapField<K, V> implements MutabilityOracle {
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public void convertMessageToKeyAndValue(Message message, Map<K, V> map) {
       MapEntry<K, V> entry = (MapEntry<K, V>) message;
       map.put(entry.getKey(), entry.getValue());
