@@ -180,6 +180,10 @@ lib_LTLIBRARIES = libprotobuf-lite.la libprotobuf.la libprotoc.la
 
 libprotobuf_lite_la_LIBADD = $(PTHREAD_LIBS)
 libprotobuf_lite_la_LDFLAGS = -version-info 12:0:0 -export-dynamic -no-undefined
+if HAVE_LD_VERSION_SCRIPT
+libprotobuf_lite_la_LDFLAGS += -Wl,--version-script=$(srcdir)/libprotobuf-lite.map
+EXTRA_libprotobuf_lite_la_DEPENDENCIES = libprotobuf-lite.map
+endif
 libprotobuf_lite_la_SOURCES =                                  \
   google/protobuf/stubs/atomicops_internals_x86_gcc.cc         \
   google/protobuf/stubs/atomicops_internals_x86_msvc.cc        \
@@ -221,6 +225,10 @@ libprotobuf_lite_la_SOURCES =                                  \
 
 libprotobuf_la_LIBADD = $(PTHREAD_LIBS)
 libprotobuf_la_LDFLAGS = -version-info 12:0:0 -export-dynamic -no-undefined
+if HAVE_LD_VERSION_SCRIPT
+libprotobuf_la_LDFLAGS += -Wl,--version-script=$(srcdir)/libprotobuf.map
+EXTRA_libprotobuf_la_DEPENDENCIES = libprotobuf.map
+endif
 libprotobuf_la_SOURCES =                                       \
   $(libprotobuf_lite_la_SOURCES)                               \
   google/protobuf/any.pb.cc                                    \
@@ -305,6 +313,10 @@ nodist_libprotobuf_la_SOURCES = $(nodist_libprotobuf_lite_la_SOURCES)
 
 libprotoc_la_LIBADD = $(PTHREAD_LIBS) libprotobuf.la
 libprotoc_la_LDFLAGS = -version-info 12:0:0 -export-dynamic -no-undefined
+if HAVE_LD_VERSION_SCRIPT
+libprotoc_la_LDFLAGS += -Wl,--version-script=$(srcdir)/libprotoc.map
+EXTRA_libprotoc_la_DEPENDENCIES = libprotoc.map
+endif
 libprotoc_la_SOURCES =                                         \
   google/protobuf/compiler/code_generator.cc                   \
   google/protobuf/compiler/command_line_interface.cc           \
@@ -580,6 +592,9 @@ EXTRA_DIST =                                                   \
   google/protobuf/compiler/ruby/ruby_generated_code_pb.rb      \
   google/protobuf/compiler/package_info.h                      \
   google/protobuf/compiler/zip_output_unittest.sh              \
+  libprotobuf-lite.map                                         \
+  libprotobuf.map                                              \
+  libprotoc.map                                                \
   README.md
 
 protoc_lite_outputs =                                          \
