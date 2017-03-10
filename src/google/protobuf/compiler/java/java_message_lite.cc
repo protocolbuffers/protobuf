@@ -345,7 +345,7 @@ void ImmutableMessageLiteGenerator::Generate(io::Printer* printer) {
   }
 
   printer->Print(
-    "@java.lang.SuppressWarnings(\"unchecked\")\n"
+    "@java.lang.SuppressWarnings({\"unchecked\", \"fallthrough\"})\n"
     "protected final Object dynamicMethod(\n"
     "    com.google.protobuf.GeneratedMessageLite.MethodToInvoke method,\n"
     "    Object arg0, Object arg1) {\n"
