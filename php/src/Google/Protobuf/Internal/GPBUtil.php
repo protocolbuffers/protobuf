@@ -34,6 +34,7 @@ namespace Google\Protobuf\Internal;
 
 use Google\Protobuf\Internal\GPBType;
 use Google\Protobuf\Internal\RepeatedField;
+use Google\Protobuf\Internal\MapField;
 
 class GPBUtil
 {
@@ -175,19 +176,60 @@ class GPBUtil
 
     public static function checkRepeatedField(&$var, $type, $klass = null)
     {
-        if (!$var instanceof RepeatedField) {
-            trigger_error("Expect repeated field.", E_USER_ERROR);
+        if (!$var instanceof RepeatedField && !is_array($var)) {
+            trigger_error("Expect array.", E_USER_ERROR);
         }
-        if ($var->getType() != $type) {
-            trigger_error(
-                "Expect repeated field of different type.",
-                E_USER_ERROR);
+        if (is_array($var)) {
+            $tmp = new RepeatedField($type, $klass);
+            foreach ($var as $value) {
+                $tmp[] = $value;
+            }
+            return $tmp;
+        } else {
+            if ($var->getType() != $type) {
+                trigger_error(
+                    "Expect repeated field of different type.",
+                    E_USER_ERROR);
+            }
+            if ($var->getType() === GPBType::MESSAGE &&
+                $var->getClass() !== $klass) {
+                trigger_error(
+                    "Expect repeated field of different message.",
+                    E_USER_ERROR);
+            }
+            return $var;
         }
-        if ($var->getType() === GPBType::MESSAGE &&
-            $var->getClass() !== $klass) {
-            trigger_error(
-                "Expect repeated field of different message.",
-                E_USER_ERROR);
+    }
+
+    public static function checkMapField(&$var, $key_type, $value_type, $klass = null)
+    {
+        if (!$var instanceof MapField && !is_array($var)) {
+            trigger_error("Expect dict.", E_USER_ERROR);
+        }
+        if (is_array($var)) {
+            $tmp = new MapField($key_type, $value_type, $klass);
+            foreach ($var as $key => $value) {
+                $tmp[$key] = $value;
+            }
+            return $tmp;
+        } else {
+            if ($var->getKeyType() != $key_type) {
+                trigger_error(
+                    "Expect map field of key type.",
+                    E_USER_ERROR);
+            }
+            if ($var->getValueType() != $value_type) {
+                trigger_error(
+                    "Expect map field of value type.",
+                    E_USER_ERROR);
+            }
+            if ($var->getValueType() === GPBType::MESSAGE &&
+                $var->getValueClass() !== $klass) {
+                trigger_error(
+                    "Expect map field of different value message.",
+                    E_USER_ERROR);
+            }
+            return $var;
         }
     }
 

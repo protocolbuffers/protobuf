@@ -296,6 +296,7 @@ PHP_METHOD(Util, checkBool);
 PHP_METHOD(Util, checkString);
 PHP_METHOD(Util, checkBytes);
 PHP_METHOD(Util, checkMessage);
+PHP_METHOD(Util, checkMapField);
 PHP_METHOD(Util, checkRepeatedField);
 
 // -----------------------------------------------------------------------------
@@ -349,7 +350,11 @@ const upb_fielddef* map_entry_key(const upb_msgdef* msgdef);
 const upb_fielddef* map_entry_value(const upb_msgdef* msgdef);
 
 zend_object_value map_field_create(zend_class_entry *ce TSRMLS_DC);
-void map_field_create_with_type(zend_class_entry *ce, const upb_fielddef *field,
+void map_field_create_with_field(zend_class_entry *ce, const upb_fielddef *field,
+                                zval **map_field TSRMLS_DC);
+void map_field_create_with_type(zend_class_entry *ce, upb_fieldtype_t key_type,
+                                upb_fieldtype_t value_type,
+                                const zend_class_entry *msg_ce,
                                 zval **map_field TSRMLS_DC);
 void map_field_free(void* object TSRMLS_DC);
 void* upb_value_memory(upb_value* v);
@@ -392,8 +397,11 @@ struct RepeatedFieldIter {
   long position;
 };
 
-void repeated_field_create_with_type(zend_class_entry* ce,
+void repeated_field_create_with_field(zend_class_entry* ce,
                                      const upb_fielddef* field,
+                                     zval** repeated_field TSRMLS_DC);
+void repeated_field_create_with_type(zend_class_entry* ce, upb_fieldtype_t type,
+                                     const zend_class_entry* msg_ce,
                                      zval** repeated_field TSRMLS_DC);
 // Return the element at the index position from the repeated field. There is
 // not restriction on the type of stored elements.

@@ -439,9 +439,31 @@ void GenerateFieldAccessor(const FieldDescriptor* field, bool is_descriptor,
 
   // Type check.
   if (field->is_map()) {
+    const Descriptor* map_entry = field->message_type();
+    const FieldDescriptor* key = map_entry->FindFieldByName("key");
+    const FieldDescriptor* value = map_entry->FindFieldByName("value");
+    printer->Print(
+        "$arr = GPBUtil::checkMapField($var, "
+        "\\Google\\Protobuf\\Internal\\GPBType::^key_type^, "
+        "\\Google\\Protobuf\\Internal\\GPBType::^value_type^",
+        "key_type", ToUpper(key->type_name()),
+        "value_type", ToUpper(value->type_name()));
+    if (value->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
+      printer->Print(
+          ", \\^class_name^);\n",
+          "class_name",
+          MessageName(value->message_type(), is_descriptor) + "::class");
+    } else if (value->cpp_type() == FieldDescriptor::CPPTYPE_ENUM) {
+      printer->Print(
+          ", ^class_name^);\n",
+          "class_name",
+          EnumName(value->enum_type(), is_descriptor) + "::class");
+    } else {
+      printer->Print(");\n");
+    }
   } else if (field->is_repeated()) {
     printer->Print(
-        "GPBUtil::checkRepeatedField($var, "
+        "$arr = GPBUtil::checkRepeatedField($var, "
         "\\Google\\Protobuf\\Internal\\GPBType::^type^",
         "type", ToUpper(field->type_name()));
     if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
@@ -480,6 +502,10 @@ void GenerateFieldAccessor(const FieldDescriptor* field, bool is_descriptor,
     printer->Print(
         "$this->writeOneof(^number^, $var);\n",
         "number", IntToString(field->number()));
+  } else if (field->is_repeated()) {
+    printer->Print(
+        "$this->^name^ = $arr;\n",
+        "name", field->name());
   } else {
     printer->Print(
         "$this->^name^ = $var;\n",

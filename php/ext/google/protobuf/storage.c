@@ -517,12 +517,12 @@ void layout_init(MessageLayout* layout, void* storage,
       *oneof_case = ONEOF_CASE_NONE;
     } else if (is_map_field(field)) {
       zval_ptr_dtor(property_ptr);
-      map_field_create_with_type(map_field_type, field, property_ptr TSRMLS_CC);
+      map_field_create_with_field(map_field_type, field, property_ptr TSRMLS_CC);
       DEREF(memory, zval**) = property_ptr;
     } else if (upb_fielddef_label(field) == UPB_LABEL_REPEATED) {
       zval_ptr_dtor(property_ptr);
-      repeated_field_create_with_type(repeated_field_type, field,
-                                      property_ptr TSRMLS_CC);
+      repeated_field_create_with_field(repeated_field_type, field,
+                                       property_ptr TSRMLS_CC);
       DEREF(memory, zval**) = property_ptr;
     } else {
       native_slot_init(upb_fielddef_type(field), memory, property_ptr);

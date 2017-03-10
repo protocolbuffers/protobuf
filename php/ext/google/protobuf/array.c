@@ -225,8 +225,17 @@ void repeated_field_push_native(RepeatedField *intern, void *value TSRMLS_DC) {
   zend_hash_next_index_insert(ht, (void **)value, size, NULL);
 }
 
+void repeated_field_create_with_field(zend_class_entry *ce,
+                                      const upb_fielddef *field,
+                                      zval **repeated_field TSRMLS_DC) {
+  upb_fieldtype_t type = upb_fielddef_type(field);
+  const zend_class_entry *msg_ce = field_type_class(field TSRMLS_CC);
+  repeated_field_create_with_type(ce, type, msg_ce, repeated_field);
+}
+
 void repeated_field_create_with_type(zend_class_entry *ce,
-                                     const upb_fielddef *field,
+                                     upb_fieldtype_t type,
+                                     const zend_class_entry* msg_ce,
                                      zval **repeated_field TSRMLS_DC) {
   MAKE_STD_ZVAL(*repeated_field);
   Z_TYPE_PP(repeated_field) = IS_OBJECT;
@@ -235,13 +244,8 @@ void repeated_field_create_with_type(zend_class_entry *ce,
 
   RepeatedField *intern =
       zend_object_store_get_object(*repeated_field TSRMLS_CC);
-  intern->type = upb_fielddef_type(field);
-  if (intern->type == UPB_TYPE_MESSAGE) {
-    const upb_msgdef *msg = upb_fielddef_msgsubdef(field);
-    zval *desc_php = get_def_obj(msg);
-    Descriptor *desc = zend_object_store_get_object(desc_php TSRMLS_CC);
-    intern->msg_ce = desc->klass;
-  }
+  intern->type = type;
+  intern->msg_ce = msg_ce;
   MAKE_STD_ZVAL(intern->array);
   repeated_field_array_init(intern->array, intern->type, 0 ZEND_FILE_LINE_CC);
 

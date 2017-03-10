@@ -6,6 +6,7 @@ require_once('test_base.php');
 require_once('test_util.php');
 
 use Google\Protobuf\Internal\RepeatedField;
+use Google\Protobuf\Internal\MapField;
 use Google\Protobuf\Internal\GPBType;
 use Foo\TestEnum;
 use Foo\TestMessage;
@@ -526,6 +527,26 @@ class GeneratedClassTest extends TestBase
         $this->assertSame($repeated_int32, $m->getRepeatedInt32());
     }
 
+    public function testRepeatedFieldViaArray()
+    {
+        $m = new TestMessage();
+
+        $arr = array();
+        $m->setRepeatedInt32($arr);
+        $this->assertSame(0, count($m->getRepeatedInt32()));
+
+        $arr = array(1, 2.1, "3");
+        $m->setRepeatedInt32($arr);
+        $this->assertTrue($m->getRepeatedInt32() instanceof RepeatedField);
+        $this->assertSame("Google\Protobuf\Internal\RepeatedField",
+                          get_class($m->getRepeatedInt32()));
+        $this->assertSame(3, count($m->getRepeatedInt32()));
+        $this->assertSame(1, $m->getRepeatedInt32()[0]);
+        $this->assertSame(2, $m->getRepeatedInt32()[1]);
+        $this->assertSame(3, $m->getRepeatedInt32()[2]);
+        $this->assertFalse($arr instanceof RepeatedField);
+    }
+
     /**
      * @expectedException PHPUnit_Framework_Error
      */
@@ -566,6 +587,80 @@ class GeneratedClassTest extends TestBase
         $repeated_message = new RepeatedField(GPBType::MESSAGE,
                                               TestMessage::class);
         $m->setRepeatedMessage($repeated_message);
+    }
+
+    #########################################################
+    # Test map field.
+    #########################################################
+
+    public function testMapField()
+    {
+        $m = new TestMessage();
+
+        $map_int32_int32 = new MapField(GPBType::INT32, GPBType::INT32);
+        $m->setMapInt32Int32($map_int32_int32);
+        $this->assertSame($map_int32_int32, $m->getMapInt32Int32());
+    }
+
+    public function testMapFieldViaArray()
+    {
+        $m = new TestMessage();
+
+        $dict = array();
+        $m->setMapInt32Int32($dict);
+        $this->assertSame(0, count($m->getMapInt32Int32()));
+
+        $dict = array(5 => 5, 6.1 => 6.1, "7" => "7");
+        $m->setMapInt32Int32($dict);
+        $this->assertTrue($m->getMapInt32Int32() instanceof MapField);
+        $this->assertSame(3, count($m->getMapInt32Int32()));
+        $this->assertSame(5, $m->getMapInt32Int32()[5]);
+        $this->assertSame(6, $m->getMapInt32Int32()[6]);
+        $this->assertSame(7, $m->getMapInt32Int32()[7]);
+        $this->assertFalse($dict instanceof MapField);
+    }
+
+    /**
+     * @expectedException PHPUnit_Framework_Error
+     */
+    public function testMapFieldWrongTypeFail()
+    {
+        $m = new TestMessage();
+        $a = 1;
+        $m->setMapInt32Int32($a);
+    }
+
+    /**
+     * @expectedException PHPUnit_Framework_Error
+     */
+    public function testMapFieldWrongObjectFail()
+    {
+        $m = new TestMessage();
+        $m->setMapInt32Int32($m);
+    }
+
+    /**
+     * @expectedException PHPUnit_Framework_Error
+     */
+    public function testMapFieldWrongRepeatedTypeFail()
+    {
+        $m = new TestMessage();
+
+        $map_uint32_uint32 = new MapField(GPBType::UINT32, GPBType::UINT32);
+        $m->setMapInt32Int32($map_uint32_uint32);
+    }
+
+    /**
+     * @expectedException PHPUnit_Framework_Error
+     */
+    public function testMapFieldWrongRepeatedMessageClassFail()
+    {
+        $m = new TestMessage();
+
+        $map_int32_message = new MapField(GPBType::INT32,
+                                          GPBType::MESSAGE,
+                                          TestMessage::class);
+        $m->setMapInt32Message($map_int32_message);
     }
 
     #########################################################
