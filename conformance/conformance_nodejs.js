@@ -33,6 +33,7 @@
  */
 
 var conformance = require('conformance_pb');
+var test_messages_proto3 = require('google/protobuf/test_messages_proto3_pb');
 var fs = require('fs');
 
 var testCount = 0;
@@ -42,10 +43,15 @@ function doTest(request) {
   var response = new conformance.ConformanceResponse();
 
   try {
+    if (request.getRequestedOutputFormat() === conformance.WireFormat.JSON) {
+      response.setSkipped("JSON not supported.");
+      return response;
+    }
+
     switch (request.getPayloadCase()) {
       case conformance.ConformanceRequest.PayloadCase.PROTOBUF_PAYLOAD:
         try {
-          testMessage = conformance.TestAllTypes.deserializeBinary(
+          testMessage = test_messages_proto3.TestAllTypes.deserializeBinary(
               request.getProtobufPayload());
         } catch (err) {
           response.setParseError(err.toString());
@@ -62,14 +68,14 @@ function doTest(request) {
     }
 
     switch (request.getRequestedOutputFormat()) {
-      case conformance.UNSPECIFIED:
+      case conformance.WireFormat.UNSPECIFIED:
         response.setRuntimeError("Unspecified output format");
         return response;
 
-      case conformance.PROTOBUF:
+      case conformance.WireFormat.PROTOBUF:
         response.setProtobufPayload(testMessage.serializeBinary());
 
-      case conformance.JSON:
+      case conformance.WireFormat.JSON:
         response.setSkipped("JSON not supported.");
         return response;
 
@@ -80,7 +86,7 @@ function doTest(request) {
     response.setRuntimeError(err.toString());
   }
 
-  return response
+  return response;
 }
 
 function onEof(totalRead) {
@@ -95,21 +101,22 @@ function onEof(totalRead) {
 function readBuffer(bytes) {
   var buf = new Buffer(bytes);
   var totalRead = 0;
+  //console.warn("Want to read: " + bytes);
   while (totalRead < bytes) {
-    var read;
+    var read = 0;
     try {
+      //console.warn("Trying to read: " + (bytes - totalRead));
       read = fs.readSync(process.stdin.fd, buf, totalRead, bytes - totalRead);
     } catch (e) {
       if (e.code == 'EOF') {
         return onEof(totalRead)
+      } else if (e.code == 'EAGAIN') {
       } else {
-        throw "conformance_nodejs: Error reading from stdin.";
+        throw "conformance_nodejs: Error reading from stdin." + e;
       }
     }
 
-    if (read === 0) {
-      return onEof(totalRead);
-    }
+    //console.warn("Read: " + read);
     totalRead += read;
   }
 
@@ -122,14 +129,6 @@ function writeBuffer(buffer) {
     totalWritten += fs.writeSync(
         process.stdout.fd, buffer, totalWritten, buffer.length - totalWritten);
   }
-}
-
-function uint8ArrayToBuffer(arr) {
-  var buffer = new Buffer(arr.length);
-  for (var i = 0; i < arr.length; i++) {
-    buffer[i] = arr[i];
-  }
-  return buffer;
 }
 
 // Returns true if the test ran successfully, false on legitimate EOF.
@@ -146,6 +145,7 @@ function doTestIo() {
     throw "conformance_nodejs: Failed to read request.";
   }
 
+  serializedRequest = new Uint8Array(serializedRequest);
   var request =
       conformance.ConformanceRequest.deserializeBinary(serializedRequest);
   var response = doTest(request);
@@ -155,7 +155,7 @@ function doTestIo() {
   lengthBuf = new Buffer(4);
   lengthBuf.writeInt32LE(serializedResponse.length, 0);
   writeBuffer(lengthBuf);
-  writeBuffer(uint8ArrayToBuffer(serializedResponse));
+  writeBuffer(new Buffer(serializedResponse));
 
   testCount += 1
 
@@ -164,7 +164,7 @@ function doTestIo() {
 
 while (true) {
   if (!doTestIo()) {
-    console.error('conformance_ruby: received EOF from test runner ' +
+    console.error('conformance_nodejs: received EOF from test runner ' +
                   "after " + testCount + " tests, exiting")
     break;
   }
