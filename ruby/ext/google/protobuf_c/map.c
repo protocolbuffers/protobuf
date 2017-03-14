@@ -654,6 +654,35 @@ VALUE Map_hash(VALUE _self) {
 
 /*
  * call-seq:
+ *     Map.to_h => {}
+ *
+ * Returns a Ruby Hash object containing all the values within the map
+ */
+VALUE Map_to_h(VALUE _self) {
+  Map* self = ruby_to_Map(_self);
+  VALUE hash = rb_hash_new();
+  upb_strtable_iter it;
+  for (upb_strtable_begin(&it, &self->table);
+       !upb_strtable_done(&it);
+       upb_strtable_next(&it)) {
+    VALUE key = table_key_to_ruby(
+        self, upb_strtable_iter_key(&it), upb_strtable_iter_keylength(&it));
+    upb_value v = upb_strtable_iter_value(&it);
+    void* mem = value_memory(&v);
+    VALUE value = native_slot_get(self->value_type,
+                                  self->value_type_class,
+                                  mem);
+
+    if (self->value_type == UPB_TYPE_MESSAGE) {
+      value = Message_to_h(value);
+    }
+    rb_hash_aset(hash, key, value);
+  }
+  return hash;
+}
+
+/*
+ * call-seq:
  *     Map.inspect => string
  *
  * Returns a string representing this map's elements. It will be formatted as
@@ -804,6 +833,8 @@ void Map_register(VALUE module) {
   rb_define_method(klass, "dup", Map_dup, 0);
   rb_define_method(klass, "==", Map_eq, 1);
   rb_define_method(klass, "hash", Map_hash, 0);
+  rb_define_method(klass, "to_hash", Map_to_h, 0);
+  rb_define_method(klass, "to_h", Map_to_h, 0);
   rb_define_method(klass, "inspect", Map_inspect, 0);
   rb_define_method(klass, "merge", Map_merge, 1);
   rb_include_module(klass, rb_mEnumerable);
