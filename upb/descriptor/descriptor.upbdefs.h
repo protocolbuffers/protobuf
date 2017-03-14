@@ -253,6 +253,7 @@ UPB_INLINE const upb_fielddef *upbdefs_google_protobuf_FileOptions_f_java_string
 UPB_INLINE const upb_fielddef *upbdefs_google_protobuf_FileOptions_f_javanano_use_deprecated_package(const upb_msgdef *m) { UPB_ASSERT(upbdefs_google_protobuf_FileOptions_is(m)); return upb_msgdef_itof(m, 38); }
 UPB_INLINE const upb_fielddef *upbdefs_google_protobuf_FileOptions_f_objc_class_prefix(const upb_msgdef *m) { UPB_ASSERT(upbdefs_google_protobuf_FileOptions_is(m)); return upb_msgdef_itof(m, 36); }
 UPB_INLINE const upb_fielddef *upbdefs_google_protobuf_FileOptions_f_optimize_for(const upb_msgdef *m) { UPB_ASSERT(upbdefs_google_protobuf_FileOptions_is(m)); return upb_msgdef_itof(m, 9); }
+UPB_INLINE const upb_fielddef *upbdefs_google_protobuf_FileOptions_f_php_class_prefix(const upb_msgdef *m) { UPB_ASSERT(upbdefs_google_protobuf_FileOptions_is(m)); return upb_msgdef_itof(m, 40); }
 UPB_INLINE const upb_fielddef *upbdefs_google_protobuf_FileOptions_f_py_generic_services(const upb_msgdef *m) { UPB_ASSERT(upbdefs_google_protobuf_FileOptions_is(m)); return upb_msgdef_itof(m, 18); }
 UPB_INLINE const upb_fielddef *upbdefs_google_protobuf_FileOptions_f_uninterpreted_option(const upb_msgdef *m) { UPB_ASSERT(upbdefs_google_protobuf_FileOptions_is(m)); return upb_msgdef_itof(m, 999); }
 UPB_INLINE const upb_fielddef *upbdefs_google_protobuf_MessageOptions_f_deprecated(const upb_msgdef *m) { UPB_ASSERT(upbdefs_google_protobuf_MessageOptions_is(m)); return upb_msgdef_itof(m, 3); }
