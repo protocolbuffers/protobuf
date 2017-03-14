@@ -237,6 +237,20 @@ static size_t file_onpackage(void *closure, const void *hd, const char *buf,
   return n;
 }
 
+static size_t file_onphpprefix(void *closure, const void *hd, const char *buf,
+                             size_t n, const upb_bufhandle *handle) {
+  upb_descreader *r = closure;
+  char *prefix;
+  bool ok;
+  UPB_UNUSED(hd);
+  UPB_UNUSED(handle);
+
+  prefix = upb_gstrndup(buf, n);
+  ok = upb_filedef_setpackage(r->file, prefix, NULL);
+  UPB_ASSERT(ok);
+  return true;
+}
+
 static size_t file_onsyntax(void *closure, const void *hd, const char *buf,
                             size_t n, const upb_bufhandle *handle) {
   upb_descreader *r = closure;
@@ -763,6 +777,9 @@ static void reghandlers(const void *closure, upb_handlers *h) {
     upb_handlers_setbool(h, F(FieldOptions, packed), &field_onpacked, NULL);
   } else if (upbdefs_google_protobuf_MessageOptions_is(m)) {
     upb_handlers_setbool(h, F(MessageOptions, map_entry), &msg_onmapentry, NULL);
+  } else if (upbdefs_google_protobuf_FileOptions_is(m)) {
+    upb_handlers_setstring(h, F(FileOptions, php_class_prefix),
+                           &file_onphpprefix, NULL);
   }
 
   UPB_ASSERT(upb_ok(upb_handlers_status(h)));

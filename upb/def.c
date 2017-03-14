@@ -1859,6 +1859,7 @@ static void freefiledef(upb_refcounted *r) {
   upb_inttable_uninit(&f->deps);
   upb_gfree((void*)f->name);
   upb_gfree((void*)f->package);
+  upb_gfree((void*)f->phpprefix);
   upb_gfree(f);
 }
 
@@ -1873,6 +1874,7 @@ upb_filedef *upb_filedef_new(const void *owner) {
 
   f->package = NULL;
   f->name = NULL;
+  f->phpprefix = NULL;
   f->syntax = UPB_SYNTAX_PROTO2;
 
   if (!upb_refcounted_init(upb_filedef_upcast_mutable(f), &upb_filedef_vtbl,
@@ -1905,6 +1907,10 @@ const char *upb_filedef_name(const upb_filedef *f) {
 
 const char *upb_filedef_package(const upb_filedef *f) {
   return f->package;
+}
+
+const char *upb_filedef_phpprefix(const upb_filedef *f) {
+  return f->phpprefix;
 }
 
 upb_syntax_t upb_filedef_syntax(const upb_filedef *f) {
@@ -1960,6 +1966,18 @@ bool upb_filedef_setpackage(upb_filedef *f, const char *package,
   }
   upb_gfree((void*)f->package);
   f->package = package;
+  return true;
+}
+
+bool upb_filedef_setphpprefix(upb_filedef *f, const char *phpprefix,
+                              upb_status *s) {
+  phpprefix = upb_gstrdup(phpprefix);
+  if (!phpprefix) {
+    upb_upberr_setoom(s);
+    return false;
+  }
+  upb_gfree((void*)f->phpprefix);
+  f->phpprefix = phpprefix;
   return true;
 }
 

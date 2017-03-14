@@ -381,6 +381,10 @@ message FileOptions {
   // suffixed package.
   optional bool javanano_use_deprecated_package = 38;
 
+  // Sets the php class prefix which is prepended to all php generated classes
+  // from this .proto. Default is empty.
+  optional string php_class_prefix = 40;
+
   // The parser stores options it doesn't recognize here. See above.
   repeated UninterpretedOption uninterpreted_option = 999;
 
