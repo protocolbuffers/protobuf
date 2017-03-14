@@ -30,6 +30,12 @@
 #include <google/protobuf/unknown_field_set.h>
 #include <google/protobuf/descriptor.pb.h>
 // @@protoc_insertion_point(includes)
+#ifdef major
+#undef major
+#endif
+#ifdef minor
+#undef minor
+#endif
 namespace google {
 namespace protobuf {
 class DescriptorProto;
