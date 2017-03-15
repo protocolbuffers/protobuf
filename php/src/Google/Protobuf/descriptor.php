@@ -78,14 +78,14 @@ class FileDescriptor
         $file->setPackage($proto->getPackage());
         foreach ($proto->getMessageType() as $message_proto) {
             $file->addMessageType(Descriptor::buildFromProto(
-                $message_proto, $file->getPackage(), ""));
+                $message_proto, $proto, ""));
         }
         foreach ($proto->getEnumType() as $enum_proto) {
             $file->getEnumType()[] =
                 $file->addEnumType(
                     EnumDescriptor::buildFromProto(
                         $enum_proto,
-                        $file->getPackage(),
+                        $proto,
                         ""));
         }
         return $file;
@@ -182,7 +182,7 @@ class Descriptor
         return $this->options;
     }
 
-    public static function buildFromProto($proto, $package, $containing)
+    public static function buildFromProto($proto, $file_proto, $containing)
     {
         $desc = new Descriptor();
 
@@ -192,7 +192,7 @@ class Descriptor
         getFullClassName(
             $proto,
             $containing,
-            $package,
+            $file_proto,
             $message_name_without_package,
             $classname,
             $fullname);
@@ -207,7 +207,7 @@ class Descriptor
         // Handle nested types.
         foreach ($proto->getNestedType() as $nested_proto) {
             $desc->addNestedType(Descriptor::buildFromProto(
-              $nested_proto, $package, $message_name_without_package));
+              $nested_proto, $file_proto, $message_name_without_package));
         }
 
         // Handle oneof fields.
@@ -220,43 +220,46 @@ class Descriptor
     }
 }
 
-function addPrefixIfSpecial(
+function getClassNameWithoutPackage(
     $name,
-    $package)
+    $file_proto)
 {
-    if ($name === "Empty" && $package === "google.protobuf") {
+    if ($name === "Empty" && $file_proto->getPackage() === "google.protobuf") {
         return "GPBEmpty";
     } else {
-        return $name;
+        $option = $file_proto->getOptions();
+        $prefix = is_null($option) ? "" : $option->getPhpClassPrefix();
+        // Nested message class names are seperated by '_', and package names
+        // are seperated by '\'.
+        return $prefix . implode('_', array_map('ucwords',
+                               explode('.', $name)));
     }
 }
 
 function getFullClassName(
     $proto,
     $containing,
-    $package,
+    $file_proto,
     &$message_name_without_package,
     &$classname,
     &$fullname)
 {
     // Full name needs to start with '.'.
-    $message_name_without_package =
-        addPrefixIfSpecial($proto->getName(), $package);
+    $message_name_without_package = $proto->getName();
     if ($containing !== "") {
         $message_name_without_package =
             $containing . "." . $message_name_without_package;
     }
+
+    $package = $file_proto->getPackage();
     if ($package === "") {
         $fullname = "." . $message_name_without_package;
     } else {
         $fullname = "." . $package . "." . $message_name_without_package;
     }
 
-    // Nested message class names are seperated by '_', and package names are
-    // seperated by '\'.
     $class_name_without_package =
-        implode('_', array_map('ucwords',
-                               explode('.', $message_name_without_package)));
+        getClassNameWithoutPackage($message_name_without_package, $file_proto);
     if ($package === "") {
         $classname = $class_name_without_package;
     } else {
@@ -333,7 +336,7 @@ class EnumDescriptor
         return $this->klass;
     }
 
-    public static function buildFromProto($proto, $package, $containing)
+    public static function buildFromProto($proto, $file_proto, $containing)
     {
         $desc = new EnumDescriptor();
 
@@ -343,7 +346,7 @@ class EnumDescriptor
         getFullClassName(
             $proto,
             $containing,
-            $package,
+            $file_proto,
             $enum_name_without_package,
             $classname,
             $fullname);

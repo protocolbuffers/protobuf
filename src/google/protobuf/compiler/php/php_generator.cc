@@ -90,7 +90,7 @@ std::string MessagePrefix(const Descriptor* message) {
       message->file()->package() == "google.protobuf") {
     return "GPB";
   } else {
-    return "";
+    return (message->file()->options()).php_class_prefix();
   }
 }
 
@@ -103,8 +103,12 @@ std::string MessageName(const Descriptor* message, bool is_descriptor) {
   }
   message_name = MessagePrefix(message) + message_name;
 
-  return PhpName(message->file()->package(), is_descriptor) + '\\' +
-         message_name;
+  if (message->file()->package() == "") {
+    return message_name;
+  } else {
+    return PhpName(message->file()->package(), is_descriptor) + '\\' +
+           message_name;
+  }
 }
 
 std::string MessageFullName(const Descriptor* message, bool is_descriptor) {

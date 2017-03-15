@@ -1,6 +1,7 @@
 syntax = "proto3";
 
 import 'proto/test_include.proto';
+import 'proto/test_prefix.proto';
 
 package foo;
 
@@ -141,4 +142,8 @@ message TestUnpackedMessage {
 // /**/@<>&\{
 message TestPhpDoc {
   int32 a = 1;
+}
+
+message TestIncludePrefixMessage {
+  TestPrefix prefix_message = 1;
 }

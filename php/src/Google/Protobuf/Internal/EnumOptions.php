@@ -144,8 +144,8 @@ class EnumOptions extends \Google\Protobuf\Internal\Message
      */
     public function setUninterpretedOption(&$var)
     {
-        GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \Google\Protobuf\Internal\UninterpretedOption::class);
-        $this->uninterpreted_option = $var;
+        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \Google\Protobuf\Internal\UninterpretedOption::class);
+        $this->uninterpreted_option = $arr;
         $this->has_uninterpreted_option = true;
     }
 

@@ -45,8 +45,8 @@ class FileDescriptorSet extends \Google\Protobuf\Internal\Message
      */
     public function setFile(&$var)
     {
-        GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \Google\Protobuf\Internal\FileDescriptorProto::class);
-        $this->file = $var;
+        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \Google\Protobuf\Internal\FileDescriptorProto::class);
+        $this->file = $arr;
         $this->has_file = true;
     }
 
