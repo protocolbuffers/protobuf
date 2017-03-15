@@ -246,9 +246,10 @@ static size_t file_onphpprefix(void *closure, const void *hd, const char *buf,
   UPB_UNUSED(handle);
 
   prefix = upb_gstrndup(buf, n);
-  ok = upb_filedef_setpackage(r->file, prefix, NULL);
+  ok = upb_filedef_setphpprefix(r->file, prefix, NULL);
+  upb_gfree(prefix);
   UPB_ASSERT(ok);
-  return true;
+  return n;
 }
 
 static size_t file_onsyntax(void *closure, const void *hd, const char *buf,
