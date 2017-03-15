@@ -305,6 +305,9 @@ void SourceContext::MergeFrom(const SourceContext& from) {
 // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.SourceContext)
   GOOGLE_DCHECK_NE(&from, this);
   _internal_metadata_.MergeFrom(from._internal_metadata_);
+  ::google::protobuf::uint32 cached_has_bits = 0;
+  (void) cached_has_bits;
+
   if (from.file_name().size() > 0) {
 
     file_name_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.file_name_);

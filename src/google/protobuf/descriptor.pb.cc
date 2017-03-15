@@ -1119,6 +1119,9 @@ void FileDescriptorSet::MergeFrom(const FileDescriptorSet& from) {
 // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.FileDescriptorSet)
   GOOGLE_DCHECK_NE(&from, this);
   _internal_metadata_.MergeFrom(from._internal_metadata_);
+  ::google::protobuf::uint32 cached_has_bits = 0;
+  (void) cached_has_bits;
+
   file_.MergeFrom(from.file_);
 }
 
@@ -1901,6 +1904,9 @@ void FileDescriptorProto::MergeFrom(const FileDescriptorProto& from) {
 // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.FileDescriptorProto)
   GOOGLE_DCHECK_NE(&from, this);
   _internal_metadata_.MergeFrom(from._internal_metadata_);
+  ::google::protobuf::uint32 cached_has_bits = 0;
+  (void) cached_has_bits;
+
   dependency_.MergeFrom(from.dependency_);
   public_dependency_.MergeFrom(from.public_dependency_);
   weak_dependency_.MergeFrom(from.weak_dependency_);
@@ -1908,23 +1914,24 @@ void FileDescriptorProto::MergeFrom(const FileDescriptorProto& from) {
   enum_type_.MergeFrom(from.enum_type_);
   service_.MergeFrom(from.service_);
   extension_.MergeFrom(from.extension_);
-  if (from._has_bits_[0 / 32] & 31u) {
-    if (from.has_name()) {
+  cached_has_bits = from._has_bits_[0];
+  if (cached_has_bits & 31u) {
+    if (cached_has_bits & 0x00000001u) {
       set_has_name();
       name_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.name_);
     }
-    if (from.has_package()) {
+    if (cached_has_bits & 0x00000002u) {
       set_has_package();
       package_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.package_);
     }
-    if (from.has_syntax()) {
+    if (cached_has_bits & 0x00000004u) {
       set_has_syntax();
       syntax_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.syntax_);
     }
-    if (from.has_options()) {
+    if (cached_has_bits & 0x00000008u) {
       mutable_options()->::google::protobuf::FileOptions::MergeFrom(from.options());
     }
-    if (from.has_source_code_info()) {
+    if (cached_has_bits & 0x00000010u) {
       mutable_source_code_info()->::google::protobuf::SourceCodeInfo::MergeFrom(from.source_code_info());
     }
   }
@@ -2737,11 +2744,15 @@ void DescriptorProto_ExtensionRange::MergeFrom(const DescriptorProto_ExtensionRa
 // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.DescriptorProto.ExtensionRange)
   GOOGLE_DCHECK_NE(&from, this);
   _internal_metadata_.MergeFrom(from._internal_metadata_);
-  if (from._has_bits_[0 / 32] & 3u) {
-    if (from.has_start()) {
+  ::google::protobuf::uint32 cached_has_bits = 0;
+  (void) cached_has_bits;
+
+  cached_has_bits = from._has_bits_[0];
+  if (cached_has_bits & 3u) {
+    if (cached_has_bits & 0x00000001u) {
       set_start(from.start());
     }
-    if (from.has_end()) {
+    if (cached_has_bits & 0x00000002u) {
       set_end(from.end());
     }
   }
@@ -3062,11 +3073,15 @@ void DescriptorProto_ReservedRange::MergeFrom(const DescriptorProto_ReservedRang
 // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.DescriptorProto.ReservedRange)
   GOOGLE_DCHECK_NE(&from, this);
   _internal_metadata_.MergeFrom(from._internal_metadata_);
-  if (from._has_bits_[0 / 32] & 3u) {
-    if (from.has_start()) {
+  ::google::protobuf::uint32 cached_has_bits = 0;
+  (void) cached_has_bits;
+
+  cached_has_bits = from._has_bits_[0];
+  if (cached_has_bits & 3u) {
+    if (cached_has_bits & 0x00000001u) {
       set_start(from.start());
     }
-    if (from.has_end()) {
+    if (cached_has_bits & 0x00000002u) {
       set_end(from.end());
     }
   }
@@ -3752,6 +3767,9 @@ void DescriptorProto::MergeFrom(const DescriptorProto& from) {
 // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.DescriptorProto)
   GOOGLE_DCHECK_NE(&from, this);
   _internal_metadata_.MergeFrom(from._internal_metadata_);
+  ::google::protobuf::uint32 cached_has_bits = 0;
+  (void) cached_has_bits;
+
   field_.MergeFrom(from.field_);
   extension_.MergeFrom(from.extension_);
   nested_type_.MergeFrom(from.nested_type_);
@@ -3760,12 +3778,13 @@ void DescriptorProto::MergeFrom(const DescriptorProto& from) {
   oneof_decl_.MergeFrom(from.oneof_decl_);
   reserved_range_.MergeFrom(from.reserved_range_);
   reserved_name_.MergeFrom(from.reserved_name_);
-  if (from._has_bits_[0 / 32] & 3u) {
-    if (from.has_name()) {
+  cached_has_bits = from._has_bits_[0];
+  if (cached_has_bits & 3u) {
+    if (cached_has_bits & 0x00000001u) {
       set_has_name();
       name_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.name_);
     }
-    if (from.has_options()) {
+    if (cached_has_bits & 0x00000002u) {
       mutable_options()->::google::protobuf::MessageOptions::MergeFrom(from.options());
     }
   }
@@ -4844,42 +4863,46 @@ void FieldDescriptorProto::MergeFrom(const FieldDescriptorProto& from) {
 // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.FieldDescriptorProto)
   GOOGLE_DCHECK_NE(&from, this);
   _internal_metadata_.MergeFrom(from._internal_metadata_);
-  if (from._has_bits_[0 / 32] & 255u) {
-    if (from.has_name()) {
+  ::google::protobuf::uint32 cached_has_bits = 0;
+  (void) cached_has_bits;
+
+  cached_has_bits = from._has_bits_[0];
+  if (cached_has_bits & 255u) {
+    if (cached_has_bits & 0x00000001u) {
       set_has_name();
       name_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.name_);
     }
-    if (from.has_type_name()) {
+    if (cached_has_bits & 0x00000002u) {
       set_has_type_name();
       type_name_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.type_name_);
     }
-    if (from.has_extendee()) {
+    if (cached_has_bits & 0x00000004u) {
       set_has_extendee();
       extendee_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.extendee_);
     }
-    if (from.has_default_value()) {
+    if (cached_has_bits & 0x00000008u) {
       set_has_default_value();
       default_value_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.default_value_);
     }
-    if (from.has_json_name()) {
+    if (cached_has_bits & 0x00000010u) {
       set_has_json_name();
       json_name_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.json_name_);
     }
-    if (from.has_options()) {
+    if (cached_has_bits & 0x00000020u) {
       mutable_options()->::google::protobuf::FieldOptions::MergeFrom(from.options());
     }
-    if (from.has_number()) {
+    if (cached_has_bits & 0x00000040u) {
       set_number(from.number());
     }
-    if (from.has_oneof_index()) {
+    if (cached_has_bits & 0x00000080u) {
       set_oneof_index(from.oneof_index());
     }
   }
-  if (from._has_bits_[8 / 32] & 768u) {
-    if (from.has_label()) {
+  if (cached_has_bits & 768u) {
+    if (cached_has_bits & 0x00000100u) {
       set_label(from.label());
     }
-    if (from.has_type()) {
+    if (cached_has_bits & 0x00000200u) {
       set_type(from.type());
     }
   }
@@ -5646,12 +5669,16 @@ void OneofDescriptorProto::MergeFrom(const OneofDescriptorProto& from) {
 // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.OneofDescriptorProto)
   GOOGLE_DCHECK_NE(&from, this);
   _internal_metadata_.MergeFrom(from._internal_metadata_);
-  if (from._has_bits_[0 / 32] & 3u) {
-    if (from.has_name()) {
+  ::google::protobuf::uint32 cached_has_bits = 0;
+  (void) cached_has_bits;
+
+  cached_has_bits = from._has_bits_[0];
+  if (cached_has_bits & 3u) {
+    if (cached_has_bits & 0x00000001u) {
       set_has_name();
       name_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.name_);
     }
-    if (from.has_options()) {
+    if (cached_has_bits & 0x00000002u) {
       mutable_options()->::google::protobuf::OneofOptions::MergeFrom(from.options());
     }
   }
@@ -6105,13 +6132,17 @@ void EnumDescriptorProto::MergeFrom(const EnumDescriptorProto& from) {
 // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.EnumDescriptorProto)
   GOOGLE_DCHECK_NE(&from, this);
   _internal_metadata_.MergeFrom(from._internal_metadata_);
+  ::google::protobuf::uint32 cached_has_bits = 0;
+  (void) cached_has_bits;
+
   value_.MergeFrom(from.value_);
-  if (from._has_bits_[0 / 32] & 3u) {
-    if (from.has_name()) {
+  cached_has_bits = from._has_bits_[0];
+  if (cached_has_bits & 3u) {
+    if (cached_has_bits & 0x00000001u) {
       set_has_name();
       name_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.name_);
     }
-    if (from.has_options()) {
+    if (cached_has_bits & 0x00000002u) {
       mutable_options()->::google::protobuf::EnumOptions::MergeFrom(from.options());
     }
   }
@@ -6591,15 +6622,19 @@ void EnumValueDescriptorProto::MergeFrom(const EnumValueDescriptorProto& from) {
 // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.EnumValueDescriptorProto)
   GOOGLE_DCHECK_NE(&from, this);
   _internal_metadata_.MergeFrom(from._internal_metadata_);
-  if (from._has_bits_[0 / 32] & 7u) {
-    if (from.has_name()) {
+  ::google::protobuf::uint32 cached_has_bits = 0;
+  (void) cached_has_bits;
+
+  cached_has_bits = from._has_bits_[0];
+  if (cached_has_bits & 7u) {
+    if (cached_has_bits & 0x00000001u) {
       set_has_name();
       name_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.name_);
     }
-    if (from.has_options()) {
+    if (cached_has_bits & 0x00000002u) {
       mutable_options()->::google::protobuf::EnumValueOptions::MergeFrom(from.options());
     }
-    if (from.has_number()) {
+    if (cached_has_bits & 0x00000004u) {
       set_number(from.number());
     }
   }
@@ -7078,13 +7113,17 @@ void ServiceDescriptorProto::MergeFrom(const ServiceDescriptorProto& from) {
 // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.ServiceDescriptorProto)
   GOOGLE_DCHECK_NE(&from, this);
   _internal_metadata_.MergeFrom(from._internal_metadata_);
+  ::google::protobuf::uint32 cached_has_bits = 0;
+  (void) cached_has_bits;
+
   method_.MergeFrom(from.method_);
-  if (from._has_bits_[0 / 32] & 3u) {
-    if (from.has_name()) {
+  cached_has_bits = from._has_bits_[0];
+  if (cached_has_bits & 3u) {
+    if (cached_has_bits & 0x00000001u) {
       set_has_name();
       name_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.name_);
     }
-    if (from.has_options()) {
+    if (cached_has_bits & 0x00000002u) {
       mutable_options()->::google::protobuf::ServiceOptions::MergeFrom(from.options());
     }
   }
@@ -7707,26 +7746,30 @@ void MethodDescriptorProto::MergeFrom(const MethodDescriptorProto& from) {
 // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.MethodDescriptorProto)
   GOOGLE_DCHECK_NE(&from, this);
   _internal_metadata_.MergeFrom(from._internal_metadata_);
-  if (from._has_bits_[0 / 32] & 63u) {
-    if (from.has_name()) {
+  ::google::protobuf::uint32 cached_has_bits = 0;
+  (void) cached_has_bits;
+
+  cached_has_bits = from._has_bits_[0];
+  if (cached_has_bits & 63u) {
+    if (cached_has_bits & 0x00000001u) {
       set_has_name();
       name_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.name_);
     }
-    if (from.has_input_type()) {
+    if (cached_has_bits & 0x00000002u) {
       set_has_input_type();
       input_type_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.input_type_);
     }
-    if (from.has_output_type()) {
+    if (cached_has_bits & 0x00000004u) {
       set_has_output_type();
       output_type_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.output_type_);
     }
-    if (from.has_options()) {
+    if (cached_has_bits & 0x00000008u) {
       mutable_options()->::google::protobuf::MethodOptions::MergeFrom(from.options());
     }
-    if (from.has_client_streaming()) {
+    if (cached_has_bits & 0x00000010u) {
       set_client_streaming(from.client_streaming());
     }
-    if (from.has_server_streaming()) {
+    if (cached_has_bits & 0x00000020u) {
       set_server_streaming(from.server_streaming());
     }
   }
@@ -8898,59 +8941,63 @@ void FileOptions::MergeFrom(const FileOptions& from) {
   GOOGLE_DCHECK_NE(&from, this);
   _extensions_.MergeFrom(from._extensions_);
   _internal_metadata_.MergeFrom(from._internal_metadata_);
+  ::google::protobuf::uint32 cached_has_bits = 0;
+  (void) cached_has_bits;
+
   uninterpreted_option_.MergeFrom(from.uninterpreted_option_);
-  if (from._has_bits_[0 / 32] & 255u) {
-    if (from.has_java_package()) {
+  cached_has_bits = from._has_bits_[0];
+  if (cached_has_bits & 255u) {
+    if (cached_has_bits & 0x00000001u) {
       set_has_java_package();
       java_package_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.java_package_);
     }
-    if (from.has_java_outer_classname()) {
+    if (cached_has_bits & 0x00000002u) {
       set_has_java_outer_classname();
       java_outer_classname_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.java_outer_classname_);
     }
-    if (from.has_go_package()) {
+    if (cached_has_bits & 0x00000004u) {
       set_has_go_package();
       go_package_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.go_package_);
     }
-    if (from.has_objc_class_prefix()) {
+    if (cached_has_bits & 0x00000008u) {
       set_has_objc_class_prefix();
       objc_class_prefix_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.objc_class_prefix_);
     }
-    if (from.has_csharp_namespace()) {
+    if (cached_has_bits & 0x00000010u) {
       set_has_csharp_namespace();
       csharp_namespace_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.csharp_namespace_);
     }
-    if (from.has_swift_prefix()) {
+    if (cached_has_bits & 0x00000020u) {
       set_has_swift_prefix();
       swift_prefix_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.swift_prefix_);
     }
-    if (from.has_java_multiple_files()) {
+    if (cached_has_bits & 0x00000040u) {
       set_java_multiple_files(from.java_multiple_files());
     }
-    if (from.has_java_generate_equals_and_hash()) {
+    if (cached_has_bits & 0x00000080u) {
       set_java_generate_equals_and_hash(from.java_generate_equals_and_hash());
     }
   }
-  if (from._has_bits_[8 / 32] & 32512u) {
-    if (from.has_java_string_check_utf8()) {
+  if (cached_has_bits & 32512u) {
+    if (cached_has_bits & 0x00000100u) {
       set_java_string_check_utf8(from.java_string_check_utf8());
     }
-    if (from.has_cc_generic_services()) {
+    if (cached_has_bits & 0x00000200u) {
       set_cc_generic_services(from.cc_generic_services());
     }
-    if (from.has_java_generic_services()) {
+    if (cached_has_bits & 0x00000400u) {
       set_java_generic_services(from.java_generic_services());
     }
-    if (from.has_py_generic_services()) {
+    if (cached_has_bits & 0x00000800u) {
       set_py_generic_services(from.py_generic_services());
     }
-    if (from.has_deprecated()) {
+    if (cached_has_bits & 0x00001000u) {
       set_deprecated(from.deprecated());
     }
-    if (from.has_cc_enable_arenas()) {
+    if (cached_has_bits & 0x00002000u) {
       set_cc_enable_arenas(from.cc_enable_arenas());
     }
-    if (from.has_optimize_for()) {
+    if (cached_has_bits & 0x00004000u) {
       set_optimize_for(from.optimize_for());
     }
   }
@@ -9977,18 +10024,22 @@ void MessageOptions::MergeFrom(const MessageOptions& from) {
   GOOGLE_DCHECK_NE(&from, this);
   _extensions_.MergeFrom(from._extensions_);
   _internal_metadata_.MergeFrom(from._internal_metadata_);
+  ::google::protobuf::uint32 cached_has_bits = 0;
+  (void) cached_has_bits;
+
   uninterpreted_option_.MergeFrom(from.uninterpreted_option_);
-  if (from._has_bits_[0 / 32] & 15u) {
-    if (from.has_message_set_wire_format()) {
+  cached_has_bits = from._has_bits_[0];
+  if (cached_has_bits & 15u) {
+    if (cached_has_bits & 0x00000001u) {
       set_message_set_wire_format(from.message_set_wire_format());
     }
-    if (from.has_no_standard_descriptor_accessor()) {
+    if (cached_has_bits & 0x00000002u) {
       set_no_standard_descriptor_accessor(from.no_standard_descriptor_accessor());
     }
-    if (from.has_deprecated()) {
+    if (cached_has_bits & 0x00000004u) {
       set_deprecated(from.deprecated());
     }
-    if (from.has_map_entry()) {
+    if (cached_has_bits & 0x00000008u) {
       set_map_entry(from.map_entry());
     }
   }
@@ -10587,24 +10638,28 @@ void FieldOptions::MergeFrom(const FieldOptions& from) {
   GOOGLE_DCHECK_NE(&from, this);
   _extensions_.MergeFrom(from._extensions_);
   _internal_metadata_.MergeFrom(from._internal_metadata_);
+  ::google::protobuf::uint32 cached_has_bits = 0;
+  (void) cached_has_bits;
+
   uninterpreted_option_.MergeFrom(from.uninterpreted_option_);
-  if (from._has_bits_[0 / 32] & 63u) {
-    if (from.has_ctype()) {
+  cached_has_bits = from._has_bits_[0];
+  if (cached_has_bits & 63u) {
+    if (cached_has_bits & 0x00000001u) {
       set_ctype(from.ctype());
     }
-    if (from.has_jstype()) {
+    if (cached_has_bits & 0x00000002u) {
       set_jstype(from.jstype());
     }
-    if (from.has_packed()) {
+    if (cached_has_bits & 0x00000004u) {
       set_packed(from.packed());
     }
-    if (from.has_lazy()) {
+    if (cached_has_bits & 0x00000008u) {
       set_lazy(from.lazy());
     }
-    if (from.has_deprecated()) {
+    if (cached_has_bits & 0x00000010u) {
       set_deprecated(from.deprecated());
     }
-    if (from.has_weak()) {
+    if (cached_has_bits & 0x00000020u) {
       set_weak(from.weak());
     }
   }
@@ -11048,6 +11103,9 @@ void OneofOptions::MergeFrom(const OneofOptions& from) {
   GOOGLE_DCHECK_NE(&from, this);
   _extensions_.MergeFrom(from._extensions_);
   _internal_metadata_.MergeFrom(from._internal_metadata_);
+  ::google::protobuf::uint32 cached_has_bits = 0;
+  (void) cached_has_bits;
+
   uninterpreted_option_.MergeFrom(from.uninterpreted_option_);
 }
 
@@ -11408,12 +11466,16 @@ void EnumOptions::MergeFrom(const EnumOptions& from) {
   GOOGLE_DCHECK_NE(&from, this);
   _extensions_.MergeFrom(from._extensions_);
   _internal_metadata_.MergeFrom(from._internal_metadata_);
+  ::google::protobuf::uint32 cached_has_bits = 0;
+  (void) cached_has_bits;
+
   uninterpreted_option_.MergeFrom(from.uninterpreted_option_);
-  if (from._has_bits_[0 / 32] & 3u) {
-    if (from.has_allow_alias()) {
+  cached_has_bits = from._has_bits_[0];
+  if (cached_has_bits & 3u) {
+    if (cached_has_bits & 0x00000001u) {
       set_allow_alias(from.allow_alias());
     }
-    if (from.has_deprecated()) {
+    if (cached_has_bits & 0x00000002u) {
       set_deprecated(from.deprecated());
     }
   }
@@ -11788,6 +11850,9 @@ void EnumValueOptions::MergeFrom(const EnumValueOptions& from) {
   GOOGLE_DCHECK_NE(&from, this);
   _extensions_.MergeFrom(from._extensions_);
   _internal_metadata_.MergeFrom(from._internal_metadata_);
+  ::google::protobuf::uint32 cached_has_bits = 0;
+  (void) cached_has_bits;
+
   uninterpreted_option_.MergeFrom(from.uninterpreted_option_);
   if (from.has_deprecated()) {
     set_deprecated(from.deprecated());
@@ -12138,6 +12203,9 @@ void ServiceOptions::MergeFrom(const ServiceOptions& from) {
   GOOGLE_DCHECK_NE(&from, this);
   _extensions_.MergeFrom(from._extensions_);
   _internal_metadata_.MergeFrom(from._internal_metadata_);
+  ::google::protobuf::uint32 cached_has_bits = 0;
+  (void) cached_has_bits;
+
   uninterpreted_option_.MergeFrom(from.uninterpreted_option_);
   if (from.has_deprecated()) {
     set_deprecated(from.deprecated());
@@ -12534,12 +12602,16 @@ void MethodOptions::MergeFrom(const MethodOptions& from) {
   GOOGLE_DCHECK_NE(&from, this);
   _extensions_.MergeFrom(from._extensions_);
   _internal_metadata_.MergeFrom(from._internal_metadata_);
+  ::google::protobuf::uint32 cached_has_bits = 0;
+  (void) cached_has_bits;
+
   uninterpreted_option_.MergeFrom(from.uninterpreted_option_);
-  if (from._has_bits_[0 / 32] & 3u) {
-    if (from.has_deprecated()) {
+  cached_has_bits = from._has_bits_[0];
+  if (cached_has_bits & 3u) {
+    if (cached_has_bits & 0x00000001u) {
       set_deprecated(from.deprecated());
     }
-    if (from.has_idempotency_level()) {
+    if (cached_has_bits & 0x00000002u) {
       set_idempotency_level(from.idempotency_level());
     }
   }
@@ -12929,12 +13001,16 @@ void UninterpretedOption_NamePart::MergeFrom(const UninterpretedOption_NamePart&
 // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.UninterpretedOption.NamePart)
   GOOGLE_DCHECK_NE(&from, this);
   _internal_metadata_.MergeFrom(from._internal_metadata_);
-  if (from._has_bits_[0 / 32] & 3u) {
-    if (from.has_name_part()) {
+  ::google::protobuf::uint32 cached_has_bits = 0;
+  (void) cached_has_bits;
+
+  cached_has_bits = from._has_bits_[0];
+  if (cached_has_bits & 3u) {
+    if (cached_has_bits & 0x00000001u) {
       set_has_name_part();
       name_part_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.name_part_);
     }
-    if (from.has_is_extension()) {
+    if (cached_has_bits & 0x00000002u) {
       set_is_extension(from.is_extension());
     }
   }
@@ -13520,27 +13596,31 @@ void UninterpretedOption::MergeFrom(const UninterpretedOption& from) {
 // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.UninterpretedOption)
   GOOGLE_DCHECK_NE(&from, this);
   _internal_metadata_.MergeFrom(from._internal_metadata_);
+  ::google::protobuf::uint32 cached_has_bits = 0;
+  (void) cached_has_bits;
+
   name_.MergeFrom(from.name_);
-  if (from._has_bits_[0 / 32] & 63u) {
-    if (from.has_identifier_value()) {
+  cached_has_bits = from._has_bits_[0];
+  if (cached_has_bits & 63u) {
+    if (cached_has_bits & 0x00000001u) {
       set_has_identifier_value();
       identifier_value_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.identifier_value_);
     }
-    if (from.has_string_value()) {
+    if (cached_has_bits & 0x00000002u) {
       set_has_string_value();
       string_value_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.string_value_);
     }
-    if (from.has_aggregate_value()) {
+    if (cached_has_bits & 0x00000004u) {
       set_has_aggregate_value();
       aggregate_value_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.aggregate_value_);
     }
-    if (from.has_positive_int_value()) {
+    if (cached_has_bits & 0x00000008u) {
       set_positive_int_value(from.positive_int_value());
     }
-    if (from.has_negative_int_value()) {
+    if (cached_has_bits & 0x00000010u) {
       set_negative_int_value(from.negative_int_value());
     }
-    if (from.has_double_value()) {
+    if (cached_has_bits & 0x00000020u) {
       set_double_value(from.double_value());
     }
   }
@@ -14314,15 +14394,19 @@ void SourceCodeInfo_Location::MergeFrom(const SourceCodeInfo_Location& from) {
 // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.SourceCodeInfo.Location)
   GOOGLE_DCHECK_NE(&from, this);
   _internal_metadata_.MergeFrom(from._internal_metadata_);
+  ::google::protobuf::uint32 cached_has_bits = 0;
+  (void) cached_has_bits;
+
   path_.MergeFrom(from.path_);
   span_.MergeFrom(from.span_);
   leading_detached_comments_.MergeFrom(from.leading_detached_comments_);
-  if (from._has_bits_[0 / 32] & 3u) {
-    if (from.has_leading_comments()) {
+  cached_has_bits = from._has_bits_[0];
+  if (cached_has_bits & 3u) {
+    if (cached_has_bits & 0x00000001u) {
       set_has_leading_comments();
       leading_comments_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.leading_comments_);
     }
-    if (from.has_trailing_comments()) {
+    if (cached_has_bits & 0x00000002u) {
       set_has_trailing_comments();
       trailing_comments_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.trailing_comments_);
     }
@@ -14816,6 +14900,9 @@ void SourceCodeInfo::MergeFrom(const SourceCodeInfo& from) {
 // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.SourceCodeInfo)
   GOOGLE_DCHECK_NE(&from, this);
   _internal_metadata_.MergeFrom(from._internal_metadata_);
+  ::google::protobuf::uint32 cached_has_bits = 0;
+  (void) cached_has_bits;
+
   location_.MergeFrom(from.location_);
 }
 
@@ -15230,16 +15317,20 @@ void GeneratedCodeInfo_Annotation::MergeFrom(const GeneratedCodeInfo_Annotation&
 // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.GeneratedCodeInfo.Annotation)
   GOOGLE_DCHECK_NE(&from, this);
   _internal_metadata_.MergeFrom(from._internal_metadata_);
+  ::google::protobuf::uint32 cached_has_bits = 0;
+  (void) cached_has_bits;
+
   path_.MergeFrom(from.path_);
-  if (from._has_bits_[0 / 32] & 7u) {
-    if (from.has_source_file()) {
+  cached_has_bits = from._has_bits_[0];
+  if (cached_has_bits & 7u) {
+    if (cached_has_bits & 0x00000001u) {
       set_has_source_file();
       source_file_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.source_file_);
     }
-    if (from.has_begin()) {
+    if (cached_has_bits & 0x00000002u) {
       set_begin(from.begin());
     }
-    if (from.has_end()) {
+    if (cached_has_bits & 0x00000004u) {
       set_end(from.end());
     }
   }
@@ -15620,6 +15711,9 @@ void GeneratedCodeInfo::MergeFrom(const GeneratedCodeInfo& from) {
 // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.GeneratedCodeInfo)
   GOOGLE_DCHECK_NE(&from, this);
   _internal_metadata_.MergeFrom(from._internal_metadata_);
+  ::google::protobuf::uint32 cached_has_bits = 0;
+  (void) cached_has_bits;
+
   annotation_.MergeFrom(from.annotation_);
 }
 
