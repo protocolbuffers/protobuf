@@ -270,7 +270,7 @@ class LIBPROTOC_EXPORT Version : public ::google::protobuf::Message /* @@protoc_
   ::google::protobuf::int32 major_;
   ::google::protobuf::int32 minor_;
   ::google::protobuf::int32 patch_;
-  friend struct LIBPROTOC_EXPORT protobuf_google_2fprotobuf_2fcompiler_2fplugin_2eproto::TableStruct;
+  friend struct protobuf_google_2fprotobuf_2fcompiler_2fplugin_2eproto::TableStruct;
 };
 // -------------------------------------------------------------------
 
@@ -421,7 +421,7 @@ class LIBPROTOC_EXPORT CodeGeneratorRequest : public ::google::protobuf::Message
   ::google::protobuf::RepeatedPtrField< ::google::protobuf::FileDescriptorProto > proto_file_;
   ::google::protobuf::internal::ArenaStringPtr parameter_;
   ::google::protobuf::compiler::Version* compiler_version_;
-  friend struct LIBPROTOC_EXPORT protobuf_google_2fprotobuf_2fcompiler_2fplugin_2eproto::TableStruct;
+  friend struct protobuf_google_2fprotobuf_2fcompiler_2fplugin_2eproto::TableStruct;
 };
 // -------------------------------------------------------------------
 
@@ -560,7 +560,7 @@ class LIBPROTOC_EXPORT CodeGeneratorResponse_File : public ::google::protobuf::M
   ::google::protobuf::internal::ArenaStringPtr name_;
   ::google::protobuf::internal::ArenaStringPtr insertion_point_;
   ::google::protobuf::internal::ArenaStringPtr content_;
-  friend struct LIBPROTOC_EXPORT protobuf_google_2fprotobuf_2fcompiler_2fplugin_2eproto::TableStruct;
+  friend struct protobuf_google_2fprotobuf_2fcompiler_2fplugin_2eproto::TableStruct;
 };
 // -------------------------------------------------------------------
 
@@ -678,7 +678,7 @@ class LIBPROTOC_EXPORT CodeGeneratorResponse : public ::google::protobuf::Messag
   mutable int _cached_size_;
   ::google::protobuf::RepeatedPtrField< ::google::protobuf::compiler::CodeGeneratorResponse_File > file_;
   ::google::protobuf::internal::ArenaStringPtr error_;
-  friend struct LIBPROTOC_EXPORT protobuf_google_2fprotobuf_2fcompiler_2fplugin_2eproto::TableStruct;
+  friend struct protobuf_google_2fprotobuf_2fcompiler_2fplugin_2eproto::TableStruct;
 };
 // ===================================================================
 

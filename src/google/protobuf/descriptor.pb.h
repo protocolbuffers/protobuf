@@ -355,7 +355,7 @@ class LIBPROTOBUF_EXPORT FileDescriptorSet : public ::google::protobuf::Message 
   ::google::protobuf::internal::HasBits<1> _has_bits_;
   mutable int _cached_size_;
   ::google::protobuf::RepeatedPtrField< ::google::protobuf::FileDescriptorProto > file_;
-  friend struct LIBPROTOBUF_EXPORT protobuf_google_2fprotobuf_2fdescriptor_2eproto::TableStruct;
+  friend struct protobuf_google_2fprotobuf_2fdescriptor_2eproto::TableStruct;
 };
 // -------------------------------------------------------------------
 
@@ -619,7 +619,7 @@ class LIBPROTOBUF_EXPORT FileDescriptorProto : public ::google::protobuf::Messag
   ::google::protobuf::internal::ArenaStringPtr syntax_;
   ::google::protobuf::FileOptions* options_;
   ::google::protobuf::SourceCodeInfo* source_code_info_;
-  friend struct LIBPROTOBUF_EXPORT protobuf_google_2fprotobuf_2fdescriptor_2eproto::TableStruct;
+  friend struct protobuf_google_2fprotobuf_2fdescriptor_2eproto::TableStruct;
 };
 // -------------------------------------------------------------------
 
@@ -724,7 +724,7 @@ class LIBPROTOBUF_EXPORT DescriptorProto_ExtensionRange : public ::google::proto
   mutable int _cached_size_;
   ::google::protobuf::int32 start_;
   ::google::protobuf::int32 end_;
-  friend struct LIBPROTOBUF_EXPORT protobuf_google_2fprotobuf_2fdescriptor_2eproto::TableStruct;
+  friend struct protobuf_google_2fprotobuf_2fdescriptor_2eproto::TableStruct;
 };
 // -------------------------------------------------------------------
 
@@ -829,7 +829,7 @@ class LIBPROTOBUF_EXPORT DescriptorProto_ReservedRange : public ::google::protob
   mutable int _cached_size_;
   ::google::protobuf::int32 start_;
   ::google::protobuf::int32 end_;
-  friend struct LIBPROTOBUF_EXPORT protobuf_google_2fprotobuf_2fdescriptor_2eproto::TableStruct;
+  friend struct protobuf_google_2fprotobuf_2fdescriptor_2eproto::TableStruct;
 };
 // -------------------------------------------------------------------
 
@@ -1061,7 +1061,7 @@ class LIBPROTOBUF_EXPORT DescriptorProto : public ::google::protobuf::Message /*
   ::google::protobuf::RepeatedPtrField< ::std::string> reserved_name_;
   ::google::protobuf::internal::ArenaStringPtr name_;
   ::google::protobuf::MessageOptions* options_;
-  friend struct LIBPROTOBUF_EXPORT protobuf_google_2fprotobuf_2fdescriptor_2eproto::TableStruct;
+  friend struct protobuf_google_2fprotobuf_2fdescriptor_2eproto::TableStruct;
 };
 // -------------------------------------------------------------------
 
@@ -1374,7 +1374,7 @@ class LIBPROTOBUF_EXPORT FieldDescriptorProto : public ::google::protobuf::Messa
   ::google::protobuf::int32 oneof_index_;
   int label_;
   int type_;
-  friend struct LIBPROTOBUF_EXPORT protobuf_google_2fprotobuf_2fdescriptor_2eproto::TableStruct;
+  friend struct protobuf_google_2fprotobuf_2fdescriptor_2eproto::TableStruct;
 };
 // -------------------------------------------------------------------
 
@@ -1489,7 +1489,7 @@ class LIBPROTOBUF_EXPORT OneofDescriptorProto : public ::google::protobuf::Messa
   mutable int _cached_size_;
   ::google::protobuf::internal::ArenaStringPtr name_;
   ::google::protobuf::OneofOptions* options_;
-  friend struct LIBPROTOBUF_EXPORT protobuf_google_2fprotobuf_2fdescriptor_2eproto::TableStruct;
+  friend struct protobuf_google_2fprotobuf_2fdescriptor_2eproto::TableStruct;
 };
 // -------------------------------------------------------------------
 
@@ -1617,7 +1617,7 @@ class LIBPROTOBUF_EXPORT EnumDescriptorProto : public ::google::protobuf::Messag
   ::google::protobuf::RepeatedPtrField< ::google::protobuf::EnumValueDescriptorProto > value_;
   ::google::protobuf::internal::ArenaStringPtr name_;
   ::google::protobuf::EnumOptions* options_;
-  friend struct LIBPROTOBUF_EXPORT protobuf_google_2fprotobuf_2fdescriptor_2eproto::TableStruct;
+  friend struct protobuf_google_2fprotobuf_2fdescriptor_2eproto::TableStruct;
 };
 // -------------------------------------------------------------------
 
@@ -1742,7 +1742,7 @@ class LIBPROTOBUF_EXPORT EnumValueDescriptorProto : public ::google::protobuf::M
   ::google::protobuf::internal::ArenaStringPtr name_;
   ::google::protobuf::EnumValueOptions* options_;
   ::google::protobuf::int32 number_;
-  friend struct LIBPROTOBUF_EXPORT protobuf_google_2fprotobuf_2fdescriptor_2eproto::TableStruct;
+  friend struct protobuf_google_2fprotobuf_2fdescriptor_2eproto::TableStruct;
 };
 // -------------------------------------------------------------------
 
@@ -1870,7 +1870,7 @@ class LIBPROTOBUF_EXPORT ServiceDescriptorProto : public ::google::protobuf::Mes
   ::google::protobuf::RepeatedPtrField< ::google::protobuf::MethodDescriptorProto > method_;
   ::google::protobuf::internal::ArenaStringPtr name_;
   ::google::protobuf::ServiceOptions* options_;
-  friend struct LIBPROTOBUF_EXPORT protobuf_google_2fprotobuf_2fdescriptor_2eproto::TableStruct;
+  friend struct protobuf_google_2fprotobuf_2fdescriptor_2eproto::TableStruct;
 };
 // -------------------------------------------------------------------
 
@@ -2041,7 +2041,7 @@ class LIBPROTOBUF_EXPORT MethodDescriptorProto : public ::google::protobuf::Mess
   ::google::protobuf::MethodOptions* options_;
   bool client_streaming_;
   bool server_streaming_;
-  friend struct LIBPROTOBUF_EXPORT protobuf_google_2fprotobuf_2fdescriptor_2eproto::TableStruct;
+  friend struct protobuf_google_2fprotobuf_2fdescriptor_2eproto::TableStruct;
 };
 // -------------------------------------------------------------------
 
@@ -2368,7 +2368,7 @@ class LIBPROTOBUF_EXPORT FileOptions : public ::google::protobuf::Message /* @@p
   bool deprecated_;
   bool cc_enable_arenas_;
   int optimize_for_;
-  friend struct LIBPROTOBUF_EXPORT protobuf_google_2fprotobuf_2fdescriptor_2eproto::TableStruct;
+  friend struct protobuf_google_2fprotobuf_2fdescriptor_2eproto::TableStruct;
 };
 // -------------------------------------------------------------------
 
@@ -2509,7 +2509,7 @@ class LIBPROTOBUF_EXPORT MessageOptions : public ::google::protobuf::Message /* 
   bool no_standard_descriptor_accessor_;
   bool deprecated_;
   bool map_entry_;
-  friend struct LIBPROTOBUF_EXPORT protobuf_google_2fprotobuf_2fdescriptor_2eproto::TableStruct;
+  friend struct protobuf_google_2fprotobuf_2fdescriptor_2eproto::TableStruct;
 };
 // -------------------------------------------------------------------
 
@@ -2726,7 +2726,7 @@ class LIBPROTOBUF_EXPORT FieldOptions : public ::google::protobuf::Message /* @@
   bool lazy_;
   bool deprecated_;
   bool weak_;
-  friend struct LIBPROTOBUF_EXPORT protobuf_google_2fprotobuf_2fdescriptor_2eproto::TableStruct;
+  friend struct protobuf_google_2fprotobuf_2fdescriptor_2eproto::TableStruct;
 };
 // -------------------------------------------------------------------
 
@@ -2827,7 +2827,7 @@ class LIBPROTOBUF_EXPORT OneofOptions : public ::google::protobuf::Message /* @@
   ::google::protobuf::internal::HasBits<1> _has_bits_;
   mutable int _cached_size_;
   ::google::protobuf::RepeatedPtrField< ::google::protobuf::UninterpretedOption > uninterpreted_option_;
-  friend struct LIBPROTOBUF_EXPORT protobuf_google_2fprotobuf_2fdescriptor_2eproto::TableStruct;
+  friend struct protobuf_google_2fprotobuf_2fdescriptor_2eproto::TableStruct;
 };
 // -------------------------------------------------------------------
 
@@ -2948,7 +2948,7 @@ class LIBPROTOBUF_EXPORT EnumOptions : public ::google::protobuf::Message /* @@p
   ::google::protobuf::RepeatedPtrField< ::google::protobuf::UninterpretedOption > uninterpreted_option_;
   bool allow_alias_;
   bool deprecated_;
-  friend struct LIBPROTOBUF_EXPORT protobuf_google_2fprotobuf_2fdescriptor_2eproto::TableStruct;
+  friend struct protobuf_google_2fprotobuf_2fdescriptor_2eproto::TableStruct;
 };
 // -------------------------------------------------------------------
 
@@ -3059,7 +3059,7 @@ class LIBPROTOBUF_EXPORT EnumValueOptions : public ::google::protobuf::Message /
   mutable int _cached_size_;
   ::google::protobuf::RepeatedPtrField< ::google::protobuf::UninterpretedOption > uninterpreted_option_;
   bool deprecated_;
-  friend struct LIBPROTOBUF_EXPORT protobuf_google_2fprotobuf_2fdescriptor_2eproto::TableStruct;
+  friend struct protobuf_google_2fprotobuf_2fdescriptor_2eproto::TableStruct;
 };
 // -------------------------------------------------------------------
 
@@ -3170,7 +3170,7 @@ class LIBPROTOBUF_EXPORT ServiceOptions : public ::google::protobuf::Message /* 
   mutable int _cached_size_;
   ::google::protobuf::RepeatedPtrField< ::google::protobuf::UninterpretedOption > uninterpreted_option_;
   bool deprecated_;
-  friend struct LIBPROTOBUF_EXPORT protobuf_google_2fprotobuf_2fdescriptor_2eproto::TableStruct;
+  friend struct protobuf_google_2fprotobuf_2fdescriptor_2eproto::TableStruct;
 };
 // -------------------------------------------------------------------
 
@@ -3319,7 +3319,7 @@ class LIBPROTOBUF_EXPORT MethodOptions : public ::google::protobuf::Message /* @
   ::google::protobuf::RepeatedPtrField< ::google::protobuf::UninterpretedOption > uninterpreted_option_;
   bool deprecated_;
   int idempotency_level_;
-  friend struct LIBPROTOBUF_EXPORT protobuf_google_2fprotobuf_2fdescriptor_2eproto::TableStruct;
+  friend struct protobuf_google_2fprotobuf_2fdescriptor_2eproto::TableStruct;
 };
 // -------------------------------------------------------------------
 
@@ -3435,7 +3435,7 @@ class LIBPROTOBUF_EXPORT UninterpretedOption_NamePart : public ::google::protobu
   mutable int _cached_size_;
   ::google::protobuf::internal::ArenaStringPtr name_part_;
   bool is_extension_;
-  friend struct LIBPROTOBUF_EXPORT protobuf_google_2fprotobuf_2fdescriptor_2eproto::TableStruct;
+  friend struct protobuf_google_2fprotobuf_2fdescriptor_2eproto::TableStruct;
 };
 // -------------------------------------------------------------------
 
@@ -3619,7 +3619,7 @@ class LIBPROTOBUF_EXPORT UninterpretedOption : public ::google::protobuf::Messag
   ::google::protobuf::uint64 positive_int_value_;
   ::google::protobuf::int64 negative_int_value_;
   double double_value_;
-  friend struct LIBPROTOBUF_EXPORT protobuf_google_2fprotobuf_2fdescriptor_2eproto::TableStruct;
+  friend struct protobuf_google_2fprotobuf_2fdescriptor_2eproto::TableStruct;
 };
 // -------------------------------------------------------------------
 
@@ -3791,7 +3791,7 @@ class LIBPROTOBUF_EXPORT SourceCodeInfo_Location : public ::google::protobuf::Me
   ::google::protobuf::RepeatedPtrField< ::std::string> leading_detached_comments_;
   ::google::protobuf::internal::ArenaStringPtr leading_comments_;
   ::google::protobuf::internal::ArenaStringPtr trailing_comments_;
-  friend struct LIBPROTOBUF_EXPORT protobuf_google_2fprotobuf_2fdescriptor_2eproto::TableStruct;
+  friend struct protobuf_google_2fprotobuf_2fdescriptor_2eproto::TableStruct;
 };
 // -------------------------------------------------------------------
 
@@ -3891,7 +3891,7 @@ class LIBPROTOBUF_EXPORT SourceCodeInfo : public ::google::protobuf::Message /* 
   ::google::protobuf::internal::HasBits<1> _has_bits_;
   mutable int _cached_size_;
   ::google::protobuf::RepeatedPtrField< ::google::protobuf::SourceCodeInfo_Location > location_;
-  friend struct LIBPROTOBUF_EXPORT protobuf_google_2fprotobuf_2fdescriptor_2eproto::TableStruct;
+  friend struct protobuf_google_2fprotobuf_2fdescriptor_2eproto::TableStruct;
 };
 // -------------------------------------------------------------------
 
@@ -4028,7 +4028,7 @@ class LIBPROTOBUF_EXPORT GeneratedCodeInfo_Annotation : public ::google::protobu
   ::google::protobuf::internal::ArenaStringPtr source_file_;
   ::google::protobuf::int32 begin_;
   ::google::protobuf::int32 end_;
-  friend struct LIBPROTOBUF_EXPORT protobuf_google_2fprotobuf_2fdescriptor_2eproto::TableStruct;
+  friend struct protobuf_google_2fprotobuf_2fdescriptor_2eproto::TableStruct;
 };
 // -------------------------------------------------------------------
 
@@ -4128,7 +4128,7 @@ class LIBPROTOBUF_EXPORT GeneratedCodeInfo : public ::google::protobuf::Message 
   ::google::protobuf::internal::HasBits<1> _has_bits_;
   mutable int _cached_size_;
   ::google::protobuf::RepeatedPtrField< ::google::protobuf::GeneratedCodeInfo_Annotation > annotation_;
-  friend struct LIBPROTOBUF_EXPORT protobuf_google_2fprotobuf_2fdescriptor_2eproto::TableStruct;
+  friend struct protobuf_google_2fprotobuf_2fdescriptor_2eproto::TableStruct;
 };
 // ===================================================================
 
