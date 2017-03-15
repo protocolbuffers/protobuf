@@ -2750,11 +2750,12 @@ void DescriptorProto_ExtensionRange::MergeFrom(const DescriptorProto_ExtensionRa
   cached_has_bits = from._has_bits_[0];
   if (cached_has_bits & 3u) {
     if (cached_has_bits & 0x00000001u) {
-      set_start(from.start());
+      start_ = from.start_;
     }
     if (cached_has_bits & 0x00000002u) {
-      set_end(from.end());
+      end_ = from.end_;
     }
+    _has_bits_[0] |= cached_has_bits;
   }
 }
 
@@ -3079,11 +3080,12 @@ void DescriptorProto_ReservedRange::MergeFrom(const DescriptorProto_ReservedRang
   cached_has_bits = from._has_bits_[0];
   if (cached_has_bits & 3u) {
     if (cached_has_bits & 0x00000001u) {
-      set_start(from.start());
+      start_ = from.start_;
     }
     if (cached_has_bits & 0x00000002u) {
-      set_end(from.end());
+      end_ = from.end_;
     }
+    _has_bits_[0] |= cached_has_bits;
   }
 }
 
@@ -4892,19 +4894,21 @@ void FieldDescriptorProto::MergeFrom(const FieldDescriptorProto& from) {
       mutable_options()->::google::protobuf::FieldOptions::MergeFrom(from.options());
     }
     if (cached_has_bits & 0x00000040u) {
-      set_number(from.number());
+      number_ = from.number_;
     }
     if (cached_has_bits & 0x00000080u) {
-      set_oneof_index(from.oneof_index());
+      oneof_index_ = from.oneof_index_;
     }
+    _has_bits_[0] |= cached_has_bits;
   }
   if (cached_has_bits & 768u) {
     if (cached_has_bits & 0x00000100u) {
-      set_label(from.label());
+      label_ = from.label_;
     }
     if (cached_has_bits & 0x00000200u) {
-      set_type(from.type());
+      type_ = from.type_;
     }
+    _has_bits_[0] |= cached_has_bits;
   }
 }
 
@@ -6635,8 +6639,9 @@ void EnumValueDescriptorProto::MergeFrom(const EnumValueDescriptorProto& from) {
       mutable_options()->::google::protobuf::EnumValueOptions::MergeFrom(from.options());
     }
     if (cached_has_bits & 0x00000004u) {
-      set_number(from.number());
+      number_ = from.number_;
     }
+    _has_bits_[0] |= cached_has_bits;
   }
 }
 
@@ -7767,11 +7772,12 @@ void MethodDescriptorProto::MergeFrom(const MethodDescriptorProto& from) {
       mutable_options()->::google::protobuf::MethodOptions::MergeFrom(from.options());
     }
     if (cached_has_bits & 0x00000010u) {
-      set_client_streaming(from.client_streaming());
+      client_streaming_ = from.client_streaming_;
     }
     if (cached_has_bits & 0x00000020u) {
-      set_server_streaming(from.server_streaming());
+      server_streaming_ = from.server_streaming_;
     }
+    _has_bits_[0] |= cached_has_bits;
   }
 }
 
@@ -8972,34 +8978,36 @@ void FileOptions::MergeFrom(const FileOptions& from) {
       swift_prefix_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.swift_prefix_);
     }
     if (cached_has_bits & 0x00000040u) {
-      set_java_multiple_files(from.java_multiple_files());
+      java_multiple_files_ = from.java_multiple_files_;
     }
     if (cached_has_bits & 0x00000080u) {
-      set_java_generate_equals_and_hash(from.java_generate_equals_and_hash());
+      java_generate_equals_and_hash_ = from.java_generate_equals_and_hash_;
     }
+    _has_bits_[0] |= cached_has_bits;
   }
   if (cached_has_bits & 32512u) {
     if (cached_has_bits & 0x00000100u) {
-      set_java_string_check_utf8(from.java_string_check_utf8());
+      java_string_check_utf8_ = from.java_string_check_utf8_;
     }
     if (cached_has_bits & 0x00000200u) {
-      set_cc_generic_services(from.cc_generic_services());
+      cc_generic_services_ = from.cc_generic_services_;
     }
     if (cached_has_bits & 0x00000400u) {
-      set_java_generic_services(from.java_generic_services());
+      java_generic_services_ = from.java_generic_services_;
     }
     if (cached_has_bits & 0x00000800u) {
-      set_py_generic_services(from.py_generic_services());
+      py_generic_services_ = from.py_generic_services_;
     }
     if (cached_has_bits & 0x00001000u) {
-      set_deprecated(from.deprecated());
+      deprecated_ = from.deprecated_;
     }
     if (cached_has_bits & 0x00002000u) {
-      set_cc_enable_arenas(from.cc_enable_arenas());
+      cc_enable_arenas_ = from.cc_enable_arenas_;
     }
     if (cached_has_bits & 0x00004000u) {
-      set_optimize_for(from.optimize_for());
+      optimize_for_ = from.optimize_for_;
     }
+    _has_bits_[0] |= cached_has_bits;
   }
 }
 
@@ -10031,17 +10039,18 @@ void MessageOptions::MergeFrom(const MessageOptions& from) {
   cached_has_bits = from._has_bits_[0];
   if (cached_has_bits & 15u) {
     if (cached_has_bits & 0x00000001u) {
-      set_message_set_wire_format(from.message_set_wire_format());
+      message_set_wire_format_ = from.message_set_wire_format_;
     }
     if (cached_has_bits & 0x00000002u) {
-      set_no_standard_descriptor_accessor(from.no_standard_descriptor_accessor());
+      no_standard_descriptor_accessor_ = from.no_standard_descriptor_accessor_;
     }
     if (cached_has_bits & 0x00000004u) {
-      set_deprecated(from.deprecated());
+      deprecated_ = from.deprecated_;
     }
     if (cached_has_bits & 0x00000008u) {
-      set_map_entry(from.map_entry());
+      map_entry_ = from.map_entry_;
     }
+    _has_bits_[0] |= cached_has_bits;
   }
 }
 
@@ -10645,23 +10654,24 @@ void FieldOptions::MergeFrom(const FieldOptions& from) {
   cached_has_bits = from._has_bits_[0];
   if (cached_has_bits & 63u) {
     if (cached_has_bits & 0x00000001u) {
-      set_ctype(from.ctype());
+      ctype_ = from.ctype_;
     }
     if (cached_has_bits & 0x00000002u) {
-      set_jstype(from.jstype());
+      jstype_ = from.jstype_;
     }
     if (cached_has_bits & 0x00000004u) {
-      set_packed(from.packed());
+      packed_ = from.packed_;
     }
     if (cached_has_bits & 0x00000008u) {
-      set_lazy(from.lazy());
+      lazy_ = from.lazy_;
     }
     if (cached_has_bits & 0x00000010u) {
-      set_deprecated(from.deprecated());
+      deprecated_ = from.deprecated_;
     }
     if (cached_has_bits & 0x00000020u) {
-      set_weak(from.weak());
+      weak_ = from.weak_;
     }
+    _has_bits_[0] |= cached_has_bits;
   }
 }
 
@@ -11473,11 +11483,12 @@ void EnumOptions::MergeFrom(const EnumOptions& from) {
   cached_has_bits = from._has_bits_[0];
   if (cached_has_bits & 3u) {
     if (cached_has_bits & 0x00000001u) {
-      set_allow_alias(from.allow_alias());
+      allow_alias_ = from.allow_alias_;
     }
     if (cached_has_bits & 0x00000002u) {
-      set_deprecated(from.deprecated());
+      deprecated_ = from.deprecated_;
     }
+    _has_bits_[0] |= cached_has_bits;
   }
 }
 
@@ -12609,11 +12620,12 @@ void MethodOptions::MergeFrom(const MethodOptions& from) {
   cached_has_bits = from._has_bits_[0];
   if (cached_has_bits & 3u) {
     if (cached_has_bits & 0x00000001u) {
-      set_deprecated(from.deprecated());
+      deprecated_ = from.deprecated_;
     }
     if (cached_has_bits & 0x00000002u) {
-      set_idempotency_level(from.idempotency_level());
+      idempotency_level_ = from.idempotency_level_;
     }
+    _has_bits_[0] |= cached_has_bits;
   }
 }
 
@@ -13011,8 +13023,9 @@ void UninterpretedOption_NamePart::MergeFrom(const UninterpretedOption_NamePart&
       name_part_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.name_part_);
     }
     if (cached_has_bits & 0x00000002u) {
-      set_is_extension(from.is_extension());
+      is_extension_ = from.is_extension_;
     }
+    _has_bits_[0] |= cached_has_bits;
   }
 }
 
@@ -13615,14 +13628,15 @@ void UninterpretedOption::MergeFrom(const UninterpretedOption& from) {
       aggregate_value_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.aggregate_value_);
     }
     if (cached_has_bits & 0x00000008u) {
-      set_positive_int_value(from.positive_int_value());
+      positive_int_value_ = from.positive_int_value_;
     }
     if (cached_has_bits & 0x00000010u) {
-      set_negative_int_value(from.negative_int_value());
+      negative_int_value_ = from.negative_int_value_;
     }
     if (cached_has_bits & 0x00000020u) {
-      set_double_value(from.double_value());
+      double_value_ = from.double_value_;
     }
+    _has_bits_[0] |= cached_has_bits;
   }
 }
 
@@ -15328,11 +15342,12 @@ void GeneratedCodeInfo_Annotation::MergeFrom(const GeneratedCodeInfo_Annotation&
       source_file_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.source_file_);
     }
     if (cached_has_bits & 0x00000002u) {
-      set_begin(from.begin());
+      begin_ = from.begin_;
     }
     if (cached_has_bits & 0x00000004u) {
-      set_end(from.end());
+      end_ = from.end_;
     }
+    _has_bits_[0] |= cached_has_bits;
   }
 }
 

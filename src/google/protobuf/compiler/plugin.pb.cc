@@ -513,14 +513,15 @@ void Version::MergeFrom(const Version& from) {
       suffix_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.suffix_);
     }
     if (cached_has_bits & 0x00000002u) {
-      set_major(from.major());
+      major_ = from.major_;
     }
     if (cached_has_bits & 0x00000004u) {
-      set_minor(from.minor());
+      minor_ = from.minor_;
     }
     if (cached_has_bits & 0x00000008u) {
-      set_patch(from.patch());
+      patch_ = from.patch_;
     }
+    _has_bits_[0] |= cached_has_bits;
   }
 }
 

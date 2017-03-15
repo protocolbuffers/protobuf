@@ -2723,10 +2723,6 @@ GenerateMergeFrom(io::Printer* printer) {
   // for cached_has_bit_index >= 0
   int cached_has_bit_index = -1;
 
-  // TODO(ckennelly): Defer merging from._has_bits_ with this->_has_bits_ until
-  // the full group of 8 has been completed.  This can reduce the number of
-  // loads/stores by up to 7 per 8 fields.
-
   int last_i = -1;
   for (int i = 0; i < optimized_order_.size(); ) {
     // Detect infinite loops.
@@ -2805,6 +2801,7 @@ GenerateMergeFrom(io::Printer* printer) {
       }
 
       // Go back and emit clears for each of the fields we processed.
+      bool deferred_has_bit_changes = false;
       for (int j = last_chunk_start; j <= last_chunk_end; j++) {
         const FieldDescriptor* field = optimized_order_[j];
         const FieldGenerator& generator = field_generators_.get(field);
@@ -2836,7 +2833,17 @@ GenerateMergeFrom(io::Printer* printer) {
               printer, "from.", field);
         }
 
-        generator.GenerateMergingCode(printer);
+        if (have_outer_if && IsPOD(field)) {
+          // GenerateCopyConstructorCode for enum and primitive scalar fields
+          // does not do _has_bits_ modifications.  We defer _has_bits_
+          // manipulation until the end of the outer if.
+          //
+          // This can reduce the number of loads/stores by up to 7 per 8 fields.
+          deferred_has_bit_changes = true;
+          generator.GenerateCopyConstructorCode(printer);
+        } else {
+          generator.GenerateMergingCode(printer);
+        }
 
         if (have_enclosing_if) {
           printer->Outdent();
@@ -2845,6 +2852,14 @@ GenerateMergeFrom(io::Printer* printer) {
       }
 
       if (have_outer_if) {
+        if (deferred_has_bit_changes) {
+          // Fush the has bits for the primitives we deferred.
+          GOOGLE_CHECK_LE(0, cached_has_bit_index);
+          printer->Print(
+              "_has_bits_[$index$] |= cached_has_bits;\n",
+              "index", SimpleItoa(cached_has_bit_index));
+        }
+
         printer->Outdent();
         printer->Print("}\n");
       }
