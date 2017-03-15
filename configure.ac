@@ -93,6 +93,25 @@ ACX_CHECK_SUNCC
 # to the link
 AC_PROG_LIBTOOL
 
+# Check whether the linker supports version scripts
+AC_MSG_CHECKING([whether the linker supports version scripts])
+save_LDFLAGS=$LDFLAGS
+LDFLAGS="$LDFLAGS -Wl,--version-script=conftest.map"
+cat > conftest.map <<EOF
+{
+  global:
+    main;
+  local:
+    *;
+};
+EOF
+AC_LINK_IFELSE(
+  [AC_LANG_SOURCE([int main() { return 0; }])],
+  [have_ld_version_script=yes; AC_MSG_RESULT(yes)],
+  [have_ld_version_script=no; AC_MSG_RESULT(no)])
+LDFLAGS=$save_LDFLAGS
+AM_CONDITIONAL([HAVE_LD_VERSION_SCRIPT], [test "$have_ld_version_script" == "yes"])
+
 # Checks for header files.
 AC_HEADER_STDC
 AC_CHECK_HEADERS([fcntl.h inttypes.h limits.h stdlib.h unistd.h])
