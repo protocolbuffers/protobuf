@@ -1452,7 +1452,7 @@ CommandLineInterface::InterpretArgument(const string& name,
 
 void CommandLineInterface::PrintHelpText() {
   // Sorry for indentation here; line wrapping would be uglier.
-  std::cerr <<
+  std::cout <<
 "Usage: " << executable_name_ << " [OPTION] PROTO_FILES\n"
 "Parse PROTO_FILES and generate output based on the options given:\n"
 "  -IPATH, --proto_path=PATH   Specify the directory in which to search for\n"
@@ -1499,7 +1499,7 @@ void CommandLineInterface::PrintHelpText() {
 "                              occupied fields numbers.\n"
       << std::endl;
   if (!plugin_prefix_.empty()) {
-    std::cerr <<
+    std::cout <<
 "  --plugin=EXECUTABLE         Specifies a plugin executable to use.\n"
 "                              Normally, protoc searches the PATH for\n"
 "                              plugins, but you may specify additional\n"
@@ -1515,7 +1515,7 @@ void CommandLineInterface::PrintHelpText() {
     // FIXME(kenton):  If the text is long enough it will wrap, which is ugly,
     //   but fixing this nicely (e.g. splitting on spaces) is probably more
     //   trouble than it's worth.
-    std::cerr << "  " << iter->first << "=OUT_DIR "
+    std::cout << "  " << iter->first << "=OUT_DIR "
               << string(19 - iter->first.size(), ' ')  // Spaces for alignment.
               << iter->second.help_text << std::endl;
   }
