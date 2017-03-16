@@ -101,11 +101,9 @@ function onEof(totalRead) {
 function readBuffer(bytes) {
   var buf = new Buffer(bytes);
   var totalRead = 0;
-  //console.warn("Want to read: " + bytes);
   while (totalRead < bytes) {
     var read = 0;
     try {
-      //console.warn("Trying to read: " + (bytes - totalRead));
       read = fs.readSync(process.stdin.fd, buf, totalRead, bytes - totalRead);
     } catch (e) {
       if (e.code == 'EOF') {
@@ -116,7 +114,6 @@ function readBuffer(bytes) {
       }
     }
 
-    //console.warn("Read: " + read);
     totalRead += read;
   }
 
