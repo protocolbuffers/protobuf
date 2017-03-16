@@ -1064,7 +1064,8 @@ string JSBinaryReaderMethodType(const FieldDescriptor* field) {
   return name;
 }
 
-string JSBinaryReadWriteMethodName(const FieldDescriptor* field,
+string JSBinaryReadWriteMethodName(const GeneratorOptions& options,
+                                   const FieldDescriptor* field,
                                    bool is_writer) {
   string name = JSBinaryReaderMethodType(field);
   if (field->is_packed()) {
@@ -1072,19 +1073,27 @@ string JSBinaryReadWriteMethodName(const FieldDescriptor* field,
   } else if (is_writer && field->is_repeated()) {
     name = "Repeated" + name;
   }
+  if (field->cpp_type() == FieldDescriptor::CPPTYPE_INT64 ||
+      field->cpp_type() == FieldDescriptor::CPPTYPE_UINT64) {
+    if (field->options().jstype() == FieldOptions_JSType_JS_STRING ||
+        field->options().jstype() == FieldOptions_JSType_JS_NORMAL &&
+        options.int64_default_type == GeneratorOptions::kInt64String) {
+      name += "String";
+    }
+  }
   return name;
 }
 
 string JSBinaryReaderMethodName(const GeneratorOptions& options,
                                 const FieldDescriptor* field) {
   return "jspb.BinaryReader.prototype.read" +
-         JSBinaryReadWriteMethodName(field, /* is_writer = */ false);
+         JSBinaryReadWriteMethodName(options, field, /* is_writer = */ false);
 }
 
 string JSBinaryWriterMethodName(const GeneratorOptions& options,
                                 const FieldDescriptor* field) {
   return "jspb.BinaryWriter.prototype.write" +
-         JSBinaryReadWriteMethodName(field, /* is_writer = */ true);
+         JSBinaryReadWriteMethodName(options, field, /* is_writer = */ true);
 }
 
 string JSReturnClause(const FieldDescriptor* desc) {
@@ -2897,7 +2906,7 @@ void Generator::GenerateClassDeserializeBinaryField(
                                              /* singular_if_not_packed */ true,
                                              BYTES_U8),
           "reader",
-          JSBinaryReadWriteMethodName(field, /* is_writer = */ false));
+          JSBinaryReadWriteMethodName(options, field, /* is_writer = */ false));
     }
 
     if (field->is_repeated() && !field->is_packed()) {
@@ -3058,7 +3067,9 @@ void Generator::GenerateClassSerializeBinaryField(
         "    writer.write$method$(\n"
         "      $index$,\n"
         "      f",
-        "method", JSBinaryReadWriteMethodName(field, /* is_writer = */ true),
+        "method", JSBinaryReadWriteMethodName(options,
+                                              field,
+                                              /* is_writer = */ true),
         "index", SimpleItoa(field->number()));
 
     if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE &&
@@ -3227,6 +3238,12 @@ bool GeneratorOptions::ParseFromOptions(
       } else {
         *error = "Unknown import style " + options[i].second + ", expected " +
                  "one of: closure, commonjs, browser, es6.";
+      }
+    } else if (options[i].first == "int64_default_type") {
+      if (options[i].second == "number") {
+        int64_default_type = kInt64Number;
+      } else if (options[i].second == "string") {
+        int64_default_type = kInt64String;
       }
     } else if (options[i].first == "extension") {
       extension = options[i].second;

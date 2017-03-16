@@ -86,7 +86,7 @@ function makeTests(msgInfo, submessageCtor, suffix) {
   var fillMapFields = function(msg) {
     msg.getMapStringStringMap().set('asdf', 'jkl;').set('key 2', 'hello world');
     msg.getMapStringInt32Map().set('a', 1).set('b', -2);
-    msg.getMapStringInt64Map().set('c', 0x100000000).set('d', 0x200000000);
+    msg.getMapStringInt64Map().set('c', '4294967296').set('d', '8589934592');
     msg.getMapStringBoolMap().set('e', true).set('f', false);
     msg.getMapStringDoubleMap().set('g', 3.14159).set('h', 2.71828);
     msg.getMapStringEnumMap()
@@ -98,7 +98,7 @@ function makeTests(msgInfo, submessageCtor, suffix) {
     msg.getMapStringMsgMap().get('k').setFoo(42);
     msg.getMapStringMsgMap().get('l').setFoo(84);
     msg.getMapInt32StringMap().set(-1, 'a').set(42, 'b');
-    msg.getMapInt64StringMap().set(0x123456789abc, 'c').set(0xcba987654321, 'd');
+    msg.getMapInt64StringMap().set('20015998343868', 'c').set('223928981472033', 'd');
     msg.getMapBoolStringMap().set(false, 'e').set(true, 'f');
   };
 
@@ -116,8 +116,8 @@ function makeTests(msgInfo, submessageCtor, suffix) {
           ['b', -2]
     ]);
     checkMapEquals(msg.getMapStringInt64Map(), [
-          ['c', 0x100000000],
-          ['d', 0x200000000]
+          ['c', '4294967296'],
+          ['d', '8589934592']
     ]);
     checkMapEquals(msg.getMapStringBoolMap(), [
           ['e', true],
@@ -136,8 +136,8 @@ function makeTests(msgInfo, submessageCtor, suffix) {
           [42, 'b']
     ]);
     checkMapEquals(msg.getMapInt64StringMap(), [
-          [0x123456789abc, 'c'],
-          [0xcba987654321, 'd']
+          ['20015998343868', 'c'],
+          ['223928981472033', 'd']
     ]);
     checkMapEquals(msg.getMapBoolStringMap(), [
           [false, 'e'],

@@ -109,13 +109,13 @@ function fillAllFields(msg) {
   // mantissa).
   msg.setOptionalInt64(-0x7fffffff00000000);
   msg.setOptionalUint32(0x80000000);
-  msg.setOptionalUint64(0xf000000000000000);
+  msg.setOptionalUint64('17293822569102704640');
   msg.setOptionalSint32(-100);
-  msg.setOptionalSint64(-0x8000000000000000);
+  msg.setOptionalSint64(-0x8000000000000000 + '');
   msg.setOptionalFixed32(1234);
-  msg.setOptionalFixed64(0x1234567800000000);
+  msg.setOptionalFixed64('1311768464867721216');
   msg.setOptionalSfixed32(-1234);
-  msg.setOptionalSfixed64(-0x1234567800000000);
+  msg.setOptionalSfixed64('-1311768464867721216');
   msg.setOptionalFloat(1.5);
   msg.setOptionalDouble(-1.5);
   msg.setOptionalBool(true);
@@ -131,15 +131,15 @@ function fillAllFields(msg) {
 
 
   msg.setRepeatedInt32List([-42]);
-  msg.setRepeatedInt64List([-0x7fffffff00000000]);
+  msg.setRepeatedInt64List(['-9223372032559808512']);
   msg.setRepeatedUint32List([0x80000000]);
-  msg.setRepeatedUint64List([0xf000000000000000]);
+  msg.setRepeatedUint64List(['17293822569102704640']);
   msg.setRepeatedSint32List([-100]);
-  msg.setRepeatedSint64List([-0x8000000000000000]);
+  msg.setRepeatedSint64List([-0x8000000000000000 + '']);
   msg.setRepeatedFixed32List([1234]);
-  msg.setRepeatedFixed64List([0x1234567800000000]);
+  msg.setRepeatedFixed64List(['1311768464867721216']);
   msg.setRepeatedSfixed32List([-1234]);
-  msg.setRepeatedSfixed64List([-0x1234567800000000]);
+  msg.setRepeatedSfixed64List(['-1311768464867721216']);
   msg.setRepeatedFloatList([1.5]);
   msg.setRepeatedDoubleList([-1.5]);
   msg.setRepeatedBoolList([true]);
@@ -153,15 +153,15 @@ function fillAllFields(msg) {
   msg.setRepeatedForeignEnumList([proto.jspb.test.ForeignEnum.FOREIGN_FOO]);
 
   msg.setPackedRepeatedInt32List([-42]);
-  msg.setPackedRepeatedInt64List([-0x7fffffff00000000]);
+  msg.setPackedRepeatedInt64List(['-9223372032559808512']);
   msg.setPackedRepeatedUint32List([0x80000000]);
-  msg.setPackedRepeatedUint64List([0xf000000000000000]);
+  msg.setPackedRepeatedUint64List(['17293822569102704640']);
   msg.setPackedRepeatedSint32List([-100]);
-  msg.setPackedRepeatedSint64List([-0x8000000000000000]);
+  msg.setPackedRepeatedSint64List([-0x8000000000000000 + '']);
   msg.setPackedRepeatedFixed32List([1234]);
-  msg.setPackedRepeatedFixed64List([0x1234567800000000]);
+  msg.setPackedRepeatedFixed64List(['1311768464867721216']);
   msg.setPackedRepeatedSfixed32List([-1234]);
-  msg.setPackedRepeatedSfixed64List([-0x1234567800000000]);
+  msg.setPackedRepeatedSfixed64List(['-1311768464867721216']);
   msg.setPackedRepeatedFloatList([1.5]);
   msg.setPackedRepeatedDoubleList([-1.5]);
   msg.setPackedRepeatedBoolList([true]);
@@ -201,13 +201,13 @@ function checkAllFields(original, copy) {
   assertEquals(copy.getOptionalInt32(), -42);
   assertEquals(copy.getOptionalInt64(), -0x7fffffff00000000);
   assertEquals(copy.getOptionalUint32(), 0x80000000);
-  assertEquals(copy.getOptionalUint64(), 0xf000000000000000);
+  assertEquals(copy.getOptionalUint64(), '17293822569102704640');
   assertEquals(copy.getOptionalSint32(), -100);
-  assertEquals(copy.getOptionalSint64(), -0x8000000000000000);
+  assertEquals(copy.getOptionalSint64(), -0x8000000000000000 + '');
   assertEquals(copy.getOptionalFixed32(), 1234);
-  assertEquals(copy.getOptionalFixed64(), 0x1234567800000000);
+  assertEquals(copy.getOptionalFixed64(), '1311768464867721216');
   assertEquals(copy.getOptionalSfixed32(), -1234);
-  assertEquals(copy.getOptionalSfixed64(), -0x1234567800000000);
+  assertEquals(copy.getOptionalSfixed64(), '-1311768464867721216');
   assertEquals(copy.getOptionalFloat(), 1.5);
   assertEquals(copy.getOptionalDouble(), -1.5);
   assertEquals(copy.getOptionalBool(), true);
@@ -228,15 +228,15 @@ function checkAllFields(original, copy) {
       proto.jspb.test.TestAllTypes.OneofFieldCase.ONEOF_STRING);
 
   assertElementsEquals(copy.getRepeatedInt32List(), [-42]);
-  assertElementsEquals(copy.getRepeatedInt64List(), [-0x7fffffff00000000]);
+  assertElementsEquals(copy.getRepeatedInt64List(), ['-9223372032559808512']);
   assertElementsEquals(copy.getRepeatedUint32List(), [0x80000000]);
-  assertElementsEquals(copy.getRepeatedUint64List(), [0xf000000000000000]);
+  assertElementsEquals(copy.getRepeatedUint64List(), ['17293822569102704640']);
   assertElementsEquals(copy.getRepeatedSint32List(), [-100]);
-  assertElementsEquals(copy.getRepeatedSint64List(), [-0x8000000000000000]);
+  assertElementsEquals(copy.getRepeatedSint64List(), [-0x8000000000000000 + '']);
   assertElementsEquals(copy.getRepeatedFixed32List(), [1234]);
-  assertElementsEquals(copy.getRepeatedFixed64List(), [0x1234567800000000]);
+  assertElementsEquals(copy.getRepeatedFixed64List(), ['1311768464867721216']);
   assertElementsEquals(copy.getRepeatedSfixed32List(), [-1234]);
-  assertElementsEquals(copy.getRepeatedSfixed64List(), [-0x1234567800000000]);
+  assertElementsEquals(copy.getRepeatedSfixed64List(), ['-1311768464867721216']);
   assertElementsEquals(copy.getRepeatedFloatList(), [1.5]);
   assertElementsEquals(copy.getRepeatedDoubleList(), [-1.5]);
   assertElementsEquals(copy.getRepeatedBoolList(), [true]);
@@ -256,19 +256,19 @@ function checkAllFields(original, copy) {
 
   assertElementsEquals(copy.getPackedRepeatedInt32List(), [-42]);
   assertElementsEquals(copy.getPackedRepeatedInt64List(),
-      [-0x7fffffff00000000]);
+      ['-9223372032559808512']);
   assertElementsEquals(copy.getPackedRepeatedUint32List(), [0x80000000]);
   assertElementsEquals(copy.getPackedRepeatedUint64List(),
-      [0xf000000000000000]);
+      ['17293822569102704640']);
   assertElementsEquals(copy.getPackedRepeatedSint32List(), [-100]);
   assertElementsEquals(copy.getPackedRepeatedSint64List(),
-      [-0x8000000000000000]);
+      [-0x8000000000000000 + '']);
   assertElementsEquals(copy.getPackedRepeatedFixed32List(), [1234]);
   assertElementsEquals(copy.getPackedRepeatedFixed64List(),
-      [0x1234567800000000]);
+      ['1311768464867721216']);
   assertElementsEquals(copy.getPackedRepeatedSfixed32List(), [-1234]);
   assertElementsEquals(copy.getPackedRepeatedSfixed64List(),
-      [-0x1234567800000000]);
+      ['-1311768464867721216']);
   assertElementsEquals(copy.getPackedRepeatedFloatList(), [1.5]);
   assertElementsEquals(copy.getPackedRepeatedDoubleList(), [-1.5]);
 
@@ -285,23 +285,23 @@ function checkAllFields(original, copy) {
 function checkExtensions(msg) {
   assertEquals(-42,
       msg.getExtension(proto.jspb.test.extendOptionalInt32));
-  assertEquals(-0x7fffffff00000000,
+  assertEquals('-9223372032559808512',
       msg.getExtension(proto.jspb.test.extendOptionalInt64));
   assertEquals(0x80000000,
       msg.getExtension(proto.jspb.test.extendOptionalUint32));
-  assertEquals(0xf000000000000000,
+  assertEquals('17293822569102704640',
       msg.getExtension(proto.jspb.test.extendOptionalUint64));
   assertEquals(-100,
       msg.getExtension(proto.jspb.test.extendOptionalSint32));
-  assertEquals(-0x8000000000000000,
+  assertEquals(-0x8000000000000000 + '',
       msg.getExtension(proto.jspb.test.extendOptionalSint64));
   assertEquals(1234,
       msg.getExtension(proto.jspb.test.extendOptionalFixed32));
-  assertEquals(0x1234567800000000,
+  assertEquals('1311768464867721216',
       msg.getExtension(proto.jspb.test.extendOptionalFixed64));
   assertEquals(-1234,
       msg.getExtension(proto.jspb.test.extendOptionalSfixed32));
-  assertEquals(-0x1234567800000000,
+  assertEquals('-1311768464867721216',
       msg.getExtension(proto.jspb.test.extendOptionalSfixed64));
   assertEquals(1.5,
       msg.getExtension(proto.jspb.test.extendOptionalFloat));
@@ -324,31 +324,31 @@ function checkExtensions(msg) {
       [-42]);
   assertElementsEquals(
       msg.getExtension(proto.jspb.test.extendRepeatedInt64List),
-      [-0x7fffffff00000000]);
+      ['-9223372032559808512']);
   assertElementsEquals(
       msg.getExtension(proto.jspb.test.extendRepeatedUint32List),
       [0x80000000]);
   assertElementsEquals(
       msg.getExtension(proto.jspb.test.extendRepeatedUint64List),
-      [0xf000000000000000]);
+      ['17293822569102704640']);
   assertElementsEquals(
       msg.getExtension(proto.jspb.test.extendRepeatedSint32List),
       [-100]);
   assertElementsEquals(
       msg.getExtension(proto.jspb.test.extendRepeatedSint64List),
-      [-0x8000000000000000]);
+      [-0x8000000000000000 + '']);
   assertElementsEquals(
       msg.getExtension(proto.jspb.test.extendRepeatedFixed32List),
       [1234]);
   assertElementsEquals(
       msg.getExtension(proto.jspb.test.extendRepeatedFixed64List),
-      [0x1234567800000000]);
+      ['1311768464867721216']);
   assertElementsEquals(
       msg.getExtension(proto.jspb.test.extendRepeatedSfixed32List),
       [-1234]);
   assertElementsEquals(
       msg.getExtension(proto.jspb.test.extendRepeatedSfixed64List),
-      [-0x1234567800000000]);
+      ['-1311768464867721216']);
   assertElementsEquals(
       msg.getExtension(proto.jspb.test.extendRepeatedFloatList),
       [1.5]);
@@ -379,31 +379,31 @@ function checkExtensions(msg) {
       [-42]);
   assertElementsEquals(
       msg.getExtension(proto.jspb.test.extendPackedRepeatedInt64List),
-      [-0x7fffffff00000000]);
+      ['-9223372032559808512']);
   assertElementsEquals(
       msg.getExtension(proto.jspb.test.extendPackedRepeatedUint32List),
       [0x80000000]);
   assertElementsEquals(
       msg.getExtension(proto.jspb.test.extendPackedRepeatedUint64List),
-      [0xf000000000000000]);
+      ['17293822569102704640']);
   assertElementsEquals(
       msg.getExtension(proto.jspb.test.extendPackedRepeatedSint32List),
       [-100]);
   assertElementsEquals(
       msg.getExtension(proto.jspb.test.extendPackedRepeatedSint64List),
-      [-0x8000000000000000]);
+      [-0x8000000000000000 + '']);
   assertElementsEquals(
       msg.getExtension(proto.jspb.test.extendPackedRepeatedFixed32List),
       [1234]);
   assertElementsEquals(
       msg.getExtension(proto.jspb.test.extendPackedRepeatedFixed64List),
-      [0x1234567800000000]);
+      ['1311768464867721216']);
   assertElementsEquals(
       msg.getExtension(proto.jspb.test.extendPackedRepeatedSfixed32List),
       [-1234]);
   assertElementsEquals(
       msg.getExtension(proto.jspb.test.extendPackedRepeatedSfixed64List),
-      [-0x1234567800000000]);
+      ['-1311768464867721216']);
   assertElementsEquals(
       msg.getExtension(proto.jspb.test.extendPackedRepeatedFloatList),
       [1.5]);
@@ -515,23 +515,23 @@ describe('protoBinaryTest', function() {
     msg.setExtension(
         proto.jspb.test.extendOptionalInt32, -42);
     msg.setExtension(
-        proto.jspb.test.extendOptionalInt64, -0x7fffffff00000000);
+        proto.jspb.test.extendOptionalInt64, '-9223372032559808512');
     msg.setExtension(
         proto.jspb.test.extendOptionalUint32, 0x80000000);
     msg.setExtension(
-        proto.jspb.test.extendOptionalUint64, 0xf000000000000000);
+        proto.jspb.test.extendOptionalUint64, '17293822569102704640');
     msg.setExtension(
         proto.jspb.test.extendOptionalSint32, -100);
     msg.setExtension(
-        proto.jspb.test.extendOptionalSint64, -0x8000000000000000);
+        proto.jspb.test.extendOptionalSint64, -0x8000000000000000 + '');
     msg.setExtension(
         proto.jspb.test.extendOptionalFixed32, 1234);
     msg.setExtension(
-        proto.jspb.test.extendOptionalFixed64, 0x1234567800000000);
+        proto.jspb.test.extendOptionalFixed64, '1311768464867721216');
     msg.setExtension(
         proto.jspb.test.extendOptionalSfixed32, -1234);
     msg.setExtension(
-        proto.jspb.test.extendOptionalSfixed64, -0x1234567800000000);
+        proto.jspb.test.extendOptionalSfixed64, '-1311768464867721216');
     msg.setExtension(
         proto.jspb.test.extendOptionalFloat, 1.5);
     msg.setExtension(
@@ -553,23 +553,23 @@ describe('protoBinaryTest', function() {
     msg.setExtension(
         proto.jspb.test.extendRepeatedInt32List, [-42]);
     msg.setExtension(
-        proto.jspb.test.extendRepeatedInt64List, [-0x7fffffff00000000]);
+        proto.jspb.test.extendRepeatedInt64List, ['-9223372032559808512']);
     msg.setExtension(
         proto.jspb.test.extendRepeatedUint32List, [0x80000000]);
     msg.setExtension(
-        proto.jspb.test.extendRepeatedUint64List, [0xf000000000000000]);
+        proto.jspb.test.extendRepeatedUint64List, ['17293822569102704640']);
     msg.setExtension(
         proto.jspb.test.extendRepeatedSint32List, [-100]);
     msg.setExtension(
-        proto.jspb.test.extendRepeatedSint64List, [-0x8000000000000000]);
+        proto.jspb.test.extendRepeatedSint64List, [-0x8000000000000000 + '']);
     msg.setExtension(
         proto.jspb.test.extendRepeatedFixed32List, [1234]);
     msg.setExtension(
-        proto.jspb.test.extendRepeatedFixed64List, [0x1234567800000000]);
+        proto.jspb.test.extendRepeatedFixed64List, ['1311768464867721216']);
     msg.setExtension(
         proto.jspb.test.extendRepeatedSfixed32List, [-1234]);
     msg.setExtension(
-        proto.jspb.test.extendRepeatedSfixed64List, [-0x1234567800000000]);
+        proto.jspb.test.extendRepeatedSfixed64List, ['-1311768464867721216']);
     msg.setExtension(
         proto.jspb.test.extendRepeatedFloatList, [1.5]);
     msg.setExtension(
@@ -590,24 +590,24 @@ describe('protoBinaryTest', function() {
     msg.setExtension(
         proto.jspb.test.extendPackedRepeatedInt32List, [-42]);
     msg.setExtension(
-        proto.jspb.test.extendPackedRepeatedInt64List, [-0x7fffffff00000000]);
+        proto.jspb.test.extendPackedRepeatedInt64List, ['-9223372032559808512']);
     msg.setExtension(
         proto.jspb.test.extendPackedRepeatedUint32List, [0x80000000]);
     msg.setExtension(
-        proto.jspb.test.extendPackedRepeatedUint64List, [0xf000000000000000]);
+        proto.jspb.test.extendPackedRepeatedUint64List, ['17293822569102704640']);
     msg.setExtension(
         proto.jspb.test.extendPackedRepeatedSint32List, [-100]);
     msg.setExtension(
-        proto.jspb.test.extendPackedRepeatedSint64List, [-0x8000000000000000]);
+        proto.jspb.test.extendPackedRepeatedSint64List, [-0x8000000000000000 + '']);
     msg.setExtension(
         proto.jspb.test.extendPackedRepeatedFixed32List, [1234]);
     msg.setExtension(
-        proto.jspb.test.extendPackedRepeatedFixed64List, [0x1234567800000000]);
+        proto.jspb.test.extendPackedRepeatedFixed64List, ['1311768464867721216']);
     msg.setExtension(
         proto.jspb.test.extendPackedRepeatedSfixed32List, [-1234]);
     msg.setExtension(
         proto.jspb.test.extendPackedRepeatedSfixed64List,
-        [-0x1234567800000000]);
+        ['-1311768464867721216']);
     msg.setExtension(
         proto.jspb.test.extendPackedRepeatedFloatList, [1.5]);
     msg.setExtension(
