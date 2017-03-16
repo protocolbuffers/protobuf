@@ -30,6 +30,7 @@ set(libprotobuf_files
   ${protobuf_source_dir}/src/google/protobuf/timestamp.pb.cc
   ${protobuf_source_dir}/src/google/protobuf/type.pb.cc
   ${protobuf_source_dir}/src/google/protobuf/unknown_field_set.cc
+  ${protobuf_source_dir}/src/google/protobuf/util/delimited_message_util.cc
   ${protobuf_source_dir}/src/google/protobuf/util/field_comparator.cc
   ${protobuf_source_dir}/src/google/protobuf/util/field_mask_util.cc
   ${protobuf_source_dir}/src/google/protobuf/util/internal/datapiece.cc
