@@ -490,6 +490,23 @@ void ImmutableMessageGenerator::Generate(io::Printer* printer) {
       "      $oneof_name$Case_);\n"
       "}\n"
       "\n");
+
+    // Generate HasXX if oneof field is nullable and has only one possible value
+    if(descriptor_->oneof_decl(i)->is_nullable()){
+      if(descriptor_->oneof_decl(i)->field_count() == 1){
+        const FieldDescriptor* field = descriptor_->oneof_decl(i)->field(0);
+        const FieldGeneratorInfo* info = context_->GetFieldGeneratorInfo(field);
+        std::map<string, string> field_vars(vars);
+        field_vars["capitalized_nullable_field_name"] = info->capitalized_name;
+        field_vars["cap_oneof_name"] = ToUpper(vars["oneof_name"]);
+        printer->Print(field_vars,
+            "public boolean has$capitalized_nullable_field_name$ {\n"
+            "  return get$oneof_capitalized_name$Case() != $cap_oneof_name$_NOT_SET;\n"
+            "}\n"
+            );
+      }
+    }
+
   }
 
   if (IsAnyMessage(descriptor_)) {

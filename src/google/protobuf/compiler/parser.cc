@@ -770,12 +770,25 @@ bool Parser::ParseMessageStatement(DescriptorProto* message,
     LocationRecorder location(message_location,
                               DescriptorProto::kFieldFieldNumber,
                               message->field_size());
-    return ParseMessageField(message->add_field(),
-                             message->mutable_nested_type(),
-                             message_location,
-                             DescriptorProto::kNestedTypeFieldNumber,
-                             location,
-                             containing_file);
+    const bool has_nullable = TryConsume("nullable");
+    if(has_nullable && syntax_identifier_ == "proto3") {
+      int oneof_index = message->oneof_decl_size ();
+      LocationRecorder oneof_location (message_location,
+                                       DescriptorProto::kOneofDeclFieldNumber,
+                                       oneof_index);
+      return ParseNullableField (message->add_oneof_decl (), message,
+                                 oneof_index, oneof_location, message_location,
+                                 containing_file);
+    } else if (has_nullable && syntax_identifier_ == "proto2") {
+      AddError("nullable fields are supported in proto3 only");
+    } else {
+      return ParseMessageField (message->add_field (),
+                                message->mutable_nested_type (),
+                                message_location,
+                                DescriptorProto::kNestedTypeFieldNumber,
+                                location,
+                                containing_file);
+    }
   }
 }
 
@@ -1674,6 +1687,48 @@ bool Parser::ParseOneof(OneofDescriptorProto* oneof_decl,
 
   return true;
 }
+
+bool Parser::ParseNullableField(OneofDescriptorProto *oneof_decl, DescriptorProto *containing_type, int oneof_index,
+                                const LocationRecorder &oneof_location,
+                                const LocationRecorder &containing_type_location,
+                                const FileDescriptorProto *containing_file) {
+
+    // Print a nice error if the user accidentally tries to place a label
+    // on an individual member of a oneof.
+    if (LookingAt("required") ||
+        LookingAt("optional") ||
+        LookingAt("repeated")) {
+      AddError("Fields in oneofs must not have labels (required / optional "
+                   "/ repeated).");
+      // We can continue parsing here because we understand what the user
+      // meant.  The error report will still make parsing fail overall.
+      input_->Next();
+    }
+
+    LocationRecorder field_location(containing_type_location,
+                                    DescriptorProto::kFieldFieldNumber,
+                                    containing_type->field_size());
+
+    FieldDescriptorProto* field = containing_type->add_field();
+    field->set_label(FieldDescriptorProto::LABEL_OPTIONAL);
+    field->set_oneof_index(oneof_index);
+
+    if (!ParseMessageFieldNoLabel(field,
+                                  containing_type->mutable_nested_type(),
+                                  containing_type_location,
+                                  DescriptorProto::kNestedTypeFieldNumber,
+                                  field_location,
+                                  containing_file)) {
+      // This statement failed to parse.  Skip it, but keep looping to parse
+      // other statements.
+      AddError("Unable to parse nullable field");
+    }
+  oneof_decl->mutable_options ()->set_nullable(true);
+  oneof_decl->set_name("nullable_" + field->name ());
+  return true;
+}
+
+
 
 // -------------------------------------------------------------------
 // Enums

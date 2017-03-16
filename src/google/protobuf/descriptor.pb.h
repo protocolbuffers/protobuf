@@ -2817,9 +2817,18 @@ class LIBPROTOBUF_EXPORT OneofOptions : public ::google::protobuf::Message /* @@
   const ::google::protobuf::RepeatedPtrField< ::google::protobuf::UninterpretedOption >&
       uninterpreted_option() const;
 
+  // optional bool nullable = 1;
+  bool has_nullable() const;
+  void clear_nullable();
+  static const int kNullableFieldNumber = 1;
+  bool nullable() const;
+  void set_nullable(bool value);
+
   GOOGLE_PROTOBUF_EXTENSION_ACCESSORS(OneofOptions)
   // @@protoc_insertion_point(class_scope:google.protobuf.OneofOptions)
  private:
+  void set_has_nullable();
+  void clear_has_nullable();
 
   ::google::protobuf::internal::ExtensionSet _extensions_;
 
@@ -2827,6 +2836,7 @@ class LIBPROTOBUF_EXPORT OneofOptions : public ::google::protobuf::Message /* @@
   ::google::protobuf::internal::HasBits<1> _has_bits_;
   mutable int _cached_size_;
   ::google::protobuf::RepeatedPtrField< ::google::protobuf::UninterpretedOption > uninterpreted_option_;
+  bool nullable_;
   friend struct LIBPROTOBUF_EXPORT protobuf_google_2fprotobuf_2fdescriptor_2eproto::TableStruct;
 };
 // -------------------------------------------------------------------
@@ -7420,6 +7430,30 @@ inline const ::google::protobuf::RepeatedPtrField< ::google::protobuf::Uninterpr
 OneofOptions::uninterpreted_option() const {
   // @@protoc_insertion_point(field_list:google.protobuf.OneofOptions.uninterpreted_option)
   return uninterpreted_option_;
+}
+
+// optional bool nullable = 1;
+inline bool OneofOptions::has_nullable() const {
+  return (_has_bits_[0] & 0x00000001u) != 0;
+}
+inline void OneofOptions::set_has_nullable() {
+  _has_bits_[0] |= 0x00000001u;
+}
+inline void OneofOptions::clear_has_nullable() {
+  _has_bits_[0] &= ~0x00000001u;
+}
+inline void OneofOptions::clear_nullable() {
+  nullable_ = false;
+  clear_has_nullable();
+}
+inline bool OneofOptions::nullable() const {
+  // @@protoc_insertion_point(field_get:google.protobuf.OneofOptions.nullable)
+  return nullable_;
+}
+inline void OneofOptions::set_nullable(bool value) {
+  set_has_nullable();
+  nullable_ = value;
+  // @@protoc_insertion_point(field_set:google.protobuf.OneofOptions.nullable)
 }
 
 // -------------------------------------------------------------------

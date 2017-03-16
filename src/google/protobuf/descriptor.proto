@@ -531,7 +531,6 @@ message FieldOptions {
   // For Google-internal migration only. Do not use.
   optional bool weak = 10 [default=false];
 
-
   // The parser stores options it doesn't recognize here. See above.
   repeated UninterpretedOption uninterpreted_option = 999;
 
@@ -544,6 +543,9 @@ message FieldOptions {
 message OneofOptions {
   // The parser stores options it doesn't recognize here. See above.
   repeated UninterpretedOption uninterpreted_option = 999;
+
+  // Is this field nullable
+  optional bool nullable = 1;
 
   // Clients can define custom options in extensions of this message. See above.
   extensions 1000 to max;

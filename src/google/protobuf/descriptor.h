@@ -772,8 +772,10 @@ class LIBPROTOBUF_EXPORT OneofDescriptor {
   // extent of this oneof declaration.  Returns false and leaves
   // |*out_location| unchanged iff location information was not available.
   bool GetSourceLocation(SourceLocation* out_location) const;
+  bool is_nullable() const;
 
  private:
+  const FileDescriptor* file_;
   typedef OneofOptions OptionsType;
 
   // Allows access to GetLocationPath for annotations.
