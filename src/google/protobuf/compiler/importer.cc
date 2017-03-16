@@ -270,8 +270,8 @@ static string CanonicalizePath(string path) {
   }
 #endif
 
-  vector<string> canonical_parts;
-  vector<string> parts = Split(
+  std::vector<string> canonical_parts;
+  std::vector<string> parts = Split(
       path, "/", true);  // Note:  Removes empty parts.
   for (int i = 0; i < parts.size(); i++) {
     if (parts[i] == ".") {

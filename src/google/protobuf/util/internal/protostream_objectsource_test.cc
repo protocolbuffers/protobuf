@@ -101,7 +101,9 @@ class ProtostreamObjectSourceTest
       : helper_(GetParam()),
         mock_(),
         ow_(&mock_),
-        use_lower_camel_for_enums_(false) {
+        use_lower_camel_for_enums_(false),
+        use_ints_for_enums_(false),
+        add_trailing_zeros_(false) {
     helper_.ResetTypeInfo(Book::descriptor(), Proto3Message::descriptor());
   }
 
@@ -113,7 +115,7 @@ class ProtostreamObjectSourceTest
   }
 
   Status ExecuteTest(const Message& msg, const Descriptor* descriptor) {
-    ostringstream oss;
+    std::ostringstream oss;
     msg.SerializePartialToOstream(&oss);
     string proto = oss.str();
     ArrayInputStream arr_stream(proto.data(), proto.size());
@@ -122,6 +124,7 @@ class ProtostreamObjectSourceTest
     google::protobuf::scoped_ptr<ProtoStreamObjectSource> os(
         helper_.NewProtoSource(&in_stream, GetTypeUrl(descriptor)));
     if (use_lower_camel_for_enums_) os->set_use_lower_camel_for_enums(true);
+    if (use_ints_for_enums_) os->set_use_ints_for_enums(true);
     os->set_max_recursion_depth(64);
     return os->WriteTo(&mock_);
   }
@@ -269,11 +272,17 @@ class ProtostreamObjectSourceTest
 
   void UseLowerCamelForEnums() { use_lower_camel_for_enums_ = true; }
 
+  void UseIntsForEnums() { use_ints_for_enums_ = true; }
+
+  void AddTrailingZeros() { add_trailing_zeros_ = true; }
+
   testing::TypeInfoTestHelper helper_;
 
   ::testing::NiceMock<MockObjectWriter> mock_;
   ExpectingObjectWriter ow_;
   bool use_lower_camel_for_enums_;
+  bool use_ints_for_enums_;
+  bool add_trailing_zeros_;
 };
 
 INSTANTIATE_TEST_CASE_P(DifferentTypeInfoSourceTest,
@@ -490,6 +499,18 @@ TEST_P(ProtostreamObjectSourceTest, EnumCaseIsUnchangedByDefault) {
   book.set_type(Book::ACTION_AND_ADVENTURE);
   ow_.StartObject("")
       ->RenderString("type", "ACTION_AND_ADVENTURE")
+      ->EndObject();
+  DoTest(book, Book::descriptor());
+}
+
+TEST_P(ProtostreamObjectSourceTest, UseIntsForEnumsTest) {
+  Book book;
+  book.set_type(Book::ACTION_AND_ADVENTURE);
+
+  UseIntsForEnums();
+
+  ow_.StartObject("")
+      ->RenderInt32("type", 3)
       ->EndObject();
   DoTest(book, Book::descriptor());
 }
@@ -1022,6 +1043,7 @@ TEST_P(ProtostreamObjectSourceTimestampTest, TimestampDurationDefaultValue) {
 
   DoTest(out, TimestampDuration::descriptor());
 }
+
 
 }  // namespace converter
 }  // namespace util

@@ -62,9 +62,12 @@ namespace compiler {
 
 class GeneratorResponseContext : public GeneratorContext {
  public:
-  GeneratorResponseContext(CodeGeneratorResponse* response,
-                           const vector<const FileDescriptor*>& parsed_files)
-      : response_(response),
+  GeneratorResponseContext(
+      const Version& compiler_version,
+      CodeGeneratorResponse* response,
+      const std::vector<const FileDescriptor*>& parsed_files)
+      : compiler_version_(compiler_version),
+        response_(response),
         parsed_files_(parsed_files) {}
   virtual ~GeneratorResponseContext() {}
 
@@ -84,13 +87,18 @@ class GeneratorResponseContext : public GeneratorContext {
     return new io::StringOutputStream(file->mutable_content());
   }
 
-  void ListParsedFiles(vector<const FileDescriptor*>* output) {
+  void ListParsedFiles(std::vector<const FileDescriptor*>* output) {
     *output = parsed_files_;
   }
 
+  void GetCompilerVersion(Version* version) const {
+    *version = compiler_version_;
+  }
+
  private:
+  Version compiler_version_;
   CodeGeneratorResponse* response_;
-  const vector<const FileDescriptor*>& parsed_files_;
+  const std::vector<const FileDescriptor*>& parsed_files_;
 };
 
 bool GenerateCode(const CodeGeneratorRequest& request,
@@ -105,7 +113,7 @@ bool GenerateCode(const CodeGeneratorRequest& request,
     }
   }
 
-  vector<const FileDescriptor*> parsed_files;
+  std::vector<const FileDescriptor*> parsed_files;
   for (int i = 0; i < request.file_to_generate_size(); i++) {
     parsed_files.push_back(pool.FindFileByName(request.file_to_generate(i)));
     if (parsed_files.back() == NULL) {
@@ -116,7 +124,8 @@ bool GenerateCode(const CodeGeneratorRequest& request,
     }
   }
 
-  GeneratorResponseContext context(response, parsed_files);
+  GeneratorResponseContext context(
+      request.compiler_version(), response, parsed_files);
 
   string error;
   bool succeeded = generator.GenerateAll(

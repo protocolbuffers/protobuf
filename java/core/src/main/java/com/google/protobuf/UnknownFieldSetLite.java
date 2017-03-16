@@ -176,6 +176,42 @@ public final class UnknownFieldSetLite {
   }
 
   /**
+   * Serializes the set and writes it to {@code output} using {@code MessageSet} wire format.
+   *
+   * <p>For use by generated code only.
+   */
+  public void writeAsMessageSetTo(CodedOutputStream output) throws IOException {
+    for (int i = 0; i < count; i++) {
+      int fieldNumber = WireFormat.getTagFieldNumber(tags[i]);
+      output.writeRawMessageSetExtension(fieldNumber, (ByteString) objects[i]);
+    }
+  }
+
+
+  /**
+   * Get the number of bytes required to encode this field, including field number, using {@code
+   * MessageSet} wire format.
+   */
+  public int getSerializedSizeAsMessageSet() {
+    int size = memoizedSerializedSize;
+    if (size != -1) {
+      return size;
+    }
+    
+    size = 0;
+    for (int i = 0; i < count; i++) {
+      int tag = tags[i];
+      int fieldNumber = WireFormat.getTagFieldNumber(tag);
+      size += CodedOutputStream.computeRawMessageSetExtensionSize(
+          fieldNumber, (ByteString) objects[i]);
+    }
+    
+    memoizedSerializedSize = size;
+    
+    return size;
+  }
+
+  /**
    * Get the number of bytes required to encode this set.
    *
    * <p>For use by generated code only.
@@ -216,6 +252,24 @@ public final class UnknownFieldSetLite {
     
     return size;
   }
+  
+  private static boolean equals(int[] tags1, int[] tags2, int count) {
+    for (int i = 0; i < count; ++i) {
+      if (tags1[i] != tags2[i]) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  private static boolean equals(Object[] objects1, Object[] objects2, int count) {
+    for (int i = 0; i < count; ++i) {
+      if (!objects1[i].equals(objects2[i])) {
+        return false;
+      }
+    }
+    return true;
+  }
 
   @Override
   public boolean equals(Object obj) {
@@ -233,9 +287,8 @@ public final class UnknownFieldSetLite {
     
     UnknownFieldSetLite other = (UnknownFieldSetLite) obj;    
     if (count != other.count
-        // TODO(dweis): Only have to compare up to count but at worst 2x worse than we need to do.
-        || !Arrays.equals(tags, other.tags)
-        || !Arrays.deepEquals(objects, other.objects)) {
+        || !equals(tags, other.tags, count)
+        || !equals(objects, other.objects, count)) {
       return false;
     }
 
@@ -268,7 +321,8 @@ public final class UnknownFieldSetLite {
     }
   }
 
-  private void storeField(int tag, Object value) {
+  // Package private for unsafe experimental runtime.
+  void storeField(int tag, Object value) {
     ensureCapacity();
     
     tags[count] = tag;

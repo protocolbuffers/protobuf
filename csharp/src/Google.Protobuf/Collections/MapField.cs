@@ -715,7 +715,7 @@ namespace Google.Protobuf.Collections
                 {
                     throw new ArgumentOutOfRangeException(nameof(arrayIndex));
                 }
-                if (arrayIndex + Count  >= array.Length)
+                if (arrayIndex + Count > array.Length)
                 {
                     throw new ArgumentException("Not enough space in the array", nameof(array));
                 }
@@ -746,7 +746,7 @@ namespace Google.Protobuf.Collections
                 {
                     throw new ArgumentOutOfRangeException(nameof(index));
                 }
-                if (index + Count >= array.Length)
+                if (index + Count > array.Length)
                 {
                     throw new ArgumentException("Not enough space in the array", nameof(array));
                 }

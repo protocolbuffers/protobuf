@@ -108,9 +108,17 @@ CF_EXTERN_C_BEGIN
 NS_INLINE void GPBPrepareReadOnlySemaphore(GPBMessage *self) {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdirect-ivar-access"
+
+// Starting on Xcode 8.3, the static analyzer complains that the dispatch_once_t
+// variable passed to dispatch_once should not be allocated on the heap or
+// stack. Given that the semaphore is also an instance variable of the message,
+// both variables are cleared at the same time, so this is safe.
+#if !defined(__clang_analyzer__)
   dispatch_once(&self->readOnlySemaphoreCreationOnce_, ^{
     self->readOnlySemaphore_ = dispatch_semaphore_create(1);
   });
+#endif  // !defined(__clang_analyzer__)
+
 #pragma clang diagnostic pop
 }
 

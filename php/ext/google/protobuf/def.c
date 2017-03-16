@@ -209,14 +209,14 @@ static void init_generated_pool_once(TSRMLS_D) {
 
 static void descriptor_pool_init_c_instance(DescriptorPool *pool TSRMLS_DC) {
   zend_object_std_init(&pool->std, descriptor_pool_type TSRMLS_CC);
-  pool->symtab = upb_symtab_new(&pool->symtab);
+  pool->symtab = upb_symtab_new();
 
   ALLOC_HASHTABLE(pool->pending_list);
   zend_hash_init(pool->pending_list, 1, NULL, ZVAL_PTR_DTOR, 0);
 }
 
 static void descriptor_pool_free_c(DescriptorPool *pool TSRMLS_DC) {
-  upb_symtab_unref(pool->symtab, &pool->symtab);
+  upb_symtab_free(pool->symtab);
 
   zend_hash_destroy(pool->pending_list);
   FREE_HASHTABLE(pool->pending_list);
@@ -256,6 +256,11 @@ static void convert_to_class_name_inplace(char *class_name,
   size_t i;
   bool first_char = false;
   size_t pkg_name_len = package_name == NULL ? 0 : strlen(package_name);
+
+  // In php, class name cannot be Empty.
+  if (strcmp("google.protobuf.Empty", fullname) == 0) {
+    fullname = "google.protobuf.GPBEmpty";
+  }
 
   if (pkg_name_len == 0) {
     strcpy(class_name, fullname);
@@ -330,9 +335,11 @@ PHP_METHOD(DescriptorPool, internalAddGeneratedFile) {
         upb_msgdef_mapentry(upb_downcast_msgdef(def))) {                       \
       break;                                                                   \
     }                                                                          \
-    /* Prepend '.' to package name to make it absolute. */                     \
+    /* Prepend '.' to package name to make it absolute. In the 5 additional    \
+     * bytes allocated, one for '.', one for trailing 0, and 3 for 'GPB' if    \
+     * given message is google.protobuf.Empty.*/                               \
     const char *fullname = upb_##def_type_lower##_fullname(def_type_lower);    \
-    char *klass_name = ecalloc(sizeof(char), 2 + strlen(fullname));            \
+    char *klass_name = ecalloc(sizeof(char), 5 + strlen(fullname));            \
     convert_to_class_name_inplace(klass_name, fullname,                        \
                                   upb_filedef_package(files[0]));              \
     zend_class_entry **pce;                                                    \
@@ -391,9 +398,21 @@ static void descriptor_free_c(Descriptor *self TSRMLS_DC) {
   if (self->fill_method) {
     upb_pbdecodermethod_unref(self->fill_method, &self->fill_method);
   }
+  if (self->json_fill_method) {
+    upb_json_parsermethod_unref(self->json_fill_method,
+                                &self->json_fill_method);
+  }
   if (self->pb_serialize_handlers) {
     upb_handlers_unref(self->pb_serialize_handlers,
                        &self->pb_serialize_handlers);
+  }
+  if (self->json_serialize_handlers) {
+    upb_handlers_unref(self->json_serialize_handlers,
+                       &self->json_serialize_handlers);
+  }
+  if (self->json_serialize_handlers_preserve) {
+    upb_handlers_unref(self->json_serialize_handlers_preserve,
+                       &self->json_serialize_handlers_preserve);
   }
 }
 
@@ -404,7 +423,10 @@ static void descriptor_init_c_instance(Descriptor *desc TSRMLS_DC) {
   desc->klass = NULL;
   desc->fill_handlers = NULL;
   desc->fill_method = NULL;
+  desc->json_fill_method = NULL;
   desc->pb_serialize_handlers = NULL;
+  desc->json_serialize_handlers = NULL;
+  desc->json_serialize_handlers_preserve = NULL;
 }
 
 // -----------------------------------------------------------------------------

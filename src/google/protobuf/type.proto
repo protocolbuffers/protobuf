@@ -41,6 +41,7 @@ option java_package = "com.google.protobuf";
 option java_outer_classname = "TypeProto";
 option java_multiple_files = true;
 option objc_class_prefix = "GPB";
+option go_package = "google.golang.org/genproto/protobuf/ptype;ptype";
 
 // A protocol buffer message type.
 message Type {
@@ -165,9 +166,15 @@ message EnumValue {
 // A protocol buffer option, which can be attached to a message, field,
 // enumeration, etc.
 message Option {
-  // The option's name. For example, `"java_package"`.
+  // The option's name. For protobuf built-in options (options defined in
+  // descriptor.proto), this is the short name. For example, `"map_entry"`.
+  // For custom options, it should be the fully-qualified name. For example,
+  // `"google.api.http"`.
   string name = 1;
-  // The option's value. For example, `"com.google.protobuf"`.
+  // The option's value packed in an Any message. If the value is a primitive,
+  // the corresponding wrapper type defined in google/protobuf/wrappers.proto
+  // should be used. If the value is an enum, it should be stored as an int32
+  // value using the google.protobuf.Int32Value type.
   Any value = 2;
 }
 

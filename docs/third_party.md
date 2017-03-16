@@ -23,7 +23,7 @@ These are projects we know about implementing Protocol Buffers for other program
 * C#: https://silentorbit.com/protobuf/
 * C#/.NET/WCF/VB: http://code.google.com/p/protobuf-net/
 * Clojure: http://github.com/ninjudd/clojure-protobuf
-* Common Lisp: http://www.prism.gatech.edu/~ndantam3/docs/s-protobuf/
+* Common Lisp: http://github.com/ndantam/s-protobuf
 * Common Lisp: http://github.com/brown/protobuf
 * D: https://github.com/msoucy/dproto
 * D: http://256.makerslocal.org/wiki/index.php/ProtocolBuffer
@@ -32,6 +32,7 @@ These are projects we know about implementing Protocol Buffers for other program
 * Delphi: http://sourceforge.net/projects/protobuf-delphi/
 * Delphi: http://fundementals.sourceforge.net/dl.html
 * Elixir: https://github.com/jeremyong/exprotoc
+* Elm: https://github.com/tiziano88/elm-protobuf
 * Erlang: http://github.com/ngerakines/erlang_protobuffs/tree/master
 * Erlang: http://piqi.org/
 * Erlang: https://code.google.com/p/protoc-gen-erl/
@@ -120,6 +121,10 @@ GRPC (http://www.grpc.io/) is Google's RPC implementation for Protocol Buffers. 
 
 There are miscellaneous other things you may find useful as a Protocol Buffers developer.
 
+* [Bazel Build](https://bazel.build)
+    * [rules_closure](https://github.com/bazelbuild/rules_closure) `js-closure`
+    * [rules_go](https://github.com/bazelbuild/rules_go) `go`
+    * [rules_protobuf](https://github.com/pubref/rules_protobuf) `java` `c++` `c#` `go` `js-closure` `js-node` `python` `ruby`
 * [NetBeans IDE plugin](http://code.google.com/p/protobuf-netbeans-plugin/)
 * [Wireshark/Ethereal packet sniffer plugin](http://code.google.com/p/protobuf-wireshark/)
 * [Alternate encodings (JSON, XML, HTML) for Java protobufs](http://code.google.com/p/protobuf-java-format/)
@@ -130,8 +135,8 @@ There are miscellaneous other things you may find useful as a Protocol Buffers d
 * [Oracle PL SQL plugin](http://code.google.com/p/protocol-buffer-plsql/)
 * [Eclipse editor for protobuf (from Google)](http://code.google.com/p/protobuf-dt/)
 * [C++ Builder compatible protobuf](https://github.com/saadware/protobuf-cppbuilder)
-* Maven Protocol Compiler Plugin
-    * https://github.com/sergei-ivanov/maven-protoc-plugin/
+* Maven Protobuf Compiler Plugin
+    * By xolstice.org ([Documentation](https://www.xolstice.org/protobuf-maven-plugin/)) ([Source](https://github.com/xolstice/protobuf-maven-plugin/)) [![Maven Central](https://img.shields.io/maven-central/v/org.xolstice.maven.plugins/protobuf-maven-plugin.svg)](https://repo1.maven.org/maven2/org/xolstice/maven/plugins/protobuf-maven-plugin/)
     * http://igor-petruk.github.com/protobuf-maven-plugin/
     * http://code.google.com/p/maven-protoc-plugin/
     * https://github.com/os72/protoc-jar-maven-plugin

@@ -92,7 +92,7 @@ ExtensionGenerator::ExtensionGenerator(const FieldDescriptor* descriptor,
 ExtensionGenerator::~ExtensionGenerator() {}
 
 void ExtensionGenerator::GenerateDeclaration(io::Printer* printer) {
-  map<string, string> vars;
+  std::map<string, string> vars;
   vars["extendee"     ] = ExtendeeClassName(descriptor_);
   vars["number"       ] = SimpleItoa(descriptor_->number());
   vars["type_traits"  ] = type_traits_;
@@ -128,7 +128,7 @@ void ExtensionGenerator::GenerateDefinition(io::Printer* printer) {
     ClassName(descriptor_->extension_scope(), false) + "::";
   string name = scope + descriptor_->name();
 
-  map<string, string> vars;
+  std::map<string, string> vars;
   vars["extendee"     ] = ExtendeeClassName(descriptor_);
   vars["type_traits"  ] = type_traits_;
   vars["name"         ] = name;
@@ -167,7 +167,7 @@ void ExtensionGenerator::GenerateDefinition(io::Printer* printer) {
 }
 
 void ExtensionGenerator::GenerateRegistration(io::Printer* printer) {
-  map<string, string> vars;
+  std::map<string, string> vars;
   vars["extendee"   ] = ExtendeeClassName(descriptor_);
   vars["number"     ] = SimpleItoa(descriptor_->number());
   vars["field_type" ] = SimpleItoa(static_cast<int>(descriptor_->type()));

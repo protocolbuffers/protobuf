@@ -66,6 +66,11 @@ CF_EXTERN_C_END
 /**
  * Base class that each generated message subclasses from.
  *
+ * @note @c NSCopying support is a "deep copy", in that all sub objects are
+ *       copied.  Just like you wouldn't want a UIView/NSView trying to
+ *       exist in two places, you don't want a sub message to be a property
+ *       property of two other messages.
+ *
  * @note While the class support NSSecureCoding, if the message has any
  *       extensions, they will end up reloaded in @c unknownFields as there is
  *       no way for the @c NSCoding plumbing to pass through a

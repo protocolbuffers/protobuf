@@ -47,6 +47,9 @@ namespace Google.Protobuf.Collections
     /// </remarks>
     /// <typeparam name="T">The element type of the repeated field.</typeparam>
     public sealed class RepeatedField<T> : IList<T>, IList, IDeepCloneable<RepeatedField<T>>, IEquatable<RepeatedField<T>>
+#if !NET35
+        , IReadOnlyList<T>
+#endif
     {
         private static readonly T[] EmptyArray = new T[0];
         private const int MinArraySize = 8;

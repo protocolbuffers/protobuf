@@ -867,7 +867,7 @@ void MapReflectionTester::RemoveLastMapsViaReflection(
     Message* message) {
   const Reflection* reflection = message->GetReflection();
 
-  vector<const FieldDescriptor*> output;
+  std::vector<const FieldDescriptor*> output;
   reflection->ListFields(*message, &output);
   for (int i = 0; i < output.size(); ++i) {
     const FieldDescriptor* field = output[i];
@@ -880,7 +880,7 @@ void MapReflectionTester::ReleaseLastMapsViaReflection(
     Message* message) {
   const Reflection* reflection = message->GetReflection();
 
-  vector<const FieldDescriptor*> output;
+  std::vector<const FieldDescriptor*> output;
   reflection->ListFields(*message, &output);
   for (int i = 0; i < output.size(); ++i) {
     const FieldDescriptor* field = output[i];
@@ -896,7 +896,7 @@ void MapReflectionTester::ReleaseLastMapsViaReflection(
 
 void MapReflectionTester::SwapMapsViaReflection(Message* message) {
   const Reflection* reflection = message->GetReflection();
-  vector<const FieldDescriptor*> output;
+  std::vector<const FieldDescriptor*> output;
   reflection->ListFields(*message, &output);
   for (int i = 0; i < output.size(); ++i) {
     const FieldDescriptor* field = output[i];

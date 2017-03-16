@@ -667,6 +667,13 @@ module BasicTest
       end
     end
 
+    def test_map_corruption
+      # This pattern led to a crash in a previous version of upb/protobuf.
+      m = MapMessage.new(map_string_int32: { "aaa" => 1 })
+      m.map_string_int32['podid'] = 2
+      m.map_string_int32['aaa'] = 3
+    end
+
     def test_map_encode_decode
       m = MapMessage.new(
         :map_string_int32 => {"a" => 1, "b" => 2},
@@ -1180,6 +1187,18 @@ module BasicTest
 
       m2 = MapMessage.decode_json(MapMessage.encode_json(m))
       assert m == m2
+    end
+
+    def test_comparison_with_arbitrary_object
+      assert MapMessage.new != nil
+    end
+
+    def test_respond_to
+      # This test fails with JRuby 1.7.23, likely because of an old JRuby bug.
+      return if RUBY_PLATFORM == "java"
+      msg = MapMessage.new
+      assert msg.respond_to?(:map_string_int32)
+      assert !msg.respond_to?(:bacon)
     end
   end
 end

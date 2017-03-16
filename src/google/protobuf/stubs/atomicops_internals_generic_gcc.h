@@ -78,7 +78,7 @@ inline void NoBarrier_Store(volatile Atomic32* ptr, Atomic32 value) {
   __atomic_store_n(ptr, value, __ATOMIC_RELAXED);
 }
 
-inline void MemoryBarrier() {
+inline void MemoryBarrierInternal() {
   __sync_synchronize();
 }
 

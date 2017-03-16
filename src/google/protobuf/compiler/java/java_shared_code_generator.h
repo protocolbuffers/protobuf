@@ -70,17 +70,13 @@ class SharedCodeGenerator {
   SharedCodeGenerator(const FileDescriptor* file, const Options& options);
   ~SharedCodeGenerator();
 
-  void Generate(GeneratorContext* generator_context, vector<string>* file_list,
-                vector<string>* annotation_file_list);
+  void Generate(GeneratorContext* generator_context,
+                std::vector<string>* file_list,
+                std::vector<string>* annotation_file_list);
 
   void GenerateDescriptors(io::Printer* printer);
 
  private:
-  // Returns whether the dependency should be included in the output file.
-  // Always returns true for opensource, but used internally at Google to help
-  // improve compatibility with version 1 of protocol buffers.
-  bool ShouldIncludeDependency(const FileDescriptor* descriptor);
-
   google::protobuf::scoped_ptr<ClassNameResolver> name_resolver_;
   const FileDescriptor* file_;
   const Options options_;

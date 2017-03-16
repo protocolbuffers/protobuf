@@ -37,7 +37,7 @@
 #include "upb.h"
 
 #define PHP_PROTOBUF_EXTNAME "protobuf"
-#define PHP_PROTOBUF_VERSION "3.1.0a1"
+#define PHP_PROTOBUF_VERSION "3.2.0a1"
 
 #define MAX_LENGTH_OF_INT64 20
 #define SIZEOF_INT64 8
@@ -122,7 +122,10 @@ struct Descriptor {
   zend_class_entry* klass;  // begins as NULL
   const upb_handlers* fill_handlers;
   const upb_pbdecodermethod* fill_method;
+  const upb_json_parsermethod* json_fill_method;
   const upb_handlers* pb_serialize_handlers;
+  const upb_handlers* json_serialize_handlers;
+  const upb_handlers* json_serialize_handlers_preserve;
 };
 
 extern zend_class_entry* descriptor_type;
@@ -148,6 +151,7 @@ extern zend_class_entry* enum_descriptor_type;
 // -----------------------------------------------------------------------------
 
 void* message_data(void* msg);
+void message_create_with_type(zend_class_entry* ce, zval** message TSRMLS_DC);
 
 // Build PHP class for given descriptor. Instead of building from scratch, this
 // function modifies existing class which has been partially defined in PHP
@@ -231,16 +235,24 @@ struct MessageHeader {
 };
 
 MessageLayout* create_layout(const upb_msgdef* msgdef);
-void layout_init(MessageLayout* layout, void* storage, zval** properties_table
-		 TSRMLS_DC);
+void layout_init(MessageLayout* layout, void* storage,
+                 zval** properties_table TSRMLS_DC);
 zval* layout_get(MessageLayout* layout, const void* storage,
                  const upb_fielddef* field, zval** cache TSRMLS_DC);
 void layout_set(MessageLayout* layout, MessageHeader* header,
                 const upb_fielddef* field, zval* val TSRMLS_DC);
+void layout_merge(MessageLayout* layout, MessageHeader* from,
+                  MessageHeader* to TSRMLS_DC);
+const char* layout_get_oneof_case(MessageLayout* layout, const void* storage,
+                                  const upb_oneofdef* oneof TSRMLS_DC);
 void free_layout(MessageLayout* layout);
 
+PHP_METHOD(Message, clear);
+PHP_METHOD(Message, mergeFrom);
 PHP_METHOD(Message, readOneof);
 PHP_METHOD(Message, writeOneof);
+PHP_METHOD(Message, whichOneof);
+PHP_METHOD(Message, __construct);
 
 // -----------------------------------------------------------------------------
 // Encode / Decode.
@@ -255,8 +267,10 @@ PHP_METHOD(Message, writeOneof);
 const upb_pbdecodermethod *new_fillmsg_decodermethod(Descriptor *desc,
                                                      const void *owner);
 
-PHP_METHOD(Message, encode);
-PHP_METHOD(Message, decode);
+PHP_METHOD(Message, serializeToString);
+PHP_METHOD(Message, mergeFromString);
+PHP_METHOD(Message, jsonEncode);
+PHP_METHOD(Message, jsonDecode);
 
 // -----------------------------------------------------------------------------
 // Type check / conversion.
@@ -282,6 +296,7 @@ PHP_METHOD(Util, checkBool);
 PHP_METHOD(Util, checkString);
 PHP_METHOD(Util, checkBytes);
 PHP_METHOD(Util, checkMessage);
+PHP_METHOD(Util, checkMapField);
 PHP_METHOD(Util, checkRepeatedField);
 
 // -----------------------------------------------------------------------------
@@ -335,7 +350,11 @@ const upb_fielddef* map_entry_key(const upb_msgdef* msgdef);
 const upb_fielddef* map_entry_value(const upb_msgdef* msgdef);
 
 zend_object_value map_field_create(zend_class_entry *ce TSRMLS_DC);
-void map_field_create_with_type(zend_class_entry *ce, const upb_fielddef *field,
+void map_field_create_with_field(zend_class_entry *ce, const upb_fielddef *field,
+                                zval **map_field TSRMLS_DC);
+void map_field_create_with_type(zend_class_entry *ce, upb_fieldtype_t key_type,
+                                upb_fieldtype_t value_type,
+                                const zend_class_entry *msg_ce,
                                 zval **map_field TSRMLS_DC);
 void map_field_free(void* object TSRMLS_DC);
 void* upb_value_memory(upb_value* v);
@@ -378,8 +397,11 @@ struct RepeatedFieldIter {
   long position;
 };
 
-void repeated_field_create_with_type(zend_class_entry* ce,
+void repeated_field_create_with_field(zend_class_entry* ce,
                                      const upb_fielddef* field,
+                                     zval** repeated_field TSRMLS_DC);
+void repeated_field_create_with_type(zend_class_entry* ce, upb_fieldtype_t type,
+                                     const zend_class_entry* msg_ce,
                                      zval** repeated_field TSRMLS_DC);
 // Return the element at the index position from the repeated field. There is
 // not restriction on the type of stored elements.

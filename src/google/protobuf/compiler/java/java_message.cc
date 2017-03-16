@@ -110,7 +110,7 @@ void ImmutableMessageGenerator::GenerateStaticVariables(
   // the outermost class in the file.  This way, they will be initialized in
   // a deterministic order.
 
-  map<string, string> vars;
+  std::map<string, string> vars;
   vars["identifier"] = UniqueFileScopeIdentifier(descriptor_);
   vars["index"] = SimpleItoa(descriptor_->index());
   vars["classname"] = name_resolver_->GetImmutableClassName(descriptor_);
@@ -154,7 +154,7 @@ void ImmutableMessageGenerator::GenerateStaticVariables(
 int ImmutableMessageGenerator::GenerateStaticVariableInitializers(
     io::Printer* printer) {
   int bytecode_estimate = 0;
-  map<string, string> vars;
+  std::map<string, string> vars;
   vars["identifier"] = UniqueFileScopeIdentifier(descriptor_);
   vars["index"] = SimpleItoa(descriptor_->index());
   vars["classname"] = name_resolver_->GetImmutableClassName(descriptor_);
@@ -191,7 +191,7 @@ int ImmutableMessageGenerator::GenerateStaticVariableInitializers(
 
 void ImmutableMessageGenerator::
 GenerateFieldAccessorTable(io::Printer* printer, int* bytecode_estimate) {
-  map<string, string> vars;
+  std::map<string, string> vars;
   vars["identifier"] = UniqueFileScopeIdentifier(descriptor_);
   if (MultipleJavaFiles(descriptor_->file(), /* immutable = */ true)) {
     // We can only make these package-private since the classes that use them
@@ -253,18 +253,22 @@ void ImmutableMessageGenerator::GenerateInterface(io::Printer* printer) {
                                 /* immutable = */ true, "OrBuilder");
   if (descriptor_->extension_range_count() > 0) {
     printer->Print(
-        "public interface $classname$OrBuilder$idend$ extends\n"
+        "$deprecation$public interface $classname$OrBuilder$idend$ extends\n"
         "    $extra_interfaces$\n"
         "    com.google.protobuf.GeneratedMessage$ver$.\n"
         "        ExtendableMessageOrBuilder<$classname$> {\n",
+        "deprecation", descriptor_->options().deprecated() ?
+            "@java.lang.Deprecated " : "",
         "extra_interfaces", ExtraMessageOrBuilderInterfaces(descriptor_),
         "classname", descriptor_->name(),
         "idend", "", "ver", GeneratedCodeVersionSuffix());
   } else {
     printer->Print(
-        "public interface $classname$OrBuilder$idend$ extends\n"
+        "$deprecation$public interface $classname$OrBuilder$idend$ extends\n"
         "    $extra_interfaces$\n"
         "    com.google.protobuf.MessageOrBuilder {\n",
+        "deprecation", descriptor_->options().deprecated() ?
+            "@java.lang.Deprecated " : "",
         "extra_interfaces", ExtraMessageOrBuilderInterfaces(descriptor_),
         "classname", descriptor_->name(),
         "idend", "");
@@ -299,11 +303,13 @@ void ImmutableMessageGenerator::GenerateInterface(io::Printer* printer) {
 void ImmutableMessageGenerator::Generate(io::Printer* printer) {
   bool is_own_file = IsOwnFile(descriptor_, /* immutable = */ true);
 
-  map<string, string> variables;
+  std::map<string, string> variables;
   variables["static"] = is_own_file ? " " : " static ";
   variables["classname"] = descriptor_->name();
   variables["extra_interfaces"] = ExtraMessageInterfaces(descriptor_);
   variables["ver"] = GeneratedCodeVersionSuffix();
+  variables["deprecation"] = descriptor_->options().deprecated()
+      ? "@java.lang.Deprecated " : "";
 
   WriteMessageDocComment(printer, descriptor_);
   MaybePrintGeneratedAnnotation(context_, printer, descriptor_,
@@ -312,8 +318,9 @@ void ImmutableMessageGenerator::Generate(io::Printer* printer) {
   // The builder_type stores the super type name of the nested Builder class.
   string builder_type;
   if (descriptor_->extension_range_count() > 0) {
-    printer->Print(variables,
-                   "public $static$final class $classname$ extends\n");
+    printer->Print(
+        variables,
+        "$deprecation$public $static$final class $classname$ extends\n");
     printer->Annotate("classname", descriptor_);
     printer->Print(
         variables,
@@ -326,8 +333,9 @@ void ImmutableMessageGenerator::Generate(io::Printer* printer) {
         name_resolver_->GetImmutableClassName(descriptor_),
         GeneratedCodeVersionSuffix());
   } else {
-    printer->Print(variables,
-                   "public $static$final class $classname$ extends\n");
+    printer->Print(
+        variables,
+        "$deprecation$public $static$final class $classname$ extends\n");
     printer->Annotate("classname", descriptor_);
     printer->Print(variables,
       "    com.google.protobuf.GeneratedMessage$ver$ implements\n"
@@ -409,7 +417,7 @@ void ImmutableMessageGenerator::Generate(io::Printer* printer) {
   }
 
   // oneof
-  map<string, string> vars;
+  std::map<string, string> vars;
   for (int i = 0; i < descriptor_->oneof_decl_count(); i++) {
     vars["oneof_name"] = context_->GetOneofGeneratorInfo(
         descriptor_->oneof_decl(i))->name;
@@ -561,13 +569,12 @@ GenerateMessageSerializationMethods(io::Printer* printer) {
   google::protobuf::scoped_array<const FieldDescriptor * > sorted_fields(
       SortFieldsByNumber(descriptor_));
 
-  vector<const Descriptor::ExtensionRange*> sorted_extensions;
+  std::vector<const Descriptor::ExtensionRange*> sorted_extensions;
   for (int i = 0; i < descriptor_->extension_range_count(); ++i) {
     sorted_extensions.push_back(descriptor_->extension_range(i));
   }
   std::sort(sorted_extensions.begin(), sorted_extensions.end(),
             ExtensionRangeOrdering());
-
   printer->Print(
     "public void writeTo(com.google.protobuf.CodedOutputStream output)\n"
     "                    throws java.io.IOException {\n");
@@ -799,7 +806,7 @@ GenerateDescriptorMethods(io::Printer* printer) {
       "fileclass", name_resolver_->GetImmutableClassName(descriptor_->file()),
       "identifier", UniqueFileScopeIdentifier(descriptor_));
   }
-  vector<const FieldDescriptor*> map_fields;
+  std::vector<const FieldDescriptor*> map_fields;
   for (int i = 0; i < descriptor_->field_count(); i++) {
     const FieldDescriptor* field = descriptor_->field(i);
     if (GetJavaType(field) == JAVATYPE_MESSAGE &&
@@ -1093,7 +1100,12 @@ GenerateEqualsAndHashCode(io::Printer* printer) {
     "}\n"
     "int hash = 41;\n");
 
-  printer->Print("hash = (19 * hash) + getDescriptorForType().hashCode();\n");
+  // If we output a getDescriptor() method, use that as it is more efficient.
+  if (descriptor_->options().no_standard_descriptor_accessor()) {
+    printer->Print("hash = (19 * hash) + getDescriptorForType().hashCode();\n");
+  } else {
+    printer->Print("hash = (19 * hash) + getDescriptor().hashCode();\n");
+  }
 
   // hashCode non-oneofs.
   for (int i = 0; i < descriptor_->field_count(); i++) {
@@ -1254,7 +1266,7 @@ GenerateParsingConstructor(io::Printer* printer) {
 
     printer->Print(
       "case $tag$: {\n",
-      "tag", SimpleItoa(tag));
+      "tag", SimpleItoa(static_cast<int32>(tag)));
     printer->Indent();
 
     field_generators_.get(field).GenerateParsingCode(printer);
@@ -1271,7 +1283,7 @@ GenerateParsingConstructor(io::Printer* printer) {
         WireFormatLite::WIRETYPE_LENGTH_DELIMITED);
       printer->Print(
         "case $tag$: {\n",
-        "tag", SimpleItoa(packed_tag));
+        "tag", SimpleItoa(static_cast<int32>(packed_tag)));
       printer->Indent();
 
       field_generators_.get(field).GenerateParsingCodeFromPacked(printer);
@@ -1417,7 +1429,7 @@ void ImmutableMessageGenerator::GenerateAnyMethods(io::Printer* printer) {
     "}\n"
     "\n"
     "/**\n"
-    " * Packs a message uisng the given type URL prefix. The type URL will\n"
+    " * Packs a message using the given type URL prefix. The type URL will\n"
     " * be constructed by concatenating the message type's full name to the\n"
     " * prefix with an optional \"/\" separator if the prefix doesn't end\n"
     " * with \"/\" already.\n"
@@ -1441,6 +1453,7 @@ void ImmutableMessageGenerator::GenerateAnyMethods(io::Printer* printer) {
     "\n"
     "private volatile com.google.protobuf.Message cachedUnpackValue;\n"
     "\n"
+    "@java.lang.SuppressWarnings(\"unchecked\")\n"
     "public <T extends com.google.protobuf.Message> T unpack(\n"
     "    java.lang.Class<T> clazz)\n"
     "    throws com.google.protobuf.InvalidProtocolBufferException {\n"

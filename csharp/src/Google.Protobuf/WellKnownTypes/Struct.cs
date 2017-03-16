@@ -50,14 +50,14 @@ namespace Google.Protobuf.WellKnownTypes {
   }
   #region Enums
   /// <summary>
-  ///  `NullValue` is a singleton enumeration to represent the null value for the
-  ///  `Value` type union.
+  /// `NullValue` is a singleton enumeration to represent the null value for the
+  /// `Value` type union.
   ///
-  ///   The JSON representation for `NullValue` is JSON `null`.
+  ///  The JSON representation for `NullValue` is JSON `null`.
   /// </summary>
   public enum NullValue {
     /// <summary>
-    ///  Null value.
+    /// Null value.
     /// </summary>
     [pbr::OriginalName("NULL_VALUE")] NullValue = 0,
   }
@@ -66,14 +66,14 @@ namespace Google.Protobuf.WellKnownTypes {
 
   #region Messages
   /// <summary>
-  ///  `Struct` represents a structured data value, consisting of fields
-  ///  which map to dynamically typed values. In some languages, `Struct`
-  ///  might be supported by a native representation. For example, in
-  ///  scripting languages like JS a struct is represented as an
-  ///  object. The details of that representation are described together
-  ///  with the proto support for the language.
+  /// `Struct` represents a structured data value, consisting of fields
+  /// which map to dynamically typed values. In some languages, `Struct`
+  /// might be supported by a native representation. For example, in
+  /// scripting languages like JS a struct is represented as an
+  /// object. The details of that representation are described together
+  /// with the proto support for the language.
   ///
-  ///  The JSON representation for `Struct` is JSON object.
+  /// The JSON representation for `Struct` is JSON object.
   /// </summary>
   public sealed partial class Struct : pb::IMessage<Struct> {
     private static readonly pb::MessageParser<Struct> _parser = new pb::MessageParser<Struct>(() => new Struct());
@@ -113,7 +113,7 @@ namespace Google.Protobuf.WellKnownTypes {
         = new pbc::MapField<string, global::Google.Protobuf.WellKnownTypes.Value>.Codec(pb::FieldCodec.ForString(10), pb::FieldCodec.ForMessage(18, global::Google.Protobuf.WellKnownTypes.Value.Parser), 10);
     private readonly pbc::MapField<string, global::Google.Protobuf.WellKnownTypes.Value> fields_ = new pbc::MapField<string, global::Google.Protobuf.WellKnownTypes.Value>();
     /// <summary>
-    ///  Unordered map of dynamically typed values.
+    /// Unordered map of dynamically typed values.
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public pbc::MapField<string, global::Google.Protobuf.WellKnownTypes.Value> Fields {
@@ -188,12 +188,12 @@ namespace Google.Protobuf.WellKnownTypes {
   }
 
   /// <summary>
-  ///  `Value` represents a dynamically typed value which can be either
-  ///  null, a number, a string, a boolean, a recursive struct value, or a
-  ///  list of values. A producer of value is expected to set one of that
-  ///  variants, absence of any variant indicates an error.
+  /// `Value` represents a dynamically typed value which can be either
+  /// null, a number, a string, a boolean, a recursive struct value, or a
+  /// list of values. A producer of value is expected to set one of that
+  /// variants, absence of any variant indicates an error.
   ///
-  ///  The JSON representation for `Value` is JSON value.
+  /// The JSON representation for `Value` is JSON value.
   /// </summary>
   public sealed partial class Value : pb::IMessage<Value> {
     private static readonly pb::MessageParser<Value> _parser = new pb::MessageParser<Value>(() => new Value());
@@ -250,7 +250,7 @@ namespace Google.Protobuf.WellKnownTypes {
     /// <summary>Field number for the "null_value" field.</summary>
     public const int NullValueFieldNumber = 1;
     /// <summary>
-    ///  Represents a null value.
+    /// Represents a null value.
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public global::Google.Protobuf.WellKnownTypes.NullValue NullValue {
@@ -264,7 +264,7 @@ namespace Google.Protobuf.WellKnownTypes {
     /// <summary>Field number for the "number_value" field.</summary>
     public const int NumberValueFieldNumber = 2;
     /// <summary>
-    ///  Represents a double value.
+    /// Represents a double value.
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public double NumberValue {
@@ -278,7 +278,7 @@ namespace Google.Protobuf.WellKnownTypes {
     /// <summary>Field number for the "string_value" field.</summary>
     public const int StringValueFieldNumber = 3;
     /// <summary>
-    ///  Represents a string value.
+    /// Represents a string value.
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public string StringValue {
@@ -292,7 +292,7 @@ namespace Google.Protobuf.WellKnownTypes {
     /// <summary>Field number for the "bool_value" field.</summary>
     public const int BoolValueFieldNumber = 4;
     /// <summary>
-    ///  Represents a boolean value.
+    /// Represents a boolean value.
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public bool BoolValue {
@@ -306,7 +306,7 @@ namespace Google.Protobuf.WellKnownTypes {
     /// <summary>Field number for the "struct_value" field.</summary>
     public const int StructValueFieldNumber = 5;
     /// <summary>
-    ///  Represents a structured value.
+    /// Represents a structured value.
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public global::Google.Protobuf.WellKnownTypes.Struct StructValue {
@@ -320,7 +320,7 @@ namespace Google.Protobuf.WellKnownTypes {
     /// <summary>Field number for the "list_value" field.</summary>
     public const int ListValueFieldNumber = 6;
     /// <summary>
-    ///  Represents a repeated `Value`.
+    /// Represents a repeated `Value`.
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public global::Google.Protobuf.WellKnownTypes.ListValue ListValue {
@@ -525,9 +525,9 @@ namespace Google.Protobuf.WellKnownTypes {
   }
 
   /// <summary>
-  ///  `ListValue` is a wrapper around a repeated field of values.
+  /// `ListValue` is a wrapper around a repeated field of values.
   ///
-  ///  The JSON representation for `ListValue` is JSON array.
+  /// The JSON representation for `ListValue` is JSON array.
   /// </summary>
   public sealed partial class ListValue : pb::IMessage<ListValue> {
     private static readonly pb::MessageParser<ListValue> _parser = new pb::MessageParser<ListValue>(() => new ListValue());
@@ -567,7 +567,7 @@ namespace Google.Protobuf.WellKnownTypes {
         = pb::FieldCodec.ForMessage(10, global::Google.Protobuf.WellKnownTypes.Value.Parser);
     private readonly pbc::RepeatedField<global::Google.Protobuf.WellKnownTypes.Value> values_ = new pbc::RepeatedField<global::Google.Protobuf.WellKnownTypes.Value>();
     /// <summary>
-    ///  Repeated field of dynamically typed values.
+    /// Repeated field of dynamically typed values.
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public pbc::RepeatedField<global::Google.Protobuf.WellKnownTypes.Value> Values {

@@ -30,6 +30,7 @@
 
 #include <php.h>
 #include <stdlib.h>
+#include <ext/json/php_json.h>
 
 #include "protobuf.h"
 
@@ -37,10 +38,16 @@ static zend_class_entry* message_type;
 zend_object_handlers* message_handlers;
 
 static  zend_function_entry message_methods[] = {
-  PHP_ME(Message, encode, NULL, ZEND_ACC_PUBLIC)
-  PHP_ME(Message, decode, NULL, ZEND_ACC_PUBLIC)
+  PHP_ME(Message, clear, NULL, ZEND_ACC_PUBLIC)
+  PHP_ME(Message, serializeToString, NULL, ZEND_ACC_PUBLIC)
+  PHP_ME(Message, mergeFromString, NULL, ZEND_ACC_PUBLIC)
+  PHP_ME(Message, jsonEncode, NULL, ZEND_ACC_PUBLIC)
+  PHP_ME(Message, jsonDecode, NULL, ZEND_ACC_PUBLIC)
+  PHP_ME(Message, mergeFrom, NULL, ZEND_ACC_PUBLIC)
   PHP_ME(Message, readOneof, NULL, ZEND_ACC_PROTECTED)
   PHP_ME(Message, writeOneof, NULL, ZEND_ACC_PROTECTED)
+  PHP_ME(Message, whichOneof, NULL, ZEND_ACC_PROTECTED)
+  PHP_ME(Message, __construct, NULL, ZEND_ACC_PROTECTED)
   {NULL, NULL, NULL}
 };
 
@@ -52,6 +59,8 @@ static zval* message_get_property(zval* object, zval* member, int type,
                                   const zend_literal* key TSRMLS_DC);
 static zval** message_get_property_ptr_ptr(zval* object, zval* member, int type,
                                            const zend_literal* key TSRMLS_DC);
+static HashTable* message_get_properties(zval* object TSRMLS_DC);
+static HashTable* message_get_gc(zval* object, zval*** table, int* n TSRMLS_DC);
 
 static zend_object_value message_create(zend_class_entry* ce TSRMLS_DC);
 static void message_free(void* object TSRMLS_DC);
@@ -72,6 +81,8 @@ void message_init(TSRMLS_D) {
   message_handlers->write_property = message_set_property;
   message_handlers->read_property = message_get_property;
   message_handlers->get_property_ptr_ptr = message_get_property_ptr_ptr;
+  message_handlers->get_properties = message_get_properties;
+  message_handlers->get_gc = message_get_gc;
 }
 
 static void message_set_property(zval* object, zval* member, zval* value,
@@ -142,6 +153,17 @@ static zval** message_get_property_ptr_ptr(zval* object, zval* member, int type,
   return NULL;
 }
 
+static HashTable* message_get_properties(zval* object TSRMLS_DC) {
+  return NULL;
+}
+
+static HashTable* message_get_gc(zval* object, zval*** table, int* n TSRMLS_DC) {
+    zend_object* zobj = Z_OBJ_P(object);
+    *table = zobj->properties_table;
+    *n = zobj->ce->default_properties_count;
+    return NULL;
+}
+
 // -----------------------------------------------------------------------------
 // C Message Utilities
 // -----------------------------------------------------------------------------
@@ -177,8 +199,8 @@ static zend_object_value message_create(zend_class_entry* ce TSRMLS_DC) {
 
   zend_object_std_init(&msg->std, ce TSRMLS_CC);
   object_properties_init(&msg->std, ce);
-  layout_init(desc->layout, message_data(msg), msg->std.properties_table
-	      TSRMLS_CC);
+  layout_init(desc->layout, message_data(msg),
+              msg->std.properties_table TSRMLS_CC);
 
   return_value.handle = zend_objects_store_put(
       msg, (zend_objects_store_dtor_t)zend_objects_destroy_object, message_free,
@@ -186,6 +208,13 @@ static zend_object_value message_create(zend_class_entry* ce TSRMLS_DC) {
 
   return_value.handlers = message_handlers;
   return return_value;
+}
+
+void message_create_with_type(zend_class_entry* ce, zval** message TSRMLS_DC) {
+  MAKE_STD_ZVAL(*message);
+  Z_TYPE_PP(message) = IS_OBJECT;
+  Z_OBJVAL_PP(message) = ce->create_object(ce TSRMLS_CC);
+  Z_DELREF_PP(message);
 }
 
 void build_class_from_descriptor(zval* php_descriptor TSRMLS_DC) {
@@ -209,6 +238,55 @@ void build_class_from_descriptor(zval* php_descriptor TSRMLS_DC) {
 // -----------------------------------------------------------------------------
 // PHP Methods
 // -----------------------------------------------------------------------------
+
+// At the first time the message is created, the class entry hasn't been
+// modified. As a result, the first created instance will be a normal zend
+// object. Here, we manually modify it to our message in such a case.
+PHP_METHOD(Message, __construct) {
+  if (Z_OBJVAL_P(getThis()).handlers != message_handlers) {
+    zend_class_entry* ce = Z_OBJCE_P(getThis());
+    zval_dtor(getThis());
+    Z_OBJVAL_P(getThis()) = message_create(ce TSRMLS_CC);
+  }
+}
+
+PHP_METHOD(Message, clear) {
+  MessageHeader* msg =
+      (MessageHeader*)zend_object_store_get_object(getThis() TSRMLS_CC);
+  Descriptor* desc = msg->descriptor;
+  zend_class_entry* ce = desc->klass;
+  int i;
+
+  for (i = 0; i < msg->std.ce->default_properties_count; i++) {
+    zval_ptr_dtor(&msg->std.properties_table[i]);
+  }
+  efree(msg->std.properties_table);
+
+  zend_object_std_init(&msg->std, ce TSRMLS_CC);
+  object_properties_init(&msg->std, ce);
+  layout_init(desc->layout, message_data(msg),
+              msg->std.properties_table TSRMLS_CC);
+}
+
+PHP_METHOD(Message, mergeFrom) {
+  zval* value;
+  if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "O", &value,
+                            message_type) == FAILURE) {
+    return;
+  }
+
+  MessageHeader* from =
+      (MessageHeader*)zend_object_store_get_object(value TSRMLS_CC);
+  MessageHeader* to =
+      (MessageHeader*)zend_object_store_get_object(getThis() TSRMLS_CC);
+
+  if(from->descriptor != to->descriptor) {
+    zend_error(E_USER_ERROR, "Cannot merge messages with different class.");
+    return;
+  }
+
+  layout_merge(from->descriptor->layout, from, to TSRMLS_CC);
+}
 
 PHP_METHOD(Message, readOneof) {
   long index;
@@ -245,4 +323,23 @@ PHP_METHOD(Message, writeOneof) {
   const upb_fielddef* field = upb_msgdef_itof(msg->descriptor->msgdef, index);
 
   layout_set(msg->descriptor->layout, msg, field, value TSRMLS_CC);
+}
+
+PHP_METHOD(Message, whichOneof) {
+  char* oneof_name;
+  int length;
+
+  if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &oneof_name,
+                            &length) == FAILURE) {
+    return;
+  }
+
+  MessageHeader* msg =
+      (MessageHeader*)zend_object_store_get_object(getThis() TSRMLS_CC);
+
+  const upb_oneofdef* oneof =
+      upb_msgdef_ntoo(msg->descriptor->msgdef, oneof_name, length);
+  const char* oneof_case_name = layout_get_oneof_case(
+      msg->descriptor->layout, message_data(msg), oneof TSRMLS_CC);
+  RETURN_STRING(oneof_case_name, 1);
 }

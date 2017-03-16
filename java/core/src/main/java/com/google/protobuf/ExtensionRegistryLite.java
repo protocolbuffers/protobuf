@@ -105,9 +105,9 @@ public class ExtensionRegistryLite {
 
   /**
    * Construct a new, empty instance.
-   * 
-   * <p>
-   * This may be an {@code ExtensionRegistry} if the full (non-Lite) proto libraries are available.
+   *
+   * <p>This may be an {@code ExtensionRegistry} if the full (non-Lite) proto libraries are
+   * available.
    */
   public static ExtensionRegistryLite newInstance() {
     return ExtensionRegistryFactory.create();
@@ -120,6 +120,7 @@ public class ExtensionRegistryLite {
   public static ExtensionRegistryLite getEmptyRegistry() {
     return ExtensionRegistryFactory.createEmpty();
   }
+
 
   /** Returns an unmodifiable view of the registry. */
   public ExtensionRegistryLite getUnmodifiable() {

@@ -144,20 +144,12 @@ string DefaultValue(const FieldDescriptor* field);
 // Convert a file name into a valid identifier.
 string FilenameIdentifier(const string& filename);
 
-// Return the name of the AddDescriptors() function for a given file.
-string GlobalAddDescriptorsName(const string& filename);
-
-// Return the name of the InitDefaults() function for a given file.
-string GlobalInitDefaultsName(const string& filename);
-
-// Return the name of the AssignDescriptors() function for a given file.
-string GlobalAssignDescriptorsName(const string& filename);
+// For each .proto file generates a unique namespace. In this namespace global
+// definitions are put to prevent collisions.
+string FileLevelNamespace(const string& filename);
 
 // Return the qualified C++ name for a file level symbol.
 string QualifiedFileLevelSymbol(const string& package, const string& name);
-
-// Return the name of the ShutdownFile() function for a given file.
-string GlobalShutdownFileName(const string& filename);
 
 // Escape C++ trigraphs by escaping question marks to \?
 string EscapeTrigraphs(const string& to_escape);
@@ -269,13 +261,13 @@ bool IsWellKnownMessage(const FileDescriptor* descriptor);
 
 void GenerateUtf8CheckCodeForString(const FieldDescriptor* field,
                                     const Options& options, bool for_parse,
-                                    const map<string, string>& variables,
+                                    const std::map<string, string>& variables,
                                     const char* parameters,
                                     io::Printer* printer);
 
 void GenerateUtf8CheckCodeForCord(const FieldDescriptor* field,
                                   const Options& options, bool for_parse,
-                                  const map<string, string>& variables,
+                                  const std::map<string, string>& variables,
                                   const char* parameters, io::Printer* printer);
 
 inline ::google::protobuf::FileOptions_OptimizeMode GetOptimizeFor(

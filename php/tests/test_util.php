@@ -118,6 +118,8 @@ class TestUtil
         $m->getMapSint64Sint64()[-65] = -65;
         $m->getMapFixed32Fixed32()[66] = 66;
         $m->getMapFixed64Fixed64()[67] = 67;
+        $m->getMapSfixed32Sfixed32()[-68] = -68;
+        $m->getMapSfixed64Sfixed64()[-69] = -69;
         $m->getMapInt32Float()[1] = 3.5;
         $m->getMapInt32Double()[1] = 3.6;
         $m->getMapBoolBool()[true] = true;
@@ -126,6 +128,87 @@ class TestUtil
         $m->getMapInt32Enum()[1] = TestEnum::ONE;
         $m->getMapInt32Message()[1] = new TestMessage_Sub();
         $m->getMapInt32Message()[1]->SetA(36);
+    }
+
+    public static function setTestMessage2(TestMessage $m)
+    {
+        $sub = new TestMessage_Sub();
+
+        $m->setOptionalInt32(-142);
+        $m->setOptionalInt64(-143);
+        $m->setOptionalUint32(142);
+        $m->setOptionalUint64(143);
+        $m->setOptionalSint32(-144);
+        $m->setOptionalSint64(-145);
+        $m->setOptionalFixed32(146);
+        $m->setOptionalFixed64(147);
+        $m->setOptionalSfixed32(-146);
+        $m->setOptionalSfixed64(-147);
+        $m->setOptionalFloat(11.5);
+        $m->setOptionalDouble(11.6);
+        $m->setOptionalBool(true);
+        $m->setOptionalString('aa');
+        $m->setOptionalBytes('bb');
+        $m->setOptionalEnum(TestEnum::TWO);
+        $m->setOptionalMessage($sub);
+        $m->getOptionalMessage()->SetA(133);
+
+        $m->getRepeatedInt32()    []= -142;
+        $m->getRepeatedInt64()    []= -143;
+        $m->getRepeatedUint32()   []=  142;
+        $m->getRepeatedUint64()   []=  143;
+        $m->getRepeatedSint32()   []= -144;
+        $m->getRepeatedSint64()   []= -145;
+        $m->getRepeatedFixed32()  []=  146;
+        $m->getRepeatedFixed64()  []=  147;
+        $m->getRepeatedSfixed32() []= -146;
+        $m->getRepeatedSfixed64() []= -147;
+        $m->getRepeatedFloat()    []= 11.5;
+        $m->getRepeatedDouble()   []= 11.6;
+        $m->getRepeatedBool()     []= false;
+        $m->getRepeatedString()   []= 'aa';
+        $m->getRepeatedBytes()    []= 'bb';
+        $m->getRepeatedEnum()     []= TestEnum::TWO;
+        $m->getRepeatedMessage()  []= new TestMessage_Sub();
+        $m->getRepeatedMessage()[0]->setA(134);
+
+        $m->getMapInt32Int32()[-62] = -162;
+        $m->getMapInt64Int64()[-63] = -163;
+        $m->getMapUint32Uint32()[62] = 162;
+        $m->getMapUint64Uint64()[63] = 163;
+        $m->getMapSint32Sint32()[-64] = -164;
+        $m->getMapSint64Sint64()[-65] = -165;
+        $m->getMapFixed32Fixed32()[66] = 166;
+        $m->getMapFixed64Fixed64()[67] = 167;
+        $m->getMapSfixed32Sfixed32()[-68] = -168;
+        $m->getMapSfixed64Sfixed64()[-69] = -169;
+        $m->getMapInt32Float()[1] = 13.5;
+        $m->getMapInt32Double()[1] = 13.6;
+        $m->getMapBoolBool()[true] = false;
+        $m->getMapStringString()['e'] = 'ee';
+        $m->getMapInt32Bytes()[1] = 'ff';
+        $m->getMapInt32Enum()[1] = TestEnum::TWO;
+        $m->getMapInt32Message()[1] = new TestMessage_Sub();
+        $m->getMapInt32Message()[1]->SetA(136);
+
+        $m->getMapInt32Int32()[-162] = -162;
+        $m->getMapInt64Int64()[-163] = -163;
+        $m->getMapUint32Uint32()[162] = 162;
+        $m->getMapUint64Uint64()[163] = 163;
+        $m->getMapSint32Sint32()[-164] = -164;
+        $m->getMapSint64Sint64()[-165] = -165;
+        $m->getMapFixed32Fixed32()[166] = 166;
+        $m->getMapFixed64Fixed64()[167] = 167;
+        $m->getMapSfixed32Sfixed32()[-168] = -168;
+        $m->getMapSfixed64Sfixed64()[-169] = -169;
+        $m->getMapInt32Float()[2] = 13.5;
+        $m->getMapInt32Double()[2] = 13.6;
+        $m->getMapBoolBool()[false] = false;
+        $m->getMapStringString()['ee'] = 'ee';
+        $m->getMapInt32Bytes()[2] = 'ff';
+        $m->getMapInt32Enum()[2] = TestEnum::TWO;
+        $m->getMapInt32Message()[2] = new TestMessage_Sub();
+        $m->getMapInt32Message()[2]->SetA(136);
     }
 
     public static function assertTestMessage(TestMessage $m)
@@ -213,16 +296,19 @@ class TestUtil
             assert('63'  === $m->getMapUint64Uint64()['63']);
             assert('-65' === $m->getMapSint64Sint64()['-65']);
             assert('67'  === $m->getMapFixed64Fixed64()['67']);
+            assert('-69'  === $m->getMapSfixed64Sfixed64()['-69']);
         } else {
             assert(-63 === $m->getMapInt64Int64()[-63]);
             assert(63  === $m->getMapUint64Uint64()[63]);
             assert(-65 === $m->getMapSint64Sint64()[-65]);
             assert(67  === $m->getMapFixed64Fixed64()[67]);
+            assert(-69  === $m->getMapSfixed64Sfixed64()[-69]);
         }
         assert(-62 === $m->getMapInt32Int32()[-62]);
         assert(62  === $m->getMapUint32Uint32()[62]);
         assert(-64 === $m->getMapSint32Sint32()[-64]);
         assert(66  === $m->getMapFixed32Fixed32()[66]);
+        assert(-68  === $m->getMapSfixed32Sfixed32()[-68]);
         assert(3.5 === $m->getMapInt32Float()[1]);
         assert(3.6 === $m->getMapInt32Double()[1]);
         assert(true === $m->getMapBoolBool()[true]);
@@ -235,7 +321,7 @@ class TestUtil
     public static function getGoldenTestMessage()
     {
         return hex2bin(
-            "08D6FFFFFF0F" .
+            "08D6FFFFFFFFFFFFFFFF01" .
             "10D5FFFFFFFFFFFFFFFF01" .
             "182A" .
             "202B" .
@@ -253,8 +339,8 @@ class TestUtil
             "800101" .
             "8A01020821" .
 
-            "F801D6FFFFFF0F" .
-            "F801CCFFFFFF0F" .
+            "F801D6FFFFFFFFFFFFFFFF01" .
+            "F801CCFFFFFFFFFFFFFFFF01" .
             "8002D5FFFFFFFFFFFFFFFF01" .
             "8002CBFFFFFFFFFFFFFFFF01" .
             "88022A" .
@@ -288,7 +374,7 @@ class TestUtil
             "FA02020822" .
             "FA02020823" .
 
-            "BA040C08C2FFFFFF0F10C2FFFFFF0F" .
+            "BA041608C2FFFFFFFFFFFFFFFF0110C2FFFFFFFFFFFFFFFF01" .
             "C2041608C1FFFFFFFFFFFFFFFF0110C1FFFFFFFFFFFFFFFF01" .
             "CA0404083E103E" .
             "D20404083F103F" .
@@ -296,6 +382,8 @@ class TestUtil
             "E20406088101108101" .
             "EA040A0D420000001542000000" .
             "F20412094300000000000000114300000000000000" .
+            "FA040A0DBCFFFFFF15BCFFFFFF" .
+            "82051209BBFFFFFFFFFFFFFF11BBFFFFFFFFFFFFFF" .
             "8A050708011500006040" .
             "92050B080111CDCCCCCCCCCC0C40" .
             "9A050408011001" .
@@ -401,7 +489,7 @@ class TestUtil
     public static function getGoldenTestPackedMessage()
     {
         return hex2bin(
-            "D2050AD6FFFFFF0FCCFFFFFF0F" .
+            "D20514D6FFFFFFFFFFFFFFFF01CCFFFFFFFFFFFFFFFF01" .
             "DA0514D5FFFFFFFFFFFFFFFF01CBFFFFFFFFFFFFFFFF01" .
             "E205022A34" .
             "EA05022B35" .
@@ -421,7 +509,7 @@ class TestUtil
     public static function getGoldenTestUnpackedMessage()
     {
         return hex2bin(
-            "D005D6FFFFFF0FD005CCFFFFFF0F" .
+            "D005D6FFFFFFFFFFFFFFFF01D005CCFFFFFFFFFFFFFFFF01" .
             "D805D5FFFFFFFFFFFFFFFF01D805CBFFFFFFFFFFFFFFFF01" .
             "E0052AE00534" .
             "E8052BE80535" .

@@ -371,9 +371,9 @@ string DefaultValue(const FieldDescriptor* field) {
       return "GOOGLE_ULONGLONG(" + SimpleItoa(field->default_value_uint64())+ ")";
     case FieldDescriptor::CPPTYPE_DOUBLE: {
       double value = field->default_value_double();
-      if (value == numeric_limits<double>::infinity()) {
+      if (value == std::numeric_limits<double>::infinity()) {
         return "::google::protobuf::internal::Infinity()";
-      } else if (value == -numeric_limits<double>::infinity()) {
+      } else if (value == -std::numeric_limits<double>::infinity()) {
         return "-::google::protobuf::internal::Infinity()";
       } else if (value != value) {
         return "::google::protobuf::internal::NaN()";
@@ -384,9 +384,9 @@ string DefaultValue(const FieldDescriptor* field) {
     case FieldDescriptor::CPPTYPE_FLOAT:
       {
         float value = field->default_value_float();
-        if (value == numeric_limits<float>::infinity()) {
+        if (value == std::numeric_limits<float>::infinity()) {
           return "static_cast<float>(::google::protobuf::internal::Infinity())";
-        } else if (value == -numeric_limits<float>::infinity()) {
+        } else if (value == -std::numeric_limits<float>::infinity()) {
           return "static_cast<float>(-::google::protobuf::internal::Infinity())";
         } else if (value != value) {
           return "static_cast<float>(::google::protobuf::internal::NaN())";
@@ -440,23 +440,8 @@ string FilenameIdentifier(const string& filename) {
   return result;
 }
 
-// Return the name of the AddDescriptors() function for a given file.
-string GlobalAddDescriptorsName(const string& filename) {
-  return "protobuf_AddDesc_" + FilenameIdentifier(filename);
-}
-
-string GlobalInitDefaultsName(const string& filename) {
-  return "protobuf_InitDefaults_" + FilenameIdentifier(filename);
-}
-
-// Return the name of the AssignDescriptors() function for a given file.
-string GlobalAssignDescriptorsName(const string& filename) {
-  return "protobuf_AssignDesc_" + FilenameIdentifier(filename);
-}
-
-// Return the name of the ShutdownFile() function for a given file.
-string GlobalShutdownFileName(const string& filename) {
-  return "protobuf_ShutdownFile_" + FilenameIdentifier(filename);
+string FileLevelNamespace(const string& filename) {
+  return "protobuf_" + FilenameIdentifier(filename);
 }
 
 // Return the qualified C++ name for a file level symbol.
@@ -602,7 +587,7 @@ static Utf8CheckMode GetUtf8CheckMode(const FieldDescriptor* field,
 
 static void GenerateUtf8CheckCode(const FieldDescriptor* field,
                                   const Options& options, bool for_parse,
-                                  const map<string, string>& variables,
+                                  const std::map<string, string>& variables,
                                   const char* parameters,
                                   const char* strict_function,
                                   const char* verify_function,
@@ -652,7 +637,7 @@ static void GenerateUtf8CheckCode(const FieldDescriptor* field,
 
 void GenerateUtf8CheckCodeForString(const FieldDescriptor* field,
                                     const Options& options, bool for_parse,
-                                    const map<string, string>& variables,
+                                    const std::map<string, string>& variables,
                                     const char* parameters,
                                     io::Printer* printer) {
   GenerateUtf8CheckCode(field, options, for_parse, variables, parameters,
@@ -662,7 +647,7 @@ void GenerateUtf8CheckCodeForString(const FieldDescriptor* field,
 
 void GenerateUtf8CheckCodeForCord(const FieldDescriptor* field,
                                   const Options& options, bool for_parse,
-                                  const map<string, string>& variables,
+                                  const std::map<string, string>& variables,
                                   const char* parameters,
                                   io::Printer* printer) {
   GenerateUtf8CheckCode(field, options, for_parse, variables, parameters,

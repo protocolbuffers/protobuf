@@ -53,14 +53,22 @@
 #include <google/protobuf/stubs/substitute.h>
 #include <gtest/gtest.h>
 
+#ifdef major
+#undef major
+#endif
+#ifdef minor
+#undef minor
+#endif
+#include <google/protobuf/compiler/plugin.pb.h>
+
 namespace google {
 namespace protobuf {
 namespace compiler {
 
 // Returns the list of the names of files in all_files in the form of a
 // comma-separated string.
-string CommaSeparatedList(const vector<const FileDescriptor*> all_files) {
-  vector<string> names;
+string CommaSeparatedList(const std::vector<const FileDescriptor*> all_files) {
+  std::vector<string> names;
   for (size_t i = 0; i < all_files.size(); i++) {
     names.push_back(all_files[i]->name());
   }
@@ -92,7 +100,8 @@ void MockCodeGenerator::ExpectGenerated(
       File::GetContents(output_directory + "/" + GetOutputFileName(name, file),
                         &content, true));
 
-  vector<string> lines = Split(content, "\n", true);
+  std::vector<string> lines =
+      Split(content, "\n", true);
 
   while (!lines.empty() && lines.back().empty()) {
     lines.pop_back();
@@ -101,7 +110,7 @@ void MockCodeGenerator::ExpectGenerated(
     lines[i] += "\n";
   }
 
-  vector<string> insertion_list;
+  std::vector<string> insertion_list;
   if (!insertions.empty()) {
     SplitStringUsing(insertions, ",", &insertion_list);
   }
@@ -159,6 +168,15 @@ bool MockCodeGenerator::Generate(
         std::cerr << "Saw json_name: "
                   << field_descriptor_proto.has_json_name() << std::endl;
         abort();
+      } else if (command == "ShowVersionNumber") {
+        Version compiler_version;
+        context->GetCompilerVersion(&compiler_version);
+        std::cerr << "Saw compiler_version: "
+                  << compiler_version.major() * 1000000 +
+                     compiler_version.minor() * 1000 +
+                     compiler_version.patch()
+                  << " " << compiler_version.suffix() << std::endl;
+        abort();
       } else {
         GOOGLE_LOG(FATAL) << "Unknown MockCodeGenerator command: " << command;
       }
@@ -166,7 +184,7 @@ bool MockCodeGenerator::Generate(
   }
 
   if (HasPrefixString(parameter, "insert=")) {
-    vector<string> insert_into;
+    std::vector<string> insert_into;
     SplitStringUsing(StripPrefixString(parameter, "insert="),
                      ",", &insert_into);
 
@@ -230,7 +248,7 @@ string MockCodeGenerator::GetOutputFileContent(
     const string& parameter,
     const FileDescriptor* file,
     GeneratorContext *context) {
-  vector<const FileDescriptor*> all_files;
+  std::vector<const FileDescriptor*> all_files;
   context->ListParsedFiles(&all_files);
   return GetOutputFileContent(
       generator_name, parameter, file->name(),

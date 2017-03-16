@@ -61,6 +61,8 @@ else:
 # Part of the public interface, but normally only used by message factories.
 GeneratedProtocolMessageType = message_impl.GeneratedProtocolMessageType
 
+MESSAGE_CLASS_CACHE = {}
+
 
 def ParseMessage(descriptor, byte_str):
   """Generate a new Message instance from this Descriptor and a byte string.
@@ -104,11 +106,16 @@ def MakeClass(descriptor):
   Returns:
     The Message class object described by the descriptor.
   """
+  if descriptor in MESSAGE_CLASS_CACHE:
+      return MESSAGE_CLASS_CACHE[descriptor]
+
   attributes = {}
   for name, nested_type in descriptor.nested_types_by_name.items():
     attributes[name] = MakeClass(nested_type)
 
   attributes[GeneratedProtocolMessageType._DESCRIPTOR_KEY] = descriptor
 
-  return GeneratedProtocolMessageType(str(descriptor.name), (message.Message,),
+  result = GeneratedProtocolMessageType(str(descriptor.name), (message.Message,),
                                       attributes)
+  MESSAGE_CLASS_CACHE[descriptor] = result
+  return result

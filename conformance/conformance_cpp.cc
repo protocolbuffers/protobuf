@@ -33,12 +33,12 @@
 #include <unistd.h>
 
 #include "conformance.pb.h"
+#include <google/protobuf/test_messages_proto3.pb.h>
 #include <google/protobuf/util/json_util.h>
 #include <google/protobuf/util/type_resolver_util.h>
 
 using conformance::ConformanceRequest;
 using conformance::ConformanceResponse;
-using conformance::TestAllTypes;
 using google::protobuf::Descriptor;
 using google::protobuf::DescriptorPool;
 using google::protobuf::internal::scoped_ptr;
@@ -47,6 +47,7 @@ using google::protobuf::util::JsonToBinaryString;
 using google::protobuf::util::NewTypeResolverForDescriptorPool;
 using google::protobuf::util::Status;
 using google::protobuf::util::TypeResolver;
+using protobuf_test_messages::proto3::TestAllTypes;
 using std::string;
 
 static const char kTypeUrlPrefix[] = "type.googleapis.com";

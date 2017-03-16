@@ -58,6 +58,125 @@ NSData *GPBEmptyNSData(void) {
   return defaultNSData;
 }
 
+void GPBMessageDropUnknownFieldsRecursively(GPBMessage *initialMessage) {
+  if (!initialMessage) {
+    return;
+  }
+
+  // Use an array as a list to process to avoid recursion.
+  NSMutableArray *todo = [NSMutableArray arrayWithObject:initialMessage];
+
+  while (todo.count) {
+    GPBMessage *msg = todo.lastObject;
+    [todo removeLastObject];
+
+    // Clear unknowns.
+    msg.unknownFields = nil;
+
+    // Handle the message fields.
+    GPBDescriptor *descriptor = [[msg class] descriptor];
+    for (GPBFieldDescriptor *field in descriptor->fields_) {
+      if (!GPBFieldDataTypeIsMessage(field)) {
+        continue;
+      }
+      switch (field.fieldType) {
+        case GPBFieldTypeSingle:
+          if (GPBGetHasIvarField(msg, field)) {
+            GPBMessage *fieldMessage = GPBGetObjectIvarWithFieldNoAutocreate(msg, field);
+            [todo addObject:fieldMessage];
+          }
+          break;
+
+        case GPBFieldTypeRepeated: {
+          NSArray *fieldMessages = GPBGetObjectIvarWithFieldNoAutocreate(msg, field);
+          if (fieldMessages.count) {
+            [todo addObjectsFromArray:fieldMessages];
+          }
+          break;
+        }
+
+        case GPBFieldTypeMap: {
+          id rawFieldMap = GPBGetObjectIvarWithFieldNoAutocreate(msg, field);
+          switch (field.mapKeyDataType) {
+            case GPBDataTypeBool:
+              [(GPBBoolObjectDictionary*)rawFieldMap enumerateKeysAndObjectsUsingBlock:^(
+                  BOOL key, id _Nonnull object, BOOL * _Nonnull stop) {
+                #pragma unused(key, stop)
+                [todo addObject:object];
+              }];
+              break;
+            case GPBDataTypeFixed32:
+            case GPBDataTypeUInt32:
+              [(GPBUInt32ObjectDictionary*)rawFieldMap enumerateKeysAndObjectsUsingBlock:^(
+                  uint32_t key, id _Nonnull object, BOOL * _Nonnull stop) {
+                #pragma unused(key, stop)
+                [todo addObject:object];
+              }];
+              break;
+            case GPBDataTypeInt32:
+            case GPBDataTypeSFixed32:
+            case GPBDataTypeSInt32:
+              [(GPBInt32ObjectDictionary*)rawFieldMap enumerateKeysAndObjectsUsingBlock:^(
+                  int32_t key, id _Nonnull object, BOOL * _Nonnull stop) {
+                #pragma unused(key, stop)
+                [todo addObject:object];
+              }];
+              break;
+            case GPBDataTypeFixed64:
+            case GPBDataTypeUInt64:
+              [(GPBUInt64ObjectDictionary*)rawFieldMap enumerateKeysAndObjectsUsingBlock:^(
+                  uint64_t key, id _Nonnull object, BOOL * _Nonnull stop) {
+                #pragma unused(key, stop)
+                [todo addObject:object];
+              }];
+              break;
+            case GPBDataTypeInt64:
+            case GPBDataTypeSFixed64:
+            case GPBDataTypeSInt64:
+              [(GPBInt64ObjectDictionary*)rawFieldMap enumerateKeysAndObjectsUsingBlock:^(
+                  int64_t key, id _Nonnull object, BOOL * _Nonnull stop) {
+                #pragma unused(key, stop)
+                [todo addObject:object];
+              }];
+              break;
+            case GPBDataTypeString:
+              [(NSDictionary*)rawFieldMap enumerateKeysAndObjectsUsingBlock:^(
+                  NSString * _Nonnull key, GPBMessage * _Nonnull obj, BOOL * _Nonnull stop) {
+                #pragma unused(key, stop)
+                [todo addObject:obj];
+              }];
+              break;
+            case GPBDataTypeFloat:
+            case GPBDataTypeDouble:
+            case GPBDataTypeEnum:
+            case GPBDataTypeBytes:
+            case GPBDataTypeGroup:
+            case GPBDataTypeMessage:
+              NSCAssert(NO, @"Aren't valid key types.");
+          }
+          break;
+        }  // switch(field.mapKeyDataType)
+      }  // switch(field.fieldType)
+    }  // for(fields)
+
+    // Handle any extensions holding messages.
+    for (GPBExtensionDescriptor *extension in [msg extensionsCurrentlySet]) {
+      if (!GPBDataTypeIsMessage(extension.dataType)) {
+        continue;
+      }
+      if (extension.isRepeated) {
+        NSArray *extMessages = [msg getExtension:extension];
+        [todo addObjectsFromArray:extMessages];
+      } else {
+        GPBMessage *extMessage = [msg getExtension:extension];
+        [todo addObject:extMessage];
+      }
+    }  // for(extensionsCurrentlySet)
+
+  }  // while(todo.count)
+}
+
+
 // -- About Version Checks --
 // There's actually 3 places these checks all come into play:
 // 1. When the generated source is compile into .o files, the header check
@@ -408,9 +527,11 @@ void GPBSetRetainedObjectIvarWithFieldInternal(GPBMessage *self,
       if (field.fieldType == GPBFieldTypeRepeated) {
         // If the old array was autocreated by us, then clear it.
         if (GPBDataTypeIsObject(fieldType)) {
-          GPBAutocreatedArray *autoArray = oldValue;
-          if (autoArray->_autocreator == self) {
-            autoArray->_autocreator = nil;
+          if ([oldValue isKindOfClass:[GPBAutocreatedArray class]]) {
+            GPBAutocreatedArray *autoArray = oldValue;
+            if (autoArray->_autocreator == self) {
+              autoArray->_autocreator = nil;
+            }
           }
         } else {
           // Type doesn't matter, it is a GPB*Array.
@@ -423,9 +544,11 @@ void GPBSetRetainedObjectIvarWithFieldInternal(GPBMessage *self,
         // If the old map was autocreated by us, then clear it.
         if ((field.mapKeyDataType == GPBDataTypeString) &&
             GPBDataTypeIsObject(fieldType)) {
-          GPBAutocreatedDictionary *autoDict = oldValue;
-          if (autoDict->_autocreator == self) {
-            autoDict->_autocreator = nil;
+          if ([oldValue isKindOfClass:[GPBAutocreatedDictionary class]]) {
+            GPBAutocreatedDictionary *autoDict = oldValue;
+            if (autoDict->_autocreator == self) {
+              autoDict->_autocreator = nil;
+            }
           }
         } else {
           // Type doesn't matter, it is a GPB*Dictionary.
@@ -1769,6 +1892,25 @@ NSString *GPBDecodeTextFormatName(const uint8_t *decodeData, int32_t key,
 }
 
 #pragma clang diagnostic pop
+
+BOOL GPBClassHasSel(Class aClass, SEL sel) {
+  // NOTE: We have to use class_copyMethodList, all other runtime method
+  // lookups actually also resolve the method implementation and this
+  // is called from within those methods.
+
+  BOOL result = NO;
+  unsigned int methodCount = 0;
+  Method *methodList = class_copyMethodList(aClass, &methodCount);
+  for (unsigned int i = 0; i < methodCount; ++i) {
+    SEL methodSelector = method_getName(methodList[i]);
+    if (methodSelector == sel) {
+      result = YES;
+      break;
+    }
+  }
+  free(methodList);
+  return result;
+}
 
 #pragma mark - GPBMessageSignatureProtocol
 

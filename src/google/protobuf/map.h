@@ -523,13 +523,13 @@ class Map {
   typedef size_t size_type;
   typedef hash<Key> hasher;
 
-  explicit Map(bool old_style = true)
+  explicit Map(bool old_style = false)
       : arena_(NULL),
         default_enum_value_(0),
         old_style_(old_style) {
     Init();
   }
-  explicit Map(Arena* arena, bool old_style = true)
+  explicit Map(Arena* arena, bool old_style = false)
       : arena_(arena),
         default_enum_value_(0),
         old_style_(old_style) {
@@ -543,7 +543,7 @@ class Map {
     insert(other.begin(), other.end());
   }
   template <class InputIt>
-  Map(const InputIt& first, const InputIt& last, bool old_style = true)
+  Map(const InputIt& first, const InputIt& last, bool old_style = false)
       : arena_(NULL),
         default_enum_value_(0),
         old_style_(old_style) {
@@ -592,7 +592,7 @@ class Map {
     MapAllocator(const MapAllocator<X>& allocator)
         : arena_(allocator.arena()) {}
 
-    pointer allocate(size_type n, const_pointer hint = 0) {
+    pointer allocate(size_type n, const void* hint = 0) {
       // If arena is not given, malloc needs to be called which doesn't
       // construct element object.
       if (arena_ == NULL) {
@@ -615,7 +615,6 @@ class Map {
 
 #if __cplusplus >= 201103L && !defined(GOOGLE_PROTOBUF_OS_APPLE) && \
     !defined(GOOGLE_PROTOBUF_OS_NACL) &&                            \
-    !defined(GOOGLE_PROTOBUF_OS_ANDROID) &&                         \
     !defined(GOOGLE_PROTOBUF_OS_EMSCRIPTEN)
     template<class NodeType, class... Args>
     void construct(NodeType* p, Args&&... args) {
@@ -654,7 +653,8 @@ class Map {
 
     // To support Visual Studio 2008
     size_type max_size() const {
-      return std::numeric_limits<size_type>::max();
+      // parentheses around (std::...:max) prevents macro warning of max()
+      return (std::numeric_limits<size_type>::max)();
     }
 
     // To support gcc-4.4, which does not properly
@@ -1084,8 +1084,9 @@ class Map {
         // index_of_first_non_null_, so we skip the code to update it.
         return InsertUniqueInTree(b, node);
       }
+      // parentheses around (std::min) prevents macro expansion of min(...)
       index_of_first_non_null_ =
-          std::min(index_of_first_non_null_, result.bucket_index_);
+          (std::min)(index_of_first_non_null_, result.bucket_index_);
       return result;
     }
 
@@ -1532,8 +1533,9 @@ class Map {
 
   // Lookup
   size_type count(const key_type& key) const {
-    if (find(key) != end()) assert(key == find(key)->first);
-    return find(key) == end() ? 0 : 1;
+    const_iterator it = find(key);
+    GOOGLE_DCHECK(it == end() || key == it->first);
+    return it == end() ? 0 : 1;
   }
   const_iterator find(const key_type& key) const {
     return old_style_ ? const_iterator(deprecated_elements_->find(key))
@@ -1724,12 +1726,19 @@ struct hash<google::protobuf::MapKey> {
         break;
       case google::protobuf::FieldDescriptor::CPPTYPE_STRING:
         return hash<string>()(map_key.GetStringValue());
+#if defined(GOOGLE_PROTOBUF_HAVE_64BIT_HASH)
       case google::protobuf::FieldDescriptor::CPPTYPE_INT64:
         return hash< ::google::protobuf::int64>()(map_key.GetInt64Value());
-      case google::protobuf::FieldDescriptor::CPPTYPE_INT32:
-        return hash< ::google::protobuf::int32>()(map_key.GetInt32Value());
       case google::protobuf::FieldDescriptor::CPPTYPE_UINT64:
         return hash< ::google::protobuf::uint64>()(map_key.GetUInt64Value());
+#else
+      case google::protobuf::FieldDescriptor::CPPTYPE_INT64:
+      case google::protobuf::FieldDescriptor::CPPTYPE_UINT64:
+        GOOGLE_LOG(FATAL) << "Unsupported on this platform.";
+        break;
+#endif
+      case google::protobuf::FieldDescriptor::CPPTYPE_INT32:
+        return hash< ::google::protobuf::int32>()(map_key.GetInt32Value());
       case google::protobuf::FieldDescriptor::CPPTYPE_UINT32:
         return hash< ::google::protobuf::uint32>()(map_key.GetUInt32Value());
       case google::protobuf::FieldDescriptor::CPPTYPE_BOOL:

@@ -154,7 +154,7 @@ TextFormat::ParseInfoTree* TextFormat::ParseInfoTree::CreateNested(
     const FieldDescriptor* field) {
   // Owned by us in the map.
   TextFormat::ParseInfoTree* instance = new TextFormat::ParseInfoTree();
-  vector<TextFormat::ParseInfoTree*>* trees = &nested_[field];
+  std::vector<TextFormat::ParseInfoTree*>* trees = &nested_[field];
   GOOGLE_CHECK(trees);
   trees->push_back(instance);
   return instance;
@@ -177,7 +177,7 @@ TextFormat::ParseLocation TextFormat::ParseInfoTree::GetLocation(
   CheckFieldIndex(field, index);
   if (index == -1) { index = 0; }
 
-  const vector<TextFormat::ParseLocation>* locations =
+  const std::vector<TextFormat::ParseLocation>* locations =
       FindOrNull(locations_, field);
   if (locations == NULL || index >= locations->size()) {
     return TextFormat::ParseLocation();
@@ -191,7 +191,8 @@ TextFormat::ParseInfoTree* TextFormat::ParseInfoTree::GetTreeForNested(
   CheckFieldIndex(field, index);
   if (index == -1) { index = 0; }
 
-  const vector<TextFormat::ParseInfoTree*>* trees = FindOrNull(nested_, field);
+  const std::vector<TextFormat::ParseInfoTree*>* trees =
+      FindOrNull(nested_, field);
   if (trees == NULL || index >= trees->size()) {
     return NULL;
   }
@@ -518,7 +519,14 @@ class TextFormat::Parser::ParserImpl {
     // Perform special handling for embedded message types.
     if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
       // ':' is optional here.
-      TryConsume(":");
+      bool consumed_semicolon = TryConsume(":");
+      if (consumed_semicolon && field->options().weak() && LookingAtType(io::Tokenizer::TYPE_STRING)) {
+        // we are getting a bytes string for a weak field.
+        string tmp;
+        DO(ConsumeString(&tmp));
+        reflection->MutableMessage(message, field)->ParseFromString(tmp);
+        goto label_skip_parsing;
+      }
     } else {
       // ':' is required here.
       DO(Consume(":"));
@@ -546,7 +554,7 @@ class TextFormat::Parser::ParserImpl {
     } else {
       DO(ConsumeFieldValue(message, reflection, field));
     }
-
+label_skip_parsing:
     // For historical reasons, fields may optionally be separated by commas or
     // semicolons.
     TryConsume(";") || TryConsume(",");
@@ -1336,7 +1344,7 @@ bool TextFormat::Parser::MergeUsingImpl(io::ZeroCopyInputStream* /* input */,
                                         ParserImpl* parser_impl) {
   if (!parser_impl->Parse(output)) return false;
   if (!allow_partial_ && !output->IsInitialized()) {
-    vector<string> missing_fields;
+    std::vector<string> missing_fields;
     output->FindInitializationErrors(&missing_fields);
     parser_impl->ReportError(-1, 0, "Message missing required fields: " +
                                         Join(missing_fields, ", "));
@@ -1610,7 +1618,7 @@ void TextFormat::Printer::Print(const Message& message,
       PrintAny(message, generator)) {
     return;
   }
-  vector<const FieldDescriptor*> fields;
+  std::vector<const FieldDescriptor*> fields;
   reflection->ListFields(message, &fields);
   if (print_message_fields_in_index_order_) {
     std::sort(fields.begin(), fields.end(), FieldIndexSorter());
@@ -1638,54 +1646,6 @@ void TextFormat::Printer::PrintFieldValueToString(
   PrintFieldValue(message, message.GetReflection(), field, index, generator);
 }
 
-class MapEntryMessageComparator {
- public:
-  explicit MapEntryMessageComparator(const Descriptor* descriptor)
-      : field_(descriptor->field(0)) {}
-
-  bool operator()(const Message* a, const Message* b) {
-    const Reflection* reflection = a->GetReflection();
-    switch (field_->cpp_type()) {
-      case FieldDescriptor::CPPTYPE_BOOL: {
-          bool first = reflection->GetBool(*a, field_);
-          bool second = reflection->GetBool(*b, field_);
-          return first < second;
-      }
-      case FieldDescriptor::CPPTYPE_INT32: {
-          int32 first = reflection->GetInt32(*a, field_);
-          int32 second = reflection->GetInt32(*b, field_);
-          return first < second;
-      }
-      case FieldDescriptor::CPPTYPE_INT64: {
-          int64 first = reflection->GetInt64(*a, field_);
-          int64 second = reflection->GetInt64(*b, field_);
-          return first < second;
-      }
-      case FieldDescriptor::CPPTYPE_UINT32: {
-          uint32 first = reflection->GetUInt32(*a, field_);
-          uint32 second = reflection->GetUInt32(*b, field_);
-          return first < second;
-      }
-      case FieldDescriptor::CPPTYPE_UINT64: {
-          uint64 first = reflection->GetUInt64(*a, field_);
-          uint64 second = reflection->GetUInt64(*b, field_);
-          return first < second;
-      }
-      case FieldDescriptor::CPPTYPE_STRING: {
-          string first = reflection->GetString(*a, field_);
-          string second = reflection->GetString(*b, field_);
-          return first < second;
-      }
-      default:
-        GOOGLE_LOG(DFATAL) << "Invalid key for map field.";
-        return true;
-    }
-  }
-
- private:
-  const FieldDescriptor* field_;
-};
-
 void TextFormat::Printer::PrintField(const Message& message,
                                      const Reflection* reflection,
                                      const FieldDescriptor* field,
@@ -1706,19 +1666,10 @@ void TextFormat::Printer::PrintField(const Message& message,
     count = 1;
   }
 
-  std::vector<const Message*> sorted_map_field;
-  if (field->is_map()) {
-    const RepeatedPtrField<Message>& map_field =
-        reflection->GetRepeatedPtrField<Message>(message, field);
-    for (RepeatedPtrField<Message>::const_pointer_iterator it =
-             map_field.pointer_begin();
-         it != map_field.pointer_end(); ++it) {
-      sorted_map_field.push_back(*it);
-    }
-
-    MapEntryMessageComparator comparator(field->message_type());
-    std::stable_sort(sorted_map_field.begin(), sorted_map_field.end(),
-                     comparator);
+  std::vector<const Message*> map_entries;
+  const bool is_map = field->is_map();
+  if (is_map) {
+    map_entries = DynamicMapSorter::Sort(message, count, reflection, field);
   }
 
   for (int j = 0; j < count; ++j) {
@@ -1731,9 +1682,8 @@ void TextFormat::Printer::PrintField(const Message& message,
           custom_printers_, field, default_field_value_printer_.get());
       const Message& sub_message =
           field->is_repeated()
-              ? (field->is_map()
-                     ? *sorted_map_field[j]
-                     : reflection->GetRepeatedMessage(message, field, j))
+              ? (is_map ? *map_entries[j]
+                        : reflection->GetRepeatedMessage(message, field, j))
               : reflection->GetMessage(message, field);
       generator.Print(
           printer->PrintMessageStart(

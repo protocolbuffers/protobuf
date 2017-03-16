@@ -60,7 +60,8 @@ import java.util.List;
 public abstract class CodedInputStream {
   private static final int DEFAULT_BUFFER_SIZE = 4096;
   private static final int DEFAULT_RECURSION_LIMIT = 100;
-  private static final int DEFAULT_SIZE_LIMIT = 64 << 20; // 64MB
+  // Integer.MAX_VALUE == 0x7FFFFFF == INT_MAX from limits.h
+  private static final int DEFAULT_SIZE_LIMIT = Integer.MAX_VALUE;
 
   /** Visible for subclasses. See setRecursionLimit() */
   int recursionDepth;
@@ -353,9 +354,9 @@ public abstract class CodedInputStream {
    *
    * <p>Set the maximum message size. In order to prevent malicious messages from exhausting memory
    * or causing integer overflows, {@code CodedInputStream} limits how large a message may be. The
-   * default limit is 64MB. You should set this limit as small as you can without harming your app's
-   * functionality. Note that size limits only apply when reading from an {@code InputStream}, not
-   * when constructed around a raw byte array (nor with {@link ByteString#newCodedInput}).
+   * default limit is {@code Integer.MAX_INT}. You should set this limit as small as you can without
+   * harming your app's functionality. Note that size limits only apply when reading from an
+   * {@code InputStream}, not when constructed around a raw byte array.
    *
    * <p>If you want to read several messages from a single CodedInputStream, you could call {@link
    * #resetSizeCounter()} after each one to avoid hitting the size limit.
@@ -2762,9 +2763,9 @@ public abstract class CodedInputStream {
         throw InvalidProtocolBufferException.negativeSize();
       }
 
-      // Verify that the message size so far has not exceeded sizeLimit.
+      // Integer-overflow-conscious check that the message size so far has not exceeded sizeLimit.
       int currentMessageSize = totalBytesRetired + pos + size;
-      if (currentMessageSize > sizeLimit) {
+      if (currentMessageSize - sizeLimit > 0) {
         throw InvalidProtocolBufferException.sizeLimitExceeded();
       }
 

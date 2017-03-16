@@ -201,3 +201,8 @@ message TestAny {
 message TestCustomJsonName {
   int32 value = 1 [json_name = "@value"];
 }
+
+message TestRecursive {
+  int32 value = 1;
+  TestRecursive nested = 2;
+}

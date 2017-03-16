@@ -56,7 +56,7 @@ void SetMessageVariables(const FieldDescriptor* descriptor,
                          int builderBitIndex,
                          const FieldGeneratorInfo* info,
                          ClassNameResolver* name_resolver,
-                         map<string, string>* variables) {
+                         std::map<string, string>* variables) {
   SetCommonFieldVariables(descriptor, info, variables);
 
   (*variables)["type"] =
@@ -70,6 +70,7 @@ void SetMessageVariables(const FieldDescriptor* descriptor,
   // by the proto compiler
   (*variables)["deprecation"] = descriptor->options().deprecated()
       ? "@java.lang.Deprecated " : "";
+  (*variables)["required"] = descriptor->is_required() ? "true" : "false";
 
   if (SupportFieldPresence(descriptor->file())) {
     // For singular messages and builders, one bit is used for the hasField bit.

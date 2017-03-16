@@ -121,7 +121,7 @@ TEST(Printer, VariableSubstitution) {
 
     {
       Printer printer(&output, '$');
-      map<string, string> vars;
+      std::map<string, string> vars;
 
       vars["foo"] = "World";
       vars["bar"] = "$foo$";
@@ -187,7 +187,7 @@ class MockDescriptorFile {
 // annotations.
 class MockDescriptor {
  public:
-  MockDescriptor(const string& file, const vector<int>& path)
+  MockDescriptor(const string& file, const std::vector<int>& path)
       : file_(file), path_(path) {}
 
   // The mock file in which this descriptor was defined.
@@ -201,7 +201,7 @@ class MockDescriptor {
   void GetLocationPath(std::vector<int>* output) const { *output = path_; }
 
   MockDescriptorFile file_;
-  vector<int> path_;
+  std::vector<int> path_;
 };
 
 TEST(Printer, AnnotateMap) {
@@ -211,13 +211,13 @@ TEST(Printer, AnnotateMap) {
   AnnotationProtoCollector<GeneratedCodeInfo> info_collector(&info);
   {
     Printer printer(&output, '$', &info_collector);
-    map<string, string> vars;
+    std::map<string, string> vars;
     vars["foo"] = "3";
     vars["bar"] = "5";
     printer.Print(vars, "012$foo$4$bar$\n");
-    vector<int> path_1;
+    std::vector<int> path_1;
     path_1.push_back(33);
-    vector<int> path_2;
+    std::vector<int> path_2;
     path_2.push_back(11);
     path_2.push_back(22);
     MockDescriptor descriptor_1("path_1", path_1);
@@ -255,9 +255,9 @@ TEST(Printer, AnnotateInline) {
   {
     Printer printer(&output, '$', &info_collector);
     printer.Print("012$foo$4$bar$\n", "foo", "3", "bar", "5");
-    vector<int> path_1;
+    std::vector<int> path_1;
     path_1.push_back(33);
-    vector<int> path_2;
+    std::vector<int> path_2;
     path_2.push_back(11);
     path_2.push_back(22);
     MockDescriptor descriptor_1("path_1", path_1);
@@ -295,7 +295,7 @@ TEST(Printer, AnnotateRange) {
   {
     Printer printer(&output, '$', &info_collector);
     printer.Print("012$foo$4$bar$\n", "foo", "3", "bar", "5");
-    vector<int> path;
+    std::vector<int> path;
     path.push_back(33);
     MockDescriptor descriptor("path", path);
     printer.Annotate("foo", "bar", &descriptor);
@@ -320,7 +320,7 @@ TEST(Printer, AnnotateEmptyRange) {
     Printer printer(&output, '$', &info_collector);
     printer.Print("012$foo$4$baz$$bam$$bar$\n", "foo", "3", "bar", "5", "baz",
                   "", "bam", "");
-    vector<int> path;
+    std::vector<int> path;
     path.push_back(33);
     MockDescriptor descriptor("path", path);
     printer.Annotate("baz", "bam", &descriptor);
@@ -344,7 +344,7 @@ TEST(Printer, AnnotateDespiteUnrelatedMultipleUses) {
   {
     Printer printer(&output, '$', &info_collector);
     printer.Print("012$foo$4$foo$$bar$\n", "foo", "3", "bar", "5");
-    vector<int> path;
+    std::vector<int> path;
     path.push_back(33);
     MockDescriptor descriptor("path", path);
     printer.Annotate("bar", "bar", &descriptor);
@@ -368,7 +368,7 @@ TEST(Printer, Indenting) {
 
     {
       Printer printer(&output, '$');
-      map<string, string> vars;
+      std::map<string, string> vars;
 
       vars["newline"] = "\n";
 
@@ -432,7 +432,7 @@ TEST(Printer, AnnotateMultipleUsesDeath) {
   {
     Printer printer(&output, '$', &info_collector);
     printer.Print("012$foo$4$foo$\n", "foo", "3");
-    vector<int> path;
+    std::vector<int> path;
     path.push_back(33);
     MockDescriptor descriptor("path", path);
     EXPECT_DEBUG_DEATH(printer.Annotate("foo", "foo", &descriptor), "multiple");
@@ -447,7 +447,7 @@ TEST(Printer, AnnotateNegativeLengthDeath) {
   {
     Printer printer(&output, '$', &info_collector);
     printer.Print("012$foo$4$bar$\n", "foo", "3", "bar", "5");
-    vector<int> path;
+    std::vector<int> path;
     path.push_back(33);
     MockDescriptor descriptor("path", path);
     EXPECT_DEBUG_DEATH(printer.Annotate("bar", "foo", &descriptor), "negative");
@@ -462,7 +462,7 @@ TEST(Printer, AnnotateUndefinedDeath) {
   {
     Printer printer(&output, '$', &info_collector);
     printer.Print("012$foo$4$foo$\n", "foo", "3");
-    vector<int> path;
+    std::vector<int> path;
     path.push_back(33);
     MockDescriptor descriptor("path", path);
     EXPECT_DEBUG_DEATH(printer.Annotate("bar", "bar", &descriptor),

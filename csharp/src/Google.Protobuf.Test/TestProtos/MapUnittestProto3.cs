@@ -172,7 +172,7 @@ namespace Google.Protobuf.TestProtos {
 
   #region Messages
   /// <summary>
-  ///  Tests maps.
+  /// Tests maps.
   /// </summary>
   public sealed partial class TestMap : pb::IMessage<TestMap> {
     private static readonly pb::MessageParser<TestMap> _parser = new pb::MessageParser<TestMap>(() => new TestMap());
@@ -836,7 +836,7 @@ namespace Google.Protobuf.TestProtos {
   }
 
   /// <summary>
-  ///  Two map fields share the same entry default instance.
+  /// Two map fields share the same entry default instance.
   /// </summary>
   public sealed partial class TestSameTypeMap : pb::IMessage<TestSameTypeMap> {
     private static readonly pb::MessageParser<TestSameTypeMap> _parser = new pb::MessageParser<TestSameTypeMap>(() => new TestSameTypeMap());
@@ -1357,8 +1357,8 @@ namespace Google.Protobuf.TestProtos {
   }
 
   /// <summary>
-  ///  Previously, message containing enum called Type cannot be used as value of
-  ///  map field.
+  /// Previously, message containing enum called Type cannot be used as value of
+  /// map field.
   /// </summary>
   public sealed partial class MessageContainingEnumCalledType : pb::IMessage<MessageContainingEnumCalledType> {
     private static readonly pb::MessageParser<MessageContainingEnumCalledType> _parser = new pb::MessageParser<MessageContainingEnumCalledType>(() => new MessageContainingEnumCalledType());
@@ -1481,7 +1481,7 @@ namespace Google.Protobuf.TestProtos {
   }
 
   /// <summary>
-  ///  Previously, message cannot contain map field called "entry".
+  /// Previously, message cannot contain map field called "entry".
   /// </summary>
   public sealed partial class MessageContainingMapCalledEntry : pb::IMessage<MessageContainingMapCalledEntry> {
     private static readonly pb::MessageParser<MessageContainingMapCalledEntry> _parser = new pb::MessageParser<MessageContainingMapCalledEntry>(() => new MessageContainingMapCalledEntry());

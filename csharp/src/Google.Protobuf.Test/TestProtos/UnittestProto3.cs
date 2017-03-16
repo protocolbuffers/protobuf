@@ -85,70 +85,72 @@ namespace Google.Protobuf.TestProtos {
             "ZXN0TXV0dWFsUmVjdXJzaW9uQRIzCgJiYhgBIAEoCzInLnByb3RvYnVmX3Vu",
             "aXR0ZXN0LlRlc3RNdXR1YWxSZWN1cnNpb25CImIKFFRlc3RNdXR1YWxSZWN1",
             "cnNpb25CEjIKAWEYASABKAsyJy5wcm90b2J1Zl91bml0dGVzdC5UZXN0TXV0",
-            "dWFsUmVjdXJzaW9uQRIWCg5vcHRpb25hbF9pbnQzMhgCIAEoBSLrAgoXVGVz",
-            "dENhbWVsQ2FzZUZpZWxkTmFtZXMSFgoOUHJpbWl0aXZlRmllbGQYASABKAUS",
-            "EwoLU3RyaW5nRmllbGQYAiABKAkSMQoJRW51bUZpZWxkGAMgASgOMh4ucHJv",
-            "dG9idWZfdW5pdHRlc3QuRm9yZWlnbkVudW0SNwoMTWVzc2FnZUZpZWxkGAQg",
-            "ASgLMiEucHJvdG9idWZfdW5pdHRlc3QuRm9yZWlnbk1lc3NhZ2USHgoWUmVw",
-            "ZWF0ZWRQcmltaXRpdmVGaWVsZBgHIAMoBRIbChNSZXBlYXRlZFN0cmluZ0Zp",
-            "ZWxkGAggAygJEjkKEVJlcGVhdGVkRW51bUZpZWxkGAkgAygOMh4ucHJvdG9i",
-            "dWZfdW5pdHRlc3QuRm9yZWlnbkVudW0SPwoUUmVwZWF0ZWRNZXNzYWdlRmll",
-            "bGQYCiADKAsyIS5wcm90b2J1Zl91bml0dGVzdC5Gb3JlaWduTWVzc2FnZSLH",
-            "AQoSVGVzdEZpZWxkT3JkZXJpbmdzEhEKCW15X3N0cmluZxgLIAEoCRIOCgZt",
-            "eV9pbnQYASABKAMSEAoIbXlfZmxvYXQYZSABKAISUwoVc2luZ2xlX25lc3Rl",
-            "ZF9tZXNzYWdlGMgBIAEoCzIzLnByb3RvYnVmX3VuaXR0ZXN0LlRlc3RGaWVs",
-            "ZE9yZGVyaW5ncy5OZXN0ZWRNZXNzYWdlGicKDU5lc3RlZE1lc3NhZ2USCgoC",
-            "b28YAiABKAMSCgoCYmIYASABKAUiSwoRU3BhcnNlRW51bU1lc3NhZ2USNgoL",
-            "c3BhcnNlX2VudW0YASABKA4yIS5wcm90b2J1Zl91bml0dGVzdC5UZXN0U3Bh",
-            "cnNlRW51bSIZCglPbmVTdHJpbmcSDAoEZGF0YRgBIAEoCSIaCgpNb3JlU3Ry",
-            "aW5nEgwKBGRhdGEYASADKAkiGAoIT25lQnl0ZXMSDAoEZGF0YRgBIAEoDCIZ",
-            "CglNb3JlQnl0ZXMSDAoEZGF0YRgBIAEoDCIcCgxJbnQzMk1lc3NhZ2USDAoE",
-            "ZGF0YRgBIAEoBSIdCg1VaW50MzJNZXNzYWdlEgwKBGRhdGEYASABKA0iHAoM",
-            "SW50NjRNZXNzYWdlEgwKBGRhdGEYASABKAMiHQoNVWludDY0TWVzc2FnZRIM",
-            "CgRkYXRhGAEgASgEIhsKC0Jvb2xNZXNzYWdlEgwKBGRhdGEYASABKAgicwoJ",
-            "VGVzdE9uZW9mEhEKB2Zvb19pbnQYASABKAVIABIUCgpmb29fc3RyaW5nGAIg",
-            "ASgJSAASNgoLZm9vX21lc3NhZ2UYAyABKAsyHy5wcm90b2J1Zl91bml0dGVz",
-            "dC5UZXN0QWxsVHlwZXNIAEIFCgNmb28iqgMKD1Rlc3RQYWNrZWRUeXBlcxIY",
-            "CgxwYWNrZWRfaW50MzIYWiADKAVCAhABEhgKDHBhY2tlZF9pbnQ2NBhbIAMo",
-            "A0ICEAESGQoNcGFja2VkX3VpbnQzMhhcIAMoDUICEAESGQoNcGFja2VkX3Vp",
-            "bnQ2NBhdIAMoBEICEAESGQoNcGFja2VkX3NpbnQzMhheIAMoEUICEAESGQoN",
-            "cGFja2VkX3NpbnQ2NBhfIAMoEkICEAESGgoOcGFja2VkX2ZpeGVkMzIYYCAD",
-            "KAdCAhABEhoKDnBhY2tlZF9maXhlZDY0GGEgAygGQgIQARIbCg9wYWNrZWRf",
-            "c2ZpeGVkMzIYYiADKA9CAhABEhsKD3BhY2tlZF9zZml4ZWQ2NBhjIAMoEEIC",
-            "EAESGAoMcGFja2VkX2Zsb2F0GGQgAygCQgIQARIZCg1wYWNrZWRfZG91Ymxl",
-            "GGUgAygBQgIQARIXCgtwYWNrZWRfYm9vbBhmIAMoCEICEAESNwoLcGFja2Vk",
-            "X2VudW0YZyADKA4yHi5wcm90b2J1Zl91bml0dGVzdC5Gb3JlaWduRW51bUIC",
-            "EAEiyAMKEVRlc3RVbnBhY2tlZFR5cGVzEhoKDnVucGFja2VkX2ludDMyGFog",
-            "AygFQgIQABIaCg51bnBhY2tlZF9pbnQ2NBhbIAMoA0ICEAASGwoPdW5wYWNr",
-            "ZWRfdWludDMyGFwgAygNQgIQABIbCg91bnBhY2tlZF91aW50NjQYXSADKARC",
-            "AhAAEhsKD3VucGFja2VkX3NpbnQzMhheIAMoEUICEAASGwoPdW5wYWNrZWRf",
-            "c2ludDY0GF8gAygSQgIQABIcChB1bnBhY2tlZF9maXhlZDMyGGAgAygHQgIQ",
-            "ABIcChB1bnBhY2tlZF9maXhlZDY0GGEgAygGQgIQABIdChF1bnBhY2tlZF9z",
-            "Zml4ZWQzMhhiIAMoD0ICEAASHQoRdW5wYWNrZWRfc2ZpeGVkNjQYYyADKBBC",
-            "AhAAEhoKDnVucGFja2VkX2Zsb2F0GGQgAygCQgIQABIbCg91bnBhY2tlZF9k",
-            "b3VibGUYZSADKAFCAhAAEhkKDXVucGFja2VkX2Jvb2wYZiADKAhCAhAAEjkK",
-            "DXVucGFja2VkX2VudW0YZyADKA4yHi5wcm90b2J1Zl91bml0dGVzdC5Gb3Jl",
-            "aWduRW51bUICEAAiwAEKI1Rlc3RSZXBlYXRlZFNjYWxhckRpZmZlcmVudFRh",
-            "Z1NpemVzEhgKEHJlcGVhdGVkX2ZpeGVkMzIYDCADKAcSFgoOcmVwZWF0ZWRf",
-            "aW50MzIYDSADKAUSGQoQcmVwZWF0ZWRfZml4ZWQ2NBj+DyADKAYSFwoOcmVw",
-            "ZWF0ZWRfaW50NjQY/w8gAygDEhgKDnJlcGVhdGVkX2Zsb2F0GP7/DyADKAIS",
-            "GQoPcmVwZWF0ZWRfdWludDY0GP//DyADKAQiKAobVGVzdENvbW1lbnRJbmpl",
-            "Y3Rpb25NZXNzYWdlEgkKAWEYASABKAkiDAoKRm9vUmVxdWVzdCINCgtGb29S",
-            "ZXNwb25zZSISChBGb29DbGllbnRNZXNzYWdlIhIKEEZvb1NlcnZlck1lc3Nh",
-            "Z2UiDAoKQmFyUmVxdWVzdCINCgtCYXJSZXNwb25zZSpZCgtGb3JlaWduRW51",
-            "bRIXChNGT1JFSUdOX1VOU1BFQ0lGSUVEEAASDwoLRk9SRUlHTl9GT08QBBIP",
-            "CgtGT1JFSUdOX0JBUhAFEg8KC0ZPUkVJR05fQkFaEAYqdQoUVGVzdEVudW1X",
-            "aXRoRHVwVmFsdWUSKAokVEVTVF9FTlVNX1dJVEhfRFVQX1ZBTFVFX1VOU1BF",
-            "Q0lGSUVEEAASCAoERk9PMRABEggKBEJBUjEQAhIHCgNCQVoQAxIICgRGT08y",
-            "EAESCAoEQkFSMhACGgIQASqdAQoOVGVzdFNwYXJzZUVudW0SIAocVEVTVF9T",
-            "UEFSU0VfRU5VTV9VTlNQRUNJRklFRBAAEgwKCFNQQVJTRV9BEHsSDgoIU1BB",
-            "UlNFX0IQpucDEg8KCFNQQVJTRV9DELKxgAYSFQoIU1BBUlNFX0QQ8f//////",
-            "////ARIVCghTUEFSU0VfRRC03vz///////8BEgwKCFNQQVJTRV9HEAIymQEK",
-            "C1Rlc3RTZXJ2aWNlEkQKA0ZvbxIdLnByb3RvYnVmX3VuaXR0ZXN0LkZvb1Jl",
-            "cXVlc3QaHi5wcm90b2J1Zl91bml0dGVzdC5Gb29SZXNwb25zZRJECgNCYXIS",
-            "HS5wcm90b2J1Zl91bml0dGVzdC5CYXJSZXF1ZXN0Gh4ucHJvdG9idWZfdW5p",
-            "dHRlc3QuQmFyUmVzcG9uc2VCOkINVW5pdHRlc3RQcm90b0gBgAEBiAEBkAEB",
-            "+AEBqgIaR29vZ2xlLlByb3RvYnVmLlRlc3RQcm90b3NiBnByb3RvMw=="));
+            "dWFsUmVjdXJzaW9uQRIWCg5vcHRpb25hbF9pbnQzMhgCIAEoBSJMChJUZXN0",
+            "RW51bUFsbG93QWxpYXMSNgoFdmFsdWUYASABKA4yJy5wcm90b2J1Zl91bml0",
+            "dGVzdC5UZXN0RW51bVdpdGhEdXBWYWx1ZSLrAgoXVGVzdENhbWVsQ2FzZUZp",
+            "ZWxkTmFtZXMSFgoOUHJpbWl0aXZlRmllbGQYASABKAUSEwoLU3RyaW5nRmll",
+            "bGQYAiABKAkSMQoJRW51bUZpZWxkGAMgASgOMh4ucHJvdG9idWZfdW5pdHRl",
+            "c3QuRm9yZWlnbkVudW0SNwoMTWVzc2FnZUZpZWxkGAQgASgLMiEucHJvdG9i",
+            "dWZfdW5pdHRlc3QuRm9yZWlnbk1lc3NhZ2USHgoWUmVwZWF0ZWRQcmltaXRp",
+            "dmVGaWVsZBgHIAMoBRIbChNSZXBlYXRlZFN0cmluZ0ZpZWxkGAggAygJEjkK",
+            "EVJlcGVhdGVkRW51bUZpZWxkGAkgAygOMh4ucHJvdG9idWZfdW5pdHRlc3Qu",
+            "Rm9yZWlnbkVudW0SPwoUUmVwZWF0ZWRNZXNzYWdlRmllbGQYCiADKAsyIS5w",
+            "cm90b2J1Zl91bml0dGVzdC5Gb3JlaWduTWVzc2FnZSLHAQoSVGVzdEZpZWxk",
+            "T3JkZXJpbmdzEhEKCW15X3N0cmluZxgLIAEoCRIOCgZteV9pbnQYASABKAMS",
+            "EAoIbXlfZmxvYXQYZSABKAISUwoVc2luZ2xlX25lc3RlZF9tZXNzYWdlGMgB",
+            "IAEoCzIzLnByb3RvYnVmX3VuaXR0ZXN0LlRlc3RGaWVsZE9yZGVyaW5ncy5O",
+            "ZXN0ZWRNZXNzYWdlGicKDU5lc3RlZE1lc3NhZ2USCgoCb28YAiABKAMSCgoC",
+            "YmIYASABKAUiSwoRU3BhcnNlRW51bU1lc3NhZ2USNgoLc3BhcnNlX2VudW0Y",
+            "ASABKA4yIS5wcm90b2J1Zl91bml0dGVzdC5UZXN0U3BhcnNlRW51bSIZCglP",
+            "bmVTdHJpbmcSDAoEZGF0YRgBIAEoCSIaCgpNb3JlU3RyaW5nEgwKBGRhdGEY",
+            "ASADKAkiGAoIT25lQnl0ZXMSDAoEZGF0YRgBIAEoDCIZCglNb3JlQnl0ZXMS",
+            "DAoEZGF0YRgBIAEoDCIcCgxJbnQzMk1lc3NhZ2USDAoEZGF0YRgBIAEoBSId",
+            "Cg1VaW50MzJNZXNzYWdlEgwKBGRhdGEYASABKA0iHAoMSW50NjRNZXNzYWdl",
+            "EgwKBGRhdGEYASABKAMiHQoNVWludDY0TWVzc2FnZRIMCgRkYXRhGAEgASgE",
+            "IhsKC0Jvb2xNZXNzYWdlEgwKBGRhdGEYASABKAgicwoJVGVzdE9uZW9mEhEK",
+            "B2Zvb19pbnQYASABKAVIABIUCgpmb29fc3RyaW5nGAIgASgJSAASNgoLZm9v",
+            "X21lc3NhZ2UYAyABKAsyHy5wcm90b2J1Zl91bml0dGVzdC5UZXN0QWxsVHlw",
+            "ZXNIAEIFCgNmb28iqgMKD1Rlc3RQYWNrZWRUeXBlcxIYCgxwYWNrZWRfaW50",
+            "MzIYWiADKAVCAhABEhgKDHBhY2tlZF9pbnQ2NBhbIAMoA0ICEAESGQoNcGFj",
+            "a2VkX3VpbnQzMhhcIAMoDUICEAESGQoNcGFja2VkX3VpbnQ2NBhdIAMoBEIC",
+            "EAESGQoNcGFja2VkX3NpbnQzMhheIAMoEUICEAESGQoNcGFja2VkX3NpbnQ2",
+            "NBhfIAMoEkICEAESGgoOcGFja2VkX2ZpeGVkMzIYYCADKAdCAhABEhoKDnBh",
+            "Y2tlZF9maXhlZDY0GGEgAygGQgIQARIbCg9wYWNrZWRfc2ZpeGVkMzIYYiAD",
+            "KA9CAhABEhsKD3BhY2tlZF9zZml4ZWQ2NBhjIAMoEEICEAESGAoMcGFja2Vk",
+            "X2Zsb2F0GGQgAygCQgIQARIZCg1wYWNrZWRfZG91YmxlGGUgAygBQgIQARIX",
+            "CgtwYWNrZWRfYm9vbBhmIAMoCEICEAESNwoLcGFja2VkX2VudW0YZyADKA4y",
+            "Hi5wcm90b2J1Zl91bml0dGVzdC5Gb3JlaWduRW51bUICEAEiyAMKEVRlc3RV",
+            "bnBhY2tlZFR5cGVzEhoKDnVucGFja2VkX2ludDMyGFogAygFQgIQABIaCg51",
+            "bnBhY2tlZF9pbnQ2NBhbIAMoA0ICEAASGwoPdW5wYWNrZWRfdWludDMyGFwg",
+            "AygNQgIQABIbCg91bnBhY2tlZF91aW50NjQYXSADKARCAhAAEhsKD3VucGFj",
+            "a2VkX3NpbnQzMhheIAMoEUICEAASGwoPdW5wYWNrZWRfc2ludDY0GF8gAygS",
+            "QgIQABIcChB1bnBhY2tlZF9maXhlZDMyGGAgAygHQgIQABIcChB1bnBhY2tl",
+            "ZF9maXhlZDY0GGEgAygGQgIQABIdChF1bnBhY2tlZF9zZml4ZWQzMhhiIAMo",
+            "D0ICEAASHQoRdW5wYWNrZWRfc2ZpeGVkNjQYYyADKBBCAhAAEhoKDnVucGFj",
+            "a2VkX2Zsb2F0GGQgAygCQgIQABIbCg91bnBhY2tlZF9kb3VibGUYZSADKAFC",
+            "AhAAEhkKDXVucGFja2VkX2Jvb2wYZiADKAhCAhAAEjkKDXVucGFja2VkX2Vu",
+            "dW0YZyADKA4yHi5wcm90b2J1Zl91bml0dGVzdC5Gb3JlaWduRW51bUICEAAi",
+            "wAEKI1Rlc3RSZXBlYXRlZFNjYWxhckRpZmZlcmVudFRhZ1NpemVzEhgKEHJl",
+            "cGVhdGVkX2ZpeGVkMzIYDCADKAcSFgoOcmVwZWF0ZWRfaW50MzIYDSADKAUS",
+            "GQoQcmVwZWF0ZWRfZml4ZWQ2NBj+DyADKAYSFwoOcmVwZWF0ZWRfaW50NjQY",
+            "/w8gAygDEhgKDnJlcGVhdGVkX2Zsb2F0GP7/DyADKAISGQoPcmVwZWF0ZWRf",
+            "dWludDY0GP//DyADKAQiKAobVGVzdENvbW1lbnRJbmplY3Rpb25NZXNzYWdl",
+            "EgkKAWEYASABKAkiDAoKRm9vUmVxdWVzdCINCgtGb29SZXNwb25zZSISChBG",
+            "b29DbGllbnRNZXNzYWdlIhIKEEZvb1NlcnZlck1lc3NhZ2UiDAoKQmFyUmVx",
+            "dWVzdCINCgtCYXJSZXNwb25zZSpZCgtGb3JlaWduRW51bRIXChNGT1JFSUdO",
+            "X1VOU1BFQ0lGSUVEEAASDwoLRk9SRUlHTl9GT08QBBIPCgtGT1JFSUdOX0JB",
+            "UhAFEg8KC0ZPUkVJR05fQkFaEAYqdQoUVGVzdEVudW1XaXRoRHVwVmFsdWUS",
+            "KAokVEVTVF9FTlVNX1dJVEhfRFVQX1ZBTFVFX1VOU1BFQ0lGSUVEEAASCAoE",
+            "Rk9PMRABEggKBEJBUjEQAhIHCgNCQVoQAxIICgRGT08yEAESCAoEQkFSMhAC",
+            "GgIQASqdAQoOVGVzdFNwYXJzZUVudW0SIAocVEVTVF9TUEFSU0VfRU5VTV9V",
+            "TlNQRUNJRklFRBAAEgwKCFNQQVJTRV9BEHsSDgoIU1BBUlNFX0IQpucDEg8K",
+            "CFNQQVJTRV9DELKxgAYSFQoIU1BBUlNFX0QQ8f//////////ARIVCghTUEFS",
+            "U0VfRRC03vz///////8BEgwKCFNQQVJTRV9HEAIymQEKC1Rlc3RTZXJ2aWNl",
+            "EkQKA0ZvbxIdLnByb3RvYnVmX3VuaXR0ZXN0LkZvb1JlcXVlc3QaHi5wcm90",
+            "b2J1Zl91bml0dGVzdC5Gb29SZXNwb25zZRJECgNCYXISHS5wcm90b2J1Zl91",
+            "bml0dGVzdC5CYXJSZXF1ZXN0Gh4ucHJvdG9idWZfdW5pdHRlc3QuQmFyUmVz",
+            "cG9uc2VCOkINVW5pdHRlc3RQcm90b0gBgAEBiAEBkAEB+AEBqgIaR29vZ2xl",
+            "LlByb3RvYnVmLlRlc3RQcm90b3NiBnByb3RvMw=="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::Google.Protobuf.TestProtos.UnittestImportProto3Reflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(new[] {typeof(global::Google.Protobuf.TestProtos.ForeignEnum), typeof(global::Google.Protobuf.TestProtos.TestEnumWithDupValue), typeof(global::Google.Protobuf.TestProtos.TestSparseEnum), }, new pbr::GeneratedClrTypeInfo[] {
@@ -162,6 +164,7 @@ namespace Google.Protobuf.TestProtos {
             new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.TestProtos.TestRecursiveMessage), global::Google.Protobuf.TestProtos.TestRecursiveMessage.Parser, new[]{ "A", "I" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.TestProtos.TestMutualRecursionA), global::Google.Protobuf.TestProtos.TestMutualRecursionA.Parser, new[]{ "Bb" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.TestProtos.TestMutualRecursionB), global::Google.Protobuf.TestProtos.TestMutualRecursionB.Parser, new[]{ "A", "OptionalInt32" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.TestProtos.TestEnumAllowAlias), global::Google.Protobuf.TestProtos.TestEnumAllowAlias.Parser, new[]{ "Value" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.TestProtos.TestCamelCaseFieldNames), global::Google.Protobuf.TestProtos.TestCamelCaseFieldNames.Parser, new[]{ "PrimitiveField", "StringField", "EnumField", "MessageField", "RepeatedPrimitiveField", "RepeatedStringField", "RepeatedEnumField", "RepeatedMessageField" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.TestProtos.TestFieldOrderings), global::Google.Protobuf.TestProtos.TestFieldOrderings.Parser, new[]{ "MyString", "MyInt", "MyFloat", "SingleNestedMessage" }, null, null, new pbr::GeneratedClrTypeInfo[] { new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.TestProtos.TestFieldOrderings.Types.NestedMessage), global::Google.Protobuf.TestProtos.TestFieldOrderings.Types.NestedMessage.Parser, new[]{ "Oo", "Bb" }, null, null, null)}),
             new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.TestProtos.SparseEnumMessage), global::Google.Protobuf.TestProtos.SparseEnumMessage.Parser, new[]{ "SparseEnum" }, null, null, null),
@@ -199,19 +202,19 @@ namespace Google.Protobuf.TestProtos {
   }
 
   /// <summary>
-  ///  Test an enum that has multiple values with the same number.
+  /// Test an enum that has multiple values with the same number.
   /// </summary>
   public enum TestEnumWithDupValue {
     [pbr::OriginalName("TEST_ENUM_WITH_DUP_VALUE_UNSPECIFIED")] Unspecified = 0,
     [pbr::OriginalName("FOO1")] Foo1 = 1,
     [pbr::OriginalName("BAR1")] Bar1 = 2,
     [pbr::OriginalName("BAZ")] Baz = 3,
-    [pbr::OriginalName("FOO2")] Foo2 = 1,
-    [pbr::OriginalName("BAR2")] Bar2 = 2,
+    [pbr::OriginalName("FOO2", PreferredAlias = false)] Foo2 = 1,
+    [pbr::OriginalName("BAR2", PreferredAlias = false)] Bar2 = 2,
   }
 
   /// <summary>
-  ///  Test an enum with large, unordered values.
+  /// Test an enum with large, unordered values.
   /// </summary>
   public enum TestSparseEnum {
     [pbr::OriginalName("TEST_SPARSE_ENUM_UNSPECIFIED")] Unspecified = 0,
@@ -221,8 +224,8 @@ namespace Google.Protobuf.TestProtos {
     [pbr::OriginalName("SPARSE_D")] SparseD = -15,
     [pbr::OriginalName("SPARSE_E")] SparseE = -53452,
     /// <summary>
-    ///  In proto3, value 0 must be the first one specified
-    ///  SPARSE_F = 0;
+    /// In proto3, value 0 must be the first one specified
+    /// SPARSE_F = 0;
     /// </summary>
     [pbr::OriginalName("SPARSE_G")] SparseG = 2,
   }
@@ -231,8 +234,8 @@ namespace Google.Protobuf.TestProtos {
 
   #region Messages
   /// <summary>
-  ///  This proto includes every type of field in both singular and repeated
-  ///  forms.
+  /// This proto includes every type of field in both singular and repeated
+  /// forms.
   /// </summary>
   public sealed partial class TestAllTypes : pb::IMessage<TestAllTypes> {
     private static readonly pb::MessageParser<TestAllTypes> _parser = new pb::MessageParser<TestAllTypes>(() => new TestAllTypes());
@@ -328,7 +331,7 @@ namespace Google.Protobuf.TestProtos {
     public const int SingleInt32FieldNumber = 1;
     private int singleInt32_;
     /// <summary>
-    ///  Singular
+    /// Singular
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int SingleInt32 {
@@ -562,7 +565,7 @@ namespace Google.Protobuf.TestProtos {
     public const int SinglePublicImportMessageFieldNumber = 26;
     private global::Google.Protobuf.TestProtos.PublicImportMessage singlePublicImportMessage_;
     /// <summary>
-    ///  Defined in unittest_import_public.proto
+    /// Defined in unittest_import_public.proto
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public global::Google.Protobuf.TestProtos.PublicImportMessage SinglePublicImportMessage {
@@ -578,7 +581,7 @@ namespace Google.Protobuf.TestProtos {
         = pb::FieldCodec.ForInt32(250);
     private readonly pbc::RepeatedField<int> repeatedInt32_ = new pbc::RepeatedField<int>();
     /// <summary>
-    ///  Repeated
+    /// Repeated
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public pbc::RepeatedField<int> RepeatedInt32 {
@@ -791,7 +794,7 @@ namespace Google.Protobuf.TestProtos {
         = pb::FieldCodec.ForMessage(434, global::Google.Protobuf.TestProtos.PublicImportMessage.Parser);
     private readonly pbc::RepeatedField<global::Google.Protobuf.TestProtos.PublicImportMessage> repeatedPublicImportMessage_ = new pbc::RepeatedField<global::Google.Protobuf.TestProtos.PublicImportMessage>();
     /// <summary>
-    ///  Defined in unittest_import_public.proto
+    /// Defined in unittest_import_public.proto
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public pbc::RepeatedField<global::Google.Protobuf.TestProtos.PublicImportMessage> RepeatedPublicImportMessage {
@@ -1593,7 +1596,7 @@ namespace Google.Protobuf.TestProtos {
         [pbr::OriginalName("BAR")] Bar = 2,
         [pbr::OriginalName("BAZ")] Baz = 3,
         /// <summary>
-        ///  Intentionally negative.
+        /// Intentionally negative.
         /// </summary>
         [pbr::OriginalName("NEG")] Neg = -1,
       }
@@ -1634,9 +1637,9 @@ namespace Google.Protobuf.TestProtos {
         public const int BbFieldNumber = 1;
         private int bb_;
         /// <summary>
-        ///  The field name "b" fails to compile in proto1 because it conflicts with
-        ///  a local variable named "b" in one of the generated methods.  Doh.
-        ///  This file needs to compile in proto1 to test backwards-compatibility.
+        /// The field name "b" fails to compile in proto1 because it conflicts with
+        /// a local variable named "b" in one of the generated methods.  Doh.
+        /// This file needs to compile in proto1 to test backwards-compatibility.
         /// </summary>
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public int Bb {
@@ -1726,7 +1729,7 @@ namespace Google.Protobuf.TestProtos {
   }
 
   /// <summary>
-  ///  This proto includes a recusively nested message.
+  /// This proto includes a recusively nested message.
   /// </summary>
   public sealed partial class NestedTestAllTypes : pb::IMessage<NestedTestAllTypes> {
     private static readonly pb::MessageParser<NestedTestAllTypes> _parser = new pb::MessageParser<NestedTestAllTypes>(() => new NestedTestAllTypes());
@@ -2024,8 +2027,8 @@ namespace Google.Protobuf.TestProtos {
   }
 
   /// <summary>
-  ///  Define these after TestAllTypes to make sure the compiler can handle
-  ///  that.
+  /// Define these after TestAllTypes to make sure the compiler can handle
+  /// that.
   /// </summary>
   public sealed partial class ForeignMessage : pb::IMessage<ForeignMessage> {
     private static readonly pb::MessageParser<ForeignMessage> _parser = new pb::MessageParser<ForeignMessage>(() => new ForeignMessage());
@@ -2234,7 +2237,7 @@ namespace Google.Protobuf.TestProtos {
   }
 
   /// <summary>
-  ///  Test that we can use NestedMessage from outside TestAllTypes.
+  /// Test that we can use NestedMessage from outside TestAllTypes.
   /// </summary>
   public sealed partial class TestForeignNested : pb::IMessage<TestForeignNested> {
     private static readonly pb::MessageParser<TestForeignNested> _parser = new pb::MessageParser<TestForeignNested>(() => new TestForeignNested());
@@ -2360,7 +2363,7 @@ namespace Google.Protobuf.TestProtos {
   }
 
   /// <summary>
-  ///  Test that really large tag numbers don't break anything.
+  /// Test that really large tag numbers don't break anything.
   /// </summary>
   public sealed partial class TestReallyLargeTagNumber : pb::IMessage<TestReallyLargeTagNumber> {
     private static readonly pb::MessageParser<TestReallyLargeTagNumber> _parser = new pb::MessageParser<TestReallyLargeTagNumber>(() => new TestReallyLargeTagNumber());
@@ -2399,8 +2402,8 @@ namespace Google.Protobuf.TestProtos {
     public const int AFieldNumber = 1;
     private int a_;
     /// <summary>
-    ///  The largest possible tag number is 2^28 - 1, since the wire format uses
-    ///  three bits to communicate wire type.
+    /// The largest possible tag number is 2^28 - 1, since the wire format uses
+    /// three bits to communicate wire type.
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int A {
@@ -2663,7 +2666,7 @@ namespace Google.Protobuf.TestProtos {
   }
 
   /// <summary>
-  ///  Test that mutual recursion works.
+  /// Test that mutual recursion works.
   /// </summary>
   public sealed partial class TestMutualRecursionA : pb::IMessage<TestMutualRecursionA> {
     private static readonly pb::MessageParser<TestMutualRecursionA> _parser = new pb::MessageParser<TestMutualRecursionA>(() => new TestMutualRecursionA());
@@ -2939,9 +2942,126 @@ namespace Google.Protobuf.TestProtos {
 
   }
 
+  public sealed partial class TestEnumAllowAlias : pb::IMessage<TestEnumAllowAlias> {
+    private static readonly pb::MessageParser<TestEnumAllowAlias> _parser = new pb::MessageParser<TestEnumAllowAlias>(() => new TestEnumAllowAlias());
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pb::MessageParser<TestEnumAllowAlias> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::Google.Protobuf.TestProtos.UnittestProto3Reflection.Descriptor.MessageTypes[10]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public TestEnumAllowAlias() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public TestEnumAllowAlias(TestEnumAllowAlias other) : this() {
+      value_ = other.value_;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public TestEnumAllowAlias Clone() {
+      return new TestEnumAllowAlias(this);
+    }
+
+    /// <summary>Field number for the "value" field.</summary>
+    public const int ValueFieldNumber = 1;
+    private global::Google.Protobuf.TestProtos.TestEnumWithDupValue value_ = 0;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public global::Google.Protobuf.TestProtos.TestEnumWithDupValue Value {
+      get { return value_; }
+      set {
+        value_ = value;
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override bool Equals(object other) {
+      return Equals(other as TestEnumAllowAlias);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public bool Equals(TestEnumAllowAlias other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      if (Value != other.Value) return false;
+      return true;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override int GetHashCode() {
+      int hash = 1;
+      if (Value != 0) hash ^= Value.GetHashCode();
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void WriteTo(pb::CodedOutputStream output) {
+      if (Value != 0) {
+        output.WriteRawTag(8);
+        output.WriteEnum((int) Value);
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public int CalculateSize() {
+      int size = 0;
+      if (Value != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) Value);
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(TestEnumAllowAlias other) {
+      if (other == null) {
+        return;
+      }
+      if (other.Value != 0) {
+        Value = other.Value;
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public void MergeFrom(pb::CodedInputStream input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            input.SkipLastField();
+            break;
+          case 8: {
+            value_ = (global::Google.Protobuf.TestProtos.TestEnumWithDupValue) input.ReadEnum();
+            break;
+          }
+        }
+      }
+    }
+
+  }
+
   /// <summary>
-  ///  Test message with CamelCase field names.  This violates Protocol Buffer
-  ///  standard style.
+  /// Test message with CamelCase field names.  This violates Protocol Buffer
+  /// standard style.
   /// </summary>
   public sealed partial class TestCamelCaseFieldNames : pb::IMessage<TestCamelCaseFieldNames> {
     private static readonly pb::MessageParser<TestCamelCaseFieldNames> _parser = new pb::MessageParser<TestCamelCaseFieldNames>(() => new TestCamelCaseFieldNames());
@@ -2950,7 +3070,7 @@ namespace Google.Protobuf.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Google.Protobuf.TestProtos.UnittestProto3Reflection.Descriptor.MessageTypes[10]; }
+      get { return global::Google.Protobuf.TestProtos.UnittestProto3Reflection.Descriptor.MessageTypes[11]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -3233,8 +3353,8 @@ namespace Google.Protobuf.TestProtos {
   }
 
   /// <summary>
-  ///  We list fields out of order, to ensure that we're using field number and not
-  ///  field index to determine serialization order.
+  /// We list fields out of order, to ensure that we're using field number and not
+  /// field index to determine serialization order.
   /// </summary>
   public sealed partial class TestFieldOrderings : pb::IMessage<TestFieldOrderings> {
     private static readonly pb::MessageParser<TestFieldOrderings> _parser = new pb::MessageParser<TestFieldOrderings>(() => new TestFieldOrderings());
@@ -3243,7 +3363,7 @@ namespace Google.Protobuf.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Google.Protobuf.TestProtos.UnittestProto3Reflection.Descriptor.MessageTypes[11]; }
+      get { return global::Google.Protobuf.TestProtos.UnittestProto3Reflection.Descriptor.MessageTypes[12]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -3493,9 +3613,9 @@ namespace Google.Protobuf.TestProtos {
         public const int BbFieldNumber = 1;
         private int bb_;
         /// <summary>
-        ///  The field name "b" fails to compile in proto1 because it conflicts with
-        ///  a local variable named "b" in one of the generated methods.  Doh.
-        ///  This file needs to compile in proto1 to test backwards-compatibility.
+        /// The field name "b" fails to compile in proto1 because it conflicts with
+        /// a local variable named "b" in one of the generated methods.  Doh.
+        /// This file needs to compile in proto1 to test backwards-compatibility.
         /// </summary>
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public int Bb {
@@ -3607,7 +3727,7 @@ namespace Google.Protobuf.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Google.Protobuf.TestProtos.UnittestProto3Reflection.Descriptor.MessageTypes[12]; }
+      get { return global::Google.Protobuf.TestProtos.UnittestProto3Reflection.Descriptor.MessageTypes[13]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -3718,7 +3838,7 @@ namespace Google.Protobuf.TestProtos {
   }
 
   /// <summary>
-  ///  Test String and Bytes: string is for valid UTF-8 strings
+  /// Test String and Bytes: string is for valid UTF-8 strings
   /// </summary>
   public sealed partial class OneString : pb::IMessage<OneString> {
     private static readonly pb::MessageParser<OneString> _parser = new pb::MessageParser<OneString>(() => new OneString());
@@ -3727,7 +3847,7 @@ namespace Google.Protobuf.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Google.Protobuf.TestProtos.UnittestProto3Reflection.Descriptor.MessageTypes[13]; }
+      get { return global::Google.Protobuf.TestProtos.UnittestProto3Reflection.Descriptor.MessageTypes[14]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -3844,7 +3964,7 @@ namespace Google.Protobuf.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Google.Protobuf.TestProtos.UnittestProto3Reflection.Descriptor.MessageTypes[14]; }
+      get { return global::Google.Protobuf.TestProtos.UnittestProto3Reflection.Descriptor.MessageTypes[15]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -3953,7 +4073,7 @@ namespace Google.Protobuf.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Google.Protobuf.TestProtos.UnittestProto3Reflection.Descriptor.MessageTypes[15]; }
+      get { return global::Google.Protobuf.TestProtos.UnittestProto3Reflection.Descriptor.MessageTypes[16]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -4070,7 +4190,7 @@ namespace Google.Protobuf.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Google.Protobuf.TestProtos.UnittestProto3Reflection.Descriptor.MessageTypes[16]; }
+      get { return global::Google.Protobuf.TestProtos.UnittestProto3Reflection.Descriptor.MessageTypes[17]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -4181,7 +4301,7 @@ namespace Google.Protobuf.TestProtos {
   }
 
   /// <summary>
-  ///  Test int32, uint32, int64, uint64, and bool are all compatible
+  /// Test int32, uint32, int64, uint64, and bool are all compatible
   /// </summary>
   public sealed partial class Int32Message : pb::IMessage<Int32Message> {
     private static readonly pb::MessageParser<Int32Message> _parser = new pb::MessageParser<Int32Message>(() => new Int32Message());
@@ -4190,7 +4310,7 @@ namespace Google.Protobuf.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Google.Protobuf.TestProtos.UnittestProto3Reflection.Descriptor.MessageTypes[17]; }
+      get { return global::Google.Protobuf.TestProtos.UnittestProto3Reflection.Descriptor.MessageTypes[18]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -4307,7 +4427,7 @@ namespace Google.Protobuf.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Google.Protobuf.TestProtos.UnittestProto3Reflection.Descriptor.MessageTypes[18]; }
+      get { return global::Google.Protobuf.TestProtos.UnittestProto3Reflection.Descriptor.MessageTypes[19]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -4424,7 +4544,7 @@ namespace Google.Protobuf.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Google.Protobuf.TestProtos.UnittestProto3Reflection.Descriptor.MessageTypes[19]; }
+      get { return global::Google.Protobuf.TestProtos.UnittestProto3Reflection.Descriptor.MessageTypes[20]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -4541,7 +4661,7 @@ namespace Google.Protobuf.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Google.Protobuf.TestProtos.UnittestProto3Reflection.Descriptor.MessageTypes[20]; }
+      get { return global::Google.Protobuf.TestProtos.UnittestProto3Reflection.Descriptor.MessageTypes[21]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -4658,7 +4778,7 @@ namespace Google.Protobuf.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Google.Protobuf.TestProtos.UnittestProto3Reflection.Descriptor.MessageTypes[21]; }
+      get { return global::Google.Protobuf.TestProtos.UnittestProto3Reflection.Descriptor.MessageTypes[22]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -4769,7 +4889,7 @@ namespace Google.Protobuf.TestProtos {
   }
 
   /// <summary>
-  ///  Test oneofs.
+  /// Test oneofs.
   /// </summary>
   public sealed partial class TestOneof : pb::IMessage<TestOneof> {
     private static readonly pb::MessageParser<TestOneof> _parser = new pb::MessageParser<TestOneof>(() => new TestOneof());
@@ -4778,7 +4898,7 @@ namespace Google.Protobuf.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Google.Protobuf.TestProtos.UnittestProto3Reflection.Descriptor.MessageTypes[22]; }
+      get { return global::Google.Protobuf.TestProtos.UnittestProto3Reflection.Descriptor.MessageTypes[23]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -4990,7 +5110,7 @@ namespace Google.Protobuf.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Google.Protobuf.TestProtos.UnittestProto3Reflection.Descriptor.MessageTypes[23]; }
+      get { return global::Google.Protobuf.TestProtos.UnittestProto3Reflection.Descriptor.MessageTypes[24]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -5367,8 +5487,8 @@ namespace Google.Protobuf.TestProtos {
   }
 
   /// <summary>
-  ///  A message with the same fields as TestPackedTypes, but without packing. Used
-  ///  to test packed &lt;-> unpacked wire compatibility.
+  /// A message with the same fields as TestPackedTypes, but without packing. Used
+  /// to test packed &lt;-> unpacked wire compatibility.
   /// </summary>
   public sealed partial class TestUnpackedTypes : pb::IMessage<TestUnpackedTypes> {
     private static readonly pb::MessageParser<TestUnpackedTypes> _parser = new pb::MessageParser<TestUnpackedTypes>(() => new TestUnpackedTypes());
@@ -5377,7 +5497,7 @@ namespace Google.Protobuf.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Google.Protobuf.TestProtos.UnittestProto3Reflection.Descriptor.MessageTypes[24]; }
+      get { return global::Google.Protobuf.TestProtos.UnittestProto3Reflection.Descriptor.MessageTypes[25]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -5760,7 +5880,7 @@ namespace Google.Protobuf.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Google.Protobuf.TestProtos.UnittestProto3Reflection.Descriptor.MessageTypes[25]; }
+      get { return global::Google.Protobuf.TestProtos.UnittestProto3Reflection.Descriptor.MessageTypes[26]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -5796,9 +5916,9 @@ namespace Google.Protobuf.TestProtos {
         = pb::FieldCodec.ForFixed32(98);
     private readonly pbc::RepeatedField<uint> repeatedFixed32_ = new pbc::RepeatedField<uint>();
     /// <summary>
-    ///  Parsing repeated fixed size values used to fail. This message needs to be
-    ///  used in order to get a tag of the right size; all of the repeated fields
-    ///  in TestAllTypes didn't trigger the check.
+    /// Parsing repeated fixed size values used to fail. This message needs to be
+    /// used in order to get a tag of the right size; all of the repeated fields
+    /// in TestAllTypes didn't trigger the check.
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public pbc::RepeatedField<uint> RepeatedFixed32 {
@@ -5811,7 +5931,7 @@ namespace Google.Protobuf.TestProtos {
         = pb::FieldCodec.ForInt32(106);
     private readonly pbc::RepeatedField<int> repeatedInt32_ = new pbc::RepeatedField<int>();
     /// <summary>
-    ///  Check for a varint type, just for good measure.
+    /// Check for a varint type, just for good measure.
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public pbc::RepeatedField<int> RepeatedInt32 {
@@ -5824,7 +5944,7 @@ namespace Google.Protobuf.TestProtos {
         = pb::FieldCodec.ForFixed64(16370);
     private readonly pbc::RepeatedField<ulong> repeatedFixed64_ = new pbc::RepeatedField<ulong>();
     /// <summary>
-    ///  These have two-byte tags.
+    /// These have two-byte tags.
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public pbc::RepeatedField<ulong> RepeatedFixed64 {
@@ -5847,7 +5967,7 @@ namespace Google.Protobuf.TestProtos {
         = pb::FieldCodec.ForFloat(2097138);
     private readonly pbc::RepeatedField<float> repeatedFloat_ = new pbc::RepeatedField<float>();
     /// <summary>
-    ///  Three byte tags.
+    /// Three byte tags.
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public pbc::RepeatedField<float> RepeatedFloat {
@@ -5989,7 +6109,7 @@ namespace Google.Protobuf.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Google.Protobuf.TestProtos.UnittestProto3Reflection.Descriptor.MessageTypes[26]; }
+      get { return global::Google.Protobuf.TestProtos.UnittestProto3Reflection.Descriptor.MessageTypes[27]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -6018,7 +6138,7 @@ namespace Google.Protobuf.TestProtos {
     public const int AFieldNumber = 1;
     private string a_ = "";
     /// <summary>
-    ///  */ &lt;- This should not close the generated doc comment
+    /// */ &lt;- This should not close the generated doc comment
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public string A {
@@ -6103,7 +6223,7 @@ namespace Google.Protobuf.TestProtos {
   }
 
   /// <summary>
-  ///  Test that RPC services work.
+  /// Test that RPC services work.
   /// </summary>
   public sealed partial class FooRequest : pb::IMessage<FooRequest> {
     private static readonly pb::MessageParser<FooRequest> _parser = new pb::MessageParser<FooRequest>(() => new FooRequest());
@@ -6112,7 +6232,7 @@ namespace Google.Protobuf.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Google.Protobuf.TestProtos.UnittestProto3Reflection.Descriptor.MessageTypes[27]; }
+      get { return global::Google.Protobuf.TestProtos.UnittestProto3Reflection.Descriptor.MessageTypes[28]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -6201,7 +6321,7 @@ namespace Google.Protobuf.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Google.Protobuf.TestProtos.UnittestProto3Reflection.Descriptor.MessageTypes[28]; }
+      get { return global::Google.Protobuf.TestProtos.UnittestProto3Reflection.Descriptor.MessageTypes[29]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -6290,7 +6410,7 @@ namespace Google.Protobuf.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Google.Protobuf.TestProtos.UnittestProto3Reflection.Descriptor.MessageTypes[29]; }
+      get { return global::Google.Protobuf.TestProtos.UnittestProto3Reflection.Descriptor.MessageTypes[30]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -6379,7 +6499,7 @@ namespace Google.Protobuf.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Google.Protobuf.TestProtos.UnittestProto3Reflection.Descriptor.MessageTypes[30]; }
+      get { return global::Google.Protobuf.TestProtos.UnittestProto3Reflection.Descriptor.MessageTypes[31]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -6468,7 +6588,7 @@ namespace Google.Protobuf.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Google.Protobuf.TestProtos.UnittestProto3Reflection.Descriptor.MessageTypes[31]; }
+      get { return global::Google.Protobuf.TestProtos.UnittestProto3Reflection.Descriptor.MessageTypes[32]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -6557,7 +6677,7 @@ namespace Google.Protobuf.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Google.Protobuf.TestProtos.UnittestProto3Reflection.Descriptor.MessageTypes[32]; }
+      get { return global::Google.Protobuf.TestProtos.UnittestProto3Reflection.Descriptor.MessageTypes[33]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]

@@ -17,7 +17,7 @@ AC_PREREQ(2.59)
 # In the SVN trunk, the version should always be the next anticipated release
 # version with the "-pre" suffix.  (We used to use "-SNAPSHOT" but this pushed
 # the size of one file name in the dist tarfile over the 99-char limit.)
-AC_INIT([Protocol Buffers],[3.1.0],[protobuf@googlegroups.com],[protobuf])
+AC_INIT([Protocol Buffers],[3.2.0],[protobuf@googlegroups.com],[protobuf])
 
 AM_MAINTAINER_MODE([enable])
 
@@ -60,6 +60,7 @@ AC_ARG_WITH([protoc],
 # Checks for programs.
 AC_PROG_CC
 AC_PROG_CXX
+AC_PROG_CXX_FOR_BUILD
 AC_LANG([C++])
 ACX_USE_SYSTEM_EXTENSIONS
 m4_ifdef([AM_PROG_AR], [AM_PROG_AR])
@@ -91,6 +92,25 @@ ACX_CHECK_SUNCC
 # Have to do libtool after SUNCC, other wise it "helpfully" adds Crun Cstd
 # to the link
 AC_PROG_LIBTOOL
+
+# Check whether the linker supports version scripts
+AC_MSG_CHECKING([whether the linker supports version scripts])
+save_LDFLAGS=$LDFLAGS
+LDFLAGS="$LDFLAGS -Wl,--version-script=conftest.map"
+cat > conftest.map <<EOF
+{
+  global:
+    main;
+  local:
+    *;
+};
+EOF
+AC_LINK_IFELSE(
+  [AC_LANG_SOURCE([int main() { return 0; }])],
+  [have_ld_version_script=yes; AC_MSG_RESULT(yes)],
+  [have_ld_version_script=no; AC_MSG_RESULT(no)])
+LDFLAGS=$save_LDFLAGS
+AM_CONDITIONAL([HAVE_LD_VERSION_SCRIPT], [test "$have_ld_version_script" == "yes"])
 
 # Checks for header files.
 AC_HEADER_STDC
@@ -177,6 +197,8 @@ case "$target_os" in
     ;;
 esac
 AM_CONDITIONAL([OBJC_CONFORMANCE_TEST], [test $OBJC_CONFORMANCE_TEST = 1])
+
+AX_CXX_COMPILE_STDCXX([11], [noext], [optional])
 
 # HACK:  Make gmock's configure script pick up our copy of CFLAGS and CXXFLAGS,
 #   since the flags added by ACX_CHECK_SUNCC must be used when compiling gmock

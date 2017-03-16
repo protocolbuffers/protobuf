@@ -74,7 +74,7 @@ void WriteDocCommentBodyImpl(io::Printer* printer, SourceLocation location) {
                 printer->Print("///\n");
             }
             last_was_empty = false;
-            printer->Print("/// $line$\n", "line", *it);
+            printer->Print("///$line$\n", "line", *it);
         }
     }
     printer->Print("/// </summary>\n");

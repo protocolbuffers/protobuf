@@ -392,6 +392,11 @@ void GPBSetMessageMapField(GPBMessage *self,
  **/
 NSData *GPBEmptyNSData(void) __attribute__((pure));
 
+/**
+ * Drops the `unknownFields` from the given message and from all sub message.
+ **/
+void GPBMessageDropUnknownFieldsRecursively(GPBMessage *message);
+
 NS_ASSUME_NONNULL_END
 
 CF_EXTERN_C_END

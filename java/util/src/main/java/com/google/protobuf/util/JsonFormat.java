@@ -35,6 +35,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
+import com.google.gson.JsonIOException;
 import com.google.gson.JsonNull;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
@@ -49,6 +50,7 @@ import com.google.protobuf.Descriptors.EnumDescriptor;
 import com.google.protobuf.Descriptors.EnumValueDescriptor;
 import com.google.protobuf.Descriptors.FieldDescriptor;
 import com.google.protobuf.Descriptors.FileDescriptor;
+import com.google.protobuf.Descriptors.OneofDescriptor;
 import com.google.protobuf.DoubleValue;
 import com.google.protobuf.Duration;
 import com.google.protobuf.DynamicMessage;
@@ -67,7 +69,6 @@ import com.google.protobuf.Timestamp;
 import com.google.protobuf.UInt32Value;
 import com.google.protobuf.UInt64Value;
 import com.google.protobuf.Value;
-
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
@@ -224,7 +225,7 @@ public class JsonFormat {
    * Creates a {@link Parser} with default configuration.
    */
   public static Parser parser() {
-    return new Parser(TypeRegistry.getEmptyTypeRegistry(), false);
+    return new Parser(TypeRegistry.getEmptyTypeRegistry(), false, Parser.DEFAULT_RECURSION_LIMIT);
   }
 
   /**
@@ -233,10 +234,15 @@ public class JsonFormat {
   public static class Parser {
     private final TypeRegistry registry;
     private final boolean ignoringUnknownFields;
+    private final int recursionLimit;
 
-    private Parser(TypeRegistry registry, boolean ignoreUnknownFields) {
+    // The default parsing recursion limit is aligned with the proto binary parser.
+    private static final int DEFAULT_RECURSION_LIMIT = 100;
+
+    private Parser(TypeRegistry registry, boolean ignoreUnknownFields, int recursionLimit) {
       this.registry = registry;
       this.ignoringUnknownFields = ignoreUnknownFields;
+      this.recursionLimit = recursionLimit;
     }
 
     /**
@@ -249,16 +255,15 @@ public class JsonFormat {
       if (this.registry != TypeRegistry.getEmptyTypeRegistry()) {
         throw new IllegalArgumentException("Only one registry is allowed.");
       }
-      return new Parser(registry, this.ignoringUnknownFields);
+      return new Parser(registry, ignoringUnknownFields, recursionLimit);
     }
 
     /**
-     * Creates a new {@link Parser} configured to not throw an exception
-     * when an unknown field is encountered. The new Parser clones all other
-     * configurations from this Parser.
+     * Creates a new {@link Parser} configured to not throw an exception when an unknown field is
+     * encountered. The new Parser clones all other configurations from this Parser.
      */
     public Parser ignoringUnknownFields() {
-      return new Parser(this.registry, true);
+      return new Parser(this.registry, true, recursionLimit);
     }
 
     /**
@@ -270,7 +275,7 @@ public class JsonFormat {
     public void merge(String json, Message.Builder builder) throws InvalidProtocolBufferException {
       // TODO(xiaofeng): Investigate the allocation overhead and optimize for
       // mobile.
-      new ParserImpl(registry, ignoringUnknownFields).merge(json, builder);
+      new ParserImpl(registry, ignoringUnknownFields, recursionLimit).merge(json, builder);
     }
 
     /**
@@ -283,7 +288,12 @@ public class JsonFormat {
     public void merge(Reader json, Message.Builder builder) throws IOException {
       // TODO(xiaofeng): Investigate the allocation overhead and optimize for
       // mobile.
-      new ParserImpl(registry, ignoringUnknownFields).merge(json, builder);
+      new ParserImpl(registry, ignoringUnknownFields, recursionLimit).merge(json, builder);
+    }
+
+    // For testing only.
+    Parser usingRecursionLimit(int recursionLimit) {
+      return new Parser(registry, ignoringUnknownFields, recursionLimit);
     }
   }
 
@@ -774,12 +784,18 @@ public class JsonFormat {
       if (includingDefaultValueFields) {
         fieldsToPrint = new TreeMap<FieldDescriptor, Object>();
         for (FieldDescriptor field : message.getDescriptorForType().getFields()) {
-          if (field.isOptional()
-              && field.getJavaType() == FieldDescriptor.JavaType.MESSAGE
-              && !message.hasField(field)) {
-            // Always skip empty optional message fields. If not we will recurse indefinitely if
-            // a message has itself as a sub-field.
-            continue;
+          if (field.isOptional()) {
+            if (field.getJavaType() == FieldDescriptor.JavaType.MESSAGE
+                && !message.hasField(field)){
+              // Always skip empty optional message fields. If not we will recurse indefinitely if
+              // a message has itself as a sub-field.
+              continue;
+            }
+            OneofDescriptor oneof = field.getContainingOneof();
+            if (oneof != null && !message.hasField(field)) {
+                // Skip all oneof fields except the one that is actually set
+              continue;
+            }
           }
           fieldsToPrint.put(field, message.getField(field));
         }
@@ -1040,17 +1056,35 @@ public class JsonFormat {
     private final TypeRegistry registry;
     private final JsonParser jsonParser;
     private final boolean ignoringUnknownFields;
+    private final int recursionLimit;
+    private int currentDepth;
 
-    ParserImpl(TypeRegistry registry, boolean ignoreUnknownFields) {
+    ParserImpl(TypeRegistry registry, boolean ignoreUnknownFields, int recursionLimit) {
       this.registry = registry;
       this.ignoringUnknownFields = ignoreUnknownFields;
       this.jsonParser = new JsonParser();
+      this.recursionLimit = recursionLimit;
+      this.currentDepth = 0;
     }
 
     void merge(Reader json, Message.Builder builder) throws IOException {
-      JsonReader reader = new JsonReader(json);
-      reader.setLenient(false);
-      merge(jsonParser.parse(reader), builder);
+      try {
+        JsonReader reader = new JsonReader(json);
+        reader.setLenient(false);
+        merge(jsonParser.parse(reader), builder);
+      } catch (InvalidProtocolBufferException e) {
+        throw e;
+      } catch (JsonIOException e) {
+        // Unwrap IOException.
+        if (e.getCause() instanceof IOException) {
+          throw (IOException) e.getCause();
+        } else {
+          throw new InvalidProtocolBufferException(e.getMessage());
+        }
+      } catch (Exception e) {
+        // We convert all exceptions from JSON parsing to our own exceptions.
+        throw new InvalidProtocolBufferException(e.getMessage());
+      }
     }
 
     void merge(String json, Message.Builder builder) throws InvalidProtocolBufferException {
@@ -1715,8 +1749,13 @@ public class JsonFormat {
 
         case MESSAGE:
         case GROUP:
+          if (currentDepth >= recursionLimit) {
+            throw new InvalidProtocolBufferException("Hit recursion limit.");
+          }
+          ++currentDepth;
           Message.Builder subBuilder = builder.newBuilderForField(field);
           merge(json, subBuilder);
+          --currentDepth;
           return subBuilder.build();
 
         default:

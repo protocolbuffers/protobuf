@@ -61,7 +61,7 @@ void SetPrimitiveVariables(const FieldDescriptor* descriptor,
                            int builderBitIndex,
                            const FieldGeneratorInfo* info,
                            ClassNameResolver* name_resolver,
-                           map<string, string>* variables) {
+                           std::map<string, string>* variables) {
   SetCommonFieldVariables(descriptor, info, variables);
   JavaType javaType = GetJavaType(descriptor);
   (*variables)["type"] = PrimitiveTypeName(javaType);
@@ -70,9 +70,11 @@ void SetPrimitiveVariables(const FieldDescriptor* descriptor,
   (*variables)["default"] = ImmutableDefaultValue(descriptor, name_resolver);
   (*variables)["capitalized_type"] =
       GetCapitalizedType(descriptor, /* immutable = */ true);
-  (*variables)["tag"] = SimpleItoa(WireFormat::MakeTag(descriptor));
+  (*variables)["tag"] =
+      SimpleItoa(static_cast<int32>(WireFormat::MakeTag(descriptor)));
   (*variables)["tag_size"] = SimpleItoa(
       WireFormat::TagSize(descriptor->number(), GetType(descriptor)));
+  (*variables)["required"] = descriptor->is_required() ? "true" : "false";
 
   string capitalized_type = UnderscoresToCamelCase(PrimitiveTypeName(javaType),
                                                    true /* cap_next_letter */);

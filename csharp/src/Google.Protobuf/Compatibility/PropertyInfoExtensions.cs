@@ -47,7 +47,7 @@ namespace Google.Protobuf.Compatibility
         /// </summary>
         internal static MethodInfo GetGetMethod(this PropertyInfo target)
         {
-#if DOTNET35
+#if NET35
             var method = target.GetGetMethod();
 #else
             var method = target.GetMethod;
@@ -61,7 +61,7 @@ namespace Google.Protobuf.Compatibility
         /// </summary>
         internal static MethodInfo GetSetMethod(this PropertyInfo target)
         {
-#if DOTNET35
+#if NET35
             var method = target.GetSetMethod();
 #else
             var method = target.SetMethod;

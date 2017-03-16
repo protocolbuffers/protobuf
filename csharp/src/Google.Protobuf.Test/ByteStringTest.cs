@@ -33,6 +33,10 @@
 using System;
 using System.Text;
 using NUnit.Framework;
+using System.IO;
+#if !NET35
+using System.Threading.Tasks;
+#endif
 
 namespace Google.Protobuf
 {
@@ -166,6 +170,68 @@ namespace Google.Protobuf
         {
             // Optimization which also fixes issue 61.
             Assert.AreSame(ByteString.Empty, ByteString.FromBase64(""));
+        }
+
+        [Test]
+        public void FromStream_Seekable()
+        {
+            var stream = new MemoryStream(new byte[] { 1, 2, 3, 4, 5 });
+            // Consume the first byte, just to test that it's "from current position"
+            stream.ReadByte();
+            var actual = ByteString.FromStream(stream);
+            ByteString expected = ByteString.CopyFrom(2, 3, 4, 5);
+            Assert.AreEqual(expected, actual, $"{expected.ToBase64()} != {actual.ToBase64()}");
+        }
+
+        [Test]
+        public void FromStream_NotSeekable()
+        {
+            var stream = new MemoryStream(new byte[] { 1, 2, 3, 4, 5 });
+            // Consume the first byte, just to test that it's "from current position"
+            stream.ReadByte();
+            // Wrap the original stream in LimitedInputStream, which has CanSeek=false
+            var limitedStream = new LimitedInputStream(stream, 3);
+            var actual = ByteString.FromStream(limitedStream);
+            ByteString expected = ByteString.CopyFrom(2, 3, 4);
+            Assert.AreEqual(expected, actual, $"{expected.ToBase64()} != {actual.ToBase64()}");
+        }
+
+#if !NET35
+        [Test]
+        public async Task FromStreamAsync_Seekable()
+        {
+            var stream = new MemoryStream(new byte[] { 1, 2, 3, 4, 5 });
+            // Consume the first byte, just to test that it's "from current position"
+            stream.ReadByte();
+            var actual = await ByteString.FromStreamAsync(stream);
+            ByteString expected = ByteString.CopyFrom(2, 3, 4, 5);
+            Assert.AreEqual(expected, actual, $"{expected.ToBase64()} != {actual.ToBase64()}");
+        }
+
+        [Test]
+        public async Task FromStreamAsync_NotSeekable()
+        {
+            var stream = new MemoryStream(new byte[] { 1, 2, 3, 4, 5 });
+            // Consume the first byte, just to test that it's "from current position"
+            stream.ReadByte();
+            // Wrap the original stream in LimitedInputStream, which has CanSeek=false
+            var limitedStream = new LimitedInputStream(stream, 3);
+            var actual = await ByteString.FromStreamAsync(limitedStream);
+            ByteString expected = ByteString.CopyFrom(2, 3, 4);
+            Assert.AreEqual(expected, actual, $"{expected.ToBase64()} != {actual.ToBase64()}");
+        }
+#endif
+
+        [Test]
+        public void GetHashCode_Regression()
+        {
+            // We used to have an awful hash algorithm where only the last four
+            // bytes were relevant. This is a regression test for
+            // https://github.com/google/protobuf/issues/2511
+
+            ByteString b1 = ByteString.CopyFrom(100, 1, 2, 3, 4);
+            ByteString b2 = ByteString.CopyFrom(200, 1, 2, 3, 4);
+            Assert.AreNotEqual(b1.GetHashCode(), b2.GetHashCode());
         }
     }
 }

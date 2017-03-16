@@ -39,6 +39,9 @@ goog.require('goog.userAgent');
 // CommonJS-LoadFromFile: google-protobuf jspb
 goog.require('jspb.Message');
 
+// CommonJS-LoadFromFile: test8_pb proto.jspb.exttest.nested
+goog.require('proto.jspb.exttest.nested.TestOuterMessage');
+
 // CommonJS-LoadFromFile: test5_pb proto.jspb.exttest.beta
 goog.require('proto.jspb.exttest.beta.floatingStrField');
 
@@ -586,6 +589,14 @@ describe('Message test suite', function() {
     assertNotUndefined(proto.jspb.exttest.beta.floatingStrField);
   });
 
+  it('testNestedExtensions', function() {
+    var extendable = new proto.jspb.exttest.nested.TestNestedExtensionsMessage();
+    var extension = new proto.jspb.exttest.nested.TestOuterMessage.NestedExtensionMessage(['s1']);
+    extendable.setExtension(proto.jspb.exttest.nested.TestOuterMessage.innerExtension, extension);
+    assertObjectEquals(extension,
+        extendable.getExtension(proto.jspb.exttest.nested.TestOuterMessage.innerExtension));
+  });
+
   it('testToObject_extendedObject', function() {
     var extension1 = new proto.jspb.test.IsExtension(['ext1field']);
     var extension2 = new proto.jspb.test.Simple1(['str', ['s1', 's2'], true]);
@@ -1040,18 +1051,4 @@ describe('Message test suite', function() {
     assertNan(message.getDefaultDoubleField());
   });
 
-  // Verify that we can successfully use a field referring to a nested message
-  // from a different .proto file.
-  it('testForeignNestedMessage', function() {
-    var msg = new proto.jspb.test.ForeignNestedFieldMessage();
-    var nested = new proto.jspb.test.Deeply.Nested.Message();
-    nested.setCount(5);
-    msg.setDeeplyNestedMessage(nested);
-
-    // After a serialization-deserialization round trip we should get back the
-    // same data we started with.
-    var serialized = msg.serializeBinary();
-    var deserialized = proto.jspb.test.ForeignNestedFieldMessage.deserializeBinary(serialized);
-    assertEquals(5, deserialized.getDeeplyNestedMessage().getCount());
-  });
 });

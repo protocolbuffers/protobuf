@@ -60,8 +60,12 @@
   #endif
 #else
   #include <sys/param.h>   // __BYTE_ORDER
+  #if defined(__OpenBSD__)
+    #include <endian.h>
+  #endif
   #if ((defined(__LITTLE_ENDIAN__) && !defined(__BIG_ENDIAN__)) || \
-         (defined(__BYTE_ORDER) && __BYTE_ORDER == __LITTLE_ENDIAN)) && \
+         (defined(__BYTE_ORDER) && __BYTE_ORDER == __LITTLE_ENDIAN) || \
+         (defined(BYTE_ORDER) && BYTE_ORDER == LITTLE_ENDIAN)) && \
       !defined(PROTOBUF_DISABLE_LITTLE_ENDIAN_OPT_FOR_TEST)
     #define PROTOBUF_LITTLE_ENDIAN 1
   #endif
@@ -93,6 +97,15 @@
 
 // ===================================================================
 // from google3/base/port.h
+
+#if (defined(__GXX_EXPERIMENTAL_CXX0X__) || __cplusplus >= 201103L || \
+     (defined(_MSC_VER) && _MSC_VER >= 1900))
+// Define this to 1 if the code is compiled in C++11 mode; leave it
+// undefined otherwise.  Do NOT define it to 0 -- that causes
+// '#ifdef LANG_CXX11' to behave differently from '#if LANG_CXX11'.
+#define LANG_CXX11 1
+#endif
+
 namespace google {
 namespace protobuf {
 
@@ -345,7 +358,7 @@ class Bits {
 #endif
   }
 
-  static uint64 Log2FloorNonZero64(uint64 n) {
+  static uint32 Log2FloorNonZero64(uint64 n) {
 #if defined(__GNUC__)
   return 63 ^ __builtin_clzll(n);
 #else
@@ -440,7 +453,6 @@ class BigEndian {
     GOOGLE_UNALIGNED_STORE64(p, FromHost64(v));
   }
 };
-
 
 }  // namespace protobuf
 }  // namespace google

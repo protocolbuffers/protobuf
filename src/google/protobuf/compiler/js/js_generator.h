@@ -29,7 +29,7 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 // Generates JavaScript code for a given .proto file.
-
+//
 #ifndef GOOGLE_PROTOBUF_COMPILER_JS_GENERATOR_H__
 #define GOOGLE_PROTOBUF_COMPILER_JS_GENERATOR_H__
 
@@ -78,12 +78,11 @@ struct GeneratorOptions {
         testonly(false),
         library(""),
         error_on_name_conflict(false),
-        broken_proto3_semantics(false),
         extension(".js"),
         one_output_file_per_input_file(false) {}
 
   bool ParseFromOptions(
-      const vector< pair< string, string > >& options,
+      const std::vector< std::pair< string, string > >& options,
       string* error);
 
   // Returns the file name extension to use for generated code.
@@ -115,10 +114,6 @@ struct GeneratorOptions {
   string library;
   // Error if there are two types that would generate the same output file?
   bool error_on_name_conflict;
-  // Preserve the broken proto3 semantics from the old codegen? This amounts
-  // to using proto2 field presence semantics even for proto3 files. DO NOT
-  // USE except for migrating legacy code.
-  bool broken_proto3_semantics;
   // The extension to use for output file names.
   string extension;
   // Create a separate output file for each input file?
@@ -144,7 +139,7 @@ class LIBPROTOC_EXPORT Generator : public CodeGenerator {
 
   virtual bool HasGenerateAll() const { return true; }
 
-  virtual bool GenerateAll(const vector<const FileDescriptor*>& files,
+  virtual bool GenerateAll(const std::vector<const FileDescriptor*>& files,
                            const string& parameter,
                            GeneratorContext* context,
                            string* error) const;
@@ -156,7 +151,7 @@ class LIBPROTOC_EXPORT Generator : public CodeGenerator {
   // Generate goog.provides() calls.
   void FindProvides(const GeneratorOptions& options,
                     io::Printer* printer,
-                    const vector<const FileDescriptor*>& file,
+                    const std::vector<const FileDescriptor*>& file,
                     std::set<string>* provided) const;
   void FindProvidesForFile(const GeneratorOptions& options,
                            io::Printer* printer,
@@ -173,7 +168,7 @@ class LIBPROTOC_EXPORT Generator : public CodeGenerator {
   // For extension fields at file scope.
   void FindProvidesForFields(const GeneratorOptions& options,
                              io::Printer* printer,
-                             const vector<const FieldDescriptor*>& fields,
+                             const std::vector<const FieldDescriptor*>& fields,
                              std::set<string>* provided) const;
   // Print the goog.provides() found by the methods above.
   void GenerateProvides(const GeneratorOptions& options,
@@ -185,10 +180,10 @@ class LIBPROTOC_EXPORT Generator : public CodeGenerator {
                         io::Printer* printer) const;
 
   // Generate goog.requires() calls.
-  void GenerateRequiresForLibrary(const GeneratorOptions& options,
-                                  io::Printer* printer,
-                                  const vector<const FileDescriptor*>& files,
-                                  std::set<string>* provided) const;
+  void GenerateRequiresForLibrary(
+      const GeneratorOptions& options, io::Printer* printer,
+      const std::vector<const FileDescriptor*>& files,
+      std::set<string>* provided) const;
   void GenerateRequiresForMessage(const GeneratorOptions& options,
                         io::Printer* printer,
                         const Descriptor* desc,
@@ -196,15 +191,13 @@ class LIBPROTOC_EXPORT Generator : public CodeGenerator {
   // For extension fields at file scope.
   void GenerateRequiresForExtensions(
       const GeneratorOptions& options, io::Printer* printer,
-      const vector<const FieldDescriptor*>& fields,
+      const std::vector<const FieldDescriptor*>& fields,
       std::set<string>* provided) const;
   void GenerateRequiresImpl(const GeneratorOptions& options,
-                            io::Printer* printer,
-                            std::set<string>* required,
+                            io::Printer* printer, std::set<string>* required,
                             std::set<string>* forwards,
-                            std::set<string>* provided,
-                            bool require_jspb,
-                            bool require_extension) const;
+                            std::set<string>* provided, bool require_jspb,
+                            bool require_extension, bool require_map) const;
   void FindRequiresForMessage(const GeneratorOptions& options,
                               const Descriptor* desc,
                               std::set<string>* required,
@@ -225,9 +218,9 @@ class LIBPROTOC_EXPORT Generator : public CodeGenerator {
 
   // Generate definitions for all message classes and enums in all files,
   // processing the files in dependence order.
-  void GenerateFilesInDepOrder(const GeneratorOptions& options,
-                               io::Printer* printer,
-                               const vector<const FileDescriptor*>& file) const;
+  void GenerateFilesInDepOrder(
+      const GeneratorOptions& options, io::Printer* printer,
+      const std::vector<const FileDescriptor*>& file) const;
   // Helper for above.
   void GenerateFileAndDeps(const GeneratorOptions& options,
                            io::Printer* printer,

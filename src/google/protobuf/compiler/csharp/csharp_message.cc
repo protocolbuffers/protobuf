@@ -98,12 +98,20 @@ const std::vector<const FieldDescriptor*>& MessageGenerator::fields_by_number() 
   return fields_by_number_;
 }
 
+void MessageGenerator::AddDeprecatedFlag(io::Printer* printer) {
+  if (descriptor_->options().deprecated()) {
+    printer->Print("[global::System.ObsoleteAttribute]\n");
+  }
+}
+
 void MessageGenerator::Generate(io::Printer* printer) {
   map<string, string> vars;
   vars["class_name"] = class_name();
   vars["access_level"] = class_access_level();
 
   WriteMessageDocComment(printer, descriptor_);
+  AddDeprecatedFlag(printer);
+  
   printer->Print(
     vars,
     "$access_level$ sealed partial class $class_name$ : pb::IMessage<$class_name$> {\n");
@@ -115,6 +123,7 @@ void MessageGenerator::Generate(io::Printer* printer) {
 	  "private static readonly pb::MessageParser<$class_name$> _parser = new pb::MessageParser<$class_name$>(() => new $class_name$());\n");
 
   WriteGeneratedCodeAttributes(printer);
+
   printer->Print(
 	  vars,
 	  "public static pb::MessageParser<$class_name$> Parser { get { return _parser; } }\n\n");
@@ -142,6 +151,12 @@ void MessageGenerator::Generate(io::Printer* printer) {
     "  get { return Descriptor; }\n"
     "}\n"
     "\n");
+  // CustomOptions property, only for options messages
+  if (IsDescriptorOptionMessage(descriptor_)) {
+    printer->Print(
+      "internal CustomOptions CustomOptions{ get; private set; } = CustomOptions.Empty;\n"
+       "\n");
+  }
 
   // Parameterless constructor and partial OnConstruction method.
   WriteGeneratedCodeAttributes(printer);
@@ -466,10 +481,18 @@ void MessageGenerator::GenerateMergingMethods(io::Printer* printer) {
     "  switch(tag) {\n");
   printer->Indent();
   printer->Indent();
-  printer->Print(
-    "default:\n"
-    "  input.SkipLastField();\n" // We're not storing the data, but we still need to consume it.
-    "  break;\n");
+  // Option messages need to store unknown fields so that options can be parsed later.
+  if (IsDescriptorOptionMessage(descriptor_)) {
+	printer->Print(
+      "default:\n"
+      "  CustomOptions = CustomOptions.ReadOrSkipUnknownField(input);\n"
+      "  break;\n");
+  } else {
+    printer->Print(
+      "default:\n"
+      "  input.SkipLastField();\n" // We're not storing the data, but we still need to consume it.
+      "  break;\n");
+  }
   for (int i = 0; i < fields_by_number().size(); i++) {
     const FieldDescriptor* field = fields_by_number()[i];
     internal::WireFormatLite::WireType wt =

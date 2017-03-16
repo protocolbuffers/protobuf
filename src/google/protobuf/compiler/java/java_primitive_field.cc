@@ -61,7 +61,7 @@ void SetPrimitiveVariables(const FieldDescriptor* descriptor,
                            int builderBitIndex,
                            const FieldGeneratorInfo* info,
                            ClassNameResolver* name_resolver,
-                           map<string, string>* variables) {
+                           std::map<string, string>* variables) {
   SetCommonFieldVariables(descriptor, info, variables);
 
   (*variables)["type"] = PrimitiveTypeName(GetJavaType(descriptor));
@@ -75,7 +75,8 @@ void SetPrimitiveVariables(const FieldDescriptor* descriptor,
       "" : ("= " + ImmutableDefaultValue(descriptor, name_resolver));
   (*variables)["capitalized_type"] =
       GetCapitalizedType(descriptor, /* immutable = */ true);
-  (*variables)["tag"] = SimpleItoa(WireFormat::MakeTag(descriptor));
+  (*variables)["tag"] =
+      SimpleItoa(static_cast<int32>(WireFormat::MakeTag(descriptor)));
   (*variables)["tag_size"] = SimpleItoa(
       WireFormat::TagSize(descriptor->number(), GetType(descriptor)));
   if (IsReferenceType(GetJavaType(descriptor))) {
@@ -522,8 +523,17 @@ void ImmutablePrimitiveOneofFieldGenerator::
 GenerateSerializationCode(io::Printer* printer) const {
   printer->Print(variables_,
     "if ($has_oneof_case_message$) {\n"
-    "  output.write$capitalized_type$(\n"
-    "      $number$, ($type$)(($boxed_type$) $oneof_name$_));\n"
+    "  output.write$capitalized_type$(\n");
+  // $type$ and $boxed_type$ is the same for bytes fields so we don't need to
+  // do redundant casts.
+  if (GetJavaType(descriptor_) == JAVATYPE_BYTES) {
+    printer->Print(variables_,
+      "      $number$, ($type$) $oneof_name$_);\n");
+  } else {
+    printer->Print(variables_,
+      "      $number$, ($type$)(($boxed_type$) $oneof_name$_));\n");
+  }
+  printer->Print(
     "}\n");
 }
 
@@ -532,8 +542,17 @@ GenerateSerializedSizeCode(io::Printer* printer) const {
   printer->Print(variables_,
     "if ($has_oneof_case_message$) {\n"
     "  size += com.google.protobuf.CodedOutputStream\n"
-    "    .compute$capitalized_type$Size(\n"
-    "        $number$, ($type$)(($boxed_type$) $oneof_name$_));\n"
+    "    .compute$capitalized_type$Size(\n");
+  // $type$ and $boxed_type$ is the same for bytes fields so we don't need to
+  // do redundant casts.
+  if (GetJavaType(descriptor_) == JAVATYPE_BYTES) {
+    printer->Print(variables_,
+      "        $number$, ($type$) $oneof_name$_);\n");
+  } else {
+    printer->Print(variables_,
+      "        $number$, ($type$)(($boxed_type$) $oneof_name$_));\n");
+  }
+  printer->Print(
     "}\n");
 }
 

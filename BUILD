@@ -28,11 +28,11 @@ config_setting(
 # Android builds do not need to link in a separate pthread library.
 LINK_OPTS = select({
     ":android": [],
-    "//conditions:default": ["-lpthread"],
+    "//conditions:default": ["-lpthread", "-lm"],
 })
 
 load(
-    "protobuf",
+    ":protobuf.bzl",
     "cc_proto_library",
     "py_proto_library",
     "internal_copied_filegroup",
@@ -182,6 +182,17 @@ cc_library(
     deps = [":protobuf_lite"],
 )
 
+# This provides just the header files for use in projects that need to build
+# shared libraries for dynamic loading. This target is available until Bazel
+# adds native support for such use cases.
+# TODO(keveman): Remove this target once the support gets added to Bazel.
+cc_library(
+    name = "protobuf_headers",
+    hdrs = glob(["src/**/*.h"]),
+    includes = ["src/"],
+    visibility = ["//visibility:public"],
+)
+
 objc_library(
     name = "protobuf_objc",
     hdrs = ["objectivec/GPBProtocolBuffers.h"],
@@ -227,6 +238,24 @@ cc_proto_library(
 ################################################################################
 # Protocol Buffers Compiler
 ################################################################################
+
+cc_binary(
+    name = "js_embed",
+    srcs = ["src/google/protobuf/compiler/js/embed.cc"],
+    visibility = ["//visibility:public"],
+)
+
+genrule(
+    name = "generate_js_well_known_types_embed",
+    srcs = [
+        "src/google/protobuf/compiler/js/well_known_types/any.js",
+        "src/google/protobuf/compiler/js/well_known_types/struct.js",
+        "src/google/protobuf/compiler/js/well_known_types/timestamp.js",
+    ],
+    outs = ["src/google/protobuf/compiler/js/well_known_types_embed.cc"],
+    cmd = "$(location :js_embed) $(SRCS) > $@",
+    tools = [":js_embed"],
+)
 
 cc_library(
     name = "protoc_lib",
@@ -305,6 +334,7 @@ cc_library(
         "src/google/protobuf/compiler/javanano/javanano_message_field.cc",
         "src/google/protobuf/compiler/javanano/javanano_primitive_field.cc",
         "src/google/protobuf/compiler/js/js_generator.cc",
+        "src/google/protobuf/compiler/js/well_known_types_embed.cc",
         "src/google/protobuf/compiler/objectivec/objectivec_enum.cc",
         "src/google/protobuf/compiler/objectivec/objectivec_enum_field.cc",
         "src/google/protobuf/compiler/objectivec/objectivec_extension.cc",
@@ -547,12 +577,12 @@ java_library(
     srcs = glob([
         "java/util/src/main/java/com/google/protobuf/util/*.java",
     ]),
+    visibility = ["//visibility:public"],
     deps = [
         "protobuf_java",
         "//external:gson",
         "//external:guava",
     ],
-    visibility = ["//visibility:public"],
 )
 
 ################################################################################
@@ -573,8 +603,8 @@ py_library(
             "python/google/protobuf/internal/test_util.py",
         ],
     ),
-    srcs_version = "PY2AND3",
     imports = ["python"],
+    srcs_version = "PY2AND3",
 )
 
 cc_binary(
@@ -639,8 +669,8 @@ config_setting(
 internal_copied_filegroup(
     name = "protos_python",
     srcs = WELL_KNOWN_PROTOS,
-    strip_prefix = "src",
     dest = "python",
+    strip_prefix = "src",
 )
 
 # TODO(dzc): Remove this once py_proto_library can have labels in srcs, in
@@ -662,7 +692,7 @@ py_proto_library(
     protoc = ":protoc",
     py_libs = [
         ":python_srcs",
-        "//external:six"
+        "//external:six",
     ],
     srcs_version = "PY2AND3",
     visibility = ["//visibility:public"],
@@ -676,13 +706,14 @@ py_proto_library(
 internal_copied_filegroup(
     name = "protos_python_test",
     srcs = LITE_TEST_PROTOS + TEST_PROTOS,
-    strip_prefix = "src",
     dest = "python",
+    strip_prefix = "src",
 )
 
 # TODO(dzc): Remove this once py_proto_library can have labels in srcs, in
 # which case we can simply add :protos_python_test in srcs.
 COPIED_LITE_TEST_PROTOS = ["python/" + s for s in RELATIVE_LITE_TEST_PROTOS]
+
 COPIED_TEST_PROTOS = ["python/" + s for s in RELATIVE_TEST_PROTOS]
 
 py_proto_library(
@@ -749,4 +780,18 @@ internal_protobuf_py_tests(
         "wire_format_test",
     ],
     deps = [":python_tests"],
+)
+
+proto_lang_toolchain(
+    name = "cc_toolchain",
+    command_line = "--cpp_out=$(OUT)",
+    runtime = ":protobuf",
+    visibility = ["//visibility:public"],
+)
+
+proto_lang_toolchain(
+    name = "java_toolchain",
+    command_line = "--java_out=$(OUT)",
+    runtime = ":protobuf_java",
+    visibility = ["//visibility:public"],
 )

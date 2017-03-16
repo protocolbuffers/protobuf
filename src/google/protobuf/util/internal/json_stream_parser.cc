@@ -45,6 +45,8 @@
 #include <google/protobuf/util/internal/object_writer.h>
 #include <google/protobuf/util/internal/json_escaping.h>
 #include <google/protobuf/stubs/strutil.h>
+#include <google/protobuf/stubs/mathlimits.h>
+
 
 namespace google {
 namespace protobuf {
@@ -54,6 +56,7 @@ namespace util {
 // this file.
 using util::Status;
 namespace error {
+using util::error::CANCELLED;
 using util::error::INTERNAL;
 using util::error::INVALID_ARGUMENT;
 }  // namespace error
@@ -108,7 +111,8 @@ JsonStreamParser::JsonStreamParser(ObjectWriter* ow)
       string_open_(0),
       chunk_storage_(),
       coerce_to_utf8_(false),
-      allow_empty_null_(false) {
+      allow_empty_null_(false),
+      loose_float_number_conversion_(false) {
   // Initialize the stack with a single value to be parsed.
   stack_.push(VALUE);
 }
@@ -243,7 +247,7 @@ util::Status JsonStreamParser::RunParser() {
     }
     if (!result.ok()) {
       // If we were cancelled, save our state and try again later.
-      if (!finishing_ && result == util::Status::CANCELLED) {
+      if (!finishing_ && result == util::Status(error::CANCELLED, "")) {
         stack_.push(type);
         // If we have a key we still need to render, make sure to save off the
         // contents in our own storage.
@@ -287,7 +291,7 @@ util::Status JsonStreamParser::ParseValue(TokenType type) {
       // don't know if the next char would be e, completing it, or something
       // else, making it invalid.
       if (!finishing_ && p_.length() < false_len) {
-        return util::Status::CANCELLED;
+        return util::Status(error::CANCELLED, "");
       }
       return ReportFailure("Unexpected token.");
     }
@@ -325,7 +329,7 @@ util::Status JsonStreamParser::ParseStringHelper() {
       // depending on if we expect more data later.
       if (p_.length() == 1) {
         if (!finishing_) {
-          return util::Status::CANCELLED;
+          return util::Status(error::CANCELLED, "");
         }
         return ReportFailure("Closing quote expected in string.");
       }
@@ -393,7 +397,7 @@ util::Status JsonStreamParser::ParseStringHelper() {
   }
   // If we didn't find the closing quote but we expect more data, cancel for now
   if (!finishing_) {
-    return util::Status::CANCELLED;
+    return util::Status(error::CANCELLED, "");
   }
   // End of string reached without a closing quote, report an error.
   string_open_ = 0;
@@ -410,7 +414,7 @@ util::Status JsonStreamParser::ParseStringHelper() {
 util::Status JsonStreamParser::ParseUnicodeEscape() {
   if (p_.length() < kUnicodeEscapedLength) {
     if (!finishing_) {
-      return util::Status::CANCELLED;
+      return util::Status(error::CANCELLED, "");
     }
     return ReportFailure("Illegal hex string.");
   }
@@ -427,7 +431,7 @@ util::Status JsonStreamParser::ParseUnicodeEscape() {
       code <= JsonEscaping::kMaxHighSurrogate) {
     if (p_.length() < 2 * kUnicodeEscapedLength) {
       if (!finishing_) {
-        return util::Status::CANCELLED;
+        return util::Status(error::CANCELLED, "");
       }
       if (!coerce_to_utf8_) {
         return ReportFailure("Missing low surrogate.");
@@ -521,7 +525,7 @@ util::Status JsonStreamParser::ParseNumberHelper(NumberResult* result) {
   // If the entire input is a valid number, and we may have more content in the
   // future, we abort for now and resume when we know more.
   if (index == length && !finishing_) {
-    return util::Status::CANCELLED;
+    return util::Status(error::CANCELLED, "");
   }
 
   // Create a string containing just the number, so we can use safe_strtoX
@@ -531,6 +535,10 @@ util::Status JsonStreamParser::ParseNumberHelper(NumberResult* result) {
   if (floating) {
     if (!safe_strtod(number, &result->double_val)) {
       return ReportFailure("Unable to parse number.");
+    }
+    if (!loose_float_number_conversion_ &&
+        !MathLimits<double>::IsFinite(result->double_val)) {
+      return ReportFailure("Number exceeds the range of double.");
     }
     result->type = NumberResult::DOUBLE;
     p_.remove_prefix(index);
@@ -672,7 +680,7 @@ util::Status JsonStreamParser::ParseArrayValue(TokenType type) {
   // empty-null array value is relying on this ARRAY_MID token.
   stack_.push(ARRAY_MID);
   util::Status result = ParseValue(type);
-  if (result == util::Status::CANCELLED) {
+  if (result == util::Status(error::CANCELLED, "")) {
     // If we were cancelled, pop back off the ARRAY_MID so we don't try to
     // push it on again when we try over.
     stack_.pop();
@@ -751,7 +759,7 @@ util::Status JsonStreamParser::ReportFailure(StringPiece message) {
 util::Status JsonStreamParser::ReportUnknown(StringPiece message) {
   // If we aren't finishing the parse, cancel parsing and try later.
   if (!finishing_) {
-    return util::Status::CANCELLED;
+    return util::Status(error::CANCELLED, "");
   }
   if (p_.empty()) {
     return ReportFailure(StrCat("Unexpected end of string. ", message));
@@ -781,7 +789,7 @@ util::Status JsonStreamParser::ParseKey() {
   // we can't know if the key was complete or not.
   if (!finishing_ && p_.empty()) {
     p_ = original;
-    return util::Status::CANCELLED;
+    return util::Status(error::CANCELLED, "");
   }
   // Since we aren't using the key storage, clear it out.
   key_storage_.clear();

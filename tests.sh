@@ -38,11 +38,21 @@ build_cpp() {
   make check -j2
   cd conformance && make test_cpp && cd ..
 
-  # Verify benchmarking code can build successfully.
-  git submodule init
-  git submodule update
-  cd third_party/benchmark && cmake -DCMAKE_BUILD_TYPE=Release && make && cd ../..
-  cd benchmarks && make && ./generate-datasets && cd ..
+  # The benchmark code depends on cmake, so test if it is installed before
+  # trying to do the build.
+  # NOTE: The travis macOS images say they have cmake, but the xcode8.1 image
+  # appears to be missing it: https://github.com/travis-ci/travis-ci/issues/6996
+  if [[ $(type cmake 2>/dev/null) ]]; then
+    # Verify benchmarking code can build successfully.
+    git submodule init
+    git submodule update
+    cd third_party/benchmark && cmake -DCMAKE_BUILD_TYPE=Release && make && cd ../..
+    cd benchmarks && make && ./generate-datasets && cd ..
+  else
+    echo ""
+    echo "WARNING: Skipping validation of the bench marking code, cmake isn't installed."
+    echo ""
+  fi
 }
 
 build_cpp_distcheck() {
@@ -51,8 +61,9 @@ build_cpp_distcheck() {
   make dist
 
   # List all files that should be included in the distribution package.
-  git ls-files | grep "^\(java\|python\|objectivec\|csharp\|js\|ruby\|cmake\|examples\)" |\
-      grep -v ".gitignore" | grep -v "java/compatibility_tests" > dist.lst
+  git ls-files | grep "^\(java\|python\|objectivec\|csharp\|js\|ruby\|php\|cmake\|examples\)" |\
+    grep -v ".gitignore" | grep -v "java/compatibility_tests" |\
+    grep -v "python/compatibility_tests" | grep -v "csharp/compatibility_tests" > dist.lst
   # Unzip the dist tar file.
   DIST=`ls *.tar.gz`
   tar -xf $DIST
@@ -89,7 +100,7 @@ build_csharp() {
     echo "deb http://download.mono-project.com/repo/debian wheezy main" | sudo tee /etc/apt/sources.list.d/mono-xamarin.list
     sudo apt-get update -qq
     sudo apt-get install -qq mono-devel referenceassemblies-pcl nunit
-    
+
     # Then install the dotnet SDK as per Ubuntu 14.04 instructions on dot.net.
     sudo sh -c 'echo "deb [arch=amd64] https://apt-mo.trafficmanager.net/repos/dotnet-release/ trusty main" > /etc/apt/sources.list.d/dotnetdev.list'
     sudo apt-key adv --keyserver apt-mo.trafficmanager.net --recv-keys 417A0893
@@ -108,6 +119,9 @@ build_csharp() {
   (cd csharp/src; dotnet restore)
   csharp/buildall.sh
   cd conformance && make test_csharp && cd ..
+
+  # Run csharp compatibility test between 3.0.0 and the current version.
+  csharp/compatibility_tests/v3.0.0/test.sh 3.0.0
 }
 
 build_golang() {
@@ -265,15 +279,6 @@ build_objectivec_osx() {
 }
 
 build_objectivec_cocoapods_integration() {
-  # First, load the RVM environment in bash, needed to update ruby.
-  source ~/.rvm/scripts/rvm
-  # Update rvm to the latest version. This is needed to solve
-  # https://github.com/google/protobuf/issues/1786 and may not be needed in the
-  # future when Travis updates the default version of rvm.
-  rvm get head
-  # Update ruby to 2.2.3 as the default one crashes with segmentation faults
-  # when using pod.
-  rvm use 2.2.3 --install --binary --fuzzy
   # Update pod to the latest version.
   gem install cocoapods --no-ri --no-rdoc
   objectivec/Tests/CocoaPods/run_tests.sh
@@ -310,6 +315,16 @@ build_python_cpp() {
   cd ..
 }
 
+build_python_compatibility() {
+  internal_build_cpp
+  # Use the unit-tests extraced from 2.5.0 to test the compatibilty.
+  cd python/compatibility_tests/v2.5.0
+  # Test between 2.5.0 and the current version.
+  ./test.sh 2.5.0
+  # Test between 3.0.0-beta-1 and the current version.
+  ./test.sh 3.0.0-beta-1
+}
+
 build_ruby21() {
   internal_build_cpp  # For conformance tests.
   cd ruby && bash travis-test.sh ruby-2.1 && cd ..
@@ -327,12 +342,27 @@ build_jruby() {
 build_ruby_all() {
   build_ruby21
   build_ruby22
-  build_jruby
+  # TODO(teboring): Disable jruby test temperarily for it randomly fails.
+  # https://grpc-testing.appspot.com/job/protobuf_pull_request/735/consoleFull.
+  # build_jruby
 }
 
 build_javascript() {
   internal_build_cpp
   cd js && npm install && npm test && cd ..
+}
+
+generate_php_test_proto() {
+  internal_build_cpp
+  pushd php/tests
+  # Generate test file
+  rm -rf generated
+  mkdir generated
+  ../../src/protoc --php_out=generated proto/test.proto proto/test_include.proto proto/test_no_namespace.proto
+  pushd ../../src
+  ./protoc --php_out=../php/tests/generated google/protobuf/empty.proto
+  popd
+  popd
 }
 
 use_php() {
@@ -346,6 +376,7 @@ use_php() {
   cp "/usr/bin/php$VERSION" $PHP
   cp "/usr/bin/php-config$VERSION" $PHP_CONFIG
   cp "/usr/bin/phpize$VERSION" $PHPIZE
+  generate_php_test_proto
 }
 
 use_php_zts() {
@@ -356,6 +387,7 @@ use_php_zts() {
   ln -sfn "/usr/local/php-${VERSION}-zts/bin/php" $PHP
   ln -sfn "/usr/local/php-${VERSION}-zts/bin/php-config" $PHP_CONFIG
   ln -sfn "/usr/local/php-${VERSION}-zts/bin/phpize" $PHPIZE
+  generate_php_test_proto
 }
 
 use_php_bc() {
@@ -366,59 +398,107 @@ use_php_bc() {
   ln -sfn "/usr/local/php-${VERSION}-bc/bin/php" $PHP
   ln -sfn "/usr/local/php-${VERSION}-bc/bin/php-config" $PHP_CONFIG
   ln -sfn "/usr/local/php-${VERSION}-bc/bin/phpize" $PHPIZE
+  generate_php_test_proto
 }
 
 build_php5.5() {
-  use_php 5.5
+  PHP=`which php`
+  PHP_CONFIG=`which php-config`
+  PHPIZE=`which phpize`
+  ln -sfn "/usr/local/php-5.5/bin/php" $PHP
+  ln -sfn "/usr/local/php-5.5/bin/php-config" $PHP_CONFIG
+  ln -sfn "/usr/local/php-5.5/bin/phpize" $PHPIZE
+  generate_php_test_proto
+
+  pushd php
   rm -rf vendor
   cp -r /usr/local/vendor-5.5 vendor
   ./vendor/bin/phpunit
+  popd
+  pushd conformance
+  # TODO(teboring): Add it back
+  # make test_php
+  popd
 }
 
 build_php5.5_c() {
-  use_php 5.5
+  PHP=`which php`
+  PHP_CONFIG=`which php-config`
+  PHPIZE=`which phpize`
+  ln -sfn "/usr/local/php-5.5/bin/php" $PHP
+  ln -sfn "/usr/local/php-5.5/bin/php-config" $PHP_CONFIG
+  ln -sfn "/usr/local/php-5.5/bin/phpize" $PHPIZE
+  generate_php_test_proto
+  wget https://phar.phpunit.de/phpunit-old.phar -O /usr/bin/phpunit
+
   cd php/tests && /bin/bash ./test.sh && cd ../..
+  pushd conformance
+  make test_php_c
+  popd
 }
 
 build_php5.5_zts_c() {
   use_php_zts 5.5
   wget https://phar.phpunit.de/phpunit-old.phar -O /usr/bin/phpunit
   cd php/tests && /bin/bash ./test.sh && cd ../..
+  pushd conformance
+  make test_php_c
+  popd
 }
 
 build_php5.5_32() {
   use_php_bc 5.5
+  pushd php
   rm -rf vendor
   cp -r /usr/local/vendor-5.5 vendor
   ./vendor/bin/phpunit
+  popd
+  # TODO(teboring): Add conformance test.
+  # pushd conformance
+  # make test_php
+  # popd
 }
 
 build_php5.5_c_32() {
   use_php_bc 5.5
   wget https://phar.phpunit.de/phpunit-old.phar -O /usr/bin/phpunit
   cd php/tests && /bin/bash ./test.sh && cd ../..
+  # TODO(teboring): Add conformance test.
+  # pushd conformance
+  # make test_php_c
+  # popd
 }
 
 build_php5.6() {
   use_php 5.6
+  pushd php
   rm -rf vendor
   cp -r /usr/local/vendor-5.6 vendor
   ./vendor/bin/phpunit
+  popd
+  pushd conformance
+  # TODO(teboring): Add it back
+  # make test_php
+  popd
 }
 
 build_php5.6_c() {
   use_php 5.6
   cd php/tests && /bin/bash ./test.sh && cd ../..
+  pushd conformance
+  make test_php_c
+  popd
 }
 
 build_php5.6_mac() {
+  generate_php_test_proto
   # Install PHP
   curl -s https://php-osx.liip.ch/install.sh | bash -s 5.6
   PHP_FOLDER=`find /usr/local -type d -name "php5-5.6*"`  # The folder name may change upon time
   export PATH="$PHP_FOLDER/bin:$PATH"
 
   # Install phpunit
-  curl https://phar.phpunit.de/phpunit.phar -L -o phpunit.phar
+  curl https://phar.phpunit.de/phpunit-5.6.10.phar -L -o phpunit.phar
   chmod +x phpunit.phar
   sudo mv phpunit.phar /usr/local/bin/phpunit
 
@@ -429,18 +509,30 @@ build_php5.6_mac() {
 
   # Test
   cd php/tests && /bin/bash ./test.sh && cd ../..
+  pushd conformance
+  make test_php_c
+  popd
 }
 
 build_php7.0() {
   use_php 7.0
+  pushd php
   rm -rf vendor
   cp -r /usr/local/vendor-7.0 vendor
   ./vendor/bin/phpunit
+  popd
+  pushd conformance
+  # TODO(teboring): Add it back
+  # make test_php
+  popd
 }
 
 build_php7.0_c() {
   use_php 7.0
   cd php/tests && /bin/bash ./test.sh && cd ../..
+  pushd conformance
+  make test_php_c
+  popd
 }
 
 build_php_all() {
@@ -485,6 +577,7 @@ Usage: $0 { cpp |
             objectivec_cocoapods_integration |
             python |
             python_cpp |
+            python_compatibility |
             ruby21 |
             ruby22 |
             jruby |

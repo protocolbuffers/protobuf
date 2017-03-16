@@ -42,6 +42,8 @@
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/stubs/stringprintf.h>
 #include <google/protobuf/descriptor.h>
+#include <google/protobuf/dynamic_message.h>
+#include <google/protobuf/map_field.h>
 #include <google/protobuf/wire_format_lite_inl.h>
 #include <google/protobuf/descriptor.pb.h>
 #include <google/protobuf/io/coded_stream.h>
@@ -792,7 +794,7 @@ void WireFormat::SerializeWithCachedSizes(
   const Reflection* message_reflection = message.GetReflection();
   int expected_endpoint = output->ByteCount() + size;
 
-  vector<const FieldDescriptor*> fields;
+  std::vector<const FieldDescriptor*> fields;
   message_reflection->ListFields(message, &fields);
   for (int i = 0; i < fields.size(); i++) {
     SerializeFieldWithCachedSizes(fields[i], message, output);
@@ -832,6 +834,13 @@ void WireFormat::SerializeFieldWithCachedSizes(
     count = message_reflection->FieldSize(message, field);
   } else if (message_reflection->HasField(message, field)) {
     count = 1;
+  }
+
+  // map_entries is for maps that'll be deterministically serialized.
+  std::vector<const Message*> map_entries;
+  if (count > 1 && field->is_map() && output->IsSerializationDeterministic()) {
+    map_entries =
+        DynamicMapSorter::Sort(message, count, message_reflection, field);
   }
 
   const bool is_packed = field->is_packed();
@@ -877,15 +886,17 @@ void WireFormat::SerializeFieldWithCachedSizes(
       HANDLE_PRIMITIVE_TYPE(BOOL, bool, Bool, Bool)
 #undef HANDLE_PRIMITIVE_TYPE
 
-#define HANDLE_TYPE(TYPE, TYPE_METHOD, CPPTYPE_METHOD)                       \
-      case FieldDescriptor::TYPE_##TYPE:                                     \
-        WireFormatLite::Write##TYPE_METHOD(                                  \
-              field->number(),                                               \
-              field->is_repeated() ?                                         \
-                message_reflection->GetRepeated##CPPTYPE_METHOD(             \
-                  message, field, j) :                                       \
-                message_reflection->Get##CPPTYPE_METHOD(message, field),     \
-              output);                                                       \
+#define HANDLE_TYPE(TYPE, TYPE_METHOD, CPPTYPE_METHOD)                      \
+      case FieldDescriptor::TYPE_##TYPE:                                    \
+        WireFormatLite::Write##TYPE_METHOD(                                 \
+              field->number(),                                              \
+              field->is_repeated() ?                                        \
+                (map_entries.empty() ?                                      \
+                     message_reflection->GetRepeated##CPPTYPE_METHOD(       \
+                                     message, field, j) :                   \
+                     *map_entries[j]) :                                     \
+                message_reflection->Get##CPPTYPE_METHOD(message, field),    \
+              output);                                                      \
         break;
 
       HANDLE_TYPE(GROUP  , Group  , Message)
@@ -970,7 +981,7 @@ size_t WireFormat::ByteSize(const Message& message) {
 
   size_t our_size = 0;
 
-  vector<const FieldDescriptor*> fields;
+  std::vector<const FieldDescriptor*> fields;
   message_reflection->ListFields(message, &fields);
   for (int i = 0; i < fields.size(); i++) {
     our_size += FieldByteSize(fields[i], message);

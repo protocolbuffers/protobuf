@@ -35,6 +35,13 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+#if !NET35
+using System.Threading;
+using System.Threading.Tasks;
+#endif
+#if NET35
+using Google.Protobuf.Compatibility;
+#endif
 
 namespace Google.Protobuf
 {
@@ -140,6 +147,55 @@ namespace Google.Protobuf
             // problem on CF 2.0. See issue 61 for details.
             return bytes == "" ? Empty : new ByteString(Convert.FromBase64String(bytes));
         }
+
+        /// <summary>
+        /// Constructs a <see cref="ByteString"/> from data in the given stream, synchronously.
+        /// </summary>
+        /// <remarks>If successful, <paramref name="stream"/> will be read completely, from the position
+        /// at the start of the call.</remarks>
+        /// <param name="stream">The stream to copy into a ByteString.</param>
+        /// <returns>A ByteString with content read from the given stream.</returns>
+        public static ByteString FromStream(Stream stream)
+        {
+            ProtoPreconditions.CheckNotNull(stream, nameof(stream));
+            int capacity = stream.CanSeek ? checked((int) (stream.Length - stream.Position)) : 0;
+            var memoryStream = new MemoryStream(capacity);
+            stream.CopyTo(memoryStream);
+#if NETSTANDARD1_0
+            byte[] bytes = memoryStream.ToArray();
+#else
+            // Avoid an extra copy if we can.
+            byte[] bytes = memoryStream.Length == memoryStream.Capacity ? memoryStream.GetBuffer() : memoryStream.ToArray();
+#endif
+            return AttachBytes(bytes);
+        }
+
+#if !NET35
+        /// <summary>
+        /// Constructs a <see cref="ByteString"/> from data in the given stream, asynchronously.
+        /// </summary>
+        /// <remarks>If successful, <paramref name="stream"/> will be read completely, from the position
+        /// at the start of the call.</remarks>
+        /// <param name="stream">The stream to copy into a ByteString.</param>
+        /// <param name="cancellationToken">The cancellation token to use when reading from the stream, if any.</param>
+        /// <returns>A ByteString with content read from the given stream.</returns>
+        public async static Task<ByteString> FromStreamAsync(Stream stream, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            ProtoPreconditions.CheckNotNull(stream, nameof(stream));
+            int capacity = stream.CanSeek ? checked((int) (stream.Length - stream.Position)) : 0;
+            var memoryStream = new MemoryStream(capacity);
+            // We have to specify the buffer size here, as there's no overload accepting the cancellation token
+            // alone. But it's documented to use 81920 by default if not specified.
+            await stream.CopyToAsync(memoryStream, 81920, cancellationToken);
+#if NETSTANDARD1_0
+            byte[] bytes = memoryStream.ToArray();
+#else
+            // Avoid an extra copy if we can.
+            byte[] bytes = memoryStream.Length == memoryStream.Capacity ? memoryStream.GetBuffer() : memoryStream.ToArray();
+#endif
+            return AttachBytes(bytes);
+        }
+#endif
 
         /// <summary>
         /// Constructs a <see cref="ByteString" /> from the given array. The contents
@@ -303,7 +359,7 @@ namespace Google.Protobuf
             int ret = 23;
             foreach (byte b in bytes)
             {
-                ret = (ret << 8) | b;
+                ret = (ret * 31) + b;
             }
             return ret;
         }

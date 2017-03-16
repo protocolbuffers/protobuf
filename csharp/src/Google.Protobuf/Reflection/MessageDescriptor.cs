@@ -34,7 +34,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-#if DOTNET35
+#if NET35
 // Needed for ReadOnlyDictionary, which does not exist in .NET 3.5
 using Google.Protobuf.Collections;
 #endif
@@ -219,6 +219,11 @@ namespace Google.Protobuf.Reflection
         /// <returns>The descriptor, or null if not found.</returns>
         public T FindDescriptor<T>(string name)  where T : class, IDescriptor =>
             File.DescriptorPool.FindSymbol<T>(FullName + "." + name);
+
+        /// <summary>
+        /// The (possibly empty) set of custom options for this message.
+        /// </summary>
+        public CustomOptions CustomOptions => Proto.Options?.CustomOptions ?? CustomOptions.Empty;
 
         /// <summary>
         /// Looks up and cross-links all fields and nested types.

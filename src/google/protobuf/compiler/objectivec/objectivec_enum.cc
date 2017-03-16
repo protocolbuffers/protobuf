@@ -74,7 +74,7 @@ void EnumGenerator::GenerateHeader(io::Printer* printer) {
 
   printer->Print("$comments$typedef$deprecated_attribute$ GPB_ENUM($name$) {\n",
                  "comments", enum_comments,
-                 "deprecated_attribute", GetOptionalDeprecatedAttribute(descriptor_),
+                 "deprecated_attribute", GetOptionalDeprecatedAttribute(descriptor_, descriptor_->file()),
                  "name", name_);
   printer->Indent();
 

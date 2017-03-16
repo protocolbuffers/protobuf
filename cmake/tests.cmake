@@ -17,6 +17,7 @@ add_library(gmock STATIC
   ${protobuf_source_dir}/gmock/src/gmock-all.cc
   ${protobuf_source_dir}/gmock/gtest/src/gtest-all.cc
 )
+target_link_libraries(gmock ${CMAKE_THREAD_LIBS_INIT})
 add_library(gmock_main STATIC ${protobuf_source_dir}/gmock/src/gmock_main.cc)
 target_link_libraries(gmock_main gmock)
 
@@ -122,6 +123,7 @@ set(tests_files
   ${protobuf_source_dir}/src/google/protobuf/compiler/cpp/cpp_plugin_unittest.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/cpp/cpp_unittest.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/cpp/metadata_test.cc
+  ${protobuf_source_dir}/src/google/protobuf/compiler/csharp/csharp_bootstrap_unittest.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/csharp/csharp_generator_unittest.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/importer_unittest.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/java/java_doc_comment_unittest.cc
@@ -214,4 +216,5 @@ target_link_libraries(lite-arena-test libprotobuf-lite gmock_main)
 
 add_custom_target(check
   COMMAND tests
+  DEPENDS tests test_plugin
   WORKING_DIRECTORY ${protobuf_source_dir})

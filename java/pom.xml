@@ -11,7 +11,7 @@
 
   <groupId>com.google.protobuf</groupId>
   <artifactId>protobuf-parent</artifactId>
-  <version>3.1.0</version>
+  <version>3.2.0</version>
   <packaging>pom</packaging>
 
   <name>Protocol Buffers [Parent]</name>
@@ -39,8 +39,8 @@
 
   <licenses>
     <license>
-      <name>New BSD license</name>
-      <url>http://www.opensource.org/licenses/bsd-license.php</url>
+      <name>3-Clause BSD License</name>
+      <url>https://opensource.org/licenses/BSD-3-Clause</url>
       <distribution>repo</distribution>
     </license>
   </licenses>

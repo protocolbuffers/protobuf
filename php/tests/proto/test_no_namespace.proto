@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+message NoNameSpaceMessage {
+  int32 a = 1;
+}
+
+enum NoNameSpaceEnum {
+  VALUE_A = 0;
+  VALUE_B = 1;
+}

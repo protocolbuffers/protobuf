@@ -1,2 +1,0 @@
-Recommended.JsonInput.FieldNameWithDoubleUnderscores.JsonOutput
-Required.JsonInput.FieldNameInSnakeCase.JsonOutput

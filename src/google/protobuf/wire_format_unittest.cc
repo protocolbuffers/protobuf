@@ -1138,7 +1138,7 @@ class Utf8ValidationTest : public ::testing::Test {
 TEST_F(Utf8ValidationTest, WriteInvalidUTF8String) {
   string wire_buffer;
   protobuf_unittest::OneString input;
-  vector<string> errors;
+  std::vector<string> errors;
   {
     ScopedMemoryLog log;
     WriteMessage(kInvalidUTF8String, &input, &wire_buffer);
@@ -1162,7 +1162,7 @@ TEST_F(Utf8ValidationTest, ReadInvalidUTF8String) {
   protobuf_unittest::OneString input;
   WriteMessage(kInvalidUTF8String, &input, &wire_buffer);
   protobuf_unittest::OneString output;
-  vector<string> errors;
+  std::vector<string> errors;
   {
     ScopedMemoryLog log;
     ReadMessage(wire_buffer, &output);
@@ -1185,7 +1185,7 @@ TEST_F(Utf8ValidationTest, ReadInvalidUTF8String) {
 TEST_F(Utf8ValidationTest, WriteValidUTF8String) {
   string wire_buffer;
   protobuf_unittest::OneString input;
-  vector<string> errors;
+  std::vector<string> errors;
   {
     ScopedMemoryLog log;
     WriteMessage(kValidUTF8String, &input, &wire_buffer);
@@ -1199,7 +1199,7 @@ TEST_F(Utf8ValidationTest, ReadValidUTF8String) {
   protobuf_unittest::OneString input;
   WriteMessage(kValidUTF8String, &input, &wire_buffer);
   protobuf_unittest::OneString output;
-  vector<string> errors;
+  std::vector<string> errors;
   {
     ScopedMemoryLog log;
     ReadMessage(wire_buffer, &output);
@@ -1213,7 +1213,7 @@ TEST_F(Utf8ValidationTest, ReadValidUTF8String) {
 TEST_F(Utf8ValidationTest, WriteArbitraryBytes) {
   string wire_buffer;
   protobuf_unittest::OneBytes input;
-  vector<string> errors;
+  std::vector<string> errors;
   {
     ScopedMemoryLog log;
     WriteMessage(kInvalidUTF8String, &input, &wire_buffer);
@@ -1227,7 +1227,7 @@ TEST_F(Utf8ValidationTest, ReadArbitraryBytes) {
   protobuf_unittest::OneBytes input;
   WriteMessage(kInvalidUTF8String, &input, &wire_buffer);
   protobuf_unittest::OneBytes output;
-  vector<string> errors;
+  std::vector<string> errors;
   {
     ScopedMemoryLog log;
     ReadMessage(wire_buffer, &output);
@@ -1245,7 +1245,7 @@ TEST_F(Utf8ValidationTest, ParseRepeatedString) {
   string wire_buffer = input.SerializeAsString();
 
   protobuf_unittest::MoreString output;
-  vector<string> errors;
+  std::vector<string> errors;
   {
     ScopedMemoryLog log;
     ReadMessage(wire_buffer, &output);
@@ -1264,7 +1264,7 @@ TEST_F(Utf8ValidationTest, ParseRepeatedString) {
 TEST_F(Utf8ValidationTest, OldVerifyUTF8String) {
   string data(kInvalidUTF8String);
 
-  vector<string> errors;
+  std::vector<string> errors;
   {
     ScopedMemoryLog log;
     WireFormat::VerifyUTF8String(data.data(), data.size(),
@@ -1282,6 +1282,136 @@ TEST_F(Utf8ValidationTest, OldVerifyUTF8String) {
 #endif
 }
 
+
+TEST(RepeatedVarint, Int32) {
+  RepeatedField<int32> v;
+
+  // Insert -2^n, 2^n and 2^n-1.
+  for (int n = 0; n < 10; n++) {
+    v.Add(-(1 << n));
+    v.Add(1 << n);
+    v.Add((1 << n) - 1);
+  }
+
+  // Check consistency with the scalar Int32Size.
+  size_t expected = 0;
+  for (int i = 0; i < v.size(); i++) {
+    expected += WireFormatLite::Int32Size(v[i]);
+  }
+
+  EXPECT_EQ(expected, WireFormatLite::Int32Size(v));
+}
+
+TEST(RepeatedVarint, Int64) {
+  RepeatedField<int64> v;
+
+  // Insert -2^n, 2^n and 2^n-1.
+  for (int n = 0; n < 10; n++) {
+    v.Add(-(1 << n));
+    v.Add(1 << n);
+    v.Add((1 << n) - 1);
+  }
+
+  // Check consistency with the scalar Int64Size.
+  size_t expected = 0;
+  for (int i = 0; i < v.size(); i++) {
+    expected += WireFormatLite::Int64Size(v[i]);
+  }
+
+  EXPECT_EQ(expected, WireFormatLite::Int64Size(v));
+}
+
+TEST(RepeatedVarint, SInt32) {
+  RepeatedField<int32> v;
+
+  // Insert -2^n, 2^n and 2^n-1.
+  for (int n = 0; n < 10; n++) {
+    v.Add(-(1 << n));
+    v.Add(1 << n);
+    v.Add((1 << n) - 1);
+  }
+
+  // Check consistency with the scalar SInt32Size.
+  size_t expected = 0;
+  for (int i = 0; i < v.size(); i++) {
+    expected += WireFormatLite::SInt32Size(v[i]);
+  }
+
+  EXPECT_EQ(expected, WireFormatLite::SInt32Size(v));
+}
+
+TEST(RepeatedVarint, SInt64) {
+  RepeatedField<int64> v;
+
+  // Insert -2^n, 2^n and 2^n-1.
+  for (int n = 0; n < 10; n++) {
+    v.Add(-(1 << n));
+    v.Add(1 << n);
+    v.Add((1 << n) - 1);
+  }
+
+  // Check consistency with the scalar SInt64Size.
+  size_t expected = 0;
+  for (int i = 0; i < v.size(); i++) {
+    expected += WireFormatLite::SInt64Size(v[i]);
+  }
+
+  EXPECT_EQ(expected, WireFormatLite::SInt64Size(v));
+}
+
+TEST(RepeatedVarint, UInt32) {
+  RepeatedField<uint32> v;
+
+  // Insert 2^n and 2^n-1.
+  for (int n = 0; n < 10; n++) {
+    v.Add(1 << n);
+    v.Add((1 << n) - 1);
+  }
+
+  // Check consistency with the scalar UInt32Size.
+  size_t expected = 0;
+  for (int i = 0; i < v.size(); i++) {
+    expected += WireFormatLite::UInt32Size(v[i]);
+  }
+
+  EXPECT_EQ(expected, WireFormatLite::UInt32Size(v));
+}
+
+TEST(RepeatedVarint, UInt64) {
+  RepeatedField<uint64> v;
+
+  // Insert 2^n and 2^n-1.
+  for (int n = 0; n < 10; n++) {
+    v.Add(1 << n);
+    v.Add((1 << n) - 1);
+  }
+
+  // Check consistency with the scalar UInt64Size.
+  size_t expected = 0;
+  for (int i = 0; i < v.size(); i++) {
+    expected += WireFormatLite::UInt64Size(v[i]);
+  }
+
+  EXPECT_EQ(expected, WireFormatLite::UInt64Size(v));
+}
+
+TEST(RepeatedVarint, Enum) {
+  RepeatedField<int> v;
+
+  // Insert 2^n and 2^n-1.
+  for (int n = 0; n < 10; n++) {
+    v.Add(1 << n);
+    v.Add((1 << n) - 1);
+  }
+
+  // Check consistency with the scalar EnumSize.
+  size_t expected = 0;
+  for (int i = 0; i < v.size(); i++) {
+    expected += WireFormatLite::EnumSize(v[i]);
+  }
+
+  EXPECT_EQ(expected, WireFormatLite::EnumSize(v));
+}
 
 }  // namespace
 }  // namespace internal

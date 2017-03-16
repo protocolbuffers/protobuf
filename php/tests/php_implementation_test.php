@@ -1,6 +1,5 @@
 <?php
 
-require_once('test.pb.php');
 require_once('test_base.php');
 require_once('test_util.php');
 
@@ -291,14 +290,14 @@ class ImplementationTest extends TestBase
     public function testDecode()
     {
         $m = new TestMessage();
-        $m->decode(TestUtil::getGoldenTestMessage());
+        $m->mergeFromString(TestUtil::getGoldenTestMessage());
         TestUtil::assertTestMessage($m);
     }
 
     public function testDescriptorDecode()
     {
         $file_desc_set = new FileDescriptorSet();
-        $file_desc_set->decode(hex2bin(
+        $file_desc_set->mergeFromString(hex2bin(
             "0a3b0a12746573745f696e636c7564652e70726f746f120362617222180a" .
             "0b54657374496e636c75646512090a0161180120012805620670726f746f33"));
 
@@ -367,6 +366,34 @@ class ImplementationTest extends TestBase
             $this->assertSame(32768, $var);
         }
         $this->assertFalse($input->readVarint64($var));
+
+        // Read 64 testing
+        $testVals = array(
+            '10'                 => '0a000000000000000000',
+            '100'                => '64000000000000000000',
+            '800'                => 'a0060000000000000000',
+            '6400'               => '80320000000000000000',
+            '70400'              => '80a60400000000000000',
+            '774400'             => '80a22f00000000000000',
+            '9292800'            => '8098b704000000000000',
+            '74342400'           => '80c0b923000000000000',
+            '743424000'          => '8080bfe2020000000000',
+            '8177664000'         => '8080b5bb1e0000000000',
+            '65421312000'        => '8080a8dbf30100000000',
+            '785055744000'       => '8080e0c7ec1600000000',
+            '9420668928000'      => '808080dd969202000000',
+            '103627358208000'    => '808080fff9c717000000',
+            '1139900940288000'   => '808080f5bd9783020000',
+            '13678811283456000'  => '808080fce699a6180000',
+            '109430490267648000' => '808080e0b7ceb1c20100',
+            '984874412408832000' => '808080e0f5c1bed50d00',
+        );
+
+        foreach ($testVals as $original => $encoded) {
+            $input = new InputStream(hex2bin($encoded));
+            $this->assertTrue($input->readVarint64($var));
+            $this->assertEquals($original, $var);
+        }
     }
 
     public function testReadVarint32()
@@ -442,6 +469,11 @@ class ImplementationTest extends TestBase
         $output = new OutputStream(3);
         $output->writeVarint32(16384);
         $this->assertSame(hex2bin('808001'), $output->getData());
+
+        // Negative numbers are padded to be compatible with int64.
+        $output = new OutputStream(10);
+        $output->writeVarint32(-43);
+        $this->assertSame(hex2bin('D5FFFFFFFFFFFFFFFF01'), $output->getData());
     }
 
     public function testWriteVarint64()
@@ -469,13 +501,13 @@ class ImplementationTest extends TestBase
     {
         $m = new TestMessage();
         TestUtil::setTestMessage($m);
-        $this->assertSame(447, $m->byteSize());
+        $this->assertSame(506, $m->byteSize());
     }
 
     public function testPackedByteSize()
     {
         $m = new TestPackedMessage();
         TestUtil::setTestPackedMessage($m);
-        $this->assertSame(156, $m->byteSize());
+        $this->assertSame(166, $m->byteSize());
     }
 }

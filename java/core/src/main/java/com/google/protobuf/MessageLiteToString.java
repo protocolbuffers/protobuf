@@ -95,7 +95,7 @@ final class MessageLiteToString {
         // Try to reflectively get the value and toString() the field as if it were repeated. This
         // only works if the method names have not be proguarded out or renamed.
         Method listMethod = nameToNoArgMethod.get("get" + suffix);
-        if (listMethod != null) {
+        if (listMethod != null && listMethod.getReturnType().equals(List.class)) {
           printField(
               buffer,
               indent,
@@ -115,7 +115,7 @@ final class MessageLiteToString {
         // Heuristic to skip bytes based accessors for string fields.
         continue;
       }
-      
+
       String camelCase = suffix.substring(0, 1).toLowerCase() + suffix.substring(1);
 
       // Try to reflectively get the value and toString() the field as if it were optional. This

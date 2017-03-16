@@ -120,6 +120,22 @@ inline bool IsDescriptorProto(const FileDescriptor* descriptor) {
   return descriptor->name() == "google/protobuf/descriptor.proto";
 }
 
+// Determines whether the given message is an options message within descriptor.proto.
+inline bool IsDescriptorOptionMessage(const Descriptor* descriptor) {
+  if (!IsDescriptorProto(descriptor->file())) {
+    return false;
+  }
+  const string name = descriptor->full_name();
+  return name == "google.protobuf.FileOptions" ||
+      name == "google.protobuf.MessageOptions" ||
+      name == "google.protobuf.FieldOptions" ||
+      name == "google.protobuf.OneofOptions" ||
+      name == "google.protobuf.EnumOptions" ||
+      name == "google.protobuf.EnumValueOptions" ||
+      name == "google.protobuf.ServiceOptions" ||
+      name == "google.protobuf.MethodOptions";
+}
+
 inline bool IsWrapperType(const FieldDescriptor* descriptor) {
   return descriptor->type() == FieldDescriptor::TYPE_MESSAGE &&
       descriptor->message_type()->file()->name() == "google/protobuf/wrappers.proto";
