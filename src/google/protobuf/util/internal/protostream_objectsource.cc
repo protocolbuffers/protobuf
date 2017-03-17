@@ -121,6 +121,7 @@ ProtoStreamObjectSource::ProtoStreamObjectSource(
       type_(type),
       use_lower_camel_for_enums_(false),
       use_ints_for_enums_(false),
+      preserve_proto_field_names_(false),
       recursion_depth_(0),
       max_recursion_depth_(kDefaultMaxRecursionDepth),
       render_unknown_fields_(false),
@@ -137,6 +138,7 @@ ProtoStreamObjectSource::ProtoStreamObjectSource(
       type_(type),
       use_lower_camel_for_enums_(false),
       use_ints_for_enums_(false),
+      preserve_proto_field_names_(false),
       recursion_depth_(0),
       max_recursion_depth_(kDefaultMaxRecursionDepth),
       render_unknown_fields_(false),
@@ -200,7 +202,11 @@ Status ProtoStreamObjectSource::WriteMessage(const google::protobuf::Type& type,
       last_tag = tag;
       field = FindAndVerifyField(type, tag);
       if (field != NULL) {
-        field_name = field->json_name();
+        if (preserve_proto_field_names_) {
+          field_name = field->name();
+        } else {
+          field_name = field->json_name();
+        }
       }
     }
     if (field == NULL) {
