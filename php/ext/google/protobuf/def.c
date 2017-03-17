@@ -252,39 +252,54 @@ PHP_METHOD(DescriptorPool, getGeneratedPool) {
 
 static void convert_to_class_name_inplace(char *class_name,
                                           const char* fullname,
+                                          const char* prefix,
                                           const char* package_name) {
-  size_t i;
-  bool first_char = false;
+  size_t i = 0, j;
+  bool first_char = true;
   size_t pkg_name_len = package_name == NULL ? 0 : strlen(package_name);
+  size_t prefix_len = prefix == NULL ? 0 : strlen(prefix);
+  size_t message_name_start = package_name == NULL ? 0 : pkg_name_len + 1;
+  size_t message_len = (strlen(fullname) - message_name_start);
 
   // In php, class name cannot be Empty.
   if (strcmp("google.protobuf.Empty", fullname) == 0) {
-    fullname = "google.protobuf.GPBEmpty";
+    strcpy(class_name, "\\Google\\Protobuf\\GPBEmpty");
+    return;
   }
 
-  if (pkg_name_len == 0) {
-    strcpy(class_name, fullname);
-  } else {
-    class_name[0] = '.';
-    strcpy(&class_name[1], fullname);
-    for (i = 0; i <= pkg_name_len + 1; i++) {
-      // PHP package uses camel case.
-      if (!first_char && class_name[i] != '.') {
-        first_char = true;
-        class_name[i] += 'A' - 'a';
-      }
+  if (pkg_name_len != 0) {
+    class_name[i++] = '\\';
+    for (j = 0; j < pkg_name_len; j++) {
       // php packages are divided by '\'.
-      if (class_name[i] == '.') {
+      if (package_name[j] == '.') {
+        class_name[i++] = '\\';
+        first_char = true;
+      } else if (first_char) {
+        // PHP package uses camel case.
+        if (package_name[j] < 'A' || package_name[j] > 'Z') {
+          class_name[i++] = package_name[j] + 'A' - 'a';
+        } else {
+          class_name[i++] = package_name[j];
+        }
         first_char = false;
-        class_name[i] = '\\';
+      } else {
+        class_name[i++] = package_name[j];
       }
     }
+    class_name[i++] = '\\';
+  }
+
+  if (prefix_len > 0) {
+    strcpy(class_name + i, prefix);
+    i += prefix_len;
   }
 
   // Submessage is concatenated with its containing messages by '_'.
-  for (i = pkg_name_len; i < strlen(class_name); i++) {
-    if (class_name[i] == '.') {
-      class_name[i] = '_';
+  for (j = message_name_start; j < message_name_start + message_len; j++) {
+    if (fullname[j] == '.') {
+      class_name[i++] = '_';
+    } else {
+      class_name[i++] = fullname[j];
     }
   }
 }
@@ -339,8 +354,13 @@ PHP_METHOD(DescriptorPool, internalAddGeneratedFile) {
      * bytes allocated, one for '.', one for trailing 0, and 3 for 'GPB' if    \
      * given message is google.protobuf.Empty.*/                               \
     const char *fullname = upb_##def_type_lower##_fullname(def_type_lower);    \
-    char *klass_name = ecalloc(sizeof(char), 5 + strlen(fullname));            \
-    convert_to_class_name_inplace(klass_name, fullname,                        \
+    const char *prefix = upb_filedef_phpprefix(files[0]);                      \
+    size_t klass_name_len = strlen(fullname) + 5;                              \
+    if (prefix != NULL) {                                                      \
+      klass_name_len += strlen(prefix);                                        \
+    }                                                                          \
+    char *klass_name = ecalloc(sizeof(char), klass_name_len);                  \
+    convert_to_class_name_inplace(klass_name, fullname, prefix,                \
                                   upb_filedef_package(files[0]));              \
     zend_class_entry **pce;                                                    \
     if (zend_lookup_class(klass_name, strlen(klass_name), &pce TSRMLS_CC) ==   \

@@ -9,6 +9,7 @@ use Google\Protobuf\Internal\RepeatedField;
 use Google\Protobuf\Internal\MapField;
 use Google\Protobuf\Internal\GPBType;
 use Foo\TestEnum;
+use Foo\TestIncludePrefixMessage;
 use Foo\TestMessage;
 use Foo\TestMessage_Sub;
 
@@ -837,5 +838,18 @@ class GeneratedClassTest extends TestBase
     public function testEnumWithoutNamespace()
     {
         $m = new NoNameSpaceEnum();
+    }
+
+    #########################################################
+    # Test message with given prefix.
+    #########################################################
+
+    public function testPrefixMessage()
+    {
+        $m = new TestIncludePrefixMessage();
+        $n = new PrefixTestPrefix();
+        $n->setA(1);
+        $m->setPrefixMessage($n);
+        $this->assertSame(1, $m->getPrefixMessage()->getA());
     }
 }

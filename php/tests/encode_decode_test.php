@@ -194,7 +194,7 @@ class EncodeDecodeTest extends TestBase
     {
         $m = new TestMessage();
         $m->setOptionalInt32(-1);
-        $data = $m->encode();
+        $data = $m->serializeToString();
         $this->assertSame("08ffffffffffffffffff01", bin2hex($data));
     }
 
@@ -202,12 +202,12 @@ class EncodeDecodeTest extends TestBase
     {
         $m = new TestMessage();
         $this->assertEquals(0, $m->getOptionalInt32());
-        $m->decode(hex2bin("08ffffffffffffffffff01"));
+        $m->mergeFromString(hex2bin("08ffffffffffffffffff01"));
         $this->assertEquals(-1, $m->getOptionalInt32());
 
         $m = new TestMessage();
         $this->assertEquals(0, $m->getOptionalInt32());
-        $m->decode(hex2bin("08ffffffff0f"));
+        $m->mergeFromString(hex2bin("08ffffffff0f"));
         $this->assertEquals(-1, $m->getOptionalInt32());
     }
 

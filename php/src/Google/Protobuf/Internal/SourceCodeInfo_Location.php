@@ -179,8 +179,8 @@ class SourceCodeInfo_Location extends \Google\Protobuf\Internal\Message
      */
     public function setPath(&$var)
     {
-        GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::INT32);
-        $this->path = $var;
+        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::INT32);
+        $this->path = $arr;
         $this->has_path = true;
     }
 
@@ -218,8 +218,8 @@ class SourceCodeInfo_Location extends \Google\Protobuf\Internal\Message
      */
     public function setSpan(&$var)
     {
-        GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::INT32);
-        $this->span = $var;
+        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::INT32);
+        $this->span = $arr;
         $this->has_span = true;
     }
 
@@ -365,8 +365,8 @@ class SourceCodeInfo_Location extends \Google\Protobuf\Internal\Message
      */
     public function setLeadingDetachedComments(&$var)
     {
-        GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::STRING);
-        $this->leading_detached_comments = $var;
+        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::STRING);
+        $this->leading_detached_comments = $arr;
         $this->has_leading_detached_comments = true;
     }
 

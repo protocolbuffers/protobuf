@@ -77,8 +77,8 @@ class ServiceDescriptorProto extends \Google\Protobuf\Internal\Message
      */
     public function setMethod(&$var)
     {
-        GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \Google\Protobuf\Internal\MethodDescriptorProto::class);
-        $this->method = $var;
+        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \Google\Protobuf\Internal\MethodDescriptorProto::class);
+        $this->method = $arr;
         $this->has_method = true;
     }
 
