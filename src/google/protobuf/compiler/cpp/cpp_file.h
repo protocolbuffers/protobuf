@@ -133,6 +133,15 @@ class FileGenerator {
 
   void GenerateProto2NamespaceEnumSpecializations(io::Printer* printer);
 
+  // Sometimes the names we use in a .proto file happen to be defined as macros
+  // on some platforms (e.g., macro/minor used in plugin.proto are defined as
+  // macros in sys/types.h on FreeBSD and a few other platforms). To make the
+  // generated code compile on these platforms, we either have to undef the
+  // macro for these few platforms, or rename the field name for all platforms.
+  // Since these names are part of protobuf public API, renaming is generally
+  // a breaking change so we prefer the #undef approach.
+  void GenerateMacroUndefs(io::Printer* printer);
+
   const FileDescriptor* file_;
   const Options options_;
 

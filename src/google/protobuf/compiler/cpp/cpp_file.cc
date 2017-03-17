@@ -54,6 +54,39 @@ namespace google {
 namespace protobuf {
 namespace compiler {
 namespace cpp {
+namespace {
+// The list of names that are defined as macros on some platforms. We need to
+// #undef them for the generated code to compile.
+const char* kMacroNames[] = {"major", "minor"};
+
+bool IsMacroName(const string& name) {
+  // Just do a linear search as the number of elements is very small.
+  for (int i = 0; i < GOOGLE_ARRAYSIZE(kMacroNames); ++i) {
+    if (name == kMacroNames[i]) return true;
+  }
+  return false;
+}
+
+void CollectMacroNames(const Descriptor* message, vector<string>* names) {
+  for (int i = 0; i < message->field_count(); ++i) {
+    const FieldDescriptor* field = message->field(i);
+    if (IsMacroName(field->name())) {
+      names->push_back(field->name());
+    }
+  }
+  for (int i = 0; i < message->nested_type_count(); ++i) {
+    CollectMacroNames(message->nested_type(i), names);
+  }
+}
+
+void CollectMacroNames(const FileDescriptor* file, vector<string>* names) {
+  for (int i = 0; i < file->message_type_count(); ++i) {
+    CollectMacroNames(file->message_type(i), names);
+  }
+}
+
+
+}  // namespace
 
 // ===================================================================
 
@@ -103,10 +136,23 @@ FileGenerator::FileGenerator(const FileDescriptor* file, const Options& options)
 
 FileGenerator::~FileGenerator() {}
 
+void FileGenerator::GenerateMacroUndefs(io::Printer* printer) {
+  vector<string> names_to_undef;
+  CollectMacroNames(file_, &names_to_undef);
+  for (int i = 0; i < names_to_undef.size(); ++i) {
+    printer->Print(
+        "#ifdef $name$\n"
+        "#undef $name$\n"
+        "#endif\n",
+        "name", names_to_undef[i]);
+  }
+}
+
 void FileGenerator::GenerateHeader(io::Printer* printer) {
   printer->Print(
     "// @@protoc_insertion_point(includes)\n");
 
+  GenerateMacroUndefs(printer);
 
   GenerateForwardDeclarations(printer);
 
