@@ -20,11 +20,11 @@ TEST(MessageTest, DelimitedMessages) {
   {
     protobuf_unittest::TestAllTypes message1;
     TestUtil::SetAllFields(&message1);
-    EXPECT_TRUE(SerializeDelimitedToOstream(&message1, &stream));
+    EXPECT_TRUE(SerializeDelimitedToOstream(message1, &stream));
 
     protobuf_unittest::TestPackedTypes message2;
     TestUtil::SetPackedFields(&message2);
-    EXPECT_TRUE(SerializeDelimitedToOstream(&message2, &stream));
+    EXPECT_TRUE(SerializeDelimitedToOstream(message2, &stream));
   }
 
   {

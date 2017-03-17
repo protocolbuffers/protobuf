@@ -7,12 +7,12 @@ namespace google {
 namespace protobuf {
 namespace util {
 
-bool SerializeDelimitedToFileDescriptor(const Message* message, int file_descriptor) {
+bool SerializeDelimitedToFileDescriptor(const MessageLite& message, int file_descriptor) {
   io::FileOutputStream output(file_descriptor);
   return SerializeDelimitedToZeroCopyStream(message, &output);
 }
 
-bool SerializeDelimitedToOstream(const Message* message, ostream* output) {
+bool SerializeDelimitedToOstream(const MessageLite& message, ostream* output) {
   {
     io::OstreamOutputStream zero_copy_output(output);
     if (!SerializeDelimitedToZeroCopyStream(message, &zero_copy_output)) return false;
@@ -49,14 +49,14 @@ bool ParseDelimitedFromCodedStream(MessageLite* message, io::CodedInputStream* i
   return true;
 }
 
-bool SerializeDelimitedToZeroCopyStream(const MessageLite* message, io::ZeroCopyOutputStream* output) {
+bool SerializeDelimitedToZeroCopyStream(const MessageLite& message, io::ZeroCopyOutputStream* output) {
   google::protobuf::io::CodedOutputStream coded_output(output);
   return SerializeDelimitedToCodedStream(message, &coded_output);
 }
 
-bool SerializeDelimitedToCodedStream(const MessageLite* message, io::CodedOutputStream* output) {
+bool SerializeDelimitedToCodedStream(const MessageLite& message, io::CodedOutputStream* output) {
   // Write the size.
-  int size = message->ByteSize();
+  int size = message.ByteSize();
   output->WriteVarint32(size);
 
   // Write the content.
@@ -64,10 +64,10 @@ bool SerializeDelimitedToCodedStream(const MessageLite* message, io::CodedOutput
   if (buffer != NULL) {
     // Optimization: The message fits in one buffer, so use the faster
     // direct-to-array serialization path.
-    message->SerializeWithCachedSizesToArray(buffer);
+    message.SerializeWithCachedSizesToArray(buffer);
   } else {
     // Slightly-slower path when the message is multiple buffers.
-    message->SerializeWithCachedSizes(output);
+    message.SerializeWithCachedSizes(output);
     if (output->HadError()) return false;
   }
 
