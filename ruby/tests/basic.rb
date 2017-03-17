@@ -1,6 +1,7 @@
 #!/usr/bin/ruby
 
 require 'google/protobuf'
+require 'json'
 require 'test/unit'
 
 # ------------- generated code --------------
@@ -1179,9 +1180,33 @@ module BasicTest
       return if RUBY_PLATFORM == "java"
       m = TestMessage.new
 
-      expected = '{"optionalInt32":0,"optionalInt64":0,"optionalUint32":0,"optionalUint64":0,"optionalBool":false,"optionalFloat":0,"optionalDouble":0,"optionalString":"","optionalBytes":"","optionalEnum":"Default","repeatedInt32":[],"repeatedInt64":[],"repeatedUint32":[],"repeatedUint64":[],"repeatedBool":[],"repeatedFloat":[],"repeatedDouble":[],"repeatedString":[],"repeatedBytes":[],"repeatedMsg":[],"repeatedEnum":[]}'
+      expected = {
+        optionalInt32: 0,
+        optionalInt64: 0,
+        optionalUint32: 0,
+        optionalUint64: 0,
+        optionalBool: false,
+        optionalFloat: 0,
+        optionalDouble: 0,
+        optionalString: "",
+        optionalBytes: "",
+        optionalEnum: "Default",
+        repeatedInt32: [],
+        repeatedInt64: [],
+        repeatedUint32: [],
+        repeatedUint64: [],
+        repeatedBool: [],
+        repeatedFloat: [],
+        repeatedDouble: [],
+        repeatedString: [],
+        repeatedBytes: [],
+        repeatedMsg: [],
+        repeatedEnum: []
+      }
 
-      assert TestMessage.encode_json(m, :emit_defaults => true) == expected
+      actual = TestMessage.encode_json(m, :emit_defaults => true)
+
+      assert JSON.parse(actual, :symbolize_names => true) == expected
     end
 
     def test_json_emit_defaults_submsg
@@ -1189,9 +1214,34 @@ module BasicTest
       return if RUBY_PLATFORM == "java"
       m = TestMessage.new(optional_msg: TestMessage2.new)
 
-      expected = '{"optionalInt32":0,"optionalInt64":0,"optionalUint32":0,"optionalUint64":0,"optionalBool":false,"optionalFloat":0,"optionalDouble":0,"optionalString":"","optionalBytes":"","optionalMsg":{"foo":0},"optionalEnum":"Default","repeatedInt32":[],"repeatedInt64":[],"repeatedUint32":[],"repeatedUint64":[],"repeatedBool":[],"repeatedFloat":[],"repeatedDouble":[],"repeatedString":[],"repeatedBytes":[],"repeatedMsg":[],"repeatedEnum":[]}'
+      expected = {
+        optionalInt32: 0,
+        optionalInt64: 0,
+        optionalUint32: 0,
+        optionalUint64: 0,
+        optionalBool: false,
+        optionalFloat: 0,
+        optionalDouble: 0,
+        optionalString: "",
+        optionalBytes: "",
+        optionalMsg: {foo: 0},
+        optionalEnum: "Default",
+        repeatedInt32: [],
+        repeatedInt64: [],
+        repeatedUint32: [],
+        repeatedUint64: [],
+        repeatedBool: [],
+        repeatedFloat: [],
+        repeatedDouble: [],
+        repeatedString: [],
+        repeatedBytes: [],
+        repeatedMsg: [],
+        repeatedEnum: []
+      }
 
-      assert TestMessage.encode_json(m, :emit_defaults => true) == expected
+      actual = TestMessage.encode_json(m, :emit_defaults => true)
+
+      assert JSON.parse(actual, :symbolize_names => true) == expected
     end
 
     def test_json_emit_defaults_repeated_submsg
@@ -1199,21 +1249,45 @@ module BasicTest
       return if RUBY_PLATFORM == "java"
       m = TestMessage.new(repeated_msg: [TestMessage2.new])
 
-      expected = '{"optionalInt32":0,"optionalInt64":0,"optionalUint32":0,"optionalUint64":0,"optionalBool":false,"optionalFloat":0,"optionalDouble":0,"optionalString":"","optionalBytes":"","optionalEnum":"Default","repeatedInt32":[],"repeatedInt64":[],"repeatedUint32":[],"repeatedUint64":[],"repeatedBool":[],"repeatedFloat":[],"repeatedDouble":[],"repeatedString":[],"repeatedBytes":[],"repeatedMsg":[{"foo":0}],"repeatedEnum":[]}'
+      expected = {
+        optionalInt32: 0,
+        optionalInt64: 0,
+        optionalUint32: 0,
+        optionalUint64: 0,
+        optionalBool: false,
+        optionalFloat: 0,
+        optionalDouble: 0,
+        optionalString: "",
+        optionalBytes: "",
+        optionalEnum: "Default",
+        repeatedInt32: [],
+        repeatedInt64: [],
+        repeatedUint32: [],
+        repeatedUint64: [],
+        repeatedBool: [],
+        repeatedFloat: [],
+        repeatedDouble: [],
+        repeatedString: [],
+        repeatedBytes: [],
+        repeatedMsg: [{foo: 0}],
+        repeatedEnum: []
+      }
 
-      assert TestMessage.encode_json(m, :emit_defaults => true) == expected
+      actual = TestMessage.encode_json(m, :emit_defaults => true)
+
+      assert JSON.parse(actual, :symbolize_names => true) == expected
     end
 
     def test_json_maps
       # TODO: Fix JSON in JRuby version.
       return if RUBY_PLATFORM == "java"
       m = MapMessage.new(:map_string_int32 => {"a" => 1})
-      expected = '{"mapStringInt32":{"a":1},"mapStringMsg":{}}'
-      expected_preserve = '{"map_string_int32":{"a":1},"map_string_msg":{}}'
-      assert MapMessage.encode_json(m) == expected
+      expected = {mapStringInt32: {a: 1}, mapStringMsg: {}}
+      expected_preserve = {map_string_int32: {a: 1}, map_string_msg: {}}
+      assert JSON.parse(MapMessage.encode_json(m), :symbolize_names => true) == expected
 
       json = MapMessage.encode_json(m, :preserve_proto_fieldnames => true)
-      assert json == expected_preserve
+      assert JSON.parse(json, :symbolize_names => true) == expected_preserve
 
       m2 = MapMessage.decode_json(MapMessage.encode_json(m))
       assert m == m2
@@ -1223,8 +1297,11 @@ module BasicTest
       # TODO: Fix JSON in JRuby version.
       return if RUBY_PLATFORM == "java"
       m = MapMessage.new(:map_string_msg => {"a" => TestMessage2.new})
-      expected = '{"mapStringInt32":{},"mapStringMsg":{"a":{"foo":0}}}'
-      assert MapMessage.encode_json(m, :emit_defaults => true) == expected
+      expected = {mapStringInt32: {}, mapStringMsg: {a: {foo: 0}}}
+
+      actual = MapMessage.encode_json(m, :emit_defaults => true)
+
+      assert JSON.parse(actual, :symbolize_names => true) == expected
     end
 
     def test_comparison_with_arbitrary_object
