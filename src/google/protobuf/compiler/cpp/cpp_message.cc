@@ -2714,7 +2714,14 @@ GenerateMergeFrom(io::Printer* printer) {
   }
 
   printer->Print(
-    "_internal_metadata_.MergeFrom(from._internal_metadata_);\n");
+    "_internal_metadata_.MergeFrom(from._internal_metadata_);\n"
+    "::google::protobuf::uint32 cached_has_bits = 0;\n"
+    "(void) cached_has_bits;\n\n");
+
+  // cached_has_bit_index maintains that:
+  //   cached_has_bits = from._has_bits_[cached_has_bit_index]
+  // for cached_has_bit_index >= 0
+  int cached_has_bit_index = -1;
 
   int last_i = -1;
   for (int i = 0; i < optimized_order_.size(); ) {
@@ -2734,7 +2741,7 @@ GenerateMergeFrom(io::Printer* printer) {
       generator.GenerateMergingCode(printer);
     }
 
-    // Merge Optional and Required fields (after a _has_bit check).
+    // Merge Optional and Required fields (after a _has_bits_ check).
     int last_chunk = -1;
     int last_chunk_start = -1;
     int last_chunk_end = -1;
@@ -2779,23 +2786,44 @@ GenerateMergeFrom(io::Printer* printer) {
         GOOGLE_DCHECK_LE(2, count);
         GOOGLE_DCHECK_GE(8, count);
 
+        if (cached_has_bit_index != last_chunk / 4) {
+          int new_index = last_chunk / 4;
+          printer->Print("cached_has_bits = from._has_bits_[$new_index$];\n",
+                         "new_index", SimpleItoa(new_index));
+          cached_has_bit_index = new_index;
+        }
+
         printer->Print(
-          "if (from._has_bits_[$index$ / 32] & $mask$u) {\n",
+          "if (cached_has_bits & $mask$u) {\n",
           "index", SimpleItoa(last_chunk * 8),
           "mask", SimpleItoa(last_chunk_mask));
         printer->Indent();
       }
 
       // Go back and emit clears for each of the fields we processed.
+      bool deferred_has_bit_changes = false;
       for (int j = last_chunk_start; j <= last_chunk_end; j++) {
         const FieldDescriptor* field = optimized_order_[j];
         const FieldGenerator& generator = field_generators_.get(field);
 
         bool have_enclosing_if = false;
         if (HasFieldPresence(descriptor_->file())) {
-          printer->Print(
-            "if (from.has_$name$()) {\n",
-            "name", FieldName(field));
+          // Attempt to use the state of cached_has_bits, if possible.
+          int has_bit_index = has_bit_indices_[field->index()];
+          if (!field->options().weak() &&
+              cached_has_bit_index == has_bit_index / 32) {
+            const string mask = StrCat(
+                strings::Hex(1u << (has_bit_index % 32),
+                             strings::ZERO_PAD_8));
+
+            printer->Print(
+              "if (cached_has_bits & 0x$mask$u) {\n", "mask", mask);
+          } else {
+            printer->Print(
+              "if (from.has_$name$()) {\n",
+              "name", FieldName(field));
+          }
+
           printer->Indent();
           have_enclosing_if = true;
         } else {
@@ -2805,7 +2833,17 @@ GenerateMergeFrom(io::Printer* printer) {
               printer, "from.", field);
         }
 
-        generator.GenerateMergingCode(printer);
+        if (have_outer_if && IsPOD(field)) {
+          // GenerateCopyConstructorCode for enum and primitive scalar fields
+          // does not do _has_bits_ modifications.  We defer _has_bits_
+          // manipulation until the end of the outer if.
+          //
+          // This can reduce the number of loads/stores by up to 7 per 8 fields.
+          deferred_has_bit_changes = true;
+          generator.GenerateCopyConstructorCode(printer);
+        } else {
+          generator.GenerateMergingCode(printer);
+        }
 
         if (have_enclosing_if) {
           printer->Outdent();
@@ -2814,6 +2852,14 @@ GenerateMergeFrom(io::Printer* printer) {
       }
 
       if (have_outer_if) {
+        if (deferred_has_bit_changes) {
+          // Fush the has bits for the primitives we deferred.
+          GOOGLE_CHECK_LE(0, cached_has_bit_index);
+          printer->Print(
+              "_has_bits_[$index$] |= cached_has_bits;\n",
+              "index", SimpleItoa(cached_has_bit_index));
+        }
+
         printer->Outdent();
         printer->Print("}\n");
       }
