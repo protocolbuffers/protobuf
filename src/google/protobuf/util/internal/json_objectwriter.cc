@@ -176,14 +176,8 @@ void JsonObjectWriter::WritePrefix(StringPiece name) {
   if (!name.empty() || empty_key_ok) {
     WriteChar('"');
     if (!name.empty()) {
-      if (use_snake_case_for_field_names_) {
-        string snake_name = ToSnakeCase(name);
-        ArrayByteSource source(snake_name);
-        JsonEscaping::Escape(&source, &sink_);
-      } else {
-        ArrayByteSource source(name);
-        JsonEscaping::Escape(&source, &sink_);
-      }
+      ArrayByteSource source(name);
+      JsonEscaping::Escape(&source, &sink_);
     }
     stream_->WriteString("\":");
     if (!indent_string_.empty()) WriteChar(' ');
