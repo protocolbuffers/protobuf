@@ -51,6 +51,7 @@ using proto3::FOO;
 using proto3::BAR;
 using proto3::TestMessage;
 using proto3::TestMap;
+using proto3::TestOneof;
 using testing::MapIn;
 
 static const char kTypeUrlPrefix[] = "type.googleapis.com";
@@ -230,6 +231,21 @@ TEST_F(JsonUtilTest, ParsePrimitiveMapIn) {
   MapIn other;
   ASSERT_TRUE(FromJson(ToJson(message, print_options), &other, parse_options));
   EXPECT_EQ(message.DebugString(), other.DebugString());
+}
+
+TEST_F(JsonUtilTest, PrintPrimitiveOneof) {
+  TestOneof message;
+  JsonPrintOptions options;
+  options.always_print_primitive_fields = true;
+  message.mutable_oneof_message_value();
+  EXPECT_EQ(
+      "{\"oneofMessageValue\":{\"value\":0}}",
+      ToJson(message, options));
+
+  message.set_oneof_int32_value(1);
+  EXPECT_EQ(
+      "{\"oneofInt32Value\":1}",
+      ToJson(message, options));
 }
 
 TEST_F(JsonUtilTest, TestParseIgnoreUnknownFields) {
