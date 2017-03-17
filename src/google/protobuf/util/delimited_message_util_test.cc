@@ -14,7 +14,7 @@ namespace google {
 namespace protobuf {
 namespace util {
 
-TEST(MessageTest, DelimitedMessages) {
+TEST(DelimitedMessageUtilTest, DelimitedMessages) {
   stringstream stream;
 
   {
