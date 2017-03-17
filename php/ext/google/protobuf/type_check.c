@@ -439,7 +439,8 @@ PHP_METHOD(Util, checkRepeatedField) {
          zend_hash_get_current_data_ex(table, (void**)&memory, &pointer) ==
          SUCCESS;
          zend_hash_move_forward_ex(table, &pointer)) {
-      repeated_field_handlers->write_dimension(repeated_field, NULL, *(zval**)memory);
+      repeated_field_handlers->write_dimension(repeated_field, NULL,
+                                               *(zval**)memory TSRMLS_CC);
     }
 
     Z_DELREF_P(repeated_field);
@@ -497,7 +498,8 @@ PHP_METHOD(Util, checkMapField) {
          SUCCESS;
          zend_hash_move_forward_ex(table, &pointer)) {
       zend_hash_get_current_key_zval_ex(table, &key, &pointer);
-      map_field_handlers->write_dimension(map_field, &key, *(zval**)value);
+      map_field_handlers->write_dimension(map_field, &key,
+                                          *(zval**)value TSRMLS_CC);
     }
 
     Z_DELREF_P(map_field);

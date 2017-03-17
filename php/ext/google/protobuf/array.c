@@ -230,7 +230,7 @@ void repeated_field_create_with_field(zend_class_entry *ce,
                                       zval **repeated_field TSRMLS_DC) {
   upb_fieldtype_t type = upb_fielddef_type(field);
   const zend_class_entry *msg_ce = field_type_class(field TSRMLS_CC);
-  repeated_field_create_with_type(ce, type, msg_ce, repeated_field);
+  repeated_field_create_with_type(ce, type, msg_ce, repeated_field TSRMLS_CC);
 }
 
 void repeated_field_create_with_type(zend_class_entry *ce,
