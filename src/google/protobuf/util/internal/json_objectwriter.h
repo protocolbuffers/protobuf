@@ -94,6 +94,7 @@ class LIBPROTOBUF_EXPORT JsonObjectWriter : public StructuredObjectWriter {
         sink_(out),
         indent_string_(indent_string.ToString()),
         use_websafe_base64_for_bytes_(false),
+        use_snake_case_for_field_names_(false),
         empty_name_ok_for_next_key_(false) {}
   virtual ~JsonObjectWriter();
 
@@ -116,6 +117,10 @@ class LIBPROTOBUF_EXPORT JsonObjectWriter : public StructuredObjectWriter {
 
   void set_use_websafe_base64_for_bytes(bool value) {
     use_websafe_base64_for_bytes_ = value;
+  }
+
+  void set_use_snake_case_for_field_names(bool value) {
+    use_snake_case_for_field_names_ = value;
   }
 
   // Whether empty strings should be rendered for the next JSON key. This
@@ -216,6 +221,9 @@ class LIBPROTOBUF_EXPORT JsonObjectWriter : public StructuredObjectWriter {
   // Whether to use regular or websafe base64 encoding for byte fields. Defaults
   // to regular base64 encoding.
   bool use_websafe_base64_for_bytes_;
+
+  // Whether to use snake_case or lowerCamelCase for field names
+  bool use_snake_case_for_field_names_;
 
   // Whether empty strings should be rendered for the next JSON key. This
   // setting is only valid until the next key is rendered, after which it gets

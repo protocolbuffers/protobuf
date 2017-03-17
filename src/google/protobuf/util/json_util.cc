@@ -86,6 +86,7 @@ util::Status BinaryToJsonStream(TypeResolver* resolver,
   io::CodedOutputStream out_stream(json_output);
   converter::JsonObjectWriter json_writer(options.add_whitespace ? " " : "",
                                           &out_stream);
+  json_writer.set_use_snake_case_for_field_names(options.use_snake_case_for_field_names);
   if (options.always_print_primitive_fields) {
     converter::DefaultValueObjectWriter default_value_writer(
         resolver, type, &json_writer);
