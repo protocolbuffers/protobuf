@@ -145,6 +145,7 @@ cc_library(
         "src/google/protobuf/timestamp.pb.cc",
         "src/google/protobuf/type.pb.cc",
         "src/google/protobuf/unknown_field_set.cc",
+        "src/google/protobuf/util/delimited_message_util.cc",
         "src/google/protobuf/util/field_comparator.cc",
         "src/google/protobuf/util/field_mask_util.cc",
         "src/google/protobuf/util/internal/datapiece.cc",
