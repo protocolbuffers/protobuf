@@ -169,6 +169,7 @@ set(tests_files
   ${protobuf_source_dir}/src/google/protobuf/stubs/type_traits_unittest.cc
   ${protobuf_source_dir}/src/google/protobuf/text_format_unittest.cc
   ${protobuf_source_dir}/src/google/protobuf/unknown_field_set_unittest.cc
+  ${protobuf_source_dir}/src/google/protobuf/util/delimited_message_util_test.cc
   ${protobuf_source_dir}/src/google/protobuf/util/field_comparator_test.cc
   ${protobuf_source_dir}/src/google/protobuf/util/field_mask_util_test.cc
   ${protobuf_source_dir}/src/google/protobuf/util/internal/default_value_objectwriter_test.cc
