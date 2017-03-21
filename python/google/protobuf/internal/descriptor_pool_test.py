@@ -107,6 +107,12 @@ class DescriptorPoolTest(unittest.TestCase):
     self.assertEqual('google.protobuf.python.internal', file_desc2.package)
     self.assertIn('Factory2Message', file_desc2.message_types_by_name)
 
+    file_desc3 = self.pool.FindFileContainingSymbol(
+        'google.protobuf.python.internal.Factory2Message.one_more_field')
+    self.assertIsInstance(file_desc3, descriptor.FileDescriptor)
+    self.assertEqual('google/protobuf/internal/factory_test2.proto',
+                     file_desc3.name)
+
   def testFindFileContainingSymbolFailure(self):
     with self.assertRaises(KeyError):
       self.pool.FindFileContainingSymbol('Does not exist')
