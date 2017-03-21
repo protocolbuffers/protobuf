@@ -247,7 +247,7 @@ void map_field_create_with_field(zend_class_entry *ce, const upb_fielddef *field
   const upb_fielddef *value_field = map_field_value(field);
   map_field_create_with_type(
       ce, upb_fielddef_type(key_field), upb_fielddef_type(value_field),
-      field_type_class(value_field TSRMLS_CC), map_field);
+      field_type_class(value_field TSRMLS_CC), map_field TSRMLS_CC);
 }
 
 void map_field_create_with_type(zend_class_entry *ce, upb_fieldtype_t key_type,
