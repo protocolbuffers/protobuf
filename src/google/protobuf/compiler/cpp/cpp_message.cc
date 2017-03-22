@@ -3198,7 +3198,7 @@ void MessageGenerator::GenerateSerializeOneofFields(
     bool to_array) {
   GOOGLE_CHECK(!fields.empty());
   if (fields.size() == 1) {
-    GenerateSerializeOneField(printer, fields[0], to_array);
+    GenerateSerializeOneField(printer, fields[0], to_array, -1);
     return;
   }
   // We have multiple mutually exclusive choices.  Emit a switch statement.
@@ -3231,14 +3231,27 @@ void MessageGenerator::GenerateSerializeOneofFields(
 }
 
 void MessageGenerator::GenerateSerializeOneField(
-    io::Printer* printer, const FieldDescriptor* field, bool to_array) {
+    io::Printer* printer, const FieldDescriptor* field, bool to_array,
+    int cached_has_bits_index) {
   PrintFieldComment(printer, field);
 
   bool have_enclosing_if = false;
   if (!field->is_repeated() && HasFieldPresence(descriptor_->file())) {
-    printer->Print(
-      "if (has_$name$()) {\n",
-      "name", FieldName(field));
+    // Attempt to use the state of the cached_has_bits, if possible.
+    int has_bit_index = has_bit_indices_[field->index()];
+    if (cached_has_bits_index == has_bit_index / 32) {
+      const ::std::string mask = StrCat(
+          strings::Hex(1u << (has_bit_index % 32),
+          strings::ZERO_PAD_8));
+
+      printer->Print(
+          "if (cached_has_bits & 0x$mask$u) {\n", "mask", mask);
+    } else {
+      printer->Print(
+        "if (has_$name$()) {\n",
+        "name", FieldName(field));
+    }
+
     printer->Indent();
     have_enclosing_if = true;
   } else if (!HasFieldPresence(descriptor_->file())) {
@@ -3376,7 +3389,8 @@ GenerateSerializeWithCachedSizesBody(io::Printer* printer, bool to_array) {
         : mg_(mg),
           printer_(printer),
           to_array_(to_array),
-          eager_(!HasFieldPresence(mg->descriptor_->file())) {}
+          eager_(!HasFieldPresence(mg->descriptor_->file())),
+          cached_has_bit_index_(-1) {}
 
     ~LazySerializerEmitter() { Flush(); }
 
@@ -3387,7 +3401,27 @@ GenerateSerializeWithCachedSizesBody(io::Printer* printer, bool to_array) {
         Flush();
       }
       if (field->containing_oneof() == NULL) {
-        mg_->GenerateSerializeOneField(printer_, field, to_array_);
+        // TODO(ckennelly): Defer non-oneof fields similarly to oneof fields.
+
+        if (!field->options().weak() && !field->is_repeated() && !eager_) {
+          // We speculatively load the entire _has_bits_[index] contents, even
+          // if it is for only one field.  Deferring non-oneof emitting would
+          // allow us to determine whether this is going to be useful.
+          int has_bit_index = mg_->has_bit_indices_[field->index()];
+          if (cached_has_bit_index_ != has_bit_index / 32) {
+            // Reload.
+            int new_index = has_bit_index / 32;
+
+            printer_->Print(
+                "cached_has_bits = _has_bits_[$new_index$];\n",
+                "new_index", SimpleItoa(new_index));
+
+            cached_has_bit_index_ = new_index;
+          }
+        }
+
+        mg_->GenerateSerializeOneField(
+            printer_, field, to_array_, cached_has_bit_index_);
       } else {
         v_.push_back(field);
       }
@@ -3413,6 +3447,11 @@ GenerateSerializeWithCachedSizesBody(io::Printer* printer, bool to_array) {
     const bool to_array_;
     const bool eager_;
     std::vector<const FieldDescriptor*> v_;
+
+    // cached_has_bit_index_ maintains that:
+    //   cached_has_bits = from._has_bits_[cached_has_bit_index_]
+    // for cached_has_bit_index_ >= 0
+    int cached_has_bit_index_;
   };
 
   std::vector<const FieldDescriptor*> ordered_fields =
@@ -3424,6 +3463,10 @@ GenerateSerializeWithCachedSizesBody(io::Printer* printer, bool to_array) {
   }
   std::sort(sorted_extensions.begin(), sorted_extensions.end(),
             ExtensionRangeSorter());
+
+  printer->Print(
+      "::google::protobuf::uint32 cached_has_bits = 0;\n"
+      "(void) cached_has_bits;\n\n");
 
   // Merge the fields and the extension ranges, both sorted by field number.
   {

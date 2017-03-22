@@ -221,6 +221,9 @@ failure:
 void Empty::SerializeWithCachedSizes(
     ::google::protobuf::io::CodedOutputStream* output) const {
   // @@protoc_insertion_point(serialize_start:google.protobuf.Empty)
+  ::google::protobuf::uint32 cached_has_bits = 0;
+  (void) cached_has_bits;
+
   // @@protoc_insertion_point(serialize_end:google.protobuf.Empty)
 }
 
@@ -228,6 +231,9 @@ void Empty::SerializeWithCachedSizes(
     bool deterministic, ::google::protobuf::uint8* target) const {
   (void)deterministic;  // Unused
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.Empty)
+  ::google::protobuf::uint32 cached_has_bits = 0;
+  (void) cached_has_bits;
+
   // @@protoc_insertion_point(serialize_to_array_end:google.protobuf.Empty)
   return target;
 }

@@ -352,6 +352,9 @@ failure:
 void Struct::SerializeWithCachedSizes(
     ::google::protobuf::io::CodedOutputStream* output) const {
   // @@protoc_insertion_point(serialize_start:google.protobuf.Struct)
+  ::google::protobuf::uint32 cached_has_bits = 0;
+  (void) cached_has_bits;
+
   // map<string, .google.protobuf.Value> fields = 1;
   if (!this->fields().empty()) {
     typedef ::google::protobuf::Map< ::std::string, ::google::protobuf::Value >::const_pointer
@@ -414,6 +417,9 @@ void Struct::SerializeWithCachedSizes(
     bool deterministic, ::google::protobuf::uint8* target) const {
   (void)deterministic;  // Unused
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.Struct)
+  ::google::protobuf::uint32 cached_has_bits = 0;
+  (void) cached_has_bits;
+
   // map<string, .google.protobuf.Value> fields = 1;
   if (!this->fields().empty()) {
     typedef ::google::protobuf::Map< ::std::string, ::google::protobuf::Value >::const_pointer
@@ -877,6 +883,9 @@ failure:
 void Value::SerializeWithCachedSizes(
     ::google::protobuf::io::CodedOutputStream* output) const {
   // @@protoc_insertion_point(serialize_start:google.protobuf.Value)
+  ::google::protobuf::uint32 cached_has_bits = 0;
+  (void) cached_has_bits;
+
   // .google.protobuf.NullValue null_value = 1;
   if (has_null_value()) {
     ::google::protobuf::internal::WireFormatLite::WriteEnum(
@@ -922,6 +931,9 @@ void Value::SerializeWithCachedSizes(
     bool deterministic, ::google::protobuf::uint8* target) const {
   (void)deterministic;  // Unused
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.Value)
+  ::google::protobuf::uint32 cached_has_bits = 0;
+  (void) cached_has_bits;
+
   // .google.protobuf.NullValue null_value = 1;
   if (has_null_value()) {
     target = ::google::protobuf::internal::WireFormatLite::WriteEnumToArray(
@@ -1633,6 +1645,9 @@ failure:
 void ListValue::SerializeWithCachedSizes(
     ::google::protobuf::io::CodedOutputStream* output) const {
   // @@protoc_insertion_point(serialize_start:google.protobuf.ListValue)
+  ::google::protobuf::uint32 cached_has_bits = 0;
+  (void) cached_has_bits;
+
   // repeated .google.protobuf.Value values = 1;
   for (unsigned int i = 0, n = this->values_size(); i < n; i++) {
     ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
@@ -1646,6 +1661,9 @@ void ListValue::SerializeWithCachedSizes(
     bool deterministic, ::google::protobuf::uint8* target) const {
   (void)deterministic;  // Unused
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.ListValue)
+  ::google::protobuf::uint32 cached_has_bits = 0;
+  (void) cached_has_bits;
+
   // repeated .google.protobuf.Value values = 1;
   for (unsigned int i = 0, n = this->values_size(); i < n; i++) {
     target = ::google::protobuf::internal::WireFormatLite::
