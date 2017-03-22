@@ -570,6 +570,7 @@ java_library(
     ]) + [
         ":gen_well_known_protos_java",
     ],
+    javacopts = ["-source 6"],
     visibility = ["//visibility:public"],
 )
 
