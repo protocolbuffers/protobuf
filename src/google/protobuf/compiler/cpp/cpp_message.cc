@@ -288,10 +288,13 @@ bool CanConstructByZeroing(const FieldDescriptor* field,
 // order, fields of similiar family (see below) are together and within each
 // family, alignment padding is minimized.
 //
-// We try to do this while keeping each field as close as possible to its
-// declaration order (from the .proto file) so that we don't reduce cache
-// locality much for function that access each field in order.  This is also the
-// only (weak) signal we have for author intent concerning field layout.
+// We try to do this while keeping each field as close as possible to its field
+// number order so that we don't reduce cache locality much for function that
+// access each field in order.  Originally, OptimizePadding used declaration
+// order for its decisions, but generated code minus the serializer/parsers uses
+// the output of OptimizePadding as well (stored in
+// MessageGenerator::optimized_order_).  Since the serializers use field number
+// order, we use that as a tie-breaker.
 //
 // TODO(ckennelly):  If/when we have profiles available for the compiler, use
 // those rather than respect declaration order.
@@ -346,10 +349,11 @@ void OptimizePadding(std::vector<const FieldDescriptor*>* fields,
       f = ZERO_INITIALIZABLE;
     }
 
+    const int j = field->number();
     switch (EstimateAlignmentSize(field)) {
-      case 1: aligned_to_1[f].push_back(FieldGroup(i, field)); break;
-      case 4: aligned_to_4[f].push_back(FieldGroup(i, field)); break;
-      case 8: aligned_to_8[f].push_back(FieldGroup(i, field)); break;
+      case 1: aligned_to_1[f].push_back(FieldGroup(j, field)); break;
+      case 4: aligned_to_4[f].push_back(FieldGroup(j, field)); break;
+      case 8: aligned_to_8[f].push_back(FieldGroup(j, field)); break;
       default:
         GOOGLE_LOG(FATAL) << "Unknown alignment size.";
     }
@@ -366,7 +370,7 @@ void OptimizePadding(std::vector<const FieldDescriptor*>* fields,
       }
       aligned_to_4[f].push_back(field_group);
     }
-    // Sort by preferred location to keep fields as close to their declaration
+    // Sort by preferred location to keep fields as close to their field number
     // order as possible.  Using stable_sort ensures that the output is
     // consistent across runs.
     std::stable_sort(aligned_to_4[f].begin(), aligned_to_4[f].end());

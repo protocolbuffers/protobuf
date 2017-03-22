@@ -154,7 +154,7 @@ class LIBPROTOBUF_EXPORT Duration : public ::google::protobuf::Message /* @@prot
   ::google::protobuf::int64 seconds_;
   ::google::protobuf::int32 nanos_;
   mutable int _cached_size_;
-  friend struct LIBPROTOBUF_EXPORT protobuf_google_2fprotobuf_2fduration_2eproto::TableStruct;
+  friend struct protobuf_google_2fprotobuf_2fduration_2eproto::TableStruct;
 };
 // ===================================================================
 

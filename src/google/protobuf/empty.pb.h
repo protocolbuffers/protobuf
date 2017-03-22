@@ -140,7 +140,7 @@ class LIBPROTOBUF_EXPORT Empty : public ::google::protobuf::Message /* @@protoc_
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
   mutable int _cached_size_;
-  friend struct LIBPROTOBUF_EXPORT protobuf_google_2fprotobuf_2fempty_2eproto::TableStruct;
+  friend struct protobuf_google_2fprotobuf_2fempty_2eproto::TableStruct;
 };
 // ===================================================================
 

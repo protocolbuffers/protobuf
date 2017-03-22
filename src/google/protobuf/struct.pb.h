@@ -193,7 +193,7 @@ class LIBPROTOBUF_EXPORT Struct : public ::google::protobuf::Message /* @@protoc
       ::google::protobuf::internal::WireFormatLite::TYPE_MESSAGE,
       0 > fields_;
   mutable int _cached_size_;
-  friend struct LIBPROTOBUF_EXPORT protobuf_google_2fprotobuf_2fstruct_2eproto::TableStruct;
+  friend struct protobuf_google_2fprotobuf_2fstruct_2eproto::TableStruct;
 };
 // -------------------------------------------------------------------
 
@@ -396,7 +396,7 @@ class LIBPROTOBUF_EXPORT Value : public ::google::protobuf::Message /* @@protoc_
   mutable int _cached_size_;
   ::google::protobuf::uint32 _oneof_case_[1];
 
-  friend struct LIBPROTOBUF_EXPORT protobuf_google_2fprotobuf_2fstruct_2eproto::TableStruct;
+  friend struct protobuf_google_2fprotobuf_2fstruct_2eproto::TableStruct;
 };
 // -------------------------------------------------------------------
 
@@ -500,7 +500,7 @@ class LIBPROTOBUF_EXPORT ListValue : public ::google::protobuf::Message /* @@pro
   typedef void DestructorSkippable_;
   ::google::protobuf::RepeatedPtrField< ::google::protobuf::Value > values_;
   mutable int _cached_size_;
-  friend struct LIBPROTOBUF_EXPORT protobuf_google_2fprotobuf_2fstruct_2eproto::TableStruct;
+  friend struct protobuf_google_2fprotobuf_2fstruct_2eproto::TableStruct;
 };
 // ===================================================================
 

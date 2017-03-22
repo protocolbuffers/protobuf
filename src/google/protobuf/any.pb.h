@@ -167,7 +167,7 @@ class LIBPROTOBUF_EXPORT Any : public ::google::protobuf::Message /* @@protoc_in
   ::google::protobuf::internal::ArenaStringPtr value_;
   mutable int _cached_size_;
   ::google::protobuf::internal::AnyMetadata _any_metadata_;
-  friend struct LIBPROTOBUF_EXPORT protobuf_google_2fprotobuf_2fany_2eproto::TableStruct;
+  friend struct protobuf_google_2fprotobuf_2fany_2eproto::TableStruct;
 };
 // ===================================================================
 
