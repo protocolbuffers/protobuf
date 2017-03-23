@@ -170,6 +170,132 @@ namespace Google.Protobuf
         }
 
         /// <summary>
+        /// Formats the specified field of the message as JSON.
+        /// </summary>
+        /// <param name="message">The message to format.</param>
+        /// <param name="field">The field in the message to format.</param>
+        /// <returns>The formatted field.</returns>
+        public string FormatFieldValue(IMessage message, FieldDescriptor field)
+        {
+            var writer = new StringWriter();
+            FormatFieldValue(message, field, writer);
+            return writer.ToString();
+        }
+
+        /// <summary>
+        /// Formats the specified field of the message as JSON.
+        /// </summary>
+        /// <param name="message">The message to format.</param>
+        /// <param name="field">The field in the message to format.</param>
+        /// <param name="index">The index of the repeated message to access.</param>
+        /// <returns>The formatted field.</returns>
+        public string FormatRepeatedFieldValue(IMessage message, FieldDescriptor field, int index)
+        {
+            var writer = new StringWriter();
+            FormatRepeatedFieldValue(message, field, index, writer);
+            return writer.ToString();
+        }
+
+        /// <summary>
+        /// Formats the specified field of the message as JSON.
+        /// </summary>
+        /// <param name="message">The message to format.</param>
+        /// <param name="field">The field in the message to format.</param>
+        /// <param name="key">The key of the map to access.</param>
+        /// <returns>The formatted field.</returns>
+        public string FormatMapFieldValue(IMessage message, FieldDescriptor field, object key)
+        {
+            var writer = new StringWriter();
+            FormatMapFieldValue(message, field, key, writer);
+            return writer.ToString();
+        }
+
+        /// <summary>
+        /// Formats the specified field of the message as JSON.
+        /// </summary>
+        /// <param name="message">The message to format.</param>
+        /// <param name="field">The field of the message to format.</param>
+        /// <param name="writer">The TextWriter to write the formatted field value to.</param>
+        /// <returns>The formatted field.</returns>
+        public void FormatFieldValue(IMessage message, FieldDescriptor field, TextWriter writer)
+        {
+            ProtoPreconditions.CheckNotNull(message, nameof(message));
+            ProtoPreconditions.CheckNotNull(field, nameof(field));
+            ProtoPreconditions.CheckNotNull(writer, nameof(writer));
+            ProtoPreconditions.CheckContainingType(field, message);
+
+            var accessor = field.Accessor;
+            if (field.ContainingOneof != null && field.ContainingOneof.Accessor.GetCaseFieldDescriptor(message) != field)
+            {
+                return;
+            }
+
+            object value = accessor.GetValue(message);
+            WriteValue(writer, value);
+        }
+
+        /// <summary>
+        /// Formats the specified field of the message as JSON.
+        /// </summary>
+        /// <param name="message">The message to format.</param>
+        /// <param name="field">The field of the message to format.</param>
+        /// <param name="index">The index of the repeated message to access.</param>
+        /// <param name="writer">The TextWriter to write the formatted field value to.</param>
+        /// <returns>The formatted field.</returns>
+        public void FormatRepeatedFieldValue(IMessage message, FieldDescriptor field, int index, TextWriter writer)
+        {
+            ProtoPreconditions.CheckNotNull(message, nameof(message));
+            ProtoPreconditions.CheckNotNull(field, nameof(field));
+            ProtoPreconditions.CheckNotNull(writer, nameof(writer));
+            ProtoPreconditions.CheckContainingType(field, message);
+
+            if (!field.IsRepeated || field.IsMap)
+            {
+                throw new ArgumentException("The field is not repeated.");
+            }
+
+            var accessor = field.Accessor;
+            if (field.ContainingOneof != null && field.ContainingOneof.Accessor.GetCaseFieldDescriptor(message) != field)
+            {
+                return;
+            }
+
+            IList value = (IList)accessor.GetValue(message);
+            WriteValue(writer, value[index]);
+        }
+
+        /// <summary>
+        /// Formats the specified field of the message as JSON.
+        /// </summary>
+        /// <param name="message">The message to format.</param>
+        /// <param name="field">The field of the message to format.</param>
+        /// <param name="key">The key of the map to access.</param>
+        /// <param name="writer">The TextWriter to write the formatted field value to.</param>
+        /// <returns>The formatted field.</returns>
+        public void FormatMapFieldValue(IMessage message, FieldDescriptor field, object key, TextWriter writer)
+        {
+            ProtoPreconditions.CheckNotNull(message, nameof(message));
+            ProtoPreconditions.CheckNotNull(field, nameof(field));
+            ProtoPreconditions.CheckNotNull(key, nameof(key));
+            ProtoPreconditions.CheckNotNull(writer, nameof(writer));
+            ProtoPreconditions.CheckContainingType(field, message);
+
+            if (!field.IsMap)
+            {
+                throw new ArgumentException("The field is not a map.");
+            }
+
+            var accessor = field.Accessor;
+            if (field.ContainingOneof != null && field.ContainingOneof.Accessor.GetCaseFieldDescriptor(message) != field)
+            {
+                return;
+            }
+
+            IDictionary value = (IDictionary)accessor.GetValue(message);
+            WriteValue(writer, value[key]);
+        }
+
+        /// <summary>
         /// Converts a message to JSON for diagnostic purposes with no extra context.
         /// </summary>
         /// <remarks>
