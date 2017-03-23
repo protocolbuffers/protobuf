@@ -1511,19 +1511,19 @@ GenerateInlineMethods(io::Printer* printer, bool is_inline) {
 
 void MessageGenerator::
 GenerateExtraDefaultFields(io::Printer* printer) {
+  if (descriptor_->oneof_decl_count() <= 0) return;
+
   // Generate oneof default instance for reflection usage.
-  if (descriptor_->oneof_decl_count() > 0) {
-    printer->Print("public:\n");
-    for (int i = 0; i < descriptor_->oneof_decl_count(); i++) {
-      for (int j = 0; j < descriptor_->oneof_decl(i)->field_count(); j++) {
-        const FieldDescriptor* field = descriptor_->oneof_decl(i)->field(j);
-        if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE ||
-            (field->cpp_type() == FieldDescriptor::CPPTYPE_STRING &&
-             EffectiveStringCType(field) != FieldOptions::STRING)) {
-          printer->Print("const ");
-        }
-        field_generators_.get(field).GeneratePrivateMembers(printer);
+  printer->Print("public:\n");
+  for (int i = 0; i < descriptor_->oneof_decl_count(); i++) {
+    for (int j = 0; j < descriptor_->oneof_decl(i)->field_count(); j++) {
+      const FieldDescriptor* field = descriptor_->oneof_decl(i)->field(j);
+      if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE ||
+          (field->cpp_type() == FieldDescriptor::CPPTYPE_STRING &&
+           EffectiveStringCType(field) != FieldOptions::STRING)) {
+        printer->Print("const ");
       }
+      field_generators_.get(field).GeneratePrivateMembers(printer);
     }
   }
 }
@@ -1546,39 +1546,39 @@ void MessageGenerator::GenerateSchema(io::Printer* printer, int offset,
 
 void MessageGenerator::
 GenerateTypeRegistrations(io::Printer* printer) {
+  if (!IsMapEntryMessage(descriptor_)) return;
+
   // Register this message type with the message factory.
-  if (IsMapEntryMessage(descriptor_)) {
-    std::map<string, string> vars;
-    CollectMapInfo(descriptor_, &vars);
-    vars["classname"] = classname_;
-    vars["file_namespace"] = FileLevelNamespace(descriptor_->file()->name());
+  std::map<string, string> vars;
+  CollectMapInfo(descriptor_, &vars);
+  vars["classname"] = classname_;
+  vars["file_namespace"] = FileLevelNamespace(descriptor_->file()->name());
 
-    const FieldDescriptor* val = descriptor_->FindFieldByName("value");
-    if (descriptor_->file()->syntax() == FileDescriptor::SYNTAX_PROTO2 &&
-        val->type() == FieldDescriptor::TYPE_ENUM) {
-      const EnumValueDescriptor* default_value = val->default_value_enum();
-      vars["default_enum_value"] = Int32ToString(default_value->number());
-    } else {
-      vars["default_enum_value"] = "0";
-    }
-
-    vars["index_in_metadata"] = SimpleItoa(index_in_metadata_);
-
-    printer->Print(
-        vars,
-        "const ::google::protobuf::Descriptor* $classname$_descriptor = "
-        "$file_namespace$::file_level_metadata[$index_in_metadata$].descriptor;"
-        "\n"
-        "::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(\n"
-        "      $classname$_descriptor,\n"
-        "      ::google::protobuf::internal::MapEntry<\n"
-        "          $key$,\n"
-        "          $val$,\n"
-        "          $key_wire_type$,\n"
-        "          $val_wire_type$,\n"
-        "          $default_enum_value$>::CreateDefaultInstance(\n"
-        "              $classname$_descriptor));\n");
+  const FieldDescriptor* val = descriptor_->FindFieldByName("value");
+  if (descriptor_->file()->syntax() == FileDescriptor::SYNTAX_PROTO2 &&
+      val->type() == FieldDescriptor::TYPE_ENUM) {
+    const EnumValueDescriptor* default_value = val->default_value_enum();
+    vars["default_enum_value"] = Int32ToString(default_value->number());
+  } else {
+    vars["default_enum_value"] = "0";
   }
+
+  vars["index_in_metadata"] = SimpleItoa(index_in_metadata_);
+
+  printer->Print(
+      vars,
+      "const ::google::protobuf::Descriptor* $classname$_descriptor = "
+      "$file_namespace$::file_level_metadata[$index_in_metadata$].descriptor;"
+      "\n"
+      "::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(\n"
+      "      $classname$_descriptor,\n"
+      "      ::google::protobuf::internal::MapEntry<\n"
+      "          $key$,\n"
+      "          $val$,\n"
+      "          $key_wire_type$,\n"
+      "          $val_wire_type$,\n"
+      "          $default_enum_value$>::CreateDefaultInstance(\n"
+      "              $classname$_descriptor));\n");
 }
 
 void MessageGenerator::
