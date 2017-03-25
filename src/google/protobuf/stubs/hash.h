@@ -40,7 +40,6 @@
 
 #define GOOGLE_PROTOBUF_HAVE_HASH_MAP 1
 #define GOOGLE_PROTOBUF_HAVE_HASH_SET 1
-#define GOOGLE_PROTOBUF_HAVE_64BIT_HASH 1
 
 // Use C++11 unordered_{map|set} if available.
 #if ((_LIBCPP_STD_VER >= 11) || \
@@ -93,9 +92,25 @@
 #  define GOOGLE_PROTOBUF_HASH_SET_CLASS hash_set
 # endif
 
+// GCC 4.1 and previous does not define hash for int64/uint64
 # if __GNUC__ == 4 && __GNUC__MINOR__ <= 1
-#  undef GOOGLE_PROTOBUF_HAVE_64BIT_HASH
-# endif
+#  include <tr1/functional>
+    namespace std {
+    namespace tr1 {
+
+    template<>
+    struct hash<google::protobuf::uint64> {
+      std::size_t operator()(google::protobuf::uint64 val) const { return static_cast<std::size_t>(val); }
+    };
+
+    template<>
+    struct hash<google::protobuf::int64> {
+      std::size_t operator()(google::protobuf::int64 val) const { return static_cast<std::size_t>(val); }
+    };
+
+    }  // namespace tr1
+    }  // namespace std
+# endif  // GCC <= 4.1
 
 // Version checks for MSC.
 // Apparently Microsoft decided to move hash_map *back* to the std namespace in
