@@ -91,6 +91,7 @@ message FileDescriptorProto {
 // Describes a message type.
 message DescriptorProto {
   optional string name = 1;
+  optional int32 try_add = 122;
 
   repeated FieldDescriptorProto field = 2;
   repeated FieldDescriptorProto extension = 6;
