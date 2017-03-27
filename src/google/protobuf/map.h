@@ -1285,7 +1285,9 @@ class Map {
     // Return a power of two no less than max(kMinTableSize, n).
     // Assumes either n < kMinTableSize or n is a power of two.
     size_type TableSize(size_type n) {
-      return n < static_cast<size_type>(kMinTableSize) ? static_cast<size_type>(kMinTableSize) : n;
+      return n < static_cast<size_type>(kMinTableSize)
+                 ? static_cast<size_type>(kMinTableSize)
+                 : n;
     }
 
     // Use alloc_ to allocate an array of n objects of type U.
