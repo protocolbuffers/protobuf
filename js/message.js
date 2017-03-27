@@ -202,7 +202,7 @@ goog.define('jspb.Message.MINIMIZE_MEMORY_ALLOCATIONS', COMPILED);
 
 
 /**
- * Does this browser support Uint8Aray typed arrays?
+ * Does this JavaScript environment support Uint8Aray typed arrays?
  * @type {boolean}
  * @private
  */

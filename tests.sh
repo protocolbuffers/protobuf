@@ -350,6 +350,7 @@ build_ruby_all() {
 build_javascript() {
   internal_build_cpp
   cd js && npm install && npm test && cd ..
+  cd conformance && make test_nodejs && cd ..
 }
 
 generate_php_test_proto() {
