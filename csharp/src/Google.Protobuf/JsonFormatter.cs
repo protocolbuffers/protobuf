@@ -375,14 +375,21 @@ namespace Google.Protobuf
             }
             else if (value is System.Enum)
             {
-                string name = OriginalEnumValueHelper.GetOriginalName(value);
-                if (name != null)
+                if (settings.FormatEnumsAsIntegers)
                 {
-                    WriteString(writer, name);
+                    WriteValue(writer, (int)value);
                 }
                 else
                 {
-                    WriteValue(writer, (int)value);
+                    string name = OriginalEnumValueHelper.GetOriginalName(value);
+                    if (name != null)
+                    {
+                        WriteString(writer, name);
+                    }
+                    else
+                    {
+                        WriteValue(writer, (int)value);
+                    }
                 }
             }
             else if (value is float || value is double)
@@ -778,7 +785,11 @@ namespace Google.Protobuf
             /// </summary>
             public TypeRegistry TypeRegistry { get; }
 
-            // TODO: Work out how we're going to scale this to multiple settings. "WithXyz" methods?
+            /// <summary>
+            /// Whether to format enums as ints. Defaults to false.
+            /// </summary>
+            public bool FormatEnumsAsIntegers { get; }
+
 
             /// <summary>
             /// Creates a new <see cref="Settings"/> object with the specified formatting of default values
@@ -795,11 +806,42 @@ namespace Google.Protobuf
             /// </summary>
             /// <param name="formatDefaultValues"><c>true</c> if default values (0, empty strings etc) should be formatted; <c>false</c> otherwise.</param>
             /// <param name="typeRegistry">The <see cref="TypeRegistry"/> to use when formatting <see cref="Any"/> messages.</param>
-            public Settings(bool formatDefaultValues, TypeRegistry typeRegistry)
+            public Settings(bool formatDefaultValues, TypeRegistry typeRegistry) : this(formatDefaultValues, typeRegistry, false)
+            {
+            }
+
+            /// <summary>
+            /// Creates a new <see cref="Settings"/> object with the specified parameters.
+            /// </summary>
+            /// <param name="formatDefaultValues"><c>true</c> if default values (0, empty strings etc) should be formatted; <c>false</c> otherwise.</param>
+            /// <param name="typeRegistry">The <see cref="TypeRegistry"/> to use when formatting <see cref="Any"/> messages. TypeRegistry.Empty will be used if it is null.</param>
+            /// <param name="formatEnumsAsIntegers"><c>true</c> to format the enums as integers; <c>false</c> to format enums as enum names.</param>
+            private Settings(bool formatDefaultValues,
+                            TypeRegistry typeRegistry,
+                            bool formatEnumsAsIntegers)
             {
                 FormatDefaultValues = formatDefaultValues;
-                TypeRegistry = ProtoPreconditions.CheckNotNull(typeRegistry, nameof(typeRegistry));
+                TypeRegistry = typeRegistry ?? TypeRegistry.Empty;
+                FormatEnumsAsIntegers = formatEnumsAsIntegers;
             }
+
+            /// <summary>
+            /// Creates a new <see cref="Settings"/> object with the specified formatting of default values and the current settings.
+            /// </summary>
+            /// <param name="formatDefaultValues"><c>true</c> if default values (0, empty strings etc) should be formatted; <c>false</c> otherwise.</param>
+            public Settings WithFormatDefaultValues(bool formatDefaultValues) => new Settings(formatDefaultValues, TypeRegistry, FormatEnumsAsIntegers);
+
+            /// <summary>
+            /// Creates a new <see cref="Settings"/> object with the specified type registry and the current settings.
+            /// </summary>
+            /// <param name="typeRegistry">The <see cref="TypeRegistry"/> to use when formatting <see cref="Any"/> messages.</param>
+            public Settings WithTypeRegistry(TypeRegistry typeRegistry) => new Settings(FormatDefaultValues, typeRegistry, FormatEnumsAsIntegers);
+
+            /// <summary>
+            /// Creates a new <see cref="Settings"/> object with the specified enums formatting option and the current settings.
+            /// </summary>
+            /// <param name="formatEnumsAsIntegers"><c>true</c> to format the enums as integers; <c>false</c> to format enums as enum names.</param>
+            public Settings WithFormatEnumsAsIntegers(bool formatEnumsAsIntegers) => new Settings(FormatDefaultValues, TypeRegistry, formatEnumsAsIntegers);
         }
 
         // Effectively a cache of mapping from enum values to the original name as specified in the proto file,
