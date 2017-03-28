@@ -678,7 +678,7 @@ class Map {
 
     const Key& key() const { return k_; }
     Key& key() { return k_; }
-    value_type* const value() const { return v_; }
+    value_type* value() const { return v_; }
     value_type*& value() { return v_; }
 
    private:
