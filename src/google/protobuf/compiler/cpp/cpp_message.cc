@@ -3307,7 +3307,7 @@ GenerateMergeFromCodedStream(io::Printer* printer) {
     // on the CodedOutputStream.
     printer->Print(
       "  ::google::protobuf::io::LazyStringOutputStream unknown_fields_string(\n"
-      "      NewPermanentCallback(&_internal_metadata_,\n"
+      "      ::google::protobuf::NewPermanentCallback(&_internal_metadata_,\n"
       "          &::google::protobuf::internal::InternalMetadataWithArenaLite::\n"
       "              mutable_unknown_fields));\n"
       "  ::google::protobuf::io::CodedOutputStream unknown_fields_stream(\n"
