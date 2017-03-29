@@ -549,6 +549,10 @@ cc_test(
         ":test_plugin",
     ] + glob([
         "src/google/protobuf/**/*",
+        # Files for csharp_bootstrap_unittest.cc.
+        "conformance/**/*",
+        "csharp/src/**/*",
+        "examples/**/*",
     ]),
     includes = [
         "src/",
