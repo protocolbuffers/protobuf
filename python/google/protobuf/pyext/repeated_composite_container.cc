@@ -47,6 +47,7 @@
 #include <google/protobuf/pyext/descriptor_pool.h>
 #include <google/protobuf/pyext/message.h>
 #include <google/protobuf/pyext/scoped_pyobject_ptr.h>
+#include <google/protobuf/reflection.h>
 
 #if PY_MAJOR_VERSION >= 3
   #define PyInt_Check PyLong_Check
@@ -485,6 +486,32 @@ int Release(RepeatedCompositeContainer* self) {
   return 0;
 }
 
+PyObject* DeepCopy(RepeatedCompositeContainer* self, PyObject* arg) {
+  ScopedPyObjectPtr cloneObj(
+      PyType_GenericAlloc(&RepeatedCompositeContainer_Type, 0));
+  if (cloneObj == NULL) {
+    return NULL;
+  }
+  RepeatedCompositeContainer* clone =
+      reinterpret_cast<RepeatedCompositeContainer*>(cloneObj.get());
+
+  Message* new_message = self->message->New();
+  clone->parent = NULL;
+  clone->parent_field_descriptor = self->parent_field_descriptor;
+  clone->message = new_message;
+  clone->owner.reset(new_message);
+  Py_INCREF(self->child_message_class);
+  clone->child_message_class = self->child_message_class;
+  clone->child_messages = PyList_New(0);
+
+  new_message->GetReflection()
+      ->GetMutableRepeatedFieldRef<Message>(new_message,
+                                            self->parent_field_descriptor)
+      .MergeFrom(self->message->GetReflection()->GetRepeatedFieldRef<Message>(
+          *self->message, self->parent_field_descriptor));
+  return cloneObj.release();
+}
+
 int SetOwner(RepeatedCompositeContainer* self,
              const shared_ptr<Message>& new_owner) {
   GOOGLE_CHECK_ATTACHED(self);
@@ -551,6 +578,8 @@ static PyMappingMethods MpMethods = {
 };
 
 static PyMethodDef Methods[] = {
+  { "__deepcopy__", (PyCFunction)DeepCopy, METH_VARARGS,
+    "Makes a deep copy of the class." },
   { "add", (PyCFunction) Add, METH_VARARGS | METH_KEYWORDS,
     "Adds an object to the repeated container." },
   { "extend", (PyCFunction) Extend, METH_O,

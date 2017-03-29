@@ -154,12 +154,6 @@ void CollectExtensions(const FileDescriptorProto& file_proto,
   }
 }
 
-// Compare two field descriptors, returning true if the first should come
-// before the second.
-bool CompareFieldsByName(const FieldDescriptor *a, const FieldDescriptor *b) {
-  return a->full_name() < b->full_name();
-}
-
 // Our static initialization methods can become very, very large.
 // So large that if we aren't careful we end up blowing the JVM's
 // 64K bytes of bytecode/method. Fortunately, since these static

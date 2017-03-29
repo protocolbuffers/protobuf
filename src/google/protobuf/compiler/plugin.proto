@@ -84,6 +84,9 @@ message CodeGeneratorRequest {
   // the entire set into memory at once.  However, as of this writing, this
   // is not similarly optimized on protoc's end -- it will store all fields in
   // memory at once before sending them to the plugin.
+  //
+  // Type names of fields and extensions in the FileDescriptorProto are always
+  // fully qualified.
   repeated FileDescriptorProto proto_file = 15;
 
   // The version number of protocol compiler.

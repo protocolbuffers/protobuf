@@ -433,12 +433,28 @@ message TestRecursiveMessage {
 
 // Test that mutual recursion works.
 message TestMutualRecursionA {
+  message SubMessage {
+    optional TestMutualRecursionB b = 1;
+  }
   optional TestMutualRecursionB bb = 1;
+  optional group SubGroup = 2 {
+    optional SubMessage sub_message = 3;  // Needed because of bug in javatest
+    optional TestAllTypes not_in_this_scc = 4;
+  }
 }
 
 message TestMutualRecursionB {
   optional TestMutualRecursionA a = 1;
   optional int32 optional_int32 = 2;
+}
+
+message TestIsInitialized {
+  message SubMessage {
+    optional group SubGroup = 1 {
+      required int32 i = 2;
+    }
+  }
+  optional SubMessage sub_message = 1;
 }
 
 // Test that groups have disjoint field numbers from their siblings and

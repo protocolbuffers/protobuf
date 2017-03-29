@@ -67,11 +67,11 @@ struct JsonPrintOptions {
   // Whether to preserve proto field names
   bool preserve_proto_field_names;
 
-  JsonPrintOptions() : add_whitespace(false),
-                       always_print_primitive_fields(false),
-                       always_print_enums_as_ints(false),
-                       preserve_proto_field_names(false) {
-  }
+  JsonPrintOptions()
+      : add_whitespace(false),
+        always_print_primitive_fields(false),
+        always_print_enums_as_ints(false),
+        preserve_proto_field_names(false) {}
 };
 
 // DEPRECATED. Use JsonPrintOptions instead.

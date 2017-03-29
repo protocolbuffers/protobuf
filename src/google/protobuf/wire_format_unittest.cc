@@ -1029,6 +1029,29 @@ TEST_F(WireFormatInvalidInputTest, InvalidSubMessage) {
   EXPECT_FALSE(message.ParseFromString(MakeInvalidEmbeddedMessage("\017", 1)));
 }
 
+TEST_F(WireFormatInvalidInputTest, InvalidMessageWithExtraZero) {
+  string data;
+  {
+    // Serialize a valid proto
+    unittest::TestAllTypes message;
+    message.set_optional_int32(1);
+    message.SerializeToString(&data);
+    data.push_back(0);  // Append invalid zero tag
+  }
+
+  // Control case.
+  {
+    io::ArrayInputStream ais(data.data(), data.size());
+    io::CodedInputStream is(&ais);
+    unittest::TestAllTypes message;
+    // It should fail but currently passes.
+    EXPECT_TRUE(message.MergePartialFromCodedStream(&is));
+    // Parsing from the string should fail.
+    EXPECT_FALSE(message.ParseFromString(data));
+  }
+}
+
+
 TEST_F(WireFormatInvalidInputTest, InvalidGroup) {
   unittest::TestAllTypes message;
 

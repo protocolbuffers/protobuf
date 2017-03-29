@@ -52,13 +52,9 @@ using proto3::BAR;
 using proto3::TestMessage;
 using proto3::TestMap;
 using proto3::TestOneof;
-using testing::MapIn;
+using google::protobuf::testing::MapIn;
 
 static const char kTypeUrlPrefix[] = "type.googleapis.com";
-
-static string GetTypeUrl(const Descriptor* message) {
-  return string(kTypeUrlPrefix) + "/" + message->full_name();
-}
 
 // As functions defined in json_util.h are just thin wrappers around the
 // JSON conversion code in //net/proto2/util/converter, in this test we
@@ -207,8 +203,7 @@ TEST_F(JsonUtilTest, TestAlwaysPrintEnumsAsInts) {
   JsonPrintOptions print_options;
   print_options.always_print_enums_as_ints = true;
 
-  string expected_json =
-    "{\"enumValue\":1,\"repeatedEnumValue\":[0,1]}";
+  string expected_json = "{\"enumValue\":1,\"repeatedEnumValue\":[0,1]}";
   EXPECT_EQ(expected_json, ToJson(orig, print_options));
 
   TestMessage parsed;
@@ -264,7 +259,8 @@ TEST_F(JsonUtilTest, ParsePrimitiveMapIn) {
   JsonPrintOptions print_options;
   print_options.always_print_primitive_fields = true;
   JsonParseOptions parse_options;
-  EXPECT_EQ("{\"other\":\"\",\"things\":[],\"mapInput\":{}}", ToJson(message, print_options));
+  EXPECT_EQ("{\"other\":\"\",\"things\":[],\"mapInput\":{}}",
+            ToJson(message, print_options));
   MapIn other;
   ASSERT_TRUE(FromJson(ToJson(message, print_options), &other, parse_options));
   EXPECT_EQ(message.DebugString(), other.DebugString());
@@ -275,14 +271,10 @@ TEST_F(JsonUtilTest, PrintPrimitiveOneof) {
   JsonPrintOptions options;
   options.always_print_primitive_fields = true;
   message.mutable_oneof_message_value();
-  EXPECT_EQ(
-      "{\"oneofMessageValue\":{\"value\":0}}",
-      ToJson(message, options));
+  EXPECT_EQ("{\"oneofMessageValue\":{\"value\":0}}", ToJson(message, options));
 
   message.set_oneof_int32_value(1);
-  EXPECT_EQ(
-      "{\"oneofInt32Value\":1}",
-      ToJson(message, options));
+  EXPECT_EQ("{\"oneofInt32Value\":1}", ToJson(message, options));
 }
 
 TEST_F(JsonUtilTest, TestParseIgnoreUnknownFields) {

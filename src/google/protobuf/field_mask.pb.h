@@ -22,6 +22,7 @@
 #include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/arena.h>
 #include <google/protobuf/arenastring.h>
+#include <google/protobuf/generated_message_table_driven.h>
 #include <google/protobuf/generated_message_util.h>
 #include <google/protobuf/metadata.h>
 #include <google/protobuf/message.h>
@@ -43,6 +44,9 @@ namespace protobuf {
 namespace protobuf_google_2fprotobuf_2ffield_5fmask_2eproto {
 // Internal implementation detail -- do not call these.
 struct LIBPROTOBUF_EXPORT TableStruct {
+  static const ::google::protobuf::internal::ParseTableField entries[];
+  static const ::google::protobuf::internal::AuxillaryParseTableField aux[];
+  static const ::google::protobuf::internal::ParseTable schema[];
   static const ::google::protobuf::uint32 offsets[];
   static void InitDefaultsImpl();
   static void Shutdown();
@@ -72,6 +76,8 @@ class LIBPROTOBUF_EXPORT FieldMask : public ::google::protobuf::Message /* @@pro
     return reinterpret_cast<const FieldMask*>(
                &_FieldMask_default_instance_);
   }
+  static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
+    0;
 
   void Swap(FieldMask* other);
 
@@ -94,11 +100,6 @@ class LIBPROTOBUF_EXPORT FieldMask : public ::google::protobuf::Message /* @@pro
       ::google::protobuf::io::CodedOutputStream* output) const PROTOBUF_FINAL;
   ::google::protobuf::uint8* InternalSerializeWithCachedSizesToArray(
       bool deterministic, ::google::protobuf::uint8* target) const PROTOBUF_FINAL;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output)
-      const PROTOBUF_FINAL {
-    return InternalSerializeWithCachedSizesToArray(
-        ::google::protobuf::io::CodedOutputStream::IsDefaultSerializationDeterministic(), output);
-  }
   int GetCachedSize() const PROTOBUF_FINAL { return _cached_size_; }
   private:
   void SharedCtor();
@@ -148,7 +149,7 @@ class LIBPROTOBUF_EXPORT FieldMask : public ::google::protobuf::Message /* @@pro
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
   ::google::protobuf::RepeatedPtrField< ::std::string> paths_;
   mutable int _cached_size_;
-  friend struct LIBPROTOBUF_EXPORT protobuf_google_2fprotobuf_2ffield_5fmask_2eproto::TableStruct;
+  friend struct protobuf_google_2fprotobuf_2ffield_5fmask_2eproto::TableStruct;
 };
 // ===================================================================
 
@@ -184,6 +185,7 @@ inline void FieldMask::set_paths(int index, ::std::string&& value) {
 }
 #endif
 inline void FieldMask::set_paths(int index, const char* value) {
+  GOOGLE_DCHECK(value != NULL);
   paths_.Mutable(index)->assign(value);
   // @@protoc_insertion_point(field_set_char:google.protobuf.FieldMask.paths)
 }
@@ -202,11 +204,12 @@ inline void FieldMask::add_paths(const ::std::string& value) {
 }
 #if LANG_CXX11
 inline void FieldMask::add_paths(::std::string&& value) {
-  paths_.Add()->assign(std::move(value));
+  paths_.Add(std::move(value));
   // @@protoc_insertion_point(field_add:google.protobuf.FieldMask.paths)
 }
 #endif
 inline void FieldMask::add_paths(const char* value) {
+  GOOGLE_DCHECK(value != NULL);
   paths_.Add()->assign(value);
   // @@protoc_insertion_point(field_add_char:google.protobuf.FieldMask.paths)
 }

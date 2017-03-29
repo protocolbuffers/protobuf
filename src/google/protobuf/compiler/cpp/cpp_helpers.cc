@@ -654,6 +654,109 @@ void GenerateUtf8CheckCodeForCord(const FieldDescriptor* field,
                         "VerifyUtf8Cord", "VerifyUTF8CordNamedField", printer);
 }
 
+bool HasWeakFields(const Descriptor* descriptor) {
+  return false;
+}
+
+bool HasWeakFields(const FileDescriptor* file) {
+  return false;
+}
+
+SCCAnalyzer::NodeData SCCAnalyzer::DFS(const Descriptor* descriptor) {
+  // Must not have visited already.
+  GOOGLE_DCHECK_EQ(cache_.count(descriptor), 0);
+
+  // Mark visited by inserting in map.
+  NodeData& result = cache_[descriptor];
+  // Initialize data structures.
+  result.index = result.lowlink = index_++;
+  stack_.push_back(descriptor);
+
+  // Recurse the fields / nodes in graph
+  for (int i = 0; i < descriptor->field_count(); i++) {
+    const Descriptor* child = descriptor->field(i)->message_type();
+    if (child) {
+      if (cache_.count(child) == 0) {
+        // unexplored node
+        NodeData child_data = DFS(child);
+        result.lowlink = std::min(result.lowlink, child_data.lowlink);
+      } else {
+        NodeData child_data = cache_[child];
+        if (child_data.scc == NULL) {
+          // Still in the stack_ so we found a back edge
+          result.lowlink = std::min(result.lowlink, child_data.index);
+        }
+      }
+    }
+  }
+  if (result.index == result.lowlink) {
+    // This is the root of a strongly connected component
+    SCC* scc = CreateSCC();
+    while (true) {
+      const Descriptor* scc_desc = stack_.back();
+      scc->descriptors.push_back(scc_desc);
+      // Remove from stack
+      stack_.pop_back();
+      cache_[scc_desc].scc = scc;
+
+      if (scc_desc == descriptor) break;
+    }
+  }
+  return result;
+}
+
+MessageAnalysis SCCAnalyzer::GetSCCAnalysis(const SCC* scc) {
+  if (analysis_cache_.count(scc)) return analysis_cache_[scc];
+  MessageAnalysis result = MessageAnalysis();
+  for (int i = 0; i < scc->descriptors.size(); i++) {
+    const Descriptor* descriptor = scc->descriptors[i];
+    if (descriptor->extension_range_count() > 0) {
+      result.contains_extension = true;
+    }
+    for (int i = 0; i < descriptor->field_count(); i++) {
+      const FieldDescriptor* field = descriptor->field(i);
+      if (field->is_required()) {
+        result.contains_required = true;
+      }
+      switch (field->type()) {
+        case FieldDescriptor::TYPE_STRING:
+        case FieldDescriptor::TYPE_BYTES: {
+          if (field->options().ctype() == FieldOptions::CORD) {
+            result.contains_cord = true;
+          }
+          break;
+        }
+        case FieldDescriptor::TYPE_GROUP:
+        case FieldDescriptor::TYPE_MESSAGE: {
+          const SCC* child = GetSCC(field->message_type());
+          if (child != scc) {
+            MessageAnalysis analysis = GetSCCAnalysis(child);
+            result.contains_cord |= analysis.contains_cord;
+            result.contains_extension |= analysis.contains_extension;
+            if (!ShouldIgnoreRequiredFieldCheck(field, options_)) {
+              result.contains_required |= analysis.contains_required;
+            }
+          } else {
+            // This field points back into the same SCC hence the messages
+            // in the SCC are recursive. Note if SCC contains more than two
+            // nodes it has to be recursive, however this test also works for
+            // a single node that is recursive.
+            result.is_recursive = true;
+          }
+          break;
+        }
+        default:
+          break;
+      }
+    }
+  }
+  // We deliberately only insert the result here. After we contracted the SCC
+  // in the graph, the graph should be a DAG. Hence we shouldn't need to mark
+  // nodes visited as we can never return to them. By inserting them here
+  // we will go in an infinite loop if the SCC is not correct.
+  return analysis_cache_[scc] = result;
+}
+
 }  // namespace cpp
 }  // namespace compiler
 }  // namespace protobuf

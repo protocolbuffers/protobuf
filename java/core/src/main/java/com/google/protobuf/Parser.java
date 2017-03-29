@@ -31,6 +31,7 @@
 package com.google.protobuf;
 
 import java.io.InputStream;
+import java.nio.ByteBuffer;
 
 /**
  * Abstract interface for parsing Protocol Messages.
@@ -92,6 +93,18 @@ public interface Parser<MessageType> {
   // ---------------------------------------------------------------
   // Convenience methods.
 
+  /**
+   * Parses {@code data} as a message of {@code MessageType}. This is just a small wrapper around
+   * {@link #parseFrom(CodedInputStream)}.
+   */
+  public MessageType parseFrom(ByteBuffer data) throws InvalidProtocolBufferException;
+
+  /**
+   * Parses {@code data} as a message of {@code MessageType}. This is just a small wrapper around
+   * {@link #parseFrom(CodedInputStream, ExtensionRegistryLite)}.
+   */
+  public MessageType parseFrom(ByteBuffer data, ExtensionRegistryLite extensionRegistry)
+      throws InvalidProtocolBufferException;
   /**
    * Parses {@code data} as a message of {@code MessageType}.
    * This is just a small wrapper around {@link #parseFrom(CodedInputStream)}.

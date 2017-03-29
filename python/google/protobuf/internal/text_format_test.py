@@ -1119,6 +1119,11 @@ class Proto3Tests(unittest.TestCase):
     packed_message = unittest_pb2.OneString()
     message.any_value.Unpack(packed_message)
     self.assertEqual('string', packed_message.data)
+    message.Clear()
+    text_format.Parse(text, message, descriptor_pool=descriptor_pool.Default())
+    packed_message = unittest_pb2.OneString()
+    message.any_value.Unpack(packed_message)
+    self.assertEqual('string', packed_message.data)
 
   def testMergeExpandedAnyRepeated(self):
     message = any_test_pb2.TestAny()
@@ -1373,6 +1378,52 @@ class TokenizerTest(unittest.TestCase):
     self.assertEqual('# some comment', tokenizer.ConsumeComment())
     self.assertTrue(tokenizer.AtEnd())
 
+  def testConsumeLineComment(self):
+    tokenizer = text_format.Tokenizer('# some comment'.splitlines(),
+                                      skip_comments=False)
+    self.assertFalse(tokenizer.AtEnd())
+    self.assertEqual((False, '# some comment'),
+                     tokenizer.ConsumeCommentOrTrailingComment())
+    self.assertTrue(tokenizer.AtEnd())
+
+  def testConsumeTwoLineComments(self):
+    text = '# some comment\n# another comment'
+    tokenizer = text_format.Tokenizer(text.splitlines(), skip_comments=False)
+    self.assertEqual((False, '# some comment'),
+                     tokenizer.ConsumeCommentOrTrailingComment())
+    self.assertFalse(tokenizer.AtEnd())
+    self.assertEqual((False, '# another comment'),
+                     tokenizer.ConsumeCommentOrTrailingComment())
+    self.assertTrue(tokenizer.AtEnd())
+
+  def testConsumeAndCheckTrailingComment(self):
+    text = 'some_number: 4  # some comment'  # trailing comment on the same line
+    tokenizer = text_format.Tokenizer(text.splitlines(), skip_comments=False)
+    self.assertRaises(text_format.ParseError,
+                      tokenizer.ConsumeCommentOrTrailingComment)
+
+    self.assertEqual('some_number', tokenizer.ConsumeIdentifier())
+    self.assertEqual(tokenizer.token, ':')
+    tokenizer.NextToken()
+    self.assertRaises(text_format.ParseError,
+                      tokenizer.ConsumeCommentOrTrailingComment)
+    self.assertEqual(4, tokenizer.ConsumeInteger())
+    self.assertFalse(tokenizer.AtEnd())
+
+    self.assertEqual((True, '# some comment'),
+                     tokenizer.ConsumeCommentOrTrailingComment())
+    self.assertTrue(tokenizer.AtEnd())
+
+  def testHashinComment(self):
+    text = 'some_number: 4  # some comment # not a new comment'
+    tokenizer = text_format.Tokenizer(text.splitlines(), skip_comments=False)
+    self.assertEqual('some_number', tokenizer.ConsumeIdentifier())
+    self.assertEqual(tokenizer.token, ':')
+    tokenizer.NextToken()
+    self.assertEqual(4, tokenizer.ConsumeInteger())
+    self.assertEqual((True, '# some comment # not a new comment'),
+                     tokenizer.ConsumeCommentOrTrailingComment())
+    self.assertTrue(tokenizer.AtEnd())
 
 if __name__ == '__main__':
   unittest.main()

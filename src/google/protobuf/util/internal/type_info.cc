@@ -107,10 +107,12 @@ class TypeInfoForTypeResolver : public TypeInfo {
 
   virtual const google::protobuf::Field* FindField(
       const google::protobuf::Type* type, StringPiece camel_case_name) const {
-    std::map<const google::protobuf::Type*,
-            CamelCaseNameTable>::const_iterator it = indexed_types_.find(type);
-    const CamelCaseNameTable& camel_case_name_table = (it == indexed_types_.end())
-        ? PopulateNameLookupTable(type, &indexed_types_[type]) : it->second;
+    std::map<const google::protobuf::Type*, CamelCaseNameTable>::const_iterator
+        it = indexed_types_.find(type);
+    const CamelCaseNameTable& camel_case_name_table =
+        (it == indexed_types_.end())
+            ? PopulateNameLookupTable(type, &indexed_types_[type])
+            : it->second;
     StringPiece name =
         FindWithDefault(camel_case_name_table, camel_case_name, StringPiece());
     if (name.empty()) {
@@ -142,8 +144,8 @@ class TypeInfoForTypeResolver : public TypeInfo {
       const google::protobuf::Field& field = type->fields(i);
       StringPiece name = field.name();
       StringPiece camel_case_name = field.json_name();
-      const StringPiece* existing = InsertOrReturnExisting(
-          camel_case_name_table, camel_case_name, name);
+      const StringPiece* existing =
+          InsertOrReturnExisting(camel_case_name_table, camel_case_name, name);
       if (existing && *existing != name) {
         GOOGLE_LOG(WARNING) << "Field '" << name << "' and '" << *existing
                      << "' map to the same camel case name '" << camel_case_name
@@ -162,8 +164,8 @@ class TypeInfoForTypeResolver : public TypeInfo {
   mutable std::map<StringPiece, StatusOrType> cached_types_;
   mutable std::map<StringPiece, StatusOrEnum> cached_enums_;
 
-  mutable std::map<const google::protobuf::Type*,
-                   CamelCaseNameTable> indexed_types_;
+  mutable std::map<const google::protobuf::Type*, CamelCaseNameTable>
+      indexed_types_;
 };
 }  // namespace
 

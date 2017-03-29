@@ -180,6 +180,35 @@ TEST(ArenaTest, BasicCreate) {
   EXPECT_EQ(2, notifier.GetCount());
 }
 
+TEST(ArenaTest, CreateAndConstCopy) {
+  Arena arena;
+  const string s("foo");
+  const string* s_copy = Arena::Create<string>(&arena, s);
+  EXPECT_TRUE(s_copy != NULL);
+  EXPECT_EQ("foo", s);
+  EXPECT_EQ("foo", *s_copy);
+}
+
+TEST(ArenaTest, CreateAndNonConstCopy) {
+  Arena arena;
+  string s("foo");
+  const string* s_copy = Arena::Create<string>(&arena, s);
+  EXPECT_TRUE(s_copy != NULL);
+  EXPECT_EQ("foo", s);
+  EXPECT_EQ("foo", *s_copy);
+}
+
+#if LANG_CXX11
+TEST(ArenaTest, CreateAndMove) {
+  Arena arena;
+  string s("foo");
+  const string* s_move = Arena::Create<string>(&arena, std::move(s));
+  EXPECT_TRUE(s_move != NULL);
+  EXPECT_TRUE(s.empty());  // NOLINT
+  EXPECT_EQ("foo", *s_move);
+}
+#endif
+
 TEST(ArenaTest, CreateWithFourConstructorArguments) {
   Arena arena;
   const string three("3");
@@ -213,6 +242,29 @@ TEST(ArenaTest, CreateWithEightConstructorArguments) {
   ASSERT_EQ("7", new_object->seven_);
   ASSERT_EQ("8", new_object->eight_);
 }
+
+#if LANG_CXX11
+class PleaseMoveMe {
+ public:
+  explicit PleaseMoveMe(const string& value) : value_(value) {}
+  PleaseMoveMe(PleaseMoveMe&&) = default;
+  PleaseMoveMe(const PleaseMoveMe&) = delete;
+
+  const string& value() const { return value_; }
+
+ private:
+  string value_;
+};
+
+TEST(ArenaTest, CreateWithMoveArguments) {
+  Arena arena;
+  PleaseMoveMe one("1");
+  const PleaseMoveMe* new_object =
+      Arena::Create<PleaseMoveMe>(&arena, std::move(one));
+  EXPECT_TRUE(new_object);
+  ASSERT_EQ("1", new_object->value());
+}
+#endif
 
 TEST(ArenaTest, InitialBlockTooSmall) {
   // Construct a small (64 byte) initial block of memory to be used by the
