@@ -1319,7 +1319,7 @@ public class JsonFormatTest extends TestCase {
     }
 
     try {
-      JsonFormat.printer().includingDefaultValueFields(Collections.emptySet());
+      JsonFormat.printer().includingDefaultValueFields(Collections.<FieldDescriptor>emptySet());
       fail("IllegalArgumentException is expected.");
     } catch (IllegalArgumentException e) {
       // Expected.

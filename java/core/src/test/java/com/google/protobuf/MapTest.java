@@ -1516,7 +1516,8 @@ public class MapTest extends TestCase {
     }
 
     try {
-      builder.putAllInt32ToMessageField(newMap(4, null, 5, null));
+      builder.putAllInt32ToMessageField(
+          MapTest.<Integer, MessageValue>newMap(4, null, 5, null));
       fail();
     } catch (NullPointerException expected) {
     }

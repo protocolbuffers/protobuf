@@ -104,7 +104,8 @@ public class JsonFormat {
    */
   public static Printer printer() {
     return new Printer(
-        TypeRegistry.getEmptyTypeRegistry(), false, Collections.emptySet(), false, false);
+        TypeRegistry.getEmptyTypeRegistry(), false, Collections.<FieldDescriptor>emptySet(),
+        false, false);
   }
 
   /**
@@ -167,7 +168,7 @@ public class JsonFormat {
       return new Printer(
           registry,
           true,
-          Collections.emptySet(),
+          Collections.<FieldDescriptor>emptySet(),
           preservingProtoFieldNames,
           omittingInsignificantWhitespace);
     }
