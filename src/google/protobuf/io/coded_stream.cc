@@ -76,10 +76,6 @@ CodedInputStream::~CodedInputStream() {
   if (input_ != NULL) {
     BackUpInputToCurrentPosition();
   }
-
-  if (total_bytes_warning_threshold_ == -2) {
-    GOOGLE_LOG(WARNING) << "The total number of bytes read was " << total_bytes_read_;
-  }
 }
 
 // Static.
@@ -123,21 +119,15 @@ CodedInputStream::Limit CodedInputStream::PushLimit(int byte_limit) {
   Limit old_limit = current_limit_;
 
   // security: byte_limit is possibly evil, so check for negative values
-  // and overflow.
-  if (byte_limit >= 0 &&
-      byte_limit <= INT_MAX - current_position) {
+  // and overflow. Also check that the new requested limit is before the
+  // previous limit; otherwise we continue to enforce the previous limit.
+  if GOOGLE_PREDICT_TRUE(byte_limit >= 0 &&
+                  byte_limit <= INT_MAX - current_position &&
+                  byte_limit < current_limit_ - current_position) {
     current_limit_ = current_position + byte_limit;
-  } else {
-    // Negative or overflow.
-    current_limit_ = INT_MAX;
+    RecomputeBufferLimits();
   }
 
-  // We need to enforce all limits, not just the new one, so if the previous
-  // limit was before the new requested limit, we continue to enforce the
-  // previous limit.
-  current_limit_ = std::min(current_limit_, old_limit);
-
-  RecomputeBufferLimits();
   return old_limit;
 }
 
@@ -185,16 +175,12 @@ int CodedInputStream::BytesUntilLimit() const {
 
 void CodedInputStream::SetTotalBytesLimit(
     int total_bytes_limit, int warning_threshold) {
+  (void) warning_threshold;
+
   // Make sure the limit isn't already past, since this could confuse other
   // code.
   int current_position = CurrentPosition();
   total_bytes_limit_ = std::max(current_position, total_bytes_limit);
-  if (warning_threshold >= 0) {
-    total_bytes_warning_threshold_ = warning_threshold;
-  } else {
-    // warning_threshold is negative
-    total_bytes_warning_threshold_ = -1;
-  }
   RecomputeBufferLimits();
 }
 
@@ -605,20 +591,6 @@ bool CodedInputStream::Refresh() {
     return false;
   }
 
-  if (total_bytes_warning_threshold_ >= 0 &&
-      total_bytes_read_ >= total_bytes_warning_threshold_) {
-      GOOGLE_LOG(INFO) << "Reading dangerously large protocol message.  If the "
-                   "message turns out to be larger than "
-                << total_bytes_limit_ << " bytes, parsing will be halted "
-                   "for security reasons.  To increase the limit (or to "
-                   "disable these warnings), see "
-                   "CodedInputStream::SetTotalBytesLimit() in "
-                   "google/protobuf/io/coded_stream.h.";
-
-    // Don't warn again for this stream, and print total size at the end.
-    total_bytes_warning_threshold_ = -2;
-  }
-
   const void* void_buffer;
   int buffer_size;
   if (NextNonEmpty(input_, &void_buffer, &buffer_size)) {
@@ -655,7 +627,7 @@ bool CodedInputStream::Refresh() {
 
 // CodedOutputStream =================================================
 
-bool CodedOutputStream::default_serialization_deterministic_ = false;
+google::protobuf::internal::AtomicWord CodedOutputStream::default_serialization_deterministic_ = 0;
 
 CodedOutputStream::CodedOutputStream(ZeroCopyOutputStream* output)
   : output_(output),

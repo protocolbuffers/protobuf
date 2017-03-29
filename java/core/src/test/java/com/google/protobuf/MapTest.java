@@ -30,7 +30,7 @@
 
 package com.google.protobuf;
 
-
+import static org.junit.Assert.assertArrayEquals;
 import com.google.protobuf.Descriptors.Descriptor;
 import com.google.protobuf.Descriptors.EnumDescriptor;
 import com.google.protobuf.Descriptors.EnumValueDescriptor;
@@ -870,6 +870,7 @@ public class MapTest extends TestCase {
     assertEquals(55, message.getInt32ToInt32Field().get(55).intValue());
   }
 
+  // See additional coverage in TextFormatTest.java.
   public void testTextFormat() throws Exception {
     TestMap.Builder builder = TestMap.newBuilder();
     setMapValuesUsingAccessors(builder);
@@ -1491,5 +1492,41 @@ public class MapTest extends TestCase {
     map.put(key2, value2);
     map.put(key3, value3);
     return map;
+  }
+
+  public void testMap_withNulls() {
+    TestMap.Builder builder = TestMap.newBuilder();
+
+    try {
+      builder.putStringToInt32Field(null, 3);
+      fail();
+    } catch (NullPointerException expected) {
+    }
+
+    try {
+      builder.putAllStringToInt32Field(newMap(null, 3, "hi", 4));
+      fail();
+    } catch (NullPointerException expected) {
+    }
+
+    try {
+      builder.putInt32ToMessageField(3, null);
+      fail();
+    } catch (NullPointerException expected) {
+    }
+
+    try {
+      builder.putAllInt32ToMessageField(newMap(4, null, 5, null));
+      fail();
+    } catch (NullPointerException expected) {
+    }
+
+    try {
+      builder.putAllInt32ToMessageField(null);
+      fail();
+    } catch (NullPointerException expected) {
+    }
+
+    assertArrayEquals(new byte[0], builder.build().toByteArray());
   }
 }

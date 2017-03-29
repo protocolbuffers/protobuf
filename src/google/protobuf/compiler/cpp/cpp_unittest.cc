@@ -76,7 +76,6 @@
 #include <google/protobuf/stubs/callback.h>
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/stubs/logging.h>
-#include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/stubs/substitute.h>
 #include <google/protobuf/testing/googletest.h>
 #include <gtest/gtest.h>
@@ -2160,6 +2159,61 @@ TEST_F(OneofTest, MergeFrom) {
   EXPECT_TRUE(message2.has_foogroup());
   EXPECT_EQ(message2.foogroup().a(), 345);
 
+}
+
+TEST(HelpersTest, TestSCC) {
+  protobuf_unittest::TestMutualRecursionA a;
+  SCCAnalyzer scc_analyzer((Options()));
+  const SCC* scc = scc_analyzer.GetSCC(a.GetDescriptor());
+  std::vector<string> names;
+  for (int i = 0; i < scc->descriptors.size(); i++) {
+    names.push_back(scc->descriptors[i]->full_name());
+  }
+  ASSERT_EQ(names.size(), 4);
+  std::sort(names.begin(), names.end());
+  EXPECT_EQ(names[0], "protobuf_unittest.TestMutualRecursionA");
+  EXPECT_EQ(names[1], "protobuf_unittest.TestMutualRecursionA.SubGroup");
+  EXPECT_EQ(names[2], "protobuf_unittest.TestMutualRecursionA.SubMessage");
+  EXPECT_EQ(names[3], "protobuf_unittest.TestMutualRecursionB");
+
+  MessageAnalysis result = scc_analyzer.GetSCCAnalysis(scc);
+  EXPECT_EQ(result.is_recursive, true);
+  EXPECT_EQ(result.contains_required, false);
+  EXPECT_EQ(result.contains_cord, true);  // TestAllTypes
+  EXPECT_EQ(result.contains_extension, false);  // TestAllTypes
+}
+
+TEST(HelpersTest, TestSCCAnalysis) {
+  {
+    protobuf_unittest::TestRecursiveMessage msg;
+    SCCAnalyzer scc_analyzer((Options()));
+    const SCC* scc = scc_analyzer.GetSCC(msg.GetDescriptor());
+    MessageAnalysis result = scc_analyzer.GetSCCAnalysis(scc);
+    EXPECT_EQ(result.is_recursive, true);
+    EXPECT_EQ(result.contains_required, false);
+    EXPECT_EQ(result.contains_cord, false);
+    EXPECT_EQ(result.contains_extension, false);
+  }
+  {
+    protobuf_unittest::TestAllExtensions msg;
+    SCCAnalyzer scc_analyzer((Options()));
+    const SCC* scc = scc_analyzer.GetSCC(msg.GetDescriptor());
+    MessageAnalysis result = scc_analyzer.GetSCCAnalysis(scc);
+    EXPECT_EQ(result.is_recursive, false);
+    EXPECT_EQ(result.contains_required, false);
+    EXPECT_EQ(result.contains_cord, false);
+    EXPECT_EQ(result.contains_extension, true);
+  }
+  {
+    protobuf_unittest::TestRequired msg;
+    SCCAnalyzer scc_analyzer((Options()));
+    const SCC* scc = scc_analyzer.GetSCC(msg.GetDescriptor());
+    MessageAnalysis result = scc_analyzer.GetSCCAnalysis(scc);
+    EXPECT_EQ(result.is_recursive, false);
+    EXPECT_EQ(result.contains_required, true);
+    EXPECT_EQ(result.contains_cord, false);
+    EXPECT_EQ(result.contains_extension, false);
+  }
 }
 
 }  // namespace cpp_unittest

@@ -30,6 +30,8 @@
 
 package com.google.protobuf;
 
+import static com.google.protobuf.Internal.checkNotNull;
+
 import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -351,22 +353,23 @@ public abstract class AbstractMessageLite<
      */
     protected static <T> void addAll(final Iterable<T> values,
                                      final Collection<? super T> list) {
-      if (values == null) {
-        throw new NullPointerException();
-      }
+      checkNotNull(values);
       if (values instanceof LazyStringList) {
         // For StringOrByteStringLists, check the underlying elements to avoid
         // forcing conversions of ByteStrings to Strings.
+        // TODO(dweis): Could we just prohibit nulls in all protobuf lists and get rid of this? Is
+        // if even possible to hit this condition as all protobuf methods check for null first,
+        // right?
         checkForNullValues(((LazyStringList) values).getUnderlyingElements());
         list.addAll((Collection<T>) values);
       } else if (values instanceof Collection) {
-        checkForNullValues(values);
+        if (!(values instanceof PrimitiveNonBoxingCollection)) {
+          checkForNullValues(values);
+        }
         list.addAll((Collection<T>) values);
       } else {
         for (final T value : values) {
-          if (value == null) {
-            throw new NullPointerException();
-          }
+          checkNotNull(value);
           list.add(value);
         }
       }
@@ -374,9 +377,7 @@ public abstract class AbstractMessageLite<
 
     private static void checkForNullValues(final Iterable<?> values) {
       for (final Object value : values) {
-        if (value == null) {
-          throw new NullPointerException();
-        }
+        checkNotNull(value);
       }
     }
   }

@@ -279,17 +279,13 @@ TEST_P(ProtoStreamObjectWriterTest, ConflictingJsonName) {
   ResetTypeInfo(TestJsonName1::descriptor());
   TestJsonName1 message1;
   message1.set_one_value(12345);
-  ow_->StartObject("")
-      ->RenderInt32("value", 12345)
-      ->EndObject();
+  ow_->StartObject("")->RenderInt32("value", 12345)->EndObject();
   CheckOutput(message1);
 
   ResetTypeInfo(TestJsonName2::descriptor());
   TestJsonName2 message2;
   message2.set_another_value(12345);
-  ow_->StartObject("")
-      ->RenderInt32("value", 12345)
-      ->EndObject();
+  ow_->StartObject("")->RenderInt32("value", 12345)->EndObject();
   CheckOutput(message2);
 }
 
@@ -1615,7 +1611,7 @@ TEST_P(ProtoStreamObjectWriterStructTest, RepeatedStructMapObjectKeyTest) {
 TEST_P(ProtoStreamObjectWriterStructTest, OptionStructIntAsStringsTest) {
   StructType struct_type;
   google::protobuf::Struct* s = struct_type.mutable_object();
-  s->mutable_fields()->operator[]("k1").set_number_value(123);
+  s->mutable_fields()->operator[]("k1").set_string_value("123");
   s->mutable_fields()->operator[]("k2").set_bool_value(true);
   s->mutable_fields()->operator[]("k3").set_string_value("-222222222");
   s->mutable_fields()->operator[]("k4").set_string_value("33333333");

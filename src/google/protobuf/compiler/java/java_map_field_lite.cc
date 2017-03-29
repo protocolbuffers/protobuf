@@ -484,6 +484,7 @@ GenerateMembers(io::Printer* printer) const {
   }
 }
 
+
 void ImmutableMapFieldLiteGenerator::
 GenerateBuilderMembers(io::Printer* printer) const {
   printer->Print(

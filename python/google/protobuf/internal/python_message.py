@@ -288,7 +288,8 @@ def _AttachFieldHelpers(cls, field_descriptor):
 
   if is_map_entry:
     field_encoder = encoder.MapEncoder(field_descriptor)
-    sizer = encoder.MapSizer(field_descriptor)
+    sizer = encoder.MapSizer(field_descriptor,
+                             _IsMessageMapField(field_descriptor))
   elif _IsMessageSetExtension(field_descriptor):
     field_encoder = encoder.MessageSetItemEncoder(field_descriptor.number)
     sizer = encoder.MessageSetItemSizer(field_descriptor.number)
@@ -891,7 +892,7 @@ def _AddHasExtensionMethod(cls):
 def _InternalUnpackAny(msg):
   """Unpacks Any message and returns the unpacked message.
 
-  This internal method is differnt from public Any Unpack method which takes
+  This internal method is different from public Any Unpack method which takes
   the target message as argument. _InternalUnpackAny method does not have
   target message type and need to find the message type in descriptor pool.
 

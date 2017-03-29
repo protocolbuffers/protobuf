@@ -48,7 +48,6 @@ proto.google.protobuf.Timestamp.prototype.toDate = function() {
  * @param {!Date} value The value to set.
  */
 proto.google.protobuf.Timestamp.prototype.fromDate = function(value) {
-  var millis = value.getTime();
   this.setSeconds(Math.floor(value.getTime() / 1000));
   this.setNanos(value.getMilliseconds() * 1000000);
 };

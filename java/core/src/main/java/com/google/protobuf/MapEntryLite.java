@@ -223,4 +223,9 @@ public class MapEntryLite<K, V> {
     input.popLimit(oldLimit);
     map.put(key, value);
   }
+
+  /** For experimental runtime internal use only. */
+  Metadata<K, V> getMetadata() {
+    return metadata;
+  }
 }

@@ -342,7 +342,7 @@ GenerateMergingCode(io::Printer* printer) const {
 
 void RepeatedPrimitiveFieldGenerator::
 GenerateSwappingCode(io::Printer* printer) const {
-  printer->Print(variables_, "$name$_.UnsafeArenaSwap(&other->$name$_);\n");
+  printer->Print(variables_, "$name$_.InternalSwap(&other->$name$_);\n");
 }
 
 void RepeatedPrimitiveFieldGenerator::
@@ -385,6 +385,9 @@ GenerateSerializeWithCachedSizes(io::Printer* printer) const {
       "  output->WriteVarint32(_$name$_cached_byte_size_);\n");
 
     if (FixedSize(descriptor_->type()) > 0) {
+      // TODO(ckennelly): Use RepeatedField<T>::unsafe_data() via
+      // WireFormatLite to access the contents of this->$name$_ to save a branch
+      // here.
       printer->Print(variables_,
         "  ::google::protobuf::internal::WireFormatLite::Write$declared_type$Array(\n"
         "    this->$name$().data(), this->$name$_size(), output);\n");
@@ -420,20 +423,14 @@ GenerateSerializeWithCachedSizesToArray(io::Printer* printer) const {
       "    target);\n"
       "  target = ::google::protobuf::io::CodedOutputStream::WriteVarint32ToArray(\n"
       "    _$name$_cached_byte_size_, target);\n"
-      "}\n");
-  }
-  printer->Print(variables_,
-      "for (int i = 0, n = this->$name$_size(); i < n; i++) {\n");
-  if (descriptor_->is_packed()) {
-    printer->Print(variables_,
       "  target = ::google::protobuf::internal::WireFormatLite::\n"
-      "    Write$declared_type$NoTagToArray(this->$name$(i), target);\n");
+      "    Write$declared_type$NoTagToArray(this->$name$_, target);\n"
+      "}\n");
   } else {
     printer->Print(variables_,
-      "  target = ::google::protobuf::internal::WireFormatLite::\n"
-      "    Write$declared_type$ToArray($number$, this->$name$(i), target);\n");
+      "target = ::google::protobuf::internal::WireFormatLite::\n"
+      "  Write$declared_type$ToArray($number$, this->$name$_, target);\n");
   }
-  printer->Print("}\n");
 }
 
 void RepeatedPrimitiveFieldGenerator::

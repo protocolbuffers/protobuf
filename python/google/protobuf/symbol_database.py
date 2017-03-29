@@ -94,6 +94,17 @@ class SymbolDatabase(message_factory.MessageFactory):
     self.pool.AddEnumDescriptor(enum_descriptor)
     return enum_descriptor
 
+  def RegisterServiceDescriptor(self, service_descriptor):
+    """Registers the given service descriptor in the local database.
+
+    Args:
+      service_descriptor: a descriptor.ServiceDescriptor.
+
+    Returns:
+      The provided descriptor.
+    """
+    self.pool.AddServiceDescriptor(service_descriptor)
+
   def RegisterFileDescriptor(self, file_descriptor):
     """Registers the given file descriptor in the local database.
 

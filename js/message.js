@@ -106,8 +106,9 @@ jspb.ExtensionFieldInfo = function(fieldNumber, fieldName, ctor, toObjectFn,
 /**
  * Stores binary-related information for a single extension field.
  * @param {!jspb.ExtensionFieldInfo<T>} fieldInfo
- * @param {!function(number,?)} binaryReaderFn
- * @param {!function(number,?)|function(number,?,?,?,?,?)} binaryWriterFn
+ * @param {function(this:jspb.BinaryReader,number,?)} binaryReaderFn
+ * @param {function(this:jspb.BinaryWriter,number,?)
+ *        |function(this:jspb.BinaryWriter,number,?,?,?,?,?)} binaryWriterFn
  * @param {function(?,?)=} opt_binaryMessageSerializeFn
  * @param {function(?,?)=} opt_binaryMessageDeserializeFn
  * @param {boolean=} opt_isPacked
@@ -141,6 +142,21 @@ jspb.ExtensionFieldInfo.prototype.isMessageType = function() {
 
 /**
  * Base class for all JsPb messages.
+ *
+ * Several common methods (toObject, serializeBinary, in particular) are not
+ * defined on the prototype to encourage code patterns that minimize code bloat
+ * due to otherwise unused code on all protos contained in the project.
+ *
+ * If you want to call these methods on a generic message, either
+ * pass in your instance of method as a parameter:
+ *     someFunction(instanceOfKnownProto,
+ *                  KnownProtoClass.prototype.serializeBinary);
+ * or use a lambda that knows the type:
+ *     someFunction(()=>instanceOfKnownProto.serializeBinary());
+ * or, if you don't care about code size, just suppress the
+ *     WARNING - Property serializeBinary never defined on jspb.Message
+ * and call it the intuitive way.
+ *
  * @constructor
  * @struct
  */
@@ -524,7 +540,7 @@ jspb.Message.toObjectExtension = function(proto, obj, extensions,
  * @param {!jspb.Message} proto The proto whose extensions to convert.
  * @param {*} writer The binary-format writer to write to.
  * @param {!Object} extensions The proto class' registered extensions.
- * @param {function(jspb.ExtensionFieldInfo) : *} getExtensionFn The proto
+ * @param {function(this:jspb.Message,!jspb.ExtensionFieldInfo) : *} getExtensionFn The proto
  *     class' getExtension function. Passed for effective dead code removal.
  */
 jspb.Message.serializeBinaryExtensions = function(proto, writer, extensions,
@@ -570,10 +586,13 @@ jspb.Message.serializeBinaryExtensions = function(proto, writer, extensions,
  * Reads an extension field from the given reader and, if a valid extension,
  * sets the extension value.
  * @param {!jspb.Message} msg A jspb proto.
- * @param {{skipField:function(),getFieldNumber:function():number}} reader
+ * @param {{
+ *   skipField:function(this:jspb.BinaryReader),
+ *   getFieldNumber:function(this:jspb.BinaryReader):number
+ * }} reader
  * @param {!Object} extensions The extensions object.
- * @param {function(jspb.ExtensionFieldInfo)} getExtensionFn
- * @param {function(jspb.ExtensionFieldInfo, ?)} setExtensionFn
+ * @param {function(this:jspb.Message,!jspb.ExtensionFieldInfo)} getExtensionFn
+ * @param {function(this:jspb.Message,!jspb.ExtensionFieldInfo, ?)} setExtensionFn
  */
 jspb.Message.readBinaryExtension = function(msg, reader, extensions,
     getExtensionFn, setExtensionFn) {

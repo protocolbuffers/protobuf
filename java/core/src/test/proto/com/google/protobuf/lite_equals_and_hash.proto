@@ -46,6 +46,14 @@ message TestOneofEquals {
 message Foo {
   optional int32 value = 1;
   repeated Bar bar = 2;
+  map<string, string> my_map = 3;
+  oneof Single {
+    sint64 sint64 = 4;
+    // LINT: ALLOW_GROUPS
+    group MyGroup = 5 {
+      optional int32 value = 1;
+    }
+  }
 
   extensions 100 to max;
 }

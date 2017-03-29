@@ -71,7 +71,7 @@ jspb.BinaryIterator = function(opt_decoder, opt_next, opt_elements) {
    */
   this.nextMethod_ = null;
 
-  /** @private {Array.<number>} */
+  /** @private {?Array<number|boolean|string>} */
   this.elements_ = null;
 
   /** @private {number} */
@@ -100,7 +100,7 @@ jspb.BinaryIterator.prototype.init_ =
     this.decoder_ = opt_decoder;
     this.nextMethod_ = opt_next;
   }
-  this.elements_ = opt_elements ? opt_elements : null;
+  this.elements_ = opt_elements || null;
   this.cursor_ = 0;
   this.nextValue_ = null;
   this.atEnd_ = !this.decoder_ && !this.elements_;
@@ -953,6 +953,7 @@ jspb.BinaryDecoder.prototype.readString = function(length) {
   var end = cursor + length;
   var codeUnits = [];
 
+  var result = '';
   while (cursor < end) {
     var c = bytes[cursor++];
     if (c < 128) { // Regular 7-bit ASCII.
@@ -973,7 +974,7 @@ jspb.BinaryDecoder.prototype.readString = function(length) {
       var c2 = bytes[cursor++];
       var c3 = bytes[cursor++];
       var c4 = bytes[cursor++];
-      // Characters written on 4 bytes have 21 bits for a codepoint. 
+      // Characters written on 4 bytes have 21 bits for a codepoint.
       // We can't fit that on 16bit characters, so we use surrogates.
       var codepoint = ((c & 7) << 18) | ((c2 & 63) << 12) | ((c3 & 63) << 6) | (c4 & 63);
       // Surrogates formula from wikipedia.
@@ -986,10 +987,14 @@ jspb.BinaryDecoder.prototype.readString = function(length) {
       var high = ((codepoint >> 10) & 1023) + 0xD800;
       codeUnits.push(high, low);
     }
+
+    // Avoid exceeding the maximum stack size when calling {@code apply}.
+    if (codeUnits.length >= 8192) {
+      result += String.fromCharCode.apply(null, codeUnits);
+      codeUnits.length = 0;
+    }
   }
-  // String.fromCharCode.apply is faster than manually appending characters on
-  // Chrome 25+, and generates no additional cons string garbage.
-  var result = String.fromCharCode.apply(null, codeUnits);
+  result += String.fromCharCode.apply(null, codeUnits);
   this.cursor_ = cursor;
   return result;
 };

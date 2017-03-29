@@ -30,9 +30,10 @@
 
 package com.google.protobuf;
 
+import static com.google.protobuf.Internal.checkNotNull;
+
 import com.google.protobuf.DescriptorProtos.*;
 import com.google.protobuf.Descriptors.FileDescriptor.Syntax;
-
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -682,9 +683,7 @@ public final class Descriptors {
 
     /** Determines if the given field name is reserved. */
     public boolean isReservedName(final String name) {
-      if (name == null) {
-        throw new NullPointerException();
-      }
+      checkNotNull(name);
       for (final String reservedName : proto.getReservedNameList()) {
         if (reservedName.equals(name)) {
           return true;

@@ -35,6 +35,7 @@
 #include <google/protobuf/compiler/cpp/cpp_message_field.h>
 #include <google/protobuf/compiler/cpp/cpp_helpers.h>
 #include <google/protobuf/io/printer.h>
+
 #include <google/protobuf/stubs/strutil.h>
 
 namespace google {
@@ -583,7 +584,7 @@ GenerateSerializeWithCachedSizesToArray(io::Printer* printer) const {
   printer->Print(variables_,
     "target = ::google::protobuf::internal::WireFormatLite::\n"
     "  InternalWrite$declared_type$NoVirtualToArray(\n"
-    "    $number$, *$non_null_ptr_to_name$, false, target);\n");
+    "    $number$, *$non_null_ptr_to_name$, deterministic, target);\n");
 }
 
 void MessageFieldGenerator::
@@ -668,15 +669,6 @@ GenerateInlineAccessorDefinitions(io::Printer* printer,
       variables["oneof_prefix"] + variables["name"] + "_";
   variables["dependent_type"] = variables["type"];
   InternalGenerateInlineAccessorDefinitions(variables, printer);
-}
-
-void MessageOneofFieldGenerator::
-GenerateNonInlineAccessorDefinitions(io::Printer* printer) const {
-  std::map<string, string> variables(variables_);
-  variables["field_member"] =
-      variables["oneof_prefix"] + variables["name"] + "_";
-
-  //printer->Print(variables,
 }
 
 void MessageOneofFieldGenerator::InternalGenerateInlineAccessorDefinitions(
@@ -1066,7 +1058,7 @@ GenerateMergingCode(io::Printer* printer) const {
 
 void RepeatedMessageFieldGenerator::
 GenerateSwappingCode(io::Printer* printer) const {
-  printer->Print(variables_, "$name$_.UnsafeArenaSwap(&other->$name$_);\n");
+  printer->Print(variables_, "$name$_.InternalSwap(&other->$name$_);\n");
 }
 
 void RepeatedMessageFieldGenerator::
@@ -1079,12 +1071,12 @@ GenerateMergeFromCodedStream(io::Printer* printer) const {
   if (descriptor_->type() == FieldDescriptor::TYPE_MESSAGE) {
     printer->Print(variables_,
       "DO_(::google::protobuf::internal::WireFormatLite::"
-      "ReadMessageNoVirtualNoRecursionDepth(\n"
+      "ReadMessageNoVirtual(\n"
       "      input, add_$name$()));\n");
   } else {
     printer->Print(variables_,
       "DO_(::google::protobuf::internal::WireFormatLite::"
-      "ReadGroupNoVirtualNoRecursionDepth(\n"
+      "ReadGroupNoVirtual(\n"
       "      $number$, input, add_$name$()));\n");
   }
 }
@@ -1104,7 +1096,7 @@ GenerateSerializeWithCachedSizesToArray(io::Printer* printer) const {
     "for (unsigned int i = 0, n = this->$name$_size(); i < n; i++) {\n"
     "  target = ::google::protobuf::internal::WireFormatLite::\n"
     "    InternalWrite$declared_type$NoVirtualToArray(\n"
-    "      $number$, this->$name$(i), false, target);\n"
+    "      $number$, this->$name$(i), deterministic, target);\n"
     "}\n");
 }
 

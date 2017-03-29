@@ -52,6 +52,7 @@ import protobuf_unittest.lite_equals_and_hash.LiteEqualsAndHash.BarPrime;
 import protobuf_unittest.lite_equals_and_hash.LiteEqualsAndHash.Foo;
 import protobuf_unittest.lite_equals_and_hash.LiteEqualsAndHash.TestOneofEquals;
 import protobuf_unittest.lite_equals_and_hash.LiteEqualsAndHash.TestRecursiveOneof;
+import java.nio.ByteBuffer;
 import junit.framework.TestCase;
 
 /**
@@ -2174,6 +2175,24 @@ public class LiteTest extends TestCase {
     assertFalse(bar.equals(barPrime));
   }
 
+  public void testEqualsAndHashCodeForTrickySchemaTypes() {
+    Foo foo1 = Foo.newBuilder()
+        .build();
+    Foo foo2 = Foo.newBuilder()
+        .setSint64(1)
+        .build();
+    Foo foo3 = Foo.newBuilder()
+        .putMyMap("key", "value2")
+        .build();
+    Foo foo4 = Foo.newBuilder()
+        .setMyGroup(Foo.MyGroup.newBuilder().setValue(4).build())
+        .build();
+
+    assertEqualsAndHashCodeAreFalse(foo1, foo2);
+    assertEqualsAndHashCodeAreFalse(foo1, foo3);
+    assertEqualsAndHashCodeAreFalse(foo1, foo4);
+  }
+
   public void testOneofEquals() throws Exception {
     TestOneofEquals.Builder builder = TestOneofEquals.newBuilder();
     TestOneofEquals message1 = builder.build();
@@ -2269,5 +2288,94 @@ public class LiteTest extends TestCase {
   public void testRecursiveHashcode() {
     // This tests that we don't infinite loop.
     TestRecursiveOneof.getDefaultInstance().hashCode();
+  }
+
+  public void testParseFromByteBuffer() throws Exception {
+    TestAllTypesLite message =
+        TestAllTypesLite.newBuilder()
+            .setOptionalInt32(123)
+            .addRepeatedString("hello")
+            .setOptionalNestedMessage(TestAllTypesLite.NestedMessage.newBuilder().setBb(7))
+            .build();
+
+    TestAllTypesLite copy =
+        TestAllTypesLite.parseFrom(message.toByteString().asReadOnlyByteBuffer());
+
+    assertEquals(message, copy);
+  }
+
+  public void testParseFromByteBufferThrows() {
+    try {
+      TestAllTypesLite.parseFrom(ByteBuffer.wrap(new byte[] { 0x5 }));
+      fail();
+    } catch (InvalidProtocolBufferException expected) {
+    }
+
+    TestAllTypesLite message =
+        TestAllTypesLite.newBuilder()
+            .setOptionalInt32(123)
+            .addRepeatedString("hello")
+            .build();
+
+    ByteBuffer buffer = ByteBuffer.wrap(message.toByteArray(), 0, message.getSerializedSize() - 1);
+    try {
+      TestAllTypesLite.parseFrom(buffer);
+      fail();
+    } catch (InvalidProtocolBufferException expected) {
+      assertEquals(
+          TestAllTypesLite.newBuilder()
+              .setOptionalInt32(123)
+              .build(),
+          expected.getUnfinishedMessage());
+    }
+  }
+
+  public void testParseFromByteBuffer_extensions() throws Exception {
+    TestAllExtensionsLite message =
+        TestAllExtensionsLite.newBuilder()
+            .setExtension(UnittestLite.optionalInt32ExtensionLite, 123)
+            .addExtension(UnittestLite.repeatedStringExtensionLite, "hello")
+            .setExtension(
+                UnittestLite.optionalNestedEnumExtensionLite, TestAllTypesLite.NestedEnum.BAZ)
+            .setExtension(
+                UnittestLite.optionalNestedMessageExtensionLite,
+                TestAllTypesLite.NestedMessage.newBuilder().setBb(7).build())
+            .build();
+
+    ExtensionRegistryLite registry = ExtensionRegistryLite.newInstance();
+    UnittestLite.registerAllExtensions(registry);
+
+    TestAllExtensionsLite copy =
+        TestAllExtensionsLite.parseFrom(message.toByteString().asReadOnlyByteBuffer(), registry);
+
+    assertEquals(message, copy);
+  }
+
+  public void testParseFromByteBufferThrows_extensions() {
+    ExtensionRegistryLite registry = ExtensionRegistryLite.newInstance();
+    UnittestLite.registerAllExtensions(registry);
+    try {
+      TestAllExtensionsLite.parseFrom(ByteBuffer.wrap(new byte[] { 0x5 }), registry);
+      fail();
+    } catch (InvalidProtocolBufferException expected) {
+    }
+
+    TestAllExtensionsLite message =
+        TestAllExtensionsLite.newBuilder()
+            .setExtension(UnittestLite.optionalInt32ExtensionLite, 123)
+            .addExtension(UnittestLite.repeatedStringExtensionLite, "hello")
+            .build();
+
+    ByteBuffer buffer = ByteBuffer.wrap(message.toByteArray(), 0, message.getSerializedSize() - 1);
+    try {
+      TestAllExtensionsLite.parseFrom(buffer, registry);
+      fail();
+    } catch (InvalidProtocolBufferException expected) {
+      assertEquals(
+          TestAllExtensionsLite.newBuilder()
+              .setExtension(UnittestLite.optionalInt32ExtensionLite, 123)
+              .build(),
+          expected.getUnfinishedMessage());
+    }
   }
 }

@@ -275,7 +275,7 @@ class RepeatedScalarFieldContainer(BaseContainer):
     new_values = [self._type_checker.CheckValue(elem) for elem in elem_seq_iter]
     if new_values:
       self._values.extend(new_values)
-      self._message_listener.Modified()
+    self._message_listener.Modified()
 
   def MergeFrom(self, other):
     """Appends the contents of another repeated field of the same type to this

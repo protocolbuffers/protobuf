@@ -76,6 +76,8 @@ void UnknownFieldSetFieldSkipper::SkipUnknownEnum(
 bool WireFormat::SkipField(io::CodedInputStream* input, uint32 tag,
                            UnknownFieldSet* unknown_fields) {
   int number = WireFormatLite::GetTagFieldNumber(tag);
+  // Field number 0 is illegal.
+  if (number == 0) return false;
 
   switch (WireFormatLite::GetTagWireType(tag)) {
     case WireFormatLite::WIRETYPE_VARINT: {
