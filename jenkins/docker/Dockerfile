@@ -129,7 +129,7 @@ ENV MVN mvn --batch-mode
 RUN cd /tmp && \
   git clone https://github.com/google/protobuf.git && \
   cd protobuf && \
-  git reset 6b27c1f981a9a93918e4039f236ead27165a8e91 && \
+  git reset 057a2851e41e9a0ad95d2cd76aba8bc39ba2e6e3 && \
   ./autogen.sh && \
   ./configure && \
   make -j4 && \
