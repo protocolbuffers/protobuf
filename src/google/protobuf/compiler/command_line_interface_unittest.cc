@@ -35,9 +35,7 @@
 #include <fcntl.h>
 #include <sys/stat.h>
 #include <sys/types.h>
-#ifdef _MSC_VER
-#include <io.h>
-#else
+#ifndef _MSC_VER
 #include <unistd.h>
 #endif
 #include <memory>
@@ -65,26 +63,26 @@
 #include <gtest/gtest.h>
 
 #include <google/protobuf/stubs/strutil.h>
+#include <google/protobuf/stubs/io_win32.h>
 
 namespace google {
 namespace protobuf {
 namespace compiler {
 
+#if defined(_WIN32)
+// DO NOT include <io.h>, instead create functions in io_win32.{h,cc} and import
+// them like we do below.
+using google::protobuf::internal::win32::access;
+using google::protobuf::internal::win32::dup;
+using google::protobuf::internal::win32::dup2;
+using google::protobuf::internal::win32::close;
+using google::protobuf::internal::win32::open;
+using google::protobuf::internal::win32::write;
+#endif
+
 // Disable the whole test when we use tcmalloc for "draconian" heap checks, in
 // which case tcmalloc will print warnings that fail the plugin tests.
 #if !GOOGLE_PROTOBUF_HEAP_CHECK_DRACONIAN
-
-#if defined(_WIN32)
-#ifndef STDIN_FILENO
-#define STDIN_FILENO 0
-#endif
-#ifndef STDOUT_FILENO
-#define STDOUT_FILENO 1
-#endif
-#ifndef F_OK
-#define F_OK 00  // not defined by MSVC for whatever reason
-#endif
-#endif
 
 namespace {
 

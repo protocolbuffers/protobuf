@@ -108,6 +108,7 @@ cc_library(
         "src/google/protobuf/stubs/bytestream.cc",
         "src/google/protobuf/stubs/common.cc",
         "src/google/protobuf/stubs/int128.cc",
+        "src/google/protobuf/stubs/io_win32.cc",
         "src/google/protobuf/stubs/once.cc",
         "src/google/protobuf/stubs/status.cc",
         "src/google/protobuf/stubs/statusor.cc",
@@ -159,6 +160,7 @@ cc_library(
         "src/google/protobuf/service.cc",
         "src/google/protobuf/source_context.pb.cc",
         "src/google/protobuf/struct.pb.cc",
+        "src/google/protobuf/stubs/io_win32.cc",
         "src/google/protobuf/stubs/mathlimits.cc",
         "src/google/protobuf/stubs/substitute.cc",
         "src/google/protobuf/text_format.cc",
@@ -470,6 +472,7 @@ COMMON_TEST_SRCS = [
     # AUTOGEN(common_test_srcs)
     "src/google/protobuf/arena_test_util.cc",
     "src/google/protobuf/map_test_util.cc",
+    "src/google/protobuf/stubs/io_win32.cc",
     "src/google/protobuf/test_util.cc",
     "src/google/protobuf/testing/file.cc",
     "src/google/protobuf/testing/googletest.cc",
@@ -488,6 +491,16 @@ cc_binary(
         ":protoc_lib",
         "//external:gtest",
     ],
+)
+
+cc_test(
+    name = "win32_test",
+    srcs = ["src/google/protobuf/stubs/io_win32_unittest.cc"],
+    deps = [
+        ":protobuf_lite",
+        "//external:gtest_main",
+    ],
+    tags = ["manual", "windows"],
 )
 
 cc_test(
@@ -536,6 +549,7 @@ cc_test(
         "src/google/protobuf/stubs/bytestream_unittest.cc",
         "src/google/protobuf/stubs/common_unittest.cc",
         "src/google/protobuf/stubs/int128_unittest.cc",
+        "src/google/protobuf/stubs/io_win32_unittest.cc",
         "src/google/protobuf/stubs/once_unittest.cc",
         "src/google/protobuf/stubs/status_test.cc",
         "src/google/protobuf/stubs/statusor_test.cc",
