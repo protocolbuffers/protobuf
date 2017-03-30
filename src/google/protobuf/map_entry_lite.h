@@ -92,7 +92,7 @@ struct MoveHelper<false, false, true, T> {  // strings and similar
 template <typename Derived, typename Base, typename Key, typename Value,
           WireFormatLite::FieldType kKeyFieldType,
           WireFormatLite::FieldType kValueFieldType, int default_enum_value>
-class LIBPROTOBUF_EXPORT MapEntryImpl : public Base {
+class MapEntryImpl : public Base {
  protected:
   // Provide utilities to parse/serialize key/value.  Provide utilities to
   // manipulate internal stored type.
@@ -537,7 +537,7 @@ class LIBPROTOBUF_EXPORT MapEntryImpl : public Base {
 
 template <typename Key, typename Value, WireFormatLite::FieldType kKeyFieldType,
           WireFormatLite::FieldType kValueFieldType, int default_enum_value>
-class LIBPROTOBUF_EXPORT MapEntryLite
+class MapEntryLite
     : public MapEntryImpl<MapEntryLite<Key, Value, kKeyFieldType,
                                        kValueFieldType, default_enum_value>,
                           MessageLite, Key, Value, kKeyFieldType,

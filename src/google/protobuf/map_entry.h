@@ -83,7 +83,7 @@ namespace internal {
 template <typename Derived, typename Key, typename Value,
           WireFormatLite::FieldType kKeyFieldType,
           WireFormatLite::FieldType kValueFieldType, int default_enum_value>
-class LIBPROTOBUF_EXPORT MapEntry
+class MapEntry
     : public MapEntryImpl<Derived, Message, Key, Value, kKeyFieldType,
                           kValueFieldType, default_enum_value> {
  public:

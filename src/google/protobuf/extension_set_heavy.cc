@@ -340,6 +340,10 @@ bool ExtensionSet::ParseMessageSet(io::CodedInputStream* input,
   }
 }
 
+int ExtensionSet::SpaceUsedExcludingSelf() const {
+  return internal::FromIntSize(SpaceUsedExcludingSelfLong());
+}
+
 size_t ExtensionSet::SpaceUsedExcludingSelfLong() const {
   size_t total_size =
       extensions_.size() * sizeof(ExtensionMap::value_type);

@@ -438,9 +438,7 @@ class LIBPROTOBUF_EXPORT ExtensionSet {
   // SpaceUsed()).
   size_t SpaceUsedExcludingSelfLong() const;
 
-  int SpaceUsedExcludingSelf() const {
-    return internal::FromIntSize(SpaceUsedExcludingSelfLong());
-  }
+  int SpaceUsedExcludingSelf() const;
 
  private:
 
