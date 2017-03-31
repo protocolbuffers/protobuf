@@ -116,6 +116,7 @@ nobase_include_HEADERS =                                         \
   google/protobuf/generated_enum_reflection.h                    \
   google/protobuf/generated_enum_util.h                          \
   google/protobuf/generated_message_reflection.h                 \
+  google/protobuf/generated_message_table_driven.h               \
   google/protobuf/generated_message_util.h                       \
   google/protobuf/has_bits.h                                     \
   google/protobuf/map_entry.h                                    \
@@ -128,6 +129,7 @@ nobase_include_HEADERS =                                         \
   google/protobuf/message.h                                      \
   google/protobuf/message_lite.h                                 \
   google/protobuf/metadata.h                                     \
+  google/protobuf/metadata_lite.h                                \
   google/protobuf/reflection.h                                   \
   google/protobuf/reflection_ops.h                               \
   google/protobuf/repeated_field.h                               \
