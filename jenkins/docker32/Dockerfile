@@ -64,7 +64,7 @@ RUN php -r "unlink('composer-setup.php');"
 RUN cd /tmp && \
   git clone https://github.com/google/protobuf.git && \
   cd protobuf/php && \
-  git reset 6b27c1f981a9a93918e4039f236ead27165a8e91 && \
+  git reset --hard 6b27c1f981a9a93918e4039f236ead27165a8e91 && \
   ln -sfn /usr/bin/php5.5 /usr/bin/php && \
   ln -sfn /usr/bin/php-config5.5 /usr/bin/php-config && \
   ln -sfn /usr/bin/phpize5.5 /usr/bin/phpize && \
