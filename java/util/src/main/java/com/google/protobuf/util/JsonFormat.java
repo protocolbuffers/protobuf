@@ -1536,7 +1536,7 @@ public class JsonFormat {
         BigDecimal value = new BigDecimal(json.getAsString());
         return value.longValueExact();
       } catch (Exception e) {
-        throw new InvalidProtocolBufferException("Not an int32 value: " + json);
+        throw new InvalidProtocolBufferException("Not an int64 value: " + json);
       }
     }
 

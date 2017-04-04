@@ -84,6 +84,8 @@ src/**/*.trs
 java/core/target
 java/util/target
 javanano/target
+java/.idea
+java/**/*.iml
 
 # Windows native output.
 cmake/build
