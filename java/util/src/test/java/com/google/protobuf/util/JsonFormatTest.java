@@ -1099,7 +1099,7 @@ public class JsonFormatTest extends TestCase {
 
   public void testParserUnexpectedTypeUrl() throws Exception {
     try {
-      TestAllTypes.Builder builder = TestAllTypes.newBuilder();
+      Any.Builder builder = Any.newBuilder();
       mergeFromJson(
           "{\n"
               + "  \"@type\": \"type.googleapis.com/json_test.TestAllTypes\",\n"
