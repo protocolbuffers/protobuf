@@ -1,3 +1,111 @@
+2017-04-05 version 3.3.0 (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
+  Planned Future Changes
+  * There are some changes that are not included in this release but are
+    planned for the near future:
+      - Preserve unknown fields in proto3: please read this doc:
+
+          https://docs.google.com/document/d/1KMRX-G91Aa-Y2FkEaHeeviLRRNblgIahbsk4wA14gRk/view
+
+        for the timeline and follow up this github issue:
+
+          https://github.com/google/protobuf/issues/272
+
+        for discussion.
+      - Make C++ implementation C++11 only: we plan to require C++11 to build
+        protobuf code starting from 3.4.0 or 3.5.0 release. Please join this
+        github issue:
+
+          https://github.com/google/protobuf/issues/2780
+
+        to provide your feedback.
+
+  C++
+  * Fixed map fields serialization of DynamicMessage to correctly serialize
+    both key and value regardless of their presence.
+  * Parser now rejects field number 0 correctly.
+  * New API Message::SpaceUsedLong() that’s equivalent to
+    Message::SpaceUsed() but returns the value in size_t.
+  * JSON support
+    - New flag always_print_enums_as_ints in JsonPrintOptions.
+    - New flag preserve_proto_field_names in JsonPrintOptions. It will instruct
+      the JSON printer to use the original field name declared in the .proto
+      file instead of converting them to lowerCamelCase when printing JSON.
+    - JsonPrintOptions.always_print_primtive_fields now works for oneof message
+      fields.
+    - Fixed a bug that doesn’t allow different fields to set the same json_name
+      value.
+    - Fixed a performance bug that causes excessive memory copy when printing
+      large messages.
+  * Various performance optimizations.
+
+  Java
+  * Map field setters eagerly validate inputs and throw NullPointerExceptions
+    as appropriate.
+  * Added ByteBuffer overloads to the generated parsing methods and the Parser
+    interface.
+  * proto3 enum's getNumber() method now throws on UNRECOGNIZED values.
+  * Output of JsonFormat is now locale independent.
+
+  Python
+  * Added FindServiceByName() in the pure-Python DescriptorPool. This works only
+    for descriptors added with DescriptorPool.Add(). Generated descriptor_pool
+    does not support this yet.
+  * Added a descriptor_pool parameter for parsing Any in text_format.Parse().
+  * descriptor_pool.FindFileContainingSymbol() now is able to find nested
+    extensions.
+  * Extending empty [] to repeated field now sets parent message presence.
+
+  PHP
+  * Added file option php_class_prefix. The prefix will be prepended to all
+    generated classes defined in the file.
+  * When encoding, negative int32 values are sign-extended to int64.
+  * Repeated/Map field setter accepts a regular PHP array. Type checking is
+    done on the array elements.
+  * encode/decode are renamed to serializeToString/mergeFromString.
+  * Added mergeFrom, clear method on Message.
+  * Fixed a bug that oneof accessor didn’t return the field name that is
+    actually set.
+  * C extension now works with php7.
+  * This is the first GA release of PHP. We guarantee that old generated code
+    can always work with new runtime and new generated code.
+
+  Objective-C
+  * Fixed help for GPBTimestamp for dates before the epoch that contain
+    fractional seconds.
+  * Added GPBMessageDropUnknownFieldsRecursively() to remove unknowns from a
+    message and any sub messages.
+  * Addressed a threading race in extension registration/lookup.
+  * Increased the max message parsing depth to 100 to match the other languages.
+  * Removed some use of dispatch_once in favor of atomic compare/set since it
+    needs to be heap based.
+  * Fixes for new Xcode 8.3 warnings.
+
+  C#
+  * Fixed MapField.Values.CopyTo, which would throw an exception unnecessarily
+    if provided exactly the right size of array to copy to.
+  * Fixed enum JSON formatting when multiple names mapped to the same numeric
+    value.
+  * Added JSON formatting option to format enums as integers.
+  * Modified RepeatedField<T> to implement IReadOnlyList<T>.
+  * Introduced the start of custom option handling; it's not as pleasant as it
+    might be, but the information is at least present. We expect to extend code
+    generation to improve this in the future.
+  * Introduced ByteString.FromStream and ByteString.FromStreamAsync to
+    efficiently create a ByteString from a stream.
+  * Added whole-message deprecation, which decorates the class with [Obsolete].
+
+  Ruby
+  * Fixed Message#to_h for messages with map fields.
+  * Fixed memcpy() in binary gems to work for old glibc, without breaking the
+    build for non-glibc libc’s like musl.
+
+  Javascript
+  * Added compatibility tests for version 3.0.0.
+  * Added conformance tests.
+  * Fixed serialization of extensions: we need to emit a value even if it is
+    falsy (like the number 0).
+  * Use closurebuilder.py in favor of calcdeps.py for compiling JavaScript.
+
 2017-01-23 version 3.2.0 (C++/Java/Python/PHP/Ruby/Objective-C/C#/JavaScript/Lite)
   General
   * Added protoc version number to protoc plugin protocol. It can be used by
