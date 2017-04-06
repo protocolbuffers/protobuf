@@ -10,7 +10,7 @@
   </parent>
   <groupId>com.google.protobuf</groupId>
   <artifactId>protoc</artifactId>
-  <version>3.2.0</version>
+  <version>3.3.0</version>
   <packaging>pom</packaging>
   <name>Protobuf Compiler</name>
   <description>
