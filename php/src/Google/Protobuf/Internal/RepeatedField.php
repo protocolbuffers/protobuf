@@ -225,6 +225,10 @@ class RepeatedField implements \ArrayAccess, \IteratorAggregate, \Countable
                 GPBUtil::checkString($value, true);
                 break;
             case GPBType::MESSAGE:
+                if (is_null($value)) {
+                  trigger_error("RepeatedField element cannot be null.",
+                                E_USER_ERROR);
+                }
                 GPBUtil::checkMessage($value, $this->klass);
                 break;
             default:

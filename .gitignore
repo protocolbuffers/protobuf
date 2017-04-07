@@ -65,6 +65,9 @@ src/js_embed
 src/protoc
 src/unittest_proto_middleman
 
+# vim generated
+*.swp
+
 # Generated test scaffolding
 src/no_warning_test.cc
 src/no-warning-test
