@@ -229,9 +229,7 @@ public class JsonFormatTest extends TestCase {
 
     TestMap.Builder mapBuilder = TestMap.newBuilder();
     mapBuilder.putInt32ToEnumMapValue(1, 0);
-    Map<Integer, Integer> mapWithInvalidValues = new HashMap<Integer, Integer>();
-    mapWithInvalidValues.put(2, 12345);
-    mapBuilder.putAllInt32ToEnumMapValue(mapWithInvalidValues);
+    mapBuilder.putInt32ToEnumMapValue(2, 12345);
     TestMap mapMessage = mapBuilder.build();
     assertEquals(
         "{\n"
