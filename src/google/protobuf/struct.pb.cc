@@ -133,6 +133,7 @@ void TableStruct::Shutdown() {
   delete file_level_metadata[2].reflection;
   _ListValue_default_instance_.Shutdown();
   delete file_level_metadata[3].reflection;
+  delete file_level_metadata[0].reflection;
 }
 
 void TableStruct::InitDefaultsImpl() {

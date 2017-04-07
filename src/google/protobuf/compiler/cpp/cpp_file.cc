@@ -751,6 +751,15 @@ void FileGenerator::GenerateBuildDescriptors(io::Printer* printer) {
     message_generators_[i]->GenerateShutdownCode(printer);
   }
 
+  if (HasDescriptorMethods(file_, options_)) {
+    for (int i = 0; i < message_generators_.size(); i++) {
+      if (!IsMapEntryMessage(message_generators_[i]->descriptor_)) continue;
+      printer->Print(
+          "delete file_level_metadata[$index$].reflection;\n",
+          "index", SimpleItoa(i));
+    }
+  }
+
   printer->Outdent();
   printer->Print(
     "}\n\n");
