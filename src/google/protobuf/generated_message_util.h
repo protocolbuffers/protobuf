@@ -39,6 +39,7 @@
 #define GOOGLE_PROTOBUF_GENERATED_MESSAGE_UTIL_H__
 
 #include <assert.h>
+#include <climits>
 #include <string>
 
 #include <google/protobuf/stubs/logging.h>
