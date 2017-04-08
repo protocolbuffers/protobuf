@@ -18,7 +18,7 @@ These are projects we know about implementing Protocol Buffers for other program
 * C: https://github.com/squidfunk/protobluff
 * C++: https://github.com/google/protobuf (Google-official implementation)
 * C/C++: http://spbc.sf.net/
-* C#: http://code.google.com/p/protobuf-csharp-port
+* C#: https://github.com/jskeet/protobuf-csharp-port
 * C#: http://code.google.com/p/protosharp/
 * C#: https://silentorbit.com/protobuf/
 * C#/.NET/WCF/VB: http://code.google.com/p/protobuf-net/
@@ -39,7 +39,7 @@ These are projects we know about implementing Protocol Buffers for other program
 * Erlang: https://github.com/basho/erlang_protobuffs
 * Erlang: https://github.com/tomas-abrahamsson/gpb
 * Go: https://github.com/golang/protobuf (Google-official implementation)
-* Go: http://code.google.com/p/goprotobuf/
+* Go: https://github.com/golang/protobuf
 * Go: https://github.com/akunspy/gopbuf
 * Haskell: http://hackage.haskell.org/package/hprotoc
 * Haxe: https://github.com/Atry/protoc-gen-haxe
@@ -74,7 +74,7 @@ These are projects we know about implementing Protocol Buffers for other program
 * Python: https://github.com/google/protobuf (Google-official implementation)
 * Python: http://eigenein.github.com/protobuf/
 * R: http://cran.r-project.org/package=RProtoBuf
-* Ruby: http://code.google.com/p/ruby-protobuf/
+* Ruby: https://github.com/macks/ruby-protobuf
 * Ruby: http://github.com/mozy/ruby-protocol-buffers
 * Ruby: https://github.com/bmizerany/beefcake/tree/master/lib/beefcake
 * Ruby: https://github.com/localshred/protobuf

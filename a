@@ -1,0 +1,188 @@
+  In file included from google/protobuf/compiler/code_generator.cc:37:
+  ./google/protobuf/compiler/plugin.pb.h:238:29: error: expected member name or ';' after declaration specifiers
+    ::google::protobuf::int32 major() const;
+    ~~~~~~~~~~~~~~~~~~~~~~~~~ ^
+  /usr/include/sys/types.h:372:20: note: expanded from macro 'major'
+  #define major(x)        ((int)(((u_int)(x) >> 8)&0xff)) /* major number */
+                            ^
+  In file included from google/protobuf/compiler/code_generator.cc:37:
+  ./google/protobuf/compiler/plugin.pb.h:238:29: error: expected ')'
+  /usr/include/sys/types.h:372:20: note: expanded from macro 'major'
+  #define major(x)        ((int)(((u_int)(x) >> 8)&0xff)) /* major number */
+                            ^
+  ./google/protobuf/compiler/plugin.pb.h:238:29: note: to match this '('
+  /usr/include/sys/types.h:372:19: note: expanded from macro 'major'
+  #define major(x)        ((int)(((u_int)(x) >> 8)&0xff)) /* major number */
+                           ^
+  In file included from google/protobuf/compiler/code_generator.cc:37:
+  ./google/protobuf/compiler/plugin.pb.h:238:29: error: expected ')'
+    ::google::protobuf::int32 major() const;
+                              ^
+  /usr/include/sys/types.h:372:37: note: expanded from macro 'major'
+  #define major(x)        ((int)(((u_int)(x) >> 8)&0xff)) /* major number */
+                                             ^
+  ./google/protobuf/compiler/plugin.pb.h:238:29: note: to match this '('
+  /usr/include/sys/types.h:372:25: note: expanded from macro 'major'
+  #define major(x)        ((int)(((u_int)(x) >> 8)&0xff)) /* major number */
+                                 ^
+  In file included from google/protobuf/compiler/code_generator.cc:37:
+  ./google/protobuf/compiler/plugin.pb.h:238:29: error: C++ requires a type specifier for all declarations
+    ::google::protobuf::int32 major() const;
+                              ^
+  /usr/include/sys/types.h:372:27: note: expanded from macro 'major'
+  #define major(x)        ((int)(((u_int)(x) >> 8)&0xff)) /* major number */
+                                   ^
+  In file included from google/protobuf/compiler/code_generator.cc:37:
+  ./google/protobuf/compiler/plugin.pb.h:238:29: error: function cannot return function type 'int (())'
+  /usr/include/sys/types.h:372:26: note: expanded from macro 'major'
+  #define major(x)        ((int)(((u_int)(x) >> 8)&0xff)) /* major number */
+                                  ^
+  In file included from google/protobuf/compiler/code_generator.cc:37:
+  ./google/protobuf/compiler/plugin.pb.h:238:29: error: expected ')'
+  /usr/include/sys/types.h:372:42: note: expanded from macro 'major'
+  #define major(x)        ((int)(((u_int)(x) >> 8)&0xff)) /* major number */
+                                                  ^
+  ./google/protobuf/compiler/plugin.pb.h:238:29: note: to match this '('
+  /usr/include/sys/types.h:372:24: note: expanded from macro 'major'
+  #define major(x)        ((int)(((u_int)(x) >> 8)&0xff)) /* major number */
+                                ^
+  In file included from google/protobuf/compiler/code_generator.cc:37:
+  ./google/protobuf/compiler/plugin.pb.h:245:29: error: expected member name or ';' after declaration specifiers
+    ::google::protobuf::int32 minor() const;
+    ~~~~~~~~~~~~~~~~~~~~~~~~~ ^
+  /usr/include/sys/types.h:373:20: note: expanded from macro 'minor'
+  #define minor(x)        ((int)((x)&0xffff00ff))         /* minor number */
+                            ^
+  In file included from google/protobuf/compiler/code_generator.cc:37:
+  ./google/protobuf/compiler/plugin.pb.h:245:29: error: expected ')'
+  /usr/include/sys/types.h:373:20: note: expanded from macro 'minor'
+  #define minor(x)        ((int)((x)&0xffff00ff))         /* minor number */
+                            ^
+  ./google/protobuf/compiler/plugin.pb.h:245:29: note: to match this '('
+  /usr/include/sys/types.h:373:19: note: expanded from macro 'minor'
+  #define minor(x)        ((int)((x)&0xffff00ff))         /* minor number */
+                           ^
+  In file included from google/protobuf/compiler/code_generator.cc:37:
+  ./google/protobuf/compiler/plugin.pb.h:245:29: error: C++ requires a type specifier for all declarations
+    ::google::protobuf::int32 minor() const;
+                              ^
+  /usr/include/sys/types.h:373:27: note: expanded from macro 'minor'
+  #define minor(x)        ((int)((x)&0xffff00ff))         /* minor number */
+                                   ^
+  In file included from google/protobuf/compiler/code_generator.cc:37:
+  ./google/protobuf/compiler/plugin.pb.h:245:29: error: non-member function cannot have '&' qualifier
+  /usr/include/sys/types.h:373:28: note: expanded from macro 'minor'
+  #define minor(x)        ((int)((x)&0xffff00ff))         /* minor number */
+                                    ^
+  In file included from google/protobuf/compiler/code_generator.cc:37:
+  ./google/protobuf/compiler/plugin.pb.h:245:29: error: expected ')'
+  /usr/include/sys/types.h:373:29: note: expanded from macro 'minor'
+  #define minor(x)        ((int)((x)&0xffff00ff))         /* minor number */
+                                     ^
+  ./google/protobuf/compiler/plugin.pb.h:245:29: note: to match this '('
+  /usr/include/sys/types.h:373:24: note: expanded from macro 'minor'
+  #define minor(x)        ((int)((x)&0xffff00ff))         /* minor number */
+                                ^
+  In file included from google/protobuf/compiler/code_generator.cc:37:
+  ./google/protobuf/compiler/plugin.pb.h:699:43: error: expected unqualified-id
+  inline ::google::protobuf::int32 Version::major() const {
+                                            ^
+  ./google/protobuf/compiler/plugin.pb.h:723:43: error: expected unqualified-id
+  inline ::google::protobuf::int32 Version::minor() const {
+                                            ^
+  13 errors generated.
+  gmake[3]: *** [Makefile:3964: google/protobuf/compiler/code_generator.lo] Error 1
+  gmake[3]: *** Waiting for unfinished jobs....
+  In file included from google/protobuf/compiler/command_line_interface.cc:68:
+  ./google/protobuf/compiler/plugin.pb.h:238:29: error: expected member name or ';' after declaration specifiers
+    ::google::protobuf::int32 major() const;
+    ~~~~~~~~~~~~~~~~~~~~~~~~~ ^
+  /usr/include/sys/types.h:372:20: note: expanded from macro 'major'
+  #define major(x)        ((int)(((u_int)(x) >> 8)&0xff)) /* major number */
+                            ^
+  In file included from google/protobuf/compiler/command_line_interface.cc:68:
+  ./google/protobuf/compiler/plugin.pb.h:238:29: error: expected ')'
+  /usr/include/sys/types.h:372:20: note: expanded from macro 'major'
+  #define major(x)        ((int)(((u_int)(x) >> 8)&0xff)) /* major number */
+                            ^
+  ./google/protobuf/compiler/plugin.pb.h:238:29: note: to match this '('
+  /usr/include/sys/types.h:372:19: note: expanded from macro 'major'
+  #define major(x)        ((int)(((u_int)(x) >> 8)&0xff)) /* major number */
+                           ^
+  In file included from google/protobuf/compiler/command_line_interface.cc:68:
+  ./google/protobuf/compiler/plugin.pb.h:238:29: error: expected ')'
+    ::google::protobuf::int32 major() const;
+                              ^
+  /usr/include/sys/types.h:372:37: note: expanded from macro 'major'
+  #define major(x)        ((int)(((u_int)(x) >> 8)&0xff)) /* major number */
+                                             ^
+  ./google/protobuf/compiler/plugin.pb.h:238:29: note: to match this '('
+  /usr/include/sys/types.h:372:25: note: expanded from macro 'major'
+  #define major(x)        ((int)(((u_int)(x) >> 8)&0xff)) /* major number */
+                                 ^
+  In file included from google/protobuf/compiler/command_line_interface.cc:68:
+  ./google/protobuf/compiler/plugin.pb.h:238:29: error: C++ requires a type specifier for all declarations
+    ::google::protobuf::int32 major() const;
+                              ^
+  /usr/include/sys/types.h:372:27: note: expanded from macro 'major'
+  #define major(x)        ((int)(((u_int)(x) >> 8)&0xff)) /* major number */
+                                   ^
+  In file included from google/protobuf/compiler/command_line_interface.cc:68:
+  ./google/protobuf/compiler/plugin.pb.h:238:29: error: function cannot return function type 'int (())'
+  /usr/include/sys/types.h:372:26: note: expanded from macro 'major'
+  #define major(x)        ((int)(((u_int)(x) >> 8)&0xff)) /* major number */
+                                  ^
+  In file included from google/protobuf/compiler/command_line_interface.cc:68:
+  ./google/protobuf/compiler/plugin.pb.h:238:29: error: expected ')'
+  /usr/include/sys/types.h:372:42: note: expanded from macro 'major'
+  #define major(x)        ((int)(((u_int)(x) >> 8)&0xff)) /* major number */
+                                                  ^
+  ./google/protobuf/compiler/plugin.pb.h:238:29: note: to match this '('
+  /usr/include/sys/types.h:372:24: note: expanded from macro 'major'
+  #define major(x)        ((int)(((u_int)(x) >> 8)&0xff)) /* major number */
+                                ^
+  In file included from google/protobuf/compiler/command_line_interface.cc:68:
+  ./google/protobuf/compiler/plugin.pb.h:245:29: error: expected member name or ';' after declaration specifiers
+    ::google::protobuf::int32 minor() const;
+    ~~~~~~~~~~~~~~~~~~~~~~~~~ ^
+  /usr/include/sys/types.h:373:20: note: expanded from macro 'minor'
+  #define minor(x)        ((int)((x)&0xffff00ff))         /* minor number */
+                            ^
+  In file included from google/protobuf/compiler/command_line_interface.cc:68:
+  ./google/protobuf/compiler/plugin.pb.h:245:29: error: expected ')'
+  /usr/include/sys/types.h:373:20: note: expanded from macro 'minor'
+  #define minor(x)        ((int)((x)&0xffff00ff))         /* minor number */
+                            ^
+  ./google/protobuf/compiler/plugin.pb.h:245:29: note: to match this '('
+  /usr/include/sys/types.h:373:19: note: expanded from macro 'minor'
+  #define minor(x)        ((int)((x)&0xffff00ff))         /* minor number */
+                           ^
+  In file included from google/protobuf/compiler/command_line_interface.cc:68:
+  ./google/protobuf/compiler/plugin.pb.h:245:29: error: C++ requires a type specifier for all declarations
+    ::google::protobuf::int32 minor() const;
+                              ^
+  /usr/include/sys/types.h:373:27: note: expanded from macro 'minor'
+  #define minor(x)        ((int)((x)&0xffff00ff))         /* minor number */
+                                   ^
+  In file included from google/protobuf/compiler/command_line_interface.cc:68:
+  ./google/protobuf/compiler/plugin.pb.h:245:29: error: non-member function cannot have '&' qualifier
+  /usr/include/sys/types.h:373:28: note: expanded from macro 'minor'
+  #define minor(x)        ((int)((x)&0xffff00ff))         /* minor number */
+                                    ^
+  In file included from google/protobuf/compiler/command_line_interface.cc:68:
+  ./google/protobuf/compiler/plugin.pb.h:245:29: error: expected ')'
+  /usr/include/sys/types.h:373:29: note: expanded from macro 'minor'
+  #define minor(x)        ((int)((x)&0xffff00ff))         /* minor number */
+                                     ^
+  ./google/protobuf/compiler/plugin.pb.h:245:29: note: to match this '('
+  /usr/include/sys/types.h:373:24: note: expanded from macro 'minor'
+  #define minor(x)        ((int)((x)&0xffff00ff))         /* minor number */
+                                ^
+  In file included from google/protobuf/compiler/command_line_interface.cc:68:
+  ./google/protobuf/compiler/plugin.pb.h:699:43: error: expected unqualified-id
+  inline ::google::protobuf::int32 Version::major() const {
+                                            ^
+  ./google/protobuf/compiler/plugin.pb.h:723:43: error: expected unqualified-id
+  inline ::google::protobuf::int32 Version::minor() const {
+                                            ^
+  13 errors generated.
