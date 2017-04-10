@@ -37,31 +37,6 @@ namespace google {
 namespace protobuf {
 namespace internal {
 
-ProtobufOnceType map_entry_default_instances_once_;
-Mutex* map_entry_default_instances_mutex_;
-vector<MessageLite*>* map_entry_default_instances_;
-
-void DeleteMapEntryDefaultInstances() {
-  for (int i = 0; i < map_entry_default_instances_->size(); ++i) {
-    delete map_entry_default_instances_->at(i);
-  }
-  delete map_entry_default_instances_mutex_;
-  delete map_entry_default_instances_;
-}
-
-void InitMapEntryDefaultInstances() {
-  map_entry_default_instances_mutex_ = new Mutex();
-  map_entry_default_instances_ = new vector<MessageLite*>();
-  OnShutdown(&DeleteMapEntryDefaultInstances);
-}
-
-void RegisterMapEntryDefaultInstance(MessageLite* default_instance) {
-  ::google::protobuf::GoogleOnceInit(&map_entry_default_instances_once_,
-                 &InitMapEntryDefaultInstances);
-  MutexLock lock(map_entry_default_instances_mutex_);
-  map_entry_default_instances_->push_back(default_instance);
-}
-
 MapFieldBase::~MapFieldBase() {
   if (repeated_field_ != NULL && arena_ == NULL) delete repeated_field_;
 }
@@ -77,25 +52,19 @@ RepeatedPtrFieldBase* MapFieldBase::MutableRepeatedField() {
   return repeated_field_;
 }
 
-int MapFieldBase::SpaceUsedExcludingSelf() const {
+size_t MapFieldBase::SpaceUsedExcludingSelfLong() const {
   mutex_.Lock();
-  int size = SpaceUsedExcludingSelfNoLock();
+  size_t size = SpaceUsedExcludingSelfNoLock();
   mutex_.Unlock();
   return size;
 }
 
-int MapFieldBase::SpaceUsedExcludingSelfNoLock() const {
+size_t MapFieldBase::SpaceUsedExcludingSelfNoLock() const {
   if (repeated_field_ != NULL) {
-    return repeated_field_->SpaceUsedExcludingSelf();
+    return repeated_field_->SpaceUsedExcludingSelfLong();
   } else {
     return 0;
   }
-}
-
-void MapFieldBase::InitMetadataOnce() const {
-  GOOGLE_CHECK(entry_descriptor_ != NULL);
-  GOOGLE_CHECK(assign_descriptor_callback_ != NULL);
-  (*assign_descriptor_callback_)();
 }
 
 void MapFieldBase::SetMapDirty() { state_ = STATE_MODIFIED_MAP; }
@@ -421,13 +390,13 @@ void DynamicMapField::SyncMapWithRepeatedFieldNoLock() const {
   }
 }
 
-int DynamicMapField::SpaceUsedExcludingSelfNoLock() const {
-  int size = 0;
+size_t DynamicMapField::SpaceUsedExcludingSelfNoLock() const {
+  size_t size = 0;
   if (MapFieldBase::repeated_field_ != NULL) {
-    size += MapFieldBase::repeated_field_->SpaceUsedExcludingSelf();
+    size += MapFieldBase::repeated_field_->SpaceUsedExcludingSelfLong();
   }
   size += sizeof(map_);
-  int map_size = map_.size();
+  size_t map_size = map_.size();
   if (map_size) {
     Map<MapKey, MapValueRef>::const_iterator it = map_.begin();
     size += sizeof(it->first) * map_size;
@@ -456,7 +425,7 @@ int DynamicMapField::SpaceUsedExcludingSelfNoLock() const {
       case google::protobuf::FieldDescriptor::CPPTYPE_MESSAGE: {
         while (it != map_.end()) {
           const Message& message = it->second.GetMessageValue();
-          size += message.GetReflection()->SpaceUsed(message);
+          size += message.GetReflection()->SpaceUsedLong(message);
           ++it;
         }
         break;

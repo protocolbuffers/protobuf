@@ -32,6 +32,7 @@
 
 #include <Python.h>
 #include <frameobject.h>
+#include <google/protobuf/stubs/hash.h>
 #include <string>
 
 #include <google/protobuf/io/coded_stream.h>
@@ -1666,6 +1667,15 @@ PyObject* PyServiceDescriptor_FromDescriptor(
       &PyServiceDescriptor_Type, service_descriptor, NULL);
 }
 
+const ServiceDescriptor* PyServiceDescriptor_AsDescriptor(PyObject* obj) {
+  if (!PyObject_TypeCheck(obj, &PyServiceDescriptor_Type)) {
+    PyErr_SetString(PyExc_TypeError, "Not a ServiceDescriptor");
+    return NULL;
+  }
+  return reinterpret_cast<const ServiceDescriptor*>(
+      reinterpret_cast<PyBaseDescriptor*>(obj)->descriptor);
+}
+
 namespace method_descriptor {
 
 // Unchecked accessor to the C++ pointer.
@@ -1767,6 +1777,15 @@ PyObject* PyMethodDescriptor_FromDescriptor(
     const MethodDescriptor* method_descriptor) {
   return descriptor::NewInternedDescriptor(
       &PyMethodDescriptor_Type, method_descriptor, NULL);
+}
+
+const MethodDescriptor* PyMethodDescriptor_AsDescriptor(PyObject* obj) {
+  if (!PyObject_TypeCheck(obj, &PyMethodDescriptor_Type)) {
+    PyErr_SetString(PyExc_TypeError, "Not a MethodDescriptor");
+    return NULL;
+  }
+  return reinterpret_cast<const MethodDescriptor*>(
+      reinterpret_cast<PyBaseDescriptor*>(obj)->descriptor);
 }
 
 // Add a enum values to a type dictionary.

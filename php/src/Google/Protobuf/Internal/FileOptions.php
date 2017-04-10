@@ -178,6 +178,16 @@ class FileOptions extends \Google\Protobuf\Internal\Message
     private $has_swift_prefix = false;
     /**
      * <pre>
+     * Sets the php class prefix which is prepended to all php generated classes
+     * from this .proto. Default is empty.
+     * </pre>
+     *
+     * <code>optional string php_class_prefix = 40;</code>
+     */
+    private $php_class_prefix = '';
+    private $has_php_class_prefix = false;
+    /**
+     * <pre>
      * The parser stores options it doesn't recognize here. See above.
      * </pre>
      *
@@ -708,6 +718,39 @@ class FileOptions extends \Google\Protobuf\Internal\Message
 
     /**
      * <pre>
+     * Sets the php class prefix which is prepended to all php generated classes
+     * from this .proto. Default is empty.
+     * </pre>
+     *
+     * <code>optional string php_class_prefix = 40;</code>
+     */
+    public function getPhpClassPrefix()
+    {
+        return $this->php_class_prefix;
+    }
+
+    /**
+     * <pre>
+     * Sets the php class prefix which is prepended to all php generated classes
+     * from this .proto. Default is empty.
+     * </pre>
+     *
+     * <code>optional string php_class_prefix = 40;</code>
+     */
+    public function setPhpClassPrefix($var)
+    {
+        GPBUtil::checkString($var, True);
+        $this->php_class_prefix = $var;
+        $this->has_php_class_prefix = true;
+    }
+
+    public function hasPhpClassPrefix()
+    {
+        return $this->has_php_class_prefix;
+    }
+
+    /**
+     * <pre>
      * The parser stores options it doesn't recognize here. See above.
      * </pre>
      *
@@ -727,8 +770,8 @@ class FileOptions extends \Google\Protobuf\Internal\Message
      */
     public function setUninterpretedOption(&$var)
     {
-        GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \Google\Protobuf\Internal\UninterpretedOption::class);
-        $this->uninterpreted_option = $var;
+        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \Google\Protobuf\Internal\UninterpretedOption::class);
+        $this->uninterpreted_option = $arr;
         $this->has_uninterpreted_option = true;
     }
 

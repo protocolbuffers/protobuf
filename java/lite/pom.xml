@@ -137,6 +137,7 @@
             <include>**/MutabilityOracle.java</include>
             <include>**/NioByteString.java</include>
             <include>**/Parser.java</include>
+            <include>**/PrimitiveNonBoxingCollection.java</include>
             <include>**/ProtobufArrayList.java</include>
             <include>**/ProtocolStringList.java</include>
             <include>**/RopeByteString.java</include>

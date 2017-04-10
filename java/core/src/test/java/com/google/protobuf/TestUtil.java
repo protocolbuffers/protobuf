@@ -2602,6 +2602,9 @@ public final class TestUtil {
       case FOO_CORD:
         Assert.assertTrue(message.hasFooCord());
         break;
+      case FOO_STRING_PIECE:
+        Assert.assertTrue(message.hasFooStringPiece());
+        break;
       case FOO_BYTES:
         Assert.assertTrue(message.hasFooBytes());
         break;
@@ -2619,6 +2622,8 @@ public final class TestUtil {
         break;
       case FOO_NOT_SET:
         break;
+      default:
+        // TODO(b/18683919): go/enum-switch-lsc
     }
   }
 

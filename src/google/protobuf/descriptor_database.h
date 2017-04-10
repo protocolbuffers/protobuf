@@ -102,6 +102,18 @@ class LIBPROTOBUF_EXPORT DescriptorDatabase {
   }
 
 
+  // Finds the file names and appends them to the output in an
+  // undefined order. This method is best-effort: it's not guaranteed that the
+  // database will find all files. Returns true if the database supports
+  // searching all file names, otherwise returns false and leaves output
+  // unchanged.
+  //
+  // This method has a default implementation that always returns
+  // false.
+  virtual bool FindAllFileNames(std::vector<string>* output) {
+    return false;
+  }
+
  private:
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(DescriptorDatabase);
 };

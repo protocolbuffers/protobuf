@@ -88,13 +88,14 @@ set(libprotoc_files
   ${protobuf_source_dir}/src/google/protobuf/compiler/php/php_generator.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/plugin.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/plugin.pb.cc
+  ${protobuf_source_dir}/src/google/protobuf/compiler/profile.pb.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/python/python_generator.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/ruby/ruby_generator.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/subprocess.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/zip_writer.cc
 )
 
-set(js_well_known_types_sources,
+set(js_well_known_types_sources
   ${protobuf_source_dir}/src/google/protobuf/compiler/js/well_known_types/any.js
   ${protobuf_source_dir}/src/google/protobuf/compiler/js/well_known_types/struct.js
   ${protobuf_source_dir}/src/google/protobuf/compiler/js/well_known_types/timestamp.js

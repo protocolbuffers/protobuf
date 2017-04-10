@@ -295,6 +295,7 @@ GenerateFieldBuilderInitializationCode(io::Printer* printer)  const {
   // noop for strings
 }
 
+
 void ImmutableStringFieldLiteGenerator::
 GenerateInitializationCode(io::Printer* printer) const {
   printer->Print(variables_, "$name$_ = $default$;\n");
@@ -466,6 +467,7 @@ GenerateMembers(io::Printer* printer) const {
     "  $oneof_name$_ = value.toStringUtf8();\n"
     "}\n");
 }
+
 
 void ImmutableStringOneofFieldLiteGenerator::
 GenerateBuilderMembers(io::Printer* printer) const {
@@ -762,6 +764,7 @@ void RepeatedImmutableStringFieldLiteGenerator::
 GenerateFieldBuilderInitializationCode(io::Printer* printer)  const {
   // noop for strings
 }
+
 
 void RepeatedImmutableStringFieldLiteGenerator::
 GenerateInitializationCode(io::Printer* printer) const {

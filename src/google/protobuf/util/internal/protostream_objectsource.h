@@ -112,8 +112,11 @@ class LIBPROTOBUF_EXPORT ProtoStreamObjectSource : public ObjectSource {
 
   // Sets whether to always output enums as ints, by default this is off, and
   // enums are rendered as strings.
-  void set_use_ints_for_enums(bool value) {
-    use_ints_for_enums_ = value;
+  void set_use_ints_for_enums(bool value) { use_ints_for_enums_ = value; }
+
+  // Sets whether to use original proto field names
+  void set_preserve_proto_field_names(bool value) {
+    preserve_proto_field_names_ = value;
   }
 
   // Sets the max recursion depth of proto message to be deserialized. Proto
@@ -293,6 +296,9 @@ class LIBPROTOBUF_EXPORT ProtoStreamObjectSource : public ObjectSource {
 
   // Whether to render enums as ints always. Defaults to false.
   bool use_ints_for_enums_;
+
+  // Whether to preserve proto field names
+  bool preserve_proto_field_names_;
 
   // Tracks current recursion depth.
   mutable int recursion_depth_;

@@ -345,6 +345,7 @@ void ImmutableMessageLiteGenerator::Generate(io::Printer* printer) {
   }
 
   printer->Print(
+    "@java.lang.SuppressWarnings({\"unchecked\", \"fallthrough\"})\n"
     "protected final Object dynamicMethod(\n"
     "    com.google.protobuf.GeneratedMessageLite.MethodToInvoke method,\n"
     "    Object arg0, Object arg1) {\n"
@@ -397,6 +398,7 @@ void ImmutableMessageLiteGenerator::Generate(io::Printer* printer) {
 
   printer->Print(
     "}\n"
+    "// fall through\n"
     "case GET_DEFAULT_INSTANCE: {\n"
     "  return DEFAULT_INSTANCE;\n"
     "}\n"
@@ -587,6 +589,19 @@ GenerateParseFromMethods(io::Printer* printer) {
   //   because they need to be generated even for messages that are optimized
   //   for code size.
   printer->Print(
+    "public static $classname$ parseFrom(\n"
+    "    java.nio.ByteBuffer data)\n"
+    "    throws com.google.protobuf.InvalidProtocolBufferException {\n"
+    "  return com.google.protobuf.GeneratedMessageLite.parseFrom(\n"
+    "      DEFAULT_INSTANCE, data);\n"
+    "}\n"
+    "public static $classname$ parseFrom(\n"
+    "    java.nio.ByteBuffer data,\n"
+    "    com.google.protobuf.ExtensionRegistryLite extensionRegistry)\n"
+    "    throws com.google.protobuf.InvalidProtocolBufferException {\n"
+    "  return com.google.protobuf.GeneratedMessageLite.parseFrom(\n"
+    "      DEFAULT_INSTANCE, data, extensionRegistry);\n"
+    "}\n"
     "public static $classname$ parseFrom(\n"
     "    com.google.protobuf.ByteString data)\n"
     "    throws com.google.protobuf.InvalidProtocolBufferException {\n"
@@ -1053,21 +1068,6 @@ void ImmutableMessageLiteGenerator::GenerateDynamicMethodMergeFromStream(
   printer->Print(
       "}\n");     // finally
 }
-
-// ===================================================================
-
-namespace {
-bool CheckHasBitsForEqualsAndHashCode(const FieldDescriptor* field) {
-  if (field->is_repeated()) {
-    return false;
-  }
-  if (SupportFieldPresence(field->file())) {
-    return true;
-  }
-  return GetJavaType(field) == JAVATYPE_MESSAGE &&
-      field->containing_oneof() == NULL;
-}
-}  // namespace
 
 // ===================================================================
 

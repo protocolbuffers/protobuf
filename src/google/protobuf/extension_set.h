@@ -416,7 +416,8 @@ class LIBPROTOBUF_EXPORT ExtensionSet {
                                                            uint8* target) const;
 
   // For backward-compatibility, versions of two of the above methods that
-  // are never forced to serialize deterministically.
+  // serialize deterministically iff SetDefaultSerializationDeterministic()
+  // has been called.
   uint8* SerializeWithCachedSizesToArray(int start_field_number,
                                          int end_field_number,
                                          uint8* target) const;
@@ -435,6 +436,8 @@ class LIBPROTOBUF_EXPORT ExtensionSet {
   // be linked in).  It's up to the protocol compiler to avoid calling this on
   // such ExtensionSets (easy enough since lite messages don't implement
   // SpaceUsed()).
+  size_t SpaceUsedExcludingSelfLong() const;
+
   int SpaceUsedExcludingSelf() const;
 
  private:
@@ -457,7 +460,7 @@ class LIBPROTOBUF_EXPORT ExtensionSet {
 
     virtual bool IsInitialized() const = 0;
     virtual int ByteSize() const = 0;
-    virtual int SpaceUsed() const = 0;
+    virtual size_t SpaceUsedLong() const = 0;
 
     virtual void MergeFrom(const LazyMessageExtension& other) = 0;
     virtual void Clear() = 0;
@@ -556,7 +559,7 @@ class LIBPROTOBUF_EXPORT ExtensionSet {
     void Clear();
     int GetSize() const;
     void Free();
-    int SpaceUsedExcludingSelf() const;
+    size_t SpaceUsedExcludingSelfLong() const;
   };
   typedef std::map<int, Extension> ExtensionMap;
 
@@ -620,7 +623,7 @@ class LIBPROTOBUF_EXPORT ExtensionSet {
   //   class.
 
   // Defined in extension_set_heavy.cc.
-  static inline int RepeatedMessage_SpaceUsedExcludingSelf(
+  static inline size_t RepeatedMessage_SpaceUsedExcludingSelfLong(
       RepeatedPtrFieldBase* field);
 
   // The Extension struct is small enough to be passed by value, so we use it
@@ -1100,7 +1103,7 @@ template<typename Type> inline
 // parameter, and thus make an instance of ExtensionIdentifier have no
 // actual contents.  However, if we did that, then using at extension
 // identifier would not necessarily cause the compiler to output any sort
-// of reference to any simple defined in the extension's .pb.o file.  Some
+// of reference to any symbol defined in the extension's .pb.o file.  Some
 // linkers will actually drop object files that are not explicitly referenced,
 // but that would be bad because it would cause this extension to not be
 // registered at static initialization, and therefore using it would crash.

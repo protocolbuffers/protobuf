@@ -74,6 +74,13 @@ class DescriptorPoolTest(unittest.TestCase):
     self.pool.Add(self.factory_test1_fd)
     self.pool.Add(self.factory_test2_fd)
 
+    self.pool.Add(descriptor_pb2.FileDescriptorProto.FromString(
+        unittest_import_public_pb2.DESCRIPTOR.serialized_pb))
+    self.pool.Add(descriptor_pb2.FileDescriptorProto.FromString(
+        unittest_import_pb2.DESCRIPTOR.serialized_pb))
+    self.pool.Add(descriptor_pb2.FileDescriptorProto.FromString(
+        unittest_pb2.DESCRIPTOR.serialized_pb))
+
   def testFindFileByName(self):
     name1 = 'google/protobuf/internal/factory_test1.proto'
     file_desc1 = self.pool.FindFileByName(name1)
@@ -333,6 +340,10 @@ class DescriptorPoolTest(unittest.TestCase):
     with self.assertRaises(KeyError):
       self.pool.FindExtensionByName(
           'google.protobuf.python.internal.Factory1Message.list_value')
+
+  def testFindService(self):
+    service = self.pool.FindServiceByName('protobuf_unittest.TestService')
+    self.assertEqual(service.full_name, 'protobuf_unittest.TestService')
 
   def testUserDefinedDB(self):
     db = descriptor_database.DescriptorDatabase()
@@ -665,6 +676,17 @@ class AddDescriptorTest(unittest.TestCase):
   def testEnum(self):
     self._TestEnum('')
     self._TestEnum('.')
+
+  @unittest.skipIf(api_implementation.Type() == 'cpp',
+                   'With the cpp implementation, Add() must be called first')
+  def testService(self):
+    pool = descriptor_pool.DescriptorPool()
+    with self.assertRaises(KeyError):
+      pool.FindServiceByName('protobuf_unittest.TestService')
+    pool.AddServiceDescriptor(unittest_pb2._TESTSERVICE)
+    self.assertEqual(
+        'protobuf_unittest.TestService',
+        pool.FindServiceByName('protobuf_unittest.TestService').full_name)
 
   @unittest.skipIf(api_implementation.Type() == 'cpp',
                    'With the cpp implementation, Add() must be called first')

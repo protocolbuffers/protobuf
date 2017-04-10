@@ -204,6 +204,30 @@ class MapField implements \ArrayAccess, \IteratorAggregate, \Countable
     }
 
     /**
+     * @ignore
+     */
+    public function getKeyType()
+    {
+        return $this->key_type;
+    }
+
+    /**
+     * @ignore
+     */
+    public function getValueType()
+    {
+        return $this->value_type;
+    }
+
+    /**
+     * @ignore
+     */
+    public function getValueClass()
+    {
+        return $this->klass;
+    }
+
+    /**
      * Return the element at the given key.
      *
      * This will also be called for: $ele = $arr[$key]

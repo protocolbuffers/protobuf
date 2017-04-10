@@ -1442,7 +1442,7 @@ public final class TextFormat {
 
     /**
      * Parse a single field from {@code tokenizer} and merge it into
-     * {@code builder}.
+     * {@code target}.
      */
     private void mergeField(final Tokenizer tokenizer,
                             final ExtensionRegistry extensionRegistry,
@@ -1712,6 +1712,8 @@ public final class TextFormat {
       }
 
       if (field.isRepeated()) {
+        // TODO(b/29122459): If field.isMapField() and FORBID_SINGULAR_OVERWRITES mode,
+        //     check for duplicate map keys here.
         target.addRepeatedField(field, value);
       } else if ((singularOverwritePolicy
               == SingularOverwritePolicy.FORBID_SINGULAR_OVERWRITES)

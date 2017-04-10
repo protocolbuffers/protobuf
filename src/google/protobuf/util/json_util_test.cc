@@ -52,13 +52,9 @@ using proto3::BAR;
 using proto3::TestMessage;
 using proto3::TestMap;
 using proto3::TestOneof;
-using testing::MapIn;
+using google::protobuf::testing::MapIn;
 
 static const char kTypeUrlPrefix[] = "type.googleapis.com";
-
-static string GetTypeUrl(const Descriptor* message) {
-  return string(kTypeUrlPrefix) + "/" + message->full_name();
-}
 
 // As functions defined in json_util.h are just thin wrappers around the
 // JSON conversion code in //net/proto2/util/converter, in this test we
@@ -159,6 +155,43 @@ TEST_F(JsonUtilTest, TestDefaultValues) {
       "\"repeatedMessageValue\":[]"
       "}",
       ToJson(m, options));
+
+  options.preserve_proto_field_names = true;
+  m.set_string_value("i am a test string value");
+  m.set_bytes_value("i am a test bytes value");
+  EXPECT_EQ(
+      "{\"bool_value\":false,"
+      "\"int32_value\":0,"
+      "\"int64_value\":\"0\","
+      "\"uint32_value\":0,"
+      "\"uint64_value\":\"0\","
+      "\"float_value\":0,"
+      "\"double_value\":0,"
+      "\"string_value\":\"i am a test string value\","
+      "\"bytes_value\":\"aSBhbSBhIHRlc3QgYnl0ZXMgdmFsdWU=\","
+      "\"enum_value\":\"FOO\","
+      "\"repeated_bool_value\":[],"
+      "\"repeated_int32_value\":[],"
+      "\"repeated_int64_value\":[],"
+      "\"repeated_uint32_value\":[],"
+      "\"repeated_uint64_value\":[],"
+      "\"repeated_float_value\":[],"
+      "\"repeated_double_value\":[],"
+      "\"repeated_string_value\":[],"
+      "\"repeated_bytes_value\":[],"
+      "\"repeated_enum_value\":[],"
+      "\"repeated_message_value\":[]"
+      "}",
+      ToJson(m, options));
+}
+
+TEST_F(JsonUtilTest, TestPreserveProtoFieldNames) {
+  TestMessage m;
+  m.mutable_message_value();
+
+  JsonPrintOptions options;
+  options.preserve_proto_field_names = true;
+  EXPECT_EQ("{\"message_value\":{}}", ToJson(m, options));
 }
 
 TEST_F(JsonUtilTest, TestAlwaysPrintEnumsAsInts) {
@@ -170,8 +203,7 @@ TEST_F(JsonUtilTest, TestAlwaysPrintEnumsAsInts) {
   JsonPrintOptions print_options;
   print_options.always_print_enums_as_ints = true;
 
-  string expected_json =
-    "{\"enumValue\":1,\"repeatedEnumValue\":[0,1]}";
+  string expected_json = "{\"enumValue\":1,\"repeatedEnumValue\":[0,1]}";
   EXPECT_EQ(expected_json, ToJson(orig, print_options));
 
   TestMessage parsed;
@@ -227,7 +259,8 @@ TEST_F(JsonUtilTest, ParsePrimitiveMapIn) {
   JsonPrintOptions print_options;
   print_options.always_print_primitive_fields = true;
   JsonParseOptions parse_options;
-  EXPECT_EQ("{\"other\":\"\",\"things\":[],\"mapInput\":{}}", ToJson(message, print_options));
+  EXPECT_EQ("{\"other\":\"\",\"things\":[],\"mapInput\":{}}",
+            ToJson(message, print_options));
   MapIn other;
   ASSERT_TRUE(FromJson(ToJson(message, print_options), &other, parse_options));
   EXPECT_EQ(message.DebugString(), other.DebugString());
@@ -238,14 +271,10 @@ TEST_F(JsonUtilTest, PrintPrimitiveOneof) {
   JsonPrintOptions options;
   options.always_print_primitive_fields = true;
   message.mutable_oneof_message_value();
-  EXPECT_EQ(
-      "{\"oneofMessageValue\":{\"value\":0}}",
-      ToJson(message, options));
+  EXPECT_EQ("{\"oneofMessageValue\":{\"value\":0}}", ToJson(message, options));
 
   message.set_oneof_int32_value(1);
-  EXPECT_EQ(
-      "{\"oneofInt32Value\":1}",
-      ToJson(message, options));
+  EXPECT_EQ("{\"oneofInt32Value\":1}", ToJson(message, options));
 }
 
 TEST_F(JsonUtilTest, TestParseIgnoreUnknownFields) {

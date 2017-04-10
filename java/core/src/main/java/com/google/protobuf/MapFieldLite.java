@@ -30,8 +30,9 @@
 
 package com.google.protobuf;
 
-import com.google.protobuf.Internal.EnumLite;
+import static com.google.protobuf.Internal.checkNotNull;
 
+import com.google.protobuf.Internal.EnumLite;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -88,6 +89,9 @@ public final class MapFieldLite<K, V> extends LinkedHashMap<K, V> {
 
   @Override public V put(K key, V value) {
     ensureMutable();
+    checkNotNull(key);
+
+    checkNotNull(value);
     return super.put(key, value);
   }
 
@@ -97,12 +101,20 @@ public final class MapFieldLite<K, V> extends LinkedHashMap<K, V> {
 
   @Override public void putAll(Map<? extends K, ? extends V> m) {
     ensureMutable();
+    checkForNullKeysAndValues(m);
     super.putAll(m);
   }
 
   @Override public V remove(Object key) {
     ensureMutable();
     return super.remove(key);
+  }
+
+  private static void checkForNullKeysAndValues(Map<?, ?> m) {
+    for (Object key : m.keySet()) {
+      checkNotNull(key);
+      checkNotNull(m.get(key));
+    }
   }
 
   private static boolean equals(Object a, Object b) {

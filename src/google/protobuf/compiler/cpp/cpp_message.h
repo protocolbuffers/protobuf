@@ -42,6 +42,7 @@
 #include <set>
 #include <string>
 #include <google/protobuf/compiler/cpp/cpp_field.h>
+#include <google/protobuf/compiler/cpp/cpp_helpers.h>
 #include <google/protobuf/compiler/cpp/cpp_options.h>
 
 namespace google {
@@ -61,7 +62,8 @@ class ExtensionGenerator;      // extension.h
 class MessageGenerator {
  public:
   // See generator.cc for the meaning of dllexport_decl.
-  MessageGenerator(const Descriptor* descriptor, const Options& options);
+  MessageGenerator(const Descriptor* descriptor, const Options& options,
+                   SCCAnalyzer* scc_analyzer);
   ~MessageGenerator();
 
   // Appends the pre-order walk of the nested generators to list.
@@ -94,10 +96,6 @@ class MessageGenerator {
   // Generate extra fields
   void GenerateExtraDefaultFields(io::Printer* printer);
 
-  // Generate code that calls MessageFactory::InternalRegisterGeneratedMessage()
-  // for all types.
-  void GenerateTypeRegistrations(io::Printer* printer);
-
   // Generates code that allocates the message's default instance.
   void GenerateDefaultInstanceAllocator(io::Printer* printer);
 
@@ -120,6 +118,15 @@ class MessageGenerator {
   void GenerateFieldAccessorDeclarations(io::Printer* printer);
   void GenerateDependentFieldAccessorDefinitions(io::Printer* printer);
   void GenerateFieldAccessorDefinitions(io::Printer* printer, bool is_inline);
+
+  // Generate the table-driven parsing array.  Returns the number of entries
+  // generated.
+  size_t GenerateParseOffsets(io::Printer* printer);
+  size_t GenerateParseAuxTable(io::Printer* printer);
+  // Generates a ParseTable entry.  Returns whether the proto uses table-driven
+  // parsing.
+  bool GenerateParseTable(io::Printer* printer, size_t offset,
+                          size_t aux_offset);
 
   // Generate the field offsets array.  Returns the a pair of the total numer
   // of entries generated and the index of the first has_bit entry.
@@ -155,9 +162,14 @@ class MessageGenerator {
   void GenerateIsInitialized(io::Printer* printer);
 
   // Helpers for GenerateSerializeWithCachedSizes().
+  //
+  // cached_has_bit_index maintains that:
+  //   cached_has_bits = _has_bits_[cached_has_bit_index]
+  // for cached_has_bit_index >= 0
   void GenerateSerializeOneField(io::Printer* printer,
                                  const FieldDescriptor* field,
-                                 bool unbounded);
+                                 bool unbounded,
+                                 int cached_has_bits_index);
   // Generate a switch statement to serialize 2+ fields from the same oneof.
   // Or, if fields.size() == 1, just call GenerateSerializeOneField().
   void GenerateSerializeOneofFields(
@@ -197,7 +209,7 @@ class MessageGenerator {
   // optimized_order_ is the order we layout the message's fields in the class.
   // This is reused to initialize the fields in-order for cache efficiency.
   //
-  // optimized_order_ excludes oneof fields.
+  // optimized_order_ excludes oneof fields and weak fields.
   std::vector<const FieldDescriptor *> optimized_order_;
   std::vector<int> has_bit_indices_;
   int max_has_bit_index_;
@@ -206,8 +218,13 @@ class MessageGenerator {
   google::protobuf::scoped_array<google::protobuf::scoped_ptr<ExtensionGenerator> > extension_generators_;
   int num_required_fields_;
   bool use_dependent_base_;
+  int num_weak_fields_;
+  // table_driven_ indicates the generated message uses table-driven parsing.
+  bool table_driven_;
 
-  int index_in_metadata_;
+  int index_in_file_messages_;
+
+  SCCAnalyzer* scc_analyzer_;
 
   friend class FileGenerator;
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(MessageGenerator);

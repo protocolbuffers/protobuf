@@ -145,6 +145,7 @@ cc_library(
         "src/google/protobuf/timestamp.pb.cc",
         "src/google/protobuf/type.pb.cc",
         "src/google/protobuf/unknown_field_set.cc",
+        "src/google/protobuf/util/delimited_message_util.cc",
         "src/google/protobuf/util/field_comparator.cc",
         "src/google/protobuf/util/field_mask_util.cc",
         "src/google/protobuf/util/internal/datapiece.cc",
@@ -205,6 +206,7 @@ RELATIVE_WELL_KNOWN_PROTOS = [
     "google/protobuf/any.proto",
     "google/protobuf/api.proto",
     "google/protobuf/compiler/plugin.proto",
+    "google/protobuf/compiler/profile.proto",
     "google/protobuf/descriptor.proto",
     "google/protobuf/duration.proto",
     "google/protobuf/empty.proto",
@@ -349,6 +351,7 @@ cc_library(
         "src/google/protobuf/compiler/php/php_generator.cc",
         "src/google/protobuf/compiler/plugin.cc",
         "src/google/protobuf/compiler/plugin.pb.cc",
+        "src/google/protobuf/compiler/profile.pb.cc",
         "src/google/protobuf/compiler/python/python_generator.cc",
         "src/google/protobuf/compiler/ruby/ruby_generator.cc",
         "src/google/protobuf/compiler/subprocess.cc",
@@ -400,6 +403,9 @@ RELATIVE_TEST_PROTOS = [
     "google/protobuf/unittest_enormous_descriptor.proto",
     "google/protobuf/unittest_import.proto",
     "google/protobuf/unittest_import_public.proto",
+    "google/protobuf/unittest_lazy_dependencies.proto",
+    "google/protobuf/unittest_lazy_dependencies_custom_option.proto",
+    "google/protobuf/unittest_lazy_dependencies_enum.proto",
     "google/protobuf/unittest_lite_imports_nonlite.proto",
     "google/protobuf/unittest_mset.proto",
     "google/protobuf/unittest_mset_wire_format.proto",
@@ -476,6 +482,7 @@ cc_test(
         "src/google/protobuf/compiler/cpp/cpp_plugin_unittest.cc",
         "src/google/protobuf/compiler/cpp/cpp_unittest.cc",
         "src/google/protobuf/compiler/cpp/metadata_test.cc",
+        "src/google/protobuf/compiler/csharp/csharp_bootstrap_unittest.cc",
         "src/google/protobuf/compiler/csharp/csharp_generator_unittest.cc",
         "src/google/protobuf/compiler/importer_unittest.cc",
         "src/google/protobuf/compiler/java/java_doc_comment_unittest.cc",
@@ -521,6 +528,7 @@ cc_test(
         "src/google/protobuf/stubs/type_traits_unittest.cc",
         "src/google/protobuf/text_format_unittest.cc",
         "src/google/protobuf/unknown_field_set_unittest.cc",
+        "src/google/protobuf/util/delimited_message_util_test.cc",
         "src/google/protobuf/util/field_comparator_test.cc",
         "src/google/protobuf/util/field_mask_util_test.cc",
         "src/google/protobuf/util/internal/default_value_objectwriter_test.cc",
@@ -541,6 +549,10 @@ cc_test(
         ":test_plugin",
     ] + glob([
         "src/google/protobuf/**/*",
+        # Files for csharp_bootstrap_unittest.cc.
+        "conformance/**/*",
+        "csharp/src/**/*",
+        "examples/**/*",
     ]),
     includes = [
         "src/",
@@ -568,6 +580,7 @@ java_library(
     ]) + [
         ":gen_well_known_protos_java",
     ],
+    javacopts = ["-source 6"],
     visibility = ["//visibility:public"],
 )
 

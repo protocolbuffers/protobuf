@@ -34,6 +34,7 @@ import com.google.protobuf.AbstractMessageLite.Builder.LimitedInputStream;
 import com.google.protobuf.GeneratedMessageLite.EqualsVisitor.NotEqualsException;
 import com.google.protobuf.Internal.BooleanList;
 import com.google.protobuf.Internal.DoubleList;
+import com.google.protobuf.Internal.EnumLiteMap;
 import com.google.protobuf.Internal.FloatList;
 import com.google.protobuf.Internal.IntList;
 import com.google.protobuf.Internal.LongList;
@@ -45,6 +46,7 @@ import java.io.ObjectStreamException;
 import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -136,6 +138,7 @@ public abstract class GeneratedMessageLite<
       return false;
     }
 
+
     try {
       visit(EqualsVisitor.INSTANCE, (MessageType) other);
     } catch (NotEqualsException e) {
@@ -220,6 +223,7 @@ public abstract class GeneratedMessageLite<
   }
 
   @Override
+  @SuppressWarnings("unchecked")
   public final BuilderType toBuilder() {
     BuilderType builder = (BuilderType) dynamicMethod(MethodToInvoke.NEW_BUILDER);
     builder.mergeFrom((MessageType) this);
@@ -453,6 +457,7 @@ public abstract class GeneratedMessageLite<
      */
     protected FieldSet<ExtensionDescriptor> extensions = FieldSet.newFieldSet();
 
+    @SuppressWarnings("unchecked")
     protected final void mergeExtensionFields(final MessageType other) {
       if (extensions.isImmutable()) {
         extensions = extensions.clone();
@@ -1152,6 +1157,7 @@ public abstract class GeneratedMessageLite<
     }
   }
 
+
   /**
    * Lite equivalent to {@link GeneratedMessage.GeneratedExtension}.
    *
@@ -1523,6 +1529,20 @@ public abstract class GeneratedMessageLite<
           .setUnfinishedMessage(message);
     }
     return message;
+  }
+
+  // Validates last tag.
+  protected static <T extends GeneratedMessageLite<T, ?>> T parseFrom(
+      T defaultInstance, ByteBuffer data, ExtensionRegistryLite extensionRegistry)
+      throws InvalidProtocolBufferException {
+    return checkMessageInitialized(
+        parseFrom(defaultInstance, CodedInputStream.newInstance(data), extensionRegistry));
+  }
+
+  // Validates last tag.
+  protected static <T extends GeneratedMessageLite<T, ?>> T parseFrom(
+      T defaultInstance, ByteBuffer data) throws InvalidProtocolBufferException {
+    return parseFrom(defaultInstance, data, ExtensionRegistryLite.getEmptyRegistry());
   }
 
   // Validates last tag.
@@ -1977,13 +1997,13 @@ public abstract class GeneratedMessageLite<
   /**
    * Implements hashCode by accumulating state.
    */
-  private static class HashCodeVisitor implements Visitor {
+  static class HashCodeVisitor implements Visitor {
 
     // The caller must ensure that the visitor is invoked parameterized with this and this such that
     // other is this. This is required due to how oneof cases are handled. See the class comment
     // on Visitor for more information.
 
-    private int hashCode = 0;
+    int hashCode = 0;
 
     @Override
     public boolean visitBoolean(

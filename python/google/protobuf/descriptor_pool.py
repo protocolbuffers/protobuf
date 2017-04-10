@@ -124,6 +124,7 @@ class DescriptorPool(object):
     self._descriptor_db = descriptor_db
     self._descriptors = {}
     self._enum_descriptors = {}
+    self._service_descriptors = {}
     self._file_descriptors = {}
     self._toplevel_extensions = {}
     # TODO(jieluo): Remove _file_desc_by_toplevel_extension when
@@ -177,7 +178,7 @@ class DescriptorPool(object):
   def AddEnumDescriptor(self, enum_desc):
     """Adds an EnumDescriptor to the pool.
 
-    This method also registers the FileDescriptor associated with the message.
+    This method also registers the FileDescriptor associated with the enum.
 
     Args:
       enum_desc: An EnumDescriptor.
@@ -188,6 +189,18 @@ class DescriptorPool(object):
 
     self._enum_descriptors[enum_desc.full_name] = enum_desc
     self._AddFileDescriptor(enum_desc.file)
+
+  def AddServiceDescriptor(self, service_desc):
+    """Adds a ServiceDescriptor to the pool.
+
+    Args:
+      service_desc: A ServiceDescriptor.
+    """
+
+    if not isinstance(service_desc, descriptor.ServiceDescriptor):
+      raise TypeError('Expected instance of descriptor.ServiceDescriptor.')
+
+    self._service_descriptors[service_desc.full_name] = service_desc
 
   def AddExtensionDescriptor(self, extension):
     """Adds a FieldDescriptor describing an extension to the pool.
@@ -272,7 +285,7 @@ class DescriptorPool(object):
       A FileDescriptor for the named file.
 
     Raises:
-      KeyError: if the file can not be found in the pool.
+      KeyError: if the file cannot be found in the pool.
     """
 
     try:
@@ -301,7 +314,7 @@ class DescriptorPool(object):
       A FileDescriptor that contains the specified symbol.
 
     Raises:
-      KeyError: if the file can not be found in the pool.
+      KeyError: if the file cannot be found in the pool.
     """
 
     symbol = _NormalizeFullyQualifiedName(symbol)
@@ -331,6 +344,7 @@ class DescriptorPool(object):
       message = self.FindMessageTypeByName(message_name)
       assert message.extensions_by_name[extension_name]
       return message.file
+
     except KeyError:
       raise KeyError('Cannot find a file containing %s' % symbol)
 
@@ -342,6 +356,9 @@ class DescriptorPool(object):
 
     Returns:
       The descriptor for the named type.
+
+    Raises:
+      KeyError: if the message cannot be found in the pool.
     """
 
     full_name = _NormalizeFullyQualifiedName(full_name)
@@ -357,6 +374,9 @@ class DescriptorPool(object):
 
     Returns:
       The enum descriptor for the named type.
+
+    Raises:
+      KeyError: if the enum cannot be found in the pool.
     """
 
     full_name = _NormalizeFullyQualifiedName(full_name)
@@ -372,6 +392,9 @@ class DescriptorPool(object):
 
     Returns:
       The field descriptor for the named field.
+
+    Raises:
+      KeyError: if the field cannot be found in the pool.
     """
     full_name = _NormalizeFullyQualifiedName(full_name)
     message_name, _, field_name = full_name.rpartition('.')
@@ -386,6 +409,9 @@ class DescriptorPool(object):
 
     Returns:
       A FieldDescriptor, describing the named extension.
+
+    Raises:
+      KeyError: if the extension cannot be found in the pool.
     """
     full_name = _NormalizeFullyQualifiedName(full_name)
     try:
@@ -418,7 +444,7 @@ class DescriptorPool(object):
     Returns:
       A FieldDescriptor describing the extension.
 
-    Raise:
+    Raises:
       KeyError: when no extension with the given number is known for the
         specified message.
     """
@@ -437,6 +463,23 @@ class DescriptorPool(object):
       A list of FieldDescriptor describing the extensions.
     """
     return list(self._extensions_by_number[message_descriptor].values())
+
+  def FindServiceByName(self, full_name):
+    """Loads the named service descriptor from the pool.
+
+    Args:
+      full_name: The full name of the service descriptor to load.
+
+    Returns:
+      The service descriptor for the named service.
+
+    Raises:
+      KeyError: if the service cannot be found in the pool.
+    """
+    full_name = _NormalizeFullyQualifiedName(full_name)
+    if full_name not in self._service_descriptors:
+      self._FindFileContainingSymbolInDb(full_name)
+    return self._service_descriptors[full_name]
 
   def _FindFileContainingSymbolInDb(self, symbol):
     """Finds the file in descriptor DB containing the specified symbol.
@@ -855,6 +898,7 @@ class DescriptorPool(object):
                                         methods=methods,
                                         options=_OptionsOrNone(service_proto),
                                         file=file_desc)
+    self._service_descriptors[service_name] = desc
     return desc
 
   def _MakeMethodDescriptor(self, method_proto, service_name, package, scope,

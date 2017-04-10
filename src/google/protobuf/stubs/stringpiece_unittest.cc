@@ -783,11 +783,13 @@ TEST(FindOneCharTest, EdgeCases) {
   EXPECT_EQ(StringPiece::npos, a.rfind('x'));
 }
 
+#ifdef PROTOBUF_HAS_DEATH_TEST
 #ifndef NDEBUG
 TEST(NonNegativeLenTest, NonNegativeLen) {
   EXPECT_DEATH(StringPiece("xyz", -1), "len >= 0");
 }
 #endif  // ndef DEBUG
+#endif  // PROTOBUF_HAS_DEATH_TEST
 
 }  // namespace
 }  // namespace protobuf

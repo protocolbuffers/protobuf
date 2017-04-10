@@ -708,6 +708,21 @@ bool ConformanceTestSuite::CheckSetEmpty(const set<string>& set_to_check,
   }
 }
 
+void ConformanceTestSuite::TestIllegalTags() {
+  // field num 0 is illegal
+  string nullfield[] = {
+    "\1DEADBEEF",
+    "\2\1\1",
+    "\3\4",
+    "\5DEAD"
+  };
+  for (int i = 0; i < 4; i++) {
+    string name = "IllegalZeroFieldNum_Case_0";
+    name.back() += i;
+    ExpectParseFailureForProto(nullfield[i], name, REQUIRED);
+  }
+}
+
 bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
                                     std::string* output) {
   runner_ = runner;
@@ -727,6 +742,8 @@ bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
     if (i == FieldDescriptor::TYPE_GROUP) continue;
     TestPrematureEOFForType(static_cast<FieldDescriptor::Type>(i));
   }
+
+  TestIllegalTags();
 
   int64 kInt64Min = -9223372036854775808ULL;
   int64 kInt64Max = 9223372036854775807ULL;

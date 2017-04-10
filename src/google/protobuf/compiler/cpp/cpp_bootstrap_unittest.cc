@@ -46,12 +46,11 @@
 
 #include <google/protobuf/compiler/cpp/cpp_generator.h>
 #include <google/protobuf/compiler/importer.h>
-#include <google/protobuf/descriptor.h>
 #include <google/protobuf/io/zero_copy_stream_impl.h>
+#include <google/protobuf/descriptor.h>
+#include <google/protobuf/stubs/substitute.h>
 #include <google/protobuf/stubs/map_util.h>
 #include <google/protobuf/stubs/stl_util.h>
-#include <google/protobuf/stubs/strutil.h>
-#include <google/protobuf/stubs/substitute.h>
 
 #include <google/protobuf/testing/file.h>
 #include <google/protobuf/testing/file.h>
@@ -126,9 +125,12 @@ TEST(BootstrapTest, GeneratedDescriptorMatches) {
     importer.Import("google/protobuf/descriptor.proto");
   const FileDescriptor* plugin_proto_file =
     importer.Import("google/protobuf/compiler/plugin.proto");
+  const FileDescriptor* profile_proto_file =
+    importer.Import("google/protobuf/compiler/profile.proto");
   EXPECT_EQ("", error_collector.text_);
   ASSERT_TRUE(proto_file != NULL);
   ASSERT_TRUE(plugin_proto_file != NULL);
+  ASSERT_TRUE(profile_proto_file != NULL);
 
   CppGenerator generator;
   MockGeneratorContext context;
@@ -139,6 +141,8 @@ TEST(BootstrapTest, GeneratedDescriptorMatches) {
   parameter = "dllexport_decl=LIBPROTOC_EXPORT";
   ASSERT_TRUE(generator.Generate(plugin_proto_file, parameter,
                                  &context, &error));
+  ASSERT_TRUE(generator.Generate(profile_proto_file, parameter,
+                                 &context, &error));
 
   context.ExpectFileMatches("google/protobuf/descriptor.pb.h",
                             "google/protobuf/descriptor.pb.h");
@@ -148,6 +152,10 @@ TEST(BootstrapTest, GeneratedDescriptorMatches) {
                             "google/protobuf/compiler/plugin.pb.h");
   context.ExpectFileMatches("google/protobuf/compiler/plugin.pb.cc",
                             "google/protobuf/compiler/plugin.pb.cc");
+  context.ExpectFileMatches("google/protobuf/compiler/profile.pb.h",
+                            "google/protobuf/compiler/profile.pb.h");
+  context.ExpectFileMatches("google/protobuf/compiler/profile.pb.cc",
+                            "google/protobuf/compiler/profile.pb.cc");
 }
 
 }  // namespace

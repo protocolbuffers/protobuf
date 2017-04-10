@@ -190,3 +190,12 @@ message Cyclic {
   repeated Author m_author = 5;
   optional Cyclic m_cyclic = 4;
 }
+
+// Test that two messages can have different fields mapped to the same JSON
+// name. See: https://github.com/google/protobuf/issues/1415
+message TestJsonName1 {
+  optional int32 one_value = 1 [json_name = "value"];
+}
+message TestJsonName2 {
+  optional int32 another_value = 1 [json_name = "value"];
+}

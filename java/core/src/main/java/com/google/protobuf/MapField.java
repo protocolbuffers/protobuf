@@ -30,6 +30,8 @@
 
 package com.google.protobuf;
 
+import static com.google.protobuf.Internal.checkNotNull;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -100,6 +102,7 @@ public class MapField<K, V> implements MutabilityOracle {
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public void convertMessageToKeyAndValue(Message message, Map<K, V> map) {
       MapEntry<K, V> entry = (MapEntry<K, V>) message;
       map.put(entry.getKey(), entry.getValue());
@@ -328,6 +331,8 @@ public class MapField<K, V> implements MutabilityOracle {
     @Override
     public V put(K key, V value) {
       mutabilityOracle.ensureMutable();
+      checkNotNull(key);
+      checkNotNull(value);
       return delegate.put(key, value);
     }
 
@@ -340,6 +345,10 @@ public class MapField<K, V> implements MutabilityOracle {
     @Override
     public void putAll(Map<? extends K, ? extends V> m) {
       mutabilityOracle.ensureMutable();
+      for (K key : m.keySet()) {
+        checkNotNull(key);
+        checkNotNull(m.get(key));
+      }
       delegate.putAll(m);
     }
 

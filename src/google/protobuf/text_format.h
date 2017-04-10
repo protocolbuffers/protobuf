@@ -75,8 +75,8 @@ class LIBPROTOBUF_EXPORT TextFormat {
                                  io::ZeroCopyOutputStream* output);
 
   // Like Print(), but outputs directly to a string.
-  // Note: output will be cleared before prior to printing, and will
-  // be left empty even if printing fails.
+  // Note: output will be cleared prior to printing, and will be left empty
+  // even if printing fails.
   static bool PrintToString(const Message& message, string* output);
 
   // Like PrintUnknownFields(), but outputs directly to a string.

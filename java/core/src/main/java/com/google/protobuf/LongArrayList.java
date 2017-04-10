@@ -30,8 +30,9 @@
 
 package com.google.protobuf;
 
-import com.google.protobuf.Internal.LongList;
+import static com.google.protobuf.Internal.checkNotNull;
 
+import com.google.protobuf.Internal.LongList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.RandomAccess;
@@ -41,9 +42,8 @@ import java.util.RandomAccess;
  *
  * @author dweis@google.com (Daniel Weis)
  */
-final class LongArrayList
-    extends AbstractProtobufList<Long>
-    implements LongList, RandomAccess {
+final class LongArrayList extends AbstractProtobufList<Long>
+    implements LongList, RandomAccess, PrimitiveNonBoxingCollection {
 
   private static final LongArrayList EMPTY_LIST = new LongArrayList();
   static {
@@ -198,9 +198,7 @@ final class LongArrayList
   public boolean addAll(Collection<? extends Long> collection) {
     ensureIsMutable();
 
-    if (collection == null) {
-      throw new NullPointerException();
-    }
+    checkNotNull(collection);
 
     // We specialize when adding another LongArrayList to avoid boxing elements.
     if (!(collection instanceof LongArrayList)) {

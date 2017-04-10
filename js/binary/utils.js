@@ -430,7 +430,7 @@ jspb.utils.joinHash64 = function(bitsLow, bitsHigh) {
 
 /**
  * Individual digits for number->string conversion.
- * @const {!Array.<number>}
+ * @const {!Array.<string>}
  */
 jspb.utils.DIGITS = [
   '0', '1', '2', '3', '4', '5', '6', '7',
@@ -967,6 +967,10 @@ jspb.utils.byteSourceToUint8Array = function(data) {
 
   if (data.constructor === ArrayBuffer) {
     data = /** @type {!ArrayBuffer} */(data);
+    return /** @type {!Uint8Array} */(new Uint8Array(data));
+  }
+
+  if (data.constructor === Buffer) {
     return /** @type {!Uint8Array} */(new Uint8Array(data));
   }
 

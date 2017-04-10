@@ -62,6 +62,7 @@ class ImmutableMapFieldLiteGenerator : public ImmutableFieldLiteGenerator {
   void GenerateEqualsCode(io::Printer* printer) const;
   void GenerateHashCode(io::Printer* printer) const;
 
+
   string GetBoxedType() const;
 
  private:

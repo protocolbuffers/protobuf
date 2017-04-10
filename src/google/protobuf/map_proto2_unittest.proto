@@ -84,3 +84,8 @@ message TestMaps {
   map<bool, TestIntIntMap> m_bool = 11;
   map<string, TestIntIntMap> m_string = 12;
 }
+
+// Test maps in submessages.
+message TestSubmessageMaps {
+  optional TestMaps m = 1;
+}

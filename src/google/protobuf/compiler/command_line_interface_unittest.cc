@@ -32,9 +32,9 @@
 //  Based on original Protocol Buffers design by
 //  Sanjay Ghemawat, Jeff Dean, and others.
 
-#include <sys/types.h>
-#include <sys/stat.h>
 #include <fcntl.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 #ifdef _MSC_VER
 #include <io.h>
 #else
@@ -46,25 +46,25 @@
 #endif
 #include <vector>
 
-#include <google/protobuf/descriptor.pb.h>
-#include <google/protobuf/descriptor.h>
-#include <google/protobuf/io/zero_copy_stream.h>
-#include <google/protobuf/compiler/command_line_interface.h>
-#include <google/protobuf/compiler/code_generator.h>
+#include <google/protobuf/stubs/stringprintf.h>
+#include <google/protobuf/testing/file.h>
 #include <google/protobuf/testing/file.h>
 #include <google/protobuf/compiler/mock_code_generator.h>
 #include <google/protobuf/compiler/subprocess.h>
-#include <google/protobuf/io/printer.h>
+#include <google/protobuf/compiler/code_generator.h>
+#include <google/protobuf/compiler/command_line_interface.h>
 #include <google/protobuf/unittest.pb.h>
-#include <google/protobuf/testing/file.h>
-#include <google/protobuf/stubs/stringprintf.h>
-#include <google/protobuf/stubs/strutil.h>
+#include <google/protobuf/io/printer.h>
+#include <google/protobuf/io/zero_copy_stream.h>
+#include <google/protobuf/descriptor.pb.h>
+#include <google/protobuf/descriptor.h>
 #include <google/protobuf/stubs/substitute.h>
 
 #include <google/protobuf/testing/file.h>
 #include <google/protobuf/testing/googletest.h>
 #include <gtest/gtest.h>
 
+#include <google/protobuf/stubs/strutil.h>
 
 namespace google {
 namespace protobuf {
@@ -101,7 +101,7 @@ class CommandLineInterfaceTest : public testing::Test {
   // command is automatically split on spaces, and the string "$tmpdir"
   // is replaced with TestTempDir().
   void Run(const string& command);
-  void RunWithArgs(vector<string> args);
+  void RunWithArgs(std::vector<string> args);
 
   // -----------------------------------------------------------------
   // Methods to set up the test (called before Run()).
@@ -155,6 +155,11 @@ class CommandLineInterfaceTest : public testing::Test {
 
   // Checks that the captured stdout is the same as the expected_text.
   void ExpectCapturedStdout(const string& expected_text);
+
+  // Checks that Run() returned zero and the stdout contains the given
+  // substring.
+  void ExpectCapturedStdoutSubstringWithZeroReturnCode(
+      const string& expected_substring);
 
   // Returns true if ExpectErrorSubstring(expected_substring) would pass, but
   // does not fail otherwise.
@@ -296,7 +301,7 @@ void CommandLineInterfaceTest::Run(const string& command) {
   RunWithArgs(Split(command, " ", true));
 }
 
-void CommandLineInterfaceTest::RunWithArgs(vector<string> args) {
+void CommandLineInterfaceTest::RunWithArgs(std::vector<string> args) {
   if (!disallow_plugins_) {
     cli_.AllowPlugins("prefix-");
 #ifndef GOOGLE_THIRD_PARTY_PROTOBUF
@@ -488,6 +493,11 @@ void CommandLineInterfaceTest::ExpectCapturedStdout(
   EXPECT_EQ(expected_text, captured_stdout_);
 }
 
+void CommandLineInterfaceTest::ExpectCapturedStdoutSubstringWithZeroReturnCode(
+    const string& expected_substring) {
+  EXPECT_EQ(0, return_code_);
+  EXPECT_PRED_FORMAT2(testing::IsSubstring, expected_substring, captured_stdout_);
+}
 
 void CommandLineInterfaceTest::ExpectFileContent(
     const string& filename, const string& content) {
@@ -1034,7 +1044,7 @@ TEST_F(CommandLineInterfaceTest, DirectDependencies_CustomErrorMessage) {
                  "syntax = \"proto2\";\n"
                  "message Bar { optional string text = 1; }");
 
-  vector<string> commands;
+  std::vector<string> commands;
   commands.push_back("protocol_compiler");
   commands.push_back("--test_out=$tmpdir");
   commands.push_back("--proto_path=$tmpdir");
@@ -1117,15 +1127,17 @@ TEST_F(CommandLineInterfaceTest, WriteDescriptorSetWithDuplicates) {
   ReadDescriptorSet("descriptor_set", &descriptor_set);
   if (HasFatalFailure()) return;
   EXPECT_EQ(3, descriptor_set.file_size());
-  EXPECT_EQ("bar.proto", descriptor_set.file(0).name());
-  EXPECT_EQ("foo.proto", descriptor_set.file(1).name());
+  // foo should come first since the output is in dependency order.
+  // since bar and baz are unordered, they should be in command line order.
+  EXPECT_EQ("foo.proto", descriptor_set.file(0).name());
+  EXPECT_EQ("bar.proto", descriptor_set.file(1).name());
   EXPECT_EQ("baz.proto", descriptor_set.file(2).name());
   // Descriptor set should not have source code info.
   EXPECT_FALSE(descriptor_set.file(0).has_source_code_info());
   // Descriptor set should have json_name.
-  EXPECT_EQ("Bar", descriptor_set.file(0).message_type(0).name());
-  EXPECT_EQ("foo", descriptor_set.file(0).message_type(0).field(0).name());
-  EXPECT_TRUE(descriptor_set.file(0).message_type(0).field(0).has_json_name());
+  EXPECT_EQ("Bar", descriptor_set.file(1).message_type(0).name());
+  EXPECT_EQ("foo", descriptor_set.file(1).message_type(0).field(0).name());
+  EXPECT_TRUE(descriptor_set.file(1).message_type(0).field(0).has_json_name());
 }
 
 TEST_F(CommandLineInterfaceTest, WriteDescriptorSetWithSourceInfo) {
@@ -1703,11 +1715,11 @@ TEST_F(CommandLineInterfaceTest, GeneratorPluginNotAllowed) {
 TEST_F(CommandLineInterfaceTest, HelpText) {
   Run("test_exec_name --help");
 
-  ExpectErrorSubstringWithZeroReturnCode("Usage: test_exec_name ");
-  ExpectErrorSubstringWithZeroReturnCode("--test_out=OUT_DIR");
-  ExpectErrorSubstringWithZeroReturnCode("Test output.");
-  ExpectErrorSubstringWithZeroReturnCode("--alt_out=OUT_DIR");
-  ExpectErrorSubstringWithZeroReturnCode("Alt output.");
+  ExpectCapturedStdoutSubstringWithZeroReturnCode("Usage: test_exec_name ");
+  ExpectCapturedStdoutSubstringWithZeroReturnCode("--test_out=OUT_DIR");
+  ExpectCapturedStdoutSubstringWithZeroReturnCode("Test output.");
+  ExpectCapturedStdoutSubstringWithZeroReturnCode("--alt_out=OUT_DIR");
+  ExpectCapturedStdoutSubstringWithZeroReturnCode("Alt output.");
 }
 
 TEST_F(CommandLineInterfaceTest, GccFormatErrors) {

@@ -232,6 +232,7 @@ GenerateSerializedSizeCode(io::Printer* printer) const {
     "}\n");
 }
 
+
 // ===================================================================
 
 ImmutableLazyMessageOneofFieldLiteGenerator::
@@ -414,6 +415,7 @@ GenerateSerializedSizeCode(io::Printer* printer) const {
     "    .computeLazyFieldSize($number$, ($lazy_type$) $oneof_name$_);\n"
     "}\n");
 }
+
 
 // ===================================================================
 
@@ -715,6 +717,7 @@ GenerateSerializedSizeCode(io::Printer* printer) const {
     "    .computeLazyFieldSize($number$, $name$_.get(i));\n"
     "}\n");
 }
+
 
 }  // namespace java
 }  // namespace compiler

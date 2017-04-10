@@ -111,7 +111,7 @@ class ProtostreamObjectSourceTest
 
   void DoTest(const Message& msg, const Descriptor* descriptor) {
     Status status = ExecuteTest(msg, descriptor);
-    EXPECT_EQ(Status::OK, status);
+    EXPECT_EQ(util::Status(), status);
   }
 
   Status ExecuteTest(const Message& msg, const Descriptor* descriptor) {
@@ -509,9 +509,7 @@ TEST_P(ProtostreamObjectSourceTest, UseIntsForEnumsTest) {
 
   UseIntsForEnums();
 
-  ow_.StartObject("")
-      ->RenderInt32("type", 3)
-      ->EndObject();
+  ow_.StartObject("")->RenderInt32("type", 3)->EndObject();
   DoTest(book, Book::descriptor());
 }
 
