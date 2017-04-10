@@ -63,6 +63,9 @@ from google.protobuf import symbol_database
 class DescriptorPoolTest(unittest.TestCase):
 
   def setUp(self):
+    # TODO(jieluo): Should make the pool which is created by
+    # serialized_pb same with generated pool.
+    # TODO(jieluo): More test coverage for the generated pool.
     self.pool = descriptor_pool.DescriptorPool()
     self.factory_test1_fd = descriptor_pb2.FileDescriptorProto.FromString(
         factory_test1_pb2.DESCRIPTOR.serialized_pb)
@@ -106,6 +109,26 @@ class DescriptorPoolTest(unittest.TestCase):
                      file_desc2.name)
     self.assertEqual('google.protobuf.python.internal', file_desc2.package)
     self.assertIn('Factory2Message', file_desc2.message_types_by_name)
+
+    # Tests top level extension.
+    file_desc3 = self.pool.FindFileContainingSymbol(
+        'google.protobuf.python.internal.another_field')
+    self.assertIsInstance(file_desc3, descriptor.FileDescriptor)
+    self.assertEqual('google/protobuf/internal/factory_test2.proto',
+                     file_desc3.name)
+
+    # Tests nested extension inside a message.
+    file_desc4 = self.pool.FindFileContainingSymbol(
+        'google.protobuf.python.internal.Factory2Message.one_more_field')
+    self.assertIsInstance(file_desc4, descriptor.FileDescriptor)
+    self.assertEqual('google/protobuf/internal/factory_test2.proto',
+                     file_desc4.name)
+
+    # Tests the generated pool.
+    assert descriptor_pool.Default().FindFileContainingSymbol(
+        'google.protobuf.python.internal.Factory2Message.one_more_field')
+    assert descriptor_pool.Default().FindFileContainingSymbol(
+        'google.protobuf.python.internal.another_field')
 
   def testFindFileContainingSymbolFailure(self):
     with self.assertRaises(KeyError):

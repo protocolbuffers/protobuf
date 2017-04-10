@@ -126,6 +126,9 @@ class DescriptorPool(object):
     self._enum_descriptors = {}
     self._file_descriptors = {}
     self._toplevel_extensions = {}
+    # TODO(jieluo): Remove _file_desc_by_toplevel_extension when
+    # FieldDescriptor.file is added in code gen.
+    self._file_desc_by_toplevel_extension = {}
     # We store extensions in two two-level mappings: The first key is the
     # descriptor of the message being extended, the second key is the extension
     # full name or its tag number.
@@ -169,7 +172,7 @@ class DescriptorPool(object):
       raise TypeError('Expected instance of descriptor.Descriptor.')
 
     self._descriptors[desc.full_name] = desc
-    self.AddFileDescriptor(desc.file)
+    self._AddFileDescriptor(desc.file)
 
   def AddEnumDescriptor(self, enum_desc):
     """Adds an EnumDescriptor to the pool.
@@ -184,7 +187,7 @@ class DescriptorPool(object):
       raise TypeError('Expected instance of descriptor.EnumDescriptor.')
 
     self._enum_descriptors[enum_desc.full_name] = enum_desc
-    self.AddFileDescriptor(enum_desc.file)
+    self._AddFileDescriptor(enum_desc.file)
 
   def AddExtensionDescriptor(self, extension):
     """Adds a FieldDescriptor describing an extension to the pool.
@@ -229,6 +232,23 @@ class DescriptorPool(object):
           extension.message_type.full_name] = extension
 
   def AddFileDescriptor(self, file_desc):
+    """Adds a FileDescriptor to the pool, non-recursively.
+
+    If the FileDescriptor contains messages or enums, the caller must explicitly
+    register them.
+
+    Args:
+      file_desc: A FileDescriptor.
+    """
+
+    self._AddFileDescriptor(file_desc)
+    # TODO(jieluo): This is a temporary solution for FieldDescriptor.file.
+    # Remove it when FieldDescriptor.file is added in code gen.
+    for extension in file_desc.extensions_by_name.itervalues():
+      self._file_desc_by_toplevel_extension[
+          extension.full_name] = file_desc
+
+  def _AddFileDescriptor(self, file_desc):
     """Adds a FileDescriptor to the pool, non-recursively.
 
     If the FileDescriptor contains messages or enums, the caller must explicitly
@@ -296,15 +316,23 @@ class DescriptorPool(object):
       pass
 
     try:
-      file_proto = self._internal_db.FindFileContainingSymbol(symbol)
-    except KeyError as error:
-      if self._descriptor_db:
-        file_proto = self._descriptor_db.FindFileContainingSymbol(symbol)
-      else:
-        raise error
-    if not file_proto:
+      return self._FindFileContainingSymbolInDb(symbol)
+    except KeyError:
+      pass
+
+    try:
+      return self._file_desc_by_toplevel_extension[symbol]
+    except KeyError:
+      pass
+
+    # Try nested extensions inside a message.
+    message_name, _, extension_name = symbol.rpartition('.')
+    try:
+      message = self.FindMessageTypeByName(message_name)
+      assert message.extensions_by_name[extension_name]
+      return message.file
+    except KeyError:
       raise KeyError('Cannot find a file containing %s' % symbol)
-    return self._ConvertFileProtoToFileDescriptor(file_proto)
 
   def FindMessageTypeByName(self, full_name):
     """Loads the named descriptor from the pool.
@@ -318,7 +346,7 @@ class DescriptorPool(object):
 
     full_name = _NormalizeFullyQualifiedName(full_name)
     if full_name not in self._descriptors:
-      self.FindFileContainingSymbol(full_name)
+      self._FindFileContainingSymbolInDb(full_name)
     return self._descriptors[full_name]
 
   def FindEnumTypeByName(self, full_name):
@@ -333,7 +361,7 @@ class DescriptorPool(object):
 
     full_name = _NormalizeFullyQualifiedName(full_name)
     if full_name not in self._enum_descriptors:
-      self.FindFileContainingSymbol(full_name)
+      self._FindFileContainingSymbolInDb(full_name)
     return self._enum_descriptors[full_name]
 
   def FindFieldByName(self, full_name):
@@ -374,7 +402,7 @@ class DescriptorPool(object):
       scope = self.FindMessageTypeByName(message_name)
     except KeyError:
       # Some extensions are defined at file scope.
-      scope = self.FindFileContainingSymbol(full_name)
+      scope = self._FindFileContainingSymbolInDb(full_name)
     return scope.extensions_by_name[extension_name]
 
   def FindExtensionByNumber(self, message_descriptor, number):
@@ -409,6 +437,29 @@ class DescriptorPool(object):
       A list of FieldDescriptor describing the extensions.
     """
     return list(self._extensions_by_number[message_descriptor].values())
+
+  def _FindFileContainingSymbolInDb(self, symbol):
+    """Finds the file in descriptor DB containing the specified symbol.
+
+    Args:
+      symbol: The name of the symbol to search for.
+
+    Returns:
+      A FileDescriptor that contains the specified symbol.
+
+    Raises:
+      KeyError: if the file cannot be found in the descriptor database.
+    """
+    try:
+      file_proto = self._internal_db.FindFileContainingSymbol(symbol)
+    except KeyError as error:
+      if self._descriptor_db:
+        file_proto = self._descriptor_db.FindFileContainingSymbol(symbol)
+      else:
+        raise error
+    if not file_proto:
+      raise KeyError('Cannot find a file containing %s' % symbol)
+    return self._ConvertFileProtoToFileDescriptor(file_proto)
 
   def _ConvertFileProtoToFileDescriptor(self, file_proto):
     """Creates a FileDescriptor from a proto or returns a cached copy.
