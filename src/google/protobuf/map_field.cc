@@ -67,6 +67,13 @@ size_t MapFieldBase::SpaceUsedExcludingSelfNoLock() const {
   }
 }
 
+bool MapFieldBase::IsMapValid() const {
+  // "Acquire" insures the operation after SyncRepeatedFieldWithMap won't get
+  // executed before state_ is checked.
+  Atomic32 state = google::protobuf::internal::Acquire_Load(&state_);
+  return state != STATE_MODIFIED_REPEATED;
+}
+
 void MapFieldBase::SetMapDirty() { state_ = STATE_MODIFIED_MAP; }
 
 void MapFieldBase::SetRepeatedDirty() { state_ = STATE_MODIFIED_REPEATED; }
@@ -359,6 +366,13 @@ void DynamicMapField::SyncMapWithRepeatedFieldNoLock() const {
         GOOGLE_LOG(FATAL) << "Can't get here.";
         break;
     }
+
+    // Remove existing map value with same key.
+    Map<MapKey, MapValueRef>::iterator iter = map->find(map_key);
+    if (iter != map->end()) {
+      iter->second.DeleteData();
+    }
+
     MapValueRef& map_val = (*map)[map_key];
     map_val.SetType(val_des->cpp_type());
     switch (val_des->cpp_type()) {

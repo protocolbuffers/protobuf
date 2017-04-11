@@ -86,6 +86,8 @@ class LIBPROTOBUF_EXPORT MapFieldBase {
   virtual bool ContainsMapKey(const MapKey& map_key) const = 0;
   virtual bool InsertOrLookupMapValue(
       const MapKey& map_key, MapValueRef* val) = 0;
+  // Insures operations after won't get executed before calling this.
+  bool IsMapValid() const;
   virtual bool DeleteMapValue(const MapKey& map_key) = 0;
   virtual bool EqualIterator(const MapIterator& a,
                              const MapIterator& b) const = 0;

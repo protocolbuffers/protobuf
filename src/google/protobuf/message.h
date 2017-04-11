@@ -154,6 +154,13 @@ class MapReflectionFriend;     // scalar_map_container.h
 }
 
 
+namespace internal {
+class ReflectionOps;     // reflection_ops.h
+class MapKeySorter;      // wire_format.cc
+class WireFormat;        // wire_format.h
+class MapFieldReflectionTest;  // map_test.cc
+}
+
 template<typename T>
 class RepeatedField;     // repeated_field.h
 
@@ -936,6 +943,10 @@ class LIBPROTOBUF_EXPORT Reflection {
   template<typename T, typename Enable>
   friend class MutableRepeatedFieldRef;
   friend class ::google::protobuf::python::MapReflectionFriend;
+  friend class internal::MapFieldReflectionTest;
+  friend class internal::MapKeySorter;
+  friend class internal::WireFormat;
+  friend class internal::ReflectionOps;
 
   // Special version for specialized implementations of string.  We can't call
   // MutableRawRepeatedField directly here because we don't have access to
