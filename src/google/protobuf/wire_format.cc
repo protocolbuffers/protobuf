@@ -797,7 +797,16 @@ void WireFormat::SerializeWithCachedSizes(
   int expected_endpoint = output->ByteCount() + size;
 
   std::vector<const FieldDescriptor*> fields;
-  message_reflection->ListFields(message, &fields);
+
+  // Fields of map entry should always be serialized.
+  if (descriptor->options().map_entry()) {
+    for (int i = 0; i < descriptor->field_count(); i++) {
+      fields.push_back(descriptor->field(i));
+    }
+  } else {
+    message_reflection->ListFields(message, &fields);
+  }
+
   for (int i = 0; i < fields.size(); i++) {
     SerializeFieldWithCachedSizes(fields[i], message, output);
   }
@@ -834,6 +843,9 @@ void WireFormat::SerializeFieldWithCachedSizes(
 
   if (field->is_repeated()) {
     count = message_reflection->FieldSize(message, field);
+  } else if (field->containing_type()->options().map_entry()) {
+    // Map entry fields always need to be serialized.
+    count = 1;
   } else if (message_reflection->HasField(message, field)) {
     count = 1;
   }
@@ -984,7 +996,16 @@ size_t WireFormat::ByteSize(const Message& message) {
   size_t our_size = 0;
 
   std::vector<const FieldDescriptor*> fields;
-  message_reflection->ListFields(message, &fields);
+
+  // Fields of map entry should always be serialized.
+  if (descriptor->options().map_entry()) {
+    for (int i = 0; i < descriptor->field_count(); i++) {
+      fields.push_back(descriptor->field(i));
+    }
+  } else {
+    message_reflection->ListFields(message, &fields);
+  }
+
   for (int i = 0; i < fields.size(); i++) {
     our_size += FieldByteSize(fields[i], message);
   }
@@ -1015,6 +1036,9 @@ size_t WireFormat::FieldByteSize(
   size_t count = 0;
   if (field->is_repeated()) {
     count = FromIntSize(message_reflection->FieldSize(message, field));
+  } else if (field->containing_type()->options().map_entry()) {
+    // Map entry fields always need to be serialized.
+    count = 1;
   } else if (message_reflection->HasField(message, field)) {
     count = 1;
   }
@@ -1044,6 +1068,9 @@ size_t WireFormat::FieldDataOnlyByteSize(
   if (field->is_repeated()) {
     count =
         internal::FromIntSize(message_reflection->FieldSize(message, field));
+  } else if (field->containing_type()->options().map_entry()) {
+    // Map entry fields always need to be serialized.
+    count = 1;
   } else if (message_reflection->HasField(message, field)) {
     count = 1;
   }

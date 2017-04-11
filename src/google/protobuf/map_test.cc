@@ -2811,6 +2811,33 @@ TEST(WireFormatForMapFieldTest, SerializeMap) {
   EXPECT_TRUE(dynamic_data == generated_data);
 }
 
+TEST(WireFormatForMapFieldTest, SerializeMapDynamicMessage) {
+  DynamicMessageFactory factory;
+  google::protobuf::scoped_ptr<Message> dynamic_message;
+  dynamic_message.reset(
+      factory.GetPrototype(unittest::TestMap::descriptor())->New());
+  MapReflectionTester reflection_tester(
+      unittest::TestMap::descriptor());
+  reflection_tester.SetMapFieldsViaReflection(dynamic_message.get());
+  reflection_tester.ExpectMapFieldsSetViaReflection(*dynamic_message);
+
+  unittest::TestMap generated_message;
+  MapTestUtil::SetMapFields(&generated_message);
+  MapTestUtil::ExpectMapFieldsSet(generated_message);
+
+  string generated_data;
+  string dynamic_data;
+
+  // Serialize.
+  generated_message.SerializeToString(&generated_data);
+  dynamic_message->SerializeToString(&dynamic_data);
+
+  // Because map serialization doesn't guarantee order, we just compare
+  // serialized size here. This is enough to tell dynamic message doesn't miss
+  // anything in serialization.
+  EXPECT_TRUE(dynamic_data.size() == generated_data.size());
+}
+
 TEST(WireFormatForMapFieldTest, MapParseHelpers) {
   string data;
 
