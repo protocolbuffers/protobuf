@@ -975,6 +975,11 @@ static int Int(const string& value) {
 class MapFieldReflectionTest : public testing::Test {
  protected:
   typedef FieldDescriptor FD;
+
+  int MapSize(const Reflection* reflection, const FieldDescriptor* field,
+              const Message& message) {
+    return reflection->MapSize(message, field);
+  }
 };
 
 TEST_F(MapFieldReflectionTest, RegularFields) {
@@ -1780,6 +1785,50 @@ TEST_F(MapFieldReflectionTest, RepeatedFieldRefMergeFromAndSwap) {
   }
 
   // TODO(teboring): add test for duplicated key
+}
+
+TEST_F(MapFieldReflectionTest, MapSizeWithDuplicatedKey) {
+  // Dynamic Message
+  {
+    DynamicMessageFactory factory;
+    google::protobuf::scoped_ptr<Message> message(
+        factory.GetPrototype(unittest::TestMap::descriptor())->New());
+    const Reflection* reflection = message->GetReflection();
+    const FieldDescriptor* field =
+        unittest::TestMap::descriptor()->FindFieldByName("map_int32_int32");
+
+    Message* entry1 = reflection->AddMessage(message.get(), field);
+    Message* entry2 = reflection->AddMessage(message.get(), field);
+
+    const Reflection* entry_reflection = entry1->GetReflection();
+    const FieldDescriptor* key_field =
+        entry1->GetDescriptor()->FindFieldByName("key");
+    entry_reflection->SetInt32(entry1, key_field, 1);
+    entry_reflection->SetInt32(entry2, key_field, 1);
+
+    EXPECT_EQ(2, reflection->FieldSize(*message, field));
+    EXPECT_EQ(1, MapSize(reflection, field, *message));
+  }
+
+  // Generated Message
+  {
+    unittest::TestMap message;
+    const Reflection* reflection = message.GetReflection();
+    const FieldDescriptor* field =
+        message.GetDescriptor()->FindFieldByName("map_int32_int32");
+
+    Message* entry1 = reflection->AddMessage(&message, field);
+    Message* entry2 = reflection->AddMessage(&message, field);
+
+    const Reflection* entry_reflection = entry1->GetReflection();
+    const FieldDescriptor* key_field =
+        entry1->GetDescriptor()->FindFieldByName("key");
+    entry_reflection->SetInt32(entry1, key_field, 1);
+    entry_reflection->SetInt32(entry2, key_field, 1);
+
+    EXPECT_EQ(2, reflection->FieldSize(message, field));
+    EXPECT_EQ(1, MapSize(reflection, field, message));
+  }
 }
 
 // Generated Message Test ===========================================
@@ -2689,6 +2738,69 @@ TEST_F(MapFieldInDynamicMessageTest, RecursiveMap) {
   ASSERT_TRUE(to->ParseFromString(data));
 }
 
+TEST_F(MapFieldInDynamicMessageTest, MapValueReferernceValidAfterSerialize) {
+  google::protobuf::scoped_ptr<Message> message(map_prototype_->New());
+  MapReflectionTester reflection_tester(map_descriptor_);
+  reflection_tester.SetMapFieldsViaMapReflection(message.get());
+
+  // Get value reference before serialization, so that we know the value is from
+  // map.
+  MapKey map_key;
+  MapValueRef map_val;
+  map_key.SetInt32Value(0);
+  reflection_tester.GetMapValueViaMapReflection(
+      message.get(), "map_int32_foreign_message", map_key, &map_val);
+  Message* submsg = map_val.MutableMessageValue();
+
+  // In previous implementation, calling SerializeToString will cause syncing
+  // from map to repeated field, which will invalidate the submsg we previously
+  // got.
+  string data;
+  message->SerializeToString(&data);
+
+  const Reflection* submsg_reflection = submsg->GetReflection();
+  const Descriptor* submsg_desc = submsg->GetDescriptor();
+  const FieldDescriptor* submsg_field = submsg_desc->FindFieldByName("c");
+  submsg_reflection->SetInt32(submsg, submsg_field, 128);
+
+  message->SerializeToString(&data);
+  TestMap to;
+  to.ParseFromString(data);
+  EXPECT_EQ(128, to.map_int32_foreign_message().at(0).c());
+}
+
+TEST_F(MapFieldInDynamicMessageTest, MapEntryReferernceValidAfterSerialize) {
+  google::protobuf::scoped_ptr<Message> message(map_prototype_->New());
+  MapReflectionTester reflection_tester(map_descriptor_);
+  reflection_tester.SetMapFieldsViaReflection(message.get());
+
+  // Get map entry before serialization, so that we know the it is from
+  // repeated field.
+  Message* map_entry = reflection_tester.GetMapEntryViaReflection(
+      message.get(), "map_int32_foreign_message", 0);
+  const Reflection* map_entry_reflection = map_entry->GetReflection();
+  const Descriptor* map_entry_desc = map_entry->GetDescriptor();
+  const FieldDescriptor* value_field = map_entry_desc->FindFieldByName("value");
+  Message* submsg =
+      map_entry_reflection->MutableMessage(map_entry, value_field);
+
+  // In previous implementation, calling SerializeToString will cause syncing
+  // from repeated field to map, which will invalidate the map_entry we
+  // previously got.
+  string data;
+  message->SerializeToString(&data);
+
+  const Reflection* submsg_reflection = submsg->GetReflection();
+  const Descriptor* submsg_desc = submsg->GetDescriptor();
+  const FieldDescriptor* submsg_field = submsg_desc->FindFieldByName("c");
+  submsg_reflection->SetInt32(submsg, submsg_field, 128);
+
+  message->SerializeToString(&data);
+  TestMap to;
+  to.ParseFromString(data);
+  EXPECT_EQ(128, to.map_int32_foreign_message().at(0).c());
+}
+
 // ReflectionOps Test ===============================================
 
 TEST(ReflectionOpsForMapFieldTest, MapSanityCheck) {
@@ -2749,6 +2861,20 @@ TEST(ReflectionOpsForMapFieldTest, MapDiscardUnknownFields) {
 
   EXPECT_EQ(0, message.GetReflection()->
       GetUnknownFields(message).field_count());
+}
+
+TEST(ReflectionOpsForMapFieldTest, IsInitialized) {
+  unittest::TestRequiredMessageMap map_message;
+
+  // Add an uninitialized message.
+  (*map_message.mutable_map_field())[0];
+  EXPECT_FALSE(ReflectionOps::IsInitialized(map_message));
+
+  // Initialize uninitialized message
+  (*map_message.mutable_map_field())[0].set_a(0);
+  (*map_message.mutable_map_field())[0].set_b(0);
+  (*map_message.mutable_map_field())[0].set_c(0);
+  EXPECT_TRUE(ReflectionOps::IsInitialized(map_message));
 }
 
 // Wire Format Test =================================================
@@ -3089,7 +3215,7 @@ TEST(ArenaTest, ParsingAndSerializingNoHeapAllocation) {
 }
 
 // Use text format parsing and serializing to test reflection api.
-TEST(ArenaTest, RelfectionInTextFormat) {
+TEST(ArenaTest, ReflectionInTextFormat) {
   Arena arena;
   string data;
 
