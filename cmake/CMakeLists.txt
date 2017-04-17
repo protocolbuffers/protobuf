@@ -159,6 +159,13 @@ else (MSVC)
   set(LIB_PREFIX)
 endif (MSVC)
 
+# https://cmake.org/Wiki/CMake_Cross_Compiling#Using_executables_in_the_build_created_during_the_build
+# when crosscompiling import the executable targets from a file
+if(CMAKE_CROSSCOMPILING)
+  set(protobuf_IMPORT_EXECUTABLES "IMPORTFILE-NOTFOUND" CACHE FILEPATH "Point it to the export file from a native build")
+  include(${protobuf_IMPORT_EXECUTABLES})
+endif(CMAKE_CROSSCOMPILING)
+
 if (protobuf_UNICODE)
   add_definitions(-DUNICODE -D_UNICODE)
 endif (protobuf_UNICODE)
@@ -180,4 +187,10 @@ endif (protobuf_BUILD_EXAMPLES)
 
 if(protobuf_VERBOSE)
     message(STATUS "Protocol Buffers Configuring done")
+endif()
+
+# export the generator target to a file, so it can be imported (see above) by another build
+# the IF() is not necessary, but makes the intention clearer
+if(NOT CMAKE_CROSSCOMPILING) 
+  export(TARGETS js_embed protoc FILE ${CMAKE_BINARY_DIR}/protobuf_ImportExecutables.cmake)
 endif()

@@ -14,8 +14,10 @@ foreach(_library
     ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR} COMPONENT ${_library})
 endforeach()
 
-install(TARGETS protoc EXPORT protobuf-targets
-  RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT protoc)
+if(NOT CMAKE_CROSSCOMPILING)
+  install(TARGETS protoc EXPORT protobuf-targets
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT protoc)
+endif()
 
 file(STRINGS extract_includes.bat.in _extract_strings
   REGEX "^copy")
@@ -94,7 +96,11 @@ configure_file(protobuf-options.cmake
   ${CMAKE_INSTALL_CMAKEDIR}/protobuf-options.cmake @ONLY)
 
 # Allows the build directory to be used as a find directory.
-export(TARGETS libprotobuf-lite libprotobuf libprotoc protoc
+set(EXPORT_TARGETS libprotobuf-lite libprotobuf libprotoc)
+if(NOT CMAKE_CROSSCOMPILING)
+  list(APPEND EXPORT_TARGETS protoc)
+endif()
+export(TARGETS ${EXPORT_TARGETS}
   NAMESPACE protobuf::
   FILE ${CMAKE_INSTALL_CMAKEDIR}/protobuf-targets.cmake
 )
