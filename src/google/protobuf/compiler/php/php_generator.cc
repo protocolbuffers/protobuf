@@ -507,8 +507,10 @@ void GenerateFieldAccessor(const FieldDescriptor* field, bool is_descriptor,
         "$this->writeOneof(^number^, $var);\n",
         "number", IntToString(field->number()));
   } else if (field->is_repeated()) {
+    // GBP::CheckRepeatedField does not return a value for
+    // older runtimes
     printer->Print(
-        "$this->^name^ = $arr;\n",
+        "$this->^name^ = $arr !== null ? $arr : $var;\n",
         "name", field->name());
   } else {
     printer->Print(
