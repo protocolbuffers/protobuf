@@ -130,7 +130,7 @@ static NSError *ErrorFromException(NSException *exception) {
 
 static void CheckExtension(GPBMessage *self,
                            GPBExtensionDescriptor *extension) {
-  if ([self class] != extension.containingMessageClass) {
+  if (![self isKindOfClass:extension.containingMessageClass]) {
     [NSException
          raise:NSInvalidArgumentException
         format:@"Extension %@ used on wrong class (%@ instead of %@)",
@@ -3189,7 +3189,7 @@ static void ResolveIvarSet(GPBFieldDescriptor *field,
 
 + (BOOL)resolveClassMethod:(SEL)sel {
   // Extensions scoped to a Message and looked up via class methods.
-  if (GPBResolveExtensionClassMethod(self, sel)) {
+  if (GPBResolveExtensionClassMethod([self descriptor].messageClass, sel)) {
     return YES;
   }
   return [super resolveClassMethod:sel];
