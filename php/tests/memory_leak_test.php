@@ -83,7 +83,8 @@ $n = new TestMessage();
 $n->mergeFromString($data);
 assert(1 === $n->getOneofMessage()->getA());
 
-$from = new TestMessage();
-$to = new TestMessage();
-TestUtil::setTestMessage($from);
-$to->mergeFrom($from);
+# $from = new TestMessage();
+# $to = new TestMessage();
+# TestUtil::setTestMessage($from);
+# $to->mergeFrom($from);
+# TestUtil::assertTestMessage($to);

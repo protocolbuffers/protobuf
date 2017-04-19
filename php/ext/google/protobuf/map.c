@@ -103,16 +103,16 @@ static bool table_key(Map* self, zval* key,
       *out_length = Z_STRLEN_P(key);
       break;
 
-#define CASE_TYPE(upb_type, type, c_type, php_type)                   \
-  case UPB_TYPE_##upb_type: {                                         \
-    c_type type##_value;                                              \
-    if (!protobuf_convert_to_##type(key, &type##_value)) {            \
-      return false;                                                   \
-    }                                                                 \
-    native_slot_set(self->key_type, NULL, buf, key TSRMLS_CC);        \
-    *out_key = buf;                                                   \
-    *out_length = native_slot_size(self->key_type);                   \
-    break;                                                            \
+#define CASE_TYPE(upb_type, type, c_type, php_type)                     \
+  case UPB_TYPE_##upb_type: {                                           \
+    c_type type##_value;                                                \
+    if (!protobuf_convert_to_##type(key, &type##_value)) {              \
+      return false;                                                     \
+    }                                                                   \
+    native_slot_set_by_array(self->key_type, NULL, buf, key TSRMLS_CC); \
+    *out_key = buf;                                                     \
+    *out_length = native_slot_size(self->key_type);                     \
+    break;                                                              \
   }
       CASE_TYPE(BOOL, bool, int8_t, BOOL)
       CASE_TYPE(INT32, int32, int32_t, LONG)
@@ -148,7 +148,7 @@ static zend_function_entry map_field_methods[] = {
 
 // Forward declare static functions.
 
-static bool map_field_write_dimension(zval *object, zval *key,
+static void map_field_write_dimension(zval *object, zval *key,
                                       zval *value TSRMLS_DC);
 
 // -----------------------------------------------------------------------------
@@ -163,8 +163,7 @@ static void map_begin_internal(Map *map, MapIter *iter) {
   upb_strtable_begin(&iter->it, &map->table);
 }
 
-static HashTable *map_field_get_gc(zval *object, zval ***table,
-                                        int *n TSRMLS_DC) {
+static HashTable *map_field_get_gc(zval *object, CACHED_VALUE **table, int *n) {
   // TODO(teboring): Unfortunately, zend engine does not support garbage
   // collection for custom array. We have to use zend engine's native array
   // instead.
@@ -173,101 +172,92 @@ static HashTable *map_field_get_gc(zval *object, zval ***table,
   return NULL;
 }
 
-void map_field_init(TSRMLS_D) {
-  zend_class_entry class_type;
-  const char* class_name = "Google\\Protobuf\\Internal\\MapField";
-  INIT_CLASS_ENTRY_EX(class_type, class_name, strlen(class_name),
-                      map_field_methods);
-
-  map_field_type = zend_register_internal_class(&class_type TSRMLS_CC);
-  map_field_type->create_object = map_field_create;
-
-  zend_class_implements(map_field_type TSRMLS_CC, 2, spl_ce_ArrayAccess,
-                        spl_ce_Countable);
-
-  map_field_handlers = PEMALLOC(zend_object_handlers);
-  memcpy(map_field_handlers, zend_get_std_object_handlers(),
-         sizeof(zend_object_handlers));
-  map_field_handlers->write_dimension = map_field_write_dimension;
-  map_field_handlers->get_gc = map_field_get_gc;
+// Define map value element free function.
+#if PHP_MAJOR_VERSION < 7
+static inline void php_proto_map_string_release(void *value) {
+  zval_ptr_dtor(value);
 }
 
-zend_object_value map_field_create(zend_class_entry *ce TSRMLS_DC) {
-  zend_object_value retval = {0};
-  Map *intern;
-
-  intern = emalloc(sizeof(Map));
-  memset(intern, 0, sizeof(Map));
-
-  zend_object_std_init(&intern->std, ce TSRMLS_CC);
-  object_properties_init(&intern->std, ce);
-
-  // Table value type is always UINT64: this ensures enough space to store the
-  // native_slot value.
-  if (!upb_strtable_init(&intern->table, UPB_CTYPE_UINT64)) {
-    zend_error(E_USER_ERROR, "Could not allocate table.");
+static inline void php_proto_map_object_release(void *value) {
+  zval_ptr_dtor(value);
+}
+#else
+static inline void php_proto_map_string_release(void *value) {
+  zend_string* object = *(zend_string**)value;
+  zend_string_release(object);
+}
+static inline void php_proto_map_object_release(void *value) {
+  zend_object* object = *(zend_object**)value;
+  if(--GC_REFCOUNT(object) == 0) {
+    zend_objects_store_del(object);
   }
-
-  retval.handle = zend_objects_store_put(
-      intern, (zend_objects_store_dtor_t)zend_objects_destroy_object,
-      (zend_objects_free_object_storage_t)map_field_free, NULL TSRMLS_CC);
-  retval.handlers = map_field_handlers;
-
-  return retval;
 }
+#endif
 
-void map_field_free(void *object TSRMLS_DC) {
-  Map *map = (Map *)object;
-
-  switch (map->value_type) {
+// Define object free method.
+PHP_PROTO_OBJECT_FREE_START(Map, map_field)
+MapIter it;
+int len;
+for (map_begin_internal(intern, &it); !map_done(&it); map_next(&it)) {
+  upb_value value = map_iter_value(&it, &len);
+  void *mem = upb_value_memory(&value);
+  switch (intern->value_type) {
     case UPB_TYPE_MESSAGE:
-    case UPB_TYPE_STRING:
-    case UPB_TYPE_BYTES: {
-      MapIter it;
-      int len;
-      for (map_begin_internal(map, &it); !map_done(&it); map_next(&it)) {
-        upb_value value = map_iter_value(&it, &len);
-        void *mem = upb_value_memory(&value);
-        zval_ptr_dtor(mem);
-      }
+      php_proto_map_object_release(mem);
       break;
-    }
+    case UPB_TYPE_STRING:
+    case UPB_TYPE_BYTES:
+      php_proto_map_string_release(mem);
+      break;
     default:
       break;
   }
-
-  upb_strtable_uninit(&map->table);
-  zend_object_std_dtor(&map->std TSRMLS_CC);
-  efree(object);
 }
+upb_strtable_uninit(&intern->table);
+PHP_PROTO_OBJECT_FREE_END
 
-void map_field_create_with_field(zend_class_entry *ce, const upb_fielddef *field,
-                                zval **map_field TSRMLS_DC) {
+PHP_PROTO_OBJECT_DTOR_START(Map, map_field)
+PHP_PROTO_OBJECT_DTOR_END
+
+// Define object create method.
+PHP_PROTO_OBJECT_CREATE_START(Map, map_field)
+// Table value type is always UINT64: this ensures enough space to store the
+// native_slot value.
+if (!upb_strtable_init(&intern->table, UPB_CTYPE_UINT64)) {
+  zend_error(E_USER_ERROR, "Could not allocate table.");
+}
+PHP_PROTO_OBJECT_CREATE_END(Map, map_field)
+
+// Init class entry.
+PHP_PROTO_INIT_CLASS_START("Google\\Protobuf\\Internal\\MapField", Map,
+                           map_field)
+zend_class_implements(map_field_type TSRMLS_CC, 2, spl_ce_ArrayAccess,
+                      spl_ce_Countable);
+map_field_handlers->write_dimension = map_field_write_dimension;
+map_field_handlers->get_gc = map_field_get_gc;
+PHP_PROTO_INIT_CLASS_END
+
+void map_field_create_with_field(const zend_class_entry *ce,
+                                 const upb_fielddef *field,
+                                 CACHED_VALUE *map_field PHP_PROTO_TSRMLS_DC) {
   const upb_fielddef *key_field = map_field_key(field);
   const upb_fielddef *value_field = map_field_value(field);
   map_field_create_with_type(
       ce, upb_fielddef_type(key_field), upb_fielddef_type(value_field),
-      field_type_class(value_field TSRMLS_CC), map_field TSRMLS_CC);
+      field_type_class(value_field TSRMLS_CC), map_field PHP_PROTO_TSRMLS_CC);
 }
 
-void map_field_create_with_type(zend_class_entry *ce, upb_fieldtype_t key_type,
+void map_field_create_with_type(const zend_class_entry *ce,
+                                upb_fieldtype_t key_type,
                                 upb_fieldtype_t value_type,
                                 const zend_class_entry *msg_ce,
-                                zval **map_field TSRMLS_DC) {
-  MAKE_STD_ZVAL(*map_field);
-  Z_TYPE_PP(map_field) = IS_OBJECT;
-  Z_OBJVAL_PP(map_field) =
-      map_field_type->create_object(map_field_type TSRMLS_CC);
-
-  Map* intern =
-      (Map*)zend_object_store_get_object(*map_field TSRMLS_CC);
-
+                                CACHED_VALUE *map_field PHP_PROTO_TSRMLS_DC) {
+  CREATE_OBJ_ON_ALLOCATED_ZVAL_PTR(CACHED_PTR_TO_ZVAL_PTR(map_field),
+                                   map_field_type);
+  Map *intern = UNBOX(Map, CACHED_TO_ZVAL_PTR(*map_field));
   intern->key_type = key_type;
   intern->value_type = value_type;
   intern->msg_ce = msg_ce;
-}
-
-static void map_field_free_element(void *object) {
 }
 
 // -----------------------------------------------------------------------------
@@ -275,9 +265,8 @@ static void map_field_free_element(void *object) {
 // -----------------------------------------------------------------------------
 
 static bool map_field_read_dimension(zval *object, zval *key, int type,
-                                     zval **retval TSRMLS_DC) {
-  Map *intern =
-      (Map *)zend_object_store_get_object(object TSRMLS_CC);
+                                     CACHED_VALUE *retval TSRMLS_DC) {
+  Map *intern = UNBOX(Map, object);
 
   char keybuf[TABLE_KEY_BUF_LENGTH];
   const char* keyval = NULL;
@@ -292,7 +281,7 @@ static bool map_field_read_dimension(zval *object, zval *key, int type,
 
   if (upb_strtable_lookup2(&intern->table, keyval, length, &v)) {
     void* mem = upb_value_memory(&v);
-    native_slot_get(intern->value_type, mem, retval TSRMLS_CC);
+    native_slot_get_by_array(intern->value_type, mem, retval TSRMLS_CC);
     return true;
   } else {
     zend_error(E_USER_ERROR, "Given key doesn't exist.");
@@ -310,9 +299,9 @@ bool map_index_set(Map *intern, const char* keyval, int length, upb_value v) {
   return true;
 }
 
-static bool map_field_write_dimension(zval *object, zval *key,
+static void map_field_write_dimension(zval *object, zval *key,
                                       zval *value TSRMLS_DC) {
-  Map *intern = (Map *)zend_object_store_get_object(object TSRMLS_CC);
+  Map *intern = UNBOX(Map, object);
 
   char keybuf[TABLE_KEY_BUF_LENGTH];
   const char* keyval = NULL;
@@ -320,14 +309,14 @@ static bool map_field_write_dimension(zval *object, zval *key,
   upb_value v;
   void* mem;
   if (!table_key(intern, key, keybuf, &keyval, &length TSRMLS_CC)) {
-    return false;
+    return;
   }
 
   mem = upb_value_memory(&v);
   memset(mem, 0, native_slot_size(intern->value_type));
-  if (!native_slot_set(intern->value_type, intern->msg_ce, mem,
-                       value TSRMLS_CC)) {
-    return false;
+  if (!native_slot_set_by_array(intern->value_type, intern->msg_ce, mem,
+                                value TSRMLS_CC)) {
+    return;
   }
 #ifndef NDEBUG
   v.ctype = UPB_CTYPE_UINT64;
@@ -337,14 +326,12 @@ static bool map_field_write_dimension(zval *object, zval *key,
   upb_strtable_remove2(&intern->table, keyval, length, NULL);
   if (!upb_strtable_insert2(&intern->table, keyval, length, v)) {
     zend_error(E_USER_ERROR, "Could not insert into table");
-    return false;
+    return;
   }
-
-  return true;
 }
 
 static bool map_field_unset_dimension(zval *object, zval *key TSRMLS_DC) {
-  Map *intern = (Map *)zend_object_store_get_object(object TSRMLS_CC);
+  Map *intern = UNBOX(Map, object);
 
   char keybuf[TABLE_KEY_BUF_LENGTH];
   const char* keyval = NULL;
@@ -375,8 +362,7 @@ PHP_METHOD(MapField, __construct) {
     return;
   }
 
-  Map* intern =
-      (Map*)zend_object_store_get_object(getThis() TSRMLS_CC);
+  Map *intern = UNBOX(Map, getThis());
   intern->key_type = to_fieldtype(key_type);
   intern->value_type = to_fieldtype(value_type);
   intern->msg_ce = klass;
@@ -404,7 +390,7 @@ PHP_METHOD(MapField, offsetExists) {
     return;
   }
 
-  Map *intern = (Map *)zend_object_store_get_object(getThis() TSRMLS_CC);
+  Map *intern = UNBOX(Map, getThis());
 
   char keybuf[TABLE_KEY_BUF_LENGTH];
   const char* keyval = NULL;
@@ -427,7 +413,7 @@ PHP_METHOD(MapField, offsetGet) {
     return;
   }
   map_field_read_dimension(getThis(), index, BP_VAR_R,
-                           return_value_ptr TSRMLS_CC);
+                           ZVAL_PTR_TO_CACHED_PTR(return_value) TSRMLS_CC);
 }
 
 PHP_METHOD(MapField, offsetSet) {
@@ -449,8 +435,7 @@ PHP_METHOD(MapField, offsetUnset) {
 }
 
 PHP_METHOD(MapField, count) {
-  Map *intern =
-      (Map *)zend_object_store_get_object(getThis() TSRMLS_CC);
+  Map *intern = UNBOX(Map, getThis());
 
   if (zend_parse_parameters_none() == FAILURE) {
     return;
