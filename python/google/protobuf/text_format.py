@@ -441,7 +441,13 @@ def Parse(text,
   if not isinstance(text, str):
     text = text.decode('utf-8')
   return ParseLines(
-      text.split('\n'), message, allow_unknown_extension, allow_field_number)
+    # Regex deciphering: split on \n unless that \n is wrapped in "
+    # Instead of splitting, I match all strings
+    # built of 0 or more blocks {not " or \n} or {a {not " or \n} block wrapped in "}
+    # optionally terminated in \n
+    # For further breakdown, see regex101.com
+    re.findall('(?:[^\"\n]|(?:\"(?:[^\"]|[\n])*\"))*\n?', text),
+    message, allow_unknown_extension, allow_field_number)
 
 
 def Merge(text,
@@ -469,6 +475,11 @@ def Merge(text,
     ParseError: On text parsing problems.
   """
   return MergeLines(
+    # Regex deciphering: split on \n unless that \n is wrapped in "
+    # Instead of splitting, I match all strings
+    # built of 0 or more blocks {not " or \n} or {a {not " or \n} block wrapped in "}
+    # optionally terminated in \n
+    # For further breakdown, see regex101.com
       re.findall('(?:[^\"\n]|(?:\"(?:[^\"]|[\n])*\"))*\n?', text),
       message,
       allow_unknown_extension,
