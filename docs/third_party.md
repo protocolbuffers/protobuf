@@ -154,3 +154,4 @@ There are miscellaneous other things you may find useful as a Protocol Buffers d
 * [Notepad++ Syntax Highlighting for .proto files](https://github.com/chai2010/notepadplus-protobuf)
 * [Linter for .proto files](https://github.com/ckaznocha/protoc-gen-lint)
 * [Protocol Buffers Dynamic Schema - create protobuf schemas programmatically (Java)] (https://github.com/os72/protobuf-dynamic)
+* [Make protoc plugins in NodeJS](https://github.com/konsumer/node-protoc-plugin)
