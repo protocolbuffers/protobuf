@@ -126,6 +126,9 @@ class LIBPROTOBUF_EXPORT DefaultValueObjectWriter : public ObjectWriter {
   // are written.
   void set_suppress_empty_list(bool value) { suppress_empty_list_ = value; }
 
+  // If set to true, original proto field names are used
+  void set_preserve_proto_field_names(bool value) { preserve_proto_field_names_ = value; }
+
  private:
   enum NodeKind {
     PRIMITIVE = 0,
@@ -141,7 +144,7 @@ class LIBPROTOBUF_EXPORT DefaultValueObjectWriter : public ObjectWriter {
     Node(const string& name, const google::protobuf::Type* type, NodeKind kind,
          const DataPiece& data, bool is_placeholder,
          const std::vector<string>& path, bool suppress_empty_list,
-         FieldScrubCallBack* field_scrub_callback);
+         bool preserve_proto_field_names, FieldScrubCallBack* field_scrub_callback);
     virtual ~Node() {
       for (int i = 0; i < children_.size(); ++i) {
         delete children_[i];
@@ -220,6 +223,9 @@ class LIBPROTOBUF_EXPORT DefaultValueObjectWriter : public ObjectWriter {
     // Whether to suppress empty list output.
     bool suppress_empty_list_;
 
+    // Whether to preserve original proto field names
+    bool preserve_proto_field_names_;
+
     // Pointer to function for determining whether a field needs to be scrubbed
     // or not. This callback is owned by the creator of this node.
     FieldScrubCallBack* field_scrub_callback_;
@@ -267,6 +273,9 @@ class LIBPROTOBUF_EXPORT DefaultValueObjectWriter : public ObjectWriter {
 
   // Whether to suppress output of empty lists.
   bool suppress_empty_list_;
+
+  // Whether to preserve original proto field names
+  bool preserve_proto_field_names_;
 
   // Unique Pointer to function for determining whether a field needs to be
   // scrubbed or not.

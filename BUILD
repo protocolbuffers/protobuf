@@ -145,6 +145,7 @@ cc_library(
         "src/google/protobuf/timestamp.pb.cc",
         "src/google/protobuf/type.pb.cc",
         "src/google/protobuf/unknown_field_set.cc",
+        "src/google/protobuf/util/delimited_message_util.cc",
         "src/google/protobuf/util/field_comparator.cc",
         "src/google/protobuf/util/field_mask_util.cc",
         "src/google/protobuf/util/internal/datapiece.cc",
@@ -521,6 +522,7 @@ cc_test(
         "src/google/protobuf/stubs/type_traits_unittest.cc",
         "src/google/protobuf/text_format_unittest.cc",
         "src/google/protobuf/unknown_field_set_unittest.cc",
+        "src/google/protobuf/util/delimited_message_util_test.cc",
         "src/google/protobuf/util/field_comparator_test.cc",
         "src/google/protobuf/util/field_mask_util_test.cc",
         "src/google/protobuf/util/internal/default_value_objectwriter_test.cc",
@@ -568,6 +570,7 @@ java_library(
     ]) + [
         ":gen_well_known_protos_java",
     ],
+    javacopts = ["-source 6"],
     visibility = ["//visibility:public"],
 )
 

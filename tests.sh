@@ -350,6 +350,7 @@ build_ruby_all() {
 build_javascript() {
   internal_build_cpp
   cd js && npm install && npm test && cd ..
+  cd conformance && make test_nodejs && cd ..
 }
 
 generate_php_test_proto() {
@@ -358,7 +359,7 @@ generate_php_test_proto() {
   # Generate test file
   rm -rf generated
   mkdir generated
-  ../../src/protoc --php_out=generated proto/test.proto proto/test_include.proto proto/test_no_namespace.proto
+  ../../src/protoc --php_out=generated proto/test.proto proto/test_include.proto proto/test_no_namespace.proto proto/test_prefix.proto
   pushd ../../src
   ./protoc --php_out=../php/tests/generated google/protobuf/empty.proto
   popd

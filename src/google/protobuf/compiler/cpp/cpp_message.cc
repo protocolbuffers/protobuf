@@ -1462,9 +1462,9 @@ GenerateClassDefinition(io::Printer* printer) {
   // Some InitDefault and Shutdown are defined as static member functions of
   // TableStruct such that they are also allowed to access private members.
   printer->Print(
-      "friend struct $dllexport_decl$ $file_namespace$::TableStruct;\n",
+      "friend struct $file_namespace$::TableStruct;\n",
       // Vars.
-      "dllexport_decl", options_.dllexport_decl, "file_namespace",
+      "file_namespace",
       FileLevelNamespace(descriptor_->file()->name()));
 
   printer->Outdent();

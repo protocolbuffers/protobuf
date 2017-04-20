@@ -156,6 +156,11 @@ class CommandLineInterfaceTest : public testing::Test {
   // Checks that the captured stdout is the same as the expected_text.
   void ExpectCapturedStdout(const string& expected_text);
 
+  // Checks that Run() returned zero and the stdout contains the given
+  // substring.
+  void ExpectCapturedStdoutSubstringWithZeroReturnCode(
+      const string& expected_substring);
+
   // Returns true if ExpectErrorSubstring(expected_substring) would pass, but
   // does not fail otherwise.
   bool HasAlternateErrorSubstring(const string& expected_substring);
@@ -488,6 +493,11 @@ void CommandLineInterfaceTest::ExpectCapturedStdout(
   EXPECT_EQ(expected_text, captured_stdout_);
 }
 
+void CommandLineInterfaceTest::ExpectCapturedStdoutSubstringWithZeroReturnCode(
+    const string& expected_substring) {
+  EXPECT_EQ(0, return_code_);
+  EXPECT_PRED_FORMAT2(testing::IsSubstring, expected_substring, captured_stdout_);
+}
 
 void CommandLineInterfaceTest::ExpectFileContent(
     const string& filename, const string& content) {
@@ -1703,11 +1713,11 @@ TEST_F(CommandLineInterfaceTest, GeneratorPluginNotAllowed) {
 TEST_F(CommandLineInterfaceTest, HelpText) {
   Run("test_exec_name --help");
 
-  ExpectErrorSubstringWithZeroReturnCode("Usage: test_exec_name ");
-  ExpectErrorSubstringWithZeroReturnCode("--test_out=OUT_DIR");
-  ExpectErrorSubstringWithZeroReturnCode("Test output.");
-  ExpectErrorSubstringWithZeroReturnCode("--alt_out=OUT_DIR");
-  ExpectErrorSubstringWithZeroReturnCode("Alt output.");
+  ExpectCapturedStdoutSubstringWithZeroReturnCode("Usage: test_exec_name ");
+  ExpectCapturedStdoutSubstringWithZeroReturnCode("--test_out=OUT_DIR");
+  ExpectCapturedStdoutSubstringWithZeroReturnCode("Test output.");
+  ExpectCapturedStdoutSubstringWithZeroReturnCode("--alt_out=OUT_DIR");
+  ExpectCapturedStdoutSubstringWithZeroReturnCode("Alt output.");
 }
 
 TEST_F(CommandLineInterfaceTest, GccFormatErrors) {

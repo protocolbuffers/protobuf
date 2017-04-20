@@ -64,10 +64,13 @@ struct JsonPrintOptions {
   // Whether to always print enums as ints. By default they are rendered as
   // strings.
   bool always_print_enums_as_ints;
+  // Whether to preserve proto field names
+  bool preserve_proto_field_names;
 
   JsonPrintOptions() : add_whitespace(false),
                        always_print_primitive_fields(false),
-                       always_print_enums_as_ints(false) {
+                       always_print_enums_as_ints(false),
+                       preserve_proto_field_names(false) {
   }
 };
 

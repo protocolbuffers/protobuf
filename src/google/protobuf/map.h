@@ -678,7 +678,7 @@ class Map {
 
     const Key& key() const { return k_; }
     Key& key() { return k_; }
-    value_type* const value() const { return v_; }
+    value_type* value() const { return v_; }
     value_type*& value() { return v_; }
 
    private:
@@ -1290,7 +1290,9 @@ class Map {
     // Return a power of two no less than max(kMinTableSize, n).
     // Assumes either n < kMinTableSize or n is a power of two.
     size_type TableSize(size_type n) {
-      return n < kMinTableSize ? kMinTableSize : n;
+      return n < static_cast<size_type>(kMinTableSize)
+                 ? static_cast<size_type>(kMinTableSize)
+                 : n;
     }
 
     // Use alloc_ to allocate an array of n objects of type U.

@@ -164,11 +164,12 @@ void AddDescriptorsImpl() {
       "\t\022B\n\004file\030\017 \003(\01324.google.protobuf.compil"
       "er.CodeGeneratorResponse.File\032>\n\004File\022\014\n"
       "\004name\030\001 \001(\t\022\027\n\017insertion_point\030\002 \001(\t\022\017\n\007"
-      "content\030\017 \001(\tB7\n\034com.google.protobuf.com"
-      "pilerB\014PluginProtosZ\tplugin_go"
+      "content\030\017 \001(\tBg\n\034com.google.protobuf.com"
+      "pilerB\014PluginProtosZ9github.com/golang/p"
+      "rotobuf/protoc-gen-go/plugin;plugin_go"
   };
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
-      descriptor, 590);
+      descriptor, 638);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "google/protobuf/compiler/plugin.proto", &protobuf_RegisterTypes);
   ::google::protobuf::protobuf_google_2fprotobuf_2fdescriptor_2eproto::AddDescriptors();

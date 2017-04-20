@@ -89,6 +89,7 @@ public final class MapEntry<K, V> extends AbstractMessage {
   }
 
   /** Create a MapEntry with the provided key and value. */
+  @SuppressWarnings("unchecked")
   private MapEntry(Metadata metadata, K key, V value) {
     this.key = key;
     this.value = value;
@@ -435,6 +436,7 @@ public final class MapEntry<K, V> extends AbstractMessage {
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public Builder<K, V> clone() {
       return new Builder(metadata, key, value);
     }

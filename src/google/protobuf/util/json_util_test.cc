@@ -51,6 +51,7 @@ using proto3::FOO;
 using proto3::BAR;
 using proto3::TestMessage;
 using proto3::TestMap;
+using proto3::TestOneof;
 using testing::MapIn;
 
 static const char kTypeUrlPrefix[] = "type.googleapis.com";
@@ -158,6 +159,43 @@ TEST_F(JsonUtilTest, TestDefaultValues) {
       "\"repeatedMessageValue\":[]"
       "}",
       ToJson(m, options));
+
+  options.preserve_proto_field_names = true;
+  m.set_string_value("i am a test string value");
+  m.set_bytes_value("i am a test bytes value");
+  EXPECT_EQ(
+      "{\"bool_value\":false,"
+      "\"int32_value\":0,"
+      "\"int64_value\":\"0\","
+      "\"uint32_value\":0,"
+      "\"uint64_value\":\"0\","
+      "\"float_value\":0,"
+      "\"double_value\":0,"
+      "\"string_value\":\"i am a test string value\","
+      "\"bytes_value\":\"aSBhbSBhIHRlc3QgYnl0ZXMgdmFsdWU=\","
+      "\"enum_value\":\"FOO\","
+      "\"repeated_bool_value\":[],"
+      "\"repeated_int32_value\":[],"
+      "\"repeated_int64_value\":[],"
+      "\"repeated_uint32_value\":[],"
+      "\"repeated_uint64_value\":[],"
+      "\"repeated_float_value\":[],"
+      "\"repeated_double_value\":[],"
+      "\"repeated_string_value\":[],"
+      "\"repeated_bytes_value\":[],"
+      "\"repeated_enum_value\":[],"
+      "\"repeated_message_value\":[]"
+      "}",
+      ToJson(m, options));
+}
+
+TEST_F(JsonUtilTest, TestPreserveProtoFieldNames) {
+  TestMessage m;
+  m.mutable_message_value();
+
+  JsonPrintOptions options;
+  options.preserve_proto_field_names = true;
+  EXPECT_EQ("{\"message_value\":{}}", ToJson(m, options));
 }
 
 TEST_F(JsonUtilTest, TestAlwaysPrintEnumsAsInts) {
@@ -230,6 +268,21 @@ TEST_F(JsonUtilTest, ParsePrimitiveMapIn) {
   MapIn other;
   ASSERT_TRUE(FromJson(ToJson(message, print_options), &other, parse_options));
   EXPECT_EQ(message.DebugString(), other.DebugString());
+}
+
+TEST_F(JsonUtilTest, PrintPrimitiveOneof) {
+  TestOneof message;
+  JsonPrintOptions options;
+  options.always_print_primitive_fields = true;
+  message.mutable_oneof_message_value();
+  EXPECT_EQ(
+      "{\"oneofMessageValue\":{\"value\":0}}",
+      ToJson(message, options));
+
+  message.set_oneof_int32_value(1);
+  EXPECT_EQ(
+      "{\"oneofInt32Value\":1}",
+      ToJson(message, options));
 }
 
 TEST_F(JsonUtilTest, TestParseIgnoreUnknownFields) {

@@ -104,3 +104,8 @@ if test -x csharp/generate_protos.sh; then
   echo "Generating messages for C#."
   csharp/generate_protos.sh $@
 fi
+
+if test -x php/generate_descriptor_protos.sh; then
+  echo "Generating messages for PHP."
+  php/generate_descriptor_protos.sh $@
+fi

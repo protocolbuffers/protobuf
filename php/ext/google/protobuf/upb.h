@@ -2972,6 +2972,11 @@ class upb::FileDef {
   const char* package() const;
   bool set_package(const char* package, Status* s);
 
+  /* Sets the php class prefix which is prepended to all php generated classes
+   / from this .proto. Default is empty. */
+  const char* phpprefix() const;
+  bool set_phpprefix(const char* phpprefix, Status* s);
+
   /* Syntax for the file.  Defaults to proto2. */
   upb_syntax_t syntax() const;
   void set_syntax(upb_syntax_t syntax);
@@ -3025,6 +3030,7 @@ UPB_REFCOUNTED_CMETHODS(upb_filedef, upb_filedef_upcast)
 
 const char *upb_filedef_name(const upb_filedef *f);
 const char *upb_filedef_package(const upb_filedef *f);
+const char *upb_filedef_phpprefix(const upb_filedef *f);
 upb_syntax_t upb_filedef_syntax(const upb_filedef *f);
 size_t upb_filedef_defcount(const upb_filedef *f);
 size_t upb_filedef_depcount(const upb_filedef *f);
@@ -3034,6 +3040,8 @@ const upb_filedef *upb_filedef_dep(const upb_filedef *f, size_t i);
 bool upb_filedef_freeze(upb_filedef *f, upb_status *s);
 bool upb_filedef_setname(upb_filedef *f, const char *name, upb_status *s);
 bool upb_filedef_setpackage(upb_filedef *f, const char *package, upb_status *s);
+bool upb_filedef_setphpprefix(upb_filedef *f, const char *phpprefix,
+                              upb_status *s);
 bool upb_filedef_setsyntax(upb_filedef *f, upb_syntax_t syntax, upb_status *s);
 
 bool upb_filedef_adddef(upb_filedef *f, upb_def *def, const void *ref_donor,
@@ -3792,6 +3800,12 @@ inline const char* FileDef::package() const {
 inline bool FileDef::set_package(const char* package, Status* s) {
   return upb_filedef_setpackage(this, package, s);
 }
+inline const char* FileDef::phpprefix() const {
+  return upb_filedef_phpprefix(this);
+}
+inline bool FileDef::set_phpprefix(const char* phpprefix, Status* s) {
+  return upb_filedef_setphpprefix(this, phpprefix, s);
+}
 inline int FileDef::def_count() const {
   return upb_filedef_defcount(this);
 }
@@ -4006,6 +4020,7 @@ struct upb_filedef {
 
   const char *name;
   const char *package;
+  const char *phpprefix;
   upb_syntax_t syntax;
 
   upb_inttable defs;
@@ -7212,6 +7227,7 @@ UPB_INLINE const upb_fielddef *upbdefs_google_protobuf_FileOptions_f_java_string
 UPB_INLINE const upb_fielddef *upbdefs_google_protobuf_FileOptions_f_javanano_use_deprecated_package(const upb_msgdef *m) { UPB_ASSERT(upbdefs_google_protobuf_FileOptions_is(m)); return upb_msgdef_itof(m, 38); }
 UPB_INLINE const upb_fielddef *upbdefs_google_protobuf_FileOptions_f_objc_class_prefix(const upb_msgdef *m) { UPB_ASSERT(upbdefs_google_protobuf_FileOptions_is(m)); return upb_msgdef_itof(m, 36); }
 UPB_INLINE const upb_fielddef *upbdefs_google_protobuf_FileOptions_f_optimize_for(const upb_msgdef *m) { UPB_ASSERT(upbdefs_google_protobuf_FileOptions_is(m)); return upb_msgdef_itof(m, 9); }
+UPB_INLINE const upb_fielddef *upbdefs_google_protobuf_FileOptions_f_php_class_prefix(const upb_msgdef *m) { UPB_ASSERT(upbdefs_google_protobuf_FileOptions_is(m)); return upb_msgdef_itof(m, 40); }
 UPB_INLINE const upb_fielddef *upbdefs_google_protobuf_FileOptions_f_py_generic_services(const upb_msgdef *m) { UPB_ASSERT(upbdefs_google_protobuf_FileOptions_is(m)); return upb_msgdef_itof(m, 18); }
 UPB_INLINE const upb_fielddef *upbdefs_google_protobuf_FileOptions_f_uninterpreted_option(const upb_msgdef *m) { UPB_ASSERT(upbdefs_google_protobuf_FileOptions_is(m)); return upb_msgdef_itof(m, 999); }
 UPB_INLINE const upb_fielddef *upbdefs_google_protobuf_MessageOptions_f_deprecated(const upb_msgdef *m) { UPB_ASSERT(upbdefs_google_protobuf_MessageOptions_is(m)); return upb_msgdef_itof(m, 3); }

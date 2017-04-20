@@ -62,13 +62,23 @@ import com.google.protobuf.util.JsonTestProto.TestStruct;
 import com.google.protobuf.util.JsonTestProto.TestTimestamp;
 import com.google.protobuf.util.JsonTestProto.TestWrappers;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.io.StringReader;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 import junit.framework.TestCase;
 
 public class JsonFormatTest extends TestCase {
+  public JsonFormatTest() {
+    // Test that locale does not affect JsonFormat.
+    Locale.setDefault(Locale.forLanguageTag("hi-IN"));
+  }
+
   private void setAllFields(TestAllTypes.Builder builder) {
     builder.setOptionalInt32(1234);
     builder.setOptionalInt64(1234567890123456789L);
@@ -1406,6 +1416,36 @@ public class JsonFormatTest extends TestCase {
     builder = TestRecursive.newBuilder();
     try {
       parser.merge(input, builder);
+      fail("Exception is expected.");
+    } catch (InvalidProtocolBufferException e) {
+      // Expected.
+    }
+  }
+
+  // Test that we are not leaking out JSON exceptions.
+  public void testJsonException() throws Exception {
+    InputStream throwingInputStream = new InputStream() {
+      public int read() throws IOException {
+        throw new IOException("12345");
+      }
+    };
+    InputStreamReader throwingReader = new InputStreamReader(throwingInputStream);
+    // When the underlying reader throws IOException, JsonFormat should forward
+    // through this IOException.
+    try {
+      TestAllTypes.Builder builder = TestAllTypes.newBuilder();
+      JsonFormat.parser().merge(throwingReader, builder);
+      fail("Exception is expected.");
+    } catch (IOException e) {
+      assertEquals("12345", e.getMessage());
+    }
+
+    Reader invalidJsonReader = new StringReader("{ xxx - yyy }");
+    // When the JSON parser throws parser exceptions, JsonFormat should turn
+    // that into InvalidProtocolBufferException.
+    try {
+      TestAllTypes.Builder builder = TestAllTypes.newBuilder();
+      JsonFormat.parser().merge(invalidJsonReader, builder);
       fail("Exception is expected.");
     } catch (InvalidProtocolBufferException e) {
       // Expected.

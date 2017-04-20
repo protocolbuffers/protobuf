@@ -206,8 +206,8 @@ class FileDescriptorProto extends \Google\Protobuf\Internal\Message
      */
     public function setDependency(&$var)
     {
-        GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::STRING);
-        $this->dependency = $var;
+        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::STRING);
+        $this->dependency = $arr;
         $this->has_dependency = true;
     }
 
@@ -237,8 +237,8 @@ class FileDescriptorProto extends \Google\Protobuf\Internal\Message
      */
     public function setPublicDependency(&$var)
     {
-        GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::INT32);
-        $this->public_dependency = $var;
+        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::INT32);
+        $this->public_dependency = $arr;
         $this->has_public_dependency = true;
     }
 
@@ -270,8 +270,8 @@ class FileDescriptorProto extends \Google\Protobuf\Internal\Message
      */
     public function setWeakDependency(&$var)
     {
-        GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::INT32);
-        $this->weak_dependency = $var;
+        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::INT32);
+        $this->weak_dependency = $arr;
         $this->has_weak_dependency = true;
     }
 
@@ -301,8 +301,8 @@ class FileDescriptorProto extends \Google\Protobuf\Internal\Message
      */
     public function setMessageType(&$var)
     {
-        GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \Google\Protobuf\Internal\DescriptorProto::class);
-        $this->message_type = $var;
+        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \Google\Protobuf\Internal\DescriptorProto::class);
+        $this->message_type = $arr;
         $this->has_message_type = true;
     }
 
@@ -324,8 +324,8 @@ class FileDescriptorProto extends \Google\Protobuf\Internal\Message
      */
     public function setEnumType(&$var)
     {
-        GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \Google\Protobuf\Internal\EnumDescriptorProto::class);
-        $this->enum_type = $var;
+        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \Google\Protobuf\Internal\EnumDescriptorProto::class);
+        $this->enum_type = $arr;
         $this->has_enum_type = true;
     }
 
@@ -347,8 +347,8 @@ class FileDescriptorProto extends \Google\Protobuf\Internal\Message
      */
     public function setService(&$var)
     {
-        GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \Google\Protobuf\Internal\ServiceDescriptorProto::class);
-        $this->service = $var;
+        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \Google\Protobuf\Internal\ServiceDescriptorProto::class);
+        $this->service = $arr;
         $this->has_service = true;
     }
 
@@ -370,8 +370,8 @@ class FileDescriptorProto extends \Google\Protobuf\Internal\Message
      */
     public function setExtension(&$var)
     {
-        GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \Google\Protobuf\Internal\FieldDescriptorProto::class);
-        $this->extension = $var;
+        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \Google\Protobuf\Internal\FieldDescriptorProto::class);
+        $this->extension = $arr;
         $this->has_extension = true;
     }
 

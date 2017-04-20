@@ -772,9 +772,11 @@ class Message
             case GPBType::SFIXED64:
                 $size += 8;
                 break;
-            case GPBType::UINT32:
             case GPBType::INT32:
             case GPBType::ENUM:
+                $size += GPBWire::varint32Size($value, true);
+                break;
+            case GPBType::UINT32:
                 $size += GPBWire::varint32Size($value);
                 break;
             case GPBType::UINT64:
