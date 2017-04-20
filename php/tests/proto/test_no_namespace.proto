@@ -1,10 +1,10 @@
 syntax = "proto3";
 
-message NoNameSpaceMessage {
+message NoNamespaceMessage {
   int32 a = 1;
 }
 
-enum NoNameSpaceEnum {
+enum NoNamespaceEnum {
   VALUE_A = 0;
   VALUE_B = 1;
 }
