@@ -39,8 +39,8 @@ These are projects we know about implementing Protocol Buffers for other program
 * Erlang: https://github.com/basho/erlang_protobuffs
 * Erlang: https://github.com/tomas-abrahamsson/gpb
 * Go: https://github.com/golang/protobuf (Google-official implementation)
-* Go: http://code.google.com/p/goprotobuf/
 * Go: https://github.com/akunspy/gopbuf
+* Go: https://github.com/gogo/protobuf
 * Haskell: http://hackage.haskell.org/package/hprotoc
 * Haxe: https://github.com/Atry/protoc-gen-haxe
 * Java: https://github.com/google/protobuf (Google-official implementation)
