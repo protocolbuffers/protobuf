@@ -865,4 +865,15 @@ class GeneratedClassTest extends TestBase
         $m->setPrefixMessage($n);
         $this->assertSame(1, $m->getPrefixMessage()->getA());
     }
+
+    #########################################################
+    # Test prefix for reserved words.
+    #########################################################
+
+    public function testPrefixForReservedWords()
+    {
+        $m = new \Foo\TestMessage_Empty();
+        $m = new \Foo\PBEmpty();
+        $m = new \PrefixEmpty();
+    }
 }
