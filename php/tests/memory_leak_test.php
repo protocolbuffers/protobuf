@@ -2,6 +2,8 @@
 
 # phpunit has memory leak by itself. Thus, it cannot be used to test memory leak.
 
+require_once('generated/NoNamespaceEnum.php');
+require_once('generated/NoNamespaceMessage.php');
 require_once('generated/PrefixTestPrefix.php');
 require_once('generated/Bar/TestInclude.php');
 require_once('generated/Foo/TestEnum.php');
@@ -13,6 +15,7 @@ require_once('generated/Foo/TestPhpDoc.php');
 require_once('generated/Foo/TestUnpackedMessage.php');
 require_once('generated/GPBMetadata/Proto/Test.php');
 require_once('generated/GPBMetadata/Proto/TestInclude.php');
+require_once('generated/GPBMetadata/Proto/TestNoNamespace.php');
 require_once('generated/GPBMetadata/Proto/TestPrefix.php');
 require_once('test_util.php');
 
