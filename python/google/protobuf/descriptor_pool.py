@@ -257,7 +257,7 @@ class DescriptorPool(object):
     self._AddFileDescriptor(file_desc)
     # TODO(jieluo): This is a temporary solution for FieldDescriptor.file.
     # Remove it when FieldDescriptor.file is added in code gen.
-    for extension in file_desc.extensions_by_name.itervalues():
+    for extension in file_desc.extensions_by_name.values():
       self._file_desc_by_toplevel_extension[
           extension.full_name] = file_desc
 
