@@ -2,6 +2,11 @@ syntax = "proto3";
 
 message NoNamespaceMessage {
   int32 a = 1;
+
+  enum NestedEnum {
+    ZERO = 0;
+  }
+  NestedEnum b = 2;
 }
 
 enum NoNamespaceEnum {

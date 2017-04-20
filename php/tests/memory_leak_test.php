@@ -4,11 +4,13 @@
 
 require_once('generated/NoNamespaceEnum.php');
 require_once('generated/NoNamespaceMessage.php');
+require_once('generated/NoNamespaceMessage_NestedEnum.php');
 require_once('generated/PrefixTestPrefix.php');
 require_once('generated/Bar/TestInclude.php');
 require_once('generated/Foo/TestEnum.php');
 require_once('generated/Foo/TestIncludePrefixMessage.php');
 require_once('generated/Foo/TestMessage.php');
+require_once('generated/Foo/TestMessage_NestedEnum.php');
 require_once('generated/Foo/TestMessage_Sub.php');
 require_once('generated/Foo/TestPackedMessage.php');
 require_once('generated/Foo/TestPhpDoc.php');

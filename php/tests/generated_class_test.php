@@ -295,6 +295,12 @@ class GeneratedClassTest extends TestBase
         $this->assertEquals(TestEnum::ONE, $m->getOptionalEnum());
     }
 
+    public function testNestedEnum()
+    {
+        $m = new TestMessage();
+        $m->setOptionalNestedEnum(\Foo\TestMessage_NestedEnum::ZERO);
+    }
+
     #########################################################
     # Test float field.
     #########################################################
@@ -835,6 +841,9 @@ class GeneratedClassTest extends TestBase
         $m = new TestMessage();
         $m->setOptionalNoNamespaceMessage(new NoNameSpaceMessage());
         $m->getRepeatedNoNamespaceMessage()[] = new NoNameSpaceMessage();
+
+        $n = new NoNamespaceMessage();
+        $n->setB(NoNamespaceMessage_NestedEnum::ZERO);
     }
 
     public function testEnumWithoutNamespace()
