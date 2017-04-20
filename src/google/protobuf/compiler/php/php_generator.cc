@@ -49,6 +49,8 @@ const std::string kDescriptorMetadataFile =
     "GPBMetadata/Google/Protobuf/Internal/Descriptor.php";
 const std::string kDescriptorDirName = "Google/Protobuf/Internal";
 const std::string kDescriptorPackageName = "Google\\Protobuf\\Internal";
+const char* const kReservedNames[] = {"Empty"};
+const int kReservedNamesSize = 1;
 
 namespace google {
 namespace protobuf {
@@ -105,14 +107,31 @@ std::string EnumFullName(const EnumDescriptor* envm, bool is_descriptor) {
 }
 
 template <typename DescriptorType>
-std::string ClassNamePrefix(const DescriptorType* desc) {
-  // Empty cannot be php class name.
-  if (desc->name() == "Empty" &&
-      desc->file()->package() == "google.protobuf") {
-    return "GPB";
-  } else {
-    return (desc->file()->options()).php_class_prefix();
+std::string ClassNamePrefix(const string& classname,
+                            const DescriptorType* desc) {
+  const string& prefix = (desc->file()->options()).php_class_prefix();
+  if (prefix != "") {
+    return prefix;
   }
+
+  bool is_reserved = false;
+
+  for (int i = 0; i < kReservedNamesSize; i++) {
+    if (classname == kReservedNames[i]) {
+      is_reserved = true;
+      break;
+    }
+  }
+
+  if (is_reserved) {
+    if (desc->file()->package() == "google.protobuf") {
+      return "GPB";
+    } else {
+      return "PB";
+    }
+  }
+
+  return "";
 }
 
 
@@ -124,7 +143,7 @@ std::string FullClassName(const DescriptorType* desc, bool is_descriptor) {
     classname = containing->name() + '_' + classname;
     containing = containing->containing_type();
   }
-  classname = ClassNamePrefix(desc) + classname;
+  classname = ClassNamePrefix(classname, desc) + classname;
 
   if (desc->file()->package() == "") {
     return classname;

@@ -30,6 +30,9 @@
 
 #include "protobuf.h"
 
+const char* const kReservedNames[] = {"Empty"};
+const int kReservedNamesSize = 1;
+
 // Forward declare.
 static void descriptor_init_c_instance(Descriptor* intern TSRMLS_DC);
 static void descriptor_free_c(Descriptor* object TSRMLS_DC);
@@ -355,49 +358,13 @@ PHP_METHOD(DescriptorPool, getGeneratedPool) {
 #endif
 }
 
-static void convert_to_class_name_inplace(char *class_name,
-                                          const char* fullname,
-                                          const char* prefix,
-                                          const char* package_name) {
+static void classname_no_prefix(const char *fullname, const char *package_name,
+                                char *class_name) {
   size_t i = 0, j;
-  bool first_char = true;
+  bool first_char = true, is_reserved = false;
   size_t pkg_name_len = package_name == NULL ? 0 : strlen(package_name);
-  size_t prefix_len = prefix == NULL ? 0 : strlen(prefix);
   size_t message_name_start = package_name == NULL ? 0 : pkg_name_len + 1;
   size_t message_len = (strlen(fullname) - message_name_start);
-
-  // In php, class name cannot be Empty.
-  if (strcmp("google.protobuf.Empty", fullname) == 0) {
-    strcpy(class_name, "\\Google\\Protobuf\\GPBEmpty");
-    return;
-  }
-
-  if (pkg_name_len != 0) {
-    class_name[i++] = '\\';
-    for (j = 0; j < pkg_name_len; j++) {
-      // php packages are divided by '\'.
-      if (package_name[j] == '.') {
-        class_name[i++] = '\\';
-        first_char = true;
-      } else if (first_char) {
-        // PHP package uses camel case.
-        if (package_name[j] < 'A' || package_name[j] > 'Z') {
-          class_name[i++] = package_name[j] + 'A' - 'a';
-        } else {
-          class_name[i++] = package_name[j];
-        }
-        first_char = false;
-      } else {
-        class_name[i++] = package_name[j];
-      }
-    }
-    class_name[i++] = '\\';
-  }
-
-  if (prefix_len > 0) {
-    strcpy(class_name + i, prefix);
-    i += prefix_len;
-  }
 
   // Submessage is concatenated with its containing messages by '_'.
   for (j = message_name_start; j < message_name_start + message_len; j++) {
@@ -407,6 +374,74 @@ static void convert_to_class_name_inplace(char *class_name,
       class_name[i++] = fullname[j];
     }
   }
+}
+
+static const char *classname_prefix(const char *classname,
+                                    const char *prefix_given,
+                                    const char *package_name) {
+  size_t i;
+  bool is_reserved = false;
+
+  if (prefix_given != NULL && strcmp(prefix_given, "") != 0) {
+    return prefix_given;
+  }
+
+  for (i = 0; i < kReservedNamesSize; i++) {
+    if (strcmp(kReservedNames[i], classname) == 0) {
+      is_reserved = true;
+      break;
+    }
+  }
+
+  if (is_reserved) {
+    if (package_name != NULL && strcmp("google.protobuf", package_name) == 0) {
+      return "GPB";
+    } else {
+      return "PB";
+    }
+  }
+
+  return "";
+}
+
+static void convert_to_class_name_inplace(const char *package,
+                                          const char *prefix, char *classname) {
+  size_t package_len = package == NULL ? 0 : strlen(package);
+  size_t prefix_len = prefix == NULL ? 0 : strlen(prefix);
+  size_t classname_len = strlen(classname);
+  int i = 0, j;
+  bool first_char = true;
+
+  int offset = package_len != 0 ? 2 : 0;
+
+  for (j = 0; j < classname_len; j++) {
+    classname[package_len + prefix_len + classname_len + offset - 1 - j] =
+        classname[classname_len - j - 1];
+  }
+
+  if (package_len != 0) {
+    classname[i++] = '\\';
+    for (j = 0; j < package_len; j++) {
+      // php packages are divided by '\'.
+      if (package[j] == '.') {
+        classname[i++] = '\\';
+        first_char = true;
+      } else if (first_char) {
+        // PHP package uses camel case.
+        if (package[j] < 'A' || package[j] > 'Z') {
+          classname[i++] = package[j] + 'A' - 'a';
+        } else {
+          classname[i++] = package[j];
+        }
+        first_char = false;
+      } else {
+        classname[i++] = package[j];
+      }
+    }
+    classname[i++] = '\\';
+  }
+
+  memcpy(classname + i, prefix, prefix_len);
 }
 
 PHP_METHOD(DescriptorPool, internalAddGeneratedFile) {
@@ -455,25 +490,27 @@ PHP_METHOD(DescriptorPool, internalAddGeneratedFile) {
      * bytes allocated, one for '.', one for trailing 0, and 3 for 'GPB' if    \
      * given message is google.protobuf.Empty.*/                               \
     const char *fullname = upb_##def_type_lower##_fullname(def_type_lower);    \
-    const char *prefix = upb_filedef_phpprefix(files[0]);                      \
-    size_t klass_name_len = strlen(fullname) + 5;                              \
-    if (prefix != NULL) {                                                      \
-      klass_name_len += strlen(prefix);                                        \
+    const char *prefix_given = upb_filedef_phpprefix(files[0]);                \
+    size_t classname_len = strlen(fullname) + 5;                               \
+    if (prefix_given != NULL) {                                                \
+      classname_len += strlen(prefix_given);                                   \
     }                                                                          \
-    char *klass_name = ecalloc(sizeof(char), klass_name_len);                  \
-    convert_to_class_name_inplace(klass_name, fullname, prefix,                \
-                                  upb_filedef_package(files[0]));              \
+    char *classname = ecalloc(sizeof(char), classname_len);                    \
+    const char *package = upb_filedef_package(files[0]);                       \
+    classname_no_prefix(fullname, package, classname);                         \
+    const char *prefix = classname_prefix(classname, prefix_given, package);   \
+    convert_to_class_name_inplace(package, prefix, classname);                 \
     PHP_PROTO_CE_DECLARE pce;                                                  \
-    if (php_proto_zend_lookup_class(klass_name, strlen(klass_name), &pce) ==   \
+    if (php_proto_zend_lookup_class(classname, strlen(classname), &pce) ==     \
         FAILURE) {                                                             \
       zend_error(E_ERROR, "Generated message class %s hasn't been defined",    \
-                 klass_name);                                                  \
+                 classname);                                                   \
       return;                                                                  \
     } else {                                                                   \
       desc->klass = PHP_PROTO_CE_UNREF(pce);                                   \
     }                                                                          \
     add_ce_obj(desc->klass, desc_php);                                         \
-    efree(klass_name);                                                         \
+    efree(classname);                                                          \
     break;                                                                     \
   }
 

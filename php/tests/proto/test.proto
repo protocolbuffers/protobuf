@@ -108,12 +108,22 @@ message TestMessage {
   }
 
   NestedEnum optional_nested_enum = 101;
+
+  // Test prefix for reserved words.
+  message Empty {
+    int32 a = 1;
+  }
 }
 
 enum TestEnum {
   ZERO = 0;
   ONE  = 1;
   TWO  = 2;
+}
+
+// Test prefix for reserved words.
+message Empty {
+  int32 a = 1;
 }
 
 message TestPackedMessage {
