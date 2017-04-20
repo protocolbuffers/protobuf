@@ -229,9 +229,7 @@ public class JsonFormatTest extends TestCase {
 
     TestMap.Builder mapBuilder = TestMap.newBuilder();
     mapBuilder.putInt32ToEnumMapValue(1, 0);
-    Map<Integer, Integer> mapWithInvalidValues = new HashMap<Integer, Integer>();
-    mapWithInvalidValues.put(2, 12345);
-    mapBuilder.putAllInt32ToEnumMapValue(mapWithInvalidValues);
+    mapBuilder.putInt32ToEnumMapValue(2, 12345);
     TestMap mapMessage = mapBuilder.build();
     assertEquals(
         "{\n"
@@ -264,7 +262,7 @@ public class JsonFormatTest extends TestCase {
     assertRoundTripEquals(message);
   }
 
-  public void testParserAcceptStringForNumbericField() throws Exception {
+  public void testParserAcceptStringForNumericField() throws Exception {
     TestAllTypes.Builder builder = TestAllTypes.newBuilder();
     mergeFromJson(
         "{\n"
@@ -479,8 +477,8 @@ public class JsonFormatTest extends TestCase {
       TestAllTypes.Builder builder = TestAllTypes.newBuilder();
       mergeFromJson(
           "{\n"
-              + "  \"repeatedNestedMessage\": [null, null],\n"
-              + "  \"repeated_nested_message\": [null, null]\n"
+              + "  \"repeatedInt32\": [1, 2],\n"
+              + "  \"repeated_int32\": [5, 6]\n"
               + "}",
           builder);
       fail();
@@ -488,10 +486,20 @@ public class JsonFormatTest extends TestCase {
       // Exception expected.
     }
 
-    // Duplicated oneof fields.
+    // Duplicated oneof fields, same name.
     try {
       TestOneof.Builder builder = TestOneof.newBuilder();
       mergeFromJson("{\n" + "  \"oneofInt32\": 1,\n" + "  \"oneof_int32\": 2\n" + "}", builder);
+      fail();
+    } catch (InvalidProtocolBufferException e) {
+      // Exception expected.
+    }
+
+    // Duplicated oneof fields, different name.
+    try {
+      TestOneof.Builder builder = TestOneof.newBuilder();
+      mergeFromJson(
+          "{\n" + "  \"oneofInt32\": 1,\n" + "  \"oneofNullValue\": null\n" + "}", builder);
       fail();
     } catch (InvalidProtocolBufferException e) {
       // Exception expected.
@@ -1089,7 +1097,7 @@ public class JsonFormatTest extends TestCase {
 
   public void testParserUnexpectedTypeUrl() throws Exception {
     try {
-      TestAllTypes.Builder builder = TestAllTypes.newBuilder();
+      Any.Builder builder = Any.newBuilder();
       mergeFromJson(
           "{\n"
               + "  \"@type\": \"type.googleapis.com/json_test.TestAllTypes\",\n"

@@ -291,7 +291,7 @@ class RepeatedField PROTOBUF_FINAL {
       Element* e = &rep->elements[0];
       Element* limit = &rep->elements[size];
       for (; e < limit; e++) {
-        e->Element::~Element();
+        e->~Element();
       }
       if (rep->arena == NULL) {
 #if defined(__GXX_DELETE_WITH_SIZE__) || defined(__cpp_sized_deallocation)
