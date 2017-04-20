@@ -656,6 +656,7 @@ php_EXTRA_DIST=                                                       \
   php/tests/map_field_test.php                                        \
   php/tests/memory_leak_test.php                                      \
   php/tests/php_implementation_test.php                               \
+  php/tests/proto/test_import_descriptor_proto.proto                  \
   php/tests/proto/test_include.proto                                  \
   php/tests/proto/test.proto                                          \
   php/tests/proto/test_prefix.proto                                   \

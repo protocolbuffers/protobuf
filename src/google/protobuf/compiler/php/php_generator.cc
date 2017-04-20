@@ -674,6 +674,12 @@ void GenerateAddFileToPool(const FileDescriptor* file, bool is_descriptor,
   } else {
     for (int i = 0; i < file->dependency_count(); i++) {
       const std::string& name = file->dependency(i)->name();
+      // Currently, descriptor.proto is not ready for external usage. Skip to
+      // import it for now, so that its dependencies can still work as long as
+      // they don't use protos defined in descriptor.proto.
+      if (name == kDescriptorFile) {
+        continue;
+      }
       std::string dependency_filename =
           GeneratedMetadataFileName(name, is_descriptor);
       printer->Print(
@@ -685,6 +691,26 @@ void GenerateAddFileToPool(const FileDescriptor* file, bool is_descriptor,
     FileDescriptorSet files;
     FileDescriptorProto* file_proto = files.add_file();
     file->CopyTo(file_proto);
+
+    // Filter out descriptor.proto as it cannot be depended on for now.
+    RepeatedPtrField<string>* dependency = file_proto->mutable_dependency();
+    for (RepeatedPtrField<string>::iterator it = dependency->begin();
+         it != dependency->end(); ++it) {
+      if (*it != kDescriptorFile) {
+        dependency->erase(it);
+        break;
+      }
+    }
+
+    // Filter out all extensions, since we do not support extension yet.
+    file_proto->clear_extension();
+    RepeatedPtrField<DescriptorProto>* message_type =
+        file_proto->mutable_message_type();
+    for (RepeatedPtrField<DescriptorProto>::iterator it = message_type->begin();
+         it != message_type->end(); ++it) {
+      it->clear_extension();
+    }
+
     string files_data;
     files.SerializeToString(&files_data);
 

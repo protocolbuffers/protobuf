@@ -71,7 +71,6 @@ class Message
             return;
         }
         $pool = DescriptorPool::getGeneratedPool();
-        var_dump(get_class($this));
         $this->desc = $pool->getDescriptorByClassName(get_class($this));
         foreach ($this->desc->getField() as $field) {
             $setter = $field->getSetter();
