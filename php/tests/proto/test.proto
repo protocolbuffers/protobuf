@@ -102,6 +102,12 @@ message TestMessage {
   NoNamespaceEnum optional_no_namespace_enum = 92;
   repeated NoNamespaceMessage repeated_no_namespace_message = 93;
   repeated NoNamespaceEnum repeated_no_namespace_enum = 94;
+
+  enum NestedEnum {
+    ZERO = 0;
+  }
+
+  NestedEnum optional_nested_enum = 101;
 }
 
 enum TestEnum {
