@@ -261,13 +261,6 @@ static void* appendbytes_handler(void *closure,
 #endif
 }
 
-  static bool int32_handler(void* closure, const void* hd, 
-                                     int32_t val) {           
-    MessageHeader* msg = (MessageHeader*)closure;           
-    const size_t *ofs = hd;                                 
-    DEREF(message_data(msg), *ofs, int32_t) = val;            
-    return true;                                            
-  }
 // Handlers that append primitive values to a repeated field.
 #define DEFINE_SINGULAR_HANDLER(type, ctype)                \
   static bool type##_handler(void* closure, const void* hd, \
@@ -279,7 +272,7 @@ static void* appendbytes_handler(void *closure,
   }
 
 DEFINE_SINGULAR_HANDLER(bool,   bool)
-// DEFINE_SINGULAR_HANDLER(int32,  int32_t)
+DEFINE_SINGULAR_HANDLER(int32,  int32_t)
 DEFINE_SINGULAR_HANDLER(uint32, uint32_t)
 DEFINE_SINGULAR_HANDLER(float,  float)
 DEFINE_SINGULAR_HANDLER(int64,  int64_t)
@@ -1435,6 +1428,7 @@ PHP_METHOD(Message, mergeFromString) {
 
   char *data = NULL;
   PHP_PROTO_SIZE data_len;
+
   if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &data, &data_len) ==
       FAILURE) {
     return;
