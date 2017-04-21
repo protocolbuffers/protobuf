@@ -211,6 +211,204 @@ class EncodeDecodeTest extends TestBase
         $this->assertEquals(-1, $m->getOptionalInt32());
     }
 
+    /**
+     * @expectedException Exception
+     */
+    public function testDecodeInvalidInt32()
+    {
+        $m = new TestMessage();
+        $m->mergeFromString(hex2bin('08'));
+    }
+
+    /**
+     * @expectedException Exception
+     */
+    public function testDecodeInvalidSubMessage()
+    {
+        $m = new TestMessage();
+        $m->mergeFromString(hex2bin('9A010108'));
+    }
+
+    /**
+     * @expectedException Exception
+     */
+    public function testDecodeInvalidInt64()
+    {
+        $m = new TestMessage();
+        $m->mergeFromString(hex2bin('10'));
+    }
+
+    /**
+     * @expectedException Exception
+     */
+    public function testDecodeInvalidUInt32()
+    {
+        $m = new TestMessage();
+        $m->mergeFromString(hex2bin('18'));
+    }
+
+    /**
+     * @expectedException Exception
+     */
+    public function testDecodeInvalidUInt64()
+    {
+        $m = new TestMessage();
+        $m->mergeFromString(hex2bin('20'));
+    }
+
+    /**
+     * @expectedException Exception
+     */
+    public function testDecodeInvalidSInt32()
+    {
+        $m = new TestMessage();
+        $m->mergeFromString(hex2bin('28'));
+    }
+
+    /**
+     * @expectedException Exception
+     */
+    public function testDecodeInvalidSInt64()
+    {
+        $m = new TestMessage();
+        $m->mergeFromString(hex2bin('30'));
+    }
+
+    /**
+     * @expectedException Exception
+     */
+    public function testDecodeInvalidFixed32()
+    {
+        $m = new TestMessage();
+        $m->mergeFromString(hex2bin('3D'));
+    }
+
+    /**
+     * @expectedException Exception
+     */
+    public function testDecodeInvalidFixed64()
+    {
+        $m = new TestMessage();
+        $m->mergeFromString(hex2bin('41'));
+    }
+
+    /**
+     * @expectedException Exception
+     */
+    public function testDecodeInvalidSFixed32()
+    {
+        $m = new TestMessage();
+        $m->mergeFromString(hex2bin('4D'));
+    }
+
+    /**
+     * @expectedException Exception
+     */
+    public function testDecodeInvalidSFixed64()
+    {
+        $m = new TestMessage();
+        $m->mergeFromString(hex2bin('51'));
+    }
+
+    /**
+     * @expectedException Exception
+     */
+    public function testDecodeInvalidFloat()
+    {
+        $m = new TestMessage();
+        $m->mergeFromString(hex2bin('5D'));
+    }
+
+    /**
+     * @expectedException Exception
+     */
+    public function testDecodeInvalidDouble()
+    {
+        $m = new TestMessage();
+        $m->mergeFromString(hex2bin('61'));
+    }
+
+    /**
+     * @expectedException Exception
+     */
+    public function testDecodeInvalidBool()
+    {
+        $m = new TestMessage();
+        $m->mergeFromString(hex2bin('68'));
+    }
+
+    /**
+     * @expectedException Exception
+     */
+    public function testDecodeInvalidStringLengthMiss()
+    {
+        $m = new TestMessage();
+        $m->mergeFromString(hex2bin('72'));
+    }
+
+    /**
+     * @expectedException Exception
+     */
+    public function testDecodeInvalidStringDataMiss()
+    {
+        $m = new TestMessage();
+        $m->mergeFromString(hex2bin('7201'));
+    }
+
+    /**
+     * @expectedException Exception
+     */
+    public function testDecodeInvalidBytesLengthMiss()
+    {
+        $m = new TestMessage();
+        $m->mergeFromString(hex2bin('7A'));
+    }
+
+    /**
+     * @expectedException Exception
+     */
+    public function testDecodeInvalidBytesDataMiss()
+    {
+        $m = new TestMessage();
+        $m->mergeFromString(hex2bin('7A01'));
+    }
+
+    /**
+     * @expectedException Exception
+     */
+    public function testDecodeInvalidEnum()
+    {
+        $m = new TestMessage();
+        $m->mergeFromString(hex2bin('8001'));
+    }
+
+    /**
+     * @expectedException Exception
+     */
+    public function testDecodeInvalidMessageLengthMiss()
+    {
+        $m = new TestMessage();
+        $m->mergeFromString(hex2bin('8A01'));
+    }
+
+    /**
+     * @expectedException Exception
+     */
+    public function testDecodeInvalidMessageDataMiss()
+    {
+        $m = new TestMessage();
+        $m->mergeFromString(hex2bin('8A0101'));
+    }
+
+    /**
+     * @expectedException Exception
+     */
+    public function testDecodeInvalidPackedMessageLength()
+    {
+        $m = new TestPackedMessage();
+        $m->mergeFromString(hex2bin('D205'));
+    }
+
     # TODO(teboring): Add test back when php implementation is ready for json
     # encode/decode.
     # public function testJsonEncode()
