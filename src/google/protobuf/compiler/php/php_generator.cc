@@ -477,7 +477,7 @@ void GenerateFieldAccessor(const FieldDescriptor* field, bool is_descriptor,
           MessageName(field->message_type(), is_descriptor) + "::class");
     } else if (field->cpp_type() == FieldDescriptor::CPPTYPE_ENUM) {
       printer->Print(
-          ", ^class_name^);\n",
+          ", ^\\class_name^);\n",
           "class_name",
           EnumName(field->enum_type(), is_descriptor) + "::class");
     } else {
