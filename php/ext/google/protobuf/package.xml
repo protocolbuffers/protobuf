@@ -13,16 +13,16 @@
  <date>2017-01-13</date>
  <time>16:06:07</time>
  <version>
-  <release>3.2.0a1</release>
-  <api>3.2.0a1</api>
+  <release>3.3.0</release>
+  <api>3.3.0</api>
  </version>
  <stability>
-  <release>alpha</release>
-  <api>alpha</api>
+  <release>stable</release>
+  <api>stable</api>
  </stability>
  <license uri="https://opensource.org/licenses/BSD-3-Clause">3-Clause BSD License</license>
  <notes>
-Second alpha release.
+GA release.
  </notes>
  <contents>
   <dir baseinstalldir="/" name="/">
@@ -85,6 +85,22 @@ First alpha release
    <license uri="https://opensource.org/licenses/BSD-3-Clause">3-Clause BSD License</license>
    <notes>
 Second alpha release.
+   </notes>
+  </release>
+  <release>
+   <version>
+    <release>3.3.0</release>
+    <api>3.3.0</api>
+   </version>
+   <stability>
+    <release>stable</release>
+    <api>stable</api>
+   </stability>
+   <date>2017-04-28</date>
+   <time>16:06:07</time>
+   <license uri="https://opensource.org/licenses/BSD-3-Clause">3-Clause BSD License</license>
+   <notes>
+GA release.
    </notes>
   </release>
  </changelog>
