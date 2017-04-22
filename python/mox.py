@@ -58,27 +58,22 @@ Suggested usage / workflow:
   # Verify all methods were called as expected
   my_mox.VerifyAll()
 """
-
 from collections import deque
 import re
 import types
 import unittest
-
 import stubout
 
 class Error(AssertionError):
   """Base exception for this module."""
 
   pass
-
-
 class ExpectedMethodCallsError(Error):
   """Raised when Verify() is called before all expected methods have been called
   """
 
   def __init__(self, expected_methods):
     """Init exception.
-
     Args:
       # expected_methods: A sequence of MockMethod objects that should have been
       #   called.
@@ -87,7 +82,6 @@ class ExpectedMethodCallsError(Error):
     Raises:
       ValueError: if expected_methods contains no methods.
     """
-
     if not expected_methods:
       raise ValueError("There must be at least one expected method")
     Error.__init__(self)
@@ -98,14 +92,12 @@ class ExpectedMethodCallsError(Error):
                        for i, m in enumerate(self._expected_methods)])
     return "Verify: Expected methods never called:\n%s" % (calls,)
 
-
 class UnexpectedMethodCallError(Error):
   """Raised when an unexpected method is called.
 
   This can occur if a method is called with incorrect parameters, or out of the
   specified order.
   """
-
   def __init__(self, unexpected_method, expected):
     """Init exception.
 
@@ -126,7 +118,6 @@ class UnexpectedMethodCallError(Error):
     return "Unexpected method call: %s.  Expecting: %s" % \
       (self._unexpected_method, self._expected)
 
-
 class UnknownMethodCallError(Error):
   """Raised if an unknown method is requested of the mock object."""
 
@@ -141,7 +132,6 @@ class UnknownMethodCallError(Error):
 
     Error.__init__(self)
     self._unknown_method_name = unknown_method_name
-
   def __str__(self):
     return "Method called is not a member of the object: %s" % \
       self._unknown_method_name
@@ -171,7 +161,6 @@ class Mox(object):
     Returns:
       MockObject that can be used as the class_to_mock would be.
     """
-
     new_mock = MockObject(class_to_mock)
     self._mock_objects.append(new_mock)
     return new_mock
@@ -218,7 +207,6 @@ class Mox(object):
       use_mock_anything: bool. True if a MockAnything should be used regardless
         of the type of attribute.
     """
-
     attr_to_replace = getattr(obj, attr_name)
     if type(attr_to_replace) in self._USE_MOCK_OBJECT and not use_mock_anything:
       stub = self.CreateMock(attr_to_replace)
@@ -473,7 +461,6 @@ class MockObject(MockAnything, object):
 
     """
     getitem = self._class_to_mock.__dict__.get('__getitem__', None)
-
     # Verify the class supports item assignment.
     if getitem is None:
       raise TypeError('unsubscriptable object')
