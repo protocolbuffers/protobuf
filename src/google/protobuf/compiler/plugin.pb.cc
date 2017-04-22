@@ -286,6 +286,7 @@ bool Version::MergePartialFromCodedStream(
     tag = p.first;
     if (!p.second) goto handle_unusual;
     switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
+      case 0: goto success;
       // optional int32 major = 1;
       case 1: {
         if (static_cast< ::google::protobuf::uint8>(tag) ==
@@ -346,8 +347,7 @@ bool Version::MergePartialFromCodedStream(
 
       default: {
       handle_unusual:
-        if (tag == 0 ||
-            ::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_END_GROUP) {
           goto success;
         }
@@ -803,6 +803,7 @@ bool CodeGeneratorRequest::MergePartialFromCodedStream(
     tag = p.first;
     if (!p.second) goto handle_unusual;
     switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
+      case 0: goto success;
       // repeated string file_to_generate = 1;
       case 1: {
         if (static_cast< ::google::protobuf::uint8>(tag) ==
@@ -864,8 +865,7 @@ bool CodeGeneratorRequest::MergePartialFromCodedStream(
 
       default: {
       handle_unusual:
-        if (tag == 0 ||
-            ::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_END_GROUP) {
           goto success;
         }
@@ -1411,6 +1411,7 @@ bool CodeGeneratorResponse_File::MergePartialFromCodedStream(
     tag = p.first;
     if (!p.second) goto handle_unusual;
     switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
+      case 0: goto success;
       // optional string name = 1;
       case 1: {
         if (static_cast< ::google::protobuf::uint8>(tag) ==
@@ -1461,8 +1462,7 @@ bool CodeGeneratorResponse_File::MergePartialFromCodedStream(
 
       default: {
       handle_unusual:
-        if (tag == 0 ||
-            ::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_END_GROUP) {
           goto success;
         }
@@ -1954,6 +1954,7 @@ bool CodeGeneratorResponse::MergePartialFromCodedStream(
     tag = p.first;
     if (!p.second) goto handle_unusual;
     switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
+      case 0: goto success;
       // optional string error = 1;
       case 1: {
         if (static_cast< ::google::protobuf::uint8>(tag) ==
@@ -1986,8 +1987,7 @@ bool CodeGeneratorResponse::MergePartialFromCodedStream(
 
       default: {
       handle_unusual:
-        if (tag == 0 ||
-            ::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+        if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_END_GROUP) {
           goto success;
         }

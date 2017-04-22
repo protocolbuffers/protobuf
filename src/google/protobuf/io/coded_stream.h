@@ -1104,7 +1104,7 @@ CodedInputStream::ReadTagWithCutoffImplementation(
   if (update_last_tag) {
     last_tag_ = tag;
   }
-  return std::make_pair(tag, static_cast<uint32>(tag - 1) < cutoff);
+  return std::make_pair(tag, tag <= cutoff);
 }
 
 inline bool CodedInputStream::LastTagWas(uint32 expected) {
