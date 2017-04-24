@@ -839,7 +839,8 @@ class GeneratedClassTest extends TestBase
     public function testMessageWithoutNamespace()
     {
         $m = new TestMessage();
-        $m->setOptionalNoNamespaceMessage(new NoNameSpaceMessage());
+        $sub = new NoNameSpaceMessage();
+        $m->setOptionalNoNamespaceMessage($sub);
         $m->getRepeatedNoNamespaceMessage()[] = new NoNameSpaceMessage();
 
         $n = new NoNamespaceMessage();

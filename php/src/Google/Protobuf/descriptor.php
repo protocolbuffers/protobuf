@@ -210,6 +210,12 @@ class Descriptor
               $nested_proto, $file_proto, $message_name_without_package));
         }
 
+        // Handle nested enum.
+        foreach ($proto->getEnumType() as $enum_proto) {
+            $desc->addEnumType(EnumDescriptor::buildFromProto(
+              $enum_proto, $file_proto, $message_name_without_package));
+        }
+
         // Handle oneof fields.
         foreach ($proto->getOneofDecl() as $oneof_proto) {
             $desc->addOneofDecl(
