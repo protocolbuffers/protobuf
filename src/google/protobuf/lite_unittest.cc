@@ -46,7 +46,7 @@
 #include <google/protobuf/wire_format_lite_inl.h>
 #include <google/protobuf/stubs/strutil.h>
 
-using namespace std;
+using namespace ::std;
 
 namespace {
 // Helper methods to test parsing merge behavior.
