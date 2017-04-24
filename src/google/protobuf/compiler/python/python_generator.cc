@@ -628,7 +628,10 @@ void Generator::PrintServiceDescriptor(
   }
 
   printer_->Outdent();
-  printer_->Print("])\n\n");
+  printer_->Print("])\n");
+  printer_->Print("_sym_db.RegisterServiceDescriptor($name$)\n", "name",
+                  service_name);
+  printer_->Print("\n");
 }
 
 
