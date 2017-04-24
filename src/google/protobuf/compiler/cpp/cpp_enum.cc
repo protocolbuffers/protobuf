@@ -80,6 +80,7 @@ void EnumGenerator::FillForwardDeclaration(
 void EnumGenerator::GenerateDefinition(io::Printer* printer) {
   std::map<string, string> vars;
   vars["classname"] = classname_;
+  vars["constexpr"] = options_.proto_h ? "constexpr " : "";
   vars["short_name"] = descriptor_->name();
   vars["enumbase"] = classname_ + (options_.proto_h ? " : int" : "");
 
@@ -135,12 +136,12 @@ void EnumGenerator::GenerateDefinition(io::Printer* printer) {
 
   printer->Print(vars,
     "$dllexport$bool $classname$_IsValid(int value);\n"
-    "const $classname$ $prefix$$short_name$_MIN = $prefix$$min_name$;\n"
-    "const $classname$ $prefix$$short_name$_MAX = $prefix$$max_name$;\n");
+    "$constexpr$const $classname$ $prefix$$short_name$_MIN = $prefix$$min_name$;\n"
+    "$constexpr$const $classname$ $prefix$$short_name$_MAX = $prefix$$max_name$;\n");
 
   if (generate_array_size_) {
     printer->Print(vars,
-      "const int $prefix$$short_name$_ARRAYSIZE = "
+      "$constexpr$const int $prefix$$short_name$_ARRAYSIZE = "
       "$prefix$$short_name$_MAX + 1;\n\n");
   }
 
@@ -199,13 +200,13 @@ void EnumGenerator::GenerateSymbolImports(io::Printer* printer) {
     "static inline bool $nested_name$_IsValid(int value) {\n"
     "  return $classname$_IsValid(value);\n"
     "}\n"
-    "static const $nested_name$ $nested_name$_MIN =\n"
+    "static $constexpr$const $nested_name$ $nested_name$_MIN =\n"
     "  $classname$_$nested_name$_MIN;\n"
-    "static const $nested_name$ $nested_name$_MAX =\n"
+    "static $constexpr$const $nested_name$ $nested_name$_MAX =\n"
     "  $classname$_$nested_name$_MAX;\n");
   if (generate_array_size_) {
     printer->Print(vars,
-      "static const int $nested_name$_ARRAYSIZE =\n"
+      "static $constexpr$const int $nested_name$_ARRAYSIZE =\n"
       "  $classname$_$nested_name$_ARRAYSIZE;\n");
   }
 
@@ -307,11 +308,11 @@ void EnumGenerator::GenerateMethods(io::Printer* printer) {
         "$constexpr$const $classname$ $parent$::$value$;\n");
     }
     printer->Print(vars,
-      "const $classname$ $parent$::$nested_name$_MIN;\n"
-      "const $classname$ $parent$::$nested_name$_MAX;\n");
+      "$constexpr$const $classname$ $parent$::$nested_name$_MIN;\n"
+      "$constexpr$const $classname$ $parent$::$nested_name$_MAX;\n");
     if (generate_array_size_) {
       printer->Print(vars,
-        "const int $parent$::$nested_name$_ARRAYSIZE;\n");
+        "$constexpr$const int $parent$::$nested_name$_ARRAYSIZE;\n");
     }
 
     printer->Print("#endif  // !defined(_MSC_VER) || _MSC_VER >= 1900\n");
