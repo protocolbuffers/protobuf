@@ -49,11 +49,9 @@ static const int kNanosPerSecond = 1000000000;
 static const int kMicrosPerSecond = 1000000;
 static const int kMillisPerSecond = 1000;
 static const int kNanosPerMillisecond = 1000000;
-static const int kMicrosPerMillisecond = 1000;
 static const int kNanosPerMicrosecond = 1000;
 static const int kSecondsPerMinute = 60;  // Note that we ignore leap seconds.
 static const int kSecondsPerHour = 3600;
-static const char kTimestampFormat[] = "%E4Y-%m-%dT%H:%M:%S";
 
 template <typename T>
 T CreateNormalized(int64 seconds, int64 nanos);
