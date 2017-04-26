@@ -119,6 +119,7 @@ enum TestEnum {
   ZERO = 0;
   ONE  = 1;
   TWO  = 2;
+  ECHO = 3;  // Test reserved name.
 }
 
 // Test prefix for reserved words.

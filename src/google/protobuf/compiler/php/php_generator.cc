@@ -49,8 +49,8 @@ const std::string kDescriptorMetadataFile =
     "GPBMetadata/Google/Protobuf/Internal/Descriptor.php";
 const std::string kDescriptorDirName = "Google/Protobuf/Internal";
 const std::string kDescriptorPackageName = "Google\\Protobuf\\Internal";
-const char* const kReservedNames[] = {"Empty"};
-const int kReservedNamesSize = 1;
+const char* const kReservedNames[] = {"Empty", "ECHO"};
+const int kReservedNamesSize = 2;
 
 namespace google {
 namespace protobuf {
@@ -559,7 +559,7 @@ void GenerateEnumToPool(const EnumDescriptor* en, io::Printer* printer) {
     const EnumValueDescriptor* value = en->value(i);
     printer->Print(
         "->value(\"^name^\", ^number^)\n",
-        "name", value->name(),
+        "name", ClassNamePrefix(value->name(), en) + value->name(),
         "number", IntToString(value->number()));
   }
   printer->Print("->finalizeToPool();\n\n");
@@ -845,7 +845,7 @@ void GenerateEnumFile(const FileDescriptor* file, const EnumDescriptor* en,
     const EnumValueDescriptor* value = en->value(i);
     GenerateEnumValueDocComment(&printer, value);
     printer.Print("const ^name^ = ^number^;\n",
-                  "name", value->name(),
+                  "name", ClassNamePrefix(value->name(), en) + value->name(),
                   "number", IntToString(value->number()));
   }
 
