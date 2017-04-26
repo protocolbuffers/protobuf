@@ -1063,21 +1063,21 @@ bool ValidateObjCClassPrefix(
   // to Apple's rules (the checks above implicitly whitelist anything that
   // doesn't meet these rules).
   if (!ascii_isupper(prefix[0])) {
-    cerr << endl
+    std::cerr << std::endl
          << "protoc:0: warning: Invalid 'option objc_class_prefix = \""
          << prefix << "\";' in '" << file->name() << "';"
-         << " it should start with a capital letter." << endl;
-    cerr.flush();
+         << " it should start with a capital letter." << std::endl;
+    std::cerr.flush();
   }
   if (prefix.length() < 3) {
     // Apple reserves 2 character prefixes for themselves. They do use some
     // 3 character prefixes, but they haven't updated the rules/docs.
-    cerr << endl
+    std::cerr << std::endl
          << "protoc:0: warning: Invalid 'option objc_class_prefix = \""
          << prefix << "\";' in '" << file->name() << "';"
          << " Apple recommends they should be at least 3 characters long."
-         << endl;
-    cerr.flush();
+         << std::endl;
+    std::cerr.flush();
   }
 
   // Look for any other package that uses the same prefix.
@@ -1096,22 +1096,22 @@ bool ValidateObjCClassPrefix(
     // The file does not have a package and ...
     if (other_package_for_prefix.empty()) {
       // ... no other package has declared that prefix.
-      cerr << endl
+      std::cerr << std::endl
            << "protoc:0: warning: File '" << file->name() << "' has no "
            << "package. Consider adding a new package to the proto and adding '"
            << "new.package = " << prefix << "' to the expected prefixes file ("
-           << expected_prefixes_path << ")." << endl;
-      cerr.flush();
+           << expected_prefixes_path << ")." << std::endl;
+      std::cerr.flush();
     } else {
       // ... another package has declared the same prefix.
-      cerr << endl
+      std::cerr << std::endl
            << "protoc:0: warning: File '" << file->name() << "' has no package "
            << "and package '" << other_package_for_prefix << "' already uses '"
            << prefix << "' as its prefix. Consider either adding a new package "
            << "to the proto, or reusing one of the packages already using this "
            << "prefix in the expected prefixes file ("
-           << expected_prefixes_path << ")." << endl;
-      cerr.flush();
+           << expected_prefixes_path << ")." << std::endl;
+      std::cerr.flush();
     }
     return true;
   }
@@ -1133,12 +1133,12 @@ bool ValidateObjCClassPrefix(
   // Check: Warning - If the given package/prefix pair wasn't expected, issue a
   // warning issue a warning suggesting it gets added to the file.
   if (!expected_package_prefixes.empty()) {
-    cerr << endl
+    std::cerr << std::endl
          << "protoc:0: warning: Found unexpected 'option objc_class_prefix = \""
          << prefix << "\";' in '" << file->name() << "';"
          << " consider adding it to the expected prefixes file ("
-         << expected_prefixes_path << ")." << endl;
-    cerr.flush();
+         << expected_prefixes_path << ")." << std::endl;
+    std::cerr.flush();
   }
 
   return true;
@@ -1180,10 +1180,10 @@ void TextFormatDecodeData::AddString(int32 key,
   for (vector<DataEntry>::const_iterator i = entries_.begin();
        i != entries_.end(); ++i) {
     if (i->first == key) {
-      cerr << "error: duplicate key (" << key
+      std::cerr << "error: duplicate key (" << key
            << ") making TextFormat data, input: \"" << input_for_decode
-           << "\", desired: \"" << desired_output << "\"." << endl;
-      cerr.flush();
+           << "\", desired: \"" << desired_output << "\"." << std::endl;
+      std::cerr.flush();
       abort();
     }
   }
@@ -1194,7 +1194,7 @@ void TextFormatDecodeData::AddString(int32 key,
 }
 
 string TextFormatDecodeData::Data() const {
-  ostringstream data_stringstream;
+  std::ostringstream data_stringstream;
 
   if (num_entries() > 0) {
     io::OstreamOutputStream data_outputstream(&data_stringstream);
@@ -1335,18 +1335,18 @@ string DirectDecodeString(const string& str) {
 string TextFormatDecodeData::DecodeDataForString(const string& input_for_decode,
                                                  const string& desired_output) {
   if ((input_for_decode.size() == 0) || (desired_output.size() == 0)) {
-    cerr << "error: got empty string for making TextFormat data, input: \""
+    std::cerr << "error: got empty string for making TextFormat data, input: \""
          << input_for_decode << "\", desired: \"" << desired_output << "\"."
-         << endl;
-    cerr.flush();
+         << std::endl;
+    std::cerr.flush();
     abort();
   }
   if ((input_for_decode.find('\0') != string::npos) ||
       (desired_output.find('\0') != string::npos)) {
-    cerr << "error: got a null char in a string for making TextFormat data,"
+    std::cerr << "error: got a null char in a string for making TextFormat data,"
          << " input: \"" << CEscape(input_for_decode) << "\", desired: \""
-         << CEscape(desired_output) << "\"." << endl;
-    cerr.flush();
+         << CEscape(desired_output) << "\"." << std::endl;
+    std::cerr.flush();
     abort();
   }
 
@@ -1611,9 +1611,9 @@ void ImportWriter::ParseFrameworkMappings() {
   string parse_error;
   if (!ParseSimpleFile(named_framework_to_proto_path_mappings_path_,
                        &collector, &parse_error)) {
-    cerr << "error parsing " << named_framework_to_proto_path_mappings_path_
-         << " : " << parse_error << endl;
-    cerr.flush();
+    std::cerr << "error parsing " << named_framework_to_proto_path_mappings_path_
+         << " : " << parse_error << std::endl;
+    std::cerr.flush();
   }
 }
 
@@ -1643,16 +1643,16 @@ bool ImportWriter::ProtoFrameworkCollector::ConsumeLine(
       map<string, string>::iterator existing_entry =
           map_->find(proto_file.ToString());
       if (existing_entry != map_->end()) {
-        cerr << "warning: duplicate proto file reference, replacing framework entry for '"
+        std::cerr << "warning: duplicate proto file reference, replacing framework entry for '"
              << proto_file.ToString() << "' with '" << framework_name.ToString()
-             << "' (was '" << existing_entry->second << "')." << endl;
-        cerr.flush();
+             << "' (was '" << existing_entry->second << "')." << std::endl;
+        std::cerr.flush();
       }
 
       if (proto_file.find(' ') != StringPiece::npos) {
-        cerr << "note: framework mapping file had a proto file with a space in, hopefully that isn't a missing comma: '"
-             << proto_file.ToString() << "'" << endl;
-        cerr.flush();
+        std::cerr << "note: framework mapping file had a proto file with a space in, hopefully that isn't a missing comma: '"
+             << proto_file.ToString() << "'" << std::endl;
+        std::cerr.flush();
       }
 
       (*map_)[proto_file.ToString()] = framework_name.ToString();

@@ -227,7 +227,7 @@ void SplitStringToIteratorUsing(const string& full,
 void SplitStringUsing(const string& full,
                       const char* delim,
                       vector<string>* result) {
-  back_insert_iterator< vector<string> > it(*result);
+  std::back_insert_iterator< vector<string> > it(*result);
   SplitStringToIteratorUsing(full, delim, it);
 }
 
@@ -265,7 +265,7 @@ void SplitStringToIteratorAllowEmpty(const StringType& full,
 
 void SplitStringAllowEmpty(const string& full, const char* delim,
                            vector<string>* result) {
-  back_insert_iterator<vector<string> > it(*result);
+  std::back_insert_iterator<vector<string> > it(*result);
   SplitStringToIteratorAllowEmpty(full, delim, 0, it);
 }
 
@@ -1262,10 +1262,10 @@ char* DoubleToBuffer(double value, char* buffer) {
   // this assert.
   GOOGLE_COMPILE_ASSERT(DBL_DIG < 20, DBL_DIG_is_too_big);
 
-  if (value == numeric_limits<double>::infinity()) {
+  if (value == std::numeric_limits<double>::infinity()) {
     strcpy(buffer, "inf");
     return buffer;
-  } else if (value == -numeric_limits<double>::infinity()) {
+  } else if (value == -std::numeric_limits<double>::infinity()) {
     strcpy(buffer, "-inf");
     return buffer;
   } else if (MathLimits<double>::IsNaN(value)) {
@@ -1380,10 +1380,10 @@ char* FloatToBuffer(float value, char* buffer) {
   // this assert.
   GOOGLE_COMPILE_ASSERT(FLT_DIG < 10, FLT_DIG_is_too_big);
 
-  if (value == numeric_limits<double>::infinity()) {
+  if (value == std::numeric_limits<double>::infinity()) {
     strcpy(buffer, "inf");
     return buffer;
-  } else if (value == -numeric_limits<double>::infinity()) {
+  } else if (value == -std::numeric_limits<double>::infinity()) {
     strcpy(buffer, "-inf");
     return buffer;
   } else if (MathLimits<float>::IsNaN(value)) {

@@ -156,7 +156,7 @@ const FieldDescriptor** SortFieldsByNumber(const Descriptor* descriptor) {
   for (int i = 0; i < descriptor->field_count(); i++) {
     fields[i] = descriptor->field(i);
   }
-  sort(fields, fields + descriptor->field_count(), FieldOrderingByNumber());
+  std::sort(fields, fields + descriptor->field_count(), FieldOrderingByNumber());
   return fields;
 }
 
@@ -168,7 +168,7 @@ const FieldDescriptor** SortFieldsByStorageSize(const Descriptor* descriptor) {
   for (int i = 0; i < descriptor->field_count(); i++) {
     fields[i] = descriptor->field(i);
   }
-  sort(fields, fields + descriptor->field_count(),
+  std::sort(fields, fields + descriptor->field_count(),
        FieldOrderingByStorageSize());
   return fields;
 }
@@ -430,7 +430,7 @@ void MessageGenerator::GenerateSource(io::Printer* printer) {
       sorted_extensions.push_back(descriptor_->extension_range(i));
     }
 
-    sort(sorted_extensions.begin(), sorted_extensions.end(),
+    std::sort(sorted_extensions.begin(), sorted_extensions.end(),
          ExtensionRangeOrdering());
 
     // Assign has bits:
