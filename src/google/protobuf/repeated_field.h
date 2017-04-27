@@ -303,6 +303,9 @@ class RepeatedField PROTOBUF_FINAL {
       }
     }
   }
+
+  friend class internal::WireFormatLite;
+  const Element* unsafe_data() const;
 };
 
 template<typename Element>
@@ -1206,6 +1209,12 @@ inline Element* RepeatedField<Element>::mutable_data() {
 template <typename Element>
 inline const Element* RepeatedField<Element>::data() const {
   return rep_ ? rep_->elements : NULL;
+}
+
+template <typename Element>
+inline const Element* RepeatedField<Element>::unsafe_data() const {
+  GOOGLE_DCHECK(rep_);
+  return rep_->elements;
 }
 
 
