@@ -359,6 +359,9 @@ string FilePath(const FileDescriptor* file) {
   // CamelCase to be more ObjC friendly.
   basename = UnderscoresToCamelCase(basename, true);
 
+  // Make filename same as class name
+  output += file->options().objc_class_prefix();
+
   output += basename;
   return output;
 }
