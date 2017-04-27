@@ -939,7 +939,7 @@ GenerateMergingCode(io::Printer* printer) const {
 
 void RepeatedStringFieldGenerator::
 GenerateSwappingCode(io::Printer* printer) const {
-  printer->Print(variables_, "$name$_.UnsafeArenaSwap(&other->$name$_);\n");
+  printer->Print(variables_, "$name$_.InternalSwap(&other->$name$_);\n");
 }
 
 void RepeatedStringFieldGenerator::

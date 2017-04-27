@@ -1080,8 +1080,8 @@ void CodeGeneratorRequest::Swap(CodeGeneratorRequest* other) {
   InternalSwap(other);
 }
 void CodeGeneratorRequest::InternalSwap(CodeGeneratorRequest* other) {
-  file_to_generate_.UnsafeArenaSwap(&other->file_to_generate_);
-  proto_file_.UnsafeArenaSwap(&other->proto_file_);
+  file_to_generate_.InternalSwap(&other->file_to_generate_);
+  proto_file_.InternalSwap(&other->proto_file_);
   parameter_.Swap(&other->parameter_);
   std::swap(compiler_version_, other->compiler_version_);
   std::swap(_has_bits_[0], other->_has_bits_[0]);
@@ -2145,7 +2145,7 @@ void CodeGeneratorResponse::Swap(CodeGeneratorResponse* other) {
   InternalSwap(other);
 }
 void CodeGeneratorResponse::InternalSwap(CodeGeneratorResponse* other) {
-  file_.UnsafeArenaSwap(&other->file_);
+  file_.InternalSwap(&other->file_);
   error_.Swap(&other->error_);
   std::swap(_has_bits_[0], other->_has_bits_[0]);
   _internal_metadata_.Swap(&other->_internal_metadata_);

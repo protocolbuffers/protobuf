@@ -831,9 +831,9 @@ void Type::UnsafeArenaSwap(Type* other) {
   InternalSwap(other);
 }
 void Type::InternalSwap(Type* other) {
-  fields_.UnsafeArenaSwap(&other->fields_);
-  oneofs_.UnsafeArenaSwap(&other->oneofs_);
-  options_.UnsafeArenaSwap(&other->options_);
+  fields_.InternalSwap(&other->fields_);
+  oneofs_.InternalSwap(&other->oneofs_);
+  options_.InternalSwap(&other->options_);
   name_.Swap(&other->name_);
   std::swap(source_context_, other->source_context_);
   std::swap(syntax_, other->syntax_);
@@ -1751,7 +1751,7 @@ void Field::UnsafeArenaSwap(Field* other) {
   InternalSwap(other);
 }
 void Field::InternalSwap(Field* other) {
-  options_.UnsafeArenaSwap(&other->options_);
+  options_.InternalSwap(&other->options_);
   name_.Swap(&other->name_);
   type_url_.Swap(&other->type_url_);
   json_name_.Swap(&other->json_name_);
@@ -2594,8 +2594,8 @@ void Enum::UnsafeArenaSwap(Enum* other) {
   InternalSwap(other);
 }
 void Enum::InternalSwap(Enum* other) {
-  enumvalue_.UnsafeArenaSwap(&other->enumvalue_);
-  options_.UnsafeArenaSwap(&other->options_);
+  enumvalue_.InternalSwap(&other->enumvalue_);
+  options_.InternalSwap(&other->options_);
   name_.Swap(&other->name_);
   std::swap(source_context_, other->source_context_);
   std::swap(syntax_, other->syntax_);
@@ -3132,7 +3132,7 @@ void EnumValue::UnsafeArenaSwap(EnumValue* other) {
   InternalSwap(other);
 }
 void EnumValue::InternalSwap(EnumValue* other) {
-  options_.UnsafeArenaSwap(&other->options_);
+  options_.InternalSwap(&other->options_);
   name_.Swap(&other->name_);
   std::swap(number_, other->number_);
   std::swap(_cached_size_, other->_cached_size_);

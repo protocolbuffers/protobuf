@@ -238,6 +238,11 @@ class RepeatedField PROTOBUF_FINAL {
     return GetArenaNoVirtual();
   }
 
+  // For internal use only.
+  //
+  // This is public due to it being called by generated code.
+  inline void InternalSwap(RepeatedField* other);
+
  private:
   static const int kInitialSize = 0;
   // A note on the representation here (see also comment below for
@@ -275,8 +280,6 @@ class RepeatedField PROTOBUF_FINAL {
 
   // Copy the elements of |from| into |to|.
   void CopyArray(Element* to, const Element* from, int size);
-
-  inline void InternalSwap(RepeatedField* other);
 
   // Internal helper expected by Arena methods.
   inline Arena* GetArenaNoVirtual() const {
@@ -970,6 +973,11 @@ class RepeatedPtrField PROTOBUF_FINAL : public internal::RepeatedPtrFieldBase {
     return GetArenaNoVirtual();
   }
 
+  // For internal use only.
+  //
+  // This is public due to it being called by generated code.
+  using RepeatedPtrFieldBase::InternalSwap;
+
  private:
   // Note:  RepeatedPtrField SHOULD NOT be subclassed by users.
   class TypeHandler;
@@ -1211,6 +1219,9 @@ inline const Element* RepeatedField<Element>::data() const {
 
 template <typename Element>
 inline void RepeatedField<Element>::InternalSwap(RepeatedField* other) {
+  GOOGLE_DCHECK(this != other);
+  GOOGLE_DCHECK(GetArenaNoVirtual() == other->GetArenaNoVirtual());
+
   std::swap(rep_, other->rep_);
   std::swap(current_size_, other->current_size_);
   std::swap(total_size_, other->total_size_);
@@ -1232,7 +1243,6 @@ void RepeatedField<Element>::Swap(RepeatedField* other) {
 template <typename Element>
 void RepeatedField<Element>::UnsafeArenaSwap(RepeatedField* other) {
   if (this == other) return;
-  GOOGLE_DCHECK(GetArenaNoVirtual() == other->GetArenaNoVirtual());
   InternalSwap(other);
 }
 
@@ -2036,7 +2046,6 @@ inline void RepeatedPtrField<Element>::Swap(RepeatedPtrField* other) {
 template <typename Element>
 inline void RepeatedPtrField<Element>::UnsafeArenaSwap(
     RepeatedPtrField* other) {
-  GOOGLE_DCHECK(GetArenaNoVirtual() == other->GetArenaNoVirtual());
   if (this == other)
       return;
   RepeatedPtrFieldBase::InternalSwap(other);
@@ -2291,6 +2300,9 @@ class RepeatedPtrOverPtrsIterator
 };
 
 void RepeatedPtrFieldBase::InternalSwap(RepeatedPtrFieldBase* other) {
+  GOOGLE_DCHECK(this != other);
+  GOOGLE_DCHECK(GetArenaNoVirtual() == other->GetArenaNoVirtual());
+
   std::swap(rep_, other->rep_);
   std::swap(current_size_, other->current_size_);
   std::swap(total_size_, other->total_size_);
