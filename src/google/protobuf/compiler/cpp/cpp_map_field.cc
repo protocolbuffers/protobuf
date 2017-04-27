@@ -32,6 +32,7 @@
 #include <google/protobuf/compiler/cpp/cpp_helpers.h>
 #include <google/protobuf/io/printer.h>
 #include <google/protobuf/wire_format.h>
+
 #include <google/protobuf/stubs/strutil.h>
 
 namespace google {
@@ -113,18 +114,49 @@ MapFieldGenerator::~MapFieldGenerator() {}
 
 void MapFieldGenerator::
 GeneratePrivateMembers(io::Printer* printer) const {
+  if (HasDescriptorMethods(descriptor_->file(), options_)) {
+    printer->Print(
+        variables_,
+        "public:\n"
+        "class $map_classname$ : public "
+        "::google::protobuf::internal::MapEntry<$map_classname$, \n"
+        "    $key_cpp$, $val_cpp$,\n"
+        "    $key_wire_type$,\n"
+        "    $val_wire_type$,\n"
+        "    $default_enum_value$ > {\n"
+        "public:\n"
+        "  typedef ::google::protobuf::internal::MapEntry<$map_classname$, \n"
+        "    $key_cpp$, $val_cpp$,\n"
+        "    $key_wire_type$,\n"
+        "    $val_wire_type$,\n"
+        "    $default_enum_value$ > SuperType;\n"
+        "  $map_classname$();\n"
+        "  $map_classname$(::google::protobuf::Arena* arena);\n"
+        "  void MergeFrom(const ::google::protobuf::Message& other) PROTOBUF_FINAL;\n"
+        "  void MergeFrom(const $map_classname$& other);\n"
+        "  static const Message* internal_default_instance() { return "
+        "reinterpret_cast<const "
+        "Message*>(&_$map_classname$_default_instance_); }\n"
+        "  ::google::protobuf::Metadata GetMetadata() const;\n"
+        "};\n");
+  } else {
+    printer->Print(variables_,
+                   "public:\n"
+                   "typedef ::google::protobuf::internal::MapEntryLite<\n"
+                   "    $key_cpp$, $val_cpp$,\n"
+                   "    $key_wire_type$,\n"
+                   "    $val_wire_type$,\n"
+                   "    $default_enum_value$ >\n"
+                   "    $map_classname$;\n");
+  }
   printer->Print(variables_,
-      "typedef ::google::protobuf::internal::MapEntryLite<\n"
-      "    $key_cpp$, $val_cpp$,\n"
-      "    $key_wire_type$,\n"
-      "    $val_wire_type$,\n"
-      "    $default_enum_value$ >\n"
-      "    $map_classname$;\n"
-      "::google::protobuf::internal::MapField$lite$<\n"
-      "    $key_cpp$, $val_cpp$,\n"
-      "    $key_wire_type$,\n"
-      "    $val_wire_type$,\n"
-      "    $default_enum_value$ > $name$_;\n");
+                 "::google::protobuf::internal::MapField$lite$<\n"
+                 "    $map_classname$,\n"
+                 "    $key_cpp$, $val_cpp$,\n"
+                 "    $key_wire_type$,\n"
+                 "    $val_wire_type$,\n"
+                 "    $default_enum_value$ > $name$_;\n"
+                 "private:\n");
 }
 
 void MapFieldGenerator::
@@ -172,17 +204,6 @@ GenerateSwappingCode(io::Printer* printer) const {
 }
 
 void MapFieldGenerator::
-GenerateConstructorCode(io::Printer* printer) const {
-  if (HasDescriptorMethods(descriptor_->file(), options_)) {
-    printer->Print(variables_,
-                   "$name$_.SetAssignDescriptorCallback(\n"
-                   "    $file_namespace$::protobuf_AssignDescriptorsOnce);\n"
-                   "$name$_.SetEntryDescriptor(\n"
-                   "    &$type$_descriptor);\n");
-  }
-}
-
-void MapFieldGenerator::
 GenerateCopyConstructorCode(io::Printer* printer) const {
   GenerateConstructorCode(printer);
   GenerateMergingCode(printer);
@@ -199,13 +220,15 @@ GenerateMergeFromCodedStream(io::Printer* printer) const {
   string value;
   if (IsProto3Field(descriptor_) ||
       value_field->type() != FieldDescriptor::TYPE_ENUM) {
-    printer->Print(variables_,
+    printer->Print(
+        variables_,
         "$map_classname$::Parser< ::google::protobuf::internal::MapField$lite$<\n"
-                   "    $key_cpp$, $val_cpp$,\n"
-                   "    $key_wire_type$,\n"
-                   "    $val_wire_type$,\n"
-                   "    $default_enum_value$ >,\n"
-                   "  ::google::protobuf::Map< $key_cpp$, $val_cpp$ > >"
+        "    $map_classname$,\n"
+        "    $key_cpp$, $val_cpp$,\n"
+        "    $key_wire_type$,\n"
+        "    $val_wire_type$,\n"
+        "    $default_enum_value$ >,\n"
+        "  ::google::protobuf::Map< $key_cpp$, $val_cpp$ > >"
         " parser(&$name$_);\n"
         "DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtual(\n"
         "    input, &parser));\n");

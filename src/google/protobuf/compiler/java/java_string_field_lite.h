@@ -78,6 +78,7 @@ class ImmutableStringFieldLiteGenerator : public ImmutableFieldLiteGenerator {
   void GenerateEqualsCode(io::Printer* printer) const;
   void GenerateHashCode(io::Printer* printer) const;
 
+
   string GetBoxedType() const;
 
  protected:
@@ -108,6 +109,7 @@ class ImmutableStringOneofFieldLiteGenerator
   void GenerateSerializationCode(io::Printer* printer) const;
   void GenerateSerializedSizeCode(io::Printer* printer) const;
 
+
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(ImmutableStringOneofFieldLiteGenerator);
 };
 
@@ -135,6 +137,7 @@ class RepeatedImmutableStringFieldLiteGenerator
   void GenerateFieldBuilderInitializationCode(io::Printer* printer) const;
   void GenerateEqualsCode(io::Printer* printer) const;
   void GenerateHashCode(io::Printer* printer) const;
+
 
   string GetBoxedType() const;
 

@@ -38,6 +38,7 @@
 #include <string>
 #include <vector>
 
+#include <google/protobuf/stubs/strutil.h>
 
 #include <google/protobuf/util/field_comparator.h>
 #include <google/protobuf/util/message_differencer.h>
@@ -54,7 +55,6 @@
 
 #include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
-#include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/testing/googletest.h>
 #include <gtest/gtest.h>
 
@@ -2042,6 +2042,9 @@ class ComparisonTest : public testing::Test {
   unittest::TestEmptyMessage empty1_;
   unittest::TestEmptyMessage empty2_;
 
+  unittest::TestMap map_proto1_;
+  unittest::TestMap map_proto2_;
+
   UnknownFieldSet* unknown1_;
   UnknownFieldSet* unknown2_;
 
@@ -2802,6 +2805,24 @@ TEST_F(ComparisonTest, EquivalentIgnoresUnknown) {
   EXPECT_TRUE(util::MessageDifferencer::Equivalent(message1, message2));
 }
 
+TEST_F(ComparisonTest, MapTest) {
+  repeated_field_as_set();
+
+  Map<string, string>& map1 = *map_proto1_.mutable_map_string_string();
+  map1["1"] = "1";
+  map1["2"] = "2";
+  map1["3"] = "3";
+  Map<string, string>& map2 = *map_proto2_.mutable_map_string_string();
+  map2["3"] = "0";
+  map2["2"] = "2";
+  map2["1"] = "1";
+
+  EXPECT_EQ(
+      "added: map_string_string: { key: \"3\" value: \"0\" }\n"
+      "deleted: map_string_string: { key: \"3\" value: \"3\" }\n",
+      Run(map_proto1_, map_proto2_));
+}
+
 class MatchingTest : public testing::Test {
  public:
   typedef util::MessageDifferencer MessageDifferencer;
@@ -3134,6 +3155,24 @@ TEST(Anytest, TreatAsSet) {
   value1.set_b(30);
   value2.set_a(20);
   value2.set_b(31);
+
+  protobuf_unittest::TestAny m1, m2;
+  m1.add_repeated_any_value()->PackFrom(value1);
+  m1.add_repeated_any_value()->PackFrom(value2);
+  m2.add_repeated_any_value()->PackFrom(value2);
+  m2.add_repeated_any_value()->PackFrom(value1);
+
+  util::MessageDifferencer message_differencer;
+  message_differencer.TreatAsSet(GetFieldDescriptor(m1, "repeated_any_value"));
+  EXPECT_TRUE(message_differencer.Compare(m1, m2));
+}
+
+TEST(Anytest, TreatAsSet_DifferentType) {
+  protobuf_unittest::TestField value1;
+  value1.set_a(20);
+  value1.set_b(30);
+  protobuf_unittest::TestDiffMessage value2;
+  value2.add_rv(40);
 
   protobuf_unittest::TestAny m1, m2;
   m1.add_repeated_any_value()->PackFrom(value1);

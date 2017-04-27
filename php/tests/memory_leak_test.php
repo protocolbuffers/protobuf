@@ -2,17 +2,25 @@
 
 # phpunit has memory leak by itself. Thus, it cannot be used to test memory leak.
 
+require_once('generated/NoNamespaceEnum.php');
+require_once('generated/NoNamespaceMessage.php');
+require_once('generated/NoNamespaceMessage_NestedEnum.php');
+require_once('generated/PrefixEmpty.php');
 require_once('generated/PrefixTestPrefix.php');
 require_once('generated/Bar/TestInclude.php');
+require_once('generated/Foo/PBEmpty.php');
 require_once('generated/Foo/TestEnum.php');
 require_once('generated/Foo/TestIncludePrefixMessage.php');
 require_once('generated/Foo/TestMessage.php');
+require_once('generated/Foo/TestMessage_Empty.php');
+require_once('generated/Foo/TestMessage_NestedEnum.php');
 require_once('generated/Foo/TestMessage_Sub.php');
 require_once('generated/Foo/TestPackedMessage.php');
 require_once('generated/Foo/TestPhpDoc.php');
 require_once('generated/Foo/TestUnpackedMessage.php');
 require_once('generated/GPBMetadata/Proto/Test.php');
 require_once('generated/GPBMetadata/Proto/TestInclude.php');
+require_once('generated/GPBMetadata/Proto/TestNoNamespace.php');
 require_once('generated/GPBMetadata/Proto/TestPrefix.php');
 require_once('test_util.php');
 
@@ -83,7 +91,8 @@ $n = new TestMessage();
 $n->mergeFromString($data);
 assert(1 === $n->getOneofMessage()->getA());
 
-$from = new TestMessage();
-$to = new TestMessage();
-TestUtil::setTestMessage($from);
-$to->mergeFrom($from);
+# $from = new TestMessage();
+# $to = new TestMessage();
+# TestUtil::setTestMessage($from);
+# $to->mergeFrom($from);
+# TestUtil::assertTestMessage($to);

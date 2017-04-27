@@ -107,7 +107,7 @@ def MakeClass(descriptor):
     The Message class object described by the descriptor.
   """
   if descriptor in MESSAGE_CLASS_CACHE:
-      return MESSAGE_CLASS_CACHE[descriptor]
+    return MESSAGE_CLASS_CACHE[descriptor]
 
   attributes = {}
   for name, nested_type in descriptor.nested_types_by_name.items():
@@ -115,7 +115,7 @@ def MakeClass(descriptor):
 
   attributes[GeneratedProtocolMessageType._DESCRIPTOR_KEY] = descriptor
 
-  result = GeneratedProtocolMessageType(str(descriptor.name), (message.Message,),
-                                      attributes)
+  result = GeneratedProtocolMessageType(
+      str(descriptor.name), (message.Message,), attributes)
   MESSAGE_CLASS_CACHE[descriptor] = result
   return result

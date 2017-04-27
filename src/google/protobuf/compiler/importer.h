@@ -175,6 +175,7 @@ class LIBPROTOBUF_EXPORT Importer {
   void AddUnusedImportTrackFile(const string& file_name);
   void ClearUnusedImportTrackFiles();
 
+
  private:
   SourceTreeDescriptorDatabase database_;
   DescriptorPool pool_;

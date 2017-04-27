@@ -106,6 +106,11 @@ class MapReflectionTester {
   void ExpectClearViaReflection(const Message& message);
   void ExpectClearViaReflectionIterator(Message* message);
   void ExpectMapEntryClearViaReflection(Message* message);
+  void GetMapValueViaMapReflection(Message* message,
+                                   const string& field_name,
+                                   const MapKey& map_key, MapValueRef* map_val);
+  Message* GetMapEntryViaReflection(Message* message, const string& field_name,
+                                    int index);
 
  private:
   const FieldDescriptor* F(const string& name);

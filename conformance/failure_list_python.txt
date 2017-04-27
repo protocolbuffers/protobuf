@@ -11,3 +11,7 @@ Required.JsonInput.FloatFieldTooLarge
 Required.JsonInput.FloatFieldTooSmall
 Required.JsonInput.RepeatedFieldWrongElementTypeExpectingIntegersGotBool
 Required.JsonInput.TimestampJsonInputLowercaseT
+Required.ProtobufInput.IllegalZeroFieldNum_Case_0
+Required.ProtobufInput.IllegalZeroFieldNum_Case_1
+Required.ProtobufInput.IllegalZeroFieldNum_Case_2
+Required.ProtobufInput.IllegalZeroFieldNum_Case_3

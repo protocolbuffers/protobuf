@@ -135,7 +135,7 @@ for HEADER in $PUBLIC_HEADERS; do
 done | sort | uniq | sed "s/^/mkdir include\\\\/" >> $EXTRACT_INCLUDES_BAT
 for HEADER in $PUBLIC_HEADERS; do
   WINPATH=$(echo $HEADER | sed 's;/;\\;g')
-  echo "copy \${PROTOBUF_SOURCE_WIN32_PATH}\\..\\src\\$WINPATH include\\$WINPATH" >> $EXTRACT_INCLUDES_BAT
+  echo "copy \"\${PROTOBUF_SOURCE_WIN32_PATH}\\..\\src\\$WINPATH\" include\\$WINPATH" >> $EXTRACT_INCLUDES_BAT
 done
 
 ################################################################################

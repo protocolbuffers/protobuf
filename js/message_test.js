@@ -40,6 +40,7 @@ goog.require('goog.userAgent');
 goog.require('jspb.Message');
 
 // CommonJS-LoadFromFile: test8_pb proto.jspb.exttest.nested
+goog.require('proto.jspb.exttest.nested.TestNestedExtensionsMessage');
 goog.require('proto.jspb.exttest.nested.TestOuterMessage');
 
 // CommonJS-LoadFromFile: test5_pb proto.jspb.exttest.beta

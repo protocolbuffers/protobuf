@@ -41,6 +41,11 @@ declare -a RUNTIME_PROTO_FILES=(\
   google/protobuf/type.proto \
   google/protobuf/wrappers.proto)
 
+declare -a COMPILER_PROTO_FILES=(\
+  google/protobuf/compiler/plugin.proto \
+  google/protobuf/compiler/profile.proto \
+)
+
 CORE_PROTO_IS_CORRECT=0
 PROCESS_ROUND=1
 TMP=$(mktemp -d)
@@ -57,9 +62,9 @@ do
   fi
 
   ./protoc --cpp_out=dllexport_decl=LIBPROTOBUF_EXPORT:$TMP ${RUNTIME_PROTO_FILES[@]} && \
-  ./protoc --cpp_out=dllexport_decl=LIBPROTOC_EXPORT:$TMP google/protobuf/compiler/plugin.proto
+  ./protoc --cpp_out=dllexport_decl=LIBPROTOC_EXPORT:$TMP ${COMPILER_PROTO_FILES[@]}
 
-  for PROTO_FILE in ${RUNTIME_PROTO_FILES[@]}; do
+  for PROTO_FILE in ${RUNTIME_PROTO_FILES[@]} ${COMPILER_PROTO_FILES[@]}; do
     BASE_NAME=${PROTO_FILE%.*}
     diff ${BASE_NAME}.pb.h $TMP/${BASE_NAME}.pb.h > /dev/null
     if test $? -ne 0; then
@@ -71,24 +76,14 @@ do
     fi
   done
 
-  diff google/protobuf/compiler/plugin.pb.h $TMP/google/protobuf/compiler/plugin.pb.h > /dev/null
-  if test $? -ne 0; then
-    CORE_PROTO_IS_CORRECT=0
-  fi
-  diff google/protobuf/compiler/plugin.pb.cc $TMP/google/protobuf/compiler/plugin.pb.cc > /dev/null
-  if test $? -ne 0; then
-    CORE_PROTO_IS_CORRECT=0
-  fi
-
   # Only override the output if the files are different to avoid re-compilation
   # of the protoc.
   if [ $CORE_PROTO_IS_CORRECT -ne 1 ]; then
-    for PROTO_FILE in ${RUNTIME_PROTO_FILES[@]}; do
+    for PROTO_FILE in ${RUNTIME_PROTO_FILES[@]} ${COMPILER_PROTO_FILES[@]}; do
       BASE_NAME=${PROTO_FILE%.*}
       mv $TMP/${BASE_NAME}.pb.h ${BASE_NAME}.pb.h
       mv $TMP/${BASE_NAME}.pb.cc ${BASE_NAME}.pb.cc
     done
-    mv $TMP/google/protobuf/compiler/plugin.pb.* google/protobuf/compiler/
   fi
 
   PROCESS_ROUND=$((PROCESS_ROUND + 1))

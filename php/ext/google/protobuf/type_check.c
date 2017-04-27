@@ -325,9 +325,18 @@ CONVERT_TO_FLOAT(double);
 
 bool protobuf_convert_to_bool(zval* from, int8_t* to) {
   switch (Z_TYPE_P(from)) {
+#if PHP_MAJOR_VERSION < 7
     case IS_BOOL:
       *to = (int8_t)Z_BVAL_P(from);
       break;
+#else
+    case IS_TRUE:
+      *to = 1;
+      break;
+    case IS_FALSE:
+      *to = 0;
+      break;
+#endif
     case IS_LONG:
       *to = (int8_t)(Z_LVAL_P(from) != 0);
       break;
@@ -357,12 +366,16 @@ bool protobuf_convert_to_string(zval* from) {
     case IS_STRING: {
       return true;
     }
+#if PHP_MAJOR_VERSION < 7
     case IS_BOOL:
+#else
+    case IS_TRUE:
+    case IS_FALSE:
+#endif
     case IS_LONG:
     case IS_DOUBLE: {
-      int use_copy;
       zval tmp;
-      zend_make_printable_zval(from, &tmp, &use_copy);
+      php_proto_zend_make_printable_zval(from, &tmp);
       ZVAL_COPY_VALUE(from, &tmp);
       return true;
     }
@@ -417,34 +430,45 @@ PHP_METHOD(Util, checkMessage) {
 
 PHP_METHOD(Util, checkRepeatedField) {
   zval* val;
-  long type;
+  PHP_PROTO_LONG type;
   const zend_class_entry* klass = NULL;
   if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "zl|C", &val, &type,
                             &klass) == FAILURE) {
     return;
   }
 
+#if PHP_MAJOR_VERSION >= 7
+  if (Z_ISREF_P(val)) {
+    ZVAL_DEREF(val);
+  }
+#endif
+
   if (Z_TYPE_P(val) == IS_ARRAY) {
-    HashTable* table = Z_ARRVAL_P(val);
+    HashTable* table = HASH_OF(val);
     HashPosition pointer;
     void* memory;
+
+#if PHP_MAJOR_VERSION < 7
     zval* repeated_field;
+    MAKE_STD_ZVAL(repeated_field);
+#else
+    zval repeated_field;
+#endif
 
     repeated_field_create_with_type(repeated_field_type, to_fieldtype(type),
                                     klass, &repeated_field TSRMLS_CC);
-    RepeatedField* intern =
-        (RepeatedField*)zend_object_store_get_object(repeated_field TSRMLS_CC);
 
     for (zend_hash_internal_pointer_reset_ex(table, &pointer);
-         zend_hash_get_current_data_ex(table, (void**)&memory, &pointer) ==
-         SUCCESS;
+         php_proto_zend_hash_get_current_data_ex(table, (void**)&memory,
+                                                 &pointer) == SUCCESS;
          zend_hash_move_forward_ex(table, &pointer)) {
-      repeated_field_handlers->write_dimension(repeated_field, NULL,
-                                               *(zval**)memory TSRMLS_CC);
+      repeated_field_handlers->write_dimension(
+          CACHED_TO_ZVAL_PTR(repeated_field), NULL,
+          CACHED_PTR_TO_ZVAL_PTR((CACHED_VALUE*)memory) TSRMLS_CC);
     }
 
-    Z_DELREF_P(repeated_field);
-    RETURN_ZVAL(repeated_field, 1, 0);
+    Z_DELREF_P(CACHED_TO_ZVAL_PTR(repeated_field));
+    RETURN_ZVAL(CACHED_TO_ZVAL_PTR(repeated_field), 1, 0);
 
   } else if (Z_TYPE_P(val) == IS_OBJECT) {
     if (!instanceof_function(Z_OBJCE_P(val), repeated_field_type TSRMLS_CC)) {
@@ -452,8 +476,7 @@ PHP_METHOD(Util, checkRepeatedField) {
                  repeated_field_type->name);
       return;
     }
-    RepeatedField* intern =
-        (RepeatedField*)zend_object_store_get_object(val TSRMLS_CC);
+    RepeatedField* intern = UNBOX(RepeatedField, val);
     if (to_fieldtype(type) != intern->type) {
       zend_error(E_USER_ERROR, "Incorrect repeated field type.");
       return;
@@ -474,43 +497,55 @@ PHP_METHOD(Util, checkRepeatedField) {
 
 PHP_METHOD(Util, checkMapField) {
   zval* val;
-  long key_type, value_type;
+  PHP_PROTO_LONG key_type, value_type;
   const zend_class_entry* klass = NULL;
   if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "zll|C", &val, &key_type,
                             &value_type, &klass) == FAILURE) {
     return;
   }
 
+#if PHP_MAJOR_VERSION >= 7
+  if (Z_ISREF_P(val)) {
+    ZVAL_DEREF(val);
+  }
+#endif
+
   if (Z_TYPE_P(val) == IS_ARRAY) {
     HashTable* table = Z_ARRVAL_P(val);
     HashPosition pointer;
-    zval key, *map_field;
+    zval key;
     void* value;
+
+#if PHP_MAJOR_VERSION < 7
+    zval* map_field;
+    MAKE_STD_ZVAL(map_field);
+#else
+    zval map_field;
+#endif
 
     map_field_create_with_type(map_field_type, to_fieldtype(key_type),
                                to_fieldtype(value_type), klass,
                                &map_field TSRMLS_CC);
-    Map* intern =
-        (Map*)zend_object_store_get_object(map_field TSRMLS_CC);
 
     for (zend_hash_internal_pointer_reset_ex(table, &pointer);
-         zend_hash_get_current_data_ex(table, (void**)&value, &pointer) ==
-         SUCCESS;
+         php_proto_zend_hash_get_current_data_ex(table, (void**)&value,
+                                                 &pointer) == SUCCESS;
          zend_hash_move_forward_ex(table, &pointer)) {
       zend_hash_get_current_key_zval_ex(table, &key, &pointer);
-      map_field_handlers->write_dimension(map_field, &key,
-                                          *(zval**)value TSRMLS_CC);
+      map_field_handlers->write_dimension(
+          CACHED_TO_ZVAL_PTR(map_field), &key,
+          CACHED_PTR_TO_ZVAL_PTR((CACHED_VALUE*)value) TSRMLS_CC);
     }
 
-    Z_DELREF_P(map_field);
-    RETURN_ZVAL(map_field, 1, 0);
+    Z_DELREF_P(CACHED_TO_ZVAL_PTR(map_field));
+    RETURN_ZVAL(CACHED_TO_ZVAL_PTR(map_field), 1, 0);
   } else if (Z_TYPE_P(val) == IS_OBJECT) {
     if (!instanceof_function(Z_OBJCE_P(val), map_field_type TSRMLS_CC)) {
       zend_error(E_USER_ERROR, "Given value is not an instance of %s.",
                  map_field_type->name);
       return;
     }
-    Map* intern = (Map*)zend_object_store_get_object(val TSRMLS_CC);
+    Map* intern = UNBOX(Map, val);
     if (to_fieldtype(key_type) != intern->key_type) {
       zend_error(E_USER_ERROR, "Incorrect map field key type.");
       return;

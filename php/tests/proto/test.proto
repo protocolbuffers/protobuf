@@ -1,6 +1,7 @@
 syntax = "proto3";
 
 import 'proto/test_include.proto';
+import 'proto/test_no_namespace.proto';
 import 'proto/test_prefix.proto';
 
 package foo;
@@ -96,12 +97,34 @@ message TestMessage {
 
   // Reserved for non-existing field test.
   // int32 non_exist = 89;
+
+  NoNamespaceMessage optional_no_namespace_message = 91;
+  NoNamespaceEnum optional_no_namespace_enum = 92;
+  repeated NoNamespaceMessage repeated_no_namespace_message = 93;
+  repeated NoNamespaceEnum repeated_no_namespace_enum = 94;
+
+  enum NestedEnum {
+    ZERO = 0;
+  }
+
+  NestedEnum optional_nested_enum = 101;
+
+  // Test prefix for reserved words.
+  message Empty {
+    int32 a = 1;
+  }
 }
 
 enum TestEnum {
   ZERO = 0;
   ONE  = 1;
   TWO  = 2;
+  ECHO = 3;  // Test reserved name.
+}
+
+// Test prefix for reserved words.
+message Empty {
+  int32 a = 1;
 }
 
 message TestPackedMessage {

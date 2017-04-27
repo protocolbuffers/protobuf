@@ -96,6 +96,8 @@ message TestAllTypes {
       optional_public_import_message = 26;
 
   NestedMessage optional_lazy_message = 27 [lazy=true];
+  protobuf_unittest_import.ImportMessage optional_lazy_import_message = 115
+      [lazy = true];
 
   // Repeated
   repeated    int32 repeated_int32    = 31;

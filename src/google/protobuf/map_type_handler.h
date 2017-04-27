@@ -186,9 +186,9 @@ class MapTypeHandler<WireFormatLite::TYPE_MESSAGE, Type> {
   static inline Type* EnsureMutable(Type** value, Arena* arena);
   // SpaceUsedInMapEntry: Return bytes used by value in MapEntry, excluding
   // those already calculate in sizeof(MapField).
-  static inline int SpaceUsedInMapEntry(const Type* value);
+  static inline size_t SpaceUsedInMapEntryLong(const Type* value);
   // Return bytes used by value in Map.
-  static inline int SpaceUsedInMap(const Type& value);
+  static inline size_t SpaceUsedInMapLong(const Type& value);
   // Assign default value to given instance.
   static inline void AssignDefaultValue(Type** value);
   // Return default instance if value is not initialized when calling const
@@ -224,9 +224,7 @@ class MapTypeHandler<WireFormatLite::TYPE_MESSAGE, Type> {
     static inline void Write(int field, const MapEntryAccessorType& value,    \
                              io::CodedOutputStream* output);                  \
     static inline uint8* InternalWriteToArray(                                \
-        int field,                                                            \
-        const MapEntryAccessorType& value,                                    \
-        bool deterministic,                                                   \
+        int field, const MapEntryAccessorType& value, bool deterministic,     \
         uint8* target);                                                       \
     static inline uint8* WriteToArray(int field,                              \
                                       const MapEntryAccessorType& value,      \
@@ -242,9 +240,9 @@ class MapTypeHandler<WireFormatLite::TYPE_MESSAGE, Type> {
     static inline void ClearMaybeByDefaultEnum(TypeOnMemory* value,           \
                                                Arena* arena,                  \
                                                int default_enum);             \
-    static inline int SpaceUsedInMapEntry(const TypeOnMemory& value);         \
-    static inline int SpaceUsedInMap(const TypeOnMemory& value);              \
-    static inline int SpaceUsedInMap(const string& value);                    \
+    static inline size_t SpaceUsedInMapEntryLong(const TypeOnMemory& value);  \
+    static inline size_t SpaceUsedInMapLong(const TypeOnMemory& value);       \
+    static inline size_t SpaceUsedInMapLong(const string& value);             \
     static inline void AssignDefaultValue(TypeOnMemory* value);               \
     static inline const MapEntryAccessorType& DefaultIfNotInitialized(        \
         const TypeOnMemory& value, const TypeOnMemory& default_value);        \
@@ -467,16 +465,15 @@ MapTypeHandler<WireFormatLite::TYPE_MESSAGE,
 }
 
 template <typename Type>
-inline int
-MapTypeHandler<WireFormatLite::TYPE_MESSAGE,
-                        Type>::SpaceUsedInMapEntry(const Type* value) {
-  return value->SpaceUsed();
+inline size_t MapTypeHandler<WireFormatLite::TYPE_MESSAGE,
+                             Type>::SpaceUsedInMapEntryLong(const Type* value) {
+  return value->SpaceUsedLong();
 }
 
 template <typename Type>
-int MapTypeHandler<WireFormatLite::TYPE_MESSAGE, Type>::SpaceUsedInMap(
+size_t MapTypeHandler<WireFormatLite::TYPE_MESSAGE, Type>::SpaceUsedInMapLong(
     const Type& value) {
-  return value.SpaceUsed();
+  return value.SpaceUsedLong();
 }
 
 template <typename Type>
@@ -507,7 +504,7 @@ void MapTypeHandler<WireFormatLite::TYPE_MESSAGE, Type>::DeleteNoArena(
 template <typename Type>
 inline void MapTypeHandler<WireFormatLite::TYPE_MESSAGE,
                                     Type>::AssignDefaultValue(Type** value) {
-  *value = const_cast<Type*>(&Type::default_instance());
+  *value = const_cast<Type*>(Type::internal_default_instance());
 }
 
 template <typename Type>
@@ -559,19 +556,21 @@ inline bool MapTypeHandler<WireFormatLite::TYPE_MESSAGE,
     return value.Get();                                                        \
   }                                                                            \
   template <typename Type>                                                     \
-  inline int                                                                   \
-  MapTypeHandler<WireFormatLite::TYPE_##FieldType, Type>::SpaceUsedInMapEntry( \
+  inline size_t                                                                \
+  MapTypeHandler<WireFormatLite::TYPE_##FieldType,                             \
+                 Type>::SpaceUsedInMapEntryLong(const TypeOnMemory& value) {   \
+    return sizeof(value);                                                      \
+  }                                                                            \
+  template <typename Type>                                                     \
+  inline size_t                                                                \
+  MapTypeHandler<WireFormatLite::TYPE_##FieldType, Type>::SpaceUsedInMapLong(  \
       const TypeOnMemory& value) {                                             \
     return sizeof(value);                                                      \
   }                                                                            \
   template <typename Type>                                                     \
-  inline int MapTypeHandler<WireFormatLite::TYPE_##FieldType,                  \
-                            Type>::SpaceUsedInMap(const TypeOnMemory& value) { \
-    return sizeof(value);                                                      \
-  }                                                                            \
-  template <typename Type>                                                     \
-  inline int MapTypeHandler<WireFormatLite::TYPE_##FieldType,                  \
-                            Type>::SpaceUsedInMap(const string& value) {       \
+  inline size_t                                                                \
+  MapTypeHandler<WireFormatLite::TYPE_##FieldType, Type>::SpaceUsedInMapLong(  \
+      const string& value) {                                                   \
     return sizeof(value);                                                      \
   }                                                                            \
   template <typename Type>                                                     \
@@ -647,14 +646,15 @@ STRING_OR_BYTES_HANDLER_FUNCTIONS(BYTES)
     return value;                                                              \
   }                                                                            \
   template <typename Type>                                                     \
-  inline int                                                                   \
-  MapTypeHandler<WireFormatLite::TYPE_##FieldType, Type>::SpaceUsedInMapEntry( \
-      const TypeOnMemory& value) {                                             \
+  inline size_t                                                                \
+  MapTypeHandler<WireFormatLite::TYPE_##FieldType,                             \
+                 Type>::SpaceUsedInMapEntryLong(const TypeOnMemory& value) {   \
     return 0;                                                                  \
   }                                                                            \
   template <typename Type>                                                     \
-  inline int MapTypeHandler<WireFormatLite::TYPE_##FieldType,                  \
-                            Type>::SpaceUsedInMap(const TypeOnMemory& value) { \
+  inline size_t                                                                \
+  MapTypeHandler<WireFormatLite::TYPE_##FieldType, Type>::SpaceUsedInMapLong(  \
+      const TypeOnMemory& value) {                                             \
     return sizeof(Type);                                                       \
   }                                                                            \
   template <typename Type>                                                     \
@@ -663,11 +663,9 @@ STRING_OR_BYTES_HANDLER_FUNCTIONS(BYTES)
     *value = 0;                                                                \
   }                                                                            \
   template <typename Type>                                                     \
-  inline void                                                                  \
-  MapTypeHandler<WireFormatLite::TYPE_##FieldType,                             \
-                 Type>::ClearMaybeByDefaultEnum(TypeOnMemory* value,           \
-                                                Arena* arena,                  \
-                                                int default_enum_value) {      \
+  inline void MapTypeHandler<WireFormatLite::TYPE_##FieldType, Type>::         \
+      ClearMaybeByDefaultEnum(TypeOnMemory* value, Arena* arena,               \
+                              int default_enum_value) {                        \
     *value = static_cast<TypeOnMemory>(default_enum_value);                    \
   }                                                                            \
   template <typename Type>                                                     \
@@ -688,11 +686,9 @@ STRING_OR_BYTES_HANDLER_FUNCTIONS(BYTES)
     *value = 0;                                                                \
   }                                                                            \
   template <typename Type>                                                     \
-  inline void                                                                  \
-  MapTypeHandler<WireFormatLite::TYPE_##FieldType,                             \
-                 Type>::InitializeMaybeByDefaultEnum(TypeOnMemory* value,      \
-                                                     int default_enum_value,   \
-                                                     Arena* arena) {           \
+  inline void MapTypeHandler<WireFormatLite::TYPE_##FieldType, Type>::         \
+      InitializeMaybeByDefaultEnum(TypeOnMemory* value,                        \
+                                   int default_enum_value, Arena* arena) {     \
     *value = static_cast<TypeOnMemory>(default_enum_value);                    \
   }                                                                            \
   template <typename Type>                                                     \

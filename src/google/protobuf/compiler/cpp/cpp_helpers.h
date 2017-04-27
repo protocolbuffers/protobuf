@@ -277,6 +277,73 @@ inline ::google::protobuf::FileOptions_OptimizeMode GetOptimizeFor(
       : file->options().optimize_for();
 }
 
+bool HasWeakFields(const Descriptor* desc);
+bool HasWeakFields(const FileDescriptor* desc);
+
+// Returns true if the "required" restriction check should be ignored for the
+// given field.
+inline static bool ShouldIgnoreRequiredFieldCheck(const FieldDescriptor* field,
+                                                  const Options& options) {
+  return false;
+}
+
+struct SCC {
+  std::vector<const Descriptor*> descriptors;
+};
+
+struct MessageAnalysis {
+  bool is_recursive;
+  bool contains_cord;
+  bool contains_extension;
+  bool contains_required;
+};
+
+// This class is used in FileGenerator, to ensure linear instead of
+// quadratic performance, if we do this per message we would get O(V*(V+E)).
+// Logically this is just only used in message.cc, but in the header for
+// FileGenerator to help share it.
+class LIBPROTOC_EXPORT SCCAnalyzer {
+ public:
+  explicit SCCAnalyzer(const Options& options) : options_(options), index_(0) {}
+  ~SCCAnalyzer() {
+    for (int i = 0; i < garbage_bin_.size(); i++) delete garbage_bin_[i];
+  }
+
+  const SCC* GetSCC(const Descriptor* descriptor) {
+    if (cache_.count(descriptor)) return cache_[descriptor].scc;
+    return DFS(descriptor).scc;
+  }
+
+  MessageAnalysis GetSCCAnalysis(const SCC* scc);
+
+  bool HasRequiredFields(const Descriptor* descriptor) {
+    MessageAnalysis result = GetSCCAnalysis(GetSCC(descriptor));
+    return result.contains_required || result.contains_extension;
+  }
+
+ private:
+  struct NodeData {
+    const SCC* scc;  // if null it means its still on the stack
+    int index;
+    int lowlink;
+  };
+
+  Options options_;
+  std::map<const Descriptor*, NodeData> cache_;
+  std::map<const SCC*, MessageAnalysis> analysis_cache_;
+  std::vector<const Descriptor*> stack_;
+  int index_;
+  std::vector<SCC*> garbage_bin_;
+
+  SCC* CreateSCC() {
+    garbage_bin_.push_back(new SCC());
+    return garbage_bin_.back();
+  }
+
+  // Tarjan's Strongly Connected Components algo
+  NodeData DFS(const Descriptor* descriptor);
+};
+
 }  // namespace cpp
 }  // namespace compiler
 }  // namespace protobuf

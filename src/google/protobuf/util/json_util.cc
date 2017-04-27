@@ -84,7 +84,7 @@ util::Status BinaryToJsonStream(TypeResolver* resolver,
   converter::ProtoStreamObjectSource proto_source(&in_stream, resolver, type);
   proto_source.set_use_ints_for_enums(options.always_print_enums_as_ints);
   proto_source.set_preserve_proto_field_names(
-          options.preserve_proto_field_names);
+      options.preserve_proto_field_names);
   io::CodedOutputStream out_stream(json_output);
   converter::JsonObjectWriter json_writer(options.add_whitespace ? " " : "",
                                           &out_stream);
@@ -92,7 +92,7 @@ util::Status BinaryToJsonStream(TypeResolver* resolver,
     converter::DefaultValueObjectWriter default_value_writer(
         resolver, type, &json_writer);
     default_value_writer.set_preserve_proto_field_names(
-            options.preserve_proto_field_names);
+        options.preserve_proto_field_names);
     return proto_source.WriteTo(&default_value_writer);
   } else {
     return proto_source.WriteTo(&json_writer);
@@ -113,7 +113,7 @@ util::Status BinaryToJsonString(TypeResolver* resolver,
 namespace {
 class StatusErrorListener : public converter::ErrorListener {
  public:
-  StatusErrorListener() : status_(util::Status::OK) {}
+  StatusErrorListener() {}
   virtual ~StatusErrorListener() {}
 
   util::Status GetStatus() { return status_; }

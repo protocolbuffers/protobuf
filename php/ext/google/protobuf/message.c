@@ -53,40 +53,64 @@ static  zend_function_entry message_methods[] = {
 
 // Forward declare static functions.
 
+#if PHP_MAJOR_VERSION < 7
 static void message_set_property(zval* object, zval* member, zval* value,
-                                 const zend_literal* key TSRMLS_DC);
+                                 php_proto_zend_literal key TSRMLS_DC);
 static zval* message_get_property(zval* object, zval* member, int type,
                                   const zend_literal* key TSRMLS_DC);
 static zval** message_get_property_ptr_ptr(zval* object, zval* member, int type,
-                                           const zend_literal* key TSRMLS_DC);
-static HashTable* message_get_properties(zval* object TSRMLS_DC);
+                                           php_proto_zend_literal key TSRMLS_DC);
 static HashTable* message_get_gc(zval* object, zval*** table, int* n TSRMLS_DC);
-
-static zend_object_value message_create(zend_class_entry* ce TSRMLS_DC);
-static void message_free(void* object TSRMLS_DC);
+#else
+static void message_set_property(zval* object, zval* member, zval* value,
+                                 void** cache_slot);
+static zval* message_get_property(zval* object, zval* member, int type,
+                                  void** cache_slot, zval* rv);
+static zval* message_get_property_ptr_ptr(zval* object, zval* member, int type,
+                                          void** cache_slot);
+static HashTable* message_get_gc(zval* object, zval** table, int* n);
+#endif
+static HashTable* message_get_properties(zval* object TSRMLS_DC);
 
 // -----------------------------------------------------------------------------
 // PHP Message Handlers
 // -----------------------------------------------------------------------------
 
-void message_init(TSRMLS_D) {
-  zend_class_entry class_type;
-  INIT_CLASS_ENTRY(class_type, "Google\\Protobuf\\Internal\\Message",
-                   message_methods);
-  message_type = zend_register_internal_class(&class_type TSRMLS_CC);
+// Define object free method.
+PHP_PROTO_OBJECT_FREE_START(MessageHeader, message)
+  FREE(intern->data);
+PHP_PROTO_OBJECT_FREE_END
 
-  message_handlers = PEMALLOC(zend_object_handlers);
-  memcpy(message_handlers, zend_get_std_object_handlers(),
-         sizeof(zend_object_handlers));
+PHP_PROTO_OBJECT_DTOR_START(MessageHeader, message)
+PHP_PROTO_OBJECT_DTOR_END
+
+// Define object create method.
+PHP_PROTO_OBJECT_CREATE_START(MessageHeader, message)
+// Because php call this create func before calling the sub-message's
+// constructor defined in PHP, it's possible that the decriptor of this class
+// hasn't been added to descritpor pool (when the class is first
+// instantiated). In that case, we will defer the initialization of the custom
+// data to the parent Message's constructor, which will be called by
+// sub-message's constructors after the descriptor has been added.
+PHP_PROTO_OBJECT_CREATE_END(MessageHeader, message)
+
+// Init class entry.
+PHP_PROTO_INIT_CLASS_START("Google\\Protobuf\\Internal\\Message",
+                           MessageHeader, message)
   message_handlers->write_property = message_set_property;
   message_handlers->read_property = message_get_property;
   message_handlers->get_property_ptr_ptr = message_get_property_ptr_ptr;
   message_handlers->get_properties = message_get_properties;
   message_handlers->get_gc = message_get_gc;
-}
+PHP_PROTO_INIT_CLASS_END
 
+#if PHP_MAJOR_VERSION < 7
 static void message_set_property(zval* object, zval* member, zval* value,
-                                 const zend_literal* key TSRMLS_DC) {
+                                 php_proto_zend_literal key TSRMLS_DC) {
+#else
+static void message_set_property(zval* object, zval* member, zval* value,
+                                 void** cache_slot) {
+#endif
   if (Z_TYPE_P(member) != IS_STRING) {
     zend_error(E_USER_ERROR, "Unexpected type for field name");
     return;
@@ -100,7 +124,7 @@ static void message_set_property(zval* object, zval* member, zval* value,
 
   const upb_fielddef* field;
 
-  MessageHeader* self = zend_object_store_get_object(object TSRMLS_CC);
+  MessageHeader* self = UNBOX(MessageHeader, object);
 
   field = upb_msgdef_ntofz(self->descriptor->msgdef, Z_STRVAL_P(member));
   if (field == NULL) {
@@ -110,46 +134,55 @@ static void message_set_property(zval* object, zval* member, zval* value,
   layout_set(self->descriptor->layout, self, field, value TSRMLS_CC);
 }
 
+#if PHP_MAJOR_VERSION < 7
 static zval* message_get_property(zval* object, zval* member, int type,
                                   const zend_literal* key TSRMLS_DC) {
+#else
+static zval* message_get_property(zval* object, zval* member, int type,
+                                  void** cache_slot, zval* rv) {
+#endif
   if (Z_TYPE_P(member) != IS_STRING) {
     zend_error(E_USER_ERROR, "Property name has to be a string.");
-    return EG(uninitialized_zval_ptr);
+    return PHP_PROTO_GLOBAL_UNINITIALIZED_ZVAL;
   }
 
   if (Z_OBJCE_P(object) != EG(scope)) {
     // User cannot get property directly (e.g., $a = $m->a)
     zend_error(E_USER_ERROR, "Cannot access private property.");
-    return EG(uninitialized_zval_ptr);
+    return PHP_PROTO_GLOBAL_UNINITIALIZED_ZVAL;
   }
 
-  zend_property_info* property_info = NULL;
-
-  // All properties should have been declared in the generated code and have
-  // corresponding zvals in properties_table.
-  ulong h = zend_get_hash_value(Z_STRVAL_P(member), Z_STRLEN_P(member) + 1);
-  if (zend_hash_quick_find(&Z_OBJCE_P(object)->properties_info,
-                           Z_STRVAL_P(member), Z_STRLEN_P(member) + 1, h,
-                           (void**)&property_info) != SUCCESS) {
-    zend_error(E_USER_ERROR, "Property does not exist.");
-    return EG(uninitialized_zval_ptr);
-  }
-
-  MessageHeader* self =
-      (MessageHeader*)zend_object_store_get_object(object TSRMLS_CC);
-
+  MessageHeader* self = UNBOX(MessageHeader, object);
   const upb_fielddef* field;
   field = upb_msgdef_ntofz(self->descriptor->msgdef, Z_STRVAL_P(member));
   if (field == NULL) {
-    return EG(uninitialized_zval_ptr);
+    return PHP_PROTO_GLOBAL_UNINITIALIZED_ZVAL;
   }
+
+  zend_property_info* property_info;
+#if PHP_MAJOR_VERSION < 7
+  property_info =
+      zend_get_property_info(Z_OBJCE_P(object), member, true TSRMLS_CC);
   return layout_get(
       self->descriptor->layout, message_data(self), field,
       &Z_OBJ_P(object)->properties_table[property_info->offset] TSRMLS_CC);
+#else
+  property_info =
+      zend_get_property_info(Z_OBJCE_P(object), Z_STR_P(member), true);
+  return layout_get(
+      self->descriptor->layout, message_data(self), field,
+      OBJ_PROP(Z_OBJ_P(object), property_info->offset) TSRMLS_CC);
+#endif
 }
 
+#if PHP_MAJOR_VERSION < 7
 static zval** message_get_property_ptr_ptr(zval* object, zval* member, int type,
-                                           const zend_literal* key TSRMLS_DC) {
+                                           php_proto_zend_literal key
+                                               TSRMLS_DC) {
+#else
+static zval* message_get_property_ptr_ptr(zval* object, zval* member, int type,
+                                          void** cache_slot) {
+#endif
   return NULL;
 }
 
@@ -157,68 +190,37 @@ static HashTable* message_get_properties(zval* object TSRMLS_DC) {
   return NULL;
 }
 
-static HashTable* message_get_gc(zval* object, zval*** table, int* n TSRMLS_DC) {
-    zend_object* zobj = Z_OBJ_P(object);
-    *table = zobj->properties_table;
-    *n = zobj->ce->default_properties_count;
-    return NULL;
+static HashTable* message_get_gc(zval* object, CACHED_VALUE** table,
+                                 int* n TSRMLS_DC) {
+  zend_object* zobj = Z_OBJ_P(object);
+  *table = zobj->properties_table;
+  *n = zobj->ce->default_properties_count;
+  return NULL;
 }
 
 // -----------------------------------------------------------------------------
 // C Message Utilities
 // -----------------------------------------------------------------------------
 
-void* message_data(void* msg) {
-  return ((uint8_t*)msg) + sizeof(MessageHeader);
+void* message_data(MessageHeader* msg) {
+  return msg->data;
 }
 
-static void message_free(void* object TSRMLS_DC) {
-  MessageHeader* msg = (MessageHeader*)object;
-  int i;
-
-  for (i = 0; i < msg->std.ce->default_properties_count; i++) {
-    zval_ptr_dtor(&msg->std.properties_table[i]);
-  }
-  efree(msg->std.properties_table);
-  efree(msg);
-}
-
-static zend_object_value message_create(zend_class_entry* ce TSRMLS_DC) {
-  zend_object_value return_value;
-
-  zval* php_descriptor = get_ce_obj(ce);
-
-  Descriptor* desc = zend_object_store_get_object(php_descriptor TSRMLS_CC);
-  MessageHeader* msg = (MessageHeader*)ALLOC_N(
-      uint8_t, sizeof(MessageHeader) + desc->layout->size);
-  memset(message_data(msg), 0, desc->layout->size);
-
+void custom_data_init(const zend_class_entry* ce,
+                      MessageHeader* intern PHP_PROTO_TSRMLS_DC) {
+  Descriptor* desc = UNBOX_HASHTABLE_VALUE(Descriptor, get_ce_obj(ce));
+  intern->data = ALLOC_N(uint8_t, desc->layout->size);
+  memset(message_data(intern), 0, desc->layout->size);
   // We wrap first so that everything in the message object is GC-rooted in
   // case a collection happens during object creation in layout_init().
-  msg->descriptor = desc;
-
-  zend_object_std_init(&msg->std, ce TSRMLS_CC);
-  object_properties_init(&msg->std, ce);
-  layout_init(desc->layout, message_data(msg),
-              msg->std.properties_table TSRMLS_CC);
-
-  return_value.handle = zend_objects_store_put(
-      msg, (zend_objects_store_dtor_t)zend_objects_destroy_object, message_free,
-      NULL TSRMLS_CC);
-
-  return_value.handlers = message_handlers;
-  return return_value;
+  intern->descriptor = desc;
+  layout_init(desc->layout, message_data(intern),
+              intern->std.properties_table PHP_PROTO_TSRMLS_CC);
 }
 
-void message_create_with_type(zend_class_entry* ce, zval** message TSRMLS_DC) {
-  MAKE_STD_ZVAL(*message);
-  Z_TYPE_PP(message) = IS_OBJECT;
-  Z_OBJVAL_PP(message) = ce->create_object(ce TSRMLS_CC);
-  Z_DELREF_PP(message);
-}
-
-void build_class_from_descriptor(zval* php_descriptor TSRMLS_DC) {
-  Descriptor* desc = UNBOX(Descriptor, php_descriptor);
+void build_class_from_descriptor(
+    PHP_PROTO_HASHTABLE_VALUE php_descriptor TSRMLS_DC) {
+  Descriptor* desc = UNBOX_HASHTABLE_VALUE(Descriptor, php_descriptor);
 
   // Map entries don't have existing php class.
   if (upb_msgdef_mapentry(desc->msgdef)) {
@@ -243,26 +245,18 @@ void build_class_from_descriptor(zval* php_descriptor TSRMLS_DC) {
 // modified. As a result, the first created instance will be a normal zend
 // object. Here, we manually modify it to our message in such a case.
 PHP_METHOD(Message, __construct) {
-  if (Z_OBJVAL_P(getThis()).handlers != message_handlers) {
-    zend_class_entry* ce = Z_OBJCE_P(getThis());
-    zval_dtor(getThis());
-    Z_OBJVAL_P(getThis()) = message_create(ce TSRMLS_CC);
+  zend_class_entry* ce = Z_OBJCE_P(getThis());
+  if (EXPECTED(class_added(ce))) {
+    MessageHeader* intern = UNBOX(MessageHeader, getThis());
+    custom_data_init(ce, intern PHP_PROTO_TSRMLS_CC);
   }
 }
 
 PHP_METHOD(Message, clear) {
-  MessageHeader* msg =
-      (MessageHeader*)zend_object_store_get_object(getThis() TSRMLS_CC);
+  MessageHeader* msg = UNBOX(MessageHeader, getThis());
   Descriptor* desc = msg->descriptor;
   zend_class_entry* ce = desc->klass;
-  int i;
 
-  for (i = 0; i < msg->std.ce->default_properties_count; i++) {
-    zval_ptr_dtor(&msg->std.properties_table[i]);
-  }
-  efree(msg->std.properties_table);
-
-  zend_object_std_init(&msg->std, ce TSRMLS_CC);
   object_properties_init(&msg->std, ce);
   layout_init(desc->layout, message_data(msg),
               msg->std.properties_table TSRMLS_CC);
@@ -275,10 +269,8 @@ PHP_METHOD(Message, mergeFrom) {
     return;
   }
 
-  MessageHeader* from =
-      (MessageHeader*)zend_object_store_get_object(value TSRMLS_CC);
-  MessageHeader* to =
-      (MessageHeader*)zend_object_store_get_object(getThis() TSRMLS_CC);
+  MessageHeader* from = UNBOX(MessageHeader, value);
+  MessageHeader* to = UNBOX(MessageHeader, getThis());
 
   if(from->descriptor != to->descriptor) {
     zend_error(E_USER_ERROR, "Cannot merge messages with different class.");
@@ -289,36 +281,37 @@ PHP_METHOD(Message, mergeFrom) {
 }
 
 PHP_METHOD(Message, readOneof) {
-  long index;
+  PHP_PROTO_LONG index;
 
   if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "l", &index) ==
       FAILURE) {
     return;
   }
 
-  MessageHeader* msg =
-      (MessageHeader*)zend_object_store_get_object(getThis() TSRMLS_CC);
+  MessageHeader* msg = UNBOX(MessageHeader, getThis());
 
   const upb_fielddef* field = upb_msgdef_itof(msg->descriptor->msgdef, index);
 
   int property_cache_index =
       msg->descriptor->layout->fields[upb_fielddef_index(field)].cache_index;
-  zval** cache_ptr = &(msg->std.properties_table)[property_cache_index];
+  zval* property_ptr = OBJ_PROP(Z_OBJ_P(getThis()), property_cache_index);
 
+  // Unlike singular fields, oneof fields share cached property. So we cannot
+  // let lay_get modify the cached property. Instead, we pass in the return
+  // value directly.
   layout_get(msg->descriptor->layout, message_data(msg), field,
-             &return_value TSRMLS_CC);
+             ZVAL_PTR_TO_CACHED_PTR(return_value) TSRMLS_CC);
 }
 
 PHP_METHOD(Message, writeOneof) {
-  long index;
+  PHP_PROTO_LONG index;
   zval* value;
   if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "lz", &index, &value) ==
       FAILURE) {
     return;
   }
 
-  MessageHeader* msg =
-      (MessageHeader*)zend_object_store_get_object(getThis() TSRMLS_CC);
+  MessageHeader* msg = UNBOX(MessageHeader, getThis());
 
   const upb_fielddef* field = upb_msgdef_itof(msg->descriptor->msgdef, index);
 
@@ -327,19 +320,18 @@ PHP_METHOD(Message, writeOneof) {
 
 PHP_METHOD(Message, whichOneof) {
   char* oneof_name;
-  int length;
+  PHP_PROTO_SIZE length;
 
   if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &oneof_name,
                             &length) == FAILURE) {
     return;
   }
 
-  MessageHeader* msg =
-      (MessageHeader*)zend_object_store_get_object(getThis() TSRMLS_CC);
+  MessageHeader* msg = UNBOX(MessageHeader, getThis());
 
   const upb_oneofdef* oneof =
       upb_msgdef_ntoo(msg->descriptor->msgdef, oneof_name, length);
   const char* oneof_case_name = layout_get_oneof_case(
       msg->descriptor->layout, message_data(msg), oneof TSRMLS_CC);
-  RETURN_STRING(oneof_case_name, 1);
+  PHP_PROTO_RETURN_STRING(oneof_case_name, 1);
 }

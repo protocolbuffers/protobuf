@@ -33,13 +33,8 @@
 
 #include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
+#include <gtest/gtest.h>
 
-
-#define EXPECT_TRUE GOOGLE_CHECK
-#define ASSERT_TRUE GOOGLE_CHECK
-#define EXPECT_FALSE(COND) GOOGLE_CHECK(!(COND))
-#define EXPECT_EQ GOOGLE_CHECK_EQ
-#define ASSERT_EQ GOOGLE_CHECK_EQ
 
 namespace google {
 namespace protobuf_unittest {}  // forward declaration
@@ -265,23 +260,23 @@ void MapTestUtilImpl::ExpectClear(const MapMessage& message) {
 template <typename EnumType, EnumType enum_value0,
           EnumType enum_value1, typename MapMessage>
 void MapTestUtilImpl::ExpectMapFieldsSet(const MapMessage& message) {
-  EXPECT_EQ(2, message.map_int32_int32().size());
-  EXPECT_EQ(2, message.map_int64_int64().size());
-  EXPECT_EQ(2, message.map_uint32_uint32().size());
-  EXPECT_EQ(2, message.map_uint64_uint64().size());
-  EXPECT_EQ(2, message.map_sint32_sint32().size());
-  EXPECT_EQ(2, message.map_sint64_sint64().size());
-  EXPECT_EQ(2, message.map_fixed32_fixed32().size());
-  EXPECT_EQ(2, message.map_fixed64_fixed64().size());
-  EXPECT_EQ(2, message.map_sfixed32_sfixed32().size());
-  EXPECT_EQ(2, message.map_sfixed64_sfixed64().size());
-  EXPECT_EQ(2, message.map_int32_float().size());
-  EXPECT_EQ(2, message.map_int32_double().size());
-  EXPECT_EQ(2, message.map_bool_bool().size());
-  EXPECT_EQ(2, message.map_string_string().size());
-  EXPECT_EQ(2, message.map_int32_bytes().size());
-  EXPECT_EQ(2, message.map_int32_enum().size());
-  EXPECT_EQ(2, message.map_int32_foreign_message().size());
+  ASSERT_EQ(2, message.map_int32_int32().size());
+  ASSERT_EQ(2, message.map_int64_int64().size());
+  ASSERT_EQ(2, message.map_uint32_uint32().size());
+  ASSERT_EQ(2, message.map_uint64_uint64().size());
+  ASSERT_EQ(2, message.map_sint32_sint32().size());
+  ASSERT_EQ(2, message.map_sint64_sint64().size());
+  ASSERT_EQ(2, message.map_fixed32_fixed32().size());
+  ASSERT_EQ(2, message.map_fixed64_fixed64().size());
+  ASSERT_EQ(2, message.map_sfixed32_sfixed32().size());
+  ASSERT_EQ(2, message.map_sfixed64_sfixed64().size());
+  ASSERT_EQ(2, message.map_int32_float().size());
+  ASSERT_EQ(2, message.map_int32_double().size());
+  ASSERT_EQ(2, message.map_bool_bool().size());
+  ASSERT_EQ(2, message.map_string_string().size());
+  ASSERT_EQ(2, message.map_int32_bytes().size());
+  ASSERT_EQ(2, message.map_int32_enum().size());
+  ASSERT_EQ(2, message.map_int32_foreign_message().size());
 
   EXPECT_EQ(0, message.map_int32_int32().at(0));
   EXPECT_EQ(0, message.map_int64_int64().at(0));

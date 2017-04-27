@@ -31,9 +31,9 @@
 package com.google.protobuf;
 
 import com.google.protobuf.AbstractMessageLite.Builder.LimitedInputStream;
-
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.ByteBuffer;
 
 /**
  * A partial implementation of the {@link Parser} interface which implements
@@ -127,6 +127,30 @@ public abstract class AbstractParser<MessageType extends MessageLite>
 
   @Override
   public MessageType parseFrom(ByteString data) throws InvalidProtocolBufferException {
+    return parseFrom(data, EMPTY_REGISTRY);
+  }
+
+  @Override
+  public MessageType parseFrom(ByteBuffer data, ExtensionRegistryLite extensionRegistry)
+      throws InvalidProtocolBufferException {
+    MessageType message;
+    try {
+      CodedInputStream input = CodedInputStream.newInstance(data);
+      message = parsePartialFrom(input, extensionRegistry);
+      try {
+        input.checkLastTagWas(0);
+      } catch (InvalidProtocolBufferException e) {
+        throw e.setUnfinishedMessage(message);
+      }
+    } catch (InvalidProtocolBufferException e) {
+      throw e;
+    }
+
+    return checkMessageInitialized(message);
+  }
+
+  @Override
+  public MessageType parseFrom(ByteBuffer data) throws InvalidProtocolBufferException {
     return parseFrom(data, EMPTY_REGISTRY);
   }
 

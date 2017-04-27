@@ -201,6 +201,7 @@ class ConformanceTestSuite {
                                       const std::string& test_name,
                                       ConformanceLevel level);
   void TestPrematureEOFForType(google::protobuf::FieldDescriptor::Type type);
+  void TestIllegalTags();
   void TestValidDataForType(
       google::protobuf::FieldDescriptor::Type,
       std::vector<std::pair<std::string, std::string>> values);

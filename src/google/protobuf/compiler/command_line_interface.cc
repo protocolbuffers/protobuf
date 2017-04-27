@@ -817,10 +817,10 @@ int CommandLineInterface::Run(int argc, const char* const argv[]) {
             direct_dependencies_.end()) {
           indirect_imports = true;
           std::cerr << parsed_file->name() << ": "
-               << StringReplace(direct_dependencies_violation_msg_, "%s",
-                                parsed_file->dependency(i)->name(),
-                                true /* replace_all */)
-               << std::endl;
+                    << StringReplace(direct_dependencies_violation_msg_, "%s",
+                                     parsed_file->dependency(i)->name(),
+                                     true /* replace_all */)
+                    << std::endl;
         }
       }
       if (indirect_imports) {
@@ -1038,7 +1038,7 @@ CommandLineInterface::ParseArguments(int argc, const char* const argv[]) {
 
   // Make sure each plugin option has a matching plugin output.
   bool foundUnknownPluginOption = false;
-  for (map<string, string>::const_iterator i = plugin_parameters_.begin();
+  for (std::map<string, string>::const_iterator i = plugin_parameters_.begin();
        i != plugin_parameters_.end(); ++i) {
     if (plugins_.find(i->first) != plugins_.end()) {
       continue;
@@ -1221,7 +1221,8 @@ CommandLineInterface::InterpretArgument(const string& name,
       if (access(disk_path.c_str(), F_OK) < 0) {
         // Try the original path; it may have just happed to have a '=' in it.
         if (access(parts[i].c_str(), F_OK) < 0) {
-          std::cerr << disk_path << ": warning: directory does not exist." << std::endl;
+          std::cerr << disk_path << ": warning: directory does not exist."
+                    << std::endl;
         } else {
           virtual_path = "";
           disk_path = parts[i];
@@ -1391,6 +1392,7 @@ CommandLineInterface::InterpretArgument(const string& name,
     }
     mode_ = MODE_PRINT;
     print_mode_ = PRINT_FREE_FIELDS;
+  } else if (name == "--profile_path") {
   } else {
     // Some other flag.  Look it up in the generators list.
     const GeneratorInfo* generator_info =
@@ -1790,30 +1792,33 @@ bool CommandLineInterface::EncodeOrDecode(const DescriptorPool* pool) {
 }
 
 bool CommandLineInterface::WriteDescriptorSet(
-    const std::vector<const FileDescriptor*> parsed_files) {
+    const std::vector<const FileDescriptor*>& parsed_files) {
   FileDescriptorSet file_set;
 
-  if (imports_in_descriptor_set_) {
-    std::set<const FileDescriptor*> already_seen;
+  std::set<const FileDescriptor*> already_seen;
+  if (!imports_in_descriptor_set_) {
+    // Since we don't want to output transitive dependencies, but we do want
+    // things to be in dependency order, add all dependencies that aren't in
+    // parsed_files to already_seen.  This will short circuit the recursion
+    // in GetTransitiveDependencies.
+    std::set<const FileDescriptor*> to_output;
+    to_output.insert(parsed_files.begin(), parsed_files.end());
     for (int i = 0; i < parsed_files.size(); i++) {
-      GetTransitiveDependencies(parsed_files[i],
-                                true,  // Include json_name
-                                source_info_in_descriptor_set_,
-                                &already_seen, file_set.mutable_file());
-    }
-  } else {
-    std::set<const FileDescriptor*> already_seen;
-    for (int i = 0; i < parsed_files.size(); i++) {
-      if (!already_seen.insert(parsed_files[i]).second) {
-        continue;
-      }
-      FileDescriptorProto* file_proto = file_set.add_file();
-      parsed_files[i]->CopyTo(file_proto);
-      parsed_files[i]->CopyJsonNameTo(file_proto);
-      if (source_info_in_descriptor_set_) {
-        parsed_files[i]->CopySourceCodeInfoTo(file_proto);
+      const FileDescriptor* file = parsed_files[i];
+      for (int i = 0; i < file->dependency_count(); i++) {
+        const FileDescriptor* dependency = file->dependency(i);
+        // if the dependency isn't in parsed files, mark it as already seen
+        if (to_output.find(dependency) == to_output.end()) {
+          already_seen.insert(dependency);
+        }
       }
     }
+  }
+  for (int i = 0; i < parsed_files.size(); i++) {
+    GetTransitiveDependencies(parsed_files[i],
+                              true,  // Include json_name
+                              source_info_in_descriptor_set_,
+                              &already_seen, file_set.mutable_file());
   }
 
   int fd;

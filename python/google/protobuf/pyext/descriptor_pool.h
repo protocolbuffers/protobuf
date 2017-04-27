@@ -85,6 +85,7 @@ extern PyTypeObject PyDescriptorPool_Type;
 
 namespace cdescriptor_pool {
 
+
 // Looks up a message by name.
 // Returns a message Descriptor, or NULL if not found.
 const Descriptor* FindMessageTypeByName(PyDescriptorPool* self,
