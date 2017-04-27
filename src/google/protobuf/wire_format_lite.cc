@@ -378,7 +378,7 @@ static void WriteArray(const CType* a, int n, io::CodedOutputStream* output) {
   const int kAtATime = 128;
   uint8 buf[sizeof(CType) * kAtATime];
   for (int i = 0; i < n; i += kAtATime) {
-    int to_do = min(kAtATime, n - i);
+    int to_do = std::min(kAtATime, n - i);
     uint8* ptr = buf;
     for (int j = 0; j < to_do; j++) {
       EncodeFixedSizeValue(a[i+j], ptr);
