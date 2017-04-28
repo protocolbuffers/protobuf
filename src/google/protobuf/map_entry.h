@@ -248,8 +248,8 @@ class MapEntry : public MapEntryBase {
         entry,
         offsets_,
         has_bits_,
-        GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(MapEntry, entry_lite_._has_bits_),
-        GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(MapEntry, _internal_metadata_),
+        static_cast<int>(GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(MapEntry, entry_lite_._has_bits_)),
+        static_cast<int>(GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(MapEntry, _internal_metadata_)),
         -1,
         -1,
         sizeof(MapEntry)};
