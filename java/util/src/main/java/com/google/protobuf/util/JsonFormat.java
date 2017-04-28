@@ -102,7 +102,7 @@ public class JsonFormat {
    * Creates a {@link Printer} with default configurations.
    */
   public static Printer printer() {
-    return new Printer(TypeRegistry.getEmptyTypeRegistry(), false, false, false);
+    return new Printer(TypeRegistry.getEmptyTypeRegistry(), false, false, false, false);
   }
 
   /**
@@ -112,16 +112,19 @@ public class JsonFormat {
     private final TypeRegistry registry;
     private final boolean includingDefaultValueFields;
     private final boolean preservingProtoFieldNames;
+    private final boolean lossy64BitNumberRepresentations;
     private final boolean omittingInsignificantWhitespace;
 
     private Printer(
         TypeRegistry registry,
         boolean includingDefaultValueFields,
         boolean preservingProtoFieldNames,
+        boolean lossy64BitNumberRepresentations,
         boolean omittingInsignificantWhitespace) {
       this.registry = registry;
       this.includingDefaultValueFields = includingDefaultValueFields;
       this.preservingProtoFieldNames = preservingProtoFieldNames;
+      this.lossy64BitNumberRepresentations = lossy64BitNumberRepresentations;
       this.omittingInsignificantWhitespace = omittingInsignificantWhitespace;
     }
 
@@ -139,6 +142,7 @@ public class JsonFormat {
           registry,
           includingDefaultValueFields,
           preservingProtoFieldNames,
+          lossy64BitNumberRepresentations,
           omittingInsignificantWhitespace);
     }
 
@@ -150,7 +154,8 @@ public class JsonFormat {
      */
     public Printer includingDefaultValueFields() {
       return new Printer(
-          registry, true, preservingProtoFieldNames, omittingInsignificantWhitespace);
+          registry, true, preservingProtoFieldNames, lossy64BitNumberRepresentations,
+          omittingInsignificantWhitespace);
     }
 
     /**
@@ -161,7 +166,7 @@ public class JsonFormat {
      */
     public Printer preservingProtoFieldNames() {
       return new Printer(
-          registry, includingDefaultValueFields, true, omittingInsignificantWhitespace);
+          registry, includingDefaultValueFields, true, lossy64BitNumberRepresentations, omittingInsignificantWhitespace);
     }
 
 
@@ -181,7 +186,24 @@ public class JsonFormat {
      * current {@link Printer}.
      */
     public Printer omittingInsignificantWhitespace() {
-      return new Printer(registry, includingDefaultValueFields, preservingProtoFieldNames, true);
+      return new Printer(registry, includingDefaultValueFields, preservingProtoFieldNames, lossy64BitNumberRepresentations, true);
+    }
+
+    /**
+     * Create a new  {@link Printer} that will force represent 64-numbers as numbers in JSON,
+     * despite the possible of loss of precision.
+     * <pre>
+     * ws = *(
+     * %x20 /              ; Space
+     * %x09 /              ; Horizontal tab
+     * %x0A /              ; Line feed or New line
+     * %x0D )              ; Carriage return
+     * </pre>
+     * See <a href="https://tools.ietf.org/html/rfc7159">https://tools.ietf.org/html/rfc7159</a>
+     * current {@link Printer}.
+     */
+    public Printer withLossy64BitNumberRepresentations() {
+      return new Printer(registry, includingDefaultValueFields, preservingProtoFieldNames, true, omittingInsignificantWhitespace);
     }
 
     /**
@@ -198,6 +220,7 @@ public class JsonFormat {
               registry,
               includingDefaultValueFields,
               preservingProtoFieldNames,
+              lossy64BitNumberRepresentations,
               output,
               omittingInsignificantWhitespace)
           .print(message);
@@ -514,6 +537,7 @@ public class JsonFormat {
     private final TypeRegistry registry;
     private final boolean includingDefaultValueFields;
     private final boolean preservingProtoFieldNames;
+    private final boolean lossy64BitNumberRepresentations;
     private final TextGenerator generator;
     // We use Gson to help handle string escapes.
     private final Gson gson;
@@ -528,11 +552,13 @@ public class JsonFormat {
         TypeRegistry registry,
         boolean includingDefaultValueFields,
         boolean preservingProtoFieldNames,
+        boolean lossy64BitNumberRepresentations,
         Appendable jsonOutput,
         boolean omittingInsignificantWhitespace) {
       this.registry = registry;
       this.includingDefaultValueFields = includingDefaultValueFields;
       this.preservingProtoFieldNames = preservingProtoFieldNames;
+      this.lossy64BitNumberRepresentations = lossy64BitNumberRepresentations;
       this.gson = GsonHolder.DEFAULT_GSON;
       // json format related properties, determined by printerType
       if (omittingInsignificantWhitespace) {
@@ -911,7 +937,13 @@ public class JsonFormat {
         case INT64:
         case SINT64:
         case SFIXED64:
-          generator.print("\"" + ((Long) value).toString() + "\"");
+          if (!lossy64BitNumberRepresentations) {
+            generator.print("\"");
+          }
+          generator.print(((Long) value).toString());
+          if (!lossy64BitNumberRepresentations) {
+            generator.print("\"");
+          }
           break;
 
         case BOOL:
