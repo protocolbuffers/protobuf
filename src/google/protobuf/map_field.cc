@@ -94,7 +94,7 @@ int MapFieldBase::SpaceUsedExcludingSelfNoLock() const {
 
 void MapFieldBase::InitMetadataOnce() const {
   GOOGLE_CHECK(entry_descriptor_ != NULL);
-  GOOGLE_CHECK(assign_descriptor_callback_ != NULL);
+  assert(assign_descriptor_callback_ != NULL);
   (*assign_descriptor_callback_)();
 }
 
