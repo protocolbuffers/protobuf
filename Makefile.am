@@ -417,26 +417,26 @@ objectivec_EXTRA_DIST=                                                       \
   objectivec/DevTools/pddm.py                                                \
   objectivec/DevTools/pddm_tests.py                                          \
   objectivec/generate_well_known_types.sh                                    \
-  objectivec/google/protobuf/Any.pbobjc.h                                    \
-  objectivec/google/protobuf/Any.pbobjc.m                                    \
-  objectivec/google/protobuf/Api.pbobjc.h                                    \
-  objectivec/google/protobuf/Api.pbobjc.m                                    \
-  objectivec/google/protobuf/Duration.pbobjc.h                               \
-  objectivec/google/protobuf/Duration.pbobjc.m                               \
-  objectivec/google/protobuf/Empty.pbobjc.h                                  \
-  objectivec/google/protobuf/Empty.pbobjc.m                                  \
-  objectivec/google/protobuf/FieldMask.pbobjc.h                              \
-  objectivec/google/protobuf/FieldMask.pbobjc.m                              \
-  objectivec/google/protobuf/SourceContext.pbobjc.h                          \
-  objectivec/google/protobuf/SourceContext.pbobjc.m                          \
-  objectivec/google/protobuf/Struct.pbobjc.h                                 \
-  objectivec/google/protobuf/Struct.pbobjc.m                                 \
-  objectivec/google/protobuf/Timestamp.pbobjc.h                              \
-  objectivec/google/protobuf/Timestamp.pbobjc.m                              \
-  objectivec/google/protobuf/Type.pbobjc.h                                   \
-  objectivec/google/protobuf/Type.pbobjc.m                                   \
-  objectivec/google/protobuf/Wrappers.pbobjc.h                               \
-  objectivec/google/protobuf/Wrappers.pbobjc.m                               \
+  objectivec/google/protobuf/GPBAny.pbobjc.h                                 \
+  objectivec/google/protobuf/GPBAny.pbobjc.m                                 \
+  objectivec/google/protobuf/GPBApi.pbobjc.h                                 \
+  objectivec/google/protobuf/GPBApi.pbobjc.m                                 \
+  objectivec/google/protobuf/GPBDuration.pbobjc.h                            \
+  objectivec/google/protobuf/GPBDuration.pbobjc.m                            \
+  objectivec/google/protobuf/GPBEmpty.pbobjc.h                               \
+  objectivec/google/protobuf/GPBEmpty.pbobjc.m                               \
+  objectivec/google/protobuf/GPBFieldMask.pbobjc.h                           \
+  objectivec/google/protobuf/GPBFieldMask.pbobjc.m                           \
+  objectivec/google/protobuf/GPBSourceContext.pbobjc.h                       \
+  objectivec/google/protobuf/GPBSourceContext.pbobjc.m                       \
+  objectivec/google/protobuf/GPBStruct.pbobjc.h                              \
+  objectivec/google/protobuf/GPBStruct.pbobjc.m                              \
+  objectivec/google/protobuf/GPBTimestamp.pbobjc.h                           \
+  objectivec/google/protobuf/GPBTimestamp.pbobjc.m                           \
+  objectivec/google/protobuf/GPBType.pbobjc.h                                \
+  objectivec/google/protobuf/GPBType.pbobjc.m                                \
+  objectivec/google/protobuf/GPBWrappers.pbobjc.h                            \
+  objectivec/google/protobuf/GPBWrappers.pbobjc.m                            \
   objectivec/GPBArray.h                                                      \
   objectivec/GPBArray.m                                                      \
   objectivec/GPBArray_PackagePrivate.h                                       \

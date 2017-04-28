@@ -37,14 +37,14 @@
 // The unittest_custom_options.proto extends the messages in descriptor.proto
 // so we build it in to test extending in general. The library doesn't provide
 // a descriptor as it doesn't use the classes/enums.
-#import "google/protobuf/Descriptor.pbobjc.h"
+#import "google/protobuf/GPBDescriptor.pbobjc.h"
 
 #import "google/protobuf/Unittest.pbobjc.h"
 #import "google/protobuf/UnittestCustomOptions.pbobjc.h"
 #import "google/protobuf/UnittestCycle.pbobjc.h"
-#import "google/protobuf/UnittestDeprecated.pbobjc.h"
-#import "google/protobuf/UnittestDeprecatedFile.pbobjc.h"
-#import "google/protobuf/UnittestDropUnknownFields.pbobjc.h"
+#import "google/protobuf/DepUnittestDeprecated.pbobjc.h"
+#import "google/protobuf/FileDepUnittestDeprecatedFile.pbobjc.h"
+#import "google/protobuf/DropUnknownsUnittestDropUnknownFields.pbobjc.h"
 #import "google/protobuf/UnittestEmbedOptimizeFor.pbobjc.h"
 #import "google/protobuf/UnittestEmpty.pbobjc.h"
 #import "google/protobuf/UnittestEnormousDescriptor.pbobjc.h"
@@ -58,6 +58,6 @@
 #import "google/protobuf/UnittestObjc.pbobjc.h"
 #import "google/protobuf/UnittestObjcStartup.pbobjc.h"
 #import "google/protobuf/UnittestOptimizeFor.pbobjc.h"
-#import "google/protobuf/UnittestPreserveUnknownEnum.pbobjc.h"
+#import "google/protobuf/UnknownEnumsUnittestPreserveUnknownEnum.pbobjc.h"
 #import "google/protobuf/UnittestRuntimeProto2.pbobjc.h"
 #import "google/protobuf/UnittestRuntimeProto3.pbobjc.h"

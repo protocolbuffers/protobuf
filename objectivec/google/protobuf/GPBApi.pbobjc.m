@@ -18,9 +18,9 @@
  #import <Protobuf/SourceContext.pbobjc.h>
  #import <Protobuf/Type.pbobjc.h>
 #else
- #import "google/protobuf/Api.pbobjc.h"
- #import "google/protobuf/SourceContext.pbobjc.h"
- #import "google/protobuf/Type.pbobjc.h"
+ #import "google/protobuf/GPBApi.pbobjc.h"
+ #import "google/protobuf/GPBSourceContext.pbobjc.h"
+ #import "google/protobuf/GPBType.pbobjc.h"
 #endif
 // @@protoc_insertion_point(imports)
 
