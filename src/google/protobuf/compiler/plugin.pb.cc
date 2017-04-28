@@ -371,12 +371,12 @@ void Version::SerializeWithCachedSizes(
   // @@protoc_insertion_point(serialize_start:google.protobuf.compiler.Version)
   // optional int32 major = 1;
   if (has_major()) {
-    ::google::protobuf::internal::WireFormatLite::WriteInt32(1, this->major(), output);
+    ::google::protobuf::internal::WireFormatLite::WriteInt32(1, this->majorV(), output);
   }
 
   // optional int32 minor = 2;
   if (has_minor()) {
-    ::google::protobuf::internal::WireFormatLite::WriteInt32(2, this->minor(), output);
+    ::google::protobuf::internal::WireFormatLite::WriteInt32(2, this->minorV(), output);
   }
 
   // optional int32 patch = 3;
@@ -407,12 +407,12 @@ void Version::SerializeWithCachedSizes(
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.compiler.Version)
   // optional int32 major = 1;
   if (has_major()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(1, this->major(), target);
+    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(1, this->majorV(), target);
   }
 
   // optional int32 minor = 2;
   if (has_minor()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(2, this->minor(), target);
+    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(2, this->minorV(), target);
   }
 
   // optional int32 patch = 3;
@@ -460,14 +460,14 @@ size_t Version::ByteSizeLong() const {
     if (has_major()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::Int32Size(
-          this->major());
+          this->majorV());
     }
 
     // optional int32 minor = 2;
     if (has_minor()) {
       total_size += 1 +
         ::google::protobuf::internal::WireFormatLite::Int32Size(
-          this->minor());
+          this->minorV());
     }
 
     // optional int32 patch = 3;
@@ -510,10 +510,10 @@ void Version::MergeFrom(const Version& from) {
       suffix_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.suffix_);
     }
     if (from.has_major()) {
-      set_major(from.major());
+      set_major(from.majorV());
     }
     if (from.has_minor()) {
-      set_minor(from.minor());
+      set_minor(from.minorV());
     }
     if (from.has_patch()) {
       set_patch(from.patch());
