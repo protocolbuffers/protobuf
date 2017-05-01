@@ -37,18 +37,19 @@ protodir = $(includedir)
 # If you are adding new files here, also remember to change the build files for
 # all other languages, //protoc-artifacts/build-zip.sh and run
 # //update_file_list.sh for bazel.
-nobase_dist_proto_DATA = google/protobuf/descriptor.proto     \
-                         google/protobuf/any.proto            \
-                         google/protobuf/api.proto            \
-                         google/protobuf/duration.proto       \
-                         google/protobuf/empty.proto          \
-                         google/protobuf/field_mask.proto     \
-                         google/protobuf/source_context.proto \
-                         google/protobuf/struct.proto         \
-                         google/protobuf/timestamp.proto      \
-                         google/protobuf/type.proto           \
-                         google/protobuf/wrappers.proto       \
-                         google/protobuf/compiler/plugin.proto
+nobase_dist_proto_DATA = google/protobuf/descriptor.proto      \
+                         google/protobuf/any.proto             \
+                         google/protobuf/api.proto             \
+                         google/protobuf/duration.proto        \
+                         google/protobuf/empty.proto           \
+                         google/protobuf/field_mask.proto      \
+                         google/protobuf/source_context.proto  \
+                         google/protobuf/struct.proto          \
+                         google/protobuf/timestamp.proto       \
+                         google/protobuf/type.proto            \
+                         google/protobuf/wrappers.proto        \
+                         google/protobuf/compiler/plugin.proto \
+                         google/protobuf/compiler/profile.proto
 
 # Not sure why these don't get cleaned automatically.
 clean-local:
@@ -115,6 +116,7 @@ nobase_include_HEADERS =                                         \
   google/protobuf/generated_enum_reflection.h                    \
   google/protobuf/generated_enum_util.h                          \
   google/protobuf/generated_message_reflection.h                 \
+  google/protobuf/generated_message_table_driven.h               \
   google/protobuf/generated_message_util.h                       \
   google/protobuf/has_bits.h                                     \
   google/protobuf/map_entry.h                                    \
@@ -127,6 +129,7 @@ nobase_include_HEADERS =                                         \
   google/protobuf/message.h                                      \
   google/protobuf/message_lite.h                                 \
   google/protobuf/metadata.h                                     \
+  google/protobuf/metadata_lite.h                                \
   google/protobuf/reflection.h                                   \
   google/protobuf/reflection_ops.h                               \
   google/protobuf/repeated_field.h                               \
@@ -155,6 +158,7 @@ nobase_include_HEADERS =                                         \
   google/protobuf/compiler/parser.h                              \
   google/protobuf/compiler/plugin.h                              \
   google/protobuf/compiler/plugin.pb.h                           \
+  google/protobuf/compiler/profile.pb.h                          \
   google/protobuf/compiler/cpp/cpp_generator.h                   \
   google/protobuf/compiler/csharp/csharp_generator.h             \
   google/protobuf/compiler/csharp/csharp_names.h                 \
@@ -180,7 +184,7 @@ nobase_include_HEADERS =                                         \
 lib_LTLIBRARIES = libprotobuf-lite.la libprotobuf.la libprotoc.la
 
 libprotobuf_lite_la_LIBADD = $(PTHREAD_LIBS)
-libprotobuf_lite_la_LDFLAGS = -version-info 12:0:0 -export-dynamic -no-undefined
+libprotobuf_lite_la_LDFLAGS = -version-info 13:0:0 -export-dynamic -no-undefined
 if HAVE_LD_VERSION_SCRIPT
 libprotobuf_lite_la_LDFLAGS += -Wl,--version-script=$(srcdir)/libprotobuf-lite.map
 EXTRA_libprotobuf_lite_la_DEPENDENCIES = libprotobuf-lite.map
@@ -225,7 +229,7 @@ libprotobuf_lite_la_SOURCES =                                  \
   google/protobuf/io/zero_copy_stream_impl_lite.cc
 
 libprotobuf_la_LIBADD = $(PTHREAD_LIBS)
-libprotobuf_la_LDFLAGS = -version-info 12:0:0 -export-dynamic -no-undefined
+libprotobuf_la_LDFLAGS = -version-info 13:0:0 -export-dynamic -no-undefined
 if HAVE_LD_VERSION_SCRIPT
 libprotobuf_la_LDFLAGS += -Wl,--version-script=$(srcdir)/libprotobuf.map
 EXTRA_libprotobuf_la_DEPENDENCIES = libprotobuf.map
@@ -314,7 +318,7 @@ libprotobuf_la_SOURCES =                                       \
 nodist_libprotobuf_la_SOURCES = $(nodist_libprotobuf_lite_la_SOURCES)
 
 libprotoc_la_LIBADD = $(PTHREAD_LIBS) libprotobuf.la
-libprotoc_la_LDFLAGS = -version-info 12:0:0 -export-dynamic -no-undefined
+libprotoc_la_LDFLAGS = -version-info 13:0:0 -export-dynamic -no-undefined
 if HAVE_LD_VERSION_SCRIPT
 libprotoc_la_LDFLAGS += -Wl,--version-script=$(srcdir)/libprotoc.map
 EXTRA_libprotoc_la_DEPENDENCIES = libprotoc.map
@@ -324,6 +328,7 @@ libprotoc_la_SOURCES =                                         \
   google/protobuf/compiler/command_line_interface.cc           \
   google/protobuf/compiler/plugin.cc                           \
   google/protobuf/compiler/plugin.pb.cc                        \
+  google/protobuf/compiler/profile.pb.cc                       \
   google/protobuf/compiler/subprocess.cc                       \
   google/protobuf/compiler/subprocess.h                        \
   google/protobuf/compiler/zip_writer.cc                       \
@@ -535,6 +540,9 @@ protoc_inputs =                                                   \
   google/protobuf/unittest_import.proto                           \
   google/protobuf/unittest_import_public_lite.proto               \
   google/protobuf/unittest_import_public.proto                    \
+  google/protobuf/unittest_lazy_dependencies.proto                \
+  google/protobuf/unittest_lazy_dependencies_custom_option.proto  \
+  google/protobuf/unittest_lazy_dependencies_enum.proto           \
   google/protobuf/unittest_lite_imports_nonlite.proto             \
   google/protobuf/unittest_lite.proto                             \
   google/protobuf/unittest_mset.proto                             \
@@ -639,6 +647,12 @@ protoc_outputs =                                                  \
   google/protobuf/unittest_import.pb.h                            \
   google/protobuf/unittest_import_public.pb.cc                    \
   google/protobuf/unittest_import_public.pb.h                     \
+  google/protobuf/unittest_lazy_dependencies.pb.cc                \
+  google/protobuf/unittest_lazy_dependencies.pb.h                 \
+  google/protobuf/unittest_lazy_dependencies_custom_option.pb.cc  \
+  google/protobuf/unittest_lazy_dependencies_custom_option.pb.h   \
+  google/protobuf/unittest_lazy_dependencies_enum.pb.cc           \
+  google/protobuf/unittest_lazy_dependencies_enum.pb.h            \
   google/protobuf/unittest_lite_imports_nonlite.pb.cc             \
   google/protobuf/unittest_lite_imports_nonlite.pb.h              \
   google/protobuf/unittest_mset.pb.cc                             \
@@ -847,7 +861,12 @@ COMMON_LITE_TEST_SOURCES =                                             \
 # depend on gtest because our internal version of gtest depend on proto
 # full runtime and we want to make sure this test builds without full
 # runtime.
-protobuf_lite_test_LDADD = $(PTHREAD_LIBS) libprotobuf-lite.la
+protobuf_lite_test_LDADD = $(PTHREAD_LIBS) libprotobuf-lite.la \
+                           ../gmock/gtest/lib/libgtest.la      \
+                           ../gmock/lib/libgmock.la            \
+                           ../gmock/lib/libgmock_main.la
+protobuf_lite_test_CPPFLAGS= -I$(srcdir)/../gmock/include \
+                             -I$(srcdir)/../gmock/gtest/include
 protobuf_lite_test_CXXFLAGS = $(NO_OPT_CXXFLAGS)
 protobuf_lite_test_SOURCES =                                           \
   google/protobuf/lite_unittest.cc                                     \

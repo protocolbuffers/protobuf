@@ -136,7 +136,7 @@ jspb.Map.prototype.toArray = function() {
  *
  * @param {boolean=} includeInstance Whether to include the JSPB instance for
  *    transitional soy proto support: http://goto/soy-param-migration
- * @param {!function((boolean|undefined),!V):!Object=} valueToObject
+ * @param {!function((boolean|undefined),V):!Object=} valueToObject
  *    The static toObject() method, if V is a message type.
  * @return {!Array<!Array<!Object>>}
  */
@@ -146,7 +146,7 @@ jspb.Map.prototype.toObject = function(includeInstance, valueToObject) {
   for (var i = 0; i < rawArray.length; i++) {
     var entry = this.map_[rawArray[i][0].toString()];
     this.wrapEntry_(entry);
-    var valueWrapper = /** @type {!V|undefined} */ (entry.valueWrapper);
+    var valueWrapper = /** @type {V|undefined} */ (entry.valueWrapper);
     if (valueWrapper) {
       goog.asserts.assert(valueToObject);
       entries.push([entry.key, valueToObject(includeInstance, valueWrapper)]);
@@ -412,8 +412,8 @@ jspb.Map.prototype.has = function(key) {
  * @param {!jspb.BinaryWriter} writer
  * @param {!function(this:jspb.BinaryWriter,number,K)} keyWriterFn
  *     The method on BinaryWriter that writes type K to the stream.
- * @param {!function(this:jspb.BinaryWriter,number,V)|
- *          function(this:jspb.BinaryReader,V,?)} valueWriterFn
+ * @param {!function(this:jspb.BinaryWriter,number,V,?=)|
+ *          function(this:jspb.BinaryWriter,number,V,?)} valueWriterFn
  *     The method on BinaryWriter that writes type V to the stream.  May be
  *     writeMessage, in which case the second callback arg form is used.
  * @param {function(V,!jspb.BinaryWriter)=} opt_valueWriterCallback
@@ -509,7 +509,7 @@ jspb.Map.prototype.stringKeys_ = function() {
 
 
 /**
- * @param {!K} key The entry's key.
+ * @param {K} key The entry's key.
  * @param {V=} opt_value The entry's value wrapper.
  * @constructor
  * @struct

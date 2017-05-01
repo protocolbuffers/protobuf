@@ -564,6 +564,11 @@ class MessageTest(BaseTestCase):
     self.assertIsInstance(m.repeated_nested_message,
                           collections.MutableSequence)
 
+  def testRepeatedFieldInsideNestedMessage(self, message_module):
+    m = message_module.NestedTestAllTypes()
+    m.payload.repeated_int32.extend([])
+    self.assertTrue(m.HasField('payload'))
+
   def ensureNestedMessageExists(self, msg, attribute):
     """Make sure that a nested message object exists.
 
@@ -1432,6 +1437,18 @@ class Proto3Test(BaseTestCase):
     self.assertIn(-456, msg2.map_int32_foreign_message)
     self.assertEqual(2, len(msg2.map_int32_foreign_message))
 
+  def testMapByteSize(self):
+    msg = map_unittest_pb2.TestMap()
+    msg.map_int32_int32[1] = 1
+    size = msg.ByteSize()
+    msg.map_int32_int32[1] = 128
+    self.assertEqual(msg.ByteSize(), size + 1)
+
+    msg.map_int32_foreign_message[19].c = 1
+    size = msg.ByteSize()
+    msg.map_int32_foreign_message[19].c = 128
+    self.assertEqual(msg.ByteSize(), size + 1)
+
   def testMergeFrom(self):
     msg = map_unittest_pb2.TestMap()
     msg.map_int32_int32[12] = 34
@@ -1456,7 +1473,15 @@ class Proto3Test(BaseTestCase):
     self.assertEqual(5, msg2.map_int32_foreign_message[111].c)
     self.assertEqual(10, msg2.map_int32_foreign_message[222].c)
     self.assertFalse(msg2.map_int32_foreign_message[222].HasField('d'))
-    self.assertEqual(15, old_map_value.c)
+    if api_implementation.Type() != 'cpp':
+      # During the call to MergeFrom(), the C++ implementation will have
+      # deallocated the underlying message, but this is very difficult to detect
+      # properly. The line below is likely to cause a segmentation fault.
+      # With the Python implementation, old_map_value is just 'detached' from
+      # the main message. Using it will not crash of course, but since it still
+      # have a reference to the parent message I'm sure we can find interesting
+      # ways to cause inconsistencies.
+      self.assertEqual(15, old_map_value.c)
 
     # Verify that there is only one entry per key, even though the MergeFrom
     # may have internally created multiple entries for a single key in the

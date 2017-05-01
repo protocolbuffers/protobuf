@@ -210,6 +210,12 @@ class Descriptor
               $nested_proto, $file_proto, $message_name_without_package));
         }
 
+        // Handle nested enum.
+        foreach ($proto->getEnumType() as $enum_proto) {
+            $desc->addEnumType(EnumDescriptor::buildFromProto(
+              $enum_proto, $file_proto, $message_name_without_package));
+        }
+
         // Handle oneof fields.
         foreach ($proto->getOneofDecl() as $oneof_proto) {
             $desc->addOneofDecl(
@@ -220,20 +226,36 @@ class Descriptor
     }
 }
 
+function getClassNamePrefix(
+    $classname,
+    $file_proto)
+{
+    $option = $file_proto->getOptions();
+    $prefix = is_null($option) ? "" : $option->getPhpClassPrefix();
+    if ($prefix !== "") {
+        return $prefix;
+    }
+
+    $reserved_words = array("Empty");
+    foreach ($reserved_words as $reserved_word) {
+        if ($classname === $reserved_word) {
+            if ($file_proto->getPackage() === "google.protobuf") {
+                return "GPB";
+            } else {
+                return "PB";
+            }
+        }
+    }
+
+    return "";
+}
+
 function getClassNameWithoutPackage(
     $name,
     $file_proto)
 {
-    if ($name === "Empty" && $file_proto->getPackage() === "google.protobuf") {
-        return "GPBEmpty";
-    } else {
-        $option = $file_proto->getOptions();
-        $prefix = is_null($option) ? "" : $option->getPhpClassPrefix();
-        // Nested message class names are seperated by '_', and package names
-        // are seperated by '\'.
-        return $prefix . implode('_', array_map('ucwords',
-                               explode('.', $name)));
-    }
+    $classname = implode('_', array_map('ucwords', explode('.', $name)));
+    return getClassNamePrefix($classname, $file_proto) . $classname;
 }
 
 function getFullClassName(

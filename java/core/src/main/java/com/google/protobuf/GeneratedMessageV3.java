@@ -41,7 +41,7 @@ import com.google.protobuf.Descriptors.OneofDescriptor;
 // class without breaking binary compatibility with old generated code that still subclasses
 // the old GeneratedMessageV3 class. To allow these different GeneratedMessageV3V? classes to
 // interoperate (e.g., a GeneratedMessageV3V3 object has a message extension field whose class
-// type is GeneratedMessageV3V4), these classes still share a common parent class AbstarctMessage
+// type is GeneratedMessageV3V4), these classes still share a common parent class AbstractMessage
 // and are using the same GeneratedMessage.GeneratedExtension class for extension definitions.
 // Since this class becomes GeneratedMessageV3V? in opensource, we have to add an import here
 // to be able to use GeneratedMessage.GeneratedExtension. The GeneratedExtension definition in

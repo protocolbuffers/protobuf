@@ -211,6 +211,25 @@ describe('binaryDecoderTest', function() {
   });
 
   /**
+   * Tests reading and writing large strings
+   */
+  it('testLargeStrings', function() {
+    var encoder = new jspb.BinaryEncoder();
+
+    var len = 150000;
+    var long_string = '';
+    for (var i = 0; i < len; i++) {
+      long_string += 'a';
+    }
+
+    encoder.writeString(long_string);
+
+    var decoder = jspb.BinaryDecoder.alloc(encoder.end());
+
+    assertEquals(long_string, decoder.readString(len));
+  });
+
+  /**
    * Test encoding and decoding utf-8.
    */
    it('testUtf8', function() {

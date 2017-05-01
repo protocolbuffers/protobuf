@@ -303,6 +303,17 @@ class LIBPROTOBUF_EXPORT Arena {
   // (unless the destructor is trivial). Hence, from T's point of view, it is as
   // if the object were allocated on the heap (except that the underlying memory
   // is obtained from the arena).
+#if LANG_CXX11
+  template <typename T, typename... Args> GOOGLE_ATTRIBUTE_ALWAYS_INLINE
+  static T* Create(::google::protobuf::Arena* arena, Args&&... args) {
+    if (arena == NULL) {
+      return new T(std::forward<Args>(args)...);
+    } else {
+      return arena->CreateInternal<T>(google::protobuf::internal::has_trivial_destructor<T>::value,
+                                      std::forward<Args>(args)...);
+    }
+  }
+#endif
   template <typename T> GOOGLE_ATTRIBUTE_ALWAYS_INLINE
   static T* Create(::google::protobuf::Arena* arena) {
     if (arena == NULL) {
@@ -322,17 +333,6 @@ class LIBPROTOBUF_EXPORT Arena {
                                       arg);
     }
   }
-#if LANG_CXX11
-  template <typename T, typename Arg> GOOGLE_ATTRIBUTE_ALWAYS_INLINE
-  static T* Create(::google::protobuf::Arena* arena, Arg&& arg) {
-    if (arena == NULL) {
-      return new T(std::move(arg));
-    } else {
-      return arena->CreateInternal<T>(google::protobuf::internal::has_trivial_destructor<T>::value,
-                                      std::move(arg));
-    }
-  }
-#endif
 
   // Version of the above with two constructor arguments for the created object.
   template <typename T, typename Arg1, typename Arg2> GOOGLE_ATTRIBUTE_ALWAYS_INLINE
@@ -655,6 +655,17 @@ class LIBPROTOBUF_EXPORT Arena {
         AllocateAligned(RTTI_TYPE_ID(T), sizeof(T) * num_elements));
   }
 
+#if LANG_CXX11
+  template <typename T, typename... Args> GOOGLE_ATTRIBUTE_ALWAYS_INLINE
+  T* CreateInternal(bool skip_explicit_ownership, Args&&... args) {
+    T* t = new (AllocateAligned(RTTI_TYPE_ID(T), sizeof(T)))
+        T(std::forward<Args>(args)...);
+    if (!skip_explicit_ownership) {
+      AddListNode(t, &internal::arena_destruct_object<T>);
+    }
+    return t;
+  }
+#endif
   template <typename T> GOOGLE_ATTRIBUTE_ALWAYS_INLINE
   T* CreateInternal(bool skip_explicit_ownership) {
     T* t = new (AllocateAligned(RTTI_TYPE_ID(T), sizeof(T))) T();
@@ -672,18 +683,6 @@ class LIBPROTOBUF_EXPORT Arena {
     }
     return t;
   }
-
-#if LANG_CXX11
-  template <typename T, typename Arg> GOOGLE_ATTRIBUTE_ALWAYS_INLINE
-  T* CreateInternal(bool skip_explicit_ownership, Arg&& arg) {
-    T* t = new (AllocateAligned(RTTI_TYPE_ID(T), sizeof(T))) T(
-        std::move(arg));
-    if (!skip_explicit_ownership) {
-      AddListNode(t, &internal::arena_destruct_object<T>);
-    }
-    return t;
-  }
-#endif
 
   template <typename T, typename Arg1, typename Arg2> GOOGLE_ATTRIBUTE_ALWAYS_INLINE
   T* CreateInternal(
@@ -796,22 +795,20 @@ class LIBPROTOBUF_EXPORT Arena {
 
   template <typename T> GOOGLE_ATTRIBUTE_ALWAYS_INLINE
   T* CreateMessageInternal(typename T::InternalArenaConstructable_*) {
-    return CreateInternal<T, Arena*>(SkipDeleteList<T>(static_cast<T*>(0)),
-                                     this);
+    return CreateInternal<T>(SkipDeleteList<T>(static_cast<T*>(0)), this);
   }
 
   template <typename T, typename Arg> GOOGLE_ATTRIBUTE_ALWAYS_INLINE
   T* CreateMessageInternal(typename T::InternalArenaConstructable_*,
                            const Arg& arg) {
-    return CreateInternal<T, Arena*>(SkipDeleteList<T>(static_cast<T*>(0)),
-                                     this, arg);
+    return CreateInternal<T>(SkipDeleteList<T>(static_cast<T*>(0)), this, arg);
   }
 
   template <typename T, typename Arg1, typename Arg2> GOOGLE_ATTRIBUTE_ALWAYS_INLINE
   T* CreateMessageInternal(typename T::InternalArenaConstructable_*,
                            const Arg1& arg1, const Arg2& arg2) {
-    return CreateInternal<T, Arena*>(SkipDeleteList<T>(static_cast<T*>(0)),
-                                     this, arg1, arg2);
+    return CreateInternal<T>(SkipDeleteList<T>(static_cast<T*>(0)), this, arg1,
+                             arg2);
   }
 
   // CreateInArenaStorage is used to implement map field. Without it,

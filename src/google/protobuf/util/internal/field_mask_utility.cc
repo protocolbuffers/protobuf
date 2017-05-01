@@ -44,11 +44,6 @@ inline util::Status CallPathSink(PathSinkCallback path_sink,
   return path_sink->Run(arg);
 }
 
-util::Status CreatePublicError(util::error::Code code,
-                                 const string& message) {
-  return util::Status(code, message);
-}
-
 // Appends a FieldMask path segment to a prefix.
 string AppendPathSegmentToPrefix(StringPiece prefix, StringPiece segment) {
   if (prefix.empty()) {
@@ -216,7 +211,7 @@ util::Status DecodeCompactFieldMaskPaths(StringPiece paths,
                           StrCat("Invalid FieldMask '", paths,
                                  "'. Cannot find matching ')' for all '('."));
   }
-  return util::Status::OK;
+  return util::Status();
 }
 
 }  // namespace converter

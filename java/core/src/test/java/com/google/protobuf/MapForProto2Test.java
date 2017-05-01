@@ -759,6 +759,7 @@ public class MapForProto2Test extends TestCase {
     assertEquals(55, message.getInt32ToInt32Field().get(55).intValue());
   }
 
+  // See additional coverage in TextFormatTest.java.
   public void testTextFormat() throws Exception {
     TestMap.Builder builder = TestMap.newBuilder();
     setMapValuesUsingAccessors(builder);

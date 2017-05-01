@@ -38,6 +38,7 @@
 #include <google/protobuf/reflection_ops.h>
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/descriptor.pb.h>
+#include <google/protobuf/map_field.h>
 #include <google/protobuf/unknown_field_set.h>
 #include <google/protobuf/stubs/strutil.h>
 
@@ -157,6 +158,27 @@ bool ReflectionOps::IsInitialized(const Message& message) {
   for (int i = 0; i < fields.size(); i++) {
     const FieldDescriptor* field = fields[i];
     if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
+
+      if (field->is_map()) {
+        const FieldDescriptor* value_field = field->message_type()->field(1);
+        if (value_field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
+          MapFieldBase* map_field =
+              reflection->MapData(const_cast<Message*>(&message), field);
+          if (map_field->IsMapValid()) {
+            MapIterator iter(const_cast<Message*>(&message), field);
+            MapIterator end(const_cast<Message*>(&message), field);
+            for (map_field->MapBegin(&iter), map_field->MapEnd(&end);
+                 iter != end; ++iter) {
+              if (!iter.GetValueRef().GetMessageValue().IsInitialized()) {
+                return false;
+              }
+            }
+            continue;
+          }
+        } else {
+          continue;
+        }
+      }
 
       if (field->is_repeated()) {
         int size = reflection->FieldSize(message, field);

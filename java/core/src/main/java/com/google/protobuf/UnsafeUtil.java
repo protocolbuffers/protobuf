@@ -33,19 +33,23 @@ package com.google.protobuf;
 import java.lang.reflect.Field;
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.security.AccessController;
 import java.security.PrivilegedExceptionAction;
-import sun.misc.Unsafe;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /** Utility class for working with unsafe operations. */
-// TODO(nathanmittler): Add support for Android Memory/MemoryBlock
 final class UnsafeUtil {
+  private static final Logger logger = Logger.getLogger(UnsafeUtil.class.getName());
   private static final sun.misc.Unsafe UNSAFE = getUnsafe();
+  private static final MemoryAccessor MEMORY_ACCESSOR = getMemoryAccessor();
   private static final boolean HAS_UNSAFE_BYTEBUFFER_OPERATIONS =
       supportsUnsafeByteBufferOperations();
   private static final boolean HAS_UNSAFE_ARRAY_OPERATIONS = supportsUnsafeArrayOperations();
+  private static final boolean HAS_UNSAFE_COPY_MEMORY = supportsUnsafeCopyMemory();
   private static final long ARRAY_BASE_OFFSET = byteArrayBaseOffset();
-  private static final long BUFFER_ADDRESS_OFFSET = fieldOffset(field(Buffer.class, "address"));
+  private static final long BUFFER_ADDRESS_OFFSET = fieldOffset(bufferAddressField());
 
   private UnsafeUtil() {}
 
@@ -53,20 +57,16 @@ final class UnsafeUtil {
     return HAS_UNSAFE_ARRAY_OPERATIONS;
   }
 
+  static boolean hasUnsafeCopyMemory() {
+    return HAS_UNSAFE_COPY_MEMORY;
+  }
+
   static boolean hasUnsafeByteBufferOperations() {
     return HAS_UNSAFE_BYTEBUFFER_OPERATIONS;
   }
 
-  static Object allocateInstance(Class<?> clazz) {
-    try {
-      return UNSAFE.allocateInstance(clazz);
-    } catch (InstantiationException e) {
-      throw new RuntimeException(e);
-    }
-  }
-
   static long objectFieldOffset(Field field) {
-    return UNSAFE.objectFieldOffset(field);
+    return MEMORY_ACCESSOR.objectFieldOffset(field);
   }
 
   static long getArrayBaseOffset() {
@@ -74,103 +74,103 @@ final class UnsafeUtil {
   }
 
   static byte getByte(Object target, long offset) {
-    return UNSAFE.getByte(target, offset);
+    return MEMORY_ACCESSOR.getByte(target, offset);
   }
 
   static void putByte(Object target, long offset, byte value) {
-    UNSAFE.putByte(target, offset, value);
+    MEMORY_ACCESSOR.putByte(target, offset, value);
   }
 
   static int getInt(Object target, long offset) {
-    return UNSAFE.getInt(target, offset);
+    return MEMORY_ACCESSOR.getInt(target, offset);
   }
 
   static void putInt(Object target, long offset, int value) {
-    UNSAFE.putInt(target, offset, value);
+    MEMORY_ACCESSOR.putInt(target, offset, value);
   }
 
   static long getLong(Object target, long offset) {
-    return UNSAFE.getLong(target, offset);
+    return MEMORY_ACCESSOR.getLong(target, offset);
   }
 
   static void putLong(Object target, long offset, long value) {
-    UNSAFE.putLong(target, offset, value);
+    MEMORY_ACCESSOR.putLong(target, offset, value);
   }
 
   static boolean getBoolean(Object target, long offset) {
-    return UNSAFE.getBoolean(target, offset);
+    return MEMORY_ACCESSOR.getBoolean(target, offset);
   }
 
   static void putBoolean(Object target, long offset, boolean value) {
-    UNSAFE.putBoolean(target, offset, value);
+    MEMORY_ACCESSOR.putBoolean(target, offset, value);
   }
 
   static float getFloat(Object target, long offset) {
-    return UNSAFE.getFloat(target, offset);
+    return MEMORY_ACCESSOR.getFloat(target, offset);
   }
 
   static void putFloat(Object target, long offset, float value) {
-    UNSAFE.putFloat(target, offset, value);
+    MEMORY_ACCESSOR.putFloat(target, offset, value);
   }
 
   static double getDouble(Object target, long offset) {
-    return UNSAFE.getDouble(target, offset);
+    return MEMORY_ACCESSOR.getDouble(target, offset);
   }
 
   static void putDouble(Object target, long offset, double value) {
-    UNSAFE.putDouble(target, offset, value);
+    MEMORY_ACCESSOR.putDouble(target, offset, value);
   }
 
   static Object getObject(Object target, long offset) {
-    return UNSAFE.getObject(target, offset);
+    return MEMORY_ACCESSOR.getObject(target, offset);
   }
 
   static void putObject(Object target, long offset, Object value) {
-    UNSAFE.putObject(target, offset, value);
+    MEMORY_ACCESSOR.putObject(target, offset, value);
   }
 
   static void copyMemory(
       Object src, long srcOffset, Object target, long targetOffset, long length) {
-    UNSAFE.copyMemory(src, srcOffset, target, targetOffset, length);
+    MEMORY_ACCESSOR.copyMemory(src, srcOffset, target, targetOffset, length);
   }
 
   static byte getByte(long address) {
-    return UNSAFE.getByte(address);
+    return MEMORY_ACCESSOR.getByte(address);
   }
 
   static void putByte(long address, byte value) {
-    UNSAFE.putByte(address, value);
+    MEMORY_ACCESSOR.putByte(address, value);
   }
 
   static int getInt(long address) {
-    return UNSAFE.getInt(address);
+    return MEMORY_ACCESSOR.getInt(address);
   }
 
   static void putInt(long address, int value) {
-    UNSAFE.putInt(address, value);
+    MEMORY_ACCESSOR.putInt(address, value);
   }
 
   static long getLong(long address) {
-    return UNSAFE.getLong(address);
+    return MEMORY_ACCESSOR.getLong(address);
   }
 
   static void putLong(long address, long value) {
-    UNSAFE.putLong(address, value);
+    MEMORY_ACCESSOR.putLong(address, value);
   }
 
   static void copyMemory(long srcAddress, long targetAddress, long length) {
-    UNSAFE.copyMemory(srcAddress, targetAddress, length);
-  }
-
-  static void setMemory(long address, long numBytes, byte value) {
-    UNSAFE.setMemory(address, numBytes, value);
+    MEMORY_ACCESSOR.copyMemory(srcAddress, targetAddress, length);
   }
 
   /**
    * Gets the offset of the {@code address} field of the given direct {@link ByteBuffer}.
    */
   static long addressOffset(ByteBuffer buffer) {
-    return UNSAFE.getLong(buffer, BUFFER_ADDRESS_OFFSET);
+    return MEMORY_ACCESSOR.getLong(buffer, BUFFER_ADDRESS_OFFSET);
+  }
+
+  static Object getStaticObject(Field field) {
+    return MEMORY_ACCESSOR.getStaticObject(field);
   }
 
   /**
@@ -181,7 +181,7 @@ final class UnsafeUtil {
     try {
       unsafe =
           AccessController.doPrivileged(
-              new PrivilegedExceptionAction<Unsafe>() {
+              new PrivilegedExceptionAction<sun.misc.Unsafe>() {
                 @Override
                 public sun.misc.Unsafe run() throws Exception {
                   Class<sun.misc.Unsafe> k = sun.misc.Unsafe.class;
@@ -204,69 +204,114 @@ final class UnsafeUtil {
     return unsafe;
   }
 
+  /** Get a {@link MemoryAccessor} appropriate for the platform, or null if not supported. */
+  private static MemoryAccessor getMemoryAccessor() {
+    if (UNSAFE == null) {
+      return null;
+    }
+    return new JvmMemoryAccessor(UNSAFE);
+  }
+
   /** Indicates whether or not unsafe array operations are supported on this platform. */
   private static boolean supportsUnsafeArrayOperations() {
-    boolean supported = false;
-    if (UNSAFE != null) {
-      try {
-        Class<?> clazz = UNSAFE.getClass();
-        clazz.getMethod("objectFieldOffset", Field.class);
-        clazz.getMethod("allocateInstance", Class.class);
-        clazz.getMethod("arrayBaseOffset", Class.class);
-        clazz.getMethod("getByte", Object.class, long.class);
-        clazz.getMethod("putByte", Object.class, long.class, byte.class);
-        clazz.getMethod("getBoolean", Object.class, long.class);
-        clazz.getMethod("putBoolean", Object.class, long.class, boolean.class);
-        clazz.getMethod("getInt", Object.class, long.class);
-        clazz.getMethod("putInt", Object.class, long.class, int.class);
-        clazz.getMethod("getLong", Object.class, long.class);
-        clazz.getMethod("putLong", Object.class, long.class, long.class);
-        clazz.getMethod("getFloat", Object.class, long.class);
-        clazz.getMethod("putFloat", Object.class, long.class, float.class);
-        clazz.getMethod("getDouble", Object.class, long.class);
-        clazz.getMethod("putDouble", Object.class, long.class, double.class);
-        clazz.getMethod("getObject", Object.class, long.class);
-        clazz.getMethod("putObject", Object.class, long.class, Object.class);
-        clazz.getMethod(
-            "copyMemory", Object.class, long.class, Object.class, long.class, long.class);
-        supported = true;
-      } catch (Throwable e) {
-        // Do nothing.
-      }
+    if (UNSAFE == null) {
+      return false;
     }
-    return supported;
+    try {
+      Class<?> clazz = UNSAFE.getClass();
+      clazz.getMethod("objectFieldOffset", Field.class);
+      clazz.getMethod("arrayBaseOffset", Class.class);
+      clazz.getMethod("getInt", Object.class, long.class);
+      clazz.getMethod("putInt", Object.class, long.class, int.class);
+      clazz.getMethod("getLong", Object.class, long.class);
+      clazz.getMethod("putLong", Object.class, long.class, long.class);
+      clazz.getMethod("getObject", Object.class, long.class);
+      clazz.getMethod("putObject", Object.class, long.class, Object.class);
+      clazz.getMethod("getByte", Object.class, long.class);
+      clazz.getMethod("putByte", Object.class, long.class, byte.class);
+      clazz.getMethod("getBoolean", Object.class, long.class);
+      clazz.getMethod("putBoolean", Object.class, long.class, boolean.class);
+      clazz.getMethod("getFloat", Object.class, long.class);
+      clazz.getMethod("putFloat", Object.class, long.class, float.class);
+      clazz.getMethod("getDouble", Object.class, long.class);
+      clazz.getMethod("putDouble", Object.class, long.class, double.class);
+
+      return true;
+    } catch (Throwable e) {
+      logger.log(
+          Level.WARNING,
+          "platform method missing - proto runtime falling back to safer methods: " + e);
+    }
+    return false;
+  }
+
+  /**
+   * Indicates whether or not unsafe copyMemory(object, long, object, long, long) operations are
+   * supported on this platform.
+   */
+  private static boolean supportsUnsafeCopyMemory() {
+    if (UNSAFE == null) {
+      return false;
+    }
+    try {
+      Class<?> clazz = UNSAFE.getClass();
+      clazz.getMethod("copyMemory", Object.class, long.class, Object.class, long.class, long.class);
+
+      return true;
+    } catch (Throwable e) {
+      logger.log(
+          Level.WARNING,
+          "copyMemory is missing from platform - proto runtime falling back to safer methods.");
+    }
+    return false;
   }
 
   private static boolean supportsUnsafeByteBufferOperations() {
-    boolean supported = false;
-    if (UNSAFE != null) {
-      try {
-        Class<?> clazz = UNSAFE.getClass();
-        // Methods for getting direct buffer address.
-        clazz.getMethod("objectFieldOffset", Field.class);
-        clazz.getMethod("getLong", Object.class, long.class);
-
-        clazz.getMethod("getByte", long.class);
-        clazz.getMethod("putByte", long.class, byte.class);
-        clazz.getMethod("getInt", long.class);
-        clazz.getMethod("putInt", long.class, int.class);
-        clazz.getMethod("getLong", long.class);
-        clazz.getMethod("putLong", long.class, long.class);
-        clazz.getMethod("setMemory", long.class, long.class, byte.class);
-        clazz.getMethod("copyMemory", long.class, long.class, long.class);
-        supported = true;
-      } catch (Throwable e) {
-        // Do nothing.
-      }
+    if (UNSAFE == null) {
+      return false;
     }
-    return supported;
+    try {
+      Class<?> clazz = UNSAFE.getClass();
+      // Methods for getting direct buffer address.
+      clazz.getMethod("objectFieldOffset", Field.class);
+      clazz.getMethod("getLong", Object.class, long.class);
+
+      clazz.getMethod("getByte", long.class);
+      clazz.getMethod("putByte", long.class, byte.class);
+      clazz.getMethod("getInt", long.class);
+      clazz.getMethod("putInt", long.class, int.class);
+      clazz.getMethod("getLong", long.class);
+      clazz.getMethod("putLong", long.class, long.class);
+      clazz.getMethod("copyMemory", long.class, long.class, long.class);
+      return true;
+    } catch (Throwable e) {
+      logger.log(
+          Level.WARNING,
+          "platform method missing - proto runtime falling back to safer methods: " + e);
+    }
+    return false;
+  }
+
+
+  @SuppressWarnings("unchecked")
+  private static <T> Class<T> getClassForName(String name) {
+    try {
+      return (Class<T>) Class.forName(name);
+    } catch (Throwable e) {
+      return null;
+    }
+  }
+
+  /** Finds the address field within a direct {@link Buffer}. */
+  private static Field bufferAddressField() {
+    return field(Buffer.class, "address");
   }
 
   /**
    * Get the base offset for byte arrays, or {@code -1} if {@code sun.misc.Unsafe} is not available.
    */
   private static int byteArrayBaseOffset() {
-    return HAS_UNSAFE_ARRAY_OPERATIONS ? UNSAFE.arrayBaseOffset(byte[].class) : -1;
+    return HAS_UNSAFE_ARRAY_OPERATIONS ? MEMORY_ACCESSOR.arrayBaseOffset(byte[].class) : -1;
   }
 
   /**
@@ -274,7 +319,7 @@ final class UnsafeUtil {
    * available.
    */
   private static long fieldOffset(Field field) {
-    return field == null || UNSAFE == null ? -1 : UNSAFE.objectFieldOffset(field);
+    return field == null || MEMORY_ACCESSOR == null ? -1 : MEMORY_ACCESSOR.objectFieldOffset(field);
   }
 
   /**
@@ -292,4 +337,174 @@ final class UnsafeUtil {
     }
     return field;
   }
+
+  private abstract static class MemoryAccessor {
+
+    sun.misc.Unsafe unsafe;
+
+    MemoryAccessor(sun.misc.Unsafe unsafe) {
+      this.unsafe = unsafe;
+    }
+
+    public final long objectFieldOffset(Field field) {
+      return unsafe.objectFieldOffset(field);
+    }
+
+    public abstract byte getByte(Object target, long offset);
+
+    public abstract void putByte(Object target, long offset, byte value);
+
+    public final int getInt(Object target, long offset) {
+      return unsafe.getInt(target, offset);
+    }
+
+    public final void putInt(Object target, long offset, int value) {
+      unsafe.putInt(target, offset, value);
+    }
+
+    public final long getLong(Object target, long offset) {
+      return unsafe.getLong(target, offset);
+    }
+
+    public final void putLong(Object target, long offset, long value) {
+      unsafe.putLong(target, offset, value);
+    }
+
+    public abstract boolean getBoolean(Object target, long offset);
+
+    public abstract void putBoolean(Object target, long offset, boolean value);
+
+    public abstract float getFloat(Object target, long offset);
+
+    public abstract void putFloat(Object target, long offset, float value);
+
+    public abstract double getDouble(Object target, long offset);
+
+    public abstract void putDouble(Object target, long offset, double value);
+
+    public final Object getObject(Object target, long offset) {
+      return unsafe.getObject(target, offset);
+    }
+
+    public final void putObject(Object target, long offset, Object value) {
+      unsafe.putObject(target, offset, value);
+    }
+
+    public final int arrayBaseOffset(Class<?> clazz) {
+      return unsafe.arrayBaseOffset(clazz);
+    }
+
+    public abstract byte getByte(long address);
+
+    public abstract void putByte(long address, byte value);
+
+    public abstract int getInt(long address);
+
+    public abstract void putInt(long address, int value);
+
+    public abstract long getLong(long address);
+
+    public abstract void putLong(long address, long value);
+
+    public abstract void copyMemory(long srcAddress, long targetAddress, long length);
+
+    public abstract void copyMemory(
+        Object src, long srcOffset, Object target, long targetOffset, long length);
+
+    public abstract Object getStaticObject(Field field);
+  }
+
+  private static final class JvmMemoryAccessor extends MemoryAccessor {
+
+    JvmMemoryAccessor(sun.misc.Unsafe unsafe) {
+      super(unsafe);
+    }
+
+    @Override
+    public byte getByte(long address) {
+      return unsafe.getByte(address);
+    }
+
+    @Override
+    public void putByte(long address, byte value) {
+      unsafe.putByte(address, value);
+    }
+
+    @Override
+    public int getInt(long address) {
+      return unsafe.getInt(address);
+    }
+
+    @Override
+    public void putInt(long address, int value) {
+      unsafe.putInt(address, value);
+    }
+
+    @Override
+    public long getLong(long address) {
+      return unsafe.getLong(address);
+    }
+
+    @Override
+    public void putLong(long address, long value) {
+      unsafe.putLong(address, value);
+    }
+
+    @Override
+    public byte getByte(Object target, long offset) {
+      return unsafe.getByte(target, offset);
+    }
+
+    @Override
+    public void putByte(Object target, long offset, byte value) {
+      unsafe.putByte(target, offset, value);
+    }
+
+    @Override
+    public boolean getBoolean(Object target, long offset) {
+      return unsafe.getBoolean(target, offset);
+    }
+
+    @Override
+    public void putBoolean(Object target, long offset, boolean value) {
+      unsafe.putBoolean(target, offset, value);
+    }
+
+    @Override
+    public float getFloat(Object target, long offset) {
+      return unsafe.getFloat(target, offset);
+    }
+
+    @Override
+    public void putFloat(Object target, long offset, float value) {
+      unsafe.putFloat(target, offset, value);
+    }
+
+    @Override
+    public double getDouble(Object target, long offset) {
+      return unsafe.getDouble(target, offset);
+    }
+
+    @Override
+    public void putDouble(Object target, long offset, double value) {
+      unsafe.putDouble(target, offset, value);
+    }
+
+    @Override
+    public void copyMemory(
+        Object src, long srcOffset, Object target, long targetOffset, long length) {
+      unsafe.copyMemory(src, srcOffset, target, targetOffset, length);
+    }
+
+    @Override
+    public void copyMemory(long srcAddress, long targetAddress, long length) {
+      unsafe.copyMemory(srcAddress, targetAddress, length);
+    }
+
+    @Override
+    public Object getStaticObject(Field field) {
+      return getObject(unsafe.staticFieldBase(field), unsafe.staticFieldOffset(field));
+    }
+  }
+
 }

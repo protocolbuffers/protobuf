@@ -596,8 +596,8 @@ jspb.BinaryWriter.prototype.writeSint64 = function(field, value) {
  */
 jspb.BinaryWriter.prototype.writeSint64String = function(field, value) {
   if (value == null) return;
-  goog.asserts.assert((value >= -jspb.BinaryConstants.TWO_TO_63) &&
-                      (value < jspb.BinaryConstants.TWO_TO_63));
+  goog.asserts.assert((+value >= -jspb.BinaryConstants.TWO_TO_63) &&
+                      (+value < jspb.BinaryConstants.TWO_TO_63));
   this.writeZigzagVarint64String_(field, value);
 };
 

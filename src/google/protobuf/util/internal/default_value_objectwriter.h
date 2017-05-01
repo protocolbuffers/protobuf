@@ -127,9 +127,11 @@ class LIBPROTOBUF_EXPORT DefaultValueObjectWriter : public ObjectWriter {
   void set_suppress_empty_list(bool value) { suppress_empty_list_ = value; }
 
   // If set to true, original proto field names are used
-  void set_preserve_proto_field_names(bool value) { preserve_proto_field_names_ = value; }
+  void set_preserve_proto_field_names(bool value) {
+    preserve_proto_field_names_ = value;
+  }
 
- private:
+ protected:
   enum NodeKind {
     PRIMITIVE = 0,
     OBJECT = 1,
@@ -144,7 +146,12 @@ class LIBPROTOBUF_EXPORT DefaultValueObjectWriter : public ObjectWriter {
     Node(const string& name, const google::protobuf::Type* type, NodeKind kind,
          const DataPiece& data, bool is_placeholder,
          const std::vector<string>& path, bool suppress_empty_list,
-         bool preserve_proto_field_names, FieldScrubCallBack* field_scrub_callback);
+         FieldScrubCallBack* field_scrub_callback);
+    Node(const string& name, const google::protobuf::Type* type, NodeKind kind,
+         const DataPiece& data, bool is_placeholder,
+         const std::vector<string>& path, bool suppress_empty_list,
+         bool preserve_proto_field_names,
+         FieldScrubCallBack* field_scrub_callback);
     virtual ~Node() {
       for (int i = 0; i < children_.size(); ++i) {
         delete children_[i];
@@ -160,7 +167,7 @@ class LIBPROTOBUF_EXPORT DefaultValueObjectWriter : public ObjectWriter {
     // Populates children of this Node based on its type. If there are already
     // children created, they will be merged to the result. Caller should pass
     // in TypeInfo for looking up types of the children.
-    void PopulateChildren(const TypeInfo* typeinfo);
+    virtual void PopulateChildren(const TypeInfo* typeinfo);
 
     // If this node is a leaf (has data), writes the current node to the
     // ObjectWriter; if not, then recursively writes the children to the
@@ -190,7 +197,7 @@ class LIBPROTOBUF_EXPORT DefaultValueObjectWriter : public ObjectWriter {
       is_placeholder_ = is_placeholder;
     }
 
-   private:
+   protected:
     // Returns the Value Type of a map given the Type of the map entry and a
     // TypeInfo instance.
     const google::protobuf::Type* GetMapValueType(
@@ -230,9 +237,32 @@ class LIBPROTOBUF_EXPORT DefaultValueObjectWriter : public ObjectWriter {
     // or not. This callback is owned by the creator of this node.
     FieldScrubCallBack* field_scrub_callback_;
 
+   private:
     GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(Node);
   };
 
+  // Creates a new Node and returns it. Caller owns memory of returned object.
+  virtual Node* CreateNewNode(const string& name,
+                              const google::protobuf::Type* type, NodeKind kind,
+                              const DataPiece& data, bool is_placeholder,
+                              const std::vector<string>& path,
+                              bool suppress_empty_list,
+                              FieldScrubCallBack* field_scrub_callback);
+
+  // Creates a new Node and returns it. Caller owns memory of returned object.
+  virtual Node* CreateNewNode(const string& name,
+                              const google::protobuf::Type* type, NodeKind kind,
+                              const DataPiece& data, bool is_placeholder,
+                              const std::vector<string>& path,
+                              bool suppress_empty_list,
+                              bool preserve_proto_field_names,
+                              FieldScrubCallBack* field_scrub_callback);
+
+  // Creates a DataPiece containing the default value of the type of the field.
+  static DataPiece CreateDefaultDataPieceForField(
+      const google::protobuf::Field& field, const TypeInfo* typeinfo);
+
+ private:
   // Populates children of "node" if it is an "any" Node and its real type has
   // been given.
   void MaybePopulateChildrenOfAny(Node* node);
@@ -240,10 +270,6 @@ class LIBPROTOBUF_EXPORT DefaultValueObjectWriter : public ObjectWriter {
   // Writes the root_ node to ow_ and resets the root_ and current_ pointer to
   // NULL.
   void WriteRoot();
-
-  // Creates a DataPiece containing the default value of the type of the field.
-  static DataPiece CreateDefaultDataPieceForField(
-      const google::protobuf::Field& field, const TypeInfo* typeinfo);
 
   // Adds or replaces the data_ of a primitive child node.
   void RenderDataPiece(StringPiece name, const DataPiece& data);

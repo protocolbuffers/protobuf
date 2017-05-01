@@ -341,31 +341,35 @@ bool ExtensionSet::ParseMessageSet(io::CodedInputStream* input,
 }
 
 int ExtensionSet::SpaceUsedExcludingSelf() const {
-  int total_size =
+  return internal::FromIntSize(SpaceUsedExcludingSelfLong());
+}
+
+size_t ExtensionSet::SpaceUsedExcludingSelfLong() const {
+  size_t total_size =
       extensions_.size() * sizeof(ExtensionMap::value_type);
   for (ExtensionMap::const_iterator iter = extensions_.begin(),
        end = extensions_.end();
        iter != end;
        ++iter) {
-    total_size += iter->second.SpaceUsedExcludingSelf();
+    total_size += iter->second.SpaceUsedExcludingSelfLong();
   }
   return total_size;
 }
 
-inline int ExtensionSet::RepeatedMessage_SpaceUsedExcludingSelf(
+inline size_t ExtensionSet::RepeatedMessage_SpaceUsedExcludingSelfLong(
     RepeatedPtrFieldBase* field) {
-  return field->SpaceUsedExcludingSelf<GenericTypeHandler<Message> >();
+  return field->SpaceUsedExcludingSelfLong<GenericTypeHandler<Message> >();
 }
 
-int ExtensionSet::Extension::SpaceUsedExcludingSelf() const {
-  int total_size = 0;
+size_t ExtensionSet::Extension::SpaceUsedExcludingSelfLong() const {
+  size_t total_size = 0;
   if (is_repeated) {
     switch (cpp_type(type)) {
-#define HANDLE_TYPE(UPPERCASE, LOWERCASE)                          \
-      case FieldDescriptor::CPPTYPE_##UPPERCASE:                   \
-        total_size += sizeof(*repeated_##LOWERCASE##_value) +      \
-            repeated_##LOWERCASE##_value->SpaceUsedExcludingSelf();\
-        break
+#define HANDLE_TYPE(UPPERCASE, LOWERCASE)                                     \
+  case FieldDescriptor::CPPTYPE_##UPPERCASE:                                  \
+    total_size += sizeof(*repeated_##LOWERCASE##_value) +                     \
+                  repeated_##LOWERCASE##_value->SpaceUsedExcludingSelfLong(); \
+    break
 
       HANDLE_TYPE(  INT32,   int32);
       HANDLE_TYPE(  INT64,   int64);
@@ -380,24 +384,25 @@ int ExtensionSet::Extension::SpaceUsedExcludingSelf() const {
 
       case FieldDescriptor::CPPTYPE_MESSAGE:
         // repeated_message_value is actually a RepeatedPtrField<MessageLite>,
-        // but MessageLite has no SpaceUsed(), so we must directly call
-        // RepeatedPtrFieldBase::SpaceUsedExcludingSelf() with a different type
-        // handler.
-        total_size += sizeof(*repeated_message_value) +
-            RepeatedMessage_SpaceUsedExcludingSelf(repeated_message_value);
+        // but MessageLite has no SpaceUsedLong(), so we must directly call
+        // RepeatedPtrFieldBase::SpaceUsedExcludingSelfLong() with a different
+        // type handler.
+        total_size +=
+            sizeof(*repeated_message_value) +
+            RepeatedMessage_SpaceUsedExcludingSelfLong(repeated_message_value);
         break;
     }
   } else {
     switch (cpp_type(type)) {
       case FieldDescriptor::CPPTYPE_STRING:
         total_size += sizeof(*string_value) +
-                      StringSpaceUsedExcludingSelf(*string_value);
+                      StringSpaceUsedExcludingSelfLong(*string_value);
         break;
       case FieldDescriptor::CPPTYPE_MESSAGE:
         if (is_lazy) {
-          total_size += lazymessage_value->SpaceUsed();
+          total_size += lazymessage_value->SpaceUsedLong();
         } else {
-          total_size += down_cast<Message*>(message_value)->SpaceUsed();
+          total_size += down_cast<Message*>(message_value)->SpaceUsedLong();
         }
         break;
       default:

@@ -129,7 +129,7 @@ ENV MVN mvn --batch-mode
 RUN cd /tmp && \
   git clone https://github.com/google/protobuf.git && \
   cd protobuf && \
-  git reset 6b27c1f981a9a93918e4039f236ead27165a8e91 && \
+  git reset --hard c2b3b3e04e7a023efe06f2107705b45428847800 && \
   ./autogen.sh && \
   ./configure && \
   make -j4 && \
@@ -147,6 +147,23 @@ RUN cd php-5.5.38 && ./configure --enable-maintainer-zts --prefix=/usr/local/php
     make && make install && cd ..
 RUN cd php-5.5.38 && make clean && ./configure --prefix=/usr/local/php-5.5 && \
     make && make install && cd ..
+
+RUN wget http://am1.php.net/get/php-5.6.30.tar.bz2/from/this/mirror
+RUN mv mirror php-5.6.30.tar.bz2
+RUN tar -xvf php-5.6.30.tar.bz2
+RUN cd php-5.6.30 && ./configure --enable-maintainer-zts --prefix=/usr/local/php-5.6-zts && \
+    make && make install && cd ..
+RUN cd php-5.6.30 && make clean && ./configure --prefix=/usr/local/php-5.6 && \
+    make && make install && cd ..
+
+RUN wget http://am1.php.net/get/php-7.0.18.tar.bz2/from/this/mirror
+RUN mv mirror php-7.0.18.tar.bz2
+RUN tar -xvf php-7.0.18.tar.bz2
+RUN cd php-7.0.18 && ./configure --enable-maintainer-zts --prefix=/usr/local/php-7.0-zts && \
+    make && make install && cd ..
+RUN cd php-7.0.18 && make clean && ./configure --prefix=/usr/local/php-7.0 && \
+    make && make install && cd ..
+
 RUN php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
 RUN php composer-setup.php
 RUN mv composer.phar /usr/bin/composer
@@ -157,21 +174,21 @@ RUN cd /tmp && \
   rm -rf protobuf && \
   git clone https://github.com/google/protobuf.git && \
   cd protobuf && \
-  git reset 46ae90dc5e145b12fffa7e053a908a9f3e066286 && \
+  git reset --hard 6b27c1f981a9a93918e4039f236ead27165a8e91 && \
   cd php && \
   ln -sfn /usr/local/php-5.5/bin/php /usr/bin/php && \
   ln -sfn /usr/local/php-5.5/bin/php-config /usr/bin/php-config && \
   ln -sfn /usr/local/php-5.5/bin/phpize /usr/bin/phpize && \
   composer install && \
   mv vendor /usr/local/vendor-5.5 && \
-  ln -sfn /usr/bin/php5.6 /usr/bin/php && \
-  ln -sfn /usr/bin/php-config5.6 /usr/bin/php-config && \
-  ln -sfn /usr/bin/phpize5.6 /usr/bin/phpize && \
+  ln -sfn /usr/local/php-5.6/bin/php /usr/bin/php && \
+  ln -sfn /usr/local/php-5.6/bin/php-config /usr/bin/php-config && \
+  ln -sfn /usr/local/php-5.6/bin/phpize /usr/bin/phpize && \
   composer install && \
   mv vendor /usr/local/vendor-5.6 && \
-  ln -sfn /usr/bin/php7.0 /usr/bin/php && \
-  ln -sfn /usr/bin/php-config7.0 /usr/bin/php-config && \
-  ln -sfn /usr/bin/phpize7.0 /usr/bin/phpize && \
+  ln -sfn /usr/local/php-7.0/bin/php /usr/bin/php && \
+  ln -sfn /usr/local/php-7.0/bin/php-config /usr/bin/php-config && \
+  ln -sfn /usr/local/php-7.0/bin/phpize /usr/bin/phpize && \
   composer install && \
   mv vendor /usr/local/vendor-7.0
 

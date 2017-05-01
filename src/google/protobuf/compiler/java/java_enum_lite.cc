@@ -49,17 +49,6 @@ namespace protobuf {
 namespace compiler {
 namespace java {
 
-namespace {
-bool EnumHasCustomOptions(const EnumDescriptor* descriptor) {
-  if (descriptor->options().unknown_fields().field_count() > 0) return true;
-  for (int i = 0; i < descriptor->value_count(); ++i) {
-    const EnumValueDescriptor* value = descriptor->value(i);
-    if (value->options().unknown_fields().field_count() > 0) return true;
-  }
-  return false;
-}
-}  // namespace
-
 EnumLiteGenerator::EnumLiteGenerator(const EnumDescriptor* descriptor,
                                      bool immutable_api, Context* context)
     : descriptor_(descriptor),
@@ -139,22 +128,30 @@ void EnumLiteGenerator::Generate(io::Printer* printer) {
   // -----------------------------------------------------------------
 
   printer->Print(
-    "\n"
-    "public final int getNumber() {\n"
-    "  return value;\n"
-    "}\n"
-    "\n"
-    "/**\n"
-    " * @deprecated Use {@link #forNumber(int)} instead.\n"
-    " */\n"
-    "@java.lang.Deprecated\n"
-    "public static $classname$ valueOf(int value) {\n"
-    "  return forNumber(value);\n"
-    "}\n"
-    "\n"
-    "public static $classname$ forNumber(int value) {\n"
-    "  switch (value) {\n",
-    "classname", descriptor_->name());
+      "\n"
+      "public final int getNumber() {\n");
+  if (SupportUnknownEnumValue(descriptor_->file())) {
+    printer->Print(
+        "  if (this == UNRECOGNIZED) {\n"
+        "    throw new java.lang.IllegalArgumentException(\n"
+        "        \"Can't get the number of an unknown enum value.\");\n"
+        "  }\n");
+  }
+  printer->Print(
+      "  return value;\n"
+      "}\n"
+      "\n"
+      "/**\n"
+      " * @deprecated Use {@link #forNumber(int)} instead.\n"
+      " */\n"
+      "@java.lang.Deprecated\n"
+      "public static $classname$ valueOf(int value) {\n"
+      "  return forNumber(value);\n"
+      "}\n"
+      "\n"
+      "public static $classname$ forNumber(int value) {\n"
+      "  switch (value) {\n",
+      "classname", descriptor_->name());
   printer->Indent();
   printer->Indent();
 

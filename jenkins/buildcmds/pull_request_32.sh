@@ -12,5 +12,5 @@
 export DOCKERFILE_DIR=jenkins/docker32
 export DOCKER_RUN_SCRIPT=jenkins/pull_request_in_docker.sh
 export OUTPUT_DIR=testoutput
-export TEST_SET="php_all_32"
+export TEST_SET="php_all"
 ./jenkins/build_and_run_docker.sh

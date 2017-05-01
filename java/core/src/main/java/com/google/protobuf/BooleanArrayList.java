@@ -30,8 +30,9 @@
 
 package com.google.protobuf;
 
-import com.google.protobuf.Internal.BooleanList;
+import static com.google.protobuf.Internal.checkNotNull;
 
+import com.google.protobuf.Internal.BooleanList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.RandomAccess;
@@ -41,9 +42,8 @@ import java.util.RandomAccess;
  *
  * @author dweis@google.com (Daniel Weis)
  */
-final class BooleanArrayList
-    extends AbstractProtobufList<Boolean>
-    implements BooleanList, RandomAccess {
+final class BooleanArrayList extends AbstractProtobufList<Boolean>
+    implements BooleanList, RandomAccess, PrimitiveNonBoxingCollection {
 
   private static final BooleanArrayList EMPTY_LIST = new BooleanArrayList();
   static {
@@ -198,9 +198,7 @@ final class BooleanArrayList
   public boolean addAll(Collection<? extends Boolean> collection) {
     ensureIsMutable();
 
-    if (collection == null) {
-      throw new NullPointerException();
-    }
+    checkNotNull(collection);
 
     // We specialize when adding another BooleanArrayList to avoid boxing elements.
     if (!(collection instanceof BooleanArrayList)) {

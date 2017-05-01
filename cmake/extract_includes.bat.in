@@ -36,6 +36,7 @@ copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\compiler\parser.h" in
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\compiler\php\php_generator.h" include\google\protobuf\compiler\php\php_generator.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\compiler\plugin.h" include\google\protobuf\compiler\plugin.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\compiler\plugin.pb.h" include\google\protobuf\compiler\plugin.pb.h
+copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\compiler\profile.pb.h" include\google\protobuf\compiler\profile.pb.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\compiler\python\python_generator.h" include\google\protobuf\compiler\python\python_generator.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\compiler\ruby\ruby_generator.h" include\google\protobuf\compiler\ruby\ruby_generator.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\descriptor.h" include\google\protobuf\descriptor.h
@@ -114,6 +115,7 @@ copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\text_format.h" includ
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\timestamp.pb.h" include\google\protobuf\timestamp.pb.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\type.pb.h" include\google\protobuf\type.pb.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\unknown_field_set.h" include\google\protobuf\unknown_field_set.h
+copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\util\delimited_message_util.h" include\google\protobuf\util\delimited_message_util.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\util\field_comparator.h" include\google\protobuf\util\field_comparator.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\util\field_mask_util.h" include\google\protobuf\util\field_mask_util.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\util\json_util.h" include\google\protobuf\util\json_util.h

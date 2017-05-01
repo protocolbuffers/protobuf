@@ -1332,7 +1332,7 @@ final class Utf8 {
       // the index (relative to the start of the array) is also 8-byte aligned. We do this by
       // ANDing the index with 7 to determine the number of bytes that need to be read before
       // we're 8-byte aligned.
-      final int unaligned = (int) offset & 7;
+      final int unaligned = 8 - ((int) offset & 7);
       for (int j = unaligned; j > 0; j--) {
         if (UnsafeUtil.getByte(bytes, offset++) < 0) {
           return unaligned - j;

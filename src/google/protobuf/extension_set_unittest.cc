@@ -32,6 +32,7 @@
 //  Based on original Protocol Buffers design by
 //  Sanjay Ghemawat, Jeff Dean, and others.
 
+#include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/extension_set.h>
 #include <google/protobuf/unittest.pb.h>
 #include <google/protobuf/unittest_mset.pb.h>
@@ -46,7 +47,6 @@
 
 #include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
-#include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/testing/googletest.h>
 #include <gtest/gtest.h>
 #include <google/protobuf/stubs/stl_util.h>

@@ -31,11 +31,26 @@ namespace {
 
 }  // namespace
 
+PROTOBUF_CONSTEXPR_VAR ::google::protobuf::internal::ParseTableField
+    const TableStruct::entries[] = {
+  {0, 0, 0, ::google::protobuf::internal::kInvalidMask, 0, 0},
+};
+
+PROTOBUF_CONSTEXPR_VAR ::google::protobuf::internal::AuxillaryParseTableField
+    const TableStruct::aux[] = {
+  ::google::protobuf::internal::AuxillaryParseTableField(),
+};
+PROTOBUF_CONSTEXPR_VAR ::google::protobuf::internal::ParseTable const
+    TableStruct::schema[] = {
+  { NULL, NULL, 0, -1, -1, false },
+};
+
 const ::google::protobuf::uint32 TableStruct::offsets[] = {
   ~0u,  // no _has_bits_
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FieldMask, _internal_metadata_),
   ~0u,  // no _extensions_
   ~0u,  // no _oneof_case_
+  ~0u,  // no _weak_field_map_
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(FieldMask, paths_),
 };
 
@@ -159,7 +174,7 @@ void FieldMask::SetCachedSize(int size) const {
 }
 const ::google::protobuf::Descriptor* FieldMask::descriptor() {
   protobuf_google_2fprotobuf_2ffield_5fmask_2eproto::protobuf_AssignDescriptorsOnce();
-  return protobuf_google_2fprotobuf_2ffield_5fmask_2eproto::file_level_metadata[0].descriptor;
+  return protobuf_google_2fprotobuf_2ffield_5fmask_2eproto::file_level_metadata[kIndexInFileMessages].descriptor;
 }
 
 const FieldMask& FieldMask::default_instance() {
@@ -231,6 +246,9 @@ failure:
 void FieldMask::SerializeWithCachedSizes(
     ::google::protobuf::io::CodedOutputStream* output) const {
   // @@protoc_insertion_point(serialize_start:google.protobuf.FieldMask)
+  ::google::protobuf::uint32 cached_has_bits = 0;
+  (void) cached_has_bits;
+
   // repeated string paths = 1;
   for (int i = 0, n = this->paths_size(); i < n; i++) {
     ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
@@ -246,8 +264,10 @@ void FieldMask::SerializeWithCachedSizes(
 
 ::google::protobuf::uint8* FieldMask::InternalSerializeWithCachedSizesToArray(
     bool deterministic, ::google::protobuf::uint8* target) const {
-  (void)deterministic;  // Unused
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.FieldMask)
+  ::google::protobuf::uint32 cached_has_bits = 0;
+  (void) cached_has_bits;
+
   // repeated string paths = 1;
   for (int i = 0, n = this->paths_size(); i < n; i++) {
     ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
@@ -300,6 +320,9 @@ void FieldMask::MergeFrom(const FieldMask& from) {
 // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.FieldMask)
   GOOGLE_DCHECK_NE(&from, this);
   _internal_metadata_.MergeFrom(from._internal_metadata_);
+  ::google::protobuf::uint32 cached_has_bits = 0;
+  (void) cached_has_bits;
+
   paths_.MergeFrom(from.paths_);
 }
 
@@ -326,13 +349,13 @@ void FieldMask::Swap(FieldMask* other) {
   InternalSwap(other);
 }
 void FieldMask::InternalSwap(FieldMask* other) {
-  paths_.UnsafeArenaSwap(&other->paths_);
+  paths_.InternalSwap(&other->paths_);
   std::swap(_cached_size_, other->_cached_size_);
 }
 
 ::google::protobuf::Metadata FieldMask::GetMetadata() const {
   protobuf_google_2fprotobuf_2ffield_5fmask_2eproto::protobuf_AssignDescriptorsOnce();
-  return protobuf_google_2fprotobuf_2ffield_5fmask_2eproto::file_level_metadata[0];
+  return protobuf_google_2fprotobuf_2ffield_5fmask_2eproto::file_level_metadata[kIndexInFileMessages];
 }
 
 #if PROTOBUF_INLINE_NOT_IN_HEADERS
@@ -364,6 +387,7 @@ void FieldMask::set_paths(int index, ::std::string&& value) {
 }
 #endif
 void FieldMask::set_paths(int index, const char* value) {
+  GOOGLE_DCHECK(value != NULL);
   paths_.Mutable(index)->assign(value);
   // @@protoc_insertion_point(field_set_char:google.protobuf.FieldMask.paths)
 }
@@ -382,11 +406,12 @@ void FieldMask::add_paths(const ::std::string& value) {
 }
 #if LANG_CXX11
 void FieldMask::add_paths(::std::string&& value) {
-  paths_.Add()->assign(std::move(value));
+  paths_.Add(std::move(value));
   // @@protoc_insertion_point(field_add:google.protobuf.FieldMask.paths)
 }
 #endif
 void FieldMask::add_paths(const char* value) {
+  GOOGLE_DCHECK(value != NULL);
   paths_.Add()->assign(value);
   // @@protoc_insertion_point(field_add_char:google.protobuf.FieldMask.paths)
 }

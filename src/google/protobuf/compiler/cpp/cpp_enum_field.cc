@@ -318,7 +318,7 @@ GenerateMergingCode(io::Printer* printer) const {
 
 void RepeatedEnumFieldGenerator::
 GenerateSwappingCode(io::Printer* printer) const {
-  printer->Print(variables_, "$name$_.UnsafeArenaSwap(&other->$name$_);\n");
+  printer->Print(variables_, "$name$_.InternalSwap(&other->$name$_);\n");
 }
 
 void RepeatedEnumFieldGenerator::
@@ -461,20 +461,14 @@ GenerateSerializeWithCachedSizesToArray(io::Printer* printer) const {
       "    target);\n"
       "  target = ::google::protobuf::io::CodedOutputStream::WriteVarint32ToArray("
       "    _$name$_cached_byte_size_, target);\n"
-      "}\n");
-  }
-  printer->Print(variables_,
-      "for (int i = 0, n = this->$name$_size(); i < n; i++) {\n");
-  if (descriptor_->is_packed()) {
-    printer->Print(variables_,
       "  target = ::google::protobuf::internal::WireFormatLite::WriteEnumNoTagToArray(\n"
-      "    this->$name$(i), target);\n");
+      "    this->$name$_, target);\n"
+      "}\n");
   } else {
     printer->Print(variables_,
-      "  target = ::google::protobuf::internal::WireFormatLite::WriteEnumToArray(\n"
-      "    $number$, this->$name$(i), target);\n");
+      "target = ::google::protobuf::internal::WireFormatLite::WriteEnumToArray(\n"
+      "  $number$, this->$name$_, target);\n");
   }
-  printer->Print("}\n");
 }
 
 void RepeatedEnumFieldGenerator::

@@ -355,8 +355,8 @@ jspb.BinaryEncoder.prototype.writeInt64 = function(value) {
  */
 jspb.BinaryEncoder.prototype.writeInt64String = function(value) {
   goog.asserts.assert(value == Math.floor(value));
-  goog.asserts.assert((value >= -jspb.BinaryConstants.TWO_TO_63) &&
-                      (value < jspb.BinaryConstants.TWO_TO_63));
+  goog.asserts.assert((+value >= -jspb.BinaryConstants.TWO_TO_63) &&
+                      (+value < jspb.BinaryConstants.TWO_TO_63));
   jspb.utils.splitHash64(jspb.utils.decimalStringToHash64(value));
   this.writeSplitFixed64(jspb.utils.split64Low, jspb.utils.split64High);
 };

@@ -154,6 +154,13 @@ class MapReflectionFriend;     // scalar_map_container.h
 }
 
 
+namespace internal {
+class ReflectionOps;     // reflection_ops.h
+class MapKeySorter;      // wire_format.cc
+class WireFormat;        // wire_format.h
+class MapFieldReflectionTest;  // map_test.cc
+}
+
 template<typename T>
 class RepeatedField;     // repeated_field.h
 
@@ -245,7 +252,9 @@ class LIBPROTOBUF_EXPORT Message : public MessageLite {
   // using reflection (rather than the generated code implementation for
   // ByteSize()). Like ByteSize(), its CPU time is linear in the number of
   // fields defined for the proto.
-  virtual int SpaceUsed() const;
+  virtual size_t SpaceUsedLong() const;
+
+  int SpaceUsed() const { return internal::ToIntSize(SpaceUsedLong()); }
 
   // Debugging & Testing----------------------------------------------
 
@@ -417,7 +426,11 @@ class LIBPROTOBUF_EXPORT Reflection {
   virtual UnknownFieldSet* MutableUnknownFields(Message* message) const = 0;
 
   // Estimate the amount of memory used by the message object.
-  virtual int SpaceUsed(const Message& message) const = 0;
+  virtual size_t SpaceUsedLong(const Message& message) const = 0;
+
+  int SpaceUsed(const Message& message) const {
+    return internal::ToIntSize(SpaceUsedLong(message));
+  }
 
   // Check if the given non-repeated field is set.
   virtual bool HasField(const Message& message,
@@ -930,6 +943,10 @@ class LIBPROTOBUF_EXPORT Reflection {
   template<typename T, typename Enable>
   friend class MutableRepeatedFieldRef;
   friend class ::google::protobuf::python::MapReflectionFriend;
+  friend class internal::MapFieldReflectionTest;
+  friend class internal::MapKeySorter;
+  friend class internal::WireFormat;
+  friend class internal::ReflectionOps;
 
   // Special version for specialized implementations of string.  We can't call
   // MutableRawRepeatedField directly here because we don't have access to

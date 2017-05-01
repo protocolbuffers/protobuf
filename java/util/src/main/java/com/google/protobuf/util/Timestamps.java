@@ -297,7 +297,7 @@ public final class Timestamps {
    * Convert a Timestamp to the number of microseconds elapsed from the epoch.
    *
    * <p>The result will be rounded down to the nearest microsecond. E.g., if the timestamp
-   * represents "1969-12-31T23:59:59.999999999Z", it will be rounded to -1 millisecond.
+   * represents "1969-12-31T23:59:59.999999999Z", it will be rounded to -1 microsecond.
    */
   public static long toMicros(Timestamp timestamp) {
     checkValid(timestamp);
