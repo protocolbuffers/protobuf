@@ -452,6 +452,28 @@ public class JsonFormatTest extends TestCase {
     assertEquals(NullValue.NULL_VALUE, message.getOneofNullValue());
   }
 
+  public void testOneOfWithIncludingDefaultValueFields() throws Exception {
+    TestOneof.Builder builder = TestOneof.newBuilder();
+    final JsonFormat.Printer printer = JsonFormat.printer().includingDefaultValueFields();
+
+    final String jsonExpectedEmpty = printer.print(builder);
+    assertEquals("{\n}", jsonExpectedEmpty);
+
+    builder.setOneofInt32(42);
+    final String jsonExpectedInt32 = printer.print(builder);
+    assertEquals("{\n" + "  \"oneofInt32\": 42\n" + "}", jsonExpectedInt32);
+
+    final NestedMessage nestedMessage = NestedMessage.newBuilder().setValue(42).build();
+    builder.setOneofNestedMessage(nestedMessage);
+    final String jsonExpectedNestedMessage = printer.print(builder);
+    assertEquals("{\n" +
+            "  \"oneofNestedMessage\": {\n" +
+            "    \"value\": 42\n" +
+            "  }\n" +
+            "}", jsonExpectedNestedMessage);
+
+  }
+
   public void testParserRejectDuplicatedFields() throws Exception {
     // TODO(xiaofeng): The parser we are currently using (GSON) will accept and keep the last
     // one if multiple entries have the same name. This is not the desired behavior but it can
