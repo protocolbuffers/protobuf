@@ -9,7 +9,6 @@
 # HINT:  Flags passed to generate_descriptor_proto.sh will be passed directly
 #   to make when building protoc.  This is particularly useful for passing
 #   -j4 to run 4 jobs simultaneously.
-
 if test ! -e src/google/protobuf/stubs/common.h; then
   cat >&2 << __EOF__
 Could not find source code.  Make sure you are running this script from the
@@ -17,7 +16,6 @@ root of the distribution tree.
 __EOF__
   exit 1
 fi
-
 if test ! -e src/Makefile; then
   cat >&2 << __EOF__
 Could not find src/Makefile.  You must run ./configure (and perhaps
@@ -25,9 +23,7 @@ Could not find src/Makefile.  You must run ./configure (and perhaps
 __EOF__
   exit 1
 fi
-
 cd src
-
 declare -a RUNTIME_PROTO_FILES=(\
   google/protobuf/any.proto \
   google/protobuf/api.proto \
@@ -49,13 +45,11 @@ while [ $CORE_PROTO_IS_CORRECT -ne 1 ]
 do
   echo "Round $PROCESS_ROUND"
   CORE_PROTO_IS_CORRECT=1
-
   make $@ protoc
   if test $? -ne 0; then
     echo "Failed to build protoc."
     exit 1
   fi
-
   ./protoc --cpp_out=dllexport_decl=LIBPROTOBUF_EXPORT:$TMP ${RUNTIME_PROTO_FILES[@]} && \
   ./protoc --cpp_out=dllexport_decl=LIBPROTOC_EXPORT:$TMP google/protobuf/compiler/plugin.proto
 
@@ -70,7 +64,6 @@ do
       CORE_PROTO_IS_CORRECT=0
     fi
   done
-
   diff google/protobuf/compiler/plugin.pb.h $TMP/google/protobuf/compiler/plugin.pb.h > /dev/null
   if test $? -ne 0; then
     CORE_PROTO_IS_CORRECT=0
@@ -79,7 +72,6 @@ do
   if test $? -ne 0; then
     CORE_PROTO_IS_CORRECT=0
   fi
-
   # Only override the output if the files are different to avoid re-compilation
   # of the protoc.
   if [ $CORE_PROTO_IS_CORRECT -ne 1 ]; then
@@ -94,7 +86,6 @@ do
   PROCESS_ROUND=$((PROCESS_ROUND + 1))
 done
 cd ..
-
 if test -x objectivec/generate_well_known_types.sh; then
   echo "Generating messages for objc."
   objectivec/generate_well_known_types.sh $@
