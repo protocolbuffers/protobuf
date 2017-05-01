@@ -331,7 +331,7 @@ class LIBPROTOBUF_EXPORT Type : public ::google::protobuf::Message /* @@protoc_i
   ::google::protobuf::SourceContext* source_context_;
   int syntax_;
   mutable int _cached_size_;
-  friend struct LIBPROTOBUF_EXPORT protobuf_google_2fprotobuf_2ftype_2eproto::TableStruct;
+  friend struct protobuf_google_2fprotobuf_2ftype_2eproto::TableStruct;
 };
 // -------------------------------------------------------------------
 
@@ -620,7 +620,7 @@ class LIBPROTOBUF_EXPORT Field : public ::google::protobuf::Message /* @@protoc_
   ::google::protobuf::int32 oneof_index_;
   bool packed_;
   mutable int _cached_size_;
-  friend struct LIBPROTOBUF_EXPORT protobuf_google_2fprotobuf_2ftype_2eproto::TableStruct;
+  friend struct protobuf_google_2fprotobuf_2ftype_2eproto::TableStruct;
 };
 // -------------------------------------------------------------------
 
@@ -776,7 +776,7 @@ class LIBPROTOBUF_EXPORT Enum : public ::google::protobuf::Message /* @@protoc_i
   ::google::protobuf::SourceContext* source_context_;
   int syntax_;
   mutable int _cached_size_;
-  friend struct LIBPROTOBUF_EXPORT protobuf_google_2fprotobuf_2ftype_2eproto::TableStruct;
+  friend struct protobuf_google_2fprotobuf_2ftype_2eproto::TableStruct;
 };
 // -------------------------------------------------------------------
 
@@ -902,7 +902,7 @@ class LIBPROTOBUF_EXPORT EnumValue : public ::google::protobuf::Message /* @@pro
   ::google::protobuf::internal::ArenaStringPtr name_;
   ::google::protobuf::int32 number_;
   mutable int _cached_size_;
-  friend struct LIBPROTOBUF_EXPORT protobuf_google_2fprotobuf_2ftype_2eproto::TableStruct;
+  friend struct protobuf_google_2fprotobuf_2ftype_2eproto::TableStruct;
 };
 // -------------------------------------------------------------------
 
@@ -1025,7 +1025,7 @@ class LIBPROTOBUF_EXPORT Option : public ::google::protobuf::Message /* @@protoc
   ::google::protobuf::internal::ArenaStringPtr name_;
   ::google::protobuf::Any* value_;
   mutable int _cached_size_;
-  friend struct LIBPROTOBUF_EXPORT protobuf_google_2fprotobuf_2ftype_2eproto::TableStruct;
+  friend struct protobuf_google_2fprotobuf_2ftype_2eproto::TableStruct;
 };
 // ===================================================================
 

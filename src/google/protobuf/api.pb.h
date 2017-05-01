@@ -237,7 +237,7 @@ class LIBPROTOBUF_EXPORT Api : public ::google::protobuf::Message /* @@protoc_in
   ::google::protobuf::SourceContext* source_context_;
   int syntax_;
   mutable int _cached_size_;
-  friend struct LIBPROTOBUF_EXPORT protobuf_google_2fprotobuf_2fapi_2eproto::TableStruct;
+  friend struct protobuf_google_2fprotobuf_2fapi_2eproto::TableStruct;
 };
 // -------------------------------------------------------------------
 
@@ -392,7 +392,7 @@ class LIBPROTOBUF_EXPORT Method : public ::google::protobuf::Message /* @@protoc
   bool response_streaming_;
   int syntax_;
   mutable int _cached_size_;
-  friend struct LIBPROTOBUF_EXPORT protobuf_google_2fprotobuf_2fapi_2eproto::TableStruct;
+  friend struct protobuf_google_2fprotobuf_2fapi_2eproto::TableStruct;
 };
 // -------------------------------------------------------------------
 
@@ -498,7 +498,7 @@ class LIBPROTOBUF_EXPORT Mixin : public ::google::protobuf::Message /* @@protoc_
   ::google::protobuf::internal::ArenaStringPtr name_;
   ::google::protobuf::internal::ArenaStringPtr root_;
   mutable int _cached_size_;
-  friend struct LIBPROTOBUF_EXPORT protobuf_google_2fprotobuf_2fapi_2eproto::TableStruct;
+  friend struct protobuf_google_2fprotobuf_2fapi_2eproto::TableStruct;
 };
 // ===================================================================
 

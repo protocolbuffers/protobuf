@@ -456,30 +456,6 @@ class LIBPROTOBUF_EXPORT FileDescriptorProto : public ::google::protobuf::Messag
   const ::google::protobuf::RepeatedPtrField< ::std::string>& dependency() const;
   ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_dependency();
 
-  // repeated int32 public_dependency = 10;
-  int public_dependency_size() const;
-  void clear_public_dependency();
-  static const int kPublicDependencyFieldNumber = 10;
-  ::google::protobuf::int32 public_dependency(int index) const;
-  void set_public_dependency(int index, ::google::protobuf::int32 value);
-  void add_public_dependency(::google::protobuf::int32 value);
-  const ::google::protobuf::RepeatedField< ::google::protobuf::int32 >&
-      public_dependency() const;
-  ::google::protobuf::RepeatedField< ::google::protobuf::int32 >*
-      mutable_public_dependency();
-
-  // repeated int32 weak_dependency = 11;
-  int weak_dependency_size() const;
-  void clear_weak_dependency();
-  static const int kWeakDependencyFieldNumber = 11;
-  ::google::protobuf::int32 weak_dependency(int index) const;
-  void set_weak_dependency(int index, ::google::protobuf::int32 value);
-  void add_weak_dependency(::google::protobuf::int32 value);
-  const ::google::protobuf::RepeatedField< ::google::protobuf::int32 >&
-      weak_dependency() const;
-  ::google::protobuf::RepeatedField< ::google::protobuf::int32 >*
-      mutable_weak_dependency();
-
   // repeated .google.protobuf.DescriptorProto message_type = 4;
   int message_type_size() const;
   void clear_message_type();
@@ -527,6 +503,30 @@ class LIBPROTOBUF_EXPORT FileDescriptorProto : public ::google::protobuf::Messag
       mutable_extension();
   const ::google::protobuf::RepeatedPtrField< ::google::protobuf::FieldDescriptorProto >&
       extension() const;
+
+  // repeated int32 public_dependency = 10;
+  int public_dependency_size() const;
+  void clear_public_dependency();
+  static const int kPublicDependencyFieldNumber = 10;
+  ::google::protobuf::int32 public_dependency(int index) const;
+  void set_public_dependency(int index, ::google::protobuf::int32 value);
+  void add_public_dependency(::google::protobuf::int32 value);
+  const ::google::protobuf::RepeatedField< ::google::protobuf::int32 >&
+      public_dependency() const;
+  ::google::protobuf::RepeatedField< ::google::protobuf::int32 >*
+      mutable_public_dependency();
+
+  // repeated int32 weak_dependency = 11;
+  int weak_dependency_size() const;
+  void clear_weak_dependency();
+  static const int kWeakDependencyFieldNumber = 11;
+  ::google::protobuf::int32 weak_dependency(int index) const;
+  void set_weak_dependency(int index, ::google::protobuf::int32 value);
+  void add_weak_dependency(::google::protobuf::int32 value);
+  const ::google::protobuf::RepeatedField< ::google::protobuf::int32 >&
+      weak_dependency() const;
+  ::google::protobuf::RepeatedField< ::google::protobuf::int32 >*
+      mutable_weak_dependency();
 
   // optional string name = 1;
   bool has_name() const;
@@ -608,12 +608,12 @@ class LIBPROTOBUF_EXPORT FileDescriptorProto : public ::google::protobuf::Messag
   ::google::protobuf::internal::HasBits<1> _has_bits_;
   mutable int _cached_size_;
   ::google::protobuf::RepeatedPtrField< ::std::string> dependency_;
-  ::google::protobuf::RepeatedField< ::google::protobuf::int32 > public_dependency_;
-  ::google::protobuf::RepeatedField< ::google::protobuf::int32 > weak_dependency_;
   ::google::protobuf::RepeatedPtrField< ::google::protobuf::DescriptorProto > message_type_;
   ::google::protobuf::RepeatedPtrField< ::google::protobuf::EnumDescriptorProto > enum_type_;
   ::google::protobuf::RepeatedPtrField< ::google::protobuf::ServiceDescriptorProto > service_;
   ::google::protobuf::RepeatedPtrField< ::google::protobuf::FieldDescriptorProto > extension_;
+  ::google::protobuf::RepeatedField< ::google::protobuf::int32 > public_dependency_;
+  ::google::protobuf::RepeatedField< ::google::protobuf::int32 > weak_dependency_;
   ::google::protobuf::internal::ArenaStringPtr name_;
   ::google::protobuf::internal::ArenaStringPtr package_;
   ::google::protobuf::internal::ArenaStringPtr syntax_;
@@ -923,18 +923,6 @@ class LIBPROTOBUF_EXPORT DescriptorProto : public ::google::protobuf::Message /*
   const ::google::protobuf::RepeatedPtrField< ::google::protobuf::FieldDescriptorProto >&
       field() const;
 
-  // repeated .google.protobuf.FieldDescriptorProto extension = 6;
-  int extension_size() const;
-  void clear_extension();
-  static const int kExtensionFieldNumber = 6;
-  const ::google::protobuf::FieldDescriptorProto& extension(int index) const;
-  ::google::protobuf::FieldDescriptorProto* mutable_extension(int index);
-  ::google::protobuf::FieldDescriptorProto* add_extension();
-  ::google::protobuf::RepeatedPtrField< ::google::protobuf::FieldDescriptorProto >*
-      mutable_extension();
-  const ::google::protobuf::RepeatedPtrField< ::google::protobuf::FieldDescriptorProto >&
-      extension() const;
-
   // repeated .google.protobuf.DescriptorProto nested_type = 3;
   int nested_type_size() const;
   void clear_nested_type();
@@ -970,6 +958,18 @@ class LIBPROTOBUF_EXPORT DescriptorProto : public ::google::protobuf::Message /*
       mutable_extension_range();
   const ::google::protobuf::RepeatedPtrField< ::google::protobuf::DescriptorProto_ExtensionRange >&
       extension_range() const;
+
+  // repeated .google.protobuf.FieldDescriptorProto extension = 6;
+  int extension_size() const;
+  void clear_extension();
+  static const int kExtensionFieldNumber = 6;
+  const ::google::protobuf::FieldDescriptorProto& extension(int index) const;
+  ::google::protobuf::FieldDescriptorProto* mutable_extension(int index);
+  ::google::protobuf::FieldDescriptorProto* add_extension();
+  ::google::protobuf::RepeatedPtrField< ::google::protobuf::FieldDescriptorProto >*
+      mutable_extension();
+  const ::google::protobuf::RepeatedPtrField< ::google::protobuf::FieldDescriptorProto >&
+      extension() const;
 
   // repeated .google.protobuf.OneofDescriptorProto oneof_decl = 8;
   int oneof_decl_size() const;
@@ -1052,10 +1052,10 @@ class LIBPROTOBUF_EXPORT DescriptorProto : public ::google::protobuf::Message /*
   ::google::protobuf::internal::HasBits<1> _has_bits_;
   mutable int _cached_size_;
   ::google::protobuf::RepeatedPtrField< ::google::protobuf::FieldDescriptorProto > field_;
-  ::google::protobuf::RepeatedPtrField< ::google::protobuf::FieldDescriptorProto > extension_;
   ::google::protobuf::RepeatedPtrField< ::google::protobuf::DescriptorProto > nested_type_;
   ::google::protobuf::RepeatedPtrField< ::google::protobuf::EnumDescriptorProto > enum_type_;
   ::google::protobuf::RepeatedPtrField< ::google::protobuf::DescriptorProto_ExtensionRange > extension_range_;
+  ::google::protobuf::RepeatedPtrField< ::google::protobuf::FieldDescriptorProto > extension_;
   ::google::protobuf::RepeatedPtrField< ::google::protobuf::OneofDescriptorProto > oneof_decl_;
   ::google::protobuf::RepeatedPtrField< ::google::protobuf::DescriptorProto_ReservedRange > reserved_range_;
   ::google::protobuf::RepeatedPtrField< ::std::string> reserved_name_;
@@ -1241,21 +1241,6 @@ class LIBPROTOBUF_EXPORT FieldDescriptorProto : public ::google::protobuf::Messa
   ::std::string* release_name();
   void set_allocated_name(::std::string* name);
 
-  // optional string type_name = 6;
-  bool has_type_name() const;
-  void clear_type_name();
-  static const int kTypeNameFieldNumber = 6;
-  const ::std::string& type_name() const;
-  void set_type_name(const ::std::string& value);
-  #if LANG_CXX11
-  void set_type_name(::std::string&& value);
-  #endif
-  void set_type_name(const char* value);
-  void set_type_name(const char* value, size_t size);
-  ::std::string* mutable_type_name();
-  ::std::string* release_type_name();
-  void set_allocated_type_name(::std::string* type_name);
-
   // optional string extendee = 2;
   bool has_extendee() const;
   void clear_extendee();
@@ -1270,6 +1255,21 @@ class LIBPROTOBUF_EXPORT FieldDescriptorProto : public ::google::protobuf::Messa
   ::std::string* mutable_extendee();
   ::std::string* release_extendee();
   void set_allocated_extendee(::std::string* extendee);
+
+  // optional string type_name = 6;
+  bool has_type_name() const;
+  void clear_type_name();
+  static const int kTypeNameFieldNumber = 6;
+  const ::std::string& type_name() const;
+  void set_type_name(const ::std::string& value);
+  #if LANG_CXX11
+  void set_type_name(::std::string&& value);
+  #endif
+  void set_type_name(const char* value);
+  void set_type_name(const char* value, size_t size);
+  ::std::string* mutable_type_name();
+  ::std::string* release_type_name();
+  void set_allocated_type_name(::std::string* type_name);
 
   // optional string default_value = 7;
   bool has_default_value() const;
@@ -1365,8 +1365,8 @@ class LIBPROTOBUF_EXPORT FieldDescriptorProto : public ::google::protobuf::Messa
   ::google::protobuf::internal::HasBits<1> _has_bits_;
   mutable int _cached_size_;
   ::google::protobuf::internal::ArenaStringPtr name_;
-  ::google::protobuf::internal::ArenaStringPtr type_name_;
   ::google::protobuf::internal::ArenaStringPtr extendee_;
+  ::google::protobuf::internal::ArenaStringPtr type_name_;
   ::google::protobuf::internal::ArenaStringPtr default_value_;
   ::google::protobuf::internal::ArenaStringPtr json_name_;
   ::google::protobuf::FieldOptions* options_;
@@ -2681,13 +2681,6 @@ class LIBPROTOBUF_EXPORT FieldOptions : public ::google::protobuf::Message /* @@
   ::google::protobuf::FieldOptions_CType ctype() const;
   void set_ctype(::google::protobuf::FieldOptions_CType value);
 
-  // optional .google.protobuf.FieldOptions.JSType jstype = 6 [default = JS_NORMAL];
-  bool has_jstype() const;
-  void clear_jstype();
-  static const int kJstypeFieldNumber = 6;
-  ::google::protobuf::FieldOptions_JSType jstype() const;
-  void set_jstype(::google::protobuf::FieldOptions_JSType value);
-
   // optional bool packed = 2;
   bool has_packed() const;
   void clear_packed();
@@ -2716,6 +2709,13 @@ class LIBPROTOBUF_EXPORT FieldOptions : public ::google::protobuf::Message /* @@
   bool weak() const;
   void set_weak(bool value);
 
+  // optional .google.protobuf.FieldOptions.JSType jstype = 6 [default = JS_NORMAL];
+  bool has_jstype() const;
+  void clear_jstype();
+  static const int kJstypeFieldNumber = 6;
+  ::google::protobuf::FieldOptions_JSType jstype() const;
+  void set_jstype(::google::protobuf::FieldOptions_JSType value);
+
   GOOGLE_PROTOBUF_EXTENSION_ACCESSORS(FieldOptions)
   // @@protoc_insertion_point(class_scope:google.protobuf.FieldOptions)
  private:
@@ -2739,11 +2739,11 @@ class LIBPROTOBUF_EXPORT FieldOptions : public ::google::protobuf::Message /* @@
   mutable int _cached_size_;
   ::google::protobuf::RepeatedPtrField< ::google::protobuf::UninterpretedOption > uninterpreted_option_;
   int ctype_;
-  int jstype_;
   bool packed_;
   bool lazy_;
   bool deprecated_;
   bool weak_;
+  int jstype_;
   friend struct protobuf_google_2fprotobuf_2fdescriptor_2eproto::TableStruct;
 };
 // -------------------------------------------------------------------
@@ -5347,13 +5347,13 @@ inline void FieldDescriptorProto::set_type(::google::protobuf::FieldDescriptorPr
 
 // optional string type_name = 6;
 inline bool FieldDescriptorProto::has_type_name() const {
-  return (_has_bits_[0] & 0x00000002u) != 0;
+  return (_has_bits_[0] & 0x00000004u) != 0;
 }
 inline void FieldDescriptorProto::set_has_type_name() {
-  _has_bits_[0] |= 0x00000002u;
+  _has_bits_[0] |= 0x00000004u;
 }
 inline void FieldDescriptorProto::clear_has_type_name() {
-  _has_bits_[0] &= ~0x00000002u;
+  _has_bits_[0] &= ~0x00000004u;
 }
 inline void FieldDescriptorProto::clear_type_name() {
   type_name_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
@@ -5409,13 +5409,13 @@ inline void FieldDescriptorProto::set_allocated_type_name(::std::string* type_na
 
 // optional string extendee = 2;
 inline bool FieldDescriptorProto::has_extendee() const {
-  return (_has_bits_[0] & 0x00000004u) != 0;
+  return (_has_bits_[0] & 0x00000002u) != 0;
 }
 inline void FieldDescriptorProto::set_has_extendee() {
-  _has_bits_[0] |= 0x00000004u;
+  _has_bits_[0] |= 0x00000002u;
 }
 inline void FieldDescriptorProto::clear_has_extendee() {
-  _has_bits_[0] &= ~0x00000004u;
+  _has_bits_[0] &= ~0x00000002u;
 }
 inline void FieldDescriptorProto::clear_extendee() {
   extendee_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
@@ -7319,13 +7319,13 @@ inline void FieldOptions::set_ctype(::google::protobuf::FieldOptions_CType value
 
 // optional bool packed = 2;
 inline bool FieldOptions::has_packed() const {
-  return (_has_bits_[0] & 0x00000004u) != 0;
+  return (_has_bits_[0] & 0x00000002u) != 0;
 }
 inline void FieldOptions::set_has_packed() {
-  _has_bits_[0] |= 0x00000004u;
+  _has_bits_[0] |= 0x00000002u;
 }
 inline void FieldOptions::clear_has_packed() {
-  _has_bits_[0] &= ~0x00000004u;
+  _has_bits_[0] &= ~0x00000002u;
 }
 inline void FieldOptions::clear_packed() {
   packed_ = false;
@@ -7343,13 +7343,13 @@ inline void FieldOptions::set_packed(bool value) {
 
 // optional .google.protobuf.FieldOptions.JSType jstype = 6 [default = JS_NORMAL];
 inline bool FieldOptions::has_jstype() const {
-  return (_has_bits_[0] & 0x00000002u) != 0;
+  return (_has_bits_[0] & 0x00000020u) != 0;
 }
 inline void FieldOptions::set_has_jstype() {
-  _has_bits_[0] |= 0x00000002u;
+  _has_bits_[0] |= 0x00000020u;
 }
 inline void FieldOptions::clear_has_jstype() {
-  _has_bits_[0] &= ~0x00000002u;
+  _has_bits_[0] &= ~0x00000020u;
 }
 inline void FieldOptions::clear_jstype() {
   jstype_ = 0;
@@ -7368,13 +7368,13 @@ inline void FieldOptions::set_jstype(::google::protobuf::FieldOptions_JSType val
 
 // optional bool lazy = 5 [default = false];
 inline bool FieldOptions::has_lazy() const {
-  return (_has_bits_[0] & 0x00000008u) != 0;
+  return (_has_bits_[0] & 0x00000004u) != 0;
 }
 inline void FieldOptions::set_has_lazy() {
-  _has_bits_[0] |= 0x00000008u;
+  _has_bits_[0] |= 0x00000004u;
 }
 inline void FieldOptions::clear_has_lazy() {
-  _has_bits_[0] &= ~0x00000008u;
+  _has_bits_[0] &= ~0x00000004u;
 }
 inline void FieldOptions::clear_lazy() {
   lazy_ = false;
@@ -7392,13 +7392,13 @@ inline void FieldOptions::set_lazy(bool value) {
 
 // optional bool deprecated = 3 [default = false];
 inline bool FieldOptions::has_deprecated() const {
-  return (_has_bits_[0] & 0x00000010u) != 0;
+  return (_has_bits_[0] & 0x00000008u) != 0;
 }
 inline void FieldOptions::set_has_deprecated() {
-  _has_bits_[0] |= 0x00000010u;
+  _has_bits_[0] |= 0x00000008u;
 }
 inline void FieldOptions::clear_has_deprecated() {
-  _has_bits_[0] &= ~0x00000010u;
+  _has_bits_[0] &= ~0x00000008u;
 }
 inline void FieldOptions::clear_deprecated() {
   deprecated_ = false;
@@ -7416,13 +7416,13 @@ inline void FieldOptions::set_deprecated(bool value) {
 
 // optional bool weak = 10 [default = false];
 inline bool FieldOptions::has_weak() const {
-  return (_has_bits_[0] & 0x00000020u) != 0;
+  return (_has_bits_[0] & 0x00000010u) != 0;
 }
 inline void FieldOptions::set_has_weak() {
-  _has_bits_[0] |= 0x00000020u;
+  _has_bits_[0] |= 0x00000010u;
 }
 inline void FieldOptions::clear_has_weak() {
-  _has_bits_[0] &= ~0x00000020u;
+  _has_bits_[0] &= ~0x00000010u;
 }
 inline void FieldOptions::clear_weak() {
   weak_ = false;

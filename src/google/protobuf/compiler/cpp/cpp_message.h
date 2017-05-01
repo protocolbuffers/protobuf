@@ -155,9 +155,14 @@ class MessageGenerator {
   void GenerateIsInitialized(io::Printer* printer);
 
   // Helpers for GenerateSerializeWithCachedSizes().
+  //
+  // cached_has_bit_index maintains that:
+  //   cached_has_bits = _has_bits_[cached_has_bit_index]
+  // for cached_has_bit_index >= 0
   void GenerateSerializeOneField(io::Printer* printer,
                                  const FieldDescriptor* field,
-                                 bool unbounded);
+                                 bool unbounded,
+                                 int cached_has_bits_index);
   // Generate a switch statement to serialize 2+ fields from the same oneof.
   // Or, if fields.size() == 1, just call GenerateSerializeOneField().
   void GenerateSerializeOneofFields(

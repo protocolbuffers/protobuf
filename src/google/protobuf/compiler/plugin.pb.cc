@@ -369,23 +369,27 @@ failure:
 void Version::SerializeWithCachedSizes(
     ::google::protobuf::io::CodedOutputStream* output) const {
   // @@protoc_insertion_point(serialize_start:google.protobuf.compiler.Version)
+  ::google::protobuf::uint32 cached_has_bits = 0;
+  (void) cached_has_bits;
+
+  cached_has_bits = _has_bits_[0];
   // optional int32 major = 1;
-  if (has_major()) {
+  if (cached_has_bits & 0x00000002u) {
     ::google::protobuf::internal::WireFormatLite::WriteInt32(1, this->major(), output);
   }
 
   // optional int32 minor = 2;
-  if (has_minor()) {
+  if (cached_has_bits & 0x00000004u) {
     ::google::protobuf::internal::WireFormatLite::WriteInt32(2, this->minor(), output);
   }
 
   // optional int32 patch = 3;
-  if (has_patch()) {
+  if (cached_has_bits & 0x00000008u) {
     ::google::protobuf::internal::WireFormatLite::WriteInt32(3, this->patch(), output);
   }
 
   // optional string suffix = 4;
-  if (has_suffix()) {
+  if (cached_has_bits & 0x00000001u) {
     ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
       this->suffix().data(), this->suffix().length(),
       ::google::protobuf::internal::WireFormat::SERIALIZE,
@@ -405,23 +409,27 @@ void Version::SerializeWithCachedSizes(
     bool deterministic, ::google::protobuf::uint8* target) const {
   (void)deterministic;  // Unused
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.compiler.Version)
+  ::google::protobuf::uint32 cached_has_bits = 0;
+  (void) cached_has_bits;
+
+  cached_has_bits = _has_bits_[0];
   // optional int32 major = 1;
-  if (has_major()) {
+  if (cached_has_bits & 0x00000002u) {
     target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(1, this->major(), target);
   }
 
   // optional int32 minor = 2;
-  if (has_minor()) {
+  if (cached_has_bits & 0x00000004u) {
     target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(2, this->minor(), target);
   }
 
   // optional int32 patch = 3;
-  if (has_patch()) {
+  if (cached_has_bits & 0x00000008u) {
     target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(3, this->patch(), target);
   }
 
   // optional string suffix = 4;
-  if (has_suffix()) {
+  if (cached_has_bits & 0x00000001u) {
     ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
       this->suffix().data(), this->suffix().length(),
       ::google::protobuf::internal::WireFormat::SERIALIZE,
@@ -887,6 +895,9 @@ failure:
 void CodeGeneratorRequest::SerializeWithCachedSizes(
     ::google::protobuf::io::CodedOutputStream* output) const {
   // @@protoc_insertion_point(serialize_start:google.protobuf.compiler.CodeGeneratorRequest)
+  ::google::protobuf::uint32 cached_has_bits = 0;
+  (void) cached_has_bits;
+
   // repeated string file_to_generate = 1;
   for (int i = 0, n = this->file_to_generate_size(); i < n; i++) {
     ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
@@ -897,8 +908,9 @@ void CodeGeneratorRequest::SerializeWithCachedSizes(
       1, this->file_to_generate(i), output);
   }
 
+  cached_has_bits = _has_bits_[0];
   // optional string parameter = 2;
-  if (has_parameter()) {
+  if (cached_has_bits & 0x00000001u) {
     ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
       this->parameter().data(), this->parameter().length(),
       ::google::protobuf::internal::WireFormat::SERIALIZE,
@@ -908,7 +920,7 @@ void CodeGeneratorRequest::SerializeWithCachedSizes(
   }
 
   // optional .google.protobuf.compiler.Version compiler_version = 3;
-  if (has_compiler_version()) {
+  if (cached_has_bits & 0x00000002u) {
     ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
       3, *this->compiler_version_, output);
   }
@@ -930,6 +942,9 @@ void CodeGeneratorRequest::SerializeWithCachedSizes(
     bool deterministic, ::google::protobuf::uint8* target) const {
   (void)deterministic;  // Unused
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.compiler.CodeGeneratorRequest)
+  ::google::protobuf::uint32 cached_has_bits = 0;
+  (void) cached_has_bits;
+
   // repeated string file_to_generate = 1;
   for (int i = 0, n = this->file_to_generate_size(); i < n; i++) {
     ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
@@ -940,8 +955,9 @@ void CodeGeneratorRequest::SerializeWithCachedSizes(
       WriteStringToArray(1, this->file_to_generate(i), target);
   }
 
+  cached_has_bits = _has_bits_[0];
   // optional string parameter = 2;
-  if (has_parameter()) {
+  if (cached_has_bits & 0x00000001u) {
     ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
       this->parameter().data(), this->parameter().length(),
       ::google::protobuf::internal::WireFormat::SERIALIZE,
@@ -952,7 +968,7 @@ void CodeGeneratorRequest::SerializeWithCachedSizes(
   }
 
   // optional .google.protobuf.compiler.Version compiler_version = 3;
-  if (has_compiler_version()) {
+  if (cached_has_bits & 0x00000002u) {
     target = ::google::protobuf::internal::WireFormatLite::
       InternalWriteMessageNoVirtualToArray(
         3, *this->compiler_version_, false, target);
@@ -1484,8 +1500,12 @@ failure:
 void CodeGeneratorResponse_File::SerializeWithCachedSizes(
     ::google::protobuf::io::CodedOutputStream* output) const {
   // @@protoc_insertion_point(serialize_start:google.protobuf.compiler.CodeGeneratorResponse.File)
+  ::google::protobuf::uint32 cached_has_bits = 0;
+  (void) cached_has_bits;
+
+  cached_has_bits = _has_bits_[0];
   // optional string name = 1;
-  if (has_name()) {
+  if (cached_has_bits & 0x00000001u) {
     ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
       this->name().data(), this->name().length(),
       ::google::protobuf::internal::WireFormat::SERIALIZE,
@@ -1495,7 +1515,7 @@ void CodeGeneratorResponse_File::SerializeWithCachedSizes(
   }
 
   // optional string insertion_point = 2;
-  if (has_insertion_point()) {
+  if (cached_has_bits & 0x00000002u) {
     ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
       this->insertion_point().data(), this->insertion_point().length(),
       ::google::protobuf::internal::WireFormat::SERIALIZE,
@@ -1505,7 +1525,7 @@ void CodeGeneratorResponse_File::SerializeWithCachedSizes(
   }
 
   // optional string content = 15;
-  if (has_content()) {
+  if (cached_has_bits & 0x00000004u) {
     ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
       this->content().data(), this->content().length(),
       ::google::protobuf::internal::WireFormat::SERIALIZE,
@@ -1525,8 +1545,12 @@ void CodeGeneratorResponse_File::SerializeWithCachedSizes(
     bool deterministic, ::google::protobuf::uint8* target) const {
   (void)deterministic;  // Unused
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.compiler.CodeGeneratorResponse.File)
+  ::google::protobuf::uint32 cached_has_bits = 0;
+  (void) cached_has_bits;
+
+  cached_has_bits = _has_bits_[0];
   // optional string name = 1;
-  if (has_name()) {
+  if (cached_has_bits & 0x00000001u) {
     ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
       this->name().data(), this->name().length(),
       ::google::protobuf::internal::WireFormat::SERIALIZE,
@@ -1537,7 +1561,7 @@ void CodeGeneratorResponse_File::SerializeWithCachedSizes(
   }
 
   // optional string insertion_point = 2;
-  if (has_insertion_point()) {
+  if (cached_has_bits & 0x00000002u) {
     ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
       this->insertion_point().data(), this->insertion_point().length(),
       ::google::protobuf::internal::WireFormat::SERIALIZE,
@@ -1548,7 +1572,7 @@ void CodeGeneratorResponse_File::SerializeWithCachedSizes(
   }
 
   // optional string content = 15;
-  if (has_content()) {
+  if (cached_has_bits & 0x00000004u) {
     ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
       this->content().data(), this->content().length(),
       ::google::protobuf::internal::WireFormat::SERIALIZE,
@@ -2009,8 +2033,12 @@ failure:
 void CodeGeneratorResponse::SerializeWithCachedSizes(
     ::google::protobuf::io::CodedOutputStream* output) const {
   // @@protoc_insertion_point(serialize_start:google.protobuf.compiler.CodeGeneratorResponse)
+  ::google::protobuf::uint32 cached_has_bits = 0;
+  (void) cached_has_bits;
+
+  cached_has_bits = _has_bits_[0];
   // optional string error = 1;
-  if (has_error()) {
+  if (cached_has_bits & 0x00000001u) {
     ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
       this->error().data(), this->error().length(),
       ::google::protobuf::internal::WireFormat::SERIALIZE,
@@ -2036,8 +2064,12 @@ void CodeGeneratorResponse::SerializeWithCachedSizes(
     bool deterministic, ::google::protobuf::uint8* target) const {
   (void)deterministic;  // Unused
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.compiler.CodeGeneratorResponse)
+  ::google::protobuf::uint32 cached_has_bits = 0;
+  (void) cached_has_bits;
+
+  cached_has_bits = _has_bits_[0];
   // optional string error = 1;
-  if (has_error()) {
+  if (cached_has_bits & 0x00000001u) {
     ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
       this->error().data(), this->error().length(),
       ::google::protobuf::internal::WireFormat::SERIALIZE,

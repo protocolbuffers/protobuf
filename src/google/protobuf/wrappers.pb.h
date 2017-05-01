@@ -171,7 +171,7 @@ class LIBPROTOBUF_EXPORT DoubleValue : public ::google::protobuf::Message /* @@p
   typedef void DestructorSkippable_;
   double value_;
   mutable int _cached_size_;
-  friend struct LIBPROTOBUF_EXPORT protobuf_google_2fprotobuf_2fwrappers_2eproto::TableStruct;
+  friend struct protobuf_google_2fprotobuf_2fwrappers_2eproto::TableStruct;
 };
 // -------------------------------------------------------------------
 
@@ -269,7 +269,7 @@ class LIBPROTOBUF_EXPORT FloatValue : public ::google::protobuf::Message /* @@pr
   typedef void DestructorSkippable_;
   float value_;
   mutable int _cached_size_;
-  friend struct LIBPROTOBUF_EXPORT protobuf_google_2fprotobuf_2fwrappers_2eproto::TableStruct;
+  friend struct protobuf_google_2fprotobuf_2fwrappers_2eproto::TableStruct;
 };
 // -------------------------------------------------------------------
 
@@ -367,7 +367,7 @@ class LIBPROTOBUF_EXPORT Int64Value : public ::google::protobuf::Message /* @@pr
   typedef void DestructorSkippable_;
   ::google::protobuf::int64 value_;
   mutable int _cached_size_;
-  friend struct LIBPROTOBUF_EXPORT protobuf_google_2fprotobuf_2fwrappers_2eproto::TableStruct;
+  friend struct protobuf_google_2fprotobuf_2fwrappers_2eproto::TableStruct;
 };
 // -------------------------------------------------------------------
 
@@ -465,7 +465,7 @@ class LIBPROTOBUF_EXPORT UInt64Value : public ::google::protobuf::Message /* @@p
   typedef void DestructorSkippable_;
   ::google::protobuf::uint64 value_;
   mutable int _cached_size_;
-  friend struct LIBPROTOBUF_EXPORT protobuf_google_2fprotobuf_2fwrappers_2eproto::TableStruct;
+  friend struct protobuf_google_2fprotobuf_2fwrappers_2eproto::TableStruct;
 };
 // -------------------------------------------------------------------
 
@@ -563,7 +563,7 @@ class LIBPROTOBUF_EXPORT Int32Value : public ::google::protobuf::Message /* @@pr
   typedef void DestructorSkippable_;
   ::google::protobuf::int32 value_;
   mutable int _cached_size_;
-  friend struct LIBPROTOBUF_EXPORT protobuf_google_2fprotobuf_2fwrappers_2eproto::TableStruct;
+  friend struct protobuf_google_2fprotobuf_2fwrappers_2eproto::TableStruct;
 };
 // -------------------------------------------------------------------
 
@@ -661,7 +661,7 @@ class LIBPROTOBUF_EXPORT UInt32Value : public ::google::protobuf::Message /* @@p
   typedef void DestructorSkippable_;
   ::google::protobuf::uint32 value_;
   mutable int _cached_size_;
-  friend struct LIBPROTOBUF_EXPORT protobuf_google_2fprotobuf_2fwrappers_2eproto::TableStruct;
+  friend struct protobuf_google_2fprotobuf_2fwrappers_2eproto::TableStruct;
 };
 // -------------------------------------------------------------------
 
@@ -759,7 +759,7 @@ class LIBPROTOBUF_EXPORT BoolValue : public ::google::protobuf::Message /* @@pro
   typedef void DestructorSkippable_;
   bool value_;
   mutable int _cached_size_;
-  friend struct LIBPROTOBUF_EXPORT protobuf_google_2fprotobuf_2fwrappers_2eproto::TableStruct;
+  friend struct protobuf_google_2fprotobuf_2fwrappers_2eproto::TableStruct;
 };
 // -------------------------------------------------------------------
 
@@ -865,7 +865,7 @@ class LIBPROTOBUF_EXPORT StringValue : public ::google::protobuf::Message /* @@p
   typedef void DestructorSkippable_;
   ::google::protobuf::internal::ArenaStringPtr value_;
   mutable int _cached_size_;
-  friend struct LIBPROTOBUF_EXPORT protobuf_google_2fprotobuf_2fwrappers_2eproto::TableStruct;
+  friend struct protobuf_google_2fprotobuf_2fwrappers_2eproto::TableStruct;
 };
 // -------------------------------------------------------------------
 
@@ -971,7 +971,7 @@ class LIBPROTOBUF_EXPORT BytesValue : public ::google::protobuf::Message /* @@pr
   typedef void DestructorSkippable_;
   ::google::protobuf::internal::ArenaStringPtr value_;
   mutable int _cached_size_;
-  friend struct LIBPROTOBUF_EXPORT protobuf_google_2fprotobuf_2fwrappers_2eproto::TableStruct;
+  friend struct protobuf_google_2fprotobuf_2fwrappers_2eproto::TableStruct;
 };
 // ===================================================================
 

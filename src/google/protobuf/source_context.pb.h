@@ -140,7 +140,7 @@ class LIBPROTOBUF_EXPORT SourceContext : public ::google::protobuf::Message /* @
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
   ::google::protobuf::internal::ArenaStringPtr file_name_;
   mutable int _cached_size_;
-  friend struct LIBPROTOBUF_EXPORT protobuf_google_2fprotobuf_2fsource_5fcontext_2eproto::TableStruct;
+  friend struct protobuf_google_2fprotobuf_2fsource_5fcontext_2eproto::TableStruct;
 };
 // ===================================================================
 
