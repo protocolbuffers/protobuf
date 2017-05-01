@@ -16,7 +16,7 @@
 #if GPB_USE_PROTOBUF_FRAMEWORK_IMPORTS
  #import <Protobuf/Empty.pbobjc.h>
 #else
- #import "google/protobuf/Empty.pbobjc.h"
+ #import "google/protobuf/GPBEmpty.pbobjc.h"
 #endif
 // @@protoc_insertion_point(imports)
 

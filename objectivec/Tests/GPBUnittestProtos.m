@@ -34,7 +34,7 @@
 // The unittest_custom_options.proto extends the messages in descriptor.proto
 // so we build it in to test extending in general. The library doesn't provide
 // a descriptor as it doesn't use the classes/enums.
-#import "google/protobuf/Descriptor.pbobjc.m"
+#import "google/protobuf/GPBDescriptor.pbobjc.m"
 
 #import "google/protobuf/AnyTest.pbobjc.m"
 #import "google/protobuf/MapProto2Unittest.pbobjc.m"
@@ -43,9 +43,9 @@
 #import "google/protobuf/UnittestArena.pbobjc.m"
 #import "google/protobuf/UnittestCustomOptions.pbobjc.m"
 #import "google/protobuf/UnittestCycle.pbobjc.m"
-#import "google/protobuf/UnittestDeprecated.pbobjc.m"
-#import "google/protobuf/UnittestDeprecatedFile.pbobjc.m"
-#import "google/protobuf/UnittestDropUnknownFields.pbobjc.m"
+#import "google/protobuf/DepUnittestDeprecated.pbobjc.m"
+#import "google/protobuf/FileDepUnittestDeprecatedFile.pbobjc.m"
+#import "google/protobuf/DropUnknownsUnittestDropUnknownFields.pbobjc.m"
 #import "google/protobuf/UnittestEmbedOptimizeFor.pbobjc.m"
 #import "google/protobuf/UnittestEmpty.pbobjc.m"
 #import "google/protobuf/UnittestEnormousDescriptor.pbobjc.m"
@@ -56,13 +56,13 @@
 #import "google/protobuf/UnittestLite.pbobjc.m"
 #import "google/protobuf/UnittestMset.pbobjc.m"
 #import "google/protobuf/UnittestMsetWireFormat.pbobjc.m"
-#import "google/protobuf/UnittestNoArena.pbobjc.m"
+#import "google/protobuf/NOARNUnittestNoArena.pbobjc.m"
 #import "google/protobuf/UnittestNoArenaImport.pbobjc.m"
 #import "google/protobuf/UnittestNoGenericServices.pbobjc.m"
 #import "google/protobuf/UnittestObjc.pbobjc.m"
 #import "google/protobuf/UnittestObjcStartup.pbobjc.m"
 #import "google/protobuf/UnittestOptimizeFor.pbobjc.m"
-#import "google/protobuf/UnittestPreserveUnknownEnum.pbobjc.m"
+#import "google/protobuf/UnknownEnumsUnittestPreserveUnknownEnum.pbobjc.m"
 #import "google/protobuf/UnittestRuntimeProto2.pbobjc.m"
 #import "google/protobuf/UnittestRuntimeProto3.pbobjc.m"
 

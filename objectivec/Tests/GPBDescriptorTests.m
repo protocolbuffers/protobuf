@@ -35,7 +35,7 @@
 #import "GPBDescriptor.h"
 #import "google/protobuf/Unittest.pbobjc.h"
 #import "google/protobuf/UnittestObjc.pbobjc.h"
-#import "google/protobuf/Descriptor.pbobjc.h"
+#import "google/protobuf/GPBDescriptor.pbobjc.h"
 
 @interface DescriptorTests : GPBTestCase
 @end

@@ -16,7 +16,7 @@
 #if GPB_USE_PROTOBUF_FRAMEWORK_IMPORTS
  #import <Protobuf/Wrappers.pbobjc.h>
 #else
- #import "google/protobuf/Wrappers.pbobjc.h"
+ #import "google/protobuf/GPBWrappers.pbobjc.h"
 #endif
 // @@protoc_insertion_point(imports)
 
