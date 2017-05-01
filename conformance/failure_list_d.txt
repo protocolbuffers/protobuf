@@ -1,0 +1,8 @@
+# Duration has hnsecs resolution
+Required.JsonInput.DurationMaxValue.JsonOutput
+Required.JsonInput.DurationMaxValue.ProtobufOutput
+Required.JsonInput.DurationMinValue.JsonOutput
+Required.JsonInput.DurationMinValue.ProtobufOutput
+
+Required.JsonInput.OriginalProtoFieldName.JsonOutput
+Required.JsonInput.OriginalProtoFieldName.ProtobufOutput

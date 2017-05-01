@@ -1,0 +1,22 @@
+{
+    "name": "protobuf",
+    "description": "D support for Google Protocol Buffers",
+    "authors": ["Dragoş Carp"],
+    "homepage": "https://developers.google.com/protocol-buffers/",
+    "license": "https://github.com/google/protobuf/blob/master/LICENSE",
+    "targetType": "library",
+    "targetPath": "build",
+    "workingDirectory": "build",
+    "configurations": [
+        {
+            "name": "library"
+        },
+        {
+            "name": "unittest",
+            "targetType": "executable",
+            "dflags": ["-main"],
+            "sourcePaths": ["test"],
+            "mainSourceFile": "test/basic.d"
+        }
+    ]
+}

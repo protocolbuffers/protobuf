@@ -4,6 +4,7 @@ mkdir include\google\protobuf
 mkdir include\google\protobuf\compiler
 mkdir include\google\protobuf\compiler\cpp
 mkdir include\google\protobuf\compiler\csharp
+mkdir include\google\protobuf\compiler\d
 mkdir include\google\protobuf\compiler\java
 mkdir include\google\protobuf\compiler\javanano
 mkdir include\google\protobuf\compiler\js
