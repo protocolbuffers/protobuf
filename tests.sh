@@ -545,6 +545,11 @@ build_php7.0_mac() {
   popd
 }
 
+build_php_compatibility() {
+  internal_build_cpp
+  php/tests/compatibility_test.sh
+}
+
 build_php_all() {
   build_php5.5
   build_php5.6
@@ -595,6 +600,7 @@ Usage: $0 { cpp |
             php5.6_c |
             php7.0   |
             php7.0_c |
+            php_compatibility |
             php_all)
 "
   exit 1
