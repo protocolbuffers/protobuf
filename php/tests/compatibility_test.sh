@@ -61,6 +61,7 @@ git checkout v$OLD_VERSION
 popd
 
 # Build and copy the new runtime
+use_php 5.5
 pushd ../ext/google/protobuf
 make clean || true
 phpize && ./configure && make
@@ -77,7 +78,6 @@ chmod +x old_protoc
 
 NEW_PROTOC=`pwd`/../../src/protoc
 OLD_PROTOC=`pwd`/old_protoc
-use_php 5.5
 cd protobuf/php
 cp -r /usr/local/vendor-5.5 vendor
 wget https://phar.phpunit.de/phpunit-4.8.0.phar -O /usr/bin/phpunit

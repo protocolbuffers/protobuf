@@ -171,8 +171,7 @@ class Message
           return "";
         }
         $field = $this->desc->getFieldByNumber($number);
-        return "";
-        # return $field->getName();
+        return $field->getName();
     }
 
     /**

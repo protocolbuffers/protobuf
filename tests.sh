@@ -550,7 +550,7 @@ build_php_compatibility() {
   php/tests/compatibility_test.sh
 }
 
-build_php_all() {
+build_php_all_32() {
   build_php5.5
   build_php5.6
   build_php7.0
@@ -560,6 +560,11 @@ build_php_all() {
   build_php5.5_zts_c
   build_php5.6_zts_c
   build_php7.0_zts_c
+}
+
+build_php_all() {
+  build_php_all_32
+  build_php_compatibility
 }
 
 # Note: travis currently does not support testing more than one language so the
