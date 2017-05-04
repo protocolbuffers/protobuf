@@ -30,7 +30,7 @@ RUN echo "deb http://ppa.launchpad.net/ondrej/php/ubuntu trusty main" | tee /etc
 # Install dotnet SDK based on https://www.microsoft.com/net/core#debian
 # (Ubuntu instructions need apt to support https)
 RUN apt-get update && apt-get install -y --force-yes curl libunwind8 gettext && \
-  curl -sSL -o dotnet.tar.gz https://go.microsoft.com/fwlink/?LinkID=809130 &&  \
+  curl -sSL -o dotnet.tar.gz https://go.microsoft.com/fwlink/?LinkID=847105 &&  \
   mkdir -p /opt/dotnet && tar zxf dotnet.tar.gz -C /opt/dotnet && \
   ln -s /opt/dotnet/dotnet /usr/local/bin
 
