@@ -74,7 +74,7 @@ inline Arena* GetArena(MessageLite* msg, int64 arena_offset) {
 template <typename Type>
 inline Type* AddField(MessageLite* msg, int64 offset) {
 #if LANG_CXX11
-  static_assert(std::is_trivially_copy_assignable<Type>::value,
+  static_assert(google::protobuf::internal::has_trivial_copy<Type>::value,
                 "Do not assign");
 #endif
 
@@ -94,7 +94,7 @@ inline string* AddField<string>(MessageLite* msg, int64 offset) {
 template <typename Type>
 inline void AddField(MessageLite* msg, int64 offset, Type value) {
 #if LANG_CXX11
-  static_assert(std::is_trivially_copy_assignable<Type>::value,
+  static_assert(google::protobuf::internal::has_trivial_copy<Type>::value,
                 "Do not assign");
 #endif
   *AddField<Type>(msg, offset) = value;
@@ -118,7 +118,7 @@ template <typename Type>
 inline void SetField(MessageLite* msg, uint32* has_bits, uint32 has_bit_index,
                      int64 offset, Type value) {
 #if LANG_CXX11
-  static_assert(std::is_trivially_copy_assignable<Type>::value,
+  static_assert(google::protobuf::internal::has_trivial_copy<Type>::value,
                 "Do not assign");
 #endif
   *MutableField<Type>(msg, has_bits, has_bit_index, offset) = value;
