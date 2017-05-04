@@ -57,6 +57,7 @@ csharp_EXTRA_DIST=                                                           \
   csharp/build_tools.sh                                                      \
   csharp/buildall.sh                                                         \
   csharp/generate_protos.sh                                                  \
+  csharp/global.json                                                         \
   csharp/keys/Google.Protobuf.public.snk                                     \
   csharp/keys/Google.Protobuf.snk                                            \
   csharp/keys/README.md                                                      \
@@ -64,18 +65,15 @@ csharp_EXTRA_DIST=                                                           \
   csharp/protos/unittest_issues.proto                                        \
   csharp/src/AddressBook/AddPerson.cs                                        \
   csharp/src/AddressBook/Addressbook.cs                                      \
-  csharp/src/AddressBook/AddressBook.xproj                                   \
+  csharp/src/AddressBook/AddressBook.csproj                                  \
   csharp/src/AddressBook/ListPeople.cs                                       \
   csharp/src/AddressBook/Program.cs                                          \
   csharp/src/AddressBook/SampleUsage.cs                                      \
-  csharp/src/AddressBook/project.json                                        \
   csharp/src/Google.Protobuf.Conformance/Conformance.cs                      \
-  csharp/src/Google.Protobuf.Conformance/Google.Protobuf.Conformance.xproj   \
+  csharp/src/Google.Protobuf.Conformance/Google.Protobuf.Conformance.csproj  \
   csharp/src/Google.Protobuf.Conformance/Program.cs                          \
-  csharp/src/Google.Protobuf.Conformance/project.json                        \
-  csharp/src/Google.Protobuf.JsonDump/Google.Protobuf.JsonDump.xproj         \
+  csharp/src/Google.Protobuf.JsonDump/Google.Protobuf.JsonDump.csproj        \
   csharp/src/Google.Protobuf.JsonDump/Program.cs                             \
-  csharp/src/Google.Protobuf.JsonDump/project.json                           \
   csharp/src/Google.Protobuf.Test/ByteStringTest.cs                          \
   csharp/src/Google.Protobuf.Test/CodedInputStreamExtensions.cs              \
   csharp/src/Google.Protobuf.Test/CodedInputStreamTest.cs                    \
@@ -89,11 +87,12 @@ csharp_EXTRA_DIST=                                                           \
   csharp/src/Google.Protobuf.Test/EqualityTester.cs                          \
   csharp/src/Google.Protobuf.Test/FieldCodecTest.cs                          \
   csharp/src/Google.Protobuf.Test/GeneratedMessageTest.cs                    \
-  csharp/src/Google.Protobuf.Test/Google.Protobuf.Test.xproj                 \
+  csharp/src/Google.Protobuf.Test/Google.Protobuf.Test.csproj                \
   csharp/src/Google.Protobuf.Test/IssuesTest.cs                              \
   csharp/src/Google.Protobuf.Test/JsonFormatterTest.cs                       \
   csharp/src/Google.Protobuf.Test/JsonParserTest.cs                          \
   csharp/src/Google.Protobuf.Test/JsonTokenizerTest.cs                       \
+  csharp/src/Google.Protobuf.Test/Program.cs                                 \
   csharp/src/Google.Protobuf.Test/Reflection/CustomOptionsTest.cs            \
   csharp/src/Google.Protobuf.Test/Reflection/DescriptorsTest.cs              \
   csharp/src/Google.Protobuf.Test/Reflection/FieldAccessTest.cs              \
@@ -115,7 +114,6 @@ csharp_EXTRA_DIST=                                                           \
   csharp/src/Google.Protobuf.Test/WellKnownTypes/FieldMaskTest.cs            \
   csharp/src/Google.Protobuf.Test/WellKnownTypes/TimestampTest.cs            \
   csharp/src/Google.Protobuf.Test/WellKnownTypes/WrappersTest.cs             \
-  csharp/src/Google.Protobuf.Test/project.json                               \
   csharp/src/Google.Protobuf.sln                                             \
   csharp/src/Google.Protobuf/ByteArray.cs                                    \
   csharp/src/Google.Protobuf/ByteString.cs                                   \
@@ -130,7 +128,7 @@ csharp_EXTRA_DIST=                                                           \
   csharp/src/Google.Protobuf/Compatibility/TypeExtensions.cs                 \
   csharp/src/Google.Protobuf/FieldCodec.cs                                   \
   csharp/src/Google.Protobuf/FrameworkPortability.cs                         \
-  csharp/src/Google.Protobuf/Google.Protobuf.xproj                           \
+  csharp/src/Google.Protobuf/Google.Protobuf.csproj                          \
   csharp/src/Google.Protobuf/ICustomDiagnosticMessage.cs                     \
   csharp/src/Google.Protobuf/IDeepCloneable.cs                               \
   csharp/src/Google.Protobuf/IMessage.cs                                     \
@@ -190,10 +188,7 @@ csharp_EXTRA_DIST=                                                           \
   csharp/src/Google.Protobuf/WellKnownTypes/ValuePartial.cs                  \
   csharp/src/Google.Protobuf/WellKnownTypes/Wrappers.cs                      \
   csharp/src/Google.Protobuf/WellKnownTypes/WrappersPartial.cs               \
-  csharp/src/Google.Protobuf/WireFormat.cs                                   \
-  csharp/src/Google.Protobuf/project.json                                    \
-  csharp/src/global.json                                                     \
-  csharp/src/packages/repositories.config
+  csharp/src/Google.Protobuf/WireFormat.cs
 
 java_EXTRA_DIST=                                                                   \
   java/README.md                                                                   \
