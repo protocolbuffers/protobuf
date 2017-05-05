@@ -128,6 +128,7 @@ cc_library(
         "src/google/protobuf/extension_set_heavy.cc",
         "src/google/protobuf/field_mask.pb.cc",
         "src/google/protobuf/generated_message_reflection.cc",
+        "src/google/protobuf/generated_message_table_driven.cc",
         "src/google/protobuf/io/gzip_stream.cc",
         "src/google/protobuf/io/printer.cc",
         "src/google/protobuf/io/strtod.cc",
