@@ -7,7 +7,7 @@ struct FieldMask
 {
     @Proto(1) string[] paths = defaultValue!(string[]);
 
-    auto toJSONValue()
+    auto toJSONValue()()
     {
         import std.algorithm : map, joiner;
         import std.conv : to;

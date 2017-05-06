@@ -38,7 +38,7 @@ struct Duration
         return this;
     }
 
-    auto toJSONValue()
+    auto toJSONValue()()
     {
         import std.format : format;
         import google.protobuf.json_encoding : toJSONValue;
@@ -65,7 +65,7 @@ struct Duration
             return "%s%ds".format(negative ? "-" : "", seconds).toJSONValue;
     }
 
-    Duration fromJSONValue(JSONValue value)
+    Duration fromJSONValue()(JSONValue value)
     {
         import core.time : dur;
         import std.algorithm : findSplit;

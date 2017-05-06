@@ -17,7 +17,7 @@ struct Empty
         return this;
     }
 
-    auto toJSONValue()
+    auto toJSONValue()()
     {
         import std.json : JSONValue;
 

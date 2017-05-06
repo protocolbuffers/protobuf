@@ -34,7 +34,7 @@ struct Timestamp
         return this;
     }
 
-    auto toJSONValue()
+    auto toJSONValue()()
     {
         import std.format : format;
         import google.protobuf.json_encoding;
@@ -61,7 +61,7 @@ struct Timestamp
                 utc.second).toJSONValue;
     }
 
-    Timestamp fromJSONValue(JSONValue value)
+    Timestamp fromJSONValue()(JSONValue value)
     {
         import google.protobuf.json_decoding : fromJSONValue;
 

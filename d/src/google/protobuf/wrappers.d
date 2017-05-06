@@ -31,14 +31,14 @@ struct WrappedValue(T)
         return this;
     }
 
-    JSONValue toJSONValue()
+    JSONValue toJSONValue()()
     {
         import google.protobuf.json_encoding;
 
         return value.isNull ? JSONValue(null) : value.get.toJSONValue;
     }
 
-    auto fromJSONValue(JSONValue jsonValue)
+    auto fromJSONValue()(JSONValue jsonValue)
     {
         import google.protobuf.json_encoding;
 

@@ -18,7 +18,7 @@ class Struct
         fromJSONValue(value);
     }
 
-    JSONValue toJSONValue()
+    JSONValue toJSONValue()()
     {
         import std.array : assocArray;
         import std.algorithm : map;
@@ -27,7 +27,7 @@ class Struct
         return JSONValue(fields.byKeyValue.map!(a => tuple(a.key, a.value.toJSONValue)).assocArray);
     }
 
-    auto fromJSONValue(JSONValue value)
+    auto fromJSONValue()(JSONValue value)
     {
         import std.array : assocArray;
         import std.algorithm : map;
@@ -104,7 +104,7 @@ class Value
         }
     }
 
-    JSONValue toJSONValue()
+    JSONValue toJSONValue()()
     {
         import std.array : array, assocArray;
         import std.algorithm : map;
@@ -129,7 +129,7 @@ class Value
         }
     }
 
-    auto fromJSONValue(JSONValue jsonValue)
+    auto fromJSONValue()(JSONValue jsonValue)
     {
         import std.array : array, assocArray;
         import std.algorithm : map;
@@ -190,7 +190,7 @@ class ListValue
         fromJSONValue(value);
     }
 
-    JSONValue toJSONValue()
+    JSONValue toJSONValue()()
     {
         import std.array : array;
         import std.algorithm : map;
@@ -198,7 +198,7 @@ class ListValue
         return JSONValue(values.map!(a => a.toJSONValue).array);
     }
 
-    auto fromJSONValue(JSONValue value)
+    auto fromJSONValue()(JSONValue value)
     {
         import std.array : array;
         import std.algorithm : map;

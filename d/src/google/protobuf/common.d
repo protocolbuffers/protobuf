@@ -93,7 +93,7 @@ template oneofAccessors(alias field)
     enum oneofAccessors = generateAccessors;
 }
 
-static struct Message(T)
+template Message(T)
 {
     import std.meta : allSatisfy, staticMap, staticSort;
     import std.traits : getSymbolsByUDA;
