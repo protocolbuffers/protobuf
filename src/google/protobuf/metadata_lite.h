@@ -167,7 +167,8 @@ class InternalMetadataWithArenaLite
   InternalMetadataWithArenaLite() {}
 
   explicit InternalMetadataWithArenaLite(Arena* arena)
-      : InternalMetadataWithArenaBase(arena) {}
+      : InternalMetadataWithArenaBase<string,
+                                      InternalMetadataWithArenaLite>(arena) {}
 
   void DoSwap(string* other) {
     mutable_unknown_fields()->swap(*other);
