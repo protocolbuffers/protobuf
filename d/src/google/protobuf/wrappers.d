@@ -8,7 +8,7 @@ struct WrappedValue(T)
 {
     private struct _Message
     {
-        @Proto(1) T value = defaultValue!(T);
+        @Proto(1) T value = defaultValue!T;
     }
 
     Nullable!T value;

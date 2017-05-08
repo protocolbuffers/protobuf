@@ -53,7 +53,7 @@ template oneofCaseFieldName(alias field)
 {
     import std.traits : getUDAs;
 
-    static assert(isOneof!field);
+    static assert(isOneof!field, "No oneof field");
 
     enum string oneofCaseFieldName = getUDAs!(field, Oneof)[0].caseFieldName;
 }
@@ -68,7 +68,7 @@ template oneofAccessorName(alias field)
 
         string fieldName = __traits(identifier, field);
         bool result = fieldName.skipOver('_');
-        assert(result);
+        assert(result, "Oneof field should start with '_'");
 
         return fieldName;
     }
@@ -99,7 +99,7 @@ template Message(T)
     import std.traits : getSymbolsByUDA;
 
     static assert(fields.length > 0, "Definition of '" ~ T.stringof ~ "' has no Proto field");
-    static assert(allSatisfy!(validateField, fields));
+    static assert(allSatisfy!(validateField, fields), "'" ~ T.stringof ~ "' has invalid fields");
 
     alias fields = staticSort!(Less, unsortedFields);
     alias protos = staticMap!(protoByField, fields);
@@ -139,7 +139,7 @@ bool validateProto(Proto proto, T)()
     import std.traits : isAggregateType, isArray, isAssociativeArray, isBoolean, isFloatingPoint, isIntegral;
     import std.traits : KeyType, ValueType;
 
-    static assert(proto.tag > 0 && proto.tag < (2 << 29));
+    static assert(proto.tag > 0 && proto.tag < (2 << 29), "Tag value out of range [1 536_870_912]");
 
     static if (isBoolean!T)
     {

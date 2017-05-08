@@ -4,5 +4,17 @@ Required.JsonInput.DurationMaxValue.ProtobufOutput
 Required.JsonInput.DurationMinValue.JsonOutput
 Required.JsonInput.DurationMinValue.ProtobufOutput
 
+# Original fields are not supported (should they work in both directions?)
 Required.JsonInput.OriginalProtoFieldName.JsonOutput
 Required.JsonInput.OriginalProtoFieldName.ProtobufOutput
+
+# Timestamp has hnsecs resolution
+Required.JsonInput.TimestampMaxValue.JsonOutput
+Required.JsonInput.TimestampMaxValue.ProtobufOutput
+Required.JsonInput.TimestampRepeatedValue.JsonOutput
+Required.JsonInput.TimestampRepeatedValue.ProtobufOutput
+# See issue #3093
+Required.JsonInput.TimestampWithNegativeOffset.JsonOutput
+Required.JsonInput.TimestampWithNegativeOffset.ProtobufOutput
+Required.JsonInput.TimestampWithPositiveOffset.JsonOutput
+Required.JsonInput.TimestampWithPositiveOffset.ProtobufOutput

@@ -1,6 +1,6 @@
 module google.protobuf.timestamp;
 
-import std.datetime : SysTime, unixTimeToStdTime;
+import std.datetime : DateTime, SysTime, unixTimeToStdTime, UTC;
 import std.exception : enforce;
 import std.json : JSONValue;
 import google.protobuf;
@@ -9,11 +9,11 @@ struct Timestamp
 {
     private struct _Message
     {
-      @Proto(1) long seconds = defaultValue!(long);
-      @Proto(2) int nanos = defaultValue!(int);
+      @Proto(1) long seconds = defaultValue!long;
+      @Proto(2) int nanos = defaultValue!int;
     }
 
-    SysTime timestamp;
+    SysTime timestamp = SysTime(DateTime(1970, 1, 1, 0, 0, 0), UTC());
 
     alias timestamp this;
 
@@ -39,7 +39,7 @@ struct Timestamp
         import std.format : format;
         import google.protobuf.json_encoding;
 
-        validateRange;
+        validateTimestamp;
 
         auto utc = timestamp.toUTC;
         auto fractionalDigits = utc.fracSecs.total!"nsecs";
@@ -63,17 +63,51 @@ struct Timestamp
 
     Timestamp fromJSONValue()(JSONValue value)
     {
+        import core.time : dur;
+        import std.algorithm : skipOver;
+        import std.conv : ConvException, to;
+        import std.datetime : DateTime, DateTimeException, Month, UTC;
+        import std.regex : matchAll, regex;
+        import std.string : leftJustify;
         import google.protobuf.json_decoding : fromJSONValue;
 
-        timestamp.fromISOExtString(fromJSONValue!string(value));
-        return this;
+        auto match = value.fromJSONValue!string.matchAll(`^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(.\d*)?Z$`);
+        enforce!ProtobufException(match, "Invalid timestamp JSON encoding");
+
+        auto yearPart = match.front[1];
+        auto monthPart = match.front[2];
+        auto dayPart = match.front[3];
+        auto hourPart = match.front[4];
+        auto minutePart = match.front[5];
+        auto secondPart = match.front[6];
+        auto fracSecsPart = match.front[7];
+        fracSecsPart.skipOver('.');
+
+        try
+        {
+            timestamp = SysTime(
+                            DateTime(yearPart.to!short, monthPart.to!ubyte.to!Month, dayPart.to!ubyte,
+                                hourPart.to!ubyte, minutePart.to!ubyte, secondPart.to!ubyte),
+                            dur!"nsecs"(fracSecsPart.leftJustify(9, '0').to!uint), UTC());
+
+            validateTimestamp;
+            return this;
+        }
+        catch (ConvException exception)
+        {
+            throw new ProtobufException(exception.msg);
+        }
+        catch (DateTimeException exception)
+        {
+            throw new ProtobufException(exception.msg);
+        }
     }
 
-    void validateRange()
+    void validateTimestamp()
     {
         auto year = timestamp.toUTC.year;
         enforce!ProtobufException(0 < year && year < 10_000,
-            "Timestamp is out of range [01.01.0001T00:00:00Z 31.12.9999T23:59:59.999999999Z]");
+            "Timestamp is out of range [0001-01-01T00:00:00Z 9999-12-31T23:59:59.999999999Z]");
     }
 }
 
@@ -126,8 +160,14 @@ unittest
     static const nonUTCTimestamp = SysTime(DateTime(1970, 1, 1), nonUTCTimeZone);
     assert(Timestamp(nonUTCTimestamp).toJSONValue == JSONValue("1970-01-01T01:00:00Z"));
 
-    static const tooSmall = SysTime(DateTime(-1, 12, 31), UTC());
+    static const tooSmall = SysTime(DateTime(0, 12, 31), UTC());
     assertThrown!ProtobufException(Timestamp(tooSmall).toJSONValue);
     static const tooLarge = SysTime(DateTime(10_000, 1, 1), UTC());
     assertThrown!ProtobufException(Timestamp(tooLarge).toJSONValue);
+
+    assert(Timestamp(epoch) == JSONValue("1970-01-01T00:00:00Z").fromJSONValue!Timestamp);
+    assert(Timestamp(epoch + 5.seconds) == JSONValue("1970-01-01T00:00:05Z").fromJSONValue!Timestamp);
+    assert(Timestamp(epoch + 5.seconds + 50.msecs) == JSONValue("1970-01-01T00:00:05.050Z").fromJSONValue!Timestamp);
+    assert(Timestamp(epoch + 5.seconds + 300.nsecs) ==
+        JSONValue("1970-01-01T00:00:05.000000300Z").fromJSONValue!Timestamp);
 }

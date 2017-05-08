@@ -38,11 +38,11 @@ struct Varint
         this._length = cast(ubyte) encodingLength(value);
     }
 
-    @property bool empty() { return index >= _length; }
-    @property ubyte front() { return opIndex(index); }
+    @property bool empty() const { return index >= _length; }
+    @property ubyte front() const { return opIndex(index); }
     void popFront() { ++index; }
 
-    ubyte opIndex(size_t index)
+    ubyte opIndex(size_t index) const
     in { assert(index < _length); }
     body
     {
@@ -54,7 +54,7 @@ struct Varint
             return result & 0x7F;
     }
 
-    @property size_t length()
+    @property size_t length() const
     in { assert(index <= _length); }
     body
     {

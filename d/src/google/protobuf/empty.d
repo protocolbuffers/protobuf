@@ -23,6 +23,15 @@ struct Empty
 
         return JSONValue(cast(JSONValue[string]) null);
     }
+
+    Empty fromJSONValue()(JSONValue value)
+    {
+        import std.exception : enforce;
+        import std.json : JSON_TYPE;
+
+        enforce!ProtobufException(value.TYPE == JSON_TYPE.OBJECT && value.empty,
+            "Invalid google.protobuf.Empty JSON Encoding");
+    }
 }
 
 unittest

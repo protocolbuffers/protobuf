@@ -59,7 +59,7 @@ class Value
     void clearKind() { _kindCase = KindCase.kindNotSet; }
     @Oneof("_kindCase") union
     {
-        @Proto(1) NullValue _nullValue = defaultValue!(NullValue); mixin(oneofAccessors!_nullValue);
+        @Proto(1) NullValue _nullValue = defaultValue!NullValue; mixin(oneofAccessors!_nullValue);
         @Proto(2) double _numberValue; mixin(oneofAccessors!_numberValue);
         @Proto(3) string _stringValue; mixin(oneofAccessors!_stringValue);
         @Proto(4) bool _boolValue; mixin(oneofAccessors!_boolValue);

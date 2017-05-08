@@ -10,8 +10,8 @@ struct Duration
 {
     private struct _Message
     {
-        @Proto(1) long seconds = defaultValue!(long);
-        @Proto(2) int nanos = defaultValue!(int);
+        @Proto(1) long seconds = defaultValue!long;
+        @Proto(2) int nanos = defaultValue!int;
     }
 
     StdDuration duration;
@@ -20,7 +20,7 @@ struct Duration
 
     auto toProtobuf()
     {
-        validateRange;
+        validateDuration;
 
         auto splitedDuration = duration.split!("seconds", "nsecs");
         auto protobufMessage = _Message(splitedDuration.seconds, cast(int) splitedDuration.nsecs);
@@ -43,10 +43,9 @@ struct Duration
         import std.format : format;
         import google.protobuf.json_encoding : toJSONValue;
 
-        validateRange;
+        validateDuration;
 
         auto splitedDuration = duration.split!("seconds", "nsecs");
-        bool negative = splitedDuration.seconds < 0 || splitedDuration.nsecs < 0;
         auto seconds = splitedDuration.seconds >= 0 ? splitedDuration.seconds : -splitedDuration.seconds;
         auto fractionalDigits = splitedDuration.nsecs >= 0 ? splitedDuration.nsecs : -splitedDuration.nsecs;
         auto fractionalLength = 9;
@@ -60,34 +59,41 @@ struct Duration
         }
 
         if (fractionalDigits)
-            return "%s%d.%0*ds".format(negative ? "-" : "", seconds, fractionalLength, fractionalDigits).toJSONValue;
+        {
+            return "%s%d.%0*ds"
+                .format(duration.isNegative ? "-" : "", seconds, fractionalLength, fractionalDigits)
+                .toJSONValue;
+        }
         else
-            return "%s%ds".format(negative ? "-" : "", seconds).toJSONValue;
+        {
+            return "%s%ds".format(duration.isNegative ? "-" : "", seconds).toJSONValue;
+        }
     }
 
     Duration fromJSONValue()(JSONValue value)
     {
         import core.time : dur;
-        import std.algorithm : findSplit;
+        import std.algorithm : skipOver;
         import std.conv : ConvException, to;
+        import std.regex : matchAll, regex;
+        import std.string : leftJustify;
         import google.protobuf.json_decoding : fromJSONValue;
 
-        string str = value.fromJSONValue!string;
-        enforce!ProtobufException(str[$ - 1] == 's', "Duration JSON encoding does not end with 's'");
+        auto match = value.fromJSONValue!string.matchAll(`^(-)?(\d+)([.]\d*)?s$`);
+        enforce!ProtobufException(match, "Invalid duration JSON encoding");
 
-        str = str[0 .. $ - 1];
-        auto split = str.findSplit(".");
+        bool negative = !match.front[1].empty;
+        auto secondsPart = match.front[2];
+        auto nsecsPart = match.front[3];
+        nsecsPart.skipOver('.');
 
         try
         {
-            auto secondsValue = split[0].to!long;
-            auto nsecsValue = split[2].empty ? 0 : (split[2] ~ "00000000")[0 .. 9].to!int;
+            duration = dur!"seconds"(secondsPart.to!ulong) + dur!"nsecs"(nsecsPart.leftJustify(9, '0').to!uint);
+            if (negative)
+                duration = -duration;
 
-            if (secondsValue < 0)
-                nsecsValue = -nsecsValue;
-            duration = dur!"seconds"(secondsValue) + dur!"nsecs"(nsecsValue);
-
-            validateRange;
+            validateDuration;
             return this;
         }
         catch (ConvException exception)
@@ -96,7 +102,7 @@ struct Duration
         }
     }
 
-    private void validateRange()
+    private void validateDuration()
     {
         import std.exception : enforce;
 
@@ -151,4 +157,16 @@ unittest
 
     assertThrown!ProtobufException(Duration(530_000.weeks).toJSONValue);
     assertThrown!ProtobufException(Duration(-530_000.weeks).toJSONValue);
+
+    Duration foo;
+    assert(Duration(0.seconds) == foo.fromJSONValue(JSONValue("0s")));
+    assert(Duration(1.seconds) == foo.fromJSONValue(JSONValue("1s")));
+    assert(Duration((-1).seconds) == foo.fromJSONValue(JSONValue("-1s")));
+    assert(Duration(0.seconds + 50.msecs) == foo.fromJSONValue(JSONValue("0.050s")));
+    assert(Duration(0.seconds - 50.msecs) == foo.fromJSONValue(JSONValue("-0.050s")));
+    assert(Duration(0.seconds - 300.nsecs) == foo.fromJSONValue(JSONValue("-0.000000300s")));
+    assert(Duration(-100.seconds - 300.nsecs) == foo.fromJSONValue(JSONValue("-100.000000300s")));
+
+    assertThrown!ProtobufException(foo.fromJSONValue(JSONValue("315576000001s")));
+    assertThrown!ProtobufException(foo.fromJSONValue(JSONValue("315576000001")));
 }

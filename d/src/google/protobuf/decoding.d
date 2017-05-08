@@ -165,7 +165,7 @@ if (isInputRange!R && isArray!T && !is(T == string) && !is(T == bytes))
     return result.data;
 }
 
-T fromProtobuf(T, R)(ref R inputRange, T result = T.init)
+T fromProtobuf(T, R)(ref R inputRange, T result = defaultValue!T)
 if (isInputRange!R && isAggregateType!T)
 {
     import std.traits : hasMember;

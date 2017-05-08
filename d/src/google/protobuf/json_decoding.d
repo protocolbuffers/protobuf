@@ -186,7 +186,7 @@ unittest
     assertThrown!ProtobufException(fromJSONValue!(bool[int])(parseJSON(`{"foo": false, "2": true}`)));
 }
 
-T fromJSONValue(T)(JSONValue value, T result = T.init)
+T fromJSONValue(T)(JSONValue value, T result = defaultValue!T)
 if (isAggregateType!T)
 {
     import std.traits : hasMember;
