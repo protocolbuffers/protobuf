@@ -57,30 +57,6 @@ RUN apt-get clean && apt-get update && apt-get install -y --force-yes \
 
 ##################
 # PHP dependencies.
-RUN php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
-RUN php composer-setup.php
-RUN mv composer.phar /usr/bin/composer
-RUN php -r "unlink('composer-setup.php');"
-RUN cd /tmp && \
-  git clone https://github.com/google/protobuf.git && \
-  cd protobuf/php && \
-  git reset --hard 6b27c1f981a9a93918e4039f236ead27165a8e91 && \
-  ln -sfn /usr/bin/php5.5 /usr/bin/php && \
-  ln -sfn /usr/bin/php-config5.5 /usr/bin/php-config && \
-  ln -sfn /usr/bin/phpize5.5 /usr/bin/phpize && \
-  composer install && \
-  mv vendor /usr/local/vendor-5.5 && \
-  ln -sfn /usr/bin/php5.6 /usr/bin/php && \
-  ln -sfn /usr/bin/php-config5.6 /usr/bin/php-config && \
-  ln -sfn /usr/bin/phpize5.6 /usr/bin/phpize && \
-  composer install && \
-  mv vendor /usr/local/vendor-5.6 && \
-  ln -sfn /usr/bin/php7.0 /usr/bin/php && \
-  ln -sfn /usr/bin/php-config7.0 /usr/bin/php-config && \
-  ln -sfn /usr/bin/phpize7.0 /usr/bin/phpize && \
-  composer install && \
-  mv vendor /usr/local/vendor-7.0
-
 RUN wget http://am1.php.net/get/php-5.5.38.tar.bz2/from/this/mirror
 RUN mv mirror php-5.5.38.tar.bz2
 RUN tar -xvf php-5.5.38.tar.bz2
@@ -104,6 +80,45 @@ RUN cd php-7.0.18 && ./configure --enable-maintainer-zts --prefix=/usr/local/php
     make && make install && cd ..
 RUN cd php-7.0.18 && make clean && ./configure --enable-bcmath --prefix=/usr/local/php-7.0 && \
     make && make install && cd ..
+
+RUN wget http://am1.php.net/get/php-7.1.4.tar.bz2/from/this/mirror
+RUN mv mirror php-7.1.4.tar.bz2
+RUN tar -xvf php-7.1.4.tar.bz2
+RUN cd php-7.1.4 && ./configure --enable-maintainer-zts --prefix=/usr/local/php-7.1-zts && \
+    make && make install && cd ..
+RUN cd php-7.1.4 && make clean && ./configure --enable-bcmath --prefix=/usr/local/php-7.1 && \
+    make && make install && cd ..
+
+RUN php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
+RUN php composer-setup.php
+RUN mv composer.phar /usr/bin/composer
+RUN php -r "unlink('composer-setup.php');"
+RUN composer config -g -- disable-tls true
+RUN composer config -g -- secure-http false
+RUN cd /tmp && \
+  git clone https://github.com/google/protobuf.git && \
+  cd protobuf/php && \
+  git reset --hard 6b27c1f981a9a93918e4039f236ead27165a8e91 && \
+  ln -sfn /usr/local/php-5.5/bin/php /usr/bin/php && \
+  ln -sfn /usr/local/php-5.5/bin/php-config /usr/bin/php-config && \
+  ln -sfn /usr/local/php-5.5/bin/phpize /usr/bin/phpize && \
+  composer install && \
+  mv vendor /usr/local/vendor-5.5 && \
+  ln -sfn /usr/local/php-5.6/bin/php /usr/bin/php && \
+  ln -sfn /usr/local/php-5.6/bin/php-config /usr/bin/php-config && \
+  ln -sfn /usr/local/php-5.6/bin/phpize /usr/bin/phpize && \
+  composer install && \
+  mv vendor /usr/local/vendor-5.6 && \
+  ln -sfn /usr/local/php-7.0/bin/php /usr/bin/php && \
+  ln -sfn /usr/local/php-7.0/bin/php-config /usr/bin/php-config && \
+  ln -sfn /usr/local/php-7.0/bin/phpize /usr/bin/phpize && \
+  composer install && \
+  mv vendor /usr/local/vendor-7.0 && \
+  ln -sfn /usr/local/php-7.1/bin/php /usr/bin/php && \
+  ln -sfn /usr/local/php-7.1/bin/php-config /usr/bin/php-config && \
+  ln -sfn /usr/local/php-7.1/bin/phpize /usr/bin/phpize && \
+  composer install && \
+  mv vendor /usr/local/vendor-7.1
 
 ##################
 # Python dependencies
