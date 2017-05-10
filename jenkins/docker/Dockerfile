@@ -164,6 +164,14 @@ RUN cd php-7.0.18 && ./configure --enable-maintainer-zts --prefix=/usr/local/php
 RUN cd php-7.0.18 && make clean && ./configure --prefix=/usr/local/php-7.0 && \
     make && make install && cd ..
 
+RUN wget http://am1.php.net/get/php-7.1.4.tar.bz2/from/this/mirror
+RUN mv mirror php-7.1.4.tar.bz2
+RUN tar -xvf php-7.1.4.tar.bz2
+RUN cd php-7.1.4 && ./configure --enable-maintainer-zts --prefix=/usr/local/php-7.1-zts && \
+    make && make install && cd ..
+RUN cd php-7.1.4 && make clean && ./configure --prefix=/usr/local/php-7.1 && \
+    make && make install && cd ..
+
 RUN php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
 RUN php composer-setup.php
 RUN mv composer.phar /usr/bin/composer
@@ -190,7 +198,12 @@ RUN cd /tmp && \
   ln -sfn /usr/local/php-7.0/bin/php-config /usr/bin/php-config && \
   ln -sfn /usr/local/php-7.0/bin/phpize /usr/bin/phpize && \
   composer install && \
-  mv vendor /usr/local/vendor-7.0
+  mv vendor /usr/local/vendor-7.0 && \
+  ln -sfn /usr/local/php-7.1/bin/php /usr/bin/php && \
+  ln -sfn /usr/local/php-7.1/bin/php-config /usr/bin/php-config && \
+  ln -sfn /usr/local/php-7.1/bin/phpize /usr/bin/phpize && \
+  composer install && \
+  mv vendor /usr/local/vendor-7.1
 
 ##################
 # Go dependencies.
