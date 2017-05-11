@@ -102,7 +102,6 @@ class GPBUtil
         if (is_numeric($var)) {
             if (PHP_INT_SIZE === 8) {
                 $var = intval($var);
-                $var |= ((-(($var >> 31) & 0x1)) & ~0xFFFFFFFF);
             } else {
                 if (bccomp($var, 0x7FFFFFFF) > 0) {
                     $var = bcsub($var, "4294967296");
