@@ -40,6 +40,7 @@ GA release.
     <file baseinstalldir="/" name="upb.h" role="src" />
     <file baseinstalldir="/" name="utf8.c" role="src" />
     <file baseinstalldir="/" name="utf8.h" role="src" />
+    <file baseinstalldir="/" name="LICENSE" role="doc" />
   </dir>
  </contents>
  <dependencies>
