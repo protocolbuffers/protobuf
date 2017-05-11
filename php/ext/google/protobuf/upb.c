@@ -2290,6 +2290,9 @@ bool upb_symtab_addfile(upb_symtab *s, upb_filedef *file, upb_status *status) {
   bool ret;
 
   n = upb_filedef_defcount(file);
+  if (n == 0) {
+    return true;
+  }
   defs = upb_gmalloc(sizeof(*defs) * n);
 
   if (defs == NULL) {
