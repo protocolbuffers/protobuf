@@ -394,6 +394,7 @@ void FieldAccessInfo::SerializeWithCachedSizes(
 
 ::google::protobuf::uint8* FieldAccessInfo::InternalSerializeWithCachedSizesToArray(
     bool deterministic, ::google::protobuf::uint8* target) const {
+  (void)deterministic; // Unused
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.compiler.FieldAccessInfo)
   ::google::protobuf::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
@@ -889,6 +890,7 @@ void MessageAccessInfo::SerializeWithCachedSizes(
 
 ::google::protobuf::uint8* MessageAccessInfo::InternalSerializeWithCachedSizesToArray(
     bool deterministic, ::google::protobuf::uint8* target) const {
+  (void)deterministic; // Unused
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.compiler.MessageAccessInfo)
   ::google::protobuf::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
@@ -1293,6 +1295,7 @@ void AccessInfo::SerializeWithCachedSizes(
 
 ::google::protobuf::uint8* AccessInfo::InternalSerializeWithCachedSizesToArray(
     bool deterministic, ::google::protobuf::uint8* target) const {
+  (void)deterministic; // Unused
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.compiler.AccessInfo)
   ::google::protobuf::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
