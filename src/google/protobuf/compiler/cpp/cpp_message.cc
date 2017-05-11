@@ -3715,6 +3715,7 @@ GenerateSerializeWithCachedSizesToArray(io::Printer* printer) {
     "classname", classname_);
   printer->Indent();
 
+  printer->Print("(void)deterministic; // Unused\n");
   printer->Print(
     "// @@protoc_insertion_point(serialize_to_array_start:$full_name$)\n",
     "full_name", descriptor_->full_name());
