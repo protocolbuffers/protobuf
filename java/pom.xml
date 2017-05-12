@@ -84,13 +84,7 @@
       <dependency>
         <groupId>com.google.guava</groupId>
         <artifactId>guava</artifactId>
-        <version>20.0</version>
-      </dependency>
-      <dependency>
-        <groupId>com.google.truth</groupId>
-        <artifactId>truth</artifactId>
-        <scope>test</scope>
-        <version>0.32</version>
+        <version>19.0</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
