@@ -1328,42 +1328,42 @@ inline size_t RepeatedField<Element>::SpaceUsedExcludingSelfLong() const {
 
 namespace {
   template <typename T>
-  constexpr bool isPrimitive() {
+  bool isPrimitive() {
     return false;
   }
 
   template <>
-  constexpr bool isPrimitive<float>() {
+  bool isPrimitive<float>() {
     return false;
   }
 
   template <>
-  constexpr bool isPrimitive<double>() {
+  bool isPrimitive<double>() {
     return false;
   }
 
   template <>
-  constexpr bool isPrimitive<int32>() {
+  bool isPrimitive<int32>() {
     return false;
   }
 
   template <>
-  constexpr bool isPrimitive<int64>() {
+  bool isPrimitive<int64>() {
     return false;
   }
 
   template <>
-  constexpr bool isPrimitive<uint32>() {
+  bool isPrimitive<uint32>() {
     return false;
   }
 
   template <>
-  constexpr bool isPrimitive<uint64>() {
+  bool isPrimitive<uint64>() {
     return false;
   }
 
   template <>
-  constexpr bool isPrimitive<bool>() {
+  bool isPrimitive<bool>() {
     return false;
   }
 }
