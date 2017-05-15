@@ -51,6 +51,10 @@
 #include <algorithm>
 #endif
 
+#if __APPLE__
+#include "TargetConditionals.h"
+#endif
+
 #include <iterator>
 #include <limits>
 #include <string>
@@ -1322,6 +1326,48 @@ inline size_t RepeatedField<Element>::SpaceUsedExcludingSelfLong() const {
   return rep_ ? (total_size_ * sizeof(Element) + kRepHeaderSize) : 0;
 }
 
+namespace {
+  template <typename T>
+  constexpr bool isPrimitive() {
+    return false;
+  }
+
+  template <>
+  constexpr bool isPrimitive<float>() {
+    return false;
+  }
+
+  template <>
+  constexpr bool isPrimitive<double>() {
+    return false;
+  }
+
+  template <>
+  constexpr bool isPrimitive<int32>() {
+    return false;
+  }
+
+  template <>
+  constexpr bool isPrimitive<int64>() {
+    return false;
+  }
+
+  template <>
+  constexpr bool isPrimitive<uint32>() {
+    return false;
+  }
+
+  template <>
+  constexpr bool isPrimitive<uint64>() {
+    return false;
+  }
+
+  template <>
+  constexpr bool isPrimitive<bool>() {
+    return false;
+  }
+}
+
 // Avoid inlining of Reserve(): new, copy, and delete[] lead to a significant
 // amount of code bloat.
 template <typename Element>
@@ -1329,43 +1375,53 @@ void RepeatedField<Element>::Reserve(int new_size) {
   if (total_size_ >= new_size) return;
   Rep* old_rep = rep_;
   Arena* arena = GetArenaNoVirtual();
+#if __ANDROID__ || (__APPLE__ && TARGET_OS_IPHONE)
+  size_t expand_size = std::min(total_size_, 1 << 20); // for mobile platform, max 1M per expand
+#else
+  size_t expand_size = total_size_;
+#endif
   new_size = std::max(google::protobuf::internal::kMinRepeatedFieldAllocationSize,
-                      std::max(total_size_ * 2, new_size));
+                      std::max(total_size_ + expand_size, new_size));
   GOOGLE_DCHECK_LE(
       static_cast<size_t>(new_size),
       (std::numeric_limits<size_t>::max() - kRepHeaderSize) / sizeof(Element))
       << "Requested size is too large to fit into size_t.";
   size_t bytes = kRepHeaderSize + sizeof(Element) * new_size;
-  if (arena == NULL) {
-    rep_ = static_cast<Rep*>(::operator new(bytes));
+  if (isPrimitive<Element>()) {
+    rep_ = realloc(rep_, bytes);
+    if (!old_rep)
+      rep_->arena = arena;
   } else {
-    rep_ = reinterpret_cast<Rep*>(
-            ::google::protobuf::Arena::CreateArray<char>(arena, bytes));
+    if (arena == NULL) {
+      rep_ = static_cast<Rep*>(::operator new(bytes));
+    } else {
+      rep_ = reinterpret_cast<Rep*>(
+              ::google::protobuf::Arena::CreateArray<char>(arena, bytes));
+    }
+    rep_->arena = arena;
+    int old_total_size = total_size_;
+    total_size_ = new_size;
+    // Invoke placement-new on newly allocated elements. We shouldn't have to do
+    // this, since Element is supposed to be POD, but a previous version of this
+    // code allocated storage with "new Element[size]" and some code uses
+    // RepeatedField with non-POD types, relying on constructor invocation. If
+    // Element has a trivial constructor (e.g., int32), gcc (tested with -O2)
+    // completely removes this loop because the loop body is empty, so this has no
+    // effect unless its side-effects are required for correctness.
+    // Note that we do this before MoveArray() below because Element's copy
+    // assignment implementation will want an initialized instance first.
+    Element* e = &rep_->elements[0];
+    Element* limit = &rep_->elements[total_size_];
+    for (; e < limit; e++) {
+      new (e) Element;
+    }
+    if (current_size_ > 0) {
+      MoveArray(rep_->elements, old_rep->elements, current_size_);
+    }
+  
+    // Likewise, we need to invoke destructors on the old array.
+    InternalDeallocate(old_rep, old_total_size);
   }
-  rep_->arena = arena;
-  int old_total_size = total_size_;
-  total_size_ = new_size;
-  // Invoke placement-new on newly allocated elements. We shouldn't have to do
-  // this, since Element is supposed to be POD, but a previous version of this
-  // code allocated storage with "new Element[size]" and some code uses
-  // RepeatedField with non-POD types, relying on constructor invocation. If
-  // Element has a trivial constructor (e.g., int32), gcc (tested with -O2)
-  // completely removes this loop because the loop body is empty, so this has no
-  // effect unless its side-effects are required for correctness.
-  // Note that we do this before MoveArray() below because Element's copy
-  // assignment implementation will want an initialized instance first.
-  Element* e = &rep_->elements[0];
-  Element* limit = &rep_->elements[total_size_];
-  for (; e < limit; e++) {
-    new (e) Element;
-  }
-  if (current_size_ > 0) {
-    MoveArray(rep_->elements, old_rep->elements, current_size_);
-  }
-
-  // Likewise, we need to invoke destructors on the old array.
-  InternalDeallocate(old_rep, old_total_size);
-
 }
 
 template <typename Element>
