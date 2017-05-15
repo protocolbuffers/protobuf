@@ -1376,9 +1376,9 @@ void RepeatedField<Element>::Reserve(int new_size) {
   Rep* old_rep = rep_;
   Arena* arena = GetArenaNoVirtual();
 #if __ANDROID__ || (__APPLE__ && TARGET_OS_IPHONE)
-  size_t expand_size = std::min(total_size_, 1 << 20); // for mobile platform, max 1M per expand
+  int expand_size = std::min(total_size_, 1 << 20); // for mobile platform, max 1M per expand
 #else
-  size_t expand_size = total_size_;
+  int expand_size = total_size_;
 #endif
   new_size = std::max(google::protobuf::internal::kMinRepeatedFieldAllocationSize,
                       std::max(total_size_ + expand_size, new_size));
@@ -1387,10 +1387,9 @@ void RepeatedField<Element>::Reserve(int new_size) {
       (std::numeric_limits<size_t>::max() - kRepHeaderSize) / sizeof(Element))
       << "Requested size is too large to fit into size_t.";
   size_t bytes = kRepHeaderSize + sizeof(Element) * new_size;
-  if (isPrimitive<Element>()) {
-    rep_ = realloc(rep_, bytes);
-    if (!old_rep)
-      rep_->arena = arena;
+  if (arena == NULL && isPrimitive<Element>()) {
+    rep_ = static_cast<Rep*>(realloc(rep_, bytes));
+    rep_->arena = NULL;
   } else {
     if (arena == NULL) {
       rep_ = static_cast<Rep*>(::operator new(bytes));
