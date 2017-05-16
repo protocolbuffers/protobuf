@@ -1334,37 +1334,37 @@ namespace {
 
   template <>
   bool isPrimitive<float>() {
-    return false;
+    return true;
   }
 
   template <>
   bool isPrimitive<double>() {
-    return false;
+    return true;
   }
 
   template <>
   bool isPrimitive<int32>() {
-    return false;
+    return true;
   }
 
   template <>
   bool isPrimitive<int64>() {
-    return false;
+    return true;
   }
 
   template <>
   bool isPrimitive<uint32>() {
-    return false;
+    return true;
   }
 
   template <>
   bool isPrimitive<uint64>() {
-    return false;
+    return true;
   }
 
   template <>
   bool isPrimitive<bool>() {
-    return false;
+    return true;
   }
 }
 
