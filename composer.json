@@ -17,7 +17,7 @@
       "GPBMetadata\\Google\\Protobuf\\Internal\\": "php/src/GPBMetadata/Google/Protobuf/Internal"
     },
     "files": [
-      "php/src/Google/Protobuf/descriptor.php"
+      "php/src/Google/Protobuf/Internal/functions.php"
     ]
   }
 }

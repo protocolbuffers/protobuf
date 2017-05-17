@@ -22,7 +22,7 @@
       "": "tests/generated"
     },
     "files": [
-      "src/Google/Protobuf/descriptor.php"
+      "src/Google/Protobuf/Internal/functions.php"
     ]
   }
 }
