@@ -60,6 +60,7 @@
 		F4487C771AADF84900531423 /* GPBMessageTests+Runtime.m in Sources */ = {isa = PBXBuildFile; fileRef = F4487C761AADF84900531423 /* GPBMessageTests+Runtime.m */; };
 		F4487C811AAF62FC00531423 /* GPBMessageTests+Serialization.m in Sources */ = {isa = PBXBuildFile; fileRef = F4487C801AAF62FC00531423 /* GPBMessageTests+Serialization.m */; };
 		F4487C851AAF6AC500531423 /* GPBMessageTests+Merge.m in Sources */ = {isa = PBXBuildFile; fileRef = F4487C841AAF6AC500531423 /* GPBMessageTests+Merge.m */; };
+		F4584D831ECCB53600803AB6 /* GPBExtensionRegistryTest.m in Sources */ = {isa = PBXBuildFile; fileRef = F4584D801ECCB39E00803AB6 /* GPBExtensionRegistryTest.m */; };
 		F45C69CC16DFD08D0081955B /* GPBExtensionInternals.m in Sources */ = {isa = PBXBuildFile; fileRef = F45C69CB16DFD08D0081955B /* GPBExtensionInternals.m */; };
 		F45E57C91AE6DC98000B7D99 /* text_format_map_unittest_data.txt in Resources */ = {isa = PBXBuildFile; fileRef = F45E57C81AE6DC98000B7D99 /* text_format_map_unittest_data.txt */; };
 		F47476E91D21A537007C7B1A /* Duration.pbobjc.m in Sources */ = {isa = PBXBuildFile; fileRef = 8B4248DE1A929C7D00BC1EC6 /* Duration.pbobjc.m */; };
@@ -202,6 +203,7 @@
 		F4487C841AAF6AC500531423 /* GPBMessageTests+Merge.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "GPBMessageTests+Merge.m"; sourceTree = "<group>"; };
 		F44929021C866B3B00C2548A /* GPBCodedOutputStream_PackagePrivate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GPBCodedOutputStream_PackagePrivate.h; sourceTree = "<group>"; };
 		F451D3F61A8AAEA600B8A22C /* GPBProtocolBuffers_RuntimeSupport.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = GPBProtocolBuffers_RuntimeSupport.h; sourceTree = "<group>"; };
+		F4584D801ECCB39E00803AB6 /* GPBExtensionRegistryTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = GPBExtensionRegistryTest.m; path = Tests/GPBExtensionRegistryTest.m; sourceTree = SOURCE_ROOT; };
 		F45C69CB16DFD08D0081955B /* GPBExtensionInternals.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GPBExtensionInternals.m; sourceTree = "<group>"; };
 		F45E57C81AE6DC98000B7D99 /* text_format_map_unittest_data.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = text_format_map_unittest_data.txt; sourceTree = "<group>"; };
 		F4AC9E1C1A8BEB1000BD6E83 /* unittest_cycle.proto */ = {isa = PBXFileReference; lastKnownFileType = text; path = unittest_cycle.proto; sourceTree = "<group>"; };
@@ -441,6 +443,7 @@
 				F4353D3E1AC06F31005A6198 /* GPBDictionaryTests+String.m */,
 				F4353D3F1AC06F31005A6198 /* GPBDictionaryTests+UInt32.m */,
 				F4353D401AC06F31005A6198 /* GPBDictionaryTests+UInt64.m */,
+				F4584D801ECCB39E00803AB6 /* GPBExtensionRegistryTest.m */,
 				7461B6A30F94FDF800A0C422 /* GPBMessageTests.m */,
 				F4487C841AAF6AC500531423 /* GPBMessageTests+Merge.m */,
 				F4487C761AADF84900531423 /* GPBMessageTests+Runtime.m */,
@@ -456,8 +459,8 @@
 				7461B6BA0F94FDF900A0C422 /* GPBUtilitiesTests.m */,
 				8B4248E51A929C9900BC1EC6 /* GPBWellKnownTypesTest.m */,
 				7461B6BC0F94FDF900A0C422 /* GPBWireFormatTests.m */,
-				F43C88CF191D77FC009E917D /* text_format_unittest_data.txt */,
 				F45E57C81AE6DC98000B7D99 /* text_format_map_unittest_data.txt */,
+				F43C88CF191D77FC009E917D /* text_format_unittest_data.txt */,
 				8B7E6A7414893DBA00F8884A /* unittest_custom_options.proto */,
 				F4AC9E1C1A8BEB1000BD6E83 /* unittest_cycle.proto */,
 				8B7E6A7514893DBA00F8884A /* unittest_embed_optimize_for.proto */,
@@ -467,8 +470,8 @@
 				8BBD9DB016DD1DC8008E1EC1 /* unittest_lite.proto */,
 				8B7E6A7B14893DBC00F8884A /* unittest_mset.proto */,
 				8B7E6A7C14893DBC00F8884A /* unittest_no_generic_services.proto */,
-				8B09AAF614B663A7007B4184 /* unittest_objc.proto */,
 				F4CF31711B162EF500BD9B06 /* unittest_objc_startup.proto */,
+				8B09AAF614B663A7007B4184 /* unittest_objc.proto */,
 				8B7E6A7D14893DBC00F8884A /* unittest_optimize_for.proto */,
 				F4487C7A1AADFB5500531423 /* unittest_runtime_proto2.proto */,
 				F4487C7B1AADFB5500531423 /* unittest_runtime_proto3.proto */,
@@ -765,6 +768,7 @@
 				F4F8D8861D78A193002CE128 /* GPBUnittestProtos2.m in Sources */,
 				F4B51B1C1BBC5C7100744318 /* GPBObjectiveCPlusPlusTest.mm in Sources */,
 				8B4248B41A8BD96E00BC1EC6 /* GPBSwiftTests.swift in Sources */,
+				F4584D831ECCB53600803AB6 /* GPBExtensionRegistryTest.m in Sources */,
 				5102DABC1891A073002037B6 /* GPBConcurrencyTests.m in Sources */,
 				F4487C771AADF84900531423 /* GPBMessageTests+Runtime.m in Sources */,
 				F4353D431AC06F31005A6198 /* GPBDictionaryTests+Int32.m in Sources */,
