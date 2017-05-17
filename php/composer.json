@@ -21,7 +21,7 @@
       "GPBMetadata\\Google\\Protobuf\\Internal\\": "src/GPBMetadata/Google/Protobuf/Internal",
       "": "tests/generated"
     },
-    "files": [
+    "classmap": [
       "src/Google/Protobuf/descriptor.php"
     ]
   }
