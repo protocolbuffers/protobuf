@@ -106,6 +106,32 @@ inline int CalculateReserve(Iter begin, Iter end) {
 }
 }  // namespace internal
 
+namespace RepeatedFieldInternal {
+  template <typename T, typename U>
+  struct SameType {
+    static bool value() {
+      return false;
+    }
+  };
+
+  template <typename T>
+  struct SameType<T, T> {
+    static bool value() {
+      return true;
+    }
+  };
+
+  template <typename T>
+  bool isPrimitive() {
+    return SameType<T, bool>::value()
+        || SameType<T, float>::value()
+        || SameType<T, double>::value()
+        || SameType<T, int32>::value()
+        || SameType<T, int64>::value()
+        || SameType<T, uint32>::value()
+        || SameType<T, uint64>::value();
+  };
+}
 
 // RepeatedField is used to represent repeated fields of a primitive type (in
 // other words, everything except strings and nested Messages).  Most users will
@@ -303,17 +329,23 @@ class RepeatedField PROTOBUF_FINAL {
   // type, like int32), the loop will be removed by the optimizer.
   void InternalDeallocate(Rep* rep, int size) {
     if (rep != NULL) {
-      Element* e = &rep->elements[0];
-      Element* limit = &rep->elements[size];
-      for (; e < limit; e++) {
-        e->~Element();
+      if (!RepeatedFieldInternal::isPrimitive<Element>()) {
+        Element* e = &rep->elements[0];
+        Element* limit = &rep->elements[size];
+        for (; e < limit; e++) {
+          e->~Element();
+        }
       }
       if (rep->arena == NULL) {
+        if (RepeatedFieldInternal::isPrimitive<Element>()) {
+          free(static_cast<void*>(rep));
+        } else {
 #if defined(__GXX_DELETE_WITH_SIZE__) || defined(__cpp_sized_deallocation)
-        const size_t bytes = size * sizeof(*e) + kRepHeaderSize;
-        ::operator delete(static_cast<void*>(rep), bytes);
+          const size_t bytes = size * sizeof(*e) + kRepHeaderSize;
+          ::operator delete(static_cast<void*>(rep), bytes);
 #else
-        ::operator delete(static_cast<void*>(rep));
+          ::operator delete(static_cast<void*>(rep));
+        }
 #endif
       }
     }
@@ -1324,33 +1356,6 @@ RepeatedField<Element>::cend() const {
 template <typename Element>
 inline size_t RepeatedField<Element>::SpaceUsedExcludingSelfLong() const {
   return rep_ ? (total_size_ * sizeof(Element) + kRepHeaderSize) : 0;
-}
-
-namespace RepeatedFieldInternal {
-  template <typename T, typename U>
-  struct SameType {
-    static bool value() {
-      return false;
-    }
-  };
-
-  template <typename T>
-  struct SameType<T, T> {
-    static bool value() {
-      return true;
-    }
-  };
-
-  template <typename T>
-  bool isPrimitive() {
-    return SameType<T, bool>::value()
-        || SameType<T, float>::value()
-        || SameType<T, double>::value()
-        || SameType<T, int32>::value()
-        || SameType<T, int64>::value()
-        || SameType<T, uint32>::value()
-        || SameType<T, uint64>::value();
-  };
 }
 
 // Avoid inlining of Reserve(): new, copy, and delete[] lead to a significant
