@@ -131,6 +131,12 @@ class DescriptorPoolTest(unittest.TestCase):
     self.assertEqual('google/protobuf/internal/factory_test2.proto',
                      file_desc4.name)
 
+    file_desc5 = self.pool.FindFileContainingSymbol(
+        'protobuf_unittest.TestService')
+    self.assertIsInstance(file_desc5, descriptor.FileDescriptor)
+    self.assertEqual('google/protobuf/unittest.proto',
+                     file_desc5.name)
+
     # Tests the generated pool.
     assert descriptor_pool.Default().FindFileContainingSymbol(
         'google.protobuf.python.internal.Factory2Message.one_more_field')

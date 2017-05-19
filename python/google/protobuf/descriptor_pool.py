@@ -329,6 +329,11 @@ class DescriptorPool(object):
       pass
 
     try:
+      return self._service_descriptors[symbol].file
+    except KeyError:
+      pass
+
+    try:
       return self._FindFileContainingSymbolInDb(symbol)
     except KeyError:
       pass
