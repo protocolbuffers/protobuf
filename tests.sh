@@ -335,6 +335,8 @@ build_ruby22() {
 }
 build_jruby() {
   internal_build_cpp  # For conformance tests.
+  rm -f ruby/Gemfile.lock  # Prvious ruby tests may create
+                           # this file, whick will fail this test.
   # TODO(xiaofeng): Upgrade to jruby-9.x. There are some broken jests to be
   # fixed.
   cd ruby && bash travis-test.sh jruby-1.7 && cd ..
