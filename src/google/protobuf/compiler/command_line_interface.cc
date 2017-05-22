@@ -1012,6 +1012,12 @@ CommandLineInterface::ParseArguments(int argc, const char* const argv[]) {
     arguments.push_back(argv[i]);
   }
 
+  // if no arguments are given, show help
+  if(arguments.empty()) {
+    PrintHelpText();
+    return PARSE_ARGUMENT_DONE_AND_EXIT;  // Exit without running compiler.
+  }
+
   // Iterate through all arguments and parse them.
   for (int i = 0; i < arguments.size(); ++i) {
     string name, value;
