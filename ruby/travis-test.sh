@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# edited by silvi goel
 
 # Exit on any error.
 set -e
