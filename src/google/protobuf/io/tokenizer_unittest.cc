@@ -341,7 +341,7 @@ inline std::ostream& operator<<(std::ostream& out,
 MultiTokenCase kMultiTokenCases[] = {
   // Test empty input.
   { "", {
-    { Tokenizer::TYPE_END       , ""     , 0,  0 },
+    { Tokenizer::TYPE_END       , ""     , 0,  0,  0 },
   }},
 
   // Test all token types at the same time.
