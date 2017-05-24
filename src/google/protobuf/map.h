@@ -47,9 +47,6 @@
 #include <google/protobuf/generated_enum_util.h>
 #include <google/protobuf/map_type_handler.h>
 #include <google/protobuf/stubs/hash.h>
-#if __cpp_exceptions && LANG_CXX11
-#include <random>
-#endif
 
 namespace google {
 namespace protobuf {
