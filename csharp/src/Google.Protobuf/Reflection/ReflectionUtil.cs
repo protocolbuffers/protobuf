@@ -31,8 +31,6 @@
 #endregion
 
 using System;
-using System.Collections.Generic;
-using System.Linq.Expressions;
 using System.Reflection;
 
 namespace Google.Protobuf.Reflection
@@ -56,52 +54,74 @@ namespace Google.Protobuf.Reflection
         /// Creates a delegate which will cast the argument to the appropriate method target type,
         /// call the method on it, then convert the result to object.
         /// </summary>
-        internal static Func<IMessage, object> CreateFuncIMessageObject(MethodInfo method)
-        {
-            ParameterExpression parameter = Expression.Parameter(typeof(IMessage), "p");
-            Expression downcast = Expression.Convert(parameter, method.DeclaringType);
-            Expression call = Expression.Call(downcast, method);
-            Expression upcast = Expression.Convert(call, typeof(object));
-            return Expression.Lambda<Func<IMessage, object>>(upcast, parameter).Compile();
-        }
+        internal static Func<IMessage, object> CreateFuncIMessageObject(MethodInfo method) =>
+            GetReflectionHelper(method.DeclaringType, method.ReturnType).CreateFuncIMessageObject(method);
 
         /// <summary>
         /// Creates a delegate which will cast the argument to the appropriate method target type,
         /// call the method on it, then convert the result to the specified type.
         /// </summary>
-        internal static Func<IMessage, T> CreateFuncIMessageT<T>(MethodInfo method)
-        {
-            ParameterExpression parameter = Expression.Parameter(typeof(IMessage), "p");
-            Expression downcast = Expression.Convert(parameter, method.DeclaringType);
-            Expression call = Expression.Call(downcast, method);
-            Expression upcast = Expression.Convert(call, typeof(T));
-            return Expression.Lambda<Func<IMessage, T>>(upcast, parameter).Compile();
-        }
+        internal static Func<IMessage, int> CreateFuncIMessageInt32(MethodInfo method) =>
+            GetReflectionHelper(method.DeclaringType, typeof(object)).CreateFuncIMessageInt32(method);
 
         /// <summary>
         /// Creates a delegate which will execute the given method after casting the first argument to
         /// the target type of the method, and the second argument to the first parameter type of the method.
         /// </summary>
-        internal static Action<IMessage, object> CreateActionIMessageObject(MethodInfo method)
-        {
-            ParameterExpression targetParameter = Expression.Parameter(typeof(IMessage), "target");
-            ParameterExpression argParameter = Expression.Parameter(typeof(object), "arg");
-            Expression castTarget = Expression.Convert(targetParameter, method.DeclaringType);
-            Expression castArgument = Expression.Convert(argParameter, method.GetParameters()[0].ParameterType);
-            Expression call = Expression.Call(castTarget, method, castArgument);
-            return Expression.Lambda<Action<IMessage, object>>(call, targetParameter, argParameter).Compile();
-        }
+        internal static Action<IMessage, object> CreateActionIMessageObject(MethodInfo method) =>
+            GetReflectionHelper(method.DeclaringType, method.GetParameters()[0].ParameterType).CreateActionIMessageObject(method);
 
         /// <summary>
         /// Creates a delegate which will execute the given method after casting the first argument to
         /// the target type of the method.
         /// </summary>
-        internal static Action<IMessage> CreateActionIMessage(MethodInfo method)
+        internal static Action<IMessage> CreateActionIMessage(MethodInfo method) =>
+            GetReflectionHelper(method.DeclaringType, typeof(object)).CreateActionIMessage(method);        
+
+        /// <summary>
+        /// Creates a reflection helper for the given type arguments. Currently these are created on demand
+        /// rather than cached; this will be "busy" when initially loading a message's descriptor, but after that
+        /// they can be garbage collected. We could cache them by type if that proves to be important, but creating
+        /// an object is pretty cheap.
+        /// </summary>
+        private static IReflectionHelper GetReflectionHelper(Type t1, Type t2) =>
+            (IReflectionHelper) Activator.CreateInstance(typeof(ReflectionHelper<,>).MakeGenericType(t1, t2));
+
+        // Non-generic interface allowing us to use an instance of ReflectionHelper<T1, T2> without statically
+        // knowing the types involved.
+        private interface IReflectionHelper
         {
-            ParameterExpression targetParameter = Expression.Parameter(typeof(IMessage), "target");
-            Expression castTarget = Expression.Convert(targetParameter, method.DeclaringType);
-            Expression call = Expression.Call(castTarget, method);
-            return Expression.Lambda<Action<IMessage>>(call, targetParameter).Compile();
-        }        
+            Func<IMessage, int> CreateFuncIMessageInt32(MethodInfo method);
+            Action<IMessage> CreateActionIMessage(MethodInfo method);
+            Func<IMessage, object> CreateFuncIMessageObject(MethodInfo method);
+            Action<IMessage, object> CreateActionIMessageObject(MethodInfo method);
+        }
+
+        private class ReflectionHelper<T1, T2> : IReflectionHelper
+        {
+            public Func<IMessage, int> CreateFuncIMessageInt32(MethodInfo method)
+            {
+                var del = (Func<T1, int>) method.CreateDelegate(typeof(Func<T1, int>));
+                return message => del((T1) message);
+            }
+
+            public Action<IMessage> CreateActionIMessage(MethodInfo method)
+            {
+                var del = (Action<T1>) method.CreateDelegate(typeof(Action<T1>));
+                return message => del((T1) message);
+            }
+
+            public Func<IMessage, object> CreateFuncIMessageObject(MethodInfo method)
+            {
+                var del = (Func<T1, T2>) method.CreateDelegate(typeof(Func<T1, T2>));
+                return message => del((T1) message);
+            }
+
+            public Action<IMessage, object> CreateActionIMessageObject(MethodInfo method)
+            {
+                var del = (Action<T1, T2>) method.CreateDelegate(typeof(Action<T1, T2>));
+                return (message, arg) => del((T1) message, (T2) arg);
+            }
+        }
     }
 }
