@@ -38,7 +38,11 @@ namespace Google.Protobuf.Test
     {
         public static int Main(string[] args)
         {
-            return new AutoRun(typeof(Program).GetTypeInfo().Assembly).Execute(args);
+            #if NET35
+                return new AutoRun(typeof(Program).Assembly).Execute(args);
+            #else
+                return new AutoRun(typeof(Program).GetTypeInfo().Assembly).Execute(args);
+            #endif
         }
     }
 }
