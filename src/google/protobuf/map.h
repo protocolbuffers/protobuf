@@ -922,16 +922,6 @@ class Map {
 
     // Return a randomish value.
     size_type Seed() const {
-      // random_device can throw, so avoid it unless we are compiling with
-      // exceptions enabled.
-#if __cpp_exceptions && LANG_CXX11
-      try {
-        std::random_device rd;
-        std::knuth_b knuth(rd());
-        std::uniform_int_distribution<size_type> u;
-        return u(knuth);
-      } catch (...) { }
-#endif
       size_type s = static_cast<size_type>(reinterpret_cast<uintptr_t>(this));
 #if defined(__x86_64__) && defined(__GNUC__)
       uint32 hi, lo;
