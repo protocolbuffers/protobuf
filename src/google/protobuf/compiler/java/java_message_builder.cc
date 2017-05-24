@@ -472,7 +472,7 @@ GenerateCommonBuilderMethods(io::Printer* printer) {
     "}\n"
     "public Builder setField(\n"
     "    com.google.protobuf.Descriptors.FieldDescriptor field,\n"
-    "    Object value) {\n"
+    "    java.lang.Object value) {\n"
     "  return (Builder) super.setField(field, value);\n"
     "}\n"
     "public Builder clearField(\n"
@@ -485,12 +485,12 @@ GenerateCommonBuilderMethods(io::Printer* printer) {
     "}\n"
     "public Builder setRepeatedField(\n"
     "    com.google.protobuf.Descriptors.FieldDescriptor field,\n"
-    "    int index, Object value) {\n"
+    "    int index, java.lang.Object value) {\n"
     "  return (Builder) super.setRepeatedField(field, index, value);\n"
     "}\n"
     "public Builder addRepeatedField(\n"
     "    com.google.protobuf.Descriptors.FieldDescriptor field,\n"
-    "    Object value) {\n"
+    "    java.lang.Object value) {\n"
     "  return (Builder) super.addRepeatedField(field, value);\n"
     "}\n");
 
