@@ -58,11 +58,11 @@ namespace compiler {
 namespace php {
 
 // Forward decls.
-std::string PhpName(const std::string& full_name, bool is_descriptor);
+std::string PhpName(const FileDescriptor* file, bool is_descriptor);
 std::string DefaultForField(FieldDescriptor* field);
 std::string IntToString(int32 value);
 std::string FilenameToClassname(const string& filename);
-std::string GeneratedMetadataFileName(const std::string& proto_file,
+std::string GeneratedMetadataFileName(const FileDescriptor* file,
                                       bool is_descriptor);
 std::string LabelForField(FieldDescriptor* field);
 std::string TypeName(FieldDescriptor* field);
@@ -148,15 +148,23 @@ std::string FullClassName(const DescriptorType* desc, bool is_descriptor) {
   if (desc->file()->package() == "") {
     return classname;
   } else {
-    return PhpName(desc->file()->package(), is_descriptor) + '\\' +
+    return PhpName(desc->file(), is_descriptor) + '\\' +
            classname;
   }
 }
 
-std::string PhpName(const std::string& full_name, bool is_descriptor) {
+std::string PhpName(const FileDescriptor* file, bool is_descriptor) {
   if (is_descriptor) {
     return kDescriptorPackageName;
   }
+
+  /* TODO: include this once php_namespace option is available
+  if (file->options().has_php_namespace()) {
+    return file->options().php_namespace();
+  }
+  */
+
+  const std::string full_name = file->package();
 
   std::string result;
   bool cap_next_letter = true;
@@ -199,11 +207,9 @@ std::string DefaultForField(const FieldDescriptor* field) {
   }
 }
 
-std::string GeneratedMetadataFileName(const std::string& proto_file,
+std::string GeneratedMetadataFileName(const FileDescriptor* file,
                                       bool is_descriptor) {
-  int start_index = 0;
-  int first_index = proto_file.find_first_of("/", start_index);
-  std::string result = "GPBMetadata/";
+  std::string proto_file = file->name();
 
   if (proto_file == kEmptyFile) {
     return kEmptyMetadataFile;
@@ -212,28 +218,23 @@ std::string GeneratedMetadataFileName(const std::string& proto_file,
     return kDescriptorMetadataFile;
   }
 
-  // Append directory name.
-  std::string file_no_suffix;
-  int lastindex = proto_file.find_last_of(".");
-  if (proto_file == kEmptyFile) {
-    return kEmptyMetadataFile;
-  } else {
-    file_no_suffix = proto_file.substr(0, lastindex);
+  int last_separator_index = proto_file.find_last_of("/");
+  int extension_index = proto_file.find_last_of(".");
+
+  std::string package_name = PhpName(file, is_descriptor);
+  for (int i = 0; i < package_name.size(); i++) {
+    if (package_name[i] == '\\') {
+      package_name[i] = '/';
+    }
   }
 
-  while (first_index != string::npos) {
-    result += UnderscoresToCamelCase(
-        file_no_suffix.substr(start_index, first_index - start_index), true);
-    result += "/";
-    start_index = first_index + 1;
-    first_index = file_no_suffix.find_first_of("/", start_index);
-  }
-
-  // Append file name.
-  result += RenameEmpty(UnderscoresToCamelCase(
-      file_no_suffix.substr(start_index, first_index - start_index), true));
-
-  return result += ".php";
+  return "GPBMetadata/"
+      + package_name
+      + '/'
+      + UnderscoresToCamelCase(
+          proto_file.substr(last_separator_index, extension_index - last_separator_index),
+          true)
+      + ".php";
 }
 
 std::string GeneratedMessageFileName(const Descriptor* message,
@@ -673,7 +674,8 @@ void GenerateAddFileToPool(const FileDescriptor* file, bool is_descriptor,
         "$pool->finish();\n");
   } else {
     for (int i = 0; i < file->dependency_count(); i++) {
-      const std::string& name = file->dependency(i)->name();
+      const FileDescriptor* dependency_file = file->dependency(i);
+      const std::string& name = dependency_file->name();
       // Currently, descriptor.proto is not ready for external usage. Skip to
       // import it for now, so that its dependencies can still work as long as
       // they don't use protos defined in descriptor.proto.
@@ -681,7 +683,7 @@ void GenerateAddFileToPool(const FileDescriptor* file, bool is_descriptor,
         continue;
       }
       std::string dependency_filename =
-          GeneratedMetadataFileName(name, is_descriptor);
+          GeneratedMetadataFileName(dependency_file, is_descriptor);
       printer->Print(
           "\\^name^::initOnce();\n",
           "name", FilenameToClassname(dependency_filename));
@@ -775,7 +777,7 @@ std::string FilenameToClassname(const string& filename) {
 void GenerateMetadataFile(const FileDescriptor* file,
                           bool is_descriptor,
                           GeneratorContext* generator_context) {
-  std::string filename = GeneratedMetadataFileName(file->name(), is_descriptor);
+  std::string filename = GeneratedMetadataFileName(file, is_descriptor);
   scoped_ptr<io::ZeroCopyOutputStream> output(
       generator_context->Open(filename));
   io::Printer printer(output.get(), '^');
@@ -910,7 +912,7 @@ void GenerateMessageFile(const FileDescriptor* file, const Descriptor* message,
   Indent(&printer);
 
   std::string metadata_filename =
-      GeneratedMetadataFileName(file->name(), is_descriptor);
+      GeneratedMetadataFileName(file, is_descriptor);
   std::string metadata_fullname = FilenameToClassname(metadata_filename);
   printer.Print(
       "\\^fullname^::initOnce();\n"
