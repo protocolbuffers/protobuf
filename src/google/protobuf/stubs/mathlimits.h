@@ -43,12 +43,18 @@
 #ifndef UTIL_MATH_MATHLIMITS_H__
 #define UTIL_MATH_MATHLIMITS_H__
 
-// <math.h> lacks a lot of prototypes. However, this file needs <math.h> to
-// access old-fashioned isinf et al. Even worse more: this file must not
-// include <cmath> because that breaks the definition of isinf with gcc 4.9.
-//
-// TODO(mec): after C++11 everywhere, use <cmath> and std::isinf in this file.
+// GCC 4.9 has a bug that makes it impossible to use isinf and isnan when both
+// <math.h> and <cmath> get pulled into the same translation unit.
+// Unfortunately it is difficult to prevent this from happening, so to work
+// around the problem we use std::isinf and std::isnan from <cmath> for C++11
+// builds and otherwise use the plain isinf and isnan functions from <math.h>.
+// Note that for Windows we do something different because it does not support
+// the plain isinf and isnan.
+#if __cplusplus >= 201103L
+#include <cmath>
+#else
 #include <math.h>
+#endif
 #include <string.h>
 
 #include <cfloat>
@@ -220,6 +226,17 @@ DECL_UNSIGNED_INT_LIMITS(unsigned long long int)
 #undef UNSIGNED_MAX_10_EXP
 #undef DECL_INT_LIMIT_FUNCS
 
+// For non-Windows builds we use the std:: versions of isinf and isnan if they
+// are available; see the comment about <cmath> at the top of this file for the
+// details on why we need to do this.
+#if __cplusplus >= 201103L
+#define ISINF std::isinf
+#define ISNAN std::isnan
+#else
+#define ISINF isinf
+#define ISNAN isnan
+#endif
+
 // ========================================================================= //
 #ifdef WIN32  // Lacks built-in isnan() and isinf()
 #define DECL_FP_LIMIT_FUNCS \
@@ -230,11 +247,11 @@ DECL_UNSIGNED_INT_LIMITS(unsigned long long int)
   static bool IsNegInf(const Type x) { return _fpclass(x) == _FPCLASS_NINF; }
 #else
 #define DECL_FP_LIMIT_FUNCS \
-  static bool IsFinite(const Type x) { return !isinf(x)  &&  !isnan(x); } \
-  static bool IsNaN(const Type x) { return isnan(x); } \
-  static bool IsInf(const Type x) { return isinf(x); } \
-  static bool IsPosInf(const Type x) { return isinf(x)  &&  x > 0; } \
-  static bool IsNegInf(const Type x) { return isinf(x)  &&  x < 0; }
+  static bool IsFinite(const Type x) { return !ISINF(x) && !ISNAN(x); } \
+  static bool IsNaN(const Type x) { return ISNAN(x); } \
+  static bool IsInf(const Type x) { return ISINF(x); } \
+  static bool IsPosInf(const Type x) { return ISINF(x) && x > 0; } \
+  static bool IsNegInf(const Type x) { return ISINF(x) && x < 0; }
 #endif
 
 // We can't put floating-point constant values in the header here because
@@ -269,6 +286,8 @@ DECL_FP_LIMITS(float, FLT)
 DECL_FP_LIMITS(double, DBL)
 DECL_FP_LIMITS(long double, LDBL)
 
+#undef ISINF
+#undef ISNAN
 #undef DECL_FP_LIMITS
 #undef DECL_FP_LIMIT_FUNCS
 

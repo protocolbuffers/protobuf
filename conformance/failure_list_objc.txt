@@ -1,0 +1,6 @@
+# JSON input or output tests are skipped (in conformance_objc.m) as mobile
+# platforms don't support JSON wire format to avoid code bloat.
+Required.ProtobufInput.IllegalZeroFieldNum_Case_0
+Required.ProtobufInput.IllegalZeroFieldNum_Case_1
+Required.ProtobufInput.IllegalZeroFieldNum_Case_2
+Required.ProtobufInput.IllegalZeroFieldNum_Case_3

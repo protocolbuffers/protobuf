@@ -1,0 +1,28 @@
+{
+  "name": "google/protobuf",
+  "type": "library",
+  "description": "proto library for PHP",
+  "keywords": ["proto"],
+  "homepage": "https://developers.google.com/protocol-buffers/",
+  "license": "BSD-3-Clause",
+  "require": {
+    "php": ">=5.5.0"
+  },
+  "require-dev": {
+    "phpunit/phpunit": ">=4.8.0"
+  },
+  "autoload": {
+    "psr-4": {
+      "Foo\\": "tests/generated/Foo",
+      "Bar\\": "tests/generated/Bar",
+      "Google\\Protobuf\\": "tests/generated/Google/Protobuf",
+      "Google\\Protobuf\\Internal\\": "src/Google/Protobuf/Internal",
+      "GPBMetadata\\": "tests/generated/GPBMetadata",
+      "GPBMetadata\\Google\\Protobuf\\Internal\\": "src/GPBMetadata/Google/Protobuf/Internal",
+      "": "tests/generated"
+    },
+    "files": [
+      "src/Google/Protobuf/descriptor.php"
+    ]
+  }
+}

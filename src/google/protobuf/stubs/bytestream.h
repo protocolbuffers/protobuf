@@ -64,7 +64,7 @@ namespace protobuf {
 namespace strings {
 
 // An abstract interface for an object that consumes a sequence of bytes. This
-// interface offers 3 different ways to append data, and a Flush() function.
+// interface offers a way to append data as well as a Flush() function.
 //
 // Example:
 //
@@ -208,7 +208,7 @@ class LIBPROTOBUF_EXPORT CheckedArrayByteSink : public ByteSink {
 };
 
 // Implementation of ByteSink that allocates an internal buffer (a char array)
-// and expands it as needed to accomodate appended data (similar to a string),
+// and expands it as needed to accommodate appended data (similar to a string),
 // and allows the caller to take ownership of the internal buffer via the
 // GetBuffer() method. The buffer returned from GetBuffer() must be deleted by
 // the caller with delete[]. GetBuffer() also sets the internal buffer to be

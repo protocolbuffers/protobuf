@@ -35,6 +35,7 @@
 #import "GPBUnknownField_PackagePrivate.h"
 #import "google/protobuf/Unittest.pbobjc.h"
 #import "google/protobuf/UnittestMset.pbobjc.h"
+#import "google/protobuf/UnittestMsetWireFormat.pbobjc.h"
 
 @interface WireFormatTests : GPBTestCase
 @end
@@ -45,6 +46,7 @@
   TestAllTypes* message = [self allSetRepeatedCount:kGPBDefaultRepeatCount];
 
   NSData* rawBytes = message.data;
+  [self assertFieldsInOrder:rawBytes];
   XCTAssertEqual(message.serializedSize, (size_t)rawBytes.length);
 
   TestAllTypes* message2 = [TestAllTypes parseFromData:rawBytes error:NULL];
@@ -57,6 +59,7 @@
       [self packedSetRepeatedCount:kGPBDefaultRepeatCount];
 
   NSData* rawBytes = message.data;
+  [self assertFieldsInOrder:rawBytes];
   XCTAssertEqual(message.serializedSize, (size_t)rawBytes.length);
 
   TestPackedTypes* message2 =
@@ -73,6 +76,7 @@
   TestAllExtensions* message =
       [self allExtensionsSetRepeatedCount:kGPBDefaultRepeatCount];
   NSData* rawBytes = message.data;
+  [self assertFieldsInOrder:rawBytes];
   XCTAssertEqual(message.serializedSize, (size_t)rawBytes.length);
 
   TestAllTypes* message2 = [TestAllTypes parseFromData:rawBytes error:NULL];
@@ -86,6 +90,7 @@
   TestPackedExtensions* message =
       [self packedExtensionsSetRepeatedCount:kGPBDefaultRepeatCount];
   NSData* rawBytes = message.data;
+  [self assertFieldsInOrder:rawBytes];
 
   TestPackedTypes* message2 =
       [self packedSetRepeatedCount:kGPBDefaultRepeatCount];
@@ -101,6 +106,7 @@
 
   TestAllTypes* message = [self allSetRepeatedCount:kGPBDefaultRepeatCount];
   NSData* rawBytes = message.data;
+  [self assertFieldsInOrder:rawBytes];
 
   GPBExtensionRegistry* registry = [self extensionRegistry];
 
@@ -112,7 +118,7 @@
 }
 
 
-- (void) testExtensionsSerializedSize {
+- (void)testExtensionsSerializedSize {
   size_t allSet = [self allSetRepeatedCount:kGPBDefaultRepeatCount].serializedSize;
   size_t extensionSet = [self allExtensionsSetRepeatedCount:kGPBDefaultRepeatCount].serializedSize;
   XCTAssertEqual(allSet, extensionSet);
@@ -123,6 +129,7 @@
   TestPackedExtensions* message =
       [self packedExtensionsSetRepeatedCount:kGPBDefaultRepeatCount];
   NSData* rawBytes = message.data;
+  [self assertFieldsInOrder:rawBytes];
 
   GPBExtensionRegistry* registry = [self extensionRegistry];
 
@@ -166,12 +173,12 @@ const int kUnknownTypeId = 1550055;
   XCTAssertEqual([raw.itemArray[2] typeId], kUnknownTypeId);
 
   TestMessageSetExtension1* message1 =
-      [TestMessageSetExtension1 parseFromData:[raw.itemArray[0] message]
+      [TestMessageSetExtension1 parseFromData:[((RawMessageSet_Item*)raw.itemArray[0]) message]
                                         error:NULL];
   XCTAssertEqual(message1.i, 123);
 
   TestMessageSetExtension2* message2 =
-      [TestMessageSetExtension2 parseFromData:[raw.itemArray[1] message]
+      [TestMessageSetExtension2 parseFromData:[((RawMessageSet_Item*)raw.itemArray[1]) message]
                                         error:NULL];
   XCTAssertEqualObjects(message2.str, @"foo");
 
@@ -189,7 +196,6 @@ const int kUnknownTypeId = 1550055;
     TestMessageSetExtension1* message = [TestMessageSetExtension1 message];
     message.i = 123;
     item.message = [message data];
-    raw.itemArray = [NSMutableArray array];
     [raw.itemArray addObject:item];
   }
 

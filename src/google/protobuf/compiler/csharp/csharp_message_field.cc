@@ -38,8 +38,10 @@
 #include <google/protobuf/io/zero_copy_stream.h>
 #include <google/protobuf/stubs/strutil.h>
 
+#include <google/protobuf/compiler/csharp/csharp_doc_comment.h>
 #include <google/protobuf/compiler/csharp/csharp_helpers.h>
 #include <google/protobuf/compiler/csharp/csharp_message_field.h>
+#include <google/protobuf/compiler/csharp/csharp_options.h>
 
 namespace google {
 namespace protobuf {
@@ -47,8 +49,9 @@ namespace compiler {
 namespace csharp {
 
 MessageFieldGenerator::MessageFieldGenerator(const FieldDescriptor* descriptor,
-                                             int fieldOrdinal)
-    : FieldGeneratorBase(descriptor, fieldOrdinal) {
+                                             int fieldOrdinal,
+                                             const Options *options)
+    : FieldGeneratorBase(descriptor, fieldOrdinal, options) {
   variables_["has_property_check"] = name() + "_ != null";
   variables_["has_not_property_check"] = name() + "_ == null";
 }
@@ -61,7 +64,8 @@ void MessageFieldGenerator::GenerateMembers(io::Printer* printer) {
   printer->Print(
     variables_,
     "private $type_name$ $name$_;\n");
-  AddDeprecatedFlag(printer);
+  WritePropertyDocComment(printer, descriptor_);
+  AddPublicMemberAttributes(printer);
   printer->Print(
     variables_,
     "$access_level$ $type_name$ $property_name$ {\n"
@@ -141,9 +145,11 @@ void MessageFieldGenerator::GenerateCodecCode(io::Printer* printer) {
     "pb::FieldCodec.ForMessage($tag$, $type_name$.Parser)");
 }
 
-MessageOneofFieldGenerator::MessageOneofFieldGenerator(const FieldDescriptor* descriptor,
-						       int fieldOrdinal)
-    : MessageFieldGenerator(descriptor, fieldOrdinal) {
+MessageOneofFieldGenerator::MessageOneofFieldGenerator(
+    const FieldDescriptor* descriptor,
+	  int fieldOrdinal,
+    const Options *options)
+    : MessageFieldGenerator(descriptor, fieldOrdinal, options) {
   SetCommonOneofFieldVariables(&variables_);
 }
 
@@ -152,7 +158,8 @@ MessageOneofFieldGenerator::~MessageOneofFieldGenerator() {
 }
 
 void MessageOneofFieldGenerator::GenerateMembers(io::Printer* printer) {
-  AddDeprecatedFlag(printer);
+  WritePropertyDocComment(printer, descriptor_);
+  AddPublicMemberAttributes(printer);
   printer->Print(
     variables_,
     "$access_level$ $type_name$ $property_name$ {\n"

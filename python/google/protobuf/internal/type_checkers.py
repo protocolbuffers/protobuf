@@ -28,10 +28,6 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#PY25 compatible for GAE.
-#
-# Copyright 2008 Google Inc. All Rights Reserved.
-
 """Provides type checking routines.
 
 This module defines type checking utilities in the forms of dictionaries:
@@ -49,8 +45,12 @@ TYPE_TO_DESERIALIZE_METHOD: A dictionary with field types and deserialization
 
 __author__ = 'robinson@google.com (Will Robinson)'
 
-import sys  ##PY25
-if sys.version < '2.6': bytes = str  ##PY25
+import numbers
+import six
+
+if six.PY3:
+  long = int
+
 from google.protobuf.internal import api_implementation
 from google.protobuf.internal import decoder
 from google.protobuf.internal import encoder
@@ -110,6 +110,16 @@ class TypeChecker(object):
     return proposed_value
 
 
+class TypeCheckerWithDefault(TypeChecker):
+
+  def __init__(self, default_value, *acceptable_types):
+    TypeChecker.__init__(self, acceptable_types)
+    self._default_value = default_value
+
+  def DefaultValue(self):
+    return self._default_value
+
+
 # IntValueChecker and its subclasses perform integer type-checks
 # and bounds-checks.
 class IntValueChecker(object):
@@ -117,11 +127,11 @@ class IntValueChecker(object):
   """Checker used for integer fields.  Performs type-check and range check."""
 
   def CheckValue(self, proposed_value):
-    if not isinstance(proposed_value, (int, long)):
+    if not isinstance(proposed_value, numbers.Integral):
       message = ('%.1024r has type %s, but expected one of: %s' %
-                 (proposed_value, type(proposed_value), (int, long)))
+                 (proposed_value, type(proposed_value), six.integer_types))
       raise TypeError(message)
-    if not self._MIN <= proposed_value <= self._MAX:
+    if not self._MIN <= int(proposed_value) <= self._MAX:
       raise ValueError('Value out of range: %d' % proposed_value)
     # We force 32-bit values to int and 64-bit values to long to make
     # alternate implementations where the distinction is more significant
@@ -141,11 +151,11 @@ class EnumValueChecker(object):
     self._enum_type = enum_type
 
   def CheckValue(self, proposed_value):
-    if not isinstance(proposed_value, (int, long)):
+    if not isinstance(proposed_value, numbers.Integral):
       message = ('%.1024r has type %s, but expected one of: %s' %
-                 (proposed_value, type(proposed_value), (int, long)))
+                 (proposed_value, type(proposed_value), six.integer_types))
       raise TypeError(message)
-    if proposed_value not in self._enum_type.values_by_number:
+    if int(proposed_value) not in self._enum_type.values_by_number:
       raise ValueError('Unknown enum value: %d' % proposed_value)
     return proposed_value
 
@@ -161,9 +171,9 @@ class UnicodeValueChecker(object):
   """
 
   def CheckValue(self, proposed_value):
-    if not isinstance(proposed_value, (bytes, unicode)):
+    if not isinstance(proposed_value, (bytes, six.text_type)):
       message = ('%.1024r has type %s, but expected one of: %s' %
-                 (proposed_value, type(proposed_value), (bytes, unicode)))
+                 (proposed_value, type(proposed_value), (bytes, six.text_type)))
       raise TypeError(message)
 
     # If the value is of type 'bytes' make sure that it is valid UTF-8 data.
@@ -213,12 +223,13 @@ _VALUE_CHECKERS = {
     _FieldDescriptor.CPPTYPE_INT64: Int64ValueChecker(),
     _FieldDescriptor.CPPTYPE_UINT32: Uint32ValueChecker(),
     _FieldDescriptor.CPPTYPE_UINT64: Uint64ValueChecker(),
-    _FieldDescriptor.CPPTYPE_DOUBLE: TypeChecker(
-        float, int, long),
-    _FieldDescriptor.CPPTYPE_FLOAT: TypeChecker(
-        float, int, long),
-    _FieldDescriptor.CPPTYPE_BOOL: TypeChecker(bool, int),
-    _FieldDescriptor.CPPTYPE_STRING: TypeChecker(bytes),
+    _FieldDescriptor.CPPTYPE_DOUBLE: TypeCheckerWithDefault(
+        0.0, numbers.Real),
+    _FieldDescriptor.CPPTYPE_FLOAT: TypeCheckerWithDefault(
+        0.0, numbers.Real),
+    _FieldDescriptor.CPPTYPE_BOOL: TypeCheckerWithDefault(
+        False, bool, numbers.Integral),
+    _FieldDescriptor.CPPTYPE_STRING: TypeCheckerWithDefault(b'', bytes),
     }
 
 

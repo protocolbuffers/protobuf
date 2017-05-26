@@ -36,17 +36,47 @@
 #import "GPBUtilities_PackagePrivate.h"
 #import "GPBWireFormat.h"
 
-static const NSUInteger kDefaultRecursionLimit = 64;
+NSString *const GPBCodedInputStreamException =
+    GPBNSStringifySymbol(GPBCodedInputStreamException);
+
+NSString *const GPBCodedInputStreamUnderlyingErrorKey =
+    GPBNSStringifySymbol(GPBCodedInputStreamUnderlyingErrorKey);
+
+NSString *const GPBCodedInputStreamErrorDomain =
+    GPBNSStringifySymbol(GPBCodedInputStreamErrorDomain);
+
+// Matching:
+// https://github.com/google/protobuf/blob/master/java/core/src/main/java/com/google/protobuf/CodedInputStream.java#L62
+//  private static final int DEFAULT_RECURSION_LIMIT = 100;
+// https://github.com/google/protobuf/blob/master/src/google/protobuf/io/coded_stream.cc#L86
+//  int CodedInputStream::default_recursion_limit_ = 100;
+static const NSUInteger kDefaultRecursionLimit = 100;
+
+static void RaiseException(NSInteger code, NSString *reason) {
+  NSDictionary *errorInfo = nil;
+  if ([reason length]) {
+    errorInfo = @{ GPBErrorReasonKey: reason };
+  }
+  NSError *error = [NSError errorWithDomain:GPBCodedInputStreamErrorDomain
+                                       code:code
+                                   userInfo:errorInfo];
+
+  NSDictionary *exceptionInfo =
+      @{ GPBCodedInputStreamUnderlyingErrorKey: error };
+  [[[NSException alloc] initWithName:GPBCodedInputStreamException
+                              reason:reason
+                            userInfo:exceptionInfo] raise];
+}
 
 static void CheckSize(GPBCodedInputStreamState *state, size_t size) {
   size_t newSize = state->bufferPos + size;
   if (newSize > state->bufferSize) {
-    [NSException raise:NSParseErrorException format:@""];
+    RaiseException(GPBCodedInputStreamErrorInvalidSize, nil);
   }
   if (newSize > state->currentLimit) {
     // Fast forward to end of currentLimit;
     state->bufferPos = state->currentLimit;
-    [NSException raise:NSParseErrorException format:@""];
+    RaiseException(GPBCodedInputStreamErrorSubsectionLimitReached, nil);
   }
 }
 
@@ -95,8 +125,8 @@ static int32_t ReadRawVarint32(GPBCodedInputStreamState *state) {
               return result;
             }
           }
-          [NSException raise:NSParseErrorException
-                      format:@"Unable to read varint32"];
+          RaiseException(GPBCodedInputStreamErrorInvalidVarInt,
+                         @"Invalid VarInt32");
         }
       }
     }
@@ -115,7 +145,7 @@ static int64_t ReadRawVarint64(GPBCodedInputStreamState *state) {
     }
     shift += 7;
   }
-  [NSException raise:NSParseErrorException format:@"Unable to read varint64"];
+  RaiseException(GPBCodedInputStreamErrorInvalidVarInt, @"Invalid VarInt64");
   return 0;
 }
 
@@ -202,8 +232,13 @@ int32_t GPBCodedInputStreamReadTag(GPBCodedInputStreamState *state) {
   state->lastTag = ReadRawVarint32(state);
   if (state->lastTag == 0) {
     // If we actually read zero, that's not a valid tag.
-    [NSException raise:NSParseErrorException
-                format:@"Invalid last tag %d", state->lastTag];
+    RaiseException(GPBCodedInputStreamErrorInvalidTag,
+                   @"A zero tag on the wire is invalid.");
+  }
+  // Tags have to include a valid wireformat, check that also.
+  if (!GPBWireFormatIsValidTag(state->lastTag)) {
+    RaiseException(GPBCodedInputStreamErrorInvalidTag,
+                   @"Invalid wireformat in tag.");
   }
   return state->lastTag;
 }
@@ -216,8 +251,18 @@ NSString *GPBCodedInputStreamReadRetainedString(
     result = @"";
   } else {
     CheckSize(state, size);
-    result = GPBCreateGPBStringWithUTF8(&state->bytes[state->bufferPos], size);
+    result = [[NSString alloc] initWithBytes:&state->bytes[state->bufferPos]
+                                      length:size
+                                    encoding:NSUTF8StringEncoding];
     state->bufferPos += size;
+    if (!result) {
+#ifdef DEBUG
+      // https://developers.google.com/protocol-buffers/docs/proto#scalar
+      NSLog(@"UTF-8 failure, is some field type 'string' when it should be "
+            @"'bytes'?");
+#endif
+      RaiseException(GPBCodedInputStreamErrorInvalidUTF8, nil);
+    }
   }
   return result;
 }
@@ -251,8 +296,7 @@ size_t GPBCodedInputStreamPushLimit(GPBCodedInputStreamState *state,
   byteLimit += state->bufferPos;
   size_t oldLimit = state->currentLimit;
   if (byteLimit > oldLimit) {
-    [NSException raise:NSInvalidArgumentException
-                format:@"byteLimit > oldLimit: %tu > %tu", byteLimit, oldLimit];
+    RaiseException(GPBCodedInputStreamErrorInvalidSubsectionLimit, nil);
   }
   state->currentLimit = byteLimit;
   return oldLimit;
@@ -264,10 +308,6 @@ void GPBCodedInputStreamPopLimit(GPBCodedInputStreamState *state,
 }
 
 size_t GPBCodedInputStreamBytesUntilLimit(GPBCodedInputStreamState *state) {
-  if (state->currentLimit == SIZE_T_MAX) {
-    return state->currentLimit;
-  }
-
   return state->currentLimit - state->bufferPos;
 }
 
@@ -279,8 +319,7 @@ BOOL GPBCodedInputStreamIsAtEnd(GPBCodedInputStreamState *state) {
 void GPBCodedInputStreamCheckLastTagWas(GPBCodedInputStreamState *state,
                                         int32_t value) {
   if (state->lastTag != value) {
-    [NSException raise:NSParseErrorException
-                format:@"Last tag: %d should be %d", state->lastTag, value];
+    RaiseException(GPBCodedInputStreamErrorInvalidTag, @"Unexpected tag read");
   }
 }
 
@@ -299,7 +338,7 @@ void GPBCodedInputStreamCheckLastTagWas(GPBCodedInputStreamState *state,
     buffer_ = [data retain];
     state_.bytes = (const uint8_t *)[data bytes];
     state_.bufferSize = [data length];
-    state_.currentLimit = NSUIntegerMax;
+    state_.currentLimit = state_.bufferSize;
   }
   return self;
 }
@@ -308,6 +347,12 @@ void GPBCodedInputStreamCheckLastTagWas(GPBCodedInputStreamState *state,
   [buffer_ release];
   [super dealloc];
 }
+
+// Direct access is use for speed, to avoid even internally declaring things
+// read/write, etc. The warning is enabled in the project to ensure code calling
+// protos can turn on -Wdirect-ivar-access without issues.
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdirect-ivar-access"
 
 - (int32_t)readTag {
   return GPBCodedInputStreamReadTag(&state_);
@@ -318,6 +363,7 @@ void GPBCodedInputStreamCheckLastTagWas(GPBCodedInputStreamState *state,
 }
 
 - (BOOL)skipField:(int32_t)tag {
+  NSAssert(GPBWireFormatIsValidTag(tag), @"Invalid tag");
   switch (GPBWireFormatGetTagWireType(tag)) {
     case GPBWireFormatVarint:
       GPBCodedInputStreamReadInt32(&state_);
@@ -340,8 +386,6 @@ void GPBCodedInputStreamCheckLastTagWas(GPBCodedInputStreamState *state,
       SkipRawData(&state_, sizeof(int32_t));
       return YES;
   }
-  [NSException raise:NSParseErrorException format:@"Invalid tag %d", tag];
-  return NO;
 }
 
 - (void)skipMessage {
@@ -351,6 +395,22 @@ void GPBCodedInputStreamCheckLastTagWas(GPBCodedInputStreamState *state,
       return;
     }
   }
+}
+
+- (BOOL)isAtEnd {
+  return GPBCodedInputStreamIsAtEnd(&state_);
+}
+
+- (size_t)position {
+  return state_.bufferPos;
+}
+
+- (size_t)pushLimit:(size_t)byteLimit {
+  return GPBCodedInputStreamPushLimit(&state_, byteLimit);
+}
+
+- (void)popLimit:(size_t)oldLimit {
+  GPBCodedInputStreamPopLimit(&state_, oldLimit);
 }
 
 - (double)readDouble {
@@ -393,9 +453,7 @@ void GPBCodedInputStreamCheckLastTagWas(GPBCodedInputStreamState *state,
               message:(GPBMessage *)message
     extensionRegistry:(GPBExtensionRegistry *)extensionRegistry {
   if (state_.recursionDepth >= kDefaultRecursionLimit) {
-    [NSException raise:NSParseErrorException
-                format:@"recursionDepth(%tu) >= %tu", state_.recursionDepth,
-                       kDefaultRecursionLimit];
+    RaiseException(GPBCodedInputStreamErrorRecursionDepthExceeded, nil);
   }
   ++state_.recursionDepth;
   [message mergeFromCodedInputStream:self extensionRegistry:extensionRegistry];
@@ -407,9 +465,7 @@ void GPBCodedInputStreamCheckLastTagWas(GPBCodedInputStreamState *state,
 - (void)readUnknownGroup:(int32_t)fieldNumber
                  message:(GPBUnknownFieldSet *)message {
   if (state_.recursionDepth >= kDefaultRecursionLimit) {
-    [NSException raise:NSParseErrorException
-                format:@"recursionDepth(%tu) >= %tu", state_.recursionDepth,
-                       kDefaultRecursionLimit];
+    RaiseException(GPBCodedInputStreamErrorRecursionDepthExceeded, nil);
   }
   ++state_.recursionDepth;
   [message mergeFromCodedInputStream:self];
@@ -422,9 +478,7 @@ void GPBCodedInputStreamCheckLastTagWas(GPBCodedInputStreamState *state,
     extensionRegistry:(GPBExtensionRegistry *)extensionRegistry {
   int32_t length = ReadRawVarint32(&state_);
   if (state_.recursionDepth >= kDefaultRecursionLimit) {
-    [NSException raise:NSParseErrorException
-                format:@"recursionDepth(%tu) >= %tu", state_.recursionDepth,
-                       kDefaultRecursionLimit];
+    RaiseException(GPBCodedInputStreamErrorRecursionDepthExceeded, nil);
   }
   size_t oldLimit = GPBCodedInputStreamPushLimit(&state_, length);
   ++state_.recursionDepth;
@@ -440,9 +494,7 @@ void GPBCodedInputStreamCheckLastTagWas(GPBCodedInputStreamState *state,
         parentMessage:(GPBMessage *)parentMessage {
   int32_t length = ReadRawVarint32(&state_);
   if (state_.recursionDepth >= kDefaultRecursionLimit) {
-    [NSException raise:NSParseErrorException
-                format:@"recursionDepth(%tu) >= %tu", state_.recursionDepth,
-                       kDefaultRecursionLimit];
+    RaiseException(GPBCodedInputStreamErrorRecursionDepthExceeded, nil);
   }
   size_t oldLimit = GPBCodedInputStreamPushLimit(&state_, length);
   ++state_.recursionDepth;
@@ -481,321 +533,6 @@ void GPBCodedInputStreamCheckLastTagWas(GPBCodedInputStreamState *state,
   return GPBCodedInputStreamReadSInt64(&state_);
 }
 
-@end
-
-@implementation GPBString {
- @package
-  CFStringRef string_;
-  unsigned char *utf8_;
-  NSUInteger utf8Len_;
-
-  // This lock is used to gate access to utf8_.  Once GPBStringInitStringValue()
-  // has been called, string_ will be filled in, and utf8_ will be NULL.
-  OSSpinLock lock_;
-
-  BOOL hasBOM_;
-  BOOL is7BitAscii_;
-}
-
-// Returns true if the passed in bytes are 7 bit ascii.
-// This routine needs to be fast.
-static bool AreBytesIn7BitASCII(const uint8_t *bytes, NSUInteger len) {
-// In the loops below, it's more efficient to collect rather than do
-// conditional at every step.
-#if __LP64__
-  // Align bytes. This is especially important in case of 3 byte BOM.
-  while (len > 0 && ((size_t)bytes & 0x07)) {
-    if (*bytes++ & 0x80) return false;
-    len--;
-  }
-  while (len >= 32) {
-    uint64_t val = *(const uint64_t *)bytes;
-    uint64_t hiBits = (val & 0x8080808080808080ULL);
-    bytes += 8;
-    val = *(const uint64_t *)bytes;
-    hiBits |= (val & 0x8080808080808080ULL);
-    bytes += 8;
-    val = *(const uint64_t *)bytes;
-    hiBits |= (val & 0x8080808080808080ULL);
-    bytes += 8;
-    val = *(const uint64_t *)bytes;
-    if (hiBits | (val & 0x8080808080808080ULL)) return false;
-    bytes += 8;
-    len -= 32;
-  }
-
-  while (len >= 16) {
-    uint64_t val = *(const uint64_t *)bytes;
-    uint64_t hiBits = (val & 0x8080808080808080ULL);
-    bytes += 8;
-    val = *(const uint64_t *)bytes;
-    if (hiBits | (val & 0x8080808080808080ULL)) return false;
-    bytes += 8;
-    len -= 16;
-  }
-
-  while (len >= 8) {
-    uint64_t val = *(const uint64_t *)bytes;
-    if (val & 0x8080808080808080ULL) return false;
-    bytes += 8;
-    len -= 8;
-  }
-#else   // __LP64__
-  // Align bytes. This is especially important in case of 3 byte BOM.
-  while (len > 0 && ((size_t)bytes & 0x03)) {
-    if (*bytes++ & 0x80) return false;
-    len--;
-  }
-  while (len >= 16) {
-    uint32_t val = *(const uint32_t *)bytes;
-    uint32_t hiBits = (val & 0x80808080U);
-    bytes += 4;
-    val = *(const uint32_t *)bytes;
-    hiBits |= (val & 0x80808080U);
-    bytes += 4;
-    val = *(const uint32_t *)bytes;
-    hiBits |= (val & 0x80808080U);
-    bytes += 4;
-    val = *(const uint32_t *)bytes;
-    if (hiBits | (val & 0x80808080U)) return false;
-    bytes += 4;
-    len -= 16;
-  }
-
-  while (len >= 8) {
-    uint32_t val = *(const uint32_t *)bytes;
-    uint32_t hiBits = (val & 0x80808080U);
-    bytes += 4;
-    val = *(const uint32_t *)bytes;
-    if (hiBits | (val & 0x80808080U)) return false;
-    bytes += 4;
-    len -= 8;
-  }
-#endif  // __LP64__
-
-  while (len >= 4) {
-    uint32_t val = *(const uint32_t *)bytes;
-    if (val & 0x80808080U) return false;
-    bytes += 4;
-    len -= 4;
-  }
-
-  while (len--) {
-    if (*bytes++ & 0x80) return false;
-  }
-
-  return true;
-}
-
-static void GPBStringInitStringValue(GPBString *string) {
-  OSSpinLockLock(&string->lock_);
-  GPBStringInitStringValueAlreadyLocked(string);
-  OSSpinLockUnlock(&string->lock_);
-}
-
-static void GPBStringInitStringValueAlreadyLocked(GPBString *string) {
-  if (string->string_ == NULL && string->utf8_ != NULL) {
-    // Using kCFAllocatorMalloc for contentsDeallocator, as buffer in
-    // string->utf8_ is being handed off.
-    string->string_ = CFStringCreateWithBytesNoCopy(
-        NULL, string->utf8_, string->utf8Len_, kCFStringEncodingUTF8, false,
-        kCFAllocatorMalloc);
-    if (!string->string_) {
-#ifdef DEBUG
-      // https://developers.google.com/protocol-buffers/docs/proto#scalar
-      NSLog(@"UTF8 failure, is some field type 'string' when it should be "
-            @"'bytes'?");
-#endif
-      string->string_ = CFSTR("");
-      string->utf8Len_ = 0;
-      // On failure, we have to clean up the buffer.
-      free(string->utf8_);
-    }
-    string->utf8_ = NULL;
-  }
-}
-
-GPBString *GPBCreateGPBStringWithUTF8(const void *bytes, NSUInteger length) {
-  GPBString *result = [[GPBString alloc] initWithBytes:bytes length:length];
-  return result;
-}
-
-- (instancetype)initWithBytes:(const void *)bytes length:(NSUInteger)length {
-  self = [super init];
-  if (self) {
-    utf8_ = malloc(length);
-    memcpy(utf8_, bytes, length);
-    utf8Len_ = length;
-    lock_ = OS_SPINLOCK_INIT;
-    is7BitAscii_ = AreBytesIn7BitASCII(bytes, length);
-    if (length >= 3 && memcmp(utf8_, "\xef\xbb\xbf", 3) == 0) {
-      // We can't just remove the BOM from the string here, because in the case
-      // where we have > 1 BOM at the beginning of the string, we will remove one,
-      // and the internal NSString we create will remove the next one, and we will
-      // end up with a GPBString != NSString issue.
-      // We also just can't remove all the BOMs because then we would end up with
-      // potential cases where a GPBString and an NSString made with the same
-      // UTF8 buffer would in fact be different.
-      // We record the fact we have a BOM, and use it as necessary to simulate
-      // what NSString would return for various calls.
-      hasBOM_ = YES;
-#if DEBUG
-      // Sending BOMs across the line is just wasting bits.
-      NSLog(@"Bad data? String should not have BOM!");
-#endif  // DEBUG
-    }
-  }
-  return self;
-}
-
-- (void)dealloc {
-  if (string_ != NULL) {
-    CFRelease(string_);
-  }
-  if (utf8_ != NULL) {
-    free(utf8_);
-  }
-  [super dealloc];
-}
-
-// Required NSString overrides.
-- (NSUInteger)length {
-  if (is7BitAscii_) {
-    return utf8Len_;
-  } else {
-    GPBStringInitStringValue(self);
-    return CFStringGetLength(string_);
-  }
-}
-
-- (unichar)characterAtIndex:(NSUInteger)anIndex {
-  OSSpinLockLock(&lock_);
-  if (is7BitAscii_ && utf8_) {
-    unichar result = utf8_[anIndex];
-    OSSpinLockUnlock(&lock_);
-    return result;
-  } else {
-    GPBStringInitStringValueAlreadyLocked(self);
-    OSSpinLockUnlock(&lock_);
-    return CFStringGetCharacterAtIndex(string_, anIndex);
-  }
-}
-
-// Override a couple of methods that typically want high performance.
-
-- (id)copyWithZone:(NSZone *)zone {
-  GPBStringInitStringValue(self);
-  return [(NSString *)string_ copyWithZone:zone];
-}
-
-- (id)mutableCopyWithZone:(NSZone *)zone {
-  GPBStringInitStringValue(self);
-  return [(NSString *)string_ mutableCopyWithZone:zone];
-}
-
-- (NSUInteger)hash {
-  // Must convert to string here to make sure that the hash is always
-  // consistent no matter what state the GPBString is in.
-  GPBStringInitStringValue(self);
-  return CFHash(string_);
-}
-
-- (BOOL)isEqual:(id)object {
-  if (self == object) {
-    return YES;
-  }
-  if ([object isKindOfClass:[NSString class]]) {
-    GPBStringInitStringValue(self);
-    return CFStringCompare(string_, (CFStringRef)object, 0) ==
-           kCFCompareEqualTo;
-  }
-  return NO;
-}
-
-- (void)getCharacters:(unichar *)buffer range:(NSRange)aRange {
-  OSSpinLockLock(&lock_);
-  if (is7BitAscii_ && utf8_) {
-    unsigned char *bytes = &(utf8_[aRange.location]);
-    for (NSUInteger i = 0; i < aRange.length; ++i) {
-      buffer[i] = bytes[i];
-    }
-    OSSpinLockUnlock(&lock_);
-  } else {
-    GPBStringInitStringValueAlreadyLocked(self);
-    OSSpinLockUnlock(&lock_);
-    CFStringGetCharacters(string_, CFRangeMake(aRange.location, aRange.length),
-                          buffer);
-  }
-}
-
-- (NSUInteger)lengthOfBytesUsingEncoding:(NSStringEncoding)encoding {
-  if ((encoding == NSUTF8StringEncoding) ||
-      (encoding == NSASCIIStringEncoding && is7BitAscii_)) {
-    return utf8Len_ - (hasBOM_ ? 3 : 0);
-  } else {
-    GPBStringInitStringValue(self);
-    return [(NSString *)string_ lengthOfBytesUsingEncoding:encoding];
-  }
-}
-
-- (BOOL)getBytes:(void *)buffer
-         maxLength:(NSUInteger)maxLength
-        usedLength:(NSUInteger *)usedLength
-          encoding:(NSStringEncoding)encoding
-           options:(NSStringEncodingConversionOptions)options
-             range:(NSRange)range
-    remainingRange:(NSRangePointer)remainingRange {
-  // [NSString getBytes:maxLength:usedLength:encoding:options:range:remainingRange]
-  // does not return reliable results if the maxLength argument is 0
-  // (Radar 16385183). Therefore we have special cased it as a slow case so
-  // that it behaves however Apple intends it to behave. It should be a rare
-  // case.
-  //
-  // [NSString getBytes:maxLength:usedLength:encoding:options:range:remainingRange]
-  // does not return reliable results if the range is outside of the strings
-  // length (Radar 16396177). Therefore we have special cased it as a slow
-  // case so that it behaves however Apple intends it to behave.  It should
-  // be a rare case.
-  //
-  // We can optimize the UTF8StringEncoding and NSASCIIStringEncoding with no
-  // options cases.
-  if ((options == 0) &&
-      (encoding == NSUTF8StringEncoding || encoding == NSASCIIStringEncoding) &&
-      (maxLength != 0) &&
-      (NSMaxRange(range) <= utf8Len_)) {
-    // Might be able to optimize it.
-    OSSpinLockLock(&lock_);
-    if (is7BitAscii_ && utf8_) {
-      NSUInteger length = range.length;
-      length = (length < maxLength) ? length : maxLength;
-      memcpy(buffer, utf8_ + range.location, length);
-      if (usedLength) {
-        *usedLength = length;
-      }
-      if (remainingRange) {
-        remainingRange->location = range.location + length;
-        remainingRange->length = range.length - length;
-      }
-      OSSpinLockUnlock(&lock_);
-      if (length > 0) {
-        return YES;
-      } else {
-        return NO;
-      }
-    } else {
-      GPBStringInitStringValueAlreadyLocked(self);
-      OSSpinLockUnlock(&lock_);
-    }
-  } else {
-    GPBStringInitStringValue(self);
-  }
-  return [(NSString *)string_ getBytes:buffer
-                             maxLength:maxLength
-                            usedLength:usedLength
-                              encoding:encoding
-                               options:options
-                                 range:range
-                        remainingRange:remainingRange];
-}
+#pragma clang diagnostic pop
 
 @end

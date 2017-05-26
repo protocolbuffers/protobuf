@@ -46,36 +46,122 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+/**
+ * Writes out protocol message fields.
+ *
+ * The common uses of protocol buffers shouldn't need to use this class.
+ * GPBMessage's provide a -data method that will serialize the message for you.
+ *
+ * @note Subclassing of GPBCodedOutputStream is NOT supported.
+ **/
 @interface GPBCodedOutputStream : NSObject
 
-// Creates a new stream to write into data.  Data must be sized to fit or it
-// will error when it runs out of space.
+/**
+ * Creates a stream to fill in the given data. Data must be sized to fit or
+ * an error will be raised when out of space.
+ *
+ * @param data The data where the stream will be written to.
+ *
+ * @return A newly instanced GPBCodedOutputStream.
+ **/
 + (instancetype)streamWithData:(NSMutableData *)data;
+
+/**
+ * Creates a stream to write into the given NSOutputStream.
+ *
+ * @param output The output stream where the stream will be written to.
+ *
+ * @return A newly instanced GPBCodedOutputStream.
+ **/
 + (instancetype)streamWithOutputStream:(NSOutputStream *)output;
-+ (instancetype)streamWithOutputStream:(NSOutputStream *)output
-                            bufferSize:(size_t)bufferSize;
 
+/**
+ * Initializes a stream to fill in the given data. Data must be sized to fit
+ * or an error will be raised when out of space.
+ *
+ * @param data The data where the stream will be written to.
+ *
+ * @return A newly initialized GPBCodedOutputStream.
+ **/
 - (instancetype)initWithData:(NSMutableData *)data;
-- (instancetype)initWithOutputStream:(NSOutputStream *)output;
-- (instancetype)initWithOutputStream:(NSOutputStream *)output
-                          bufferSize:(size_t)bufferSize;
 
+/**
+ * Initializes a stream to write into the given @c NSOutputStream.
+ *
+ * @param output The output stream where the stream will be written to.
+ *
+ * @return A newly initialized GPBCodedOutputStream.
+ **/
+- (instancetype)initWithOutputStream:(NSOutputStream *)output;
+
+/**
+ * Flush any buffered data out.
+ **/
 - (void)flush;
 
+/**
+ * Write the raw byte out.
+ *
+ * @param value The value to write out.
+ **/
 - (void)writeRawByte:(uint8_t)value;
 
+/**
+ * Write the tag for the given field number and wire format.
+ *
+ * @param fieldNumber The field number.
+ * @param format      The wire format the data for the field will be in.
+ **/
 - (void)writeTag:(uint32_t)fieldNumber format:(GPBWireFormat)format;
 
+/**
+ * Write a 32bit value out in little endian format.
+ *
+ * @param value The value to write out.
+ **/
 - (void)writeRawLittleEndian32:(int32_t)value;
+/**
+ * Write a 64bit value out in little endian format.
+ *
+ * @param value The value to write out.
+ **/
 - (void)writeRawLittleEndian64:(int64_t)value;
 
+/**
+ * Write a 32bit value out in varint format.
+ *
+ * @param value The value to write out.
+ **/
 - (void)writeRawVarint32:(int32_t)value;
+/**
+ * Write a 64bit value out in varint format.
+ *
+ * @param value The value to write out.
+ **/
 - (void)writeRawVarint64:(int64_t)value;
 
-// Note that this will truncate 64 bit values to 32.
+/**
+ * Write a size_t out as a 32bit varint value.
+ *
+ * @note This will truncate 64 bit values to 32.
+ *
+ * @param value The value to write out.
+ **/
 - (void)writeRawVarintSizeTAs32:(size_t)value;
 
+/**
+ * Writes the contents of an NSData out.
+ *
+ * @param data The data to write out.
+ **/
 - (void)writeRawData:(NSData *)data;
+/**
+ * Writes out the given data.
+ *
+ * @param data   The data blob to write out.
+ * @param offset The offset into the blob to start writing out.
+ * @param length The number of bytes from the blob to write out.
+ **/
 - (void)writeRawPtr:(const void *)data
              offset:(size_t)offset
              length:(size_t)length;
@@ -83,240 +169,551 @@ NS_ASSUME_NONNULL_BEGIN
 //%PDDM-EXPAND _WRITE_DECLS()
 // This block of code is generated, do not edit it directly.
 
+/**
+ * Write a double for the given field number.
+ *
+ * @param fieldNumber The field number assigned to the value.
+ * @param value       The value to write out.
+ **/
 - (void)writeDouble:(int32_t)fieldNumber value:(double)value;
+/**
+ * Write a packed array of double for the given field number.
+ *
+ * @param fieldNumber The field number assigned to the values.
+ * @param values      The values to write out.
+ * @param tag         The tag assigned to the values.
+ **/
 - (void)writeDoubleArray:(int32_t)fieldNumber
                   values:(GPBDoubleArray *)values
                      tag:(uint32_t)tag;
+/**
+ * Write a double without any tag.
+ *
+ * @param value The value to write out.
+ **/
 - (void)writeDoubleNoTag:(double)value;
 
+/**
+ * Write a float for the given field number.
+ *
+ * @param fieldNumber The field number assigned to the value.
+ * @param value       The value to write out.
+ **/
 - (void)writeFloat:(int32_t)fieldNumber value:(float)value;
+/**
+ * Write a packed array of float for the given field number.
+ *
+ * @param fieldNumber The field number assigned to the values.
+ * @param values      The values to write out.
+ * @param tag         The tag assigned to the values.
+ **/
 - (void)writeFloatArray:(int32_t)fieldNumber
                  values:(GPBFloatArray *)values
                     tag:(uint32_t)tag;
+/**
+ * Write a float without any tag.
+ *
+ * @param value The value to write out.
+ **/
 - (void)writeFloatNoTag:(float)value;
 
+/**
+ * Write a uint64_t for the given field number.
+ *
+ * @param fieldNumber The field number assigned to the value.
+ * @param value       The value to write out.
+ **/
 - (void)writeUInt64:(int32_t)fieldNumber value:(uint64_t)value;
+/**
+ * Write a packed array of uint64_t for the given field number.
+ *
+ * @param fieldNumber The field number assigned to the values.
+ * @param values      The values to write out.
+ * @param tag         The tag assigned to the values.
+ **/
 - (void)writeUInt64Array:(int32_t)fieldNumber
                   values:(GPBUInt64Array *)values
                      tag:(uint32_t)tag;
+/**
+ * Write a uint64_t without any tag.
+ *
+ * @param value The value to write out.
+ **/
 - (void)writeUInt64NoTag:(uint64_t)value;
 
+/**
+ * Write a int64_t for the given field number.
+ *
+ * @param fieldNumber The field number assigned to the value.
+ * @param value       The value to write out.
+ **/
 - (void)writeInt64:(int32_t)fieldNumber value:(int64_t)value;
+/**
+ * Write a packed array of int64_t for the given field number.
+ *
+ * @param fieldNumber The field number assigned to the values.
+ * @param values      The values to write out.
+ * @param tag         The tag assigned to the values.
+ **/
 - (void)writeInt64Array:(int32_t)fieldNumber
                  values:(GPBInt64Array *)values
                     tag:(uint32_t)tag;
+/**
+ * Write a int64_t without any tag.
+ *
+ * @param value The value to write out.
+ **/
 - (void)writeInt64NoTag:(int64_t)value;
 
+/**
+ * Write a int32_t for the given field number.
+ *
+ * @param fieldNumber The field number assigned to the value.
+ * @param value       The value to write out.
+ **/
 - (void)writeInt32:(int32_t)fieldNumber value:(int32_t)value;
+/**
+ * Write a packed array of int32_t for the given field number.
+ *
+ * @param fieldNumber The field number assigned to the values.
+ * @param values      The values to write out.
+ * @param tag         The tag assigned to the values.
+ **/
 - (void)writeInt32Array:(int32_t)fieldNumber
                  values:(GPBInt32Array *)values
                     tag:(uint32_t)tag;
+/**
+ * Write a int32_t without any tag.
+ *
+ * @param value The value to write out.
+ **/
 - (void)writeInt32NoTag:(int32_t)value;
 
+/**
+ * Write a uint32_t for the given field number.
+ *
+ * @param fieldNumber The field number assigned to the value.
+ * @param value       The value to write out.
+ **/
 - (void)writeUInt32:(int32_t)fieldNumber value:(uint32_t)value;
+/**
+ * Write a packed array of uint32_t for the given field number.
+ *
+ * @param fieldNumber The field number assigned to the values.
+ * @param values      The values to write out.
+ * @param tag         The tag assigned to the values.
+ **/
 - (void)writeUInt32Array:(int32_t)fieldNumber
                   values:(GPBUInt32Array *)values
                      tag:(uint32_t)tag;
+/**
+ * Write a uint32_t without any tag.
+ *
+ * @param value The value to write out.
+ **/
 - (void)writeUInt32NoTag:(uint32_t)value;
 
+/**
+ * Write a uint64_t for the given field number.
+ *
+ * @param fieldNumber The field number assigned to the value.
+ * @param value       The value to write out.
+ **/
 - (void)writeFixed64:(int32_t)fieldNumber value:(uint64_t)value;
+/**
+ * Write a packed array of uint64_t for the given field number.
+ *
+ * @param fieldNumber The field number assigned to the values.
+ * @param values      The values to write out.
+ * @param tag         The tag assigned to the values.
+ **/
 - (void)writeFixed64Array:(int32_t)fieldNumber
                    values:(GPBUInt64Array *)values
                       tag:(uint32_t)tag;
+/**
+ * Write a uint64_t without any tag.
+ *
+ * @param value The value to write out.
+ **/
 - (void)writeFixed64NoTag:(uint64_t)value;
 
+/**
+ * Write a uint32_t for the given field number.
+ *
+ * @param fieldNumber The field number assigned to the value.
+ * @param value       The value to write out.
+ **/
 - (void)writeFixed32:(int32_t)fieldNumber value:(uint32_t)value;
+/**
+ * Write a packed array of uint32_t for the given field number.
+ *
+ * @param fieldNumber The field number assigned to the values.
+ * @param values      The values to write out.
+ * @param tag         The tag assigned to the values.
+ **/
 - (void)writeFixed32Array:(int32_t)fieldNumber
                    values:(GPBUInt32Array *)values
                       tag:(uint32_t)tag;
+/**
+ * Write a uint32_t without any tag.
+ *
+ * @param value The value to write out.
+ **/
 - (void)writeFixed32NoTag:(uint32_t)value;
 
+/**
+ * Write a int32_t for the given field number.
+ *
+ * @param fieldNumber The field number assigned to the value.
+ * @param value       The value to write out.
+ **/
 - (void)writeSInt32:(int32_t)fieldNumber value:(int32_t)value;
+/**
+ * Write a packed array of int32_t for the given field number.
+ *
+ * @param fieldNumber The field number assigned to the values.
+ * @param values      The values to write out.
+ * @param tag         The tag assigned to the values.
+ **/
 - (void)writeSInt32Array:(int32_t)fieldNumber
                   values:(GPBInt32Array *)values
                      tag:(uint32_t)tag;
+/**
+ * Write a int32_t without any tag.
+ *
+ * @param value The value to write out.
+ **/
 - (void)writeSInt32NoTag:(int32_t)value;
 
+/**
+ * Write a int64_t for the given field number.
+ *
+ * @param fieldNumber The field number assigned to the value.
+ * @param value       The value to write out.
+ **/
 - (void)writeSInt64:(int32_t)fieldNumber value:(int64_t)value;
+/**
+ * Write a packed array of int64_t for the given field number.
+ *
+ * @param fieldNumber The field number assigned to the values.
+ * @param values      The values to write out.
+ * @param tag         The tag assigned to the values.
+ **/
 - (void)writeSInt64Array:(int32_t)fieldNumber
                   values:(GPBInt64Array *)values
                      tag:(uint32_t)tag;
+/**
+ * Write a int64_t without any tag.
+ *
+ * @param value The value to write out.
+ **/
 - (void)writeSInt64NoTag:(int64_t)value;
 
+/**
+ * Write a int64_t for the given field number.
+ *
+ * @param fieldNumber The field number assigned to the value.
+ * @param value       The value to write out.
+ **/
 - (void)writeSFixed64:(int32_t)fieldNumber value:(int64_t)value;
+/**
+ * Write a packed array of int64_t for the given field number.
+ *
+ * @param fieldNumber The field number assigned to the values.
+ * @param values      The values to write out.
+ * @param tag         The tag assigned to the values.
+ **/
 - (void)writeSFixed64Array:(int32_t)fieldNumber
                     values:(GPBInt64Array *)values
                        tag:(uint32_t)tag;
+/**
+ * Write a int64_t without any tag.
+ *
+ * @param value The value to write out.
+ **/
 - (void)writeSFixed64NoTag:(int64_t)value;
 
+/**
+ * Write a int32_t for the given field number.
+ *
+ * @param fieldNumber The field number assigned to the value.
+ * @param value       The value to write out.
+ **/
 - (void)writeSFixed32:(int32_t)fieldNumber value:(int32_t)value;
+/**
+ * Write a packed array of int32_t for the given field number.
+ *
+ * @param fieldNumber The field number assigned to the values.
+ * @param values      The values to write out.
+ * @param tag         The tag assigned to the values.
+ **/
 - (void)writeSFixed32Array:(int32_t)fieldNumber
                     values:(GPBInt32Array *)values
                        tag:(uint32_t)tag;
+/**
+ * Write a int32_t without any tag.
+ *
+ * @param value The value to write out.
+ **/
 - (void)writeSFixed32NoTag:(int32_t)value;
 
+/**
+ * Write a BOOL for the given field number.
+ *
+ * @param fieldNumber The field number assigned to the value.
+ * @param value       The value to write out.
+ **/
 - (void)writeBool:(int32_t)fieldNumber value:(BOOL)value;
+/**
+ * Write a packed array of BOOL for the given field number.
+ *
+ * @param fieldNumber The field number assigned to the values.
+ * @param values      The values to write out.
+ * @param tag         The tag assigned to the values.
+ **/
 - (void)writeBoolArray:(int32_t)fieldNumber
                 values:(GPBBoolArray *)values
                    tag:(uint32_t)tag;
+/**
+ * Write a BOOL without any tag.
+ *
+ * @param value The value to write out.
+ **/
 - (void)writeBoolNoTag:(BOOL)value;
 
+/**
+ * Write a int32_t for the given field number.
+ *
+ * @param fieldNumber The field number assigned to the value.
+ * @param value       The value to write out.
+ **/
 - (void)writeEnum:(int32_t)fieldNumber value:(int32_t)value;
+/**
+ * Write a packed array of int32_t for the given field number.
+ *
+ * @param fieldNumber The field number assigned to the values.
+ * @param values      The values to write out.
+ * @param tag         The tag assigned to the values.
+ **/
 - (void)writeEnumArray:(int32_t)fieldNumber
                 values:(GPBEnumArray *)values
                    tag:(uint32_t)tag;
+/**
+ * Write a int32_t without any tag.
+ *
+ * @param value The value to write out.
+ **/
 - (void)writeEnumNoTag:(int32_t)value;
 
+/**
+ * Write a NSString for the given field number.
+ *
+ * @param fieldNumber The field number assigned to the value.
+ * @param value       The value to write out.
+ **/
 - (void)writeString:(int32_t)fieldNumber value:(NSString *)value;
-- (void)writeStringArray:(int32_t)fieldNumber values:(NSArray *)values;
+/**
+ * Write an array of NSString for the given field number.
+ *
+ * @param fieldNumber The field number assigned to the values.
+ * @param values      The values to write out.
+ **/
+- (void)writeStringArray:(int32_t)fieldNumber values:(NSArray<NSString*> *)values;
+/**
+ * Write a NSString without any tag.
+ *
+ * @param value The value to write out.
+ **/
 - (void)writeStringNoTag:(NSString *)value;
 
+/**
+ * Write a GPBMessage for the given field number.
+ *
+ * @param fieldNumber The field number assigned to the value.
+ * @param value       The value to write out.
+ **/
 - (void)writeMessage:(int32_t)fieldNumber value:(GPBMessage *)value;
-- (void)writeMessageArray:(int32_t)fieldNumber values:(NSArray *)values;
+/**
+ * Write an array of GPBMessage for the given field number.
+ *
+ * @param fieldNumber The field number assigned to the values.
+ * @param values      The values to write out.
+ **/
+- (void)writeMessageArray:(int32_t)fieldNumber values:(NSArray<GPBMessage*> *)values;
+/**
+ * Write a GPBMessage without any tag.
+ *
+ * @param value The value to write out.
+ **/
 - (void)writeMessageNoTag:(GPBMessage *)value;
 
+/**
+ * Write a NSData for the given field number.
+ *
+ * @param fieldNumber The field number assigned to the value.
+ * @param value       The value to write out.
+ **/
 - (void)writeBytes:(int32_t)fieldNumber value:(NSData *)value;
-- (void)writeBytesArray:(int32_t)fieldNumber values:(NSArray *)values;
+/**
+ * Write an array of NSData for the given field number.
+ *
+ * @param fieldNumber The field number assigned to the values.
+ * @param values      The values to write out.
+ **/
+- (void)writeBytesArray:(int32_t)fieldNumber values:(NSArray<NSData*> *)values;
+/**
+ * Write a NSData without any tag.
+ *
+ * @param value The value to write out.
+ **/
 - (void)writeBytesNoTag:(NSData *)value;
 
+/**
+ * Write a GPBMessage for the given field number.
+ *
+ * @param fieldNumber The field number assigned to the value.
+ * @param value       The value to write out.
+ **/
 - (void)writeGroup:(int32_t)fieldNumber
              value:(GPBMessage *)value;
-- (void)writeGroupArray:(int32_t)fieldNumber values:(NSArray *)values;
+/**
+ * Write an array of GPBMessage for the given field number.
+ *
+ * @param fieldNumber The field number assigned to the values.
+ * @param values      The values to write out.
+ **/
+- (void)writeGroupArray:(int32_t)fieldNumber values:(NSArray<GPBMessage*> *)values;
+/**
+ * Write a GPBMessage without any tag (but does write the endGroup tag).
+ *
+ * @param fieldNumber The field number assigned to the value.
+ * @param value       The value to write out.
+ **/
 - (void)writeGroupNoTag:(int32_t)fieldNumber
                   value:(GPBMessage *)value;
 
+/**
+ * Write a GPBUnknownFieldSet for the given field number.
+ *
+ * @param fieldNumber The field number assigned to the value.
+ * @param value       The value to write out.
+ **/
 - (void)writeUnknownGroup:(int32_t)fieldNumber
                     value:(GPBUnknownFieldSet *)value;
-- (void)writeUnknownGroupArray:(int32_t)fieldNumber values:(NSArray *)values;
+/**
+ * Write an array of GPBUnknownFieldSet for the given field number.
+ *
+ * @param fieldNumber The field number assigned to the values.
+ * @param values      The values to write out.
+ **/
+- (void)writeUnknownGroupArray:(int32_t)fieldNumber values:(NSArray<GPBUnknownFieldSet*> *)values;
+/**
+ * Write a GPBUnknownFieldSet without any tag (but does write the endGroup tag).
+ *
+ * @param fieldNumber The field number assigned to the value.
+ * @param value       The value to write out.
+ **/
 - (void)writeUnknownGroupNoTag:(int32_t)fieldNumber
                          value:(GPBUnknownFieldSet *)value;
 
 //%PDDM-EXPAND-END _WRITE_DECLS()
 
-// Write a MessageSet extension field to the stream.  For historical reasons,
-// the wire format differs from normal fields.
+/**
+Write a MessageSet extension field to the stream. For historical reasons,
+the wire format differs from normal fields.
+
+@param fieldNumber The extension field number to write out.
+@param value       The message from where to get the extension.
+*/
 - (void)writeMessageSetExtension:(int32_t)fieldNumber value:(GPBMessage *)value;
 
-// Write an unparsed MessageSet extension field to the stream.  For
-// historical reasons, the wire format differs from normal fields.
+/**
+Write an unparsed MessageSet extension field to the stream. For historical
+reasons, the wire format differs from normal fields.
+
+@param fieldNumber The extension field number to write out.
+@param value       The raw message from where to get the extension.
+*/
 - (void)writeRawMessageSetExtension:(int32_t)fieldNumber value:(NSData *)value;
 
 @end
-
-CF_EXTERN_C_BEGIN
-
-size_t GPBComputeDoubleSize(int32_t fieldNumber, double value)
-    __attribute__((const));
-size_t GPBComputeFloatSize(int32_t fieldNumber, float value)
-    __attribute__((const));
-size_t GPBComputeUInt64Size(int32_t fieldNumber, uint64_t value)
-    __attribute__((const));
-size_t GPBComputeInt64Size(int32_t fieldNumber, int64_t value)
-    __attribute__((const));
-size_t GPBComputeInt32Size(int32_t fieldNumber, int32_t value)
-    __attribute__((const));
-size_t GPBComputeFixed64Size(int32_t fieldNumber, uint64_t value)
-    __attribute__((const));
-size_t GPBComputeFixed32Size(int32_t fieldNumber, uint32_t value)
-    __attribute__((const));
-size_t GPBComputeBoolSize(int32_t fieldNumber, BOOL value)
-    __attribute__((const));
-size_t GPBComputeStringSize(int32_t fieldNumber, NSString *value)
-    __attribute__((const));
-size_t GPBComputeGroupSize(int32_t fieldNumber, GPBMessage *value)
-    __attribute__((const));
-size_t GPBComputeUnknownGroupSize(int32_t fieldNumber,
-                                  GPBUnknownFieldSet *value)
-    __attribute__((const));
-size_t GPBComputeMessageSize(int32_t fieldNumber, GPBMessage *value)
-    __attribute__((const));
-size_t GPBComputeBytesSize(int32_t fieldNumber, NSData *value)
-    __attribute__((const));
-size_t GPBComputeUInt32Size(int32_t fieldNumber, uint32_t value)
-    __attribute__((const));
-size_t GPBComputeSFixed32Size(int32_t fieldNumber, int32_t value)
-    __attribute__((const));
-size_t GPBComputeSFixed64Size(int32_t fieldNumber, int64_t value)
-    __attribute__((const));
-size_t GPBComputeSInt32Size(int32_t fieldNumber, int32_t value)
-    __attribute__((const));
-size_t GPBComputeSInt64Size(int32_t fieldNumber, int64_t value)
-    __attribute__((const));
-size_t GPBComputeTagSize(int32_t fieldNumber) __attribute__((const));
-size_t GPBComputeWireFormatTagSize(int field_number, GPBDataType dataType)
-    __attribute__((const));
-
-size_t GPBComputeDoubleSizeNoTag(double value) __attribute__((const));
-size_t GPBComputeFloatSizeNoTag(float value) __attribute__((const));
-size_t GPBComputeUInt64SizeNoTag(uint64_t value) __attribute__((const));
-size_t GPBComputeInt64SizeNoTag(int64_t value) __attribute__((const));
-size_t GPBComputeInt32SizeNoTag(int32_t value) __attribute__((const));
-size_t GPBComputeFixed64SizeNoTag(uint64_t value) __attribute__((const));
-size_t GPBComputeFixed32SizeNoTag(uint32_t value) __attribute__((const));
-size_t GPBComputeBoolSizeNoTag(BOOL value) __attribute__((const));
-size_t GPBComputeStringSizeNoTag(NSString *value) __attribute__((const));
-size_t GPBComputeGroupSizeNoTag(GPBMessage *value) __attribute__((const));
-size_t GPBComputeUnknownGroupSizeNoTag(GPBUnknownFieldSet *value)
-    __attribute__((const));
-size_t GPBComputeMessageSizeNoTag(GPBMessage *value) __attribute__((const));
-size_t GPBComputeBytesSizeNoTag(NSData *value) __attribute__((const));
-size_t GPBComputeUInt32SizeNoTag(int32_t value) __attribute__((const));
-size_t GPBComputeEnumSizeNoTag(int32_t value) __attribute__((const));
-size_t GPBComputeSFixed32SizeNoTag(int32_t value) __attribute__((const));
-size_t GPBComputeSFixed64SizeNoTag(int64_t value) __attribute__((const));
-size_t GPBComputeSInt32SizeNoTag(int32_t value) __attribute__((const));
-size_t GPBComputeSInt64SizeNoTag(int64_t value) __attribute__((const));
-
-// Note that this will calculate the size of 64 bit values truncated to 32.
-size_t GPBComputeSizeTSizeAsInt32NoTag(size_t value) __attribute__((const));
-
-size_t GPBComputeRawVarint32Size(int32_t value) __attribute__((const));
-size_t GPBComputeRawVarint64Size(int64_t value) __attribute__((const));
-
-// Note that this will calculate the size of 64 bit values truncated to 32.
-size_t GPBComputeRawVarint32SizeForInteger(NSInteger value)
-    __attribute__((const));
-
-// Compute the number of bytes that would be needed to encode a
-// MessageSet extension to the stream.  For historical reasons,
-// the wire format differs from normal fields.
-size_t GPBComputeMessageSetExtensionSize(int32_t fieldNumber, GPBMessage *value)
-    __attribute__((const));
-
-// Compute the number of bytes that would be needed to encode an
-// unparsed MessageSet extension field to the stream.  For
-// historical reasons, the wire format differs from normal fields.
-size_t GPBComputeRawMessageSetExtensionSize(int32_t fieldNumber, NSData *value)
-    __attribute__((const));
-
-size_t GPBComputeEnumSize(int32_t fieldNumber, int32_t value)
-    __attribute__((const));
-
-CF_EXTERN_C_END
 
 NS_ASSUME_NONNULL_END
 
 // Write methods for types that can be in packed arrays.
 //%PDDM-DEFINE _WRITE_PACKABLE_DECLS(NAME, ARRAY_TYPE, TYPE)
+//%/**
+//% * Write a TYPE for the given field number.
+//% *
+//% * @param fieldNumber The field number assigned to the value.
+//% * @param value       The value to write out.
+//% **/
 //%- (void)write##NAME:(int32_t)fieldNumber value:(TYPE)value;
+//%/**
+//% * Write a packed array of TYPE for the given field number.
+//% *
+//% * @param fieldNumber The field number assigned to the values.
+//% * @param values      The values to write out.
+//% * @param tag         The tag assigned to the values.
+//% **/
 //%- (void)write##NAME##Array:(int32_t)fieldNumber
 //%       NAME$S     values:(GPB##ARRAY_TYPE##Array *)values
 //%       NAME$S        tag:(uint32_t)tag;
+//%/**
+//% * Write a TYPE without any tag.
+//% *
+//% * @param value The value to write out.
+//% **/
 //%- (void)write##NAME##NoTag:(TYPE)value;
 //%
 // Write methods for types that aren't in packed arrays.
 //%PDDM-DEFINE _WRITE_UNPACKABLE_DECLS(NAME, TYPE)
-//%- (void)write##NAME:(int32_t)fieldNumber value:(TYPE)value;
-//%- (void)write##NAME##Array:(int32_t)fieldNumber values:(NSArray *)values;
-//%- (void)write##NAME##NoTag:(TYPE)value;
+//%/**
+//% * Write a TYPE for the given field number.
+//% *
+//% * @param fieldNumber The field number assigned to the value.
+//% * @param value       The value to write out.
+//% **/
+//%- (void)write##NAME:(int32_t)fieldNumber value:(TYPE *)value;
+//%/**
+//% * Write an array of TYPE for the given field number.
+//% *
+//% * @param fieldNumber The field number assigned to the values.
+//% * @param values      The values to write out.
+//% **/
+//%- (void)write##NAME##Array:(int32_t)fieldNumber values:(NSArray<##TYPE##*> *)values;
+//%/**
+//% * Write a TYPE without any tag.
+//% *
+//% * @param value The value to write out.
+//% **/
+//%- (void)write##NAME##NoTag:(TYPE *)value;
 //%
 // Special write methods for Groups.
 //%PDDM-DEFINE _WRITE_GROUP_DECLS(NAME, TYPE)
+//%/**
+//% * Write a TYPE for the given field number.
+//% *
+//% * @param fieldNumber The field number assigned to the value.
+//% * @param value       The value to write out.
+//% **/
 //%- (void)write##NAME:(int32_t)fieldNumber
-//%       NAME$S value:(TYPE)value;
-//%- (void)write##NAME##Array:(int32_t)fieldNumber values:(NSArray *)values;
+//%       NAME$S value:(TYPE *)value;
+//%/**
+//% * Write an array of TYPE for the given field number.
+//% *
+//% * @param fieldNumber The field number assigned to the values.
+//% * @param values      The values to write out.
+//% **/
+//%- (void)write##NAME##Array:(int32_t)fieldNumber values:(NSArray<##TYPE##*> *)values;
+//%/**
+//% * Write a TYPE without any tag (but does write the endGroup tag).
+//% *
+//% * @param fieldNumber The field number assigned to the value.
+//% * @param value       The value to write out.
+//% **/
 //%- (void)write##NAME##NoTag:(int32_t)fieldNumber
-//%            NAME$S value:(TYPE)value;
+//%            NAME$S value:(TYPE *)value;
 //%
 
 // One macro to hide it all up above.
@@ -335,8 +732,8 @@ NS_ASSUME_NONNULL_END
 //%_WRITE_PACKABLE_DECLS(SFixed32, Int32, int32_t)
 //%_WRITE_PACKABLE_DECLS(Bool, Bool, BOOL)
 //%_WRITE_PACKABLE_DECLS(Enum, Enum, int32_t)
-//%_WRITE_UNPACKABLE_DECLS(String, NSString *)
-//%_WRITE_UNPACKABLE_DECLS(Message, GPBMessage *)
-//%_WRITE_UNPACKABLE_DECLS(Bytes, NSData *)
-//%_WRITE_GROUP_DECLS(Group, GPBMessage *)
-//%_WRITE_GROUP_DECLS(UnknownGroup, GPBUnknownFieldSet *)
+//%_WRITE_UNPACKABLE_DECLS(String, NSString)
+//%_WRITE_UNPACKABLE_DECLS(Message, GPBMessage)
+//%_WRITE_UNPACKABLE_DECLS(Bytes, NSData)
+//%_WRITE_GROUP_DECLS(Group, GPBMessage)
+//%_WRITE_GROUP_DECLS(UnknownGroup, GPBUnknownFieldSet)

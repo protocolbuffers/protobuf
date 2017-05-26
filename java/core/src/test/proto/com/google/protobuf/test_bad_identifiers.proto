@@ -1,0 +1,168 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2008 Google Inc.  All rights reserved.
+// https://developers.google.com/protocol-buffers/
+//
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are
+// met:
+//
+//     * Redistributions of source code must retain the above copyright
+// notice, this list of conditions and the following disclaimer.
+//     * Redistributions in binary form must reproduce the above
+// copyright notice, this list of conditions and the following disclaimer
+// in the documentation and/or other materials provided with the
+// distribution.
+//     * Neither the name of Google Inc. nor the names of its
+// contributors may be used to endorse or promote products derived from
+// this software without specific prior written permission.
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+// A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+// OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+// LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+// DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+// THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+// (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+// OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+// Author: jonp@google.com (Jon Perlow)
+
+// This file tests that various identifiers work as field and type names even
+// though the same identifiers are used internally by the java code generator.
+
+syntax = "proto2";
+
+// Some generic_services option(s) added automatically.
+// See:  http://go/proto2-generic-services-default
+option java_generic_services = true;   // auto-added
+
+package io_protocol_tests;
+
+option java_package = "com.google.protobuf";
+option java_outer_classname = "TestBadIdentifiersProto";
+
+message TestMessage {
+  optional string cached_size = 1;
+  optional string serialized_size = 2;
+  optional string class = 3;
+}
+
+message Descriptor {
+  option no_standard_descriptor_accessor = true;
+  optional string descriptor = 1;
+  message NestedDescriptor {
+    option no_standard_descriptor_accessor = true;
+    optional string descriptor = 1;
+  }
+  optional NestedDescriptor nested_descriptor = 2;
+  enum NestedEnum {
+    UNKNOWN = 0;
+    FOO = 1;
+  }
+}
+
+message Parser {
+  enum ParserEnum {
+    UNKNOWN = 0;
+    PARSER = 1;
+  }
+  optional ParserEnum parser = 1;
+}
+
+message Deprecated {
+  enum TestEnum {
+    UNKNOWN = 0;
+    FOO = 1;
+
+    // Test if @Deprecated annotation conflicts with Deprecated message name.
+    BAR = 2 [ deprecated = true ];
+  }
+
+  optional int32 field1 = 1 [deprecated=true];
+  optional TestEnum field2 = 2 [deprecated=true];
+  optional TestMessage field3 = 3 [deprecated=true];
+}
+
+message Override {
+  optional int32 override = 1;
+}
+
+message Object {
+  optional int32 object = 1;
+  optional string string_object = 2;
+}
+
+message String {
+  optional string string = 1;
+}
+
+message Integer {
+  optional int32 integer = 1;
+}
+
+message Long {
+  optional int32 long = 1;
+}
+
+message Float {
+  optional float float = 1;
+}
+
+message Double {
+  optional double double = 1;
+}
+
+service TestConflictingMethodNames {
+  rpc Override(TestMessage) returns (TestMessage);
+}
+
+message TestConflictingFieldNames {
+  enum TestEnum {
+    UNKNOWN = 0;
+    FOO = 1;
+  }
+  message TestMessage {
+  }
+  repeated int32 int32_field = 1;
+  repeated TestEnum enum_field = 2;
+  repeated string string_field = 3;
+  repeated bytes bytes_field = 4;
+  repeated TestMessage message_field = 5;
+
+  optional int32 int32_field_count = 11;
+  optional TestEnum enum_field_count = 12;
+  optional string string_field_count = 13;
+  optional bytes bytes_field_count = 14;
+  optional TestMessage message_field_count = 15;
+
+  repeated int32 Int32Field = 21;  // NO_PROTO3
+  repeated TestEnum EnumField = 22;  // NO_PROTO3
+  repeated string StringField = 23;  // NO_PROTO3
+  repeated bytes BytesField = 24;  // NO_PROTO3
+  repeated TestMessage MessageField = 25;  // NO_PROTO3
+
+  // This field conflicts with "int32_field" as they both generate
+  // the method getInt32FieldList().
+  required int32 int32_field_list = 31;  // NO_PROTO3
+
+  extensions 1000 to max;  // NO_PROTO3
+
+  repeated int64 int64_field = 41;
+  extend TestConflictingFieldNames {  // NO_PROTO3
+    // We don't generate accessors for extensions so the following extension
+    // fields don't conflict with the repeated field "int64_field".
+    optional int64 int64_field_count = 1001;  // NO_PROTO3
+    optional int64 int64_field_list = 1002;  // NO_PROTO3
+  }  // NO_PROTO3
+}
+
+message TestMapField {
+  message MapField {}
+  message Pair {}
+  message Message {}
+
+  map<int32, int32> map_field = 1;
+}

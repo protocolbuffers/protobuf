@@ -675,21 +675,20 @@
 
   TestAllTypes *subMsg = [TestAllTypes message];
   subMsg.repeatedInt32Array = [GPBInt32Array arrayWithValue:100];
-  msg1.mapInt32Message = [GPBInt32ObjectDictionary dictionary];
-  [msg1.mapInt32Message setValue:subMsg forKey:0];
+  [msg1.mapInt32Message setObject:subMsg forKey:0];
   subMsg = nil;
 
   subMsg = [TestAllTypes message];
   subMsg.repeatedInt32Array = [GPBInt32Array arrayWithValue:101];
-  msg2.mapInt32Message = [GPBInt32ObjectDictionary dictionary];
-  [msg2.mapInt32Message setValue:subMsg forKey:0];
+
+  [msg2.mapInt32Message setObject:subMsg forKey:0];
   subMsg = nil;
 
   [msg1 mergeFrom:msg2];
 
   // Checks repeated field is overwritten.
   XCTAssertEqual(msg1.mapInt32Message.count, 1U);
-  subMsg = [msg1.mapInt32Message valueForKey:0];
+  subMsg = [msg1.mapInt32Message objectForKey:0];
   XCTAssertNotNil(subMsg);
   XCTAssertEqual(subMsg.repeatedInt32Array.count, 1U);
   XCTAssertEqual([subMsg.repeatedInt32Array valueAtIndex:0], 101);

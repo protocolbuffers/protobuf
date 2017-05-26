@@ -93,6 +93,21 @@ void StripString(string* s, const char* remove, char replacewith) {
   }
 }
 
+// ----------------------------------------------------------------------
+// ReplaceCharacters
+//    Replaces any occurrence of the character 'remove' (or the characters
+//    in 'remove') with the character 'replacewith'.
+// ----------------------------------------------------------------------
+void ReplaceCharacters(string *s, const char *remove, char replacewith) {
+  const char *str_start = s->c_str();
+  const char *str = str_start;
+  for (str = strpbrk(str, remove);
+       str != NULL;
+       str = strpbrk(str + 1, remove)) {
+    (*s)[str - str_start] = replacewith;
+  }
+}
+
 void StripWhitespace(string* str) {
   int str_length = str->length();
 
@@ -524,27 +539,81 @@ int CEscapeInternal(const char* src, int src_len, char* dest,
   return used;
 }
 
-int CEscapeString(const char* src, int src_len, char* dest, int dest_len) {
-  return CEscapeInternal(src, src_len, dest, dest_len, false, false);
+// Calculates the length of the C-style escaped version of 'src'.
+// Assumes that non-printable characters are escaped using octal sequences, and
+// that UTF-8 bytes are not handled specially.
+static inline size_t CEscapedLength(StringPiece src) {
+  static char c_escaped_len[256] = {
+    4, 4, 4, 4, 4, 4, 4, 4, 4, 2, 2, 4, 4, 2, 4, 4,  // \t, \n, \r
+    4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4,
+    1, 1, 2, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1,  // ", '
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,  // '0'..'9'
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,  // 'A'..'O'
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1,  // 'P'..'Z', '\'
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,  // 'a'..'o'
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 4,  // 'p'..'z', DEL
+    4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4,
+    4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4,
+    4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4,
+    4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4,
+    4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4,
+    4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4,
+    4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4,
+    4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4,
+  };
+
+  size_t escaped_len = 0;
+  for (int i = 0; i < src.size(); ++i) {
+    unsigned char c = static_cast<unsigned char>(src[i]);
+    escaped_len += c_escaped_len[c];
+  }
+  return escaped_len;
 }
 
 // ----------------------------------------------------------------------
-// CEscape()
-// CHexEscape()
-//    Copies 'src' to result, escaping dangerous characters using
-//    C-style escape sequences. This is very useful for preparing query
-//    flags. 'src' and 'dest' should not overlap. The 'Hex' version
-//    hexadecimal rather than octal sequences.
-//
-//    Currently only \n, \r, \t, ", ', \ and !isprint() chars are escaped.
+// Escapes 'src' using C-style escape sequences, and appends the escaped string
+// to 'dest'. This version is faster than calling CEscapeInternal as it computes
+// the required space using a lookup table, and also does not do any special
+// handling for Hex or UTF-8 characters.
 // ----------------------------------------------------------------------
+void CEscapeAndAppend(StringPiece src, string* dest) {
+  size_t escaped_len = CEscapedLength(src);
+  if (escaped_len == src.size()) {
+    dest->append(src.data(), src.size());
+    return;
+  }
+
+  size_t cur_dest_len = dest->size();
+  dest->resize(cur_dest_len + escaped_len);
+  char* append_ptr = &(*dest)[cur_dest_len];
+
+  for (int i = 0; i < src.size(); ++i) {
+    unsigned char c = static_cast<unsigned char>(src[i]);
+    switch (c) {
+      case '\n': *append_ptr++ = '\\'; *append_ptr++ = 'n'; break;
+      case '\r': *append_ptr++ = '\\'; *append_ptr++ = 'r'; break;
+      case '\t': *append_ptr++ = '\\'; *append_ptr++ = 't'; break;
+      case '\"': *append_ptr++ = '\\'; *append_ptr++ = '\"'; break;
+      case '\'': *append_ptr++ = '\\'; *append_ptr++ = '\''; break;
+      case '\\': *append_ptr++ = '\\'; *append_ptr++ = '\\'; break;
+      default:
+        if (!isprint(c)) {
+          *append_ptr++ = '\\';
+          *append_ptr++ = '0' + c / 64;
+          *append_ptr++ = '0' + (c % 64) / 8;
+          *append_ptr++ = '0' + c % 8;
+        } else {
+          *append_ptr++ = c;
+        }
+        break;
+    }
+  }
+}
+
 string CEscape(const string& src) {
-  const int dest_length = src.size() * 4 + 1; // Maximum possible expansion
-  scoped_array<char> dest(new char[dest_length]);
-  const int len = CEscapeInternal(src.data(), src.size(),
-                                  dest.get(), dest_length, false, false);
-  GOOGLE_DCHECK_GE(len, 0);
-  return string(dest.get(), len);
+  string dest;
+  CEscapeAndAppend(src, &dest);
+  return dest;
 }
 
 namespace strings {
@@ -912,7 +981,7 @@ static const char two_ASCII_digits[100][2] = {
 };
 
 char* FastUInt32ToBufferLeft(uint32 u, char* buffer) {
-  int digits;
+  uint32 digits;
   const char *ASCII_digits = NULL;
   // The idea of this implementation is to trim the number of divides to as few
   // as possible by using multiplication and subtraction rather than mod (%),

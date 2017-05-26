@@ -66,7 +66,7 @@ void LIBPROTOBUF_EXPORT GetCurrentTime(int64* seconds, int32* nanos);
 string LIBPROTOBUF_EXPORT FormatTime(int64 seconds, int32 nanos);
 // Parses a time string. This method accepts RFC3339 date/time string with UTC
 // offset. For example, "2015-05-20T13:29:35.120-08:00".
-bool LIBPROTOBUF_EXPORT ParseTime(const string& vaule, int64* seconds, int32* nanos);
+bool LIBPROTOBUF_EXPORT ParseTime(const string& value, int64* seconds, int32* nanos);
 
 }  // namespace internal
 }  // namespace protobuf

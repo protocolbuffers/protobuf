@@ -30,9 +30,8 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #endregion
 
-using System;
-using System.Linq;
 using Google.Protobuf.Compatibility;
+using System;
 
 namespace Google.Protobuf.Reflection
 {
@@ -41,20 +40,35 @@ namespace Google.Protobuf.Reflection
     /// </summary>
     public sealed class FieldDescriptor : DescriptorBase, IComparable<FieldDescriptor>
     {
-        private readonly FieldDescriptorProto proto;
         private EnumDescriptor enumType;
         private MessageDescriptor messageType;
-        private readonly MessageDescriptor containingType;
-        private readonly OneofDescriptor containingOneof;
         private FieldType fieldType;
         private readonly string propertyName; // Annoyingly, needed in Crosslink.
         private IFieldAccessor accessor;
+
+        /// <summary>
+        /// Get the field's containing message type.
+        /// </summary>
+        public MessageDescriptor ContainingType { get; }
+
+        /// <summary>
+        /// Returns the oneof containing this field, or <c>null</c> if it is not part of a oneof.
+        /// </summary>
+        public OneofDescriptor ContainingOneof { get; }
+
+        /// <summary>
+        /// The effective JSON name for this field. This is usually the lower-camel-cased form of the field name,
+        /// but can be overridden using the <c>json_name</c> option in the .proto file.
+        /// </summary>
+        public string JsonName { get; }
+
+        internal FieldDescriptorProto Proto { get; }
 
         internal FieldDescriptor(FieldDescriptorProto proto, FileDescriptor file,
                                  MessageDescriptor parent, int index, string propertyName)
             : base(file, file.ComputeFullName(parent, proto.Name), index)
         {
-            this.proto = proto;
+            Proto = proto;
             if (proto.Type != 0)
             {
                 fieldType = GetFieldTypeFromProtoType(proto.Type);
@@ -62,19 +76,18 @@ namespace Google.Protobuf.Reflection
 
             if (FieldNumber <= 0)
             {
-                throw new DescriptorValidationException(this,
-                                                        "Field numbers must be positive integers.");
+                throw new DescriptorValidationException(this, "Field numbers must be positive integers.");
             }
-            containingType = parent;
+            ContainingType = parent;
             // OneofIndex "defaults" to -1 due to a hack in FieldDescriptor.OnConstruction.
             if (proto.OneofIndex != -1)
             {
                 if (proto.OneofIndex < 0 || proto.OneofIndex >= parent.Proto.OneofDecl.Count)
                 {
                     throw new DescriptorValidationException(this,
-                        "FieldDescriptorProto.oneof_index is out of range for type " + parent.Name);
+                        $"FieldDescriptorProto.oneof_index is out of range for type {parent.Name}");
                 }
-                containingOneof = parent.Oneofs[proto.OneofIndex];
+                ContainingOneof = parent.Oneofs[proto.OneofIndex];
             }
 
             file.DescriptorPool.AddSymbol(this);
@@ -84,25 +97,34 @@ namespace Google.Protobuf.Reflection
             // We could trust the generated code and check whether the type of the property is
             // a MapField, but that feels a tad nasty.
             this.propertyName = propertyName;
+            JsonName =  Proto.JsonName == "" ? JsonFormatter.ToJsonName(Proto.Name) : Proto.JsonName;
         }
+    
 
         /// <summary>
         /// The brief name of the descriptor's target.
         /// </summary>
-        public override string Name { get { return proto.Name; } }
-
-        internal FieldDescriptorProto Proto { get { return proto; } }
+        public override string Name => Proto.Name;
 
         /// <summary>
-        /// Returns the accessor for this field, or <c>null</c> if this descriptor does
-        /// not support reflective access.
+        /// Returns the accessor for this field.
         /// </summary>
         /// <remarks>
+        /// <para>
         /// While a <see cref="FieldDescriptor"/> describes the field, it does not provide
         /// any way of obtaining or changing the value of the field within a specific message;
         /// that is the responsibility of the accessor.
+        /// </para>
+        /// <para>
+        /// The value returned by this property will be non-null for all regular fields. However,
+        /// if a message containing a map field is introspected, the list of nested messages will include
+        /// an auto-generated nested key/value pair message for the field. This is not represented in any
+        /// generated type, and the value of the map field itself is represented by a dictionary in the
+        /// reflection API. There are never instances of those "hidden" messages, so no accessor is provided
+        /// and this property will return null.
+        /// </para>
         /// </remarks>
-        public IFieldAccessor Accessor { get { return accessor; } }
+        public IFieldAccessor Accessor => accessor;
         
         /// <summary>
         /// Maps a field type as included in the .proto file to a FieldType.
@@ -111,41 +133,41 @@ namespace Google.Protobuf.Reflection
         {
             switch (type)
             {
-                case FieldDescriptorProto.Types.Type.TYPE_DOUBLE:
+                case FieldDescriptorProto.Types.Type.Double:
                     return FieldType.Double;
-                case FieldDescriptorProto.Types.Type.TYPE_FLOAT:
+                case FieldDescriptorProto.Types.Type.Float:
                     return FieldType.Float;
-                case FieldDescriptorProto.Types.Type.TYPE_INT64:
+                case FieldDescriptorProto.Types.Type.Int64:
                     return FieldType.Int64;
-                case FieldDescriptorProto.Types.Type.TYPE_UINT64:
+                case FieldDescriptorProto.Types.Type.Uint64:
                     return FieldType.UInt64;
-                case FieldDescriptorProto.Types.Type.TYPE_INT32:
+                case FieldDescriptorProto.Types.Type.Int32:
                     return FieldType.Int32;
-                case FieldDescriptorProto.Types.Type.TYPE_FIXED64:
+                case FieldDescriptorProto.Types.Type.Fixed64:
                     return FieldType.Fixed64;
-                case FieldDescriptorProto.Types.Type.TYPE_FIXED32:
+                case FieldDescriptorProto.Types.Type.Fixed32:
                     return FieldType.Fixed32;
-                case FieldDescriptorProto.Types.Type.TYPE_BOOL:
+                case FieldDescriptorProto.Types.Type.Bool:
                     return FieldType.Bool;
-                case FieldDescriptorProto.Types.Type.TYPE_STRING:
+                case FieldDescriptorProto.Types.Type.String:
                     return FieldType.String;
-                case FieldDescriptorProto.Types.Type.TYPE_GROUP:
+                case FieldDescriptorProto.Types.Type.Group:
                     return FieldType.Group;
-                case FieldDescriptorProto.Types.Type.TYPE_MESSAGE:
+                case FieldDescriptorProto.Types.Type.Message:
                     return FieldType.Message;
-                case FieldDescriptorProto.Types.Type.TYPE_BYTES:
+                case FieldDescriptorProto.Types.Type.Bytes:
                     return FieldType.Bytes;
-                case FieldDescriptorProto.Types.Type.TYPE_UINT32:
+                case FieldDescriptorProto.Types.Type.Uint32:
                     return FieldType.UInt32;
-                case FieldDescriptorProto.Types.Type.TYPE_ENUM:
+                case FieldDescriptorProto.Types.Type.Enum:
                     return FieldType.Enum;
-                case FieldDescriptorProto.Types.Type.TYPE_SFIXED32:
+                case FieldDescriptorProto.Types.Type.Sfixed32:
                     return FieldType.SFixed32;
-                case FieldDescriptorProto.Types.Type.TYPE_SFIXED64:
+                case FieldDescriptorProto.Types.Type.Sfixed64:
                     return FieldType.SFixed64;
-                case FieldDescriptorProto.Types.Type.TYPE_SINT32:
+                case FieldDescriptorProto.Types.Type.Sint32:
                     return FieldType.SInt32;
-                case FieldDescriptorProto.Types.Type.TYPE_SINT64:
+                case FieldDescriptorProto.Types.Type.Sint64:
                     return FieldType.SInt64;
                 default:
                     throw new ArgumentException("Invalid type specified");
@@ -155,62 +177,32 @@ namespace Google.Protobuf.Reflection
         /// <summary>
         /// Returns <c>true</c> if this field is a repeated field; <c>false</c> otherwise.
         /// </summary>
-        public bool IsRepeated
-        {
-            get { return Proto.Label == FieldDescriptorProto.Types.Label.LABEL_REPEATED; }
-        }
+        public bool IsRepeated => Proto.Label == FieldDescriptorProto.Types.Label.Repeated;
 
         /// <summary>
         /// Returns <c>true</c> if this field is a map field; <c>false</c> otherwise.
         /// </summary>
-        public bool IsMap
-        {
-            get { return fieldType == FieldType.Message && messageType.Proto.Options != null && messageType.Proto.Options.MapEntry; }
-        }
+        public bool IsMap => fieldType == FieldType.Message && messageType.Proto.Options != null && messageType.Proto.Options.MapEntry;
 
         /// <summary>
         /// Returns <c>true</c> if this field is a packed, repeated field; <c>false</c> otherwise.
         /// </summary>
-        public bool IsPacked
-        {
+        public bool IsPacked => 
             // Note the || rather than && here - we're effectively defaulting to packed, because that *is*
             // the default in proto3, which is all we support. We may give the wrong result for the protos
             // within descriptor.proto, but that's okay, as they're never exposed and we don't use IsPacked
             // within the runtime.
-            get { return Proto.Options == null || Proto.Options.Packed; }
-        }        
-
+            Proto.Options == null || Proto.Options.Packed;
+        
         /// <summary>
-        /// Get the field's containing message type.
+        /// Returns the type of the field.
         /// </summary>
-        public MessageDescriptor ContainingType
-        {
-            get { return containingType; }
-        }
-
-        /// <summary>
-        /// Returns the oneof containing this field, or <c>null</c> if it is not part of a oneof.
-        /// </summary>
-        public OneofDescriptor ContainingOneof
-        {
-            get { return containingOneof; }
-        }
-
-        /// <summary>
-        /// Returns  the type of the field.
-        /// </summary>
-        public FieldType FieldType
-        {
-            get { return fieldType; }
-        }
+        public FieldType FieldType => fieldType;
 
         /// <summary>
         /// Returns the field number declared in the proto file.
         /// </summary>
-        public int FieldNumber
-        {
-            get { return Proto.Number; }
-        }
+        public int FieldNumber => Proto.Number;
 
         /// <summary>
         /// Compares this descriptor with another one, ordering in "canonical" order
@@ -220,7 +212,7 @@ namespace Google.Protobuf.Reflection
         /// </summary>
         public int CompareTo(FieldDescriptor other)
         {
-            if (other.containingType != containingType)
+            if (other.ContainingType != ContainingType)
             {
                 throw new ArgumentException("FieldDescriptors can only be compared to other FieldDescriptors " +
                                             "for fields of the same message type.");
@@ -252,11 +244,16 @@ namespace Google.Protobuf.Reflection
             {
                 if (fieldType != FieldType.Message)
                 {
-                    throw new InvalidOperationException("MessageType is only valid for enum fields.");
+                    throw new InvalidOperationException("MessageType is only valid for message fields.");
                 }
                 return messageType;
             }
         }
+
+        /// <summary>
+        /// The (possibly empty) set of custom options for this field.
+        /// </summary>
+        public CustomOptions CustomOptions => Proto.Options?.CustomOptions ?? CustomOptions.Empty;
 
         /// <summary>
         /// Look up and cross-link all field types etc.
@@ -281,7 +278,7 @@ namespace Google.Protobuf.Reflection
                     }
                     else
                     {
-                        throw new DescriptorValidationException(this, "\"" + Proto.TypeName + "\" is not a type.");
+                        throw new DescriptorValidationException(this, $"\"{Proto.TypeName}\" is not a type.");
                     }
                 }
 
@@ -289,8 +286,7 @@ namespace Google.Protobuf.Reflection
                 {
                     if (!(typeDescriptor is MessageDescriptor))
                     {
-                        throw new DescriptorValidationException(this,
-                                                                "\"" + Proto.TypeName + "\" is not a message type.");
+                        throw new DescriptorValidationException(this, $"\"{Proto.TypeName}\" is not a message type.");
                     }
                     messageType = (MessageDescriptor) typeDescriptor;
 
@@ -303,7 +299,7 @@ namespace Google.Protobuf.Reflection
                 {
                     if (!(typeDescriptor is EnumDescriptor))
                     {
-                        throw new DescriptorValidationException(this, "\"" + Proto.TypeName + "\" is not an enum type.");
+                        throw new DescriptorValidationException(this, $"\"{Proto.TypeName}\" is not an enum type.");
                     }
                     enumType = (EnumDescriptor) typeDescriptor;
                 }
@@ -324,23 +320,25 @@ namespace Google.Protobuf.Reflection
 
             File.DescriptorPool.AddFieldByNumber(this);
 
-            if (containingType != null && containingType.Proto.Options != null && containingType.Proto.Options.MessageSetWireFormat)
+            if (ContainingType != null && ContainingType.Proto.Options != null && ContainingType.Proto.Options.MessageSetWireFormat)
             {
                 throw new DescriptorValidationException(this, "MessageSet format is not supported.");
             }
-            accessor = CreateAccessor(propertyName);
+            accessor = CreateAccessor();
         }
 
-        private IFieldAccessor CreateAccessor(string propertyName)
+        private IFieldAccessor CreateAccessor()
         {
-            if (containingType.GeneratedType == null || propertyName == null)
+            // If we're given no property name, that's because we really don't want an accessor.
+            // (At the moment, that means it's a map entry message...)
+            if (propertyName == null)
             {
                 return null;
             }
-            var property = containingType.GeneratedType.GetProperty(propertyName);
+            var property = ContainingType.ClrType.GetProperty(propertyName);
             if (property == null)
             {
-                throw new DescriptorValidationException(this, "Property " + propertyName + " not found in " + containingType.GeneratedType);
+                throw new DescriptorValidationException(this, $"Property {propertyName} not found in {ContainingType.ClrType}");
             }
             return IsMap ? new MapFieldAccessor(property, this)
                 : IsRepeated ? new RepeatedFieldAccessor(property, this)

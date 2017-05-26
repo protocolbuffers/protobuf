@@ -43,7 +43,9 @@ namespace csharp {
 
 class EnumFieldGenerator : public PrimitiveFieldGenerator {
  public:
-  EnumFieldGenerator(const FieldDescriptor* descriptor, int fieldOrdinal);
+  EnumFieldGenerator(const FieldDescriptor* descriptor,
+                     int fieldOrdinal,
+                     const Options *options);
   ~EnumFieldGenerator();
 
   virtual void GenerateCodecCode(io::Printer* printer);
@@ -57,7 +59,9 @@ class EnumFieldGenerator : public PrimitiveFieldGenerator {
 
 class EnumOneofFieldGenerator : public PrimitiveOneofFieldGenerator {
  public:
-  EnumOneofFieldGenerator(const FieldDescriptor* descriptor, int fieldOrdinal);
+  EnumOneofFieldGenerator(const FieldDescriptor* descriptor,
+                          int fieldOrdinal,
+                          const Options *options);
   ~EnumOneofFieldGenerator();
 
   virtual void GenerateParsingCode(io::Printer* printer);

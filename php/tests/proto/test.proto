@@ -1,0 +1,172 @@
+syntax = "proto3";
+
+import 'proto/test_include.proto';
+import 'proto/test_no_namespace.proto';
+import 'proto/test_prefix.proto';
+
+package foo;
+
+message TestMessage {
+  // Singular
+  int32 optional_int32 = 1;
+  int64 optional_int64 = 2;
+  uint32 optional_uint32 = 3;
+  uint64 optional_uint64 = 4;
+  sint32 optional_sint32 = 5;
+  sint64 optional_sint64 = 6;
+  fixed32 optional_fixed32 = 7;
+  fixed64 optional_fixed64 = 8;
+  sfixed32 optional_sfixed32 = 9;
+  sfixed64 optional_sfixed64 = 10;
+  float optional_float = 11;
+  double optional_double = 12;
+  bool optional_bool = 13;
+  string optional_string = 14;
+  bytes optional_bytes = 15;
+
+  TestEnum optional_enum = 16;
+  Sub optional_message = 17;
+  bar.TestInclude optional_included_message = 18;
+  TestMessage recursive = 19;
+
+  // Repeated
+  repeated    int32 repeated_int32    = 31;
+  repeated    int64 repeated_int64    = 32;
+  repeated   uint32 repeated_uint32   = 33;
+  repeated   uint64 repeated_uint64   = 34;
+  repeated   sint32 repeated_sint32   = 35;
+  repeated   sint64 repeated_sint64   = 36;
+  repeated  fixed32 repeated_fixed32  = 37;
+  repeated  fixed64 repeated_fixed64  = 38;
+  repeated sfixed32 repeated_sfixed32 = 39;
+  repeated sfixed64 repeated_sfixed64 = 40;
+  repeated    float repeated_float    = 41;
+  repeated   double repeated_double   = 42;
+  repeated     bool repeated_bool     = 43;
+  repeated   string repeated_string   = 44;
+  repeated    bytes repeated_bytes    = 45;
+
+  repeated TestEnum repeated_enum = 46;
+  repeated Sub repeated_message = 47;
+  repeated TestMessage repeated_recursive = 48;
+
+  oneof my_oneof {
+    int32  oneof_int32    = 51;
+    int64  oneof_int64    = 52;
+    uint32 oneof_uint32   = 53;
+    uint64 oneof_uint64   = 54;
+    uint32 oneof_sint32   = 55;
+    uint64 oneof_sint64   = 56;
+    uint32 oneof_fixed32  = 57;
+    uint64 oneof_fixed64  = 58;
+    uint32 oneof_sfixed32 = 59;
+    uint64 oneof_sfixed64 = 60;
+    double oneof_double   = 61;
+    float  oneof_float    = 62;
+    bool   oneof_bool     = 63;
+    string oneof_string   = 64;
+    bytes  oneof_bytes    = 65;
+    TestEnum oneof_enum   = 66;
+    Sub    oneof_message  = 67;
+  }
+
+  map<int32,       int32> map_int32_int32       = 71;
+  map<int64,       int64> map_int64_int64       = 72;
+  map<uint32,     uint32> map_uint32_uint32     = 73;
+  map<uint64,     uint64> map_uint64_uint64     = 74;
+  map<sint32,     sint32> map_sint32_sint32     = 75;
+  map<sint64,     sint64> map_sint64_sint64     = 76;
+  map<fixed32,   fixed32> map_fixed32_fixed32   = 77;
+  map<fixed64,   fixed64> map_fixed64_fixed64   = 78;
+  map<sfixed32, sfixed32> map_sfixed32_sfixed32 = 79;
+  map<sfixed64, sfixed64> map_sfixed64_sfixed64 = 80;
+  map<int32,       float> map_int32_float       = 81;
+  map<int32,      double> map_int32_double      = 82;
+  map<bool,         bool> map_bool_bool         = 83;
+  map<string,     string> map_string_string     = 84;
+  map<int32,       bytes> map_int32_bytes       = 85;
+  map<int32,    TestEnum> map_int32_enum        = 86;
+  map<int32,         Sub> map_int32_message     = 87;
+
+  map<int32, TestMessage> map_recursive = 88;
+
+  message Sub {
+    int32 a = 1;
+    repeated int32 b = 2;
+  }
+
+  // Reserved for non-existing field test.
+  // int32 non_exist = 89;
+
+  NoNamespaceMessage optional_no_namespace_message = 91;
+  NoNamespaceEnum optional_no_namespace_enum = 92;
+  repeated NoNamespaceMessage repeated_no_namespace_message = 93;
+  repeated NoNamespaceEnum repeated_no_namespace_enum = 94;
+
+  enum NestedEnum {
+    ZERO = 0;
+  }
+
+  NestedEnum optional_nested_enum = 101;
+
+  // Test prefix for reserved words.
+  message Empty {
+    int32 a = 1;
+  }
+}
+
+enum TestEnum {
+  ZERO = 0;
+  ONE  = 1;
+  TWO  = 2;
+  ECHO = 3;  // Test reserved name.
+}
+
+// Test prefix for reserved words.
+message Empty {
+  int32 a = 1;
+}
+
+message TestPackedMessage {
+  repeated int32    repeated_int32    = 90  [packed = true];
+  repeated int64    repeated_int64    = 91  [packed = true];
+  repeated uint32   repeated_uint32   = 92  [packed = true];
+  repeated uint64   repeated_uint64   = 93  [packed = true];
+  repeated sint32   repeated_sint32   = 94  [packed = true];
+  repeated sint64   repeated_sint64   = 95  [packed = true];
+  repeated fixed32  repeated_fixed32  = 96  [packed = true];
+  repeated fixed64  repeated_fixed64  = 97  [packed = true];
+  repeated sfixed32 repeated_sfixed32 = 98  [packed = true];
+  repeated sfixed64 repeated_sfixed64 = 99  [packed = true];
+  repeated float    repeated_float    = 100 [packed = true];
+  repeated double   repeated_double   = 101 [packed = true];
+  repeated bool     repeated_bool     = 102 [packed = true];
+  repeated TestEnum repeated_enum     = 103 [packed = true];
+}
+
+// Need to be in sync with TestPackedMessage.
+message TestUnpackedMessage {
+  repeated int32    repeated_int32    = 90  [packed = false];
+  repeated int64    repeated_int64    = 91  [packed = false];
+  repeated uint32   repeated_uint32   = 92  [packed = false];
+  repeated uint64   repeated_uint64   = 93  [packed = false];
+  repeated sint32   repeated_sint32   = 94  [packed = false];
+  repeated sint64   repeated_sint64   = 95  [packed = false];
+  repeated fixed32  repeated_fixed32  = 96  [packed = false];
+  repeated fixed64  repeated_fixed64  = 97  [packed = false];
+  repeated sfixed32 repeated_sfixed32 = 98  [packed = false];
+  repeated sfixed64 repeated_sfixed64 = 99  [packed = false];
+  repeated float    repeated_float    = 100 [packed = false];
+  repeated double   repeated_double   = 101 [packed = false];
+  repeated bool     repeated_bool     = 102 [packed = false];
+  repeated TestEnum repeated_enum     = 103 [packed = false];
+}
+
+// /**/@<>&\{
+message TestPhpDoc {
+  int32 a = 1;
+}
+
+message TestIncludePrefixMessage {
+  TestPrefix prefix_message = 1;
+}

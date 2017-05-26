@@ -30,10 +30,29 @@
 
 #import "GPBTestUtilities.h"
 
-#import "GPBCodedOutputStream.h"
+#import "GPBCodedOutputStream_PackagePrivate.h"
 #import "GPBCodedInputStream.h"
 #import "GPBUtilities_PackagePrivate.h"
 #import "google/protobuf/Unittest.pbobjc.h"
+
+@interface GPBCodedOutputStream (InternalMethods)
+// Declared in the .m file, expose for testing.
+- (instancetype)initWithOutputStream:(NSOutputStream *)output
+                                data:(NSMutableData *)data;
+@end
+
+@interface GPBCodedOutputStream (Helper)
++ (instancetype)streamWithOutputStream:(NSOutputStream *)output
+                            bufferSize:(size_t)bufferSize;
+@end
+
+@implementation GPBCodedOutputStream (Helper)
++ (instancetype)streamWithOutputStream:(NSOutputStream *)output
+                            bufferSize:(size_t)bufferSize {
+  NSMutableData *data = [NSMutableData dataWithLength:bufferSize];
+  return [[[self alloc] initWithOutputStream:output data:data] autorelease];
+}
+@end
 
 @interface CodedOutputStreamTests : GPBTestCase
 @end
@@ -171,6 +190,32 @@
           [rawOutput propertyForKey:NSStreamDataWrittenToMemoryStreamKey];
       XCTAssertEqualObjects(data, actual);
     }
+  }
+}
+
+- (void)assertWriteStringNoTag:(NSData*)data
+                         value:(NSString *)value
+                       context:(NSString *)contextMessage {
+  NSOutputStream* rawOutput = [NSOutputStream outputStreamToMemory];
+  GPBCodedOutputStream* output =
+      [GPBCodedOutputStream streamWithOutputStream:rawOutput];
+  [output writeStringNoTag:value];
+  [output flush];
+
+  NSData* actual =
+      [rawOutput propertyForKey:NSStreamDataWrittenToMemoryStreamKey];
+  XCTAssertEqualObjects(data, actual, @"%@", contextMessage);
+
+  // Try different block sizes.
+  for (int blockSize = 1; blockSize <= 16; blockSize *= 2) {
+    rawOutput = [NSOutputStream outputStreamToMemory];
+    output = [GPBCodedOutputStream streamWithOutputStream:rawOutput
+                                               bufferSize:blockSize];
+    [output writeStringNoTag:value];
+    [output flush];
+
+    actual = [rawOutput propertyForKey:NSStreamDataWrittenToMemoryStreamKey];
+    XCTAssertEqualObjects(data, actual, @"%@", contextMessage);
   }
 }
 
@@ -316,6 +361,66 @@
   goldenData = [self getDataFileNamed:@"golden_packed_fields_message"
                           dataToWrite:rawBytes];
   XCTAssertEqualObjects(rawBytes, goldenData);
+}
+
+- (void)testCFStringGetCStringPtrAndStringsWithNullChars {
+  // This test exists to verify that CFStrings with embedded NULLs still expose
+  // their raw buffer if they are backed by UTF8 storage. If this fails, the
+  // quick/direct access paths in GPBCodedOutputStream that depend on
+  // CFStringGetCStringPtr need to be re-evalutated (maybe just removed).
+  // And yes, we do get NULLs in strings from some servers.
+
+  char zeroTest[] = "\0Test\0String";
+  // Note: there is a \0 at the end of this since it is a c-string.
+  NSString *asNSString = [[NSString alloc] initWithBytes:zeroTest
+                                                  length:sizeof(zeroTest)
+                                                encoding:NSUTF8StringEncoding];
+  const char *cString =
+      CFStringGetCStringPtr((CFStringRef)asNSString, kCFStringEncodingUTF8);
+  XCTAssertTrue(cString != NULL);
+  // Again, if the above assert fails, then it means NSString no longer exposes
+  // the raw utf8 storage of a string created from utf8 input, so the code using
+  // CFStringGetCStringPtr in GPBCodedOutputStream will still work (it will take
+  // a different code path); but the optimizations for when
+  // CFStringGetCStringPtr does work could possibly go away.
+
+  XCTAssertEqual(sizeof(zeroTest),
+                 [asNSString lengthOfBytesUsingEncoding:NSUTF8StringEncoding]);
+  XCTAssertTrue(0 == memcmp(cString, zeroTest, sizeof(zeroTest)));
+  [asNSString release];
+}
+
+- (void)testWriteStringsWithZeroChar {
+  // Unicode allows `\0` as a character, and NSString is a class cluster, so
+  // there are a few different classes that could end up beind a given string.
+  // Historically, we've seen differences based on constant strings in code and
+  // strings built via the NSString apis. So this round trips them to ensure
+  // they are acting as expected.
+
+  NSArray<NSString *> *strs = @[
+    @"\0at start",
+    @"in\0middle",
+    @"at end\0",
+  ];
+  int i = 0;
+  for (NSString *str in strs) {
+    NSData *asUTF8 = [str dataUsingEncoding:NSUTF8StringEncoding];
+    NSMutableData *expected = [NSMutableData data];
+    uint8_t lengthByte = (uint8_t)asUTF8.length;
+    [expected appendBytes:&lengthByte length:1];
+    [expected appendData:asUTF8];
+
+    NSString *context = [NSString stringWithFormat:@"Loop %d - Literal", i];
+    [self assertWriteStringNoTag:expected value:str context:context];
+
+    // Force a new string to be built which gets a different class from the
+    // NSString class cluster than the literal did.
+    NSString *str2 = [NSString stringWithFormat:@"%@", str];
+    context = [NSString stringWithFormat:@"Loop %d - Built", i];
+    [self assertWriteStringNoTag:expected value:str2 context:context];
+
+    ++i;
+  }
 }
 
 @end

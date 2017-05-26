@@ -47,6 +47,7 @@ any_test.pb.*
 map*unittest.pb.*
 unittest*.pb.*
 cpp_test*.pb.*
+src/google/protobuf/compiler/js/well_known_types_embed.cc
 src/google/protobuf/util/**/*.pb.cc
 src/google/protobuf/util/**/*.pb.h
 
@@ -55,13 +56,21 @@ src/google/protobuf/util/**/*.pb.h
 *_pb2.py
 python/*.egg
 python/.eggs/
+python/.tox
 python/build/
 python/google/protobuf/compiler/
+python/google/protobuf/util/
 
+src/js_embed
 src/protoc
 src/unittest_proto_middleman
 
+# vim generated
+*.swp
+
 # Generated test scaffolding
+src/no_warning_test.cc
+src/no-warning-test
 src/protobuf*-test
 src/test_plugin
 src/testzip.*
@@ -75,31 +84,75 @@ src/**/*.log
 src/**/*.trs
 
 # JavaBuild output.
-java/target
+java/core/target
+java/util/target
 javanano/target
 
 # Windows native output.
 cmake/build
+build_msvc
 
 # NuGet packages: we want the repository configuration, but not the
 # packages themselves.
 /csharp/src/packages/*/
 
-# Directories created by opening the Objective C Xcode projects.
-objectivec/ProtocolBuffers_OSX.xcodeproj/project.xcworkspace/xcuserdata/
-objectivec/ProtocolBuffers_OSX.xcodeproj/project.xcworkspace/xcshareddata/ProtocolBuffers_OSX.xccheckout
-objectivec/ProtocolBuffers_OSX.xcodeproj/xcuserdata/
-objectivec/ProtocolBuffers_iOS.xcodeproj/project.xcworkspace/xcuserdata/
-objectivec/ProtocolBuffers_iOS.xcodeproj/project.xcworkspace/xcshareddata/ProtocolBuffers_iOS.xccheckout
-objectivec/ProtocolBuffers_iOS.xcodeproj/xcuserdata/
 # OS X's Finder creates these for state about opened windows/etc.
 **/.DS_Store
+
+# Cocoapods artifacts
+# Podfile.lock and the workspace file are tracked, to ease deleting them. That's
+# needed to trigger "pod install" to rerun the preinstall commands.
+Pods/
 
 # Comformance test output
 conformance/.libs/
 conformance/com/
 conformance/conformance-cpp
+conformance/conformance-csharp
+conformance/conformance-java
+conformance/conformance-objc
 conformance/conformance-test-runner
 conformance/conformance.pb.cc
 conformance/conformance.pb.h
+conformance/Conformance.pbobjc.h
+conformance/Conformance.pbobjc.m
+conformance/conformance_pb.js
+conformance/conformance_pb.rb
+conformance/failing_tests.txt
+conformance/google/
+conformance/google-protobuf/
+conformance/javac_middleman
+conformance/lite/
+conformance/nonexistent_tests.txt
 conformance/protoc_middleman
+conformance/succeeding_tests.txt
+conformance/Conformance/
+conformance/GPBMetadata/
+conformance/Google/
+conformance/Protobuf_test_messages/
+conformance/conformance-php
+conformance/conformance-php-c
+
+# php test output
+composer.lock
+php/tests/generated/
+php/ext/google/protobuf/.libs/
+php/ext/google/protobuf/Makefile.fragments
+php/ext/google/protobuf/Makefile.global
+php/ext/google/protobuf/Makefile.objects
+php/ext/google/protobuf/acinclude.m4
+php/ext/google/protobuf/build/
+php/ext/google/protobuf/config.h
+php/ext/google/protobuf/config.nice
+php/ext/google/protobuf/configure.in
+php/ext/google/protobuf/mkinstalldirs
+php/ext/google/protobuf/run-tests.php
+vendor/
+
+# JavaScript artifacts
+js/commonjs_out/
+js/deps.js
+js/google-protobuf.js
+js/google/
+js/node_modules/
+js/testproto_libs.js

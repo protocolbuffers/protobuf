@@ -38,6 +38,7 @@
 #include <google/protobuf/io/zero_copy_stream.h>
 #include <google/protobuf/wire_format.h>
 
+#include <google/protobuf/compiler/csharp/csharp_doc_comment.h>
 #include <google/protobuf/compiler/csharp/csharp_helpers.h>
 #include <google/protobuf/compiler/csharp/csharp_repeated_primitive_field.h>
 
@@ -47,8 +48,8 @@ namespace compiler {
 namespace csharp {
 
 RepeatedPrimitiveFieldGenerator::RepeatedPrimitiveFieldGenerator(
-    const FieldDescriptor* descriptor, int fieldOrdinal)
-    : FieldGeneratorBase(descriptor, fieldOrdinal) {
+    const FieldDescriptor* descriptor, int fieldOrdinal, const Options *options)
+    : FieldGeneratorBase(descriptor, fieldOrdinal, options) {
 }
 
 RepeatedPrimitiveFieldGenerator::~RepeatedPrimitiveFieldGenerator() {
@@ -62,7 +63,8 @@ void RepeatedPrimitiveFieldGenerator::GenerateMembers(io::Printer* printer) {
     "    = pb::FieldCodec.For$capitalized_type_name$($tag$);\n");
   printer->Print(variables_,
     "private readonly pbc::RepeatedField<$type_name$> $name$_ = new pbc::RepeatedField<$type_name$>();\n");
-  AddDeprecatedFlag(printer);
+  WritePropertyDocComment(printer, descriptor_);
+  AddPublicMemberAttributes(printer);
   printer->Print(
     variables_,
     "$access_level$ pbc::RepeatedField<$type_name$> $property_name$ {\n"

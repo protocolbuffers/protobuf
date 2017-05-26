@@ -92,7 +92,7 @@ Installation
    error:  "sem_init: Resource temporarily unavailable".  This appears
    to be a bug either in Cygwin or in Python:
      http://www.cygwin.com/ml/cygwin/2005-07/msg01378.html
-   We do not know if or when it might me fixed.  We also do not know
+   We do not know if or when it might be fixed.  We also do not know
    how likely it is that this bug will affect users in practice.
 
 5) Install:
@@ -123,13 +123,5 @@ C++ Implementation
 The C++ implementation for Python messages is built as a Python extension to
 improve the overall protobuf Python performance.
 
-To use the C++ implementation, you need to:
-1) Install the C++ protobuf runtime library, please see instructions in the
-   parent directory.
-2) Export an environment variable:
-
-    $ export PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION=cpp
-
-You must set this variable at runtime, before running your program, otherwise
-the pure-Python implementation will be used. In a future release, we will
-change the default so that C++ implementation is used whenever it is available.
+To use the C++ implementation, you need to install the C++ protobuf runtime
+library, please see instructions in the parent directory.

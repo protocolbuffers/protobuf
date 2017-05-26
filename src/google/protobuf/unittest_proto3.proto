@@ -200,6 +200,9 @@ message TestMutualRecursionB {
   int32 optional_int32 = 2;
 }
 
+message TestEnumAllowAlias {
+  TestEnumWithDupValue value = 1;
+}
 
 // Test an enum that has multiple values with the same number.
 enum TestEnumWithDupValue {

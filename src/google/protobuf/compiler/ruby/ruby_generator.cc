@@ -48,7 +48,7 @@ namespace ruby {
 
 // Forward decls.
 std::string IntToString(int32 value);
-std::string StripDotProto(const std::string& proto_file);
+std::string GetRequireName(const std::string& proto_file);
 std::string LabelForField(google::protobuf::FieldDescriptor* field);
 std::string TypeName(google::protobuf::FieldDescriptor* field);
 void GenerateMessage(const google::protobuf::Descriptor* message,
@@ -70,9 +70,13 @@ std::string IntToString(int32 value) {
   return os.str();
 }
 
-std::string StripDotProto(const std::string& proto_file) {
+std::string GetRequireName(const std::string& proto_file) {
   int lastindex = proto_file.find_last_of(".");
-  return proto_file.substr(0, lastindex);
+  return proto_file.substr(0, lastindex) + "_pb";
+}
+
+std::string GetOutputFilename(const std::string& proto_file) {
+  return GetRequireName(proto_file) + ".rb";
 }
 
 std::string LabelForField(const google::protobuf::FieldDescriptor* field) {
@@ -233,15 +237,52 @@ void GenerateEnum(const google::protobuf::EnumDescriptor* en,
     "end\n");
 }
 
-// Module names, class names, and enum value names need to be Ruby constants,
-// which must start with a capital letter.
+// Locale-agnostic utility functions.
+bool IsLower(char ch) { return ch >= 'a' && ch <= 'z'; }
+
+bool IsUpper(char ch) { return ch >= 'A' && ch <= 'Z'; }
+
+bool IsAlpha(char ch) { return IsLower(ch) || IsUpper(ch); }
+
+char ToUpper(char ch) { return IsLower(ch) ? (ch - 'a' + 'A') : ch; }
+
+
+// Package names in protobuf are snake_case by convention, but Ruby module
+// names must be PascalCased.
+//
+//   foo_bar_baz -> FooBarBaz
+std::string PackageToModule(const std::string& name) {
+  bool next_upper = true;
+  std::string result;
+  result.reserve(name.size());
+
+  for (int i = 0; i < name.size(); i++) {
+    if (name[i] == '_') {
+      next_upper = true;
+    } else {
+      if (next_upper) {
+        result.push_back(ToUpper(name[i]));
+      } else {
+        result.push_back(name[i]);
+      }
+      next_upper = false;
+    }
+  }
+
+  return result;
+}
+
+// Class and enum names in protobuf should be PascalCased by convention, but
+// since there is nothing enforcing this we need to ensure that they are valid
+// Ruby constants.  That mainly means making sure that the first character is
+// an upper-case letter.
 std::string RubifyConstant(const std::string& name) {
   std::string ret = name;
   if (!ret.empty()) {
-    if (ret[0] >= 'a' && ret[0] <= 'z') {
+    if (IsLower(ret[0])) {
       // If it starts with a lowercase letter, capitalize it.
-      ret[0] = ret[0] - 'a' + 'A';
-    } else if (ret[0] < 'A' || ret[0] > 'Z') {
+      ret[0] = ToUpper(ret[0]);
+    } else if (!IsAlpha(ret[0])) {
       // Otherwise (e.g. if it begins with an underscore), we need to come up
       // with some prefix that starts with a capital letter. We could be smarter
       // here, e.g. try to strip leading underscores, but this may cause other
@@ -250,6 +291,7 @@ std::string RubifyConstant(const std::string& name) {
       ret = "PB_" + ret;
     }
   }
+
   return ret;
 }
 
@@ -310,7 +352,7 @@ int GeneratePackageModules(
       component = package_name.substr(0, dot_index);
       package_name = package_name.substr(dot_index + 1);
     }
-    component = RubifyConstant(component);
+    component = PackageToModule(component);
     printer->Print(
       "module $name$\n",
       "name", component);
@@ -331,8 +373,69 @@ void EndPackageModules(
   }
 }
 
-void GenerateFile(const google::protobuf::FileDescriptor* file,
-                  google::protobuf::io::Printer* printer) {
+bool UsesTypeFromFile(const Descriptor* message, const FileDescriptor* file,
+                      string* error) {
+  for (int i = 0; i < message->field_count(); i++) {
+    const FieldDescriptor* field = message->field(i);
+    if ((field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE &&
+         field->message_type()->file() == file) ||
+        (field->type() == FieldDescriptor::TYPE_ENUM &&
+         field->enum_type()->file() == file)) {
+      *error = "proto3 message field " + field->full_name() + " in file " +
+               file->name() + " has a dependency on a type from proto2 file " +
+               file->name() +
+               ".  Ruby doesn't support proto2 yet, so we must fail.";
+      return true;
+    }
+  }
+
+  for (int i = 0; i < message->nested_type_count(); i++) {
+    if (UsesTypeFromFile(message->nested_type(i), file, error)) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+// Ruby doesn't currently support proto2.  This causes a failure even for proto3
+// files that import proto2.  But in some cases, the proto2 file is only being
+// imported to extend another proto2 message.  The prime example is declaring
+// custom options by extending FileOptions/FieldOptions/etc.
+//
+// If the proto3 messages don't have any proto2 submessages, it is safe to omit
+// the dependency completely.  Users won't be able to use any proto2 extensions,
+// but they already couldn't because proto2 messages aren't supported.
+//
+// If/when we add proto2 support, we should remove this.
+bool MaybeEmitDependency(const FileDescriptor* import,
+                         const FileDescriptor* from,
+                         io::Printer* printer,
+                         string* error) {
+  if (import->syntax() == FileDescriptor::SYNTAX_PROTO2) {
+    for (int i = 0; i < from->message_type_count(); i++) {
+      if (UsesTypeFromFile(from->message_type(i), import, error)) {
+        // Error text was already set by UsesTypeFromFile().
+        return false;
+      }
+    }
+
+    // Ok to omit this proto2 dependency -- so we won't print anything.
+    GOOGLE_LOG(WARNING) << "Omitting proto2 dependency '" << import->name()
+                        << "' from proto3 output file '"
+                        << GetOutputFilename(from->name())
+                        << "' because we don't support proto2 and no proto2 "
+                           "types from that file are being used.";
+    return true;
+  } else {
+    printer->Print(
+      "require '$name$'\n", "name", GetRequireName(import->name()));
+    return true;
+  }
+}
+
+bool GenerateFile(const FileDescriptor* file, io::Printer* printer,
+                  string* error) {
   printer->Print(
     "# Generated by the protocol buffer compiler.  DO NOT EDIT!\n"
     "# source: $filename$\n"
@@ -343,9 +446,9 @@ void GenerateFile(const google::protobuf::FileDescriptor* file,
     "require 'google/protobuf'\n\n");
 
   for (int i = 0; i < file->dependency_count(); i++) {
-    const std::string& name = file->dependency(i)->name();
-    printer->Print(
-      "require '$name$'\n", "name", StripDotProto(name));
+    if (!MaybeEmitDependency(file->dependency(i), file, printer, error)) {
+      return false;
+    }
   }
 
   printer->Print(
@@ -369,6 +472,7 @@ void GenerateFile(const google::protobuf::FileDescriptor* file,
     GenerateEnumAssignment("", file->enum_type(i), printer);
   }
   EndPackageModules(levels, printer);
+  return true;
 }
 
 bool Generator::Generate(
@@ -384,15 +488,11 @@ bool Generator::Generate(
     return false;
   }
 
-  std::string filename =
-      StripDotProto(file->name()) + ".rb";
   scoped_ptr<io::ZeroCopyOutputStream> output(
-      generator_context->Open(filename));
+      generator_context->Open(GetOutputFilename(file->name())));
   io::Printer printer(output.get(), '$');
 
-  GenerateFile(file, &printer);
-
-  return true;
+  return GenerateFile(file, &printer, error);
 }
 
 }  // namespace ruby

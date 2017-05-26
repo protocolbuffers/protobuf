@@ -46,6 +46,7 @@
 //   "parametized tests" so that one set of tests can be used on all the
 //   implementations.
 
+
 #ifdef _MSC_VER
 #include <io.h>
 #else
@@ -56,16 +57,22 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <errno.h>
+#include <memory>
+#ifndef _SHARED_PTR_H
+#include <google/protobuf/stubs/shared_ptr.h>
+#endif
 #include <sstream>
 
-#include <google/protobuf/io/zero_copy_stream_impl.h>
+#include <google/protobuf/testing/file.h>
 #include <google/protobuf/io/coded_stream.h>
+#include <google/protobuf/io/zero_copy_stream_impl.h>
 
 #if HAVE_ZLIB
 #include <google/protobuf/io/gzip_stream.h>
 #endif
 
 #include <google/protobuf/stubs/common.h>
+#include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/testing/googletest.h>
 #include <google/protobuf/testing/file.h>
 #include <gtest/gtest.h>
@@ -194,7 +201,7 @@ void IoTest::WriteString(ZeroCopyOutputStream* output, const string& str) {
 }
 
 void IoTest::ReadString(ZeroCopyInputStream* input, const string& str) {
-  scoped_array<char> buffer(new char[str.size() + 1]);
+  google::protobuf::scoped_array<char> buffer(new char[str.size() + 1]);
   buffer[str.size()] = '\0';
   EXPECT_EQ(ReadFromInput(input, buffer.get(), str.size()), str.size());
   EXPECT_STREQ(str.c_str(), buffer.get());
@@ -875,7 +882,7 @@ TEST_F(IoTest, IostreamIo) {
   for (int i = 0; i < kBlockSizeCount; i++) {
     for (int j = 0; j < kBlockSizeCount; j++) {
       {
-        stringstream stream;
+        std::stringstream stream;
 
         {
           OstreamOutputStream output(&stream, kBlockSizes[i]);
@@ -891,7 +898,7 @@ TEST_F(IoTest, IostreamIo) {
       }
 
       {
-        stringstream stream;
+        std::stringstream stream;
 
         {
           OstreamOutputStream output(&stream, kBlockSizes[i]);

@@ -183,12 +183,44 @@ module BasicTest
 
     def test_hash
       m1 = TestMessage.new(:optional_int32 => 42)
-      m2 = TestMessage.new(:optional_int32 => 102)
+      m2 = TestMessage.new(:optional_int32 => 102, repeated_string: ['please', 'work', 'ok?'])
+      m3 = TestMessage.new(:optional_int32 => 102, repeated_string: ['please', 'work', 'ok?'])
       assert m1.hash != 0
       assert m2.hash != 0
+      assert m3.hash != 0
       # relying on the randomness here -- if hash function changes and we are
       # unlucky enough to get a collision, then change the values above.
       assert m1.hash != m2.hash
+      assert_equal m2.hash, m3.hash
+    end
+
+    def test_unknown_field_errors
+      e = assert_raise NoMethodError do
+        TestMessage.new.hello
+      end
+      assert_match(/hello/, e.message)
+
+      e = assert_raise NoMethodError do
+        TestMessage.new.hello = "world"
+      end
+      assert_match(/hello/, e.message)
+    end
+
+    def test_initialization_map_errors
+      e = assert_raise ArgumentError do
+        TestMessage.new(:hello => "world")
+      end
+      assert_match(/hello/, e.message)
+
+      e = assert_raise ArgumentError do
+        MapMessage.new(:map_string_int32 => "hello")
+      end
+      assert_equal e.message, "Expected Hash object as initializer value for map field 'map_string_int32'."
+
+      e = assert_raise ArgumentError do
+        TestMessage.new(:repeated_uint32 => "hello")
+      end
+      assert_equal e.message, "Expected array as initializer value for repeated field 'repeated_uint32'."
     end
 
     def test_type_errors
@@ -226,14 +258,17 @@ module BasicTest
       m = TestMessage.new
 
       # Assigning a normal (ASCII or UTF8) string to a bytes field, or
-      # ASCII-8BIT to a string field, raises an error.
-      assert_raise TypeError do
-        m.optional_bytes = "Test string ASCII".encode!('ASCII')
-      end
-      assert_raise TypeError do
+      # ASCII-8BIT to a string field will convert to the proper encoding.
+      m.optional_bytes = "Test string ASCII".encode!('ASCII')
+      assert m.optional_bytes.frozen?
+      assert_equal Encoding::ASCII_8BIT, m.optional_bytes.encoding
+      assert_equal "Test string ASCII", m.optional_bytes
+
+      assert_raise Encoding::UndefinedConversionError do
         m.optional_bytes = "Test string UTF-8 \u0100".encode!('UTF-8')
       end
-      assert_raise TypeError do
+
+      assert_raise Encoding::UndefinedConversionError do
         m.optional_string = ["FFFF"].pack('H*')
       end
 
@@ -241,11 +276,10 @@ module BasicTest
       m.optional_bytes = ["FFFF"].pack('H*')
       m.optional_string = "\u0100"
 
-      # strings are mutable so we can do this, but serialize should catch it.
+      # strings are immutable so we can't do this, but serialize should catch it.
       m.optional_string = "asdf".encode!('UTF-8')
-      m.optional_string.encode!('ASCII-8BIT')
-      assert_raise TypeError do
-        data = TestMessage.encode(m)
+      assert_raise RuntimeError do
+        m.optional_string.encode!('ASCII-8BIT')
       end
     end
 
@@ -437,9 +471,9 @@ module BasicTest
       assert m.length == 2
 
       m2 = m.dup
-      assert m == m2
+      assert_equal m, m2
       assert m.hash != 0
-      assert m.hash == m2.hash
+      assert_equal m.hash, m2.hash
 
       collected = {}
       m.each { |k,v| collected[v] = k }
@@ -529,7 +563,7 @@ module BasicTest
       assert_raise TypeError do
         m[1] = 1
       end
-      assert_raise TypeError do
+      assert_raise Encoding::UndefinedConversionError do
         bytestring = ["FFFF"].pack("H*")
         m[bytestring] = 1
       end
@@ -537,9 +571,8 @@ module BasicTest
       m = Google::Protobuf::Map.new(:bytes, :int32)
       bytestring = ["FFFF"].pack("H*")
       m[bytestring] = 1
-      assert_raise TypeError do
-        m["asdf"] = 1
-      end
+      # Allowed -- we will automatically convert to ASCII-8BIT.
+      m["asdf"] = 1
       assert_raise TypeError do
         m[1] = 1
       end
@@ -634,6 +667,13 @@ module BasicTest
       end
     end
 
+    def test_map_corruption
+      # This pattern led to a crash in a previous version of upb/protobuf.
+      m = MapMessage.new(map_string_int32: { "aaa" => 1 })
+      m.map_string_int32['podid'] = 2
+      m.map_string_int32['aaa'] = 3
+    end
+
     def test_map_encode_decode
       m = MapMessage.new(
         :map_string_int32 => {"a" => 1, "b" => 2},
@@ -674,36 +714,36 @@ module BasicTest
 
     def test_oneof
       d = OneofMessage.new
-      assert d.a == nil
-      assert d.b == nil
+      assert d.a == ""
+      assert d.b == 0
       assert d.c == nil
-      assert d.d == nil
+      assert d.d == :Default
       assert d.my_oneof == nil
 
       d.a = "hi"
       assert d.a == "hi"
-      assert d.b == nil
+      assert d.b == 0
       assert d.c == nil
-      assert d.d == nil
+      assert d.d == :Default
       assert d.my_oneof == :a
 
       d.b = 42
-      assert d.a == nil
+      assert d.a == ""
       assert d.b == 42
       assert d.c == nil
-      assert d.d == nil
+      assert d.d == :Default
       assert d.my_oneof == :b
 
       d.c = TestMessage2.new(:foo => 100)
-      assert d.a == nil
-      assert d.b == nil
+      assert d.a == ""
+      assert d.b == 0
       assert d.c.foo == 100
-      assert d.d == nil
+      assert d.d == :Default
       assert d.my_oneof == :c
 
       d.d = :C
-      assert d.a == nil
-      assert d.b == nil
+      assert d.a == ""
+      assert d.b == 0
       assert d.c == nil
       assert d.d == :C
       assert d.my_oneof == :d
@@ -719,23 +759,23 @@ module BasicTest
 
       d3 = OneofMessage.decode(
         encoded_field_c + encoded_field_a + encoded_field_d)
-      assert d3.a == nil
-      assert d3.b == nil
+      assert d3.a == ""
+      assert d3.b == 0
       assert d3.c == nil
       assert d3.d == :B
 
       d4 = OneofMessage.decode(
         encoded_field_c + encoded_field_a + encoded_field_d +
         encoded_field_c)
-      assert d4.a == nil
-      assert d4.b == nil
+      assert d4.a == ""
+      assert d4.b == 0
       assert d4.c.foo == 1
-      assert d4.d == nil
+      assert d4.d == :Default
 
       d5 = OneofMessage.new(:a => "hello")
-      assert d5.a != nil
+      assert d5.a == "hello"
       d5.a = nil
-      assert d5.a == nil
+      assert d5.a == ""
       assert OneofMessage.encode(d5) == ''
       assert d5.my_oneof == nil
     end
@@ -824,15 +864,22 @@ module BasicTest
 
     def test_encode_decode_helpers
       m = TestMessage.new(:optional_string => 'foo', :repeated_string => ['bar1', 'bar2'])
+      assert_equal 'foo', m.optional_string
+      assert_equal ['bar1', 'bar2'], m.repeated_string
+
       json = m.to_json
       m2 = TestMessage.decode_json(json)
-      assert m2.optional_string == 'foo'
-      assert m2.repeated_string == ['bar1', 'bar2']
+      assert_equal 'foo', m2.optional_string
+      assert_equal ['bar1', 'bar2'], m2.repeated_string
+      if RUBY_PLATFORM != "java"
+        assert m2.optional_string.frozen?
+        assert m2.repeated_string[0].frozen?
+      end
 
       proto = m.to_proto
       m2 = TestMessage.decode(proto)
-      assert m2.optional_string == 'foo'
-      assert m2.repeated_string == ['bar1', 'bar2']
+      assert_equal 'foo', m2.optional_string
+      assert_equal ['bar1', 'bar2'], m2.repeated_string
     end
 
     def test_protobuf_encode_decode_helpers
@@ -878,6 +925,16 @@ module BasicTest
         :repeated_string=>["bar1", "bar2"],
         :repeated_uint32=>[],
         :repeated_uint64=>[]
+      }
+      assert_equal expected_result, m.to_h
+
+      m = MapMessage.new(
+        :map_string_int32 => {"a" => 1, "b" => 2},
+        :map_string_msg => {"a" => TestMessage2.new(:foo => 1),
+                            "b" => TestMessage2.new(:foo => 2)})
+      expected_result = {
+        :map_string_int32 => {"a" => 1, "b" => 2},
+        :map_string_msg => {"a" => {:foo => 1}, "b" => {:foo => 2}}
       }
       assert_equal expected_result, m.to_h
     end
@@ -1131,10 +1188,27 @@ module BasicTest
       # TODO: Fix JSON in JRuby version.
       return if RUBY_PLATFORM == "java"
       m = MapMessage.new(:map_string_int32 => {"a" => 1})
-      expected = '{"map_string_int32":{"a":1},"map_string_msg":{}}'
+      expected = '{"mapStringInt32":{"a":1},"mapStringMsg":{}}'
+      expected_preserve = '{"map_string_int32":{"a":1},"map_string_msg":{}}'
       assert MapMessage.encode_json(m) == expected
+
+      json = MapMessage.encode_json(m, :preserve_proto_fieldnames => true)
+      assert json == expected_preserve
+
       m2 = MapMessage.decode_json(MapMessage.encode_json(m))
       assert m == m2
+    end
+
+    def test_comparison_with_arbitrary_object
+      assert MapMessage.new != nil
+    end
+
+    def test_respond_to
+      # This test fails with JRuby 1.7.23, likely because of an old JRuby bug.
+      return if RUBY_PLATFORM == "java"
+      msg = MapMessage.new
+      assert msg.respond_to?(:map_string_int32)
+      assert !msg.respond_to?(:bacon)
     end
   end
 end

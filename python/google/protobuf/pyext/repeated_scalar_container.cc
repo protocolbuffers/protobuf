@@ -39,10 +39,12 @@
 #endif
 
 #include <google/protobuf/stubs/common.h>
+#include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/dynamic_message.h>
 #include <google/protobuf/message.h>
 #include <google/protobuf/pyext/descriptor.h>
+#include <google/protobuf/pyext/descriptor_pool.h>
 #include <google/protobuf/pyext/message.h>
 #include <google/protobuf/pyext/scoped_pyobject_ptr.h>
 
@@ -68,7 +70,7 @@ static int InternalAssignRepeatedField(
                                              self->parent_field_descriptor);
   for (Py_ssize_t i = 0; i < PyList_GET_SIZE(list); ++i) {
     PyObject* value = PyList_GET_ITEM(list, i);
-    if (Append(self, value) == NULL) {
+    if (ScopedPyObjectPtr(Append(self, value)) == NULL) {
       return -1;
     }
   }
@@ -103,7 +105,7 @@ static int AssignItem(RepeatedScalarContainer* self,
   if (arg == NULL) {
     ScopedPyObjectPtr py_index(PyLong_FromLong(index));
     return cmessage::InternalDeleteRepeatedField(self->parent, field_descriptor,
-                                                 py_index, NULL);
+                                                 py_index.get(), NULL);
   }
 
   if (PySequence_Check(arg) && !(PyBytes_Check(arg) || PyUnicode_Check(arg))) {
@@ -170,7 +172,7 @@ static int AssignItem(RepeatedScalarContainer* self,
           ScopedPyObjectPtr s(PyObject_Str(arg));
           if (s != NULL) {
             PyErr_Format(PyExc_ValueError, "Unknown enum value: %s",
-                         PyString_AsString(s));
+                         PyString_AsString(s.get()));
           }
           return -1;
         }
@@ -332,7 +334,7 @@ static PyObject* Subscript(RepeatedScalarContainer* self, PyObject* slice) {
         break;
       }
       ScopedPyObjectPtr s(Item(self, index));
-      PyList_Append(list, s);
+      PyList_Append(list, s.get());
     }
   } else {
     if (step > 0) {
@@ -343,7 +345,7 @@ static PyObject* Subscript(RepeatedScalarContainer* self, PyObject* slice) {
         break;
       }
       ScopedPyObjectPtr s(Item(self, index));
-      PyList_Append(list, s);
+      PyList_Append(list, s.get());
     }
   }
   return list;
@@ -412,7 +414,7 @@ PyObject* Append(RepeatedScalarContainer* self, PyObject* item) {
           ScopedPyObjectPtr s(PyObject_Str(item));
           if (s != NULL) {
             PyErr_Format(PyExc_ValueError, "Unknown enum value: %s",
-                         PyString_AsString(s));
+                         PyString_AsString(s.get()));
           }
           return NULL;
         }
@@ -481,15 +483,15 @@ static int AssSubscript(RepeatedScalarContainer* self,
   if (full_slice == NULL) {
     return -1;
   }
-  ScopedPyObjectPtr new_list(Subscript(self, full_slice));
+  ScopedPyObjectPtr new_list(Subscript(self, full_slice.get()));
   if (new_list == NULL) {
     return -1;
   }
-  if (PySequence_SetSlice(new_list, from, to, value) < 0) {
+  if (PySequence_SetSlice(new_list.get(), from, to, value) < 0) {
     return -1;
   }
 
-  return InternalAssignRepeatedField(self, new_list);
+  return InternalAssignRepeatedField(self, new_list.get());
 }
 
 PyObject* Extend(RepeatedScalarContainer* self, PyObject* value) {
@@ -509,8 +511,8 @@ PyObject* Extend(RepeatedScalarContainer* self, PyObject* value) {
     return NULL;
   }
   ScopedPyObjectPtr next;
-  while ((next.reset(PyIter_Next(iter))) != NULL) {
-    if (Append(self, next) == NULL) {
+  while ((next.reset(PyIter_Next(iter.get()))) != NULL) {
+    if (ScopedPyObjectPtr(Append(self, next.get())) == NULL) {
       return NULL;
     }
   }
@@ -527,11 +529,11 @@ static PyObject* Insert(RepeatedScalarContainer* self, PyObject* args) {
     return NULL;
   }
   ScopedPyObjectPtr full_slice(PySlice_New(NULL, NULL, NULL));
-  ScopedPyObjectPtr new_list(Subscript(self, full_slice));
-  if (PyList_Insert(new_list, index, value) < 0) {
+  ScopedPyObjectPtr new_list(Subscript(self, full_slice.get()));
+  if (PyList_Insert(new_list.get(), index, value) < 0) {
     return NULL;
   }
-  int ret = InternalAssignRepeatedField(self, new_list);
+  int ret = InternalAssignRepeatedField(self, new_list.get());
   if (ret < 0) {
     return NULL;
   }
@@ -542,7 +544,7 @@ static PyObject* Remove(RepeatedScalarContainer* self, PyObject* value) {
   Py_ssize_t match_index = -1;
   for (Py_ssize_t i = 0; i < Len(self); ++i) {
     ScopedPyObjectPtr elem(Item(self, i));
-    if (PyObject_RichCompareBool(elem, value, Py_EQ)) {
+    if (PyObject_RichCompareBool(elem.get(), value, Py_EQ)) {
       match_index = i;
       break;
     }
@@ -577,15 +579,15 @@ static PyObject* RichCompare(RepeatedScalarContainer* self,
   ScopedPyObjectPtr other_list_deleter;
   if (PyObject_TypeCheck(other, &RepeatedScalarContainer_Type)) {
     other_list_deleter.reset(Subscript(
-        reinterpret_cast<RepeatedScalarContainer*>(other), full_slice));
+        reinterpret_cast<RepeatedScalarContainer*>(other), full_slice.get()));
     other = other_list_deleter.get();
   }
 
-  ScopedPyObjectPtr list(Subscript(self, full_slice));
+  ScopedPyObjectPtr list(Subscript(self, full_slice.get()));
   if (list == NULL) {
     return NULL;
   }
-  return PyObject_RichCompare(list, other, opid);
+  return PyObject_RichCompare(list.get(), other, opid);
 }
 
 PyObject* Reduce(RepeatedScalarContainer* unused_self) {
@@ -616,19 +618,19 @@ static PyObject* Sort(RepeatedScalarContainer* self,
   if (full_slice == NULL) {
     return NULL;
   }
-  ScopedPyObjectPtr list(Subscript(self, full_slice));
+  ScopedPyObjectPtr list(Subscript(self, full_slice.get()));
   if (list == NULL) {
     return NULL;
   }
-  ScopedPyObjectPtr m(PyObject_GetAttrString(list, "sort"));
+  ScopedPyObjectPtr m(PyObject_GetAttrString(list.get(), "sort"));
   if (m == NULL) {
     return NULL;
   }
-  ScopedPyObjectPtr res(PyObject_Call(m, args, kwds));
+  ScopedPyObjectPtr res(PyObject_Call(m.get(), args, kwds));
   if (res == NULL) {
     return NULL;
   }
-  int ret = InternalAssignRepeatedField(self, list);
+  int ret = InternalAssignRepeatedField(self, list.get());
   if (ret < 0) {
     return NULL;
   }
@@ -686,17 +688,16 @@ static int InitializeAndCopyToParentContainer(
   if (full_slice == NULL) {
     return -1;
   }
-  ScopedPyObjectPtr values(Subscript(from, full_slice));
+  ScopedPyObjectPtr values(Subscript(from, full_slice.get()));
   if (values == NULL) {
     return -1;
   }
-  Message* new_message = cmessage::GetMessageFactory()->GetPrototype(
-      from->message->GetDescriptor())->New();
+  Message* new_message = from->message->New();
   to->parent = NULL;
   to->parent_field_descriptor = from->parent_field_descriptor;
   to->message = new_message;
   to->owner.reset(new_message);
-  if (InternalAssignRepeatedField(to, values) < 0) {
+  if (InternalAssignRepeatedField(to, values.get()) < 0) {
     return -1;
   }
   return 0;
@@ -781,7 +782,7 @@ PyTypeObject RepeatedScalarContainer_Type = {
   0,                                   //  tp_as_number
   &repeated_scalar_container::SqMethods,   //  tp_as_sequence
   &repeated_scalar_container::MpMethods,   //  tp_as_mapping
-  0,                                   //  tp_hash
+  PyObject_HashNotImplemented,         //  tp_hash
   0,                                   //  tp_call
   0,                                   //  tp_str
   0,                                   //  tp_getattro

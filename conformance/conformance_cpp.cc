@@ -33,12 +33,12 @@
 #include <unistd.h>
 
 #include "conformance.pb.h"
+#include <google/protobuf/test_messages_proto3.pb.h>
 #include <google/protobuf/util/json_util.h>
 #include <google/protobuf/util/type_resolver_util.h>
 
 using conformance::ConformanceRequest;
 using conformance::ConformanceResponse;
-using conformance::TestAllTypes;
 using google::protobuf::Descriptor;
 using google::protobuf::DescriptorPool;
 using google::protobuf::internal::scoped_ptr;
@@ -47,6 +47,7 @@ using google::protobuf::util::JsonToBinaryString;
 using google::protobuf::util::NewTypeResolverForDescriptorPool;
 using google::protobuf::util::Status;
 using google::protobuf::util::TypeResolver;
+using protobuf_test_messages::proto3::TestAllTypes;
 using std::string;
 
 static const char kTypeUrlPrefix[] = "type.googleapis.com";
@@ -108,7 +109,11 @@ void DoTest(const ConformanceRequest& request, ConformanceResponse* response) {
         return;
       }
 
-      GOOGLE_CHECK(test_message.ParseFromString(proto_binary));
+      if (!test_message.ParseFromString(proto_binary)) {
+        response->set_runtime_error(
+            "Parsing JSON generates invalid proto output.");
+        return;
+      }
       break;
     }
 
@@ -132,9 +137,18 @@ void DoTest(const ConformanceRequest& request, ConformanceResponse* response) {
       GOOGLE_CHECK(test_message.SerializeToString(&proto_binary));
       Status status = BinaryToJsonString(type_resolver, *type_url, proto_binary,
                                          response->mutable_json_payload());
-      GOOGLE_CHECK(status.ok());
+      if (!status.ok()) {
+        response->set_serialize_error(
+            string("Failed to serialize JSON output: ") +
+            status.error_message().as_string());
+        return;
+      }
       break;
     }
+
+    default:
+      GOOGLE_LOG(FATAL) << "Unknown output format: "
+                        << request.requested_output_format();
   }
 }
 

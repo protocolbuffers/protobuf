@@ -46,8 +46,7 @@ namespace cpp {
 
 class EnumFieldGenerator : public FieldGenerator {
  public:
-  explicit EnumFieldGenerator(const FieldDescriptor* descriptor,
-                              const Options& options);
+  EnumFieldGenerator(const FieldDescriptor* descriptor, const Options& options);
   ~EnumFieldGenerator();
 
   // implements FieldGenerator ---------------------------------------
@@ -59,6 +58,7 @@ class EnumFieldGenerator : public FieldGenerator {
   void GenerateMergingCode(io::Printer* printer) const;
   void GenerateSwappingCode(io::Printer* printer) const;
   void GenerateConstructorCode(io::Printer* printer) const;
+  void GenerateCopyConstructorCode(io::Printer* printer) const;
   void GenerateMergeFromCodedStream(io::Printer* printer) const;
   void GenerateSerializeWithCachedSizes(io::Printer* printer) const;
   void GenerateSerializeWithCachedSizesToArray(io::Printer* printer) const;
@@ -66,7 +66,7 @@ class EnumFieldGenerator : public FieldGenerator {
 
  protected:
   const FieldDescriptor* descriptor_;
-  map<string, string> variables_;
+  std::map<string, string> variables_;
 
  private:
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(EnumFieldGenerator);
@@ -74,8 +74,8 @@ class EnumFieldGenerator : public FieldGenerator {
 
 class EnumOneofFieldGenerator : public EnumFieldGenerator {
  public:
-  explicit EnumOneofFieldGenerator(const FieldDescriptor* descriptor,
-                                   const Options& options);
+  EnumOneofFieldGenerator(const FieldDescriptor* descriptor,
+                          const Options& options);
   ~EnumOneofFieldGenerator();
 
   // implements FieldGenerator ---------------------------------------
@@ -91,8 +91,8 @@ class EnumOneofFieldGenerator : public EnumFieldGenerator {
 
 class RepeatedEnumFieldGenerator : public FieldGenerator {
  public:
-  explicit RepeatedEnumFieldGenerator(const FieldDescriptor* descriptor,
-                                      const Options& options);
+  RepeatedEnumFieldGenerator(const FieldDescriptor* descriptor,
+                             const Options& options);
   ~RepeatedEnumFieldGenerator();
 
   // implements FieldGenerator ---------------------------------------
@@ -104,6 +104,7 @@ class RepeatedEnumFieldGenerator : public FieldGenerator {
   void GenerateMergingCode(io::Printer* printer) const;
   void GenerateSwappingCode(io::Printer* printer) const;
   void GenerateConstructorCode(io::Printer* printer) const;
+  void GenerateCopyConstructorCode(io::Printer* printer) const {}
   void GenerateMergeFromCodedStream(io::Printer* printer) const;
   void GenerateMergeFromCodedStreamWithPacking(io::Printer* printer) const;
   void GenerateSerializeWithCachedSizes(io::Printer* printer) const;
@@ -112,7 +113,7 @@ class RepeatedEnumFieldGenerator : public FieldGenerator {
 
  private:
   const FieldDescriptor* descriptor_;
-  map<string, string> variables_;
+  std::map<string, string> variables_;
 
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(RepeatedEnumFieldGenerator);
 };

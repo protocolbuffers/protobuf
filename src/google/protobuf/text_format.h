@@ -75,6 +75,8 @@ class LIBPROTOBUF_EXPORT TextFormat {
                                  io::ZeroCopyOutputStream* output);
 
   // Like Print(), but outputs directly to a string.
+  // Note: output will be cleared prior to printing, and will be left empty
+  // even if printing fails.
   static bool PrintToString(const Message& message, string* output);
 
   // Like PrintUnknownFields(), but outputs directly to a string.
@@ -219,6 +221,18 @@ class LIBPROTOBUF_EXPORT TextFormat {
       expand_any_ = expand;
     }
 
+    // If non-zero, we truncate all string fields that are  longer than this
+    // threshold.  This is useful when the proto message has very long strings,
+    // e.g., dump of encoded image file.
+    //
+    // NOTE(hfgong):  Setting a non-zero value breaks round-trip safe
+    // property of TextFormat::Printer.  That is, from the printed message, we
+    // cannot fully recover the original string field any more.
+    void SetTruncateStringFieldLongerThan(
+        const int64 truncate_string_field_longer_than) {
+      truncate_string_field_longer_than_ = truncate_string_field_longer_than;
+    }
+
     // Register a custom field-specific FieldValuePrinter for fields
     // with a particular FieldDescriptor.
     // Returns "true" if the registration succeeded, or "false", if there is
@@ -286,9 +300,11 @@ class LIBPROTOBUF_EXPORT TextFormat {
 
     bool expand_any_;
 
+    int64 truncate_string_field_longer_than_;
+
     google::protobuf::scoped_ptr<const FieldValuePrinter> default_field_value_printer_;
-    typedef map<const FieldDescriptor*,
-                const FieldValuePrinter*> CustomPrinterMap;
+    typedef std::map<const FieldDescriptor*,
+                     const FieldValuePrinter*> CustomPrinterMap;
     CustomPrinterMap custom_printers_;
   };
 
@@ -377,11 +393,13 @@ class LIBPROTOBUF_EXPORT TextFormat {
     ParseInfoTree* CreateNested(const FieldDescriptor* field);
 
     // Defines the map from the index-th field descriptor to its parse location.
-    typedef map<const FieldDescriptor*, vector<ParseLocation> > LocationMap;
+    typedef std::map<const FieldDescriptor*,
+                     std::vector<ParseLocation> > LocationMap;
 
     // Defines the map from the index-th field descriptor to the nested parse
     // info tree.
-    typedef map<const FieldDescriptor*, vector<ParseInfoTree*> > NestedMap;
+    typedef std::map<const FieldDescriptor*,
+                     std::vector<ParseInfoTree*> > NestedMap;
 
     LocationMap locations_;
     NestedMap nested_;

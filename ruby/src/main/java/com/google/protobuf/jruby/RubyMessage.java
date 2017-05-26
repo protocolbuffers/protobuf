@@ -41,6 +41,8 @@ import org.jruby.runtime.ThreadContext;
 import org.jruby.runtime.builtin.IRubyObject;
 import org.jruby.util.ByteList;
 
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -86,14 +88,14 @@ public class RubyMessage extends RubyObject {
 
                     if (Utils.isMapEntry(fieldDescriptor)) {
                         if (!(value instanceof RubyHash))
-                            throw runtime.newArgumentError("Expected Hash object as initializer value for map field.");
+                            throw runtime.newArgumentError("Expected Hash object as initializer value for map field '" +  key.asJavaString() + "'.");
 
                         final RubyMap map = newMapForField(context, fieldDescriptor);
                         map.mergeIntoSelf(context, value);
                         maps.put(fieldDescriptor, map);
                     } else if (fieldDescriptor.isRepeated()) {
                         if (!(value instanceof RubyArray))
-                            throw runtime.newTypeError("Expected array as initializer var for repeated field.");
+                            throw runtime.newArgumentError("Expected array as initializer value for repeated field '" +  key.asJavaString() + "'.");
                         RubyRepeatedField repeatedField = rubyToRepeatedField(context, fieldDescriptor, value);
                         addRepeatedField(fieldDescriptor, repeatedField);
                     } else {
@@ -164,8 +166,21 @@ public class RubyMessage extends RubyObject {
      */
     @JRubyMethod
     public IRubyObject hash(ThreadContext context) {
-        int hashCode = System.identityHashCode(this);
-        return context.runtime.newFixnum(hashCode);
+        try {
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            for (RubyMap map : maps.values()) {
+                digest.update((byte) map.hashCode());
+            }
+            for (RubyRepeatedField repeatedField : repeatedFields.values()) {
+                digest.update((byte) repeatedFields.hashCode());
+            }
+            for (IRubyObject field : fields.values()) {
+                digest.update((byte) field.hashCode());
+            }
+            return context.runtime.newString(new ByteList(digest.digest()));
+        } catch (NoSuchAlgorithmException ignore) {
+            return context.runtime.newFixnum(System.identityHashCode(this));
+        }
     }
 
     /*
@@ -217,6 +232,9 @@ public class RubyMessage extends RubyObject {
             RubyDescriptor rubyDescriptor = (RubyDescriptor) getDescriptor(context, metaClass);
             IRubyObject oneofDescriptor = rubyDescriptor.lookupOneof(context, args[0]);
             if (oneofDescriptor.isNil()) {
+                if (!hasField(args[0])) {
+                    return Helpers.invokeSuper(context, this, metaClass, "method_missing", args, Block.NULL_BLOCK);
+                }
                 return index(context, args[0]);
             }
             RubyOneofDescriptor rubyOneofDescriptor = (RubyOneofDescriptor) oneofDescriptor;
@@ -232,6 +250,10 @@ public class RubyMessage extends RubyObject {
             RubyString equalSign = context.runtime.newString(Utils.EQUAL_SIGN);
             if (field.end_with_p(context, equalSign).isTrue()) {
                 field.chomp_bang(context, equalSign);
+            }
+
+            if (!hasField(field)) {
+                return Helpers.invokeSuper(context, this, metaClass, "method_missing", args, Block.NULL_BLOCK);
             }
             return indexSet(context, field, args[1]);
         }
@@ -435,6 +457,11 @@ public class RubyMessage extends RubyObject {
         return ret;
     }
 
+    private boolean hasField(IRubyObject fieldName) {
+        String nameStr = fieldName.asJavaString();
+        return this.descriptor.findFieldByName(Utils.escapeIdentifier(nameStr)) != null;
+    }
+
     private void checkRepeatedFieldType(ThreadContext context, IRubyObject value,
                                         Descriptors.FieldDescriptor fieldDescriptor) {
         Ruby runtime = context.runtime;
@@ -492,7 +519,7 @@ public class RubyMessage extends RubyObject {
                 break;
             case BYTES:
             case STRING:
-                Utils.validateStringEncoding(context.runtime, fieldDescriptor.getType(), value);
+                Utils.validateStringEncoding(context, fieldDescriptor.getType(), value);
                 RubyString str = (RubyString) value;
                 switch (fieldDescriptor.getType()) {
                     case BYTES:
@@ -580,13 +607,17 @@ public class RubyMessage extends RubyObject {
     protected IRubyObject getField(ThreadContext context, Descriptors.FieldDescriptor fieldDescriptor) {
         Descriptors.OneofDescriptor oneofDescriptor = fieldDescriptor.getContainingOneof();
         if (oneofDescriptor != null) {
-            if (oneofCases.containsKey(oneofDescriptor)) {
-                if (oneofCases.get(oneofDescriptor) != fieldDescriptor)
-                    return context.runtime.getNil();
+            if (oneofCases.get(oneofDescriptor) == fieldDescriptor) {
                 return fields.get(fieldDescriptor);
             } else {
                 Descriptors.FieldDescriptor oneofCase = builder.getOneofFieldDescriptor(oneofDescriptor);
-                if (oneofCase != fieldDescriptor) return context.runtime.getNil();
+                if (oneofCase != fieldDescriptor) {
+                  if (fieldDescriptor.getType() == Descriptors.FieldDescriptor.Type.MESSAGE) {
+                    return context.runtime.getNil();
+                  } else {
+                    return wrapField(context, fieldDescriptor, fieldDescriptor.getDefaultValue());
+                  }
+                }
                 IRubyObject value = wrapField(context, oneofCase, builder.getField(oneofCase));
                 fields.put(fieldDescriptor, value);
                 return value;
@@ -679,7 +710,7 @@ public class RubyMessage extends RubyObject {
                     }
                 }
                 if (addValue) {
-                    Utils.checkType(context, fieldType, value, (RubyModule) typeClass);
+                    value = Utils.checkType(context, fieldType, value, (RubyModule) typeClass);
                     this.fields.put(fieldDescriptor, value);
                 } else {
                     this.fields.remove(fieldDescriptor);

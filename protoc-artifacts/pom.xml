@@ -10,7 +10,7 @@
   </parent>
   <groupId>com.google.protobuf</groupId>
   <artifactId>protoc</artifactId>
-  <version>3.0.0-alpha-4-pre</version>
+  <version>3.3.1</version>
   <packaging>pom</packaging>
   <name>Protobuf Compiler</name>
   <description>
@@ -21,8 +21,8 @@
   <url>https://developers.google.com/protocol-buffers/</url>
   <licenses>
     <license>
-      <name>New BSD license</name>
-      <url>http://www.opensource.org/licenses/bsd-license.php</url>
+      <name>3-Clause BSD License</name>
+      <url>https://opensource.org/licenses/BSD-3-Clause</url>
       <distribution>repo</distribution>
     </license>
   </licenses>
@@ -59,6 +59,7 @@
             <argument>build-protoc.sh</argument>
             <argument>${os.detected.name}</argument>
             <argument>${os.detected.arch}</argument>
+            <argument>protoc</argument>
           </arguments>
         </configuration>
       </plugin>

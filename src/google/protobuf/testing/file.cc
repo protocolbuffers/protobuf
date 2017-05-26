@@ -91,6 +91,7 @@ bool File::WriteStringToFile(const string& contents, const string& name) {
 
   if (fwrite(contents.data(), 1, contents.size(), file) != contents.size()) {
     GOOGLE_LOG(ERROR) << "fwrite(" << name << "): " << strerror(errno);
+    fclose(file);
     return false;
   }
 
@@ -140,12 +141,12 @@ void File::DeleteRecursively(const string& name,
 
 #ifdef _MSC_VER
   // This interface is so weird.
-  WIN32_FIND_DATA find_data;
-  HANDLE find_handle = FindFirstFile((name + "/*").c_str(), &find_data);
+  WIN32_FIND_DATAA find_data;
+  HANDLE find_handle = FindFirstFileA((name + "/*").c_str(), &find_data);
   if (find_handle == INVALID_HANDLE_VALUE) {
     // Just delete it, whatever it is.
-    DeleteFile(name.c_str());
-    RemoveDirectory(name.c_str());
+    DeleteFileA(name.c_str());
+    RemoveDirectoryA(name.c_str());
     return;
   }
 
@@ -155,15 +156,15 @@ void File::DeleteRecursively(const string& name,
       string path = name + "/" + entry_name;
       if (find_data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
         DeleteRecursively(path, NULL, NULL);
-        RemoveDirectory(path.c_str());
+        RemoveDirectoryA(path.c_str());
       } else {
-        DeleteFile(path.c_str());
+        DeleteFileA(path.c_str());
       }
     }
-  } while(FindNextFile(find_handle, &find_data));
+  } while(FindNextFileA(find_handle, &find_data));
   FindClose(find_handle);
 
-  RemoveDirectory(name.c_str());
+  RemoveDirectoryA(name.c_str());
 #else
   // Use opendir()!  Yay!
   // lstat = Don't follow symbolic links.

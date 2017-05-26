@@ -185,6 +185,19 @@ void SourceTreeDescriptorDatabase::ValidationErrorCollector::AddError(
   owner_->error_collector_->AddError(filename, line, column, message);
 }
 
+void SourceTreeDescriptorDatabase::ValidationErrorCollector::AddWarning(
+    const string& filename,
+    const string& element_name,
+    const Message* descriptor,
+    ErrorLocation location,
+    const string& message) {
+  if (owner_->error_collector_ == NULL) return;
+
+  int line, column;
+  owner_->source_locations_.Find(descriptor, location, &line, &column);
+  owner_->error_collector_->AddWarning(filename, line, column, message);
+}
+
 // ===================================================================
 
 Importer::Importer(SourceTree* source_tree,
@@ -208,6 +221,7 @@ void Importer::AddUnusedImportTrackFile(const string& file_name) {
 void Importer::ClearUnusedImportTrackFiles() {
   pool_.ClearUnusedImportTrackFiles();
 }
+
 
 // ===================================================================
 
@@ -257,8 +271,8 @@ static string CanonicalizePath(string path) {
   }
 #endif
 
-  vector<string> canonical_parts;
-  vector<string> parts = Split(
+  std::vector<string> canonical_parts;
+  std::vector<string> parts = Split(
       path, "/", true);  // Note:  Removes empty parts.
   for (int i = 0; i < parts.size(); i++) {
     if (parts[i] == ".") {

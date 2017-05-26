@@ -39,6 +39,7 @@
 #include <google/protobuf/stubs/shared_ptr.h>
 #endif
 
+#include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/compiler/java/java_context.h>
 #include <google/protobuf/compiler/java/java_enum_field.h>
@@ -76,7 +77,7 @@ ImmutableFieldGenerator* MakeImmutableGenerator(
           return new ImmutableMapFieldGenerator(
               field, messageBitIndex, builderBitIndex, context);
         } else {
-          if (IsLazy(field)) {
+          if (IsLazy(field, context->EnforceLite())) {
             return new RepeatedImmutableLazyMessageFieldGenerator(
                 field, messageBitIndex, builderBitIndex, context);
           } else {
@@ -98,7 +99,7 @@ ImmutableFieldGenerator* MakeImmutableGenerator(
     if (field->containing_oneof()) {
       switch (GetJavaType(field)) {
         case JAVATYPE_MESSAGE:
-          if (IsLazy(field)) {
+          if (IsLazy(field, context->EnforceLite())) {
             return new ImmutableLazyMessageOneofFieldGenerator(
                 field, messageBitIndex, builderBitIndex, context);
           } else {
@@ -118,7 +119,7 @@ ImmutableFieldGenerator* MakeImmutableGenerator(
     } else {
       switch (GetJavaType(field)) {
         case JAVATYPE_MESSAGE:
-          if (IsLazy(field)) {
+          if (IsLazy(field, context->EnforceLite())) {
             return new ImmutableLazyMessageFieldGenerator(
                 field, messageBitIndex, builderBitIndex, context);
           } else {
@@ -149,7 +150,7 @@ ImmutableFieldLiteGenerator* MakeImmutableLiteGenerator(
           return new ImmutableMapFieldLiteGenerator(
               field, messageBitIndex, builderBitIndex, context);
         } else {
-          if (IsLazy(field)) {
+          if (IsLazy(field, context->EnforceLite())) {
             return new RepeatedImmutableLazyMessageFieldLiteGenerator(
                 field, messageBitIndex, builderBitIndex, context);
           } else {
@@ -171,7 +172,7 @@ ImmutableFieldLiteGenerator* MakeImmutableLiteGenerator(
     if (field->containing_oneof()) {
       switch (GetJavaType(field)) {
         case JAVATYPE_MESSAGE:
-          if (IsLazy(field)) {
+          if (IsLazy(field, context->EnforceLite())) {
             return new ImmutableLazyMessageOneofFieldLiteGenerator(
                 field, messageBitIndex, builderBitIndex, context);
           } else {
@@ -191,7 +192,7 @@ ImmutableFieldLiteGenerator* MakeImmutableLiteGenerator(
     } else {
       switch (GetJavaType(field)) {
         case JAVATYPE_MESSAGE:
-          if (IsLazy(field)) {
+          if (IsLazy(field, context->EnforceLite())) {
             return new ImmutableLazyMessageFieldLiteGenerator(
                 field, messageBitIndex, builderBitIndex, context);
           } else {
@@ -289,7 +290,7 @@ FieldGeneratorMap<ImmutableFieldLiteGenerator>::~FieldGeneratorMap() {}
 
 void SetCommonFieldVariables(const FieldDescriptor* descriptor,
                              const FieldGeneratorInfo* info,
-                             map<string, string>* variables) {
+                             std::map<string, string>* variables) {
   (*variables)["field_name"] = descriptor->name();
   (*variables)["name"] = info->name;
   (*variables)["capitalized_name"] = info->capitalized_name;
@@ -300,7 +301,7 @@ void SetCommonFieldVariables(const FieldDescriptor* descriptor,
 
 void SetCommonOneofVariables(const FieldDescriptor* descriptor,
                              const OneofGeneratorInfo* info,
-                             map<string, string>* variables) {
+                             std::map<string, string>* variables) {
   (*variables)["oneof_name"] = info->name;
   (*variables)["oneof_capitalized_name"] = info->capitalized_name;
   (*variables)["oneof_index"] =
@@ -313,9 +314,9 @@ void SetCommonOneofVariables(const FieldDescriptor* descriptor,
       "Case_ == " + SimpleItoa(descriptor->number());
 }
 
-void PrintExtraFieldInfo(const map<string, string>& variables,
+void PrintExtraFieldInfo(const std::map<string, string>& variables,
                          io::Printer* printer) {
-  const map<string, string>::const_iterator it =
+  const std::map<string, string>::const_iterator it =
       variables.find("disambiguated_reason");
   if (it != variables.end() && !it->second.empty()) {
     printer->Print(

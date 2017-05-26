@@ -63,13 +63,16 @@ void ExtensionGenerator::GenerateMembersHeader(io::Printer* printer) {
   vars["method_name"] = method_name_;
   SourceLocation location;
   if (descriptor_->GetSourceLocation(&location)) {
-    vars["comments"] = BuildCommentsString(location);
+    vars["comments"] = BuildCommentsString(location, true);
   } else {
     vars["comments"] = "";
   }
+  // Unlike normal message fields, check if the file for the extension was
+  // deprecated.
+  vars["deprecated_attribute"] = GetOptionalDeprecatedAttribute(descriptor_, descriptor_->file());
   printer->Print(vars,
                  "$comments$"
-                 "+ (GPBExtensionDescriptor *)$method_name$;\n");
+                 "+ (GPBExtensionDescriptor *)$method_name$$deprecated_attribute$;\n");
 }
 
 void ExtensionGenerator::GenerateStaticVariablesInitialization(
@@ -85,7 +88,7 @@ void ExtensionGenerator::GenerateStaticVariablesInitialization(
   if (descriptor_->containing_type()->options().message_set_wire_format())
     options.push_back("GPBExtensionSetWireFormat");
 
-  vars["options"] = BuildFlagsString(options);
+  vars["options"] = BuildFlagsString(FLAGTYPE_EXTENSION, options);
 
   ObjectiveCType objc_type = GetObjectiveCType(descriptor_);
   string singular_type;
@@ -114,14 +117,14 @@ void ExtensionGenerator::GenerateStaticVariablesInitialization(
 
   printer->Print(vars,
                  "{\n"
-                 "  .singletonName = GPBStringifySymbol($root_class_and_method_name$),\n"
-                 "  .dataType = $extension_type$,\n"
-                 "  .extendedClass = GPBStringifySymbol($extended_type$),\n"
-                 "  .fieldNumber = $number$,\n"
                  "  .defaultValue.$default_name$ = $default$,\n"
+                 "  .singletonName = GPBStringifySymbol($root_class_and_method_name$),\n"
+                 "  .extendedClass = GPBStringifySymbol($extended_type$),\n"
                  "  .messageOrGroupClassName = $type$,\n"
-                 "  .options = $options$,\n"
                  "  .enumDescriptorFunc = $enum_desc_func_name$,\n"
+                 "  .fieldNumber = $number$,\n"
+                 "  .dataType = $extension_type$,\n"
+                 "  .options = $options$,\n"
                  "},\n");
 }
 

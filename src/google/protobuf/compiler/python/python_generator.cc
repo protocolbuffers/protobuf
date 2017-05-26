@@ -44,6 +44,7 @@
 // performance-minded Python code leverage the fast C++ implementation
 // directly.
 
+#include <algorithm>
 #include <google/protobuf/stubs/hash.h>
 #include <limits>
 #include <map>
@@ -58,6 +59,7 @@
 #include <google/protobuf/compiler/python/python_generator.h>
 #include <google/protobuf/descriptor.pb.h>
 
+#include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/stubs/stringprintf.h>
 #include <google/protobuf/io/printer.h>
@@ -86,8 +88,8 @@ string StripProto(const string& filename) {
 // Returns the Python module name expected for a given .proto filename.
 string ModuleName(const string& filename) {
   string basename = StripProto(filename);
-  StripString(&basename, "-", '_');
-  StripString(&basename, "/", '.');
+  ReplaceCharacters(&basename, "-", '_');
+  ReplaceCharacters(&basename, "/", '.');
   return basename + "_pb2";
 }
 
@@ -106,20 +108,25 @@ string ModuleAlias(const string& filename) {
   return module_name;
 }
 
+// Keywords reserved by the Python language.
+const char* const kKeywords[] = {
+    "False",   "None",     "True",     "and",    "as",    "assert", "break",
+    "class",   "continue", "def",      "del",    "elif",  "else",   "except",
+    "finally", "for",      "from",     "global", "if",    "import", "in",
+    "is",      "lambda",   "nonlocal", "not",    "or",    "pass",   "raise",
+    "return",  "try",      "while",    "with",   "yield",
+};
+const char* const* kKeywordsEnd =
+    kKeywords + (sizeof(kKeywords) / sizeof(kKeywords[0]));
 
-// Returns an import statement of form "from X.Y.Z import T" for the given
-// .proto filename.
-string ModuleImportStatement(const string& filename) {
-  string module_name = ModuleName(filename);
-  int last_dot_pos = module_name.rfind('.');
-  if (last_dot_pos == string::npos) {
-    // NOTE(petya): this is not tested as it would require a protocol buffer
-    // outside of any package, and I don't think that is easily achievable.
-    return "import " + module_name;
-  } else {
-    return "from " + module_name.substr(0, last_dot_pos) + " import " +
-        module_name.substr(last_dot_pos + 1);
+bool ContainsPythonKeyword(const string& module_name) {
+  std::vector<string> tokens = Split(module_name, ".");
+  for (int i = 0; i < tokens.size(); ++i) {
+    if (std::find(kKeywords, kKeywordsEnd, tokens[i]) != kKeywordsEnd) {
+      return true;
+    }
   }
+  return false;
 }
 
 
@@ -223,34 +230,34 @@ string StringifyDefaultValue(const FieldDescriptor& field) {
       return SimpleItoa(field.default_value_uint64());
     case FieldDescriptor::CPPTYPE_DOUBLE: {
       double value = field.default_value_double();
-      if (value == numeric_limits<double>::infinity()) {
+      if (value == std::numeric_limits<double>::infinity()) {
         // Python pre-2.6 on Windows does not parse "inf" correctly.  However,
         // a numeric literal that is too big for a double will become infinity.
         return "1e10000";
-      } else if (value == -numeric_limits<double>::infinity()) {
+      } else if (value == -std::numeric_limits<double>::infinity()) {
         // See above.
         return "-1e10000";
       } else if (value != value) {
         // infinity * 0 = nan
         return "(1e10000 * 0)";
       } else {
-        return SimpleDtoa(value);
+        return "float(" + SimpleDtoa(value) + ")";
       }
     }
     case FieldDescriptor::CPPTYPE_FLOAT: {
       float value = field.default_value_float();
-      if (value == numeric_limits<float>::infinity()) {
+      if (value == std::numeric_limits<float>::infinity()) {
         // Python pre-2.6 on Windows does not parse "inf" correctly.  However,
         // a numeric literal that is too big for a double will become infinity.
         return "1e10000";
-      } else if (value == -numeric_limits<float>::infinity()) {
+      } else if (value == -std::numeric_limits<float>::infinity()) {
         // See above.
         return "-1e10000";
       } else if (value != value) {
         // infinity - infinity = nan
         return "(1e10000 * 0)";
       } else {
-        return SimpleFtoa(value);
+        return "float(" + SimpleFtoa(value) + ")";
       }
     }
     case FieldDescriptor::CPPTYPE_BOOL:
@@ -313,7 +320,7 @@ bool Generator::Generate(const FileDescriptor* file,
   file_ = file;
   string module_name = ModuleName(file->name());
   string filename = module_name;
-  StripString(&filename, ".", '/');
+  ReplaceCharacters(&filename, ".", '/');
   filename += ".py";
 
   FileDescriptorProto fdp;
@@ -358,10 +365,32 @@ bool Generator::Generate(const FileDescriptor* file,
 void Generator::PrintImports() const {
   for (int i = 0; i < file_->dependency_count(); ++i) {
     const string& filename = file_->dependency(i)->name();
-    string import_statement = ModuleImportStatement(filename);
+
+    string module_name = ModuleName(filename);
     string module_alias = ModuleAlias(filename);
-    printer_->Print("$statement$ as $alias$\n", "statement",
-                    import_statement, "alias", module_alias);
+    if (ContainsPythonKeyword(module_name)) {
+      // If the module path contains a Python keyword, we have to quote the
+      // module name and import it using importlib. Otherwise the usual kind of
+      // import statement would result in a syntax error from the presence of
+      // the keyword.
+      printer_->Print("import importlib\n");
+      printer_->Print("$alias$ = importlib.import_module('$name$')\n", "alias",
+                      module_alias, "name", module_name);
+    } else {
+      int last_dot_pos = module_name.rfind('.');
+      string import_statement;
+      if (last_dot_pos == string::npos) {
+        // NOTE(petya): this is not tested as it would require a protocol buffer
+        // outside of any package, and I don't think that is easily achievable.
+        import_statement = "import " + module_name;
+      } else {
+        import_statement = "from " + module_name.substr(0, last_dot_pos) +
+                           " import " + module_name.substr(last_dot_pos + 1);
+      }
+      printer_->Print("$statement$ as $alias$\n", "statement", import_statement,
+                      "alias", module_alias);
+    }
+
     CopyPublicDependenciesAliases(module_alias, file_->dependency(i));
   }
   printer_->Print("\n");
@@ -376,7 +405,7 @@ void Generator::PrintImports() const {
 
 // Prints the single file descriptor for this file.
 void Generator::PrintFileDescriptor() const {
-  map<string, string> m;
+  std::map<string, string> m;
   m["descriptor_name"] = kDescriptorKey;
   m["name"] = file_->name();
   m["package"] = file_->package();
@@ -401,21 +430,28 @@ void Generator::PrintFileDescriptor() const {
     }
     printer_->Print("]");
   }
+  if (file_->public_dependency_count() > 0) {
+    printer_->Print(",\npublic_dependencies=[");
+    for (int i = 0; i < file_->public_dependency_count(); ++i) {
+      string module_alias = ModuleAlias(file_->public_dependency(i)->name());
+      printer_->Print("$module_alias$.DESCRIPTOR,", "module_alias",
+                      module_alias);
+    }
+    printer_->Print("]");
+  }
 
   // TODO(falk): Also print options and fix the message_type, enum_type,
   //             service and extension later in the generation.
 
   printer_->Outdent();
   printer_->Print(")\n");
-  printer_->Print("_sym_db.RegisterFileDescriptor($name$)\n", "name",
-                  kDescriptorKey);
   printer_->Print("\n");
 }
 
 // Prints descriptors and module-level constants for all top-level
 // enums defined in |file|.
 void Generator::PrintTopLevelEnums() const {
-  vector<pair<string, int> > top_level_enum_values;
+  std::vector<std::pair<string, int> > top_level_enum_values;
   for (int i = 0; i < file_->enum_type_count(); ++i) {
     const EnumDescriptor& enum_descriptor = *file_->enum_type(i);
     PrintEnum(enum_descriptor);
@@ -452,7 +488,7 @@ void Generator::PrintAllNestedEnumsInFile() const {
 // enum name to a Python EnumDescriptor object equivalent to
 // enum_descriptor.
 void Generator::PrintEnum(const EnumDescriptor& enum_descriptor) const {
-  map<string, string> m;
+  std::map<string, string> m;
   string module_level_descriptor_name =
       ModuleLevelDescriptorName(enum_descriptor);
   m["descriptor_name"] = module_level_descriptor_name;
@@ -546,7 +582,7 @@ void Generator::PrintServiceDescriptor(
       "$service_name$ = _descriptor.ServiceDescriptor(\n",
       "service_name", service_name);
   printer_->Indent();
-  map<string, string> m;
+  std::map<string, string> m;
   m["name"] = descriptor.name();
   m["full_name"] = descriptor.full_name();
   m["file"] = kDescriptorKey;
@@ -642,7 +678,7 @@ void Generator::PrintDescriptor(const Descriptor& message_descriptor) const {
                   "descriptor_name",
                   ModuleLevelDescriptorName(message_descriptor));
   printer_->Indent();
-  map<string, string> m;
+  std::map<string, string> m;
   m["name"] = message_descriptor.name();
   m["full_name"] = message_descriptor.full_name();
   m["file"] = kDescriptorKey;
@@ -702,15 +738,22 @@ void Generator::PrintDescriptor(const Descriptor& message_descriptor) const {
   printer_->Indent();
   for (int i = 0; i < message_descriptor.oneof_decl_count(); ++i) {
     const OneofDescriptor* desc = message_descriptor.oneof_decl(i);
-    map<string, string> m;
+    std::map<string, string> m;
     m["name"] = desc->name();
     m["full_name"] = desc->full_name();
     m["index"] = SimpleItoa(desc->index());
+    string options_string =
+        OptionsValue("OneofOptions", desc->options().SerializeAsString());
+    if (options_string == "None") {
+      m["options"] = "";
+    } else {
+      m["options"] = ", options=" + options_string;
+    }
     printer_->Print(
         m,
         "_descriptor.OneofDescriptor(\n"
         "  name='$name$', full_name='$full_name$',\n"
-        "  index=$index$, containing_type=None, fields=[]),\n");
+        "  index=$index$, containing_type=None, fields=[]$options$),\n");
   }
   printer_->Outdent();
   printer_->Print("],\n");
@@ -736,7 +779,7 @@ void Generator::PrintNestedDescriptors(
 // Prints all messages in |file|.
 void Generator::PrintMessages() const {
   for (int i = 0; i < file_->message_type_count(); ++i) {
-    vector<string> to_register;
+    std::vector<string> to_register;
     PrintMessage(*file_->message_type(i), "", &to_register);
     for (int j = 0; j < to_register.size(); ++j) {
       printer_->Print("_sym_db.RegisterMessage($name$)\n", "name",
@@ -756,7 +799,7 @@ void Generator::PrintMessages() const {
 // Collect nested message names to_register for the symbol_database.
 void Generator::PrintMessage(const Descriptor& message_descriptor,
                              const string& prefix,
-                             vector<string>* to_register) const {
+                             std::vector<string>* to_register) const {
   string qualified_name(prefix + message_descriptor.name());
   to_register->push_back(qualified_name);
   printer_->Print(
@@ -766,7 +809,7 @@ void Generator::PrintMessage(const Descriptor& message_descriptor,
   printer_->Indent();
 
   PrintNestedMessages(message_descriptor, qualified_name + ".", to_register);
-  map<string, string> m;
+  std::map<string, string> m;
   m["descriptor_key"] = kDescriptorKey;
   m["descriptor_name"] = ModuleLevelDescriptorName(message_descriptor);
   printer_->Print(m, "$descriptor_key$ = $descriptor_name$,\n");
@@ -782,7 +825,7 @@ void Generator::PrintMessage(const Descriptor& message_descriptor,
 // Mutually recursive with PrintMessage().
 void Generator::PrintNestedMessages(const Descriptor& containing_descriptor,
                                     const string& prefix,
-                                    vector<string>* to_register) const {
+                                    std::vector<string>* to_register) const {
   for (int i = 0; i < containing_descriptor.nested_type_count(); ++i) {
     printer_->Print("\n");
     PrintMessage(*containing_descriptor.nested_type(i), prefix, to_register);
@@ -815,7 +858,7 @@ void Generator::FixForeignFieldsInDescriptor(
     FixContainingTypeInDescriptor(enum_descriptor, &descriptor);
   }
   for (int i = 0; i < descriptor.oneof_decl_count(); ++i) {
-    map<string, string> m;
+    std::map<string, string> m;
     const OneofDescriptor* oneof = descriptor.oneof_decl(i);
     m["descriptor_name"] = ModuleLevelDescriptorName(descriptor);
     m["oneof_name"] = oneof->name();
@@ -834,7 +877,7 @@ void Generator::FixForeignFieldsInDescriptor(
 }
 
 void Generator::AddMessageToFileDescriptor(const Descriptor& descriptor) const {
-  map<string, string> m;
+  std::map<string, string> m;
   m["descriptor_name"] = kDescriptorKey;
   m["message_name"] = descriptor.name();
   m["message_descriptor_name"] = ModuleLevelDescriptorName(descriptor);
@@ -846,7 +889,7 @@ void Generator::AddMessageToFileDescriptor(const Descriptor& descriptor) const {
 
 void Generator::AddEnumToFileDescriptor(
     const EnumDescriptor& descriptor) const {
-  map<string, string> m;
+  std::map<string, string> m;
   m["descriptor_name"] = kDescriptorKey;
   m["enum_name"] = descriptor.name();
   m["enum_descriptor_name"] = ModuleLevelDescriptorName(descriptor);
@@ -858,7 +901,7 @@ void Generator::AddEnumToFileDescriptor(
 
 void Generator::AddExtensionToFileDescriptor(
     const FieldDescriptor& descriptor) const {
-  map<string, string> m;
+  std::map<string, string> m;
   m["descriptor_name"] = kDescriptorKey;
   m["field_name"] = descriptor.name();
   const char file_descriptor_template[] =
@@ -881,7 +924,7 @@ void Generator::FixForeignFieldsInField(const Descriptor* containing_type,
                                         const string& python_dict_name) const {
   const string field_referencing_expression = FieldReferencingExpression(
       containing_type, field, python_dict_name);
-  map<string, string> m;
+  std::map<string, string> m;
   m["field_ref"] = field_referencing_expression;
   const Descriptor* foreign_message_type = field.message_type();
   if (foreign_message_type) {
@@ -954,6 +997,10 @@ void Generator::FixForeignFieldsInDescriptors() const {
   for (int i = 0; i < file_->extension_count(); ++i) {
     AddExtensionToFileDescriptor(*file_->extension(i));
   }
+  // TODO(jieluo): Move this register to PrintFileDescriptor() when
+  // FieldDescriptor.file is added in generated file.
+  printer_->Print("_sym_db.RegisterFileDescriptor($name$)\n", "name",
+                  kDescriptorKey);
   printer_->Print("\n");
 }
 
@@ -980,7 +1027,7 @@ void Generator::FixForeignFieldsInExtension(
   FixForeignFieldsInField(extension_field.extension_scope(), extension_field,
                           "extensions_by_name");
 
-  map<string, string> m;
+  std::map<string, string> m;
   // Confusingly, for FieldDescriptors that happen to be extensions,
   // containing_type() means "extended type."
   // On the other hand, extension_scope() will give us what we normally
@@ -1013,7 +1060,7 @@ void Generator::PrintEnumValueDescriptor(
   // More circular references.  ::sigh::
   string options_string;
   descriptor.options().SerializeToString(&options_string);
-  map<string, string> m;
+  std::map<string, string> m;
   m["name"] = descriptor.name();
   m["index"] = SimpleItoa(descriptor.index());
   m["number"] = SimpleItoa(descriptor.number());
@@ -1046,7 +1093,7 @@ void Generator::PrintFieldDescriptor(
     const FieldDescriptor& field, bool is_extension) const {
   string options_string;
   field.options().SerializeToString(&options_string);
-  map<string, string> m;
+  std::map<string, string> m;
   m["name"] = field.name();
   m["full_name"] = field.full_name();
   m["index"] = SimpleItoa(field.index());
@@ -1058,6 +1105,8 @@ void Generator::PrintFieldDescriptor(
   m["default_value"] = StringifyDefaultValue(field);
   m["is_extension"] = is_extension ? "True" : "False";
   m["options"] = OptionsValue("FieldOptions", options_string);
+  m["json_name"] = field.has_json_name() ?
+      ", json_name='" + field.json_name() + "'": "";
   // We always set message_type and enum_type to None at this point, and then
   // these fields in correctly after all referenced descriptors have been
   // defined and/or imported (see FixForeignFieldsInDescriptors()).
@@ -1068,7 +1117,7 @@ void Generator::PrintFieldDescriptor(
     "  has_default_value=$has_default_value$, default_value=$default_value$,\n"
     "  message_type=None, enum_type=None, containing_type=None,\n"
     "  is_extension=$is_extension$, extension_scope=None,\n"
-    "  options=$options$)";
+    "  options=$options$$json_name$)";
   printer_->Print(m, field_descriptor_decl);
 }
 
@@ -1234,6 +1283,18 @@ void Generator::FixAllDescriptorOptions() const {
   }
 }
 
+void Generator::FixOptionsForOneof(const OneofDescriptor& oneof) const {
+  string oneof_options = OptionsValue(
+      "OneofOptions", oneof.options().SerializeAsString());
+  if (oneof_options != "None") {
+    string oneof_name = strings::Substitute(
+        "$0.$1['$2']",
+        ModuleLevelDescriptorName(*oneof.containing_type()),
+        "oneofs_by_name", oneof.name());
+    PrintDescriptorOptionsFixingCode(oneof_name, oneof_options, printer_);
+  }
+}
+
 // Prints expressions that set the options for an enum descriptor and its
 // value descriptors.
 void Generator::FixOptionsForEnum(const EnumDescriptor& enum_descriptor) const {
@@ -1287,6 +1348,10 @@ void Generator::FixOptionsForMessage(const Descriptor& descriptor) const {
   for (int i = 0; i < descriptor.nested_type_count(); ++i) {
     FixOptionsForMessage(*descriptor.nested_type(i));
   }
+  // Oneofs.
+  for (int i = 0; i < descriptor.oneof_decl_count(); ++i) {
+    FixOptionsForOneof(*descriptor.oneof_decl(i));
+  }
   // Enums.
   for (int i = 0; i < descriptor.enum_type_count(); ++i) {
     FixOptionsForEnum(*descriptor.enum_type(i));
@@ -1317,8 +1382,17 @@ void Generator::FixOptionsForMessage(const Descriptor& descriptor) const {
 void Generator::CopyPublicDependenciesAliases(
     const string& copy_from, const FileDescriptor* file) const {
   for (int i = 0; i < file->public_dependency_count(); ++i) {
+    string module_name = ModuleName(file->public_dependency(i)->name());
     string module_alias = ModuleAlias(file->public_dependency(i)->name());
-    printer_->Print("$alias$ = $copy_from$.$alias$\n", "alias", module_alias,
+    // There's no module alias in the dependent file if it was generated by
+    // an old protoc (less than 3.0.0-alpha-1). Use module name in this
+    // situation.
+    printer_->Print("try:\n"
+                    "  $alias$ = $copy_from$.$alias$\n"
+                    "except AttributeError:\n"
+                    "  $alias$ = $copy_from$.$module$\n",
+                    "alias", module_alias,
+                    "module", module_name,
                     "copy_from", copy_from);
     CopyPublicDependenciesAliases(copy_from, file->public_dependency(i));
   }

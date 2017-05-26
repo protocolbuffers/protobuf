@@ -29,9 +29,19 @@
 
 syntax = "proto2";
 
+import "google/protobuf/any.proto";
 import "google/protobuf/unittest.proto";
 
 package protobuf_unittest;
+
+// Used to check that Headerdocs and appledoc work correctly. If these comments
+// are not handled correctly, Xcode will fail to build the tests.
+message TestGeneratedComments {
+  // This is a string that could contain stuff like
+  // mime types as image/* or */plain. Maybe twitter usernames
+  // like @protobuf, @google or @something.
+  optional string string_field = 1;
+}
 
 // Using the messages in unittest.proto, setup for recursive cases for testing
 // extensions at various depths.
@@ -110,6 +120,18 @@ enum retain {
   count          = 4;
   initialized    = 5;
   serializedSize = 6;
+}
+
+message ObjCPropertyNaming {
+  // Test that the properties properly get things all caps.
+  optional string url           = 1;
+  optional string thumbnail_url = 2;
+  optional string url_foo       = 3;
+  optional string some_url_blah = 4;
+  optional string http          = 5;
+  optional string https         = 6;
+  // This one doesn't.
+  repeated string urls          = 7;
 }
 
 // EnumValueShortName: The short names shouldn't get suffixes/prefixes.
@@ -388,4 +410,58 @@ message EnumTestMsg {
   optional MyEnum baz = 3 [default = NEG_ONE];
 
   repeated MyEnum mumble = 4;
+}
+
+// Test case for https://github.com/google/protobuf/issues/1453
+// Message with no explicit defaults, but a non zero default for an enum.
+message MessageWithOneBasedEnum {
+  enum OneBasedEnum {
+    ONE = 1;
+    TWO = 2;
+  }
+  optional OneBasedEnum enum_field = 1;
+}
+
+// Message with all bools for testing things related to bool storage.
+message BoolOnlyMessage {
+  optional bool bool_field_1 = 1;
+  optional bool bool_field_2 = 2;
+  optional bool bool_field_3 = 3;
+  optional bool bool_field_4 = 4;
+  optional bool bool_field_5 = 5;
+  optional bool bool_field_6 = 6;
+  optional bool bool_field_7 = 7;
+  optional bool bool_field_8 = 8;
+  optional bool bool_field_9 = 9;
+  optional bool bool_field_10 = 10;
+  optional bool bool_field_11 = 11;
+  optional bool bool_field_12 = 12;
+  optional bool bool_field_13 = 13;
+  optional bool bool_field_14 = 14;
+  optional bool bool_field_15 = 15;
+  optional bool bool_field_16 = 16;
+  optional bool bool_field_17 = 17;
+  optional bool bool_field_18 = 18;
+  optional bool bool_field_19 = 19;
+  optional bool bool_field_20 = 20;
+  optional bool bool_field_21 = 21;
+  optional bool bool_field_22 = 22;
+  optional bool bool_field_23 = 23;
+  optional bool bool_field_24 = 24;
+  optional bool bool_field_25 = 25;
+  optional bool bool_field_26 = 26;
+  optional bool bool_field_27 = 27;
+  optional bool bool_field_28 = 28;
+  optional bool bool_field_29 = 29;
+  optional bool bool_field_30 = 30;
+  optional bool bool_field_31 = 31;
+  optional bool bool_field_32 = 32;
+}
+
+// Reference to a WKT to test (via generated code inspection), the handling
+// of #imports.  Within the WKTs, references to each other are just path
+// based imports, but when reference from another proto file, they should be
+// conditional to support the framework import style.
+message WKTRefereceMessage {
+  optional google.protobuf.Any an_any = 1;
 }

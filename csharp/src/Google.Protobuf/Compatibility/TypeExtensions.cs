@@ -33,6 +33,7 @@
 using System;
 using System.Reflection;
 
+#if !NET35
 namespace Google.Protobuf.Compatibility
 {
     /// <summary>
@@ -45,15 +46,6 @@ namespace Google.Protobuf.Compatibility
     /// </summary>
     internal static class TypeExtensions
     {
-        /// <summary>
-        /// Returns true if the target type is a value type, including a nullable value type or an enum, or false
-        /// if it's a reference type (class, delegate, interface - including System.ValueType and System.Enum).
-        /// </summary>
-        internal static bool IsValueType(this Type target)
-        {
-            return target.GetTypeInfo().IsValueType;
-        }
-
         /// <summary>
         /// See https://msdn.microsoft.com/en-us/library/system.type.isassignablefrom
         /// </summary>
@@ -111,3 +103,4 @@ namespace Google.Protobuf.Compatibility
         }
     }
 }
+#endif

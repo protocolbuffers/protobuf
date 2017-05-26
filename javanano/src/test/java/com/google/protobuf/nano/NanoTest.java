@@ -30,8 +30,11 @@
 
 package com.google.protobuf.nano;
 
-import com.google.protobuf.nano.MapTestProto.TestMap;
 import com.google.protobuf.nano.CodedOutputByteBufferNano;
+import com.google.protobuf.nano.EnumClassNanos.EnumClassNano;
+import com.google.protobuf.nano.EnumClassNanos.EnumClassNano.MessageScopeEnum;
+import com.google.protobuf.nano.EnumClassNanos.FileScopeEnum;
+import com.google.protobuf.nano.MapTestProto.TestMap;
 import com.google.protobuf.nano.MapTestProto.TestMap.MessageValue;
 import com.google.protobuf.nano.NanoAccessorsOuterClass.TestNanoAccessors;
 import com.google.protobuf.nano.NanoHasOuterClass.TestAllTypesNanoHas;

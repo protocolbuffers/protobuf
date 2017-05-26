@@ -44,6 +44,7 @@
 #include <google/protobuf/descriptor.pb.h>
 #include <google/protobuf/wire_format.h>
 #include <google/protobuf/io/tokenizer.h>
+#include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/stubs/map_util.h>
@@ -248,11 +249,11 @@ bool Parser::ConsumeNumber(double* output, const char* error) {
     input_->Next();
     return true;
   } else if (LookingAt("inf")) {
-    *output = numeric_limits<double>::infinity();
+    *output = std::numeric_limits<double>::infinity();
     input_->Next();
     return true;
   } else if (LookingAt("nan")) {
-    *output = numeric_limits<double>::quiet_NaN();
+    *output = std::numeric_limits<double>::quiet_NaN();
     input_->Next();
     return true;
   } else {
@@ -281,7 +282,7 @@ bool Parser::TryConsumeEndOfDeclaration(
     const char* text, const LocationRecorder* location) {
   if (LookingAt(text)) {
     string leading, trailing;
-    vector<string> detached;
+    std::vector<string> detached;
     input_->NextWithComments(&trailing, &detached, &leading);
 
     // Save the leading comments for next time, and recall the leading comments
@@ -403,7 +404,7 @@ void Parser::LocationRecorder::RecordLegacyLocation(const Message* descriptor,
 
 void Parser::LocationRecorder::AttachComments(
     string* leading, string* trailing,
-    vector<string>* detached_comments) const {
+    std::vector<string>* detached_comments) const {
   GOOGLE_CHECK(!location_->has_leading_comments());
   GOOGLE_CHECK(!location_->has_trailing_comments());
 
@@ -457,6 +458,61 @@ void Parser::SkipRestOfBlock() {
 
 // ===================================================================
 
+bool Parser::ValidateEnum(const EnumDescriptorProto* proto) {
+  bool has_allow_alias = false;
+  bool allow_alias = false;
+
+  for (int i = 0; i < proto->options().uninterpreted_option_size(); i++) {
+    const UninterpretedOption option = proto->options().uninterpreted_option(i);
+    if (option.name_size() > 1) {
+      continue;
+    }
+    if (!option.name(0).is_extension() &&
+        option.name(0).name_part() == "allow_alias") {
+      has_allow_alias = true;
+      if (option.identifier_value() == "true") {
+        allow_alias = true;
+      }
+      break;
+    }
+  }
+
+  if (has_allow_alias && !allow_alias) {
+    string error =
+        "\"" + proto->name() +
+        "\" declares 'option allow_alias = false;' which has no effect. "
+        "Please remove the declaration.";
+    // This needlessly clutters declarations with nops.
+    AddError(error);
+    return false;
+  }
+
+  std::set<int> used_values;
+  bool has_duplicates = false;
+  for (int i = 0; i < proto->value_size(); ++i) {
+    const EnumValueDescriptorProto enum_value = proto->value(i);
+    if (used_values.find(enum_value.number()) != used_values.end()) {
+      has_duplicates = true;
+      break;
+    } else {
+      used_values.insert(enum_value.number());
+    }
+  }
+  if (allow_alias && !has_duplicates) {
+    string error =
+        "\"" + proto->name() +
+        "\" declares support for enum aliases but no enum values share field "
+        "numbers. Please remove the unnecessary 'option allow_alias = true;' "
+        "declaration.";
+    // Generate an error if an enum declares support for duplicate enum values
+    // and does not use it protect future authors.
+    AddError(error);
+    return false;
+  }
+
+  return true;
+}
+
 bool Parser::Parse(io::Tokenizer* input, FileDescriptorProto* file) {
   input_ = input;
   had_errors_ = false;
@@ -469,7 +525,6 @@ bool Parser::Parse(io::Tokenizer* input, FileDescriptorProto* file) {
   SourceCodeInfo source_code_info;
   source_code_info_ = &source_code_info;
 
-  vector<string> top_doc_comments;
   if (LookingAtType(io::Tokenizer::TYPE_START)) {
     // Advance to first token.
     input_->NextWithComments(NULL, &upcoming_detached_comments_,
@@ -488,9 +543,9 @@ bool Parser::Parse(io::Tokenizer* input, FileDescriptorProto* file) {
       // Store the syntax into the file.
       if (file != NULL) file->set_syntax(syntax_identifier_);
     } else if (!stop_after_syntax_identifier_) {
-      GOOGLE_LOG(WARNING) << "No syntax specified for the proto file. "
-                   << "Please use 'syntax = \"proto2\";' or "
-                   << "'syntax = \"proto3\";' to specify a syntax "
+      GOOGLE_LOG(WARNING) << "No syntax specified for the proto file: "
+                   << file->name() << ". Please use 'syntax = \"proto2\";' "
+                   << "or 'syntax = \"proto3\";' to specify a syntax "
                    << "version. (Defaulted to proto2 syntax.)";
       syntax_identifier_ = "proto2";
     }
@@ -515,6 +570,7 @@ bool Parser::Parse(io::Tokenizer* input, FileDescriptorProto* file) {
 
   input_ = NULL;
   source_code_info_ = NULL;
+  assert(file != NULL);
   source_code_info.Swap(file->mutable_source_code_info());
   return !had_errors_;
 }
@@ -938,6 +994,42 @@ void Parser::GenerateMapEntry(const MapField& map_field,
   } else {
     value_field->set_type_name(map_field.value_type_name);
   }
+  // Propagate the "enforce_utf8" option to key and value fields if they
+  // are strings. This helps simplify the implementation of code generators
+  // and also reflection-based parsing code.
+  //
+  // The following definition:
+  //   message Foo {
+  //     map<string, string> value = 1 [enforce_utf8 = false];
+  //   }
+  // will be interpreted as:
+  //   message Foo {
+  //     message ValueEntry {
+  //       option map_entry = true;
+  //       string key = 1 [enforce_utf8 = false];
+  //       string value = 2 [enforce_utf8 = false];
+  //     }
+  //     repeated ValueEntry value = 1 [enforce_utf8 = false];
+  //  }
+  //
+  // TODO(xiaofeng): Remove this when the "enforce_utf8" option is removed
+  // from protocol compiler.
+  for (int i = 0; i < field->options().uninterpreted_option_size(); ++i) {
+    const UninterpretedOption& option =
+        field->options().uninterpreted_option(i);
+    if (option.name_size() == 1 &&
+        option.name(0).name_part() == "enforce_utf8" &&
+        !option.name(0).is_extension()) {
+      if (key_field->type() == FieldDescriptorProto::TYPE_STRING) {
+        key_field->mutable_options()->add_uninterpreted_option()
+            ->CopyFrom(option);
+      }
+      if (value_field->type() == FieldDescriptorProto::TYPE_STRING) {
+        value_field->mutable_options()->add_uninterpreted_option()
+            ->CopyFrom(option);
+      }
+    }
+  }
 }
 
 bool Parser::ParseFieldOptions(FieldDescriptorProto* field,
@@ -956,6 +1048,9 @@ bool Parser::ParseFieldOptions(FieldDescriptorProto* field,
       // We intentionally pass field_location rather than location here, since
       // the default value is not actually an option.
       DO(ParseDefaultAssignment(field, field_location, containing_file));
+    } else if (LookingAt("json_name")) {
+      // Like default value, this "json_name" is not an actual option.
+      DO(ParseJsonName(field, field_location, containing_file));
     } else {
       DO(ParseOption(field->mutable_options(), location,
                      containing_file, OPTION_ASSIGNMENT));
@@ -1102,6 +1197,28 @@ bool Parser::ParseDefaultAssignment(
 
   return true;
 }
+
+bool Parser::ParseJsonName(
+    FieldDescriptorProto* field,
+    const LocationRecorder& field_location,
+    const FileDescriptorProto* containing_file) {
+  if (field->has_json_name()) {
+    AddError("Already set option \"json_name\".");
+    field->clear_json_name();
+  }
+
+  DO(Consume("json_name"));
+  DO(Consume("="));
+
+  LocationRecorder location(field_location,
+                            FieldDescriptorProto::kJsonNameFieldNumber);
+  location.RecordLegacyLocation(
+      field, DescriptorPool::ErrorCollector::OPTION_VALUE);
+  DO(ConsumeString(field->mutable_json_name(),
+                   "Expected string for JSON name."));
+  return true;
+}
+
 
 bool Parser::ParseOptionNamePart(UninterpretedOption* uninterpreted_option,
                                  const LocationRecorder& part_location,
@@ -1513,6 +1630,16 @@ bool Parser::ParseOneof(OneofDescriptorProto* oneof_decl,
       return false;
     }
 
+    if (LookingAt("option")) {
+      LocationRecorder option_location(
+          oneof_location, OneofDescriptorProto::kOptionsFieldNumber);
+      if (!ParseOption(oneof_decl->mutable_options(), option_location,
+                       containing_file, OPTION_STATEMENT)) {
+        return false;
+      }
+      continue;
+    }
+
     // Print a nice error if the user accidentally tries to place a label
     // on an individual member of a oneof.
     if (LookingAt("required") ||
@@ -1565,6 +1692,9 @@ bool Parser::ParseEnumDefinition(EnumDescriptorProto* enum_type,
   }
 
   DO(ParseEnumBlock(enum_type, enum_location, containing_file));
+
+  DO(ValidateEnum(enum_type));
+
   return true;
 }
 
@@ -1959,7 +2089,7 @@ bool SourceLocationTable::Find(
     const Message* descriptor,
     DescriptorPool::ErrorCollector::ErrorLocation location,
     int* line, int* column) const {
-  const pair<int, int>* result =
+  const std::pair<int, int>* result =
       FindOrNull(location_map_, std::make_pair(descriptor, location));
   if (result == NULL) {
     *line   = -1;

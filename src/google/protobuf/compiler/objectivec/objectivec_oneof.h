@@ -61,7 +61,9 @@ class OneofGenerator {
 
   void GeneratePropertyImplementation(io::Printer* printer);
   void GenerateClearFunctionImplementation(io::Printer* printer);
-  void GenerateDescription(io::Printer* printer);
+
+  string DescriptorName(void) const;
+  string HasIndexAsString(void) const;
 
  private:
   const OneofDescriptor* descriptor_;

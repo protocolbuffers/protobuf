@@ -225,10 +225,11 @@ class Message(object):
   # """
   def ListFields(self):
     """Returns a list of (FieldDescriptor, value) tuples for all
-    fields in the message which are not empty.  A singular field is non-empty
-    if HasField() would return true, and a repeated field is non-empty if
-    it contains at least one element.  The fields are ordered by field
-    number"""
+    fields in the message which are not empty.  A message field is
+    non-empty if HasField() would return true. A singular primitive field
+    is non-empty if HasField() would return true in proto2 or it is non zero
+    in proto3. A repeated field is non-empty if it contains at least one
+    element.  The fields are ordered by field number"""
     raise NotImplementedError
 
   def HasField(self, field_name):
@@ -253,6 +254,9 @@ class Message(object):
     raise NotImplementedError
 
   def ClearExtension(self, extension_handle):
+    raise NotImplementedError
+
+  def DiscardUnknownFields(self):
     raise NotImplementedError
 
   def ByteSize(self):

@@ -32,7 +32,6 @@
 //  Based on original Protocol Buffers design by
 //  Sanjay Ghemawat, Jeff Dean, and others.
 
-#include <set>
 #include <map>
 
 #include <google/protobuf/compiler/cpp/cpp_enum.h>
@@ -70,23 +69,22 @@ EnumGenerator::EnumGenerator(const EnumDescriptor* descriptor,
 
 EnumGenerator::~EnumGenerator() {}
 
-void EnumGenerator::GenerateForwardDeclaration(io::Printer* printer) {
+void EnumGenerator::FillForwardDeclaration(
+    std::map<string, const EnumDescriptor*>* enum_names) {
   if (!options_.proto_h) {
     return;
   }
-  map<string, string> vars;
-  vars["classname"] = classname_;
-  printer->Print(vars, "enum $classname$ : int;\n");
-  printer->Print(vars, "bool $classname$_IsValid(int value);\n");
+  (*enum_names)[classname_] = descriptor_;
 }
 
 void EnumGenerator::GenerateDefinition(io::Printer* printer) {
-  map<string, string> vars;
+  std::map<string, string> vars;
   vars["classname"] = classname_;
   vars["short_name"] = descriptor_->name();
   vars["enumbase"] = classname_ + (options_.proto_h ? " : int" : "");
 
   printer->Print(vars, "enum $enumbase$ {\n");
+  printer->Annotate("enumbase", descriptor_);
   printer->Indent();
 
   const EnumValueDescriptor* min_value = descriptor_->value(0);
@@ -100,9 +98,11 @@ void EnumGenerator::GenerateDefinition(io::Printer* printer) {
     vars["number"] = Int32ToString(descriptor_->value(i)->number());
     vars["prefix"] = (descriptor_->containing_type() == NULL) ?
       "" : classname_ + "_";
+    vars["deprecation"] = descriptor_->value(i)->options().deprecated() ?
+        " PROTOBUF_DEPRECATED" : "";
 
     if (i > 0) printer->Print(",\n");
-    printer->Print(vars, "$prefix$$name$ = $number$");
+    printer->Print(vars, "$prefix$$name$$deprecation$ = $number$");
 
     if (descriptor_->value(i)->number() < min_value->number()) {
       min_value = descriptor_->value(i);
@@ -144,15 +144,16 @@ void EnumGenerator::GenerateDefinition(io::Printer* printer) {
       "$prefix$$short_name$_MAX + 1;\n\n");
   }
 
-  if (HasDescriptorMethods(descriptor_->file())) {
+  if (HasDescriptorMethods(descriptor_->file(), options_)) {
     printer->Print(vars,
       "$dllexport$const ::google::protobuf::EnumDescriptor* $classname$_descriptor();\n");
     // The _Name and _Parse methods
-    printer->Print(vars,
-      "inline const ::std::string& $classname$_Name($classname$ value) {\n"
-      "  return ::google::protobuf::internal::NameOfEnum(\n"
-      "    $classname$_descriptor(), value);\n"
-      "}\n");
+    printer->Print(
+        vars,
+        "inline const ::std::string& $classname$_Name($classname$ value) {\n"
+        "  return ::google::protobuf::internal::NameOfEnum(\n"
+        "    $classname$_descriptor(), value);\n"
+        "}\n");
     printer->Print(vars,
       "inline bool $classname$_Parse(\n"
       "    const ::std::string& name, $classname$* value) {\n"
@@ -168,7 +169,7 @@ GenerateGetEnumDescriptorSpecializations(io::Printer* printer) {
       "template <> struct is_proto_enum< $classname$> : ::google::protobuf::internal::true_type "
       "{};\n",
       "classname", ClassName(descriptor_, true));
-  if (HasDescriptorMethods(descriptor_->file())) {
+  if (HasDescriptorMethods(descriptor_->file(), options_)) {
     printer->Print(
       "template <>\n"
       "inline const EnumDescriptor* GetEnumDescriptor< $classname$>() {\n"
@@ -179,15 +180,19 @@ GenerateGetEnumDescriptorSpecializations(io::Printer* printer) {
 }
 
 void EnumGenerator::GenerateSymbolImports(io::Printer* printer) {
-  map<string, string> vars;
+  std::map<string, string> vars;
   vars["nested_name"] = descriptor_->name();
   vars["classname"] = classname_;
+  vars["constexpr"] = options_.proto_h ? "constexpr " : "";
   printer->Print(vars, "typedef $classname$ $nested_name$;\n");
 
   for (int j = 0; j < descriptor_->value_count(); j++) {
     vars["tag"] = EnumValueName(descriptor_->value(j));
+    vars["deprecated_attr"] = descriptor_->value(j)->options().deprecated() ?
+      "GOOGLE_PROTOBUF_DEPRECATED_ATTR " : "";
     printer->Print(vars,
-      "static const $nested_name$ $tag$ = $classname$_$tag$;\n");
+      "$deprecated_attr$static $constexpr$const $nested_name$ $tag$ =\n"
+      "  $classname$_$tag$;\n");
   }
 
   printer->Print(vars,
@@ -204,16 +209,18 @@ void EnumGenerator::GenerateSymbolImports(io::Printer* printer) {
       "  $classname$_$nested_name$_ARRAYSIZE;\n");
   }
 
-  if (HasDescriptorMethods(descriptor_->file())) {
+  if (HasDescriptorMethods(descriptor_->file(), options_)) {
     printer->Print(vars,
       "static inline const ::google::protobuf::EnumDescriptor*\n"
       "$nested_name$_descriptor() {\n"
       "  return $classname$_descriptor();\n"
       "}\n");
     printer->Print(vars,
-      "static inline const ::std::string& $nested_name$_Name($nested_name$ value) {\n"
-      "  return $classname$_Name(value);\n"
-      "}\n");
+                   "static inline const ::std::string& "
+                   "$nested_name$_Name($nested_name$ value) {"
+                   "\n"
+                   "  return $classname$_Name(value);\n"
+                   "}\n");
     printer->Print(vars,
       "static inline bool $nested_name$_Parse(const ::std::string& name,\n"
       "    $nested_name$* value) {\n"
@@ -222,49 +229,55 @@ void EnumGenerator::GenerateSymbolImports(io::Printer* printer) {
   }
 }
 
-void EnumGenerator::GenerateDescriptorInitializer(
-    io::Printer* printer, int index) {
-  map<string, string> vars;
-  vars["classname"] = classname_;
-  vars["index"] = SimpleItoa(index);
+void EnumGenerator::GenerateDescriptorInitializer(io::Printer* printer) {
+  std::map<string, string> vars;
+  vars["index"] = SimpleItoa(descriptor_->index());
+  vars["index_in_metadata"] = SimpleItoa(index_in_metadata_);
 
   if (descriptor_->containing_type() == NULL) {
     printer->Print(vars,
-      "$classname$_descriptor_ = file->enum_type($index$);\n");
+                   "file_level_enum_descriptors[$index_in_metadata$] = "
+                   "file->enum_type($index$);\n");
   } else {
     vars["parent"] = ClassName(descriptor_->containing_type(), false);
     printer->Print(vars,
-      "$classname$_descriptor_ = $parent$_descriptor_->enum_type($index$);\n");
+                   "file_level_enum_descriptors[$index_in_metadata$] = "
+                   "$parent$_descriptor->enum_type($index$);\n");
   }
 }
 
 void EnumGenerator::GenerateMethods(io::Printer* printer) {
-  map<string, string> vars;
+  std::map<string, string> vars;
   vars["classname"] = classname_;
+  vars["index_in_metadata"] = SimpleItoa(index_in_metadata_);
+  vars["constexpr"] = options_.proto_h ? "constexpr " : "";
+  vars["file_namespace"] = FileLevelNamespace(descriptor_->file()->name());
 
-  if (HasDescriptorMethods(descriptor_->file())) {
-    printer->Print(vars,
-      "const ::google::protobuf::EnumDescriptor* $classname$_descriptor() {\n"
-      "  protobuf_AssignDescriptorsOnce();\n"
-      "  return $classname$_descriptor_;\n"
-      "}\n");
+  if (HasDescriptorMethods(descriptor_->file(), options_)) {
+    printer->Print(
+        vars,
+        "const ::google::protobuf::EnumDescriptor* $classname$_descriptor() {\n"
+        "  $file_namespace$::protobuf_AssignDescriptorsOnce();\n"
+        "  return "
+        "$file_namespace$::file_level_enum_descriptors[$index_in_metadata$];\n"
+        "}\n");
   }
 
   printer->Print(vars,
     "bool $classname$_IsValid(int value) {\n"
-    "  switch(value) {\n");
+    "  switch (value) {\n");
 
   // Multiple values may have the same number.  Make sure we only cover
   // each number once by first constructing a set containing all valid
   // numbers, then printing a case statement for each element.
 
-  set<int> numbers;
+  std::set<int> numbers;
   for (int j = 0; j < descriptor_->value_count(); j++) {
     const EnumValueDescriptor* value = descriptor_->value(j);
     numbers.insert(value->number());
   }
 
-  for (set<int>::iterator iter = numbers.begin();
+  for (std::set<int>::iterator iter = numbers.begin();
        iter != numbers.end(); ++iter) {
     printer->Print(
       "    case $number$:\n",
@@ -282,16 +295,16 @@ void EnumGenerator::GenerateMethods(io::Printer* printer) {
   if (descriptor_->containing_type() != NULL) {
     // We need to "define" the static constants which were declared in the
     // header, to give the linker a place to put them.  Or at least the C++
-    // standard says we have to.  MSVC actually insists tha we do _not_ define
-    // them again in the .cc file.
-    printer->Print("#ifndef _MSC_VER\n");
+    // standard says we have to.  MSVC actually insists that we do _not_ define
+    // them again in the .cc file, prior to VC++ 2015.
+    printer->Print("#if !defined(_MSC_VER) || _MSC_VER >= 1900\n");
 
     vars["parent"] = ClassName(descriptor_->containing_type(), false);
     vars["nested_name"] = descriptor_->name();
     for (int i = 0; i < descriptor_->value_count(); i++) {
       vars["value"] = EnumValueName(descriptor_->value(i));
       printer->Print(vars,
-        "const $classname$ $parent$::$value$;\n");
+        "$constexpr$const $classname$ $parent$::$value$;\n");
     }
     printer->Print(vars,
       "const $classname$ $parent$::$nested_name$_MIN;\n"
@@ -301,7 +314,7 @@ void EnumGenerator::GenerateMethods(io::Printer* printer) {
         "const int $parent$::$nested_name$_ARRAYSIZE;\n");
     }
 
-    printer->Print("#endif  // _MSC_VER\n");
+    printer->Print("#endif  // !defined(_MSC_VER) || _MSC_VER >= 1900\n");
   }
 }
 

@@ -28,10 +28,6 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-# Keep it Python2.5 compatible for GAE.
-#
-# Copyright 2007 Google Inc. All Rights Reserved.
-#
 # This code is meant to work on Python 2.4 and above only.
 #
 # TODO(robinson): Helpers for verbose, common checks like seeing if a
@@ -54,20 +50,12 @@ this file*.
 
 __author__ = 'robinson@google.com (Will Robinson)'
 
-import sys
-if sys.version_info[0] < 3:
-  try:
-    from cStringIO import StringIO as BytesIO
-  except ImportError:
-    from StringIO import StringIO as BytesIO
-  import copy_reg as copyreg
-  _basestring = basestring
-else:
-  from io import BytesIO
-  import copyreg
-  _basestring = str
+from io import BytesIO
 import struct
+import sys
 import weakref
+
+import six
 
 # We use "as" to avoid name collisions with variables.
 from google.protobuf.internal import containers
@@ -76,43 +64,113 @@ from google.protobuf.internal import encoder
 from google.protobuf.internal import enum_type_wrapper
 from google.protobuf.internal import message_listener as message_listener_mod
 from google.protobuf.internal import type_checkers
+from google.protobuf.internal import well_known_types
 from google.protobuf.internal import wire_format
 from google.protobuf import descriptor as descriptor_mod
 from google.protobuf import message as message_mod
-from google.protobuf import symbol_database
 from google.protobuf import text_format
 
 _FieldDescriptor = descriptor_mod.FieldDescriptor
+_AnyFullTypeName = 'google.protobuf.Any'
 
 
-def NewMessage(bases, descriptor, dictionary):
-  _AddClassAttributesForNestedExtensions(descriptor, dictionary)
-  _AddSlots(descriptor, dictionary)
-  return bases
+class GeneratedProtocolMessageType(type):
 
+  """Metaclass for protocol message classes created at runtime from Descriptors.
 
-def InitMessage(descriptor, cls):
-  cls._decoders_by_tag = {}
-  cls._extensions_by_name = {}
-  cls._extensions_by_number = {}
-  if (descriptor.has_options and
-      descriptor.GetOptions().message_set_wire_format):
-    cls._decoders_by_tag[decoder.MESSAGE_SET_ITEM_TAG] = (
-        decoder.MessageSetItemDecoder(cls._extensions_by_number), None)
+  We add implementations for all methods described in the Message class.  We
+  also create properties to allow getting/setting all fields in the protocol
+  message.  Finally, we create slots to prevent users from accidentally
+  "setting" nonexistent fields in the protocol message, which then wouldn't get
+  serialized / deserialized properly.
 
-  # Attach stuff to each FieldDescriptor for quick lookup later on.
-  for field in descriptor.fields:
-    _AttachFieldHelpers(cls, field)
+  The protocol compiler currently uses this metaclass to create protocol
+  message classes at runtime.  Clients can also manually create their own
+  classes at runtime, as in this example:
 
-  descriptor._concrete_class = cls  # pylint: disable=protected-access
-  _AddEnumValues(descriptor, cls)
-  _AddInitMethod(descriptor, cls)
-  _AddPropertiesForFields(descriptor, cls)
-  _AddPropertiesForExtensions(descriptor, cls)
-  _AddStaticMethods(cls)
-  _AddMessageMethods(descriptor, cls)
-  _AddPrivateHelperMethods(descriptor, cls)
-  copyreg.pickle(cls, lambda obj: (cls, (), obj.__getstate__()))
+  mydescriptor = Descriptor(.....)
+  factory = symbol_database.Default()
+  factory.pool.AddDescriptor(mydescriptor)
+  MyProtoClass = factory.GetPrototype(mydescriptor)
+  myproto_instance = MyProtoClass()
+  myproto.foo_field = 23
+  ...
+  """
+
+  # Must be consistent with the protocol-compiler code in
+  # proto2/compiler/internal/generator.*.
+  _DESCRIPTOR_KEY = 'DESCRIPTOR'
+
+  def __new__(cls, name, bases, dictionary):
+    """Custom allocation for runtime-generated class types.
+
+    We override __new__ because this is apparently the only place
+    where we can meaningfully set __slots__ on the class we're creating(?).
+    (The interplay between metaclasses and slots is not very well-documented).
+
+    Args:
+      name: Name of the class (ignored, but required by the
+        metaclass protocol).
+      bases: Base classes of the class we're constructing.
+        (Should be message.Message).  We ignore this field, but
+        it's required by the metaclass protocol
+      dictionary: The class dictionary of the class we're
+        constructing.  dictionary[_DESCRIPTOR_KEY] must contain
+        a Descriptor object describing this protocol message
+        type.
+
+    Returns:
+      Newly-allocated class.
+    """
+    descriptor = dictionary[GeneratedProtocolMessageType._DESCRIPTOR_KEY]
+    if descriptor.full_name in well_known_types.WKTBASES:
+      bases += (well_known_types.WKTBASES[descriptor.full_name],)
+    _AddClassAttributesForNestedExtensions(descriptor, dictionary)
+    _AddSlots(descriptor, dictionary)
+
+    superclass = super(GeneratedProtocolMessageType, cls)
+    new_class = superclass.__new__(cls, name, bases, dictionary)
+    return new_class
+
+  def __init__(cls, name, bases, dictionary):
+    """Here we perform the majority of our work on the class.
+    We add enum getters, an __init__ method, implementations
+    of all Message methods, and properties for all fields
+    in the protocol type.
+
+    Args:
+      name: Name of the class (ignored, but required by the
+        metaclass protocol).
+      bases: Base classes of the class we're constructing.
+        (Should be message.Message).  We ignore this field, but
+        it's required by the metaclass protocol
+      dictionary: The class dictionary of the class we're
+        constructing.  dictionary[_DESCRIPTOR_KEY] must contain
+        a Descriptor object describing this protocol message
+        type.
+    """
+    descriptor = dictionary[GeneratedProtocolMessageType._DESCRIPTOR_KEY]
+    cls._decoders_by_tag = {}
+    if (descriptor.has_options and
+        descriptor.GetOptions().message_set_wire_format):
+      cls._decoders_by_tag[decoder.MESSAGE_SET_ITEM_TAG] = (
+          decoder.MessageSetItemDecoder(descriptor), None)
+
+    # Attach stuff to each FieldDescriptor for quick lookup later on.
+    for field in descriptor.fields:
+      _AttachFieldHelpers(cls, field)
+
+    descriptor._concrete_class = cls  # pylint: disable=protected-access
+    _AddEnumValues(descriptor, cls)
+    _AddInitMethod(descriptor, cls)
+    _AddPropertiesForFields(descriptor, cls)
+    _AddPropertiesForExtensions(descriptor, cls)
+    _AddStaticMethods(cls)
+    _AddMessageMethods(descriptor, cls)
+    _AddPrivateHelperMethods(descriptor, cls)
+
+    superclass = super(GeneratedProtocolMessageType, cls)
+    superclass.__init__(name, bases, dictionary)
 
 
 # Stateless helpers for GeneratedProtocolMessageType below.
@@ -198,7 +256,6 @@ def _IsMessageSetExtension(field):
           field.containing_type.has_options and
           field.containing_type.GetOptions().message_set_wire_format and
           field.type == _FieldDescriptor.TYPE_MESSAGE and
-          field.message_type == field.extension_scope and
           field.label == _FieldDescriptor.LABEL_OPTIONAL)
 
 
@@ -231,7 +288,8 @@ def _AttachFieldHelpers(cls, field_descriptor):
 
   if is_map_entry:
     field_encoder = encoder.MapEncoder(field_descriptor)
-    sizer = encoder.MapSizer(field_descriptor)
+    sizer = encoder.MapSizer(field_descriptor,
+                             _IsMessageMapField(field_descriptor))
   elif _IsMessageSetExtension(field_descriptor):
     field_encoder = encoder.MessageSetItemEncoder(field_descriptor.number)
     sizer = encoder.MessageSetItemSizer(field_descriptor.number)
@@ -281,7 +339,7 @@ def _AttachFieldHelpers(cls, field_descriptor):
 
 def _AddClassAttributesForNestedExtensions(descriptor, dictionary):
   extension_dict = descriptor.extensions_by_name
-  for extension_name, extension_field in extension_dict.iteritems():
+  for extension_name, extension_field in extension_dict.items():
     assert extension_name not in dictionary
     dictionary[extension_name] = extension_field
 
@@ -312,13 +370,15 @@ def _GetInitializeDefaultForMap(field):
   if _IsMessageMapField(field):
     def MakeMessageMapDefault(message):
       return containers.MessageMap(
-          message._listener_for_children, value_field.message_type, key_checker)
+          message._listener_for_children, value_field.message_type, key_checker,
+          field.message_type)
     return MakeMessageMapDefault
   else:
     value_checker = type_checkers.GetTypeChecker(value_field)
     def MakePrimitiveMapDefault(message):
       return containers.ScalarMap(
-          message._listener_for_children, key_checker, value_checker)
+          message._listener_for_children, key_checker, value_checker,
+          field.message_type)
     return MakePrimitiveMapDefault
 
 def _DefaultValueConstructorForField(field):
@@ -362,9 +422,10 @@ def _DefaultValueConstructorForField(field):
     message_type = field.message_type
     def MakeSubMessageDefault(message):
       result = message_type._concrete_class()
-      result._SetListener(message._listener_for_children)
-      if field.containing_oneof:
-        message._UpdateOneofState(field)
+      result._SetListener(
+          _OneofListener(message, field)
+          if field.containing_oneof is not None
+          else message._listener_for_children)
       return result
     return MakeSubMessageDefault
 
@@ -383,7 +444,7 @@ def _ReraiseTypeErrorWithFieldName(message_name, field_name):
     exc = TypeError('%s for field %s.%s' % (str(exc), message_name, field_name))
 
   # re-raise possibly-amended exception with original traceback:
-  raise type(exc)(exc, sys.exc_info()[2])
+  six.reraise(type(exc), exc, sys.exc_info()[2])
 
 
 def _AddInitMethod(message_descriptor, cls):
@@ -396,7 +457,7 @@ def _AddInitMethod(message_descriptor, cls):
     enum_type with the same name.  If the value is not a string, it's
     returned as-is.  (No conversion or bounds-checking is done.)
     """
-    if isinstance(value, _basestring):
+    if isinstance(value, six.string_types):
       try:
         return enum_type.values_by_name[value].number
       except KeyError:
@@ -418,11 +479,14 @@ def _AddInitMethod(message_descriptor, cls):
     self._is_present_in_parent = False
     self._listener = message_listener_mod.NullMessageListener()
     self._listener_for_children = _Listener(self)
-    for field_name, field_value in kwargs.iteritems():
+    for field_name, field_value in kwargs.items():
       field = _GetFieldByName(message_descriptor, field_name)
       if field is None:
         raise TypeError("%s() got an unexpected keyword argument '%s'" %
                         (message_descriptor.name, field_name))
+      if field_value is None:
+        # field=None is the same as no field at all.
+        continue
       if field.label == _FieldDescriptor.LABEL_REPEATED:
         copy = field._default_constructor(self)
         if field.cpp_type == _FieldDescriptor.CPPTYPE_MESSAGE:  # Composite
@@ -479,7 +543,8 @@ def _GetFieldByName(message_descriptor, field_name):
   try:
     return message_descriptor.fields_by_name[field_name]
   except KeyError:
-    raise ValueError('Protocol message has no "%s" field.' % field_name)
+    raise ValueError('Protocol message %s has no "%s" field.' %
+                     (message_descriptor.name, field_name))
 
 
 def _AddPropertiesForFields(descriptor, cls):
@@ -634,21 +699,11 @@ def _AddPropertiesForNonRepeatedCompositeField(field, cls):
   proto_field_name = field.name
   property_name = _PropertyName(proto_field_name)
 
-  # TODO(komarek): Can anyone explain to me why we cache the message_type this
-  # way, instead of referring to field.message_type inside of getter(self)?
-  # What if someone sets message_type later on (which makes for simpler
-  # dyanmic proto descriptor and class creation code).
-  message_type = field.message_type
-
   def getter(self):
     field_value = self._fields.get(field)
     if field_value is None:
       # Construct a new object to represent this field.
-      field_value = message_type._concrete_class()  # use field.message_type?
-      field_value._SetListener(
-          _OneofListener(self, field)
-          if field.containing_oneof is not None
-          else self._listener_for_children)
+      field_value = field._default_constructor(self)
 
       # Atomically check if another thread has preempted us and, if not, swap
       # in the new object we just created.  If someone has preempted us, we
@@ -675,36 +730,25 @@ def _AddPropertiesForNonRepeatedCompositeField(field, cls):
 def _AddPropertiesForExtensions(descriptor, cls):
   """Adds properties for all fields in this protocol message type."""
   extension_dict = descriptor.extensions_by_name
-  for extension_name, extension_field in extension_dict.iteritems():
+  for extension_name, extension_field in extension_dict.items():
     constant_name = extension_name.upper() + "_FIELD_NUMBER"
     setattr(cls, constant_name, extension_field.number)
 
+  # TODO(amauryfa): Migrate all users of these attributes to functions like
+  #   pool.FindExtensionByNumber(descriptor).
+  if descriptor.file is not None:
+    # TODO(amauryfa): Use cls.MESSAGE_FACTORY.pool when available.
+    pool = descriptor.file.pool
+    cls._extensions_by_number = pool._extensions_by_number[descriptor]
+    cls._extensions_by_name = pool._extensions_by_name[descriptor]
 
 def _AddStaticMethods(cls):
   # TODO(robinson): This probably needs to be thread-safe(?)
   def RegisterExtension(extension_handle):
     extension_handle.containing_type = cls.DESCRIPTOR
+    # TODO(amauryfa): Use cls.MESSAGE_FACTORY.pool when available.
+    cls.DESCRIPTOR.file.pool.AddExtensionDescriptor(extension_handle)
     _AttachFieldHelpers(cls, extension_handle)
-
-    # Try to insert our extension, failing if an extension with the same number
-    # already exists.
-    actual_handle = cls._extensions_by_number.setdefault(
-        extension_handle.number, extension_handle)
-    if actual_handle is not extension_handle:
-      raise AssertionError(
-          'Extensions "%s" and "%s" both try to extend message type "%s" with '
-          'field number %d.' %
-          (extension_handle.full_name, actual_handle.full_name,
-           cls.DESCRIPTOR.full_name, extension_handle.number))
-
-    cls._extensions_by_name[extension_handle.full_name] = extension_handle
-
-    handle = extension_handle  # avoid line wrapping
-    if _IsMessageSetExtension(handle):
-      # MessageSet extension.  Also register under type name.
-      cls._extensions_by_name[
-          extension_handle.message_type.full_name] = extension_handle
-
   cls.RegisterExtension = staticmethod(RegisterExtension)
 
   def FromString(s):
@@ -730,7 +774,7 @@ def _AddListFieldsMethod(message_descriptor, cls):
   """Helper for _AddMessageMethods()."""
 
   def ListFields(self):
-    all_fields = [item for item in self._fields.iteritems() if _IsPresent(item)]
+    all_fields = [item for item in self._fields.items() if _IsPresent(item)]
     all_fields.sort(key = lambda item: item[0].number)
     return all_fields
 
@@ -794,9 +838,15 @@ def _AddClearFieldMethod(message_descriptor, cls):
         else:
           return
       except KeyError:
-        raise ValueError('Protocol message has no "%s" field.' % field_name)
+        raise ValueError('Protocol message %s() has no "%s" field.' %
+                         (message_descriptor.name, field_name))
 
     if field in self._fields:
+      # To match the C++ implementation, we need to invalidate iterators
+      # for map fields when ClearField() happens.
+      if hasattr(self._fields[field], 'InvalidateIterators'):
+        self._fields[field].InvalidateIterators()
+
       # Note:  If the field is a sub-message, its listener will still point
       #   at us.  That's fine, because the worst than can happen is that it
       #   will call _Modified() and invalidate our byte size.  Big deal.
@@ -825,17 +875,6 @@ def _AddClearExtensionMethod(cls):
   cls.ClearExtension = ClearExtension
 
 
-def _AddClearMethod(message_descriptor, cls):
-  """Helper for _AddMessageMethods()."""
-  def Clear(self):
-    # Clear fields.
-    self._fields = {}
-    self._unknown_fields = ()
-    self._oneofs = {}
-    self._Modified()
-  cls.Clear = Clear
-
-
 def _AddHasExtensionMethod(cls):
   """Helper for _AddMessageMethods()."""
   def HasExtension(self, extension_handle):
@@ -850,26 +889,45 @@ def _AddHasExtensionMethod(cls):
       return extension_handle in self._fields
   cls.HasExtension = HasExtension
 
-def _UnpackAny(msg):
+def _InternalUnpackAny(msg):
+  """Unpacks Any message and returns the unpacked message.
+
+  This internal method is different from public Any Unpack method which takes
+  the target message as argument. _InternalUnpackAny method does not have
+  target message type and need to find the message type in descriptor pool.
+
+  Args:
+    msg: An Any message to be unpacked.
+
+  Returns:
+    The unpacked message.
+  """
+  # TODO(amauryfa): Don't use the factory of generated messages.
+  # To make Any work with custom factories, use the message factory of the
+  # parent message.
+  # pylint: disable=g-import-not-at-top
+  from google.protobuf import symbol_database
+  factory = symbol_database.Default()
+
   type_url = msg.type_url
-  db = symbol_database.Default()
 
   if not type_url:
     return None
 
   # TODO(haberman): For now we just strip the hostname.  Better logic will be
   # required.
-  type_name = type_url.split("/")[-1]
-  descriptor = db.pool.FindMessageTypeByName(type_name)
+  type_name = type_url.split('/')[-1]
+  descriptor = factory.pool.FindMessageTypeByName(type_name)
 
   if descriptor is None:
     return None
 
-  message_class = db.GetPrototype(descriptor)
+  message_class = factory.GetPrototype(descriptor)
   message = message_class()
 
   message.ParseFromString(msg.value)
   return message
+
 
 def _AddEqualsMethod(message_descriptor, cls):
   """Helper for _AddMessageMethods()."""
@@ -881,9 +939,9 @@ def _AddEqualsMethod(message_descriptor, cls):
     if self is other:
       return True
 
-    if self.DESCRIPTOR.full_name == "google.protobuf.Any":
-      any_a = _UnpackAny(self)
-      any_b = _UnpackAny(other)
+    if self.DESCRIPTOR.full_name == _AnyFullTypeName:
+      any_a = _InternalUnpackAny(self)
+      any_b = _InternalUnpackAny(other)
       if any_a and any_b:
         return any_a == any_b
 
@@ -908,22 +966,19 @@ def _AddStrMethod(message_descriptor, cls):
   cls.__str__ = __str__
 
 
+def _AddReprMethod(message_descriptor, cls):
+  """Helper for _AddMessageMethods()."""
+  def __repr__(self):
+    return text_format.MessageToString(self)
+  cls.__repr__ = __repr__
+
+
 def _AddUnicodeMethod(unused_message_descriptor, cls):
   """Helper for _AddMessageMethods()."""
 
   def __unicode__(self):
     return text_format.MessageToString(self, as_utf8=True).decode('utf-8')
   cls.__unicode__ = __unicode__
-
-
-def _AddSetListenerMethod(cls):
-  """Helper for _AddMessageMethods()."""
-  def SetListener(self, listener):
-    if listener is None:
-      self._listener = message_listener_mod.NullMessageListener()
-    else:
-      self._listener = listener
-  cls._SetListener = SetListener
 
 
 def _BytesForNonRepeatedElement(value, field_number, field_type):
@@ -1121,14 +1176,14 @@ def _AddIsInitializedMethod(message_descriptor, cls):
           if _IsMessageMapField(field):
             for key in value:
               element = value[key]
-              prefix = "%s[%d]." % (name, key)
+              prefix = "%s[%s]." % (name, key)
               sub_errors = element.FindInitializationErrors()
               errors += [prefix + error for error in sub_errors]
           else:
             # ScalarMaps can't have any initialization errors.
             pass
         elif field.label == _FieldDescriptor.LABEL_REPEATED:
-          for i in xrange(len(value)):
+          for i in range(len(value)):
             element = value[i]
             prefix = "%s[%d]." % (name, i)
             sub_errors = element.FindInitializationErrors()
@@ -1151,14 +1206,14 @@ def _AddMergeFromMethod(cls):
     if not isinstance(msg, cls):
       raise TypeError(
           "Parameter to MergeFrom() must be instance of same class: "
-          "expected %s got %s." % (cls.__name__, type(msg).__name__))
+          'expected %s got %s.' % (cls.__name__, msg.__class__.__name__))
 
     assert msg is not self
     self._Modified()
 
     fields = self._fields
 
-    for field, value in msg._fields.iteritems():
+    for field, value in msg._fields.items():
       if field.label == LABEL_REPEATED:
         field_value = fields.get(field)
         if field_value is None:
@@ -1173,8 +1228,6 @@ def _AddMergeFromMethod(cls):
             # Construct a new object to represent this field.
             field_value = field._default_constructor(self)
             fields[field] = field_value
-            if field.containing_oneof:
-              self._UpdateOneofState(field)
           field_value.MergeFrom(value)
       else:
         self._fields[field] = value
@@ -1207,6 +1260,38 @@ def _AddWhichOneofMethod(message_descriptor, cls):
   cls.WhichOneof = WhichOneof
 
 
+def _AddReduceMethod(cls):
+  def __reduce__(self):  # pylint: disable=invalid-name
+    return (type(self), (), self.__getstate__())
+  cls.__reduce__ = __reduce__
+
+
+def _Clear(self):
+  # Clear fields.
+  self._fields = {}
+  self._unknown_fields = ()
+  self._oneofs = {}
+  self._Modified()
+
+
+def _DiscardUnknownFields(self):
+  self._unknown_fields = []
+  for field, value in self.ListFields():
+    if field.cpp_type == _FieldDescriptor.CPPTYPE_MESSAGE:
+      if field.label == _FieldDescriptor.LABEL_REPEATED:
+        for sub_message in value:
+          sub_message.DiscardUnknownFields()
+      else:
+        value.DiscardUnknownFields()
+
+
+def _SetListener(self, listener):
+  if listener is None:
+    self._listener = message_listener_mod.NullMessageListener()
+  else:
+    self._listener = listener
+
+
 def _AddMessageMethods(message_descriptor, cls):
   """Adds implementations of all Message methods to cls."""
   _AddListFieldsMethod(message_descriptor, cls)
@@ -1215,11 +1300,10 @@ def _AddMessageMethods(message_descriptor, cls):
   if message_descriptor.is_extendable:
     _AddClearExtensionMethod(cls)
     _AddHasExtensionMethod(cls)
-  _AddClearMethod(message_descriptor, cls)
   _AddEqualsMethod(message_descriptor, cls)
   _AddStrMethod(message_descriptor, cls)
+  _AddReprMethod(message_descriptor, cls)
   _AddUnicodeMethod(message_descriptor, cls)
-  _AddSetListenerMethod(cls)
   _AddByteSizeMethod(message_descriptor, cls)
   _AddSerializeToStringMethod(message_descriptor, cls)
   _AddSerializePartialToStringMethod(message_descriptor, cls)
@@ -1227,6 +1311,12 @@ def _AddMessageMethods(message_descriptor, cls):
   _AddIsInitializedMethod(message_descriptor, cls)
   _AddMergeFromMethod(cls)
   _AddWhichOneofMethod(message_descriptor, cls)
+  _AddReduceMethod(cls)
+  # Adds methods which do not depend on cls.
+  cls.Clear = _Clear
+  cls.DiscardUnknownFields = _DiscardUnknownFields
+  cls._SetListener = _SetListener
+
 
 def _AddPrivateHelperMethods(message_descriptor, cls):
   """Adds implementation of private helper methods to cls."""
@@ -1435,3 +1525,14 @@ class _ExtensionDict(object):
       Extension field descriptor.
     """
     return self._extended_message._extensions_by_name.get(name, None)
+
+  def _FindExtensionByNumber(self, number):
+    """Tries to find a known extension with the field number.
+
+    Args:
+      number: Extension field number.
+
+    Returns:
+      Extension field descriptor.
+    """
+    return self._extended_message._extensions_by_number.get(number, None)

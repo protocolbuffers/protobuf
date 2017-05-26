@@ -56,7 +56,7 @@ void SetMessageVariables(const FieldDescriptor* descriptor,
                          int builderBitIndex,
                          const FieldGeneratorInfo* info,
                          ClassNameResolver* name_resolver,
-                         map<string, string>* variables) {
+                         std::map<string, string>* variables) {
   SetCommonFieldVariables(descriptor, info, variables);
 
   (*variables)["type"] =
@@ -70,8 +70,11 @@ void SetMessageVariables(const FieldDescriptor* descriptor,
   // by the proto compiler
   (*variables)["deprecation"] = descriptor->options().deprecated()
       ? "@java.lang.Deprecated " : "";
-  (*variables)["on_changed"] =
-      HasDescriptorMethods(descriptor->containing_type()) ? "onChanged();" : "";
+  (*variables)["on_changed"] = "onChanged();";
+  (*variables)["ver"] = GeneratedCodeVersionSuffix();
+  (*variables)["get_parser"] =
+      ExposePublicParser(descriptor->message_type()->file())
+          ? "PARSER" : "parser()";
 
   if (SupportFieldPresence(descriptor->file())) {
     // For singular messages and builders, one bit is used for the hasField bit.
@@ -253,7 +256,7 @@ GenerateBuilderMembers(io::Printer* printer) const {
   printer->Print(variables_,
       // If this builder is non-null, it is used and the other fields are
       // ignored.
-      "private com.google.protobuf.SingleFieldBuilder<\n"
+      "private com.google.protobuf.SingleFieldBuilder$ver$<\n"
       "    $type$, $type$.Builder, $type$OrBuilder> $name$Builder_;"
       "\n");
 
@@ -375,11 +378,11 @@ GenerateBuilderMembers(io::Printer* printer) const {
     "}\n");
   WriteFieldDocComment(printer, descriptor_);
   printer->Print(variables_,
-    "private com.google.protobuf.SingleFieldBuilder<\n"
+    "private com.google.protobuf.SingleFieldBuilder$ver$<\n"
     "    $type$, $type$.Builder, $type$OrBuilder> \n"
     "    get$capitalized_name$FieldBuilder() {\n"
     "  if ($name$Builder_ == null) {\n"
-    "    $name$Builder_ = new com.google.protobuf.SingleFieldBuilder<\n"
+    "    $name$Builder_ = new com.google.protobuf.SingleFieldBuilder$ver$<\n"
     "        $type$, $type$.Builder, $type$OrBuilder>(\n"
     "            get$capitalized_name$(),\n"
     "            getParentForChildren(),\n"
@@ -452,11 +455,11 @@ GenerateParsingCode(io::Printer* printer) const {
 
   if (GetType(descriptor_) == FieldDescriptor::TYPE_GROUP) {
     printer->Print(variables_,
-      "$name$_ = input.readGroup($number$, $type$.PARSER,\n"
+      "$name$_ = input.readGroup($number$, $type$.$get_parser$,\n"
       "    extensionRegistry);\n");
   } else {
     printer->Print(variables_,
-      "$name$_ = input.readMessage($type$.PARSER, extensionRegistry);\n");
+      "$name$_ = input.readMessage($type$.$get_parser$, extensionRegistry);\n");
   }
 
   printer->Print(variables_,
@@ -561,7 +564,7 @@ GenerateBuilderMembers(io::Printer* printer) const {
   printer->Print(variables_,
     // If this builder is non-null, it is used and the other fields are
     // ignored.
-    "private com.google.protobuf.SingleFieldBuilder<\n"
+    "private com.google.protobuf.SingleFieldBuilder$ver$<\n"
     "    $type$, $type$.Builder, $type$OrBuilder> $name$Builder_;"
     "\n");
 
@@ -684,14 +687,14 @@ GenerateBuilderMembers(io::Printer* printer) const {
     "}\n");
   WriteFieldDocComment(printer, descriptor_);
   printer->Print(variables_,
-    "private com.google.protobuf.SingleFieldBuilder<\n"
+    "private com.google.protobuf.SingleFieldBuilder$ver$<\n"
     "    $type$, $type$.Builder, $type$OrBuilder> \n"
     "    get$capitalized_name$FieldBuilder() {\n"
     "  if ($name$Builder_ == null) {\n"
     "    if (!($has_oneof_case_message$)) {\n"
     "      $oneof_name$_ = $type$.getDefaultInstance();\n"
     "    }\n"
-    "    $name$Builder_ = new com.google.protobuf.SingleFieldBuilder<\n"
+    "    $name$Builder_ = new com.google.protobuf.SingleFieldBuilder$ver$<\n"
     "        $type$, $type$.Builder, $type$OrBuilder>(\n"
     "            ($type$) $oneof_name$_,\n"
     "            getParentForChildren(),\n"
@@ -736,11 +739,12 @@ GenerateParsingCode(io::Printer* printer) const {
 
   if (GetType(descriptor_) == FieldDescriptor::TYPE_GROUP) {
     printer->Print(variables_,
-      "$oneof_name$_ = input.readGroup($number$, $type$.PARSER,\n"
+      "$oneof_name$_ = input.readGroup($number$, $type$.$get_parser$,\n"
       "    extensionRegistry);\n");
   } else {
     printer->Print(variables_,
-      "$oneof_name$_ = input.readMessage($type$.PARSER, extensionRegistry);\n");
+      "$oneof_name$_ =\n"
+      "    input.readMessage($type$.$get_parser$, extensionRegistry);\n");
   }
 
   printer->Print(variables_,
@@ -920,7 +924,7 @@ GenerateBuilderMembers(io::Printer* printer) const {
   printer->Print(variables_,
     // If this builder is non-null, it is used and the other fields are
     // ignored.
-    "private com.google.protobuf.RepeatedFieldBuilder<\n"
+    "private com.google.protobuf.RepeatedFieldBuilder$ver$<\n"
     "    $type$, $type$.Builder, $type$OrBuilder> $name$Builder_;\n"
     "\n");
 
@@ -1137,11 +1141,11 @@ GenerateBuilderMembers(io::Printer* printer) const {
     "     get$capitalized_name$BuilderList() {\n"
     "  return get$capitalized_name$FieldBuilder().getBuilderList();\n"
     "}\n"
-    "private com.google.protobuf.RepeatedFieldBuilder<\n"
+    "private com.google.protobuf.RepeatedFieldBuilder$ver$<\n"
     "    $type$, $type$.Builder, $type$OrBuilder> \n"
     "    get$capitalized_name$FieldBuilder() {\n"
     "  if ($name$Builder_ == null) {\n"
-    "    $name$Builder_ = new com.google.protobuf.RepeatedFieldBuilder<\n"
+    "    $name$Builder_ = new com.google.protobuf.RepeatedFieldBuilder$ver$<\n"
     "        $type$, $type$.Builder, $type$OrBuilder>(\n"
     "            $name$_,\n"
     "            $get_mutable_bit_builder$,\n"
@@ -1199,7 +1203,7 @@ GenerateMergingCode(io::Printer* printer) const {
     "    $name$_ = other.$name$_;\n"
     "    $clear_mutable_bit_builder$;\n"
     "    $name$Builder_ = \n"
-    "      com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders ?\n"
+    "      com.google.protobuf.GeneratedMessage$ver$.alwaysUseFieldBuilders ?\n"
     "         get$capitalized_name$FieldBuilder() : null;\n"
     "  } else {\n"
     "    $name$Builder_.addAllMessages(other.$name$_);\n"
@@ -1232,11 +1236,12 @@ GenerateParsingCode(io::Printer* printer) const {
 
   if (GetType(descriptor_) == FieldDescriptor::TYPE_GROUP) {
     printer->Print(variables_,
-      "$name$_.add(input.readGroup($number$, $type$.PARSER,\n"
+      "$name$_.add(input.readGroup($number$, $type$.$get_parser$,\n"
       "    extensionRegistry));\n");
   } else {
     printer->Print(variables_,
-      "$name$_.add(input.readMessage($type$.PARSER, extensionRegistry));\n");
+      "$name$_.add(\n"
+      "    input.readMessage($type$.$get_parser$, extensionRegistry));\n");
   }
 }
 

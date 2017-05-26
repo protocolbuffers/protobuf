@@ -35,6 +35,7 @@
 #ifndef GOOGLE_PROTOBUF_COMMON_H__
 #define GOOGLE_PROTOBUF_COMMON_H__
 
+#include <string>
 
 #include <google/protobuf/stubs/port.h>
 #include <google/protobuf/stubs/macros.h>
@@ -95,24 +96,27 @@ namespace internal {
 
 // The current version, represented as a single integer to make comparison
 // easier:  major * 10^6 + minor * 10^3 + micro
-#define GOOGLE_PROTOBUF_VERSION 3000000
+#define GOOGLE_PROTOBUF_VERSION 3003001
+
+// A suffix string for alpha, beta or rc releases. Empty for stable releases.
+#define GOOGLE_PROTOBUF_VERSION_SUFFIX ""
 
 // The minimum library version which works with the current version of the
 // headers.
-#define GOOGLE_PROTOBUF_MIN_LIBRARY_VERSION 3000000
+#define GOOGLE_PROTOBUF_MIN_LIBRARY_VERSION 3003000
 
 // The minimum header version which works with the current version of
 // the library.  This constant should only be used by protoc's C++ code
 // generator.
-static const int kMinHeaderVersionForLibrary = 3000000;
+static const int kMinHeaderVersionForLibrary = 3003000;
 
 // The minimum protoc version which works with the current version of the
 // headers.
-#define GOOGLE_PROTOBUF_MIN_PROTOC_VERSION 3000000
+#define GOOGLE_PROTOBUF_MIN_PROTOC_VERSION 3003000
 
 // The minimum header version which works with the current version of
 // protoc.  This constant should only be used in VerifyVersion().
-static const int kMinHeaderVersionForProtoc = 3000000;
+static const int kMinHeaderVersionForProtoc = 3003000;
 
 // Verifies that the headers and libraries are compatible.  Use the macro
 // below to call this.
@@ -137,11 +141,34 @@ std::string LIBPROTOBUF_EXPORT VersionString(int version);
 // ===================================================================
 // from google3/util/utf8/public/unilib.h
 
+class StringPiece;
 namespace internal {
 
 // Checks if the buffer contains structurally-valid UTF-8.  Implemented in
 // structurally_valid.cc.
 LIBPROTOBUF_EXPORT bool IsStructurallyValidUTF8(const char* buf, int len);
+
+inline bool IsStructurallyValidUTF8(const std::string& str) {
+  return IsStructurallyValidUTF8(str.data(), static_cast<int>(str.length()));
+}
+
+// Returns initial number of bytes of structually valid UTF-8.
+LIBPROTOBUF_EXPORT int UTF8SpnStructurallyValid(const StringPiece& str);
+
+// Coerce UTF-8 byte string in src_str to be
+// a structurally-valid equal-length string by selectively
+// overwriting illegal bytes with replace_char (typically ' ' or '?').
+// replace_char must be legal printable 7-bit Ascii 0x20..0x7e.
+// src_str is read-only.
+//
+// Returns pointer to output buffer, src_str.data() if no changes were made,
+//  or idst if some bytes were changed. idst is allocated by the caller
+//  and must be at least as big as src_str
+//
+// Optimized for: all structurally valid and no byte copying is done.
+//
+LIBPROTOBUF_EXPORT char* UTF8CoerceToStructurallyValid(
+    const StringPiece& str, char* dst, char replace_char);
 
 }  // namespace internal
 

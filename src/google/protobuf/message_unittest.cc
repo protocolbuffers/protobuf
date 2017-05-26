@@ -48,12 +48,15 @@
 #include <google/protobuf/test_util.h>
 #include <google/protobuf/unittest.pb.h>
 #include <google/protobuf/io/coded_stream.h>
+#include <google/protobuf/io/zero_copy_stream.h>
 #include <google/protobuf/io/zero_copy_stream_impl.h>
 #include <google/protobuf/descriptor.pb.h>
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/generated_message_reflection.h>
 
+#include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
+#include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/testing/googletest.h>
 #include <gtest/gtest.h>
 
@@ -74,7 +77,7 @@ TEST(MessageTest, SerializeHelpers) {
 
   protobuf_unittest::TestAllTypes message;
   TestUtil::SetAllFields(&message);
-  stringstream stream;
+  std::stringstream stream;
 
   string str1("foo");
   string str2("bar");
@@ -98,7 +101,7 @@ TEST(MessageTest, SerializeHelpers) {
 }
 
 TEST(MessageTest, SerializeToBrokenOstream) {
-  ofstream out;
+  std::ofstream out;
   protobuf_unittest::TestAllTypes message;
   message.set_optional_int32(123);
 
@@ -152,7 +155,7 @@ TEST(MessageTest, ParseHelpers) {
   {
     // Test ParseFromIstream.
     protobuf_unittest::TestAllTypes message;
-    stringstream stream(data);
+    std::stringstream stream(data);
     EXPECT_TRUE(message.ParseFromIstream(&stream));
     EXPECT_TRUE(stream.eof());
     TestUtil::ExpectAllFieldsSet(message);
@@ -180,7 +183,7 @@ TEST(MessageTest, ParseHelpers) {
 
 TEST(MessageTest, ParseFailsIfNotInitialized) {
   unittest::TestRequired message;
-  vector<string> errors;
+  std::vector<string> errors;
 
   {
     ScopedMemoryLog log;
@@ -263,25 +266,117 @@ TEST(MessageTest, CheckOverflow) {
   EXPECT_FALSE(message.AppendToCord(&serialized));
 }
 
+TEST(MessageTest, CheckBigOverflow) {
+  unittest::TestAllTypes message;
+  // Create a message with size just over 4GB. We should be able to detect this
+  // too, even though it will make a plain "int" wrap back to a positive number.
+  const string data(1024, 'x');
+  Cord one_megabyte;
+  for (int i = 0; i < 1024; i++) {
+    one_megabyte.Append(data);
+  }
+
+  for (int i = 0; i < 4 * 1024 + 1; ++i) {
+    message.add_repeated_cord()->CopyFrom(one_megabyte);
+  }
+
+  Cord serialized;
+  EXPECT_FALSE(message.AppendToCord(&serialized));
+}
+
 #endif  // PROTOBUF_HAS_DEATH_TEST
 
 namespace {
-
-class NegativeByteSize : public unittest::TestRequired {
+// An input stream that repeats a string's content for a number of times. It
+// helps us create a really large input without consuming too much memory. Used
+// to test the parsing behavior when the input size exceeds 2G or close to it.
+class RepeatedInputStream : public io::ZeroCopyInputStream {
  public:
-  virtual int ByteSize() const { return -1; }
-};
+  RepeatedInputStream(const string& data, size_t count)
+      : data_(data), count_(count), position_(0), total_byte_count_(0) {}
 
+  virtual bool Next(const void** data, int* size) {
+    if (position_ == data_.size()) {
+      if (--count_ == 0) {
+        return false;
+      }
+      position_ = 0;
+    }
+    *data = &data_[position_];
+    *size = static_cast<int>(data_.size() - position_);
+    position_ = data_.size();
+    total_byte_count_ += *size;
+    return true;
+  }
+
+  virtual void BackUp(int count) {
+    position_ -= static_cast<size_t>(count);
+    total_byte_count_ -= count;
+  }
+
+  virtual bool Skip(int count) {
+    while (count > 0) {
+      const void* data;
+      int size;
+      if (!Next(&data, &size)) {
+        break;
+      }
+      if (size >= count) {
+        BackUp(size - count);
+        return true;
+      } else {
+        count -= size;
+      }
+    }
+    return false;
+  }
+
+  virtual int64 ByteCount() const { return total_byte_count_; }
+
+ private:
+  string data_;
+  size_t count_;     // The number of strings that haven't been consuemd.
+  size_t position_;  // Position in the string for the next read.
+  int64 total_byte_count_;
+};
 }  // namespace
 
-TEST(MessageTest, SerializationFailsOnNegativeByteSize) {
-  NegativeByteSize message;
-  string string_output;
-  EXPECT_FALSE(message.AppendPartialToString(&string_output));
+TEST(MessageTest, TestParseMessagesCloseTo2G) {
+  // Create a message with a large string field.
+  string value = string(64 * 1024 * 1024, 'x');
+  protobuf_unittest::TestAllTypes message;
+  message.set_optional_string(value);
 
-  io::ArrayOutputStream coded_raw_output(NULL, 100);
-  io::CodedOutputStream coded_output(&coded_raw_output);
-  EXPECT_FALSE(message.SerializePartialToCodedStream(&coded_output));
+  // Repeat this message in the input stream to make the total input size
+  // close to 2G.
+  string data = message.SerializeAsString();
+  size_t count = static_cast<size_t>(kint32max) / data.size();
+  RepeatedInputStream input(data, count);
+
+  // The parsing should succeed.
+  protobuf_unittest::TestAllTypes result;
+  EXPECT_TRUE(result.ParseFromZeroCopyStream(&input));
+
+  // When there are multiple occurences of a singulr field, the last one
+  // should win.
+  EXPECT_EQ(value, result.optional_string());
+}
+
+TEST(MessageTest, TestParseMessagesOver2G) {
+  // Create a message with a large string field.
+  string value = string(64 * 1024 * 1024, 'x');
+  protobuf_unittest::TestAllTypes message;
+  message.set_optional_string(value);
+
+  // Repeat this message in the input stream to make the total input size
+  // larger than 2G.
+  string data = message.SerializeAsString();
+  size_t count = static_cast<size_t>(kint32max) / data.size() + 1;
+  RepeatedInputStream input(data, count);
+
+  // The parsing should fail.
+  protobuf_unittest::TestAllTypes result;
+  EXPECT_FALSE(result.ParseFromZeroCopyStream(&input));
 }
 
 TEST(MessageTest, BypassInitializationCheckOnSerialize) {
@@ -293,7 +388,7 @@ TEST(MessageTest, BypassInitializationCheckOnSerialize) {
 
 TEST(MessageTest, FindInitializationErrors) {
   unittest::TestRequired message;
-  vector<string> errors;
+  std::vector<string> errors;
   message.FindInitializationErrors(&errors);
   ASSERT_EQ(3, errors.size());
   EXPECT_EQ("a", errors[0]);
@@ -315,6 +410,18 @@ TEST(MessageTest, ParseFailsOnInvalidMessageEnd) {
 
   // The byte is an endgroup tag, but we aren't parsing a group.
   EXPECT_FALSE(message.ParseFromArray("\014", 1));
+}
+
+// Regression test for b/23630858
+TEST(MessageTest, MessageIsStillValidAfterParseFails) {
+  unittest::TestAllTypes message;
+
+  // 9 0xFFs for the "optional_uint64" field.
+  string invalid_data = "\x20\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF\xFF";
+
+  EXPECT_FALSE(message.ParseFromString(invalid_data));
+  message.Clear();
+  EXPECT_EQ(0, message.optional_uint64());
 }
 
 namespace {
@@ -442,6 +549,17 @@ TEST(MessageTest, MergeFrom) {
   EXPECT_EQ(11, dest.repeated_uint32(0));
   EXPECT_EQ(12, dest.repeated_uint32(1));
   ASSERT_EQ(0, dest.repeated_uint64_size());
+}
+
+TEST(MessageTest, IsInitialized) {
+  protobuf_unittest::TestIsInitialized msg;
+  EXPECT_TRUE(msg.IsInitialized());
+  protobuf_unittest::TestIsInitialized::SubMessage* sub_message = msg.mutable_sub_message();
+  EXPECT_TRUE(msg.IsInitialized());
+  protobuf_unittest::TestIsInitialized::SubMessage::SubGroup* sub_group = sub_message->mutable_subgroup();
+  EXPECT_FALSE(msg.IsInitialized());
+  sub_group->set_i(1);
+  EXPECT_TRUE(msg.IsInitialized());
 }
 
 TEST(MessageFactoryTest, GeneratedFactoryLookup) {

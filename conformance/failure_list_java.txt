@@ -1,0 +1,45 @@
+# This is the list of conformance tests that are known to fail for the Java
+# implementation right now.  These should be fixed.
+#
+# By listing them here we can keep tabs on which ones are failing and be sure
+# that we don't introduce regressions in other tests.
+
+Recommended.FieldMaskNumbersDontRoundTrip.JsonOutput
+Recommended.FieldMaskPathsDontRoundTrip.JsonOutput
+Recommended.FieldMaskTooManyUnderscore.JsonOutput
+Recommended.JsonInput.BoolFieldAllCapitalFalse
+Recommended.JsonInput.BoolFieldAllCapitalTrue
+Recommended.JsonInput.BoolFieldCamelCaseFalse
+Recommended.JsonInput.BoolFieldCamelCaseTrue
+Recommended.JsonInput.BoolFieldDoubleQuotedFalse
+Recommended.JsonInput.BoolFieldDoubleQuotedTrue
+Recommended.JsonInput.BoolMapFieldKeyNotQuoted
+Recommended.JsonInput.DoubleFieldInfinityNotQuoted
+Recommended.JsonInput.DoubleFieldNanNotQuoted
+Recommended.JsonInput.DoubleFieldNegativeInfinityNotQuoted
+Recommended.JsonInput.FieldMaskInvalidCharacter
+Recommended.JsonInput.FieldNameDuplicate
+Recommended.JsonInput.FieldNameNotQuoted
+Recommended.JsonInput.FloatFieldInfinityNotQuoted
+Recommended.JsonInput.FloatFieldNanNotQuoted
+Recommended.JsonInput.FloatFieldNegativeInfinityNotQuoted
+Recommended.JsonInput.Int32MapFieldKeyNotQuoted
+Recommended.JsonInput.Int64MapFieldKeyNotQuoted
+Recommended.JsonInput.JsonWithComments
+Recommended.JsonInput.StringFieldSingleQuoteBoth
+Recommended.JsonInput.StringFieldSingleQuoteKey
+Recommended.JsonInput.StringFieldSingleQuoteValue
+Recommended.JsonInput.StringFieldSurrogateInWrongOrder
+Recommended.JsonInput.StringFieldUnpairedHighSurrogate
+Recommended.JsonInput.StringFieldUnpairedLowSurrogate
+Recommended.JsonInput.Uint32MapFieldKeyNotQuoted
+Recommended.JsonInput.Uint64MapFieldKeyNotQuoted
+Required.JsonInput.EnumFieldNotQuoted
+Required.JsonInput.Int32FieldLeadingZero
+Required.JsonInput.Int32FieldNegativeWithLeadingZero
+Required.JsonInput.Int32FieldPlusSign
+Required.JsonInput.RepeatedFieldWrongElementTypeExpectingStringsGotBool
+Required.JsonInput.RepeatedFieldWrongElementTypeExpectingStringsGotInt
+Required.JsonInput.StringFieldNotAString
+Required.ProtobufInput.PrematureEofInDelimitedDataForKnownNonRepeatedValue.MESSAGE
+Required.ProtobufInput.PrematureEofInDelimitedDataForKnownRepeatedValue.MESSAGE

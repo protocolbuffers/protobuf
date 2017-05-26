@@ -36,6 +36,7 @@
 #include <map>
 #include <string>
 
+#include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/compiler/java/java_context.h>
 #include <google/protobuf/compiler/java/java_doc_comment.h>
@@ -61,7 +62,7 @@ void SetPrimitiveVariables(const FieldDescriptor* descriptor,
                            int builderBitIndex,
                            const FieldGeneratorInfo* info,
                            ClassNameResolver* name_resolver,
-                           map<string, string>* variables) {
+                           std::map<string, string>* variables) {
   SetCommonFieldVariables(descriptor, info, variables);
 
   (*variables)["empty_list"] = "com.google.protobuf.LazyStringArrayList.EMPTY";
@@ -70,20 +71,26 @@ void SetPrimitiveVariables(const FieldDescriptor* descriptor,
   (*variables)["default_init"] =
       "= " + ImmutableDefaultValue(descriptor, name_resolver);
   (*variables)["capitalized_type"] = "String";
-  (*variables)["tag"] = SimpleItoa(WireFormat::MakeTag(descriptor));
+  (*variables)["tag"] =
+      SimpleItoa(static_cast<int32>(WireFormat::MakeTag(descriptor)));
   (*variables)["tag_size"] = SimpleItoa(
       WireFormat::TagSize(descriptor->number(), GetType(descriptor)));
   (*variables)["null_check"] =
       "  if (value == null) {\n"
       "    throw new NullPointerException();\n"
       "  }\n";
+  (*variables)["writeString"] =
+      "com.google.protobuf.GeneratedMessage" + GeneratedCodeVersionSuffix() +
+      ".writeString";
+  (*variables)["computeStringSize"] =
+      "com.google.protobuf.GeneratedMessage" + GeneratedCodeVersionSuffix() +
+      ".computeStringSize";
 
   // TODO(birdo): Add @deprecated javadoc when generating javadoc is supported
   // by the proto compiler
   (*variables)["deprecation"] = descriptor->options().deprecated()
       ? "@java.lang.Deprecated " : "";
-  (*variables)["on_changed"] =
-      HasDescriptorMethods(descriptor->containing_type()) ? "onChanged();" : "";
+  (*variables)["on_changed"] = "onChanged();";
 
   if (SupportFieldPresence(descriptor->file())) {
     // For singular messages and builders, one bit is used for the hasField bit.
@@ -124,10 +131,6 @@ void SetPrimitiveVariables(const FieldDescriptor* descriptor,
       GenerateGetBitFromLocal(builderBitIndex);
   (*variables)["set_has_field_bit_to_local"] =
       GenerateSetBitToLocal(messageBitIndex);
-}
-
-bool CheckUtf8(const FieldDescriptor* descriptor) {
-  return descriptor->file()->options().java_string_check_utf8();
 }
 
 }  // namespace
@@ -404,16 +407,7 @@ void ImmutableStringFieldGenerator::
 GenerateParsingCode(io::Printer* printer) const {
   if (CheckUtf8(descriptor_)) {
     printer->Print(variables_,
-      "String s = input.readStringRequireUtf8();\n"
-      "$set_has_field_bit_message$\n"
-      "$name$_ = s;\n");
-  } else if (!HasDescriptorMethods(descriptor_->file())) {
-    // Lite runtime should attempt to reduce allocations by attempting to
-    // construct the string directly from the input stream buffer. This avoids
-    // spurious intermediary ByteString allocations, cutting overall allocations
-    // in half.
-    printer->Print(variables_,
-      "String s = input.readString();\n"
+      "java.lang.String s = input.readStringRequireUtf8();\n"
       "$set_has_field_bit_message$\n"
       "$name$_ = s;\n");
   } else {
@@ -433,7 +427,7 @@ void ImmutableStringFieldGenerator::
 GenerateSerializationCode(io::Printer* printer) const {
   printer->Print(variables_,
     "if ($is_field_present_message$) {\n"
-    "  output.writeBytes($number$, get$capitalized_name$Bytes());\n"
+    "  $writeString$(output, $number$, $name$_);\n"
     "}\n");
 }
 
@@ -441,8 +435,7 @@ void ImmutableStringFieldGenerator::
 GenerateSerializedSizeCode(io::Printer* printer) const {
   printer->Print(variables_,
     "if ($is_field_present_message$) {\n"
-    "  size += com.google.protobuf.CodedOutputStream\n"
-    "    .computeBytesSize($number$, get$capitalized_name$Bytes());\n"
+    "  size += $computeStringSize$($number$, $name$_);\n"
     "}\n");
 }
 
@@ -665,16 +658,7 @@ void ImmutableStringOneofFieldGenerator::
 GenerateParsingCode(io::Printer* printer) const {
   if (CheckUtf8(descriptor_)) {
     printer->Print(variables_,
-      "String s = input.readStringRequireUtf8();\n"
-      "$set_oneof_case_message$;\n"
-      "$oneof_name$_ = s;\n");
-  } else if (!HasDescriptorMethods(descriptor_->file())) {
-    // Lite runtime should attempt to reduce allocations by attempting to
-    // construct the string directly from the input stream buffer. This avoids
-    // spurious intermediary ByteString allocations, cutting overall allocations
-    // in half.
-    printer->Print(variables_,
-      "String s = input.readString();\n"
+      "java.lang.String s = input.readStringRequireUtf8();\n"
       "$set_oneof_case_message$;\n"
       "$oneof_name$_ = s;\n");
   } else {
@@ -689,7 +673,7 @@ void ImmutableStringOneofFieldGenerator::
 GenerateSerializationCode(io::Printer* printer) const {
   printer->Print(variables_,
     "if ($has_oneof_case_message$) {\n"
-    "  output.writeBytes($number$, get$capitalized_name$Bytes());\n"
+    "  $writeString$(output, $number$, $oneof_name$_);\n"
     "}\n");
 }
 
@@ -697,8 +681,7 @@ void ImmutableStringOneofFieldGenerator::
 GenerateSerializedSizeCode(io::Printer* printer) const {
   printer->Print(variables_,
     "if ($has_oneof_case_message$) {\n"
-    "  size += com.google.protobuf.CodedOutputStream\n"
-    "    .computeBytesSize($number$, get$capitalized_name$Bytes());\n"
+    "  size += $computeStringSize$($number$, $oneof_name$_);\n"
     "}\n");
 }
 
@@ -732,7 +715,13 @@ void RepeatedImmutableStringFieldGenerator::
 GenerateInterfaceMembers(io::Printer* printer) const {
   WriteFieldDocComment(printer, descriptor_);
   printer->Print(variables_,
-    "$deprecation$com.google.protobuf.ProtocolStringList\n"
+    // NOTE: the same method in the implementation class actually returns
+    // com.google.protobuf.ProtocolStringList (a subclass of List). It's
+    // changed between protobuf 2.5.0 release and protobuf 2.6.1 release.
+    // To retain binary compatibility with both 2.5.0 and 2.6.1 generated
+    // code, we make this interface method return List so both methods
+    // with different return types exist in the compiled byte code.
+    "$deprecation$java.util.List<java.lang.String>\n"
     "    get$capitalized_name$List();\n");
   WriteFieldDocComment(printer, descriptor_);
   printer->Print(variables_,
@@ -774,12 +763,6 @@ GenerateMembers(io::Printer* printer) const {
     "    get$capitalized_name$Bytes(int index) {\n"
     "  return $name$_.getByteString(index);\n"
     "}\n");
-
-  if (descriptor_->options().packed() &&
-      HasGeneratedMethods(descriptor_->containing_type())) {
-    printer->Print(variables_,
-      "private int $name$MemoizedSerializedSize = -1;\n");
-  }
 }
 
 void RepeatedImmutableStringFieldGenerator::
@@ -940,14 +923,7 @@ void RepeatedImmutableStringFieldGenerator::
 GenerateParsingCode(io::Printer* printer) const {
   if (CheckUtf8(descriptor_)) {
     printer->Print(variables_,
-    "String s = input.readStringRequireUtf8();\n");
-  } else if (!HasDescriptorMethods(descriptor_->file())) {
-    // Lite runtime should attempt to reduce allocations by attempting to
-    // construct the string directly from the input stream buffer. This avoids
-    // spurious intermediary ByteString allocations, cutting overall allocations
-    // in half.
-    printer->Print(variables_,
-    "String s = input.readString();\n");
+    "java.lang.String s = input.readStringRequireUtf8();\n");
   } else {
     printer->Print(variables_,
     "com.google.protobuf.ByteString bs = input.readBytes();\n");
@@ -957,37 +933,13 @@ GenerateParsingCode(io::Printer* printer) const {
     "  $name$_ = new com.google.protobuf.LazyStringArrayList();\n"
     "  $set_mutable_bit_parser$;\n"
     "}\n");
-  if (CheckUtf8(descriptor_) || !HasDescriptorMethods(descriptor_->file())) {
+  if (CheckUtf8(descriptor_)) {
     printer->Print(variables_,
       "$name$_.add(s);\n");
   } else {
     printer->Print(variables_,
       "$name$_.add(bs);\n");
   }
-}
-
-void RepeatedImmutableStringFieldGenerator::
-GenerateParsingCodeFromPacked(io::Printer* printer) const {
-  printer->Print(variables_,
-    "int length = input.readRawVarint32();\n"
-    "int limit = input.pushLimit(length);\n"
-    "if (!$get_mutable_bit_parser$ && input.getBytesUntilLimit() > 0) {\n"
-    "  $name$_ = new com.google.protobuf.LazyStringArrayList();\n"
-    "  $set_mutable_bit_parser$;\n"
-    "}\n"
-    "while (input.getBytesUntilLimit() > 0) {\n");
-  if (CheckUtf8(descriptor_)) {
-    printer->Print(variables_,
-      "  String s = input.readStringRequireUtf8();\n");
-  } else {
-    printer->Print(variables_,
-      "  String s = input.readString();\n");
-  }
-  printer->Print(variables_,
-    "  $name$.add(s);\n");
-  printer->Print(variables_,
-    "}\n"
-    "input.popLimit(limit);\n");
 }
 
 void RepeatedImmutableStringFieldGenerator::
@@ -1000,21 +952,10 @@ GenerateParsingDoneCode(io::Printer* printer) const {
 
 void RepeatedImmutableStringFieldGenerator::
 GenerateSerializationCode(io::Printer* printer) const {
-  if (descriptor_->options().packed()) {
-    printer->Print(variables_,
-      "if (get$capitalized_name$List().size() > 0) {\n"
-      "  output.writeRawVarint32($tag$);\n"
-      "  output.writeRawVarint32($name$MemoizedSerializedSize);\n"
-      "}\n"
-      "for (int i = 0; i < $name$_.size(); i++) {\n"
-      "  output.write$capitalized_type$NoTag($name$_.get(i));\n"
-      "}\n");
-  } else {
-    printer->Print(variables_,
-      "for (int i = 0; i < $name$_.size(); i++) {\n"
-      "  output.writeBytes($number$, $name$_.getByteString(i));\n"
-      "}\n");
-  }
+  printer->Print(variables_,
+    "for (int i = 0; i < $name$_.size(); i++) {\n"
+    "  $writeString$(output, $number$, $name$_.getRaw(i));\n"
+    "}\n");
 }
 
 void RepeatedImmutableStringFieldGenerator::
@@ -1026,30 +967,14 @@ GenerateSerializedSizeCode(io::Printer* printer) const {
 
   printer->Print(variables_,
     "for (int i = 0; i < $name$_.size(); i++) {\n"
-    "  dataSize += com.google.protobuf.CodedOutputStream\n"
-    "    .computeBytesSizeNoTag($name$_.getByteString(i));\n"
+    "  dataSize += computeStringSizeNoTag($name$_.getRaw(i));\n"
     "}\n");
 
   printer->Print(
       "size += dataSize;\n");
 
-  if (descriptor_->options().packed()) {
-    printer->Print(variables_,
-      "if (!get$capitalized_name$List().isEmpty()) {\n"
-      "  size += $tag_size$;\n"
-      "  size += com.google.protobuf.CodedOutputStream\n"
-      "      .computeInt32SizeNoTag(dataSize);\n"
-      "}\n");
-  } else {
-    printer->Print(variables_,
-      "size += $tag_size$ * get$capitalized_name$List().size();\n");
-  }
-
-  // cache the data size for packed fields.
-  if (descriptor_->options().packed()) {
-    printer->Print(variables_,
-      "$name$MemoizedSerializedSize = dataSize;\n");
-  }
+  printer->Print(variables_,
+    "size += $tag_size$ * get$capitalized_name$List().size();\n");
 
   printer->Outdent();
   printer->Print("}\n");

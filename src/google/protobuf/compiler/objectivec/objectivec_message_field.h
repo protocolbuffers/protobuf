@@ -41,10 +41,12 @@ namespace compiler {
 namespace objectivec {
 
 class MessageFieldGenerator : public ObjCObjFieldGenerator {
-  friend FieldGenerator* FieldGenerator::Make(const FieldDescriptor* field);
+  friend FieldGenerator* FieldGenerator::Make(const FieldDescriptor* field,
+                                              const Options& options);
 
  protected:
-  explicit MessageFieldGenerator(const FieldDescriptor* descriptor);
+  MessageFieldGenerator(const FieldDescriptor* descriptor,
+                        const Options& options);
   virtual ~MessageFieldGenerator();
   virtual bool WantsHasProperty(void) const;
 
@@ -56,11 +58,16 @@ class MessageFieldGenerator : public ObjCObjFieldGenerator {
 };
 
 class RepeatedMessageFieldGenerator : public RepeatedFieldGenerator {
-  friend FieldGenerator* FieldGenerator::Make(const FieldDescriptor* field);
+  friend FieldGenerator* FieldGenerator::Make(const FieldDescriptor* field,
+                                              const Options& options);
 
  protected:
-  explicit RepeatedMessageFieldGenerator(const FieldDescriptor* descriptor);
+  RepeatedMessageFieldGenerator(const FieldDescriptor* descriptor,
+                                const Options& options);
   virtual ~RepeatedMessageFieldGenerator();
+
+ public:
+  virtual void DetermineForwardDeclarations(set<string>* fwd_decls) const;
 
  private:
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(RepeatedMessageFieldGenerator);

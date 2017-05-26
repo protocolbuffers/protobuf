@@ -42,6 +42,7 @@
 
 #include <google/protobuf/compiler/java/java_context.h>
 #include <google/protobuf/compiler/java/java_enum.h>
+#include <google/protobuf/compiler/java/java_enum_lite.h>
 #include <google/protobuf/compiler/java/java_extension.h>
 #include <google/protobuf/compiler/java/java_generator_factory.h>
 #include <google/protobuf/compiler/java/java_helpers.h>
@@ -64,7 +65,7 @@ namespace java {
 namespace {
 
 struct FieldDescriptorCompare {
-  bool operator ()(const FieldDescriptor* f1, const FieldDescriptor* f2) {
+  bool operator ()(const FieldDescriptor* f1, const FieldDescriptor* f2) const {
     if(f1 == NULL) {
       return false;
     }
@@ -89,7 +90,7 @@ bool CollectExtensions(const Message& message,
   // There are unknown fields that could be extensions, thus this call fails.
   if (reflection->GetUnknownFields(message).field_count() > 0) return false;
 
-  vector<const FieldDescriptor*> fields;
+  std::vector<const FieldDescriptor*> fields;
   reflection->ListFields(message, &fields);
 
   for (int i = 0; i < fields.size(); i++) {
@@ -153,12 +154,6 @@ void CollectExtensions(const FileDescriptorProto& file_proto,
   }
 }
 
-// Compare two field descriptors, returning true if the first should come
-// before the second.
-bool CompareFieldsByName(const FieldDescriptor *a, const FieldDescriptor *b) {
-  return a->full_name() < b->full_name();
-}
-
 // Our static initialization methods can become very, very large.
 // So large that if we aren't careful we end up blowing the JVM's
 // 64K bytes of bytecode/method. Fortunately, since these static
@@ -176,7 +171,7 @@ void MaybeRestartJavaMethod(io::Printer* printer,
   // since otherwise we hit a hardcoded limit in the jvm and javac will
   // then fail with the error "code too large". This limit lets our
   // estimates be off by a factor of two and still we're okay.
-  static const int bytesPerMethod = 1<<15;  // aka 32K
+  static const int bytesPerMethod = kMaxStaticSize;
 
   if ((*bytecode_estimate) > bytesPerMethod) {
     ++(*method_num);
@@ -188,19 +183,19 @@ void MaybeRestartJavaMethod(io::Printer* printer,
     *bytecode_estimate = 0;
   }
 }
-
-
 }  // namespace
 
-FileGenerator::FileGenerator(const FileDescriptor* file, bool immutable_api)
+FileGenerator::FileGenerator(const FileDescriptor* file, const Options& options,
+                             bool immutable_api)
     : file_(file),
       java_package_(FileJavaPackage(file, immutable_api)),
       message_generators_(
           new google::protobuf::scoped_ptr<MessageGenerator>[file->message_type_count()]),
       extension_generators_(
           new google::protobuf::scoped_ptr<ExtensionGenerator>[file->extension_count()]),
-      context_(new Context(file)),
+      context_(new Context(file, options)),
       name_resolver_(context_->GetNameResolver()),
+      options_(options),
       immutable_api_(immutable_api) {
   classname_ = name_resolver_->GetFileClassName(file, immutable_api);
   generator_factory_.reset(
@@ -250,18 +245,20 @@ void FileGenerator::Generate(io::Printer* printer) {
       "\n",
       "package", java_package_);
   }
+  PrintGeneratedAnnotation(
+      printer, '$', options_.annotate_code ? classname_ + ".java.pb.meta" : "");
   printer->Print(
-    "public final class $classname$ {\n"
-    "  private $classname$() {}\n",
-    "classname", classname_);
+      "public final class $classname$ {\n"
+      "  private $ctor$() {}\n",
+      "classname", classname_, "ctor", classname_);
+  printer->Annotate("classname", file_->name());
   printer->Indent();
 
   // -----------------------------------------------------------------
 
   printer->Print(
     "public static void registerAllExtensions(\n"
-    "    com.google.protobuf.ExtensionRegistry$lite$ registry) {\n",
-    "lite", HasDescriptorMethods(file_) ? "" : "Lite");
+    "    com.google.protobuf.ExtensionRegistryLite registry) {\n");
 
   printer->Indent();
 
@@ -276,19 +273,38 @@ void FileGenerator::Generate(io::Printer* printer) {
   printer->Outdent();
   printer->Print(
     "}\n");
+  if (HasDescriptorMethods(file_, context_->EnforceLite())) {
+    // Overload registerAllExtensions for the non-lite usage to
+    // redundantly maintain the original signature (this is
+    // redundant because ExtensionRegistryLite now invokes
+    // ExtensionRegistry in the non-lite usage). Intent is
+    // to remove this in the future.
+    printer->Print(
+      "\n"
+      "public static void registerAllExtensions(\n"
+      "    com.google.protobuf.ExtensionRegistry registry) {\n"
+      "  registerAllExtensions(\n"
+      "      (com.google.protobuf.ExtensionRegistryLite) registry);\n"
+      "}\n");
+  }
 
   // -----------------------------------------------------------------
 
   if (!MultipleJavaFiles(file_, immutable_api_)) {
     for (int i = 0; i < file_->enum_type_count(); i++) {
-      EnumGenerator(file_->enum_type(i), immutable_api_, context_.get())
-          .Generate(printer);
+      if (HasDescriptorMethods(file_, context_->EnforceLite())) {
+        EnumGenerator(file_->enum_type(i), immutable_api_, context_.get())
+            .Generate(printer);
+      } else {
+        EnumLiteGenerator(file_->enum_type(i), immutable_api_, context_.get())
+            .Generate(printer);
+      }
     }
     for (int i = 0; i < file_->message_type_count(); i++) {
       message_generators_[i]->GenerateInterface(printer);
       message_generators_[i]->Generate(printer);
     }
-    if (HasGenericServices(file_)) {
+    if (HasGenericServices(file_, context_->EnforceLite())) {
       for (int i = 0; i < file_->service_count(); i++) {
         google::protobuf::scoped_ptr<ServiceGenerator> generator(
             generator_factory_->NewServiceGenerator(file_->service(i)));
@@ -303,14 +319,18 @@ void FileGenerator::Generate(io::Printer* printer) {
     extension_generators_[i]->Generate(printer);
   }
 
-  // Static variables.
+  // Static variables. We'd like them to be final if possible, but due to
+  // the JVM's 64k size limit on static blocks, we have to initialize some
+  // of them in methods; thus they cannot be final.
+  int static_block_bytecode_estimate = 0;
   for (int i = 0; i < file_->message_type_count(); i++) {
-    message_generators_[i]->GenerateStaticVariables(printer);
+    message_generators_[i]->GenerateStaticVariables(
+        printer, &static_block_bytecode_estimate);
   }
 
   printer->Print("\n");
 
-  if (HasDescriptorMethods(file_)) {
+  if (HasDescriptorMethods(file_, context_->EnforceLite())) {
     if (immutable_api_) {
       GenerateDescriptorInitializationCodeForImmutable(printer);
     } else {
@@ -352,12 +372,14 @@ void FileGenerator::GenerateDescriptorInitializationCodeForImmutable(
     "    getDescriptor() {\n"
     "  return descriptor;\n"
     "}\n"
-    "private static com.google.protobuf.Descriptors.FileDescriptor\n"
+    "private static $final$ com.google.protobuf.Descriptors.FileDescriptor\n"
     "    descriptor;\n"
-    "static {\n");
+    "static {\n",
+    // TODO(dweis): Mark this as final.
+    "final", "");
   printer->Indent();
 
-  SharedCodeGenerator shared_code_generator(file_);
+  SharedCodeGenerator shared_code_generator(file_, options_);
   shared_code_generator.GenerateDescriptors(printer);
 
   int bytecode_estimate = 0;
@@ -447,7 +469,7 @@ void FileGenerator::GenerateDescriptorInitializationCodeForMutable(io::Printer* 
     "    getDescriptor() {\n"
     "  return descriptor;\n"
     "}\n"
-    "private static com.google.protobuf.Descriptors.FileDescriptor\n"
+    "private static final com.google.protobuf.Descriptors.FileDescriptor\n"
     "    descriptor;\n"
     "static {\n");
   printer->Indent();
@@ -508,20 +530,26 @@ void FileGenerator::GenerateDescriptorInitializationCodeForMutable(io::Printer* 
     "}\n");
 }
 
-template<typename GeneratorClass, typename DescriptorClass>
+template <typename GeneratorClass, typename DescriptorClass>
 static void GenerateSibling(const string& package_dir,
                             const string& java_package,
                             const DescriptorClass* descriptor,
                             GeneratorContext* context,
-                            vector<string>* file_list,
+                            std::vector<string>* file_list, bool annotate_code,
+                            std::vector<string>* annotation_list,
                             const string& name_suffix,
                             GeneratorClass* generator,
                             void (GeneratorClass::*pfn)(io::Printer* printer)) {
   string filename = package_dir + descriptor->name() + name_suffix + ".java";
   file_list->push_back(filename);
+  string info_full_path = filename + ".pb.meta";
+  GeneratedCodeInfo annotations;
+  io::AnnotationProtoCollector<GeneratedCodeInfo> annotation_collector(
+      &annotations);
 
   google::protobuf::scoped_ptr<io::ZeroCopyOutputStream> output(context->Open(filename));
-  io::Printer printer(output.get(), '$');
+  io::Printer printer(output.get(), '$',
+                      annotate_code ? &annotation_collector : NULL);
 
   printer.Print(
     "// Generated by the protocol buffer compiler.  DO NOT EDIT!\n"
@@ -536,45 +564,57 @@ static void GenerateSibling(const string& package_dir,
   }
 
   (generator->*pfn)(&printer);
+
+  if (annotate_code) {
+    google::protobuf::scoped_ptr<io::ZeroCopyOutputStream> info_output(
+        context->Open(info_full_path));
+    annotations.SerializeToZeroCopyStream(info_output.get());
+    annotation_list->push_back(info_full_path);
+  }
 }
 
 void FileGenerator::GenerateSiblings(const string& package_dir,
                                      GeneratorContext* context,
-                                     vector<string>* file_list) {
+                                     std::vector<string>* file_list,
+                                     std::vector<string>* annotation_list) {
   if (MultipleJavaFiles(file_, immutable_api_)) {
     for (int i = 0; i < file_->enum_type_count(); i++) {
-      EnumGenerator generator(file_->enum_type(i), immutable_api_,
-                              context_.get());
-      GenerateSibling<EnumGenerator>(package_dir, java_package_,
-                                     file_->enum_type(i),
-                                     context, file_list, "",
-                                     &generator,
-                                     &EnumGenerator::Generate);
+      if (HasDescriptorMethods(file_, context_->EnforceLite())) {
+        EnumGenerator generator(file_->enum_type(i), immutable_api_,
+                                context_.get());
+        GenerateSibling<EnumGenerator>(
+            package_dir, java_package_, file_->enum_type(i), context, file_list,
+            options_.annotate_code, annotation_list, "", &generator,
+            &EnumGenerator::Generate);
+      } else {
+        EnumLiteGenerator generator(file_->enum_type(i), immutable_api_,
+                                    context_.get());
+        GenerateSibling<EnumLiteGenerator>(
+            package_dir, java_package_, file_->enum_type(i), context, file_list,
+            options_.annotate_code, annotation_list, "", &generator,
+            &EnumLiteGenerator::Generate);
+      }
     }
     for (int i = 0; i < file_->message_type_count(); i++) {
       if (immutable_api_) {
-        GenerateSibling<MessageGenerator>(package_dir, java_package_,
-                                          file_->message_type(i),
-                                          context, file_list,
-                                          "OrBuilder",
-                                          message_generators_[i].get(),
-                                          &MessageGenerator::GenerateInterface);
+        GenerateSibling<MessageGenerator>(
+            package_dir, java_package_, file_->message_type(i), context,
+            file_list, options_.annotate_code, annotation_list, "OrBuilder",
+            message_generators_[i].get(), &MessageGenerator::GenerateInterface);
       }
-      GenerateSibling<MessageGenerator>(package_dir, java_package_,
-                                        file_->message_type(i),
-                                        context, file_list, "",
-                                        message_generators_[i].get(),
-                                        &MessageGenerator::Generate);
+      GenerateSibling<MessageGenerator>(
+          package_dir, java_package_, file_->message_type(i), context,
+          file_list, options_.annotate_code, annotation_list, "",
+          message_generators_[i].get(), &MessageGenerator::Generate);
     }
-    if (HasGenericServices(file_)) {
+    if (HasGenericServices(file_, context_->EnforceLite())) {
       for (int i = 0; i < file_->service_count(); i++) {
         google::protobuf::scoped_ptr<ServiceGenerator> generator(
             generator_factory_->NewServiceGenerator(file_->service(i)));
-        GenerateSibling<ServiceGenerator>(package_dir, java_package_,
-                                          file_->service(i),
-                                          context, file_list, "",
-                                          generator.get(),
-                                          &ServiceGenerator::Generate);
+        GenerateSibling<ServiceGenerator>(
+            package_dir, java_package_, file_->service(i), context, file_list,
+            options_.annotate_code, annotation_list, "", generator.get(),
+            &ServiceGenerator::Generate);
       }
     }
   }

@@ -96,6 +96,8 @@ namespace Google.Protobuf.Reflection
                 return descriptor;
             }
 
+            // dependencies contains direct dependencies and any *public* dependencies
+            // of those dependencies (transitively)... so we don't need to recurse here.
             foreach (FileDescriptor dependency in dependencies)
             {
                 dependency.DescriptorPool.descriptorsByName.TryGetValue(fullName, out result);

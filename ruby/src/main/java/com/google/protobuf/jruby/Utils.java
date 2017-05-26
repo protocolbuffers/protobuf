@@ -64,8 +64,8 @@ public class Utils {
         return context.runtime.newSymbol(typeName.replace("TYPE_", "").toLowerCase());
     }
 
-    public static void checkType(ThreadContext context, Descriptors.FieldDescriptor.Type fieldType,
-                            IRubyObject value, RubyModule typeClass) {
+    public static IRubyObject checkType(ThreadContext context, Descriptors.FieldDescriptor.Type fieldType,
+                                        IRubyObject value, RubyModule typeClass) {
         Ruby runtime = context.runtime;
         Object val;
         switch(fieldType) {
@@ -106,7 +106,7 @@ public class Utils {
                 break;
             case BYTES:
             case STRING:
-                validateStringEncoding(context.runtime, fieldType, value);
+                value = validateStringEncoding(context, fieldType, value);
                 break;
             case MESSAGE:
                 if (value.getMetaClass() != typeClass) {
@@ -127,6 +127,7 @@ public class Utils {
             default:
                 break;
         }
+        return value;
     }
 
     public static IRubyObject wrapPrimaryValue(ThreadContext context, Descriptors.FieldDescriptor.Type fieldType, Object value) {
@@ -148,10 +149,16 @@ public class Utils {
                 return runtime.newFloat((Double) value);
             case BOOL:
                 return (Boolean) value ? runtime.getTrue() : runtime.getFalse();
-            case BYTES:
-                return runtime.newString(((ByteString) value).toStringUtf8());
-            case STRING:
-                return runtime.newString(value.toString());
+            case BYTES: {
+                IRubyObject wrapped = runtime.newString(((ByteString) value).toStringUtf8());
+                wrapped.setFrozen(true);
+                return wrapped;
+            }
+            case STRING: {
+                IRubyObject wrapped = runtime.newString(value.toString());
+                wrapped.setFrozen(true);
+                return wrapped;
+            }
             default:
                 return runtime.getNil();
         }
@@ -180,25 +187,21 @@ public class Utils {
         }
     }
 
-    public static void validateStringEncoding(Ruby runtime, Descriptors.FieldDescriptor.Type type, IRubyObject value) {
+    public static IRubyObject validateStringEncoding(ThreadContext context, Descriptors.FieldDescriptor.Type type, IRubyObject value) {
         if (!(value instanceof RubyString))
-            throw runtime.newTypeError("Invalid argument for string field.");
-        Encoding encoding = ((RubyString) value).getEncoding();
+            throw context.runtime.newTypeError("Invalid argument for string field.");
         switch(type) {
             case BYTES:
-                if (encoding != ASCIIEncoding.INSTANCE)
-                    throw runtime.newTypeError("Encoding for bytes fields" +
-                            " must be \"ASCII-8BIT\", but was " + encoding);
+                value = ((RubyString)value).encode(context, context.runtime.evalScriptlet("Encoding::ASCII_8BIT"));
                 break;
             case STRING:
-                if (encoding != UTF8Encoding.INSTANCE
-                        && encoding != USASCIIEncoding.INSTANCE)
-                    throw runtime.newTypeError("Encoding for string fields" +
-                            " must be \"UTF-8\" or \"ASCII\", but was " + encoding);
+                value = ((RubyString)value).encode(context, context.runtime.evalScriptlet("Encoding::UTF_8"));
                 break;
             default:
                 break;
         }
+        value.setFrozen(true);
+        return value;
     }
 
     public static void checkNameAvailability(ThreadContext context, String name) {

@@ -149,6 +149,7 @@
 #include <string>
 
 #include <google/protobuf/stubs/common.h>
+#include <google/protobuf/stubs/hash.h>
 
 namespace google {
 namespace protobuf {
@@ -221,14 +222,6 @@ class LIBPROTOBUF_EXPORT StringPiece {
       : ptr_(str.data()), length_(0) {
     length_ = CheckedSsizeTFromSizeT(str.size());
   }
-#if defined(HAS_GLOBAL_STRING)
-  template <class Allocator>
-  StringPiece(  // NOLINT(runtime/explicit)
-      const basic_string<char, std::char_traits<char>, Allocator>& str)
-      : ptr_(str.data()), length_(0) {
-    length_ = CheckedSsizeTFromSizeT(str.size());
-  }
-#endif
 
   StringPiece(const char* offset, stringpiece_ssize_type len)
       : ptr_(offset), length_(len) {
@@ -434,7 +427,57 @@ inline bool operator>=(StringPiece x, StringPiece y) {
 // allow StringPiece to be logged
 extern std::ostream& operator<<(std::ostream& o, StringPiece piece);
 
+namespace internal {
+// StringPiece is not a POD and can not be used in an union (pre C++11). We
+// need a POD version of it.
+struct StringPiecePod {
+  // Create from a StringPiece.
+  static StringPiecePod CreateFromStringPiece(StringPiece str) {
+    StringPiecePod pod;
+    pod.data_ = str.data();
+    pod.size_ = str.size();
+    return pod;
+  }
+
+  // Cast to StringPiece.
+  operator StringPiece() const { return StringPiece(data_, size_); }
+
+  bool operator==(const char* value) const {
+    return StringPiece(data_, size_) == StringPiece(value);
+  }
+
+  char operator[](stringpiece_ssize_type i) const {
+    assert(0 <= i);
+    assert(i < size_);
+    return data_[i];
+  }
+
+  const char* data() const { return data_; }
+
+  stringpiece_ssize_type size() const {
+    return size_;
+  }
+
+  std::string ToString() const { return std::string(data_, size_); }
+ private:
+  const char* data_;
+  stringpiece_ssize_type size_;
+};
+
+}  // namespace internal
 }  // namespace protobuf
 }  // namespace google
+
+GOOGLE_PROTOBUF_HASH_NAMESPACE_DECLARATION_START
+template<> struct hash<StringPiece> {
+  size_t operator()(const StringPiece& s) const {
+    size_t result = 0;
+    for (const char *str = s.data(), *end = str + s.size(); str < end; str++) {  
+      result = 5 * result + *str;
+    }
+    return result;
+  }
+};
+GOOGLE_PROTOBUF_HASH_NAMESPACE_DECLARATION_END
 
 #endif  // STRINGS_STRINGPIECE_H_

@@ -56,7 +56,7 @@ void SetMessageVariables(const FieldDescriptor* descriptor,
                          int builderBitIndex,
                          const FieldGeneratorInfo* info,
                          ClassNameResolver* name_resolver,
-                         map<string, string>* variables) {
+                         std::map<string, string>* variables) {
   SetCommonFieldVariables(descriptor, info, variables);
 
   (*variables)["type"] =
@@ -70,8 +70,7 @@ void SetMessageVariables(const FieldDescriptor* descriptor,
   // by the proto compiler
   (*variables)["deprecation"] = descriptor->options().deprecated()
       ? "@java.lang.Deprecated " : "";
-  (*variables)["on_changed"] =
-      HasDescriptorMethods(descriptor->containing_type()) ? "onChanged();" : "";
+  (*variables)["required"] = descriptor->is_required() ? "true" : "false";
 
   if (SupportFieldPresence(descriptor->file())) {
     // For singular messages and builders, one bit is used for the hasField bit.
@@ -147,6 +146,7 @@ GenerateInterfaceMembers(io::Printer* printer) const {
 
 void ImmutableMessageFieldLiteGenerator::
 GenerateMembers(io::Printer* printer) const {
+
   printer->Print(variables_,
     "private $type$ $name$_;\n");
   PrintExtraFieldInfo(variables_, printer);
@@ -288,11 +288,9 @@ void ImmutableMessageFieldLiteGenerator::
 GenerateInitializationCode(io::Printer* printer) const {}
 
 void ImmutableMessageFieldLiteGenerator::
-GenerateMergingCode(io::Printer* printer) const {
+GenerateVisitCode(io::Printer* printer) const {
   printer->Print(variables_,
-    "if (other.has$capitalized_name$()) {\n"
-    "  merge$capitalized_name$(other.get$capitalized_name$());\n"
-    "}\n");
+    "$name$_ = visitor.visitMessage($name$_, other.$name$_);\n");
 }
 
 void ImmutableMessageFieldLiteGenerator::
@@ -302,19 +300,26 @@ GenerateDynamicMethodMakeImmutableCode(io::Printer* printer) const {
 
 void ImmutableMessageFieldLiteGenerator::
 GenerateParsingCode(io::Printer* printer) const {
+  // TODO(dweis): Update this code to avoid the builder allocation and instead
+  // only allocate a submessage that isn't made immutable. Rely on the top
+  // message calling makeImmutable once done to actually traverse the tree and
+  // finalize state. This will avoid:
+  // - transitive builder allocations
+  // - the extra transitive iteration for streamed fields
+  // - reallocations for copying repeated fields
   printer->Print(variables_,
-    "$type$.Builder subBuilder = null;\n"
-    "if ($is_field_present_message$) {\n"
-    "  subBuilder = $name$_.toBuilder();\n"
-    "}\n");
+      "$type$.Builder subBuilder = null;\n"
+      "if ($is_field_present_message$) {\n"
+      "  subBuilder = $name$_.toBuilder();\n"
+      "}\n");
 
     if (GetType(descriptor_) == FieldDescriptor::TYPE_GROUP) {
       printer->Print(variables_,
-        "$name$_ = input.readGroup($number$, $type$.PARSER,\n"
+        "$name$_ = input.readGroup($number$, $type$.parser(),\n"
         "    extensionRegistry);\n");
     } else {
       printer->Print(variables_,
-        "$name$_ = input.readMessage($type$.PARSER, extensionRegistry);\n");
+        "$name$_ = input.readMessage($type$.parser(), extensionRegistry);\n");
     }
 
   printer->Print(variables_,
@@ -446,6 +451,7 @@ GenerateMembers(io::Printer* printer) const {
     "}\n");
 }
 
+
 void ImmutableMessageOneofFieldLiteGenerator::
 GenerateBuilderMembers(io::Printer* printer) const {
   // The comments above the methods below are based on a hypothetical
@@ -506,9 +512,12 @@ GenerateBuilderMembers(io::Printer* printer) const {
 }
 
 void ImmutableMessageOneofFieldLiteGenerator::
-GenerateMergingCode(io::Printer* printer) const {
+GenerateVisitCode(io::Printer* printer) const {
   printer->Print(variables_,
-    "merge$capitalized_name$(other.get$capitalized_name$());\n");
+    "$oneof_name$_ = visitor.visitOneofMessage(\n"
+    "    $has_oneof_case_message$,\n"
+    "    $oneof_name$_,\n"
+    "    other.$oneof_name$_);\n");
 }
 
 void ImmutableMessageOneofFieldLiteGenerator::
@@ -521,11 +530,12 @@ GenerateParsingCode(io::Printer* printer) const {
 
     if (GetType(descriptor_) == FieldDescriptor::TYPE_GROUP) {
       printer->Print(variables_,
-        "$oneof_name$_ = input.readGroup($number$, $type$.PARSER,\n"
+        "$oneof_name$_ = input.readGroup($number$, $type$.parser(),\n"
         "    extensionRegistry);\n");
     } else {
       printer->Print(variables_,
-        "$oneof_name$_ = input.readMessage($type$.PARSER, extensionRegistry);\n");
+        "$oneof_name$_ =\n"
+        "     input.readMessage($type$.parser(), extensionRegistry);\n");
     }
 
   printer->Print(variables_,
@@ -634,7 +644,8 @@ GenerateMembers(io::Printer* printer) const {
   printer->Print(variables_,
     "private void ensure$capitalized_name$IsMutable() {\n"
     "  if (!$is_mutable$) {\n"
-    "    $name$_ = newProtobufList($name$_);\n"
+    "    $name$_ =\n"
+    "        com.google.protobuf.GeneratedMessageLite.mutableCopy($name$_);\n"
     "   }\n"
     "}\n"
     "\n");
@@ -846,28 +857,16 @@ GenerateFieldBuilderInitializationCode(io::Printer* printer)  const {
     "get$capitalized_name$FieldBuilder();\n");
 }
 
+
 void RepeatedImmutableMessageFieldLiteGenerator::
 GenerateInitializationCode(io::Printer* printer) const {
   printer->Print(variables_, "$name$_ = emptyProtobufList();\n");
 }
 
 void RepeatedImmutableMessageFieldLiteGenerator::
-GenerateMergingCode(io::Printer* printer) const {
-  // The code below does two optimizations (non-nested builder case):
-  //   1. If the other list is empty, there's nothing to do. This ensures we
-  //      don't allocate a new array if we already have an immutable one.
-  //   2. If the other list is non-empty and our current list is empty, we can
-  //      reuse the other list which is guaranteed to be immutable.
+GenerateVisitCode(io::Printer* printer) const {
   printer->Print(variables_,
-    "if (!other.$name$_.isEmpty()) {\n"
-    "  if ($name$_.isEmpty()) {\n"
-    "    $name$_ = other.$name$_;\n"
-    "  } else {\n"
-    "    ensure$capitalized_name$IsMutable();\n"
-    "    $name$_.addAll(other.$name$_);\n"
-    "  }\n"
-    "  $on_changed$\n"
-    "}\n");
+      "$name$_= visitor.visitList($name$_, other.$name$_);\n");
 }
 
 void RepeatedImmutableMessageFieldLiteGenerator::
@@ -880,16 +879,18 @@ void RepeatedImmutableMessageFieldLiteGenerator::
 GenerateParsingCode(io::Printer* printer) const {
   printer->Print(variables_,
     "if (!$is_mutable$) {\n"
-    "  $name$_ = newProtobufList();\n"
+    "  $name$_ =\n"
+    "      com.google.protobuf.GeneratedMessageLite.mutableCopy($name$_);\n"
     "}\n");
 
     if (GetType(descriptor_) == FieldDescriptor::TYPE_GROUP) {
       printer->Print(variables_,
-        "$name$_.add(input.readGroup($number$, $type$.PARSER,\n"
+        "$name$_.add(input.readGroup($number$, $type$.parser(),\n"
         "    extensionRegistry));\n");
     } else {
       printer->Print(variables_,
-        "$name$_.add(input.readMessage($type$.PARSER, extensionRegistry));\n");
+        "$name$_.add(\n"
+        "    input.readMessage($type$.parser(), extensionRegistry));\n");
     }
 }
 

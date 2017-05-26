@@ -31,6 +31,14 @@
 // If you want to build protocol buffers in your own project without adding the
 // project dependency, you can just add this file.
 
+
+// This warning seems to treat code differently when it is #imported than when
+// it is inline in the file.  GPBDictionary.m compiles cleanly in other targets,
+// but when #imported here it triggers a bunch of warnings that don't make
+// much sense, and don't trigger when compiled directly.  So we shut off the
+// warnings here.
+#pragma clang diagnostic ignored "-Wnullability-completeness"
+
 #import "GPBArray.m"
 #import "GPBCodedInputStream.m"
 #import "GPBCodedOutputStream.m"
@@ -46,17 +54,13 @@
 #import "GPBWellKnownTypes.m"
 #import "GPBWireFormat.m"
 
-#import "google/protobuf/Descriptor.pbobjc.m"
-
-// Duration and Timestamp are #imported into GPBWellKnownTypes.m to the
-// Objective C categories added will always be linked in with the classes.
 #import "google/protobuf/Any.pbobjc.m"
 #import "google/protobuf/Api.pbobjc.m"
-// #import "google/protobuf/Duration.pbobjc.m"
+#import "google/protobuf/Duration.pbobjc.m"
 #import "google/protobuf/Empty.pbobjc.m"
 #import "google/protobuf/FieldMask.pbobjc.m"
 #import "google/protobuf/SourceContext.pbobjc.m"
 #import "google/protobuf/Struct.pbobjc.m"
-// #import "google/protobuf/Timestamp.pbobjc.m"
+#import "google/protobuf/Timestamp.pbobjc.m"
 #import "google/protobuf/Type.pbobjc.m"
 #import "google/protobuf/Wrappers.pbobjc.m"

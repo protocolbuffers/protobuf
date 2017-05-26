@@ -80,6 +80,12 @@ class RepeatedFieldRef<
 
   typedef IteratorType iterator;
   typedef IteratorType const_iterator;
+  typedef T value_type;
+  typedef T& reference;
+  typedef const T& const_reference;
+  typedef int size_type;
+  typedef ptrdiff_t difference_type;
+
   iterator begin() const {
     return iterator(data_, accessor_, true);
   }
@@ -202,11 +208,18 @@ class RepeatedFieldRef<
 
   typedef IteratorType iterator;
   typedef IteratorType const_iterator;
+  typedef T value_type;
+  typedef T& reference;
+  typedef const T& const_reference;
+  typedef int size_type;
+  typedef ptrdiff_t difference_type;
+
   iterator begin() const {
     return iterator(data_, accessor_, true, NewMessage());
   }
   iterator end() const {
-    return iterator(data_, accessor_, false, NewMessage());
+    // The end iterator must not be dereferenced, no need for scratch space.
+    return iterator(data_, accessor_, false, NULL);
   }
 
  private:
@@ -356,7 +369,7 @@ class LIBPROTOBUF_EXPORT RepeatedFieldAccessor {
   virtual void Swap(Field* data, const RepeatedFieldAccessor* other_mutator,
                     Field* other_data) const = 0;
 
-  // Create an iterator that points at the begining of the repeated field.
+  // Create an iterator that points at the beginning of the repeated field.
   virtual Iterator* BeginIterator(const Field* data) const = 0;
   // Create an iterator that points at the end of the repeated field.
   virtual Iterator* EndIterator(const Field* data) const = 0;
@@ -428,13 +441,13 @@ class RepeatedFieldRefIterator
  public:
   // Constructor for non-message fields.
   RepeatedFieldRefIterator(const void* data,
-                           const RepeatedFieldAccessor* accessor,
-                           bool begin)
-      : data_(data), accessor_(accessor),
-        iterator_(begin ? accessor->BeginIterator(data) :
-                          accessor->EndIterator(data)),
-        scratch_space_(new AccessorValueType) {
-  }
+                           const RepeatedFieldAccessor* accessor, bool begin)
+      : data_(data),
+        accessor_(accessor),
+        iterator_(begin ? accessor->BeginIterator(data)
+                        : accessor->EndIterator(data)),
+        // The end iterator must not be dereferenced, no need for scratch space.
+        scratch_space_(begin ? new AccessorValueType : NULL) {}
   // Constructor for message fields.
   RepeatedFieldRefIterator(const void* data,
                            const RepeatedFieldAccessor* accessor,
@@ -553,12 +566,12 @@ struct RefTypeTraits<
 
 template<typename T>
 struct RefTypeTraits<
-    T, typename internal::enable_if<internal::is_same<string, T>::value>::type> {
+    T, typename internal::enable_if< ::google::protobuf::internal::is_same<string, T>::value>::type> {
   typedef RepeatedFieldRefIterator<T> iterator;
   typedef RepeatedFieldAccessor AccessorType;
   typedef string AccessorValueType;
-  typedef string IteratorValueType;
-  typedef string* IteratorPointerType;
+  typedef const string IteratorValueType;
+  typedef const string* IteratorPointerType;
   static const FieldDescriptor::CppType cpp_type =
       FieldDescriptor::CPPTYPE_STRING;
   static const Descriptor* GetMessageFieldDescriptor() {

@@ -28,17 +28,27 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+#ifdef _MSC_VER
+#include <io.h>
+#else
+#include <unistd.h>
+#endif
 #include <climits>
+#include <errno.h>
+#include <fcntl.h>
 #include <fstream>
 #include <iostream>
 #include <sstream>
+#include <stdlib.h>
 #include <vector>
 
 #include <google/protobuf/stubs/hash.h>
 #include <google/protobuf/compiler/objectivec/objectivec_helpers.h>
-#include <google/protobuf/io/coded_stream.h>
-#include <google/protobuf/io/zero_copy_stream_impl.h>
 #include <google/protobuf/descriptor.pb.h>
+#include <google/protobuf/io/coded_stream.h>
+#include <google/protobuf/io/printer.h>
+#include <google/protobuf/io/zero_copy_stream_impl.h>
+#include <google/protobuf/stubs/common.h>
 #include <google/protobuf/stubs/strutil.h>
 
 // NOTE: src/google/protobuf/compiler/plugin.cc makes use of cerr for some
@@ -49,46 +59,15 @@ namespace protobuf {
 namespace compiler {
 namespace objectivec {
 
+Options::Options() {
+  // Default is the value of the env for the package prefixes.
+  const char* file_path = getenv("GPB_OBJC_EXPECTED_PACKAGE_PREFIXES");
+  if (file_path) {
+    expected_prefixes_path = file_path;
+  }
+}
+
 namespace {
-
-// islower()/isupper()/tolower()/toupper() change based on locale.
-//
-// src/google/protobuf/stubs/strutil.h:150 has the same pattern. For the
-// Objective C plugin, test failures were seen on TravisCI because isupper('A')
-// was coming back false for some server's locale.  This approach avoids any
-// such issues.
-
-bool IsLower(const char c) {
-  return ('a' <= c && c <= 'z');
-}
-
-bool IsUpper(const char c) {
-  return ('A' <= c && c <= 'Z');
-}
-
-char ToLower(char c) {
-  if ('A' <= c && c <= 'Z') {
-    c += 'a' - 'A';
-  }
-  return c;
-}
-
-// toupper() changes based on locale.  We don't want this!
-char ToUpper(char c) {
-  if ('a' <= c && c <= 'z') {
-    c += 'A' - 'a';
-  }
-  return c;
-}
-
-string TrimString(const string& s) {
-  string::size_type start = s.find_first_not_of(" \n\r\t");
-  if (start == string::npos) {
-    return "";
-  }
-  string::size_type end = s.find_last_not_of(" \n\r\t") + 1;
-  return s.substr(start, end - start);
-}
 
 hash_set<string> MakeWordsMap(const char* const words[], size_t num_words) {
   hash_set<string> result;
@@ -103,6 +82,10 @@ const char* const kUpperSegmentsList[] = {"url", "http", "https"};
 hash_set<string> kUpperSegments =
     MakeWordsMap(kUpperSegmentsList, GOOGLE_ARRAYSIZE(kUpperSegmentsList));
 
+bool ascii_isnewline(char c) {
+  return c == '\n' || c == '\r';
+}
+
 // Internal helper for name handing.
 // Do not expose this outside of helpers, stick to having functions for specific
 // cases (ClassName(), FieldName()), so there is always consistent suffix rules.
@@ -115,7 +98,7 @@ string UnderscoresToCamelCase(const string& input, bool first_capitalized) {
   bool last_char_was_upper = false;
   for (int i = 0; i < input.size(); i++) {
     char c = input[i];
-    if (c >= '0' && c <= '9') {
+    if (ascii_isdigit(c)) {
       if (!last_char_was_number) {
         values.push_back(current);
         current = "";
@@ -123,7 +106,7 @@ string UnderscoresToCamelCase(const string& input, bool first_capitalized) {
       current += c;
       last_char_was_number = last_char_was_lower = last_char_was_upper = false;
       last_char_was_number = true;
-    } else if (IsLower(c)) {
+    } else if (ascii_islower(c)) {
       // lowercase letter can follow a lowercase or uppercase letter
       if (!last_char_was_lower && !last_char_was_upper) {
         values.push_back(current);
@@ -132,12 +115,12 @@ string UnderscoresToCamelCase(const string& input, bool first_capitalized) {
       current += c;  // already lower
       last_char_was_number = last_char_was_lower = last_char_was_upper = false;
       last_char_was_lower = true;
-    } else if (IsUpper(c)) {
+    } else if (ascii_isupper(c)) {
       if (!last_char_was_upper) {
         values.push_back(current);
         current = "";
       }
-      current += ToLower(c);
+      current += ascii_tolower(c);
       last_char_was_number = last_char_was_lower = last_char_was_upper = false;
       last_char_was_upper = true;
     } else {
@@ -146,24 +129,27 @@ string UnderscoresToCamelCase(const string& input, bool first_capitalized) {
   }
   values.push_back(current);
 
+  string result;
+  bool first_segment_forces_upper = false;
   for (vector<string>::iterator i = values.begin(); i != values.end(); ++i) {
     string value = *i;
     bool all_upper = (kUpperSegments.count(value) > 0);
+    if (all_upper && (result.length() == 0)) {
+      first_segment_forces_upper = true;
+    }
     for (int j = 0; j < value.length(); j++) {
       if (j == 0 || all_upper) {
-        value[j] = ToUpper(value[j]);
+        value[j] = ascii_toupper(value[j]);
       } else {
         // Nothing, already in lower.
       }
     }
-    *i = value;
+    result += value;
   }
-  string result;
-  for (vector<string>::iterator i = values.begin(); i != values.end(); ++i) {
-    result += *i;
-  }
-  if ((result.length() != 0) && !first_capitalized) {
-    result[0] = ToLower(result[0]);
+  if ((result.length() != 0) &&
+      !first_capitalized &&
+      !first_segment_forces_upper) {
+    result[0] = ascii_tolower(result[0]);
   }
   return result;
 }
@@ -224,10 +210,14 @@ const char* const kReservedWordList[] = {
 hash_set<string> kReservedWords =
     MakeWordsMap(kReservedWordList, GOOGLE_ARRAYSIZE(kReservedWordList));
 
-string SanitizeNameForObjC(const string& input, const string& extension) {
+string SanitizeNameForObjC(const string& input,
+                           const string& extension,
+                           string* out_suffix_added) {
   if (kReservedWords.count(input) > 0) {
+    if (out_suffix_added) *out_suffix_added = extension;
     return input + extension;
   }
+  if (out_suffix_added) out_suffix_added->clear();
   return input;
 }
 
@@ -237,11 +227,6 @@ string NameFromFieldDescriptor(const FieldDescriptor* field) {
   } else {
     return field->name();
   }
-}
-
-// Escape C++ trigraphs by escaping question marks to \?
-string EscapeTrigraphs(const string& to_escape) {
-  return StringReplace(to_escape, "?", "\\?", true);
 }
 
 void PathSplit(const string& path, string* directory, string* basename) {
@@ -272,7 +257,7 @@ bool IsSpecialName(const string& name, const string* special_names,
         // If name is longer than the retained_name[i] that it matches
         // the next character must be not lower case (newton vs newTon vs
         // new_ton).
-        return !IsLower(name[length]);
+        return !ascii_islower(name[length]);
       } else {
         return true;
       }
@@ -281,7 +266,40 @@ bool IsSpecialName(const string& name, const string* special_names,
   return false;
 }
 
+string GetZeroEnumNameForFlagType(const FlagType flag_type) {
+  switch(flag_type) {
+    case FLAGTYPE_DESCRIPTOR_INITIALIZATION:
+      return "GPBDescriptorInitializationFlag_None";
+    case FLAGTYPE_EXTENSION:
+      return "GPBExtensionNone";
+    case FLAGTYPE_FIELD:
+      return "GPBFieldNone";
+    default:
+      GOOGLE_LOG(FATAL) << "Can't get here.";
+      return "0";
+  }
+}
+
+string GetEnumNameForFlagType(const FlagType flag_type) {
+  switch(flag_type) {
+    case FLAGTYPE_DESCRIPTOR_INITIALIZATION:
+      return "GPBDescriptorInitializationFlags";
+    case FLAGTYPE_EXTENSION:
+      return "GPBExtensionOptions";
+    case FLAGTYPE_FIELD:
+      return "GPBFieldFlags";
+    default:
+      GOOGLE_LOG(FATAL) << "Can't get here.";
+      return string();
+  }
+}
+
 }  // namespace
+
+// Escape C++ trigraphs by escaping question marks to \?
+string EscapeTrigraphs(const string& to_escape) {
+  return StringReplace(to_escape, "?", "\\?", true);
+}
 
 string StripProto(const string& filename) {
   if (HasSuffixString(filename, ".protodevel")) {
@@ -290,6 +308,16 @@ string StripProto(const string& filename) {
     return StripSuffixString(filename, ".proto");
   }
 }
+
+void StringPieceTrimWhitespace(StringPiece* input) {
+  while (!input->empty() && ascii_isspace(*input->data())) {
+    input->remove_prefix(1);
+  }
+  while (!input->empty() && ascii_isspace((*input)[input->length() - 1])) {
+    input->remove_suffix(1);
+  }
+}
+
 
 bool IsRetainedName(const string& name) {
   // List of prefixes from
@@ -312,11 +340,10 @@ string BaseFileName(const FileDescriptor* file) {
   return basename;
 }
 
-string FileName(const FileDescriptor* file) {
-  string path = FilePath(file);
-  string basename;
-  PathSplit(path, NULL, &basename);
-  return basename;
+string FileClassPrefix(const FileDescriptor* file) {
+  // Default is empty string, no need to check has_objc_class_prefix.
+  string result = file->options().objc_class_prefix();
+  return result;
 }
 
 string FilePath(const FileDescriptor* file) {
@@ -336,34 +363,17 @@ string FilePath(const FileDescriptor* file) {
   return output;
 }
 
-string FileClassPrefix(const FileDescriptor* file) {
-  // Default is empty string, no need to check has_objc_class_prefix.
-  string result = file->options().objc_class_prefix();
-  return result;
-}
+string FilePathBasename(const FileDescriptor* file) {
+  string output;
+  string basename;
+  string directory;
+  PathSplit(file->name(), &directory, &basename);
+  basename = StripProto(basename);
 
-void ValidateObjCClassPrefix(const FileDescriptor* file) {
-  string prefix = file->options().objc_class_prefix();
-  if (prefix.length() > 0) {
-    // NOTE: src/google/protobuf/compiler/plugin.cc makes use of cerr for some
-    // error cases, so it seems to be ok to use as a back door for errors.
-    if (!IsUpper(prefix[0])) {
-      cerr << endl
-           << "protoc:0: warning: Invalid 'option objc_class_prefix = \""
-           << prefix << "\";' in '" << file->name() << "';"
-           << " it should start with a capital letter."
-           << endl;
-      cerr.flush();
-    }
-    if (prefix.length() < 3) {
-      cerr << endl
-           << "protoc:0: warning: Invalid 'option objc_class_prefix = \""
-           << prefix << "\";' in '" << file->name() << "';"
-           << " Apple recommends they should be at least 3 characters long."
-           << endl;
-      cerr.flush();
-    }
-  }
+  // CamelCase to be more ObjC friendly.
+  output = UnderscoresToCamelCase(basename, true);
+
+  return output;
 }
 
 string FileClassName(const FileDescriptor* file) {
@@ -372,7 +382,7 @@ string FileClassName(const FileDescriptor* file) {
   name += "Root";
   // There aren't really any reserved words that end in "Root", but playing
   // it safe and checking.
-  return SanitizeNameForObjC(name, "_RootClass");
+  return SanitizeNameForObjC(name, "_RootClass", NULL);
 }
 
 string ClassNameWorker(const Descriptor* descriptor) {
@@ -394,11 +404,15 @@ string ClassNameWorker(const EnumDescriptor* descriptor) {
 }
 
 string ClassName(const Descriptor* descriptor) {
+  return ClassName(descriptor, NULL);
+}
+
+string ClassName(const Descriptor* descriptor, string* out_suffix_added) {
   // 1. Message names are used as is (style calls for CamelCase, trust it).
   // 2. Check for reserved word at the very end and then suffix things.
   string prefix = FileClassPrefix(descriptor->file());
   string name = ClassNameWorker(descriptor);
-  return SanitizeNameForObjC(prefix + name, "_Class");
+  return SanitizeNameForObjC(prefix + name, "_Class", out_suffix_added);
 }
 
 string EnumName(const EnumDescriptor* descriptor) {
@@ -412,7 +426,7 @@ string EnumName(const EnumDescriptor* descriptor) {
   //    yields Fixed_Class, Fixed_Size.
   string name = FileClassPrefix(descriptor->file());
   name += ClassNameWorker(descriptor);
-  return SanitizeNameForObjC(name, "_Enum");
+  return SanitizeNameForObjC(name, "_Enum", NULL);
 }
 
 string EnumValueName(const EnumValueDescriptor* descriptor) {
@@ -427,7 +441,7 @@ string EnumValueName(const EnumValueDescriptor* descriptor) {
   const string& name = class_name + "_" + value_str;
   // There aren't really any reserved words with an underscore and a leading
   // capital letter, but playing it safe and checking.
-  return SanitizeNameForObjC(name, "_Value");
+  return SanitizeNameForObjC(name, "_Value", NULL);
 }
 
 string EnumValueShortName(const EnumValueDescriptor* descriptor) {
@@ -453,10 +467,10 @@ string UnCamelCaseEnumShortName(const string& name) {
   string result;
   for (int i = 0; i < name.size(); i++) {
     char c = name[i];
-    if (i > 0 && c >= 'A' && c <= 'Z') {
+    if (i > 0 && ascii_isupper(c)) {
       result += '_';
     }
-    result += ToUpper(c);
+    result += ascii_toupper(c);
   }
   return result;
 }
@@ -464,7 +478,7 @@ string UnCamelCaseEnumShortName(const string& name) {
 string ExtensionMethodName(const FieldDescriptor* descriptor) {
   const string& name = NameFromFieldDescriptor(descriptor);
   const string& result = UnderscoresToCamelCase(name, false);
-  return SanitizeNameForObjC(result, "_Extension");
+  return SanitizeNameForObjC(result, "_Extension", NULL);
 }
 
 string FieldName(const FieldDescriptor* field) {
@@ -479,7 +493,7 @@ string FieldName(const FieldDescriptor* field) {
       result += "_p";
     }
   }
-  return SanitizeNameForObjC(result, "_p");
+  return SanitizeNameForObjC(result, "_p", NULL);
 }
 
 string FieldNameCapitalized(const FieldDescriptor* field) {
@@ -487,7 +501,7 @@ string FieldNameCapitalized(const FieldDescriptor* field) {
   // name.
   string result = FieldName(field);
   if (result.length() > 0) {
-    result[0] = ToUpper(result[0]);
+    result[0] = ascii_toupper(result[0]);
   }
   return result;
 }
@@ -511,7 +525,7 @@ string OneofNameCapitalized(const OneofDescriptor* descriptor) {
   // Use the common handling and then up-case the first letter.
   string result = OneofName(descriptor);
   if (result.length() > 0) {
-    result[0] = ToUpper(result[0]);
+    result[0] = ascii_toupper(result[0]);
   }
   return result;
 }
@@ -526,8 +540,8 @@ string UnCamelCaseFieldName(const string& name, const FieldDescriptor* field) {
   }
   if (field->type() == FieldDescriptor::TYPE_GROUP) {
     if (worker.length() > 0) {
-      if (worker[0] >= 'a' && worker[0] <= 'z') {
-        worker[0] = ToUpper(worker[0]);
+      if (ascii_islower(worker[0])) {
+        worker[0] = ascii_toupper(worker[0]);
       }
     }
     return worker;
@@ -535,11 +549,11 @@ string UnCamelCaseFieldName(const string& name, const FieldDescriptor* field) {
     string result;
     for (int i = 0; i < worker.size(); i++) {
       char c = worker[i];
-      if (c >= 'A' && c <= 'Z') {
+      if (ascii_isupper(c)) {
         if (i > 0) {
           result += '_';
         }
-        result += ToLower(c);
+        result += ascii_tolower(c);
       } else {
         result += c;
       }
@@ -777,7 +791,7 @@ string DefaultValue(const FieldDescriptor* field) {
         uint32 length = ghtonl(default_string.length());
         string bytes((const char*)&length, sizeof(length));
         bytes.append(default_string);
-        return "(NSData*)\"" + CEscape(bytes) + "\"";
+        return "(NSData*)\"" + EscapeTrigraphs(CEscape(bytes)) + "\"";
       } else {
         return "@\"" + EscapeTrigraphs(CEscape(default_string)) + "\"";
       }
@@ -794,21 +808,71 @@ string DefaultValue(const FieldDescriptor* field) {
   return NULL;
 }
 
-string BuildFlagsString(const vector<string>& strings) {
-  if (strings.size() == 0) {
-    return "0";
+bool HasNonZeroDefaultValue(const FieldDescriptor* field) {
+  // Repeated fields don't have defaults.
+  if (field->is_repeated()) {
+    return false;
   }
-  string string;
+
+  // As much as checking field->has_default_value() seems useful, it isn't
+  // because of enums. proto2 syntax allows the first item in an enum (the
+  // default) to be non zero. So checking field->has_default_value() would
+  // result in missing this non zero default.  See MessageWithOneBasedEnum in
+  // objectivec/Tests/unittest_objc.proto for a test Message to confirm this.
+
+  // Some proto file set the default to the zero value, so make sure the value
+  // isn't the zero case.
+  switch (field->cpp_type()) {
+    case FieldDescriptor::CPPTYPE_INT32:
+      return field->default_value_int32() != 0;
+    case FieldDescriptor::CPPTYPE_UINT32:
+      return field->default_value_uint32() != 0U;
+    case FieldDescriptor::CPPTYPE_INT64:
+      return field->default_value_int64() != 0LL;
+    case FieldDescriptor::CPPTYPE_UINT64:
+      return field->default_value_uint64() != 0ULL;
+    case FieldDescriptor::CPPTYPE_DOUBLE:
+      return field->default_value_double() != 0.0;
+    case FieldDescriptor::CPPTYPE_FLOAT:
+      return field->default_value_float() != 0.0f;
+    case FieldDescriptor::CPPTYPE_BOOL:
+      return field->default_value_bool();
+    case FieldDescriptor::CPPTYPE_STRING: {
+      const string& default_string = field->default_value_string();
+      return default_string.length() != 0;
+    }
+    case FieldDescriptor::CPPTYPE_ENUM:
+      return field->default_value_enum()->number() != 0;
+    case FieldDescriptor::CPPTYPE_MESSAGE:
+      return false;
+  }
+
+  // Some compilers report reaching end of function even though all cases of
+  // the enum are handed in the switch.
+  GOOGLE_LOG(FATAL) << "Can't get here.";
+  return false;
+}
+
+string BuildFlagsString(const FlagType flag_type,
+                        const vector<string>& strings) {
+  if (strings.size() == 0) {
+    return GetZeroEnumNameForFlagType(flag_type);
+  } else if (strings.size() == 1) {
+    return strings[0];
+  }
+  string string("(" + GetEnumNameForFlagType(flag_type) + ")(");
   for (size_t i = 0; i != strings.size(); ++i) {
     if (i > 0) {
       string.append(" | ");
     }
     string.append(strings[i]);
   }
+  string.append(")");
   return string;
 }
 
-string BuildCommentsString(const SourceLocation& location) {
+string BuildCommentsString(const SourceLocation& location,
+                           bool prefer_single_line) {
   const string& comments = location.leading_comments.empty()
                                ? location.trailing_comments
                                : location.leading_comments;
@@ -817,19 +881,298 @@ string BuildCommentsString(const SourceLocation& location) {
   while (!lines.empty() && lines.back().empty()) {
     lines.pop_back();
   }
-  string prefix("//");
-  string suffix("\n");
-  string final_comments;
-  for (int i = 0; i < lines.size(); i++) {
-    // We use $ for delimiters, so replace comments with dollars with
-    // html escaped version.
-    // None of the other compilers handle this (as of this writing) but we
-    // ran into it once, so just to be safe.
-    final_comments +=
-        prefix + StringReplace(lines[i], "$", "&#36;", true) + suffix;
+  // If there are no comments, just return an empty string.
+  if (lines.size() == 0) {
+    return "";
   }
+
+  string prefix;
+  string suffix;
+  string final_comments;
+  string epilogue;
+
+  bool add_leading_space = false;
+
+  if (prefer_single_line && lines.size() == 1) {
+    prefix = "/** ";
+    suffix = " */\n";
+  } else {
+    prefix = "* ";
+    suffix = "\n";
+    final_comments += "/**\n";
+    epilogue = " **/\n";
+    add_leading_space = true;
+  }
+
+  for (int i = 0; i < lines.size(); i++) {
+    string line = StripPrefixString(lines[i], " ");
+    // HeaderDoc and appledoc use '\' and '@' for markers; escape them.
+    line = StringReplace(line, "\\", "\\\\", true);
+    line = StringReplace(line, "@", "\\@", true);
+    // Decouple / from * to not have inline comments inside comments.
+    line = StringReplace(line, "/*", "/\\*", true);
+    line = StringReplace(line, "*/", "*\\/", true);
+    line = prefix + line;
+    StripWhitespace(&line);
+    // If not a one line, need to add the first space before *, as
+    // StripWhitespace would have removed it.
+    line = (add_leading_space ? " " : "") + line;
+    final_comments += line + suffix;
+  }
+  final_comments += epilogue;
   return final_comments;
 }
+
+// Making these a generator option for folks that don't use CocoaPods, but do
+// want to put the library in a framework is an interesting question. The
+// problem is it means changing sources shipped with the library to actually
+// use a different value; so it isn't as simple as a option.
+const char* const ProtobufLibraryFrameworkName = "Protobuf";
+
+string ProtobufFrameworkImportSymbol(const string& framework_name) {
+  // GPB_USE_[framework_name]_FRAMEWORK_IMPORTS
+  string result = string("GPB_USE_");
+  result += ToUpper(framework_name);
+  result += "_FRAMEWORK_IMPORTS";
+  return result;
+}
+
+bool IsProtobufLibraryBundledProtoFile(const FileDescriptor* file) {
+  // We don't check the name prefix or proto package because some files
+  // (descriptor.proto), aren't shipped generated by the library, so this
+  // seems to be the safest way to only catch the ones shipped.
+  const string name = file->name();
+  if (name == "google/protobuf/any.proto" ||
+      name == "google/protobuf/api.proto" ||
+      name == "google/protobuf/duration.proto" ||
+      name == "google/protobuf/empty.proto" ||
+      name == "google/protobuf/field_mask.proto" ||
+      name == "google/protobuf/source_context.proto" ||
+      name == "google/protobuf/struct.proto" ||
+      name == "google/protobuf/timestamp.proto" ||
+      name == "google/protobuf/type.proto" ||
+      name == "google/protobuf/wrappers.proto") {
+    return true;
+  }
+  return false;
+}
+
+bool ReadLine(StringPiece* input, StringPiece* line) {
+  for (int len = 0; len < input->size(); ++len) {
+    if (ascii_isnewline((*input)[len])) {
+      *line = StringPiece(input->data(), len);
+      ++len;  // advance over the newline
+      *input = StringPiece(input->data() + len, input->size() - len);
+      return true;
+    }
+  }
+  return false;  // Ran out of input with no newline.
+}
+
+void RemoveComment(StringPiece* input) {
+  int offset = input->find('#');
+  if (offset != StringPiece::npos) {
+    input->remove_suffix(input->length() - offset);
+  }
+}
+
+namespace {
+
+class ExpectedPrefixesCollector : public LineConsumer {
+ public:
+  ExpectedPrefixesCollector(map<string, string>* inout_package_to_prefix_map)
+      : prefix_map_(inout_package_to_prefix_map) {}
+
+  virtual bool ConsumeLine(const StringPiece& line, string* out_error);
+
+ private:
+  map<string, string>* prefix_map_;
+};
+
+bool ExpectedPrefixesCollector::ConsumeLine(
+    const StringPiece& line, string* out_error) {
+  int offset = line.find('=');
+  if (offset == StringPiece::npos) {
+    *out_error =
+        string("Expected prefixes file line without equal sign: '") +
+        line.ToString() + "'.";
+    return false;
+  }
+  StringPiece package(line, 0, offset);
+  StringPiece prefix(line, offset + 1, line.length() - offset - 1);
+  StringPieceTrimWhitespace(&package);
+  StringPieceTrimWhitespace(&prefix);
+  // Don't really worry about error checking the package/prefix for
+  // being valid.  Assume the file is validated when it is created/edited.
+  (*prefix_map_)[package.ToString()] = prefix.ToString();
+  return true;
+}
+
+bool LoadExpectedPackagePrefixes(const Options &generation_options,
+                                 map<string, string>* prefix_map,
+                                 string* out_error) {
+  if (generation_options.expected_prefixes_path.empty()) {
+    return true;
+  }
+
+  ExpectedPrefixesCollector collector(prefix_map);
+  return ParseSimpleFile(
+      generation_options.expected_prefixes_path, &collector, out_error);
+}
+
+bool ValidateObjCClassPrefix(
+    const FileDescriptor* file,
+    const string& expected_prefixes_path,
+    const map<string, string>& expected_package_prefixes,
+    string* out_error) {
+  const string prefix = file->options().objc_class_prefix();
+  const string package = file->package();
+
+  // NOTE: src/google/protobuf/compiler/plugin.cc makes use of cerr for some
+  // error cases, so it seems to be ok to use as a back door for warnings.
+
+  // Check: Error - See if there was an expected prefix for the package and
+  // report if it doesn't match (wrong or missing).
+  map<string, string>::const_iterator package_match =
+      expected_package_prefixes.find(package);
+  if (package_match != expected_package_prefixes.end()) {
+    // There was an entry, and...
+    if (package_match->second == prefix) {
+      // ...it matches.  All good, out of here!
+      return true;
+    } else {
+      // ...it didn't match!
+      *out_error = "error: Expected 'option objc_class_prefix = \"" +
+                   package_match->second + "\";' for package '" + package +
+                   "' in '" + file->name() + "'";
+      if (prefix.length()) {
+        *out_error += "; but found '" + prefix + "' instead";
+      }
+      *out_error += ".";
+      return false;
+    }
+  }
+
+  // If there was no prefix option, we're done at this point.
+  if (prefix.empty()) {
+    // No prefix, nothing left to check.
+    return true;
+  }
+
+  // Check: Warning - Make sure the prefix is is a reasonable value according
+  // to Apple's rules (the checks above implicitly whitelist anything that
+  // doesn't meet these rules).
+  if (!ascii_isupper(prefix[0])) {
+    cerr << endl
+         << "protoc:0: warning: Invalid 'option objc_class_prefix = \""
+         << prefix << "\";' in '" << file->name() << "';"
+         << " it should start with a capital letter." << endl;
+    cerr.flush();
+  }
+  if (prefix.length() < 3) {
+    // Apple reserves 2 character prefixes for themselves. They do use some
+    // 3 character prefixes, but they haven't updated the rules/docs.
+    cerr << endl
+         << "protoc:0: warning: Invalid 'option objc_class_prefix = \""
+         << prefix << "\";' in '" << file->name() << "';"
+         << " Apple recommends they should be at least 3 characters long."
+         << endl;
+    cerr.flush();
+  }
+
+  // Look for any other package that uses the same prefix.
+  string other_package_for_prefix;
+  for (map<string, string>::const_iterator i = expected_package_prefixes.begin();
+       i != expected_package_prefixes.end(); ++i) {
+    if (i->second == prefix) {
+      other_package_for_prefix = i->first;
+      break;
+    }
+  }
+
+  // Check: Warning - If the file does not have a package, check whether
+  // the prefix declared is being used by another package or not.
+  if (package.empty()) {
+    // The file does not have a package and ...
+    if (other_package_for_prefix.empty()) {
+      // ... no other package has declared that prefix.
+      cerr << endl
+           << "protoc:0: warning: File '" << file->name() << "' has no "
+           << "package. Consider adding a new package to the proto and adding '"
+           << "new.package = " << prefix << "' to the expected prefixes file ("
+           << expected_prefixes_path << ")." << endl;
+      cerr.flush();
+    } else {
+      // ... another package has declared the same prefix.
+      cerr << endl
+           << "protoc:0: warning: File '" << file->name() << "' has no package "
+           << "and package '" << other_package_for_prefix << "' already uses '"
+           << prefix << "' as its prefix. Consider either adding a new package "
+           << "to the proto, or reusing one of the packages already using this "
+           << "prefix in the expected prefixes file ("
+           << expected_prefixes_path << ")." << endl;
+      cerr.flush();
+    }
+    return true;
+  }
+
+  // Check: Error - Make sure the prefix wasn't expected for a different
+  // package (overlap is allowed, but it has to be listed as an expected
+  // overlap).
+  if (!other_package_for_prefix.empty()) {
+    *out_error =
+        "error: Found 'option objc_class_prefix = \"" + prefix +
+        "\";' in '" + file->name() +
+        "'; that prefix is already used for 'package " +
+        other_package_for_prefix + ";'. It can only be reused by listing " +
+        "it in the expected file (" +
+        expected_prefixes_path + ").";
+    return false;  // Only report first usage of the prefix.
+  }
+
+  // Check: Warning - If the given package/prefix pair wasn't expected, issue a
+  // warning issue a warning suggesting it gets added to the file.
+  if (!expected_package_prefixes.empty()) {
+    cerr << endl
+         << "protoc:0: warning: Found unexpected 'option objc_class_prefix = \""
+         << prefix << "\";' in '" << file->name() << "';"
+         << " consider adding it to the expected prefixes file ("
+         << expected_prefixes_path << ")." << endl;
+    cerr.flush();
+  }
+
+  return true;
+}
+
+}  // namespace
+
+bool ValidateObjCClassPrefixes(const vector<const FileDescriptor*>& files,
+                               const Options& generation_options,
+                               string* out_error) {
+  // Load the expected package prefixes, if available, to validate against.
+  map<string, string> expected_package_prefixes;
+  if (!LoadExpectedPackagePrefixes(generation_options,
+                                   &expected_package_prefixes,
+                                   out_error)) {
+    return false;
+  }
+
+  for (int i = 0; i < files.size(); i++) {
+    bool is_valid =
+        ValidateObjCClassPrefix(files[i],
+                                generation_options.expected_prefixes_path,
+                                expected_package_prefixes,
+                                out_error);
+    if (!is_valid) {
+      return false;
+    }
+  }
+  return true;
+}
+
+TextFormatDecodeData::TextFormatDecodeData() { }
+
+TextFormatDecodeData::~TextFormatDecodeData() { }
 
 void TextFormatDecodeData::AddString(int32 key,
                                      const string& input_for_decode,
@@ -898,7 +1241,7 @@ class DecodeDataBuilder {
 
   void AddChar(const char desired) {
     ++segment_len_;
-    is_all_upper_ &= IsUpper(desired);
+    is_all_upper_ &= ascii_isupper(desired);
   }
 
   void Push() {
@@ -913,9 +1256,9 @@ class DecodeDataBuilder {
   bool AddFirst(const char desired, const char input) {
     if (desired == input) {
       op_ = kOpAsIs;
-    } else if (desired == ToUpper(input)) {
+    } else if (desired == ascii_toupper(input)) {
       op_ = kOpFirstUpper;
-    } else if (desired == ToLower(input)) {
+    } else if (desired == ascii_tolower(input)) {
       op_ = kOpFirstLower;
     } else {
       // Can't be transformed to match.
@@ -953,7 +1296,7 @@ bool DecodeDataBuilder::AddCharacter(const char desired, const char input) {
   if (desired == input) {
     // If we aren't transforming it, or we're upper casing it and it is
     // supposed to be uppercase; just add it to the segment.
-    if ((op_ != kOpAllUpper) || IsUpper(desired)) {
+    if ((op_ != kOpAllUpper) || ascii_isupper(desired)) {
       AddChar(desired);
       return true;
     }
@@ -965,7 +1308,7 @@ bool DecodeDataBuilder::AddCharacter(const char desired, const char input) {
 
   // If we need to uppercase, and everything so far has been uppercase,
   // promote op to AllUpper.
-  if ((desired == ToUpper(input)) && is_all_upper_) {
+  if ((desired == ascii_toupper(input)) && is_all_upper_) {
     op_ = kOpAllUpper;
     AddChar(desired);
     return true;
@@ -1038,6 +1381,289 @@ string TextFormatDecodeData::DecodeDataForString(const string& input_for_decode,
   // Add the end marker.
   return builder.Finish() + (char)'\0';
 }
+
+namespace {
+
+class Parser {
+ public:
+  Parser(LineConsumer* line_consumer)
+      : line_consumer_(line_consumer), line_(0) {}
+
+  // Parses a check of input, returning success/failure.
+  bool ParseChunk(StringPiece chunk);
+
+  // Should be called to finish parsing (after all input has been provided via
+  // ParseChunk()).  Returns success/failure.
+  bool Finish();
+
+  int last_line() const { return line_; }
+  string error_str() const { return error_str_; }
+
+ private:
+  bool ParseLoop();
+
+  LineConsumer* line_consumer_;
+  int line_;
+  string error_str_;
+  StringPiece p_;
+  string leftover_;
+};
+
+bool Parser::ParseChunk(StringPiece chunk) {
+  if (!leftover_.empty()) {
+    chunk.AppendToString(&leftover_);
+    p_ = StringPiece(leftover_);
+  } else {
+    p_ = chunk;
+  }
+  bool result = ParseLoop();
+  if (p_.empty()) {
+    leftover_.clear();
+  } else {
+    leftover_ = p_.ToString();
+  }
+  return result;
+}
+
+bool Parser::Finish() {
+  if (leftover_.empty()) {
+    return true;
+  }
+  // Force a newline onto the end to finish parsing.
+  leftover_ += "\n";
+  p_ = StringPiece(leftover_);
+  if (!ParseLoop()) {
+    return false;
+  }
+  return p_.empty();  // Everything used?
+}
+
+bool Parser::ParseLoop() {
+  StringPiece line;
+  while (ReadLine(&p_, &line)) {
+    ++line_;
+    RemoveComment(&line);
+    StringPieceTrimWhitespace(&line);
+    if (line.size() == 0) {
+      continue;  // Blank line.
+    }
+    if (!line_consumer_->ConsumeLine(line, &error_str_)) {
+      return false;
+    }
+  }
+  return true;
+}
+
+}  // namespace
+
+LineConsumer::LineConsumer() {}
+
+LineConsumer::~LineConsumer() {}
+
+bool ParseSimpleFile(
+    const string& path, LineConsumer* line_consumer, string* out_error) {
+  int fd;
+  do {
+    fd = open(path.c_str(), O_RDONLY);
+  } while (fd < 0 && errno == EINTR);
+  if (fd < 0) {
+    *out_error =
+        string("error: Unable to open \"") + path + "\", " + strerror(errno);
+    return false;
+  }
+  io::FileInputStream file_stream(fd);
+  file_stream.SetCloseOnDelete(true);
+
+  Parser parser(line_consumer);
+  const void* buf;
+  int buf_len;
+  while (file_stream.Next(&buf, &buf_len)) {
+    if (buf_len == 0) {
+      continue;
+    }
+
+    if (!parser.ParseChunk(StringPiece(static_cast<const char*>(buf), buf_len))) {
+      *out_error =
+          string("error: ") + path +
+          " Line " + SimpleItoa(parser.last_line()) + ", " + parser.error_str();
+      return false;
+    }
+  }
+  return parser.Finish();
+}
+
+ImportWriter::ImportWriter(
+  const string& generate_for_named_framework,
+  const string& named_framework_to_proto_path_mappings_path)
+    : generate_for_named_framework_(generate_for_named_framework),
+      named_framework_to_proto_path_mappings_path_(
+          named_framework_to_proto_path_mappings_path),
+      need_to_parse_mapping_file_(true) {
+}
+
+ImportWriter::~ImportWriter() {}
+
+void ImportWriter::AddFile(const FileDescriptor* file,
+                           const string& header_extension) {
+  const string file_path(FilePath(file));
+
+  if (IsProtobufLibraryBundledProtoFile(file)) {
+    protobuf_framework_imports_.push_back(
+        FilePathBasename(file) + header_extension);
+    protobuf_non_framework_imports_.push_back(file_path + header_extension);
+    return;
+  }
+
+  // Lazy parse any mappings.
+  if (need_to_parse_mapping_file_) {
+    ParseFrameworkMappings();
+  }
+
+  map<string, string>::iterator proto_lookup =
+      proto_file_to_framework_name_.find(file->name());
+  if (proto_lookup != proto_file_to_framework_name_.end()) {
+    other_framework_imports_.push_back(
+        proto_lookup->second + "/" +
+        FilePathBasename(file) + header_extension);
+    return;
+  }
+
+  if (!generate_for_named_framework_.empty()) {
+    other_framework_imports_.push_back(
+        generate_for_named_framework_ + "/" +
+        FilePathBasename(file) + header_extension);
+    return;
+  }
+
+  other_imports_.push_back(file_path + header_extension);
+}
+
+void ImportWriter::Print(io::Printer* printer) const {
+  assert(protobuf_non_framework_imports_.size() ==
+         protobuf_framework_imports_.size());
+
+  bool add_blank_line = false;
+
+  if (protobuf_framework_imports_.size() > 0) {
+    const string framework_name(ProtobufLibraryFrameworkName);
+    const string cpp_symbol(ProtobufFrameworkImportSymbol(framework_name));
+
+    printer->Print(
+        "#if $cpp_symbol$\n",
+        "cpp_symbol", cpp_symbol);
+    for (vector<string>::const_iterator iter = protobuf_framework_imports_.begin();
+         iter != protobuf_framework_imports_.end(); ++iter) {
+      printer->Print(
+          " #import <$framework_name$/$header$>\n",
+          "framework_name", framework_name,
+          "header", *iter);
+    }
+    printer->Print(
+        "#else\n");
+    for (vector<string>::const_iterator iter = protobuf_non_framework_imports_.begin();
+         iter != protobuf_non_framework_imports_.end(); ++iter) {
+      printer->Print(
+          " #import \"$header$\"\n",
+          "header", *iter);
+    }
+    printer->Print(
+        "#endif\n");
+
+    add_blank_line = true;
+  }
+
+  if (other_framework_imports_.size() > 0) {
+    if (add_blank_line) {
+      printer->Print("\n");
+    }
+
+    for (vector<string>::const_iterator iter = other_framework_imports_.begin();
+         iter != other_framework_imports_.end(); ++iter) {
+      printer->Print(
+          " #import <$header$>\n",
+          "header", *iter);
+    }
+
+    add_blank_line = true;
+  }
+
+  if (other_imports_.size() > 0) {
+    if (add_blank_line) {
+      printer->Print("\n");
+    }
+
+    for (vector<string>::const_iterator iter = other_imports_.begin();
+         iter != other_imports_.end(); ++iter) {
+      printer->Print(
+          " #import \"$header$\"\n",
+          "header", *iter);
+    }
+  }
+}
+
+void ImportWriter::ParseFrameworkMappings() {
+  need_to_parse_mapping_file_ = false;
+  if (named_framework_to_proto_path_mappings_path_.empty()) {
+    return;  // Nothing to do.
+  }
+
+  ProtoFrameworkCollector collector(&proto_file_to_framework_name_);
+  string parse_error;
+  if (!ParseSimpleFile(named_framework_to_proto_path_mappings_path_,
+                       &collector, &parse_error)) {
+    cerr << "error parsing " << named_framework_to_proto_path_mappings_path_
+         << " : " << parse_error << endl;
+    cerr.flush();
+  }
+}
+
+bool ImportWriter::ProtoFrameworkCollector::ConsumeLine(
+    const StringPiece& line, string* out_error) {
+  int offset = line.find(':');
+  if (offset == StringPiece::npos) {
+    *out_error =
+        string("Framework/proto file mapping line without colon sign: '") +
+        line.ToString() + "'.";
+    return false;
+  }
+  StringPiece framework_name(line, 0, offset);
+  StringPiece proto_file_list(line, offset + 1, line.length() - offset - 1);
+  StringPieceTrimWhitespace(&framework_name);
+
+  int start = 0;
+  while (start < proto_file_list.length()) {
+    offset = proto_file_list.find(',', start);
+    if (offset == StringPiece::npos) {
+      offset = proto_file_list.length();
+    }
+
+    StringPiece proto_file(proto_file_list, start, offset - start);
+    StringPieceTrimWhitespace(&proto_file);
+    if (proto_file.size() != 0) {
+      map<string, string>::iterator existing_entry =
+          map_->find(proto_file.ToString());
+      if (existing_entry != map_->end()) {
+        cerr << "warning: duplicate proto file reference, replacing framework entry for '"
+             << proto_file.ToString() << "' with '" << framework_name.ToString()
+             << "' (was '" << existing_entry->second << "')." << endl;
+        cerr.flush();
+      }
+
+      if (proto_file.find(' ') != StringPiece::npos) {
+        cerr << "note: framework mapping file had a proto file with a space in, hopefully that isn't a missing comma: '"
+             << proto_file.ToString() << "'" << endl;
+        cerr.flush();
+      }
+
+      (*map_)[proto_file.ToString()] = framework_name.ToString();
+    }
+
+    start = offset + 1;
+  }
+
+  return true;
+}
+
 
 }  // namespace objectivec
 }  // namespace compiler
