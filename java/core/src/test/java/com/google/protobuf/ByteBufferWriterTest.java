@@ -30,13 +30,12 @@
 
 package com.google.protobuf;
 
-import junit.framework.TestCase;
-
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.Random;
+import junit.framework.TestCase;
 
 /**
  * Tests for {@link ByteBufferWriter}.

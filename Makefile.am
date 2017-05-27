@@ -571,6 +571,57 @@ objectivec_EXTRA_DIST=                                                       \
   objectivec/Tests/UnitTests-Info.plist                                       \
   Protobuf.podspec
 
+php_EXTRA_DIST=                                              \
+  php/src/phpdoc.dist.xml                                    \
+  php/src/Google/Protobuf/Internal/DescriptorPool.php        \
+  php/src/Google/Protobuf/Internal/OneofField.php            \
+  php/src/Google/Protobuf/Internal/MapEntry.php              \
+  php/src/Google/Protobuf/Internal/Type.php                  \
+  php/src/Google/Protobuf/Internal/InputStream.php           \
+  php/src/Google/Protobuf/Internal/OutputStream.php          \
+  php/src/Google/Protobuf/Internal/MessageBuilderContext.php \
+  php/src/Google/Protobuf/Internal/MapField.php              \
+  php/src/Google/Protobuf/Internal/RepeatedField.php         \
+  php/src/Google/Protobuf/Internal/Message.php               \
+  php/src/Google/Protobuf/Internal/GPBWire.php               \
+  php/src/Google/Protobuf/Internal/GPBType.php               \
+  php/src/Google/Protobuf/Internal/GPBLabel.php              \
+  php/src/Google/Protobuf/Internal/EnumBuilderContext.php    \
+  php/src/Google/Protobuf/Internal/GPBUtil.php               \
+  php/src/Google/Protobuf/descriptor_internal.pb.php         \
+  php/src/Google/Protobuf/descriptor.php                     \
+  php/tests/encode_decode_test.php                           \
+  php/tests/test.sh                                          \
+  php/tests/generated_class_test.php                         \
+  php/tests/array_test.php                                   \
+  php/tests/php_implementation_test.php                      \
+  php/tests/test_include.proto                               \
+  php/tests/test_include.pb.php                              \
+  php/tests/map_field_test.php                               \
+  php/tests/test_base.php                                    \
+  php/tests/test_util.php                                    \
+  php/tests/test.proto                                       \
+  php/tests/test.pb.php                                      \
+  php/tests/memory_leak_test.php                             \
+  php/README.md                                              \
+  php/ext/google/protobuf/utf8.h                             \
+  php/ext/google/protobuf/message.c                          \
+  php/ext/google/protobuf/utf8.c                             \
+  php/ext/google/protobuf/package.xml                        \
+  php/ext/google/protobuf/upb.h                              \
+  php/ext/google/protobuf/array.c                            \
+  php/ext/google/protobuf/encode_decode.c                    \
+  php/ext/google/protobuf/protobuf.h                         \
+  php/ext/google/protobuf/type_check.c                       \
+  php/ext/google/protobuf/def.c                              \
+  php/ext/google/protobuf/storage.c                          \
+  php/ext/google/protobuf/map.c                              \
+  php/ext/google/protobuf/config.m4                          \
+  php/ext/google/protobuf/upb.c                              \
+  php/ext/google/protobuf/protobuf.c                         \
+  phpunit.xml                                                \
+  composer.json
+
 python_EXTRA_DIST=                                                           \
   python/MANIFEST.in                                                         \
   python/google/__init__.py                                                  \
@@ -617,6 +668,7 @@ python_EXTRA_DIST=                                                           \
   python/google/protobuf/internal/symbol_database_test.py                    \
   python/google/protobuf/internal/test_bad_identifiers.proto                 \
   python/google/protobuf/internal/test_util.py                               \
+  python/google/protobuf/internal/testing_refleaks.py                        \
   python/google/protobuf/internal/text_encoding_test.py                      \
   python/google/protobuf/internal/text_format_test.py                        \
   python/google/protobuf/internal/type_checkers.py                           \
@@ -648,6 +700,8 @@ python_EXTRA_DIST=                                                           \
   python/google/protobuf/pyext/map_container.h                               \
   python/google/protobuf/pyext/message.cc                                    \
   python/google/protobuf/pyext/message.h                                     \
+  python/google/protobuf/pyext/message_factory.cc                            \
+  python/google/protobuf/pyext/message_factory.h                             \
   python/google/protobuf/pyext/message_module.cc                             \
   python/google/protobuf/pyext/proto2_api_test.proto                         \
   python/google/protobuf/pyext/python.proto                                  \
@@ -749,6 +803,7 @@ js_EXTRA_DIST=                              \
   js/gulpfile.js                            \
   js/jasmine.json                           \
   js/map.js                                 \
+  js/maps_test.js                           \
   js/message.js                             \
   js/message_test.js                        \
   js/node_loader.js                         \
@@ -764,7 +819,7 @@ js_EXTRA_DIST=                              \
   js/testbinary.proto                       \
   js/testempty.proto
 
-all_EXTRA_DIST=$(csharp_EXTRA_DIST) $(java_EXTRA_DIST) $(javanano_EXTRA_DIST) $(objectivec_EXTRA_DIST) $(python_EXTRA_DIST) $(ruby_EXTRA_DIST) $(js_EXTRA_DIST)
+all_EXTRA_DIST=$(csharp_EXTRA_DIST) $(java_EXTRA_DIST) $(javanano_EXTRA_DIST) $(objectivec_EXTRA_DIST) $(php_EXTRA_DIST) $(python_EXTRA_DIST) $(ruby_EXTRA_DIST) $(js_EXTRA_DIST)
 
 EXTRA_DIST = $(@DIST_LANG@_EXTRA_DIST)   \
   autogen.sh                             \

@@ -234,3 +234,29 @@ message TestEndsWithBytes {
   optional bytes data = 2;
 }
 
+message TestMapFieldsNoBinary {
+  map<string, string> map_string_string = 1;
+  map<string, int32> map_string_int32 = 2;
+  map<string, int64> map_string_int64 = 3;
+  map<string, bool> map_string_bool = 4;
+  map<string, double> map_string_double = 5;
+  map<string, MapValueEnumNoBinary> map_string_enum = 6;
+  map<string, MapValueMessageNoBinary> map_string_msg = 7;
+
+  map<int32, string> map_int32_string = 8;
+  map<int64, string> map_int64_string = 9;
+  map<bool, string> map_bool_string = 10;
+
+  optional TestMapFieldsNoBinary test_map_fields = 11;
+  map<string, TestMapFieldsNoBinary> map_string_testmapfields = 12;
+}
+
+enum MapValueEnumNoBinary {
+  MAP_VALUE_FOO_NOBINARY = 0;
+  MAP_VALUE_BAR_NOBINARY = 1;
+  MAP_VALUE_BAZ_NOBINARY = 2;
+}
+
+message MapValueMessageNoBinary {
+  optional int32 foo = 1;
+}

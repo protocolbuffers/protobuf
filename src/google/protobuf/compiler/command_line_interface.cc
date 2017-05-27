@@ -704,6 +704,7 @@ CommandLineInterface::CommandLineInterface()
   : mode_(MODE_COMPILE),
     print_mode_(PRINT_NONE),
     error_format_(ERROR_FORMAT_GCC),
+    direct_dependencies_explicitly_set_(false),
     imports_in_descriptor_set_(false),
     source_info_in_descriptor_set_(false),
     disallow_services_(false),
@@ -783,6 +784,24 @@ int CommandLineInterface::Run(int argc, const char* const argv[]) {
       cerr << parsed_file->name() << ": This file contains services, but "
               "--disallow_services was used." << endl;
       return 1;
+    }
+
+    // Enforce --direct_dependencies
+    if (direct_dependencies_explicitly_set_) {
+      bool indirect_imports = false;
+      for (int i = 0; i < parsed_file->dependency_count(); i++) {
+        if (direct_dependencies_.find(parsed_file->dependency(i)->name()) ==
+            direct_dependencies_.end()) {
+          indirect_imports = true;
+          cerr << parsed_file->name()
+               << ": File is imported but not declared in "
+               << "--direct_dependencies: "
+               << parsed_file->dependency(i)->name() << std::endl;
+        }
+      }
+      if (indirect_imports) {
+        return 1;
+      }
     }
   }
 
@@ -897,6 +916,7 @@ void CommandLineInterface::Clear() {
   executable_name_.clear();
   proto_path_.clear();
   input_files_.clear();
+  direct_dependencies_.clear();
   output_directives_.clear();
   codec_type_.clear();
   descriptor_set_name_.clear();
@@ -907,6 +927,7 @@ void CommandLineInterface::Clear() {
   imports_in_descriptor_set_ = false;
   source_info_in_descriptor_set_ = false;
   disallow_services_ = false;
+  direct_dependencies_explicitly_set_ = false;
 }
 
 bool CommandLineInterface::MakeInputsBeProtoPathRelative(
@@ -1153,6 +1174,19 @@ CommandLineInterface::InterpretArgument(const string& name,
       // incompatible with C++0x's make_pair.
       proto_path_.push_back(pair<string, string>(virtual_path, disk_path));
     }
+
+  } else if (name == "--direct_dependencies") {
+    if (direct_dependencies_explicitly_set_) {
+      std::cerr << name << " may only be passed once. To specify multiple "
+                           "direct dependencies, pass them all as a single "
+                           "parameter separated by ':'." << std::endl;
+      return PARSE_ARGUMENT_FAIL;
+    }
+
+    direct_dependencies_explicitly_set_ = true;
+    vector<string> direct = Split(value, ":", true);
+    GOOGLE_DCHECK(direct_dependencies_.empty());
+    direct_dependencies_.insert(direct.begin(), direct.end());
 
   } else if (name == "-o" || name == "--descriptor_set_out") {
     if (!descriptor_set_name_.empty()) {
@@ -1447,24 +1481,11 @@ bool CommandLineInterface::GenerateOutput(
       }
       parameters.append(generator_parameters_[output_directive.name]);
     }
-    if (output_directive.generator->HasGenerateAll()) {
-      if (!output_directive.generator->GenerateAll(
-          parsed_files, parameters, generator_context, &error)) {
-          // Generator returned an error.
-          std::cerr << output_directive.name << ": "
-                    << ": " << error << std::endl;
-          return false;
-      }
-    } else {
-      for (int i = 0; i < parsed_files.size(); i++) {
-        if (!output_directive.generator->Generate(parsed_files[i], parameters,
-                                                  generator_context, &error)) {
-          // Generator returned an error.
-          std::cerr << output_directive.name << ": " << parsed_files[i]->name()
-                    << ": " << error << std::endl;
-          return false;
-        }
-      }
+    if (!output_directive.generator->GenerateAll(
+        parsed_files, parameters, generator_context, &error)) {
+      // Generator returned an error.
+      std::cerr << output_directive.name << ": " << error << std::endl;
+      return false;
     }
   }
 

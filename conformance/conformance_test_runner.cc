@@ -251,6 +251,16 @@ void UsageError() {
           "                              should contain one test name per\n");
   fprintf(stderr,
           "                              line.  Use '#' for comments.\n");
+  fprintf(stderr,
+          "  --enforce_recommended       Enforce that recommended test\n");
+  fprintf(stderr,
+          "                              cases are also passing. Specify\n");
+  fprintf(stderr,
+          "                              this flag if you want to be\n");
+  fprintf(stderr,
+          "                              strictly conforming to protobuf\n");
+  fprintf(stderr,
+          "                              spec.\n");
   exit(1);
 }
 
@@ -290,6 +300,8 @@ int main(int argc, char *argv[]) {
       ParseFailureList(argv[arg], &failure_list);
     } else if (strcmp(argv[arg], "--verbose") == 0) {
       suite.SetVerbose(true);
+    } else if (strcmp(argv[arg], "--enforce_recommended") == 0) {
+      suite.SetEnforceRecommended(true);
     } else if (argv[arg][0] == '-') {
       fprintf(stderr, "Unknown option: %s\n", argv[arg]);
       UsageError();

@@ -45,6 +45,7 @@ import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -1609,24 +1610,6 @@ public abstract class GeneratedMessageV3 extends AbstractMessage
     FieldDescriptor getDescriptor();
   }
 
-  private abstract static class CachedDescriptorRetriever
-      implements ExtensionDescriptorRetriever {
-    private volatile FieldDescriptor descriptor;
-    protected abstract FieldDescriptor loadDescriptor();
-
-    @Override
-    public FieldDescriptor getDescriptor() {
-      if (descriptor == null) {
-        synchronized (this) {
-          if (descriptor == null) {
-            descriptor = loadDescriptor();
-          }
-        }
-      }
-      return descriptor;
-    }
-  }
-
   // =================================================================
 
   /** Calls Class.getMethod and throws a RuntimeException if it fails. */
@@ -2223,6 +2206,20 @@ public abstract class GeneratedMessageV3 extends AbstractMessage
             field.getNumber());
       }
 
+      private Message coerceType(Message value) {
+        if (value == null) {
+          return null;
+        }
+        if (mapEntryMessageDefaultInstance.getClass().isInstance(value)) {
+          return value;
+        }
+        // The value is not the exact right message type.  However, if it
+        // is an alternative implementation of the same type -- e.g. a
+        // DynamicMessage -- we should accept it.  In this case we can make
+        // a copy of the message.
+        return mapEntryMessageDefaultInstance.toBuilder().mergeFrom(value).build();
+      }
+
       @Override
       public Object get(GeneratedMessageV3 message) {
         List result = new ArrayList();
@@ -2278,15 +2275,15 @@ public abstract class GeneratedMessageV3 extends AbstractMessage
       public Object getRepeatedRaw(Builder builder, int index) {
         return getRepeated(builder, index);
       }
-
+      
       @Override
       public void setRepeated(Builder builder, int index, Object value) {
-        getMutableMapField(builder).getMutableList().set(index, (Message) value);
+        getMutableMapField(builder).getMutableList().set(index, coerceType((Message) value));
       }
 
       @Override
       public void addRepeated(Builder builder, Object value) {
-        getMutableMapField(builder).getMutableList().add((Message) value);
+        getMutableMapField(builder).getMutableList().add(coerceType((Message) value));
       }
 
       @Override
@@ -2711,6 +2708,133 @@ public abstract class GeneratedMessageV3 extends AbstractMessage
       output.writeStringNoTag((String) value);
     } else {
       output.writeBytesNoTag((ByteString) value);
+    }
+  }
+
+  protected static <V> void serializeIntegerMapTo(
+      CodedOutputStream out,
+      MapField<Integer, V> field,
+      MapEntry<Integer, V> defaultEntry,
+      int fieldNumber) throws IOException {
+    Map<Integer, V> m = field.getMap();
+    if (!out.isSerializationDeterministic()) {
+      serializeMapTo(out, m, defaultEntry, fieldNumber);
+      return;
+    }
+    // Sorting the unboxed keys and then look up the values during serialziation is 2x faster
+    // than sorting map entries with a custom comparator directly.
+    int[] keys = new int[m.size()];
+    int index = 0;
+    for (int k : m.keySet()) {
+      keys[index++] = k;
+    }
+    Arrays.sort(keys);
+    for (int key : keys) {
+      out.writeMessage(fieldNumber,
+          defaultEntry.newBuilderForType()
+              .setKey(key)
+              .setValue(m.get(key))
+              .build());
+    }
+  }
+
+  protected static <V> void serializeLongMapTo(
+      CodedOutputStream out,
+      MapField<Long, V> field,
+      MapEntry<Long, V> defaultEntry,
+      int fieldNumber)
+      throws IOException {
+    Map<Long, V> m = field.getMap();
+    if (!out.isSerializationDeterministic()) {
+      serializeMapTo(out, m, defaultEntry, fieldNumber);
+      return;
+    }
+
+    long[] keys = new long[m.size()];
+    int index = 0;
+    for (long k : m.keySet()) {
+      keys[index++] = k;
+    }
+    Arrays.sort(keys);
+    for (long key : keys) {
+      out.writeMessage(fieldNumber,
+          defaultEntry.newBuilderForType()
+              .setKey(key)
+              .setValue(m.get(key))
+              .build());
+    }
+  }
+
+  protected static <V> void serializeStringMapTo(
+      CodedOutputStream out,
+      MapField<String, V> field,
+      MapEntry<String, V> defaultEntry,
+      int fieldNumber)
+      throws IOException {
+    Map<String, V> m = field.getMap();
+    if (!out.isSerializationDeterministic()) {
+      serializeMapTo(out, m, defaultEntry, fieldNumber);
+      return;
+    }
+
+    // Sorting the String keys and then look up the values during serialziation is 25% faster than
+    // sorting map entries with a custom comparator directly.
+    String[] keys = new String[m.size()];
+    keys = m.keySet().toArray(keys);
+    Arrays.sort(keys);
+    for (String key : keys) {
+      out.writeMessage(fieldNumber,
+          defaultEntry.newBuilderForType()
+              .setKey(key)
+              .setValue(m.get(key))
+              .build());
+    }
+  }
+
+  protected static <V> void serializeBooleanMapTo(
+      CodedOutputStream out,
+      MapField<Boolean, V> field,
+      MapEntry<Boolean, V> defaultEntry,
+      int fieldNumber)
+      throws IOException {
+    Map<Boolean, V> m = field.getMap();
+    if (!out.isSerializationDeterministic()) {
+      serializeMapTo(out, m, defaultEntry, fieldNumber);
+      return;
+    }
+    maybeSerializeBooleanEntryTo(out, m, defaultEntry, fieldNumber, false);
+    maybeSerializeBooleanEntryTo(out, m, defaultEntry, fieldNumber, true);
+  }
+
+  private static <V> void maybeSerializeBooleanEntryTo(
+      CodedOutputStream out,
+      Map<Boolean, V> m,
+      MapEntry<Boolean, V> defaultEntry,
+      int fieldNumber,
+      boolean key)
+      throws IOException {
+    if (m.containsKey(key)) {
+      out.writeMessage(fieldNumber,
+          defaultEntry.newBuilderForType()
+              .setKey(key)
+              .setValue(m.get(key))
+              .build());
+    }
+  }
+
+  /** Serialize the map using the iteration order. */
+  private static <K, V> void serializeMapTo(
+      CodedOutputStream out,
+      Map<K, V> m,
+      MapEntry<K, V> defaultEntry,
+      int fieldNumber)
+      throws IOException {
+    for (Map.Entry<K, V> entry : m.entrySet()) {
+      out.writeMessage(fieldNumber,
+          defaultEntry.newBuilderForType()
+              .setKey(entry.getKey())
+              .setValue(entry.getValue())
+              .build());
     }
   }
 }

@@ -103,6 +103,7 @@ class RepeatedPrimitiveFieldGenerator : public FieldGenerator {
                                          bool is_inline) const;
   void GenerateClearingCode(io::Printer* printer) const;
   void GenerateMergingCode(io::Printer* printer) const;
+  virtual void GenerateUnsafeMergingCode(io::Printer* printer) const;
   void GenerateSwappingCode(io::Printer* printer) const;
   void GenerateConstructorCode(io::Printer* printer) const;
   void GenerateMergeFromCodedStream(io::Printer* printer) const;

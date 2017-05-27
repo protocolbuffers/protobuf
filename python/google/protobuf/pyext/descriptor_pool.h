@@ -38,9 +38,9 @@
 
 namespace google {
 namespace protobuf {
-class MessageFactory;
-
 namespace python {
+
+struct PyMessageFactory;
 
 // The (meta) type of all Messages classes.
 struct CMessageClass;
@@ -69,20 +69,10 @@ typedef struct PyDescriptorPool {
   // This pointer is owned.
   const DescriptorDatabase* database;
 
-  // DynamicMessageFactory used to create C++ instances of messages.
-  // This object cache the descriptors that were used, so the DescriptorPool
-  // needs to get rid of it before it can delete itself.
-  //
-  // Note: A C++ MessageFactory is different from the Python MessageFactory.
-  // The C++ one creates messages, when the Python one creates classes.
-  MessageFactory* message_factory;
-
-  // Make our own mapping to retrieve Python classes from C++ descriptors.
-  //
-  // Descriptor pointers stored here are owned by the DescriptorPool above.
-  // Python references to classes are owned by this PyDescriptorPool.
-  typedef hash_map<const Descriptor*, CMessageClass*> ClassesByMessageMap;
-  ClassesByMessageMap* classes_by_descriptor;
+  // The preferred MessageFactory to be used by descriptors.
+  // TODO(amauryfa): Don't create the Factory from the DescriptorPool, but
+  // use the one passed while creating message classes. And remove this member.
+  PyMessageFactory* py_message_factory;
 
   // Cache the options for any kind of descriptor.
   // Descriptor pointers are owned by the DescriptorPool above.
@@ -99,19 +89,6 @@ namespace cdescriptor_pool {
 // Returns a message Descriptor, or NULL if not found.
 const Descriptor* FindMessageTypeByName(PyDescriptorPool* self,
                                         const string& name);
-
-// Registers a new Python class for the given message descriptor.
-// On error, returns -1 with a Python exception set.
-int RegisterMessageClass(PyDescriptorPool* self,
-                         const Descriptor* message_descriptor,
-                         CMessageClass* message_class);
-
-// Retrieves the Python class registered with the given message descriptor.
-//
-// Returns a *borrowed* reference if found, otherwise returns NULL with an
-// exception set.
-CMessageClass* GetMessageClass(PyDescriptorPool* self,
-                               const Descriptor* message_descriptor);
 
 // The functions below are also exposed as methods of the DescriptorPool type.
 

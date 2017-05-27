@@ -95,7 +95,7 @@ TEST(RepeatedField, Small) {
   EXPECT_EQ(field.size(), 0);
   // Additional bytes are for 'struct Rep' header.
   int expected_usage = 4 * sizeof(int) + sizeof(Arena*);
-  EXPECT_EQ(field.SpaceUsedExcludingSelf(), expected_usage);
+  EXPECT_GE(field.SpaceUsedExcludingSelf(), expected_usage);
 }
 
 
@@ -207,7 +207,7 @@ TEST(RepeatedField, ReserveMoreThanDouble) {
   RepeatedField<int> field;
   field.Reserve(20);
 
-  EXPECT_EQ(20, ReservedSpace(&field));
+  EXPECT_LE(20, ReservedSpace(&field));
 }
 
 TEST(RepeatedField, ReserveLessThanDouble) {
@@ -215,9 +215,10 @@ TEST(RepeatedField, ReserveLessThanDouble) {
   // field to grow by double instead.
   RepeatedField<int> field;
   field.Reserve(20);
-  field.Reserve(30);
+  int capacity = field.Capacity();
+  field.Reserve(capacity * 1.5);
 
-  EXPECT_EQ(40, ReservedSpace(&field));
+  EXPECT_LE(2 * capacity, ReservedSpace(&field));
 }
 
 TEST(RepeatedField, ReserveLessThanExisting) {
@@ -229,7 +230,7 @@ TEST(RepeatedField, ReserveLessThanExisting) {
   field.Reserve(10);
 
   EXPECT_EQ(previous_ptr, field.data());
-  EXPECT_EQ(20, ReservedSpace(&field));
+  EXPECT_LE(20, ReservedSpace(&field));
 }
 
 TEST(RepeatedField, Resize) {
@@ -397,6 +398,16 @@ TEST(RepeatedField, MutableDataIsMutable) {
   EXPECT_EQ(2, field.Get(0));
 }
 
+TEST(RepeatedField, SubscriptOperators) {
+  RepeatedField<int> field;
+  field.Add(1);
+  EXPECT_EQ(1, field.Get(0));
+  EXPECT_EQ(1, field[0]);
+  EXPECT_EQ(field.Mutable(0), &field[0]);
+  const RepeatedField<int>& const_field = field;
+  EXPECT_EQ(field.data(), &const_field[0]);
+}
+
 TEST(RepeatedField, Truncate) {
   RepeatedField<int> field;
 
@@ -470,11 +481,11 @@ TEST(RepeatedField, ClearThenReserveMore) {
   EXPECT_EQ(32, field.size());
   field.Clear();
   EXPECT_EQ(0, field.size());
-  EXPECT_EQ(32, field.Capacity());
+  EXPECT_LE(32, field.Capacity());
 
   field.Reserve(1024);
   EXPECT_EQ(0, field.size());
-  EXPECT_EQ(1024, field.Capacity());
+  EXPECT_LE(1024, field.Capacity());
   // Finish test -- |field| should destroy the cleared-but-not-yet-destroyed
   // strings.
 }
@@ -629,15 +640,18 @@ TEST(RepeatedPtrField, ReserveMoreThanDouble) {
   RepeatedPtrField<string> field;
   field.Reserve(20);
 
-  EXPECT_EQ(20, ReservedSpace(&field));
+  EXPECT_LE(20, ReservedSpace(&field));
 }
 
 TEST(RepeatedPtrField, ReserveLessThanDouble) {
   RepeatedPtrField<string> field;
   field.Reserve(20);
-  field.Reserve(30);
 
-  EXPECT_EQ(40, ReservedSpace(&field));
+  int capacity = field.Capacity();
+  // Grow by 1.5x
+  field.Reserve(capacity + (capacity >> 2));
+
+  EXPECT_LE(2 * capacity, ReservedSpace(&field));
 }
 
 TEST(RepeatedPtrField, ReserveLessThanExisting) {
@@ -647,7 +661,7 @@ TEST(RepeatedPtrField, ReserveLessThanExisting) {
   field.Reserve(10);
 
   EXPECT_EQ(previous_ptr, field.data());
-  EXPECT_EQ(20, ReservedSpace(&field));
+  EXPECT_LE(20, ReservedSpace(&field));
 }
 
 TEST(RepeatedPtrField, ReserveDoesntLoseAllocated) {
@@ -916,6 +930,16 @@ TEST(RepeatedPtrField, MutableDataIsMutable) {
   string** data = field.mutable_data();
   **data = "2";
   EXPECT_EQ("2", field.Get(0));
+}
+
+TEST(RepeatedPtrField, SubscriptOperators) {
+  RepeatedPtrField<string> field;
+  *field.Add() = "1";
+  EXPECT_EQ("1", field.Get(0));
+  EXPECT_EQ("1", field[0]);
+  EXPECT_EQ(field.Mutable(0), &field[0]);
+  const RepeatedPtrField<string>& const_field = field;
+  EXPECT_EQ(*field.data(), &const_field[0]);
 }
 
 TEST(RepeatedPtrField, ExtractSubrange) {

@@ -45,7 +45,8 @@ import java.util.Map.Entry;
  *
  * <p>The locations of primary fields values are retrieved by {@code getLocation} or
  * {@code getLocations}.  The locations of sub message values are within nested
- * {@code TextFormatParseInfoTree}s and are retrieve by {@code getNestedTree} or {@code getNestedTrees}.
+ * {@code TextFormatParseInfoTree}s and are retrieve by {@code getNestedTree} or
+ * {@code getNestedTrees}.
  *
  * <p>The {@code TextFormatParseInfoTree} is created by a Builder.
  */

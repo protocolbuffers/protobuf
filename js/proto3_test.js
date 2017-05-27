@@ -294,7 +294,7 @@ describe('proto3Test', function() {
     msg.setOptionalForeignEnum(proto.jspb.test.Proto3Enum.PROTO3_BAR);
     msg.setOptionalForeignEnum(proto.jspb.test.Proto3Enum.PROTO3_FOO);
     msg.setOneofUint32(32);
-    msg.setOneofUint32(null);
+    msg.clearOneofUint32();
 
 
     var serialized = msg.serializeBinary();

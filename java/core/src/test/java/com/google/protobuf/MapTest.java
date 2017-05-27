@@ -36,12 +36,12 @@ import com.google.protobuf.Descriptors.EnumDescriptor;
 import com.google.protobuf.Descriptors.EnumValueDescriptor;
 import com.google.protobuf.Descriptors.FieldDescriptor;
 import map_test.MapTestProto.BizarroTestMap;
+import map_test.MapTestProto.ReservedAsMapField;
+import map_test.MapTestProto.ReservedAsMapFieldWithEnumValue;
 import map_test.MapTestProto.TestMap;
 import map_test.MapTestProto.TestMap.MessageValue;
 import map_test.MapTestProto.TestMapOrBuilder;
 import map_test.MapTestProto.TestOnChangeEventPropagation;
-import junit.framework.TestCase;
-
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -49,6 +49,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import junit.framework.TestCase;
 
 /**
  * Unit tests for map fields.
@@ -1305,6 +1306,171 @@ public class MapTest extends TestCase {
     } catch (NullPointerException e) {
       // expected
     }
+  }
+
+  public void testReservedWordsFieldNames() {
+    ReservedAsMapField.newBuilder().build();
+    ReservedAsMapFieldWithEnumValue.newBuilder().build();
+  }
+
+  public void testDeterministicSerialziation() throws Exception {
+    TestMap.Builder builder = TestMap.newBuilder();
+    // int32->int32
+    builder.putInt32ToInt32Field(5, 1);
+    builder.putInt32ToInt32Field(1, 1);
+    builder.putInt32ToInt32Field(4, 1);
+    builder.putInt32ToInt32Field(-2, 1);
+    builder.putInt32ToInt32Field(0, 1);
+
+    // uint32->int32
+    builder.putUint32ToInt32Field(5, 1);
+    builder.putUint32ToInt32Field(1, 1);
+    builder.putUint32ToInt32Field(4, 1);
+    builder.putUint32ToInt32Field(-2, 1);
+    builder.putUint32ToInt32Field(0, 1);
+
+    // int64->int32
+    builder.putInt64ToInt32Field(5L, 1);
+    builder.putInt64ToInt32Field(1L, 1);
+    builder.putInt64ToInt32Field(4L, 1);
+    builder.putInt64ToInt32Field(-2L, 1);
+    builder.putInt64ToInt32Field(0L, 1);
+
+    // string->int32
+    builder.putStringToInt32Field("baz", 1);
+    builder.putStringToInt32Field("foo", 1);
+    builder.putStringToInt32Field("bar", 1);
+    builder.putStringToInt32Field("", 1);
+    builder.putStringToInt32Field("hello", 1);
+    builder.putStringToInt32Field("world", 1);
+
+    TestMap message = builder.build();
+    byte[] serialized = new byte[message.getSerializedSize()];
+    CodedOutputStream output = CodedOutputStream.newInstance(serialized);
+    output.useDeterministicSerialization();
+    message.writeTo(output);
+    output.flush();
+
+    CodedInputStream input = CodedInputStream.newInstance(serialized);
+    List<Integer> int32Keys = new ArrayList<Integer>();
+    List<Integer> uint32Keys = new ArrayList<Integer>();
+    List<Long> int64Keys = new ArrayList<Long>();
+    List<String> stringKeys = new ArrayList<String>();
+    int tag;
+    while (true) {
+      tag = input.readTag();
+      if (tag == 0) {
+        break;
+      }
+      int length = input.readRawVarint32();
+      int oldLimit = input.pushLimit(length);
+      switch (WireFormat.getTagFieldNumber(tag)) {
+        case TestMap.STRING_TO_INT32_FIELD_FIELD_NUMBER:
+          stringKeys.add(readMapStringKey(input));
+          break;
+        case TestMap.INT32_TO_INT32_FIELD_FIELD_NUMBER:
+          int32Keys.add(readMapIntegerKey(input));
+          break;
+        case TestMap.UINT32_TO_INT32_FIELD_FIELD_NUMBER:
+          uint32Keys.add(readMapIntegerKey(input));
+          break;
+        case TestMap.INT64_TO_INT32_FIELD_FIELD_NUMBER:
+          int64Keys.add(readMapLongKey(input));
+          break;
+        default:
+          fail("Unexpected fields.");
+      }
+      input.popLimit(oldLimit);
+    }
+    assertEquals(
+        Arrays.asList(-2, 0, 1, 4, 5),
+        int32Keys);
+    assertEquals(
+        Arrays.asList(-2, 0, 1, 4, 5),
+        uint32Keys);
+    assertEquals(
+        Arrays.asList(-2L, 0L, 1L, 4L, 5L),
+        int64Keys);
+    assertEquals(
+        Arrays.asList("", "bar", "baz", "foo", "hello", "world"),
+        stringKeys);
+  }
+
+  public void testInitFromPartialDynamicMessage() {
+    FieldDescriptor fieldDescriptor =
+        TestMap.getDescriptor().findFieldByNumber(TestMap.INT32_TO_MESSAGE_FIELD_FIELD_NUMBER);
+    Descriptor mapEntryType = fieldDescriptor.getMessageType();
+    FieldDescriptor keyField = mapEntryType.findFieldByNumber(1);
+    FieldDescriptor valueField = mapEntryType.findFieldByNumber(2);
+    DynamicMessage dynamicMessage =
+        DynamicMessage.newBuilder(TestMap.getDescriptor())
+            .addRepeatedField(
+                fieldDescriptor,
+                DynamicMessage.newBuilder(mapEntryType)
+                    .setField(keyField, 10)
+                    .setField(valueField, TestMap.MessageValue.newBuilder().setValue(10).build())
+                    .build())
+            .build();
+    TestMap message = TestMap.newBuilder().mergeFrom(dynamicMessage).build();
+    assertEquals(
+        TestMap.MessageValue.newBuilder().setValue(10).build(),
+        message.getInt32ToMessageFieldMap().get(10));
+  }
+
+  public void testInitFromFullyDynamicMessage() {
+    FieldDescriptor fieldDescriptor =
+        TestMap.getDescriptor().findFieldByNumber(TestMap.INT32_TO_MESSAGE_FIELD_FIELD_NUMBER);
+    Descriptor mapEntryType = fieldDescriptor.getMessageType();
+    FieldDescriptor keyField = mapEntryType.findFieldByNumber(1);
+    FieldDescriptor valueField = mapEntryType.findFieldByNumber(2);
+    DynamicMessage dynamicMessage =
+        DynamicMessage.newBuilder(TestMap.getDescriptor())
+            .addRepeatedField(
+                fieldDescriptor,
+                DynamicMessage.newBuilder(mapEntryType)
+                    .setField(keyField, 10)
+                    .setField(
+                        valueField,
+                        DynamicMessage.newBuilder(TestMap.MessageValue.getDescriptor())
+                            .setField(
+                                TestMap.MessageValue.getDescriptor().findFieldByName("value"), 10)
+                            .build())
+                    .build())
+            .build();
+    TestMap message = TestMap.newBuilder().mergeFrom(dynamicMessage).build();
+    assertEquals(
+        TestMap.MessageValue.newBuilder().setValue(10).build(),
+        message.getInt32ToMessageFieldMap().get(10));
+  }
+
+  private int readMapIntegerKey(CodedInputStream input) throws IOException {
+    int tag = input.readTag();
+    assertEquals(WireFormat.makeTag(1, WireFormat.WIRETYPE_VARINT), tag);
+    int ret = input.readInt32();
+    // skip the value field.
+    input.skipField(input.readTag());
+    assertTrue(input.isAtEnd());
+    return ret;
+  }
+
+  private long readMapLongKey(CodedInputStream input) throws IOException {
+    int tag = input.readTag();
+    assertEquals(WireFormat.makeTag(1, WireFormat.WIRETYPE_VARINT), tag);
+    long ret = input.readInt64();
+    // skip the value field.
+    input.skipField(input.readTag());
+    assertTrue(input.isAtEnd());
+    return ret;
+  }
+
+  private String readMapStringKey(CodedInputStream input) throws IOException {
+    int tag = input.readTag();
+    assertEquals(WireFormat.makeTag(1, WireFormat.WIRETYPE_LENGTH_DELIMITED), tag);
+    String ret = input.readString();
+    // skip the value field.
+    input.skipField(input.readTag());
+    assertTrue(input.isAtEnd());
+    return ret;
   }
 
   private static <K, V> Map<K, V> newMap(K key1, V value1) {

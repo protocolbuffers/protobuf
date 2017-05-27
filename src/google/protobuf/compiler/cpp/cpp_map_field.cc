@@ -399,7 +399,8 @@ void MapFieldGenerator::GenerateSerializeWithCachedSizes(
 void MapFieldGenerator::
 GenerateByteSize(io::Printer* printer) const {
   printer->Print(variables_,
-      "total_size += $tag_size$ * this->$name$_size();\n"
+      "total_size += $tag_size$ *\n"
+      "    ::google::protobuf::internal::FromIntSize(this->$name$_size());\n"
       "{\n"
       "  ::google::protobuf::scoped_ptr<$map_classname$> entry;\n"
       "  for (::google::protobuf::Map< $key_cpp$, $val_cpp$ >::const_iterator\n"

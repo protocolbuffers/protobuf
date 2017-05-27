@@ -43,6 +43,7 @@
 
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/stubs/once.h>
+#include <google/protobuf/has_bits.h>
 
 namespace google {
 
@@ -70,22 +71,55 @@ namespace internal {
 LIBPROTOBUF_EXPORT double Infinity();
 LIBPROTOBUF_EXPORT double NaN();
 
+// This type is used to define a global variable, without it's constructor
+// and destructor run on start and end of the program lifetime. This circumvents
+// the initial construction order fiasco, while keeping the address of the
+// empty string a compile time constant.
+template <typename T>
+class ExplicitlyConstructed {
+ public:
+  void DefaultConstruct() {
+    new (&union_) T();
+    init_ = true;
+  }
+
+  bool IsInitialized() { return init_; }
+  void Shutdown() {
+    if (init_) {
+      init_ = false;
+      get_mutable()->~T();
+    }
+  }
+
+  const T& get() const { return reinterpret_cast<const T&>(union_); }
+  T* get_mutable() { return reinterpret_cast<T*>(&union_); }
+
+ private:
+  // Prefer c++14 aligned_storage, but for compatibility this will do.
+  union AlignedUnion {
+    char space[sizeof(T)];
+    int64 align_to_int64;
+    void* align_to_ptr;
+  } union_;
+  bool init_;  // false by linker
+};
+
 // TODO(jieluo): Change to template. We have tried to use template,
 // but it causes net/rpc/python:rpcutil_test fail (the empty string will
 // init twice). It may related to swig. Change to template after we
 // found the solution.
 
-// Default empty string object. Don't use the pointer directly. Instead, call
+// Default empty string object. Don't use this directly. Instead, call
 // GetEmptyString() to get the reference.
-LIBPROTOBUF_EXPORT extern const ::std::string* empty_string_;
+extern ExplicitlyConstructed< ::std::string> fixed_address_empty_string;
 LIBPROTOBUF_EXPORT extern ProtobufOnceType empty_string_once_init_;
 LIBPROTOBUF_EXPORT void InitEmptyString();
 
 
 LIBPROTOBUF_EXPORT inline const ::std::string& GetEmptyStringAlreadyInited() {
-  assert(empty_string_ != NULL);
-  return *empty_string_;
+  return fixed_address_empty_string.get();
 }
+
 LIBPROTOBUF_EXPORT inline const ::std::string& GetEmptyString() {
   ::google::protobuf::GoogleOnceInit(&empty_string_once_init_, &InitEmptyString);
   return GetEmptyStringAlreadyInited();
@@ -106,19 +140,27 @@ template <class Type> bool AllAreInitialized(const Type& t) {
   return true;
 }
 
-class ArenaString;
-
-// Read a length (varint32), followed by a string, from *input.  Return a
-// pointer to a copy of the string that resides in *arena.  Requires both
-// args to be non-NULL.  If something goes wrong while reading the data
-// then NULL is returned (e.g., input does not start with a valid varint).
-LIBPROTOBUF_EXPORT ArenaString* ReadArenaString(
-    ::google::protobuf::io::CodedInputStream* input,
-    ::google::protobuf::Arena* arena);
-
 // Helper function to crash on merge failure.
 // Moved out of generated code to reduce binary size.
 LIBPROTOBUF_EXPORT void MergeFromFail(const char* file, int line) GOOGLE_ATTRIBUTE_NORETURN;
+
+// We compute sizes as size_t but cache them as int.  This function converts a
+// computed size to a cached size.  Since we don't proceed with serialization if
+// the total size was > INT_MAX, it is not important what this function returns
+// for inputs > INT_MAX.
+inline int ToCachedSize(size_t size) {
+  return static_cast<int>(size);
+}
+
+// We mainly calculate sizes in terms of size_t, but some functions that compute
+// sizes return "int".  These int sizes are expected to always be positive.
+// This function is more efficient than casting an int to size_t directly on
+// 64-bit platforms because it avoids making the compiler emit a sign extending
+// instruction, which we don't want and don't want to pay for.
+inline size_t FromIntSize(int size) {
+  // Convert to unsigned before widening so sign extension is not necessary.
+  return static_cast<unsigned int>(size);
+}
 
 }  // namespace internal
 }  // namespace protobuf

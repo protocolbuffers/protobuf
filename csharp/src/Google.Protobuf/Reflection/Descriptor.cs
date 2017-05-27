@@ -80,66 +80,66 @@ namespace Google.Protobuf.Reflection {
             "ASgJEhMKC291dHB1dF90eXBlGAMgASgJEi8KB29wdGlvbnMYBCABKAsyHi5n",
             "b29nbGUucHJvdG9idWYuTWV0aG9kT3B0aW9ucxIfChBjbGllbnRfc3RyZWFt",
             "aW5nGAUgASgIOgVmYWxzZRIfChBzZXJ2ZXJfc3RyZWFtaW5nGAYgASgIOgVm",
-            "YWxzZSKHBQoLRmlsZU9wdGlvbnMSFAoMamF2YV9wYWNrYWdlGAEgASgJEhwK",
+            "YWxzZSKEBQoLRmlsZU9wdGlvbnMSFAoMamF2YV9wYWNrYWdlGAEgASgJEhwK",
             "FGphdmFfb3V0ZXJfY2xhc3NuYW1lGAggASgJEiIKE2phdmFfbXVsdGlwbGVf",
-            "ZmlsZXMYCiABKAg6BWZhbHNlEiwKHWphdmFfZ2VuZXJhdGVfZXF1YWxzX2Fu",
-            "ZF9oYXNoGBQgASgIOgVmYWxzZRIlChZqYXZhX3N0cmluZ19jaGVja191dGY4",
-            "GBsgASgIOgVmYWxzZRJGCgxvcHRpbWl6ZV9mb3IYCSABKA4yKS5nb29nbGUu",
-            "cHJvdG9idWYuRmlsZU9wdGlvbnMuT3B0aW1pemVNb2RlOgVTUEVFRBISCgpn",
-            "b19wYWNrYWdlGAsgASgJEiIKE2NjX2dlbmVyaWNfc2VydmljZXMYECABKAg6",
-            "BWZhbHNlEiQKFWphdmFfZ2VuZXJpY19zZXJ2aWNlcxgRIAEoCDoFZmFsc2US",
-            "IgoTcHlfZ2VuZXJpY19zZXJ2aWNlcxgSIAEoCDoFZmFsc2USGQoKZGVwcmVj",
-            "YXRlZBgXIAEoCDoFZmFsc2USHwoQY2NfZW5hYmxlX2FyZW5hcxgfIAEoCDoF",
-            "ZmFsc2USGQoRb2JqY19jbGFzc19wcmVmaXgYJCABKAkSGAoQY3NoYXJwX25h",
-            "bWVzcGFjZRglIAEoCRJDChR1bmludGVycHJldGVkX29wdGlvbhjnByADKAsy",
-            "JC5nb29nbGUucHJvdG9idWYuVW5pbnRlcnByZXRlZE9wdGlvbiI6CgxPcHRp",
-            "bWl6ZU1vZGUSCQoFU1BFRUQQARINCglDT0RFX1NJWkUQAhIQCgxMSVRFX1JV",
-            "TlRJTUUQAyoJCOgHEICAgIACSgQIJhAnIuYBCg5NZXNzYWdlT3B0aW9ucxIm",
-            "ChdtZXNzYWdlX3NldF93aXJlX2Zvcm1hdBgBIAEoCDoFZmFsc2USLgofbm9f",
-            "c3RhbmRhcmRfZGVzY3JpcHRvcl9hY2Nlc3NvchgCIAEoCDoFZmFsc2USGQoK",
-            "ZGVwcmVjYXRlZBgDIAEoCDoFZmFsc2USEQoJbWFwX2VudHJ5GAcgASgIEkMK",
-            "FHVuaW50ZXJwcmV0ZWRfb3B0aW9uGOcHIAMoCzIkLmdvb2dsZS5wcm90b2J1",
-            "Zi5VbmludGVycHJldGVkT3B0aW9uKgkI6AcQgICAgAIimAMKDEZpZWxkT3B0",
-            "aW9ucxI6CgVjdHlwZRgBIAEoDjIjLmdvb2dsZS5wcm90b2J1Zi5GaWVsZE9w",
-            "dGlvbnMuQ1R5cGU6BlNUUklORxIOCgZwYWNrZWQYAiABKAgSPwoGanN0eXBl",
-            "GAYgASgOMiQuZ29vZ2xlLnByb3RvYnVmLkZpZWxkT3B0aW9ucy5KU1R5cGU6",
-            "CUpTX05PUk1BTBITCgRsYXp5GAUgASgIOgVmYWxzZRIZCgpkZXByZWNhdGVk",
-            "GAMgASgIOgVmYWxzZRITCgR3ZWFrGAogASgIOgVmYWxzZRJDChR1bmludGVy",
-            "cHJldGVkX29wdGlvbhjnByADKAsyJC5nb29nbGUucHJvdG9idWYuVW5pbnRl",
-            "cnByZXRlZE9wdGlvbiIvCgVDVHlwZRIKCgZTVFJJTkcQABIICgRDT1JEEAES",
-            "EAoMU1RSSU5HX1BJRUNFEAIiNQoGSlNUeXBlEg0KCUpTX05PUk1BTBAAEg0K",
-            "CUpTX1NUUklORxABEg0KCUpTX05VTUJFUhACKgkI6AcQgICAgAIiXgoMT25l",
-            "b2ZPcHRpb25zEkMKFHVuaW50ZXJwcmV0ZWRfb3B0aW9uGOcHIAMoCzIkLmdv",
-            "b2dsZS5wcm90b2J1Zi5VbmludGVycHJldGVkT3B0aW9uKgkI6AcQgICAgAIi",
-            "jQEKC0VudW1PcHRpb25zEhMKC2FsbG93X2FsaWFzGAIgASgIEhkKCmRlcHJl",
-            "Y2F0ZWQYAyABKAg6BWZhbHNlEkMKFHVuaW50ZXJwcmV0ZWRfb3B0aW9uGOcH",
+            "ZmlsZXMYCiABKAg6BWZhbHNlEikKHWphdmFfZ2VuZXJhdGVfZXF1YWxzX2Fu",
+            "ZF9oYXNoGBQgASgIQgIYARIlChZqYXZhX3N0cmluZ19jaGVja191dGY4GBsg",
+            "ASgIOgVmYWxzZRJGCgxvcHRpbWl6ZV9mb3IYCSABKA4yKS5nb29nbGUucHJv",
+            "dG9idWYuRmlsZU9wdGlvbnMuT3B0aW1pemVNb2RlOgVTUEVFRBISCgpnb19w",
+            "YWNrYWdlGAsgASgJEiIKE2NjX2dlbmVyaWNfc2VydmljZXMYECABKAg6BWZh",
+            "bHNlEiQKFWphdmFfZ2VuZXJpY19zZXJ2aWNlcxgRIAEoCDoFZmFsc2USIgoT",
+            "cHlfZ2VuZXJpY19zZXJ2aWNlcxgSIAEoCDoFZmFsc2USGQoKZGVwcmVjYXRl",
+            "ZBgXIAEoCDoFZmFsc2USHwoQY2NfZW5hYmxlX2FyZW5hcxgfIAEoCDoFZmFs",
+            "c2USGQoRb2JqY19jbGFzc19wcmVmaXgYJCABKAkSGAoQY3NoYXJwX25hbWVz",
+            "cGFjZRglIAEoCRJDChR1bmludGVycHJldGVkX29wdGlvbhjnByADKAsyJC5n",
+            "b29nbGUucHJvdG9idWYuVW5pbnRlcnByZXRlZE9wdGlvbiI6CgxPcHRpbWl6",
+            "ZU1vZGUSCQoFU1BFRUQQARINCglDT0RFX1NJWkUQAhIQCgxMSVRFX1JVTlRJ",
+            "TUUQAyoJCOgHEICAgIACSgQIJhAnIuwBCg5NZXNzYWdlT3B0aW9ucxImChdt",
+            "ZXNzYWdlX3NldF93aXJlX2Zvcm1hdBgBIAEoCDoFZmFsc2USLgofbm9fc3Rh",
+            "bmRhcmRfZGVzY3JpcHRvcl9hY2Nlc3NvchgCIAEoCDoFZmFsc2USGQoKZGVw",
+            "cmVjYXRlZBgDIAEoCDoFZmFsc2USEQoJbWFwX2VudHJ5GAcgASgIEkMKFHVu",
+            "aW50ZXJwcmV0ZWRfb3B0aW9uGOcHIAMoCzIkLmdvb2dsZS5wcm90b2J1Zi5V",
+            "bmludGVycHJldGVkT3B0aW9uKgkI6AcQgICAgAJKBAgIEAkingMKDEZpZWxk",
+            "T3B0aW9ucxI6CgVjdHlwZRgBIAEoDjIjLmdvb2dsZS5wcm90b2J1Zi5GaWVs",
+            "ZE9wdGlvbnMuQ1R5cGU6BlNUUklORxIOCgZwYWNrZWQYAiABKAgSPwoGanN0",
+            "eXBlGAYgASgOMiQuZ29vZ2xlLnByb3RvYnVmLkZpZWxkT3B0aW9ucy5KU1R5",
+            "cGU6CUpTX05PUk1BTBITCgRsYXp5GAUgASgIOgVmYWxzZRIZCgpkZXByZWNh",
+            "dGVkGAMgASgIOgVmYWxzZRITCgR3ZWFrGAogASgIOgVmYWxzZRJDChR1bmlu",
+            "dGVycHJldGVkX29wdGlvbhjnByADKAsyJC5nb29nbGUucHJvdG9idWYuVW5p",
+            "bnRlcnByZXRlZE9wdGlvbiIvCgVDVHlwZRIKCgZTVFJJTkcQABIICgRDT1JE",
+            "EAESEAoMU1RSSU5HX1BJRUNFEAIiNQoGSlNUeXBlEg0KCUpTX05PUk1BTBAA",
+            "Eg0KCUpTX1NUUklORxABEg0KCUpTX05VTUJFUhACKgkI6AcQgICAgAJKBAgE",
+            "EAUiXgoMT25lb2ZPcHRpb25zEkMKFHVuaW50ZXJwcmV0ZWRfb3B0aW9uGOcH",
             "IAMoCzIkLmdvb2dsZS5wcm90b2J1Zi5VbmludGVycHJldGVkT3B0aW9uKgkI",
-            "6AcQgICAgAIifQoQRW51bVZhbHVlT3B0aW9ucxIZCgpkZXByZWNhdGVkGAEg",
-            "ASgIOgVmYWxzZRJDChR1bmludGVycHJldGVkX29wdGlvbhjnByADKAsyJC5n",
-            "b29nbGUucHJvdG9idWYuVW5pbnRlcnByZXRlZE9wdGlvbioJCOgHEICAgIAC",
-            "InsKDlNlcnZpY2VPcHRpb25zEhkKCmRlcHJlY2F0ZWQYISABKAg6BWZhbHNl",
-            "EkMKFHVuaW50ZXJwcmV0ZWRfb3B0aW9uGOcHIAMoCzIkLmdvb2dsZS5wcm90",
-            "b2J1Zi5VbmludGVycHJldGVkT3B0aW9uKgkI6AcQgICAgAIiegoNTWV0aG9k",
-            "T3B0aW9ucxIZCgpkZXByZWNhdGVkGCEgASgIOgVmYWxzZRJDChR1bmludGVy",
-            "cHJldGVkX29wdGlvbhjnByADKAsyJC5nb29nbGUucHJvdG9idWYuVW5pbnRl",
-            "cnByZXRlZE9wdGlvbioJCOgHEICAgIACIp4CChNVbmludGVycHJldGVkT3B0",
-            "aW9uEjsKBG5hbWUYAiADKAsyLS5nb29nbGUucHJvdG9idWYuVW5pbnRlcnBy",
-            "ZXRlZE9wdGlvbi5OYW1lUGFydBIYChBpZGVudGlmaWVyX3ZhbHVlGAMgASgJ",
-            "EhoKEnBvc2l0aXZlX2ludF92YWx1ZRgEIAEoBBIaChJuZWdhdGl2ZV9pbnRf",
-            "dmFsdWUYBSABKAMSFAoMZG91YmxlX3ZhbHVlGAYgASgBEhQKDHN0cmluZ192",
-            "YWx1ZRgHIAEoDBIXCg9hZ2dyZWdhdGVfdmFsdWUYCCABKAkaMwoITmFtZVBh",
-            "cnQSEQoJbmFtZV9wYXJ0GAEgAigJEhQKDGlzX2V4dGVuc2lvbhgCIAIoCCLV",
-            "AQoOU291cmNlQ29kZUluZm8SOgoIbG9jYXRpb24YASADKAsyKC5nb29nbGUu",
-            "cHJvdG9idWYuU291cmNlQ29kZUluZm8uTG9jYXRpb24ahgEKCExvY2F0aW9u",
-            "EhAKBHBhdGgYASADKAVCAhABEhAKBHNwYW4YAiADKAVCAhABEhgKEGxlYWRp",
-            "bmdfY29tbWVudHMYAyABKAkSGQoRdHJhaWxpbmdfY29tbWVudHMYBCABKAkS",
-            "IQoZbGVhZGluZ19kZXRhY2hlZF9jb21tZW50cxgGIAMoCSKnAQoRR2VuZXJh",
-            "dGVkQ29kZUluZm8SQQoKYW5ub3RhdGlvbhgBIAMoCzItLmdvb2dsZS5wcm90",
-            "b2J1Zi5HZW5lcmF0ZWRDb2RlSW5mby5Bbm5vdGF0aW9uGk8KCkFubm90YXRp",
-            "b24SEAoEcGF0aBgBIAMoBUICEAESEwoLc291cmNlX2ZpbGUYAiABKAkSDQoF",
-            "YmVnaW4YAyABKAUSCwoDZW5kGAQgASgFQlsKE2NvbS5nb29nbGUucHJvdG9i",
-            "dWZCEERlc2NyaXB0b3JQcm90b3NIAVoKZGVzY3JpcHRvcqABAaICA0dQQqoC",
-            "Gkdvb2dsZS5Qcm90b2J1Zi5SZWZsZWN0aW9u"));
+            "6AcQgICAgAIijQEKC0VudW1PcHRpb25zEhMKC2FsbG93X2FsaWFzGAIgASgI",
+            "EhkKCmRlcHJlY2F0ZWQYAyABKAg6BWZhbHNlEkMKFHVuaW50ZXJwcmV0ZWRf",
+            "b3B0aW9uGOcHIAMoCzIkLmdvb2dsZS5wcm90b2J1Zi5VbmludGVycHJldGVk",
+            "T3B0aW9uKgkI6AcQgICAgAIifQoQRW51bVZhbHVlT3B0aW9ucxIZCgpkZXBy",
+            "ZWNhdGVkGAEgASgIOgVmYWxzZRJDChR1bmludGVycHJldGVkX29wdGlvbhjn",
+            "ByADKAsyJC5nb29nbGUucHJvdG9idWYuVW5pbnRlcnByZXRlZE9wdGlvbioJ",
+            "COgHEICAgIACInsKDlNlcnZpY2VPcHRpb25zEhkKCmRlcHJlY2F0ZWQYISAB",
+            "KAg6BWZhbHNlEkMKFHVuaW50ZXJwcmV0ZWRfb3B0aW9uGOcHIAMoCzIkLmdv",
+            "b2dsZS5wcm90b2J1Zi5VbmludGVycHJldGVkT3B0aW9uKgkI6AcQgICAgAIi",
+            "egoNTWV0aG9kT3B0aW9ucxIZCgpkZXByZWNhdGVkGCEgASgIOgVmYWxzZRJD",
+            "ChR1bmludGVycHJldGVkX29wdGlvbhjnByADKAsyJC5nb29nbGUucHJvdG9i",
+            "dWYuVW5pbnRlcnByZXRlZE9wdGlvbioJCOgHEICAgIACIp4CChNVbmludGVy",
+            "cHJldGVkT3B0aW9uEjsKBG5hbWUYAiADKAsyLS5nb29nbGUucHJvdG9idWYu",
+            "VW5pbnRlcnByZXRlZE9wdGlvbi5OYW1lUGFydBIYChBpZGVudGlmaWVyX3Zh",
+            "bHVlGAMgASgJEhoKEnBvc2l0aXZlX2ludF92YWx1ZRgEIAEoBBIaChJuZWdh",
+            "dGl2ZV9pbnRfdmFsdWUYBSABKAMSFAoMZG91YmxlX3ZhbHVlGAYgASgBEhQK",
+            "DHN0cmluZ192YWx1ZRgHIAEoDBIXCg9hZ2dyZWdhdGVfdmFsdWUYCCABKAka",
+            "MwoITmFtZVBhcnQSEQoJbmFtZV9wYXJ0GAEgAigJEhQKDGlzX2V4dGVuc2lv",
+            "bhgCIAIoCCLVAQoOU291cmNlQ29kZUluZm8SOgoIbG9jYXRpb24YASADKAsy",
+            "KC5nb29nbGUucHJvdG9idWYuU291cmNlQ29kZUluZm8uTG9jYXRpb24ahgEK",
+            "CExvY2F0aW9uEhAKBHBhdGgYASADKAVCAhABEhAKBHNwYW4YAiADKAVCAhAB",
+            "EhgKEGxlYWRpbmdfY29tbWVudHMYAyABKAkSGQoRdHJhaWxpbmdfY29tbWVu",
+            "dHMYBCABKAkSIQoZbGVhZGluZ19kZXRhY2hlZF9jb21tZW50cxgGIAMoCSKn",
+            "AQoRR2VuZXJhdGVkQ29kZUluZm8SQQoKYW5ub3RhdGlvbhgBIAMoCzItLmdv",
+            "b2dsZS5wcm90b2J1Zi5HZW5lcmF0ZWRDb2RlSW5mby5Bbm5vdGF0aW9uGk8K",
+            "CkFubm90YXRpb24SEAoEcGF0aBgBIAMoBUICEAESEwoLc291cmNlX2ZpbGUY",
+            "AiABKAkSDQoFYmVnaW4YAyABKAUSCwoDZW5kGAQgASgFQlgKE2NvbS5nb29n",
+            "bGUucHJvdG9idWZCEERlc2NyaXB0b3JQcm90b3NIAVoKZGVzY3JpcHRvcqIC",
+            "A0dQQqoCGkdvb2dsZS5Qcm90b2J1Zi5SZWZsZWN0aW9u"));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { },
           new pbr::GeneratedClrTypeInfo(null, new pbr::GeneratedClrTypeInfo[] {
@@ -2865,19 +2865,9 @@ namespace Google.Protobuf.Reflection {
     public const int JavaGenerateEqualsAndHashFieldNumber = 20;
     private bool javaGenerateEqualsAndHash_;
     /// <summary>
-    ///  If set true, then the Java code generator will generate equals() and
-    ///  hashCode() methods for all messages defined in the .proto file.
-    ///  This increases generated code size, potentially substantially for large
-    ///  protos, which may harm a memory-constrained application.
-    ///  - In the full runtime this is a speed optimization, as the
-    ///  AbstractMessage base class includes reflection-based implementations of
-    ///  these methods.
-    ///  - In the lite runtime, setting this option changes the semantics of
-    ///  equals() and hashCode() to more closely match those of the full runtime;
-    ///  the generated methods compute their results based on field values rather
-    ///  than object identity. (Implementations should not assume that hashcodes
-    ///  will be consistent across runtimes or versions of the protocol compiler.)
+    ///  This option does nothing.
     /// </summary>
+    [global::System.ObsoleteAttribute]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public bool JavaGenerateEqualsAndHash {
       get { return javaGenerateEqualsAndHash_; }
@@ -3764,7 +3754,7 @@ namespace Google.Protobuf.Reflection {
     ///  to require exclusive access.
     ///
     ///  Note that implementations may choose not to check required fields within
-    ///  a lazy sub-message.  That is, calling IsInitialized() on the outher message
+    ///  a lazy sub-message.  That is, calling IsInitialized() on the outer message
     ///  may return true even if the inner message has missing required fields.
     ///  This is necessary because otherwise the inner message would have to be
     ///  parsed in order to perform the check, defeating the purpose of lazy

@@ -334,6 +334,15 @@ public final class MapEntry<K, V> extends AbstractMessage {
       } else {
         if (field.getType() == FieldDescriptor.Type.ENUM) {
           value = ((EnumValueDescriptor) value).getNumber();
+        } else if (field.getType() == FieldDescriptor.Type.MESSAGE) {
+          if (value != null && !metadata.defaultValue.getClass().isInstance(value)) {
+            // The value is not the exact right message type.  However, if it
+            // is an alternative implementation of the same type -- e.g. a
+            // DynamicMessage -- we should accept it.  In this case we can make
+            // a copy of the message.
+            value =
+                ((Message) metadata.defaultValue).toBuilder().mergeFrom((Message) value).build();
+          }
         }
         setValue((V) value);
       }

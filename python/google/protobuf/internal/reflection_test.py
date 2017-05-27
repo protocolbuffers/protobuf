@@ -60,7 +60,11 @@ from google.protobuf.internal import more_messages_pb2
 from google.protobuf.internal import message_set_extensions_pb2
 from google.protobuf.internal import wire_format
 from google.protobuf.internal import test_util
+from google.protobuf.internal import testing_refleaks
 from google.protobuf.internal import decoder
+
+
+BaseTestCase = testing_refleaks.BaseTestCase
 
 
 class _MiniDecoder(object):
@@ -108,7 +112,7 @@ class _MiniDecoder(object):
     return self._pos == len(self._bytes)
 
 
-class ReflectionTest(unittest.TestCase):
+class ReflectionTest(BaseTestCase):
 
   def assertListsEqual(self, values, others):
     self.assertEqual(len(values), len(others))
@@ -1552,6 +1556,20 @@ class ReflectionTest(unittest.TestCase):
     self.assertFalse(proto.HasField('optional_foreign_message'))
     self.assertEqual(0, proto.optional_foreign_message.c)
 
+  def testDisconnectingInOneof(self):
+    m = unittest_pb2.TestOneof2()  # This message has two messages in a oneof.
+    m.foo_message.qux_int = 5
+    sub_message = m.foo_message
+    # Accessing another message's field does not clear the first one
+    self.assertEqual(m.foo_lazy_message.qux_int, 0)
+    self.assertEqual(m.foo_message.qux_int, 5)
+    # But mutating another message in the oneof detaches the first one.
+    m.foo_lazy_message.qux_int = 6
+    self.assertEqual(m.foo_message.qux_int, 0)
+    # The reference we got above was detached and is still valid.
+    self.assertEqual(sub_message.qux_int, 5)
+    sub_message.qux_int = 7
+
   def testOneOf(self):
     proto = unittest_pb2.TestAllTypes()
     proto.oneof_uint32 = 10
@@ -1810,7 +1828,7 @@ class ReflectionTest(unittest.TestCase):
 #  into separate TestCase classes.
 
 
-class TestAllTypesEqualityTest(unittest.TestCase):
+class TestAllTypesEqualityTest(BaseTestCase):
 
   def setUp(self):
     self.first_proto = unittest_pb2.TestAllTypes()
@@ -1826,7 +1844,7 @@ class TestAllTypesEqualityTest(unittest.TestCase):
     self.assertEqual(self.first_proto, self.second_proto)
 
 
-class FullProtosEqualityTest(unittest.TestCase):
+class FullProtosEqualityTest(BaseTestCase):
 
   """Equality tests using completely-full protos as a starting point."""
 
@@ -1912,7 +1930,7 @@ class FullProtosEqualityTest(unittest.TestCase):
     self.assertEqual(self.first_proto, self.second_proto)
 
 
-class ExtensionEqualityTest(unittest.TestCase):
+class ExtensionEqualityTest(BaseTestCase):
 
   def testExtensionEquality(self):
     first_proto = unittest_pb2.TestAllExtensions()
@@ -1945,7 +1963,7 @@ class ExtensionEqualityTest(unittest.TestCase):
     self.assertEqual(first_proto, second_proto)
 
 
-class MutualRecursionEqualityTest(unittest.TestCase):
+class MutualRecursionEqualityTest(BaseTestCase):
 
   def testEqualityWithMutualRecursion(self):
     first_proto = unittest_pb2.TestMutualRecursionA()
@@ -1957,7 +1975,7 @@ class MutualRecursionEqualityTest(unittest.TestCase):
     self.assertEqual(first_proto, second_proto)
 
 
-class ByteSizeTest(unittest.TestCase):
+class ByteSizeTest(BaseTestCase):
 
   def setUp(self):
     self.proto = unittest_pb2.TestAllTypes()
@@ -2253,7 +2271,7 @@ class ByteSizeTest(unittest.TestCase):
 #   * Handling of empty submessages (with and without "has"
 #     bits set).
 
-class SerializationTest(unittest.TestCase):
+class SerializationTest(BaseTestCase):
 
   def testSerializeEmtpyMessage(self):
     first_proto = unittest_pb2.TestAllTypes()
@@ -2814,7 +2832,7 @@ class SerializationTest(unittest.TestCase):
     self.assertEqual(3, proto.repeated_int32[2])
 
 
-class OptionsTest(unittest.TestCase):
+class OptionsTest(BaseTestCase):
 
   def testMessageOptions(self):
     proto = message_set_extensions_pb2.TestMessageSet()
@@ -2841,7 +2859,7 @@ class OptionsTest(unittest.TestCase):
 
 
 
-class ClassAPITest(unittest.TestCase):
+class ClassAPITest(BaseTestCase):
 
   @unittest.skipIf(
       api_implementation.Type() == 'cpp' and api_implementation.Version() == 2,
@@ -2924,6 +2942,9 @@ class ClassAPITest(unittest.TestCase):
     text_format.Merge(file_descriptor_str, file_descriptor)
     return file_descriptor.SerializeToString()
 
+  @testing_refleaks.SkipReferenceLeakChecker('MakeDescriptor is not repeatable')
+  # This test can only run once; the second time, it raises errors about
+  # conflicting message descriptors.
   def testParsingFlatClassWithExplicitClassDeclaration(self):
     """Test that the generated class can parse a flat message."""
     # TODO(xiaofeng): This test fails with cpp implemetnation in the call
@@ -2948,6 +2969,7 @@ class ClassAPITest(unittest.TestCase):
     text_format.Merge(msg_str, msg)
     self.assertEqual(msg.flat, [0, 1, 2])
 
+  @testing_refleaks.SkipReferenceLeakChecker('MakeDescriptor is not repeatable')
   def testParsingFlatClass(self):
     """Test that the generated class can parse a flat message."""
     file_descriptor = descriptor_pb2.FileDescriptorProto()
@@ -2963,6 +2985,7 @@ class ClassAPITest(unittest.TestCase):
     text_format.Merge(msg_str, msg)
     self.assertEqual(msg.flat, [0, 1, 2])
 
+  @testing_refleaks.SkipReferenceLeakChecker('MakeDescriptor is not repeatable')
   def testParsingNestedClass(self):
     """Test that the generated class can parse a nested message."""
     file_descriptor = descriptor_pb2.FileDescriptorProto()
