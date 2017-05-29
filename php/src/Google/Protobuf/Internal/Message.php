@@ -739,6 +739,13 @@ class Message
      */
     private function existField($field)
     {
+        $oneof_index = $field->getOneofIndex();
+        if ($oneof_index !== -1) {
+            $oneof = $this->desc->getOneofDecl()[$oneof_index];
+            $oneof_name = $oneof->getName();
+            return $this->$oneof_name->getNumber() === $field->getNumber();
+        }
+
         $getter = $field->getGetter();
         $value = $this->$getter();
         return $value !== $this->defaultValue($field);
