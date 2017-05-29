@@ -236,7 +236,7 @@ function getClassNamePrefix(
         return $prefix;
     }
 
-    $reserved_words = array("Empty");
+    $reserved_words = array("Empty", "ECHO", "ARRAY");
     foreach ($reserved_words as $reserved_word) {
         if ($classname === $reserved_word) {
             if ($file_proto->getPackage() === "google.protobuf") {
