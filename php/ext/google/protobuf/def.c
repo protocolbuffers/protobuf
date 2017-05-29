@@ -30,8 +30,8 @@
 
 #include "protobuf.h"
 
-const char* const kReservedNames[] = {"Empty"};
-const int kReservedNamesSize = 1;
+const char* const kReservedNames[] = {"Empty", "ECHO", "ARRAY"};
+const int kReservedNamesSize = 3;
 
 // Forward declare.
 static void descriptor_init_c_instance(Descriptor* intern TSRMLS_DC);
