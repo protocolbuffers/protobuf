@@ -876,6 +876,7 @@ class GeneratedClassTest extends TestBase
         $m = new \Foo\TestMessage_Empty();
         $m = new \Foo\PBEmpty();
         $m = new \PrefixEmpty();
+        $m = new \Foo\PBARRAY();
     }
 
     #########################################################
@@ -886,8 +887,8 @@ class GeneratedClassTest extends TestBase
     {
         $m = (new TestMessage())
             ->setOptionalInt32(1)
-            ->setOptionalInt64(2);
+            ->setOptionalUInt32(2);
         $this->assertSame(1, $m->getOptionalInt32());
-        $this->assertSame(2, $m->getOptionalInt64());
+        $this->assertSame(2, $m->getOptionalUInt32());
     }
 }
