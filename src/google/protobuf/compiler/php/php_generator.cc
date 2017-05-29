@@ -530,6 +530,8 @@ void GenerateFieldAccessor(const FieldDescriptor* field, bool is_descriptor,
         "field_name", field->name());
   }
 
+  printer->Print("\nreturn $this;\n");
+
   Outdent(printer);
 
   printer->Print(
