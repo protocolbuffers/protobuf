@@ -876,5 +876,6 @@ class GeneratedClassTest extends TestBase
         $m = new \Foo\TestMessage_Empty();
         $m = new \Foo\PBEmpty();
         $m = new \PrefixEmpty();
+        $m = new \Foo\PBARRAY();
     }
 }
