@@ -1299,9 +1299,15 @@ class upb::FileDef {
   bool set_package(const char* package, Status* s);
 
   /* Sets the php class prefix which is prepended to all php generated classes
-   / from this .proto. Default is empty. */
+   * from this .proto. Default is empty. */
   const char* phpprefix() const;
   bool set_phpprefix(const char* phpprefix, Status* s);
+
+  /* Use this option to change the namespace of php generated classes. Default
+   * is empty. When this option is empty, the package name will be used for
+   * determining the namespace. */
+  const char* phpnamespace() const;
+  bool set_phpnamespace(const char* phpnamespace, Status* s);
 
   /* Syntax for the file.  Defaults to proto2. */
   upb_syntax_t syntax() const;
@@ -1357,6 +1363,7 @@ UPB_REFCOUNTED_CMETHODS(upb_filedef, upb_filedef_upcast)
 const char *upb_filedef_name(const upb_filedef *f);
 const char *upb_filedef_package(const upb_filedef *f);
 const char *upb_filedef_phpprefix(const upb_filedef *f);
+const char *upb_filedef_phpnamespace(const upb_filedef *f);
 upb_syntax_t upb_filedef_syntax(const upb_filedef *f);
 size_t upb_filedef_defcount(const upb_filedef *f);
 size_t upb_filedef_depcount(const upb_filedef *f);
@@ -1368,6 +1375,8 @@ bool upb_filedef_setname(upb_filedef *f, const char *name, upb_status *s);
 bool upb_filedef_setpackage(upb_filedef *f, const char *package, upb_status *s);
 bool upb_filedef_setphpprefix(upb_filedef *f, const char *phpprefix,
                               upb_status *s);
+bool upb_filedef_setphpnamespace(upb_filedef *f, const char *phpnamespace,
+                                 upb_status *s);
 bool upb_filedef_setsyntax(upb_filedef *f, upb_syntax_t syntax, upb_status *s);
 
 bool upb_filedef_adddef(upb_filedef *f, upb_def *def, const void *ref_donor,
@@ -2131,6 +2140,12 @@ inline const char* FileDef::phpprefix() const {
 }
 inline bool FileDef::set_phpprefix(const char* phpprefix, Status* s) {
   return upb_filedef_setphpprefix(this, phpprefix, s);
+}
+inline const char* FileDef::phpnamespace() const {
+  return upb_filedef_phpnamespace(this);
+}
+inline bool FileDef::set_phpnamespace(const char* phpnamespace, Status* s) {
+  return upb_filedef_setphpnamespace(this, phpnamespace, s);
 }
 inline int FileDef::def_count() const {
   return upb_filedef_defcount(this);

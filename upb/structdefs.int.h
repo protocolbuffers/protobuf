@@ -179,6 +179,7 @@ struct upb_filedef {
   const char *name;
   const char *package;
   const char *phpprefix;
+  const char *phpnamespace;
   upb_syntax_t syntax;
 
   upb_inttable defs;
