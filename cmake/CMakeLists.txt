@@ -189,7 +189,10 @@ if (protobuf_BUILD_TESTS)
   include(tests.cmake)
 endif (protobuf_BUILD_TESTS)
 
-include(install.cmake)
+# airtime : start
+# we don't use libraries on public path. also this causes a problem if BUILD_PROTOC_EXE is OFF
+#include(install.cmake)
+# airtime : end
 
 if (protobuf_BUILD_EXAMPLES)
   include(examples.cmake)
