@@ -39,7 +39,7 @@ endif()
 # Check and save build options used to create this package
 macro(_check_and_save_build_option OPTION VALUE)
   if(DEFINED ${PACKAGE_FIND_NAME}_${OPTION} AND
-    NOT ${PACKAGE_FIND_NAME}_${OPTION} EQUAL VALUE)
+    NOT ${PACKAGE_FIND_NAME}_${OPTION} STREQUAL ${VALUE})
     set(PACKAGE_VERSION_UNSUITABLE TRUE)
   endif()
   set(${PACKAGE_FIND_NAME}_${OPTION} ${VALUE})
