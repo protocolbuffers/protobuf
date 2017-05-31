@@ -8,14 +8,34 @@ exports_files(["LICENSE"])
 # Protobuf Runtime Library
 ################################################################################
 
-COPTS = [
-    "-DHAVE_PTHREAD",
-    "-Wall",
-    "-Wwrite-strings",
-    "-Woverloaded-virtual",
-    "-Wno-sign-compare",
-    "-Wno-unused-function",
+WIN_COPTS = [
+    "/DHAVE_PTHREAD",
+    "/wd4018", # -Wno-sign-compare
+    "/wd4514", # -Wno-unused-function
 ]
+
+COPTS = select({
+    ":windows" : WIN_COPTS,
+    ":windows_msvc" : WIN_COPTS,
+    "//conditions:default": [
+        "-DHAVE_PTHREAD",
+        "-Wall",
+        "-Wwrite-strings",
+        "-Woverloaded-virtual",
+        "-Wno-sign-compare",
+        "-Wno-unused-function",
+    ],
+})
+
+config_setting(
+    name = "windows",
+    values = { "cpu": "x64_windows" },
+)
+
+config_setting(
+    name = "windows_msvc",
+    values = { "cpu": "x64_windows_msvc" },
+)
 
 config_setting(
     name = "android",
@@ -60,7 +80,7 @@ config_setting(
     },
 )
 
-IOS_ARM_COPTS = COPTS + [
+IOS_ARM_COPTS = [
     "-DOS_IOS",
     "-miphoneos-version-min=7.0",
     "-arch armv7",
@@ -103,8 +123,8 @@ cc_library(
         ":ios_armv7": IOS_ARM_COPTS,
         ":ios_armv7s": IOS_ARM_COPTS,
         ":ios_arm64": IOS_ARM_COPTS,
-        "//conditions:default": COPTS,
-    }),
+        "//conditions:default": [],
+    }) + COPTS,
     includes = ["src/"],
     linkopts = LINK_OPTS,
     visibility = ["//visibility:public"],
@@ -174,8 +194,8 @@ cc_library(
         ":ios_armv7": IOS_ARM_COPTS,
         ":ios_armv7s": IOS_ARM_COPTS,
         ":ios_arm64": IOS_ARM_COPTS,
-        "//conditions:default": COPTS,
-    }),
+        "//conditions:default": [],
+    }) + COPTS,
     includes = ["src/"],
     linkopts = LINK_OPTS,
     visibility = ["//visibility:public"],
