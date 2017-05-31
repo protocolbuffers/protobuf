@@ -64,7 +64,7 @@ RUN php -r "unlink('composer-setup.php');"
 RUN cd /tmp && \
   git clone https://github.com/google/protobuf.git && \
   cd protobuf/php && \
-  git reset 6b27c1f981a9a93918e4039f236ead27165a8e91 && \
+  git reset --hard 6b27c1f981a9a93918e4039f236ead27165a8e91 && \
   ln -sfn /usr/bin/php5.5 /usr/bin/php && \
   ln -sfn /usr/bin/php-config5.5 /usr/bin/php-config && \
   ln -sfn /usr/bin/phpize5.5 /usr/bin/phpize && \
@@ -80,13 +80,30 @@ RUN cd /tmp && \
   ln -sfn /usr/bin/phpize7.0 /usr/bin/phpize && \
   composer install && \
   mv vendor /usr/local/vendor-7.0
+
 RUN wget http://am1.php.net/get/php-5.5.38.tar.bz2/from/this/mirror
 RUN mv mirror php-5.5.38.tar.bz2
 RUN tar -xvf php-5.5.38.tar.bz2
 RUN cd php-5.5.38 && ./configure --enable-maintainer-zts --prefix=/usr/local/php-5.5-zts && \
     make && make install && make clean && cd ..
-RUN cd php-5.5.38 && ./configure --enable-bcmath --prefix=/usr/local/php-5.5-bc && \
+RUN cd php-5.5.38 && make clean && ./configure --enable-bcmath --prefix=/usr/local/php-5.5 && \
     make && make install && make clean && cd ..
+
+RUN wget http://am1.php.net/get/php-5.6.30.tar.bz2/from/this/mirror
+RUN mv mirror php-5.6.30.tar.bz2
+RUN tar -xvf php-5.6.30.tar.bz2
+RUN cd php-5.6.30 && ./configure --enable-maintainer-zts --prefix=/usr/local/php-5.6-zts && \
+    make && make install && cd ..
+RUN cd php-5.6.30 && make clean && ./configure --enable-bcmath --prefix=/usr/local/php-5.6 && \
+    make && make install && cd ..
+
+RUN wget http://am1.php.net/get/php-7.0.18.tar.bz2/from/this/mirror
+RUN mv mirror php-7.0.18.tar.bz2
+RUN tar -xvf php-7.0.18.tar.bz2
+RUN cd php-7.0.18 && ./configure --enable-maintainer-zts --prefix=/usr/local/php-7.0-zts && \
+    make && make install && cd ..
+RUN cd php-7.0.18 && make clean && ./configure --enable-bcmath --prefix=/usr/local/php-7.0 && \
+    make && make install && cd ..
 
 ##################
 # Python dependencies

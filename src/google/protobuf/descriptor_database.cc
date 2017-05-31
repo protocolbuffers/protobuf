@@ -199,7 +199,7 @@ template <typename Value>
 bool SimpleDescriptorDatabase::DescriptorIndex<Value>::FindAllExtensionNumbers(
     const string& containing_type,
     std::vector<int>* output) {
-  typename std::map<pair<string, int>, Value>::const_iterator it =
+  typename std::map<std::pair<string, int>, Value>::const_iterator it =
       by_extension_.lower_bound(std::make_pair(containing_type, 0));
   bool success = false;
 
@@ -213,7 +213,7 @@ bool SimpleDescriptorDatabase::DescriptorIndex<Value>::FindAllExtensionNumbers(
 }
 
 template <typename Value>
-typename map<string, Value>::iterator
+typename std::map<string, Value>::iterator
 SimpleDescriptorDatabase::DescriptorIndex<Value>::FindLastLessOrEqual(
     const string& name) {
   // Find the last key in the map which sorts less than or equal to the

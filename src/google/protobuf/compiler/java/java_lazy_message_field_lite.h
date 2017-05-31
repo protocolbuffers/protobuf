@@ -68,6 +68,7 @@ class ImmutableLazyMessageFieldLiteGenerator
   void GenerateSerializationCode(io::Printer* printer) const;
   void GenerateSerializedSizeCode(io::Printer* printer) const;
 
+
  private:
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(ImmutableLazyMessageFieldLiteGenerator);
 };
@@ -87,6 +88,7 @@ class ImmutableLazyMessageOneofFieldLiteGenerator
   void GenerateSerializationCode(io::Printer* printer) const;
   void GenerateSerializedSizeCode(io::Printer* printer) const;
 
+
  private:
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(ImmutableLazyMessageOneofFieldLiteGenerator);
 };
@@ -105,6 +107,7 @@ class RepeatedImmutableLazyMessageFieldLiteGenerator
   void GenerateParsingCode(io::Printer* printer) const;
   void GenerateSerializationCode(io::Printer* printer) const;
   void GenerateSerializedSizeCode(io::Printer* printer) const;
+
 
  private:
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(RepeatedImmutableLazyMessageFieldLiteGenerator);

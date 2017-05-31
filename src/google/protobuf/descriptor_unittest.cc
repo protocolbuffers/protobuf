@@ -44,6 +44,7 @@
 #include <google/protobuf/compiler/parser.h>
 #include <google/protobuf/unittest.pb.h>
 #include <google/protobuf/unittest_custom_options.pb.h>
+#include <google/protobuf/unittest_lazy_dependencies.pb.h>
 #include <google/protobuf/unittest_proto3_arena.pb.h>
 #include <google/protobuf/io/tokenizer.h>
 #include <google/protobuf/io/zero_copy_stream_impl.h>
@@ -52,7 +53,6 @@
 #include <google/protobuf/descriptor_database.h>
 #include <google/protobuf/dynamic_message.h>
 #include <google/protobuf/text_format.h>
-#include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/stubs/substitute.h>
 
 #include <google/protobuf/stubs/common.h>
@@ -501,7 +501,7 @@ void ExtractDebugString(
   for (int i = 0; i < file->dependency_count(); ++i) {
     ExtractDebugString(file->dependency(i), visited, debug_strings);
   }
-  debug_strings->push_back(make_pair(file->name(), file->DebugString()));
+  debug_strings->push_back(std::make_pair(file->name(), file->DebugString()));
 }
 
 class SimpleErrorCollector : public google::protobuf::io::ErrorCollector {
@@ -6066,6 +6066,7 @@ TEST_F(ValidationErrorTest, ValidateProto3JsonName) {
       "conflicts with field \"ab\". This is not allowed in proto3.\n");
 }
 
+
 // ===================================================================
 // DescriptorDatabase
 
@@ -6820,6 +6821,360 @@ TEST_F(CopySourceCodeInfoToTest, CopySourceCodeInfoTo) {
   EXPECT_EQ(1, foo_location.span(0));      // Foo is declared on line 1
   EXPECT_EQ(0, foo_location.span(1));      // Foo starts at column 0
   EXPECT_EQ(14, foo_location.span(2));     // Foo ends on column 14
+}
+
+// ===================================================================
+
+class LazilyBuildDependenciesTest : public testing::Test {
+ public:
+  LazilyBuildDependenciesTest() : pool_(&db_, NULL) {
+    pool_.InternalSetLazilyBuildDependencies();
+  }
+
+  void ParseProtoAndAddToDb(const char* proto) {
+    FileDescriptorProto tmp;
+    ASSERT_TRUE(TextFormat::ParseFromString(proto, &tmp));
+    db_.Add(tmp);
+  }
+
+  void ParseProtoAndAddToDb(const string& proto) {
+    FileDescriptorProto tmp;
+    ASSERT_TRUE(TextFormat::ParseFromString(proto, &tmp));
+    db_.Add(tmp);
+  }
+
+  void AddSimpleMessageProtoFileToDb(const char* file_name,
+                                     const char* message_name) {
+    ParseProtoAndAddToDb("name: '" + string(file_name) +
+                         ".proto' "
+                         "package: \"protobuf_unittest\" "
+                         "message_type { "
+                         "  name:'" +
+                         string(message_name) +
+                         "' "
+                         "  field { name:'a' number:1 "
+                         "  label:LABEL_OPTIONAL "
+                         "  type_name:'int32' } "
+                         "}");
+  }
+
+  void AddSimpleEnumProtoFileToDb(const char* file_name, const char* enum_name,
+                                  const char* enum_value_name) {
+    ParseProtoAndAddToDb("name: '" + string(file_name) +
+                         ".proto' "
+                         "package: 'protobuf_unittest' "
+                         "enum_type { "
+                         "  name:'" +
+                         string(enum_name) +
+                         "' "
+                         "  value { name:'" +
+                         string(enum_value_name) +
+                         "' number:1 } "
+                         "}");
+  }
+
+ protected:
+  SimpleDescriptorDatabase db_;
+  DescriptorPool pool_;
+};
+
+TEST_F(LazilyBuildDependenciesTest, Message) {
+  ParseProtoAndAddToDb(
+      "name: 'foo.proto' "
+      "package: 'protobuf_unittest' "
+      "dependency: 'bar.proto' "
+      "message_type { "
+      "  name:'Foo' "
+      "  field { name:'bar' number:1 label:LABEL_OPTIONAL "
+      "type_name:'.protobuf_unittest.Bar' } "
+      "}");
+  AddSimpleMessageProtoFileToDb("bar", "Bar");
+
+  // Verify neither has been built yet.
+  EXPECT_FALSE(pool_.InternalIsFileLoaded("foo.proto"));
+  EXPECT_FALSE(pool_.InternalIsFileLoaded("bar.proto"));
+
+  const FileDescriptor* file = pool_.FindFileByName("foo.proto");
+
+  // Verify only foo gets built when asking for foo.proto
+  EXPECT_TRUE(file != NULL);
+  EXPECT_TRUE(pool_.InternalIsFileLoaded("foo.proto"));
+  EXPECT_FALSE(pool_.InternalIsFileLoaded("bar.proto"));
+
+  // Verify calling FindFieldBy* works when the type of the field was
+  // not built at cross link time. Verify this doesn't build the file
+  // the field's type is defined in, as well.
+  const Descriptor* desc = file->FindMessageTypeByName("Foo");
+  const FieldDescriptor* field = desc->FindFieldByName("bar");
+  EXPECT_TRUE(field != NULL);
+  EXPECT_EQ(field, desc->FindFieldByNumber(1));
+  EXPECT_EQ(field, desc->FindFieldByLowercaseName("bar"));
+  EXPECT_EQ(field, desc->FindFieldByCamelcaseName("bar"));
+  EXPECT_FALSE(pool_.InternalIsFileLoaded("bar.proto"));
+
+  // Finally, verify that if we call message_type() on the field, we will
+  // buid the file where the message is defined, and get a valid descriptor
+  EXPECT_TRUE(field->message_type() != NULL);
+  EXPECT_TRUE(pool_.InternalIsFileLoaded("bar.proto"));
+}
+
+TEST_F(LazilyBuildDependenciesTest, Enum) {
+  ParseProtoAndAddToDb(
+      "name: 'foo.proto' "
+      "package: 'protobuf_unittest' "
+      "dependency: 'enum1.proto' "
+      "dependency: 'enum2.proto' "
+      "message_type { "
+      "  name:'Lazy' "
+      "  field { name:'enum1' number:1 label:LABEL_OPTIONAL "
+      "type_name:'.protobuf_unittest.Enum1' } "
+      "  field { name:'enum2' number:1 label:LABEL_OPTIONAL "
+      "type_name:'.protobuf_unittest.Enum2' } "
+      "}");
+  AddSimpleEnumProtoFileToDb("enum1", "Enum1", "ENUM1");
+  AddSimpleEnumProtoFileToDb("enum2", "Enum2", "ENUM2");
+
+  const FileDescriptor* file = pool_.FindFileByName("foo.proto");
+
+  // Verify calling enum_type() on a field whose definition is not
+  // yet built will build the file and return a descriptor.
+  EXPECT_FALSE(pool_.InternalIsFileLoaded("enum1.proto"));
+  const Descriptor* desc = file->FindMessageTypeByName("Lazy");
+  EXPECT_TRUE(desc != NULL);
+  const FieldDescriptor* field = desc->FindFieldByName("enum1");
+  EXPECT_TRUE(field != NULL);
+  EXPECT_TRUE(field->enum_type() != NULL);
+  EXPECT_TRUE(pool_.InternalIsFileLoaded("enum1.proto"));
+
+  // Verify calling default_value_enum() on a field whose definition is not
+  // yet built will build the file and return a descriptor to the value.
+  EXPECT_FALSE(pool_.InternalIsFileLoaded("enum2.proto"));
+  field = desc->FindFieldByName("enum2");
+  EXPECT_TRUE(field != NULL);
+  EXPECT_TRUE(field->default_value_enum() != NULL);
+  EXPECT_TRUE(pool_.InternalIsFileLoaded("enum2.proto"));
+}
+
+TEST_F(LazilyBuildDependenciesTest, Type) {
+  ParseProtoAndAddToDb(
+      "name: 'foo.proto' "
+      "package: 'protobuf_unittest' "
+      "dependency: 'message1.proto' "
+      "dependency: 'message2.proto' "
+      "dependency: 'enum1.proto' "
+      "dependency: 'enum2.proto' "
+      "message_type { "
+      "  name:'Lazy' "
+      "  field { name:'message1' number:1 label:LABEL_OPTIONAL "
+      "type_name:'.protobuf_unittest.Message1' } "
+      "  field { name:'message2' number:1 label:LABEL_OPTIONAL "
+      "type_name:'.protobuf_unittest.Message2' } "
+      "  field { name:'enum1' number:1 label:LABEL_OPTIONAL "
+      "type_name:'.protobuf_unittest.Enum1' } "
+      "  field { name:'enum2' number:1 label:LABEL_OPTIONAL "
+      "type_name:'.protobuf_unittest.Enum2' } "
+      "}");
+  AddSimpleMessageProtoFileToDb("message1", "Message1");
+  AddSimpleMessageProtoFileToDb("message2", "Message2");
+  AddSimpleEnumProtoFileToDb("enum1", "Enum1", "ENUM1");
+  AddSimpleEnumProtoFileToDb("enum2", "Enum2", "ENUM2");
+
+  const FileDescriptor* file = pool_.FindFileByName("foo.proto");
+
+  // Verify calling type() on a field that is a message type will
+  // build the type defined in another file.
+  EXPECT_FALSE(pool_.InternalIsFileLoaded("message1.proto"));
+  const Descriptor* desc = file->FindMessageTypeByName("Lazy");
+  EXPECT_TRUE(desc != NULL);
+  const FieldDescriptor* field = desc->FindFieldByName("message1");
+  EXPECT_TRUE(field != NULL);
+  EXPECT_EQ(field->type(), FieldDescriptor::TYPE_MESSAGE);
+  EXPECT_TRUE(pool_.InternalIsFileLoaded("message1.proto"));
+
+  // Verify calling cpp_type() on a field that is a message type will
+  // build the type defined in another file.
+  EXPECT_FALSE(pool_.InternalIsFileLoaded("message2.proto"));
+  field = desc->FindFieldByName("message2");
+  EXPECT_TRUE(field != NULL);
+  EXPECT_EQ(field->cpp_type(), FieldDescriptor::CPPTYPE_MESSAGE);
+  EXPECT_TRUE(pool_.InternalIsFileLoaded("message2.proto"));
+
+  // Verify calling type() on a field that is an enum type will
+  // build the type defined in another file.
+  EXPECT_FALSE(pool_.InternalIsFileLoaded("enum1.proto"));
+  field = desc->FindFieldByName("enum1");
+  EXPECT_TRUE(field != NULL);
+  EXPECT_EQ(field->type(), FieldDescriptor::TYPE_ENUM);
+  EXPECT_TRUE(pool_.InternalIsFileLoaded("enum1.proto"));
+
+  // Verify calling cpp_type() on a field that is an enum type will
+  // build the type defined in another file.
+  EXPECT_FALSE(pool_.InternalIsFileLoaded("enum2.proto"));
+  field = desc->FindFieldByName("enum2");
+  EXPECT_TRUE(field != NULL);
+  EXPECT_EQ(field->cpp_type(), FieldDescriptor::CPPTYPE_ENUM);
+  EXPECT_TRUE(pool_.InternalIsFileLoaded("enum2.proto"));
+}
+
+TEST_F(LazilyBuildDependenciesTest, Extension) {
+  ParseProtoAndAddToDb(
+      "name: 'foo.proto' "
+      "package: 'protobuf_unittest' "
+      "dependency: 'bar.proto' "
+      "dependency: 'baz.proto' "
+      "extension { extendee: '.protobuf_unittest.Bar' name:'bar' number:11"
+      "            label:LABEL_OPTIONAL type_name:'.protobuf_unittest.Baz' }");
+  ParseProtoAndAddToDb(
+      "name: 'bar.proto' "
+      "package: 'protobuf_unittest' "
+      "message_type { "
+      "  name:'Bar' "
+      "  extension_range { start: 10 end: 20 }"
+      "}");
+  AddSimpleMessageProtoFileToDb("baz", "Baz");
+
+  // Verify none have been built yet.
+  EXPECT_FALSE(pool_.InternalIsFileLoaded("foo.proto"));
+  EXPECT_FALSE(pool_.InternalIsFileLoaded("bar.proto"));
+  EXPECT_FALSE(pool_.InternalIsFileLoaded("baz.proto"));
+
+  const FileDescriptor* file = pool_.FindFileByName("foo.proto");
+
+  // Verify foo.bar gets loaded, and bar.proto gets loaded
+  // to register the extension. baz.proto should not get loaded.
+  EXPECT_TRUE(file != NULL);
+  EXPECT_TRUE(pool_.InternalIsFileLoaded("foo.proto"));
+  EXPECT_TRUE(pool_.InternalIsFileLoaded("bar.proto"));
+  EXPECT_FALSE(pool_.InternalIsFileLoaded("baz.proto"));
+}
+
+TEST_F(LazilyBuildDependenciesTest, Service) {
+  ParseProtoAndAddToDb(
+      "name: 'foo.proto' "
+      "package: 'protobuf_unittest' "
+      "dependency: 'message1.proto' "
+      "dependency: 'message2.proto' "
+      "dependency: 'message3.proto' "
+      "dependency: 'message4.proto' "
+      "service {"
+      "  name: 'LazyService'"
+      "  method { name: 'A' input_type:  '.protobuf_unittest.Message1' "
+      "                     output_type: '.protobuf_unittest.Message2' }"
+      "}");
+  AddSimpleMessageProtoFileToDb("message1", "Message1");
+  AddSimpleMessageProtoFileToDb("message2", "Message2");
+  AddSimpleMessageProtoFileToDb("message3", "Message3");
+  AddSimpleMessageProtoFileToDb("message4", "Message4");
+
+  const FileDescriptor* file = pool_.FindFileByName("foo.proto");
+
+  // Verify calling FindServiceByName or FindMethodByName doesn't build the
+  // files defining the input and output type, and input_type() and
+  // output_type() does indeed build the appropriate files.
+  const ServiceDescriptor* service = file->FindServiceByName("LazyService");
+  EXPECT_TRUE(service != NULL);
+  const MethodDescriptor* method = service->FindMethodByName("A");
+  EXPECT_FALSE(pool_.InternalIsFileLoaded("message1.proto"));
+  EXPECT_FALSE(pool_.InternalIsFileLoaded("message2.proto"));
+  EXPECT_TRUE(method != NULL);
+  EXPECT_TRUE(method->input_type() != NULL);
+  EXPECT_TRUE(pool_.InternalIsFileLoaded("message1.proto"));
+  EXPECT_FALSE(pool_.InternalIsFileLoaded("message2.proto"));
+  EXPECT_TRUE(method->output_type() != NULL);
+  EXPECT_TRUE(pool_.InternalIsFileLoaded("message2.proto"));
+}
+
+
+TEST_F(LazilyBuildDependenciesTest, GeneratedFile) {
+  // Most testing is done with custom pools with lazy dependencies forced on,
+  // do some sanity checking that lazy imports is on by default for the
+  // generated pool, and do custom options testing with generated to
+  // be able to use the GetExtension ids for the custom options.
+
+  // Verify none of the files are loaded yet.
+  EXPECT_FALSE(DescriptorPool::generated_pool()->InternalIsFileLoaded(
+      "google/protobuf/unittest_lazy_dependencies.proto"));
+  EXPECT_FALSE(DescriptorPool::generated_pool()->InternalIsFileLoaded(
+      "google/protobuf/unittest_lazy_dependencies_custom_option.proto"));
+  EXPECT_FALSE(DescriptorPool::generated_pool()->InternalIsFileLoaded(
+      "google/protobuf/unittest_lazy_dependencies_enum.proto"));
+
+  // Verify calling autogenerated function to get a descriptor in the base
+  // file will build that file but none of it's imports. This verifies that
+  // lazily_build_dependencies_ is set on the generated pool, and also that
+  // the generated function "descriptor()" doesn't somehow subvert the laziness
+  // by manually loading the dependencies or something.
+  EXPECT_TRUE(protobuf_unittest::lazy_imports::ImportedMessage::descriptor() !=
+              NULL);
+  EXPECT_TRUE(DescriptorPool::generated_pool()->InternalIsFileLoaded(
+      "google/protobuf/unittest_lazy_dependencies.proto"));
+  EXPECT_FALSE(DescriptorPool::generated_pool()->InternalIsFileLoaded(
+      "google/protobuf/unittest_lazy_dependencies_custom_option.proto"));
+  EXPECT_FALSE(DescriptorPool::generated_pool()->InternalIsFileLoaded(
+      "google/protobuf/unittest_lazy_dependencies_enum.proto"));
+
+  // Verify custom options work when defined in an import that isn't loaded,
+  // and that a non-default value of a custom option doesn't load the file
+  // where that enum is defined.
+  const google::protobuf::MessageOptions& options =
+      protobuf_unittest::lazy_imports::MessageCustomOption::descriptor()
+          ->options();
+  protobuf_unittest::lazy_imports::LazyEnum custom_option_value =
+      options.GetExtension(protobuf_unittest::lazy_imports::lazy_enum_option);
+
+  EXPECT_FALSE(DescriptorPool::generated_pool()->InternalIsFileLoaded(
+      "google/protobuf/unittest_lazy_dependencies_custom_option.proto"));
+  EXPECT_FALSE(DescriptorPool::generated_pool()->InternalIsFileLoaded(
+      "google/protobuf/unittest_lazy_dependencies_enum.proto"));
+  EXPECT_EQ(custom_option_value, protobuf_unittest::lazy_imports::LAZY_ENUM_1);
+
+  const google::protobuf::MessageOptions& options2 =
+      protobuf_unittest::lazy_imports::MessageCustomOption2::descriptor()
+          ->options();
+  custom_option_value =
+      options2.GetExtension(protobuf_unittest::lazy_imports::lazy_enum_option);
+
+  EXPECT_FALSE(DescriptorPool::generated_pool()->InternalIsFileLoaded(
+      "google/protobuf/unittest_lazy_dependencies_custom_option.proto"));
+  EXPECT_FALSE(DescriptorPool::generated_pool()->InternalIsFileLoaded(
+      "google/protobuf/unittest_lazy_dependencies_enum.proto"));
+  EXPECT_EQ(custom_option_value, protobuf_unittest::lazy_imports::LAZY_ENUM_0);
+}
+
+TEST_F(LazilyBuildDependenciesTest, Dependency) {
+  ParseProtoAndAddToDb(
+      "name: 'foo.proto' "
+      "package: 'protobuf_unittest' "
+      "dependency: 'bar.proto' "
+      "message_type { "
+      "  name:'Foo' "
+      "  field { name:'bar' number:1 label:LABEL_OPTIONAL "
+      "type_name:'.protobuf_unittest.Bar' } "
+      "}");
+  ParseProtoAndAddToDb(
+      "name: 'bar.proto' "
+      "package: 'protobuf_unittest' "
+      "dependency: 'baz.proto' "
+      "message_type { "
+      "  name:'Bar' "
+      "  field { name:'baz' number:1 label:LABEL_OPTIONAL "
+      "type_name:'.protobuf_unittest.Baz' } "
+      "}");
+  AddSimpleMessageProtoFileToDb("baz", "Baz");
+
+  const FileDescriptor* foo_file = pool_.FindFileByName("foo.proto");
+  EXPECT_TRUE(foo_file != NULL);
+  // As expected, requesting foo.proto shouldn't build it's dependencies
+  EXPECT_TRUE(pool_.InternalIsFileLoaded("foo.proto"));
+  EXPECT_FALSE(pool_.InternalIsFileLoaded("bar.proto"));
+  EXPECT_FALSE(pool_.InternalIsFileLoaded("baz.proto"));
+
+  // Verify calling dependency(N) will build the dependency, but
+  // not that file's dependencies.
+  const FileDescriptor* bar_file = foo_file->dependency(0);
+  EXPECT_TRUE(bar_file != NULL);
+  EXPECT_TRUE(pool_.InternalIsFileLoaded("bar.proto"));
+  EXPECT_FALSE(pool_.InternalIsFileLoaded("baz.proto"));
 }
 
 // ===================================================================

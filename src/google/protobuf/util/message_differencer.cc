@@ -467,6 +467,10 @@ bool MessageDifferencer::Compare(
     google::protobuf::scoped_ptr<Message> data1;
     google::protobuf::scoped_ptr<Message> data2;
     if (UnpackAny(message1, &data1) && UnpackAny(message2, &data2)) {
+      // Avoid DFATAL for different descriptors in google.protobuf.Any payloads.
+      if (data1->GetDescriptor() != data2->GetDescriptor()) {
+        return false;
+      }
       return Compare(*data1, *data2, parent_fields);
     }
   }
@@ -849,7 +853,8 @@ bool MessageDifferencer::CompareRepeatedField(
       parent_fields->pop_back();
       fieldDifferent = true;
     } else if (reporter_ != NULL &&
-               specific_field.index != specific_field.new_index) {
+               specific_field.index != specific_field.new_index &&
+               !specific_field.field->is_map()) {
       parent_fields->push_back(specific_field);
       reporter_->ReportMoved(message1, message2, *parent_fields);
       parent_fields->pop_back();
@@ -1502,6 +1507,10 @@ void MessageDifferencer::StreamReporter::PrintPath(
                         specific_field.field->full_name());
       } else {
         printer_->PrintRaw(specific_field.field->name());
+      }
+      if (specific_field.field->is_map()) {
+        // Don't print index in a map field; they are semantically unordered.
+        continue;
       }
     } else {
       printer_->PrintRaw(SimpleItoa(specific_field.unknown_field_number));

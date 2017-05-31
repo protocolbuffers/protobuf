@@ -98,7 +98,7 @@ static void AddFile(const char* name, std::basic_ostream<char>* out) {
 
 int main(int argc, char *argv[]) {
   std::cout << "#include "
-               "<google/protobuf/compiler/js/well_known_types_embed.h>\n";
+               "\"google/protobuf/compiler/js/well_known_types_embed.h\"\n";
   std::cout << "struct FileToc well_known_types_js[] = {\n";
 
   for (int i = 1; i < argc; i++) {

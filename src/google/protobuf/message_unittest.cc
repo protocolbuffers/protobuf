@@ -551,6 +551,17 @@ TEST(MessageTest, MergeFrom) {
   ASSERT_EQ(0, dest.repeated_uint64_size());
 }
 
+TEST(MessageTest, IsInitialized) {
+  protobuf_unittest::TestIsInitialized msg;
+  EXPECT_TRUE(msg.IsInitialized());
+  protobuf_unittest::TestIsInitialized::SubMessage* sub_message = msg.mutable_sub_message();
+  EXPECT_TRUE(msg.IsInitialized());
+  protobuf_unittest::TestIsInitialized::SubMessage::SubGroup* sub_group = sub_message->mutable_subgroup();
+  EXPECT_FALSE(msg.IsInitialized());
+  sub_group->set_i(1);
+  EXPECT_TRUE(msg.IsInitialized());
+}
+
 TEST(MessageFactoryTest, GeneratedFactoryLookup) {
   EXPECT_EQ(
     MessageFactory::generated_factory()->GetPrototype(

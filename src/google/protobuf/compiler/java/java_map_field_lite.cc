@@ -484,6 +484,7 @@ GenerateMembers(io::Printer* printer) const {
   }
 }
 
+
 void ImmutableMapFieldLiteGenerator::
 GenerateBuilderMembers(io::Printer* printer) const {
   printer->Print(
@@ -642,9 +643,6 @@ GenerateBuilderMembers(io::Printer* printer) const {
           "    $key_type$ key,\n"
           "    $value_type$ value) {\n"
           "  $key_null_check$\n"
-          "  if ($value_enum_type$.forNumber(value) == null) {\n"
-          "    throw new java.lang.IllegalArgumentException();\n"
-          "  }\n"
           "  copyOnWrite();\n"
           "  instance.getMutable$capitalized_name$ValueMap().put(key, value);\n"
           "  return this;\n"

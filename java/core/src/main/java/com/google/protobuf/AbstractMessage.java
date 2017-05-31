@@ -34,7 +34,6 @@ import com.google.protobuf.Descriptors.EnumValueDescriptor;
 import com.google.protobuf.Descriptors.FieldDescriptor;
 import com.google.protobuf.Descriptors.OneofDescriptor;
 import com.google.protobuf.Internal.EnumLite;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
@@ -328,7 +327,8 @@ public abstract class AbstractMessage
       extends AbstractMessageLite.Builder
       implements Message.Builder {
     // The compiler produces an error if this is not declared explicitly.
-    // Method isn't abstract to bypass Java 1.6 compiler issue http://bugs.java.com/view_bug.do?bug_id=6908259
+    // Method isn't abstract to bypass Java 1.6 compiler issue:
+    //     http://bugs.java.com/view_bug.do?bug_id=6908259
     @Override
     public BuilderType clone() {
       throw new UnsupportedOperationException("clone() should be implemented in subclasses.");

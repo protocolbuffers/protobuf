@@ -39,14 +39,16 @@
 #define GOOGLE_PROTOBUF_GENERATED_MESSAGE_UTIL_H__
 
 #include <assert.h>
+#include <climits>
 #include <string>
 
+#include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/stubs/once.h>
 #include <google/protobuf/has_bits.h>
 
 #ifndef PROTOBUF_FINAL
-#if LANG_CXX11
+#if LANG_CXX11 && !defined(__NVCC__)
 #define PROTOBUF_FINAL final
 #else
 #define PROTOBUF_FINAL
@@ -74,6 +76,43 @@ namespace internal {
 
 #define GOOGLE_PROTOBUF_DEPRECATED_ATTR
 
+
+// Returns the offset of the given field within the given aggregate type.
+// This is equivalent to the ANSI C offsetof() macro.  However, according
+// to the C++ standard, offsetof() only works on POD types, and GCC
+// enforces this requirement with a warning.  In practice, this rule is
+// unnecessarily strict; there is probably no compiler or platform on
+// which the offsets of the direct fields of a class are non-constant.
+// Fields inherited from superclasses *can* have non-constant offsets,
+// but that's not what this macro will be used for.
+#if defined(__clang__)
+// For Clang we use __builtin_offsetof() and suppress the warning,
+// to avoid Control Flow Integrity and UBSan vptr sanitizers from
+// crashing while trying to validate the invalid reinterpet_casts.
+#define GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(TYPE, FIELD)  \
+  _Pragma("clang diagnostic push")                                   \
+  _Pragma("clang diagnostic ignored \"-Winvalid-offsetof\"")         \
+  __builtin_offsetof(TYPE, FIELD)                                    \
+  _Pragma("clang diagnostic pop")
+#else
+// Note that we calculate relative to the pointer value 16 here since if we
+// just use zero, GCC complains about dereferencing a NULL pointer.  We
+// choose 16 rather than some other number just in case the compiler would
+// be confused by an unaligned pointer.
+#define GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(TYPE, FIELD)  \
+  static_cast<int>(                                                  \
+      reinterpret_cast<const char*>(                                 \
+          &reinterpret_cast<const TYPE*>(16)->FIELD) -               \
+      reinterpret_cast<const char*>(16))
+#endif
+
+#define GOOGLE_PROTOBUF_GENERATED_DEFAULT_ONEOF_FIELD_OFFSET(ONEOF, FIELD)  \
+  static_cast< ::google::protobuf::uint32>(                                                    \
+      reinterpret_cast<const char*>(&(ONEOF->FIELD))                        \
+      - reinterpret_cast<const char*>(ONEOF))
+// TODO(acozzette): remove this transitional macro after updating generated code
+#define PROTO2_GENERATED_DEFAULT_ONEOF_FIELD_OFFSET(ONEOF, FIELD) \
+  GOOGLE_PROTOBUF_GENERATED_DEFAULT_ONEOF_FIELD_OFFSET(ONEOF, FIELD)
 
 // Constants for special floating point values.
 LIBPROTOBUF_EXPORT double Infinity();
@@ -125,7 +164,7 @@ class ExplicitlyConstructed {
 
 // Default empty string object. Don't use this directly. Instead, call
 // GetEmptyString() to get the reference.
-LIBPROTOBUF_EXPORT extern ExplicitlyConstructed< ::std::string> fixed_address_empty_string;
+extern ExplicitlyConstructed< ::std::string> fixed_address_empty_string;
 LIBPROTOBUF_EXPORT extern ProtobufOnceType empty_string_once_init_;
 LIBPROTOBUF_EXPORT void InitEmptyString();
 
@@ -139,7 +178,7 @@ LIBPROTOBUF_EXPORT inline const ::std::string& GetEmptyString() {
   return GetEmptyStringAlreadyInited();
 }
 
-LIBPROTOBUF_EXPORT int StringSpaceUsedExcludingSelf(const string& str);
+LIBPROTOBUF_EXPORT size_t StringSpaceUsedExcludingSelfLong(const string& str);
 
 
 // True if IsInitialized() is true for all elements of t.  Type is expected
@@ -159,8 +198,18 @@ LIBPROTOBUF_EXPORT void InitProtobufDefaults();
 // We compute sizes as size_t but cache them as int.  This function converts a
 // computed size to a cached size.  Since we don't proceed with serialization if
 // the total size was > INT_MAX, it is not important what this function returns
-// for inputs > INT_MAX.
+// for inputs > INT_MAX.  However this case should not error or GOOGLE_CHECK-fail,
+// because the full size_t resolution is still returned from ByteSizeLong() and
+// checked against INT_MAX; we can catch the overflow there.
 inline int ToCachedSize(size_t size) {
+  return static_cast<int>(size);
+}
+
+// For cases where a legacy function returns an integer size.  We GOOGLE_DCHECK() that
+// the conversion will fit within an integer; if this is false then we are
+// losing information.
+inline int ToIntSize(size_t size) {
+  GOOGLE_DCHECK_LE(size, static_cast<size_t>(INT_MAX));
   return static_cast<int>(size);
 }
 

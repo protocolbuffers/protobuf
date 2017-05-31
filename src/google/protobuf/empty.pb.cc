@@ -31,11 +31,26 @@ namespace {
 
 }  // namespace
 
+PROTOBUF_CONSTEXPR_VAR ::google::protobuf::internal::ParseTableField
+    const TableStruct::entries[] = {
+  {0, 0, 0, ::google::protobuf::internal::kInvalidMask, 0, 0},
+};
+
+PROTOBUF_CONSTEXPR_VAR ::google::protobuf::internal::AuxillaryParseTableField
+    const TableStruct::aux[] = {
+  ::google::protobuf::internal::AuxillaryParseTableField(),
+};
+PROTOBUF_CONSTEXPR_VAR ::google::protobuf::internal::ParseTable const
+    TableStruct::schema[] = {
+  { NULL, NULL, 0, -1, -1, false },
+};
+
 const ::google::protobuf::uint32 TableStruct::offsets[] = {
   ~0u,  // no _has_bits_
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Empty, _internal_metadata_),
   ~0u,  // no _extensions_
   ~0u,  // no _oneof_case_
+  ~0u,  // no _weak_field_map_
 };
 
 static const ::google::protobuf::internal::MigrationSchema schemas[] = {
@@ -176,7 +191,7 @@ void Empty::SetCachedSize(int size) const {
 }
 const ::google::protobuf::Descriptor* Empty::descriptor() {
   protobuf_google_2fprotobuf_2fempty_2eproto::protobuf_AssignDescriptorsOnce();
-  return protobuf_google_2fprotobuf_2fempty_2eproto::file_level_metadata[0].descriptor;
+  return protobuf_google_2fprotobuf_2fempty_2eproto::file_level_metadata[kIndexInFileMessages].descriptor;
 }
 
 const Empty& Empty::default_instance() {
@@ -221,13 +236,18 @@ failure:
 void Empty::SerializeWithCachedSizes(
     ::google::protobuf::io::CodedOutputStream* output) const {
   // @@protoc_insertion_point(serialize_start:google.protobuf.Empty)
+  ::google::protobuf::uint32 cached_has_bits = 0;
+  (void) cached_has_bits;
+
   // @@protoc_insertion_point(serialize_end:google.protobuf.Empty)
 }
 
 ::google::protobuf::uint8* Empty::InternalSerializeWithCachedSizesToArray(
     bool deterministic, ::google::protobuf::uint8* target) const {
-  (void)deterministic;  // Unused
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.Empty)
+  ::google::protobuf::uint32 cached_has_bits = 0;
+  (void) cached_has_bits;
+
   // @@protoc_insertion_point(serialize_to_array_end:google.protobuf.Empty)
   return target;
 }
@@ -262,6 +282,9 @@ void Empty::MergeFrom(const Empty& from) {
 // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.Empty)
   GOOGLE_DCHECK_NE(&from, this);
   _internal_metadata_.MergeFrom(from._internal_metadata_);
+  ::google::protobuf::uint32 cached_has_bits = 0;
+  (void) cached_has_bits;
+
 }
 
 void Empty::CopyFrom(const ::google::protobuf::Message& from) {
@@ -307,7 +330,7 @@ void Empty::InternalSwap(Empty* other) {
 
 ::google::protobuf::Metadata Empty::GetMetadata() const {
   protobuf_google_2fprotobuf_2fempty_2eproto::protobuf_AssignDescriptorsOnce();
-  return protobuf_google_2fprotobuf_2fempty_2eproto::file_level_metadata[0];
+  return protobuf_google_2fprotobuf_2fempty_2eproto::file_level_metadata[kIndexInFileMessages];
 }
 
 #if PROTOBUF_INLINE_NOT_IN_HEADERS

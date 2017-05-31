@@ -445,7 +445,7 @@ message MessageOptions {
   optional bool map_entry = 7;
 
   reserved 8;  // javalite_serializable
-
+  reserved 9;  // javanano_as_lite
 
   // The parser stores options it doesn't recognize here. See above.
   repeated UninterpretedOption uninterpreted_option = 999;
@@ -565,6 +565,7 @@ message EnumOptions {
   // is a formalization for deprecating enums.
   optional bool deprecated = 3 [default=false];
 
+  reserved 5;  // javanano_as_lite
 
   // The parser stores options it doesn't recognize here. See above.
   repeated UninterpretedOption uninterpreted_option = 999;

@@ -47,8 +47,8 @@
 #include <google/protobuf/io/zero_copy_stream.h>
 #include <google/protobuf/io/zero_copy_stream_impl_lite.h>
 
-
 namespace google {
+
 namespace protobuf {
 namespace internal {
 
@@ -123,6 +123,8 @@ WireFormatLite::kWireTypeForFieldType[MAX_FIELD_TYPE + 1] = {
 
 bool WireFormatLite::SkipField(
     io::CodedInputStream* input, uint32 tag) {
+  // Field number 0 is illegal.
+  if (WireFormatLite::GetTagFieldNumber(tag) == 0) return false;
   switch (WireFormatLite::GetTagWireType(tag)) {
     case WireFormatLite::WIRETYPE_VARINT: {
       uint64 value;
@@ -168,6 +170,8 @@ bool WireFormatLite::SkipField(
 
 bool WireFormatLite::SkipField(
     io::CodedInputStream* input, uint32 tag, io::CodedOutputStream* output) {
+  // Field number 0 is illegal.
+  if (WireFormatLite::GetTagFieldNumber(tag) == 0) return false;
   switch (WireFormatLite::GetTagWireType(tag)) {
     case WireFormatLite::WIRETYPE_VARINT: {
       uint64 value;
@@ -340,6 +344,8 @@ bool WireFormatLite::ReadPackedEnumPreserveUnknowns(
   return true;
 }
 
+#if !defined(PROTOBUF_LITTLE_ENDIAN)
+
 namespace {
 void EncodeFixedSizeValue(float v, uint8* dest) {
   WireFormatLite::WriteFloatNoTagToArray(v, dest);
@@ -370,6 +376,8 @@ void EncodeFixedSizeValue(bool v, uint8* dest) {
 }
 }  // anonymous namespace
 
+#endif  // !defined(PROTOBUF_LITTLE_ENDIAN)
+
 template <typename CType>
 static void WriteArray(const CType* a, int n, io::CodedOutputStream* output) {
 #if defined(PROTOBUF_LITTLE_ENDIAN)
@@ -378,7 +386,7 @@ static void WriteArray(const CType* a, int n, io::CodedOutputStream* output) {
   const int kAtATime = 128;
   uint8 buf[sizeof(CType) * kAtATime];
   for (int i = 0; i < n; i += kAtATime) {
-    int to_do = min(kAtATime, n - i);
+    int to_do = std::min(kAtATime, n - i);
     uint8* ptr = buf;
     for (int j = 0; j < to_do; j++) {
       EncodeFixedSizeValue(a[i+j], ptr);

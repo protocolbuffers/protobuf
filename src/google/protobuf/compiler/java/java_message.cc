@@ -686,6 +686,17 @@ GenerateParseFromMethods(io::Printer* printer) {
   //   for code size.
   printer->Print(
     "public static $classname$ parseFrom(\n"
+    "    java.nio.ByteBuffer data)\n"
+    "    throws com.google.protobuf.InvalidProtocolBufferException {\n"
+    "  return PARSER.parseFrom(data);\n"
+    "}\n"
+    "public static $classname$ parseFrom(\n"
+    "    java.nio.ByteBuffer data,\n"
+    "    com.google.protobuf.ExtensionRegistryLite extensionRegistry)\n"
+    "    throws com.google.protobuf.InvalidProtocolBufferException {\n"
+    "  return PARSER.parseFrom(data, extensionRegistry);\n"
+    "}\n"
+    "public static $classname$ parseFrom(\n"
     "    com.google.protobuf.ByteString data)\n"
     "    throws com.google.protobuf.InvalidProtocolBufferException {\n"
     "  return PARSER.parseFrom(data);\n"

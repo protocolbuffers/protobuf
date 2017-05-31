@@ -30,7 +30,7 @@
 
 package com.google.protobuf;
 
-
+import static org.junit.Assert.assertArrayEquals;
 import com.google.protobuf.Descriptors.Descriptor;
 import com.google.protobuf.Descriptors.EnumDescriptor;
 import com.google.protobuf.Descriptors.EnumValueDescriptor;
@@ -490,19 +490,13 @@ public class MapTest extends TestCase {
   public void testPutForUnknownEnumValues() throws Exception {
     TestMap.Builder builder = TestMap.newBuilder()
         .putInt32ToEnumFieldValue(0, 0)
-        .putInt32ToEnumFieldValue(1, 1);
-
-    try {
-      builder.putInt32ToEnumFieldValue(2, 1000);  // unknown value.
-      fail();
-    } catch (IllegalArgumentException e) {
-      // expected
-    }
-
+        .putInt32ToEnumFieldValue(1, 1)
+        .putInt32ToEnumFieldValue(2, 1000);  // unknown value.
     TestMap message = builder.build();
     assertEquals(0, message.getInt32ToEnumFieldValueOrThrow(0));
     assertEquals(1, message.getInt32ToEnumFieldValueOrThrow(1));
-    assertEquals(2, message.getInt32ToEnumFieldCount());
+    assertEquals(1000, message.getInt32ToEnumFieldValueOrThrow(2));
+    assertEquals(3, message.getInt32ToEnumFieldCount());
   }
 
   public void testPutChecksNullKeysAndValues() throws Exception {
@@ -870,6 +864,7 @@ public class MapTest extends TestCase {
     assertEquals(55, message.getInt32ToInt32Field().get(55).intValue());
   }
 
+  // See additional coverage in TextFormatTest.java.
   public void testTextFormat() throws Exception {
     TestMap.Builder builder = TestMap.newBuilder();
     setMapValuesUsingAccessors(builder);
@@ -1250,12 +1245,9 @@ public class MapTest extends TestCase {
     builder.putInt32ToEnumFieldValue(1, TestMap.EnumValue.BAR.getNumber());
     assertEquals(
         TestMap.EnumValue.BAR.getNumber(), builder.getInt32ToEnumFieldValueOrThrow(1));
-    try {
-      builder.putInt32ToEnumFieldValue(1, -1);
-      fail();
-    } catch (IllegalArgumentException e) {
-      // expected
-    }
+    builder.putInt32ToEnumFieldValue(1, -1);
+    assertEquals(-1, builder.getInt32ToEnumFieldValueOrThrow(1));
+    assertEquals(TestMap.EnumValue.UNRECOGNIZED, builder.getInt32ToEnumFieldOrThrow(1));
 
     builder.putStringToInt32Field("a", 1);
     assertEquals(1, builder.getStringToInt32FieldOrThrow("a"));
@@ -1491,5 +1483,42 @@ public class MapTest extends TestCase {
     map.put(key2, value2);
     map.put(key3, value3);
     return map;
+  }
+
+  public void testMap_withNulls() {
+    TestMap.Builder builder = TestMap.newBuilder();
+
+    try {
+      builder.putStringToInt32Field(null, 3);
+      fail();
+    } catch (NullPointerException expected) {
+    }
+
+    try {
+      builder.putAllStringToInt32Field(newMap(null, 3, "hi", 4));
+      fail();
+    } catch (NullPointerException expected) {
+    }
+
+    try {
+      builder.putInt32ToMessageField(3, null);
+      fail();
+    } catch (NullPointerException expected) {
+    }
+
+    try {
+      builder.putAllInt32ToMessageField(
+          MapTest.<Integer, MessageValue>newMap(4, null, 5, null));
+      fail();
+    } catch (NullPointerException expected) {
+    }
+
+    try {
+      builder.putAllInt32ToMessageField(null);
+      fail();
+    } catch (NullPointerException expected) {
+    }
+
+    assertArrayEquals(new byte[0], builder.build().toByteArray());
   }
 }

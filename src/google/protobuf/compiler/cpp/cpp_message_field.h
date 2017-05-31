@@ -95,7 +95,7 @@ class MessageOneofFieldGenerator : public MessageFieldGenerator {
   void GenerateDependentInlineAccessorDefinitions(io::Printer* printer) const;
   void GenerateInlineAccessorDefinitions(io::Printer* printer,
                                          bool is_inline) const;
-  void GenerateNonInlineAccessorDefinitions(io::Printer* printer) const;
+  void GenerateNonInlineAccessorDefinitions(io::Printer* printer) const { }
   void GenerateClearingCode(io::Printer* printer) const;
 
   // MessageFieldGenerator, from which we inherit, overrides this so we need to

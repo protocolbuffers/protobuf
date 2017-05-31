@@ -112,9 +112,7 @@ class LIBPROTOBUF_EXPORT ProtoStreamObjectSource : public ObjectSource {
 
   // Sets whether to always output enums as ints, by default this is off, and
   // enums are rendered as strings.
-  void set_use_ints_for_enums(bool value) {
-    use_ints_for_enums_ = value;
-  }
+  void set_use_ints_for_enums(bool value) { use_ints_for_enums_ = value; }
 
   // Sets whether to use original proto field names
   void set_preserve_proto_field_names(bool value) {

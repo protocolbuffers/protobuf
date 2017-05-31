@@ -55,39 +55,60 @@ static void add_to_table(HashTable* t, const void* def, void* value) {
   uint nIndex = (ulong)def & t->nTableMask;
 
   zval* pDest = NULL;
-  zend_hash_index_update(t, (zend_ulong)def, &value, sizeof(zval*), (void**)&pDest);
+  php_proto_zend_hash_index_update(t, (zend_ulong)def, &value, sizeof(zval*),
+                                   (void**)&pDest);
 }
 
 static void* get_from_table(const HashTable* t, const void* def) {
   void** value;
-  if (zend_hash_index_find(t, (zend_ulong)def, (void**)&value) == FAILURE) {
+  if (php_proto_zend_hash_index_find(t, (zend_ulong)def, (void**)&value) ==
+      FAILURE) {
     zend_error(E_ERROR, "PHP object not found for given definition.\n");
     return NULL;
   }
   return *value;
 }
 
-static void add_to_list(HashTable* t, void* value) {
-  zval* pDest = NULL;
-  zend_hash_next_index_insert(t, &value, sizeof(void*), (void**)&pDest);
+static bool exist_in_table(const HashTable* t, const void* def) {
+  void** value;
+  return (php_proto_zend_hash_index_find(t, (zend_ulong)def, (void**)&value) ==
+          SUCCESS);
 }
 
-void add_def_obj(const void* def, zval* value) {
+static void add_to_list(HashTable* t, void* value) {
+  zval* pDest = NULL;
+  php_proto_zend_hash_next_index_insert(t, &value, sizeof(void*),
+                                        (void**)&pDest);
+}
+
+void add_def_obj(const void* def, PHP_PROTO_HASHTABLE_VALUE value) {
+#if PHP_MAJOR_VERSION < 7
   Z_ADDREF_P(value);
+#else
+  ++GC_REFCOUNT(value);
+#endif
   add_to_table(upb_def_to_php_obj_map, def, value);
 }
 
-zval* get_def_obj(const void* def) {
-  return (zval*)get_from_table(upb_def_to_php_obj_map, def);
+PHP_PROTO_HASHTABLE_VALUE get_def_obj(const void* def) {
+  return (PHP_PROTO_HASHTABLE_VALUE)get_from_table(upb_def_to_php_obj_map, def);
 }
 
-void add_ce_obj(const void* ce, zval* value) {
+void add_ce_obj(const void* ce, PHP_PROTO_HASHTABLE_VALUE value) {
+#if PHP_MAJOR_VERSION < 7
   Z_ADDREF_P(value);
+#else
+  ++GC_REFCOUNT(value);
+#endif
   add_to_table(ce_to_php_obj_map, ce, value);
 }
 
-zval* get_ce_obj(const void* ce) {
-  return (zval*)get_from_table(ce_to_php_obj_map, ce);
+PHP_PROTO_HASHTABLE_VALUE get_ce_obj(const void* ce) {
+  return (PHP_PROTO_HASHTABLE_VALUE)get_from_table(ce_to_php_obj_map, ce);
+}
+
+bool class_added(const void* ce) {
+  return exist_in_table(ce_to_php_obj_map, ce);
 }
 
 // -----------------------------------------------------------------------------
@@ -125,12 +146,23 @@ static PHP_GINIT_FUNCTION(protobuf) {
 static PHP_GSHUTDOWN_FUNCTION(protobuf) {
 }
 
+#if PHP_MAJOR_VERSION >= 7
+static void php_proto_hashtable_descriptor_release(zval* value) {
+  void* ptr = Z_PTR_P(value);
+  zend_object* object = *(zend_object**)ptr;
+  if(--GC_REFCOUNT(object) == 0) {
+    zend_objects_store_del(object);
+  }
+  efree(ptr);
+}
+#endif
+
 static PHP_RINIT_FUNCTION(protobuf) {
   ALLOC_HASHTABLE(upb_def_to_php_obj_map);
-  zend_hash_init(upb_def_to_php_obj_map, 16, NULL, ZVAL_PTR_DTOR, 0);
+  zend_hash_init(upb_def_to_php_obj_map, 16, NULL, HASHTABLE_VALUE_DTOR, 0);
 
   ALLOC_HASHTABLE(ce_to_php_obj_map);
-  zend_hash_init(ce_to_php_obj_map, 16, NULL, ZVAL_PTR_DTOR, 0);
+  zend_hash_init(ce_to_php_obj_map, 16, NULL, HASHTABLE_VALUE_DTOR, 0);
 
   generated_pool = NULL;
   generated_pool_php = NULL;
@@ -145,10 +177,12 @@ static PHP_RSHUTDOWN_FUNCTION(protobuf) {
   zend_hash_destroy(ce_to_php_obj_map);
   FREE_HASHTABLE(ce_to_php_obj_map);
 
+#if PHP_MAJOR_VERSION < 7
   if (generated_pool_php != NULL) {
     zval_dtor(generated_pool_php);
     FREE_ZVAL(generated_pool_php);
   }
+#endif
 
   return 0;
 }
@@ -170,6 +204,7 @@ static PHP_MINIT_FUNCTION(protobuf) {
 static PHP_MSHUTDOWN_FUNCTION(protobuf) {
   PEFREE(message_handlers);
   PEFREE(repeated_field_handlers);
+  PEFREE(repeated_field_iter_handlers);
   PEFREE(map_field_handlers);
 
   return 0;

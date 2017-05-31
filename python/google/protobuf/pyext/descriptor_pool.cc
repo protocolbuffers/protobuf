@@ -39,6 +39,7 @@
 #include <google/protobuf/pyext/message.h>
 #include <google/protobuf/pyext/message_factory.h>
 #include <google/protobuf/pyext/scoped_pyobject_ptr.h>
+#include <google/protobuf/stubs/hash.h>
 
 #if PY_MAJOR_VERSION >= 3
   #define PyString_FromStringAndSize PyUnicode_FromStringAndSize
@@ -437,8 +438,23 @@ PyObject* AddExtensionDescriptor(PyDescriptorPool* self, PyObject* descriptor) {
   Py_RETURN_NONE;
 }
 
-// The code below loads new Descriptors from a serialized FileDescriptorProto.
+PyObject* AddServiceDescriptor(PyDescriptorPool* self, PyObject* descriptor) {
+  const ServiceDescriptor* service_descriptor =
+      PyServiceDescriptor_AsDescriptor(descriptor);
+  if (!service_descriptor) {
+    return NULL;
+  }
+  if (service_descriptor !=
+      self->pool->FindServiceByName(service_descriptor->full_name())) {
+    PyErr_Format(PyExc_ValueError,
+                 "The service descriptor %s does not belong to this pool",
+                 service_descriptor->full_name().c_str());
+    return NULL;
+  }
+  Py_RETURN_NONE;
+}
 
+// The code below loads new Descriptors from a serialized FileDescriptorProto.
 
 // Collects errors that occur during proto file building to allow them to be
 // propagated in the python exception instead of only living in ERROR logs.
@@ -537,6 +553,8 @@ static PyMethodDef Methods[] = {
   { "AddEnumDescriptor", (PyCFunction)AddEnumDescriptor, METH_O,
     "No-op. Add() must have been called before." },
   { "AddExtensionDescriptor", (PyCFunction)AddExtensionDescriptor, METH_O,
+    "No-op. Add() must have been called before." },
+  { "AddServiceDescriptor", (PyCFunction)AddServiceDescriptor, METH_O,
     "No-op. Add() must have been called before." },
 
   { "FindFileByName", (PyCFunction)FindFileByName, METH_O,

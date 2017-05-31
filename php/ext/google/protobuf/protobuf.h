@@ -37,10 +37,327 @@
 #include "upb.h"
 
 #define PHP_PROTOBUF_EXTNAME "protobuf"
-#define PHP_PROTOBUF_VERSION "3.2.0a1"
+#define PHP_PROTOBUF_VERSION "3.3.0"
 
 #define MAX_LENGTH_OF_INT64 20
 #define SIZEOF_INT64 8
+
+// -----------------------------------------------------------------------------
+// PHP7 Wrappers
+// ----------------------------------------------------------------------------
+
+#if PHP_MAJOR_VERSION < 7
+
+#define php_proto_zend_literal const zend_literal*
+#define PHP_PROTO_CASE_IS_BOOL IS_BOOL
+#define PHP_PROTO_SIZE int
+#define PHP_PROTO_LONG long
+#define PHP_PROTO_TSRMLS_DC TSRMLS_DC
+#define PHP_PROTO_TSRMLS_CC TSRMLS_CC
+
+// PHP String
+
+#define PHP_PROTO_ZVAL_STRING(zval_ptr, s, copy) \
+  ZVAL_STRING(zval_ptr, s, copy)
+#define PHP_PROTO_ZVAL_STRINGL(zval_ptr, s, len, copy) \
+  ZVAL_STRINGL(zval_ptr, s, len, copy)
+#define PHP_PROTO_RETURN_STRING(s, copy) RETURN_STRING(s, copy)
+#define PHP_PROTO_RETURN_STRINGL(s, len, copy) RETURN_STRINGL(s, len, copy)
+#define PHP_PROTO_RETVAL_STRINGL(s, len, copy) RETVAL_STRINGL(s, len, copy)
+#define php_proto_zend_make_printable_zval(from, to) \
+  {                                                  \
+    int use_copy;                                    \
+    zend_make_printable_zval(from, to, &use_copy);   \
+  }
+
+// PHP Array
+
+#define PHP_PROTO_HASH_OF(array) Z_ARRVAL_P(array)
+
+#define php_proto_zend_hash_index_update(ht, h, pData, nDataSize, pDest) \
+  zend_hash_index_update(ht, h, pData, nDataSize, pDest)
+
+#define php_proto_zend_hash_index_find(ht, h, pDest) \
+  zend_hash_index_find(ht, h, pDest)
+
+#define php_proto_zend_hash_next_index_insert(ht, pData, nDataSize, pDest) \
+  zend_hash_next_index_insert(ht, pData, nDataSize, pDest)
+
+#define php_proto_zend_hash_get_current_data_ex(ht, pDest, pos) \
+  zend_hash_get_current_data_ex(ht, pDest, pos)
+
+// PHP Object
+
+#define PHP_PROTO_WRAP_OBJECT_START(name) \
+  struct name {                           \
+    zend_object std;
+#define PHP_PROTO_WRAP_OBJECT_END \
+  };
+
+#define PHP_PROTO_INIT_CLASS_START(CLASSNAME, CAMELNAME, LOWWERNAME)         \
+  void LOWWERNAME##_init(TSRMLS_D) {                                         \
+    zend_class_entry class_type;                                             \
+    const char* class_name = CLASSNAME;                                      \
+    INIT_CLASS_ENTRY_EX(class_type, CLASSNAME, strlen(CLASSNAME),            \
+                        LOWWERNAME##_methods);                               \
+    LOWWERNAME##_type = zend_register_internal_class(&class_type TSRMLS_CC); \
+    LOWWERNAME##_type->create_object = LOWWERNAME##_create;                  \
+    LOWWERNAME##_handlers = PEMALLOC(zend_object_handlers);                  \
+    memcpy(LOWWERNAME##_handlers, zend_get_std_object_handlers(),            \
+           sizeof(zend_object_handlers));
+#define PHP_PROTO_INIT_CLASS_END \
+  }
+
+#define PHP_PROTO_OBJECT_CREATE_START(NAME, LOWWERNAME) \
+  static zend_object_value LOWWERNAME##_create(         \
+      zend_class_entry* ce TSRMLS_DC) {                 \
+    PHP_PROTO_ALLOC_CLASS_OBJECT(NAME, ce);             \
+    zend_object_std_init(&intern->std, ce TSRMLS_CC);   \
+    object_properties_init(&intern->std, ce);
+#define PHP_PROTO_OBJECT_CREATE_END(NAME, LOWWERNAME)                          \
+  PHP_PROTO_FREE_CLASS_OBJECT(NAME, LOWWERNAME##_free, LOWWERNAME##_handlers); \
+  }
+
+#define PHP_PROTO_OBJECT_FREE_START(classname, lowername) \
+  void lowername##_free(void* object TSRMLS_DC) {         \
+    classname* intern = object;
+#define PHP_PROTO_OBJECT_FREE_END                 \
+    zend_object_std_dtor(&intern->std TSRMLS_CC); \
+    efree(intern);                                \
+  }
+
+#define PHP_PROTO_OBJECT_DTOR_START(classname, lowername)
+#define PHP_PROTO_OBJECT_DTOR_END
+
+#define CACHED_VALUE zval*
+#define CACHED_TO_ZVAL_PTR(VALUE) (VALUE)
+#define CACHED_PTR_TO_ZVAL_PTR(VALUE) (*VALUE)
+#define ZVAL_PTR_TO_CACHED_PTR(VALUE) (&VALUE)
+
+#define CREATE_OBJ_ON_ALLOCATED_ZVAL_PTR(zval_ptr, class_type) \
+  ZVAL_OBJ(zval_ptr, class_type->create_object(class_type TSRMLS_CC));
+
+#define PHP_PROTO_SEPARATE_ZVAL_IF_NOT_REF(value) \
+  SEPARATE_ZVAL_IF_NOT_REF(value)
+
+#define PHP_PROTO_GLOBAL_UNINITIALIZED_ZVAL EG(uninitialized_zval_ptr)
+
+#define OBJ_PROP(PROPERTIES, OFFSET) (PROPERTIES)->properties_table[OFFSET]
+
+#define php_proto_zval_ptr_dtor(zval_ptr) \
+  zval_ptr_dtor(&(zval_ptr))
+
+#define PHP_PROTO_ALLOC_CLASS_OBJECT(class_object, class_type) \
+  class_object* intern;                                        \
+  intern = (class_object*)emalloc(sizeof(class_object));       \
+  memset(intern, 0, sizeof(class_object));
+
+#define PHP_PROTO_FREE_CLASS_OBJECT(class_object, class_object_free, handler) \
+  zend_object_value retval = {0};                                             \
+  retval.handle = zend_objects_store_put(                                     \
+      intern, (zend_objects_store_dtor_t)zend_objects_destroy_object,         \
+      class_object_free, NULL TSRMLS_CC);                                     \
+  retval.handlers = handler;                                                  \
+  return retval;
+
+#define PHP_PROTO_ALLOC_ARRAY(zval_ptr)  \
+  ALLOC_HASHTABLE(Z_ARRVAL_P(zval_ptr)); \
+  Z_TYPE_P(zval_ptr) = IS_ARRAY;
+
+#define ZVAL_OBJ(zval_ptr, call_create) \
+  Z_TYPE_P(zval_ptr) = IS_OBJECT;       \
+  Z_OBJVAL_P(zval_ptr) = call_create;
+
+#define UNBOX(class_name, val) \
+  (class_name*)zend_object_store_get_object(val TSRMLS_CC);
+
+#define UNBOX_HASHTABLE_VALUE(class_name, val) UNBOX(class_name, val)
+
+#define HASHTABLE_VALUE_DTOR ZVAL_PTR_DTOR
+
+#define PHP_PROTO_HASHTABLE_VALUE zval*
+
+#define CREATE_HASHTABLE_VALUE(OBJ, WRAPPED_OBJ, OBJ_TYPE, OBJ_CLASS_ENTRY) \
+  OBJ_TYPE* OBJ;                                                            \
+  PHP_PROTO_HASHTABLE_VALUE WRAPPED_OBJ;                                    \
+  MAKE_STD_ZVAL(WRAPPED_OBJ);                                               \
+  ZVAL_OBJ(WRAPPED_OBJ,                                                     \
+           OBJ_CLASS_ENTRY->create_object(OBJ_CLASS_ENTRY TSRMLS_CC));      \
+  OBJ = UNBOX_HASHTABLE_VALUE(OBJ_TYPE, WRAPPED_OBJ);                       \
+  Z_DELREF_P(desc_php);
+
+#define PHP_PROTO_CE_DECLARE zend_class_entry**
+#define PHP_PROTO_CE_UNREF(ce) (*ce)
+
+#define php_proto_zend_lookup_class(name, name_length, ce) \
+  zend_lookup_class(name, name_length, ce TSRMLS_CC)
+
+#else  // PHP_MAJOR_VERSION >= 7
+
+#define php_proto_zend_literal void**
+#define PHP_PROTO_CASE_IS_BOOL IS_TRUE: case IS_FALSE
+#define PHP_PROTO_SIZE size_t
+#define PHP_PROTO_LONG zend_long
+#define PHP_PROTO_TSRMLS_DC
+#define PHP_PROTO_TSRMLS_CC
+
+// PHP String
+
+#define PHP_PROTO_ZVAL_STRING(zval_ptr, s, copy) \
+  ZVAL_STRING(zval_ptr, s)
+#define PHP_PROTO_ZVAL_STRINGL(zval_ptr, s, len, copy) \
+  ZVAL_STRINGL(zval_ptr, s, len)
+#define PHP_PROTO_RETURN_STRING(s, copy) RETURN_STRING(s)
+#define PHP_PROTO_RETURN_STRINGL(s, len, copy) RETURN_STRINGL(s, len)
+#define PHP_PROTO_RETVAL_STRINGL(s, len, copy) RETVAL_STRINGL(s, len)
+#define php_proto_zend_make_printable_zval(from, to) \
+  zend_make_printable_zval(from, to)
+
+// PHP Array
+
+#define PHP_PROTO_HASH_OF(array) Z_ARRVAL_P(&array)
+
+static inline int php_proto_zend_hash_index_update(HashTable* ht, ulong h,
+                                                   void* pData, uint nDataSize,
+                                                   void** pDest) {
+  void* result = NULL;
+  result = zend_hash_index_update_mem(ht, h, pData, nDataSize);
+  if (pDest != NULL) *pDest = result;
+  return result != NULL ? SUCCESS : FAILURE;
+}
+
+static inline int php_proto_zend_hash_index_find(const HashTable* ht, ulong h,
+                                                 void** pDest) {
+  void* result = NULL;
+  result = zend_hash_index_find_ptr(ht, h);
+  if (pDest != NULL) *pDest = result;
+  return result != NULL ? SUCCESS : FAILURE;
+}
+
+static inline int php_proto_zend_hash_next_index_insert(HashTable* ht,
+                                                        void* pData,
+                                                        uint nDataSize,
+                                                        void** pDest) {
+  void* result = NULL;
+  result = zend_hash_next_index_insert_mem(ht, pData, nDataSize);
+  if (pDest != NULL) *pDest = result;
+  return result != NULL ? SUCCESS : FAILURE;
+}
+
+static inline int php_proto_zend_hash_get_current_data_ex(HashTable* ht,
+                                                          void** pDest,
+                                                          HashPosition* pos) {
+  void* result = NULL;
+  result = zend_hash_get_current_data_ex(ht, pos);
+  if (pDest != NULL) *pDest = result;
+  return result != NULL ? SUCCESS : FAILURE;
+}
+
+// PHP Object
+
+#define PHP_PROTO_WRAP_OBJECT_START(name) struct name {
+#define PHP_PROTO_WRAP_OBJECT_END \
+  zend_object std;                \
+  };
+
+#define PHP_PROTO_INIT_CLASS_START(CLASSNAME, CAMELNAME, LOWWERNAME)         \
+  void LOWWERNAME##_init(TSRMLS_D) {                                         \
+    zend_class_entry class_type;                                             \
+    const char* class_name = CLASSNAME;                                      \
+    INIT_CLASS_ENTRY_EX(class_type, CLASSNAME, strlen(CLASSNAME),            \
+                        LOWWERNAME##_methods);                               \
+    LOWWERNAME##_type = zend_register_internal_class(&class_type TSRMLS_CC); \
+    LOWWERNAME##_type->create_object = LOWWERNAME##_create;                  \
+    LOWWERNAME##_handlers = PEMALLOC(zend_object_handlers);                  \
+    memcpy(LOWWERNAME##_handlers, zend_get_std_object_handlers(),            \
+           sizeof(zend_object_handlers));                                    \
+    LOWWERNAME##_handlers->free_obj = LOWWERNAME##_free;                     \
+    LOWWERNAME##_handlers->dtor_obj = LOWWERNAME##_dtor;                     \
+    LOWWERNAME##_handlers->offset = XtOffsetOf(CAMELNAME, std);
+#define PHP_PROTO_INIT_CLASS_END \
+  }
+
+#define PHP_PROTO_OBJECT_FREE_START(classname, lowername) \
+  void lowername##_free(zend_object* object) {            \
+    classname* intern =                                   \
+        (classname*)((char*)object - XtOffsetOf(classname, std));
+#define PHP_PROTO_OBJECT_FREE_END           \
+  }
+
+#define PHP_PROTO_OBJECT_DTOR_START(classname, lowername) \
+  void lowername##_dtor(zend_object* object) {            \
+    classname* intern =                                   \
+        (classname*)((char*)object - XtOffsetOf(classname, std));
+#define PHP_PROTO_OBJECT_DTOR_END           \
+    zend_object_std_dtor(object TSRMLS_CC); \
+  }
+
+#define PHP_PROTO_OBJECT_CREATE_START(NAME, LOWWERNAME)                     \
+  static zend_object* LOWWERNAME##_create(zend_class_entry* ce TSRMLS_DC) { \
+    PHP_PROTO_ALLOC_CLASS_OBJECT(NAME, ce);                                 \
+    zend_object_std_init(&intern->std, ce TSRMLS_CC);                       \
+    object_properties_init(&intern->std, ce);
+#define PHP_PROTO_OBJECT_CREATE_END(NAME, LOWWERNAME)                          \
+  PHP_PROTO_FREE_CLASS_OBJECT(NAME, LOWWERNAME##_free, LOWWERNAME##_handlers); \
+  }
+
+#define CACHED_VALUE zval
+#define CACHED_TO_ZVAL_PTR(VALUE) (&VALUE)
+#define CACHED_PTR_TO_ZVAL_PTR(VALUE) (VALUE)
+#define ZVAL_PTR_TO_CACHED_PTR(VALUE) (VALUE)
+
+#define CREATE_OBJ_ON_ALLOCATED_ZVAL_PTR(zval_ptr, class_type) \
+  ZVAL_OBJ(zval_ptr, class_type->create_object(class_type));
+
+#define PHP_PROTO_SEPARATE_ZVAL_IF_NOT_REF(value) ;
+
+#define PHP_PROTO_GLOBAL_UNINITIALIZED_ZVAL &EG(uninitialized_zval)
+
+#define php_proto_zval_ptr_dtor(zval_ptr) \
+  zval_ptr_dtor(zval_ptr)
+
+#define PHP_PROTO_ALLOC_CLASS_OBJECT(class_object, class_type)               \
+  class_object* intern;                                                      \
+  int size = sizeof(class_object) + zend_object_properties_size(class_type); \
+  intern = ecalloc(1, size);                                                 \
+  memset(intern, 0, size);
+
+#define PHP_PROTO_FREE_CLASS_OBJECT(class_object, class_object_free, handler) \
+  intern->std.handlers = handler;                                             \
+  return &intern->std;
+
+#define PHP_PROTO_ALLOC_ARRAY(zval_ptr) \
+  ZVAL_NEW_ARR(zval_ptr)
+
+#define UNBOX(class_name, val) \
+  (class_name*)((char*)Z_OBJ_P(val) - XtOffsetOf(class_name, std));
+
+#define UNBOX_HASHTABLE_VALUE(class_name, val) \
+  (class_name*)((char*)val - XtOffsetOf(class_name, std))
+
+#define HASHTABLE_VALUE_DTOR php_proto_hashtable_descriptor_release
+
+#define PHP_PROTO_HASHTABLE_VALUE zend_object*
+
+#define CREATE_HASHTABLE_VALUE(OBJ, WRAPPED_OBJ, OBJ_TYPE, OBJ_CLASS_ENTRY) \
+  OBJ_TYPE* OBJ;                                                            \
+  PHP_PROTO_HASHTABLE_VALUE WRAPPED_OBJ;                                    \
+  WRAPPED_OBJ = OBJ_CLASS_ENTRY->create_object(OBJ_CLASS_ENTRY);            \
+  OBJ = UNBOX_HASHTABLE_VALUE(OBJ_TYPE, WRAPPED_OBJ);                       \
+  --GC_REFCOUNT(WRAPPED_OBJ);
+
+#define PHP_PROTO_CE_DECLARE zend_class_entry*
+#define PHP_PROTO_CE_UNREF(ce) (ce)
+
+static inline int php_proto_zend_lookup_class(
+    const char* name, int name_length, zend_class_entry** ce TSRMLS_DC) {
+  zend_string *zstr_name = zend_string_init(name, name_length, 0);
+  *ce = zend_lookup_class(zstr_name);
+  zend_string_release(zstr_name);
+  return *ce != NULL ? SUCCESS : FAILURE;
+}
+
+#endif  // PHP_MAJOR_VERSION >= 7
 
 // -----------------------------------------------------------------------------
 // Forward Declaration
@@ -55,7 +372,8 @@ struct MessageHeader;
 struct MessageLayout;
 struct RepeatedField;
 struct RepeatedFieldIter;
-struct MapField;
+struct Map;
+struct Oneof;
 
 typedef struct DescriptorPool DescriptorPool;
 typedef struct Descriptor Descriptor;
@@ -66,7 +384,8 @@ typedef struct MessageHeader MessageHeader;
 typedef struct MessageLayout MessageLayout;
 typedef struct RepeatedField RepeatedField;
 typedef struct RepeatedFieldIter RepeatedFieldIter;
-typedef struct MapField MapField;
+typedef struct Map Map;
+typedef struct Oneof Oneof;
 
 // -----------------------------------------------------------------------------
 // Globals.
@@ -88,13 +407,14 @@ void message_init(TSRMLS_D);
 
 // Global map from upb {msg,enum}defs to wrapper Descriptor/EnumDescriptor
 // instances.
-void add_def_obj(const void* def, zval* value);
-zval* get_def_obj(const void* def);
+void add_def_obj(const void* def, PHP_PROTO_HASHTABLE_VALUE value);
+PHP_PROTO_HASHTABLE_VALUE get_def_obj(const void* def);
 
 // Global map from PHP class entries to wrapper Descriptor/EnumDescriptor
 // instances.
-void add_ce_obj(const void* ce, zval* value);
-zval* get_ce_obj(const void* ce);
+void add_ce_obj(const void* ce, PHP_PROTO_HASHTABLE_VALUE value);
+PHP_PROTO_HASHTABLE_VALUE get_ce_obj(const void* ce);
+bool class_added(const void* ce);
 
 extern zend_class_entry* map_field_type;
 extern zend_class_entry* repeated_field_type;
@@ -103,20 +423,25 @@ extern zend_class_entry* repeated_field_type;
 // Descriptor.
 // -----------------------------------------------------------------------------
 
-struct DescriptorPool {
-  zend_object std;
+PHP_PROTO_WRAP_OBJECT_START(DescriptorPool)
   upb_symtab* symtab;
   HashTable* pending_list;
-};
+PHP_PROTO_WRAP_OBJECT_END
 
 PHP_METHOD(DescriptorPool, getGeneratedPool);
 PHP_METHOD(DescriptorPool, internalAddGeneratedFile);
 
-extern zval* generated_pool_php;  // wrapper of generated pool
+// wrapper of generated pool
+#if PHP_MAJOR_VERSION < 7
+extern zval* generated_pool_php;
+void descriptor_pool_free(void* object TSRMLS_DC);
+#else
+extern zend_object *generated_pool_php;
+void descriptor_pool_free(zend_object* object);
+#endif
 extern DescriptorPool* generated_pool;  // The actual generated pool
 
-struct Descriptor {
-  zend_object std;
+PHP_PROTO_WRAP_OBJECT_START(Descriptor)
   const upb_msgdef* msgdef;
   MessageLayout* layout;
   zend_class_entry* klass;  // begins as NULL
@@ -126,23 +451,21 @@ struct Descriptor {
   const upb_handlers* pb_serialize_handlers;
   const upb_handlers* json_serialize_handlers;
   const upb_handlers* json_serialize_handlers_preserve;
-};
+PHP_PROTO_WRAP_OBJECT_END
 
 extern zend_class_entry* descriptor_type;
 
 void descriptor_name_set(Descriptor *desc, const char *name);
 
-struct FieldDescriptor {
-  zend_object std;
+PHP_PROTO_WRAP_OBJECT_START(FieldDescriptor)
   const upb_fielddef* fielddef;
-};
+PHP_PROTO_WRAP_OBJECT_END
 
-struct EnumDescriptor {
-  zend_object std;
+PHP_PROTO_WRAP_OBJECT_START(EnumDescriptor)
   const upb_enumdef* enumdef;
   zend_class_entry* klass;  // begins as NULL
   // VALUE module;  // begins as nil
-};
+PHP_PROTO_WRAP_OBJECT_END
 
 extern zend_class_entry* enum_descriptor_type;
 
@@ -150,13 +473,15 @@ extern zend_class_entry* enum_descriptor_type;
 // Message class creation.
 // -----------------------------------------------------------------------------
 
-void* message_data(void* msg);
-void message_create_with_type(zend_class_entry* ce, zval** message TSRMLS_DC);
+void* message_data(MessageHeader* msg);
+void custom_data_init(const zend_class_entry* ce,
+                      MessageHeader* msg PHP_PROTO_TSRMLS_DC);
 
 // Build PHP class for given descriptor. Instead of building from scratch, this
 // function modifies existing class which has been partially defined in PHP
 // code.
-void build_class_from_descriptor(zval* php_descriptor TSRMLS_DC);
+void build_class_from_descriptor(
+    PHP_PROTO_HASHTABLE_VALUE php_descriptor TSRMLS_DC);
 
 extern zend_object_handlers* message_handlers;
 
@@ -227,18 +552,17 @@ struct MessageLayout {
   size_t size;
 };
 
-struct MessageHeader {
-  zend_object std;  // Stores properties table and class info of PHP instance.
-                    // This is needed for MessageHeader to be accessed via PHP.
+PHP_PROTO_WRAP_OBJECT_START(MessageHeader)
+  void* data;  // Point to the real message data.
+               // Place needs to be consistent with map_parse_frame_data_t.
   Descriptor* descriptor;  // Kept alive by self.class.descriptor reference.
-  // The real message data is appended after MessageHeader.
-};
+PHP_PROTO_WRAP_OBJECT_END
 
 MessageLayout* create_layout(const upb_msgdef* msgdef);
 void layout_init(MessageLayout* layout, void* storage,
-                 zval** properties_table TSRMLS_DC);
+                 CACHED_VALUE* properties_table PHP_PROTO_TSRMLS_DC);
 zval* layout_get(MessageLayout* layout, const void* storage,
-                 const upb_fielddef* field, zval** cache TSRMLS_DC);
+                 const upb_fielddef* field, CACHED_VALUE* cache TSRMLS_DC);
 void layout_set(MessageLayout* layout, MessageHeader* header,
                 const upb_fielddef* field, zval* val TSRMLS_DC);
 void layout_merge(MessageLayout* layout, MessageHeader* from,
@@ -308,7 +632,12 @@ PHP_METHOD(Util, checkRepeatedField);
 size_t native_slot_size(upb_fieldtype_t type);
 bool native_slot_set(upb_fieldtype_t type, const zend_class_entry* klass,
                      void* memory, zval* value TSRMLS_DC);
-void native_slot_init(upb_fieldtype_t type, void* memory, zval** cache);
+// String/Message is stored differently in array/map from normal message fields.
+// So we need to make a special method to handle that.
+bool native_slot_set_by_array(upb_fieldtype_t type,
+                              const zend_class_entry* klass, void* memory,
+                              zval* value TSRMLS_DC);
+void native_slot_init(upb_fieldtype_t type, void* memory, void* cache);
 // For each property, in order to avoid conversion between the zval object and
 // the actual data type during parsing/serialization, the containing message
 // object use the custom memory layout to store the actual data type for each
@@ -317,8 +646,13 @@ void native_slot_init(upb_fieldtype_t type, void* memory, zval** cache);
 // for providing such a zval object. Instead the caller needs to provide one
 // (cache) and update it with the actual data (memory).
 void native_slot_get(upb_fieldtype_t type, const void* memory,
-                     zval** cache TSRMLS_DC);
-void native_slot_get_default(upb_fieldtype_t type, zval** cache TSRMLS_DC);
+                     CACHED_VALUE* cache TSRMLS_DC);
+// String/Message is stored differently in array/map from normal message fields.
+// So we need to make a special method to handle that.
+void native_slot_get_by_array(upb_fieldtype_t type, const void* memory,
+                     CACHED_VALUE* cache TSRMLS_DC);
+void native_slot_get_default(upb_fieldtype_t type,
+                             CACHED_VALUE* cache TSRMLS_DC);
 
 // -----------------------------------------------------------------------------
 // Map Field.
@@ -326,13 +660,12 @@ void native_slot_get_default(upb_fieldtype_t type, zval** cache TSRMLS_DC);
 
 extern zend_object_handlers* map_field_handlers;
 
-typedef struct {
-  zend_object std;
+PHP_PROTO_WRAP_OBJECT_START(Map)
   upb_fieldtype_t key_type;
   upb_fieldtype_t value_type;
   const zend_class_entry* msg_ce;  // class entry for value message
   upb_strtable table;
-} Map;
+PHP_PROTO_WRAP_OBJECT_END
 
 typedef struct {
   Map* self;
@@ -349,14 +682,14 @@ upb_value map_iter_value(MapIter* iter, int* len);
 const upb_fielddef* map_entry_key(const upb_msgdef* msgdef);
 const upb_fielddef* map_entry_value(const upb_msgdef* msgdef);
 
-zend_object_value map_field_create(zend_class_entry *ce TSRMLS_DC);
-void map_field_create_with_field(zend_class_entry *ce, const upb_fielddef *field,
-                                zval **map_field TSRMLS_DC);
-void map_field_create_with_type(zend_class_entry *ce, upb_fieldtype_t key_type,
+void map_field_create_with_field(const zend_class_entry* ce,
+                                 const upb_fielddef* field,
+                                 CACHED_VALUE* map_field PHP_PROTO_TSRMLS_DC);
+void map_field_create_with_type(const zend_class_entry* ce,
+                                upb_fieldtype_t key_type,
                                 upb_fieldtype_t value_type,
-                                const zend_class_entry *msg_ce,
-                                zval **map_field TSRMLS_DC);
-void map_field_free(void* object TSRMLS_DC);
+                                const zend_class_entry* msg_ce,
+                                CACHED_VALUE* map_field PHP_PROTO_TSRMLS_DC);
 void* upb_value_memory(upb_value* v);
 
 #define MAP_KEY_FIELD 1
@@ -382,33 +715,36 @@ PHP_METHOD(MapField, count);
 // -----------------------------------------------------------------------------
 
 extern zend_object_handlers* repeated_field_handlers;
+extern zend_object_handlers* repeated_field_iter_handlers;
 
-struct RepeatedField {
-  zend_object std;
+PHP_PROTO_WRAP_OBJECT_START(RepeatedField)
+#if PHP_MAJOR_VERSION < 7
   zval* array;
+#else
+  zval array;
+#endif
   upb_fieldtype_t type;
   const zend_class_entry* msg_ce;  // class entry for containing message
                                    // (for message field only).
-};
+PHP_PROTO_WRAP_OBJECT_END
 
-struct RepeatedFieldIter {
-  zend_object std;
+PHP_PROTO_WRAP_OBJECT_START(RepeatedFieldIter)
   RepeatedField* repeated_field;
   long position;
-};
+PHP_PROTO_WRAP_OBJECT_END
 
-void repeated_field_create_with_field(zend_class_entry* ce,
-                                     const upb_fielddef* field,
-                                     zval** repeated_field TSRMLS_DC);
-void repeated_field_create_with_type(zend_class_entry* ce, upb_fieldtype_t type,
-                                     const zend_class_entry* msg_ce,
-                                     zval** repeated_field TSRMLS_DC);
+void repeated_field_create_with_field(
+    zend_class_entry* ce, const upb_fielddef* field,
+    CACHED_VALUE* repeated_field PHP_PROTO_TSRMLS_DC);
+void repeated_field_create_with_type(
+    zend_class_entry* ce, upb_fieldtype_t type, const zend_class_entry* msg_ce,
+    CACHED_VALUE* repeated_field PHP_PROTO_TSRMLS_DC);
 // Return the element at the index position from the repeated field. There is
 // not restriction on the type of stored elements.
 void *repeated_field_index_native(RepeatedField *intern, int index TSRMLS_DC);
 // Add the element to the end of the repeated field. There is not restriction on
 // the type of stored elements.
-void repeated_field_push_native(RepeatedField *intern, void *value TSRMLS_DC);
+void repeated_field_push_native(RepeatedField *intern, void *value);
 
 PHP_METHOD(RepeatedField, __construct);
 PHP_METHOD(RepeatedField, append);
@@ -429,12 +765,11 @@ PHP_METHOD(RepeatedFieldIter, valid);
 // Oneof Field.
 // -----------------------------------------------------------------------------
 
-typedef struct {
-  zend_object std;
+PHP_PROTO_WRAP_OBJECT_START(Oneof)
   upb_oneofdef* oneofdef;
   int index;    // Index of field in oneof. -1 if not set.
   char value[NATIVE_SLOT_MAX_SIZE];
-} Oneof;
+PHP_PROTO_WRAP_OBJECT_END
 
 // Oneof case slot value to indicate that no oneof case is set. The value `0` is
 // safe because field numbers are used as case identifiers, and no field can
@@ -446,23 +781,12 @@ typedef struct {
 // -----------------------------------------------------------------------------
 
 upb_fieldtype_t to_fieldtype(upb_descriptortype_t type);
-const zend_class_entry *field_type_class(const upb_fielddef *field TSRMLS_DC);
+const zend_class_entry* field_type_class(
+    const upb_fielddef* field PHP_PROTO_TSRMLS_DC);
 
 // -----------------------------------------------------------------------------
 // Utilities.
 // -----------------------------------------------------------------------------
-
-// PHP <-> C conversion.
-#define UNBOX(class_name, val) \
-  (class_name*)zend_object_store_get_object(val TSRMLS_CC);
-
-#define BOX(class_name, wrapper, intern, free_func)                    \
-  MAKE_STD_ZVAL(wrapper);                                              \
-  Z_TYPE_P(wrapper) = IS_OBJECT;                                       \
-  Z_OBJVAL_P(wrapper)                                                  \
-      .handle =                                                        \
-      zend_objects_store_put(intern, NULL, free_func, NULL TSRMLS_CC); \
-  Z_OBJVAL_P(wrapper).handlers = zend_get_std_object_handlers();
 
 // Memory management
 #define ALLOC(class_name) (class_name*) emalloc(sizeof(class_name))
@@ -471,19 +795,15 @@ const zend_class_entry *field_type_class(const upb_fielddef *field TSRMLS_DC);
 #define FREE(object) efree(object)
 #define PEFREE(object) pefree(object, 1)
 
-// Create PHP internal instance.
-#define CREATE(class_name, intern, init_func) \
-  intern = ALLOC(class_name);                 \
-  memset(intern, 0, sizeof(class_name));      \
-  init_func(intern TSRMLS_CC);
-
 // String argument.
 #define STR(str) (str), strlen(str)
 
 // Zend Value
+#if PHP_MAJOR_VERSION < 7
 #define Z_OBJ_P(zval_p)                                       \
   ((zend_object*)(EG(objects_store)                           \
                       .object_buckets[Z_OBJ_HANDLE_P(zval_p)] \
                       .bucket.obj.object))
+#endif
 
 #endif  // __GOOGLE_PROTOBUF_PHP_PROTOBUF_H__

@@ -48,16 +48,6 @@ namespace protobuf {
 namespace util {
 namespace converter {
 
-namespace {
-const StringPiece SkipWhiteSpace(StringPiece str) {
-  StringPiece::size_type i;
-  for (i = 0; i < str.size() && isspace(str[i]); ++i) {
-  }
-  GOOGLE_DCHECK(i == str.size() || !isspace(str[i]));
-  return str.substr(i);
-}
-}  // namespace
-
 bool GetBoolOptionOrDefault(
     const google::protobuf::RepeatedPtrField<google::protobuf::Option>& options,
     const string& option_name, bool default_value) {

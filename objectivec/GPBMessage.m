@@ -130,7 +130,7 @@ static NSError *ErrorFromException(NSException *exception) {
 
 static void CheckExtension(GPBMessage *self,
                            GPBExtensionDescriptor *extension) {
-  if ([self class] != extension.containingMessageClass) {
+  if (![self isKindOfClass:extension.containingMessageClass]) {
     [NSException
          raise:NSInvalidArgumentException
         format:@"Extension %@ used on wrong class (%@ instead of %@)",
@@ -736,6 +736,25 @@ void GPBClearMessageAutocreator(GPBMessage *self) {
   self->autocreatorField_ = nil;
   [self->autocreatorExtension_ release];
   self->autocreatorExtension_ = nil;
+}
+
+// Call this before using the readOnlySemaphore_. This ensures it is created only once.
+void GPBPrepareReadOnlySemaphore(GPBMessage *self) {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdirect-ivar-access"
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+
+  // Create the semaphore on demand (rather than init) as developers might not cause them
+  // to be needed, and the heap usage can add up.  The atomic swap is used to avoid needing
+  // another lock around creating it.
+  if (self->readOnlySemaphore_ == nil) {
+    dispatch_semaphore_t worker = dispatch_semaphore_create(1);
+    if (!OSAtomicCompareAndSwapPtrBarrier(NULL, worker, (void * volatile *)&(self->readOnlySemaphore_))) {
+      dispatch_release(worker);
+    }
+  }
+
+#pragma clang diagnostic pop
 }
 
 static GPBUnknownFieldSet *GetOrMakeUnknownFields(GPBMessage *self) {
@@ -3170,7 +3189,7 @@ static void ResolveIvarSet(GPBFieldDescriptor *field,
 
 + (BOOL)resolveClassMethod:(SEL)sel {
   // Extensions scoped to a Message and looked up via class methods.
-  if (GPBResolveExtensionClassMethod(self, sel)) {
+  if (GPBResolveExtensionClassMethod([self descriptor].messageClass, sel)) {
     return YES;
   }
   return [super resolveClassMethod:sel];

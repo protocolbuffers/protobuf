@@ -62,7 +62,15 @@ namespace protobuf {
 class DescriptorPool;
 class MapKey;
 class MapValueRef;
-}
+}  // namespace protobuf
+
+
+namespace protobuf {
+namespace flat {
+class MetadataBuilder;
+}  // namespace flat
+}  // namespace protobuf
+
 
 namespace protobuf {
 namespace internal {
@@ -73,6 +81,7 @@ class GeneratedMessageReflection;
 
 // Defined in other files.
 class ExtensionSet;             // extension_set.h
+class WeakFieldMap;             // weak_field_map.h
 
 // This struct describes the internal layout of the message, hence this is
 // used to act on the message reflectively.
@@ -83,17 +92,17 @@ class ExtensionSet;             // extension_set.h
 //                  embedded message fields *must* have non-NULL pointers
 //                  in the default instance.)
 //   offsets:       An array of ints giving the byte offsets.
-//                  For each oneof field, the offset is relative to the
-//                  default_oneof_instance. These can be computed at compile
-//                  time using the
-//                  PROTO2_GENERATED_DEFAULT_ONEOF_FIELD_OFFSET() macro.
-//                  For each none oneof field, the offset is related to
-//                  the start of the message object.  These can be computed
-//                  at compile time using the
+//                  For each oneof or weak field, the offset is relative to the
+//                  default_instance. These can be computed at compile time
+//                  using the
+//                  GOOGLE_PROTOBUF_GENERATED_DEFAULT_ONEOF_FIELD_OFFSET()
+//                  macro. For each none oneof field, the offset is related to
+//                  the start of the message object.  These can be computed at
+//                  compile time using the
 //                  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET() macro.
 //                  Besides offsets for all fields, this array also contains
-//                  offsets for oneof unions. The offset of the i-th oneof
-//                  union is offsets[descriptor->field_count() + i].
+//                  offsets for oneof unions. The offset of the i-th oneof union
+//                  is offsets[descriptor->field_count() + i].
 //   has_bit_indices:  Mapping from field indexes to their index in the has
 //                  bit array.
 //   has_bits_offset:  Offset in the message of an array of uint32s of size
@@ -114,6 +123,9 @@ class ExtensionSet;             // extension_set.h
 //                  by sizeof().
 //   arena_offset:  If a message doesn't have a unknown_field_set that stores
 //                  the arena, it must have a direct pointer to the arena.
+//   weak_field_map_offset: If the message proto has weak fields, this is the
+//                  offset of _weak_field_map_ in the generated proto. Otherwise
+//                  -1.
 struct ReflectionSchema {
  public:
   // Size of a google::protobuf::Message object of this type.
@@ -187,6 +199,9 @@ struct ReflectionSchema {
                      offsets_[field->index()];
   }
 
+
+  bool HasWeakFields() const { return weak_field_map_offset_ > 0; }
+
   // These members are intended to be private, but we cannot actually make them
   // private because this prevents us from using aggregate initialization of
   // them, ie.
@@ -240,8 +255,7 @@ struct MigrationSchema {
 //    of whatever type the individual field would be.  Strings and
 //    Messages use RepeatedPtrFields while everything else uses
 //    RepeatedFields.
-class LIBPROTOBUF_EXPORT GeneratedMessageReflection PROTOBUF_FINAL
-    : public Reflection {
+class LIBPROTOBUF_EXPORT GeneratedMessageReflection PROTOBUF_FINAL : public Reflection {
  public:
   // Constructs a GeneratedMessageReflection.
   // Parameters:
@@ -263,7 +277,7 @@ class LIBPROTOBUF_EXPORT GeneratedMessageReflection PROTOBUF_FINAL
   const UnknownFieldSet& GetUnknownFields(const Message& message) const;
   UnknownFieldSet* MutableUnknownFields(Message* message) const;
 
-  int SpaceUsed(const Message& message) const;
+  size_t SpaceUsedLong(const Message& message) const;
 
   bool HasField(const Message& message, const FieldDescriptor* field) const;
   int FieldSize(const Message& message, const FieldDescriptor* field) const;
@@ -481,13 +495,18 @@ class LIBPROTOBUF_EXPORT GeneratedMessageReflection PROTOBUF_FINAL
       const Descriptor* message_type) const;
 
  private:
-  friend class GeneratedMessage;
+  friend class google::protobuf::flat::MetadataBuilder;
   friend class upb::google_opensource::GMR_Handlers;
 
   const Descriptor* const descriptor_;
   const ReflectionSchema schema_;
   const DescriptorPool* const descriptor_pool_;
   MessageFactory* const message_factory_;
+
+  // Last non weak field index. This is an optimization when most weak fields
+  // are at the end of the containing message. If a message proto doesn't
+  // contain weak fields, then this field equals descriptor_->field_count().
+  int last_non_weak_field_index_;
 
   template <class T>
   const T& GetRawNonOneof(const Message& message,
@@ -613,40 +632,6 @@ class LIBPROTOBUF_EXPORT GeneratedMessageReflection PROTOBUF_FINAL
       RegisterAllTypesInternal(const Metadata* file_level_metadata, int size);
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(GeneratedMessageReflection);
 };
-
-// Returns the offset of the given field within the given aggregate type.
-// This is equivalent to the ANSI C offsetof() macro.  However, according
-// to the C++ standard, offsetof() only works on POD types, and GCC
-// enforces this requirement with a warning.  In practice, this rule is
-// unnecessarily strict; there is probably no compiler or platform on
-// which the offsets of the direct fields of a class are non-constant.
-// Fields inherited from superclasses *can* have non-constant offsets,
-// but that's not what this macro will be used for.
-#if defined(__clang__)
-// For Clang we use __builtin_offsetof() and suppress the warning,
-// to avoid Control Flow Integrity and UBSan vptr sanitizers from
-// crashing while trying to validate the invalid reinterpet_casts.
-#define GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(TYPE, FIELD)    \
-  _Pragma("clang diagnostic push")                            \
-  _Pragma("clang diagnostic ignored \"-Winvalid-offsetof\"")  \
-  __builtin_offsetof(TYPE, FIELD)                             \
-  _Pragma("clang diagnostic pop")
-#else
-// Note that we calculate relative to the pointer value 16 here since if we
-// just use zero, GCC complains about dereferencing a NULL pointer.  We
-// choose 16 rather than some other number just in case the compiler would
-// be confused by an unaligned pointer.
-#define GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(TYPE, FIELD)    \
-  static_cast< ::google::protobuf::uint32>(                            \
-      reinterpret_cast<const char*>(                                   \
-          &reinterpret_cast<const TYPE*>(16)->FIELD) -                 \
-      reinterpret_cast<const char*>(16))
-#endif
-
-#define PROTO2_GENERATED_DEFAULT_ONEOF_FIELD_OFFSET(ONEOF, FIELD)     \
-  static_cast< ::google::protobuf::uint32>(                           \
-      reinterpret_cast<const char*>(&(ONEOF->FIELD))                  \
-      - reinterpret_cast<const char*>(ONEOF))
 
 // There are some places in proto2 where dynamic_cast would be useful as an
 // optimization.  For example, take Message::MergeFrom(const Message& other).
