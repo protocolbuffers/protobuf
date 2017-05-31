@@ -176,11 +176,12 @@ endif (protobuf_UNICODE)
 
 include(libprotobuf-lite.cmake)
 include(libprotobuf.cmake)
-include(libprotoc.cmake)
 
 # airtime : start
+#include(libprotoc.cmake)
 #include(protoc.cmake)
 if (BUILD_PROTOC_EXE)
+  include(libprotoc.cmake)
   include(protoc.cmake)
 endif()
 # airtime : end
