@@ -282,6 +282,14 @@ function getFullClassName(
 
     $class_name_without_package =
         getClassNameWithoutPackage($message_name_without_package, $file_proto);
+
+    $option = $file_proto->getOptions();
+    $namespace = is_null($option) ? "" : $option->getPhpNamespace();
+    if ($namespace !== "") {
+        $classname = $namespace . "\\" . $class_name_without_package;
+        return;
+    }
+
     if ($package === "") {
         $classname = $class_name_without_package;
     } else {

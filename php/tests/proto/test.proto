@@ -2,6 +2,7 @@ syntax = "proto3";
 
 import 'proto/test_include.proto';
 import 'proto/test_no_namespace.proto';
+import 'proto/test_php_namespace.proto';
 import 'proto/test_prefix.proto';
 
 package foo;
@@ -173,4 +174,8 @@ message TestPhpDoc {
 
 message TestIncludePrefixMessage {
   TestPrefix prefix_message = 1;
+}
+
+message TestIncludeNamespaceMessage {
+  TestNamespace namespace_message = 1;
 }

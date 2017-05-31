@@ -2973,9 +2973,15 @@ class upb::FileDef {
   bool set_package(const char* package, Status* s);
 
   /* Sets the php class prefix which is prepended to all php generated classes
-   / from this .proto. Default is empty. */
+   * from this .proto. Default is empty. */
   const char* phpprefix() const;
   bool set_phpprefix(const char* phpprefix, Status* s);
+
+  /* Use this option to change the namespace of php generated classes. Default
+   * is empty. When this option is empty, the package name will be used for
+   * determining the namespace. */
+  const char* phpnamespace() const;
+  bool set_phpnamespace(const char* phpnamespace, Status* s);
 
   /* Syntax for the file.  Defaults to proto2. */
   upb_syntax_t syntax() const;
@@ -3031,6 +3037,7 @@ UPB_REFCOUNTED_CMETHODS(upb_filedef, upb_filedef_upcast)
 const char *upb_filedef_name(const upb_filedef *f);
 const char *upb_filedef_package(const upb_filedef *f);
 const char *upb_filedef_phpprefix(const upb_filedef *f);
+const char *upb_filedef_phpnamespace(const upb_filedef *f);
 upb_syntax_t upb_filedef_syntax(const upb_filedef *f);
 size_t upb_filedef_defcount(const upb_filedef *f);
 size_t upb_filedef_depcount(const upb_filedef *f);
@@ -3042,6 +3049,8 @@ bool upb_filedef_setname(upb_filedef *f, const char *name, upb_status *s);
 bool upb_filedef_setpackage(upb_filedef *f, const char *package, upb_status *s);
 bool upb_filedef_setphpprefix(upb_filedef *f, const char *phpprefix,
                               upb_status *s);
+bool upb_filedef_setphpnamespace(upb_filedef *f, const char *phpnamespace,
+                                 upb_status *s);
 bool upb_filedef_setsyntax(upb_filedef *f, upb_syntax_t syntax, upb_status *s);
 
 bool upb_filedef_adddef(upb_filedef *f, upb_def *def, const void *ref_donor,
@@ -3806,6 +3815,12 @@ inline const char* FileDef::phpprefix() const {
 inline bool FileDef::set_phpprefix(const char* phpprefix, Status* s) {
   return upb_filedef_setphpprefix(this, phpprefix, s);
 }
+inline const char* FileDef::phpnamespace() const {
+  return upb_filedef_phpnamespace(this);
+}
+inline bool FileDef::set_phpnamespace(const char* phpnamespace, Status* s) {
+  return upb_filedef_setphpnamespace(this, phpnamespace, s);
+}
 inline int FileDef::def_count() const {
   return upb_filedef_defcount(this);
 }
@@ -4021,6 +4036,7 @@ struct upb_filedef {
   const char *name;
   const char *package;
   const char *phpprefix;
+  const char *phpnamespace;
   upb_syntax_t syntax;
 
   upb_inttable defs;
@@ -7228,6 +7244,7 @@ UPB_INLINE const upb_fielddef *upbdefs_google_protobuf_FileOptions_f_javanano_us
 UPB_INLINE const upb_fielddef *upbdefs_google_protobuf_FileOptions_f_objc_class_prefix(const upb_msgdef *m) { UPB_ASSERT(upbdefs_google_protobuf_FileOptions_is(m)); return upb_msgdef_itof(m, 36); }
 UPB_INLINE const upb_fielddef *upbdefs_google_protobuf_FileOptions_f_optimize_for(const upb_msgdef *m) { UPB_ASSERT(upbdefs_google_protobuf_FileOptions_is(m)); return upb_msgdef_itof(m, 9); }
 UPB_INLINE const upb_fielddef *upbdefs_google_protobuf_FileOptions_f_php_class_prefix(const upb_msgdef *m) { UPB_ASSERT(upbdefs_google_protobuf_FileOptions_is(m)); return upb_msgdef_itof(m, 40); }
+UPB_INLINE const upb_fielddef *upbdefs_google_protobuf_FileOptions_f_php_namespace(const upb_msgdef *m) { UPB_ASSERT(upbdefs_google_protobuf_FileOptions_is(m)); return upb_msgdef_itof(m, 41); }
 UPB_INLINE const upb_fielddef *upbdefs_google_protobuf_FileOptions_f_py_generic_services(const upb_msgdef *m) { UPB_ASSERT(upbdefs_google_protobuf_FileOptions_is(m)); return upb_msgdef_itof(m, 18); }
 UPB_INLINE const upb_fielddef *upbdefs_google_protobuf_FileOptions_f_uninterpreted_option(const upb_msgdef *m) { UPB_ASSERT(upbdefs_google_protobuf_FileOptions_is(m)); return upb_msgdef_itof(m, 999); }
 UPB_INLINE const upb_fielddef *upbdefs_google_protobuf_MessageOptions_f_deprecated(const upb_msgdef *m) { UPB_ASSERT(upbdefs_google_protobuf_MessageOptions_is(m)); return upb_msgdef_itof(m, 3); }
@@ -8326,16 +8343,8 @@ UPB_INLINE upb_decoderet upb_decoderet_make(const char *p, uint64_t val) {
   return ret;
 }
 
-/* Four functions for decoding a varint of at most eight bytes.  They are all
- * functionally identical, but are implemented in different ways and likely have
- * different performance profiles.  We keep them around for performance testing.
- *
- * Note that these functions may not read byte-by-byte, so they must not be used
- * unless there are at least eight bytes left in the buffer! */
 upb_decoderet upb_vdecode_max8_branch32(upb_decoderet r);
 upb_decoderet upb_vdecode_max8_branch64(upb_decoderet r);
-upb_decoderet upb_vdecode_max8_wright(upb_decoderet r);
-upb_decoderet upb_vdecode_max8_massimino(upb_decoderet r);
 
 /* Template for a function that checks the first two bytes with branching
  * and dispatches 2-10 bytes with a separate function.  Note that this may read
@@ -8360,8 +8369,6 @@ UPB_INLINE upb_decoderet upb_vdecode_check2_ ## name(const char *_p) {         \
 
 UPB_VARINT_DECODER_CHECK2(branch32, upb_vdecode_max8_branch32)
 UPB_VARINT_DECODER_CHECK2(branch64, upb_vdecode_max8_branch64)
-UPB_VARINT_DECODER_CHECK2(wright, upb_vdecode_max8_wright)
-UPB_VARINT_DECODER_CHECK2(massimino, upb_vdecode_max8_massimino)
 #undef UPB_VARINT_DECODER_CHECK2
 
 /* Our canonical functions for decoding varints, based on the currently
@@ -8371,10 +8378,6 @@ UPB_INLINE upb_decoderet upb_vdecode_fast(const char *p) {
     return upb_vdecode_check2_branch64(p);
   else
     return upb_vdecode_check2_branch32(p);
-}
-
-UPB_INLINE upb_decoderet upb_vdecode_max8_fast(upb_decoderet r) {
-  return upb_vdecode_max8_massimino(r);
 }
 
 

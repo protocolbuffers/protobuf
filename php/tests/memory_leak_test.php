@@ -11,6 +11,7 @@ require_once('generated/Bar/TestInclude.php');
 require_once('generated/Foo/PBARRAY.php');
 require_once('generated/Foo/PBEmpty.php');
 require_once('generated/Foo/TestEnum.php');
+require_once('generated/Foo/TestIncludeNamespaceMessage.php');
 require_once('generated/Foo/TestIncludePrefixMessage.php');
 require_once('generated/Foo/TestMessage.php');
 require_once('generated/Foo/TestMessage_Empty.php');
@@ -22,7 +23,9 @@ require_once('generated/Foo/TestUnpackedMessage.php');
 require_once('generated/GPBMetadata/Proto/Test.php');
 require_once('generated/GPBMetadata/Proto/TestInclude.php');
 require_once('generated/GPBMetadata/Proto/TestNoNamespace.php');
+require_once('generated/GPBMetadata/Proto/TestPhpNamespace.php');
 require_once('generated/GPBMetadata/Proto/TestPrefix.php');
+require_once('generated/Php/Test/TestNamespace.php');
 require_once('test_util.php');
 
 use Google\Protobuf\Internal\RepeatedField;

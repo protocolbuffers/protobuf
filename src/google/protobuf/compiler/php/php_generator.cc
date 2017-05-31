@@ -145,6 +145,11 @@ std::string FullClassName(const DescriptorType* desc, bool is_descriptor) {
   }
   classname = ClassNamePrefix(classname, desc) + classname;
 
+  const string& php_namespace = (desc->file()->options()).php_namespace();
+  if (php_namespace != "") {
+    return php_namespace + '\\' + classname;
+  }
+
   if (desc->file()->package() == "") {
     return classname;
   } else {

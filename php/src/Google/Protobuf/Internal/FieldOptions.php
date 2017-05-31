@@ -156,6 +156,8 @@ class FieldOptions extends \Google\Protobuf\Internal\Message
         GPBUtil::checkEnum($var, \Google\Protobuf\Internal\FieldOptions_CType::class);
         $this->ctype = $var;
         $this->has_ctype = true;
+
+        return $this;
     }
 
     public function hasCtype()
@@ -195,6 +197,8 @@ class FieldOptions extends \Google\Protobuf\Internal\Message
         GPBUtil::checkBool($var);
         $this->packed = $var;
         $this->has_packed = true;
+
+        return $this;
     }
 
     public function hasPacked()
@@ -242,6 +246,8 @@ class FieldOptions extends \Google\Protobuf\Internal\Message
         GPBUtil::checkEnum($var, \Google\Protobuf\Internal\FieldOptions_JSType::class);
         $this->jstype = $var;
         $this->has_jstype = true;
+
+        return $this;
     }
 
     public function hasJstype()
@@ -319,6 +325,8 @@ class FieldOptions extends \Google\Protobuf\Internal\Message
         GPBUtil::checkBool($var);
         $this->lazy = $var;
         $this->has_lazy = true;
+
+        return $this;
     }
 
     public function hasLazy()
@@ -356,6 +364,8 @@ class FieldOptions extends \Google\Protobuf\Internal\Message
         GPBUtil::checkBool($var);
         $this->deprecated = $var;
         $this->has_deprecated = true;
+
+        return $this;
     }
 
     public function hasDeprecated()
@@ -387,6 +397,8 @@ class FieldOptions extends \Google\Protobuf\Internal\Message
         GPBUtil::checkBool($var);
         $this->weak = $var;
         $this->has_weak = true;
+
+        return $this;
     }
 
     public function hasWeak()
@@ -418,6 +430,8 @@ class FieldOptions extends \Google\Protobuf\Internal\Message
         $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \Google\Protobuf\Internal\UninterpretedOption::class);
         $this->uninterpreted_option = $arr;
         $this->has_uninterpreted_option = true;
+
+        return $this;
     }
 
     public function hasUninterpretedOption()
