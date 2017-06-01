@@ -406,7 +406,7 @@ static void ReadValue(GPBCodedInputStream *stream,
       valueToFill->valueInt32 = GPBCodedInputStreamReadInt32(&stream->state_);
       break;
     case GPBDataTypeInt64:
-      valueToFill->valueInt64 = GPBCodedInputStreamReadInt32(&stream->state_);
+      valueToFill->valueInt64 = GPBCodedInputStreamReadInt64(&stream->state_);
       break;
     case GPBDataTypeSInt32:
       valueToFill->valueInt32 = GPBCodedInputStreamReadSInt32(&stream->state_);
