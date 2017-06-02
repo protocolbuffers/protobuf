@@ -876,10 +876,16 @@ class GeneratedClassTest extends TestBase
     public function testNamespaceMessage()
     {
         $m = new TestIncludeNamespaceMessage();
+
         $n = new TestNamespace();
         $n->setA(1);
         $m->setNamespaceMessage($n);
         $this->assertSame(1, $m->getNamespaceMessage()->getA());
+
+        $n = new TestEmptyNamespace();
+        $n->setA(1);
+        $m->setEmptyNamespaceMessage($n);
+        $this->assertSame(1, $m->getEmptyNamespaceMessage()->getA());
     }
 
     #########################################################
