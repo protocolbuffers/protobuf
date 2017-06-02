@@ -1114,10 +1114,10 @@
 - (void)testMap_Proto2UnknownEnum {
   TestEnumMapPlusExtra *orig = [[TestEnumMapPlusExtra alloc] init];
 
-  orig.knownMapField = [GPBInt32EnumDictionary
-      dictionaryWithValidationFunction:Proto2MapEnumPlusExtra_IsValidValue];
-  orig.unknownMapField = [GPBInt32EnumDictionary
-      dictionaryWithValidationFunction:Proto2MapEnumPlusExtra_IsValidValue];
+  orig.knownMapField = [[[GPBInt32EnumDictionary alloc]
+      initWithValidationFunction:Proto2MapEnumPlusExtra_IsValidValue] autorelease];
+  orig.unknownMapField = [[[GPBInt32EnumDictionary alloc]
+      initWithValidationFunction:Proto2MapEnumPlusExtra_IsValidValue] autorelease];
   [orig.knownMapField setEnum:Proto2MapEnumPlusExtra_EProto2MapEnumFoo
                        forKey:0];
   [orig.unknownMapField setEnum:Proto2MapEnumPlusExtra_EProto2MapEnumExtra

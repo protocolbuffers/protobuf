@@ -78,7 +78,8 @@
 //%}
 //%
 //%- (void)testOne {
-//%  DICTIONARY_CLASS_DECL##VHELPER(KEY_NAME, VALUE_NAME, VALUE_TYPE) *dict = [GPB##KEY_NAME##VALUE_NAME##Dictionary dictionaryWith##VALUE_NAME$u##:VAL1 forKey:KEY1];
+//%  DICTIONARY_CLASS_DECL##VHELPER(KEY_NAME, VALUE_NAME, VALUE_TYPE) *dict = [[GPB##KEY_NAME##VALUE_NAME##Dictionary alloc] init];
+//%  [dict set##VALUE_NAME$u##:VAL1 forKey:KEY1];
 //%  XCTAssertNotNil(dict);
 //%  XCTAssertEqual(dict.count, 1U);
 //%DECLARE_VALUE_STORAGE##VHELPER(VALUE_TYPE, VNAME)TEST_VALUE##VHELPER(VALUE_NAME, dict, VNAME, KEY1, VAL1)
@@ -88,6 +89,7 @@
 //%    XCTAssertEqual##VSUFFIX(a##VNAME$u, VAL1);
 //%    XCTAssertNotEqual(stop, NULL);
 //%  }];
+//%  [dict release];
 //%}
 //%
 //%- (void)testBasics {
@@ -223,17 +225,18 @@
 //%  XCTAssertNotNil(dict);
 //%
 //%  DICTIONARY_CLASS_DECL##VHELPER(KEY_NAME, VALUE_NAME, VALUE_TYPE) *dict2 =
-//%      [GPB##KEY_NAME##VALUE_NAME##Dictionary dictionaryWithDictionary:dict];
+//%      [[GPB##KEY_NAME##VALUE_NAME##Dictionary alloc] initWithDictionary:dict];
 //%  XCTAssertNotNil(dict2);
 //%
 //%  // Should be new pointer, but equal objects.
 //%  XCTAssertNotEqual(dict, dict2);
 //%  XCTAssertEqualObjects(dict, dict2);
+//%  [dict2 release];
 //%  [dict release];
 //%}
 //%
 //%- (void)testAdds {
-//%  DICTIONARY_CLASS_DECL##VHELPER(KEY_NAME, VALUE_NAME, VALUE_TYPE) *dict = [GPB##KEY_NAME##VALUE_NAME##Dictionary dictionary];
+//%  DICTIONARY_CLASS_DECL##VHELPER(KEY_NAME, VALUE_NAME, VALUE_TYPE) *dict = [[GPB##KEY_NAME##VALUE_NAME##Dictionary alloc] init];
 //%  XCTAssertNotNil(dict);
 //%
 //%  XCTAssertEqual(dict.count, 0U);
@@ -255,6 +258,7 @@
 //%TEST_VALUE##VHELPER(VALUE_NAME, dict, VNAME, KEY3, VAL3)
 //%TEST_VALUE##VHELPER(VALUE_NAME, dict, VNAME, KEY4, VAL4)
 //%  [dict2 release];
+//%  [dict release];
 //%}
 //%
 //%- (void)testRemove {
@@ -522,19 +526,20 @@
 //%  XCTAssertNotNil(dict);
 //%
 //%  DICTIONARY_CLASS_DECL##VHELPER(KEY_NAME, VALUE_NAME, VALUE_TYPE) *dict2 =
-//%      [GPB##KEY_NAME##VALUE_NAME##Dictionary dictionaryWithDictionary:dict];
+//%      [[GPB##KEY_NAME##VALUE_NAME##Dictionary alloc] initWithDictionary:dict];
 //%  XCTAssertNotNil(dict2);
 //%
 //%  // Should be new pointer, but equal objects.
 //%  XCTAssertNotEqual(dict, dict2);
 //%  XCTAssertEqualObjects(dict, dict2);
 //%  XCTAssertEqual(dict.validationFunc, dict2.validationFunc);  // Pointer comparison
+//%  [dict2 release];
 //%  [dict release];
 //%}
 //%
 //%- (void)testUnknownAdds {
 //%  DICTIONARY_CLASS_DECL##VHELPER(KEY_NAME, VALUE_NAME, VALUE_TYPE) *dict =
-//%    [GPB##KEY_NAME##VALUE_NAME##Dictionary dictionaryWithValidationFunction:TestingEnum_IsValidValue];
+//%      [[GPB##KEY_NAME##VALUE_NAME##Dictionary alloc] initWithValidationFunction:TestingEnum_IsValidValue];
 //%  XCTAssertNotNil(dict);
 //%
 //%  XCTAssertEqual(dict.count, 0U);
@@ -561,6 +566,7 @@
 //%TEST_VALUE##VHELPER(VALUE_NAME, dict, value, KEY4, kGPBUnrecognizedEnumeratorValue)
 //%TEST_RAW_VALUE##VHELPER(dict, value, KEY4, VAL4)
 //%  [dict2 release];
+//%  [dict release];
 //%}
 //%
 //%- (void)testUnknownRemove {
@@ -729,7 +735,6 @@
 //%PDDM-DEFINE TEST_HELPERS(KEY_NAME, KEY_TYPE, KisP)
 //%// To let the testing macros work, add some extra methods to simplify things.
 //%@interface GPB##KEY_NAME##EnumDictionary (TestingTweak)
-//%+ (instancetype)dictionaryWithEnum:(int32_t)value forKey:(KEY_TYPE##KisP$S##KisP)key;
 //%- (instancetype)initWithEnums:(const int32_t [])values
 //%                      forKeys:(const KEY_TYPE##KisP$S##KisP [])keys
 //%                        count:(NSUInteger)count;
@@ -748,14 +753,6 @@
 //%}
 //%
 //%@implementation GPB##KEY_NAME##EnumDictionary (TestingTweak)
-//%+ (instancetype)dictionaryWithEnum:(int32_t)value forKey:(KEY_TYPE##KisP$S##KisP)key {
-//%  // Cast is needed to compiler knows what class we are invoking initWithValues: on to get the
-//%  // type correct.
-//%  return [[(GPB##KEY_NAME##EnumDictionary*)[self alloc] initWithValidationFunction:TestingEnum_IsValidValue
-//%                KEY_NAME$S                                             rawValues:&value
-//%                KEY_NAME$S                                               forKeys:&key
-//%                KEY_NAME$S                                                 count:1] autorelease];
-//%}
 //%- (instancetype)initWithEnums:(const int32_t [])values
 //%                      forKeys:(const KEY_TYPE##KisP$S##KisP [])keys
 //%                        count:(NSUInteger)count {
@@ -801,7 +798,8 @@
 //%}
 //%
 //%- (void)testOne {
-//%  DICTIONARY_CLASS_DECL##VHELPER(KEY_NAME, VALUE_NAME, VALUE_TYPE) *dict = [GPB##KEY_NAME##VALUE_NAME##Dictionary dictionaryWith##VALUE_NAME$u##:VAL1 forKey:KEY1];
+//%  DICTIONARY_CLASS_DECL##VHELPER(KEY_NAME, VALUE_NAME, VALUE_TYPE) *dict = [[GPB##KEY_NAME##VALUE_NAME##Dictionary alloc] init];
+//%  [dict set##VALUE_NAME$u##:VAL1 forKey:KEY1];
 //%  XCTAssertNotNil(dict);
 //%  XCTAssertEqual(dict.count, 1U);
 //%DECLARE_VALUE_STORAGE##VHELPER(VALUE_TYPE, VNAME)TEST_VALUE##VHELPER(VALUE_NAME, dict, VNAME, KEY1, VAL1)
@@ -811,6 +809,7 @@
 //%    XCTAssertEqual##VSUFFIX(a##VNAME$u, VAL1);
 //%    XCTAssertNotEqual(stop, NULL);
 //%  }];
+//%  [dict release];
 //%}
 //%
 //%- (void)testBasics {
@@ -944,17 +943,18 @@
 //%  XCTAssertNotNil(dict);
 //%
 //%  DICTIONARY_CLASS_DECL##VHELPER(KEY_NAME, VALUE_NAME, VALUE_TYPE) *dict2 =
-//%      [GPB##KEY_NAME##VALUE_NAME##Dictionary dictionaryWithDictionary:dict];
+//%      [[GPB##KEY_NAME##VALUE_NAME##Dictionary alloc] initWithDictionary:dict];
 //%  XCTAssertNotNil(dict2);
 //%
 //%  // Should be new pointer, but equal objects.
 //%  XCTAssertNotEqual(dict, dict2);
 //%  XCTAssertEqualObjects(dict, dict2);
+//%  [dict2 release];
 //%  [dict release];
 //%}
 //%
 //%- (void)testAdds {
-//%  DICTIONARY_CLASS_DECL##VHELPER(KEY_NAME, VALUE_NAME, VALUE_TYPE) *dict = [GPB##KEY_NAME##VALUE_NAME##Dictionary dictionary];
+//%  DICTIONARY_CLASS_DECL##VHELPER(KEY_NAME, VALUE_NAME, VALUE_TYPE) *dict = [[GPB##KEY_NAME##VALUE_NAME##Dictionary alloc] init];
 //%  XCTAssertNotNil(dict);
 //%
 //%  XCTAssertEqual(dict.count, 0U);
@@ -974,6 +974,7 @@
 //%DECLARE_VALUE_STORAGE##VHELPER(VALUE_TYPE, VNAME)TEST_VALUE##VHELPER(VALUE_NAME, dict, VNAME, KEY1, VAL1)
 //%TEST_VALUE##VHELPER(VALUE_NAME, dict, VNAME, KEY2, VAL2)
 //%  [dict2 release];
+//%  [dict release];
 //%}
 //%
 //%- (void)testRemove {
