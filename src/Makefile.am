@@ -250,6 +250,7 @@ libprotobuf_la_SOURCES =                                       \
   google/protobuf/extension_set_heavy.cc                       \
   google/protobuf/field_mask.pb.cc                             \
   google/protobuf/generated_message_reflection.cc              \
+  google/protobuf/generated_message_table_driven.cc            \
   google/protobuf/map_field.cc                                 \
   google/protobuf/message.cc                                   \
   google/protobuf/reflection_internal.h                        \
