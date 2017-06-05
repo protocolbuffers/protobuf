@@ -130,6 +130,8 @@ class FieldDescriptorProto extends \Google\Protobuf\Internal\Message
         GPBUtil::checkString($var, True);
         $this->name = $var;
         $this->has_name = true;
+
+        return $this;
     }
 
     public function hasName()
@@ -153,6 +155,8 @@ class FieldDescriptorProto extends \Google\Protobuf\Internal\Message
         GPBUtil::checkInt32($var);
         $this->number = $var;
         $this->has_number = true;
+
+        return $this;
     }
 
     public function hasNumber()
@@ -176,6 +180,8 @@ class FieldDescriptorProto extends \Google\Protobuf\Internal\Message
         GPBUtil::checkEnum($var, \Google\Protobuf\Internal\FieldDescriptorProto_Label::class);
         $this->label = $var;
         $this->has_label = true;
+
+        return $this;
     }
 
     public function hasLabel()
@@ -209,6 +215,8 @@ class FieldDescriptorProto extends \Google\Protobuf\Internal\Message
         GPBUtil::checkEnum($var, \Google\Protobuf\Internal\FieldDescriptorProto_Type::class);
         $this->type = $var;
         $this->has_type = true;
+
+        return $this;
     }
 
     public function hasType()
@@ -248,6 +256,8 @@ class FieldDescriptorProto extends \Google\Protobuf\Internal\Message
         GPBUtil::checkString($var, True);
         $this->type_name = $var;
         $this->has_type_name = true;
+
+        return $this;
     }
 
     public function hasTypeName()
@@ -281,6 +291,8 @@ class FieldDescriptorProto extends \Google\Protobuf\Internal\Message
         GPBUtil::checkString($var, True);
         $this->extendee = $var;
         $this->has_extendee = true;
+
+        return $this;
     }
 
     public function hasExtendee()
@@ -320,6 +332,8 @@ class FieldDescriptorProto extends \Google\Protobuf\Internal\Message
         GPBUtil::checkString($var, True);
         $this->default_value = $var;
         $this->has_default_value = true;
+
+        return $this;
     }
 
     public function hasDefaultValue()
@@ -353,6 +367,8 @@ class FieldDescriptorProto extends \Google\Protobuf\Internal\Message
         GPBUtil::checkInt32($var);
         $this->oneof_index = $var;
         $this->has_oneof_index = true;
+
+        return $this;
     }
 
     public function hasOneofIndex()
@@ -390,6 +406,8 @@ class FieldDescriptorProto extends \Google\Protobuf\Internal\Message
         GPBUtil::checkString($var, True);
         $this->json_name = $var;
         $this->has_json_name = true;
+
+        return $this;
     }
 
     public function hasJsonName()
@@ -413,6 +431,8 @@ class FieldDescriptorProto extends \Google\Protobuf\Internal\Message
         GPBUtil::checkMessage($var, \Google\Protobuf\Internal\FieldOptions::class);
         $this->options = $var;
         $this->has_options = true;
+
+        return $this;
     }
 
     public function hasOptions()

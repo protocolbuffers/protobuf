@@ -87,6 +87,8 @@ class UninterpretedOption extends \Google\Protobuf\Internal\Message
         $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \Google\Protobuf\Internal\UninterpretedOption_NamePart::class);
         $this->name = $arr;
         $this->has_name = true;
+
+        return $this;
     }
 
     public function hasName()
@@ -120,6 +122,8 @@ class UninterpretedOption extends \Google\Protobuf\Internal\Message
         GPBUtil::checkString($var, True);
         $this->identifier_value = $var;
         $this->has_identifier_value = true;
+
+        return $this;
     }
 
     public function hasIdentifierValue()
@@ -143,6 +147,8 @@ class UninterpretedOption extends \Google\Protobuf\Internal\Message
         GPBUtil::checkUint64($var);
         $this->positive_int_value = $var;
         $this->has_positive_int_value = true;
+
+        return $this;
     }
 
     public function hasPositiveIntValue()
@@ -166,6 +172,8 @@ class UninterpretedOption extends \Google\Protobuf\Internal\Message
         GPBUtil::checkInt64($var);
         $this->negative_int_value = $var;
         $this->has_negative_int_value = true;
+
+        return $this;
     }
 
     public function hasNegativeIntValue()
@@ -189,6 +197,8 @@ class UninterpretedOption extends \Google\Protobuf\Internal\Message
         GPBUtil::checkDouble($var);
         $this->double_value = $var;
         $this->has_double_value = true;
+
+        return $this;
     }
 
     public function hasDoubleValue()
@@ -212,6 +222,8 @@ class UninterpretedOption extends \Google\Protobuf\Internal\Message
         GPBUtil::checkString($var, False);
         $this->string_value = $var;
         $this->has_string_value = true;
+
+        return $this;
     }
 
     public function hasStringValue()
@@ -235,6 +247,8 @@ class UninterpretedOption extends \Google\Protobuf\Internal\Message
         GPBUtil::checkString($var, True);
         $this->aggregate_value = $var;
         $this->has_aggregate_value = true;
+
+        return $this;
     }
 
     public function hasAggregateValue()

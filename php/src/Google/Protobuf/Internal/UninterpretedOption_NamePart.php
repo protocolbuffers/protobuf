@@ -56,6 +56,8 @@ class UninterpretedOption_NamePart extends \Google\Protobuf\Internal\Message
         GPBUtil::checkString($var, True);
         $this->name_part = $var;
         $this->has_name_part = true;
+
+        return $this;
     }
 
     public function hasNamePart()
@@ -79,6 +81,8 @@ class UninterpretedOption_NamePart extends \Google\Protobuf\Internal\Message
         GPBUtil::checkBool($var);
         $this->is_extension = $var;
         $this->has_is_extension = true;
+
+        return $this;
     }
 
     public function hasIsExtension()
