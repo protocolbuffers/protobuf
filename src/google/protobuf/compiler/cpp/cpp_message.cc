@@ -417,31 +417,6 @@ bool HasHasMethod(const FieldDescriptor* field) {
   return field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE;
 }
 
-// Collects map entry message type information.
-void CollectMapInfo(const Descriptor* descriptor,
-                    std::map<string, string>* variables) {
-  GOOGLE_CHECK(IsMapEntryMessage(descriptor));
-  const FieldDescriptor* key = descriptor->FindFieldByName("key");
-  const FieldDescriptor* val = descriptor->FindFieldByName("value");
-  (*variables)["key"] = PrimitiveTypeName(key->cpp_type());
-  switch (val->cpp_type()) {
-    case FieldDescriptor::CPPTYPE_MESSAGE:
-      (*variables)["val"] = FieldMessageTypeName(val);
-      break;
-    case FieldDescriptor::CPPTYPE_ENUM:
-      (*variables)["val"] = ClassName(val->enum_type(), true);
-      break;
-    default:
-      (*variables)["val"] = PrimitiveTypeName(val->cpp_type());
-  }
-  (*variables)["key_wire_type"] =
-      "::google::protobuf::internal::WireFormatLite::TYPE_" +
-      ToUpper(DeclaredTypeMethodName(key->type()));
-  (*variables)["val_wire_type"] =
-      "::google::protobuf::internal::WireFormatLite::TYPE_" +
-      ToUpper(DeclaredTypeMethodName(val->type()));
-}
-
 // Does the given field have a private (internal helper only) has_$name$()
 // method?
 bool HasPrivateHasMethod(const FieldDescriptor* field) {
