@@ -9,9 +9,11 @@ use Google\Protobuf\Internal\RepeatedField;
 use Google\Protobuf\Internal\MapField;
 use Google\Protobuf\Internal\GPBType;
 use Foo\TestEnum;
+use Foo\TestIncludeNamespaceMessage;
 use Foo\TestIncludePrefixMessage;
 use Foo\TestMessage;
 use Foo\TestMessage_Sub;
+use Php\Test\TestNamespace;
 
 class GeneratedClassTest extends TestBase
 {
@@ -865,6 +867,25 @@ class GeneratedClassTest extends TestBase
         $n->setA(1);
         $m->setPrefixMessage($n);
         $this->assertSame(1, $m->getPrefixMessage()->getA());
+    }
+
+    #########################################################
+    # Test message with given namespace.
+    #########################################################
+
+    public function testNamespaceMessage()
+    {
+        $m = new TestIncludeNamespaceMessage();
+
+        $n = new TestNamespace();
+        $n->setA(1);
+        $m->setNamespaceMessage($n);
+        $this->assertSame(1, $m->getNamespaceMessage()->getA());
+
+        $n = new TestEmptyNamespace();
+        $n->setA(1);
+        $m->setEmptyNamespaceMessage($n);
+        $this->assertSame(1, $m->getEmptyNamespaceMessage()->getA());
     }
 
     #########################################################

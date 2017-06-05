@@ -2233,6 +2233,21 @@ class LIBPROTOBUF_EXPORT FileOptions : public ::google::protobuf::Message /* @@p
   ::std::string* release_php_class_prefix();
   void set_allocated_php_class_prefix(::std::string* php_class_prefix);
 
+  // optional string php_namespace = 41;
+  bool has_php_namespace() const;
+  void clear_php_namespace();
+  static const int kPhpNamespaceFieldNumber = 41;
+  const ::std::string& php_namespace() const;
+  void set_php_namespace(const ::std::string& value);
+  #if LANG_CXX11
+  void set_php_namespace(::std::string&& value);
+  #endif
+  void set_php_namespace(const char* value);
+  void set_php_namespace(const char* value, size_t size);
+  ::std::string* mutable_php_namespace();
+  ::std::string* release_php_namespace();
+  void set_allocated_php_namespace(::std::string* php_namespace);
+
   // optional bool java_multiple_files = 10 [default = false];
   bool has_java_multiple_files() const;
   void clear_java_multiple_files();
@@ -2331,6 +2346,8 @@ class LIBPROTOBUF_EXPORT FileOptions : public ::google::protobuf::Message /* @@p
   void clear_has_swift_prefix();
   void set_has_php_class_prefix();
   void clear_has_php_class_prefix();
+  void set_has_php_namespace();
+  void clear_has_php_namespace();
 
   ::google::protobuf::internal::ExtensionSet _extensions_;
 
@@ -2345,6 +2362,7 @@ class LIBPROTOBUF_EXPORT FileOptions : public ::google::protobuf::Message /* @@p
   ::google::protobuf::internal::ArenaStringPtr csharp_namespace_;
   ::google::protobuf::internal::ArenaStringPtr swift_prefix_;
   ::google::protobuf::internal::ArenaStringPtr php_class_prefix_;
+  ::google::protobuf::internal::ArenaStringPtr php_namespace_;
   bool java_multiple_files_;
   bool java_generate_equals_and_hash_;
   bool java_string_check_utf8_;
@@ -6554,13 +6572,13 @@ inline void FileOptions::set_allocated_java_outer_classname(::std::string* java_
 
 // optional bool java_multiple_files = 10 [default = false];
 inline bool FileOptions::has_java_multiple_files() const {
-  return (_has_bits_[0] & 0x00000080u) != 0;
+  return (_has_bits_[0] & 0x00000100u) != 0;
 }
 inline void FileOptions::set_has_java_multiple_files() {
-  _has_bits_[0] |= 0x00000080u;
+  _has_bits_[0] |= 0x00000100u;
 }
 inline void FileOptions::clear_has_java_multiple_files() {
-  _has_bits_[0] &= ~0x00000080u;
+  _has_bits_[0] &= ~0x00000100u;
 }
 inline void FileOptions::clear_java_multiple_files() {
   java_multiple_files_ = false;
@@ -6578,13 +6596,13 @@ inline void FileOptions::set_java_multiple_files(bool value) {
 
 // optional bool java_generate_equals_and_hash = 20 [deprecated = true];
 inline bool FileOptions::has_java_generate_equals_and_hash() const {
-  return (_has_bits_[0] & 0x00000100u) != 0;
+  return (_has_bits_[0] & 0x00000200u) != 0;
 }
 inline void FileOptions::set_has_java_generate_equals_and_hash() {
-  _has_bits_[0] |= 0x00000100u;
+  _has_bits_[0] |= 0x00000200u;
 }
 inline void FileOptions::clear_has_java_generate_equals_and_hash() {
-  _has_bits_[0] &= ~0x00000100u;
+  _has_bits_[0] &= ~0x00000200u;
 }
 inline void FileOptions::clear_java_generate_equals_and_hash() {
   java_generate_equals_and_hash_ = false;
@@ -6602,13 +6620,13 @@ inline void FileOptions::set_java_generate_equals_and_hash(bool value) {
 
 // optional bool java_string_check_utf8 = 27 [default = false];
 inline bool FileOptions::has_java_string_check_utf8() const {
-  return (_has_bits_[0] & 0x00000200u) != 0;
+  return (_has_bits_[0] & 0x00000400u) != 0;
 }
 inline void FileOptions::set_has_java_string_check_utf8() {
-  _has_bits_[0] |= 0x00000200u;
+  _has_bits_[0] |= 0x00000400u;
 }
 inline void FileOptions::clear_has_java_string_check_utf8() {
-  _has_bits_[0] &= ~0x00000200u;
+  _has_bits_[0] &= ~0x00000400u;
 }
 inline void FileOptions::clear_java_string_check_utf8() {
   java_string_check_utf8_ = false;
@@ -6626,13 +6644,13 @@ inline void FileOptions::set_java_string_check_utf8(bool value) {
 
 // optional .google.protobuf.FileOptions.OptimizeMode optimize_for = 9 [default = SPEED];
 inline bool FileOptions::has_optimize_for() const {
-  return (_has_bits_[0] & 0x00008000u) != 0;
+  return (_has_bits_[0] & 0x00010000u) != 0;
 }
 inline void FileOptions::set_has_optimize_for() {
-  _has_bits_[0] |= 0x00008000u;
+  _has_bits_[0] |= 0x00010000u;
 }
 inline void FileOptions::clear_has_optimize_for() {
-  _has_bits_[0] &= ~0x00008000u;
+  _has_bits_[0] &= ~0x00010000u;
 }
 inline void FileOptions::clear_optimize_for() {
   optimize_for_ = 1;
@@ -6714,13 +6732,13 @@ inline void FileOptions::set_allocated_go_package(::std::string* go_package) {
 
 // optional bool cc_generic_services = 16 [default = false];
 inline bool FileOptions::has_cc_generic_services() const {
-  return (_has_bits_[0] & 0x00000400u) != 0;
+  return (_has_bits_[0] & 0x00000800u) != 0;
 }
 inline void FileOptions::set_has_cc_generic_services() {
-  _has_bits_[0] |= 0x00000400u;
+  _has_bits_[0] |= 0x00000800u;
 }
 inline void FileOptions::clear_has_cc_generic_services() {
-  _has_bits_[0] &= ~0x00000400u;
+  _has_bits_[0] &= ~0x00000800u;
 }
 inline void FileOptions::clear_cc_generic_services() {
   cc_generic_services_ = false;
@@ -6738,13 +6756,13 @@ inline void FileOptions::set_cc_generic_services(bool value) {
 
 // optional bool java_generic_services = 17 [default = false];
 inline bool FileOptions::has_java_generic_services() const {
-  return (_has_bits_[0] & 0x00000800u) != 0;
+  return (_has_bits_[0] & 0x00001000u) != 0;
 }
 inline void FileOptions::set_has_java_generic_services() {
-  _has_bits_[0] |= 0x00000800u;
+  _has_bits_[0] |= 0x00001000u;
 }
 inline void FileOptions::clear_has_java_generic_services() {
-  _has_bits_[0] &= ~0x00000800u;
+  _has_bits_[0] &= ~0x00001000u;
 }
 inline void FileOptions::clear_java_generic_services() {
   java_generic_services_ = false;
@@ -6762,13 +6780,13 @@ inline void FileOptions::set_java_generic_services(bool value) {
 
 // optional bool py_generic_services = 18 [default = false];
 inline bool FileOptions::has_py_generic_services() const {
-  return (_has_bits_[0] & 0x00001000u) != 0;
+  return (_has_bits_[0] & 0x00002000u) != 0;
 }
 inline void FileOptions::set_has_py_generic_services() {
-  _has_bits_[0] |= 0x00001000u;
+  _has_bits_[0] |= 0x00002000u;
 }
 inline void FileOptions::clear_has_py_generic_services() {
-  _has_bits_[0] &= ~0x00001000u;
+  _has_bits_[0] &= ~0x00002000u;
 }
 inline void FileOptions::clear_py_generic_services() {
   py_generic_services_ = false;
@@ -6786,13 +6804,13 @@ inline void FileOptions::set_py_generic_services(bool value) {
 
 // optional bool deprecated = 23 [default = false];
 inline bool FileOptions::has_deprecated() const {
-  return (_has_bits_[0] & 0x00002000u) != 0;
+  return (_has_bits_[0] & 0x00004000u) != 0;
 }
 inline void FileOptions::set_has_deprecated() {
-  _has_bits_[0] |= 0x00002000u;
+  _has_bits_[0] |= 0x00004000u;
 }
 inline void FileOptions::clear_has_deprecated() {
-  _has_bits_[0] &= ~0x00002000u;
+  _has_bits_[0] &= ~0x00004000u;
 }
 inline void FileOptions::clear_deprecated() {
   deprecated_ = false;
@@ -6810,13 +6828,13 @@ inline void FileOptions::set_deprecated(bool value) {
 
 // optional bool cc_enable_arenas = 31 [default = false];
 inline bool FileOptions::has_cc_enable_arenas() const {
-  return (_has_bits_[0] & 0x00004000u) != 0;
+  return (_has_bits_[0] & 0x00008000u) != 0;
 }
 inline void FileOptions::set_has_cc_enable_arenas() {
-  _has_bits_[0] |= 0x00004000u;
+  _has_bits_[0] |= 0x00008000u;
 }
 inline void FileOptions::clear_has_cc_enable_arenas() {
-  _has_bits_[0] &= ~0x00004000u;
+  _has_bits_[0] &= ~0x00008000u;
 }
 inline void FileOptions::clear_cc_enable_arenas() {
   cc_enable_arenas_ = false;
@@ -7082,6 +7100,69 @@ inline void FileOptions::set_allocated_php_class_prefix(::std::string* php_class
   }
   php_class_prefix_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), php_class_prefix);
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.FileOptions.php_class_prefix)
+}
+
+// optional string php_namespace = 41;
+inline bool FileOptions::has_php_namespace() const {
+  return (_has_bits_[0] & 0x00000080u) != 0;
+}
+inline void FileOptions::set_has_php_namespace() {
+  _has_bits_[0] |= 0x00000080u;
+}
+inline void FileOptions::clear_has_php_namespace() {
+  _has_bits_[0] &= ~0x00000080u;
+}
+inline void FileOptions::clear_php_namespace() {
+  php_namespace_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  clear_has_php_namespace();
+}
+inline const ::std::string& FileOptions::php_namespace() const {
+  // @@protoc_insertion_point(field_get:google.protobuf.FileOptions.php_namespace)
+  return php_namespace_.GetNoArena();
+}
+inline void FileOptions::set_php_namespace(const ::std::string& value) {
+  set_has_php_namespace();
+  php_namespace_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
+  // @@protoc_insertion_point(field_set:google.protobuf.FileOptions.php_namespace)
+}
+#if LANG_CXX11
+inline void FileOptions::set_php_namespace(::std::string&& value) {
+  set_has_php_namespace();
+  php_namespace_.SetNoArena(
+    &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
+  // @@protoc_insertion_point(field_set_rvalue:google.protobuf.FileOptions.php_namespace)
+}
+#endif
+inline void FileOptions::set_php_namespace(const char* value) {
+  GOOGLE_DCHECK(value != NULL);
+  set_has_php_namespace();
+  php_namespace_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
+  // @@protoc_insertion_point(field_set_char:google.protobuf.FileOptions.php_namespace)
+}
+inline void FileOptions::set_php_namespace(const char* value, size_t size) {
+  set_has_php_namespace();
+  php_namespace_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+      ::std::string(reinterpret_cast<const char*>(value), size));
+  // @@protoc_insertion_point(field_set_pointer:google.protobuf.FileOptions.php_namespace)
+}
+inline ::std::string* FileOptions::mutable_php_namespace() {
+  set_has_php_namespace();
+  // @@protoc_insertion_point(field_mutable:google.protobuf.FileOptions.php_namespace)
+  return php_namespace_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline ::std::string* FileOptions::release_php_namespace() {
+  // @@protoc_insertion_point(field_release:google.protobuf.FileOptions.php_namespace)
+  clear_has_php_namespace();
+  return php_namespace_.ReleaseNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline void FileOptions::set_allocated_php_namespace(::std::string* php_namespace) {
+  if (php_namespace != NULL) {
+    set_has_php_namespace();
+  } else {
+    clear_has_php_namespace();
+  }
+  php_namespace_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), php_namespace);
+  // @@protoc_insertion_point(field_set_allocated:google.protobuf.FileOptions.php_namespace)
 }
 
 // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;

@@ -405,23 +405,34 @@ static const char *classname_prefix(const char *classname,
 }
 
 static void convert_to_class_name_inplace(const char *package,
+                                          const char *namespace_given,
                                           const char *prefix, char *classname) {
-  size_t package_len = package == NULL ? 0 : strlen(package);
   size_t prefix_len = prefix == NULL ? 0 : strlen(prefix);
   size_t classname_len = strlen(classname);
   int i = 0, j;
   bool first_char = true;
 
-  int offset = package_len != 0 ? 2 : 0;
+  size_t package_len = package == NULL ? 0 : strlen(package);
+  size_t namespace_given_len =
+      namespace_given == NULL ? 0 : strlen(namespace_given);
+  bool use_namespace_given = namespace_given != NULL;
+  size_t namespace_len =
+      use_namespace_given ? namespace_given_len : package_len;
+
+  int offset = namespace_len != 0 ? 2 : 0;
 
   for (j = 0; j < classname_len; j++) {
-    classname[package_len + prefix_len + classname_len + offset - 1 - j] =
+    classname[namespace_len + prefix_len + classname_len + offset - 1 - j] =
         classname[classname_len - j - 1];
   }
 
-  if (package_len != 0) {
+  if (namespace_len != 0) {
     classname[i++] = '\\';
-    for (j = 0; j < package_len; j++) {
+    for (j = 0; j < namespace_len; j++) {
+      if (use_namespace_given) {
+        classname[i++] = namespace_given[j];
+        continue;
+      }
       // php packages are divided by '\'.
       if (package[j] == '.') {
         classname[i++] = '\\';
@@ -490,16 +501,20 @@ PHP_METHOD(DescriptorPool, internalAddGeneratedFile) {
      * bytes allocated, one for '.', one for trailing 0, and 3 for 'GPB' if    \
      * given message is google.protobuf.Empty.*/                               \
     const char *fullname = upb_##def_type_lower##_fullname(def_type_lower);    \
+    const char *php_namespace = upb_filedef_phpnamespace(files[0]);            \
     const char *prefix_given = upb_filedef_phpprefix(files[0]);                \
     size_t classname_len = strlen(fullname) + 5;                               \
     if (prefix_given != NULL) {                                                \
       classname_len += strlen(prefix_given);                                   \
     }                                                                          \
+    if (php_namespace != NULL) {                                               \
+      classname_len += strlen(php_namespace);                                  \
+    }                                                                          \
     char *classname = ecalloc(sizeof(char), classname_len);                    \
     const char *package = upb_filedef_package(files[0]);                       \
     classname_no_prefix(fullname, package, classname);                         \
     const char *prefix = classname_prefix(classname, prefix_given, package);   \
-    convert_to_class_name_inplace(package, prefix, classname);                 \
+    convert_to_class_name_inplace(package, php_namespace, prefix, classname);  \
     PHP_PROTO_CE_DECLARE pce;                                                  \
     if (php_proto_zend_lookup_class(classname, strlen(classname), &pce) ==     \
         FAILURE) {                                                             \
