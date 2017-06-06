@@ -217,14 +217,16 @@ void FileGenerator::GenerateHeader(io::Printer *printer) {
   }
 
   // Note:
-  //  deprecated-declarations suppression is only needed if some place in this
-  //    proto file is something deprecated or if it references something from
-  //    another file that is deprecated.
+  //  deprecated-declarations and deprecated-implementations suppression is 
+  //    only needed when any symbol in this proto file has something 
+  //    deprecated or if it references something from another file that is
+  //    deprecated.
   printer->Print(
       "// @@protoc_insertion_point(imports)\n"
       "\n"
       "#pragma clang diagnostic push\n"
       "#pragma clang diagnostic ignored \"-Wdeprecated-declarations\"\n"
+      "#pragma clang diagnostic ignored \"-Wdeprecated-implementations\"\n"
       "\n"
       "CF_EXTERN_C_BEGIN\n"
       "\n");
