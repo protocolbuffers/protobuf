@@ -2372,17 +2372,11 @@ static void MergeRepeatedNotPackedFieldFromCodedInputStream(
         // zero signals EOF / limit reached
         return;
       } else {
-        if (GPBPreserveUnknownFields(syntax)) {
-          if (![self parseUnknownField:input
-                     extensionRegistry:extensionRegistry
-                                   tag:tag]) {
-            // it's an endgroup tag
-            return;
-          }
-        } else {
-          if (![input skipField:tag]) {
-            return;
-          }
+        if (![self parseUnknownField:input
+                   extensionRegistry:extensionRegistry
+                                 tag:tag]) {
+          // it's an endgroup tag
+          return;
         }
       }
     }  // if(!merged)
