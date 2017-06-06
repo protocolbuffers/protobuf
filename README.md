@@ -69,6 +69,8 @@ how to install protobuf runtime for that specific language:
 | Dart                                 | [dart-lang/protobuf](https://github.com/dart-lang/protobuf) |
 
 
+For Mac: You need to install protobuf modules for python. Installation using easy install: sudo easy_install --upgrade protobuf
+
 Usage
 -----
 
