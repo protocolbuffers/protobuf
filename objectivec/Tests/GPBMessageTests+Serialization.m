@@ -946,6 +946,41 @@ static NSData *DataFromCStr(const char *str) {
   XCTAssertEqual(error.code, GPBCodedInputStreamErrorInvalidTag);
 }
 
+- (void)testZeroFieldNum {
+  // These are ConformanceTestSuite::TestIllegalTags.
+
+  const char *tests[] = {
+    "\1DEADBEEF",
+    "\2\1\1",
+    "\3\4",
+    "\5DEAD"
+  };
+
+  for (size_t i = 0; i < GPBARRAYSIZE(tests); ++i) {
+    NSData *data = DataFromCStr(tests[i]);
+
+    {
+      // Message from proto2 syntax file
+      NSError *error = nil;
+      Message2 *msg = [Message2 parseFromData:data error:&error];
+      XCTAssertNil(msg, @"i = %zd", i);
+      XCTAssertNotNil(error, @"i = %zd", i);
+      XCTAssertEqualObjects(error.domain, GPBCodedInputStreamErrorDomain, @"i = %zd", i);
+      XCTAssertEqual(error.code, GPBCodedInputStreamErrorInvalidTag, @"i = %zd", i);
+    }
+
+    {
+      // Message from proto3 syntax file
+      NSError *error = nil;
+      Message3 *msg = [Message3 parseFromData:data error:&error];
+      XCTAssertNil(msg, @"i = %zd", i);
+      XCTAssertNotNil(error, @"i = %zd", i);
+      XCTAssertEqualObjects(error.domain, GPBCodedInputStreamErrorDomain, @"i = %zd", i);
+      XCTAssertEqual(error.code, GPBCodedInputStreamErrorInvalidTag, @"i = %zd", i);
+    }
+  }
+}
+
 - (void)testErrorRecursionDepthReached {
   NSData *data = DataFromCStr(
       "\x0A\xF2\x01\x0A\xEF\x01\x0A\xEC\x01\x0A\xE9\x01\x0A\xE6\x01"
