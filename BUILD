@@ -10,6 +10,7 @@ exports_files(["LICENSE"])
 
 COPTS = [
     "-DHAVE_PTHREAD",
+    "-DHAVE_ZLIB",
     "-Wall",
     "-Wwrite-strings",
     "-Woverloaded-virtual",
