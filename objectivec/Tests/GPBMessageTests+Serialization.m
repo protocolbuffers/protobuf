@@ -113,35 +113,6 @@ static NSData *DataFromCStr(const char *str) {
   [msg release];
 }
 
-- (void)testProto3DroppingUnknownFields {
-  DropUnknownsFooWithExtraFields *fooWithExtras =
-      [[DropUnknownsFooWithExtraFields alloc] init];
-
-  fooWithExtras.int32Value = 1;
-  fooWithExtras.enumValue = DropUnknownsFooWithExtraFields_NestedEnum_Baz;
-  fooWithExtras.extraInt32Value = 2;
-
-  NSData *data = [fooWithExtras data];
-  XCTAssertNotNil(data);
-  DropUnknownsFoo *foo = [DropUnknownsFoo parseFromData:data error:NULL];
-
-  XCTAssertEqual(foo.int32Value, 1);
-  XCTAssertEqual(foo.enumValue, DropUnknownsFoo_NestedEnum_Baz);
-  // Nothing should end up in the unknowns.
-  XCTAssertEqual([foo.unknownFields countOfFields], 0U);
-
-  [fooWithExtras release];
-  data = [foo data];
-  fooWithExtras =
-      [DropUnknownsFooWithExtraFields parseFromData:data error:NULL];
-  XCTAssertEqual(fooWithExtras.int32Value, 1);
-  XCTAssertEqual(fooWithExtras.enumValue,
-                 DropUnknownsFooWithExtraFields_NestedEnum_Baz);
-  // And the extra value is gone (back to the default).
-  XCTAssertEqual(fooWithExtras.extraInt32Value, 0);
-  XCTAssertEqual([foo.unknownFields countOfFields], 0U);
-}
-
 - (void)testProto2UnknownEnumToUnknownField {
   Message3 *orig = [[Message3 alloc] init];
 
