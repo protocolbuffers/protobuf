@@ -233,6 +233,7 @@ using std::pair;
 using std::set;
 using std::string;
 using std::vector;
+using std::back_insert_iterator;
 
 }  // namespace protobuf
 }  // namespace google
