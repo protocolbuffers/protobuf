@@ -1452,7 +1452,7 @@ PHP_METHOD(Message, mergeFromString) {
   }
 }
 
-PHP_METHOD(Message, jsonEncode) {
+PHP_METHOD(Message, serializeToJsonString) {
   Descriptor* desc =
       UNBOX_HASHTABLE_VALUE(Descriptor, get_ce_obj(Z_OBJCE_P(getThis())));
 
@@ -1483,13 +1483,14 @@ PHP_METHOD(Message, jsonEncode) {
   }
 }
 
-PHP_METHOD(Message, jsonDecode) {
+PHP_METHOD(Message, mergeFromJsonString) {
   Descriptor* desc =
       UNBOX_HASHTABLE_VALUE(Descriptor, get_ce_obj(Z_OBJCE_P(getThis())));
   MessageHeader* msg = UNBOX(MessageHeader, getThis());
 
   char *data = NULL;
-  int data_len;
+  PHP_PROTO_SIZE data_len;
+
   if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &data, &data_len) ==
       FAILURE) {
     return;

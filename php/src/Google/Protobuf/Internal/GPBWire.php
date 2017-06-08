@@ -117,19 +117,12 @@ class GPBWire
   //        << decode <<
   public static function zigZagEncode32($int32)
   {
-      // Fill high 32 bits.
-      if (PHP_INT_SIZE === 8) {
-          $int32 |= ((($int32 << 32) >> 31) & (0xFFFFFFFF << 32));
+      if (PHP_INT_SIZE == 8) {
+          $trim_int32 = $int32 & 0xFFFFFFFF;
+          return (($trim_int32 << 1) ^ ($int32 << 32 >> 63)) & 0xFFFFFFFF;
+      } else {
+          return ($int32 << 1) ^ ($int32 >> 31);
       }
-
-      $uint32 = ($int32 << 1) ^ ($int32 >> 31);
-
-      // Fill high 32 bits.
-      if (PHP_INT_SIZE === 8) {
-          $uint32 |= ((($uint32 << 32) >> 31) & (0xFFFFFFFF << 32));
-      }
-
-      return $uint32;
   }
 
     public static function zigZagDecode32($uint32)
@@ -578,6 +571,9 @@ class GPBWire
                 }
                 break;
             case GPBType::UINT32:
+                if (PHP_INT_SIZE === 8 && $value < 0) {
+                    $value += 4294967296;
+                }
                 if (!GPBWire::writeUint32($output, $value)) {
                     return false;
                 }

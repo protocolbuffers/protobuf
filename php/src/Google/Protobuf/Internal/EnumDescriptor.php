@@ -8,6 +8,7 @@ class EnumDescriptor
     private $klass;
     private $full_name;
     private $value;
+    private $name_to_value;
 
     public function setFullName($full_name)
     {
@@ -22,6 +23,17 @@ class EnumDescriptor
     public function addValue($number, $value)
     {
         $this->value[$number] = $value;
+        $this->name_to_value[$value->getName()] = $value;
+    }
+
+    public function getValueByNumber($number)
+    {
+        return $this->value[$number];
+    }
+
+    public function getValueByName($name)
+    {
+        return $this->name_to_value[$name];
     }
 
     public function setClass($klass)
@@ -50,6 +62,10 @@ class EnumDescriptor
             $fullname);
         $desc->setFullName($fullname);
         $desc->setClass($classname);
+        $values = $proto->getValue();
+        foreach ($values as $value) {
+            $desc->addValue($value->getNumber(), $value);
+        }
 
         return $desc;
     }

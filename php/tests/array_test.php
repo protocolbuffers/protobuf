@@ -77,44 +77,6 @@ class RepeatedFieldTest extends PHPUnit_Framework_TestCase
         $this->assertSame(3, $i);
     }
 
-    /**
-     * @expectedException PHPUnit_Framework_Error
-     */
-    public function testInt32AppendStringFail()
-    {
-        $arr = new RepeatedField(GPBType::INT32);
-        $arr []= 'abc';
-    }
-
-    /**
-     * @expectedException PHPUnit_Framework_Error
-     */
-    public function testInt32SetStringFail()
-    {
-        $arr = new RepeatedField(GPBType::INT32);
-        $arr []= 0;
-        $arr [0]= 'abc';
-    }
-
-    /**
-     * @expectedException PHPUnit_Framework_Error
-     */
-    public function testInt32AppendMessageFail()
-    {
-        $arr = new RepeatedField(GPBType::INT32);
-        $arr []= new TestMessage_Sub();
-    }
-
-    /**
-     * @expectedException PHPUnit_Framework_Error
-     */
-    public function testInt32SetMessageFail()
-    {
-        $arr = new RepeatedField(GPBType::INT32);
-        $arr []= 0;
-        $arr [0]= new TestMessage_Sub();
-    }
-
     #########################################################
     # Test uint32 field.
     #########################################################
@@ -185,44 +147,6 @@ class RepeatedFieldTest extends PHPUnit_Framework_TestCase
         $this->assertSame(-1, $arr[10]);
         $arr [11]= MIN_UINT32_STRING;
         $this->assertSame(MIN_UINT32, $arr[11]);
-    }
-
-    /**
-     * @expectedException PHPUnit_Framework_Error
-     */
-    public function testUint32AppendStringFail()
-    {
-        $arr = new RepeatedField(GPBType::UINT32);
-        $arr []= 'abc';
-    }
-
-    /**
-     * @expectedException PHPUnit_Framework_Error
-     */
-    public function testUint32SetStringFail()
-    {
-        $arr = new RepeatedField(GPBType::UINT32);
-        $arr []= 0;
-        $arr [0]= 'abc';
-    }
-
-    /**
-     * @expectedException PHPUnit_Framework_Error
-     */
-    public function testUint32AppendMessageFail()
-    {
-        $arr = new RepeatedField(GPBType::UINT32);
-        $arr []= new TestMessage_Sub();
-    }
-
-    /**
-     * @expectedException PHPUnit_Framework_Error
-     */
-    public function testUint32SetMessageFail()
-    {
-        $arr = new RepeatedField(GPBType::UINT32);
-        $arr []= 0;
-        $arr [0]= new TestMessage_Sub();
     }
 
     #########################################################
@@ -299,44 +223,6 @@ class RepeatedFieldTest extends PHPUnit_Framework_TestCase
         }
     }
 
-    /**
-     * @expectedException PHPUnit_Framework_Error
-     */
-    public function testInt64AppendStringFail()
-    {
-        $arr = new RepeatedField(GPBType::INT64);
-        $arr []= 'abc';
-    }
-
-    /**
-     * @expectedException PHPUnit_Framework_Error
-     */
-    public function testInt64SetStringFail()
-    {
-        $arr = new RepeatedField(GPBType::INT64);
-        $arr []= 0;
-        $arr [0]= 'abc';
-    }
-
-    /**
-     * @expectedException PHPUnit_Framework_Error
-     */
-    public function testInt64AppendMessageFail()
-    {
-        $arr = new RepeatedField(GPBType::INT64);
-        $arr []= new TestMessage_Sub();
-    }
-
-    /**
-     * @expectedException PHPUnit_Framework_Error
-     */
-    public function testInt64SetMessageFail()
-    {
-        $arr = new RepeatedField(GPBType::INT64);
-        $arr []= 0;
-        $arr [0]= new TestMessage_Sub();
-    }
-
     #########################################################
     # Test uint64 field.
     #########################################################
@@ -400,44 +286,6 @@ class RepeatedFieldTest extends PHPUnit_Framework_TestCase
         }
     }
 
-    /**
-     * @expectedException PHPUnit_Framework_Error
-     */
-    public function testUint64AppendStringFail()
-    {
-        $arr = new RepeatedField(GPBType::UINT64);
-        $arr []= 'abc';
-    }
-
-    /**
-     * @expectedException PHPUnit_Framework_Error
-     */
-    public function testUint64SetStringFail()
-    {
-        $arr = new RepeatedField(GPBType::UINT64);
-        $arr []= 0;
-        $arr [0]= 'abc';
-    }
-
-    /**
-     * @expectedException PHPUnit_Framework_Error
-     */
-    public function testUint64AppendMessageFail()
-    {
-        $arr = new RepeatedField(GPBType::UINT64);
-        $arr []= new TestMessage_Sub();
-    }
-
-    /**
-     * @expectedException PHPUnit_Framework_Error
-     */
-    public function testUint64SetMessageFail()
-    {
-        $arr = new RepeatedField(GPBType::UINT64);
-        $arr []= 0;
-        $arr [0]= new TestMessage_Sub();
-    }
-
     #########################################################
     # Test float field.
     #########################################################
@@ -478,44 +326,6 @@ class RepeatedFieldTest extends PHPUnit_Framework_TestCase
         $this->assertEquals(3.1, $arr[3], '', MAX_FLOAT_DIFF);
     }
 
-    /**
-     * @expectedException PHPUnit_Framework_Error
-     */
-    public function testFloatAppendStringFail()
-    {
-        $arr = new RepeatedField(GPBType::FLOAT);
-        $arr []= 'abc';
-    }
-
-    /**
-     * @expectedException PHPUnit_Framework_Error
-     */
-    public function testFloatSetStringFail()
-    {
-        $arr = new RepeatedField(GPBType::FLOAT);
-        $arr []= 0.0;
-        $arr [0]= 'abc';
-    }
-
-    /**
-     * @expectedException PHPUnit_Framework_Error
-     */
-    public function testFloatAppendMessageFail()
-    {
-        $arr = new RepeatedField(GPBType::FLOAT);
-        $arr []= new TestMessage_Sub();
-    }
-
-    /**
-     * @expectedException PHPUnit_Framework_Error
-     */
-    public function testFloatSetMessageFail()
-    {
-        $arr = new RepeatedField(GPBType::FLOAT);
-        $arr []= 0.0;
-        $arr [0]= new TestMessage_Sub();
-    }
-
     #########################################################
     # Test double field.
     #########################################################
@@ -554,44 +364,6 @@ class RepeatedFieldTest extends PHPUnit_Framework_TestCase
         $this->assertEquals(2.0, $arr[2], '', MAX_FLOAT_DIFF);
         $arr [3]= '3.1';
         $this->assertEquals(3.1, $arr[3], '', MAX_FLOAT_DIFF);
-    }
-
-    /**
-     * @expectedException PHPUnit_Framework_Error
-     */
-    public function testDoubleAppendStringFail()
-    {
-        $arr = new RepeatedField(GPBType::DOUBLE);
-        $arr []= 'abc';
-    }
-
-    /**
-     * @expectedException PHPUnit_Framework_Error
-     */
-    public function testDoubleSetStringFail()
-    {
-        $arr = new RepeatedField(GPBType::DOUBLE);
-        $arr []= 0.0;
-        $arr [0]= 'abc';
-    }
-
-    /**
-     * @expectedException PHPUnit_Framework_Error
-     */
-    public function testDoubleAppendMessageFail()
-    {
-        $arr = new RepeatedField(GPBType::DOUBLE);
-        $arr []= new TestMessage_Sub();
-    }
-
-    /**
-     * @expectedException PHPUnit_Framework_Error
-     */
-    public function testDoubleSetMessageFail()
-    {
-        $arr = new RepeatedField(GPBType::DOUBLE);
-        $arr []= 0.0;
-        $arr [0]= new TestMessage_Sub();
     }
 
     #########################################################
@@ -636,25 +408,6 @@ class RepeatedFieldTest extends PHPUnit_Framework_TestCase
         $this->assertSame(false, $arr[3]);
     }
 
-    /**
-     * @expectedException PHPUnit_Framework_Error
-     */
-    public function testBoolAppendMessageFail()
-    {
-        $arr = new RepeatedField(GPBType::BOOL);
-        $arr []= new TestMessage_Sub();
-    }
-
-    /**
-     * @expectedException PHPUnit_Framework_Error
-     */
-    public function testBoolSetMessageFail()
-    {
-        $arr = new RepeatedField(GPBType::BOOL);
-        $arr []= true;
-        $arr [0]= new TestMessage_Sub();
-    }
-
     #########################################################
     # Test string field.
     #########################################################
@@ -697,46 +450,6 @@ class RepeatedFieldTest extends PHPUnit_Framework_TestCase
         $this->assertSame('1', $arr[3]);
     }
 
-    /**
-     * @expectedException PHPUnit_Framework_Error
-     */
-    public function testStringAppendMessageFail()
-    {
-        $arr = new RepeatedField(GPBType::STRING);
-        $arr []= new TestMessage_Sub();
-    }
-
-    /**
-     * @expectedException PHPUnit_Framework_Error
-     */
-    public function testStringSetMessageFail()
-    {
-        $arr = new RepeatedField(GPBType::STRING);
-        $arr []= 'abc';
-        $arr [0]= new TestMessage_Sub();
-    }
-
-    /**
-     * @expectedException PHPUnit_Framework_Error
-     */
-    public function testStringAppendInvalidUTF8Fail()
-    {
-        $arr = new RepeatedField(GPBType::STRING);
-        $hex = hex2bin("ff");
-        $arr []= $hex;
-    }
-
-    /**
-     * @expectedException PHPUnit_Framework_Error
-     */
-    public function testStringSetInvalidUTF8Fail()
-    {
-        $arr = new RepeatedField(GPBType::STRING);
-        $arr []= 'abc';
-        $hex = hex2bin("ff");
-        $arr [0]= $hex;
-    }
-
     #########################################################
     # Test message field.
     #########################################################
@@ -758,74 +471,6 @@ class RepeatedFieldTest extends PHPUnit_Framework_TestCase
         $sub_m->setA(2);
         $arr [0]= $sub_m;
         $this->assertSame(2, $arr[0]->getA());
-    }
-
-    /**
-     * @expectedException PHPUnit_Framework_Error
-     */
-    public function testMessageAppendIntFail()
-    {
-        $arr = new RepeatedField(GPBType::MESSAGE, TestMessage_Sub::class);
-        $arr []= 1;
-    }
-
-    /**
-     * @expectedException PHPUnit_Framework_Error
-     */
-    public function testMessageSetIntFail()
-    {
-        $arr = new RepeatedField(GPBType::MESSAGE, TestMessage_Sub::class);
-        $arr []= new TestMessage_Sub;
-        $arr [0]= 'abc';
-    }
-
-    /**
-     * @expectedException PHPUnit_Framework_Error
-     */
-    public function testMessageAppendStringFail()
-    {
-        $arr = new RepeatedField(GPBType::MESSAGE, TestMessage_Sub::class);
-        $arr []= 'abc';
-    }
-
-    /**
-     * @expectedException PHPUnit_Framework_Error
-     */
-    public function testMessageSetStringFail()
-    {
-        $arr = new RepeatedField(GPBType::MESSAGE, TestMessage_Sub::class);
-        $arr []= new TestMessage_Sub;
-        $arr [0]= 'abc';
-    }
-
-    /**
-     * @expectedException PHPUnit_Framework_Error
-     */
-    public function testMessageAppendOtherMessageFail()
-    {
-        $arr = new RepeatedField(GPBType::MESSAGE, TestMessage_Sub::class);
-        $arr []= new TestMessage;
-    }
-
-    /**
-     * @expectedException PHPUnit_Framework_Error
-     */
-    public function testMessageAppendNullFail()
-    {
-        $arr = new RepeatedField(GPBType::MESSAGE, TestMessage_Sub::class);
-        $null = null;
-        $arr []= $null;
-    }
-
-    /**
-     * @expectedException PHPUnit_Framework_Error
-     */
-    public function testMessageSetNullFail()
-    {
-        $arr = new RepeatedField(GPBType::MESSAGE, TestMessage_Sub::class);
-        $arr []= new TestMessage_Sub();
-        $null = null;
-        $arr[0] = $null;
     }
 
     #########################################################
@@ -870,60 +515,6 @@ class RepeatedFieldTest extends PHPUnit_Framework_TestCase
         $this->assertSame(0, $arr[0]);
         $this->assertSame(1, $arr[1]);
         $this->assertSame(3, $arr[2]);
-    }
-
-    /**
-     * @expectedException PHPUnit_Framework_Error
-     */
-    public function testRemoveMiddleFail()
-    {
-        $arr = new RepeatedField(GPBType::INT32);
-
-        $arr []= 0;
-        $arr []= 1;
-        $arr []= 2;
-        $this->assertSame(3, count($arr));
-
-        unset($arr[1]);
-    }
-
-    /**
-     * @expectedException PHPUnit_Framework_Error
-     */
-    public function testRemoveEmptyFail()
-    {
-        $arr = new RepeatedField(GPBType::INT32);
-
-        unset($arr[0]);
-    }
-
-    /**
-     * @expectedException PHPUnit_Framework_Error
-     */
-    public function testMessageOffsetFail()
-    {
-        $arr = new RepeatedField(GPBType::INT32);
-        $arr []= 0;
-        $arr [new TestMessage_Sub()]= 0;
-    }
-
-    /**
-     * @expectedException PHPUnit_Framework_Error
-     */
-    public function testStringOffsetFail()
-    {
-        $arr = new RepeatedField(GPBType::INT32);
-        $arr []= 0;
-        $arr ['abc']= 0;
-    }
-
-    /**
-     * @expectedException PHPUnit_Framework_Error
-     */
-    public function testSetNonExistedOffsetFail()
-    {
-        $arr = new RepeatedField(GPBType::INT32);
-        $arr [0]= 0;
     }
 
     #########################################################

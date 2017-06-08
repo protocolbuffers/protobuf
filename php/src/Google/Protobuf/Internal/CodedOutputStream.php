@@ -32,7 +32,7 @@
 
 namespace Google\Protobuf\Internal;
 
-class OutputStream
+class CodedOutputStream
 {
 
     private $buffer;

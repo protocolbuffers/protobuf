@@ -37,6 +37,8 @@ class Descriptor
 
     private $full_name;
     private $field = [];
+    private $json_to_field = [];
+    private $name_to_field = [];
     private $nested_type = [];
     private $enum_type = [];
     private $klass;
@@ -66,6 +68,8 @@ class Descriptor
     public function addField($field)
     {
         $this->field[$field->getNumber()] = $field;
+        $this->json_to_field[$field->getJsonName()] = $field;
+        $this->name_to_field[$field->getName()] = $field;
     }
 
     public function getField()
@@ -95,11 +99,29 @@ class Descriptor
 
     public function getFieldByNumber($number)
     {
-      if (!isset($this->field[$number])) {
-        return NULL;
-      } else {
-        return $this->field[$number];
-      }
+        if (!isset($this->field[$number])) {
+          return NULL;
+        } else {
+          return $this->field[$number];
+        }
+    }
+
+    public function getFieldByJsonName($json_name)
+    {
+        if (!isset($this->json_to_field[$json_name])) {
+          return NULL;
+        } else {
+          return $this->json_to_field[$json_name];
+        }
+    }
+
+    public function getFieldByName($name)
+    {
+        if (!isset($this->name_to_field[$name])) {
+          return NULL;
+        } else {
+          return $this->name_to_field[$name];
+        }
     }
 
     public function setClass($klass)

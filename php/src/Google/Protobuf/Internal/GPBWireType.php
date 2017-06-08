@@ -32,28 +32,12 @@
 
 namespace Google\Protobuf\Internal;
 
-class EnumValueDescriptor
+class GPBWireType
 {
-    private $name;
-    private $number;
-
-    public function setName($name)
-    {
-        $this->name = $name;
-    }
-
-    public function getName()
-    {
-        return $this->name;
-    }
-
-    public function setNumber($number)
-    {
-        $this->number = $number;
-    }
-
-    public function getNumber()
-    {
-        return $this->number;
-    }
+    const VARINT           = 0;
+    const FIXED64          = 1;
+    const LENGTH_DELIMITED = 2;
+    const START_GROUP      = 3;
+    const END_GROUP        = 4;
+    const FIXED32          = 5;
 }

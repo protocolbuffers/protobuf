@@ -70,15 +70,13 @@ class GPBUtil
     public static function checkString(&$var, $check_utf8)
     {
         if (is_array($var) || is_object($var)) {
-            trigger_error("Expect string.", E_USER_ERROR);
-            return;
+            throw new \Exception("Expect string.");
         }
         if (!is_string($var)) {
             $var = strval($var);
         }
         if ($check_utf8 && !preg_match('//u', $var)) {
-            trigger_error("Expect utf-8 encoding.", E_USER_ERROR);
-            return;
+            throw new \Exception("Expect utf-8 encoding.");
         }
     }
 
@@ -92,7 +90,7 @@ class GPBUtil
         if (is_numeric($var)) {
             $var = intval($var);
         } else {
-            trigger_error("Expect integer.", E_USER_ERROR);
+            throw new \Exception("Expect integer.");
         }
     }
 
@@ -109,7 +107,7 @@ class GPBUtil
                 $var = (int) $var;
             }
         } else {
-            trigger_error("Expect integer.", E_USER_ERROR);
+            throw new \Exception("Expect integer.");
         }
     }
 
@@ -122,7 +120,7 @@ class GPBUtil
                 $var = bcdiv($var, 1, 0);
             }
         } else {
-            trigger_error("Expect integer.", E_USER_ERROR);
+            throw new \Exception("Expect integer.");
         }
     }
 
@@ -135,7 +133,7 @@ class GPBUtil
                 $var = bcdiv($var, 1, 0);
             }
         } else {
-            trigger_error("Expect integer.", E_USER_ERROR);
+            throw new \Exception("Expect integer.");
         }
     }
 
@@ -144,7 +142,7 @@ class GPBUtil
         if (is_float($var) || is_numeric($var)) {
             $var = floatval($var);
         } else {
-            trigger_error("Expect float.", E_USER_ERROR);
+            throw new \Exception("Expect float.");
         }
     }
 
@@ -153,15 +151,14 @@ class GPBUtil
         if (is_float($var) || is_numeric($var)) {
             $var = floatval($var);
         } else {
-            trigger_error("Expect float.", E_USER_ERROR);
+            throw new \Exception("Expect float.");
         }
     }
 
     public static function checkBool(&$var)
     {
         if (is_array($var) || is_object($var)) {
-            trigger_error("Expect boolean.", E_USER_ERROR);
-            return;
+            throw new \Exception("Expect boolean.");
         }
         $var = boolval($var);
     }
@@ -169,14 +166,14 @@ class GPBUtil
     public static function checkMessage(&$var, $klass)
     {
         if (!$var instanceof $klass && !is_null($var)) {
-            trigger_error("Expect message.", E_USER_ERROR);
+            throw new \Exception("Expect message.");
         }
     }
 
     public static function checkRepeatedField(&$var, $type, $klass = null)
     {
         if (!$var instanceof RepeatedField && !is_array($var)) {
-            trigger_error("Expect array.", E_USER_ERROR);
+            throw new \Exception("Expect array.");
         }
         if (is_array($var)) {
             $tmp = new RepeatedField($type, $klass);
@@ -186,15 +183,13 @@ class GPBUtil
             return $tmp;
         } else {
             if ($var->getType() != $type) {
-                trigger_error(
-                    "Expect repeated field of different type.",
-                    E_USER_ERROR);
+                throw new \Exception(
+                    "Expect repeated field of different type.");
             }
             if ($var->getType() === GPBType::MESSAGE &&
                 $var->getClass() !== $klass) {
-                trigger_error(
-                    "Expect repeated field of different message.",
-                    E_USER_ERROR);
+                throw new \Exception(
+                    "Expect repeated field of different message.");
             }
             return $var;
         }
@@ -203,7 +198,7 @@ class GPBUtil
     public static function checkMapField(&$var, $key_type, $value_type, $klass = null)
     {
         if (!$var instanceof MapField && !is_array($var)) {
-            trigger_error("Expect dict.", E_USER_ERROR);
+            throw new \Exception("Expect dict.");
         }
         if (is_array($var)) {
             $tmp = new MapField($key_type, $value_type, $klass);
@@ -213,20 +208,15 @@ class GPBUtil
             return $tmp;
         } else {
             if ($var->getKeyType() != $key_type) {
-                trigger_error(
-                    "Expect map field of key type.",
-                    E_USER_ERROR);
+                throw new \Exception("Expect map field of key type.");
             }
             if ($var->getValueType() != $value_type) {
-                trigger_error(
-                    "Expect map field of value type.",
-                    E_USER_ERROR);
+                throw new \Exception("Expect map field of value type.");
             }
             if ($var->getValueType() === GPBType::MESSAGE &&
                 $var->getValueClass() !== $klass) {
-                trigger_error(
-                    "Expect map field of different value message.",
-                    E_USER_ERROR);
+                throw new \Exception(
+                    "Expect map field of different value message.");
             }
             return $var;
         }

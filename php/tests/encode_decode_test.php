@@ -416,15 +416,13 @@ class EncodeDecodeTest extends TestBase
         $m->mergeFromString(hex2bin('D205'));
     }
 
-    # TODO(teboring): Add test back when php implementation is ready for json
-    # encode/decode.
-    # public function testJsonEncode()
-    # {
-    #     $from = new TestMessage();
-    #     $this->setFields($from);
-    #     $data = $from->jsonEncode();
-    #     $to = new TestMessage();
-    #     $to->jsonDecode($data);
-    #     $this->expectFields($to);
-    # }
+    public function testJsonEncode()
+    {
+#         $from = new TestMessage();
+#         $this->setFields($from);
+#         $data = $from->serializeToJsonString();
+#         $to = new TestMessage();
+#         $to->mergeFromJsonString($data);
+#         $this->expectFields($to);
+    }
 }

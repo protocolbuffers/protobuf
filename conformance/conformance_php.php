@@ -42,34 +42,45 @@ $test_count = 0;
 
 function doTest($request)
 {
+    fwrite(STDERR, "Start Test.\n");
     $test_message = new \Protobuf_test_messages\Proto3\TestAllTypes();
     $response = new \Conformance\ConformanceResponse();
     if ($request->getPayload() == "protobuf_payload") {
+      fwrite(STDERR, "Protobuf Payload\n");
       try {
           $test_message->mergeFromString($request->getProtobufPayload());
       } catch (Exception $e) {
+          # fwrite(STDERR, "Protobuf Error: " . $e->getMessage() . "\n");
           $response->setParseError($e->getMessage());
           return $response;
       }
     } elseif ($request->getPayload() == "json_payload") {
+      fwrite(STDERR, "Json Payload\n");
       try {
-          $test_message->jsonDecode($request->getJsonPayload());
+          fwrite(STDERR, "Request Json Payload:" . $request->getJsonPayload() . "\n");
+          $test_message->mergeFromJsonString($request->getJsonPayload());
       } catch (Exception $e) {
+          fwrite(STDERR, "Invalid Json Payload\n");
           $response->setParseError($e->getMessage());
           return $response;
       }
     } else {
       trigger_error("Request didn't have payload.", E_USER_ERROR);
     }
+    # fwrite(STDERR, "Finish Parsing Request.\n");
 
     if ($request->getRequestedOutputFormat() == WireFormat::UNSPECIFIED) {
+      fwrite(STDERR, "Response Format: UNSPECIFIED.\n");
       trigger_error("Unspecified output format.", E_USER_ERROR);
     } elseif ($request->getRequestedOutputFormat() == WireFormat::PROTOBUF) {
       $response->setProtobufPayload($test_message->serializeToString());
+      fwrite(STDERR, "Response Protobuf Payload:" . bin2hex($response->getProtobufPayload()) . "\n");
     } elseif ($request->getRequestedOutputFormat() == WireFormat::JSON) {
-      $response->setJsonPayload($test_message->jsonEncode());
+      $response->setJsonPayload($test_message->serializeToJsonString());
+      fwrite(STDERR, "Response Json Payload:" . $response->getJsonPayload() . "\n");
     }
 
+    fwrite(STDERR, "Finish Test.\n");
     return $response;
 }
 
@@ -84,6 +95,8 @@ function doTestIO()
 
     $length = unpack("V", $length_bytes)[1];
     $serialized_request = fread(STDIN, $length);
+    fwrite(STDERR, "=================================\n");
+    fwrite(STDERR, "Request: ". bin2hex($serialized_request) ."\n");
     if (strlen($serialized_request) != $length) {
       trigger_error("I/O error", E_USER_ERROR);
     }
@@ -94,6 +107,7 @@ function doTestIO()
     $response = doTest($request);
 
     $serialized_response = $response->serializeToString();
+    fwrite(STDERR, "Response:". bin2hex($serialized_response) ."\n");
     fwrite(STDOUT, pack("V", strlen($serialized_response)));
     fwrite(STDOUT, $serialized_response);
 

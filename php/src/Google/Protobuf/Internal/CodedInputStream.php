@@ -34,7 +34,7 @@ namespace Google\Protobuf\Internal;
 
 use Google\Protobuf\Internal\Uint64;
 
-class InputStream
+class CodedInputStream
 {
 
     private $buffer;
@@ -73,7 +73,7 @@ class InputStream
         $this->current += $amount;
     }
 
-    private function bufferSize()
+    public function bufferSize()
     {
         return $this->buffer_end - $this->current;
     }

@@ -19,6 +19,8 @@ class TestBase extends PHPUnit_Framework_TestCase
 
     public function expectFields(TestMessage $m)
     {
+        $this->assertSame(-42,  $m->getOptionalInt32());
+        $this->assertSame(42,  $m->getOptionalUint32());
         $this->assertSame(-44,  $m->getOptionalSint32());
         $this->assertSame(46,   $m->getOptionalFixed32());
         $this->assertSame(-46,  $m->getOptionalSfixed32());
@@ -27,6 +29,7 @@ class TestBase extends PHPUnit_Framework_TestCase
         $this->assertSame(true, $m->getOptionalBool());
         $this->assertSame('a',  $m->getOptionalString());
         $this->assertSame('b',  $m->getOptionalBytes());
+        $this->assertSame(TestEnum::ONE, $m->getOptionalEnum());
         $this->assertSame(33,   $m->getOptionalMessage()->getA());
         if (PHP_INT_SIZE == 4) {
             $this->assertSame('-43',  $m->getOptionalInt64());
