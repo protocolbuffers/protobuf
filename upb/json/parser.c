@@ -21,8 +21,9 @@
 ** - handling of keys/escape-sequences/etc that span input buffers.
 */
 
-#include <assert.h>
 #include <errno.h>
+#include <float.h>
+#include <math.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
@@ -608,21 +609,136 @@ static void start_number(upb_json_parser *p, const char *ptr) {
   capture_begin(p, ptr);
 }
 
-static bool parse_number(upb_json_parser *p);
+static bool parse_number(upb_json_parser *p, bool is_quoted);
 
 static bool end_number(upb_json_parser *p, const char *ptr) {
   if (!capture_end(p, ptr)) {
     return false;
   }
 
-  return parse_number(p);
+  return parse_number(p, false);
 }
 
-static bool parse_number(upb_json_parser *p) {
+static bool parse_number_from_buffer(upb_json_parser *p, const char *buf,
+                                     const char *bufend, bool is_quoted) {
+  size_t len = bufend - buf;
+  char *end;
+  upb_fieldtype_t type = upb_fielddef_type(p->top->f);
+  double val;
+  double dummy;
+
+  if (buf[0] == ' ') {
+    return false;
+  }
+
+  /* For integer types, first try parsing with integer-specific routines.
+   * If these succeed, they will be more accurate for int64/uint64 than
+   * strtod().
+   */
+  switch (type) {
+    case UPB_TYPE_ENUM:
+    case UPB_TYPE_INT32: {
+      long val = strtol(buf, &end, 0);
+      if (errno == ERANGE || end != bufend) {
+        break;
+      } else if (val > INT32_MAX || val < INT32_MIN) {
+        return false;
+      } else {
+        upb_sink_putint32(&p->top->sink, parser_getsel(p), val);
+        return true;
+      }
+    }
+    case UPB_TYPE_UINT32: {
+      unsigned long val = strtoul(buf, &end, 0);
+      if (end != bufend) {
+        break;
+      } else if (val > UINT32_MAX || errno == ERANGE) {
+        return false;
+      } else {
+        upb_sink_putuint32(&p->top->sink, parser_getsel(p), val);
+        return true;
+      }
+    }
+    /* XXX: We can't handle [u]int64 properly on 32-bit machines because
+     * strto[u]ll isn't in C89. */
+    case UPB_TYPE_INT64: {
+      long val = strtol(buf, &end, 0);
+      if (errno == ERANGE || end != bufend) {
+        break;
+      } else {
+        upb_sink_putint64(&p->top->sink, parser_getsel(p), val);
+        return true;
+      }
+    }
+    case UPB_TYPE_UINT64: {
+      unsigned long val = strtoul(p->accumulated, &end, 0);
+      if (end != bufend) {
+        break;
+      } else if (errno == ERANGE) {
+        return false;
+      } else {
+        upb_sink_putuint64(&p->top->sink, parser_getsel(p), val);
+        return true;
+      }
+    }
+    default:
+      break;
+  }
+
+  if (type != UPB_TYPE_DOUBLE && type != UPB_TYPE_FLOAT && is_quoted) {
+    /* Quoted numbers shouldn't support double forms for integer types. */
+    return false;
+  }
+
+  if (len == strlen("Infinity") && strcmp(buf, "Infinity") == 0) {
+    /* C89 does not have an INFINITY macro. */
+    val = 1.0 / 0.0;
+  } else if (len == strlen("-Infinity") && strcmp(buf, "-Infinity") == 0) {
+    val = -1.0 / 0.0;
+  } else {
+    val = strtod(buf, &end);
+    if (errno == ERANGE || end != bufend) {
+      return false;
+    }
+  }
+
+  switch (type) {
+#define CASE(capitaltype, smalltype, min, max)                            \
+    case UPB_TYPE_ ## capitaltype: {                                      \
+      if (modf(val, &dummy) != 0 || val > max || val < min) {             \
+        return false;                                                     \
+      } else {                                                            \
+        upb_sink_put ## smalltype(&p->top->sink, parser_getsel(p), val);  \
+        return true;                                                      \
+      }                                                                   \
+      break;                                                              \
+    }
+    case UPB_TYPE_ENUM:
+    CASE(INT32, int32, INT32_MIN, INT32_MAX);
+    CASE(INT64, int64, INT64_MIN, INT64_MAX);
+    CASE(UINT32, uint32, 0, UINT32_MAX);
+    CASE(UINT64, uint64, 0, UINT64_MAX);
+#undef CASE
+
+    case UPB_TYPE_DOUBLE:
+      upb_sink_putdouble(&p->top->sink, parser_getsel(p), val);
+      return true;
+    case UPB_TYPE_FLOAT:
+      if (false /*val > FLT_MAX || val < -FLT_MAX*/) {
+        return false;
+      } else {
+        upb_sink_putfloat(&p->top->sink, parser_getsel(p), val);
+        return true;
+      }
+    default:
+      return false;
+  }
+}
+
+static bool parse_number(upb_json_parser *p, bool is_quoted) {
   size_t len;
   const char *buf;
-  const char *myend;
-  char *end;
+  const char *bufend;
 
   /* strtol() and friends unfortunately do not support specifying the length of
    * the input string, so we need to force a copy into a NULL-terminated buffer. */
@@ -631,80 +747,18 @@ static bool parse_number(upb_json_parser *p) {
   }
 
   buf = accumulate_getptr(p, &len);
-  myend = buf + len - 1;  /* One for NULL. */
+  bufend = buf + len - 1;  /* One for NULL. */
+  errno = 0;
 
-  /* XXX: We are using strtol to parse integers, but this is wrong as even
-   * integers can be represented as 1e6 (for example), which strtol can't
-   * handle correctly.
-   *
-   * XXX: Also, we can't handle large integers properly because strto[u]ll
-   * isn't in C89.
-   *
-   * XXX: Also, we don't properly check floats for overflow, since strtof
-   * isn't in C89. */
-  switch (upb_fielddef_type(p->top->f)) {
-    case UPB_TYPE_ENUM:
-    case UPB_TYPE_INT32: {
-      long val = strtol(p->accumulated, &end, 0);
-      if (val > INT32_MAX || val < INT32_MIN || errno == ERANGE || end != myend)
-        goto err;
-      else
-        upb_sink_putint32(&p->top->sink, parser_getsel(p), val);
-      break;
-    }
-    case UPB_TYPE_INT64: {
-      long long val = strtol(p->accumulated, &end, 0);
-      if (val > INT64_MAX || val < INT64_MIN || errno == ERANGE || end != myend)
-        goto err;
-      else
-        upb_sink_putint64(&p->top->sink, parser_getsel(p), val);
-      break;
-    }
-    case UPB_TYPE_UINT32: {
-      unsigned long val = strtoul(p->accumulated, &end, 0);
-      if (val > UINT32_MAX || errno == ERANGE || end != myend)
-        goto err;
-      else
-        upb_sink_putuint32(&p->top->sink, parser_getsel(p), val);
-      break;
-    }
-    case UPB_TYPE_UINT64: {
-      unsigned long long val = strtoul(p->accumulated, &end, 0);
-      if (val > UINT64_MAX || errno == ERANGE || end != myend)
-        goto err;
-      else
-        upb_sink_putuint64(&p->top->sink, parser_getsel(p), val);
-      break;
-    }
-    case UPB_TYPE_DOUBLE: {
-      double val = strtod(p->accumulated, &end);
-      if (errno == ERANGE || end != myend)
-        goto err;
-      else
-        upb_sink_putdouble(&p->top->sink, parser_getsel(p), val);
-      break;
-    }
-    case UPB_TYPE_FLOAT: {
-      float val = strtod(p->accumulated, &end);
-      if (errno == ERANGE || end != myend)
-        goto err;
-      else
-        upb_sink_putfloat(&p->top->sink, parser_getsel(p), val);
-      break;
-    }
-    default:
-      UPB_ASSERT(false);
+  if (parse_number_from_buffer(p, buf, bufend, is_quoted)) {
+    multipart_end(p);
+    return true;
+  } else {
+    upb_status_seterrf(&p->status, "error parsing number: %s", buf);
+    upb_env_reporterror(p->env, &p->status);
+    multipart_end(p);
+    return false;
   }
-
-  multipart_end(p);
-
-  return true;
-
-err:
-  upb_status_seterrf(&p->status, "error parsing number: %s", buf);
-  upb_env_reporterror(p->env, &p->status);
-  multipart_end(p);
-  return false;
 }
 
 static bool parser_putbool(upb_json_parser *p, bool val) {
@@ -757,17 +811,16 @@ static bool start_stringval(upb_json_parser *p) {
       multipart_startaccum(p);
       return true;
     }
-  } else if (upb_fielddef_type(p->top->f) == UPB_TYPE_ENUM) {
-    /* No need to push a frame -- symbolic enum names in quotes remain in the
-     * current parser frame.
-     *
-     * Enum string values must accumulate so we can look up the value in a table
-     * once it is complete. */
+  } else if (upb_fielddef_type(p->top->f) != UPB_TYPE_BOOL &&
+             upb_fielddef_type(p->top->f) != UPB_TYPE_MESSAGE) {
+    /* No need to push a frame -- numeric values in quotes remain in the
+     * current parser frame.  These values must accmulate so we can convert
+     * them all at once at the end. */
     multipart_startaccum(p);
     return true;
   } else {
     upb_status_seterrf(&p->status,
-                       "String specified for non-string/non-enum field: %s",
+                       "String specified for bool or submessage field: %s",
                        upb_fielddef_name(p->top->f));
     upb_env_reporterror(p->env, &p->status);
     return false;
@@ -814,6 +867,15 @@ static bool end_stringval(upb_json_parser *p) {
       break;
     }
 
+    case UPB_TYPE_INT32:
+    case UPB_TYPE_INT64:
+    case UPB_TYPE_UINT32:
+    case UPB_TYPE_UINT64:
+    case UPB_TYPE_DOUBLE:
+    case UPB_TYPE_FLOAT:
+      ok = parse_number(p, true);
+      break;
+
     default:
       UPB_ASSERT(false);
       upb_status_seterrmsg(&p->status, "Internal error in JSON decoder");
@@ -857,7 +919,7 @@ static bool parse_mapentry_key(upb_json_parser *p) {
     case UPB_TYPE_UINT32:
     case UPB_TYPE_UINT64:
       /* Invoke end_number. The accum buffer has the number's text already. */
-      if (!parse_number(p)) {
+      if (!parse_number(p, true)) {
         return false;
       }
       break;
@@ -1148,11 +1210,11 @@ static void end_object(upb_json_parser *p) {
  * final state once, when the closing '"' is seen. */
 
 
-#line 1244 "upb/json/parser.rl"
+#line 1306 "upb/json/parser.rl"
 
 
 
-#line 1156 "upb/json/parser.c"
+#line 1218 "upb/json/parser.c"
 static const char _json_actions[] = {
 	0, 1, 0, 1, 2, 1, 3, 1, 
 	5, 1, 6, 1, 7, 1, 8, 1, 
@@ -1301,7 +1363,7 @@ static const int json_en_value_machine = 27;
 static const int json_en_main = 1;
 
 
-#line 1247 "upb/json/parser.rl"
+#line 1309 "upb/json/parser.rl"
 
 size_t parse(void *closure, const void *hd, const char *buf, size_t size,
              const upb_bufhandle *handle) {
@@ -1323,7 +1385,7 @@ size_t parse(void *closure, const void *hd, const char *buf, size_t size,
   capture_resume(parser, buf);
 
   
-#line 1327 "upb/json/parser.c"
+#line 1389 "upb/json/parser.c"
 	{
 	int _klen;
 	unsigned int _trans;
@@ -1398,118 +1460,118 @@ _match:
 		switch ( *_acts++ )
 		{
 	case 0:
-#line 1159 "upb/json/parser.rl"
+#line 1221 "upb/json/parser.rl"
 	{ p--; {cs = stack[--top]; goto _again;} }
 	break;
 	case 1:
-#line 1160 "upb/json/parser.rl"
+#line 1222 "upb/json/parser.rl"
 	{ p--; {stack[top++] = cs; cs = 10; goto _again;} }
 	break;
 	case 2:
-#line 1164 "upb/json/parser.rl"
+#line 1226 "upb/json/parser.rl"
 	{ start_text(parser, p); }
 	break;
 	case 3:
-#line 1165 "upb/json/parser.rl"
+#line 1227 "upb/json/parser.rl"
 	{ CHECK_RETURN_TOP(end_text(parser, p)); }
 	break;
 	case 4:
-#line 1171 "upb/json/parser.rl"
+#line 1233 "upb/json/parser.rl"
 	{ start_hex(parser); }
 	break;
 	case 5:
-#line 1172 "upb/json/parser.rl"
+#line 1234 "upb/json/parser.rl"
 	{ hexdigit(parser, p); }
 	break;
 	case 6:
-#line 1173 "upb/json/parser.rl"
+#line 1235 "upb/json/parser.rl"
 	{ CHECK_RETURN_TOP(end_hex(parser)); }
 	break;
 	case 7:
-#line 1179 "upb/json/parser.rl"
+#line 1241 "upb/json/parser.rl"
 	{ CHECK_RETURN_TOP(escape(parser, p)); }
 	break;
 	case 8:
-#line 1185 "upb/json/parser.rl"
+#line 1247 "upb/json/parser.rl"
 	{ p--; {cs = stack[--top]; goto _again;} }
 	break;
 	case 9:
-#line 1188 "upb/json/parser.rl"
+#line 1250 "upb/json/parser.rl"
 	{ {stack[top++] = cs; cs = 19; goto _again;} }
 	break;
 	case 10:
-#line 1190 "upb/json/parser.rl"
+#line 1252 "upb/json/parser.rl"
 	{ p--; {stack[top++] = cs; cs = 27; goto _again;} }
 	break;
 	case 11:
-#line 1195 "upb/json/parser.rl"
+#line 1257 "upb/json/parser.rl"
 	{ start_member(parser); }
 	break;
 	case 12:
-#line 1196 "upb/json/parser.rl"
+#line 1258 "upb/json/parser.rl"
 	{ CHECK_RETURN_TOP(end_membername(parser)); }
 	break;
 	case 13:
-#line 1199 "upb/json/parser.rl"
+#line 1261 "upb/json/parser.rl"
 	{ end_member(parser); }
 	break;
 	case 14:
-#line 1205 "upb/json/parser.rl"
+#line 1267 "upb/json/parser.rl"
 	{ start_object(parser); }
 	break;
 	case 15:
-#line 1208 "upb/json/parser.rl"
+#line 1270 "upb/json/parser.rl"
 	{ end_object(parser); }
 	break;
 	case 16:
-#line 1214 "upb/json/parser.rl"
+#line 1276 "upb/json/parser.rl"
 	{ CHECK_RETURN_TOP(start_array(parser)); }
 	break;
 	case 17:
-#line 1218 "upb/json/parser.rl"
+#line 1280 "upb/json/parser.rl"
 	{ end_array(parser); }
 	break;
 	case 18:
-#line 1223 "upb/json/parser.rl"
+#line 1285 "upb/json/parser.rl"
 	{ start_number(parser, p); }
 	break;
 	case 19:
-#line 1224 "upb/json/parser.rl"
+#line 1286 "upb/json/parser.rl"
 	{ CHECK_RETURN_TOP(end_number(parser, p)); }
 	break;
 	case 20:
-#line 1226 "upb/json/parser.rl"
+#line 1288 "upb/json/parser.rl"
 	{ CHECK_RETURN_TOP(start_stringval(parser)); }
 	break;
 	case 21:
-#line 1227 "upb/json/parser.rl"
+#line 1289 "upb/json/parser.rl"
 	{ CHECK_RETURN_TOP(end_stringval(parser)); }
 	break;
 	case 22:
-#line 1229 "upb/json/parser.rl"
+#line 1291 "upb/json/parser.rl"
 	{ CHECK_RETURN_TOP(parser_putbool(parser, true)); }
 	break;
 	case 23:
-#line 1231 "upb/json/parser.rl"
+#line 1293 "upb/json/parser.rl"
 	{ CHECK_RETURN_TOP(parser_putbool(parser, false)); }
 	break;
 	case 24:
-#line 1233 "upb/json/parser.rl"
+#line 1295 "upb/json/parser.rl"
 	{ /* null value */ }
 	break;
 	case 25:
-#line 1235 "upb/json/parser.rl"
+#line 1297 "upb/json/parser.rl"
 	{ CHECK_RETURN_TOP(start_subobject(parser)); }
 	break;
 	case 26:
-#line 1236 "upb/json/parser.rl"
+#line 1298 "upb/json/parser.rl"
 	{ end_subobject(parser); }
 	break;
 	case 27:
-#line 1241 "upb/json/parser.rl"
+#line 1303 "upb/json/parser.rl"
 	{ p--; {cs = stack[--top]; goto _again;} }
 	break;
-#line 1513 "upb/json/parser.c"
+#line 1575 "upb/json/parser.c"
 		}
 	}
 
@@ -1522,7 +1584,7 @@ _again:
 	_out: {}
 	}
 
-#line 1268 "upb/json/parser.rl"
+#line 1330 "upb/json/parser.rl"
 
   if (p != pe) {
     upb_status_seterrf(&parser->status, "Parse error at '%.*s'\n", pe - p, p);
@@ -1563,13 +1625,13 @@ static void json_parser_reset(upb_json_parser *p) {
 
   /* Emit Ragel initialization of the parser. */
   
-#line 1567 "upb/json/parser.c"
+#line 1629 "upb/json/parser.c"
 	{
 	cs = json_start;
 	top = 0;
 	}
 
-#line 1308 "upb/json/parser.rl"
+#line 1370 "upb/json/parser.rl"
   p->current_state = cs;
   p->parser_top = top;
   accumulate_clear(p);
