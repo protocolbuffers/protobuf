@@ -1,13 +1,14 @@
 Recommended.FieldMaskNumbersDontRoundTrip.JsonOutput
 Recommended.FieldMaskPathsDontRoundTrip.JsonOutput
 Recommended.FieldMaskTooManyUnderscore.JsonOutput
-Recommended.JsonInput.BoolFieldIntegerOne
-Recommended.JsonInput.BoolFieldIntegerZero
 Recommended.JsonInput.DurationHas3FractionalDigits.Validator
 Recommended.JsonInput.DurationHas6FractionalDigits.Validator
 Recommended.JsonInput.DurationHas9FractionalDigits.Validator
 Recommended.JsonInput.DurationHasZeroFractionalDigit.Validator
 Recommended.JsonInput.Int64FieldBeString.Validator
+Recommended.JsonInput.MapFieldValueIsNull
+Recommended.JsonInput.RepeatedFieldMessageElementIsNull
+Recommended.JsonInput.RepeatedFieldPrimitiveElementIsNull
 Recommended.JsonInput.StringEndsWithEscapeChar
 Recommended.JsonInput.StringFieldSurrogateInWrongOrder
 Recommended.JsonInput.StringFieldUnpairedHighSurrogate
@@ -58,14 +59,7 @@ Required.JsonInput.FloatFieldNan.JsonOutput
 Required.JsonInput.FloatFieldNegativeInfinity.JsonOutput
 Required.JsonInput.FloatFieldTooLarge
 Required.JsonInput.FloatFieldTooSmall
-Required.JsonInput.Int32FieldExponentialFormat.JsonOutput
-Required.JsonInput.Int32FieldExponentialFormat.ProtobufOutput
-Required.JsonInput.Int32FieldFloatTrailingZero.JsonOutput
-Required.JsonInput.Int32FieldFloatTrailingZero.ProtobufOutput
-Required.JsonInput.Int32FieldMaxFloatValue.JsonOutput
-Required.JsonInput.Int32FieldMaxFloatValue.ProtobufOutput
-Required.JsonInput.Int32FieldMinFloatValue.JsonOutput
-Required.JsonInput.Int32FieldMinFloatValue.ProtobufOutput
+Required.JsonInput.OneofFieldDuplicate
 Required.JsonInput.OptionalBoolWrapper.JsonOutput
 Required.JsonInput.OptionalBoolWrapper.ProtobufOutput
 Required.JsonInput.OptionalBytesWrapper.JsonOutput
@@ -92,7 +86,6 @@ Required.JsonInput.RepeatedBytesWrapper.JsonOutput
 Required.JsonInput.RepeatedBytesWrapper.ProtobufOutput
 Required.JsonInput.RepeatedDoubleWrapper.JsonOutput
 Required.JsonInput.RepeatedDoubleWrapper.ProtobufOutput
-Required.JsonInput.RepeatedFieldWrongElementTypeExpectingStringsGotInt
 Required.JsonInput.RepeatedFloatWrapper.JsonOutput
 Required.JsonInput.RepeatedFloatWrapper.ProtobufOutput
 Required.JsonInput.RepeatedInt32Wrapper.JsonOutput
@@ -105,7 +98,6 @@ Required.JsonInput.RepeatedUint32Wrapper.JsonOutput
 Required.JsonInput.RepeatedUint32Wrapper.ProtobufOutput
 Required.JsonInput.RepeatedUint64Wrapper.JsonOutput
 Required.JsonInput.RepeatedUint64Wrapper.ProtobufOutput
-Required.JsonInput.StringFieldNotAString
 Required.JsonInput.StringFieldSurrogatePair.JsonOutput
 Required.JsonInput.StringFieldSurrogatePair.ProtobufOutput
 Required.JsonInput.Struct.JsonOutput
@@ -120,8 +112,6 @@ Required.JsonInput.TimestampWithNegativeOffset.JsonOutput
 Required.JsonInput.TimestampWithNegativeOffset.ProtobufOutput
 Required.JsonInput.TimestampWithPositiveOffset.JsonOutput
 Required.JsonInput.TimestampWithPositiveOffset.ProtobufOutput
-Required.JsonInput.Uint32FieldMaxFloatValue.JsonOutput
-Required.JsonInput.Uint32FieldMaxFloatValue.ProtobufOutput
 Required.JsonInput.ValueAcceptBool.JsonOutput
 Required.JsonInput.ValueAcceptBool.ProtobufOutput
 Required.JsonInput.ValueAcceptFloat.JsonOutput
