@@ -585,7 +585,7 @@ class Message
     public function mergeFromString($data)
     {
         $input = new InputStream($data);
-        $this->parseFromStream($input);
+        return $this->parseFromStream($input);
     }
 
     /**
