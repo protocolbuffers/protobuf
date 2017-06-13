@@ -14,7 +14,7 @@
 #endif
 
 #if GPB_USE_PROTOBUF_FRAMEWORK_IMPORTS
- #import <Protobuf/FieldMask.pbobjc.h>
+ #import <protobuf/FieldMask.pbobjc.h>
 #else
  #import "google/protobuf/FieldMask.pbobjc.h"
 #endif
