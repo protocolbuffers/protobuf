@@ -67,7 +67,6 @@ class GPBUtil
         }
     }
 
-
     public static function checkString(&$var, $check_utf8)
     {
         if (is_array($var) || is_object($var)) {
@@ -241,5 +240,104 @@ class GPBUtil
     public static function Uint64($value)
     {
         return new Uint64($value);
+    }
+
+    public static function getClassNamePrefix(
+        $classname,
+        $file_proto)
+    {
+        $option = $file_proto->getOptions();
+        $prefix = is_null($option) ? "" : $option->getPhpClassPrefix();
+        if ($prefix !== "") {
+            return $prefix;
+        }
+
+        $reserved_words = array("Empty");
+        foreach ($reserved_words as $reserved_word) {
+            if ($classname === $reserved_word) {
+                if ($file_proto->getPackage() === "google.protobuf") {
+                    return "GPB";
+                } else {
+                    return "PB";
+                }
+            }
+        }
+
+        return "";
+    }
+
+    public static function getClassNameWithoutPackage(
+        $name,
+        $file_proto)
+    {
+        $classname = implode('_', array_map('ucwords', explode('.', $name)));
+        return static::getClassNamePrefix($classname, $file_proto) . $classname;
+    }
+
+    public static function getFullClassName(
+        $proto,
+        $containing,
+        $file_proto,
+        &$message_name_without_package,
+        &$classname,
+        &$fullname)
+    {
+        // Full name needs to start with '.'.
+        $message_name_without_package = $proto->getName();
+        if ($containing !== "") {
+            $message_name_without_package =
+                $containing . "." . $message_name_without_package;
+        }
+
+        $package = $file_proto->getPackage();
+        if ($package === "") {
+            $fullname = "." . $message_name_without_package;
+        } else {
+            $fullname = "." . $package . "." . $message_name_without_package;
+        }
+
+        $class_name_without_package =
+            static::getClassNameWithoutPackage($message_name_without_package, $file_proto);
+
+        $option = $file_proto->getOptions();
+        if (!is_null($option) && $option->hasPhpNamespace()) {
+            $namespace = $option->getPhpNamespace();
+            if ($namespace !== "") {
+                $classname = $namespace . "\\" . $class_name_without_package;
+                return;
+            } else {
+                $classname = $class_name_without_package;
+                return;
+            }
+        }
+
+        if ($package === "") {
+            $classname = $class_name_without_package;
+        } else {
+            $classname =
+                implode('\\', array_map('ucwords', explode('.', $package))).
+                "\\".$class_name_without_package;
+        }
+    }
+
+    public static function combineInt32ToInt64($high, $low)
+    {
+        $isNeg = $high < 0;
+        if ($isNeg) {
+            $high = ~$high;
+            $low = ~$low;
+            $low++;
+            if (!$low) {
+                $high++;
+            }
+        }
+        $result = bcadd(bcmul($high, 4294967296), $low);
+        if ($low < 0) {
+            $result = bcadd($result, 4294967296);
+        }
+        if ($isNeg) {
+          $result = bcsub(0, $result);
+        }
+        return $result;
     }
 }

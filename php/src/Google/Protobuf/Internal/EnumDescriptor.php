@@ -41,7 +41,7 @@ class EnumDescriptor
         $enum_name_without_package  = "";
         $classname = "";
         $fullname = "";
-        getFullClassName(
+        GPBUtil::getFullClassName(
             $proto,
             $containing,
             $file_proto,

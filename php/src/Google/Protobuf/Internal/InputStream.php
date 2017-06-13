@@ -171,7 +171,7 @@ class InputStream
                 $count += 1;
             } while ($b & 0x80);
 
-            $var = combineInt32ToInt64($high, $low);
+            $var = GPBUtil::combineInt32ToInt64($high, $low);
         } else {
             $result = 0;
             $shift = 0;
@@ -244,7 +244,7 @@ class InputStream
         }
         $high = unpack('V', $data)[1];
         if (PHP_INT_SIZE == 4) {
-            $var = combineInt32ToInt64($high, $low);
+            $var = GPBUtil::combineInt32ToInt64($high, $low);
         } else {
             $var = ($high << 32) | $low;
         }
