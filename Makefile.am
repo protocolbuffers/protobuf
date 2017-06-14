@@ -597,36 +597,44 @@ php_EXTRA_DIST=                                                       \
   php/ext/google/protobuf/upb.c                                       \
   php/ext/google/protobuf/protobuf.c                                  \
   php/src/phpdoc.dist.xml                                             \
+  php/src/Google/Protobuf/Internal/Descriptor.php                     \
   php/src/Google/Protobuf/Internal/DescriptorPool.php                 \
   php/src/Google/Protobuf/Internal/GeneratedCodeInfo.php              \
   php/src/Google/Protobuf/Internal/OneofField.php                     \
   php/src/Google/Protobuf/Internal/MessageOptions.php                 \
+  php/src/Google/Protobuf/Internal/FileDescriptor.php                 \
   php/src/Google/Protobuf/Internal/FileDescriptorProto.php            \
   php/src/Google/Protobuf/Internal/MapEntry.php                       \
+  php/src/Google/Protobuf/Internal/FieldDescriptor.php                \
   php/src/Google/Protobuf/Internal/FieldDescriptorProto.php           \
   php/src/Google/Protobuf/Internal/InputStream.php                    \
   php/src/Google/Protobuf/Internal/UninterpretedOption.php            \
   php/src/Google/Protobuf/Internal/ServiceOptions.php                 \
   php/src/Google/Protobuf/Internal/MethodOptions_IdempotencyLevel.php \
   php/src/Google/Protobuf/Internal/ServiceDescriptorProto.php         \
+  php/src/Google/Protobuf/Internal/OneofDescriptor.php                \
   php/src/Google/Protobuf/Internal/OneofDescriptorProto.php           \
   php/src/Google/Protobuf/Internal/UninterpretedOption_NamePart.php   \
   php/src/Google/Protobuf/Internal/OutputStream.php                   \
   php/src/Google/Protobuf/Internal/MessageBuilderContext.php          \
+  php/src/Google/Protobuf/Internal/EnumValueDescriptor.php            \
   php/src/Google/Protobuf/Internal/EnumValueDescriptorProto.php       \
   php/src/Google/Protobuf/Internal/FileOptions_OptimizeMode.php       \
   php/src/Google/Protobuf/Internal/DescriptorProto.php                \
   php/src/Google/Protobuf/Internal/MapField.php                       \
+  php/src/Google/Protobuf/Internal/MapFieldIter.php                   \
   php/src/Google/Protobuf/Internal/MethodDescriptorProto.php          \
   php/src/Google/Protobuf/Internal/DescriptorProto_ExtensionRange.php \
   php/src/Google/Protobuf/Internal/DescriptorProto_ReservedRange.php  \
   php/src/Google/Protobuf/Internal/RepeatedField.php                  \
+  php/src/Google/Protobuf/Internal/RepeatedFieldIter.php              \
   php/src/Google/Protobuf/Internal/EnumValueOptions.php               \
   php/src/Google/Protobuf/Internal/MethodOptions.php                  \
   php/src/Google/Protobuf/Internal/OneofOptions.php                   \
   php/src/Google/Protobuf/Internal/Message.php                        \
   php/src/Google/Protobuf/Internal/FileOptions.php                    \
   php/src/Google/Protobuf/Internal/FileDescriptorSet.php              \
+  php/src/Google/Protobuf/Internal/EnumDescriptor.php                 \
   php/src/Google/Protobuf/Internal/EnumDescriptorProto.php            \
   php/src/Google/Protobuf/Internal/GPBWire.php                        \
   php/src/Google/Protobuf/Internal/FieldDescriptorProto_Label.php     \
@@ -643,7 +651,6 @@ php_EXTRA_DIST=                                                       \
   php/src/Google/Protobuf/Internal/GPBUtil.php                        \
   php/src/Google/Protobuf/Internal/FieldOptions_CType.php             \
   php/src/Google/Protobuf/Internal/GPBDecodeException.php             \
-  php/src/Google/Protobuf/descriptor.php                              \
   php/src/GPBMetadata/Google/Protobuf/Internal/Descriptor.php         \
   php/tests/array_test.php                                            \
   php/tests/autoload.php                                              \
