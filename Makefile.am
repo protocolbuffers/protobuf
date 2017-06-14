@@ -651,7 +651,6 @@ php_EXTRA_DIST=                                                       \
   php/src/Google/Protobuf/Internal/GPBUtil.php                        \
   php/src/Google/Protobuf/Internal/FieldOptions_CType.php             \
   php/src/Google/Protobuf/Internal/GPBDecodeException.php             \
-  php/src/Google/Protobuf/Internal/functions.php                      \
   php/src/GPBMetadata/Google/Protobuf/Internal/Descriptor.php         \
   php/tests/array_test.php                                            \
   php/tests/autoload.php                                              \
