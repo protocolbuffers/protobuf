@@ -34,27 +34,6 @@ namespace Google\Protobuf\Internal;
 
 use Google\Protobuf\Internal\Uint64;
 
-function combineInt32ToInt64($high, $low)
-{
-    $isNeg = $high < 0;
-    if ($isNeg) {
-        $high = ~$high;
-        $low = ~$low;
-        $low++;
-        if (!$low) {
-            $high++;
-        }
-    }
-    $result = bcadd(bcmul($high, 4294967296), $low);
-    if ($low < 0) {
-        $result = bcadd($result, 4294967296);
-    }
-    if ($isNeg) {
-      $result = bcsub(0, $result);
-    }
-    return $result;
-}
-
 class InputStream
 {
 
@@ -192,7 +171,7 @@ class InputStream
                 $count += 1;
             } while ($b & 0x80);
 
-            $var = combineInt32ToInt64($high, $low);
+            $var = GPBUtil::combineInt32ToInt64($high, $low);
         } else {
             $result = 0;
             $shift = 0;
@@ -265,7 +244,7 @@ class InputStream
         }
         $high = unpack('V', $data)[1];
         if (PHP_INT_SIZE == 4) {
-            $var = combineInt32ToInt64($high, $low);
+            $var = GPBUtil::combineInt32ToInt64($high, $low);
         } else {
             $var = ($high << 32) | $low;
         }
