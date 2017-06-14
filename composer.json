@@ -15,9 +15,6 @@
     "psr-4": {
       "Google\\Protobuf\\Internal\\": "php/src/Google/Protobuf/Internal",
       "GPBMetadata\\Google\\Protobuf\\Internal\\": "php/src/GPBMetadata/Google/Protobuf/Internal"
-    },
-    "files": [
-      "php/src/Google/Protobuf/descriptor.php"
-    ]
+    }
   }
 }
