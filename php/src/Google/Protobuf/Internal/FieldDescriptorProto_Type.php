@@ -5,7 +5,7 @@
 namespace Google\Protobuf\Internal;
 
 /**
- * Protobuf enum <code>google.protobuf.FieldDescriptorProto.Type</code>
+ * Protobuf enum <code>Google\Protobuf\Internal</code>
  */
 class FieldDescriptorProto_Type
 {

@@ -12,7 +12,7 @@ use Google\Protobuf\Internal\InputStream;
 use Google\Protobuf\Internal\GPBUtil;
 
 /**
- * Protobuf type <code>google.protobuf.EnumOptions</code>
+ * Protobuf type <code>Google\Protobuf\Internal</code>
  */
 class EnumOptions extends \Google\Protobuf\Internal\Message
 {
@@ -60,6 +60,7 @@ class EnumOptions extends \Google\Protobuf\Internal\Message
      * </pre>
      *
      * <code>optional bool allow_alias = 2;</code>
+     * @return bool
      */
     public function getAllowAlias()
     {
@@ -73,6 +74,7 @@ class EnumOptions extends \Google\Protobuf\Internal\Message
      * </pre>
      *
      * <code>optional bool allow_alias = 2;</code>
+     * @param bool $var
      */
     public function setAllowAlias($var)
     {
@@ -97,6 +99,7 @@ class EnumOptions extends \Google\Protobuf\Internal\Message
      * </pre>
      *
      * <code>optional bool deprecated = 3 [default = false];</code>
+     * @return bool
      */
     public function getDeprecated()
     {
@@ -112,6 +115,7 @@ class EnumOptions extends \Google\Protobuf\Internal\Message
      * </pre>
      *
      * <code>optional bool deprecated = 3 [default = false];</code>
+     * @param bool $var
      */
     public function setDeprecated($var)
     {
@@ -133,6 +137,7 @@ class EnumOptions extends \Google\Protobuf\Internal\Message
      * </pre>
      *
      * <code>repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;</code>
+     * @return \Google\Protobuf\Internal\RepeatedField
      */
     public function getUninterpretedOption()
     {
@@ -145,6 +150,7 @@ class EnumOptions extends \Google\Protobuf\Internal\Message
      * </pre>
      *
      * <code>repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;</code>
+     * @param array|\Google\Protobuf\Internal\RepeatedField $var
      */
     public function setUninterpretedOption(&$var)
     {

@@ -16,7 +16,7 @@ use Google\Protobuf\Internal\GPBUtil;
  * Describes a method of a service.
  * </pre>
  *
- * Protobuf type <code>google.protobuf.MethodDescriptorProto</code>
+ * Protobuf type <code>Google\Protobuf\Internal</code>
  */
 class MethodDescriptorProto extends \Google\Protobuf\Internal\Message
 {
@@ -71,6 +71,7 @@ class MethodDescriptorProto extends \Google\Protobuf\Internal\Message
 
     /**
      * <code>optional string name = 1;</code>
+     * @return string
      */
     public function getName()
     {
@@ -79,6 +80,7 @@ class MethodDescriptorProto extends \Google\Protobuf\Internal\Message
 
     /**
      * <code>optional string name = 1;</code>
+     * @param string $var
      */
     public function setName($var)
     {
@@ -101,6 +103,7 @@ class MethodDescriptorProto extends \Google\Protobuf\Internal\Message
      * </pre>
      *
      * <code>optional string input_type = 2;</code>
+     * @return string
      */
     public function getInputType()
     {
@@ -114,6 +117,7 @@ class MethodDescriptorProto extends \Google\Protobuf\Internal\Message
      * </pre>
      *
      * <code>optional string input_type = 2;</code>
+     * @param string $var
      */
     public function setInputType($var)
     {
@@ -131,6 +135,7 @@ class MethodDescriptorProto extends \Google\Protobuf\Internal\Message
 
     /**
      * <code>optional string output_type = 3;</code>
+     * @return string
      */
     public function getOutputType()
     {
@@ -139,6 +144,7 @@ class MethodDescriptorProto extends \Google\Protobuf\Internal\Message
 
     /**
      * <code>optional string output_type = 3;</code>
+     * @param string $var
      */
     public function setOutputType($var)
     {
@@ -156,6 +162,7 @@ class MethodDescriptorProto extends \Google\Protobuf\Internal\Message
 
     /**
      * <code>optional .google.protobuf.MethodOptions options = 4;</code>
+     * @return Google\Protobuf\Internal\MethodOptions
      */
     public function getOptions()
     {
@@ -164,6 +171,7 @@ class MethodDescriptorProto extends \Google\Protobuf\Internal\Message
 
     /**
      * <code>optional .google.protobuf.MethodOptions options = 4;</code>
+     * @param Google\Protobuf\Internal\MethodOptions $var
      */
     public function setOptions(&$var)
     {
@@ -185,6 +193,7 @@ class MethodDescriptorProto extends \Google\Protobuf\Internal\Message
      * </pre>
      *
      * <code>optional bool client_streaming = 5 [default = false];</code>
+     * @return bool
      */
     public function getClientStreaming()
     {
@@ -197,6 +206,7 @@ class MethodDescriptorProto extends \Google\Protobuf\Internal\Message
      * </pre>
      *
      * <code>optional bool client_streaming = 5 [default = false];</code>
+     * @param bool $var
      */
     public function setClientStreaming($var)
     {
@@ -218,6 +228,7 @@ class MethodDescriptorProto extends \Google\Protobuf\Internal\Message
      * </pre>
      *
      * <code>optional bool server_streaming = 6 [default = false];</code>
+     * @return bool
      */
     public function getServerStreaming()
     {
@@ -230,6 +241,7 @@ class MethodDescriptorProto extends \Google\Protobuf\Internal\Message
      * </pre>
      *
      * <code>optional bool server_streaming = 6 [default = false];</code>
+     * @param bool $var
      */
     public function setServerStreaming($var)
     {

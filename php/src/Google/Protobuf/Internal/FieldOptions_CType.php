@@ -5,7 +5,7 @@
 namespace Google\Protobuf\Internal;
 
 /**
- * Protobuf enum <code>google.protobuf.FieldOptions.CType</code>
+ * Protobuf enum <code>Google\Protobuf\Internal</code>
  */
 class FieldOptions_CType
 {

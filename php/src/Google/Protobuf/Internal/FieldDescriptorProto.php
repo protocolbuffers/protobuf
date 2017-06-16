@@ -16,7 +16,7 @@ use Google\Protobuf\Internal\GPBUtil;
  * Describes a field within a message.
  * </pre>
  *
- * Protobuf type <code>google.protobuf.FieldDescriptorProto</code>
+ * Protobuf type <code>Google\Protobuf\Internal</code>
  */
 class FieldDescriptorProto extends \Google\Protobuf\Internal\Message
 {
@@ -73,7 +73,7 @@ class FieldDescriptorProto extends \Google\Protobuf\Internal\Message
      * For numeric types, contains the original text representation of the value.
      * For booleans, "true" or "false".
      * For strings, contains the default text contents (not escaped in any way).
-     * For bytes, contains the C escaped value.  All bytes &gt;= 128 are escaped.
+     * For bytes, contains the C escaped value.  All bytes >= 128 are escaped.
      * TODO(kenton):  Base-64 encode?
      * </pre>
      *
@@ -116,6 +116,7 @@ class FieldDescriptorProto extends \Google\Protobuf\Internal\Message
 
     /**
      * <code>optional string name = 1;</code>
+     * @return string
      */
     public function getName()
     {
@@ -124,6 +125,7 @@ class FieldDescriptorProto extends \Google\Protobuf\Internal\Message
 
     /**
      * <code>optional string name = 1;</code>
+     * @param string $var
      */
     public function setName($var)
     {
@@ -141,6 +143,7 @@ class FieldDescriptorProto extends \Google\Protobuf\Internal\Message
 
     /**
      * <code>optional int32 number = 3;</code>
+     * @return int
      */
     public function getNumber()
     {
@@ -149,6 +152,7 @@ class FieldDescriptorProto extends \Google\Protobuf\Internal\Message
 
     /**
      * <code>optional int32 number = 3;</code>
+     * @param int $var
      */
     public function setNumber($var)
     {
@@ -166,6 +170,7 @@ class FieldDescriptorProto extends \Google\Protobuf\Internal\Message
 
     /**
      * <code>optional .google.protobuf.FieldDescriptorProto.Label label = 4;</code>
+     * @return int
      */
     public function getLabel()
     {
@@ -174,6 +179,7 @@ class FieldDescriptorProto extends \Google\Protobuf\Internal\Message
 
     /**
      * <code>optional .google.protobuf.FieldDescriptorProto.Label label = 4;</code>
+     * @param int $var
      */
     public function setLabel($var)
     {
@@ -196,6 +202,7 @@ class FieldDescriptorProto extends \Google\Protobuf\Internal\Message
      * </pre>
      *
      * <code>optional .google.protobuf.FieldDescriptorProto.Type type = 5;</code>
+     * @return int
      */
     public function getType()
     {
@@ -209,6 +216,7 @@ class FieldDescriptorProto extends \Google\Protobuf\Internal\Message
      * </pre>
      *
      * <code>optional .google.protobuf.FieldDescriptorProto.Type type = 5;</code>
+     * @param int $var
      */
     public function setType($var)
     {
@@ -234,6 +242,7 @@ class FieldDescriptorProto extends \Google\Protobuf\Internal\Message
      * </pre>
      *
      * <code>optional string type_name = 6;</code>
+     * @return string
      */
     public function getTypeName()
     {
@@ -250,6 +259,7 @@ class FieldDescriptorProto extends \Google\Protobuf\Internal\Message
      * </pre>
      *
      * <code>optional string type_name = 6;</code>
+     * @param string $var
      */
     public function setTypeName($var)
     {
@@ -272,6 +282,7 @@ class FieldDescriptorProto extends \Google\Protobuf\Internal\Message
      * </pre>
      *
      * <code>optional string extendee = 2;</code>
+     * @return string
      */
     public function getExtendee()
     {
@@ -285,6 +296,7 @@ class FieldDescriptorProto extends \Google\Protobuf\Internal\Message
      * </pre>
      *
      * <code>optional string extendee = 2;</code>
+     * @param string $var
      */
     public function setExtendee($var)
     {
@@ -305,11 +317,12 @@ class FieldDescriptorProto extends \Google\Protobuf\Internal\Message
      * For numeric types, contains the original text representation of the value.
      * For booleans, "true" or "false".
      * For strings, contains the default text contents (not escaped in any way).
-     * For bytes, contains the C escaped value.  All bytes &gt;= 128 are escaped.
+     * For bytes, contains the C escaped value.  All bytes >= 128 are escaped.
      * TODO(kenton):  Base-64 encode?
      * </pre>
      *
      * <code>optional string default_value = 7;</code>
+     * @return string
      */
     public function getDefaultValue()
     {
@@ -321,11 +334,12 @@ class FieldDescriptorProto extends \Google\Protobuf\Internal\Message
      * For numeric types, contains the original text representation of the value.
      * For booleans, "true" or "false".
      * For strings, contains the default text contents (not escaped in any way).
-     * For bytes, contains the C escaped value.  All bytes &gt;= 128 are escaped.
+     * For bytes, contains the C escaped value.  All bytes >= 128 are escaped.
      * TODO(kenton):  Base-64 encode?
      * </pre>
      *
      * <code>optional string default_value = 7;</code>
+     * @param string $var
      */
     public function setDefaultValue($var)
     {
@@ -348,6 +362,7 @@ class FieldDescriptorProto extends \Google\Protobuf\Internal\Message
      * </pre>
      *
      * <code>optional int32 oneof_index = 9;</code>
+     * @return int
      */
     public function getOneofIndex()
     {
@@ -361,6 +376,7 @@ class FieldDescriptorProto extends \Google\Protobuf\Internal\Message
      * </pre>
      *
      * <code>optional int32 oneof_index = 9;</code>
+     * @param int $var
      */
     public function setOneofIndex($var)
     {
@@ -385,6 +401,7 @@ class FieldDescriptorProto extends \Google\Protobuf\Internal\Message
      * </pre>
      *
      * <code>optional string json_name = 10;</code>
+     * @return string
      */
     public function getJsonName()
     {
@@ -400,6 +417,7 @@ class FieldDescriptorProto extends \Google\Protobuf\Internal\Message
      * </pre>
      *
      * <code>optional string json_name = 10;</code>
+     * @param string $var
      */
     public function setJsonName($var)
     {
@@ -417,6 +435,7 @@ class FieldDescriptorProto extends \Google\Protobuf\Internal\Message
 
     /**
      * <code>optional .google.protobuf.FieldOptions options = 8;</code>
+     * @return Google\Protobuf\Internal\FieldOptions
      */
     public function getOptions()
     {
@@ -425,6 +444,7 @@ class FieldDescriptorProto extends \Google\Protobuf\Internal\Message
 
     /**
      * <code>optional .google.protobuf.FieldOptions options = 8;</code>
+     * @param Google\Protobuf\Internal\FieldOptions $var
      */
     public function setOptions(&$var)
     {

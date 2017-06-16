@@ -12,7 +12,7 @@ use Google\Protobuf\Internal\InputStream;
 use Google\Protobuf\Internal\GPBUtil;
 
 /**
- * Protobuf type <code>google.protobuf.MethodOptions</code>
+ * Protobuf type <code>Google\Protobuf\Internal</code>
  */
 class MethodOptions extends \Google\Protobuf\Internal\Message
 {
@@ -57,6 +57,7 @@ class MethodOptions extends \Google\Protobuf\Internal\Message
      * </pre>
      *
      * <code>optional bool deprecated = 33 [default = false];</code>
+     * @return bool
      */
     public function getDeprecated()
     {
@@ -72,6 +73,7 @@ class MethodOptions extends \Google\Protobuf\Internal\Message
      * </pre>
      *
      * <code>optional bool deprecated = 33 [default = false];</code>
+     * @param bool $var
      */
     public function setDeprecated($var)
     {
@@ -89,6 +91,7 @@ class MethodOptions extends \Google\Protobuf\Internal\Message
 
     /**
      * <code>optional .google.protobuf.MethodOptions.IdempotencyLevel idempotency_level = 34 [default = IDEMPOTENCY_UNKNOWN];</code>
+     * @return int
      */
     public function getIdempotencyLevel()
     {
@@ -97,6 +100,7 @@ class MethodOptions extends \Google\Protobuf\Internal\Message
 
     /**
      * <code>optional .google.protobuf.MethodOptions.IdempotencyLevel idempotency_level = 34 [default = IDEMPOTENCY_UNKNOWN];</code>
+     * @param int $var
      */
     public function setIdempotencyLevel($var)
     {
@@ -118,6 +122,7 @@ class MethodOptions extends \Google\Protobuf\Internal\Message
      * </pre>
      *
      * <code>repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;</code>
+     * @return \Google\Protobuf\Internal\RepeatedField
      */
     public function getUninterpretedOption()
     {
@@ -130,6 +135,7 @@ class MethodOptions extends \Google\Protobuf\Internal\Message
      * </pre>
      *
      * <code>repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;</code>
+     * @param array|\Google\Protobuf\Internal\RepeatedField $var
      */
     public function setUninterpretedOption(&$var)
     {

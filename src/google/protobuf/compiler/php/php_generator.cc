@@ -311,22 +311,50 @@ std::string TypeName(const FieldDescriptor* field) {
   }
 }
 
-std::string PhpTypeName(const FieldDescriptor* field, bool is_descriptor) {
+std::string PhpSetterTypeName(const FieldDescriptor* field, bool is_descriptor) {
   if (field->is_repeated()) {
     return "array|\\Google\\Protobuf\\Internal\\RepeatedField";
   }
   switch (field->type()) {
     case FieldDescriptor::TYPE_INT32:
-    case FieldDescriptor::TYPE_INT64:
     case FieldDescriptor::TYPE_UINT32:
-    case FieldDescriptor::TYPE_UINT64:
     case FieldDescriptor::TYPE_SINT32:
-    case FieldDescriptor::TYPE_SINT64:
     case FieldDescriptor::TYPE_FIXED32:
-    case FieldDescriptor::TYPE_FIXED64:
     case FieldDescriptor::TYPE_SFIXED32:
-    case FieldDescriptor::TYPE_SFIXED64:
     case FieldDescriptor::TYPE_ENUM: return "int";
+    case FieldDescriptor::TYPE_INT64:
+    case FieldDescriptor::TYPE_UINT64:
+    case FieldDescriptor::TYPE_SINT64:
+    case FieldDescriptor::TYPE_FIXED64:
+    case FieldDescriptor::TYPE_SFIXED64: return "int|string";
+    case FieldDescriptor::TYPE_DOUBLE:
+    case FieldDescriptor::TYPE_FLOAT: return "float";
+    case FieldDescriptor::TYPE_BOOL: return "bool";
+    case FieldDescriptor::TYPE_STRING:
+    case FieldDescriptor::TYPE_BYTES: return "string";
+    case FieldDescriptor::TYPE_MESSAGE:
+      return FullClassName(field->message_type(), is_descriptor);
+    case FieldDescriptor::TYPE_GROUP: return "null";
+    default: assert(false); return "";
+  }
+}
+
+std::string PhpGetterTypeName(const FieldDescriptor* field, bool is_descriptor) {
+  if (field->is_repeated()) {
+    return "\\Google\\Protobuf\\Internal\\RepeatedField";
+  }
+  switch (field->type()) {
+    case FieldDescriptor::TYPE_INT32:
+    case FieldDescriptor::TYPE_UINT32:
+    case FieldDescriptor::TYPE_SINT32:
+    case FieldDescriptor::TYPE_FIXED32:
+    case FieldDescriptor::TYPE_SFIXED32:
+    case FieldDescriptor::TYPE_ENUM: return "int";
+    case FieldDescriptor::TYPE_INT64:
+    case FieldDescriptor::TYPE_UINT64:
+    case FieldDescriptor::TYPE_SINT64:
+    case FieldDescriptor::TYPE_FIXED64:
+    case FieldDescriptor::TYPE_SFIXED64: return "int|string";
     case FieldDescriptor::TYPE_DOUBLE:
     case FieldDescriptor::TYPE_FLOAT: return "float";
     case FieldDescriptor::TYPE_BOOL: return "bool";
@@ -1055,22 +1083,6 @@ static string EscapePhpdoc(const string& input) {
         // does not have a corresponding @Deprecated annotation.
         result.append("&#64;");
         break;
-      case '<':
-        // Avoid interpretation as HTML.
-        result.append("&lt;");
-        break;
-      case '>':
-        // Avoid interpretation as HTML.
-        result.append("&gt;");
-        break;
-      case '&':
-        // Avoid interpretation as HTML.
-        result.append("&amp;");
-        break;
-      case '\\':
-        // Java interprets Unicode escape sequences anywhere!
-        result.append("&#92;");
-        break;
       default:
         result.push_back(c);
         break;
@@ -1164,10 +1176,10 @@ void GenerateFieldDocComment(io::Printer* printer, const FieldDescriptor* field,
     "def", EscapePhpdoc(FirstLineOf(field->DebugString())));
   if (function_type == kFieldSetter) {
     printer->Print(" * @param ^php_type^ $var\n",
-      "php_type", PhpTypeName(field, is_descriptor));
+      "php_type", PhpSetterTypeName(field, is_descriptor));
   } else if (function_type == kFieldGetter) {
     printer->Print(" * @return ^php_type^\n",
-      "php_type", PhpTypeName(field, is_descriptor));
+      "php_type", PhpGetterTypeName(field, is_descriptor));
   }
   printer->Print(" */\n");
 }

@@ -11,7 +11,7 @@ namespace Google\Protobuf\Internal;
  * methods, and PUT verb for idempotent methods instead of the default POST.
  * </pre>
  *
- * Protobuf enum <code>google.protobuf.MethodOptions.IdempotencyLevel</code>
+ * Protobuf enum <code>Google\Protobuf\Internal</code>
  */
 class MethodOptions_IdempotencyLevel
 {

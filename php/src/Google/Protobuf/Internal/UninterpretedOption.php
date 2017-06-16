@@ -21,7 +21,7 @@ use Google\Protobuf\Internal\GPBUtil;
  * in them.
  * </pre>
  *
- * Protobuf type <code>google.protobuf.UninterpretedOption</code>
+ * Protobuf type <code>Google\Protobuf\Internal</code>
  */
 class UninterpretedOption extends \Google\Protobuf\Internal\Message
 {
@@ -73,6 +73,7 @@ class UninterpretedOption extends \Google\Protobuf\Internal\Message
 
     /**
      * <code>repeated .google.protobuf.UninterpretedOption.NamePart name = 2;</code>
+     * @return \Google\Protobuf\Internal\RepeatedField
      */
     public function getName()
     {
@@ -81,6 +82,7 @@ class UninterpretedOption extends \Google\Protobuf\Internal\Message
 
     /**
      * <code>repeated .google.protobuf.UninterpretedOption.NamePart name = 2;</code>
+     * @param array|\Google\Protobuf\Internal\RepeatedField $var
      */
     public function setName(&$var)
     {
@@ -103,6 +105,7 @@ class UninterpretedOption extends \Google\Protobuf\Internal\Message
      * </pre>
      *
      * <code>optional string identifier_value = 3;</code>
+     * @return string
      */
     public function getIdentifierValue()
     {
@@ -116,6 +119,7 @@ class UninterpretedOption extends \Google\Protobuf\Internal\Message
      * </pre>
      *
      * <code>optional string identifier_value = 3;</code>
+     * @param string $var
      */
     public function setIdentifierValue($var)
     {
@@ -133,6 +137,7 @@ class UninterpretedOption extends \Google\Protobuf\Internal\Message
 
     /**
      * <code>optional uint64 positive_int_value = 4;</code>
+     * @return int|string
      */
     public function getPositiveIntValue()
     {
@@ -141,6 +146,7 @@ class UninterpretedOption extends \Google\Protobuf\Internal\Message
 
     /**
      * <code>optional uint64 positive_int_value = 4;</code>
+     * @param int|string $var
      */
     public function setPositiveIntValue($var)
     {
@@ -158,6 +164,7 @@ class UninterpretedOption extends \Google\Protobuf\Internal\Message
 
     /**
      * <code>optional int64 negative_int_value = 5;</code>
+     * @return int|string
      */
     public function getNegativeIntValue()
     {
@@ -166,6 +173,7 @@ class UninterpretedOption extends \Google\Protobuf\Internal\Message
 
     /**
      * <code>optional int64 negative_int_value = 5;</code>
+     * @param int|string $var
      */
     public function setNegativeIntValue($var)
     {
@@ -183,6 +191,7 @@ class UninterpretedOption extends \Google\Protobuf\Internal\Message
 
     /**
      * <code>optional double double_value = 6;</code>
+     * @return float
      */
     public function getDoubleValue()
     {
@@ -191,6 +200,7 @@ class UninterpretedOption extends \Google\Protobuf\Internal\Message
 
     /**
      * <code>optional double double_value = 6;</code>
+     * @param float $var
      */
     public function setDoubleValue($var)
     {
@@ -208,6 +218,7 @@ class UninterpretedOption extends \Google\Protobuf\Internal\Message
 
     /**
      * <code>optional bytes string_value = 7;</code>
+     * @return string
      */
     public function getStringValue()
     {
@@ -216,6 +227,7 @@ class UninterpretedOption extends \Google\Protobuf\Internal\Message
 
     /**
      * <code>optional bytes string_value = 7;</code>
+     * @param string $var
      */
     public function setStringValue($var)
     {
@@ -233,6 +245,7 @@ class UninterpretedOption extends \Google\Protobuf\Internal\Message
 
     /**
      * <code>optional string aggregate_value = 8;</code>
+     * @return string
      */
     public function getAggregateValue()
     {
@@ -241,6 +254,7 @@ class UninterpretedOption extends \Google\Protobuf\Internal\Message
 
     /**
      * <code>optional string aggregate_value = 8;</code>
+     * @param string $var
      */
     public function setAggregateValue($var)
     {

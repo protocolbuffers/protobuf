@@ -12,7 +12,7 @@ use Google\Protobuf\Internal\InputStream;
 use Google\Protobuf\Internal\GPBUtil;
 
 /**
- * Protobuf type <code>google.protobuf.EnumValueOptions</code>
+ * Protobuf type <code>Google\Protobuf\Internal</code>
  */
 class EnumValueOptions extends \Google\Protobuf\Internal\Message
 {
@@ -52,6 +52,7 @@ class EnumValueOptions extends \Google\Protobuf\Internal\Message
      * </pre>
      *
      * <code>optional bool deprecated = 1 [default = false];</code>
+     * @return bool
      */
     public function getDeprecated()
     {
@@ -67,6 +68,7 @@ class EnumValueOptions extends \Google\Protobuf\Internal\Message
      * </pre>
      *
      * <code>optional bool deprecated = 1 [default = false];</code>
+     * @param bool $var
      */
     public function setDeprecated($var)
     {
@@ -88,6 +90,7 @@ class EnumValueOptions extends \Google\Protobuf\Internal\Message
      * </pre>
      *
      * <code>repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;</code>
+     * @return \Google\Protobuf\Internal\RepeatedField
      */
     public function getUninterpretedOption()
     {
@@ -100,6 +103,7 @@ class EnumValueOptions extends \Google\Protobuf\Internal\Message
      * </pre>
      *
      * <code>repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;</code>
+     * @param array|\Google\Protobuf\Internal\RepeatedField $var
      */
     public function setUninterpretedOption(&$var)
     {

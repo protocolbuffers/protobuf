@@ -18,7 +18,7 @@ use Google\Protobuf\Internal\GPBUtil;
  * not overlap.
  * </pre>
  *
- * Protobuf type <code>google.protobuf.DescriptorProto.ReservedRange</code>
+ * Protobuf type <code>Google\Protobuf\Internal</code>
  */
 class DescriptorProto_ReservedRange extends \Google\Protobuf\Internal\Message
 {
@@ -52,6 +52,7 @@ class DescriptorProto_ReservedRange extends \Google\Protobuf\Internal\Message
      * </pre>
      *
      * <code>optional int32 start = 1;</code>
+     * @return int
      */
     public function getStart()
     {
@@ -64,6 +65,7 @@ class DescriptorProto_ReservedRange extends \Google\Protobuf\Internal\Message
      * </pre>
      *
      * <code>optional int32 start = 1;</code>
+     * @param int $var
      */
     public function setStart($var)
     {
@@ -85,6 +87,7 @@ class DescriptorProto_ReservedRange extends \Google\Protobuf\Internal\Message
      * </pre>
      *
      * <code>optional int32 end = 2;</code>
+     * @return int
      */
     public function getEnd()
     {
@@ -97,6 +100,7 @@ class DescriptorProto_ReservedRange extends \Google\Protobuf\Internal\Message
      * </pre>
      *
      * <code>optional int32 end = 2;</code>
+     * @param int $var
      */
     public function setEnd($var)
     {

@@ -16,7 +16,7 @@ use Google\Protobuf\Internal\GPBUtil;
  * Describes a value within an enum.
  * </pre>
  *
- * Protobuf type <code>google.protobuf.EnumValueDescriptorProto</code>
+ * Protobuf type <code>Google\Protobuf\Internal</code>
  */
 class EnumValueDescriptorProto extends \Google\Protobuf\Internal\Message
 {
@@ -43,6 +43,7 @@ class EnumValueDescriptorProto extends \Google\Protobuf\Internal\Message
 
     /**
      * <code>optional string name = 1;</code>
+     * @return string
      */
     public function getName()
     {
@@ -51,6 +52,7 @@ class EnumValueDescriptorProto extends \Google\Protobuf\Internal\Message
 
     /**
      * <code>optional string name = 1;</code>
+     * @param string $var
      */
     public function setName($var)
     {
@@ -68,6 +70,7 @@ class EnumValueDescriptorProto extends \Google\Protobuf\Internal\Message
 
     /**
      * <code>optional int32 number = 2;</code>
+     * @return int
      */
     public function getNumber()
     {
@@ -76,6 +79,7 @@ class EnumValueDescriptorProto extends \Google\Protobuf\Internal\Message
 
     /**
      * <code>optional int32 number = 2;</code>
+     * @param int $var
      */
     public function setNumber($var)
     {
@@ -93,6 +97,7 @@ class EnumValueDescriptorProto extends \Google\Protobuf\Internal\Message
 
     /**
      * <code>optional .google.protobuf.EnumValueOptions options = 3;</code>
+     * @return Google\Protobuf\Internal\EnumValueOptions
      */
     public function getOptions()
     {
@@ -101,6 +106,7 @@ class EnumValueDescriptorProto extends \Google\Protobuf\Internal\Message
 
     /**
      * <code>optional .google.protobuf.EnumValueOptions options = 3;</code>
+     * @param Google\Protobuf\Internal\EnumValueOptions $var
      */
     public function setOptions(&$var)
     {

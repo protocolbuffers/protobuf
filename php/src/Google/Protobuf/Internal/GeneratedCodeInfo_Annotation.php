@@ -12,7 +12,7 @@ use Google\Protobuf\Internal\InputStream;
 use Google\Protobuf\Internal\GPBUtil;
 
 /**
- * Protobuf type <code>google.protobuf.GeneratedCodeInfo.Annotation</code>
+ * Protobuf type <code>Google\Protobuf\Internal</code>
  */
 class GeneratedCodeInfo_Annotation extends \Google\Protobuf\Internal\Message
 {
@@ -69,6 +69,7 @@ class GeneratedCodeInfo_Annotation extends \Google\Protobuf\Internal\Message
      * </pre>
      *
      * <code>repeated int32 path = 1 [packed = true];</code>
+     * @return \Google\Protobuf\Internal\RepeatedField
      */
     public function getPath()
     {
@@ -82,6 +83,7 @@ class GeneratedCodeInfo_Annotation extends \Google\Protobuf\Internal\Message
      * </pre>
      *
      * <code>repeated int32 path = 1 [packed = true];</code>
+     * @param array|\Google\Protobuf\Internal\RepeatedField $var
      */
     public function setPath(&$var)
     {
@@ -103,6 +105,7 @@ class GeneratedCodeInfo_Annotation extends \Google\Protobuf\Internal\Message
      * </pre>
      *
      * <code>optional string source_file = 2;</code>
+     * @return string
      */
     public function getSourceFile()
     {
@@ -115,6 +118,7 @@ class GeneratedCodeInfo_Annotation extends \Google\Protobuf\Internal\Message
      * </pre>
      *
      * <code>optional string source_file = 2;</code>
+     * @param string $var
      */
     public function setSourceFile($var)
     {
@@ -137,6 +141,7 @@ class GeneratedCodeInfo_Annotation extends \Google\Protobuf\Internal\Message
      * </pre>
      *
      * <code>optional int32 begin = 3;</code>
+     * @return int
      */
     public function getBegin()
     {
@@ -150,6 +155,7 @@ class GeneratedCodeInfo_Annotation extends \Google\Protobuf\Internal\Message
      * </pre>
      *
      * <code>optional int32 begin = 3;</code>
+     * @param int $var
      */
     public function setBegin($var)
     {
@@ -173,6 +179,7 @@ class GeneratedCodeInfo_Annotation extends \Google\Protobuf\Internal\Message
      * </pre>
      *
      * <code>optional int32 end = 4;</code>
+     * @return int
      */
     public function getEnd()
     {
@@ -187,6 +194,7 @@ class GeneratedCodeInfo_Annotation extends \Google\Protobuf\Internal\Message
      * </pre>
      *
      * <code>optional int32 end = 4;</code>
+     * @param int $var
      */
     public function setEnd($var)
     {

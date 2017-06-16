@@ -12,7 +12,7 @@ use Google\Protobuf\Internal\InputStream;
 use Google\Protobuf\Internal\GPBUtil;
 
 /**
- * Protobuf type <code>google.protobuf.MessageOptions</code>
+ * Protobuf type <code>Google\Protobuf\Internal</code>
  */
 class MessageOptions extends \Google\Protobuf\Internal\Message
 {
@@ -67,7 +67,7 @@ class MessageOptions extends \Google\Protobuf\Internal\Message
      * Whether the message is an automatically generated map entry type for the
      * maps field.
      * For maps fields:
-     *     map&lt;KeyType, ValueType&gt; map_field = 1;
+     *     map<KeyType, ValueType> map_field = 1;
      * The parsed descriptor looks like:
      *     message MapFieldEntry {
      *         option map_entry = true;
@@ -123,6 +123,7 @@ class MessageOptions extends \Google\Protobuf\Internal\Message
      * </pre>
      *
      * <code>optional bool message_set_wire_format = 1 [default = false];</code>
+     * @return bool
      */
     public function getMessageSetWireFormat()
     {
@@ -149,6 +150,7 @@ class MessageOptions extends \Google\Protobuf\Internal\Message
      * </pre>
      *
      * <code>optional bool message_set_wire_format = 1 [default = false];</code>
+     * @param bool $var
      */
     public function setMessageSetWireFormat($var)
     {
@@ -172,6 +174,7 @@ class MessageOptions extends \Google\Protobuf\Internal\Message
      * </pre>
      *
      * <code>optional bool no_standard_descriptor_accessor = 2 [default = false];</code>
+     * @return bool
      */
     public function getNoStandardDescriptorAccessor()
     {
@@ -186,6 +189,7 @@ class MessageOptions extends \Google\Protobuf\Internal\Message
      * </pre>
      *
      * <code>optional bool no_standard_descriptor_accessor = 2 [default = false];</code>
+     * @param bool $var
      */
     public function setNoStandardDescriptorAccessor($var)
     {
@@ -210,6 +214,7 @@ class MessageOptions extends \Google\Protobuf\Internal\Message
      * </pre>
      *
      * <code>optional bool deprecated = 3 [default = false];</code>
+     * @return bool
      */
     public function getDeprecated()
     {
@@ -225,6 +230,7 @@ class MessageOptions extends \Google\Protobuf\Internal\Message
      * </pre>
      *
      * <code>optional bool deprecated = 3 [default = false];</code>
+     * @param bool $var
      */
     public function setDeprecated($var)
     {
@@ -245,7 +251,7 @@ class MessageOptions extends \Google\Protobuf\Internal\Message
      * Whether the message is an automatically generated map entry type for the
      * maps field.
      * For maps fields:
-     *     map&lt;KeyType, ValueType&gt; map_field = 1;
+     *     map<KeyType, ValueType> map_field = 1;
      * The parsed descriptor looks like:
      *     message MapFieldEntry {
      *         option map_entry = true;
@@ -263,6 +269,7 @@ class MessageOptions extends \Google\Protobuf\Internal\Message
      * </pre>
      *
      * <code>optional bool map_entry = 7;</code>
+     * @return bool
      */
     public function getMapEntry()
     {
@@ -274,7 +281,7 @@ class MessageOptions extends \Google\Protobuf\Internal\Message
      * Whether the message is an automatically generated map entry type for the
      * maps field.
      * For maps fields:
-     *     map&lt;KeyType, ValueType&gt; map_field = 1;
+     *     map<KeyType, ValueType> map_field = 1;
      * The parsed descriptor looks like:
      *     message MapFieldEntry {
      *         option map_entry = true;
@@ -292,6 +299,7 @@ class MessageOptions extends \Google\Protobuf\Internal\Message
      * </pre>
      *
      * <code>optional bool map_entry = 7;</code>
+     * @param bool $var
      */
     public function setMapEntry($var)
     {
@@ -313,6 +321,7 @@ class MessageOptions extends \Google\Protobuf\Internal\Message
      * </pre>
      *
      * <code>repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;</code>
+     * @return \Google\Protobuf\Internal\RepeatedField
      */
     public function getUninterpretedOption()
     {
@@ -325,6 +334,7 @@ class MessageOptions extends \Google\Protobuf\Internal\Message
      * </pre>
      *
      * <code>repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;</code>
+     * @param array|\Google\Protobuf\Internal\RepeatedField $var
      */
     public function setUninterpretedOption(&$var)
     {

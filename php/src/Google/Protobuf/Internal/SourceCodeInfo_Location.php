@@ -12,7 +12,7 @@ use Google\Protobuf\Internal\InputStream;
 use Google\Protobuf\Internal\GPBUtil;
 
 /**
- * Protobuf type <code>google.protobuf.SourceCodeInfo.Location</code>
+ * Protobuf type <code>Google\Protobuf\Internal</code>
  */
 class SourceCodeInfo_Location extends \Google\Protobuf\Internal\Message
 {
@@ -144,6 +144,7 @@ class SourceCodeInfo_Location extends \Google\Protobuf\Internal\Message
      * </pre>
      *
      * <code>repeated int32 path = 1 [packed = true];</code>
+     * @return \Google\Protobuf\Internal\RepeatedField
      */
     public function getPath()
     {
@@ -176,6 +177,7 @@ class SourceCodeInfo_Location extends \Google\Protobuf\Internal\Message
      * </pre>
      *
      * <code>repeated int32 path = 1 [packed = true];</code>
+     * @param array|\Google\Protobuf\Internal\RepeatedField $var
      */
     public function setPath(&$var)
     {
@@ -201,6 +203,7 @@ class SourceCodeInfo_Location extends \Google\Protobuf\Internal\Message
      * </pre>
      *
      * <code>repeated int32 span = 2 [packed = true];</code>
+     * @return \Google\Protobuf\Internal\RepeatedField
      */
     public function getSpan()
     {
@@ -217,6 +220,7 @@ class SourceCodeInfo_Location extends \Google\Protobuf\Internal\Message
      * </pre>
      *
      * <code>repeated int32 span = 2 [packed = true];</code>
+     * @param array|\Google\Protobuf\Internal\RepeatedField $var
      */
     public function setSpan(&$var)
     {
@@ -273,6 +277,7 @@ class SourceCodeInfo_Location extends \Google\Protobuf\Internal\Message
      * </pre>
      *
      * <code>optional string leading_comments = 3;</code>
+     * @return string
      */
     public function getLeadingComments()
     {
@@ -320,6 +325,7 @@ class SourceCodeInfo_Location extends \Google\Protobuf\Internal\Message
      * </pre>
      *
      * <code>optional string leading_comments = 3;</code>
+     * @param string $var
      */
     public function setLeadingComments($var)
     {
@@ -337,6 +343,7 @@ class SourceCodeInfo_Location extends \Google\Protobuf\Internal\Message
 
     /**
      * <code>optional string trailing_comments = 4;</code>
+     * @return string
      */
     public function getTrailingComments()
     {
@@ -345,6 +352,7 @@ class SourceCodeInfo_Location extends \Google\Protobuf\Internal\Message
 
     /**
      * <code>optional string trailing_comments = 4;</code>
+     * @param string $var
      */
     public function setTrailingComments($var)
     {
@@ -362,6 +370,7 @@ class SourceCodeInfo_Location extends \Google\Protobuf\Internal\Message
 
     /**
      * <code>repeated string leading_detached_comments = 6;</code>
+     * @return \Google\Protobuf\Internal\RepeatedField
      */
     public function getLeadingDetachedComments()
     {
@@ -370,6 +379,7 @@ class SourceCodeInfo_Location extends \Google\Protobuf\Internal\Message
 
     /**
      * <code>repeated string leading_detached_comments = 6;</code>
+     * @param array|\Google\Protobuf\Internal\RepeatedField $var
      */
     public function setLeadingDetachedComments(&$var)
     {

@@ -17,7 +17,7 @@ use Google\Protobuf\Internal\GPBUtil;
  * files it parses.
  * </pre>
  *
- * Protobuf type <code>google.protobuf.FileDescriptorSet</code>
+ * Protobuf type <code>Google\Protobuf\Internal</code>
  */
 class FileDescriptorSet extends \Google\Protobuf\Internal\Message
 {
@@ -34,6 +34,7 @@ class FileDescriptorSet extends \Google\Protobuf\Internal\Message
 
     /**
      * <code>repeated .google.protobuf.FileDescriptorProto file = 1;</code>
+     * @return \Google\Protobuf\Internal\RepeatedField
      */
     public function getFile()
     {
@@ -42,6 +43,7 @@ class FileDescriptorSet extends \Google\Protobuf\Internal\Message
 
     /**
      * <code>repeated .google.protobuf.FileDescriptorProto file = 1;</code>
+     * @param array|\Google\Protobuf\Internal\RepeatedField $var
      */
     public function setFile(&$var)
     {

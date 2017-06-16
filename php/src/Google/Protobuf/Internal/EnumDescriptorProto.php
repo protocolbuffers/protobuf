@@ -16,7 +16,7 @@ use Google\Protobuf\Internal\GPBUtil;
  * Describes an enum type.
  * </pre>
  *
- * Protobuf type <code>google.protobuf.EnumDescriptorProto</code>
+ * Protobuf type <code>Google\Protobuf\Internal</code>
  */
 class EnumDescriptorProto extends \Google\Protobuf\Internal\Message
 {
@@ -43,6 +43,7 @@ class EnumDescriptorProto extends \Google\Protobuf\Internal\Message
 
     /**
      * <code>optional string name = 1;</code>
+     * @return string
      */
     public function getName()
     {
@@ -51,6 +52,7 @@ class EnumDescriptorProto extends \Google\Protobuf\Internal\Message
 
     /**
      * <code>optional string name = 1;</code>
+     * @param string $var
      */
     public function setName($var)
     {
@@ -68,6 +70,7 @@ class EnumDescriptorProto extends \Google\Protobuf\Internal\Message
 
     /**
      * <code>repeated .google.protobuf.EnumValueDescriptorProto value = 2;</code>
+     * @return \Google\Protobuf\Internal\RepeatedField
      */
     public function getValue()
     {
@@ -76,6 +79,7 @@ class EnumDescriptorProto extends \Google\Protobuf\Internal\Message
 
     /**
      * <code>repeated .google.protobuf.EnumValueDescriptorProto value = 2;</code>
+     * @param array|\Google\Protobuf\Internal\RepeatedField $var
      */
     public function setValue(&$var)
     {
@@ -93,6 +97,7 @@ class EnumDescriptorProto extends \Google\Protobuf\Internal\Message
 
     /**
      * <code>optional .google.protobuf.EnumOptions options = 3;</code>
+     * @return Google\Protobuf\Internal\EnumOptions
      */
     public function getOptions()
     {
@@ -101,6 +106,7 @@ class EnumDescriptorProto extends \Google\Protobuf\Internal\Message
 
     /**
      * <code>optional .google.protobuf.EnumOptions options = 3;</code>
+     * @param Google\Protobuf\Internal\EnumOptions $var
      */
     public function setOptions(&$var)
     {

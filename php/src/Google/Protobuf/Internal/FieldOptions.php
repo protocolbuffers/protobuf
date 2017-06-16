@@ -12,7 +12,7 @@ use Google\Protobuf\Internal\InputStream;
 use Google\Protobuf\Internal\GPBUtil;
 
 /**
- * Protobuf type <code>google.protobuf.FieldOptions</code>
+ * Protobuf type <code>Google\Protobuf\Internal</code>
  */
 class FieldOptions extends \Google\Protobuf\Internal\Message
 {
@@ -135,6 +135,7 @@ class FieldOptions extends \Google\Protobuf\Internal\Message
      * </pre>
      *
      * <code>optional .google.protobuf.FieldOptions.CType ctype = 1 [default = STRING];</code>
+     * @return int
      */
     public function getCtype()
     {
@@ -150,6 +151,7 @@ class FieldOptions extends \Google\Protobuf\Internal\Message
      * </pre>
      *
      * <code>optional .google.protobuf.FieldOptions.CType ctype = 1 [default = STRING];</code>
+     * @param int $var
      */
     public function setCtype($var)
     {
@@ -175,6 +177,7 @@ class FieldOptions extends \Google\Protobuf\Internal\Message
      * </pre>
      *
      * <code>optional bool packed = 2;</code>
+     * @return bool
      */
     public function getPacked()
     {
@@ -191,6 +194,7 @@ class FieldOptions extends \Google\Protobuf\Internal\Message
      * </pre>
      *
      * <code>optional bool packed = 2;</code>
+     * @param bool $var
      */
     public function setPacked($var)
     {
@@ -220,6 +224,7 @@ class FieldOptions extends \Google\Protobuf\Internal\Message
      * </pre>
      *
      * <code>optional .google.protobuf.FieldOptions.JSType jstype = 6 [default = JS_NORMAL];</code>
+     * @return int
      */
     public function getJstype()
     {
@@ -240,6 +245,7 @@ class FieldOptions extends \Google\Protobuf\Internal\Message
      * </pre>
      *
      * <code>optional .google.protobuf.FieldOptions.JSType jstype = 6 [default = JS_NORMAL];</code>
+     * @param int $var
      */
     public function setJstype($var)
     {
@@ -284,6 +290,7 @@ class FieldOptions extends \Google\Protobuf\Internal\Message
      * </pre>
      *
      * <code>optional bool lazy = 5 [default = false];</code>
+     * @return bool
      */
     public function getLazy()
     {
@@ -319,6 +326,7 @@ class FieldOptions extends \Google\Protobuf\Internal\Message
      * </pre>
      *
      * <code>optional bool lazy = 5 [default = false];</code>
+     * @param bool $var
      */
     public function setLazy($var)
     {
@@ -343,6 +351,7 @@ class FieldOptions extends \Google\Protobuf\Internal\Message
      * </pre>
      *
      * <code>optional bool deprecated = 3 [default = false];</code>
+     * @return bool
      */
     public function getDeprecated()
     {
@@ -358,6 +367,7 @@ class FieldOptions extends \Google\Protobuf\Internal\Message
      * </pre>
      *
      * <code>optional bool deprecated = 3 [default = false];</code>
+     * @param bool $var
      */
     public function setDeprecated($var)
     {
@@ -379,6 +389,7 @@ class FieldOptions extends \Google\Protobuf\Internal\Message
      * </pre>
      *
      * <code>optional bool weak = 10 [default = false];</code>
+     * @return bool
      */
     public function getWeak()
     {
@@ -391,6 +402,7 @@ class FieldOptions extends \Google\Protobuf\Internal\Message
      * </pre>
      *
      * <code>optional bool weak = 10 [default = false];</code>
+     * @param bool $var
      */
     public function setWeak($var)
     {
@@ -412,6 +424,7 @@ class FieldOptions extends \Google\Protobuf\Internal\Message
      * </pre>
      *
      * <code>repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;</code>
+     * @return \Google\Protobuf\Internal\RepeatedField
      */
     public function getUninterpretedOption()
     {
@@ -424,6 +437,7 @@ class FieldOptions extends \Google\Protobuf\Internal\Message
      * </pre>
      *
      * <code>repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;</code>
+     * @param array|\Google\Protobuf\Internal\RepeatedField $var
      */
     public function setUninterpretedOption(&$var)
     {

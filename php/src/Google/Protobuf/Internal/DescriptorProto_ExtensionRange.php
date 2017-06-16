@@ -12,7 +12,7 @@ use Google\Protobuf\Internal\InputStream;
 use Google\Protobuf\Internal\GPBUtil;
 
 /**
- * Protobuf type <code>google.protobuf.DescriptorProto.ExtensionRange</code>
+ * Protobuf type <code>Google\Protobuf\Internal</code>
  */
 class DescriptorProto_ExtensionRange extends \Google\Protobuf\Internal\Message
 {
@@ -34,6 +34,7 @@ class DescriptorProto_ExtensionRange extends \Google\Protobuf\Internal\Message
 
     /**
      * <code>optional int32 start = 1;</code>
+     * @return int
      */
     public function getStart()
     {
@@ -42,6 +43,7 @@ class DescriptorProto_ExtensionRange extends \Google\Protobuf\Internal\Message
 
     /**
      * <code>optional int32 start = 1;</code>
+     * @param int $var
      */
     public function setStart($var)
     {
@@ -59,6 +61,7 @@ class DescriptorProto_ExtensionRange extends \Google\Protobuf\Internal\Message
 
     /**
      * <code>optional int32 end = 2;</code>
+     * @return int
      */
     public function getEnd()
     {
@@ -67,6 +70,7 @@ class DescriptorProto_ExtensionRange extends \Google\Protobuf\Internal\Message
 
     /**
      * <code>optional int32 end = 2;</code>
+     * @param int $var
      */
     public function setEnd($var)
     {

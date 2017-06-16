@@ -16,7 +16,7 @@ use Google\Protobuf\Internal\GPBUtil;
  * Describes a oneof.
  * </pre>
  *
- * Protobuf type <code>google.protobuf.OneofDescriptorProto</code>
+ * Protobuf type <code>Google\Protobuf\Internal</code>
  */
 class OneofDescriptorProto extends \Google\Protobuf\Internal\Message
 {
@@ -38,6 +38,7 @@ class OneofDescriptorProto extends \Google\Protobuf\Internal\Message
 
     /**
      * <code>optional string name = 1;</code>
+     * @return string
      */
     public function getName()
     {
@@ -46,6 +47,7 @@ class OneofDescriptorProto extends \Google\Protobuf\Internal\Message
 
     /**
      * <code>optional string name = 1;</code>
+     * @param string $var
      */
     public function setName($var)
     {
@@ -63,6 +65,7 @@ class OneofDescriptorProto extends \Google\Protobuf\Internal\Message
 
     /**
      * <code>optional .google.protobuf.OneofOptions options = 2;</code>
+     * @return Google\Protobuf\Internal\OneofOptions
      */
     public function getOptions()
     {
@@ -71,6 +74,7 @@ class OneofDescriptorProto extends \Google\Protobuf\Internal\Message
 
     /**
      * <code>optional .google.protobuf.OneofOptions options = 2;</code>
+     * @param Google\Protobuf\Internal\OneofOptions $var
      */
     public function setOptions(&$var)
     {
