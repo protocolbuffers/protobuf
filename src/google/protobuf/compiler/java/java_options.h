@@ -59,10 +59,10 @@ struct Options {
   bool annotate_code;
   // Name of a file where we will write a list of generated .meta file names,
   // one per line.
-  string annotation_list_file;
+  std::string annotation_list_file;
   // Name of a file where we will write a list of generated file names, one
   // per line.
-  string output_list_file;
+  std::string output_list_file;
 };
 
 }  // namespace java
