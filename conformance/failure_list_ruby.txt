@@ -199,5 +199,6 @@ Required.ProtobufInput.DoubleFieldNormalizeQuietNan.JsonOutput
 Required.ProtobufInput.DoubleFieldNormalizeSignalingNan.JsonOutput
 Required.ProtobufInput.FloatFieldNormalizeQuietNan.JsonOutput
 Required.ProtobufInput.FloatFieldNormalizeSignalingNan.JsonOutput
+Required.ProtobufInput.ValidDataRepeated.FLOAT.JsonOutput
 Required.TimestampProtoInputTooLarge.JsonOutput
 Required.TimestampProtoInputTooSmall.JsonOutput
