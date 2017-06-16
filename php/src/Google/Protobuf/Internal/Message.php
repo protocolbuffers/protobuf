@@ -373,7 +373,7 @@ class Message
             $getter = $field->getGetter();
             while ($input->bytesUntilLimit() > 0) {
                 self::parseFieldFromStreamNoTag($input, $field, $value);
-                $this->$getter()[] = $value;
+                FieldDescriptor::append($field, $value);
             }
             $input->popLimit($limit);
             return;
@@ -382,11 +382,9 @@ class Message
         }
 
         if ($field->isMap()) {
-            $getter = $field->getGetter();
-            $this->$getter()[$value->getKey()] = $value->getValue();
+            FieldDescriptor::kvUpdate($field, $value->getKey(), $value->getValue());
         } else if ($field->isRepeated()) {
-            $getter = $field->getGetter();
-            $this->$getter()[] = $value;
+            FieldDescriptor::append($field, $value);
         } else {
             $setter = $field->getSetter();
             $this->$setter($value);
@@ -533,9 +531,10 @@ class Message
                           $klass = $value_field->getMessageType()->getClass();
                           $copy = new $klass;
                           $copy->mergeFrom($value);
-                          $this->$getter()[$key] = $copy;
+
+                          FieldDescriptor::kvUpdate($field, $key, $copy);
                       } else {
-                          $this->$getter()[$key] = $value;
+                          FieldDescriptor::kvUpdate($field, $key, $value);
                       }
                   }
               }
@@ -546,9 +545,9 @@ class Message
                           $klass = $field->getMessageType()->getClass();
                           $copy = new $klass;
                           $copy->mergeFrom($tmp);
-                          $this->$getter()[] = $copy;
+                          FieldDescriptor::append($field, $copy);
                       } else {
-                          $this->$getter()[] = $tmp;
+                          FieldDescriptor::append($field, $tmp);
                       }
                   }
               }
