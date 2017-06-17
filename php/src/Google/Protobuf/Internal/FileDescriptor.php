@@ -78,13 +78,33 @@ class FileDescriptor
                 $message_proto, $proto, ""));
         }
         foreach ($proto->getEnumType() as $enum_proto) {
-            $file->getEnumType()[] =
+            $file->addEnumType(
                 $file->addEnumType(
                     EnumDescriptor::buildFromProto(
                         $enum_proto,
                         $proto,
-                        ""));
+                        "")));
         }
         return $file;
+    }
+
+    public static function append($field, $append_value)
+    {
+        $getter = $field->getGetter();
+        $setter = $field->getSetter();
+
+        $field_arr_value = $this->$getter();
+        $field_arr_value[] = $append_value;
+        $this->$setter($field_arr_value);
+    }
+
+    public static function kvUpdate($field, $update_key, $update_value)
+    {
+        $getter = $field->getGetter();
+        $setter = $field->getSetter();
+
+        $field_arr_value = $this->$getter();
+        $field_arr_value[$update_key] = $update_value;
+        $this->$setter($field_arr_value);
     }
 }
