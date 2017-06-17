@@ -20,9 +20,6 @@
       "GPBMetadata\\": "tests/generated/GPBMetadata",
       "GPBMetadata\\Google\\Protobuf\\Internal\\": "src/GPBMetadata/Google/Protobuf/Internal",
       "": "tests/generated"
-    },
-    "files": [
-      "src/Google/Protobuf/descriptor.php"
-    ]
+    }
   }
 }

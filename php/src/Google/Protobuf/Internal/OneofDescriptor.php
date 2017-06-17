@@ -1,3 +1,5 @@
+<?php
+
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
 // https://developers.google.com/protocol-buffers/
@@ -28,46 +30,38 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef GOOGLE_PROTOBUF_COMPILER_JAVA_OPTIONS_H__
-#define GOOGLE_PROTOBUF_COMPILER_JAVA_OPTIONS_H__
+namespace Google\Protobuf\Internal;
 
-#include <string>
+class OneofDescriptor
+{
 
-namespace google {
-namespace protobuf {
-namespace compiler {
-namespace java {
+    private $name;
+    private $fields;
 
-// Generator options
-struct Options {
-  Options()
-      : generate_immutable_code(false),
-        generate_mutable_code(false),
-        generate_shared_code(false),
-        enforce_lite(false),
-        annotate_code(false) {
-  }
+    public function setName($name)
+    {
+        $this->name = $name;
+    }
 
-  bool generate_immutable_code;
-  bool generate_mutable_code;
-  bool generate_shared_code;
-  // When set, the protoc will generate the current files and all the transitive
-  // dependencies as lite runtime.
-  bool enforce_lite;
-  // If true, we should build .meta files and emit @Generated annotations into
-  // generated code.
-  bool annotate_code;
-  // Name of a file where we will write a list of generated .meta file names,
-  // one per line.
-  std::string annotation_list_file;
-  // Name of a file where we will write a list of generated file names, one
-  // per line.
-  std::string output_list_file;
-};
+    public function getName()
+    {
+        return $this->name;
+    }
 
-}  // namespace java
-}  // namespace compiler
-}  // namespace protobuf
+    public function addField(&$field)
+    {
+        $this->fields[] = $field;
+    }
 
-}  // namespace google
-#endif  // GOOGLE_PROTOBUF_COMPILER_JAVA_OPTIONS_H__
+    public function getFields()
+    {
+        return $this->fields;
+    }
+
+    public static function buildFromProto($oneof_proto)
+    {
+        $oneof = new OneofDescriptor();
+        $oneof->setName($oneof_proto->getName());
+        return $oneof;
+    }
+}

@@ -38,131 +38,6 @@
 namespace Google\Protobuf\Internal;
 
 /**
- * MapFieldIter is used to iterate MapField. It is also need for the foreach
- * syntax.
- */
-class MapFieldIter implements \Iterator
-{
-
-    /**
-     * @ignore
-     */
-    private $container;
-
-    /**
-     * Create iterator instance for MapField.
-     *
-     * @param MapField The MapField instance for which this iterator is
-     * created.
-     * @ignore
-     */
-    public function __construct($container)
-    {
-        $this->container = $container;
-    }
-
-    /**
-     * Reset the status of the iterator
-     *
-     * @return void
-     */
-    public function rewind()
-    {
-        return reset($this->container);
-    }
-
-    /**
-     * Return the element at the current position.
-     *
-     * @return object The element at the current position.
-     */
-    public function current()
-    {
-        return current($this->container);
-    }
-
-    /**
-     * Return the current key.
-     *
-     * @return object The current key.
-     */
-    public function key()
-    {
-        return key($this->container);
-    }
-
-    /**
-     * Move to the next position.
-     *
-     * @return void
-     */
-    public function next()
-    {
-        return next($this->container);
-    }
-
-    /**
-     * Check whether there are more elements to iterate.
-     *
-     * @return bool True if there are more elements to iterate.
-     */
-    public function valid()
-    {
-        return key($this->container) !== null;
-    }
-}
-
-/**
- * @ignore
- */
-function checkKey($key_type, &$key)
-{
-    switch ($key_type) {
-        case GPBType::INT32:
-            GPBUtil::checkInt32($key);
-            break;
-        case GPBType::UINT32:
-            GPBUtil::checkUint32($key);
-            break;
-        case GPBType::INT64:
-            GPBUtil::checkInt64($key);
-            break;
-        case GPBType::UINT64:
-            GPBUtil::checkUint64($key);
-            break;
-        case GPBType::FIXED64:
-            GPBUtil::checkUint64($key);
-            break;
-        case GPBType::FIXED32:
-            GPBUtil::checkUint32($key);
-            break;
-        case GPBType::SFIXED64:
-            GPBUtil::checkInt64($key);
-            break;
-        case GPBType::SFIXED32:
-            GPBUtil::checkInt32($key);
-            break;
-        case GPBType::SINT64:
-            GPBUtil::checkInt64($key);
-            break;
-        case GPBType::SINT32:
-            GPBUtil::checkInt32($key);
-            break;
-        case GPBType::BOOL:
-            GPBUtil::checkBool($key);
-            break;
-        case GPBType::STRING:
-            GPBUtil::checkString($key, true);
-            break;
-        default:
-            trigger_error(
-                "Given type cannot be map key.",
-                E_USER_ERROR);
-            break;
-    }
-}
-
-/**
  * MapField is used by generated protocol message classes to manipulate map
  * fields. It can be used like native PHP array.
  */
@@ -255,7 +130,7 @@ class MapField implements \ArrayAccess, \IteratorAggregate, \Countable
      */
     public function offsetSet($key, $value)
     {
-        checkKey($this->key_type, $key);
+        $this->checkKey($this->key_type, $key);
 
         switch ($this->value_type) {
             case GPBType::INT32:
@@ -306,7 +181,7 @@ class MapField implements \ArrayAccess, \IteratorAggregate, \Countable
      */
     public function offsetUnset($key)
     {
-        checkKey($this->key_type, $key);
+        $this->checkKey($this->key_type, $key);
         unset($this->container[$key]);
     }
 
@@ -321,7 +196,7 @@ class MapField implements \ArrayAccess, \IteratorAggregate, \Countable
      */
     public function offsetExists($key)
     {
-        checkKey($this->key_type, $key);
+        $this->checkKey($this->key_type, $key);
         return isset($this->container[$key]);
     }
 
@@ -343,5 +218,55 @@ class MapField implements \ArrayAccess, \IteratorAggregate, \Countable
     public function count()
     {
         return count($this->container);
+    }
+
+    /**
+     * @ignore
+     */
+    private function checkKey($key_type, &$key)
+    {
+        switch ($key_type) {
+            case GPBType::INT32:
+                GPBUtil::checkInt32($key);
+                break;
+            case GPBType::UINT32:
+                GPBUtil::checkUint32($key);
+                break;
+            case GPBType::INT64:
+                GPBUtil::checkInt64($key);
+                break;
+            case GPBType::UINT64:
+                GPBUtil::checkUint64($key);
+                break;
+            case GPBType::FIXED64:
+                GPBUtil::checkUint64($key);
+                break;
+            case GPBType::FIXED32:
+                GPBUtil::checkUint32($key);
+                break;
+            case GPBType::SFIXED64:
+                GPBUtil::checkInt64($key);
+                break;
+            case GPBType::SFIXED32:
+                GPBUtil::checkInt32($key);
+                break;
+            case GPBType::SINT64:
+                GPBUtil::checkInt64($key);
+                break;
+            case GPBType::SINT32:
+                GPBUtil::checkInt32($key);
+                break;
+            case GPBType::BOOL:
+                GPBUtil::checkBool($key);
+                break;
+            case GPBType::STRING:
+                GPBUtil::checkString($key, true);
+                break;
+            default:
+                trigger_error(
+                    "Given type cannot be map key.",
+                    E_USER_ERROR);
+                break;
+        }
     }
 }

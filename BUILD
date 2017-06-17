@@ -600,7 +600,7 @@ java_library(
     ]) + [
         ":gen_well_known_protos_java",
     ],
-    javacopts = ["-source 6"],
+    javacopts = ["-source 6", "-target 6"],
     visibility = ["//visibility:public"],
 )
 
@@ -609,6 +609,7 @@ java_library(
     srcs = glob([
         "java/util/src/main/java/com/google/protobuf/util/*.java",
     ]),
+    javacopts = ["-source 6", "-target 6"],
     visibility = ["//visibility:public"],
     deps = [
         "protobuf_java",

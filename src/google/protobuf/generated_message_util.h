@@ -164,7 +164,7 @@ class ExplicitlyConstructed {
 
 // Default empty string object. Don't use this directly. Instead, call
 // GetEmptyString() to get the reference.
-extern ExplicitlyConstructed< ::std::string> fixed_address_empty_string;
+LIBPROTOBUF_EXPORT extern ExplicitlyConstructed< ::std::string> fixed_address_empty_string;
 LIBPROTOBUF_EXPORT extern ProtobufOnceType empty_string_once_init_;
 LIBPROTOBUF_EXPORT void InitEmptyString();
 

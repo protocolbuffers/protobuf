@@ -1,3 +1,5 @@
+<?php
+
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
 // https://developers.google.com/protocol-buffers/
@@ -28,46 +30,84 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef GOOGLE_PROTOBUF_COMPILER_JAVA_OPTIONS_H__
-#define GOOGLE_PROTOBUF_COMPILER_JAVA_OPTIONS_H__
+/**
+ * MapField and MapFieldIter are used by generated protocol message classes to
+ * manipulate map fields.
+ */
 
-#include <string>
+namespace Google\Protobuf\Internal;
 
-namespace google {
-namespace protobuf {
-namespace compiler {
-namespace java {
+/**
+ * MapFieldIter is used to iterate MapField. It is also need for the foreach
+ * syntax.
+ */
+class MapFieldIter implements \Iterator
+{
 
-// Generator options
-struct Options {
-  Options()
-      : generate_immutable_code(false),
-        generate_mutable_code(false),
-        generate_shared_code(false),
-        enforce_lite(false),
-        annotate_code(false) {
-  }
+    /**
+     * @ignore
+     */
+    private $container;
 
-  bool generate_immutable_code;
-  bool generate_mutable_code;
-  bool generate_shared_code;
-  // When set, the protoc will generate the current files and all the transitive
-  // dependencies as lite runtime.
-  bool enforce_lite;
-  // If true, we should build .meta files and emit @Generated annotations into
-  // generated code.
-  bool annotate_code;
-  // Name of a file where we will write a list of generated .meta file names,
-  // one per line.
-  std::string annotation_list_file;
-  // Name of a file where we will write a list of generated file names, one
-  // per line.
-  std::string output_list_file;
-};
+    /**
+     * Create iterator instance for MapField.
+     *
+     * @param MapField The MapField instance for which this iterator is
+     * created.
+     * @ignore
+     */
+    public function __construct($container)
+    {
+        $this->container = $container;
+    }
 
-}  // namespace java
-}  // namespace compiler
-}  // namespace protobuf
+    /**
+     * Reset the status of the iterator
+     *
+     * @return void
+     */
+    public function rewind()
+    {
+        return reset($this->container);
+    }
 
-}  // namespace google
-#endif  // GOOGLE_PROTOBUF_COMPILER_JAVA_OPTIONS_H__
+    /**
+     * Return the element at the current position.
+     *
+     * @return object The element at the current position.
+     */
+    public function current()
+    {
+        return current($this->container);
+    }
+
+    /**
+     * Return the current key.
+     *
+     * @return object The current key.
+     */
+    public function key()
+    {
+        return key($this->container);
+    }
+
+    /**
+     * Move to the next position.
+     *
+     * @return void
+     */
+    public function next()
+    {
+        return next($this->container);
+    }
+
+    /**
+     * Check whether there are more elements to iterate.
+     *
+     * @return bool True if there are more elements to iterate.
+     */
+    public function valid()
+    {
+        return key($this->container) !== null;
+    }
+}
