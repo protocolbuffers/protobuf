@@ -528,7 +528,7 @@ class TestUtil
     private static function appendHelper($obj, $func_suffix, $value)
     {
         $getter_function = 'get'.$func_suffix;
-        $setter_fucntion = 'set'.$func_suffix;
+        $setter_function = 'set'.$func_suffix;
 
         $arr = $obj->$getter_function();
         $arr[] = $value;
@@ -538,7 +538,7 @@ class TestUtil
     private static function kvUpdateHelper($obj, $func_suffix, $key, $value)
     {
         $getter_function = 'get'.$func_suffix;
-        $setter_fucntion = 'set'.$func_suffix;
+        $setter_function = 'set'.$func_suffix;
 
         $arr = $obj->$getter_function();
         $arr[$key] = $value;
