@@ -530,9 +530,9 @@ class TestUtil
         $getter_function = 'get'.$func_suffix;
         $setter_fucntion = 'set'.$func_suffix;
 
-        $arr = call_user_func([$obj, $getter_function]);
+        $arr = $obj->$getter_function();
         $arr[] = $value;
-        call_user_func([$obj, $setter_function], $arr);
+        $obj->$setter_function($arr);
     }
 
     private static function kvUpdateHelper($obj, $func_suffix, $key, $value)
@@ -540,8 +540,8 @@ class TestUtil
         $getter_function = 'get'.$func_suffix;
         $setter_fucntion = 'set'.$func_suffix;
 
-        $arr = call_user_func([$obj, $getter_function]);
+        $arr = $obj->$getter_function();
         $arr[$key] = $value;
-        call_user_func([$obj, $setter_function], $arr);
+        $obj->$setter_function($arr);
     }
 }
