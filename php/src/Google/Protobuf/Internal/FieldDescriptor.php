@@ -233,24 +233,4 @@ class FieldDescriptor
             $proto->getName(), $proto->getLabel(), $proto->getType(),
             $proto->getNumber(), $oneof_index, $packed, $type_name);
     }
-
-    public static function append($field, $append_value)
-    {
-        $getter = $field->getGetter();
-        $setter = $field->getSetter();
-
-        $field_arr_value = $this->$getter();
-        $field_arr_value[] = $append_value;
-        $this->$setter($field_arr_value);
-    }
-
-    public static function kvUpdate($field, $update_key, $update_value)
-    {
-        $getter = $field->getGetter();
-        $setter = $field->getSetter();
-
-        $field_arr_value = $this->$getter();
-        $field_arr_value[$update_key] = $update_value;
-        $this->$setter($field_arr_value);
-    }
 }

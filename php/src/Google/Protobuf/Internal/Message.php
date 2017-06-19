@@ -373,7 +373,7 @@ class Message
             $getter = $field->getGetter();
             while ($input->bytesUntilLimit() > 0) {
                 self::parseFieldFromStreamNoTag($input, $field, $value);
-                FieldDescriptor::append($field, $value);
+                $this->appendHelper($field, $value);
             }
             $input->popLimit($limit);
             return;
@@ -382,9 +382,9 @@ class Message
         }
 
         if ($field->isMap()) {
-            FieldDescriptor::kvUpdate($field, $value->getKey(), $value->getValue());
+            $this->kvUpdateHelper($field, $value->getKey(), $value->getValue());
         } else if ($field->isRepeated()) {
-            FieldDescriptor::append($field, $value);
+            $this->appendHelper($field, $value);
         } else {
             $setter = $field->getSetter();
             $this->$setter($value);
@@ -532,9 +532,9 @@ class Message
                           $copy = new $klass;
                           $copy->mergeFrom($value);
 
-                          FieldDescriptor::kvUpdate($field, $key, $copy);
+                          $this->kvUpdateHelper($field, $key, $copy);
                       } else {
-                          FieldDescriptor::kvUpdate($field, $key, $value);
+                          $this->kvUpdateHelper($field, $key, $value);
                       }
                   }
               }
@@ -545,9 +545,9 @@ class Message
                           $klass = $field->getMessageType()->getClass();
                           $copy = new $klass;
                           $copy->mergeFrom($tmp);
-                          FieldDescriptor::append($field, $copy);
+                          $this->appendHelper($field, $copy);
                       } else {
-                          FieldDescriptor::append($field, $tmp);
+                          $this->appendHelper($field, $tmp);
                       }
                   }
               }
@@ -894,5 +894,25 @@ class Message
             $size += $this->fieldByteSize($field);
         }
         return $size;
+    }
+
+    private function appendHelper($field, $append_value)
+    {
+        $getter = $field->getGetter();
+        $setter = $field->getSetter();
+
+        $field_arr_value = $this->$getter();
+        $field_arr_value[] = $append_value;
+        $this->$setter($field_arr_value);
+    }
+
+    private function kvUpdateHelper($field, $update_key, $update_value)
+    {
+        $getter = $field->getGetter();
+        $setter = $field->getSetter();
+
+        $field_arr_value = $this->$getter();
+        $field_arr_value[$update_key] = $update_value;
+        $this->$setter($field_arr_value);
     }
 }
