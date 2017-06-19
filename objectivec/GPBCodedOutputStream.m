@@ -36,6 +36,11 @@
 #import "GPBUnknownFieldSet_PackagePrivate.h"
 #import "GPBUtilities_PackagePrivate.h"
 
+// These values are the existing values so as not to break any code that might
+// have already been inspecting them when they weren't documented/exposed.
+NSString *const GPBCodedOutputStreamException_OutOfSpace = @"OutOfSpace";
+NSString *const GPBCodedOutputStreamException_WriteFailed = @"WriteFailed";
+
 // Structure for containing state of a GPBCodedInputStream. Brought out into
 // a struct so that we can inline several common functions instead of dealing
 // with overhead of ObjC dispatch.
@@ -59,13 +64,13 @@ static const int32_t LITTLE_ENDIAN_64_SIZE = sizeof(uint64_t);
 static void GPBRefreshBuffer(GPBOutputBufferState *state) {
   if (state->output == nil) {
     // We're writing to a single buffer.
-    [NSException raise:@"OutOfSpace" format:@""];
+    [NSException raise:GPBCodedOutputStreamException_OutOfSpace format:@""];
   }
   if (state->position != 0) {
     NSInteger written =
         [state->output write:state->bytes maxLength:state->position];
     if (written != (NSInteger)state->position) {
-      [NSException raise:@"WriteFailed" format:@""];
+      [NSException raise:GPBCodedOutputStreamException_WriteFailed format:@""];
     }
     state->position = 0;
   }
