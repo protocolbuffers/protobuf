@@ -823,7 +823,7 @@ class GeneratedClassTest extends TestBase
 
         $mapInt32Message = $n->getMapInt32Message();
         $mapInt32Message[1]->setA(-302);
-        $n->setMapInt32Messge($mapInt32Message);
+        $n->setMapInt32Message($mapInt32Message);
 
         $this->assertSame(302, $m->getMapInt32Message()[1]->getA());
 
