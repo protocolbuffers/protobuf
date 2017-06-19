@@ -903,7 +903,10 @@ class Message
 
         $field_arr_value = $this->$getter();
         $field_arr_value[] = $append_value;
-        $this->$setter($field_arr_value);
+
+        if (!is_object($field_arr_value)) {
+            $this->$setter($field_arr_value);
+        }
     }
 
     private function kvUpdateHelper($field, $update_key, $update_value)
@@ -913,6 +916,9 @@ class Message
 
         $field_arr_value = $this->$getter();
         $field_arr_value[$update_key] = $update_value;
-        $this->$setter($field_arr_value);
+
+        if (!is_object($field_arr_value)) {
+            $this->$setter($field_arr_value);
+        }
     }
 }
