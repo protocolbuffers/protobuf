@@ -51,6 +51,7 @@ copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\generated_enum_reflec
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\generated_enum_util.h" include\google\protobuf\generated_enum_util.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\generated_message_reflection.h" include\google\protobuf\generated_message_reflection.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\generated_message_util.h" include\google\protobuf\generated_message_util.h
+copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\generated_message_table_driven.h" include\google\protobuf\generated_message_table_driven.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\has_bits.h" include\google\protobuf\has_bits.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\io\coded_stream.h" include\google\protobuf\io\coded_stream.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\io\gzip_stream.h" include\google\protobuf\io\gzip_stream.h
@@ -70,6 +71,7 @@ copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\map_type_handler.h" i
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\message.h" include\google\protobuf\message.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\message_lite.h" include\google\protobuf\message_lite.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\metadata.h" include\google\protobuf\metadata.h
+copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\metadata_lite.h" include\google\protobuf\metadata_lite.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\reflection.h" include\google\protobuf\reflection.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\reflection_ops.h" include\google\protobuf\reflection_ops.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\repeated_field.h" include\google\protobuf\repeated_field.h
