@@ -45,8 +45,13 @@ class GPBUtil
             $value = bcsub(0, $value);
         }
 
-        $high = (int) bcdiv(bcadd($value, 1), 4294967296);
+        $high = bcdiv($value, 4294967296);
         $low = bcmod($value, 4294967296);
+        if (bccomp($high, 2147483647) > 0) {
+            $high = (int) bcsub($high, 4294967296);
+        } else {
+            $high = (int) $high;
+        }
         if (bccomp($low, 2147483647) > 0) {
             $low = (int) bcsub($low, 4294967296);
         } else {
@@ -58,7 +63,7 @@ class GPBUtil
             $low = ~$low;
             $low++;
             if (!$low) {
-                $high++;
+                $high = (int)($high + 1);
             }
         }
 
@@ -117,7 +122,12 @@ class GPBUtil
             if (PHP_INT_SIZE == 8) {
                 $var = intval($var);
             } else {
-                $var = bcdiv($var, 1, 0);
+                if (is_float($var) ||
+                    is_integer($var) ||
+                    (is_string($var) &&
+                         bccomp($var, "9223372036854774784") < 0)) {
+                    $var = number_format($var, 0, ".", "");
+                }
             }
         } else {
             throw new \Exception("Expect integer.");
@@ -130,7 +140,7 @@ class GPBUtil
             if (PHP_INT_SIZE == 8) {
                 $var = intval($var);
             } else {
-                $var = bcdiv($var, 1, 0);
+                $var = number_format($var, 0, ".", "");
             }
         } else {
             throw new \Exception("Expect integer.");
@@ -318,7 +328,7 @@ class GPBUtil
             $low = ~$low;
             $low++;
             if (!$low) {
-                $high++;
+                $high = (int) ($high + 1);
             }
         }
         $result = bcadd(bcmul($high, 4294967296), $low);

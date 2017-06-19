@@ -48,6 +48,7 @@ function doTest($request)
     if ($request->getPayload() == "protobuf_payload") {
       fwrite(STDERR, "Protobuf Payload\n");
       try {
+          fwrite(STDERR, "Request Protobuf Payload:" . bin2hex($request->getProtobufPayload()) . "\n");
           $test_message->mergeFromString($request->getProtobufPayload());
       } catch (Exception $e) {
           # fwrite(STDERR, "Protobuf Error: " . $e->getMessage() . "\n");

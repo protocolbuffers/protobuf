@@ -132,16 +132,16 @@ class GPBJsonWire
         &$output)
     {
         switch ($field->getType()) {
-            case GPBType::FIXED32:
             case GPBType::SFIXED32:
             case GPBType::SINT32:
             case GPBType::INT32:
                 $str_value = strval($value);
                 $output->writeRaw($str_value, strlen($str_value));
                 break;
+            case GPBType::FIXED32:
             case GPBType::UINT32:
                 if ($value < 0) {
-                    $value += 4294967296;
+                    $value = bcadd($value, "4294967296");
                 }
                 $str_value = strval($value);
                 $output->writeRaw($str_value, strlen($str_value));

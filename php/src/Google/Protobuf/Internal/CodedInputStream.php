@@ -172,6 +172,9 @@ class CodedInputStream
             } while ($b & 0x80);
 
             $var = GPBUtil::combineInt32ToInt64($high, $low);
+            if (bccomp($var, 0) < 0) {
+                $var = bcadd($var, "18446744073709551616");
+            }
         } else {
             $result = 0;
             $shift = 0;
@@ -205,6 +208,7 @@ class CodedInputStream
     public function readVarintSizeAsInt(&$var)
     {
         if (!$this->readVarint64($var)) {
+            fwrite(STDERR, "failed to read size\n");
             return false;
         }
         $var = (int)$var;

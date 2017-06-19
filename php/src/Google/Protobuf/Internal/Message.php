@@ -328,10 +328,12 @@ class Message
                 break;
             case GPBType::STRING:
                 // TODO(teboring): Add utf-8 check.
+                fwrite(STDERR, "parse string\n");
                 if (!GPBWire::readString($input, $value)) {
                     throw new GPBDecodeException(
                         "Unexpected EOF inside string field.");
                 }
+                fwrite(STDERR, "parsed string: " . $value . "\n");
                 break;
             case GPBType::GROUP:
                 trigger_error("Not implemented.", E_ERROR);
@@ -405,6 +407,7 @@ class Message
     {
         $value = null;
 
+        fwrite(STDERR, "parse field from stream\n");
         if (is_null($field)) {
             $value_format = GPBWire::UNKNOWN;
         } elseif (GPBWire::getTagWireType($tag) ===
@@ -449,6 +452,9 @@ class Message
         } else {
             $setter = $field->getSetter();
             $this->$setter($value);
+            if ($field->getType() == GPBType::STRING) {
+                fwrite(STDERR, $field->getName() . ": " . $value . "\n");
+            }
         }
     }
 
@@ -693,15 +699,10 @@ class Message
         if (is_null($value)) {
             return $this->defaultValue($field);
         }
-        fwrite(STDERR, "Convert type: " . $field->getType() . "\n");
-        fwrite(STDERR, "Convert field: " . $field->getName() . "\n");
-        if ($field->getType() != GPBType::MESSAGE) {
-            fwrite(STDERR, "Values: " . $value . "\n");
-        }
         switch ($field->getType()) {
             case GPBType::MESSAGE:
                 $klass = $field->getMessageType()->getClass();
-                if (!is_object($value)) {
+                if (!is_object($value) && !is_array($value)) {
                     throw new \Exception("Expect message.");
                 }
                 $submsg = new $klass;
@@ -774,50 +775,57 @@ class Message
                 }
                 return $value;
             case GPBType::INT32:
-                if (PHP_INT_SIZE === 8) {
-                    if ($value > 2147483647) {
-                        throw new GPBDecodeException(
-                            "Int32 too large");
-                    }
-                    if ($value < -2147483648) {
-                        throw new GPBDecodeException(
-                            "Int32 too small");
-                    }
+                if (!is_numeric($value)) {
+                   throw new GPBDecodeException(
+                       "Invalid data type for int32 field");
+                }
+                if (bccomp($value, "2147483647") > 0) {
+                   throw new GPBDecodeException(
+                       "Int32 too large");
+                }
+                if (bccomp($value, "-2147483648") < 0) {
+                   throw new GPBDecodeException(
+                       "Int32 too small");
                 }
                 return $value;
             case GPBType::UINT32:
-                if (PHP_INT_SIZE === 8) {
-                    if ($value > 4294967295) {
-                        throw new GPBDecodeException(
-                            "Uint32 too large");
-                    }
+                if (!is_numeric($value)) {
+                   throw new GPBDecodeException(
+                       "Invalid data type for uint32 field");
+                }
+                if (bccomp($value, 4294967295) > 0) {
+                    throw new GPBDecodeException(
+                        "Uint32 too large");
                 }
                 return $value;
             case GPBType::INT64:
-                if (PHP_INT_SIZE === 8) {
-                    if (bccomp($value, "9223372036854775807") > 0) {
-                        throw new GPBDecodeException(
-                            "Int64 too large");
-                    }
-                    if (bccomp($value, "-9223372036854775808") < 0) {
-                        throw new GPBDecodeException(
-                            "Int64 too small");
-                    }
+                if (!is_numeric($value)) {
+                   throw new GPBDecodeException(
+                       "Invalid data type for int64 field");
+                }
+                if (bccomp($value, "9223372036854775807") > 0) {
+                    throw new GPBDecodeException(
+                        "Int64 too large");
+                }
+                if (bccomp($value, "-9223372036854775808") < 0) {
+                    throw new GPBDecodeException(
+                        "Int64 too small");
                 }
                 return $value;
             case GPBType::UINT64:
-                if (PHP_INT_SIZE === 8) {
-                    if (bccomp($value, "18446744073709551615") > 0) {
-                        throw new GPBDecodeException(
-                            "Uint64 too large");
-                    }
-                    if (bccomp($value, "9223372036854775807") > 0) {
-                        $value = bcsub($value, "18446744073709551616");
-                    }
+                if (!is_numeric($value)) {
+                   throw new GPBDecodeException(
+                       "Invalid data type for int64 field");
+                }
+                if (bccomp($value, "18446744073709551615") > 0) {
+                    throw new GPBDecodeException(
+                        "Uint64 too large");
+                }
+                if (bccomp($value, "9223372036854775807") > 0) {
+                    $value = bcsub($value, "18446744073709551616");
                 }
                 return $value;
             case GPBType::FIXED64:
-                fwrite(STDERR, $value . "\n");
                 return $value;
             default:
                 return $value;
@@ -826,7 +834,6 @@ class Message
 
     private function mergeFromJsonArray($array)
     {
-        fwrite(STDERR, "Merge From Json Array\n");
         foreach ($array as $key => $value) {
             $field = $this->desc->getFieldByJsonName($key);
             if (is_null($field)) {
@@ -898,7 +905,7 @@ class Message
      */
     public function parseFromJsonStream($input)
     {
-        $array = json_decode($input->getData());
+        $array = json_decode($input->getData(), JSON_BIGINT_AS_STRING);
         if (is_null($array)) {
             throw new GPBDecodeException(
                 "Cannot decode json string.");
@@ -949,7 +956,7 @@ class Message
             foreach ($values as $value) {
                 $size += $this->fieldDataOnlyByteSize($field, $value);
             }
-            if (!$output->writeVarint32($size)) {
+            if (!$output->writeVarint32($size, true)) {
                 return false;
             }
         }
@@ -1185,15 +1192,15 @@ class Message
         $size = 0;
 
         switch ($field->getType()) {
-            case GPBType::FIXED32:
             case GPBType::SFIXED32:
             case GPBType::SINT32:
             case GPBType::INT32:
                 $size += strlen(strval($value));
                 break;
+            case GPBType::FIXED32:
             case GPBType::UINT32:
                 if ($value < 0) {
-                    $value += 4294967296;
+                    $value = bcadd($value, "4294967296");
                 }
                 $size += strlen(strval($value));
                 break;

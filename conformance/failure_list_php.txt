@@ -115,3 +115,4 @@ Required.JsonInput.Uint32FieldNotInteger
 Required.JsonInput.Uint64FieldNotInteger
 Required.JsonInput.Int32FieldLeadingSpace
 Required.JsonInput.OneofFieldDuplicate
+Required.ProtobufInput.ValidDataRepeated.FLOAT.JsonOutput

@@ -470,12 +470,12 @@ class ImplementationTest extends TestBase
     public function testWriteVarint32()
     {
         $output = new CodedOutputStream(3);
-        $output->writeVarint32(16384);
+        $output->writeVarint32(16384, true);
         $this->assertSame(hex2bin('808001'), $output->getData());
 
         // Negative numbers are padded to be compatible with int64.
         $output = new CodedOutputStream(10);
-        $output->writeVarint32(-43);
+        $output->writeVarint32(-43, false);
         $this->assertSame(hex2bin('D5FFFFFFFFFFFFFFFF01'), $output->getData());
     }
 
