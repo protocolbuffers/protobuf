@@ -1233,7 +1233,7 @@ bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
       "Int32FieldNegativeWithLeadingZero", REQUIRED,
       R"({"optionalInt32": -01})");
   // String values must follow the same syntax rule. Specifically leading
-  // or traling spaces are not allowed.
+  // or trailing spaces are not allowed.
   ExpectParseFailureForJson(
       "Int32FieldLeadingSpace", REQUIRED,
       R"({"optionalInt32": " 1"})");
