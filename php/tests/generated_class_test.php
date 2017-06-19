@@ -872,7 +872,7 @@ class GeneratedClassTest extends TestBase
         $m->setOptionalNoNamespaceMessage($sub);
         $repeatedNoNamespaceMessage = $m->getRepeatedNoNamespaceMessage();
         $repeatedNoNamespaceMessage[] = new NoNameSpaceMessage();
-        $n->setRepeatedNoNamespaceMessage($repeatedNoNamespaceMessage);
+        $m->setRepeatedNoNamespaceMessage($repeatedNoNamespaceMessage);
 
         $n = new NoNamespaceMessage();
         $n->setB(NoNamespaceMessage_NestedEnum::ZERO);
@@ -884,7 +884,7 @@ class GeneratedClassTest extends TestBase
         $m->setOptionalNoNamespaceEnum(NoNameSpaceEnum::VALUE_A);
         $repeatedNoNamespaceEnum = $m->getRepeatedNoNamespaceEnum();
         $repeatedNoNamespaceEnum[] = NoNameSpaceEnum::VALUE_A;
-        $n->setRepeatedNoNamespaceEnum($repeatedNoNamespaceEnum);
+        $m->setRepeatedNoNamespaceEnum($repeatedNoNamespaceEnum);
     }
 
     #########################################################
