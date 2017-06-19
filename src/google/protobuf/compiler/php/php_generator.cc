@@ -333,7 +333,7 @@ std::string PhpSetterTypeName(const FieldDescriptor* field, bool is_descriptor) 
     case FieldDescriptor::TYPE_STRING:
     case FieldDescriptor::TYPE_BYTES: return "string";
     case FieldDescriptor::TYPE_MESSAGE:
-      return FullClassName(field->message_type(), is_descriptor);
+      return "\\" + FullClassName(field->message_type(), is_descriptor);
     case FieldDescriptor::TYPE_GROUP: return "null";
     default: assert(false); return "";
   }
@@ -361,7 +361,7 @@ std::string PhpGetterTypeName(const FieldDescriptor* field, bool is_descriptor) 
     case FieldDescriptor::TYPE_STRING:
     case FieldDescriptor::TYPE_BYTES: return "string";
     case FieldDescriptor::TYPE_MESSAGE:
-      return FullClassName(field->message_type(), is_descriptor);
+      return "\\" + FullClassName(field->message_type(), is_descriptor);
     case FieldDescriptor::TYPE_GROUP: return "null";
     default: assert(false); return "";
   }
@@ -1101,7 +1101,7 @@ static void GenerateDocCommentBodyForLocation(
   if (!comments.empty()) {
     // TODO(teboring):  Ideally we should parse the comment text as Markdown and
     //   write it back as HTML, but this requires a Markdown parser.  For now
-    //   we just use <pre> to get fixed-width text formatting.
+    //   we just use the proto comments unchanged.
 
     // If the comment itself contains block comment start or end markers,
     // HTML-escape them so that they don't accidentally close the doc comment.
@@ -1112,7 +1112,6 @@ static void GenerateDocCommentBodyForLocation(
       lines.pop_back();
     }
 
-    printer->Print(" * <pre>\n");
     for (int i = 0; i < lines.size(); i++) {
       // Most lines should start with a space.  Watch out for lines that start
       // with a /, since putting that right after the leading asterisk will
@@ -1124,7 +1123,6 @@ static void GenerateDocCommentBodyForLocation(
       }
     }
     printer->Print(
-        " * </pre>\n"
         " *\n");
   }
 }
@@ -1172,7 +1170,7 @@ void GenerateFieldDocComment(io::Printer* printer, const FieldDescriptor* field,
   printer->Print("/**\n");
   GenerateDocCommentBody(printer, field);
   printer->Print(
-    " * <code>^def^</code>\n",
+    " * Generated from protobuf field <code>^def^</code>\n",
     "def", EscapePhpdoc(FirstLineOf(field->DebugString())));
   if (function_type == kFieldSetter) {
     printer->Print(" * @param ^php_type^ $var\n",
@@ -1199,7 +1197,7 @@ void GenerateEnumValueDocComment(io::Printer* printer,
   printer->Print("/**\n");
   GenerateDocCommentBody(printer, value);
   printer->Print(
-    " * <code>^def^</code>\n"
+    " * Generated from protobuf enum <code>^def^</code>\n"
     " */\n",
     "def", EscapePhpdoc(FirstLineOf(value->DebugString())));
 }
