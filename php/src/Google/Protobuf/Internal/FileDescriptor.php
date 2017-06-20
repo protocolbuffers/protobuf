@@ -78,12 +78,11 @@ class FileDescriptor
                 $message_proto, $proto, ""));
         }
         foreach ($proto->getEnumType() as $enum_proto) {
-            $file->getEnumType()[] =
-                $file->addEnumType(
-                    EnumDescriptor::buildFromProto(
-                        $enum_proto,
-                        $proto,
-                        ""));
+            $file->addEnumType(
+                EnumDescriptor::buildFromProto(
+                    $enum_proto,
+                    $proto,
+                    ""));
         }
         return $file;
     }

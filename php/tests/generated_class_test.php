@@ -743,24 +743,44 @@ class GeneratedClassTest extends TestBase
         $n->setOptionalInt32(100);
         $sub1 = new TestMessage_Sub();
         $sub1->setA(101);
-        $sub1->getB()[] = 102;
+
+        $b = $sub1->getB();
+        $b[] = 102;
+        $sub1->setB($b);
+
         $n->setOptionalMessage($sub1);
 
         // Repeated
-        $n->getRepeatedInt32()[] = 200;
-        $n->getRepeatedString()[] = 'abc';
+        $repeatedInt32 = $n->getRepeatedInt32();
+        $repeatedInt32[] = 200;
+        $n->setRepeatedInt32($repeatedInt32);
+
+        $repeatedString = $n->getRepeatedString();
+        $repeatedString[] = 'abc';
+        $n->setRepeatedString($repeatedString);
+
         $sub2 = new TestMessage_Sub();
         $sub2->setA(201);
-        $n->getRepeatedMessage()[] = $sub2;
+        $repeatedMessage = $n->getRepeatedMessage();
+        $repeatedMessage[] = $sub2;
+        $n->setRepeatedMessage($repeatedMessage);
 
         // Map
-        $n->getMapInt32Int32()[1] = 300;
-        $n->getMapInt32Int32()[-62] = 301;
-        $n->getMapStringString()['def'] = 'def';
-        $n->getMapInt32Message()[1] = new TestMessage_Sub();
-        $n->getMapInt32Message()[1]->setA(302);
-        $n->getMapInt32Message()[2] = new TestMessage_Sub();
-        $n->getMapInt32Message()[2]->setA(303);
+        $mapInt32Int32 = $n->getMapInt32Int32();
+        $mapInt32Int32[1] = 300;
+        $mapInt32Int32[-62] = 301;
+        $n->setMapInt32Int32($mapInt32Int32);
+
+        $mapStringString = $n->getMapStringString();
+        $mapStringString['def'] = 'def';
+        $n->setMapStringString($mapStringString);
+
+        $mapInt32Message = $n->getMapInt32Message();
+        $mapInt32Message[1] = new TestMessage_Sub();
+        $mapInt32Message[1]->setA(302);
+        $mapInt32Message[2] = new TestMessage_Sub();
+        $mapInt32Message[2]->setA(303);
+        $n->setMapInt32Message($mapInt32Message);
 
         $m->mergeFrom($n);
 
@@ -795,9 +815,16 @@ class GeneratedClassTest extends TestBase
         // Check sub-messages are copied by value.
         $n->getOptionalMessage()->setA(-101);
         $this->assertSame(101, $m->getOptionalMessage()->getA());
-        $n->getRepeatedMessage()[0]->setA(-201);
+
+        $repeatedMessage = $n->getRepeatedMessage();
+        $repeatedMessage[0]->setA(-201);
+        $n->setRepeatedMessage($repeatedMessage);
         $this->assertSame(201, $m->getRepeatedMessage()[2]->getA());
-        $n->getMapInt32Message()[1]->setA(-302);
+
+        $mapInt32Message = $n->getMapInt32Message();
+        $mapInt32Message[1]->setA(-302);
+        $n->setMapInt32Message($mapInt32Message);
+
         $this->assertSame(302, $m->getMapInt32Message()[1]->getA());
 
         // Test merge oneof.
@@ -843,7 +870,9 @@ class GeneratedClassTest extends TestBase
         $m = new TestMessage();
         $sub = new NoNameSpaceMessage();
         $m->setOptionalNoNamespaceMessage($sub);
-        $m->getRepeatedNoNamespaceMessage()[] = new NoNameSpaceMessage();
+        $repeatedNoNamespaceMessage = $m->getRepeatedNoNamespaceMessage();
+        $repeatedNoNamespaceMessage[] = new NoNameSpaceMessage();
+        $m->setRepeatedNoNamespaceMessage($repeatedNoNamespaceMessage);
 
         $n = new NoNamespaceMessage();
         $n->setB(NoNamespaceMessage_NestedEnum::ZERO);
@@ -853,7 +882,9 @@ class GeneratedClassTest extends TestBase
     {
         $m = new TestMessage();
         $m->setOptionalNoNamespaceEnum(NoNameSpaceEnum::VALUE_A);
-        $m->getRepeatedNoNamespaceEnum()[] = NoNameSpaceEnum::VALUE_A;
+        $repeatedNoNamespaceEnum = $m->getRepeatedNoNamespaceEnum();
+        $repeatedNoNamespaceEnum[] = NoNameSpaceEnum::VALUE_A;
+        $m->setRepeatedNoNamespaceEnum($repeatedNoNamespaceEnum);
     }
 
     #########################################################
