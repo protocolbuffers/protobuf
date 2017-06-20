@@ -78,6 +78,8 @@ class MethodOptions extends \Google\Protobuf\Internal\Message
         GPBUtil::checkBool($var);
         $this->deprecated = $var;
         $this->has_deprecated = true;
+
+        return $this;
     }
 
     public function hasDeprecated()
@@ -101,6 +103,8 @@ class MethodOptions extends \Google\Protobuf\Internal\Message
         GPBUtil::checkEnum($var, \Google\Protobuf\Internal\MethodOptions_IdempotencyLevel::class);
         $this->idempotency_level = $var;
         $this->has_idempotency_level = true;
+
+        return $this;
     }
 
     public function hasIdempotencyLevel()
@@ -132,6 +136,8 @@ class MethodOptions extends \Google\Protobuf\Internal\Message
         $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \Google\Protobuf\Internal\UninterpretedOption::class);
         $this->uninterpreted_option = $arr;
         $this->has_uninterpreted_option = true;
+
+        return $this;
     }
 
     public function hasUninterpretedOption()

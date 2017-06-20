@@ -85,6 +85,8 @@ class MethodDescriptorProto extends \Google\Protobuf\Internal\Message
         GPBUtil::checkString($var, True);
         $this->name = $var;
         $this->has_name = true;
+
+        return $this;
     }
 
     public function hasName()
@@ -118,6 +120,8 @@ class MethodDescriptorProto extends \Google\Protobuf\Internal\Message
         GPBUtil::checkString($var, True);
         $this->input_type = $var;
         $this->has_input_type = true;
+
+        return $this;
     }
 
     public function hasInputType()
@@ -141,6 +145,8 @@ class MethodDescriptorProto extends \Google\Protobuf\Internal\Message
         GPBUtil::checkString($var, True);
         $this->output_type = $var;
         $this->has_output_type = true;
+
+        return $this;
     }
 
     public function hasOutputType()
@@ -164,6 +170,8 @@ class MethodDescriptorProto extends \Google\Protobuf\Internal\Message
         GPBUtil::checkMessage($var, \Google\Protobuf\Internal\MethodOptions::class);
         $this->options = $var;
         $this->has_options = true;
+
+        return $this;
     }
 
     public function hasOptions()
@@ -195,6 +203,8 @@ class MethodDescriptorProto extends \Google\Protobuf\Internal\Message
         GPBUtil::checkBool($var);
         $this->client_streaming = $var;
         $this->has_client_streaming = true;
+
+        return $this;
     }
 
     public function hasClientStreaming()
@@ -226,6 +236,8 @@ class MethodDescriptorProto extends \Google\Protobuf\Internal\Message
         GPBUtil::checkBool($var);
         $this->server_streaming = $var;
         $this->has_server_streaming = true;
+
+        return $this;
     }
 
     public function hasServerStreaming()

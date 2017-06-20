@@ -30,7 +30,6 @@
 
 #include <php.h>
 #include <stdlib.h>
-#include <ext/json/php_json.h>
 
 #include "protobuf.h"
 

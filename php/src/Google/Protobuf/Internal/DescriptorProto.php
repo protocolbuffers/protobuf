@@ -97,6 +97,8 @@ class DescriptorProto extends \Google\Protobuf\Internal\Message
         GPBUtil::checkString($var, True);
         $this->name = $var;
         $this->has_name = true;
+
+        return $this;
     }
 
     public function hasName()
@@ -120,6 +122,8 @@ class DescriptorProto extends \Google\Protobuf\Internal\Message
         $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \Google\Protobuf\Internal\FieldDescriptorProto::class);
         $this->field = $arr;
         $this->has_field = true;
+
+        return $this;
     }
 
     public function hasField()
@@ -143,6 +147,8 @@ class DescriptorProto extends \Google\Protobuf\Internal\Message
         $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \Google\Protobuf\Internal\FieldDescriptorProto::class);
         $this->extension = $arr;
         $this->has_extension = true;
+
+        return $this;
     }
 
     public function hasExtension()
@@ -166,6 +172,8 @@ class DescriptorProto extends \Google\Protobuf\Internal\Message
         $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \Google\Protobuf\Internal\DescriptorProto::class);
         $this->nested_type = $arr;
         $this->has_nested_type = true;
+
+        return $this;
     }
 
     public function hasNestedType()
@@ -189,6 +197,8 @@ class DescriptorProto extends \Google\Protobuf\Internal\Message
         $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \Google\Protobuf\Internal\EnumDescriptorProto::class);
         $this->enum_type = $arr;
         $this->has_enum_type = true;
+
+        return $this;
     }
 
     public function hasEnumType()
@@ -212,6 +222,8 @@ class DescriptorProto extends \Google\Protobuf\Internal\Message
         $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \Google\Protobuf\Internal\DescriptorProto_ExtensionRange::class);
         $this->extension_range = $arr;
         $this->has_extension_range = true;
+
+        return $this;
     }
 
     public function hasExtensionRange()
@@ -235,6 +247,8 @@ class DescriptorProto extends \Google\Protobuf\Internal\Message
         $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \Google\Protobuf\Internal\OneofDescriptorProto::class);
         $this->oneof_decl = $arr;
         $this->has_oneof_decl = true;
+
+        return $this;
     }
 
     public function hasOneofDecl()
@@ -258,6 +272,8 @@ class DescriptorProto extends \Google\Protobuf\Internal\Message
         GPBUtil::checkMessage($var, \Google\Protobuf\Internal\MessageOptions::class);
         $this->options = $var;
         $this->has_options = true;
+
+        return $this;
     }
 
     public function hasOptions()
@@ -281,6 +297,8 @@ class DescriptorProto extends \Google\Protobuf\Internal\Message
         $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \Google\Protobuf\Internal\DescriptorProto_ReservedRange::class);
         $this->reserved_range = $arr;
         $this->has_reserved_range = true;
+
+        return $this;
     }
 
     public function hasReservedRange()
@@ -314,6 +332,8 @@ class DescriptorProto extends \Google\Protobuf\Internal\Message
         $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::STRING);
         $this->reserved_name = $arr;
         $this->has_reserved_name = true;
+
+        return $this;
     }
 
     public function hasReservedName()

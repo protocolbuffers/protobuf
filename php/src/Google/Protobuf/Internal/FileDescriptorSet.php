@@ -48,6 +48,8 @@ class FileDescriptorSet extends \Google\Protobuf\Internal\Message
         $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \Google\Protobuf\Internal\FileDescriptorProto::class);
         $this->file = $arr;
         $this->has_file = true;
+
+        return $this;
     }
 
     public function hasFile()

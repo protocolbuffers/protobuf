@@ -9,9 +9,11 @@ use Google\Protobuf\Internal\RepeatedField;
 use Google\Protobuf\Internal\MapField;
 use Google\Protobuf\Internal\GPBType;
 use Foo\TestEnum;
+use Foo\TestIncludeNamespaceMessage;
 use Foo\TestIncludePrefixMessage;
 use Foo\TestMessage;
 use Foo\TestMessage_Sub;
+use Php\Test\TestNamespace;
 
 class GeneratedClassTest extends TestBase
 {
@@ -868,6 +870,25 @@ class GeneratedClassTest extends TestBase
     }
 
     #########################################################
+    # Test message with given namespace.
+    #########################################################
+
+    public function testNamespaceMessage()
+    {
+        $m = new TestIncludeNamespaceMessage();
+
+        $n = new TestNamespace();
+        $n->setA(1);
+        $m->setNamespaceMessage($n);
+        $this->assertSame(1, $m->getNamespaceMessage()->getA());
+
+        $n = new TestEmptyNamespace();
+        $n->setA(1);
+        $m->setEmptyNamespaceMessage($n);
+        $this->assertSame(1, $m->getEmptyNamespaceMessage()->getA());
+    }
+
+    #########################################################
     # Test prefix for reserved words.
     #########################################################
 
@@ -876,5 +897,19 @@ class GeneratedClassTest extends TestBase
         $m = new \Foo\TestMessage_Empty();
         $m = new \Foo\PBEmpty();
         $m = new \PrefixEmpty();
+        $m = new \Foo\PBARRAY();
+    }
+
+    #########################################################
+    # Test fluent setters.
+    #########################################################
+
+    public function testFluentSetters()
+    {
+        $m = (new TestMessage())
+            ->setOptionalInt32(1)
+            ->setOptionalUInt32(2);
+        $this->assertSame(1, $m->getOptionalInt32());
+        $this->assertSame(2, $m->getOptionalUInt32());
     }
 }
