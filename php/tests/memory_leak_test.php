@@ -8,6 +8,7 @@ require_once('generated/NoNamespaceMessage_NestedEnum.php');
 require_once('generated/PrefixEmpty.php');
 require_once('generated/PrefixTestPrefix.php');
 require_once('generated/Bar/TestInclude.php');
+require_once('generated/Foo/PBARRAY.php');
 require_once('generated/Foo/PBEmpty.php');
 require_once('generated/Foo/TestEnum.php');
 require_once('generated/Foo/TestIncludePrefixMessage.php');
