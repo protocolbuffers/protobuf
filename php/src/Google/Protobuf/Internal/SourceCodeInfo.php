@@ -12,17 +12,14 @@ use Google\Protobuf\Internal\InputStream;
 use Google\Protobuf\Internal\GPBUtil;
 
 /**
- * <pre>
  * Encapsulates information about the original source file from which a
  * FileDescriptorProto was generated.
- * </pre>
  *
  * Protobuf type <code>Google\Protobuf\Internal</code>
  */
 class SourceCodeInfo extends \Google\Protobuf\Internal\Message
 {
     /**
-     * <pre>
      * A Location identifies a piece of source code in a .proto file which
      * corresponds to a particular definition.  This information is intended
      * to be useful to IDEs, code indexers, documentation generators, and similar
@@ -64,9 +61,8 @@ class SourceCodeInfo extends \Google\Protobuf\Internal\Message
      * - Code which tries to interpret locations should probably be designed to
      *   ignore those that it doesn't understand, as more types of locations could
      *   be recorded in the future.
-     * </pre>
      *
-     * <code>repeated .google.protobuf.SourceCodeInfo.Location location = 1;</code>
+     * Generated from protobuf field <code>repeated .google.protobuf.SourceCodeInfo.Location location = 1;</code>
      */
     private $location;
     private $has_location = false;
@@ -77,7 +73,6 @@ class SourceCodeInfo extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * <pre>
      * A Location identifies a piece of source code in a .proto file which
      * corresponds to a particular definition.  This information is intended
      * to be useful to IDEs, code indexers, documentation generators, and similar
@@ -119,9 +114,8 @@ class SourceCodeInfo extends \Google\Protobuf\Internal\Message
      * - Code which tries to interpret locations should probably be designed to
      *   ignore those that it doesn't understand, as more types of locations could
      *   be recorded in the future.
-     * </pre>
      *
-     * <code>repeated .google.protobuf.SourceCodeInfo.Location location = 1;</code>
+     * Generated from protobuf field <code>repeated .google.protobuf.SourceCodeInfo.Location location = 1;</code>
      * @return \Google\Protobuf\Internal\RepeatedField
      */
     public function getLocation()
@@ -130,7 +124,6 @@ class SourceCodeInfo extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * <pre>
      * A Location identifies a piece of source code in a .proto file which
      * corresponds to a particular definition.  This information is intended
      * to be useful to IDEs, code indexers, documentation generators, and similar
@@ -172,9 +165,8 @@ class SourceCodeInfo extends \Google\Protobuf\Internal\Message
      * - Code which tries to interpret locations should probably be designed to
      *   ignore those that it doesn't understand, as more types of locations could
      *   be recorded in the future.
-     * </pre>
      *
-     * <code>repeated .google.protobuf.SourceCodeInfo.Location location = 1;</code>
+     * Generated from protobuf field <code>repeated .google.protobuf.SourceCodeInfo.Location location = 1;</code>
      * @param array|\Google\Protobuf\Internal\RepeatedField $var
      */
     public function setLocation(&$var)

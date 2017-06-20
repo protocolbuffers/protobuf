@@ -12,25 +12,23 @@ use Google\Protobuf\Internal\InputStream;
 use Google\Protobuf\Internal\GPBUtil;
 
 /**
- * <pre>
  * The name of the uninterpreted option.  Each string represents a segment in
  * a dot-separated name.  is_extension is true iff a segment represents an
  * extension (denoted with parentheses in options specs in .proto files).
  * E.g.,{ ["foo", false], ["bar.baz", true], ["qux", false] } represents
  * "foo.(bar.baz).qux".
- * </pre>
  *
  * Protobuf type <code>Google\Protobuf\Internal</code>
  */
 class UninterpretedOption_NamePart extends \Google\Protobuf\Internal\Message
 {
     /**
-     * <code>required string name_part = 1;</code>
+     * Generated from protobuf field <code>required string name_part = 1;</code>
      */
     private $name_part = '';
     private $has_name_part = false;
     /**
-     * <code>required bool is_extension = 2;</code>
+     * Generated from protobuf field <code>required bool is_extension = 2;</code>
      */
     private $is_extension = false;
     private $has_is_extension = false;
@@ -41,7 +39,7 @@ class UninterpretedOption_NamePart extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * <code>required string name_part = 1;</code>
+     * Generated from protobuf field <code>required string name_part = 1;</code>
      * @return string
      */
     public function getNamePart()
@@ -50,7 +48,7 @@ class UninterpretedOption_NamePart extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * <code>required string name_part = 1;</code>
+     * Generated from protobuf field <code>required string name_part = 1;</code>
      * @param string $var
      */
     public function setNamePart($var)
@@ -68,7 +66,7 @@ class UninterpretedOption_NamePart extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * <code>required bool is_extension = 2;</code>
+     * Generated from protobuf field <code>required bool is_extension = 2;</code>
      * @return bool
      */
     public function getIsExtension()
@@ -77,7 +75,7 @@ class UninterpretedOption_NamePart extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * <code>required bool is_extension = 2;</code>
+     * Generated from protobuf field <code>required bool is_extension = 2;</code>
      * @param bool $var
      */
     public function setIsExtension($var)

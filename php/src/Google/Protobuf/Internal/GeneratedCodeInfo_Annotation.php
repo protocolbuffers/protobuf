@@ -17,42 +17,34 @@ use Google\Protobuf\Internal\GPBUtil;
 class GeneratedCodeInfo_Annotation extends \Google\Protobuf\Internal\Message
 {
     /**
-     * <pre>
      * Identifies the element in the original source .proto file. This field
      * is formatted the same as SourceCodeInfo.Location.path.
-     * </pre>
      *
-     * <code>repeated int32 path = 1 [packed = true];</code>
+     * Generated from protobuf field <code>repeated int32 path = 1 [packed = true];</code>
      */
     private $path;
     private $has_path = false;
     /**
-     * <pre>
      * Identifies the filesystem path to the original source .proto.
-     * </pre>
      *
-     * <code>optional string source_file = 2;</code>
+     * Generated from protobuf field <code>optional string source_file = 2;</code>
      */
     private $source_file = '';
     private $has_source_file = false;
     /**
-     * <pre>
      * Identifies the starting offset in bytes in the generated code
      * that relates to the identified object.
-     * </pre>
      *
-     * <code>optional int32 begin = 3;</code>
+     * Generated from protobuf field <code>optional int32 begin = 3;</code>
      */
     private $begin = 0;
     private $has_begin = false;
     /**
-     * <pre>
      * Identifies the ending offset in bytes in the generated code that
      * relates to the identified offset. The end offset should be one past
      * the last relevant byte (so the length of the text = end - begin).
-     * </pre>
      *
-     * <code>optional int32 end = 4;</code>
+     * Generated from protobuf field <code>optional int32 end = 4;</code>
      */
     private $end = 0;
     private $has_end = false;
@@ -63,12 +55,10 @@ class GeneratedCodeInfo_Annotation extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * <pre>
      * Identifies the element in the original source .proto file. This field
      * is formatted the same as SourceCodeInfo.Location.path.
-     * </pre>
      *
-     * <code>repeated int32 path = 1 [packed = true];</code>
+     * Generated from protobuf field <code>repeated int32 path = 1 [packed = true];</code>
      * @return \Google\Protobuf\Internal\RepeatedField
      */
     public function getPath()
@@ -77,12 +67,10 @@ class GeneratedCodeInfo_Annotation extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * <pre>
      * Identifies the element in the original source .proto file. This field
      * is formatted the same as SourceCodeInfo.Location.path.
-     * </pre>
      *
-     * <code>repeated int32 path = 1 [packed = true];</code>
+     * Generated from protobuf field <code>repeated int32 path = 1 [packed = true];</code>
      * @param array|\Google\Protobuf\Internal\RepeatedField $var
      */
     public function setPath(&$var)
@@ -100,11 +88,9 @@ class GeneratedCodeInfo_Annotation extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * <pre>
      * Identifies the filesystem path to the original source .proto.
-     * </pre>
      *
-     * <code>optional string source_file = 2;</code>
+     * Generated from protobuf field <code>optional string source_file = 2;</code>
      * @return string
      */
     public function getSourceFile()
@@ -113,11 +99,9 @@ class GeneratedCodeInfo_Annotation extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * <pre>
      * Identifies the filesystem path to the original source .proto.
-     * </pre>
      *
-     * <code>optional string source_file = 2;</code>
+     * Generated from protobuf field <code>optional string source_file = 2;</code>
      * @param string $var
      */
     public function setSourceFile($var)
@@ -135,12 +119,10 @@ class GeneratedCodeInfo_Annotation extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * <pre>
      * Identifies the starting offset in bytes in the generated code
      * that relates to the identified object.
-     * </pre>
      *
-     * <code>optional int32 begin = 3;</code>
+     * Generated from protobuf field <code>optional int32 begin = 3;</code>
      * @return int
      */
     public function getBegin()
@@ -149,12 +131,10 @@ class GeneratedCodeInfo_Annotation extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * <pre>
      * Identifies the starting offset in bytes in the generated code
      * that relates to the identified object.
-     * </pre>
      *
-     * <code>optional int32 begin = 3;</code>
+     * Generated from protobuf field <code>optional int32 begin = 3;</code>
      * @param int $var
      */
     public function setBegin($var)
@@ -172,13 +152,11 @@ class GeneratedCodeInfo_Annotation extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * <pre>
      * Identifies the ending offset in bytes in the generated code that
      * relates to the identified offset. The end offset should be one past
      * the last relevant byte (so the length of the text = end - begin).
-     * </pre>
      *
-     * <code>optional int32 end = 4;</code>
+     * Generated from protobuf field <code>optional int32 end = 4;</code>
      * @return int
      */
     public function getEnd()
@@ -187,13 +165,11 @@ class GeneratedCodeInfo_Annotation extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * <pre>
      * Identifies the ending offset in bytes in the generated code that
      * relates to the identified offset. The end offset should be one past
      * the last relevant byte (so the length of the text = end - begin).
-     * </pre>
      *
-     * <code>optional int32 end = 4;</code>
+     * Generated from protobuf field <code>optional int32 end = 4;</code>
      * @param int $var
      */
     public function setEnd($var)

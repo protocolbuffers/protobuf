@@ -12,26 +12,24 @@ use Google\Protobuf\Internal\InputStream;
 use Google\Protobuf\Internal\GPBUtil;
 
 /**
- * <pre>
  * Describes a value within an enum.
- * </pre>
  *
  * Protobuf type <code>Google\Protobuf\Internal</code>
  */
 class EnumValueDescriptorProto extends \Google\Protobuf\Internal\Message
 {
     /**
-     * <code>optional string name = 1;</code>
+     * Generated from protobuf field <code>optional string name = 1;</code>
      */
     private $name = '';
     private $has_name = false;
     /**
-     * <code>optional int32 number = 2;</code>
+     * Generated from protobuf field <code>optional int32 number = 2;</code>
      */
     private $number = 0;
     private $has_number = false;
     /**
-     * <code>optional .google.protobuf.EnumValueOptions options = 3;</code>
+     * Generated from protobuf field <code>optional .google.protobuf.EnumValueOptions options = 3;</code>
      */
     private $options = null;
     private $has_options = false;
@@ -42,7 +40,7 @@ class EnumValueDescriptorProto extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * <code>optional string name = 1;</code>
+     * Generated from protobuf field <code>optional string name = 1;</code>
      * @return string
      */
     public function getName()
@@ -51,7 +49,7 @@ class EnumValueDescriptorProto extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * <code>optional string name = 1;</code>
+     * Generated from protobuf field <code>optional string name = 1;</code>
      * @param string $var
      */
     public function setName($var)
@@ -69,7 +67,7 @@ class EnumValueDescriptorProto extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * <code>optional int32 number = 2;</code>
+     * Generated from protobuf field <code>optional int32 number = 2;</code>
      * @return int
      */
     public function getNumber()
@@ -78,7 +76,7 @@ class EnumValueDescriptorProto extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * <code>optional int32 number = 2;</code>
+     * Generated from protobuf field <code>optional int32 number = 2;</code>
      * @param int $var
      */
     public function setNumber($var)
@@ -96,8 +94,8 @@ class EnumValueDescriptorProto extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * <code>optional .google.protobuf.EnumValueOptions options = 3;</code>
-     * @return Google\Protobuf\Internal\EnumValueOptions
+     * Generated from protobuf field <code>optional .google.protobuf.EnumValueOptions options = 3;</code>
+     * @return \Google\Protobuf\Internal\EnumValueOptions
      */
     public function getOptions()
     {
@@ -105,8 +103,8 @@ class EnumValueDescriptorProto extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * <code>optional .google.protobuf.EnumValueOptions options = 3;</code>
-     * @param Google\Protobuf\Internal\EnumValueOptions $var
+     * Generated from protobuf field <code>optional .google.protobuf.EnumValueOptions options = 3;</code>
+     * @param \Google\Protobuf\Internal\EnumValueOptions $var
      */
     public function setOptions(&$var)
     {

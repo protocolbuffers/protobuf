@@ -17,12 +17,12 @@ use Google\Protobuf\Internal\GPBUtil;
 class DescriptorProto_ExtensionRange extends \Google\Protobuf\Internal\Message
 {
     /**
-     * <code>optional int32 start = 1;</code>
+     * Generated from protobuf field <code>optional int32 start = 1;</code>
      */
     private $start = 0;
     private $has_start = false;
     /**
-     * <code>optional int32 end = 2;</code>
+     * Generated from protobuf field <code>optional int32 end = 2;</code>
      */
     private $end = 0;
     private $has_end = false;
@@ -33,7 +33,7 @@ class DescriptorProto_ExtensionRange extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * <code>optional int32 start = 1;</code>
+     * Generated from protobuf field <code>optional int32 start = 1;</code>
      * @return int
      */
     public function getStart()
@@ -42,7 +42,7 @@ class DescriptorProto_ExtensionRange extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * <code>optional int32 start = 1;</code>
+     * Generated from protobuf field <code>optional int32 start = 1;</code>
      * @param int $var
      */
     public function setStart($var)
@@ -60,7 +60,7 @@ class DescriptorProto_ExtensionRange extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * <code>optional int32 end = 2;</code>
+     * Generated from protobuf field <code>optional int32 end = 2;</code>
      * @return int
      */
     public function getEnd()
@@ -69,7 +69,7 @@ class DescriptorProto_ExtensionRange extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * <code>optional int32 end = 2;</code>
+     * Generated from protobuf field <code>optional int32 end = 2;</code>
      * @param int $var
      */
     public function setEnd($var)

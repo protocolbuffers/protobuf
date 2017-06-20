@@ -12,108 +12,90 @@ use Google\Protobuf\Internal\InputStream;
 use Google\Protobuf\Internal\GPBUtil;
 
 /**
- * <pre>
  * Describes a complete .proto file.
- * </pre>
  *
  * Protobuf type <code>Google\Protobuf\Internal</code>
  */
 class FileDescriptorProto extends \Google\Protobuf\Internal\Message
 {
     /**
-     * <pre>
      * file name, relative to root of source tree
-     * </pre>
      *
-     * <code>optional string name = 1;</code>
+     * Generated from protobuf field <code>optional string name = 1;</code>
      */
     private $name = '';
     private $has_name = false;
     /**
-     * <pre>
      * e.g. "foo", "foo.bar", etc.
-     * </pre>
      *
-     * <code>optional string package = 2;</code>
+     * Generated from protobuf field <code>optional string package = 2;</code>
      */
     private $package = '';
     private $has_package = false;
     /**
-     * <pre>
      * Names of files imported by this file.
-     * </pre>
      *
-     * <code>repeated string dependency = 3;</code>
+     * Generated from protobuf field <code>repeated string dependency = 3;</code>
      */
     private $dependency;
     private $has_dependency = false;
     /**
-     * <pre>
      * Indexes of the public imported files in the dependency list above.
-     * </pre>
      *
-     * <code>repeated int32 public_dependency = 10;</code>
+     * Generated from protobuf field <code>repeated int32 public_dependency = 10;</code>
      */
     private $public_dependency;
     private $has_public_dependency = false;
     /**
-     * <pre>
      * Indexes of the weak imported files in the dependency list.
      * For Google-internal migration only. Do not use.
-     * </pre>
      *
-     * <code>repeated int32 weak_dependency = 11;</code>
+     * Generated from protobuf field <code>repeated int32 weak_dependency = 11;</code>
      */
     private $weak_dependency;
     private $has_weak_dependency = false;
     /**
-     * <pre>
      * All top-level definitions in this file.
-     * </pre>
      *
-     * <code>repeated .google.protobuf.DescriptorProto message_type = 4;</code>
+     * Generated from protobuf field <code>repeated .google.protobuf.DescriptorProto message_type = 4;</code>
      */
     private $message_type;
     private $has_message_type = false;
     /**
-     * <code>repeated .google.protobuf.EnumDescriptorProto enum_type = 5;</code>
+     * Generated from protobuf field <code>repeated .google.protobuf.EnumDescriptorProto enum_type = 5;</code>
      */
     private $enum_type;
     private $has_enum_type = false;
     /**
-     * <code>repeated .google.protobuf.ServiceDescriptorProto service = 6;</code>
+     * Generated from protobuf field <code>repeated .google.protobuf.ServiceDescriptorProto service = 6;</code>
      */
     private $service;
     private $has_service = false;
     /**
-     * <code>repeated .google.protobuf.FieldDescriptorProto extension = 7;</code>
+     * Generated from protobuf field <code>repeated .google.protobuf.FieldDescriptorProto extension = 7;</code>
      */
     private $extension;
     private $has_extension = false;
     /**
-     * <code>optional .google.protobuf.FileOptions options = 8;</code>
+     * Generated from protobuf field <code>optional .google.protobuf.FileOptions options = 8;</code>
      */
     private $options = null;
     private $has_options = false;
     /**
-     * <pre>
      * This field contains optional information about the original source code.
      * You may safely remove this entire field without harming runtime
      * functionality of the descriptors -- the information is needed only by
      * development tools.
-     * </pre>
      *
-     * <code>optional .google.protobuf.SourceCodeInfo source_code_info = 9;</code>
+     * Generated from protobuf field <code>optional .google.protobuf.SourceCodeInfo source_code_info = 9;</code>
      */
     private $source_code_info = null;
     private $has_source_code_info = false;
     /**
-     * <pre>
      * The syntax of the proto file.
      * The supported values are "proto2" and "proto3".
-     * </pre>
      *
-     * <code>optional string syntax = 12;</code>
+     * Generated from protobuf field <code>optional string syntax = 12;</code>
      */
     private $syntax = '';
     private $has_syntax = false;
@@ -124,11 +106,9 @@ class FileDescriptorProto extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * <pre>
      * file name, relative to root of source tree
-     * </pre>
      *
-     * <code>optional string name = 1;</code>
+     * Generated from protobuf field <code>optional string name = 1;</code>
      * @return string
      */
     public function getName()
@@ -137,11 +117,9 @@ class FileDescriptorProto extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * <pre>
      * file name, relative to root of source tree
-     * </pre>
      *
-     * <code>optional string name = 1;</code>
+     * Generated from protobuf field <code>optional string name = 1;</code>
      * @param string $var
      */
     public function setName($var)
@@ -159,11 +137,9 @@ class FileDescriptorProto extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * <pre>
      * e.g. "foo", "foo.bar", etc.
-     * </pre>
      *
-     * <code>optional string package = 2;</code>
+     * Generated from protobuf field <code>optional string package = 2;</code>
      * @return string
      */
     public function getPackage()
@@ -172,11 +148,9 @@ class FileDescriptorProto extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * <pre>
      * e.g. "foo", "foo.bar", etc.
-     * </pre>
      *
-     * <code>optional string package = 2;</code>
+     * Generated from protobuf field <code>optional string package = 2;</code>
      * @param string $var
      */
     public function setPackage($var)
@@ -194,11 +168,9 @@ class FileDescriptorProto extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * <pre>
      * Names of files imported by this file.
-     * </pre>
      *
-     * <code>repeated string dependency = 3;</code>
+     * Generated from protobuf field <code>repeated string dependency = 3;</code>
      * @return \Google\Protobuf\Internal\RepeatedField
      */
     public function getDependency()
@@ -207,11 +179,9 @@ class FileDescriptorProto extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * <pre>
      * Names of files imported by this file.
-     * </pre>
      *
-     * <code>repeated string dependency = 3;</code>
+     * Generated from protobuf field <code>repeated string dependency = 3;</code>
      * @param array|\Google\Protobuf\Internal\RepeatedField $var
      */
     public function setDependency(&$var)
@@ -229,11 +199,9 @@ class FileDescriptorProto extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * <pre>
      * Indexes of the public imported files in the dependency list above.
-     * </pre>
      *
-     * <code>repeated int32 public_dependency = 10;</code>
+     * Generated from protobuf field <code>repeated int32 public_dependency = 10;</code>
      * @return \Google\Protobuf\Internal\RepeatedField
      */
     public function getPublicDependency()
@@ -242,11 +210,9 @@ class FileDescriptorProto extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * <pre>
      * Indexes of the public imported files in the dependency list above.
-     * </pre>
      *
-     * <code>repeated int32 public_dependency = 10;</code>
+     * Generated from protobuf field <code>repeated int32 public_dependency = 10;</code>
      * @param array|\Google\Protobuf\Internal\RepeatedField $var
      */
     public function setPublicDependency(&$var)
@@ -264,12 +230,10 @@ class FileDescriptorProto extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * <pre>
      * Indexes of the weak imported files in the dependency list.
      * For Google-internal migration only. Do not use.
-     * </pre>
      *
-     * <code>repeated int32 weak_dependency = 11;</code>
+     * Generated from protobuf field <code>repeated int32 weak_dependency = 11;</code>
      * @return \Google\Protobuf\Internal\RepeatedField
      */
     public function getWeakDependency()
@@ -278,12 +242,10 @@ class FileDescriptorProto extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * <pre>
      * Indexes of the weak imported files in the dependency list.
      * For Google-internal migration only. Do not use.
-     * </pre>
      *
-     * <code>repeated int32 weak_dependency = 11;</code>
+     * Generated from protobuf field <code>repeated int32 weak_dependency = 11;</code>
      * @param array|\Google\Protobuf\Internal\RepeatedField $var
      */
     public function setWeakDependency(&$var)
@@ -301,11 +263,9 @@ class FileDescriptorProto extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * <pre>
      * All top-level definitions in this file.
-     * </pre>
      *
-     * <code>repeated .google.protobuf.DescriptorProto message_type = 4;</code>
+     * Generated from protobuf field <code>repeated .google.protobuf.DescriptorProto message_type = 4;</code>
      * @return \Google\Protobuf\Internal\RepeatedField
      */
     public function getMessageType()
@@ -314,11 +274,9 @@ class FileDescriptorProto extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * <pre>
      * All top-level definitions in this file.
-     * </pre>
      *
-     * <code>repeated .google.protobuf.DescriptorProto message_type = 4;</code>
+     * Generated from protobuf field <code>repeated .google.protobuf.DescriptorProto message_type = 4;</code>
      * @param array|\Google\Protobuf\Internal\RepeatedField $var
      */
     public function setMessageType(&$var)
@@ -336,7 +294,7 @@ class FileDescriptorProto extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * <code>repeated .google.protobuf.EnumDescriptorProto enum_type = 5;</code>
+     * Generated from protobuf field <code>repeated .google.protobuf.EnumDescriptorProto enum_type = 5;</code>
      * @return \Google\Protobuf\Internal\RepeatedField
      */
     public function getEnumType()
@@ -345,7 +303,7 @@ class FileDescriptorProto extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * <code>repeated .google.protobuf.EnumDescriptorProto enum_type = 5;</code>
+     * Generated from protobuf field <code>repeated .google.protobuf.EnumDescriptorProto enum_type = 5;</code>
      * @param array|\Google\Protobuf\Internal\RepeatedField $var
      */
     public function setEnumType(&$var)
@@ -363,7 +321,7 @@ class FileDescriptorProto extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * <code>repeated .google.protobuf.ServiceDescriptorProto service = 6;</code>
+     * Generated from protobuf field <code>repeated .google.protobuf.ServiceDescriptorProto service = 6;</code>
      * @return \Google\Protobuf\Internal\RepeatedField
      */
     public function getService()
@@ -372,7 +330,7 @@ class FileDescriptorProto extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * <code>repeated .google.protobuf.ServiceDescriptorProto service = 6;</code>
+     * Generated from protobuf field <code>repeated .google.protobuf.ServiceDescriptorProto service = 6;</code>
      * @param array|\Google\Protobuf\Internal\RepeatedField $var
      */
     public function setService(&$var)
@@ -390,7 +348,7 @@ class FileDescriptorProto extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * <code>repeated .google.protobuf.FieldDescriptorProto extension = 7;</code>
+     * Generated from protobuf field <code>repeated .google.protobuf.FieldDescriptorProto extension = 7;</code>
      * @return \Google\Protobuf\Internal\RepeatedField
      */
     public function getExtension()
@@ -399,7 +357,7 @@ class FileDescriptorProto extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * <code>repeated .google.protobuf.FieldDescriptorProto extension = 7;</code>
+     * Generated from protobuf field <code>repeated .google.protobuf.FieldDescriptorProto extension = 7;</code>
      * @param array|\Google\Protobuf\Internal\RepeatedField $var
      */
     public function setExtension(&$var)
@@ -417,8 +375,8 @@ class FileDescriptorProto extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * <code>optional .google.protobuf.FileOptions options = 8;</code>
-     * @return Google\Protobuf\Internal\FileOptions
+     * Generated from protobuf field <code>optional .google.protobuf.FileOptions options = 8;</code>
+     * @return \Google\Protobuf\Internal\FileOptions
      */
     public function getOptions()
     {
@@ -426,8 +384,8 @@ class FileDescriptorProto extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * <code>optional .google.protobuf.FileOptions options = 8;</code>
-     * @param Google\Protobuf\Internal\FileOptions $var
+     * Generated from protobuf field <code>optional .google.protobuf.FileOptions options = 8;</code>
+     * @param \Google\Protobuf\Internal\FileOptions $var
      */
     public function setOptions(&$var)
     {
@@ -444,15 +402,13 @@ class FileDescriptorProto extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * <pre>
      * This field contains optional information about the original source code.
      * You may safely remove this entire field without harming runtime
      * functionality of the descriptors -- the information is needed only by
      * development tools.
-     * </pre>
      *
-     * <code>optional .google.protobuf.SourceCodeInfo source_code_info = 9;</code>
-     * @return Google\Protobuf\Internal\SourceCodeInfo
+     * Generated from protobuf field <code>optional .google.protobuf.SourceCodeInfo source_code_info = 9;</code>
+     * @return \Google\Protobuf\Internal\SourceCodeInfo
      */
     public function getSourceCodeInfo()
     {
@@ -460,15 +416,13 @@ class FileDescriptorProto extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * <pre>
      * This field contains optional information about the original source code.
      * You may safely remove this entire field without harming runtime
      * functionality of the descriptors -- the information is needed only by
      * development tools.
-     * </pre>
      *
-     * <code>optional .google.protobuf.SourceCodeInfo source_code_info = 9;</code>
-     * @param Google\Protobuf\Internal\SourceCodeInfo $var
+     * Generated from protobuf field <code>optional .google.protobuf.SourceCodeInfo source_code_info = 9;</code>
+     * @param \Google\Protobuf\Internal\SourceCodeInfo $var
      */
     public function setSourceCodeInfo(&$var)
     {
@@ -485,12 +439,10 @@ class FileDescriptorProto extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * <pre>
      * The syntax of the proto file.
      * The supported values are "proto2" and "proto3".
-     * </pre>
      *
-     * <code>optional string syntax = 12;</code>
+     * Generated from protobuf field <code>optional string syntax = 12;</code>
      * @return string
      */
     public function getSyntax()
@@ -499,12 +451,10 @@ class FileDescriptorProto extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * <pre>
      * The syntax of the proto file.
      * The supported values are "proto2" and "proto3".
-     * </pre>
      *
-     * <code>optional string syntax = 12;</code>
+     * Generated from protobuf field <code>optional string syntax = 12;</code>
      * @param string $var
      */
     public function setSyntax($var)
