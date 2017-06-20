@@ -299,18 +299,6 @@ class GPBUtil
         $class_name_without_package =
             static::getClassNameWithoutPackage($message_name_without_package, $file_proto);
 
-        $option = $file_proto->getOptions();
-        if (!is_null($option) && $option->hasPhpNamespace()) {
-            $namespace = $option->getPhpNamespace();
-            if ($namespace !== "") {
-                $classname = $namespace . "\\" . $class_name_without_package;
-                return;
-            } else {
-                $classname = $class_name_without_package;
-                return;
-            }
-        }
-
         if ($package === "") {
             $classname = $class_name_without_package;
         } else {
