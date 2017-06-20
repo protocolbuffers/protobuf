@@ -95,6 +95,20 @@ class EncodeDecodeTest extends TestBase
         $n = new TestMessage();
         $n->mergeFromString($data);
         $this->assertSame("oneof_enum", $n->getMyOneof());
+
+        $m->setOneofString("");
+        $data = $m->serializeToString();
+        $n = new TestMessage();
+        $n->mergeFromString($data);
+        $this->assertSame("oneof_string", $n->getMyOneof());
+
+        $sub_m = new TestMessage_Sub();
+        $m->setOneofMessage($sub_m);
+        $data = $m->serializeToString();
+        $n = new TestMessage();
+        $n->mergeFromString($data);
+        $this->assertSame("oneof_message", $n->getMyOneof());
+
     }
 
     public function testPackedEncode()
@@ -418,11 +432,11 @@ class EncodeDecodeTest extends TestBase
 
     public function testJsonEncode()
     {
-#         $from = new TestMessage();
-#         $this->setFields($from);
-#         $data = $from->serializeToJsonString();
-#         $to = new TestMessage();
-#         $to->mergeFromJsonString($data);
-#         $this->expectFields($to);
+        $from = new TestMessage();
+        $this->setFields($from);
+        $data = $from->serializeToJsonString();
+        $to = new TestMessage();
+        $to->mergeFromJsonString($data);
+        $this->expectFields($to);
     }
 }

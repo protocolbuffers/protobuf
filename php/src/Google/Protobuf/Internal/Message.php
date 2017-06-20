@@ -328,12 +328,10 @@ class Message
                 break;
             case GPBType::STRING:
                 // TODO(teboring): Add utf-8 check.
-                fwrite(STDERR, "parse string\n");
                 if (!GPBWire::readString($input, $value)) {
                     throw new GPBDecodeException(
                         "Unexpected EOF inside string field.");
                 }
-                fwrite(STDERR, "parsed string: " . $value . "\n");
                 break;
             case GPBType::GROUP:
                 trigger_error("Not implemented.", E_ERROR);
@@ -407,7 +405,6 @@ class Message
     {
         $value = null;
 
-        fwrite(STDERR, "parse field from stream\n");
         if (is_null($field)) {
             $value_format = GPBWire::UNKNOWN;
         } elseif (GPBWire::getTagWireType($tag) ===
@@ -452,9 +449,6 @@ class Message
         } else {
             $setter = $field->getSetter();
             $this->$setter($value);
-            if ($field->getType() == GPBType::STRING) {
-                fwrite(STDERR, $field->getName() . ": " . $value . "\n");
-            }
         }
     }
 
@@ -1440,6 +1434,7 @@ class Message
         if (!is_object($field_arr_value)) {
             $this->$setter($field_arr_value);
         }
+    }
 
     /**
      * @ignore

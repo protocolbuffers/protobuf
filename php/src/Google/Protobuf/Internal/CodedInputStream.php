@@ -208,7 +208,6 @@ class CodedInputStream
     public function readVarintSizeAsInt(&$var)
     {
         if (!$this->readVarint64($var)) {
-            fwrite(STDERR, "failed to read size\n");
             return false;
         }
         $var = (int)$var;

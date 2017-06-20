@@ -253,7 +253,6 @@ void ConformanceTestSuite::RunTest(const string& test_name,
   string serialized_response;
   request.SerializeToString(&serialized_request);
 
-  GOOGLE_LOG(ERROR) << test_name;
   runner_->RunTest(test_name, serialized_request, &serialized_response);
 
   if (!response->ParseFromString(serialized_response)) {

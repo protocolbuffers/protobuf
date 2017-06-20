@@ -31,7 +31,6 @@ Recommended.ProtobufInput.OneofZeroString.JsonOutput
 Recommended.ProtobufInput.OneofZeroString.ProtobufOutput
 Required.DurationProtoInputTooLarge.JsonOutput
 Required.DurationProtoInputTooSmall.JsonOutput
-Required.JsonInput.AllFieldAcceptNull.ProtobufOutput
 Required.JsonInput.Any.JsonOutput
 Required.JsonInput.Any.ProtobufOutput
 Required.JsonInput.AnyNested.JsonOutput
@@ -52,7 +51,6 @@ Required.JsonInput.AnyWithValueForInteger.JsonOutput
 Required.JsonInput.AnyWithValueForInteger.ProtobufOutput
 Required.JsonInput.AnyWithValueForJsonObject.JsonOutput
 Required.JsonInput.AnyWithValueForJsonObject.ProtobufOutput
-Required.JsonInput.BoolFieldFalse.ProtobufOutput
 Required.JsonInput.BoolMapField.JsonOutput
 Required.JsonInput.DoubleFieldInfinity.JsonOutput
 Required.JsonInput.DoubleFieldInfinity.ProtobufOutput
@@ -76,7 +74,6 @@ Required.JsonInput.DurationMinValue.JsonOutput
 Required.JsonInput.DurationMinValue.ProtobufOutput
 Required.JsonInput.DurationRepeatedValue.JsonOutput
 Required.JsonInput.DurationRepeatedValue.ProtobufOutput
-Required.JsonInput.EnumField.ProtobufOutput
 Required.JsonInput.EnumFieldNumericValueNonZero.JsonOutput
 Required.JsonInput.EnumFieldNumericValueNonZero.ProtobufOutput
 Required.JsonInput.EnumFieldNumericValueZero.JsonOutput
@@ -191,13 +188,10 @@ Required.JsonInput.ValueAcceptObject.JsonOutput
 Required.JsonInput.ValueAcceptObject.ProtobufOutput
 Required.JsonInput.ValueAcceptString.JsonOutput
 Required.JsonInput.ValueAcceptString.ProtobufOutput
-Required.JsonInput.WrapperTypesWithNullValue.ProtobufOutput
 Required.ProtobufInput.DoubleFieldNormalizeQuietNan.JsonOutput
 Required.ProtobufInput.DoubleFieldNormalizeSignalingNan.JsonOutput
 Required.ProtobufInput.FloatFieldNormalizeQuietNan.JsonOutput
 Required.ProtobufInput.FloatFieldNormalizeSignalingNan.JsonOutput
-Required.ProtobufInput.RepeatedScalarSelectsLast.FIXED32.ProtobufOutput
-Required.ProtobufInput.RepeatedScalarSelectsLast.FIXED64.ProtobufOutput
-Required.ProtobufInput.RepeatedScalarSelectsLast.UINT64.ProtobufOutput
+Required.ProtobufInput.ValidDataRepeated.FLOAT.JsonOutput
 Required.TimestampProtoInputTooLarge.JsonOutput
 Required.TimestampProtoInputTooSmall.JsonOutput
