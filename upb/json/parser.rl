@@ -617,15 +617,21 @@ static bool end_number(upb_json_parser *p, const char *ptr) {
   return parse_number(p, false);
 }
 
+/* |buf| is NULL-terminated. |buf| itself will never include quotes;
+ * |is_quoted| tells us whether this text originally appeared inside quotes. */
 static bool parse_number_from_buffer(upb_json_parser *p, const char *buf,
-                                     const char *bufend, bool is_quoted) {
-  size_t len = bufend - buf;
+                                     bool is_quoted) {
+  size_t len = strlen(buf);
+  const char *bufend = buf + len;
   char *end;
   upb_fieldtype_t type = upb_fielddef_type(p->top->f);
   double val;
   double dummy;
+  double inf = 1.0 / 0.0;  /* C89 does not have an INFINITY macro. */
 
-  if (buf[0] == ' ') {
+  errno = 0;
+
+  if (len == 0 || buf[0] == ' ') {
     return false;
   }
 
@@ -684,15 +690,15 @@ static bool parse_number_from_buffer(upb_json_parser *p, const char *buf,
   }
 
   if (type != UPB_TYPE_DOUBLE && type != UPB_TYPE_FLOAT && is_quoted) {
-    /* Quoted numbers shouldn't support double forms for integer types. */
+    /* Quoted numbers for integer types are not allowed to be in double form. */
     return false;
   }
 
   if (len == strlen("Infinity") && strcmp(buf, "Infinity") == 0) {
     /* C89 does not have an INFINITY macro. */
-    val = 1.0 / 0.0;
+    val = inf;
   } else if (len == strlen("-Infinity") && strcmp(buf, "-Infinity") == 0) {
-    val = -1.0 / 0.0;
+    val = -inf;
   } else {
     val = strtod(buf, &end);
     if (errno == ERANGE || end != bufend) {
@@ -701,28 +707,29 @@ static bool parse_number_from_buffer(upb_json_parser *p, const char *buf,
   }
 
   switch (type) {
-#define CASE(capitaltype, smalltype, min, max)                            \
+#define CASE(capitaltype, smalltype, ctype, min, max)                     \
     case UPB_TYPE_ ## capitaltype: {                                      \
       if (modf(val, &dummy) != 0 || val > max || val < min) {             \
         return false;                                                     \
       } else {                                                            \
-        upb_sink_put ## smalltype(&p->top->sink, parser_getsel(p), val);  \
+        upb_sink_put ## smalltype(&p->top->sink, parser_getsel(p),        \
+                                  (ctype)val);                            \
         return true;                                                      \
       }                                                                   \
       break;                                                              \
     }
     case UPB_TYPE_ENUM:
-    CASE(INT32, int32, INT32_MIN, INT32_MAX);
-    CASE(INT64, int64, INT64_MIN, INT64_MAX);
-    CASE(UINT32, uint32, 0, UINT32_MAX);
-    CASE(UINT64, uint64, 0, UINT64_MAX);
+    CASE(INT32, int32, int32_t, INT32_MIN, INT32_MAX);
+    CASE(INT64, int64, int64_t, INT64_MIN, INT64_MAX);
+    CASE(UINT32, uint32, uint32_t, 0, UINT32_MAX);
+    CASE(UINT64, uint64, uint64_t, 0, UINT64_MAX);
 #undef CASE
 
     case UPB_TYPE_DOUBLE:
       upb_sink_putdouble(&p->top->sink, parser_getsel(p), val);
       return true;
     case UPB_TYPE_FLOAT:
-      if (false /*val > FLT_MAX || val < -FLT_MAX*/) {
+      if ((val > FLT_MAX || val < -FLT_MAX) && val != inf && val != -inf) {
         return false;
       } else {
         upb_sink_putfloat(&p->top->sink, parser_getsel(p), val);
@@ -736,7 +743,6 @@ static bool parse_number_from_buffer(upb_json_parser *p, const char *buf,
 static bool parse_number(upb_json_parser *p, bool is_quoted) {
   size_t len;
   const char *buf;
-  const char *bufend;
 
   /* strtol() and friends unfortunately do not support specifying the length of
    * the input string, so we need to force a copy into a NULL-terminated buffer. */
@@ -745,10 +751,8 @@ static bool parse_number(upb_json_parser *p, bool is_quoted) {
   }
 
   buf = accumulate_getptr(p, &len);
-  bufend = buf + len - 1;  /* One for NULL. */
-  errno = 0;
 
-  if (parse_number_from_buffer(p, buf, bufend, is_quoted)) {
+  if (parse_number_from_buffer(p, buf, is_quoted)) {
     multipart_end(p);
     return true;
   } else {
