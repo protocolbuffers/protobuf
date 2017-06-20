@@ -1,0 +1,300 @@
+<?php
+
+require_once('generated/NoNamespaceEnum.php');
+require_once('generated/NoNamespaceMessage.php');
+require_once('test_base.php');
+require_once('test_util.php');
+
+// use Google\Protobuf\Internal\RepeatedField;
+// use Google\Protobuf\Internal\MapField;
+// use Google\Protobuf\Internal\GPBType;
+// use Foo\TestEnum;
+// use Foo\TestIncludeNamespaceMessage;
+// use Foo\TestIncludePrefixMessage;
+use Foo\TestMessage;
+// use Foo\TestMessage_Sub;
+// use Php\Test\TestNamespace;
+
+class GeneratedPhpdocTest extends TestBase
+{
+    public function testPhpDocForClass()
+    {
+        $class = new ReflectionClass('Foo\TestMessage');
+        $doc = $class->getDocComment();
+        $this->assertContains('Foo\TestMessage', $doc);
+    }
+
+    /**
+     * @dataProvider providePhpDocForGettersAndSetters
+     */
+    public function testPhpDocForIntGetters($methods, $expectedDoc)
+    {
+        $class = new ReflectionClass('Foo\TestMessage');
+        foreach ($methods as $method) {
+            $doc = $class->getMethod($method)->getDocComment();
+            $this->assertContains($expectedDoc, $doc);
+        }
+    }
+
+    public function providePhpDocForGettersAndSetters()
+    {
+        return [
+            [
+                [
+                    'setOptionalInt32',
+                    'setOptionalUint32',
+                    'setOptionalSint32',
+                    'setOptionalFixed32',
+                    'setOptionalSfixed32',
+                    'setOneofInt32',
+                    'setOneofUint32',
+                    'setOneofSint32',
+                    'setOneofFixed32',
+                    'setOneofSfixed32',
+                    'setOptionalEnum',
+                    'setOptionalNoNamespaceEnum',
+                    'setOptionalNestedEnum',
+                    'setOneofEnum'
+                ],
+                '@param int $var'
+            ],
+            [
+                [
+                    'setOptionalInt64',
+                    'setOptionalUint64',
+                    'setOptionalSint64',
+                    'setOptionalFixed64',
+                    'setOptionalSfixed64',
+                    'setOneofInt64',
+                    'setOneofUint64',
+                    'setOneofSint64',
+                    'setOneofFixed64',
+                    'setOneofSfixed64',
+                ],
+                '@param int|string $var'
+            ],
+            [
+                [
+                    'getOptionalInt32',
+                    'getOptionalUint32',
+                    'getOptionalSint32',
+                    'getOptionalFixed32',
+                    'getOptionalSfixed32',
+                    'getOneofInt32',
+                    'getOneofUint32',
+                    'getOneofSint32',
+                    'getOneofFixed32',
+                    'getOneofSfixed32',
+                    'getOptionalEnum',
+                    'getOptionalNoNamespaceEnum',
+                    'getOptionalNestedEnum',
+                    'getOneofEnum',
+                ],
+                '@return int'
+            ],
+            [
+                [
+                    'setOptionalInt64',
+                    'setOptionalUint64',
+                    'setOptionalSint64',
+                    'setOptionalFixed64',
+                    'setOptionalSfixed64',
+                    'setOneofInt64',
+                    'setOneofUint64',
+                    'setOneofSint64',
+                    'setOneofFixed64',
+                    'setOneofSfixed64',
+                ],
+                '@param int|string $var'
+            ],
+            [
+                [
+                    'getRepeatedInt32',
+                    'getRepeatedInt64',
+                    'getRepeatedUint32',
+                    'getRepeatedUint64',
+                    'getRepeatedSint32',
+                    'getRepeatedSint64',
+                    'getRepeatedFixed32',
+                    'getRepeatedFixed64',
+                    'getRepeatedSfixed32',
+                    'getRepeatedSfixed64',
+                    'getRepeatedFloat',
+                    'getRepeatedDouble',
+                    'getRepeatedBool',
+                    'getRepeatedString',
+                    'getRepeatedBytes',
+                    'getRepeatedEnum',
+                    'getRepeatedMessage',
+                    'getRepeatedRecursive',
+                    'getMapInt32Int32',
+                    'getMapInt64Int64',
+                    'getMapUint32Uint32',
+                    'getMapUint64Uint64',
+                    'getMapSint32Sint32',
+                    'getMapSint64Sint64',
+                    'getMapFixed32Fixed32',
+                    'getMapFixed64Fixed64',
+                    'getMapSfixed32Sfixed32',
+                    'getMapSfixed64Sfixed64',
+                    'getMapInt32Float',
+                    'getMapInt32Double',
+                    'getMapBoolBool',
+                    'getMapStringString',
+                    'getMapInt32Bytes',
+                    'getMapInt32Enum',
+                    'getMapInt32Message',
+                    'getMapRecursive',
+                    'getRepeatedNoNamespaceMessage',
+                    'getRepeatedNoNamespaceEnum',
+                ],
+                '@return \Google\Protobuf\Internal\RepeatedField'
+            ],
+            [
+                [
+                    'setRepeatedInt32',
+                    'setRepeatedInt64',
+                    'setRepeatedUint32',
+                    'setRepeatedUint64',
+                    'setRepeatedSint32',
+                    'setRepeatedSint64',
+                    'setRepeatedFixed32',
+                    'setRepeatedFixed64',
+                    'setRepeatedSfixed32',
+                    'setRepeatedSfixed64',
+                    'setRepeatedFloat',
+                    'setRepeatedDouble',
+                    'setRepeatedBool',
+                    'setRepeatedString',
+                    'setRepeatedBytes',
+                    'setRepeatedEnum',
+                    'setRepeatedMessage',
+                    'setRepeatedRecursive',
+                    'setMapInt32Int32',
+                    'setMapInt64Int64',
+                    'setMapUint32Uint32',
+                    'setMapUint64Uint64',
+                    'setMapSint32Sint32',
+                    'setMapSint64Sint64',
+                    'setMapFixed32Fixed32',
+                    'setMapFixed64Fixed64',
+                    'setMapSfixed32Sfixed32',
+                    'setMapSfixed64Sfixed64',
+                    'setMapInt32Float',
+                    'setMapInt32Double',
+                    'setMapBoolBool',
+                    'setMapStringString',
+                    'setMapInt32Bytes',
+                    'setMapInt32Enum',
+                    'setMapInt32Message',
+                    'setMapRecursive',
+                    'setRepeatedNoNamespaceMessage',
+                    'setRepeatedNoNamespaceEnum',
+                ],
+                '@param array|\Google\Protobuf\Internal\RepeatedField $var'
+            ],
+            [
+                [
+                    'getOptionalFloat',
+                    'getOptionalDouble',
+                    'getOneofDouble',
+                    'getOneofFloat',
+                ],
+                '@return float'
+            ],
+            [
+                [
+                    'setOptionalFloat',
+                    'setOptionalDouble',
+                    'setOneofDouble',
+                    'setOneofFloat',
+                ],
+                '@param float $var'
+            ],
+            [
+                [
+                    'getOptionalBool',
+                    'getOneofBool',
+                ],
+                '@return bool'],
+            [
+                [
+                    'setOptionalBool',
+                    'setOneofBool',
+                ],
+                '@param bool $var'
+            ],
+            [
+                [
+                    'getOptionalString',
+                    'getOptionalBytes',
+                    'getOneofString',
+                    'getOneofBytes',
+                    'getMyOneof',
+                ],
+                '@return string'
+            ],
+            [
+                [
+                    'setOptionalString',
+                    'setOptionalBytes',
+                    'setOneofString',
+                    'setOneofBytes',
+                ],
+                '@param string $var'
+            ],
+
+            [
+                [
+                    'getOptionalMessage',
+                    'getOneofMessage'
+                ],
+                '@return Foo\TestMessage_Sub'
+            ],
+            [
+                [
+                    'setOptionalMessage',
+                    'setOneofMessage'
+                ],
+                '@param Foo\TestMessage_Sub $var'
+            ],
+            [
+                [
+                    'getOptionalIncludedMessage'
+                ],
+                '@return Bar\TestInclude'
+            ],
+            [
+                [
+                    'setOptionalIncludedMessage'
+                ],
+                '@param Bar\TestInclude $var'
+            ],
+            [
+                [
+                    'getRecursive'
+                ],
+                '@return Foo\TestMessage'
+            ],
+            [
+                [
+                    'setRecursive'
+                ],
+                '@param Foo\TestMessage $var'
+            ],
+
+            [
+                [
+                    'getOptionalNoNamespaceMessage'
+                ],
+                '@return NoNamespaceMessage'
+            ],
+            [
+                [
+                    'setOptionalNoNamespaceMessage'
+                ],
+                '@param NoNamespaceMessage $var'
+            ],
+        ];
+    }
+}
