@@ -154,10 +154,23 @@ static void putstring(upb_json_printer *p, const char *buf, unsigned int len) {
  * Right now we use %.8g and %.17g for float/double, respectively, to match
  * proto2::util::JsonFormat's defaults.  May want to change this later. */
 
+const char neginf[] = "\"-Infinity\"";
+const char inf[] = "\"Infinity\"";
+
 static size_t fmt_double(double val, char* buf, size_t length) {
-  size_t n = _upb_snprintf(buf, length, "%.17g", val);
-  CHKLENGTH(n > 0 && n < length);
-  return n;
+  if (val == (1.0 / 0.0)) {
+    CHKLENGTH(length >= strlen(inf));
+    strcpy(buf, inf);
+    return strlen(inf);
+  } else if (val == (-1.0 / 0.0)) {
+    CHKLENGTH(length >= strlen(neginf));
+    strcpy(buf, neginf);
+    return strlen(neginf);
+  } else {
+    size_t n = _upb_snprintf(buf, length, "%.17g", val);
+    CHKLENGTH(n > 0 && n < length);
+    return n;
+  }
 }
 
 static size_t fmt_float(float val, char* buf, size_t length) {
