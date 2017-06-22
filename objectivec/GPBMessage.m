@@ -3077,7 +3077,7 @@ static void ResolveIvarSet(GPBFieldDescriptor *field,
 + (BOOL)resolveInstanceMethod:(SEL)sel {
   const GPBDescriptor *descriptor = [self descriptor];
   if (!descriptor) {
-    return NO;
+    return [super resolveInstanceMethod:sel];
   }
 
   // NOTE: hasOrCountSel_/setHasSel_ will be NULL if the field for the given
