@@ -150,7 +150,8 @@ struct ReflectionSchema {
   }
 
   uint32 GetOneofCaseOffset(const OneofDescriptor* oneof_descriptor) const {
-    return oneof_case_offset_ + (oneof_descriptor->index() * sizeof(uint32));
+    return oneof_case_offset_ +
+           static_cast<uint32>(oneof_descriptor->index() * sizeof(uint32));
   }
 
   bool HasHasbits() const { return has_bits_offset_ != -1; }

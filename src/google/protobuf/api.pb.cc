@@ -312,7 +312,7 @@ bool Api::MergePartialFromCodedStream(
           DO_(::google::protobuf::internal::WireFormatLite::ReadString(
                 input, this->mutable_name()));
           DO_(::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
-            this->name().data(), this->name().length(),
+            this->name().data(), static_cast<int>(this->name().length()),
             ::google::protobuf::internal::WireFormatLite::PARSE,
             "google.protobuf.Api.name"));
         } else {
@@ -352,7 +352,7 @@ bool Api::MergePartialFromCodedStream(
           DO_(::google::protobuf::internal::WireFormatLite::ReadString(
                 input, this->mutable_version()));
           DO_(::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
-            this->version().data(), this->version().length(),
+            this->version().data(), static_cast<int>(this->version().length()),
             ::google::protobuf::internal::WireFormatLite::PARSE,
             "google.protobuf.Api.version"));
         } else {
@@ -430,7 +430,7 @@ void Api::SerializeWithCachedSizes(
   // string name = 1;
   if (this->name().size() > 0) {
     ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
-      this->name().data(), this->name().length(),
+      this->name().data(), static_cast<int>(this->name().length()),
       ::google::protobuf::internal::WireFormatLite::SERIALIZE,
       "google.protobuf.Api.name");
     ::google::protobuf::internal::WireFormatLite::WriteStringMaybeAliased(
@@ -452,7 +452,7 @@ void Api::SerializeWithCachedSizes(
   // string version = 4;
   if (this->version().size() > 0) {
     ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
-      this->version().data(), this->version().length(),
+      this->version().data(), static_cast<int>(this->version().length()),
       ::google::protobuf::internal::WireFormatLite::SERIALIZE,
       "google.protobuf.Api.version");
     ::google::protobuf::internal::WireFormatLite::WriteStringMaybeAliased(
@@ -489,7 +489,7 @@ void Api::SerializeWithCachedSizes(
   // string name = 1;
   if (this->name().size() > 0) {
     ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
-      this->name().data(), this->name().length(),
+      this->name().data(), static_cast<int>(this->name().length()),
       ::google::protobuf::internal::WireFormatLite::SERIALIZE,
       "google.protobuf.Api.name");
     target =
@@ -514,7 +514,7 @@ void Api::SerializeWithCachedSizes(
   // string version = 4;
   if (this->version().size() > 0) {
     ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
-      this->version().data(), this->version().length(),
+      this->version().data(), static_cast<int>(this->version().length()),
       ::google::protobuf::internal::WireFormatLite::SERIALIZE,
       "google.protobuf.Api.version");
     target =
@@ -1064,7 +1064,7 @@ bool Method::MergePartialFromCodedStream(
           DO_(::google::protobuf::internal::WireFormatLite::ReadString(
                 input, this->mutable_name()));
           DO_(::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
-            this->name().data(), this->name().length(),
+            this->name().data(), static_cast<int>(this->name().length()),
             ::google::protobuf::internal::WireFormatLite::PARSE,
             "google.protobuf.Method.name"));
         } else {
@@ -1080,7 +1080,7 @@ bool Method::MergePartialFromCodedStream(
           DO_(::google::protobuf::internal::WireFormatLite::ReadString(
                 input, this->mutable_request_type_url()));
           DO_(::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
-            this->request_type_url().data(), this->request_type_url().length(),
+            this->request_type_url().data(), static_cast<int>(this->request_type_url().length()),
             ::google::protobuf::internal::WireFormatLite::PARSE,
             "google.protobuf.Method.request_type_url"));
         } else {
@@ -1110,7 +1110,7 @@ bool Method::MergePartialFromCodedStream(
           DO_(::google::protobuf::internal::WireFormatLite::ReadString(
                 input, this->mutable_response_type_url()));
           DO_(::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
-            this->response_type_url().data(), this->response_type_url().length(),
+            this->response_type_url().data(), static_cast<int>(this->response_type_url().length()),
             ::google::protobuf::internal::WireFormatLite::PARSE,
             "google.protobuf.Method.response_type_url"));
         } else {
@@ -1190,7 +1190,7 @@ void Method::SerializeWithCachedSizes(
   // string name = 1;
   if (this->name().size() > 0) {
     ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
-      this->name().data(), this->name().length(),
+      this->name().data(), static_cast<int>(this->name().length()),
       ::google::protobuf::internal::WireFormatLite::SERIALIZE,
       "google.protobuf.Method.name");
     ::google::protobuf::internal::WireFormatLite::WriteStringMaybeAliased(
@@ -1200,7 +1200,7 @@ void Method::SerializeWithCachedSizes(
   // string request_type_url = 2;
   if (this->request_type_url().size() > 0) {
     ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
-      this->request_type_url().data(), this->request_type_url().length(),
+      this->request_type_url().data(), static_cast<int>(this->request_type_url().length()),
       ::google::protobuf::internal::WireFormatLite::SERIALIZE,
       "google.protobuf.Method.request_type_url");
     ::google::protobuf::internal::WireFormatLite::WriteStringMaybeAliased(
@@ -1215,7 +1215,7 @@ void Method::SerializeWithCachedSizes(
   // string response_type_url = 4;
   if (this->response_type_url().size() > 0) {
     ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
-      this->response_type_url().data(), this->response_type_url().length(),
+      this->response_type_url().data(), static_cast<int>(this->response_type_url().length()),
       ::google::protobuf::internal::WireFormatLite::SERIALIZE,
       "google.protobuf.Method.response_type_url");
     ::google::protobuf::internal::WireFormatLite::WriteStringMaybeAliased(
@@ -1251,7 +1251,7 @@ void Method::SerializeWithCachedSizes(
   // string name = 1;
   if (this->name().size() > 0) {
     ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
-      this->name().data(), this->name().length(),
+      this->name().data(), static_cast<int>(this->name().length()),
       ::google::protobuf::internal::WireFormatLite::SERIALIZE,
       "google.protobuf.Method.name");
     target =
@@ -1262,7 +1262,7 @@ void Method::SerializeWithCachedSizes(
   // string request_type_url = 2;
   if (this->request_type_url().size() > 0) {
     ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
-      this->request_type_url().data(), this->request_type_url().length(),
+      this->request_type_url().data(), static_cast<int>(this->request_type_url().length()),
       ::google::protobuf::internal::WireFormatLite::SERIALIZE,
       "google.protobuf.Method.request_type_url");
     target =
@@ -1278,7 +1278,7 @@ void Method::SerializeWithCachedSizes(
   // string response_type_url = 4;
   if (this->response_type_url().size() > 0) {
     ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
-      this->response_type_url().data(), this->response_type_url().length(),
+      this->response_type_url().data(), static_cast<int>(this->response_type_url().length()),
       ::google::protobuf::internal::WireFormatLite::SERIALIZE,
       "google.protobuf.Method.response_type_url");
     target =
@@ -1780,7 +1780,7 @@ bool Mixin::MergePartialFromCodedStream(
           DO_(::google::protobuf::internal::WireFormatLite::ReadString(
                 input, this->mutable_name()));
           DO_(::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
-            this->name().data(), this->name().length(),
+            this->name().data(), static_cast<int>(this->name().length()),
             ::google::protobuf::internal::WireFormatLite::PARSE,
             "google.protobuf.Mixin.name"));
         } else {
@@ -1796,7 +1796,7 @@ bool Mixin::MergePartialFromCodedStream(
           DO_(::google::protobuf::internal::WireFormatLite::ReadString(
                 input, this->mutable_root()));
           DO_(::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
-            this->root().data(), this->root().length(),
+            this->root().data(), static_cast<int>(this->root().length()),
             ::google::protobuf::internal::WireFormatLite::PARSE,
             "google.protobuf.Mixin.root"));
         } else {
@@ -1835,7 +1835,7 @@ void Mixin::SerializeWithCachedSizes(
   // string name = 1;
   if (this->name().size() > 0) {
     ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
-      this->name().data(), this->name().length(),
+      this->name().data(), static_cast<int>(this->name().length()),
       ::google::protobuf::internal::WireFormatLite::SERIALIZE,
       "google.protobuf.Mixin.name");
     ::google::protobuf::internal::WireFormatLite::WriteStringMaybeAliased(
@@ -1845,7 +1845,7 @@ void Mixin::SerializeWithCachedSizes(
   // string root = 2;
   if (this->root().size() > 0) {
     ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
-      this->root().data(), this->root().length(),
+      this->root().data(), static_cast<int>(this->root().length()),
       ::google::protobuf::internal::WireFormatLite::SERIALIZE,
       "google.protobuf.Mixin.root");
     ::google::protobuf::internal::WireFormatLite::WriteStringMaybeAliased(
@@ -1864,7 +1864,7 @@ void Mixin::SerializeWithCachedSizes(
   // string name = 1;
   if (this->name().size() > 0) {
     ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
-      this->name().data(), this->name().length(),
+      this->name().data(), static_cast<int>(this->name().length()),
       ::google::protobuf::internal::WireFormatLite::SERIALIZE,
       "google.protobuf.Mixin.name");
     target =
@@ -1875,7 +1875,7 @@ void Mixin::SerializeWithCachedSizes(
   // string root = 2;
   if (this->root().size() > 0) {
     ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
-      this->root().data(), this->root().length(),
+      this->root().data(), static_cast<int>(this->root().length()),
       ::google::protobuf::internal::WireFormatLite::SERIALIZE,
       "google.protobuf.Mixin.root");
     target =

@@ -280,7 +280,7 @@ bool FieldAccessInfo::MergePartialFromCodedStream(
           DO_(::google::protobuf::internal::WireFormatLite::ReadString(
                 input, this->mutable_name()));
           ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
-            this->name().data(), this->name().length(),
+            this->name().data(), static_cast<int>(this->name().length()),
             ::google::protobuf::internal::WireFormat::PARSE,
             "google.protobuf.compiler.FieldAccessInfo.name");
         } else {
@@ -363,7 +363,7 @@ void FieldAccessInfo::SerializeWithCachedSizes(
   // optional string name = 1;
   if (cached_has_bits & 0x00000001u) {
     ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
-      this->name().data(), this->name().length(),
+      this->name().data(), static_cast<int>(this->name().length()),
       ::google::protobuf::internal::WireFormat::SERIALIZE,
       "google.protobuf.compiler.FieldAccessInfo.name");
     ::google::protobuf::internal::WireFormatLite::WriteStringMaybeAliased(
@@ -402,7 +402,7 @@ void FieldAccessInfo::SerializeWithCachedSizes(
   // optional string name = 1;
   if (cached_has_bits & 0x00000001u) {
     ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
-      this->name().data(), this->name().length(),
+      this->name().data(), static_cast<int>(this->name().length()),
       ::google::protobuf::internal::WireFormat::SERIALIZE,
       "google.protobuf.compiler.FieldAccessInfo.name");
     target =
@@ -795,7 +795,7 @@ bool MessageAccessInfo::MergePartialFromCodedStream(
           DO_(::google::protobuf::internal::WireFormatLite::ReadString(
                 input, this->mutable_name()));
           ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
-            this->name().data(), this->name().length(),
+            this->name().data(), static_cast<int>(this->name().length()),
             ::google::protobuf::internal::WireFormat::PARSE,
             "google.protobuf.compiler.MessageAccessInfo.name");
         } else {
@@ -862,7 +862,7 @@ void MessageAccessInfo::SerializeWithCachedSizes(
   // optional string name = 1;
   if (cached_has_bits & 0x00000001u) {
     ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
-      this->name().data(), this->name().length(),
+      this->name().data(), static_cast<int>(this->name().length()),
       ::google::protobuf::internal::WireFormat::SERIALIZE,
       "google.protobuf.compiler.MessageAccessInfo.name");
     ::google::protobuf::internal::WireFormatLite::WriteStringMaybeAliased(
@@ -897,7 +897,7 @@ void MessageAccessInfo::SerializeWithCachedSizes(
   // optional string name = 1;
   if (cached_has_bits & 0x00000001u) {
     ::google::protobuf::internal::WireFormat::VerifyUTF8StringNamedField(
-      this->name().data(), this->name().length(),
+      this->name().data(), static_cast<int>(this->name().length()),
       ::google::protobuf::internal::WireFormat::SERIALIZE,
       "google.protobuf.compiler.MessageAccessInfo.name");
     target =

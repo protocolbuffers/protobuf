@@ -268,7 +268,7 @@ inline bool WireFormatLite::ReadRepeatedFixedSizePrimitive(
   if (size > 0) {
     const uint8* buffer = reinterpret_cast<const uint8*>(void_pointer);
     // The number of bytes each type occupies on the wire.
-    const int per_value_size = tag_size + sizeof(value);
+    const int per_value_size = tag_size + static_cast<int>(sizeof(value));
 
     // parentheses around (std::min) prevents macro expansion of min(...)
     int elements_available =
@@ -344,8 +344,8 @@ inline bool WireFormatLite::ReadPackedFixedSizePrimitive(
   int length;
   if (!input->ReadVarintSizeAsInt(&length)) return false;
   const int old_entries = values->size();
-  const int new_entries = length / sizeof(CType);
-  const int new_bytes = new_entries * sizeof(CType);
+  const int new_entries = length / static_cast<int>(sizeof(CType));
+  const int new_bytes = new_entries * static_cast<int>(sizeof(CType));
   if (new_bytes != length) return false;
   // We would *like* to pre-allocate the buffer to write into (for
   // speed), but *must* avoid performing a very large allocation due
@@ -695,7 +695,7 @@ inline uint8* WireFormatLite::WriteFixedNoTagToArray(
   GOOGLE_DCHECK_GT(n, 0);
 
   const T* ii = value.unsafe_data();
-  const int bytes = n * sizeof(ii[0]);
+  const int bytes = n * static_cast<int>(sizeof(ii[0]));
   memcpy(target, ii, bytes);
   return target + bytes;
 #else

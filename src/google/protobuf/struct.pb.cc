@@ -340,7 +340,7 @@ bool Struct::MergePartialFromCodedStream(
           DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtual(
               input, &parser));
           DO_(::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
-            parser.key().data(), parser.key().length(),
+            parser.key().data(), static_cast<int>(parser.key().length()),
             ::google::protobuf::internal::WireFormatLite::PARSE,
             "google.protobuf.Struct.FieldsEntry.key"));
         } else {
@@ -385,7 +385,7 @@ void Struct::SerializeWithCachedSizes(
     struct Utf8Check {
       static void Check(ConstPtr p) {
         ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
-          p->first.data(), p->first.length(),
+          p->first.data(), static_cast<int>(p->first.length()),
           ::google::protobuf::internal::WireFormatLite::SERIALIZE,
           "google.protobuf.Struct.FieldsEntry.key");
       }
@@ -449,7 +449,7 @@ void Struct::SerializeWithCachedSizes(
     struct Utf8Check {
       static void Check(ConstPtr p) {
         ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
-          p->first.data(), p->first.length(),
+          p->first.data(), static_cast<int>(p->first.length()),
           ::google::protobuf::internal::WireFormatLite::SERIALIZE,
           "google.protobuf.Struct.FieldsEntry.key");
       }
@@ -834,7 +834,7 @@ bool Value::MergePartialFromCodedStream(
           DO_(::google::protobuf::internal::WireFormatLite::ReadString(
                 input, this->mutable_string_value()));
           DO_(::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
-            this->string_value().data(), this->string_value().length(),
+            this->string_value().data(), static_cast<int>(this->string_value().length()),
             ::google::protobuf::internal::WireFormatLite::PARSE,
             "google.protobuf.Value.string_value"));
         } else {
@@ -923,7 +923,7 @@ void Value::SerializeWithCachedSizes(
   // string string_value = 3;
   if (has_string_value()) {
     ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
-      this->string_value().data(), this->string_value().length(),
+      this->string_value().data(), static_cast<int>(this->string_value().length()),
       ::google::protobuf::internal::WireFormatLite::SERIALIZE,
       "google.protobuf.Value.string_value");
     ::google::protobuf::internal::WireFormatLite::WriteStringMaybeAliased(
@@ -970,7 +970,7 @@ void Value::SerializeWithCachedSizes(
   // string string_value = 3;
   if (has_string_value()) {
     ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
-      this->string_value().data(), this->string_value().length(),
+      this->string_value().data(), static_cast<int>(this->string_value().length()),
       ::google::protobuf::internal::WireFormatLite::SERIALIZE,
       "google.protobuf.Value.string_value");
     target =

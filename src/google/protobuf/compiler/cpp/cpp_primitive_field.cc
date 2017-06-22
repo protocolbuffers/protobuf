@@ -452,7 +452,8 @@ GenerateByteSize(io::Printer* printer) const {
     printer->Print(variables_,
       "if (data_size > 0) {\n"
       "  total_size += $tag_size$ +\n"
-      "    ::google::protobuf::internal::WireFormatLite::Int32Size(data_size);\n"
+      "    ::google::protobuf::internal::WireFormatLite::Int32Size(\n"
+      "        static_cast<google::protobuf::int32>(data_size));\n"
       "}\n"
       "int cached_size = ::google::protobuf::internal::ToCachedSize(data_size);\n"
       "GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();\n"

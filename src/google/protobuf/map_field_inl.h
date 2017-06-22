@@ -168,7 +168,7 @@ template <typename Derived, typename Key, typename T,
 int MapField<Derived, Key, T, kKeyFieldType, kValueFieldType,
              default_enum_value>::size() const {
   MapFieldBase::SyncMapWithRepeatedField();
-  return impl_.GetMap().size();
+  return static_cast<int>(impl_.GetMap().size());
 }
 
 template <typename Derived, typename Key, typename T,
