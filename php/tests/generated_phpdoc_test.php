@@ -13,7 +13,7 @@ class GeneratedPhpdocTest extends TestBase
     {
         $class = new ReflectionClass('Foo\TestMessage');
         $doc = $class->getDocComment();
-        $this->assertContains('Foo\TestMessage', $doc);
+        $this->assertContains('foo.TestMessage', $doc);
     }
 
     /**
