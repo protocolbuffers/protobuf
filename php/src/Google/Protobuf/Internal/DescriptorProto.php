@@ -14,7 +14,6 @@ use Google\Protobuf\Internal\GPBUtil;
 /**
  * Describes a message type.
  *
- * Protobuf type <code>Google\Protobuf\Internal</code>
  * Generated from protobuf message <code>google.protobuf.DescriptorProto</code>
  */
 class DescriptorProto extends \Google\Protobuf\Internal\Message

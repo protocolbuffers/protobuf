@@ -14,7 +14,6 @@ use Google\Protobuf\Internal\GPBUtil;
 /**
  * Describes a complete .proto file.
  *
- * Protobuf type <code>Google\Protobuf\Internal</code>
  * Generated from protobuf message <code>google.protobuf.FileDescriptorProto</code>
  */
 class FileDescriptorProto extends \Google\Protobuf\Internal\Message

@@ -15,7 +15,6 @@ use Google\Protobuf\Internal\GPBUtil;
  * Encapsulates information about the original source file from which a
  * FileDescriptorProto was generated.
  *
- * Protobuf type <code>Google\Protobuf\Internal</code>
  * Generated from protobuf message <code>google.protobuf.SourceCodeInfo</code>
  */
 class SourceCodeInfo extends \Google\Protobuf\Internal\Message

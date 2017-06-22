@@ -15,7 +15,6 @@ use Google\Protobuf\Internal\GPBUtil;
  * The protocol compiler can output a FileDescriptorSet containing the .proto
  * files it parses.
  *
- * Protobuf type <code>Google\Protobuf\Internal</code>
  * Generated from protobuf message <code>google.protobuf.FileDescriptorSet</code>
  */
 class FileDescriptorSet extends \Google\Protobuf\Internal\Message

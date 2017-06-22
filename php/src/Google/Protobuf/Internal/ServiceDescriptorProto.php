@@ -14,7 +14,6 @@ use Google\Protobuf\Internal\GPBUtil;
 /**
  * Describes a service.
  *
- * Protobuf type <code>Google\Protobuf\Internal</code>
  * Generated from protobuf message <code>google.protobuf.ServiceDescriptorProto</code>
  */
 class ServiceDescriptorProto extends \Google\Protobuf\Internal\Message

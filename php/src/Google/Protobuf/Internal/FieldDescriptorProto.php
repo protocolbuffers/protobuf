@@ -14,7 +14,6 @@ use Google\Protobuf\Internal\GPBUtil;
 /**
  * Describes a field within a message.
  *
- * Protobuf type <code>Google\Protobuf\Internal</code>
  * Generated from protobuf message <code>google.protobuf.FieldDescriptorProto</code>
  */
 class FieldDescriptorProto extends \Google\Protobuf\Internal\Message

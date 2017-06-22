@@ -14,7 +14,6 @@ use Google\Protobuf\Internal\GPBUtil;
 /**
  * Describes a value within an enum.
  *
- * Protobuf type <code>Google\Protobuf\Internal</code>
  * Generated from protobuf message <code>google.protobuf.EnumValueDescriptorProto</code>
  */
 class EnumValueDescriptorProto extends \Google\Protobuf\Internal\Message

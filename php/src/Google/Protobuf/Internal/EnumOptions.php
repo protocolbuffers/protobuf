@@ -12,7 +12,6 @@ use Google\Protobuf\Internal\InputStream;
 use Google\Protobuf\Internal\GPBUtil;
 
 /**
- * Protobuf type <code>Google\Protobuf\Internal</code>
  * Generated from protobuf message <code>google.protobuf.EnumOptions</code>
  */
 class EnumOptions extends \Google\Protobuf\Internal\Message

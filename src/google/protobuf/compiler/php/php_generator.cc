@@ -1158,7 +1158,6 @@ void GenerateMessageDocComment(io::Printer* printer,
   printer->Print("/**\n");
   GenerateDocCommentBody(printer, message);
   printer->Print(
-    " * Protobuf type <code>^fullname^</code>\n"
     " * Generated from protobuf message <code>^messagename^</code>\n"
     " */\n",
     "fullname", EscapePhpdoc(PhpName(message->full_name(), is_descriptor)),

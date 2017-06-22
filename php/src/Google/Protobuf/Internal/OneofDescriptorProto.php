@@ -14,7 +14,6 @@ use Google\Protobuf\Internal\GPBUtil;
 /**
  * Describes a oneof.
  *
- * Protobuf type <code>Google\Protobuf\Internal</code>
  * Generated from protobuf message <code>google.protobuf.OneofDescriptorProto</code>
  */
 class OneofDescriptorProto extends \Google\Protobuf\Internal\Message

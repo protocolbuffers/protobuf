@@ -12,7 +12,6 @@ use Google\Protobuf\Internal\InputStream;
 use Google\Protobuf\Internal\GPBUtil;
 
 /**
- * Protobuf type <code>Google\Protobuf\Internal</code>
  * Generated from protobuf message <code>google.protobuf.DescriptorProto.ExtensionRange</code>
  */
 class DescriptorProto_ExtensionRange extends \Google\Protobuf\Internal\Message

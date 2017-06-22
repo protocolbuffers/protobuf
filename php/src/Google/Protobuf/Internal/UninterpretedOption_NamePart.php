@@ -18,7 +18,6 @@ use Google\Protobuf\Internal\GPBUtil;
  * E.g.,{ ["foo", false], ["bar.baz", true], ["qux", false] } represents
  * "foo.(bar.baz).qux".
  *
- * Protobuf type <code>Google\Protobuf\Internal</code>
  * Generated from protobuf message <code>google.protobuf.UninterpretedOption.NamePart</code>
  */
 class UninterpretedOption_NamePart extends \Google\Protobuf\Internal\Message

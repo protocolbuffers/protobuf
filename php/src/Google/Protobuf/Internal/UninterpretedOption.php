@@ -19,7 +19,6 @@ use Google\Protobuf\Internal\GPBUtil;
  * or produced by Descriptor::CopyTo()) will never have UninterpretedOptions
  * in them.
  *
- * Protobuf type <code>Google\Protobuf\Internal</code>
  * Generated from protobuf message <code>google.protobuf.UninterpretedOption</code>
  */
 class UninterpretedOption extends \Google\Protobuf\Internal\Message

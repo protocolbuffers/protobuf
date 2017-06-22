@@ -16,7 +16,6 @@ use Google\Protobuf\Internal\GPBUtil;
  * fields or extension ranges in the same message. Reserved ranges may
  * not overlap.
  *
- * Protobuf type <code>Google\Protobuf\Internal</code>
  * Generated from protobuf message <code>google.protobuf.DescriptorProto.ReservedRange</code>
  */
 class DescriptorProto_ReservedRange extends \Google\Protobuf\Internal\Message

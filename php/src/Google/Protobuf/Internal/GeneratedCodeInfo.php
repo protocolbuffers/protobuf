@@ -16,7 +16,6 @@ use Google\Protobuf\Internal\GPBUtil;
  * file. A GeneratedCodeInfo message is associated with only one generated
  * source file, but may contain references to different source .proto files.
  *
- * Protobuf type <code>Google\Protobuf\Internal</code>
  * Generated from protobuf message <code>google.protobuf.GeneratedCodeInfo</code>
  */
 class GeneratedCodeInfo extends \Google\Protobuf\Internal\Message
