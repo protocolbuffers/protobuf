@@ -15,6 +15,7 @@ use Google\Protobuf\Internal\GPBUtil;
  * Describes a complete .proto file.
  *
  * Protobuf type <code>Google\Protobuf\Internal</code>
+ * Generated from protobuf message <code>google.protobuf.FileDescriptorProto</code>
  */
 class FileDescriptorProto extends \Google\Protobuf\Internal\Message
 {
@@ -121,6 +122,7 @@ class FileDescriptorProto extends \Google\Protobuf\Internal\Message
      *
      * Generated from protobuf field <code>optional string name = 1;</code>
      * @param string $var
+     * @return $this
      */
     public function setName($var)
     {
@@ -152,6 +154,7 @@ class FileDescriptorProto extends \Google\Protobuf\Internal\Message
      *
      * Generated from protobuf field <code>optional string package = 2;</code>
      * @param string $var
+     * @return $this
      */
     public function setPackage($var)
     {
@@ -183,6 +186,7 @@ class FileDescriptorProto extends \Google\Protobuf\Internal\Message
      *
      * Generated from protobuf field <code>repeated string dependency = 3;</code>
      * @param array|\Google\Protobuf\Internal\RepeatedField $var
+     * @return $this
      */
     public function setDependency(&$var)
     {
@@ -214,6 +218,7 @@ class FileDescriptorProto extends \Google\Protobuf\Internal\Message
      *
      * Generated from protobuf field <code>repeated int32 public_dependency = 10;</code>
      * @param array|\Google\Protobuf\Internal\RepeatedField $var
+     * @return $this
      */
     public function setPublicDependency(&$var)
     {
@@ -247,6 +252,7 @@ class FileDescriptorProto extends \Google\Protobuf\Internal\Message
      *
      * Generated from protobuf field <code>repeated int32 weak_dependency = 11;</code>
      * @param array|\Google\Protobuf\Internal\RepeatedField $var
+     * @return $this
      */
     public function setWeakDependency(&$var)
     {
@@ -278,6 +284,7 @@ class FileDescriptorProto extends \Google\Protobuf\Internal\Message
      *
      * Generated from protobuf field <code>repeated .google.protobuf.DescriptorProto message_type = 4;</code>
      * @param array|\Google\Protobuf\Internal\RepeatedField $var
+     * @return $this
      */
     public function setMessageType(&$var)
     {
@@ -305,6 +312,7 @@ class FileDescriptorProto extends \Google\Protobuf\Internal\Message
     /**
      * Generated from protobuf field <code>repeated .google.protobuf.EnumDescriptorProto enum_type = 5;</code>
      * @param array|\Google\Protobuf\Internal\RepeatedField $var
+     * @return $this
      */
     public function setEnumType(&$var)
     {
@@ -332,6 +340,7 @@ class FileDescriptorProto extends \Google\Protobuf\Internal\Message
     /**
      * Generated from protobuf field <code>repeated .google.protobuf.ServiceDescriptorProto service = 6;</code>
      * @param array|\Google\Protobuf\Internal\RepeatedField $var
+     * @return $this
      */
     public function setService(&$var)
     {
@@ -359,6 +368,7 @@ class FileDescriptorProto extends \Google\Protobuf\Internal\Message
     /**
      * Generated from protobuf field <code>repeated .google.protobuf.FieldDescriptorProto extension = 7;</code>
      * @param array|\Google\Protobuf\Internal\RepeatedField $var
+     * @return $this
      */
     public function setExtension(&$var)
     {
@@ -386,6 +396,7 @@ class FileDescriptorProto extends \Google\Protobuf\Internal\Message
     /**
      * Generated from protobuf field <code>optional .google.protobuf.FileOptions options = 8;</code>
      * @param \Google\Protobuf\Internal\FileOptions $var
+     * @return $this
      */
     public function setOptions(&$var)
     {
@@ -423,6 +434,7 @@ class FileDescriptorProto extends \Google\Protobuf\Internal\Message
      *
      * Generated from protobuf field <code>optional .google.protobuf.SourceCodeInfo source_code_info = 9;</code>
      * @param \Google\Protobuf\Internal\SourceCodeInfo $var
+     * @return $this
      */
     public function setSourceCodeInfo(&$var)
     {
@@ -456,6 +468,7 @@ class FileDescriptorProto extends \Google\Protobuf\Internal\Message
      *
      * Generated from protobuf field <code>optional string syntax = 12;</code>
      * @param string $var
+     * @return $this
      */
     public function setSyntax($var)
     {

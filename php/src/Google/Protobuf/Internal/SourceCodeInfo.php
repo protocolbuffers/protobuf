@@ -16,6 +16,7 @@ use Google\Protobuf\Internal\GPBUtil;
  * FileDescriptorProto was generated.
  *
  * Protobuf type <code>Google\Protobuf\Internal</code>
+ * Generated from protobuf message <code>google.protobuf.SourceCodeInfo</code>
  */
 class SourceCodeInfo extends \Google\Protobuf\Internal\Message
 {
@@ -168,6 +169,7 @@ class SourceCodeInfo extends \Google\Protobuf\Internal\Message
      *
      * Generated from protobuf field <code>repeated .google.protobuf.SourceCodeInfo.Location location = 1;</code>
      * @param array|\Google\Protobuf\Internal\RepeatedField $var
+     * @return $this
      */
     public function setLocation(&$var)
     {

@@ -15,6 +15,7 @@ use Google\Protobuf\Internal\GPBUtil;
  * Describes a method of a service.
  *
  * Protobuf type <code>Google\Protobuf\Internal</code>
+ * Generated from protobuf message <code>google.protobuf.MethodDescriptorProto</code>
  */
 class MethodDescriptorProto extends \Google\Protobuf\Internal\Message
 {
@@ -73,6 +74,7 @@ class MethodDescriptorProto extends \Google\Protobuf\Internal\Message
     /**
      * Generated from protobuf field <code>optional string name = 1;</code>
      * @param string $var
+     * @return $this
      */
     public function setName($var)
     {
@@ -106,6 +108,7 @@ class MethodDescriptorProto extends \Google\Protobuf\Internal\Message
      *
      * Generated from protobuf field <code>optional string input_type = 2;</code>
      * @param string $var
+     * @return $this
      */
     public function setInputType($var)
     {
@@ -133,6 +136,7 @@ class MethodDescriptorProto extends \Google\Protobuf\Internal\Message
     /**
      * Generated from protobuf field <code>optional string output_type = 3;</code>
      * @param string $var
+     * @return $this
      */
     public function setOutputType($var)
     {
@@ -160,6 +164,7 @@ class MethodDescriptorProto extends \Google\Protobuf\Internal\Message
     /**
      * Generated from protobuf field <code>optional .google.protobuf.MethodOptions options = 4;</code>
      * @param \Google\Protobuf\Internal\MethodOptions $var
+     * @return $this
      */
     public function setOptions(&$var)
     {
@@ -191,6 +196,7 @@ class MethodDescriptorProto extends \Google\Protobuf\Internal\Message
      *
      * Generated from protobuf field <code>optional bool client_streaming = 5 [default = false];</code>
      * @param bool $var
+     * @return $this
      */
     public function setClientStreaming($var)
     {
@@ -222,6 +228,7 @@ class MethodDescriptorProto extends \Google\Protobuf\Internal\Message
      *
      * Generated from protobuf field <code>optional bool server_streaming = 6 [default = false];</code>
      * @param bool $var
+     * @return $this
      */
     public function setServerStreaming($var)
     {

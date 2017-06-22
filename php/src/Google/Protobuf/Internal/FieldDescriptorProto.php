@@ -15,6 +15,7 @@ use Google\Protobuf\Internal\GPBUtil;
  * Describes a field within a message.
  *
  * Protobuf type <code>Google\Protobuf\Internal</code>
+ * Generated from protobuf message <code>google.protobuf.FieldDescriptorProto</code>
  */
 class FieldDescriptorProto extends \Google\Protobuf\Internal\Message
 {
@@ -112,6 +113,7 @@ class FieldDescriptorProto extends \Google\Protobuf\Internal\Message
     /**
      * Generated from protobuf field <code>optional string name = 1;</code>
      * @param string $var
+     * @return $this
      */
     public function setName($var)
     {
@@ -139,6 +141,7 @@ class FieldDescriptorProto extends \Google\Protobuf\Internal\Message
     /**
      * Generated from protobuf field <code>optional int32 number = 3;</code>
      * @param int $var
+     * @return $this
      */
     public function setNumber($var)
     {
@@ -166,6 +169,7 @@ class FieldDescriptorProto extends \Google\Protobuf\Internal\Message
     /**
      * Generated from protobuf field <code>optional .google.protobuf.FieldDescriptorProto.Label label = 4;</code>
      * @param int $var
+     * @return $this
      */
     public function setLabel($var)
     {
@@ -199,6 +203,7 @@ class FieldDescriptorProto extends \Google\Protobuf\Internal\Message
      *
      * Generated from protobuf field <code>optional .google.protobuf.FieldDescriptorProto.Type type = 5;</code>
      * @param int $var
+     * @return $this
      */
     public function setType($var)
     {
@@ -238,6 +243,7 @@ class FieldDescriptorProto extends \Google\Protobuf\Internal\Message
      *
      * Generated from protobuf field <code>optional string type_name = 6;</code>
      * @param string $var
+     * @return $this
      */
     public function setTypeName($var)
     {
@@ -271,6 +277,7 @@ class FieldDescriptorProto extends \Google\Protobuf\Internal\Message
      *
      * Generated from protobuf field <code>optional string extendee = 2;</code>
      * @param string $var
+     * @return $this
      */
     public function setExtendee($var)
     {
@@ -310,6 +317,7 @@ class FieldDescriptorProto extends \Google\Protobuf\Internal\Message
      *
      * Generated from protobuf field <code>optional string default_value = 7;</code>
      * @param string $var
+     * @return $this
      */
     public function setDefaultValue($var)
     {
@@ -343,6 +351,7 @@ class FieldDescriptorProto extends \Google\Protobuf\Internal\Message
      *
      * Generated from protobuf field <code>optional int32 oneof_index = 9;</code>
      * @param int $var
+     * @return $this
      */
     public function setOneofIndex($var)
     {
@@ -380,6 +389,7 @@ class FieldDescriptorProto extends \Google\Protobuf\Internal\Message
      *
      * Generated from protobuf field <code>optional string json_name = 10;</code>
      * @param string $var
+     * @return $this
      */
     public function setJsonName($var)
     {
@@ -407,6 +417,7 @@ class FieldDescriptorProto extends \Google\Protobuf\Internal\Message
     /**
      * Generated from protobuf field <code>optional .google.protobuf.FieldOptions options = 8;</code>
      * @param \Google\Protobuf\Internal\FieldOptions $var
+     * @return $this
      */
     public function setOptions(&$var)
     {

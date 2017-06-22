@@ -13,6 +13,7 @@ use Google\Protobuf\Internal\GPBUtil;
 
 /**
  * Protobuf type <code>Google\Protobuf\Internal</code>
+ * Generated from protobuf message <code>google.protobuf.GeneratedCodeInfo.Annotation</code>
  */
 class GeneratedCodeInfo_Annotation extends \Google\Protobuf\Internal\Message
 {
@@ -72,6 +73,7 @@ class GeneratedCodeInfo_Annotation extends \Google\Protobuf\Internal\Message
      *
      * Generated from protobuf field <code>repeated int32 path = 1 [packed = true];</code>
      * @param array|\Google\Protobuf\Internal\RepeatedField $var
+     * @return $this
      */
     public function setPath(&$var)
     {
@@ -103,6 +105,7 @@ class GeneratedCodeInfo_Annotation extends \Google\Protobuf\Internal\Message
      *
      * Generated from protobuf field <code>optional string source_file = 2;</code>
      * @param string $var
+     * @return $this
      */
     public function setSourceFile($var)
     {
@@ -136,6 +139,7 @@ class GeneratedCodeInfo_Annotation extends \Google\Protobuf\Internal\Message
      *
      * Generated from protobuf field <code>optional int32 begin = 3;</code>
      * @param int $var
+     * @return $this
      */
     public function setBegin($var)
     {
@@ -171,6 +175,7 @@ class GeneratedCodeInfo_Annotation extends \Google\Protobuf\Internal\Message
      *
      * Generated from protobuf field <code>optional int32 end = 4;</code>
      * @param int $var
+     * @return $this
      */
     public function setEnd($var)
     {

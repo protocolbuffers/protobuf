@@ -13,6 +13,7 @@ use Google\Protobuf\Internal\GPBUtil;
 
 /**
  * Protobuf type <code>Google\Protobuf\Internal</code>
+ * Generated from protobuf message <code>google.protobuf.MethodOptions</code>
  */
 class MethodOptions extends \Google\Protobuf\Internal\Message
 {
@@ -66,6 +67,7 @@ class MethodOptions extends \Google\Protobuf\Internal\Message
      *
      * Generated from protobuf field <code>optional bool deprecated = 33 [default = false];</code>
      * @param bool $var
+     * @return $this
      */
     public function setDeprecated($var)
     {
@@ -93,6 +95,7 @@ class MethodOptions extends \Google\Protobuf\Internal\Message
     /**
      * Generated from protobuf field <code>optional .google.protobuf.MethodOptions.IdempotencyLevel idempotency_level = 34 [default = IDEMPOTENCY_UNKNOWN];</code>
      * @param int $var
+     * @return $this
      */
     public function setIdempotencyLevel($var)
     {
@@ -124,6 +127,7 @@ class MethodOptions extends \Google\Protobuf\Internal\Message
      *
      * Generated from protobuf field <code>repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;</code>
      * @param array|\Google\Protobuf\Internal\RepeatedField $var
+     * @return $this
      */
     public function setUninterpretedOption(&$var)
     {

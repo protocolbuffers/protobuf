@@ -13,6 +13,7 @@ use Google\Protobuf\Internal\GPBUtil;
 
 /**
  * Protobuf type <code>Google\Protobuf\Internal</code>
+ * Generated from protobuf message <code>google.protobuf.EnumOptions</code>
  */
 class EnumOptions extends \Google\Protobuf\Internal\Message
 {
@@ -65,6 +66,7 @@ class EnumOptions extends \Google\Protobuf\Internal\Message
      *
      * Generated from protobuf field <code>optional bool allow_alias = 2;</code>
      * @param bool $var
+     * @return $this
      */
     public function setAllowAlias($var)
     {
@@ -102,6 +104,7 @@ class EnumOptions extends \Google\Protobuf\Internal\Message
      *
      * Generated from protobuf field <code>optional bool deprecated = 3 [default = false];</code>
      * @param bool $var
+     * @return $this
      */
     public function setDeprecated($var)
     {
@@ -133,6 +136,7 @@ class EnumOptions extends \Google\Protobuf\Internal\Message
      *
      * Generated from protobuf field <code>repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;</code>
      * @param array|\Google\Protobuf\Internal\RepeatedField $var
+     * @return $this
      */
     public function setUninterpretedOption(&$var)
     {

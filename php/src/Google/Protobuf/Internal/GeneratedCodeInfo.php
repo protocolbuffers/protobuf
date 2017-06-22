@@ -17,6 +17,7 @@ use Google\Protobuf\Internal\GPBUtil;
  * source file, but may contain references to different source .proto files.
  *
  * Protobuf type <code>Google\Protobuf\Internal</code>
+ * Generated from protobuf message <code>google.protobuf.GeneratedCodeInfo</code>
  */
 class GeneratedCodeInfo extends \Google\Protobuf\Internal\Message
 {
@@ -52,6 +53,7 @@ class GeneratedCodeInfo extends \Google\Protobuf\Internal\Message
      *
      * Generated from protobuf field <code>repeated .google.protobuf.GeneratedCodeInfo.Annotation annotation = 1;</code>
      * @param array|\Google\Protobuf\Internal\RepeatedField $var
+     * @return $this
      */
     public function setAnnotation(&$var)
     {

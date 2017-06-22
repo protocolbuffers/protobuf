@@ -20,6 +20,7 @@ use Google\Protobuf\Internal\GPBUtil;
  * in them.
  *
  * Protobuf type <code>Google\Protobuf\Internal</code>
+ * Generated from protobuf message <code>google.protobuf.UninterpretedOption</code>
  */
 class UninterpretedOption extends \Google\Protobuf\Internal\Message
 {
@@ -79,6 +80,7 @@ class UninterpretedOption extends \Google\Protobuf\Internal\Message
     /**
      * Generated from protobuf field <code>repeated .google.protobuf.UninterpretedOption.NamePart name = 2;</code>
      * @param array|\Google\Protobuf\Internal\RepeatedField $var
+     * @return $this
      */
     public function setName(&$var)
     {
@@ -112,6 +114,7 @@ class UninterpretedOption extends \Google\Protobuf\Internal\Message
      *
      * Generated from protobuf field <code>optional string identifier_value = 3;</code>
      * @param string $var
+     * @return $this
      */
     public function setIdentifierValue($var)
     {
@@ -139,6 +142,7 @@ class UninterpretedOption extends \Google\Protobuf\Internal\Message
     /**
      * Generated from protobuf field <code>optional uint64 positive_int_value = 4;</code>
      * @param int|string $var
+     * @return $this
      */
     public function setPositiveIntValue($var)
     {
@@ -166,6 +170,7 @@ class UninterpretedOption extends \Google\Protobuf\Internal\Message
     /**
      * Generated from protobuf field <code>optional int64 negative_int_value = 5;</code>
      * @param int|string $var
+     * @return $this
      */
     public function setNegativeIntValue($var)
     {
@@ -193,6 +198,7 @@ class UninterpretedOption extends \Google\Protobuf\Internal\Message
     /**
      * Generated from protobuf field <code>optional double double_value = 6;</code>
      * @param float $var
+     * @return $this
      */
     public function setDoubleValue($var)
     {
@@ -220,6 +226,7 @@ class UninterpretedOption extends \Google\Protobuf\Internal\Message
     /**
      * Generated from protobuf field <code>optional bytes string_value = 7;</code>
      * @param string $var
+     * @return $this
      */
     public function setStringValue($var)
     {
@@ -247,6 +254,7 @@ class UninterpretedOption extends \Google\Protobuf\Internal\Message
     /**
      * Generated from protobuf field <code>optional string aggregate_value = 8;</code>
      * @param string $var
+     * @return $this
      */
     public function setAggregateValue($var)
     {

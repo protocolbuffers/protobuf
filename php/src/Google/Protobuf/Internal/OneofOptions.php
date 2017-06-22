@@ -13,6 +13,7 @@ use Google\Protobuf\Internal\GPBUtil;
 
 /**
  * Protobuf type <code>Google\Protobuf\Internal</code>
+ * Generated from protobuf message <code>google.protobuf.OneofOptions</code>
  */
 class OneofOptions extends \Google\Protobuf\Internal\Message
 {
@@ -45,6 +46,7 @@ class OneofOptions extends \Google\Protobuf\Internal\Message
      *
      * Generated from protobuf field <code>repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;</code>
      * @param array|\Google\Protobuf\Internal\RepeatedField $var
+     * @return $this
      */
     public function setUninterpretedOption(&$var)
     {

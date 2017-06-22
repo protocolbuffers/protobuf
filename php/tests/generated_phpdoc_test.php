@@ -5,15 +5,7 @@ require_once('generated/NoNamespaceMessage.php');
 require_once('test_base.php');
 require_once('test_util.php');
 
-// use Google\Protobuf\Internal\RepeatedField;
-// use Google\Protobuf\Internal\MapField;
-// use Google\Protobuf\Internal\GPBType;
-// use Foo\TestEnum;
-// use Foo\TestIncludeNamespaceMessage;
-// use Foo\TestIncludePrefixMessage;
 use Foo\TestMessage;
-// use Foo\TestMessage_Sub;
-// use Php\Test\TestNamespace;
 
 class GeneratedPhpdocTest extends TestBase
 {
@@ -127,6 +119,13 @@ class GeneratedPhpdocTest extends TestBase
                     'getRepeatedEnum',
                     'getRepeatedMessage',
                     'getRepeatedRecursive',
+                    'getRepeatedNoNamespaceMessage',
+                    'getRepeatedNoNamespaceEnum',
+                ],
+                '@return \Google\Protobuf\Internal\RepeatedField'
+            ],
+            [
+                [
                     'getMapInt32Int32',
                     'getMapInt64Int64',
                     'getMapUint32Uint32',
@@ -145,10 +144,8 @@ class GeneratedPhpdocTest extends TestBase
                     'getMapInt32Enum',
                     'getMapInt32Message',
                     'getMapRecursive',
-                    'getRepeatedNoNamespaceMessage',
-                    'getRepeatedNoNamespaceEnum',
                 ],
-                '@return \Google\Protobuf\Internal\RepeatedField'
+                '@return \Google\Protobuf\Internal\MapField'
             ],
             [
                 [
@@ -170,6 +167,13 @@ class GeneratedPhpdocTest extends TestBase
                     'setRepeatedEnum',
                     'setRepeatedMessage',
                     'setRepeatedRecursive',
+                    'setRepeatedNoNamespaceMessage',
+                    'setRepeatedNoNamespaceEnum',
+                ],
+                '@param array|\Google\Protobuf\Internal\RepeatedField $var'
+            ],
+            [
+                [
                     'setMapInt32Int32',
                     'setMapInt64Int64',
                     'setMapUint32Uint32',
@@ -188,10 +192,8 @@ class GeneratedPhpdocTest extends TestBase
                     'setMapInt32Enum',
                     'setMapInt32Message',
                     'setMapRecursive',
-                    'setRepeatedNoNamespaceMessage',
-                    'setRepeatedNoNamespaceEnum',
                 ],
-                '@param array|\Google\Protobuf\Internal\RepeatedField $var'
+                '@param array|\Google\Protobuf\Internal\MapField $var'
             ],
             [
                 [
@@ -249,51 +251,51 @@ class GeneratedPhpdocTest extends TestBase
                     'getOptionalMessage',
                     'getOneofMessage'
                 ],
-                '@return Foo\TestMessage_Sub'
+                '@return \Foo\TestMessage_Sub'
             ],
             [
                 [
                     'setOptionalMessage',
                     'setOneofMessage'
                 ],
-                '@param Foo\TestMessage_Sub $var'
+                '@param \Foo\TestMessage_Sub $var'
             ],
             [
                 [
                     'getOptionalIncludedMessage'
                 ],
-                '@return Bar\TestInclude'
+                '@return \Bar\TestInclude'
             ],
             [
                 [
                     'setOptionalIncludedMessage'
                 ],
-                '@param Bar\TestInclude $var'
+                '@param \Bar\TestInclude $var'
             ],
             [
                 [
                     'getRecursive'
                 ],
-                '@return Foo\TestMessage'
+                '@return \Foo\TestMessage'
             ],
             [
                 [
                     'setRecursive'
                 ],
-                '@param Foo\TestMessage $var'
+                '@param \Foo\TestMessage $var'
             ],
 
             [
                 [
                     'getOptionalNoNamespaceMessage'
                 ],
-                '@return NoNamespaceMessage'
+                '@return \NoNamespaceMessage'
             ],
             [
                 [
                     'setOptionalNoNamespaceMessage'
                 ],
-                '@param NoNamespaceMessage $var'
+                '@param \NoNamespaceMessage $var'
             ],
         ];
     }

@@ -13,6 +13,7 @@ use Google\Protobuf\Internal\GPBUtil;
 
 /**
  * Protobuf type <code>Google\Protobuf\Internal</code>
+ * Generated from protobuf message <code>google.protobuf.DescriptorProto.ExtensionRange</code>
  */
 class DescriptorProto_ExtensionRange extends \Google\Protobuf\Internal\Message
 {
@@ -44,6 +45,7 @@ class DescriptorProto_ExtensionRange extends \Google\Protobuf\Internal\Message
     /**
      * Generated from protobuf field <code>optional int32 start = 1;</code>
      * @param int $var
+     * @return $this
      */
     public function setStart($var)
     {
@@ -71,6 +73,7 @@ class DescriptorProto_ExtensionRange extends \Google\Protobuf\Internal\Message
     /**
      * Generated from protobuf field <code>optional int32 end = 2;</code>
      * @param int $var
+     * @return $this
      */
     public function setEnd($var)
     {

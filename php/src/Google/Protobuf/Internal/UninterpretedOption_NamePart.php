@@ -19,6 +19,7 @@ use Google\Protobuf\Internal\GPBUtil;
  * "foo.(bar.baz).qux".
  *
  * Protobuf type <code>Google\Protobuf\Internal</code>
+ * Generated from protobuf message <code>google.protobuf.UninterpretedOption.NamePart</code>
  */
 class UninterpretedOption_NamePart extends \Google\Protobuf\Internal\Message
 {
@@ -50,6 +51,7 @@ class UninterpretedOption_NamePart extends \Google\Protobuf\Internal\Message
     /**
      * Generated from protobuf field <code>required string name_part = 1;</code>
      * @param string $var
+     * @return $this
      */
     public function setNamePart($var)
     {
@@ -77,6 +79,7 @@ class UninterpretedOption_NamePart extends \Google\Protobuf\Internal\Message
     /**
      * Generated from protobuf field <code>required bool is_extension = 2;</code>
      * @param bool $var
+     * @return $this
      */
     public function setIsExtension($var)
     {

@@ -15,6 +15,7 @@ use Google\Protobuf\Internal\GPBUtil;
  * Describes a service.
  *
  * Protobuf type <code>Google\Protobuf\Internal</code>
+ * Generated from protobuf message <code>google.protobuf.ServiceDescriptorProto</code>
  */
 class ServiceDescriptorProto extends \Google\Protobuf\Internal\Message
 {
@@ -51,6 +52,7 @@ class ServiceDescriptorProto extends \Google\Protobuf\Internal\Message
     /**
      * Generated from protobuf field <code>optional string name = 1;</code>
      * @param string $var
+     * @return $this
      */
     public function setName($var)
     {
@@ -78,6 +80,7 @@ class ServiceDescriptorProto extends \Google\Protobuf\Internal\Message
     /**
      * Generated from protobuf field <code>repeated .google.protobuf.MethodDescriptorProto method = 2;</code>
      * @param array|\Google\Protobuf\Internal\RepeatedField $var
+     * @return $this
      */
     public function setMethod(&$var)
     {
@@ -105,6 +108,7 @@ class ServiceDescriptorProto extends \Google\Protobuf\Internal\Message
     /**
      * Generated from protobuf field <code>optional .google.protobuf.ServiceOptions options = 3;</code>
      * @param \Google\Protobuf\Internal\ServiceOptions $var
+     * @return $this
      */
     public function setOptions(&$var)
     {

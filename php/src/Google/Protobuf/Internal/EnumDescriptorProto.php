@@ -15,6 +15,7 @@ use Google\Protobuf\Internal\GPBUtil;
  * Describes an enum type.
  *
  * Protobuf type <code>Google\Protobuf\Internal</code>
+ * Generated from protobuf message <code>google.protobuf.EnumDescriptorProto</code>
  */
 class EnumDescriptorProto extends \Google\Protobuf\Internal\Message
 {
@@ -51,6 +52,7 @@ class EnumDescriptorProto extends \Google\Protobuf\Internal\Message
     /**
      * Generated from protobuf field <code>optional string name = 1;</code>
      * @param string $var
+     * @return $this
      */
     public function setName($var)
     {
@@ -78,6 +80,7 @@ class EnumDescriptorProto extends \Google\Protobuf\Internal\Message
     /**
      * Generated from protobuf field <code>repeated .google.protobuf.EnumValueDescriptorProto value = 2;</code>
      * @param array|\Google\Protobuf\Internal\RepeatedField $var
+     * @return $this
      */
     public function setValue(&$var)
     {
@@ -105,6 +108,7 @@ class EnumDescriptorProto extends \Google\Protobuf\Internal\Message
     /**
      * Generated from protobuf field <code>optional .google.protobuf.EnumOptions options = 3;</code>
      * @param \Google\Protobuf\Internal\EnumOptions $var
+     * @return $this
      */
     public function setOptions(&$var)
     {

@@ -312,6 +312,9 @@ std::string TypeName(const FieldDescriptor* field) {
 }
 
 std::string PhpSetterTypeName(const FieldDescriptor* field, bool is_descriptor) {
+  if (field->is_map()) {
+    return "array|\\Google\\Protobuf\\Internal\\MapField";
+  }
   if (field->is_repeated()) {
     return "array|\\Google\\Protobuf\\Internal\\RepeatedField";
   }
@@ -340,6 +343,9 @@ std::string PhpSetterTypeName(const FieldDescriptor* field, bool is_descriptor) 
 }
 
 std::string PhpGetterTypeName(const FieldDescriptor* field, bool is_descriptor) {
+  if (field->is_map()) {
+    return "\\Google\\Protobuf\\Internal\\MapField";
+  }
   if (field->is_repeated()) {
     return "\\Google\\Protobuf\\Internal\\RepeatedField";
   }
@@ -1153,8 +1159,10 @@ void GenerateMessageDocComment(io::Printer* printer,
   GenerateDocCommentBody(printer, message);
   printer->Print(
     " * Protobuf type <code>^fullname^</code>\n"
+    " * Generated from protobuf message <code>^messagename^</code>\n"
     " */\n",
-    "fullname", EscapePhpdoc(PhpName(message->full_name(), is_descriptor)));
+    "fullname", EscapePhpdoc(PhpName(message->full_name(), is_descriptor)),
+    "messagename", EscapePhpdoc(message->full_name()));
 }
 
 void GenerateFieldDocComment(io::Printer* printer, const FieldDescriptor* field,
@@ -1175,6 +1183,7 @@ void GenerateFieldDocComment(io::Printer* printer, const FieldDescriptor* field,
   if (function_type == kFieldSetter) {
     printer->Print(" * @param ^php_type^ $var\n",
       "php_type", PhpSetterTypeName(field, is_descriptor));
+    printer->Print(" * @return $this\n");
   } else if (function_type == kFieldGetter) {
     printer->Print(" * @return ^php_type^\n",
       "php_type", PhpGetterTypeName(field, is_descriptor));

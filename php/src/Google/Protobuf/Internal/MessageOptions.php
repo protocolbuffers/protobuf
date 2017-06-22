@@ -13,6 +13,7 @@ use Google\Protobuf\Internal\GPBUtil;
 
 /**
  * Protobuf type <code>Google\Protobuf\Internal</code>
+ * Generated from protobuf message <code>google.protobuf.MessageOptions</code>
  */
 class MessageOptions extends \Google\Protobuf\Internal\Message
 {
@@ -137,6 +138,7 @@ class MessageOptions extends \Google\Protobuf\Internal\Message
      *
      * Generated from protobuf field <code>optional bool message_set_wire_format = 1 [default = false];</code>
      * @param bool $var
+     * @return $this
      */
     public function setMessageSetWireFormat($var)
     {
@@ -172,6 +174,7 @@ class MessageOptions extends \Google\Protobuf\Internal\Message
      *
      * Generated from protobuf field <code>optional bool no_standard_descriptor_accessor = 2 [default = false];</code>
      * @param bool $var
+     * @return $this
      */
     public function setNoStandardDescriptorAccessor($var)
     {
@@ -209,6 +212,7 @@ class MessageOptions extends \Google\Protobuf\Internal\Message
      *
      * Generated from protobuf field <code>optional bool deprecated = 3 [default = false];</code>
      * @param bool $var
+     * @return $this
      */
     public function setDeprecated($var)
     {
@@ -274,6 +278,7 @@ class MessageOptions extends \Google\Protobuf\Internal\Message
      *
      * Generated from protobuf field <code>optional bool map_entry = 7;</code>
      * @param bool $var
+     * @return $this
      */
     public function setMapEntry($var)
     {
@@ -305,6 +310,7 @@ class MessageOptions extends \Google\Protobuf\Internal\Message
      *
      * Generated from protobuf field <code>repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;</code>
      * @param array|\Google\Protobuf\Internal\RepeatedField $var
+     * @return $this
      */
     public function setUninterpretedOption(&$var)
     {

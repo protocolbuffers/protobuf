@@ -13,6 +13,7 @@ use Google\Protobuf\Internal\GPBUtil;
 
 /**
  * Protobuf type <code>Google\Protobuf\Internal</code>
+ * Generated from protobuf message <code>google.protobuf.FieldOptions</code>
  */
 class FieldOptions extends \Google\Protobuf\Internal\Message
 {
@@ -134,6 +135,7 @@ class FieldOptions extends \Google\Protobuf\Internal\Message
      *
      * Generated from protobuf field <code>optional .google.protobuf.FieldOptions.CType ctype = 1 [default = STRING];</code>
      * @param int $var
+     * @return $this
      */
     public function setCtype($var)
     {
@@ -173,6 +175,7 @@ class FieldOptions extends \Google\Protobuf\Internal\Message
      *
      * Generated from protobuf field <code>optional bool packed = 2;</code>
      * @param bool $var
+     * @return $this
      */
     public function setPacked($var)
     {
@@ -220,6 +223,7 @@ class FieldOptions extends \Google\Protobuf\Internal\Message
      *
      * Generated from protobuf field <code>optional .google.protobuf.FieldOptions.JSType jstype = 6 [default = JS_NORMAL];</code>
      * @param int $var
+     * @return $this
      */
     public function setJstype($var)
     {
@@ -297,6 +301,7 @@ class FieldOptions extends \Google\Protobuf\Internal\Message
      *
      * Generated from protobuf field <code>optional bool lazy = 5 [default = false];</code>
      * @param bool $var
+     * @return $this
      */
     public function setLazy($var)
     {
@@ -334,6 +339,7 @@ class FieldOptions extends \Google\Protobuf\Internal\Message
      *
      * Generated from protobuf field <code>optional bool deprecated = 3 [default = false];</code>
      * @param bool $var
+     * @return $this
      */
     public function setDeprecated($var)
     {
@@ -365,6 +371,7 @@ class FieldOptions extends \Google\Protobuf\Internal\Message
      *
      * Generated from protobuf field <code>optional bool weak = 10 [default = false];</code>
      * @param bool $var
+     * @return $this
      */
     public function setWeak($var)
     {
@@ -396,6 +403,7 @@ class FieldOptions extends \Google\Protobuf\Internal\Message
      *
      * Generated from protobuf field <code>repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;</code>
      * @param array|\Google\Protobuf\Internal\RepeatedField $var
+     * @return $this
      */
     public function setUninterpretedOption(&$var)
     {

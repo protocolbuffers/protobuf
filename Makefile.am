@@ -658,6 +658,7 @@ php_EXTRA_DIST=                                                       \
   php/tests/encode_decode_test.php                                    \
   php/tests/gdb_test.sh                                               \
   php/tests/generated_class_test.php                                  \
+  php/tests/generated_phpdoc_test.php                                 \
   php/tests/map_field_test.php                                        \
   php/tests/memory_leak_test.php                                      \
   php/tests/php_implementation_test.php                               \

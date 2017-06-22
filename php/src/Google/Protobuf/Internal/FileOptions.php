@@ -13,6 +13,7 @@ use Google\Protobuf\Internal\GPBUtil;
 
 /**
  * Protobuf type <code>Google\Protobuf\Internal</code>
+ * Generated from protobuf message <code>google.protobuf.FileOptions</code>
  */
 class FileOptions extends \Google\Protobuf\Internal\Message
 {
@@ -204,6 +205,7 @@ class FileOptions extends \Google\Protobuf\Internal\Message
      *
      * Generated from protobuf field <code>optional string java_package = 1;</code>
      * @param string $var
+     * @return $this
      */
     public function setJavaPackage($var)
     {
@@ -243,6 +245,7 @@ class FileOptions extends \Google\Protobuf\Internal\Message
      *
      * Generated from protobuf field <code>optional string java_outer_classname = 8;</code>
      * @param string $var
+     * @return $this
      */
     public function setJavaOuterClassname($var)
     {
@@ -284,6 +287,7 @@ class FileOptions extends \Google\Protobuf\Internal\Message
      *
      * Generated from protobuf field <code>optional bool java_multiple_files = 10 [default = false];</code>
      * @param bool $var
+     * @return $this
      */
     public function setJavaMultipleFiles($var)
     {
@@ -315,6 +319,7 @@ class FileOptions extends \Google\Protobuf\Internal\Message
      *
      * Generated from protobuf field <code>optional bool java_generate_equals_and_hash = 20 [deprecated = true];</code>
      * @param bool $var
+     * @return $this
      */
     public function setJavaGenerateEqualsAndHash($var)
     {
@@ -356,6 +361,7 @@ class FileOptions extends \Google\Protobuf\Internal\Message
      *
      * Generated from protobuf field <code>optional bool java_string_check_utf8 = 27 [default = false];</code>
      * @param bool $var
+     * @return $this
      */
     public function setJavaStringCheckUtf8($var)
     {
@@ -383,6 +389,7 @@ class FileOptions extends \Google\Protobuf\Internal\Message
     /**
      * Generated from protobuf field <code>optional .google.protobuf.FileOptions.OptimizeMode optimize_for = 9 [default = SPEED];</code>
      * @param int $var
+     * @return $this
      */
     public function setOptimizeFor($var)
     {
@@ -422,6 +429,7 @@ class FileOptions extends \Google\Protobuf\Internal\Message
      *
      * Generated from protobuf field <code>optional string go_package = 11;</code>
      * @param string $var
+     * @return $this
      */
     public function setGoPackage($var)
     {
@@ -469,6 +477,7 @@ class FileOptions extends \Google\Protobuf\Internal\Message
      *
      * Generated from protobuf field <code>optional bool cc_generic_services = 16 [default = false];</code>
      * @param bool $var
+     * @return $this
      */
     public function setCcGenericServices($var)
     {
@@ -496,6 +505,7 @@ class FileOptions extends \Google\Protobuf\Internal\Message
     /**
      * Generated from protobuf field <code>optional bool java_generic_services = 17 [default = false];</code>
      * @param bool $var
+     * @return $this
      */
     public function setJavaGenericServices($var)
     {
@@ -523,6 +533,7 @@ class FileOptions extends \Google\Protobuf\Internal\Message
     /**
      * Generated from protobuf field <code>optional bool py_generic_services = 18 [default = false];</code>
      * @param bool $var
+     * @return $this
      */
     public function setPyGenericServices($var)
     {
@@ -560,6 +571,7 @@ class FileOptions extends \Google\Protobuf\Internal\Message
      *
      * Generated from protobuf field <code>optional bool deprecated = 23 [default = false];</code>
      * @param bool $var
+     * @return $this
      */
     public function setDeprecated($var)
     {
@@ -593,6 +605,7 @@ class FileOptions extends \Google\Protobuf\Internal\Message
      *
      * Generated from protobuf field <code>optional bool cc_enable_arenas = 31 [default = false];</code>
      * @param bool $var
+     * @return $this
      */
     public function setCcEnableArenas($var)
     {
@@ -626,6 +639,7 @@ class FileOptions extends \Google\Protobuf\Internal\Message
      *
      * Generated from protobuf field <code>optional string objc_class_prefix = 36;</code>
      * @param string $var
+     * @return $this
      */
     public function setObjcClassPrefix($var)
     {
@@ -657,6 +671,7 @@ class FileOptions extends \Google\Protobuf\Internal\Message
      *
      * Generated from protobuf field <code>optional string csharp_namespace = 37;</code>
      * @param string $var
+     * @return $this
      */
     public function setCsharpNamespace($var)
     {
@@ -694,6 +709,7 @@ class FileOptions extends \Google\Protobuf\Internal\Message
      *
      * Generated from protobuf field <code>optional string swift_prefix = 39;</code>
      * @param string $var
+     * @return $this
      */
     public function setSwiftPrefix($var)
     {
@@ -727,6 +743,7 @@ class FileOptions extends \Google\Protobuf\Internal\Message
      *
      * Generated from protobuf field <code>optional string php_class_prefix = 40;</code>
      * @param string $var
+     * @return $this
      */
     public function setPhpClassPrefix($var)
     {
@@ -762,6 +779,7 @@ class FileOptions extends \Google\Protobuf\Internal\Message
      *
      * Generated from protobuf field <code>optional string php_namespace = 41;</code>
      * @param string $var
+     * @return $this
      */
     public function setPhpNamespace($var)
     {
@@ -793,6 +811,7 @@ class FileOptions extends \Google\Protobuf\Internal\Message
      *
      * Generated from protobuf field <code>repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;</code>
      * @param array|\Google\Protobuf\Internal\RepeatedField $var
+     * @return $this
      */
     public function setUninterpretedOption(&$var)
     {
