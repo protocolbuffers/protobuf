@@ -51,6 +51,10 @@
 #include <algorithm>
 #endif
 
+#if __APPLE__
+#include "TargetConditionals.h"
+#endif
+
 #include <iterator>
 #include <limits>
 #include <string>
@@ -102,6 +106,32 @@ inline int CalculateReserve(Iter begin, Iter end) {
 }
 }  // namespace internal
 
+namespace RepeatedFieldInternal {
+  template <typename T, typename U>
+  struct SameType {
+    static bool value() {
+      return false;
+    }
+  };
+
+  template <typename T>
+  struct SameType<T, T> {
+    static bool value() {
+      return true;
+    }
+  };
+
+  template <typename T>
+  bool isPrimitive() {
+    return SameType<T, bool>::value()
+        || SameType<T, float>::value()
+        || SameType<T, double>::value()
+        || SameType<T, int32>::value()
+        || SameType<T, int64>::value()
+        || SameType<T, uint32>::value()
+        || SameType<T, uint64>::value();
+  };
+}
 
 // RepeatedField is used to represent repeated fields of a primitive type (in
 // other words, everything except strings and nested Messages).  Most users will
@@ -299,17 +329,23 @@ class RepeatedField PROTOBUF_FINAL {
   // type, like int32), the loop will be removed by the optimizer.
   void InternalDeallocate(Rep* rep, int size) {
     if (rep != NULL) {
-      Element* e = &rep->elements[0];
-      Element* limit = &rep->elements[size];
-      for (; e < limit; e++) {
-        e->~Element();
+      if (!RepeatedFieldInternal::isPrimitive<Element>()) {
+        Element* e = &rep->elements[0];
+        Element* limit = &rep->elements[size];
+        for (; e < limit; e++) {
+          e->~Element();
+        }
       }
       if (rep->arena == NULL) {
+        if (RepeatedFieldInternal::isPrimitive<Element>()) {
+          free(static_cast<void*>(rep));
+        } else {
 #if defined(__GXX_DELETE_WITH_SIZE__) || defined(__cpp_sized_deallocation)
-        const size_t bytes = size * sizeof(*e) + kRepHeaderSize;
-        ::operator delete(static_cast<void*>(rep), bytes);
+          const size_t bytes = size * sizeof(*e) + kRepHeaderSize;
+          ::operator delete(static_cast<void*>(rep), bytes);
 #else
-        ::operator delete(static_cast<void*>(rep));
+          ::operator delete(static_cast<void*>(rep));
+        }
 #endif
       }
     }
@@ -1329,43 +1365,53 @@ void RepeatedField<Element>::Reserve(int new_size) {
   if (total_size_ >= new_size) return;
   Rep* old_rep = rep_;
   Arena* arena = GetArenaNoVirtual();
+#if __ANDROID__ || (__APPLE__ && TARGET_OS_IPHONE)
+  int expand_size = std::min(total_size_, 1 << 20); // for mobile platform, max 1M per expand
+#else
+  int expand_size = total_size_;
+#endif
   new_size = std::max(google::protobuf::internal::kMinRepeatedFieldAllocationSize,
-                      std::max(total_size_ * 2, new_size));
+                      std::max(total_size_ + expand_size, new_size));
   GOOGLE_DCHECK_LE(
       static_cast<size_t>(new_size),
       (std::numeric_limits<size_t>::max() - kRepHeaderSize) / sizeof(Element))
       << "Requested size is too large to fit into size_t.";
   size_t bytes = kRepHeaderSize + sizeof(Element) * new_size;
-  if (arena == NULL) {
-    rep_ = static_cast<Rep*>(::operator new(bytes));
+  if (arena == NULL && RepeatedFieldInternal::isPrimitive<Element>()) {
+    rep_ = static_cast<Rep*>(realloc(rep_, bytes));
+    rep_->arena = NULL;
+    total_size_ = new_size;
   } else {
-    rep_ = reinterpret_cast<Rep*>(
-            ::google::protobuf::Arena::CreateArray<char>(arena, bytes));
+    if (arena == NULL) {
+      rep_ = static_cast<Rep*>(::operator new(bytes));
+    } else {
+      rep_ = reinterpret_cast<Rep*>(
+              ::google::protobuf::Arena::CreateArray<char>(arena, bytes));
+    }
+    rep_->arena = arena;
+    int old_total_size = total_size_;
+    total_size_ = new_size;
+    // Invoke placement-new on newly allocated elements. We shouldn't have to do
+    // this, since Element is supposed to be POD, but a previous version of this
+    // code allocated storage with "new Element[size]" and some code uses
+    // RepeatedField with non-POD types, relying on constructor invocation. If
+    // Element has a trivial constructor (e.g., int32), gcc (tested with -O2)
+    // completely removes this loop because the loop body is empty, so this has no
+    // effect unless its side-effects are required for correctness.
+    // Note that we do this before MoveArray() below because Element's copy
+    // assignment implementation will want an initialized instance first.
+    Element* e = &rep_->elements[0];
+    Element* limit = &rep_->elements[total_size_];
+    for (; e < limit; e++) {
+      new (e) Element;
+    }
+    if (current_size_ > 0) {
+      MoveArray(rep_->elements, old_rep->elements, current_size_);
+    }
+  
+    // Likewise, we need to invoke destructors on the old array.
+    InternalDeallocate(old_rep, old_total_size);
   }
-  rep_->arena = arena;
-  int old_total_size = total_size_;
-  total_size_ = new_size;
-  // Invoke placement-new on newly allocated elements. We shouldn't have to do
-  // this, since Element is supposed to be POD, but a previous version of this
-  // code allocated storage with "new Element[size]" and some code uses
-  // RepeatedField with non-POD types, relying on constructor invocation. If
-  // Element has a trivial constructor (e.g., int32), gcc (tested with -O2)
-  // completely removes this loop because the loop body is empty, so this has no
-  // effect unless its side-effects are required for correctness.
-  // Note that we do this before MoveArray() below because Element's copy
-  // assignment implementation will want an initialized instance first.
-  Element* e = &rep_->elements[0];
-  Element* limit = &rep_->elements[total_size_];
-  for (; e < limit; e++) {
-    new (e) Element;
-  }
-  if (current_size_ > 0) {
-    MoveArray(rep_->elements, old_rep->elements, current_size_);
-  }
-
-  // Likewise, we need to invoke destructors on the old array.
-  InternalDeallocate(old_rep, old_total_size);
-
 }
 
 template <typename Element>
