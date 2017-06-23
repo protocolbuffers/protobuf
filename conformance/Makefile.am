@@ -2,7 +2,11 @@
 
 conformance_protoc_inputs =                                    \
   conformance.proto                                            \
-  $(top_srcdir)/src/google/protobuf/test_messages_proto3.proto
+  $(top_srcdir)/src/google/protobuf/test_messages_proto3.proto 
+  
+conformance_proto2_protoc_inputs =                             \
+  conformance.proto                                            \
+  $(top_srcdir)/src/google/protobuf/test_messages_proto2.proto                            
 
 well_known_type_protoc_inputs =                                \
   $(top_srcdir)/src/google/protobuf/any.proto                  \
@@ -64,6 +68,7 @@ other_language_protoc_outputs =                                \
   com/google/protobuf/ValueOrBuilder.java                      \
   com/google/protobuf/WrappersProto.java                       \
   com/google/protobuf_test_messages/proto3/TestMessagesProto3.java \
+  com/google/protobuf_test_messages/proto2/TestMessagesProto2.java \
   google/protobuf/any.pb.cc                                    \
   google/protobuf/any.pb.h                                     \
   google/protobuf/any.rb                                       \
@@ -84,8 +89,11 @@ other_language_protoc_outputs =                                \
   google/protobuf/TestMessagesProto3.pbobjc.m                  \
   google/protobuf/test_messages_proto3.pb.cc                   \
   google/protobuf/test_messages_proto3.pb.h                    \
+  google/protobuf/test_messages_proto2.pb.cc                   \
+  google/protobuf/test_messages_proto2.pb.h                    \
   google/protobuf/test_messages_proto3_pb.rb                   \
   google/protobuf/test_messages_proto3_pb2.py                  \
+  google/protobuf/test_messages_proto2_pb2.py                  \
   google/protobuf/timestamp.pb.cc                              \
   google/protobuf/timestamp.pb.h                               \
   google/protobuf/timestamp.rb                                 \
@@ -198,7 +206,7 @@ conformance_test_runner_SOURCES = conformance_test.h conformance_test.cc \
                                   conformance_test_runner.cc             \
                                   third_party/jsoncpp/json.h             \
                                   third_party/jsoncpp/jsoncpp.cpp
-nodist_conformance_test_runner_SOURCES = conformance.pb.cc google/protobuf/test_messages_proto3.pb.cc
+nodist_conformance_test_runner_SOURCES = conformance.pb.cc google/protobuf/test_messages_proto3.pb.cc google/protobuf/test_messages_proto2.pb.cc
 conformance_test_runner_CPPFLAGS = -I$(top_srcdir)/src -I$(srcdir)
 conformance_test_runner_CXXFLAGS = -std=c++11
 # Explicit deps beacuse BUILT_SOURCES are only done before a "make all/check"
@@ -208,7 +216,7 @@ conformance_test_runner-conformance_test_runner.$(OBJEXT): conformance.pb.h
 
 conformance_cpp_LDADD = $(top_srcdir)/src/libprotobuf.la
 conformance_cpp_SOURCES = conformance_cpp.cc
-nodist_conformance_cpp_SOURCES = conformance.pb.cc google/protobuf/test_messages_proto3.pb.cc
+nodist_conformance_cpp_SOURCES = conformance.pb.cc google/protobuf/test_messages_proto3.pb.cc google/protobuf/test_messages_proto2.pb.cc
 conformance_cpp_CPPFLAGS = -I$(top_srcdir)/src
 # Explicit dep beacuse BUILT_SOURCES are only done before a "make all/check"
 # so a direct "make test_cpp" could fail if parallel enough.
@@ -242,8 +250,9 @@ google-protobuf:
 if USE_EXTERNAL_PROTOC
 
 # Some implementations include pre-generated versions of well-known types.
-protoc_middleman: $(conformance_protoc_inputs) $(well_known_type_protoc_inputs) google-protobuf
+protoc_middleman: $(conformance_protoc_inputs) $(conformance_proto2_protoc_inputs) $(well_known_type_protoc_inputs) google-protobuf
 	$(PROTOC) -I$(srcdir) -I$(top_srcdir) --cpp_out=. --java_out=. --ruby_out=. --objc_out=. --python_out=. --php_out=. --js_out=import_style=commonjs,binary:. $(conformance_protoc_inputs)
+	$(PROTOC) -I$(srcdir) -I$(top_srcdir) --cpp_out=. --java_out=. --python_out=. $(conformance_proto2_protoc_inputs)
 	$(PROTOC) -I$(srcdir) -I$(top_srcdir) --cpp_out=. --java_out=. --ruby_out=. --python_out=. --php_out=. --js_out=import_style=commonjs,binary:google-protobuf $(well_known_type_protoc_inputs)
 	## $(PROTOC) -I$(srcdir) -I$(top_srcdir) --java_out=lite:lite $(conformance_protoc_inputs) $(well_known_type_protoc_inputs)
 	touch protoc_middleman
@@ -253,8 +262,9 @@ else
 # We have to cd to $(srcdir) before executing protoc because $(protoc_inputs) is
 # relative to srcdir, which may not be the same as the current directory when
 # building out-of-tree.
-protoc_middleman: $(top_srcdir)/src/protoc$(EXEEXT) $(conformance_protoc_inputs) $(well_known_type_protoc_inputs) google-protobuf
+protoc_middleman: $(top_srcdir)/src/protoc$(EXEEXT) $(conformance_protoc_inputs) $(conformance_proto2_protoc_inputs) $(well_known_type_protoc_inputs) google-protobuf
 	oldpwd=`pwd` && ( cd $(srcdir) && $$oldpwd/../src/protoc$(EXEEXT) -I. -I$(top_srcdir)/src --cpp_out=$$oldpwd --java_out=$$oldpwd --ruby_out=$$oldpwd --objc_out=$$oldpwd --python_out=$$oldpwd --php_out=$$oldpwd --js_out=import_style=commonjs,binary:$$oldpwd $(conformance_protoc_inputs) )
+	oldpwd=`pwd` && ( cd $(srcdir) && $$oldpwd/../src/protoc$(EXEEXT) -I. -I$(top_srcdir)/src --cpp_out=$$oldpwd --java_out=$$oldpwd --python_out=$$oldpwd  $(conformance_proto2_protoc_inputs) )
 	oldpwd=`pwd` && ( cd $(srcdir) && $$oldpwd/../src/protoc$(EXEEXT) -I. -I$(top_srcdir)/src --cpp_out=$$oldpwd --java_out=$$oldpwd --ruby_out=$$oldpwd --python_out=$$oldpwd --php_out=$$oldpwd --js_out=import_style=commonjs,binary:$$oldpwd/google-protobuf $(well_known_type_protoc_inputs) )
 	## @mkdir -p lite
 	## oldpwd=`pwd` && ( cd $(srcdir) && $$oldpwd/../src/protoc$(EXEEXT) -I. -I$(top_srcdir)/src --java_out=lite:$$oldpwd/lite $(conformance_protoc_inputs) $(well_known_type_protoc_inputs) )
@@ -274,7 +284,7 @@ MAINTAINERCLEANFILES =   \
   Makefile.in
 
 javac_middleman: ConformanceJava.java protoc_middleman $(other_language_protoc_outputs)
-	jar=`ls ../java/util/target/*jar-with-dependencies.jar` && javac -classpath ../java/target/classes:$$jar ConformanceJava.java com/google/protobuf/conformance/Conformance.java com/google/protobuf_test_messages/proto3/TestMessagesProto3.java
+	jar=`ls ../java/util/target/*jar-with-dependencies.jar` && javac -classpath ../java/target/classes:$$jar ConformanceJava.java com/google/protobuf/conformance/Conformance.java com/google/protobuf_test_messages/proto3/TestMessagesProto3.java com/google/protobuf_test_messages/proto2/TestMessagesProto2.java
 	@touch javac_middleman
 
 conformance-java: javac_middleman
