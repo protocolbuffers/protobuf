@@ -205,16 +205,17 @@ FieldAccessInfo::FieldAccessInfo(const FieldAccessInfo& from)
     name_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.name_);
   }
   ::memcpy(&getters_count_, &from.getters_count_,
-    reinterpret_cast<char*>(&configs_count_) -
-    reinterpret_cast<char*>(&getters_count_) + sizeof(configs_count_));
+    static_cast<size_t>(reinterpret_cast<char*>(&configs_count_) -
+    reinterpret_cast<char*>(&getters_count_)) + sizeof(configs_count_));
   // @@protoc_insertion_point(copy_constructor:google.protobuf.compiler.FieldAccessInfo)
 }
 
 void FieldAccessInfo::SharedCtor() {
   _cached_size_ = 0;
   name_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  ::memset(&getters_count_, 0, reinterpret_cast<char*>(&configs_count_) -
-    reinterpret_cast<char*>(&getters_count_) + sizeof(configs_count_));
+  ::memset(&getters_count_, 0, static_cast<size_t>(
+      reinterpret_cast<char*>(&configs_count_) -
+      reinterpret_cast<char*>(&getters_count_)) + sizeof(configs_count_));
 }
 
 FieldAccessInfo::~FieldAccessInfo() {
@@ -256,8 +257,9 @@ void FieldAccessInfo::Clear() {
     (*name_.UnsafeRawStringPointer())->clear();
   }
   if (_has_bits_[0 / 32] & 14u) {
-    ::memset(&getters_count_, 0, reinterpret_cast<char*>(&configs_count_) -
-      reinterpret_cast<char*>(&getters_count_) + sizeof(configs_count_));
+    ::memset(&getters_count_, 0, static_cast<size_t>(
+        reinterpret_cast<char*>(&configs_count_) -
+        reinterpret_cast<char*>(&getters_count_)) + sizeof(configs_count_));
   }
   _has_bits_.Clear();
   _internal_metadata_.Clear();
@@ -875,9 +877,10 @@ void MessageAccessInfo::SerializeWithCachedSizes(
   }
 
   // repeated .google.protobuf.compiler.FieldAccessInfo field = 3;
-  for (unsigned int i = 0, n = this->field_size(); i < n; i++) {
+  for (unsigned int i = 0,
+      n = static_cast<unsigned int>(this->field_size()); i < n; i++) {
     ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
-      3, this->field(i), output);
+      3, this->field(static_cast<int>(i)), output);
   }
 
   if (_internal_metadata_.have_unknown_fields()) {
@@ -911,10 +914,11 @@ void MessageAccessInfo::SerializeWithCachedSizes(
   }
 
   // repeated .google.protobuf.compiler.FieldAccessInfo field = 3;
-  for (unsigned int i = 0, n = this->field_size(); i < n; i++) {
+  for (unsigned int i = 0,
+      n = static_cast<unsigned int>(this->field_size()); i < n; i++) {
     target = ::google::protobuf::internal::WireFormatLite::
       InternalWriteMessageNoVirtualToArray(
-        3, this->field(i), deterministic, target);
+        3, this->field(static_cast<int>(i)), deterministic, target);
   }
 
   if (_internal_metadata_.have_unknown_fields()) {
@@ -936,12 +940,12 @@ size_t MessageAccessInfo::ByteSizeLong() const {
   }
   // repeated .google.protobuf.compiler.FieldAccessInfo field = 3;
   {
-    unsigned int count = this->field_size();
+    unsigned int count = static_cast<unsigned int>(this->field_size());
     total_size += 1UL * count;
     for (unsigned int i = 0; i < count; i++) {
       total_size +=
         ::google::protobuf::internal::WireFormatLite::MessageSizeNoVirtual(
-          this->field(i));
+          this->field(static_cast<int>(i)));
     }
   }
 
@@ -1279,9 +1283,10 @@ void AccessInfo::SerializeWithCachedSizes(
   (void) cached_has_bits;
 
   // repeated .google.protobuf.compiler.MessageAccessInfo message = 1;
-  for (unsigned int i = 0, n = this->message_size(); i < n; i++) {
+  for (unsigned int i = 0,
+      n = static_cast<unsigned int>(this->message_size()); i < n; i++) {
     ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
-      1, this->message(i), output);
+      1, this->message(static_cast<int>(i)), output);
   }
 
   if (_internal_metadata_.have_unknown_fields()) {
@@ -1298,10 +1303,11 @@ void AccessInfo::SerializeWithCachedSizes(
   (void) cached_has_bits;
 
   // repeated .google.protobuf.compiler.MessageAccessInfo message = 1;
-  for (unsigned int i = 0, n = this->message_size(); i < n; i++) {
+  for (unsigned int i = 0,
+      n = static_cast<unsigned int>(this->message_size()); i < n; i++) {
     target = ::google::protobuf::internal::WireFormatLite::
       InternalWriteMessageNoVirtualToArray(
-        1, this->message(i), deterministic, target);
+        1, this->message(static_cast<int>(i)), deterministic, target);
   }
 
   if (_internal_metadata_.have_unknown_fields()) {
@@ -1323,12 +1329,12 @@ size_t AccessInfo::ByteSizeLong() const {
   }
   // repeated .google.protobuf.compiler.MessageAccessInfo message = 1;
   {
-    unsigned int count = this->message_size();
+    unsigned int count = static_cast<unsigned int>(this->message_size());
     total_size += 1UL * count;
     for (unsigned int i = 0; i < count; i++) {
       total_size +=
         ::google::protobuf::internal::WireFormatLite::MessageSizeNoVirtual(
-          this->message(i));
+          this->message(static_cast<int>(i)));
     }
   }
 

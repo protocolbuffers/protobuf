@@ -400,19 +400,19 @@ void Struct::SerializeWithCachedSizes(
       for (::google::protobuf::Map< ::std::string, ::google::protobuf::Value >::const_iterator
           it = this->fields().begin();
           it != this->fields().end(); ++it, ++n) {
-        items[n] = SortItem(&*it);
+        items[static_cast<ptrdiff_t>(n)] = SortItem(&*it);
       }
-      ::std::sort(&items[0], &items[n], Less());
+      ::std::sort(&items[0], &items[static_cast<ptrdiff_t>(n)], Less());
       ::google::protobuf::scoped_ptr<Struct_FieldsEntry> entry;
       for (size_type i = 0; i < n; i++) {
         entry.reset(fields_.NewEntryWrapper(
-            items[i]->first, items[i]->second));
+            items[static_cast<ptrdiff_t>(i)]->first, items[static_cast<ptrdiff_t>(i)]->second));
         ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
             1, *entry, output);
         if (entry->GetArena() != NULL) {
           entry.release();
         }
-        Utf8Check::Check(items[i]);
+        Utf8Check::Check(items[static_cast<ptrdiff_t>(i)]);
       }
     } else {
       ::google::protobuf::scoped_ptr<Struct_FieldsEntry> entry;
@@ -464,13 +464,13 @@ void Struct::SerializeWithCachedSizes(
       for (::google::protobuf::Map< ::std::string, ::google::protobuf::Value >::const_iterator
           it = this->fields().begin();
           it != this->fields().end(); ++it, ++n) {
-        items[n] = SortItem(&*it);
+        items[static_cast<ptrdiff_t>(n)] = SortItem(&*it);
       }
-      ::std::sort(&items[0], &items[n], Less());
+      ::std::sort(&items[0], &items[static_cast<ptrdiff_t>(n)], Less());
       ::google::protobuf::scoped_ptr<Struct_FieldsEntry> entry;
       for (size_type i = 0; i < n; i++) {
         entry.reset(fields_.NewEntryWrapper(
-            items[i]->first, items[i]->second));
+            items[static_cast<ptrdiff_t>(i)]->first, items[static_cast<ptrdiff_t>(i)]->second));
         target = ::google::protobuf::internal::WireFormatLite::
                    InternalWriteMessageNoVirtualToArray(
                        1, *entry, deterministic, target);
@@ -478,7 +478,7 @@ void Struct::SerializeWithCachedSizes(
         if (entry->GetArena() != NULL) {
           entry.release();
         }
-        Utf8Check::Check(items[i]);
+        Utf8Check::Check(items[static_cast<ptrdiff_t>(i)]);
       }
     } else {
       ::google::protobuf::scoped_ptr<Struct_FieldsEntry> entry;
@@ -1673,9 +1673,10 @@ void ListValue::SerializeWithCachedSizes(
   (void) cached_has_bits;
 
   // repeated .google.protobuf.Value values = 1;
-  for (unsigned int i = 0, n = this->values_size(); i < n; i++) {
+  for (unsigned int i = 0,
+      n = static_cast<unsigned int>(this->values_size()); i < n; i++) {
     ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
-      1, this->values(i), output);
+      1, this->values(static_cast<int>(i)), output);
   }
 
   // @@protoc_insertion_point(serialize_end:google.protobuf.ListValue)
@@ -1688,10 +1689,11 @@ void ListValue::SerializeWithCachedSizes(
   (void) cached_has_bits;
 
   // repeated .google.protobuf.Value values = 1;
-  for (unsigned int i = 0, n = this->values_size(); i < n; i++) {
+  for (unsigned int i = 0,
+      n = static_cast<unsigned int>(this->values_size()); i < n; i++) {
     target = ::google::protobuf::internal::WireFormatLite::
       InternalWriteMessageNoVirtualToArray(
-        1, this->values(i), deterministic, target);
+        1, this->values(static_cast<int>(i)), deterministic, target);
   }
 
   // @@protoc_insertion_point(serialize_to_array_end:google.protobuf.ListValue)
@@ -1704,12 +1706,12 @@ size_t ListValue::ByteSizeLong() const {
 
   // repeated .google.protobuf.Value values = 1;
   {
-    unsigned int count = this->values_size();
+    unsigned int count = static_cast<unsigned int>(this->values_size());
     total_size += 1UL * count;
     for (unsigned int i = 0; i < count; i++) {
       total_size +=
         ::google::protobuf::internal::WireFormatLite::MessageSizeNoVirtual(
-          this->values(i));
+          this->values(static_cast<int>(i)));
     }
   }
 

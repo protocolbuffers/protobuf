@@ -321,7 +321,8 @@ inline int
 MapTypeHandler<WireFormatLite::TYPE_MESSAGE, Type>::GetCachedSize(
     const MapEntryAccessorType& value) {
   return static_cast<int>(
-      WireFormatLite::LengthDelimitedSize(value.GetCachedSize()));
+      WireFormatLite::LengthDelimitedSize(
+          static_cast<size_t>(value.GetCachedSize())));
 }
 
 #define GET_CACHED_SIZE(FieldType, DeclaredType)                         \

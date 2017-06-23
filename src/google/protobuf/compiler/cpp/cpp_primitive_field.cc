@@ -382,7 +382,8 @@ GenerateSerializeWithCachedSizes(io::Printer* printer) const {
           "$number$, "
           "::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED, "
           "output);\n"
-      "  output->WriteVarint32(_$name$_cached_byte_size_);\n");
+      "  output->WriteVarint32(static_cast<::google::protobuf::uint32>(\n"
+      "      _$name$_cached_byte_size_));\n");
 
     if (FixedSize(descriptor_->type()) > 0) {
       // TODO(ckennelly): Use RepeatedField<T>::unsafe_data() via
@@ -422,7 +423,8 @@ GenerateSerializeWithCachedSizesToArray(io::Printer* printer) const {
       "    ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED,\n"
       "    target);\n"
       "  target = ::google::protobuf::io::CodedOutputStream::WriteVarint32ToArray(\n"
-      "    _$name$_cached_byte_size_, target);\n"
+      "      static_cast<::google::protobuf::uint32>(\n"
+      "          _$name$_cached_byte_size_), target);\n"
       "  target = ::google::protobuf::internal::WireFormatLite::\n"
       "    Write$declared_type$NoTagToArray(this->$name$_, target);\n"
       "}\n");
@@ -444,7 +446,7 @@ GenerateByteSize(io::Printer* printer) const {
       "  $declared_type$Size(this->$name$_);\n");
   } else {
     printer->Print(variables_,
-      "unsigned int count = this->$name$_size();\n"
+      "unsigned int count = static_cast<unsigned int>(this->$name$_size());\n"
       "size_t data_size = $fixed_size$UL * count;\n");
   }
 

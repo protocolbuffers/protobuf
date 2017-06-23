@@ -239,16 +239,17 @@ Version::Version(const Version& from)
     suffix_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.suffix_);
   }
   ::memcpy(&major_, &from.major_,
-    reinterpret_cast<char*>(&patch_) -
-    reinterpret_cast<char*>(&major_) + sizeof(patch_));
+    static_cast<size_t>(reinterpret_cast<char*>(&patch_) -
+    reinterpret_cast<char*>(&major_)) + sizeof(patch_));
   // @@protoc_insertion_point(copy_constructor:google.protobuf.compiler.Version)
 }
 
 void Version::SharedCtor() {
   _cached_size_ = 0;
   suffix_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  ::memset(&major_, 0, reinterpret_cast<char*>(&patch_) -
-    reinterpret_cast<char*>(&major_) + sizeof(patch_));
+  ::memset(&major_, 0, static_cast<size_t>(
+      reinterpret_cast<char*>(&patch_) -
+      reinterpret_cast<char*>(&major_)) + sizeof(patch_));
 }
 
 Version::~Version() {
@@ -290,8 +291,9 @@ void Version::Clear() {
     (*suffix_.UnsafeRawStringPointer())->clear();
   }
   if (_has_bits_[0 / 32] & 14u) {
-    ::memset(&major_, 0, reinterpret_cast<char*>(&patch_) -
-      reinterpret_cast<char*>(&major_) + sizeof(patch_));
+    ::memset(&major_, 0, static_cast<size_t>(
+        reinterpret_cast<char*>(&patch_) -
+        reinterpret_cast<char*>(&major_)) + sizeof(patch_));
   }
   _has_bits_.Clear();
   _internal_metadata_.Clear();
@@ -950,9 +952,10 @@ void CodeGeneratorRequest::SerializeWithCachedSizes(
   }
 
   // repeated .google.protobuf.FileDescriptorProto proto_file = 15;
-  for (unsigned int i = 0, n = this->proto_file_size(); i < n; i++) {
+  for (unsigned int i = 0,
+      n = static_cast<unsigned int>(this->proto_file_size()); i < n; i++) {
     ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
-      15, this->proto_file(i), output);
+      15, this->proto_file(static_cast<int>(i)), output);
   }
 
   if (_internal_metadata_.have_unknown_fields()) {
@@ -998,10 +1001,11 @@ void CodeGeneratorRequest::SerializeWithCachedSizes(
   }
 
   // repeated .google.protobuf.FileDescriptorProto proto_file = 15;
-  for (unsigned int i = 0, n = this->proto_file_size(); i < n; i++) {
+  for (unsigned int i = 0,
+      n = static_cast<unsigned int>(this->proto_file_size()); i < n; i++) {
     target = ::google::protobuf::internal::WireFormatLite::
       InternalWriteMessageNoVirtualToArray(
-        15, this->proto_file(i), deterministic, target);
+        15, this->proto_file(static_cast<int>(i)), deterministic, target);
   }
 
   if (_internal_metadata_.have_unknown_fields()) {
@@ -1031,12 +1035,12 @@ size_t CodeGeneratorRequest::ByteSizeLong() const {
 
   // repeated .google.protobuf.FileDescriptorProto proto_file = 15;
   {
-    unsigned int count = this->proto_file_size();
+    unsigned int count = static_cast<unsigned int>(this->proto_file_size());
     total_size += 1UL * count;
     for (unsigned int i = 0; i < count; i++) {
       total_size +=
         ::google::protobuf::internal::WireFormatLite::MessageSizeNoVirtual(
-          this->proto_file(i));
+          this->proto_file(static_cast<int>(i)));
     }
   }
 
@@ -2082,9 +2086,10 @@ void CodeGeneratorResponse::SerializeWithCachedSizes(
   }
 
   // repeated .google.protobuf.compiler.CodeGeneratorResponse.File file = 15;
-  for (unsigned int i = 0, n = this->file_size(); i < n; i++) {
+  for (unsigned int i = 0,
+      n = static_cast<unsigned int>(this->file_size()); i < n; i++) {
     ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
-      15, this->file(i), output);
+      15, this->file(static_cast<int>(i)), output);
   }
 
   if (_internal_metadata_.have_unknown_fields()) {
@@ -2113,10 +2118,11 @@ void CodeGeneratorResponse::SerializeWithCachedSizes(
   }
 
   // repeated .google.protobuf.compiler.CodeGeneratorResponse.File file = 15;
-  for (unsigned int i = 0, n = this->file_size(); i < n; i++) {
+  for (unsigned int i = 0,
+      n = static_cast<unsigned int>(this->file_size()); i < n; i++) {
     target = ::google::protobuf::internal::WireFormatLite::
       InternalWriteMessageNoVirtualToArray(
-        15, this->file(i), deterministic, target);
+        15, this->file(static_cast<int>(i)), deterministic, target);
   }
 
   if (_internal_metadata_.have_unknown_fields()) {
@@ -2138,12 +2144,12 @@ size_t CodeGeneratorResponse::ByteSizeLong() const {
   }
   // repeated .google.protobuf.compiler.CodeGeneratorResponse.File file = 15;
   {
-    unsigned int count = this->file_size();
+    unsigned int count = static_cast<unsigned int>(this->file_size());
     total_size += 1UL * count;
     for (unsigned int i = 0; i < count; i++) {
       total_size +=
         ::google::protobuf::internal::WireFormatLite::MessageSizeNoVirtual(
-          this->file(i));
+          this->file(static_cast<int>(i)));
     }
   }
 

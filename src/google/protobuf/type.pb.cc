@@ -437,8 +437,9 @@ Type::Type(const Type& from)
 
 void Type::SharedCtor() {
   name_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  ::memset(&source_context_, 0, reinterpret_cast<char*>(&syntax_) -
-    reinterpret_cast<char*>(&source_context_) + sizeof(syntax_));
+  ::memset(&source_context_, 0, static_cast<size_t>(
+      reinterpret_cast<char*>(&syntax_) -
+      reinterpret_cast<char*>(&source_context_)) + sizeof(syntax_));
   _cached_size_ = 0;
 }
 
@@ -629,9 +630,10 @@ void Type::SerializeWithCachedSizes(
   }
 
   // repeated .google.protobuf.Field fields = 2;
-  for (unsigned int i = 0, n = this->fields_size(); i < n; i++) {
+  for (unsigned int i = 0,
+      n = static_cast<unsigned int>(this->fields_size()); i < n; i++) {
     ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
-      2, this->fields(i), output);
+      2, this->fields(static_cast<int>(i)), output);
   }
 
   // repeated string oneofs = 3;
@@ -645,9 +647,10 @@ void Type::SerializeWithCachedSizes(
   }
 
   // repeated .google.protobuf.Option options = 4;
-  for (unsigned int i = 0, n = this->options_size(); i < n; i++) {
+  for (unsigned int i = 0,
+      n = static_cast<unsigned int>(this->options_size()); i < n; i++) {
     ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
-      4, this->options(i), output);
+      4, this->options(static_cast<int>(i)), output);
   }
 
   // .google.protobuf.SourceContext source_context = 5;
@@ -683,10 +686,11 @@ void Type::SerializeWithCachedSizes(
   }
 
   // repeated .google.protobuf.Field fields = 2;
-  for (unsigned int i = 0, n = this->fields_size(); i < n; i++) {
+  for (unsigned int i = 0,
+      n = static_cast<unsigned int>(this->fields_size()); i < n; i++) {
     target = ::google::protobuf::internal::WireFormatLite::
       InternalWriteMessageNoVirtualToArray(
-        2, this->fields(i), deterministic, target);
+        2, this->fields(static_cast<int>(i)), deterministic, target);
   }
 
   // repeated string oneofs = 3;
@@ -700,10 +704,11 @@ void Type::SerializeWithCachedSizes(
   }
 
   // repeated .google.protobuf.Option options = 4;
-  for (unsigned int i = 0, n = this->options_size(); i < n; i++) {
+  for (unsigned int i = 0,
+      n = static_cast<unsigned int>(this->options_size()); i < n; i++) {
     target = ::google::protobuf::internal::WireFormatLite::
       InternalWriteMessageNoVirtualToArray(
-        4, this->options(i), deterministic, target);
+        4, this->options(static_cast<int>(i)), deterministic, target);
   }
 
   // .google.protobuf.SourceContext source_context = 5;
@@ -729,12 +734,12 @@ size_t Type::ByteSizeLong() const {
 
   // repeated .google.protobuf.Field fields = 2;
   {
-    unsigned int count = this->fields_size();
+    unsigned int count = static_cast<unsigned int>(this->fields_size());
     total_size += 1UL * count;
     for (unsigned int i = 0; i < count; i++) {
       total_size +=
         ::google::protobuf::internal::WireFormatLite::MessageSizeNoVirtual(
-          this->fields(i));
+          this->fields(static_cast<int>(i)));
     }
   }
 
@@ -748,12 +753,12 @@ size_t Type::ByteSizeLong() const {
 
   // repeated .google.protobuf.Option options = 4;
   {
-    unsigned int count = this->options_size();
+    unsigned int count = static_cast<unsigned int>(this->options_size());
     total_size += 1UL * count;
     for (unsigned int i = 0; i < count; i++) {
       total_size +=
         ::google::protobuf::internal::WireFormatLite::MessageSizeNoVirtual(
-          this->options(i));
+          this->options(static_cast<int>(i)));
     }
   }
 
@@ -1199,8 +1204,8 @@ Field::Field(const Field& from)
       GetArenaNoVirtual());
   }
   ::memcpy(&kind_, &from.kind_,
-    reinterpret_cast<char*>(&packed_) -
-    reinterpret_cast<char*>(&kind_) + sizeof(packed_));
+    static_cast<size_t>(reinterpret_cast<char*>(&packed_) -
+    reinterpret_cast<char*>(&kind_)) + sizeof(packed_));
   // @@protoc_insertion_point(copy_constructor:google.protobuf.Field)
 }
 
@@ -1209,8 +1214,9 @@ void Field::SharedCtor() {
   type_url_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   json_name_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   default_value_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  ::memset(&kind_, 0, reinterpret_cast<char*>(&packed_) -
-    reinterpret_cast<char*>(&kind_) + sizeof(packed_));
+  ::memset(&kind_, 0, static_cast<size_t>(
+      reinterpret_cast<char*>(&packed_) -
+      reinterpret_cast<char*>(&kind_)) + sizeof(packed_));
   _cached_size_ = 0;
 }
 
@@ -1263,8 +1269,9 @@ void Field::Clear() {
   type_url_.ClearToEmpty(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), GetArenaNoVirtual());
   json_name_.ClearToEmpty(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), GetArenaNoVirtual());
   default_value_.ClearToEmpty(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), GetArenaNoVirtual());
-  ::memset(&kind_, 0, reinterpret_cast<char*>(&packed_) -
-    reinterpret_cast<char*>(&kind_) + sizeof(packed_));
+  ::memset(&kind_, 0, static_cast<size_t>(
+      reinterpret_cast<char*>(&packed_) -
+      reinterpret_cast<char*>(&kind_)) + sizeof(packed_));
 }
 
 bool Field::MergePartialFromCodedStream(
@@ -1500,9 +1507,10 @@ void Field::SerializeWithCachedSizes(
   }
 
   // repeated .google.protobuf.Option options = 9;
-  for (unsigned int i = 0, n = this->options_size(); i < n; i++) {
+  for (unsigned int i = 0,
+      n = static_cast<unsigned int>(this->options_size()); i < n; i++) {
     ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
-      9, this->options(i), output);
+      9, this->options(static_cast<int>(i)), output);
   }
 
   // string json_name = 10;
@@ -1584,10 +1592,11 @@ void Field::SerializeWithCachedSizes(
   }
 
   // repeated .google.protobuf.Option options = 9;
-  for (unsigned int i = 0, n = this->options_size(); i < n; i++) {
+  for (unsigned int i = 0,
+      n = static_cast<unsigned int>(this->options_size()); i < n; i++) {
     target = ::google::protobuf::internal::WireFormatLite::
       InternalWriteMessageNoVirtualToArray(
-        9, this->options(i), deterministic, target);
+        9, this->options(static_cast<int>(i)), deterministic, target);
   }
 
   // string json_name = 10;
@@ -1622,12 +1631,12 @@ size_t Field::ByteSizeLong() const {
 
   // repeated .google.protobuf.Option options = 9;
   {
-    unsigned int count = this->options_size();
+    unsigned int count = static_cast<unsigned int>(this->options_size());
     total_size += 1UL * count;
     for (unsigned int i = 0; i < count; i++) {
       total_size +=
         ::google::protobuf::internal::WireFormatLite::MessageSizeNoVirtual(
-          this->options(i));
+          this->options(static_cast<int>(i)));
     }
   }
 
@@ -2264,8 +2273,9 @@ Enum::Enum(const Enum& from)
 
 void Enum::SharedCtor() {
   name_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  ::memset(&source_context_, 0, reinterpret_cast<char*>(&syntax_) -
-    reinterpret_cast<char*>(&source_context_) + sizeof(syntax_));
+  ::memset(&source_context_, 0, static_cast<size_t>(
+      reinterpret_cast<char*>(&syntax_) -
+      reinterpret_cast<char*>(&source_context_)) + sizeof(syntax_));
   _cached_size_ = 0;
 }
 
@@ -2438,15 +2448,17 @@ void Enum::SerializeWithCachedSizes(
   }
 
   // repeated .google.protobuf.EnumValue enumvalue = 2;
-  for (unsigned int i = 0, n = this->enumvalue_size(); i < n; i++) {
+  for (unsigned int i = 0,
+      n = static_cast<unsigned int>(this->enumvalue_size()); i < n; i++) {
     ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
-      2, this->enumvalue(i), output);
+      2, this->enumvalue(static_cast<int>(i)), output);
   }
 
   // repeated .google.protobuf.Option options = 3;
-  for (unsigned int i = 0, n = this->options_size(); i < n; i++) {
+  for (unsigned int i = 0,
+      n = static_cast<unsigned int>(this->options_size()); i < n; i++) {
     ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
-      3, this->options(i), output);
+      3, this->options(static_cast<int>(i)), output);
   }
 
   // .google.protobuf.SourceContext source_context = 4;
@@ -2482,17 +2494,19 @@ void Enum::SerializeWithCachedSizes(
   }
 
   // repeated .google.protobuf.EnumValue enumvalue = 2;
-  for (unsigned int i = 0, n = this->enumvalue_size(); i < n; i++) {
+  for (unsigned int i = 0,
+      n = static_cast<unsigned int>(this->enumvalue_size()); i < n; i++) {
     target = ::google::protobuf::internal::WireFormatLite::
       InternalWriteMessageNoVirtualToArray(
-        2, this->enumvalue(i), deterministic, target);
+        2, this->enumvalue(static_cast<int>(i)), deterministic, target);
   }
 
   // repeated .google.protobuf.Option options = 3;
-  for (unsigned int i = 0, n = this->options_size(); i < n; i++) {
+  for (unsigned int i = 0,
+      n = static_cast<unsigned int>(this->options_size()); i < n; i++) {
     target = ::google::protobuf::internal::WireFormatLite::
       InternalWriteMessageNoVirtualToArray(
-        3, this->options(i), deterministic, target);
+        3, this->options(static_cast<int>(i)), deterministic, target);
   }
 
   // .google.protobuf.SourceContext source_context = 4;
@@ -2518,23 +2532,23 @@ size_t Enum::ByteSizeLong() const {
 
   // repeated .google.protobuf.EnumValue enumvalue = 2;
   {
-    unsigned int count = this->enumvalue_size();
+    unsigned int count = static_cast<unsigned int>(this->enumvalue_size());
     total_size += 1UL * count;
     for (unsigned int i = 0; i < count; i++) {
       total_size +=
         ::google::protobuf::internal::WireFormatLite::MessageSizeNoVirtual(
-          this->enumvalue(i));
+          this->enumvalue(static_cast<int>(i)));
     }
   }
 
   // repeated .google.protobuf.Option options = 3;
   {
-    unsigned int count = this->options_size();
+    unsigned int count = static_cast<unsigned int>(this->options_size());
     total_size += 1UL * count;
     for (unsigned int i = 0; i < count; i++) {
       total_size +=
         ::google::protobuf::internal::WireFormatLite::MessageSizeNoVirtual(
-          this->options(i));
+          this->options(static_cast<int>(i)));
     }
   }
 
@@ -3037,9 +3051,10 @@ void EnumValue::SerializeWithCachedSizes(
   }
 
   // repeated .google.protobuf.Option options = 3;
-  for (unsigned int i = 0, n = this->options_size(); i < n; i++) {
+  for (unsigned int i = 0,
+      n = static_cast<unsigned int>(this->options_size()); i < n; i++) {
     ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
-      3, this->options(i), output);
+      3, this->options(static_cast<int>(i)), output);
   }
 
   // @@protoc_insertion_point(serialize_end:google.protobuf.EnumValue)
@@ -3068,10 +3083,11 @@ void EnumValue::SerializeWithCachedSizes(
   }
 
   // repeated .google.protobuf.Option options = 3;
-  for (unsigned int i = 0, n = this->options_size(); i < n; i++) {
+  for (unsigned int i = 0,
+      n = static_cast<unsigned int>(this->options_size()); i < n; i++) {
     target = ::google::protobuf::internal::WireFormatLite::
       InternalWriteMessageNoVirtualToArray(
-        3, this->options(i), deterministic, target);
+        3, this->options(static_cast<int>(i)), deterministic, target);
   }
 
   // @@protoc_insertion_point(serialize_to_array_end:google.protobuf.EnumValue)
@@ -3084,12 +3100,12 @@ size_t EnumValue::ByteSizeLong() const {
 
   // repeated .google.protobuf.Option options = 3;
   {
-    unsigned int count = this->options_size();
+    unsigned int count = static_cast<unsigned int>(this->options_size());
     total_size += 1UL * count;
     for (unsigned int i = 0; i < count; i++) {
       total_size +=
         ::google::protobuf::internal::WireFormatLite::MessageSizeNoVirtual(
-          this->options(i));
+          this->options(static_cast<int>(i)));
     }
   }
 

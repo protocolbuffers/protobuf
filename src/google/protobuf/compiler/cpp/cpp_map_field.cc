@@ -409,13 +409,14 @@ void MapFieldGenerator::GenerateSerializeWithCachedSizes(
       "  for (::google::protobuf::Map< $key_cpp$, $val_cpp$ >::const_iterator\n"
       "      it = this->$name$().begin();\n"
       "      it != this->$name$().end(); ++it, ++n) {\n"
-      "    items[n] = SortItem(&*it);\n"
+      "    items[static_cast<ptrdiff_t>(n)] = SortItem(&*it);\n"
       "  }\n"
-      "  ::std::sort(&items[0], &items[n], Less());\n");
+      "  ::std::sort(&items[0], &items[static_cast<ptrdiff_t>(n)], Less());\n");
   printer->Indent();
   GenerateSerializationLoop(printer, variables, SupportsArenas(descriptor_),
-                            utf8_check, "for (size_type i = 0; i < n; i++)",
-                            string_key ? "items[i]" : "items[i].second", false);
+      utf8_check, "for (size_type i = 0; i < n; i++)",
+      string_key ? "items[static_cast<ptrdiff_t>(i)]" :
+                   "items[static_cast<ptrdiff_t>(i)].second", false);
   printer->Outdent();
   printer->Print(
       "} else {\n");

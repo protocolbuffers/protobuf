@@ -696,7 +696,7 @@ inline uint8* WireFormatLite::WriteFixedNoTagToArray(
 
   const T* ii = value.unsafe_data();
   const int bytes = n * static_cast<int>(sizeof(ii[0]));
-  memcpy(target, ii, bytes);
+  memcpy(target, ii, static_cast<size_t>(bytes));
   return target + bytes;
 #else
   return WritePrimitiveNoTagToArray(value, Writer, target);
@@ -954,7 +954,7 @@ inline uint8* WireFormatLite::InternalWriteMessageToArray(
     uint8* target) {
   target = WriteTagToArray(field_number, WIRETYPE_LENGTH_DELIMITED, target);
   target = io::CodedOutputStream::WriteVarint32ToArray(
-    value.GetCachedSize(), target);
+    static_cast<uint32>(value.GetCachedSize()), target);
   return value.InternalSerializeWithCachedSizesToArray(deterministic, target);
 }
 
@@ -975,7 +975,9 @@ inline uint8* WireFormatLite::InternalWriteMessageNoVirtualToArray(
     bool deterministic, uint8* target) {
   target = WriteTagToArray(field_number, WIRETYPE_LENGTH_DELIMITED, target);
   target = io::CodedOutputStream::WriteVarint32ToArray(
-    value.MessageType_WorkAroundCppLookupDefect::GetCachedSize(), target);
+        static_cast<uint32>(
+            value.MessageType_WorkAroundCppLookupDefect::GetCachedSize()),
+        target);
   return value.MessageType_WorkAroundCppLookupDefect::
       InternalSerializeWithCachedSizesToArray(deterministic, target);
 }
