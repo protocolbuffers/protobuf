@@ -37,7 +37,7 @@ as well as a set of standard .proto files distributed along with protobuf.
 If you are looking for an old version that is not available in the release
 page, check out the maven repo here:
 
-  [http://repo1.maven.org/maven2/com/google/protobuf/protoc/](http://repo1.maven.org/maven2/com/google/protobuf/protoc/)
+  [https://repo1.maven.org/maven2/com/google/protobuf/protoc/](https://repo1.maven.org/maven2/com/google/protobuf/protoc/)
 
 These pre-built binaries are only provided for released versions. If you want
 to use the github master version at HEAD, or you need to modify protobuf code,
