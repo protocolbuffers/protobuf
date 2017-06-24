@@ -256,7 +256,8 @@ GenerateMergeFromCodedStream(io::Printer* printer) const {
     } else {
       printer->Print(variables_,
           "    unknown_fields_stream.WriteVarint32($tag$u);\n"
-          "    unknown_fields_stream.WriteVarint32(data.size());\n"
+          "    unknown_fields_stream.WriteVarint32(\n"
+          "        static_cast<google::protobuf::uint32>(data.size()));\n"
           "    unknown_fields_stream.WriteString(data);\n");
     }
 
@@ -267,12 +268,16 @@ GenerateMergeFromCodedStream(io::Printer* printer) const {
 
   if (key_field->type() == FieldDescriptor::TYPE_STRING) {
     GenerateUtf8CheckCodeForString(
-    key_field, options_, true, variables_,
-        StrCat(key, ".data(), ", key, ".length(),\n").data(), printer);
+        key_field, options_, true, variables_,
+        StrCat(key, ".data(), static_cast<int>(", key, ".length()),\n").data(),
+        printer);
   }
   if (value_field->type() == FieldDescriptor::TYPE_STRING) {
-    GenerateUtf8CheckCodeForString(value_field, options_, true, variables_,
-        StrCat(value, ".data(), ", value, ".length(),\n").data(), printer);
+    GenerateUtf8CheckCodeForString(
+        value_field, options_, true, variables_,
+        StrCat(value, ".data(), static_cast<int>(", value, ".length()),\n")
+            .data(),
+        printer);
   }
 
   // If entry is allocated by arena, its desctructor should be avoided.
@@ -376,14 +381,14 @@ void MapFieldGenerator::GenerateSerializeWithCachedSizes(
     printer->Indent();
     printer->Indent();
     if (string_key) {
-      GenerateUtf8CheckCodeForString(key_field, options_, false, variables,
-                                     "p->first.data(), p->first.length(),\n",
-                                     printer);
+      GenerateUtf8CheckCodeForString(
+          key_field, options_, false, variables,
+          "p->first.data(), static_cast<int>(p->first.length()),\n", printer);
     }
     if (string_value) {
-      GenerateUtf8CheckCodeForString(value_field, options_, false, variables,
-                                     "p->second.data(), p->second.length(),\n",
-                                     printer);
+      GenerateUtf8CheckCodeForString(
+          value_field, options_, false, variables,
+          "p->second.data(), static_cast<int>(p->second.length()),\n", printer);
     }
     printer->Outdent();
     printer->Outdent();
@@ -404,13 +409,14 @@ void MapFieldGenerator::GenerateSerializeWithCachedSizes(
       "  for (::google::protobuf::Map< $key_cpp$, $val_cpp$ >::const_iterator\n"
       "      it = this->$name$().begin();\n"
       "      it != this->$name$().end(); ++it, ++n) {\n"
-      "    items[n] = SortItem(&*it);\n"
+      "    items[static_cast<ptrdiff_t>(n)] = SortItem(&*it);\n"
       "  }\n"
-      "  ::std::sort(&items[0], &items[n], Less());\n");
+      "  ::std::sort(&items[0], &items[static_cast<ptrdiff_t>(n)], Less());\n");
   printer->Indent();
   GenerateSerializationLoop(printer, variables, SupportsArenas(descriptor_),
-                            utf8_check, "for (size_type i = 0; i < n; i++)",
-                            string_key ? "items[i]" : "items[i].second", false);
+      utf8_check, "for (size_type i = 0; i < n; i++)",
+      string_key ? "items[static_cast<ptrdiff_t>(i)]" :
+                   "items[static_cast<ptrdiff_t>(i)].second", false);
   printer->Outdent();
   printer->Print(
       "} else {\n");
