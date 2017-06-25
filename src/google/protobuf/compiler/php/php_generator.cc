@@ -82,6 +82,10 @@ void GenerateEnumDocComment(io::Printer* printer, const EnumDescriptor* enum_,
                             int is_descriptor);
 void GenerateEnumValueDocComment(io::Printer* printer,
                                  const EnumValueDescriptor* value);
+void GenerateServiceDocComment(io::Printer* printer,
+                               const ServiceDescriptor* service);
+void GenerateMethodDocComment(io::Printer* printer,
+                              const MethodDescriptor* method);
 
 std::string RenameEmpty(const std::string& name) {
   if (name == "Empty") {
@@ -264,6 +268,18 @@ std::string GeneratedMessageFileName(const Descriptor* message,
 std::string GeneratedEnumFileName(const EnumDescriptor* en,
                                   bool is_descriptor) {
   std::string result = FullClassName(en, is_descriptor);
+  for (int i = 0; i < result.size(); i++) {
+    if (result[i] == '\\') {
+      result[i] = '/';
+    }
+  }
+  return result + ".php";
+}
+
+std::string GeneratedServiceFileName(const ServiceDescriptor* service,
+                                    bool is_descriptor) {
+  std::string result = PhpName(service->file()->package(), is_descriptor) +
+           '\\' + service->name();
   for (int i = 0; i < result.size(); i++) {
     if (result[i] == '\\') {
       result[i] = '/';
@@ -661,6 +677,16 @@ void GenerateEnumToPool(const EnumDescriptor* en, io::Printer* printer) {
   }
   printer->Print("->finalizeToPool();\n\n");
   Outdent(printer);
+}
+
+void GenerateServiceMethod(const MethodDescriptor* method,
+                           io::Printer* printer) {
+  printer->Print(
+        "public function ^camel_name^(^request_name^ $request);\n\n",
+        "camel_name", UnderscoresToCamelCase(method->name(), false),
+        "request_name", UnderscoresToCamelCase(
+          method->input_type()->name(), true)
+  );
 }
 
 void GenerateMessageToPool(const string& name_prefix, const Descriptor* message,
@@ -1064,6 +1090,58 @@ void GenerateMessageFile(const FileDescriptor* file, const Descriptor* message,
   }
 }
 
+void GenerateServiceFile(const FileDescriptor* file,
+  const ServiceDescriptor* service, bool is_descriptor,
+  GeneratorContext* generator_context) {
+  std::string filename = GeneratedServiceFileName(service, is_descriptor);
+  scoped_ptr<io::ZeroCopyOutputStream> output(
+      generator_context->Open(filename));
+  io::Printer printer(output.get(), '^');
+
+  GenerateHead(file, &printer);
+
+  std::string fullname = FilenameToClassname(filename);
+  int lastindex = fullname.find_last_of("\\");
+
+  if (file->options().has_php_namespace()) {
+    const string& php_namespace = file->options().php_namespace();
+    if (!php_namespace.empty()) {
+      printer.Print(
+          "namespace ^name^;\n\n",
+          "name", php_namespace);
+    }
+  } else if (!file->package().empty()) {
+    printer.Print(
+        "namespace ^name^;\n\n",
+        "name", fullname.substr(0, lastindex));
+  }
+
+  GenerateServiceDocComment(&printer, service);
+
+  if (lastindex != string::npos) {
+      printer.Print(
+        "interface ^name^\n"
+        "{\n",
+        "name", fullname.substr(lastindex + 1));
+  } else {
+      printer.Print(
+        "interface ^name^\n"
+        "{\n",
+        "name", fullname);
+  }
+
+  Indent(&printer);
+
+  for (int i = 0; i < service->method_count(); i++) {
+    const MethodDescriptor* method = service->method(i);
+    GenerateMethodDocComment(&printer, method);
+    GenerateServiceMethod(method, &printer);
+  }
+
+  Outdent(&printer);
+  printer.Print("}\n\n");
+}
+
 void GenerateFile(const FileDescriptor* file, bool is_descriptor,
                   GeneratorContext* generator_context) {
   GenerateMetadataFile(file, is_descriptor, generator_context);
@@ -1074,6 +1152,12 @@ void GenerateFile(const FileDescriptor* file, bool is_descriptor,
   for (int i = 0; i < file->enum_type_count(); i++) {
     GenerateEnumFile(file, file->enum_type(i), is_descriptor,
                      generator_context);
+  }
+  if (file->options().php_generic_services()) {
+    for (int i = 0; i < file->service_count(); i++) {
+      GenerateServiceFile(file, file->service(i), is_descriptor,
+                       generator_context);
+    }
   }
 }
 
@@ -1183,6 +1267,16 @@ void GenerateMessageDocComment(io::Printer* printer,
     "messagename", EscapePhpdoc(message->full_name()));
 }
 
+void GenerateServiceDocComment(io::Printer* printer,
+                               const ServiceDescriptor* service) {
+  printer->Print("/**\n");
+  GenerateDocCommentBody(printer, service);
+  printer->Print(
+    " * Protobuf type <code>^fullname^</code>\n"
+    " */\n",
+    "fullname", EscapePhpdoc(service->full_name()));
+}
+
 void GenerateFieldDocComment(io::Printer* printer, const FieldDescriptor* field,
                              int is_descriptor, int function_type) {
   // In theory we should have slightly different comments for setters, getters,
@@ -1227,6 +1321,23 @@ void GenerateEnumValueDocComment(io::Printer* printer,
     " * Generated from protobuf enum <code>^def^</code>\n"
     " */\n",
     "def", EscapePhpdoc(FirstLineOf(value->DebugString())));
+}
+
+void GenerateMethodDocComment(io::Printer* printer,
+                              const MethodDescriptor* method) {
+  printer->Print("/**\n");
+  GenerateDocCommentBody(printer, method);
+  printer->Print(
+    " * Method <code>^method_name^</code>\n"
+    " *\n",
+    "method_name", EscapePhpdoc(method->name()));
+  printer->Print(
+    " * @param ^input_type^ $request\n",
+    "input_type", EscapePhpdoc(method->input_type()->name()));
+  printer->Print(
+    " * @return ^return_type^\n"
+    " */\n",
+    "return_type", EscapePhpdoc(method->output_type()->name()));
 }
 
 bool Generator::Generate(const FileDescriptor* file, const string& parameter,
