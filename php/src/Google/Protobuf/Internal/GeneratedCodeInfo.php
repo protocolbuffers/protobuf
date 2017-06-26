@@ -51,7 +51,7 @@ class GeneratedCodeInfo extends \Google\Protobuf\Internal\Message
      * of its generating .proto file.
      *
      * Generated from protobuf field <code>repeated .google.protobuf.GeneratedCodeInfo.Annotation annotation = 1;</code>
-     * @param array|\Google\Protobuf\Internal\RepeatedField $var
+     * @param \Google\Protobuf\Internal\GeneratedCodeInfo_Annotation[]|\Google\Protobuf\Internal\RepeatedField $var
      * @return $this
      */
     public function setAnnotation(&$var)

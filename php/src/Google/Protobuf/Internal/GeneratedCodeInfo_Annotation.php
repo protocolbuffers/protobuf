@@ -71,7 +71,7 @@ class GeneratedCodeInfo_Annotation extends \Google\Protobuf\Internal\Message
      * is formatted the same as SourceCodeInfo.Location.path.
      *
      * Generated from protobuf field <code>repeated int32 path = 1 [packed = true];</code>
-     * @param array|\Google\Protobuf\Internal\RepeatedField $var
+     * @param int[]|\Google\Protobuf\Internal\RepeatedField $var
      * @return $this
      */
     public function setPath(&$var)

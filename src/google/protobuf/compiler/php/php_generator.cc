@@ -315,31 +315,50 @@ std::string PhpSetterTypeName(const FieldDescriptor* field, bool is_descriptor) 
   if (field->is_map()) {
     return "array|\\Google\\Protobuf\\Internal\\MapField";
   }
-  if (field->is_repeated()) {
-    return "array|\\Google\\Protobuf\\Internal\\RepeatedField";
-  }
+  string type;
   switch (field->type()) {
     case FieldDescriptor::TYPE_INT32:
     case FieldDescriptor::TYPE_UINT32:
     case FieldDescriptor::TYPE_SINT32:
     case FieldDescriptor::TYPE_FIXED32:
     case FieldDescriptor::TYPE_SFIXED32:
-    case FieldDescriptor::TYPE_ENUM: return "int";
+    case FieldDescriptor::TYPE_ENUM:
+      type = "int";
+      break;
     case FieldDescriptor::TYPE_INT64:
     case FieldDescriptor::TYPE_UINT64:
     case FieldDescriptor::TYPE_SINT64:
     case FieldDescriptor::TYPE_FIXED64:
-    case FieldDescriptor::TYPE_SFIXED64: return "int|string";
+    case FieldDescriptor::TYPE_SFIXED64:
+      type = "int|string";
+      break;
     case FieldDescriptor::TYPE_DOUBLE:
-    case FieldDescriptor::TYPE_FLOAT: return "float";
-    case FieldDescriptor::TYPE_BOOL: return "bool";
+    case FieldDescriptor::TYPE_FLOAT:
+      type = "float";
+      break;
+    case FieldDescriptor::TYPE_BOOL:
+      type = "bool";
+      break;
     case FieldDescriptor::TYPE_STRING:
-    case FieldDescriptor::TYPE_BYTES: return "string";
+    case FieldDescriptor::TYPE_BYTES:
+      type = "string";
+      break;
     case FieldDescriptor::TYPE_MESSAGE:
-      return "\\" + FullClassName(field->message_type(), is_descriptor);
-    case FieldDescriptor::TYPE_GROUP: return "null";
+      type = "\\" + FullClassName(field->message_type(), is_descriptor);
+      break;
+    case FieldDescriptor::TYPE_GROUP:
+      return "null";
     default: assert(false); return "";
   }
+  if (field->is_repeated()) {
+    // accommodate for edge case with multiple types.
+    size_t start_pos = type.find("|");
+    if (start_pos != std::string::npos) {
+      type.replace(start_pos, 1, "[]|");
+    }
+    type += "[]|\\Google\\Protobuf\\Internal\\RepeatedField";
+  }
+  return type;
 }
 
 std::string PhpGetterTypeName(const FieldDescriptor* field, bool is_descriptor) {

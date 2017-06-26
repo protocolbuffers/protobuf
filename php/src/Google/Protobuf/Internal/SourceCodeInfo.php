@@ -167,7 +167,7 @@ class SourceCodeInfo extends \Google\Protobuf\Internal\Message
      *   be recorded in the future.
      *
      * Generated from protobuf field <code>repeated .google.protobuf.SourceCodeInfo.Location location = 1;</code>
-     * @param array|\Google\Protobuf\Internal\RepeatedField $var
+     * @param \Google\Protobuf\Internal\SourceCodeInfo_Location[]|\Google\Protobuf\Internal\RepeatedField $var
      * @return $this
      */
     public function setLocation(&$var)

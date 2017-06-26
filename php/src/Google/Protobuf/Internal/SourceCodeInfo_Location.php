@@ -167,7 +167,7 @@ class SourceCodeInfo_Location extends \Google\Protobuf\Internal\Message
      * of the label to the terminating semicolon).
      *
      * Generated from protobuf field <code>repeated int32 path = 1 [packed = true];</code>
-     * @param array|\Google\Protobuf\Internal\RepeatedField $var
+     * @param int[]|\Google\Protobuf\Internal\RepeatedField $var
      * @return $this
      */
     public function setPath(&$var)
@@ -207,7 +207,7 @@ class SourceCodeInfo_Location extends \Google\Protobuf\Internal\Message
      * 1 to each before displaying to a user.
      *
      * Generated from protobuf field <code>repeated int32 span = 2 [packed = true];</code>
-     * @param array|\Google\Protobuf\Internal\RepeatedField $var
+     * @param int[]|\Google\Protobuf\Internal\RepeatedField $var
      * @return $this
      */
     public function setSpan(&$var)
@@ -365,7 +365,7 @@ class SourceCodeInfo_Location extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>repeated string leading_detached_comments = 6;</code>
-     * @param array|\Google\Protobuf\Internal\RepeatedField $var
+     * @param string[]|\Google\Protobuf\Internal\RepeatedField $var
      * @return $this
      */
     public function setLeadingDetachedComments(&$var)
