@@ -7,6 +7,10 @@ using pb = global::Google.Protobuf;
 using pbc = global::Google.Protobuf.Collections;
 using pbr = global::Google.Protobuf.Reflection;
 using scg = global::System.Collections.Generic;
+#if !PROTOBUF_NO_ASYNC
+using st = global::System.Threading;
+using stt = global::System.Threading.Tasks;
+#endif
 namespace Google.Protobuf.Examples.AddressBook {
 
   /// <summary>Holder for reflection information generated from addressbook.proto</summary>
@@ -42,13 +46,69 @@ namespace Google.Protobuf.Examples.AddressBook {
 
   }
   #region Messages
+  #if !PROTOBUF_NO_ASYNC
+  public sealed partial class Person : pb::IAsyncMessage<Person> {
+    private static readonly pb::AsyncMessageParser<Person> _parser = new pb::AsyncMessageParser<Person>(() => new Person());
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pb::AsyncMessageParser<Person> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public async stt::Task WriteToAsync(pb::CodedOutputStream output, st::CancellationToken cancellationToken) {
+      if (Name.Length != 0) {
+        await output.WriteRawTagAsync(10, cancellationToken).ConfigureAwait(false);
+        await output.WriteStringAsync(Name, cancellationToken).ConfigureAwait(false);
+      }
+      if (Id != 0) {
+        await output.WriteRawTagAsync(16, cancellationToken).ConfigureAwait(false);
+        await output.WriteInt32Async(Id, cancellationToken).ConfigureAwait(false);
+      }
+      if (Email.Length != 0) {
+        await output.WriteRawTagAsync(26, cancellationToken).ConfigureAwait(false);
+        await output.WriteStringAsync(Email, cancellationToken).ConfigureAwait(false);
+      }
+      await phones_.WriteToAsync(output, _repeated_phones_codec, cancellationToken).ConfigureAwait(false);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public async stt::Task MergeFromAsync(pb::CodedInputStream input, st::CancellationToken cancellationToken) {
+      uint tag;
+      while ((tag = await input.ReadTagAsync(cancellationToken).ConfigureAwait(false)) != 0) {
+        switch(tag) {
+          default:
+            await input.SkipLastFieldAsync(cancellationToken).ConfigureAwait(false);
+            break;
+          case 10: {
+            Name = await input.ReadStringAsync(cancellationToken).ConfigureAwait(false);
+            break;
+          }
+          case 16: {
+            Id = await input.ReadInt32Async(cancellationToken).ConfigureAwait(false);
+            break;
+          }
+          case 26: {
+            Email = await input.ReadStringAsync(cancellationToken).ConfigureAwait(false);
+            break;
+          }
+          case 34: {
+            await phones_.AddEntriesFromAsync(input, _repeated_phones_codec, cancellationToken).ConfigureAwait(false);
+            break;
+          }
+        }
+      }
+    }
+
+  }
+  #endif
+
   /// <summary>
   /// [START messages]
   /// </summary>
   public sealed partial class Person : pb::IMessage<Person> {
+    #if PROTOBUF_NO_ASYNC
     private static readonly pb::MessageParser<Person> _parser = new pb::MessageParser<Person>(() => new Person());
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<Person> Parser { get { return _parser; } }
+    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
@@ -249,10 +309,53 @@ namespace Google.Protobuf.Examples.AddressBook {
         [pbr::OriginalName("WORK")] Work = 2,
       }
 
+      #if !PROTOBUF_NO_ASYNC
+      public sealed partial class PhoneNumber : pb::IAsyncMessage<PhoneNumber> {
+        private static readonly pb::AsyncMessageParser<PhoneNumber> _parser = new pb::AsyncMessageParser<PhoneNumber>(() => new PhoneNumber());
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public static pb::AsyncMessageParser<PhoneNumber> Parser { get { return _parser; } }
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public async stt::Task WriteToAsync(pb::CodedOutputStream output, st::CancellationToken cancellationToken) {
+          if (Number.Length != 0) {
+            await output.WriteRawTagAsync(10, cancellationToken).ConfigureAwait(false);
+            await output.WriteStringAsync(Number, cancellationToken).ConfigureAwait(false);
+          }
+          if (Type != 0) {
+            await output.WriteRawTagAsync(16, cancellationToken).ConfigureAwait(false);
+            await output.WriteEnumAsync((int) Type, cancellationToken).ConfigureAwait(false);
+          }
+        }
+
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        public async stt::Task MergeFromAsync(pb::CodedInputStream input, st::CancellationToken cancellationToken) {
+          uint tag;
+          while ((tag = await input.ReadTagAsync(cancellationToken).ConfigureAwait(false)) != 0) {
+            switch(tag) {
+              default:
+                await input.SkipLastFieldAsync(cancellationToken).ConfigureAwait(false);
+                break;
+              case 10: {
+                Number = await input.ReadStringAsync(cancellationToken).ConfigureAwait(false);
+                break;
+              }
+              case 16: {
+                type_ = (global::Google.Protobuf.Examples.AddressBook.Person.Types.PhoneType) await input.ReadEnumAsync(cancellationToken).ConfigureAwait(false);
+                break;
+              }
+            }
+          }
+        }
+
+      }
+      #endif
+
       public sealed partial class PhoneNumber : pb::IMessage<PhoneNumber> {
+        #if PROTOBUF_NO_ASYNC
         private static readonly pb::MessageParser<PhoneNumber> _parser = new pb::MessageParser<PhoneNumber>(() => new PhoneNumber());
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public static pb::MessageParser<PhoneNumber> Parser { get { return _parser; } }
+        #endif
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public static pbr::MessageDescriptor Descriptor {
@@ -399,13 +502,45 @@ namespace Google.Protobuf.Examples.AddressBook {
 
   }
 
+  #if !PROTOBUF_NO_ASYNC
+  public sealed partial class AddressBook : pb::IAsyncMessage<AddressBook> {
+    private static readonly pb::AsyncMessageParser<AddressBook> _parser = new pb::AsyncMessageParser<AddressBook>(() => new AddressBook());
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public static pb::AsyncMessageParser<AddressBook> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public async stt::Task WriteToAsync(pb::CodedOutputStream output, st::CancellationToken cancellationToken) {
+      await people_.WriteToAsync(output, _repeated_people_codec, cancellationToken).ConfigureAwait(false);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public async stt::Task MergeFromAsync(pb::CodedInputStream input, st::CancellationToken cancellationToken) {
+      uint tag;
+      while ((tag = await input.ReadTagAsync(cancellationToken).ConfigureAwait(false)) != 0) {
+        switch(tag) {
+          default:
+            await input.SkipLastFieldAsync(cancellationToken).ConfigureAwait(false);
+            break;
+          case 10: {
+            await people_.AddEntriesFromAsync(input, _repeated_people_codec, cancellationToken).ConfigureAwait(false);
+            break;
+          }
+        }
+      }
+    }
+
+  }
+  #endif
+
   /// <summary>
   /// Our address book file is just one of these.
   /// </summary>
   public sealed partial class AddressBook : pb::IMessage<AddressBook> {
+    #if PROTOBUF_NO_ASYNC
     private static readonly pb::MessageParser<AddressBook> _parser = new pb::MessageParser<AddressBook>(() => new AddressBook());
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<AddressBook> Parser { get { return _parser; } }
+    #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
