@@ -107,12 +107,29 @@ void PrimitiveFieldGenerator::GenerateParsingCode(io::Printer* printer) {
     "$property_name$ = input.Read$capitalized_type_name$();\n");
 }
 
+void PrimitiveFieldGenerator::GenerateAsyncParsingCode(io::Printer* printer) {
+  // Note: invoke the property setter rather than writing straight to the field,
+  // so that we can normalize "null to empty" for strings and bytes.
+  printer->Print(
+    variables_,
+    "$property_name$ = await input.Read$capitalized_type_name$Async(cancellationToken).ConfigureAwait(false);\n");
+}
+
 void PrimitiveFieldGenerator::GenerateSerializationCode(io::Printer* printer) {
   printer->Print(
     variables_,
     "if ($has_property_check$) {\n"
     "  output.WriteRawTag($tag_bytes$);\n"
     "  output.Write$capitalized_type_name$($property_name$);\n"
+    "}\n");
+}
+
+void PrimitiveFieldGenerator::GenerateAsyncSerializationCode(io::Printer* printer) {
+  printer->Print(
+    variables_,
+    "if ($has_property_check$) {\n"
+    "  await output.WriteRawTagAsync($tag_bytes$, cancellationToken).ConfigureAwait(false);\n"
+    "  await output.Write$capitalized_type_name$Async($property_name$, cancellationToken).ConfigureAwait(false);\n"
     "}\n");
 }
 
@@ -205,6 +222,12 @@ void PrimitiveOneofFieldGenerator::GenerateParsingCode(io::Printer* printer) {
     printer->Print(
       variables_,
       "$property_name$ = input.Read$capitalized_type_name$();\n");
+}
+
+void PrimitiveOneofFieldGenerator::GenerateAsyncParsingCode(io::Printer* printer) {
+  printer->Print(
+    variables_,
+    "$property_name$ = await input.Read$capitalized_type_name$Async(cancellationToken).ConfigureAwait(false);\n");
 }
 
 void PrimitiveOneofFieldGenerator::GenerateCloningCode(io::Printer* printer) {

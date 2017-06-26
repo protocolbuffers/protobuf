@@ -100,10 +100,22 @@ void MapFieldGenerator::GenerateParsingCode(io::Printer* printer) {
     "$name$_.AddEntriesFrom(input, _map_$name$_codec);\n");
 }
 
+void MapFieldGenerator::GenerateAsyncParsingCode(io::Printer* printer) {
+  printer->Print(
+    variables_,
+    "await $name$_.AddEntriesFromAsync(input, _map_$name$_codec, cancellationToken).ConfigureAwait(false);\n");
+}
+
 void MapFieldGenerator::GenerateSerializationCode(io::Printer* printer) {
   printer->Print(
     variables_,
     "$name$_.WriteTo(output, _map_$name$_codec);\n");
+}
+
+void MapFieldGenerator::GenerateAsyncSerializationCode(io::Printer* printer) {
+  printer->Print(
+    variables_,
+    "await $name$_.WriteToAsync(output, _map_$name$_codec, cancellationToken).ConfigureAwait(false);\n");
 }
 
 void MapFieldGenerator::GenerateSerializedSizeCode(io::Printer* printer) {

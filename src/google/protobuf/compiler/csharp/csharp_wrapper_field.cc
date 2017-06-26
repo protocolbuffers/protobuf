@@ -103,11 +103,28 @@ void WrapperFieldGenerator::GenerateParsingCode(io::Printer* printer) {
     "}\n");
 }
 
+void WrapperFieldGenerator::GenerateAsyncParsingCode(io::Printer* printer) {
+  printer->Print(
+    variables_,
+    "$type_name$ value = await _single_$name$_codec.ReadAsync(input, cancellationToken).ConfigureAwait(false);\n"
+    "if ($has_not_property_check$ || value != $default_value$) {\n"
+    "  $property_name$ = value;\n"
+    "}\n");
+}
+
 void WrapperFieldGenerator::GenerateSerializationCode(io::Printer* printer) {
   printer->Print(
     variables_,
     "if ($has_property_check$) {\n"
     "  _single_$name$_codec.WriteTagAndValue(output, $property_name$);\n"
+    "}\n");
+}
+
+void WrapperFieldGenerator::GenerateAsyncSerializationCode(io::Printer* printer) {
+  printer->Print(
+    variables_,
+    "if ($has_property_check$) {\n"
+    "  await _single_$name$_codec.WriteTagAndValueAsync(output, $property_name$, cancellationToken).ConfigureAwait(false);\n"
     "}\n");
 }
 
@@ -187,12 +204,26 @@ void WrapperOneofFieldGenerator::GenerateParsingCode(io::Printer* printer) {
     "$property_name$ = _oneof_$name$_codec.Read(input);\n");
 }
 
+void WrapperOneofFieldGenerator::GenerateAsyncParsingCode(io::Printer* printer) {
+  printer->Print(
+    variables_,
+    "$property_name$ = await _oneof_$name$_codec.ReadAsync(input, cancellationToken).ConfigureAwait(false);\n");
+}
+
 void WrapperOneofFieldGenerator::GenerateSerializationCode(io::Printer* printer) {
   // TODO: I suspect this is wrong...
   printer->Print(
     variables_,
     "if ($has_property_check$) {\n"
     "  _oneof_$name$_codec.WriteTagAndValue(output, ($type_name$) $oneof_name$_);\n"
+    "}\n");
+}
+
+void WrapperOneofFieldGenerator::GenerateAsyncSerializationCode(io::Printer* printer) {
+  printer->Print(
+    variables_,
+    "if ($has_property_check$) {\n"
+    "  await _oneof_$name$_codec.WriteTagAndValueAsync(output, ($type_name$) $oneof_name$_, cancellationToken).ConfigureAwait(false);\n"
     "}\n");
 }
 

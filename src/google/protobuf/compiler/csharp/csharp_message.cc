@@ -48,6 +48,7 @@
 #include <google/protobuf/compiler/csharp/csharp_helpers.h>
 #include <google/protobuf/compiler/csharp/csharp_message.h>
 #include <google/protobuf/compiler/csharp/csharp_names.h>
+#include <google/protobuf/compiler/csharp/csharp_options.h>
 
 using google::protobuf::internal::scoped_ptr;
 
@@ -109,24 +110,62 @@ void MessageGenerator::Generate(io::Printer* printer) {
   vars["class_name"] = class_name();
   vars["access_level"] = class_access_level();
 
+  // It is critical that the async class is declared first to ensure the parser is initialized first during
+  // type initialization.
+  if (options()->async) {
+    printer->Print(
+      vars,
+      "#if !PROTOBUF_NO_ASYNC\n"
+      "$access_level$ sealed partial class $class_name$ : pb::IAsyncMessage<$class_name$> {\n");
+    printer->Indent();
+
+    printer->Print(
+      vars,
+      "private static readonly pb::AsyncMessageParser<$class_name$> _parser = new pb::AsyncMessageParser<$class_name$>(() => new $class_name$());\n");
+
+    WriteGeneratedCodeAttributes(printer);
+
+    printer->Print(
+      vars,
+      "public static pb::AsyncMessageParser<$class_name$> Parser { get { return _parser; } }\n\n");
+
+    GenerateMessageAsyncSerializationMethods(printer);
+    GenerateAsyncMergingMethods(printer);
+
+    printer->Outdent();
+    printer->Print("}\n"
+      "#endif\n"
+      "\n");
+  }
+
   WriteMessageDocComment(printer, descriptor_);
   AddDeprecatedFlag(printer);
-  
   printer->Print(
     vars,
     "$access_level$ sealed partial class $class_name$ : pb::IMessage<$class_name$> {\n");
   printer->Indent();
 
   // All static fields and properties
+  // In async mode this field will be generated in Async-class part. Condition is added to avoid duplicate parsers.
+  if (options()->async) {
+    printer->Print("#if PROTOBUF_NO_ASYNC\n");
+  }
+
   printer->Print(
-	  vars,
-	  "private static readonly pb::MessageParser<$class_name$> _parser = new pb::MessageParser<$class_name$>(() => new $class_name$());\n");
+    vars,
+    "private static readonly pb::MessageParser<$class_name$> _parser = new pb::MessageParser<$class_name$>(() => new $class_name$());\n");
 
   WriteGeneratedCodeAttributes(printer);
 
   printer->Print(
-	  vars,
-	  "public static pb::MessageParser<$class_name$> Parser { get { return _parser; } }\n\n");
+    vars,
+    "public static pb::MessageParser<$class_name$> Parser { get { return _parser; } }\n");
+
+  if (options()->async) {
+    printer->Print("#endif\n");
+  }
+
+  printer->Print("\n");
 
   // Access the message descriptor via the relevant file descriptor or containing message descriptor.
   if (!descriptor_->containing_type()) {
@@ -413,6 +452,7 @@ void MessageGenerator::GenerateMessageSerializationMethods(io::Printer* printer)
   printer->Print(
 	"}\n"
 	"\n");
+
   WriteGeneratedCodeAttributes(printer);
   printer->Print(
     "public int CalculateSize() {\n");
@@ -426,6 +466,25 @@ void MessageGenerator::GenerateMessageSerializationMethods(io::Printer* printer)
   printer->Print("return size;\n");
   printer->Outdent();
   printer->Print("}\n\n");
+}
+
+void MessageGenerator::GenerateMessageAsyncSerializationMethods(io::Printer* printer) {
+  WriteGeneratedCodeAttributes(printer);
+  printer->Print(
+    "public async stt::Task WriteToAsync(pb::CodedOutputStream output, st::CancellationToken cancellationToken) {\n");
+  printer->Indent();
+
+  // Serialize all the fields
+  for (int i = 0; i < fields_by_number().size(); i++) {
+    scoped_ptr<FieldGeneratorBase> generator(
+      CreateFieldGeneratorInternal(fields_by_number()[i]));
+    generator->GenerateAsyncSerializationCode(printer);
+  }
+
+  printer->Outdent();
+  printer->Print(
+    "}\n"
+    "\n");
 }
 
 void MessageGenerator::GenerateMergingMethods(io::Printer* printer) {
@@ -528,6 +587,67 @@ void MessageGenerator::GenerateMergingMethods(io::Printer* printer) {
   printer->Print("}\n"); // while
   printer->Outdent();
   printer->Print("}\n\n"); // method
+}
+
+void MessageGenerator::GenerateAsyncMergingMethods(io::Printer* printer) {
+  WriteGeneratedCodeAttributes(printer);
+  printer->Print("public async stt::Task MergeFromAsync(pb::CodedInputStream input, st::CancellationToken cancellationToken) {\n");
+  printer->Indent();
+  printer->Print(
+    "uint tag;\n"
+    "while ((tag = await input.ReadTagAsync(cancellationToken).ConfigureAwait(false)) != 0) {\n"
+    "  switch(tag) {\n");
+  printer->Indent();
+  printer->Indent();
+  // Option messages need to store unknown fields so that options can be parsed later.
+  if (IsDescriptorOptionMessage(descriptor_)) {
+    printer->Print(
+      "default:\n"
+      "  CustomOptions = await CustomOptions.ReadOrSkipUnknownFieldAsync(input, cancellationToken).ConfigureAwait(false);\n"
+      "  break;\n");
+  }
+  else {
+    printer->Print(
+      "default:\n"
+      "  await input.SkipLastFieldAsync(cancellationToken).ConfigureAwait(false);\n" // We're not storing the data, but we still need to consume it.
+      "  break;\n");
+  }
+  for (int i = 0; i < fields_by_number().size(); i++) {
+    const FieldDescriptor* field = fields_by_number()[i];
+    internal::WireFormatLite::WireType wt =
+      internal::WireFormat::WireTypeForFieldType(field->type());
+    uint32 tag = internal::WireFormatLite::MakeTag(field->number(), wt);
+    // Handle both packed and unpacked repeated fields with the same Read*Array call;
+    // the two generated cases are the packed and unpacked tags.
+    // TODO(jonskeet): Check that is_packable is equivalent to
+    // is_repeated && wt in { VARINT, FIXED32, FIXED64 }.
+    // It looks like it is...
+    if (field->is_packable()) {
+      printer->Print(
+        "case $packed_tag$:\n",
+        "packed_tag",
+        SimpleItoa(
+          internal::WireFormatLite::MakeTag(
+            field->number(),
+            internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED)));
+    }
+
+    printer->Print("case $tag$: {\n", "tag", SimpleItoa(tag));
+    printer->Indent();
+    scoped_ptr<FieldGeneratorBase> generator(
+      CreateFieldGeneratorInternal(field));
+    generator->GenerateAsyncParsingCode(printer);
+    printer->Print("break;\n");
+    printer->Outdent();
+    printer->Print("}\n");
+  }
+  printer->Outdent();
+  printer->Print("}\n"); // switch
+  printer->Outdent();
+  printer->Print("}\n"); // while
+  printer->Outdent();
+  printer->Print("}\n"
+    "\n"); // method
 }
 
 int MessageGenerator::GetFieldOrdinal(const FieldDescriptor* descriptor) {

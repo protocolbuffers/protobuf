@@ -55,7 +55,9 @@ class RepeatedEnumFieldGenerator : public FieldGeneratorBase {
   virtual void GenerateMembers(io::Printer* printer);
   virtual void GenerateMergingCode(io::Printer* printer);
   virtual void GenerateParsingCode(io::Printer* printer);
+  virtual void GenerateAsyncParsingCode(io::Printer* printer);
   virtual void GenerateSerializationCode(io::Printer* printer);
+  virtual void GenerateAsyncSerializationCode(io::Printer* printer);
   virtual void GenerateSerializedSizeCode(io::Printer* printer);
 
   virtual void WriteHash(io::Printer* printer);

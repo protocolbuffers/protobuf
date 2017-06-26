@@ -84,10 +84,22 @@ void RepeatedEnumFieldGenerator::GenerateParsingCode(io::Printer* printer) {
     "$name$_.AddEntriesFrom(input, _repeated_$name$_codec);\n");
 }
 
+void RepeatedEnumFieldGenerator::GenerateAsyncParsingCode(io::Printer* printer) {
+  printer->Print(
+    variables_,
+    "await $name$_.AddEntriesFromAsync(input, _repeated_$name$_codec, cancellationToken).ConfigureAwait(false);\n");
+}
+
 void RepeatedEnumFieldGenerator::GenerateSerializationCode(io::Printer* printer) {
   printer->Print(
     variables_,
     "$name$_.WriteTo(output, _repeated_$name$_codec);\n");
+}
+
+void RepeatedEnumFieldGenerator::GenerateAsyncSerializationCode(io::Printer* printer) {
+  printer->Print(
+    variables_,
+    "await $name$_.WriteToAsync(output, _repeated_$name$_codec, cancellationToken).ConfigureAwait(false);\n");
 }
 
 void RepeatedEnumFieldGenerator::GenerateSerializedSizeCode(io::Printer* printer) {  

@@ -59,11 +59,24 @@ void EnumFieldGenerator::GenerateParsingCode(io::Printer* printer) {
     "$name$_ = ($type_name$) input.ReadEnum();\n");
 }
 
+void EnumFieldGenerator::GenerateAsyncParsingCode(io::Printer* printer) {
+  printer->Print(variables_,
+    "$name$_ = ($type_name$) await input.ReadEnumAsync(cancellationToken).ConfigureAwait(false);\n");
+}
+
 void EnumFieldGenerator::GenerateSerializationCode(io::Printer* printer) {
   printer->Print(variables_,
     "if ($has_property_check$) {\n"
     "  output.WriteRawTag($tag_bytes$);\n"
     "  output.WriteEnum((int) $property_name$);\n"
+    "}\n");
+}
+
+void EnumFieldGenerator::GenerateAsyncSerializationCode(io::Printer* printer) {
+  printer->Print(variables_,
+    "if ($has_property_check$) {\n"
+    "  await output.WriteRawTagAsync($tag_bytes$, cancellationToken).ConfigureAwait(false);\n"
+    "  await output.WriteEnumAsync((int) $property_name$, cancellationToken).ConfigureAwait(false);\n"
     "}\n");
 }
 
@@ -97,12 +110,29 @@ void EnumOneofFieldGenerator::GenerateParsingCode(io::Printer* printer) {
     "$oneof_name$Case_ = $oneof_property_name$OneofCase.$property_name$;\n");
 }
 
+void EnumOneofFieldGenerator::GenerateAsyncParsingCode(io::Printer* printer) {
+  // TODO(jonskeet): What about if we read the default value?
+  printer->Print(
+    variables_,
+    "$oneof_name$_ = await input.ReadEnumAsync(cancellationToken).ConfigureAwait(false);\n"
+    "$oneof_name$Case_ = $oneof_property_name$OneofCase.$property_name$;\n");
+}
+
 void EnumOneofFieldGenerator::GenerateSerializationCode(io::Printer* printer) {
   printer->Print(
     variables_,
     "if ($has_property_check$) {\n"
     "  output.WriteRawTag($tag_bytes$);\n"
     "  output.WriteEnum((int) $property_name$);\n"
+    "}\n");
+}
+
+void EnumOneofFieldGenerator::GenerateAsyncSerializationCode(io::Printer* printer) {
+  printer->Print(
+    variables_,
+    "if ($has_property_check$) {\n"
+    "  await output.WriteRawTagAsync($tag_bytes$, cancellationToken).ConfigureAwait(false);\n"
+    "  await output.WriteEnumAsync((int) $property_name$, cancellationToken).ConfigureAwait(false);\n"
     "}\n");
 }
 
