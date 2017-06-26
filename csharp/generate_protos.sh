@@ -27,7 +27,7 @@ fi
 
 # descriptor.proto and well-known types
 $PROTOC -Isrc --csharp_out=csharp/src/Google.Protobuf \
-    --csharp_opt=base_namespace=Google.Protobuf \
+    --csharp_opt=base_namespace=Google.Protobuf,async \
     src/google/protobuf/descriptor.proto \
     src/google/protobuf/any.proto \
     src/google/protobuf/api.proto \
@@ -42,7 +42,7 @@ $PROTOC -Isrc --csharp_out=csharp/src/Google.Protobuf \
 
 # Test protos where the namespace matches the target location
 $PROTOC -Isrc --csharp_out=csharp/src/Google.Protobuf.Test \
-    --csharp_opt=base_namespace=Google.Protobuf \
+    --csharp_opt=base_namespace=Google.Protobuf,async \
     src/google/protobuf/map_unittest_proto3.proto \
     src/google/protobuf/unittest_proto3.proto \
     src/google/protobuf/unittest_import_proto3.proto \
@@ -51,17 +51,19 @@ $PROTOC -Isrc --csharp_out=csharp/src/Google.Protobuf.Test \
 
 # Different base namespace to the protos above
 $PROTOC -Isrc -Icsharp/protos --csharp_out=csharp/src/Google.Protobuf.Test \
-    --csharp_opt=base_namespace=UnitTest.Issues \
+    --csharp_opt=base_namespace=UnitTest.Issues,async \
     csharp/protos/unittest_issues.proto \
     csharp/protos/unittest_custom_options_proto3.proto
 
 # Don't specify a base namespace at all; we just want to make sure the
 # results end up in TestProtos.
 $PROTOC -Isrc --csharp_out=csharp/src/Google.Protobuf.Test/TestProtos \
+    --csharp_opt=async \
     src/google/protobuf/test_messages_proto3.proto
 
 # AddressBook sample protos
 $PROTOC -Iexamples --csharp_out=csharp/src/AddressBook \
+    --csharp_opt=async \
     examples/addressbook.proto
 
 $PROTOC -Iconformance -Isrc --csharp_out=csharp/src/Google.Protobuf.Conformance \
