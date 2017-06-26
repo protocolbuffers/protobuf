@@ -30,7 +30,7 @@ RUN wget http://people.centos.org/tru/devtools-1.1/devtools-1.1.repo -P /etc/yum
 RUN bash -c 'echo "enabled=1" >> /etc/yum.repos.d/devtools-1.1.repo'
 RUN bash -c "sed -e 's/\$basearch/i386/g' /etc/yum.repos.d/devtools-1.1.repo > /etc/yum.repos.d/devtools-i386-1.1.repo"
 RUN sed -e 's/testing-/testing-i386-/g' -i /etc/yum.repos.d/devtools-i386-1.1.repo
-RUN yum install -y devtoolset-1.1 \
+RUN rpm --rebuilddb && yum install -y devtoolset-1.1 \
                    devtoolset-1.1-libstdc++-devel \
                    devtoolset-1.1-libstdc++-devel.i686
 
