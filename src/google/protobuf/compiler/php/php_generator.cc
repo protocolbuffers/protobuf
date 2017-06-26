@@ -143,17 +143,9 @@ std::string ClassNamePrefix(const string& classname,
   return "";
 }
 
-
 template <typename DescriptorType>
-std::string FullClassName(const DescriptorType* desc, bool is_descriptor) {
-  string classname = desc->name();
-  const Descriptor* containing = desc->containing_type();
-  while (containing != NULL) {
-    classname = containing->name() + '_' + classname;
-    containing = containing->containing_type();
-  }
-  classname = ClassNamePrefix(classname, desc) + classname;
-
+std::string NamespacedName(const string& classname,
+                            const DescriptorType* desc, bool is_descriptor) {
   if (desc->file()->options().has_php_namespace()) {
     const string& php_namespace = desc->file()->options().php_namespace();
     if (php_namespace != "") {
@@ -169,6 +161,24 @@ std::string FullClassName(const DescriptorType* desc, bool is_descriptor) {
     return PhpName(desc->file()->package(), is_descriptor) + '\\' +
            classname;
   }
+}
+
+template <typename DescriptorType>
+std::string FullClassName(const DescriptorType* desc, bool is_descriptor) {
+  string classname = desc->name();
+  const Descriptor* containing = desc->containing_type();
+  while (containing != NULL) {
+    classname = containing->name() + '_' + classname;
+    containing = containing->containing_type();
+  }
+  classname = ClassNamePrefix(classname, desc) + classname;
+  return NamespacedName(classname, desc, is_descriptor);
+}
+
+std::string FullClassName(const ServiceDescriptor* desc, bool is_descriptor) {
+  string classname = desc->name();
+  classname = ClassNamePrefix(classname, desc) + classname;
+  return NamespacedName(classname, desc, is_descriptor);
 }
 
 std::string PhpName(const std::string& full_name, bool is_descriptor) {
@@ -278,8 +288,7 @@ std::string GeneratedEnumFileName(const EnumDescriptor* en,
 
 std::string GeneratedServiceFileName(const ServiceDescriptor* service,
                                     bool is_descriptor) {
-  std::string result = PhpName(service->file()->package(), is_descriptor) +
-           '\\' + service->name();
+  std::string result = FullClassName(service, is_descriptor);
   for (int i = 0; i < result.size(); i++) {
     if (result[i] == '\\') {
       result[i] = '/';
