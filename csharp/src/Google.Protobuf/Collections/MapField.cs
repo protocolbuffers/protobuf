@@ -37,6 +37,10 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+#if !PROTOBUF_NO_ASYNC
+using System.Threading.Tasks;
+using System.Threading;
+#endif
 
 namespace Google.Protobuf.Collections
 {
@@ -446,6 +450,49 @@ namespace Google.Protobuf.Collections
             }
         }
 
+#if !PROTOBUF_NO_ASYNC
+        /// <summary>
+        /// Adds entries to the map from the given stream.
+        /// </summary>
+        /// <remarks>
+        /// It is assumed that the stream is initially positioned after the tag specified by the codec.
+        /// This method will continue reading entries from the stream until the end is reached, or
+        /// a different tag is encountered.
+        /// </remarks>
+        /// <param name="input">Stream to read from</param>
+        /// <param name="codec">Codec describing how the key/value pairs are encoded</param>
+        /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
+        public async Task AddEntriesFromAsync(CodedInputStream input, Codec codec, CancellationToken cancellationToken)
+        {
+            var adapter = new Codec.MessageAdapter(codec);
+            do
+            {
+                adapter.Reset();
+                await input.ReadMessageAsync(adapter, cancellationToken).ConfigureAwait(false);
+                this[adapter.Key] = adapter.Value;
+            } while (await input.MaybeConsumeTagAsync(codec.MapTag, cancellationToken).ConfigureAwait(false));
+        }
+
+        /// <summary>
+        /// Writes the contents of this map to the given coded output stream, using the specified codec
+        /// to encode each entry.
+        /// </summary>
+        /// <param name="output">The output stream to write to.</param>
+        /// <param name="codec">The codec to use for each entry.</param>
+        /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
+        public async Task WriteToAsync(CodedOutputStream output, Codec codec, CancellationToken cancellationToken)
+        {
+            var message = new Codec.MessageAdapter(codec);
+            foreach (var entry in list)
+            {
+                message.Key = entry.Key;
+                message.Value = entry.Value;
+                await output.WriteTagAsync(codec.MapTag, cancellationToken).ConfigureAwait(false);
+                await output.WriteMessageAsync(message, cancellationToken).ConfigureAwait(false);
+            }
+        }
+#endif
+
         /// <summary>
         /// Calculates the size of this map based on the given entry codec.
         /// </summary>
@@ -609,7 +656,11 @@ namespace Google.Protobuf.Collections
             /// This is nested inside Codec as it's tightly coupled to the associated codec,
             /// and it's simpler if it has direct access to all its fields.
             /// </summary>
+#if !PROTOBUF_NO_ASYNC
+            internal class MessageAdapter : IAsyncMessage
+#else
             internal class MessageAdapter : IMessage
+#endif
             {
                 private static readonly byte[] ZeroLengthMessageStreamData = new byte[] { 0 };
 
@@ -660,6 +711,42 @@ namespace Google.Protobuf.Collections
                     codec.keyCodec.WriteTagAndValue(output, Key);
                     codec.valueCodec.WriteTagAndValue(output, Value);
                 }
+
+#if !PROTOBUF_NO_ASYNC
+                public async Task MergeFromAsync(CodedInputStream input, CancellationToken cancellationToken)
+                {
+                    uint tag;
+                    while ((tag = await input.ReadTagAsync(cancellationToken).ConfigureAwait(false)) != 0)
+                    {
+                        if (tag == codec.keyCodec.Tag)
+                        {
+                            Key = await codec.keyCodec.ReadAsync(input, cancellationToken).ConfigureAwait(false);
+                        }
+                        else if (tag == codec.valueCodec.Tag)
+                        {
+                            Value = await codec.valueCodec.ReadAsync(input, cancellationToken).ConfigureAwait(false);
+                        }
+                        else
+                        {
+                            await input.SkipLastFieldAsync(cancellationToken).ConfigureAwait(false);
+                        }
+                    }
+
+                    // Corner case: a map entry with a key but no value, where the value type is a message.
+                    // Read it as if we'd seen an input stream with no data (i.e. create a "default" message).
+                    if (Value == null)
+                    {
+                        Value = await codec.valueCodec.ReadAsync(new CodedInputStream(ZeroLengthMessageStreamData), cancellationToken).ConfigureAwait(false);
+                    }
+                }
+
+                public async Task WriteToAsync(CodedOutputStream output, CancellationToken cancellationToken)
+                {
+                    await codec.keyCodec.WriteTagAndValueAsync(output, Key, cancellationToken).ConfigureAwait(false);
+                    await codec.valueCodec.WriteTagAndValueAsync(output, Value, cancellationToken).ConfigureAwait(false);
+                }
+
+#endif
 
                 public int CalculateSize()
                 {

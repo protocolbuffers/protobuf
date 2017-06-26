@@ -32,6 +32,10 @@
 
 using System;
 using System.Collections.Generic;
+#if !PROTOBUF_NO_ASYNC
+using System.Threading;
+using System.Threading.Tasks;
+#endif
 
 namespace Google.Protobuf.Reflection
 {
@@ -350,6 +354,41 @@ namespace Google.Protobuf.Reflection
                     return this;
             }
         }
+
+#if !PROTOBUF_NO_ASYNC
+        /// <summary>
+        /// Reads an unknown field, either parsing it and storing it or skipping it.
+        /// </summary>
+        /// <remarks>
+        /// If the current set of options is empty and we manage to read a field, a new set of options
+        /// will be created and returned. Otherwise, the return value is <c>this</c>. This allows
+        /// us to start with a singleton empty set of options and just create new ones where necessary.
+        /// </remarks>
+        /// <param name="input">Input stream to read from. </param>
+        /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
+        /// <returns>The resulting set of custom options, either <c>this</c> or a new set.</returns>
+        internal async Task<CustomOptions> ReadOrSkipUnknownFieldAsync(CodedInputStream input, CancellationToken cancellationToken)
+        {
+            var tag = input.LastTag;
+            var field = WireFormat.GetTagFieldNumber(tag);
+            switch (WireFormat.GetTagWireType(tag))
+            {
+                case WireFormat.WireType.LengthDelimited:
+                    return AddValue(field, new FieldValue(await input.ReadBytesAsync(cancellationToken).ConfigureAwait(false)));
+                case WireFormat.WireType.Fixed32:
+                    return AddValue(field, new FieldValue(await input.ReadFixed32Async(cancellationToken).ConfigureAwait(false)));
+                case WireFormat.WireType.Fixed64:
+                    return AddValue(field, new FieldValue(await input.ReadFixed64Async(cancellationToken).ConfigureAwait(false)));
+                case WireFormat.WireType.Varint:
+                    return AddValue(field, new FieldValue(await input.ReadRawVarint64Async(cancellationToken).ConfigureAwait(false)));
+                // For StartGroup, EndGroup or any wire format we don't understand,
+                // just use the normal behavior (call SkipLastField).
+                default:
+                    await input.SkipLastFieldAsync(cancellationToken).ConfigureAwait(false);
+                    return this;
+            }
+        }
+#endif
 
         private CustomOptions AddValue(int field, FieldValue value)
         {

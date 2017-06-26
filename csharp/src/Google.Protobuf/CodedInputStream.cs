@@ -51,7 +51,7 @@ namespace Google.Protobuf
     /// and <see cref="MapField{TKey, TValue}"/> to serialize such fields.
     /// </para>
     /// </remarks>
-    public sealed class CodedInputStream : IDisposable
+    public sealed partial class CodedInputStream : IDisposable
     {
         /// <summary>
         /// Whether to leave the underlying stream open when disposing of this stream.

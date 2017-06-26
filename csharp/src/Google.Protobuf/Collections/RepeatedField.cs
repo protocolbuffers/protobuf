@@ -34,6 +34,10 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+#if !PROTOBUF_NO_ASYNC
+using System.Threading;
+using System.Threading.Tasks;
+#endif
 
 namespace Google.Protobuf.Collections
 {
@@ -123,6 +127,45 @@ namespace Google.Protobuf.Collections
             }
         }
 
+#if !PROTOBUF_NO_ASYNC
+        /// <summary>
+        /// Adds the entries from the given input stream, decoding them with the specified codec.
+        /// </summary>
+        /// <param name="input">The input stream to read from.</param>
+        /// <param name="codec">The codec to use in order to read each entry.</param>
+        /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
+        public async Task AddEntriesFromAsync(CodedInputStream input, FieldCodec<T> codec, CancellationToken cancellationToken)
+        {
+            // TODO: Inline some of the Add code, so we can avoid checking the size on every
+            // iteration.
+            uint tag = input.LastTag;
+            var reader = codec.ValueAsyncReader;
+            // Non-nullable value types can be packed or not.
+            if (FieldCodec<T>.IsPackedRepeatedField(tag))
+            {
+                int length = await input.ReadLengthAsync(cancellationToken).ConfigureAwait(false);
+                if (length > 0)
+                {
+                    int oldLimit = input.PushLimit(length);
+                    while (!input.ReachedLimit)
+                    {
+                        Add(await reader(input, cancellationToken).ConfigureAwait(false));
+                    }
+                    input.PopLimit(oldLimit);
+                }
+                // Empty packed field. Odd, but valid - just ignore.
+            }
+            else
+            {
+                // Not packed... (possibly not packable)
+                do
+                {
+                    Add(await reader(input, cancellationToken).ConfigureAwait(false));
+                } while (await input.MaybeConsumeTagAsync(tag, cancellationToken).ConfigureAwait(false));
+            }
+        }
+#endif
+
         /// <summary>
         /// Calculates the size of this collection based on the given codec.
         /// </summary>
@@ -210,6 +253,46 @@ namespace Google.Protobuf.Collections
                 }
             }
         }
+
+#if !PROTOBUF_NO_ASYNC
+        /// <summary>
+        /// Writes the contents of this collection to the given <see cref="CodedOutputStream"/>,
+        /// encoding each value using the specified codec.
+        /// </summary>
+        /// <param name="output">The output stream to write to.</param>
+        /// <param name="codec">The codec to use when encoding each value.</param>
+        /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
+        public async Task WriteToAsync(CodedOutputStream output, FieldCodec<T> codec, CancellationToken cancellationToken)
+        {
+            if (count == 0)
+            {
+                return;
+            }
+            var writer = codec.ValueAsyncWriter;
+            var tag = codec.Tag;
+            if (codec.PackedRepeatedField)
+            {
+                // Packed primitive type
+                uint size = (uint)CalculatePackedDataSize(codec);
+                await output.WriteTagAsync(tag, cancellationToken).ConfigureAwait(false);
+                await output.WriteRawVarint32Async(size, cancellationToken).ConfigureAwait(false);
+                for (int i = 0; i < count; i++)
+                {
+                    await writer(output, array[i], cancellationToken).ConfigureAwait(false);
+                }
+            }
+            else
+            {
+                // Not packed: a simple tag/value pair for each value.
+                // Can't use codec.WriteTagAndValue, as that omits default values.
+                for (int i = 0; i < count; i++)
+                {
+                    await output.WriteTagAsync(tag, cancellationToken).ConfigureAwait(false);
+                    await writer(output, array[i], cancellationToken).ConfigureAwait(false);
+                }
+            }
+        }
+#endif
 
         private void EnsureSize(int size)
         {

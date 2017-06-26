@@ -29,9 +29,13 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #endregion
-    
+
 using System;
 using System.IO;
+#if !PROTOBUF_NO_ASYNC
+using System.Threading;
+using System.Threading.Tasks;
+#endif
 
 namespace Google.Protobuf
 {
@@ -91,6 +95,19 @@ namespace Google.Protobuf
             }
             return 0;
         }
+
+#if !PROTOBUF_NO_ASYNC
+        public async override Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
+        {
+            if (bytesLeft > 0)
+            {
+                int bytesRead = await proxied.ReadAsync(buffer, offset, Math.Min(bytesLeft, count), cancellationToken).ConfigureAwait(false);
+                bytesLeft -= bytesRead;
+                return bytesRead;
+            }
+            return 0;
+        }
+#endif
 
         public override long Seek(long offset, SeekOrigin origin)
         {
