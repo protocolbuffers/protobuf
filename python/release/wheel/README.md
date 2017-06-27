@@ -5,7 +5,8 @@ them to pypi.
 
 Usage
 ------------------------------
-    ./protobuf_optimized_pip.sh PROTOBUF_VERSION PYPI_USERNAME PYPI_PASSWORD
+For example, to release 3.3.0:
+    ./protobuf_optimized_pip.sh 3.3.0 PYPI_USERNAME PYPI_PASSWORD
 
 Structure
 ------------------------------
