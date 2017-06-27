@@ -12,31 +12,25 @@ use Google\Protobuf\Internal\InputStream;
 use Google\Protobuf\Internal\GPBUtil;
 
 /**
- * <pre>
  * Range of reserved tag numbers. Reserved tag numbers may not be used by
  * fields or extension ranges in the same message. Reserved ranges may
  * not overlap.
- * </pre>
  *
- * Protobuf type <code>google.protobuf.DescriptorProto.ReservedRange</code>
+ * Generated from protobuf message <code>google.protobuf.DescriptorProto.ReservedRange</code>
  */
 class DescriptorProto_ReservedRange extends \Google\Protobuf\Internal\Message
 {
     /**
-     * <pre>
      * Inclusive.
-     * </pre>
      *
-     * <code>optional int32 start = 1;</code>
+     * Generated from protobuf field <code>optional int32 start = 1;</code>
      */
     private $start = 0;
     private $has_start = false;
     /**
-     * <pre>
      * Exclusive.
-     * </pre>
      *
-     * <code>optional int32 end = 2;</code>
+     * Generated from protobuf field <code>optional int32 end = 2;</code>
      */
     private $end = 0;
     private $has_end = false;
@@ -47,11 +41,10 @@ class DescriptorProto_ReservedRange extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * <pre>
      * Inclusive.
-     * </pre>
      *
-     * <code>optional int32 start = 1;</code>
+     * Generated from protobuf field <code>optional int32 start = 1;</code>
+     * @return int
      */
     public function getStart()
     {
@@ -59,11 +52,11 @@ class DescriptorProto_ReservedRange extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * <pre>
      * Inclusive.
-     * </pre>
      *
-     * <code>optional int32 start = 1;</code>
+     * Generated from protobuf field <code>optional int32 start = 1;</code>
+     * @param int $var
+     * @return $this
      */
     public function setStart($var)
     {
@@ -80,11 +73,10 @@ class DescriptorProto_ReservedRange extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * <pre>
      * Exclusive.
-     * </pre>
      *
-     * <code>optional int32 end = 2;</code>
+     * Generated from protobuf field <code>optional int32 end = 2;</code>
+     * @return int
      */
     public function getEnd()
     {
@@ -92,11 +84,11 @@ class DescriptorProto_ReservedRange extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * <pre>
      * Exclusive.
-     * </pre>
      *
-     * <code>optional int32 end = 2;</code>
+     * Generated from protobuf field <code>optional int32 end = 2;</code>
+     * @param int $var
+     * @return $this
      */
     public function setEnd($var)
     {

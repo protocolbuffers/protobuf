@@ -12,17 +12,15 @@ use Google\Protobuf\Internal\InputStream;
 use Google\Protobuf\Internal\GPBUtil;
 
 /**
- * <pre>
  * The protocol compiler can output a FileDescriptorSet containing the .proto
  * files it parses.
- * </pre>
  *
- * Protobuf type <code>google.protobuf.FileDescriptorSet</code>
+ * Generated from protobuf message <code>google.protobuf.FileDescriptorSet</code>
  */
 class FileDescriptorSet extends \Google\Protobuf\Internal\Message
 {
     /**
-     * <code>repeated .google.protobuf.FileDescriptorProto file = 1;</code>
+     * Generated from protobuf field <code>repeated .google.protobuf.FileDescriptorProto file = 1;</code>
      */
     private $file;
     private $has_file = false;
@@ -33,7 +31,8 @@ class FileDescriptorSet extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * <code>repeated .google.protobuf.FileDescriptorProto file = 1;</code>
+     * Generated from protobuf field <code>repeated .google.protobuf.FileDescriptorProto file = 1;</code>
+     * @return \Google\Protobuf\Internal\RepeatedField
      */
     public function getFile()
     {
@@ -41,7 +40,9 @@ class FileDescriptorSet extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * <code>repeated .google.protobuf.FileDescriptorProto file = 1;</code>
+     * Generated from protobuf field <code>repeated .google.protobuf.FileDescriptorProto file = 1;</code>
+     * @param \Google\Protobuf\Internal\FileDescriptorProto[]|\Google\Protobuf\Internal\RepeatedField $var
+     * @return $this
      */
     public function setFile(&$var)
     {

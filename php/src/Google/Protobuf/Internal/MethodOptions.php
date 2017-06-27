@@ -12,33 +12,29 @@ use Google\Protobuf\Internal\InputStream;
 use Google\Protobuf\Internal\GPBUtil;
 
 /**
- * Protobuf type <code>google.protobuf.MethodOptions</code>
+ * Generated from protobuf message <code>google.protobuf.MethodOptions</code>
  */
 class MethodOptions extends \Google\Protobuf\Internal\Message
 {
     /**
-     * <pre>
      * Is this method deprecated?
      * Depending on the target platform, this can emit Deprecated annotations
      * for the method, or it will be completely ignored; in the very least,
      * this is a formalization for deprecating methods.
-     * </pre>
      *
-     * <code>optional bool deprecated = 33 [default = false];</code>
+     * Generated from protobuf field <code>optional bool deprecated = 33 [default = false];</code>
      */
     private $deprecated = false;
     private $has_deprecated = false;
     /**
-     * <code>optional .google.protobuf.MethodOptions.IdempotencyLevel idempotency_level = 34 [default = IDEMPOTENCY_UNKNOWN];</code>
+     * Generated from protobuf field <code>optional .google.protobuf.MethodOptions.IdempotencyLevel idempotency_level = 34 [default = IDEMPOTENCY_UNKNOWN];</code>
      */
     private $idempotency_level = 0;
     private $has_idempotency_level = false;
     /**
-     * <pre>
      * The parser stores options it doesn't recognize here. See above.
-     * </pre>
      *
-     * <code>repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;</code>
+     * Generated from protobuf field <code>repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;</code>
      */
     private $uninterpreted_option;
     private $has_uninterpreted_option = false;
@@ -49,14 +45,13 @@ class MethodOptions extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * <pre>
      * Is this method deprecated?
      * Depending on the target platform, this can emit Deprecated annotations
      * for the method, or it will be completely ignored; in the very least,
      * this is a formalization for deprecating methods.
-     * </pre>
      *
-     * <code>optional bool deprecated = 33 [default = false];</code>
+     * Generated from protobuf field <code>optional bool deprecated = 33 [default = false];</code>
+     * @return bool
      */
     public function getDeprecated()
     {
@@ -64,14 +59,14 @@ class MethodOptions extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * <pre>
      * Is this method deprecated?
      * Depending on the target platform, this can emit Deprecated annotations
      * for the method, or it will be completely ignored; in the very least,
      * this is a formalization for deprecating methods.
-     * </pre>
      *
-     * <code>optional bool deprecated = 33 [default = false];</code>
+     * Generated from protobuf field <code>optional bool deprecated = 33 [default = false];</code>
+     * @param bool $var
+     * @return $this
      */
     public function setDeprecated($var)
     {
@@ -88,7 +83,8 @@ class MethodOptions extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * <code>optional .google.protobuf.MethodOptions.IdempotencyLevel idempotency_level = 34 [default = IDEMPOTENCY_UNKNOWN];</code>
+     * Generated from protobuf field <code>optional .google.protobuf.MethodOptions.IdempotencyLevel idempotency_level = 34 [default = IDEMPOTENCY_UNKNOWN];</code>
+     * @return int
      */
     public function getIdempotencyLevel()
     {
@@ -96,7 +92,9 @@ class MethodOptions extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * <code>optional .google.protobuf.MethodOptions.IdempotencyLevel idempotency_level = 34 [default = IDEMPOTENCY_UNKNOWN];</code>
+     * Generated from protobuf field <code>optional .google.protobuf.MethodOptions.IdempotencyLevel idempotency_level = 34 [default = IDEMPOTENCY_UNKNOWN];</code>
+     * @param int $var
+     * @return $this
      */
     public function setIdempotencyLevel($var)
     {
@@ -113,11 +111,10 @@ class MethodOptions extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * <pre>
      * The parser stores options it doesn't recognize here. See above.
-     * </pre>
      *
-     * <code>repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;</code>
+     * Generated from protobuf field <code>repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;</code>
+     * @return \Google\Protobuf\Internal\RepeatedField
      */
     public function getUninterpretedOption()
     {
@@ -125,11 +122,11 @@ class MethodOptions extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * <pre>
      * The parser stores options it doesn't recognize here. See above.
-     * </pre>
      *
-     * <code>repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;</code>
+     * Generated from protobuf field <code>repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;</code>
+     * @param \Google\Protobuf\Internal\UninterpretedOption[]|\Google\Protobuf\Internal\RepeatedField $var
+     * @return $this
      */
     public function setUninterpretedOption(&$var)
     {
