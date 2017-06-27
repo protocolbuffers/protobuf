@@ -50,10 +50,10 @@ option cc_enable_arenas = true;
 // submessages of this message.  So for example, a fuzz test of TestAllTypes
 // could trigger bugs that occur in any message type in this file.  We verify
 // this stays true in a unit test.
-message TestAllTypes {
+message TestAllTypesProto2 {
   message NestedMessage {
     optional int32 a = 1;
-    optional TestAllTypes corecursive = 2;
+    optional TestAllTypesProto2 corecursive = 2;
   }
 
   enum NestedEnum {
@@ -89,7 +89,7 @@ message TestAllTypes {
   optional string optional_string_piece = 24 [ctype=STRING_PIECE];
   optional string optional_cord = 25 [ctype=CORD];
 
-  optional TestAllTypes recursive_message = 27;
+  optional TestAllTypesProto2 recursive_message = 27;
 
   // Repeated
   repeated    int32 repeated_int32    = 31;
@@ -191,6 +191,6 @@ enum ForeignEnum {
   FOREIGN_BAZ = 2;
 }
 
-extend TestAllTypes {
+extend TestAllTypesProto2 {
   optional int32 extension_int32 = 120;
 }

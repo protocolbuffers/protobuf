@@ -35,6 +35,7 @@
 #include "conformance.pb.h"
 #include "conformance_test.h"
 #include <google/protobuf/test_messages_proto3.pb.h>
+#include <google/protobuf/test_messages_proto2.pb.h>
 
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/stubs/stringprintf.h>
@@ -60,6 +61,7 @@ using google::protobuf::util::MessageDifferencer;
 using google::protobuf::util::NewTypeResolverForDescriptorPool;
 using google::protobuf::util::Status;
 using protobuf_test_messages::proto3::TestAllTypes;
+using protobuf_test_messages::proto2::TestAllTypesProto2;
 using std::string;
 
 namespace {
@@ -163,8 +165,10 @@ string submsg(uint32_t fn, const string& buf) {
 #define UNKNOWN_FIELD 666
 
 const FieldDescriptor* GetFieldForType(FieldDescriptor::Type type,
-                                       bool repeated) {
-  const Descriptor* d = TestAllTypes().GetDescriptor();
+                                       bool repeated, bool isProto3) {
+
+  const Descriptor* d = isProto3 ?
+      TestAllTypes().GetDescriptor() : TestAllTypesProto2().GetDescriptor();
   for (int i = 0; i < d->field_count(); i++) {
     const FieldDescriptor* f = d->field(i);
     if (f->type() == type && f->is_repeated() == repeated) {
@@ -271,7 +275,7 @@ void ConformanceTestSuite::RunTest(const string& test_name,
 void ConformanceTestSuite::RunValidInputTest(
     const string& test_name, ConformanceLevel level, const string& input,
     WireFormat input_format, const string& equivalent_text_format,
-    WireFormat requested_output) {
+    WireFormat requested_output, bool isProto3) {
   TestAllTypes reference_message;
   GOOGLE_CHECK(
       TextFormat::ParseFromString(equivalent_text_format, &reference_message))
@@ -282,9 +286,15 @@ void ConformanceTestSuite::RunValidInputTest(
   ConformanceResponse response;
 
   switch (input_format) {
-    case conformance::PROTOBUF:
+    case conformance::PROTOBUF: {
       request.set_protobuf_payload(input);
+      if (isProto3) {
+        request.set_message_type("proto3");
+      } else {
+        request.set_message_type("proto2");
+      }
       break;
+    }
 
     case conformance::JSON:
       request.set_json_payload(input);
@@ -299,6 +309,7 @@ void ConformanceTestSuite::RunValidInputTest(
   RunTest(test_name, request, &response);
 
   TestAllTypes test_message;
+  TestAllTypesProto2 test_message_proto2;
 
   switch (response.result_case()) {
     case ConformanceResponse::RESULT_NOT_SET:
@@ -334,11 +345,20 @@ void ConformanceTestSuite::RunValidInputTest(
         return;
       }
 
-      if (!test_message.ParseFromString(binary_protobuf)) {
-        ReportFailure(test_name, level, request, response,
+      if (isProto3) {
+        if (!test_message.ParseFromString(binary_protobuf)) {
+          ReportFailure(test_name, level, request, response,
                       "INTERNAL ERROR: internal JSON->protobuf transcode "
                       "yielded unparseable proto.");
-        return;
+          return;
+        }
+      } else {
+        if (!test_message_proto2.ParseFromString(binary_protobuf)) {
+          ReportFailure(test_name, level, request, response,
+                      "INTERNAL ERROR: internal JSON->protobuf transcode "
+                      "yielded unparseable proto.");
+          return;
+        }
       }
 
       break;
@@ -352,10 +372,18 @@ void ConformanceTestSuite::RunValidInputTest(
         return;
       }
 
-      if (!test_message.ParseFromString(response.protobuf_payload())) {
-        ReportFailure(test_name, level, request, response,
-                      "Protobuf output we received from test was unparseable.");
-        return;
+      if (isProto3) {
+        if (!test_message.ParseFromString(response.protobuf_payload())) {
+          ReportFailure(test_name, level, request, response,
+                     "Protobuf output we received from test was unparseable.");
+          return;
+        }
+      } else {
+        if (!test_message_proto2.ParseFromString(response.protobuf_payload())) {
+          ReportFailure(test_name, level, request, response,
+                     "Protobuf output we received from test was unparseable.");
+          return;
+        }
       }
 
       break;
@@ -384,10 +412,16 @@ void ConformanceTestSuite::RunValidInputTest(
 
 // Expect that this precise protobuf will cause a parse error.
 void ConformanceTestSuite::ExpectParseFailureForProto(
-    const string& proto, const string& test_name, ConformanceLevel level) {
+    const string& proto, const string& test_name, ConformanceLevel level,
+    bool isProto3) {
   ConformanceRequest request;
   ConformanceResponse response;
   request.set_protobuf_payload(proto);
+  if (isProto3) {
+    request.set_message_type("proto3");
+  } else {
+    request.set_message_type("proto2");
+  }
   string effective_test_name = ConformanceLevelToString(level) +
       ".ProtobufInput." + test_name;
 
@@ -412,8 +446,9 @@ void ConformanceTestSuite::ExpectParseFailureForProto(
 //
 // TODO(haberman): implement the second of these.
 void ConformanceTestSuite::ExpectHardParseFailureForProto(
-    const string& proto, const string& test_name, ConformanceLevel level) {
-  return ExpectParseFailureForProto(proto, test_name, level);
+    const string& proto, const string& test_name, ConformanceLevel level,
+    bool isProto3) {
+  return ExpectParseFailureForProto(proto, test_name, level, isProto3);
 }
 
 void ConformanceTestSuite::RunValidJsonTest(
@@ -422,39 +457,40 @@ void ConformanceTestSuite::RunValidJsonTest(
   RunValidInputTest(
       ConformanceLevelToString(level) + ".JsonInput." + test_name +
       ".ProtobufOutput", level, input_json, conformance::JSON,
-      equivalent_text_format, conformance::PROTOBUF);
+      equivalent_text_format, conformance::PROTOBUF, true);
   RunValidInputTest(
       ConformanceLevelToString(level) + ".JsonInput." + test_name +
       ".JsonOutput", level, input_json, conformance::JSON,
-      equivalent_text_format, conformance::JSON);
+      equivalent_text_format, conformance::JSON, true);
 }
 
 void ConformanceTestSuite::RunValidJsonTestWithProtobufInput(
     const string& test_name, ConformanceLevel level, const TestAllTypes& input,
-    const string& equivalent_text_format) {
+    const string& equivalent_text_format, bool isProto3) {
   RunValidInputTest(
       ConformanceLevelToString(level) + ".ProtobufInput." + test_name +
       ".JsonOutput", level, input.SerializeAsString(), conformance::PROTOBUF,
-      equivalent_text_format, conformance::JSON);
+      equivalent_text_format, conformance::JSON, isProto3);
 }
 
 void ConformanceTestSuite::RunValidProtobufTest(
     const string& test_name, ConformanceLevel level,
-    const string& input_protobuf, const string& equivalent_text_format) {
+    const string& input_protobuf, const string& equivalent_text_format,
+    bool isProto3) {
   RunValidInputTest(
       ConformanceLevelToString(level) + ".ProtobufInput." + test_name +
       ".ProtobufOutput", level, input_protobuf, conformance::PROTOBUF,
-      equivalent_text_format, conformance::PROTOBUF);
+      equivalent_text_format, conformance::PROTOBUF, isProto3);
   RunValidInputTest(
       ConformanceLevelToString(level) + ".ProtobufInput." + test_name +
       ".JsonOutput", level, input_protobuf, conformance::PROTOBUF,
-      equivalent_text_format, conformance::JSON);
+      equivalent_text_format, conformance::JSON, isProto3);
 }
 
 void ConformanceTestSuite::RunValidProtobufTestWithMessage(
     const string& test_name, ConformanceLevel level, const TestAllTypes& input,
-    const string& equivalent_text_format) {
-  RunValidProtobufTest(test_name, level, input.SerializeAsString(), equivalent_text_format);
+    const string& equivalent_text_format, bool isProto3) {
+  RunValidProtobufTest(test_name, level, input.SerializeAsString(), equivalent_text_format, isProto3);
 }
 
 // According to proto3 JSON specification, JSON serializers follow more strict
@@ -535,6 +571,7 @@ void ConformanceTestSuite::ExpectSerializeFailureForJson(
   ConformanceRequest request;
   ConformanceResponse response;
   request.set_protobuf_payload(payload_message.SerializeAsString());
+  request.set_message_type("proto3");
   string effective_test_name =
       ConformanceLevelToString(level) + "." + test_name + ".JsonOutput";
   request.set_requested_output_format(conformance::JSON);
@@ -550,6 +587,7 @@ void ConformanceTestSuite::ExpectSerializeFailureForJson(
   }
 }
 
+//TODO: proto2?
 void ConformanceTestSuite::TestPrematureEOFForType(FieldDescriptor::Type type) {
   // Incomplete values for each wire type.
   static const string incompletes[6] = {
@@ -561,8 +599,8 @@ void ConformanceTestSuite::TestPrematureEOFForType(FieldDescriptor::Type type) {
     string("abc")       // 32BIT
   };
 
-  const FieldDescriptor* field = GetFieldForType(type, false);
-  const FieldDescriptor* rep_field = GetFieldForType(type, true);
+  const FieldDescriptor* field = GetFieldForType(type, false, true);
+  const FieldDescriptor* rep_field = GetFieldForType(type, true, true);
   WireFormatLite::WireType wire_type = WireFormatLite::WireTypeForFieldType(
       static_cast<WireFormatLite::FieldType>(type));
   const string& incomplete = incompletes[wire_type];
@@ -571,43 +609,43 @@ void ConformanceTestSuite::TestPrematureEOFForType(FieldDescriptor::Type type) {
 
   ExpectParseFailureForProto(
       tag(field->number(), wire_type),
-      "PrematureEofBeforeKnownNonRepeatedValue" + type_name, REQUIRED);
+      "PrematureEofBeforeKnownNonRepeatedValue" + type_name, REQUIRED, true);
 
   ExpectParseFailureForProto(
       tag(rep_field->number(), wire_type),
-      "PrematureEofBeforeKnownRepeatedValue" + type_name, REQUIRED);
+      "PrematureEofBeforeKnownRepeatedValue" + type_name, REQUIRED, true);
 
   ExpectParseFailureForProto(
       tag(UNKNOWN_FIELD, wire_type),
-      "PrematureEofBeforeUnknownValue" + type_name, REQUIRED);
+      "PrematureEofBeforeUnknownValue" + type_name, REQUIRED, true);
 
   ExpectParseFailureForProto(
       cat( tag(field->number(), wire_type), incomplete ),
-      "PrematureEofInsideKnownNonRepeatedValue" + type_name, REQUIRED);
+      "PrematureEofInsideKnownNonRepeatedValue" + type_name, REQUIRED, true);
 
   ExpectParseFailureForProto(
       cat( tag(rep_field->number(), wire_type), incomplete ),
-      "PrematureEofInsideKnownRepeatedValue" + type_name, REQUIRED);
+      "PrematureEofInsideKnownRepeatedValue" + type_name, REQUIRED, true);
 
   ExpectParseFailureForProto(
       cat( tag(UNKNOWN_FIELD, wire_type), incomplete ),
-      "PrematureEofInsideUnknownValue" + type_name, REQUIRED);
+      "PrematureEofInsideUnknownValue" + type_name, REQUIRED, true);
 
   if (wire_type == WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
     ExpectParseFailureForProto(
         cat( tag(field->number(), wire_type), varint(1) ),
         "PrematureEofInDelimitedDataForKnownNonRepeatedValue" + type_name,
-        REQUIRED);
+        REQUIRED, true);
 
     ExpectParseFailureForProto(
         cat( tag(rep_field->number(), wire_type), varint(1) ),
         "PrematureEofInDelimitedDataForKnownRepeatedValue" + type_name,
-        REQUIRED);
+        REQUIRED, true);
 
     // EOF in the middle of delimited data for unknown value.
     ExpectParseFailureForProto(
         cat( tag(UNKNOWN_FIELD, wire_type), varint(1) ),
-        "PrematureEofInDelimitedDataForUnknownValue" + type_name, REQUIRED);
+        "PrematureEofInDelimitedDataForUnknownValue" + type_name, REQUIRED, true);
 
     if (type == FieldDescriptor::TYPE_MESSAGE) {
       // Submessage ends in the middle of a value.
@@ -618,7 +656,7 @@ void ConformanceTestSuite::TestPrematureEOFForType(FieldDescriptor::Type type) {
           cat( tag(field->number(), WireFormatLite::WIRETYPE_LENGTH_DELIMITED),
                varint(incomplete_submsg.size()),
                incomplete_submsg ),
-          "PrematureEofInSubmessageValue" + type_name, REQUIRED);
+          "PrematureEofInSubmessageValue" + type_name, REQUIRED, true);
     }
   } else if (type != FieldDescriptor::TYPE_GROUP) {
     // Non-delimited, non-group: eligible for packing.
@@ -627,29 +665,29 @@ void ConformanceTestSuite::TestPrematureEOFForType(FieldDescriptor::Type type) {
     ExpectHardParseFailureForProto(
         cat(tag(rep_field->number(), WireFormatLite::WIRETYPE_LENGTH_DELIMITED),
             varint(incomplete.size()), incomplete),
-        "PrematureEofInPackedFieldValue" + type_name, REQUIRED);
+        "PrematureEofInPackedFieldValue" + type_name, REQUIRED, true);
 
     // EOF in the middle of packed region.
     ExpectParseFailureForProto(
         cat(tag(rep_field->number(), WireFormatLite::WIRETYPE_LENGTH_DELIMITED),
             varint(1)),
-        "PrematureEofInPackedField" + type_name, REQUIRED);
+        "PrematureEofInPackedField" + type_name, REQUIRED, true);
   }
 }
 
 void ConformanceTestSuite::TestValidDataForType(
     FieldDescriptor::Type type,
-    std::vector<std::pair<std::string, std::string>> values) {
+    std::vector<std::pair<std::string, std::string>> values, bool isProto3) {
   const string type_name =
       UpperCase(string(".") + FieldDescriptor::TypeName(type));
   WireFormatLite::WireType wire_type = WireFormatLite::WireTypeForFieldType(
       static_cast<WireFormatLite::FieldType>(type));
-  const FieldDescriptor* field = GetFieldForType(type, false);
-  const FieldDescriptor* rep_field = GetFieldForType(type, true);
+  const FieldDescriptor* field = GetFieldForType(type, false, isProto3);
+  const FieldDescriptor* rep_field = GetFieldForType(type, true, isProto3);
 
   RunValidProtobufTest("ValidDataScalar" + type_name, REQUIRED,
                        cat(tag(field->number(), wire_type), values[0].first),
-                       field->name() + ": " + values[0].second);
+                       field->name() + ": " + values[0].second, isProto3);
 
   string proto;
   string text = field->name() + ": " + values.back().second;
@@ -657,7 +695,7 @@ void ConformanceTestSuite::TestValidDataForType(
     proto += cat(tag(field->number(), wire_type), values[i].first);
   }
   RunValidProtobufTest("RepeatedScalarSelectsLast" + type_name, REQUIRED,
-                       proto, text);
+                       proto, text, isProto3);
 
   proto.clear();
   text.clear();
@@ -666,7 +704,7 @@ void ConformanceTestSuite::TestValidDataForType(
     proto += cat(tag(rep_field->number(), wire_type), values[i].first);
     text += rep_field->name() + ": " + values[i].second + " ";
   }
-  RunValidProtobufTest("ValidDataRepeated" + type_name, REQUIRED, proto, text);
+  RunValidProtobufTest("ValidDataRepeated" + type_name, REQUIRED, proto, text, true);
 }
 
 void ConformanceTestSuite::SetFailureList(const string& filename,
@@ -708,6 +746,7 @@ bool ConformanceTestSuite::CheckSetEmpty(const set<string>& set_to_check,
   }
 }
 
+// TODO: proto2?
 void ConformanceTestSuite::TestIllegalTags() {
   // field num 0 is illegal
   string nullfield[] = {
@@ -719,7 +758,7 @@ void ConformanceTestSuite::TestIllegalTags() {
   for (int i = 0; i < 4; i++) {
     string name = "IllegalZeroFieldNum_Case_0";
     name.back() += i;
-    ExpectParseFailureForProto(nullfield[i], name, REQUIRED);
+    ExpectParseFailureForProto(nullfield[i], name, REQUIRED, true);
   }
 }
 
@@ -756,23 +795,23 @@ bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
     {dbl(0.1), "0.1"},
     {dbl(1.7976931348623157e+308), "1.7976931348623157e+308"},
     {dbl(2.22507385850720138309e-308), "2.22507385850720138309e-308"}
-  });
+  }, true);
   TestValidDataForType(FieldDescriptor::TYPE_FLOAT, {
     {flt(0.1), "0.1"},
     {flt(1.00000075e-36), "1.00000075e-36"},
     {flt(3.402823e+38), "3.402823e+38"},  // 3.40282347e+38
     {flt(1.17549435e-38f), "1.17549435e-38"}
-  });
+  }, true);
   TestValidDataForType(FieldDescriptor::TYPE_INT64, {
     {varint(12345), "12345"},
     {varint(kInt64Max), std::to_string(kInt64Max)},
     {varint(kInt64Min), std::to_string(kInt64Min)}
-  });
+  }, true);
   TestValidDataForType(FieldDescriptor::TYPE_UINT64, {
     {varint(12345), "12345"},
     {varint(kUint64Max), std::to_string(kUint64Max)},
     {varint(0), "0"}
-  });
+  }, true);
   TestValidDataForType(FieldDescriptor::TYPE_INT32, {
     {varint(12345), "12345"},
     {longvarint(12345, 2), "12345"},
@@ -782,7 +821,7 @@ bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
     {varint(1LL << 33), std::to_string(static_cast<int32>(1LL << 33))},
     {varint((1LL << 33) - 1),
      std::to_string(static_cast<int32>((1LL << 33) - 1))},
-  });
+  }, true);
   TestValidDataForType(FieldDescriptor::TYPE_UINT32, {
     {varint(12345), "12345"},
     {longvarint(12345, 2), "12345"},
@@ -792,42 +831,42 @@ bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
     {varint(1LL << 33), std::to_string(static_cast<uint32>(1LL << 33))},
     {varint((1LL << 33) - 1),
      std::to_string(static_cast<uint32>((1LL << 33) - 1))},
-  });
+  }, true);
   TestValidDataForType(FieldDescriptor::TYPE_FIXED64, {
     {u64(12345), "12345"},
     {u64(kUint64Max), std::to_string(kUint64Max)},
     {u64(0), "0"}
-  });
+  }, true);
   TestValidDataForType(FieldDescriptor::TYPE_FIXED32, {
     {u32(12345), "12345"},
     {u32(kUint32Max), std::to_string(kUint32Max)},  // UINT32_MAX
     {u32(0), "0"}
-  });
+  }, true);
   TestValidDataForType(FieldDescriptor::TYPE_SFIXED64, {
     {u64(12345), "12345"},
     {u64(kInt64Max), std::to_string(kInt64Max)},
     {u64(kInt64Min), std::to_string(kInt64Min)}
-  });
+  }, true);
   TestValidDataForType(FieldDescriptor::TYPE_SFIXED32, {
     {u32(12345), "12345"},
     {u32(kInt32Max), std::to_string(kInt32Max)},
     {u32(kInt32Min), std::to_string(kInt32Min)}
-  });
+  }, true);
   TestValidDataForType(FieldDescriptor::TYPE_BOOL, {
     {varint(1), "true"},
     {varint(0), "false"},
     {varint(12345678), "true"}
-  });
+  }, true);
   TestValidDataForType(FieldDescriptor::TYPE_SINT32, {
     {zz32(12345), "12345"},
     {zz32(kInt32Max), std::to_string(kInt32Max)},
     {zz32(kInt32Min), std::to_string(kInt32Min)}
-  });
+  }, true);
   TestValidDataForType(FieldDescriptor::TYPE_SINT64, {
     {zz64(12345), "12345"},
     {zz64(kInt64Max), std::to_string(kInt64Max)},
     {zz64(kInt64Min), std::to_string(kInt64Min)}
-  });
+  }, true);
 
   // TODO(haberman):
   // TestValidDataForType(FieldDescriptor::TYPE_STRING
@@ -1337,14 +1376,14 @@ bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
         WireFormatLite::DecodeFloat(0x7FA12345));
     RunValidJsonTestWithProtobufInput(
         "FloatFieldNormalizeQuietNan", REQUIRED, message,
-        "optional_float: nan");
+        "optional_float: nan", true);
     // IEEE floating-point standard 64-bit signaling NaN:
     //   1111 1111 1xxx xxxx xxxx xxxx xxxx xxxx
     message.set_optional_float(
         WireFormatLite::DecodeFloat(0xFFB54321));
     RunValidJsonTestWithProtobufInput(
         "FloatFieldNormalizeSignalingNan", REQUIRED, message,
-        "optional_float: nan");
+        "optional_float: nan", true);
   }
 
   // Special values must be quoted.
@@ -1407,12 +1446,12 @@ bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
         WireFormatLite::DecodeDouble(0x7FFA123456789ABCLL));
     RunValidJsonTestWithProtobufInput(
         "DoubleFieldNormalizeQuietNan", REQUIRED, message,
-        "optional_double: nan");
+        "optional_double: nan", true);
     message.set_optional_double(
         WireFormatLite::DecodeDouble(0xFFFBCBA987654321LL));
     RunValidJsonTestWithProtobufInput(
         "DoubleFieldNormalizeSignalingNan", REQUIRED, message,
-        "optional_double: nan");
+        "optional_double: nan", true);
   }
 
   // Special values must be quoted.
@@ -1536,31 +1575,31 @@ bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
     TestAllTypes message;
     message.set_oneof_uint32(0);
     RunValidProtobufTestWithMessage(
-        "OneofZeroUint32", RECOMMENDED, message, "oneof_uint32: 0");
+        "OneofZeroUint32", RECOMMENDED, message, "oneof_uint32: 0", true);
     message.mutable_oneof_nested_message()->set_a(0);
     RunValidProtobufTestWithMessage(
-        "OneofZeroMessage", RECOMMENDED, message, "oneof_nested_message: {}");
+        "OneofZeroMessage", RECOMMENDED, message, "oneof_nested_message: {}", true);
     message.set_oneof_string("");
     RunValidProtobufTestWithMessage(
-        "OneofZeroString", RECOMMENDED, message, "oneof_string: \"\"");
+        "OneofZeroString", RECOMMENDED, message, "oneof_string: \"\"", true);
     message.set_oneof_bytes("");
     RunValidProtobufTestWithMessage(
-        "OneofZeroBytes", RECOMMENDED, message, "oneof_bytes: \"\"");
+        "OneofZeroBytes", RECOMMENDED, message, "oneof_bytes: \"\"", true);
     message.set_oneof_bool(false);
     RunValidProtobufTestWithMessage(
-        "OneofZeroBool", RECOMMENDED, message, "oneof_bool: false");
+        "OneofZeroBool", RECOMMENDED, message, "oneof_bool: false", true);
     message.set_oneof_uint64(0);
     RunValidProtobufTestWithMessage(
-        "OneofZeroUint64", RECOMMENDED, message, "oneof_uint64: 0");
+        "OneofZeroUint64", RECOMMENDED, message, "oneof_uint64: 0", true);
     message.set_oneof_float(0.0f);
     RunValidProtobufTestWithMessage(
-        "OneofZeroFloat", RECOMMENDED, message, "oneof_float: 0");
+        "OneofZeroFloat", RECOMMENDED, message, "oneof_float: 0", true);
     message.set_oneof_double(0.0);
     RunValidProtobufTestWithMessage(
-        "OneofZeroDouble", RECOMMENDED, message, "oneof_double: 0");
+        "OneofZeroDouble", RECOMMENDED, message, "oneof_double: 0", true);
     message.set_oneof_enum(TestAllTypes::FOO);
     RunValidProtobufTestWithMessage(
-        "OneofZeroEnum", RECOMMENDED, message, "oneof_enum: FOO");
+        "OneofZeroEnum", RECOMMENDED, message, "oneof_enum: FOO", true);
   }
   RunValidJsonTest(
       "OneofZeroUint32", RECOMMENDED,

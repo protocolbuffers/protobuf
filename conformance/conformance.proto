@@ -77,6 +77,8 @@ message ConformanceRequest {
 
   // Which format should the testee serialize its message to?
   WireFormat requested_output_format = 3;
+
+  string message_type = 4;
 }
 
 // Represents a single test case's output.

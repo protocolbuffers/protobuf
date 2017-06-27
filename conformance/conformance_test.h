@@ -165,7 +165,8 @@ class ConformanceTestSuite {
                          const string& input,
                          conformance::WireFormat input_format,
                          const string& equivalent_text_format,
-                         conformance::WireFormat requested_output);
+                         conformance::WireFormat requested_output,
+                         bool isProto3);
   void RunValidJsonTest(const string& test_name,
                         ConformanceLevel level,
                         const string& input_json,
@@ -174,14 +175,17 @@ class ConformanceTestSuite {
       const string& test_name,
       ConformanceLevel level,
       const protobuf_test_messages::proto3::TestAllTypes& input,
-      const string& equivalent_text_format);
+      const string& equivalent_text_format,
+      bool isProto3);
   void RunValidProtobufTest(const string& test_name, ConformanceLevel level,
                             const string& input_protobuf,
-                            const string& equivalent_text_format);
+                            const string& equivalent_text_format,
+                            bool isProto3);
   void RunValidProtobufTestWithMessage(
       const string& test_name, ConformanceLevel level,
       const protobuf_test_messages::proto3::TestAllTypes& input,
-      const string& equivalent_text_format);
+      const string& equivalent_text_format,
+      bool isProto3);
 
   typedef std::function<bool(const Json::Value&)> Validator;
   void RunValidJsonTestWithValidator(const string& test_name,
@@ -196,15 +200,18 @@ class ConformanceTestSuite {
                                      const string& text_format);
   void ExpectParseFailureForProto(const std::string& proto,
                                   const std::string& test_name,
-                                  ConformanceLevel level);
+                                  ConformanceLevel level,
+                                  bool isProto3);
   void ExpectHardParseFailureForProto(const std::string& proto,
                                       const std::string& test_name,
-                                      ConformanceLevel level);
+                                      ConformanceLevel level,
+                                      bool isProto3);
   void TestPrematureEOFForType(google::protobuf::FieldDescriptor::Type type);
   void TestIllegalTags();
   void TestValidDataForType(
       google::protobuf::FieldDescriptor::Type,
-      std::vector<std::pair<std::string, std::string>> values);
+      std::vector<std::pair<std::string, std::string>> values,
+      bool isProto3);
   bool CheckSetEmpty(const set<string>& set_to_check,
                      const std::string& write_to_file, const std::string& msg);
   ConformanceTestRunner* runner_;
