@@ -277,8 +277,13 @@ void ConformanceTestSuite::RunValidInputTest(
     WireFormat input_format, const string& equivalent_text_format,
     WireFormat requested_output, bool isProto3) {
   TestAllTypes reference_message;
+  TestAllTypesProto2 reference_message_proto2;
   GOOGLE_CHECK(
-      TextFormat::ParseFromString(equivalent_text_format, &reference_message))
+      isProto3 ?
+          TextFormat::ParseFromString(equivalent_text_format, &reference_message)
+          :
+          TextFormat::ParseFromString(equivalent_text_format, &reference_message_proto2)
+  )
           << "Failed to parse data for test case: " << test_name
           << ", data: " << equivalent_text_format;
 
@@ -401,7 +406,13 @@ void ConformanceTestSuite::RunValidInputTest(
   string differences;
   differencer.ReportDifferencesToString(&differences);
 
-  if (differencer.Compare(reference_message, test_message)) {
+  bool check;
+  if (isProto3) {
+    check = differencer.Compare(reference_message, test_message);
+  } else {
+    check = differencer.Compare(reference_message_proto2, test_message_proto2);
+  }
+  if (check) {
     ReportSuccess(test_name);
   } else {
     ReportFailure(test_name, level, request, response,
@@ -477,12 +488,16 @@ void ConformanceTestSuite::RunValidProtobufTest(
     const string& test_name, ConformanceLevel level,
     const string& input_protobuf, const string& equivalent_text_format,
     bool isProto3) {
+  string rname = ".ProtobufInput.";
+  if (!isProto3) {
+    rname = ".Protobuf2Input.";
+  }
   RunValidInputTest(
-      ConformanceLevelToString(level) + ".ProtobufInput." + test_name +
+      ConformanceLevelToString(level) + rname + test_name +
       ".ProtobufOutput", level, input_protobuf, conformance::PROTOBUF,
       equivalent_text_format, conformance::PROTOBUF, isProto3);
   RunValidInputTest(
-      ConformanceLevelToString(level) + ".ProtobufInput." + test_name +
+      ConformanceLevelToString(level) + rname +  test_name +
       ".JsonOutput", level, input_protobuf, conformance::PROTOBUF,
       equivalent_text_format, conformance::JSON, isProto3);
 }
@@ -704,7 +719,8 @@ void ConformanceTestSuite::TestValidDataForType(
     proto += cat(tag(rep_field->number(), wire_type), values[i].first);
     text += rep_field->name() + ": " + values[i].second + " ";
   }
-  RunValidProtobufTest("ValidDataRepeated" + type_name, REQUIRED, proto, text, true);
+  RunValidProtobufTest("ValidDataRepeated" + type_name, REQUIRED,
+                       proto, text, isProto3);
 }
 
 void ConformanceTestSuite::SetFailureList(const string& filename,
@@ -796,6 +812,12 @@ bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
     {dbl(1.7976931348623157e+308), "1.7976931348623157e+308"},
     {dbl(2.22507385850720138309e-308), "2.22507385850720138309e-308"}
   }, true);
+  TestValidDataForType(FieldDescriptor::TYPE_DOUBLE, {
+    {dbl(0.1), "0.1"},
+    {dbl(1.7976931348623157e+308), "1.7976931348623157e+308"},
+    {dbl(2.22507385850720138309e-308), "2.22507385850720138309e-308"}
+  }, false);
+
   TestValidDataForType(FieldDescriptor::TYPE_FLOAT, {
     {flt(0.1), "0.1"},
     {flt(1.00000075e-36), "1.00000075e-36"},

@@ -49,14 +49,22 @@ function doTest(request) {
     }
 
     switch (request.getPayloadCase()) {
-      case conformance.ConformanceRequest.PayloadCase.PROTOBUF_PAYLOAD:
-        try {
-          testMessage = test_messages_proto3.TestAllTypes.deserializeBinary(
-              request.getProtobufPayload());
-        } catch (err) {
-          response.setParseError(err.toString());
+      case conformance.ConformanceRequest.PayloadCase.PROTOBUF_PAYLOAD: {
+        if (request.getMessageType() == "proto3") {
+          try {
+            testMessage = test_messages_proto3.TestAllTypes.deserializeBinary(
+                request.getProtobufPayload());
+          } catch (err) {
+            response.setParseError(err.toString());
+            return response;
+          }
+        } else if (request.getMessageType() == "proto2"){
+          response.setSkipped("NodeJS doesn\'t support proto2");
           return response;
+        } else {
+          throw "Protobuf request doesn\'t have specific payload type";
         }
+      }
 
       case conformance.ConformanceRequest.PayloadCase.JSON_PAYLOAD:
         response.setSkipped("JSON not supported.");
