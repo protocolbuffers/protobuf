@@ -91,22 +91,22 @@ namespace Google.Protobuf.Conformance
                         message = parser.Parse<ProtobufTestMessages.Proto3.TestAllTypes>(request.JsonPayload);
                         break;
                     case ConformanceRequest.PayloadOneofCase.ProtobufPayload: 
-					{
-						if (request.MessageType.Equals("proto3"))
-						{
-							message = ProtobufTestMessages.Proto3.TestAllTypes.Parser.ParseFrom(request.ProtobufPayload);
-						} 
-						else if (request.MessageType.Equals("proto2")) 
-						{
-							response.Skipped = "Ruby doesn't support proto2";
-							return response;
-						}
-						else 
-						{
-							throw new Exception(" Protobuf request doesn't have specific payload type");
-						}
+		    {
+			if (request.MessageType.Equals("proto3"))
+			{
+			    message = ProtobufTestMessages.Proto3.TestAllTypes.Parser.ParseFrom(request.ProtobufPayload);
+			} 
+			else if (request.MessageType.Equals("proto2")) 
+			{
+			    response.Skipped = "CSharp doesn't support proto2";
+			    return response;
+			}
+			else 
+			{
+			    throw new Exception(" Protobuf request doesn't have specific payload type");
+			}
                         break;
-					}
+		    }
                     default:
                         throw new Exception("Unsupported request payload: " + request.PayloadCase);
                 }
