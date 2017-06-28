@@ -99,7 +99,7 @@ namespace Google.Protobuf.Conformance
 						else if (request.MessageType.Equals("proto2")) 
 						{
 
-							return new ConformanceResponse { Skipped = "CSharp doesn't support proto2" }
+							return new ConformanceResponse { Skipped = "CSharp doesn't support proto2" };
 						}
 						else 
 						{
