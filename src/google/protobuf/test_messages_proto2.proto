@@ -179,6 +179,26 @@ message TestAllTypesProto2 {
   optional int32 field__Name16 = 416;
   optional int32 field_name17__ = 417;
   optional int32 Field_name18__ = 418;
+
+  // message_set test case.
+  message mset_correct {
+    option message_set_wire_format = true;
+    extensions 4 to max;
+  }
+
+  message mset_correct_extension1 {
+    extend mset_correct {
+      optional mset_correct_extension1 message_set_extension = 1547769;
+    }
+    optional string str = 25;
+  }
+
+  message mset_correct_extension2 {
+    extend mset_correct {
+      optional mset_correct_extension1 message_set_extension = 4135312;
+    }
+    optional int32 i = 9;
+  }
 }
 
 message ForeignMessage {
