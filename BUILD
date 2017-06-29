@@ -592,6 +592,14 @@ java_library(
     visibility = ["//visibility:public"],
 )
 
+cc_binary(
+    name = "protoc_gen_javalite",
+    srcs = ["src/google/protobuf/compiler/java/java_lite_main.cc"],
+    linkopts = LINK_OPTS,
+    visibility = ["//visibility:public"],
+    deps = [":protoc_lib"],
+)
+
 java_library(
     name = "protobuf_java",
     srcs = [
