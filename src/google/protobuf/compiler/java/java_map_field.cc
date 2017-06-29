@@ -81,6 +81,8 @@ void SetMessageVariables(const FieldDescriptor* descriptor,
                          const FieldGeneratorInfo* info,
                          Context* context,
                          std::map<string, string>* variables) {
+  (*variables)["containing_type_full_name"] = descriptor->containing_type()->full_name();
+
   SetCommonFieldVariables(descriptor, info, variables);
   ClassNameResolver* name_resolver = context->GetNameResolver();
 
@@ -354,6 +356,7 @@ GenerateBuilderMembers(io::Printer* printer) const {
                  "public Builder clear$capitalized_name$() {\n"
                  "  internalGetMutable$capitalized_name$().getMutableMap()\n"
                  "      .clear();\n"
+                 "// @@protoc_insertion_point(builder_field_modifier_scope_after:$containing_type_full_name$.clear$capitalized_name$)\n"
                  "  return this;\n"
                  "}\n");
   WriteFieldDocComment(printer, descriptor_);
@@ -364,6 +367,7 @@ GenerateBuilderMembers(io::Printer* printer) const {
                  "  $key_null_check$\n"
                  "  internalGetMutable$capitalized_name$().getMutableMap()\n"
                  "      .remove(key);\n"
+                 "// @@protoc_insertion_point(builder_field_modifier_scope_after:$containing_type_full_name$.remove$capitalized_name$)\n"
                  "  return this;\n"
                  "}\n");
   if (GetJavaType(ValueField(descriptor_)) == JAVATYPE_ENUM) {
@@ -387,6 +391,7 @@ GenerateBuilderMembers(io::Printer* printer) const {
                    "  $value_null_check$\n"
                    "  internalGetMutable$capitalized_name$().getMutableMap()\n"
                    "      .put(key, $name$ValueConverter.doBackward(value));\n"
+                   "// @@protoc_insertion_point(builder_field_modifier_scope_after:$containing_type_full_name$.put$capitalized_name$)\n"
                    "  return this;\n"
                    "}\n");
     WriteFieldDocComment(printer, descriptor_);
@@ -397,6 +402,7 @@ GenerateBuilderMembers(io::Printer* printer) const {
         "  internalGetAdapted$capitalized_name$Map(\n"
         "      internalGetMutable$capitalized_name$().getMutableMap())\n"
         "          .putAll(values);\n"
+        "// @@protoc_insertion_point(builder_field_modifier_scope_after:$containing_type_full_name$.putAll$capitalized_name$)\n"
         "  return this;\n"
         "}\n");
     if (SupportUnknownEnumValue(descriptor_->file())) {
@@ -422,6 +428,7 @@ GenerateBuilderMembers(io::Printer* printer) const {
           "  }\n"
           "  internalGetMutable$capitalized_name$().getMutableMap()\n"
           "      .put(key, value);\n"
+          "// @@protoc_insertion_point(builder_field_modifier_scope_after:$containing_type_full_name$.put$capitalized_name$)\n"
           "  return this;\n"
           "}\n");
       WriteFieldDocComment(printer, descriptor_);
@@ -431,6 +438,7 @@ GenerateBuilderMembers(io::Printer* printer) const {
           "    java.util.Map<$boxed_key_type$, $boxed_value_type$> values) {\n"
           "  internalGetMutable$capitalized_name$().getMutableMap()\n"
           "      .putAll(values);\n"
+          "// @@protoc_insertion_point(builder_field_modifier_scope_after:$containing_type_full_name$.putAll$capitalized_name$)\n"
           "  return this;\n"
           "}\n");
     }
@@ -455,6 +463,7 @@ GenerateBuilderMembers(io::Printer* printer) const {
                    "  $value_null_check$\n"
                    "  internalGetMutable$capitalized_name$().getMutableMap()\n"
                    "      .put(key, value);\n"
+                   "// @@protoc_insertion_point(builder_field_modifier_scope_after:$containing_type_full_name$.put$capitalized_name$)\n"
                    "  return this;\n"
                    "}\n");
     WriteFieldDocComment(printer, descriptor_);
@@ -464,6 +473,7 @@ GenerateBuilderMembers(io::Printer* printer) const {
                    "    java.util.Map<$type_parameters$> values) {\n"
                    "  internalGetMutable$capitalized_name$().getMutableMap()\n"
                    "      .putAll(values);\n"
+                   "// @@protoc_insertion_point(builder_field_modifier_scope_after:$containing_type_full_name$.putAll$capitalized_name$)\n"
                    "  return this;\n"
                    "}\n");
   }

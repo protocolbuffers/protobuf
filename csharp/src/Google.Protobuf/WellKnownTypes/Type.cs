@@ -140,6 +140,7 @@ namespace Google.Protobuf.WellKnownTypes {
       get { return name_; }
       set {
         name_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+        //@@protoc_insertion_point(field_modifier_scope_after:google.protobuf.Type.setName)
       }
     }
 
@@ -207,9 +208,11 @@ namespace Google.Protobuf.WellKnownTypes {
       get { return syntax_; }
       set {
         syntax_ = value;
+        //@@protoc_insertion_point(field_modifier_scope_after:google.protobuf.Type.setSyntax)
       }
     }
 
+    //@@protoc_insertion_point(class_scope:google.protobuf.Type)
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as Type);
@@ -251,6 +254,7 @@ namespace Google.Protobuf.WellKnownTypes {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+      //@@protoc_insertion_point(write_to_scope_begin:google.protobuf.Type)
       if (Name.Length != 0) {
         output.WriteRawTag(10);
         output.WriteString(Name);
@@ -404,6 +408,7 @@ namespace Google.Protobuf.WellKnownTypes {
       get { return kind_; }
       set {
         kind_ = value;
+        //@@protoc_insertion_point(field_modifier_scope_after:google.protobuf.Field.setKind)
       }
     }
 
@@ -418,6 +423,7 @@ namespace Google.Protobuf.WellKnownTypes {
       get { return cardinality_; }
       set {
         cardinality_ = value;
+        //@@protoc_insertion_point(field_modifier_scope_after:google.protobuf.Field.setCardinality)
       }
     }
 
@@ -432,6 +438,7 @@ namespace Google.Protobuf.WellKnownTypes {
       get { return number_; }
       set {
         number_ = value;
+        //@@protoc_insertion_point(field_modifier_scope_after:google.protobuf.Field.setNumber)
       }
     }
 
@@ -446,6 +453,7 @@ namespace Google.Protobuf.WellKnownTypes {
       get { return name_; }
       set {
         name_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+        //@@protoc_insertion_point(field_modifier_scope_after:google.protobuf.Field.setName)
       }
     }
 
@@ -461,6 +469,7 @@ namespace Google.Protobuf.WellKnownTypes {
       get { return typeUrl_; }
       set {
         typeUrl_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+        //@@protoc_insertion_point(field_modifier_scope_after:google.protobuf.Field.setTypeUrl)
       }
     }
 
@@ -476,6 +485,7 @@ namespace Google.Protobuf.WellKnownTypes {
       get { return oneofIndex_; }
       set {
         oneofIndex_ = value;
+        //@@protoc_insertion_point(field_modifier_scope_after:google.protobuf.Field.setOneofIndex)
       }
     }
 
@@ -490,6 +500,7 @@ namespace Google.Protobuf.WellKnownTypes {
       get { return packed_; }
       set {
         packed_ = value;
+        //@@protoc_insertion_point(field_modifier_scope_after:google.protobuf.Field.setPacked)
       }
     }
 
@@ -517,6 +528,7 @@ namespace Google.Protobuf.WellKnownTypes {
       get { return jsonName_; }
       set {
         jsonName_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+        //@@protoc_insertion_point(field_modifier_scope_after:google.protobuf.Field.setJsonName)
       }
     }
 
@@ -531,9 +543,11 @@ namespace Google.Protobuf.WellKnownTypes {
       get { return defaultValue_; }
       set {
         defaultValue_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+        //@@protoc_insertion_point(field_modifier_scope_after:google.protobuf.Field.setDefaultValue)
       }
     }
 
+    //@@protoc_insertion_point(class_scope:google.protobuf.Field)
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as Field);
@@ -583,6 +597,7 @@ namespace Google.Protobuf.WellKnownTypes {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+      //@@protoc_insertion_point(write_to_scope_begin:google.protobuf.Field)
       if (Kind != 0) {
         output.WriteRawTag(8);
         output.WriteEnum((int) Kind);
@@ -906,6 +921,7 @@ namespace Google.Protobuf.WellKnownTypes {
       get { return name_; }
       set {
         name_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+        //@@protoc_insertion_point(field_modifier_scope_after:google.protobuf.Enum.setName)
       }
     }
 
@@ -960,9 +976,11 @@ namespace Google.Protobuf.WellKnownTypes {
       get { return syntax_; }
       set {
         syntax_ = value;
+        //@@protoc_insertion_point(field_modifier_scope_after:google.protobuf.Enum.setSyntax)
       }
     }
 
+    //@@protoc_insertion_point(class_scope:google.protobuf.Enum)
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as Enum);
@@ -1002,6 +1020,7 @@ namespace Google.Protobuf.WellKnownTypes {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+      //@@protoc_insertion_point(write_to_scope_begin:google.protobuf.Enum)
       if (Name.Length != 0) {
         output.WriteRawTag(10);
         output.WriteString(Name);
@@ -1141,6 +1160,7 @@ namespace Google.Protobuf.WellKnownTypes {
       get { return name_; }
       set {
         name_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+        //@@protoc_insertion_point(field_modifier_scope_after:google.protobuf.EnumValue.setName)
       }
     }
 
@@ -1155,6 +1175,7 @@ namespace Google.Protobuf.WellKnownTypes {
       get { return number_; }
       set {
         number_ = value;
+        //@@protoc_insertion_point(field_modifier_scope_after:google.protobuf.EnumValue.setNumber)
       }
     }
 
@@ -1171,6 +1192,7 @@ namespace Google.Protobuf.WellKnownTypes {
       get { return options_; }
     }
 
+    //@@protoc_insertion_point(class_scope:google.protobuf.EnumValue)
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as EnumValue);
@@ -1206,6 +1228,7 @@ namespace Google.Protobuf.WellKnownTypes {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+      //@@protoc_insertion_point(write_to_scope_begin:google.protobuf.EnumValue)
       if (Name.Length != 0) {
         output.WriteRawTag(10);
         output.WriteString(Name);
@@ -1321,6 +1344,7 @@ namespace Google.Protobuf.WellKnownTypes {
       get { return name_; }
       set {
         name_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+        //@@protoc_insertion_point(field_modifier_scope_after:google.protobuf.Option.setName)
       }
     }
 
@@ -1341,6 +1365,7 @@ namespace Google.Protobuf.WellKnownTypes {
       }
     }
 
+    //@@protoc_insertion_point(class_scope:google.protobuf.Option)
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as Option);
@@ -1374,6 +1399,7 @@ namespace Google.Protobuf.WellKnownTypes {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+      //@@protoc_insertion_point(write_to_scope_begin:google.protobuf.Option)
       if (Name.Length != 0) {
         output.WriteRawTag(10);
         output.WriteString(Name);

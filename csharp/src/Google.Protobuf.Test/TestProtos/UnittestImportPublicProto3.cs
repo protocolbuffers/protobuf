@@ -76,9 +76,11 @@ namespace Google.Protobuf.TestProtos {
       get { return e_; }
       set {
         e_ = value;
+        //@@protoc_insertion_point(field_modifier_scope_after:protobuf_unittest_import.PublicImportMessage.setE)
       }
     }
 
+    //@@protoc_insertion_point(class_scope:protobuf_unittest_import.PublicImportMessage)
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as PublicImportMessage);
@@ -110,6 +112,7 @@ namespace Google.Protobuf.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+      //@@protoc_insertion_point(write_to_scope_begin:protobuf_unittest_import.PublicImportMessage)
       if (E != 0) {
         output.WriteRawTag(8);
         output.WriteInt32(E);

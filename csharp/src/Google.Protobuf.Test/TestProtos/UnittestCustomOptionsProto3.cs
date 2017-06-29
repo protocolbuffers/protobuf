@@ -227,6 +227,7 @@ namespace UnitTest.Issues.TestProtos {
       get { return field1_; }
       set {
         field1_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+        //@@protoc_insertion_point(field_modifier_scope_after:protobuf_unittest.TestMessageWithCustomOptions.setField1)
       }
     }
 
@@ -259,6 +260,7 @@ namespace UnitTest.Issues.TestProtos {
       anOneof_ = null;
     }
 
+    //@@protoc_insertion_point(class_scope:protobuf_unittest.TestMessageWithCustomOptions)
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as TestMessageWithCustomOptions);
@@ -294,6 +296,7 @@ namespace UnitTest.Issues.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+      //@@protoc_insertion_point(write_to_scope_begin:protobuf_unittest.TestMessageWithCustomOptions)
       if (Field1.Length != 0) {
         output.WriteRawTag(10);
         output.WriteString(Field1);
@@ -402,6 +405,7 @@ namespace UnitTest.Issues.TestProtos {
       return new CustomOptionFooRequest(this);
     }
 
+    //@@protoc_insertion_point(class_scope:protobuf_unittest.CustomOptionFooRequest)
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as CustomOptionFooRequest);
@@ -431,6 +435,7 @@ namespace UnitTest.Issues.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+      //@@protoc_insertion_point(write_to_scope_begin:protobuf_unittest.CustomOptionFooRequest)
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -491,6 +496,7 @@ namespace UnitTest.Issues.TestProtos {
       return new CustomOptionFooResponse(this);
     }
 
+    //@@protoc_insertion_point(class_scope:protobuf_unittest.CustomOptionFooResponse)
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as CustomOptionFooResponse);
@@ -520,6 +526,7 @@ namespace UnitTest.Issues.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+      //@@protoc_insertion_point(write_to_scope_begin:protobuf_unittest.CustomOptionFooResponse)
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -580,6 +587,7 @@ namespace UnitTest.Issues.TestProtos {
       return new CustomOptionFooClientMessage(this);
     }
 
+    //@@protoc_insertion_point(class_scope:protobuf_unittest.CustomOptionFooClientMessage)
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as CustomOptionFooClientMessage);
@@ -609,6 +617,7 @@ namespace UnitTest.Issues.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+      //@@protoc_insertion_point(write_to_scope_begin:protobuf_unittest.CustomOptionFooClientMessage)
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -669,6 +678,7 @@ namespace UnitTest.Issues.TestProtos {
       return new CustomOptionFooServerMessage(this);
     }
 
+    //@@protoc_insertion_point(class_scope:protobuf_unittest.CustomOptionFooServerMessage)
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as CustomOptionFooServerMessage);
@@ -698,6 +708,7 @@ namespace UnitTest.Issues.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+      //@@protoc_insertion_point(write_to_scope_begin:protobuf_unittest.CustomOptionFooServerMessage)
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -758,6 +769,7 @@ namespace UnitTest.Issues.TestProtos {
       return new DummyMessageContainingEnum(this);
     }
 
+    //@@protoc_insertion_point(class_scope:protobuf_unittest.DummyMessageContainingEnum)
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as DummyMessageContainingEnum);
@@ -787,6 +799,7 @@ namespace UnitTest.Issues.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+      //@@protoc_insertion_point(write_to_scope_begin:protobuf_unittest.DummyMessageContainingEnum)
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -860,6 +873,7 @@ namespace UnitTest.Issues.TestProtos {
       return new DummyMessageInvalidAsOptionType(this);
     }
 
+    //@@protoc_insertion_point(class_scope:protobuf_unittest.DummyMessageInvalidAsOptionType)
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as DummyMessageInvalidAsOptionType);
@@ -889,6 +903,7 @@ namespace UnitTest.Issues.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+      //@@protoc_insertion_point(write_to_scope_begin:protobuf_unittest.DummyMessageInvalidAsOptionType)
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -949,6 +964,7 @@ namespace UnitTest.Issues.TestProtos {
       return new CustomOptionMinIntegerValues(this);
     }
 
+    //@@protoc_insertion_point(class_scope:protobuf_unittest.CustomOptionMinIntegerValues)
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as CustomOptionMinIntegerValues);
@@ -978,6 +994,7 @@ namespace UnitTest.Issues.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+      //@@protoc_insertion_point(write_to_scope_begin:protobuf_unittest.CustomOptionMinIntegerValues)
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -1038,6 +1055,7 @@ namespace UnitTest.Issues.TestProtos {
       return new CustomOptionMaxIntegerValues(this);
     }
 
+    //@@protoc_insertion_point(class_scope:protobuf_unittest.CustomOptionMaxIntegerValues)
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as CustomOptionMaxIntegerValues);
@@ -1067,6 +1085,7 @@ namespace UnitTest.Issues.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+      //@@protoc_insertion_point(write_to_scope_begin:protobuf_unittest.CustomOptionMaxIntegerValues)
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -1127,6 +1146,7 @@ namespace UnitTest.Issues.TestProtos {
       return new CustomOptionOtherValues(this);
     }
 
+    //@@protoc_insertion_point(class_scope:protobuf_unittest.CustomOptionOtherValues)
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as CustomOptionOtherValues);
@@ -1156,6 +1176,7 @@ namespace UnitTest.Issues.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+      //@@protoc_insertion_point(write_to_scope_begin:protobuf_unittest.CustomOptionOtherValues)
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -1216,6 +1237,7 @@ namespace UnitTest.Issues.TestProtos {
       return new SettingRealsFromPositiveInts(this);
     }
 
+    //@@protoc_insertion_point(class_scope:protobuf_unittest.SettingRealsFromPositiveInts)
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as SettingRealsFromPositiveInts);
@@ -1245,6 +1267,7 @@ namespace UnitTest.Issues.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+      //@@protoc_insertion_point(write_to_scope_begin:protobuf_unittest.SettingRealsFromPositiveInts)
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -1305,6 +1328,7 @@ namespace UnitTest.Issues.TestProtos {
       return new SettingRealsFromNegativeInts(this);
     }
 
+    //@@protoc_insertion_point(class_scope:protobuf_unittest.SettingRealsFromNegativeInts)
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as SettingRealsFromNegativeInts);
@@ -1334,6 +1358,7 @@ namespace UnitTest.Issues.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+      //@@protoc_insertion_point(write_to_scope_begin:protobuf_unittest.SettingRealsFromNegativeInts)
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -1406,6 +1431,7 @@ namespace UnitTest.Issues.TestProtos {
       get { return foo_; }
       set {
         foo_ = value;
+        //@@protoc_insertion_point(field_modifier_scope_after:protobuf_unittest.ComplexOptionType1.setFoo)
       }
     }
 
@@ -1417,6 +1443,7 @@ namespace UnitTest.Issues.TestProtos {
       get { return foo2_; }
       set {
         foo2_ = value;
+        //@@protoc_insertion_point(field_modifier_scope_after:protobuf_unittest.ComplexOptionType1.setFoo2)
       }
     }
 
@@ -1428,6 +1455,7 @@ namespace UnitTest.Issues.TestProtos {
       get { return foo3_; }
       set {
         foo3_ = value;
+        //@@protoc_insertion_point(field_modifier_scope_after:protobuf_unittest.ComplexOptionType1.setFoo3)
       }
     }
 
@@ -1441,6 +1469,7 @@ namespace UnitTest.Issues.TestProtos {
       get { return foo4_; }
     }
 
+    //@@protoc_insertion_point(class_scope:protobuf_unittest.ComplexOptionType1)
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as ComplexOptionType1);
@@ -1478,6 +1507,7 @@ namespace UnitTest.Issues.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+      //@@protoc_insertion_point(write_to_scope_begin:protobuf_unittest.ComplexOptionType1)
       if (Foo != 0) {
         output.WriteRawTag(8);
         output.WriteInt32(Foo);
@@ -1611,6 +1641,7 @@ namespace UnitTest.Issues.TestProtos {
       get { return baz_; }
       set {
         baz_ = value;
+        //@@protoc_insertion_point(field_modifier_scope_after:protobuf_unittest.ComplexOptionType2.setBaz)
       }
     }
 
@@ -1635,6 +1666,7 @@ namespace UnitTest.Issues.TestProtos {
       get { return barney_; }
     }
 
+    //@@protoc_insertion_point(class_scope:protobuf_unittest.ComplexOptionType2)
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as ComplexOptionType2);
@@ -1672,6 +1704,7 @@ namespace UnitTest.Issues.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+      //@@protoc_insertion_point(write_to_scope_begin:protobuf_unittest.ComplexOptionType2)
       if (bar_ != null) {
         output.WriteRawTag(10);
         output.WriteMessage(Bar);
@@ -1804,9 +1837,11 @@ namespace UnitTest.Issues.TestProtos {
           get { return waldo_; }
           set {
             waldo_ = value;
+            //@@protoc_insertion_point(field_modifier_scope_after:protobuf_unittest.ComplexOptionType2.ComplexOptionType4.setWaldo)
           }
         }
 
+        //@@protoc_insertion_point(class_scope:protobuf_unittest.ComplexOptionType2.ComplexOptionType4)
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public override bool Equals(object other) {
           return Equals(other as ComplexOptionType4);
@@ -1838,6 +1873,7 @@ namespace UnitTest.Issues.TestProtos {
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public void WriteTo(pb::CodedOutputStream output) {
+          //@@protoc_insertion_point(write_to_scope_begin:protobuf_unittest.ComplexOptionType2.ComplexOptionType4)
           if (Waldo != 0) {
             output.WriteRawTag(8);
             output.WriteInt32(Waldo);
@@ -1926,9 +1962,11 @@ namespace UnitTest.Issues.TestProtos {
       get { return qux_; }
       set {
         qux_ = value;
+        //@@protoc_insertion_point(field_modifier_scope_after:protobuf_unittest.ComplexOptionType3.setQux)
       }
     }
 
+    //@@protoc_insertion_point(class_scope:protobuf_unittest.ComplexOptionType3)
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as ComplexOptionType3);
@@ -1960,6 +1998,7 @@ namespace UnitTest.Issues.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+      //@@protoc_insertion_point(write_to_scope_begin:protobuf_unittest.ComplexOptionType3)
       if (Qux != 0) {
         output.WriteRawTag(8);
         output.WriteInt32(Qux);
@@ -2037,6 +2076,7 @@ namespace UnitTest.Issues.TestProtos {
       return new VariousComplexOptions(this);
     }
 
+    //@@protoc_insertion_point(class_scope:protobuf_unittest.VariousComplexOptions)
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as VariousComplexOptions);
@@ -2066,6 +2106,7 @@ namespace UnitTest.Issues.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+      //@@protoc_insertion_point(write_to_scope_begin:protobuf_unittest.VariousComplexOptions)
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -2140,6 +2181,7 @@ namespace UnitTest.Issues.TestProtos {
       get { return i_; }
       set {
         i_ = value;
+        //@@protoc_insertion_point(field_modifier_scope_after:protobuf_unittest.Aggregate.setI)
       }
     }
 
@@ -2151,6 +2193,7 @@ namespace UnitTest.Issues.TestProtos {
       get { return s_; }
       set {
         s_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+        //@@protoc_insertion_point(field_modifier_scope_after:protobuf_unittest.Aggregate.setS)
       }
     }
 
@@ -2168,6 +2211,7 @@ namespace UnitTest.Issues.TestProtos {
       }
     }
 
+    //@@protoc_insertion_point(class_scope:protobuf_unittest.Aggregate)
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as Aggregate);
@@ -2203,6 +2247,7 @@ namespace UnitTest.Issues.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+      //@@protoc_insertion_point(write_to_scope_begin:protobuf_unittest.Aggregate)
       if (I != 0) {
         output.WriteRawTag(8);
         output.WriteInt32(I);
@@ -2320,9 +2365,11 @@ namespace UnitTest.Issues.TestProtos {
       get { return fieldname_; }
       set {
         fieldname_ = value;
+        //@@protoc_insertion_point(field_modifier_scope_after:protobuf_unittest.AggregateMessage.setFieldname)
       }
     }
 
+    //@@protoc_insertion_point(class_scope:protobuf_unittest.AggregateMessage)
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as AggregateMessage);
@@ -2354,6 +2401,7 @@ namespace UnitTest.Issues.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+      //@@protoc_insertion_point(write_to_scope_begin:protobuf_unittest.AggregateMessage)
       if (Fieldname != 0) {
         output.WriteRawTag(8);
         output.WriteInt32(Fieldname);
@@ -2431,6 +2479,7 @@ namespace UnitTest.Issues.TestProtos {
       return new NestedOptionType(this);
     }
 
+    //@@protoc_insertion_point(class_scope:protobuf_unittest.NestedOptionType)
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as NestedOptionType);
@@ -2460,6 +2509,7 @@ namespace UnitTest.Issues.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+      //@@protoc_insertion_point(write_to_scope_begin:protobuf_unittest.NestedOptionType)
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -2536,9 +2586,11 @@ namespace UnitTest.Issues.TestProtos {
           get { return nestedField_; }
           set {
             nestedField_ = value;
+            //@@protoc_insertion_point(field_modifier_scope_after:protobuf_unittest.NestedOptionType.NestedMessage.setNestedField)
           }
         }
 
+        //@@protoc_insertion_point(class_scope:protobuf_unittest.NestedOptionType.NestedMessage)
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public override bool Equals(object other) {
           return Equals(other as NestedMessage);
@@ -2570,6 +2622,7 @@ namespace UnitTest.Issues.TestProtos {
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public void WriteTo(pb::CodedOutputStream output) {
+          //@@protoc_insertion_point(write_to_scope_begin:protobuf_unittest.NestedOptionType.NestedMessage)
           if (NestedField != 0) {
             output.WriteRawTag(8);
             output.WriteInt32(NestedField);

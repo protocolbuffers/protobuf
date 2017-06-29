@@ -409,6 +409,7 @@ namespace ProtobufTestMessages.Proto3 {
       get { return optionalInt32_; }
       set {
         optionalInt32_ = value;
+        //@@protoc_insertion_point(field_modifier_scope_after:protobuf_test_messages.proto3.TestAllTypes.setOptionalInt32)
       }
     }
 
@@ -420,6 +421,7 @@ namespace ProtobufTestMessages.Proto3 {
       get { return optionalInt64_; }
       set {
         optionalInt64_ = value;
+        //@@protoc_insertion_point(field_modifier_scope_after:protobuf_test_messages.proto3.TestAllTypes.setOptionalInt64)
       }
     }
 
@@ -431,6 +433,7 @@ namespace ProtobufTestMessages.Proto3 {
       get { return optionalUint32_; }
       set {
         optionalUint32_ = value;
+        //@@protoc_insertion_point(field_modifier_scope_after:protobuf_test_messages.proto3.TestAllTypes.setOptionalUint32)
       }
     }
 
@@ -442,6 +445,7 @@ namespace ProtobufTestMessages.Proto3 {
       get { return optionalUint64_; }
       set {
         optionalUint64_ = value;
+        //@@protoc_insertion_point(field_modifier_scope_after:protobuf_test_messages.proto3.TestAllTypes.setOptionalUint64)
       }
     }
 
@@ -453,6 +457,7 @@ namespace ProtobufTestMessages.Proto3 {
       get { return optionalSint32_; }
       set {
         optionalSint32_ = value;
+        //@@protoc_insertion_point(field_modifier_scope_after:protobuf_test_messages.proto3.TestAllTypes.setOptionalSint32)
       }
     }
 
@@ -464,6 +469,7 @@ namespace ProtobufTestMessages.Proto3 {
       get { return optionalSint64_; }
       set {
         optionalSint64_ = value;
+        //@@protoc_insertion_point(field_modifier_scope_after:protobuf_test_messages.proto3.TestAllTypes.setOptionalSint64)
       }
     }
 
@@ -475,6 +481,7 @@ namespace ProtobufTestMessages.Proto3 {
       get { return optionalFixed32_; }
       set {
         optionalFixed32_ = value;
+        //@@protoc_insertion_point(field_modifier_scope_after:protobuf_test_messages.proto3.TestAllTypes.setOptionalFixed32)
       }
     }
 
@@ -486,6 +493,7 @@ namespace ProtobufTestMessages.Proto3 {
       get { return optionalFixed64_; }
       set {
         optionalFixed64_ = value;
+        //@@protoc_insertion_point(field_modifier_scope_after:protobuf_test_messages.proto3.TestAllTypes.setOptionalFixed64)
       }
     }
 
@@ -497,6 +505,7 @@ namespace ProtobufTestMessages.Proto3 {
       get { return optionalSfixed32_; }
       set {
         optionalSfixed32_ = value;
+        //@@protoc_insertion_point(field_modifier_scope_after:protobuf_test_messages.proto3.TestAllTypes.setOptionalSfixed32)
       }
     }
 
@@ -508,6 +517,7 @@ namespace ProtobufTestMessages.Proto3 {
       get { return optionalSfixed64_; }
       set {
         optionalSfixed64_ = value;
+        //@@protoc_insertion_point(field_modifier_scope_after:protobuf_test_messages.proto3.TestAllTypes.setOptionalSfixed64)
       }
     }
 
@@ -519,6 +529,7 @@ namespace ProtobufTestMessages.Proto3 {
       get { return optionalFloat_; }
       set {
         optionalFloat_ = value;
+        //@@protoc_insertion_point(field_modifier_scope_after:protobuf_test_messages.proto3.TestAllTypes.setOptionalFloat)
       }
     }
 
@@ -530,6 +541,7 @@ namespace ProtobufTestMessages.Proto3 {
       get { return optionalDouble_; }
       set {
         optionalDouble_ = value;
+        //@@protoc_insertion_point(field_modifier_scope_after:protobuf_test_messages.proto3.TestAllTypes.setOptionalDouble)
       }
     }
 
@@ -541,6 +553,7 @@ namespace ProtobufTestMessages.Proto3 {
       get { return optionalBool_; }
       set {
         optionalBool_ = value;
+        //@@protoc_insertion_point(field_modifier_scope_after:protobuf_test_messages.proto3.TestAllTypes.setOptionalBool)
       }
     }
 
@@ -552,6 +565,7 @@ namespace ProtobufTestMessages.Proto3 {
       get { return optionalString_; }
       set {
         optionalString_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+        //@@protoc_insertion_point(field_modifier_scope_after:protobuf_test_messages.proto3.TestAllTypes.setOptionalString)
       }
     }
 
@@ -563,6 +577,7 @@ namespace ProtobufTestMessages.Proto3 {
       get { return optionalBytes_; }
       set {
         optionalBytes_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+        //@@protoc_insertion_point(field_modifier_scope_after:protobuf_test_messages.proto3.TestAllTypes.setOptionalBytes)
       }
     }
 
@@ -596,6 +611,7 @@ namespace ProtobufTestMessages.Proto3 {
       get { return optionalNestedEnum_; }
       set {
         optionalNestedEnum_ = value;
+        //@@protoc_insertion_point(field_modifier_scope_after:protobuf_test_messages.proto3.TestAllTypes.setOptionalNestedEnum)
       }
     }
 
@@ -607,6 +623,7 @@ namespace ProtobufTestMessages.Proto3 {
       get { return optionalForeignEnum_; }
       set {
         optionalForeignEnum_ = value;
+        //@@protoc_insertion_point(field_modifier_scope_after:protobuf_test_messages.proto3.TestAllTypes.setOptionalForeignEnum)
       }
     }
 
@@ -618,6 +635,7 @@ namespace ProtobufTestMessages.Proto3 {
       get { return optionalStringPiece_; }
       set {
         optionalStringPiece_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+        //@@protoc_insertion_point(field_modifier_scope_after:protobuf_test_messages.proto3.TestAllTypes.setOptionalStringPiece)
       }
     }
 
@@ -629,6 +647,7 @@ namespace ProtobufTestMessages.Proto3 {
       get { return optionalCord_; }
       set {
         optionalCord_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+        //@@protoc_insertion_point(field_modifier_scope_after:protobuf_test_messages.proto3.TestAllTypes.setOptionalCord)
       }
     }
 
@@ -1487,6 +1506,7 @@ namespace ProtobufTestMessages.Proto3 {
       get { return fieldname1_; }
       set {
         fieldname1_ = value;
+        //@@protoc_insertion_point(field_modifier_scope_after:protobuf_test_messages.proto3.TestAllTypes.setFieldname1)
       }
     }
 
@@ -1498,6 +1518,7 @@ namespace ProtobufTestMessages.Proto3 {
       get { return fieldName2_; }
       set {
         fieldName2_ = value;
+        //@@protoc_insertion_point(field_modifier_scope_after:protobuf_test_messages.proto3.TestAllTypes.setFieldName2)
       }
     }
 
@@ -1509,6 +1530,7 @@ namespace ProtobufTestMessages.Proto3 {
       get { return FieldName3_; }
       set {
         FieldName3_ = value;
+        //@@protoc_insertion_point(field_modifier_scope_after:protobuf_test_messages.proto3.TestAllTypes.setFieldName3)
       }
     }
 
@@ -1520,6 +1542,7 @@ namespace ProtobufTestMessages.Proto3 {
       get { return fieldName4_; }
       set {
         fieldName4_ = value;
+        //@@protoc_insertion_point(field_modifier_scope_after:protobuf_test_messages.proto3.TestAllTypes.setFieldName4)
       }
     }
 
@@ -1531,6 +1554,7 @@ namespace ProtobufTestMessages.Proto3 {
       get { return field0Name5_; }
       set {
         field0Name5_ = value;
+        //@@protoc_insertion_point(field_modifier_scope_after:protobuf_test_messages.proto3.TestAllTypes.setField0Name5)
       }
     }
 
@@ -1542,6 +1566,7 @@ namespace ProtobufTestMessages.Proto3 {
       get { return field0Name6_; }
       set {
         field0Name6_ = value;
+        //@@protoc_insertion_point(field_modifier_scope_after:protobuf_test_messages.proto3.TestAllTypes.setField0Name6)
       }
     }
 
@@ -1553,6 +1578,7 @@ namespace ProtobufTestMessages.Proto3 {
       get { return fieldName7_; }
       set {
         fieldName7_ = value;
+        //@@protoc_insertion_point(field_modifier_scope_after:protobuf_test_messages.proto3.TestAllTypes.setFieldName7)
       }
     }
 
@@ -1564,6 +1590,7 @@ namespace ProtobufTestMessages.Proto3 {
       get { return fieldName8_; }
       set {
         fieldName8_ = value;
+        //@@protoc_insertion_point(field_modifier_scope_after:protobuf_test_messages.proto3.TestAllTypes.setFieldName8)
       }
     }
 
@@ -1575,6 +1602,7 @@ namespace ProtobufTestMessages.Proto3 {
       get { return fieldName9_; }
       set {
         fieldName9_ = value;
+        //@@protoc_insertion_point(field_modifier_scope_after:protobuf_test_messages.proto3.TestAllTypes.setFieldName9)
       }
     }
 
@@ -1586,6 +1614,7 @@ namespace ProtobufTestMessages.Proto3 {
       get { return fieldName10_; }
       set {
         fieldName10_ = value;
+        //@@protoc_insertion_point(field_modifier_scope_after:protobuf_test_messages.proto3.TestAllTypes.setFieldName10)
       }
     }
 
@@ -1597,6 +1626,7 @@ namespace ProtobufTestMessages.Proto3 {
       get { return fIELDNAME11_; }
       set {
         fIELDNAME11_ = value;
+        //@@protoc_insertion_point(field_modifier_scope_after:protobuf_test_messages.proto3.TestAllTypes.setFIELDNAME11)
       }
     }
 
@@ -1608,6 +1638,7 @@ namespace ProtobufTestMessages.Proto3 {
       get { return fIELDName12_; }
       set {
         fIELDName12_ = value;
+        //@@protoc_insertion_point(field_modifier_scope_after:protobuf_test_messages.proto3.TestAllTypes.setFIELDName12)
       }
     }
 
@@ -1619,6 +1650,7 @@ namespace ProtobufTestMessages.Proto3 {
       get { return FieldName13_; }
       set {
         FieldName13_ = value;
+        //@@protoc_insertion_point(field_modifier_scope_after:protobuf_test_messages.proto3.TestAllTypes.setFieldName13)
       }
     }
 
@@ -1630,6 +1662,7 @@ namespace ProtobufTestMessages.Proto3 {
       get { return FieldName14_; }
       set {
         FieldName14_ = value;
+        //@@protoc_insertion_point(field_modifier_scope_after:protobuf_test_messages.proto3.TestAllTypes.setFieldName14)
       }
     }
 
@@ -1641,6 +1674,7 @@ namespace ProtobufTestMessages.Proto3 {
       get { return fieldName15_; }
       set {
         fieldName15_ = value;
+        //@@protoc_insertion_point(field_modifier_scope_after:protobuf_test_messages.proto3.TestAllTypes.setFieldName15)
       }
     }
 
@@ -1652,6 +1686,7 @@ namespace ProtobufTestMessages.Proto3 {
       get { return fieldName16_; }
       set {
         fieldName16_ = value;
+        //@@protoc_insertion_point(field_modifier_scope_after:protobuf_test_messages.proto3.TestAllTypes.setFieldName16)
       }
     }
 
@@ -1663,6 +1698,7 @@ namespace ProtobufTestMessages.Proto3 {
       get { return fieldName17_; }
       set {
         fieldName17_ = value;
+        //@@protoc_insertion_point(field_modifier_scope_after:protobuf_test_messages.proto3.TestAllTypes.setFieldName17)
       }
     }
 
@@ -1674,6 +1710,7 @@ namespace ProtobufTestMessages.Proto3 {
       get { return fieldName18_; }
       set {
         fieldName18_ = value;
+        //@@protoc_insertion_point(field_modifier_scope_after:protobuf_test_messages.proto3.TestAllTypes.setFieldName18)
       }
     }
 
@@ -1703,6 +1740,7 @@ namespace ProtobufTestMessages.Proto3 {
       oneofField_ = null;
     }
 
+    //@@protoc_insertion_point(class_scope:protobuf_test_messages.proto3.TestAllTypes)
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as TestAllTypes);
@@ -1972,6 +2010,7 @@ namespace ProtobufTestMessages.Proto3 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+      //@@protoc_insertion_point(write_to_scope_begin:protobuf_test_messages.proto3.TestAllTypes)
       if (OptionalInt32 != 0) {
         output.WriteRawTag(8);
         output.WriteInt32(OptionalInt32);
@@ -3449,6 +3488,7 @@ namespace ProtobufTestMessages.Proto3 {
           get { return a_; }
           set {
             a_ = value;
+            //@@protoc_insertion_point(field_modifier_scope_after:protobuf_test_messages.proto3.TestAllTypes.NestedMessage.setA)
           }
         }
 
@@ -3463,6 +3503,7 @@ namespace ProtobufTestMessages.Proto3 {
           }
         }
 
+        //@@protoc_insertion_point(class_scope:protobuf_test_messages.proto3.TestAllTypes.NestedMessage)
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public override bool Equals(object other) {
           return Equals(other as NestedMessage);
@@ -3496,6 +3537,7 @@ namespace ProtobufTestMessages.Proto3 {
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public void WriteTo(pb::CodedOutputStream output) {
+          //@@protoc_insertion_point(write_to_scope_begin:protobuf_test_messages.proto3.TestAllTypes.NestedMessage)
           if (A != 0) {
             output.WriteRawTag(8);
             output.WriteInt32(A);
@@ -3604,9 +3646,11 @@ namespace ProtobufTestMessages.Proto3 {
       get { return c_; }
       set {
         c_ = value;
+        //@@protoc_insertion_point(field_modifier_scope_after:protobuf_test_messages.proto3.ForeignMessage.setC)
       }
     }
 
+    //@@protoc_insertion_point(class_scope:protobuf_test_messages.proto3.ForeignMessage)
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as ForeignMessage);
@@ -3638,6 +3682,7 @@ namespace ProtobufTestMessages.Proto3 {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+      //@@protoc_insertion_point(write_to_scope_begin:protobuf_test_messages.proto3.ForeignMessage)
       if (C != 0) {
         output.WriteRawTag(8);
         output.WriteInt32(C);

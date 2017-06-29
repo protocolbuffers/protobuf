@@ -59,6 +59,7 @@ void SetMessageVariables(const FieldDescriptor* descriptor,
                          std::map<string, string>* variables) {
   SetCommonFieldVariables(descriptor, info, variables);
 
+  (*variables)["containing_type_full_name"] = descriptor->containing_type()->full_name();
   (*variables)["type"] =
       name_resolver->GetImmutableClassName(descriptor->message_type());
   (*variables)["mutable_type"] =
@@ -299,6 +300,7 @@ GenerateBuilderMembers(io::Printer* printer) const {
     "$name$Builder_.setMessage(value);\n",
 
     "$set_has_field_bit_builder$\n"
+    "// @@protoc_insertion_point(builder_field_modifier_scope_after:$containing_type_full_name$.set$capitalized_name$)\n"
     "return this;\n");
 
   // Field.Builder setField(Field.Builder builderForValue)
@@ -313,6 +315,7 @@ GenerateBuilderMembers(io::Printer* printer) const {
     "$name$Builder_.setMessage(builderForValue.build());\n",
 
     "$set_has_field_bit_builder$\n"
+    "// @@protoc_insertion_point(builder_field_modifier_scope_after:$containing_type_full_name$.set$capitalized_name$)\n"
     "return this;\n");
 
   // Field.Builder mergeField(Field value)
@@ -974,6 +977,7 @@ GenerateBuilderMembers(io::Printer* printer) const {
     "$name$_.set(index, value);\n"
     "$on_changed$\n",
     "$name$Builder_.setMessage(index, value);\n",
+    "// @@protoc_insertion_point(builder_field_modifier_scope_after:$containing_type_full_name$.setIndex$capitalized_name$)\n"
     "return this;\n");
 
   // Builder setRepeatedField(int index, Field.Builder builderForValue)
@@ -987,14 +991,13 @@ GenerateBuilderMembers(io::Printer* printer) const {
     "$on_changed$\n",
 
     "$name$Builder_.setMessage(index, builderForValue.build());\n",
-
+    "// @@protoc_insertion_point(builder_field_modifier_scope_after:$containing_type_full_name$.setBuilderIndex$capitalized_name$)\n"
     "return this;\n");
 
   // Builder addRepeatedField(Field value)
   WriteFieldDocComment(printer, descriptor_);
   PrintNestedBuilderFunction(printer,
     "$deprecation$public Builder add$capitalized_name$($type$ value)",
-
     "if (value == null) {\n"
     "  throw new NullPointerException();\n"
     "}\n"
@@ -1004,7 +1007,7 @@ GenerateBuilderMembers(io::Printer* printer) const {
     "$on_changed$\n",
 
     "$name$Builder_.addMessage(value);\n",
-
+    "// @@protoc_insertion_point(builder_field_modifier_scope_after:$containing_type_full_name$.add$capitalized_name$)\n"
     "return this;\n");
 
   // Builder addRepeatedField(int index, Field value)
@@ -1012,7 +1015,6 @@ GenerateBuilderMembers(io::Printer* printer) const {
   PrintNestedBuilderFunction(printer,
     "$deprecation$public Builder add$capitalized_name$(\n"
     "    int index, $type$ value)",
-
     "if (value == null) {\n"
     "  throw new NullPointerException();\n"
     "}\n"
@@ -1021,7 +1023,7 @@ GenerateBuilderMembers(io::Printer* printer) const {
     "$on_changed$\n",
 
     "$name$Builder_.addMessage(index, value);\n",
-
+    "// @@protoc_insertion_point(builder_field_modifier_scope_after:$containing_type_full_name$.addIndex$capitalized_name$)\n"
     "return this;\n");
 
   // Builder addRepeatedField(Field.Builder builderForValue)
@@ -1035,7 +1037,7 @@ GenerateBuilderMembers(io::Printer* printer) const {
     "$on_changed$\n",
 
     "$name$Builder_.addMessage(builderForValue.build());\n",
-
+    "// @@protoc_insertion_point(builder_field_modifier_scope_after:$containing_type_full_name$.addBuilder$capitalized_name$)\n"
     "return this;\n");
 
   // Builder addRepeatedField(int index, Field.Builder builderForValue)
@@ -1049,7 +1051,7 @@ GenerateBuilderMembers(io::Printer* printer) const {
     "$on_changed$\n",
 
     "$name$Builder_.addMessage(index, builderForValue.build());\n",
-
+    "// @@protoc_insertion_point(builder_field_modifier_scope_after:$containing_type_full_name$.addBuilderIndex$capitalized_name$)\n"
     "return this;\n");
 
   // Builder addAllRepeatedField(Iterable<Field> values)
@@ -1064,7 +1066,7 @@ GenerateBuilderMembers(io::Printer* printer) const {
     "$on_changed$\n",
 
     "$name$Builder_.addAllMessages(values);\n",
-
+    "// @@protoc_insertion_point(builder_field_modifier_scope_after:$containing_type_full_name$.addAll$capitalized_name$)\n"
     "return this;\n");
 
   // Builder clearAllRepeatedField()
@@ -1077,7 +1079,7 @@ GenerateBuilderMembers(io::Printer* printer) const {
     "$on_changed$\n",
 
     "$name$Builder_.clear();\n",
-
+    "// @@protoc_insertion_point(builder_field_modifier_scope_after:$containing_type_full_name$.clear$capitalized_name$)\n"
     "return this;\n");
 
   // Builder removeRepeatedField(int index)
@@ -1090,7 +1092,7 @@ GenerateBuilderMembers(io::Printer* printer) const {
     "$on_changed$\n",
 
     "$name$Builder_.remove(index);\n",
-
+    "// @@protoc_insertion_point(builder_field_modifier_scope_after:$containing_type_full_name$.removeIndex$capitalized_name$)\n"
     "return this;\n");
 
   WriteFieldDocComment(printer, descriptor_);
