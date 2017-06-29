@@ -394,7 +394,7 @@ class MapFieldTest extends PHPUnit_Framework_TestCase {
     // {
     //     $arr = new MapField(GPBType::INT32,
     //         GPBType::MESSAGE, TestMessage::class);
-    //     $arr [0]= new TestMessage;
+    //     $arr[0] = new TestMessage;
     //     $arr[0]->SetMapRecursive($arr);
 
     //     // Clean up memory before test.

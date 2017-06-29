@@ -206,7 +206,7 @@ class ImplementationTest extends TestBase
         $this->assertSame(2, GPBWire::zigZagEncode32(1));
         $this->assertSame(3, GPBWire::zigZagEncode32(-2));
         $this->assertSame(0x7FFFFFFE, GPBWire::zigZagEncode32(0x3FFFFFFF));
-        # $this->assertSame(0x7FFFFFFF, GPBWire::zigZagEncode32(0xC0000000));
+        $this->assertSame(0x7FFFFFFF, GPBWire::zigZagEncode32(0xC0000000));
         $this->assertSame(0x7FFFFFFF, GPBWire::zigZagEncode32(-1073741824));
 
         $this->assertSame(0,  GPBWire::zigZagDecode32(0));

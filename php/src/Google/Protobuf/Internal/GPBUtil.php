@@ -75,7 +75,7 @@ class GPBUtil
     public static function checkString(&$var, $check_utf8)
     {
         if (is_array($var) || is_object($var)) {
-            throw new \Exception("Expect string.");
+            throw new \InvalidArgumentException("Expect string.");
         }
         if (!is_string($var)) {
             $var = strval($var);

@@ -287,10 +287,19 @@ DEFINE_SINGULAR_HANDLER(double, double)
 #if PHP_MAJOR_VERSION < 7
 static void *empty_php_string(zval** value_ptr) {
   SEPARATE_ZVAL_IF_NOT_REF(value_ptr);
+  if (Z_TYPE_PP(value_ptr) == IS_STRING &&
+      !IS_INTERNED(Z_STRVAL_PP(value_ptr))) {
+    FREE(Z_STRVAL_PP(value_ptr));
+  }
+  ZVAL_EMPTY_STRING(*value_ptr);
   return (void*)(*value_ptr);
 }
 #else
 static void *empty_php_string(zval* value_ptr) {
+  if (Z_TYPE_P(value_ptr) == IS_STRING) {
+    zend_string_release(Z_STR_P(value_ptr));
+  }
+  ZVAL_EMPTY_STRING(value_ptr);
   return value_ptr;
 }
 #endif
@@ -465,7 +474,7 @@ static void map_slot_init(void* memory, upb_fieldtype_t type, zval* cache) {
       *(zval***)memory = holder;
 #else
       *(zval**)memory = cache;
-      PHP_PROTO_ZVAL_STRINGL(*(zval**)memory, "", 0, 1);
+      // PHP_PROTO_ZVAL_STRINGL(*(zval**)memory, "", 0, 1);
 #endif
       break;
     }

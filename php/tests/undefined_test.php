@@ -16,7 +16,7 @@ class UndefinedTest extends PHPUnit_Framework_TestCase
     public function testInt32AppendStringFail()
     {
         $arr = new RepeatedField(GPBType::INT32);
-        $arr []= 'abc';
+        $arr[] = 'abc';
     }
 
     /**
@@ -25,8 +25,8 @@ class UndefinedTest extends PHPUnit_Framework_TestCase
     public function testInt32SetStringFail()
     {
         $arr = new RepeatedField(GPBType::INT32);
-        $arr []= 0;
-        $arr [0]= 'abc';
+        $arr[] = 0;
+        $arr[0] = 'abc';
     }
 
     /**
@@ -35,7 +35,7 @@ class UndefinedTest extends PHPUnit_Framework_TestCase
     public function testInt32AppendMessageFail()
     {
         $arr = new RepeatedField(GPBType::INT32);
-        $arr []= new TestMessage_Sub();
+        $arr[] = new TestMessage_Sub();
     }
 
     /**
@@ -44,8 +44,8 @@ class UndefinedTest extends PHPUnit_Framework_TestCase
     public function testInt32SetMessageFail()
     {
         $arr = new RepeatedField(GPBType::INT32);
-        $arr []= 0;
-        $arr [0]= new TestMessage_Sub();
+        $arr[] = 0;
+        $arr[0] = new TestMessage_Sub();
     }
 
     /**
@@ -54,7 +54,7 @@ class UndefinedTest extends PHPUnit_Framework_TestCase
     public function testUint32AppendStringFail()
     {
         $arr = new RepeatedField(GPBType::UINT32);
-        $arr []= 'abc';
+        $arr[] = 'abc';
     }
 
     /**
@@ -63,8 +63,8 @@ class UndefinedTest extends PHPUnit_Framework_TestCase
     public function testUint32SetStringFail()
     {
         $arr = new RepeatedField(GPBType::UINT32);
-        $arr []= 0;
-        $arr [0]= 'abc';
+        $arr[] = 0;
+        $arr[0] = 'abc';
     }
 
     /**
@@ -73,7 +73,7 @@ class UndefinedTest extends PHPUnit_Framework_TestCase
     public function testUint32AppendMessageFail()
     {
         $arr = new RepeatedField(GPBType::UINT32);
-        $arr []= new TestMessage_Sub();
+        $arr[] = new TestMessage_Sub();
     }
 
     /**
@@ -82,8 +82,8 @@ class UndefinedTest extends PHPUnit_Framework_TestCase
     public function testUint32SetMessageFail()
     {
         $arr = new RepeatedField(GPBType::UINT32);
-        $arr []= 0;
-        $arr [0]= new TestMessage_Sub();
+        $arr[] = 0;
+        $arr[0] = new TestMessage_Sub();
     }
 
     /**
@@ -92,7 +92,7 @@ class UndefinedTest extends PHPUnit_Framework_TestCase
     public function testInt64AppendStringFail()
     {
         $arr = new RepeatedField(GPBType::INT64);
-        $arr []= 'abc';
+        $arr[] = 'abc';
     }
 
     /**
@@ -101,8 +101,8 @@ class UndefinedTest extends PHPUnit_Framework_TestCase
     public function testInt64SetStringFail()
     {
         $arr = new RepeatedField(GPBType::INT64);
-        $arr []= 0;
-        $arr [0]= 'abc';
+        $arr[] = 0;
+        $arr[0] = 'abc';
     }
 
     /**
@@ -111,7 +111,7 @@ class UndefinedTest extends PHPUnit_Framework_TestCase
     public function testInt64AppendMessageFail()
     {
         $arr = new RepeatedField(GPBType::INT64);
-        $arr []= new TestMessage_Sub();
+        $arr[] = new TestMessage_Sub();
     }
 
     /**
@@ -120,8 +120,8 @@ class UndefinedTest extends PHPUnit_Framework_TestCase
     public function testInt64SetMessageFail()
     {
         $arr = new RepeatedField(GPBType::INT64);
-        $arr []= 0;
-        $arr [0]= new TestMessage_Sub();
+        $arr[] = 0;
+        $arr[0] = new TestMessage_Sub();
     }
 
     /**
@@ -130,7 +130,7 @@ class UndefinedTest extends PHPUnit_Framework_TestCase
     public function testUint64AppendStringFail()
     {
         $arr = new RepeatedField(GPBType::UINT64);
-        $arr []= 'abc';
+        $arr[] = 'abc';
     }
 
     /**
@@ -139,8 +139,8 @@ class UndefinedTest extends PHPUnit_Framework_TestCase
     public function testUint64SetStringFail()
     {
         $arr = new RepeatedField(GPBType::UINT64);
-        $arr []= 0;
-        $arr [0]= 'abc';
+        $arr[] = 0;
+        $arr[0] = 'abc';
     }
 
     /**
@@ -149,7 +149,7 @@ class UndefinedTest extends PHPUnit_Framework_TestCase
     public function testUint64AppendMessageFail()
     {
         $arr = new RepeatedField(GPBType::UINT64);
-        $arr []= new TestMessage_Sub();
+        $arr[] = new TestMessage_Sub();
     }
 
     /**
@@ -158,8 +158,8 @@ class UndefinedTest extends PHPUnit_Framework_TestCase
     public function testUint64SetMessageFail()
     {
         $arr = new RepeatedField(GPBType::UINT64);
-        $arr []= 0;
-        $arr [0]= new TestMessage_Sub();
+        $arr[] = 0;
+        $arr[0] = new TestMessage_Sub();
     }
 
     /**
@@ -168,7 +168,7 @@ class UndefinedTest extends PHPUnit_Framework_TestCase
     public function testFloatAppendStringFail()
     {
         $arr = new RepeatedField(GPBType::FLOAT);
-        $arr []= 'abc';
+        $arr[] = 'abc';
     }
 
     /**
@@ -177,8 +177,8 @@ class UndefinedTest extends PHPUnit_Framework_TestCase
     public function testFloatSetStringFail()
     {
         $arr = new RepeatedField(GPBType::FLOAT);
-        $arr []= 0.0;
-        $arr [0]= 'abc';
+        $arr[] = 0.0;
+        $arr[0] = 'abc';
     }
 
     /**
@@ -187,7 +187,7 @@ class UndefinedTest extends PHPUnit_Framework_TestCase
     public function testFloatAppendMessageFail()
     {
         $arr = new RepeatedField(GPBType::FLOAT);
-        $arr []= new TestMessage_Sub();
+        $arr[] = new TestMessage_Sub();
     }
 
     /**
@@ -196,8 +196,8 @@ class UndefinedTest extends PHPUnit_Framework_TestCase
     public function testFloatSetMessageFail()
     {
         $arr = new RepeatedField(GPBType::FLOAT);
-        $arr []= 0.0;
-        $arr [0]= new TestMessage_Sub();
+        $arr[] = 0.0;
+        $arr[0] = new TestMessage_Sub();
     }
 
     /**
@@ -206,7 +206,7 @@ class UndefinedTest extends PHPUnit_Framework_TestCase
     public function testDoubleAppendStringFail()
     {
         $arr = new RepeatedField(GPBType::DOUBLE);
-        $arr []= 'abc';
+        $arr[] = 'abc';
     }
 
     /**
@@ -215,8 +215,8 @@ class UndefinedTest extends PHPUnit_Framework_TestCase
     public function testDoubleSetStringFail()
     {
         $arr = new RepeatedField(GPBType::DOUBLE);
-        $arr []= 0.0;
-        $arr [0]= 'abc';
+        $arr[] = 0.0;
+        $arr[0] = 'abc';
     }
 
     /**
@@ -225,7 +225,7 @@ class UndefinedTest extends PHPUnit_Framework_TestCase
     public function testDoubleAppendMessageFail()
     {
         $arr = new RepeatedField(GPBType::DOUBLE);
-        $arr []= new TestMessage_Sub();
+        $arr[] = new TestMessage_Sub();
     }
 
     /**
@@ -234,8 +234,8 @@ class UndefinedTest extends PHPUnit_Framework_TestCase
     public function testDoubleSetMessageFail()
     {
         $arr = new RepeatedField(GPBType::DOUBLE);
-        $arr []= 0.0;
-        $arr [0]= new TestMessage_Sub();
+        $arr[] = 0.0;
+        $arr[0] = new TestMessage_Sub();
     }
 
     /**
@@ -244,7 +244,7 @@ class UndefinedTest extends PHPUnit_Framework_TestCase
     public function testBoolAppendMessageFail()
     {
         $arr = new RepeatedField(GPBType::BOOL);
-        $arr []= new TestMessage_Sub();
+        $arr[] = new TestMessage_Sub();
     }
 
     /**
@@ -253,8 +253,8 @@ class UndefinedTest extends PHPUnit_Framework_TestCase
     public function testBoolSetMessageFail()
     {
         $arr = new RepeatedField(GPBType::BOOL);
-        $arr []= true;
-        $arr [0]= new TestMessage_Sub();
+        $arr[] = true;
+        $arr[0] = new TestMessage_Sub();
     }
 
     /**
@@ -263,7 +263,7 @@ class UndefinedTest extends PHPUnit_Framework_TestCase
     public function testStringAppendMessageFail()
     {
         $arr = new RepeatedField(GPBType::STRING);
-        $arr []= new TestMessage_Sub();
+        $arr[] = new TestMessage_Sub();
     }
 
     /**
@@ -272,8 +272,8 @@ class UndefinedTest extends PHPUnit_Framework_TestCase
     public function testStringSetMessageFail()
     {
         $arr = new RepeatedField(GPBType::STRING);
-        $arr []= 'abc';
-        $arr [0]= new TestMessage_Sub();
+        $arr[] = 'abc';
+        $arr[0] = new TestMessage_Sub();
     }
 
     /**
@@ -283,7 +283,7 @@ class UndefinedTest extends PHPUnit_Framework_TestCase
     {
         $arr = new RepeatedField(GPBType::STRING);
         $hex = hex2bin("ff");
-        $arr []= $hex;
+        $arr[] = $hex;
     }
 
     /**
@@ -292,9 +292,9 @@ class UndefinedTest extends PHPUnit_Framework_TestCase
     public function testStringSetInvalidUTF8Fail()
     {
         $arr = new RepeatedField(GPBType::STRING);
-        $arr []= 'abc';
+        $arr[] = 'abc';
         $hex = hex2bin("ff");
-        $arr [0]= $hex;
+        $arr[0] = $hex;
     }
 
     /**
@@ -303,7 +303,7 @@ class UndefinedTest extends PHPUnit_Framework_TestCase
     public function testMessageAppendIntFail()
     {
         $arr = new RepeatedField(GPBType::MESSAGE, TestMessage_Sub::class);
-        $arr []= 1;
+        $arr[] = 1;
     }
 
     /**
@@ -312,8 +312,8 @@ class UndefinedTest extends PHPUnit_Framework_TestCase
     public function testMessageSetIntFail()
     {
         $arr = new RepeatedField(GPBType::MESSAGE, TestMessage_Sub::class);
-        $arr []= new TestMessage_Sub;
-        $arr [0]= 'abc';
+        $arr[] = new TestMessage_Sub;
+        $arr[0] = 'abc';
     }
 
     /**
@@ -322,7 +322,7 @@ class UndefinedTest extends PHPUnit_Framework_TestCase
     public function testMessageAppendStringFail()
     {
         $arr = new RepeatedField(GPBType::MESSAGE, TestMessage_Sub::class);
-        $arr []= 'abc';
+        $arr[] = 'abc';
     }
 
     /**
@@ -331,8 +331,8 @@ class UndefinedTest extends PHPUnit_Framework_TestCase
     public function testMessageSetStringFail()
     {
         $arr = new RepeatedField(GPBType::MESSAGE, TestMessage_Sub::class);
-        $arr []= new TestMessage_Sub;
-        $arr [0]= 'abc';
+        $arr[] = new TestMessage_Sub;
+        $arr[0] = 'abc';
     }
 
     /**
@@ -341,7 +341,7 @@ class UndefinedTest extends PHPUnit_Framework_TestCase
     public function testMessageAppendOtherMessageFail()
     {
         $arr = new RepeatedField(GPBType::MESSAGE, TestMessage_Sub::class);
-        $arr []= new TestMessage;
+        $arr[] = new TestMessage;
     }
 
     /**
@@ -351,7 +351,7 @@ class UndefinedTest extends PHPUnit_Framework_TestCase
     {
         $arr = new RepeatedField(GPBType::MESSAGE, TestMessage_Sub::class);
         $null = null;
-        $arr []= $null;
+        $arr[] = $null;
     }
 
     /**
@@ -360,7 +360,7 @@ class UndefinedTest extends PHPUnit_Framework_TestCase
     public function testMessageSetNullFail()
     {
         $arr = new RepeatedField(GPBType::MESSAGE, TestMessage_Sub::class);
-        $arr []= new TestMessage_Sub();
+        $arr[] = new TestMessage_Sub();
         $null = null;
         $arr[0] = $null;
     }
@@ -372,9 +372,9 @@ class UndefinedTest extends PHPUnit_Framework_TestCase
     {
         $arr = new RepeatedField(GPBType::INT32);
 
-        $arr []= 0;
-        $arr []= 1;
-        $arr []= 2;
+        $arr[] = 0;
+        $arr[] = 1;
+        $arr[] = 2;
         $this->assertSame(3, count($arr));
 
         unset($arr[1]);
@@ -396,8 +396,8 @@ class UndefinedTest extends PHPUnit_Framework_TestCase
     public function testMessageOffsetFail()
     {
         $arr = new RepeatedField(GPBType::INT32);
-        $arr []= 0;
-        $arr [new TestMessage_Sub()]= 0;
+        $arr[] = 0;
+        $arr[new TestMessage_Sub()] = 0;
     }
 
     /**
@@ -406,8 +406,8 @@ class UndefinedTest extends PHPUnit_Framework_TestCase
     public function testStringOffsetFail()
     {
         $arr = new RepeatedField(GPBType::INT32);
-        $arr []= 0;
-        $arr ['abc']= 0;
+        $arr[] = 0;
+        $arr['abc'] = 0;
     }
 
     /**
@@ -416,7 +416,7 @@ class UndefinedTest extends PHPUnit_Framework_TestCase
     public function testSetNonExistedOffsetFail()
     {
         $arr = new RepeatedField(GPBType::INT32);
-        $arr [0]= 0;
+        $arr[0] = 0;
     }
 
     /**
@@ -666,7 +666,7 @@ class UndefinedTest extends PHPUnit_Framework_TestCase
     public function testInt32SetStringKeyFail()
     {
         $arr = new MapField(GPBType::INT32, GPBType::INT32);
-        $arr ['abc']= 0;
+        $arr['abc'] = 0;
     }
 
     /**
@@ -675,7 +675,7 @@ class UndefinedTest extends PHPUnit_Framework_TestCase
     public function testInt32SetStringValueFail()
     {
         $arr = new MapField(GPBType::INT32, GPBType::INT32);
-        $arr [0]= 'abc';
+        $arr[0] = 'abc';
     }
 
     /**
@@ -684,7 +684,7 @@ class UndefinedTest extends PHPUnit_Framework_TestCase
     public function testInt32SetMessageKeyFail()
     {
         $arr = new MapField(GPBType::INT32, GPBType::INT32);
-        $arr [new TestMessage_Sub()]= 0;
+        $arr[new TestMessage_Sub()] = 0;
     }
 
     /**
@@ -693,7 +693,7 @@ class UndefinedTest extends PHPUnit_Framework_TestCase
     public function testInt32SetMessageValueFail()
     {
         $arr = new MapField(GPBType::INT32, GPBType::INT32);
-        $arr [0]= new TestMessage_Sub();
+        $arr[0] = new TestMessage_Sub();
     }
 
     /**
@@ -702,7 +702,7 @@ class UndefinedTest extends PHPUnit_Framework_TestCase
     public function testUint32SetStringKeyFail()
     {
         $arr = new MapField(GPBType::UINT32, GPBType::UINT32);
-        $arr ['abc']= 0;
+        $arr['abc'] = 0;
     }
 
     /**
@@ -711,7 +711,7 @@ class UndefinedTest extends PHPUnit_Framework_TestCase
     public function testUint32SetStringValueFail()
     {
         $arr = new MapField(GPBType::UINT32, GPBType::UINT32);
-        $arr [0]= 'abc';
+        $arr[0] = 'abc';
     }
 
     /**
@@ -720,7 +720,7 @@ class UndefinedTest extends PHPUnit_Framework_TestCase
     public function testUint32SetMessageKeyFail()
     {
         $arr = new MapField(GPBType::UINT32, GPBType::UINT32);
-        $arr [new TestMessage_Sub()]= 0;
+        $arr[new TestMessage_Sub()] = 0;
     }
 
     /**
@@ -729,7 +729,7 @@ class UndefinedTest extends PHPUnit_Framework_TestCase
     public function testUint32SetMessageValueFail()
     {
         $arr = new MapField(GPBType::UINT32, GPBType::UINT32);
-        $arr [0]= new TestMessage_Sub();
+        $arr[0] = new TestMessage_Sub();
     }
 
     /**
@@ -738,7 +738,7 @@ class UndefinedTest extends PHPUnit_Framework_TestCase
     public function testInt64SetStringKeyFail()
     {
         $arr = new MapField(GPBType::INT64, GPBType::INT64);
-        $arr ['abc']= 0;
+        $arr['abc'] = 0;
     }
 
     /**
@@ -747,7 +747,7 @@ class UndefinedTest extends PHPUnit_Framework_TestCase
     public function testInt64SetStringValueFail()
     {
         $arr = new MapField(GPBType::INT64, GPBType::INT64);
-        $arr [0]= 'abc';
+        $arr[0] = 'abc';
     }
 
     /**
@@ -756,7 +756,7 @@ class UndefinedTest extends PHPUnit_Framework_TestCase
     public function testInt64SetMessageKeyFail()
     {
         $arr = new MapField(GPBType::INT64, GPBType::INT64);
-        $arr [new TestMessage_Sub()]= 0;
+        $arr[new TestMessage_Sub()] = 0;
     }
 
     /**
@@ -765,7 +765,7 @@ class UndefinedTest extends PHPUnit_Framework_TestCase
     public function testInt64SetMessageValueFail()
     {
         $arr = new MapField(GPBType::INT64, GPBType::INT64);
-        $arr [0]= new TestMessage_Sub();
+        $arr[0] = new TestMessage_Sub();
     }
 
     /**
@@ -774,7 +774,7 @@ class UndefinedTest extends PHPUnit_Framework_TestCase
     public function testUint64SetStringKeyFail()
     {
         $arr = new MapField(GPBType::UINT64, GPBType::UINT64);
-        $arr ['abc']= 0;
+        $arr['abc'] = 0;
     }
 
     /**
@@ -783,7 +783,7 @@ class UndefinedTest extends PHPUnit_Framework_TestCase
     public function testUint64SetStringValueFail()
     {
         $arr = new MapField(GPBType::UINT64, GPBType::UINT64);
-        $arr [0]= 'abc';
+        $arr[0] = 'abc';
     }
 
     /**
@@ -792,7 +792,7 @@ class UndefinedTest extends PHPUnit_Framework_TestCase
     public function testUint64SetMessageKeyFail()
     {
         $arr = new MapField(GPBType::UINT64, GPBType::UINT64);
-        $arr [new TestMessage_Sub()]= 0;
+        $arr[new TestMessage_Sub()] = 0;
     }
 
     /**
@@ -801,7 +801,7 @@ class UndefinedTest extends PHPUnit_Framework_TestCase
     public function testUint64SetMessageValueFail()
     {
         $arr = new MapField(GPBType::UINT64, GPBType::UINT64);
-        $arr [0]= new TestMessage_Sub();
+        $arr[0] = new TestMessage_Sub();
     }
 
     /**
@@ -810,7 +810,7 @@ class UndefinedTest extends PHPUnit_Framework_TestCase
     public function testDoubleSetStringValueFail()
     {
         $arr = new MapField(GPBType::INT64, GPBType::DOUBLE);
-        $arr [0]= 'abc';
+        $arr[0] = 'abc';
     }
 
     /**
@@ -819,7 +819,7 @@ class UndefinedTest extends PHPUnit_Framework_TestCase
     public function testDoubleSetMessageValueFail()
     {
         $arr = new MapField(GPBType::INT64, GPBType::DOUBLE);
-        $arr [0]= new TestMessage_Sub();
+        $arr[0] = new TestMessage_Sub();
     }
 
     /**
@@ -828,7 +828,7 @@ class UndefinedTest extends PHPUnit_Framework_TestCase
     public function testBoolSetMessageKeyFail()
     {
         $arr = new MapField(GPBType::BOOL, GPBType::BOOL);
-        $arr [new TestMessage_Sub()]= true;
+        $arr[new TestMessage_Sub()] = true;
     }
 
     /**
@@ -837,7 +837,7 @@ class UndefinedTest extends PHPUnit_Framework_TestCase
     public function testBoolSetMessageValueFail()
     {
         $arr = new MapField(GPBType::BOOL, GPBType::BOOL);
-        $arr [true]= new TestMessage_Sub();
+        $arr[true] = new TestMessage_Sub();
     }
 
     /**
@@ -846,7 +846,7 @@ class UndefinedTest extends PHPUnit_Framework_TestCase
     public function testStringSetInvalidUTF8KeyFail()
     {
         $arr = new MapField(GPBType::STRING, GPBType::STRING);
-        $arr[hex2bin("ff")]= 'abc';
+        $arr[hex2bin("ff")] = 'abc';
     }
 
     /**
@@ -855,7 +855,7 @@ class UndefinedTest extends PHPUnit_Framework_TestCase
     public function testStringSetInvalidUTF8ValueFail()
     {
         $arr = new MapField(GPBType::STRING, GPBType::STRING);
-        $arr ['abc']= hex2bin("ff");
+        $arr['abc'] = hex2bin("ff");
     }
 
     /**
@@ -864,7 +864,7 @@ class UndefinedTest extends PHPUnit_Framework_TestCase
     public function testStringSetMessageKeyFail()
     {
         $arr = new MapField(GPBType::STRING, GPBType::STRING);
-        $arr [new TestMessage_Sub()]= 'abc';
+        $arr[new TestMessage_Sub()] = 'abc';
     }
 
     /**
@@ -873,7 +873,7 @@ class UndefinedTest extends PHPUnit_Framework_TestCase
     public function testStringSetMessageValueFail()
     {
         $arr = new MapField(GPBType::STRING, GPBType::STRING);
-        $arr ['abc']= new TestMessage_Sub();
+        $arr['abc'] = new TestMessage_Sub();
     }
 
     /**
