@@ -55,7 +55,7 @@ class InputStream
     public function __construct($buffer)
     {
         $start = 0;
-        $end = strlen($buffer);
+        $end = mb_strlen($buffer, "8bit");
         $this->buffer = $buffer;
         $this->buffer_size_after_limit = 0;
         $this->buffer_end = $end;
@@ -291,7 +291,7 @@ class InputStream
             return false;
         }
 
-        $buffer = substr($this->buffer, $this->current, $size);
+        $buffer = mb_substr($this->buffer, $this->current, $size, "8bit");
         $this->advance($size);
 
         return true;

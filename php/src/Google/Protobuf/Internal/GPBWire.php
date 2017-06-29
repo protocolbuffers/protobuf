@@ -376,7 +376,7 @@ class GPBWire
 
     public static function writeBytes(&$output, $value)
     {
-        $size = strlen($value);
+        $size = mb_strlen($value, "8bit");
         if (!$output->writeVarint32($size)) {
             return false;
         }

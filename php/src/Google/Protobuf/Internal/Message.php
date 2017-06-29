@@ -808,7 +808,7 @@ class Message
                 break;
             case GPBType::STRING:
             case GPBType::BYTES:
-                $size += strlen($value);
+                $size += mb_strlen($value, "8bit");
                 $size += GPBWire::varint32Size($size);
                 break;
             case GPBType::MESSAGE:
