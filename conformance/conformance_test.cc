@@ -674,35 +674,37 @@ void ConformanceTestSuite::TestPrematureEOFForType(FieldDescriptor::Type type) {
 
 void ConformanceTestSuite::TestValidDataForType(
     FieldDescriptor::Type type,
-    std::vector<std::pair<std::string, std::string>> values, bool isProto3) {
-  const string type_name =
-      UpperCase(string(".") + FieldDescriptor::TypeName(type));
-  WireFormatLite::WireType wire_type = WireFormatLite::WireTypeForFieldType(
-      static_cast<WireFormatLite::FieldType>(type));
-  const FieldDescriptor* field = GetFieldForType(type, false, isProto3);
-  const FieldDescriptor* rep_field = GetFieldForType(type, true, isProto3);
+    std::vector<std::pair<std::string, std::string>> values) {
+  for (int isProto3 = 0; isProto3 < 2; isProto3++) {
+    const string type_name =
+        UpperCase(string(".") + FieldDescriptor::TypeName(type));
+    WireFormatLite::WireType wire_type = WireFormatLite::WireTypeForFieldType(
+        static_cast<WireFormatLite::FieldType>(type));
+    const FieldDescriptor* field = GetFieldForType(type, false, isProto3);
+    const FieldDescriptor* rep_field = GetFieldForType(type, true, isProto3);
 
-  RunValidProtobufTest("ValidDataScalar" + type_name, REQUIRED,
-                       cat(tag(field->number(), wire_type), values[0].first),
-                       field->name() + ": " + values[0].second, isProto3);
+    RunValidProtobufTest("ValidDataScalar" + type_name, REQUIRED,
+                         cat(tag(field->number(), wire_type), values[0].first),
+                         field->name() + ": " + values[0].second, isProto3);
 
-  string proto;
-  string text = field->name() + ": " + values.back().second;
-  for (size_t i = 0; i < values.size(); i++) {
-    proto += cat(tag(field->number(), wire_type), values[i].first);
+    string proto;
+    string text = field->name() + ": " + values.back().second;
+    for (size_t i = 0; i < values.size(); i++) {
+      proto += cat(tag(field->number(), wire_type), values[i].first);
+    }
+    RunValidProtobufTest("RepeatedScalarSelectsLast" + type_name, REQUIRED,
+                         proto, text, isProto3);
+
+    proto.clear();
+    text.clear();
+
+    for (size_t i = 0; i < values.size(); i++) {
+      proto += cat(tag(rep_field->number(), wire_type), values[i].first);
+      text += rep_field->name() + ": " + values[i].second + " ";
+    }
+    RunValidProtobufTest("ValidDataRepeated" + type_name, REQUIRED,
+                         proto, text, isProto3);
   }
-  RunValidProtobufTest("RepeatedScalarSelectsLast" + type_name, REQUIRED,
-                       proto, text, isProto3);
-
-  proto.clear();
-  text.clear();
-
-  for (size_t i = 0; i < values.size(); i++) {
-    proto += cat(tag(rep_field->number(), wire_type), values[i].first);
-    text += rep_field->name() + ": " + values[i].second + " ";
-  }
-  RunValidProtobufTest("ValidDataRepeated" + type_name, REQUIRED,
-                       proto, text, isProto3);
 }
 
 void ConformanceTestSuite::SetFailureList(const string& filename,
@@ -793,29 +795,23 @@ bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
     {dbl(0.1), "0.1"},
     {dbl(1.7976931348623157e+308), "1.7976931348623157e+308"},
     {dbl(2.22507385850720138309e-308), "2.22507385850720138309e-308"}
-  }, true);
-  TestValidDataForType(FieldDescriptor::TYPE_DOUBLE, {
-    {dbl(0.1), "0.1"},
-    {dbl(1.7976931348623157e+308), "1.7976931348623157e+308"},
-    {dbl(2.22507385850720138309e-308), "2.22507385850720138309e-308"}
-  }, false);
-
+  });
   TestValidDataForType(FieldDescriptor::TYPE_FLOAT, {
     {flt(0.1), "0.1"},
     {flt(1.00000075e-36), "1.00000075e-36"},
     {flt(3.402823e+38), "3.402823e+38"},  // 3.40282347e+38
     {flt(1.17549435e-38f), "1.17549435e-38"}
-  }, true);
+  });
   TestValidDataForType(FieldDescriptor::TYPE_INT64, {
     {varint(12345), "12345"},
     {varint(kInt64Max), std::to_string(kInt64Max)},
     {varint(kInt64Min), std::to_string(kInt64Min)}
-  }, true);
+  });
   TestValidDataForType(FieldDescriptor::TYPE_UINT64, {
     {varint(12345), "12345"},
     {varint(kUint64Max), std::to_string(kUint64Max)},
     {varint(0), "0"}
-  }, true);
+  });
   TestValidDataForType(FieldDescriptor::TYPE_INT32, {
     {varint(12345), "12345"},
     {longvarint(12345, 2), "12345"},
@@ -825,7 +821,7 @@ bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
     {varint(1LL << 33), std::to_string(static_cast<int32>(1LL << 33))},
     {varint((1LL << 33) - 1),
      std::to_string(static_cast<int32>((1LL << 33) - 1))},
-  }, true);
+  });
   TestValidDataForType(FieldDescriptor::TYPE_UINT32, {
     {varint(12345), "12345"},
     {longvarint(12345, 2), "12345"},
@@ -835,42 +831,42 @@ bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
     {varint(1LL << 33), std::to_string(static_cast<uint32>(1LL << 33))},
     {varint((1LL << 33) - 1),
      std::to_string(static_cast<uint32>((1LL << 33) - 1))},
-  }, true);
+  });
   TestValidDataForType(FieldDescriptor::TYPE_FIXED64, {
     {u64(12345), "12345"},
     {u64(kUint64Max), std::to_string(kUint64Max)},
     {u64(0), "0"}
-  }, true);
+  });
   TestValidDataForType(FieldDescriptor::TYPE_FIXED32, {
     {u32(12345), "12345"},
     {u32(kUint32Max), std::to_string(kUint32Max)},  // UINT32_MAX
     {u32(0), "0"}
-  }, true);
+  });
   TestValidDataForType(FieldDescriptor::TYPE_SFIXED64, {
     {u64(12345), "12345"},
     {u64(kInt64Max), std::to_string(kInt64Max)},
     {u64(kInt64Min), std::to_string(kInt64Min)}
-  }, true);
+  });
   TestValidDataForType(FieldDescriptor::TYPE_SFIXED32, {
     {u32(12345), "12345"},
     {u32(kInt32Max), std::to_string(kInt32Max)},
     {u32(kInt32Min), std::to_string(kInt32Min)}
-  }, true);
+  });
   TestValidDataForType(FieldDescriptor::TYPE_BOOL, {
     {varint(1), "true"},
     {varint(0), "false"},
     {varint(12345678), "true"}
-  }, true);
+  });
   TestValidDataForType(FieldDescriptor::TYPE_SINT32, {
     {zz32(12345), "12345"},
     {zz32(kInt32Max), std::to_string(kInt32Max)},
     {zz32(kInt32Min), std::to_string(kInt32Min)}
-  }, true);
+  });
   TestValidDataForType(FieldDescriptor::TYPE_SINT64, {
     {zz64(12345), "12345"},
     {zz64(kInt64Max), std::to_string(kInt64Max)},
     {zz64(kInt64Min), std::to_string(kInt64Min)}
-  }, true);
+  });
 
   // TODO(haberman):
   // TestValidDataForType(FieldDescriptor::TYPE_STRING
