@@ -54,30 +54,25 @@ class ProtocolError(Exception):
   pass
 
 def do_test(request):
-  test_message = test_messages_proto3_pb2.TestAllTypes()
-  response = conformance_pb2.ConformanceResponse()
-  test_message = test_messages_proto3_pb2.TestAllTypes()
-  test_message_proto2 = test_messages_proto2_pb2.TestAllTypesProto2()
-  isProto3 = (request.message_type == "proto3")
+  isProto3 = (request.message_type == "protobuf_test_messages.proto3.TestAllTypes")
   isJson = (request.WhichOneof('payload') == 'json_payload')
+  isProto2 = (request.message_type == "protobuf_test_messages.proto2.TestAllTypesProto2")
+  
+  if (not isProto3) and (not isJson) and (not isProto2):
+    raise ProtocolError("Protobuf request doesn't have specific payload type")
+     
+  test_message = test_messages_proto2_pb2.TestAllTypesProto2() if isProto2 else \
+    test_messages_proto3_pb2.TestAllTypes()
+  response = conformance_pb2.ConformanceResponse()
 
   try:
     if request.WhichOneof('payload') == 'protobuf_payload':
-      if isProto3:
-        try:
-          test_message.ParseFromString(request.protobuf_payload)
-        except message.DecodeError as e:
-          response.parse_error = str(e)
-          return response
-      elif request.message_type == "proto2":
-        try:
-          test_message_proto2.ParseFromString(request.protobuf_payload)
-        except message.DecodeError as e:
-          response.parse_error = str(e)
-          return response
-      else:
-        raise ProtocolError("Protobuf request doesn't have specific payload type")
-
+      try:
+        test_message.ParseFromString(request.protobuf_payload)
+      except message.DecodeError as e:
+        response.parse_error = str(e)
+        return response  
+      
     elif request.WhichOneof('payload') == 'json_payload':
       try:
         json_format.Parse(request.json_payload, test_message)
@@ -92,17 +87,11 @@ def do_test(request):
       raise ProtocolError("Unspecified output format")
 
     elif request.requested_output_format == conformance_pb2.PROTOBUF:
-      if isProto3 or isJson:
-        response.protobuf_payload = test_message.SerializeToString()
-      else:
-        response.protobuf_payload = test_message_proto2.SerializeToString()
+      response.protobuf_payload = test_message.SerializeToString()
 
     elif request.requested_output_format == conformance_pb2.JSON:
-      try:
-        if isProto3 or isJson:        
-          response.json_payload = json_format.MessageToJson(test_message)
-        else:
-          response.json_payload = json_format.MessageToJson(test_message_proto2)
+      try: 
+        response.json_payload = json_format.MessageToJson(test_message)
       except Exception as e:
         response.serialize_error = str(e)
         return response

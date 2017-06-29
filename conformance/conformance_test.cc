@@ -276,14 +276,18 @@ void ConformanceTestSuite::RunValidInputTest(
     const string& test_name, ConformanceLevel level, const string& input,
     WireFormat input_format, const string& equivalent_text_format,
     WireFormat requested_output, bool isProto3) {
-  TestAllTypes reference_message;
-  TestAllTypesProto2 reference_message_proto2;
+  auto newTestMessage = [&isProto3]() {
+    Message* newMessage;
+    if (isProto3) {
+      newMessage = new TestAllTypes;
+    } else {
+      newMessage = new TestAllTypesProto2;
+    }
+    return newMessage;
+  };
+  Message* reference_message = newTestMessage();
   GOOGLE_CHECK(
-      isProto3 ?
-          TextFormat::ParseFromString(equivalent_text_format, &reference_message)
-          :
-          TextFormat::ParseFromString(equivalent_text_format, &reference_message_proto2)
-  )
+      TextFormat::ParseFromString(equivalent_text_format, reference_message))
           << "Failed to parse data for test case: " << test_name
           << ", data: " << equivalent_text_format;
 
@@ -294,9 +298,9 @@ void ConformanceTestSuite::RunValidInputTest(
     case conformance::PROTOBUF: {
       request.set_protobuf_payload(input);
       if (isProto3) {
-        request.set_message_type("proto3");
+        request.set_message_type("protobuf_test_messages.proto3.TestAllTypes");
       } else {
-        request.set_message_type("proto2");
+        request.set_message_type("protobuf_test_messages.proto2.TestAllTypesProto2");
       }
       break;
     }
@@ -313,8 +317,7 @@ void ConformanceTestSuite::RunValidInputTest(
 
   RunTest(test_name, request, &response);
 
-  TestAllTypes test_message;
-  TestAllTypesProto2 test_message_proto2;
+  Message *test_message = newTestMessage();
 
   switch (response.result_case()) {
     case ConformanceResponse::RESULT_NOT_SET:
@@ -350,20 +353,11 @@ void ConformanceTestSuite::RunValidInputTest(
         return;
       }
 
-      if (isProto3) {
-        if (!test_message.ParseFromString(binary_protobuf)) {
-          ReportFailure(test_name, level, request, response,
-                      "INTERNAL ERROR: internal JSON->protobuf transcode "
-                      "yielded unparseable proto.");
-          return;
-        }
-      } else {
-        if (!test_message_proto2.ParseFromString(binary_protobuf)) {
-          ReportFailure(test_name, level, request, response,
-                      "INTERNAL ERROR: internal JSON->protobuf transcode "
-                      "yielded unparseable proto.");
-          return;
-        }
+      if (!test_message->ParseFromString(binary_protobuf)) {
+        ReportFailure(test_name, level, request, response,
+                    "INTERNAL ERROR: internal JSON->protobuf transcode "
+                    "yielded unparseable proto.");
+        return;
       }
 
       break;
@@ -377,18 +371,10 @@ void ConformanceTestSuite::RunValidInputTest(
         return;
       }
 
-      if (isProto3) {
-        if (!test_message.ParseFromString(response.protobuf_payload())) {
-          ReportFailure(test_name, level, request, response,
-                     "Protobuf output we received from test was unparseable.");
-          return;
-        }
-      } else {
-        if (!test_message_proto2.ParseFromString(response.protobuf_payload())) {
-          ReportFailure(test_name, level, request, response,
-                     "Protobuf output we received from test was unparseable.");
-          return;
-        }
+      if (!test_message->ParseFromString(response.protobuf_payload())) {
+        ReportFailure(test_name, level, request, response,
+                   "Protobuf output we received from test was unparseable.");
+        return;
       }
 
       break;
@@ -407,11 +393,7 @@ void ConformanceTestSuite::RunValidInputTest(
   differencer.ReportDifferencesToString(&differences);
 
   bool check;
-  if (isProto3) {
-    check = differencer.Compare(reference_message, test_message);
-  } else {
-    check = differencer.Compare(reference_message_proto2, test_message_proto2);
-  }
+  check = differencer.Compare(*reference_message, *test_message);
   if (check) {
     ReportSuccess(test_name);
   } else {
@@ -429,9 +411,9 @@ void ConformanceTestSuite::ExpectParseFailureForProto(
   ConformanceResponse response;
   request.set_protobuf_payload(proto);
   if (isProto3) {
-    request.set_message_type("proto3");
+    request.set_message_type("protobuf_test_messages.proto3.TestAllTypes");
   } else {
-    request.set_message_type("proto2");
+    request.set_message_type("protobuf_test_messages.proto2.TestAllTypesProto2");
   }
   string effective_test_name = ConformanceLevelToString(level) +
       ".ProtobufInput." + test_name;
@@ -586,7 +568,7 @@ void ConformanceTestSuite::ExpectSerializeFailureForJson(
   ConformanceRequest request;
   ConformanceResponse response;
   request.set_protobuf_payload(payload_message.SerializeAsString());
-  request.set_message_type("proto3");
+  request.set_message_type("protobuf_test_messages.proto3.TestAllTypes");
   string effective_test_name =
       ConformanceLevelToString(level) + "." + test_name + ".JsonOutput";
   request.set_requested_output_format(conformance::JSON);

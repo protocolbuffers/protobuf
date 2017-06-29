@@ -35,6 +35,7 @@
 #include "conformance.pb.h"
 #include <google/protobuf/test_messages_proto3.pb.h>
 #include <google/protobuf/test_messages_proto2.pb.h>
+#include <google/protobuf/message.h>
 #include <google/protobuf/util/json_util.h>
 #include <google/protobuf/util/type_resolver_util.h>
 
@@ -42,6 +43,7 @@ using conformance::ConformanceRequest;
 using conformance::ConformanceResponse;
 using google::protobuf::Descriptor;
 using google::protobuf::DescriptorPool;
+using google::protobuf::Message;
 using google::protobuf::internal::scoped_ptr;
 using google::protobuf::util::BinaryToJsonString;
 using google::protobuf::util::JsonToBinaryString;
@@ -89,27 +91,27 @@ void CheckedWrite(int fd, const void *buf, size_t len) {
 }
 
 void DoTest(const ConformanceRequest& request, ConformanceResponse* response) {
-  TestAllTypes test_message;
-  TestAllTypesProto2 test_message_proto2;
-  bool isProto3 = request.message_type() == "proto3";
+  Message *test_message;
+  bool isProto3 =
+      request.message_type() == "protobuf_test_messages.proto3.TestAllTypes";
   bool isJson = request.payload_case() == ConformanceRequest::kJsonPayload;
+  bool isProto2 =
+      request.message_type() == "protobuf_test_messages.proto2.TestAllTypesProto2";
+  if (isJson || isProto3) {
+    test_message = new TestAllTypes;
+  } else if (isProto2) {
+    test_message = new TestAllTypesProto2;
+  } else {
+    GOOGLE_LOG(FATAL) << "Protobuf request doesn't have specific payload type";
+  }
 
   switch (request.payload_case()) {
     case ConformanceRequest::kProtobufPayload: {
-      if (isProto3) {
-        if (!test_message.ParseFromString(request.protobuf_payload())) {
-          // Getting parse details would involve something like:
-          //   http://stackoverflow.com/questions/22121922/how-can-i-get-more-details-about-errors-generated-during-protobuf-parsing-c
-          response->set_parse_error("Parse error (no more details available).");
-          return;
-        }
-      } else if (request.message_type() == "proto2") {
-        if (!test_message_proto2.ParseFromString(request.protobuf_payload())) {
-          response->set_parse_error("Parse error (no more details available).");
-          return;
-        }
-      } else {
-        GOOGLE_LOG(FATAL) << "Protobuf request doesn't have specific payload type";
+      if (!test_message->ParseFromString(request.protobuf_payload())) {
+        // Getting parse details would involve something like:
+        //   http://stackoverflow.com/questions/22121922/how-can-i-get-more-details-about-errors-generated-during-protobuf-parsing-c
+        response->set_parse_error("Parse error (no more details available).");
+        return;
       }
       break;
     }
@@ -124,7 +126,7 @@ void DoTest(const ConformanceRequest& request, ConformanceResponse* response) {
         return;
       }
 
-      if (!test_message.ParseFromString(proto_binary)) {
+      if (!test_message->ParseFromString(proto_binary)) {
         response->set_runtime_error(
             "Parsing JSON generates invalid proto output.");
         return;
@@ -143,21 +145,13 @@ void DoTest(const ConformanceRequest& request, ConformanceResponse* response) {
       break;
 
     case conformance::PROTOBUF: {
-      (isProto3 || isJson) ?
-        GOOGLE_CHECK(
-              test_message.SerializeToString(response->mutable_protobuf_payload()))
-              :
-        GOOGLE_CHECK(
-              test_message_proto2.SerializeToString(response->mutable_protobuf_payload()));
+      GOOGLE_CHECK(test_message->SerializeToString(response->mutable_protobuf_payload()));
       break;
     }
 
     case conformance::JSON: {
       string proto_binary;
-      (isProto3 || isJson) ?
-          GOOGLE_CHECK(test_message.SerializeToString(&proto_binary))
-               :
-          GOOGLE_CHECK(test_message_proto2.SerializeToString(&proto_binary));
+      GOOGLE_CHECK(test_message->SerializeToString(&proto_binary));
       Status status = BinaryToJsonString(type_resolver, *type_url, proto_binary,
                                          response->mutable_json_payload());
       if (!status.ok()) {
