@@ -71,7 +71,7 @@ static ConformanceResponse *DoTest(ConformanceRequest *request) {
       break;
 
     case ConformanceRequest_Payload_OneOfCase_ProtobufPayload: {
-      if ([request.messageType isEqualToString:@"proto3"]) {
+      if ([request.messageType isEqualToString:@"protobuf_test_messages.proto3.TestAllTypes"]) {
         NSError *error = nil;
         testMessage = [TestAllTypes parseFromData:request.protobufPayload
                                             error:&error];
@@ -79,7 +79,7 @@ static ConformanceResponse *DoTest(ConformanceRequest *request) {
           response.parseError =
               [NSString stringWithFormat:@"Parse error: %@", error];
         }
-      } else if ([request.messageType isEqualToString:@"proto2"]) {
+      } else if ([request.messageType isEqualToString:@"protobuf_test_messages.proto2.TestAllTypesProto2"]) {
 	response.skipped = @"ObjC doesn't support proto2";
 	break;
       } else {

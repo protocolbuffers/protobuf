@@ -50,7 +50,7 @@ function doTest(request) {
 
     switch (request.getPayloadCase()) {
       case conformance.ConformanceRequest.PayloadCase.PROTOBUF_PAYLOAD: {
-        if (request.getMessageType() == "proto3") {
+        if (request.getMessageType() == "protobuf_test_messages.proto3.TestAllTypes") {
           try {
             testMessage = test_messages_proto3.TestAllTypes.deserializeBinary(
                 request.getProtobufPayload());
@@ -58,7 +58,7 @@ function doTest(request) {
             response.setParseError(err.toString());
             return response;
           }
-        } else if (request.getMessageType() == "proto2"){
+        } else if (request.getMessageType() == "protobuf_test_messages.proto2.TestAllTypesProto2"){
           response.setSkipped("NodeJS doesn\'t support proto2");
           return response;
         } else {

@@ -43,7 +43,7 @@ def do_test(request)
   begin
     case request.payload
     when :protobuf_payload
-      if request.message_type.eql?('proto3')
+      if request.message_type.eql?('protobuf_test_messages.proto3.TestAllTypes')
         begin
           test_message = ProtobufTestMessages::Proto3::TestAllTypes.decode(
               request.protobuf_payload)
@@ -51,7 +51,7 @@ def do_test(request)
           response.parse_error = err.message.encode('utf-8')
           return response
         end
-      elsif request.message_type.eql?('proto2')
+      elsif request.message_type.eql?('protobuf_test_messages.proto2.TestAllTypesProto2')
         response.skipped = "Ruby doesn't support proto2"
         return response
       else 

@@ -45,14 +45,14 @@ function doTest($request)
     $test_message = new \Protobuf_test_messages\Proto3\TestAllTypes();
     $response = new \Conformance\ConformanceResponse();
     if ($request->getPayload() == "protobuf_payload") {
-      if ($request->getMessageType() == "proto3") {
+      if ($request->getMessageType() == "protobuf_test_messages.proto3.TestAllTypes") {
         try {
           $test_message->mergeFromString($request->getProtobufPayload());
         } catch (Exception $e) {
           $response->setParseError($e->getMessage());
           return $response;
         }
-      } elseif ($request->getMessageType() == "proto2") {
+      } elseif ($request->getMessageType() == "protobuf_test_messages.proto2.TestAllTypesProto2") {
 	$response->setSkipped("PHP doesn't support proto2");
 	return $response;
       } else {
