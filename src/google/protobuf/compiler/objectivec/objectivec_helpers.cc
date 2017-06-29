@@ -196,7 +196,7 @@ const char* const kReservedWordList[] = {
     // method declared in protos. The main cases are methods
     // that take no arguments, or setFoo:/hasFoo: type methods.
     "clear", "data", "delimitedData", "descriptor", "extensionRegistry",
-    "extensionsCurrentlySet", "isInitialized", "serializedSize",
+    "extensionsCurrentlySet", "initialized", "isInitialized", "serializedSize",
     "sortedExtensionsInUse", "unknownFields",
 
     // MacTypes.h names
