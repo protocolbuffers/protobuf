@@ -285,7 +285,8 @@ public class JsonFormat {
    * Creates a {@link Parser} with default configuration.
    */
   public static Parser parser() {
-    return new Parser(TypeRegistry.getEmptyTypeRegistry(), false, Parser.DEFAULT_RECURSION_LIMIT);
+    return new Parser(TypeRegistry.getEmptyTypeRegistry(), false, false,
+            Parser.DEFAULT_RECURSION_LIMIT);
   }
 
   /**
@@ -294,14 +295,17 @@ public class JsonFormat {
   public static class Parser {
     private final TypeRegistry registry;
     private final boolean ignoringUnknownFields;
+    private final boolean usingUnrecognizedEnumValue;
     private final int recursionLimit;
 
     // The default parsing recursion limit is aligned with the proto binary parser.
     private static final int DEFAULT_RECURSION_LIMIT = 100;
 
-    private Parser(TypeRegistry registry, boolean ignoreUnknownFields, int recursionLimit) {
+    private Parser(TypeRegistry registry, boolean ignoreUnknownFields, boolean useUnrecognizedEnumValue,
+                   int recursionLimit) {
       this.registry = registry;
       this.ignoringUnknownFields = ignoreUnknownFields;
+      this.usingUnrecognizedEnumValue = useUnrecognizedEnumValue;
       this.recursionLimit = recursionLimit;
     }
 
@@ -315,7 +319,7 @@ public class JsonFormat {
       if (this.registry != TypeRegistry.getEmptyTypeRegistry()) {
         throw new IllegalArgumentException("Only one registry is allowed.");
       }
-      return new Parser(registry, ignoringUnknownFields, recursionLimit);
+      return new Parser(registry, ignoringUnknownFields, usingUnrecognizedEnumValue, recursionLimit);
     }
 
     /**
@@ -323,7 +327,16 @@ public class JsonFormat {
      * encountered. The new Parser clones all other configurations from this Parser.
      */
     public Parser ignoringUnknownFields() {
-      return new Parser(this.registry, true, recursionLimit);
+      return new Parser(this.registry, true, usingUnrecognizedEnumValue, recursionLimit);
+    }
+
+    /**
+     * Creates a new {@link Parser} configured to use the unrecognized enum value when an unknown
+     * enum value is encountered, rather than throw an exception. The new Parser clones all other
+     * configurations from this Parser.
+     */
+    public Parser usingUnrecognizedEnumValue() {
+      return new Parser(this.registry, ignoringUnknownFields, true, recursionLimit);
     }
 
     /**
@@ -335,7 +348,8 @@ public class JsonFormat {
     public void merge(String json, Message.Builder builder) throws InvalidProtocolBufferException {
       // TODO(xiaofeng): Investigate the allocation overhead and optimize for
       // mobile.
-      new ParserImpl(registry, ignoringUnknownFields, recursionLimit).merge(json, builder);
+      new ParserImpl(registry, ignoringUnknownFields, usingUnrecognizedEnumValue, recursionLimit)
+              .merge(json, builder);
     }
 
     /**
@@ -348,12 +362,13 @@ public class JsonFormat {
     public void merge(Reader json, Message.Builder builder) throws IOException {
       // TODO(xiaofeng): Investigate the allocation overhead and optimize for
       // mobile.
-      new ParserImpl(registry, ignoringUnknownFields, recursionLimit).merge(json, builder);
+      new ParserImpl(registry, ignoringUnknownFields, usingUnrecognizedEnumValue, recursionLimit)
+              .merge(json, builder);
     }
 
     // For testing only.
     Parser usingRecursionLimit(int recursionLimit) {
-      return new Parser(registry, ignoringUnknownFields, recursionLimit);
+      return new Parser(registry, ignoringUnknownFields, usingUnrecognizedEnumValue, recursionLimit);
     }
   }
 
@@ -1117,12 +1132,15 @@ public class JsonFormat {
     private final TypeRegistry registry;
     private final JsonParser jsonParser;
     private final boolean ignoringUnknownFields;
+    private final boolean usingUnrecognizedEnumValue;
     private final int recursionLimit;
     private int currentDepth;
 
-    ParserImpl(TypeRegistry registry, boolean ignoreUnknownFields, int recursionLimit) {
+    ParserImpl(TypeRegistry registry, boolean ignoreUnknownFields, boolean useUnrecognizedEnumValue,
+               int recursionLimit) {
       this.registry = registry;
       this.ignoringUnknownFields = ignoreUnknownFields;
+      this.usingUnrecognizedEnumValue = useUnrecognizedEnumValue;
       this.jsonParser = new JsonParser();
       this.recursionLimit = recursionLimit;
       this.currentDepth = 0;
@@ -1706,6 +1724,10 @@ public class JsonFormat {
           // Fall through. This exception is about invalid int32 value we get from parseInt32() but
           // that's not the exception we want the user to see. Since result == null, we will throw
           // an exception later.
+
+          if (usingUnrecognizedEnumValue) {
+            result = enumDescriptor.createUnrecognizedValueDescriptor();
+          }
         }
 
         if (result == null) {

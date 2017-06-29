@@ -1595,6 +1595,23 @@ public final class Descriptors {
       if (result != null) {
         return result;
       }
+
+      return createEnumValueDescriptor(number);
+    }
+
+    /**
+     * Create the UNRECOGNIZED enum value descriptor by using a number outside the range of valid
+     * numbers.
+     */
+    public EnumValueDescriptor createUnrecognizedValueDescriptor() {
+      return createEnumValueDescriptor(-1);
+    }
+
+    /**
+     * Construct an EnumValueDescriptor for a number.
+     */
+    private EnumValueDescriptor createEnumValueDescriptor(final int number) {
+      EnumValueDescriptor result = null;
       // The number represents an unknown enum value.
       synchronized (this) {
         // Descriptors are compared by object identity so for the same number
