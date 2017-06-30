@@ -630,7 +630,6 @@ java_library(
         "java/core/src/main/java/com/google/protobuf/TextFormatParseLocation.java",
         "java/core/src/main/java/com/google/protobuf/UnknownFieldSet.java",
         "java/core/src/main/java/com/google/protobuf/UnsafeByteOperations.java",
-    ] + [
         ":gen_well_known_protos_java",
     ],
     deps = [":protobuf_java_lite"],
