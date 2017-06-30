@@ -862,3 +862,11 @@ proto_lang_toolchain(
     runtime = ":protobuf_java",
     visibility = ["//visibility:public"],
 )
+
+proto_lang_toolchain(
+    name = "javalite_toolchain",
+    command_line = "--$(PLUGIN_OUT)=$(OUT)",
+    plugin = ":protoc_gen_javalite",
+    runtime = ":protobuf_java_lite",
+    visibility = ["//visibility:public"],
+)
