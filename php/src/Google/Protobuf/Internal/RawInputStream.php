@@ -32,28 +32,19 @@
 
 namespace Google\Protobuf\Internal;
 
-class EnumValueDescriptor
+class RawInputStream
 {
-    private $name;
-    private $number;
 
-    public function setName($name)
+    private $buffer;
+
+    public function __construct($buffer)
     {
-        $this->name = $name;
+        $this->buffer = $buffer;
     }
 
-    public function getName()
+    public function getData()
     {
-        return $this->name;
+        return $this->buffer;
     }
 
-    public function setNumber($number)
-    {
-        $this->number = $number;
-    }
-
-    public function getNumber()
-    {
-        return $this->number;
-    }
 }
