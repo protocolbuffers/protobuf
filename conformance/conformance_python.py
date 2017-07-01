@@ -38,6 +38,8 @@ See conformance.proto for more information.
 import struct
 import sys
 import os
+from google.protobuf import descriptor
+from google.protobuf import descriptor_pool
 from google.protobuf import json_format
 from google.protobuf import message
 from google.protobuf import test_messages_proto3_pb2
@@ -54,15 +56,16 @@ class ProtocolError(Exception):
   pass
 
 def do_test(request):
-  isProto3 = (request.message_type == "protobuf_test_messages.proto3.TestAllTypes")
+  isProto3 = (request.message_type == "protobuf_test_messages.proto3.TestAllTypesProto3")
   isJson = (request.WhichOneof('payload') == 'json_payload')
   isProto2 = (request.message_type == "protobuf_test_messages.proto2.TestAllTypesProto2")
   
   if (not isProto3) and (not isJson) and (not isProto2):
     raise ProtocolError("Protobuf request doesn't have specific payload type")
-     
+      
   test_message = test_messages_proto2_pb2.TestAllTypesProto2() if isProto2 else \
-    test_messages_proto3_pb2.TestAllTypes()
+    test_messages_proto3_pb2.TestAllTypesProto3()
+
   response = conformance_pb2.ConformanceResponse()
 
   try:

@@ -5,7 +5,7 @@ import com.google.protobuf.CodedInputStream;
 import com.google.protobuf.conformance.Conformance;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf_test_messages.proto3.TestMessagesProto3;
-import com.google.protobuf_test_messages.proto3.TestMessagesProto3.TestAllTypes;
+import com.google.protobuf_test_messages.proto3.TestMessagesProto3.TestAllTypesProto3;
 import com.google.protobuf_test_messages.proto2.TestMessagesProto2;
 import com.google.protobuf_test_messages.proto2.TestMessagesProto2.TestAllTypesProto2;
 import com.google.protobuf.ExtensionRegistry;
@@ -205,7 +205,7 @@ class ConformanceJava {
 
   private Conformance.ConformanceResponse doTest(Conformance.ConformanceRequest request) {
     com.google.protobuf.AbstractMessage testMessage;
-    boolean isProto3 = request.getMessageType().equals("protobuf_test_messages.proto3.TestAllTypes");
+    boolean isProto3 = request.getMessageType().equals("protobuf_test_messages.proto3.TestAllTypesProto3");
     boolean isProto2 = request.getMessageType().equals("protobuf_test_messages.proto2.TestAllTypesProto2");
 
     switch (request.getPayloadCase()) {
@@ -214,7 +214,7 @@ class ConformanceJava {
           try {
             ExtensionRegistry extensions = ExtensionRegistry.newInstance();
             TestMessagesProto3.registerAllExtensions(extensions);
-            testMessage = parseBinary(request.getProtobufPayload(), TestAllTypes.parser(), extensions);
+            testMessage = parseBinary(request.getProtobufPayload(), TestAllTypesProto3.parser(), extensions);
           } catch (InvalidProtocolBufferException e) {
             return Conformance.ConformanceResponse.newBuilder().setParseError(e.getMessage()).build();
           }
@@ -233,7 +233,8 @@ class ConformanceJava {
       }
       case JSON_PAYLOAD: {
         try {
-          TestMessagesProto3.TestAllTypes.Builder builder = TestMessagesProto3.TestAllTypes.newBuilder();
+          TestMessagesProto3.TestAllTypesProto3.Builder builder = 
+              TestMessagesProto3.TestAllTypesProto3.newBuilder();
           JsonFormat.parser().usingTypeRegistry(typeRegistry)
               .merge(request.getJsonPayload(), builder);
           testMessage = builder.build();
@@ -301,7 +302,7 @@ class ConformanceJava {
 
   public void run() throws Exception {
     typeRegistry = TypeRegistry.newBuilder().add(
-        TestMessagesProto3.TestAllTypes.getDescriptor()).build();
+        TestMessagesProto3.TestAllTypesProto3.getDescriptor()).build();
     while (doTestIo()) {
       this.testCount++;
     }

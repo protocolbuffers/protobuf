@@ -34,6 +34,7 @@
 
 var conformance = require('conformance_pb');
 var test_messages_proto3 = require('google/protobuf/test_messages_proto3_pb');
+var test_messages_proto2 = require('google/protobuf/test_messages_proto2_pb');
 var fs = require('fs');
 
 var testCount = 0;
@@ -50,17 +51,22 @@ function doTest(request) {
 
     switch (request.getPayloadCase()) {
       case conformance.ConformanceRequest.PayloadCase.PROTOBUF_PAYLOAD: {
-        if (request.getMessageType() == "protobuf_test_messages.proto3.TestAllTypes") {
+        if (request.getMessageType() == "protobuf_test_messages.proto3.TestAllTypesProto3") {
           try {
-            testMessage = test_messages_proto3.TestAllTypes.deserializeBinary(
+            testMessage = test_messages_proto3.TestAllTypesProto3.deserializeBinary(
                 request.getProtobufPayload());
           } catch (err) {
             response.setParseError(err.toString());
             return response;
           }
         } else if (request.getMessageType() == "protobuf_test_messages.proto2.TestAllTypesProto2"){
-          response.setSkipped("NodeJS doesn\'t support proto2");
-          return response;
+          try {
+            testMessage = test_messages_proto2.TestAllTypesProto2.deserializeBinary(
+                request.getProtobufPayload());
+          } catch (err) {
+            response.setParseError(err.toString());
+            return response;
+          }
         } else {
           throw "Protobuf request doesn\'t have specific payload type";
         }

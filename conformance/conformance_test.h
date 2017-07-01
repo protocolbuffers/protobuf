@@ -53,7 +53,7 @@ class ConformanceResponse;
 
 namespace protobuf_test_messages {
 namespace proto3 {
-class TestAllTypes;
+class TestAllTypesProto3;
 }  // namespace proto3
 }  // namespace protobuf_test_messages
 
@@ -174,16 +174,15 @@ class ConformanceTestSuite {
   void RunValidJsonTestWithProtobufInput(
       const string& test_name,
       ConformanceLevel level,
-      const protobuf_test_messages::proto3::TestAllTypes& input,
-      const string& equivalent_text_format,
-      bool isProto3);
+      const protobuf_test_messages::proto3::TestAllTypesProto3& input,
+      const string& equivalent_text_format);
   void RunValidProtobufTest(const string& test_name, ConformanceLevel level,
                             const string& input_protobuf,
                             const string& equivalent_text_format,
                             bool isProto3);
   void RunValidProtobufTestWithMessage(
       const string& test_name, ConformanceLevel level,
-      const protobuf_test_messages::proto3::TestAllTypes& input,
+      const Message *input,
       const string& equivalent_text_format,
       bool isProto3);
 
@@ -198,16 +197,21 @@ class ConformanceTestSuite {
   void ExpectSerializeFailureForJson(const string& test_name,
                                      ConformanceLevel level,
                                      const string& text_format);
+  void ExpectParseFailureForProtoWithProtoVersion (const string& proto,
+                                                   const string& test_name,
+                                                   ConformanceLevel level,
+                                                   bool isProto3);
   void ExpectParseFailureForProto(const std::string& proto,
                                   const std::string& test_name,
-                                  ConformanceLevel level,
-                                  bool isProto3);
+                                  ConformanceLevel level);
   void ExpectHardParseFailureForProto(const std::string& proto,
                                       const std::string& test_name,
-                                      ConformanceLevel level,
-                                      bool isProto3);
+                                      ConformanceLevel level);
   void TestPrematureEOFForType(google::protobuf::FieldDescriptor::Type type);
   void TestIllegalTags();
+  template <class MessageType>
+  void TestOneofMessage (MessageType &message,
+                         bool isProto3);
   void TestValidDataForType(
       google::protobuf::FieldDescriptor::Type,
       std::vector<std::pair<std::string, std::string>> values);

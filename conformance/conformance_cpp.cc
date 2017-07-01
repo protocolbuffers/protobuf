@@ -44,14 +44,14 @@ using conformance::ConformanceResponse;
 using google::protobuf::Descriptor;
 using google::protobuf::DescriptorPool;
 using google::protobuf::Message;
+using google::protobuf::MessageFactory;
 using google::protobuf::internal::scoped_ptr;
 using google::protobuf::util::BinaryToJsonString;
 using google::protobuf::util::JsonToBinaryString;
 using google::protobuf::util::NewTypeResolverForDescriptorPool;
 using google::protobuf::util::Status;
 using google::protobuf::util::TypeResolver;
-using protobuf_test_messages::proto3::TestAllTypes;
-using protobuf_test_messages::proto2::TestAllTypesProto2;
+using protobuf_test_messages::proto3::TestAllTypesProto3;
 using std::string;
 
 static const char kTypeUrlPrefix[] = "type.googleapis.com";
@@ -92,18 +92,12 @@ void CheckedWrite(int fd, const void *buf, size_t len) {
 
 void DoTest(const ConformanceRequest& request, ConformanceResponse* response) {
   Message *test_message;
-  bool isProto3 =
-      request.message_type() == "protobuf_test_messages.proto3.TestAllTypes";
-  bool isJson = request.payload_case() == ConformanceRequest::kJsonPayload;
-  bool isProto2 =
-      request.message_type() == "protobuf_test_messages.proto2.TestAllTypesProto2";
-  if (isJson || isProto3) {
-    test_message = new TestAllTypes;
-  } else if (isProto2) {
-    test_message = new TestAllTypesProto2;
-  } else {
-    GOOGLE_LOG(FATAL) << "Protobuf request doesn't have specific payload type";
+  const Descriptor *descriptor = DescriptorPool::generated_pool()->FindMessageTypeByName(
+      request.message_type());
+  if (!descriptor) {
+    GOOGLE_LOG(FATAL) << "No such message type: " << request.message_type();
   }
+  test_message = MessageFactory::generated_factory()->GetPrototype(descriptor)->New();
 
   switch (request.payload_case()) {
     case ConformanceRequest::kProtobufPayload: {
@@ -214,7 +208,7 @@ bool DoTestIo() {
 int main() {
   type_resolver = NewTypeResolverForDescriptorPool(
       kTypeUrlPrefix, DescriptorPool::generated_pool());
-  type_url = new string(GetTypeUrl(TestAllTypes::descriptor()));
+  type_url = new string(GetTypeUrl(TestAllTypesProto3::descriptor()));
   while (1) {
     if (!DoTestIo()) {
       fprintf(stderr, "conformance-cpp: received EOF from test runner "
