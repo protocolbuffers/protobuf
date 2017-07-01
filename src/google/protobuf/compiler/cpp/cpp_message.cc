@@ -2308,12 +2308,13 @@ void MessageGenerator::GenerateConstructorBody(io::Printer* printer,
   if (copy_constructor) {
     pod_template =
         "::memcpy(&$first$_, &from.$first$_,\n"
-        "  reinterpret_cast<char*>(&$last$_) -\n"
-        "  reinterpret_cast<char*>(&$first$_) + sizeof($last$_));\n";
+        "  static_cast<size_t>(reinterpret_cast<char*>(&$last$_) -\n"
+        "  reinterpret_cast<char*>(&$first$_)) + sizeof($last$_));\n";
   } else {
     pod_template =
-        "::memset(&$first$_, 0, reinterpret_cast<char*>(&$last$_) -\n"
-        "  reinterpret_cast<char*>(&$first$_) + sizeof($last$_));\n";
+        "::memset(&$first$_, 0, static_cast<size_t>(\n"
+        "    reinterpret_cast<char*>(&$last$_) -\n"
+        "    reinterpret_cast<char*>(&$first$_)) + sizeof($last$_));\n";
   }
 
   for (int i = 0; i < optimized_order_.size(); ++i) {
@@ -2750,8 +2751,9 @@ GenerateClear(io::Printer* printer) {
               FieldName(optimized_order_[memset_run_end]);
 
           printer->Print(
-            "::memset(&$first$_, 0, reinterpret_cast<char*>(&$last$_) -\n"
-            "  reinterpret_cast<char*>(&$first$_) + sizeof($last$_));\n",
+            "::memset(&$first$_, 0, static_cast<size_t>(\n"
+            "    reinterpret_cast<char*>(&$last$_) -\n"
+            "    reinterpret_cast<char*>(&$first$_)) + sizeof($last$_));\n",
             "first", first_field_name,
             "last", last_field_name);
         }

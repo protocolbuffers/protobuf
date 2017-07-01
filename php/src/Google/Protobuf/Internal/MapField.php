@@ -205,7 +205,7 @@ class MapField implements \ArrayAccess, \IteratorAggregate, \Countable
      */
     public function getIterator()
     {
-        return new MapFieldIter($this->container);
+        return new MapFieldIter($this->container, $this->key_type);
     }
 
     /**

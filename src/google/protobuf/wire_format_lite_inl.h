@@ -268,7 +268,7 @@ inline bool WireFormatLite::ReadRepeatedFixedSizePrimitive(
   if (size > 0) {
     const uint8* buffer = reinterpret_cast<const uint8*>(void_pointer);
     // The number of bytes each type occupies on the wire.
-    const int per_value_size = tag_size + sizeof(value);
+    const int per_value_size = tag_size + static_cast<int>(sizeof(value));
 
     // parentheses around (std::min) prevents macro expansion of min(...)
     int elements_available =
@@ -344,8 +344,8 @@ inline bool WireFormatLite::ReadPackedFixedSizePrimitive(
   int length;
   if (!input->ReadVarintSizeAsInt(&length)) return false;
   const int old_entries = values->size();
-  const int new_entries = length / sizeof(CType);
-  const int new_bytes = new_entries * sizeof(CType);
+  const int new_entries = length / static_cast<int>(sizeof(CType));
+  const int new_bytes = new_entries * static_cast<int>(sizeof(CType));
   if (new_bytes != length) return false;
   // We would *like* to pre-allocate the buffer to write into (for
   // speed), but *must* avoid performing a very large allocation due
@@ -695,8 +695,8 @@ inline uint8* WireFormatLite::WriteFixedNoTagToArray(
   GOOGLE_DCHECK_GT(n, 0);
 
   const T* ii = value.unsafe_data();
-  const int bytes = n * sizeof(ii[0]);
-  memcpy(target, ii, bytes);
+  const int bytes = n * static_cast<int>(sizeof(ii[0]));
+  memcpy(target, ii, static_cast<size_t>(bytes));
   return target + bytes;
 #else
   return WritePrimitiveNoTagToArray(value, Writer, target);
@@ -954,7 +954,7 @@ inline uint8* WireFormatLite::InternalWriteMessageToArray(
     uint8* target) {
   target = WriteTagToArray(field_number, WIRETYPE_LENGTH_DELIMITED, target);
   target = io::CodedOutputStream::WriteVarint32ToArray(
-    value.GetCachedSize(), target);
+    static_cast<uint32>(value.GetCachedSize()), target);
   return value.InternalSerializeWithCachedSizesToArray(deterministic, target);
 }
 
@@ -975,7 +975,9 @@ inline uint8* WireFormatLite::InternalWriteMessageNoVirtualToArray(
     bool deterministic, uint8* target) {
   target = WriteTagToArray(field_number, WIRETYPE_LENGTH_DELIMITED, target);
   target = io::CodedOutputStream::WriteVarint32ToArray(
-    value.MessageType_WorkAroundCppLookupDefect::GetCachedSize(), target);
+        static_cast<uint32>(
+            value.MessageType_WorkAroundCppLookupDefect::GetCachedSize()),
+        target);
   return value.MessageType_WorkAroundCppLookupDefect::
       InternalSerializeWithCachedSizesToArray(deterministic, target);
 }

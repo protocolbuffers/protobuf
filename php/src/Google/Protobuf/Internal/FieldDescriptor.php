@@ -36,6 +36,7 @@ class FieldDescriptor
 {
 
     private $name;
+    private $json_name;
     private $setter;
     private $getter;
     private $number;
@@ -65,6 +66,16 @@ class FieldDescriptor
     public function getName()
     {
         return $this->name;
+    }
+
+    public function setJsonName($json_name)
+    {
+        $this->json_name = $json_name;
+    }
+
+    public function getJsonName()
+    {
+        return $this->json_name;
     }
 
     public function setSetter($setter)
@@ -172,23 +183,49 @@ class FieldDescriptor
             $field_type !== GPBType::BYTES);
     }
 
-    public static function getFieldDescriptor(
-        $name,
-        $label,
-        $type,
-        $number,
-        $oneof_index,
-        $packed,
-        $type_name = null)
+    public static function getFieldDescriptor($proto)
     {
+        $type_name = null;
+        $type = $proto->getType();
+        switch ($type) {
+            case GPBType::MESSAGE:
+            case GPBType::GROUP:
+            case GPBType::ENUM:
+                $type_name = $proto->getTypeName();
+                break;
+            default:
+                break;
+        }
+
+        $oneof_index = $proto->hasOneofIndex() ? $proto->getOneofIndex() : -1;
+        $packed = false;
+        $options = $proto->getOptions();
+        if ($options !== null) {
+            $packed = $options->getPacked();
+        }
+
         $field = new FieldDescriptor();
-        $field->setName($name);
-        $camel_name = implode('', array_map('ucwords', explode('_', $name)));
+        $field->setName($proto->getName());
+
+        $json_name = $proto->hasJsonName() ? $proto->getJsonName() :
+            lcfirst(implode('', array_map('ucwords', explode('_', $proto->getName()))));
+        if ($proto->hasJsonName()) {
+            $json_name = $proto->getJsonName();
+        } else {
+            $proto_name = $proto->getName();
+            $json_name = implode('', array_map('ucwords', explode('_', $proto_name)));
+            if ($proto_name[0] !== "_" && !ctype_upper($proto_name[0])) {
+                $json_name = lcfirst($json_name);
+            }
+        }
+        $field->setJsonName($json_name);
+
+        $camel_name = implode('', array_map('ucwords', explode('_', $proto->getName())));
         $field->setGetter('get' . $camel_name);
         $field->setSetter('set' . $camel_name);
-        $field->setType($type);
-        $field->setNumber($number);
-        $field->setLabel($label);
+        $field->setType($proto->getType());
+        $field->setNumber($proto->getNumber());
+        $field->setLabel($proto->getLabel());
         $field->setPacked($packed);
         $field->setOneofIndex($oneof_index);
 
@@ -211,26 +248,6 @@ class FieldDescriptor
 
     public static function buildFromProto($proto)
     {
-        $type_name = null;
-        switch ($proto->getType()) {
-            case GPBType::MESSAGE:
-            case GPBType::GROUP:
-            case GPBType::ENUM:
-                $type_name = $proto->getTypeName();
-                break;
-            default:
-                break;
-        }
-
-        $oneof_index = $proto->hasOneofIndex() ? $proto->getOneofIndex() : -1;
-        $packed = false;
-        $options = $proto->getOptions();
-        if ($options !== null) {
-            $packed = $options->getPacked();
-        }
-
-        return FieldDescriptor::getFieldDescriptor(
-            $proto->getName(), $proto->getLabel(), $proto->getType(),
-            $proto->getNumber(), $oneof_index, $packed, $type_name);
+        return FieldDescriptor::getFieldDescriptor($proto);
     }
 }

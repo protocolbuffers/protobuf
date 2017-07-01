@@ -164,14 +164,15 @@ Duration::Duration(const Duration& from)
       _cached_size_(0) {
   _internal_metadata_.MergeFrom(from._internal_metadata_);
   ::memcpy(&seconds_, &from.seconds_,
-    reinterpret_cast<char*>(&nanos_) -
-    reinterpret_cast<char*>(&seconds_) + sizeof(nanos_));
+    static_cast<size_t>(reinterpret_cast<char*>(&nanos_) -
+    reinterpret_cast<char*>(&seconds_)) + sizeof(nanos_));
   // @@protoc_insertion_point(copy_constructor:google.protobuf.Duration)
 }
 
 void Duration::SharedCtor() {
-  ::memset(&seconds_, 0, reinterpret_cast<char*>(&nanos_) -
-    reinterpret_cast<char*>(&seconds_) + sizeof(nanos_));
+  ::memset(&seconds_, 0, static_cast<size_t>(
+      reinterpret_cast<char*>(&nanos_) -
+      reinterpret_cast<char*>(&seconds_)) + sizeof(nanos_));
   _cached_size_ = 0;
 }
 
@@ -215,8 +216,9 @@ Duration* Duration::New(::google::protobuf::Arena* arena) const {
 
 void Duration::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.Duration)
-  ::memset(&seconds_, 0, reinterpret_cast<char*>(&nanos_) -
-    reinterpret_cast<char*>(&seconds_) + sizeof(nanos_));
+  ::memset(&seconds_, 0, static_cast<size_t>(
+      reinterpret_cast<char*>(&nanos_) -
+      reinterpret_cast<char*>(&seconds_)) + sizeof(nanos_));
 }
 
 bool Duration::MergePartialFromCodedStream(

@@ -354,7 +354,7 @@ class Bits {
  public:
   static uint32 Log2FloorNonZero(uint32 n) {
 #if defined(__GNUC__)
-  return 31 ^ __builtin_clz(n);
+  return 31 ^ static_cast<uint32>(__builtin_clz(n));
 #elif defined(COMPILER_MSVC) && defined(_M_IX86)
   _asm {
     bsr ebx, n
@@ -373,7 +373,7 @@ class Bits {
     // To work around this, when we build for NaCl we use the portable
     // implementation instead.
 #if defined(__GNUC__) && !defined(GOOGLE_PROTOBUF_OS_NACL)
-  return 63 ^ __builtin_clzll(n);
+  return 63 ^ static_cast<uint32>(__builtin_clzll(n));
 #else
   return Log2FloorNonZero64_Portable(n);
 #endif
@@ -400,9 +400,9 @@ class Bits {
     const uint32 topbits = static_cast<uint32>(n >> 32);
     if (topbits == 0) {
       // Top bits are zero, so scan in bottom bits
-      return Log2FloorNonZero(static_cast<uint32>(n));
+      return static_cast<int>(Log2FloorNonZero(static_cast<uint32>(n)));
     } else {
-      return 32 + Log2FloorNonZero(topbits);
+      return 32 + static_cast<int>(Log2FloorNonZero(topbits));
     }
   }
 };

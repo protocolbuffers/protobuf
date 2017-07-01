@@ -60,7 +60,7 @@ function doTest($request)
       }
     } elseif ($request->getPayload() == "json_payload") {
       try {
-          $test_message->jsonDecode($request->getJsonPayload());
+          $test_message->mergeFromJsonString($request->getJsonPayload());
       } catch (Exception $e) {
           $response->setParseError($e->getMessage());
           return $response;
@@ -74,7 +74,7 @@ function doTest($request)
     } elseif ($request->getRequestedOutputFormat() == WireFormat::PROTOBUF) {
       $response->setProtobufPayload($test_message->serializeToString());
     } elseif ($request->getRequestedOutputFormat() == WireFormat::JSON) {
-      $response->setJsonPayload($test_message->jsonEncode());
+      $response->setJsonPayload($test_message->serializeToJsonString());
     }
 
     return $response;
@@ -86,7 +86,8 @@ function doTestIO()
     if (strlen($length_bytes) == 0) {
       return false;   # EOF
     } elseif (strlen($length_bytes) != 4) {
-      trigger_error("I/O error", E_USER_ERROR);
+      fwrite(STDERR, "I/O error\n");
+      return false;
     }
 
     $length = unpack("V", $length_bytes)[1];

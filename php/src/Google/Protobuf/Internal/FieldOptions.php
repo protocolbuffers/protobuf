@@ -12,37 +12,32 @@ use Google\Protobuf\Internal\InputStream;
 use Google\Protobuf\Internal\GPBUtil;
 
 /**
- * Protobuf type <code>google.protobuf.FieldOptions</code>
+ * Generated from protobuf message <code>google.protobuf.FieldOptions</code>
  */
 class FieldOptions extends \Google\Protobuf\Internal\Message
 {
     /**
-     * <pre>
      * The ctype option instructs the C++ code generator to use a different
      * representation of the field than it normally would.  See the specific
      * options below.  This option is not yet implemented in the open source
      * release -- sorry, we'll try to include it in a future version!
-     * </pre>
      *
-     * <code>optional .google.protobuf.FieldOptions.CType ctype = 1 [default = STRING];</code>
+     * Generated from protobuf field <code>optional .google.protobuf.FieldOptions.CType ctype = 1 [default = STRING];</code>
      */
     private $ctype = 0;
     private $has_ctype = false;
     /**
-     * <pre>
      * The packed option can be enabled for repeated primitive fields to enable
      * a more efficient representation on the wire. Rather than repeatedly
      * writing the tag and type for each element, the entire array is encoded as
      * a single length-delimited blob. In proto3, only explicit setting it to
      * false will avoid using packed encoding.
-     * </pre>
      *
-     * <code>optional bool packed = 2;</code>
+     * Generated from protobuf field <code>optional bool packed = 2;</code>
      */
     private $packed = false;
     private $has_packed = false;
     /**
-     * <pre>
      * The jstype option determines the JavaScript type used for values of the
      * field.  The option is permitted only for 64 bit integral and fixed types
      * (int64, uint64, sint64, fixed64, sfixed64).  By default these types are
@@ -52,14 +47,12 @@ class FieldOptions extends \Google\Protobuf\Internal\Message
      * JavaScript code to use the JavaScript "number" type instead of strings.
      * This option is an enum to permit additional types to be added,
      * e.g. goog.math.Integer.
-     * </pre>
      *
-     * <code>optional .google.protobuf.FieldOptions.JSType jstype = 6 [default = JS_NORMAL];</code>
+     * Generated from protobuf field <code>optional .google.protobuf.FieldOptions.JSType jstype = 6 [default = JS_NORMAL];</code>
      */
     private $jstype = 0;
     private $has_jstype = false;
     /**
-     * <pre>
      * Should this field be parsed lazily?  Lazy applies only to message-type
      * fields.  It means that when the outer message is initially parsed, the
      * inner message's contents will not be parsed but instead stored in encoded
@@ -84,39 +77,32 @@ class FieldOptions extends \Google\Protobuf\Internal\Message
      * implementation must either *always* check its required fields, or *never*
      * check its required fields, regardless of whether or not the message has
      * been parsed.
-     * </pre>
      *
-     * <code>optional bool lazy = 5 [default = false];</code>
+     * Generated from protobuf field <code>optional bool lazy = 5 [default = false];</code>
      */
     private $lazy = false;
     private $has_lazy = false;
     /**
-     * <pre>
      * Is this field deprecated?
      * Depending on the target platform, this can emit Deprecated annotations
      * for accessors, or it will be completely ignored; in the very least, this
      * is a formalization for deprecating fields.
-     * </pre>
      *
-     * <code>optional bool deprecated = 3 [default = false];</code>
+     * Generated from protobuf field <code>optional bool deprecated = 3 [default = false];</code>
      */
     private $deprecated = false;
     private $has_deprecated = false;
     /**
-     * <pre>
      * For Google-internal migration only. Do not use.
-     * </pre>
      *
-     * <code>optional bool weak = 10 [default = false];</code>
+     * Generated from protobuf field <code>optional bool weak = 10 [default = false];</code>
      */
     private $weak = false;
     private $has_weak = false;
     /**
-     * <pre>
      * The parser stores options it doesn't recognize here. See above.
-     * </pre>
      *
-     * <code>repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;</code>
+     * Generated from protobuf field <code>repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;</code>
      */
     private $uninterpreted_option;
     private $has_uninterpreted_option = false;
@@ -127,14 +113,13 @@ class FieldOptions extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * <pre>
      * The ctype option instructs the C++ code generator to use a different
      * representation of the field than it normally would.  See the specific
      * options below.  This option is not yet implemented in the open source
      * release -- sorry, we'll try to include it in a future version!
-     * </pre>
      *
-     * <code>optional .google.protobuf.FieldOptions.CType ctype = 1 [default = STRING];</code>
+     * Generated from protobuf field <code>optional .google.protobuf.FieldOptions.CType ctype = 1 [default = STRING];</code>
+     * @return int
      */
     public function getCtype()
     {
@@ -142,14 +127,14 @@ class FieldOptions extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * <pre>
      * The ctype option instructs the C++ code generator to use a different
      * representation of the field than it normally would.  See the specific
      * options below.  This option is not yet implemented in the open source
      * release -- sorry, we'll try to include it in a future version!
-     * </pre>
      *
-     * <code>optional .google.protobuf.FieldOptions.CType ctype = 1 [default = STRING];</code>
+     * Generated from protobuf field <code>optional .google.protobuf.FieldOptions.CType ctype = 1 [default = STRING];</code>
+     * @param int $var
+     * @return $this
      */
     public function setCtype($var)
     {
@@ -166,15 +151,14 @@ class FieldOptions extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * <pre>
      * The packed option can be enabled for repeated primitive fields to enable
      * a more efficient representation on the wire. Rather than repeatedly
      * writing the tag and type for each element, the entire array is encoded as
      * a single length-delimited blob. In proto3, only explicit setting it to
      * false will avoid using packed encoding.
-     * </pre>
      *
-     * <code>optional bool packed = 2;</code>
+     * Generated from protobuf field <code>optional bool packed = 2;</code>
+     * @return bool
      */
     public function getPacked()
     {
@@ -182,15 +166,15 @@ class FieldOptions extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * <pre>
      * The packed option can be enabled for repeated primitive fields to enable
      * a more efficient representation on the wire. Rather than repeatedly
      * writing the tag and type for each element, the entire array is encoded as
      * a single length-delimited blob. In proto3, only explicit setting it to
      * false will avoid using packed encoding.
-     * </pre>
      *
-     * <code>optional bool packed = 2;</code>
+     * Generated from protobuf field <code>optional bool packed = 2;</code>
+     * @param bool $var
+     * @return $this
      */
     public function setPacked($var)
     {
@@ -207,7 +191,6 @@ class FieldOptions extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * <pre>
      * The jstype option determines the JavaScript type used for values of the
      * field.  The option is permitted only for 64 bit integral and fixed types
      * (int64, uint64, sint64, fixed64, sfixed64).  By default these types are
@@ -217,9 +200,9 @@ class FieldOptions extends \Google\Protobuf\Internal\Message
      * JavaScript code to use the JavaScript "number" type instead of strings.
      * This option is an enum to permit additional types to be added,
      * e.g. goog.math.Integer.
-     * </pre>
      *
-     * <code>optional .google.protobuf.FieldOptions.JSType jstype = 6 [default = JS_NORMAL];</code>
+     * Generated from protobuf field <code>optional .google.protobuf.FieldOptions.JSType jstype = 6 [default = JS_NORMAL];</code>
+     * @return int
      */
     public function getJstype()
     {
@@ -227,7 +210,6 @@ class FieldOptions extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * <pre>
      * The jstype option determines the JavaScript type used for values of the
      * field.  The option is permitted only for 64 bit integral and fixed types
      * (int64, uint64, sint64, fixed64, sfixed64).  By default these types are
@@ -237,9 +219,10 @@ class FieldOptions extends \Google\Protobuf\Internal\Message
      * JavaScript code to use the JavaScript "number" type instead of strings.
      * This option is an enum to permit additional types to be added,
      * e.g. goog.math.Integer.
-     * </pre>
      *
-     * <code>optional .google.protobuf.FieldOptions.JSType jstype = 6 [default = JS_NORMAL];</code>
+     * Generated from protobuf field <code>optional .google.protobuf.FieldOptions.JSType jstype = 6 [default = JS_NORMAL];</code>
+     * @param int $var
+     * @return $this
      */
     public function setJstype($var)
     {
@@ -256,7 +239,6 @@ class FieldOptions extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * <pre>
      * Should this field be parsed lazily?  Lazy applies only to message-type
      * fields.  It means that when the outer message is initially parsed, the
      * inner message's contents will not be parsed but instead stored in encoded
@@ -281,9 +263,9 @@ class FieldOptions extends \Google\Protobuf\Internal\Message
      * implementation must either *always* check its required fields, or *never*
      * check its required fields, regardless of whether or not the message has
      * been parsed.
-     * </pre>
      *
-     * <code>optional bool lazy = 5 [default = false];</code>
+     * Generated from protobuf field <code>optional bool lazy = 5 [default = false];</code>
+     * @return bool
      */
     public function getLazy()
     {
@@ -291,7 +273,6 @@ class FieldOptions extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * <pre>
      * Should this field be parsed lazily?  Lazy applies only to message-type
      * fields.  It means that when the outer message is initially parsed, the
      * inner message's contents will not be parsed but instead stored in encoded
@@ -316,9 +297,10 @@ class FieldOptions extends \Google\Protobuf\Internal\Message
      * implementation must either *always* check its required fields, or *never*
      * check its required fields, regardless of whether or not the message has
      * been parsed.
-     * </pre>
      *
-     * <code>optional bool lazy = 5 [default = false];</code>
+     * Generated from protobuf field <code>optional bool lazy = 5 [default = false];</code>
+     * @param bool $var
+     * @return $this
      */
     public function setLazy($var)
     {
@@ -335,14 +317,13 @@ class FieldOptions extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * <pre>
      * Is this field deprecated?
      * Depending on the target platform, this can emit Deprecated annotations
      * for accessors, or it will be completely ignored; in the very least, this
      * is a formalization for deprecating fields.
-     * </pre>
      *
-     * <code>optional bool deprecated = 3 [default = false];</code>
+     * Generated from protobuf field <code>optional bool deprecated = 3 [default = false];</code>
+     * @return bool
      */
     public function getDeprecated()
     {
@@ -350,14 +331,14 @@ class FieldOptions extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * <pre>
      * Is this field deprecated?
      * Depending on the target platform, this can emit Deprecated annotations
      * for accessors, or it will be completely ignored; in the very least, this
      * is a formalization for deprecating fields.
-     * </pre>
      *
-     * <code>optional bool deprecated = 3 [default = false];</code>
+     * Generated from protobuf field <code>optional bool deprecated = 3 [default = false];</code>
+     * @param bool $var
+     * @return $this
      */
     public function setDeprecated($var)
     {
@@ -374,11 +355,10 @@ class FieldOptions extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * <pre>
      * For Google-internal migration only. Do not use.
-     * </pre>
      *
-     * <code>optional bool weak = 10 [default = false];</code>
+     * Generated from protobuf field <code>optional bool weak = 10 [default = false];</code>
+     * @return bool
      */
     public function getWeak()
     {
@@ -386,11 +366,11 @@ class FieldOptions extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * <pre>
      * For Google-internal migration only. Do not use.
-     * </pre>
      *
-     * <code>optional bool weak = 10 [default = false];</code>
+     * Generated from protobuf field <code>optional bool weak = 10 [default = false];</code>
+     * @param bool $var
+     * @return $this
      */
     public function setWeak($var)
     {
@@ -407,11 +387,10 @@ class FieldOptions extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * <pre>
      * The parser stores options it doesn't recognize here. See above.
-     * </pre>
      *
-     * <code>repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;</code>
+     * Generated from protobuf field <code>repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;</code>
+     * @return \Google\Protobuf\Internal\RepeatedField
      */
     public function getUninterpretedOption()
     {
@@ -419,11 +398,11 @@ class FieldOptions extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * <pre>
      * The parser stores options it doesn't recognize here. See above.
-     * </pre>
      *
-     * <code>repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;</code>
+     * Generated from protobuf field <code>repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;</code>
+     * @param \Google\Protobuf\Internal\UninterpretedOption[]|\Google\Protobuf\Internal\RepeatedField $var
+     * @return $this
      */
     public function setUninterpretedOption(&$var)
     {

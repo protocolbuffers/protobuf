@@ -37,30 +37,12 @@ namespace protobuf {
 class Api;
 class ApiDefaultTypeInternal;
 LIBPROTOBUF_EXPORT extern ApiDefaultTypeInternal _Api_default_instance_;
-class Enum;
-class EnumDefaultTypeInternal;
-LIBPROTOBUF_EXPORT extern EnumDefaultTypeInternal _Enum_default_instance_;
-class EnumValue;
-class EnumValueDefaultTypeInternal;
-LIBPROTOBUF_EXPORT extern EnumValueDefaultTypeInternal _EnumValue_default_instance_;
-class Field;
-class FieldDefaultTypeInternal;
-LIBPROTOBUF_EXPORT extern FieldDefaultTypeInternal _Field_default_instance_;
 class Method;
 class MethodDefaultTypeInternal;
 LIBPROTOBUF_EXPORT extern MethodDefaultTypeInternal _Method_default_instance_;
 class Mixin;
 class MixinDefaultTypeInternal;
 LIBPROTOBUF_EXPORT extern MixinDefaultTypeInternal _Mixin_default_instance_;
-class Option;
-class OptionDefaultTypeInternal;
-LIBPROTOBUF_EXPORT extern OptionDefaultTypeInternal _Option_default_instance_;
-class SourceContext;
-class SourceContextDefaultTypeInternal;
-LIBPROTOBUF_EXPORT extern SourceContextDefaultTypeInternal _SourceContext_default_instance_;
-class Type;
-class TypeDefaultTypeInternal;
-LIBPROTOBUF_EXPORT extern TypeDefaultTypeInternal _Type_default_instance_;
 }  // namespace protobuf
 }  // namespace google
 

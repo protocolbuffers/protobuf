@@ -5,34 +5,28 @@
 namespace Google\Protobuf\Internal;
 
 /**
- * <pre>
  * Is this method side-effect-free (or safe in HTTP parlance), or idempotent,
  * or neither? HTTP based RPC implementation may choose GET verb for safe
  * methods, and PUT verb for idempotent methods instead of the default POST.
- * </pre>
  *
- * Protobuf enum <code>google.protobuf.MethodOptions.IdempotencyLevel</code>
+ * Protobuf enum <code>Google\Protobuf\Internal</code>
  */
 class MethodOptions_IdempotencyLevel
 {
     /**
-     * <code>IDEMPOTENCY_UNKNOWN = 0;</code>
+     * Generated from protobuf enum <code>IDEMPOTENCY_UNKNOWN = 0;</code>
      */
     const IDEMPOTENCY_UNKNOWN = 0;
     /**
-     * <pre>
      * implies idempotent
-     * </pre>
      *
-     * <code>NO_SIDE_EFFECTS = 1;</code>
+     * Generated from protobuf enum <code>NO_SIDE_EFFECTS = 1;</code>
      */
     const NO_SIDE_EFFECTS = 1;
     /**
-     * <pre>
      * idempotent, but may have side effects
-     * </pre>
      *
-     * <code>IDEMPOTENT = 2;</code>
+     * Generated from protobuf enum <code>IDEMPOTENT = 2;</code>
      */
     const IDEMPOTENT = 2;
 }
