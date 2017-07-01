@@ -65,18 +65,6 @@ typedef void upb_msg;
  * instances of this from a upb_msgfactory, and the factory always owns the
  * msglayout. */
 
-/* Gets the factory for this layout */
-upb_msgfactory *upb_msglayout_factory(const upb_msglayout *l);
-
-/* Get the msglayout for a submessage.  This requires that this field is a
- * submessage, ie. upb_fielddef_issubmsg(upb_msglayout_msgdef(l)) == true.
- *
- * Since map entry messages don't have layouts, if upb_fielddef_ismap(f) == true
- * then this function will return the layout for the map's value.  It requires
- * that the value type of the map field is a submessage. */
-const upb_msglayout *upb_msglayout_sublayout(const upb_msglayout *l,
-                                             const upb_fielddef *f);
-
 /* Returns the msgdef for this msglayout. */
 const upb_msgdef *upb_msglayout_msgdef(const upb_msglayout *l);
 
@@ -212,19 +200,29 @@ size_t upb_msg_sizeof(const upb_msglayout *l);
  * upb_msg_uninit() must be called to release internally-allocated memory
  * unless the allocator is an arena that does not require freeing.
  *
+ * Please note that upb_msg_init() may return a value that is different than
+ * |msg|, so you must assign the return value and not cast your memory block
+ * to upb_msg* directly!
+ *
  * Please note that upb_msg_uninit() does *not* free any submessages, maps,
  * or arrays referred to by this message's fields.  You must free them manually
- * yourself. */
-void upb_msg_init(upb_msg *msg, const upb_msglayout *l, upb_alloc *a);
-void upb_msg_uninit(upb_msg *msg, const upb_msglayout *l);
+ * yourself.
+ *
+ * upb_msg_uninit returns the original memory block, which may be useful if
+ * you dynamically allocated it (though upb_msg_new() would normally be more
+ * appropriate in this case). */
+upb_msg *upb_msg_init(void *msg, const upb_msglayout *l, upb_alloc *a);
+void *upb_msg_uninit(upb_msg *msg, const upb_msglayout *l);
 
 /* Like upb_msg_init() / upb_msg_uninit(), except the message's memory is
  * allocated / freed from the given upb_alloc. */
 upb_msg *upb_msg_new(const upb_msglayout *l, upb_alloc *a);
 void upb_msg_free(upb_msg *msg, const upb_msglayout *l);
 
-/* Returns the upb_alloc for the given message. */
-upb_alloc *upb_msg_alloc(const upb_msg *msg, const upb_msglayout *l);
+/* Returns the upb_alloc for the given message.
+ * TODO(haberman): get rid of this?  Not sure we want to be storing this
+ * for every message. */
+upb_alloc *upb_msg_alloc(const upb_msg *msg);
 
 /* Packs the tree of messages rooted at "msg" into a single hunk of memory,
  * allocated from the given allocator. */
@@ -399,6 +397,43 @@ bool upb_msg_getscalarhandlerdata(const upb_handlers *h,
                                   upb_fieldtype_t *type,
                                   size_t *offset,
                                   int32_t *hasbit);
+
+
+/** Interfaces for generated code *********************************************/
+
+struct upb_msglayout_strinit_v1 {
+  const char *ptr;
+  uint32_t length;
+};
+
+struct upb_msglayout_fieldinit_v1 {
+  uint32_t number;
+  uint32_t offset;
+  uint16_t hasbit;
+  uint16_t oneof_index;
+  uint16_t submsg_index;
+  uint8_t type;
+  uint8_t label;
+};
+
+struct upb_msglayout_msginit_v1 {
+  struct upb_msglayout_fieldinit_v1 *fields;
+  struct upb_msglayout_msginit_v1 **submsgs;
+  uint32_t *case_offsets;
+  void *default_msg;
+  /* Must be aligned to 8.  Doesn't include internal members like unknown
+   * fields, extension dict, pointer to msglayout, etc. */
+  uint32_t size;
+  bool extendable;
+  char align;
+};
+
+/* Initialize/uninitialize a msglayout from a msginit.  If upb uses v1
+ * internally, this will not allocate any memory.  Should only be used by
+ * generated code. */
+upb_msglayout *upb_msglayout_frominit_v1(
+    const struct upb_msglayout_msginit_v1 *init, upb_alloc *a);
+void upb_msglayout_uninit_v1(upb_msglayout *layout, upb_alloc *a);
 
 UPB_END_EXTERN_C
 

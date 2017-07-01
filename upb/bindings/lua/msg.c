@@ -189,7 +189,8 @@ typedef struct lupb_msgfactory {
   upb_msgfactory *factory;
 } lupb_msgfactory;
 
-static int lupb_msgclass_pushnew(lua_State *L, int factory, const upb_msglayout *l);
+static int lupb_msgclass_pushnew(lua_State *L, int factory,
+                                 const upb_msgdef *md);
 
 /* lupb_msgfactory helpers. */
 
@@ -199,8 +200,6 @@ static lupb_msgfactory *lupb_msgfactory_check(lua_State *L, int narg) {
 
 static void lupb_msgfactory_pushmsgclass(lua_State *L, int narg,
                                          const upb_msgdef *md) {
-  const lupb_msgfactory *lfactory = lupb_msgfactory_check(L, narg);
-
   lupb_getuservalue(L, narg);
   lua_pushlightuserdata(L, (void*)md);
   lua_rawget(L, -2);
@@ -208,8 +207,7 @@ static void lupb_msgfactory_pushmsgclass(lua_State *L, int narg,
   if (lua_isnil(L, -1)) {
     lua_pop(L, 1);
     /* TODO: verify md is in symtab? */
-    lupb_msgclass_pushnew(L, narg,
-                          upb_msgfactory_getlayout(lfactory->factory, md));
+    lupb_msgclass_pushnew(L, narg, md);
 
     /* Set in userval. */
     lua_pushlightuserdata(L, (void*)md);
@@ -317,6 +315,10 @@ const upb_handlers *lupb_msgclass_getmergehandlers(lua_State *L, int narg) {
       lmsgclass->lfactory->factory, upb_msglayout_msgdef(lmsgclass->layout));
 }
 
+upb_msgfactory *lupb_msgclass_getfactory(const lupb_msgclass *lmsgclass) {
+  return lmsgclass->lfactory->factory;
+}
+
 /**
  * lupb_msgclass_typecheck()
  *
@@ -360,13 +362,13 @@ static const lupb_msgclass *lupb_msgclass_getsubmsgclass(lua_State *L, int narg,
   return lupb_msgclass_msgclassfor(L, narg, upb_fielddef_msgsubdef(f));
 }
 
-static int lupb_msgclass_pushnew(lua_State *L, int factory, const upb_msglayout *l) {
+static int lupb_msgclass_pushnew(lua_State *L, int factory,
+                                 const upb_msgdef *md) {
   const lupb_msgfactory *lfactory = lupb_msgfactory_check(L, factory);
   lupb_msgclass *lmc = lupb_newuserdata(L, sizeof(*lmc), LUPB_MSGCLASS);
 
-  UPB_ASSERT(l);
   lupb_uservalseti(L, -1, LUPB_MSGCLASS_FACTORY, factory);
-  lmc->layout = l;
+  lmc->layout = upb_msgfactory_getlayout(lfactory->factory, md);
   lmc->lfactory = lfactory;
 
   return 1;
@@ -933,7 +935,7 @@ static const lupb_msgclass *lupb_msg_getsubmsgclass(lua_State *L, int narg,
   return lupb_msgclass_getsubmsgclass(L, -1, f);
 }
 
-int lupb_msg_pushref(lua_State *L, int msgclass, void *msg) {
+int lupb_msg_pushref(lua_State *L, int msgclass, upb_msg *msg) {
   const lupb_msgclass *lmsgclass = lupb_msgclass_check(L, msgclass);
   lupb_msg *lmsg = lupb_newuserdata(L, sizeof(lupb_msg), LUPB_MSG);
 
@@ -966,8 +968,8 @@ static int lupb_msg_pushnew(lua_State *L, int narg) {
   lupb_msg *lmsg = lupb_newuserdata(L, size, LUPB_MSG);
 
   lmsg->lmsgclass = lmsgclass;
-  lmsg->msg = ADD_BYTES(lmsg, sizeof(*lmsg));
-  upb_msg_init(lmsg->msg, lmsgclass->layout, lupb_alloc_get(L));
+  lmsg->msg = upb_msg_init(
+      ADD_BYTES(lmsg, sizeof(*lmsg)), lmsgclass->layout, lupb_alloc_get(L));
 
   lupb_uservalseti(L, -1, LUPB_MSG_MSGCLASSINDEX, narg);
 
