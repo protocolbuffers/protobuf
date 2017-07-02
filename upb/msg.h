@@ -65,9 +65,6 @@ typedef void upb_msg;
  * instances of this from a upb_msgfactory, and the factory always owns the
  * msglayout. */
 
-/* Returns the msgdef for this msglayout. */
-const upb_msgdef *upb_msglayout_msgdef(const upb_msglayout *l);
-
 
 /** upb_visitor ***************************************************************/
 
@@ -242,24 +239,13 @@ void *upb_msg_pack(const upb_msg *msg, const upb_msglayout *l,
  * arenas).
  */
 upb_msgval upb_msg_get(const upb_msg *msg,
-                       const upb_fielddef *f,
+                       int field_index,
                        const upb_msglayout *l);
 
 /* May only be called for fields where upb_fielddef_haspresence(f) == true. */
 bool upb_msg_has(const upb_msg *msg,
-                 const upb_fielddef *f,
+                 int field_index,
                  const upb_msglayout *l);
-
-/* Returns NULL if no field in the oneof is set. */
-const upb_fielddef *upb_msg_getoneofcase(const upb_msg *msg,
-                                         const upb_oneofdef *o,
-                                         const upb_msglayout *l);
-
-/* Returns true if any field in the oneof is set. */
-bool upb_msg_hasoneof(const upb_msg *msg,
-                      const upb_oneofdef *o,
-                      const upb_msglayout *l);
-
 
 /* Mutable message API.  May only be called by the owner of the message who
  * knows its ownership scheme and how to keep it consistent. */
@@ -268,8 +254,8 @@ bool upb_msg_hasoneof(const upb_msg *msg,
  * management: if you overwrite a pointer to a msg/array/map/string without
  * cleaning it up (or using an arena) it will leak.
  */
-bool upb_msg_set(upb_msg *msg,
-                 const upb_fielddef *f,
+void upb_msg_set(upb_msg *msg,
+                 int field_index,
                  upb_msgval val,
                  const upb_msglayout *l);
 
@@ -280,12 +266,7 @@ bool upb_msg_set(upb_msg *msg,
  * arrays/maps/strings/msgs that this field may have pointed to.
  */
 bool upb_msg_clearfield(upb_msg *msg,
-                        const upb_fielddef *f,
-                        const upb_msglayout *l);
-
-/* Clears all fields in the oneof such that none of them are set. */
-bool upb_msg_clearoneof(upb_msg *msg,
-                        const upb_oneofdef *o,
+                        int field_index,
                         const upb_msglayout *l);
 
 /* TODO(haberman): copyfrom()/mergefrom()? */
@@ -401,38 +382,49 @@ bool upb_msg_getscalarhandlerdata(const upb_handlers *h,
 
 /** Interfaces for generated code *********************************************/
 
-struct upb_msglayout_strinit_v1 {
+#define UPB_NOT_IN_ONEOF UINT16_MAX
+
+typedef struct {
   const char *ptr;
   uint32_t length;
-};
+} upb_msglayout_strinit_v1;
 
-struct upb_msglayout_fieldinit_v1 {
+typedef struct {
   uint32_t number;
-  uint32_t offset;
+  uint32_t offset;  /* If in a oneof, offset of default in default_msg below. */
   uint16_t hasbit;
-  uint16_t oneof_index;
+  uint16_t oneof_index;  /* UPB_NOT_IN_ONEOF if not in a oneof. */
   uint16_t submsg_index;
   uint8_t type;
   uint8_t label;
-};
+} upb_msglayout_fieldinit_v1;
 
-struct upb_msglayout_msginit_v1 {
-  struct upb_msglayout_fieldinit_v1 *fields;
-  struct upb_msglayout_msginit_v1 **submsgs;
+typedef struct {
+  uint32_t data_offset;
+  uint32_t case_offset;
+} upb_msglayout_oneofinit_v1;
+
+typedef struct upb_msglayout_msginit_v1 {
+  const struct upb_msglayout_msginit_v1 **submsgs;
+  const upb_msglayout_fieldinit_v1 *fields;
+  const upb_msglayout_oneofinit_v1 *oneofs;
   uint32_t *case_offsets;
   void *default_msg;
   /* Must be aligned to 8.  Doesn't include internal members like unknown
    * fields, extension dict, pointer to msglayout, etc. */
   uint32_t size;
+  uint16_t field_count;
+  uint16_t oneof_count;
   bool extendable;
+  bool is_proto2;
   char align;
-};
+} upb_msglayout_msginit_v1;
 
 /* Initialize/uninitialize a msglayout from a msginit.  If upb uses v1
  * internally, this will not allocate any memory.  Should only be used by
  * generated code. */
 upb_msglayout *upb_msglayout_frominit_v1(
-    const struct upb_msglayout_msginit_v1 *init, upb_alloc *a);
+    const upb_msglayout_msginit_v1 *init, upb_alloc *a);
 void upb_msglayout_uninit_v1(upb_msglayout *layout, upb_alloc *a);
 
 UPB_END_EXTERN_C

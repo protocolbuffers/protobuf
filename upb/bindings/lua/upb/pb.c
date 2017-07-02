@@ -103,9 +103,8 @@ static int lupb_pb_makestrtomsgdecoder(lua_State *L) {
 }
 
 static int lupb_pb_makemsgtostrencoder(lua_State *L) {
-  const upb_msglayout *layout = lupb_msgclass_getlayout(L, 1);
   const lupb_msgclass *lmsgclass = lupb_msgclass_check(L, 1);
-  const upb_msgdef *md = upb_msglayout_msgdef(layout);
+  const upb_msgdef *md = lupb_msgclass_getmsgdef(lmsgclass);
   upb_msgfactory *factory = lupb_msgclass_getfactory(lmsgclass);
   const upb_handlers *encode_handlers;
   const upb_visitorplan *vp;

@@ -24,7 +24,8 @@ bool upb_fieldtype_mapkeyok(upb_fieldtype_t type) {
 void *upb_array_pack(const upb_array *arr, void *p, size_t *ofs, size_t size);
 void *upb_map_pack(const upb_map *map, void *p, size_t *ofs, size_t size);
 
-#define VOIDPTR_AT(msg, ofs) (void*)((char*)msg + ofs)
+#define PTR_AT(msg, ofs, type) (type*)((char*)msg + ofs)
+#define VOIDPTR_AT(msg, ofs) PTR_AT(msg, ofs, void)
 #define ENCODE_MAX_NESTING 64
 #define CHECK_TRUE(x) if (!(x)) { return false; }
 
@@ -71,7 +72,15 @@ static size_t upb_msgval_sizeof(upb_fieldtype_t type) {
   UPB_UNREACHABLE();
 }
 
-static uint8_t upb_msg_fieldsize(const upb_fielddef *f) {
+static uint8_t upb_msg_fieldsize(const upb_msglayout_fieldinit_v1 *field) {
+  if (field->label == UPB_LABEL_REPEATED) {
+    return sizeof(void*);
+  } else {
+    return upb_msgval_sizeof(field->type);
+  }
+}
+
+static uint8_t upb_msg_fielddefsize(const upb_fielddef *f) {
   if (upb_fielddef_isseq(f)) {
     return sizeof(void*);
   } else {
@@ -115,7 +124,6 @@ static upb_ctype_t upb_fieldtotabtype(upb_fieldtype_t type) {
 }
 
 static upb_msgval upb_msgval_fromdefault(const upb_fielddef *f) {
-  /* TODO(haberman): improve/optimize this (maybe use upb_msgval in fielddef) */
   switch (upb_fielddef_type(f)) {
       case UPB_TYPE_FLOAT:
         return upb_msgval_float(upb_fielddef_defaultfloat(f));
@@ -150,21 +158,12 @@ static upb_msgval upb_msgval_fromdefault(const upb_fielddef *f) {
 /** upb_msglayout *************************************************************/
 
 struct upb_msglayout {
-  const upb_msgdef *msgdef;  /* TODO(haberman): remove. */
   struct upb_msglayout_msginit_v1 data;
 };
-
-static void upb_msg_checkfield(const upb_msglayout *l, const upb_fielddef *f) {
-  UPB_ASSERT(l->msgdef == upb_fielddef_containingtype(f));
-}
 
 static void upb_msglayout_free(upb_msglayout *l) {
   upb_gfree(l->data.default_msg);
   upb_gfree(l);
-}
-
-const upb_msgdef *upb_msglayout_msgdef(const upb_msglayout *l) {
-  return l->msgdef;
 }
 
 static size_t upb_msglayout_place(upb_msglayout *l, size_t size) {
@@ -187,8 +186,7 @@ static uint32_t upb_msglayout_hasbit(const upb_msglayout *l,
   return l->data.fields[upb_fielddef_index(f)].hasbit;
 }
 
-static bool upb_msglayout_initdefault(upb_msglayout *l) {
-  const upb_msgdef *m = l->msgdef;
+static bool upb_msglayout_initdefault(upb_msglayout *l, const upb_msgdef *m) {
   upb_msg_field_iter it;
 
   if (upb_msgdef_syntax(m) == UPB_SYNTAX_PROTO2 && l->data.size) {
@@ -211,7 +209,10 @@ static bool upb_msglayout_initdefault(upb_msglayout *l) {
       if (!upb_fielddef_isstring(f) &&
           !upb_fielddef_issubmsg(f) &&
           !upb_fielddef_isseq(f)) {
-        upb_msg_set(l->data.default_msg, f, upb_msgval_fromdefault(f), l);
+        upb_msg_set(l->data.default_msg,
+                    upb_fielddef_index(f),
+                    upb_msgval_fromdefault(f),
+                    l);
       }
     }
   }
@@ -225,6 +226,9 @@ static upb_msglayout *upb_msglayout_new(const upb_msgdef *m) {
   upb_msglayout *l;
   size_t hasbit;
   size_t submsg_count = 0;
+  const upb_msglayout_msginit_v1 **submsgs;
+  upb_msglayout_fieldinit_v1 *fields;
+  upb_msglayout_oneofinit_v1 *oneofs;
 
   for (upb_msg_field_begin(&it, m), hasbit = sizeof(void*) * 8;
        !upb_msg_field_done(&it);
@@ -239,14 +243,18 @@ static upb_msglayout *upb_msglayout_new(const upb_msgdef *m) {
   if (!l) return NULL;
 
   memset(l, 0, sizeof(*l));
-  l->msgdef = m;
 
   /* TODO(haberman): check OOM. */
-  l->data.fields = upb_gmalloc(upb_msgdef_numfields(m) *
-                               sizeof(struct upb_msglayout_fieldinit_v1));
-  l->data.submsgs = upb_gmalloc(submsg_count * sizeof(void*));
-  l->data.case_offsets = upb_gmalloc(upb_msgdef_numoneofs(m) *
-                                     sizeof(*l->data.case_offsets));
+  fields = upb_gmalloc(upb_msgdef_numfields(m) * sizeof(*fields));
+  submsgs = upb_gmalloc(submsg_count * sizeof(*submsgs));
+  oneofs = upb_gmalloc(upb_msgdef_numoneofs(m) * sizeof(*oneofs));
+
+  l->data.field_count = upb_msgdef_numfields(m);
+  l->data.oneof_count = upb_msgdef_numoneofs(m);
+  l->data.fields = fields;
+  l->data.submsgs = submsgs;
+  l->data.oneofs = oneofs;
+  l->data.is_proto2 = (upb_msgdef_syntax(m) == UPB_SYNTAX_PROTO2);
 
   /* Allocate data offsets in three stages:
    *
@@ -257,14 +265,25 @@ static upb_msglayout *upb_msglayout_new(const upb_msgdef *m) {
    * OPT: There is a lot of room for optimization here to minimize the size.
    */
 
-  /* Allocate hasbits.  Start at sizeof(void*) for upb_alloc*. */
-  for (upb_msg_field_begin(&it, m), hasbit = sizeof(void*) * 8;
+  /* Allocate hasbits and set basic field attributes. */
+  for (upb_msg_field_begin(&it, m), hasbit = 0;
        !upb_msg_field_done(&it);
        upb_msg_field_next(&it)) {
     const upb_fielddef* f = upb_msg_iter_field(&it);
+    upb_msglayout_fieldinit_v1 *field = &fields[upb_fielddef_index(f)];
+
+    field->number = upb_fielddef_number(f);
+    field->type = upb_fielddef_type(f);
+    field->label = upb_fielddef_label(f);
+
+    if (upb_fielddef_containingoneof(f)) {
+      field->oneof_index = upb_oneofdef_index(upb_fielddef_containingoneof(f));
+    } else {
+      field->oneof_index = UPB_NOT_IN_ONEOF;
+    }
 
     if (upb_fielddef_haspresence(f) && !upb_fielddef_containingoneof(f)) {
-      l->data.fields[upb_fielddef_index(f)].hasbit = hasbit++;
+      field->hasbit = hasbit++;
     }
   }
 
@@ -276,7 +295,7 @@ static upb_msglayout *upb_msglayout_new(const upb_msgdef *m) {
   for (upb_msg_field_begin(&it, m); !upb_msg_field_done(&it);
        upb_msg_field_next(&it)) {
     const upb_fielddef* f = upb_msg_iter_field(&it);
-    size_t field_size = upb_msg_fieldsize(f);
+    size_t field_size = upb_msg_fielddefsize(f);
     size_t index = upb_fielddef_index(f);
 
     if (upb_fielddef_containingoneof(f)) {
@@ -284,47 +303,38 @@ static upb_msglayout *upb_msglayout_new(const upb_msgdef *m) {
       continue;
     }
 
-    l->data.fields[index].offset = upb_msglayout_place(l, field_size);
+    fields[index].offset = upb_msglayout_place(l, field_size);
   }
 
   /* Allocate oneof fields.  Each oneof field consists of a uint32 for the case
    * and space for the actual data. */
   for (upb_msg_oneof_begin(&oit, m); !upb_msg_oneof_done(&oit);
        upb_msg_oneof_next(&oit)) {
-    const upb_oneofdef* oneof = upb_msg_iter_oneof(&oit);
+    const upb_oneofdef* o = upb_msg_iter_oneof(&oit);
     upb_oneof_iter fit;
+
     size_t case_size = sizeof(uint32_t);  /* Could potentially optimize this. */
+    upb_msglayout_oneofinit_v1 *oneof = &oneofs[upb_oneofdef_index(o)];
     size_t field_size = 0;
-    size_t case_offset;
-    size_t val_offset;
 
     /* Calculate field size: the max of all field sizes. */
-    for (upb_oneof_begin(&fit, oneof);
+    for (upb_oneof_begin(&fit, o);
          !upb_oneof_done(&fit);
          upb_oneof_next(&fit)) {
       const upb_fielddef* f = upb_oneof_iter_field(&fit);
-      field_size = UPB_MAX(field_size, upb_msg_fieldsize(f));
+      field_size = UPB_MAX(field_size, upb_msg_fielddefsize(f));
     }
 
     /* Align and allocate case offset. */
-    case_offset = upb_msglayout_place(l, case_size);
-    val_offset = upb_msglayout_place(l, field_size);
-
-    l->data.case_offsets[upb_oneofdef_index(oneof)] = case_offset;
-
-    /* Assign all fields in the oneof this same offset. */
-    for (upb_oneof_begin(&fit, oneof); !upb_oneof_done(&fit);
-         upb_oneof_next(&fit)) {
-      const upb_fielddef* f = upb_oneof_iter_field(&fit);
-      l->data.fields[upb_fielddef_index(f)].offset = val_offset;
-    }
+    oneof->case_offset = upb_msglayout_place(l, case_size);
+    oneof->data_offset = upb_msglayout_place(l, field_size);
   }
 
   /* Size of the entire structure should be a multiple of its greatest
    * alignment. */
   l->data.size = align_up(l->data.size, l->data.align);
 
-  if (upb_msglayout_initdefault(l)) {
+  if (upb_msglayout_initdefault(l, m)) {
     return l;
   } else {
     upb_msglayout_free(l);
@@ -506,13 +516,14 @@ static upb_selector_t getsel2(const upb_fielddef *f, upb_handlertype_t type) {
 
 static bool upb_visitor_hasfield(const upb_msg *msg, const upb_fielddef *f,
                                  const upb_msglayout *layout) {
+  int field_index = upb_fielddef_index(f);
   if (upb_fielddef_isseq(f)) {
-    return upb_msgval_getarr(upb_msg_get(msg, f, layout)) != NULL;
+    return upb_msgval_getarr(upb_msg_get(msg, field_index, layout)) != NULL;
   } else if (upb_msgdef_syntax(upb_fielddef_containingtype(f)) ==
              UPB_SYNTAX_PROTO2) {
-    return upb_msg_has(msg, f, layout);
+    return upb_msg_has(msg, field_index, layout);
   } else {
-    upb_msgval val = upb_msg_get(msg, f, layout);
+    upb_msgval val = upb_msg_get(msg, field_index, layout);
     switch (upb_fielddef_type(f)) {
       case UPB_TYPE_FLOAT:
         return upb_msgval_getfloat(val) != 0;
@@ -542,7 +553,7 @@ static bool upb_visitor_hasfield(const upb_msg *msg, const upb_fielddef *f,
 static bool upb_visitor_visitmsg2(const upb_msg *msg,
                                   const upb_msglayout *layout, upb_sink *sink,
                                   int depth) {
-  const upb_msgdef *md = upb_msglayout_msgdef(layout);
+  const upb_msgdef *md = upb_handlers_msgdef(sink->handlers);
   upb_msg_field_iter i;
   upb_status status;
 
@@ -564,7 +575,7 @@ static bool upb_visitor_visitmsg2(const upb_msg *msg,
       continue;
     }
 
-    val = upb_msg_get(msg, f, layout);
+    val = upb_msg_get(msg, upb_fielddef_index(f), layout);
 
     if (upb_fielddef_isseq(f)) {
       const upb_array *arr = upb_msgval_getarr(val);
@@ -633,7 +644,7 @@ bool upb_visitor_visitmsg(upb_visitor *visitor, const upb_msg *msg) {
 /* If we always read/write as a consistent type to each address, this shouldn't
  * violate aliasing.
  */
-#define DEREF(msg, ofs, type) *(type*)VOIDPTR_AT(msg, ofs)
+#define DEREF(msg, ofs, type) *PTR_AT(msg, ofs, type)
 
 /* Internal members of a upb_msg.  We can change this without breaking binary
  * compatibility.  We put these before the user's data.  The user's upb_msg*
@@ -668,62 +679,21 @@ static upb_msg_internal_withext *upb_msg_getinternalwithext(
   return VOIDPTR_AT(msg, -sizeof(upb_msg_internal_withext));
 }
 
-static const upb_msg_internal_withext *upb_msg_getinternalwithext_const(
-    const upb_msg *msg, const upb_msglayout *l) {
-  UPB_ASSERT(l->data.extendable);
-  return VOIDPTR_AT(msg, -sizeof(upb_msg_internal_withext));
+static const upb_msglayout_fieldinit_v1 *upb_msg_checkfield(
+    int field_index, const upb_msglayout *l) {
+  UPB_ASSERT(field_index >= 0 && field_index < l->data.field_count);
+  return &l->data.fields[field_index];
 }
 
-static upb_inttable *upb_msg_trygetextdict(const upb_msg *msg,
-                                           const upb_msglayout *l) {
-  return upb_msg_getinternalwithext_const(msg, l)->extdict;
+static bool upb_msg_inoneof(const upb_msglayout_fieldinit_v1 *field) {
+  return field->oneof_index != UPB_NOT_IN_ONEOF;
 }
 
-static upb_inttable *upb_msg_getextdict(upb_msg *msg,
-                                        const upb_msglayout *l,
-                                        upb_alloc *a) {
-  upb_inttable *ext_dict;
-
-  ext_dict = upb_msg_getinternalwithext(msg, l)->extdict;
-
-  if (!ext_dict) {
-    ext_dict = upb_malloc(a, sizeof(upb_inttable));
-
-    if (!ext_dict) {
-      return NULL;
-    }
-
-    /* Use an 8-byte type to ensure all bytes are copied. */
-    if (!upb_inttable_init2(ext_dict, UPB_CTYPE_INT64, a)) {
-      upb_free(a, ext_dict);
-      return NULL;
-    }
-
-    upb_msg_getinternalwithext(msg, l)->extdict = ext_dict;
-  }
-
-  return ext_dict;
-}
-
-static uint32_t upb_msg_getoneofint(const upb_msg *msg,
-                                    const upb_oneofdef *o,
-                                    const upb_msglayout *l) {
-  size_t oneof_ofs = l->data.case_offsets[upb_oneofdef_index(o)];
-  return DEREF(msg, oneof_ofs, uint8_t);
-}
-
-static void upb_msg_setoneofcase(const upb_msg *msg,
-                                 const upb_oneofdef *o,
-                                 const upb_msglayout *l,
-                                 uint32_t val) {
-  size_t oneof_ofs = l->data.case_offsets[upb_oneofdef_index(o)];
-  DEREF(msg, oneof_ofs, uint8_t) = val;
-}
-
-
-static bool upb_msg_oneofis(const upb_msg *msg, const upb_msglayout *l,
-                            const upb_oneofdef *o, const upb_fielddef *f) {
-  return upb_msg_getoneofint(msg, o, l) == upb_fielddef_number(f);
+static uint32_t *upb_msg_oneofcase(const upb_msg *msg, int field_index,
+                                   const upb_msglayout *l) {
+  const upb_msglayout_fieldinit_v1 *field = upb_msg_checkfield(field_index, l);
+  UPB_ASSERT(upb_msg_inoneof(field));
+  return PTR_AT(msg, l->data.oneofs[field->oneof_index].case_offset, uint32_t);
 }
 
 size_t upb_msg_sizeof(const upb_msglayout *l) {
@@ -772,82 +742,52 @@ upb_alloc *upb_msg_alloc(const upb_msg *msg) {
 }
 
 bool upb_msg_has(const upb_msg *msg,
-                 const upb_fielddef *f,
+                 int field_index,
                  const upb_msglayout *l) {
-  const upb_oneofdef *o;
-  upb_msg_checkfield(l, f);
-  UPB_ASSERT(upb_fielddef_haspresence(f));
+  const upb_msglayout_fieldinit_v1 *field = upb_msg_checkfield(field_index, l);
 
-  if (upb_fielddef_isextension(f)) {
-    /* Extensions are set when they are present in the extension dict. */
-    upb_inttable *ext_dict = upb_msg_trygetextdict(msg, l);
-    upb_value v;
-    return ext_dict != NULL &&
-           upb_inttable_lookup32(ext_dict, upb_fielddef_number(f), &v);
-  } else if ((o = upb_fielddef_containingoneof(f)) != NULL) {
+  UPB_ASSERT(l->data.is_proto2);
+
+  if (upb_msg_inoneof(field)) {
     /* Oneofs are set when the oneof number is set to this field. */
-    return upb_msg_getoneofint(msg, o, l) == upb_fielddef_number(f);
+    return *upb_msg_oneofcase(msg, field_index, l) == field->number;
   } else {
     /* Other fields are set when their hasbit is set. */
-    uint32_t hasbit = l->data.fields[upb_fielddef_index(f)].hasbit;
+    uint32_t hasbit = l->data.fields[field_index].hasbit;
     return DEREF(msg, hasbit / 8, char) | (1 << (hasbit % 8));
   }
 }
 
-upb_msgval upb_msg_get(const upb_msg *msg, const upb_fielddef *f,
+upb_msgval upb_msg_get(const upb_msg *msg, int field_index,
                        const upb_msglayout *l) {
-  upb_msg_checkfield(l, f);
+  const upb_msglayout_fieldinit_v1 *field = upb_msg_checkfield(field_index, l);
+  int size = upb_msg_fieldsize(field);
 
-  if (upb_fielddef_isextension(f)) {
-    upb_inttable *ext_dict = upb_msg_trygetextdict(msg, l);
-    upb_value val;
-    if (upb_inttable_lookup32(ext_dict, upb_fielddef_number(f), &val)) {
-      return upb_msgval_fromval(val);
+  if (upb_msg_inoneof(field)) {
+    if (*upb_msg_oneofcase(msg, field_index, l) == field->number) {
+      size_t ofs = l->data.oneofs[field->oneof_index].data_offset;
+      return upb_msgval_read(msg, ofs, size);
     } else {
-      return upb_msgval_fromdefault(f);
+      /* Return default. */
+      return upb_msgval_read(l->data.default_msg, field->offset, size);
     }
   } else {
-    size_t ofs = l->data.fields[upb_fielddef_index(f)].offset;
-    const upb_oneofdef *o = upb_fielddef_containingoneof(f);
-    upb_msgval ret;
-
-    if (o && !upb_msg_oneofis(msg, l, o, f)) {
-      /* Oneof defaults can't come from the message because the memory is reused
-       * by all types in the oneof. */
-      return upb_msgval_fromdefault(f);
-    }
-
-    ret = upb_msgval_read(msg, ofs, upb_msg_fieldsize(f));
-    return ret;
+    return upb_msgval_read(msg, field->offset, size);
   }
 }
 
-bool upb_msg_set(upb_msg *msg,
-                 const upb_fielddef *f,
-                 upb_msgval val,
+void upb_msg_set(upb_msg *msg, int field_index, upb_msgval val,
                  const upb_msglayout *l) {
-  upb_msg_checkfield(l, f);
+  const upb_msglayout_fieldinit_v1 *field = upb_msg_checkfield(field_index, l);
+  int size = upb_msg_fieldsize(field);
 
-  if (upb_fielddef_isextension(f)) {
-    upb_alloc *a = upb_msg_alloc(msg);
-    /* TODO(haberman): introduce table API that can do this in one call. */
-    upb_inttable *ext = upb_msg_getextdict(msg, l, a);
-    upb_value val2 = upb_toval(val);
-    if (!upb_inttable_replace(ext, upb_fielddef_number(f), val2) &&
-        !upb_inttable_insert2(ext, upb_fielddef_number(f), val2, a)) {
-      return false;
-    }
+  if (upb_msg_inoneof(field)) {
+    size_t ofs = l->data.oneofs[field->oneof_index].data_offset;
+    *upb_msg_oneofcase(msg, field_index, l) = field->number;
+    upb_msgval_write(msg, ofs, val, size);
   } else {
-    size_t ofs = l->data.fields[upb_fielddef_index(f)].offset;
-    const upb_oneofdef *o = upb_fielddef_containingoneof(f);
-
-    if (o) {
-      upb_msg_setoneofcase(msg, o, l, upb_fielddef_number(f));
-    }
-
-    upb_msgval_write(msg, ofs, val, upb_msg_fieldsize(f));
+    upb_msgval_write(msg, field->offset, val, size);
   }
-  return true;
 }
 
 

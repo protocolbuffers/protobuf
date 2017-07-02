@@ -283,11 +283,16 @@ static const struct luaL_Reg lupb_msgfactory_mm[] = {
 
 /* lupb_msgclass **************************************************************/
 
+/* Userval contains a map of:
+ *   [1] -> MessageFactory (to keep GC-reachable)
+ *   [const upb_msgdef*] -> [lupb_msgclass userdata]
+ */
+
 #define LUPB_MSGCLASS_FACTORY 1
-#define LUPB_MSGCLASS_MSGDEF 2
 
 struct lupb_msgclass {
   const upb_msglayout *layout;
+  const upb_msgdef *msgdef;
   const lupb_msgfactory *lfactory;
 };
 
@@ -312,7 +317,11 @@ const upb_msglayout *lupb_msgclass_getlayout(lua_State *L, int narg) {
 const upb_handlers *lupb_msgclass_getmergehandlers(lua_State *L, int narg) {
   const lupb_msgclass *lmsgclass = lupb_msgclass_check(L, narg);
   return upb_msgfactory_getmergehandlers(
-      lmsgclass->lfactory->factory, upb_msglayout_msgdef(lmsgclass->layout));
+      lmsgclass->lfactory->factory, lmsgclass->msgdef);
+}
+
+const upb_msgdef *lupb_msgclass_getmsgdef(const lupb_msgclass *lmsgclass) {
+  return lmsgclass->msgdef;
 }
 
 upb_msgfactory *lupb_msgclass_getfactory(const lupb_msgclass *lmsgclass) {
@@ -329,8 +338,8 @@ static void lupb_msgclass_typecheck(lua_State *L, const lupb_msgclass *expected,
                                     const lupb_msgclass *actual) {
   if (expected != actual) {
     luaL_error(L, "Message had incorrect type, expected '%s', got '%s'",
-               upb_msgdef_fullname(upb_msglayout_msgdef(expected->layout)),
-               upb_msgdef_fullname(upb_msglayout_msgdef(actual->layout)));
+               upb_msgdef_fullname(expected->msgdef),
+               upb_msgdef_fullname(actual->msgdef));
   }
 }
 
@@ -370,6 +379,7 @@ static int lupb_msgclass_pushnew(lua_State *L, int factory,
   lupb_uservalseti(L, -1, LUPB_MSGCLASS_FACTORY, factory);
   lmc->layout = upb_msgfactory_getlayout(lfactory->factory, md);
   lmc->lfactory = lfactory;
+  lmc->msgdef = md;
 
   return 1;
 }
@@ -903,7 +913,7 @@ const upb_msg *lupb_msg_checkmsg(lua_State *L, int narg,
 }
 
 const upb_msgdef *lupb_msg_checkdef(lua_State *L, int narg) {
-  return upb_msglayout_msgdef(lupb_msg_check(L, narg)->lmsgclass->layout);
+  return lupb_msg_check(L, narg)->lmsgclass->msgdef;
 }
 
 static const upb_fielddef *lupb_msg_checkfield(lua_State *L,
@@ -911,7 +921,7 @@ static const upb_fielddef *lupb_msg_checkfield(lua_State *L,
                                                int fieldarg) {
   size_t len;
   const char *fieldname = luaL_checklstring(L, fieldarg, &len);
-  const upb_msgdef *msgdef = upb_msglayout_msgdef(msg->lmsgclass->layout);
+  const upb_msgdef *msgdef = msg->lmsgclass->msgdef;
   const upb_fielddef *f = upb_msgdef_ntof(msgdef, fieldname, len);
 
   if (!f) {
@@ -988,6 +998,7 @@ static int lupb_msg_index(lua_State *L) {
   lupb_msg *lmsg = lupb_msg_check(L, 1);
   const upb_fielddef *f = lupb_msg_checkfield(L, lmsg, 2);
   const upb_msglayout *l = lmsg->lmsgclass->layout;
+  int field_index = upb_fielddef_index(f);
 
   if (in_userval(f)) {
     lupb_uservalgeti(L, 1, lupb_fieldindex(f));
@@ -1000,8 +1011,8 @@ static int lupb_msg_index(lua_State *L) {
         /* TODO(haberman) */
       } else {
         UPB_ASSERT(upb_fielddef_isstring(f));
-        if (upb_msg_has(lmsg->msg, f, l)) {
-          upb_msgval val = upb_msg_get(lmsg->msg, f, l);
+        if (upb_msg_has(lmsg->msg, field_index, l)) {
+          upb_msgval val = upb_msg_get(lmsg->msg, field_index, l);
           lua_pop(L, 1);
           lua_pushlstring(L, val.str.ptr, val.str.len);
           lupb_uservalseti(L, 1, lupb_fieldindex(f), -1);
@@ -1009,7 +1020,8 @@ static int lupb_msg_index(lua_State *L) {
       }
     }
   } else {
-    lupb_pushmsgval(L, upb_fielddef_type(f), upb_msg_get(lmsg->msg, f, l));
+    upb_msgval val = upb_msg_get(lmsg->msg, field_index, l);
+    lupb_pushmsgval(L, upb_fielddef_type(f), val);
   }
 
   return 1;
@@ -1027,6 +1039,7 @@ static int lupb_msg_newindex(lua_State *L) {
   lupb_msg *lmsg = lupb_msg_check(L, 1);
   const upb_fielddef *f = lupb_msg_checkfield(L, lmsg, 2);
   upb_fieldtype_t type = upb_fielddef_type(f);
+  int field_index = upb_fielddef_index(f);
   upb_msgval msgval;
 
   /* Typecheck and get msgval. */
@@ -1047,7 +1060,7 @@ static int lupb_msg_newindex(lua_State *L) {
 
   /* Set in upb_msg and userval (if necessary). */
 
-  upb_msg_set(lmsg->msg, f, msgval, lmsg->lmsgclass->layout);
+  upb_msg_set(lmsg->msg, field_index, msgval, lmsg->lmsgclass->layout);
 
   if (in_userval(f)) {
     lupb_uservalseti(L, 1, lupb_fieldindex(f), 3);
