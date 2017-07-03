@@ -594,5 +594,12 @@ namespace Google.Protobuf
             }
             Assert.IsTrue(memoryStream.CanRead); // We left the stream open
         }
+
+        [Test]
+        public void Dispose_WithByteArray()
+        {
+            var cis = new CodedInputStream(new byte[0]);
+            Assert.DoesNotThrow(() => cis.Dispose());
+        }
     }
 }
