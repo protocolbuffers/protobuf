@@ -262,11 +262,11 @@ genfiles: tools/upbc
 	$(E) PROTOC upb/descriptor/descriptor.proto
 	$(Q) protoc upb/descriptor/descriptor.proto -oupb/descriptor/descriptor.pb
 	$(E) UPBC upb/descriptor/descriptor.pb
-	$(Q) ./tools/upbc upb/descriptor/descriptor.pb
+	$(Q) ./tools/upbc --generate-upbdefs upb/descriptor/descriptor.pb
 	$(E) PROTOC tests/json/test.proto
 	$(Q) protoc tests/json/test.proto -otests/json/test.proto.pb
 	$(E) UPBC tests/json/test.proto.pb
-	$(Q) ./tools/upbc tests/json/test.proto.pb
+	$(Q) ./tools/upbc --generate-upbdefs tests/json/test.proto.pb
 	$(E) DYNASM upb/pb/compile_decoder_x64.dasc
 	$(Q) $(LUA) third_party/dynasm/dynasm.lua -c upb/pb/compile_decoder_x64.dasc > upb/pb/compile_decoder_x64.h || (rm upb/pb/compile_decoder_x64.h ; false)
 

@@ -211,6 +211,7 @@ bool lupb_def_pushwrapper(lua_State *L, const upb_def *def,
       type = LUPB_ENUMDEF;
       break;
     default:
+      printf("Def type: %d\n", (int)upb_def_type(def));
       UPB_UNREACHABLE();
   }
 
@@ -228,6 +229,15 @@ void lupb_def_pushnewrapper(lua_State *L, const upb_def *def,
 static int lupb_def_type(lua_State *L) {
   const upb_def *def = lupb_def_check(L, 1);
   lua_pushinteger(L, upb_def_type(def));
+  return 1;
+}
+
+void lupb_filedef_pushwrapper(lua_State *L, const upb_filedef *f,
+                              const void *ref_donor);
+
+static int lupb_def_file(lua_State *L) {
+  const upb_def *def = lupb_def_check(L, 1);
+  lupb_filedef_pushwrapper(L, upb_def_file(def), NULL);
   return 1;
 }
 
@@ -263,6 +273,7 @@ static int lupb_def_setfullname(lua_State *L) {
 
 #define LUPB_COMMON_DEF_METHODS \
   {"def_type", lupb_def_type},  \
+  {"file", lupb_def_file}, \
   {"full_name", lupb_def_fullname}, \
   {"freeze", lupb_def_freeze}, \
   {"is_frozen", lupb_def_isfrozen}, \
@@ -295,6 +306,15 @@ static int lupb_fielddef_new(lua_State *L) {
 }
 
 /* Getters */
+
+void lupb_oneofdef_pushwrapper(lua_State *L, const upb_oneofdef *o,
+                               const void *ref_donor);
+
+static int lupb_fielddef_containingoneof(lua_State *L) {
+  const upb_fielddef *f = lupb_fielddef_check(L, 1);
+  lupb_oneofdef_pushwrapper(L, upb_fielddef_containingoneof(f), NULL);
+  return 1;
+}
 
 static int lupb_fielddef_containingtype(lua_State *L) {
   const upb_fielddef *f = lupb_fielddef_check(L, 1);
@@ -346,6 +366,12 @@ static int lupb_fielddef_default(lua_State *L) {
     case UPB_TYPE_MESSAGE:
       return luaL_error(L, "Message fields do not have explicit defaults.");
   }
+  return 1;
+}
+
+static int lupb_fielddef_descriptortype(lua_State *L) {
+  const upb_fielddef *f = lupb_fielddef_check(L, 1);
+  lua_pushnumber(L, upb_fielddef_descriptortype(f));
   return 1;
 }
 
@@ -593,9 +619,11 @@ static const struct luaL_Reg lupb_fielddef_mm[] = {
 static const struct luaL_Reg lupb_fielddef_m[] = {
   LUPB_COMMON_DEF_METHODS
 
+  {"containing_oneof", lupb_fielddef_containingoneof},
   {"containing_type", lupb_fielddef_containingtype},
   {"containing_type_name", lupb_fielddef_containingtypename},
   {"default", lupb_fielddef_default},
+  {"descriptor_type", lupb_fielddef_descriptortype},
   {"getsel", lupb_fielddef_getsel},
   {"has_subdef", lupb_fielddef_hassubdef},
   {"index", lupb_fielddef_index},
@@ -681,6 +709,24 @@ static int lupb_oneofdef_field(lua_State *L) {
   return 1;
 }
 
+static int lupb_oneofiter_next(lua_State *L) {
+  upb_oneof_iter *i = lua_touserdata(L, lua_upvalueindex(1));
+  if (upb_oneof_done(i)) return 0;
+  lupb_fielddef_pushwrapper(L, upb_oneof_iter_field(i), NULL);
+  upb_oneof_next(i);
+  return 1;
+}
+
+static int lupb_oneofdef_fields(lua_State *L) {
+  const upb_oneofdef *o = lupb_oneofdef_check(L, 1);
+  upb_oneof_iter *i = lua_newuserdata(L, sizeof(upb_oneof_iter));
+  upb_oneof_begin(i, o);
+  /* Need to guarantee that the msgdef outlives the iter. */
+  lua_pushvalue(L, 1);
+  lua_pushcclosure(L, &lupb_oneofiter_next, 2);
+  return 1;
+}
+
 static int lupb_oneofdef_len(lua_State *L) {
   const upb_oneofdef *o = lupb_oneofdef_check(L, 1);
   lua_pushinteger(L, upb_oneofdef_numfields(o));
@@ -711,6 +757,7 @@ static int lupb_oneofdef_setname(lua_State *L) {
 static const struct luaL_Reg lupb_oneofdef_m[] = {
   {"containing_type", lupb_oneofdef_containingtype},
   {"field", lupb_oneofdef_field},
+  {"fields", lupb_oneofdef_fields},
   {"name", lupb_oneofdef_name},
 
   {"add", lupb_oneofdef_add},
@@ -1008,6 +1055,29 @@ static int lupb_filedef_def(lua_State *L) {
   return 1;
 }
 
+static int lupb_filedefdepiter_next(lua_State *L) {
+  const upb_filedef *f = lupb_filedef_check(L, lua_upvalueindex(1));
+  size_t i = lua_tointeger(L, lua_upvalueindex(2));
+
+  if (i >= upb_filedef_depcount(f)) {
+    return 0;
+  }
+
+  lupb_filedef_pushwrapper(L, upb_filedef_dep(f, i), NULL);
+  lua_pushinteger(L, i + 1);
+  lua_replace(L, lua_upvalueindex(2));
+  return 1;
+}
+
+
+static int lupb_filedef_dependencies(lua_State *L) {
+  lupb_filedef_check(L, 1);
+  lua_pushvalue(L, 1);
+  lua_pushnumber(L, 0);      /* Index, starts at zero. */
+  lua_pushcclosure(L, &lupb_filedefdepiter_next, 2);
+  return 1;
+}
+
 static int lupb_filedef_name(lua_State *L) {
   const upb_filedef *f = lupb_filedef_check(L, 1);
   lua_pushstring(L, upb_filedef_name(f));
@@ -1017,6 +1087,12 @@ static int lupb_filedef_name(lua_State *L) {
 static int lupb_filedef_package(lua_State *L) {
   const upb_filedef *f = lupb_filedef_check(L, 1);
   lua_pushstring(L, upb_filedef_package(f));
+  return 1;
+}
+
+static int lupb_filedef_syntax(lua_State *L) {
+  const upb_filedef *f = lupb_filedef_check(L, 1);
+  lua_pushnumber(L, upb_filedef_syntax(f));
   return 1;
 }
 
@@ -1078,8 +1154,10 @@ static const struct luaL_Reg lupb_filedef_mm[] = {
 static const struct luaL_Reg lupb_filedef_m[] = {
   {"def", lupb_filedef_def},
   {"defs", lupb_filedef_defs},
+  {"dependencies", lupb_filedef_dependencies},
   {"name", lupb_filedef_name},
   {"package", lupb_filedef_package},
+  {"syntax", lupb_filedef_syntax},
 
   {"set_name", lupb_filedef_setname},
   {"set_package", lupb_filedef_setpackage},

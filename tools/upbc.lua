@@ -1,20 +1,29 @@
 --[[
 
-  The upb compiler.  Unlike the proto2 compiler, this does
-  not output any parsing code or generated classes or anything
-  specific to the protobuf binary format at all.  At the moment
-  it only dumps C initializers for upb_defs, so that a .proto
-  file can be represented in a .o file.
+  The upb compiler.  It can write two different kinds of output
+  files:
+
+  - generated code for a C API (foo.upb.h, foo.upb.c)
+  - (obsolete): definitions of upb defs. (foo.upbdefs.h, foo.upbdefs.c)
 
 --]]
 
 local dump_cinit = require "dump_cinit"
+local make_c_api = require "make_c_api"
 local upb = require "upb"
 
-local src = arg[1]
+local generate_upbdefs = false
+
+for _, argument in ipairs(arg) do
+  if argument == "--generate-upbdefs" then
+    generate_upbdefs = true
+  else
+    src = argument
+  end
+end
 
 if not src then
-  print("Usage: upbc <binary descriptor>")
+  print("Usage: upbc [--generate-upbdefs] <binary descriptor>")
   return 1
 end
 
@@ -32,6 +41,8 @@ for _, file in ipairs(files) do
   symtab:add_file(file)
   local outbase = strip_proto(file:name())
 
+  -- Write upbdefs.
+
   local hfilename = outbase .. ".upbdefs.h"
   local cfilename = outbase .. ".upbdefs.c"
 
@@ -44,14 +55,40 @@ for _, file in ipairs(files) do
   end
 
   os.execute(string.format("mkdir -p `dirname %s`", outbase))
+
+  if generate_upbdefs then
+    -- Legacy generated defs.
+    local hfile = assert(io.open(hfilename, "w"), "couldn't open " .. hfilename)
+    local cfile = assert(io.open(cfilename, "w"), "couldn't open " .. cfilename)
+
+    local happend = dump_cinit.file_appender(hfile)
+    local cappend = dump_cinit.file_appender(cfile)
+
+    dump_cinit.dump_defs(file, happend, cappend)
+
+    hfile:close()
+    cfile:close()
+  end
+
+  -- Write C API.
+  hfilename = outbase .. ".upb.h"
+  cfilename = outbase .. ".upb.c"
+
+  if os.getenv("UPBC_VERBOSE") then
+    print("upbc:")
+    print(string.format("  source file=%s", src))
+    print(string.format("  output file base=%s", outbase))
+    print(string.format("  hfilename=%s", hfilename))
+    print(string.format("  cfilename=%s", cfilename))
+  end
+
   local hfile = assert(io.open(hfilename, "w"), "couldn't open " .. hfilename)
   local cfile = assert(io.open(cfilename, "w"), "couldn't open " .. cfilename)
 
   local happend = dump_cinit.file_appender(hfile)
   local cappend = dump_cinit.file_appender(cfile)
 
-  -- Dump defs
-  dump_cinit.dump_defs(file, happend, cappend)
+  make_c_api.write_gencode(file, hfilename, happend, cappend)
 
   hfile:close()
   cfile:close()

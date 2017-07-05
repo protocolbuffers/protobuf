@@ -135,7 +135,7 @@ static upb_msgval upb_msgval_fromdefault(const upb_fielddef *f) {
       case UPB_TYPE_BYTES: {
         size_t len;
         const char *ptr = upb_fielddef_defaultstr(f, &len);
-        return upb_msgval_str(ptr, len);
+        return upb_msgval_makestr(ptr, len);
       }
       case UPB_TYPE_MESSAGE:
         return upb_msgval_msg(NULL);
@@ -170,7 +170,6 @@ static size_t upb_msglayout_place(upb_msglayout *l, size_t size) {
   size_t ret;
 
   l->data.size = align_up(l->data.size, size);
-  l->data.align = align_up(l->data.align, size);
   ret = l->data.size;
   l->data.size += size;
   return ret;
@@ -230,7 +229,7 @@ static upb_msglayout *upb_msglayout_new(const upb_msgdef *m) {
   upb_msglayout_fieldinit_v1 *fields;
   upb_msglayout_oneofinit_v1 *oneofs;
 
-  for (upb_msg_field_begin(&it, m), hasbit = sizeof(void*) * 8;
+  for (upb_msg_field_begin(&it, m);
        !upb_msg_field_done(&it);
        upb_msg_field_next(&it)) {
     const upb_fielddef* f = upb_msg_iter_field(&it);
@@ -289,7 +288,6 @@ static upb_msglayout *upb_msglayout_new(const upb_msgdef *m) {
 
   /* Account for space used by hasbits. */
   l->data.size = div_round_up(hasbit, 8);
-  l->data.align = 1;
 
   /* Allocate non-oneof fields. */
   for (upb_msg_field_begin(&it, m); !upb_msg_field_done(&it);
@@ -332,7 +330,7 @@ static upb_msglayout *upb_msglayout_new(const upb_msgdef *m) {
 
   /* Size of the entire structure should be a multiple of its greatest
    * alignment. */
-  l->data.size = align_up(l->data.size, l->data.align);
+  l->data.size = align_up(l->data.size, 8 /* TODO: track for real? */);
 
   if (upb_msglayout_initdefault(l, m)) {
     return l;
@@ -425,9 +423,9 @@ void *upb_msg_startstr(void *msg, const void *hd, size_t size_hint) {
 
   val = upb_msgval_read(msg, ofs, upb_msgval_sizeof(UPB_TYPE_STRING));
 
-  upb_free(alloc, (void*)val.str.ptr);
-  val.str.ptr = NULL;
-  val.str.len = 0;
+  upb_free(alloc, (void*)val.str.data);
+  val.str.data = NULL;
+  val.str.size = 0;
 
   upb_msgval_write(msg, ofs, val, upb_msgval_sizeof(UPB_TYPE_STRING));
   return msg;
@@ -443,15 +441,15 @@ size_t upb_msg_str(void *msg, const void *hd, const char *ptr, size_t size,
 
   val = upb_msgval_read(msg, ofs, upb_msgval_sizeof(UPB_TYPE_STRING));
 
-  newsize = val.str.len + size;
-  val.str.ptr = upb_realloc(alloc, (void*)val.str.ptr, val.str.len, newsize);
+  newsize = val.str.size + size;
+  val.str.data = upb_realloc(alloc, (void*)val.str.data, val.str.size, newsize);
 
-  if (!val.str.ptr) {
+  if (!val.str.data) {
     return false;
   }
 
-  memcpy((char*)val.str.ptr + val.str.len, ptr, size);
-  val.str.len = newsize;
+  memcpy((char*)val.str.data + val.str.size, ptr, size);
+  val.str.size = newsize;
   upb_msgval_write(msg, ofs, val, upb_msgval_sizeof(UPB_TYPE_STRING));
   return size;
 }
@@ -542,7 +540,7 @@ static bool upb_visitor_hasfield(const upb_msg *msg, const upb_fielddef *f,
         return upb_msgval_getuint64(val) != 0;
       case UPB_TYPE_STRING:
       case UPB_TYPE_BYTES:
-        return upb_msgval_getstr(val) && upb_msgval_getstrlen(val) > 0;
+        return upb_msgval_getstr(val).size > 0;
       case UPB_TYPE_MESSAGE:
         return upb_msgval_getmsg(val) != NULL;
     }
@@ -896,8 +894,8 @@ static void upb_map_tokey(upb_fieldtype_t type, upb_msgval *key,
   switch (type) {
     case UPB_TYPE_STRING:
       /* Point to string data of the input key. */
-      *out_key = key->str.ptr;
-      *out_len = key->str.len;
+      *out_key = key->str.data;
+      *out_len = key->str.size;
       return;
     case UPB_TYPE_BOOL:
     case UPB_TYPE_INT32:
@@ -922,7 +920,7 @@ static upb_msgval upb_map_fromkey(upb_fieldtype_t type, const char *key,
                                   size_t len) {
   switch (type) {
     case UPB_TYPE_STRING:
-      return upb_msgval_str(key, len);
+      return upb_msgval_makestr(key, len);
     case UPB_TYPE_BOOL:
     case UPB_TYPE_INT32:
     case UPB_TYPE_UINT32:

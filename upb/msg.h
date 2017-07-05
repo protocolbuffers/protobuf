@@ -110,6 +110,22 @@ const upb_visitorplan *upb_msgfactory_getvisitorplan(upb_msgfactory *f,
                                                      const upb_handlers *h);
 
 
+/** upb_stringview ************************************************************/
+
+typedef struct {
+  const char *data;
+  size_t size;
+} upb_stringview;
+
+UPB_INLINE upb_stringview upb_stringview_make(const char *data, size_t size) {
+  upb_stringview ret;
+  ret.data = data;
+  ret.size = size;
+  return ret;
+}
+
+#define UPB_STRINGVIEW_INIT(ptr, len) {ptr, len}
+
 /** upb_msgval ****************************************************************/
 
 /* A union representing all possible protobuf values.  Used for generic get/set
@@ -127,10 +143,7 @@ typedef union {
   const upb_msg* msg;
   const upb_array* arr;
   const void* ptr;
-  struct {
-    const char *ptr;
-    size_t len;
-  } str;
+  upb_stringview str;
 } upb_msgval;
 
 #define ACCESSORS(name, membername, ctype) \
@@ -157,22 +170,12 @@ ACCESSORS(map,    map, const upb_map*)
 ACCESSORS(msg,    msg, const upb_msg*)
 ACCESSORS(ptr,    ptr, const void*)
 ACCESSORS(arr,    arr, const upb_array*)
+ACCESSORS(str,    str, upb_stringview)
 
 #undef ACCESSORS
 
-UPB_INLINE upb_msgval upb_msgval_str(const char *ptr, size_t len) {
-  upb_msgval ret;
-  ret.str.ptr = ptr;
-  ret.str.len = len;
-  return ret;
-}
-
-UPB_INLINE const char* upb_msgval_getstr(upb_msgval val) {
-  return val.str.ptr;
-}
-
-UPB_INLINE size_t upb_msgval_getstrlen(upb_msgval val) {
-  return val.str.len;
+UPB_INLINE upb_msgval upb_msgval_makestr(const char *data, size_t size) {
+  return upb_msgval_str(upb_stringview_make(data, size));
 }
 
 
@@ -385,11 +388,6 @@ bool upb_msg_getscalarhandlerdata(const upb_handlers *h,
 #define UPB_NOT_IN_ONEOF UINT16_MAX
 
 typedef struct {
-  const char *ptr;
-  uint32_t length;
-} upb_msglayout_strinit_v1;
-
-typedef struct {
   uint32_t number;
   uint32_t offset;  /* If in a oneof, offset of default in default_msg below. */
   uint16_t hasbit;
@@ -405,20 +403,21 @@ typedef struct {
 } upb_msglayout_oneofinit_v1;
 
 typedef struct upb_msglayout_msginit_v1 {
-  const struct upb_msglayout_msginit_v1 **submsgs;
+  const struct upb_msglayout_msginit_v1 *const* submsgs;
   const upb_msglayout_fieldinit_v1 *fields;
   const upb_msglayout_oneofinit_v1 *oneofs;
-  uint32_t *case_offsets;
   void *default_msg;
-  /* Must be aligned to 8.  Doesn't include internal members like unknown
-   * fields, extension dict, pointer to msglayout, etc. */
+  /* Must be aligned to sizeof(void*).  Doesn't include internal members like
+   * unknown * fields, extension dict, pointer to msglayout, etc. */
   uint32_t size;
   uint16_t field_count;
   uint16_t oneof_count;
   bool extendable;
   bool is_proto2;
-  char align;
 } upb_msglayout_msginit_v1;
+
+#define UPB_ALIGN_UP_TO(val, align) ((val + (align - 1)) & -align)
+#define UPB_ALIGNED_SIZEOF(type) UPB_ALIGN_UP_TO(sizeof(type), sizeof(void*))
 
 /* Initialize/uninitialize a msglayout from a msginit.  If upb uses v1
  * internally, this will not allocate any memory.  Should only be used by
