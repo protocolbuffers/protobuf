@@ -15,8 +15,13 @@ local upb = require "upb"
 local generate_upbdefs = false
 
 for _, argument in ipairs(arg) do
-  if argument == "--generate-upbdefs" then
-    generate_upbdefs = true
+  if argument.sub(argument, 1, 2) == "--" then
+    if argument == "--generate-upbdefs" then
+      generate_upbdefs = true
+    else
+      print("Unknown flag: " .. argument)
+      return 1
+    end
   else
     src = argument
   end
