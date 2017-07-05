@@ -195,4 +195,3 @@ Required.Proto3.ProtobufInput.FloatFieldNormalizeSignalingNan.JsonOutput
 Required.Proto3.ProtobufInput.ValidDataRepeated.FLOAT.JsonOutput
 Required.TimestampProtoInputTooLarge.JsonOutput
 Required.TimestampProtoInputTooSmall.JsonOutput
-Recommended.Proto3.ProtobufInput.OneofZeroMessageSetTwice.JsonOutput
