@@ -4,8 +4,9 @@ conformance_protoc_inputs =                                    \
   conformance.proto                                            \
   $(top_srcdir)/src/google/protobuf/test_messages_proto3.proto 
   
+# proto2 input files, should be separated with proto3, as we 
+# can't generate proto2 files for ruby, php and objc   
 conformance_proto2_protoc_inputs =                             \
-  conformance.proto                                            \
   $(top_srcdir)/src/google/protobuf/test_messages_proto2.proto                            
 
 well_known_type_protoc_inputs =                                \
