@@ -593,8 +593,8 @@ const upb_pbdecodermethod *new_fillmsg_decodermethod(Descriptor *desc,
 
 PHP_METHOD(Message, serializeToString);
 PHP_METHOD(Message, mergeFromString);
-PHP_METHOD(Message, jsonEncode);
-PHP_METHOD(Message, jsonDecode);
+PHP_METHOD(Message, serializeToJsonString);
+PHP_METHOD(Message, mergeFromJsonString);
 
 // -----------------------------------------------------------------------------
 // Type check / conversion.

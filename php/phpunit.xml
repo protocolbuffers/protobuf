@@ -7,6 +7,7 @@
       <file>tests/array_test.php</file>
       <file>tests/encode_decode_test.php</file>
       <file>tests/generated_class_test.php</file>
+      <file>tests/generated_phpdoc_test.php</file>
       <file>tests/map_field_test.php</file>
       <file>tests/well_known_test.php</file>
     </testsuite>

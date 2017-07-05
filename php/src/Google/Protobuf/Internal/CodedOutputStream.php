@@ -32,7 +32,7 @@
 
 namespace Google\Protobuf\Internal;
 
-class OutputStream
+class CodedOutputStream
 {
 
     private $buffer;
@@ -53,10 +53,10 @@ class OutputStream
         return $this->buffer;
     }
 
-    public function writeVarint32($value)
+    public function writeVarint32($value, $trim)
     {
         $bytes = str_repeat(chr(0), self::MAX_VARINT64_BYTES);
-        $size = self::writeVarintToArray($value, $bytes);
+        $size = self::writeVarintToArray($value, $bytes, $trim);
         return $this->writeRaw($bytes, $size);
     }
 
@@ -83,7 +83,7 @@ class OutputStream
 
     public function writeTag($tag)
     {
-        return $this->writeVarint32($tag);
+        return $this->writeVarint32($tag, true);
     }
 
     public function writeRaw($data, $size)
@@ -101,19 +101,19 @@ class OutputStream
         return true;
     }
 
-    private static function writeVarintToArray($value, &$buffer)
+    private static function writeVarintToArray($value, &$buffer, $trim = false)
     {
         $current = 0;
 
         $high = 0;
         $low = 0;
         if (PHP_INT_SIZE == 4) {
-            GPBUtil::divideInt64ToInt32($value, $high, $low);
+            GPBUtil::divideInt64ToInt32($value, $high, $low, $trim);
         } else {
             $low = $value;
         }
 
-        while ($low >= 0x80 || $low < 0) {
+        while (($low >= 0x80 || $low < 0) || $high != 0) {
             $buffer[$current] = chr($low | 0x80);
             $value = ($value >> 7) & ~(0x7F << ((PHP_INT_SIZE << 3) - 7));
             $carry = ($high & 0x7F) << ((PHP_INT_SIZE << 3) - 7);

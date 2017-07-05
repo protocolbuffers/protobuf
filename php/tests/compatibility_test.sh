@@ -1,6 +1,6 @@
 #!/bin/bash
 
-use_php() {
+function use_php() {
   VERSION=$1
   PHP=`which php`
   PHP_CONFIG=`which php-config`
@@ -10,7 +10,7 @@ use_php() {
   ln -sfn "/usr/local/php-${VERSION}/bin/phpize" $PHPIZE
 }
 
-generate_proto() {
+function generate_proto() {
   PROTOC1=$1
   PROTOC2=$2
 
@@ -23,6 +23,27 @@ generate_proto() {
   $PROTOC2 --php_out=../php/tests/generated google/protobuf/empty.proto
   $PROTOC2 --php_out=../php/tests/generated -I../php/tests -I. ../php/tests/proto/test_import_descriptor_proto.proto
   popd
+}
+
+# Remove tests to expect error. These were added to API tests by mistake.
+function remove_error_test() {
+  local TEMPFILE=`tempfile`
+  cat $1 | \
+  awk -v file=`basename $1` -v dir=`basename $(dirname $1)` '
+    BEGIN {
+      show = 1
+    }
+    /@expectedException PHPUnit_Framework_Error/ { show = 0; next; }
+    / *\*\//                                     { print; next; }
+    / *}/ {
+      if (!show) {
+        show = 1;
+        next;
+      }
+    }
+    show { print }
+  ' > $TEMPFILE
+  cp $TEMPFILE $1
 }
 
 set -ex
@@ -81,6 +102,15 @@ OLD_PROTOC=`pwd`/old_protoc
 cd protobuf/php
 cp -r /usr/local/vendor-5.5 vendor
 wget https://phar.phpunit.de/phpunit-4.8.0.phar -O /usr/bin/phpunit
+
+# Remove implementation detail tests.
+tests=( array_test.php encode_decode_test.php generated_class_test.php map_field_test.php well_known_test.php )
+sed -i.bak '/php_implementation_test.php/d' phpunit.xml
+for t in "${tests[@]}"
+do
+  remove_error_test tests/$t
+done
+
 cd tests
 
 # Test A.1:

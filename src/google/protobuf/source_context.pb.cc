@@ -218,7 +218,7 @@ bool SourceContext::MergePartialFromCodedStream(
           DO_(::google::protobuf::internal::WireFormatLite::ReadString(
                 input, this->mutable_file_name()));
           DO_(::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
-            this->file_name().data(), this->file_name().length(),
+            this->file_name().data(), static_cast<int>(this->file_name().length()),
             ::google::protobuf::internal::WireFormatLite::PARSE,
             "google.protobuf.SourceContext.file_name"));
         } else {
@@ -257,7 +257,7 @@ void SourceContext::SerializeWithCachedSizes(
   // string file_name = 1;
   if (this->file_name().size() > 0) {
     ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
-      this->file_name().data(), this->file_name().length(),
+      this->file_name().data(), static_cast<int>(this->file_name().length()),
       ::google::protobuf::internal::WireFormatLite::SERIALIZE,
       "google.protobuf.SourceContext.file_name");
     ::google::protobuf::internal::WireFormatLite::WriteStringMaybeAliased(
@@ -276,7 +276,7 @@ void SourceContext::SerializeWithCachedSizes(
   // string file_name = 1;
   if (this->file_name().size() > 0) {
     ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
-      this->file_name().data(), this->file_name().length(),
+      this->file_name().data(), static_cast<int>(this->file_name().length()),
       ::google::protobuf::internal::WireFormatLite::SERIALIZE,
       "google.protobuf.SourceContext.file_name");
     target =

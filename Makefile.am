@@ -597,60 +597,63 @@ php_EXTRA_DIST=                                                       \
   php/ext/google/protobuf/upb.c                                       \
   php/ext/google/protobuf/protobuf.c                                  \
   php/src/phpdoc.dist.xml                                             \
-  php/src/Google/Protobuf/Internal/Descriptor.php                     \
+  php/src/Google/Protobuf/Internal/CodedInputStream.php               \
+  php/src/Google/Protobuf/Internal/CodedOutputStream.php              \
   php/src/Google/Protobuf/Internal/DescriptorPool.php                 \
-  php/src/Google/Protobuf/Internal/GeneratedCodeInfo.php              \
-  php/src/Google/Protobuf/Internal/OneofField.php                     \
-  php/src/Google/Protobuf/Internal/MessageOptions.php                 \
-  php/src/Google/Protobuf/Internal/FileDescriptor.php                 \
-  php/src/Google/Protobuf/Internal/FileDescriptorProto.php            \
-  php/src/Google/Protobuf/Internal/MapEntry.php                       \
-  php/src/Google/Protobuf/Internal/FieldDescriptor.php                \
-  php/src/Google/Protobuf/Internal/FieldDescriptorProto.php           \
-  php/src/Google/Protobuf/Internal/InputStream.php                    \
-  php/src/Google/Protobuf/Internal/UninterpretedOption.php            \
-  php/src/Google/Protobuf/Internal/ServiceOptions.php                 \
-  php/src/Google/Protobuf/Internal/MethodOptions_IdempotencyLevel.php \
-  php/src/Google/Protobuf/Internal/ServiceDescriptorProto.php         \
-  php/src/Google/Protobuf/Internal/OneofDescriptor.php                \
-  php/src/Google/Protobuf/Internal/OneofDescriptorProto.php           \
-  php/src/Google/Protobuf/Internal/UninterpretedOption_NamePart.php   \
-  php/src/Google/Protobuf/Internal/OutputStream.php                   \
-  php/src/Google/Protobuf/Internal/MessageBuilderContext.php          \
-  php/src/Google/Protobuf/Internal/EnumValueDescriptor.php            \
-  php/src/Google/Protobuf/Internal/EnumValueDescriptorProto.php       \
-  php/src/Google/Protobuf/Internal/FileOptions_OptimizeMode.php       \
-  php/src/Google/Protobuf/Internal/DescriptorProto.php                \
-  php/src/Google/Protobuf/Internal/MapField.php                       \
-  php/src/Google/Protobuf/Internal/MapFieldIter.php                   \
-  php/src/Google/Protobuf/Internal/MethodDescriptorProto.php          \
   php/src/Google/Protobuf/Internal/DescriptorProto_ExtensionRange.php \
   php/src/Google/Protobuf/Internal/DescriptorProto_ReservedRange.php  \
-  php/src/Google/Protobuf/Internal/RepeatedField.php                  \
-  php/src/Google/Protobuf/Internal/RepeatedFieldIter.php              \
-  php/src/Google/Protobuf/Internal/EnumValueOptions.php               \
-  php/src/Google/Protobuf/Internal/MethodOptions.php                  \
-  php/src/Google/Protobuf/Internal/OneofOptions.php                   \
-  php/src/Google/Protobuf/Internal/Message.php                        \
-  php/src/Google/Protobuf/Internal/FileOptions.php                    \
-  php/src/Google/Protobuf/Internal/FileDescriptorSet.php              \
+  php/src/Google/Protobuf/Internal/DescriptorProto.php                \
+  php/src/Google/Protobuf/Internal/Descriptor.php                     \
+  php/src/Google/Protobuf/Internal/EnumBuilderContext.php             \
   php/src/Google/Protobuf/Internal/EnumDescriptor.php                 \
   php/src/Google/Protobuf/Internal/EnumDescriptorProto.php            \
-  php/src/Google/Protobuf/Internal/GPBWire.php                        \
+  php/src/Google/Protobuf/Internal/EnumOptions.php                    \
+  php/src/Google/Protobuf/Internal/EnumValueDescriptorProto.php       \
+  php/src/Google/Protobuf/Internal/EnumValueDescriptor.php            \
+  php/src/Google/Protobuf/Internal/EnumValueOptions.php               \
   php/src/Google/Protobuf/Internal/FieldDescriptorProto_Label.php     \
-  php/src/Google/Protobuf/Internal/FieldOptions.php                   \
-  php/src/Google/Protobuf/Internal/GeneratedCodeInfo_Annotation.php   \
+  php/src/Google/Protobuf/Internal/FieldDescriptorProto.php           \
+  php/src/Google/Protobuf/Internal/FieldDescriptor.php                \
   php/src/Google/Protobuf/Internal/FieldDescriptorProto_Type.php      \
-  php/src/Google/Protobuf/Internal/GPBType.php                        \
+  php/src/Google/Protobuf/Internal/FieldOptions_CType.php             \
   php/src/Google/Protobuf/Internal/FieldOptions_JSType.php            \
+  php/src/Google/Protobuf/Internal/FieldOptions.php                   \
+  php/src/Google/Protobuf/Internal/FileDescriptorProto.php            \
+  php/src/Google/Protobuf/Internal/FileDescriptorSet.php              \
+  php/src/Google/Protobuf/Internal/FileDescriptor.php                 \
+  php/src/Google/Protobuf/Internal/FileOptions_OptimizeMode.php       \
+  php/src/Google/Protobuf/Internal/FileOptions.php                    \
+  php/src/Google/Protobuf/Internal/GeneratedCodeInfo_Annotation.php   \
+  php/src/Google/Protobuf/Internal/GeneratedCodeInfo.php              \
+  php/src/Google/Protobuf/Internal/GPBDecodeException.php             \
+  php/src/Google/Protobuf/Internal/GPBJsonWire.php                    \
+  php/src/Google/Protobuf/Internal/GPBLabel.php                       \
+  php/src/Google/Protobuf/Internal/GPBType.php                        \
+  php/src/Google/Protobuf/Internal/GPBUtil.php                        \
+  php/src/Google/Protobuf/Internal/GPBWireType.php                    \
+  php/src/Google/Protobuf/Internal/GPBWire.php                        \
+  php/src/Google/Protobuf/Internal/MapEntry.php                       \
+  php/src/Google/Protobuf/Internal/MapFieldIter.php                   \
+  php/src/Google/Protobuf/Internal/MapField.php                       \
+  php/src/Google/Protobuf/Internal/MessageBuilderContext.php          \
+  php/src/Google/Protobuf/Internal/MessageOptions.php                 \
+  php/src/Google/Protobuf/Internal/Message.php                        \
+  php/src/Google/Protobuf/Internal/MethodDescriptorProto.php          \
+  php/src/Google/Protobuf/Internal/MethodOptions_IdempotencyLevel.php \
+  php/src/Google/Protobuf/Internal/MethodOptions.php                  \
+  php/src/Google/Protobuf/Internal/OneofDescriptorProto.php           \
+  php/src/Google/Protobuf/Internal/OneofDescriptor.php                \
+  php/src/Google/Protobuf/Internal/OneofField.php                     \
+  php/src/Google/Protobuf/Internal/OneofOptions.php                   \
+  php/src/Google/Protobuf/Internal/RawInputStream.php                 \
+  php/src/Google/Protobuf/Internal/RepeatedFieldIter.php              \
+  php/src/Google/Protobuf/Internal/RepeatedField.php                  \
+  php/src/Google/Protobuf/Internal/ServiceDescriptorProto.php         \
+  php/src/Google/Protobuf/Internal/ServiceOptions.php                 \
   php/src/Google/Protobuf/Internal/SourceCodeInfo_Location.php        \
   php/src/Google/Protobuf/Internal/SourceCodeInfo.php                 \
-  php/src/Google/Protobuf/Internal/EnumOptions.php                    \
-  php/src/Google/Protobuf/Internal/GPBLabel.php                       \
-  php/src/Google/Protobuf/Internal/EnumBuilderContext.php             \
-  php/src/Google/Protobuf/Internal/GPBUtil.php                        \
-  php/src/Google/Protobuf/Internal/FieldOptions_CType.php             \
-  php/src/Google/Protobuf/Internal/GPBDecodeException.php             \
+  php/src/Google/Protobuf/Internal/UninterpretedOption_NamePart.php   \
+  php/src/Google/Protobuf/Internal/UninterpretedOption.php            \
   php/src/GPBMetadata/Google/Protobuf/Internal/Descriptor.php         \
   php/tests/array_test.php                                            \
   php/tests/autoload.php                                              \
@@ -658,6 +661,7 @@ php_EXTRA_DIST=                                                       \
   php/tests/encode_decode_test.php                                    \
   php/tests/gdb_test.sh                                               \
   php/tests/generated_class_test.php                                  \
+  php/tests/generated_phpdoc_test.php                                 \
   php/tests/map_field_test.php                                        \
   php/tests/memory_leak_test.php                                      \
   php/tests/php_implementation_test.php                               \
@@ -672,10 +676,11 @@ php_EXTRA_DIST=                                                       \
   php/tests/test_base.php                                             \
   php/tests/test_util.php                                             \
   php/tests/well_known_test.php                                       \
+  php/tests/undefined_test.php                                        \
   php/README.md                                                       \
-  php/phpunit.xml                                                     \
   php/composer.json                                                   \
   php/generate_descriptor_protos.sh                                   \
+  php/phpunit.xml                                                     \
   composer.json
 
 python_EXTRA_DIST=                                                           \
@@ -963,8 +968,13 @@ EXTRA_DIST = $(@DIST_LANG@_EXTRA_DIST)   \
   examples/list_people.py                \
   examples/list_people_test.go           \
   protobuf.bzl                           \
+  python/release/wheel/build_wheel_manylinux.sh  \
+  python/release/wheel/Dockerfile                \
+  python/release/wheel/protobuf_optimized_pip.sh \
+  python/release/wheel/README.md         \
   six.BUILD                              \
   util/python/BUILD
+
 
 # Deletes all the files generated by autogen.sh.
 MAINTAINERCLEANFILES =   \

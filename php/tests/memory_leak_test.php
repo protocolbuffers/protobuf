@@ -49,7 +49,7 @@ TestUtil::assertTestMessage($to);
 $from->setRecursive($from);
 
 $arr = new RepeatedField(GPBType::MESSAGE, TestMessage::class);
-$arr []= new TestMessage;
+$arr[] = new TestMessage;
 $arr[0]->SetRepeatedRecursive($arr);
 
 // Test oneof fields.

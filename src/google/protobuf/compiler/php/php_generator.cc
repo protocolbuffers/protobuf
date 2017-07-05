@@ -51,6 +51,9 @@ const std::string kDescriptorDirName = "Google/Protobuf/Internal";
 const std::string kDescriptorPackageName = "Google\\Protobuf\\Internal";
 const char* const kReservedNames[] = {"ARRAY", "Empty", "ECHO"};
 const int kReservedNamesSize = 3;
+const int kFieldSetter = 1;
+const int kFieldGetter = 2;
+const int kFieldProperty = 3;
 
 namespace google {
 namespace protobuf {
@@ -71,10 +74,12 @@ std::string EscapeDollor(const string& to_escape);
 std::string BinaryToHex(const string& binary);
 void Indent(io::Printer* printer);
 void Outdent(io::Printer* printer);
-void GenerateMessageDocComment(io::Printer* printer, const Descriptor* message);
-void GenerateFieldDocComment(io::Printer* printer,
-                             const FieldDescriptor* field);
-void GenerateEnumDocComment(io::Printer* printer, const EnumDescriptor* enum_);
+void GenerateMessageDocComment(io::Printer* printer, const Descriptor* message,
+                               int is_descriptor);
+void GenerateFieldDocComment(io::Printer* printer, const FieldDescriptor* field,
+                             int is_descriptor, int function_type);
+void GenerateEnumDocComment(io::Printer* printer, const EnumDescriptor* enum_,
+                            int is_descriptor);
 void GenerateEnumValueDocComment(io::Printer* printer,
                                  const EnumValueDescriptor* value);
 
@@ -306,6 +311,87 @@ std::string TypeName(const FieldDescriptor* field) {
   }
 }
 
+std::string PhpSetterTypeName(const FieldDescriptor* field, bool is_descriptor) {
+  if (field->is_map()) {
+    return "array|\\Google\\Protobuf\\Internal\\MapField";
+  }
+  string type;
+  switch (field->type()) {
+    case FieldDescriptor::TYPE_INT32:
+    case FieldDescriptor::TYPE_UINT32:
+    case FieldDescriptor::TYPE_SINT32:
+    case FieldDescriptor::TYPE_FIXED32:
+    case FieldDescriptor::TYPE_SFIXED32:
+    case FieldDescriptor::TYPE_ENUM:
+      type = "int";
+      break;
+    case FieldDescriptor::TYPE_INT64:
+    case FieldDescriptor::TYPE_UINT64:
+    case FieldDescriptor::TYPE_SINT64:
+    case FieldDescriptor::TYPE_FIXED64:
+    case FieldDescriptor::TYPE_SFIXED64:
+      type = "int|string";
+      break;
+    case FieldDescriptor::TYPE_DOUBLE:
+    case FieldDescriptor::TYPE_FLOAT:
+      type = "float";
+      break;
+    case FieldDescriptor::TYPE_BOOL:
+      type = "bool";
+      break;
+    case FieldDescriptor::TYPE_STRING:
+    case FieldDescriptor::TYPE_BYTES:
+      type = "string";
+      break;
+    case FieldDescriptor::TYPE_MESSAGE:
+      type = "\\" + FullClassName(field->message_type(), is_descriptor);
+      break;
+    case FieldDescriptor::TYPE_GROUP:
+      return "null";
+    default: assert(false); return "";
+  }
+  if (field->is_repeated()) {
+    // accommodate for edge case with multiple types.
+    size_t start_pos = type.find("|");
+    if (start_pos != std::string::npos) {
+      type.replace(start_pos, 1, "[]|");
+    }
+    type += "[]|\\Google\\Protobuf\\Internal\\RepeatedField";
+  }
+  return type;
+}
+
+std::string PhpGetterTypeName(const FieldDescriptor* field, bool is_descriptor) {
+  if (field->is_map()) {
+    return "\\Google\\Protobuf\\Internal\\MapField";
+  }
+  if (field->is_repeated()) {
+    return "\\Google\\Protobuf\\Internal\\RepeatedField";
+  }
+  switch (field->type()) {
+    case FieldDescriptor::TYPE_INT32:
+    case FieldDescriptor::TYPE_UINT32:
+    case FieldDescriptor::TYPE_SINT32:
+    case FieldDescriptor::TYPE_FIXED32:
+    case FieldDescriptor::TYPE_SFIXED32:
+    case FieldDescriptor::TYPE_ENUM: return "int";
+    case FieldDescriptor::TYPE_INT64:
+    case FieldDescriptor::TYPE_UINT64:
+    case FieldDescriptor::TYPE_SINT64:
+    case FieldDescriptor::TYPE_FIXED64:
+    case FieldDescriptor::TYPE_SFIXED64: return "int|string";
+    case FieldDescriptor::TYPE_DOUBLE:
+    case FieldDescriptor::TYPE_FLOAT: return "float";
+    case FieldDescriptor::TYPE_BOOL: return "bool";
+    case FieldDescriptor::TYPE_STRING:
+    case FieldDescriptor::TYPE_BYTES: return "string";
+    case FieldDescriptor::TYPE_MESSAGE:
+      return "\\" + FullClassName(field->message_type(), is_descriptor);
+    case FieldDescriptor::TYPE_GROUP: return "null";
+    default: assert(false); return "";
+  }
+}
+
 std::string EnumOrMessageSuffix(
     const FieldDescriptor* field, bool is_descriptor) {
   if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
@@ -390,7 +476,7 @@ void Outdent(io::Printer* printer) {
 void GenerateField(const FieldDescriptor* field, io::Printer* printer,
                    bool is_descriptor) {
   if (field->is_repeated()) {
-    GenerateFieldDocComment(printer, field);
+    GenerateFieldDocComment(printer, field, is_descriptor, kFieldProperty);
     printer->Print(
         "private $^name^;\n",
         "name", field->name());
@@ -398,7 +484,7 @@ void GenerateField(const FieldDescriptor* field, io::Printer* printer,
     // Oneof fields are handled by GenerateOneofField.
     return;
   } else {
-    GenerateFieldDocComment(printer, field);
+    GenerateFieldDocComment(printer, field, is_descriptor, kFieldProperty);
     printer->Print(
         "private $^name^ = ^default^;\n",
         "name", field->name(),
@@ -426,7 +512,7 @@ void GenerateFieldAccessor(const FieldDescriptor* field, bool is_descriptor,
 
   // Generate getter.
   if (oneof != NULL) {
-    GenerateFieldDocComment(printer, field);
+    GenerateFieldDocComment(printer, field, is_descriptor, kFieldGetter);
     printer->Print(
         "public function get^camel_name^()\n"
         "{\n"
@@ -435,7 +521,7 @@ void GenerateFieldAccessor(const FieldDescriptor* field, bool is_descriptor,
         "camel_name", UnderscoresToCamelCase(field->name(), true),
         "number", IntToString(field->number()));
   } else {
-    GenerateFieldDocComment(printer, field);
+    GenerateFieldDocComment(printer, field, is_descriptor, kFieldGetter);
     printer->Print(
         "public function get^camel_name^()\n"
         "{\n"
@@ -446,7 +532,7 @@ void GenerateFieldAccessor(const FieldDescriptor* field, bool is_descriptor,
   }
 
   // Generate setter.
-  GenerateFieldDocComment(printer, field);
+  GenerateFieldDocComment(printer, field, is_descriptor, kFieldSetter);
   printer->Print(
       "public function set^camel_name^(^var^)\n"
       "{\n",
@@ -844,7 +930,7 @@ void GenerateEnumFile(const FileDescriptor* file, const EnumDescriptor* en,
         "name", fullname.substr(0, lastindex));
   }
 
-  GenerateEnumDocComment(&printer, en);
+  GenerateEnumDocComment(&printer, en, is_descriptor);
 
   if (lastindex != string::npos) {
     printer.Print(
@@ -905,7 +991,7 @@ void GenerateMessageFile(const FileDescriptor* file, const Descriptor* message,
 
   GenerateUseDeclaration(is_descriptor, &printer);
 
-  GenerateMessageDocComment(&printer, message);
+  GenerateMessageDocComment(&printer, message, is_descriptor);
   if (lastindex != string::npos) {
     printer.Print(
         "class ^name^ extends \\Google\\Protobuf\\Internal\\Message\n"
@@ -953,6 +1039,9 @@ void GenerateMessageFile(const FileDescriptor* file, const Descriptor* message,
   for (int i = 0; i < message->oneof_decl_count(); i++) {
     const OneofDescriptor* oneof = message->oneof_decl(i);
     printer.Print(
+      "/**\n"
+      " * @return string\n"
+      " */\n"
       "public function get^camel_name^()\n"
       "{\n"
       "    return $this->whichOneof(\"^name^\");\n"
@@ -1019,22 +1108,6 @@ static string EscapePhpdoc(const string& input) {
         // does not have a corresponding @Deprecated annotation.
         result.append("&#64;");
         break;
-      case '<':
-        // Avoid interpretation as HTML.
-        result.append("&lt;");
-        break;
-      case '>':
-        // Avoid interpretation as HTML.
-        result.append("&gt;");
-        break;
-      case '&':
-        // Avoid interpretation as HTML.
-        result.append("&amp;");
-        break;
-      case '\\':
-        // Java interprets Unicode escape sequences anywhere!
-        result.append("&#92;");
-        break;
       default:
         result.push_back(c);
         break;
@@ -1053,7 +1126,7 @@ static void GenerateDocCommentBodyForLocation(
   if (!comments.empty()) {
     // TODO(teboring):  Ideally we should parse the comment text as Markdown and
     //   write it back as HTML, but this requires a Markdown parser.  For now
-    //   we just use <pre> to get fixed-width text formatting.
+    //   we just use the proto comments unchanged.
 
     // If the comment itself contains block comment start or end markers,
     // HTML-escape them so that they don't accidentally close the doc comment.
@@ -1064,7 +1137,6 @@ static void GenerateDocCommentBodyForLocation(
       lines.pop_back();
     }
 
-    printer->Print(" * <pre>\n");
     for (int i = 0; i < lines.size(); i++) {
       // Most lines should start with a space.  Watch out for lines that start
       // with a /, since putting that right after the leading asterisk will
@@ -1076,7 +1148,6 @@ static void GenerateDocCommentBodyForLocation(
       }
     }
     printer->Print(
-        " * </pre>\n"
         " *\n");
   }
 }
@@ -1102,17 +1173,18 @@ static string FirstLineOf(const string& value) {
 }
 
 void GenerateMessageDocComment(io::Printer* printer,
-                               const Descriptor* message) {
+                               const Descriptor* message, int is_descriptor) {
   printer->Print("/**\n");
   GenerateDocCommentBody(printer, message);
   printer->Print(
-    " * Protobuf type <code>^fullname^</code>\n"
+    " * Generated from protobuf message <code>^messagename^</code>\n"
     " */\n",
-    "fullname", EscapePhpdoc(message->full_name()));
+    "fullname", EscapePhpdoc(PhpName(message->full_name(), is_descriptor)),
+    "messagename", EscapePhpdoc(message->full_name()));
 }
 
-void GenerateFieldDocComment(io::Printer* printer,
-                             const FieldDescriptor* field) {
+void GenerateFieldDocComment(io::Printer* printer, const FieldDescriptor* field,
+                             int is_descriptor, int function_type) {
   // In theory we should have slightly different comments for setters, getters,
   // etc., but in practice everyone already knows the difference between these
   // so it's redundant information.
@@ -1124,18 +1196,27 @@ void GenerateFieldDocComment(io::Printer* printer,
   printer->Print("/**\n");
   GenerateDocCommentBody(printer, field);
   printer->Print(
-    " * <code>^def^</code>\n",
+    " * Generated from protobuf field <code>^def^</code>\n",
     "def", EscapePhpdoc(FirstLineOf(field->DebugString())));
+  if (function_type == kFieldSetter) {
+    printer->Print(" * @param ^php_type^ $var\n",
+      "php_type", PhpSetterTypeName(field, is_descriptor));
+    printer->Print(" * @return $this\n");
+  } else if (function_type == kFieldGetter) {
+    printer->Print(" * @return ^php_type^\n",
+      "php_type", PhpGetterTypeName(field, is_descriptor));
+  }
   printer->Print(" */\n");
 }
 
-void GenerateEnumDocComment(io::Printer* printer, const EnumDescriptor* enum_) {
+void GenerateEnumDocComment(io::Printer* printer, const EnumDescriptor* enum_,
+                            int is_descriptor) {
   printer->Print("/**\n");
   GenerateDocCommentBody(printer, enum_);
   printer->Print(
     " * Protobuf enum <code>^fullname^</code>\n"
     " */\n",
-    "fullname", EscapePhpdoc(enum_->full_name()));
+    "fullname", EscapePhpdoc(PhpName(enum_->full_name(), is_descriptor)));
 }
 
 void GenerateEnumValueDocComment(io::Printer* printer,
@@ -1143,7 +1224,7 @@ void GenerateEnumValueDocComment(io::Printer* printer,
   printer->Print("/**\n");
   GenerateDocCommentBody(printer, value);
   printer->Print(
-    " * <code>^def^</code>\n"
+    " * Generated from protobuf enum <code>^def^</code>\n"
     " */\n",
     "def", EscapePhpdoc(FirstLineOf(value->DebugString())));
 }

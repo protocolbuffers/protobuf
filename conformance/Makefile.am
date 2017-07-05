@@ -315,7 +315,7 @@ conformance-csharp: $(other_language_protoc_outputs)
 conformance-php:
 	@echo "Writing shortcut script conformance-php..."
 	@echo '#! /bin/sh' > conformance-php
-	@echo 'php  ./conformance_php.php' >> conformance-php
+	@echo 'php -d auto_prepend_file=autoload.php ./conformance_php.php' >> conformance-php
 	@chmod +x conformance-php
 
 conformance-php-c:
@@ -345,6 +345,9 @@ test_php: protoc_middleman conformance-test-runner conformance-php $(other_langu
 
 test_php_c: protoc_middleman conformance-test-runner conformance-php-c $(other_language_protoc_outputs)
 	./conformance-test-runner --enforce_recommended --failure_list failure_list_php_c.txt ./conformance-php-c
+
+test_php_zts_c: protoc_middleman conformance-test-runner conformance-php-c $(other_language_protoc_outputs)
+	./conformance-test-runner --enforce_recommended --failure_list failure_list_php_zts_c.txt ./conformance-php-c
 
 # These depend on library paths being properly set up.  The easiest way to
 # run them is to just use "tox" from the python dir.
