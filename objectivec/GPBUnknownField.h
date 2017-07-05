@@ -42,6 +42,9 @@ NS_ASSUME_NONNULL_BEGIN
  **/
 @interface GPBUnknownField : NSObject<NSCopying>
 
+/** Initialize a field with the given number. */
+- (instancetype)initWithNumber:(int32_t)number;
+
 /** The field number the data is stored under. */
 @property(nonatomic, readonly, assign) int32_t number;
 
