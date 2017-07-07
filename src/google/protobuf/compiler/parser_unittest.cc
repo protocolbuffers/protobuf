@@ -570,8 +570,8 @@ TEST_F(ParseMessageTest, MultipleOneofs) {
 TEST_F(ParseMessageTest, Maps) {
   ExpectParsesTo(
     "message TestMessage {\n"
-    "  std::map<int32, string> primitive_type_map = 1;\n"
-    "  std::map<KeyType, ValueType> composite_type_map = 2;\n"
+    "  map<int32, string> primitive_type_map = 1;\n"
+    "  map<KeyType, ValueType> composite_type_map = 2;\n"
     "}\n",
 
     "message_type {"
@@ -1241,7 +1241,7 @@ TEST_F(ParseErrorTest, MapInOneof) {
   ExpectHasErrors(
     "message TestMessage {\n"
     "  oneof foo {\n"
-    "    std::map<int32, int32> foo_map = 1;\n"
+    "    map<int32, int32> foo_map = 1;\n"
     "    map message_field = 2;\n"  // a normal message field is OK
     "  }\n"
     "}\n",
@@ -1251,9 +1251,9 @@ TEST_F(ParseErrorTest, MapInOneof) {
 TEST_F(ParseErrorTest, LabelForMap) {
   ExpectHasErrors(
     "message TestMessage {\n"
-    "  optional std::map<int32, int32> int_map = 1;\n"
-    "  required std::map<int32, int32> int_map2 = 2;\n"
-    "  repeated std::map<int32, int32> int_map3 = 3;\n"
+    "  optional map<int32, int32> int_map = 1;\n"
+    "  required map<int32, int32> int_map2 = 2;\n"
+    "  repeated map<int32, int32> int_map3 = 3;\n"
     "  optional map map_message = 4;\n"  // a normal message field is OK
     "}\n",
     "1:14: Field labels (required/optional/repeated) are not allowed on map "
@@ -1268,14 +1268,14 @@ TEST_F(ParseErrorTest, MalformedMaps) {
   ExpectHasErrors(
     "message TestMessage {\n"
     "  map map_message = 1;\n"   // a normal message field lacking label
-    "  std::map<string> str_map = 2;\n"
-    "  std::map<string,> str_map2 = 3;\n"
-    "  std::map<,string> str_map3 = 4;\n"
-    "  std::map<> empty_map = 5;\n"
-    "  std::map<string,string str_map6 = 6;\n"
+    "  map<string> str_map = 2;\n"
+    "  map<string,> str_map2 = 3;\n"
+    "  map<,string> str_map3 = 4;\n"
+    "  map<> empty_map = 5;\n"
+    "  map<string,string str_map6 = 6;\n"
     "}"
     "extend SomeMessage {\n"
-    "  std::map<int32, int32> int_map = 1;\n"
+    "  map<int32, int32> int_map = 1;\n"
     "}",
     "1:6: Expected \"required\", \"optional\", or \"repeated\".\n"
     "2:12: Expected \",\".\n"
@@ -1968,8 +1968,8 @@ TEST_F(ParseDescriptorDebugTest, TestMaps) {
       "syntax = \"proto3\"; "
       "message Foo { "
       "  message Bar { } "
-      "  std::map<int32, Bar> enum_message_map = 1; "
-      "  std::map<string, float> primitive_map = 2; "
+      "  map<int32, Bar> enum_message_map = 1; "
+      "  map<string, float> primitive_map = 2; "
       "} ");
   FileDescriptorProto original;
   EXPECT_TRUE(parser_->Parse(input_.get(), &original));
@@ -1980,7 +1980,7 @@ TEST_F(ParseDescriptorDebugTest, TestMaps) {
   // Make sure the debug string uses map syntax and does not have the auto
   // generated entry.
   string debug_string = file->DebugString();
-  EXPECT_TRUE(debug_string.find("std::map<") != string::npos);
+  EXPECT_TRUE(debug_string.find("map<") != string::npos);
   EXPECT_TRUE(debug_string.find("option map_entry") == string::npos);
   EXPECT_TRUE(debug_string.find("MapEntry") == string::npos);
 

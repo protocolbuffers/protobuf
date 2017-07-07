@@ -745,7 +745,7 @@ const Message* DynamicMessageFactory::GetPrototypeNoLock(
   memset(base, 0, size);
 
   // The prototype in type_info has to be set before creating the prototype
-  // instance on memory. e.g., message Foo { std::map<int32, Foo> a = 1; }. When
+  // instance on memory. e.g., message Foo { map<int32, Foo> a = 1; }. When
   // creating prototype for Foo, prototype of the map entry will also be
   // created, which needs the address of the prototype of Foo (the value in
   // map). To break the cyclic dependency, we have to assgin the address of
