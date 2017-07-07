@@ -550,8 +550,8 @@ void GenerateFieldAccessor(const FieldDescriptor* field, bool is_descriptor,
     const FieldDescriptor* value = map_entry->FindFieldByName("value");
     printer->Print(
         "$arr = GPBUtil::checkMapField($var, "
-        "\\Google\\Protobuf\\Internal\\GPBType::^key_type^, "
-        "\\Google\\Protobuf\\Internal\\GPBType::^value_type^",
+        "GPBType::^key_type^, "
+        "GPBType::^value_type^",
         "key_type", ToUpper(key->type_name()),
         "value_type", ToUpper(value->type_name()));
     if (value->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
@@ -570,7 +570,7 @@ void GenerateFieldAccessor(const FieldDescriptor* field, bool is_descriptor,
   } else if (field->is_repeated()) {
     printer->Print(
         "$arr = GPBUtil::checkRepeatedField($var, "
-        "\\Google\\Protobuf\\Internal\\GPBType::^type^",
+        "GPBType::^type^",
         "type", ToUpper(field->type_name()));
     if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
       printer->Print(
@@ -689,8 +689,8 @@ void GenerateMessageToPool(const string& name_prefix, const Descriptor* message,
       const FieldDescriptor* val =
           field->message_type()->FindFieldByName("value");
       printer->Print(
-          "->map('^field^', \\Google\\Protobuf\\Internal\\GPBType::^key^, "
-          "\\Google\\Protobuf\\Internal\\GPBType::^value^, ^number^^other^)\n",
+          "->map('^field^', GPBType::^key^, "
+          "GPBType::^value^, ^number^^other^)\n",
           "field", field->name(),
           "key", ToUpper(key->type_name()),
           "value", ToUpper(val->type_name()),
@@ -699,7 +699,7 @@ void GenerateMessageToPool(const string& name_prefix, const Descriptor* message,
     } else if (!field->containing_oneof()) {
       printer->Print(
           "->^label^('^field^', "
-          "\\Google\\Protobuf\\Internal\\GPBType::^type^, ^number^^other^)\n",
+          "GPBType::^type^, ^number^^other^)\n",
           "field", field->name(),
           "label", LabelForField(field),
           "type", ToUpper(field->type_name()),
@@ -718,7 +718,7 @@ void GenerateMessageToPool(const string& name_prefix, const Descriptor* message,
       const FieldDescriptor* field = oneof->field(index);
       printer->Print(
           "->value('^field^', "
-          "\\Google\\Protobuf\\Internal\\GPBType::^type^, ^number^^other^)\n",
+          "GPBType::^type^, ^number^^other^)\n",
           "field", field->name(),
           "type", ToUpper(field->type_name()),
           "number", SimpleItoa(field->number()),
@@ -885,6 +885,8 @@ void GenerateMetadataFile(const FileDescriptor* file,
   printer.Print(
       "namespace ^name^;\n\n",
       "name", fullname.substr(0, lastindex));
+
+  printer.Print("use Google\\Protobuf\\Internal\\GPBType;\n\n");
 
   if (lastindex != string::npos) {
     printer.Print(

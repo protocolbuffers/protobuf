@@ -172,7 +172,7 @@ class SourceCodeInfo extends \Google\Protobuf\Internal\Message
      */
     public function setLocation(&$var)
     {
-        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \Google\Protobuf\Internal\SourceCodeInfo_Location::class);
+        $arr = GPBUtil::checkRepeatedField($var, GPBType::MESSAGE, \Google\Protobuf\Internal\SourceCodeInfo_Location::class);
         $this->location = $arr;
         $this->has_location = true;
 
