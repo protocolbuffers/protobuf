@@ -125,7 +125,7 @@ class EnumDescriptorProto extends \Google\Protobuf\Internal\Message
      * @param \Google\Protobuf\Internal\EnumOptions $var
      * @return $this
      */
-    public function setOptions($var)
+    public function setOptions(\Google\Protobuf\Internal\EnumOptions $var = null)
     {
         GPBUtil::checkMessage($var, \Google\Protobuf\Internal\EnumOptions::class);
         $this->options = $var;
