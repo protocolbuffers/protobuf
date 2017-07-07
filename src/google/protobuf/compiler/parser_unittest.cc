@@ -2294,7 +2294,7 @@ class SourceInfoTest : public ParserTest {
     }
   };
 
-  typedef std::multistd::map<SpanKey, const SourceCodeInfo::Location*> SpanMap;
+  typedef std::multimap<SpanKey, const SourceCodeInfo::Location*> SpanMap;
   SpanMap spans_;
   std::map<char, std::pair<int, int> > markers_;
   string text_without_markers_;
