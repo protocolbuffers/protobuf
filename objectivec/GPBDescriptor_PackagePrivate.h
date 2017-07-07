@@ -198,7 +198,7 @@ typedef NS_OPTIONS(uint32_t, GPBDescriptorInitializationFlags) {
 
   SEL getSel_;
   SEL setSel_;
-  SEL hasOrCountSel_;  // *Count for std::map<>/repeated fields, has* otherwise.
+  SEL hasOrCountSel_;  // *Count for map<>/repeated fields, has* otherwise.
   SEL setHasSel_;
 }
 
