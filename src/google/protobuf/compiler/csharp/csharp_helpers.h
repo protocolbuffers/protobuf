@@ -108,7 +108,7 @@ FieldGeneratorBase* CreateFieldGenerator(const FieldDescriptor* descriptor,
                                          const Options* options);
 
 // Determines whether the given message is a map entry message,
-// i.e. one implicitly created by protoc due to a map<key, value> field.
+// i.e. one implicitly created by protoc due to a std::map<key, value> field.
 inline bool IsMapEntryMessage(const Descriptor* descriptor) {
   return descriptor->options().map_entry();
 }

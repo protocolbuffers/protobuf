@@ -1207,7 +1207,7 @@ string FieldDefinition(const GeneratorOptions& options,
     } else {
       value_type = ProtoTypeName(options, value_field);
     }
-    return StringPrintf("map<%s, %s> %s = %d;",
+    return StringPrintf("std::map<%s, %s> %s = %d;",
                         key_type.c_str(),
                         value_type.c_str(),
                         field->name().c_str(),

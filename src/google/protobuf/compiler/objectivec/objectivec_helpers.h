@@ -262,20 +262,20 @@ class LIBPROTOC_EXPORT ImportWriter {
  private:
   class ProtoFrameworkCollector : public LineConsumer {
    public:
-    ProtoFrameworkCollector(map<string, string>* inout_proto_file_to_framework_name)
+    ProtoFrameworkCollector(std::map<string, string>* inout_proto_file_to_framework_name)
         : map_(inout_proto_file_to_framework_name) {}
 
     virtual bool ConsumeLine(const StringPiece& line, string* out_error);
 
    private:
-    map<string, string>* map_;
+    std::map<string, string>* map_;
   };
 
   void ParseFrameworkMappings();
 
   const string generate_for_named_framework_;
   const string named_framework_to_proto_path_mappings_path_;
-  map<string, string> proto_file_to_framework_name_;
+  std::map<string, string> proto_file_to_framework_name_;
   bool need_to_parse_mapping_file_;
 
   vector<string> protobuf_framework_imports_;

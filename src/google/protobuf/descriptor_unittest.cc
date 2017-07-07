@@ -580,7 +580,7 @@ class DescriptorTest : public testing::Test {
     //
     //   // in "map.proto"
     //   message TestMessage3 {
-    //     map<int32, int32> map_int32_int32 = 1;
+    //     std::map<int32, int32> map_int32_int32 = 1;
     //   }
     //
     //   // in "json.proto"
@@ -5425,7 +5425,7 @@ void FillValidMapEntry(FileDescriptorProto* file_proto) {
 }
 static const char* kMapEntryErrorMessage =
     "foo.proto: Foo.foo_map: OTHER: map_entry should not be set explicitly. "
-    "Use map<KeyType, ValueType> instead.\n";
+    "Use std::map<KeyType, ValueType> instead.\n";
 static const char* kMapEntryKeyTypeErrorMessage =
     "foo.proto: Foo.foo_map: TYPE: Key in map fields cannot be float/double, "
     "bytes or message types.\n";

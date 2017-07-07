@@ -155,14 +155,14 @@ class LIBPROTOBUF_EXPORT MapFieldBase {
   // different types. Real helper methods are implemented in
   // TypeDefinedMapFieldBase.
   friend class ::google::protobuf::MapIterator;
-  // Allocate map<...>::iterator for MapIterator.
+  // Allocate std::map<...>::iterator for MapIterator.
   virtual void InitializeIterator(MapIterator* map_iter) const = 0;
 
   // DeleteIterator() is called by the destructor of MapIterator only.
-  // It deletes map<...>::iterator for MapIterator.
+  // It deletes std::map<...>::iterator for MapIterator.
   virtual void DeleteIterator(MapIterator* map_iter) const = 0;
 
-  // Copy the map<...>::iterator from other_iterator to
+  // Copy the std::map<...>::iterator from other_iterator to
   // this_iterator.
   virtual void CopyIterator(MapIterator* this_iterator,
                             const MapIterator& other_iterator) const = 0;

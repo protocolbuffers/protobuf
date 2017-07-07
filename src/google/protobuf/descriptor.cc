@@ -2543,7 +2543,7 @@ void FieldDescriptor::DebugString(int depth,
   // Special case map fields.
   if (is_map()) {
     strings::SubstituteAndAppend(
-        &field_type, "map<$0, $1>",
+        &field_type, "std::map<$0, $1>",
         message_type()->field(0)->FieldTypeNameDebugString(),
         message_type()->field(1)->FieldTypeNameDebugString());
   } else {
@@ -5729,7 +5729,7 @@ void DescriptorBuilder::ValidateFieldOptions(FieldDescriptor* field,
     if (!ValidateMapEntry(field, proto)) {
       AddError(field->full_name(), proto,
                DescriptorPool::ErrorCollector::OTHER,
-               "map_entry should not be set explicitly. Use map<KeyType, "
+               "map_entry should not be set explicitly. Use std::map<KeyType, "
                "ValueType> instead.");
     }
   }

@@ -476,7 +476,7 @@ ProtoStreamObjectWriter* ProtoStreamObjectWriter::StartObject(
     // If master type is a special type that needs extra values to be written to
     // stream, we write those values.
     if (master_type_.name() == kStructType) {
-      // Struct has a map<string, Value> field called "fields".
+      // Struct has a std::map<string, Value> field called "fields".
       // https://github.com/google/protobuf/blob/master/src/google/protobuf/struct.proto
       // "fields": [
       Push("fields", Item::MAP, true, true);

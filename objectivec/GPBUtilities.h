@@ -363,7 +363,7 @@ void GPBSetMessageRepeatedField(GPBMessage *self,
 // Map Fields
 
 /**
- * Gets the value of a map<> field.
+ * Gets the value of a std::map<> field.
  *
  * @param self  The message from which to get the field.
  * @param field The repeated field to get.
@@ -373,7 +373,7 @@ void GPBSetMessageRepeatedField(GPBMessage *self,
 id GPBGetMessageMapField(GPBMessage *self, GPBFieldDescriptor *field);
 
 /**
- * Sets the value of a map<> field.
+ * Sets the value of a std::map<> field.
  *
  * @param self       The message into which to set the field.
  * @param field      The field to set.
@@ -495,7 +495,7 @@ CF_EXTERN_C_END
 //%// Map Fields
 //%
 //%/**
-//% * Gets the value of a map<> field.
+//% * Gets the value of a std::map<> field.
 //% *
 //% * @param self  The message from which to get the field.
 //% * @param field The repeated field to get.
@@ -505,7 +505,7 @@ CF_EXTERN_C_END
 //%id GPBGetMessageMapField(GPBMessage *self, GPBFieldDescriptor *field);
 //%
 //%/**
-//% * Sets the value of a map<> field.
+//% * Sets the value of a std::map<> field.
 //% *
 //% * @param self       The message into which to set the field.
 //% * @param field      The field to set.

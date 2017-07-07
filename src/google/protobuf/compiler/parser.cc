@@ -86,7 +86,7 @@ TypeNameMap MakeTypeNameTable() {
 const TypeNameMap kTypeNames = MakeTypeNameTable();
 
 // Camel-case the field name and append "Entry" for generated map entry name.
-// e.g. map<KeyType, ValueType> foo_map => FooMapEntry
+// e.g. std::map<KeyType, ValueType> foo_map => FooMapEntry
 string MapEntryName(const string& field_name) {
   string result;
   static const char kSuffix[] = "Entry";
@@ -1000,7 +1000,7 @@ void Parser::GenerateMapEntry(const MapField& map_field,
   //
   // The following definition:
   //   message Foo {
-  //     map<string, string> value = 1 [enforce_utf8 = false];
+  //     std::map<string, string> value = 1 [enforce_utf8 = false];
   //   }
   // will be interpreted as:
   //   message Foo {

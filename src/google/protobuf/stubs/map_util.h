@@ -295,7 +295,7 @@ void InsertOrUpdateMany(Collection* const collection,
 }
 
 // Change the value associated with a particular key in a map or hash_map
-// of the form map<Key, Value*> which owns the objects pointed to by the
+// of the form std::map<Key, Value*> which owns the objects pointed to by the
 // value pointers.  If there was an existing value for the key, it is deleted.
 // True indicates an insert took place, false indicates an update + delete.
 template <class Collection>
@@ -370,7 +370,7 @@ void InsertOrDieNoPrint(
 // Inserts a new key and default-initialized value. Dies if the key was already
 // present. Returns a reference to the value. Example usage:
 //
-// map<int, SomeProto> m;
+// std::map<int, SomeProto> m;
 // SomeProto& proto = InsertKeyOrDie(&m, 3);
 // proto.set_field("foo");
 template <class Collection>
@@ -413,7 +413,7 @@ LookupOrInsert(Collection* const collection,
 //
 // Example:
 //   vector<string> v = {"a", "b", "c", "a", "b"};
-//   map<string, int> m;
+//   std::map<string, int> m;
 //   AddTokenCounts(v, 1, &m);
 //   assert(m["a"] == 2);
 //   assert(m["b"] == 2);
@@ -435,7 +435,7 @@ void AddTokenCounts(
 // Returns a reference to the value associated with key. If not found, a value
 // is default constructed on the heap and added to the map.
 //
-// This function is useful for containers of the form map<Key, Value*>, where
+// This function is useful for containers of the form std::map<Key, Value*>, where
 // inserting a new key, value pair involves constructing a new heap-allocated
 // Value, and storing a pointer to that in the collection.
 template <class Collection>
@@ -648,7 +648,7 @@ InsertOrReturnExisting(
 // collection.
 //
 // Examples:
-//   map<string, MyType*> my_map;
+//   std::map<string, MyType*> my_map;
 //
 // One line cleanup:
 //     delete EraseKeyReturnValuePtr(&my_map, "abc");

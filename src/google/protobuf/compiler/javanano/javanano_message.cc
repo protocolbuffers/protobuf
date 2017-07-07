@@ -182,7 +182,7 @@ void MessageGenerator::Generate(io::Printer* printer) {
   }
 
   // oneof
-  map<string, string> vars;
+  std::map<string, string> vars;
   vars["message_name"] = descriptor_->name();
   for (int i = 0; i < descriptor_->oneof_decl_count(); i++) {
     const OneofDescriptor* oneof_desc = descriptor_->oneof_decl(i);

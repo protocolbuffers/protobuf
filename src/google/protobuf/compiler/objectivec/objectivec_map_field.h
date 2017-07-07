@@ -51,7 +51,7 @@ class MapFieldGenerator : public RepeatedFieldGenerator {
   MapFieldGenerator(const FieldDescriptor* descriptor, const Options& options);
   virtual ~MapFieldGenerator();
 
-  virtual void DetermineForwardDeclarations(set<string>* fwd_decls) const;
+  virtual void DetermineForwardDeclarations(std::set<string>* fwd_decls) const;
 
  private:
   scoped_ptr<FieldGenerator> value_field_generator_;
