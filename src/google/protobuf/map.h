@@ -862,14 +862,7 @@ class Map {
     size_type BucketNumber(const Key& k) const {
       // We inherit from hasher, so one-arg operator() provides a hash function.
       size_type h = (*const_cast<InnerMap*>(this))(k);
-      // To help prevent people from making assumptions about the hash function,
-      // we use the seed differently depending on NDEBUG.  The default hash
-      // function, the seeding, etc., are all likely to change in the future.
-#ifndef NDEBUG
-      return (h * (seed_ | 1)) & (num_buckets_ - 1);
-#else
       return (h + seed_) & (num_buckets_ - 1);
-#endif
     }
 
     bool IsMatch(const Key& k0, const Key& k1) const {
