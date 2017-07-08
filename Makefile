@@ -110,7 +110,7 @@ clean_leave_profile:
 	@rm -rf obj lib
 	@rm -f tests/google_message?.h
 	@rm -f tests/json/test.upbdefs.o
-	@rm -f $(TESTS) tests/testmain.o tests/t.*
+	@rm -f $(TESTS) tests/testmain.o tests/t.* tests/conformance_upb
 	@rm -rf tools/upbc deps
 	@rm -rf upb/bindings/python/build
 	@rm -f upb/bindings/ruby/Makefile
@@ -148,7 +148,9 @@ make_objs_cc = $$(patsubst upb/$$(pc).cc,obj/upb/$$(pc).$(1),$$($$(call to_srcs,
 # Core libraries (ie. not bindings). ###############################################################
 
 upb_SRCS = \
+  upb/decode.c \
   upb/def.c \
+  upb/encode.c \
   upb/handlers.c \
   upb/msg.c \
   upb/refcounted.c \
@@ -360,6 +362,21 @@ test:
 	  fi \
 	done;
 	@echo "All tests passed!"
+
+obj/conformance_protos: obj/conformance_protos.pb tools/upbc
+	cd obj && ../tools/upbc conformance_protos.pb && touch conformance_protos
+
+obj/conformance_protos.pb: third_party/protobuf/autogen.sh
+	protoc -Ithird_party/protobuf/conformance -Ithird_party/protobuf/src --include_imports \
+	  third_party/protobuf/conformance/conformance.proto \
+	  third_party/protobuf/src/google/protobuf/test_messages_proto3.proto \
+	  -o obj/conformance_protos.pb
+
+third_party/protouf/autogen.sh: .gitmodules
+	git submodule init && git submodule update
+
+tests/conformance_upb: tests/conformance_upb.c lib/libupb.a obj/conformance_protos
+	$(CC) -o tests/conformance_upb tests/conformance_upb.c -Iobj -I. $(CPPFLAGS) $(CFLAGS) obj/conformance.upb.c obj/google/protobuf/*.upb.c lib/libupb.a
 
 
 # Google protobuf binding ######################################################

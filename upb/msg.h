@@ -386,6 +386,7 @@ bool upb_msg_getscalarhandlerdata(const upb_handlers *h,
 /** Interfaces for generated code *********************************************/
 
 #define UPB_NOT_IN_ONEOF UINT16_MAX
+#define UPB_NO_HASBIT UINT16_MAX
 
 typedef struct {
   uint32_t number;

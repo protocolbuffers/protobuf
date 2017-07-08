@@ -34,6 +34,9 @@ template <int N> class InlinedEnvironment;
 #define UPB_INLINE static
 #endif
 
+/* Hints to the compiler about likely/unlikely branches. */
+#define UPB_LIKELY(x) __builtin_expect((x),1)
+
 /* Define UPB_BIG_ENDIAN manually if you're on big endian and your compiler
  * doesn't provide these preprocessor symbols. */
 #if defined(__BYTE_ORDER__) && (__BYTE_ORDER__ == __ORDER_BIG_ENDIAN__)
