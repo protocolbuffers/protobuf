@@ -474,7 +474,7 @@ static void map_slot_init(void* memory, upb_fieldtype_t type, zval* cache) {
       *(zval***)memory = holder;
 #else
       *(zval**)memory = cache;
-      // PHP_PROTO_ZVAL_STRINGL(*(zval**)memory, "", 0, 1);
+      PHP_PROTO_ZVAL_STRINGL(*(zval**)memory, "", 0, 1);
 #endif
       break;
     }
