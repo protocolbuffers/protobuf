@@ -120,6 +120,7 @@ namespace Google.Protobuf.WellKnownTypes {
       get { return fields_; }
     }
 
+    //@@protoc_insertion_point(class_scope:google.protobuf.Struct)
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as Struct);
@@ -151,6 +152,7 @@ namespace Google.Protobuf.WellKnownTypes {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+      //@@protoc_insertion_point(write_to_scope_begin:google.protobuf.Struct)
       fields_.WriteTo(output, _map_fields_codec);
     }
 
@@ -354,6 +356,7 @@ namespace Google.Protobuf.WellKnownTypes {
       kind_ = null;
     }
 
+    //@@protoc_insertion_point(class_scope:google.protobuf.Value)
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as Value);
@@ -397,6 +400,7 @@ namespace Google.Protobuf.WellKnownTypes {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+      //@@protoc_insertion_point(write_to_scope_begin:google.protobuf.Value)
       if (kindCase_ == KindOneofCase.NullValue) {
         output.WriteRawTag(8);
         output.WriteEnum((int) NullValue);
@@ -574,6 +578,7 @@ namespace Google.Protobuf.WellKnownTypes {
       get { return values_; }
     }
 
+    //@@protoc_insertion_point(class_scope:google.protobuf.ListValue)
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as ListValue);
@@ -605,6 +610,7 @@ namespace Google.Protobuf.WellKnownTypes {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+      //@@protoc_insertion_point(write_to_scope_begin:google.protobuf.ListValue)
       values_.WriteTo(output, _repeated_values_codec);
     }
 

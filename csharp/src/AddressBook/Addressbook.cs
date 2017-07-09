@@ -88,6 +88,7 @@ namespace Google.Protobuf.Examples.AddressBook {
       get { return name_; }
       set {
         name_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+        //@@protoc_insertion_point(field_modifier_scope_after:tutorial.Person.setName)
       }
     }
 
@@ -102,6 +103,7 @@ namespace Google.Protobuf.Examples.AddressBook {
       get { return id_; }
       set {
         id_ = value;
+        //@@protoc_insertion_point(field_modifier_scope_after:tutorial.Person.setId)
       }
     }
 
@@ -113,6 +115,7 @@ namespace Google.Protobuf.Examples.AddressBook {
       get { return email_; }
       set {
         email_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+        //@@protoc_insertion_point(field_modifier_scope_after:tutorial.Person.setEmail)
       }
     }
 
@@ -126,6 +129,7 @@ namespace Google.Protobuf.Examples.AddressBook {
       get { return phones_; }
     }
 
+    //@@protoc_insertion_point(class_scope:tutorial.Person)
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as Person);
@@ -163,6 +167,7 @@ namespace Google.Protobuf.Examples.AddressBook {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+      //@@protoc_insertion_point(write_to_scope_begin:tutorial.Person)
       if (Name.Length != 0) {
         output.WriteRawTag(10);
         output.WriteString(Name);
@@ -290,6 +295,7 @@ namespace Google.Protobuf.Examples.AddressBook {
           get { return number_; }
           set {
             number_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+            //@@protoc_insertion_point(field_modifier_scope_after:tutorial.Person.PhoneNumber.setNumber)
           }
         }
 
@@ -301,9 +307,11 @@ namespace Google.Protobuf.Examples.AddressBook {
           get { return type_; }
           set {
             type_ = value;
+            //@@protoc_insertion_point(field_modifier_scope_after:tutorial.Person.PhoneNumber.setType)
           }
         }
 
+        //@@protoc_insertion_point(class_scope:tutorial.Person.PhoneNumber)
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public override bool Equals(object other) {
           return Equals(other as PhoneNumber);
@@ -337,6 +345,7 @@ namespace Google.Protobuf.Examples.AddressBook {
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public void WriteTo(pb::CodedOutputStream output) {
+          //@@protoc_insertion_point(write_to_scope_begin:tutorial.Person.PhoneNumber)
           if (Number.Length != 0) {
             output.WriteRawTag(10);
             output.WriteString(Number);
@@ -444,6 +453,7 @@ namespace Google.Protobuf.Examples.AddressBook {
       get { return people_; }
     }
 
+    //@@protoc_insertion_point(class_scope:tutorial.AddressBook)
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as AddressBook);
@@ -475,6 +485,7 @@ namespace Google.Protobuf.Examples.AddressBook {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+      //@@protoc_insertion_point(write_to_scope_begin:tutorial.AddressBook)
       people_.WriteTo(output, _repeated_people_codec);
     }
 

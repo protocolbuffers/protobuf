@@ -144,6 +144,7 @@ namespace Google.Protobuf.WellKnownTypes {
       get { return seconds_; }
       set {
         seconds_ = value;
+        //@@protoc_insertion_point(field_modifier_scope_after:google.protobuf.Duration.setSeconds)
       }
     }
 
@@ -163,9 +164,11 @@ namespace Google.Protobuf.WellKnownTypes {
       get { return nanos_; }
       set {
         nanos_ = value;
+        //@@protoc_insertion_point(field_modifier_scope_after:google.protobuf.Duration.setNanos)
       }
     }
 
+    //@@protoc_insertion_point(class_scope:google.protobuf.Duration)
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as Duration);
@@ -199,6 +202,7 @@ namespace Google.Protobuf.WellKnownTypes {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+      //@@protoc_insertion_point(write_to_scope_begin:google.protobuf.Duration)
       if (Seconds != 0L) {
         output.WriteRawTag(8);
         output.WriteInt64(Seconds);

@@ -79,6 +79,7 @@ namespace Google.Protobuf.WellKnownTypes {
       return new Empty(this);
     }
 
+    //@@protoc_insertion_point(class_scope:google.protobuf.Empty)
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as Empty);
@@ -108,6 +109,7 @@ namespace Google.Protobuf.WellKnownTypes {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+      //@@protoc_insertion_point(write_to_scope_begin:google.protobuf.Empty)
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]

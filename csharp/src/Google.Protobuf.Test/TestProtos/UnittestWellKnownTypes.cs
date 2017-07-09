@@ -448,6 +448,7 @@ namespace Google.Protobuf.TestProtos {
       }
     }
 
+    //@@protoc_insertion_point(class_scope:protobuf_unittest.TestWellKnownTypes)
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as TestWellKnownTypes);
@@ -515,6 +516,7 @@ namespace Google.Protobuf.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+      //@@protoc_insertion_point(write_to_scope_begin:protobuf_unittest.TestWellKnownTypes)
       if (anyField_ != null) {
         output.WriteRawTag(10);
         output.WriteMessage(AnyField);
@@ -1141,6 +1143,7 @@ namespace Google.Protobuf.TestProtos {
       get { return bytesField_; }
     }
 
+    //@@protoc_insertion_point(class_scope:protobuf_unittest.RepeatedWellKnownTypes)
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as RepeatedWellKnownTypes);
@@ -1206,6 +1209,7 @@ namespace Google.Protobuf.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+      //@@protoc_insertion_point(write_to_scope_begin:protobuf_unittest.RepeatedWellKnownTypes)
       anyField_.WriteTo(output, _repeated_anyField_codec);
       apiField_.WriteTo(output, _repeated_apiField_codec);
       durationField_.WriteTo(output, _repeated_durationField_codec);
@@ -1691,6 +1695,7 @@ namespace Google.Protobuf.TestProtos {
       oneofField_ = null;
     }
 
+    //@@protoc_insertion_point(class_scope:protobuf_unittest.OneofWellKnownTypes)
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as OneofWellKnownTypes);
@@ -1758,6 +1763,7 @@ namespace Google.Protobuf.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+      //@@protoc_insertion_point(write_to_scope_begin:protobuf_unittest.OneofWellKnownTypes)
       if (oneofFieldCase_ == OneofFieldOneofCase.AnyField) {
         output.WriteRawTag(10);
         output.WriteMessage(AnyField);
@@ -2312,6 +2318,7 @@ namespace Google.Protobuf.TestProtos {
       get { return bytesField_; }
     }
 
+    //@@protoc_insertion_point(class_scope:protobuf_unittest.MapWellKnownTypes)
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as MapWellKnownTypes);
@@ -2377,6 +2384,7 @@ namespace Google.Protobuf.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+      //@@protoc_insertion_point(write_to_scope_begin:protobuf_unittest.MapWellKnownTypes)
       anyField_.WriteTo(output, _map_anyField_codec);
       apiField_.WriteTo(output, _map_apiField_codec);
       durationField_.WriteTo(output, _map_durationField_codec);

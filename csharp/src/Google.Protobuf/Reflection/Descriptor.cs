@@ -223,6 +223,7 @@ namespace Google.Protobuf.Reflection {
       get { return file_; }
     }
 
+    //@@protoc_insertion_point(class_scope:google.protobuf.FileDescriptorSet)
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as FileDescriptorSet);
@@ -254,6 +255,7 @@ namespace Google.Protobuf.Reflection {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+      //@@protoc_insertion_point(write_to_scope_begin:google.protobuf.FileDescriptorSet)
       file_.WriteTo(output, _repeated_file_codec);
     }
 
@@ -347,6 +349,7 @@ namespace Google.Protobuf.Reflection {
       get { return name_; }
       set {
         name_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+        //@@protoc_insertion_point(field_modifier_scope_after:google.protobuf.FileDescriptorProto.setName)
       }
     }
 
@@ -361,6 +364,7 @@ namespace Google.Protobuf.Reflection {
       get { return package_; }
       set {
         package_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+        //@@protoc_insertion_point(field_modifier_scope_after:google.protobuf.FileDescriptorProto.setPackage)
       }
     }
 
@@ -487,9 +491,11 @@ namespace Google.Protobuf.Reflection {
       get { return syntax_; }
       set {
         syntax_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+        //@@protoc_insertion_point(field_modifier_scope_after:google.protobuf.FileDescriptorProto.setSyntax)
       }
     }
 
+    //@@protoc_insertion_point(class_scope:google.protobuf.FileDescriptorProto)
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as FileDescriptorProto);
@@ -543,6 +549,7 @@ namespace Google.Protobuf.Reflection {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+      //@@protoc_insertion_point(write_to_scope_begin:google.protobuf.FileDescriptorProto)
       if (Name.Length != 0) {
         output.WriteRawTag(10);
         output.WriteString(Name);
@@ -757,6 +764,7 @@ namespace Google.Protobuf.Reflection {
       get { return name_; }
       set {
         name_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+        //@@protoc_insertion_point(field_modifier_scope_after:google.protobuf.DescriptorProto.setName)
       }
     }
 
@@ -855,6 +863,7 @@ namespace Google.Protobuf.Reflection {
       get { return reservedName_; }
     }
 
+    //@@protoc_insertion_point(class_scope:google.protobuf.DescriptorProto)
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as DescriptorProto);
@@ -904,6 +913,7 @@ namespace Google.Protobuf.Reflection {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+      //@@protoc_insertion_point(write_to_scope_begin:google.protobuf.DescriptorProto)
       if (Name.Length != 0) {
         output.WriteRawTag(10);
         output.WriteString(Name);
@@ -1066,6 +1076,7 @@ namespace Google.Protobuf.Reflection {
           get { return start_; }
           set {
             start_ = value;
+            //@@protoc_insertion_point(field_modifier_scope_after:google.protobuf.DescriptorProto.ExtensionRange.setStart)
           }
         }
 
@@ -1077,9 +1088,11 @@ namespace Google.Protobuf.Reflection {
           get { return end_; }
           set {
             end_ = value;
+            //@@protoc_insertion_point(field_modifier_scope_after:google.protobuf.DescriptorProto.ExtensionRange.setEnd)
           }
         }
 
+        //@@protoc_insertion_point(class_scope:google.protobuf.DescriptorProto.ExtensionRange)
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public override bool Equals(object other) {
           return Equals(other as ExtensionRange);
@@ -1113,6 +1126,7 @@ namespace Google.Protobuf.Reflection {
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public void WriteTo(pb::CodedOutputStream output) {
+          //@@protoc_insertion_point(write_to_scope_begin:google.protobuf.DescriptorProto.ExtensionRange)
           if (Start != 0) {
             output.WriteRawTag(8);
             output.WriteInt32(Start);
@@ -1219,6 +1233,7 @@ namespace Google.Protobuf.Reflection {
           get { return start_; }
           set {
             start_ = value;
+            //@@protoc_insertion_point(field_modifier_scope_after:google.protobuf.DescriptorProto.ReservedRange.setStart)
           }
         }
 
@@ -1233,9 +1248,11 @@ namespace Google.Protobuf.Reflection {
           get { return end_; }
           set {
             end_ = value;
+            //@@protoc_insertion_point(field_modifier_scope_after:google.protobuf.DescriptorProto.ReservedRange.setEnd)
           }
         }
 
+        //@@protoc_insertion_point(class_scope:google.protobuf.DescriptorProto.ReservedRange)
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public override bool Equals(object other) {
           return Equals(other as ReservedRange);
@@ -1269,6 +1286,7 @@ namespace Google.Protobuf.Reflection {
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public void WriteTo(pb::CodedOutputStream output) {
+          //@@protoc_insertion_point(write_to_scope_begin:google.protobuf.DescriptorProto.ReservedRange)
           if (Start != 0) {
             output.WriteRawTag(8);
             output.WriteInt32(Start);
@@ -1383,6 +1401,7 @@ namespace Google.Protobuf.Reflection {
       get { return name_; }
       set {
         name_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+        //@@protoc_insertion_point(field_modifier_scope_after:google.protobuf.FieldDescriptorProto.setName)
       }
     }
 
@@ -1394,6 +1413,7 @@ namespace Google.Protobuf.Reflection {
       get { return number_; }
       set {
         number_ = value;
+        //@@protoc_insertion_point(field_modifier_scope_after:google.protobuf.FieldDescriptorProto.setNumber)
       }
     }
 
@@ -1405,6 +1425,7 @@ namespace Google.Protobuf.Reflection {
       get { return label_; }
       set {
         label_ = value;
+        //@@protoc_insertion_point(field_modifier_scope_after:google.protobuf.FieldDescriptorProto.setLabel)
       }
     }
 
@@ -1420,6 +1441,7 @@ namespace Google.Protobuf.Reflection {
       get { return type_; }
       set {
         type_ = value;
+        //@@protoc_insertion_point(field_modifier_scope_after:google.protobuf.FieldDescriptorProto.setType)
       }
     }
 
@@ -1438,6 +1460,7 @@ namespace Google.Protobuf.Reflection {
       get { return typeName_; }
       set {
         typeName_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+        //@@protoc_insertion_point(field_modifier_scope_after:google.protobuf.FieldDescriptorProto.setTypeName)
       }
     }
 
@@ -1453,6 +1476,7 @@ namespace Google.Protobuf.Reflection {
       get { return extendee_; }
       set {
         extendee_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+        //@@protoc_insertion_point(field_modifier_scope_after:google.protobuf.FieldDescriptorProto.setExtendee)
       }
     }
 
@@ -1471,6 +1495,7 @@ namespace Google.Protobuf.Reflection {
       get { return defaultValue_; }
       set {
         defaultValue_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+        //@@protoc_insertion_point(field_modifier_scope_after:google.protobuf.FieldDescriptorProto.setDefaultValue)
       }
     }
 
@@ -1486,6 +1511,7 @@ namespace Google.Protobuf.Reflection {
       get { return oneofIndex_; }
       set {
         oneofIndex_ = value;
+        //@@protoc_insertion_point(field_modifier_scope_after:google.protobuf.FieldDescriptorProto.setOneofIndex)
       }
     }
 
@@ -1503,6 +1529,7 @@ namespace Google.Protobuf.Reflection {
       get { return jsonName_; }
       set {
         jsonName_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+        //@@protoc_insertion_point(field_modifier_scope_after:google.protobuf.FieldDescriptorProto.setJsonName)
       }
     }
 
@@ -1517,6 +1544,7 @@ namespace Google.Protobuf.Reflection {
       }
     }
 
+    //@@protoc_insertion_point(class_scope:google.protobuf.FieldDescriptorProto)
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as FieldDescriptorProto);
@@ -1566,6 +1594,7 @@ namespace Google.Protobuf.Reflection {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+      //@@protoc_insertion_point(write_to_scope_begin:google.protobuf.FieldDescriptorProto)
       if (Name.Length != 0) {
         output.WriteRawTag(10);
         output.WriteString(Name);
@@ -1852,6 +1881,7 @@ namespace Google.Protobuf.Reflection {
       get { return name_; }
       set {
         name_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+        //@@protoc_insertion_point(field_modifier_scope_after:google.protobuf.OneofDescriptorProto.setName)
       }
     }
 
@@ -1866,6 +1896,7 @@ namespace Google.Protobuf.Reflection {
       }
     }
 
+    //@@protoc_insertion_point(class_scope:google.protobuf.OneofDescriptorProto)
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as OneofDescriptorProto);
@@ -1899,6 +1930,7 @@ namespace Google.Protobuf.Reflection {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+      //@@protoc_insertion_point(write_to_scope_begin:google.protobuf.OneofDescriptorProto)
       if (Name.Length != 0) {
         output.WriteRawTag(10);
         output.WriteString(Name);
@@ -2007,6 +2039,7 @@ namespace Google.Protobuf.Reflection {
       get { return name_; }
       set {
         name_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+        //@@protoc_insertion_point(field_modifier_scope_after:google.protobuf.EnumDescriptorProto.setName)
       }
     }
 
@@ -2031,6 +2064,7 @@ namespace Google.Protobuf.Reflection {
       }
     }
 
+    //@@protoc_insertion_point(class_scope:google.protobuf.EnumDescriptorProto)
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as EnumDescriptorProto);
@@ -2066,6 +2100,7 @@ namespace Google.Protobuf.Reflection {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+      //@@protoc_insertion_point(write_to_scope_begin:google.protobuf.EnumDescriptorProto)
       if (Name.Length != 0) {
         output.WriteRawTag(10);
         output.WriteString(Name);
@@ -2181,6 +2216,7 @@ namespace Google.Protobuf.Reflection {
       get { return name_; }
       set {
         name_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+        //@@protoc_insertion_point(field_modifier_scope_after:google.protobuf.EnumValueDescriptorProto.setName)
       }
     }
 
@@ -2192,6 +2228,7 @@ namespace Google.Protobuf.Reflection {
       get { return number_; }
       set {
         number_ = value;
+        //@@protoc_insertion_point(field_modifier_scope_after:google.protobuf.EnumValueDescriptorProto.setNumber)
       }
     }
 
@@ -2206,6 +2243,7 @@ namespace Google.Protobuf.Reflection {
       }
     }
 
+    //@@protoc_insertion_point(class_scope:google.protobuf.EnumValueDescriptorProto)
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as EnumValueDescriptorProto);
@@ -2241,6 +2279,7 @@ namespace Google.Protobuf.Reflection {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+      //@@protoc_insertion_point(write_to_scope_begin:google.protobuf.EnumValueDescriptorProto)
       if (Name.Length != 0) {
         output.WriteRawTag(10);
         output.WriteString(Name);
@@ -2363,6 +2402,7 @@ namespace Google.Protobuf.Reflection {
       get { return name_; }
       set {
         name_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+        //@@protoc_insertion_point(field_modifier_scope_after:google.protobuf.ServiceDescriptorProto.setName)
       }
     }
 
@@ -2387,6 +2427,7 @@ namespace Google.Protobuf.Reflection {
       }
     }
 
+    //@@protoc_insertion_point(class_scope:google.protobuf.ServiceDescriptorProto)
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as ServiceDescriptorProto);
@@ -2422,6 +2463,7 @@ namespace Google.Protobuf.Reflection {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+      //@@protoc_insertion_point(write_to_scope_begin:google.protobuf.ServiceDescriptorProto)
       if (Name.Length != 0) {
         output.WriteRawTag(10);
         output.WriteString(Name);
@@ -2540,6 +2582,7 @@ namespace Google.Protobuf.Reflection {
       get { return name_; }
       set {
         name_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+        //@@protoc_insertion_point(field_modifier_scope_after:google.protobuf.MethodDescriptorProto.setName)
       }
     }
 
@@ -2555,6 +2598,7 @@ namespace Google.Protobuf.Reflection {
       get { return inputType_; }
       set {
         inputType_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+        //@@protoc_insertion_point(field_modifier_scope_after:google.protobuf.MethodDescriptorProto.setInputType)
       }
     }
 
@@ -2566,6 +2610,7 @@ namespace Google.Protobuf.Reflection {
       get { return outputType_; }
       set {
         outputType_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+        //@@protoc_insertion_point(field_modifier_scope_after:google.protobuf.MethodDescriptorProto.setOutputType)
       }
     }
 
@@ -2591,6 +2636,7 @@ namespace Google.Protobuf.Reflection {
       get { return clientStreaming_; }
       set {
         clientStreaming_ = value;
+        //@@protoc_insertion_point(field_modifier_scope_after:google.protobuf.MethodDescriptorProto.setClientStreaming)
       }
     }
 
@@ -2605,9 +2651,11 @@ namespace Google.Protobuf.Reflection {
       get { return serverStreaming_; }
       set {
         serverStreaming_ = value;
+        //@@protoc_insertion_point(field_modifier_scope_after:google.protobuf.MethodDescriptorProto.setServerStreaming)
       }
     }
 
+    //@@protoc_insertion_point(class_scope:google.protobuf.MethodDescriptorProto)
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as MethodDescriptorProto);
@@ -2649,6 +2697,7 @@ namespace Google.Protobuf.Reflection {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+      //@@protoc_insertion_point(write_to_scope_begin:google.protobuf.MethodDescriptorProto)
       if (Name.Length != 0) {
         output.WriteRawTag(10);
         output.WriteString(Name);
@@ -2833,6 +2882,7 @@ namespace Google.Protobuf.Reflection {
       get { return javaPackage_; }
       set {
         javaPackage_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+        //@@protoc_insertion_point(field_modifier_scope_after:google.protobuf.FileOptions.setJavaPackage)
       }
     }
 
@@ -2851,6 +2901,7 @@ namespace Google.Protobuf.Reflection {
       get { return javaOuterClassname_; }
       set {
         javaOuterClassname_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+        //@@protoc_insertion_point(field_modifier_scope_after:google.protobuf.FileOptions.setJavaOuterClassname)
       }
     }
 
@@ -2870,6 +2921,7 @@ namespace Google.Protobuf.Reflection {
       get { return javaMultipleFiles_; }
       set {
         javaMultipleFiles_ = value;
+        //@@protoc_insertion_point(field_modifier_scope_after:google.protobuf.FileOptions.setJavaMultipleFiles)
       }
     }
 
@@ -2885,6 +2937,7 @@ namespace Google.Protobuf.Reflection {
       get { return javaGenerateEqualsAndHash_; }
       set {
         javaGenerateEqualsAndHash_ = value;
+        //@@protoc_insertion_point(field_modifier_scope_after:google.protobuf.FileOptions.setJavaGenerateEqualsAndHash)
       }
     }
 
@@ -2904,6 +2957,7 @@ namespace Google.Protobuf.Reflection {
       get { return javaStringCheckUtf8_; }
       set {
         javaStringCheckUtf8_ = value;
+        //@@protoc_insertion_point(field_modifier_scope_after:google.protobuf.FileOptions.setJavaStringCheckUtf8)
       }
     }
 
@@ -2915,6 +2969,7 @@ namespace Google.Protobuf.Reflection {
       get { return optimizeFor_; }
       set {
         optimizeFor_ = value;
+        //@@protoc_insertion_point(field_modifier_scope_after:google.protobuf.FileOptions.setOptimizeFor)
       }
     }
 
@@ -2933,6 +2988,7 @@ namespace Google.Protobuf.Reflection {
       get { return goPackage_; }
       set {
         goPackage_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+        //@@protoc_insertion_point(field_modifier_scope_after:google.protobuf.FileOptions.setGoPackage)
       }
     }
 
@@ -2956,6 +3012,7 @@ namespace Google.Protobuf.Reflection {
       get { return ccGenericServices_; }
       set {
         ccGenericServices_ = value;
+        //@@protoc_insertion_point(field_modifier_scope_after:google.protobuf.FileOptions.setCcGenericServices)
       }
     }
 
@@ -2967,6 +3024,7 @@ namespace Google.Protobuf.Reflection {
       get { return javaGenericServices_; }
       set {
         javaGenericServices_ = value;
+        //@@protoc_insertion_point(field_modifier_scope_after:google.protobuf.FileOptions.setJavaGenericServices)
       }
     }
 
@@ -2978,6 +3036,7 @@ namespace Google.Protobuf.Reflection {
       get { return pyGenericServices_; }
       set {
         pyGenericServices_ = value;
+        //@@protoc_insertion_point(field_modifier_scope_after:google.protobuf.FileOptions.setPyGenericServices)
       }
     }
 
@@ -2995,6 +3054,7 @@ namespace Google.Protobuf.Reflection {
       get { return deprecated_; }
       set {
         deprecated_ = value;
+        //@@protoc_insertion_point(field_modifier_scope_after:google.protobuf.FileOptions.setDeprecated)
       }
     }
 
@@ -3010,6 +3070,7 @@ namespace Google.Protobuf.Reflection {
       get { return ccEnableArenas_; }
       set {
         ccEnableArenas_ = value;
+        //@@protoc_insertion_point(field_modifier_scope_after:google.protobuf.FileOptions.setCcEnableArenas)
       }
     }
 
@@ -3025,6 +3086,7 @@ namespace Google.Protobuf.Reflection {
       get { return objcClassPrefix_; }
       set {
         objcClassPrefix_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+        //@@protoc_insertion_point(field_modifier_scope_after:google.protobuf.FileOptions.setObjcClassPrefix)
       }
     }
 
@@ -3039,6 +3101,7 @@ namespace Google.Protobuf.Reflection {
       get { return csharpNamespace_; }
       set {
         csharpNamespace_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+        //@@protoc_insertion_point(field_modifier_scope_after:google.protobuf.FileOptions.setCsharpNamespace)
       }
     }
 
@@ -3056,6 +3119,7 @@ namespace Google.Protobuf.Reflection {
       get { return swiftPrefix_; }
       set {
         swiftPrefix_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+        //@@protoc_insertion_point(field_modifier_scope_after:google.protobuf.FileOptions.setSwiftPrefix)
       }
     }
 
@@ -3071,6 +3135,7 @@ namespace Google.Protobuf.Reflection {
       get { return phpClassPrefix_; }
       set {
         phpClassPrefix_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+        //@@protoc_insertion_point(field_modifier_scope_after:google.protobuf.FileOptions.setPhpClassPrefix)
       }
     }
 
@@ -3103,6 +3168,7 @@ namespace Google.Protobuf.Reflection {
       get { return uninterpretedOption_; }
     }
 
+    //@@protoc_insertion_point(class_scope:google.protobuf.FileOptions)
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as FileOptions);
@@ -3168,6 +3234,7 @@ namespace Google.Protobuf.Reflection {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+      //@@protoc_insertion_point(write_to_scope_begin:google.protobuf.FileOptions)
       if (JavaPackage.Length != 0) {
         output.WriteRawTag(10);
         output.WriteString(JavaPackage);
@@ -3533,6 +3600,7 @@ namespace Google.Protobuf.Reflection {
       get { return messageSetWireFormat_; }
       set {
         messageSetWireFormat_ = value;
+        //@@protoc_insertion_point(field_modifier_scope_after:google.protobuf.MessageOptions.setMessageSetWireFormat)
       }
     }
 
@@ -3549,6 +3617,7 @@ namespace Google.Protobuf.Reflection {
       get { return noStandardDescriptorAccessor_; }
       set {
         noStandardDescriptorAccessor_ = value;
+        //@@protoc_insertion_point(field_modifier_scope_after:google.protobuf.MessageOptions.setNoStandardDescriptorAccessor)
       }
     }
 
@@ -3566,6 +3635,7 @@ namespace Google.Protobuf.Reflection {
       get { return deprecated_; }
       set {
         deprecated_ = value;
+        //@@protoc_insertion_point(field_modifier_scope_after:google.protobuf.MessageOptions.setDeprecated)
       }
     }
 
@@ -3600,6 +3670,7 @@ namespace Google.Protobuf.Reflection {
       get { return mapEntry_; }
       set {
         mapEntry_ = value;
+        //@@protoc_insertion_point(field_modifier_scope_after:google.protobuf.MessageOptions.setMapEntry)
       }
     }
 
@@ -3616,6 +3687,7 @@ namespace Google.Protobuf.Reflection {
       get { return uninterpretedOption_; }
     }
 
+    //@@protoc_insertion_point(class_scope:google.protobuf.MessageOptions)
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as MessageOptions);
@@ -3655,6 +3727,7 @@ namespace Google.Protobuf.Reflection {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+      //@@protoc_insertion_point(write_to_scope_begin:google.protobuf.MessageOptions)
       if (MessageSetWireFormat != false) {
         output.WriteRawTag(8);
         output.WriteBool(MessageSetWireFormat);
@@ -3801,6 +3874,7 @@ namespace Google.Protobuf.Reflection {
       get { return ctype_; }
       set {
         ctype_ = value;
+        //@@protoc_insertion_point(field_modifier_scope_after:google.protobuf.FieldOptions.setCtype)
       }
     }
 
@@ -3819,6 +3893,7 @@ namespace Google.Protobuf.Reflection {
       get { return packed_; }
       set {
         packed_ = value;
+        //@@protoc_insertion_point(field_modifier_scope_after:google.protobuf.FieldOptions.setPacked)
       }
     }
 
@@ -3841,6 +3916,7 @@ namespace Google.Protobuf.Reflection {
       get { return jstype_; }
       set {
         jstype_ = value;
+        //@@protoc_insertion_point(field_modifier_scope_after:google.protobuf.FieldOptions.setJstype)
       }
     }
 
@@ -3881,6 +3957,7 @@ namespace Google.Protobuf.Reflection {
       get { return lazy_; }
       set {
         lazy_ = value;
+        //@@protoc_insertion_point(field_modifier_scope_after:google.protobuf.FieldOptions.setLazy)
       }
     }
 
@@ -3898,6 +3975,7 @@ namespace Google.Protobuf.Reflection {
       get { return deprecated_; }
       set {
         deprecated_ = value;
+        //@@protoc_insertion_point(field_modifier_scope_after:google.protobuf.FieldOptions.setDeprecated)
       }
     }
 
@@ -3912,6 +3990,7 @@ namespace Google.Protobuf.Reflection {
       get { return weak_; }
       set {
         weak_ = value;
+        //@@protoc_insertion_point(field_modifier_scope_after:google.protobuf.FieldOptions.setWeak)
       }
     }
 
@@ -3928,6 +4007,7 @@ namespace Google.Protobuf.Reflection {
       get { return uninterpretedOption_; }
     }
 
+    //@@protoc_insertion_point(class_scope:google.protobuf.FieldOptions)
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as FieldOptions);
@@ -3971,6 +4051,7 @@ namespace Google.Protobuf.Reflection {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+      //@@protoc_insertion_point(write_to_scope_begin:google.protobuf.FieldOptions)
       if (Ctype != 0) {
         output.WriteRawTag(8);
         output.WriteEnum((int) Ctype);
@@ -4169,6 +4250,7 @@ namespace Google.Protobuf.Reflection {
       get { return uninterpretedOption_; }
     }
 
+    //@@protoc_insertion_point(class_scope:google.protobuf.OneofOptions)
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as OneofOptions);
@@ -4200,6 +4282,7 @@ namespace Google.Protobuf.Reflection {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+      //@@protoc_insertion_point(write_to_scope_begin:google.protobuf.OneofOptions)
       uninterpretedOption_.WriteTo(output, _repeated_uninterpretedOption_codec);
     }
 
@@ -4284,6 +4367,7 @@ namespace Google.Protobuf.Reflection {
       get { return allowAlias_; }
       set {
         allowAlias_ = value;
+        //@@protoc_insertion_point(field_modifier_scope_after:google.protobuf.EnumOptions.setAllowAlias)
       }
     }
 
@@ -4301,6 +4385,7 @@ namespace Google.Protobuf.Reflection {
       get { return deprecated_; }
       set {
         deprecated_ = value;
+        //@@protoc_insertion_point(field_modifier_scope_after:google.protobuf.EnumOptions.setDeprecated)
       }
     }
 
@@ -4317,6 +4402,7 @@ namespace Google.Protobuf.Reflection {
       get { return uninterpretedOption_; }
     }
 
+    //@@protoc_insertion_point(class_scope:google.protobuf.EnumOptions)
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as EnumOptions);
@@ -4352,6 +4438,7 @@ namespace Google.Protobuf.Reflection {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+      //@@protoc_insertion_point(write_to_scope_begin:google.protobuf.EnumOptions)
       if (AllowAlias != false) {
         output.WriteRawTag(16);
         output.WriteBool(AllowAlias);
@@ -4465,6 +4552,7 @@ namespace Google.Protobuf.Reflection {
       get { return deprecated_; }
       set {
         deprecated_ = value;
+        //@@protoc_insertion_point(field_modifier_scope_after:google.protobuf.EnumValueOptions.setDeprecated)
       }
     }
 
@@ -4481,6 +4569,7 @@ namespace Google.Protobuf.Reflection {
       get { return uninterpretedOption_; }
     }
 
+    //@@protoc_insertion_point(class_scope:google.protobuf.EnumValueOptions)
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as EnumValueOptions);
@@ -4514,6 +4603,7 @@ namespace Google.Protobuf.Reflection {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+      //@@protoc_insertion_point(write_to_scope_begin:google.protobuf.EnumValueOptions)
       if (Deprecated != false) {
         output.WriteRawTag(8);
         output.WriteBool(Deprecated);
@@ -4613,6 +4703,7 @@ namespace Google.Protobuf.Reflection {
       get { return deprecated_; }
       set {
         deprecated_ = value;
+        //@@protoc_insertion_point(field_modifier_scope_after:google.protobuf.ServiceOptions.setDeprecated)
       }
     }
 
@@ -4629,6 +4720,7 @@ namespace Google.Protobuf.Reflection {
       get { return uninterpretedOption_; }
     }
 
+    //@@protoc_insertion_point(class_scope:google.protobuf.ServiceOptions)
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as ServiceOptions);
@@ -4662,6 +4754,7 @@ namespace Google.Protobuf.Reflection {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+      //@@protoc_insertion_point(write_to_scope_begin:google.protobuf.ServiceOptions)
       if (Deprecated != false) {
         output.WriteRawTag(136, 2);
         output.WriteBool(Deprecated);
@@ -4762,6 +4855,7 @@ namespace Google.Protobuf.Reflection {
       get { return deprecated_; }
       set {
         deprecated_ = value;
+        //@@protoc_insertion_point(field_modifier_scope_after:google.protobuf.MethodOptions.setDeprecated)
       }
     }
 
@@ -4773,6 +4867,7 @@ namespace Google.Protobuf.Reflection {
       get { return idempotencyLevel_; }
       set {
         idempotencyLevel_ = value;
+        //@@protoc_insertion_point(field_modifier_scope_after:google.protobuf.MethodOptions.setIdempotencyLevel)
       }
     }
 
@@ -4789,6 +4884,7 @@ namespace Google.Protobuf.Reflection {
       get { return uninterpretedOption_; }
     }
 
+    //@@protoc_insertion_point(class_scope:google.protobuf.MethodOptions)
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as MethodOptions);
@@ -4824,6 +4920,7 @@ namespace Google.Protobuf.Reflection {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+      //@@protoc_insertion_point(write_to_scope_begin:google.protobuf.MethodOptions)
       if (Deprecated != false) {
         output.WriteRawTag(136, 2);
         output.WriteBool(Deprecated);
@@ -4980,6 +5077,7 @@ namespace Google.Protobuf.Reflection {
       get { return identifierValue_; }
       set {
         identifierValue_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+        //@@protoc_insertion_point(field_modifier_scope_after:google.protobuf.UninterpretedOption.setIdentifierValue)
       }
     }
 
@@ -4991,6 +5089,7 @@ namespace Google.Protobuf.Reflection {
       get { return positiveIntValue_; }
       set {
         positiveIntValue_ = value;
+        //@@protoc_insertion_point(field_modifier_scope_after:google.protobuf.UninterpretedOption.setPositiveIntValue)
       }
     }
 
@@ -5002,6 +5101,7 @@ namespace Google.Protobuf.Reflection {
       get { return negativeIntValue_; }
       set {
         negativeIntValue_ = value;
+        //@@protoc_insertion_point(field_modifier_scope_after:google.protobuf.UninterpretedOption.setNegativeIntValue)
       }
     }
 
@@ -5013,6 +5113,7 @@ namespace Google.Protobuf.Reflection {
       get { return doubleValue_; }
       set {
         doubleValue_ = value;
+        //@@protoc_insertion_point(field_modifier_scope_after:google.protobuf.UninterpretedOption.setDoubleValue)
       }
     }
 
@@ -5024,6 +5125,7 @@ namespace Google.Protobuf.Reflection {
       get { return stringValue_; }
       set {
         stringValue_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+        //@@protoc_insertion_point(field_modifier_scope_after:google.protobuf.UninterpretedOption.setStringValue)
       }
     }
 
@@ -5035,9 +5137,11 @@ namespace Google.Protobuf.Reflection {
       get { return aggregateValue_; }
       set {
         aggregateValue_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+        //@@protoc_insertion_point(field_modifier_scope_after:google.protobuf.UninterpretedOption.setAggregateValue)
       }
     }
 
+    //@@protoc_insertion_point(class_scope:google.protobuf.UninterpretedOption)
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as UninterpretedOption);
@@ -5081,6 +5185,7 @@ namespace Google.Protobuf.Reflection {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+      //@@protoc_insertion_point(write_to_scope_begin:google.protobuf.UninterpretedOption)
       name_.WriteTo(output, _repeated_name_codec);
       if (IdentifierValue.Length != 0) {
         output.WriteRawTag(26);
@@ -5251,6 +5356,7 @@ namespace Google.Protobuf.Reflection {
           get { return namePart_; }
           set {
             namePart_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+            //@@protoc_insertion_point(field_modifier_scope_after:google.protobuf.UninterpretedOption.NamePart.setNamePart_)
           }
         }
 
@@ -5262,9 +5368,11 @@ namespace Google.Protobuf.Reflection {
           get { return isExtension_; }
           set {
             isExtension_ = value;
+            //@@protoc_insertion_point(field_modifier_scope_after:google.protobuf.UninterpretedOption.NamePart.setIsExtension)
           }
         }
 
+        //@@protoc_insertion_point(class_scope:google.protobuf.UninterpretedOption.NamePart)
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public override bool Equals(object other) {
           return Equals(other as NamePart);
@@ -5298,6 +5406,7 @@ namespace Google.Protobuf.Reflection {
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public void WriteTo(pb::CodedOutputStream output) {
+          //@@protoc_insertion_point(write_to_scope_begin:google.protobuf.UninterpretedOption.NamePart)
           if (NamePart_.Length != 0) {
             output.WriteRawTag(10);
             output.WriteString(NamePart_);
@@ -5451,6 +5560,7 @@ namespace Google.Protobuf.Reflection {
       get { return location_; }
     }
 
+    //@@protoc_insertion_point(class_scope:google.protobuf.SourceCodeInfo)
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as SourceCodeInfo);
@@ -5482,6 +5592,7 @@ namespace Google.Protobuf.Reflection {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+      //@@protoc_insertion_point(write_to_scope_begin:google.protobuf.SourceCodeInfo)
       location_.WriteTo(output, _repeated_location_codec);
     }
 
@@ -5665,6 +5776,7 @@ namespace Google.Protobuf.Reflection {
           get { return leadingComments_; }
           set {
             leadingComments_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+            //@@protoc_insertion_point(field_modifier_scope_after:google.protobuf.SourceCodeInfo.Location.setLeadingComments)
           }
         }
 
@@ -5676,6 +5788,7 @@ namespace Google.Protobuf.Reflection {
           get { return trailingComments_; }
           set {
             trailingComments_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+            //@@protoc_insertion_point(field_modifier_scope_after:google.protobuf.SourceCodeInfo.Location.setTrailingComments)
           }
         }
 
@@ -5689,6 +5802,7 @@ namespace Google.Protobuf.Reflection {
           get { return leadingDetachedComments_; }
         }
 
+        //@@protoc_insertion_point(class_scope:google.protobuf.SourceCodeInfo.Location)
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public override bool Equals(object other) {
           return Equals(other as Location);
@@ -5728,6 +5842,7 @@ namespace Google.Protobuf.Reflection {
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public void WriteTo(pb::CodedOutputStream output) {
+          //@@protoc_insertion_point(write_to_scope_begin:google.protobuf.SourceCodeInfo.Location)
           path_.WriteTo(output, _repeated_path_codec);
           span_.WriteTo(output, _repeated_span_codec);
           if (LeadingComments.Length != 0) {
@@ -5864,6 +5979,7 @@ namespace Google.Protobuf.Reflection {
       get { return annotation_; }
     }
 
+    //@@protoc_insertion_point(class_scope:google.protobuf.GeneratedCodeInfo)
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as GeneratedCodeInfo);
@@ -5895,6 +6011,7 @@ namespace Google.Protobuf.Reflection {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+      //@@protoc_insertion_point(write_to_scope_begin:google.protobuf.GeneratedCodeInfo)
       annotation_.WriteTo(output, _repeated_annotation_codec);
     }
 
@@ -5993,6 +6110,7 @@ namespace Google.Protobuf.Reflection {
           get { return sourceFile_; }
           set {
             sourceFile_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+            //@@protoc_insertion_point(field_modifier_scope_after:google.protobuf.GeneratedCodeInfo.Annotation.setSourceFile)
           }
         }
 
@@ -6008,6 +6126,7 @@ namespace Google.Protobuf.Reflection {
           get { return begin_; }
           set {
             begin_ = value;
+            //@@protoc_insertion_point(field_modifier_scope_after:google.protobuf.GeneratedCodeInfo.Annotation.setBegin)
           }
         }
 
@@ -6024,9 +6143,11 @@ namespace Google.Protobuf.Reflection {
           get { return end_; }
           set {
             end_ = value;
+            //@@protoc_insertion_point(field_modifier_scope_after:google.protobuf.GeneratedCodeInfo.Annotation.setEnd)
           }
         }
 
+        //@@protoc_insertion_point(class_scope:google.protobuf.GeneratedCodeInfo.Annotation)
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public override bool Equals(object other) {
           return Equals(other as Annotation);
@@ -6064,6 +6185,7 @@ namespace Google.Protobuf.Reflection {
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         public void WriteTo(pb::CodedOutputStream output) {
+          //@@protoc_insertion_point(write_to_scope_begin:google.protobuf.GeneratedCodeInfo.Annotation)
           path_.WriteTo(output, _repeated_path_codec);
           if (SourceFile.Length != 0) {
             output.WriteRawTag(18);

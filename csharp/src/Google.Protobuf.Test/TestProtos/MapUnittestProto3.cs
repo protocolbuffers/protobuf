@@ -392,6 +392,7 @@ namespace Google.Protobuf.TestProtos {
       get { return mapInt32ForeignMessage_; }
     }
 
+    //@@protoc_insertion_point(class_scope:protobuf_unittest.TestMap)
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as TestMap);
@@ -455,6 +456,7 @@ namespace Google.Protobuf.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+      //@@protoc_insertion_point(write_to_scope_begin:protobuf_unittest.TestMap)
       mapInt32Int32_.WriteTo(output, _map_mapInt32Int32_codec);
       mapInt64Int64_.WriteTo(output, _map_mapInt64Int64_codec);
       mapUint32Uint32_.WriteTo(output, _map_mapUint32Uint32_codec);
@@ -646,6 +648,7 @@ namespace Google.Protobuf.TestProtos {
       }
     }
 
+    //@@protoc_insertion_point(class_scope:protobuf_unittest.TestMapSubmessage)
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as TestMapSubmessage);
@@ -677,6 +680,7 @@ namespace Google.Protobuf.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+      //@@protoc_insertion_point(write_to_scope_begin:protobuf_unittest.TestMapSubmessage)
       if (testMap_ != null) {
         output.WriteRawTag(10);
         output.WriteMessage(TestMap);
@@ -768,6 +772,7 @@ namespace Google.Protobuf.TestProtos {
       get { return mapInt32Message_; }
     }
 
+    //@@protoc_insertion_point(class_scope:protobuf_unittest.TestMessageMap)
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as TestMessageMap);
@@ -799,6 +804,7 @@ namespace Google.Protobuf.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+      //@@protoc_insertion_point(write_to_scope_begin:protobuf_unittest.TestMessageMap)
       mapInt32Message_.WriteTo(output, _map_mapInt32Message_codec);
     }
 
@@ -891,6 +897,7 @@ namespace Google.Protobuf.TestProtos {
       get { return map2_; }
     }
 
+    //@@protoc_insertion_point(class_scope:protobuf_unittest.TestSameTypeMap)
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as TestSameTypeMap);
@@ -924,6 +931,7 @@ namespace Google.Protobuf.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+      //@@protoc_insertion_point(write_to_scope_begin:protobuf_unittest.TestSameTypeMap)
       map1_.WriteTo(output, _map_map1_codec);
       map2_.WriteTo(output, _map_map2_codec);
     }
@@ -1163,6 +1171,7 @@ namespace Google.Protobuf.TestProtos {
       get { return mapInt32ForeignMessage_; }
     }
 
+    //@@protoc_insertion_point(class_scope:protobuf_unittest.TestArenaMap)
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as TestArenaMap);
@@ -1222,6 +1231,7 @@ namespace Google.Protobuf.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+      //@@protoc_insertion_point(write_to_scope_begin:protobuf_unittest.TestArenaMap)
       mapInt32Int32_.WriteTo(output, _map_mapInt32Int32_codec);
       mapInt64Int64_.WriteTo(output, _map_mapInt64Int64_codec);
       mapUint32Uint32_.WriteTo(output, _map_mapUint32Uint32_codec);
@@ -1402,6 +1412,7 @@ namespace Google.Protobuf.TestProtos {
       get { return type_; }
     }
 
+    //@@protoc_insertion_point(class_scope:protobuf_unittest.MessageContainingEnumCalledType)
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as MessageContainingEnumCalledType);
@@ -1433,6 +1444,7 @@ namespace Google.Protobuf.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+      //@@protoc_insertion_point(write_to_scope_begin:protobuf_unittest.MessageContainingEnumCalledType)
       type_.WriteTo(output, _map_type_codec);
     }
 
@@ -1525,6 +1537,7 @@ namespace Google.Protobuf.TestProtos {
       get { return entry_; }
     }
 
+    //@@protoc_insertion_point(class_scope:protobuf_unittest.MessageContainingMapCalledEntry)
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as MessageContainingMapCalledEntry);
@@ -1556,6 +1569,7 @@ namespace Google.Protobuf.TestProtos {
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
+      //@@protoc_insertion_point(write_to_scope_begin:protobuf_unittest.MessageContainingMapCalledEntry)
       entry_.WriteTo(output, _map_entry_codec);
     }
 
