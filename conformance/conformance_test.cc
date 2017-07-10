@@ -677,7 +677,7 @@ void ConformanceTestSuite::SetFailureList(const string& filename,
             std::inserter(expected_to_fail_, expected_to_fail_.end()));
 }
 
-bool ConformanceTestSuite::CheckSetEmpty(const set<string>& set_to_check,
+bool ConformanceTestSuite::CheckSetEmpty(const std::set<string>& set_to_check,
                                          const std::string& write_to_file,
                                          const std::string& msg) {
   if (set_to_check.empty()) {
@@ -685,7 +685,7 @@ bool ConformanceTestSuite::CheckSetEmpty(const set<string>& set_to_check,
   } else {
     StringAppendF(&output_, "\n");
     StringAppendF(&output_, "%s\n\n", msg.c_str());
-    for (set<string>::const_iterator iter = set_to_check.begin();
+    for (std::set<string>::const_iterator iter = set_to_check.begin();
          iter != set_to_check.end(); ++iter) {
       StringAppendF(&output_, "  %s\n", iter->c_str());
     }
@@ -694,7 +694,7 @@ bool ConformanceTestSuite::CheckSetEmpty(const set<string>& set_to_check,
     if (!write_to_file.empty()) {
       std::ofstream os(write_to_file);
       if (os) {
-        for (set<string>::const_iterator iter = set_to_check.begin();
+        for (std::set<string>::const_iterator iter = set_to_check.begin();
              iter != set_to_check.end(); ++iter) {
           os << *iter << "\n";
         }

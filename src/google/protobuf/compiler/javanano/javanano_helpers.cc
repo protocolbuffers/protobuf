@@ -567,7 +567,7 @@ string GenerateDifferentBit(int bit_index) {
 }
 
 void SetBitOperationVariables(const string name,
-    int bitIndex, map<string, string>* variables) {
+    int bitIndex, std::map<string, string>* variables) {
   (*variables)["get_" + name] = GenerateGetBit(bitIndex);
   (*variables)["set_" + name] = GenerateSetBit(bitIndex);
   (*variables)["clear_" + name] = GenerateClearBit(bitIndex);

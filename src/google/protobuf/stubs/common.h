@@ -227,10 +227,8 @@ class FatalException : public std::exception {
 // in some versions of MSVC.
 // TODO(acozzette): remove these using statements
 using std::istream;
-using std::map;
 using std::ostream;
 using std::pair;
-using std::set;
 using std::string;
 using std::vector;
 

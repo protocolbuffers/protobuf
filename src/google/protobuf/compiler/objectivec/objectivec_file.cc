@@ -89,7 +89,7 @@ bool FileContainsExtensions(const FileDescriptor* file) {
 void PruneFileAndDepsMarkingAsVisited(
     const FileDescriptor* file,
     vector<const FileDescriptor*>* files,
-    set<const FileDescriptor*>* files_visited) {
+    std::set<const FileDescriptor*>* files_visited) {
   vector<const FileDescriptor*>::iterator iter =
       std::find(files->begin(), files->end(), file);
   if (iter != files->end()) {
@@ -105,7 +105,7 @@ void PruneFileAndDepsMarkingAsVisited(
 void CollectMinimalFileDepsContainingExtensionsWorker(
     const FileDescriptor* file,
     vector<const FileDescriptor*>* files,
-    set<const FileDescriptor*>* files_visited) {
+    std::set<const FileDescriptor*>* files_visited) {
   if (files_visited->find(file) != files_visited->end()) {
     return;
   }
@@ -138,7 +138,7 @@ void CollectMinimalFileDepsContainingExtensionsWorker(
 void CollectMinimalFileDepsContainingExtensions(
     const FileDescriptor* file,
     vector<const FileDescriptor*>* files) {
-  set<const FileDescriptor*> files_visited;
+  std::set<const FileDescriptor*> files_visited;
   for (int i = 0; i < file->dependency_count(); i++) {
     const FileDescriptor* dep = file->dependency(i);
     CollectMinimalFileDepsContainingExtensionsWorker(dep, files,
@@ -229,12 +229,12 @@ void FileGenerator::GenerateHeader(io::Printer *printer) {
       "CF_EXTERN_C_BEGIN\n"
       "\n");
 
-  set<string> fwd_decls;
+  std::set<string> fwd_decls;
   for (vector<MessageGenerator *>::iterator iter = message_generators_.begin();
        iter != message_generators_.end(); ++iter) {
     (*iter)->DetermineForwardDeclarations(&fwd_decls);
   }
-  for (set<string>::const_iterator i(fwd_decls.begin());
+  for (std::set<string>::const_iterator i(fwd_decls.begin());
        i != fwd_decls.end(); ++i) {
     printer->Print("$value$;\n", "value", *i);
   }
@@ -325,7 +325,7 @@ void FileGenerator::GenerateSource(io::Printer *printer) {
 
     // #import the headers for anything that a plain dependency of this proto
     // file (that means they were just an include, not a "public" include).
-    set<string> public_import_names;
+    std::set<string> public_import_names;
     for (int i = 0; i < file_->public_dependency_count(); i++) {
       public_import_names.insert(file_->public_dependency(i)->name());
     }
@@ -468,7 +468,7 @@ void FileGenerator::GenerateSource(io::Printer *printer) {
 
   // File descriptor only needed if there are messages to use it.
   if (message_generators_.size() > 0) {
-    map<string, string> vars;
+    std::map<string, string> vars;
     vars["root_class_name"] = root_class_name_;
     vars["package"] = file_->package();
     vars["objc_prefix"] = FileClassPrefix(file_);

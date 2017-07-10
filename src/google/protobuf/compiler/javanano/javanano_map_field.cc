@@ -84,7 +84,7 @@ const FieldDescriptor* ValueField(const FieldDescriptor* descriptor) {
 }
 
 void SetMapVariables(const Params& params,
-    const FieldDescriptor* descriptor, map<string, string>* variables) {
+    const FieldDescriptor* descriptor, std::map<string, string>* variables) {
   const FieldDescriptor* key = KeyField(descriptor);
   const FieldDescriptor* value = ValueField(descriptor);
   (*variables)["name"] =
