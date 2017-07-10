@@ -10,6 +10,15 @@ typedef enum {
   UPB_WIRE_TYPE_32BIT       = 5
 } upb_wiretype_t;
 
+typedef struct {
+  upb_env *env;
+  /* Current decoding pointer.  Points to the beginning of a field until we
+   * have finished decoding the whole field. */
+  const char *ptr;
+} upb_decstate;
+
+#define CHK(x) if (!(x)) { return false; }
+
 static void upb_decode_seterr(upb_env *env, const char *msg) {
   upb_status status = UPB_STATUS_INIT;
   upb_status_seterrmsg(&status, msg);
@@ -110,24 +119,56 @@ static void upb_set32(void *msg, size_t ofs, uint32_t val) {
   memcpy((char*)msg + ofs, &val, sizeof(val));
 }
 
-bool upb_append_unknown(const char **ptr, const char *start, const char *limit,
-                        char *msg) {
+static bool upb_append_unknownfield(const char **ptr, const char *start,
+                                    const char *limit, char *msg) {
   UPB_UNUSED(limit);
   UPB_UNUSED(msg);
   *ptr = limit;
   return true;
 }
 
-bool upb_decode_field(const char **ptr, const char *limit, char *msg,
-                      const upb_msglayout_msginit_v1 *l, upb_env *env) {
+static bool upb_decode_unknownfielddata(upb_decstate *d, const char *ptr,
+                                        const char *limit, char *msg,
+                                        const upb_msglayout_msginit_v1 *l) {
+  do {
+    switch (wire_type) {
+      case UPB_WIRE_TYPE_VARINT:
+        CHK(upb_decode_varint(&ptr, limit, &val));
+        break;
+      case UPB_WIRE_TYPE_32BIT:
+        CHK(upb_decode_32bit(&ptr, limit, &val));
+        break;
+      case UPB_WIRE_TYPE_64BIT:
+        CHK(upb_decode_64bit(&ptr, limit, &val));
+        break;
+      case UPB_WIRE_TYPE_DELIMITED: {
+        upb_stringview val;
+        CHK(upb_decode_string(&ptr, limit, &val));
+      }
+      case UPB_WIRE_TYPE_START_GROUP:
+        depth++;
+        continue;
+      case UPB_WIRE_TYPE_END_GROUP:
+        depth--;
+        continue;
+    }
+
+    UPB_ASSERT(depth == 0);
+    upb_append_unknown(msg, l, d->ptr, ptr);
+    d->ptr = ptr;
+    return true;
+  } while (true);
+}
+
+static bool upb_decode_field(upb_decstate *d, const char *limit, char *msg,
+                             const upb_msglayout_msginit_v1 *l) {
   uint32_t tag;
   uint32_t wire_type;
   uint32_t field_number;
-  const char *p = *ptr;
-  const char *field_start = p;
+  const char *ptr = d->ptr;
   const upb_msglayout_fieldinit_v1 *f;
 
-  if (!upb_decode_varint32(&p, limit, &tag)) {
+  if (!upb_decode_varint32(&ptr, limit, &tag)) {
     upb_decode_seterr(env, "Error decoding tag.\n");
     return false;
   }
@@ -141,21 +182,151 @@ bool upb_decode_field(const char **ptr, const char *limit, char *msg,
 
   f = upb_find_field(l, field_number);
 
+  if (f) {
+    return upb_decode_knownfield(d, ptr, limit, msg, l, f);
+  } else {
+    return upb_decode_unknownfield(d, ptr, limit, msg, l);
+  }
+
+  if (f->label == UPB_LABEL_REPEATED) {
+    arr = upb_getarray(msg, f, env);
+  }
+
   switch (wire_type) {
     case UPB_WIRE_TYPE_VARINT: {
       uint64_t val;
-      if (!upb_decode_varint(&p, limit, &val)) {
+      if (!upb_decode_varint(&ptr, limit, &val)) {
         upb_decode_seterr(env, "Error decoding varint value.\n");
         return false;
       }
 
       if (!f) {
-        return upb_append_unknown(ptr, field_start, p, msg);
+        return upb_append_unknown(ptr, field_start, ptr, msg);
+      }
+
+      if (f->label == UPB_LABEL_REPEATED) {
+        upb_array *arr = upb_getarray(msg, f, env);
+        switch (f->type) {
+          case UPB_DESCRIPTOR_TYPE_INT64:
+          case UPB_DESCRIPTOR_TYPE_UINT64:
+            memcpy(arr->data, &val, sizeof(val));
+            arr->len++;
+            break;
+          case UPB_DESCRIPTOR_TYPE_INT32:
+          case UPB_DESCRIPTOR_TYPE_UINT32:
+          case UPB_DESCRIPTOR_TYPE_ENUM: {
+            uint32_t val32 = val;
+            memcpy(arr->data, &val32, sizeof(val32));
+            arr->len++;
+            break;
+          }
+          case UPB_DESCRIPTOR_TYPE_SINT32: {
+            int32_t decoded = upb_zzdec_32(val);
+            memcpy(arr->data, &decoded, sizeof(decoded));
+            arr->len++;
+            break;
+          }
+          case UPB_DESCRIPTOR_TYPE_SINT64: {
+            int64_t decoded = upb_zzdec_64(val);
+            memcpy(arr->data, &decoded, sizeof(decoded));
+            arr->len++;
+            break;
+          }
+          default:
+            return upb_append_unknown(ptr, field_start, ptr, msg);
+        }
+      } else {
+        switch (f->type) {
+          case UPB_DESCRIPTOR_TYPE_INT64:
+          case UPB_DESCRIPTOR_TYPE_UINT64:
+            memcpy(msg + f->offset, &val, sizeof(val));
+            break;
+          case UPB_DESCRIPTOR_TYPE_INT32:
+          case UPB_DESCRIPTOR_TYPE_UINT32:
+          case UPB_DESCRIPTOR_TYPE_ENUM: {
+            uint32_t val32 = val;
+            memcpy(msg + f->offset, &val32, sizeof(val32));
+            break;
+          }
+          case UPB_DESCRIPTOR_TYPE_SINT32: {
+            int32_t decoded = upb_zzdec_32(val);
+            memcpy(msg + f->offset, &decoded, sizeof(decoded));
+            break;
+          }
+          case UPB_DESCRIPTOR_TYPE_SINT64: {
+            int64_t decoded = upb_zzdec_64(val);
+            memcpy(msg + f->offset, &decoded, sizeof(decoded));
+            break;
+          }
+          default:
+            return upb_append_unknown(ptr, field_start, ptr, msg);
+        }
+      }
+
+      break;
+    }
+    case UPB_WIRE_TYPE_64BIT: {
+      uint64_t val;
+      if (!upb_decode_64bit(&ptr, limit, &val)) {
+        upb_decode_seterr(env, "Error decoding 64bit value.\n");
+        return false;
+      }
+
+      if (!f) {
+        return upb_append_unknown(ptr, field_start, ptr, msg);
       }
 
       switch (f->type) {
+        case UPB_DESCRIPTOR_TYPE_DOUBLE:
+        case UPB_DESCRIPTOR_TYPE_FIXED64:
+        case UPB_DESCRIPTOR_TYPE_SFIXED64:
+          memcpy(msg + f->offset, &val, sizeof(val));
+        default:
+          return upb_append_unknown(ptr, field_start, ptr, msg);
+      }
+
+      break;
+    }
+    case UPB_WIRE_TYPE_32BIT: {
+      uint32_t val;
+      if (!upb_decode_32bit(&ptr, limit, &val)) {
+        upb_decode_seterr(env, "Error decoding 32bit value.\n");
+        return false;
+      }
+
+      if (!f) {
+        return upb_append_unknown(ptr, field_start, ptr, msg);
+      }
+
+      switch (f->type) {
+        case UPB_DESCRIPTOR_TYPE_FLOAT:
+        case UPB_DESCRIPTOR_TYPE_FIXED32:
+        case UPB_DESCRIPTOR_TYPE_SFIXED32:
+          memcpy(msg + f->offset, &val, sizeof(val));
+        default:
+          return upb_append_unknown(ptr, field_start, ptr, msg);
+      }
+
+      break;
+    }
+    case UPB_WIRE_TYPE_DELIMITED: {
+      upb_stringview val;
+      if (!upb_decode_string(&ptr, limit, &val)) {
+        upb_decode_seterr(env, "Error decoding delimited value.\n");
+        return false;
+      }
+
+      if (!f) {
+        return upb_append_unknown(ptr, field_start, ptr, msg);
+      }
+
+      switch (f->type) {
+        case UPB_DESCRIPTOR_TYPE_STRING:
+        case UPB_DESCRIPTOR_TYPE_BYTES:
+          memcpy(msg + f->offset, &val, sizeof(val));
+          break;
         case UPB_DESCRIPTOR_TYPE_INT64:
-        case UPB_DESCRIPTOR_TYPE_UINT64:
+        case UPB_DESCRIPTOR_TYPE_UINT64: {
           memcpy(msg + f->offset, &val, sizeof(val));
           break;
         case UPB_DESCRIPTOR_TYPE_INT32:
@@ -170,55 +341,19 @@ bool upb_decode_field(const char **ptr, const char *limit, char *msg,
           memcpy(msg + f->offset, &decoded, sizeof(decoded));
           break;
         }
-        case UPB_DESCRIPTOR_TYPE_SINT64: {
-          int64_t decoded = upb_zzdec_64(val);
-          memcpy(msg + f->offset, &decoded, sizeof(decoded));
-          break;
+        case UPB_DESCRIPTOR_TYPE_SINT64:
+        case UPB_DESCRIPTOR_TYPE_FLOAT:
+        case UPB_DESCRIPTOR_TYPE_FIXED32:
+        case UPB_DESCRIPTOR_TYPE_SFIXED32:
+        /*
+        case UPB_DESCRIPTOR_TYPE_MESSAGE: {
+          upb_decode_message(val, 
         }
+        */
         default:
-          return upb_append_unknown(ptr, field_start, p, msg);
+          return upb_append_unknown(ptr, field_start, ptr, msg);
       }
 
-      break;
-    }
-    case UPB_WIRE_TYPE_64BIT: {
-      uint64_t val;
-      if (!upb_decode_64bit(&p, limit, &val)) {
-        upb_decode_seterr(env, "Error decoding 64bit value.\n");
-        return false;
-      }
-
-      if (!f) {
-        return upb_append_unknown(ptr, field_start, p, msg);
-      }
-
-      break;
-    }
-    case UPB_WIRE_TYPE_32BIT: {
-      uint32_t val;
-      if (!upb_decode_32bit(&p, limit, &val)) {
-        upb_decode_seterr(env, "Error decoding 32bit value.\n");
-        return false;
-      }
-
-      if (!f) {
-        return upb_append_unknown(ptr, field_start, p, msg);
-      }
-
-      break;
-    }
-    case UPB_WIRE_TYPE_DELIMITED: {
-      upb_stringview val;
-      if (!upb_decode_string(&p, limit, &val)) {
-        upb_decode_seterr(env, "Error decoding delimited value.\n");
-        return false;
-      }
-
-      if (!f) {
-        return upb_append_unknown(ptr, field_start, p, msg);
-      }
-
-      memcpy(msg + f->offset, &val, sizeof(val));
       break;
     }
   }
@@ -227,21 +362,24 @@ bool upb_decode_field(const char **ptr, const char *limit, char *msg,
     upb_set32(msg, l->oneofs[f->oneof_index].case_offset, f->number);
   }
 
-  *ptr = p;
+  d->ptr = ptr;
   return true;
 }
 
-bool upb_decode(upb_stringview buf, void *msg_void,
-                const upb_msglayout_msginit_v1 *l, upb_env *env) {
-  char *msg = msg_void;
-  const char *ptr = buf.data;
+static bool upb_decode_message(upb_decstate *d, upb_stringview buf,
+                               char *msg, const upb_msglayout_msginit_v1 *l) {
   const char *limit = ptr + buf.size;
 
-  while (ptr < limit) {
+  while (d->ptr < limit) {
     if (!upb_decode_field(&ptr, limit, msg, l, env)) {
       return false;
     }
   }
 
   return true;
+}
+
+bool upb_decode(upb_stringview buf, void *msg,
+                const upb_msglayout_msginit_v1 *l, upb_env *env) {
+  return upb_decode_message(buf, msg, l, env);
 }
