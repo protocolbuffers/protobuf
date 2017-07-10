@@ -78,12 +78,12 @@ class ServiceDescriptorProto extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>repeated .google.protobuf.MethodDescriptorProto method = 2;</code>
-     * @param \Google\Protobuf\Internal\MethodDescriptorProto[]|\Google\Protobuf\Internal\RepeatedField $var
+     * @param MethodDescriptorProto[]|\Google\Protobuf\Internal\RepeatedField $var
      * @return $this
      */
     public function setMethod(&$var)
     {
-        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \Google\Protobuf\Internal\MethodDescriptorProto::class);
+        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, MethodDescriptorProto::class);
         $this->method = $arr;
         $this->has_method = true;
 
@@ -97,7 +97,7 @@ class ServiceDescriptorProto extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>optional .google.protobuf.ServiceOptions options = 3;</code>
-     * @return \Google\Protobuf\Internal\ServiceOptions
+     * @return ServiceOptions
      */
     public function getOptions()
     {
@@ -106,12 +106,12 @@ class ServiceDescriptorProto extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>optional .google.protobuf.ServiceOptions options = 3;</code>
-     * @param \Google\Protobuf\Internal\ServiceOptions $var
+     * @param ServiceOptions $var
      * @return $this
      */
     public function setOptions(&$var)
     {
-        GPBUtil::checkMessage($var, \Google\Protobuf\Internal\ServiceOptions::class);
+        GPBUtil::checkMessage($var, ServiceOptions::class);
         $this->options = $var;
         $this->has_options = true;
 

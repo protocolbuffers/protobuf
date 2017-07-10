@@ -64,7 +64,7 @@ class OneofDescriptorProto extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>optional .google.protobuf.OneofOptions options = 2;</code>
-     * @return \Google\Protobuf\Internal\OneofOptions
+     * @return OneofOptions
      */
     public function getOptions()
     {
@@ -73,12 +73,12 @@ class OneofDescriptorProto extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>optional .google.protobuf.OneofOptions options = 2;</code>
-     * @param \Google\Protobuf\Internal\OneofOptions $var
+     * @param OneofOptions $var
      * @return $this
      */
     public function setOptions(&$var)
     {
-        GPBUtil::checkMessage($var, \Google\Protobuf\Internal\OneofOptions::class);
+        GPBUtil::checkMessage($var, OneofOptions::class);
         $this->options = $var;
         $this->has_options = true;
 

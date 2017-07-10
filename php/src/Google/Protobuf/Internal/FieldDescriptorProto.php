@@ -172,7 +172,7 @@ class FieldDescriptorProto extends \Google\Protobuf\Internal\Message
      */
     public function setLabel($var)
     {
-        GPBUtil::checkEnum($var, \Google\Protobuf\Internal\FieldDescriptorProto_Label::class);
+        GPBUtil::checkEnum($var, FieldDescriptorProto_Label::class);
         $this->label = $var;
         $this->has_label = true;
 
@@ -206,7 +206,7 @@ class FieldDescriptorProto extends \Google\Protobuf\Internal\Message
      */
     public function setType($var)
     {
-        GPBUtil::checkEnum($var, \Google\Protobuf\Internal\FieldDescriptorProto_Type::class);
+        GPBUtil::checkEnum($var, FieldDescriptorProto_Type::class);
         $this->type = $var;
         $this->has_type = true;
 
@@ -406,7 +406,7 @@ class FieldDescriptorProto extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>optional .google.protobuf.FieldOptions options = 8;</code>
-     * @return \Google\Protobuf\Internal\FieldOptions
+     * @return FieldOptions
      */
     public function getOptions()
     {
@@ -415,12 +415,12 @@ class FieldDescriptorProto extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>optional .google.protobuf.FieldOptions options = 8;</code>
-     * @param \Google\Protobuf\Internal\FieldOptions $var
+     * @param FieldOptions $var
      * @return $this
      */
     public function setOptions(&$var)
     {
-        GPBUtil::checkMessage($var, \Google\Protobuf\Internal\FieldOptions::class);
+        GPBUtil::checkMessage($var, FieldOptions::class);
         $this->options = $var;
         $this->has_options = true;
 

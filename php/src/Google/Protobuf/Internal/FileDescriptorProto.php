@@ -282,12 +282,12 @@ class FileDescriptorProto extends \Google\Protobuf\Internal\Message
      * All top-level definitions in this file.
      *
      * Generated from protobuf field <code>repeated .google.protobuf.DescriptorProto message_type = 4;</code>
-     * @param \Google\Protobuf\Internal\DescriptorProto[]|\Google\Protobuf\Internal\RepeatedField $var
+     * @param DescriptorProto[]|\Google\Protobuf\Internal\RepeatedField $var
      * @return $this
      */
     public function setMessageType(&$var)
     {
-        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \Google\Protobuf\Internal\DescriptorProto::class);
+        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, DescriptorProto::class);
         $this->message_type = $arr;
         $this->has_message_type = true;
 
@@ -310,12 +310,12 @@ class FileDescriptorProto extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>repeated .google.protobuf.EnumDescriptorProto enum_type = 5;</code>
-     * @param \Google\Protobuf\Internal\EnumDescriptorProto[]|\Google\Protobuf\Internal\RepeatedField $var
+     * @param EnumDescriptorProto[]|\Google\Protobuf\Internal\RepeatedField $var
      * @return $this
      */
     public function setEnumType(&$var)
     {
-        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \Google\Protobuf\Internal\EnumDescriptorProto::class);
+        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, EnumDescriptorProto::class);
         $this->enum_type = $arr;
         $this->has_enum_type = true;
 
@@ -338,12 +338,12 @@ class FileDescriptorProto extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>repeated .google.protobuf.ServiceDescriptorProto service = 6;</code>
-     * @param \Google\Protobuf\Internal\ServiceDescriptorProto[]|\Google\Protobuf\Internal\RepeatedField $var
+     * @param ServiceDescriptorProto[]|\Google\Protobuf\Internal\RepeatedField $var
      * @return $this
      */
     public function setService(&$var)
     {
-        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \Google\Protobuf\Internal\ServiceDescriptorProto::class);
+        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, ServiceDescriptorProto::class);
         $this->service = $arr;
         $this->has_service = true;
 
@@ -366,12 +366,12 @@ class FileDescriptorProto extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>repeated .google.protobuf.FieldDescriptorProto extension = 7;</code>
-     * @param \Google\Protobuf\Internal\FieldDescriptorProto[]|\Google\Protobuf\Internal\RepeatedField $var
+     * @param FieldDescriptorProto[]|\Google\Protobuf\Internal\RepeatedField $var
      * @return $this
      */
     public function setExtension(&$var)
     {
-        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \Google\Protobuf\Internal\FieldDescriptorProto::class);
+        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, FieldDescriptorProto::class);
         $this->extension = $arr;
         $this->has_extension = true;
 
@@ -385,7 +385,7 @@ class FileDescriptorProto extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>optional .google.protobuf.FileOptions options = 8;</code>
-     * @return \Google\Protobuf\Internal\FileOptions
+     * @return FileOptions
      */
     public function getOptions()
     {
@@ -394,12 +394,12 @@ class FileDescriptorProto extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>optional .google.protobuf.FileOptions options = 8;</code>
-     * @param \Google\Protobuf\Internal\FileOptions $var
+     * @param FileOptions $var
      * @return $this
      */
     public function setOptions(&$var)
     {
-        GPBUtil::checkMessage($var, \Google\Protobuf\Internal\FileOptions::class);
+        GPBUtil::checkMessage($var, FileOptions::class);
         $this->options = $var;
         $this->has_options = true;
 
@@ -418,7 +418,7 @@ class FileDescriptorProto extends \Google\Protobuf\Internal\Message
      * development tools.
      *
      * Generated from protobuf field <code>optional .google.protobuf.SourceCodeInfo source_code_info = 9;</code>
-     * @return \Google\Protobuf\Internal\SourceCodeInfo
+     * @return SourceCodeInfo
      */
     public function getSourceCodeInfo()
     {
@@ -432,12 +432,12 @@ class FileDescriptorProto extends \Google\Protobuf\Internal\Message
      * development tools.
      *
      * Generated from protobuf field <code>optional .google.protobuf.SourceCodeInfo source_code_info = 9;</code>
-     * @param \Google\Protobuf\Internal\SourceCodeInfo $var
+     * @param SourceCodeInfo $var
      * @return $this
      */
     public function setSourceCodeInfo(&$var)
     {
-        GPBUtil::checkMessage($var, \Google\Protobuf\Internal\SourceCodeInfo::class);
+        GPBUtil::checkMessage($var, SourceCodeInfo::class);
         $this->source_code_info = $var;
         $this->has_source_code_info = true;
 

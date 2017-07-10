@@ -139,31 +139,55 @@ std::string ClassNamePrefix(const string& classname,
   return "";
 }
 
+template <typename DescriptorType>
+std::string PhpNamespace(const DescriptorType* desc, bool is_descriptor) {
+  if (desc->file()->options().has_php_namespace()) {
+    const string& php_namespace = desc->file()->options().php_namespace();
+    if (php_namespace != "") {
+      return php_namespace;
+    } else {
+      return "";
+    }
+  }
+
+  if (desc->file()->package() == "") {
+    return "";
+  } else {
+    return PhpName(desc->file()->package(), is_descriptor);
+  }
+}
 
 template <typename DescriptorType>
-std::string FullClassName(const DescriptorType* desc, bool is_descriptor) {
+std::string PhpClassName(const DescriptorType* desc, bool is_descriptor) {
   string classname = desc->name();
   const Descriptor* containing = desc->containing_type();
   while (containing != NULL) {
     classname = containing->name() + '_' + classname;
     containing = containing->containing_type();
   }
-  classname = ClassNamePrefix(classname, desc) + classname;
+  return ClassNamePrefix(classname, desc) + classname;
+}
 
-  if (desc->file()->options().has_php_namespace()) {
-    const string& php_namespace = desc->file()->options().php_namespace();
-    if (php_namespace != "") {
-      return php_namespace + '\\' + classname;
-    } else {
-      return classname;
-    }
-  }
+template <typename DescriptorType>
+std::string FullClassName(const DescriptorType* desc, bool is_descriptor) {
+  std::string php_classname = PhpClassName(desc, is_descriptor);
+  std::string php_namespace = PhpNamespace(desc, is_descriptor);
 
-  if (desc->file()->package() == "") {
-    return classname;
+  if (php_namespace != "") {
+    return php_namespace + '\\' + php_classname;
   } else {
-    return PhpName(desc->file()->package(), is_descriptor) + '\\' +
-           classname;
+    return php_classname;
+  }
+}
+
+template <typename DescriptorType>
+std::string RelativeClassName(const FieldDescriptor* field, const DescriptorType* type, bool is_descriptor) {
+  if (PhpNamespace(field, is_descriptor) == PhpNamespace(type, is_descriptor)) {
+    return PhpClassName(type, is_descriptor);
+  } else if (PhpNamespace(field, is_descriptor) == "") {
+    return FullClassName(type, is_descriptor);
+  } else {
+    return "\\" + FullClassName(type, is_descriptor);
   }
 }
 
@@ -344,7 +368,7 @@ std::string PhpSetterTypeName(const FieldDescriptor* field, bool is_descriptor) 
       type = "string";
       break;
     case FieldDescriptor::TYPE_MESSAGE:
-      type = "\\" + FullClassName(field->message_type(), is_descriptor);
+      type = RelativeClassName(field, field->message_type(), is_descriptor);
       break;
     case FieldDescriptor::TYPE_GROUP:
       return "null";
@@ -386,7 +410,7 @@ std::string PhpGetterTypeName(const FieldDescriptor* field, bool is_descriptor) 
     case FieldDescriptor::TYPE_STRING:
     case FieldDescriptor::TYPE_BYTES: return "string";
     case FieldDescriptor::TYPE_MESSAGE:
-      return "\\" + FullClassName(field->message_type(), is_descriptor);
+      return RelativeClassName(field, field->message_type(), is_descriptor);
     case FieldDescriptor::TYPE_GROUP: return "null";
     default: assert(false); return "";
   }
@@ -556,14 +580,14 @@ void GenerateFieldAccessor(const FieldDescriptor* field, bool is_descriptor,
         "value_type", ToUpper(value->type_name()));
     if (value->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
       printer->Print(
-          ", \\^class_name^);\n",
+          ", ^class_name^);\n",
           "class_name",
-          FullClassName(value->message_type(), is_descriptor) + "::class");
+          RelativeClassName(field, value->message_type(), is_descriptor) + "::class");
     } else if (value->cpp_type() == FieldDescriptor::CPPTYPE_ENUM) {
       printer->Print(
-          ", \\^class_name^);\n",
+          ", ^class_name^);\n",
           "class_name",
-          FullClassName(value->enum_type(), is_descriptor) + "::class");
+          RelativeClassName(field, value->enum_type(), is_descriptor) + "::class");
     } else {
       printer->Print(");\n");
     }
@@ -574,25 +598,25 @@ void GenerateFieldAccessor(const FieldDescriptor* field, bool is_descriptor,
         "type", ToUpper(field->type_name()));
     if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
       printer->Print(
-          ", \\^class_name^);\n",
+          ", ^class_name^);\n",
           "class_name",
-          FullClassName(field->message_type(), is_descriptor) + "::class");
+          RelativeClassName(field, field->message_type(), is_descriptor) + "::class");
     } else if (field->cpp_type() == FieldDescriptor::CPPTYPE_ENUM) {
       printer->Print(
-          ", \\^class_name^);\n",
+          ", ^class_name^);\n",
           "class_name",
-          FullClassName(field->enum_type(), is_descriptor) + "::class");
+          RelativeClassName(field, field->enum_type(), is_descriptor) + "::class");
     } else {
       printer->Print(");\n");
     }
   } else if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
     printer->Print(
-        "GPBUtil::checkMessage($var, \\^class_name^::class);\n",
-        "class_name", FullClassName(field->message_type(), is_descriptor));
+        "GPBUtil::checkMessage($var, ^class_name^::class);\n",
+        "class_name", RelativeClassName(field, field->message_type(), is_descriptor));
   } else if (field->cpp_type() == FieldDescriptor::CPPTYPE_ENUM) {
     printer->Print(
-        "GPBUtil::checkEnum($var, \\^class_name^::class);\n",
-        "class_name", FullClassName(field->enum_type(), is_descriptor));
+        "GPBUtil::checkEnum($var, ^class_name^::class);\n",
+        "class_name", RelativeClassName(field, field->enum_type(), is_descriptor));
   } else if (field->cpp_type() == FieldDescriptor::CPPTYPE_STRING) {
     printer->Print(
         "GPBUtil::checkString($var, ^utf8^);\n",

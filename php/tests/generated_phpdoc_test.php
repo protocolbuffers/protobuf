@@ -193,13 +193,13 @@ class GeneratedPhpdocTest extends TestBase
                 [
                     'setRepeatedMessage',
                 ],
-                '@param \Foo\TestMessage_Sub[]|\Google\Protobuf\Internal\RepeatedField $var'
+                '@param TestMessage_Sub[]|\Google\Protobuf\Internal\RepeatedField $var'
             ],
             [
                 [
                     'setRepeatedRecursive',
                 ],
-                '@param \Foo\TestMessage[]|\Google\Protobuf\Internal\RepeatedField $var'
+                '@param TestMessage[]|\Google\Protobuf\Internal\RepeatedField $var'
             ],
             [
                 [
@@ -286,14 +286,14 @@ class GeneratedPhpdocTest extends TestBase
                     'getOptionalMessage',
                     'getOneofMessage'
                 ],
-                '@return \Foo\TestMessage_Sub'
+                '@return TestMessage_Sub'
             ],
             [
                 [
                     'setOptionalMessage',
                     'setOneofMessage'
                 ],
-                '@param \Foo\TestMessage_Sub $var'
+                '@param TestMessage_Sub $var'
             ],
             [
                 [
@@ -311,13 +311,13 @@ class GeneratedPhpdocTest extends TestBase
                 [
                     'getRecursive'
                 ],
-                '@return \Foo\TestMessage'
+                '@return TestMessage'
             ],
             [
                 [
                     'setRecursive'
                 ],
-                '@param \Foo\TestMessage $var'
+                '@param TestMessage $var'
             ],
 
             [

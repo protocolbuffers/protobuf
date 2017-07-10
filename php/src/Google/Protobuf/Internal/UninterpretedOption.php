@@ -78,12 +78,12 @@ class UninterpretedOption extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>repeated .google.protobuf.UninterpretedOption.NamePart name = 2;</code>
-     * @param \Google\Protobuf\Internal\UninterpretedOption_NamePart[]|\Google\Protobuf\Internal\RepeatedField $var
+     * @param UninterpretedOption_NamePart[]|\Google\Protobuf\Internal\RepeatedField $var
      * @return $this
      */
     public function setName(&$var)
     {
-        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \Google\Protobuf\Internal\UninterpretedOption_NamePart::class);
+        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, UninterpretedOption_NamePart::class);
         $this->name = $arr;
         $this->has_name = true;
 

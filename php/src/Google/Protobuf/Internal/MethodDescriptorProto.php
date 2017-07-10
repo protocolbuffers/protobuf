@@ -153,7 +153,7 @@ class MethodDescriptorProto extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>optional .google.protobuf.MethodOptions options = 4;</code>
-     * @return \Google\Protobuf\Internal\MethodOptions
+     * @return MethodOptions
      */
     public function getOptions()
     {
@@ -162,12 +162,12 @@ class MethodDescriptorProto extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>optional .google.protobuf.MethodOptions options = 4;</code>
-     * @param \Google\Protobuf\Internal\MethodOptions $var
+     * @param MethodOptions $var
      * @return $this
      */
     public function setOptions(&$var)
     {
-        GPBUtil::checkMessage($var, \Google\Protobuf\Internal\MethodOptions::class);
+        GPBUtil::checkMessage($var, MethodOptions::class);
         $this->options = $var;
         $this->has_options = true;
 

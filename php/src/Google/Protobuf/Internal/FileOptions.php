@@ -392,7 +392,7 @@ class FileOptions extends \Google\Protobuf\Internal\Message
      */
     public function setOptimizeFor($var)
     {
-        GPBUtil::checkEnum($var, \Google\Protobuf\Internal\FileOptions_OptimizeMode::class);
+        GPBUtil::checkEnum($var, FileOptions_OptimizeMode::class);
         $this->optimize_for = $var;
         $this->has_optimize_for = true;
 
@@ -809,12 +809,12 @@ class FileOptions extends \Google\Protobuf\Internal\Message
      * The parser stores options it doesn't recognize here. See above.
      *
      * Generated from protobuf field <code>repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;</code>
-     * @param \Google\Protobuf\Internal\UninterpretedOption[]|\Google\Protobuf\Internal\RepeatedField $var
+     * @param UninterpretedOption[]|\Google\Protobuf\Internal\RepeatedField $var
      * @return $this
      */
     public function setUninterpretedOption(&$var)
     {
-        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \Google\Protobuf\Internal\UninterpretedOption::class);
+        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, UninterpretedOption::class);
         $this->uninterpreted_option = $arr;
         $this->has_uninterpreted_option = true;
 
