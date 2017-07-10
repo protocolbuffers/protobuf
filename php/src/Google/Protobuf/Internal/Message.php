@@ -70,7 +70,8 @@ class Message
             $this->desc = $desc;
             foreach ($desc->getField() as $field) {
                 $setter = $field->getSetter();
-                $this->$setter($this->defaultValue($field));
+                $defaultValue = $this->defaultValue($field);
+                $this->$setter($defaultValue);
             }
             return;
         }
