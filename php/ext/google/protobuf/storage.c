@@ -355,6 +355,19 @@ void native_slot_get_by_array(upb_fieldtype_t type, const void* memory,
   }
 }
 
+void native_slot_get_by_map_key(upb_fieldtype_t type, const void* memory,
+                                int length, CACHED_VALUE* cache TSRMLS_DC) {
+  switch (type) {
+    case UPB_TYPE_STRING:
+    case UPB_TYPE_BYTES: {
+      PHP_PROTO_ZVAL_STRINGL(CACHED_PTR_TO_ZVAL_PTR(cache), memory, length, 1);
+      return;
+    }
+    default:
+      native_slot_get(type, memory, cache TSRMLS_CC);
+  }
+}
+
 void native_slot_get_default(upb_fieldtype_t type,
                              CACHED_VALUE* cache TSRMLS_DC) {
   switch (type) {

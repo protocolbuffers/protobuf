@@ -56,6 +56,23 @@ class MapFieldTest extends PHPUnit_Framework_TestCase {
         unset($arr['3.1']);
         unset($arr[MAX_INT32_STRING]);
         $this->assertEquals(0, count($arr));
+
+        // Test foreach.
+        $arr = new MapField(GPBType::INT32, GPBType::INT32);
+        for ($i = 0; $i < 3; $i++) {
+          $arr[$i] = $i;
+        }
+        $i = 0;
+        $arr_test = [];
+        foreach ($arr as $key => $val) {
+          $this->assertSame($key, $val);
+          $arr_test[] = $key;
+          $i++;
+        }
+        $this->assertTrue(isset($arr_test[0]));
+        $this->assertTrue(isset($arr_test[1]));
+        $this->assertTrue(isset($arr_test[2]));
+        $this->assertSame(3, $i);
     }
 
     #########################################################
@@ -366,6 +383,23 @@ class MapFieldTest extends PHPUnit_Framework_TestCase {
         $this->assertEquals(1, count($arr));
         unset($arr[True]);
         $this->assertEquals(0, count($arr));
+
+        // Test foreach.
+        $arr = new MapField(GPBType::STRING, GPBType::STRING);
+        for ($i = 0; $i < 3; $i++) {
+          $arr[$i] = $i;
+        }
+        $i = 0;
+        $arr_test = [];
+        foreach ($arr as $key => $val) {
+          $this->assertSame($key, $val);
+          $arr_test[] = $key;
+          $i++;
+        }
+        $this->assertTrue(isset($arr_test['0']));
+        $this->assertTrue(isset($arr_test['1']));
+        $this->assertTrue(isset($arr_test['2']));
+        $this->assertSame(3, $i);
     }
 
     #########################################################
