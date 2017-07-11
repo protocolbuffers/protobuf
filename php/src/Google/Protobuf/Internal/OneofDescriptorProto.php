@@ -12,21 +12,19 @@ use Google\Protobuf\Internal\InputStream;
 use Google\Protobuf\Internal\GPBUtil;
 
 /**
- * <pre>
  * Describes a oneof.
- * </pre>
  *
- * Protobuf type <code>google.protobuf.OneofDescriptorProto</code>
+ * Generated from protobuf message <code>google.protobuf.OneofDescriptorProto</code>
  */
 class OneofDescriptorProto extends \Google\Protobuf\Internal\Message
 {
     /**
-     * <code>optional string name = 1;</code>
+     * Generated from protobuf field <code>optional string name = 1;</code>
      */
     private $name = '';
     private $has_name = false;
     /**
-     * <code>optional .google.protobuf.OneofOptions options = 2;</code>
+     * Generated from protobuf field <code>optional .google.protobuf.OneofOptions options = 2;</code>
      */
     private $options = null;
     private $has_options = false;
@@ -37,7 +35,8 @@ class OneofDescriptorProto extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * <code>optional string name = 1;</code>
+     * Generated from protobuf field <code>optional string name = 1;</code>
+     * @return string
      */
     public function getName()
     {
@@ -45,7 +44,9 @@ class OneofDescriptorProto extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * <code>optional string name = 1;</code>
+     * Generated from protobuf field <code>optional string name = 1;</code>
+     * @param string $var
+     * @return $this
      */
     public function setName($var)
     {
@@ -62,7 +63,8 @@ class OneofDescriptorProto extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * <code>optional .google.protobuf.OneofOptions options = 2;</code>
+     * Generated from protobuf field <code>optional .google.protobuf.OneofOptions options = 2;</code>
+     * @return \Google\Protobuf\Internal\OneofOptions
      */
     public function getOptions()
     {
@@ -70,7 +72,9 @@ class OneofDescriptorProto extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * <code>optional .google.protobuf.OneofOptions options = 2;</code>
+     * Generated from protobuf field <code>optional .google.protobuf.OneofOptions options = 2;</code>
+     * @param \Google\Protobuf\Internal\OneofOptions $var
+     * @return $this
      */
     public function setOptions(&$var)
     {

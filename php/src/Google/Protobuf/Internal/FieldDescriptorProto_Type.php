@@ -5,118 +5,102 @@
 namespace Google\Protobuf\Internal;
 
 /**
- * Protobuf enum <code>google.protobuf.FieldDescriptorProto.Type</code>
+ * Protobuf enum <code>Google\Protobuf\Internal</code>
  */
 class FieldDescriptorProto_Type
 {
     /**
-     * <pre>
      * 0 is reserved for errors.
      * Order is weird for historical reasons.
-     * </pre>
      *
-     * <code>TYPE_DOUBLE = 1;</code>
+     * Generated from protobuf enum <code>TYPE_DOUBLE = 1;</code>
      */
     const TYPE_DOUBLE = 1;
     /**
-     * <code>TYPE_FLOAT = 2;</code>
+     * Generated from protobuf enum <code>TYPE_FLOAT = 2;</code>
      */
     const TYPE_FLOAT = 2;
     /**
-     * <pre>
      * Not ZigZag encoded.  Negative numbers take 10 bytes.  Use TYPE_SINT64 if
      * negative values are likely.
-     * </pre>
      *
-     * <code>TYPE_INT64 = 3;</code>
+     * Generated from protobuf enum <code>TYPE_INT64 = 3;</code>
      */
     const TYPE_INT64 = 3;
     /**
-     * <code>TYPE_UINT64 = 4;</code>
+     * Generated from protobuf enum <code>TYPE_UINT64 = 4;</code>
      */
     const TYPE_UINT64 = 4;
     /**
-     * <pre>
      * Not ZigZag encoded.  Negative numbers take 10 bytes.  Use TYPE_SINT32 if
      * negative values are likely.
-     * </pre>
      *
-     * <code>TYPE_INT32 = 5;</code>
+     * Generated from protobuf enum <code>TYPE_INT32 = 5;</code>
      */
     const TYPE_INT32 = 5;
     /**
-     * <code>TYPE_FIXED64 = 6;</code>
+     * Generated from protobuf enum <code>TYPE_FIXED64 = 6;</code>
      */
     const TYPE_FIXED64 = 6;
     /**
-     * <code>TYPE_FIXED32 = 7;</code>
+     * Generated from protobuf enum <code>TYPE_FIXED32 = 7;</code>
      */
     const TYPE_FIXED32 = 7;
     /**
-     * <code>TYPE_BOOL = 8;</code>
+     * Generated from protobuf enum <code>TYPE_BOOL = 8;</code>
      */
     const TYPE_BOOL = 8;
     /**
-     * <code>TYPE_STRING = 9;</code>
+     * Generated from protobuf enum <code>TYPE_STRING = 9;</code>
      */
     const TYPE_STRING = 9;
     /**
-     * <pre>
      * Tag-delimited aggregate.
      * Group type is deprecated and not supported in proto3. However, Proto3
      * implementations should still be able to parse the group wire format and
      * treat group fields as unknown fields.
-     * </pre>
      *
-     * <code>TYPE_GROUP = 10;</code>
+     * Generated from protobuf enum <code>TYPE_GROUP = 10;</code>
      */
     const TYPE_GROUP = 10;
     /**
-     * <pre>
      * Length-delimited aggregate.
-     * </pre>
      *
-     * <code>TYPE_MESSAGE = 11;</code>
+     * Generated from protobuf enum <code>TYPE_MESSAGE = 11;</code>
      */
     const TYPE_MESSAGE = 11;
     /**
-     * <pre>
      * New in version 2.
-     * </pre>
      *
-     * <code>TYPE_BYTES = 12;</code>
+     * Generated from protobuf enum <code>TYPE_BYTES = 12;</code>
      */
     const TYPE_BYTES = 12;
     /**
-     * <code>TYPE_UINT32 = 13;</code>
+     * Generated from protobuf enum <code>TYPE_UINT32 = 13;</code>
      */
     const TYPE_UINT32 = 13;
     /**
-     * <code>TYPE_ENUM = 14;</code>
+     * Generated from protobuf enum <code>TYPE_ENUM = 14;</code>
      */
     const TYPE_ENUM = 14;
     /**
-     * <code>TYPE_SFIXED32 = 15;</code>
+     * Generated from protobuf enum <code>TYPE_SFIXED32 = 15;</code>
      */
     const TYPE_SFIXED32 = 15;
     /**
-     * <code>TYPE_SFIXED64 = 16;</code>
+     * Generated from protobuf enum <code>TYPE_SFIXED64 = 16;</code>
      */
     const TYPE_SFIXED64 = 16;
     /**
-     * <pre>
      * Uses ZigZag encoding.
-     * </pre>
      *
-     * <code>TYPE_SINT32 = 17;</code>
+     * Generated from protobuf enum <code>TYPE_SINT32 = 17;</code>
      */
     const TYPE_SINT32 = 17;
     /**
-     * <pre>
      * Uses ZigZag encoding.
-     * </pre>
      *
-     * <code>TYPE_SINT64 = 18;</code>
+     * Generated from protobuf enum <code>TYPE_SINT64 = 18;</code>
      */
     const TYPE_SINT64 = 18;
 }

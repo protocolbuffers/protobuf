@@ -181,7 +181,7 @@ string GenerateDifferentBit(int bit_index);
 // the given name of the bit, to the appropriate Java expressions for the given
 // bit index.
 void SetBitOperationVariables(const string name,
-    int bitIndex, map<string, string>* variables);
+    int bitIndex, std::map<string, string>* variables);
 
 inline bool IsMapEntry(const Descriptor* descriptor) {
   // TODO(liujisi): Add an option to turn on maps for proto2 syntax as well.

@@ -116,6 +116,7 @@ GRPC (http://www.grpc.io/) is Google's RPC implementation for Protocol Buffers. 
 * https://github.com/thesamet/rpcz (C++/Python, based on ZeroMQ)
 * https://github.com/w359405949/libmaid (C++, Python)
 * https://github.com/madwyn/libpbrpc (C++)
+* https://github.com/SeriousMa/grpc-protobuf-validation (Java)
 
 ## Other Utilities
 

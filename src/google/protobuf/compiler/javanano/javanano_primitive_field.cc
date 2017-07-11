@@ -166,7 +166,7 @@ bool AllAscii(const string& text) {
 
 
 void SetPrimitiveVariables(const FieldDescriptor* descriptor, const Params params,
-                           map<string, string>* variables) {
+                           std::map<string, string>* variables) {
   (*variables)["name"] =
     RenameJavaKeywords(UnderscoresToCamelCase(descriptor));
   (*variables)["capitalized_name"] =

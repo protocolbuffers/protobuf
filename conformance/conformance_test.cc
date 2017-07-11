@@ -677,7 +677,7 @@ void ConformanceTestSuite::SetFailureList(const string& filename,
             std::inserter(expected_to_fail_, expected_to_fail_.end()));
 }
 
-bool ConformanceTestSuite::CheckSetEmpty(const set<string>& set_to_check,
+bool ConformanceTestSuite::CheckSetEmpty(const std::set<string>& set_to_check,
                                          const std::string& write_to_file,
                                          const std::string& msg) {
   if (set_to_check.empty()) {
@@ -685,7 +685,7 @@ bool ConformanceTestSuite::CheckSetEmpty(const set<string>& set_to_check,
   } else {
     StringAppendF(&output_, "\n");
     StringAppendF(&output_, "%s\n\n", msg.c_str());
-    for (set<string>::const_iterator iter = set_to_check.begin();
+    for (std::set<string>::const_iterator iter = set_to_check.begin();
          iter != set_to_check.end(); ++iter) {
       StringAppendF(&output_, "  %s\n", iter->c_str());
     }
@@ -694,7 +694,7 @@ bool ConformanceTestSuite::CheckSetEmpty(const set<string>& set_to_check,
     if (!write_to_file.empty()) {
       std::ofstream os(write_to_file);
       if (os) {
-        for (set<string>::const_iterator iter = set_to_check.begin();
+        for (std::set<string>::const_iterator iter = set_to_check.begin();
              iter != set_to_check.end(); ++iter) {
           os << *iter << "\n";
         }
@@ -759,6 +759,7 @@ bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
   });
   TestValidDataForType(FieldDescriptor::TYPE_FLOAT, {
     {flt(0.1), "0.1"},
+    {flt(1.00000075e-36), "1.00000075e-36"},
     {flt(3.402823e+38), "3.402823e+38"},  // 3.40282347e+38
     {flt(1.17549435e-38f), "1.17549435e-38"}
   });
@@ -1232,7 +1233,7 @@ bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
       "Int32FieldNegativeWithLeadingZero", REQUIRED,
       R"({"optionalInt32": -01})");
   // String values must follow the same syntax rule. Specifically leading
-  // or traling spaces are not allowed.
+  // or trailing spaces are not allowed.
   ExpectParseFailureForJson(
       "Int32FieldLeadingSpace", REQUIRED,
       R"({"optionalInt32": " 1"})");

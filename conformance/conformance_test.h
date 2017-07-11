@@ -205,7 +205,7 @@ class ConformanceTestSuite {
   void TestValidDataForType(
       google::protobuf::FieldDescriptor::Type,
       std::vector<std::pair<std::string, std::string>> values);
-  bool CheckSetEmpty(const set<string>& set_to_check,
+  bool CheckSetEmpty(const std::set<string>& set_to_check,
                      const std::string& write_to_file, const std::string& msg);
   ConformanceTestRunner* runner_;
   int successes_;

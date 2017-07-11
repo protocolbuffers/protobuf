@@ -403,7 +403,7 @@ namespace Google.Protobuf
                 output.Flush();
 
                 ms.Position = 0;
-                CodedInputStream input = new CodedInputStream(ms, new byte[ms.Length / 2], 0, 0);
+                CodedInputStream input = new CodedInputStream(ms, new byte[ms.Length / 2], 0, 0, false);
 
                 uint tag = input.ReadTag();
                 Assert.AreEqual(1, WireFormat.GetTagFieldNumber(tag));
@@ -593,6 +593,13 @@ namespace Google.Protobuf
             {
             }
             Assert.IsTrue(memoryStream.CanRead); // We left the stream open
+        }
+
+        [Test]
+        public void Dispose_FromByteArray()
+        {
+            var stream = new CodedInputStream(new byte[10]);
+            stream.Dispose();
         }
     }
 }

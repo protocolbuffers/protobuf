@@ -925,19 +925,11 @@ void FileGenerator::GenerateNamespaceClosers(io::Printer* printer) {
 
 void FileGenerator::GenerateForwardDeclarations(io::Printer* printer) {
   ForwardDeclarations decls;
-  for (int i = 0; i < file_->dependency_count(); i++) {
-    FileGenerator dependency(file_->dependency(i), options_);
-    dependency.FillForwardDeclarations(&decls);
-  }
   FillForwardDeclarations(&decls);
   decls.Print(printer, options_);
 }
 
 void FileGenerator::FillForwardDeclarations(ForwardDeclarations* decls) {
-  for (int i = 0; i < file_->public_dependency_count(); i++) {
-    FileGenerator dependency(file_->public_dependency(i), options_);
-    dependency.FillForwardDeclarations(decls);
-  }
   for (int i = 0; i < package_parts_.size(); i++) {
     decls = decls->AddOrGetNamespace(package_parts_[i]);
   }

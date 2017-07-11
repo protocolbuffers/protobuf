@@ -1174,6 +1174,8 @@ module BasicTest
 
       json_text = TestMessage.encode_json(m)
       m2 = TestMessage.decode_json(json_text)
+      puts m.inspect
+      puts m2.inspect
       assert m == m2
 
       # Crash case from GitHub issue 283.

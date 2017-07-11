@@ -787,7 +787,7 @@ inline int WireFormatLite::GetTagFieldNumber(uint32 tag) {
 inline size_t WireFormatLite::TagSize(int field_number,
                                       WireFormatLite::FieldType type) {
   size_t result = io::CodedOutputStream::VarintSize32(
-    field_number << kTagTypeBits);
+    static_cast<uint32>(field_number << kTagTypeBits));
   if (type == TYPE_GROUP) {
     // Groups have both a start and an end tag.
     return result * 2;
@@ -846,20 +846,20 @@ inline double WireFormatLite::DecodeDouble(uint64 value) {
 
 inline uint32 WireFormatLite::ZigZagEncode32(int32 n) {
   // Note:  the right-shift must be arithmetic
-  return (static_cast<uint32>(n) << 1) ^ (n >> 31);
+  return static_cast<uint32>((n << 1) ^ (n >> 31));
 }
 
 inline int32 WireFormatLite::ZigZagDecode32(uint32 n) {
-  return (n >> 1) ^ -static_cast<int32>(n & 1);
+  return static_cast<int32>(n >> 1) ^ -static_cast<int32>(n & 1);
 }
 
 inline uint64 WireFormatLite::ZigZagEncode64(int64 n) {
   // Note:  the right-shift must be arithmetic
-  return (static_cast<uint64>(n) << 1) ^ (n >> 63);
+  return static_cast<uint64>((n << 1) ^ (n >> 63));
 }
 
 inline int64 WireFormatLite::ZigZagDecode64(uint64 n) {
-  return (n >> 1) ^ -static_cast<int64>(n & 1);
+  return static_cast<int64>(n >> 1) ^ -static_cast<int64>(n & 1);
 }
 
 // String is for UTF-8 text only, but, even so, ReadString() can simply

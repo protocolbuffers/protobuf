@@ -158,7 +158,7 @@ class Map {
 
  private:
   void Init() {
-    elements_ = Arena::Create<InnerMap>(arena_, 0, hasher(), Allocator(arena_));
+    elements_ = Arena::Create<InnerMap>(arena_, 0u, hasher(), Allocator(arena_));
   }
 
   // re-implement std::allocator to use arena allocator for memory allocation.

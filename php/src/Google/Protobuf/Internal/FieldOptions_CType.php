@@ -5,24 +5,22 @@
 namespace Google\Protobuf\Internal;
 
 /**
- * Protobuf enum <code>google.protobuf.FieldOptions.CType</code>
+ * Protobuf enum <code>Google\Protobuf\Internal</code>
  */
 class FieldOptions_CType
 {
     /**
-     * <pre>
      * Default mode.
-     * </pre>
      *
-     * <code>STRING = 0;</code>
+     * Generated from protobuf enum <code>STRING = 0;</code>
      */
     const STRING = 0;
     /**
-     * <code>CORD = 1;</code>
+     * Generated from protobuf enum <code>CORD = 1;</code>
      */
     const CORD = 1;
     /**
-     * <code>STRING_PIECE = 2;</code>
+     * Generated from protobuf enum <code>STRING_PIECE = 2;</code>
      */
     const STRING_PIECE = 2;
 }

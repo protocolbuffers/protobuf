@@ -47,10 +47,19 @@
 NS_ASSUME_NONNULL_BEGIN
 
 /**
+ * @c GPBCodedOutputStream exception names.
+ **/
+extern NSString *const GPBCodedOutputStreamException_OutOfSpace;
+extern NSString *const GPBCodedOutputStreamException_WriteFailed;
+
+/**
  * Writes out protocol message fields.
  *
  * The common uses of protocol buffers shouldn't need to use this class.
  * GPBMessage's provide a -data method that will serialize the message for you.
+ *
+ * @note Any -write* api can raise the GPBCodedOutputStreamException_*
+ *       exceptions.
  *
  * @note Subclassing of GPBCodedOutputStream is NOT supported.
  **/

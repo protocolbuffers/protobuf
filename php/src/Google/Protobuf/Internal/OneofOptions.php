@@ -12,16 +12,14 @@ use Google\Protobuf\Internal\InputStream;
 use Google\Protobuf\Internal\GPBUtil;
 
 /**
- * Protobuf type <code>google.protobuf.OneofOptions</code>
+ * Generated from protobuf message <code>google.protobuf.OneofOptions</code>
  */
 class OneofOptions extends \Google\Protobuf\Internal\Message
 {
     /**
-     * <pre>
      * The parser stores options it doesn't recognize here. See above.
-     * </pre>
      *
-     * <code>repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;</code>
+     * Generated from protobuf field <code>repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;</code>
      */
     private $uninterpreted_option;
     private $has_uninterpreted_option = false;
@@ -32,11 +30,10 @@ class OneofOptions extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * <pre>
      * The parser stores options it doesn't recognize here. See above.
-     * </pre>
      *
-     * <code>repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;</code>
+     * Generated from protobuf field <code>repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;</code>
+     * @return \Google\Protobuf\Internal\RepeatedField
      */
     public function getUninterpretedOption()
     {
@@ -44,11 +41,11 @@ class OneofOptions extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * <pre>
      * The parser stores options it doesn't recognize here. See above.
-     * </pre>
      *
-     * <code>repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;</code>
+     * Generated from protobuf field <code>repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;</code>
+     * @param \Google\Protobuf\Internal\UninterpretedOption[]|\Google\Protobuf\Internal\RepeatedField $var
+     * @return $this
      */
     public function setUninterpretedOption(&$var)
     {

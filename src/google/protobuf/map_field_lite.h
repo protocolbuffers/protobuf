@@ -60,7 +60,7 @@ class MapFieldLite {
   Map<Key, T>* MutableMap() { return &map_; }
 
   // Convenient methods for generated message implementation.
-  int size() const { return map_.size(); }
+  int size() const { return static_cast<int>(map_.size()); }
   void Clear() { return map_.clear(); }
   void MergeFrom(const MapFieldLite& other) {
     for (typename Map<Key, T>::const_iterator it = other.map_.begin();
