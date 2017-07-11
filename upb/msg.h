@@ -389,11 +389,6 @@ bool upb_msg_getscalarhandlerdata(const upb_handlers *h,
 #define UPB_NOT_IN_ONEOF UINT16_MAX
 
 typedef struct {
-  const char *ptr;
-  uint32_t length;
-} upb_msglayout_strinit_v1;
-
-typedef struct {
   uint32_t number;
   uint32_t offset;  /* If in a oneof, offset of default in default_msg below. */
   uint16_t hasbit;
@@ -409,20 +404,21 @@ typedef struct {
 } upb_msglayout_oneofinit_v1;
 
 typedef struct upb_msglayout_msginit_v1 {
-  const struct upb_msglayout_msginit_v1 **submsgs;
+  const struct upb_msglayout_msginit_v1 *const* submsgs;
   const upb_msglayout_fieldinit_v1 *fields;
   const upb_msglayout_oneofinit_v1 *oneofs;
-  uint32_t *case_offsets;
   void *default_msg;
-  /* Must be aligned to 8.  Doesn't include internal members like unknown
-   * fields, extension dict, pointer to msglayout, etc. */
+  /* Must be aligned to sizeof(void*).  Doesn't include internal members like
+   * unknown fields, extension dict, pointer to msglayout, etc. */
   uint32_t size;
   uint16_t field_count;
   uint16_t oneof_count;
   bool extendable;
   bool is_proto2;
-  char align;
 } upb_msglayout_msginit_v1;
+
+#define UPB_ALIGN_UP_TO(val, align) ((val + (align - 1)) & -align)
+#define UPB_ALIGNED_SIZEOF(type) UPB_ALIGN_UP_TO(sizeof(type), sizeof(void*))
 
 /* Initialize/uninitialize a msglayout from a msginit.  If upb uses v1
  * internally, this will not allocate any memory.  Should only be used by

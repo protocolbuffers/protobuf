@@ -170,7 +170,6 @@ static size_t upb_msglayout_place(upb_msglayout *l, size_t size) {
   size_t ret;
 
   l->data.size = align_up(l->data.size, size);
-  l->data.align = align_up(l->data.align, size);
   ret = l->data.size;
   l->data.size += size;
   return ret;
@@ -231,7 +230,7 @@ static upb_msglayout *upb_msglayout_new(const upb_msgdef *m) {
   upb_msglayout_fieldinit_v1 *fields;
   upb_msglayout_oneofinit_v1 *oneofs;
 
-  for (upb_msg_field_begin(&it, m), hasbit = sizeof(void*) * 8;
+  for (upb_msg_field_begin(&it, m);
        !upb_msg_field_done(&it);
        upb_msg_field_next(&it)) {
     const upb_fielddef* f = upb_msg_iter_field(&it);
@@ -300,7 +299,6 @@ static upb_msglayout *upb_msglayout_new(const upb_msgdef *m) {
 
   /* Account for space used by hasbits. */
   l->data.size = div_round_up(hasbit, 8);
-  l->data.align = 1;
 
   /* Allocate non-oneof fields. */
   for (upb_msg_field_begin(&it, m); !upb_msg_field_done(&it);
@@ -342,8 +340,8 @@ static upb_msglayout *upb_msglayout_new(const upb_msgdef *m) {
   }
 
   /* Size of the entire structure should be a multiple of its greatest
-   * alignment. */
-  l->data.size = align_up(l->data.size, l->data.align);
+   * alignment.  TODO: track overall alignment for real? */
+  l->data.size = align_up(l->data.size, 8);
 
   if (upb_msglayout_initdefault(l, m)) {
     return l;

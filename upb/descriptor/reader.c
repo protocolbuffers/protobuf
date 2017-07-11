@@ -48,6 +48,7 @@ typedef struct {
 struct upb_descreader {
   upb_sink sink;
   upb_inttable files;
+  upb_strtable files_by_name;
   upb_filedef *file;  /* The last file in files. */
   upb_descreader_frame stack[UPB_MAX_MESSAGE_NESTING];
   int stack_len;
@@ -214,6 +215,7 @@ static size_t file_onname(void *closure, const void *hd, const char *buf,
   UPB_UNUSED(handle);
 
   name = upb_gstrndup(buf, n);
+  upb_strtable_insert(&r->files_by_name, name, upb_value_ptr(r->file));
   /* XXX: see comment at the top of the file. */
   ok = upb_filedef_setname(r->file, name, NULL);
   upb_gfree(name);
@@ -325,6 +327,18 @@ static void *file_startext(void *closure, const void *hd) {
   UPB_UNUSED(hd);
   UPB_ASSERT(ok);
   return r;
+}
+
+static size_t file_ondep(void *closure, const void *hd, const char *buf,
+                         size_t n, const upb_bufhandle *handle) {
+  upb_descreader *r = closure;
+  upb_value val;
+  if (upb_strtable_lookup2(&r->files_by_name, buf, n, &val)) {
+    upb_filedef_adddep(r->file, upb_value_getptr(val));
+  }
+  UPB_UNUSED(hd);
+  UPB_UNUSED(handle);
+  return n;
 }
 
 /** Handlers for google.protobuf.EnumValueDescriptorProto. *********************/
@@ -771,6 +785,8 @@ static void reghandlers(const void *closure, upb_handlers *h) {
                                 &file_startenum, NULL);
     upb_handlers_setstartsubmsg(h, F(FileDescriptorProto, extension),
                                 &file_startext, NULL);
+    upb_handlers_setstring(h, F(FileDescriptorProto, dependency),
+                           &file_ondep, NULL);
   } else if (upbdefs_google_protobuf_EnumValueDescriptorProto_is(m)) {
     upb_handlers_setstartmsg(h, &enumval_startmsg, NULL);
     upb_handlers_setendmsg(h, &enumval_endmsg, NULL);
@@ -830,6 +846,7 @@ void descreader_cleanup(void *_r) {
 
   upb_gfree(r->name);
   upb_inttable_uninit(&r->files);
+  upb_strtable_uninit(&r->files_by_name);
   upb_inttable_uninit(&r->oneofs);
   upb_gfree(r->default_string);
   while (r->stack_len > 0) {
@@ -848,6 +865,7 @@ upb_descreader *upb_descreader_create(upb_env *e, const upb_handlers *h) {
   }
 
   upb_inttable_init(&r->files, UPB_CTYPE_PTR);
+  upb_strtable_init(&r->files_by_name, UPB_CTYPE_PTR);
   upb_inttable_init(&r->oneofs, UPB_CTYPE_PTR);
   upb_sink_reset(upb_descreader_input(r), h, r);
   r->stack_len = 0;
