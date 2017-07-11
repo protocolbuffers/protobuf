@@ -55,9 +55,9 @@ class MethodDescriptorProto extends \Google\Protobuf\Internal\Message
     private $server_streaming = false;
     private $has_server_streaming = false;
 
-    public function __construct() {
+    public function __construct($data = NULL) {
         \GPBMetadata\Google\Protobuf\Internal\Descriptor::initOnce();
-        parent::__construct();
+        parent::__construct($data);
     }
 
     /**
