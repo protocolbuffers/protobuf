@@ -19,7 +19,7 @@ class GeneratedPhpdocTest extends TestBase
     /**
      * @dataProvider providePhpDocForGettersAndSetters
      */
-    public function testPhpDocForIntGetters($methods, $expectedDoc)
+    public function testPhpDocForGettersAndSetters($methods, $expectedDoc)
     {
         $class = new ReflectionClass('Foo\TestMessage');
         foreach ($methods as $method) {
@@ -332,6 +332,32 @@ class GeneratedPhpdocTest extends TestBase
                 ],
                 '@param \NoNamespaceMessage $var'
             ],
+        ];
+    }
+
+    /**
+     * @dataProvider providePhpDocForNamespaces
+     */
+    public function testPhpDocForNamespaces($method, $expectedDoc)
+    {
+        $class = new ReflectionClass('Foo\TestNamespaces');
+        $doc = $class->getMethod($method)->getDocComment();
+        $this->assertContains($expectedDoc, $doc);
+    }
+
+    public function providePhpDocForNamespaces()
+    {
+        return [
+            ['getNoNamespaceMessage', '@return \NoNamespaceMessage'],
+            ['setNoNamespaceMessage', '@param \NoNamespaceMessage $var'],
+            ['getDifferentPackageMessage', '@return \Bar\TestInclude'],
+            ['setDifferentPackageMessage', '@param \Bar\TestInclude $var'],
+            ['getEmptyNamespaceMessage', '@return \TestEmptyNamespace'],
+            ['setEmptyNamespaceMessage', '@param \TestEmptyNamespace $var'],
+            ['getSameNamespaceMessage', '@return TestMessage'],
+            ['setSameNamespaceMessage', '@param TestMessage $var'],
+            ['getDifferentPhpNamespaceMessage', '@return \Php\Test\TestNamespace'],
+            ['setDifferentPhpNamespaceMessage', '@param \Php\Test\TestNamespace $var'],
         ];
     }
 }

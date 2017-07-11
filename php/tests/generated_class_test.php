@@ -13,6 +13,7 @@ use Foo\TestIncludeNamespaceMessage;
 use Foo\TestIncludePrefixMessage;
 use Foo\TestMessage;
 use Foo\TestMessage_Sub;
+use Foo\TestNamespaces;
 use Php\Test\TestNamespace;
 
 class GeneratedClassTest extends TestBase
@@ -676,6 +677,40 @@ class GeneratedClassTest extends TestBase
         $n->setA(1);
         $m->setEmptyNamespaceMessage($n);
         $this->assertSame(1, $m->getEmptyNamespaceMessage()->getA());
+    }
+
+    #########################################################
+    # Test across different packages and php namespaces
+    #########################################################
+
+    public function testNamespaces()
+    {
+        $m = new TestNamespaces();
+
+        $m->getNoNamespaceMessage();
+        $m->setNoNamespaceMessage(new \NoNamespaceMessage());
+        $m->getNoNamespaceMessage();
+        $m->setNoNamespaceEnum(1);
+
+        $m->getDifferentPackageMessage();
+        $m->setDifferentPackageMessage(new \Bar\TestInclude());
+        $m->getDifferentPackageEnum();
+        $m->setDifferentPackageEnum(1);
+
+        $m->getEmptyNamespaceMessage();
+        $m->setEmptyNamespaceMessage(new \TestEmptyNamespace());
+        $m->getEmptyNamespaceEnum();
+        $m->setEmptyNamespaceEnum(1);
+
+        $m->getSameNamespaceMessage();
+        $m->setSameNamespaceMessage(new TestMessage());
+        $m->getSameNamespaceEnum();
+        $m->setSameNamespaceEnum(1);
+
+        $m->getDifferentPhpNamespaceMessage();
+        $m->setDifferentPhpNamespaceMessage(new \Php\Test\TestNamespace());
+        $m->getDifferentPhpNamespaceEnum();
+        $m->setDifferentPhpNamespaceEnum(1);
     }
 
     #########################################################
