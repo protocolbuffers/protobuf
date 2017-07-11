@@ -126,6 +126,7 @@ UPB_INLINE upb_stringview upb_stringview_make(const char *data, size_t size) {
 
 #define UPB_STRINGVIEW_INIT(ptr, len) {ptr, len}
 
+
 /** upb_msgval ****************************************************************/
 
 /* A union representing all possible protobuf values.  Used for generic get/set

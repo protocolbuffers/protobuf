@@ -434,7 +434,7 @@ static upb_msgval lupb_tomsgval(lua_State *L, upb_fieldtype_t type, int narg,
     case UPB_TYPE_BYTES: {
       size_t len;
       const char *ptr = lupb_checkstring(L, narg, &len);
-      return upb_msgval_str(upb_stringview_make(ptr, len));
+      return upb_msgval_makestr(ptr, len);
     }
     case UPB_TYPE_MESSAGE:
       UPB_ASSERT(lmsgclass);
