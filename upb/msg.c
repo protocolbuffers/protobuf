@@ -206,6 +206,7 @@ static bool upb_msglayout_initdefault(upb_msglayout *l, const upb_msgdef *m) {
         continue;
       }
 
+      /* TODO(haberman): handle strings. */
       if (!upb_fielddef_isstring(f) &&
           !upb_fielddef_issubmsg(f) &&
           !upb_fielddef_isseq(f)) {
@@ -244,10 +245,20 @@ static upb_msglayout *upb_msglayout_new(const upb_msgdef *m) {
 
   memset(l, 0, sizeof(*l));
 
-  /* TODO(haberman): check OOM. */
   fields = upb_gmalloc(upb_msgdef_numfields(m) * sizeof(*fields));
   submsgs = upb_gmalloc(submsg_count * sizeof(*submsgs));
   oneofs = upb_gmalloc(upb_msgdef_numoneofs(m) * sizeof(*oneofs));
+
+  if ((!fields && upb_msgdef_numfields(m)) ||
+      (!submsgs && submsg_count) ||
+      (!oneofs && upb_msgdef_numoneofs(m))) {
+    /* OOM. */
+    upb_gfree(l);
+    upb_gfree(fields);
+    upb_gfree(submsgs);
+    upb_gfree(oneofs);
+    return NULL;
+  }
 
   l->data.field_count = upb_msgdef_numfields(m);
   l->data.oneof_count = upb_msgdef_numoneofs(m);
@@ -339,19 +350,6 @@ static upb_msglayout *upb_msglayout_new(const upb_msgdef *m) {
     upb_msglayout_free(l);
     return NULL;
   }
-}
-
-upb_msglayout *upb_msglayout_frominit_v1(
-    const struct upb_msglayout_msginit_v1 *init, upb_alloc *a) {
-  UPB_UNUSED(a);
-  /* If upb upgrades to a v2, this would create a heap-allocated v2. */
-  return (upb_msglayout*)init;
-}
-
-void upb_msglayout_uninit_v1(upb_msglayout *layout, upb_alloc *a) {
-  UPB_UNUSED(layout);
-  UPB_UNUSED(a);
-  /* If upb upgrades to a v2, this would free the heap-allocated v2. */
 }
 
 
@@ -661,8 +659,9 @@ typedef struct {
   upb_msg_internal base;
 } upb_msg_internal_withext;
 
-#define INTERNAL_MEMBERS_SIZE(l) \
-    sizeof(upb_msg_internal) - (l->data.extendable * sizeof(void*))
+static int upb_msg_internalsize(const upb_msglayout *l) {
+    return sizeof(upb_msg_internal) - l->data.extendable * sizeof(void*);
+}
 
 static upb_msg_internal *upb_msg_getinternal(upb_msg *msg) {
   return VOIDPTR_AT(msg, -sizeof(upb_msg_internal));
@@ -696,18 +695,22 @@ static uint32_t *upb_msg_oneofcase(const upb_msg *msg, int field_index,
 }
 
 size_t upb_msg_sizeof(const upb_msglayout *l) {
-  return l->data.size + INTERNAL_MEMBERS_SIZE(l);
+  return l->data.size + upb_msg_internalsize(l);
 }
 
 upb_msg *upb_msg_init(void *mem, const upb_msglayout *l, upb_alloc *a) {
-  upb_msg *msg = VOIDPTR_AT(mem, INTERNAL_MEMBERS_SIZE(l));
+  upb_msg *msg = VOIDPTR_AT(mem, upb_msg_internalsize(l));
+
+  /* Initialize normal members. */
   if (l->data.default_msg) {
     memcpy(msg, l->data.default_msg, l->data.size);
   } else {
     memset(msg, 0, l->data.size);
   }
 
+  /* Initialize internal members. */
   upb_msg_getinternal(msg)->alloc = a;
+
   if (l->data.extendable) {
     upb_msg_getinternalwithext(msg, l)->extdict = NULL;
   }
@@ -724,7 +727,7 @@ void *upb_msg_uninit(upb_msg *msg, const upb_msglayout *l) {
     }
   }
 
-  return VOIDPTR_AT(msg, -INTERNAL_MEMBERS_SIZE(l));
+  return VOIDPTR_AT(msg, -upb_msg_internalsize(l));
 }
 
 upb_msg *upb_msg_new(const upb_msglayout *l, upb_alloc *a) {
