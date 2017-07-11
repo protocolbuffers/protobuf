@@ -144,13 +144,13 @@ GenerateMergeFromCodedStream(io::Printer* printer) const {
       printer->Print(variables_,
         "} else {\n"
         "  mutable_unknown_fields()->AddVarint(\n"
-        "      $number$, static_cast<::google::protobuf::uint64>(value));\n");
+        "      $number$, static_cast< ::google::protobuf::uint64>(value));\n");
     } else {
       printer->Print(
         "} else {\n"
         "  unknown_fields_stream.WriteVarint32($tag$u);\n"
         "  unknown_fields_stream.WriteVarint32(\n"
-        "      static_cast<::google::protobuf::uint32>(value));\n",
+        "      static_cast< ::google::protobuf::uint32>(value));\n",
         "tag", SimpleItoa(internal::WireFormat::MakeTag(descriptor_)));
     }
     printer->Print(variables_,
@@ -347,13 +347,13 @@ GenerateMergeFromCodedStream(io::Printer* printer) const {
       printer->Print(variables_,
         "} else {\n"
         "  mutable_unknown_fields()->AddVarint(\n"
-        "      $number$, static_cast<::google::protobuf::uint64>(value));\n");
+        "      $number$, static_cast< ::google::protobuf::uint64>(value));\n");
     } else {
       printer->Print(
         "} else {\n"
         "  unknown_fields_stream.WriteVarint32(tag);\n"
         "  unknown_fields_stream.WriteVarint32(\n"
-        "      static_cast<::google::protobuf::uint32>(value));\n");
+        "      static_cast< ::google::protobuf::uint32>(value));\n");
     }
     printer->Print("}\n");
   }
@@ -412,12 +412,12 @@ GenerateMergeFromCodedStreamWithPacking(io::Printer* printer) const {
       if (UseUnknownFieldSet(descriptor_->file(), options_)) {
         printer->Print(variables_,
         "  mutable_unknown_fields()->AddVarint(\n"
-        "      $number$, static_cast<::google::protobuf::uint64>(value));\n");
+        "      $number$, static_cast< ::google::protobuf::uint64>(value));\n");
       } else {
         printer->Print(variables_,
         "    unknown_fields_stream.WriteVarint32(tag);\n"
         "    unknown_fields_stream.WriteVarint32(\n"
-        "        static_cast<::google::protobuf::uint32>(value));\n");
+        "        static_cast< ::google::protobuf::uint32>(value));\n");
       }
       printer->Print(
       "  }\n");
@@ -439,7 +439,7 @@ GenerateSerializeWithCachedSizes(io::Printer* printer) const {
       "    ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED,\n"
       "    output);\n"
       "  output->WriteVarint32(\n"
-      "      static_cast<::google::protobuf::uint32>(_$name$_cached_byte_size_));\n"
+      "      static_cast< ::google::protobuf::uint32>(_$name$_cached_byte_size_));\n"
       "}\n");
   }
   printer->Print(variables_,
@@ -467,7 +467,7 @@ GenerateSerializeWithCachedSizesToArray(io::Printer* printer) const {
       "    ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED,\n"
       "    target);\n"
       "  target = ::google::protobuf::io::CodedOutputStream::WriteVarint32ToArray("
-      "      static_cast<::google::protobuf::uint32>(\n"
+      "      static_cast< ::google::protobuf::uint32>(\n"
       "          _$name$_cached_byte_size_), target);\n"
       "  target = ::google::protobuf::internal::WireFormatLite::WriteEnumNoTagToArray(\n"
       "    this->$name$_, target);\n"
@@ -497,7 +497,7 @@ GenerateByteSize(io::Printer* printer) const {
       "if (data_size > 0) {\n"
       "  total_size += $tag_size$ +\n"
       "    ::google::protobuf::internal::WireFormatLite::Int32Size(\n"
-      "        static_cast<google::protobuf::int32>(data_size));\n"
+      "        static_cast< ::google::protobuf::int32>(data_size));\n"
       "}\n"
       "int cached_size = ::google::protobuf::internal::ToCachedSize(data_size);\n"
       "GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();\n"
