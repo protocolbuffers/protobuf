@@ -23,6 +23,10 @@ for _, argument in ipairs(arg) do
       return 1
     end
   else
+    if src then
+      print("upbc can only handle one input file at a time.")
+      return 1
+    end
     src = argument
   end
 end

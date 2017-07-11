@@ -30,11 +30,6 @@ function strip_proto(filename)
   return string.gsub(filename, '%.proto$','')
 end
 
---[[
-  [upb.TYPE_ENUM]     = 5,
-  [upb.TYPE_MESSAGE]  = 8,
---]]
-
 local function join(...)
   return table.concat({...}, ".")
 end
@@ -154,6 +149,12 @@ local function field_layout_rank(field)
   --   4. string fields
   --   5. submessage fields
   --   6. repeated fields
+  --
+  -- This has the following nice properties:
+  --
+  --  1. padding alignment is (nearly) minimized.
+  --  2. fields that might have defaults (1-4) are segregated
+  --     from fields that are always zero-initialized (5-7).
   local rank
   if field:containing_oneof() then
     rank = 100  -- These go last (actually we skip them).
