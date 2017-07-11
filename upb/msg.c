@@ -135,7 +135,7 @@ static upb_msgval upb_msgval_fromdefault(const upb_fielddef *f) {
       case UPB_TYPE_BYTES: {
         size_t len;
         const char *ptr = upb_fielddef_defaultstr(f, &len);
-        return upb_msgval_str(ptr, len);
+        return upb_msgval_makestr(ptr, len);
       }
       case UPB_TYPE_MESSAGE:
         return upb_msgval_msg(NULL);
@@ -423,9 +423,9 @@ void *upb_msg_startstr(void *msg, const void *hd, size_t size_hint) {
 
   val = upb_msgval_read(msg, ofs, upb_msgval_sizeof(UPB_TYPE_STRING));
 
-  upb_free(alloc, (void*)val.str.ptr);
-  val.str.ptr = NULL;
-  val.str.len = 0;
+  upb_free(alloc, (void*)val.str.data);
+  val.str.data = NULL;
+  val.str.size = 0;
 
   upb_msgval_write(msg, ofs, val, upb_msgval_sizeof(UPB_TYPE_STRING));
   return msg;
@@ -441,15 +441,15 @@ size_t upb_msg_str(void *msg, const void *hd, const char *ptr, size_t size,
 
   val = upb_msgval_read(msg, ofs, upb_msgval_sizeof(UPB_TYPE_STRING));
 
-  newsize = val.str.len + size;
-  val.str.ptr = upb_realloc(alloc, (void*)val.str.ptr, val.str.len, newsize);
+  newsize = val.str.size + size;
+  val.str.data = upb_realloc(alloc, (void*)val.str.data, val.str.size, newsize);
 
-  if (!val.str.ptr) {
+  if (!val.str.data) {
     return false;
   }
 
-  memcpy((char*)val.str.ptr + val.str.len, ptr, size);
-  val.str.len = newsize;
+  memcpy((char*)val.str.data + val.str.size, ptr, size);
+  val.str.size = newsize;
   upb_msgval_write(msg, ofs, val, upb_msgval_sizeof(UPB_TYPE_STRING));
   return size;
 }
@@ -540,7 +540,7 @@ static bool upb_visitor_hasfield(const upb_msg *msg, const upb_fielddef *f,
         return upb_msgval_getuint64(val) != 0;
       case UPB_TYPE_STRING:
       case UPB_TYPE_BYTES:
-        return upb_msgval_getstr(val) && upb_msgval_getstrlen(val) > 0;
+        return upb_msgval_getstr(val).size > 0;
       case UPB_TYPE_MESSAGE:
         return upb_msgval_getmsg(val) != NULL;
     }
@@ -899,8 +899,8 @@ static void upb_map_tokey(upb_fieldtype_t type, upb_msgval *key,
   switch (type) {
     case UPB_TYPE_STRING:
       /* Point to string data of the input key. */
-      *out_key = key->str.ptr;
-      *out_len = key->str.len;
+      *out_key = key->str.data;
+      *out_len = key->str.size;
       return;
     case UPB_TYPE_BOOL:
     case UPB_TYPE_INT32:
@@ -925,7 +925,7 @@ static upb_msgval upb_map_fromkey(upb_fieldtype_t type, const char *key,
                                   size_t len) {
   switch (type) {
     case UPB_TYPE_STRING:
-      return upb_msgval_str(key, len);
+      return upb_msgval_makestr(key, len);
     case UPB_TYPE_BOOL:
     case UPB_TYPE_INT32:
     case UPB_TYPE_UINT32:

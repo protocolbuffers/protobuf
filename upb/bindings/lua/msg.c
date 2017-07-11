@@ -434,7 +434,7 @@ static upb_msgval lupb_tomsgval(lua_State *L, upb_fieldtype_t type, int narg,
     case UPB_TYPE_BYTES: {
       size_t len;
       const char *ptr = lupb_checkstring(L, narg, &len);
-      return upb_msgval_str(ptr, len);
+      return upb_msgval_makestr(ptr, len);
     }
     case UPB_TYPE_MESSAGE:
       UPB_ASSERT(lmsgclass);
@@ -1014,7 +1014,7 @@ static int lupb_msg_index(lua_State *L) {
         if (upb_msg_has(lmsg->msg, field_index, l)) {
           upb_msgval val = upb_msg_get(lmsg->msg, field_index, l);
           lua_pop(L, 1);
-          lua_pushlstring(L, val.str.ptr, val.str.len);
+          lua_pushlstring(L, val.str.data, val.str.size);
           lupb_uservalseti(L, 1, lupb_fieldindex(f), -1);
         }
       }

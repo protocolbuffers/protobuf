@@ -110,6 +110,23 @@ const upb_visitorplan *upb_msgfactory_getvisitorplan(upb_msgfactory *f,
                                                      const upb_handlers *h);
 
 
+/** upb_stringview ************************************************************/
+
+typedef struct {
+  const char *data;
+  size_t size;
+} upb_stringview;
+
+UPB_INLINE upb_stringview upb_stringview_make(const char *data, size_t size) {
+  upb_stringview ret;
+  ret.data = data;
+  ret.size = size;
+  return ret;
+}
+
+#define UPB_STRINGVIEW_INIT(ptr, len) {ptr, len}
+
+
 /** upb_msgval ****************************************************************/
 
 /* A union representing all possible protobuf values.  Used for generic get/set
@@ -127,10 +144,7 @@ typedef union {
   const upb_msg* msg;
   const upb_array* arr;
   const void* ptr;
-  struct {
-    const char *ptr;
-    size_t len;
-  } str;
+  upb_stringview str;
 } upb_msgval;
 
 #define ACCESSORS(name, membername, ctype) \
@@ -157,22 +171,12 @@ ACCESSORS(map,    map, const upb_map*)
 ACCESSORS(msg,    msg, const upb_msg*)
 ACCESSORS(ptr,    ptr, const void*)
 ACCESSORS(arr,    arr, const upb_array*)
+ACCESSORS(str,    str, upb_stringview)
 
 #undef ACCESSORS
 
-UPB_INLINE upb_msgval upb_msgval_str(const char *ptr, size_t len) {
-  upb_msgval ret;
-  ret.str.ptr = ptr;
-  ret.str.len = len;
-  return ret;
-}
-
-UPB_INLINE const char* upb_msgval_getstr(upb_msgval val) {
-  return val.str.ptr;
-}
-
-UPB_INLINE size_t upb_msgval_getstrlen(upb_msgval val) {
-  return val.str.len;
+UPB_INLINE upb_msgval upb_msgval_makestr(const char *data, size_t size) {
+  return upb_msgval_str(upb_stringview_make(data, size));
 }
 
 
