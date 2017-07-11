@@ -1,5 +1,6 @@
 
 #include "upb/decode.h"
+#include "upb/structs.int.h"
 
 typedef enum {
   UPB_WIRE_TYPE_VARINT      = 0,
@@ -16,6 +17,13 @@ typedef struct {
    * have finished decoding the whole field. */
   const char *ptr;
 } upb_decstate;
+
+typedef struct {
+  int32_t group_number;  /* 0 if we are not parsing a group. */
+  char *msg;
+  const upb_msglayout_msginit_v1 *m;
+  const char *limit;
+} upb_decframe;
 
 #define CHK(x) if (!(x)) { return false; }
 
@@ -159,6 +167,25 @@ static bool upb_decode_unknownfielddata(upb_decstate *d, const char *ptr,
     return true;
   } while (true);
 }
+
+static bool upb_decode_knownfield(upb_decstate *d, const char *ptr,
+                                  const char *limit, char *msg,
+                                  const upb_msglayout_msginit_v1 *l,
+                                  const upb_msglayout_fieldinit_v1 *l) {
+  switch (wire_type) {
+    case UPB_WIRE_TYPE_VARINT:
+      return upb_decode_varintfield(d, ptr, limit, msg, l, f);
+    case UPB_WIRE_TYPE_32BIT:
+      return upb_decode_32bitfield(d, ptr, limit, msg, l, f);
+    case UPB_WIRE_TYPE_64BIT:
+      return upb_decode_64bitfield(d, ptr, limit, msg, l, f);
+    case UPB_WIRE_TYPE_DELIMITED:
+      return upb_decode_delimitedfield(d, ptr, limit, msg, l, f);
+    case UPB_WIRE_TYPE_START_GROUP:
+    case UPB_WIRE_TYPE_END_GROUP:
+  }
+}
+
 
 static bool upb_decode_field(upb_decstate *d, const char *limit, char *msg,
                              const upb_msglayout_msginit_v1 *l) {
@@ -366,12 +393,9 @@ static bool upb_decode_field(upb_decstate *d, const char *limit, char *msg,
   return true;
 }
 
-static bool upb_decode_message(upb_decstate *d, upb_stringview buf,
-                               char *msg, const upb_msglayout_msginit_v1 *l) {
-  const char *limit = ptr + buf.size;
-
-  while (d->ptr < limit) {
-    if (!upb_decode_field(&ptr, limit, msg, l, env)) {
+static bool upb_decode_message(upb_decstate *d, upb_decframe *frame) {
+  while (d->ptr < frame->limit) {
+    if (!upb_decode_field(d, frame)) {
       return false;
     }
   }
@@ -381,5 +405,15 @@ static bool upb_decode_message(upb_decstate *d, upb_stringview buf,
 
 bool upb_decode(upb_stringview buf, void *msg,
                 const upb_msglayout_msginit_v1 *l, upb_env *env) {
-  return upb_decode_message(buf, msg, l, env);
+  upb_decstate state;
+  state.ptr = buf.data;
+  state.env = env;
+
+  upb_decframe frame;
+  frame.msg = msg;
+  frame.l = l;
+  frame.group_number = 0;
+  frame.limit = buf.data + buf.size
+
+  return upb_decode_message(&state, &frame);
 }
