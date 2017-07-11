@@ -705,7 +705,6 @@ upb_msg *upb_msg_init(void *mem, const upb_msglayout *l, upb_alloc *a) {
     memset(msg, 0, l->data.size);
   }
 
-  UPB_ASSERT(!upb_msg_getinternal(msg)->alloc);
   upb_msg_getinternal(msg)->alloc = a;
 
   if (l->data.extendable) {
