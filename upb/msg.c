@@ -701,13 +701,15 @@ size_t upb_msg_sizeof(const upb_msglayout *l) {
 
 upb_msg *upb_msg_init(void *mem, const upb_msglayout *l, upb_alloc *a) {
   upb_msg *msg = VOIDPTR_AT(mem, upb_msg_internalsize(l));
+
+  /* Initialize normal members. */
   if (l->data.default_msg) {
     memcpy(msg, l->data.default_msg, l->data.size);
   } else {
     memset(msg, 0, l->data.size);
   }
 
-  UPB_ASSERT(!upb_msg_getinternal(msg)->alloc);
+  /* Initialize internal members. */
   upb_msg_getinternal(msg)->alloc = a;
 
   if (l->data.extendable) {
