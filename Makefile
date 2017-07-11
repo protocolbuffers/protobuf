@@ -463,7 +463,7 @@ testlua: lua
 	  echo LUA $$test; \
 	  LUA_PATH="third_party/lunit/?.lua;upb/bindings/lua/?.lua" \
 	    LUA_CPATH=upb/bindings/lua/?.so \
-	    lua $$test; \
+	    $(RUN_UNDER) lua $$test; \
 	done
 
 clean: clean_lua

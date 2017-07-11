@@ -565,13 +565,20 @@ function test_msg_primitives()
 
   local symtab = upb.SymbolTable{
     upb.MessageDef{full_name = "TestMessage", fields = {
-      upb.FieldDef{name = "i32", number = 1, type = upb.TYPE_INT32},
-      upb.FieldDef{name = "u32", number = 2, type = upb.TYPE_UINT32},
-      upb.FieldDef{name = "i64", number = 3, type = upb.TYPE_INT64},
-      upb.FieldDef{name = "u64", number = 4, type = upb.TYPE_UINT64},
-      upb.FieldDef{name = "dbl", number = 5, type = upb.TYPE_DOUBLE},
-      upb.FieldDef{name = "flt", number = 6, type = upb.TYPE_FLOAT},
-      upb.FieldDef{name = "bool", number = 7, type = upb.TYPE_BOOL},
+      upb.FieldDef{
+          name = "i32", number = 1, type = upb.TYPE_INT32, default = 1},
+      upb.FieldDef{
+          name = "u32", number = 2, type = upb.TYPE_UINT32, default = 2},
+      upb.FieldDef{
+          name = "i64", number = 3, type = upb.TYPE_INT64, default = 3},
+      upb.FieldDef{
+          name = "u64", number = 4, type = upb.TYPE_UINT64, default = 4},
+      upb.FieldDef{
+          name = "dbl", number = 5, type = upb.TYPE_DOUBLE, default = 5},
+      upb.FieldDef{
+          name = "flt", number = 6, type = upb.TYPE_FLOAT, default = 6},
+      upb.FieldDef{
+          name = "bool", number = 7, type = upb.TYPE_BOOL, default = true},
       }
     }
   }
@@ -581,13 +588,13 @@ function test_msg_primitives()
   msg = TestMessage()
 
   -- Unset member returns default value.
-  assert_equal(0, msg.i32)
-  assert_equal(0, msg.u32)
-  assert_equal(0, msg.i64)
-  assert_equal(0, msg.u64)
-  assert_equal(0, msg.dbl)
-  assert_equal(0, msg.flt)
-  assert_equal(false, msg.bool)
+  assert_equal(1, msg.i32)
+  assert_equal(2, msg.u32)
+  assert_equal(3, msg.i64)
+  assert_equal(4, msg.u64)
+  assert_equal(5, msg.dbl)
+  assert_equal(6, msg.flt)
+  assert_equal(true, msg.bool)
 
   -- Attempts to access non-existent fields fail.
   assert_error_match("no such field", function() msg.no_such = 1 end)
