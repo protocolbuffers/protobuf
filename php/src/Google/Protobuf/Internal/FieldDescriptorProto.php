@@ -418,7 +418,7 @@ class FieldDescriptorProto extends \Google\Protobuf\Internal\Message
      * @param \Google\Protobuf\Internal\FieldOptions $var
      * @return $this
      */
-    public function setOptions(&$var)
+    public function setOptions($var)
     {
         GPBUtil::checkMessage($var, \Google\Protobuf\Internal\FieldOptions::class);
         $this->options = $var;

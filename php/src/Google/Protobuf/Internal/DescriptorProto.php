@@ -119,7 +119,7 @@ class DescriptorProto extends \Google\Protobuf\Internal\Message
      * @param \Google\Protobuf\Internal\FieldDescriptorProto[]|\Google\Protobuf\Internal\RepeatedField $var
      * @return $this
      */
-    public function setField(&$var)
+    public function setField($var)
     {
         $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \Google\Protobuf\Internal\FieldDescriptorProto::class);
         $this->field = $arr;
@@ -147,7 +147,7 @@ class DescriptorProto extends \Google\Protobuf\Internal\Message
      * @param \Google\Protobuf\Internal\FieldDescriptorProto[]|\Google\Protobuf\Internal\RepeatedField $var
      * @return $this
      */
-    public function setExtension(&$var)
+    public function setExtension($var)
     {
         $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \Google\Protobuf\Internal\FieldDescriptorProto::class);
         $this->extension = $arr;
@@ -175,7 +175,7 @@ class DescriptorProto extends \Google\Protobuf\Internal\Message
      * @param \Google\Protobuf\Internal\DescriptorProto[]|\Google\Protobuf\Internal\RepeatedField $var
      * @return $this
      */
-    public function setNestedType(&$var)
+    public function setNestedType($var)
     {
         $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \Google\Protobuf\Internal\DescriptorProto::class);
         $this->nested_type = $arr;
@@ -203,7 +203,7 @@ class DescriptorProto extends \Google\Protobuf\Internal\Message
      * @param \Google\Protobuf\Internal\EnumDescriptorProto[]|\Google\Protobuf\Internal\RepeatedField $var
      * @return $this
      */
-    public function setEnumType(&$var)
+    public function setEnumType($var)
     {
         $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \Google\Protobuf\Internal\EnumDescriptorProto::class);
         $this->enum_type = $arr;
@@ -231,7 +231,7 @@ class DescriptorProto extends \Google\Protobuf\Internal\Message
      * @param \Google\Protobuf\Internal\DescriptorProto_ExtensionRange[]|\Google\Protobuf\Internal\RepeatedField $var
      * @return $this
      */
-    public function setExtensionRange(&$var)
+    public function setExtensionRange($var)
     {
         $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \Google\Protobuf\Internal\DescriptorProto_ExtensionRange::class);
         $this->extension_range = $arr;
@@ -259,7 +259,7 @@ class DescriptorProto extends \Google\Protobuf\Internal\Message
      * @param \Google\Protobuf\Internal\OneofDescriptorProto[]|\Google\Protobuf\Internal\RepeatedField $var
      * @return $this
      */
-    public function setOneofDecl(&$var)
+    public function setOneofDecl($var)
     {
         $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \Google\Protobuf\Internal\OneofDescriptorProto::class);
         $this->oneof_decl = $arr;
@@ -287,7 +287,7 @@ class DescriptorProto extends \Google\Protobuf\Internal\Message
      * @param \Google\Protobuf\Internal\MessageOptions $var
      * @return $this
      */
-    public function setOptions(&$var)
+    public function setOptions($var)
     {
         GPBUtil::checkMessage($var, \Google\Protobuf\Internal\MessageOptions::class);
         $this->options = $var;
@@ -315,7 +315,7 @@ class DescriptorProto extends \Google\Protobuf\Internal\Message
      * @param \Google\Protobuf\Internal\DescriptorProto_ReservedRange[]|\Google\Protobuf\Internal\RepeatedField $var
      * @return $this
      */
-    public function setReservedRange(&$var)
+    public function setReservedRange($var)
     {
         $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \Google\Protobuf\Internal\DescriptorProto_ReservedRange::class);
         $this->reserved_range = $arr;
@@ -349,7 +349,7 @@ class DescriptorProto extends \Google\Protobuf\Internal\Message
      * @param string[]|\Google\Protobuf\Internal\RepeatedField $var
      * @return $this
      */
-    public function setReservedName(&$var)
+    public function setReservedName($var)
     {
         $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::STRING);
         $this->reserved_name = $arr;
