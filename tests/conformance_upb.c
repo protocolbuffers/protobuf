@@ -81,7 +81,7 @@ void DoTest(
       char *serialized = protobuf_test_messages_proto3_TestAllTypes_serialize(
           test_message, env, &serialized_len);
       if (!serialized) {
-        fprintf(stderr, "conformance_upb: Error serialiing.");
+        fprintf(stderr, "conformance_upb: Error serializing.");
         exit(1);
       }
       conformance_ConformanceResponse_set_protobuf_payload(

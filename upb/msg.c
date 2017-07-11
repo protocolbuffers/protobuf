@@ -340,8 +340,8 @@ static upb_msglayout *upb_msglayout_new(const upb_msgdef *m) {
   }
 
   /* Size of the entire structure should be a multiple of its greatest
-   * alignment. */
-  l->data.size = align_up(l->data.size, 8 /* TODO: track for real? */);
+   * alignment.  TODO: track overall alignment for real? */
+  l->data.size = align_up(l->data.size, 8);
 
   if (upb_msglayout_initdefault(l, m)) {
     return l;

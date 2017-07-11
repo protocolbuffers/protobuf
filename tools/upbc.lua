@@ -18,6 +18,10 @@ for _, argument in ipairs(arg) do
   if argument == "--generate-upbdefs" then
     generate_upbdefs = true
   else
+    if src then
+      print("upbc can only handle one input file at a time.")
+      return 1
+    end
     src = argument
   end
 end

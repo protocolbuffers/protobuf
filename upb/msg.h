@@ -408,7 +408,7 @@ typedef struct upb_msglayout_msginit_v1 {
   const upb_msglayout_oneofinit_v1 *oneofs;
   void *default_msg;
   /* Must be aligned to sizeof(void*).  Doesn't include internal members like
-   * unknown * fields, extension dict, pointer to msglayout, etc. */
+   * unknown fields, extension dict, pointer to msglayout, etc. */
   uint32_t size;
   uint16_t field_count;
   uint16_t oneof_count;
