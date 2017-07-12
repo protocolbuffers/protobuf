@@ -314,6 +314,12 @@ conformance-php-c:
 	@echo 'php -dextension=../php/ext/google/protobuf/modules/protobuf.so ./conformance_php.php' >> conformance-php-c
 	@chmod +x conformance-php-c
 
+conformance-hhvm:
+  @echo "Writing shortcut script conformance-hhvm..."
+  @echo '#! /bin/sh' > conformance-hhvm
+  @echo 'hhvm -d hhvm.jit=false -d max_execution_time=0 -d auto_prepend_file=autoload.php ./conformance_php.php' >> conformance-hhvm
+  @chmod +x conformance-hhvm
+
 # Targets for actually running tests.
 test_cpp: protoc_middleman conformance-test-runner conformance-cpp
 	./conformance-test-runner --enforce_recommended --failure_list failure_list_cpp.txt ./conformance-cpp
@@ -338,6 +344,9 @@ test_php_c: protoc_middleman conformance-test-runner conformance-php-c $(other_l
 
 test_php_zts_c: protoc_middleman conformance-test-runner conformance-php-c $(other_language_protoc_outputs)
 	./conformance-test-runner --enforce_recommended --failure_list failure_list_php_zts_c.txt ./conformance-php-c
+
+test_hhvm: protoc_middleman conformance-test-runner conformance-hhvm $(other_language_protoc_outputs)
+  ./conformance-test-runner --enforce_recommended --failure_list failure_list_php.txt ./conformance-hhvm
 
 # These depend on library paths being properly set up.  The easiest way to
 # run them is to just use "tox" from the python dir.

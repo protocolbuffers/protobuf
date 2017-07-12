@@ -561,6 +561,20 @@ build_php_all() {
   build_php_compatibility
 }
 
+build_hhvm() {
+  sudo apt-get install -y hhvm
+  use_php 7.0
+  pushd php
+  rm -rf vendor
+  cp -r /usr/local/vendor-7.0 vendor
+  wget https://phar.phpunit.de/phpunit-5.6.0.phar -O /usr/bin/phpunit
+  hhvm -d hhvm.jit=false -d max_execution_time=0 phpunit
+  popd
+  pushd conformance
+  make test_hhvm
+  popd
+}
+
 # Note: travis currently does not support testing more than one language so the
 # .travis.yml cheats and claims to only be cpp.  If they add multiple language
 # support, this should probably get updated to install steps and/or
@@ -600,7 +614,8 @@ Usage: $0 { cpp |
             php7.0   |
             php7.0_c |
             php_compatibility |
-            php_all)
+            php_all |
+            hhvm)
 "
   exit 1
 fi
