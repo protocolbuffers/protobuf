@@ -42,7 +42,7 @@
 #define GOOGLE_PROTOBUF_HAVE_HASH_SET 1
 
 // Use C++11 unordered_{map|set} if available.
-#if ((_LIBCPP_STD_VER >= 11) || \
+#if ((defined(_LIBCPP_STD_VER) && _LIBCPP_STD_VER >= 11) || \
     (((__cplusplus >= 201103L) || defined(__GXX_EXPERIMENTAL_CXX0X)) && \
     (__GLIBCXX__ > 20090421)))
 # define GOOGLE_PROTOBUF_HAS_CXX11_HASH
