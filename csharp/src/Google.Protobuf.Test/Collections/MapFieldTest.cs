@@ -540,6 +540,22 @@ namespace Google.Protobuf.Collections
             Assert.Throws<ArgumentException>(() => map.ToString());
         }
 
+#if !NET35
+        [Test]
+        public void IDictionaryKeys_Equals_IReadOnlyDictionaryKeys()
+        {
+            var map = new MapField<string, string> { { "foo", "bar" }, { "x", "y" } };
+            CollectionAssert.AreEquivalent(((IDictionary<string, string>)map).Keys, ((IReadOnlyDictionary<string, string>)map).Keys);
+        }
+
+        [Test]
+        public void IDictionaryValues_Equals_IReadOnlyDictionaryValues()
+        {
+            var map = new MapField<string, string> { { "foo", "bar" }, { "x", "y" } };
+            CollectionAssert.AreEquivalent(((IDictionary<string, string>)map).Values, ((IReadOnlyDictionary<string, string>)map).Values);
+        }
+#endif
+
         private static KeyValuePair<TKey, TValue> NewKeyValuePair<TKey, TValue>(TKey key, TValue value)
         {
             return new KeyValuePair<TKey, TValue>(key, value);
