@@ -50,10 +50,6 @@ matrix:
     # which doesn't work on OS X.
     - os: osx
       env: CONFIG=golang
-    # HHVM currently uses apt-get to install hhvm and doesn't have a stable
-    # OS X build yet
-    - os: osx
-      env: CONFIG=hhvm
   include:
     # The dotnet environment requires Ubuntu 14.04 or 16.04. This
     # configuration is effectively an "extra" one, outside the
@@ -76,6 +72,8 @@ matrix:
     # fetch pre-built Linux protoc binaries in the test.
     - os: linux
       env: CONFIG=python_compatibility
+    - os: linux
+      env: CONFIG=hhvm
   allow_failures:
     # These currently do not work on OS X but are being worked on by @haberman.
     - os: osx
