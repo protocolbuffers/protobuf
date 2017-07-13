@@ -31,9 +31,12 @@
 #ifndef __GOOGLE_PROTOBUF_PHP_PROTOBUF_H__
 #define __GOOGLE_PROTOBUF_PHP_PROTOBUF_H__
 
-#include <php.h>
+#include "php.h"
 
-// ubp.h has to be placed after php.h. Othwise, php.h will introduce NDEBUG.
+extern zend_module_entry protobuf_module_entry;
+#define phpext_protobuf_ptr &protobuf_module_entry
+
+// upb.h must come after php.h, otherwise, php.h introduces NDEBUG.
 #include "upb.h"
 
 #define PHP_PROTOBUF_EXTNAME "protobuf"
