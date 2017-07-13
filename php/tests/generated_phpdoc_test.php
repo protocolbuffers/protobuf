@@ -19,7 +19,7 @@ class GeneratedPhpdocTest extends TestBase
     /**
      * @dataProvider providePhpDocForGettersAndSetters
      */
-    public function testPhpDocForIntGetters($methods, $expectedDoc)
+    public function testPhpDocForGettersAndSetters($methods, $expectedDoc)
     {
         $class = new ReflectionClass('Foo\TestMessage');
         foreach ($methods as $method) {
@@ -193,13 +193,13 @@ class GeneratedPhpdocTest extends TestBase
                 [
                     'setRepeatedMessage',
                 ],
-                '@param \Foo\TestMessage_Sub[]|\Google\Protobuf\Internal\RepeatedField $var'
+                '@param TestMessage_Sub[]|\Google\Protobuf\Internal\RepeatedField $var'
             ],
             [
                 [
                     'setRepeatedRecursive',
                 ],
-                '@param \Foo\TestMessage[]|\Google\Protobuf\Internal\RepeatedField $var'
+                '@param TestMessage[]|\Google\Protobuf\Internal\RepeatedField $var'
             ],
             [
                 [
@@ -286,14 +286,14 @@ class GeneratedPhpdocTest extends TestBase
                     'getOptionalMessage',
                     'getOneofMessage'
                 ],
-                '@return \Foo\TestMessage_Sub'
+                '@return TestMessage_Sub'
             ],
             [
                 [
                     'setOptionalMessage',
                     'setOneofMessage'
                 ],
-                '@param \Foo\TestMessage_Sub $var'
+                '@param TestMessage_Sub $var'
             ],
             [
                 [
@@ -311,13 +311,13 @@ class GeneratedPhpdocTest extends TestBase
                 [
                     'getRecursive'
                 ],
-                '@return \Foo\TestMessage'
+                '@return TestMessage'
             ],
             [
                 [
                     'setRecursive'
                 ],
-                '@param \Foo\TestMessage $var'
+                '@param TestMessage $var'
             ],
 
             [
@@ -332,6 +332,32 @@ class GeneratedPhpdocTest extends TestBase
                 ],
                 '@param \NoNamespaceMessage $var'
             ],
+        ];
+    }
+
+    /**
+     * @dataProvider providePhpDocForNamespaces
+     */
+    public function testPhpDocForNamespaces($method, $expectedDoc)
+    {
+        $class = new ReflectionClass('Foo\TestNamespaces');
+        $doc = $class->getMethod($method)->getDocComment();
+        $this->assertContains($expectedDoc, $doc);
+    }
+
+    public function providePhpDocForNamespaces()
+    {
+        return [
+            ['getNoNamespaceMessage', '@return \NoNamespaceMessage'],
+            ['setNoNamespaceMessage', '@param \NoNamespaceMessage $var'],
+            ['getDifferentPackageMessage', '@return \Bar\TestInclude'],
+            ['setDifferentPackageMessage', '@param \Bar\TestInclude $var'],
+            ['getEmptyNamespaceMessage', '@return \TestEmptyNamespace'],
+            ['setEmptyNamespaceMessage', '@param \TestEmptyNamespace $var'],
+            ['getSameNamespaceMessage', '@return TestMessage'],
+            ['setSameNamespaceMessage', '@param TestMessage $var'],
+            ['getDifferentPhpNamespaceMessage', '@return \Php\Test\TestNamespace'],
+            ['setDifferentPhpNamespaceMessage', '@param \Php\Test\TestNamespace $var'],
         ];
     }
 }

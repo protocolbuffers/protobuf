@@ -6,3 +6,8 @@ option php_namespace = "Php\\Test";
 message TestNamespace {
   int32 a = 1;
 }
+
+enum TestNamespaceEnum {
+  PHP_NAMESPACE_VALUE_A = 0;
+  PHP_NAMESPACE_VALUE_B = 1;
+}

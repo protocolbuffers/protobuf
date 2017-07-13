@@ -138,7 +138,7 @@ class FieldOptions extends \Google\Protobuf\Internal\Message
      */
     public function setCtype($var)
     {
-        GPBUtil::checkEnum($var, \Google\Protobuf\Internal\FieldOptions_CType::class);
+        GPBUtil::checkEnum($var, FieldOptions_CType::class);
         $this->ctype = $var;
         $this->has_ctype = true;
 
@@ -226,7 +226,7 @@ class FieldOptions extends \Google\Protobuf\Internal\Message
      */
     public function setJstype($var)
     {
-        GPBUtil::checkEnum($var, \Google\Protobuf\Internal\FieldOptions_JSType::class);
+        GPBUtil::checkEnum($var, FieldOptions_JSType::class);
         $this->jstype = $var;
         $this->has_jstype = true;
 
@@ -401,12 +401,12 @@ class FieldOptions extends \Google\Protobuf\Internal\Message
      * The parser stores options it doesn't recognize here. See above.
      *
      * Generated from protobuf field <code>repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;</code>
-     * @param \Google\Protobuf\Internal\UninterpretedOption[]|\Google\Protobuf\Internal\RepeatedField $var
+     * @param UninterpretedOption[]|\Google\Protobuf\Internal\RepeatedField $var
      * @return $this
      */
     public function setUninterpretedOption(&$var)
     {
-        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \Google\Protobuf\Internal\UninterpretedOption::class);
+        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, UninterpretedOption::class);
         $this->uninterpreted_option = $arr;
         $this->has_uninterpreted_option = true;
 

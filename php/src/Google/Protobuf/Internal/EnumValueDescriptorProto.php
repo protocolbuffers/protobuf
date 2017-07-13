@@ -97,7 +97,7 @@ class EnumValueDescriptorProto extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>optional .google.protobuf.EnumValueOptions options = 3;</code>
-     * @return \Google\Protobuf\Internal\EnumValueOptions
+     * @return EnumValueOptions
      */
     public function getOptions()
     {
@@ -106,12 +106,12 @@ class EnumValueDescriptorProto extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>optional .google.protobuf.EnumValueOptions options = 3;</code>
-     * @param \Google\Protobuf\Internal\EnumValueOptions $var
+     * @param EnumValueOptions $var
      * @return $this
      */
     public function setOptions(&$var)
     {
-        GPBUtil::checkMessage($var, \Google\Protobuf\Internal\EnumValueOptions::class);
+        GPBUtil::checkMessage($var, EnumValueOptions::class);
         $this->options = $var;
         $this->has_options = true;
 

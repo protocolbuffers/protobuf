@@ -78,12 +78,12 @@ class EnumDescriptorProto extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>repeated .google.protobuf.EnumValueDescriptorProto value = 2;</code>
-     * @param \Google\Protobuf\Internal\EnumValueDescriptorProto[]|\Google\Protobuf\Internal\RepeatedField $var
+     * @param EnumValueDescriptorProto[]|\Google\Protobuf\Internal\RepeatedField $var
      * @return $this
      */
     public function setValue(&$var)
     {
-        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \Google\Protobuf\Internal\EnumValueDescriptorProto::class);
+        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, EnumValueDescriptorProto::class);
         $this->value = $arr;
         $this->has_value = true;
 
@@ -97,7 +97,7 @@ class EnumDescriptorProto extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>optional .google.protobuf.EnumOptions options = 3;</code>
-     * @return \Google\Protobuf\Internal\EnumOptions
+     * @return EnumOptions
      */
     public function getOptions()
     {
@@ -106,12 +106,12 @@ class EnumDescriptorProto extends \Google\Protobuf\Internal\Message
 
     /**
      * Generated from protobuf field <code>optional .google.protobuf.EnumOptions options = 3;</code>
-     * @param \Google\Protobuf\Internal\EnumOptions $var
+     * @param EnumOptions $var
      * @return $this
      */
     public function setOptions(&$var)
     {
-        GPBUtil::checkMessage($var, \Google\Protobuf\Internal\EnumOptions::class);
+        GPBUtil::checkMessage($var, EnumOptions::class);
         $this->options = $var;
         $this->has_options = true;
 

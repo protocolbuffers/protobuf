@@ -6,3 +6,8 @@ option php_namespace = "";
 message TestEmptyNamespace {
   int32 a = 1;
 }
+
+enum TestEmptyNamespaceEnum {
+  EMPTY_NAMESPACE_VALUE_A = 0;
+  EMPTY_NAMESPACE_VALUE_B = 1;
+}

@@ -181,3 +181,16 @@ message TestIncludeNamespaceMessage {
   TestNamespace namespace_message = 1;
   TestEmptyNamespace empty_namespace_message = 2;
 }
+
+message TestNamespaces {
+  NoNamespaceMessage no_namespace_message = 2;
+  NoNamespaceEnum no_namespace_enum = 3;
+  bar.TestInclude different_package_message = 4;
+  bar.TestEnum different_package_enum = 5;
+  foo.TestEmptyNamespace empty_namespace_message = 6;
+  foo.TestEmptyNamespaceEnum empty_namespace_enum = 7;
+  TestMessage same_namespace_message = 8;
+  TestEnum same_namespace_enum = 9;
+  foo.TestNamespace different_php_namespace_message = 10;
+  foo.TestNamespaceEnum different_php_namespace_enum = 11;
+}
