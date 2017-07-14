@@ -181,3 +181,9 @@ message TestIncludeNamespaceMessage {
   TestNamespace namespace_message = 1;
   TestEmptyNamespace empty_namespace_message = 2;
 }
+
+// This will cause upb fields not ordered by the order in the generated code.
+message TestRandomFieldOrder {
+  int64 tag13 = 150;
+  string tag14 = 160;
+}
