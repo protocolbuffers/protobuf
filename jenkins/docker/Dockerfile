@@ -9,6 +9,8 @@
 # Base Dockerfile for gRPC dev images
 FROM debian:latest
 
+RUN lsb_release -sc
+
 # Apt source for old Python versions.
 RUN echo 'deb http://ppa.launchpad.net/fkrull/deadsnakes/ubuntu trusty main' > /etc/apt/sources.list.d/deadsnakes.list && \
   apt-key adv --keyserver keyserver.ubuntu.com --recv-keys DB82666C
