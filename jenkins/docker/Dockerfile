@@ -25,7 +25,7 @@ RUN echo "deb http://download.mono-project.com/repo/debian wheezy main" | tee /e
 
 # Apt source for php
 RUN echo "deb http://ppa.launchpad.net/ondrej/php/ubuntu trusty main" | tee /etc/apt/sources.list.d/various-php.list && \
-    echo "deb http://dl.hhvm.com/ubuntu trusty main" | tee -a /etc/apt/sources.list.d/various-php.list && \
+    echo "deb http://dl.hhvm.com/debian wheezy main" | tee -a /etc/apt/sources.list.d/various-php.list && \
   apt-key adv --keyserver keyserver.ubuntu.com --recv-keys F4FCBB07 && \
   apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 0x5a16e7281be7a449
 
