@@ -1339,7 +1339,7 @@ void GenerateServiceMethodDocComment(io::Printer* printer,
   printer->Print(
     " * Method <code>^method_name^</code>\n"
     " *\n",
-    "method_name", EscapePhpdoc(method->name()));
+    "method_name", EscapePhpdoc(UnderscoresToCamelCase(method->name(), false)));
   printer->Print(
     " * @param ^input_type^ $request\n",
     "input_type", EscapePhpdoc(method->input_type()->name()));
