@@ -691,10 +691,10 @@ void GenerateEnumToPool(const EnumDescriptor* en, io::Printer* printer) {
 void GenerateServiceMethod(const MethodDescriptor* method,
                            io::Printer* printer) {
   printer->Print(
-        "public function ^camel_name^(^request_name^ $request);\n\n",
+        "public function ^camel_name^(\\^request_name^ $request);\n\n",
         "camel_name", UnderscoresToCamelCase(method->name(), false),
-        "request_name", UnderscoresToCamelCase(
-          method->input_type()->name(), true)
+        "request_name", FullClassName(
+          method->input_type(), false)
   );
 }
 
@@ -1341,12 +1341,12 @@ void GenerateServiceMethodDocComment(io::Printer* printer,
     " *\n",
     "method_name", EscapePhpdoc(UnderscoresToCamelCase(method->name(), false)));
   printer->Print(
-    " * @param ^input_type^ $request\n",
-    "input_type", EscapePhpdoc(method->input_type()->name()));
+    " * @param \\^input_type^ $request\n",
+    "input_type", EscapePhpdoc(FullClassName(method->input_type(), false)));
   printer->Print(
-    " * @return ^return_type^\n"
+    " * @return \\^return_type^\n"
     " */\n",
-    "return_type", EscapePhpdoc(method->output_type()->name()));
+    "return_type", EscapePhpdoc(FullClassName(method->output_type(), false)));
 }
 
 bool Generator::Generate(const FileDescriptor* file, const string& parameter,
