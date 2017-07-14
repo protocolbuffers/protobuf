@@ -18,6 +18,11 @@ class GeneratedServiceTest extends TestBase
     private $serviceClass;
 
     /**
+     * @var \ReflectionClass
+     */
+    private $namespacedServiceClass;
+
+    /**
      * @var array
      */
     private $methodNames = [
@@ -30,6 +35,8 @@ class GeneratedServiceTest extends TestBase
         parent::setUp();
 
         $this->serviceClass = new ReflectionClass('Foo\Greeter');
+
+        $this->namespacedServiceClass = new ReflectionClass('Bar\OtherGreeter');
     }
 
     public function testIsInterface()
@@ -40,6 +47,11 @@ class GeneratedServiceTest extends TestBase
     public function testPhpDocForClass()
     {
         $this->assertContains('foo.Greeter', $this->serviceClass->getDocComment());
+    }
+
+    public function testPhpDocForNamespacedClass()
+    {
+        $this->assertContains('foo.OtherGreeter', $this->namespacedServiceClass->getDocComment());
     }
 
     public function testServiceMethodsAreGenerated()
@@ -55,12 +67,35 @@ class GeneratedServiceTest extends TestBase
         foreach ($this->methodNames as $methodName) {
             $docComment = $this->serviceClass->getMethod($methodName)->getDocComment();
             $this->assertContains($methodName, $docComment);
-            $this->assertContains('@param HelloRequest $request', $docComment);
-            $this->assertContains('@return HelloReply', $docComment);
+            $this->assertContains('@param \Foo\HelloRequest $request', $docComment);
+            $this->assertContains('@return \Foo\HelloReply', $docComment);
+        }
+    }
+
+    public function testPhpDocForServiceMethodInNamespacedClass()
+    {
+        foreach ($this->methodNames as $methodName) {
+            $docComment = $this->namespacedServiceClass->getMethod($methodName)->getDocComment();
+            $this->assertContains($methodName, $docComment);
+            $this->assertContains('@param \Foo\HelloRequest $request', $docComment);
+            $this->assertContains('@return \Foo\HelloReply', $docComment);
         }
     }
 
     public function testParamForServiceMethod()
+    {
+        foreach ($this->methodNames as $methodName) {
+            $method = $this->serviceClass->getMethod($methodName);
+            $this->assertCount(1, $method->getParameters());
+            $param = $method->getParameters()[0];
+            $this->assertFalse($param->isOptional());
+            $this->assertSame('request', $param->getName());
+            // ReflectionParameter::getType only exists in PHP 7+, so get the type from __toString
+            $this->assertContains('Foo\HelloRequest $request', (string) $param);
+        }
+    }
+
+    public function testParamForServiceMethodInNamespacedClass()
     {
         foreach ($this->methodNames as $methodName) {
             $method = $this->serviceClass->getMethod($methodName);
