@@ -84,7 +84,7 @@ void GenerateEnumValueDocComment(io::Printer* printer,
                                  const EnumValueDescriptor* value);
 void GenerateServiceDocComment(io::Printer* printer,
                                const ServiceDescriptor* service);
-void GenerateMethodDocComment(io::Printer* printer,
+void GenerateServiceMethodDocComment(io::Printer* printer,
                               const MethodDescriptor* method);
 
 std::string RenameEmpty(const std::string& name) {
@@ -1143,7 +1143,7 @@ void GenerateServiceFile(const FileDescriptor* file,
 
   for (int i = 0; i < service->method_count(); i++) {
     const MethodDescriptor* method = service->method(i);
-    GenerateMethodDocComment(&printer, method);
+    GenerateServiceMethodDocComment(&printer, method);
     GenerateServiceMethod(method, &printer);
   }
 
@@ -1332,7 +1332,7 @@ void GenerateEnumValueDocComment(io::Printer* printer,
     "def", EscapePhpdoc(FirstLineOf(value->DebugString())));
 }
 
-void GenerateMethodDocComment(io::Printer* printer,
+void GenerateServiceMethodDocComment(io::Printer* printer,
                               const MethodDescriptor* method) {
   printer->Print("/**\n");
   GenerateDocCommentBody(printer, method);
