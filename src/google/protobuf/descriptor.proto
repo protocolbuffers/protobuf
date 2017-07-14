@@ -44,6 +44,7 @@ option go_package = "github.com/golang/protobuf/protoc-gen-go/descriptor;descrip
 option java_package = "com.google.protobuf";
 option java_outer_classname = "DescriptorProtos";
 option csharp_namespace = "Google.Protobuf.Reflection";
+option fsharp_namespace = "Google.Protobuf.Reflection";
 option objc_class_prefix = "GPB";
 
 // descriptor.proto must be optimized for speed because reflection-based
@@ -384,6 +385,9 @@ message FileOptions {
   // is empty. When this option is empty, the package name will be used for
   // determining the namespace.
   optional string php_namespace = 41;
+
+  // Namespace for generated classes; defaults to the package.
+  optional string fsharp_namespace = 42;
 
   // The parser stores options it doesn't recognize here. See above.
   repeated UninterpretedOption uninterpreted_option = 999;

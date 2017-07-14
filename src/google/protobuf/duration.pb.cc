@@ -107,13 +107,14 @@ void AddDescriptorsImpl() {
   static const char descriptor[] = {
       "\n\036google/protobuf/duration.proto\022\017google"
       ".protobuf\"*\n\010Duration\022\017\n\007seconds\030\001 \001(\003\022\r"
-      "\n\005nanos\030\002 \001(\005B|\n\023com.google.protobufB\rDu"
-      "rationProtoP\001Z*github.com/golang/protobu"
-      "f/ptypes/duration\370\001\001\242\002\003GPB\252\002\036Google.Prot"
-      "obuf.WellKnownTypesb\006proto3"
+      "\n\005nanos\030\002 \001(\005B\235\001\n\023com.google.protobufB\rD"
+      "urationProtoP\001Z*github.com/golang/protob"
+      "uf/ptypes/duration\370\001\001\242\002\003GPB\252\002\036Google.Pro"
+      "tobuf.WellKnownTypes\322\002\036Google.Protobuf.W"
+      "ellKnownTypesb\006proto3"
   };
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
-      descriptor, 227);
+      descriptor, 261);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "google/protobuf/duration.proto", &protobuf_RegisterTypes);
   ::google::protobuf::internal::OnShutdown(&TableStruct::Shutdown);

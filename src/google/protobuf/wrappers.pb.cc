@@ -223,14 +223,15 @@ void AddDescriptorsImpl() {
       "e\030\001 \001(\004\"\033\n\nInt32Value\022\r\n\005value\030\001 \001(\005\"\034\n\013"
       "UInt32Value\022\r\n\005value\030\001 \001(\r\"\032\n\tBoolValue\022"
       "\r\n\005value\030\001 \001(\010\"\034\n\013StringValue\022\r\n\005value\030\001"
-      " \001(\t\"\033\n\nBytesValue\022\r\n\005value\030\001 \001(\014B|\n\023com"
-      ".google.protobufB\rWrappersProtoP\001Z*githu"
-      "b.com/golang/protobuf/ptypes/wrappers\370\001\001"
-      "\242\002\003GPB\252\002\036Google.Protobuf.WellKnownTypesb"
-      "\006proto3"
+      " \001(\t\"\033\n\nBytesValue\022\r\n\005value\030\001 \001(\014B\235\001\n\023co"
+      "m.google.protobufB\rWrappersProtoP\001Z*gith"
+      "ub.com/golang/protobuf/ptypes/wrappers\370\001"
+      "\001\242\002\003GPB\252\002\036Google.Protobuf.WellKnownTypes"
+      "\322\002\036Google.Protobuf.WellKnownTypesb\006proto"
+      "3"
   };
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
-      descriptor, 447);
+      descriptor, 481);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "google/protobuf/wrappers.proto", &protobuf_RegisterTypes);
   ::google::protobuf::internal::OnShutdown(&TableStruct::Shutdown);

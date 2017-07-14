@@ -40,6 +40,7 @@
 
 #ifndef OPENSOURCE_PROTOBUF_CPP_BOOTSTRAP
 #include <google/protobuf/compiler/csharp/csharp_generator.h>
+#include <google/protobuf/compiler/fsharp/fsharp_generator.h>
 #include <google/protobuf/compiler/javanano/javanano_generator.h>
 #include <google/protobuf/compiler/js/js_generator.h>
 #include <google/protobuf/compiler/objectivec/objectivec_generator.h>
@@ -90,6 +91,10 @@ int main(int argc, char* argv[]) {
   google::protobuf::compiler::csharp::Generator csharp_generator;
   cli.RegisterGenerator("--csharp_out", "--csharp_opt", &csharp_generator,
                         "Generate C# source file.");
+  // CSharp
+  google::protobuf::compiler::fsharp::Generator fsharp_generator;
+  cli.RegisterGenerator("--fsharp_out", "--fsharp_opt", &fsharp_generator,
+	  "Generate F# source file.");
 
   // Objective C
   google::protobuf::compiler::objectivec::ObjectiveCGenerator objc_generator;

@@ -162,6 +162,8 @@ nobase_include_HEADERS =                                         \
   google/protobuf/compiler/cpp/cpp_generator.h                   \
   google/protobuf/compiler/csharp/csharp_generator.h             \
   google/protobuf/compiler/csharp/csharp_names.h                 \
+  google/protobuf/compiler/fsharp/fsharp_generator.h             \
+  google/protobuf/compiler/fsharp/fsharp_names.h                 \
   google/protobuf/compiler/java/java_generator.h                 \
   google/protobuf/compiler/java/java_names.h                     \
   google/protobuf/compiler/javanano/javanano_generator.h         \
@@ -501,7 +503,41 @@ libprotoc_la_SOURCES =                                         \
   google/protobuf/compiler/csharp/csharp_source_generator_base.cc \
   google/protobuf/compiler/csharp/csharp_source_generator_base.h \
   google/protobuf/compiler/csharp/csharp_wrapper_field.cc      \
-  google/protobuf/compiler/csharp/csharp_wrapper_field.h
+  google/protobuf/compiler/csharp/csharp_wrapper_field.h       \
+  google/protobuf/compiler/fsharp/fsharp_doc_comment.cc        \
+  google/protobuf/compiler/fsharp/fsharp_doc_comment.h         \
+  google/protobuf/compiler/fsharp/fsharp_enum.cc               \
+  google/protobuf/compiler/fsharp/fsharp_enum.h                \
+  google/protobuf/compiler/fsharp/fsharp_enum_field.cc         \
+  google/protobuf/compiler/fsharp/fsharp_enum_field.h          \
+  google/protobuf/compiler/fsharp/fsharp_field_base.cc         \
+  google/protobuf/compiler/fsharp/fsharp_field_base.h          \
+  google/protobuf/compiler/fsharp/fsharp_generator.cc          \
+  google/protobuf/compiler/fsharp/fsharp_helpers.cc            \
+  google/protobuf/compiler/fsharp/fsharp_helpers.h             \
+  google/protobuf/compiler/fsharp/fsharp_map_field.cc          \
+  google/protobuf/compiler/fsharp/fsharp_map_field.h           \
+  google/protobuf/compiler/fsharp/fsharp_message.cc            \
+  google/protobuf/compiler/fsharp/fsharp_message.h             \
+  google/protobuf/compiler/fsharp/fsharp_message_field.cc      \
+  google/protobuf/compiler/fsharp/fsharp_message_field.h       \
+  google/protobuf/compiler/fsharp/fsharp_options.h             \
+  google/protobuf/compiler/fsharp/fsharp_primitive_field.cc    \
+  google/protobuf/compiler/fsharp/fsharp_primitive_field.h     \
+  google/protobuf/compiler/fsharp/fsharp_reflection_class.cc     \
+  google/protobuf/compiler/fsharp/fsharp_reflection_class.h      \
+  google/protobuf/compiler/fsharp/fsharp_repeated_enum_field.cc \
+  google/protobuf/compiler/fsharp/fsharp_repeated_enum_field.h \
+  google/protobuf/compiler/fsharp/fsharp_repeated_message_field.cc \
+  google/protobuf/compiler/fsharp/fsharp_repeated_message_field.h \
+  google/protobuf/compiler/fsharp/fsharp_repeated_primitive_field.cc \
+  google/protobuf/compiler/fsharp/fsharp_repeated_primitive_field.h \
+  google/protobuf/compiler/fsharp/fsharp_source_generator_base.cc \
+  google/protobuf/compiler/fsharp/fsharp_source_generator_base.h \
+  google/protobuf/compiler/fsharp/fsharp_wrapper_field.cc      \
+  google/protobuf/compiler/fsharp/fsharp_wrapper_field.h       \
+  google/protobuf/compiler/fsharp/fsharp_oneof.h               \
+  google/protobuf/compiler/fsharp/fsharp_oneof.cc
 
 bin_PROGRAMS = protoc
 protoc_LDADD = $(PTHREAD_LIBS) libprotobuf.la libprotoc.la

@@ -30,6 +30,23 @@ set(libprotoc_files
   ${protobuf_source_dir}/src/google/protobuf/compiler/csharp/csharp_repeated_primitive_field.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/csharp/csharp_source_generator_base.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/csharp/csharp_wrapper_field.cc
+  ${protobuf_source_dir}/src/google/protobuf/compiler/fsharp/fsharp_doc_comment.cc
+  ${protobuf_source_dir}/src/google/protobuf/compiler/fsharp/fsharp_enum.cc
+  ${protobuf_source_dir}/src/google/protobuf/compiler/fsharp/fsharp_enum_field.cc
+  ${protobuf_source_dir}/src/google/protobuf/compiler/fsharp/fsharp_field_base.cc
+  ${protobuf_source_dir}/src/google/protobuf/compiler/fsharp/fsharp_generator.cc
+  ${protobuf_source_dir}/src/google/protobuf/compiler/fsharp/fsharp_helpers.cc
+  ${protobuf_source_dir}/src/google/protobuf/compiler/fsharp/fsharp_map_field.cc
+  ${protobuf_source_dir}/src/google/protobuf/compiler/fsharp/fsharp_message.cc
+  ${protobuf_source_dir}/src/google/protobuf/compiler/fsharp/fsharp_message_field.cc
+  ${protobuf_source_dir}/src/google/protobuf/compiler/fsharp/fsharp_primitive_field.cc
+  ${protobuf_source_dir}/src/google/protobuf/compiler/fsharp/fsharp_reflection_class.cc
+  ${protobuf_source_dir}/src/google/protobuf/compiler/fsharp/fsharp_repeated_enum_field.cc
+  ${protobuf_source_dir}/src/google/protobuf/compiler/fsharp/fsharp_repeated_message_field.cc
+  ${protobuf_source_dir}/src/google/protobuf/compiler/fsharp/fsharp_repeated_primitive_field.cc
+  ${protobuf_source_dir}/src/google/protobuf/compiler/fsharp/fsharp_source_generator_base.cc
+  ${protobuf_source_dir}/src/google/protobuf/compiler/fsharp/fsharp_wrapper_field.cc
+  ${protobuf_source_dir}/src/google/protobuf/compiler/fsharp/fsharp_oneof.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/java/java_context.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/java/java_doc_comment.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/java/java_enum.cc
@@ -140,6 +157,25 @@ set(libprotoc_headers
   ${protobuf_source_dir}/src/google/protobuf/compiler/csharp/csharp_repeated_primitive_field.h
   ${protobuf_source_dir}/src/google/protobuf/compiler/csharp/csharp_source_generator_base.h
   ${protobuf_source_dir}/src/google/protobuf/compiler/csharp/csharp_wrapper_field.h
+  ${protobuf_source_dir}/src/google/protobuf/compiler/fsharp/fsharp_doc_comment.h
+  ${protobuf_source_dir}/src/google/protobuf/compiler/fsharp/fsharp_enum.h
+  ${protobuf_source_dir}/src/google/protobuf/compiler/fsharp/fsharp_enum_field.h
+  ${protobuf_source_dir}/src/google/protobuf/compiler/fsharp/fsharp_field_base.h
+  ${protobuf_source_dir}/src/google/protobuf/compiler/fsharp/fsharp_generator.h
+  ${protobuf_source_dir}/src/google/protobuf/compiler/fsharp/fsharp_helpers.h
+  ${protobuf_source_dir}/src/google/protobuf/compiler/fsharp/fsharp_map_field.h
+  ${protobuf_source_dir}/src/google/protobuf/compiler/fsharp/fsharp_message.h
+  ${protobuf_source_dir}/src/google/protobuf/compiler/fsharp/fsharp_message_field.h
+  ${protobuf_source_dir}/src/google/protobuf/compiler/fsharp/fsharp_names.h
+  ${protobuf_source_dir}/src/google/protobuf/compiler/fsharp/fsharp_options.h
+  ${protobuf_source_dir}/src/google/protobuf/compiler/fsharp/fsharp_primitive_field.h
+  ${protobuf_source_dir}/src/google/protobuf/compiler/fsharp/fsharp_reflection_class.h
+  ${protobuf_source_dir}/src/google/protobuf/compiler/fsharp/fsharp_repeated_enum_field.h
+  ${protobuf_source_dir}/src/google/protobuf/compiler/fsharp/fsharp_repeated_message_field.h
+  ${protobuf_source_dir}/src/google/protobuf/compiler/fsharp/fsharp_repeated_primitive_field.h
+  ${protobuf_source_dir}/src/google/protobuf/compiler/fsharp/fsharp_source_generator_base.h
+  ${protobuf_source_dir}/src/google/protobuf/compiler/fsharp/fsharp_wrapper_field.h
+  ${protobuf_source_dir}/src/google/protobuf/compiler/fsharp/fsharp_oneof.h
   ${protobuf_source_dir}/src/google/protobuf/compiler/java/java_context.h
   ${protobuf_source_dir}/src/google/protobuf/compiler/java/java_doc_comment.h
   ${protobuf_source_dir}/src/google/protobuf/compiler/java/java_enum.h

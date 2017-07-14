@@ -170,6 +170,13 @@ class FileOptions extends \Google\Protobuf\Internal\Message
     private $php_namespace = '';
     private $has_php_namespace = false;
     /**
+     * Namespace for generated classes; defaults to the package.
+     *
+     * Generated from protobuf field <code>optional string fsharp_namespace = 42;</code>
+     */
+    private $fsharp_namespace = '';
+    private $has_fsharp_namespace = false;
+    /**
      * The parser stores options it doesn't recognize here. See above.
      *
      * Generated from protobuf field <code>repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;</code>
@@ -792,6 +799,38 @@ class FileOptions extends \Google\Protobuf\Internal\Message
     public function hasPhpNamespace()
     {
         return $this->has_php_namespace;
+    }
+
+    /**
+     * Namespace for generated classes; defaults to the package.
+     *
+     * Generated from protobuf field <code>optional string fsharp_namespace = 42;</code>
+     * @return string
+     */
+    public function getFsharpNamespace()
+    {
+        return $this->fsharp_namespace;
+    }
+
+    /**
+     * Namespace for generated classes; defaults to the package.
+     *
+     * Generated from protobuf field <code>optional string fsharp_namespace = 42;</code>
+     * @param string $var
+     * @return $this
+     */
+    public function setFsharpNamespace($var)
+    {
+        GPBUtil::checkString($var, True);
+        $this->fsharp_namespace = $var;
+        $this->has_fsharp_namespace = true;
+
+        return $this;
+    }
+
+    public function hasFsharpNamespace()
+    {
+        return $this->has_fsharp_namespace;
     }
 
     /**

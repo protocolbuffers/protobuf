@@ -164,13 +164,14 @@ void AddDescriptorsImpl() {
       "esponse_streaming\030\005 \001(\010\022(\n\007options\030\006 \003(\013"
       "2\027.google.protobuf.Option\022\'\n\006syntax\030\007 \001("
       "\0162\027.google.protobuf.Syntax\"#\n\005Mixin\022\014\n\004n"
-      "ame\030\001 \001(\t\022\014\n\004root\030\002 \001(\tBu\n\023com.google.pr"
-      "otobufB\010ApiProtoP\001Z+google.golang.org/ge"
-      "nproto/protobuf/api;api\242\002\003GPB\252\002\036Google.P"
-      "rotobuf.WellKnownTypesb\006proto3"
+      "ame\030\001 \001(\t\022\014\n\004root\030\002 \001(\tB\226\001\n\023com.google.p"
+      "rotobufB\010ApiProtoP\001Z+google.golang.org/g"
+      "enproto/protobuf/api;api\242\002\003GPB\252\002\036Google."
+      "Protobuf.WellKnownTypes\322\002\036Google.Protobu"
+      "f.WellKnownTypesb\006proto3"
   };
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
-      descriptor, 750);
+      descriptor, 784);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "google/protobuf/api.proto", &protobuf_RegisterTypes);
   ::google::protobuf::protobuf_google_2fprotobuf_2fsource_5fcontext_2eproto::AddDescriptors();
