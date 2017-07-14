@@ -54,7 +54,13 @@ namespace Google.Protobuf.Reflection
             containingType = parent;
 
             file.DescriptorPool.AddSymbol(this);
-            accessor = CreateAccessor(clrName);
+            if (clrName.EndsWith(FSHARP_TRAIL))
+            {
+                accessor = CreateFSharpAccessor(clrName.Substring(0, clrName.Length - FSHARP_TRAIL.Length));
+            } else
+            {
+                accessor = CreateAccessor(clrName);
+            }
         }
 
         /// <summary>
@@ -122,6 +128,17 @@ namespace Google.Protobuf.Reflection
             }
 
             return new OneofAccessor(caseProperty, clearMethod, this);
+        }
+
+        private OneofAccessor CreateFSharpAccessor(string clrName)
+        {
+            var duProperty = containingType.ClrType.GetProperty(clrName);
+            if (duProperty == null)
+            {
+                throw new DescriptorValidationException(this, $"Property {clrName} not found in {containingType.ClrType}");
+            }
+
+            return OneofAccessor.CreateFSharpAccessor(duProperty, this);
         }
     }
 }

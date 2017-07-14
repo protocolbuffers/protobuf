@@ -44,6 +44,7 @@ namespace Google.Protobuf.Reflection
         private readonly Func<IMessage, int> caseDelegate;
         private readonly Action<IMessage> clearDelegate;
         private OneofDescriptor descriptor;
+        private PropertyInfo caseProperty;
 
         internal OneofAccessor(PropertyInfo caseProperty, MethodInfo clearMethod, OneofDescriptor descriptor) 
         {
@@ -52,10 +53,51 @@ namespace Google.Protobuf.Reflection
                 throw new ArgumentException("Cannot read from property");
             }
             this.descriptor = descriptor;
-            caseDelegate = ReflectionUtil.CreateFuncIMessageT<int>(caseProperty.GetGetMethod());
+            this.caseProperty = caseProperty;
 
-            this.descriptor = descriptor;
+            caseDelegate = ReflectionUtil.CreateFuncIMessageT<int>(caseProperty.GetGetMethod());
             clearDelegate = ReflectionUtil.CreateActionIMessage(clearMethod);
+        }
+
+        private OneofAccessor(PropertyInfo duProperty, OneofDescriptor descriptor)
+        {
+            if (!duProperty.CanRead)
+            {
+                throw new ArgumentException("Cannot read from property");
+            }
+            this.descriptor = descriptor;
+            this.caseProperty = duProperty;
+
+            // Get DU tag, transform to field number
+            var tagProperty = duProperty.PropertyType.GetProperty("Tag").GetGetMethod();
+            var innerCaseDelegate = ReflectionUtil.CreateFuncIMessageT<int>(duProperty.GetGetMethod(), tagProperty);
+            caseDelegate = x =>
+            {
+                var num = innerCaseDelegate(x) - 1;
+                if (num >= 0 && num < descriptor.Fields.Count)
+                {
+                    return descriptor.Fields[num].FieldNumber;
+                }
+                return -1;
+            };
+
+            // Set to DU OneofNone
+            var duSet = ReflectionUtil.CreateActionIMessageObject(duProperty.SetMethod);
+            var oneofNone = duProperty.PropertyType.GetProperty("OneofNone").GetGetMethod();
+            clearDelegate = delegate (IMessage x)
+            {
+                duSet(x, oneofNone.Invoke(null, null));
+            };
+        }
+        /// <summary>
+        /// Creates OneofAccessor for F# using the discriminated union's C# methods
+        /// </summary>
+        /// <param name="duProperty">Info for the DU property in the message</param>
+        /// <param name="descriptor">OneofDescriptor</param>
+        /// <returns>OneofAccessor for F#</returns>
+        internal static OneofAccessor CreateFSharpAccessor(PropertyInfo duProperty, OneofDescriptor descriptor)
+        {
+            return new OneofAccessor(duProperty, descriptor);
         }
 
         /// <summary>
@@ -85,6 +127,14 @@ namespace Google.Protobuf.Reflection
                 return descriptor.ContainingType.FindFieldByNumber(fieldNumber);
             }
             return null;
+        }
+
+        /// <summary>
+        /// Indicates which field in the oneof is set for specified message
+        /// </summary>
+        internal PropertyInfo GetCaseProperty()
+        {
+            return caseProperty;
         }
     }
 }

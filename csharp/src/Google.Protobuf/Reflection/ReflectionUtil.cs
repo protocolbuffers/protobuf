@@ -79,6 +79,21 @@ namespace Google.Protobuf.Reflection
         }
 
         /// <summary>
+        /// Creates delegate of a two level retrieval.
+        /// The result of the first method is expected to be the target of the second method.
+        /// </summary>
+        internal static Func<IMessage, T> CreateFuncIMessageT<T>(MethodInfo method, MethodInfo method2)
+        {
+            ParameterExpression parameter = Expression.Parameter(typeof(IMessage), "p");
+            Expression inCast = Expression.Convert(parameter, method.DeclaringType);
+            Expression call = Expression.Call(inCast, method);
+            Expression composeCast = Expression.Convert(call, method2.DeclaringType);
+            Expression call2 = Expression.Call(composeCast, method2);
+            Expression outCast = Expression.Convert(call2, typeof(T));
+            return Expression.Lambda<Func<IMessage, T>>(outCast, parameter).Compile();
+        }
+
+        /// <summary>
         /// Creates a delegate which will execute the given method after casting the first argument to
         /// the target type of the method, and the second argument to the first parameter type of the method.
         /// </summary>
@@ -89,6 +104,22 @@ namespace Google.Protobuf.Reflection
             Expression castTarget = Expression.Convert(targetParameter, method.DeclaringType);
             Expression castArgument = Expression.Convert(argParameter, method.GetParameters()[0].ParameterType);
             Expression call = Expression.Call(castTarget, method, castArgument);
+            return Expression.Lambda<Action<IMessage, object>>(call, targetParameter, argParameter).Compile();
+        }
+
+        /// <summary>
+        /// Creates a delegate which will execute the given method after casting the first argument to
+        /// the target type of the method, and the second argument to the first parameter type of the method.
+        /// </summary>
+        internal static Action<IMessage, object> CreateActionIMessageObject(MethodInfo staticConverter, MethodInfo method)
+        {
+            ParameterExpression argParameter = Expression.Parameter(typeof(object), "arg");
+            Expression castArgument = Expression.Convert(argParameter, staticConverter.GetParameters()[0].ParameterType);
+            Expression convertArgument = Expression.Call(staticConverter, castArgument);
+
+            ParameterExpression targetParameter = Expression.Parameter(typeof(IMessage), "target");
+            Expression castTarget = Expression.Convert(targetParameter, method.DeclaringType);
+            Expression call = Expression.Call(castTarget, method, convertArgument);
             return Expression.Lambda<Action<IMessage, object>>(call, targetParameter, argParameter).Compile();
         }
 

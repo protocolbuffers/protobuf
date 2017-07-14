@@ -207,9 +207,11 @@ void ReflectionClassGenerator::WriteGeneratedCodeInfo(const Descriptor* descript
   if (descriptor->field_count() > 0) {
     std::vector<std::string> fields;
     for (int i = 0; i < descriptor->field_count(); i++) {
-      if (!descriptor->field(i)->containing_oneof()) {
-        fields.push_back(GetPropertyName(descriptor->field(i)));
+      std::string field_name = GetPropertyName(descriptor->field(i));
+      if (descriptor->field(i)->containing_oneof()) {
+        field_name += "_FSharp";
       }
+      fields.push_back(field_name);
     }
     printer->Print("[| \"$fields$\" |], ", "fields", JoinStrings(fields, "\"; \""));
   } else {
@@ -218,14 +220,11 @@ void ReflectionClassGenerator::WriteGeneratedCodeInfo(const Descriptor* descript
 
   // Oneofs
   if (descriptor->oneof_decl_count() > 0) {
-    /* TODO(bbus)
       std::vector<std::string> oneofs;
       for (int i = 0; i < descriptor->oneof_decl_count(); i++) {
           oneofs.push_back(UnderscoresToCamelCase(descriptor->oneof_decl(i)->name(), true));
       }
-      printer->Print("[| \"$oneofs$\" |], ", "oneofs", JoinStrings(oneofs, "\"; \""));
-      */
-    printer->Print("null, ");
+      printer->Print("[| \"$oneofs$_FSharp\" |], ", "oneofs", JoinStrings(oneofs, "\"; \""));
   } else {
     printer->Print("null, ");
   }

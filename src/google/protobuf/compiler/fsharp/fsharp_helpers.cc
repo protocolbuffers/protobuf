@@ -542,19 +542,6 @@ std::string FileDescriptorToBase64(const FileDescriptor* descriptor) {
   FileDescriptorProto fdp;
   descriptor->CopyTo(&fdp);
 
-  // TODO(bbus) reenable oneof description
-  for (int i = 0; i < fdp.message_type_size(); i++) {
-    DescriptorProto* message = fdp.mutable_message_type(i);
-    google::protobuf::RepeatedPtrField<FieldDescriptorProto>* fields = message->mutable_field();
-    message->mutable_oneof_decl()->Clear();
-    std::vector<FieldDescriptorProto*> other;
-    for (int j = message->field_size() - 1; j >= 0; j--) {
-      if (fields->Mutable(j)->has_oneof_index()) {
-        fields->DeleteSubrange(j, 1);
-      }
-    }
-  }
-
   fdp.SerializeToString(&fdp_bytes);
   return StringToBase64(fdp_bytes);
 }
