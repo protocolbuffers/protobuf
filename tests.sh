@@ -559,10 +559,10 @@ build_php_all_32() {
 build_php_all() {
   build_php_all_32
   build_php_compatibility
+  build_hhvm
 }
 
 build_hhvm() {
-  sudo apt-get install -y hhvm
   use_php 7.0
   pushd php
   rm -rf vendor
@@ -614,8 +614,8 @@ Usage: $0 { cpp |
             php7.0   |
             php7.0_c |
             php_compatibility |
-            php_all |
-            hhvm)
+            hhvm |
+            php_all)
 "
   exit 1
 fi

@@ -87,6 +87,7 @@ RUN apt-get clean && apt-get update && apt-get install -y --force-yes \
   phpunit    \
   valgrind   \
   libxml2-dev \
+  hhvm       \
   && apt-get clean
 
 ##################
