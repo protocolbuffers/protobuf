@@ -473,26 +473,37 @@ GenerateCommonBuilderMethods(io::Printer* printer) {
     "public Builder setField(\n"
     "    com.google.protobuf.Descriptors.FieldDescriptor field,\n"
     "    Object value) {\n"
+    "  //@@protoc_insertion_point(field_modifier_scope_before:$full_name$.setField)\n"
     "  return (Builder) super.setField(field, value);\n"
+    "  //@@protoc_insertion_point(field_modifier_scope_after:$full_name$.setField)\n"
     "}\n"
     "public Builder clearField(\n"
     "    com.google.protobuf.Descriptors.FieldDescriptor field) {\n"
+    "  //@@protoc_insertion_point(field_modifier_scope_before:$full_name$.clearField)\n"
     "  return (Builder) super.clearField(field);\n"
+    "  //@@protoc_insertion_point(field_modifier_scope_after:$full_name$.clearField)\n"
     "}\n"
     "public Builder clearOneof(\n"
     "    com.google.protobuf.Descriptors.OneofDescriptor oneof) {\n"
+    "  //@@protoc_insertion_point(field_modifier_scope_before:$full_name$.clearOneOf)\n"
     "  return (Builder) super.clearOneof(oneof);\n"
+    "  //@@protoc_insertion_point(field_modifier_scope_after:$full_name$.clearOneOf)\n"
     "}\n"
     "public Builder setRepeatedField(\n"
     "    com.google.protobuf.Descriptors.FieldDescriptor field,\n"
     "    int index, Object value) {\n"
+    "  //@@protoc_insertion_point(field_modifier_scope_before:$full_name$.setRepeatedField)\n"
     "  return (Builder) super.setRepeatedField(field, index, value);\n"
+    "  //@@protoc_insertion_point(field_modifier_scope_after:$full_name$.setRepeatedField)\n"
     "}\n"
     "public Builder addRepeatedField(\n"
     "    com.google.protobuf.Descriptors.FieldDescriptor field,\n"
     "    Object value) {\n"
+    "  //@@protoc_insertion_point(field_modifier_scope_before:$full_name$.addRepeatedField)\n"
     "  return (Builder) super.addRepeatedField(field, value);\n"
-    "}\n");
+    "  //@@protoc_insertion_point(field_modifier_scope_before:$full_name$.addRepeatedField)\n"
+    "}\n",
+    "full_name", descriptor_->full_name());
 
   if (descriptor_->extension_range_count() > 0) {
     printer->Print(
