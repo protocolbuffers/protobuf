@@ -72,7 +72,7 @@ FieldGeneratorMap::FieldGeneratorMap(const Descriptor* descriptor, const Options
 
 FieldGeneratorMap::~FieldGeneratorMap() {}
 
-FieldGeneratorBase* FieldGeneratorMap::FieldGeneratorMap::Get(int i) const {
+FieldGeneratorBase* FieldGeneratorMap::Get(int i) const {
   return map_[i].get();
 }
 
