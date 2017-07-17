@@ -76,7 +76,7 @@ class GeneratedCodeInfo_Annotation extends \Google\Protobuf\Internal\Message
      */
     public function setPath($var)
     {
-        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::INT32);
+        $arr = GPBUtil::checkRepeatedField($var, GPBType::INT32);
         $this->path = $arr;
         $this->has_path = true;
 

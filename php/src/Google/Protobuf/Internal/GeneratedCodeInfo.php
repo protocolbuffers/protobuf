@@ -56,7 +56,7 @@ class GeneratedCodeInfo extends \Google\Protobuf\Internal\Message
      */
     public function setAnnotation($var)
     {
-        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \Google\Protobuf\Internal\GeneratedCodeInfo_Annotation::class);
+        $arr = GPBUtil::checkRepeatedField($var, GPBType::MESSAGE, \Google\Protobuf\Internal\GeneratedCodeInfo_Annotation::class);
         $this->annotation = $arr;
         $this->has_annotation = true;
 

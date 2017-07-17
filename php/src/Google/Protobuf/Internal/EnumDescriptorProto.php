@@ -83,7 +83,7 @@ class EnumDescriptorProto extends \Google\Protobuf\Internal\Message
      */
     public function setValue($var)
     {
-        $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \Google\Protobuf\Internal\EnumValueDescriptorProto::class);
+        $arr = GPBUtil::checkRepeatedField($var, GPBType::MESSAGE, \Google\Protobuf\Internal\EnumValueDescriptorProto::class);
         $this->value = $arr;
         $this->has_value = true;
 
