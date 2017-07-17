@@ -534,12 +534,9 @@ void GenerateFieldAccessor(const FieldDescriptor* field, bool is_descriptor,
   // Generate setter.
   GenerateFieldDocComment(printer, field, is_descriptor, kFieldSetter);
   printer->Print(
-      "public function set^camel_name^(^var^)\n"
+      "public function set^camel_name^($var)\n"
       "{\n",
-      "camel_name", UnderscoresToCamelCase(field->name(), true),
-      "var", (field->is_repeated() ||
-              field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) ?
-             "&$var": "$var");
+      "camel_name", UnderscoresToCamelCase(field->name(), true));
 
   Indent(printer);
 

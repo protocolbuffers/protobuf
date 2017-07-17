@@ -81,7 +81,7 @@ class UninterpretedOption extends \Google\Protobuf\Internal\Message
      * @param \Google\Protobuf\Internal\UninterpretedOption_NamePart[]|\Google\Protobuf\Internal\RepeatedField $var
      * @return $this
      */
-    public function setName(&$var)
+    public function setName($var)
     {
         $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \Google\Protobuf\Internal\UninterpretedOption_NamePart::class);
         $this->name = $arr;
