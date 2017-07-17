@@ -762,7 +762,7 @@ void layout_set(MessageLayout* layout, MessageHeader* header,
   }
 }
 
-static native_slot_merge(const upb_fielddef* field, const void* from_memory,
+static void native_slot_merge(const upb_fielddef* field, const void* from_memory,
                          void* to_memory PHP_PROTO_TSRMLS_DC) {
   upb_fieldtype_t type = upb_fielddef_type(field);
   zend_class_entry* ce = NULL;
@@ -819,7 +819,7 @@ static native_slot_merge(const upb_fielddef* field, const void* from_memory,
   }
 }
 
-static native_slot_merge_by_array(const upb_fielddef* field, const void* from_memory,
+static void native_slot_merge_by_array(const upb_fielddef* field, const void* from_memory,
                          void* to_memory PHP_PROTO_TSRMLS_DC) {
   upb_fieldtype_t type = upb_fielddef_type(field);
   switch (type) {
