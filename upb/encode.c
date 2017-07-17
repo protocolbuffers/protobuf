@@ -1,9 +1,34 @@
+/* We encode backwards, to avoid pre-computing lengths (one-pass encode). */
 
+#include "upb/upb.h"
 #include "upb/encode.h"
 #include "upb/structs.int.h"
 
 #define UPB_PB_VARINT_MAX_LEN 10
 #define CHK(x) do { if (!(x)) { return false; } } while(0)
+
+/* Maps descriptor type -> upb field type.  */
+static const uint8_t upb_desctype_to_fieldtype[] = {
+  UPB_WIRE_TYPE_END_GROUP,  /* ENDGROUP */
+  UPB_TYPE_DOUBLE,          /* DOUBLE */
+  UPB_TYPE_FLOAT,           /* FLOAT */
+  UPB_TYPE_INT64,           /* INT64 */
+  UPB_TYPE_UINT64,          /* UINT64 */
+  UPB_TYPE_INT32,           /* INT32 */
+  UPB_TYPE_UINT64,          /* FIXED64 */
+  UPB_TYPE_UINT32,          /* FIXED32 */
+  UPB_TYPE_BOOL,            /* BOOL */
+  UPB_TYPE_STRING,          /* STRING */
+  UPB_TYPE_MESSAGE,         /* GROUP */
+  UPB_TYPE_MESSAGE,         /* MESSAGE */
+  UPB_TYPE_BYTES,           /* BYTES */
+  UPB_TYPE_UINT32,          /* UINT32 */
+  UPB_TYPE_ENUM,            /* ENUM */
+  UPB_TYPE_INT32,           /* SFIXED32 */
+  UPB_TYPE_INT64,           /* SFIXED64 */
+  UPB_TYPE_INT32,           /* SINT32 */
+  UPB_TYPE_INT64,           /* SINT64 */
+};
 
 static size_t upb_encode_varint(uint64_t val, char *buf) {
   size_t i;
@@ -20,38 +45,6 @@ static size_t upb_encode_varint(uint64_t val, char *buf) {
 
 static uint32_t upb_zzenc_32(int32_t n) { return (n << 1) ^ (n >> 31); }
 static uint64_t upb_zzenc_64(int64_t n) { return (n << 1) ^ (n >> 63); }
-
-typedef enum {
-  UPB_WIRE_TYPE_VARINT      = 0,
-  UPB_WIRE_TYPE_64BIT       = 1,
-  UPB_WIRE_TYPE_DELIMITED   = 2,
-  UPB_WIRE_TYPE_START_GROUP = 3,
-  UPB_WIRE_TYPE_END_GROUP   = 4,
-  UPB_WIRE_TYPE_32BIT       = 5
-} upb_wiretype_t;
-
-/* Index is descriptor type. */
-const uint8_t upb_native_wiretypes[] = {
-  UPB_WIRE_TYPE_END_GROUP,     /* ENDGROUP */
-  UPB_WIRE_TYPE_64BIT,         /* DOUBLE */
-  UPB_WIRE_TYPE_32BIT,         /* FLOAT */
-  UPB_WIRE_TYPE_VARINT,        /* INT64 */
-  UPB_WIRE_TYPE_VARINT,        /* UINT64 */
-  UPB_WIRE_TYPE_VARINT,        /* INT32 */
-  UPB_WIRE_TYPE_64BIT,         /* FIXED64 */
-  UPB_WIRE_TYPE_32BIT,         /* FIXED32 */
-  UPB_WIRE_TYPE_VARINT,        /* BOOL */
-  UPB_WIRE_TYPE_DELIMITED,     /* STRING */
-  UPB_WIRE_TYPE_START_GROUP,   /* GROUP */
-  UPB_WIRE_TYPE_DELIMITED,     /* MESSAGE */
-  UPB_WIRE_TYPE_DELIMITED,     /* BYTES */
-  UPB_WIRE_TYPE_VARINT,        /* UINT32 */
-  UPB_WIRE_TYPE_VARINT,        /* ENUM */
-  UPB_WIRE_TYPE_32BIT,         /* SFIXED32 */
-  UPB_WIRE_TYPE_64BIT,         /* SFIXED64 */
-  UPB_WIRE_TYPE_VARINT,        /* SINT32 */
-  UPB_WIRE_TYPE_VARINT,        /* SINT64 */
-};
 
 typedef struct {
   upb_env *env;
@@ -165,21 +158,24 @@ static bool upb_encode_array(upb_encstate *e, const char *field_mem,
                              const upb_msglayout_fieldinit_v1 *f) {
   const upb_array *arr = *(const upb_array**)field_mem;
 
-  if (arr->len == 0) {
+  if (arr == NULL || arr->len == 0) {
     return true;
   }
 
-#define VARINT_CASE(ctype, encode) do { \
-  uint64_t *start = arr->data; \
-  uint64_t *ptr = start + arr->len; \
+  UPB_ASSERT(arr->type == upb_desctype_to_fieldtype[f->type]);
+
+#define VARINT_CASE(ctype, encode) { \
+  ctype *start = arr->data; \
+  ctype *ptr = start + arr->len; \
   char *buf_ptr = e->ptr; \
   do { \
     ptr--; \
     CHK(upb_put_varint(e, encode)); \
   } while (ptr != start); \
   CHK(upb_put_varint(e, buf_ptr - e->ptr)); \
-  break; \
-} while(0)
+} \
+break; \
+do { ; } while(0)
 
   switch (f->type) {
     case UPB_DESCRIPTOR_TYPE_DOUBLE:
@@ -352,7 +348,7 @@ bool upb_encode_message(upb_encstate* e, const char *msg,
     const upb_msglayout_fieldinit_v1 *f = &m->fields[i];
 
     if (f->label == UPB_LABEL_REPEATED) {
-      CHK(upb_encode_array(e, msg, m, f));
+      CHK(upb_encode_array(e, msg + f->offset, m, f));
     } else {
       if (upb_encode_hasscalarfield(msg, m, f)) {
         CHK(upb_encode_scalarfield(e, msg + f->offset, m, f, !m->is_proto2));
@@ -372,10 +368,14 @@ char *upb_encode(const void *msg, const upb_msglayout_msginit_v1 *m,
   e.limit = NULL;
   e.ptr = NULL;
 
-  if (!upb_encode_message(&e, msg, m, size)) {
-    return false;
-  }
-
+  CHK(upb_encode_message(&e, msg, m, size));
   *size = e.limit - e.ptr;
-  return e.ptr;
+
+  if (*size == 0) {
+    static char ch;
+    return &ch;
+  } else {
+    UPB_ASSERT(e.ptr);
+    return e.ptr;
+  }
 }

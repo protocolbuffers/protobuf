@@ -417,7 +417,7 @@ local function write_c_file(filedef, hfilename, append)
       append('static const upb_msglayout_fieldinit_v1 %s[%s] = {\n',
              fields_array_name, field_count)
       for _, field in ipairs(fields_number_order) do
-        local submsg_index = "-1"
+        local submsg_index = "UPB_NO_SUBMSG"
         local oneof_index = "UPB_NOT_IN_ONEOF"
         if field:type() == upb.TYPE_MESSAGE then
           submsg_index = submsg_indexes[field:subdef()]
@@ -430,7 +430,7 @@ local function write_c_file(filedef, hfilename, append)
                field:number(),
                msgname,
                (field:containing_oneof() and field:containing_oneof():name()) or field:name(),
-               hasbit_indexes[field] or "-1",
+               hasbit_indexes[field] or "UPB_NO_HASBIT",
                oneof_index,
                submsg_index,
                field:descriptor_type(),
@@ -448,7 +448,7 @@ local function write_c_file(filedef, hfilename, append)
            msgname, field_count,
            0, -- TODO: oneof_count
            'false', -- TODO: extendable
-           'true' -- TODO: is_proto2
+          msg:file():syntax() == upb.SYNTAX_PROTO2
           )
     append('};\n\n')
 

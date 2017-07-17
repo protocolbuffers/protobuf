@@ -15,21 +15,9 @@
 extern "C" {
 #endif
 
-/* A list of types as they are encoded on-the-wire. */
-typedef enum {
-  UPB_WIRE_TYPE_VARINT      = 0,
-  UPB_WIRE_TYPE_64BIT       = 1,
-  UPB_WIRE_TYPE_DELIMITED   = 2,
-  UPB_WIRE_TYPE_START_GROUP = 3,
-  UPB_WIRE_TYPE_END_GROUP   = 4,
-  UPB_WIRE_TYPE_32BIT       = 5
-} upb_wiretype_t;
-
 #define UPB_MAX_WIRE_TYPE 5
 
-/* The maximum number of bytes that it takes to encode a 64-bit varint.
- * Note that with a better encoding this could be 9 (TODO: write up a
- * wiki document about this). */
+/* The maximum number of bytes that it takes to encode a 64-bit varint. */
 #define UPB_PB_VARINT_MAX_LEN 10
 
 /* Array of the "native" (ie. non-packed-repeated) wire type for the given a

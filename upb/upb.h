@@ -298,6 +298,16 @@ class PointerBase2 : public PointerBase<T, Base> {
 
 #endif
 
+/* A list of types as they are encoded on-the-wire. */
+typedef enum {
+  UPB_WIRE_TYPE_VARINT      = 0,
+  UPB_WIRE_TYPE_64BIT       = 1,
+  UPB_WIRE_TYPE_DELIMITED   = 2,
+  UPB_WIRE_TYPE_START_GROUP = 3,
+  UPB_WIRE_TYPE_END_GROUP   = 4,
+  UPB_WIRE_TYPE_32BIT       = 5
+} upb_wiretype_t;
+
 
 /* upb::ErrorSpace ************************************************************/
 
@@ -626,7 +636,7 @@ void upb_env_uninit(upb_env *e);
 
 void upb_env_initonly(upb_env *e);
 
-upb_arena *upb_env_arena(upb_env *e);
+UPB_INLINE upb_arena *upb_env_arena(upb_env *e) { return (upb_arena*)e; }
 bool upb_env_ok(const upb_env *e);
 void upb_env_seterrorfunc(upb_env *e, upb_error_func *func, void *ud);
 
