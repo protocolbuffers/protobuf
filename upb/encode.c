@@ -167,12 +167,12 @@ static bool upb_encode_array(upb_encstate *e, const char *field_mem,
 #define VARINT_CASE(ctype, encode) { \
   ctype *start = arr->data; \
   ctype *ptr = start + arr->len; \
-  char *buf_ptr = e->ptr; \
+  size_t pre_len = e->limit - e->ptr; \
   do { \
     ptr--; \
     CHK(upb_put_varint(e, encode)); \
   } while (ptr != start); \
-  CHK(upb_put_varint(e, buf_ptr - e->ptr)); \
+  CHK(upb_put_varint(e, e->limit - e->ptr - pre_len)); \
 } \
 break; \
 do { ; } while(0)
