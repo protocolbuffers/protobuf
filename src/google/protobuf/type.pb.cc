@@ -226,13 +226,14 @@ void AddDescriptorsImpl() {
       "\003 \003(\0132\027.google.protobuf.Option\";\n\006Option"
       "\022\014\n\004name\030\001 \001(\t\022#\n\005value\030\002 \001(\0132\024.google.p"
       "rotobuf.Any*.\n\006Syntax\022\021\n\rSYNTAX_PROTO2\020\000"
-      "\022\021\n\rSYNTAX_PROTO3\020\001B}\n\023com.google.protob"
-      "ufB\tTypeProtoP\001Z/google.golang.org/genpr"
-      "oto/protobuf/ptype;ptype\370\001\001\242\002\003GPB\252\002\036Goog"
-      "le.Protobuf.WellKnownTypesb\006proto3"
+      "\022\021\n\rSYNTAX_PROTO3\020\001B\236\001\n\023com.google.proto"
+      "bufB\tTypeProtoP\001Z/google.golang.org/genp"
+      "roto/protobuf/ptype;ptype\370\001\001\242\002\003GPB\252\002\036Goo"
+      "gle.Protobuf.WellKnownTypes\322\002\036Google.Pro"
+      "tobuf.WellKnownTypesb\006proto3"
   };
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
-      descriptor, 1594);
+      descriptor, 1628);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "google/protobuf/type.proto", &protobuf_RegisterTypes);
   ::google::protobuf::protobuf_google_2fprotobuf_2fany_2eproto::AddDescriptors();

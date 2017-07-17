@@ -107,13 +107,13 @@ void AddDescriptorsImpl() {
   static const char descriptor[] = {
       "\n\031google/protobuf/any.proto\022\017google.prot"
       "obuf\"&\n\003Any\022\020\n\010type_url\030\001 \001(\t\022\r\n\005value\030\002"
-      " \001(\014Bo\n\023com.google.protobufB\010AnyProtoP\001Z"
-      "%github.com/golang/protobuf/ptypes/any\242\002"
-      "\003GPB\252\002\036Google.Protobuf.WellKnownTypesb\006p"
-      "roto3"
+      " \001(\014B\220\001\n\023com.google.protobufB\010AnyProtoP\001"
+      "Z%github.com/golang/protobuf/ptypes/any\242"
+      "\002\003GPB\252\002\036Google.Protobuf.WellKnownTypes\322\002"
+      "\036Google.Protobuf.WellKnownTypesb\006proto3"
   };
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
-      descriptor, 205);
+      descriptor, 239);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "google/protobuf/any.proto", &protobuf_RegisterTypes);
   ::google::protobuf::internal::OnShutdown(&TableStruct::Shutdown);

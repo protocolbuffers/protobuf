@@ -104,13 +104,14 @@ void AddDescriptorsImpl() {
   InitDefaults();
   static const char descriptor[] = {
       "\n\033google/protobuf/empty.proto\022\017google.pr"
-      "otobuf\"\007\n\005EmptyBv\n\023com.google.protobufB\n"
-      "EmptyProtoP\001Z\'github.com/golang/protobuf"
-      "/ptypes/empty\370\001\001\242\002\003GPB\252\002\036Google.Protobuf"
-      ".WellKnownTypesb\006proto3"
+      "otobuf\"\007\n\005EmptyB\227\001\n\023com.google.protobufB"
+      "\nEmptyProtoP\001Z\'github.com/golang/protobu"
+      "f/ptypes/empty\370\001\001\242\002\003GPB\252\002\036Google.Protobu"
+      "f.WellKnownTypes\322\002\036Google.Protobuf.WellK"
+      "nownTypesb\006proto3"
   };
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
-      descriptor, 183);
+      descriptor, 217);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "google/protobuf/empty.proto", &protobuf_RegisterTypes);
   ::google::protobuf::internal::OnShutdown(&TableStruct::Shutdown);

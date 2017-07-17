@@ -335,14 +335,24 @@ namespace Google.Protobuf.Reflection
             {
                 return null;
             }
-            var property = ContainingType.ClrType.GetProperty(propertyName);
-            if (property == null)
+            if (!propertyName.EndsWith(FSHARP_TRAIL))
             {
-                throw new DescriptorValidationException(this, $"Property {propertyName} not found in {ContainingType.ClrType}");
+                var property = ContainingType.ClrType.GetProperty(propertyName);
+                if (property == null)
+                {
+                    throw new DescriptorValidationException(this, $"Property {propertyName} not found in {ContainingType.ClrType}");
+                }
+                return IsMap ? new MapFieldAccessor(property, this)
+                    : IsRepeated ? new RepeatedFieldAccessor(property, this)
+                    : (IFieldAccessor) new SingleFieldAccessor(property, this);
+            } else
+            {
+                if (this.ContainingOneof == null)
+                {
+                    throw new DescriptorValidationException(this, $"Property {propertyName} is not a oneof field cannot end with {FSHARP_TRAIL}");
+                }
+                return (IFieldAccessor) new OneofFieldAccessorFSharp(this, this.propertyName.Substring(0, this.propertyName.Length - FSHARP_TRAIL.Length));
             }
-            return IsMap ? new MapFieldAccessor(property, this)
-                : IsRepeated ? new RepeatedFieldAccessor(property, this)
-                : (IFieldAccessor) new SingleFieldAccessor(property, this);
         }
     }
 }

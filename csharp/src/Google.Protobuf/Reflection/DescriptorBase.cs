@@ -37,6 +37,10 @@ namespace Google.Protobuf.Reflection
     /// </summary>
     public abstract class DescriptorBase : IDescriptor
     {
+        /// <summary>
+        /// Trailing field or oneof tag to specify FSharp Behavior (e.g. Discrimited Unions)
+        /// </summary>
+        public const string FSHARP_TRAIL = "_FSharp";
         private readonly FileDescriptor file;
         private readonly string fullName;
         private readonly int index;

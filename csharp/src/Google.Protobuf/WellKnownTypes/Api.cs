@@ -35,10 +35,11 @@ namespace Google.Protobuf.WellKnownTypes {
             "ChFyZXNwb25zZV90eXBlX3VybBgEIAEoCRIaChJyZXNwb25zZV9zdHJlYW1p",
             "bmcYBSABKAgSKAoHb3B0aW9ucxgGIAMoCzIXLmdvb2dsZS5wcm90b2J1Zi5P",
             "cHRpb24SJwoGc3ludGF4GAcgASgOMhcuZ29vZ2xlLnByb3RvYnVmLlN5bnRh",
-            "eCIjCgVNaXhpbhIMCgRuYW1lGAEgASgJEgwKBHJvb3QYAiABKAlCdQoTY29t",
-            "Lmdvb2dsZS5wcm90b2J1ZkIIQXBpUHJvdG9QAVorZ29vZ2xlLmdvbGFuZy5v",
-            "cmcvZ2VucHJvdG8vcHJvdG9idWYvYXBpO2FwaaICA0dQQqoCHkdvb2dsZS5Q",
-            "cm90b2J1Zi5XZWxsS25vd25UeXBlc2IGcHJvdG8z"));
+            "eCIjCgVNaXhpbhIMCgRuYW1lGAEgASgJEgwKBHJvb3QYAiABKAlClgEKE2Nv",
+            "bS5nb29nbGUucHJvdG9idWZCCEFwaVByb3RvUAFaK2dvb2dsZS5nb2xhbmcu",
+            "b3JnL2dlbnByb3RvL3Byb3RvYnVmL2FwaTthcGmiAgNHUEKqAh5Hb29nbGUu",
+            "UHJvdG9idWYuV2VsbEtub3duVHlwZXPSAh5Hb29nbGUuUHJvdG9idWYuV2Vs",
+            "bEtub3duVHlwZXNiBnByb3RvMw=="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::Google.Protobuf.WellKnownTypes.SourceContextReflection.Descriptor, global::Google.Protobuf.WellKnownTypes.TypeReflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(null, new pbr::GeneratedClrTypeInfo[] {

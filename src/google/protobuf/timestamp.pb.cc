@@ -107,13 +107,14 @@ void AddDescriptorsImpl() {
   static const char descriptor[] = {
       "\n\037google/protobuf/timestamp.proto\022\017googl"
       "e.protobuf\"+\n\tTimestamp\022\017\n\007seconds\030\001 \001(\003"
-      "\022\r\n\005nanos\030\002 \001(\005B~\n\023com.google.protobufB\016"
-      "TimestampProtoP\001Z+github.com/golang/prot"
-      "obuf/ptypes/timestamp\370\001\001\242\002\003GPB\252\002\036Google."
-      "Protobuf.WellKnownTypesb\006proto3"
+      "\022\r\n\005nanos\030\002 \001(\005B\237\001\n\023com.google.protobufB"
+      "\016TimestampProtoP\001Z+github.com/golang/pro"
+      "tobuf/ptypes/timestamp\370\001\001\242\002\003GPB\252\002\036Google"
+      ".Protobuf.WellKnownTypes\322\002\036Google.Protob"
+      "uf.WellKnownTypesb\006proto3"
   };
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
-      descriptor, 231);
+      descriptor, 265);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "google/protobuf/timestamp.proto", &protobuf_RegisterTypes);
   ::google::protobuf::internal::OnShutdown(&TableStruct::Shutdown);

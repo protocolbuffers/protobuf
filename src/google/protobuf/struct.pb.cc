@@ -176,14 +176,14 @@ void AddDescriptorsImpl() {
       "\000\0220\n\nlist_value\030\006 \001(\0132\032.google.protobuf."
       "ListValueH\000B\006\n\004kind\"3\n\tListValue\022&\n\006valu"
       "es\030\001 \003(\0132\026.google.protobuf.Value*\033\n\tNull"
-      "Value\022\016\n\nNULL_VALUE\020\000B\201\001\n\023com.google.pro"
+      "Value\022\016\n\nNULL_VALUE\020\000B\242\001\n\023com.google.pro"
       "tobufB\013StructProtoP\001Z1github.com/golang/"
       "protobuf/ptypes/struct;structpb\370\001\001\242\002\003GPB"
-      "\252\002\036Google.Protobuf.WellKnownTypesb\006proto"
-      "3"
+      "\252\002\036Google.Protobuf.WellKnownTypes\322\002\036Goog"
+      "le.Protobuf.WellKnownTypesb\006proto3"
   };
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
-      descriptor, 641);
+      descriptor, 674);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "google/protobuf/struct.proto", &protobuf_RegisterTypes);
   ::google::protobuf::internal::OnShutdown(&TableStruct::Shutdown);

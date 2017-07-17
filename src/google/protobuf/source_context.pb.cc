@@ -106,14 +106,15 @@ void AddDescriptorsImpl() {
   static const char descriptor[] = {
       "\n$google/protobuf/source_context.proto\022\017"
       "google.protobuf\"\"\n\rSourceContext\022\021\n\tfile"
-      "_name\030\001 \001(\tB\225\001\n\023com.google.protobufB\022Sou"
+      "_name\030\001 \001(\tB\266\001\n\023com.google.protobufB\022Sou"
       "rceContextProtoP\001ZAgoogle.golang.org/gen"
       "proto/protobuf/source_context;source_con"
       "text\242\002\003GPB\252\002\036Google.Protobuf.WellKnownTy"
-      "pesb\006proto3"
+      "pes\322\002\036Google.Protobuf.WellKnownTypesb\006pr"
+      "oto3"
   };
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
-      descriptor, 251);
+      descriptor, 284);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "google/protobuf/source_context.proto", &protobuf_RegisterTypes);
   ::google::protobuf::internal::OnShutdown(&TableStruct::Shutdown);
