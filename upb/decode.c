@@ -309,6 +309,11 @@ static bool upb_decode_varintfield(upb_decstate *d, upb_decframe *frame,
       memcpy(field_mem, &val32, sizeof(val32));
       break;
     }
+    case UPB_DESCRIPTOR_TYPE_BOOL: {
+      bool valbool = val != 0;
+      memcpy(field_mem, &valbool, sizeof(valbool));
+      break;
+    }
     case UPB_DESCRIPTOR_TYPE_SINT32: {
       int32_t decoded = upb_zzdec_32(val);
       memcpy(field_mem, &decoded, sizeof(decoded));

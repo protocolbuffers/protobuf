@@ -258,7 +258,7 @@ static bool upb_encode_scalarfield(upb_encstate *e, const char *field_mem,
                                    bool is_proto3) {
 #define CASE(ctype, type, wire_type, encodeval) do { \
   ctype val = *(ctype*)field_mem; \
-  if (is_proto3 && val == 0) { \
+  if (is_proto3 && f->oneof_index == UPB_NOT_IN_ONEOF && val == 0) { \
     return true; \
   } \
   return upb_put_ ## type(e, encodeval) && \
@@ -292,7 +292,7 @@ static bool upb_encode_scalarfield(upb_encstate *e, const char *field_mem,
     case UPB_DESCRIPTOR_TYPE_STRING:
     case UPB_DESCRIPTOR_TYPE_BYTES: {
       upb_stringview view = *(upb_stringview*)field_mem;
-      if (is_proto3 && view.size == 0) {
+      if (is_proto3 && f->oneof_index == UPB_NOT_IN_ONEOF && view.size == 0) {
         return true;
       }
       return upb_put_bytes(e, view.data, view.size) &&
@@ -303,7 +303,7 @@ static bool upb_encode_scalarfield(upb_encstate *e, const char *field_mem,
       size_t size;
       void *submsg = *(void**)field_mem;
       const upb_msglayout_msginit_v1 *subm = m->submsgs[f->submsg_index];
-      if (is_proto3 && submsg == NULL) {
+      if (is_proto3 && f->oneof_index == UPB_NOT_IN_ONEOF && submsg == NULL) {
         return true;
       }
       return upb_put_tag(e, f->number, UPB_WIRE_TYPE_END_GROUP) &&
@@ -314,7 +314,7 @@ static bool upb_encode_scalarfield(upb_encstate *e, const char *field_mem,
       size_t size;
       void *submsg = *(void**)field_mem;
       const upb_msglayout_msginit_v1 *subm = m->submsgs[f->submsg_index];
-      if (is_proto3 && submsg == NULL) {
+      if (is_proto3 && f->oneof_index == UPB_NOT_IN_ONEOF && submsg == NULL) {
         return true;
       }
       return upb_encode_message(e, submsg, subm, &size) &&
@@ -344,6 +344,11 @@ bool upb_encode_message(upb_encstate* e, const char *msg,
                         size_t *size) {
   int i;
   char *buf_end = e->ptr;
+
+  if (msg == NULL) {
+    return true;
+  }
+
   for (i = m->field_count - 1; i >= 0; i--) {
     const upb_msglayout_fieldinit_v1 *f = &m->fields[i];
 
