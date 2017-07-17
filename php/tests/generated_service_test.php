@@ -34,9 +34,9 @@ class GeneratedServiceTest extends TestBase
     {
         parent::setUp();
 
-        $this->serviceClass = new ReflectionClass('Foo\Greeter');
+        $this->serviceClass = new ReflectionClass('Foo\GreeterInterface');
 
-        $this->namespacedServiceClass = new ReflectionClass('Bar\OtherGreeter');
+        $this->namespacedServiceClass = new ReflectionClass('Bar\OtherGreeterInterface');
     }
 
     public function testIsInterface()

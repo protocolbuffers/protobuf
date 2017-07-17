@@ -288,7 +288,7 @@ std::string GeneratedEnumFileName(const EnumDescriptor* en,
 
 std::string GeneratedServiceFileName(const ServiceDescriptor* service,
                                     bool is_descriptor) {
-  std::string result = FullClassName(service, is_descriptor);
+  std::string result = FullClassName(service, is_descriptor) + "Interface";
   for (int i = 0; i < result.size(); i++) {
     if (result[i] == '\\') {
       result[i] = '/';
