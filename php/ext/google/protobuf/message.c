@@ -115,7 +115,11 @@ static void message_set_property(zval* object, zval* member, zval* value,
     return;
   }
 
+#if PHP_MAJOR_VERSION < 7 || (PHP_MAJOR_VERSION == 7 && PHP_MINOR_VERSION == 0)
   if (Z_OBJCE_P(object) != EG(scope)) {
+#else
+  if (Z_OBJCE_P(object) != zend_get_executed_scope()) {
+#endif
     // User cannot set property directly (e.g., $m->a = 1)
     zend_error(E_USER_ERROR, "Cannot access private property.");
     return;
@@ -145,7 +149,11 @@ static zval* message_get_property(zval* object, zval* member, int type,
     return PHP_PROTO_GLOBAL_UNINITIALIZED_ZVAL;
   }
 
+#if PHP_MAJOR_VERSION < 7 || (PHP_MAJOR_VERSION == 7 && PHP_MINOR_VERSION == 0)
   if (Z_OBJCE_P(object) != EG(scope)) {
+#else
+  if (Z_OBJCE_P(object) != zend_get_executed_scope()) {
+#endif
     // User cannot get property directly (e.g., $a = $m->a)
     zend_error(E_USER_ERROR, "Cannot access private property.");
     return PHP_PROTO_GLOBAL_UNINITIALIZED_ZVAL;

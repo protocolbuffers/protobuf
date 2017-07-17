@@ -392,6 +392,7 @@ void DoubleValue::SerializeWithCachedSizes(
 
 ::google::protobuf::uint8* DoubleValue::InternalSerializeWithCachedSizesToArray(
     bool deterministic, ::google::protobuf::uint8* target) const {
+  (void)deterministic; // Unused
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.DoubleValue)
   ::google::protobuf::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
@@ -656,6 +657,7 @@ void FloatValue::SerializeWithCachedSizes(
 
 ::google::protobuf::uint8* FloatValue::InternalSerializeWithCachedSizesToArray(
     bool deterministic, ::google::protobuf::uint8* target) const {
+  (void)deterministic; // Unused
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.FloatValue)
   ::google::protobuf::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
@@ -920,6 +922,7 @@ void Int64Value::SerializeWithCachedSizes(
 
 ::google::protobuf::uint8* Int64Value::InternalSerializeWithCachedSizesToArray(
     bool deterministic, ::google::protobuf::uint8* target) const {
+  (void)deterministic; // Unused
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.Int64Value)
   ::google::protobuf::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
@@ -1186,6 +1189,7 @@ void UInt64Value::SerializeWithCachedSizes(
 
 ::google::protobuf::uint8* UInt64Value::InternalSerializeWithCachedSizesToArray(
     bool deterministic, ::google::protobuf::uint8* target) const {
+  (void)deterministic; // Unused
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.UInt64Value)
   ::google::protobuf::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
@@ -1452,6 +1456,7 @@ void Int32Value::SerializeWithCachedSizes(
 
 ::google::protobuf::uint8* Int32Value::InternalSerializeWithCachedSizesToArray(
     bool deterministic, ::google::protobuf::uint8* target) const {
+  (void)deterministic; // Unused
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.Int32Value)
   ::google::protobuf::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
@@ -1718,6 +1723,7 @@ void UInt32Value::SerializeWithCachedSizes(
 
 ::google::protobuf::uint8* UInt32Value::InternalSerializeWithCachedSizesToArray(
     bool deterministic, ::google::protobuf::uint8* target) const {
+  (void)deterministic; // Unused
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.UInt32Value)
   ::google::protobuf::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
@@ -1984,6 +1990,7 @@ void BoolValue::SerializeWithCachedSizes(
 
 ::google::protobuf::uint8* BoolValue::InternalSerializeWithCachedSizesToArray(
     bool deterministic, ::google::protobuf::uint8* target) const {
+  (void)deterministic; // Unused
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.BoolValue)
   ::google::protobuf::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
@@ -2260,6 +2267,7 @@ void StringValue::SerializeWithCachedSizes(
 
 ::google::protobuf::uint8* StringValue::InternalSerializeWithCachedSizesToArray(
     bool deterministic, ::google::protobuf::uint8* target) const {
+  (void)deterministic; // Unused
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.StringValue)
   ::google::protobuf::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
@@ -2589,6 +2597,7 @@ void BytesValue::SerializeWithCachedSizes(
 
 ::google::protobuf::uint8* BytesValue::InternalSerializeWithCachedSizesToArray(
     bool deterministic, ::google::protobuf::uint8* target) const {
+  (void)deterministic; // Unused
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.BytesValue)
   ::google::protobuf::uint32 cached_has_bits = 0;
   (void) cached_has_bits;

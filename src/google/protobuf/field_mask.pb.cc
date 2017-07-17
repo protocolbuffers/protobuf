@@ -264,6 +264,7 @@ void FieldMask::SerializeWithCachedSizes(
 
 ::google::protobuf::uint8* FieldMask::InternalSerializeWithCachedSizesToArray(
     bool deterministic, ::google::protobuf::uint8* target) const {
+  (void)deterministic; // Unused
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.FieldMask)
   ::google::protobuf::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
