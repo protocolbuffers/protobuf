@@ -578,3 +578,5 @@ bool upb_decode(upb_stringview buf, void *msg,
 
   return upb_decode_message(&state, buf.data + buf.size, 0, msg, l);
 }
+
+#undef CHK

@@ -390,3 +390,5 @@ char *upb_encode(const void *msg, const upb_msglayout_msginit_v1 *m,
     return e.ptr;
   }
 }
+
+#undef CHK
