@@ -110,6 +110,11 @@ class FileOptions extends \Google\Protobuf\Internal\Message
     private $py_generic_services = false;
     private $has_py_generic_services = false;
     /**
+     * Generated from protobuf field <code>optional bool php_generic_services = 19 [default = false];</code>
+     */
+    private $php_generic_services = false;
+    private $has_php_generic_services = false;
+    /**
      * Is this file deprecated?
      * Depending on the target platform, this can emit Deprecated annotations
      * for everything in the file, or it will be completely ignored; in the very
@@ -546,6 +551,34 @@ class FileOptions extends \Google\Protobuf\Internal\Message
     public function hasPyGenericServices()
     {
         return $this->has_py_generic_services;
+    }
+
+    /**
+     * Generated from protobuf field <code>optional bool php_generic_services = 19 [default = false];</code>
+     * @return bool
+     */
+    public function getPhpGenericServices()
+    {
+        return $this->php_generic_services;
+    }
+
+    /**
+     * Generated from protobuf field <code>optional bool php_generic_services = 19 [default = false];</code>
+     * @param bool $var
+     * @return $this
+     */
+    public function setPhpGenericServices($var)
+    {
+        GPBUtil::checkBool($var);
+        $this->php_generic_services = $var;
+        $this->has_php_generic_services = true;
+
+        return $this;
+    }
+
+    public function hasPhpGenericServices()
+    {
+        return $this->has_php_generic_services;
     }
 
     /**

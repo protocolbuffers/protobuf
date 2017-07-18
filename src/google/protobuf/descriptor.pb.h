@@ -2290,6 +2290,13 @@ class LIBPROTOBUF_EXPORT FileOptions : public ::google::protobuf::Message /* @@p
   bool py_generic_services() const;
   void set_py_generic_services(bool value);
 
+  // optional bool php_generic_services = 19 [default = false];
+  bool has_php_generic_services() const;
+  void clear_php_generic_services();
+  static const int kPhpGenericServicesFieldNumber = 19;
+  bool php_generic_services() const;
+  void set_php_generic_services(bool value);
+
   // optional bool deprecated = 23 [default = false];
   bool has_deprecated() const;
   void clear_deprecated();
@@ -2334,6 +2341,8 @@ class LIBPROTOBUF_EXPORT FileOptions : public ::google::protobuf::Message /* @@p
   void clear_has_java_generic_services();
   void set_has_py_generic_services();
   void clear_has_py_generic_services();
+  void set_has_php_generic_services();
+  void clear_has_php_generic_services();
   void set_has_deprecated();
   void clear_has_deprecated();
   void set_has_cc_enable_arenas();
@@ -2369,6 +2378,7 @@ class LIBPROTOBUF_EXPORT FileOptions : public ::google::protobuf::Message /* @@p
   bool cc_generic_services_;
   bool java_generic_services_;
   bool py_generic_services_;
+  bool php_generic_services_;
   bool deprecated_;
   bool cc_enable_arenas_;
   int optimize_for_;
@@ -6644,13 +6654,13 @@ inline void FileOptions::set_java_string_check_utf8(bool value) {
 
 // optional .google.protobuf.FileOptions.OptimizeMode optimize_for = 9 [default = SPEED];
 inline bool FileOptions::has_optimize_for() const {
-  return (_has_bits_[0] & 0x00010000u) != 0;
+  return (_has_bits_[0] & 0x00020000u) != 0;
 }
 inline void FileOptions::set_has_optimize_for() {
-  _has_bits_[0] |= 0x00010000u;
+  _has_bits_[0] |= 0x00020000u;
 }
 inline void FileOptions::clear_has_optimize_for() {
-  _has_bits_[0] &= ~0x00010000u;
+  _has_bits_[0] &= ~0x00020000u;
 }
 inline void FileOptions::clear_optimize_for() {
   optimize_for_ = 1;
@@ -6802,15 +6812,39 @@ inline void FileOptions::set_py_generic_services(bool value) {
   // @@protoc_insertion_point(field_set:google.protobuf.FileOptions.py_generic_services)
 }
 
-// optional bool deprecated = 23 [default = false];
-inline bool FileOptions::has_deprecated() const {
+// optional bool php_generic_services = 19 [default = false];
+inline bool FileOptions::has_php_generic_services() const {
   return (_has_bits_[0] & 0x00004000u) != 0;
 }
-inline void FileOptions::set_has_deprecated() {
+inline void FileOptions::set_has_php_generic_services() {
   _has_bits_[0] |= 0x00004000u;
 }
-inline void FileOptions::clear_has_deprecated() {
+inline void FileOptions::clear_has_php_generic_services() {
   _has_bits_[0] &= ~0x00004000u;
+}
+inline void FileOptions::clear_php_generic_services() {
+  php_generic_services_ = false;
+  clear_has_php_generic_services();
+}
+inline bool FileOptions::php_generic_services() const {
+  // @@protoc_insertion_point(field_get:google.protobuf.FileOptions.php_generic_services)
+  return php_generic_services_;
+}
+inline void FileOptions::set_php_generic_services(bool value) {
+  set_has_php_generic_services();
+  php_generic_services_ = value;
+  // @@protoc_insertion_point(field_set:google.protobuf.FileOptions.php_generic_services)
+}
+
+// optional bool deprecated = 23 [default = false];
+inline bool FileOptions::has_deprecated() const {
+  return (_has_bits_[0] & 0x00008000u) != 0;
+}
+inline void FileOptions::set_has_deprecated() {
+  _has_bits_[0] |= 0x00008000u;
+}
+inline void FileOptions::clear_has_deprecated() {
+  _has_bits_[0] &= ~0x00008000u;
 }
 inline void FileOptions::clear_deprecated() {
   deprecated_ = false;
@@ -6828,13 +6862,13 @@ inline void FileOptions::set_deprecated(bool value) {
 
 // optional bool cc_enable_arenas = 31 [default = false];
 inline bool FileOptions::has_cc_enable_arenas() const {
-  return (_has_bits_[0] & 0x00008000u) != 0;
+  return (_has_bits_[0] & 0x00010000u) != 0;
 }
 inline void FileOptions::set_has_cc_enable_arenas() {
-  _has_bits_[0] |= 0x00008000u;
+  _has_bits_[0] |= 0x00010000u;
 }
 inline void FileOptions::clear_has_cc_enable_arenas() {
-  _has_bits_[0] &= ~0x00008000u;
+  _has_bits_[0] &= ~0x00010000u;
 }
 inline void FileOptions::clear_cc_enable_arenas() {
   cc_enable_arenas_ = false;
