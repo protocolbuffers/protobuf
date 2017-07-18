@@ -8,7 +8,7 @@
 #define CHK(x) do { if (!(x)) { return false; } } while(0)
 
 /* Maps descriptor type -> upb field type.  */
-static const uint8_t upb_desctype_to_fieldtype[] = {
+static const uint8_t upb_desctype_to_fieldtype2[] = {
   UPB_WIRE_TYPE_END_GROUP,  /* ENDGROUP */
   UPB_TYPE_DOUBLE,          /* DOUBLE */
   UPB_TYPE_FLOAT,           /* FLOAT */
@@ -43,8 +43,8 @@ static size_t upb_encode_varint(uint64_t val, char *buf) {
   return i;
 }
 
-static uint32_t upb_zzenc_32(int32_t n) { return (n << 1) ^ (n >> 31); }
-static uint64_t upb_zzenc_64(int64_t n) { return (n << 1) ^ (n >> 63); }
+static uint32_t upb_zzencode_32(int32_t n) { return (n << 1) ^ (n >> 31); }
+static uint64_t upb_zzencode_64(int64_t n) { return (n << 1) ^ (n >> 63); }
 
 typedef struct {
   upb_env *env;
@@ -162,7 +162,7 @@ static bool upb_encode_array(upb_encstate *e, const char *field_mem,
     return true;
   }
 
-  UPB_ASSERT(arr->type == upb_desctype_to_fieldtype[f->type]);
+  UPB_ASSERT(arr->type == upb_desctype_to_fieldtype2[f->type]);
 
 #define VARINT_CASE(ctype, encode) { \
   ctype *start = arr->data; \
@@ -202,9 +202,9 @@ do { ; } while(0)
     case UPB_DESCRIPTOR_TYPE_BOOL:
       VARINT_CASE(bool, *ptr);
     case UPB_DESCRIPTOR_TYPE_SINT32:
-      VARINT_CASE(int32_t, upb_zzenc_32(*ptr));
+      VARINT_CASE(int32_t, upb_zzencode_32(*ptr));
     case UPB_DESCRIPTOR_TYPE_SINT64:
-      VARINT_CASE(int64_t, upb_zzenc_64(*ptr));
+      VARINT_CASE(int64_t, upb_zzencode_64(*ptr));
     case UPB_DESCRIPTOR_TYPE_STRING:
     case UPB_DESCRIPTOR_TYPE_BYTES: {
       upb_stringview *start = arr->data;
@@ -288,9 +288,9 @@ static bool upb_encode_scalarfield(upb_encstate *e, const char *field_mem,
     case UPB_DESCRIPTOR_TYPE_BOOL:
       CASE(bool, varint, UPB_WIRE_TYPE_VARINT, val);
     case UPB_DESCRIPTOR_TYPE_SINT32:
-      CASE(int32_t, varint, UPB_WIRE_TYPE_VARINT, upb_zzenc_32(val));
+      CASE(int32_t, varint, UPB_WIRE_TYPE_VARINT, upb_zzencode_32(val));
     case UPB_DESCRIPTOR_TYPE_SINT64:
-      CASE(int64_t, varint, UPB_WIRE_TYPE_VARINT, upb_zzenc_64(val));
+      CASE(int64_t, varint, UPB_WIRE_TYPE_VARINT, upb_zzencode_64(val));
     case UPB_DESCRIPTOR_TYPE_STRING:
     case UPB_DESCRIPTOR_TYPE_BYTES: {
       upb_stringview view = *(upb_stringview*)field_mem;

@@ -104,11 +104,11 @@ static bool upb_decode_tag(const char **ptr, const char *limit,
   return true;
 }
 
-static int32_t upb_zzdec_32(uint32_t n) {
+static int32_t upb_zzdecode_32(uint32_t n) {
   return (n >> 1) ^ -(int32_t)(n & 1);
 }
 
-static int64_t upb_zzdec_64(uint64_t n) {
+static int64_t upb_zzdecode_64(uint64_t n) {
   return (n >> 1) ^ -(int64_t)(n & 1);
 }
 
@@ -317,12 +317,12 @@ static bool upb_decode_varintfield(upb_decstate *d, upb_decframe *frame,
       break;
     }
     case UPB_DESCRIPTOR_TYPE_SINT32: {
-      int32_t decoded = upb_zzdec_32(val);
+      int32_t decoded = upb_zzdecode_32(val);
       memcpy(field_mem, &decoded, sizeof(decoded));
       break;
     }
     case UPB_DESCRIPTOR_TYPE_SINT64: {
-      int64_t decoded = upb_zzdec_64(val);
+      int64_t decoded = upb_zzdecode_64(val);
       memcpy(field_mem, &decoded, sizeof(decoded));
       break;
     }
@@ -443,9 +443,9 @@ static bool upb_decode_toarray(upb_decstate *d, upb_decframe *frame,
     case UPB_DESCRIPTOR_TYPE_BOOL:
       VARINT_CASE(bool, bool);
     case UPB_DESCRIPTOR_TYPE_SINT32:
-      VARINT_CASE(int32_t, upb_zzdec_32);
+      VARINT_CASE(int32_t, upb_zzdecode_32);
     case UPB_DESCRIPTOR_TYPE_SINT64:
-      VARINT_CASE(int64_t, upb_zzdec_64);
+      VARINT_CASE(int64_t, upb_zzdecode_64);
     case UPB_DESCRIPTOR_TYPE_MESSAGE:
       CHK(val.size <= (size_t)(frame->limit - val.data));
       return upb_decode_submsg(d, frame, val.data + val.size, field, 0);
