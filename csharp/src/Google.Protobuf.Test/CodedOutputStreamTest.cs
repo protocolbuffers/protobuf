@@ -334,7 +334,7 @@ namespace Google.Protobuf
             }
             // Now test Input stream:
             {
-                CodedInputStream cin = new CodedInputStream(new MemoryStream(bytes), new byte[50], 0, 0);
+                CodedInputStream cin = new CodedInputStream(new MemoryStream(bytes), new byte[50], 0, 0, false);
                 Assert.AreEqual(0, cin.Position);
                 // Field 1:
                 uint tag = cin.ReadTag();
@@ -414,6 +414,13 @@ namespace Google.Protobuf
             }
             Assert.AreEqual(1, memoryStream.Position); // Flushed data from CodedOutputStream to MemoryStream
             Assert.IsTrue(memoryStream.CanWrite); // We left the stream open
+        }
+
+        [Test]
+        public void Dispose_FromByteArray()
+        {
+            var stream = new CodedOutputStream(new byte[10]);
+            stream.Dispose();
         }
     }
 }

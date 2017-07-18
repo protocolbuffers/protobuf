@@ -13,10 +13,18 @@ class TestWellKnownTypes < Test::Unit::TestCase
     assert_equal Time.at(12345), ts.to_time
     assert_equal 12345, ts.to_i
 
-    ts.from_time(Time.at(123456, 654321))
+    # millisecond accuracy
+    time = Time.at(123456, 654321)
+    ts.from_time(time)
     assert_equal 123456, ts.seconds
     assert_equal 654321000, ts.nanos
-    assert_equal Time.at(123456.654321), ts.to_time
+    assert_equal time, ts.to_time
+
+    # nanosecond accuracy
+    time = Time.at(123456, Rational(654321321, 1000))
+    ts.from_time(time)
+    assert_equal 654321321, ts.nanos
+    assert_equal time, ts.to_time
   end
 
   def test_duration

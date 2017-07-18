@@ -8,14 +8,34 @@ exports_files(["LICENSE"])
 # Protobuf Runtime Library
 ################################################################################
 
-COPTS = [
-    "-DHAVE_PTHREAD",
-    "-Wall",
-    "-Wwrite-strings",
-    "-Woverloaded-virtual",
-    "-Wno-sign-compare",
-    "-Wno-unused-function",
+WIN_COPTS = [
+    "/DHAVE_PTHREAD",
+    "/wd4018", # -Wno-sign-compare
+    "/wd4514", # -Wno-unused-function
 ]
+
+COPTS = select({
+    ":windows" : WIN_COPTS,
+    ":windows_msvc" : WIN_COPTS,
+    "//conditions:default": [
+        "-DHAVE_PTHREAD",
+        "-Wall",
+        "-Wwrite-strings",
+        "-Woverloaded-virtual",
+        "-Wno-sign-compare",
+        "-Wno-unused-function",
+    ],
+})
+
+config_setting(
+    name = "windows",
+    values = { "cpu": "x64_windows" },
+)
+
+config_setting(
+    name = "windows_msvc",
+    values = { "cpu": "x64_windows_msvc" },
+)
 
 config_setting(
     name = "android",
@@ -60,7 +80,7 @@ config_setting(
     },
 )
 
-IOS_ARM_COPTS = COPTS + [
+IOS_ARM_COPTS = [
     "-DOS_IOS",
     "-miphoneos-version-min=7.0",
     "-arch armv7",
@@ -103,8 +123,8 @@ cc_library(
         ":ios_armv7": IOS_ARM_COPTS,
         ":ios_armv7s": IOS_ARM_COPTS,
         ":ios_arm64": IOS_ARM_COPTS,
-        "//conditions:default": COPTS,
-    }),
+        "//conditions:default": [],
+    }) + COPTS,
     includes = ["src/"],
     linkopts = LINK_OPTS,
     visibility = ["//visibility:public"],
@@ -174,8 +194,8 @@ cc_library(
         ":ios_armv7": IOS_ARM_COPTS,
         ":ios_armv7s": IOS_ARM_COPTS,
         ":ios_arm64": IOS_ARM_COPTS,
-        "//conditions:default": COPTS,
-    }),
+        "//conditions:default": [],
+    }) + COPTS,
     includes = ["src/"],
     linkopts = LINK_OPTS,
     visibility = ["//visibility:public"],
@@ -580,7 +600,7 @@ java_library(
     ]) + [
         ":gen_well_known_protos_java",
     ],
-    javacopts = ["-source 6"],
+    javacopts = ["-source 6", "-target 6"],
     visibility = ["//visibility:public"],
 )
 
@@ -589,6 +609,7 @@ java_library(
     srcs = glob([
         "java/util/src/main/java/com/google/protobuf/util/*.java",
     ]),
+    javacopts = ["-source 6", "-target 6"],
     visibility = ["//visibility:public"],
     deps = [
         "protobuf_java",
@@ -805,5 +826,86 @@ proto_lang_toolchain(
     name = "java_toolchain",
     command_line = "--java_out=$(OUT)",
     runtime = ":protobuf_java",
+    visibility = ["//visibility:public"],
+)
+
+OBJC_HDRS = [
+    "objectivec/GPBArray.h",
+    "objectivec/GPBBootstrap.h",
+    "objectivec/GPBCodedInputStream.h",
+    "objectivec/GPBCodedOutputStream.h",
+    "objectivec/GPBDescriptor.h",
+    "objectivec/GPBDictionary.h",
+    "objectivec/GPBExtensionInternals.h",
+    "objectivec/GPBExtensionRegistry.h",
+    "objectivec/GPBMessage.h",
+    "objectivec/GPBProtocolBuffers.h",
+    "objectivec/GPBProtocolBuffers_RuntimeSupport.h",
+    "objectivec/GPBRootObject.h",
+    "objectivec/GPBRuntimeTypes.h",
+    "objectivec/GPBUnknownField.h",
+    "objectivec/GPBUnknownFieldSet.h",
+    "objectivec/GPBUtilities.h",
+    "objectivec/GPBWellKnownTypes.h",
+    "objectivec/GPBWireFormat.h",
+    "objectivec/google/protobuf/Any.pbobjc.h",
+    "objectivec/google/protobuf/Api.pbobjc.h",
+    "objectivec/google/protobuf/Duration.pbobjc.h",
+    "objectivec/google/protobuf/Empty.pbobjc.h",
+    "objectivec/google/protobuf/FieldMask.pbobjc.h",
+    "objectivec/google/protobuf/SourceContext.pbobjc.h",
+    "objectivec/google/protobuf/Struct.pbobjc.h",
+    "objectivec/google/protobuf/Timestamp.pbobjc.h",
+    "objectivec/google/protobuf/Type.pbobjc.h",
+    "objectivec/google/protobuf/Wrappers.pbobjc.h",
+]
+
+OBJC_PRIVATE_HDRS = [
+    "objectivec/GPBArray_PackagePrivate.h",
+    "objectivec/GPBCodedInputStream_PackagePrivate.h",
+    "objectivec/GPBCodedOutputStream_PackagePrivate.h",
+    "objectivec/GPBDescriptor_PackagePrivate.h",
+    "objectivec/GPBDictionary_PackagePrivate.h",
+    "objectivec/GPBMessage_PackagePrivate.h",
+    "objectivec/GPBRootObject_PackagePrivate.h",
+    "objectivec/GPBUnknownFieldSet_PackagePrivate.h",
+    "objectivec/GPBUnknownField_PackagePrivate.h",
+    "objectivec/GPBUtilities_PackagePrivate.h",
+]
+
+OBJC_SRCS = [
+    "objectivec/GPBArray.m",
+    "objectivec/GPBCodedInputStream.m",
+    "objectivec/GPBCodedOutputStream.m",
+    "objectivec/GPBDescriptor.m",
+    "objectivec/GPBDictionary.m",
+    "objectivec/GPBExtensionInternals.m",
+    "objectivec/GPBExtensionRegistry.m",
+    "objectivec/GPBMessage.m",
+    "objectivec/GPBRootObject.m",
+    "objectivec/GPBUnknownField.m",
+    "objectivec/GPBUnknownFieldSet.m",
+    "objectivec/GPBUtilities.m",
+    "objectivec/GPBWellKnownTypes.m",
+    "objectivec/GPBWireFormat.m",
+    "objectivec/google/protobuf/Any.pbobjc.m",
+    "objectivec/google/protobuf/Api.pbobjc.m",
+    "objectivec/google/protobuf/Duration.pbobjc.m",
+    "objectivec/google/protobuf/Empty.pbobjc.m",
+    "objectivec/google/protobuf/FieldMask.pbobjc.m",
+    "objectivec/google/protobuf/SourceContext.pbobjc.m",
+    "objectivec/google/protobuf/Struct.pbobjc.m",
+    "objectivec/google/protobuf/Timestamp.pbobjc.m",
+    "objectivec/google/protobuf/Type.pbobjc.m",
+    "objectivec/google/protobuf/Wrappers.pbobjc.m",
+]
+
+objc_library(
+    name = "objectivec",
+    hdrs = OBJC_HDRS + OBJC_PRIVATE_HDRS,
+    includes = [
+        "objectivec",
+    ],
+    non_arc_srcs = OBJC_SRCS,
     visibility = ["//visibility:public"],
 )

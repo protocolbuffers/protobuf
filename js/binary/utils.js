@@ -613,7 +613,7 @@ jspb.utils.decimalStringToHash64 = function(dec) {
     muladd(1, 1);
   }
 
-  return String.fromCharCode.apply(null, resultBytes);
+  return goog.crypt.byteArrayToString(resultBytes);
 };
 
 

@@ -59,7 +59,7 @@ ExtensionGenerator::ExtensionGenerator(const string& root_class_name,
 ExtensionGenerator::~ExtensionGenerator() {}
 
 void ExtensionGenerator::GenerateMembersHeader(io::Printer* printer) {
-  map<string, string> vars;
+  std::map<string, string> vars;
   vars["method_name"] = method_name_;
   SourceLocation location;
   if (descriptor_->GetSourceLocation(&location)) {
@@ -77,7 +77,7 @@ void ExtensionGenerator::GenerateMembersHeader(io::Printer* printer) {
 
 void ExtensionGenerator::GenerateStaticVariablesInitialization(
     io::Printer* printer) {
-  map<string, string> vars;
+  std::map<string, string> vars;
   vars["root_class_and_method_name"] = root_class_and_method_name_;
   vars["extended_type"] = ClassName(descriptor_->containing_type());
   vars["number"] = SimpleItoa(descriptor_->number());

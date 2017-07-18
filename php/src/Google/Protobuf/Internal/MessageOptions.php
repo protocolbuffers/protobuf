@@ -8,16 +8,14 @@ use Google\Protobuf\Internal\GPBType;
 use Google\Protobuf\Internal\GPBWire;
 use Google\Protobuf\Internal\RepeatedField;
 use Google\Protobuf\Internal\InputStream;
-
 use Google\Protobuf\Internal\GPBUtil;
 
 /**
- * Protobuf type <code>google.protobuf.MessageOptions</code>
+ * Generated from protobuf message <code>google.protobuf.MessageOptions</code>
  */
 class MessageOptions extends \Google\Protobuf\Internal\Message
 {
     /**
-     * <pre>
      * Set true to use the old proto1 MessageSet wire format for extensions.
      * This is provided for backwards-compatibility with the MessageSet wire
      * format.  You should not use this for any other reason:  It's less
@@ -33,41 +31,35 @@ class MessageOptions extends \Google\Protobuf\Internal\Message
      * be int32s, enums, or repeated messages.
      * Because this is an option, the above two restrictions are not enforced by
      * the protocol compiler.
-     * </pre>
      *
-     * <code>optional bool message_set_wire_format = 1 [default = false];</code>
+     * Generated from protobuf field <code>optional bool message_set_wire_format = 1 [default = false];</code>
      */
     private $message_set_wire_format = false;
     private $has_message_set_wire_format = false;
     /**
-     * <pre>
      * Disables the generation of the standard "descriptor()" accessor, which can
      * conflict with a field of the same name.  This is meant to make migration
      * from proto1 easier; new code should avoid fields named "descriptor".
-     * </pre>
      *
-     * <code>optional bool no_standard_descriptor_accessor = 2 [default = false];</code>
+     * Generated from protobuf field <code>optional bool no_standard_descriptor_accessor = 2 [default = false];</code>
      */
     private $no_standard_descriptor_accessor = false;
     private $has_no_standard_descriptor_accessor = false;
     /**
-     * <pre>
      * Is this message deprecated?
      * Depending on the target platform, this can emit Deprecated annotations
      * for the message, or it will be completely ignored; in the very least,
      * this is a formalization for deprecating messages.
-     * </pre>
      *
-     * <code>optional bool deprecated = 3 [default = false];</code>
+     * Generated from protobuf field <code>optional bool deprecated = 3 [default = false];</code>
      */
     private $deprecated = false;
     private $has_deprecated = false;
     /**
-     * <pre>
      * Whether the message is an automatically generated map entry type for the
      * maps field.
      * For maps fields:
-     *     map&lt;KeyType, ValueType&gt; map_field = 1;
+     *     map<KeyType, ValueType> map_field = 1;
      * The parsed descriptor looks like:
      *     message MapFieldEntry {
      *         option map_entry = true;
@@ -82,18 +74,15 @@ class MessageOptions extends \Google\Protobuf\Internal\Message
      * NOTE: Do not set the option in .proto files. Always use the maps syntax
      * instead. The option should only be implicitly set by the proto compiler
      * parser.
-     * </pre>
      *
-     * <code>optional bool map_entry = 7;</code>
+     * Generated from protobuf field <code>optional bool map_entry = 7;</code>
      */
     private $map_entry = false;
     private $has_map_entry = false;
     /**
-     * <pre>
      * The parser stores options it doesn't recognize here. See above.
-     * </pre>
      *
-     * <code>repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;</code>
+     * Generated from protobuf field <code>repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;</code>
      */
     private $uninterpreted_option;
     private $has_uninterpreted_option = false;
@@ -104,7 +93,6 @@ class MessageOptions extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * <pre>
      * Set true to use the old proto1 MessageSet wire format for extensions.
      * This is provided for backwards-compatibility with the MessageSet wire
      * format.  You should not use this for any other reason:  It's less
@@ -120,9 +108,9 @@ class MessageOptions extends \Google\Protobuf\Internal\Message
      * be int32s, enums, or repeated messages.
      * Because this is an option, the above two restrictions are not enforced by
      * the protocol compiler.
-     * </pre>
      *
-     * <code>optional bool message_set_wire_format = 1 [default = false];</code>
+     * Generated from protobuf field <code>optional bool message_set_wire_format = 1 [default = false];</code>
+     * @return bool
      */
     public function getMessageSetWireFormat()
     {
@@ -130,7 +118,6 @@ class MessageOptions extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * <pre>
      * Set true to use the old proto1 MessageSet wire format for extensions.
      * This is provided for backwards-compatibility with the MessageSet wire
      * format.  You should not use this for any other reason:  It's less
@@ -146,15 +133,18 @@ class MessageOptions extends \Google\Protobuf\Internal\Message
      * be int32s, enums, or repeated messages.
      * Because this is an option, the above two restrictions are not enforced by
      * the protocol compiler.
-     * </pre>
      *
-     * <code>optional bool message_set_wire_format = 1 [default = false];</code>
+     * Generated from protobuf field <code>optional bool message_set_wire_format = 1 [default = false];</code>
+     * @param bool $var
+     * @return $this
      */
     public function setMessageSetWireFormat($var)
     {
         GPBUtil::checkBool($var);
         $this->message_set_wire_format = $var;
         $this->has_message_set_wire_format = true;
+
+        return $this;
     }
 
     public function hasMessageSetWireFormat()
@@ -163,13 +153,12 @@ class MessageOptions extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * <pre>
      * Disables the generation of the standard "descriptor()" accessor, which can
      * conflict with a field of the same name.  This is meant to make migration
      * from proto1 easier; new code should avoid fields named "descriptor".
-     * </pre>
      *
-     * <code>optional bool no_standard_descriptor_accessor = 2 [default = false];</code>
+     * Generated from protobuf field <code>optional bool no_standard_descriptor_accessor = 2 [default = false];</code>
+     * @return bool
      */
     public function getNoStandardDescriptorAccessor()
     {
@@ -177,19 +166,21 @@ class MessageOptions extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * <pre>
      * Disables the generation of the standard "descriptor()" accessor, which can
      * conflict with a field of the same name.  This is meant to make migration
      * from proto1 easier; new code should avoid fields named "descriptor".
-     * </pre>
      *
-     * <code>optional bool no_standard_descriptor_accessor = 2 [default = false];</code>
+     * Generated from protobuf field <code>optional bool no_standard_descriptor_accessor = 2 [default = false];</code>
+     * @param bool $var
+     * @return $this
      */
     public function setNoStandardDescriptorAccessor($var)
     {
         GPBUtil::checkBool($var);
         $this->no_standard_descriptor_accessor = $var;
         $this->has_no_standard_descriptor_accessor = true;
+
+        return $this;
     }
 
     public function hasNoStandardDescriptorAccessor()
@@ -198,14 +189,13 @@ class MessageOptions extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * <pre>
      * Is this message deprecated?
      * Depending on the target platform, this can emit Deprecated annotations
      * for the message, or it will be completely ignored; in the very least,
      * this is a formalization for deprecating messages.
-     * </pre>
      *
-     * <code>optional bool deprecated = 3 [default = false];</code>
+     * Generated from protobuf field <code>optional bool deprecated = 3 [default = false];</code>
+     * @return bool
      */
     public function getDeprecated()
     {
@@ -213,20 +203,22 @@ class MessageOptions extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * <pre>
      * Is this message deprecated?
      * Depending on the target platform, this can emit Deprecated annotations
      * for the message, or it will be completely ignored; in the very least,
      * this is a formalization for deprecating messages.
-     * </pre>
      *
-     * <code>optional bool deprecated = 3 [default = false];</code>
+     * Generated from protobuf field <code>optional bool deprecated = 3 [default = false];</code>
+     * @param bool $var
+     * @return $this
      */
     public function setDeprecated($var)
     {
         GPBUtil::checkBool($var);
         $this->deprecated = $var;
         $this->has_deprecated = true;
+
+        return $this;
     }
 
     public function hasDeprecated()
@@ -235,11 +227,10 @@ class MessageOptions extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * <pre>
      * Whether the message is an automatically generated map entry type for the
      * maps field.
      * For maps fields:
-     *     map&lt;KeyType, ValueType&gt; map_field = 1;
+     *     map<KeyType, ValueType> map_field = 1;
      * The parsed descriptor looks like:
      *     message MapFieldEntry {
      *         option map_entry = true;
@@ -254,9 +245,9 @@ class MessageOptions extends \Google\Protobuf\Internal\Message
      * NOTE: Do not set the option in .proto files. Always use the maps syntax
      * instead. The option should only be implicitly set by the proto compiler
      * parser.
-     * </pre>
      *
-     * <code>optional bool map_entry = 7;</code>
+     * Generated from protobuf field <code>optional bool map_entry = 7;</code>
+     * @return bool
      */
     public function getMapEntry()
     {
@@ -264,11 +255,10 @@ class MessageOptions extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * <pre>
      * Whether the message is an automatically generated map entry type for the
      * maps field.
      * For maps fields:
-     *     map&lt;KeyType, ValueType&gt; map_field = 1;
+     *     map<KeyType, ValueType> map_field = 1;
      * The parsed descriptor looks like:
      *     message MapFieldEntry {
      *         option map_entry = true;
@@ -283,15 +273,18 @@ class MessageOptions extends \Google\Protobuf\Internal\Message
      * NOTE: Do not set the option in .proto files. Always use the maps syntax
      * instead. The option should only be implicitly set by the proto compiler
      * parser.
-     * </pre>
      *
-     * <code>optional bool map_entry = 7;</code>
+     * Generated from protobuf field <code>optional bool map_entry = 7;</code>
+     * @param bool $var
+     * @return $this
      */
     public function setMapEntry($var)
     {
         GPBUtil::checkBool($var);
         $this->map_entry = $var;
         $this->has_map_entry = true;
+
+        return $this;
     }
 
     public function hasMapEntry()
@@ -300,11 +293,10 @@ class MessageOptions extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * <pre>
      * The parser stores options it doesn't recognize here. See above.
-     * </pre>
      *
-     * <code>repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;</code>
+     * Generated from protobuf field <code>repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;</code>
+     * @return \Google\Protobuf\Internal\RepeatedField
      */
     public function getUninterpretedOption()
     {
@@ -312,17 +304,19 @@ class MessageOptions extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * <pre>
      * The parser stores options it doesn't recognize here. See above.
-     * </pre>
      *
-     * <code>repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;</code>
+     * Generated from protobuf field <code>repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;</code>
+     * @param \Google\Protobuf\Internal\UninterpretedOption[]|\Google\Protobuf\Internal\RepeatedField $var
+     * @return $this
      */
-    public function setUninterpretedOption(&$var)
+    public function setUninterpretedOption($var)
     {
         $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \Google\Protobuf\Internal\UninterpretedOption::class);
         $this->uninterpreted_option = $arr;
         $this->has_uninterpreted_option = true;
+
+        return $this;
     }
 
     public function hasUninterpretedOption()

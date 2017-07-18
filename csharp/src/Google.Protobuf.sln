@@ -1,16 +1,16 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25420.1
-MinimumVisualStudioVersion = 14.0.24720.0
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "AddressBook", "AddressBook\AddressBook.xproj", "{AFB63919-1E05-43B4-802A-8FB8C9B2F463}"
+# Visual Studio 15
+VisualStudioVersion = 15.0.26114.2
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AddressBook", "AddressBook\AddressBook.csproj", "{AFB63919-1E05-43B4-802A-8FB8C9B2F463}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Google.Protobuf", "Google.Protobuf\Google.Protobuf.xproj", "{9B576380-726D-4142-8238-60A43AB0E35A}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Google.Protobuf", "Google.Protobuf\Google.Protobuf.csproj", "{9B576380-726D-4142-8238-60A43AB0E35A}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Google.Protobuf.Test", "Google.Protobuf.Test\Google.Protobuf.Test.xproj", "{580EB013-D3C7-4578-B845-015F4A3B0591}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Google.Protobuf.Test", "Google.Protobuf.Test\Google.Protobuf.Test.csproj", "{580EB013-D3C7-4578-B845-015F4A3B0591}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Google.Protobuf.Conformance", "Google.Protobuf.Conformance\Google.Protobuf.Conformance.xproj", "{DDDC055B-E185-4181-BAB0-072F0F984569}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Google.Protobuf.Conformance", "Google.Protobuf.Conformance\Google.Protobuf.Conformance.csproj", "{DDDC055B-E185-4181-BAB0-072F0F984569}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Google.Protobuf.JsonDump", "Google.Protobuf.JsonDump\Google.Protobuf.JsonDump.xproj", "{9695E08F-9829-497D-B95C-B38F28D48690}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Google.Protobuf.JsonDump", "Google.Protobuf.JsonDump\Google.Protobuf.JsonDump.csproj", "{9695E08F-9829-497D-B95C-B38F28D48690}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

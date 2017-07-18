@@ -154,14 +154,15 @@ Timestamp::Timestamp(const Timestamp& from)
       _cached_size_(0) {
   _internal_metadata_.MergeFrom(from._internal_metadata_);
   ::memcpy(&seconds_, &from.seconds_,
-    reinterpret_cast<char*>(&nanos_) -
-    reinterpret_cast<char*>(&seconds_) + sizeof(nanos_));
+    static_cast<size_t>(reinterpret_cast<char*>(&nanos_) -
+    reinterpret_cast<char*>(&seconds_)) + sizeof(nanos_));
   // @@protoc_insertion_point(copy_constructor:google.protobuf.Timestamp)
 }
 
 void Timestamp::SharedCtor() {
-  ::memset(&seconds_, 0, reinterpret_cast<char*>(&nanos_) -
-    reinterpret_cast<char*>(&seconds_) + sizeof(nanos_));
+  ::memset(&seconds_, 0, static_cast<size_t>(
+      reinterpret_cast<char*>(&nanos_) -
+      reinterpret_cast<char*>(&seconds_)) + sizeof(nanos_));
   _cached_size_ = 0;
 }
 
@@ -210,8 +211,9 @@ void Timestamp::Clear() {
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
-  ::memset(&seconds_, 0, reinterpret_cast<char*>(&nanos_) -
-    reinterpret_cast<char*>(&seconds_) + sizeof(nanos_));
+  ::memset(&seconds_, 0, static_cast<size_t>(
+      reinterpret_cast<char*>(&nanos_) -
+      reinterpret_cast<char*>(&seconds_)) + sizeof(nanos_));
   _internal_metadata_.Clear();
 }
 

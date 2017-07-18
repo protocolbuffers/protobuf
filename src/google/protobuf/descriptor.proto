@@ -361,6 +361,7 @@ message FileOptions {
   optional bool cc_generic_services = 16 [default=false];
   optional bool java_generic_services = 17 [default=false];
   optional bool py_generic_services = 18 [default=false];
+  optional bool php_generic_services = 19 [default=false];
 
   // Is this file deprecated?
   // Depending on the target platform, this can emit Deprecated annotations
@@ -389,6 +390,11 @@ message FileOptions {
   // Sets the php class prefix which is prepended to all php generated classes
   // from this .proto. Default is empty.
   optional string php_class_prefix = 40;
+
+  // Use this option to change the namespace of php generated classes. Default
+  // is empty. When this option is empty, the package name will be used for
+  // determining the namespace.
+  optional string php_namespace = 41;
 
   // The parser stores options it doesn't recognize here. See above.
   repeated UninterpretedOption uninterpreted_option = 999;

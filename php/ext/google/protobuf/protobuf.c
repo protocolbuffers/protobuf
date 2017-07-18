@@ -189,6 +189,7 @@ static PHP_RSHUTDOWN_FUNCTION(protobuf) {
 
 static PHP_MINIT_FUNCTION(protobuf) {
   map_field_init(TSRMLS_C);
+  map_field_iter_init(TSRMLS_C);
   repeated_field_init(TSRMLS_C);
   repeated_field_iter_init(TSRMLS_C);
   gpb_type_init(TSRMLS_C);
@@ -206,6 +207,7 @@ static PHP_MSHUTDOWN_FUNCTION(protobuf) {
   PEFREE(repeated_field_handlers);
   PEFREE(repeated_field_iter_handlers);
   PEFREE(map_field_handlers);
+  PEFREE(map_field_iter_handlers);
 
   return 0;
 }

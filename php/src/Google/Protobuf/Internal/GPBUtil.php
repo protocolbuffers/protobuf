@@ -45,8 +45,13 @@ class GPBUtil
             $value = bcsub(0, $value);
         }
 
-        $high = (int) bcdiv(bcadd($value, 1), 4294967296);
+        $high = bcdiv($value, 4294967296);
         $low = bcmod($value, 4294967296);
+        if (bccomp($high, 2147483647) > 0) {
+            $high = (int) bcsub($high, 4294967296);
+        } else {
+            $high = (int) $high;
+        }
         if (bccomp($low, 2147483647) > 0) {
             $low = (int) bcsub($low, 4294967296);
         } else {
@@ -58,7 +63,7 @@ class GPBUtil
             $low = ~$low;
             $low++;
             if (!$low) {
-                $high++;
+                $high = (int)($high + 1);
             }
         }
 
@@ -67,19 +72,16 @@ class GPBUtil
         }
     }
 
-
     public static function checkString(&$var, $check_utf8)
     {
         if (is_array($var) || is_object($var)) {
-            trigger_error("Expect string.", E_USER_ERROR);
-            return;
+            throw new \InvalidArgumentException("Expect string.");
         }
         if (!is_string($var)) {
             $var = strval($var);
         }
         if ($check_utf8 && !preg_match('//u', $var)) {
-            trigger_error("Expect utf-8 encoding.", E_USER_ERROR);
-            return;
+            throw new \Exception("Expect utf-8 encoding.");
         }
     }
 
@@ -93,7 +95,7 @@ class GPBUtil
         if (is_numeric($var)) {
             $var = intval($var);
         } else {
-            trigger_error("Expect integer.", E_USER_ERROR);
+            throw new \Exception("Expect integer.");
         }
     }
 
@@ -110,7 +112,7 @@ class GPBUtil
                 $var = (int) $var;
             }
         } else {
-            trigger_error("Expect integer.", E_USER_ERROR);
+            throw new \Exception("Expect integer.");
         }
     }
 
@@ -120,10 +122,15 @@ class GPBUtil
             if (PHP_INT_SIZE == 8) {
                 $var = intval($var);
             } else {
-                $var = bcdiv($var, 1, 0);
+                if (is_float($var) ||
+                    is_integer($var) ||
+                    (is_string($var) &&
+                         bccomp($var, "9223372036854774784") < 0)) {
+                    $var = number_format($var, 0, ".", "");
+                }
             }
         } else {
-            trigger_error("Expect integer.", E_USER_ERROR);
+            throw new \Exception("Expect integer.");
         }
     }
 
@@ -133,10 +140,10 @@ class GPBUtil
             if (PHP_INT_SIZE == 8) {
                 $var = intval($var);
             } else {
-                $var = bcdiv($var, 1, 0);
+                $var = number_format($var, 0, ".", "");
             }
         } else {
-            trigger_error("Expect integer.", E_USER_ERROR);
+            throw new \Exception("Expect integer.");
         }
     }
 
@@ -145,7 +152,7 @@ class GPBUtil
         if (is_float($var) || is_numeric($var)) {
             $var = floatval($var);
         } else {
-            trigger_error("Expect float.", E_USER_ERROR);
+            throw new \Exception("Expect float.");
         }
     }
 
@@ -154,15 +161,14 @@ class GPBUtil
         if (is_float($var) || is_numeric($var)) {
             $var = floatval($var);
         } else {
-            trigger_error("Expect float.", E_USER_ERROR);
+            throw new \Exception("Expect float.");
         }
     }
 
     public static function checkBool(&$var)
     {
         if (is_array($var) || is_object($var)) {
-            trigger_error("Expect boolean.", E_USER_ERROR);
-            return;
+            throw new \Exception("Expect boolean.");
         }
         $var = boolval($var);
     }
@@ -170,14 +176,14 @@ class GPBUtil
     public static function checkMessage(&$var, $klass)
     {
         if (!$var instanceof $klass && !is_null($var)) {
-            trigger_error("Expect message.", E_USER_ERROR);
+            throw new \Exception("Expect message.");
         }
     }
 
     public static function checkRepeatedField(&$var, $type, $klass = null)
     {
         if (!$var instanceof RepeatedField && !is_array($var)) {
-            trigger_error("Expect array.", E_USER_ERROR);
+            throw new \Exception("Expect array.");
         }
         if (is_array($var)) {
             $tmp = new RepeatedField($type, $klass);
@@ -187,15 +193,13 @@ class GPBUtil
             return $tmp;
         } else {
             if ($var->getType() != $type) {
-                trigger_error(
-                    "Expect repeated field of different type.",
-                    E_USER_ERROR);
+                throw new \Exception(
+                    "Expect repeated field of different type.");
             }
             if ($var->getType() === GPBType::MESSAGE &&
                 $var->getClass() !== $klass) {
-                trigger_error(
-                    "Expect repeated field of different message.",
-                    E_USER_ERROR);
+                throw new \Exception(
+                    "Expect repeated field of different message.");
             }
             return $var;
         }
@@ -204,7 +208,7 @@ class GPBUtil
     public static function checkMapField(&$var, $key_type, $value_type, $klass = null)
     {
         if (!$var instanceof MapField && !is_array($var)) {
-            trigger_error("Expect dict.", E_USER_ERROR);
+            throw new \Exception("Expect dict.");
         }
         if (is_array($var)) {
             $tmp = new MapField($key_type, $value_type, $klass);
@@ -214,20 +218,15 @@ class GPBUtil
             return $tmp;
         } else {
             if ($var->getKeyType() != $key_type) {
-                trigger_error(
-                    "Expect map field of key type.",
-                    E_USER_ERROR);
+                throw new \Exception("Expect map field of key type.");
             }
             if ($var->getValueType() != $value_type) {
-                trigger_error(
-                    "Expect map field of value type.",
-                    E_USER_ERROR);
+                throw new \Exception("Expect map field of value type.");
             }
             if ($var->getValueType() === GPBType::MESSAGE &&
                 $var->getValueClass() !== $klass) {
-                trigger_error(
-                    "Expect map field of different value message.",
-                    E_USER_ERROR);
+                throw new \Exception(
+                    "Expect map field of different value message.");
             }
             return $var;
         }
@@ -241,5 +240,104 @@ class GPBUtil
     public static function Uint64($value)
     {
         return new Uint64($value);
+    }
+
+    public static function getClassNamePrefix(
+        $classname,
+        $file_proto)
+    {
+        $option = $file_proto->getOptions();
+        $prefix = is_null($option) ? "" : $option->getPhpClassPrefix();
+        if ($prefix !== "") {
+            return $prefix;
+        }
+
+        $reserved_words = array("Empty", "ECHO", "ARRAY");
+        foreach ($reserved_words as $reserved_word) {
+            if ($classname === $reserved_word) {
+                if ($file_proto->getPackage() === "google.protobuf") {
+                    return "GPB";
+                } else {
+                    return "PB";
+                }
+            }
+        }
+
+        return "";
+    }
+
+    public static function getClassNameWithoutPackage(
+        $name,
+        $file_proto)
+    {
+        $classname = implode('_', array_map('ucwords', explode('.', $name)));
+        return static::getClassNamePrefix($classname, $file_proto) . $classname;
+    }
+
+    public static function getFullClassName(
+        $proto,
+        $containing,
+        $file_proto,
+        &$message_name_without_package,
+        &$classname,
+        &$fullname)
+    {
+        // Full name needs to start with '.'.
+        $message_name_without_package = $proto->getName();
+        if ($containing !== "") {
+            $message_name_without_package =
+                $containing . "." . $message_name_without_package;
+        }
+
+        $package = $file_proto->getPackage();
+        if ($package === "") {
+            $fullname = "." . $message_name_without_package;
+        } else {
+            $fullname = "." . $package . "." . $message_name_without_package;
+        }
+
+        $class_name_without_package =
+            static::getClassNameWithoutPackage($message_name_without_package, $file_proto);
+
+        $option = $file_proto->getOptions();
+        if (!is_null($option) && $option->hasPhpNamespace()) {
+            $namespace = $option->getPhpNamespace();
+            if ($namespace !== "") {
+                $classname = $namespace . "\\" . $class_name_without_package;
+                return;
+            } else {
+                $classname = $class_name_without_package;
+                return;
+            }
+        }
+
+        if ($package === "") {
+            $classname = $class_name_without_package;
+        } else {
+            $classname =
+                implode('\\', array_map('ucwords', explode('.', $package))).
+                "\\".$class_name_without_package;
+        }
+    }
+
+    public static function combineInt32ToInt64($high, $low)
+    {
+        $isNeg = $high < 0;
+        if ($isNeg) {
+            $high = ~$high;
+            $low = ~$low;
+            $low++;
+            if (!$low) {
+                $high = (int) ($high + 1);
+            }
+        }
+        $result = bcadd(bcmul($high, 4294967296), $low);
+        if ($low < 0) {
+            $result = bcadd($result, 4294967296);
+        }
+        if ($isNeg) {
+          $result = bcsub(0, $result);
+        }
+        return $result;
     }
 }

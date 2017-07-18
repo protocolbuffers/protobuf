@@ -963,7 +963,7 @@ class LIBPROTOBUF_EXPORT Reflection {
   // TODO(jieluo) - make the map APIs pure virtual after updating
   // all the subclasses.
   // Returns true if key is in map. Returns false if key is not in map field.
-  virtual bool ContainsMapKey(const Message& /* message*/,
+  virtual bool ContainsMapKey(const Message& /* message */,
                               const FieldDescriptor* /* field */,
                               const MapKey& /* key */) const {
     return false;
@@ -981,7 +981,7 @@ class LIBPROTOBUF_EXPORT Reflection {
 
   // Delete and returns true if key is in the map field. Returns false
   // otherwise.
-  virtual bool DeleteMapValue(Message* /* mesage */,
+  virtual bool DeleteMapValue(Message* /* message */,
                               const FieldDescriptor* /* field */,
                               const MapKey& /* key */) const {
     return false;

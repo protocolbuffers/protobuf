@@ -93,30 +93,17 @@ build_csharp() {
   internal_build_cpp
   NUGET=/usr/local/bin/nuget.exe
 
-  if [ "$TRAVIS" == "true" ]; then
-    # Install latest version of Mono
-    sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF
-    sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 1397BC53640DB551
-    echo "deb http://download.mono-project.com/repo/debian wheezy main" | sudo tee /etc/apt/sources.list.d/mono-xamarin.list
-    sudo apt-get update -qq
-    sudo apt-get install -qq mono-devel referenceassemblies-pcl nunit
-
-    # Then install the dotnet SDK as per Ubuntu 14.04 instructions on dot.net.
-    sudo sh -c 'echo "deb [arch=amd64] https://apt-mo.trafficmanager.net/repos/dotnet-release/ trusty main" > /etc/apt/sources.list.d/dotnetdev.list'
-    sudo apt-key adv --keyserver apt-mo.trafficmanager.net --recv-keys 417A0893
-    sudo apt-get update -qq
-    sudo apt-get install -qq dotnet-dev-1.0.0-preview2-003121
-  fi
-
   # Perform "dotnet new" once to get the setup preprocessing out of the
   # way. That spews a lot of output (including backspaces) into logs
   # otherwise, and can cause problems. It doesn't matter if this step
   # is performed multiple times; it's cheap after the first time anyway.
+  # (It also doesn't matter if it's unnecessary, which it will be on some
+  # systems. It's necessary on Jenkins in order to avoid unprintable
+  # characters appearing in the JUnit output.)
   mkdir dotnettmp
   (cd dotnettmp; dotnet new > /dev/null)
   rm -rf dotnettmp
 
-  (cd csharp/src; dotnet restore)
   csharp/buildall.sh
   cd conformance && make test_csharp && cd ..
 
@@ -359,7 +346,7 @@ generate_php_test_proto() {
   # Generate test file
   rm -rf generated
   mkdir generated
-  ../../src/protoc --php_out=generated proto/test.proto proto/test_include.proto proto/test_no_namespace.proto proto/test_prefix.proto
+  ../../src/protoc --php_out=generated proto/test.proto proto/test_include.proto proto/test_no_namespace.proto proto/test_prefix.proto proto/test_php_namespace.proto proto/test_empty_php_namespace.proto proto/test_service.proto proto/test_service_namespace.proto
   pushd ../../src
   ./protoc --php_out=../php/tests/generated google/protobuf/empty.proto
   ./protoc --php_out=../php/tests/generated -I../php/tests -I. ../php/tests/proto/test_import_descriptor_proto.proto
@@ -410,27 +397,30 @@ build_php5.5() {
   phpunit
   popd
   pushd conformance
-  # TODO(teboring): Add it back
-  # make test_php
+  make test_php
   popd
 }
 
 build_php5.5_c() {
   use_php 5.5
   wget https://phar.phpunit.de/phpunit-4.8.0.phar -O /usr/bin/phpunit
-  cd php/tests && /bin/bash ./test.sh && cd ../..
-  pushd conformance
-  # make test_php_c
+  pushd php/tests
+  /bin/bash ./test.sh
   popd
+  # TODO(teboring): Add it back
+  # pushd conformance
+  # make test_php_c
+  # popd
 }
 
 build_php5.5_zts_c() {
   use_php_zts 5.5
   wget https://phar.phpunit.de/phpunit-4.8.0.phar -O /usr/bin/phpunit
   cd php/tests && /bin/bash ./test.sh && cd ../..
-  pushd conformance
-  # make test_php_c
-  popd
+  # TODO(teboring): Add it back
+  # pushd conformance
+  # make test_php_zts_c
+  # popd
 }
 
 build_php5.6() {
@@ -442,8 +432,7 @@ build_php5.6() {
   phpunit
   popd
   pushd conformance
-  # TODO(teboring): Add it back
-  # make test_php
+  make test_php
   popd
 }
 
@@ -451,18 +440,20 @@ build_php5.6_c() {
   use_php 5.6
   wget https://phar.phpunit.de/phpunit-5.7.0.phar -O /usr/bin/phpunit
   cd php/tests && /bin/bash ./test.sh && cd ../..
-  pushd conformance
+  # TODO(teboring): Add it back
+  # pushd conformance
   # make test_php_c
-  popd
+  # popd
 }
 
 build_php5.6_zts_c() {
   use_php_zts 5.6
   wget https://phar.phpunit.de/phpunit-5.7.0.phar -O /usr/bin/phpunit
   cd php/tests && /bin/bash ./test.sh && cd ../..
-  pushd conformance
-  # make test_php_c
-  popd
+  # TODO(teboring): Add it back
+  # pushd conformance
+  # make test_php_zts_c
+  # popd
 }
 
 build_php5.6_mac() {
@@ -484,9 +475,10 @@ build_php5.6_mac() {
 
   # Test
   cd php/tests && /bin/bash ./test.sh && cd ../..
-  pushd conformance
+  # TODO(teboring): Add it back
+  # pushd conformance
   # make test_php_c
-  popd
+  # popd
 }
 
 build_php7.0() {
@@ -498,8 +490,7 @@ build_php7.0() {
   phpunit
   popd
   pushd conformance
-  # TODO(teboring): Add it back
-  # make test_php
+  make test_php
   popd
 }
 
@@ -507,18 +498,20 @@ build_php7.0_c() {
   use_php 7.0
   wget https://phar.phpunit.de/phpunit-5.6.0.phar -O /usr/bin/phpunit
   cd php/tests && /bin/bash ./test.sh && cd ../..
-  pushd conformance
+  # TODO(teboring): Add it back
+  # pushd conformance
   # make test_php_c
-  popd
+  # popd
 }
 
 build_php7.0_zts_c() {
   use_php_zts 7.0
   wget https://phar.phpunit.de/phpunit-5.6.0.phar -O /usr/bin/phpunit
   cd php/tests && /bin/bash ./test.sh && cd ../..
-  pushd conformance
-  # make test_php_c
-  popd
+  # TODO(teboring): Add it back.
+  # pushd conformance
+  # make test_php_zts_c
+  # popd
 }
 
 build_php7.0_mac() {
@@ -540,12 +533,18 @@ build_php7.0_mac() {
 
   # Test
   cd php/tests && /bin/bash ./test.sh && cd ../..
-  pushd conformance
+  # TODO(teboring): Add it back
+  # pushd conformance
   # make test_php_c
-  popd
+  # popd
 }
 
-build_php_all() {
+build_php_compatibility() {
+  internal_build_cpp
+  php/tests/compatibility_test.sh
+}
+
+build_php_all_32() {
   build_php5.5
   build_php5.6
   build_php7.0
@@ -555,6 +554,11 @@ build_php_all() {
   build_php5.5_zts_c
   build_php5.6_zts_c
   build_php7.0_zts_c
+}
+
+build_php_all() {
+  build_php_all_32
+  build_php_compatibility
 }
 
 # Note: travis currently does not support testing more than one language so the
@@ -595,6 +599,7 @@ Usage: $0 { cpp |
             php5.6_c |
             php7.0   |
             php7.0_c |
+            php_compatibility |
             php_all)
 "
   exit 1

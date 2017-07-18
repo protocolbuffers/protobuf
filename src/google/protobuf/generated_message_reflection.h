@@ -129,7 +129,7 @@ class WeakFieldMap;             // weak_field_map.h
 struct ReflectionSchema {
  public:
   // Size of a google::protobuf::Message object of this type.
-  uint32 GetObjectSize() const { return object_size_; }
+  uint32 GetObjectSize() const { return static_cast<uint32>(object_size_); }
 
   // Offset of a non-oneof field.  Getting a field offset is slightly more
   // efficient when we know statically that it is not a oneof field.
@@ -141,8 +141,9 @@ struct ReflectionSchema {
   // Offset of any field.
   uint32 GetFieldOffset(const FieldDescriptor* field) const {
     if (field->containing_oneof()) {
-      size_t offset = field->containing_type()->field_count() +
-                      field->containing_oneof()->index();
+      size_t offset =
+          static_cast<size_t>(field->containing_type()->field_count() +
+          field->containing_oneof()->index());
       return offsets_[offset];
     } else {
       return GetFieldOffsetNonOneof(field);
@@ -150,7 +151,9 @@ struct ReflectionSchema {
   }
 
   uint32 GetOneofCaseOffset(const OneofDescriptor* oneof_descriptor) const {
-    return oneof_case_offset_ + (oneof_descriptor->index() * sizeof(uint32));
+    return static_cast<uint32>(oneof_case_offset_) +
+           static_cast<uint32>(
+               static_cast<size_t>(oneof_descriptor->index()) * sizeof(uint32));
   }
 
   bool HasHasbits() const { return has_bits_offset_ != -1; }
@@ -164,7 +167,7 @@ struct ReflectionSchema {
   // Byte offset of the hasbits array.
   uint32 HasBitsOffset() const {
     GOOGLE_DCHECK(HasHasbits());
-    return has_bits_offset_;
+    return static_cast<uint32>(has_bits_offset_);
   }
 
   // The offset of the InternalMetadataWithArena member.
@@ -172,7 +175,7 @@ struct ReflectionSchema {
   // The schema doesn't contain enough information to distinguish between
   // these two cases.
   uint32 GetMetadataOffset() const {
-    return metadata_offset_;
+    return static_cast<uint32>(metadata_offset_);
   }
 
   // Whether this message has an ExtensionSet.
@@ -181,7 +184,7 @@ struct ReflectionSchema {
   // The offset of the ExtensionSet in this message.
   uint32 GetExtensionSetOffset() const {
     GOOGLE_DCHECK(HasExtensionSet());
-    return extensions_offset_;
+    return static_cast<uint32>(extensions_offset_);
   }
 
   // The off set of WeakFieldMap when the message contains weak fields.

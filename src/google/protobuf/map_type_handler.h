@@ -283,7 +283,7 @@ MapTypeHandler<WireFormatLite::TYPE_MESSAGE, Type>::ByteSize(
   template <typename Type>                                                     \
   inline int MapTypeHandler<WireFormatLite::TYPE_##FieldType, Type>::ByteSize( \
       const MapEntryAccessorType& value) {                                     \
-    return WireFormatLite::DeclaredType##Size(value);                          \
+    return static_cast<int>(WireFormatLite::DeclaredType##Size(value));        \
   }
 
 GOOGLE_PROTOBUF_BYTE_SIZE(STRING, String)
@@ -319,7 +319,9 @@ template <typename Type>
 inline int
 MapTypeHandler<WireFormatLite::TYPE_MESSAGE, Type>::GetCachedSize(
     const MapEntryAccessorType& value) {
-  return WireFormatLite::LengthDelimitedSize(value.GetCachedSize());
+  return static_cast<int>(
+      WireFormatLite::LengthDelimitedSize(
+          static_cast<size_t>(value.GetCachedSize())));
 }
 
 #define GET_CACHED_SIZE(FieldType, DeclaredType)                         \
@@ -327,7 +329,7 @@ MapTypeHandler<WireFormatLite::TYPE_MESSAGE, Type>::GetCachedSize(
   inline int                                                             \
   MapTypeHandler<WireFormatLite::TYPE_##FieldType, Type>::GetCachedSize( \
       const MapEntryAccessorType& value) {                               \
-    return WireFormatLite::DeclaredType##Size(value);                    \
+    return static_cast<int>(WireFormatLite::DeclaredType##Size(value));  \
   }
 
 GET_CACHED_SIZE(STRING, String)

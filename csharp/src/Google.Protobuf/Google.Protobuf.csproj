@@ -1,0 +1,33 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Description>C# runtime library for Protocol Buffers - Google's data interchange format.</Description>
+    <Copyright>Copyright 2015, Google Inc.</Copyright>
+    <AssemblyTitle>Google Protocol Buffers</AssemblyTitle>
+    <VersionPrefix>3.3.0</VersionPrefix>
+    <Authors>Google Inc.</Authors>
+    <TargetFrameworks>netstandard1.0;net451</TargetFrameworks>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <AssemblyOriginatorKeyFile>../../keys/Google.Protobuf.snk</AssemblyOriginatorKeyFile>
+    <SignAssembly>true</SignAssembly>
+    <PublicSign Condition=" '$(OS)' != 'Windows_NT' ">true</PublicSign>
+    <PackageTags>Protocol;Buffers;Binary;Serialization;Format;Google;proto;proto3</PackageTags>
+    <PackageReleaseNotes>C# proto3 support</PackageReleaseNotes>
+    <PackageProjectUrl>https://github.com/google/protobuf</PackageProjectUrl>
+    <PackageLicenseUrl>https://github.com/google/protobuf/blob/master/LICENSE</PackageLicenseUrl>
+    <RepositoryType>git</RepositoryType>
+    <RepositoryUrl>https://github.com/google/protobuf.git</RepositoryUrl>
+    <IncludeSymbols>true</IncludeSymbols>
+    <IncludeSource>true</IncludeSource>
+  </PropertyGroup>
+
+  <!-- 
+    - Override target frameworks on non-Windows to just .NET Core
+    - Doing this conditionally in the initial PropertyGroup confuses
+    - Visual Studio.
+    -->
+  <PropertyGroup Condition="'$(OS)' != 'Windows_NT'">
+    <TargetFrameworks>netstandard1.0</TargetFrameworks>
+  </PropertyGroup>
+
+</Project>

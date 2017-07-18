@@ -227,8 +227,10 @@ class MapEntryImpl : public Base {
 
   size_t ByteSizeLong() const {
     size_t size = 0;
-    size += has_key() ? kTagSize + KeyTypeHandler::ByteSize(key()) : 0;
-    size += has_value() ? kTagSize + ValueTypeHandler::ByteSize(value()) : 0;
+    size += has_key() ?
+        kTagSize + static_cast<size_t>(KeyTypeHandler::ByteSize(key())) : 0;
+    size += has_value() ?
+        kTagSize + static_cast<size_t>(ValueTypeHandler::ByteSize(value())) : 0;
     return size;
   }
 
@@ -251,11 +253,10 @@ class MapEntryImpl : public Base {
   int GetCachedSize() const {
     int size = 0;
     size += has_key()
-        ? kTagSize + KeyTypeHandler::GetCachedSize(key())
+        ? static_cast<int>(kTagSize) + KeyTypeHandler::GetCachedSize(key())
         : 0;
     size += has_value()
-        ? kTagSize + ValueTypeHandler::GetCachedSize(
-            value())
+        ? static_cast<int>(kTagSize) + ValueTypeHandler::GetCachedSize(value())
         : 0;
     return size;
   }

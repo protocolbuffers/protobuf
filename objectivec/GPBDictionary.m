@@ -329,13 +329,15 @@ static void WriteDictObjectField(GPBCodedOutputStream *stream, id value, uint32_
 
 size_t GPBDictionaryComputeSizeInternalHelper(NSDictionary *dict, GPBFieldDescriptor *field) {
   GPBDataType mapValueType = GPBGetFieldDataType(field);
-  __block size_t result = 0;
-  [dict enumerateKeysAndObjectsUsingBlock:^(NSString *key, id obj, BOOL *stop) {
-    #pragma unused(stop)
+  size_t result = 0;
+  NSString *key;
+  NSEnumerator *keys = [dict keyEnumerator];
+  while ((key = [keys nextObject])) {
+    id obj = dict[key];
     size_t msgSize = GPBComputeStringSize(kMapKeyFieldNumber, key);
     msgSize += ComputeDictObjectFieldSize(obj, kMapValueFieldNumber, mapValueType);
     result += GPBComputeRawVarint32SizeForInteger(msgSize) + msgSize;
-  }];
+  }
   size_t tagSize = GPBComputeWireFormatTagSize(GPBFieldNumber(field), GPBDataTypeMessage);
   result += tagSize * dict.count;
   return result;
@@ -347,8 +349,10 @@ void GPBDictionaryWriteToStreamInternalHelper(GPBCodedOutputStream *outputStream
   NSCAssert(field.mapKeyDataType == GPBDataTypeString, @"Unexpected key type");
   GPBDataType mapValueType = GPBGetFieldDataType(field);
   uint32_t tag = GPBWireFormatMakeTag(GPBFieldNumber(field), GPBWireFormatLengthDelimited);
-  [dict enumerateKeysAndObjectsUsingBlock:^(NSString *key, id obj, BOOL *stop) {
-    #pragma unused(stop)
+  NSString *key;
+  NSEnumerator *keys = [dict keyEnumerator];
+  while ((key = [keys nextObject])) {
+    id obj = dict[key];
     // Write the tag.
     [outputStream writeInt32NoTag:tag];
     // Write the size of the message.
@@ -359,14 +363,16 @@ void GPBDictionaryWriteToStreamInternalHelper(GPBCodedOutputStream *outputStream
     [outputStream writeInt32NoTag:(int32_t)msgSize];
     [outputStream writeString:kMapKeyFieldNumber value:key];
     WriteDictObjectField(outputStream, obj, kMapValueFieldNumber, mapValueType);
-  }];
+  }
 }
 
 BOOL GPBDictionaryIsInitializedInternalHelper(NSDictionary *dict, GPBFieldDescriptor *field) {
   NSCAssert(field.mapKeyDataType == GPBDataTypeString, @"Unexpected key type");
   NSCAssert(GPBGetFieldDataType(field) == GPBDataTypeMessage, @"Unexpected value type");
   #pragma unused(field)  // For when asserts are off in release.
-  for (GPBMessage *msg in [dict objectEnumerator]) {
+  GPBMessage *msg;
+  NSEnumerator *objects = [dict objectEnumerator];
+  while ((msg = [objects nextObject])) {
     if (!msg.initialized) {
       return NO;
     }
@@ -406,7 +412,7 @@ static void ReadValue(GPBCodedInputStream *stream,
       valueToFill->valueInt32 = GPBCodedInputStreamReadInt32(&stream->state_);
       break;
     case GPBDataTypeInt64:
-      valueToFill->valueInt64 = GPBCodedInputStreamReadInt32(&stream->state_);
+      valueToFill->valueInt64 = GPBCodedInputStreamReadInt64(&stream->state_);
       break;
     case GPBDataTypeSInt32:
       valueToFill->valueInt32 = GPBCodedInputStreamReadSInt32(&stream->state_);
@@ -796,15 +802,20 @@ void GPBDictionaryReadEntry(id mapDictionary,
 //%- (void)enumerateKeysAndEnumsUsingBlock:
 //%    (void (^)(KEY_TYPE KisP##key, VALUE_TYPE value, BOOL *stop))block {
 //%  GPBEnumValidationFunc func = _validationFunc;
-//%  [_dictionary enumerateKeysAndObjectsUsingBlock:^(ENUM_TYPE##KHELPER(KEY_TYPE)##aKey,
-//%                                                   ENUM_TYPE##VHELPER(VALUE_TYPE)##aValue,
-//%                                                   BOOL *stop) {
+//%  BOOL stop = NO;
+//%  NSEnumerator *keys = [_dictionary keyEnumerator];
+//%  ENUM_TYPE##KHELPER(KEY_TYPE)##aKey;
+//%  while ((aKey = [keys nextObject])) {
+//%    ENUM_TYPE##VHELPER(VALUE_TYPE)##aValue = _dictionary[aKey];
 //%      VALUE_TYPE unwrapped = UNWRAP##VALUE_NAME(aValue);
 //%      if (!func(unwrapped)) {
 //%        unwrapped = kGPBUnrecognizedEnumeratorValue;
 //%      }
-//%      block(UNWRAP##KEY_NAME(aKey), unwrapped, stop);
-//%  }];
+//%    block(UNWRAP##KEY_NAME(aKey), unwrapped, &stop);
+//%    if (stop) {
+//%      break;
+//%    }
+//%  }
 //%}
 //%
 //%DICTIONARY_MUTABLE_CORE2(KEY_NAME, KEY_TYPE, KisP, VALUE_NAME, VALUE_TYPE, KHELPER, VHELPER, Value, Enum, value, Raw)
@@ -863,30 +874,37 @@ void GPBDictionaryReadEntry(id mapDictionary,
 //%
 //%- (void)enumerateKeysAnd##ACCESSOR_NAME##VNAME##sUsingBlock:
 //%    (void (^)(KEY_TYPE KisP##key, VALUE_TYPE VNAME_VAR, BOOL *stop))block {
-//%  [_dictionary enumerateKeysAndObjectsUsingBlock:^(ENUM_TYPE##KHELPER(KEY_TYPE)##aKey,
-//%                                                   ENUM_TYPE##VHELPER(VALUE_TYPE)##a##VNAME_VAR$u,
-//%                                                   BOOL *stop) {
-//%      block(UNWRAP##KEY_NAME(aKey), UNWRAP##VALUE_NAME(a##VNAME_VAR$u), stop);
-//%  }];
+//%  BOOL stop = NO;
+//%  NSDictionary *internal = _dictionary;
+//%  NSEnumerator *keys = [internal keyEnumerator];
+//%  ENUM_TYPE##KHELPER(KEY_TYPE)##aKey;
+//%  while ((aKey = [keys nextObject])) {
+//%    ENUM_TYPE##VHELPER(VALUE_TYPE)##a##VNAME_VAR$u = internal[aKey];
+//%    block(UNWRAP##KEY_NAME(aKey), UNWRAP##VALUE_NAME(a##VNAME_VAR$u), &stop);
+//%    if (stop) {
+//%      break;
+//%    }
+//%  }
 //%}
 //%
 //%EXTRA_METHODS_##VHELPER(KEY_NAME, VALUE_NAME)- (size_t)computeSerializedSizeAsField:(GPBFieldDescriptor *)field {
-//%  NSUInteger count = _dictionary.count;
+//%  NSDictionary *internal = _dictionary;
+//%  NSUInteger count = internal.count;
 //%  if (count == 0) {
 //%    return 0;
 //%  }
 //%
 //%  GPBDataType valueDataType = GPBGetFieldDataType(field);
 //%  GPBDataType keyDataType = field.mapKeyDataType;
-//%  __block size_t result = 0;
-//%  [_dictionary enumerateKeysAndObjectsUsingBlock:^(ENUM_TYPE##KHELPER(KEY_TYPE)##aKey,
-//%                                                   ENUM_TYPE##VHELPER(VALUE_TYPE)##a##VNAME_VAR$u##,
-//%                                                   BOOL *stop) {
-//%    #pragma unused(stop)
+//%  size_t result = 0;
+//%  NSEnumerator *keys = [internal keyEnumerator];
+//%  ENUM_TYPE##KHELPER(KEY_TYPE)##aKey;
+//%  while ((aKey = [keys nextObject])) {
+//%    ENUM_TYPE##VHELPER(VALUE_TYPE)##a##VNAME_VAR$u = internal[aKey];
 //%    size_t msgSize = ComputeDict##KEY_NAME##FieldSize(UNWRAP##KEY_NAME(aKey), kMapKeyFieldNumber, keyDataType);
 //%    msgSize += ComputeDict##VALUE_NAME##FieldSize(UNWRAP##VALUE_NAME(a##VNAME_VAR$u), kMapValueFieldNumber, valueDataType);
 //%    result += GPBComputeRawVarint32SizeForInteger(msgSize) + msgSize;
-//%  }];
+//%  }
 //%  size_t tagSize = GPBComputeWireFormatTagSize(GPBFieldNumber(field), GPBDataTypeMessage);
 //%  result += tagSize * count;
 //%  return result;
@@ -897,20 +915,22 @@ void GPBDictionaryReadEntry(id mapDictionary,
 //%  GPBDataType valueDataType = GPBGetFieldDataType(field);
 //%  GPBDataType keyDataType = field.mapKeyDataType;
 //%  uint32_t tag = GPBWireFormatMakeTag(GPBFieldNumber(field), GPBWireFormatLengthDelimited);
-//%  [_dictionary enumerateKeysAndObjectsUsingBlock:^(ENUM_TYPE##KHELPER(KEY_TYPE)##aKey,
-//%                                                   ENUM_TYPE##VHELPER(VALUE_TYPE)##a##VNAME_VAR$u,
-//%                                                   BOOL *stop) {
-//%    #pragma unused(stop)
-//%    // Write the tag.
+//%  NSDictionary *internal = _dictionary;
+//%  NSEnumerator *keys = [internal keyEnumerator];
+//%  ENUM_TYPE##KHELPER(KEY_TYPE)##aKey;
+//%  while ((aKey = [keys nextObject])) {
+//%    ENUM_TYPE##VHELPER(VALUE_TYPE)##a##VNAME_VAR$u = internal[aKey];
 //%    [outputStream writeInt32NoTag:tag];
 //%    // Write the size of the message.
-//%    size_t msgSize = ComputeDict##KEY_NAME##FieldSize(UNWRAP##KEY_NAME(aKey), kMapKeyFieldNumber, keyDataType);
-//%    msgSize += ComputeDict##VALUE_NAME##FieldSize(UNWRAP##VALUE_NAME(a##VNAME_VAR$u), kMapValueFieldNumber, valueDataType);
+//%    KEY_TYPE KisP##unwrappedKey = UNWRAP##KEY_NAME(aKey);
+//%    VALUE_TYPE unwrappedValue = UNWRAP##VALUE_NAME(a##VNAME_VAR$u);
+//%    size_t msgSize = ComputeDict##KEY_NAME##FieldSize(unwrappedKey, kMapKeyFieldNumber, keyDataType);
+//%    msgSize += ComputeDict##VALUE_NAME##FieldSize(unwrappedValue, kMapValueFieldNumber, valueDataType);
 //%    [outputStream writeInt32NoTag:(int32_t)msgSize];
 //%    // Write the fields.
-//%    WriteDict##KEY_NAME##Field(outputStream, UNWRAP##KEY_NAME(aKey), kMapKeyFieldNumber, keyDataType);
-//%    WriteDict##VALUE_NAME##Field(outputStream, UNWRAP##VALUE_NAME(a##VNAME_VAR$u), kMapValueFieldNumber, valueDataType);
-//%  }];
+//%    WriteDict##KEY_NAME##Field(outputStream, unwrappedKey, kMapKeyFieldNumber, keyDataType);
+//%    WriteDict##VALUE_NAME##Field(outputStream, unwrappedValue, kMapValueFieldNumber, valueDataType);
+//%  }
 //%}
 //%
 //%SERIAL_DATA_FOR_ENTRY_##VHELPER(KEY_NAME, VALUE_NAME)- (void)setGPBGenericValue:(GPBGenericValue *)value
@@ -1366,14 +1386,15 @@ void GPBDictionaryReadEntry(id mapDictionary,
 //%- (instancetype)deepCopyWithZone:(NSZone *)zone {
 //%  GPB##KEY_NAME##VALUE_NAME##Dictionary *newDict =
 //%      [[GPB##KEY_NAME##VALUE_NAME##Dictionary alloc] init];
-//%  [_dictionary enumerateKeysAndObjectsUsingBlock:^(id aKey,
-//%                                                   GPBMessage *msg,
-//%                                                   BOOL *stop) {
-//%    #pragma unused(stop)
+//%  NSEnumerator *keys = [_dictionary keyEnumerator];
+//%  id aKey;
+//%  NSMutableDictionary *internalDict = newDict->_dictionary;
+//%  while ((aKey = [keys nextObject])) {
+//%    GPBMessage *msg = _dictionary[aKey];
 //%    GPBMessage *copiedMsg = [msg copyWithZone:zone];
-//%    [newDict->_dictionary setObject:copiedMsg forKey:aKey];
+//%    [internalDict setObject:copiedMsg forKey:aKey];
 //%    [copiedMsg release];
-//%  }];
+//%  }
 //%  return newDict;
 //%}
 //%
@@ -1632,30 +1653,37 @@ void GPBDictionaryReadEntry(id mapDictionary,
 
 - (void)enumerateKeysAndUInt32sUsingBlock:
     (void (^)(uint32_t key, uint32_t value, BOOL *stop))block {
-  [_dictionary enumerateKeysAndObjectsUsingBlock:^(NSNumber *aKey,
-                                                   NSNumber *aValue,
-                                                   BOOL *stop) {
-      block([aKey unsignedIntValue], [aValue unsignedIntValue], stop);
-  }];
+  BOOL stop = NO;
+  NSDictionary *internal = _dictionary;
+  NSEnumerator *keys = [internal keyEnumerator];
+  NSNumber *aKey;
+  while ((aKey = [keys nextObject])) {
+    NSNumber *aValue = internal[aKey];
+    block([aKey unsignedIntValue], [aValue unsignedIntValue], &stop);
+    if (stop) {
+      break;
+    }
+  }
 }
 
 - (size_t)computeSerializedSizeAsField:(GPBFieldDescriptor *)field {
-  NSUInteger count = _dictionary.count;
+  NSDictionary *internal = _dictionary;
+  NSUInteger count = internal.count;
   if (count == 0) {
     return 0;
   }
 
   GPBDataType valueDataType = GPBGetFieldDataType(field);
   GPBDataType keyDataType = field.mapKeyDataType;
-  __block size_t result = 0;
-  [_dictionary enumerateKeysAndObjectsUsingBlock:^(NSNumber *aKey,
-                                                   NSNumber *aValue,
-                                                   BOOL *stop) {
-    #pragma unused(stop)
+  size_t result = 0;
+  NSEnumerator *keys = [internal keyEnumerator];
+  NSNumber *aKey;
+  while ((aKey = [keys nextObject])) {
+    NSNumber *aValue = internal[aKey];
     size_t msgSize = ComputeDictUInt32FieldSize([aKey unsignedIntValue], kMapKeyFieldNumber, keyDataType);
     msgSize += ComputeDictUInt32FieldSize([aValue unsignedIntValue], kMapValueFieldNumber, valueDataType);
     result += GPBComputeRawVarint32SizeForInteger(msgSize) + msgSize;
-  }];
+  }
   size_t tagSize = GPBComputeWireFormatTagSize(GPBFieldNumber(field), GPBDataTypeMessage);
   result += tagSize * count;
   return result;
@@ -1666,20 +1694,22 @@ void GPBDictionaryReadEntry(id mapDictionary,
   GPBDataType valueDataType = GPBGetFieldDataType(field);
   GPBDataType keyDataType = field.mapKeyDataType;
   uint32_t tag = GPBWireFormatMakeTag(GPBFieldNumber(field), GPBWireFormatLengthDelimited);
-  [_dictionary enumerateKeysAndObjectsUsingBlock:^(NSNumber *aKey,
-                                                   NSNumber *aValue,
-                                                   BOOL *stop) {
-    #pragma unused(stop)
-    // Write the tag.
+  NSDictionary *internal = _dictionary;
+  NSEnumerator *keys = [internal keyEnumerator];
+  NSNumber *aKey;
+  while ((aKey = [keys nextObject])) {
+    NSNumber *aValue = internal[aKey];
     [outputStream writeInt32NoTag:tag];
     // Write the size of the message.
-    size_t msgSize = ComputeDictUInt32FieldSize([aKey unsignedIntValue], kMapKeyFieldNumber, keyDataType);
-    msgSize += ComputeDictUInt32FieldSize([aValue unsignedIntValue], kMapValueFieldNumber, valueDataType);
+    uint32_t unwrappedKey = [aKey unsignedIntValue];
+    uint32_t unwrappedValue = [aValue unsignedIntValue];
+    size_t msgSize = ComputeDictUInt32FieldSize(unwrappedKey, kMapKeyFieldNumber, keyDataType);
+    msgSize += ComputeDictUInt32FieldSize(unwrappedValue, kMapValueFieldNumber, valueDataType);
     [outputStream writeInt32NoTag:(int32_t)msgSize];
     // Write the fields.
-    WriteDictUInt32Field(outputStream, [aKey unsignedIntValue], kMapKeyFieldNumber, keyDataType);
-    WriteDictUInt32Field(outputStream, [aValue unsignedIntValue], kMapValueFieldNumber, valueDataType);
-  }];
+    WriteDictUInt32Field(outputStream, unwrappedKey, kMapKeyFieldNumber, keyDataType);
+    WriteDictUInt32Field(outputStream, unwrappedValue, kMapValueFieldNumber, valueDataType);
+  }
 }
 
 - (void)setGPBGenericValue:(GPBGenericValue *)value
@@ -1839,30 +1869,37 @@ void GPBDictionaryReadEntry(id mapDictionary,
 
 - (void)enumerateKeysAndInt32sUsingBlock:
     (void (^)(uint32_t key, int32_t value, BOOL *stop))block {
-  [_dictionary enumerateKeysAndObjectsUsingBlock:^(NSNumber *aKey,
-                                                   NSNumber *aValue,
-                                                   BOOL *stop) {
-      block([aKey unsignedIntValue], [aValue intValue], stop);
-  }];
+  BOOL stop = NO;
+  NSDictionary *internal = _dictionary;
+  NSEnumerator *keys = [internal keyEnumerator];
+  NSNumber *aKey;
+  while ((aKey = [keys nextObject])) {
+    NSNumber *aValue = internal[aKey];
+    block([aKey unsignedIntValue], [aValue intValue], &stop);
+    if (stop) {
+      break;
+    }
+  }
 }
 
 - (size_t)computeSerializedSizeAsField:(GPBFieldDescriptor *)field {
-  NSUInteger count = _dictionary.count;
+  NSDictionary *internal = _dictionary;
+  NSUInteger count = internal.count;
   if (count == 0) {
     return 0;
   }
 
   GPBDataType valueDataType = GPBGetFieldDataType(field);
   GPBDataType keyDataType = field.mapKeyDataType;
-  __block size_t result = 0;
-  [_dictionary enumerateKeysAndObjectsUsingBlock:^(NSNumber *aKey,
-                                                   NSNumber *aValue,
-                                                   BOOL *stop) {
-    #pragma unused(stop)
+  size_t result = 0;
+  NSEnumerator *keys = [internal keyEnumerator];
+  NSNumber *aKey;
+  while ((aKey = [keys nextObject])) {
+    NSNumber *aValue = internal[aKey];
     size_t msgSize = ComputeDictUInt32FieldSize([aKey unsignedIntValue], kMapKeyFieldNumber, keyDataType);
     msgSize += ComputeDictInt32FieldSize([aValue intValue], kMapValueFieldNumber, valueDataType);
     result += GPBComputeRawVarint32SizeForInteger(msgSize) + msgSize;
-  }];
+  }
   size_t tagSize = GPBComputeWireFormatTagSize(GPBFieldNumber(field), GPBDataTypeMessage);
   result += tagSize * count;
   return result;
@@ -1873,20 +1910,22 @@ void GPBDictionaryReadEntry(id mapDictionary,
   GPBDataType valueDataType = GPBGetFieldDataType(field);
   GPBDataType keyDataType = field.mapKeyDataType;
   uint32_t tag = GPBWireFormatMakeTag(GPBFieldNumber(field), GPBWireFormatLengthDelimited);
-  [_dictionary enumerateKeysAndObjectsUsingBlock:^(NSNumber *aKey,
-                                                   NSNumber *aValue,
-                                                   BOOL *stop) {
-    #pragma unused(stop)
-    // Write the tag.
+  NSDictionary *internal = _dictionary;
+  NSEnumerator *keys = [internal keyEnumerator];
+  NSNumber *aKey;
+  while ((aKey = [keys nextObject])) {
+    NSNumber *aValue = internal[aKey];
     [outputStream writeInt32NoTag:tag];
     // Write the size of the message.
-    size_t msgSize = ComputeDictUInt32FieldSize([aKey unsignedIntValue], kMapKeyFieldNumber, keyDataType);
-    msgSize += ComputeDictInt32FieldSize([aValue intValue], kMapValueFieldNumber, valueDataType);
+    uint32_t unwrappedKey = [aKey unsignedIntValue];
+    int32_t unwrappedValue = [aValue intValue];
+    size_t msgSize = ComputeDictUInt32FieldSize(unwrappedKey, kMapKeyFieldNumber, keyDataType);
+    msgSize += ComputeDictInt32FieldSize(unwrappedValue, kMapValueFieldNumber, valueDataType);
     [outputStream writeInt32NoTag:(int32_t)msgSize];
     // Write the fields.
-    WriteDictUInt32Field(outputStream, [aKey unsignedIntValue], kMapKeyFieldNumber, keyDataType);
-    WriteDictInt32Field(outputStream, [aValue intValue], kMapValueFieldNumber, valueDataType);
-  }];
+    WriteDictUInt32Field(outputStream, unwrappedKey, kMapKeyFieldNumber, keyDataType);
+    WriteDictInt32Field(outputStream, unwrappedValue, kMapValueFieldNumber, valueDataType);
+  }
 }
 
 - (void)setGPBGenericValue:(GPBGenericValue *)value
@@ -2046,30 +2085,37 @@ void GPBDictionaryReadEntry(id mapDictionary,
 
 - (void)enumerateKeysAndUInt64sUsingBlock:
     (void (^)(uint32_t key, uint64_t value, BOOL *stop))block {
-  [_dictionary enumerateKeysAndObjectsUsingBlock:^(NSNumber *aKey,
-                                                   NSNumber *aValue,
-                                                   BOOL *stop) {
-      block([aKey unsignedIntValue], [aValue unsignedLongLongValue], stop);
-  }];
+  BOOL stop = NO;
+  NSDictionary *internal = _dictionary;
+  NSEnumerator *keys = [internal keyEnumerator];
+  NSNumber *aKey;
+  while ((aKey = [keys nextObject])) {
+    NSNumber *aValue = internal[aKey];
+    block([aKey unsignedIntValue], [aValue unsignedLongLongValue], &stop);
+    if (stop) {
+      break;
+    }
+  }
 }
 
 - (size_t)computeSerializedSizeAsField:(GPBFieldDescriptor *)field {
-  NSUInteger count = _dictionary.count;
+  NSDictionary *internal = _dictionary;
+  NSUInteger count = internal.count;
   if (count == 0) {
     return 0;
   }
 
   GPBDataType valueDataType = GPBGetFieldDataType(field);
   GPBDataType keyDataType = field.mapKeyDataType;
-  __block size_t result = 0;
-  [_dictionary enumerateKeysAndObjectsUsingBlock:^(NSNumber *aKey,
-                                                   NSNumber *aValue,
-                                                   BOOL *stop) {
-    #pragma unused(stop)
+  size_t result = 0;
+  NSEnumerator *keys = [internal keyEnumerator];
+  NSNumber *aKey;
+  while ((aKey = [keys nextObject])) {
+    NSNumber *aValue = internal[aKey];
     size_t msgSize = ComputeDictUInt32FieldSize([aKey unsignedIntValue], kMapKeyFieldNumber, keyDataType);
     msgSize += ComputeDictUInt64FieldSize([aValue unsignedLongLongValue], kMapValueFieldNumber, valueDataType);
     result += GPBComputeRawVarint32SizeForInteger(msgSize) + msgSize;
-  }];
+  }
   size_t tagSize = GPBComputeWireFormatTagSize(GPBFieldNumber(field), GPBDataTypeMessage);
   result += tagSize * count;
   return result;
@@ -2080,20 +2126,22 @@ void GPBDictionaryReadEntry(id mapDictionary,
   GPBDataType valueDataType = GPBGetFieldDataType(field);
   GPBDataType keyDataType = field.mapKeyDataType;
   uint32_t tag = GPBWireFormatMakeTag(GPBFieldNumber(field), GPBWireFormatLengthDelimited);
-  [_dictionary enumerateKeysAndObjectsUsingBlock:^(NSNumber *aKey,
-                                                   NSNumber *aValue,
-                                                   BOOL *stop) {
-    #pragma unused(stop)
-    // Write the tag.
+  NSDictionary *internal = _dictionary;
+  NSEnumerator *keys = [internal keyEnumerator];
+  NSNumber *aKey;
+  while ((aKey = [keys nextObject])) {
+    NSNumber *aValue = internal[aKey];
     [outputStream writeInt32NoTag:tag];
     // Write the size of the message.
-    size_t msgSize = ComputeDictUInt32FieldSize([aKey unsignedIntValue], kMapKeyFieldNumber, keyDataType);
-    msgSize += ComputeDictUInt64FieldSize([aValue unsignedLongLongValue], kMapValueFieldNumber, valueDataType);
+    uint32_t unwrappedKey = [aKey unsignedIntValue];
+    uint64_t unwrappedValue = [aValue unsignedLongLongValue];
+    size_t msgSize = ComputeDictUInt32FieldSize(unwrappedKey, kMapKeyFieldNumber, keyDataType);
+    msgSize += ComputeDictUInt64FieldSize(unwrappedValue, kMapValueFieldNumber, valueDataType);
     [outputStream writeInt32NoTag:(int32_t)msgSize];
     // Write the fields.
-    WriteDictUInt32Field(outputStream, [aKey unsignedIntValue], kMapKeyFieldNumber, keyDataType);
-    WriteDictUInt64Field(outputStream, [aValue unsignedLongLongValue], kMapValueFieldNumber, valueDataType);
-  }];
+    WriteDictUInt32Field(outputStream, unwrappedKey, kMapKeyFieldNumber, keyDataType);
+    WriteDictUInt64Field(outputStream, unwrappedValue, kMapValueFieldNumber, valueDataType);
+  }
 }
 
 - (void)setGPBGenericValue:(GPBGenericValue *)value
@@ -2253,30 +2301,37 @@ void GPBDictionaryReadEntry(id mapDictionary,
 
 - (void)enumerateKeysAndInt64sUsingBlock:
     (void (^)(uint32_t key, int64_t value, BOOL *stop))block {
-  [_dictionary enumerateKeysAndObjectsUsingBlock:^(NSNumber *aKey,
-                                                   NSNumber *aValue,
-                                                   BOOL *stop) {
-      block([aKey unsignedIntValue], [aValue longLongValue], stop);
-  }];
+  BOOL stop = NO;
+  NSDictionary *internal = _dictionary;
+  NSEnumerator *keys = [internal keyEnumerator];
+  NSNumber *aKey;
+  while ((aKey = [keys nextObject])) {
+    NSNumber *aValue = internal[aKey];
+    block([aKey unsignedIntValue], [aValue longLongValue], &stop);
+    if (stop) {
+      break;
+    }
+  }
 }
 
 - (size_t)computeSerializedSizeAsField:(GPBFieldDescriptor *)field {
-  NSUInteger count = _dictionary.count;
+  NSDictionary *internal = _dictionary;
+  NSUInteger count = internal.count;
   if (count == 0) {
     return 0;
   }
 
   GPBDataType valueDataType = GPBGetFieldDataType(field);
   GPBDataType keyDataType = field.mapKeyDataType;
-  __block size_t result = 0;
-  [_dictionary enumerateKeysAndObjectsUsingBlock:^(NSNumber *aKey,
-                                                   NSNumber *aValue,
-                                                   BOOL *stop) {
-    #pragma unused(stop)
+  size_t result = 0;
+  NSEnumerator *keys = [internal keyEnumerator];
+  NSNumber *aKey;
+  while ((aKey = [keys nextObject])) {
+    NSNumber *aValue = internal[aKey];
     size_t msgSize = ComputeDictUInt32FieldSize([aKey unsignedIntValue], kMapKeyFieldNumber, keyDataType);
     msgSize += ComputeDictInt64FieldSize([aValue longLongValue], kMapValueFieldNumber, valueDataType);
     result += GPBComputeRawVarint32SizeForInteger(msgSize) + msgSize;
-  }];
+  }
   size_t tagSize = GPBComputeWireFormatTagSize(GPBFieldNumber(field), GPBDataTypeMessage);
   result += tagSize * count;
   return result;
@@ -2287,20 +2342,22 @@ void GPBDictionaryReadEntry(id mapDictionary,
   GPBDataType valueDataType = GPBGetFieldDataType(field);
   GPBDataType keyDataType = field.mapKeyDataType;
   uint32_t tag = GPBWireFormatMakeTag(GPBFieldNumber(field), GPBWireFormatLengthDelimited);
-  [_dictionary enumerateKeysAndObjectsUsingBlock:^(NSNumber *aKey,
-                                                   NSNumber *aValue,
-                                                   BOOL *stop) {
-    #pragma unused(stop)
-    // Write the tag.
+  NSDictionary *internal = _dictionary;
+  NSEnumerator *keys = [internal keyEnumerator];
+  NSNumber *aKey;
+  while ((aKey = [keys nextObject])) {
+    NSNumber *aValue = internal[aKey];
     [outputStream writeInt32NoTag:tag];
     // Write the size of the message.
-    size_t msgSize = ComputeDictUInt32FieldSize([aKey unsignedIntValue], kMapKeyFieldNumber, keyDataType);
-    msgSize += ComputeDictInt64FieldSize([aValue longLongValue], kMapValueFieldNumber, valueDataType);
+    uint32_t unwrappedKey = [aKey unsignedIntValue];
+    int64_t unwrappedValue = [aValue longLongValue];
+    size_t msgSize = ComputeDictUInt32FieldSize(unwrappedKey, kMapKeyFieldNumber, keyDataType);
+    msgSize += ComputeDictInt64FieldSize(unwrappedValue, kMapValueFieldNumber, valueDataType);
     [outputStream writeInt32NoTag:(int32_t)msgSize];
     // Write the fields.
-    WriteDictUInt32Field(outputStream, [aKey unsignedIntValue], kMapKeyFieldNumber, keyDataType);
-    WriteDictInt64Field(outputStream, [aValue longLongValue], kMapValueFieldNumber, valueDataType);
-  }];
+    WriteDictUInt32Field(outputStream, unwrappedKey, kMapKeyFieldNumber, keyDataType);
+    WriteDictInt64Field(outputStream, unwrappedValue, kMapValueFieldNumber, valueDataType);
+  }
 }
 
 - (void)setGPBGenericValue:(GPBGenericValue *)value
@@ -2460,30 +2517,37 @@ void GPBDictionaryReadEntry(id mapDictionary,
 
 - (void)enumerateKeysAndBoolsUsingBlock:
     (void (^)(uint32_t key, BOOL value, BOOL *stop))block {
-  [_dictionary enumerateKeysAndObjectsUsingBlock:^(NSNumber *aKey,
-                                                   NSNumber *aValue,
-                                                   BOOL *stop) {
-      block([aKey unsignedIntValue], [aValue boolValue], stop);
-  }];
+  BOOL stop = NO;
+  NSDictionary *internal = _dictionary;
+  NSEnumerator *keys = [internal keyEnumerator];
+  NSNumber *aKey;
+  while ((aKey = [keys nextObject])) {
+    NSNumber *aValue = internal[aKey];
+    block([aKey unsignedIntValue], [aValue boolValue], &stop);
+    if (stop) {
+      break;
+    }
+  }
 }
 
 - (size_t)computeSerializedSizeAsField:(GPBFieldDescriptor *)field {
-  NSUInteger count = _dictionary.count;
+  NSDictionary *internal = _dictionary;
+  NSUInteger count = internal.count;
   if (count == 0) {
     return 0;
   }
 
   GPBDataType valueDataType = GPBGetFieldDataType(field);
   GPBDataType keyDataType = field.mapKeyDataType;
-  __block size_t result = 0;
-  [_dictionary enumerateKeysAndObjectsUsingBlock:^(NSNumber *aKey,
-                                                   NSNumber *aValue,
-                                                   BOOL *stop) {
-    #pragma unused(stop)
+  size_t result = 0;
+  NSEnumerator *keys = [internal keyEnumerator];
+  NSNumber *aKey;
+  while ((aKey = [keys nextObject])) {
+    NSNumber *aValue = internal[aKey];
     size_t msgSize = ComputeDictUInt32FieldSize([aKey unsignedIntValue], kMapKeyFieldNumber, keyDataType);
     msgSize += ComputeDictBoolFieldSize([aValue boolValue], kMapValueFieldNumber, valueDataType);
     result += GPBComputeRawVarint32SizeForInteger(msgSize) + msgSize;
-  }];
+  }
   size_t tagSize = GPBComputeWireFormatTagSize(GPBFieldNumber(field), GPBDataTypeMessage);
   result += tagSize * count;
   return result;
@@ -2494,20 +2558,22 @@ void GPBDictionaryReadEntry(id mapDictionary,
   GPBDataType valueDataType = GPBGetFieldDataType(field);
   GPBDataType keyDataType = field.mapKeyDataType;
   uint32_t tag = GPBWireFormatMakeTag(GPBFieldNumber(field), GPBWireFormatLengthDelimited);
-  [_dictionary enumerateKeysAndObjectsUsingBlock:^(NSNumber *aKey,
-                                                   NSNumber *aValue,
-                                                   BOOL *stop) {
-    #pragma unused(stop)
-    // Write the tag.
+  NSDictionary *internal = _dictionary;
+  NSEnumerator *keys = [internal keyEnumerator];
+  NSNumber *aKey;
+  while ((aKey = [keys nextObject])) {
+    NSNumber *aValue = internal[aKey];
     [outputStream writeInt32NoTag:tag];
     // Write the size of the message.
-    size_t msgSize = ComputeDictUInt32FieldSize([aKey unsignedIntValue], kMapKeyFieldNumber, keyDataType);
-    msgSize += ComputeDictBoolFieldSize([aValue boolValue], kMapValueFieldNumber, valueDataType);
+    uint32_t unwrappedKey = [aKey unsignedIntValue];
+    BOOL unwrappedValue = [aValue boolValue];
+    size_t msgSize = ComputeDictUInt32FieldSize(unwrappedKey, kMapKeyFieldNumber, keyDataType);
+    msgSize += ComputeDictBoolFieldSize(unwrappedValue, kMapValueFieldNumber, valueDataType);
     [outputStream writeInt32NoTag:(int32_t)msgSize];
     // Write the fields.
-    WriteDictUInt32Field(outputStream, [aKey unsignedIntValue], kMapKeyFieldNumber, keyDataType);
-    WriteDictBoolField(outputStream, [aValue boolValue], kMapValueFieldNumber, valueDataType);
-  }];
+    WriteDictUInt32Field(outputStream, unwrappedKey, kMapKeyFieldNumber, keyDataType);
+    WriteDictBoolField(outputStream, unwrappedValue, kMapValueFieldNumber, valueDataType);
+  }
 }
 
 - (void)setGPBGenericValue:(GPBGenericValue *)value
@@ -2667,30 +2733,37 @@ void GPBDictionaryReadEntry(id mapDictionary,
 
 - (void)enumerateKeysAndFloatsUsingBlock:
     (void (^)(uint32_t key, float value, BOOL *stop))block {
-  [_dictionary enumerateKeysAndObjectsUsingBlock:^(NSNumber *aKey,
-                                                   NSNumber *aValue,
-                                                   BOOL *stop) {
-      block([aKey unsignedIntValue], [aValue floatValue], stop);
-  }];
+  BOOL stop = NO;
+  NSDictionary *internal = _dictionary;
+  NSEnumerator *keys = [internal keyEnumerator];
+  NSNumber *aKey;
+  while ((aKey = [keys nextObject])) {
+    NSNumber *aValue = internal[aKey];
+    block([aKey unsignedIntValue], [aValue floatValue], &stop);
+    if (stop) {
+      break;
+    }
+  }
 }
 
 - (size_t)computeSerializedSizeAsField:(GPBFieldDescriptor *)field {
-  NSUInteger count = _dictionary.count;
+  NSDictionary *internal = _dictionary;
+  NSUInteger count = internal.count;
   if (count == 0) {
     return 0;
   }
 
   GPBDataType valueDataType = GPBGetFieldDataType(field);
   GPBDataType keyDataType = field.mapKeyDataType;
-  __block size_t result = 0;
-  [_dictionary enumerateKeysAndObjectsUsingBlock:^(NSNumber *aKey,
-                                                   NSNumber *aValue,
-                                                   BOOL *stop) {
-    #pragma unused(stop)
+  size_t result = 0;
+  NSEnumerator *keys = [internal keyEnumerator];
+  NSNumber *aKey;
+  while ((aKey = [keys nextObject])) {
+    NSNumber *aValue = internal[aKey];
     size_t msgSize = ComputeDictUInt32FieldSize([aKey unsignedIntValue], kMapKeyFieldNumber, keyDataType);
     msgSize += ComputeDictFloatFieldSize([aValue floatValue], kMapValueFieldNumber, valueDataType);
     result += GPBComputeRawVarint32SizeForInteger(msgSize) + msgSize;
-  }];
+  }
   size_t tagSize = GPBComputeWireFormatTagSize(GPBFieldNumber(field), GPBDataTypeMessage);
   result += tagSize * count;
   return result;
@@ -2701,20 +2774,22 @@ void GPBDictionaryReadEntry(id mapDictionary,
   GPBDataType valueDataType = GPBGetFieldDataType(field);
   GPBDataType keyDataType = field.mapKeyDataType;
   uint32_t tag = GPBWireFormatMakeTag(GPBFieldNumber(field), GPBWireFormatLengthDelimited);
-  [_dictionary enumerateKeysAndObjectsUsingBlock:^(NSNumber *aKey,
-                                                   NSNumber *aValue,
-                                                   BOOL *stop) {
-    #pragma unused(stop)
-    // Write the tag.
+  NSDictionary *internal = _dictionary;
+  NSEnumerator *keys = [internal keyEnumerator];
+  NSNumber *aKey;
+  while ((aKey = [keys nextObject])) {
+    NSNumber *aValue = internal[aKey];
     [outputStream writeInt32NoTag:tag];
     // Write the size of the message.
-    size_t msgSize = ComputeDictUInt32FieldSize([aKey unsignedIntValue], kMapKeyFieldNumber, keyDataType);
-    msgSize += ComputeDictFloatFieldSize([aValue floatValue], kMapValueFieldNumber, valueDataType);
+    uint32_t unwrappedKey = [aKey unsignedIntValue];
+    float unwrappedValue = [aValue floatValue];
+    size_t msgSize = ComputeDictUInt32FieldSize(unwrappedKey, kMapKeyFieldNumber, keyDataType);
+    msgSize += ComputeDictFloatFieldSize(unwrappedValue, kMapValueFieldNumber, valueDataType);
     [outputStream writeInt32NoTag:(int32_t)msgSize];
     // Write the fields.
-    WriteDictUInt32Field(outputStream, [aKey unsignedIntValue], kMapKeyFieldNumber, keyDataType);
-    WriteDictFloatField(outputStream, [aValue floatValue], kMapValueFieldNumber, valueDataType);
-  }];
+    WriteDictUInt32Field(outputStream, unwrappedKey, kMapKeyFieldNumber, keyDataType);
+    WriteDictFloatField(outputStream, unwrappedValue, kMapValueFieldNumber, valueDataType);
+  }
 }
 
 - (void)setGPBGenericValue:(GPBGenericValue *)value
@@ -2874,30 +2949,37 @@ void GPBDictionaryReadEntry(id mapDictionary,
 
 - (void)enumerateKeysAndDoublesUsingBlock:
     (void (^)(uint32_t key, double value, BOOL *stop))block {
-  [_dictionary enumerateKeysAndObjectsUsingBlock:^(NSNumber *aKey,
-                                                   NSNumber *aValue,
-                                                   BOOL *stop) {
-      block([aKey unsignedIntValue], [aValue doubleValue], stop);
-  }];
+  BOOL stop = NO;
+  NSDictionary *internal = _dictionary;
+  NSEnumerator *keys = [internal keyEnumerator];
+  NSNumber *aKey;
+  while ((aKey = [keys nextObject])) {
+    NSNumber *aValue = internal[aKey];
+    block([aKey unsignedIntValue], [aValue doubleValue], &stop);
+    if (stop) {
+      break;
+    }
+  }
 }
 
 - (size_t)computeSerializedSizeAsField:(GPBFieldDescriptor *)field {
-  NSUInteger count = _dictionary.count;
+  NSDictionary *internal = _dictionary;
+  NSUInteger count = internal.count;
   if (count == 0) {
     return 0;
   }
 
   GPBDataType valueDataType = GPBGetFieldDataType(field);
   GPBDataType keyDataType = field.mapKeyDataType;
-  __block size_t result = 0;
-  [_dictionary enumerateKeysAndObjectsUsingBlock:^(NSNumber *aKey,
-                                                   NSNumber *aValue,
-                                                   BOOL *stop) {
-    #pragma unused(stop)
+  size_t result = 0;
+  NSEnumerator *keys = [internal keyEnumerator];
+  NSNumber *aKey;
+  while ((aKey = [keys nextObject])) {
+    NSNumber *aValue = internal[aKey];
     size_t msgSize = ComputeDictUInt32FieldSize([aKey unsignedIntValue], kMapKeyFieldNumber, keyDataType);
     msgSize += ComputeDictDoubleFieldSize([aValue doubleValue], kMapValueFieldNumber, valueDataType);
     result += GPBComputeRawVarint32SizeForInteger(msgSize) + msgSize;
-  }];
+  }
   size_t tagSize = GPBComputeWireFormatTagSize(GPBFieldNumber(field), GPBDataTypeMessage);
   result += tagSize * count;
   return result;
@@ -2908,20 +2990,22 @@ void GPBDictionaryReadEntry(id mapDictionary,
   GPBDataType valueDataType = GPBGetFieldDataType(field);
   GPBDataType keyDataType = field.mapKeyDataType;
   uint32_t tag = GPBWireFormatMakeTag(GPBFieldNumber(field), GPBWireFormatLengthDelimited);
-  [_dictionary enumerateKeysAndObjectsUsingBlock:^(NSNumber *aKey,
-                                                   NSNumber *aValue,
-                                                   BOOL *stop) {
-    #pragma unused(stop)
-    // Write the tag.
+  NSDictionary *internal = _dictionary;
+  NSEnumerator *keys = [internal keyEnumerator];
+  NSNumber *aKey;
+  while ((aKey = [keys nextObject])) {
+    NSNumber *aValue = internal[aKey];
     [outputStream writeInt32NoTag:tag];
     // Write the size of the message.
-    size_t msgSize = ComputeDictUInt32FieldSize([aKey unsignedIntValue], kMapKeyFieldNumber, keyDataType);
-    msgSize += ComputeDictDoubleFieldSize([aValue doubleValue], kMapValueFieldNumber, valueDataType);
+    uint32_t unwrappedKey = [aKey unsignedIntValue];
+    double unwrappedValue = [aValue doubleValue];
+    size_t msgSize = ComputeDictUInt32FieldSize(unwrappedKey, kMapKeyFieldNumber, keyDataType);
+    msgSize += ComputeDictDoubleFieldSize(unwrappedValue, kMapValueFieldNumber, valueDataType);
     [outputStream writeInt32NoTag:(int32_t)msgSize];
     // Write the fields.
-    WriteDictUInt32Field(outputStream, [aKey unsignedIntValue], kMapKeyFieldNumber, keyDataType);
-    WriteDictDoubleField(outputStream, [aValue doubleValue], kMapValueFieldNumber, valueDataType);
-  }];
+    WriteDictUInt32Field(outputStream, unwrappedKey, kMapKeyFieldNumber, keyDataType);
+    WriteDictDoubleField(outputStream, unwrappedValue, kMapValueFieldNumber, valueDataType);
+  }
 }
 
 - (void)setGPBGenericValue:(GPBGenericValue *)value
@@ -3109,30 +3193,37 @@ void GPBDictionaryReadEntry(id mapDictionary,
 
 - (void)enumerateKeysAndRawValuesUsingBlock:
     (void (^)(uint32_t key, int32_t value, BOOL *stop))block {
-  [_dictionary enumerateKeysAndObjectsUsingBlock:^(NSNumber *aKey,
-                                                   NSNumber *aValue,
-                                                   BOOL *stop) {
-      block([aKey unsignedIntValue], [aValue intValue], stop);
-  }];
+  BOOL stop = NO;
+  NSDictionary *internal = _dictionary;
+  NSEnumerator *keys = [internal keyEnumerator];
+  NSNumber *aKey;
+  while ((aKey = [keys nextObject])) {
+    NSNumber *aValue = internal[aKey];
+    block([aKey unsignedIntValue], [aValue intValue], &stop);
+    if (stop) {
+      break;
+    }
+  }
 }
 
 - (size_t)computeSerializedSizeAsField:(GPBFieldDescriptor *)field {
-  NSUInteger count = _dictionary.count;
+  NSDictionary *internal = _dictionary;
+  NSUInteger count = internal.count;
   if (count == 0) {
     return 0;
   }
 
   GPBDataType valueDataType = GPBGetFieldDataType(field);
   GPBDataType keyDataType = field.mapKeyDataType;
-  __block size_t result = 0;
-  [_dictionary enumerateKeysAndObjectsUsingBlock:^(NSNumber *aKey,
-                                                   NSNumber *aValue,
-                                                   BOOL *stop) {
-    #pragma unused(stop)
+  size_t result = 0;
+  NSEnumerator *keys = [internal keyEnumerator];
+  NSNumber *aKey;
+  while ((aKey = [keys nextObject])) {
+    NSNumber *aValue = internal[aKey];
     size_t msgSize = ComputeDictUInt32FieldSize([aKey unsignedIntValue], kMapKeyFieldNumber, keyDataType);
     msgSize += ComputeDictEnumFieldSize([aValue intValue], kMapValueFieldNumber, valueDataType);
     result += GPBComputeRawVarint32SizeForInteger(msgSize) + msgSize;
-  }];
+  }
   size_t tagSize = GPBComputeWireFormatTagSize(GPBFieldNumber(field), GPBDataTypeMessage);
   result += tagSize * count;
   return result;
@@ -3143,20 +3234,22 @@ void GPBDictionaryReadEntry(id mapDictionary,
   GPBDataType valueDataType = GPBGetFieldDataType(field);
   GPBDataType keyDataType = field.mapKeyDataType;
   uint32_t tag = GPBWireFormatMakeTag(GPBFieldNumber(field), GPBWireFormatLengthDelimited);
-  [_dictionary enumerateKeysAndObjectsUsingBlock:^(NSNumber *aKey,
-                                                   NSNumber *aValue,
-                                                   BOOL *stop) {
-    #pragma unused(stop)
-    // Write the tag.
+  NSDictionary *internal = _dictionary;
+  NSEnumerator *keys = [internal keyEnumerator];
+  NSNumber *aKey;
+  while ((aKey = [keys nextObject])) {
+    NSNumber *aValue = internal[aKey];
     [outputStream writeInt32NoTag:tag];
     // Write the size of the message.
-    size_t msgSize = ComputeDictUInt32FieldSize([aKey unsignedIntValue], kMapKeyFieldNumber, keyDataType);
-    msgSize += ComputeDictEnumFieldSize([aValue intValue], kMapValueFieldNumber, valueDataType);
+    uint32_t unwrappedKey = [aKey unsignedIntValue];
+    int32_t unwrappedValue = [aValue intValue];
+    size_t msgSize = ComputeDictUInt32FieldSize(unwrappedKey, kMapKeyFieldNumber, keyDataType);
+    msgSize += ComputeDictEnumFieldSize(unwrappedValue, kMapValueFieldNumber, valueDataType);
     [outputStream writeInt32NoTag:(int32_t)msgSize];
     // Write the fields.
-    WriteDictUInt32Field(outputStream, [aKey unsignedIntValue], kMapKeyFieldNumber, keyDataType);
-    WriteDictEnumField(outputStream, [aValue intValue], kMapValueFieldNumber, valueDataType);
-  }];
+    WriteDictUInt32Field(outputStream, unwrappedKey, kMapKeyFieldNumber, keyDataType);
+    WriteDictEnumField(outputStream, unwrappedValue, kMapValueFieldNumber, valueDataType);
+  }
 }
 
 - (NSData *)serializedDataForUnknownValue:(int32_t)value
@@ -3206,15 +3299,20 @@ void GPBDictionaryReadEntry(id mapDictionary,
 - (void)enumerateKeysAndEnumsUsingBlock:
     (void (^)(uint32_t key, int32_t value, BOOL *stop))block {
   GPBEnumValidationFunc func = _validationFunc;
-  [_dictionary enumerateKeysAndObjectsUsingBlock:^(NSNumber *aKey,
-                                                   NSNumber *aValue,
-                                                   BOOL *stop) {
+  BOOL stop = NO;
+  NSEnumerator *keys = [_dictionary keyEnumerator];
+  NSNumber *aKey;
+  while ((aKey = [keys nextObject])) {
+    NSNumber *aValue = _dictionary[aKey];
       int32_t unwrapped = [aValue intValue];
       if (!func(unwrapped)) {
         unwrapped = kGPBUnrecognizedEnumeratorValue;
       }
-      block([aKey unsignedIntValue], unwrapped, stop);
-  }];
+    block([aKey unsignedIntValue], unwrapped, &stop);
+    if (stop) {
+      break;
+    }
+  }
 }
 
 - (void)addRawEntriesFromDictionary:(GPBUInt32EnumDictionary *)otherDictionary {
@@ -3371,11 +3469,17 @@ void GPBDictionaryReadEntry(id mapDictionary,
 
 - (void)enumerateKeysAndObjectsUsingBlock:
     (void (^)(uint32_t key, id object, BOOL *stop))block {
-  [_dictionary enumerateKeysAndObjectsUsingBlock:^(NSNumber *aKey,
-                                                   id aObject,
-                                                   BOOL *stop) {
-      block([aKey unsignedIntValue], aObject, stop);
-  }];
+  BOOL stop = NO;
+  NSDictionary *internal = _dictionary;
+  NSEnumerator *keys = [internal keyEnumerator];
+  NSNumber *aKey;
+  while ((aKey = [keys nextObject])) {
+    id aObject = internal[aKey];
+    block([aKey unsignedIntValue], aObject, &stop);
+    if (stop) {
+      break;
+    }
+  }
 }
 
 - (BOOL)isInitialized {
@@ -3390,34 +3494,36 @@ void GPBDictionaryReadEntry(id mapDictionary,
 - (instancetype)deepCopyWithZone:(NSZone *)zone {
   GPBUInt32ObjectDictionary *newDict =
       [[GPBUInt32ObjectDictionary alloc] init];
-  [_dictionary enumerateKeysAndObjectsUsingBlock:^(id aKey,
-                                                   GPBMessage *msg,
-                                                   BOOL *stop) {
-    #pragma unused(stop)
+  NSEnumerator *keys = [_dictionary keyEnumerator];
+  id aKey;
+  NSMutableDictionary *internalDict = newDict->_dictionary;
+  while ((aKey = [keys nextObject])) {
+    GPBMessage *msg = _dictionary[aKey];
     GPBMessage *copiedMsg = [msg copyWithZone:zone];
-    [newDict->_dictionary setObject:copiedMsg forKey:aKey];
+    [internalDict setObject:copiedMsg forKey:aKey];
     [copiedMsg release];
-  }];
+  }
   return newDict;
 }
 
 - (size_t)computeSerializedSizeAsField:(GPBFieldDescriptor *)field {
-  NSUInteger count = _dictionary.count;
+  NSDictionary *internal = _dictionary;
+  NSUInteger count = internal.count;
   if (count == 0) {
     return 0;
   }
 
   GPBDataType valueDataType = GPBGetFieldDataType(field);
   GPBDataType keyDataType = field.mapKeyDataType;
-  __block size_t result = 0;
-  [_dictionary enumerateKeysAndObjectsUsingBlock:^(NSNumber *aKey,
-                                                   id aObject,
-                                                   BOOL *stop) {
-    #pragma unused(stop)
+  size_t result = 0;
+  NSEnumerator *keys = [internal keyEnumerator];
+  NSNumber *aKey;
+  while ((aKey = [keys nextObject])) {
+    id aObject = internal[aKey];
     size_t msgSize = ComputeDictUInt32FieldSize([aKey unsignedIntValue], kMapKeyFieldNumber, keyDataType);
     msgSize += ComputeDictObjectFieldSize(aObject, kMapValueFieldNumber, valueDataType);
     result += GPBComputeRawVarint32SizeForInteger(msgSize) + msgSize;
-  }];
+  }
   size_t tagSize = GPBComputeWireFormatTagSize(GPBFieldNumber(field), GPBDataTypeMessage);
   result += tagSize * count;
   return result;
@@ -3428,20 +3534,22 @@ void GPBDictionaryReadEntry(id mapDictionary,
   GPBDataType valueDataType = GPBGetFieldDataType(field);
   GPBDataType keyDataType = field.mapKeyDataType;
   uint32_t tag = GPBWireFormatMakeTag(GPBFieldNumber(field), GPBWireFormatLengthDelimited);
-  [_dictionary enumerateKeysAndObjectsUsingBlock:^(NSNumber *aKey,
-                                                   id aObject,
-                                                   BOOL *stop) {
-    #pragma unused(stop)
-    // Write the tag.
+  NSDictionary *internal = _dictionary;
+  NSEnumerator *keys = [internal keyEnumerator];
+  NSNumber *aKey;
+  while ((aKey = [keys nextObject])) {
+    id aObject = internal[aKey];
     [outputStream writeInt32NoTag:tag];
     // Write the size of the message.
-    size_t msgSize = ComputeDictUInt32FieldSize([aKey unsignedIntValue], kMapKeyFieldNumber, keyDataType);
-    msgSize += ComputeDictObjectFieldSize(aObject, kMapValueFieldNumber, valueDataType);
+    uint32_t unwrappedKey = [aKey unsignedIntValue];
+    id unwrappedValue = aObject;
+    size_t msgSize = ComputeDictUInt32FieldSize(unwrappedKey, kMapKeyFieldNumber, keyDataType);
+    msgSize += ComputeDictObjectFieldSize(unwrappedValue, kMapValueFieldNumber, valueDataType);
     [outputStream writeInt32NoTag:(int32_t)msgSize];
     // Write the fields.
-    WriteDictUInt32Field(outputStream, [aKey unsignedIntValue], kMapKeyFieldNumber, keyDataType);
-    WriteDictObjectField(outputStream, aObject, kMapValueFieldNumber, valueDataType);
-  }];
+    WriteDictUInt32Field(outputStream, unwrappedKey, kMapKeyFieldNumber, keyDataType);
+    WriteDictObjectField(outputStream, unwrappedValue, kMapValueFieldNumber, valueDataType);
+  }
 }
 
 - (void)setGPBGenericValue:(GPBGenericValue *)value
@@ -3605,30 +3713,37 @@ void GPBDictionaryReadEntry(id mapDictionary,
 
 - (void)enumerateKeysAndUInt32sUsingBlock:
     (void (^)(int32_t key, uint32_t value, BOOL *stop))block {
-  [_dictionary enumerateKeysAndObjectsUsingBlock:^(NSNumber *aKey,
-                                                   NSNumber *aValue,
-                                                   BOOL *stop) {
-      block([aKey intValue], [aValue unsignedIntValue], stop);
-  }];
+  BOOL stop = NO;
+  NSDictionary *internal = _dictionary;
+  NSEnumerator *keys = [internal keyEnumerator];
+  NSNumber *aKey;
+  while ((aKey = [keys nextObject])) {
+    NSNumber *aValue = internal[aKey];
+    block([aKey intValue], [aValue unsignedIntValue], &stop);
+    if (stop) {
+      break;
+    }
+  }
 }
 
 - (size_t)computeSerializedSizeAsField:(GPBFieldDescriptor *)field {
-  NSUInteger count = _dictionary.count;
+  NSDictionary *internal = _dictionary;
+  NSUInteger count = internal.count;
   if (count == 0) {
     return 0;
   }
 
   GPBDataType valueDataType = GPBGetFieldDataType(field);
   GPBDataType keyDataType = field.mapKeyDataType;
-  __block size_t result = 0;
-  [_dictionary enumerateKeysAndObjectsUsingBlock:^(NSNumber *aKey,
-                                                   NSNumber *aValue,
-                                                   BOOL *stop) {
-    #pragma unused(stop)
+  size_t result = 0;
+  NSEnumerator *keys = [internal keyEnumerator];
+  NSNumber *aKey;
+  while ((aKey = [keys nextObject])) {
+    NSNumber *aValue = internal[aKey];
     size_t msgSize = ComputeDictInt32FieldSize([aKey intValue], kMapKeyFieldNumber, keyDataType);
     msgSize += ComputeDictUInt32FieldSize([aValue unsignedIntValue], kMapValueFieldNumber, valueDataType);
     result += GPBComputeRawVarint32SizeForInteger(msgSize) + msgSize;
-  }];
+  }
   size_t tagSize = GPBComputeWireFormatTagSize(GPBFieldNumber(field), GPBDataTypeMessage);
   result += tagSize * count;
   return result;
@@ -3639,20 +3754,22 @@ void GPBDictionaryReadEntry(id mapDictionary,
   GPBDataType valueDataType = GPBGetFieldDataType(field);
   GPBDataType keyDataType = field.mapKeyDataType;
   uint32_t tag = GPBWireFormatMakeTag(GPBFieldNumber(field), GPBWireFormatLengthDelimited);
-  [_dictionary enumerateKeysAndObjectsUsingBlock:^(NSNumber *aKey,
-                                                   NSNumber *aValue,
-                                                   BOOL *stop) {
-    #pragma unused(stop)
-    // Write the tag.
+  NSDictionary *internal = _dictionary;
+  NSEnumerator *keys = [internal keyEnumerator];
+  NSNumber *aKey;
+  while ((aKey = [keys nextObject])) {
+    NSNumber *aValue = internal[aKey];
     [outputStream writeInt32NoTag:tag];
     // Write the size of the message.
-    size_t msgSize = ComputeDictInt32FieldSize([aKey intValue], kMapKeyFieldNumber, keyDataType);
-    msgSize += ComputeDictUInt32FieldSize([aValue unsignedIntValue], kMapValueFieldNumber, valueDataType);
+    int32_t unwrappedKey = [aKey intValue];
+    uint32_t unwrappedValue = [aValue unsignedIntValue];
+    size_t msgSize = ComputeDictInt32FieldSize(unwrappedKey, kMapKeyFieldNumber, keyDataType);
+    msgSize += ComputeDictUInt32FieldSize(unwrappedValue, kMapValueFieldNumber, valueDataType);
     [outputStream writeInt32NoTag:(int32_t)msgSize];
     // Write the fields.
-    WriteDictInt32Field(outputStream, [aKey intValue], kMapKeyFieldNumber, keyDataType);
-    WriteDictUInt32Field(outputStream, [aValue unsignedIntValue], kMapValueFieldNumber, valueDataType);
-  }];
+    WriteDictInt32Field(outputStream, unwrappedKey, kMapKeyFieldNumber, keyDataType);
+    WriteDictUInt32Field(outputStream, unwrappedValue, kMapValueFieldNumber, valueDataType);
+  }
 }
 
 - (void)setGPBGenericValue:(GPBGenericValue *)value
@@ -3812,30 +3929,37 @@ void GPBDictionaryReadEntry(id mapDictionary,
 
 - (void)enumerateKeysAndInt32sUsingBlock:
     (void (^)(int32_t key, int32_t value, BOOL *stop))block {
-  [_dictionary enumerateKeysAndObjectsUsingBlock:^(NSNumber *aKey,
-                                                   NSNumber *aValue,
-                                                   BOOL *stop) {
-      block([aKey intValue], [aValue intValue], stop);
-  }];
+  BOOL stop = NO;
+  NSDictionary *internal = _dictionary;
+  NSEnumerator *keys = [internal keyEnumerator];
+  NSNumber *aKey;
+  while ((aKey = [keys nextObject])) {
+    NSNumber *aValue = internal[aKey];
+    block([aKey intValue], [aValue intValue], &stop);
+    if (stop) {
+      break;
+    }
+  }
 }
 
 - (size_t)computeSerializedSizeAsField:(GPBFieldDescriptor *)field {
-  NSUInteger count = _dictionary.count;
+  NSDictionary *internal = _dictionary;
+  NSUInteger count = internal.count;
   if (count == 0) {
     return 0;
   }
 
   GPBDataType valueDataType = GPBGetFieldDataType(field);
   GPBDataType keyDataType = field.mapKeyDataType;
-  __block size_t result = 0;
-  [_dictionary enumerateKeysAndObjectsUsingBlock:^(NSNumber *aKey,
-                                                   NSNumber *aValue,
-                                                   BOOL *stop) {
-    #pragma unused(stop)
+  size_t result = 0;
+  NSEnumerator *keys = [internal keyEnumerator];
+  NSNumber *aKey;
+  while ((aKey = [keys nextObject])) {
+    NSNumber *aValue = internal[aKey];
     size_t msgSize = ComputeDictInt32FieldSize([aKey intValue], kMapKeyFieldNumber, keyDataType);
     msgSize += ComputeDictInt32FieldSize([aValue intValue], kMapValueFieldNumber, valueDataType);
     result += GPBComputeRawVarint32SizeForInteger(msgSize) + msgSize;
-  }];
+  }
   size_t tagSize = GPBComputeWireFormatTagSize(GPBFieldNumber(field), GPBDataTypeMessage);
   result += tagSize * count;
   return result;
@@ -3846,20 +3970,22 @@ void GPBDictionaryReadEntry(id mapDictionary,
   GPBDataType valueDataType = GPBGetFieldDataType(field);
   GPBDataType keyDataType = field.mapKeyDataType;
   uint32_t tag = GPBWireFormatMakeTag(GPBFieldNumber(field), GPBWireFormatLengthDelimited);
-  [_dictionary enumerateKeysAndObjectsUsingBlock:^(NSNumber *aKey,
-                                                   NSNumber *aValue,
-                                                   BOOL *stop) {
-    #pragma unused(stop)
-    // Write the tag.
+  NSDictionary *internal = _dictionary;
+  NSEnumerator *keys = [internal keyEnumerator];
+  NSNumber *aKey;
+  while ((aKey = [keys nextObject])) {
+    NSNumber *aValue = internal[aKey];
     [outputStream writeInt32NoTag:tag];
     // Write the size of the message.
-    size_t msgSize = ComputeDictInt32FieldSize([aKey intValue], kMapKeyFieldNumber, keyDataType);
-    msgSize += ComputeDictInt32FieldSize([aValue intValue], kMapValueFieldNumber, valueDataType);
+    int32_t unwrappedKey = [aKey intValue];
+    int32_t unwrappedValue = [aValue intValue];
+    size_t msgSize = ComputeDictInt32FieldSize(unwrappedKey, kMapKeyFieldNumber, keyDataType);
+    msgSize += ComputeDictInt32FieldSize(unwrappedValue, kMapValueFieldNumber, valueDataType);
     [outputStream writeInt32NoTag:(int32_t)msgSize];
     // Write the fields.
-    WriteDictInt32Field(outputStream, [aKey intValue], kMapKeyFieldNumber, keyDataType);
-    WriteDictInt32Field(outputStream, [aValue intValue], kMapValueFieldNumber, valueDataType);
-  }];
+    WriteDictInt32Field(outputStream, unwrappedKey, kMapKeyFieldNumber, keyDataType);
+    WriteDictInt32Field(outputStream, unwrappedValue, kMapValueFieldNumber, valueDataType);
+  }
 }
 
 - (void)setGPBGenericValue:(GPBGenericValue *)value
@@ -4019,30 +4145,37 @@ void GPBDictionaryReadEntry(id mapDictionary,
 
 - (void)enumerateKeysAndUInt64sUsingBlock:
     (void (^)(int32_t key, uint64_t value, BOOL *stop))block {
-  [_dictionary enumerateKeysAndObjectsUsingBlock:^(NSNumber *aKey,
-                                                   NSNumber *aValue,
-                                                   BOOL *stop) {
-      block([aKey intValue], [aValue unsignedLongLongValue], stop);
-  }];
+  BOOL stop = NO;
+  NSDictionary *internal = _dictionary;
+  NSEnumerator *keys = [internal keyEnumerator];
+  NSNumber *aKey;
+  while ((aKey = [keys nextObject])) {
+    NSNumber *aValue = internal[aKey];
+    block([aKey intValue], [aValue unsignedLongLongValue], &stop);
+    if (stop) {
+      break;
+    }
+  }
 }
 
 - (size_t)computeSerializedSizeAsField:(GPBFieldDescriptor *)field {
-  NSUInteger count = _dictionary.count;
+  NSDictionary *internal = _dictionary;
+  NSUInteger count = internal.count;
   if (count == 0) {
     return 0;
   }
 
   GPBDataType valueDataType = GPBGetFieldDataType(field);
   GPBDataType keyDataType = field.mapKeyDataType;
-  __block size_t result = 0;
-  [_dictionary enumerateKeysAndObjectsUsingBlock:^(NSNumber *aKey,
-                                                   NSNumber *aValue,
-                                                   BOOL *stop) {
-    #pragma unused(stop)
+  size_t result = 0;
+  NSEnumerator *keys = [internal keyEnumerator];
+  NSNumber *aKey;
+  while ((aKey = [keys nextObject])) {
+    NSNumber *aValue = internal[aKey];
     size_t msgSize = ComputeDictInt32FieldSize([aKey intValue], kMapKeyFieldNumber, keyDataType);
     msgSize += ComputeDictUInt64FieldSize([aValue unsignedLongLongValue], kMapValueFieldNumber, valueDataType);
     result += GPBComputeRawVarint32SizeForInteger(msgSize) + msgSize;
-  }];
+  }
   size_t tagSize = GPBComputeWireFormatTagSize(GPBFieldNumber(field), GPBDataTypeMessage);
   result += tagSize * count;
   return result;
@@ -4053,20 +4186,22 @@ void GPBDictionaryReadEntry(id mapDictionary,
   GPBDataType valueDataType = GPBGetFieldDataType(field);
   GPBDataType keyDataType = field.mapKeyDataType;
   uint32_t tag = GPBWireFormatMakeTag(GPBFieldNumber(field), GPBWireFormatLengthDelimited);
-  [_dictionary enumerateKeysAndObjectsUsingBlock:^(NSNumber *aKey,
-                                                   NSNumber *aValue,
-                                                   BOOL *stop) {
-    #pragma unused(stop)
-    // Write the tag.
+  NSDictionary *internal = _dictionary;
+  NSEnumerator *keys = [internal keyEnumerator];
+  NSNumber *aKey;
+  while ((aKey = [keys nextObject])) {
+    NSNumber *aValue = internal[aKey];
     [outputStream writeInt32NoTag:tag];
     // Write the size of the message.
-    size_t msgSize = ComputeDictInt32FieldSize([aKey intValue], kMapKeyFieldNumber, keyDataType);
-    msgSize += ComputeDictUInt64FieldSize([aValue unsignedLongLongValue], kMapValueFieldNumber, valueDataType);
+    int32_t unwrappedKey = [aKey intValue];
+    uint64_t unwrappedValue = [aValue unsignedLongLongValue];
+    size_t msgSize = ComputeDictInt32FieldSize(unwrappedKey, kMapKeyFieldNumber, keyDataType);
+    msgSize += ComputeDictUInt64FieldSize(unwrappedValue, kMapValueFieldNumber, valueDataType);
     [outputStream writeInt32NoTag:(int32_t)msgSize];
     // Write the fields.
-    WriteDictInt32Field(outputStream, [aKey intValue], kMapKeyFieldNumber, keyDataType);
-    WriteDictUInt64Field(outputStream, [aValue unsignedLongLongValue], kMapValueFieldNumber, valueDataType);
-  }];
+    WriteDictInt32Field(outputStream, unwrappedKey, kMapKeyFieldNumber, keyDataType);
+    WriteDictUInt64Field(outputStream, unwrappedValue, kMapValueFieldNumber, valueDataType);
+  }
 }
 
 - (void)setGPBGenericValue:(GPBGenericValue *)value
@@ -4226,30 +4361,37 @@ void GPBDictionaryReadEntry(id mapDictionary,
 
 - (void)enumerateKeysAndInt64sUsingBlock:
     (void (^)(int32_t key, int64_t value, BOOL *stop))block {
-  [_dictionary enumerateKeysAndObjectsUsingBlock:^(NSNumber *aKey,
-                                                   NSNumber *aValue,
-                                                   BOOL *stop) {
-      block([aKey intValue], [aValue longLongValue], stop);
-  }];
+  BOOL stop = NO;
+  NSDictionary *internal = _dictionary;
+  NSEnumerator *keys = [internal keyEnumerator];
+  NSNumber *aKey;
+  while ((aKey = [keys nextObject])) {
+    NSNumber *aValue = internal[aKey];
+    block([aKey intValue], [aValue longLongValue], &stop);
+    if (stop) {
+      break;
+    }
+  }
 }
 
 - (size_t)computeSerializedSizeAsField:(GPBFieldDescriptor *)field {
-  NSUInteger count = _dictionary.count;
+  NSDictionary *internal = _dictionary;
+  NSUInteger count = internal.count;
   if (count == 0) {
     return 0;
   }
 
   GPBDataType valueDataType = GPBGetFieldDataType(field);
   GPBDataType keyDataType = field.mapKeyDataType;
-  __block size_t result = 0;
-  [_dictionary enumerateKeysAndObjectsUsingBlock:^(NSNumber *aKey,
-                                                   NSNumber *aValue,
-                                                   BOOL *stop) {
-    #pragma unused(stop)
+  size_t result = 0;
+  NSEnumerator *keys = [internal keyEnumerator];
+  NSNumber *aKey;
+  while ((aKey = [keys nextObject])) {
+    NSNumber *aValue = internal[aKey];
     size_t msgSize = ComputeDictInt32FieldSize([aKey intValue], kMapKeyFieldNumber, keyDataType);
     msgSize += ComputeDictInt64FieldSize([aValue longLongValue], kMapValueFieldNumber, valueDataType);
     result += GPBComputeRawVarint32SizeForInteger(msgSize) + msgSize;
-  }];
+  }
   size_t tagSize = GPBComputeWireFormatTagSize(GPBFieldNumber(field), GPBDataTypeMessage);
   result += tagSize * count;
   return result;
@@ -4260,20 +4402,22 @@ void GPBDictionaryReadEntry(id mapDictionary,
   GPBDataType valueDataType = GPBGetFieldDataType(field);
   GPBDataType keyDataType = field.mapKeyDataType;
   uint32_t tag = GPBWireFormatMakeTag(GPBFieldNumber(field), GPBWireFormatLengthDelimited);
-  [_dictionary enumerateKeysAndObjectsUsingBlock:^(NSNumber *aKey,
-                                                   NSNumber *aValue,
-                                                   BOOL *stop) {
-    #pragma unused(stop)
-    // Write the tag.
+  NSDictionary *internal = _dictionary;
+  NSEnumerator *keys = [internal keyEnumerator];
+  NSNumber *aKey;
+  while ((aKey = [keys nextObject])) {
+    NSNumber *aValue = internal[aKey];
     [outputStream writeInt32NoTag:tag];
     // Write the size of the message.
-    size_t msgSize = ComputeDictInt32FieldSize([aKey intValue], kMapKeyFieldNumber, keyDataType);
-    msgSize += ComputeDictInt64FieldSize([aValue longLongValue], kMapValueFieldNumber, valueDataType);
+    int32_t unwrappedKey = [aKey intValue];
+    int64_t unwrappedValue = [aValue longLongValue];
+    size_t msgSize = ComputeDictInt32FieldSize(unwrappedKey, kMapKeyFieldNumber, keyDataType);
+    msgSize += ComputeDictInt64FieldSize(unwrappedValue, kMapValueFieldNumber, valueDataType);
     [outputStream writeInt32NoTag:(int32_t)msgSize];
     // Write the fields.
-    WriteDictInt32Field(outputStream, [aKey intValue], kMapKeyFieldNumber, keyDataType);
-    WriteDictInt64Field(outputStream, [aValue longLongValue], kMapValueFieldNumber, valueDataType);
-  }];
+    WriteDictInt32Field(outputStream, unwrappedKey, kMapKeyFieldNumber, keyDataType);
+    WriteDictInt64Field(outputStream, unwrappedValue, kMapValueFieldNumber, valueDataType);
+  }
 }
 
 - (void)setGPBGenericValue:(GPBGenericValue *)value
@@ -4433,30 +4577,37 @@ void GPBDictionaryReadEntry(id mapDictionary,
 
 - (void)enumerateKeysAndBoolsUsingBlock:
     (void (^)(int32_t key, BOOL value, BOOL *stop))block {
-  [_dictionary enumerateKeysAndObjectsUsingBlock:^(NSNumber *aKey,
-                                                   NSNumber *aValue,
-                                                   BOOL *stop) {
-      block([aKey intValue], [aValue boolValue], stop);
-  }];
+  BOOL stop = NO;
+  NSDictionary *internal = _dictionary;
+  NSEnumerator *keys = [internal keyEnumerator];
+  NSNumber *aKey;
+  while ((aKey = [keys nextObject])) {
+    NSNumber *aValue = internal[aKey];
+    block([aKey intValue], [aValue boolValue], &stop);
+    if (stop) {
+      break;
+    }
+  }
 }
 
 - (size_t)computeSerializedSizeAsField:(GPBFieldDescriptor *)field {
-  NSUInteger count = _dictionary.count;
+  NSDictionary *internal = _dictionary;
+  NSUInteger count = internal.count;
   if (count == 0) {
     return 0;
   }
 
   GPBDataType valueDataType = GPBGetFieldDataType(field);
   GPBDataType keyDataType = field.mapKeyDataType;
-  __block size_t result = 0;
-  [_dictionary enumerateKeysAndObjectsUsingBlock:^(NSNumber *aKey,
-                                                   NSNumber *aValue,
-                                                   BOOL *stop) {
-    #pragma unused(stop)
+  size_t result = 0;
+  NSEnumerator *keys = [internal keyEnumerator];
+  NSNumber *aKey;
+  while ((aKey = [keys nextObject])) {
+    NSNumber *aValue = internal[aKey];
     size_t msgSize = ComputeDictInt32FieldSize([aKey intValue], kMapKeyFieldNumber, keyDataType);
     msgSize += ComputeDictBoolFieldSize([aValue boolValue], kMapValueFieldNumber, valueDataType);
     result += GPBComputeRawVarint32SizeForInteger(msgSize) + msgSize;
-  }];
+  }
   size_t tagSize = GPBComputeWireFormatTagSize(GPBFieldNumber(field), GPBDataTypeMessage);
   result += tagSize * count;
   return result;
@@ -4467,20 +4618,22 @@ void GPBDictionaryReadEntry(id mapDictionary,
   GPBDataType valueDataType = GPBGetFieldDataType(field);
   GPBDataType keyDataType = field.mapKeyDataType;
   uint32_t tag = GPBWireFormatMakeTag(GPBFieldNumber(field), GPBWireFormatLengthDelimited);
-  [_dictionary enumerateKeysAndObjectsUsingBlock:^(NSNumber *aKey,
-                                                   NSNumber *aValue,
-                                                   BOOL *stop) {
-    #pragma unused(stop)
-    // Write the tag.
+  NSDictionary *internal = _dictionary;
+  NSEnumerator *keys = [internal keyEnumerator];
+  NSNumber *aKey;
+  while ((aKey = [keys nextObject])) {
+    NSNumber *aValue = internal[aKey];
     [outputStream writeInt32NoTag:tag];
     // Write the size of the message.
-    size_t msgSize = ComputeDictInt32FieldSize([aKey intValue], kMapKeyFieldNumber, keyDataType);
-    msgSize += ComputeDictBoolFieldSize([aValue boolValue], kMapValueFieldNumber, valueDataType);
+    int32_t unwrappedKey = [aKey intValue];
+    BOOL unwrappedValue = [aValue boolValue];
+    size_t msgSize = ComputeDictInt32FieldSize(unwrappedKey, kMapKeyFieldNumber, keyDataType);
+    msgSize += ComputeDictBoolFieldSize(unwrappedValue, kMapValueFieldNumber, valueDataType);
     [outputStream writeInt32NoTag:(int32_t)msgSize];
     // Write the fields.
-    WriteDictInt32Field(outputStream, [aKey intValue], kMapKeyFieldNumber, keyDataType);
-    WriteDictBoolField(outputStream, [aValue boolValue], kMapValueFieldNumber, valueDataType);
-  }];
+    WriteDictInt32Field(outputStream, unwrappedKey, kMapKeyFieldNumber, keyDataType);
+    WriteDictBoolField(outputStream, unwrappedValue, kMapValueFieldNumber, valueDataType);
+  }
 }
 
 - (void)setGPBGenericValue:(GPBGenericValue *)value
@@ -4640,30 +4793,37 @@ void GPBDictionaryReadEntry(id mapDictionary,
 
 - (void)enumerateKeysAndFloatsUsingBlock:
     (void (^)(int32_t key, float value, BOOL *stop))block {
-  [_dictionary enumerateKeysAndObjectsUsingBlock:^(NSNumber *aKey,
-                                                   NSNumber *aValue,
-                                                   BOOL *stop) {
-      block([aKey intValue], [aValue floatValue], stop);
-  }];
+  BOOL stop = NO;
+  NSDictionary *internal = _dictionary;
+  NSEnumerator *keys = [internal keyEnumerator];
+  NSNumber *aKey;
+  while ((aKey = [keys nextObject])) {
+    NSNumber *aValue = internal[aKey];
+    block([aKey intValue], [aValue floatValue], &stop);
+    if (stop) {
+      break;
+    }
+  }
 }
 
 - (size_t)computeSerializedSizeAsField:(GPBFieldDescriptor *)field {
-  NSUInteger count = _dictionary.count;
+  NSDictionary *internal = _dictionary;
+  NSUInteger count = internal.count;
   if (count == 0) {
     return 0;
   }
 
   GPBDataType valueDataType = GPBGetFieldDataType(field);
   GPBDataType keyDataType = field.mapKeyDataType;
-  __block size_t result = 0;
-  [_dictionary enumerateKeysAndObjectsUsingBlock:^(NSNumber *aKey,
-                                                   NSNumber *aValue,
-                                                   BOOL *stop) {
-    #pragma unused(stop)
+  size_t result = 0;
+  NSEnumerator *keys = [internal keyEnumerator];
+  NSNumber *aKey;
+  while ((aKey = [keys nextObject])) {
+    NSNumber *aValue = internal[aKey];
     size_t msgSize = ComputeDictInt32FieldSize([aKey intValue], kMapKeyFieldNumber, keyDataType);
     msgSize += ComputeDictFloatFieldSize([aValue floatValue], kMapValueFieldNumber, valueDataType);
     result += GPBComputeRawVarint32SizeForInteger(msgSize) + msgSize;
-  }];
+  }
   size_t tagSize = GPBComputeWireFormatTagSize(GPBFieldNumber(field), GPBDataTypeMessage);
   result += tagSize * count;
   return result;
@@ -4674,20 +4834,22 @@ void GPBDictionaryReadEntry(id mapDictionary,
   GPBDataType valueDataType = GPBGetFieldDataType(field);
   GPBDataType keyDataType = field.mapKeyDataType;
   uint32_t tag = GPBWireFormatMakeTag(GPBFieldNumber(field), GPBWireFormatLengthDelimited);
-  [_dictionary enumerateKeysAndObjectsUsingBlock:^(NSNumber *aKey,
-                                                   NSNumber *aValue,
-                                                   BOOL *stop) {
-    #pragma unused(stop)
-    // Write the tag.
+  NSDictionary *internal = _dictionary;
+  NSEnumerator *keys = [internal keyEnumerator];
+  NSNumber *aKey;
+  while ((aKey = [keys nextObject])) {
+    NSNumber *aValue = internal[aKey];
     [outputStream writeInt32NoTag:tag];
     // Write the size of the message.
-    size_t msgSize = ComputeDictInt32FieldSize([aKey intValue], kMapKeyFieldNumber, keyDataType);
-    msgSize += ComputeDictFloatFieldSize([aValue floatValue], kMapValueFieldNumber, valueDataType);
+    int32_t unwrappedKey = [aKey intValue];
+    float unwrappedValue = [aValue floatValue];
+    size_t msgSize = ComputeDictInt32FieldSize(unwrappedKey, kMapKeyFieldNumber, keyDataType);
+    msgSize += ComputeDictFloatFieldSize(unwrappedValue, kMapValueFieldNumber, valueDataType);
     [outputStream writeInt32NoTag:(int32_t)msgSize];
     // Write the fields.
-    WriteDictInt32Field(outputStream, [aKey intValue], kMapKeyFieldNumber, keyDataType);
-    WriteDictFloatField(outputStream, [aValue floatValue], kMapValueFieldNumber, valueDataType);
-  }];
+    WriteDictInt32Field(outputStream, unwrappedKey, kMapKeyFieldNumber, keyDataType);
+    WriteDictFloatField(outputStream, unwrappedValue, kMapValueFieldNumber, valueDataType);
+  }
 }
 
 - (void)setGPBGenericValue:(GPBGenericValue *)value
@@ -4847,30 +5009,37 @@ void GPBDictionaryReadEntry(id mapDictionary,
 
 - (void)enumerateKeysAndDoublesUsingBlock:
     (void (^)(int32_t key, double value, BOOL *stop))block {
-  [_dictionary enumerateKeysAndObjectsUsingBlock:^(NSNumber *aKey,
-                                                   NSNumber *aValue,
-                                                   BOOL *stop) {
-      block([aKey intValue], [aValue doubleValue], stop);
-  }];
+  BOOL stop = NO;
+  NSDictionary *internal = _dictionary;
+  NSEnumerator *keys = [internal keyEnumerator];
+  NSNumber *aKey;
+  while ((aKey = [keys nextObject])) {
+    NSNumber *aValue = internal[aKey];
+    block([aKey intValue], [aValue doubleValue], &stop);
+    if (stop) {
+      break;
+    }
+  }
 }
 
 - (size_t)computeSerializedSizeAsField:(GPBFieldDescriptor *)field {
-  NSUInteger count = _dictionary.count;
+  NSDictionary *internal = _dictionary;
+  NSUInteger count = internal.count;
   if (count == 0) {
     return 0;
   }
 
   GPBDataType valueDataType = GPBGetFieldDataType(field);
   GPBDataType keyDataType = field.mapKeyDataType;
-  __block size_t result = 0;
-  [_dictionary enumerateKeysAndObjectsUsingBlock:^(NSNumber *aKey,
-                                                   NSNumber *aValue,
-                                                   BOOL *stop) {
-    #pragma unused(stop)
+  size_t result = 0;
+  NSEnumerator *keys = [internal keyEnumerator];
+  NSNumber *aKey;
+  while ((aKey = [keys nextObject])) {
+    NSNumber *aValue = internal[aKey];
     size_t msgSize = ComputeDictInt32FieldSize([aKey intValue], kMapKeyFieldNumber, keyDataType);
     msgSize += ComputeDictDoubleFieldSize([aValue doubleValue], kMapValueFieldNumber, valueDataType);
     result += GPBComputeRawVarint32SizeForInteger(msgSize) + msgSize;
-  }];
+  }
   size_t tagSize = GPBComputeWireFormatTagSize(GPBFieldNumber(field), GPBDataTypeMessage);
   result += tagSize * count;
   return result;
@@ -4881,20 +5050,22 @@ void GPBDictionaryReadEntry(id mapDictionary,
   GPBDataType valueDataType = GPBGetFieldDataType(field);
   GPBDataType keyDataType = field.mapKeyDataType;
   uint32_t tag = GPBWireFormatMakeTag(GPBFieldNumber(field), GPBWireFormatLengthDelimited);
-  [_dictionary enumerateKeysAndObjectsUsingBlock:^(NSNumber *aKey,
-                                                   NSNumber *aValue,
-                                                   BOOL *stop) {
-    #pragma unused(stop)
-    // Write the tag.
+  NSDictionary *internal = _dictionary;
+  NSEnumerator *keys = [internal keyEnumerator];
+  NSNumber *aKey;
+  while ((aKey = [keys nextObject])) {
+    NSNumber *aValue = internal[aKey];
     [outputStream writeInt32NoTag:tag];
     // Write the size of the message.
-    size_t msgSize = ComputeDictInt32FieldSize([aKey intValue], kMapKeyFieldNumber, keyDataType);
-    msgSize += ComputeDictDoubleFieldSize([aValue doubleValue], kMapValueFieldNumber, valueDataType);
+    int32_t unwrappedKey = [aKey intValue];
+    double unwrappedValue = [aValue doubleValue];
+    size_t msgSize = ComputeDictInt32FieldSize(unwrappedKey, kMapKeyFieldNumber, keyDataType);
+    msgSize += ComputeDictDoubleFieldSize(unwrappedValue, kMapValueFieldNumber, valueDataType);
     [outputStream writeInt32NoTag:(int32_t)msgSize];
     // Write the fields.
-    WriteDictInt32Field(outputStream, [aKey intValue], kMapKeyFieldNumber, keyDataType);
-    WriteDictDoubleField(outputStream, [aValue doubleValue], kMapValueFieldNumber, valueDataType);
-  }];
+    WriteDictInt32Field(outputStream, unwrappedKey, kMapKeyFieldNumber, keyDataType);
+    WriteDictDoubleField(outputStream, unwrappedValue, kMapValueFieldNumber, valueDataType);
+  }
 }
 
 - (void)setGPBGenericValue:(GPBGenericValue *)value
@@ -5082,30 +5253,37 @@ void GPBDictionaryReadEntry(id mapDictionary,
 
 - (void)enumerateKeysAndRawValuesUsingBlock:
     (void (^)(int32_t key, int32_t value, BOOL *stop))block {
-  [_dictionary enumerateKeysAndObjectsUsingBlock:^(NSNumber *aKey,
-                                                   NSNumber *aValue,
-                                                   BOOL *stop) {
-      block([aKey intValue], [aValue intValue], stop);
-  }];
+  BOOL stop = NO;
+  NSDictionary *internal = _dictionary;
+  NSEnumerator *keys = [internal keyEnumerator];
+  NSNumber *aKey;
+  while ((aKey = [keys nextObject])) {
+    NSNumber *aValue = internal[aKey];
+    block([aKey intValue], [aValue intValue], &stop);
+    if (stop) {
+      break;
+    }
+  }
 }
 
 - (size_t)computeSerializedSizeAsField:(GPBFieldDescriptor *)field {
-  NSUInteger count = _dictionary.count;
+  NSDictionary *internal = _dictionary;
+  NSUInteger count = internal.count;
   if (count == 0) {
     return 0;
   }
 
   GPBDataType valueDataType = GPBGetFieldDataType(field);
   GPBDataType keyDataType = field.mapKeyDataType;
-  __block size_t result = 0;
-  [_dictionary enumerateKeysAndObjectsUsingBlock:^(NSNumber *aKey,
-                                                   NSNumber *aValue,
-                                                   BOOL *stop) {
-    #pragma unused(stop)
+  size_t result = 0;
+  NSEnumerator *keys = [internal keyEnumerator];
+  NSNumber *aKey;
+  while ((aKey = [keys nextObject])) {
+    NSNumber *aValue = internal[aKey];
     size_t msgSize = ComputeDictInt32FieldSize([aKey intValue], kMapKeyFieldNumber, keyDataType);
     msgSize += ComputeDictEnumFieldSize([aValue intValue], kMapValueFieldNumber, valueDataType);
     result += GPBComputeRawVarint32SizeForInteger(msgSize) + msgSize;
-  }];
+  }
   size_t tagSize = GPBComputeWireFormatTagSize(GPBFieldNumber(field), GPBDataTypeMessage);
   result += tagSize * count;
   return result;
@@ -5116,20 +5294,22 @@ void GPBDictionaryReadEntry(id mapDictionary,
   GPBDataType valueDataType = GPBGetFieldDataType(field);
   GPBDataType keyDataType = field.mapKeyDataType;
   uint32_t tag = GPBWireFormatMakeTag(GPBFieldNumber(field), GPBWireFormatLengthDelimited);
-  [_dictionary enumerateKeysAndObjectsUsingBlock:^(NSNumber *aKey,
-                                                   NSNumber *aValue,
-                                                   BOOL *stop) {
-    #pragma unused(stop)
-    // Write the tag.
+  NSDictionary *internal = _dictionary;
+  NSEnumerator *keys = [internal keyEnumerator];
+  NSNumber *aKey;
+  while ((aKey = [keys nextObject])) {
+    NSNumber *aValue = internal[aKey];
     [outputStream writeInt32NoTag:tag];
     // Write the size of the message.
-    size_t msgSize = ComputeDictInt32FieldSize([aKey intValue], kMapKeyFieldNumber, keyDataType);
-    msgSize += ComputeDictEnumFieldSize([aValue intValue], kMapValueFieldNumber, valueDataType);
+    int32_t unwrappedKey = [aKey intValue];
+    int32_t unwrappedValue = [aValue intValue];
+    size_t msgSize = ComputeDictInt32FieldSize(unwrappedKey, kMapKeyFieldNumber, keyDataType);
+    msgSize += ComputeDictEnumFieldSize(unwrappedValue, kMapValueFieldNumber, valueDataType);
     [outputStream writeInt32NoTag:(int32_t)msgSize];
     // Write the fields.
-    WriteDictInt32Field(outputStream, [aKey intValue], kMapKeyFieldNumber, keyDataType);
-    WriteDictEnumField(outputStream, [aValue intValue], kMapValueFieldNumber, valueDataType);
-  }];
+    WriteDictInt32Field(outputStream, unwrappedKey, kMapKeyFieldNumber, keyDataType);
+    WriteDictEnumField(outputStream, unwrappedValue, kMapValueFieldNumber, valueDataType);
+  }
 }
 
 - (NSData *)serializedDataForUnknownValue:(int32_t)value
@@ -5179,15 +5359,20 @@ void GPBDictionaryReadEntry(id mapDictionary,
 - (void)enumerateKeysAndEnumsUsingBlock:
     (void (^)(int32_t key, int32_t value, BOOL *stop))block {
   GPBEnumValidationFunc func = _validationFunc;
-  [_dictionary enumerateKeysAndObjectsUsingBlock:^(NSNumber *aKey,
-                                                   NSNumber *aValue,
-                                                   BOOL *stop) {
+  BOOL stop = NO;
+  NSEnumerator *keys = [_dictionary keyEnumerator];
+  NSNumber *aKey;
+  while ((aKey = [keys nextObject])) {
+    NSNumber *aValue = _dictionary[aKey];
       int32_t unwrapped = [aValue intValue];
       if (!func(unwrapped)) {
         unwrapped = kGPBUnrecognizedEnumeratorValue;
       }
-      block([aKey intValue], unwrapped, stop);
-  }];
+    block([aKey intValue], unwrapped, &stop);
+    if (stop) {
+      break;
+    }
+  }
 }
 
 - (void)addRawEntriesFromDictionary:(GPBInt32EnumDictionary *)otherDictionary {
@@ -5344,11 +5529,17 @@ void GPBDictionaryReadEntry(id mapDictionary,
 
 - (void)enumerateKeysAndObjectsUsingBlock:
     (void (^)(int32_t key, id object, BOOL *stop))block {
-  [_dictionary enumerateKeysAndObjectsUsingBlock:^(NSNumber *aKey,
-                                                   id aObject,
-                                                   BOOL *stop) {
-      block([aKey intValue], aObject, stop);
-  }];
+  BOOL stop = NO;
+  NSDictionary *internal = _dictionary;
+  NSEnumerator *keys = [internal keyEnumerator];
+  NSNumber *aKey;
+  while ((aKey = [keys nextObject])) {
+    id aObject = internal[aKey];
+    block([aKey intValue], aObject, &stop);
+    if (stop) {
+      break;
+    }
+  }
 }
 
 - (BOOL)isInitialized {
@@ -5363,34 +5554,36 @@ void GPBDictionaryReadEntry(id mapDictionary,
 - (instancetype)deepCopyWithZone:(NSZone *)zone {
   GPBInt32ObjectDictionary *newDict =
       [[GPBInt32ObjectDictionary alloc] init];
-  [_dictionary enumerateKeysAndObjectsUsingBlock:^(id aKey,
-                                                   GPBMessage *msg,
-                                                   BOOL *stop) {
-    #pragma unused(stop)
+  NSEnumerator *keys = [_dictionary keyEnumerator];
+  id aKey;
+  NSMutableDictionary *internalDict = newDict->_dictionary;
+  while ((aKey = [keys nextObject])) {
+    GPBMessage *msg = _dictionary[aKey];
     GPBMessage *copiedMsg = [msg copyWithZone:zone];
-    [newDict->_dictionary setObject:copiedMsg forKey:aKey];
+    [internalDict setObject:copiedMsg forKey:aKey];
     [copiedMsg release];
-  }];
+  }
   return newDict;
 }
 
 - (size_t)computeSerializedSizeAsField:(GPBFieldDescriptor *)field {
-  NSUInteger count = _dictionary.count;
+  NSDictionary *internal = _dictionary;
+  NSUInteger count = internal.count;
   if (count == 0) {
     return 0;
   }
 
   GPBDataType valueDataType = GPBGetFieldDataType(field);
   GPBDataType keyDataType = field.mapKeyDataType;
-  __block size_t result = 0;
-  [_dictionary enumerateKeysAndObjectsUsingBlock:^(NSNumber *aKey,
-                                                   id aObject,
-                                                   BOOL *stop) {
-    #pragma unused(stop)
+  size_t result = 0;
+  NSEnumerator *keys = [internal keyEnumerator];
+  NSNumber *aKey;
+  while ((aKey = [keys nextObject])) {
+    id aObject = internal[aKey];
     size_t msgSize = ComputeDictInt32FieldSize([aKey intValue], kMapKeyFieldNumber, keyDataType);
     msgSize += ComputeDictObjectFieldSize(aObject, kMapValueFieldNumber, valueDataType);
     result += GPBComputeRawVarint32SizeForInteger(msgSize) + msgSize;
-  }];
+  }
   size_t tagSize = GPBComputeWireFormatTagSize(GPBFieldNumber(field), GPBDataTypeMessage);
   result += tagSize * count;
   return result;
@@ -5401,20 +5594,22 @@ void GPBDictionaryReadEntry(id mapDictionary,
   GPBDataType valueDataType = GPBGetFieldDataType(field);
   GPBDataType keyDataType = field.mapKeyDataType;
   uint32_t tag = GPBWireFormatMakeTag(GPBFieldNumber(field), GPBWireFormatLengthDelimited);
-  [_dictionary enumerateKeysAndObjectsUsingBlock:^(NSNumber *aKey,
-                                                   id aObject,
-                                                   BOOL *stop) {
-    #pragma unused(stop)
-    // Write the tag.
+  NSDictionary *internal = _dictionary;
+  NSEnumerator *keys = [internal keyEnumerator];
+  NSNumber *aKey;
+  while ((aKey = [keys nextObject])) {
+    id aObject = internal[aKey];
     [outputStream writeInt32NoTag:tag];
     // Write the size of the message.
-    size_t msgSize = ComputeDictInt32FieldSize([aKey intValue], kMapKeyFieldNumber, keyDataType);
-    msgSize += ComputeDictObjectFieldSize(aObject, kMapValueFieldNumber, valueDataType);
+    int32_t unwrappedKey = [aKey intValue];
+    id unwrappedValue = aObject;
+    size_t msgSize = ComputeDictInt32FieldSize(unwrappedKey, kMapKeyFieldNumber, keyDataType);
+    msgSize += ComputeDictObjectFieldSize(unwrappedValue, kMapValueFieldNumber, valueDataType);
     [outputStream writeInt32NoTag:(int32_t)msgSize];
     // Write the fields.
-    WriteDictInt32Field(outputStream, [aKey intValue], kMapKeyFieldNumber, keyDataType);
-    WriteDictObjectField(outputStream, aObject, kMapValueFieldNumber, valueDataType);
-  }];
+    WriteDictInt32Field(outputStream, unwrappedKey, kMapKeyFieldNumber, keyDataType);
+    WriteDictObjectField(outputStream, unwrappedValue, kMapValueFieldNumber, valueDataType);
+  }
 }
 
 - (void)setGPBGenericValue:(GPBGenericValue *)value
@@ -5578,30 +5773,37 @@ void GPBDictionaryReadEntry(id mapDictionary,
 
 - (void)enumerateKeysAndUInt32sUsingBlock:
     (void (^)(uint64_t key, uint32_t value, BOOL *stop))block {
-  [_dictionary enumerateKeysAndObjectsUsingBlock:^(NSNumber *aKey,
-                                                   NSNumber *aValue,
-                                                   BOOL *stop) {
-      block([aKey unsignedLongLongValue], [aValue unsignedIntValue], stop);
-  }];
+  BOOL stop = NO;
+  NSDictionary *internal = _dictionary;
+  NSEnumerator *keys = [internal keyEnumerator];
+  NSNumber *aKey;
+  while ((aKey = [keys nextObject])) {
+    NSNumber *aValue = internal[aKey];
+    block([aKey unsignedLongLongValue], [aValue unsignedIntValue], &stop);
+    if (stop) {
+      break;
+    }
+  }
 }
 
 - (size_t)computeSerializedSizeAsField:(GPBFieldDescriptor *)field {
-  NSUInteger count = _dictionary.count;
+  NSDictionary *internal = _dictionary;
+  NSUInteger count = internal.count;
   if (count == 0) {
     return 0;
   }
 
   GPBDataType valueDataType = GPBGetFieldDataType(field);
   GPBDataType keyDataType = field.mapKeyDataType;
-  __block size_t result = 0;
-  [_dictionary enumerateKeysAndObjectsUsingBlock:^(NSNumber *aKey,
-                                                   NSNumber *aValue,
-                                                   BOOL *stop) {
-    #pragma unused(stop)
+  size_t result = 0;
+  NSEnumerator *keys = [internal keyEnumerator];
+  NSNumber *aKey;
+  while ((aKey = [keys nextObject])) {
+    NSNumber *aValue = internal[aKey];
     size_t msgSize = ComputeDictUInt64FieldSize([aKey unsignedLongLongValue], kMapKeyFieldNumber, keyDataType);
     msgSize += ComputeDictUInt32FieldSize([aValue unsignedIntValue], kMapValueFieldNumber, valueDataType);
     result += GPBComputeRawVarint32SizeForInteger(msgSize) + msgSize;
-  }];
+  }
   size_t tagSize = GPBComputeWireFormatTagSize(GPBFieldNumber(field), GPBDataTypeMessage);
   result += tagSize * count;
   return result;
@@ -5612,20 +5814,22 @@ void GPBDictionaryReadEntry(id mapDictionary,
   GPBDataType valueDataType = GPBGetFieldDataType(field);
   GPBDataType keyDataType = field.mapKeyDataType;
   uint32_t tag = GPBWireFormatMakeTag(GPBFieldNumber(field), GPBWireFormatLengthDelimited);
-  [_dictionary enumerateKeysAndObjectsUsingBlock:^(NSNumber *aKey,
-                                                   NSNumber *aValue,
-                                                   BOOL *stop) {
-    #pragma unused(stop)
-    // Write the tag.
+  NSDictionary *internal = _dictionary;
+  NSEnumerator *keys = [internal keyEnumerator];
+  NSNumber *aKey;
+  while ((aKey = [keys nextObject])) {
+    NSNumber *aValue = internal[aKey];
     [outputStream writeInt32NoTag:tag];
     // Write the size of the message.
-    size_t msgSize = ComputeDictUInt64FieldSize([aKey unsignedLongLongValue], kMapKeyFieldNumber, keyDataType);
-    msgSize += ComputeDictUInt32FieldSize([aValue unsignedIntValue], kMapValueFieldNumber, valueDataType);
+    uint64_t unwrappedKey = [aKey unsignedLongLongValue];
+    uint32_t unwrappedValue = [aValue unsignedIntValue];
+    size_t msgSize = ComputeDictUInt64FieldSize(unwrappedKey, kMapKeyFieldNumber, keyDataType);
+    msgSize += ComputeDictUInt32FieldSize(unwrappedValue, kMapValueFieldNumber, valueDataType);
     [outputStream writeInt32NoTag:(int32_t)msgSize];
     // Write the fields.
-    WriteDictUInt64Field(outputStream, [aKey unsignedLongLongValue], kMapKeyFieldNumber, keyDataType);
-    WriteDictUInt32Field(outputStream, [aValue unsignedIntValue], kMapValueFieldNumber, valueDataType);
-  }];
+    WriteDictUInt64Field(outputStream, unwrappedKey, kMapKeyFieldNumber, keyDataType);
+    WriteDictUInt32Field(outputStream, unwrappedValue, kMapValueFieldNumber, valueDataType);
+  }
 }
 
 - (void)setGPBGenericValue:(GPBGenericValue *)value
@@ -5785,30 +5989,37 @@ void GPBDictionaryReadEntry(id mapDictionary,
 
 - (void)enumerateKeysAndInt32sUsingBlock:
     (void (^)(uint64_t key, int32_t value, BOOL *stop))block {
-  [_dictionary enumerateKeysAndObjectsUsingBlock:^(NSNumber *aKey,
-                                                   NSNumber *aValue,
-                                                   BOOL *stop) {
-      block([aKey unsignedLongLongValue], [aValue intValue], stop);
-  }];
+  BOOL stop = NO;
+  NSDictionary *internal = _dictionary;
+  NSEnumerator *keys = [internal keyEnumerator];
+  NSNumber *aKey;
+  while ((aKey = [keys nextObject])) {
+    NSNumber *aValue = internal[aKey];
+    block([aKey unsignedLongLongValue], [aValue intValue], &stop);
+    if (stop) {
+      break;
+    }
+  }
 }
 
 - (size_t)computeSerializedSizeAsField:(GPBFieldDescriptor *)field {
-  NSUInteger count = _dictionary.count;
+  NSDictionary *internal = _dictionary;
+  NSUInteger count = internal.count;
   if (count == 0) {
     return 0;
   }
 
   GPBDataType valueDataType = GPBGetFieldDataType(field);
   GPBDataType keyDataType = field.mapKeyDataType;
-  __block size_t result = 0;
-  [_dictionary enumerateKeysAndObjectsUsingBlock:^(NSNumber *aKey,
-                                                   NSNumber *aValue,
-                                                   BOOL *stop) {
-    #pragma unused(stop)
+  size_t result = 0;
+  NSEnumerator *keys = [internal keyEnumerator];
+  NSNumber *aKey;
+  while ((aKey = [keys nextObject])) {
+    NSNumber *aValue = internal[aKey];
     size_t msgSize = ComputeDictUInt64FieldSize([aKey unsignedLongLongValue], kMapKeyFieldNumber, keyDataType);
     msgSize += ComputeDictInt32FieldSize([aValue intValue], kMapValueFieldNumber, valueDataType);
     result += GPBComputeRawVarint32SizeForInteger(msgSize) + msgSize;
-  }];
+  }
   size_t tagSize = GPBComputeWireFormatTagSize(GPBFieldNumber(field), GPBDataTypeMessage);
   result += tagSize * count;
   return result;
@@ -5819,20 +6030,22 @@ void GPBDictionaryReadEntry(id mapDictionary,
   GPBDataType valueDataType = GPBGetFieldDataType(field);
   GPBDataType keyDataType = field.mapKeyDataType;
   uint32_t tag = GPBWireFormatMakeTag(GPBFieldNumber(field), GPBWireFormatLengthDelimited);
-  [_dictionary enumerateKeysAndObjectsUsingBlock:^(NSNumber *aKey,
-                                                   NSNumber *aValue,
-                                                   BOOL *stop) {
-    #pragma unused(stop)
-    // Write the tag.
+  NSDictionary *internal = _dictionary;
+  NSEnumerator *keys = [internal keyEnumerator];
+  NSNumber *aKey;
+  while ((aKey = [keys nextObject])) {
+    NSNumber *aValue = internal[aKey];
     [outputStream writeInt32NoTag:tag];
     // Write the size of the message.
-    size_t msgSize = ComputeDictUInt64FieldSize([aKey unsignedLongLongValue], kMapKeyFieldNumber, keyDataType);
-    msgSize += ComputeDictInt32FieldSize([aValue intValue], kMapValueFieldNumber, valueDataType);
+    uint64_t unwrappedKey = [aKey unsignedLongLongValue];
+    int32_t unwrappedValue = [aValue intValue];
+    size_t msgSize = ComputeDictUInt64FieldSize(unwrappedKey, kMapKeyFieldNumber, keyDataType);
+    msgSize += ComputeDictInt32FieldSize(unwrappedValue, kMapValueFieldNumber, valueDataType);
     [outputStream writeInt32NoTag:(int32_t)msgSize];
     // Write the fields.
-    WriteDictUInt64Field(outputStream, [aKey unsignedLongLongValue], kMapKeyFieldNumber, keyDataType);
-    WriteDictInt32Field(outputStream, [aValue intValue], kMapValueFieldNumber, valueDataType);
-  }];
+    WriteDictUInt64Field(outputStream, unwrappedKey, kMapKeyFieldNumber, keyDataType);
+    WriteDictInt32Field(outputStream, unwrappedValue, kMapValueFieldNumber, valueDataType);
+  }
 }
 
 - (void)setGPBGenericValue:(GPBGenericValue *)value
@@ -5992,30 +6205,37 @@ void GPBDictionaryReadEntry(id mapDictionary,
 
 - (void)enumerateKeysAndUInt64sUsingBlock:
     (void (^)(uint64_t key, uint64_t value, BOOL *stop))block {
-  [_dictionary enumerateKeysAndObjectsUsingBlock:^(NSNumber *aKey,
-                                                   NSNumber *aValue,
-                                                   BOOL *stop) {
-      block([aKey unsignedLongLongValue], [aValue unsignedLongLongValue], stop);
-  }];
+  BOOL stop = NO;
+  NSDictionary *internal = _dictionary;
+  NSEnumerator *keys = [internal keyEnumerator];
+  NSNumber *aKey;
+  while ((aKey = [keys nextObject])) {
+    NSNumber *aValue = internal[aKey];
+    block([aKey unsignedLongLongValue], [aValue unsignedLongLongValue], &stop);
+    if (stop) {
+      break;
+    }
+  }
 }
 
 - (size_t)computeSerializedSizeAsField:(GPBFieldDescriptor *)field {
-  NSUInteger count = _dictionary.count;
+  NSDictionary *internal = _dictionary;
+  NSUInteger count = internal.count;
   if (count == 0) {
     return 0;
   }
 
   GPBDataType valueDataType = GPBGetFieldDataType(field);
   GPBDataType keyDataType = field.mapKeyDataType;
-  __block size_t result = 0;
-  [_dictionary enumerateKeysAndObjectsUsingBlock:^(NSNumber *aKey,
-                                                   NSNumber *aValue,
-                                                   BOOL *stop) {
-    #pragma unused(stop)
+  size_t result = 0;
+  NSEnumerator *keys = [internal keyEnumerator];
+  NSNumber *aKey;
+  while ((aKey = [keys nextObject])) {
+    NSNumber *aValue = internal[aKey];
     size_t msgSize = ComputeDictUInt64FieldSize([aKey unsignedLongLongValue], kMapKeyFieldNumber, keyDataType);
     msgSize += ComputeDictUInt64FieldSize([aValue unsignedLongLongValue], kMapValueFieldNumber, valueDataType);
     result += GPBComputeRawVarint32SizeForInteger(msgSize) + msgSize;
-  }];
+  }
   size_t tagSize = GPBComputeWireFormatTagSize(GPBFieldNumber(field), GPBDataTypeMessage);
   result += tagSize * count;
   return result;
@@ -6026,20 +6246,22 @@ void GPBDictionaryReadEntry(id mapDictionary,
   GPBDataType valueDataType = GPBGetFieldDataType(field);
   GPBDataType keyDataType = field.mapKeyDataType;
   uint32_t tag = GPBWireFormatMakeTag(GPBFieldNumber(field), GPBWireFormatLengthDelimited);
-  [_dictionary enumerateKeysAndObjectsUsingBlock:^(NSNumber *aKey,
-                                                   NSNumber *aValue,
-                                                   BOOL *stop) {
-    #pragma unused(stop)
-    // Write the tag.
+  NSDictionary *internal = _dictionary;
+  NSEnumerator *keys = [internal keyEnumerator];
+  NSNumber *aKey;
+  while ((aKey = [keys nextObject])) {
+    NSNumber *aValue = internal[aKey];
     [outputStream writeInt32NoTag:tag];
     // Write the size of the message.
-    size_t msgSize = ComputeDictUInt64FieldSize([aKey unsignedLongLongValue], kMapKeyFieldNumber, keyDataType);
-    msgSize += ComputeDictUInt64FieldSize([aValue unsignedLongLongValue], kMapValueFieldNumber, valueDataType);
+    uint64_t unwrappedKey = [aKey unsignedLongLongValue];
+    uint64_t unwrappedValue = [aValue unsignedLongLongValue];
+    size_t msgSize = ComputeDictUInt64FieldSize(unwrappedKey, kMapKeyFieldNumber, keyDataType);
+    msgSize += ComputeDictUInt64FieldSize(unwrappedValue, kMapValueFieldNumber, valueDataType);
     [outputStream writeInt32NoTag:(int32_t)msgSize];
     // Write the fields.
-    WriteDictUInt64Field(outputStream, [aKey unsignedLongLongValue], kMapKeyFieldNumber, keyDataType);
-    WriteDictUInt64Field(outputStream, [aValue unsignedLongLongValue], kMapValueFieldNumber, valueDataType);
-  }];
+    WriteDictUInt64Field(outputStream, unwrappedKey, kMapKeyFieldNumber, keyDataType);
+    WriteDictUInt64Field(outputStream, unwrappedValue, kMapValueFieldNumber, valueDataType);
+  }
 }
 
 - (void)setGPBGenericValue:(GPBGenericValue *)value
@@ -6199,30 +6421,37 @@ void GPBDictionaryReadEntry(id mapDictionary,
 
 - (void)enumerateKeysAndInt64sUsingBlock:
     (void (^)(uint64_t key, int64_t value, BOOL *stop))block {
-  [_dictionary enumerateKeysAndObjectsUsingBlock:^(NSNumber *aKey,
-                                                   NSNumber *aValue,
-                                                   BOOL *stop) {
-      block([aKey unsignedLongLongValue], [aValue longLongValue], stop);
-  }];
+  BOOL stop = NO;
+  NSDictionary *internal = _dictionary;
+  NSEnumerator *keys = [internal keyEnumerator];
+  NSNumber *aKey;
+  while ((aKey = [keys nextObject])) {
+    NSNumber *aValue = internal[aKey];
+    block([aKey unsignedLongLongValue], [aValue longLongValue], &stop);
+    if (stop) {
+      break;
+    }
+  }
 }
 
 - (size_t)computeSerializedSizeAsField:(GPBFieldDescriptor *)field {
-  NSUInteger count = _dictionary.count;
+  NSDictionary *internal = _dictionary;
+  NSUInteger count = internal.count;
   if (count == 0) {
     return 0;
   }
 
   GPBDataType valueDataType = GPBGetFieldDataType(field);
   GPBDataType keyDataType = field.mapKeyDataType;
-  __block size_t result = 0;
-  [_dictionary enumerateKeysAndObjectsUsingBlock:^(NSNumber *aKey,
-                                                   NSNumber *aValue,
-                                                   BOOL *stop) {
-    #pragma unused(stop)
+  size_t result = 0;
+  NSEnumerator *keys = [internal keyEnumerator];
+  NSNumber *aKey;
+  while ((aKey = [keys nextObject])) {
+    NSNumber *aValue = internal[aKey];
     size_t msgSize = ComputeDictUInt64FieldSize([aKey unsignedLongLongValue], kMapKeyFieldNumber, keyDataType);
     msgSize += ComputeDictInt64FieldSize([aValue longLongValue], kMapValueFieldNumber, valueDataType);
     result += GPBComputeRawVarint32SizeForInteger(msgSize) + msgSize;
-  }];
+  }
   size_t tagSize = GPBComputeWireFormatTagSize(GPBFieldNumber(field), GPBDataTypeMessage);
   result += tagSize * count;
   return result;
@@ -6233,20 +6462,22 @@ void GPBDictionaryReadEntry(id mapDictionary,
   GPBDataType valueDataType = GPBGetFieldDataType(field);
   GPBDataType keyDataType = field.mapKeyDataType;
   uint32_t tag = GPBWireFormatMakeTag(GPBFieldNumber(field), GPBWireFormatLengthDelimited);
-  [_dictionary enumerateKeysAndObjectsUsingBlock:^(NSNumber *aKey,
-                                                   NSNumber *aValue,
-                                                   BOOL *stop) {
-    #pragma unused(stop)
-    // Write the tag.
+  NSDictionary *internal = _dictionary;
+  NSEnumerator *keys = [internal keyEnumerator];
+  NSNumber *aKey;
+  while ((aKey = [keys nextObject])) {
+    NSNumber *aValue = internal[aKey];
     [outputStream writeInt32NoTag:tag];
     // Write the size of the message.
-    size_t msgSize = ComputeDictUInt64FieldSize([aKey unsignedLongLongValue], kMapKeyFieldNumber, keyDataType);
-    msgSize += ComputeDictInt64FieldSize([aValue longLongValue], kMapValueFieldNumber, valueDataType);
+    uint64_t unwrappedKey = [aKey unsignedLongLongValue];
+    int64_t unwrappedValue = [aValue longLongValue];
+    size_t msgSize = ComputeDictUInt64FieldSize(unwrappedKey, kMapKeyFieldNumber, keyDataType);
+    msgSize += ComputeDictInt64FieldSize(unwrappedValue, kMapValueFieldNumber, valueDataType);
     [outputStream writeInt32NoTag:(int32_t)msgSize];
     // Write the fields.
-    WriteDictUInt64Field(outputStream, [aKey unsignedLongLongValue], kMapKeyFieldNumber, keyDataType);
-    WriteDictInt64Field(outputStream, [aValue longLongValue], kMapValueFieldNumber, valueDataType);
-  }];
+    WriteDictUInt64Field(outputStream, unwrappedKey, kMapKeyFieldNumber, keyDataType);
+    WriteDictInt64Field(outputStream, unwrappedValue, kMapValueFieldNumber, valueDataType);
+  }
 }
 
 - (void)setGPBGenericValue:(GPBGenericValue *)value
@@ -6406,30 +6637,37 @@ void GPBDictionaryReadEntry(id mapDictionary,
 
 - (void)enumerateKeysAndBoolsUsingBlock:
     (void (^)(uint64_t key, BOOL value, BOOL *stop))block {
-  [_dictionary enumerateKeysAndObjectsUsingBlock:^(NSNumber *aKey,
-                                                   NSNumber *aValue,
-                                                   BOOL *stop) {
-      block([aKey unsignedLongLongValue], [aValue boolValue], stop);
-  }];
+  BOOL stop = NO;
+  NSDictionary *internal = _dictionary;
+  NSEnumerator *keys = [internal keyEnumerator];
+  NSNumber *aKey;
+  while ((aKey = [keys nextObject])) {
+    NSNumber *aValue = internal[aKey];
+    block([aKey unsignedLongLongValue], [aValue boolValue], &stop);
+    if (stop) {
+      break;
+    }
+  }
 }
 
 - (size_t)computeSerializedSizeAsField:(GPBFieldDescriptor *)field {
-  NSUInteger count = _dictionary.count;
+  NSDictionary *internal = _dictionary;
+  NSUInteger count = internal.count;
   if (count == 0) {
     return 0;
   }
 
   GPBDataType valueDataType = GPBGetFieldDataType(field);
   GPBDataType keyDataType = field.mapKeyDataType;
-  __block size_t result = 0;
-  [_dictionary enumerateKeysAndObjectsUsingBlock:^(NSNumber *aKey,
-                                                   NSNumber *aValue,
-                                                   BOOL *stop) {
-    #pragma unused(stop)
+  size_t result = 0;
+  NSEnumerator *keys = [internal keyEnumerator];
+  NSNumber *aKey;
+  while ((aKey = [keys nextObject])) {
+    NSNumber *aValue = internal[aKey];
     size_t msgSize = ComputeDictUInt64FieldSize([aKey unsignedLongLongValue], kMapKeyFieldNumber, keyDataType);
     msgSize += ComputeDictBoolFieldSize([aValue boolValue], kMapValueFieldNumber, valueDataType);
     result += GPBComputeRawVarint32SizeForInteger(msgSize) + msgSize;
-  }];
+  }
   size_t tagSize = GPBComputeWireFormatTagSize(GPBFieldNumber(field), GPBDataTypeMessage);
   result += tagSize * count;
   return result;
@@ -6440,20 +6678,22 @@ void GPBDictionaryReadEntry(id mapDictionary,
   GPBDataType valueDataType = GPBGetFieldDataType(field);
   GPBDataType keyDataType = field.mapKeyDataType;
   uint32_t tag = GPBWireFormatMakeTag(GPBFieldNumber(field), GPBWireFormatLengthDelimited);
-  [_dictionary enumerateKeysAndObjectsUsingBlock:^(NSNumber *aKey,
-                                                   NSNumber *aValue,
-                                                   BOOL *stop) {
-    #pragma unused(stop)
-    // Write the tag.
+  NSDictionary *internal = _dictionary;
+  NSEnumerator *keys = [internal keyEnumerator];
+  NSNumber *aKey;
+  while ((aKey = [keys nextObject])) {
+    NSNumber *aValue = internal[aKey];
     [outputStream writeInt32NoTag:tag];
     // Write the size of the message.
-    size_t msgSize = ComputeDictUInt64FieldSize([aKey unsignedLongLongValue], kMapKeyFieldNumber, keyDataType);
-    msgSize += ComputeDictBoolFieldSize([aValue boolValue], kMapValueFieldNumber, valueDataType);
+    uint64_t unwrappedKey = [aKey unsignedLongLongValue];
+    BOOL unwrappedValue = [aValue boolValue];
+    size_t msgSize = ComputeDictUInt64FieldSize(unwrappedKey, kMapKeyFieldNumber, keyDataType);
+    msgSize += ComputeDictBoolFieldSize(unwrappedValue, kMapValueFieldNumber, valueDataType);
     [outputStream writeInt32NoTag:(int32_t)msgSize];
     // Write the fields.
-    WriteDictUInt64Field(outputStream, [aKey unsignedLongLongValue], kMapKeyFieldNumber, keyDataType);
-    WriteDictBoolField(outputStream, [aValue boolValue], kMapValueFieldNumber, valueDataType);
-  }];
+    WriteDictUInt64Field(outputStream, unwrappedKey, kMapKeyFieldNumber, keyDataType);
+    WriteDictBoolField(outputStream, unwrappedValue, kMapValueFieldNumber, valueDataType);
+  }
 }
 
 - (void)setGPBGenericValue:(GPBGenericValue *)value
@@ -6613,30 +6853,37 @@ void GPBDictionaryReadEntry(id mapDictionary,
 
 - (void)enumerateKeysAndFloatsUsingBlock:
     (void (^)(uint64_t key, float value, BOOL *stop))block {
-  [_dictionary enumerateKeysAndObjectsUsingBlock:^(NSNumber *aKey,
-                                                   NSNumber *aValue,
-                                                   BOOL *stop) {
-      block([aKey unsignedLongLongValue], [aValue floatValue], stop);
-  }];
+  BOOL stop = NO;
+  NSDictionary *internal = _dictionary;
+  NSEnumerator *keys = [internal keyEnumerator];
+  NSNumber *aKey;
+  while ((aKey = [keys nextObject])) {
+    NSNumber *aValue = internal[aKey];
+    block([aKey unsignedLongLongValue], [aValue floatValue], &stop);
+    if (stop) {
+      break;
+    }
+  }
 }
 
 - (size_t)computeSerializedSizeAsField:(GPBFieldDescriptor *)field {
-  NSUInteger count = _dictionary.count;
+  NSDictionary *internal = _dictionary;
+  NSUInteger count = internal.count;
   if (count == 0) {
     return 0;
   }
 
   GPBDataType valueDataType = GPBGetFieldDataType(field);
   GPBDataType keyDataType = field.mapKeyDataType;
-  __block size_t result = 0;
-  [_dictionary enumerateKeysAndObjectsUsingBlock:^(NSNumber *aKey,
-                                                   NSNumber *aValue,
-                                                   BOOL *stop) {
-    #pragma unused(stop)
+  size_t result = 0;
+  NSEnumerator *keys = [internal keyEnumerator];
+  NSNumber *aKey;
+  while ((aKey = [keys nextObject])) {
+    NSNumber *aValue = internal[aKey];
     size_t msgSize = ComputeDictUInt64FieldSize([aKey unsignedLongLongValue], kMapKeyFieldNumber, keyDataType);
     msgSize += ComputeDictFloatFieldSize([aValue floatValue], kMapValueFieldNumber, valueDataType);
     result += GPBComputeRawVarint32SizeForInteger(msgSize) + msgSize;
-  }];
+  }
   size_t tagSize = GPBComputeWireFormatTagSize(GPBFieldNumber(field), GPBDataTypeMessage);
   result += tagSize * count;
   return result;
@@ -6647,20 +6894,22 @@ void GPBDictionaryReadEntry(id mapDictionary,
   GPBDataType valueDataType = GPBGetFieldDataType(field);
   GPBDataType keyDataType = field.mapKeyDataType;
   uint32_t tag = GPBWireFormatMakeTag(GPBFieldNumber(field), GPBWireFormatLengthDelimited);
-  [_dictionary enumerateKeysAndObjectsUsingBlock:^(NSNumber *aKey,
-                                                   NSNumber *aValue,
-                                                   BOOL *stop) {
-    #pragma unused(stop)
-    // Write the tag.
+  NSDictionary *internal = _dictionary;
+  NSEnumerator *keys = [internal keyEnumerator];
+  NSNumber *aKey;
+  while ((aKey = [keys nextObject])) {
+    NSNumber *aValue = internal[aKey];
     [outputStream writeInt32NoTag:tag];
     // Write the size of the message.
-    size_t msgSize = ComputeDictUInt64FieldSize([aKey unsignedLongLongValue], kMapKeyFieldNumber, keyDataType);
-    msgSize += ComputeDictFloatFieldSize([aValue floatValue], kMapValueFieldNumber, valueDataType);
+    uint64_t unwrappedKey = [aKey unsignedLongLongValue];
+    float unwrappedValue = [aValue floatValue];
+    size_t msgSize = ComputeDictUInt64FieldSize(unwrappedKey, kMapKeyFieldNumber, keyDataType);
+    msgSize += ComputeDictFloatFieldSize(unwrappedValue, kMapValueFieldNumber, valueDataType);
     [outputStream writeInt32NoTag:(int32_t)msgSize];
     // Write the fields.
-    WriteDictUInt64Field(outputStream, [aKey unsignedLongLongValue], kMapKeyFieldNumber, keyDataType);
-    WriteDictFloatField(outputStream, [aValue floatValue], kMapValueFieldNumber, valueDataType);
-  }];
+    WriteDictUInt64Field(outputStream, unwrappedKey, kMapKeyFieldNumber, keyDataType);
+    WriteDictFloatField(outputStream, unwrappedValue, kMapValueFieldNumber, valueDataType);
+  }
 }
 
 - (void)setGPBGenericValue:(GPBGenericValue *)value
@@ -6820,30 +7069,37 @@ void GPBDictionaryReadEntry(id mapDictionary,
 
 - (void)enumerateKeysAndDoublesUsingBlock:
     (void (^)(uint64_t key, double value, BOOL *stop))block {
-  [_dictionary enumerateKeysAndObjectsUsingBlock:^(NSNumber *aKey,
-                                                   NSNumber *aValue,
-                                                   BOOL *stop) {
-      block([aKey unsignedLongLongValue], [aValue doubleValue], stop);
-  }];
+  BOOL stop = NO;
+  NSDictionary *internal = _dictionary;
+  NSEnumerator *keys = [internal keyEnumerator];
+  NSNumber *aKey;
+  while ((aKey = [keys nextObject])) {
+    NSNumber *aValue = internal[aKey];
+    block([aKey unsignedLongLongValue], [aValue doubleValue], &stop);
+    if (stop) {
+      break;
+    }
+  }
 }
 
 - (size_t)computeSerializedSizeAsField:(GPBFieldDescriptor *)field {
-  NSUInteger count = _dictionary.count;
+  NSDictionary *internal = _dictionary;
+  NSUInteger count = internal.count;
   if (count == 0) {
     return 0;
   }
 
   GPBDataType valueDataType = GPBGetFieldDataType(field);
   GPBDataType keyDataType = field.mapKeyDataType;
-  __block size_t result = 0;
-  [_dictionary enumerateKeysAndObjectsUsingBlock:^(NSNumber *aKey,
-                                                   NSNumber *aValue,
-                                                   BOOL *stop) {
-    #pragma unused(stop)
+  size_t result = 0;
+  NSEnumerator *keys = [internal keyEnumerator];
+  NSNumber *aKey;
+  while ((aKey = [keys nextObject])) {
+    NSNumber *aValue = internal[aKey];
     size_t msgSize = ComputeDictUInt64FieldSize([aKey unsignedLongLongValue], kMapKeyFieldNumber, keyDataType);
     msgSize += ComputeDictDoubleFieldSize([aValue doubleValue], kMapValueFieldNumber, valueDataType);
     result += GPBComputeRawVarint32SizeForInteger(msgSize) + msgSize;
-  }];
+  }
   size_t tagSize = GPBComputeWireFormatTagSize(GPBFieldNumber(field), GPBDataTypeMessage);
   result += tagSize * count;
   return result;
@@ -6854,20 +7110,22 @@ void GPBDictionaryReadEntry(id mapDictionary,
   GPBDataType valueDataType = GPBGetFieldDataType(field);
   GPBDataType keyDataType = field.mapKeyDataType;
   uint32_t tag = GPBWireFormatMakeTag(GPBFieldNumber(field), GPBWireFormatLengthDelimited);
-  [_dictionary enumerateKeysAndObjectsUsingBlock:^(NSNumber *aKey,
-                                                   NSNumber *aValue,
-                                                   BOOL *stop) {
-    #pragma unused(stop)
-    // Write the tag.
+  NSDictionary *internal = _dictionary;
+  NSEnumerator *keys = [internal keyEnumerator];
+  NSNumber *aKey;
+  while ((aKey = [keys nextObject])) {
+    NSNumber *aValue = internal[aKey];
     [outputStream writeInt32NoTag:tag];
     // Write the size of the message.
-    size_t msgSize = ComputeDictUInt64FieldSize([aKey unsignedLongLongValue], kMapKeyFieldNumber, keyDataType);
-    msgSize += ComputeDictDoubleFieldSize([aValue doubleValue], kMapValueFieldNumber, valueDataType);
+    uint64_t unwrappedKey = [aKey unsignedLongLongValue];
+    double unwrappedValue = [aValue doubleValue];
+    size_t msgSize = ComputeDictUInt64FieldSize(unwrappedKey, kMapKeyFieldNumber, keyDataType);
+    msgSize += ComputeDictDoubleFieldSize(unwrappedValue, kMapValueFieldNumber, valueDataType);
     [outputStream writeInt32NoTag:(int32_t)msgSize];
     // Write the fields.
-    WriteDictUInt64Field(outputStream, [aKey unsignedLongLongValue], kMapKeyFieldNumber, keyDataType);
-    WriteDictDoubleField(outputStream, [aValue doubleValue], kMapValueFieldNumber, valueDataType);
-  }];
+    WriteDictUInt64Field(outputStream, unwrappedKey, kMapKeyFieldNumber, keyDataType);
+    WriteDictDoubleField(outputStream, unwrappedValue, kMapValueFieldNumber, valueDataType);
+  }
 }
 
 - (void)setGPBGenericValue:(GPBGenericValue *)value
@@ -7055,30 +7313,37 @@ void GPBDictionaryReadEntry(id mapDictionary,
 
 - (void)enumerateKeysAndRawValuesUsingBlock:
     (void (^)(uint64_t key, int32_t value, BOOL *stop))block {
-  [_dictionary enumerateKeysAndObjectsUsingBlock:^(NSNumber *aKey,
-                                                   NSNumber *aValue,
-                                                   BOOL *stop) {
-      block([aKey unsignedLongLongValue], [aValue intValue], stop);
-  }];
+  BOOL stop = NO;
+  NSDictionary *internal = _dictionary;
+  NSEnumerator *keys = [internal keyEnumerator];
+  NSNumber *aKey;
+  while ((aKey = [keys nextObject])) {
+    NSNumber *aValue = internal[aKey];
+    block([aKey unsignedLongLongValue], [aValue intValue], &stop);
+    if (stop) {
+      break;
+    }
+  }
 }
 
 - (size_t)computeSerializedSizeAsField:(GPBFieldDescriptor *)field {
-  NSUInteger count = _dictionary.count;
+  NSDictionary *internal = _dictionary;
+  NSUInteger count = internal.count;
   if (count == 0) {
     return 0;
   }
 
   GPBDataType valueDataType = GPBGetFieldDataType(field);
   GPBDataType keyDataType = field.mapKeyDataType;
-  __block size_t result = 0;
-  [_dictionary enumerateKeysAndObjectsUsingBlock:^(NSNumber *aKey,
-                                                   NSNumber *aValue,
-                                                   BOOL *stop) {
-    #pragma unused(stop)
+  size_t result = 0;
+  NSEnumerator *keys = [internal keyEnumerator];
+  NSNumber *aKey;
+  while ((aKey = [keys nextObject])) {
+    NSNumber *aValue = internal[aKey];
     size_t msgSize = ComputeDictUInt64FieldSize([aKey unsignedLongLongValue], kMapKeyFieldNumber, keyDataType);
     msgSize += ComputeDictEnumFieldSize([aValue intValue], kMapValueFieldNumber, valueDataType);
     result += GPBComputeRawVarint32SizeForInteger(msgSize) + msgSize;
-  }];
+  }
   size_t tagSize = GPBComputeWireFormatTagSize(GPBFieldNumber(field), GPBDataTypeMessage);
   result += tagSize * count;
   return result;
@@ -7089,20 +7354,22 @@ void GPBDictionaryReadEntry(id mapDictionary,
   GPBDataType valueDataType = GPBGetFieldDataType(field);
   GPBDataType keyDataType = field.mapKeyDataType;
   uint32_t tag = GPBWireFormatMakeTag(GPBFieldNumber(field), GPBWireFormatLengthDelimited);
-  [_dictionary enumerateKeysAndObjectsUsingBlock:^(NSNumber *aKey,
-                                                   NSNumber *aValue,
-                                                   BOOL *stop) {
-    #pragma unused(stop)
-    // Write the tag.
+  NSDictionary *internal = _dictionary;
+  NSEnumerator *keys = [internal keyEnumerator];
+  NSNumber *aKey;
+  while ((aKey = [keys nextObject])) {
+    NSNumber *aValue = internal[aKey];
     [outputStream writeInt32NoTag:tag];
     // Write the size of the message.
-    size_t msgSize = ComputeDictUInt64FieldSize([aKey unsignedLongLongValue], kMapKeyFieldNumber, keyDataType);
-    msgSize += ComputeDictEnumFieldSize([aValue intValue], kMapValueFieldNumber, valueDataType);
+    uint64_t unwrappedKey = [aKey unsignedLongLongValue];
+    int32_t unwrappedValue = [aValue intValue];
+    size_t msgSize = ComputeDictUInt64FieldSize(unwrappedKey, kMapKeyFieldNumber, keyDataType);
+    msgSize += ComputeDictEnumFieldSize(unwrappedValue, kMapValueFieldNumber, valueDataType);
     [outputStream writeInt32NoTag:(int32_t)msgSize];
     // Write the fields.
-    WriteDictUInt64Field(outputStream, [aKey unsignedLongLongValue], kMapKeyFieldNumber, keyDataType);
-    WriteDictEnumField(outputStream, [aValue intValue], kMapValueFieldNumber, valueDataType);
-  }];
+    WriteDictUInt64Field(outputStream, unwrappedKey, kMapKeyFieldNumber, keyDataType);
+    WriteDictEnumField(outputStream, unwrappedValue, kMapValueFieldNumber, valueDataType);
+  }
 }
 
 - (NSData *)serializedDataForUnknownValue:(int32_t)value
@@ -7152,15 +7419,20 @@ void GPBDictionaryReadEntry(id mapDictionary,
 - (void)enumerateKeysAndEnumsUsingBlock:
     (void (^)(uint64_t key, int32_t value, BOOL *stop))block {
   GPBEnumValidationFunc func = _validationFunc;
-  [_dictionary enumerateKeysAndObjectsUsingBlock:^(NSNumber *aKey,
-                                                   NSNumber *aValue,
-                                                   BOOL *stop) {
+  BOOL stop = NO;
+  NSEnumerator *keys = [_dictionary keyEnumerator];
+  NSNumber *aKey;
+  while ((aKey = [keys nextObject])) {
+    NSNumber *aValue = _dictionary[aKey];
       int32_t unwrapped = [aValue intValue];
       if (!func(unwrapped)) {
         unwrapped = kGPBUnrecognizedEnumeratorValue;
       }
-      block([aKey unsignedLongLongValue], unwrapped, stop);
-  }];
+    block([aKey unsignedLongLongValue], unwrapped, &stop);
+    if (stop) {
+      break;
+    }
+  }
 }
 
 - (void)addRawEntriesFromDictionary:(GPBUInt64EnumDictionary *)otherDictionary {
@@ -7317,11 +7589,17 @@ void GPBDictionaryReadEntry(id mapDictionary,
 
 - (void)enumerateKeysAndObjectsUsingBlock:
     (void (^)(uint64_t key, id object, BOOL *stop))block {
-  [_dictionary enumerateKeysAndObjectsUsingBlock:^(NSNumber *aKey,
-                                                   id aObject,
-                                                   BOOL *stop) {
-      block([aKey unsignedLongLongValue], aObject, stop);
-  }];
+  BOOL stop = NO;
+  NSDictionary *internal = _dictionary;
+  NSEnumerator *keys = [internal keyEnumerator];
+  NSNumber *aKey;
+  while ((aKey = [keys nextObject])) {
+    id aObject = internal[aKey];
+    block([aKey unsignedLongLongValue], aObject, &stop);
+    if (stop) {
+      break;
+    }
+  }
 }
 
 - (BOOL)isInitialized {
@@ -7336,34 +7614,36 @@ void GPBDictionaryReadEntry(id mapDictionary,
 - (instancetype)deepCopyWithZone:(NSZone *)zone {
   GPBUInt64ObjectDictionary *newDict =
       [[GPBUInt64ObjectDictionary alloc] init];
-  [_dictionary enumerateKeysAndObjectsUsingBlock:^(id aKey,
-                                                   GPBMessage *msg,
-                                                   BOOL *stop) {
-    #pragma unused(stop)
+  NSEnumerator *keys = [_dictionary keyEnumerator];
+  id aKey;
+  NSMutableDictionary *internalDict = newDict->_dictionary;
+  while ((aKey = [keys nextObject])) {
+    GPBMessage *msg = _dictionary[aKey];
     GPBMessage *copiedMsg = [msg copyWithZone:zone];
-    [newDict->_dictionary setObject:copiedMsg forKey:aKey];
+    [internalDict setObject:copiedMsg forKey:aKey];
     [copiedMsg release];
-  }];
+  }
   return newDict;
 }
 
 - (size_t)computeSerializedSizeAsField:(GPBFieldDescriptor *)field {
-  NSUInteger count = _dictionary.count;
+  NSDictionary *internal = _dictionary;
+  NSUInteger count = internal.count;
   if (count == 0) {
     return 0;
   }
 
   GPBDataType valueDataType = GPBGetFieldDataType(field);
   GPBDataType keyDataType = field.mapKeyDataType;
-  __block size_t result = 0;
-  [_dictionary enumerateKeysAndObjectsUsingBlock:^(NSNumber *aKey,
-                                                   id aObject,
-                                                   BOOL *stop) {
-    #pragma unused(stop)
+  size_t result = 0;
+  NSEnumerator *keys = [internal keyEnumerator];
+  NSNumber *aKey;
+  while ((aKey = [keys nextObject])) {
+    id aObject = internal[aKey];
     size_t msgSize = ComputeDictUInt64FieldSize([aKey unsignedLongLongValue], kMapKeyFieldNumber, keyDataType);
     msgSize += ComputeDictObjectFieldSize(aObject, kMapValueFieldNumber, valueDataType);
     result += GPBComputeRawVarint32SizeForInteger(msgSize) + msgSize;
-  }];
+  }
   size_t tagSize = GPBComputeWireFormatTagSize(GPBFieldNumber(field), GPBDataTypeMessage);
   result += tagSize * count;
   return result;
@@ -7374,20 +7654,22 @@ void GPBDictionaryReadEntry(id mapDictionary,
   GPBDataType valueDataType = GPBGetFieldDataType(field);
   GPBDataType keyDataType = field.mapKeyDataType;
   uint32_t tag = GPBWireFormatMakeTag(GPBFieldNumber(field), GPBWireFormatLengthDelimited);
-  [_dictionary enumerateKeysAndObjectsUsingBlock:^(NSNumber *aKey,
-                                                   id aObject,
-                                                   BOOL *stop) {
-    #pragma unused(stop)
-    // Write the tag.
+  NSDictionary *internal = _dictionary;
+  NSEnumerator *keys = [internal keyEnumerator];
+  NSNumber *aKey;
+  while ((aKey = [keys nextObject])) {
+    id aObject = internal[aKey];
     [outputStream writeInt32NoTag:tag];
     // Write the size of the message.
-    size_t msgSize = ComputeDictUInt64FieldSize([aKey unsignedLongLongValue], kMapKeyFieldNumber, keyDataType);
-    msgSize += ComputeDictObjectFieldSize(aObject, kMapValueFieldNumber, valueDataType);
+    uint64_t unwrappedKey = [aKey unsignedLongLongValue];
+    id unwrappedValue = aObject;
+    size_t msgSize = ComputeDictUInt64FieldSize(unwrappedKey, kMapKeyFieldNumber, keyDataType);
+    msgSize += ComputeDictObjectFieldSize(unwrappedValue, kMapValueFieldNumber, valueDataType);
     [outputStream writeInt32NoTag:(int32_t)msgSize];
     // Write the fields.
-    WriteDictUInt64Field(outputStream, [aKey unsignedLongLongValue], kMapKeyFieldNumber, keyDataType);
-    WriteDictObjectField(outputStream, aObject, kMapValueFieldNumber, valueDataType);
-  }];
+    WriteDictUInt64Field(outputStream, unwrappedKey, kMapKeyFieldNumber, keyDataType);
+    WriteDictObjectField(outputStream, unwrappedValue, kMapValueFieldNumber, valueDataType);
+  }
 }
 
 - (void)setGPBGenericValue:(GPBGenericValue *)value
@@ -7551,30 +7833,37 @@ void GPBDictionaryReadEntry(id mapDictionary,
 
 - (void)enumerateKeysAndUInt32sUsingBlock:
     (void (^)(int64_t key, uint32_t value, BOOL *stop))block {
-  [_dictionary enumerateKeysAndObjectsUsingBlock:^(NSNumber *aKey,
-                                                   NSNumber *aValue,
-                                                   BOOL *stop) {
-      block([aKey longLongValue], [aValue unsignedIntValue], stop);
-  }];
+  BOOL stop = NO;
+  NSDictionary *internal = _dictionary;
+  NSEnumerator *keys = [internal keyEnumerator];
+  NSNumber *aKey;
+  while ((aKey = [keys nextObject])) {
+    NSNumber *aValue = internal[aKey];
+    block([aKey longLongValue], [aValue unsignedIntValue], &stop);
+    if (stop) {
+      break;
+    }
+  }
 }
 
 - (size_t)computeSerializedSizeAsField:(GPBFieldDescriptor *)field {
-  NSUInteger count = _dictionary.count;
+  NSDictionary *internal = _dictionary;
+  NSUInteger count = internal.count;
   if (count == 0) {
     return 0;
   }
 
   GPBDataType valueDataType = GPBGetFieldDataType(field);
   GPBDataType keyDataType = field.mapKeyDataType;
-  __block size_t result = 0;
-  [_dictionary enumerateKeysAndObjectsUsingBlock:^(NSNumber *aKey,
-                                                   NSNumber *aValue,
-                                                   BOOL *stop) {
-    #pragma unused(stop)
+  size_t result = 0;
+  NSEnumerator *keys = [internal keyEnumerator];
+  NSNumber *aKey;
+  while ((aKey = [keys nextObject])) {
+    NSNumber *aValue = internal[aKey];
     size_t msgSize = ComputeDictInt64FieldSize([aKey longLongValue], kMapKeyFieldNumber, keyDataType);
     msgSize += ComputeDictUInt32FieldSize([aValue unsignedIntValue], kMapValueFieldNumber, valueDataType);
     result += GPBComputeRawVarint32SizeForInteger(msgSize) + msgSize;
-  }];
+  }
   size_t tagSize = GPBComputeWireFormatTagSize(GPBFieldNumber(field), GPBDataTypeMessage);
   result += tagSize * count;
   return result;
@@ -7585,20 +7874,22 @@ void GPBDictionaryReadEntry(id mapDictionary,
   GPBDataType valueDataType = GPBGetFieldDataType(field);
   GPBDataType keyDataType = field.mapKeyDataType;
   uint32_t tag = GPBWireFormatMakeTag(GPBFieldNumber(field), GPBWireFormatLengthDelimited);
-  [_dictionary enumerateKeysAndObjectsUsingBlock:^(NSNumber *aKey,
-                                                   NSNumber *aValue,
-                                                   BOOL *stop) {
-    #pragma unused(stop)
-    // Write the tag.
+  NSDictionary *internal = _dictionary;
+  NSEnumerator *keys = [internal keyEnumerator];
+  NSNumber *aKey;
+  while ((aKey = [keys nextObject])) {
+    NSNumber *aValue = internal[aKey];
     [outputStream writeInt32NoTag:tag];
     // Write the size of the message.
-    size_t msgSize = ComputeDictInt64FieldSize([aKey longLongValue], kMapKeyFieldNumber, keyDataType);
-    msgSize += ComputeDictUInt32FieldSize([aValue unsignedIntValue], kMapValueFieldNumber, valueDataType);
+    int64_t unwrappedKey = [aKey longLongValue];
+    uint32_t unwrappedValue = [aValue unsignedIntValue];
+    size_t msgSize = ComputeDictInt64FieldSize(unwrappedKey, kMapKeyFieldNumber, keyDataType);
+    msgSize += ComputeDictUInt32FieldSize(unwrappedValue, kMapValueFieldNumber, valueDataType);
     [outputStream writeInt32NoTag:(int32_t)msgSize];
     // Write the fields.
-    WriteDictInt64Field(outputStream, [aKey longLongValue], kMapKeyFieldNumber, keyDataType);
-    WriteDictUInt32Field(outputStream, [aValue unsignedIntValue], kMapValueFieldNumber, valueDataType);
-  }];
+    WriteDictInt64Field(outputStream, unwrappedKey, kMapKeyFieldNumber, keyDataType);
+    WriteDictUInt32Field(outputStream, unwrappedValue, kMapValueFieldNumber, valueDataType);
+  }
 }
 
 - (void)setGPBGenericValue:(GPBGenericValue *)value
@@ -7758,30 +8049,37 @@ void GPBDictionaryReadEntry(id mapDictionary,
 
 - (void)enumerateKeysAndInt32sUsingBlock:
     (void (^)(int64_t key, int32_t value, BOOL *stop))block {
-  [_dictionary enumerateKeysAndObjectsUsingBlock:^(NSNumber *aKey,
-                                                   NSNumber *aValue,
-                                                   BOOL *stop) {
-      block([aKey longLongValue], [aValue intValue], stop);
-  }];
+  BOOL stop = NO;
+  NSDictionary *internal = _dictionary;
+  NSEnumerator *keys = [internal keyEnumerator];
+  NSNumber *aKey;
+  while ((aKey = [keys nextObject])) {
+    NSNumber *aValue = internal[aKey];
+    block([aKey longLongValue], [aValue intValue], &stop);
+    if (stop) {
+      break;
+    }
+  }
 }
 
 - (size_t)computeSerializedSizeAsField:(GPBFieldDescriptor *)field {
-  NSUInteger count = _dictionary.count;
+  NSDictionary *internal = _dictionary;
+  NSUInteger count = internal.count;
   if (count == 0) {
     return 0;
   }
 
   GPBDataType valueDataType = GPBGetFieldDataType(field);
   GPBDataType keyDataType = field.mapKeyDataType;
-  __block size_t result = 0;
-  [_dictionary enumerateKeysAndObjectsUsingBlock:^(NSNumber *aKey,
-                                                   NSNumber *aValue,
-                                                   BOOL *stop) {
-    #pragma unused(stop)
+  size_t result = 0;
+  NSEnumerator *keys = [internal keyEnumerator];
+  NSNumber *aKey;
+  while ((aKey = [keys nextObject])) {
+    NSNumber *aValue = internal[aKey];
     size_t msgSize = ComputeDictInt64FieldSize([aKey longLongValue], kMapKeyFieldNumber, keyDataType);
     msgSize += ComputeDictInt32FieldSize([aValue intValue], kMapValueFieldNumber, valueDataType);
     result += GPBComputeRawVarint32SizeForInteger(msgSize) + msgSize;
-  }];
+  }
   size_t tagSize = GPBComputeWireFormatTagSize(GPBFieldNumber(field), GPBDataTypeMessage);
   result += tagSize * count;
   return result;
@@ -7792,20 +8090,22 @@ void GPBDictionaryReadEntry(id mapDictionary,
   GPBDataType valueDataType = GPBGetFieldDataType(field);
   GPBDataType keyDataType = field.mapKeyDataType;
   uint32_t tag = GPBWireFormatMakeTag(GPBFieldNumber(field), GPBWireFormatLengthDelimited);
-  [_dictionary enumerateKeysAndObjectsUsingBlock:^(NSNumber *aKey,
-                                                   NSNumber *aValue,
-                                                   BOOL *stop) {
-    #pragma unused(stop)
-    // Write the tag.
+  NSDictionary *internal = _dictionary;
+  NSEnumerator *keys = [internal keyEnumerator];
+  NSNumber *aKey;
+  while ((aKey = [keys nextObject])) {
+    NSNumber *aValue = internal[aKey];
     [outputStream writeInt32NoTag:tag];
     // Write the size of the message.
-    size_t msgSize = ComputeDictInt64FieldSize([aKey longLongValue], kMapKeyFieldNumber, keyDataType);
-    msgSize += ComputeDictInt32FieldSize([aValue intValue], kMapValueFieldNumber, valueDataType);
+    int64_t unwrappedKey = [aKey longLongValue];
+    int32_t unwrappedValue = [aValue intValue];
+    size_t msgSize = ComputeDictInt64FieldSize(unwrappedKey, kMapKeyFieldNumber, keyDataType);
+    msgSize += ComputeDictInt32FieldSize(unwrappedValue, kMapValueFieldNumber, valueDataType);
     [outputStream writeInt32NoTag:(int32_t)msgSize];
     // Write the fields.
-    WriteDictInt64Field(outputStream, [aKey longLongValue], kMapKeyFieldNumber, keyDataType);
-    WriteDictInt32Field(outputStream, [aValue intValue], kMapValueFieldNumber, valueDataType);
-  }];
+    WriteDictInt64Field(outputStream, unwrappedKey, kMapKeyFieldNumber, keyDataType);
+    WriteDictInt32Field(outputStream, unwrappedValue, kMapValueFieldNumber, valueDataType);
+  }
 }
 
 - (void)setGPBGenericValue:(GPBGenericValue *)value
@@ -7965,30 +8265,37 @@ void GPBDictionaryReadEntry(id mapDictionary,
 
 - (void)enumerateKeysAndUInt64sUsingBlock:
     (void (^)(int64_t key, uint64_t value, BOOL *stop))block {
-  [_dictionary enumerateKeysAndObjectsUsingBlock:^(NSNumber *aKey,
-                                                   NSNumber *aValue,
-                                                   BOOL *stop) {
-      block([aKey longLongValue], [aValue unsignedLongLongValue], stop);
-  }];
+  BOOL stop = NO;
+  NSDictionary *internal = _dictionary;
+  NSEnumerator *keys = [internal keyEnumerator];
+  NSNumber *aKey;
+  while ((aKey = [keys nextObject])) {
+    NSNumber *aValue = internal[aKey];
+    block([aKey longLongValue], [aValue unsignedLongLongValue], &stop);
+    if (stop) {
+      break;
+    }
+  }
 }
 
 - (size_t)computeSerializedSizeAsField:(GPBFieldDescriptor *)field {
-  NSUInteger count = _dictionary.count;
+  NSDictionary *internal = _dictionary;
+  NSUInteger count = internal.count;
   if (count == 0) {
     return 0;
   }
 
   GPBDataType valueDataType = GPBGetFieldDataType(field);
   GPBDataType keyDataType = field.mapKeyDataType;
-  __block size_t result = 0;
-  [_dictionary enumerateKeysAndObjectsUsingBlock:^(NSNumber *aKey,
-                                                   NSNumber *aValue,
-                                                   BOOL *stop) {
-    #pragma unused(stop)
+  size_t result = 0;
+  NSEnumerator *keys = [internal keyEnumerator];
+  NSNumber *aKey;
+  while ((aKey = [keys nextObject])) {
+    NSNumber *aValue = internal[aKey];
     size_t msgSize = ComputeDictInt64FieldSize([aKey longLongValue], kMapKeyFieldNumber, keyDataType);
     msgSize += ComputeDictUInt64FieldSize([aValue unsignedLongLongValue], kMapValueFieldNumber, valueDataType);
     result += GPBComputeRawVarint32SizeForInteger(msgSize) + msgSize;
-  }];
+  }
   size_t tagSize = GPBComputeWireFormatTagSize(GPBFieldNumber(field), GPBDataTypeMessage);
   result += tagSize * count;
   return result;
@@ -7999,20 +8306,22 @@ void GPBDictionaryReadEntry(id mapDictionary,
   GPBDataType valueDataType = GPBGetFieldDataType(field);
   GPBDataType keyDataType = field.mapKeyDataType;
   uint32_t tag = GPBWireFormatMakeTag(GPBFieldNumber(field), GPBWireFormatLengthDelimited);
-  [_dictionary enumerateKeysAndObjectsUsingBlock:^(NSNumber *aKey,
-                                                   NSNumber *aValue,
-                                                   BOOL *stop) {
-    #pragma unused(stop)
-    // Write the tag.
+  NSDictionary *internal = _dictionary;
+  NSEnumerator *keys = [internal keyEnumerator];
+  NSNumber *aKey;
+  while ((aKey = [keys nextObject])) {
+    NSNumber *aValue = internal[aKey];
     [outputStream writeInt32NoTag:tag];
     // Write the size of the message.
-    size_t msgSize = ComputeDictInt64FieldSize([aKey longLongValue], kMapKeyFieldNumber, keyDataType);
-    msgSize += ComputeDictUInt64FieldSize([aValue unsignedLongLongValue], kMapValueFieldNumber, valueDataType);
+    int64_t unwrappedKey = [aKey longLongValue];
+    uint64_t unwrappedValue = [aValue unsignedLongLongValue];
+    size_t msgSize = ComputeDictInt64FieldSize(unwrappedKey, kMapKeyFieldNumber, keyDataType);
+    msgSize += ComputeDictUInt64FieldSize(unwrappedValue, kMapValueFieldNumber, valueDataType);
     [outputStream writeInt32NoTag:(int32_t)msgSize];
     // Write the fields.
-    WriteDictInt64Field(outputStream, [aKey longLongValue], kMapKeyFieldNumber, keyDataType);
-    WriteDictUInt64Field(outputStream, [aValue unsignedLongLongValue], kMapValueFieldNumber, valueDataType);
-  }];
+    WriteDictInt64Field(outputStream, unwrappedKey, kMapKeyFieldNumber, keyDataType);
+    WriteDictUInt64Field(outputStream, unwrappedValue, kMapValueFieldNumber, valueDataType);
+  }
 }
 
 - (void)setGPBGenericValue:(GPBGenericValue *)value
@@ -8172,30 +8481,37 @@ void GPBDictionaryReadEntry(id mapDictionary,
 
 - (void)enumerateKeysAndInt64sUsingBlock:
     (void (^)(int64_t key, int64_t value, BOOL *stop))block {
-  [_dictionary enumerateKeysAndObjectsUsingBlock:^(NSNumber *aKey,
-                                                   NSNumber *aValue,
-                                                   BOOL *stop) {
-      block([aKey longLongValue], [aValue longLongValue], stop);
-  }];
+  BOOL stop = NO;
+  NSDictionary *internal = _dictionary;
+  NSEnumerator *keys = [internal keyEnumerator];
+  NSNumber *aKey;
+  while ((aKey = [keys nextObject])) {
+    NSNumber *aValue = internal[aKey];
+    block([aKey longLongValue], [aValue longLongValue], &stop);
+    if (stop) {
+      break;
+    }
+  }
 }
 
 - (size_t)computeSerializedSizeAsField:(GPBFieldDescriptor *)field {
-  NSUInteger count = _dictionary.count;
+  NSDictionary *internal = _dictionary;
+  NSUInteger count = internal.count;
   if (count == 0) {
     return 0;
   }
 
   GPBDataType valueDataType = GPBGetFieldDataType(field);
   GPBDataType keyDataType = field.mapKeyDataType;
-  __block size_t result = 0;
-  [_dictionary enumerateKeysAndObjectsUsingBlock:^(NSNumber *aKey,
-                                                   NSNumber *aValue,
-                                                   BOOL *stop) {
-    #pragma unused(stop)
+  size_t result = 0;
+  NSEnumerator *keys = [internal keyEnumerator];
+  NSNumber *aKey;
+  while ((aKey = [keys nextObject])) {
+    NSNumber *aValue = internal[aKey];
     size_t msgSize = ComputeDictInt64FieldSize([aKey longLongValue], kMapKeyFieldNumber, keyDataType);
     msgSize += ComputeDictInt64FieldSize([aValue longLongValue], kMapValueFieldNumber, valueDataType);
     result += GPBComputeRawVarint32SizeForInteger(msgSize) + msgSize;
-  }];
+  }
   size_t tagSize = GPBComputeWireFormatTagSize(GPBFieldNumber(field), GPBDataTypeMessage);
   result += tagSize * count;
   return result;
@@ -8206,20 +8522,22 @@ void GPBDictionaryReadEntry(id mapDictionary,
   GPBDataType valueDataType = GPBGetFieldDataType(field);
   GPBDataType keyDataType = field.mapKeyDataType;
   uint32_t tag = GPBWireFormatMakeTag(GPBFieldNumber(field), GPBWireFormatLengthDelimited);
-  [_dictionary enumerateKeysAndObjectsUsingBlock:^(NSNumber *aKey,
-                                                   NSNumber *aValue,
-                                                   BOOL *stop) {
-    #pragma unused(stop)
-    // Write the tag.
+  NSDictionary *internal = _dictionary;
+  NSEnumerator *keys = [internal keyEnumerator];
+  NSNumber *aKey;
+  while ((aKey = [keys nextObject])) {
+    NSNumber *aValue = internal[aKey];
     [outputStream writeInt32NoTag:tag];
     // Write the size of the message.
-    size_t msgSize = ComputeDictInt64FieldSize([aKey longLongValue], kMapKeyFieldNumber, keyDataType);
-    msgSize += ComputeDictInt64FieldSize([aValue longLongValue], kMapValueFieldNumber, valueDataType);
+    int64_t unwrappedKey = [aKey longLongValue];
+    int64_t unwrappedValue = [aValue longLongValue];
+    size_t msgSize = ComputeDictInt64FieldSize(unwrappedKey, kMapKeyFieldNumber, keyDataType);
+    msgSize += ComputeDictInt64FieldSize(unwrappedValue, kMapValueFieldNumber, valueDataType);
     [outputStream writeInt32NoTag:(int32_t)msgSize];
     // Write the fields.
-    WriteDictInt64Field(outputStream, [aKey longLongValue], kMapKeyFieldNumber, keyDataType);
-    WriteDictInt64Field(outputStream, [aValue longLongValue], kMapValueFieldNumber, valueDataType);
-  }];
+    WriteDictInt64Field(outputStream, unwrappedKey, kMapKeyFieldNumber, keyDataType);
+    WriteDictInt64Field(outputStream, unwrappedValue, kMapValueFieldNumber, valueDataType);
+  }
 }
 
 - (void)setGPBGenericValue:(GPBGenericValue *)value
@@ -8379,30 +8697,37 @@ void GPBDictionaryReadEntry(id mapDictionary,
 
 - (void)enumerateKeysAndBoolsUsingBlock:
     (void (^)(int64_t key, BOOL value, BOOL *stop))block {
-  [_dictionary enumerateKeysAndObjectsUsingBlock:^(NSNumber *aKey,
-                                                   NSNumber *aValue,
-                                                   BOOL *stop) {
-      block([aKey longLongValue], [aValue boolValue], stop);
-  }];
+  BOOL stop = NO;
+  NSDictionary *internal = _dictionary;
+  NSEnumerator *keys = [internal keyEnumerator];
+  NSNumber *aKey;
+  while ((aKey = [keys nextObject])) {
+    NSNumber *aValue = internal[aKey];
+    block([aKey longLongValue], [aValue boolValue], &stop);
+    if (stop) {
+      break;
+    }
+  }
 }
 
 - (size_t)computeSerializedSizeAsField:(GPBFieldDescriptor *)field {
-  NSUInteger count = _dictionary.count;
+  NSDictionary *internal = _dictionary;
+  NSUInteger count = internal.count;
   if (count == 0) {
     return 0;
   }
 
   GPBDataType valueDataType = GPBGetFieldDataType(field);
   GPBDataType keyDataType = field.mapKeyDataType;
-  __block size_t result = 0;
-  [_dictionary enumerateKeysAndObjectsUsingBlock:^(NSNumber *aKey,
-                                                   NSNumber *aValue,
-                                                   BOOL *stop) {
-    #pragma unused(stop)
+  size_t result = 0;
+  NSEnumerator *keys = [internal keyEnumerator];
+  NSNumber *aKey;
+  while ((aKey = [keys nextObject])) {
+    NSNumber *aValue = internal[aKey];
     size_t msgSize = ComputeDictInt64FieldSize([aKey longLongValue], kMapKeyFieldNumber, keyDataType);
     msgSize += ComputeDictBoolFieldSize([aValue boolValue], kMapValueFieldNumber, valueDataType);
     result += GPBComputeRawVarint32SizeForInteger(msgSize) + msgSize;
-  }];
+  }
   size_t tagSize = GPBComputeWireFormatTagSize(GPBFieldNumber(field), GPBDataTypeMessage);
   result += tagSize * count;
   return result;
@@ -8413,20 +8738,22 @@ void GPBDictionaryReadEntry(id mapDictionary,
   GPBDataType valueDataType = GPBGetFieldDataType(field);
   GPBDataType keyDataType = field.mapKeyDataType;
   uint32_t tag = GPBWireFormatMakeTag(GPBFieldNumber(field), GPBWireFormatLengthDelimited);
-  [_dictionary enumerateKeysAndObjectsUsingBlock:^(NSNumber *aKey,
-                                                   NSNumber *aValue,
-                                                   BOOL *stop) {
-    #pragma unused(stop)
-    // Write the tag.
+  NSDictionary *internal = _dictionary;
+  NSEnumerator *keys = [internal keyEnumerator];
+  NSNumber *aKey;
+  while ((aKey = [keys nextObject])) {
+    NSNumber *aValue = internal[aKey];
     [outputStream writeInt32NoTag:tag];
     // Write the size of the message.
-    size_t msgSize = ComputeDictInt64FieldSize([aKey longLongValue], kMapKeyFieldNumber, keyDataType);
-    msgSize += ComputeDictBoolFieldSize([aValue boolValue], kMapValueFieldNumber, valueDataType);
+    int64_t unwrappedKey = [aKey longLongValue];
+    BOOL unwrappedValue = [aValue boolValue];
+    size_t msgSize = ComputeDictInt64FieldSize(unwrappedKey, kMapKeyFieldNumber, keyDataType);
+    msgSize += ComputeDictBoolFieldSize(unwrappedValue, kMapValueFieldNumber, valueDataType);
     [outputStream writeInt32NoTag:(int32_t)msgSize];
     // Write the fields.
-    WriteDictInt64Field(outputStream, [aKey longLongValue], kMapKeyFieldNumber, keyDataType);
-    WriteDictBoolField(outputStream, [aValue boolValue], kMapValueFieldNumber, valueDataType);
-  }];
+    WriteDictInt64Field(outputStream, unwrappedKey, kMapKeyFieldNumber, keyDataType);
+    WriteDictBoolField(outputStream, unwrappedValue, kMapValueFieldNumber, valueDataType);
+  }
 }
 
 - (void)setGPBGenericValue:(GPBGenericValue *)value
@@ -8586,30 +8913,37 @@ void GPBDictionaryReadEntry(id mapDictionary,
 
 - (void)enumerateKeysAndFloatsUsingBlock:
     (void (^)(int64_t key, float value, BOOL *stop))block {
-  [_dictionary enumerateKeysAndObjectsUsingBlock:^(NSNumber *aKey,
-                                                   NSNumber *aValue,
-                                                   BOOL *stop) {
-      block([aKey longLongValue], [aValue floatValue], stop);
-  }];
+  BOOL stop = NO;
+  NSDictionary *internal = _dictionary;
+  NSEnumerator *keys = [internal keyEnumerator];
+  NSNumber *aKey;
+  while ((aKey = [keys nextObject])) {
+    NSNumber *aValue = internal[aKey];
+    block([aKey longLongValue], [aValue floatValue], &stop);
+    if (stop) {
+      break;
+    }
+  }
 }
 
 - (size_t)computeSerializedSizeAsField:(GPBFieldDescriptor *)field {
-  NSUInteger count = _dictionary.count;
+  NSDictionary *internal = _dictionary;
+  NSUInteger count = internal.count;
   if (count == 0) {
     return 0;
   }
 
   GPBDataType valueDataType = GPBGetFieldDataType(field);
   GPBDataType keyDataType = field.mapKeyDataType;
-  __block size_t result = 0;
-  [_dictionary enumerateKeysAndObjectsUsingBlock:^(NSNumber *aKey,
-                                                   NSNumber *aValue,
-                                                   BOOL *stop) {
-    #pragma unused(stop)
+  size_t result = 0;
+  NSEnumerator *keys = [internal keyEnumerator];
+  NSNumber *aKey;
+  while ((aKey = [keys nextObject])) {
+    NSNumber *aValue = internal[aKey];
     size_t msgSize = ComputeDictInt64FieldSize([aKey longLongValue], kMapKeyFieldNumber, keyDataType);
     msgSize += ComputeDictFloatFieldSize([aValue floatValue], kMapValueFieldNumber, valueDataType);
     result += GPBComputeRawVarint32SizeForInteger(msgSize) + msgSize;
-  }];
+  }
   size_t tagSize = GPBComputeWireFormatTagSize(GPBFieldNumber(field), GPBDataTypeMessage);
   result += tagSize * count;
   return result;
@@ -8620,20 +8954,22 @@ void GPBDictionaryReadEntry(id mapDictionary,
   GPBDataType valueDataType = GPBGetFieldDataType(field);
   GPBDataType keyDataType = field.mapKeyDataType;
   uint32_t tag = GPBWireFormatMakeTag(GPBFieldNumber(field), GPBWireFormatLengthDelimited);
-  [_dictionary enumerateKeysAndObjectsUsingBlock:^(NSNumber *aKey,
-                                                   NSNumber *aValue,
-                                                   BOOL *stop) {
-    #pragma unused(stop)
-    // Write the tag.
+  NSDictionary *internal = _dictionary;
+  NSEnumerator *keys = [internal keyEnumerator];
+  NSNumber *aKey;
+  while ((aKey = [keys nextObject])) {
+    NSNumber *aValue = internal[aKey];
     [outputStream writeInt32NoTag:tag];
     // Write the size of the message.
-    size_t msgSize = ComputeDictInt64FieldSize([aKey longLongValue], kMapKeyFieldNumber, keyDataType);
-    msgSize += ComputeDictFloatFieldSize([aValue floatValue], kMapValueFieldNumber, valueDataType);
+    int64_t unwrappedKey = [aKey longLongValue];
+    float unwrappedValue = [aValue floatValue];
+    size_t msgSize = ComputeDictInt64FieldSize(unwrappedKey, kMapKeyFieldNumber, keyDataType);
+    msgSize += ComputeDictFloatFieldSize(unwrappedValue, kMapValueFieldNumber, valueDataType);
     [outputStream writeInt32NoTag:(int32_t)msgSize];
     // Write the fields.
-    WriteDictInt64Field(outputStream, [aKey longLongValue], kMapKeyFieldNumber, keyDataType);
-    WriteDictFloatField(outputStream, [aValue floatValue], kMapValueFieldNumber, valueDataType);
-  }];
+    WriteDictInt64Field(outputStream, unwrappedKey, kMapKeyFieldNumber, keyDataType);
+    WriteDictFloatField(outputStream, unwrappedValue, kMapValueFieldNumber, valueDataType);
+  }
 }
 
 - (void)setGPBGenericValue:(GPBGenericValue *)value
@@ -8793,30 +9129,37 @@ void GPBDictionaryReadEntry(id mapDictionary,
 
 - (void)enumerateKeysAndDoublesUsingBlock:
     (void (^)(int64_t key, double value, BOOL *stop))block {
-  [_dictionary enumerateKeysAndObjectsUsingBlock:^(NSNumber *aKey,
-                                                   NSNumber *aValue,
-                                                   BOOL *stop) {
-      block([aKey longLongValue], [aValue doubleValue], stop);
-  }];
+  BOOL stop = NO;
+  NSDictionary *internal = _dictionary;
+  NSEnumerator *keys = [internal keyEnumerator];
+  NSNumber *aKey;
+  while ((aKey = [keys nextObject])) {
+    NSNumber *aValue = internal[aKey];
+    block([aKey longLongValue], [aValue doubleValue], &stop);
+    if (stop) {
+      break;
+    }
+  }
 }
 
 - (size_t)computeSerializedSizeAsField:(GPBFieldDescriptor *)field {
-  NSUInteger count = _dictionary.count;
+  NSDictionary *internal = _dictionary;
+  NSUInteger count = internal.count;
   if (count == 0) {
     return 0;
   }
 
   GPBDataType valueDataType = GPBGetFieldDataType(field);
   GPBDataType keyDataType = field.mapKeyDataType;
-  __block size_t result = 0;
-  [_dictionary enumerateKeysAndObjectsUsingBlock:^(NSNumber *aKey,
-                                                   NSNumber *aValue,
-                                                   BOOL *stop) {
-    #pragma unused(stop)
+  size_t result = 0;
+  NSEnumerator *keys = [internal keyEnumerator];
+  NSNumber *aKey;
+  while ((aKey = [keys nextObject])) {
+    NSNumber *aValue = internal[aKey];
     size_t msgSize = ComputeDictInt64FieldSize([aKey longLongValue], kMapKeyFieldNumber, keyDataType);
     msgSize += ComputeDictDoubleFieldSize([aValue doubleValue], kMapValueFieldNumber, valueDataType);
     result += GPBComputeRawVarint32SizeForInteger(msgSize) + msgSize;
-  }];
+  }
   size_t tagSize = GPBComputeWireFormatTagSize(GPBFieldNumber(field), GPBDataTypeMessage);
   result += tagSize * count;
   return result;
@@ -8827,20 +9170,22 @@ void GPBDictionaryReadEntry(id mapDictionary,
   GPBDataType valueDataType = GPBGetFieldDataType(field);
   GPBDataType keyDataType = field.mapKeyDataType;
   uint32_t tag = GPBWireFormatMakeTag(GPBFieldNumber(field), GPBWireFormatLengthDelimited);
-  [_dictionary enumerateKeysAndObjectsUsingBlock:^(NSNumber *aKey,
-                                                   NSNumber *aValue,
-                                                   BOOL *stop) {
-    #pragma unused(stop)
-    // Write the tag.
+  NSDictionary *internal = _dictionary;
+  NSEnumerator *keys = [internal keyEnumerator];
+  NSNumber *aKey;
+  while ((aKey = [keys nextObject])) {
+    NSNumber *aValue = internal[aKey];
     [outputStream writeInt32NoTag:tag];
     // Write the size of the message.
-    size_t msgSize = ComputeDictInt64FieldSize([aKey longLongValue], kMapKeyFieldNumber, keyDataType);
-    msgSize += ComputeDictDoubleFieldSize([aValue doubleValue], kMapValueFieldNumber, valueDataType);
+    int64_t unwrappedKey = [aKey longLongValue];
+    double unwrappedValue = [aValue doubleValue];
+    size_t msgSize = ComputeDictInt64FieldSize(unwrappedKey, kMapKeyFieldNumber, keyDataType);
+    msgSize += ComputeDictDoubleFieldSize(unwrappedValue, kMapValueFieldNumber, valueDataType);
     [outputStream writeInt32NoTag:(int32_t)msgSize];
     // Write the fields.
-    WriteDictInt64Field(outputStream, [aKey longLongValue], kMapKeyFieldNumber, keyDataType);
-    WriteDictDoubleField(outputStream, [aValue doubleValue], kMapValueFieldNumber, valueDataType);
-  }];
+    WriteDictInt64Field(outputStream, unwrappedKey, kMapKeyFieldNumber, keyDataType);
+    WriteDictDoubleField(outputStream, unwrappedValue, kMapValueFieldNumber, valueDataType);
+  }
 }
 
 - (void)setGPBGenericValue:(GPBGenericValue *)value
@@ -9028,30 +9373,37 @@ void GPBDictionaryReadEntry(id mapDictionary,
 
 - (void)enumerateKeysAndRawValuesUsingBlock:
     (void (^)(int64_t key, int32_t value, BOOL *stop))block {
-  [_dictionary enumerateKeysAndObjectsUsingBlock:^(NSNumber *aKey,
-                                                   NSNumber *aValue,
-                                                   BOOL *stop) {
-      block([aKey longLongValue], [aValue intValue], stop);
-  }];
+  BOOL stop = NO;
+  NSDictionary *internal = _dictionary;
+  NSEnumerator *keys = [internal keyEnumerator];
+  NSNumber *aKey;
+  while ((aKey = [keys nextObject])) {
+    NSNumber *aValue = internal[aKey];
+    block([aKey longLongValue], [aValue intValue], &stop);
+    if (stop) {
+      break;
+    }
+  }
 }
 
 - (size_t)computeSerializedSizeAsField:(GPBFieldDescriptor *)field {
-  NSUInteger count = _dictionary.count;
+  NSDictionary *internal = _dictionary;
+  NSUInteger count = internal.count;
   if (count == 0) {
     return 0;
   }
 
   GPBDataType valueDataType = GPBGetFieldDataType(field);
   GPBDataType keyDataType = field.mapKeyDataType;
-  __block size_t result = 0;
-  [_dictionary enumerateKeysAndObjectsUsingBlock:^(NSNumber *aKey,
-                                                   NSNumber *aValue,
-                                                   BOOL *stop) {
-    #pragma unused(stop)
+  size_t result = 0;
+  NSEnumerator *keys = [internal keyEnumerator];
+  NSNumber *aKey;
+  while ((aKey = [keys nextObject])) {
+    NSNumber *aValue = internal[aKey];
     size_t msgSize = ComputeDictInt64FieldSize([aKey longLongValue], kMapKeyFieldNumber, keyDataType);
     msgSize += ComputeDictEnumFieldSize([aValue intValue], kMapValueFieldNumber, valueDataType);
     result += GPBComputeRawVarint32SizeForInteger(msgSize) + msgSize;
-  }];
+  }
   size_t tagSize = GPBComputeWireFormatTagSize(GPBFieldNumber(field), GPBDataTypeMessage);
   result += tagSize * count;
   return result;
@@ -9062,20 +9414,22 @@ void GPBDictionaryReadEntry(id mapDictionary,
   GPBDataType valueDataType = GPBGetFieldDataType(field);
   GPBDataType keyDataType = field.mapKeyDataType;
   uint32_t tag = GPBWireFormatMakeTag(GPBFieldNumber(field), GPBWireFormatLengthDelimited);
-  [_dictionary enumerateKeysAndObjectsUsingBlock:^(NSNumber *aKey,
-                                                   NSNumber *aValue,
-                                                   BOOL *stop) {
-    #pragma unused(stop)
-    // Write the tag.
+  NSDictionary *internal = _dictionary;
+  NSEnumerator *keys = [internal keyEnumerator];
+  NSNumber *aKey;
+  while ((aKey = [keys nextObject])) {
+    NSNumber *aValue = internal[aKey];
     [outputStream writeInt32NoTag:tag];
     // Write the size of the message.
-    size_t msgSize = ComputeDictInt64FieldSize([aKey longLongValue], kMapKeyFieldNumber, keyDataType);
-    msgSize += ComputeDictEnumFieldSize([aValue intValue], kMapValueFieldNumber, valueDataType);
+    int64_t unwrappedKey = [aKey longLongValue];
+    int32_t unwrappedValue = [aValue intValue];
+    size_t msgSize = ComputeDictInt64FieldSize(unwrappedKey, kMapKeyFieldNumber, keyDataType);
+    msgSize += ComputeDictEnumFieldSize(unwrappedValue, kMapValueFieldNumber, valueDataType);
     [outputStream writeInt32NoTag:(int32_t)msgSize];
     // Write the fields.
-    WriteDictInt64Field(outputStream, [aKey longLongValue], kMapKeyFieldNumber, keyDataType);
-    WriteDictEnumField(outputStream, [aValue intValue], kMapValueFieldNumber, valueDataType);
-  }];
+    WriteDictInt64Field(outputStream, unwrappedKey, kMapKeyFieldNumber, keyDataType);
+    WriteDictEnumField(outputStream, unwrappedValue, kMapValueFieldNumber, valueDataType);
+  }
 }
 
 - (NSData *)serializedDataForUnknownValue:(int32_t)value
@@ -9125,15 +9479,20 @@ void GPBDictionaryReadEntry(id mapDictionary,
 - (void)enumerateKeysAndEnumsUsingBlock:
     (void (^)(int64_t key, int32_t value, BOOL *stop))block {
   GPBEnumValidationFunc func = _validationFunc;
-  [_dictionary enumerateKeysAndObjectsUsingBlock:^(NSNumber *aKey,
-                                                   NSNumber *aValue,
-                                                   BOOL *stop) {
+  BOOL stop = NO;
+  NSEnumerator *keys = [_dictionary keyEnumerator];
+  NSNumber *aKey;
+  while ((aKey = [keys nextObject])) {
+    NSNumber *aValue = _dictionary[aKey];
       int32_t unwrapped = [aValue intValue];
       if (!func(unwrapped)) {
         unwrapped = kGPBUnrecognizedEnumeratorValue;
       }
-      block([aKey longLongValue], unwrapped, stop);
-  }];
+    block([aKey longLongValue], unwrapped, &stop);
+    if (stop) {
+      break;
+    }
+  }
 }
 
 - (void)addRawEntriesFromDictionary:(GPBInt64EnumDictionary *)otherDictionary {
@@ -9290,11 +9649,17 @@ void GPBDictionaryReadEntry(id mapDictionary,
 
 - (void)enumerateKeysAndObjectsUsingBlock:
     (void (^)(int64_t key, id object, BOOL *stop))block {
-  [_dictionary enumerateKeysAndObjectsUsingBlock:^(NSNumber *aKey,
-                                                   id aObject,
-                                                   BOOL *stop) {
-      block([aKey longLongValue], aObject, stop);
-  }];
+  BOOL stop = NO;
+  NSDictionary *internal = _dictionary;
+  NSEnumerator *keys = [internal keyEnumerator];
+  NSNumber *aKey;
+  while ((aKey = [keys nextObject])) {
+    id aObject = internal[aKey];
+    block([aKey longLongValue], aObject, &stop);
+    if (stop) {
+      break;
+    }
+  }
 }
 
 - (BOOL)isInitialized {
@@ -9309,34 +9674,36 @@ void GPBDictionaryReadEntry(id mapDictionary,
 - (instancetype)deepCopyWithZone:(NSZone *)zone {
   GPBInt64ObjectDictionary *newDict =
       [[GPBInt64ObjectDictionary alloc] init];
-  [_dictionary enumerateKeysAndObjectsUsingBlock:^(id aKey,
-                                                   GPBMessage *msg,
-                                                   BOOL *stop) {
-    #pragma unused(stop)
+  NSEnumerator *keys = [_dictionary keyEnumerator];
+  id aKey;
+  NSMutableDictionary *internalDict = newDict->_dictionary;
+  while ((aKey = [keys nextObject])) {
+    GPBMessage *msg = _dictionary[aKey];
     GPBMessage *copiedMsg = [msg copyWithZone:zone];
-    [newDict->_dictionary setObject:copiedMsg forKey:aKey];
+    [internalDict setObject:copiedMsg forKey:aKey];
     [copiedMsg release];
-  }];
+  }
   return newDict;
 }
 
 - (size_t)computeSerializedSizeAsField:(GPBFieldDescriptor *)field {
-  NSUInteger count = _dictionary.count;
+  NSDictionary *internal = _dictionary;
+  NSUInteger count = internal.count;
   if (count == 0) {
     return 0;
   }
 
   GPBDataType valueDataType = GPBGetFieldDataType(field);
   GPBDataType keyDataType = field.mapKeyDataType;
-  __block size_t result = 0;
-  [_dictionary enumerateKeysAndObjectsUsingBlock:^(NSNumber *aKey,
-                                                   id aObject,
-                                                   BOOL *stop) {
-    #pragma unused(stop)
+  size_t result = 0;
+  NSEnumerator *keys = [internal keyEnumerator];
+  NSNumber *aKey;
+  while ((aKey = [keys nextObject])) {
+    id aObject = internal[aKey];
     size_t msgSize = ComputeDictInt64FieldSize([aKey longLongValue], kMapKeyFieldNumber, keyDataType);
     msgSize += ComputeDictObjectFieldSize(aObject, kMapValueFieldNumber, valueDataType);
     result += GPBComputeRawVarint32SizeForInteger(msgSize) + msgSize;
-  }];
+  }
   size_t tagSize = GPBComputeWireFormatTagSize(GPBFieldNumber(field), GPBDataTypeMessage);
   result += tagSize * count;
   return result;
@@ -9347,20 +9714,22 @@ void GPBDictionaryReadEntry(id mapDictionary,
   GPBDataType valueDataType = GPBGetFieldDataType(field);
   GPBDataType keyDataType = field.mapKeyDataType;
   uint32_t tag = GPBWireFormatMakeTag(GPBFieldNumber(field), GPBWireFormatLengthDelimited);
-  [_dictionary enumerateKeysAndObjectsUsingBlock:^(NSNumber *aKey,
-                                                   id aObject,
-                                                   BOOL *stop) {
-    #pragma unused(stop)
-    // Write the tag.
+  NSDictionary *internal = _dictionary;
+  NSEnumerator *keys = [internal keyEnumerator];
+  NSNumber *aKey;
+  while ((aKey = [keys nextObject])) {
+    id aObject = internal[aKey];
     [outputStream writeInt32NoTag:tag];
     // Write the size of the message.
-    size_t msgSize = ComputeDictInt64FieldSize([aKey longLongValue], kMapKeyFieldNumber, keyDataType);
-    msgSize += ComputeDictObjectFieldSize(aObject, kMapValueFieldNumber, valueDataType);
+    int64_t unwrappedKey = [aKey longLongValue];
+    id unwrappedValue = aObject;
+    size_t msgSize = ComputeDictInt64FieldSize(unwrappedKey, kMapKeyFieldNumber, keyDataType);
+    msgSize += ComputeDictObjectFieldSize(unwrappedValue, kMapValueFieldNumber, valueDataType);
     [outputStream writeInt32NoTag:(int32_t)msgSize];
     // Write the fields.
-    WriteDictInt64Field(outputStream, [aKey longLongValue], kMapKeyFieldNumber, keyDataType);
-    WriteDictObjectField(outputStream, aObject, kMapValueFieldNumber, valueDataType);
-  }];
+    WriteDictInt64Field(outputStream, unwrappedKey, kMapKeyFieldNumber, keyDataType);
+    WriteDictObjectField(outputStream, unwrappedValue, kMapValueFieldNumber, valueDataType);
+  }
 }
 
 - (void)setGPBGenericValue:(GPBGenericValue *)value
@@ -9528,30 +9897,37 @@ void GPBDictionaryReadEntry(id mapDictionary,
 
 - (void)enumerateKeysAndUInt32sUsingBlock:
     (void (^)(NSString *key, uint32_t value, BOOL *stop))block {
-  [_dictionary enumerateKeysAndObjectsUsingBlock:^(NSString *aKey,
-                                                   NSNumber *aValue,
-                                                   BOOL *stop) {
-      block(aKey, [aValue unsignedIntValue], stop);
-  }];
+  BOOL stop = NO;
+  NSDictionary *internal = _dictionary;
+  NSEnumerator *keys = [internal keyEnumerator];
+  NSString *aKey;
+  while ((aKey = [keys nextObject])) {
+    NSNumber *aValue = internal[aKey];
+    block(aKey, [aValue unsignedIntValue], &stop);
+    if (stop) {
+      break;
+    }
+  }
 }
 
 - (size_t)computeSerializedSizeAsField:(GPBFieldDescriptor *)field {
-  NSUInteger count = _dictionary.count;
+  NSDictionary *internal = _dictionary;
+  NSUInteger count = internal.count;
   if (count == 0) {
     return 0;
   }
 
   GPBDataType valueDataType = GPBGetFieldDataType(field);
   GPBDataType keyDataType = field.mapKeyDataType;
-  __block size_t result = 0;
-  [_dictionary enumerateKeysAndObjectsUsingBlock:^(NSString *aKey,
-                                                   NSNumber *aValue,
-                                                   BOOL *stop) {
-    #pragma unused(stop)
+  size_t result = 0;
+  NSEnumerator *keys = [internal keyEnumerator];
+  NSString *aKey;
+  while ((aKey = [keys nextObject])) {
+    NSNumber *aValue = internal[aKey];
     size_t msgSize = ComputeDictStringFieldSize(aKey, kMapKeyFieldNumber, keyDataType);
     msgSize += ComputeDictUInt32FieldSize([aValue unsignedIntValue], kMapValueFieldNumber, valueDataType);
     result += GPBComputeRawVarint32SizeForInteger(msgSize) + msgSize;
-  }];
+  }
   size_t tagSize = GPBComputeWireFormatTagSize(GPBFieldNumber(field), GPBDataTypeMessage);
   result += tagSize * count;
   return result;
@@ -9562,20 +9938,22 @@ void GPBDictionaryReadEntry(id mapDictionary,
   GPBDataType valueDataType = GPBGetFieldDataType(field);
   GPBDataType keyDataType = field.mapKeyDataType;
   uint32_t tag = GPBWireFormatMakeTag(GPBFieldNumber(field), GPBWireFormatLengthDelimited);
-  [_dictionary enumerateKeysAndObjectsUsingBlock:^(NSString *aKey,
-                                                   NSNumber *aValue,
-                                                   BOOL *stop) {
-    #pragma unused(stop)
-    // Write the tag.
+  NSDictionary *internal = _dictionary;
+  NSEnumerator *keys = [internal keyEnumerator];
+  NSString *aKey;
+  while ((aKey = [keys nextObject])) {
+    NSNumber *aValue = internal[aKey];
     [outputStream writeInt32NoTag:tag];
     // Write the size of the message.
-    size_t msgSize = ComputeDictStringFieldSize(aKey, kMapKeyFieldNumber, keyDataType);
-    msgSize += ComputeDictUInt32FieldSize([aValue unsignedIntValue], kMapValueFieldNumber, valueDataType);
+    NSString *unwrappedKey = aKey;
+    uint32_t unwrappedValue = [aValue unsignedIntValue];
+    size_t msgSize = ComputeDictStringFieldSize(unwrappedKey, kMapKeyFieldNumber, keyDataType);
+    msgSize += ComputeDictUInt32FieldSize(unwrappedValue, kMapValueFieldNumber, valueDataType);
     [outputStream writeInt32NoTag:(int32_t)msgSize];
     // Write the fields.
-    WriteDictStringField(outputStream, aKey, kMapKeyFieldNumber, keyDataType);
-    WriteDictUInt32Field(outputStream, [aValue unsignedIntValue], kMapValueFieldNumber, valueDataType);
-  }];
+    WriteDictStringField(outputStream, unwrappedKey, kMapKeyFieldNumber, keyDataType);
+    WriteDictUInt32Field(outputStream, unwrappedValue, kMapValueFieldNumber, valueDataType);
+  }
 }
 
 - (void)setGPBGenericValue:(GPBGenericValue *)value
@@ -9743,30 +10121,37 @@ void GPBDictionaryReadEntry(id mapDictionary,
 
 - (void)enumerateKeysAndInt32sUsingBlock:
     (void (^)(NSString *key, int32_t value, BOOL *stop))block {
-  [_dictionary enumerateKeysAndObjectsUsingBlock:^(NSString *aKey,
-                                                   NSNumber *aValue,
-                                                   BOOL *stop) {
-      block(aKey, [aValue intValue], stop);
-  }];
+  BOOL stop = NO;
+  NSDictionary *internal = _dictionary;
+  NSEnumerator *keys = [internal keyEnumerator];
+  NSString *aKey;
+  while ((aKey = [keys nextObject])) {
+    NSNumber *aValue = internal[aKey];
+    block(aKey, [aValue intValue], &stop);
+    if (stop) {
+      break;
+    }
+  }
 }
 
 - (size_t)computeSerializedSizeAsField:(GPBFieldDescriptor *)field {
-  NSUInteger count = _dictionary.count;
+  NSDictionary *internal = _dictionary;
+  NSUInteger count = internal.count;
   if (count == 0) {
     return 0;
   }
 
   GPBDataType valueDataType = GPBGetFieldDataType(field);
   GPBDataType keyDataType = field.mapKeyDataType;
-  __block size_t result = 0;
-  [_dictionary enumerateKeysAndObjectsUsingBlock:^(NSString *aKey,
-                                                   NSNumber *aValue,
-                                                   BOOL *stop) {
-    #pragma unused(stop)
+  size_t result = 0;
+  NSEnumerator *keys = [internal keyEnumerator];
+  NSString *aKey;
+  while ((aKey = [keys nextObject])) {
+    NSNumber *aValue = internal[aKey];
     size_t msgSize = ComputeDictStringFieldSize(aKey, kMapKeyFieldNumber, keyDataType);
     msgSize += ComputeDictInt32FieldSize([aValue intValue], kMapValueFieldNumber, valueDataType);
     result += GPBComputeRawVarint32SizeForInteger(msgSize) + msgSize;
-  }];
+  }
   size_t tagSize = GPBComputeWireFormatTagSize(GPBFieldNumber(field), GPBDataTypeMessage);
   result += tagSize * count;
   return result;
@@ -9777,20 +10162,22 @@ void GPBDictionaryReadEntry(id mapDictionary,
   GPBDataType valueDataType = GPBGetFieldDataType(field);
   GPBDataType keyDataType = field.mapKeyDataType;
   uint32_t tag = GPBWireFormatMakeTag(GPBFieldNumber(field), GPBWireFormatLengthDelimited);
-  [_dictionary enumerateKeysAndObjectsUsingBlock:^(NSString *aKey,
-                                                   NSNumber *aValue,
-                                                   BOOL *stop) {
-    #pragma unused(stop)
-    // Write the tag.
+  NSDictionary *internal = _dictionary;
+  NSEnumerator *keys = [internal keyEnumerator];
+  NSString *aKey;
+  while ((aKey = [keys nextObject])) {
+    NSNumber *aValue = internal[aKey];
     [outputStream writeInt32NoTag:tag];
     // Write the size of the message.
-    size_t msgSize = ComputeDictStringFieldSize(aKey, kMapKeyFieldNumber, keyDataType);
-    msgSize += ComputeDictInt32FieldSize([aValue intValue], kMapValueFieldNumber, valueDataType);
+    NSString *unwrappedKey = aKey;
+    int32_t unwrappedValue = [aValue intValue];
+    size_t msgSize = ComputeDictStringFieldSize(unwrappedKey, kMapKeyFieldNumber, keyDataType);
+    msgSize += ComputeDictInt32FieldSize(unwrappedValue, kMapValueFieldNumber, valueDataType);
     [outputStream writeInt32NoTag:(int32_t)msgSize];
     // Write the fields.
-    WriteDictStringField(outputStream, aKey, kMapKeyFieldNumber, keyDataType);
-    WriteDictInt32Field(outputStream, [aValue intValue], kMapValueFieldNumber, valueDataType);
-  }];
+    WriteDictStringField(outputStream, unwrappedKey, kMapKeyFieldNumber, keyDataType);
+    WriteDictInt32Field(outputStream, unwrappedValue, kMapValueFieldNumber, valueDataType);
+  }
 }
 
 - (void)setGPBGenericValue:(GPBGenericValue *)value
@@ -9958,30 +10345,37 @@ void GPBDictionaryReadEntry(id mapDictionary,
 
 - (void)enumerateKeysAndUInt64sUsingBlock:
     (void (^)(NSString *key, uint64_t value, BOOL *stop))block {
-  [_dictionary enumerateKeysAndObjectsUsingBlock:^(NSString *aKey,
-                                                   NSNumber *aValue,
-                                                   BOOL *stop) {
-      block(aKey, [aValue unsignedLongLongValue], stop);
-  }];
+  BOOL stop = NO;
+  NSDictionary *internal = _dictionary;
+  NSEnumerator *keys = [internal keyEnumerator];
+  NSString *aKey;
+  while ((aKey = [keys nextObject])) {
+    NSNumber *aValue = internal[aKey];
+    block(aKey, [aValue unsignedLongLongValue], &stop);
+    if (stop) {
+      break;
+    }
+  }
 }
 
 - (size_t)computeSerializedSizeAsField:(GPBFieldDescriptor *)field {
-  NSUInteger count = _dictionary.count;
+  NSDictionary *internal = _dictionary;
+  NSUInteger count = internal.count;
   if (count == 0) {
     return 0;
   }
 
   GPBDataType valueDataType = GPBGetFieldDataType(field);
   GPBDataType keyDataType = field.mapKeyDataType;
-  __block size_t result = 0;
-  [_dictionary enumerateKeysAndObjectsUsingBlock:^(NSString *aKey,
-                                                   NSNumber *aValue,
-                                                   BOOL *stop) {
-    #pragma unused(stop)
+  size_t result = 0;
+  NSEnumerator *keys = [internal keyEnumerator];
+  NSString *aKey;
+  while ((aKey = [keys nextObject])) {
+    NSNumber *aValue = internal[aKey];
     size_t msgSize = ComputeDictStringFieldSize(aKey, kMapKeyFieldNumber, keyDataType);
     msgSize += ComputeDictUInt64FieldSize([aValue unsignedLongLongValue], kMapValueFieldNumber, valueDataType);
     result += GPBComputeRawVarint32SizeForInteger(msgSize) + msgSize;
-  }];
+  }
   size_t tagSize = GPBComputeWireFormatTagSize(GPBFieldNumber(field), GPBDataTypeMessage);
   result += tagSize * count;
   return result;
@@ -9992,20 +10386,22 @@ void GPBDictionaryReadEntry(id mapDictionary,
   GPBDataType valueDataType = GPBGetFieldDataType(field);
   GPBDataType keyDataType = field.mapKeyDataType;
   uint32_t tag = GPBWireFormatMakeTag(GPBFieldNumber(field), GPBWireFormatLengthDelimited);
-  [_dictionary enumerateKeysAndObjectsUsingBlock:^(NSString *aKey,
-                                                   NSNumber *aValue,
-                                                   BOOL *stop) {
-    #pragma unused(stop)
-    // Write the tag.
+  NSDictionary *internal = _dictionary;
+  NSEnumerator *keys = [internal keyEnumerator];
+  NSString *aKey;
+  while ((aKey = [keys nextObject])) {
+    NSNumber *aValue = internal[aKey];
     [outputStream writeInt32NoTag:tag];
     // Write the size of the message.
-    size_t msgSize = ComputeDictStringFieldSize(aKey, kMapKeyFieldNumber, keyDataType);
-    msgSize += ComputeDictUInt64FieldSize([aValue unsignedLongLongValue], kMapValueFieldNumber, valueDataType);
+    NSString *unwrappedKey = aKey;
+    uint64_t unwrappedValue = [aValue unsignedLongLongValue];
+    size_t msgSize = ComputeDictStringFieldSize(unwrappedKey, kMapKeyFieldNumber, keyDataType);
+    msgSize += ComputeDictUInt64FieldSize(unwrappedValue, kMapValueFieldNumber, valueDataType);
     [outputStream writeInt32NoTag:(int32_t)msgSize];
     // Write the fields.
-    WriteDictStringField(outputStream, aKey, kMapKeyFieldNumber, keyDataType);
-    WriteDictUInt64Field(outputStream, [aValue unsignedLongLongValue], kMapValueFieldNumber, valueDataType);
-  }];
+    WriteDictStringField(outputStream, unwrappedKey, kMapKeyFieldNumber, keyDataType);
+    WriteDictUInt64Field(outputStream, unwrappedValue, kMapValueFieldNumber, valueDataType);
+  }
 }
 
 - (void)setGPBGenericValue:(GPBGenericValue *)value
@@ -10173,30 +10569,37 @@ void GPBDictionaryReadEntry(id mapDictionary,
 
 - (void)enumerateKeysAndInt64sUsingBlock:
     (void (^)(NSString *key, int64_t value, BOOL *stop))block {
-  [_dictionary enumerateKeysAndObjectsUsingBlock:^(NSString *aKey,
-                                                   NSNumber *aValue,
-                                                   BOOL *stop) {
-      block(aKey, [aValue longLongValue], stop);
-  }];
+  BOOL stop = NO;
+  NSDictionary *internal = _dictionary;
+  NSEnumerator *keys = [internal keyEnumerator];
+  NSString *aKey;
+  while ((aKey = [keys nextObject])) {
+    NSNumber *aValue = internal[aKey];
+    block(aKey, [aValue longLongValue], &stop);
+    if (stop) {
+      break;
+    }
+  }
 }
 
 - (size_t)computeSerializedSizeAsField:(GPBFieldDescriptor *)field {
-  NSUInteger count = _dictionary.count;
+  NSDictionary *internal = _dictionary;
+  NSUInteger count = internal.count;
   if (count == 0) {
     return 0;
   }
 
   GPBDataType valueDataType = GPBGetFieldDataType(field);
   GPBDataType keyDataType = field.mapKeyDataType;
-  __block size_t result = 0;
-  [_dictionary enumerateKeysAndObjectsUsingBlock:^(NSString *aKey,
-                                                   NSNumber *aValue,
-                                                   BOOL *stop) {
-    #pragma unused(stop)
+  size_t result = 0;
+  NSEnumerator *keys = [internal keyEnumerator];
+  NSString *aKey;
+  while ((aKey = [keys nextObject])) {
+    NSNumber *aValue = internal[aKey];
     size_t msgSize = ComputeDictStringFieldSize(aKey, kMapKeyFieldNumber, keyDataType);
     msgSize += ComputeDictInt64FieldSize([aValue longLongValue], kMapValueFieldNumber, valueDataType);
     result += GPBComputeRawVarint32SizeForInteger(msgSize) + msgSize;
-  }];
+  }
   size_t tagSize = GPBComputeWireFormatTagSize(GPBFieldNumber(field), GPBDataTypeMessage);
   result += tagSize * count;
   return result;
@@ -10207,20 +10610,22 @@ void GPBDictionaryReadEntry(id mapDictionary,
   GPBDataType valueDataType = GPBGetFieldDataType(field);
   GPBDataType keyDataType = field.mapKeyDataType;
   uint32_t tag = GPBWireFormatMakeTag(GPBFieldNumber(field), GPBWireFormatLengthDelimited);
-  [_dictionary enumerateKeysAndObjectsUsingBlock:^(NSString *aKey,
-                                                   NSNumber *aValue,
-                                                   BOOL *stop) {
-    #pragma unused(stop)
-    // Write the tag.
+  NSDictionary *internal = _dictionary;
+  NSEnumerator *keys = [internal keyEnumerator];
+  NSString *aKey;
+  while ((aKey = [keys nextObject])) {
+    NSNumber *aValue = internal[aKey];
     [outputStream writeInt32NoTag:tag];
     // Write the size of the message.
-    size_t msgSize = ComputeDictStringFieldSize(aKey, kMapKeyFieldNumber, keyDataType);
-    msgSize += ComputeDictInt64FieldSize([aValue longLongValue], kMapValueFieldNumber, valueDataType);
+    NSString *unwrappedKey = aKey;
+    int64_t unwrappedValue = [aValue longLongValue];
+    size_t msgSize = ComputeDictStringFieldSize(unwrappedKey, kMapKeyFieldNumber, keyDataType);
+    msgSize += ComputeDictInt64FieldSize(unwrappedValue, kMapValueFieldNumber, valueDataType);
     [outputStream writeInt32NoTag:(int32_t)msgSize];
     // Write the fields.
-    WriteDictStringField(outputStream, aKey, kMapKeyFieldNumber, keyDataType);
-    WriteDictInt64Field(outputStream, [aValue longLongValue], kMapValueFieldNumber, valueDataType);
-  }];
+    WriteDictStringField(outputStream, unwrappedKey, kMapKeyFieldNumber, keyDataType);
+    WriteDictInt64Field(outputStream, unwrappedValue, kMapValueFieldNumber, valueDataType);
+  }
 }
 
 - (void)setGPBGenericValue:(GPBGenericValue *)value
@@ -10388,30 +10793,37 @@ void GPBDictionaryReadEntry(id mapDictionary,
 
 - (void)enumerateKeysAndBoolsUsingBlock:
     (void (^)(NSString *key, BOOL value, BOOL *stop))block {
-  [_dictionary enumerateKeysAndObjectsUsingBlock:^(NSString *aKey,
-                                                   NSNumber *aValue,
-                                                   BOOL *stop) {
-      block(aKey, [aValue boolValue], stop);
-  }];
+  BOOL stop = NO;
+  NSDictionary *internal = _dictionary;
+  NSEnumerator *keys = [internal keyEnumerator];
+  NSString *aKey;
+  while ((aKey = [keys nextObject])) {
+    NSNumber *aValue = internal[aKey];
+    block(aKey, [aValue boolValue], &stop);
+    if (stop) {
+      break;
+    }
+  }
 }
 
 - (size_t)computeSerializedSizeAsField:(GPBFieldDescriptor *)field {
-  NSUInteger count = _dictionary.count;
+  NSDictionary *internal = _dictionary;
+  NSUInteger count = internal.count;
   if (count == 0) {
     return 0;
   }
 
   GPBDataType valueDataType = GPBGetFieldDataType(field);
   GPBDataType keyDataType = field.mapKeyDataType;
-  __block size_t result = 0;
-  [_dictionary enumerateKeysAndObjectsUsingBlock:^(NSString *aKey,
-                                                   NSNumber *aValue,
-                                                   BOOL *stop) {
-    #pragma unused(stop)
+  size_t result = 0;
+  NSEnumerator *keys = [internal keyEnumerator];
+  NSString *aKey;
+  while ((aKey = [keys nextObject])) {
+    NSNumber *aValue = internal[aKey];
     size_t msgSize = ComputeDictStringFieldSize(aKey, kMapKeyFieldNumber, keyDataType);
     msgSize += ComputeDictBoolFieldSize([aValue boolValue], kMapValueFieldNumber, valueDataType);
     result += GPBComputeRawVarint32SizeForInteger(msgSize) + msgSize;
-  }];
+  }
   size_t tagSize = GPBComputeWireFormatTagSize(GPBFieldNumber(field), GPBDataTypeMessage);
   result += tagSize * count;
   return result;
@@ -10422,20 +10834,22 @@ void GPBDictionaryReadEntry(id mapDictionary,
   GPBDataType valueDataType = GPBGetFieldDataType(field);
   GPBDataType keyDataType = field.mapKeyDataType;
   uint32_t tag = GPBWireFormatMakeTag(GPBFieldNumber(field), GPBWireFormatLengthDelimited);
-  [_dictionary enumerateKeysAndObjectsUsingBlock:^(NSString *aKey,
-                                                   NSNumber *aValue,
-                                                   BOOL *stop) {
-    #pragma unused(stop)
-    // Write the tag.
+  NSDictionary *internal = _dictionary;
+  NSEnumerator *keys = [internal keyEnumerator];
+  NSString *aKey;
+  while ((aKey = [keys nextObject])) {
+    NSNumber *aValue = internal[aKey];
     [outputStream writeInt32NoTag:tag];
     // Write the size of the message.
-    size_t msgSize = ComputeDictStringFieldSize(aKey, kMapKeyFieldNumber, keyDataType);
-    msgSize += ComputeDictBoolFieldSize([aValue boolValue], kMapValueFieldNumber, valueDataType);
+    NSString *unwrappedKey = aKey;
+    BOOL unwrappedValue = [aValue boolValue];
+    size_t msgSize = ComputeDictStringFieldSize(unwrappedKey, kMapKeyFieldNumber, keyDataType);
+    msgSize += ComputeDictBoolFieldSize(unwrappedValue, kMapValueFieldNumber, valueDataType);
     [outputStream writeInt32NoTag:(int32_t)msgSize];
     // Write the fields.
-    WriteDictStringField(outputStream, aKey, kMapKeyFieldNumber, keyDataType);
-    WriteDictBoolField(outputStream, [aValue boolValue], kMapValueFieldNumber, valueDataType);
-  }];
+    WriteDictStringField(outputStream, unwrappedKey, kMapKeyFieldNumber, keyDataType);
+    WriteDictBoolField(outputStream, unwrappedValue, kMapValueFieldNumber, valueDataType);
+  }
 }
 
 - (void)setGPBGenericValue:(GPBGenericValue *)value
@@ -10603,30 +11017,37 @@ void GPBDictionaryReadEntry(id mapDictionary,
 
 - (void)enumerateKeysAndFloatsUsingBlock:
     (void (^)(NSString *key, float value, BOOL *stop))block {
-  [_dictionary enumerateKeysAndObjectsUsingBlock:^(NSString *aKey,
-                                                   NSNumber *aValue,
-                                                   BOOL *stop) {
-      block(aKey, [aValue floatValue], stop);
-  }];
+  BOOL stop = NO;
+  NSDictionary *internal = _dictionary;
+  NSEnumerator *keys = [internal keyEnumerator];
+  NSString *aKey;
+  while ((aKey = [keys nextObject])) {
+    NSNumber *aValue = internal[aKey];
+    block(aKey, [aValue floatValue], &stop);
+    if (stop) {
+      break;
+    }
+  }
 }
 
 - (size_t)computeSerializedSizeAsField:(GPBFieldDescriptor *)field {
-  NSUInteger count = _dictionary.count;
+  NSDictionary *internal = _dictionary;
+  NSUInteger count = internal.count;
   if (count == 0) {
     return 0;
   }
 
   GPBDataType valueDataType = GPBGetFieldDataType(field);
   GPBDataType keyDataType = field.mapKeyDataType;
-  __block size_t result = 0;
-  [_dictionary enumerateKeysAndObjectsUsingBlock:^(NSString *aKey,
-                                                   NSNumber *aValue,
-                                                   BOOL *stop) {
-    #pragma unused(stop)
+  size_t result = 0;
+  NSEnumerator *keys = [internal keyEnumerator];
+  NSString *aKey;
+  while ((aKey = [keys nextObject])) {
+    NSNumber *aValue = internal[aKey];
     size_t msgSize = ComputeDictStringFieldSize(aKey, kMapKeyFieldNumber, keyDataType);
     msgSize += ComputeDictFloatFieldSize([aValue floatValue], kMapValueFieldNumber, valueDataType);
     result += GPBComputeRawVarint32SizeForInteger(msgSize) + msgSize;
-  }];
+  }
   size_t tagSize = GPBComputeWireFormatTagSize(GPBFieldNumber(field), GPBDataTypeMessage);
   result += tagSize * count;
   return result;
@@ -10637,20 +11058,22 @@ void GPBDictionaryReadEntry(id mapDictionary,
   GPBDataType valueDataType = GPBGetFieldDataType(field);
   GPBDataType keyDataType = field.mapKeyDataType;
   uint32_t tag = GPBWireFormatMakeTag(GPBFieldNumber(field), GPBWireFormatLengthDelimited);
-  [_dictionary enumerateKeysAndObjectsUsingBlock:^(NSString *aKey,
-                                                   NSNumber *aValue,
-                                                   BOOL *stop) {
-    #pragma unused(stop)
-    // Write the tag.
+  NSDictionary *internal = _dictionary;
+  NSEnumerator *keys = [internal keyEnumerator];
+  NSString *aKey;
+  while ((aKey = [keys nextObject])) {
+    NSNumber *aValue = internal[aKey];
     [outputStream writeInt32NoTag:tag];
     // Write the size of the message.
-    size_t msgSize = ComputeDictStringFieldSize(aKey, kMapKeyFieldNumber, keyDataType);
-    msgSize += ComputeDictFloatFieldSize([aValue floatValue], kMapValueFieldNumber, valueDataType);
+    NSString *unwrappedKey = aKey;
+    float unwrappedValue = [aValue floatValue];
+    size_t msgSize = ComputeDictStringFieldSize(unwrappedKey, kMapKeyFieldNumber, keyDataType);
+    msgSize += ComputeDictFloatFieldSize(unwrappedValue, kMapValueFieldNumber, valueDataType);
     [outputStream writeInt32NoTag:(int32_t)msgSize];
     // Write the fields.
-    WriteDictStringField(outputStream, aKey, kMapKeyFieldNumber, keyDataType);
-    WriteDictFloatField(outputStream, [aValue floatValue], kMapValueFieldNumber, valueDataType);
-  }];
+    WriteDictStringField(outputStream, unwrappedKey, kMapKeyFieldNumber, keyDataType);
+    WriteDictFloatField(outputStream, unwrappedValue, kMapValueFieldNumber, valueDataType);
+  }
 }
 
 - (void)setGPBGenericValue:(GPBGenericValue *)value
@@ -10818,30 +11241,37 @@ void GPBDictionaryReadEntry(id mapDictionary,
 
 - (void)enumerateKeysAndDoublesUsingBlock:
     (void (^)(NSString *key, double value, BOOL *stop))block {
-  [_dictionary enumerateKeysAndObjectsUsingBlock:^(NSString *aKey,
-                                                   NSNumber *aValue,
-                                                   BOOL *stop) {
-      block(aKey, [aValue doubleValue], stop);
-  }];
+  BOOL stop = NO;
+  NSDictionary *internal = _dictionary;
+  NSEnumerator *keys = [internal keyEnumerator];
+  NSString *aKey;
+  while ((aKey = [keys nextObject])) {
+    NSNumber *aValue = internal[aKey];
+    block(aKey, [aValue doubleValue], &stop);
+    if (stop) {
+      break;
+    }
+  }
 }
 
 - (size_t)computeSerializedSizeAsField:(GPBFieldDescriptor *)field {
-  NSUInteger count = _dictionary.count;
+  NSDictionary *internal = _dictionary;
+  NSUInteger count = internal.count;
   if (count == 0) {
     return 0;
   }
 
   GPBDataType valueDataType = GPBGetFieldDataType(field);
   GPBDataType keyDataType = field.mapKeyDataType;
-  __block size_t result = 0;
-  [_dictionary enumerateKeysAndObjectsUsingBlock:^(NSString *aKey,
-                                                   NSNumber *aValue,
-                                                   BOOL *stop) {
-    #pragma unused(stop)
+  size_t result = 0;
+  NSEnumerator *keys = [internal keyEnumerator];
+  NSString *aKey;
+  while ((aKey = [keys nextObject])) {
+    NSNumber *aValue = internal[aKey];
     size_t msgSize = ComputeDictStringFieldSize(aKey, kMapKeyFieldNumber, keyDataType);
     msgSize += ComputeDictDoubleFieldSize([aValue doubleValue], kMapValueFieldNumber, valueDataType);
     result += GPBComputeRawVarint32SizeForInteger(msgSize) + msgSize;
-  }];
+  }
   size_t tagSize = GPBComputeWireFormatTagSize(GPBFieldNumber(field), GPBDataTypeMessage);
   result += tagSize * count;
   return result;
@@ -10852,20 +11282,22 @@ void GPBDictionaryReadEntry(id mapDictionary,
   GPBDataType valueDataType = GPBGetFieldDataType(field);
   GPBDataType keyDataType = field.mapKeyDataType;
   uint32_t tag = GPBWireFormatMakeTag(GPBFieldNumber(field), GPBWireFormatLengthDelimited);
-  [_dictionary enumerateKeysAndObjectsUsingBlock:^(NSString *aKey,
-                                                   NSNumber *aValue,
-                                                   BOOL *stop) {
-    #pragma unused(stop)
-    // Write the tag.
+  NSDictionary *internal = _dictionary;
+  NSEnumerator *keys = [internal keyEnumerator];
+  NSString *aKey;
+  while ((aKey = [keys nextObject])) {
+    NSNumber *aValue = internal[aKey];
     [outputStream writeInt32NoTag:tag];
     // Write the size of the message.
-    size_t msgSize = ComputeDictStringFieldSize(aKey, kMapKeyFieldNumber, keyDataType);
-    msgSize += ComputeDictDoubleFieldSize([aValue doubleValue], kMapValueFieldNumber, valueDataType);
+    NSString *unwrappedKey = aKey;
+    double unwrappedValue = [aValue doubleValue];
+    size_t msgSize = ComputeDictStringFieldSize(unwrappedKey, kMapKeyFieldNumber, keyDataType);
+    msgSize += ComputeDictDoubleFieldSize(unwrappedValue, kMapValueFieldNumber, valueDataType);
     [outputStream writeInt32NoTag:(int32_t)msgSize];
     // Write the fields.
-    WriteDictStringField(outputStream, aKey, kMapKeyFieldNumber, keyDataType);
-    WriteDictDoubleField(outputStream, [aValue doubleValue], kMapValueFieldNumber, valueDataType);
-  }];
+    WriteDictStringField(outputStream, unwrappedKey, kMapKeyFieldNumber, keyDataType);
+    WriteDictDoubleField(outputStream, unwrappedValue, kMapValueFieldNumber, valueDataType);
+  }
 }
 
 - (void)setGPBGenericValue:(GPBGenericValue *)value
@@ -11061,30 +11493,37 @@ void GPBDictionaryReadEntry(id mapDictionary,
 
 - (void)enumerateKeysAndRawValuesUsingBlock:
     (void (^)(NSString *key, int32_t value, BOOL *stop))block {
-  [_dictionary enumerateKeysAndObjectsUsingBlock:^(NSString *aKey,
-                                                   NSNumber *aValue,
-                                                   BOOL *stop) {
-      block(aKey, [aValue intValue], stop);
-  }];
+  BOOL stop = NO;
+  NSDictionary *internal = _dictionary;
+  NSEnumerator *keys = [internal keyEnumerator];
+  NSString *aKey;
+  while ((aKey = [keys nextObject])) {
+    NSNumber *aValue = internal[aKey];
+    block(aKey, [aValue intValue], &stop);
+    if (stop) {
+      break;
+    }
+  }
 }
 
 - (size_t)computeSerializedSizeAsField:(GPBFieldDescriptor *)field {
-  NSUInteger count = _dictionary.count;
+  NSDictionary *internal = _dictionary;
+  NSUInteger count = internal.count;
   if (count == 0) {
     return 0;
   }
 
   GPBDataType valueDataType = GPBGetFieldDataType(field);
   GPBDataType keyDataType = field.mapKeyDataType;
-  __block size_t result = 0;
-  [_dictionary enumerateKeysAndObjectsUsingBlock:^(NSString *aKey,
-                                                   NSNumber *aValue,
-                                                   BOOL *stop) {
-    #pragma unused(stop)
+  size_t result = 0;
+  NSEnumerator *keys = [internal keyEnumerator];
+  NSString *aKey;
+  while ((aKey = [keys nextObject])) {
+    NSNumber *aValue = internal[aKey];
     size_t msgSize = ComputeDictStringFieldSize(aKey, kMapKeyFieldNumber, keyDataType);
     msgSize += ComputeDictEnumFieldSize([aValue intValue], kMapValueFieldNumber, valueDataType);
     result += GPBComputeRawVarint32SizeForInteger(msgSize) + msgSize;
-  }];
+  }
   size_t tagSize = GPBComputeWireFormatTagSize(GPBFieldNumber(field), GPBDataTypeMessage);
   result += tagSize * count;
   return result;
@@ -11095,20 +11534,22 @@ void GPBDictionaryReadEntry(id mapDictionary,
   GPBDataType valueDataType = GPBGetFieldDataType(field);
   GPBDataType keyDataType = field.mapKeyDataType;
   uint32_t tag = GPBWireFormatMakeTag(GPBFieldNumber(field), GPBWireFormatLengthDelimited);
-  [_dictionary enumerateKeysAndObjectsUsingBlock:^(NSString *aKey,
-                                                   NSNumber *aValue,
-                                                   BOOL *stop) {
-    #pragma unused(stop)
-    // Write the tag.
+  NSDictionary *internal = _dictionary;
+  NSEnumerator *keys = [internal keyEnumerator];
+  NSString *aKey;
+  while ((aKey = [keys nextObject])) {
+    NSNumber *aValue = internal[aKey];
     [outputStream writeInt32NoTag:tag];
     // Write the size of the message.
-    size_t msgSize = ComputeDictStringFieldSize(aKey, kMapKeyFieldNumber, keyDataType);
-    msgSize += ComputeDictEnumFieldSize([aValue intValue], kMapValueFieldNumber, valueDataType);
+    NSString *unwrappedKey = aKey;
+    int32_t unwrappedValue = [aValue intValue];
+    size_t msgSize = ComputeDictStringFieldSize(unwrappedKey, kMapKeyFieldNumber, keyDataType);
+    msgSize += ComputeDictEnumFieldSize(unwrappedValue, kMapValueFieldNumber, valueDataType);
     [outputStream writeInt32NoTag:(int32_t)msgSize];
     // Write the fields.
-    WriteDictStringField(outputStream, aKey, kMapKeyFieldNumber, keyDataType);
-    WriteDictEnumField(outputStream, [aValue intValue], kMapValueFieldNumber, valueDataType);
-  }];
+    WriteDictStringField(outputStream, unwrappedKey, kMapKeyFieldNumber, keyDataType);
+    WriteDictEnumField(outputStream, unwrappedValue, kMapValueFieldNumber, valueDataType);
+  }
 }
 
 - (NSData *)serializedDataForUnknownValue:(int32_t)value
@@ -11158,15 +11599,20 @@ void GPBDictionaryReadEntry(id mapDictionary,
 - (void)enumerateKeysAndEnumsUsingBlock:
     (void (^)(NSString *key, int32_t value, BOOL *stop))block {
   GPBEnumValidationFunc func = _validationFunc;
-  [_dictionary enumerateKeysAndObjectsUsingBlock:^(NSString *aKey,
-                                                   NSNumber *aValue,
-                                                   BOOL *stop) {
+  BOOL stop = NO;
+  NSEnumerator *keys = [_dictionary keyEnumerator];
+  NSString *aKey;
+  while ((aKey = [keys nextObject])) {
+    NSNumber *aValue = _dictionary[aKey];
       int32_t unwrapped = [aValue intValue];
       if (!func(unwrapped)) {
         unwrapped = kGPBUnrecognizedEnumeratorValue;
       }
-      block(aKey, unwrapped, stop);
-  }];
+    block(aKey, unwrapped, &stop);
+    if (stop) {
+      break;
+    }
+  }
 }
 
 - (void)addRawEntriesFromDictionary:(GPBStringEnumDictionary *)otherDictionary {

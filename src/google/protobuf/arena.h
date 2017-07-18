@@ -810,13 +810,13 @@ class LIBPROTOBUF_EXPORT Arena {
   }
   template <typename T>
   static void CreateInArenaStorageInternal(
-      T* ptr, Arena* arena, google::protobuf::internal::false_type) {
+      T* ptr, Arena* /* arena */, google::protobuf::internal::false_type) {
     new (ptr) T();
   }
 
   template <typename T>
   static void RegisterDestructorInternal(
-      T* ptr, Arena* arena, google::protobuf::internal::true_type) {}
+      T* /* ptr */, Arena* /* arena */, google::protobuf::internal::true_type) {}
   template <typename T>
   static void RegisterDestructorInternal(
       T* ptr, Arena* arena, google::protobuf::internal::false_type) {

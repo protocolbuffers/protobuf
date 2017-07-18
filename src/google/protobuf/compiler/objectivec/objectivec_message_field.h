@@ -51,7 +51,7 @@ class MessageFieldGenerator : public ObjCObjFieldGenerator {
   virtual bool WantsHasProperty(void) const;
 
  public:
-  virtual void DetermineForwardDeclarations(set<string>* fwd_decls) const;
+  virtual void DetermineForwardDeclarations(std::set<string>* fwd_decls) const;
 
  private:
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(MessageFieldGenerator);
@@ -67,7 +67,7 @@ class RepeatedMessageFieldGenerator : public RepeatedFieldGenerator {
   virtual ~RepeatedMessageFieldGenerator();
 
  public:
-  virtual void DetermineForwardDeclarations(set<string>* fwd_decls) const;
+  virtual void DetermineForwardDeclarations(std::set<string>* fwd_decls) const;
 
  private:
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(RepeatedMessageFieldGenerator);

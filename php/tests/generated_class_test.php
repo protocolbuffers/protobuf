@@ -9,9 +9,11 @@ use Google\Protobuf\Internal\RepeatedField;
 use Google\Protobuf\Internal\MapField;
 use Google\Protobuf\Internal\GPBType;
 use Foo\TestEnum;
+use Foo\TestIncludeNamespaceMessage;
 use Foo\TestIncludePrefixMessage;
 use Foo\TestMessage;
 use Foo\TestMessage_Sub;
+use Php\Test\TestNamespace;
 
 class GeneratedClassTest extends TestBase
 {
@@ -60,24 +62,6 @@ class GeneratedClassTest extends TestBase
         $this->assertSame(MIN_INT32, $m->getOptionalInt32());
     }
 
-    /**
-     * @expectedException PHPUnit_Framework_Error
-     */
-    public function testInt32FieldInvalidTypeFail()
-    {
-        $m = new TestMessage();
-        $m->setOptionalInt32(new TestMessage());
-    }
-
-    /**
-     * @expectedException PHPUnit_Framework_Error
-     */
-    public function testInt32FieldInvalidStringFail()
-    {
-        $m = new TestMessage();
-        $m->setOptionalInt32('abc');
-    }
-
     #########################################################
     # Test uint32 field.
     #########################################################
@@ -115,24 +99,6 @@ class GeneratedClassTest extends TestBase
         $this->assertSame(-1, $m->getOptionalUint32());
         $m->setOptionalUint32(MIN_UINT32_STRING);
         $this->assertSame(MIN_INT32, $m->getOptionalUint32());
-    }
-
-    /**
-     * @expectedException PHPUnit_Framework_Error
-     */
-    public function testUint32FieldInvalidTypeFail()
-    {
-        $m = new TestMessage();
-        $m->setOptionalUint32(new TestMessage());
-    }
-
-    /**
-     * @expectedException PHPUnit_Framework_Error
-     */
-    public function testUint32FieldInvalidStringFail()
-    {
-        $m = new TestMessage();
-        $m->setOptionalUint32('abc');
     }
 
     #########################################################
@@ -187,24 +153,6 @@ class GeneratedClassTest extends TestBase
         }
     }
 
-    /**
-     * @expectedException PHPUnit_Framework_Error
-     */
-    public function testInt64FieldInvalidTypeFail()
-    {
-        $m = new TestMessage();
-        $m->setOptionalInt64(new TestMessage());
-    }
-
-    /**
-     * @expectedException PHPUnit_Framework_Error
-     */
-    public function testInt64FieldInvalidStringFail()
-    {
-        $m = new TestMessage();
-        $m->setOptionalInt64('abc');
-    }
-
     #########################################################
     # Test uint64 field.
     #########################################################
@@ -250,24 +198,6 @@ class GeneratedClassTest extends TestBase
         } else {
             $this->assertSame(MAX_UINT64, $m->getOptionalUint64());
         }
-    }
-
-    /**
-     * @expectedException PHPUnit_Framework_Error
-     */
-    public function testUint64FieldInvalidTypeFail()
-    {
-        $m = new TestMessage();
-        $m->setOptionalUint64(new TestMessage());
-    }
-
-    /**
-     * @expectedException PHPUnit_Framework_Error
-     */
-    public function testUint64FieldInvalidStringFail()
-    {
-        $m = new TestMessage();
-        $m->setOptionalUint64('abc');
     }
 
     #########################################################
@@ -324,24 +254,6 @@ class GeneratedClassTest extends TestBase
         $this->assertEquals(3.1, $m->getOptionalFloat(), '', MAX_FLOAT_DIFF);
     }
 
-    /**
-     * @expectedException PHPUnit_Framework_Error
-     */
-    public function testFloatFieldInvalidTypeFail()
-    {
-        $m = new TestMessage();
-        $m->setOptionalFloat(new TestMessage());
-    }
-
-    /**
-     * @expectedException PHPUnit_Framework_Error
-     */
-    public function testFloatFieldInvalidStringFail()
-    {
-        $m = new TestMessage();
-        $m->setOptionalFloat('abc');
-    }
-
     #########################################################
     # Test double field.
     #########################################################
@@ -363,24 +275,6 @@ class GeneratedClassTest extends TestBase
         $this->assertEquals(2.0, $m->getOptionalDouble(), '', MAX_FLOAT_DIFF);
         $m->setOptionalDouble('3.1');
         $this->assertEquals(3.1, $m->getOptionalDouble(), '', MAX_FLOAT_DIFF);
-    }
-
-    /**
-     * @expectedException PHPUnit_Framework_Error
-     */
-    public function testDoubleFieldInvalidTypeFail()
-    {
-        $m = new TestMessage();
-        $m->setOptionalDouble(new TestMessage());
-    }
-
-    /**
-     * @expectedException PHPUnit_Framework_Error
-     */
-    public function testDoubleFieldInvalidStringFail()
-    {
-        $m = new TestMessage();
-        $m->setOptionalDouble('abc');
     }
 
     #########################################################
@@ -408,15 +302,6 @@ class GeneratedClassTest extends TestBase
         $this->assertSame(false, $m->getOptionalBool());
     }
 
-    /**
-     * @expectedException PHPUnit_Framework_Error
-     */
-    public function testBoolFieldInvalidStringFail()
-    {
-        $m = new TestMessage();
-        $m->setOptionalBool(new TestMessage());
-    }
-
     #########################################################
     # Test string field.
     #########################################################
@@ -440,16 +325,6 @@ class GeneratedClassTest extends TestBase
         // Set bool.
         $m->setOptionalString(true);
         $this->assertSame('1', $m->getOptionalString());
-    }
-
-    /**
-     * @expectedException PHPUnit_Framework_Error
-     */
-    public function testStringFieldInvalidUTF8Fail()
-    {
-        $m = new TestMessage();
-        $hex = hex2bin("ff");
-        $m->setOptionalString($hex);
     }
 
     #########################################################
@@ -502,25 +377,6 @@ class GeneratedClassTest extends TestBase
         $this->assertNull($m->getOptionalMessage());
     }
 
-    /**
-     * @expectedException PHPUnit_Framework_Error
-     */
-    public function testMessageFieldWrongTypeFail()
-    {
-        $m = new TestMessage();
-        $a = 1;
-        $m->setOptionalMessage($a);
-    }
-
-    /**
-     * @expectedException PHPUnit_Framework_Error
-     */
-    public function testMessageFieldWrongClassFail()
-    {
-        $m = new TestMessage();
-        $m->setOptionalMessage(new TestMessage());
-    }
-
     #########################################################
     # Test repeated field.
     #########################################################
@@ -554,48 +410,6 @@ class GeneratedClassTest extends TestBase
         $this->assertFalse($arr instanceof RepeatedField);
     }
 
-    /**
-     * @expectedException PHPUnit_Framework_Error
-     */
-    public function testRepeatedFieldWrongTypeFail()
-    {
-        $m = new TestMessage();
-        $a = 1;
-        $m->setRepeatedInt32($a);
-    }
-
-    /**
-     * @expectedException PHPUnit_Framework_Error
-     */
-    public function testRepeatedFieldWrongObjectFail()
-    {
-        $m = new TestMessage();
-        $m->setRepeatedInt32($m);
-    }
-
-    /**
-     * @expectedException PHPUnit_Framework_Error
-     */
-    public function testRepeatedFieldWrongRepeatedTypeFail()
-    {
-        $m = new TestMessage();
-
-        $repeated_int32 = new RepeatedField(GPBType::UINT32);
-        $m->setRepeatedInt32($repeated_int32);
-    }
-
-    /**
-     * @expectedException PHPUnit_Framework_Error
-     */
-    public function testRepeatedFieldWrongRepeatedMessageClassFail()
-    {
-        $m = new TestMessage();
-
-        $repeated_message = new RepeatedField(GPBType::MESSAGE,
-                                              TestMessage::class);
-        $m->setRepeatedMessage($repeated_message);
-    }
-
     #########################################################
     # Test map field.
     #########################################################
@@ -625,49 +439,6 @@ class GeneratedClassTest extends TestBase
         $this->assertSame(6, $m->getMapInt32Int32()[6]);
         $this->assertSame(7, $m->getMapInt32Int32()[7]);
         $this->assertFalse($dict instanceof MapField);
-    }
-
-    /**
-     * @expectedException PHPUnit_Framework_Error
-     */
-    public function testMapFieldWrongTypeFail()
-    {
-        $m = new TestMessage();
-        $a = 1;
-        $m->setMapInt32Int32($a);
-    }
-
-    /**
-     * @expectedException PHPUnit_Framework_Error
-     */
-    public function testMapFieldWrongObjectFail()
-    {
-        $m = new TestMessage();
-        $m->setMapInt32Int32($m);
-    }
-
-    /**
-     * @expectedException PHPUnit_Framework_Error
-     */
-    public function testMapFieldWrongRepeatedTypeFail()
-    {
-        $m = new TestMessage();
-
-        $map_uint32_uint32 = new MapField(GPBType::UINT32, GPBType::UINT32);
-        $m->setMapInt32Int32($map_uint32_uint32);
-    }
-
-    /**
-     * @expectedException PHPUnit_Framework_Error
-     */
-    public function testMapFieldWrongRepeatedMessageClassFail()
-    {
-        $m = new TestMessage();
-
-        $map_int32_message = new MapField(GPBType::INT32,
-                                          GPBType::MESSAGE,
-                                          TestMessage::class);
-        $m->setMapInt32Message($map_int32_message);
     }
 
     #########################################################
@@ -741,24 +512,44 @@ class GeneratedClassTest extends TestBase
         $n->setOptionalInt32(100);
         $sub1 = new TestMessage_Sub();
         $sub1->setA(101);
-        $sub1->getB()[] = 102;
+
+        $b = $sub1->getB();
+        $b[] = 102;
+        $sub1->setB($b);
+
         $n->setOptionalMessage($sub1);
 
         // Repeated
-        $n->getRepeatedInt32()[] = 200;
-        $n->getRepeatedString()[] = 'abc';
+        $repeatedInt32 = $n->getRepeatedInt32();
+        $repeatedInt32[] = 200;
+        $n->setRepeatedInt32($repeatedInt32);
+
+        $repeatedString = $n->getRepeatedString();
+        $repeatedString[] = 'abc';
+        $n->setRepeatedString($repeatedString);
+
         $sub2 = new TestMessage_Sub();
         $sub2->setA(201);
-        $n->getRepeatedMessage()[] = $sub2;
+        $repeatedMessage = $n->getRepeatedMessage();
+        $repeatedMessage[] = $sub2;
+        $n->setRepeatedMessage($repeatedMessage);
 
         // Map
-        $n->getMapInt32Int32()[1] = 300;
-        $n->getMapInt32Int32()[-62] = 301;
-        $n->getMapStringString()['def'] = 'def';
-        $n->getMapInt32Message()[1] = new TestMessage_Sub();
-        $n->getMapInt32Message()[1]->setA(302);
-        $n->getMapInt32Message()[2] = new TestMessage_Sub();
-        $n->getMapInt32Message()[2]->setA(303);
+        $mapInt32Int32 = $n->getMapInt32Int32();
+        $mapInt32Int32[1] = 300;
+        $mapInt32Int32[-62] = 301;
+        $n->setMapInt32Int32($mapInt32Int32);
+
+        $mapStringString = $n->getMapStringString();
+        $mapStringString['def'] = 'def';
+        $n->setMapStringString($mapStringString);
+
+        $mapInt32Message = $n->getMapInt32Message();
+        $mapInt32Message[1] = new TestMessage_Sub();
+        $mapInt32Message[1]->setA(302);
+        $mapInt32Message[2] = new TestMessage_Sub();
+        $mapInt32Message[2]->setA(303);
+        $n->setMapInt32Message($mapInt32Message);
 
         $m->mergeFrom($n);
 
@@ -793,9 +584,16 @@ class GeneratedClassTest extends TestBase
         // Check sub-messages are copied by value.
         $n->getOptionalMessage()->setA(-101);
         $this->assertSame(101, $m->getOptionalMessage()->getA());
-        $n->getRepeatedMessage()[0]->setA(-201);
+
+        $repeatedMessage = $n->getRepeatedMessage();
+        $repeatedMessage[0]->setA(-201);
+        $n->setRepeatedMessage($repeatedMessage);
         $this->assertSame(201, $m->getRepeatedMessage()[2]->getA());
-        $n->getMapInt32Message()[1]->setA(-302);
+
+        $mapInt32Message = $n->getMapInt32Message();
+        $mapInt32Message[1]->setA(-302);
+        $n->setMapInt32Message($mapInt32Message);
+
         $this->assertSame(302, $m->getMapInt32Message()[1]->getA());
 
         // Test merge oneof.
@@ -822,16 +620,6 @@ class GeneratedClassTest extends TestBase
         $this->expectFields($n);
     }
 
-    /**
-     * @expectedException PHPUnit_Framework_Error
-     */
-    public function testMessageMergeFromInvalidTypeFail()
-    {
-        $m = new TestMessage();
-        $n = new TestMessage_Sub();
-        $m->mergeFrom($n);
-    }
-
     #########################################################
     # Test message/enum without namespace.
     #########################################################
@@ -841,7 +629,9 @@ class GeneratedClassTest extends TestBase
         $m = new TestMessage();
         $sub = new NoNameSpaceMessage();
         $m->setOptionalNoNamespaceMessage($sub);
-        $m->getRepeatedNoNamespaceMessage()[] = new NoNameSpaceMessage();
+        $repeatedNoNamespaceMessage = $m->getRepeatedNoNamespaceMessage();
+        $repeatedNoNamespaceMessage[] = new NoNameSpaceMessage();
+        $m->setRepeatedNoNamespaceMessage($repeatedNoNamespaceMessage);
 
         $n = new NoNamespaceMessage();
         $n->setB(NoNamespaceMessage_NestedEnum::ZERO);
@@ -851,7 +641,9 @@ class GeneratedClassTest extends TestBase
     {
         $m = new TestMessage();
         $m->setOptionalNoNamespaceEnum(NoNameSpaceEnum::VALUE_A);
-        $m->getRepeatedNoNamespaceEnum()[] = NoNameSpaceEnum::VALUE_A;
+        $repeatedNoNamespaceEnum = $m->getRepeatedNoNamespaceEnum();
+        $repeatedNoNamespaceEnum[] = NoNameSpaceEnum::VALUE_A;
+        $m->setRepeatedNoNamespaceEnum($repeatedNoNamespaceEnum);
     }
 
     #########################################################
@@ -868,6 +660,25 @@ class GeneratedClassTest extends TestBase
     }
 
     #########################################################
+    # Test message with given namespace.
+    #########################################################
+
+    public function testNamespaceMessage()
+    {
+        $m = new TestIncludeNamespaceMessage();
+
+        $n = new TestNamespace();
+        $n->setA(1);
+        $m->setNamespaceMessage($n);
+        $this->assertSame(1, $m->getNamespaceMessage()->getA());
+
+        $n = new TestEmptyNamespace();
+        $n->setA(1);
+        $m->setEmptyNamespaceMessage($n);
+        $this->assertSame(1, $m->getEmptyNamespaceMessage()->getA());
+    }
+
+    #########################################################
     # Test prefix for reserved words.
     #########################################################
 
@@ -876,5 +687,19 @@ class GeneratedClassTest extends TestBase
         $m = new \Foo\TestMessage_Empty();
         $m = new \Foo\PBEmpty();
         $m = new \PrefixEmpty();
+        $m = new \Foo\PBARRAY();
+    }
+
+    #########################################################
+    # Test fluent setters.
+    #########################################################
+
+    public function testFluentSetters()
+    {
+        $m = (new TestMessage())
+            ->setOptionalInt32(1)
+            ->setOptionalUInt32(2);
+        $this->assertSame(1, $m->getOptionalInt32());
+        $this->assertSame(2, $m->getOptionalUInt32());
     }
 }

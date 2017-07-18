@@ -282,10 +282,10 @@ inline int UnknownFieldSet::field_count() const {
 }
 inline const UnknownField& UnknownFieldSet::field(int index) const {
   GOOGLE_DCHECK(fields_ != NULL);
-  return (*fields_)[index];
+  return (*fields_)[static_cast<size_t>(index)];
 }
 inline UnknownField* UnknownFieldSet::mutable_field(int index) {
-  return &(*fields_)[index];
+  return &(*fields_)[static_cast<size_t>(index)];
 }
 
 inline void UnknownFieldSet::AddLengthDelimited(
@@ -296,7 +296,7 @@ inline void UnknownFieldSet::AddLengthDelimited(
 
 
 
-inline int UnknownField::number() const { return number_; }
+inline int UnknownField::number() const { return static_cast<int>(number_); }
 inline UnknownField::Type UnknownField::type() const {
   return static_cast<Type>(type_);
 }

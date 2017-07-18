@@ -9,6 +9,7 @@ use Foo\TestEnum;
 use Foo\TestMessage;
 use Foo\TestMessage_Sub;
 use Foo\TestPackedMessage;
+use Foo\TestRandomFieldOrder;
 use Foo\TestUnpackedMessage;
 
 class EncodeDecodeTest extends TestBase
@@ -88,6 +89,30 @@ class EncodeDecodeTest extends TestBase
         $n = new TestMessage();
         $n->mergeFromString($data);
         $this->assertSame(1, $n->getOneofMessage()->getA());
+
+        // Encode default value
+        $m->setOneofEnum(TestEnum::ZERO);
+        $data = $m->serializeToString();
+        $n = new TestMessage();
+        $n->mergeFromString($data);
+        $this->assertSame("oneof_enum", $n->getMyOneof());
+        $this->assertSame(TestEnum::ZERO, $n->getOneofEnum());
+
+        $m->setOneofString("");
+        $data = $m->serializeToString();
+        $n = new TestMessage();
+        $n->mergeFromString($data);
+        $this->assertSame("oneof_string", $n->getMyOneof());
+        $this->assertSame("", $n->getOneofString());
+
+        $sub_m = new TestMessage_Sub();
+        $m->setOneofMessage($sub_m);
+        $data = $m->serializeToString();
+        $n = new TestMessage();
+        $n->mergeFromString($data);
+        $this->assertSame("oneof_message", $n->getMyOneof());
+        $this->assertFalse(is_null($n->getOneofMessage()));
+
     }
 
     public function testPackedEncode()
@@ -209,6 +234,13 @@ class EncodeDecodeTest extends TestBase
         $this->assertEquals(0, $m->getOptionalInt32());
         $m->mergeFromString(hex2bin("08ffffffff0f"));
         $this->assertEquals(-1, $m->getOptionalInt32());
+    }
+
+    public function testRandomFieldOrder()
+    {
+        $m = new TestRandomFieldOrder();
+        $data = $m->serializeToString();
+        $this->assertSame("", $data);
     }
 
     /**
@@ -409,15 +441,13 @@ class EncodeDecodeTest extends TestBase
         $m->mergeFromString(hex2bin('D205'));
     }
 
-    # TODO(teboring): Add test back when php implementation is ready for json
-    # encode/decode.
-    # public function testJsonEncode()
-    # {
-    #     $from = new TestMessage();
-    #     $this->setFields($from);
-    #     $data = $from->jsonEncode();
-    #     $to = new TestMessage();
-    #     $to->jsonDecode($data);
-    #     $this->expectFields($to);
-    # }
+    public function testJsonEncode()
+    {
+        $from = new TestMessage();
+        $this->setFields($from);
+        $data = $from->serializeToJsonString();
+        $to = new TestMessage();
+        $to->mergeFromJsonString($data);
+        $this->expectFields($to);
+    }
 }

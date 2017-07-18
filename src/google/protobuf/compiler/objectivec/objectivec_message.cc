@@ -233,7 +233,7 @@ void MessageGenerator::GenerateStaticVariablesInitialization(
   }
 }
 
-void MessageGenerator::DetermineForwardDeclarations(set<string>* fwd_decls) {
+void MessageGenerator::DetermineForwardDeclarations(std::set<string>* fwd_decls) {
   if (!IsMapEntryMessage(descriptor_)) {
     for (int i = 0; i < descriptor_->field_count(); i++) {
       const FieldDescriptor* fieldDescriptor = descriptor_->field(i);
@@ -514,7 +514,7 @@ void MessageGenerator::GenerateSource(io::Printer* printer) {
           "    };\n");
     }
 
-    map<string, string> vars;
+    std::map<string, string> vars;
     vars["classname"] = class_name_;
     vars["rootclassname"] = root_classname_;
     vars["fields"] = has_fields ? "fields" : "NULL";

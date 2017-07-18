@@ -8,30 +8,27 @@ use Google\Protobuf\Internal\GPBType;
 use Google\Protobuf\Internal\GPBWire;
 use Google\Protobuf\Internal\RepeatedField;
 use Google\Protobuf\Internal\InputStream;
-
 use Google\Protobuf\Internal\GPBUtil;
 
 /**
- * <pre>
  * Describes a value within an enum.
- * </pre>
  *
- * Protobuf type <code>google.protobuf.EnumValueDescriptorProto</code>
+ * Generated from protobuf message <code>google.protobuf.EnumValueDescriptorProto</code>
  */
 class EnumValueDescriptorProto extends \Google\Protobuf\Internal\Message
 {
     /**
-     * <code>optional string name = 1;</code>
+     * Generated from protobuf field <code>optional string name = 1;</code>
      */
     private $name = '';
     private $has_name = false;
     /**
-     * <code>optional int32 number = 2;</code>
+     * Generated from protobuf field <code>optional int32 number = 2;</code>
      */
     private $number = 0;
     private $has_number = false;
     /**
-     * <code>optional .google.protobuf.EnumValueOptions options = 3;</code>
+     * Generated from protobuf field <code>optional .google.protobuf.EnumValueOptions options = 3;</code>
      */
     private $options = null;
     private $has_options = false;
@@ -42,7 +39,8 @@ class EnumValueDescriptorProto extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * <code>optional string name = 1;</code>
+     * Generated from protobuf field <code>optional string name = 1;</code>
+     * @return string
      */
     public function getName()
     {
@@ -50,13 +48,17 @@ class EnumValueDescriptorProto extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * <code>optional string name = 1;</code>
+     * Generated from protobuf field <code>optional string name = 1;</code>
+     * @param string $var
+     * @return $this
      */
     public function setName($var)
     {
         GPBUtil::checkString($var, True);
         $this->name = $var;
         $this->has_name = true;
+
+        return $this;
     }
 
     public function hasName()
@@ -65,7 +67,8 @@ class EnumValueDescriptorProto extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * <code>optional int32 number = 2;</code>
+     * Generated from protobuf field <code>optional int32 number = 2;</code>
+     * @return int
      */
     public function getNumber()
     {
@@ -73,13 +76,17 @@ class EnumValueDescriptorProto extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * <code>optional int32 number = 2;</code>
+     * Generated from protobuf field <code>optional int32 number = 2;</code>
+     * @param int $var
+     * @return $this
      */
     public function setNumber($var)
     {
         GPBUtil::checkInt32($var);
         $this->number = $var;
         $this->has_number = true;
+
+        return $this;
     }
 
     public function hasNumber()
@@ -88,7 +95,8 @@ class EnumValueDescriptorProto extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * <code>optional .google.protobuf.EnumValueOptions options = 3;</code>
+     * Generated from protobuf field <code>optional .google.protobuf.EnumValueOptions options = 3;</code>
+     * @return \Google\Protobuf\Internal\EnumValueOptions
      */
     public function getOptions()
     {
@@ -96,13 +104,17 @@ class EnumValueDescriptorProto extends \Google\Protobuf\Internal\Message
     }
 
     /**
-     * <code>optional .google.protobuf.EnumValueOptions options = 3;</code>
+     * Generated from protobuf field <code>optional .google.protobuf.EnumValueOptions options = 3;</code>
+     * @param \Google\Protobuf\Internal\EnumValueOptions $var
+     * @return $this
      */
-    public function setOptions(&$var)
+    public function setOptions($var)
     {
         GPBUtil::checkMessage($var, \Google\Protobuf\Internal\EnumValueOptions::class);
         $this->options = $var;
         $this->has_options = true;
+
+        return $this;
     }
 
     public function hasOptions()

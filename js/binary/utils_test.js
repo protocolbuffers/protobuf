@@ -205,31 +205,31 @@ describe('binaryUtilsTest', function() {
     var convert = jspb.utils.decimalStringToHash64;
 
     result = convert('0');
-    assertEquals(String.fromCharCode.apply(null,
+    assertEquals(goog.crypt.byteArrayToString(
       [0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]), result);
 
     result = convert('-1');
-    assertEquals(String.fromCharCode.apply(null,
+    assertEquals(goog.crypt.byteArrayToString(
       [0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF]), result);
 
     result = convert('18446744073709551615');
-    assertEquals(String.fromCharCode.apply(null,
+    assertEquals(goog.crypt.byteArrayToString(
       [0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF]), result);
 
     result = convert('9223372036854775808');
-    assertEquals(String.fromCharCode.apply(null,
+    assertEquals(goog.crypt.byteArrayToString(
       [0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x80]), result);
 
     result = convert('-9223372036854775808');
-    assertEquals(String.fromCharCode.apply(null,
+    assertEquals(goog.crypt.byteArrayToString(
       [0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x80]), result);
 
     result = convert('123456789123456789');
-    assertEquals(String.fromCharCode.apply(null,
+    assertEquals(goog.crypt.byteArrayToString(
       [0x15, 0x5F, 0xD0, 0xAC, 0x4B, 0x9B, 0xB6, 0x01]), result);
 
     result = convert('-123456789123456789');
-    assertEquals(String.fromCharCode.apply(null,
+    assertEquals(goog.crypt.byteArrayToString(
       [0xEB, 0xA0, 0x2F, 0x53, 0xB4, 0x64, 0x49, 0xFE]), result);
   });
 
@@ -259,21 +259,21 @@ describe('binaryUtilsTest', function() {
     var convert = jspb.utils.hexStringToHash64;
 
     result = convert('0x0000000000000000');
-    assertEquals(String.fromCharCode.apply(null,
+    assertEquals(goog.crypt.byteArrayToString(
         [0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]), result);
 
     result = convert('0xffffffffffffffff');
-    assertEquals(String.fromCharCode.apply(null,
+    assertEquals(goog.crypt.byteArrayToString(
         [0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF]), result);
 
     // Hex string is big-endian, hash string is little-endian.
     result = convert('0x123456789ABCDEF0');
-    assertEquals(String.fromCharCode.apply(null,
+    assertEquals(goog.crypt.byteArrayToString(
         [0xF0, 0xDE, 0xBC, 0x9A, 0x78, 0x56, 0x34, 0x12]), result);
 
     // Capitalization should not matter.
     result = convert('0x0000abcdefABCDEF');
-    assertEquals(String.fromCharCode.apply(null,
+    assertEquals(goog.crypt.byteArrayToString(
         [0xEF, 0xCD, 0xAB, 0xEF, 0xCD, 0xAB, 0x00, 0x00]), result);
   });
 
@@ -643,7 +643,7 @@ describe('binaryUtilsTest', function() {
     var sourceBytes = new Uint8Array(sourceData);
     var sourceBuffer = sourceBytes.buffer;
     var sourceBase64 = goog.crypt.base64.encodeByteArray(sourceData);
-    var sourceString = String.fromCharCode.apply(null, sourceData);
+    var sourceString = goog.crypt.byteArrayToString(sourceData);
 
     function check(result) {
       assertEquals(Uint8Array, result.constructor);

@@ -138,6 +138,8 @@ conformance/conformance-php-c
 # php test output
 composer.lock
 php/tests/generated/
+php/tests/old_protoc
+php/tests/protobuf/
 php/ext/google/protobuf/.libs/
 php/ext/google/protobuf/Makefile.fragments
 php/ext/google/protobuf/Makefile.global
@@ -165,3 +167,6 @@ js/google/
 js/node_modules/
 js/testproto_libs1.js
 js/testproto_libs2.js
+
+# Ignore the bazel symlinks
+/bazel-*

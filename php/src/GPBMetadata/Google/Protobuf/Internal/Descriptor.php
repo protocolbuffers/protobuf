@@ -144,12 +144,14 @@ class Descriptor
             ->optional('cc_generic_services', \Google\Protobuf\Internal\GPBType::BOOL, 16)
             ->optional('java_generic_services', \Google\Protobuf\Internal\GPBType::BOOL, 17)
             ->optional('py_generic_services', \Google\Protobuf\Internal\GPBType::BOOL, 18)
+            ->optional('php_generic_services', \Google\Protobuf\Internal\GPBType::BOOL, 19)
             ->optional('deprecated', \Google\Protobuf\Internal\GPBType::BOOL, 23)
             ->optional('cc_enable_arenas', \Google\Protobuf\Internal\GPBType::BOOL, 31)
             ->optional('objc_class_prefix', \Google\Protobuf\Internal\GPBType::STRING, 36)
             ->optional('csharp_namespace', \Google\Protobuf\Internal\GPBType::STRING, 37)
             ->optional('swift_prefix', \Google\Protobuf\Internal\GPBType::STRING, 39)
             ->optional('php_class_prefix', \Google\Protobuf\Internal\GPBType::STRING, 40)
+            ->optional('php_namespace', \Google\Protobuf\Internal\GPBType::STRING, 41)
             ->repeated('uninterpreted_option', \Google\Protobuf\Internal\GPBType::MESSAGE, 999, 'google.protobuf.internal.UninterpretedOption')
             ->finalizeToPool();
 

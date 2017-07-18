@@ -1091,19 +1091,21 @@ GenerateMergeFromCodedStream(io::Printer* printer) const {
 void RepeatedMessageFieldGenerator::
 GenerateSerializeWithCachedSizes(io::Printer* printer) const {
   printer->Print(variables_,
-    "for (unsigned int i = 0, n = this->$name$_size(); i < n; i++) {\n"
+    "for (unsigned int i = 0,\n"
+    "    n = static_cast<unsigned int>(this->$name$_size()); i < n; i++) {\n"
     "  ::google::protobuf::internal::WireFormatLite::Write$stream_writer$(\n"
-    "    $number$, this->$name$(i), output);\n"
+    "    $number$, this->$name$(static_cast<int>(i)), output);\n"
     "}\n");
 }
 
 void RepeatedMessageFieldGenerator::
 GenerateSerializeWithCachedSizesToArray(io::Printer* printer) const {
   printer->Print(variables_,
-    "for (unsigned int i = 0, n = this->$name$_size(); i < n; i++) {\n"
+    "for (unsigned int i = 0,\n"
+    "    n = static_cast<unsigned int>(this->$name$_size()); i < n; i++) {\n"
     "  target = ::google::protobuf::internal::WireFormatLite::\n"
     "    InternalWrite$declared_type$NoVirtualToArray(\n"
-    "      $number$, this->$name$(i), deterministic, target);\n"
+    "      $number$, this->$name$(static_cast<int>(i)), deterministic, target);\n"
     "}\n");
 }
 
@@ -1111,14 +1113,14 @@ void RepeatedMessageFieldGenerator::
 GenerateByteSize(io::Printer* printer) const {
   printer->Print(variables_,
     "{\n"
-    "  unsigned int count = this->$name$_size();\n");
+    "  unsigned int count = static_cast<unsigned int>(this->$name$_size());\n");
   printer->Indent();
   printer->Print(variables_,
     "total_size += $tag_size$UL * count;\n"
     "for (unsigned int i = 0; i < count; i++) {\n"
     "  total_size +=\n"
     "    ::google::protobuf::internal::WireFormatLite::$declared_type$SizeNoVirtual(\n"
-    "      this->$name$(i));\n"
+    "      this->$name$(static_cast<int>(i)));\n"
     "}\n");
   printer->Outdent();
   printer->Print("}\n");

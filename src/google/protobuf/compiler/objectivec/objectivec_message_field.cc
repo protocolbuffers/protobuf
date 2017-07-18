@@ -45,7 +45,7 @@ namespace objectivec {
 namespace {
 
 void SetMessageVariables(const FieldDescriptor* descriptor,
-                         map<string, string>* variables) {
+                         std::map<string, string>* variables) {
   const string& message_type = ClassName(descriptor->message_type());
   (*variables)["type"] = message_type;
   (*variables)["containing_class"] = ClassName(descriptor->containing_type());
@@ -67,7 +67,7 @@ MessageFieldGenerator::MessageFieldGenerator(const FieldDescriptor* descriptor,
 MessageFieldGenerator::~MessageFieldGenerator() {}
 
 void MessageFieldGenerator::DetermineForwardDeclarations(
-    set<string>* fwd_decls) const {
+    std::set<string>* fwd_decls) const {
   ObjCObjFieldGenerator::DetermineForwardDeclarations(fwd_decls);
   // Class name is already in "storage_type".
   fwd_decls->insert("@class " + variable("storage_type"));
@@ -95,7 +95,7 @@ RepeatedMessageFieldGenerator::RepeatedMessageFieldGenerator(
 RepeatedMessageFieldGenerator::~RepeatedMessageFieldGenerator() {}
 
 void RepeatedMessageFieldGenerator::DetermineForwardDeclarations(
-    set<string>* fwd_decls) const {
+    std::set<string>* fwd_decls) const {
   RepeatedFieldGenerator::DetermineForwardDeclarations(fwd_decls);
   // Class name is already in "storage_type".
   fwd_decls->insert("@class " + variable("storage_type"));

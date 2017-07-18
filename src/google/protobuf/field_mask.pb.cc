@@ -210,7 +210,7 @@ bool FieldMask::MergePartialFromCodedStream(
                 input, this->add_paths()));
           DO_(::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
             this->paths(this->paths_size() - 1).data(),
-            this->paths(this->paths_size() - 1).length(),
+            static_cast<int>(this->paths(this->paths_size() - 1).length()),
             ::google::protobuf::internal::WireFormatLite::PARSE,
             "google.protobuf.FieldMask.paths"));
         } else {
@@ -248,7 +248,7 @@ void FieldMask::SerializeWithCachedSizes(
   // repeated string paths = 1;
   for (int i = 0, n = this->paths_size(); i < n; i++) {
     ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
-      this->paths(i).data(), this->paths(i).length(),
+      this->paths(i).data(), static_cast<int>(this->paths(i).length()),
       ::google::protobuf::internal::WireFormatLite::SERIALIZE,
       "google.protobuf.FieldMask.paths");
     ::google::protobuf::internal::WireFormatLite::WriteString(
@@ -271,7 +271,7 @@ void FieldMask::SerializeWithCachedSizes(
   // repeated string paths = 1;
   for (int i = 0, n = this->paths_size(); i < n; i++) {
     ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
-      this->paths(i).data(), this->paths(i).length(),
+      this->paths(i).data(), static_cast<int>(this->paths(i).length()),
       ::google::protobuf::internal::WireFormatLite::SERIALIZE,
       "google.protobuf.FieldMask.paths");
     target = ::google::protobuf::internal::WireFormatLite::
