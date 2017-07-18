@@ -116,7 +116,9 @@ static bool upb_decode_string(const char **ptr, const char *limit,
                               upb_stringview *val) {
   uint32_t len;
 
-  CHK(upb_decode_varint32(ptr, limit, &len) && limit - *ptr >= len);
+  CHK(upb_decode_varint32(ptr, limit, &len) &&
+      len < INT32_MAX &&
+      limit - *ptr >= (int32_t)len);
 
   *val = upb_stringview_make(*ptr, len);
   *ptr += len;
