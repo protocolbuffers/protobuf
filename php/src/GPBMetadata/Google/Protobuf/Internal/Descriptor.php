@@ -49,11 +49,16 @@ class Descriptor
         $pool->addMessage('google.protobuf.internal.DescriptorProto.ExtensionRange', \Google\Protobuf\Internal\DescriptorProto_ExtensionRange::class)
             ->optional('start', \Google\Protobuf\Internal\GPBType::INT32, 1)
             ->optional('end', \Google\Protobuf\Internal\GPBType::INT32, 2)
+            ->optional('options', \Google\Protobuf\Internal\GPBType::MESSAGE, 3, 'google.protobuf.internal.ExtensionRangeOptions')
             ->finalizeToPool();
 
         $pool->addMessage('google.protobuf.internal.DescriptorProto.ReservedRange', \Google\Protobuf\Internal\DescriptorProto_ReservedRange::class)
             ->optional('start', \Google\Protobuf\Internal\GPBType::INT32, 1)
             ->optional('end', \Google\Protobuf\Internal\GPBType::INT32, 2)
+            ->finalizeToPool();
+
+        $pool->addMessage('google.protobuf.internal.ExtensionRangeOptions', \Google\Protobuf\Internal\ExtensionRangeOptions::class)
+            ->repeated('uninterpreted_option', \Google\Protobuf\Internal\GPBType::MESSAGE, 999, 'google.protobuf.internal.UninterpretedOption')
             ->finalizeToPool();
 
         $pool->addMessage('google.protobuf.internal.FieldDescriptorProto', \Google\Protobuf\Internal\FieldDescriptorProto::class)

@@ -52,7 +52,15 @@ namespace Google.Protobuf.WellKnownTypes {
   }
   #region Messages
   /// <summary>
-  /// Api is a light-weight descriptor for a protocol buffer service.
+  /// Api is a light-weight descriptor for an API Interface.
+  ///
+  /// Interfaces are also described as "protocol buffer services" in some contexts,
+  /// such as by the "service" keyword in a .proto file, but they are different
+  /// from API Services, which represent a concrete implementation of an interface
+  /// as opposed to simply a description of methods and bindings. They are also
+  /// sometimes simply referred to as "APIs" in other contexts, such as the name of
+  /// this message itself. See https://cloud.google.com/apis/design/glossary for
+  /// detailed terminology.
   /// </summary>
   public sealed partial class Api : pb::IMessage<Api> {
     private static readonly pb::MessageParser<Api> _parser = new pb::MessageParser<Api>(() => new Api());
@@ -96,8 +104,8 @@ namespace Google.Protobuf.WellKnownTypes {
     public const int NameFieldNumber = 1;
     private string name_ = "";
     /// <summary>
-    /// The fully qualified name of this api, including package name
-    /// followed by the api's simple name.
+    /// The fully qualified name of this interface, including package name
+    /// followed by the interface's simple name.
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public string Name {
@@ -113,7 +121,7 @@ namespace Google.Protobuf.WellKnownTypes {
         = pb::FieldCodec.ForMessage(18, global::Google.Protobuf.WellKnownTypes.Method.Parser);
     private readonly pbc::RepeatedField<global::Google.Protobuf.WellKnownTypes.Method> methods_ = new pbc::RepeatedField<global::Google.Protobuf.WellKnownTypes.Method>();
     /// <summary>
-    /// The methods of this api, in unspecified order.
+    /// The methods of this interface, in unspecified order.
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public pbc::RepeatedField<global::Google.Protobuf.WellKnownTypes.Method> Methods {
@@ -126,7 +134,7 @@ namespace Google.Protobuf.WellKnownTypes {
         = pb::FieldCodec.ForMessage(26, global::Google.Protobuf.WellKnownTypes.Option.Parser);
     private readonly pbc::RepeatedField<global::Google.Protobuf.WellKnownTypes.Option> options_ = new pbc::RepeatedField<global::Google.Protobuf.WellKnownTypes.Option>();
     /// <summary>
-    /// Any metadata attached to the API.
+    /// Any metadata attached to the interface.
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public pbc::RepeatedField<global::Google.Protobuf.WellKnownTypes.Option> Options {
@@ -137,13 +145,12 @@ namespace Google.Protobuf.WellKnownTypes {
     public const int VersionFieldNumber = 4;
     private string version_ = "";
     /// <summary>
-    /// A version string for this api. If specified, must have the form
-    /// `major-version.minor-version`, as in `1.10`. If the minor version
-    /// is omitted, it defaults to zero. If the entire version field is
-    /// empty, the major version is derived from the package name, as
-    /// outlined below. If the field is not empty, the version in the
-    /// package name will be verified to be consistent with what is
-    /// provided here.
+    /// A version string for this interface. If specified, must have the form
+    /// `major-version.minor-version`, as in `1.10`. If the minor version is
+    /// omitted, it defaults to zero. If the entire version field is empty, the
+    /// major version is derived from the package name, as outlined below. If the
+    /// field is not empty, the version in the package name will be verified to be
+    /// consistent with what is provided here.
     ///
     /// The versioning schema uses [semantic
     /// versioning](http://semver.org) where the major version number
@@ -153,10 +160,10 @@ namespace Google.Protobuf.WellKnownTypes {
     /// chosen based on the product plan.
     ///
     /// The major version is also reflected in the package name of the
-    /// API, which must end in `v&lt;major-version>`, as in
+    /// interface, which must end in `v&lt;major-version>`, as in
     /// `google.feature.v1`. For major versions 0 and 1, the suffix can
     /// be omitted. Zero major versions must only be used for
-    /// experimental, none-GA apis.
+    /// experimental, non-GA interfaces.
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public string Version {
@@ -187,7 +194,7 @@ namespace Google.Protobuf.WellKnownTypes {
         = pb::FieldCodec.ForMessage(50, global::Google.Protobuf.WellKnownTypes.Mixin.Parser);
     private readonly pbc::RepeatedField<global::Google.Protobuf.WellKnownTypes.Mixin> mixins_ = new pbc::RepeatedField<global::Google.Protobuf.WellKnownTypes.Mixin>();
     /// <summary>
-    /// Included APIs. See [Mixin][].
+    /// Included interfaces. See [Mixin][].
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public pbc::RepeatedField<global::Google.Protobuf.WellKnownTypes.Mixin> Mixins {
@@ -364,7 +371,7 @@ namespace Google.Protobuf.WellKnownTypes {
   }
 
   /// <summary>
-  /// Method represents a method of an api.
+  /// Method represents a method of an API interface.
   /// </summary>
   public sealed partial class Method : pb::IMessage<Method> {
     private static readonly pb::MessageParser<Method> _parser = new pb::MessageParser<Method>(() => new Method());
@@ -665,9 +672,9 @@ namespace Google.Protobuf.WellKnownTypes {
   }
 
   /// <summary>
-  /// Declares an API to be included in this API. The including API must
-  /// redeclare all the methods from the included API, but documentation
-  /// and options are inherited as follows:
+  /// Declares an API Interface to be included in this interface. The including
+  /// interface must redeclare all the methods from the included interface, but
+  /// documentation and options are inherited as follows:
   ///
   /// - If after comment and whitespace stripping, the documentation
   ///   string of the redeclared method is empty, it will be inherited
@@ -679,7 +686,8 @@ namespace Google.Protobuf.WellKnownTypes {
   ///
   /// - If an http annotation is inherited, the path pattern will be
   ///   modified as follows. Any version prefix will be replaced by the
-  ///   version of the including API plus the [root][] path if specified.
+  ///   version of the including interface plus the [root][] path if
+  ///   specified.
   ///
   /// Example of a simple mixin:
   ///
@@ -780,7 +788,7 @@ namespace Google.Protobuf.WellKnownTypes {
     public const int NameFieldNumber = 1;
     private string name_ = "";
     /// <summary>
-    /// The fully qualified name of the API which is included.
+    /// The fully qualified name of the interface which is included.
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public string Name {
