@@ -73,7 +73,7 @@ inline Arena* GetArena(MessageLite* msg, int64 arena_offset) {
 
 template <typename Type>
 inline Type* AddField(MessageLite* msg, int64 offset) {
-#if LANG_CXX11
+#if GOOGLE_HAVE_STD_IS_TRIVIALLY_ASSIGNABLE
   static_assert(std::is_trivially_copy_assignable<Type>::value,
                 "Do not assign");
 #endif
@@ -93,7 +93,7 @@ inline string* AddField<string>(MessageLite* msg, int64 offset) {
 
 template <typename Type>
 inline void AddField(MessageLite* msg, int64 offset, Type value) {
-#if LANG_CXX11
+#if GOOGLE_HAVE_STD_IS_TRIVIALLY_ASSIGNABLE
   static_assert(std::is_trivially_copy_assignable<Type>::value,
                 "Do not assign");
 #endif
@@ -117,7 +117,7 @@ inline Type* MutableField(MessageLite* msg, uint32* has_bits,
 template <typename Type>
 inline void SetField(MessageLite* msg, uint32* has_bits, uint32 has_bit_index,
                      int64 offset, Type value) {
-#if LANG_CXX11
+#if GOOGLE_HAVE_STD_IS_TRIVIALLY_ASSIGNABLE
   static_assert(std::is_trivially_copy_assignable<Type>::value,
                 "Do not assign");
 #endif

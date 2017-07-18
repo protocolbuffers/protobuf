@@ -48,6 +48,22 @@ namespace protobuf {
   void operator=(const TypeName&)
 
 // ===================================================================
+// from google3/third_party/absl/base/config.h
+
+// GOOGLE_HAVE_STD_IS_TRIVIALLY_ASSIGNABLE is defined when
+// std::is_trivially_copy_assignable<T> is supported.
+
+#undef GOOGLE_HAVE_STD_IS_TRIVIALLY_ASSIGNABLE
+#if LANG_CXX11 &&                                               \
+  ((defined(__clang__) && defined(_LIBCPP_VERSION)) ||          \
+   (!defined(__clang__) && defined(__GNUC__) &&                 \
+    (__GNUC__ > 5 || (__GNUC__ == 5 && __GNUC_MINOR__ >= 1)) && \
+    (defined(_LIBCPP_VERSION) || defined(__GLIBCXX__))) ||      \
+    defined(_MSC_VER))
+#define GOOGLE_HAVE_STD_IS_TRIVIALLY_ASSIGNABLE 1
+#endif
+
+// ===================================================================
 // from google3/base/basictypes.h
 
 // The GOOGLE_ARRAYSIZE(arr) macro returns the # of elements in an array arr.
