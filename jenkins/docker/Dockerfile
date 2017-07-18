@@ -7,7 +7,7 @@
 # changes.
 
 # Base Dockerfile for gRPC dev images
-FROM debian:latest
+FROM debian:jessie
 
 # Apt source for old Python versions.
 RUN echo 'deb http://ppa.launchpad.net/fkrull/deadsnakes/ubuntu trusty main' > /etc/apt/sources.list.d/deadsnakes.list && \
@@ -19,7 +19,7 @@ RUN echo 'deb http://ppa.launchpad.net/webupd8team/java/ubuntu trusty main' > /e
   echo "oracle-java7-installer shared/accepted-oracle-license-v1-1 select true" | debconf-set-selections
 
 # Apt source for Mono
-RUN echo "deb http://download.mono-project.com/repo/debian wheezy main" | tee /etc/apt/sources.list.d/mono-xamarin.list && \
+RUN echo "deb http://download.mono-project.com/repo/debian wheezy/snapshots/3.12.0 main" | tee /etc/apt/sources.list.d/mono-xamarin.list && \
   echo "deb http://download.mono-project.com/repo/debian wheezy-libjpeg62-compat main" | tee -a /etc/apt/sources.list.d/mono-xamarin.list && \
   apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF
 
@@ -89,7 +89,8 @@ RUN apt-get clean && apt-get update && apt-get install -y --force-yes \
   phpunit    \
   valgrind   \
   libxml2-dev \
-  hhvm       \
+  libgd3 \
+  hhvm \
   && apt-get clean
 
 ##################
