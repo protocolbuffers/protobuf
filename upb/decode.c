@@ -385,7 +385,7 @@ static bool upb_decode_fixedpacked(upb_array *arr, upb_stringview data,
   int elements = data.size / elem_size;
   void *field_mem;
 
-  CHK(elements * elem_size == data.size);
+  CHK((size_t)(elements * elem_size) == data.size);
   field_mem = upb_array_add(arr, elements);
   CHK(field_mem);
   memcpy(field_mem, data.data, data.size);

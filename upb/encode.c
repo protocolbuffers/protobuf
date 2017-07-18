@@ -256,9 +256,11 @@ static bool upb_encode_scalarfield(upb_encstate *e, const char *field_mem,
                                    const upb_msglayout_msginit_v1 *m,
                                    const upb_msglayout_fieldinit_v1 *f,
                                    bool is_proto3) {
+  bool skip_zero_value = is_proto3 && f->oneof_index == UPB_NOT_IN_ONEOF;
+
 #define CASE(ctype, type, wire_type, encodeval) do { \
   ctype val = *(ctype*)field_mem; \
-  if (is_proto3 && f->oneof_index == UPB_NOT_IN_ONEOF && val == 0) { \
+  if (skip_zero_value && val == 0) { \
     return true; \
   } \
   return upb_put_ ## type(e, encodeval) && \
@@ -292,7 +294,7 @@ static bool upb_encode_scalarfield(upb_encstate *e, const char *field_mem,
     case UPB_DESCRIPTOR_TYPE_STRING:
     case UPB_DESCRIPTOR_TYPE_BYTES: {
       upb_stringview view = *(upb_stringview*)field_mem;
-      if (is_proto3 && f->oneof_index == UPB_NOT_IN_ONEOF && view.size == 0) {
+      if (skip_zero_value && view.size == 0) {
         return true;
       }
       return upb_put_bytes(e, view.data, view.size) &&
@@ -303,7 +305,7 @@ static bool upb_encode_scalarfield(upb_encstate *e, const char *field_mem,
       size_t size;
       void *submsg = *(void**)field_mem;
       const upb_msglayout_msginit_v1 *subm = m->submsgs[f->submsg_index];
-      if (is_proto3 && f->oneof_index == UPB_NOT_IN_ONEOF && submsg == NULL) {
+      if (skip_zero_value && submsg == NULL) {
         return true;
       }
       return upb_put_tag(e, f->number, UPB_WIRE_TYPE_END_GROUP) &&
@@ -314,7 +316,7 @@ static bool upb_encode_scalarfield(upb_encstate *e, const char *field_mem,
       size_t size;
       void *submsg = *(void**)field_mem;
       const upb_msglayout_msginit_v1 *subm = m->submsgs[f->submsg_index];
-      if (is_proto3 && f->oneof_index == UPB_NOT_IN_ONEOF && submsg == NULL) {
+      if (skip_zero_value && submsg == NULL) {
         return true;
       }
       return upb_encode_message(e, submsg, subm, &size) &&

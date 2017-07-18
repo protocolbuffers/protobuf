@@ -33,7 +33,7 @@ bool CheckedRead(int fd, void *buf, size_t len) {
 }
 
 void CheckedWrite(int fd, const void *buf, size_t len) {
-  if (write(fd, buf, len) != len) {
+  if ((size_t)write(fd, buf, len) != len) {
     perror("writing to test runner");
     exit(1);
   }
