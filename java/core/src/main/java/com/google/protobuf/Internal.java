@@ -414,9 +414,8 @@ public final class Internal {
     }
   }
 
-  /**
-   * An empty byte array constant used in generated code.
-   */
+
+  /** An empty byte array constant used in generated code. */
   public static final byte[] EMPTY_BYTE_ARRAY = new byte[0];
 
   /**

@@ -227,19 +227,6 @@ uint8* MessageLite::SerializeWithCachedSizesToArray(uint8* target) const {
       io::CodedOutputStream::IsDefaultSerializationDeterministic(), target);
 }
 
-uint8* MessageLite::InternalSerializeWithCachedSizesToArray(
-    bool deterministic, uint8* target) const {
-  // We only optimize this when using optimize_for = SPEED.  In other cases
-  // we just use the CodedOutputStream path.
-  int size = GetCachedSize();
-  io::ArrayOutputStream out(target, size);
-  io::CodedOutputStream coded_out(&out);
-  coded_out.SetSerializationDeterministic(deterministic);
-  SerializeWithCachedSizes(&coded_out);
-  GOOGLE_CHECK(!coded_out.HadError());
-  return target + size;
-}
-
 bool MessageLite::SerializeToCodedStream(io::CodedOutputStream* output) const {
   GOOGLE_DCHECK(IsInitialized()) << InitializationErrorMessage("serialize", *this);
   return SerializePartialToCodedStream(output);
@@ -357,6 +344,36 @@ string MessageLite::SerializePartialAsString() const {
   return output;
 }
 
+void MessageLite::SerializeWithCachedSizes(io::CodedOutputStream* output) const
+    {
+  GOOGLE_DCHECK(InternalGetTable());
+  internal::TableSerialize(*this, static_cast<const internal::SerializationTable*>(InternalGetTable()), output);
+}
+
+// The table driven code optimizes the case that the CodedOutputStream buffer
+// is large enough to serialize into it directly.
+// If the proto is optimized for speed, this method will be overridden by
+// generated code for maximum speed. If the proto is optimized for size or
+// is lite, then we need to specialize this to avoid infinite recursion.
+uint8* MessageLite::InternalSerializeWithCachedSizesToArray(bool deterministic,
+                                               uint8* target) const {
+  const internal::SerializationTable* table =
+      static_cast<const internal::SerializationTable*>(InternalGetTable());
+  if (table == NULL) {
+    // We only optimize this when using optimize_for = SPEED.  In other cases
+  // we just use the CodedOutputStream path.
+  int size = GetCachedSize();
+  io::ArrayOutputStream out(target, size);
+  io::CodedOutputStream coded_out(&out);
+  coded_out.SetSerializationDeterministic(deterministic);
+  SerializeWithCachedSizes(&coded_out);
+  GOOGLE_CHECK(!coded_out.HadError());
+  return target + size;
+  } else {
+    return internal::TableSerializeToArray(*this, table, deterministic, target);
+  }
+}
+
 namespace internal {
 template<>
 MessageLite* GenericTypeHandler<MessageLite>::NewFromPrototype(
@@ -373,6 +390,13 @@ void GenericTypeHandler<string>::Merge(const string& from,
                                               string* to) {
   *to = from;
 }
+
+bool proto3_preserve_unknown_ = false;
+void SetProto3PreserveUnknownsDefault(bool preserve) {
+  proto3_preserve_unknown_ = preserve;
+}
+
+
 }  // namespace internal
 
 }  // namespace protobuf

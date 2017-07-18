@@ -124,9 +124,16 @@ class LIBPROTOBUF_EXPORT FieldMaskUtil {
   static void MergeMessageTo(const Message& source, const FieldMask& mask,
                              const MergeOptions& options, Message* destination);
 
+  class TrimOptions;
   // Removes from 'message' any field that is not represented in the given
   // FieldMask. If the FieldMask is empty, does nothing.
   static void TrimMessage(const FieldMask& mask, Message* message);
+
+  // Removes from 'message' any field that is not represented in the given
+  // FieldMask with customized TrimOptions.
+  // If the FieldMask is empty, does nothing.
+  static void TrimMessage(const FieldMask& mask, Message* message,
+                          const TrimOptions& options);
 
  private:
   friend class SnakeCaseCamelCaseTest;
@@ -192,6 +199,23 @@ class LIBPROTOBUF_EXPORT FieldMaskUtil::MergeOptions {
  private:
   bool replace_message_fields_;
   bool replace_repeated_fields_;
+};
+
+class LIBPROTOBUF_EXPORT FieldMaskUtil::TrimOptions {
+ public:
+  TrimOptions()
+      : keep_required_fields_(false) {}
+  // When trimming message fields, the default behavior is to trim required
+  // fields of the present message if they are not specified in the field mask.
+  // If you instead want to keep required fields of the present message even
+  // they are not speicifed in the field mask, set this flag to true.
+  void set_keep_required_fields(bool value) {
+    keep_required_fields_ = value;
+  }
+  bool keep_required_fields() const { return keep_required_fields_; }
+
+ private:
+  bool keep_required_fields_;
 };
 
 }  // namespace util

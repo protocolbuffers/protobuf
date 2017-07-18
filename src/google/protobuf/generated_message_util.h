@@ -41,25 +41,22 @@
 #include <assert.h>
 #include <climits>
 #include <string>
+#include <vector>
 
 #include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/stubs/once.h>
 #include <google/protobuf/has_bits.h>
-
-#ifndef PROTOBUF_FINAL
-#if LANG_CXX11 && !defined(__NVCC__)
-#define PROTOBUF_FINAL final
-#else
-#define PROTOBUF_FINAL
-#endif
-#endif  // !PROTOBUF_FINAL
+#include <google/protobuf/map_entry_lite.h>
+#include <google/protobuf/message_lite.h>
+#include <google/protobuf/wire_format_lite.h>
 
 namespace google {
 
 namespace protobuf {
 
 class Arena;
+
 namespace io { class CodedInputStream; }
 
 namespace internal {
@@ -106,79 +103,9 @@ namespace internal {
       reinterpret_cast<const char*>(16))
 #endif
 
-#define GOOGLE_PROTOBUF_GENERATED_DEFAULT_ONEOF_FIELD_OFFSET(ONEOF, FIELD)  \
-  static_cast< ::google::protobuf::uint32>(                                                    \
-      reinterpret_cast<const char*>(&(ONEOF->FIELD))                        \
-      - reinterpret_cast<const char*>(ONEOF))
-// TODO(acozzette): remove this transitional macro after updating generated code
-#define PROTO2_GENERATED_DEFAULT_ONEOF_FIELD_OFFSET(ONEOF, FIELD) \
-  GOOGLE_PROTOBUF_GENERATED_DEFAULT_ONEOF_FIELD_OFFSET(ONEOF, FIELD)
-
 // Constants for special floating point values.
 LIBPROTOBUF_EXPORT double Infinity();
 LIBPROTOBUF_EXPORT double NaN();
-
-// This type is used to define a global variable, without it's constructor
-// and destructor run on start and end of the program lifetime. This circumvents
-// the initial construction order fiasco, while keeping the address of the
-// empty string a compile time constant.
-template <typename T>
-class ExplicitlyConstructed {
- public:
-  void DefaultConstruct() {
-    new (&union_) T();
-    init_ = true;
-  }
-
-  bool IsInitialized() { return init_; }
-  void Shutdown() {
-    if (init_) {
-      init_ = false;
-      get_mutable()->~T();
-    }
-  }
-
-#if LANG_CXX11
-  constexpr
-#endif
-      const T&
-      get() const {
-    return reinterpret_cast<const T&>(union_);
-  }
-  T* get_mutable() { return reinterpret_cast<T*>(&union_); }
-
- private:
-  // Prefer c++14 aligned_storage, but for compatibility this will do.
-  union AlignedUnion {
-    char space[sizeof(T)];
-    int64 align_to_int64;
-    void* align_to_ptr;
-  } union_;
-  bool init_;  // false by linker
-};
-
-// TODO(jieluo): Change to template. We have tried to use template,
-// but it causes net/rpc/python:rpcutil_test fail (the empty string will
-// init twice). It may related to swig. Change to template after we
-// found the solution.
-
-// Default empty string object. Don't use this directly. Instead, call
-// GetEmptyString() to get the reference.
-extern ExplicitlyConstructed< ::std::string> fixed_address_empty_string;
-LIBPROTOBUF_EXPORT extern ProtobufOnceType empty_string_once_init_;
-LIBPROTOBUF_EXPORT void InitEmptyString();
-
-
-LIBPROTOBUF_EXPORT inline const ::std::string& GetEmptyStringAlreadyInited() {
-  return fixed_address_empty_string.get();
-}
-
-LIBPROTOBUF_EXPORT inline const ::std::string& GetEmptyString() {
-  ::google::protobuf::GoogleOnceInit(&empty_string_once_init_, &InitEmptyString);
-  return GetEmptyStringAlreadyInited();
-}
-
-LIBPROTOBUF_EXPORT size_t StringSpaceUsedExcludingSelfLong(const string& str);
 
 
 // True if IsInitialized() is true for all elements of t.  Type is expected
@@ -195,32 +122,156 @@ template <class Type> bool AllAreInitialized(const Type& t) {
 
 LIBPROTOBUF_EXPORT void InitProtobufDefaults();
 
-// We compute sizes as size_t but cache them as int.  This function converts a
-// computed size to a cached size.  Since we don't proceed with serialization if
-// the total size was > INT_MAX, it is not important what this function returns
-// for inputs > INT_MAX.  However this case should not error or GOOGLE_CHECK-fail,
-// because the full size_t resolution is still returned from ByteSizeLong() and
-// checked against INT_MAX; we can catch the overflow there.
-inline int ToCachedSize(size_t size) {
-  return static_cast<int>(size);
+struct LIBPROTOBUF_EXPORT FieldMetadata {
+  uint32 offset;  // offset of this field in the struct
+  uint32 tag;     // field * 8 + wire_type
+  // byte offset * 8 + bit_offset;
+  // if the high bit is set then this is the byte offset of the oneof_case
+  // for this field.
+  uint32 has_offset;
+  uint32 type;      // the type of this field.
+  const void* ptr;  // auxiliary data
+
+  // From the serializer point of view each fundamental type can occur in
+  // 4 different ways. For simplicity we treat all combinations as a cartesion
+  // product although not all combinations are allowed.
+  enum FieldTypeClass {
+    kPresence,
+    kNoPresence,
+    kRepeated,
+    kPacked,
+    kOneOf,
+    kNumTypeClasses  // must be last enum
+  };
+  // C++ protobuf has 20 fundamental types, were we added Cord and StringPiece
+  // and also distinquish the same types if they have different wire format.
+  enum {
+    kCordType = 19,
+    kStringPieceType = 20,
+    kNumTypes = 20,
+    kSpecial = kNumTypes * kNumTypeClasses,
+  };
+
+  static int CalculateType(int fundamental_type, FieldTypeClass type_class);
+};
+
+inline bool IsPresent(const void* base, uint32 hasbit) {
+  const uint32* has_bits_array = static_cast<const uint32*>(base);
+  return has_bits_array[hasbit / 32] & (1u << (hasbit & 31));
 }
 
-// For cases where a legacy function returns an integer size.  We GOOGLE_DCHECK() that
-// the conversion will fit within an integer; if this is false then we are
-// losing information.
-inline int ToIntSize(size_t size) {
-  GOOGLE_DCHECK_LE(size, static_cast<size_t>(INT_MAX));
-  return static_cast<int>(size);
+inline bool IsOneofPresent(const void* base, uint32 offset, uint32 tag) {
+  const uint32* oneof =
+      reinterpret_cast<const uint32*>(static_cast<const uint8*>(base) + offset);
+  return *oneof == tag >> 3;
 }
 
-// We mainly calculate sizes in terms of size_t, but some functions that compute
-// sizes return "int".  These int sizes are expected to always be positive.
-// This function is more efficient than casting an int to size_t directly on
-// 64-bit platforms because it avoids making the compiler emit a sign extending
-// instruction, which we don't want and don't want to pay for.
-inline size_t FromIntSize(int size) {
-  // Convert to unsigned before widening so sign extension is not necessary.
-  return static_cast<unsigned int>(size);
+typedef void (*SpecialSerializer)(const uint8* base, uint32 offset, uint32 tag,
+                                  uint32 has_offset,
+                                  ::google::protobuf::io::CodedOutputStream* output);
+
+LIBPROTOBUF_EXPORT void ExtensionSerializer(const uint8* base, uint32 offset, uint32 tag,
+                         uint32 has_offset,
+                         ::google::protobuf::io::CodedOutputStream* output);
+LIBPROTOBUF_EXPORT void UnknownFieldSerializerLite(const uint8* base, uint32 offset, uint32 tag,
+                                uint32 has_offset,
+                                ::google::protobuf::io::CodedOutputStream* output);
+
+struct SerializationTable {
+  int num_fields;
+  const FieldMetadata* field_table;
+};
+
+LIBPROTOBUF_EXPORT void SerializeInternal(const uint8* base, const FieldMetadata* table,
+                       int num_fields, ::google::protobuf::io::CodedOutputStream* output);
+
+inline void TableSerialize(const ::google::protobuf::MessageLite& msg,
+                           const SerializationTable* table,
+                           ::google::protobuf::io::CodedOutputStream* output) {
+  const FieldMetadata* field_table = table->field_table;
+  int num_fields = table->num_fields - 1;
+  const uint8* base = reinterpret_cast<const uint8*>(&msg);
+  // TODO(gerbens) This skips the first test if we could use the fast
+  // array serialization path, we should make this
+  // int cached_size =
+  //    *reinterpret_cast<const int32*>(base + field_table->offset);
+  // SerializeWithCachedSize(msg, field_table + 1, num_fields, cached_size, ...)
+  // But we keep conformance with the old way for now.
+  SerializeInternal(base, field_table + 1, num_fields, output);
+}
+
+uint8* SerializeInternalToArray(const uint8* base, const FieldMetadata* table,
+                                int num_fields, bool is_deterministic,
+                                uint8* buffer);
+
+inline uint8* TableSerializeToArray(const ::google::protobuf::MessageLite& msg,
+                                    const SerializationTable* table,
+                                    bool is_deterministic, uint8* buffer) {
+  const uint8* base = reinterpret_cast<const uint8*>(&msg);
+  const FieldMetadata* field_table = table->field_table + 1;
+  int num_fields = table->num_fields - 1;
+  return SerializeInternalToArray(base, field_table, num_fields,
+                                  is_deterministic, buffer);
+}
+
+template <typename T>
+struct CompareHelper {
+  bool operator()(const T& a, const T& b) { return a < b; }
+};
+
+template <>
+struct CompareHelper<ArenaStringPtr> {
+  bool operator()(const ArenaStringPtr& a, const ArenaStringPtr& b) {
+    return a.Get() < b.Get();
+  }
+};
+
+struct CompareMapKey {
+  template <typename T>
+  bool operator()(const MapEntryHelper<T>& a, const MapEntryHelper<T>& b) {
+    return Compare(a.key_, b.key_);
+  }
+  template <typename T>
+  bool Compare(const T& a, const T& b) {
+    return CompareHelper<T>()(a, b);
+  }
+};
+
+template <typename MapFieldType, const SerializationTable* table>
+void MapFieldSerializer(const uint8* base, uint32 offset, uint32 tag,
+                        uint32 has_offset,
+                        ::google::protobuf::io::CodedOutputStream* output) {
+  typedef MapEntryHelper<typename MapFieldType::EntryTypeTrait> Entry;
+  typedef typename MapFieldType::MapType::const_iterator Iter;
+
+  const MapFieldType& map_field =
+      *reinterpret_cast<const MapFieldType*>(base + offset);
+  const SerializationTable* t =
+      table +
+      has_offset;  // has_offset is overloaded for maps to mean table offset
+  if (!output->IsSerializationDeterministic()) {
+    for (Iter it = map_field.GetMap().begin(); it != map_field.GetMap().end();
+         ++it) {
+      Entry map_entry(*it);
+      output->WriteVarint32(tag);
+      output->WriteVarint32(map_entry._cached_size_);
+      SerializeInternal(reinterpret_cast<const uint8*>(&map_entry),
+                        t->field_table, t->num_fields, output);
+    }
+  } else {
+    std::vector<Entry> v;
+    for (Iter it = map_field.GetMap().begin(); it != map_field.GetMap().end();
+         ++it) {
+      v.push_back(Entry(*it));
+    }
+    std::sort(v.begin(), v.end(), CompareMapKey());
+    for (int i = 0; i < v.size(); i++) {
+      output->WriteVarint32(tag);
+      output->WriteVarint32(v[i]._cached_size_);
+      SerializeInternal(reinterpret_cast<const uint8*>(&v[i]), t->field_table,
+                        t->num_fields, output);
+    }
+  }
 }
 
 }  // namespace internal

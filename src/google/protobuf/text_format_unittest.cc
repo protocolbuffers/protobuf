@@ -53,6 +53,7 @@
 #include <google/protobuf/unittest_mset_wire_format.pb.h>
 #include <google/protobuf/io/tokenizer.h>
 #include <google/protobuf/io/zero_copy_stream_impl.h>
+
 #include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/stubs/substitute.h>
 #include <google/protobuf/testing/googletest.h>
@@ -454,13 +455,29 @@ TEST_F(TextFormatTest, FieldSpecificCustomPrinter) {
   EXPECT_EQ("optional_int32: value-is(42)\nrepeated_int32: 42\n", text);
 }
 
+TEST_F(TextFormatTest, FieldSpecificCustomPrinterRegisterSameFieldTwice) {
+  protobuf_unittest::TestAllTypes message;
+  TextFormat::Printer printer;
+  const FieldDescriptor* const field =
+      message.GetDescriptor()->FindFieldByName("optional_int32");
+  ASSERT_TRUE(printer.RegisterFieldValuePrinter(
+      field, new CustomInt32FieldValuePrinter()));
+  const TextFormat::FieldValuePrinter* const rejected =
+      new CustomInt32FieldValuePrinter();
+  ASSERT_FALSE(printer.RegisterFieldValuePrinter(field, rejected));
+  delete rejected;
+}
+
 TEST_F(TextFormatTest, ErrorCasesRegisteringFieldValuePrinterShouldFail) {
   protobuf_unittest::TestAllTypes message;
   TextFormat::Printer printer;
   // NULL printer.
   EXPECT_FALSE(printer.RegisterFieldValuePrinter(
       message.GetDescriptor()->FindFieldByName("optional_int32"),
-      NULL));
+      static_cast<const TextFormat::FieldValuePrinter*>(NULL)));
+  EXPECT_FALSE(printer.RegisterFieldValuePrinter(
+      message.GetDescriptor()->FindFieldByName("optional_int32"),
+      static_cast<const TextFormat::FastFieldValuePrinter*>(NULL)));
   // Because registration fails, the ownership of this printer is never taken.
   TextFormat::FieldValuePrinter my_field_printer;
   // NULL field

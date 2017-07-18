@@ -1686,7 +1686,11 @@ public class JsonFormat {
     }
 
     private ByteString parseBytes(JsonElement json) throws InvalidProtocolBufferException {
-      return ByteString.copyFrom(BaseEncoding.base64().decode(json.getAsString()));
+      try {
+        return ByteString.copyFrom(BaseEncoding.base64().decode(json.getAsString()));
+      } catch (IllegalArgumentException e) {
+        return ByteString.copyFrom(BaseEncoding.base64Url().decode(json.getAsString()));
+      }
     }
 
     private EnumValueDescriptor parseEnum(EnumDescriptor enumDescriptor, JsonElement json)

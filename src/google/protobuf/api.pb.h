@@ -37,30 +37,12 @@ namespace protobuf {
 class Api;
 class ApiDefaultTypeInternal;
 LIBPROTOBUF_EXPORT extern ApiDefaultTypeInternal _Api_default_instance_;
-class Enum;
-class EnumDefaultTypeInternal;
-LIBPROTOBUF_EXPORT extern EnumDefaultTypeInternal _Enum_default_instance_;
-class EnumValue;
-class EnumValueDefaultTypeInternal;
-LIBPROTOBUF_EXPORT extern EnumValueDefaultTypeInternal _EnumValue_default_instance_;
-class Field;
-class FieldDefaultTypeInternal;
-LIBPROTOBUF_EXPORT extern FieldDefaultTypeInternal _Field_default_instance_;
 class Method;
 class MethodDefaultTypeInternal;
 LIBPROTOBUF_EXPORT extern MethodDefaultTypeInternal _Method_default_instance_;
 class Mixin;
 class MixinDefaultTypeInternal;
 LIBPROTOBUF_EXPORT extern MixinDefaultTypeInternal _Mixin_default_instance_;
-class Option;
-class OptionDefaultTypeInternal;
-LIBPROTOBUF_EXPORT extern OptionDefaultTypeInternal _Option_default_instance_;
-class SourceContext;
-class SourceContextDefaultTypeInternal;
-LIBPROTOBUF_EXPORT extern SourceContextDefaultTypeInternal _SourceContext_default_instance_;
-class Type;
-class TypeDefaultTypeInternal;
-LIBPROTOBUF_EXPORT extern TypeDefaultTypeInternal _Type_default_instance_;
 }  // namespace protobuf
 }  // namespace google
 
@@ -74,8 +56,9 @@ struct LIBPROTOBUF_EXPORT TableStruct {
   static const ::google::protobuf::internal::AuxillaryParseTableField aux[];
   static const ::google::protobuf::internal::ParseTable schema[];
   static const ::google::protobuf::uint32 offsets[];
+  static const ::google::protobuf::internal::FieldMetadata field_metadata[];
+  static const ::google::protobuf::internal::SerializationTable serialization_table[];
   static void InitDefaultsImpl();
-  static void Shutdown();
 };
 void LIBPROTOBUF_EXPORT AddDescriptors();
 void LIBPROTOBUF_EXPORT InitDefaults();
@@ -94,7 +77,21 @@ class LIBPROTOBUF_EXPORT Api : public ::google::protobuf::Message /* @@protoc_in
     CopyFrom(from);
     return *this;
   }
+  #if LANG_CXX11
+  Api(Api&& from) noexcept
+    : Api() {
+    *this = ::std::move(from);
+  }
 
+  inline Api& operator=(Api&& from) noexcept {
+    if (GetArenaNoVirtual() == from.GetArenaNoVirtual()) {
+      if (this != &from) InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+  #endif
   static const ::google::protobuf::Descriptor* descriptor();
   static const Api& default_instance();
 
@@ -106,6 +103,9 @@ class LIBPROTOBUF_EXPORT Api : public ::google::protobuf::Message /* @@protoc_in
     0;
 
   void Swap(Api* other);
+  friend void swap(Api& a, Api& b) {
+    a.Swap(&b);
+  }
 
   // implements Message ----------------------------------------------
 
@@ -253,7 +253,21 @@ class LIBPROTOBUF_EXPORT Method : public ::google::protobuf::Message /* @@protoc
     CopyFrom(from);
     return *this;
   }
+  #if LANG_CXX11
+  Method(Method&& from) noexcept
+    : Method() {
+    *this = ::std::move(from);
+  }
 
+  inline Method& operator=(Method&& from) noexcept {
+    if (GetArenaNoVirtual() == from.GetArenaNoVirtual()) {
+      if (this != &from) InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+  #endif
   static const ::google::protobuf::Descriptor* descriptor();
   static const Method& default_instance();
 
@@ -265,6 +279,9 @@ class LIBPROTOBUF_EXPORT Method : public ::google::protobuf::Message /* @@protoc
     1;
 
   void Swap(Method* other);
+  friend void swap(Method& a, Method& b) {
+    a.Swap(&b);
+  }
 
   // implements Message ----------------------------------------------
 
@@ -405,7 +422,21 @@ class LIBPROTOBUF_EXPORT Mixin : public ::google::protobuf::Message /* @@protoc_
     CopyFrom(from);
     return *this;
   }
+  #if LANG_CXX11
+  Mixin(Mixin&& from) noexcept
+    : Mixin() {
+    *this = ::std::move(from);
+  }
 
+  inline Mixin& operator=(Mixin&& from) noexcept {
+    if (GetArenaNoVirtual() == from.GetArenaNoVirtual()) {
+      if (this != &from) InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+  #endif
   static const ::google::protobuf::Descriptor* descriptor();
   static const Mixin& default_instance();
 
@@ -417,6 +448,9 @@ class LIBPROTOBUF_EXPORT Mixin : public ::google::protobuf::Message /* @@protoc_
     2;
 
   void Swap(Mixin* other);
+  friend void swap(Mixin& a, Mixin& b) {
+    a.Swap(&b);
+  }
 
   // implements Message ----------------------------------------------
 
@@ -501,6 +535,10 @@ class LIBPROTOBUF_EXPORT Mixin : public ::google::protobuf::Message /* @@protoc_
 // ===================================================================
 
 #if !PROTOBUF_INLINE_NOT_IN_HEADERS
+#ifdef __GNUC__
+  #pragma GCC diagnostic push
+  #pragma GCC diagnostic ignored "-Wstrict-aliasing"
+#endif  // __GNUC__
 // Api
 
 // string name = 1;
@@ -678,9 +716,10 @@ inline void Api::clear_source_context() {
   source_context_ = NULL;
 }
 inline const ::google::protobuf::SourceContext& Api::source_context() const {
+  const ::google::protobuf::SourceContext* p = source_context_;
   // @@protoc_insertion_point(field_get:google.protobuf.Api.source_context)
-  return source_context_ != NULL ? *source_context_
-                         : *::google::protobuf::SourceContext::internal_default_instance();
+  return p != NULL ? *p : *reinterpret_cast<const ::google::protobuf::SourceContext*>(
+      &::google::protobuf::_SourceContext_default_instance_);
 }
 inline ::google::protobuf::SourceContext* Api::mutable_source_context() {
   
@@ -1097,6 +1136,9 @@ inline void Mixin::set_allocated_root(::std::string* root) {
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.Mixin.root)
 }
 
+#ifdef __GNUC__
+  #pragma GCC diagnostic pop
+#endif  // __GNUC__
 #endif  // !PROTOBUF_INLINE_NOT_IN_HEADERS
 // -------------------------------------------------------------------
 

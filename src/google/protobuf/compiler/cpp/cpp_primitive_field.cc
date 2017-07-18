@@ -115,9 +115,11 @@ GeneratePrivateMembers(io::Printer* printer) const {
 
 void PrimitiveFieldGenerator::
 GenerateAccessorDeclarations(io::Printer* printer) const {
+  printer->Print(variables_, "$deprecated_attr$$type$ $name$() const;\n");
+  printer->Annotate("name", descriptor_);
   printer->Print(variables_,
-    "$deprecated_attr$$type$ $name$() const;\n"
-    "$deprecated_attr$void set_$name$($type$ value);\n");
+                 "$deprecated_attr$void ${$set_$name$$}$($type$ value);\n");
+  printer->Annotate("{", "}", descriptor_);
 }
 
 void PrimitiveFieldGenerator::
@@ -148,7 +150,7 @@ GenerateMergingCode(io::Printer* printer) const {
 
 void PrimitiveFieldGenerator::
 GenerateSwappingCode(io::Printer* printer) const {
-  printer->Print(variables_, "std::swap($name$_, other->$name$_);\n");
+  printer->Print(variables_, "swap($name$_, other->$name$_);\n");
 }
 
 void PrimitiveFieldGenerator::
@@ -290,14 +292,23 @@ GeneratePrivateMembers(io::Printer* printer) const {
 void RepeatedPrimitiveFieldGenerator::
 GenerateAccessorDeclarations(io::Printer* printer) const {
   printer->Print(variables_,
-    "$deprecated_attr$$type$ $name$(int index) const;\n"
-    "$deprecated_attr$void set_$name$(int index, $type$ value);\n"
-    "$deprecated_attr$void add_$name$($type$ value);\n");
+                 "$deprecated_attr$$type$ $name$(int index) const;\n");
+  printer->Annotate("name", descriptor_);
+  printer->Print(
+      variables_,
+      "$deprecated_attr$void ${$set_$name$$}$(int index, $type$ value);\n");
+  printer->Annotate("{", "}", descriptor_);
   printer->Print(variables_,
-    "$deprecated_attr$const ::google::protobuf::RepeatedField< $type$ >&\n"
-    "    $name$() const;\n"
-    "$deprecated_attr$::google::protobuf::RepeatedField< $type$ >*\n"
-    "    mutable_$name$();\n");
+                 "$deprecated_attr$void ${$add_$name$$}$($type$ value);\n");
+  printer->Annotate("{", "}", descriptor_);
+  printer->Print(variables_,
+                 "$deprecated_attr$const ::google::protobuf::RepeatedField< $type$ >&\n"
+                 "    $name$() const;\n");
+  printer->Annotate("name", descriptor_);
+  printer->Print(variables_,
+                 "$deprecated_attr$::google::protobuf::RepeatedField< $type$ >*\n"
+                 "    ${$mutable_$name$$}$();\n");
+  printer->Annotate("{", "}", descriptor_);
 }
 
 void RepeatedPrimitiveFieldGenerator::
@@ -316,8 +327,7 @@ GenerateInlineAccessorDefinitions(io::Printer* printer, bool is_inline) const {
     "$inline$void $classname$::add_$name$($type$ value) {\n"
     "  $name$_.Add(value);\n"
     "  // @@protoc_insertion_point(field_add:$full_name$)\n"
-    "}\n");
-  printer->Print(variables,
+    "}\n"
     "$inline$const ::google::protobuf::RepeatedField< $type$ >&\n"
     "$classname$::$name$() const {\n"
     "  // @@protoc_insertion_point(field_list:$full_name$)\n"

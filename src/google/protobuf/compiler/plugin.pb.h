@@ -39,81 +39,6 @@
 #endif
 namespace google {
 namespace protobuf {
-class DescriptorProto;
-class DescriptorProtoDefaultTypeInternal;
-LIBPROTOC_EXPORT extern DescriptorProtoDefaultTypeInternal _DescriptorProto_default_instance_;
-class DescriptorProto_ExtensionRange;
-class DescriptorProto_ExtensionRangeDefaultTypeInternal;
-LIBPROTOC_EXPORT extern DescriptorProto_ExtensionRangeDefaultTypeInternal _DescriptorProto_ExtensionRange_default_instance_;
-class DescriptorProto_ReservedRange;
-class DescriptorProto_ReservedRangeDefaultTypeInternal;
-LIBPROTOC_EXPORT extern DescriptorProto_ReservedRangeDefaultTypeInternal _DescriptorProto_ReservedRange_default_instance_;
-class EnumDescriptorProto;
-class EnumDescriptorProtoDefaultTypeInternal;
-LIBPROTOC_EXPORT extern EnumDescriptorProtoDefaultTypeInternal _EnumDescriptorProto_default_instance_;
-class EnumOptions;
-class EnumOptionsDefaultTypeInternal;
-LIBPROTOC_EXPORT extern EnumOptionsDefaultTypeInternal _EnumOptions_default_instance_;
-class EnumValueDescriptorProto;
-class EnumValueDescriptorProtoDefaultTypeInternal;
-LIBPROTOC_EXPORT extern EnumValueDescriptorProtoDefaultTypeInternal _EnumValueDescriptorProto_default_instance_;
-class EnumValueOptions;
-class EnumValueOptionsDefaultTypeInternal;
-LIBPROTOC_EXPORT extern EnumValueOptionsDefaultTypeInternal _EnumValueOptions_default_instance_;
-class FieldDescriptorProto;
-class FieldDescriptorProtoDefaultTypeInternal;
-LIBPROTOC_EXPORT extern FieldDescriptorProtoDefaultTypeInternal _FieldDescriptorProto_default_instance_;
-class FieldOptions;
-class FieldOptionsDefaultTypeInternal;
-LIBPROTOC_EXPORT extern FieldOptionsDefaultTypeInternal _FieldOptions_default_instance_;
-class FileDescriptorProto;
-class FileDescriptorProtoDefaultTypeInternal;
-LIBPROTOC_EXPORT extern FileDescriptorProtoDefaultTypeInternal _FileDescriptorProto_default_instance_;
-class FileDescriptorSet;
-class FileDescriptorSetDefaultTypeInternal;
-LIBPROTOC_EXPORT extern FileDescriptorSetDefaultTypeInternal _FileDescriptorSet_default_instance_;
-class FileOptions;
-class FileOptionsDefaultTypeInternal;
-LIBPROTOC_EXPORT extern FileOptionsDefaultTypeInternal _FileOptions_default_instance_;
-class GeneratedCodeInfo;
-class GeneratedCodeInfoDefaultTypeInternal;
-LIBPROTOC_EXPORT extern GeneratedCodeInfoDefaultTypeInternal _GeneratedCodeInfo_default_instance_;
-class GeneratedCodeInfo_Annotation;
-class GeneratedCodeInfo_AnnotationDefaultTypeInternal;
-LIBPROTOC_EXPORT extern GeneratedCodeInfo_AnnotationDefaultTypeInternal _GeneratedCodeInfo_Annotation_default_instance_;
-class MessageOptions;
-class MessageOptionsDefaultTypeInternal;
-LIBPROTOC_EXPORT extern MessageOptionsDefaultTypeInternal _MessageOptions_default_instance_;
-class MethodDescriptorProto;
-class MethodDescriptorProtoDefaultTypeInternal;
-LIBPROTOC_EXPORT extern MethodDescriptorProtoDefaultTypeInternal _MethodDescriptorProto_default_instance_;
-class MethodOptions;
-class MethodOptionsDefaultTypeInternal;
-LIBPROTOC_EXPORT extern MethodOptionsDefaultTypeInternal _MethodOptions_default_instance_;
-class OneofDescriptorProto;
-class OneofDescriptorProtoDefaultTypeInternal;
-LIBPROTOC_EXPORT extern OneofDescriptorProtoDefaultTypeInternal _OneofDescriptorProto_default_instance_;
-class OneofOptions;
-class OneofOptionsDefaultTypeInternal;
-LIBPROTOC_EXPORT extern OneofOptionsDefaultTypeInternal _OneofOptions_default_instance_;
-class ServiceDescriptorProto;
-class ServiceDescriptorProtoDefaultTypeInternal;
-LIBPROTOC_EXPORT extern ServiceDescriptorProtoDefaultTypeInternal _ServiceDescriptorProto_default_instance_;
-class ServiceOptions;
-class ServiceOptionsDefaultTypeInternal;
-LIBPROTOC_EXPORT extern ServiceOptionsDefaultTypeInternal _ServiceOptions_default_instance_;
-class SourceCodeInfo;
-class SourceCodeInfoDefaultTypeInternal;
-LIBPROTOC_EXPORT extern SourceCodeInfoDefaultTypeInternal _SourceCodeInfo_default_instance_;
-class SourceCodeInfo_Location;
-class SourceCodeInfo_LocationDefaultTypeInternal;
-LIBPROTOC_EXPORT extern SourceCodeInfo_LocationDefaultTypeInternal _SourceCodeInfo_Location_default_instance_;
-class UninterpretedOption;
-class UninterpretedOptionDefaultTypeInternal;
-LIBPROTOC_EXPORT extern UninterpretedOptionDefaultTypeInternal _UninterpretedOption_default_instance_;
-class UninterpretedOption_NamePart;
-class UninterpretedOption_NamePartDefaultTypeInternal;
-LIBPROTOC_EXPORT extern UninterpretedOption_NamePartDefaultTypeInternal _UninterpretedOption_NamePart_default_instance_;
 namespace compiler {
 class CodeGeneratorRequest;
 class CodeGeneratorRequestDefaultTypeInternal;
@@ -142,8 +67,9 @@ struct LIBPROTOC_EXPORT TableStruct {
   static const ::google::protobuf::internal::AuxillaryParseTableField aux[];
   static const ::google::protobuf::internal::ParseTable schema[];
   static const ::google::protobuf::uint32 offsets[];
+  static const ::google::protobuf::internal::FieldMetadata field_metadata[];
+  static const ::google::protobuf::internal::SerializationTable serialization_table[];
   static void InitDefaultsImpl();
-  static void Shutdown();
 };
 void LIBPROTOC_EXPORT AddDescriptors();
 void LIBPROTOC_EXPORT InitDefaults();
@@ -162,11 +88,24 @@ class LIBPROTOC_EXPORT Version : public ::google::protobuf::Message /* @@protoc_
     CopyFrom(from);
     return *this;
   }
+  #if LANG_CXX11
+  Version(Version&& from) noexcept
+    : Version() {
+    *this = ::std::move(from);
+  }
 
+  inline Version& operator=(Version&& from) noexcept {
+    if (GetArenaNoVirtual() == from.GetArenaNoVirtual()) {
+      if (this != &from) InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+  #endif
   inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
     return _internal_metadata_.unknown_fields();
   }
-
   inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
     return _internal_metadata_.mutable_unknown_fields();
   }
@@ -182,6 +121,9 @@ class LIBPROTOC_EXPORT Version : public ::google::protobuf::Message /* @@protoc_
     0;
 
   void Swap(Version* other);
+  friend void swap(Version& a, Version& b) {
+    a.Swap(&b);
+  }
 
   // implements Message ----------------------------------------------
 
@@ -292,11 +234,24 @@ class LIBPROTOC_EXPORT CodeGeneratorRequest : public ::google::protobuf::Message
     CopyFrom(from);
     return *this;
   }
+  #if LANG_CXX11
+  CodeGeneratorRequest(CodeGeneratorRequest&& from) noexcept
+    : CodeGeneratorRequest() {
+    *this = ::std::move(from);
+  }
 
+  inline CodeGeneratorRequest& operator=(CodeGeneratorRequest&& from) noexcept {
+    if (GetArenaNoVirtual() == from.GetArenaNoVirtual()) {
+      if (this != &from) InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+  #endif
   inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
     return _internal_metadata_.unknown_fields();
   }
-
   inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
     return _internal_metadata_.mutable_unknown_fields();
   }
@@ -312,6 +267,9 @@ class LIBPROTOC_EXPORT CodeGeneratorRequest : public ::google::protobuf::Message
     1;
 
   void Swap(CodeGeneratorRequest* other);
+  friend void swap(CodeGeneratorRequest& a, CodeGeneratorRequest& b) {
+    a.Swap(&b);
+  }
 
   // implements Message ----------------------------------------------
 
@@ -440,11 +398,24 @@ class LIBPROTOC_EXPORT CodeGeneratorResponse_File : public ::google::protobuf::M
     CopyFrom(from);
     return *this;
   }
+  #if LANG_CXX11
+  CodeGeneratorResponse_File(CodeGeneratorResponse_File&& from) noexcept
+    : CodeGeneratorResponse_File() {
+    *this = ::std::move(from);
+  }
 
+  inline CodeGeneratorResponse_File& operator=(CodeGeneratorResponse_File&& from) noexcept {
+    if (GetArenaNoVirtual() == from.GetArenaNoVirtual()) {
+      if (this != &from) InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+  #endif
   inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
     return _internal_metadata_.unknown_fields();
   }
-
   inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
     return _internal_metadata_.mutable_unknown_fields();
   }
@@ -460,6 +431,9 @@ class LIBPROTOC_EXPORT CodeGeneratorResponse_File : public ::google::protobuf::M
     2;
 
   void Swap(CodeGeneratorResponse_File* other);
+  friend void swap(CodeGeneratorResponse_File& a, CodeGeneratorResponse_File& b) {
+    a.Swap(&b);
+  }
 
   // implements Message ----------------------------------------------
 
@@ -576,11 +550,24 @@ class LIBPROTOC_EXPORT CodeGeneratorResponse : public ::google::protobuf::Messag
     CopyFrom(from);
     return *this;
   }
+  #if LANG_CXX11
+  CodeGeneratorResponse(CodeGeneratorResponse&& from) noexcept
+    : CodeGeneratorResponse() {
+    *this = ::std::move(from);
+  }
 
+  inline CodeGeneratorResponse& operator=(CodeGeneratorResponse&& from) noexcept {
+    if (GetArenaNoVirtual() == from.GetArenaNoVirtual()) {
+      if (this != &from) InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+  #endif
   inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
     return _internal_metadata_.unknown_fields();
   }
-
   inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
     return _internal_metadata_.mutable_unknown_fields();
   }
@@ -596,6 +583,9 @@ class LIBPROTOC_EXPORT CodeGeneratorResponse : public ::google::protobuf::Messag
     3;
 
   void Swap(CodeGeneratorResponse* other);
+  friend void swap(CodeGeneratorResponse& a, CodeGeneratorResponse& b) {
+    a.Swap(&b);
+  }
 
   // implements Message ----------------------------------------------
 
@@ -684,6 +674,10 @@ class LIBPROTOC_EXPORT CodeGeneratorResponse : public ::google::protobuf::Messag
 // ===================================================================
 
 #if !PROTOBUF_INLINE_NOT_IN_HEADERS
+#ifdef __GNUC__
+  #pragma GCC diagnostic push
+  #pragma GCC diagnostic ignored "-Wstrict-aliasing"
+#endif  // __GNUC__
 // Version
 
 // optional int32 major = 1;
@@ -1002,9 +996,10 @@ inline void CodeGeneratorRequest::clear_compiler_version() {
   clear_has_compiler_version();
 }
 inline const ::google::protobuf::compiler::Version& CodeGeneratorRequest::compiler_version() const {
+  const ::google::protobuf::compiler::Version* p = compiler_version_;
   // @@protoc_insertion_point(field_get:google.protobuf.compiler.CodeGeneratorRequest.compiler_version)
-  return compiler_version_ != NULL ? *compiler_version_
-                         : *::google::protobuf::compiler::Version::internal_default_instance();
+  return p != NULL ? *p : *reinterpret_cast<const ::google::protobuf::compiler::Version*>(
+      &::google::protobuf::compiler::_Version_default_instance_);
 }
 inline ::google::protobuf::compiler::Version* CodeGeneratorRequest::mutable_compiler_version() {
   set_has_compiler_version();
@@ -1322,6 +1317,9 @@ CodeGeneratorResponse::file() const {
   return file_;
 }
 
+#ifdef __GNUC__
+  #pragma GCC diagnostic pop
+#endif  // __GNUC__
 #endif  // !PROTOBUF_INLINE_NOT_IN_HEADERS
 // -------------------------------------------------------------------
 

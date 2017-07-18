@@ -103,7 +103,8 @@ class ProtostreamObjectSourceTest
         ow_(&mock_),
         use_lower_camel_for_enums_(false),
         use_ints_for_enums_(false),
-        add_trailing_zeros_(false) {
+        add_trailing_zeros_(false),
+        render_unknown_enum_values_(true) {
     helper_.ResetTypeInfo(Book::descriptor(), Proto3Message::descriptor());
   }
 
@@ -276,6 +277,10 @@ class ProtostreamObjectSourceTest
 
   void AddTrailingZeros() { add_trailing_zeros_ = true; }
 
+  void SetRenderUnknownEnumValues(bool value) {
+    render_unknown_enum_values_ = value;
+  }
+
   testing::TypeInfoTestHelper helper_;
 
   ::testing::NiceMock<MockObjectWriter> mock_;
@@ -283,6 +288,7 @@ class ProtostreamObjectSourceTest
   bool use_lower_camel_for_enums_;
   bool use_ints_for_enums_;
   bool add_trailing_zeros_;
+  bool render_unknown_enum_values_;
 };
 
 INSTANTIATE_TEST_CASE_P(DifferentTypeInfoSourceTest,
@@ -513,12 +519,27 @@ TEST_P(ProtostreamObjectSourceTest, UseIntsForEnumsTest) {
   DoTest(book, Book::descriptor());
 }
 
-TEST_P(ProtostreamObjectSourceTest, UnknownEnum) {
+TEST_P(ProtostreamObjectSourceTest,
+       UnknownEnumAreDroppedWhenRenderUnknownEnumValuesIsUnset) {
   Proto3Message message;
   message.set_enum_value(static_cast<Proto3Message::NestedEnum>(1234));
-  ow_.StartObject("")
-      ->RenderInt32("enumValue", 1234)
-      ->EndObject();
+
+  SetRenderUnknownEnumValues(false);
+
+  // Unknown enum values are not output.
+  ow_.StartObject("")->EndObject();
+  DoTest(message, Proto3Message::descriptor());
+}
+
+TEST_P(ProtostreamObjectSourceTest,
+       UnknownEnumAreOutputWhenRenderUnknownEnumValuesIsSet) {
+  Proto3Message message;
+  message.set_enum_value(static_cast<Proto3Message::NestedEnum>(1234));
+
+  SetRenderUnknownEnumValues(true);
+
+  // Unknown enum values are output.
+  ow_.StartObject("")->RenderInt32("enumValue", 1234)->EndObject();
   DoTest(message, Proto3Message::descriptor());
 }
 

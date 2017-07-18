@@ -49,6 +49,7 @@ from google.protobuf import field_mask_pb2
 from google.protobuf import struct_pb2
 from google.protobuf import timestamp_pb2
 from google.protobuf import wrappers_pb2
+from google.protobuf import unittest_mset_pb2
 from google.protobuf.internal import well_known_types
 from google.protobuf import json_format
 from google.protobuf.util import json_format_proto3_pb2
@@ -157,6 +158,84 @@ class JsonFormatTest(JsonFormatBase):
     parsed_message = json_format_proto3_pb2.TestMessage()
     json_format.Parse(text, parsed_message)
     self.assertEqual(message, parsed_message)
+
+  def testExtensionToJsonAndBack(self):
+    message = unittest_mset_pb2.TestMessageSetContainer()
+    ext1 = unittest_mset_pb2.TestMessageSetExtension1.message_set_extension
+    ext2 = unittest_mset_pb2.TestMessageSetExtension2.message_set_extension
+    message.message_set.Extensions[ext1].i = 23
+    message.message_set.Extensions[ext2].str = 'foo'
+    message_text = json_format.MessageToJson(
+        message
+    )
+    parsed_message = unittest_mset_pb2.TestMessageSetContainer()
+    json_format.Parse(message_text, parsed_message)
+    self.assertEqual(message, parsed_message)
+
+  def testExtensionToDictAndBack(self):
+    message = unittest_mset_pb2.TestMessageSetContainer()
+    ext1 = unittest_mset_pb2.TestMessageSetExtension1.message_set_extension
+    ext2 = unittest_mset_pb2.TestMessageSetExtension2.message_set_extension
+    message.message_set.Extensions[ext1].i = 23
+    message.message_set.Extensions[ext2].str = 'foo'
+    message_dict = json_format.MessageToDict(
+        message
+    )
+    parsed_message = unittest_mset_pb2.TestMessageSetContainer()
+    json_format.ParseDict(message_dict, parsed_message)
+    self.assertEqual(message, parsed_message)
+
+  def testExtensionSerializationDictMatchesProto3Spec(self):
+    """See go/proto3-json-spec for spec.
+    """
+    message = unittest_mset_pb2.TestMessageSetContainer()
+    ext1 = unittest_mset_pb2.TestMessageSetExtension1.message_set_extension
+    ext2 = unittest_mset_pb2.TestMessageSetExtension2.message_set_extension
+    message.message_set.Extensions[ext1].i = 23
+    message.message_set.Extensions[ext2].str = 'foo'
+    message_dict = json_format.MessageToDict(
+        message
+    )
+    golden_dict = {
+        'messageSet': {
+            '[protobuf_unittest.'
+            'TestMessageSetExtension1.messageSetExtension]': {
+                'i': 23,
+            },
+            '[protobuf_unittest.'
+            'TestMessageSetExtension2.messageSetExtension]': {
+                'str': u'foo',
+            },
+        },
+    }
+    self.assertEqual(golden_dict, message_dict)
+
+
+  def testExtensionSerializationJsonMatchesProto3Spec(self):
+    """See go/proto3-json-spec for spec.
+    """
+    message = unittest_mset_pb2.TestMessageSetContainer()
+    ext1 = unittest_mset_pb2.TestMessageSetExtension1.message_set_extension
+    ext2 = unittest_mset_pb2.TestMessageSetExtension2.message_set_extension
+    message.message_set.Extensions[ext1].i = 23
+    message.message_set.Extensions[ext2].str = 'foo'
+    message_text = json_format.MessageToJson(
+        message
+    )
+    ext1_text = ('protobuf_unittest.TestMessageSetExtension1.'
+                 'messageSetExtension')
+    ext2_text = ('protobuf_unittest.TestMessageSetExtension2.'
+                 'messageSetExtension')
+    golden_text = ('{"messageSet": {'
+                   '    "[%s]": {'
+                   '        "i": 23'
+                   '    },'
+                   '    "[%s]": {'
+                   '        "str": "foo"'
+                   '    }'
+                   '}}') % (ext1_text, ext2_text)
+    self.assertEqual(json.loads(golden_text), json.loads(message_text))
+
 
   def testJsonEscapeString(self):
     message = json_format_proto3_pb2.TestMessage()
@@ -768,7 +847,7 @@ class JsonFormatTest(JsonFormatBase):
     text = '{"value": "0000-01-01T00:00:00Z"}'
     self.assertRaisesRegexp(
         json_format.ParseError,
-        'Failed to parse value field: year is out of range.',
+        'Failed to parse value field: year (0 )?is out of range.',
         json_format.Parse, text, message)
     # Time bigger than maxinum time.
     message.value.seconds = 253402300800
@@ -840,6 +919,12 @@ class JsonFormatTest(JsonFormatBase):
     json_format.Parse('{"int32_value": 12345}', message)
     self.assertEqual(12345, message.int32_value)
 
+  def testIndent(self):
+    message = json_format_proto3_pb2.TestMessage()
+    message.int32_value = 12345
+    self.assertEqual('{\n"int32Value": 12345\n}',
+                     json_format.MessageToJson(message, indent=0))
+
   def testParseDict(self):
     expected = 12345
     js_dict = {'int32Value': expected}
@@ -861,6 +946,22 @@ class JsonFormatTest(JsonFormatBase):
                      json_format.MessageToJson(message))
     parsed_message = json_format_proto3_pb2.TestCustomJsonName()
     self.CheckParseBack(message, parsed_message)
+
+  def testSortKeys(self):
+    # Testing sort_keys is not perfectly working, as by random luck we could
+    # get the output sorted. We just use a selection of names.
+    message = json_format_proto3_pb2.TestMessage(bool_value=True,
+                                                 int32_value=1,
+                                                 int64_value=3,
+                                                 uint32_value=4,
+                                                 string_value='bla')
+    self.assertEqual(
+        json_format.MessageToJson(message, sort_keys=True),
+        # We use json.dumps() instead of a hardcoded string due to differences
+        # between Python 2 and Python 3.
+        json.dumps({'boolValue': True, 'int32Value': 1, 'int64Value': '3',
+                    'uint32Value': 4, 'stringValue': 'bla'},
+                   indent=2, sort_keys=True))
 
 
 if __name__ == '__main__':

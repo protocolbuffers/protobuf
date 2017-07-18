@@ -197,17 +197,7 @@ void CodedInputStream::PrintTotalBytesLimitError() {
                 "in google/protobuf/io/coded_stream.h.";
 }
 
-bool CodedInputStream::Skip(int count) {
-  if (count < 0) return false;  // security: count is often user-supplied
-
-  const int original_buffer_size = BufferSize();
-
-  if (count <= original_buffer_size) {
-    // Just skipping within the current buffer.  Easy.
-    Advance(count);
-    return true;
-  }
-
+bool CodedInputStream::SkipFallback(int count, int original_buffer_size) {
   if (buffer_size_after_limit_ > 0) {
     // We hit a limit inside this buffer.  Advance to the limit and fail.
     Advance(original_buffer_size);

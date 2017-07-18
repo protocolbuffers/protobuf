@@ -29,6 +29,7 @@
 #include <google/protobuf/repeated_field.h>  // IWYU pragma: export
 #include <google/protobuf/extension_set.h>  // IWYU pragma: export
 #include <google/protobuf/map.h>  // IWYU pragma: export
+#include <google/protobuf/map_entry.h>
 #include <google/protobuf/map_field_inl.h>
 #include <google/protobuf/generated_enum_reflection.h>
 #include <google/protobuf/unknown_field_set.h>
@@ -60,8 +61,9 @@ struct LIBPROTOBUF_EXPORT TableStruct {
   static const ::google::protobuf::internal::AuxillaryParseTableField aux[];
   static const ::google::protobuf::internal::ParseTable schema[];
   static const ::google::protobuf::uint32 offsets[];
+  static const ::google::protobuf::internal::FieldMetadata field_metadata[];
+  static const ::google::protobuf::internal::SerializationTable serialization_table[];
   static void InitDefaultsImpl();
-  static void Shutdown();
 };
 void LIBPROTOBUF_EXPORT AddDescriptors();
 void LIBPROTOBUF_EXPORT InitDefaults();
@@ -103,7 +105,21 @@ class LIBPROTOBUF_EXPORT Struct : public ::google::protobuf::Message /* @@protoc
     CopyFrom(from);
     return *this;
   }
+  #if LANG_CXX11
+  Struct(Struct&& from) noexcept
+    : Struct() {
+    *this = ::std::move(from);
+  }
 
+  inline Struct& operator=(Struct&& from) noexcept {
+    if (GetArenaNoVirtual() == from.GetArenaNoVirtual()) {
+      if (this != &from) InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+  #endif
   inline ::google::protobuf::Arena* GetArena() const PROTOBUF_FINAL {
     return GetArenaNoVirtual();
   }
@@ -122,6 +138,9 @@ class LIBPROTOBUF_EXPORT Struct : public ::google::protobuf::Message /* @@protoc
 
   void UnsafeArenaSwap(Struct* other);
   void Swap(Struct* other);
+  friend void swap(Struct& a, Struct& b) {
+    a.Swap(&b);
+  }
 
   // implements Message ----------------------------------------------
 
@@ -182,7 +201,7 @@ class LIBPROTOBUF_EXPORT Struct : public ::google::protobuf::Message /* @@protoc
  private:
 
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
-  friend class ::google::protobuf::Arena;
+  template <typename T> friend class ::google::protobuf::Arena::InternalHelper;
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
   public:
@@ -204,6 +223,7 @@ class LIBPROTOBUF_EXPORT Struct : public ::google::protobuf::Message /* @@protoc
     static const Message* internal_default_instance() { return reinterpret_cast<const Message*>(&_Struct_FieldsEntry_default_instance_); }
     ::google::protobuf::Metadata GetMetadata() const;
   };
+  private:
   ::google::protobuf::internal::MapField<
       Struct_FieldsEntry,
       ::std::string, ::google::protobuf::Value,
@@ -227,7 +247,21 @@ class LIBPROTOBUF_EXPORT Value : public ::google::protobuf::Message /* @@protoc_
     CopyFrom(from);
     return *this;
   }
+  #if LANG_CXX11
+  Value(Value&& from) noexcept
+    : Value() {
+    *this = ::std::move(from);
+  }
 
+  inline Value& operator=(Value&& from) noexcept {
+    if (GetArenaNoVirtual() == from.GetArenaNoVirtual()) {
+      if (this != &from) InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+  #endif
   inline ::google::protobuf::Arena* GetArena() const PROTOBUF_FINAL {
     return GetArenaNoVirtual();
   }
@@ -256,6 +290,9 @@ class LIBPROTOBUF_EXPORT Value : public ::google::protobuf::Message /* @@protoc_
 
   void UnsafeArenaSwap(Value* other);
   void Swap(Value* other);
+  friend void swap(Value& a, Value& b) {
+    a.Swap(&b);
+  }
 
   // implements Message ----------------------------------------------
 
@@ -328,6 +365,9 @@ class LIBPROTOBUF_EXPORT Value : public ::google::protobuf::Message /* @@protoc_
   static const int kStringValueFieldNumber = 3;
   const ::std::string& string_value() const;
   void set_string_value(const ::std::string& value);
+  #if LANG_CXX11
+  void set_string_value(::std::string&& value);
+  #endif
   void set_string_value(const char* value);
   void set_string_value(const char* value, size_t size);
   ::std::string* mutable_string_value();
@@ -397,7 +437,7 @@ class LIBPROTOBUF_EXPORT Value : public ::google::protobuf::Message /* @@protoc_
   inline void clear_has_kind();
 
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
-  friend class ::google::protobuf::Arena;
+  template <typename T> friend class ::google::protobuf::Arena::InternalHelper;
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
   union KindUnion {
@@ -427,7 +467,21 @@ class LIBPROTOBUF_EXPORT ListValue : public ::google::protobuf::Message /* @@pro
     CopyFrom(from);
     return *this;
   }
+  #if LANG_CXX11
+  ListValue(ListValue&& from) noexcept
+    : ListValue() {
+    *this = ::std::move(from);
+  }
 
+  inline ListValue& operator=(ListValue&& from) noexcept {
+    if (GetArenaNoVirtual() == from.GetArenaNoVirtual()) {
+      if (this != &from) InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+  #endif
   inline ::google::protobuf::Arena* GetArena() const PROTOBUF_FINAL {
     return GetArenaNoVirtual();
   }
@@ -446,6 +500,9 @@ class LIBPROTOBUF_EXPORT ListValue : public ::google::protobuf::Message /* @@pro
 
   void UnsafeArenaSwap(ListValue* other);
   void Swap(ListValue* other);
+  friend void swap(ListValue& a, ListValue& b) {
+    a.Swap(&b);
+  }
 
   // implements Message ----------------------------------------------
 
@@ -508,7 +565,7 @@ class LIBPROTOBUF_EXPORT ListValue : public ::google::protobuf::Message /* @@pro
  private:
 
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
-  friend class ::google::protobuf::Arena;
+  template <typename T> friend class ::google::protobuf::Arena::InternalHelper;
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
   ::google::protobuf::RepeatedPtrField< ::google::protobuf::Value > values_;
@@ -521,6 +578,10 @@ class LIBPROTOBUF_EXPORT ListValue : public ::google::protobuf::Message /* @@pro
 // ===================================================================
 
 #if !PROTOBUF_INLINE_NOT_IN_HEADERS
+#ifdef __GNUC__
+  #pragma GCC diagnostic push
+  #pragma GCC diagnostic ignored "-Wstrict-aliasing"
+#endif  // __GNUC__
 // -------------------------------------------------------------------
 
 // Struct
@@ -636,6 +697,19 @@ inline void Value::set_string_value(const ::std::string& value) {
       GetArenaNoVirtual());
   // @@protoc_insertion_point(field_set:google.protobuf.Value.string_value)
 }
+#if LANG_CXX11
+inline void Value::set_string_value(::std::string&& value) {
+  // @@protoc_insertion_point(field_set:google.protobuf.Value.string_value)
+  if (!has_string_value()) {
+    clear_kind();
+    set_has_string_value();
+    kind_.string_value_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  }
+  kind_.string_value_.Set(
+    &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value), GetArenaNoVirtual());
+  // @@protoc_insertion_point(field_set_rvalue:google.protobuf.Value.string_value)
+}
+#endif
 inline void Value::set_string_value(const char* value) {
   GOOGLE_DCHECK(value != NULL);
   if (!has_string_value()) {
@@ -963,6 +1037,9 @@ ListValue::values() const {
   return values_;
 }
 
+#ifdef __GNUC__
+  #pragma GCC diagnostic pop
+#endif  // __GNUC__
 #endif  // !PROTOBUF_INLINE_NOT_IN_HEADERS
 // -------------------------------------------------------------------
 
@@ -977,7 +1054,6 @@ ListValue::values() const {
 }  // namespace protobuf
 }  // namespace google
 
-#ifndef SWIG
 namespace google {
 namespace protobuf {
 
@@ -989,7 +1065,6 @@ inline const EnumDescriptor* GetEnumDescriptor< ::google::protobuf::NullValue>()
 
 }  // namespace protobuf
 }  // namespace google
-#endif  // SWIG
 
 // @@protoc_insertion_point(global_scope)
 

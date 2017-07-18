@@ -157,7 +157,7 @@ class AnnotationProtoCollector : public AnnotationCollector {
 //   vars["function"] = "call";
 //   vars["mark"] = "";
 //   printer.Print(vars, "$function$($foo$,$foo$)$mark$");
-//   printer.Annotate("function", "rmark", call_);
+//   printer.Annotate("function", "mark", call_);
 //
 // This code associates the span covering "call(bar,bar)" in the output with the
 // call_ descriptor.
@@ -311,6 +311,9 @@ class LIBPROTOBUF_EXPORT Printer {
   void Annotate(const char* begin_varname, const char* end_varname,
                 const string& file_path, const std::vector<int>& path);
 
+  // Copy size worth of bytes from data to buffer_.
+  void CopyToBuffer(const char* data, int size);
+
   const char variable_delimiter_;
 
   ZeroCopyOutputStream* const output_;
@@ -333,6 +336,11 @@ class LIBPROTOBUF_EXPORT Printer {
   // last byte of the substitution plus one (such that (end - start) is the
   // length of the substituted string).
   std::map<string, std::pair<size_t, size_t> > substitutions_;
+
+  // Keeps track of the keys in substitutions_ that need to be updated when
+  // indents are inserted. These are keys that refer to the beginning of the
+  // current line.
+  std::vector<string> line_start_variables_;
 
   // Returns true and sets range to the substitution range in the output for
   // varname if varname was used once in the last call to Print. If varname

@@ -47,7 +47,6 @@
 #include <google/protobuf/message.h>
 #include <google/protobuf/stubs/substitute.h>
 
-
 namespace google {
 namespace protobuf {
 namespace compiler {
@@ -347,7 +346,6 @@ void Subprocess::Start(const string& program, SearchMode search_mode) {
 
 bool Subprocess::Communicate(const Message& input, Message* output,
                              string* error) {
-
   GOOGLE_CHECK_NE(child_stdin_, -1) << "Must call Start() first.";
 
   // The "sighandler_t" typedef is GNU-specific, so define our own.

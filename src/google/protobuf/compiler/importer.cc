@@ -32,6 +32,7 @@
 //  Based on original Protocol Buffers design by
 //  Sanjay Ghemawat, Jeff Dean, and others.
 
+
 #ifdef _MSC_VER
 #include <io.h>
 #else
@@ -295,10 +296,8 @@ static string CanonicalizePath(string path) {
 }
 
 static inline bool ContainsParentReference(const string& path) {
-  return path == ".." ||
-         HasPrefixString(path, "../") ||
-         HasSuffixString(path, "/..") ||
-         path.find("/../") != string::npos;
+  return path == ".." || HasPrefixString(path, "../") ||
+         HasSuffixString(path, "/..") || path.find("/../") != string::npos;
 }
 
 // Maps a file from an old location to a new one.  Typically, old_prefix is
@@ -328,8 +327,7 @@ static bool ApplyMapping(const string& filename,
       // We do not allow the file name to use "..".
       return false;
     }
-    if (HasPrefixString(filename, "/") ||
-        IsWindowsAbsolutePath(filename)) {
+    if (HasPrefixString(filename, "/") || IsWindowsAbsolutePath(filename)) {
       // This is an absolute path, so it isn't matched by the empty string.
       return false;
     }

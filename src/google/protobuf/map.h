@@ -865,14 +865,7 @@ class Map {
     size_type BucketNumber(const Key& k) const {
       // We inherit from hasher, so one-arg operator() provides a hash function.
       size_type h = (*const_cast<InnerMap*>(this))(k);
-      // To help prevent people from making assumptions about the hash function,
-      // we use the seed differently depending on NDEBUG.  The default hash
-      // function, the seeding, etc., are all likely to change in the future.
-#ifndef NDEBUG
-      return (h * (seed_ | 1)) & (num_buckets_ - 1);
-#else
       return (h + seed_) & (num_buckets_ - 1);
-#endif
     }
 
     bool IsMatch(const Key& k0, const Key& k1) const {
@@ -952,12 +945,16 @@ class Map {
 
  public:
   // Iterators
-  class const_iterator
-      : public std::iterator<std::forward_iterator_tag, value_type, ptrdiff_t,
-                             const value_type*, const value_type&> {
+  class const_iterator {
     typedef typename InnerMap::const_iterator InnerIt;
 
    public:
+    typedef std::forward_iterator_tag iterator_category;
+    typedef typename Map::value_type value_type;
+    typedef ptrdiff_t difference_type;
+    typedef const value_type* pointer;
+    typedef const value_type& reference;
+
     const_iterator() {}
     explicit const_iterator(const InnerIt& it) : it_(it) {}
 
@@ -983,10 +980,16 @@ class Map {
     InnerIt it_;
   };
 
-  class iterator : public std::iterator<std::forward_iterator_tag, value_type> {
+  class iterator {
     typedef typename InnerMap::iterator InnerIt;
 
    public:
+    typedef std::forward_iterator_tag iterator_category;
+    typedef typename Map::value_type value_type;
+    typedef ptrdiff_t difference_type;
+    typedef value_type* pointer;
+    typedef value_type& reference;
+
     iterator() {}
     explicit iterator(const InnerIt& it) : it_(it) {}
 

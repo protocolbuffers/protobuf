@@ -54,6 +54,9 @@ LIBPROTOBUF_EXPORT extern EnumValueDescriptorProtoDefaultTypeInternal _EnumValue
 class EnumValueOptions;
 class EnumValueOptionsDefaultTypeInternal;
 LIBPROTOBUF_EXPORT extern EnumValueOptionsDefaultTypeInternal _EnumValueOptions_default_instance_;
+class ExtensionRangeOptions;
+class ExtensionRangeOptionsDefaultTypeInternal;
+LIBPROTOBUF_EXPORT extern ExtensionRangeOptionsDefaultTypeInternal _ExtensionRangeOptions_default_instance_;
 class FieldDescriptorProto;
 class FieldDescriptorProtoDefaultTypeInternal;
 LIBPROTOBUF_EXPORT extern FieldDescriptorProtoDefaultTypeInternal _FieldDescriptorProto_default_instance_;
@@ -121,8 +124,9 @@ struct LIBPROTOBUF_EXPORT TableStruct {
   static const ::google::protobuf::internal::AuxillaryParseTableField aux[];
   static const ::google::protobuf::internal::ParseTable schema[];
   static const ::google::protobuf::uint32 offsets[];
+  static const ::google::protobuf::internal::FieldMetadata field_metadata[];
+  static const ::google::protobuf::internal::SerializationTable serialization_table[];
   static void InitDefaultsImpl();
-  static void Shutdown();
 };
 void LIBPROTOBUF_EXPORT AddDescriptors();
 void LIBPROTOBUF_EXPORT InitDefaults();
@@ -276,11 +280,24 @@ class LIBPROTOBUF_EXPORT FileDescriptorSet : public ::google::protobuf::Message 
     CopyFrom(from);
     return *this;
   }
+  #if LANG_CXX11
+  FileDescriptorSet(FileDescriptorSet&& from) noexcept
+    : FileDescriptorSet() {
+    *this = ::std::move(from);
+  }
 
+  inline FileDescriptorSet& operator=(FileDescriptorSet&& from) noexcept {
+    if (GetArenaNoVirtual() == from.GetArenaNoVirtual()) {
+      if (this != &from) InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+  #endif
   inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
     return _internal_metadata_.unknown_fields();
   }
-
   inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
     return _internal_metadata_.mutable_unknown_fields();
   }
@@ -296,6 +313,9 @@ class LIBPROTOBUF_EXPORT FileDescriptorSet : public ::google::protobuf::Message 
     0;
 
   void Swap(FileDescriptorSet* other);
+  friend void swap(FileDescriptorSet& a, FileDescriptorSet& b) {
+    a.Swap(&b);
+  }
 
   // implements Message ----------------------------------------------
 
@@ -371,11 +391,24 @@ class LIBPROTOBUF_EXPORT FileDescriptorProto : public ::google::protobuf::Messag
     CopyFrom(from);
     return *this;
   }
+  #if LANG_CXX11
+  FileDescriptorProto(FileDescriptorProto&& from) noexcept
+    : FileDescriptorProto() {
+    *this = ::std::move(from);
+  }
 
+  inline FileDescriptorProto& operator=(FileDescriptorProto&& from) noexcept {
+    if (GetArenaNoVirtual() == from.GetArenaNoVirtual()) {
+      if (this != &from) InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+  #endif
   inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
     return _internal_metadata_.unknown_fields();
   }
-
   inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
     return _internal_metadata_.mutable_unknown_fields();
   }
@@ -391,6 +424,9 @@ class LIBPROTOBUF_EXPORT FileDescriptorProto : public ::google::protobuf::Messag
     1;
 
   void Swap(FileDescriptorProto* other);
+  friend void swap(FileDescriptorProto& a, FileDescriptorProto& b) {
+    a.Swap(&b);
+  }
 
   // implements Message ----------------------------------------------
 
@@ -632,11 +668,24 @@ class LIBPROTOBUF_EXPORT DescriptorProto_ExtensionRange : public ::google::proto
     CopyFrom(from);
     return *this;
   }
+  #if LANG_CXX11
+  DescriptorProto_ExtensionRange(DescriptorProto_ExtensionRange&& from) noexcept
+    : DescriptorProto_ExtensionRange() {
+    *this = ::std::move(from);
+  }
 
+  inline DescriptorProto_ExtensionRange& operator=(DescriptorProto_ExtensionRange&& from) noexcept {
+    if (GetArenaNoVirtual() == from.GetArenaNoVirtual()) {
+      if (this != &from) InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+  #endif
   inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
     return _internal_metadata_.unknown_fields();
   }
-
   inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
     return _internal_metadata_.mutable_unknown_fields();
   }
@@ -652,6 +701,9 @@ class LIBPROTOBUF_EXPORT DescriptorProto_ExtensionRange : public ::google::proto
     2;
 
   void Swap(DescriptorProto_ExtensionRange* other);
+  friend void swap(DescriptorProto_ExtensionRange& a, DescriptorProto_ExtensionRange& b) {
+    a.Swap(&b);
+  }
 
   // implements Message ----------------------------------------------
 
@@ -693,6 +745,15 @@ class LIBPROTOBUF_EXPORT DescriptorProto_ExtensionRange : public ::google::proto
 
   // accessors -------------------------------------------------------
 
+  // optional .google.protobuf.ExtensionRangeOptions options = 3;
+  bool has_options() const;
+  void clear_options();
+  static const int kOptionsFieldNumber = 3;
+  const ::google::protobuf::ExtensionRangeOptions& options() const;
+  ::google::protobuf::ExtensionRangeOptions* mutable_options();
+  ::google::protobuf::ExtensionRangeOptions* release_options();
+  void set_allocated_options(::google::protobuf::ExtensionRangeOptions* options);
+
   // optional int32 start = 1;
   bool has_start() const;
   void clear_start();
@@ -713,10 +774,13 @@ class LIBPROTOBUF_EXPORT DescriptorProto_ExtensionRange : public ::google::proto
   void clear_has_start();
   void set_has_end();
   void clear_has_end();
+  void set_has_options();
+  void clear_has_options();
 
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
   ::google::protobuf::internal::HasBits<1> _has_bits_;
   mutable int _cached_size_;
+  ::google::protobuf::ExtensionRangeOptions* options_;
   ::google::protobuf::int32 start_;
   ::google::protobuf::int32 end_;
   friend struct protobuf_google_2fprotobuf_2fdescriptor_2eproto::TableStruct;
@@ -734,11 +798,24 @@ class LIBPROTOBUF_EXPORT DescriptorProto_ReservedRange : public ::google::protob
     CopyFrom(from);
     return *this;
   }
+  #if LANG_CXX11
+  DescriptorProto_ReservedRange(DescriptorProto_ReservedRange&& from) noexcept
+    : DescriptorProto_ReservedRange() {
+    *this = ::std::move(from);
+  }
 
+  inline DescriptorProto_ReservedRange& operator=(DescriptorProto_ReservedRange&& from) noexcept {
+    if (GetArenaNoVirtual() == from.GetArenaNoVirtual()) {
+      if (this != &from) InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+  #endif
   inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
     return _internal_metadata_.unknown_fields();
   }
-
   inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
     return _internal_metadata_.mutable_unknown_fields();
   }
@@ -754,6 +831,9 @@ class LIBPROTOBUF_EXPORT DescriptorProto_ReservedRange : public ::google::protob
     3;
 
   void Swap(DescriptorProto_ReservedRange* other);
+  friend void swap(DescriptorProto_ReservedRange& a, DescriptorProto_ReservedRange& b) {
+    a.Swap(&b);
+  }
 
   // implements Message ----------------------------------------------
 
@@ -836,11 +916,24 @@ class LIBPROTOBUF_EXPORT DescriptorProto : public ::google::protobuf::Message /*
     CopyFrom(from);
     return *this;
   }
+  #if LANG_CXX11
+  DescriptorProto(DescriptorProto&& from) noexcept
+    : DescriptorProto() {
+    *this = ::std::move(from);
+  }
 
+  inline DescriptorProto& operator=(DescriptorProto&& from) noexcept {
+    if (GetArenaNoVirtual() == from.GetArenaNoVirtual()) {
+      if (this != &from) InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+  #endif
   inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
     return _internal_metadata_.unknown_fields();
   }
-
   inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
     return _internal_metadata_.mutable_unknown_fields();
   }
@@ -856,6 +949,9 @@ class LIBPROTOBUF_EXPORT DescriptorProto : public ::google::protobuf::Message /*
     4;
 
   void Swap(DescriptorProto* other);
+  friend void swap(DescriptorProto& a, DescriptorProto& b) {
+    a.Swap(&b);
+  }
 
   // implements Message ----------------------------------------------
 
@@ -1054,6 +1150,120 @@ class LIBPROTOBUF_EXPORT DescriptorProto : public ::google::protobuf::Message /*
 };
 // -------------------------------------------------------------------
 
+class LIBPROTOBUF_EXPORT ExtensionRangeOptions : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.ExtensionRangeOptions) */ {
+ public:
+  ExtensionRangeOptions();
+  virtual ~ExtensionRangeOptions();
+
+  ExtensionRangeOptions(const ExtensionRangeOptions& from);
+
+  inline ExtensionRangeOptions& operator=(const ExtensionRangeOptions& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  #if LANG_CXX11
+  ExtensionRangeOptions(ExtensionRangeOptions&& from) noexcept
+    : ExtensionRangeOptions() {
+    *this = ::std::move(from);
+  }
+
+  inline ExtensionRangeOptions& operator=(ExtensionRangeOptions&& from) noexcept {
+    if (GetArenaNoVirtual() == from.GetArenaNoVirtual()) {
+      if (this != &from) InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+  #endif
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
+    return _internal_metadata_.unknown_fields();
+  }
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
+    return _internal_metadata_.mutable_unknown_fields();
+  }
+
+  static const ::google::protobuf::Descriptor* descriptor();
+  static const ExtensionRangeOptions& default_instance();
+
+  static inline const ExtensionRangeOptions* internal_default_instance() {
+    return reinterpret_cast<const ExtensionRangeOptions*>(
+               &_ExtensionRangeOptions_default_instance_);
+  }
+  static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
+    5;
+
+  void Swap(ExtensionRangeOptions* other);
+  friend void swap(ExtensionRangeOptions& a, ExtensionRangeOptions& b) {
+    a.Swap(&b);
+  }
+
+  // implements Message ----------------------------------------------
+
+  inline ExtensionRangeOptions* New() const PROTOBUF_FINAL { return New(NULL); }
+
+  ExtensionRangeOptions* New(::google::protobuf::Arena* arena) const PROTOBUF_FINAL;
+  void CopyFrom(const ::google::protobuf::Message& from) PROTOBUF_FINAL;
+  void MergeFrom(const ::google::protobuf::Message& from) PROTOBUF_FINAL;
+  void CopyFrom(const ExtensionRangeOptions& from);
+  void MergeFrom(const ExtensionRangeOptions& from);
+  void Clear() PROTOBUF_FINAL;
+  bool IsInitialized() const PROTOBUF_FINAL;
+
+  size_t ByteSizeLong() const PROTOBUF_FINAL;
+  bool MergePartialFromCodedStream(
+      ::google::protobuf::io::CodedInputStream* input) PROTOBUF_FINAL;
+  void SerializeWithCachedSizes(
+      ::google::protobuf::io::CodedOutputStream* output) const PROTOBUF_FINAL;
+  ::google::protobuf::uint8* InternalSerializeWithCachedSizesToArray(
+      bool deterministic, ::google::protobuf::uint8* target) const PROTOBUF_FINAL;
+  int GetCachedSize() const PROTOBUF_FINAL { return _cached_size_; }
+  private:
+  void SharedCtor();
+  void SharedDtor();
+  void SetCachedSize(int size) const PROTOBUF_FINAL;
+  void InternalSwap(ExtensionRangeOptions* other);
+  private:
+  inline ::google::protobuf::Arena* GetArenaNoVirtual() const {
+    return NULL;
+  }
+  inline void* MaybeArenaPtr() const {
+    return NULL;
+  }
+  public:
+
+  ::google::protobuf::Metadata GetMetadata() const PROTOBUF_FINAL;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
+  int uninterpreted_option_size() const;
+  void clear_uninterpreted_option();
+  static const int kUninterpretedOptionFieldNumber = 999;
+  const ::google::protobuf::UninterpretedOption& uninterpreted_option(int index) const;
+  ::google::protobuf::UninterpretedOption* mutable_uninterpreted_option(int index);
+  ::google::protobuf::UninterpretedOption* add_uninterpreted_option();
+  ::google::protobuf::RepeatedPtrField< ::google::protobuf::UninterpretedOption >*
+      mutable_uninterpreted_option();
+  const ::google::protobuf::RepeatedPtrField< ::google::protobuf::UninterpretedOption >&
+      uninterpreted_option() const;
+
+  GOOGLE_PROTOBUF_EXTENSION_ACCESSORS(ExtensionRangeOptions)
+  // @@protoc_insertion_point(class_scope:google.protobuf.ExtensionRangeOptions)
+ private:
+
+  ::google::protobuf::internal::ExtensionSet _extensions_;
+
+  ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
+  ::google::protobuf::internal::HasBits<1> _has_bits_;
+  mutable int _cached_size_;
+  ::google::protobuf::RepeatedPtrField< ::google::protobuf::UninterpretedOption > uninterpreted_option_;
+  friend struct protobuf_google_2fprotobuf_2fdescriptor_2eproto::TableStruct;
+};
+// -------------------------------------------------------------------
+
 class LIBPROTOBUF_EXPORT FieldDescriptorProto : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:google.protobuf.FieldDescriptorProto) */ {
  public:
   FieldDescriptorProto();
@@ -1065,11 +1275,24 @@ class LIBPROTOBUF_EXPORT FieldDescriptorProto : public ::google::protobuf::Messa
     CopyFrom(from);
     return *this;
   }
+  #if LANG_CXX11
+  FieldDescriptorProto(FieldDescriptorProto&& from) noexcept
+    : FieldDescriptorProto() {
+    *this = ::std::move(from);
+  }
 
+  inline FieldDescriptorProto& operator=(FieldDescriptorProto&& from) noexcept {
+    if (GetArenaNoVirtual() == from.GetArenaNoVirtual()) {
+      if (this != &from) InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+  #endif
   inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
     return _internal_metadata_.unknown_fields();
   }
-
   inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
     return _internal_metadata_.mutable_unknown_fields();
   }
@@ -1082,9 +1305,12 @@ class LIBPROTOBUF_EXPORT FieldDescriptorProto : public ::google::protobuf::Messa
                &_FieldDescriptorProto_default_instance_);
   }
   static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
-    5;
+    6;
 
   void Swap(FieldDescriptorProto* other);
+  friend void swap(FieldDescriptorProto& a, FieldDescriptorProto& b) {
+    a.Swap(&b);
+  }
 
   // implements Message ----------------------------------------------
 
@@ -1375,11 +1601,24 @@ class LIBPROTOBUF_EXPORT OneofDescriptorProto : public ::google::protobuf::Messa
     CopyFrom(from);
     return *this;
   }
+  #if LANG_CXX11
+  OneofDescriptorProto(OneofDescriptorProto&& from) noexcept
+    : OneofDescriptorProto() {
+    *this = ::std::move(from);
+  }
 
+  inline OneofDescriptorProto& operator=(OneofDescriptorProto&& from) noexcept {
+    if (GetArenaNoVirtual() == from.GetArenaNoVirtual()) {
+      if (this != &from) InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+  #endif
   inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
     return _internal_metadata_.unknown_fields();
   }
-
   inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
     return _internal_metadata_.mutable_unknown_fields();
   }
@@ -1392,9 +1631,12 @@ class LIBPROTOBUF_EXPORT OneofDescriptorProto : public ::google::protobuf::Messa
                &_OneofDescriptorProto_default_instance_);
   }
   static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
-    6;
+    7;
 
   void Swap(OneofDescriptorProto* other);
+  friend void swap(OneofDescriptorProto& a, OneofDescriptorProto& b) {
+    a.Swap(&b);
+  }
 
   // implements Message ----------------------------------------------
 
@@ -1487,11 +1729,24 @@ class LIBPROTOBUF_EXPORT EnumDescriptorProto : public ::google::protobuf::Messag
     CopyFrom(from);
     return *this;
   }
+  #if LANG_CXX11
+  EnumDescriptorProto(EnumDescriptorProto&& from) noexcept
+    : EnumDescriptorProto() {
+    *this = ::std::move(from);
+  }
 
+  inline EnumDescriptorProto& operator=(EnumDescriptorProto&& from) noexcept {
+    if (GetArenaNoVirtual() == from.GetArenaNoVirtual()) {
+      if (this != &from) InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+  #endif
   inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
     return _internal_metadata_.unknown_fields();
   }
-
   inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
     return _internal_metadata_.mutable_unknown_fields();
   }
@@ -1504,9 +1759,12 @@ class LIBPROTOBUF_EXPORT EnumDescriptorProto : public ::google::protobuf::Messag
                &_EnumDescriptorProto_default_instance_);
   }
   static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
-    7;
+    8;
 
   void Swap(EnumDescriptorProto* other);
+  friend void swap(EnumDescriptorProto& a, EnumDescriptorProto& b) {
+    a.Swap(&b);
+  }
 
   // implements Message ----------------------------------------------
 
@@ -1612,11 +1870,24 @@ class LIBPROTOBUF_EXPORT EnumValueDescriptorProto : public ::google::protobuf::M
     CopyFrom(from);
     return *this;
   }
+  #if LANG_CXX11
+  EnumValueDescriptorProto(EnumValueDescriptorProto&& from) noexcept
+    : EnumValueDescriptorProto() {
+    *this = ::std::move(from);
+  }
 
+  inline EnumValueDescriptorProto& operator=(EnumValueDescriptorProto&& from) noexcept {
+    if (GetArenaNoVirtual() == from.GetArenaNoVirtual()) {
+      if (this != &from) InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+  #endif
   inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
     return _internal_metadata_.unknown_fields();
   }
-
   inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
     return _internal_metadata_.mutable_unknown_fields();
   }
@@ -1629,9 +1900,12 @@ class LIBPROTOBUF_EXPORT EnumValueDescriptorProto : public ::google::protobuf::M
                &_EnumValueDescriptorProto_default_instance_);
   }
   static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
-    8;
+    9;
 
   void Swap(EnumValueDescriptorProto* other);
+  friend void swap(EnumValueDescriptorProto& a, EnumValueDescriptorProto& b) {
+    a.Swap(&b);
+  }
 
   // implements Message ----------------------------------------------
 
@@ -1734,11 +2008,24 @@ class LIBPROTOBUF_EXPORT ServiceDescriptorProto : public ::google::protobuf::Mes
     CopyFrom(from);
     return *this;
   }
+  #if LANG_CXX11
+  ServiceDescriptorProto(ServiceDescriptorProto&& from) noexcept
+    : ServiceDescriptorProto() {
+    *this = ::std::move(from);
+  }
 
+  inline ServiceDescriptorProto& operator=(ServiceDescriptorProto&& from) noexcept {
+    if (GetArenaNoVirtual() == from.GetArenaNoVirtual()) {
+      if (this != &from) InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+  #endif
   inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
     return _internal_metadata_.unknown_fields();
   }
-
   inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
     return _internal_metadata_.mutable_unknown_fields();
   }
@@ -1751,9 +2038,12 @@ class LIBPROTOBUF_EXPORT ServiceDescriptorProto : public ::google::protobuf::Mes
                &_ServiceDescriptorProto_default_instance_);
   }
   static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
-    9;
+    10;
 
   void Swap(ServiceDescriptorProto* other);
+  friend void swap(ServiceDescriptorProto& a, ServiceDescriptorProto& b) {
+    a.Swap(&b);
+  }
 
   // implements Message ----------------------------------------------
 
@@ -1859,11 +2149,24 @@ class LIBPROTOBUF_EXPORT MethodDescriptorProto : public ::google::protobuf::Mess
     CopyFrom(from);
     return *this;
   }
+  #if LANG_CXX11
+  MethodDescriptorProto(MethodDescriptorProto&& from) noexcept
+    : MethodDescriptorProto() {
+    *this = ::std::move(from);
+  }
 
+  inline MethodDescriptorProto& operator=(MethodDescriptorProto&& from) noexcept {
+    if (GetArenaNoVirtual() == from.GetArenaNoVirtual()) {
+      if (this != &from) InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+  #endif
   inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
     return _internal_metadata_.unknown_fields();
   }
-
   inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
     return _internal_metadata_.mutable_unknown_fields();
   }
@@ -1876,9 +2179,12 @@ class LIBPROTOBUF_EXPORT MethodDescriptorProto : public ::google::protobuf::Mess
                &_MethodDescriptorProto_default_instance_);
   }
   static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
-    10;
+    11;
 
   void Swap(MethodDescriptorProto* other);
+  friend void swap(MethodDescriptorProto& a, MethodDescriptorProto& b) {
+    a.Swap(&b);
+  }
 
   // implements Message ----------------------------------------------
 
@@ -2027,11 +2333,24 @@ class LIBPROTOBUF_EXPORT FileOptions : public ::google::protobuf::Message /* @@p
     CopyFrom(from);
     return *this;
   }
+  #if LANG_CXX11
+  FileOptions(FileOptions&& from) noexcept
+    : FileOptions() {
+    *this = ::std::move(from);
+  }
 
+  inline FileOptions& operator=(FileOptions&& from) noexcept {
+    if (GetArenaNoVirtual() == from.GetArenaNoVirtual()) {
+      if (this != &from) InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+  #endif
   inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
     return _internal_metadata_.unknown_fields();
   }
-
   inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
     return _internal_metadata_.mutable_unknown_fields();
   }
@@ -2044,9 +2363,12 @@ class LIBPROTOBUF_EXPORT FileOptions : public ::google::protobuf::Message /* @@p
                &_FileOptions_default_instance_);
   }
   static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
-    11;
+    12;
 
   void Swap(FileOptions* other);
+  friend void swap(FileOptions& a, FileOptions& b) {
+    a.Swap(&b);
+  }
 
   // implements Message ----------------------------------------------
 
@@ -2369,11 +2691,24 @@ class LIBPROTOBUF_EXPORT MessageOptions : public ::google::protobuf::Message /* 
     CopyFrom(from);
     return *this;
   }
+  #if LANG_CXX11
+  MessageOptions(MessageOptions&& from) noexcept
+    : MessageOptions() {
+    *this = ::std::move(from);
+  }
 
+  inline MessageOptions& operator=(MessageOptions&& from) noexcept {
+    if (GetArenaNoVirtual() == from.GetArenaNoVirtual()) {
+      if (this != &from) InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+  #endif
   inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
     return _internal_metadata_.unknown_fields();
   }
-
   inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
     return _internal_metadata_.mutable_unknown_fields();
   }
@@ -2386,9 +2721,12 @@ class LIBPROTOBUF_EXPORT MessageOptions : public ::google::protobuf::Message /* 
                &_MessageOptions_default_instance_);
   }
   static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
-    12;
+    13;
 
   void Swap(MessageOptions* other);
+  friend void swap(MessageOptions& a, MessageOptions& b) {
+    a.Swap(&b);
+  }
 
   // implements Message ----------------------------------------------
 
@@ -2507,11 +2845,24 @@ class LIBPROTOBUF_EXPORT FieldOptions : public ::google::protobuf::Message /* @@
     CopyFrom(from);
     return *this;
   }
+  #if LANG_CXX11
+  FieldOptions(FieldOptions&& from) noexcept
+    : FieldOptions() {
+    *this = ::std::move(from);
+  }
 
+  inline FieldOptions& operator=(FieldOptions&& from) noexcept {
+    if (GetArenaNoVirtual() == from.GetArenaNoVirtual()) {
+      if (this != &from) InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+  #endif
   inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
     return _internal_metadata_.unknown_fields();
   }
-
   inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
     return _internal_metadata_.mutable_unknown_fields();
   }
@@ -2524,9 +2875,12 @@ class LIBPROTOBUF_EXPORT FieldOptions : public ::google::protobuf::Message /* @@
                &_FieldOptions_default_instance_);
   }
   static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
-    13;
+    14;
 
   void Swap(FieldOptions* other);
+  friend void swap(FieldOptions& a, FieldOptions& b) {
+    a.Swap(&b);
+  }
 
   // implements Message ----------------------------------------------
 
@@ -2721,11 +3075,24 @@ class LIBPROTOBUF_EXPORT OneofOptions : public ::google::protobuf::Message /* @@
     CopyFrom(from);
     return *this;
   }
+  #if LANG_CXX11
+  OneofOptions(OneofOptions&& from) noexcept
+    : OneofOptions() {
+    *this = ::std::move(from);
+  }
 
+  inline OneofOptions& operator=(OneofOptions&& from) noexcept {
+    if (GetArenaNoVirtual() == from.GetArenaNoVirtual()) {
+      if (this != &from) InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+  #endif
   inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
     return _internal_metadata_.unknown_fields();
   }
-
   inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
     return _internal_metadata_.mutable_unknown_fields();
   }
@@ -2738,9 +3105,12 @@ class LIBPROTOBUF_EXPORT OneofOptions : public ::google::protobuf::Message /* @@
                &_OneofOptions_default_instance_);
   }
   static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
-    14;
+    15;
 
   void Swap(OneofOptions* other);
+  friend void swap(OneofOptions& a, OneofOptions& b) {
+    a.Swap(&b);
+  }
 
   // implements Message ----------------------------------------------
 
@@ -2819,11 +3189,24 @@ class LIBPROTOBUF_EXPORT EnumOptions : public ::google::protobuf::Message /* @@p
     CopyFrom(from);
     return *this;
   }
+  #if LANG_CXX11
+  EnumOptions(EnumOptions&& from) noexcept
+    : EnumOptions() {
+    *this = ::std::move(from);
+  }
 
+  inline EnumOptions& operator=(EnumOptions&& from) noexcept {
+    if (GetArenaNoVirtual() == from.GetArenaNoVirtual()) {
+      if (this != &from) InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+  #endif
   inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
     return _internal_metadata_.unknown_fields();
   }
-
   inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
     return _internal_metadata_.mutable_unknown_fields();
   }
@@ -2836,9 +3219,12 @@ class LIBPROTOBUF_EXPORT EnumOptions : public ::google::protobuf::Message /* @@p
                &_EnumOptions_default_instance_);
   }
   static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
-    15;
+    16;
 
   void Swap(EnumOptions* other);
+  friend void swap(EnumOptions& a, EnumOptions& b) {
+    a.Swap(&b);
+  }
 
   // implements Message ----------------------------------------------
 
@@ -2937,11 +3323,24 @@ class LIBPROTOBUF_EXPORT EnumValueOptions : public ::google::protobuf::Message /
     CopyFrom(from);
     return *this;
   }
+  #if LANG_CXX11
+  EnumValueOptions(EnumValueOptions&& from) noexcept
+    : EnumValueOptions() {
+    *this = ::std::move(from);
+  }
 
+  inline EnumValueOptions& operator=(EnumValueOptions&& from) noexcept {
+    if (GetArenaNoVirtual() == from.GetArenaNoVirtual()) {
+      if (this != &from) InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+  #endif
   inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
     return _internal_metadata_.unknown_fields();
   }
-
   inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
     return _internal_metadata_.mutable_unknown_fields();
   }
@@ -2954,9 +3353,12 @@ class LIBPROTOBUF_EXPORT EnumValueOptions : public ::google::protobuf::Message /
                &_EnumValueOptions_default_instance_);
   }
   static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
-    16;
+    17;
 
   void Swap(EnumValueOptions* other);
+  friend void swap(EnumValueOptions& a, EnumValueOptions& b) {
+    a.Swap(&b);
+  }
 
   // implements Message ----------------------------------------------
 
@@ -3045,11 +3447,24 @@ class LIBPROTOBUF_EXPORT ServiceOptions : public ::google::protobuf::Message /* 
     CopyFrom(from);
     return *this;
   }
+  #if LANG_CXX11
+  ServiceOptions(ServiceOptions&& from) noexcept
+    : ServiceOptions() {
+    *this = ::std::move(from);
+  }
 
+  inline ServiceOptions& operator=(ServiceOptions&& from) noexcept {
+    if (GetArenaNoVirtual() == from.GetArenaNoVirtual()) {
+      if (this != &from) InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+  #endif
   inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
     return _internal_metadata_.unknown_fields();
   }
-
   inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
     return _internal_metadata_.mutable_unknown_fields();
   }
@@ -3062,9 +3477,12 @@ class LIBPROTOBUF_EXPORT ServiceOptions : public ::google::protobuf::Message /* 
                &_ServiceOptions_default_instance_);
   }
   static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
-    17;
+    18;
 
   void Swap(ServiceOptions* other);
+  friend void swap(ServiceOptions& a, ServiceOptions& b) {
+    a.Swap(&b);
+  }
 
   // implements Message ----------------------------------------------
 
@@ -3153,11 +3571,24 @@ class LIBPROTOBUF_EXPORT MethodOptions : public ::google::protobuf::Message /* @
     CopyFrom(from);
     return *this;
   }
+  #if LANG_CXX11
+  MethodOptions(MethodOptions&& from) noexcept
+    : MethodOptions() {
+    *this = ::std::move(from);
+  }
 
+  inline MethodOptions& operator=(MethodOptions&& from) noexcept {
+    if (GetArenaNoVirtual() == from.GetArenaNoVirtual()) {
+      if (this != &from) InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+  #endif
   inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
     return _internal_metadata_.unknown_fields();
   }
-
   inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
     return _internal_metadata_.mutable_unknown_fields();
   }
@@ -3170,9 +3601,12 @@ class LIBPROTOBUF_EXPORT MethodOptions : public ::google::protobuf::Message /* @
                &_MethodOptions_default_instance_);
   }
   static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
-    18;
+    19;
 
   void Swap(MethodOptions* other);
+  friend void swap(MethodOptions& a, MethodOptions& b) {
+    a.Swap(&b);
+  }
 
   // implements Message ----------------------------------------------
 
@@ -3299,11 +3733,24 @@ class LIBPROTOBUF_EXPORT UninterpretedOption_NamePart : public ::google::protobu
     CopyFrom(from);
     return *this;
   }
+  #if LANG_CXX11
+  UninterpretedOption_NamePart(UninterpretedOption_NamePart&& from) noexcept
+    : UninterpretedOption_NamePart() {
+    *this = ::std::move(from);
+  }
 
+  inline UninterpretedOption_NamePart& operator=(UninterpretedOption_NamePart&& from) noexcept {
+    if (GetArenaNoVirtual() == from.GetArenaNoVirtual()) {
+      if (this != &from) InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+  #endif
   inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
     return _internal_metadata_.unknown_fields();
   }
-
   inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
     return _internal_metadata_.mutable_unknown_fields();
   }
@@ -3316,9 +3763,12 @@ class LIBPROTOBUF_EXPORT UninterpretedOption_NamePart : public ::google::protobu
                &_UninterpretedOption_NamePart_default_instance_);
   }
   static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
-    19;
+    20;
 
   void Swap(UninterpretedOption_NamePart* other);
+  friend void swap(UninterpretedOption_NamePart& a, UninterpretedOption_NamePart& b) {
+    a.Swap(&b);
+  }
 
   // implements Message ----------------------------------------------
 
@@ -3412,11 +3862,24 @@ class LIBPROTOBUF_EXPORT UninterpretedOption : public ::google::protobuf::Messag
     CopyFrom(from);
     return *this;
   }
+  #if LANG_CXX11
+  UninterpretedOption(UninterpretedOption&& from) noexcept
+    : UninterpretedOption() {
+    *this = ::std::move(from);
+  }
 
+  inline UninterpretedOption& operator=(UninterpretedOption&& from) noexcept {
+    if (GetArenaNoVirtual() == from.GetArenaNoVirtual()) {
+      if (this != &from) InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+  #endif
   inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
     return _internal_metadata_.unknown_fields();
   }
-
   inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
     return _internal_metadata_.mutable_unknown_fields();
   }
@@ -3429,9 +3892,12 @@ class LIBPROTOBUF_EXPORT UninterpretedOption : public ::google::protobuf::Messag
                &_UninterpretedOption_default_instance_);
   }
   static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
-    20;
+    21;
 
   void Swap(UninterpretedOption* other);
+  friend void swap(UninterpretedOption& a, UninterpretedOption& b) {
+    a.Swap(&b);
+  }
 
   // implements Message ----------------------------------------------
 
@@ -3593,11 +4059,24 @@ class LIBPROTOBUF_EXPORT SourceCodeInfo_Location : public ::google::protobuf::Me
     CopyFrom(from);
     return *this;
   }
+  #if LANG_CXX11
+  SourceCodeInfo_Location(SourceCodeInfo_Location&& from) noexcept
+    : SourceCodeInfo_Location() {
+    *this = ::std::move(from);
+  }
 
+  inline SourceCodeInfo_Location& operator=(SourceCodeInfo_Location&& from) noexcept {
+    if (GetArenaNoVirtual() == from.GetArenaNoVirtual()) {
+      if (this != &from) InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+  #endif
   inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
     return _internal_metadata_.unknown_fields();
   }
-
   inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
     return _internal_metadata_.mutable_unknown_fields();
   }
@@ -3610,9 +4089,12 @@ class LIBPROTOBUF_EXPORT SourceCodeInfo_Location : public ::google::protobuf::Me
                &_SourceCodeInfo_Location_default_instance_);
   }
   static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
-    21;
+    22;
 
   void Swap(SourceCodeInfo_Location* other);
+  friend void swap(SourceCodeInfo_Location& a, SourceCodeInfo_Location& b) {
+    a.Swap(&b);
+  }
 
   // implements Message ----------------------------------------------
 
@@ -3762,11 +4244,24 @@ class LIBPROTOBUF_EXPORT SourceCodeInfo : public ::google::protobuf::Message /* 
     CopyFrom(from);
     return *this;
   }
+  #if LANG_CXX11
+  SourceCodeInfo(SourceCodeInfo&& from) noexcept
+    : SourceCodeInfo() {
+    *this = ::std::move(from);
+  }
 
+  inline SourceCodeInfo& operator=(SourceCodeInfo&& from) noexcept {
+    if (GetArenaNoVirtual() == from.GetArenaNoVirtual()) {
+      if (this != &from) InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+  #endif
   inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
     return _internal_metadata_.unknown_fields();
   }
-
   inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
     return _internal_metadata_.mutable_unknown_fields();
   }
@@ -3779,9 +4274,12 @@ class LIBPROTOBUF_EXPORT SourceCodeInfo : public ::google::protobuf::Message /* 
                &_SourceCodeInfo_default_instance_);
   }
   static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
-    22;
+    23;
 
   void Swap(SourceCodeInfo* other);
+  friend void swap(SourceCodeInfo& a, SourceCodeInfo& b) {
+    a.Swap(&b);
+  }
 
   // implements Message ----------------------------------------------
 
@@ -3859,11 +4357,24 @@ class LIBPROTOBUF_EXPORT GeneratedCodeInfo_Annotation : public ::google::protobu
     CopyFrom(from);
     return *this;
   }
+  #if LANG_CXX11
+  GeneratedCodeInfo_Annotation(GeneratedCodeInfo_Annotation&& from) noexcept
+    : GeneratedCodeInfo_Annotation() {
+    *this = ::std::move(from);
+  }
 
+  inline GeneratedCodeInfo_Annotation& operator=(GeneratedCodeInfo_Annotation&& from) noexcept {
+    if (GetArenaNoVirtual() == from.GetArenaNoVirtual()) {
+      if (this != &from) InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+  #endif
   inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
     return _internal_metadata_.unknown_fields();
   }
-
   inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
     return _internal_metadata_.mutable_unknown_fields();
   }
@@ -3876,9 +4387,12 @@ class LIBPROTOBUF_EXPORT GeneratedCodeInfo_Annotation : public ::google::protobu
                &_GeneratedCodeInfo_Annotation_default_instance_);
   }
   static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
-    23;
+    24;
 
   void Swap(GeneratedCodeInfo_Annotation* other);
+  friend void swap(GeneratedCodeInfo_Annotation& a, GeneratedCodeInfo_Annotation& b) {
+    a.Swap(&b);
+  }
 
   // implements Message ----------------------------------------------
 
@@ -3993,11 +4507,24 @@ class LIBPROTOBUF_EXPORT GeneratedCodeInfo : public ::google::protobuf::Message 
     CopyFrom(from);
     return *this;
   }
+  #if LANG_CXX11
+  GeneratedCodeInfo(GeneratedCodeInfo&& from) noexcept
+    : GeneratedCodeInfo() {
+    *this = ::std::move(from);
+  }
 
+  inline GeneratedCodeInfo& operator=(GeneratedCodeInfo&& from) noexcept {
+    if (GetArenaNoVirtual() == from.GetArenaNoVirtual()) {
+      if (this != &from) InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+  #endif
   inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
     return _internal_metadata_.unknown_fields();
   }
-
   inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
     return _internal_metadata_.mutable_unknown_fields();
   }
@@ -4010,9 +4537,12 @@ class LIBPROTOBUF_EXPORT GeneratedCodeInfo : public ::google::protobuf::Message 
                &_GeneratedCodeInfo_default_instance_);
   }
   static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
-    24;
+    25;
 
   void Swap(GeneratedCodeInfo* other);
+  friend void swap(GeneratedCodeInfo& a, GeneratedCodeInfo& b) {
+    a.Swap(&b);
+  }
 
   // implements Message ----------------------------------------------
 
@@ -4083,6 +4613,10 @@ class LIBPROTOBUF_EXPORT GeneratedCodeInfo : public ::google::protobuf::Message 
 // ===================================================================
 
 #if !PROTOBUF_INLINE_NOT_IN_HEADERS
+#ifdef __GNUC__
+  #pragma GCC diagnostic push
+  #pragma GCC diagnostic ignored "-Wstrict-aliasing"
+#endif  // __GNUC__
 // FileDescriptorSet
 
 // repeated .google.protobuf.FileDescriptorProto file = 1;
@@ -4509,9 +5043,10 @@ inline void FileDescriptorProto::clear_options() {
   clear_has_options();
 }
 inline const ::google::protobuf::FileOptions& FileDescriptorProto::options() const {
+  const ::google::protobuf::FileOptions* p = options_;
   // @@protoc_insertion_point(field_get:google.protobuf.FileDescriptorProto.options)
-  return options_ != NULL ? *options_
-                         : *::google::protobuf::FileOptions::internal_default_instance();
+  return p != NULL ? *p : *reinterpret_cast<const ::google::protobuf::FileOptions*>(
+      &::google::protobuf::_FileOptions_default_instance_);
 }
 inline ::google::protobuf::FileOptions* FileDescriptorProto::mutable_options() {
   set_has_options();
@@ -4554,9 +5089,10 @@ inline void FileDescriptorProto::clear_source_code_info() {
   clear_has_source_code_info();
 }
 inline const ::google::protobuf::SourceCodeInfo& FileDescriptorProto::source_code_info() const {
+  const ::google::protobuf::SourceCodeInfo* p = source_code_info_;
   // @@protoc_insertion_point(field_get:google.protobuf.FileDescriptorProto.source_code_info)
-  return source_code_info_ != NULL ? *source_code_info_
-                         : *::google::protobuf::SourceCodeInfo::internal_default_instance();
+  return p != NULL ? *p : *reinterpret_cast<const ::google::protobuf::SourceCodeInfo*>(
+      &::google::protobuf::_SourceCodeInfo_default_instance_);
 }
 inline ::google::protobuf::SourceCodeInfo* FileDescriptorProto::mutable_source_code_info() {
   set_has_source_code_info();
@@ -4653,13 +5189,13 @@ inline void FileDescriptorProto::set_allocated_syntax(::std::string* syntax) {
 
 // optional int32 start = 1;
 inline bool DescriptorProto_ExtensionRange::has_start() const {
-  return (_has_bits_[0] & 0x00000001u) != 0;
+  return (_has_bits_[0] & 0x00000002u) != 0;
 }
 inline void DescriptorProto_ExtensionRange::set_has_start() {
-  _has_bits_[0] |= 0x00000001u;
+  _has_bits_[0] |= 0x00000002u;
 }
 inline void DescriptorProto_ExtensionRange::clear_has_start() {
-  _has_bits_[0] &= ~0x00000001u;
+  _has_bits_[0] &= ~0x00000002u;
 }
 inline void DescriptorProto_ExtensionRange::clear_start() {
   start_ = 0;
@@ -4677,13 +5213,13 @@ inline void DescriptorProto_ExtensionRange::set_start(::google::protobuf::int32 
 
 // optional int32 end = 2;
 inline bool DescriptorProto_ExtensionRange::has_end() const {
-  return (_has_bits_[0] & 0x00000002u) != 0;
+  return (_has_bits_[0] & 0x00000004u) != 0;
 }
 inline void DescriptorProto_ExtensionRange::set_has_end() {
-  _has_bits_[0] |= 0x00000002u;
+  _has_bits_[0] |= 0x00000004u;
 }
 inline void DescriptorProto_ExtensionRange::clear_has_end() {
-  _has_bits_[0] &= ~0x00000002u;
+  _has_bits_[0] &= ~0x00000004u;
 }
 inline void DescriptorProto_ExtensionRange::clear_end() {
   end_ = 0;
@@ -4697,6 +5233,52 @@ inline void DescriptorProto_ExtensionRange::set_end(::google::protobuf::int32 va
   set_has_end();
   end_ = value;
   // @@protoc_insertion_point(field_set:google.protobuf.DescriptorProto.ExtensionRange.end)
+}
+
+// optional .google.protobuf.ExtensionRangeOptions options = 3;
+inline bool DescriptorProto_ExtensionRange::has_options() const {
+  return (_has_bits_[0] & 0x00000001u) != 0;
+}
+inline void DescriptorProto_ExtensionRange::set_has_options() {
+  _has_bits_[0] |= 0x00000001u;
+}
+inline void DescriptorProto_ExtensionRange::clear_has_options() {
+  _has_bits_[0] &= ~0x00000001u;
+}
+inline void DescriptorProto_ExtensionRange::clear_options() {
+  if (options_ != NULL) options_->::google::protobuf::ExtensionRangeOptions::Clear();
+  clear_has_options();
+}
+inline const ::google::protobuf::ExtensionRangeOptions& DescriptorProto_ExtensionRange::options() const {
+  const ::google::protobuf::ExtensionRangeOptions* p = options_;
+  // @@protoc_insertion_point(field_get:google.protobuf.DescriptorProto.ExtensionRange.options)
+  return p != NULL ? *p : *reinterpret_cast<const ::google::protobuf::ExtensionRangeOptions*>(
+      &::google::protobuf::_ExtensionRangeOptions_default_instance_);
+}
+inline ::google::protobuf::ExtensionRangeOptions* DescriptorProto_ExtensionRange::mutable_options() {
+  set_has_options();
+  if (options_ == NULL) {
+    options_ = new ::google::protobuf::ExtensionRangeOptions;
+  }
+  // @@protoc_insertion_point(field_mutable:google.protobuf.DescriptorProto.ExtensionRange.options)
+  return options_;
+}
+inline ::google::protobuf::ExtensionRangeOptions* DescriptorProto_ExtensionRange::release_options() {
+  // @@protoc_insertion_point(field_release:google.protobuf.DescriptorProto.ExtensionRange.options)
+  clear_has_options();
+  ::google::protobuf::ExtensionRangeOptions* temp = options_;
+  options_ = NULL;
+  return temp;
+}
+inline void DescriptorProto_ExtensionRange::set_allocated_options(::google::protobuf::ExtensionRangeOptions* options) {
+  delete options_;
+  options_ = options;
+  if (options) {
+    set_has_options();
+  } else {
+    clear_has_options();
+  }
+  // @@protoc_insertion_point(field_set_allocated:google.protobuf.DescriptorProto.ExtensionRange.options)
 }
 
 // -------------------------------------------------------------------
@@ -5013,9 +5595,10 @@ inline void DescriptorProto::clear_options() {
   clear_has_options();
 }
 inline const ::google::protobuf::MessageOptions& DescriptorProto::options() const {
+  const ::google::protobuf::MessageOptions* p = options_;
   // @@protoc_insertion_point(field_get:google.protobuf.DescriptorProto.options)
-  return options_ != NULL ? *options_
-                         : *::google::protobuf::MessageOptions::internal_default_instance();
+  return p != NULL ? *p : *reinterpret_cast<const ::google::protobuf::MessageOptions*>(
+      &::google::protobuf::_MessageOptions_default_instance_);
 }
 inline ::google::protobuf::MessageOptions* DescriptorProto::mutable_options() {
   set_has_options();
@@ -5140,6 +5723,40 @@ inline ::google::protobuf::RepeatedPtrField< ::std::string>*
 DescriptorProto::mutable_reserved_name() {
   // @@protoc_insertion_point(field_mutable_list:google.protobuf.DescriptorProto.reserved_name)
   return &reserved_name_;
+}
+
+// -------------------------------------------------------------------
+
+// ExtensionRangeOptions
+
+// repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
+inline int ExtensionRangeOptions::uninterpreted_option_size() const {
+  return uninterpreted_option_.size();
+}
+inline void ExtensionRangeOptions::clear_uninterpreted_option() {
+  uninterpreted_option_.Clear();
+}
+inline const ::google::protobuf::UninterpretedOption& ExtensionRangeOptions::uninterpreted_option(int index) const {
+  // @@protoc_insertion_point(field_get:google.protobuf.ExtensionRangeOptions.uninterpreted_option)
+  return uninterpreted_option_.Get(index);
+}
+inline ::google::protobuf::UninterpretedOption* ExtensionRangeOptions::mutable_uninterpreted_option(int index) {
+  // @@protoc_insertion_point(field_mutable:google.protobuf.ExtensionRangeOptions.uninterpreted_option)
+  return uninterpreted_option_.Mutable(index);
+}
+inline ::google::protobuf::UninterpretedOption* ExtensionRangeOptions::add_uninterpreted_option() {
+  // @@protoc_insertion_point(field_add:google.protobuf.ExtensionRangeOptions.uninterpreted_option)
+  return uninterpreted_option_.Add();
+}
+inline ::google::protobuf::RepeatedPtrField< ::google::protobuf::UninterpretedOption >*
+ExtensionRangeOptions::mutable_uninterpreted_option() {
+  // @@protoc_insertion_point(field_mutable_list:google.protobuf.ExtensionRangeOptions.uninterpreted_option)
+  return &uninterpreted_option_;
+}
+inline const ::google::protobuf::RepeatedPtrField< ::google::protobuf::UninterpretedOption >&
+ExtensionRangeOptions::uninterpreted_option() const {
+  // @@protoc_insertion_point(field_list:google.protobuf.ExtensionRangeOptions.uninterpreted_option)
+  return uninterpreted_option_;
 }
 
 // -------------------------------------------------------------------
@@ -5574,9 +6191,10 @@ inline void FieldDescriptorProto::clear_options() {
   clear_has_options();
 }
 inline const ::google::protobuf::FieldOptions& FieldDescriptorProto::options() const {
+  const ::google::protobuf::FieldOptions* p = options_;
   // @@protoc_insertion_point(field_get:google.protobuf.FieldDescriptorProto.options)
-  return options_ != NULL ? *options_
-                         : *::google::protobuf::FieldOptions::internal_default_instance();
+  return p != NULL ? *p : *reinterpret_cast<const ::google::protobuf::FieldOptions*>(
+      &::google::protobuf::_FieldOptions_default_instance_);
 }
 inline ::google::protobuf::FieldOptions* FieldDescriptorProto::mutable_options() {
   set_has_options();
@@ -5686,9 +6304,10 @@ inline void OneofDescriptorProto::clear_options() {
   clear_has_options();
 }
 inline const ::google::protobuf::OneofOptions& OneofDescriptorProto::options() const {
+  const ::google::protobuf::OneofOptions* p = options_;
   // @@protoc_insertion_point(field_get:google.protobuf.OneofDescriptorProto.options)
-  return options_ != NULL ? *options_
-                         : *::google::protobuf::OneofOptions::internal_default_instance();
+  return p != NULL ? *p : *reinterpret_cast<const ::google::protobuf::OneofOptions*>(
+      &::google::protobuf::_OneofOptions_default_instance_);
 }
 inline ::google::protobuf::OneofOptions* OneofDescriptorProto::mutable_options() {
   set_has_options();
@@ -5828,9 +6447,10 @@ inline void EnumDescriptorProto::clear_options() {
   clear_has_options();
 }
 inline const ::google::protobuf::EnumOptions& EnumDescriptorProto::options() const {
+  const ::google::protobuf::EnumOptions* p = options_;
   // @@protoc_insertion_point(field_get:google.protobuf.EnumDescriptorProto.options)
-  return options_ != NULL ? *options_
-                         : *::google::protobuf::EnumOptions::internal_default_instance();
+  return p != NULL ? *p : *reinterpret_cast<const ::google::protobuf::EnumOptions*>(
+      &::google::protobuf::_EnumOptions_default_instance_);
 }
 inline ::google::protobuf::EnumOptions* EnumDescriptorProto::mutable_options() {
   set_has_options();
@@ -5964,9 +6584,10 @@ inline void EnumValueDescriptorProto::clear_options() {
   clear_has_options();
 }
 inline const ::google::protobuf::EnumValueOptions& EnumValueDescriptorProto::options() const {
+  const ::google::protobuf::EnumValueOptions* p = options_;
   // @@protoc_insertion_point(field_get:google.protobuf.EnumValueDescriptorProto.options)
-  return options_ != NULL ? *options_
-                         : *::google::protobuf::EnumValueOptions::internal_default_instance();
+  return p != NULL ? *p : *reinterpret_cast<const ::google::protobuf::EnumValueOptions*>(
+      &::google::protobuf::_EnumValueOptions_default_instance_);
 }
 inline ::google::protobuf::EnumValueOptions* EnumValueDescriptorProto::mutable_options() {
   set_has_options();
@@ -6106,9 +6727,10 @@ inline void ServiceDescriptorProto::clear_options() {
   clear_has_options();
 }
 inline const ::google::protobuf::ServiceOptions& ServiceDescriptorProto::options() const {
+  const ::google::protobuf::ServiceOptions* p = options_;
   // @@protoc_insertion_point(field_get:google.protobuf.ServiceDescriptorProto.options)
-  return options_ != NULL ? *options_
-                         : *::google::protobuf::ServiceOptions::internal_default_instance();
+  return p != NULL ? *p : *reinterpret_cast<const ::google::protobuf::ServiceOptions*>(
+      &::google::protobuf::_ServiceOptions_default_instance_);
 }
 inline ::google::protobuf::ServiceOptions* ServiceDescriptorProto::mutable_options() {
   set_has_options();
@@ -6344,9 +6966,10 @@ inline void MethodDescriptorProto::clear_options() {
   clear_has_options();
 }
 inline const ::google::protobuf::MethodOptions& MethodDescriptorProto::options() const {
+  const ::google::protobuf::MethodOptions* p = options_;
   // @@protoc_insertion_point(field_get:google.protobuf.MethodDescriptorProto.options)
-  return options_ != NULL ? *options_
-                         : *::google::protobuf::MethodOptions::internal_default_instance();
+  return p != NULL ? *p : *reinterpret_cast<const ::google::protobuf::MethodOptions*>(
+      &::google::protobuf::_MethodOptions_default_instance_);
 }
 inline ::google::protobuf::MethodOptions* MethodDescriptorProto::mutable_options() {
   set_has_options();
@@ -8597,7 +9220,12 @@ GeneratedCodeInfo::annotation() const {
   return annotation_;
 }
 
+#ifdef __GNUC__
+  #pragma GCC diagnostic pop
+#endif  // __GNUC__
 #endif  // !PROTOBUF_INLINE_NOT_IN_HEADERS
+// -------------------------------------------------------------------
+
 // -------------------------------------------------------------------
 
 // -------------------------------------------------------------------
@@ -8653,7 +9281,6 @@ GeneratedCodeInfo::annotation() const {
 }  // namespace protobuf
 }  // namespace google
 
-#ifndef SWIG
 namespace google {
 namespace protobuf {
 
@@ -8690,7 +9317,6 @@ inline const EnumDescriptor* GetEnumDescriptor< ::google::protobuf::MethodOption
 
 }  // namespace protobuf
 }  // namespace google
-#endif  // SWIG
 
 // @@protoc_insertion_point(global_scope)
 

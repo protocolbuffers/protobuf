@@ -235,6 +235,13 @@ message TestEndsWithBytes {
 }
 
 
+message Int64Types {
+  optional int64 int64_normal = 1 [jstype=JS_NORMAL];
+  optional sint64 int64_string = 2 [jstype=JS_STRING];
+  optional uint64 int64_number = 3 [jstype=JS_NUMBER];
+
+}
+
 message TestMapFieldsNoBinary {
 
   map<string, string> map_string_string = 1;
@@ -271,3 +278,4 @@ message Deeply {
     }
   }
 }
+

@@ -1586,6 +1586,38 @@ TEST_F(RepeatedFieldInsertionIteratorsTest,
   EXPECT_EQ(testproto.DebugString(), goldenproto.DebugString());
 }
 
+#if LANG_CXX11
+TEST_F(RepeatedFieldInsertionIteratorsTest, MoveStrings) {
+  std::vector<string> src = {"a", "b", "c", "d"};
+  std::vector<string> copy = src;  // copy since move leaves in undefined state
+  TestAllTypes testproto;
+  std::move(copy.begin(), copy.end(),
+            RepeatedFieldBackInserter(testproto.mutable_repeated_string()));
+
+  ASSERT_THAT(testproto.repeated_string(), testing::ElementsAreArray(src));
+}
+
+TEST_F(RepeatedFieldInsertionIteratorsTest, MoveProtos) {
+  auto make_nested = [](int32 x) {
+    Nested ret;
+    ret.set_bb(x);
+    return ret;
+  };
+  std::vector<Nested> src = {make_nested(3), make_nested(5), make_nested(7)};
+  std::vector<Nested> copy = src;  // copy since move leaves in undefined state
+  TestAllTypes testproto;
+  std::move(
+      copy.begin(), copy.end(),
+      RepeatedFieldBackInserter(testproto.mutable_repeated_nested_message()));
+
+  ASSERT_EQ(src.size(), testproto.repeated_nested_message_size());
+  for (int i = 0; i < src.size(); ++i) {
+    EXPECT_EQ(src[i].DebugString(),
+              testproto.repeated_nested_message(i).DebugString());
+  }
+}
+#endif
+
 }  // namespace
 
 }  // namespace protobuf

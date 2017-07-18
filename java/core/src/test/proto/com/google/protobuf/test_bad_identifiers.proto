@@ -148,6 +148,12 @@ message TestConflictingFieldNames {
   // the method getInt32FieldList().
   required int32 int32_field_list = 31;  // NO_PROTO3
 
+  // These field pairs have the same Java converted name
+  optional string field_name = 32; // NO_PROTO3
+  optional string field__name = 33; // NO_PROTO3
+  optional int32 _2conflict = 34; // NO_PROTO3
+  optional int32 __2conflict = 35;
+
   extensions 1000 to max;  // NO_PROTO3
 
   repeated int64 int64_field = 41;
@@ -165,4 +171,15 @@ message TestMapField {
   message Message {}
 
   map<int32, int32> map_field = 1;
+}
+
+message TestLeadingNumberFields {
+  optional int32 _30day_impressions = 1;
+  repeated string _60day_impressions = 2;
+
+  optional string __2_underscores = 3;
+  repeated string __2repeated_underscores = 4;
+
+  optional int32 _32 = 32;
+  repeated int64 _64 = 64;
 }

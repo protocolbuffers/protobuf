@@ -499,19 +499,57 @@ void FileGenerator::GenerateDescriptorInitializationCodeForMutable(io::Printer* 
     // Try to load immutable messages' outer class. Its initialization code
     // will take care of interpreting custom options.
     printer->Print(
-      "try {\n"
-      // Note that we have to load the immutable class dynamically here as
-      // we want the mutable code to be independent from the immutable code
-      // at compile time. It is required to implement dual-compile for
-      // mutable and immutable API in blaze.
-      "  java.lang.Class immutableClass = java.lang.Class.forName(\n"
-      "      \"$immutable_classname$\");\n"
-      "} catch (java.lang.ClassNotFoundException e) {\n"
-      // The immutable class can not be found. Custom options are left
-      // as unknown fields.
-      // TODO(xiaofeng): inform the user with a warning?
-      "}\n",
-      "immutable_classname", name_resolver_->GetImmutableClassName(file_));
+        "try {\n"
+        // Note that we have to load the immutable class dynamically here as
+        // we want the mutable code to be independent from the immutable code
+        // at compile time. It is required to implement dual-compile for
+        // mutable and immutable API in blaze.
+        "  java.lang.Class immutableClass = java.lang.Class.forName(\n"
+        "      \"$immutable_classname$\");\n"
+        "} catch (java.lang.ClassNotFoundException e) {\n",
+        "immutable_classname", name_resolver_->GetImmutableClassName(file_));
+    printer->Indent();
+
+    // The immutable class can not be found. We try our best to collect all
+    // custom option extensions to interpret the custom options.
+    printer->Print(
+        "com.google.protobuf.ExtensionRegistry registry =\n"
+        "    com.google.protobuf.ExtensionRegistry.newInstance();\n"
+        "com.google.protobuf.MessageLite defaultExtensionInstance = null;\n");
+    FieldDescriptorSet::iterator it;
+    for (it = extensions.begin(); it != extensions.end(); it++) {
+      const FieldDescriptor* field = *it;
+      string scope;
+      if (field->extension_scope() != NULL) {
+        scope = name_resolver_->GetMutableClassName(field->extension_scope()) +
+                ".getDescriptor()";
+      } else {
+        scope = FileJavaPackage(field->file(), true) + "." +
+                name_resolver_->GetDescriptorClassName(field->file()) +
+                ".descriptor";
+      }
+      if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
+        printer->Print(
+            "defaultExtensionInstance = com.google.protobuf.Internal\n"
+            "    .getDefaultInstance(\"$class$\");\n"
+            "if (defaultExtensionInstance != null) {\n"
+            "  registry.add(\n"
+            "      $scope$.getExtensions().get($index$),\n"
+            "      (com.google.protobuf.Message) defaultExtensionInstance);\n"
+            "}\n",
+            "scope", scope, "index", SimpleItoa(field->index()), "class",
+            name_resolver_->GetImmutableClassName(field->message_type()));
+      } else {
+        printer->Print("registry.add($scope$.getExtensions().get($index$));\n",
+                       "scope", scope, "index", SimpleItoa(field->index()));
+      }
+    }
+    printer->Print(
+        "com.google.protobuf.Descriptors.FileDescriptor\n"
+        "    .internalUpdateFileDescriptor(descriptor, registry);\n");
+
+    printer->Outdent();
+    printer->Print("}\n");
   }
 
   // Force descriptor initialization of all dependencies.

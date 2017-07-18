@@ -104,10 +104,6 @@ class MessageGenerator {
   // allocated before any can be initialized.
   void GenerateDefaultInstanceInitializer(io::Printer* printer);
 
-  // Generates code that should be run when ShutdownProtobufLibrary() is called,
-  // to delete all dynamically-allocated objects.
-  void GenerateShutdownCode(io::Printer* printer);
-
   // Generate all non-inline methods for this class.
   void GenerateClassMethods(io::Printer* printer);
 
@@ -132,6 +128,9 @@ class MessageGenerator {
   // of entries generated and the index of the first has_bit entry.
   std::pair<size_t, size_t> GenerateOffsets(io::Printer* printer);
   void GenerateSchema(io::Printer* printer, int offset, int has_offset);
+  // For each field generates a table entry describing the field for the
+  // table driven serializer.
+  int GenerateFieldMetadata(io::Printer* printer);
 
   // Generate constructors and destructor.
   void GenerateStructors(io::Printer* printer);
@@ -146,6 +145,13 @@ class MessageGenerator {
   void GenerateSharedDestructorCode(io::Printer* printer);
   // Generate the arena-specific destructor code.
   void GenerateArenaDestructorCode(io::Printer* printer);
+
+  // Helper for GenerateClear and others.  Optionally emits a condition that
+  // assumes the existence of the cached_has_bits variable, and returns true if
+  // the condition was printed.
+  bool MaybeGenerateOptionalFieldCondition(io::Printer* printer,
+                                           const FieldDescriptor* field,
+                                           int expected_has_bits_index);
 
   // Generate standard Message methods.
   void GenerateClear(io::Printer* printer);
@@ -178,7 +184,6 @@ class MessageGenerator {
   void GenerateSerializeOneExtensionRange(
       io::Printer* printer, const Descriptor::ExtensionRange* range,
       bool unbounded);
-
 
   // Generates has_foo() functions and variables for singular field has-bits.
   void GenerateSingularFieldHasBits(const FieldDescriptor* field,

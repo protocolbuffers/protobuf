@@ -1558,6 +1558,43 @@ TEST(MessageDifferencerTest, RepeatedFieldMapTest_CustomMapKeyComparator) {
   EXPECT_EQ("ignored: item[0].ra\n", output);
 }
 
+// Compares fields by their index offset by one, so index 0 matches with 1, etc.
+class OffsetByOneMapKeyComparator
+    : public util::MessageDifferencer::MapKeyComparator {
+ public:
+  typedef util::MessageDifferencer::SpecificField SpecificField;
+  virtual bool IsMatch(const Message& message1, const Message& message2,
+                       const std::vector<SpecificField>& parent_fields) const {
+    return parent_fields.back().index + 1 == parent_fields.back().new_index;
+  }
+};
+
+TEST(MessageDifferencerTest, RepeatedFieldMapTest_CustomIndexMapKeyComparator) {
+  protobuf_unittest::TestDiffMessage msg1;
+  protobuf_unittest::TestDiffMessage msg2;
+  // Treat "item" as Map, using custom key comparator to determine if two
+  // elements have the same key.
+  protobuf_unittest::TestDiffMessage::Item* item = msg1.add_item();
+  item->set_b("one");
+  item = msg2.add_item();
+  item->set_b("zero");
+  item = msg2.add_item();
+  item->set_b("one");
+  util::MessageDifferencer differencer;
+  OffsetByOneMapKeyComparator key_comparator;
+  differencer.TreatAsMapUsingKeyComparator(GetFieldDescriptor(msg1, "item"),
+                                           &key_comparator);
+  string output;
+  differencer.ReportDifferencesToString(&output);
+  // With the offset by one comparator msg1.item[0] should be compared to
+  // msg2.item[1] and thus be moved, msg2.item[0] should be marked as added.
+  EXPECT_FALSE(differencer.Compare(msg1, msg2));
+  EXPECT_EQ(
+      "moved: item[0] -> item[1] : { b: \"one\" }\n"
+      "added: item[0]: { b: \"zero\" }\n",
+      output);
+}
+
 TEST(MessageDifferencerTest, RepeatedFieldSetTest_Subset) {
   protobuf_unittest::TestDiffMessage msg1;
   protobuf_unittest::TestDiffMessage msg2;
@@ -2806,21 +2843,130 @@ TEST_F(ComparisonTest, EquivalentIgnoresUnknown) {
 }
 
 TEST_F(ComparisonTest, MapTest) {
-  repeated_field_as_set();
-
   Map<string, string>& map1 = *map_proto1_.mutable_map_string_string();
-  map1["1"] = "1";
-  map1["2"] = "2";
-  map1["3"] = "3";
+  map1["key1"] = "1";
+  map1["key2"] = "2";
+  map1["key3"] = "3";
   Map<string, string>& map2 = *map_proto2_.mutable_map_string_string();
-  map2["3"] = "0";
-  map2["2"] = "2";
-  map2["1"] = "1";
+  map2["key3"] = "0";
+  map2["key2"] = "2";
+  map2["key1"] = "1";
 
-  EXPECT_EQ(
-      "added: map_string_string: { key: \"3\" value: \"0\" }\n"
-      "deleted: map_string_string: { key: \"3\" value: \"3\" }\n",
-      Run(map_proto1_, map_proto2_));
+  EXPECT_EQ("modified: map_string_string.value: \"3\" -> \"0\"\n",
+            Run(map_proto1_, map_proto2_));
+}
+
+TEST_F(ComparisonTest, MapIgnoreKeyTest) {
+  Map<string, string>& map1 = *map_proto1_.mutable_map_string_string();
+  map1["key1"] = "1";
+  map1["key2"] = "2";
+  map1["key3"] = "3";
+  Map<string, string>& map2 = *map_proto2_.mutable_map_string_string();
+  map2["key4"] = "2";
+  map2["key5"] = "3";
+  map2["key6"] = "1";
+
+  util::MessageDifferencer differencer;
+  differencer.IgnoreField(
+      GetFieldDescriptor(map_proto1_, "map_string_string.key"));
+  EXPECT_TRUE(differencer.Compare(map_proto1_, map_proto2_));
+}
+
+TEST_F(ComparisonTest, MapRoundTripSyncTest) {
+  google::protobuf::TextFormat::Parser parser;
+  unittest::TestMap map_reflection1;
+
+  // By setting via reflection, data exists in repeated field.
+  ASSERT_TRUE(parser.ParseFromString(
+      "map_int32_foreign_message { key: 1 }", &map_reflection1));
+
+  // During copy, data is synced from repeated field to map.
+  unittest::TestMap map_reflection2 = map_reflection1;
+
+  // During comparison, data is synced from map to repeated field.
+  EXPECT_TRUE(
+      util::MessageDifferencer::Equals(map_reflection1, map_reflection2));
+}
+
+TEST_F(ComparisonTest, MapEntryPartialTest) {
+  google::protobuf::TextFormat::Parser parser;
+  unittest::TestMap map1;
+  unittest::TestMap map2;
+
+  string output;
+  util::MessageDifferencer differencer;
+  differencer.set_scope(util::MessageDifferencer::PARTIAL);
+  differencer.ReportDifferencesToString(&output);
+
+  ASSERT_TRUE(parser.ParseFromString(
+      "map_int32_foreign_message { key: 1 value { c: 1 } }", &map1));
+  ASSERT_TRUE(parser.ParseFromString(
+      "map_int32_foreign_message { key: 1 value { c: 2 }}", &map2));
+  EXPECT_FALSE(differencer.Compare(map1, map2));
+  EXPECT_EQ("modified: map_int32_foreign_message.value.c: 1 -> 2\n", output);
+
+  ASSERT_TRUE(
+      parser.ParseFromString("map_int32_foreign_message { key: 1 }", &map1));
+  EXPECT_TRUE(differencer.Compare(map1, map2));
+}
+
+TEST_F(ComparisonTest, MapEntryPartialEmptyKeyTest) {
+  google::protobuf::TextFormat::Parser parser;
+  unittest::TestMap map1;
+  unittest::TestMap map2;
+  ASSERT_TRUE(parser.ParseFromString("map_int32_foreign_message {}", &map1));
+  ASSERT_TRUE(
+      parser.ParseFromString("map_int32_foreign_message { key: 1 }", &map2));
+
+  util::MessageDifferencer differencer;
+  differencer.set_scope(util::MessageDifferencer::PARTIAL);
+  EXPECT_TRUE(differencer.Compare(map1, map2));
+}
+
+// Considers strings keys as equal if they have equal lengths.
+class LengthMapKeyComparator
+    : public util::MessageDifferencer::MapKeyComparator {
+ public:
+  typedef util::MessageDifferencer::SpecificField SpecificField;
+  virtual bool IsMatch(const Message& message1, const Message& message2,
+                       const std::vector<SpecificField>& parent_fields) const {
+    const Reflection* reflection1 = message1.GetReflection();
+    const Reflection* reflection2 = message2.GetReflection();
+    const FieldDescriptor* key_field =
+        message1.GetDescriptor()->FindFieldByName("key");
+    return reflection1->GetString(message1, key_field).size() ==
+           reflection2->GetString(message2, key_field).size();
+  }
+};
+
+TEST_F(ComparisonTest, MapEntryCustomMapKeyComparator) {
+  google::protobuf::TextFormat::Parser parser;
+  protobuf_unittest::TestMap msg1;
+  protobuf_unittest::TestMap msg2;
+
+  ASSERT_TRUE(parser.ParseFromString(
+      "map_string_foreign_message { key: 'key1' value { c: 1 }}", &msg1));
+  ASSERT_TRUE(parser.ParseFromString(
+      "map_string_foreign_message { key: 'key2' value { c: 1 }}", &msg2));
+
+  util::MessageDifferencer differencer;
+  LengthMapKeyComparator key_comparator;
+  differencer.TreatAsMapUsingKeyComparator(
+      GetFieldDescriptor(msg1, "map_string_foreign_message"), &key_comparator);
+  string output;
+  differencer.ReportDifferencesToString(&output);
+  // Though the above two messages have different keys for their map entries,
+  // they are considered the same by key_comparator because their lengths are
+  // equal.  However, in value comparison, all fields of the message are taken
+  // into consideration, so they are reported as different.
+  EXPECT_FALSE(differencer.Compare(msg1, msg2));
+  EXPECT_EQ("modified: map_string_foreign_message.key: \"key1\" -> \"key2\"\n",
+            output);
+  differencer.IgnoreField(
+      GetFieldDescriptor(msg1, "map_string_foreign_message.key"));
+  output.clear();
+  EXPECT_TRUE(differencer.Compare(msg1, msg2));
+  EXPECT_EQ("ignored: map_string_foreign_message.key\n", output);
 }
 
 class MatchingTest : public testing::Test {

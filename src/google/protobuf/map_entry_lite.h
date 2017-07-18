@@ -34,6 +34,7 @@
 #include <assert.h>
 
 #include <google/protobuf/arena.h>
+#include <google/protobuf/map.h>
 #include <google/protobuf/map_type_handler.h>
 #include <google/protobuf/wire_format_lite_inl.h>
 
@@ -552,6 +553,23 @@ class MapEntryLite
                                     default_enum_value>& other) {
     MergeFromInternal(other);
   }
+ private:
+  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(MapEntryLite);
+};
+// The completely unprincipled and unwieldy use of template parameters in
+// the map code necessitates wrappers to make the code a little bit more
+// manageable.
+template <typename Derived>
+struct DeconstructMapEntry;
+
+template <typename K, typename V, WireFormatLite::FieldType key,
+          WireFormatLite::FieldType value, int default_enum>
+struct DeconstructMapEntry<MapEntryLite<K, V, key, value, default_enum> > {
+  typedef K Key;
+  typedef V Value;
+  static const WireFormatLite::FieldType kKeyFieldType = key;
+  static const WireFormatLite::FieldType kValueFieldType = value;
+  static const int default_enum_value = default_enum;
 };
 
 // Helpers for deterministic serialization =============================
@@ -578,6 +596,75 @@ template <typename T> struct CompareByDerefFirst {
   bool operator()(const T& a, const T& b) const {
     return a->first < b->first;
   }
+};
+
+// Helper for table driven serialization
+
+template <WireFormatLite::FieldType FieldType>
+struct FromHelper {
+  template <typename T>
+  static const T& From(const T& x) {
+    return x;
+  }
+};
+
+template <>
+struct FromHelper<WireFormatLite::TYPE_STRING> {
+  static ArenaStringPtr From(const string& x) {
+    ArenaStringPtr res;
+    res.UnsafeArenaSetAllocated(NULL, const_cast<string*>(&x), NULL);
+    return res;
+  }
+};
+template <>
+struct FromHelper<WireFormatLite::TYPE_BYTES> {
+  static ArenaStringPtr From(const string& x) {
+    ArenaStringPtr res;
+    res.UnsafeArenaSetAllocated(NULL, const_cast<string*>(&x), NULL);
+    return res;
+  }
+};
+template <>
+struct FromHelper<WireFormatLite::TYPE_MESSAGE> {
+  template <typename T>
+  static T* From(const T& x) {
+    return const_cast<T*>(&x);
+  }
+};
+
+template <typename MapEntryType>
+struct MapEntryHelper;
+
+template <typename Key, typename Value, WireFormatLite::FieldType kKeyFieldType,
+          WireFormatLite::FieldType kValueFieldType, int default_enum_value>
+struct MapEntryHelper<MapEntryLite<Key, Value, kKeyFieldType, kValueFieldType,
+                                   default_enum_value> > {
+  // Provide utilities to parse/serialize key/value.  Provide utilities to
+  // manipulate internal stored type.
+  typedef MapTypeHandler<kKeyFieldType, Key> KeyTypeHandler;
+  typedef MapTypeHandler<kValueFieldType, Value> ValueTypeHandler;
+
+  // Define internal memory layout. Strings and messages are stored as
+  // pointers, while other types are stored as values.
+  typedef typename KeyTypeHandler::TypeOnMemory KeyOnMemory;
+  typedef typename ValueTypeHandler::TypeOnMemory ValueOnMemory;
+
+  explicit MapEntryHelper(const MapPair<Key, Value>& map_pair)
+      : _has_bits_(3),
+        _cached_size_(2 + KeyTypeHandler::GetCachedSize(map_pair.first) +
+                      ValueTypeHandler::GetCachedSize(map_pair.second)),
+        key_(FromHelper<kKeyFieldType>::From(map_pair.first)),
+        value_(FromHelper<kValueFieldType>::From(map_pair.second)) {}
+
+  // Purposely not folowing the style guide naming. These are the names
+  // the proto compiler would generate given the map entry descriptor.
+  // The proto compiler generates the offsets in this struct as if this was
+  // a regular message. This way the table driven code barely notices it's
+  // dealing with a map field.
+  uint32 _has_bits_;     // NOLINT
+  uint32 _cached_size_;  // NOLINT
+  KeyOnMemory key_;      // NOLINT
+  ValueOnMemory value_;  // NOLINT
 };
 
 }  // namespace internal

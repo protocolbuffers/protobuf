@@ -84,6 +84,17 @@ public final class Durations {
   }
 
   /**
+   * Compares two durations. The value returned is identical to what would be returned by:
+   * {@code Durations.comparator().compare(x, y)}.
+   *
+   * @return the value {@code 0} if {@code x == y}; a value less than {@code 0} if {@code x < y};
+   *     and a value greater than {@code 0} if {@code x > y}
+   */
+  public static int compare(Duration x, Duration y) {
+    return COMPARATOR.compare(x, y);
+  }
+
+  /**
    * Returns true if the given {@link Duration} is valid. The {@code seconds} value must be in the
    * range [-315,576,000,000, +315,576,000,000]. The {@code nanos} value must be in the range
    * [-999,999,999, +999,999,999].

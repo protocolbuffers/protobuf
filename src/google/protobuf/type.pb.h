@@ -35,9 +35,6 @@
 // @@protoc_insertion_point(includes)
 namespace google {
 namespace protobuf {
-class Any;
-class AnyDefaultTypeInternal;
-LIBPROTOBUF_EXPORT extern AnyDefaultTypeInternal _Any_default_instance_;
 class Enum;
 class EnumDefaultTypeInternal;
 LIBPROTOBUF_EXPORT extern EnumDefaultTypeInternal _Enum_default_instance_;
@@ -50,9 +47,6 @@ LIBPROTOBUF_EXPORT extern FieldDefaultTypeInternal _Field_default_instance_;
 class Option;
 class OptionDefaultTypeInternal;
 LIBPROTOBUF_EXPORT extern OptionDefaultTypeInternal _Option_default_instance_;
-class SourceContext;
-class SourceContextDefaultTypeInternal;
-LIBPROTOBUF_EXPORT extern SourceContextDefaultTypeInternal _SourceContext_default_instance_;
 class Type;
 class TypeDefaultTypeInternal;
 LIBPROTOBUF_EXPORT extern TypeDefaultTypeInternal _Type_default_instance_;
@@ -69,8 +63,9 @@ struct LIBPROTOBUF_EXPORT TableStruct {
   static const ::google::protobuf::internal::AuxillaryParseTableField aux[];
   static const ::google::protobuf::internal::ParseTable schema[];
   static const ::google::protobuf::uint32 offsets[];
+  static const ::google::protobuf::internal::FieldMetadata field_metadata[];
+  static const ::google::protobuf::internal::SerializationTable serialization_table[];
   static void InitDefaultsImpl();
-  static void Shutdown();
 };
 void LIBPROTOBUF_EXPORT AddDescriptors();
 void LIBPROTOBUF_EXPORT InitDefaults();
@@ -171,7 +166,21 @@ class LIBPROTOBUF_EXPORT Type : public ::google::protobuf::Message /* @@protoc_i
     CopyFrom(from);
     return *this;
   }
+  #if LANG_CXX11
+  Type(Type&& from) noexcept
+    : Type() {
+    *this = ::std::move(from);
+  }
 
+  inline Type& operator=(Type&& from) noexcept {
+    if (GetArenaNoVirtual() == from.GetArenaNoVirtual()) {
+      if (this != &from) InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+  #endif
   inline ::google::protobuf::Arena* GetArena() const PROTOBUF_FINAL {
     return GetArenaNoVirtual();
   }
@@ -190,6 +199,9 @@ class LIBPROTOBUF_EXPORT Type : public ::google::protobuf::Message /* @@protoc_i
 
   void UnsafeArenaSwap(Type* other);
   void Swap(Type* other);
+  friend void swap(Type& a, Type& b) {
+    a.Swap(&b);
+  }
 
   // implements Message ----------------------------------------------
 
@@ -287,6 +299,9 @@ class LIBPROTOBUF_EXPORT Type : public ::google::protobuf::Message /* @@protoc_i
   static const int kNameFieldNumber = 1;
   const ::std::string& name() const;
   void set_name(const ::std::string& value);
+  #if LANG_CXX11
+  void set_name(::std::string&& value);
+  #endif
   void set_name(const char* value);
   void set_name(const char* value, size_t size);
   ::std::string* mutable_name();
@@ -322,7 +337,7 @@ class LIBPROTOBUF_EXPORT Type : public ::google::protobuf::Message /* @@protoc_i
  private:
 
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
-  friend class ::google::protobuf::Arena;
+  template <typename T> friend class ::google::protobuf::Arena::InternalHelper;
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
   ::google::protobuf::RepeatedPtrField< ::google::protobuf::Field > fields_;
@@ -347,7 +362,21 @@ class LIBPROTOBUF_EXPORT Field : public ::google::protobuf::Message /* @@protoc_
     CopyFrom(from);
     return *this;
   }
+  #if LANG_CXX11
+  Field(Field&& from) noexcept
+    : Field() {
+    *this = ::std::move(from);
+  }
 
+  inline Field& operator=(Field&& from) noexcept {
+    if (GetArenaNoVirtual() == from.GetArenaNoVirtual()) {
+      if (this != &from) InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+  #endif
   inline ::google::protobuf::Arena* GetArena() const PROTOBUF_FINAL {
     return GetArenaNoVirtual();
   }
@@ -366,6 +395,9 @@ class LIBPROTOBUF_EXPORT Field : public ::google::protobuf::Message /* @@protoc_
 
   void UnsafeArenaSwap(Field* other);
   void Swap(Field* other);
+  friend void swap(Field& a, Field& b) {
+    a.Swap(&b);
+  }
 
   // implements Message ----------------------------------------------
 
@@ -519,6 +551,9 @@ class LIBPROTOBUF_EXPORT Field : public ::google::protobuf::Message /* @@protoc_
   static const int kNameFieldNumber = 4;
   const ::std::string& name() const;
   void set_name(const ::std::string& value);
+  #if LANG_CXX11
+  void set_name(::std::string&& value);
+  #endif
   void set_name(const char* value);
   void set_name(const char* value, size_t size);
   ::std::string* mutable_name();
@@ -533,6 +568,9 @@ class LIBPROTOBUF_EXPORT Field : public ::google::protobuf::Message /* @@protoc_
   static const int kTypeUrlFieldNumber = 6;
   const ::std::string& type_url() const;
   void set_type_url(const ::std::string& value);
+  #if LANG_CXX11
+  void set_type_url(::std::string&& value);
+  #endif
   void set_type_url(const char* value);
   void set_type_url(const char* value, size_t size);
   ::std::string* mutable_type_url();
@@ -547,6 +585,9 @@ class LIBPROTOBUF_EXPORT Field : public ::google::protobuf::Message /* @@protoc_
   static const int kJsonNameFieldNumber = 10;
   const ::std::string& json_name() const;
   void set_json_name(const ::std::string& value);
+  #if LANG_CXX11
+  void set_json_name(::std::string&& value);
+  #endif
   void set_json_name(const char* value);
   void set_json_name(const char* value, size_t size);
   ::std::string* mutable_json_name();
@@ -561,6 +602,9 @@ class LIBPROTOBUF_EXPORT Field : public ::google::protobuf::Message /* @@protoc_
   static const int kDefaultValueFieldNumber = 11;
   const ::std::string& default_value() const;
   void set_default_value(const ::std::string& value);
+  #if LANG_CXX11
+  void set_default_value(::std::string&& value);
+  #endif
   void set_default_value(const char* value);
   void set_default_value(const char* value, size_t size);
   ::std::string* mutable_default_value();
@@ -604,7 +648,7 @@ class LIBPROTOBUF_EXPORT Field : public ::google::protobuf::Message /* @@protoc_
  private:
 
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
-  friend class ::google::protobuf::Arena;
+  template <typename T> friend class ::google::protobuf::Arena::InternalHelper;
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
   ::google::protobuf::RepeatedPtrField< ::google::protobuf::Option > options_;
@@ -633,7 +677,21 @@ class LIBPROTOBUF_EXPORT Enum : public ::google::protobuf::Message /* @@protoc_i
     CopyFrom(from);
     return *this;
   }
+  #if LANG_CXX11
+  Enum(Enum&& from) noexcept
+    : Enum() {
+    *this = ::std::move(from);
+  }
 
+  inline Enum& operator=(Enum&& from) noexcept {
+    if (GetArenaNoVirtual() == from.GetArenaNoVirtual()) {
+      if (this != &from) InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+  #endif
   inline ::google::protobuf::Arena* GetArena() const PROTOBUF_FINAL {
     return GetArenaNoVirtual();
   }
@@ -652,6 +710,9 @@ class LIBPROTOBUF_EXPORT Enum : public ::google::protobuf::Message /* @@protoc_i
 
   void UnsafeArenaSwap(Enum* other);
   void Swap(Enum* other);
+  friend void swap(Enum& a, Enum& b) {
+    a.Swap(&b);
+  }
 
   // implements Message ----------------------------------------------
 
@@ -727,6 +788,9 @@ class LIBPROTOBUF_EXPORT Enum : public ::google::protobuf::Message /* @@protoc_i
   static const int kNameFieldNumber = 1;
   const ::std::string& name() const;
   void set_name(const ::std::string& value);
+  #if LANG_CXX11
+  void set_name(::std::string&& value);
+  #endif
   void set_name(const char* value);
   void set_name(const char* value, size_t size);
   ::std::string* mutable_name();
@@ -762,7 +826,7 @@ class LIBPROTOBUF_EXPORT Enum : public ::google::protobuf::Message /* @@protoc_i
  private:
 
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
-  friend class ::google::protobuf::Arena;
+  template <typename T> friend class ::google::protobuf::Arena::InternalHelper;
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
   ::google::protobuf::RepeatedPtrField< ::google::protobuf::EnumValue > enumvalue_;
@@ -786,7 +850,21 @@ class LIBPROTOBUF_EXPORT EnumValue : public ::google::protobuf::Message /* @@pro
     CopyFrom(from);
     return *this;
   }
+  #if LANG_CXX11
+  EnumValue(EnumValue&& from) noexcept
+    : EnumValue() {
+    *this = ::std::move(from);
+  }
 
+  inline EnumValue& operator=(EnumValue&& from) noexcept {
+    if (GetArenaNoVirtual() == from.GetArenaNoVirtual()) {
+      if (this != &from) InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+  #endif
   inline ::google::protobuf::Arena* GetArena() const PROTOBUF_FINAL {
     return GetArenaNoVirtual();
   }
@@ -805,6 +883,9 @@ class LIBPROTOBUF_EXPORT EnumValue : public ::google::protobuf::Message /* @@pro
 
   void UnsafeArenaSwap(EnumValue* other);
   void Swap(EnumValue* other);
+  friend void swap(EnumValue& a, EnumValue& b) {
+    a.Swap(&b);
+  }
 
   // implements Message ----------------------------------------------
 
@@ -868,6 +949,9 @@ class LIBPROTOBUF_EXPORT EnumValue : public ::google::protobuf::Message /* @@pro
   static const int kNameFieldNumber = 1;
   const ::std::string& name() const;
   void set_name(const ::std::string& value);
+  #if LANG_CXX11
+  void set_name(::std::string&& value);
+  #endif
   void set_name(const char* value);
   void set_name(const char* value, size_t size);
   ::std::string* mutable_name();
@@ -887,7 +971,7 @@ class LIBPROTOBUF_EXPORT EnumValue : public ::google::protobuf::Message /* @@pro
  private:
 
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
-  friend class ::google::protobuf::Arena;
+  template <typename T> friend class ::google::protobuf::Arena::InternalHelper;
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
   ::google::protobuf::RepeatedPtrField< ::google::protobuf::Option > options_;
@@ -909,7 +993,21 @@ class LIBPROTOBUF_EXPORT Option : public ::google::protobuf::Message /* @@protoc
     CopyFrom(from);
     return *this;
   }
+  #if LANG_CXX11
+  Option(Option&& from) noexcept
+    : Option() {
+    *this = ::std::move(from);
+  }
 
+  inline Option& operator=(Option&& from) noexcept {
+    if (GetArenaNoVirtual() == from.GetArenaNoVirtual()) {
+      if (this != &from) InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+  #endif
   inline ::google::protobuf::Arena* GetArena() const PROTOBUF_FINAL {
     return GetArenaNoVirtual();
   }
@@ -928,6 +1026,9 @@ class LIBPROTOBUF_EXPORT Option : public ::google::protobuf::Message /* @@protoc
 
   void UnsafeArenaSwap(Option* other);
   void Swap(Option* other);
+  friend void swap(Option& a, Option& b) {
+    a.Swap(&b);
+  }
 
   // implements Message ----------------------------------------------
 
@@ -979,6 +1080,9 @@ class LIBPROTOBUF_EXPORT Option : public ::google::protobuf::Message /* @@protoc
   static const int kNameFieldNumber = 1;
   const ::std::string& name() const;
   void set_name(const ::std::string& value);
+  #if LANG_CXX11
+  void set_name(::std::string&& value);
+  #endif
   void set_name(const char* value);
   void set_name(const char* value, size_t size);
   ::std::string* mutable_name();
@@ -1008,7 +1112,7 @@ class LIBPROTOBUF_EXPORT Option : public ::google::protobuf::Message /* @@protoc
  private:
 
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
-  friend class ::google::protobuf::Arena;
+  template <typename T> friend class ::google::protobuf::Arena::InternalHelper;
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
   ::google::protobuf::internal::ArenaStringPtr name_;
@@ -1022,6 +1126,10 @@ class LIBPROTOBUF_EXPORT Option : public ::google::protobuf::Message /* @@protoc
 // ===================================================================
 
 #if !PROTOBUF_INLINE_NOT_IN_HEADERS
+#ifdef __GNUC__
+  #pragma GCC diagnostic push
+  #pragma GCC diagnostic ignored "-Wstrict-aliasing"
+#endif  // __GNUC__
 // Type
 
 // string name = 1;
@@ -1037,6 +1145,14 @@ inline void Type::set_name(const ::std::string& value) {
   name_.Set(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value, GetArenaNoVirtual());
   // @@protoc_insertion_point(field_set:google.protobuf.Type.name)
 }
+#if LANG_CXX11
+inline void Type::set_name(::std::string&& value) {
+  
+  name_.Set(
+    &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value), GetArenaNoVirtual());
+  // @@protoc_insertion_point(field_set_rvalue:google.protobuf.Type.name)
+}
+#endif
 inline void Type::set_name(const char* value) {
   GOOGLE_DCHECK(value != NULL);
   
@@ -1229,9 +1345,10 @@ inline void Type::clear_source_context() {
   source_context_ = NULL;
 }
 inline const ::google::protobuf::SourceContext& Type::source_context() const {
+  const ::google::protobuf::SourceContext* p = source_context_;
   // @@protoc_insertion_point(field_get:google.protobuf.Type.source_context)
-  return source_context_ != NULL ? *source_context_
-                         : *::google::protobuf::SourceContext::internal_default_instance();
+  return p != NULL ? *p : *reinterpret_cast<const ::google::protobuf::SourceContext*>(
+      &::google::protobuf::_SourceContext_default_instance_);
 }
 inline ::google::protobuf::SourceContext* Type::mutable_source_context() {
   
@@ -1344,6 +1461,14 @@ inline void Field::set_name(const ::std::string& value) {
   name_.Set(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value, GetArenaNoVirtual());
   // @@protoc_insertion_point(field_set:google.protobuf.Field.name)
 }
+#if LANG_CXX11
+inline void Field::set_name(::std::string&& value) {
+  
+  name_.Set(
+    &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value), GetArenaNoVirtual());
+  // @@protoc_insertion_point(field_set_rvalue:google.protobuf.Field.name)
+}
+#endif
 inline void Field::set_name(const char* value) {
   GOOGLE_DCHECK(value != NULL);
   
@@ -1411,6 +1536,14 @@ inline void Field::set_type_url(const ::std::string& value) {
   type_url_.Set(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value, GetArenaNoVirtual());
   // @@protoc_insertion_point(field_set:google.protobuf.Field.type_url)
 }
+#if LANG_CXX11
+inline void Field::set_type_url(::std::string&& value) {
+  
+  type_url_.Set(
+    &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value), GetArenaNoVirtual());
+  // @@protoc_insertion_point(field_set_rvalue:google.protobuf.Field.type_url)
+}
+#endif
 inline void Field::set_type_url(const char* value) {
   GOOGLE_DCHECK(value != NULL);
   
@@ -1536,6 +1669,14 @@ inline void Field::set_json_name(const ::std::string& value) {
   json_name_.Set(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value, GetArenaNoVirtual());
   // @@protoc_insertion_point(field_set:google.protobuf.Field.json_name)
 }
+#if LANG_CXX11
+inline void Field::set_json_name(::std::string&& value) {
+  
+  json_name_.Set(
+    &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value), GetArenaNoVirtual());
+  // @@protoc_insertion_point(field_set_rvalue:google.protobuf.Field.json_name)
+}
+#endif
 inline void Field::set_json_name(const char* value) {
   GOOGLE_DCHECK(value != NULL);
   
@@ -1603,6 +1744,14 @@ inline void Field::set_default_value(const ::std::string& value) {
   default_value_.Set(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value, GetArenaNoVirtual());
   // @@protoc_insertion_point(field_set:google.protobuf.Field.default_value)
 }
+#if LANG_CXX11
+inline void Field::set_default_value(::std::string&& value) {
+  
+  default_value_.Set(
+    &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value), GetArenaNoVirtual());
+  // @@protoc_insertion_point(field_set_rvalue:google.protobuf.Field.default_value)
+}
+#endif
 inline void Field::set_default_value(const char* value) {
   GOOGLE_DCHECK(value != NULL);
   
@@ -1674,6 +1823,14 @@ inline void Enum::set_name(const ::std::string& value) {
   name_.Set(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value, GetArenaNoVirtual());
   // @@protoc_insertion_point(field_set:google.protobuf.Enum.name)
 }
+#if LANG_CXX11
+inline void Enum::set_name(::std::string&& value) {
+  
+  name_.Set(
+    &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value), GetArenaNoVirtual());
+  // @@protoc_insertion_point(field_set_rvalue:google.protobuf.Enum.name)
+}
+#endif
 inline void Enum::set_name(const char* value) {
   GOOGLE_DCHECK(value != NULL);
   
@@ -1797,9 +1954,10 @@ inline void Enum::clear_source_context() {
   source_context_ = NULL;
 }
 inline const ::google::protobuf::SourceContext& Enum::source_context() const {
+  const ::google::protobuf::SourceContext* p = source_context_;
   // @@protoc_insertion_point(field_get:google.protobuf.Enum.source_context)
-  return source_context_ != NULL ? *source_context_
-                         : *::google::protobuf::SourceContext::internal_default_instance();
+  return p != NULL ? *p : *reinterpret_cast<const ::google::protobuf::SourceContext*>(
+      &::google::protobuf::_SourceContext_default_instance_);
 }
 inline ::google::protobuf::SourceContext* Enum::mutable_source_context() {
   
@@ -1870,6 +2028,14 @@ inline void EnumValue::set_name(const ::std::string& value) {
   name_.Set(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value, GetArenaNoVirtual());
   // @@protoc_insertion_point(field_set:google.protobuf.EnumValue.name)
 }
+#if LANG_CXX11
+inline void EnumValue::set_name(::std::string&& value) {
+  
+  name_.Set(
+    &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value), GetArenaNoVirtual());
+  // @@protoc_insertion_point(field_set_rvalue:google.protobuf.EnumValue.name)
+}
+#endif
 inline void EnumValue::set_name(const char* value) {
   GOOGLE_DCHECK(value != NULL);
   
@@ -1985,6 +2151,14 @@ inline void Option::set_name(const ::std::string& value) {
   name_.Set(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value, GetArenaNoVirtual());
   // @@protoc_insertion_point(field_set:google.protobuf.Option.name)
 }
+#if LANG_CXX11
+inline void Option::set_name(::std::string&& value) {
+  
+  name_.Set(
+    &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value), GetArenaNoVirtual());
+  // @@protoc_insertion_point(field_set_rvalue:google.protobuf.Option.name)
+}
+#endif
 inline void Option::set_name(const char* value) {
   GOOGLE_DCHECK(value != NULL);
   
@@ -2048,9 +2222,10 @@ inline void Option::clear_value() {
   value_ = NULL;
 }
 inline const ::google::protobuf::Any& Option::value() const {
+  const ::google::protobuf::Any* p = value_;
   // @@protoc_insertion_point(field_get:google.protobuf.Option.value)
-  return value_ != NULL ? *value_
-                         : *::google::protobuf::Any::internal_default_instance();
+  return p != NULL ? *p : *reinterpret_cast<const ::google::protobuf::Any*>(
+      &::google::protobuf::_Any_default_instance_);
 }
 inline ::google::protobuf::Any* Option::mutable_value() {
   
@@ -2090,6 +2265,9 @@ inline  void Option::set_allocated_value(::google::protobuf::Any* value) {
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.Option.value)
 }
 
+#ifdef __GNUC__
+  #pragma GCC diagnostic pop
+#endif  // __GNUC__
 #endif  // !PROTOBUF_INLINE_NOT_IN_HEADERS
 // -------------------------------------------------------------------
 
@@ -2106,7 +2284,6 @@ inline  void Option::set_allocated_value(::google::protobuf::Any* value) {
 }  // namespace protobuf
 }  // namespace google
 
-#ifndef SWIG
 namespace google {
 namespace protobuf {
 
@@ -2128,7 +2305,6 @@ inline const EnumDescriptor* GetEnumDescriptor< ::google::protobuf::Syntax>() {
 
 }  // namespace protobuf
 }  // namespace google
-#endif  // SWIG
 
 // @@protoc_insertion_point(global_scope)
 

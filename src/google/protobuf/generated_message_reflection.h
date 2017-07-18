@@ -714,6 +714,11 @@ LIBPROTOBUF_EXPORT void AssignDescriptors(
 
 LIBPROTOBUF_EXPORT void RegisterAllTypes(const Metadata* file_level_metadata, int size);
 
+// These cannot be in lite so we put them in the reflection.
+LIBPROTOBUF_EXPORT void UnknownFieldSetSerializer(const uint8* base, uint32 offset, uint32 tag,
+                               uint32 has_offset,
+                               ::google::protobuf::io::CodedOutputStream* output);
+
 }  // namespace internal
 }  // namespace protobuf
 

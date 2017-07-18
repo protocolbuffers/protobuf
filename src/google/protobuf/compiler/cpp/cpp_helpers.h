@@ -67,6 +67,9 @@ extern const char kThinSeparator[];
 string ClassName(const Descriptor* descriptor, bool qualified);
 string ClassName(const EnumDescriptor* enum_descriptor, bool qualified);
 
+// Fully qualified name of the default_instance of this message.
+string DefaultInstanceName(const Descriptor* descriptor);
+
 // Name of the CRTP class template (for use with proto_h).
 // This is a class name, like "ProtoName_InternalBase".
 string DependentBaseClassTemplateName(const Descriptor* descriptor);
@@ -159,8 +162,18 @@ string SafeFunctionName(const Descriptor* descriptor,
                         const FieldDescriptor* field,
                         const string& prefix);
 
-// Returns true if unknown fields are preseved after parsing.
-inline bool PreserveUnknownFields(const Descriptor* message) {
+// Returns true if unknown fields are always preserved after parsing.
+inline bool AlwaysPreserveUnknownFields(const FileDescriptor* file) {
+  return file->syntax() != FileDescriptor::SYNTAX_PROTO3;
+}
+
+// Returns true if unknown fields are preserved after parsing.
+inline bool AlwaysPreserveUnknownFields(const Descriptor* message) {
+  return AlwaysPreserveUnknownFields(message->file());
+}
+
+// Returns true if generated messages have public unknown fields accessors
+inline bool PublicUnknownFieldsAccessors(const Descriptor* message) {
   return message->file()->syntax() != FileDescriptor::SYNTAX_PROTO3;
 }
 
@@ -168,10 +181,8 @@ inline bool PreserveUnknownFields(const Descriptor* message) {
 ::google::protobuf::FileOptions_OptimizeMode GetOptimizeFor(
     const FileDescriptor* file, const Options& options);
 
-// If PreserveUnknownFields() is true, determines whether unknown
-// fields will be stored in an UnknownFieldSet or a string.
-// If PreserveUnknownFields() is false, this method will not be
-// used.
+// Determines whether unknown fields will be stored in an UnknownFieldSet or
+// a string.
 inline bool UseUnknownFieldSet(const FileDescriptor* file,
                                const Options& options) {
   return GetOptimizeFor(file, options) != FileOptions::LITE_RUNTIME;
@@ -276,6 +287,10 @@ inline ::google::protobuf::FileOptions_OptimizeMode GetOptimizeFor(
       ? FileOptions::LITE_RUNTIME
       : file->options().optimize_for();
 }
+
+// This orders the messages in a .pb.cc as it's outputted by file.cc
+std::vector<const Descriptor*> FlattenMessagesInFile(
+    const FileDescriptor* file);
 
 bool HasWeakFields(const Descriptor* desc);
 bool HasWeakFields(const FileDescriptor* desc);
