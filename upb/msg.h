@@ -387,13 +387,15 @@ bool upb_msg_getscalarhandlerdata(const upb_handlers *h,
 /** Interfaces for generated code *********************************************/
 
 #define UPB_NOT_IN_ONEOF UINT16_MAX
+#define UPB_NO_HASBIT UINT16_MAX
+#define UPB_NO_SUBMSG UINT16_MAX
 
 typedef struct {
   uint32_t number;
   uint32_t offset;  /* If in a oneof, offset of default in default_msg below. */
-  uint16_t hasbit;
-  uint16_t oneof_index;  /* UPB_NOT_IN_ONEOF if not in a oneof. */
-  uint16_t submsg_index;
+  uint16_t hasbit;        /* UPB_NO_HASBIT if no hasbit. */
+  uint16_t oneof_index;   /* UPB_NOT_IN_ONEOF if not in a oneof. */
+  uint16_t submsg_index;  /* UPB_NO_SUBMSG if no submsg. */
   uint8_t type;
   uint8_t label;
 } upb_msglayout_fieldinit_v1;

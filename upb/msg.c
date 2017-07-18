@@ -1,5 +1,6 @@
 
 #include "upb/msg.h"
+#include "upb/structs.int.h"
 
 static bool is_power_of_two(size_t val) {
   return (val & (val - 1)) == 0;
@@ -67,7 +68,7 @@ static size_t upb_msgval_sizeof(upb_fieldtype_t type) {
     case UPB_TYPE_MESSAGE:
       return sizeof(void*);
     case UPB_TYPE_STRING:
-      return sizeof(char*) + sizeof(size_t);
+      return sizeof(upb_stringview);
   }
   UPB_UNREACHABLE();
 }
@@ -793,15 +794,6 @@ void upb_msg_set(upb_msg *msg, int field_index, upb_msgval val,
 
 
 /** upb_array *****************************************************************/
-
-struct upb_array {
-  upb_fieldtype_t type;
-  uint8_t element_size;
-  void *data;   /* Each element is element_size. */
-  size_t len;   /* Measured in elements. */
-  size_t size;  /* Measured in elements. */
-  upb_alloc *alloc;
-};
 
 #define DEREF_ARR(arr, i, type) ((type*)arr->data)[i]
 

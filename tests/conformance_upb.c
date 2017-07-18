@@ -4,6 +4,7 @@
 
 #include <errno.h>
 #include <stdarg.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 
@@ -32,7 +33,7 @@ bool CheckedRead(int fd, void *buf, size_t len) {
 }
 
 void CheckedWrite(int fd, const void *buf, size_t len) {
-  if (write(fd, buf, len) != len) {
+  if ((size_t)write(fd, buf, len) != len) {
     perror("writing to test runner");
     exit(1);
   }
@@ -52,7 +53,7 @@ void DoTest(
 
       if (!test_message) {
         /* TODO(haberman): return details. */
-        static char msg[] = "Parse error (no more details available).";
+        static const char msg[] = "Parse error (no more details available).";
         conformance_ConformanceResponse_set_parse_error(
             response, upb_stringview_make(msg, sizeof(msg)));
         return;
@@ -60,20 +61,20 @@ void DoTest(
       break;
 
     case conformance_ConformanceRequest_payload_json_payload: {
-      static char msg[] = "JSON support not yet implemented.";
+      static const char msg[] = "JSON support not yet implemented.";
       conformance_ConformanceResponse_set_skipped(
           response, upb_stringview_make(msg, sizeof(msg)));
       return;
     }
 
     case conformance_ConformanceRequest_payload_NOT_SET:
-      fprintf(stderr, "conformance_upb: Request didn't have payload.");
-      exit(1);
+      fprintf(stderr, "conformance_upb: Request didn't have payload.\n");
+      return;
   }
 
   switch (conformance_ConformanceRequest_requested_output_format(request)) {
     case conformance_UNSPECIFIED:
-      fprintf(stderr, "conformance_upb: Unspecified output format.");
+      fprintf(stderr, "conformance_upb: Unspecified output format.\n");
       exit(1);
 
     case conformance_PROTOBUF: {
@@ -81,8 +82,10 @@ void DoTest(
       char *serialized = protobuf_test_messages_proto3_TestAllTypes_serialize(
           test_message, env, &serialized_len);
       if (!serialized) {
-        fprintf(stderr, "conformance_upb: Error serializing.");
-        exit(1);
+        static const char msg[] = "Error serializing.";
+        conformance_ConformanceResponse_set_serialize_error(
+            response, upb_stringview_make(msg, sizeof(msg)));
+        return;
       }
       conformance_ConformanceResponse_set_protobuf_payload(
           response, upb_stringview_make(serialized, serialized_len));
@@ -90,14 +93,14 @@ void DoTest(
     }
 
     case conformance_JSON: {
-      static char msg[] = "JSON support not yet implemented.";
+      static const char msg[] = "JSON support not yet implemented.";
       conformance_ConformanceResponse_set_skipped(
           response, upb_stringview_make(msg, sizeof(msg)));
       break;
     }
 
     default:
-      fprintf(stderr, "conformance_upb: Unknown output format: %d",
+      fprintf(stderr, "conformance_upb: Unknown output format: %d\n",
               conformance_ConformanceRequest_requested_output_format(request));
       exit(1);
   }

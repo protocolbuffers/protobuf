@@ -42,7 +42,6 @@ local function to_preproc(...)
   return string.upper(to_cident(...))
 end
 
-
 -- Strips away last path element, ie:
 --   foo.Bar.Baz -> foo.Bar
 local function remove_name(name)
@@ -53,6 +52,10 @@ local function remove_name(name)
     end
   end
   return string.sub(name, 1, package_end)
+end
+
+local function enum_value_symbol(enumdef, name)
+  return to_cident(remove_name(enumdef:full_name())) .. "_" .. name
 end
 
 local function dump_enum_vals(enumdef, append)
@@ -91,12 +94,26 @@ local function dump_enum_vals(enumdef, append)
   local cident = to_cident(remove_name(enumdef:full_name()))
   for i, pair in ipairs(enum_vals) do
     k, v = pair[1], pair[2]
-    append('  %s = %d', cident .. "_" .. k, v)
+    append('  %s = %d', enum_value_symbol(enumdef, k), v)
     if i == #enum_vals then
       append('\n')
     else
       append(',\n')
     end
+  end
+end
+
+local function field_default(field)
+  if field:type() == upb.TYPE_MESSAGE then
+    return "NULL"
+  elseif field:type() == upb.TYPE_STRING or
+         field:type() == upb.TYPE_BYTES then
+    local default = field:default() or ""
+    return string.format('upb_stringview_make("%s", strlen("%s"))', field:default(), field:default())
+  elseif field:type() == upb.TYPE_ENUM then
+    return enum_value_symbol(field:subdef(), field:default())
+  else
+    return field:default();
   end
 end
 
@@ -129,25 +146,26 @@ end
 local function field_layout_rank(field)
   -- Order:
   --   1, 2, 3. primitive fields (8, 4, 1 byte)
-  --   4. oneof fields
-  --   5. string fields
-  --   6. submessage fields
-  --   7. repeated fields
+  --   4. string fields
+  --   5. submessage fields
+  --   6. repeated fields
   --
   -- This has the following nice properties:
   --
   --  1. padding alignment is (nearly) minimized.
-  --  2. fields that might have defaults (1-5) are segregated
-  --     from fields that are always zero-initialized (6-7).
+  --  2. fields that might have defaults (1-4) are segregated
+  --     from fields that are always zero-initialized (5-7).
+  --
+  -- We skip oneof fields, because they are emitted in a separate pass.
   local rank
   if field:containing_oneof() then
-    rank = 4
+    rank = 100  -- These go last (actually we skip them).
   elseif field:label() == upb.LABEL_REPEATED then
-    rank = 7
-  elseif field:type() == upb.TYPE_MESSAGE then
     rank = 6
-  elseif field:type() == upb.TYPE_STRING or field:type() == upb.TYPE_BYTES then
+  elseif field:type() == upb.TYPE_MESSAGE then
     rank = 5
+  elseif field:type() == upb.TYPE_STRING or field:type() == upb.TYPE_BYTES then
+    rank = 4
   elseif field:type() == upb.TYPE_BOOL then
     rank = 3
   elseif field:type() == upb.TYPE_FLOAT or
@@ -258,6 +276,8 @@ local function write_c_file(filedef, hfilename, append)
   emit_file_warning(filedef, append)
 
   append('#include <stddef.h>\n')
+  append('#include "upb/decode.h"\n')
+  append('#include "upb/encode.h"\n')
   append('#include "upb/msg.h"\n')
   append('#include "upb/upb.h"\n')
   append('#include "%s"\n\n', hfilename)
@@ -274,13 +294,29 @@ local function write_c_file(filedef, hfilename, append)
 
     local fields_array_ref = "NULL"
     local submsgs_array_ref = "NULL"
+    local oneofs_array_ref = "NULL"
     local field_count = 0
     local submsg_count = 0
     local submsg_set = {}
     local submsg_indexes = {}
     local hasbit_count = 0
     local hasbit_indexes = {}
-    -- TODO(haberman): oneofs
+    local oneof_count = 0
+    local oneof_indexes = {}
+
+    -- Create a layout order for oneofs.
+    local oneofs_layout_order = {}
+    for oneof in msg:oneofs() do
+      table.insert(oneofs_layout_order, oneof)
+    end
+    table.sort(oneofs_layout_order, function(a, b)
+      return a:name() < b:name()
+    end)
+
+    for _, oneof in ipairs(oneofs_layout_order) do
+      oneof_indexes[oneof] = oneof_count
+      oneof_count = oneof_count + 1
+    end
 
     -- Create a layout order for fields.  We use this order for the struct and
     -- for offsets, but our list of fields we keep in field number order.
@@ -302,6 +338,8 @@ local function write_c_file(filedef, hfilename, append)
     end)
 
     append('struct %s {\n', msgname)
+
+    -- Non-oneof fields.
     for _, field in ipairs(fields_layout_order) do
       field_count = field_count + 1
 
@@ -310,14 +348,42 @@ local function write_c_file(filedef, hfilename, append)
         submsg_set[field:subdef()] = true
       end
 
-      if has_hasbit(field) then
-        hasbit_indexes[field] = hasbit_count
-        hasbit_count = hasbit_count + 1
-      end
+      if field:containing_oneof() then
+        -- Handled below.
+      else
+        if has_hasbit(field) then
+          hasbit_indexes[field] = hasbit_count
+          hasbit_count = hasbit_count + 1
+        end
 
-      append('  %s %s;\n', ctype(field), field:name())
+        append('  %s %s;\n', ctype(field), field:name())
+      end
     end
+
+    -- Oneof fields.
+    for oneof in msg:oneofs() do
+      local fullname = to_cident(oneof:containing_type():full_name() .. "." .. oneof:name())
+      append('  union {\n')
+      for field in oneof:fields() do
+        append('    %s %s;\n', ctype(field), field:name())
+      end
+      append('  } %s;\n', oneof:name())
+      append('  %s_oneofcases %s_case;\n', fullname, oneof:name())
+    end
+
     append('};\n\n')
+
+    if oneof_count > 0 then
+      local oneofs_array_name = msgname .. "_oneofs"
+      oneofs_array_ref = "&" .. oneofs_array_name .. "[0]"
+      append('static const upb_msglayout_oneofinit_v1 %s[%s] = {\n',
+             oneofs_array_name, oneof_count)
+      for _, oneof in ipairs(oneofs_layout_order) do
+        append('  {offsetof(%s, %s), offsetof(%s, %s_case)},\n',
+               msgname, oneof:name(), msgname, oneof:name())
+      end
+      append('};\n\n')
+    end
 
     if submsg_count > 0 then
       -- TODO(haberman): could save a little bit of space by only generating a
@@ -350,17 +416,19 @@ local function write_c_file(filedef, hfilename, append)
       append('static const upb_msglayout_fieldinit_v1 %s[%s] = {\n',
              fields_array_name, field_count)
       for _, field in ipairs(fields_number_order) do
-        local submsg_index = "-1"
+        local submsg_index = "UPB_NO_SUBMSG"
         local oneof_index = "UPB_NOT_IN_ONEOF"
         if field:type() == upb.TYPE_MESSAGE then
           submsg_index = submsg_indexes[field:subdef()]
         end
-        -- TODO(haberman): oneofs.
+        if field:containing_oneof() then
+          oneof_index = oneof_indexes[field:containing_oneof()]
+        end
         append('  {%s, offsetof(%s, %s), %s, %s, %s, %s, %s},\n',
                field:number(),
                msgname,
-               field:name(),
-               hasbit_indexes[field] or "-1",
+               (field:containing_oneof() and field:containing_oneof():name()) or field:name(),
+               hasbit_indexes[field] or "UPB_NO_HASBIT",
                oneof_index,
                submsg_index,
                field:descriptor_type(),
@@ -372,13 +440,13 @@ local function write_c_file(filedef, hfilename, append)
     append('const upb_msglayout_msginit_v1 %s_msginit = {\n', msgname)
     append('  %s,\n', submsgs_array_ref)
     append('  %s,\n', fields_array_ref)
-    append('  NULL, /* TODO. oneofs */\n')
+    append('  %s,\n', oneofs_array_ref)
     append('  NULL, /* TODO. default_msg */\n')
     append('  UPB_ALIGNED_SIZEOF(%s), %s, %s, %s, %s\n',
            msgname, field_count,
            0, -- TODO: oneof_count
            'false', -- TODO: extendable
-           'true' -- TODO: is_proto2
+          msg:file():syntax() == upb.SYNTAX_PROTO2
           )
     append('};\n\n')
 
@@ -391,36 +459,49 @@ local function write_c_file(filedef, hfilename, append)
 
     append('%s *%s_parsenew(upb_stringview buf, upb_env *env) {\n',
            msgname, msgname)
-    append('  UPB_UNUSED(buf);\n')
-    append('  UPB_UNUSED(env);\n')
-    append('  return NULL;\n')
+    append('  %s *msg = %s_new(env);\n', msgname, msgname)
+    append('  if (upb_decode(buf, msg, &%s_msginit, env)) {\n', msgname)
+    append('    return msg;\n')
+    append('  } else {\n')
+    append('    return NULL;\n')
+    append('  }\n')
     append('}\n')
 
     append('char *%s_serialize(%s *msg, upb_env *env, size_t *size) {\n',
            msgname, msgname)
-    append('  UPB_UNUSED(msg);\n')
-    append('  UPB_UNUSED(env);\n')
-    append('  UPB_UNUSED(size);\n')
-    append('  return NULL; /* TODO. */\n')
+    append('  return upb_encode(msg, &%s_msginit, env, size);\n', msgname)
     append('}\n')
 
     for field in msg:fields() do
       local typename = ctype(field)
       append('%s %s_%s(const %s *msg) {\n',
              typename, msgname, field:name(), msgname);
-      append('  return msg->%s;\n', field:name())
+      if field:containing_oneof() then
+        local oneof = field:containing_oneof()
+        append('  return msg->%s_case == %s ? msg->%s.%s : %s;\n',
+               oneof:name(), field:number(), oneof:name(), field:name(),
+               field_default(field))
+      else
+        append('  return msg->%s;\n', field:name())
+      end
       append('}\n')
       append('void %s_set_%s(%s *msg, %s value) {\n',
              msgname, field:name(), msgname, typename);
-      append('  msg->%s = value;\n', field:name())
+      if field:containing_oneof() then
+        local oneof = field:containing_oneof()
+        append('  msg->%s.%s = value;\n', oneof:name(), field:name())
+        append('  msg->%s_case = %s;\n', oneof:name(), field:number())
+      else
+        append('  msg->%s = value;\n', field:name())
+      end
       append('}\n')
     end
 
     for oneof in msg:oneofs() do
       local fullname = to_cident(oneof:containing_type():full_name() .. "." .. oneof:name())
       append('%s_oneofcases %s_case(const %s *msg) {\n', fullname, fullname, msgname)
-      append('  return 0;  /* TODO. */')
-      append('}')
+      append('  return msg->%s_case;\n', oneof:name())
+      append('}\n')
     end
   end
 end
