@@ -41,10 +41,11 @@ goog.provide('jspb.Message');
 goog.require('goog.array');
 goog.require('goog.asserts');
 goog.require('goog.crypt.base64');
-goog.require('goog.json');
 goog.require('jspb.Map');
 
 // Not needed in compilation units that have no protos with xids.
+goog.forwardDeclare('jspb.BinaryReader');
+goog.forwardDeclare('jspb.BinaryWriter');
 goog.forwardDeclare('xid.String');
 
 
@@ -980,7 +981,7 @@ jspb.Message.getWrapperField = function(msg, ctor, fieldNumber, opt_required) {
  * @param {!jspb.Message} msg A jspb proto.
  * @param {function(new:jspb.Message, Array)} ctor Constructor for the field.
  * @param {number} fieldNumber The field number.
- * @return {Array<!jspb.Message>} The repeated field as an array of protos.
+ * @return {!Array<!jspb.Message>} The repeated field as an array of protos.
  * @protected
  */
 jspb.Message.getRepeatedWrapperField = function(msg, ctor, fieldNumber) {
@@ -1122,7 +1123,7 @@ jspb.Message.addToRepeatedWrapperField = function(
  * @param {function() : string?} mapKeyGetterFn The function to get the key of
  *     the map.
  * @param {?function(boolean=): Object|
- *     function((boolean|undefined),T): Object} opt_toObjectFn The
+ *     function((boolean|undefined),T): Object=} opt_toObjectFn The
  *     toObject function for this field. We need to pass this for effective
  *     dead code removal.
  * @param {boolean=} opt_includeInstance Whether to include the JSPB instance

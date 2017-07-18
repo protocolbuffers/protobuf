@@ -38,9 +38,12 @@
 goog.provide('jspb.utils');
 
 goog.require('goog.asserts');
+goog.require('goog.crypt');
 goog.require('goog.crypt.base64');
 goog.require('goog.string');
 goog.require('jspb.BinaryConstants');
+
+goog.forwardDeclare('jspb.ByteSource');
 
 
 /**

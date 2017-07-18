@@ -65,6 +65,9 @@ goog.require('jspb.arith.Int64');
 goog.require('jspb.arith.UInt64');
 goog.require('jspb.utils');
 
+goog.forwardDeclare('jspb.AnyFieldType');
+goog.forwardDeclare('jspb.ByteSource');
+
 
 
 /**

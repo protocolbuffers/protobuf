@@ -50,6 +50,9 @@ goog.require('goog.asserts');
 goog.require('jspb.BinaryConstants');
 goog.require('jspb.BinaryDecoder');
 
+goog.forwardDeclare('jspb.AnyFieldType');
+goog.forwardDeclare('jspb.ByteSource');
+
 
 
 /**
@@ -929,7 +932,7 @@ jspb.BinaryReader.prototype.readString = function() {
 
 /**
  * Reads a length-prefixed block of bytes from the binary stream, or returns
- * null if the next field in the stream has an invalid length value.
+ * empty if the next field in the stream has an invalid length value.
  *
  * @return {!Uint8Array} The block of bytes.
  */
