@@ -155,6 +155,8 @@ local function field_layout_rank(field)
   --  1. padding alignment is (nearly) minimized.
   --  2. fields that might have defaults (1-4) are segregated
   --     from fields that are always zero-initialized (5-7).
+  --
+  -- We skip oneof fields, because they are emitted in a separate pass.
   local rank
   if field:containing_oneof() then
     rank = 100  -- These go last (actually we skip them).
@@ -347,7 +349,7 @@ local function write_c_file(filedef, hfilename, append)
       end
 
       if field:containing_oneof() then
-        -- Do nothing now
+        -- Handled below.
       else
         if has_hasbit(field) then
           hasbit_indexes[field] = hasbit_count
@@ -358,14 +360,11 @@ local function write_c_file(filedef, hfilename, append)
       end
     end
 
-    local oneof_last_fields = {}
     -- Oneof fields.
     for oneof in msg:oneofs() do
       local fullname = to_cident(oneof:containing_type():full_name() .. "." .. oneof:name())
       append('  union {\n')
-      oneof_last_fields[oneof] = ""
       for field in oneof:fields() do
-        oneof_last_fields[oneof] = field:name()
         append('    %s %s;\n', ctype(field), field:name())
       end
       append('  } %s;\n', oneof:name())
@@ -425,7 +424,6 @@ local function write_c_file(filedef, hfilename, append)
         if field:containing_oneof() then
           oneof_index = oneof_indexes[field:containing_oneof()]
         end
-        -- TODO(haberman): oneofs.
         append('  {%s, offsetof(%s, %s), %s, %s, %s, %s, %s},\n',
                field:number(),
                msgname,

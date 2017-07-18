@@ -54,18 +54,18 @@ static bool upb_decode_message(upb_decstate *d, const char *limit,
 
 static bool upb_decode_varint(const char **ptr, const char *limit,
                               uint64_t *val) {
-  uint8_t byte = 0x80;
+  uint8_t byte;
   int bitpos = 0;
   const char *p = *ptr;
   *val = 0;
 
-  while (byte & 0x80) {
+  do {
     CHK(bitpos < 70 && p < limit);
     byte = *p;
     *val |= (uint64_t)(byte & 0x7F) << bitpos;
     p++;
     bitpos += 7;
-  }
+  } while (byte & 0x80);
 
   *ptr = p;
   return true;
@@ -385,7 +385,7 @@ static bool upb_decode_fixedpacked(upb_array *arr, upb_stringview data,
   int elements = data.size / elem_size;
   void *field_mem;
 
-  CHK((data.size % elem_size) == 0);
+  CHK(elements * elem_size == data.size);
   field_mem = upb_array_add(arr, elements);
   CHK(field_mem);
   memcpy(field_mem, data.data, data.size);
@@ -451,6 +451,7 @@ static bool upb_decode_toarray(upb_decstate *d, upb_decframe *frame,
       return upb_append_unknown(d, frame, field_start);
   }
 #undef VARINT_CASE
+  UPB_UNREACHABLE();
 }
 
 static bool upb_decode_delimitedfield(upb_decstate *d, upb_decframe *frame,

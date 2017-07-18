@@ -114,7 +114,7 @@ bool DoTestIo() {
   char *serialized_input;
   char *serialized_output;
   uint32_t input_size;
-  size_t output_size = 0;
+  size_t output_size;
   conformance_ConformanceRequest *request;
   conformance_ConformanceResponse *response;
 

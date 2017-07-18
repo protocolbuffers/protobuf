@@ -32,7 +32,7 @@ static const uint8_t upb_desctype_to_fieldtype[] = {
 
 static size_t upb_encode_varint(uint64_t val, char *buf) {
   size_t i;
-  if (val == 0) { buf[0] = 0; return 1; }
+  if (val < 128) { buf[0] = val; return 1; }
   i = 0;
   while (val) {
     uint8_t byte = val & 0x7fU;
@@ -373,7 +373,11 @@ char *upb_encode(const void *msg, const upb_msglayout_msginit_v1 *m,
   e.limit = NULL;
   e.ptr = NULL;
 
-  CHK(upb_encode_message(&e, msg, m, size));
+  if (!upb_encode_message(&e, msg, m, size)) {
+    *size = 0;
+    return NULL;
+  }
+
   *size = e.limit - e.ptr;
 
   if (*size == 0) {
