@@ -526,11 +526,10 @@ class FileGenerator::ForwardDeclarations {
 void FileGenerator::GenerateBuildDescriptors(io::Printer* printer) {
   // AddDescriptors() is a file-level procedure which adds the encoded
   // FileDescriptorProto for this .proto file to the global DescriptorPool for
-  // generated files (DescriptorPool::generated_pool()). It either runs at
-  // static initialization time (by default) or when default_instance() is
-  // called for the first time (in LITE_RUNTIME mode with
-  // GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER flag enabled). This procedure also
-  // constructs default instances and registers extensions.
+  // generated files (DescriptorPool::generated_pool()). It ordinarily runs at
+  // static initialization time, but is not used at all in LITE_RUNTIME mode
+  // except when extensions are used. This procedure also constructs default
+  // instances and registers extensions.
   //
   // Its sibling, AssignDescriptors(), actually pulls the compiled
   // FileDescriptor from the DescriptorPool and uses it to populate all of
@@ -889,19 +888,15 @@ void FileGenerator::GenerateBuildDescriptors(io::Printer* printer) {
       "  ::google::protobuf::GoogleOnceInit(&once, &AddDescriptorsImpl);\n"
       "}\n");
 
-  if (!StaticInitializersForced(file_, options_)) {
-    printer->Print("#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER\n");
-  }
-  printer->Print(
-      // With static initializers.
-      "// Force AddDescriptors() to be called at static initialization time.\n"
-      "struct StaticDescriptorInitializer {\n"
-      "  StaticDescriptorInitializer() {\n"
-      "    AddDescriptors();\n"
-      "  }\n"
-      "} static_descriptor_initializer;\n");
-  if (!StaticInitializersForced(file_, options_)) {
-    printer->Print("#endif  // GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER\n");
+  if (StaticInitializersForced(file_, options_)) {
+    printer->Print(
+        "// Force AddDescriptors() to be called at dynamic initialization "
+        "time.\n"
+        "struct StaticDescriptorInitializer {\n"
+        "  StaticDescriptorInitializer() {\n"
+        "    AddDescriptors();\n"
+        "  }\n"
+        "} static_descriptor_initializer;\n");
   }
 }
 

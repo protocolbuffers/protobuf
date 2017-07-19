@@ -2411,11 +2411,7 @@ GenerateStructors(io::Printer* printer) {
     printer->Print(
         "$classname$::$classname$(::google::protobuf::Arena* arena)\n"
         "  : $initializer$ {\n"
-        // When arenas are used it's safe to assume we have finished
-        // static init time (protos with arenas are unsafe during static init)
-        "#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER\n"
         "  $file_namespace$::InitDefaults();\n"
-        "#endif  // GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER\n"
         "  SharedCtor();\n"
         "  RegisterArenaDtor(arena);\n"
         "  // @@protoc_insertion_point(arena_constructor:$full_name$)\n"
