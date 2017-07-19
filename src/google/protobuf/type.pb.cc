@@ -670,6 +670,7 @@ void Type::SerializeWithCachedSizes(
 
 ::google::protobuf::uint8* Type::InternalSerializeWithCachedSizesToArray(
     bool deterministic, ::google::protobuf::uint8* target) const {
+  (void)deterministic; // Unused
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.Type)
   ::google::protobuf::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
@@ -1538,6 +1539,7 @@ void Field::SerializeWithCachedSizes(
 
 ::google::protobuf::uint8* Field::InternalSerializeWithCachedSizesToArray(
     bool deterministic, ::google::protobuf::uint8* target) const {
+  (void)deterministic; // Unused
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.Field)
   ::google::protobuf::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
@@ -2478,6 +2480,7 @@ void Enum::SerializeWithCachedSizes(
 
 ::google::protobuf::uint8* Enum::InternalSerializeWithCachedSizesToArray(
     bool deterministic, ::google::protobuf::uint8* target) const {
+  (void)deterministic; // Unused
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.Enum)
   ::google::protobuf::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
@@ -3062,6 +3065,7 @@ void EnumValue::SerializeWithCachedSizes(
 
 ::google::protobuf::uint8* EnumValue::InternalSerializeWithCachedSizesToArray(
     bool deterministic, ::google::protobuf::uint8* target) const {
+  (void)deterministic; // Unused
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.EnumValue)
   ::google::protobuf::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
@@ -3545,6 +3549,7 @@ void Option::SerializeWithCachedSizes(
 
 ::google::protobuf::uint8* Option::InternalSerializeWithCachedSizesToArray(
     bool deterministic, ::google::protobuf::uint8* target) const {
+  (void)deterministic; // Unused
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.Option)
   ::google::protobuf::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
