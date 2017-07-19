@@ -207,6 +207,7 @@ java_EXTRA_DIST=                                                                
   java/core/src/main/java/com/google/protobuf/ByteString.java                      \
   java/core/src/main/java/com/google/protobuf/CodedInputStream.java                \
   java/core/src/main/java/com/google/protobuf/CodedOutputStream.java               \
+  java/core/src/main/java/com/google/protobuf/DiscardUnknownFieldsParser.java      \
   java/core/src/main/java/com/google/protobuf/Descriptors.java                     \
   java/core/src/main/java/com/google/protobuf/DoubleArrayList.java                 \
   java/core/src/main/java/com/google/protobuf/DynamicMessage.java                  \
@@ -281,6 +282,7 @@ java_EXTRA_DIST=                                                                
   java/core/src/test/java/com/google/protobuf/CodedOutputStreamTest.java           \
   java/core/src/test/java/com/google/protobuf/DeprecatedFieldTest.java             \
   java/core/src/test/java/com/google/protobuf/DescriptorsTest.java                 \
+  java/core/src/test/java/com/google/protobuf/DiscardUnknownFieldsTest.java        \
   java/core/src/test/java/com/google/protobuf/DoubleArrayListTest.java             \
   java/core/src/test/java/com/google/protobuf/DynamicMessageTest.java              \
   java/core/src/test/java/com/google/protobuf/EnumTest.java                        \
@@ -900,6 +902,27 @@ js_EXTRA_DIST=                                                         \
   js/compatibility_tests/v3.0.0/testempty.proto                        \
   js/compatibility_tests/v3.0.0/test.proto                             \
   js/compatibility_tests/v3.0.0/test.sh                                \
+  js/compatibility_tests/v3.1.0/testempty.proto                        \
+  js/compatibility_tests/v3.1.0/testbinary.proto                       \
+  js/compatibility_tests/v3.1.0/test5.proto                            \
+  js/compatibility_tests/v3.1.0/test4.proto                            \
+  js/compatibility_tests/v3.1.0/test3.proto                            \
+  js/compatibility_tests/v3.1.0/test2.proto                            \
+  js/compatibility_tests/v3.1.0/test.proto                             \
+  js/compatibility_tests/v3.1.0/proto3_test.proto                      \
+  js/compatibility_tests/v3.1.0/proto3_test.js                         \
+  js/compatibility_tests/v3.1.0/message_test.js                        \
+  js/compatibility_tests/v3.1.0/maps_test.js                           \
+  js/compatibility_tests/v3.1.0/debug_test.js                          \
+  js/compatibility_tests/v3.1.0/data.proto                             \
+  js/compatibility_tests/v3.1.0/commonjs/test7/test7.proto             \
+  js/compatibility_tests/v3.1.0/commonjs/test6/test6.proto             \
+  js/compatibility_tests/v3.1.0/binary/writer_test.js                  \
+  js/compatibility_tests/v3.1.0/binary/utils_test.js                   \
+  js/compatibility_tests/v3.1.0/binary/reader_test.js                  \
+  js/compatibility_tests/v3.1.0/binary/proto_test.js                   \
+  js/compatibility_tests/v3.1.0/binary/decoder_test.js                 \
+  js/compatibility_tests/v3.1.0/binary/arith_test.js                   \
   js/data.proto                                                        \
   js/debug.js                                                          \
   js/debug_test.js                                                     \
