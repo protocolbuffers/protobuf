@@ -103,6 +103,7 @@ nobase_include_HEADERS =                                         \
   google/protobuf/api.pb.h                                       \
   google/protobuf/any.h                                          \
   google/protobuf/arena.h                                        \
+  google/protobuf/arena_impl.h                                   \
   google/protobuf/arenastring.h                                  \
   google/protobuf/descriptor_database.h                          \
   google/protobuf/descriptor.h                                   \
