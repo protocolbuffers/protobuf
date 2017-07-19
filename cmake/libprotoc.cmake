@@ -103,7 +103,6 @@ set(libprotoc_headers
   ${protobuf_source_dir}/src/google/protobuf/compiler/parser.h
   ${protobuf_source_dir}/src/google/protobuf/compiler/plugin.h
   ${protobuf_source_dir}/src/google/protobuf/compiler/plugin.pb.h
-  ${protobuf_source_dir}/src/google/protobuf/compiler/profile.pb.h
   ${protobuf_source_dir}/src/google/protobuf/compiler/subprocess.h
   ${protobuf_source_dir}/src/google/protobuf/compiler/zip_writer.h
   ${protobuf_source_dir}/src/google/protobuf/compiler/cpp/cpp_enum.h
