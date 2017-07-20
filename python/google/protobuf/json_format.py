@@ -532,8 +532,8 @@ class _Parser(object):
 
   def _ConvertGenericMessage(self, value, message):
     """Convert a JSON representation into message with FromJsonString."""
-    # Durantion, Timestamp, FieldMask have FromJsonString method to do the
-    # convert. Users can also call the method directly.
+    # Duration, Timestamp, FieldMask have a FromJsonString method to do the
+    # conversion. Users can also call the method directly.
     message.FromJsonString(value)
 
   def _ConvertValueMessage(self, value, message):
