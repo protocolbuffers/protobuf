@@ -1401,7 +1401,7 @@ static void putarray(zval* array, const upb_fielddef* f, upb_sink* sink,
         MessageHeader *submsg = UNBOX(MessageHeader, *(zval**)memory);
 #else
         MessageHeader *submsg =
-            (MessageHeader*)((char*)(*(zend_object**)memory) -
+            (MessageHeader*)((char*)(Z_OBJ_P((zval*)memory)) -
                 XtOffsetOf(MessageHeader, std));
 #endif
         putrawsubmsg(submsg, f, &subsink, depth TSRMLS_CC);

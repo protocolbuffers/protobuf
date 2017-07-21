@@ -199,6 +199,59 @@ bool native_slot_set_by_array(upb_fieldtype_t type,
         Z_ADDREF_P(value);
       }
 #else
+      // DEREF(memory, zend_object*) = Z_OBJ_P(value);
+      // ++GC_REFCOUNT(Z_OBJ_P(value));
+      DEREF(memory, zval*) = value;
+      ++GC_REFCOUNT(Z_OBJ_P(value));
+#endif
+      break;
+    }
+    default:
+      return native_slot_set(type, klass, memory, value TSRMLS_CC);
+  }
+  return true;
+}
+
+bool native_slot_set_by_map(upb_fieldtype_t type, const zend_class_entry* klass,
+                            void* memory, zval* value TSRMLS_DC) {
+  switch (type) {
+    case UPB_TYPE_STRING:
+    case UPB_TYPE_BYTES: {
+      if (!protobuf_convert_to_string(value)) {
+        return false;
+      }
+      if (type == UPB_TYPE_STRING &&
+          !is_structurally_valid_utf8(Z_STRVAL_P(value), Z_STRLEN_P(value))) {
+        zend_error(E_USER_ERROR, "Given string is not UTF8 encoded.");
+        return false;
+      }
+
+      // Handles repeated/map string field. Memory provided by
+      // RepeatedField/Map is not initialized.
+#if PHP_MAJOR_VERSION < 7
+      MAKE_STD_ZVAL(DEREF(memory, zval*));
+      PHP_PROTO_ZVAL_STRINGL(DEREF(memory, zval*), Z_STRVAL_P(value),
+                             Z_STRLEN_P(value), 1);
+#else
+      *(zend_string**)memory = zend_string_dup(Z_STR_P(value), 0);
+#endif
+      break;
+    }
+    case UPB_TYPE_MESSAGE: {
+      if (Z_TYPE_P(value) != IS_OBJECT) {
+        zend_error(E_USER_ERROR, "Given value is not message.");
+        return false;
+      }
+      if (Z_TYPE_P(value) == IS_OBJECT && klass != Z_OBJCE_P(value)) {
+        zend_error(E_USER_ERROR, "Given message does not have correct class.");
+        return false;
+      }
+#if PHP_MAJOR_VERSION < 7
+      if (EXPECTED(DEREF(memory, zval*) != value)) {
+        DEREF(memory, zval*) = value;
+        Z_ADDREF_P(value);
+      }
+#else
       DEREF(memory, zend_object*) = Z_OBJ_P(value);
       ++GC_REFCOUNT(Z_OBJ_P(value));
 #endif
@@ -952,8 +1005,16 @@ void layout_merge(MessageLayout* layout, MessageHeader* from,
           void* to_memory =
               ALLOC_N(char, native_slot_size(upb_fielddef_type(field)));
           memset(to_memory, 0, native_slot_size(upb_fielddef_type(field)));
-          php_proto_zend_hash_index_find(PHP_PROTO_HASH_OF(from_array->array),
-                                         j, (void**)&from_memory);
+
+          if (to_array->type == UPB_TYPE_MESSAGE) {
+            zval* result =
+                zend_hash_index_find(PHP_PROTO_HASH_OF(from_array->array), j);
+            from_memory = &Z_OBJ_P(result);
+          } else {
+            php_proto_zend_hash_index_find(PHP_PROTO_HASH_OF(from_array->array),
+                                           j, (void**)&from_memory);
+          }
+
           native_slot_merge_by_array(field, from_memory,
                                      to_memory PHP_PROTO_TSRMLS_CC);
           repeated_field_push_native(to_array, to_memory);
