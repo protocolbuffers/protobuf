@@ -206,9 +206,9 @@ static void repeated_field_write_dimension(zval *object, zval *offset,
   }
 
   if (intern->type == UPB_TYPE_MESSAGE) {
-    zend_hash_index_update(ht, index, *(zval**)memory);
+    php_proto_zend_hash_index_update_zval(ht, index, *(zval**)memory);
   } else {
-    php_proto_zend_hash_index_update(ht, index, memory, size, NULL);
+    php_proto_zend_hash_index_update_mem(ht, index, memory, size, NULL);
   }
 }
 
@@ -233,13 +233,14 @@ void *repeated_field_index_native(RepeatedField *intern, int index TSRMLS_DC) {
   void *value;
 
   if (intern->type == UPB_TYPE_MESSAGE) {
-    value = zend_hash_index_find(ht, index);
-    if (value == NULL) {
+    if (php_proto_zend_hash_index_find_zval(ht, index, (void **)&value) ==
+        FAILURE) {
       zend_error(E_USER_ERROR, "Element at %d doesn't exist.\n", index);
       return NULL;
     }
   } else {
-    if (php_proto_zend_hash_index_find(ht, index, (void **)&value) == FAILURE) {
+    if (php_proto_zend_hash_index_find_mem(ht, index, (void **)&value) ==
+        FAILURE) {
       zend_error(E_USER_ERROR, "Element at %d doesn't exist.\n", index);
       return NULL;
     }
@@ -252,11 +253,9 @@ void repeated_field_push_native(RepeatedField *intern, void *value) {
   HashTable *ht = PHP_PROTO_HASH_OF(intern->array);
   int size = native_slot_size(intern->type);
   if (intern->type == UPB_TYPE_MESSAGE) {
-    zval tmp;
-    ZVAL_OBJ(&tmp, *(zend_object**)value);
-    zend_hash_next_index_insert(ht, &tmp);
+    php_proto_zend_hash_next_index_insert_zval(ht, value);
   } else {
-    php_proto_zend_hash_next_index_insert(ht, (void **)value, size, NULL);
+    php_proto_zend_hash_next_index_insert_mem(ht, (void **)value, size, NULL);
   }
 }
 
@@ -381,14 +380,15 @@ PHP_METHOD(RepeatedField, offsetGet) {
   HashTable *table = PHP_PROTO_HASH_OF(intern->array);
 
   if (intern->type == UPB_TYPE_MESSAGE) {
-    zval *result = zend_hash_index_find(table, index);
-    if (result == NULL) {
+    if (php_proto_zend_hash_index_find_zval(table, index, (void **)&memory) ==
+        FAILURE) {
       zend_error(E_USER_ERROR, "Element at %ld doesn't exist.\n", index);
       return;
     }
-    ZVAL_COPY(return_value, result);
+    native_slot_get_by_array(intern->type, memory,
+                             ZVAL_PTR_TO_CACHED_PTR(return_value) TSRMLS_CC);
   } else {
-    if (php_proto_zend_hash_index_find(table, index, (void **)&memory) ==
+    if (php_proto_zend_hash_index_find_mem(table, index, (void **)&memory) ==
         FAILURE) {
       zend_error(E_USER_ERROR, "Element at %ld doesn't exist.\n", index);
       return;
@@ -514,8 +514,9 @@ PHP_METHOD(RepeatedFieldIter, current) {
 
   HashTable *table = PHP_PROTO_HASH_OF(repeated_field->array);
 
-  if (php_proto_zend_hash_index_find(table, intern->position, (void **)&memory) ==
-      FAILURE) {
+  ////////////////////////////////////
+  if (php_proto_zend_hash_index_find_mem(table, intern->position,
+                                         (void **)&memory) == FAILURE) {
     zend_error(E_USER_ERROR, "Element at %ld doesn't exist.\n", index);
     return;
   }

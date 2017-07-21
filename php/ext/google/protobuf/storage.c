@@ -401,8 +401,7 @@ void native_slot_get_by_array(upb_fieldtype_t type, const void* memory,
         ZVAL_ZVAL(CACHED_PTR_TO_ZVAL_PTR(cache), value, 1, 0);
       }
 #else
-      ++GC_REFCOUNT(*(zend_object**)memory);
-      ZVAL_OBJ(cache, *(zend_object**)memory);
+      ZVAL_COPY(CACHED_PTR_TO_ZVAL_PTR(cache), *(zval**)memory);
 #endif
       return;
     }
@@ -421,6 +420,25 @@ void native_slot_get_by_map_key(upb_fieldtype_t type, const void* memory,
     }
     default:
       native_slot_get(type, memory, cache TSRMLS_CC);
+  }
+}
+
+void native_slot_get_by_map_value(upb_fieldtype_t type, const void* memory,
+                              CACHED_VALUE* cache TSRMLS_DC) {
+  switch (type) {
+    case UPB_TYPE_MESSAGE: {
+#if PHP_MAJOR_VERSION < 7
+      zval* value = CACHED_PTR_TO_ZVAL_PTR((CACHED_VALUE*)memory);
+      if (EXPECTED(CACHED_PTR_TO_ZVAL_PTR(cache) != value)) {
+        ZVAL_ZVAL(CACHED_PTR_TO_ZVAL_PTR(cache), value, 1, 0);
+      }
+#else
+      ++GC_REFCOUNT(*(zend_object**)memory);
+      ZVAL_OBJ(cache, *(zend_object**)memory);
+#endif
+    }
+    default:
+      native_slot_get_by_array(type, memory, cache TSRMLS_CC);
   }
 }
 
@@ -1007,12 +1025,14 @@ void layout_merge(MessageLayout* layout, MessageHeader* from,
           memset(to_memory, 0, native_slot_size(upb_fielddef_type(field)));
 
           if (to_array->type == UPB_TYPE_MESSAGE) {
-            zval* result =
-                zend_hash_index_find(PHP_PROTO_HASH_OF(from_array->array), j);
-            from_memory = &Z_OBJ_P(result);
+            php_proto_zend_hash_index_find_zval(
+                PHP_PROTO_HASH_OF(from_array->array), j, (void**)&from_memory);
+#if PHP_MAJOR_VERSION >= 7
+            from_memory = &Z_OBJ_P((zval*)from_memory);
+#endif
           } else {
-            php_proto_zend_hash_index_find(PHP_PROTO_HASH_OF(from_array->array),
-                                           j, (void**)&from_memory);
+            php_proto_zend_hash_index_find_mem(
+                PHP_PROTO_HASH_OF(from_array->array), j, (void**)&from_memory);
           }
 
           native_slot_merge_by_array(field, from_memory,

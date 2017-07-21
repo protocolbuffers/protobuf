@@ -354,7 +354,7 @@ static size_t zendstringdata_handler(void* closure, const void* hd,
 
   HashTable *ht = PHP_PROTO_HASH_OF(intern->array);
   int index = zend_hash_num_elements(ht) - 1;
-  php_proto_zend_hash_index_update(
+  php_proto_zend_hash_index_update_mem(
       ht, index, memory, sizeof(zend_string*), NULL);
 
   return len;
