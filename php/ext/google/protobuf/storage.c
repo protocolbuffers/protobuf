@@ -401,7 +401,7 @@ void native_slot_get_by_array(upb_fieldtype_t type, const void* memory,
         ZVAL_ZVAL(CACHED_PTR_TO_ZVAL_PTR(cache), value, 1, 0);
       }
 #else
-      ZVAL_COPY(CACHED_PTR_TO_ZVAL_PTR(cache), *(zval**)memory);
+      ZVAL_COPY(CACHED_PTR_TO_ZVAL_PTR(cache), memory);
 #endif
       return;
     }
@@ -436,6 +436,7 @@ void native_slot_get_by_map_value(upb_fieldtype_t type, const void* memory,
       ++GC_REFCOUNT(*(zend_object**)memory);
       ZVAL_OBJ(cache, *(zend_object**)memory);
 #endif
+      return;
     }
     default:
       native_slot_get_by_array(type, memory, cache TSRMLS_CC);
