@@ -11,8 +11,18 @@ cmake_policy(SET CMP0022 NEW)
 # Project
 project(protobuf C CXX)
 
+# Auxiliary modules
+include(CMakeDependentOption)
+
 # Options
-option(protobuf_BUILD_TESTS "Build tests" ON)
+cmake_dependent_option(protobuf_BUILD_TESTS "Build tests" ON
+  "NOT CMAKE_CROSSCOMPILING" OFF)
+cmake_dependent_option(protobuf_BUILD_PROTOC "Build protoc compiler" ON
+  "NOT CMAKE_SYSTEM_NAME MATCHES Android" OFF)
+mark_as_advanced(protobuf_BUILD_PROTOC)
+cmake_dependent_option(protobuf_BUILD_LIBPROTOC "Build libprotoc" ON
+  "protobuf_BUILD_PROTOC" OFF)
+mark_as_advanced(protobuf_BUILD_LIBPROTOC)
 option(protobuf_BUILD_EXAMPLES "Build examples" OFF)
 if (BUILD_SHARED_LIBS)
   set(protobuf_BUILD_SHARED_LIBS_DEFAULT ON)
@@ -20,7 +30,6 @@ else (BUILD_SHARED_LIBS)
   set(protobuf_BUILD_SHARED_LIBS_DEFAULT OFF)
 endif (BUILD_SHARED_LIBS)
 option(protobuf_BUILD_SHARED_LIBS "Build Shared Libraries" ${protobuf_BUILD_SHARED_LIBS_DEFAULT})
-include(CMakeDependentOption)
 cmake_dependent_option(protobuf_MSVC_STATIC_RUNTIME "Link static runtime libraries" ON
   "NOT protobuf_BUILD_SHARED_LIBS" OFF)
 if (MSVC)
@@ -165,8 +174,12 @@ endif (protobuf_UNICODE)
 
 include(libprotobuf-lite.cmake)
 include(libprotobuf.cmake)
-include(libprotoc.cmake)
-include(protoc.cmake)
+if(protobuf_BUILD_LIBPROTOC)
+  include(libprotoc.cmake)
+  if(protobuf_BUILD_PROTOC)
+    include(protoc.cmake)
+  endif()
+endif()
 
 if (protobuf_BUILD_TESTS)
   include(tests.cmake)
