@@ -136,6 +136,39 @@ class MessageTest(BaseTestCase):
     golden_copy = copy.deepcopy(golden_message)
     self.assertEqual(golden_data, golden_copy.SerializeToString())
 
+  def testDeterminismParameters(self, message_module):
+    # This message is always deterministically serialized, even if determinism
+    # is disabled, so we can use it to verify that all the determinism
+    # parameters work correctly.
+    golden_data = (b'\xe2\x02\nOne string'
+                   b'\xe2\x02\nTwo string'
+                   b'\xe2\x02\nRed string'
+                   b'\xe2\x02\x0bBlue string')
+    golden_message = message_module.TestAllTypes()
+    golden_message.repeated_string.extend([
+        'One string',
+        'Two string',
+        'Red string',
+        'Blue string',
+    ])
+    self.assertEqual(golden_data,
+                     golden_message.SerializeToString(deterministic=None))
+    self.assertEqual(golden_data,
+                     golden_message.SerializeToString(deterministic=False))
+    self.assertEqual(golden_data,
+                     golden_message.SerializeToString(deterministic=True))
+
+    class BadArgError(Exception):
+      pass
+
+    class BadArg(object):
+
+      def __nonzero__(self):
+        raise BadArgError()
+
+    with self.assertRaises(BadArgError):
+      golden_message.SerializeToString(deterministic=BadArg())
+
   def testPickleSupport(self, message_module):
     golden_data = test_util.GoldenFileData('golden_message')
     golden_message = message_module.TestAllTypes()
@@ -377,6 +410,7 @@ class MessageTest(BaseTestCase):
     self.assertEqual(message.repeated_int32[0], 1)
     self.assertEqual(message.repeated_int32[1], 2)
     self.assertEqual(message.repeated_int32[2], 3)
+    self.assertEqual(str(message.repeated_int32), str([1, 2, 3]))
 
     message.repeated_float.append(1.1)
     message.repeated_float.append(1.3)
@@ -393,6 +427,7 @@ class MessageTest(BaseTestCase):
     self.assertEqual(message.repeated_string[0], 'a')
     self.assertEqual(message.repeated_string[1], 'b')
     self.assertEqual(message.repeated_string[2], 'c')
+    self.assertEqual(str(message.repeated_string), str([u'a', u'b', u'c']))
 
     message.repeated_bytes.append(b'a')
     message.repeated_bytes.append(b'c')
@@ -401,6 +436,7 @@ class MessageTest(BaseTestCase):
     self.assertEqual(message.repeated_bytes[0], b'a')
     self.assertEqual(message.repeated_bytes[1], b'b')
     self.assertEqual(message.repeated_bytes[2], b'c')
+    self.assertEqual(str(message.repeated_bytes), str([b'a', b'b', b'c']))
 
   def testSortingRepeatedScalarFieldsCustomComparator(self, message_module):
     """Check some different types with custom comparator."""
@@ -439,6 +475,8 @@ class MessageTest(BaseTestCase):
     self.assertEqual(message.repeated_nested_message[3].bb, 4)
     self.assertEqual(message.repeated_nested_message[4].bb, 5)
     self.assertEqual(message.repeated_nested_message[5].bb, 6)
+    self.assertEqual(str(message.repeated_nested_message),
+                     '[bb: 1\n, bb: 2\n, bb: 3\n, bb: 4\n, bb: 5\n, bb: 6\n]')
 
   def testSortingRepeatedCompositeFieldsStable(self, message_module):
     """Check passing a custom comparator to sort a repeated composite field."""
@@ -1266,6 +1304,14 @@ class Proto3Test(BaseTestCase):
     self.assertEqual(1234567, m2.optional_nested_enum)
     self.assertEqual(7654321, m2.repeated_nested_enum[0])
 
+    # ParseFromString in Proto2 should accept unknown enums too.
+    m3 = unittest_pb2.TestAllTypes()
+    m3.ParseFromString(serialized)
+    m2.Clear()
+    m2.ParseFromString(m3.SerializeToString())
+    self.assertEqual(1234567, m2.optional_nested_enum)
+    self.assertEqual(7654321, m2.repeated_nested_enum[0])
+
   # Map isn't really a proto3-only feature. But there is no proto2 equivalent
   # of google/protobuf/map_unittest.proto right now, so it's not easy to
   # test both with the same test like we do for the other proto2/proto3 tests.
@@ -1436,6 +1482,23 @@ class Proto3Test(BaseTestCase):
     self.assertIn(123, msg2.map_int32_foreign_message)
     self.assertIn(-456, msg2.map_int32_foreign_message)
     self.assertEqual(2, len(msg2.map_int32_foreign_message))
+
+  def testNestedMessageMapItemDelete(self):
+    msg = map_unittest_pb2.TestMap()
+    msg.map_int32_all_types[1].optional_nested_message.bb = 1
+    del msg.map_int32_all_types[1]
+    msg.map_int32_all_types[2].optional_nested_message.bb = 2
+    self.assertEqual(1, len(msg.map_int32_all_types))
+    msg.map_int32_all_types[1].optional_nested_message.bb = 1
+    self.assertEqual(2, len(msg.map_int32_all_types))
+
+    serialized = msg.SerializeToString()
+    msg2 = map_unittest_pb2.TestMap()
+    msg2.ParseFromString(serialized)
+    keys = [1, 2]
+    # The loop triggers PyErr_Occurred() in c extension.
+    for key in keys:
+      del msg2.map_int32_all_types[key]
 
   def testMapByteSize(self):
     msg = map_unittest_pb2.TestMap()
@@ -1650,6 +1713,35 @@ class Proto3Test(BaseTestCase):
     items1 = msg.map_string_string.items()
     items2 = msg.map_string_string.items()
     self.assertEqual(items1, items2)
+
+  def testMapDeterministicSerialization(self):
+    golden_data = (b'r\x0c\n\x07init_op\x12\x01d'
+                   b'r\n\n\x05item1\x12\x01e'
+                   b'r\n\n\x05item2\x12\x01f'
+                   b'r\n\n\x05item3\x12\x01g'
+                   b'r\x0b\n\x05item4\x12\x02QQ'
+                   b'r\x12\n\rlocal_init_op\x12\x01a'
+                   b'r\x0e\n\tsummaries\x12\x01e'
+                   b'r\x18\n\x13trainable_variables\x12\x01b'
+                   b'r\x0e\n\tvariables\x12\x01c')
+    msg = map_unittest_pb2.TestMap()
+    msg.map_string_string['local_init_op'] = 'a'
+    msg.map_string_string['trainable_variables'] = 'b'
+    msg.map_string_string['variables'] = 'c'
+    msg.map_string_string['init_op'] = 'd'
+    msg.map_string_string['summaries'] = 'e'
+    msg.map_string_string['item1'] = 'e'
+    msg.map_string_string['item2'] = 'f'
+    msg.map_string_string['item3'] = 'g'
+    msg.map_string_string['item4'] = 'QQ'
+
+    # If deterministic serialization is not working correctly, this will be
+    # "flaky" depending on the exact python dict hash seed.
+    #
+    # Fortunately, there are enough items in this map that it is extremely
+    # unlikely to ever hit the "right" in-order combination, so the test
+    # itself should fail reliably.
+    self.assertEqual(golden_data, msg.SerializeToString(deterministic=True))
 
   def testMapIterationClearMessage(self):
     # Iterator needs to work even if message and map are deleted.

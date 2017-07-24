@@ -109,14 +109,16 @@ void EnumGenerator::Generate(io::Printer* printer) {
       printer->Print(vars,
         "$name$($index$, $number$),\n");
     }
+    printer->Annotate("name", canonical_values_[i]);
   }
 
   if (SupportUnknownEnumValue(descriptor_->file())) {
     if (ordinal_is_index) {
-      printer->Print("UNRECOGNIZED(-1),\n");
+      printer->Print("${$UNRECOGNIZED$}$(-1),\n", "{", "", "}", "");
     } else {
-      printer->Print("UNRECOGNIZED(-1, -1),\n");
+      printer->Print("${$UNRECOGNIZED$}$(-1, -1),\n", "{", "", "}", "");
     }
+    printer->Annotate("{", "}", descriptor_);
   }
 
   printer->Print(
@@ -133,15 +135,19 @@ void EnumGenerator::Generate(io::Printer* printer) {
     WriteEnumValueDocComment(printer, aliases_[i].value);
     printer->Print(vars,
       "public static final $classname$ $name$ = $canonical_name$;\n");
+    printer->Annotate("name", aliases_[i].value);
   }
 
   for (int i = 0; i < descriptor_->value_count(); i++) {
     std::map<string, string> vars;
     vars["name"] = descriptor_->value(i)->name();
     vars["number"] = SimpleItoa(descriptor_->value(i)->number());
+    vars["{"] = "";
+    vars["}"] = "";
     WriteEnumValueDocComment(printer, descriptor_->value(i));
     printer->Print(vars,
-      "public static final int $name$_VALUE = $number$;\n");
+      "public static final int ${$$name$_VALUE$}$ = $number$;\n");
+    printer->Annotate("{", "}", descriptor_->value(i));
   }
   printer->Print("\n");
 

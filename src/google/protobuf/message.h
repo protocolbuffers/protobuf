@@ -254,6 +254,7 @@ class LIBPROTOBUF_EXPORT Message : public MessageLite {
   // fields defined for the proto.
   virtual size_t SpaceUsedLong() const;
 
+  PROTOBUF_RUNTIME_DEPRECATED("Please use SpaceUsedLong() instead")
   int SpaceUsed() const { return internal::ToIntSize(SpaceUsedLong()); }
 
   // Debugging & Testing----------------------------------------------
@@ -428,6 +429,7 @@ class LIBPROTOBUF_EXPORT Reflection {
   // Estimate the amount of memory used by the message object.
   virtual size_t SpaceUsedLong(const Message& message) const = 0;
 
+  PROTOBUF_RUNTIME_DEPRECATED("Please use SpaceUsedLong() instead")
   int SpaceUsed(const Message& message) const {
     return internal::ToIntSize(SpaceUsedLong(message));
   }
@@ -752,9 +754,9 @@ class LIBPROTOBUF_EXPORT Reflection {
   // specifyed by 'field' passing ownership to the message.
   // TODO(tmarek): Make virtual after all subclasses have been
   // updated.
-  virtual void AddAllocatedMessage(Message* /* message */,
-                                   const FieldDescriptor* /* field */,
-                                   Message* /* new_entry */) const {}
+  virtual void AddAllocatedMessage(Message* message,
+                                   const FieldDescriptor* field,
+                                   Message* new_entry) const;
 
 
   // Get a RepeatedFieldRef object that can be used to read the underlying

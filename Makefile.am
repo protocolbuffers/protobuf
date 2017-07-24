@@ -207,6 +207,7 @@ java_EXTRA_DIST=                                                                
   java/core/src/main/java/com/google/protobuf/ByteString.java                      \
   java/core/src/main/java/com/google/protobuf/CodedInputStream.java                \
   java/core/src/main/java/com/google/protobuf/CodedOutputStream.java               \
+  java/core/src/main/java/com/google/protobuf/DiscardUnknownFieldsParser.java      \
   java/core/src/main/java/com/google/protobuf/Descriptors.java                     \
   java/core/src/main/java/com/google/protobuf/DoubleArrayList.java                 \
   java/core/src/main/java/com/google/protobuf/DynamicMessage.java                  \
@@ -281,6 +282,7 @@ java_EXTRA_DIST=                                                                
   java/core/src/test/java/com/google/protobuf/CodedOutputStreamTest.java           \
   java/core/src/test/java/com/google/protobuf/DeprecatedFieldTest.java             \
   java/core/src/test/java/com/google/protobuf/DescriptorsTest.java                 \
+  java/core/src/test/java/com/google/protobuf/DiscardUnknownFieldsTest.java        \
   java/core/src/test/java/com/google/protobuf/DoubleArrayListTest.java             \
   java/core/src/test/java/com/google/protobuf/DynamicMessageTest.java              \
   java/core/src/test/java/com/google/protobuf/EnumTest.java                        \
@@ -317,6 +319,7 @@ java_EXTRA_DIST=                                                                
   java/core/src/test/java/com/google/protobuf/SingleFieldBuilderV3Test.java        \
   java/core/src/test/java/com/google/protobuf/SmallSortedMapTest.java              \
   java/core/src/test/java/com/google/protobuf/TestBadIdentifiers.java              \
+  java/core/src/test/java/com/google/protobuf/TestBadIdentifiersLite.java          \
   java/core/src/test/java/com/google/protobuf/TestUtil.java                        \
   java/core/src/test/java/com/google/protobuf/TestUtilLite.java                    \
   java/core/src/test/java/com/google/protobuf/TextFormatParseInfoTreeTest.java     \
@@ -747,6 +750,7 @@ python_EXTRA_DIST=                                                           \
   python/google/protobuf/json_format.py                                      \
   python/google/protobuf/message.py                                          \
   python/google/protobuf/message_factory.py                                  \
+  python/google/protobuf/python_protobuf.h                                   \
   python/google/protobuf/proto_builder.py                                    \
   python/google/protobuf/pyext/README                                        \
   python/google/protobuf/pyext/__init__.py                                   \
@@ -776,13 +780,13 @@ python_EXTRA_DIST=                                                           \
   python/google/protobuf/pyext/repeated_scalar_container.h                   \
   python/google/protobuf/pyext/safe_numerics.h                               \
   python/google/protobuf/pyext/scoped_pyobject_ptr.h                         \
-  python/google/protobuf/python_protobuf.h                                   \
   python/google/protobuf/reflection.py                                       \
   python/google/protobuf/service.py                                          \
   python/google/protobuf/service_reflection.py                               \
   python/google/protobuf/symbol_database.py                                  \
   python/google/protobuf/text_encoding.py                                    \
   python/google/protobuf/text_format.py                                      \
+  python/release.sh                                                          \
   python/mox.py                                                              \
   python/setup.cfg                                                           \
   python/setup.py                                                            \
@@ -902,6 +906,27 @@ js_EXTRA_DIST=                                                         \
   js/compatibility_tests/v3.0.0/testempty.proto                        \
   js/compatibility_tests/v3.0.0/test.proto                             \
   js/compatibility_tests/v3.0.0/test.sh                                \
+  js/compatibility_tests/v3.1.0/testempty.proto                        \
+  js/compatibility_tests/v3.1.0/testbinary.proto                       \
+  js/compatibility_tests/v3.1.0/test5.proto                            \
+  js/compatibility_tests/v3.1.0/test4.proto                            \
+  js/compatibility_tests/v3.1.0/test3.proto                            \
+  js/compatibility_tests/v3.1.0/test2.proto                            \
+  js/compatibility_tests/v3.1.0/test.proto                             \
+  js/compatibility_tests/v3.1.0/proto3_test.proto                      \
+  js/compatibility_tests/v3.1.0/proto3_test.js                         \
+  js/compatibility_tests/v3.1.0/message_test.js                        \
+  js/compatibility_tests/v3.1.0/maps_test.js                           \
+  js/compatibility_tests/v3.1.0/debug_test.js                          \
+  js/compatibility_tests/v3.1.0/data.proto                             \
+  js/compatibility_tests/v3.1.0/commonjs/test7/test7.proto             \
+  js/compatibility_tests/v3.1.0/commonjs/test6/test6.proto             \
+  js/compatibility_tests/v3.1.0/binary/writer_test.js                  \
+  js/compatibility_tests/v3.1.0/binary/utils_test.js                   \
+  js/compatibility_tests/v3.1.0/binary/reader_test.js                  \
+  js/compatibility_tests/v3.1.0/binary/proto_test.js                   \
+  js/compatibility_tests/v3.1.0/binary/decoder_test.js                 \
+  js/compatibility_tests/v3.1.0/binary/arith_test.js                   \
   js/data.proto                                                        \
   js/debug.js                                                          \
   js/debug_test.js                                                     \

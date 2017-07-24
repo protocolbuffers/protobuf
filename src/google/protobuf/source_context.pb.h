@@ -48,8 +48,9 @@ struct LIBPROTOBUF_EXPORT TableStruct {
   static const ::google::protobuf::internal::AuxillaryParseTableField aux[];
   static const ::google::protobuf::internal::ParseTable schema[];
   static const ::google::protobuf::uint32 offsets[];
+  static const ::google::protobuf::internal::FieldMetadata field_metadata[];
+  static const ::google::protobuf::internal::SerializationTable serialization_table[];
   static void InitDefaultsImpl();
-  static void Shutdown();
 };
 void LIBPROTOBUF_EXPORT AddDescriptors();
 void LIBPROTOBUF_EXPORT InitDefaults();
@@ -68,7 +69,21 @@ class LIBPROTOBUF_EXPORT SourceContext : public ::google::protobuf::Message /* @
     CopyFrom(from);
     return *this;
   }
+  #if LANG_CXX11
+  SourceContext(SourceContext&& from) noexcept
+    : SourceContext() {
+    *this = ::std::move(from);
+  }
 
+  inline SourceContext& operator=(SourceContext&& from) noexcept {
+    if (GetArenaNoVirtual() == from.GetArenaNoVirtual()) {
+      if (this != &from) InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+  #endif
   static const ::google::protobuf::Descriptor* descriptor();
   static const SourceContext& default_instance();
 
@@ -80,6 +95,9 @@ class LIBPROTOBUF_EXPORT SourceContext : public ::google::protobuf::Message /* @
     0;
 
   void Swap(SourceContext* other);
+  friend void swap(SourceContext& a, SourceContext& b) {
+    a.Swap(&b);
+  }
 
   // implements Message ----------------------------------------------
 
@@ -149,6 +167,10 @@ class LIBPROTOBUF_EXPORT SourceContext : public ::google::protobuf::Message /* @
 // ===================================================================
 
 #if !PROTOBUF_INLINE_NOT_IN_HEADERS
+#ifdef __GNUC__
+  #pragma GCC diagnostic push
+  #pragma GCC diagnostic ignored "-Wstrict-aliasing"
+#endif  // __GNUC__
 // SourceContext
 
 // string file_name = 1;
@@ -204,6 +226,9 @@ inline void SourceContext::set_allocated_file_name(::std::string* file_name) {
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.SourceContext.file_name)
 }
 
+#ifdef __GNUC__
+  #pragma GCC diagnostic pop
+#endif  // __GNUC__
 #endif  // !PROTOBUF_INLINE_NOT_IN_HEADERS
 
 // @@protoc_insertion_point(namespace_scope)

@@ -166,14 +166,14 @@ class LIBPROTOBUF_EXPORT DynamicMapSorter {
     }
     GOOGLE_DCHECK_EQ(result.size(), i);
     MapEntryMessageComparator comparator(field->message_type());
-    std::sort(result.begin(), result.end(), comparator);
+    std::stable_sort(result.begin(), result.end(), comparator);
     // Complain if the keys aren't in ascending order.
 #ifndef NDEBUG
     for (size_t j = 1; j < static_cast<size_t>(map_size); j++) {
       if (!comparator(result[j - 1], result[j])) {
         GOOGLE_LOG(ERROR) << (comparator(result[j], result[j - 1]) ?
-                       "internal error in map key sorting" :
-                       "map keys are not unique");
+                      "internal error in map key sorting" :
+                      "map keys are not unique");
       }
     }
 #endif

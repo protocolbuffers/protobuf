@@ -35,9 +35,10 @@
 #include <google/protobuf/compiler/cpp/cpp_extension.h>
 #include <map>
 #include <google/protobuf/compiler/cpp/cpp_helpers.h>
-#include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/io/printer.h>
 #include <google/protobuf/descriptor.pb.h>
+#include <google/protobuf/stubs/strutil.h>
+
 
 namespace google {
 namespace protobuf {

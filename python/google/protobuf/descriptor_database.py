@@ -134,8 +134,7 @@ def _ExtractSymbols(desc_proto, package):
   Yields:
     The fully qualified name found in the descriptor.
   """
-
-  message_name = '.'.join((package, desc_proto.name))
+  message_name = package + '.' + desc_proto.name if package else desc_proto.name
   yield message_name
   for nested_type in desc_proto.nested_type:
     for symbol in _ExtractSymbols(nested_type, message_name):

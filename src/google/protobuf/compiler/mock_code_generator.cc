@@ -40,6 +40,7 @@
 #endif
 #include <vector>
 
+
 #include <google/protobuf/stubs/strutil.h>
 
 #include <google/protobuf/stubs/logging.h>
@@ -52,6 +53,7 @@
 #include <google/protobuf/io/zero_copy_stream.h>
 #include <google/protobuf/descriptor.pb.h>
 #include <google/protobuf/descriptor.h>
+#include <google/protobuf/text_format.h>
 #include <google/protobuf/stubs/substitute.h>
 #include <gtest/gtest.h>
 
@@ -129,11 +131,48 @@ void MockCodeGenerator::ExpectGenerated(
   }
 }
 
+namespace {
+void CheckSingleAnnotation(const string& expected_file,
+                           const string& expected_text,
+                           const string& file_content,
+                           const GeneratedCodeInfo::Annotation& annotation) {
+  EXPECT_EQ(expected_file, annotation.source_file());
+  ASSERT_GE(file_content.size(), annotation.begin());
+  ASSERT_GE(file_content.size(), annotation.end());
+  ASSERT_LE(annotation.begin(), annotation.end());
+  EXPECT_EQ(expected_text.size(), annotation.end() - annotation.begin());
+  EXPECT_EQ(expected_text,
+            file_content.substr(annotation.begin(), expected_text.size()));
+}
+}  // anonymous namespace
+
+void MockCodeGenerator::CheckGeneratedAnnotations(
+    const string& name, const string& file, const string& output_directory) {
+  string file_content;
+  GOOGLE_CHECK_OK(
+      File::GetContents(output_directory + "/" + GetOutputFileName(name, file),
+                        &file_content, true));
+  string meta_content;
+  GOOGLE_CHECK_OK(File::GetContents(
+      output_directory + "/" + GetOutputFileName(name, file) + ".meta",
+      &meta_content, true));
+  GeneratedCodeInfo annotations;
+  GOOGLE_CHECK(TextFormat::ParseFromString(meta_content, &annotations));
+  ASSERT_EQ(3, annotations.annotation_size());
+  CheckSingleAnnotation("first_annotation", "first", file_content,
+                        annotations.annotation(0));
+  CheckSingleAnnotation("second_annotation", "second", file_content,
+                        annotations.annotation(1));
+  CheckSingleAnnotation("third_annotation", "third", file_content,
+                        annotations.annotation(2));
+}
+
 bool MockCodeGenerator::Generate(
     const FileDescriptor* file,
     const string& parameter,
     GeneratorContext* context,
     string* error) const {
+  bool annotate = false;
   for (int i = 0; i < file->message_type_count(); i++) {
     if (HasPrefixString(file->message_type(i)->name(), "MockCodeGenerator_")) {
       string command = StripPrefixString(file->message_type(i)->name(),
@@ -162,6 +201,8 @@ bool MockCodeGenerator::Generate(
         std::cerr << "Saw json_name: "
                   << field_descriptor_proto.has_json_name() << std::endl;
         abort();
+      } else if (command == "Annotate") {
+        annotate = true;
       } else if (command == "ShowVersionNumber") {
         Version compiler_version;
         context->GetCompilerVersion(&compiler_version);
@@ -212,15 +253,39 @@ bool MockCodeGenerator::Generate(
     google::protobuf::scoped_ptr<io::ZeroCopyOutputStream> output(
         context->Open(GetOutputFileName(name_, file)));
 
-    io::Printer printer(output.get(), '$');
-    printer.PrintRaw(GetOutputFileContent(name_, parameter,
-                                          file, context));
+    GeneratedCodeInfo annotations;
+    io::AnnotationProtoCollector<GeneratedCodeInfo> annotation_collector(
+        &annotations);
+    io::Printer printer(output.get(), '$',
+                        annotate ? &annotation_collector : NULL);
+    printer.PrintRaw(GetOutputFileContent(name_, parameter, file, context));
+    string annotate_suffix = "_annotation";
+    if (annotate) {
+      printer.Print("$p$", "p", "first");
+      printer.Annotate("p", "first" + annotate_suffix);
+    }
     printer.PrintRaw(kFirstInsertionPoint);
+    if (annotate) {
+      printer.Print("$p$", "p", "second");
+      printer.Annotate("p", "second" + annotate_suffix);
+    }
     printer.PrintRaw(kSecondInsertionPoint);
+    if (annotate) {
+      printer.Print("$p$", "p", "third");
+      printer.Annotate("p", "third" + annotate_suffix);
+    }
 
     if (printer.failed()) {
       *error = "MockCodeGenerator detected write error.";
       return false;
+    }
+    if (annotate) {
+      google::protobuf::scoped_ptr<io::ZeroCopyOutputStream> meta_output(
+          context->Open(GetOutputFileName(name_, file) + ".meta"));
+      if (!TextFormat::Print(annotations, meta_output.get())) {
+        *error = "MockCodeGenerator couldn't write .meta";
+        return false;
+      }
     }
   }
 

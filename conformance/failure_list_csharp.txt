@@ -1,3 +1,5 @@
+Recommended.JsonInput.BytesFieldBase64Url.JsonOutput
+Recommended.JsonInput.BytesFieldBase64Url.ProtobufOutput
 Required.ProtobufInput.IllegalZeroFieldNum_Case_0
 Required.ProtobufInput.IllegalZeroFieldNum_Case_1
 Required.ProtobufInput.IllegalZeroFieldNum_Case_2

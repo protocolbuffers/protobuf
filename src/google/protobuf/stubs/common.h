@@ -200,7 +200,8 @@ namespace internal {
 
 // Register a function to be called when ShutdownProtocolBuffers() is called.
 LIBPROTOBUF_EXPORT void OnShutdown(void (*func)());
-
+// Destroy the string (call string destructor)
+LIBPROTOBUF_EXPORT void OnShutdownDestroyString(const std::string* ptr);
 }  // namespace internal
 
 #if PROTOBUF_USE_EXCEPTIONS

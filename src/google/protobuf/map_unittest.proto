@@ -60,6 +60,7 @@ message TestMap {
   map<int32   , MapEnum > map_int32_enum        = 16;
   map<int32   , ForeignMessage> map_int32_foreign_message = 17;
   map<string  , ForeignMessage> map_string_foreign_message = 18;
+  map<int32   , TestAllTypes> map_int32_all_types = 19;
 }
 
 message TestMapSubmessage {

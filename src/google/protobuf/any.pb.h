@@ -49,8 +49,9 @@ struct LIBPROTOBUF_EXPORT TableStruct {
   static const ::google::protobuf::internal::AuxillaryParseTableField aux[];
   static const ::google::protobuf::internal::ParseTable schema[];
   static const ::google::protobuf::uint32 offsets[];
+  static const ::google::protobuf::internal::FieldMetadata field_metadata[];
+  static const ::google::protobuf::internal::SerializationTable serialization_table[];
   static void InitDefaultsImpl();
-  static void Shutdown();
 };
 void LIBPROTOBUF_EXPORT AddDescriptors();
 void LIBPROTOBUF_EXPORT InitDefaults();
@@ -69,7 +70,6 @@ class LIBPROTOBUF_EXPORT Any : public ::google::protobuf::Message /* @@protoc_in
     CopyFrom(from);
     return *this;
   }
-
   static const ::google::protobuf::Descriptor* descriptor();
   static const Any& default_instance();
 
@@ -91,6 +91,9 @@ class LIBPROTOBUF_EXPORT Any : public ::google::protobuf::Message /* @@protoc_in
   }
 
   void Swap(Any* other);
+  friend void swap(Any& a, Any& b) {
+    a.Swap(&b);
+  }
 
   // implements Message ----------------------------------------------
 
@@ -176,6 +179,10 @@ class LIBPROTOBUF_EXPORT Any : public ::google::protobuf::Message /* @@protoc_in
 // ===================================================================
 
 #if !PROTOBUF_INLINE_NOT_IN_HEADERS
+#ifdef __GNUC__
+  #pragma GCC diagnostic push
+  #pragma GCC diagnostic ignored "-Wstrict-aliasing"
+#endif  // __GNUC__
 // Any
 
 // string type_url = 1;
@@ -284,6 +291,9 @@ inline void Any::set_allocated_value(::std::string* value) {
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.Any.value)
 }
 
+#ifdef __GNUC__
+  #pragma GCC diagnostic pop
+#endif  // __GNUC__
 #endif  // !PROTOBUF_INLINE_NOT_IN_HEADERS
 
 // @@protoc_insertion_point(namespace_scope)

@@ -321,8 +321,10 @@ public class MessageTest extends TestCase {
 
     assertTrue(result.getField(result.getDescriptorForType()
         .findFieldByName("repeated_foreign_message")) instanceof List<?>);
-    assertEquals(result.getRepeatedFieldCount(result.getDescriptorForType()
-        .findFieldByName("repeated_foreign_message")), 0);
+    assertEquals(
+        0,
+        result.getRepeatedFieldCount(
+            result.getDescriptorForType().findFieldByName("repeated_foreign_message")));
   }
   
   /** Test reading repeated message from DynamicMessage. */
@@ -345,7 +347,9 @@ public class MessageTest extends TestCase {
 
     assertTrue(result.getField(result.getDescriptorForType()
         .findFieldByName("repeated_foreign_message")) instanceof List<?>);
-    assertEquals(result.getRepeatedFieldCount(result.getDescriptorForType()
-        .findFieldByName("repeated_foreign_message")), 2);
+    assertEquals(
+        2,
+        result.getRepeatedFieldCount(
+            result.getDescriptorForType().findFieldByName("repeated_foreign_message")));
   }
 }

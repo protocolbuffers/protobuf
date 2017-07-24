@@ -129,7 +129,8 @@ TEST(Proto3ArenaTest, Parsing) {
   ExpectAllFieldsSet(*arena_message);
 }
 
-TEST(Proto3ArenaTest, UnknownFields) {
+TEST(Proto3ArenaTest, UnknownFieldsDefaultDrop) {
+  ::google::protobuf::internal::SetProto3PreserveUnknownsDefault(false);
   TestAllTypes original;
   SetAllFields(&original);
 
@@ -147,6 +148,28 @@ TEST(Proto3ArenaTest, UnknownFields) {
   // But the change will never will serialized back.
   ASSERT_EQ(original.ByteSize(), arena_message->ByteSize());
   ASSERT_TRUE(
+      arena_message->GetReflection()->GetUnknownFields(*arena_message).empty());
+}
+
+TEST(Proto3ArenaTest, UnknownFieldsDefaultPreserve) {
+  ::google::protobuf::internal::SetProto3PreserveUnknownsDefault(true);
+  TestAllTypes original;
+  SetAllFields(&original);
+
+  Arena arena;
+  TestAllTypes* arena_message = Arena::CreateMessage<TestAllTypes>(&arena);
+  arena_message->ParseFromString(original.SerializeAsString());
+  ExpectAllFieldsSet(*arena_message);
+
+  // In proto3 we can still get a pointer to the UnknownFieldSet through
+  // reflection API.
+  UnknownFieldSet* unknown_fields =
+      arena_message->GetReflection()->MutableUnknownFields(arena_message);
+  // We can modify this UnknownFieldSet.
+  unknown_fields->AddVarint(1, 2);
+  // And the unknown fields should be changed.
+  ASSERT_NE(original.ByteSize(), arena_message->ByteSize());
+  ASSERT_FALSE(
       arena_message->GetReflection()->GetUnknownFields(*arena_message).empty());
 }
 

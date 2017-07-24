@@ -12,6 +12,8 @@ Recommended.FieldMaskPathsDontRoundTrip.JsonOutput
 Recommended.FieldMaskTooManyUnderscore.JsonOutput
 Recommended.JsonInput.BoolFieldDoubleQuotedFalse
 Recommended.JsonInput.BoolFieldDoubleQuotedTrue
+Recommended.JsonInput.BytesFieldBase64Url.JsonOutput
+Recommended.JsonInput.BytesFieldBase64Url.ProtobufOutput
 Recommended.JsonInput.FieldMaskInvalidCharacter
 Recommended.JsonInput.FieldNameDuplicate
 Recommended.JsonInput.FieldNameDuplicateDifferentCasing1

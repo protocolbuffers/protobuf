@@ -48,8 +48,9 @@ struct LIBPROTOBUF_EXPORT TableStruct {
   static const ::google::protobuf::internal::AuxillaryParseTableField aux[];
   static const ::google::protobuf::internal::ParseTable schema[];
   static const ::google::protobuf::uint32 offsets[];
+  static const ::google::protobuf::internal::FieldMetadata field_metadata[];
+  static const ::google::protobuf::internal::SerializationTable serialization_table[];
   static void InitDefaultsImpl();
-  static void Shutdown();
 };
 void LIBPROTOBUF_EXPORT AddDescriptors();
 void LIBPROTOBUF_EXPORT InitDefaults();
@@ -68,7 +69,21 @@ class LIBPROTOBUF_EXPORT Empty : public ::google::protobuf::Message /* @@protoc_
     CopyFrom(from);
     return *this;
   }
+  #if LANG_CXX11
+  Empty(Empty&& from) noexcept
+    : Empty() {
+    *this = ::std::move(from);
+  }
 
+  inline Empty& operator=(Empty&& from) noexcept {
+    if (GetArenaNoVirtual() == from.GetArenaNoVirtual()) {
+      if (this != &from) InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+  #endif
   inline ::google::protobuf::Arena* GetArena() const PROTOBUF_FINAL {
     return GetArenaNoVirtual();
   }
@@ -87,6 +102,9 @@ class LIBPROTOBUF_EXPORT Empty : public ::google::protobuf::Message /* @@protoc_
 
   void UnsafeArenaSwap(Empty* other);
   void Swap(Empty* other);
+  friend void swap(Empty& a, Empty& b) {
+    a.Swap(&b);
+  }
 
   // implements Message ----------------------------------------------
 
@@ -137,7 +155,7 @@ class LIBPROTOBUF_EXPORT Empty : public ::google::protobuf::Message /* @@protoc_
  private:
 
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
-  friend class ::google::protobuf::Arena;
+  template <typename T> friend class ::google::protobuf::Arena::InternalHelper;
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
   mutable int _cached_size_;
@@ -149,8 +167,15 @@ class LIBPROTOBUF_EXPORT Empty : public ::google::protobuf::Message /* @@protoc_
 // ===================================================================
 
 #if !PROTOBUF_INLINE_NOT_IN_HEADERS
+#ifdef __GNUC__
+  #pragma GCC diagnostic push
+  #pragma GCC diagnostic ignored "-Wstrict-aliasing"
+#endif  // __GNUC__
 // Empty
 
+#ifdef __GNUC__
+  #pragma GCC diagnostic pop
+#endif  // __GNUC__
 #endif  // !PROTOBUF_INLINE_NOT_IN_HEADERS
 
 // @@protoc_insertion_point(namespace_scope)

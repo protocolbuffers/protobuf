@@ -32,7 +32,6 @@
 #define GOOGLE_PROTOBUF_TYPE_HANDLER_H__
 
 #include <google/protobuf/arena.h>
-#include <google/protobuf/generated_message_util.h>
 #include <google/protobuf/wire_format_lite_inl.h>
 
 namespace google {

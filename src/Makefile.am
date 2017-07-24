@@ -48,8 +48,7 @@ nobase_dist_proto_DATA = google/protobuf/descriptor.proto      \
                          google/protobuf/timestamp.proto       \
                          google/protobuf/type.proto            \
                          google/protobuf/wrappers.proto        \
-                         google/protobuf/compiler/plugin.proto \
-                         google/protobuf/compiler/profile.proto
+                         google/protobuf/compiler/plugin.proto
 
 # Not sure why these don't get cleaned automatically.
 clean-local:
@@ -104,6 +103,7 @@ nobase_include_HEADERS =                                         \
   google/protobuf/api.pb.h                                       \
   google/protobuf/any.h                                          \
   google/protobuf/arena.h                                        \
+  google/protobuf/arena_impl.h                                   \
   google/protobuf/arenastring.h                                  \
   google/protobuf/descriptor_database.h                          \
   google/protobuf/descriptor.h                                   \
@@ -158,7 +158,6 @@ nobase_include_HEADERS =                                         \
   google/protobuf/compiler/parser.h                              \
   google/protobuf/compiler/plugin.h                              \
   google/protobuf/compiler/plugin.pb.h                           \
-  google/protobuf/compiler/profile.pb.h                          \
   google/protobuf/compiler/cpp/cpp_generator.h                   \
   google/protobuf/compiler/csharp/csharp_generator.h             \
   google/protobuf/compiler/csharp/csharp_names.h                 \
@@ -328,7 +327,6 @@ libprotoc_la_SOURCES =                                         \
   google/protobuf/compiler/command_line_interface.cc           \
   google/protobuf/compiler/plugin.cc                           \
   google/protobuf/compiler/plugin.pb.cc                        \
-  google/protobuf/compiler/profile.pb.cc                       \
   google/protobuf/compiler/subprocess.cc                       \
   google/protobuf/compiler/subprocess.h                        \
   google/protobuf/compiler/zip_writer.cc                       \
@@ -786,8 +784,8 @@ protobuf_test_SOURCES =                                        \
   google/protobuf/no_field_presence_test.cc                    \
   google/protobuf/preserve_unknown_enum_test.cc                \
   google/protobuf/proto3_arena_unittest.cc                     \
-  google/protobuf/proto3_arena_lite_unittest.cc                     \
-  google/protobuf/proto3_lite_unittest.cc                     \
+  google/protobuf/proto3_arena_lite_unittest.cc                \
+  google/protobuf/proto3_lite_unittest.cc                      \
   google/protobuf/reflection_ops_unittest.cc                   \
   google/protobuf/repeated_field_reflection_unittest.cc        \
   google/protobuf/repeated_field_unittest.cc                   \
@@ -805,6 +803,7 @@ protobuf_test_SOURCES =                                        \
   google/protobuf/compiler/mock_code_generator.h               \
   google/protobuf/compiler/parser_unittest.cc                  \
   google/protobuf/compiler/cpp/cpp_bootstrap_unittest.cc       \
+  google/protobuf/compiler/cpp/cpp_move_unittest.cc            \
   google/protobuf/compiler/cpp/cpp_unittest.h                  \
   google/protobuf/compiler/cpp/cpp_unittest.cc                 \
   google/protobuf/compiler/cpp/cpp_plugin_unittest.cc          \
@@ -924,7 +923,7 @@ no_warning_test_LDADD = $(PTHREAD_LIBS) libprotobuf.la      \
                         ../gmock/gtest/lib/libgtest_main.la
 no_warning_test_CPPFLAGS = -I$(srcdir)/../gmock/gtest/include
 no_warning_test_CXXFLAGS = $(PTHREAD_CFLAGS) $(PTHREAD_DEF) $(ZLIB_DEF) \
-                           -Wall -Wconversion -Werror
+                           -Wall -Werror -Wno-invalid-offsetof
 nodist_no_warning_test_SOURCES = no_warning_test.cc $(protoc_outputs)
 
 TESTS = protobuf-test protobuf-lazy-descriptor-test protobuf-lite-test \

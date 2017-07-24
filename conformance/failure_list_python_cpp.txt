@@ -7,13 +7,14 @@
 # TODO(haberman): insert links to corresponding bugs tracking the issue.
 # Should we use GitHub issues or the Google-internal bug tracker?
 
+Recommended.JsonInput.BytesFieldBase64Url.JsonOutput
+Recommended.JsonInput.BytesFieldBase64Url.ProtobufOutput
 Recommended.JsonInput.DoubleFieldInfinityNotQuoted
 Recommended.JsonInput.DoubleFieldNanNotQuoted
 Recommended.JsonInput.DoubleFieldNegativeInfinityNotQuoted
 Recommended.JsonInput.FloatFieldInfinityNotQuoted
 Recommended.JsonInput.FloatFieldNanNotQuoted
 Recommended.JsonInput.FloatFieldNegativeInfinityNotQuoted
-Required.JsonInput.BytesFieldInvalidBase64Characters
 Required.JsonInput.DoubleFieldTooSmall
 Required.JsonInput.EnumFieldUnknownValue.Validator
 Required.JsonInput.FloatFieldTooLarge

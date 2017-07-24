@@ -760,6 +760,18 @@ Message* MapReflectionTester::GetMapEntryViaReflection(Message* message,
   return reflection->MutableRepeatedMessage(message, F(field_name), index);
 }
 
+MapIterator MapReflectionTester::MapBegin(Message* message,
+                                          const string& field_name) {
+  const Reflection* reflection = message->GetReflection();
+  return reflection->MapBegin(message, F(field_name));
+}
+
+MapIterator MapReflectionTester::MapEnd(Message* message,
+                                        const string& field_name) {
+  const Reflection* reflection = message->GetReflection();
+  return reflection->MapEnd(message, F(field_name));
+}
+
 void MapReflectionTester::ClearMapFieldsViaReflection(
     Message* message) {
   const Reflection* reflection = message->GetReflection();

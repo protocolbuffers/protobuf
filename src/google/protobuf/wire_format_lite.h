@@ -46,6 +46,11 @@
 #include <google/protobuf/message_lite.h>
 #include <google/protobuf/io/coded_stream.h>  // for CodedOutputStream::Varint32Size
 
+// Do UTF-8 validation on string type in Debug build only
+#ifndef NDEBUG
+#define GOOGLE_PROTOBUF_UTF8_VALIDATION_ENABLED
+#endif
+
 // Avoid conflict with iOS where <ConditionalMacros.h> #defines TYPE_BOOL.
 //
 // If some one needs the macro TYPE_BOOL in a file that includes this header, it's

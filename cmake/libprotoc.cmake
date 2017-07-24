@@ -88,7 +88,6 @@ set(libprotoc_files
   ${protobuf_source_dir}/src/google/protobuf/compiler/php/php_generator.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/plugin.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/plugin.pb.cc
-  ${protobuf_source_dir}/src/google/protobuf/compiler/profile.pb.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/python/python_generator.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/ruby/ruby_generator.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/subprocess.cc
@@ -104,7 +103,6 @@ set(libprotoc_headers
   ${protobuf_source_dir}/src/google/protobuf/compiler/parser.h
   ${protobuf_source_dir}/src/google/protobuf/compiler/plugin.h
   ${protobuf_source_dir}/src/google/protobuf/compiler/plugin.pb.h
-  ${protobuf_source_dir}/src/google/protobuf/compiler/profile.pb.h
   ${protobuf_source_dir}/src/google/protobuf/compiler/subprocess.h
   ${protobuf_source_dir}/src/google/protobuf/compiler/zip_writer.h
   ${protobuf_source_dir}/src/google/protobuf/compiler/cpp/cpp_enum.h

@@ -48,8 +48,9 @@ struct LIBPROTOBUF_EXPORT TableStruct {
   static const ::google::protobuf::internal::AuxillaryParseTableField aux[];
   static const ::google::protobuf::internal::ParseTable schema[];
   static const ::google::protobuf::uint32 offsets[];
+  static const ::google::protobuf::internal::FieldMetadata field_metadata[];
+  static const ::google::protobuf::internal::SerializationTable serialization_table[];
   static void InitDefaultsImpl();
-  static void Shutdown();
 };
 void LIBPROTOBUF_EXPORT AddDescriptors();
 void LIBPROTOBUF_EXPORT InitDefaults();
@@ -68,7 +69,21 @@ class LIBPROTOBUF_EXPORT FieldMask : public ::google::protobuf::Message /* @@pro
     CopyFrom(from);
     return *this;
   }
+  #if LANG_CXX11
+  FieldMask(FieldMask&& from) noexcept
+    : FieldMask() {
+    *this = ::std::move(from);
+  }
 
+  inline FieldMask& operator=(FieldMask&& from) noexcept {
+    if (GetArenaNoVirtual() == from.GetArenaNoVirtual()) {
+      if (this != &from) InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+  #endif
   static const ::google::protobuf::Descriptor* descriptor();
   static const FieldMask& default_instance();
 
@@ -80,6 +95,9 @@ class LIBPROTOBUF_EXPORT FieldMask : public ::google::protobuf::Message /* @@pro
     0;
 
   void Swap(FieldMask* other);
+  friend void swap(FieldMask& a, FieldMask& b) {
+    a.Swap(&b);
+  }
 
   // implements Message ----------------------------------------------
 
@@ -157,6 +175,10 @@ class LIBPROTOBUF_EXPORT FieldMask : public ::google::protobuf::Message /* @@pro
 // ===================================================================
 
 #if !PROTOBUF_INLINE_NOT_IN_HEADERS
+#ifdef __GNUC__
+  #pragma GCC diagnostic push
+  #pragma GCC diagnostic ignored "-Wstrict-aliasing"
+#endif  // __GNUC__
 // FieldMask
 
 // repeated string paths = 1;
@@ -228,6 +250,9 @@ FieldMask::mutable_paths() {
   return &paths_;
 }
 
+#ifdef __GNUC__
+  #pragma GCC diagnostic pop
+#endif  // __GNUC__
 #endif  // !PROTOBUF_INLINE_NOT_IN_HEADERS
 
 // @@protoc_insertion_point(namespace_scope)

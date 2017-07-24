@@ -235,7 +235,7 @@ jspb.BinaryWriter.prototype.getResultBuffer = function() {
 
 
 /**
- * Converts the encoded data into a bas64-encoded string.
+ * Converts the encoded data into a base64-encoded string.
  * @return {string}
  */
 jspb.BinaryWriter.prototype.getResultBase64String = function() {
@@ -716,13 +716,15 @@ jspb.BinaryWriter.prototype.writeDouble = function(field, value) {
 
 
 /**
- * Writes a boolean field to the buffer.
+ * Writes a boolean field to the buffer. We allow numbers as input
+ * because the JSPB code generator uses 0/1 instead of true/false to save space
+ * in the string representation of the proto.
  * @param {number} field The field number.
- * @param {boolean?} value The value to write.
+ * @param {boolean?|number?} value The value to write.
  */
 jspb.BinaryWriter.prototype.writeBool = function(field, value) {
   if (value == null) return;
-  goog.asserts.assert(goog.isBoolean(value));
+  goog.asserts.assert(goog.isBoolean(value) || goog.isNumber(value));
   this.writeFieldHeader_(field, jspb.BinaryConstants.WireType.VARINT);
   this.encoder_.writeBool(value);
 };

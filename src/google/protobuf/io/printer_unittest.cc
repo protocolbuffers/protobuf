@@ -360,6 +360,83 @@ TEST(Printer, AnnotateDespiteUnrelatedMultipleUses) {
   EXPECT_EQ(7, bar->end());
 }
 
+TEST(Printer, AnnotateIndent) {
+  char buffer[8192];
+  ArrayOutputStream output(buffer, sizeof(buffer));
+  GeneratedCodeInfo info;
+  AnnotationProtoCollector<GeneratedCodeInfo> info_collector(&info);
+  {
+    Printer printer(&output, '$', &info_collector);
+    printer.Print("0\n");
+    printer.Indent();
+    printer.Print("$foo$", "foo", "4");
+    std::vector<int> path;
+    path.push_back(44);
+    MockDescriptor descriptor("path", path);
+    printer.Annotate("foo", &descriptor);
+    printer.Print(",\n");
+    printer.Print("$bar$", "bar", "9");
+    path[0] = 99;
+    MockDescriptor descriptor_two("path", path);
+    printer.Annotate("bar", &descriptor_two);
+    printer.Print("\n${$$D$$}$\n", "{", "", "}", "", "D", "d");
+    path[0] = 1313;
+    MockDescriptor descriptor_three("path", path);
+    printer.Annotate("{", "}", &descriptor_three);
+    printer.Outdent();
+    printer.Print("\n");
+  }
+  buffer[output.ByteCount()] = '\0';
+  EXPECT_STREQ("0\n  4,\n  9\n  d\n\n", buffer);
+  ASSERT_EQ(3, info.annotation_size());
+  const GeneratedCodeInfo::Annotation* foo = &info.annotation(0);
+  ASSERT_EQ(1, foo->path_size());
+  EXPECT_EQ(44, foo->path(0));
+  EXPECT_EQ("path", foo->source_file());
+  EXPECT_EQ(4, foo->begin());
+  EXPECT_EQ(5, foo->end());
+  const GeneratedCodeInfo::Annotation* bar = &info.annotation(1);
+  ASSERT_EQ(1, bar->path_size());
+  EXPECT_EQ(99, bar->path(0));
+  EXPECT_EQ("path", bar->source_file());
+  EXPECT_EQ(9, bar->begin());
+  EXPECT_EQ(10, bar->end());
+  const GeneratedCodeInfo::Annotation* braces = &info.annotation(2);
+  ASSERT_EQ(1, braces->path_size());
+  EXPECT_EQ(1313, braces->path(0));
+  EXPECT_EQ("path", braces->source_file());
+  EXPECT_EQ(13, braces->begin());
+  EXPECT_EQ(14, braces->end());
+}
+
+TEST(Printer, AnnotateIndentNewline) {
+  char buffer[8192];
+  ArrayOutputStream output(buffer, sizeof(buffer));
+  GeneratedCodeInfo info;
+  AnnotationProtoCollector<GeneratedCodeInfo> info_collector(&info);
+  {
+    Printer printer(&output, '$', &info_collector);
+    printer.Indent();
+    printer.Print("$A$$N$$B$C\n", "A", "", "N", "\nz", "B", "");
+    std::vector<int> path;
+    path.push_back(0);
+    MockDescriptor descriptor("path", path);
+    printer.Annotate("A", "B", &descriptor);
+    printer.Outdent();
+    printer.Print("\n");
+  }
+  buffer[output.ByteCount()] = '\0';
+  EXPECT_STREQ("\nz  C\n\n", buffer);
+  ASSERT_EQ(1, info.annotation_size());
+  const GeneratedCodeInfo::Annotation* ab = &info.annotation(0);
+  ASSERT_EQ(1, ab->path_size());
+  EXPECT_EQ(0, ab->path(0));
+  EXPECT_EQ("path", ab->source_file());
+  EXPECT_EQ(0, ab->begin());
+  EXPECT_EQ(4, ab->end());
+}
+
+
 TEST(Printer, Indenting) {
   char buffer[8192];
 
