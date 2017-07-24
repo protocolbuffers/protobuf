@@ -99,10 +99,22 @@ void RepeatedMessageFieldGenerator::GenerateParsingCode(io::Printer* printer) {
     "$name$_.AddEntriesFrom(input, _repeated_$name$_codec);\n");
 }
 
+void RepeatedMessageFieldGenerator::GenerateAsyncParsingCode(io::Printer* printer) {
+  printer->Print(
+    variables_,
+    "await $name$_.AddEntriesFromAsync(input, _repeated_$name$_codec, cancellationToken).ConfigureAwait(false);\n");
+}
+
 void RepeatedMessageFieldGenerator::GenerateSerializationCode(io::Printer* printer) {
   printer->Print(
     variables_,
     "$name$_.WriteTo(output, _repeated_$name$_codec);\n");
+}
+
+void RepeatedMessageFieldGenerator::GenerateAsyncSerializationCode(io::Printer* printer) {
+  printer->Print(
+    variables_,
+    "await $name$_.WriteToAsync(output, _repeated_$name$_codec, cancellationToken).ConfigureAwait(false);\n");
 }
 
 void RepeatedMessageFieldGenerator::GenerateSerializedSizeCode(io::Printer* printer) {

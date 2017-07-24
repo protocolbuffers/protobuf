@@ -84,10 +84,22 @@ void RepeatedPrimitiveFieldGenerator::GenerateParsingCode(io::Printer* printer) 
     "$name$_.AddEntriesFrom(input, _repeated_$name$_codec);\n");
 }
 
+void RepeatedPrimitiveFieldGenerator::GenerateAsyncParsingCode(io::Printer* printer) {
+  printer->Print(
+    variables_,
+    "await $name$_.AddEntriesFromAsync(input, _repeated_$name$_codec, cancellationToken).ConfigureAwait(false);\n");
+}
+
 void RepeatedPrimitiveFieldGenerator::GenerateSerializationCode(io::Printer* printer) {
   printer->Print(
     variables_,
     "$name$_.WriteTo(output, _repeated_$name$_codec);\n");
+}
+
+void RepeatedPrimitiveFieldGenerator::GenerateAsyncSerializationCode(io::Printer* printer) {
+  printer->Print(
+    variables_,
+    "await $name$_.WriteToAsync(output, _repeated_$name$_codec, cancellationToken).ConfigureAwait(false);\n");
 }
 
 void RepeatedPrimitiveFieldGenerator::GenerateSerializedSizeCode(io::Printer* printer) {

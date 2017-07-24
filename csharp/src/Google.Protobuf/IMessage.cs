@@ -45,7 +45,7 @@ namespace Google.Protobuf
         /// Merges the data from the specified coded input stream with the current message.
         /// </summary>
         /// <remarks>See the user guide for precise merge semantics.</remarks>
-        /// <param name="input"></param>
+        /// <param name="input">Coded input stream to read the data from. Must not be null.</param>
         void MergeFrom(CodedInputStream input);
 
         /// <summary>

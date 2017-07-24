@@ -45,7 +45,8 @@ struct Options {
       file_extension(".cs"),
       base_namespace(""),
       base_namespace_specified(false),
-      internal_access(false) {
+      internal_access(false),
+      async(false) {
   }
   // Extension of the generated file. Defaults to ".cs"
   string file_extension;
@@ -68,6 +69,8 @@ struct Options {
   // Whether the generated classes should have accessibility level of "internal".
   // Defaults to false that generates "public" classes.
   bool internal_access;
+  // Enables async-friendly code generation for all files.
+  bool async;
 };
 
 }  // namespace csharp

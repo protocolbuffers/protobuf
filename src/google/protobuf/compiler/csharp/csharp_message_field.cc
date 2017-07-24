@@ -97,12 +97,31 @@ void MessageFieldGenerator::GenerateParsingCode(io::Printer* printer) {
     "input.ReadMessage($name$_);\n"); // No need to support TYPE_GROUP...
 }
 
+void MessageFieldGenerator::GenerateAsyncParsingCode(io::Printer* printer) {
+  printer->Print(
+    variables_,
+    "if ($has_not_property_check$) {\n"
+    "  $name$_ = new $type_name$();\n"
+    "}\n"
+    // TODO(jonskeet): Do we really need merging behaviour like this?
+    "await input.ReadMessageAsync($name$_, cancellationToken).ConfigureAwait(false);\n"); // No need to support TYPE_GROUP...
+}
+
 void MessageFieldGenerator::GenerateSerializationCode(io::Printer* printer) {
   printer->Print(
     variables_,
     "if ($has_property_check$) {\n"
     "  output.WriteRawTag($tag_bytes$);\n"
     "  output.WriteMessage($property_name$);\n"
+    "}\n");
+}
+
+void MessageFieldGenerator::GenerateAsyncSerializationCode(io::Printer* printer) {
+  printer->Print(
+    variables_,
+    "if ($has_property_check$) {\n"
+    "  await output.WriteRawTagAsync($tag_bytes$, cancellationToken).ConfigureAwait(false);\n"
+    "  await output.WriteMessageAsync($property_name$, cancellationToken).ConfigureAwait(false);\n"
     "}\n");
 }
 
@@ -180,6 +199,18 @@ void MessageOneofFieldGenerator::GenerateParsingCode(io::Printer* printer) {
     "  subBuilder.MergeFrom($property_name$);\n"
     "}\n"
     "input.ReadMessage(subBuilder);\n" // No support of TYPE_GROUP
+    "$property_name$ = subBuilder;\n");
+}
+
+void MessageOneofFieldGenerator::GenerateAsyncParsingCode(io::Printer* printer) {
+  // TODO(jonskeet): We may be able to do better than this
+  printer->Print(
+    variables_,
+    "$type_name$ subBuilder = new $type_name$();\n"
+    "if ($has_property_check$) {\n"
+    "  subBuilder.MergeFrom($property_name$);\n"
+    "}\n"
+    "await input.ReadMessageAsync(subBuilder, cancellationToken).ConfigureAwait(false);\n" // No support of TYPE_GROUP
     "$property_name$ = subBuilder;\n");
 }
 

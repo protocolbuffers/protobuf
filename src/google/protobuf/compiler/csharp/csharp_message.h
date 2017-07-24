@@ -61,7 +61,9 @@ class MessageGenerator : public SourceGeneratorBase {
   std::vector<const FieldDescriptor*> fields_by_number_;
 
   void GenerateMessageSerializationMethods(io::Printer* printer);
+  void GenerateMessageAsyncSerializationMethods(io::Printer* printer);
   void GenerateMergingMethods(io::Printer* printer);
+  void GenerateAsyncMergingMethods(io::Printer* printer);
 
   int GetFieldOrdinal(const FieldDescriptor* descriptor);
   FieldGeneratorBase* CreateFieldGeneratorInternal(

@@ -54,7 +54,9 @@ class MessageFieldGenerator : public FieldGeneratorBase {
   virtual void GenerateMembers(io::Printer* printer);
   virtual void GenerateMergingCode(io::Printer* printer);
   virtual void GenerateParsingCode(io::Printer* printer);
+  virtual void GenerateAsyncParsingCode(io::Printer* printer);
   virtual void GenerateSerializationCode(io::Printer* printer);
+  virtual void GenerateAsyncSerializationCode(io::Printer* printer);
   virtual void GenerateSerializedSizeCode(io::Printer* printer);
 
   virtual void WriteHash(io::Printer* printer);
@@ -76,6 +78,7 @@ class MessageOneofFieldGenerator : public MessageFieldGenerator {
   virtual void GenerateMembers(io::Printer* printer);
   virtual void WriteToString(io::Printer* printer);
   virtual void GenerateParsingCode(io::Printer* printer);
+  virtual void GenerateAsyncParsingCode(io::Printer* printer);
 
  private:
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(MessageOneofFieldGenerator);
