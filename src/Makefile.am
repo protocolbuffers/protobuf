@@ -198,6 +198,8 @@ libprotobuf_lite_la_SOURCES =                                  \
   google/protobuf/stubs/hash.h                                 \
   google/protobuf/stubs/int128.cc                              \
   google/protobuf/stubs/int128.h                               \
+  google/protobuf/stubs/io_win32.cc                            \
+  google/protobuf/stubs/io_win32.h                             \
   google/protobuf/stubs/map_util.h                             \
   google/protobuf/stubs/mathutil.h                             \
   google/protobuf/stubs/once.cc                                \
@@ -762,6 +764,7 @@ protobuf_test_SOURCES =                                        \
   google/protobuf/stubs/bytestream_unittest.cc                 \
   google/protobuf/stubs/common_unittest.cc                     \
   google/protobuf/stubs/int128_unittest.cc                     \
+  google/protobuf/stubs/io_win32_unittest.cc                   \
   google/protobuf/stubs/once_unittest.cc                       \
   google/protobuf/stubs/statusor_test.cc                       \
   google/protobuf/stubs/status_test.cc                         \
