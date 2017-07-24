@@ -811,6 +811,7 @@ void FileGenerator::GenerateBuildDescriptors(io::Printer* printer) {
 
   // Now generate the AddDescriptors() function.
   printer->Print(
+      "namespace {\n"
       "void AddDescriptorsImpl() {\n"
       "  InitDefaults();\n");
 
@@ -882,6 +883,7 @@ void FileGenerator::GenerateBuildDescriptors(io::Printer* printer) {
   printer->Outdent();
   printer->Print(
       "}\n"
+      "} // anonymous namespace\n"
       "\n"
       "void AddDescriptors() {\n"
       "  static GOOGLE_PROTOBUF_DECLARE_ONCE(once);\n"
