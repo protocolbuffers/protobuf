@@ -545,7 +545,3 @@ class TestUtil
         $obj->$setter_function($arr);
     }
 }
-
-class Abc {
-  public $a;
-}

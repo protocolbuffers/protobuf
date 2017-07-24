@@ -380,39 +380,20 @@ PHP_METHOD(RepeatedField, offsetGet) {
   HashTable *table = PHP_PROTO_HASH_OF(intern->array);
 
   if (intern->type == UPB_TYPE_MESSAGE) {
-    // zval *result = zend_hash_index_find(table, index);
-    // if (result == NULL) {
-    //   zend_error(E_USER_ERROR, "Element at %ld doesn't exist.\n", index);
-    //   return;
-    // }
-    // ZVAL_COPY(return_value, result);
-
     if (php_proto_zend_hash_index_find_zval(table, index, (void **)&memory) ==
         FAILURE) {
       zend_error(E_USER_ERROR, "Element at %ld doesn't exist.\n", index);
       return;
     }
-    // ZVAL_COPY(return_value, memory);
-    native_slot_get_by_array(intern->type, memory,
-                             ZVAL_PTR_TO_CACHED_PTR(return_value) TSRMLS_CC);
-
-    // if (php_proto_zend_hash_index_find_zval(table, index, (void **)&memory) ==
-    //     FAILURE) {
-    //   zend_error(E_USER_ERROR, "Element at %ld doesn't exist.\n", index);
-    //   return;
-    // }
-    // native_slot_get_by_array(intern->type, memory,
-    //                          ZVAL_PTR_TO_CACHED_PTR(return_value) TSRMLS_CC);
   } else {
     if (php_proto_zend_hash_index_find_mem(table, index, (void **)&memory) ==
         FAILURE) {
       zend_error(E_USER_ERROR, "Element at %ld doesn't exist.\n", index);
       return;
     }
-
-    native_slot_get_by_array(intern->type, memory,
-                             ZVAL_PTR_TO_CACHED_PTR(return_value) TSRMLS_CC);
   }
+  native_slot_get_by_array(intern->type, memory,
+                           ZVAL_PTR_TO_CACHED_PTR(return_value) TSRMLS_CC);
 }
 
 /**
@@ -534,13 +515,13 @@ PHP_METHOD(RepeatedFieldIter, current) {
     if (php_proto_zend_hash_index_find_zval(table, intern->position,
                                             (void **)&memory) == FAILURE) {
       zend_error(E_USER_ERROR, "Element at %d doesn't exist.\n", index);
-      return NULL;
+      return;
     }
   } else {
     if (php_proto_zend_hash_index_find_mem(table, intern->position,
                                            (void **)&memory) == FAILURE) {
       zend_error(E_USER_ERROR, "Element at %d doesn't exist.\n", index);
-      return NULL;
+      return;
     }
   }
   native_slot_get_by_array(repeated_field->type, memory,

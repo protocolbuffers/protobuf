@@ -199,8 +199,6 @@ bool native_slot_set_by_array(upb_fieldtype_t type,
         Z_ADDREF_P(value);
       }
 #else
-      // DEREF(memory, zend_object*) = Z_OBJ_P(value);
-      // ++GC_REFCOUNT(Z_OBJ_P(value));
       DEREF(memory, zval*) = value;
       ++GC_REFCOUNT(Z_OBJ_P(value));
 #endif

@@ -539,12 +539,8 @@ class RepeatedFieldTest extends PHPUnit_Framework_TestCase
         $arr = new RepeatedField(GPBType::MESSAGE, TestMessage::class);
         $arr[] = new TestMessage;
         $arr[0]->SetRepeatedRecursive($arr);
-#         $arr = array();
-#         $arr[] = new Abc();
-#         $arr[0]->a = $arr;
 
         // Clean up memory before test.
-        gc_collect_cycles();
         gc_collect_cycles();
         $start = memory_get_usage();
         unset($arr);
@@ -553,8 +549,6 @@ class RepeatedFieldTest extends PHPUnit_Framework_TestCase
         gc_collect_cycles();
 
         $end = memory_get_usage();
-        var_dump($start);
-        var_dump($end);
-#         $this->assertLessThan($start, $end);
+        $this->assertLessThan($start, $end);
     }
 }
