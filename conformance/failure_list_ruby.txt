@@ -1,8 +1,8 @@
 Recommended.FieldMaskNumbersDontRoundTrip.JsonOutput
 Recommended.FieldMaskPathsDontRoundTrip.JsonOutput
 Recommended.FieldMaskTooManyUnderscore.JsonOutput
-Recommended.JsonInput.BytesFieldBase64Url.JsonOutput
-Recommended.JsonInput.BytesFieldBase64Url.ProtobufOutput
+Recommended.Proto3.BytesFieldBase64Url.JsonOutput
+Recommended.Proto3.BytesFieldBase64Url.ProtobufOutput
 Recommended.Proto3.JsonInput.DurationHas3FractionalDigits.Validator
 Recommended.Proto3.JsonInput.DurationHas6FractionalDigits.Validator
 Recommended.Proto3.JsonInput.DurationHas9FractionalDigits.Validator
