@@ -354,7 +354,7 @@ static size_t zendstringdata_handler(void* closure, const void* hd,
 
   HashTable *ht = PHP_PROTO_HASH_OF(intern->array);
   int index = zend_hash_num_elements(ht) - 1;
-  php_proto_zend_hash_index_update(
+  php_proto_zend_hash_index_update_mem(
       ht, index, memory, sizeof(zend_string*), NULL);
 
   return len;
@@ -1401,7 +1401,7 @@ static void putarray(zval* array, const upb_fielddef* f, upb_sink* sink,
         MessageHeader *submsg = UNBOX(MessageHeader, *(zval**)memory);
 #else
         MessageHeader *submsg =
-            (MessageHeader*)((char*)(*(zend_object**)memory) -
+            (MessageHeader*)((char*)(Z_OBJ_P((zval*)memory)) -
                 XtOffsetOf(MessageHeader, std));
 #endif
         putrawsubmsg(submsg, f, &subsink, depth TSRMLS_CC);

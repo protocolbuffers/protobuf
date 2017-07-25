@@ -142,12 +142,7 @@ static inline void php_proto_array_string_release(zval *value) {
   efree(ptr);
 }
 static inline void php_proto_array_object_release(zval *value) {
-  void* ptr = Z_PTR_P(value);
-  zend_object* object = *(zend_object**)ptr;
-  if(--GC_REFCOUNT(object) == 0) {
-    zend_objects_store_del(object);
-  }
-  efree(ptr);
+  zval_ptr_dtor(value);
 }
 static void php_proto_array_default_release(zval* value) {
   void* ptr = Z_PTR_P(value);
@@ -210,7 +205,11 @@ static void repeated_field_write_dimension(zval *object, zval *offset,
     }
   }
 
-  php_proto_zend_hash_index_update(ht, index, memory, size, NULL);
+  if (intern->type == UPB_TYPE_MESSAGE) {
+    php_proto_zend_hash_index_update_zval(ht, index, *(zval**)memory);
+  } else {
+    php_proto_zend_hash_index_update_mem(ht, index, memory, size, NULL);
+  }
 }
 
 #if PHP_MAJOR_VERSION < 7
@@ -233,9 +232,18 @@ void *repeated_field_index_native(RepeatedField *intern, int index TSRMLS_DC) {
   HashTable *ht = PHP_PROTO_HASH_OF(intern->array);
   void *value;
 
-  if (php_proto_zend_hash_index_find(ht, index, (void **)&value) == FAILURE) {
-    zend_error(E_USER_ERROR, "Element at %d doesn't exist.\n", index);
-    return NULL;
+  if (intern->type == UPB_TYPE_MESSAGE) {
+    if (php_proto_zend_hash_index_find_zval(ht, index, (void **)&value) ==
+        FAILURE) {
+      zend_error(E_USER_ERROR, "Element at %d doesn't exist.\n", index);
+      return NULL;
+    }
+  } else {
+    if (php_proto_zend_hash_index_find_mem(ht, index, (void **)&value) ==
+        FAILURE) {
+      zend_error(E_USER_ERROR, "Element at %d doesn't exist.\n", index);
+      return NULL;
+    }
   }
 
   return value;
@@ -244,7 +252,11 @@ void *repeated_field_index_native(RepeatedField *intern, int index TSRMLS_DC) {
 void repeated_field_push_native(RepeatedField *intern, void *value) {
   HashTable *ht = PHP_PROTO_HASH_OF(intern->array);
   int size = native_slot_size(intern->type);
-  php_proto_zend_hash_next_index_insert(ht, (void **)value, size, NULL);
+  if (intern->type == UPB_TYPE_MESSAGE) {
+    php_proto_zend_hash_next_index_insert_zval(ht, value);
+  } else {
+    php_proto_zend_hash_next_index_insert_mem(ht, (void **)value, size, NULL);
+  }
 }
 
 void repeated_field_create_with_field(
@@ -367,11 +379,19 @@ PHP_METHOD(RepeatedField, offsetGet) {
   RepeatedField *intern = UNBOX(RepeatedField, getThis());
   HashTable *table = PHP_PROTO_HASH_OF(intern->array);
 
-  if (php_proto_zend_hash_index_find(table, index, (void **)&memory) == FAILURE) {
-    zend_error(E_USER_ERROR, "Element at %ld doesn't exist.\n", index);
-    return;
+  if (intern->type == UPB_TYPE_MESSAGE) {
+    if (php_proto_zend_hash_index_find_zval(table, index, (void **)&memory) ==
+        FAILURE) {
+      zend_error(E_USER_ERROR, "Element at %ld doesn't exist.\n", index);
+      return;
+    }
+  } else {
+    if (php_proto_zend_hash_index_find_mem(table, index, (void **)&memory) ==
+        FAILURE) {
+      zend_error(E_USER_ERROR, "Element at %ld doesn't exist.\n", index);
+      return;
+    }
   }
-
   native_slot_get_by_array(intern->type, memory,
                            ZVAL_PTR_TO_CACHED_PTR(return_value) TSRMLS_CC);
 }
@@ -491,10 +511,18 @@ PHP_METHOD(RepeatedFieldIter, current) {
 
   HashTable *table = PHP_PROTO_HASH_OF(repeated_field->array);
 
-  if (php_proto_zend_hash_index_find(table, intern->position, (void **)&memory) ==
-      FAILURE) {
-    zend_error(E_USER_ERROR, "Element at %ld doesn't exist.\n", index);
-    return;
+  if (repeated_field->type == UPB_TYPE_MESSAGE) {
+    if (php_proto_zend_hash_index_find_zval(table, intern->position,
+                                            (void **)&memory) == FAILURE) {
+      zend_error(E_USER_ERROR, "Element at %d doesn't exist.\n", index);
+      return;
+    }
+  } else {
+    if (php_proto_zend_hash_index_find_mem(table, intern->position,
+                                           (void **)&memory) == FAILURE) {
+      zend_error(E_USER_ERROR, "Element at %d doesn't exist.\n", index);
+      return;
+    }
   }
   native_slot_get_by_array(repeated_field->type, memory,
                            ZVAL_PTR_TO_CACHED_PTR(return_value) TSRMLS_CC);
