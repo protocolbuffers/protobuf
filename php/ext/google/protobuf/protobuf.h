@@ -37,7 +37,7 @@
 #include "upb.h"
 
 #define PHP_PROTOBUF_EXTNAME "protobuf"
-#define PHP_PROTOBUF_VERSION "3.3.0"
+#define PHP_PROTOBUF_VERSION "3.3.2"
 
 #define MAX_LENGTH_OF_INT64 20
 #define SIZEOF_INT64 8
@@ -74,13 +74,22 @@
 
 #define PHP_PROTO_HASH_OF(array) Z_ARRVAL_P(array)
 
-#define php_proto_zend_hash_index_update(ht, h, pData, nDataSize, pDest) \
+#define php_proto_zend_hash_index_update_zval(ht, h, pData) \
+  zend_hash_index_update(ht, h, &(pData), sizeof(void*), NULL)
+
+#define php_proto_zend_hash_index_update_mem(ht, h, pData, nDataSize, pDest) \
   zend_hash_index_update(ht, h, pData, nDataSize, pDest)
 
-#define php_proto_zend_hash_index_find(ht, h, pDest) \
+#define php_proto_zend_hash_index_find_zval(ht, h, pDest) \
   zend_hash_index_find(ht, h, pDest)
 
-#define php_proto_zend_hash_next_index_insert(ht, pData, nDataSize, pDest) \
+#define php_proto_zend_hash_index_find_mem(ht, h, pDest) \
+  zend_hash_index_find(ht, h, pDest)
+
+#define php_proto_zend_hash_next_index_insert_zval(ht, pData) \
+  zend_hash_next_index_insert(ht, pData, sizeof(void*), NULL)
+
+#define php_proto_zend_hash_next_index_insert_mem(ht, pData, nDataSize, pDest) \
   zend_hash_next_index_insert(ht, pData, nDataSize, pDest)
 
 #define php_proto_zend_hash_get_current_data_ex(ht, pDest, pos) \
@@ -217,7 +226,14 @@
 
 #define PHP_PROTO_HASH_OF(array) Z_ARRVAL_P(&array)
 
-static inline int php_proto_zend_hash_index_update(HashTable* ht, ulong h,
+static inline int php_proto_zend_hash_index_update_zval(HashTable* ht, ulong h,
+                                                        zval* pData) {
+  void* result = NULL;
+  result = zend_hash_index_update(ht, h, pData);
+  return result != NULL ? SUCCESS : FAILURE;
+}
+
+static inline int php_proto_zend_hash_index_update_mem(HashTable* ht, ulong h,
                                                    void* pData, uint nDataSize,
                                                    void** pDest) {
   void* result = NULL;
@@ -226,18 +242,33 @@ static inline int php_proto_zend_hash_index_update(HashTable* ht, ulong h,
   return result != NULL ? SUCCESS : FAILURE;
 }
 
-static inline int php_proto_zend_hash_index_find(const HashTable* ht, ulong h,
-                                                 void** pDest) {
+static inline int php_proto_zend_hash_index_find_zval(const HashTable* ht,
+                                                      ulong h, void** pDest) {
+  zval* result = zend_hash_index_find(ht, h);
+  if (pDest != NULL) *pDest = result;
+  return result != NULL ? SUCCESS : FAILURE;
+}
+
+static inline int php_proto_zend_hash_index_find_mem(const HashTable* ht,
+                                                     ulong h, void** pDest) {
   void* result = NULL;
   result = zend_hash_index_find_ptr(ht, h);
   if (pDest != NULL) *pDest = result;
   return result != NULL ? SUCCESS : FAILURE;
 }
 
-static inline int php_proto_zend_hash_next_index_insert(HashTable* ht,
-                                                        void* pData,
-                                                        uint nDataSize,
-                                                        void** pDest) {
+static inline int php_proto_zend_hash_next_index_insert_zval(HashTable* ht,
+                                                             void* pData) {
+  zval tmp;
+  ZVAL_OBJ(&tmp, *(zend_object**)pData);
+  zval* result = zend_hash_next_index_insert(ht, &tmp);
+  return result != NULL ? SUCCESS : FAILURE;
+}
+
+static inline int php_proto_zend_hash_next_index_insert_mem(HashTable* ht,
+                                                            void* pData,
+                                                            uint nDataSize,
+                                                            void** pDest) {
   void* result = NULL;
   result = zend_hash_next_index_insert_mem(ht, pData, nDataSize);
   if (pDest != NULL) *pDest = result;
@@ -640,6 +671,8 @@ bool native_slot_set(upb_fieldtype_t type, const zend_class_entry* klass,
 bool native_slot_set_by_array(upb_fieldtype_t type,
                               const zend_class_entry* klass, void* memory,
                               zval* value TSRMLS_DC);
+bool native_slot_set_by_map(upb_fieldtype_t type, const zend_class_entry* klass,
+                            void* memory, zval* value TSRMLS_DC);
 void native_slot_init(upb_fieldtype_t type, void* memory, CACHED_VALUE* cache);
 // For each property, in order to avoid conversion between the zval object and
 // the actual data type during parsing/serialization, the containing message
@@ -654,6 +687,10 @@ void native_slot_get(upb_fieldtype_t type, const void* memory,
 // So we need to make a special method to handle that.
 void native_slot_get_by_array(upb_fieldtype_t type, const void* memory,
                      CACHED_VALUE* cache TSRMLS_DC);
+void native_slot_get_by_map_key(upb_fieldtype_t type, const void* memory,
+                                int length, CACHED_VALUE* cache TSRMLS_DC);
+void native_slot_get_by_map_value(upb_fieldtype_t type, const void* memory,
+                                  CACHED_VALUE* cache TSRMLS_DC);
 void native_slot_get_default(upb_fieldtype_t type,
                              CACHED_VALUE* cache TSRMLS_DC);
 

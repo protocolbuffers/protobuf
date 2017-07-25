@@ -63,6 +63,7 @@ build_cpp_distcheck() {
   # List all files that should be included in the distribution package.
   git ls-files | grep "^\(java\|python\|objectivec\|csharp\|js\|ruby\|php\|cmake\|examples\)" |\
     grep -v ".gitignore" | grep -v "java/compatibility_tests" |\
+    grep -v "cmake/protobuf.*\.pc\.cmake" |\
     grep -v "python/compatibility_tests" | grep -v "csharp/compatibility_tests" > dist.lst
   # Unzip the dist tar file.
   DIST=`ls *.tar.gz`
@@ -544,16 +545,51 @@ build_php_compatibility() {
   php/tests/compatibility_test.sh
 }
 
+build_php7.1() {
+  use_php 7.1
+  pushd php
+  rm -rf vendor
+  cp -r /usr/local/vendor-7.1 vendor
+  wget https://phar.phpunit.de/phpunit-5.6.0.phar -O /usr/bin/phpunit
+  phpunit
+  popd
+  pushd conformance
+  # TODO(teboring): Add it back
+  # make test_php
+  popd
+}
+
+build_php7.1_c() {
+  use_php 7.1
+  wget https://phar.phpunit.de/phpunit-5.6.0.phar -O /usr/bin/phpunit
+  cd php/tests && /bin/bash ./test.sh && cd ../..
+  pushd conformance
+  # make test_php_c
+  popd
+}
+
+build_php7.1_zts_c() {
+  use_php_zts 7.1
+  wget https://phar.phpunit.de/phpunit-5.6.0.phar -O /usr/bin/phpunit
+  cd php/tests && /bin/bash ./test.sh && cd ../..
+  pushd conformance
+  # make test_php_c
+  popd
+}
+
 build_php_all_32() {
   build_php5.5
   build_php5.6
   build_php7.0
+  build_php7.1
   build_php5.5_c
   build_php5.6_c
   build_php7.0_c
+  build_php7.1_c
   build_php5.5_zts_c
   build_php5.6_zts_c
   build_php7.0_zts_c
+  build_php7.1_zts_c
 }
 
 build_php_all() {
@@ -600,6 +636,8 @@ Usage: $0 { cpp |
             php7.0   |
             php7.0_c |
             php_compatibility |
+            php7.1   |
+            php7.1_c |
             php_all)
 "
   exit 1

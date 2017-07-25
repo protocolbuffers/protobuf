@@ -141,7 +141,7 @@ There are miscellaneous other things you may find useful as a Protocol Buffers d
     * http://igor-petruk.github.com/protobuf-maven-plugin/
     * http://code.google.com/p/maven-protoc-plugin/
     * https://github.com/os72/protoc-jar-maven-plugin
-* [Documentation generator plugin (Markdown/HTML/DocBook/...)](https://github.com/estan/protoc-gen-doc)
+* [Documentation generator plugin (Markdown/HTML/DocBook/...)](https://github.com/pseudomuto/protoc-gen-doc)
 * [DocBook generator for .proto files](http://code.google.com/p/protoc-gen-docbook/)
 * [Protobuf for nginx module](https://github.com/dbcode/protobuf-nginx/)
 * [RSpec matchers and Cucumber step defs for testing Protocol Buffers](https://github.com/connamara/protobuf_spec)

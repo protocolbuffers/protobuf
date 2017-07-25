@@ -92,6 +92,7 @@ set(libprotoc_files
   ${protobuf_source_dir}/src/google/protobuf/compiler/ruby/ruby_generator.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/subprocess.cc
   ${protobuf_source_dir}/src/google/protobuf/compiler/zip_writer.cc
+  ${protobuf_source_dir}/src/google/protobuf/stubs/io_win32.cc
 )
 
 set(libprotoc_headers

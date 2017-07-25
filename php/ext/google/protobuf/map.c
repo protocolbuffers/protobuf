@@ -285,7 +285,7 @@ static bool map_field_read_dimension(zval *object, zval *key, int type,
 
   if (upb_strtable_lookup2(&intern->table, keyval, length, &v)) {
     void* mem = upb_value_memory(&v);
-    native_slot_get_by_array(intern->value_type, mem, retval TSRMLS_CC);
+    native_slot_get_by_map_value(intern->value_type, mem, retval TSRMLS_CC);
     return true;
   } else {
     zend_error(E_USER_ERROR, "Given key doesn't exist.");
@@ -318,7 +318,7 @@ static void map_field_write_dimension(zval *object, zval *key,
 
   mem = upb_value_memory(&v);
   memset(mem, 0, native_slot_size(intern->value_type));
-  if (!native_slot_set_by_array(intern->value_type, intern->msg_ce, mem,
+  if (!native_slot_set_by_map(intern->value_type, intern->msg_ce, mem,
                                 value TSRMLS_CC)) {
     return;
   }
@@ -535,8 +535,8 @@ PHP_METHOD(MapFieldIter, current) {
   upb_value value = map_iter_value(intern, &value_length);
 
   void* mem = upb_value_memory(&value);
-  native_slot_get_by_array(map_field->value_type, mem,
-                           ZVAL_PTR_TO_CACHED_PTR(return_value) TSRMLS_CC);
+  native_slot_get_by_map_value(map_field->value_type, mem,
+                               ZVAL_PTR_TO_CACHED_PTR(return_value) TSRMLS_CC);
 }
 
 PHP_METHOD(MapFieldIter, key) {
