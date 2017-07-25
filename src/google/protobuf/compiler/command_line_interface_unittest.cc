@@ -63,6 +63,7 @@
 #include <gtest/gtest.h>
 
 #include <google/protobuf/stubs/strutil.h>
+#include <google/protobuf/stubs/io_win32.h>
 
 namespace google {
 namespace protobuf {
