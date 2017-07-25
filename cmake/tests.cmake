@@ -161,7 +161,6 @@ set(tests_files
   ${protobuf_source_dir}/src/google/protobuf/stubs/bytestream_unittest.cc
   ${protobuf_source_dir}/src/google/protobuf/stubs/common_unittest.cc
   ${protobuf_source_dir}/src/google/protobuf/stubs/int128_unittest.cc
-  ${protobuf_source_dir}/src/google/protobuf/stubs/io_win32.cc
   ${protobuf_source_dir}/src/google/protobuf/stubs/io_win32_unittest.cc
   ${protobuf_source_dir}/src/google/protobuf/stubs/once_unittest.cc
   ${protobuf_source_dir}/src/google/protobuf/stubs/status_test.cc

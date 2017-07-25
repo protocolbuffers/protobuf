@@ -197,6 +197,8 @@ libprotobuf_lite_la_SOURCES =                                  \
   google/protobuf/stubs/hash.h                                 \
   google/protobuf/stubs/int128.cc                              \
   google/protobuf/stubs/int128.h                               \
+  google/protobuf/stubs/io_win32.cc                            \
+  google/protobuf/stubs/io_win32.h                             \
   google/protobuf/stubs/map_util.h                             \
   google/protobuf/stubs/mathutil.h                             \
   google/protobuf/stubs/once.cc                                \
@@ -249,6 +251,7 @@ libprotobuf_la_SOURCES =                                       \
   google/protobuf/extension_set_heavy.cc                       \
   google/protobuf/field_mask.pb.cc                             \
   google/protobuf/generated_message_reflection.cc              \
+  google/protobuf/generated_message_table_driven.cc            \
   google/protobuf/map_field.cc                                 \
   google/protobuf/message.cc                                   \
   google/protobuf/reflection_internal.h                        \

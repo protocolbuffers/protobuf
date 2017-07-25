@@ -37,7 +37,6 @@ copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\compiler\parser.h" in
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\compiler\php\php_generator.h" include\google\protobuf\compiler\php\php_generator.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\compiler\plugin.h" include\google\protobuf\compiler\plugin.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\compiler\plugin.pb.h" include\google\protobuf\compiler\plugin.pb.h
-copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\compiler\profile.pb.h" include\google\protobuf\compiler\profile.pb.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\compiler\python\python_generator.h" include\google\protobuf\compiler\python\python_generator.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\compiler\ruby\ruby_generator.h" include\google\protobuf\compiler\ruby\ruby_generator.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\descriptor.h" include\google\protobuf\descriptor.h
@@ -53,7 +52,6 @@ copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\generated_enum_util.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\generated_message_reflection.h" include\google\protobuf\generated_message_reflection.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\generated_message_table_driven.h" include\google\protobuf\generated_message_table_driven.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\generated_message_util.h" include\google\protobuf\generated_message_util.h
-copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\generated_message_table_driven.h" include\google\protobuf\generated_message_table_driven.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\has_bits.h" include\google\protobuf\has_bits.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\io\coded_stream.h" include\google\protobuf\io\coded_stream.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\io\gzip_stream.h" include\google\protobuf\io\gzip_stream.h
@@ -101,7 +99,6 @@ copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\stubs\casts.h" includ
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\stubs\common.h" include\google\protobuf\stubs\common.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\stubs\fastmem.h" include\google\protobuf\stubs\fastmem.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\stubs\hash.h" include\google\protobuf\stubs\hash.h
-copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\stubs\io_win32.h" include\google\protobuf\stubs\io_win32.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\stubs\logging.h" include\google\protobuf\stubs\logging.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\stubs\macros.h" include\google\protobuf\stubs\macros.h
 copy "${PROTOBUF_SOURCE_WIN32_PATH}\..\src\google\protobuf\stubs\mutex.h" include\google\protobuf\stubs\mutex.h
