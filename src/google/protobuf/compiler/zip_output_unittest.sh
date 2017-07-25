@@ -59,32 +59,42 @@ $PROTOC \
     || fail 'protoc failed.'
 
 echo "Testing output to zip..."
-$UNZIP -t $TEST_TMPDIR/testzip.zip > $TEST_TMPDIR/testzip.list || fail 'unzip failed.'
+if $UNZIP -h > /dev/null; then
+  $UNZIP -t $TEST_TMPDIR/testzip.zip > $TEST_TMPDIR/testzip.list \
+    || fail 'unzip failed.'
 
-grep 'testing: testzip\.pb\.cc *OK$' $TEST_TMPDIR/testzip.list > /dev/null \
-  || fail 'testzip.pb.cc not found in output zip.'
-grep 'testing: testzip\.pb\.h *OK$' $TEST_TMPDIR/testzip.list > /dev/null \
-  || fail 'testzip.pb.h not found in output zip.'
-grep 'testing: testzip_pb2\.py *OK$' $TEST_TMPDIR/testzip.list > /dev/null \
-  || fail 'testzip_pb2.py not found in output zip.'
-grep -i 'manifest' $TEST_TMPDIR/testzip.list > /dev/null \
-  && fail 'Zip file contained manifest.'
-
-echo "Testing output to jar..."
-$JAR tf $TEST_TMPDIR/testzip.jar > $TEST_TMPDIR/testzip.list || fail 'jar failed.'
-
-# Check that -interface.jar timestamps are normalized:
-if [[ "$(TZ=UTC $JAR tvf $TEST_TMPDIR/testzip.jar)" != *'Tue Jan 01 00:00:00 UTC 1980'* ]]; then
-  fail 'Zip did not contain normalized timestamps'
+  grep 'testing: testzip\.pb\.cc *OK$' $TEST_TMPDIR/testzip.list > /dev/null \
+    || fail 'testzip.pb.cc not found in output zip.'
+  grep 'testing: testzip\.pb\.h *OK$' $TEST_TMPDIR/testzip.list > /dev/null \
+    || fail 'testzip.pb.h not found in output zip.'
+  grep 'testing: testzip_pb2\.py *OK$' $TEST_TMPDIR/testzip.list > /dev/null \
+    || fail 'testzip_pb2.py not found in output zip.'
+  grep -i 'manifest' $TEST_TMPDIR/testzip.list > /dev/null \
+    && fail 'Zip file contained manifest.'
+else
+  echo "Warning:  'unzip' command not available.  Skipping test."
 fi
 
-grep '^test/jar/Foo\.java$' $TEST_TMPDIR/testzip.list > /dev/null \
-  || fail 'Foo.java not found in output jar.'
-grep '^test/jar/Bar\.java$' $TEST_TMPDIR/testzip.list > /dev/null \
-  || fail 'Bar.java not found in output jar.'
-grep '^test/jar/Outer\.java$' $TEST_TMPDIR/testzip.list > /dev/null \
-  || fail 'Outer.java not found in output jar.'
-grep '^META-INF/MANIFEST\.MF$' $TEST_TMPDIR/testzip.list > /dev/null \
-  || fail 'Manifest not found in output jar.'
+echo "Testing output to jar..."
+if $JAR c $TEST_TMPDIR/testzip.proto > /dev/null; then
+  $JAR tf $TEST_TMPDIR/testzip.jar > $TEST_TMPDIR/testzip.list \
+    || fail 'jar failed.'
+
+  # Check that -interface.jar timestamps are normalized:
+  if [[ "$(TZ=UTC $JAR tvf $TEST_TMPDIR/testzip.jar)" != *'Tue Jan 01 00:00:00 UTC 1980'* ]]; then
+    fail 'Zip did not contain normalized timestamps'
+  fi
+
+  grep '^test/jar/Foo\.java$' $TEST_TMPDIR/testzip.list > /dev/null \
+    || fail 'Foo.java not found in output jar.'
+  grep '^test/jar/Bar\.java$' $TEST_TMPDIR/testzip.list > /dev/null \
+    || fail 'Bar.java not found in output jar.'
+  grep '^test/jar/Outer\.java$' $TEST_TMPDIR/testzip.list > /dev/null \
+    || fail 'Outer.java not found in output jar.'
+  grep '^META-INF/MANIFEST\.MF$' $TEST_TMPDIR/testzip.list > /dev/null \
+    || fail 'Manifest not found in output jar.'
+else
+  echo "Warning:  'jar' command not available.  Skipping test."
+fi
 
 echo PASS
