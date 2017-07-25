@@ -166,6 +166,9 @@ class MessageTest(BaseTestCase):
       def __nonzero__(self):
         raise BadArgError()
 
+      def __bool__(self):
+        raise BadArgError()
+
     with self.assertRaises(BadArgError):
       golden_message.SerializeToString(deterministic=BadArg())
 
