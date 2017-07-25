@@ -30,7 +30,6 @@
 
 package com.google.protobuf.util;
 
-import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.math.IntMath.checkedAdd;
 import static com.google.common.math.IntMath.checkedSubtract;
 import static com.google.common.math.LongMath.checkedAdd;
@@ -135,14 +134,13 @@ public final class Durations {
   public static Duration checkValid(Duration duration) {
     long seconds = duration.getSeconds();
     int nanos = duration.getNanos();
-    checkArgument(
-        isValid(seconds, nanos),
-        "Duration is not valid. See proto definition for valid values. "
+    if (!isValid(seconds, nanos)) {
+        throw new IllegalArgumentException(String.format(
+            "Duration is not valid. See proto definition for valid values. "
             + "Seconds (%s) must be in range [-315,576,000,000, +315,576,000,000]. "
             + "Nanos (%s) must be in range [-999,999,999, +999,999,999]. "
-            + "Nanos must have the same sign as seconds",
-        seconds,
-        nanos);
+            + "Nanos must have the same sign as seconds", seconds, nanos));
+    }
     return duration;
   }
 
