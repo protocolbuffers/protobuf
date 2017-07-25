@@ -221,6 +221,8 @@ libprotobuf_lite_la_SOURCES =                                  \
   google/protobuf/arenastring.cc                               \
   google/protobuf/extension_set.cc                             \
   google/protobuf/generated_message_util.cc                    \
+  google/protobuf/generated_message_table_driven_lite.h        \
+  google/protobuf/generated_message_table_driven_lite.cc       \
   google/protobuf/message_lite.cc                              \
   google/protobuf/repeated_field.cc                            \
   google/protobuf/wire_format_lite.cc                          \
@@ -251,6 +253,7 @@ libprotobuf_la_SOURCES =                                       \
   google/protobuf/extension_set_heavy.cc                       \
   google/protobuf/field_mask.pb.cc                             \
   google/protobuf/generated_message_reflection.cc              \
+  google/protobuf/generated_message_table_driven_lite.h        \
   google/protobuf/generated_message_table_driven.cc            \
   google/protobuf/map_field.cc                                 \
   google/protobuf/message.cc                                   \
