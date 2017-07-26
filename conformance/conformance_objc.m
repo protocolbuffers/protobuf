@@ -63,7 +63,7 @@ static NSData *CheckedReadDataOfLength(NSFileHandle *handle, NSUInteger numBytes
 
 static ConformanceResponse *DoTest(ConformanceRequest *request) {
   ConformanceResponse *response = [ConformanceResponse message];
-  TestAllTypesProto3 *testMessage = nil;
+  Proto3TestAllTypesProto3 *testMessage = nil;
 
   switch (request.payloadOneOfCase) {
     case ConformanceRequest_Payload_OneOfCase_GPBUnsetOneOfCase:
@@ -73,8 +73,8 @@ static ConformanceResponse *DoTest(ConformanceRequest *request) {
     case ConformanceRequest_Payload_OneOfCase_ProtobufPayload: {
       if ([request.messageType isEqualToString:@"protobuf_test_messages.proto3.TestAllTypesProto3"]) {
         NSError *error = nil;
-        testMessage = [TestAllTypesProto3 parseFromData:request.protobufPayload
-                                            error:&error];
+        testMessage = [Proto3TestAllTypesProto3 parseFromData:request.protobufPayload
+                                                        error:&error];
         if (!testMessage) {
           response.parseError =
               [NSString stringWithFormat:@"Parse error: %@", error];
