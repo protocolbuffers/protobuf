@@ -185,6 +185,7 @@
 #define HASHTABLE_VALUE_DTOR ZVAL_PTR_DTOR
 
 #define PHP_PROTO_HASHTABLE_VALUE zval*
+#define HASHTABLE_VALUE_CE(val) Z_OBJCE_P(val)
 
 #define CREATE_HASHTABLE_VALUE(OBJ, WRAPPED_OBJ, OBJ_TYPE, OBJ_CLASS_ENTRY) \
   OBJ_TYPE* OBJ;                                                            \
@@ -369,6 +370,7 @@ static inline int php_proto_zend_hash_get_current_data_ex(HashTable* ht,
 #define HASHTABLE_VALUE_DTOR php_proto_hashtable_descriptor_release
 
 #define PHP_PROTO_HASHTABLE_VALUE zend_object*
+#define HASHTABLE_VALUE_CE(val) val->ce
 
 #define CREATE_HASHTABLE_VALUE(OBJ, WRAPPED_OBJ, OBJ_TYPE, OBJ_CLASS_ENTRY) \
   OBJ_TYPE* OBJ;                                                            \
@@ -397,7 +399,9 @@ static inline int php_proto_zend_lookup_class(
 struct DescriptorPool;
 struct Descriptor;
 struct EnumDescriptor;
+struct EnumValueDescriptor;
 struct FieldDescriptor;
+struct InternalDescriptorPool;
 struct MessageField;
 struct MessageHeader;
 struct MessageLayout;
@@ -410,7 +414,9 @@ struct Oneof;
 typedef struct DescriptorPool DescriptorPool;
 typedef struct Descriptor Descriptor;
 typedef struct EnumDescriptor EnumDescriptor;
+typedef struct EnumValueDescriptor EnumValueDescriptor;
 typedef struct FieldDescriptor FieldDescriptor;
+typedef struct InternalDescriptorPool InternalDescriptorPool;
 typedef struct MessageField MessageField;
 typedef struct MessageHeader MessageHeader;
 typedef struct MessageLayout MessageLayout;
@@ -431,9 +437,12 @@ ZEND_END_MODULE_GLOBALS(protobuf)
 void descriptor_init(TSRMLS_D);
 void enum_descriptor_init(TSRMLS_D);
 void descriptor_pool_init(TSRMLS_D);
+void internal_descriptor_pool_init(TSRMLS_D);
+void field_descriptor_init(TSRMLS_D);
 void gpb_type_init(TSRMLS_D);
 void map_field_init(TSRMLS_D);
 void map_field_iter_init(TSRMLS_D);
+void oneof_descriptor_init(TSRMLS_D);
 void repeated_field_init(TSRMLS_D);
 void repeated_field_iter_init(TSRMLS_D);
 void util_init(TSRMLS_D);
@@ -458,22 +467,34 @@ extern zend_class_entry* repeated_field_type;
 // -----------------------------------------------------------------------------
 
 PHP_PROTO_WRAP_OBJECT_START(DescriptorPool)
+  InternalDescriptorPool* intern;
+PHP_PROTO_WRAP_OBJECT_END
+
+PHP_METHOD(DescriptorPool, getGeneratedPool);
+PHP_METHOD(DescriptorPool, getDescriptorByClassName);
+PHP_METHOD(DescriptorPool, getEnumDescriptorByClassName);
+
+PHP_PROTO_WRAP_OBJECT_START(InternalDescriptorPool)
   upb_symtab* symtab;
   HashTable* pending_list;
 PHP_PROTO_WRAP_OBJECT_END
 
-PHP_METHOD(DescriptorPool, getGeneratedPool);
-PHP_METHOD(DescriptorPool, internalAddGeneratedFile);
+PHP_METHOD(InternalDescriptorPool, getGeneratedPool);
+PHP_METHOD(InternalDescriptorPool, internalAddGeneratedFile);
 
 // wrapper of generated pool
 #if PHP_MAJOR_VERSION < 7
 extern zval* generated_pool_php;
+extern zval* internal_generated_pool_php;
 void descriptor_pool_free(void* object TSRMLS_DC);
+void internal_descriptor_pool_free(void* object TSRMLS_DC);
 #else
 extern zend_object *generated_pool_php;
+extern zend_object *internal_generated_pool_php;
 void descriptor_pool_free(zend_object* object);
+void internal_descriptor_pool_free(zend_object* object);
 #endif
-extern DescriptorPool* generated_pool;  // The actual generated pool
+extern InternalDescriptorPool* generated_pool;  // The actual generated pool
 
 PHP_PROTO_WRAP_OBJECT_START(Descriptor)
   const upb_msgdef* msgdef;
@@ -487,6 +508,12 @@ PHP_PROTO_WRAP_OBJECT_START(Descriptor)
   const upb_handlers* json_serialize_handlers_preserve;
 PHP_PROTO_WRAP_OBJECT_END
 
+PHP_METHOD(Descriptor, getFullName);
+PHP_METHOD(Descriptor, getField);
+PHP_METHOD(Descriptor, getFieldCount);
+PHP_METHOD(Descriptor, getOneofDecl);
+PHP_METHOD(Descriptor, getOneofDeclCount);
+
 extern zend_class_entry* descriptor_type;
 
 void descriptor_name_set(Descriptor *desc, const char *name);
@@ -495,13 +522,35 @@ PHP_PROTO_WRAP_OBJECT_START(FieldDescriptor)
   const upb_fielddef* fielddef;
 PHP_PROTO_WRAP_OBJECT_END
 
+PHP_METHOD(FieldDescriptor, getName);
+PHP_METHOD(FieldDescriptor, getNumber);
+PHP_METHOD(FieldDescriptor, getLabel);
+PHP_METHOD(FieldDescriptor, getType);
+PHP_METHOD(FieldDescriptor, isMap);
+PHP_METHOD(FieldDescriptor, getEnumType);
+PHP_METHOD(FieldDescriptor, getMessageType);
+
+extern zend_class_entry* field_descriptor_type;
+
 PHP_PROTO_WRAP_OBJECT_START(EnumDescriptor)
   const upb_enumdef* enumdef;
   zend_class_entry* klass;  // begins as NULL
-  // VALUE module;  // begins as nil
 PHP_PROTO_WRAP_OBJECT_END
 
+PHP_METHOD(EnumDescriptor, getValue);
+PHP_METHOD(EnumDescriptor, getValueCount);
+
 extern zend_class_entry* enum_descriptor_type;
+
+PHP_PROTO_WRAP_OBJECT_START(EnumValueDescriptor)
+  const char* name;
+  int32_t number;
+PHP_PROTO_WRAP_OBJECT_END
+
+PHP_METHOD(EnumValueDescriptor, getName);
+PHP_METHOD(EnumValueDescriptor, getNumber);
+
+extern zend_class_entry* enum_value_descriptor_type;
 
 // -----------------------------------------------------------------------------
 // Message class creation.
@@ -818,6 +867,12 @@ PHP_PROTO_WRAP_OBJECT_START(Oneof)
   int index;    // Index of field in oneof. -1 if not set.
   char value[NATIVE_SLOT_MAX_SIZE];
 PHP_PROTO_WRAP_OBJECT_END
+
+PHP_METHOD(Oneof, getName);
+PHP_METHOD(Oneof, getField);
+PHP_METHOD(Oneof, getFieldCount);
+
+extern zend_class_entry* oneof_descriptor_type;
 
 // Oneof case slot value to indicate that no oneof case is set. The value `0` is
 // safe because field numbers are used as case identifiers, and no field can
