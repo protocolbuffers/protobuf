@@ -78,15 +78,13 @@ static ConformanceResponse *DoTest(ConformanceRequest *request) {
       } else if ([request.messageType isEqual:@"protobuf_test_messages.proto2.TestAllTypesProto2"]) {
         msgClass = [TestAllTypesProto2 class];
       } else {
-        Die(@"Protobuf request doesn't have specific payload type");
+        Die(@"Protobuf request had an unknown message_type: %@", request.messageType);
       }
-      if (msgClass) {
-        NSError *error = nil;
-        testMessage = [msgClass parseFromData:request.protobufPayload error:&error];
-        if (!testMessage) {
-          response.parseError =
-              [NSString stringWithFormat:@"Parse error: %@", error];
-        }
+      NSError *error = nil;
+      testMessage = [msgClass parseFromData:request.protobufPayload error:&error];
+      if (!testMessage) {
+        response.parseError =
+            [NSString stringWithFormat:@"Parse error: %@", error];
       }
       break;
     }
