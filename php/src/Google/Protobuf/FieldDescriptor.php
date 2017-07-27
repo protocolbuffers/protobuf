@@ -33,9 +33,7 @@
 namespace Google\Protobuf;
 
 use Google\Protobuf\Internal\GetPublicDescriptorTrait;
-use Google\Protobuf\Internal\GPBLabel;
 use Google\Protobuf\Internal\GPBType;
-use Google\Protobuf\Internal\GPBUtil;
 
 class FieldDescriptor
 {
@@ -68,7 +66,7 @@ class FieldDescriptor
     }
 
     /**
-     * @return GPBLabel
+     * @return int
      */
     public function getLabel()
     {
@@ -76,7 +74,7 @@ class FieldDescriptor
     }
 
     /**
-     * @return GPBType
+     * @return int
      */
     public function getType()
     {
@@ -84,7 +82,7 @@ class FieldDescriptor
     }
 
     /**
-     * @return Descriptor Returns a descriptor for the field type if getType() == GBPType::Message, otherwise throws \Exception
+     * @return Descriptor Returns a descriptor for the field type if the field type is a message, otherwise throws \Exception
      * @throws \Exception
      */
     public function getMessageType()
@@ -97,7 +95,7 @@ class FieldDescriptor
     }
 
     /**
-     * @return EnumDescriptor Returns an enum descriptor for the field type if getType() == GBPType::Enum, otherwise throws \Exception
+     * @return EnumDescriptor Returns an enum descriptor if the field type is an enum, otherwise throws \Exception
      * @throws \Exception
      */
     public function getEnumType()
@@ -115,13 +113,5 @@ class FieldDescriptor
     public function isMap()
     {
         return $this->internal_desc->isMap();
-    }
-
-    /**
-     * @return int Returns the index of the oneof containing this field, or -1 if this field is part of a oneof
-     */
-    public function getOneofIndex()
-    {
-        return $this->internal_desc->getOneofIndex();
     }
 }

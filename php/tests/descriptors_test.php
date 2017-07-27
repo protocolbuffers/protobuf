@@ -84,15 +84,16 @@ class DescriptorsTest extends TestBase
 
         $enumDesc = $pool->getEnumDescriptorByClassName(get_class(new TestDescriptorsEnum()));
 
-        $enumValueDesc = $enumDesc->getValue(0);
-        $this->assertInstanceOf('\Google\Protobuf\EnumValueDescriptor', $enumValueDesc);
-        $this->assertSame(0, $enumValueDesc->getNumber());
-        $this->assertSame('ZERO', $enumValueDesc->getName());
+        // Build map of enum values
+        $enumDescMap = [];
+        for ($i = 0; $i < $enumDesc->getValueCount(); $i++) {
+            $enumValueDesc = $enumDesc->getValue($i);
+            $this->assertInstanceOf('\Google\Protobuf\EnumValueDescriptor', $enumValueDesc);
+            $enumDescMap[$enumValueDesc->getNumber()] = $enumValueDesc->getName();
+        }
 
-        $enumValueDesc = $enumDesc->getValue(1);
-        $this->assertInstanceOf('\Google\Protobuf\EnumValueDescriptor', $enumValueDesc);
-        $this->assertSame(1, $enumValueDesc->getNumber());
-        $this->assertSame('ONE', $enumValueDesc->getName());
+        $this->assertSame('ZERO', $enumDescMap[0]);
+        $this->assertSame('ONE', $enumDescMap[1]);
 
         $this->assertSame(2, $enumDesc->getValueCount());
     }
@@ -106,66 +107,62 @@ class DescriptorsTest extends TestBase
         $pool = DescriptorPool::getGeneratedPool();
         $desc = $pool->getDescriptorByClassName(get_class(new TestDescriptorsMessage()));
 
+        $fieldDescMap = $this->buildFieldMap($desc);
+
         // Optional int field
-        $fieldDesc = $desc->getField(0);
+        $fieldDesc = $fieldDescMap[1];
         $this->assertSame('optional_int32', $fieldDesc->getName());
         $this->assertSame(1, $fieldDesc->getNumber());
         $this->assertSame(GPBLabel::OPTIONAL, $fieldDesc->getLabel());
         $this->assertSame(GPBType::INT32, $fieldDesc->getType());
         $this->assertFalse($fieldDesc->isMap());
-        $this->assertSame(-1, $fieldDesc->getOneofIndex());
 
         // Optional enum field
-        $fieldDesc = $desc->getField(1);
+        $fieldDesc = $fieldDescMap[16];
         $this->assertSame('optional_enum', $fieldDesc->getName());
         $this->assertSame(16, $fieldDesc->getNumber());
         $this->assertSame(GPBLabel::OPTIONAL, $fieldDesc->getLabel());
         $this->assertSame(GPBType::ENUM, $fieldDesc->getType());
         $this->assertInstanceOf('\Google\Protobuf\EnumDescriptor', $fieldDesc->getEnumType());
         $this->assertFalse($fieldDesc->isMap());
-        $this->assertSame(-1, $fieldDesc->getOneofIndex());
 
         // Optional message field
-        $fieldDesc = $desc->getField(2);
+        $fieldDesc = $fieldDescMap[17];
         $this->assertSame('optional_message', $fieldDesc->getName());
         $this->assertSame(17, $fieldDesc->getNumber());
         $this->assertSame(GPBLabel::OPTIONAL, $fieldDesc->getLabel());
         $this->assertSame(GPBType::MESSAGE, $fieldDesc->getType());
         $this->assertInstanceOf('\Google\Protobuf\Descriptor', $fieldDesc->getMessageType());
         $this->assertFalse($fieldDesc->isMap());
-        $this->assertSame(-1, $fieldDesc->getOneofIndex());
 
         // Repeated int field
-        $fieldDesc = $desc->getField(3);
+        $fieldDesc = $fieldDescMap[31];
         $this->assertSame('repeated_int32', $fieldDesc->getName());
         $this->assertSame(31, $fieldDesc->getNumber());
         $this->assertSame(GPBLabel::REPEATED, $fieldDesc->getLabel());
         $this->assertSame(GPBType::INT32, $fieldDesc->getType());
         $this->assertFalse($fieldDesc->isMap());
-        $this->assertSame(-1, $fieldDesc->getOneofIndex());
 
         // Repeated message field
-        $fieldDesc = $desc->getField(4);
+        $fieldDesc = $fieldDescMap[47];
         $this->assertSame('repeated_message', $fieldDesc->getName());
         $this->assertSame(47, $fieldDesc->getNumber());
         $this->assertSame(GPBLabel::REPEATED, $fieldDesc->getLabel());
         $this->assertSame(GPBType::MESSAGE, $fieldDesc->getType());
         $this->assertInstanceOf('\Google\Protobuf\Descriptor', $fieldDesc->getMessageType());
         $this->assertFalse($fieldDesc->isMap());
-        $this->assertSame(-1, $fieldDesc->getOneofIndex());
 
         // Oneof int field
-        $fieldDesc = $desc->getField(5);
+        // Tested further in testOneofDescriptor()
+        $fieldDesc = $fieldDescMap[51];
         $this->assertSame('oneof_int32', $fieldDesc->getName());
         $this->assertSame(51, $fieldDesc->getNumber());
         $this->assertSame(GPBLabel::OPTIONAL, $fieldDesc->getLabel());
         $this->assertSame(GPBType::INT32, $fieldDesc->getType());
         $this->assertFalse($fieldDesc->isMap());
-        $this->assertSame(0, $fieldDesc->getOneofIndex());
-        $this->assertInstanceOf('\Google\Protobuf\OneofDescriptor', $desc->getOneofDecl($fieldDesc->getOneofIndex()));
 
         // Map int-enum field
-        $fieldDesc = $desc->getField(6);
+        $fieldDesc = $fieldDescMap[71];
         $this->assertSame('map_int32_enum', $fieldDesc->getName());
         $this->assertSame(71, $fieldDesc->getNumber());
         $this->assertSame(GPBLabel::REPEATED, $fieldDesc->getLabel());
@@ -175,7 +172,6 @@ class DescriptorsTest extends TestBase
         $this->assertSame('.descriptors.TestDescriptorsMessage.MapInt32EnumEntry', $mapDesc->getFullName());
         $this->assertSame(GPBType::INT32, $mapDesc->getField(0)->getType());
         $this->assertSame(GPBType::ENUM, $mapDesc->getField(1)->getType());
-        $this->assertSame(-1, $fieldDesc->getOneofIndex());
     }
 
     /**
@@ -208,12 +204,25 @@ class DescriptorsTest extends TestBase
     {
         $pool = DescriptorPool::getGeneratedPool();
         $desc = $pool->getDescriptorByClassName(get_class(new TestDescriptorsMessage()));
-        $fieldDesc = $desc->getField(5);
-        $oneofDesc = $desc->getOneofDecl($fieldDesc->getOneofIndex());
+
+        $fieldDescMap = $this->buildFieldMap($desc);
+        $fieldDesc = $fieldDescMap[51];
+
+        $oneofDesc = $desc->getOneofDecl(0);
 
         $this->assertSame('my_oneof', $oneofDesc->getName());
         $fieldDescFromOneof = $oneofDesc->getField(0);
         $this->assertSame($fieldDesc, $fieldDescFromOneof);
         $this->assertSame(1, $oneofDesc->getFieldCount());
+    }
+
+    private function buildFieldMap($desc)
+    {
+        $fieldDescMap = [];
+        for ($i = 0; $i < $desc->getFieldCount(); $i++) {
+            $fieldDesc = $desc->getField($i);
+            $fieldDescMap[$fieldDesc->getNumber()] = $fieldDesc;
+        }
+        return $fieldDescMap;
     }
 }
