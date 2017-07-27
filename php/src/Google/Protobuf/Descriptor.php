@@ -82,23 +82,6 @@ class Descriptor
     }
 
     /**
-     * @param int $index Must be >= 0 and < getNestedTypeCount()
-     * @return Descriptor
-     */
-    public function getNestedType($index)
-    {
-        return $this->getPublicDescriptor($this->internal_desc->getNestedType()[$index]);
-    }
-
-    /**
-     * @return int Number of nested types in message
-     */
-    public function getNestedTypeCount()
-    {
-        return count($this->internal_desc->getNestedType());
-    }
-
-    /**
      * @param int $index Must be >= 0 and < getEnumTypeCount()
      * @return EnumDescriptor
      */
