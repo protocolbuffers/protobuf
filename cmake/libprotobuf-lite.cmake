@@ -13,6 +13,7 @@ set(libprotobuf_lite_files
   ${protobuf_source_dir}/src/google/protobuf/stubs/bytestream.cc
   ${protobuf_source_dir}/src/google/protobuf/stubs/common.cc
   ${protobuf_source_dir}/src/google/protobuf/stubs/int128.cc
+  ${protobuf_source_dir}/src/google/protobuf/stubs/io_win32.cc
   ${protobuf_source_dir}/src/google/protobuf/stubs/once.cc
   ${protobuf_source_dir}/src/google/protobuf/stubs/status.cc
   ${protobuf_source_dir}/src/google/protobuf/stubs/statusor.cc

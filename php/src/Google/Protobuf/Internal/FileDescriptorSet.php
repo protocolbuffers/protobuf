@@ -8,7 +8,6 @@ use Google\Protobuf\Internal\GPBType;
 use Google\Protobuf\Internal\GPBWire;
 use Google\Protobuf\Internal\RepeatedField;
 use Google\Protobuf\Internal\InputStream;
-
 use Google\Protobuf\Internal\GPBUtil;
 
 /**
@@ -44,7 +43,7 @@ class FileDescriptorSet extends \Google\Protobuf\Internal\Message
      * @param \Google\Protobuf\Internal\FileDescriptorProto[]|\Google\Protobuf\Internal\RepeatedField $var
      * @return $this
      */
-    public function setFile(&$var)
+    public function setFile($var)
     {
         $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \Google\Protobuf\Internal\FileDescriptorProto::class);
         $this->file = $arr;

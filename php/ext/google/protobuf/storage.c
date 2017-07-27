@@ -199,6 +199,57 @@ bool native_slot_set_by_array(upb_fieldtype_t type,
         Z_ADDREF_P(value);
       }
 #else
+      DEREF(memory, zval*) = value;
+      ++GC_REFCOUNT(Z_OBJ_P(value));
+#endif
+      break;
+    }
+    default:
+      return native_slot_set(type, klass, memory, value TSRMLS_CC);
+  }
+  return true;
+}
+
+bool native_slot_set_by_map(upb_fieldtype_t type, const zend_class_entry* klass,
+                            void* memory, zval* value TSRMLS_DC) {
+  switch (type) {
+    case UPB_TYPE_STRING:
+    case UPB_TYPE_BYTES: {
+      if (!protobuf_convert_to_string(value)) {
+        return false;
+      }
+      if (type == UPB_TYPE_STRING &&
+          !is_structurally_valid_utf8(Z_STRVAL_P(value), Z_STRLEN_P(value))) {
+        zend_error(E_USER_ERROR, "Given string is not UTF8 encoded.");
+        return false;
+      }
+
+      // Handles repeated/map string field. Memory provided by
+      // RepeatedField/Map is not initialized.
+#if PHP_MAJOR_VERSION < 7
+      MAKE_STD_ZVAL(DEREF(memory, zval*));
+      PHP_PROTO_ZVAL_STRINGL(DEREF(memory, zval*), Z_STRVAL_P(value),
+                             Z_STRLEN_P(value), 1);
+#else
+      *(zend_string**)memory = zend_string_dup(Z_STR_P(value), 0);
+#endif
+      break;
+    }
+    case UPB_TYPE_MESSAGE: {
+      if (Z_TYPE_P(value) != IS_OBJECT) {
+        zend_error(E_USER_ERROR, "Given value is not message.");
+        return false;
+      }
+      if (Z_TYPE_P(value) == IS_OBJECT && klass != Z_OBJCE_P(value)) {
+        zend_error(E_USER_ERROR, "Given message does not have correct class.");
+        return false;
+      }
+#if PHP_MAJOR_VERSION < 7
+      if (EXPECTED(DEREF(memory, zval*) != value)) {
+        DEREF(memory, zval*) = value;
+        Z_ADDREF_P(value);
+      }
+#else
       DEREF(memory, zend_object*) = Z_OBJ_P(value);
       ++GC_REFCOUNT(Z_OBJ_P(value));
 #endif
@@ -210,7 +261,7 @@ bool native_slot_set_by_array(upb_fieldtype_t type,
   return true;
 }
 
-void native_slot_init(upb_fieldtype_t type, void* memory, void* cache) {
+void native_slot_init(upb_fieldtype_t type, void* memory, CACHED_VALUE* cache) {
   zval* tmp = NULL;
   switch (type) {
     case UPB_TYPE_FLOAT:
@@ -224,6 +275,9 @@ void native_slot_init(upb_fieldtype_t type, void* memory, void* cache) {
       break;
     case UPB_TYPE_STRING:
     case UPB_TYPE_BYTES:
+      DEREF(memory, CACHED_VALUE*) = cache;
+      ZVAL_EMPTY_STRING(CACHED_PTR_TO_ZVAL_PTR(cache));
+      break;
     case UPB_TYPE_MESSAGE:
       DEREF(memory, CACHED_VALUE*) = cache;
       break;
@@ -345,8 +399,7 @@ void native_slot_get_by_array(upb_fieldtype_t type, const void* memory,
         ZVAL_ZVAL(CACHED_PTR_TO_ZVAL_PTR(cache), value, 1, 0);
       }
 #else
-      ++GC_REFCOUNT(*(zend_object**)memory);
-      ZVAL_OBJ(cache, *(zend_object**)memory);
+      ZVAL_COPY(CACHED_PTR_TO_ZVAL_PTR(cache), memory);
 #endif
       return;
     }
@@ -365,6 +418,26 @@ void native_slot_get_by_map_key(upb_fieldtype_t type, const void* memory,
     }
     default:
       native_slot_get(type, memory, cache TSRMLS_CC);
+  }
+}
+
+void native_slot_get_by_map_value(upb_fieldtype_t type, const void* memory,
+                              CACHED_VALUE* cache TSRMLS_DC) {
+  switch (type) {
+    case UPB_TYPE_MESSAGE: {
+#if PHP_MAJOR_VERSION < 7
+      zval* value = CACHED_PTR_TO_ZVAL_PTR((CACHED_VALUE*)memory);
+      if (EXPECTED(CACHED_PTR_TO_ZVAL_PTR(cache) != value)) {
+        ZVAL_ZVAL(CACHED_PTR_TO_ZVAL_PTR(cache), value, 1, 0);
+      }
+#else
+      ++GC_REFCOUNT(*(zend_object**)memory);
+      ZVAL_OBJ(cache, *(zend_object**)memory);
+#endif
+      return;
+    }
+    default:
+      native_slot_get_by_array(type, memory, cache TSRMLS_CC);
   }
 }
 
@@ -621,6 +694,21 @@ void layout_init(MessageLayout* layout, void* storage,
     int cache_index = slot_property_cache(layout, storage, field);
     CACHED_VALUE* property_ptr = &properties_table[cache_index];
 
+    // Clean up initial value by generated code. In the generated code of
+    // previous versions, each php field is given an initial value. However, the
+    // order to initialize these fields may not be consistent with the order of
+    // upb fields.
+    if (Z_TYPE_P(CACHED_PTR_TO_ZVAL_PTR(property_ptr)) == IS_STRING) {
+#if PHP_MAJOR_VERSION < 7
+      if (!IS_INTERNED(Z_STRVAL_PP(property_ptr))) {
+        FREE(Z_STRVAL_PP(property_ptr));
+      }
+#else
+      zend_string_release(Z_STR_P(property_ptr));
+#endif
+    }
+    ZVAL_NULL(CACHED_PTR_TO_ZVAL_PTR(property_ptr));
+
     if (upb_fielddef_containingoneof(field)) {
       memset(memory, 0, NATIVE_SLOT_MAX_SIZE);
       *oneof_case = ONEOF_CASE_NONE;
@@ -744,7 +832,7 @@ void layout_set(MessageLayout* layout, MessageHeader* header,
   }
 }
 
-static native_slot_merge(const upb_fielddef* field, const void* from_memory,
+static void native_slot_merge(const upb_fielddef* field, const void* from_memory,
                          void* to_memory PHP_PROTO_TSRMLS_DC) {
   upb_fieldtype_t type = upb_fielddef_type(field);
   zend_class_entry* ce = NULL;
@@ -801,7 +889,7 @@ static native_slot_merge(const upb_fielddef* field, const void* from_memory,
   }
 }
 
-static native_slot_merge_by_array(const upb_fielddef* field, const void* from_memory,
+static void native_slot_merge_by_array(const upb_fielddef* field, const void* from_memory,
                          void* to_memory PHP_PROTO_TSRMLS_DC) {
   upb_fieldtype_t type = upb_fielddef_type(field);
   switch (type) {
@@ -934,8 +1022,18 @@ void layout_merge(MessageLayout* layout, MessageHeader* from,
           void* to_memory =
               ALLOC_N(char, native_slot_size(upb_fielddef_type(field)));
           memset(to_memory, 0, native_slot_size(upb_fielddef_type(field)));
-          php_proto_zend_hash_index_find(PHP_PROTO_HASH_OF(from_array->array),
-                                         j, (void**)&from_memory);
+
+          if (to_array->type == UPB_TYPE_MESSAGE) {
+            php_proto_zend_hash_index_find_zval(
+                PHP_PROTO_HASH_OF(from_array->array), j, (void**)&from_memory);
+#if PHP_MAJOR_VERSION >= 7
+            from_memory = &Z_OBJ_P((zval*)from_memory);
+#endif
+          } else {
+            php_proto_zend_hash_index_find_mem(
+                PHP_PROTO_HASH_OF(from_array->array), j, (void**)&from_memory);
+          }
+
           native_slot_merge_by_array(field, from_memory,
                                      to_memory PHP_PROTO_TSRMLS_CC);
           repeated_field_push_native(to_array, to_memory);

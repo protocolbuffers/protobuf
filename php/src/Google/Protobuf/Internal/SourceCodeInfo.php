@@ -8,7 +8,6 @@ use Google\Protobuf\Internal\GPBType;
 use Google\Protobuf\Internal\GPBWire;
 use Google\Protobuf\Internal\RepeatedField;
 use Google\Protobuf\Internal\InputStream;
-
 use Google\Protobuf\Internal\GPBUtil;
 
 /**
@@ -170,7 +169,7 @@ class SourceCodeInfo extends \Google\Protobuf\Internal\Message
      * @param \Google\Protobuf\Internal\SourceCodeInfo_Location[]|\Google\Protobuf\Internal\RepeatedField $var
      * @return $this
      */
-    public function setLocation(&$var)
+    public function setLocation($var)
     {
         $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \Google\Protobuf\Internal\SourceCodeInfo_Location::class);
         $this->location = $arr;

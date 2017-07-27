@@ -1,12 +1,18 @@
 import com.google.protobuf.ByteString;
+import com.google.protobuf.AbstractMessage;
+import com.google.protobuf.Parser;
 import com.google.protobuf.CodedInputStream;
 import com.google.protobuf.conformance.Conformance;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf_test_messages.proto3.TestMessagesProto3;
+import com.google.protobuf_test_messages.proto3.TestMessagesProto3.TestAllTypesProto3;
+import com.google.protobuf_test_messages.proto2.TestMessagesProto2;
+import com.google.protobuf_test_messages.proto2.TestMessagesProto2.TestAllTypesProto2;
+import com.google.protobuf.ExtensionRegistry;
 import com.google.protobuf.util.JsonFormat;
 import com.google.protobuf.util.JsonFormat.TypeRegistry;
-import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
 
 class ConformanceJava {
   private int testCount = 0;
@@ -50,123 +56,100 @@ class ConformanceJava {
     buf[3] = (byte)(val >> 24);
     writeToStdout(buf);
   }
-
-  private enum BinaryDecoder {
-    BYTE_STRING_DECODER() {
-      @Override
-      public TestMessagesProto3.TestAllTypes parse(ByteString bytes)
-          throws InvalidProtocolBufferException {
-        return TestMessagesProto3.TestAllTypes.parseFrom(bytes);
-      }
-    },
-    BYTE_ARRAY_DECODER() {
-      @Override
-      public TestMessagesProto3.TestAllTypes parse(ByteString bytes)
-          throws InvalidProtocolBufferException {
-        return TestMessagesProto3.TestAllTypes.parseFrom(bytes.toByteArray());
-      }
-    },
-    ARRAY_BYTE_BUFFER_DECODER() {
-      @Override
-      public TestMessagesProto3.TestAllTypes parse(ByteString bytes)
-          throws InvalidProtocolBufferException {
-        ByteBuffer buffer = ByteBuffer.allocate(bytes.size());
-        bytes.copyTo(buffer);
-        buffer.flip();
-        try {
-          return TestMessagesProto3.TestAllTypes.parseFrom(CodedInputStream.newInstance(buffer));
-        } catch (InvalidProtocolBufferException e) {
-          throw e;
-        } catch (IOException e) {
-          throw new RuntimeException(
-              "ByteString based ByteBuffer should not throw IOException.", e);
-        }
-      }
-    },
-    READONLY_ARRAY_BYTE_BUFFER_DECODER() {
-      @Override
-      public TestMessagesProto3.TestAllTypes parse(ByteString bytes)
-          throws InvalidProtocolBufferException {
-        try {
-          return TestMessagesProto3.TestAllTypes.parseFrom(
-              CodedInputStream.newInstance(bytes.asReadOnlyByteBuffer()));
-        } catch (InvalidProtocolBufferException e) {
-          throw e;
-        } catch (IOException e) {
-          throw new RuntimeException(
-              "ByteString based ByteBuffer should not throw IOException.", e);
-        }
-      }
-    },
-    DIRECT_BYTE_BUFFER_DECODER() {
-      @Override
-      public TestMessagesProto3.TestAllTypes parse(ByteString bytes)
-          throws InvalidProtocolBufferException {
-        ByteBuffer buffer = ByteBuffer.allocateDirect(bytes.size());
-        bytes.copyTo(buffer);
-        buffer.flip();
-        try {
-          return TestMessagesProto3.TestAllTypes.parseFrom(CodedInputStream.newInstance(buffer));
-        } catch (InvalidProtocolBufferException e) {
-          throw e;
-        } catch (IOException e) {
-          throw new RuntimeException(
-              "ByteString based ByteBuffer should not throw IOException.", e);
-        }
-      }
-    },
-    READONLY_DIRECT_BYTE_BUFFER_DECODER() {
-      @Override
-      public TestMessagesProto3.TestAllTypes parse(ByteString bytes)
-          throws InvalidProtocolBufferException {
-        ByteBuffer buffer = ByteBuffer.allocateDirect(bytes.size());
-        bytes.copyTo(buffer);
-        buffer.flip();
-        try {
-          return TestMessagesProto3.TestAllTypes.parseFrom(
-              CodedInputStream.newInstance(buffer.asReadOnlyBuffer()));
-        } catch (InvalidProtocolBufferException e) {
-          throw e;
-        } catch (IOException e) {
-          throw new RuntimeException(
-              "ByteString based ByteBuffer should not throw IOException.", e);
-        }
-      }
-    },
-    INPUT_STREAM_DECODER() {
-      @Override
-      public TestMessagesProto3.TestAllTypes parse(ByteString bytes)
-          throws InvalidProtocolBufferException {
-        try {
-          return TestMessagesProto3.TestAllTypes.parseFrom(bytes.newInput());
-        } catch (InvalidProtocolBufferException e) {
-          throw e;
-        } catch (IOException e) {
-          throw new RuntimeException(
-              "ByteString based InputStream should not throw IOException.", e);
-        }
-      }
-    };
-
-    public abstract TestMessagesProto3.TestAllTypes parse(ByteString bytes)
-        throws InvalidProtocolBufferException;
+  
+  private enum BinaryDecoderType {
+    BTYE_STRING_DECODER,
+    BYTE_ARRAY_DECODER,
+    ARRAY_BYTE_BUFFER_DECODER,
+    READONLY_ARRAY_BYTE_BUFFER_DECODER,
+    DIRECT_BYTE_BUFFER_DECODER,
+    READONLY_DIRECT_BYTE_BUFFER_DECODER,
+    INPUT_STREAM_DECODER;
   }
 
-  private TestMessagesProto3.TestAllTypes parseBinary(ByteString bytes)
+  private static class BinaryDecoder <MessageType extends AbstractMessage> {
+    public MessageType decode (ByteString bytes, BinaryDecoderType type, 
+        Parser <MessageType> parser, ExtensionRegistry extensions)
       throws InvalidProtocolBufferException {
-    TestMessagesProto3.TestAllTypes[] messages =
-        new TestMessagesProto3.TestAllTypes[BinaryDecoder.values().length];
-    InvalidProtocolBufferException[] exceptions =
-        new InvalidProtocolBufferException[BinaryDecoder.values().length];
+      switch (type) {
+        case BTYE_STRING_DECODER: 
+          return parser.parseFrom(bytes, extensions);
+        case BYTE_ARRAY_DECODER:
+          return parser.parseFrom(bytes.toByteArray(), extensions);
+        case ARRAY_BYTE_BUFFER_DECODER: {
+          ByteBuffer buffer = ByteBuffer.allocate(bytes.size());
+          bytes.copyTo(buffer);
+          buffer.flip();
+          try {
+            return parser.parseFrom(CodedInputStream.newInstance(buffer), extensions);
+          } catch (InvalidProtocolBufferException e) {
+            throw e;
+          }
+        }
+        case READONLY_ARRAY_BYTE_BUFFER_DECODER: {
+          try {
+            return parser.parseFrom(
+                CodedInputStream.newInstance(bytes.asReadOnlyByteBuffer()), extensions);
+          } catch (InvalidProtocolBufferException e) {
+            throw e;
+          }
+        } 
+        case DIRECT_BYTE_BUFFER_DECODER: {
+          ByteBuffer buffer = ByteBuffer.allocateDirect(bytes.size());
+          bytes.copyTo(buffer);
+          buffer.flip();
+          try {
+            return parser.parseFrom(CodedInputStream.newInstance(buffer), extensions);
+          } catch (InvalidProtocolBufferException e) {
+            throw e;
+          }
+        }
+        case READONLY_DIRECT_BYTE_BUFFER_DECODER: {
+          ByteBuffer buffer = ByteBuffer.allocateDirect(bytes.size());
+          bytes.copyTo(buffer);
+          buffer.flip();
+          try {
+            return parser.parseFrom(
+                CodedInputStream.newInstance(buffer.asReadOnlyBuffer()), extensions);
+          } catch (InvalidProtocolBufferException e) {
+            throw e;
+          }
+        }
+        case INPUT_STREAM_DECODER: {
+          try {
+            return parser.parseFrom(bytes.newInput(), extensions);
+          } catch (InvalidProtocolBufferException e) {
+            throw e;
+          }
+        }
+        default :
+          return null;
+      }
+    }
+  }
+
+  private <MessageType extends AbstractMessage> MessageType parseBinary(
+      ByteString bytes, Parser <MessageType> parser, ExtensionRegistry extensions)
+      throws InvalidProtocolBufferException {
+    ArrayList <MessageType> messages = new ArrayList <MessageType> ();
+    ArrayList <InvalidProtocolBufferException> exceptions =
+        new ArrayList <InvalidProtocolBufferException>();
+    
+    for (int i = 0; i < BinaryDecoderType.values().length; i++) {
+      messages.add(null);
+      exceptions.add(null);
+    }
+    BinaryDecoder <MessageType> decoder = new BinaryDecoder <MessageType> ();
 
     boolean hasMessage = false;
     boolean hasException = false;
-    for (int i = 0; i < BinaryDecoder.values().length; ++i) {
+    for (int i = 0; i < BinaryDecoderType.values().length; ++i) {
       try {
-        messages[i] = BinaryDecoder.values()[i].parse(bytes);
+        //= BinaryDecoderType.values()[i].parseProto3(bytes);
+        messages.set(i, decoder.decode(bytes, BinaryDecoderType.values()[i], parser, extensions));
         hasMessage = true;
       } catch (InvalidProtocolBufferException e) {
-        exceptions[i] = e;
+        exceptions.set(i, e);
         hasException = true;
       }
     }
@@ -174,9 +157,9 @@ class ConformanceJava {
     if (hasMessage && hasException) {
       StringBuilder sb =
           new StringBuilder("Binary decoders disagreed on whether the payload was valid.\n");
-      for (int i = 0; i < BinaryDecoder.values().length; ++i) {
-        sb.append(BinaryDecoder.values()[i].name());
-        if (messages[i] != null) {
+      for (int i = 0; i < BinaryDecoderType.values().length; ++i) {
+        sb.append(BinaryDecoderType.values()[i].name());
+        if (messages.get(i) != null) {
           sb.append(" accepted the payload.\n");
         } else {
           sb.append(" rejected the payload.\n");
@@ -188,14 +171,14 @@ class ConformanceJava {
     if (hasException) {
       // We do not check if exceptions are equal. Different implementations may return different
       // exception messages. Throw an arbitrary one out instead.
-      throw exceptions[0];
+      throw exceptions.get(0);
     }
 
     // Fast path comparing all the messages with the first message, assuming equality being
     // symmetric and transitive.
     boolean allEqual = true;
-    for (int i = 1; i < messages.length; ++i) {
-      if (!messages[0].equals(messages[i])) {
+    for (int i = 1; i < messages.size(); ++i) {
+      if (!messages.get(0).equals(messages.get(i))) {
         allEqual = false;
         break;
       }
@@ -204,12 +187,12 @@ class ConformanceJava {
     // Slow path: compare and find out all unequal pairs.
     if (!allEqual) {
       StringBuilder sb = new StringBuilder();
-      for (int i = 0; i < messages.length - 1; ++i) {
-        for (int j = i + 1; j < messages.length; ++j) {
-          if (!messages[i].equals(messages[j])) {
-            sb.append(BinaryDecoder.values()[i].name())
+      for (int i = 0; i < messages.size() - 1; ++i) {
+        for (int j = i + 1; j < messages.size(); ++j) {
+          if (!messages.get(i).equals(messages.get(j))) {
+            sb.append(BinaryDecoderType.values()[i].name())
                 .append(" and ")
-                .append(BinaryDecoder.values()[j].name())
+                .append(BinaryDecoderType.values()[j].name())
                 .append(" parsed the payload differently.\n");
           }
         }
@@ -217,24 +200,41 @@ class ConformanceJava {
       throw new RuntimeException(sb.toString());
     }
 
-    return messages[0];
+    return messages.get(0);
   }
 
   private Conformance.ConformanceResponse doTest(Conformance.ConformanceRequest request) {
-    TestMessagesProto3.TestAllTypes testMessage;
+    com.google.protobuf.AbstractMessage testMessage;
+    boolean isProto3 = request.getMessageType().equals("protobuf_test_messages.proto3.TestAllTypesProto3");
+    boolean isProto2 = request.getMessageType().equals("protobuf_test_messages.proto2.TestAllTypesProto2");
 
     switch (request.getPayloadCase()) {
       case PROTOBUF_PAYLOAD: {
-        try {
-          testMessage = parseBinary(request.getProtobufPayload());
-        } catch (InvalidProtocolBufferException e) {
-          return Conformance.ConformanceResponse.newBuilder().setParseError(e.getMessage()).build();
+        if (isProto3) {
+          try {
+            ExtensionRegistry extensions = ExtensionRegistry.newInstance();
+            TestMessagesProto3.registerAllExtensions(extensions);
+            testMessage = parseBinary(request.getProtobufPayload(), TestAllTypesProto3.parser(), extensions);
+          } catch (InvalidProtocolBufferException e) {
+            return Conformance.ConformanceResponse.newBuilder().setParseError(e.getMessage()).build();
+          }
+        } else if (isProto2) {
+          try {
+            ExtensionRegistry extensions = ExtensionRegistry.newInstance();
+            TestMessagesProto2.registerAllExtensions(extensions);
+            testMessage = parseBinary(request.getProtobufPayload(), TestAllTypesProto2.parser(), extensions);
+          } catch (InvalidProtocolBufferException e) {
+            return Conformance.ConformanceResponse.newBuilder().setParseError(e.getMessage()).build();
+          }
+        } else {
+          throw new RuntimeException("Protobuf request doesn't have specific payload type.");
         }
         break;
       }
       case JSON_PAYLOAD: {
         try {
-          TestMessagesProto3.TestAllTypes.Builder builder = TestMessagesProto3.TestAllTypes.newBuilder();
+          TestMessagesProto3.TestAllTypesProto3.Builder builder = 
+              TestMessagesProto3.TestAllTypesProto3.newBuilder();
           JsonFormat.parser().usingTypeRegistry(typeRegistry)
               .merge(request.getJsonPayload(), builder);
           testMessage = builder.build();
@@ -256,8 +256,10 @@ class ConformanceJava {
       case UNSPECIFIED:
         throw new RuntimeException("Unspecified output format.");
 
-      case PROTOBUF:
-        return Conformance.ConformanceResponse.newBuilder().setProtobufPayload(testMessage.toByteString()).build();
+      case PROTOBUF: {
+        ByteString MessageString = testMessage.toByteString(); 
+        return Conformance.ConformanceResponse.newBuilder().setProtobufPayload(MessageString).build();
+      }
 
       case JSON:
         try {
@@ -300,7 +302,7 @@ class ConformanceJava {
 
   public void run() throws Exception {
     typeRegistry = TypeRegistry.newBuilder().add(
-        TestMessagesProto3.TestAllTypes.getDescriptor()).build();
+        TestMessagesProto3.TestAllTypesProto3.getDescriptor()).build();
     while (doTestIo()) {
       this.testCount++;
     }

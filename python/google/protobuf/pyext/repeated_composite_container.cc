@@ -266,10 +266,11 @@ int AssignSubscript(RepeatedCompositeContainer* self,
     if (PySlice_Check(slice)) {
 #if PY_MAJOR_VERSION >= 3
       if (PySlice_GetIndicesEx(slice,
+                               length, &from, &to, &step, &slicelength) == -1) {
 #else
       if (PySlice_GetIndicesEx(reinterpret_cast<PySliceObject*>(slice),
-#endif
                                length, &from, &to, &step, &slicelength) == -1) {
+#endif
         return -1;
       }
       return PySequence_DelSlice(self->child_messages, from, to);

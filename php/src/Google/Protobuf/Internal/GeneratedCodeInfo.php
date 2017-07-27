@@ -8,7 +8,6 @@ use Google\Protobuf\Internal\GPBType;
 use Google\Protobuf\Internal\GPBWire;
 use Google\Protobuf\Internal\RepeatedField;
 use Google\Protobuf\Internal\InputStream;
-
 use Google\Protobuf\Internal\GPBUtil;
 
 /**
@@ -54,7 +53,7 @@ class GeneratedCodeInfo extends \Google\Protobuf\Internal\Message
      * @param \Google\Protobuf\Internal\GeneratedCodeInfo_Annotation[]|\Google\Protobuf\Internal\RepeatedField $var
      * @return $this
      */
-    public function setAnnotation(&$var)
+    public function setAnnotation($var)
     {
         $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::MESSAGE, \Google\Protobuf\Internal\GeneratedCodeInfo_Annotation::class);
         $this->annotation = $arr;

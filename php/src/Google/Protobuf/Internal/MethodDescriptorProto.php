@@ -8,7 +8,6 @@ use Google\Protobuf\Internal\GPBType;
 use Google\Protobuf\Internal\GPBWire;
 use Google\Protobuf\Internal\RepeatedField;
 use Google\Protobuf\Internal\InputStream;
-
 use Google\Protobuf\Internal\GPBUtil;
 
 /**
@@ -165,7 +164,7 @@ class MethodDescriptorProto extends \Google\Protobuf\Internal\Message
      * @param \Google\Protobuf\Internal\MethodOptions $var
      * @return $this
      */
-    public function setOptions(&$var)
+    public function setOptions($var)
     {
         GPBUtil::checkMessage($var, \Google\Protobuf\Internal\MethodOptions::class);
         $this->options = $var;

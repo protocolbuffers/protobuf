@@ -134,6 +134,14 @@ class GenerateAndTest {
 };
 
 TEST(CsharpBootstrapTest, GeneratedCsharpDescriptorMatches) {
+  // Skip this whole test if the csharp directory doesn't exist (i.e., a C++11
+  // only distribution).
+  string descriptor_file_name =
+      "../csharp/src/Google.Protobuf/Reflection/Descriptor.cs";
+  if (!File::Exists(TestSourceDir() + "/" + descriptor_file_name)) {
+    return;
+  }
+
   MockErrorCollector error_collector;
   DiskSourceTree source_tree;
   Importer importer(&source_tree, &error_collector);

@@ -9,6 +9,7 @@ use Foo\TestEnum;
 use Foo\TestMessage;
 use Foo\TestMessage_Sub;
 use Foo\TestPackedMessage;
+use Foo\TestRandomFieldOrder;
 use Foo\TestUnpackedMessage;
 
 class EncodeDecodeTest extends TestBase
@@ -233,6 +234,13 @@ class EncodeDecodeTest extends TestBase
         $this->assertEquals(0, $m->getOptionalInt32());
         $m->mergeFromString(hex2bin("08ffffffff0f"));
         $this->assertEquals(-1, $m->getOptionalInt32());
+    }
+
+    public function testRandomFieldOrder()
+    {
+        $m = new TestRandomFieldOrder();
+        $data = $m->serializeToString();
+        $this->assertSame("", $data);
     }
 
     /**

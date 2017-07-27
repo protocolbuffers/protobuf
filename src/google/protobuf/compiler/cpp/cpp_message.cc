@@ -2411,11 +2411,7 @@ GenerateStructors(io::Printer* printer) {
     printer->Print(
         "$classname$::$classname$(::google::protobuf::Arena* arena)\n"
         "  : $initializer$ {\n"
-        // When arenas are used it's safe to assume we have finished
-        // static init time (protos with arenas are unsafe during static init)
-        "#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER\n"
         "  $file_namespace$::InitDefaults();\n"
-        "#endif  // GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER\n"
         "  SharedCtor();\n"
         "  RegisterArenaDtor(arena);\n"
         "  // @@protoc_insertion_point(arena_constructor:$full_name$)\n"
@@ -3717,6 +3713,7 @@ GenerateSerializeWithCachedSizesToArray(io::Printer* printer) {
     "classname", classname_);
   printer->Indent();
 
+  printer->Print("(void)deterministic; // Unused\n");
   printer->Print(
     "// @@protoc_insertion_point(serialize_to_array_start:$full_name$)\n",
     "full_name", descriptor_->full_name());

@@ -662,6 +662,7 @@ php_EXTRA_DIST=                                                       \
   php/tests/gdb_test.sh                                               \
   php/tests/generated_class_test.php                                  \
   php/tests/generated_phpdoc_test.php                                 \
+  php/tests/generated_service_test.php                                \
   php/tests/map_field_test.php                                        \
   php/tests/memory_leak_test.php                                      \
   php/tests/php_implementation_test.php                               \
@@ -672,6 +673,8 @@ php_EXTRA_DIST=                                                       \
   php/tests/proto/test_no_namespace.proto                             \
   php/tests/proto/test_php_namespace.proto                            \
   php/tests/proto/test_prefix.proto                                   \
+  php/tests/proto/test_service.proto                                  \
+  php/tests/proto/test_service_namespace.proto                        \
   php/tests/test.sh                                                   \
   php/tests/test_base.php                                             \
   php/tests/test_util.php                                             \

@@ -8,7 +8,6 @@ use Google\Protobuf\Internal\GPBType;
 use Google\Protobuf\Internal\GPBWire;
 use Google\Protobuf\Internal\RepeatedField;
 use Google\Protobuf\Internal\InputStream;
-
 use Google\Protobuf\Internal\GPBUtil;
 
 /**
@@ -170,7 +169,7 @@ class SourceCodeInfo_Location extends \Google\Protobuf\Internal\Message
      * @param int[]|\Google\Protobuf\Internal\RepeatedField $var
      * @return $this
      */
-    public function setPath(&$var)
+    public function setPath($var)
     {
         $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::INT32);
         $this->path = $arr;
@@ -210,7 +209,7 @@ class SourceCodeInfo_Location extends \Google\Protobuf\Internal\Message
      * @param int[]|\Google\Protobuf\Internal\RepeatedField $var
      * @return $this
      */
-    public function setSpan(&$var)
+    public function setSpan($var)
     {
         $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::INT32);
         $this->span = $arr;
@@ -368,7 +367,7 @@ class SourceCodeInfo_Location extends \Google\Protobuf\Internal\Message
      * @param string[]|\Google\Protobuf\Internal\RepeatedField $var
      * @return $this
      */
-    public function setLeadingDetachedComments(&$var)
+    public function setLeadingDetachedComments($var)
     {
         $arr = GPBUtil::checkRepeatedField($var, \Google\Protobuf\Internal\GPBType::STRING);
         $this->leading_detached_comments = $arr;
