@@ -82,23 +82,6 @@ class Descriptor
     }
 
     /**
-     * @param int $index Must be >= 0 and < getEnumTypeCount()
-     * @return EnumDescriptor
-     */
-    public function getEnumType($index)
-    {
-        return $this->getPublicDescriptor($this->internal_desc->getEnumType()[$index]);
-    }
-
-    /**
-     * @return int Number of enum types in message
-     */
-    public function getEnumTypeCount()
-    {
-        return count($this->internal_desc->getEnumType());
-    }
-
-    /**
      * @param int $index Must be >= 0 and < getOneofDeclCount()
      * @return OneofDescriptor
      */

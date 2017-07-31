@@ -8,7 +8,6 @@ require_once('test_util.php');
 use Google\Protobuf\DescriptorPool;
 use Google\Protobuf\Internal\RepeatedField;
 use Google\Protobuf\Internal\MapField;
-use Google\Protobuf\Internal\GPBType;
 use Descriptors\TestDescriptorsEnum;
 use Descriptors\TestDescriptorsMessage;
 use Descriptors\TestDescriptorsMessage_Sub;
@@ -20,6 +19,25 @@ class DescriptorsTest extends TestBase
     const GPBLABEL_OPTIONAL = 1;
     const GPBLABEL_REQUIRED = 2;
     const GPBLABEL_REPEATED = 3;
+
+    const GPBTYPE_DOUBLE   =  1;
+    const GPBTYPE_FLOAT    =  2;
+    const GPBTYPE_INT64    =  3;
+    const GPBTYPE_UINT64   =  4;
+    const GPBTYPE_INT32    =  5;
+    const GPBTYPE_FIXED64  =  6;
+    const GPBTYPE_FIXED32  =  7;
+    const GPBTYPE_BOOL     =  8;
+    const GPBTYPE_STRING   =  9;
+    const GPBTYPE_GROUP    = 10;
+    const GPBTYPE_MESSAGE  = 11;
+    const GPBTYPE_BYTES    = 12;
+    const GPBTYPE_UINT32   = 13;
+    const GPBTYPE_ENUM     = 14;
+    const GPBTYPE_SFIXED32 = 15;
+    const GPBTYPE_SFIXED64 = 16;
+    const GPBTYPE_SINT32   = 17;
+    const GPBTYPE_SINT64   = 18;
 
     #########################################################
     # Test descriptor pool.
@@ -63,9 +81,6 @@ class DescriptorsTest extends TestBase
 
         $this->assertInstanceOf('\Google\Protobuf\FieldDescriptor', $desc->getField(0));
         $this->assertSame(7, $desc->getFieldCount());
-
-        $this->assertInstanceOf('\Google\Protobuf\EnumDescriptor', $desc->getEnumType(0));
-        $this->assertSame(1, $desc->getEnumTypeCount());
 
         $this->assertInstanceOf('\Google\Protobuf\OneofDescriptor', $desc->getOneofDecl(0));
         $this->assertSame(1, $desc->getOneofDeclCount());
@@ -114,7 +129,7 @@ class DescriptorsTest extends TestBase
         $this->assertSame('optional_int32', $fieldDesc->getName());
         $this->assertSame(1, $fieldDesc->getNumber());
         $this->assertSame(self::GPBLABEL_OPTIONAL, $fieldDesc->getLabel());
-        $this->assertSame(GPBType::INT32, $fieldDesc->getType());
+        $this->assertSame(self::GPBTYPE_INT32, $fieldDesc->getType());
         $this->assertFalse($fieldDesc->isMap());
 
         // Optional enum field
@@ -122,7 +137,7 @@ class DescriptorsTest extends TestBase
         $this->assertSame('optional_enum', $fieldDesc->getName());
         $this->assertSame(16, $fieldDesc->getNumber());
         $this->assertSame(self::GPBLABEL_OPTIONAL, $fieldDesc->getLabel());
-        $this->assertSame(GPBType::ENUM, $fieldDesc->getType());
+        $this->assertSame(self::GPBTYPE_ENUM, $fieldDesc->getType());
         $this->assertInstanceOf('\Google\Protobuf\EnumDescriptor', $fieldDesc->getEnumType());
         $this->assertFalse($fieldDesc->isMap());
 
@@ -131,7 +146,7 @@ class DescriptorsTest extends TestBase
         $this->assertSame('optional_message', $fieldDesc->getName());
         $this->assertSame(17, $fieldDesc->getNumber());
         $this->assertSame(self::GPBLABEL_OPTIONAL, $fieldDesc->getLabel());
-        $this->assertSame(GPBType::MESSAGE, $fieldDesc->getType());
+        $this->assertSame(self::GPBTYPE_MESSAGE, $fieldDesc->getType());
         $this->assertInstanceOf('\Google\Protobuf\Descriptor', $fieldDesc->getMessageType());
         $this->assertFalse($fieldDesc->isMap());
 
@@ -140,7 +155,7 @@ class DescriptorsTest extends TestBase
         $this->assertSame('repeated_int32', $fieldDesc->getName());
         $this->assertSame(31, $fieldDesc->getNumber());
         $this->assertSame(self::GPBLABEL_REPEATED, $fieldDesc->getLabel());
-        $this->assertSame(GPBType::INT32, $fieldDesc->getType());
+        $this->assertSame(self::GPBTYPE_INT32, $fieldDesc->getType());
         $this->assertFalse($fieldDesc->isMap());
 
         // Repeated message field
@@ -148,7 +163,7 @@ class DescriptorsTest extends TestBase
         $this->assertSame('repeated_message', $fieldDesc->getName());
         $this->assertSame(47, $fieldDesc->getNumber());
         $this->assertSame(self::GPBLABEL_REPEATED, $fieldDesc->getLabel());
-        $this->assertSame(GPBType::MESSAGE, $fieldDesc->getType());
+        $this->assertSame(self::GPBTYPE_MESSAGE, $fieldDesc->getType());
         $this->assertInstanceOf('\Google\Protobuf\Descriptor', $fieldDesc->getMessageType());
         $this->assertFalse($fieldDesc->isMap());
 
@@ -158,7 +173,7 @@ class DescriptorsTest extends TestBase
         $this->assertSame('oneof_int32', $fieldDesc->getName());
         $this->assertSame(51, $fieldDesc->getNumber());
         $this->assertSame(self::GPBLABEL_OPTIONAL, $fieldDesc->getLabel());
-        $this->assertSame(GPBType::INT32, $fieldDesc->getType());
+        $this->assertSame(self::GPBTYPE_INT32, $fieldDesc->getType());
         $this->assertFalse($fieldDesc->isMap());
 
         // Map int-enum field
@@ -166,12 +181,12 @@ class DescriptorsTest extends TestBase
         $this->assertSame('map_int32_enum', $fieldDesc->getName());
         $this->assertSame(71, $fieldDesc->getNumber());
         $this->assertSame(self::GPBLABEL_REPEATED, $fieldDesc->getLabel());
-        $this->assertSame(GPBType::MESSAGE, $fieldDesc->getType());
+        $this->assertSame(self::GPBTYPE_MESSAGE, $fieldDesc->getType());
         $this->assertTrue($fieldDesc->isMap());
         $mapDesc = $fieldDesc->getMessageType();
         $this->assertSame('.descriptors.TestDescriptorsMessage.MapInt32EnumEntry', $mapDesc->getFullName());
-        $this->assertSame(GPBType::INT32, $mapDesc->getField(0)->getType());
-        $this->assertSame(GPBType::ENUM, $mapDesc->getField(1)->getType());
+        $this->assertSame(self::GPBTYPE_INT32, $mapDesc->getField(0)->getType());
+        $this->assertSame(self::GPBTYPE_ENUM, $mapDesc->getField(1)->getType());
     }
 
     /**
