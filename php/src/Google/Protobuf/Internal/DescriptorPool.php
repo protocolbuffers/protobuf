@@ -61,17 +61,17 @@ class DescriptorPool
         $files->mergeFromString($data);
         $file = FileDescriptor::buildFromProto($files->getFile()[0]);
 
-        foreach ($file->getMessageType() as &$desc) {
+        foreach ($file->getMessageType() as $desc) {
             $this->addDescriptor($desc);
         }
         unset($desc);
 
-        foreach ($file->getEnumType() as &$desc) {
+        foreach ($file->getEnumType() as $desc) {
             $this->addEnumDescriptor($desc);
         }
         unset($desc);
 
-        foreach ($file->getMessageType() as &$desc) {
+        foreach ($file->getMessageType() as $desc) {
             $this->crossLink($desc);
         }
         unset($desc);
@@ -129,9 +129,9 @@ class DescriptorPool
         return $this->class_to_enum_desc[$klass];
     }
 
-    private function crossLink(&$desc)
+    private function crossLink(Descriptor $desc)
     {
-        foreach ($desc->getField() as &$field) {
+        foreach ($desc->getField() as $field) {
             switch ($field->getType()) {
                 case GPBType::MESSAGE:
                     $proto = $field->getMessageType();
@@ -149,7 +149,7 @@ class DescriptorPool
         }
         unset($field);
 
-        foreach ($desc->getNestedType() as &$nested_type) {
+        foreach ($desc->getNestedType() as $nested_type) {
             $this->crossLink($nested_type);
         }
         unset($nested_type);
@@ -157,7 +157,7 @@ class DescriptorPool
 
     public function finish()
     {
-        foreach ($this->class_to_desc as $klass => &$desc) {
+        foreach ($this->class_to_desc as $klass => $desc) {
             $this->crossLink($desc);
         }
         unset($desc);
