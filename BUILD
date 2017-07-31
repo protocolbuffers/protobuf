@@ -641,6 +641,7 @@ py_library(
     name = "python_srcs",
     srcs = glob(
         [
+            "python/google/__init__.py",
             "python/google/protobuf/*.py",
             "python/google/protobuf/**/*.py",
         ],
