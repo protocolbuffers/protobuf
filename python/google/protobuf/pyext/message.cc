@@ -1056,13 +1056,15 @@ int InternalDeleteRepeatedField(
 
   if (PySlice_Check(slice)) {
     from = to = step = slice_length = 0;
-    PySlice_GetIndicesEx(
 #if PY_MAJOR_VERSION < 3
+    PySlice_GetIndicesEx(
         reinterpret_cast<PySliceObject*>(slice),
-#else
-        slice,
-#endif
         length, &from, &to, &step, &slice_length);
+#else
+    PySlice_GetIndicesEx(
+        slice,
+        length, &from, &to, &step, &slice_length);
+#endif
     if (from < to) {
       min = from;
       max = to - 1;

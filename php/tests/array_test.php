@@ -471,6 +471,18 @@ class RepeatedFieldTest extends PHPUnit_Framework_TestCase
         $sub_m->setA(2);
         $arr[0] = $sub_m;
         $this->assertSame(2, $arr[0]->getA());
+
+        // Test foreach.
+        $arr = new RepeatedField(GPBType::MESSAGE, TestMessage_Sub::class);
+        for ($i = 0; $i < 3; $i++) {
+          $arr[] = new TestMessage_Sub();
+          $arr[$i]->setA($i);
+        }
+        $i = 0;
+        foreach ($arr as $val) {
+          $this->assertSame($i++, $val->getA());
+        }
+        $this->assertSame(3, $i);
     }
 
     #########################################################
@@ -521,23 +533,22 @@ class RepeatedFieldTest extends PHPUnit_Framework_TestCase
     # Test memory leak
     #########################################################
 
-    // COMMENTED OUT BY @bshaffer
-    // @see https://github.com/google/protobuf/pull/3344#issuecomment-315162761
-    // public function testCycleLeak()
-    // {
-    //     $arr = new RepeatedField(GPBType::MESSAGE, TestMessage::class);
-    //     $arr[] = new TestMessage;
-    //     $arr[0]->SetRepeatedRecursive($arr);
+    public function testCycleLeak()
+    {
+        gc_collect_cycles();
+        $arr = new RepeatedField(GPBType::MESSAGE, TestMessage::class);
+        $arr[] = new TestMessage;
+        $arr[0]->SetRepeatedRecursive($arr);
 
-    //     // Clean up memory before test.
-    //     gc_collect_cycles();
-    //     $start = memory_get_usage();
-    //     unset($arr);
+        // Clean up memory before test.
+        gc_collect_cycles();
+        $start = memory_get_usage();
+        unset($arr);
 
-    //     // Explicitly trigger garbage collection.
-    //     gc_collect_cycles();
+        // Explicitly trigger garbage collection.
+        gc_collect_cycles();
 
-    //     $end = memory_get_usage();
-    //     $this->assertLessThan($start, $end);
-    // }
+        $end = memory_get_usage();
+        $this->assertLessThan($start, $end);
+    }
 }

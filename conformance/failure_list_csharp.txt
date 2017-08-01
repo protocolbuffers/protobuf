@@ -1,6 +1,7 @@
-Recommended.JsonInput.BytesFieldBase64Url.JsonOutput
-Recommended.JsonInput.BytesFieldBase64Url.ProtobufOutput
-Required.ProtobufInput.IllegalZeroFieldNum_Case_0
-Required.ProtobufInput.IllegalZeroFieldNum_Case_1
-Required.ProtobufInput.IllegalZeroFieldNum_Case_2
-Required.ProtobufInput.IllegalZeroFieldNum_Case_3
+Recommended.Proto3.JsonInput.BytesFieldBase64Url.JsonOutput
+Recommended.Proto3.JsonInput.BytesFieldBase64Url.ProtobufOutput
+Required.Proto3.ProtobufInput.IllegalZeroFieldNum_Case_0
+Required.Proto3.ProtobufInput.IllegalZeroFieldNum_Case_1
+Required.Proto3.ProtobufInput.IllegalZeroFieldNum_Case_2
+Required.Proto3.ProtobufInput.IllegalZeroFieldNum_Case_3
+

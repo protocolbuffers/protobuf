@@ -22,21 +22,21 @@ namespace Conformance {
     static ConformanceReflection() {
       byte[] descriptorData = global::System.Convert.FromBase64String(
           string.Concat(
-            "ChFjb25mb3JtYW5jZS5wcm90bxILY29uZm9ybWFuY2UijQEKEkNvbmZvcm1h",
+            "ChFjb25mb3JtYW5jZS5wcm90bxILY29uZm9ybWFuY2UiowEKEkNvbmZvcm1h",
             "bmNlUmVxdWVzdBIaChBwcm90b2J1Zl9wYXlsb2FkGAEgASgMSAASFgoManNv",
             "bl9wYXlsb2FkGAIgASgJSAASOAoXcmVxdWVzdGVkX291dHB1dF9mb3JtYXQY",
-            "AyABKA4yFy5jb25mb3JtYW5jZS5XaXJlRm9ybWF0QgkKB3BheWxvYWQisQEK",
-            "E0NvbmZvcm1hbmNlUmVzcG9uc2USFQoLcGFyc2VfZXJyb3IYASABKAlIABIZ",
-            "Cg9zZXJpYWxpemVfZXJyb3IYBiABKAlIABIXCg1ydW50aW1lX2Vycm9yGAIg",
-            "ASgJSAASGgoQcHJvdG9idWZfcGF5bG9hZBgDIAEoDEgAEhYKDGpzb25fcGF5",
-            "bG9hZBgEIAEoCUgAEhEKB3NraXBwZWQYBSABKAlIAEIICgZyZXN1bHQqNQoK",
-            "V2lyZUZvcm1hdBIPCgtVTlNQRUNJRklFRBAAEgwKCFBST1RPQlVGEAESCAoE",
-            "SlNPThACQiEKH2NvbS5nb29nbGUucHJvdG9idWYuY29uZm9ybWFuY2ViBnBy",
-            "b3RvMw=="));
+            "AyABKA4yFy5jb25mb3JtYW5jZS5XaXJlRm9ybWF0EhQKDG1lc3NhZ2VfdHlw",
+            "ZRgEIAEoCUIJCgdwYXlsb2FkIrEBChNDb25mb3JtYW5jZVJlc3BvbnNlEhUK",
+            "C3BhcnNlX2Vycm9yGAEgASgJSAASGQoPc2VyaWFsaXplX2Vycm9yGAYgASgJ",
+            "SAASFwoNcnVudGltZV9lcnJvchgCIAEoCUgAEhoKEHByb3RvYnVmX3BheWxv",
+            "YWQYAyABKAxIABIWCgxqc29uX3BheWxvYWQYBCABKAlIABIRCgdza2lwcGVk",
+            "GAUgASgJSABCCAoGcmVzdWx0KjUKCldpcmVGb3JtYXQSDwoLVU5TUEVDSUZJ",
+            "RUQQABIMCghQUk9UT0JVRhABEggKBEpTT04QAkIhCh9jb20uZ29vZ2xlLnBy",
+            "b3RvYnVmLmNvbmZvcm1hbmNlYgZwcm90bzM="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { },
           new pbr::GeneratedClrTypeInfo(new[] {typeof(global::Conformance.WireFormat), }, new pbr::GeneratedClrTypeInfo[] {
-            new pbr::GeneratedClrTypeInfo(typeof(global::Conformance.ConformanceRequest), global::Conformance.ConformanceRequest.Parser, new[]{ "ProtobufPayload", "JsonPayload", "RequestedOutputFormat" }, new[]{ "Payload" }, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Conformance.ConformanceRequest), global::Conformance.ConformanceRequest.Parser, new[]{ "ProtobufPayload", "JsonPayload", "RequestedOutputFormat", "MessageType" }, new[]{ "Payload" }, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Conformance.ConformanceResponse), global::Conformance.ConformanceResponse.Parser, new[]{ "ParseError", "SerializeError", "RuntimeError", "ProtobufPayload", "JsonPayload", "Skipped" }, new[]{ "Result" }, null, null)
           }));
     }
@@ -85,6 +85,7 @@ namespace Conformance {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public ConformanceRequest(ConformanceRequest other) : this() {
       requestedOutputFormat_ = other.requestedOutputFormat_;
+      messageType_ = other.messageType_;
       switch (other.PayloadCase) {
         case PayloadOneofCase.ProtobufPayload:
           ProtobufPayload = other.ProtobufPayload;
@@ -137,6 +138,20 @@ namespace Conformance {
       }
     }
 
+    /// <summary>Field number for the "message_type" field.</summary>
+    public const int MessageTypeFieldNumber = 4;
+    private string messageType_ = "";
+    /// <summary>
+    /// should be set to either "proto2" or "proto3"
+    /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public string MessageType {
+      get { return messageType_; }
+      set {
+        messageType_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+      }
+    }
+
     private object payload_;
     /// <summary>Enum of possible cases for the "payload" oneof.</summary>
     public enum PayloadOneofCase {
@@ -172,6 +187,7 @@ namespace Conformance {
       if (ProtobufPayload != other.ProtobufPayload) return false;
       if (JsonPayload != other.JsonPayload) return false;
       if (RequestedOutputFormat != other.RequestedOutputFormat) return false;
+      if (MessageType != other.MessageType) return false;
       if (PayloadCase != other.PayloadCase) return false;
       return true;
     }
@@ -182,6 +198,7 @@ namespace Conformance {
       if (payloadCase_ == PayloadOneofCase.ProtobufPayload) hash ^= ProtobufPayload.GetHashCode();
       if (payloadCase_ == PayloadOneofCase.JsonPayload) hash ^= JsonPayload.GetHashCode();
       if (RequestedOutputFormat != 0) hash ^= RequestedOutputFormat.GetHashCode();
+      if (MessageType.Length != 0) hash ^= MessageType.GetHashCode();
       hash ^= (int) payloadCase_;
       return hash;
     }
@@ -205,6 +222,10 @@ namespace Conformance {
         output.WriteRawTag(24);
         output.WriteEnum((int) RequestedOutputFormat);
       }
+      if (MessageType.Length != 0) {
+        output.WriteRawTag(34);
+        output.WriteString(MessageType);
+      }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -219,6 +240,9 @@ namespace Conformance {
       if (RequestedOutputFormat != 0) {
         size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) RequestedOutputFormat);
       }
+      if (MessageType.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(MessageType);
+      }
       return size;
     }
 
@@ -229,6 +253,9 @@ namespace Conformance {
       }
       if (other.RequestedOutputFormat != 0) {
         RequestedOutputFormat = other.RequestedOutputFormat;
+      }
+      if (other.MessageType.Length != 0) {
+        MessageType = other.MessageType;
       }
       switch (other.PayloadCase) {
         case PayloadOneofCase.ProtobufPayload:
@@ -259,6 +286,10 @@ namespace Conformance {
           }
           case 24: {
             requestedOutputFormat_ = (global::Conformance.WireFormat) input.ReadEnum();
+            break;
+          }
+          case 34: {
+            MessageType = input.ReadString();
             break;
           }
         }

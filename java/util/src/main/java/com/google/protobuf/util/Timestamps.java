@@ -30,7 +30,6 @@
 
 package com.google.protobuf.util;
 
-import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.math.IntMath.checkedAdd;
 import static com.google.common.math.IntMath.checkedSubtract;
 import static com.google.common.math.LongMath.checkedAdd;
@@ -160,13 +159,12 @@ public final class Timestamps {
   public static Timestamp checkValid(Timestamp timestamp) {
     long seconds = timestamp.getSeconds();
     int nanos = timestamp.getNanos();
-    checkArgument(
-        isValid(seconds, nanos),
-        "Timestamp is not valid. See proto definition for valid values. "
+    if (!isValid(seconds, nanos)) {
+        throw new IllegalArgumentException(String.format(
+            "Timestamp is not valid. See proto definition for valid values. "
             + "Seconds (%s) must be in range [-62,135,596,800, +253,402,300,799]. "
-            + "Nanos (%s) must be in range [0, +999,999,999].",
-        seconds,
-        nanos);
+            + "Nanos (%s) must be in range [0, +999,999,999].", seconds, nanos));
+    }
     return timestamp;
   }
 

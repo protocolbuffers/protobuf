@@ -55,13 +55,13 @@ static void add_to_table(HashTable* t, const void* def, void* value) {
   uint nIndex = (ulong)def & t->nTableMask;
 
   zval* pDest = NULL;
-  php_proto_zend_hash_index_update(t, (zend_ulong)def, &value, sizeof(zval*),
-                                   (void**)&pDest);
+  php_proto_zend_hash_index_update_mem(t, (zend_ulong)def, &value,
+                                       sizeof(zval*), (void**)&pDest);
 }
 
 static void* get_from_table(const HashTable* t, const void* def) {
   void** value;
-  if (php_proto_zend_hash_index_find(t, (zend_ulong)def, (void**)&value) ==
+  if (php_proto_zend_hash_index_find_mem(t, (zend_ulong)def, (void**)&value) ==
       FAILURE) {
     zend_error(E_ERROR, "PHP object not found for given definition.\n");
     return NULL;
@@ -71,13 +71,13 @@ static void* get_from_table(const HashTable* t, const void* def) {
 
 static bool exist_in_table(const HashTable* t, const void* def) {
   void** value;
-  return (php_proto_zend_hash_index_find(t, (zend_ulong)def, (void**)&value) ==
-          SUCCESS);
+  return (php_proto_zend_hash_index_find_mem(t, (zend_ulong)def,
+                                             (void**)&value) == SUCCESS);
 }
 
 static void add_to_list(HashTable* t, void* value) {
   zval* pDest = NULL;
-  php_proto_zend_hash_next_index_insert(t, &value, sizeof(void*),
+  php_proto_zend_hash_next_index_insert_mem(t, &value, sizeof(void*),
                                         (void**)&pDest);
 }
 

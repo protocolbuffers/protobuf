@@ -63,7 +63,7 @@ static NSData *CheckedReadDataOfLength(NSFileHandle *handle, NSUInteger numBytes
 
 static ConformanceResponse *DoTest(ConformanceRequest *request) {
   ConformanceResponse *response = [ConformanceResponse message];
-  TestAllTypes *testMessage = nil;
+  TestAllTypesProto3 *testMessage = nil;
 
   switch (request.payloadOneOfCase) {
     case ConformanceRequest_Payload_OneOfCase_GPBUnsetOneOfCase:
@@ -71,12 +71,20 @@ static ConformanceResponse *DoTest(ConformanceRequest *request) {
       break;
 
     case ConformanceRequest_Payload_OneOfCase_ProtobufPayload: {
-      NSError *error = nil;
-      testMessage = [TestAllTypes parseFromData:request.protobufPayload
-                                          error:&error];
-      if (!testMessage) {
-        response.parseError =
-            [NSString stringWithFormat:@"Parse error: %@", error];
+      if ([request.messageType isEqualToString:@"protobuf_test_messages.proto3.TestAllTypesProto3"]) {
+        NSError *error = nil;
+        testMessage = [TestAllTypesProto3 parseFromData:request.protobufPayload
+                                            error:&error];
+        if (!testMessage) {
+          response.parseError =
+              [NSString stringWithFormat:@"Parse error: %@", error];
+        }
+      } else if ([request.messageType isEqualToString:@"protobuf_test_messages.proto2.TestAllTypesProto2"]) {
+	response.skipped = @"ObjC doesn't support proto2";
+	break;
+      } else {
+	Die(@"Protobuf request doesn't have specific payload type");
+	break;
       }
       break;
     }

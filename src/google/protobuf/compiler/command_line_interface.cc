@@ -47,10 +47,7 @@
 #endif
 #include <sys/stat.h>
 #include <fcntl.h>
-#ifdef _MSC_VER
-#include <io.h>
-#include <direct.h>
-#else
+#ifndef _MSC_VER
 #include <unistd.h>
 #endif
 #include <errno.h>
@@ -72,6 +69,9 @@
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/stringprintf.h>
+#include <google/protobuf/compiler/importer.h>
+#include <google/protobuf/compiler/code_generator.h>
+#include <google/protobuf/compiler/plugin.pb.h>
 #include <google/protobuf/compiler/subprocess.h>
 #include <google/protobuf/compiler/zip_writer.h>
 #include <google/protobuf/compiler/plugin.pb.h>
@@ -83,6 +83,12 @@
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/dynamic_message.h>
 #include <google/protobuf/text_format.h>
+#include <google/protobuf/dynamic_message.h>
+#include <google/protobuf/io/coded_stream.h>
+#include <google/protobuf/io/zero_copy_stream_impl.h>
+#include <google/protobuf/io/printer.h>
+#include <google/protobuf/stubs/io_win32.h>
+#include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/stubs/substitute.h>
 #include <google/protobuf/stubs/map_util.h>
@@ -93,22 +99,6 @@ namespace google {
 namespace protobuf {
 namespace compiler {
 
-#if defined(_WIN32)
-#define mkdir(name, mode) mkdir(name)
-#ifndef W_OK
-#define W_OK 02  // not defined by MSVC for whatever reason
-#endif
-#ifndef F_OK
-#define F_OK 00  // not defined by MSVC for whatever reason
-#endif
-#ifndef STDIN_FILENO
-#define STDIN_FILENO 0
-#endif
-#ifndef STDOUT_FILENO
-#define STDOUT_FILENO 1
-#endif
-#endif
-
 #ifndef O_BINARY
 #ifdef _O_BINARY
 #define O_BINARY _O_BINARY
@@ -118,6 +108,16 @@ namespace compiler {
 #endif
 
 namespace {
+#if defined(_WIN32) && !defined(__CYGWIN__)
+// DO NOT include <io.h>, instead create functions in io_win32.{h,cc} and import
+// them like we do below.
+using google::protobuf::internal::win32::access;
+using google::protobuf::internal::win32::close;
+using google::protobuf::internal::win32::mkdir;
+using google::protobuf::internal::win32::open;
+using google::protobuf::internal::win32::setmode;
+using google::protobuf::internal::win32::write;
+#endif
 
 static const char* kDefaultDirectDependenciesViolationMsg =
     "File is imported but not declared in --direct_dependencies: %s";
@@ -138,9 +138,9 @@ static bool IsWindowsAbsolutePath(const string& text) {
 
 void SetFdToTextMode(int fd) {
 #ifdef _WIN32
-  if (_setmode(fd, _O_TEXT) == -1) {
+  if (setmode(fd, _O_TEXT) == -1) {
     // This should never happen, I think.
-    GOOGLE_LOG(WARNING) << "_setmode(" << fd << ", _O_TEXT): " << strerror(errno);
+    GOOGLE_LOG(WARNING) << "setmode(" << fd << ", _O_TEXT): " << strerror(errno);
   }
 #endif
   // (Text and binary are the same on non-Windows platforms.)
@@ -148,9 +148,9 @@ void SetFdToTextMode(int fd) {
 
 void SetFdToBinaryMode(int fd) {
 #ifdef _WIN32
-  if (_setmode(fd, _O_BINARY) == -1) {
+  if (setmode(fd, _O_BINARY) == -1) {
     // This should never happen, I think.
-    GOOGLE_LOG(WARNING) << "_setmode(" << fd << ", _O_BINARY): " << strerror(errno);
+    GOOGLE_LOG(WARNING) << "setmode(" << fd << ", _O_BINARY): " << strerror(errno);
   }
 #endif
   // (Text and binary are the same on non-Windows platforms.)
