@@ -48,6 +48,7 @@
 #if defined(_WIN32)
 
 #include <string>
+#include <google/protobuf/stubs/port.h>
 
 namespace google {
 namespace protobuf {
