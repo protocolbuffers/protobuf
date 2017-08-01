@@ -53,7 +53,7 @@ class Descriptor
      */
     public function getFullName()
     {
-        return $this->internal_desc->getFullName();
+        return trim($this->internal_desc->getFullName(), ".");
     }
 
     /**

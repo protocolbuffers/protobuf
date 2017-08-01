@@ -77,7 +77,7 @@ class DescriptorsTest extends TestBase
         $pool = DescriptorPool::getGeneratedPool();
         $desc = $pool->getDescriptorByClassName(get_class(new TestDescriptorsMessage()));
 
-        $this->assertSame('.descriptors.TestDescriptorsMessage', $desc->getFullName());
+        $this->assertSame('descriptors.TestDescriptorsMessage', $desc->getFullName());
 
         $this->assertInstanceOf('\Google\Protobuf\FieldDescriptor', $desc->getField(0));
         $this->assertSame(7, $desc->getFieldCount());
@@ -184,7 +184,7 @@ class DescriptorsTest extends TestBase
         $this->assertSame(self::GPBTYPE_MESSAGE, $fieldDesc->getType());
         $this->assertTrue($fieldDesc->isMap());
         $mapDesc = $fieldDesc->getMessageType();
-        $this->assertSame('.descriptors.TestDescriptorsMessage.MapInt32EnumEntry', $mapDesc->getFullName());
+        $this->assertSame('descriptors.TestDescriptorsMessage.MapInt32EnumEntry', $mapDesc->getFullName());
         $this->assertSame(self::GPBTYPE_INT32, $mapDesc->getField(0)->getType());
         $this->assertSame(self::GPBTYPE_ENUM, $mapDesc->getField(1)->getType());
     }
