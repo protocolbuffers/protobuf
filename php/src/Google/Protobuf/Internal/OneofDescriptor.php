@@ -48,7 +48,7 @@ class OneofDescriptor
         return $this->name;
     }
 
-    public function addField(&$field)
+    public function addField(Descriptor $field)
     {
         $this->fields[] = $field;
     }
