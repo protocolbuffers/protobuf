@@ -200,7 +200,6 @@ target_link_libraries(tests libprotoc libprotobuf gmock_main)
 
 set(test_plugin_files
   ${protobuf_source_dir}/src/google/protobuf/compiler/mock_code_generator.cc
-  ${protobuf_source_dir}/src/google/protobuf/stubs/io_win32.cc
   ${protobuf_source_dir}/src/google/protobuf/testing/file.cc
   ${protobuf_source_dir}/src/google/protobuf/testing/file.h
   ${protobuf_source_dir}/src/google/protobuf/compiler/test_plugin.cc
