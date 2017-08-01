@@ -14,9 +14,9 @@
 #endif
 
 #if GPB_USE_PROTOBUF_FRAMEWORK_IMPORTS
- #import <Protobuf/Type.pbobjc.h>
- #import <Protobuf/Any.pbobjc.h>
- #import <Protobuf/SourceContext.pbobjc.h>
+ #import <protobuf/Type.pbobjc.h>
+ #import <protobuf/Any.pbobjc.h>
+ #import <protobuf/SourceContext.pbobjc.h>
 #else
  #import "google/protobuf/Type.pbobjc.h"
  #import "google/protobuf/Any.pbobjc.h"
