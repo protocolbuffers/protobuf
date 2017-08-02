@@ -48,7 +48,7 @@ namespace Google.Protobuf.Conformance
             // This way we get the binary streams instead of readers/writers.
             var input = new BinaryReader(Console.OpenStandardInput());
             var output = new BinaryWriter(Console.OpenStandardOutput());
-            var typeRegistry = TypeRegistry.FromMessages(ProtobufTestMessages.Proto3.TestAllTypes.Descriptor);
+            var typeRegistry = TypeRegistry.FromMessages(ProtobufTestMessages.Proto3.TestAllTypesProto3.Descriptor);
 
             int count = 0;
             while (RunTest(input, output, typeRegistry))
@@ -81,18 +81,31 @@ namespace Google.Protobuf.Conformance
 
         private static ConformanceResponse PerformRequest(ConformanceRequest request, TypeRegistry typeRegistry)
         {
-            ProtobufTestMessages.Proto3.TestAllTypes message;
+            ProtobufTestMessages.Proto3.TestAllTypesProto3 message;
             try
             {
                 switch (request.PayloadCase)
                 {
                     case ConformanceRequest.PayloadOneofCase.JsonPayload:
                         var parser = new JsonParser(new JsonParser.Settings(20, typeRegistry));
-                        message = parser.Parse<ProtobufTestMessages.Proto3.TestAllTypes>(request.JsonPayload);
+                        message = parser.Parse<ProtobufTestMessages.Proto3.TestAllTypesProto3>(request.JsonPayload);
                         break;
-                    case ConformanceRequest.PayloadOneofCase.ProtobufPayload:
-                        message = ProtobufTestMessages.Proto3.TestAllTypes.Parser.ParseFrom(request.ProtobufPayload);
+                    case ConformanceRequest.PayloadOneofCase.ProtobufPayload: 
+                    {
+                        if (request.MessageType.Equals("protobuf_test_messages.proto3.TestAllTypesProto3"))
+                        {
+                            message = ProtobufTestMessages.Proto3.TestAllTypesProto3.Parser.ParseFrom(request.ProtobufPayload);
+                        }							
+                        else if (request.MessageType.Equals("protobuf_test_messages.proto2.TestAllTypesProto2")) 
+                        {
+                            return new ConformanceResponse { Skipped = "CSharp doesn't support proto2" };
+                        }
+                        else 
+                        {
+                            throw new Exception(" Protobuf request doesn't have specific payload type");
+                        }
                         break;
+                    }
                     default:
                         throw new Exception("Unsupported request payload: " + request.PayloadCase);
                 }

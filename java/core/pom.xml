@@ -6,7 +6,7 @@
   <parent>
     <groupId>com.google.protobuf</groupId>
     <artifactId>protobuf-parent</artifactId>
-    <version>3.3.0</version>
+    <version>3.3.2</version>
   </parent>
 
   <artifactId>protobuf-java</artifactId>
@@ -32,11 +32,6 @@
     <dependency>
       <groupId>org.easymock</groupId>
       <artifactId>easymockclassextension</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>com.google.truth</groupId>
-      <artifactId>truth</artifactId>
       <scope>test</scope>
     </dependency>
   </dependencies>

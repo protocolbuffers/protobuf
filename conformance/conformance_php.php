@@ -23,9 +23,9 @@ require_once("Google/Protobuf/StringValue.php");
 require_once("Google/Protobuf/UInt64Value.php");
 require_once("Protobuf_test_messages/Proto3/ForeignMessage.php");
 require_once("Protobuf_test_messages/Proto3/ForeignEnum.php");
-require_once("Protobuf_test_messages/Proto3/TestAllTypes.php");
-require_once("Protobuf_test_messages/Proto3/TestAllTypes_NestedMessage.php");
-require_once("Protobuf_test_messages/Proto3/TestAllTypes_NestedEnum.php");
+require_once("Protobuf_test_messages/Proto3/TestAllTypesProto3.php");
+require_once("Protobuf_test_messages/Proto3/TestAllTypesProto3_NestedMessage.php");
+require_once("Protobuf_test_messages/Proto3/TestAllTypesProto3_NestedEnum.php");
 
 require_once("GPBMetadata/Conformance.php");
 require_once("GPBMetadata/Google/Protobuf/Any.php");
@@ -42,14 +42,21 @@ $test_count = 0;
 
 function doTest($request)
 {
-    $test_message = new \Protobuf_test_messages\Proto3\TestAllTypes();
+    $test_message = new \Protobuf_test_messages\Proto3\TestAllTypesProto3();
     $response = new \Conformance\ConformanceResponse();
     if ($request->getPayload() == "protobuf_payload") {
-      try {
+      if ($request->getMessageType() == "protobuf_test_messages.proto3.TestAllTypesProto3") {
+        try {
           $test_message->mergeFromString($request->getProtobufPayload());
-      } catch (Exception $e) {
+        } catch (Exception $e) {
           $response->setParseError($e->getMessage());
           return $response;
+        }
+      } elseif ($request->getMessageType() == "protobuf_test_messages.proto2.TestAllTypesProto2") {
+	$response->setSkipped("PHP doesn't support proto2");
+	return $response;
+      } else {
+	trigger_error("Protobuf request doesn't have specific payload type", E_USER_ERROR);
       }
     } elseif ($request->getPayload() == "json_payload") {
       try {

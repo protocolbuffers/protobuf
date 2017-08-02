@@ -34,6 +34,7 @@
 
 var conformance = require('conformance_pb');
 var test_messages_proto3 = require('google/protobuf/test_messages_proto3_pb');
+var test_messages_proto2 = require('google/protobuf/test_messages_proto2_pb');
 var fs = require('fs');
 
 var testCount = 0;
@@ -49,14 +50,27 @@ function doTest(request) {
     }
 
     switch (request.getPayloadCase()) {
-      case conformance.ConformanceRequest.PayloadCase.PROTOBUF_PAYLOAD:
-        try {
-          testMessage = test_messages_proto3.TestAllTypes.deserializeBinary(
-              request.getProtobufPayload());
-        } catch (err) {
-          response.setParseError(err.toString());
-          return response;
+      case conformance.ConformanceRequest.PayloadCase.PROTOBUF_PAYLOAD: {
+        if (request.getMessageType() == "protobuf_test_messages.proto3.TestAllTypesProto3") {
+          try {
+            testMessage = test_messages_proto3.TestAllTypesProto3.deserializeBinary(
+                request.getProtobufPayload());
+          } catch (err) {
+            response.setParseError(err.toString());
+            return response;
+          }
+        } else if (request.getMessageType() == "protobuf_test_messages.proto2.TestAllTypesProto2"){
+          try {
+            testMessage = test_messages_proto2.TestAllTypesProto2.deserializeBinary(
+                request.getProtobufPayload());
+          } catch (err) {
+            response.setParseError(err.toString());
+            return response;
+          }
+        } else {
+          throw "Protobuf request doesn\'t have specific payload type";
         }
+      }
 
       case conformance.ConformanceRequest.PayloadCase.JSON_PAYLOAD:
         response.setSkipped("JSON not supported.");
