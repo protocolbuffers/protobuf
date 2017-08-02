@@ -184,6 +184,7 @@ void gpb_type_init(TSRMLS_D) {
 // -----------------------------------------------------------------------------
 
 static zend_function_entry descriptor_methods[] = {
+  PHP_ME(Descriptor, getClass, NULL, ZEND_ACC_PUBLIC)
   PHP_ME(Descriptor, getFullName, NULL, ZEND_ACC_PUBLIC)
   PHP_ME(Descriptor, getField, NULL, ZEND_ACC_PUBLIC)
   PHP_ME(Descriptor, getFieldCount, NULL, ZEND_ACC_PUBLIC)
@@ -232,6 +233,16 @@ static void descriptor_init_c_instance(Descriptor *desc TSRMLS_DC) {
   desc->pb_serialize_handlers = NULL;
   desc->json_serialize_handlers = NULL;
   desc->json_serialize_handlers_preserve = NULL;
+}
+
+PHP_METHOD(Descriptor, getClass) {
+  Descriptor *intern = UNBOX(Descriptor, getThis());
+#if PHP_MAJOR_VERSION < 7
+  const char* classname = intern->klass->name;
+#else
+  const char* classname = ZSTR_VAL(intern->klass->name);
+#endif
+  PHP_PROTO_RETVAL_STRINGL(classname, strlen(classname), 1);
 }
 
 PHP_METHOD(Descriptor, getFullName) {

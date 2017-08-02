@@ -75,9 +75,12 @@ class DescriptorsTest extends TestBase
     public function testDescriptor()
     {
         $pool = DescriptorPool::getGeneratedPool();
-        $desc = $pool->getDescriptorByClassName(get_class(new TestDescriptorsMessage()));
+        $class = get_class(new TestDescriptorsMessage());
+        $this->assertSame('Descriptors\TestDescriptorsMessage', $class);
+        $desc = $pool->getDescriptorByClassName($class);
 
         $this->assertSame('descriptors.TestDescriptorsMessage', $desc->getFullName());
+        $this->assertSame($class, $desc->getClass());
 
         $this->assertInstanceOf('\Google\Protobuf\FieldDescriptor', $desc->getField(0));
         $this->assertSame(7, $desc->getFieldCount());
