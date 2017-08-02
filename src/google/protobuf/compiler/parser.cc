@@ -1469,7 +1469,7 @@ bool Parser::ParseExtensions(DescriptorProto* message,
 
     // Users like to specify inclusive ranges, but in code we like the end
     // number to be exclusive.
-    ++end;
+    end += 1u;
 
     range->set_start(start);
     range->set_end(end);
