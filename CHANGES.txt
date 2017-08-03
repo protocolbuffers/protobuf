@@ -33,7 +33,7 @@
   * Proto3 messages are now able to preserve unknown fields. The default
     behavior is still to drop unknowns, which will be flipped in a future
     release. If you rely on unknowns fields being dropped. Please use
-    Messgae::DiscardUnknownFields() explicitly.
+    Message::DiscardUnknownFields() explicitly.
   * Packable proto3 fields are now packed by default in serialization.
   * Following C++11 features are introduced when C++11 is available:
       - move-constructor and move-assignment are introduced to messages
