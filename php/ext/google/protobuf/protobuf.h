@@ -508,6 +508,7 @@ PHP_PROTO_WRAP_OBJECT_START(Descriptor)
   const upb_handlers* json_serialize_handlers_preserve;
 PHP_PROTO_WRAP_OBJECT_END
 
+PHP_METHOD(Descriptor, getClass);
 PHP_METHOD(Descriptor, getFullName);
 PHP_METHOD(Descriptor, getField);
 PHP_METHOD(Descriptor, getFieldCount);
