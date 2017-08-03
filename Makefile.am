@@ -597,6 +597,12 @@ php_EXTRA_DIST=                                                       \
   php/ext/google/protobuf/upb.c                                       \
   php/ext/google/protobuf/protobuf.c                                  \
   php/src/phpdoc.dist.xml                                             \
+  php/src/Google/Protobuf/Descriptor.php                              \
+  php/src/Google/Protobuf/DescriptorPool.php                          \
+  php/src/Google/Protobuf/EnumDescriptor.php                          \
+  php/src/Google/Protobuf/EnumValueDescriptor.php                     \
+  php/src/Google/Protobuf/FieldDescriptor.php                         \
+  php/src/Google/Protobuf/OneofDescriptor.php                         \
   php/src/Google/Protobuf/Internal/CodedInputStream.php               \
   php/src/Google/Protobuf/Internal/CodedOutputStream.php              \
   php/src/Google/Protobuf/Internal/DescriptorPool.php                 \
@@ -609,7 +615,6 @@ php_EXTRA_DIST=                                                       \
   php/src/Google/Protobuf/Internal/EnumDescriptorProto.php            \
   php/src/Google/Protobuf/Internal/EnumOptions.php                    \
   php/src/Google/Protobuf/Internal/EnumValueDescriptorProto.php       \
-  php/src/Google/Protobuf/Internal/EnumValueDescriptor.php            \
   php/src/Google/Protobuf/Internal/EnumValueOptions.php               \
   php/src/Google/Protobuf/Internal/FieldDescriptorProto_Label.php     \
   php/src/Google/Protobuf/Internal/FieldDescriptorProto.php           \
@@ -625,6 +630,7 @@ php_EXTRA_DIST=                                                       \
   php/src/Google/Protobuf/Internal/FileOptions.php                    \
   php/src/Google/Protobuf/Internal/GeneratedCodeInfo_Annotation.php   \
   php/src/Google/Protobuf/Internal/GeneratedCodeInfo.php              \
+  php/src/Google/Protobuf/Internal/GetPublicDescriptorTrait.php       \
   php/src/Google/Protobuf/Internal/GPBDecodeException.php             \
   php/src/Google/Protobuf/Internal/GPBJsonWire.php                    \
   php/src/Google/Protobuf/Internal/GPBLabel.php                       \
@@ -632,6 +638,7 @@ php_EXTRA_DIST=                                                       \
   php/src/Google/Protobuf/Internal/GPBUtil.php                        \
   php/src/Google/Protobuf/Internal/GPBWireType.php                    \
   php/src/Google/Protobuf/Internal/GPBWire.php                        \
+  php/src/Google/Protobuf/Internal/HasPublicDescriptorTrait.php       \
   php/src/Google/Protobuf/Internal/MapEntry.php                       \
   php/src/Google/Protobuf/Internal/MapFieldIter.php                   \
   php/src/Google/Protobuf/Internal/MapField.php                       \
