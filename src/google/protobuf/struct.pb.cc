@@ -19,12 +19,20 @@
 
 namespace google {
 namespace protobuf {
-class Struct_FieldsEntryDefaultTypeInternal : public ::google::protobuf::internal::ExplicitlyConstructed<Struct::Struct_FieldsEntry> {
+class Struct_FieldsEntryDefaultTypeInternal {
+public:
+ ::google::protobuf::internal::ExplicitlyConstructed<Struct::Struct_FieldsEntry>
+     _instance;
 } _Struct_FieldsEntry_default_instance_;
-class StructDefaultTypeInternal : public ::google::protobuf::internal::ExplicitlyConstructed<Struct> {
+class StructDefaultTypeInternal {
+public:
+ ::google::protobuf::internal::ExplicitlyConstructed<Struct>
+     _instance;
 } _Struct_default_instance_;
-class ValueDefaultTypeInternal : public ::google::protobuf::internal::ExplicitlyConstructed<Value> {
-  public:
+class ValueDefaultTypeInternal {
+public:
+ ::google::protobuf::internal::ExplicitlyConstructed<Value>
+     _instance;
   int null_value_;
   double number_value_;
   ::google::protobuf::internal::ArenaStringPtr string_value_;
@@ -32,7 +40,10 @@ class ValueDefaultTypeInternal : public ::google::protobuf::internal::Explicitly
   const ::google::protobuf::Struct* struct_value_;
   const ::google::protobuf::ListValue* list_value_;
 } _Value_default_instance_;
-class ListValueDefaultTypeInternal : public ::google::protobuf::internal::ExplicitlyConstructed<ListValue> {
+class ListValueDefaultTypeInternal {
+public:
+ ::google::protobuf::internal::ExplicitlyConstructed<ListValue>
+     _instance;
 } _ListValue_default_instance_;
 
 namespace protobuf_google_2fprotobuf_2fstruct_2eproto {
@@ -109,7 +120,7 @@ void protobuf_AssignDescriptors() {
   AssignDescriptors(
       "google/protobuf/struct.proto", schemas, file_default_instances, TableStruct::offsets, factory,
       file_level_metadata, file_level_enum_descriptors, NULL);
-file_level_metadata[0].reflection = Struct::Struct_FieldsEntry::CreateReflection(file_level_metadata[0].descriptor, _Struct_FieldsEntry_default_instance_.get_mutable());
+file_level_metadata[0].reflection = Struct::Struct_FieldsEntry::CreateReflection(file_level_metadata[0].descriptor, _Struct_FieldsEntry_default_instance_._instance.get_mutable());
 }
 
 void protobuf_AssignDescriptorsOnce() {
@@ -128,16 +139,16 @@ void TableStruct::InitDefaultsImpl() {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
 
   ::google::protobuf::internal::InitProtobufDefaults();
-  _Struct_FieldsEntry_default_instance_.DefaultConstruct();
+  _Struct_FieldsEntry_default_instance_._instance.DefaultConstruct();
   ::google::protobuf::internal::OnShutdownDestroyMessage(
-      &_Struct_FieldsEntry_default_instance_);_Struct_default_instance_.DefaultConstruct();
+      &_Struct_FieldsEntry_default_instance_);_Struct_default_instance_._instance.DefaultConstruct();
   ::google::protobuf::internal::OnShutdownDestroyMessage(
-      &_Struct_default_instance_);_Value_default_instance_.DefaultConstruct();
+      &_Struct_default_instance_);_Value_default_instance_._instance.DefaultConstruct();
   ::google::protobuf::internal::OnShutdownDestroyMessage(
-      &_Value_default_instance_);_ListValue_default_instance_.DefaultConstruct();
+      &_Value_default_instance_);_ListValue_default_instance_._instance.DefaultConstruct();
   ::google::protobuf::internal::OnShutdownDestroyMessage(
-      &_ListValue_default_instance_);_Struct_FieldsEntry_default_instance_.get_mutable()->set_default_instance(_Struct_FieldsEntry_default_instance_.get_mutable());
-  _Struct_FieldsEntry_default_instance_.get_mutable()->InitAsDefaultInstance();
+      &_ListValue_default_instance_);_Struct_FieldsEntry_default_instance_._instance.get_mutable()->set_default_instance(_Struct_FieldsEntry_default_instance_._instance.get_mutable());
+  _Struct_FieldsEntry_default_instance_._instance.get_mutable()->InitAsDefaultInstance();
   _Value_default_instance_.null_value_ = 0;
   _Value_default_instance_.number_value_ = 0;
   _Value_default_instance_.string_value_.UnsafeSetDefault(

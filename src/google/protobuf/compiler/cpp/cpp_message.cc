@@ -1604,7 +1604,6 @@ GenerateExtraDefaultFields(io::Printer* printer) {
   // Generate oneof default instance and weak field instances for reflection
   // usage.
   if (descriptor_->oneof_decl_count() > 0 || num_weak_fields_ > 0) {
-    printer->Print("public:\n");
     for (int i = 0; i < descriptor_->oneof_decl_count(); i++) {
       for (int j = 0; j < descriptor_->oneof_decl(i)->field_count(); j++) {
         const FieldDescriptor* field = descriptor_->oneof_decl(i)->field(j);
@@ -1977,7 +1976,7 @@ GenerateDefaultInstanceAllocator(io::Printer* printer) {
   // Construct the default instance.  We can't call InitAsDefaultInstance() yet
   // because we need to make sure all default instances that this one might
   // depend on are constructed first.
-  printer->Print("_$classname$_default_instance_.DefaultConstruct();\n"
+  printer->Print("_$classname$_default_instance_._instance.DefaultConstruct();\n"
                  "::google::protobuf::internal::OnShutdownDestroyMessage(\n"
                  "    &_$classname$_default_instance_);",
                  "classname", classname_);
@@ -1987,9 +1986,9 @@ void MessageGenerator::
 GenerateDefaultInstanceInitializer(io::Printer* printer) {
   if (IsMapEntryMessage(descriptor_)) {
     printer->Print(
-        "_$classname$_default_instance_.get_mutable()->set_default_instance(_$"
-        "classname$_default_instance_.get_mutable());\n"
-        "_$classname$_default_instance_.get_mutable()->InitAsDefaultInstance();"
+        "_$classname$_default_instance_._instance.get_mutable()->set_default_instance(_$"
+        "classname$_default_instance_._instance.get_mutable());\n"
+        "_$classname$_default_instance_._instance.get_mutable()->InitAsDefaultInstance();"
         "\n",
         "classname", classname_);
     return;
@@ -2012,7 +2011,8 @@ GenerateDefaultInstanceInitializer(io::Printer* printer) {
       if (field->containing_oneof() || field->options().weak()) {
         name = "_" + classname_ + "_default_instance_.";
       } else {
-        name = "_" + classname_ + "_default_instance_.get_mutable()->";
+        name =
+            "_" + classname_ + "_default_instance_._instance.get_mutable()->";
       }
       name += FieldName(field);
       printer->Print(

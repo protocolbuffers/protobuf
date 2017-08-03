@@ -19,7 +19,10 @@
 
 namespace google {
 namespace protobuf {
-class SourceContextDefaultTypeInternal : public ::google::protobuf::internal::ExplicitlyConstructed<SourceContext> {
+class SourceContextDefaultTypeInternal {
+public:
+ ::google::protobuf::internal::ExplicitlyConstructed<SourceContext>
+     _instance;
 } _SourceContext_default_instance_;
 
 namespace protobuf_google_2fprotobuf_2fsource_5fcontext_2eproto {
@@ -87,7 +90,7 @@ void TableStruct::InitDefaultsImpl() {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
 
   ::google::protobuf::internal::InitProtobufDefaults();
-  _SourceContext_default_instance_.DefaultConstruct();
+  _SourceContext_default_instance_._instance.DefaultConstruct();
   ::google::protobuf::internal::OnShutdownDestroyMessage(
       &_SourceContext_default_instance_);}
 
