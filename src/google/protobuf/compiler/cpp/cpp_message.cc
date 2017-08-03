@@ -1977,7 +1977,9 @@ GenerateDefaultInstanceAllocator(io::Printer* printer) {
   // Construct the default instance.  We can't call InitAsDefaultInstance() yet
   // because we need to make sure all default instances that this one might
   // depend on are constructed first.
-  printer->Print("_$classname$_default_instance_.DefaultConstruct();\n",
+  printer->Print("_$classname$_default_instance_.DefaultConstruct();\n"
+                 "::google::protobuf::internal::OnShutdownDestroyMessage(\n"
+                 "    &_$classname$_default_instance_);",
                  "classname", classname_);
 }
 

@@ -89,7 +89,8 @@ void TableStruct::InitDefaultsImpl() {
 
   ::google::protobuf::internal::InitProtobufDefaults();
   _Duration_default_instance_.DefaultConstruct();
-}
+  ::google::protobuf::internal::OnShutdownDestroyMessage(
+      &_Duration_default_instance_);}
 
 void InitDefaults() {
   static GOOGLE_PROTOBUF_DECLARE_ONCE(once);

@@ -125,9 +125,12 @@ void TableStruct::InitDefaultsImpl() {
   ::google::protobuf::protobuf_google_2fprotobuf_2fsource_5fcontext_2eproto::InitDefaults();
   ::google::protobuf::protobuf_google_2fprotobuf_2ftype_2eproto::InitDefaults();
   _Api_default_instance_.DefaultConstruct();
-  _Method_default_instance_.DefaultConstruct();
-  _Mixin_default_instance_.DefaultConstruct();
-  _Api_default_instance_.get_mutable()->source_context_ = const_cast< ::google::protobuf::SourceContext*>(
+  ::google::protobuf::internal::OnShutdownDestroyMessage(
+      &_Api_default_instance_);_Method_default_instance_.DefaultConstruct();
+  ::google::protobuf::internal::OnShutdownDestroyMessage(
+      &_Method_default_instance_);_Mixin_default_instance_.DefaultConstruct();
+  ::google::protobuf::internal::OnShutdownDestroyMessage(
+      &_Mixin_default_instance_);_Api_default_instance_.get_mutable()->source_context_ = const_cast< ::google::protobuf::SourceContext*>(
       ::google::protobuf::SourceContext::internal_default_instance());
 }
 
@@ -244,7 +247,7 @@ Api::~Api() {
 void Api::SharedDtor() {
   name_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   version_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  delete source_context_;
+  if (this != internal_default_instance()) delete source_context_;
 }
 
 void Api::SetCachedSize(int size) const {

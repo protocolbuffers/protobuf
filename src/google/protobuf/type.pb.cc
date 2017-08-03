@@ -156,11 +156,16 @@ void TableStruct::InitDefaultsImpl() {
   ::google::protobuf::protobuf_google_2fprotobuf_2fany_2eproto::InitDefaults();
   ::google::protobuf::protobuf_google_2fprotobuf_2fsource_5fcontext_2eproto::InitDefaults();
   _Type_default_instance_.DefaultConstruct();
-  _Field_default_instance_.DefaultConstruct();
-  _Enum_default_instance_.DefaultConstruct();
-  _EnumValue_default_instance_.DefaultConstruct();
-  _Option_default_instance_.DefaultConstruct();
-  _Type_default_instance_.get_mutable()->source_context_ = const_cast< ::google::protobuf::SourceContext*>(
+  ::google::protobuf::internal::OnShutdownDestroyMessage(
+      &_Type_default_instance_);_Field_default_instance_.DefaultConstruct();
+  ::google::protobuf::internal::OnShutdownDestroyMessage(
+      &_Field_default_instance_);_Enum_default_instance_.DefaultConstruct();
+  ::google::protobuf::internal::OnShutdownDestroyMessage(
+      &_Enum_default_instance_);_EnumValue_default_instance_.DefaultConstruct();
+  ::google::protobuf::internal::OnShutdownDestroyMessage(
+      &_EnumValue_default_instance_);_Option_default_instance_.DefaultConstruct();
+  ::google::protobuf::internal::OnShutdownDestroyMessage(
+      &_Option_default_instance_);_Type_default_instance_.get_mutable()->source_context_ = const_cast< ::google::protobuf::SourceContext*>(
       ::google::protobuf::SourceContext::internal_default_instance());
   _Enum_default_instance_.get_mutable()->source_context_ = const_cast< ::google::protobuf::SourceContext*>(
       ::google::protobuf::SourceContext::internal_default_instance());
@@ -440,7 +445,7 @@ void Type::SharedDtor() {
   }
 
   name_.Destroy(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), arena);
-  delete source_context_;
+  if (this != internal_default_instance()) delete source_context_;
 }
 
 void Type::ArenaDtor(void* object) {
@@ -2353,7 +2358,7 @@ void Enum::SharedDtor() {
   }
 
   name_.Destroy(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), arena);
-  delete source_context_;
+  if (this != internal_default_instance()) delete source_context_;
 }
 
 void Enum::ArenaDtor(void* object) {
@@ -3535,7 +3540,7 @@ void Option::SharedDtor() {
   }
 
   name_.Destroy(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), arena);
-  delete value_;
+  if (this != internal_default_instance()) delete value_;
 }
 
 void Option::ArenaDtor(void* object) {

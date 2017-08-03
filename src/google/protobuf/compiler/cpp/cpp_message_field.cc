@@ -522,6 +522,12 @@ GenerateSwappingCode(io::Printer* printer) const {
 
 void MessageFieldGenerator::
 GenerateDestructorCode(io::Printer* printer) const {
+  // TODO(gerbens) Remove this when we don't need to destruct default instances.
+  // In google3 a default instance will never get deleted so we don't need to
+  // worry about that but in opensource protobuf default instances are deleted
+  // in shutdown process and we need to take special care when handling them.
+  printer->Print(variables_,
+    "if (this != internal_default_instance()) ");
   printer->Print(variables_, "delete $name$_;\n");
 }
 

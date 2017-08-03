@@ -30,6 +30,7 @@
 
 // Author: kenton@google.com (Kenton Varda)
 
+#include <google/protobuf/message_lite.h>  // TODO(gerbens) ideally remove this.
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/stubs/once.h>
 #include <google/protobuf/stubs/status.h>
@@ -424,10 +425,14 @@ struct ShutdownData {
     for (int i = 0; i < strings.size(); i++) {
       strings[i]->~string();
     }
+    for (int i = 0; i < messages.size(); i++) {
+      messages[i]->~MessageLite();
+    }
   }
 
   vector<void (*)()> functions;
   vector<const std::string*> strings;
+  vector<const MessageLite*> messages;
   Mutex mutex;
 };
 
@@ -452,6 +457,12 @@ void OnShutdownDestroyString(const std::string* ptr) {
   InitShutdownFunctionsOnce();
   MutexLock lock(&shutdown_data->mutex);
   shutdown_data->strings.push_back(ptr);
+}
+
+void OnShutdownDestroyMessage(const void* ptr) {
+  InitShutdownFunctionsOnce();
+  MutexLock lock(&shutdown_data->mutex);
+  shutdown_data->messages.push_back(static_cast<const MessageLite*>(ptr));
 }
 
 }  // namespace internal

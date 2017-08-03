@@ -129,10 +129,14 @@ void TableStruct::InitDefaultsImpl() {
 
   ::google::protobuf::internal::InitProtobufDefaults();
   _Struct_FieldsEntry_default_instance_.DefaultConstruct();
-  _Struct_default_instance_.DefaultConstruct();
-  _Value_default_instance_.DefaultConstruct();
-  _ListValue_default_instance_.DefaultConstruct();
-  _Struct_FieldsEntry_default_instance_.get_mutable()->set_default_instance(_Struct_FieldsEntry_default_instance_.get_mutable());
+  ::google::protobuf::internal::OnShutdownDestroyMessage(
+      &_Struct_FieldsEntry_default_instance_);_Struct_default_instance_.DefaultConstruct();
+  ::google::protobuf::internal::OnShutdownDestroyMessage(
+      &_Struct_default_instance_);_Value_default_instance_.DefaultConstruct();
+  ::google::protobuf::internal::OnShutdownDestroyMessage(
+      &_Value_default_instance_);_ListValue_default_instance_.DefaultConstruct();
+  ::google::protobuf::internal::OnShutdownDestroyMessage(
+      &_ListValue_default_instance_);_Struct_FieldsEntry_default_instance_.get_mutable()->set_default_instance(_Struct_FieldsEntry_default_instance_.get_mutable());
   _Struct_FieldsEntry_default_instance_.get_mutable()->InitAsDefaultInstance();
   _Value_default_instance_.null_value_ = 0;
   _Value_default_instance_.number_value_ = 0;

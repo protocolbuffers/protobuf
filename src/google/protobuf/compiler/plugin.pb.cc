@@ -145,10 +145,14 @@ void TableStruct::InitDefaultsImpl() {
   ::google::protobuf::internal::InitProtobufDefaults();
   ::google::protobuf::protobuf_google_2fprotobuf_2fdescriptor_2eproto::InitDefaults();
   _Version_default_instance_.DefaultConstruct();
-  _CodeGeneratorRequest_default_instance_.DefaultConstruct();
-  _CodeGeneratorResponse_File_default_instance_.DefaultConstruct();
-  _CodeGeneratorResponse_default_instance_.DefaultConstruct();
-  _CodeGeneratorRequest_default_instance_.get_mutable()->compiler_version_ = const_cast< ::google::protobuf::compiler::Version*>(
+  ::google::protobuf::internal::OnShutdownDestroyMessage(
+      &_Version_default_instance_);_CodeGeneratorRequest_default_instance_.DefaultConstruct();
+  ::google::protobuf::internal::OnShutdownDestroyMessage(
+      &_CodeGeneratorRequest_default_instance_);_CodeGeneratorResponse_File_default_instance_.DefaultConstruct();
+  ::google::protobuf::internal::OnShutdownDestroyMessage(
+      &_CodeGeneratorResponse_File_default_instance_);_CodeGeneratorResponse_default_instance_.DefaultConstruct();
+  ::google::protobuf::internal::OnShutdownDestroyMessage(
+      &_CodeGeneratorResponse_default_instance_);_CodeGeneratorRequest_default_instance_.get_mutable()->compiler_version_ = const_cast< ::google::protobuf::compiler::Version*>(
       ::google::protobuf::compiler::Version::internal_default_instance());
 }
 
@@ -776,7 +780,7 @@ CodeGeneratorRequest::~CodeGeneratorRequest() {
 
 void CodeGeneratorRequest::SharedDtor() {
   parameter_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  delete compiler_version_;
+  if (this != internal_default_instance()) delete compiler_version_;
 }
 
 void CodeGeneratorRequest::SetCachedSize(int size) const {

@@ -88,7 +88,8 @@ void TableStruct::InitDefaultsImpl() {
 
   ::google::protobuf::internal::InitProtobufDefaults();
   _FieldMask_default_instance_.DefaultConstruct();
-}
+  ::google::protobuf::internal::OnShutdownDestroyMessage(
+      &_FieldMask_default_instance_);}
 
 void InitDefaults() {
   static GOOGLE_PROTOBUF_DECLARE_ONCE(once);

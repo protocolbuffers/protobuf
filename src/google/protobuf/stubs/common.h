@@ -202,6 +202,9 @@ namespace internal {
 LIBPROTOBUF_EXPORT void OnShutdown(void (*func)());
 // Destroy the string (call string destructor)
 LIBPROTOBUF_EXPORT void OnShutdownDestroyString(const std::string* ptr);
+// Destroy (not delete) the message
+LIBPROTOBUF_EXPORT void OnShutdownDestroyMessage(const void* ptr);
+
 }  // namespace internal
 
 #if PROTOBUF_USE_EXCEPTIONS
