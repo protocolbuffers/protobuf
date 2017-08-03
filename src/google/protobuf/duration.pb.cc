@@ -19,7 +19,10 @@
 
 namespace google {
 namespace protobuf {
-class DurationDefaultTypeInternal : public ::google::protobuf::internal::ExplicitlyConstructed<Duration> {
+class DurationDefaultTypeInternal {
+public:
+ ::google::protobuf::internal::ExplicitlyConstructed<Duration>
+     _instance;
 } _Duration_default_instance_;
 
 namespace protobuf_google_2fprotobuf_2fduration_2eproto {
@@ -88,7 +91,7 @@ void TableStruct::InitDefaultsImpl() {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
 
   ::google::protobuf::internal::InitProtobufDefaults();
-  _Duration_default_instance_.DefaultConstruct();
+  _Duration_default_instance_._instance.DefaultConstruct();
   ::google::protobuf::internal::OnShutdownDestroyMessage(
       &_Duration_default_instance_);}
 

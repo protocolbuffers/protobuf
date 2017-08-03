@@ -19,23 +19,50 @@
 
 namespace google {
 namespace protobuf {
-class DoubleValueDefaultTypeInternal : public ::google::protobuf::internal::ExplicitlyConstructed<DoubleValue> {
+class DoubleValueDefaultTypeInternal {
+public:
+ ::google::protobuf::internal::ExplicitlyConstructed<DoubleValue>
+     _instance;
 } _DoubleValue_default_instance_;
-class FloatValueDefaultTypeInternal : public ::google::protobuf::internal::ExplicitlyConstructed<FloatValue> {
+class FloatValueDefaultTypeInternal {
+public:
+ ::google::protobuf::internal::ExplicitlyConstructed<FloatValue>
+     _instance;
 } _FloatValue_default_instance_;
-class Int64ValueDefaultTypeInternal : public ::google::protobuf::internal::ExplicitlyConstructed<Int64Value> {
+class Int64ValueDefaultTypeInternal {
+public:
+ ::google::protobuf::internal::ExplicitlyConstructed<Int64Value>
+     _instance;
 } _Int64Value_default_instance_;
-class UInt64ValueDefaultTypeInternal : public ::google::protobuf::internal::ExplicitlyConstructed<UInt64Value> {
+class UInt64ValueDefaultTypeInternal {
+public:
+ ::google::protobuf::internal::ExplicitlyConstructed<UInt64Value>
+     _instance;
 } _UInt64Value_default_instance_;
-class Int32ValueDefaultTypeInternal : public ::google::protobuf::internal::ExplicitlyConstructed<Int32Value> {
+class Int32ValueDefaultTypeInternal {
+public:
+ ::google::protobuf::internal::ExplicitlyConstructed<Int32Value>
+     _instance;
 } _Int32Value_default_instance_;
-class UInt32ValueDefaultTypeInternal : public ::google::protobuf::internal::ExplicitlyConstructed<UInt32Value> {
+class UInt32ValueDefaultTypeInternal {
+public:
+ ::google::protobuf::internal::ExplicitlyConstructed<UInt32Value>
+     _instance;
 } _UInt32Value_default_instance_;
-class BoolValueDefaultTypeInternal : public ::google::protobuf::internal::ExplicitlyConstructed<BoolValue> {
+class BoolValueDefaultTypeInternal {
+public:
+ ::google::protobuf::internal::ExplicitlyConstructed<BoolValue>
+     _instance;
 } _BoolValue_default_instance_;
-class StringValueDefaultTypeInternal : public ::google::protobuf::internal::ExplicitlyConstructed<StringValue> {
+class StringValueDefaultTypeInternal {
+public:
+ ::google::protobuf::internal::ExplicitlyConstructed<StringValue>
+     _instance;
 } _StringValue_default_instance_;
-class BytesValueDefaultTypeInternal : public ::google::protobuf::internal::ExplicitlyConstructed<BytesValue> {
+class BytesValueDefaultTypeInternal {
+public:
+ ::google::protobuf::internal::ExplicitlyConstructed<BytesValue>
+     _instance;
 } _BytesValue_default_instance_;
 
 namespace protobuf_google_2fprotobuf_2fwrappers_2eproto {
@@ -175,23 +202,23 @@ void TableStruct::InitDefaultsImpl() {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
 
   ::google::protobuf::internal::InitProtobufDefaults();
-  _DoubleValue_default_instance_.DefaultConstruct();
+  _DoubleValue_default_instance_._instance.DefaultConstruct();
   ::google::protobuf::internal::OnShutdownDestroyMessage(
-      &_DoubleValue_default_instance_);_FloatValue_default_instance_.DefaultConstruct();
+      &_DoubleValue_default_instance_);_FloatValue_default_instance_._instance.DefaultConstruct();
   ::google::protobuf::internal::OnShutdownDestroyMessage(
-      &_FloatValue_default_instance_);_Int64Value_default_instance_.DefaultConstruct();
+      &_FloatValue_default_instance_);_Int64Value_default_instance_._instance.DefaultConstruct();
   ::google::protobuf::internal::OnShutdownDestroyMessage(
-      &_Int64Value_default_instance_);_UInt64Value_default_instance_.DefaultConstruct();
+      &_Int64Value_default_instance_);_UInt64Value_default_instance_._instance.DefaultConstruct();
   ::google::protobuf::internal::OnShutdownDestroyMessage(
-      &_UInt64Value_default_instance_);_Int32Value_default_instance_.DefaultConstruct();
+      &_UInt64Value_default_instance_);_Int32Value_default_instance_._instance.DefaultConstruct();
   ::google::protobuf::internal::OnShutdownDestroyMessage(
-      &_Int32Value_default_instance_);_UInt32Value_default_instance_.DefaultConstruct();
+      &_Int32Value_default_instance_);_UInt32Value_default_instance_._instance.DefaultConstruct();
   ::google::protobuf::internal::OnShutdownDestroyMessage(
-      &_UInt32Value_default_instance_);_BoolValue_default_instance_.DefaultConstruct();
+      &_UInt32Value_default_instance_);_BoolValue_default_instance_._instance.DefaultConstruct();
   ::google::protobuf::internal::OnShutdownDestroyMessage(
-      &_BoolValue_default_instance_);_StringValue_default_instance_.DefaultConstruct();
+      &_BoolValue_default_instance_);_StringValue_default_instance_._instance.DefaultConstruct();
   ::google::protobuf::internal::OnShutdownDestroyMessage(
-      &_StringValue_default_instance_);_BytesValue_default_instance_.DefaultConstruct();
+      &_StringValue_default_instance_);_BytesValue_default_instance_._instance.DefaultConstruct();
   ::google::protobuf::internal::OnShutdownDestroyMessage(
       &_BytesValue_default_instance_);}
 

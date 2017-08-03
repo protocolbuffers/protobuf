@@ -19,57 +19,135 @@
 
 namespace google {
 namespace protobuf {
-class FileDescriptorSetDefaultTypeInternal : public ::google::protobuf::internal::ExplicitlyConstructed<FileDescriptorSet> {
+class FileDescriptorSetDefaultTypeInternal {
+public:
+ ::google::protobuf::internal::ExplicitlyConstructed<FileDescriptorSet>
+     _instance;
 } _FileDescriptorSet_default_instance_;
-class FileDescriptorProtoDefaultTypeInternal : public ::google::protobuf::internal::ExplicitlyConstructed<FileDescriptorProto> {
+class FileDescriptorProtoDefaultTypeInternal {
+public:
+ ::google::protobuf::internal::ExplicitlyConstructed<FileDescriptorProto>
+     _instance;
 } _FileDescriptorProto_default_instance_;
-class DescriptorProto_ExtensionRangeDefaultTypeInternal : public ::google::protobuf::internal::ExplicitlyConstructed<DescriptorProto_ExtensionRange> {
+class DescriptorProto_ExtensionRangeDefaultTypeInternal {
+public:
+ ::google::protobuf::internal::ExplicitlyConstructed<DescriptorProto_ExtensionRange>
+     _instance;
 } _DescriptorProto_ExtensionRange_default_instance_;
-class DescriptorProto_ReservedRangeDefaultTypeInternal : public ::google::protobuf::internal::ExplicitlyConstructed<DescriptorProto_ReservedRange> {
+class DescriptorProto_ReservedRangeDefaultTypeInternal {
+public:
+ ::google::protobuf::internal::ExplicitlyConstructed<DescriptorProto_ReservedRange>
+     _instance;
 } _DescriptorProto_ReservedRange_default_instance_;
-class DescriptorProtoDefaultTypeInternal : public ::google::protobuf::internal::ExplicitlyConstructed<DescriptorProto> {
+class DescriptorProtoDefaultTypeInternal {
+public:
+ ::google::protobuf::internal::ExplicitlyConstructed<DescriptorProto>
+     _instance;
 } _DescriptorProto_default_instance_;
-class ExtensionRangeOptionsDefaultTypeInternal : public ::google::protobuf::internal::ExplicitlyConstructed<ExtensionRangeOptions> {
+class ExtensionRangeOptionsDefaultTypeInternal {
+public:
+ ::google::protobuf::internal::ExplicitlyConstructed<ExtensionRangeOptions>
+     _instance;
 } _ExtensionRangeOptions_default_instance_;
-class FieldDescriptorProtoDefaultTypeInternal : public ::google::protobuf::internal::ExplicitlyConstructed<FieldDescriptorProto> {
+class FieldDescriptorProtoDefaultTypeInternal {
+public:
+ ::google::protobuf::internal::ExplicitlyConstructed<FieldDescriptorProto>
+     _instance;
 } _FieldDescriptorProto_default_instance_;
-class OneofDescriptorProtoDefaultTypeInternal : public ::google::protobuf::internal::ExplicitlyConstructed<OneofDescriptorProto> {
+class OneofDescriptorProtoDefaultTypeInternal {
+public:
+ ::google::protobuf::internal::ExplicitlyConstructed<OneofDescriptorProto>
+     _instance;
 } _OneofDescriptorProto_default_instance_;
-class EnumDescriptorProtoDefaultTypeInternal : public ::google::protobuf::internal::ExplicitlyConstructed<EnumDescriptorProto> {
+class EnumDescriptorProtoDefaultTypeInternal {
+public:
+ ::google::protobuf::internal::ExplicitlyConstructed<EnumDescriptorProto>
+     _instance;
 } _EnumDescriptorProto_default_instance_;
-class EnumValueDescriptorProtoDefaultTypeInternal : public ::google::protobuf::internal::ExplicitlyConstructed<EnumValueDescriptorProto> {
+class EnumValueDescriptorProtoDefaultTypeInternal {
+public:
+ ::google::protobuf::internal::ExplicitlyConstructed<EnumValueDescriptorProto>
+     _instance;
 } _EnumValueDescriptorProto_default_instance_;
-class ServiceDescriptorProtoDefaultTypeInternal : public ::google::protobuf::internal::ExplicitlyConstructed<ServiceDescriptorProto> {
+class ServiceDescriptorProtoDefaultTypeInternal {
+public:
+ ::google::protobuf::internal::ExplicitlyConstructed<ServiceDescriptorProto>
+     _instance;
 } _ServiceDescriptorProto_default_instance_;
-class MethodDescriptorProtoDefaultTypeInternal : public ::google::protobuf::internal::ExplicitlyConstructed<MethodDescriptorProto> {
+class MethodDescriptorProtoDefaultTypeInternal {
+public:
+ ::google::protobuf::internal::ExplicitlyConstructed<MethodDescriptorProto>
+     _instance;
 } _MethodDescriptorProto_default_instance_;
-class FileOptionsDefaultTypeInternal : public ::google::protobuf::internal::ExplicitlyConstructed<FileOptions> {
+class FileOptionsDefaultTypeInternal {
+public:
+ ::google::protobuf::internal::ExplicitlyConstructed<FileOptions>
+     _instance;
 } _FileOptions_default_instance_;
-class MessageOptionsDefaultTypeInternal : public ::google::protobuf::internal::ExplicitlyConstructed<MessageOptions> {
+class MessageOptionsDefaultTypeInternal {
+public:
+ ::google::protobuf::internal::ExplicitlyConstructed<MessageOptions>
+     _instance;
 } _MessageOptions_default_instance_;
-class FieldOptionsDefaultTypeInternal : public ::google::protobuf::internal::ExplicitlyConstructed<FieldOptions> {
+class FieldOptionsDefaultTypeInternal {
+public:
+ ::google::protobuf::internal::ExplicitlyConstructed<FieldOptions>
+     _instance;
 } _FieldOptions_default_instance_;
-class OneofOptionsDefaultTypeInternal : public ::google::protobuf::internal::ExplicitlyConstructed<OneofOptions> {
+class OneofOptionsDefaultTypeInternal {
+public:
+ ::google::protobuf::internal::ExplicitlyConstructed<OneofOptions>
+     _instance;
 } _OneofOptions_default_instance_;
-class EnumOptionsDefaultTypeInternal : public ::google::protobuf::internal::ExplicitlyConstructed<EnumOptions> {
+class EnumOptionsDefaultTypeInternal {
+public:
+ ::google::protobuf::internal::ExplicitlyConstructed<EnumOptions>
+     _instance;
 } _EnumOptions_default_instance_;
-class EnumValueOptionsDefaultTypeInternal : public ::google::protobuf::internal::ExplicitlyConstructed<EnumValueOptions> {
+class EnumValueOptionsDefaultTypeInternal {
+public:
+ ::google::protobuf::internal::ExplicitlyConstructed<EnumValueOptions>
+     _instance;
 } _EnumValueOptions_default_instance_;
-class ServiceOptionsDefaultTypeInternal : public ::google::protobuf::internal::ExplicitlyConstructed<ServiceOptions> {
+class ServiceOptionsDefaultTypeInternal {
+public:
+ ::google::protobuf::internal::ExplicitlyConstructed<ServiceOptions>
+     _instance;
 } _ServiceOptions_default_instance_;
-class MethodOptionsDefaultTypeInternal : public ::google::protobuf::internal::ExplicitlyConstructed<MethodOptions> {
+class MethodOptionsDefaultTypeInternal {
+public:
+ ::google::protobuf::internal::ExplicitlyConstructed<MethodOptions>
+     _instance;
 } _MethodOptions_default_instance_;
-class UninterpretedOption_NamePartDefaultTypeInternal : public ::google::protobuf::internal::ExplicitlyConstructed<UninterpretedOption_NamePart> {
+class UninterpretedOption_NamePartDefaultTypeInternal {
+public:
+ ::google::protobuf::internal::ExplicitlyConstructed<UninterpretedOption_NamePart>
+     _instance;
 } _UninterpretedOption_NamePart_default_instance_;
-class UninterpretedOptionDefaultTypeInternal : public ::google::protobuf::internal::ExplicitlyConstructed<UninterpretedOption> {
+class UninterpretedOptionDefaultTypeInternal {
+public:
+ ::google::protobuf::internal::ExplicitlyConstructed<UninterpretedOption>
+     _instance;
 } _UninterpretedOption_default_instance_;
-class SourceCodeInfo_LocationDefaultTypeInternal : public ::google::protobuf::internal::ExplicitlyConstructed<SourceCodeInfo_Location> {
+class SourceCodeInfo_LocationDefaultTypeInternal {
+public:
+ ::google::protobuf::internal::ExplicitlyConstructed<SourceCodeInfo_Location>
+     _instance;
 } _SourceCodeInfo_Location_default_instance_;
-class SourceCodeInfoDefaultTypeInternal : public ::google::protobuf::internal::ExplicitlyConstructed<SourceCodeInfo> {
+class SourceCodeInfoDefaultTypeInternal {
+public:
+ ::google::protobuf::internal::ExplicitlyConstructed<SourceCodeInfo>
+     _instance;
 } _SourceCodeInfo_default_instance_;
-class GeneratedCodeInfo_AnnotationDefaultTypeInternal : public ::google::protobuf::internal::ExplicitlyConstructed<GeneratedCodeInfo_Annotation> {
+class GeneratedCodeInfo_AnnotationDefaultTypeInternal {
+public:
+ ::google::protobuf::internal::ExplicitlyConstructed<GeneratedCodeInfo_Annotation>
+     _instance;
 } _GeneratedCodeInfo_Annotation_default_instance_;
-class GeneratedCodeInfoDefaultTypeInternal : public ::google::protobuf::internal::ExplicitlyConstructed<GeneratedCodeInfo> {
+class GeneratedCodeInfoDefaultTypeInternal {
+public:
+ ::google::protobuf::internal::ExplicitlyConstructed<GeneratedCodeInfo>
+     _instance;
 } _GeneratedCodeInfo_default_instance_;
 
 namespace protobuf_google_2fprotobuf_2fdescriptor_2eproto {
@@ -573,77 +651,77 @@ void TableStruct::InitDefaultsImpl() {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
 
   ::google::protobuf::internal::InitProtobufDefaults();
-  _FileDescriptorSet_default_instance_.DefaultConstruct();
+  _FileDescriptorSet_default_instance_._instance.DefaultConstruct();
   ::google::protobuf::internal::OnShutdownDestroyMessage(
-      &_FileDescriptorSet_default_instance_);_FileDescriptorProto_default_instance_.DefaultConstruct();
+      &_FileDescriptorSet_default_instance_);_FileDescriptorProto_default_instance_._instance.DefaultConstruct();
   ::google::protobuf::internal::OnShutdownDestroyMessage(
-      &_FileDescriptorProto_default_instance_);_DescriptorProto_ExtensionRange_default_instance_.DefaultConstruct();
+      &_FileDescriptorProto_default_instance_);_DescriptorProto_ExtensionRange_default_instance_._instance.DefaultConstruct();
   ::google::protobuf::internal::OnShutdownDestroyMessage(
-      &_DescriptorProto_ExtensionRange_default_instance_);_DescriptorProto_ReservedRange_default_instance_.DefaultConstruct();
+      &_DescriptorProto_ExtensionRange_default_instance_);_DescriptorProto_ReservedRange_default_instance_._instance.DefaultConstruct();
   ::google::protobuf::internal::OnShutdownDestroyMessage(
-      &_DescriptorProto_ReservedRange_default_instance_);_DescriptorProto_default_instance_.DefaultConstruct();
+      &_DescriptorProto_ReservedRange_default_instance_);_DescriptorProto_default_instance_._instance.DefaultConstruct();
   ::google::protobuf::internal::OnShutdownDestroyMessage(
-      &_DescriptorProto_default_instance_);_ExtensionRangeOptions_default_instance_.DefaultConstruct();
+      &_DescriptorProto_default_instance_);_ExtensionRangeOptions_default_instance_._instance.DefaultConstruct();
   ::google::protobuf::internal::OnShutdownDestroyMessage(
-      &_ExtensionRangeOptions_default_instance_);_FieldDescriptorProto_default_instance_.DefaultConstruct();
+      &_ExtensionRangeOptions_default_instance_);_FieldDescriptorProto_default_instance_._instance.DefaultConstruct();
   ::google::protobuf::internal::OnShutdownDestroyMessage(
-      &_FieldDescriptorProto_default_instance_);_OneofDescriptorProto_default_instance_.DefaultConstruct();
+      &_FieldDescriptorProto_default_instance_);_OneofDescriptorProto_default_instance_._instance.DefaultConstruct();
   ::google::protobuf::internal::OnShutdownDestroyMessage(
-      &_OneofDescriptorProto_default_instance_);_EnumDescriptorProto_default_instance_.DefaultConstruct();
+      &_OneofDescriptorProto_default_instance_);_EnumDescriptorProto_default_instance_._instance.DefaultConstruct();
   ::google::protobuf::internal::OnShutdownDestroyMessage(
-      &_EnumDescriptorProto_default_instance_);_EnumValueDescriptorProto_default_instance_.DefaultConstruct();
+      &_EnumDescriptorProto_default_instance_);_EnumValueDescriptorProto_default_instance_._instance.DefaultConstruct();
   ::google::protobuf::internal::OnShutdownDestroyMessage(
-      &_EnumValueDescriptorProto_default_instance_);_ServiceDescriptorProto_default_instance_.DefaultConstruct();
+      &_EnumValueDescriptorProto_default_instance_);_ServiceDescriptorProto_default_instance_._instance.DefaultConstruct();
   ::google::protobuf::internal::OnShutdownDestroyMessage(
-      &_ServiceDescriptorProto_default_instance_);_MethodDescriptorProto_default_instance_.DefaultConstruct();
+      &_ServiceDescriptorProto_default_instance_);_MethodDescriptorProto_default_instance_._instance.DefaultConstruct();
   ::google::protobuf::internal::OnShutdownDestroyMessage(
-      &_MethodDescriptorProto_default_instance_);_FileOptions_default_instance_.DefaultConstruct();
+      &_MethodDescriptorProto_default_instance_);_FileOptions_default_instance_._instance.DefaultConstruct();
   ::google::protobuf::internal::OnShutdownDestroyMessage(
-      &_FileOptions_default_instance_);_MessageOptions_default_instance_.DefaultConstruct();
+      &_FileOptions_default_instance_);_MessageOptions_default_instance_._instance.DefaultConstruct();
   ::google::protobuf::internal::OnShutdownDestroyMessage(
-      &_MessageOptions_default_instance_);_FieldOptions_default_instance_.DefaultConstruct();
+      &_MessageOptions_default_instance_);_FieldOptions_default_instance_._instance.DefaultConstruct();
   ::google::protobuf::internal::OnShutdownDestroyMessage(
-      &_FieldOptions_default_instance_);_OneofOptions_default_instance_.DefaultConstruct();
+      &_FieldOptions_default_instance_);_OneofOptions_default_instance_._instance.DefaultConstruct();
   ::google::protobuf::internal::OnShutdownDestroyMessage(
-      &_OneofOptions_default_instance_);_EnumOptions_default_instance_.DefaultConstruct();
+      &_OneofOptions_default_instance_);_EnumOptions_default_instance_._instance.DefaultConstruct();
   ::google::protobuf::internal::OnShutdownDestroyMessage(
-      &_EnumOptions_default_instance_);_EnumValueOptions_default_instance_.DefaultConstruct();
+      &_EnumOptions_default_instance_);_EnumValueOptions_default_instance_._instance.DefaultConstruct();
   ::google::protobuf::internal::OnShutdownDestroyMessage(
-      &_EnumValueOptions_default_instance_);_ServiceOptions_default_instance_.DefaultConstruct();
+      &_EnumValueOptions_default_instance_);_ServiceOptions_default_instance_._instance.DefaultConstruct();
   ::google::protobuf::internal::OnShutdownDestroyMessage(
-      &_ServiceOptions_default_instance_);_MethodOptions_default_instance_.DefaultConstruct();
+      &_ServiceOptions_default_instance_);_MethodOptions_default_instance_._instance.DefaultConstruct();
   ::google::protobuf::internal::OnShutdownDestroyMessage(
-      &_MethodOptions_default_instance_);_UninterpretedOption_NamePart_default_instance_.DefaultConstruct();
+      &_MethodOptions_default_instance_);_UninterpretedOption_NamePart_default_instance_._instance.DefaultConstruct();
   ::google::protobuf::internal::OnShutdownDestroyMessage(
-      &_UninterpretedOption_NamePart_default_instance_);_UninterpretedOption_default_instance_.DefaultConstruct();
+      &_UninterpretedOption_NamePart_default_instance_);_UninterpretedOption_default_instance_._instance.DefaultConstruct();
   ::google::protobuf::internal::OnShutdownDestroyMessage(
-      &_UninterpretedOption_default_instance_);_SourceCodeInfo_Location_default_instance_.DefaultConstruct();
+      &_UninterpretedOption_default_instance_);_SourceCodeInfo_Location_default_instance_._instance.DefaultConstruct();
   ::google::protobuf::internal::OnShutdownDestroyMessage(
-      &_SourceCodeInfo_Location_default_instance_);_SourceCodeInfo_default_instance_.DefaultConstruct();
+      &_SourceCodeInfo_Location_default_instance_);_SourceCodeInfo_default_instance_._instance.DefaultConstruct();
   ::google::protobuf::internal::OnShutdownDestroyMessage(
-      &_SourceCodeInfo_default_instance_);_GeneratedCodeInfo_Annotation_default_instance_.DefaultConstruct();
+      &_SourceCodeInfo_default_instance_);_GeneratedCodeInfo_Annotation_default_instance_._instance.DefaultConstruct();
   ::google::protobuf::internal::OnShutdownDestroyMessage(
-      &_GeneratedCodeInfo_Annotation_default_instance_);_GeneratedCodeInfo_default_instance_.DefaultConstruct();
+      &_GeneratedCodeInfo_Annotation_default_instance_);_GeneratedCodeInfo_default_instance_._instance.DefaultConstruct();
   ::google::protobuf::internal::OnShutdownDestroyMessage(
-      &_GeneratedCodeInfo_default_instance_);_FileDescriptorProto_default_instance_.get_mutable()->options_ = const_cast< ::google::protobuf::FileOptions*>(
+      &_GeneratedCodeInfo_default_instance_);_FileDescriptorProto_default_instance_._instance.get_mutable()->options_ = const_cast< ::google::protobuf::FileOptions*>(
       ::google::protobuf::FileOptions::internal_default_instance());
-  _FileDescriptorProto_default_instance_.get_mutable()->source_code_info_ = const_cast< ::google::protobuf::SourceCodeInfo*>(
+  _FileDescriptorProto_default_instance_._instance.get_mutable()->source_code_info_ = const_cast< ::google::protobuf::SourceCodeInfo*>(
       ::google::protobuf::SourceCodeInfo::internal_default_instance());
-  _DescriptorProto_ExtensionRange_default_instance_.get_mutable()->options_ = const_cast< ::google::protobuf::ExtensionRangeOptions*>(
+  _DescriptorProto_ExtensionRange_default_instance_._instance.get_mutable()->options_ = const_cast< ::google::protobuf::ExtensionRangeOptions*>(
       ::google::protobuf::ExtensionRangeOptions::internal_default_instance());
-  _DescriptorProto_default_instance_.get_mutable()->options_ = const_cast< ::google::protobuf::MessageOptions*>(
+  _DescriptorProto_default_instance_._instance.get_mutable()->options_ = const_cast< ::google::protobuf::MessageOptions*>(
       ::google::protobuf::MessageOptions::internal_default_instance());
-  _FieldDescriptorProto_default_instance_.get_mutable()->options_ = const_cast< ::google::protobuf::FieldOptions*>(
+  _FieldDescriptorProto_default_instance_._instance.get_mutable()->options_ = const_cast< ::google::protobuf::FieldOptions*>(
       ::google::protobuf::FieldOptions::internal_default_instance());
-  _OneofDescriptorProto_default_instance_.get_mutable()->options_ = const_cast< ::google::protobuf::OneofOptions*>(
+  _OneofDescriptorProto_default_instance_._instance.get_mutable()->options_ = const_cast< ::google::protobuf::OneofOptions*>(
       ::google::protobuf::OneofOptions::internal_default_instance());
-  _EnumDescriptorProto_default_instance_.get_mutable()->options_ = const_cast< ::google::protobuf::EnumOptions*>(
+  _EnumDescriptorProto_default_instance_._instance.get_mutable()->options_ = const_cast< ::google::protobuf::EnumOptions*>(
       ::google::protobuf::EnumOptions::internal_default_instance());
-  _EnumValueDescriptorProto_default_instance_.get_mutable()->options_ = const_cast< ::google::protobuf::EnumValueOptions*>(
+  _EnumValueDescriptorProto_default_instance_._instance.get_mutable()->options_ = const_cast< ::google::protobuf::EnumValueOptions*>(
       ::google::protobuf::EnumValueOptions::internal_default_instance());
-  _ServiceDescriptorProto_default_instance_.get_mutable()->options_ = const_cast< ::google::protobuf::ServiceOptions*>(
+  _ServiceDescriptorProto_default_instance_._instance.get_mutable()->options_ = const_cast< ::google::protobuf::ServiceOptions*>(
       ::google::protobuf::ServiceOptions::internal_default_instance());
-  _MethodDescriptorProto_default_instance_.get_mutable()->options_ = const_cast< ::google::protobuf::MethodOptions*>(
+  _MethodDescriptorProto_default_instance_._instance.get_mutable()->options_ = const_cast< ::google::protobuf::MethodOptions*>(
       ::google::protobuf::MethodOptions::internal_default_instance());
 }
 
