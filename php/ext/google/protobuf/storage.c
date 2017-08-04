@@ -616,7 +616,7 @@ MessageLayout* create_layout(const upb_msgdef* msgdef) {
     EG(scope) = desc->klass;
 #if PHP_MAJOR_VERSION < 7
     zval member;
-    ZVAL_STRING(&member, fieldname, strlen(fieldname), 1);
+    ZVAL_STRINGL(&member, fieldname, strlen(fieldname), 0);
     zend_property_info* property_info = zend_get_property_info(
         desc->klass, &member, true);
 #else
@@ -666,7 +666,7 @@ MessageLayout* create_layout(const upb_msgdef* msgdef) {
       EG(scope) = desc->klass;
 #if PHP_MAJOR_VERSION < 7
       zval member;
-      ZVAL_STRING(&member, oneofname, strlen(oneofname), 1);
+      ZVAL_STRINGL(&member, oneofname, strlen(oneofname), 0);
       zend_property_info* property_info = zend_get_property_info(
           desc->klass, &member, true);
 #else
