@@ -2,13 +2,22 @@
 
 namespace Google\Protobuf\Internal;
 
+use Google\Protobuf\EnumValueDescriptor;
+
 class EnumDescriptor
 {
+    use HasPublicDescriptorTrait;
 
     private $klass;
     private $full_name;
     private $value;
     private $name_to_value;
+    private $value_descriptor = [];
+
+    public function __construct()
+    {
+        $this->public_desc = new \Google\Protobuf\EnumDescriptor($this);
+    }
 
     public function setFullName($full_name)
     {
@@ -24,6 +33,7 @@ class EnumDescriptor
     {
         $this->value[$number] = $value;
         $this->name_to_value[$value->getName()] = $value;
+        $this->value_descriptor[] = new EnumValueDescriptor($value->getName(), $number);
     }
 
     public function getValueByNumber($number)
@@ -34,6 +44,16 @@ class EnumDescriptor
     public function getValueByName($name)
     {
         return $this->name_to_value[$name];
+    }
+
+    public function getValueDescriptorByIndex($index)
+    {
+        return $this->value_descriptor[$index];
+    }
+
+    public function getValueCount()
+    {
+        return count($this->value);
     }
 
     public function setClass($klass)
