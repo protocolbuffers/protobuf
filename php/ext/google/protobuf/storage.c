@@ -612,8 +612,15 @@ MessageLayout* create_layout(const upb_msgdef* msgdef) {
         MESSAGE_FIELD_NO_CASE;
 
     const char* fieldname = upb_fielddef_name(field);
+
+#if PHP_MAJOR_VERSION < 7 || (PHP_MAJOR_VERSION == 7 && PHP_MINOR_VERSION == 0)
     zend_class_entry* old_scope = EG(scope);
     EG(scope) = desc->klass;
+#else
+    zend_class_entry* old_scope = EG(fake_scope);
+    EG(fake_scope) = desc->klass;
+#endif
+
 #if PHP_MAJOR_VERSION < 7
     zval member;
     ZVAL_STRINGL(&member, fieldname, strlen(fieldname), 0);
@@ -625,7 +632,12 @@ MessageLayout* create_layout(const upb_msgdef* msgdef) {
         desc->klass, member, true);
     zend_string_release(member);
 #endif
+
+#if PHP_MAJOR_VERSION < 7 || (PHP_MAJOR_VERSION == 7 && PHP_MINOR_VERSION == 0)
     EG(scope) = old_scope;
+#else
+    EG(fake_scope) = old_scope;
+#endif
 
     layout->fields[upb_fielddef_index(field)].cache_index =
         property_info->offset;
@@ -662,8 +674,14 @@ MessageLayout* create_layout(const upb_msgdef* msgdef) {
       const upb_fielddef* field = upb_oneof_iter_field(&fit);
       layout->fields[upb_fielddef_index(field)].offset = off;
 
+#if PHP_MAJOR_VERSION < 7 || (PHP_MAJOR_VERSION == 7 && PHP_MINOR_VERSION == 0)
       zend_class_entry* old_scope = EG(scope);
       EG(scope) = desc->klass;
+#else
+      zend_class_entry* old_scope = EG(fake_scope);
+      EG(fake_scope) = desc->klass;
+#endif
+
 #if PHP_MAJOR_VERSION < 7
       zval member;
       ZVAL_STRINGL(&member, oneofname, strlen(oneofname), 0);
@@ -675,7 +693,13 @@ MessageLayout* create_layout(const upb_msgdef* msgdef) {
           desc->klass, member, true);
       zend_string_release(member);
 #endif
+
+#if PHP_MAJOR_VERSION < 7 || (PHP_MAJOR_VERSION == 7 && PHP_MINOR_VERSION == 0)
       EG(scope) = old_scope;
+#else
+      EG(fake_scope) = old_scope;
+#endif
+
       layout->fields[upb_fielddef_index(field)].cache_index =
           property_info->offset;
     }
