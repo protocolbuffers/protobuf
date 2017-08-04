@@ -16,8 +16,8 @@
   },
   "autoload": {
     "psr-4": {
-      "Google\\Protobuf\\Internal\\": "php/src/Google/Protobuf/Internal",
-      "GPBMetadata\\Google\\Protobuf\\Internal\\": "php/src/GPBMetadata/Google/Protobuf/Internal"
+      "Google\\Protobuf\\": "php/src/Google/Protobuf",
+      "GPBMetadata\\Google\\Protobuf\\": "php/src/GPBMetadata/Google/Protobuf"
     }
   }
 }

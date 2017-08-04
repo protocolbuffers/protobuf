@@ -38,7 +38,7 @@ use Google\Protobuf\Internal\MapField;
 
 class GPBUtil
 {
-    public function divideInt64ToInt32($value, &$high, &$low, $trim = false)
+    public static function divideInt64ToInt32($value, &$high, &$low, $trim = false)
     {
         $isNeg = (bccomp($value, 0) < 0);
         if ($isNeg) {

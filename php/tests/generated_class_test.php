@@ -13,6 +13,7 @@ use Foo\TestIncludeNamespaceMessage;
 use Foo\TestIncludePrefixMessage;
 use Foo\TestMessage;
 use Foo\TestMessage_Sub;
+use Foo\TestReverseFieldOrder;
 use Php\Test\TestNamespace;
 
 class GeneratedClassTest extends TestBase
@@ -701,5 +702,17 @@ class GeneratedClassTest extends TestBase
             ->setOptionalUInt32(2);
         $this->assertSame(1, $m->getOptionalInt32());
         $this->assertSame(2, $m->getOptionalUInt32());
+    }
+
+    #########################################################
+    # Test Reverse Field Order.
+    #########################################################
+
+    public function testReverseFieldOrder()
+    {
+        $m = new TestReverseFieldOrder();
+        $m->setB("abc");
+        $this->assertSame("abc", $m->getB());
+        $this->assertNotSame("abc", $m->getA());
     }
 }
