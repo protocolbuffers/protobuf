@@ -583,6 +583,7 @@ MessageLayout* create_layout(const upb_msgdef* msgdef) {
   upb_msg_oneof_iter oit;
   size_t off = 0;
   int i = 0;
+  TSRMLS_FETCH();
   Descriptor* desc = UNBOX_HASHTABLE_VALUE(Descriptor, get_def_obj(msgdef));
 
   layout->fields = ALLOC_N(MessageField, nfields);
@@ -624,12 +625,12 @@ MessageLayout* create_layout(const upb_msgdef* msgdef) {
 #if PHP_MAJOR_VERSION < 7
     zval member;
     ZVAL_STRINGL(&member, fieldname, strlen(fieldname), 0);
-    zend_property_info* property_info = zend_get_property_info(
-        desc->klass, &member, true);
+    zend_property_info* property_info =
+        zend_get_property_info(desc->klass, &member, true TSRMLS_CC);
 #else
     zend_string* member = zend_string_init(fieldname, strlen(fieldname), 1);
-    zend_property_info* property_info = zend_get_property_info(
-        desc->klass, member, true);
+    zend_property_info* property_info =
+        zend_get_property_info(desc->klass, member, true);
     zend_string_release(member);
 #endif
 
@@ -685,12 +686,12 @@ MessageLayout* create_layout(const upb_msgdef* msgdef) {
 #if PHP_MAJOR_VERSION < 7
       zval member;
       ZVAL_STRINGL(&member, oneofname, strlen(oneofname), 0);
-      zend_property_info* property_info = zend_get_property_info(
-          desc->klass, &member, true);
+      zend_property_info* property_info =
+          zend_get_property_info(desc->klass, &member, true TSRMLS_CC);
 #else
       zend_string* member = zend_string_init(oneofname, strlen(oneofname), 1);
-      zend_property_info* property_info = zend_get_property_info(
-          desc->klass, member, true);
+      zend_property_info* property_info =
+          zend_get_property_info(desc->klass, member, true);
       zend_string_release(member);
 #endif
 
