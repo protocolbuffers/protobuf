@@ -151,7 +151,7 @@
 
 #define PHP_PROTO_GLOBAL_UNINITIALIZED_ZVAL EG(uninitialized_zval_ptr)
 
-#define OBJ_PROP(PROPERTIES, OFFSET) (PROPERTIES)->properties_table[OFFSET]
+#define OBJ_PROP(OBJECT, OFFSET) &((OBJECT)->properties_table[OFFSET])
 
 #define php_proto_zval_ptr_dtor(zval_ptr) \
   zval_ptr_dtor(&(zval_ptr))
@@ -644,7 +644,7 @@ PHP_PROTO_WRAP_OBJECT_END
 
 MessageLayout* create_layout(const upb_msgdef* msgdef);
 void layout_init(MessageLayout* layout, void* storage,
-                 CACHED_VALUE* properties_table PHP_PROTO_TSRMLS_DC);
+                 zend_object* object PHP_PROTO_TSRMLS_DC);
 zval* layout_get(MessageLayout* layout, const void* storage,
                  const upb_fielddef* field, CACHED_VALUE* cache TSRMLS_DC);
 void layout_set(MessageLayout* layout, MessageHeader* header,
