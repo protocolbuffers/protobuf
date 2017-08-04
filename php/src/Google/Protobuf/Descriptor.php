@@ -1,7 +1,7 @@
 <?php
 
 // Protocol Buffers - Google's data interchange format
-// Copyright 2008 Google Inc.  All rights reserved.
+// Copyright 2017 Google Inc.  All rights reserved.
 // https://developers.google.com/protocol-buffers/
 //
 // Redistribution and use in source and binary forms, with or without
@@ -30,34 +30,71 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-namespace Google\Protobuf\Internal;
+namespace Google\Protobuf;
 
-use Google\Protobuf\Internal\EnumDescriptor;
-use Google\Protobuf\EnumValueDescriptor;
+use Google\Protobuf\Internal\GetPublicDescriptorTrait;
 
-class EnumBuilderContext
+class Descriptor
 {
+    use GetPublicDescriptorTrait;
 
-    private $descriptor;
-    private $pool;
+    private $internal_desc;
 
-    public function __construct($full_name, $klass, $pool)
+    /**
+     * @internal
+     */
+    public function __construct($internal_desc)
     {
-        $this->descriptor = new EnumDescriptor();
-        $this->descriptor->setFullName($full_name);
-        $this->descriptor->setClass($klass);
-        $this->pool = $pool;
+        $this->internal_desc = $internal_desc;
     }
 
-    public function value($name, $number)
+    /**
+     * @return string Full protobuf message name
+     */
+    public function getFullName()
     {
-        $value = new EnumValueDescriptor($name, $number);
-        $this->descriptor->addValue($number, $value);
-        return $this;
+        return trim($this->internal_desc->getFullName(), ".");
     }
 
-    public function finalizeToPool()
+    /**
+     * @return string PHP class name
+     */
+    public function getClass()
     {
-        $this->pool->addEnumDescriptor($this->descriptor);
+        return $this->internal_desc->getClass();
+    }
+
+    /**
+     * @param int $index Must be >= 0 and < getFieldCount()
+     * @return FieldDescriptor
+     */
+    public function getField($index)
+    {
+        return $this->getPublicDescriptor($this->internal_desc->getFieldByIndex($index));
+    }
+
+    /**
+     * @return int Number of fields in message
+     */
+    public function getFieldCount()
+    {
+        return count($this->internal_desc->getField());
+    }
+
+    /**
+     * @param int $index Must be >= 0 and < getOneofDeclCount()
+     * @return OneofDescriptor
+     */
+    public function getOneofDecl($index)
+    {
+        return $this->getPublicDescriptor($this->internal_desc->getOneofDecl()[$index]);
+    }
+
+    /**
+     * @return int Number of oneofs in message
+     */
+    public function getOneofDeclCount()
+    {
+        return count($this->internal_desc->getOneofDecl());
     }
 }

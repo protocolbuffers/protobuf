@@ -1,7 +1,7 @@
 <?php
 
 // Protocol Buffers - Google's data interchange format
-// Copyright 2008 Google Inc.  All rights reserved.
+// Copyright 2017 Google Inc.  All rights reserved.
 // https://developers.google.com/protocol-buffers/
 //
 // Redistribution and use in source and binary forms, with or without
@@ -32,32 +32,10 @@
 
 namespace Google\Protobuf\Internal;
 
-use Google\Protobuf\Internal\EnumDescriptor;
-use Google\Protobuf\EnumValueDescriptor;
-
-class EnumBuilderContext
+trait GetPublicDescriptorTrait
 {
-
-    private $descriptor;
-    private $pool;
-
-    public function __construct($full_name, $klass, $pool)
+    private function getPublicDescriptor($desc)
     {
-        $this->descriptor = new EnumDescriptor();
-        $this->descriptor->setFullName($full_name);
-        $this->descriptor->setClass($klass);
-        $this->pool = $pool;
-    }
-
-    public function value($name, $number)
-    {
-        $value = new EnumValueDescriptor($name, $number);
-        $this->descriptor->addValue($number, $value);
-        return $this;
-    }
-
-    public function finalizeToPool()
-    {
-        $this->pool->addEnumDescriptor($this->descriptor);
+        return is_null($desc) ? null : $desc->getPublicDescriptor();
     }
 }

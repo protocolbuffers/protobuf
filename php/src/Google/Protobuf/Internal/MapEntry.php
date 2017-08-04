@@ -39,7 +39,7 @@ class MapEntry extends Message
     public $key;
     public $value;
 
-    public function setKey(&$key) {
+    public function setKey($key) {
       $this->key = $key;
     }
 
@@ -47,7 +47,7 @@ class MapEntry extends Message
       return $this->key;
     }
 
-    public function setValue(&$value) {
+    public function setValue($value) {
       $this->value = $value;
     }
 
