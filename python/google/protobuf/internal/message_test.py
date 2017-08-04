@@ -1832,8 +1832,9 @@ class PackedFieldTest(BaseTestCase):
     self.assertEqual(golden_data, message.SerializeToString())
 
 
-@unittest.skipIf(api_implementation.Type() != 'cpp',
-                 'explicit tests of the C++ implementation')
+@unittest.skipIf(api_implementation.Type() != 'cpp' or
+                 sys.version_info < (2, 7),
+                 'explicit tests of the C++ implementation for PY27 and above')
 class OversizeProtosTest(BaseTestCase):
 
   @classmethod
