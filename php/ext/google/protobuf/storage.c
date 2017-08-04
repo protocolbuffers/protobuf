@@ -627,7 +627,6 @@ MessageLayout* create_layout(const upb_msgdef* msgdef) {
 #endif
     EG(scope) = old_scope;
 
-    // layout->fields[upb_fielddef_index(field)].cache_index = i++;
     layout->fields[upb_fielddef_index(field)].cache_index =
         property_info->offset;
     off += field_size;
@@ -679,7 +678,6 @@ MessageLayout* create_layout(const upb_msgdef* msgdef) {
       EG(scope) = old_scope;
       layout->fields[upb_fielddef_index(field)].cache_index =
           property_info->offset;
-      // layout->fields[upb_fielddef_index(field)].cache_index = i;
     }
     i++;
     off += field_size;
@@ -719,7 +717,6 @@ void free_layout(MessageLayout* layout) {
 
 void layout_init(MessageLayout* layout, void* storage,
                  zend_object* object PHP_PROTO_TSRMLS_DC) {
-  // CACHED_VALUE* properties_table PHP_PROTO_TSRMLS_DC) {
   int i;
   upb_msg_field_iter it;
   for (upb_msg_field_begin(&it, layout->msgdef), i = 0; !upb_msg_field_done(&it);
@@ -729,22 +726,6 @@ void layout_init(MessageLayout* layout, void* storage,
     uint32_t* oneof_case = slot_oneof_case(layout, storage, field);
     int cache_index = slot_property_cache(layout, storage, field);
     CACHED_VALUE* property_ptr = OBJ_PROP(object, cache_index);
-    // CACHED_VALUE* property_ptr = &properties_table[cache_index];
-
-//     // Clean up initial value by generated code. In the generated code of
-//     // previous versions, each php field is given an initial value. However, the
-//     // order to initialize these fields may not be consistent with the order of
-//     // upb fields.
-//     if (Z_TYPE_P(CACHED_PTR_TO_ZVAL_PTR(property_ptr)) == IS_STRING) {
-// #if PHP_MAJOR_VERSION < 7
-//       if (!IS_INTERNED(Z_STRVAL_PP(property_ptr))) {
-//         FREE(Z_STRVAL_PP(property_ptr));
-//       }
-// #else
-//       zend_string_release(Z_STR_P(property_ptr));
-// #endif
-//     }
-//     ZVAL_NULL(CACHED_PTR_TO_ZVAL_PTR(property_ptr));
 
     if (upb_fielddef_containingoneof(field)) {
       memset(memory, 0, NATIVE_SLOT_MAX_SIZE);
@@ -835,7 +816,6 @@ void layout_set(MessageLayout* layout, MessageHeader* header,
                 .cache_index;
         DEREF(memory, CACHED_VALUE*) =
             OBJ_PROP(&header->std, property_cache_index);
-        // &(header->std.properties_table)[property_cache_index];
         memory = DEREF(memory, CACHED_VALUE*);
         break;
       }
@@ -1003,7 +983,6 @@ void layout_merge(MessageLayout* layout, MessageHeader* from,
               layout->fields[upb_fielddef_index(field)].cache_index;
           DEREF(to_memory, CACHED_VALUE*) =
               OBJ_PROP(&to->std, property_cache_index);
-          // &(to->std.properties_table)[property_cache_index];
           break;
         }
         default:

@@ -223,7 +223,6 @@ void custom_data_init(const zend_class_entry* ce,
   intern->descriptor = desc;
   layout_init(desc->layout, message_data(intern),
               &intern->std PHP_PROTO_TSRMLS_CC);
-  // intern->std.properties_table PHP_PROTO_TSRMLS_CC);
 }
 
 void build_class_from_descriptor(
@@ -267,7 +266,6 @@ PHP_METHOD(Message, clear) {
 
   object_properties_init(&msg->std, ce);
   layout_init(desc->layout, message_data(msg), &msg->std TSRMLS_CC);
-  // msg->std.properties_table TSRMLS_CC);
 }
 
 PHP_METHOD(Message, mergeFrom) {

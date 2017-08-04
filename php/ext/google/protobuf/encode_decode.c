@@ -717,7 +717,6 @@ static void *oneofbytes_handler(void *closure,
       oneofdata->oneof_case_num;
   DEREF(message_data(msg), oneofdata->ofs, CACHED_VALUE*) =
       OBJ_PROP(&msg->std, oneofdata->property_ofs);
-      // &(msg->std.properties_table)[oneofdata->property_ofs];
 
    return empty_php_string(DEREF(
        message_data(msg), oneofdata->ofs, CACHED_VALUE*));
@@ -749,7 +748,6 @@ static void* oneofsubmsg_handler(void* closure, const void* hd) {
     // Create new message.
     DEREF(message_data(msg), oneofdata->ofs, CACHED_VALUE*) =
         OBJ_PROP(&msg->std, oneofdata->property_ofs);
-    // &(msg->std.properties_table)[oneofdata->property_ofs];
     ZVAL_OBJ(CACHED_PTR_TO_ZVAL_PTR(
         DEREF(message_data(msg), oneofdata->ofs, CACHED_VALUE*)),
         subklass->create_object(subklass TSRMLS_CC));

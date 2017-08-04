@@ -645,7 +645,6 @@ PHP_PROTO_WRAP_OBJECT_END
 MessageLayout* create_layout(const upb_msgdef* msgdef);
 void layout_init(MessageLayout* layout, void* storage,
                  zend_object* object PHP_PROTO_TSRMLS_DC);
-// CACHED_VALUE* properties_table PHP_PROTO_TSRMLS_DC);
 zval* layout_get(MessageLayout* layout, const void* storage,
                  const upb_fielddef* field, CACHED_VALUE* cache TSRMLS_DC);
 void layout_set(MessageLayout* layout, MessageHeader* header,
