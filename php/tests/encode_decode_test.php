@@ -208,49 +208,49 @@ class EncodeDecodeTest extends TestBase
         $this->expectFieldsMerged($m1);
     }
 
-  public function testDecodeFieldNonExist()
-  {
-      $data = hex2bin('c80501');
-      $m = new TestMessage();
-      $m->mergeFromString($data);
-  }
+    public function testDecodeFieldNonExist()
+    {
+        $data = hex2bin('c80501');
+        $m = new TestMessage();
+        $m->mergeFromString($data);
+    }
 
-  public function testEncodeNegativeInt32()
-  {
-      $m = new TestMessage();
-      $m->setOptionalInt32(-1);
-      $data = $m->serializeToString();
-      $this->assertSame("08ffffffffffffffffff01", bin2hex($data));
-  }
+    public function testEncodeNegativeInt32()
+    {
+        $m = new TestMessage();
+        $m->setOptionalInt32(-1);
+        $data = $m->serializeToString();
+        $this->assertSame("08ffffffffffffffffff01", bin2hex($data));
+    }
 
-  public function testDecodeNegativeInt32()
-  {
-      $m = new TestMessage();
-      $this->assertEquals(0, $m->getOptionalInt32());
-      $m->mergeFromString(hex2bin("08ffffffffffffffffff01"));
-      $this->assertEquals(-1, $m->getOptionalInt32());
+    public function testDecodeNegativeInt32()
+    {
+        $m = new TestMessage();
+        $this->assertEquals(0, $m->getOptionalInt32());
+        $m->mergeFromString(hex2bin("08ffffffffffffffffff01"));
+        $this->assertEquals(-1, $m->getOptionalInt32());
 
-      $m = new TestMessage();
-      $this->assertEquals(0, $m->getOptionalInt32());
-      $m->mergeFromString(hex2bin("08ffffffff0f"));
-      $this->assertEquals(-1, $m->getOptionalInt32());
-  }
+        $m = new TestMessage();
+        $this->assertEquals(0, $m->getOptionalInt32());
+        $m->mergeFromString(hex2bin("08ffffffff0f"));
+        $this->assertEquals(-1, $m->getOptionalInt32());
+    }
 
-  public function testRandomFieldOrder()
-  {
-      $m = new TestRandomFieldOrder();
-      $data = $m->serializeToString();
-      $this->assertSame("", $data);
-  }
+    public function testRandomFieldOrder()
+    {
+        $m = new TestRandomFieldOrder();
+        $data = $m->serializeToString();
+        $this->assertSame("", $data);
+    }
 
-  /**
-   * @expectedException Exception
-   */
-  public function testDecodeInvalidInt32()
-  {
-      $m = new TestMessage();
-      $m->mergeFromString(hex2bin('08'));
-  }
+    /**
+     * @expectedException Exception
+     */
+    public function testDecodeInvalidInt32()
+    {
+        $m = new TestMessage();
+        $m->mergeFromString(hex2bin('08'));
+    }
 
     /**
      * @expectedException Exception
