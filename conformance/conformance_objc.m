@@ -31,6 +31,7 @@
 #import <Foundation/Foundation.h>
 
 #import "Conformance.pbobjc.h"
+#import "google/protobuf/TestMessagesProto2.pbobjc.h"
 #import "google/protobuf/TestMessagesProto3.pbobjc.h"
 
 static void Die(NSString *format, ...) __dead2;
@@ -63,7 +64,7 @@ static NSData *CheckedReadDataOfLength(NSFileHandle *handle, NSUInteger numBytes
 
 static ConformanceResponse *DoTest(ConformanceRequest *request) {
   ConformanceResponse *response = [ConformanceResponse message];
-  TestAllTypesProto3 *testMessage = nil;
+  GPBMessage *testMessage = nil;
 
   switch (request.payloadOneOfCase) {
     case ConformanceRequest_Payload_OneOfCase_GPBUnsetOneOfCase:
@@ -71,20 +72,19 @@ static ConformanceResponse *DoTest(ConformanceRequest *request) {
       break;
 
     case ConformanceRequest_Payload_OneOfCase_ProtobufPayload: {
-      if ([request.messageType isEqualToString:@"protobuf_test_messages.proto3.TestAllTypesProto3"]) {
-        NSError *error = nil;
-        testMessage = [TestAllTypesProto3 parseFromData:request.protobufPayload
-                                            error:&error];
-        if (!testMessage) {
-          response.parseError =
-              [NSString stringWithFormat:@"Parse error: %@", error];
-        }
-      } else if ([request.messageType isEqualToString:@"protobuf_test_messages.proto2.TestAllTypesProto2"]) {
-	response.skipped = @"ObjC doesn't support proto2";
-	break;
+      Class msgClass = nil;
+      if ([request.messageType isEqual:@"protobuf_test_messages.proto3.TestAllTypesProto3"]) {
+        msgClass = [Proto3TestAllTypesProto3 class];
+      } else if ([request.messageType isEqual:@"protobuf_test_messages.proto2.TestAllTypesProto2"]) {
+        msgClass = [TestAllTypesProto2 class];
       } else {
-	Die(@"Protobuf request doesn't have specific payload type");
-	break;
+        Die(@"Protobuf request had an unknown message_type: %@", request.messageType);
+      }
+      NSError *error = nil;
+      testMessage = [msgClass parseFromData:request.protobufPayload error:&error];
+      if (!testMessage) {
+        response.parseError =
+            [NSString stringWithFormat:@"Parse error: %@", error];
       }
       break;
     }

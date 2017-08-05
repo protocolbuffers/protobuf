@@ -78,7 +78,9 @@ message ConformanceRequest {
   // Which format should the testee serialize its message to?
   WireFormat requested_output_format = 3;
 
-  // should be set to either "proto2" or "proto3"
+  // The full name for the test message to use; for the moment, either:
+  // protobuf_test_messages.proto3.TestAllTypesProto3 or
+  // protobuf_test_messages.proto2.TestAllTypesProto2.
   string message_type = 4;
 }
 

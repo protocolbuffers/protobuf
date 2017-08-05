@@ -197,6 +197,7 @@ string ModuleAlias(const string& filename) {
   string basename = StripProto(filename);
   StripString(&basename, "-", '$');
   StripString(&basename, "/", '_');
+  StripString(&basename, ".", '_');
   return basename + "_pb";
 }
 

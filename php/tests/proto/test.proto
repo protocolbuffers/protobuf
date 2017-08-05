@@ -187,3 +187,8 @@ message TestRandomFieldOrder {
   int64 tag13 = 150;
   string tag14 = 160;
 }
+
+message TestReverseFieldOrder {
+  repeated int32 a = 2;
+  string b = 1;
+}
