@@ -2,12 +2,12 @@
 
 conformance_protoc_inputs =                                    \
   conformance.proto                                            \
-  $(top_srcdir)/src/google/protobuf/test_messages_proto3.proto 
-  
-# proto2 input files, should be separated with proto3, as we 
-# can't generate proto2 files for ruby, php and objc   
+  $(top_srcdir)/src/google/protobuf/test_messages_proto3.proto
+
+# proto2 input files, should be separated with proto3, as we
+# can't generate proto2 files for ruby, php and objc
 conformance_proto2_protoc_inputs =                             \
-  $(top_srcdir)/src/google/protobuf/test_messages_proto2.proto                            
+  $(top_srcdir)/src/google/protobuf/test_messages_proto2.proto
 
 well_known_type_protoc_inputs =                                \
   $(top_srcdir)/src/google/protobuf/any.proto                  \
@@ -86,6 +86,8 @@ other_language_protoc_outputs =                                \
   google/protobuf/struct.pb.h                                  \
   google/protobuf/struct.rb                                    \
   google/protobuf/struct_pb2.py                                \
+  google/protobuf/TestMessagesProto2.pbobjc.h                  \
+  google/protobuf/TestMessagesProto2.pbobjc.m                  \
   google/protobuf/TestMessagesProto3.pbobjc.h                  \
   google/protobuf/TestMessagesProto3.pbobjc.m                  \
   google/protobuf/test_messages_proto3.pb.cc                   \
@@ -228,7 +230,7 @@ if OBJC_CONFORMANCE_TEST
 bin_PROGRAMS += conformance-objc
 
 conformance_objc_SOURCES = conformance_objc.m ../objectivec/GPBProtocolBuffers.m
-nodist_conformance_objc_SOURCES = Conformance.pbobjc.m google/protobuf/TestMessagesProto3.pbobjc.m
+nodist_conformance_objc_SOURCES = Conformance.pbobjc.m google/protobuf/TestMessagesProto2.pbobjc.m google/protobuf/TestMessagesProto3.pbobjc.m
 # On travis, the build fails without the isysroot because whatever system
 # headers are being found don't include generics support for
 # NSArray/NSDictionary, the only guess is their image at one time had an odd
@@ -237,7 +239,7 @@ conformance_objc_CPPFLAGS = -I$(top_srcdir)/objectivec -isysroot `xcrun --sdk ma
 conformance_objc_LDFLAGS = -framework Foundation
 # Explicit dep beacuse BUILT_SOURCES are only done before a "make all/check"
 # so a direct "make test_objc" could fail if parallel enough.
-conformance_objc-conformance_objc.$(OBJEXT): Conformance.pbobjc.h google/protobuf/TestMessagesProto3.pbobjc.h
+conformance_objc-conformance_objc.$(OBJEXT): Conformance.pbobjc.h google/protobuf/TestMessagesProto2.pbobjc.h google/protobuf/TestMessagesProto3.pbobjc.h
 
 endif
 
@@ -253,7 +255,7 @@ if USE_EXTERNAL_PROTOC
 # Some implementations include pre-generated versions of well-known types.
 protoc_middleman: $(conformance_protoc_inputs) $(conformance_proto2_protoc_inputs) $(well_known_type_protoc_inputs) google-protobuf
 	$(PROTOC) -I$(srcdir) -I$(top_srcdir) --cpp_out=. --java_out=. --ruby_out=. --objc_out=. --python_out=. --php_out=. --js_out=import_style=commonjs,binary:. $(conformance_protoc_inputs)
-	$(PROTOC) -I$(srcdir) -I$(top_srcdir) --cpp_out=. --java_out=. --python_out=. --js_out=import_style=commonjs,binary:. $(conformance_proto2_protoc_inputs)
+	$(PROTOC) -I$(srcdir) -I$(top_srcdir) --cpp_out=. --java_out=. --objc_out=. --python_out=. --js_out=import_style=commonjs,binary:. $(conformance_proto2_protoc_inputs)
 	$(PROTOC) -I$(srcdir) -I$(top_srcdir) --cpp_out=. --java_out=. --ruby_out=. --python_out=. --php_out=. --js_out=import_style=commonjs,binary:google-protobuf $(well_known_type_protoc_inputs)
 	## $(PROTOC) -I$(srcdir) -I$(top_srcdir) --java_out=lite:lite $(conformance_protoc_inputs) $(well_known_type_protoc_inputs)
 	touch protoc_middleman
@@ -265,7 +267,7 @@ else
 # building out-of-tree.
 protoc_middleman: $(top_srcdir)/src/protoc$(EXEEXT) $(conformance_protoc_inputs) $(conformance_proto2_protoc_inputs) $(well_known_type_protoc_inputs) google-protobuf
 	oldpwd=`pwd` && ( cd $(srcdir) && $$oldpwd/../src/protoc$(EXEEXT) -I. -I$(top_srcdir)/src --cpp_out=$$oldpwd --java_out=$$oldpwd --ruby_out=$$oldpwd --objc_out=$$oldpwd --python_out=$$oldpwd --php_out=$$oldpwd --js_out=import_style=commonjs,binary:$$oldpwd $(conformance_protoc_inputs) )
-	oldpwd=`pwd` && ( cd $(srcdir) && $$oldpwd/../src/protoc$(EXEEXT) -I. -I$(top_srcdir)/src --cpp_out=$$oldpwd --java_out=$$oldpwd --python_out=$$oldpwd --js_out=import_style=commonjs,binary:$$oldpwd $(conformance_proto2_protoc_inputs) )
+	oldpwd=`pwd` && ( cd $(srcdir) && $$oldpwd/../src/protoc$(EXEEXT) -I. -I$(top_srcdir)/src --cpp_out=$$oldpwd --java_out=$$oldpwd --objc_out=. --python_out=$$oldpwd --js_out=import_style=commonjs,binary:$$oldpwd $(conformance_proto2_protoc_inputs) )
 	oldpwd=`pwd` && ( cd $(srcdir) && $$oldpwd/../src/protoc$(EXEEXT) -I. -I$(top_srcdir)/src --cpp_out=$$oldpwd --java_out=$$oldpwd --ruby_out=$$oldpwd --python_out=$$oldpwd --php_out=$$oldpwd --js_out=import_style=commonjs,binary:$$oldpwd/google-protobuf $(well_known_type_protoc_inputs) )
 	## @mkdir -p lite
 	## oldpwd=`pwd` && ( cd $(srcdir) && $$oldpwd/../src/protoc$(EXEEXT) -I. -I$(top_srcdir)/src --java_out=lite:$$oldpwd/lite $(conformance_protoc_inputs) $(well_known_type_protoc_inputs) )

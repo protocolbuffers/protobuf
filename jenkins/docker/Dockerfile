@@ -182,7 +182,7 @@ RUN cd /tmp && \
   rm -rf protobuf && \
   git clone https://github.com/google/protobuf.git && \
   cd protobuf && \
-  git reset --hard 8d97b3d8b5a33650e822460b3b561802c969e86e && \
+  git reset --hard 49b44bff2b6257a119f9c6a342d6151c736586b8 && \
   cd php && \
   ln -sfn /usr/local/php-5.5/bin/php /usr/bin/php && \
   ln -sfn /usr/local/php-5.5/bin/php-config /usr/bin/php-config && \

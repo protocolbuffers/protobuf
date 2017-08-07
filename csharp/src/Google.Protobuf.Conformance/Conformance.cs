@@ -142,7 +142,9 @@ namespace Conformance {
     public const int MessageTypeFieldNumber = 4;
     private string messageType_ = "";
     /// <summary>
-    /// should be set to either "proto2" or "proto3"
+    /// The full name for the test message to use; for the moment, either:
+    /// protobuf_test_messages.proto3.TestAllTypesProto3 or
+    /// protobuf_test_messages.proto2.TestAllTypesProto2.
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public string MessageType {
