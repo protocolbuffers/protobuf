@@ -40,6 +40,7 @@ import gc
 import operator
 import six
 import struct
+import sys
 
 try:
   import unittest2 as unittest  #PY26
@@ -686,8 +687,8 @@ class ReflectionTest(BaseTestCase):
       self.assertEqual(expected_min, getattr(pb, field_name))
       setattr(pb, field_name, expected_max)
       self.assertEqual(expected_max, getattr(pb, field_name))
-      self.assertRaises(ValueError, setattr, pb, field_name, expected_min - 1)
-      self.assertRaises(ValueError, setattr, pb, field_name, expected_max + 1)
+      self.assertRaises(Exception, setattr, pb, field_name, expected_min - 1)
+      self.assertRaises(Exception, setattr, pb, field_name, expected_max + 1)
 
     TestMinAndMaxIntegers('optional_int32', -(1 << 31), (1 << 31) - 1)
     TestMinAndMaxIntegers('optional_uint32', 0, 0xffffffff)
@@ -696,7 +697,7 @@ class ReflectionTest(BaseTestCase):
     # A bit of white-box testing since -1 is an int and not a long in C++ and
     # so goes down a different path.
     pb = unittest_pb2.TestAllTypes()
-    with self.assertRaises(ValueError):
+    with self.assertRaises(Exception):
       pb.optional_uint64 = integer_fn(-(1 << 63))
 
     pb = unittest_pb2.TestAllTypes()
