@@ -8,7 +8,7 @@ language: cpp
 os:
   - osx
 # The Objective C build needs Xcode 7.0 or later.
-osx_image: xcode8.1
+osx_image: xcode8.3
 script:
   - ./tests.sh $CONFIG
 env:

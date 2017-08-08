@@ -276,9 +276,7 @@ if [[ "${DO_XCODE_IOS_TESTS}" == "yes" ]] ; then
     8.3* )
       XCODEBUILD_TEST_BASE_IOS+=(
           -destination "platform=iOS Simulator,name=iPhone 4s,OS=8.1" # 32bit
-          -destination "platform=iOS Simulator,name=iPhone 7,OS=10.3" # 64bit
-          -destination "platform=iOS Simulator,name=iPad 2,OS=8.1" # 32bit
-          -destination "platform=iOS Simulator,name=iPad Pro (9.7 inch),OS=10.3" # 64bit
+          -destination "platform=iOS Simulator,name=iPhone 7,OS=latest" # 64bit
       )
       ;;
     * )
