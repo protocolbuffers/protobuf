@@ -1362,7 +1362,7 @@ final class Utf8 {
       // Read bytes until 8-byte aligned so that we can read longs in the loop below.
       // We do this by ANDing the address with 7 to determine the number of bytes that need to
       // be read before we're 8-byte aligned.
-      final int unaligned = (int) address & 7;
+      final int unaligned = 8 - ((int) address & 7);
       for (int j = unaligned; j > 0; j--) {
         if (UnsafeUtil.getByte(address++) < 0) {
           return unaligned - j;
