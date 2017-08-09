@@ -436,6 +436,10 @@ public final class Internal {
   public static Class<?> getClassForName(String className) throws ClassNotFoundException {
     ClassLoader classLoader;
     if (isAndroid()) {
+      // When android:sharedUserId or android:process is used, Android will setup a dummy
+      // ClassLoader for the thread context (http://stackoverflow.com/questions/13407006),
+      // instead of letting users to manually set context class loader, we choose the
+      // correct class loader here.
       classLoader = Internal.class.getClassLoader();
     } else {
       classLoader = Thread.currentThread().getContextClassLoader();
