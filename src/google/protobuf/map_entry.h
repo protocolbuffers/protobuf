@@ -101,7 +101,9 @@ class MapEntry
         GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(MapEntry, _internal_metadata_),
         -1,
         -1,
-        sizeof(MapEntry)};
+        sizeof(MapEntry),
+        -1,
+    };
     const Reflection* reflection = new GeneratedMessageReflection(
         descriptor, schema, DescriptorPool::generated_pool(),
         MessageFactory::generated_factory());

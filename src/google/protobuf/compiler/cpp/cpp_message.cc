@@ -1628,7 +1628,7 @@ GenerateExtraDefaultFields(io::Printer* printer) {
 bool MessageGenerator::GenerateParseTable(io::Printer* printer, size_t offset,
                                           size_t aux_offset) {
   if (!table_driven_) {
-    printer->Print("{ NULL, NULL, 0, -1, -1, false },\n");
+    printer->Print("{ NULL, NULL, 0, -1, -1, -1, -1, NULL, false },\n");
     return false;
   }
 
