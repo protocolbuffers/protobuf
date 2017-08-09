@@ -296,7 +296,7 @@ final class UnsafeUtil {
   @SuppressWarnings("unchecked")
   private static <T> Class<T> getClassForName(String name) {
     try {
-      return (Class<T>) Class.forName(name);
+      return (Class<T>) Internal.getClassForName(name);
     } catch (Throwable e) {
       return null;
     }

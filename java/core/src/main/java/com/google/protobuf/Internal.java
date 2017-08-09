@@ -414,6 +414,39 @@ public final class Internal {
     }
   }
 
+  private static final boolean isAndroid = looksLikeAndroid();
+
+  /**
+   * Copied from grpc-java
+   */
+  private static boolean looksLikeAndroid() {
+    try {
+      Class.forName("android.app.Application", /*initialize=*/ false, null);
+      return true;
+    } catch (Exception e) {
+      // If Application isn't loaded, it might as well not be Android.
+      return false;
+    }
+  }
+
+  static boolean isAndroid() {
+    return isAndroid;
+  }
+
+  public static Class<?> getClassForName(String className) throws ClassNotFoundException {
+    ClassLoader classLoader;
+    if (isAndroid()) {
+      classLoader = Internal.class.getClassLoader();
+    } else {
+      classLoader = Thread.currentThread().getContextClassLoader();
+      if (classLoader == null) {
+        classLoader = Internal.class.getClassLoader();
+      }
+    }
+
+    return Class.forName(className, true, classLoader);
+  }
+
   /**
    * An empty byte array constant used in generated code.
    */

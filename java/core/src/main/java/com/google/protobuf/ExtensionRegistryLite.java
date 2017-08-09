@@ -85,7 +85,7 @@ public class ExtensionRegistryLite {
   /* @Nullable */
   static Class<?> resolveExtensionClass() {
     try {
-      return Class.forName(EXTENSION_CLASS_NAME);
+      return Internal.getClassForName(EXTENSION_CLASS_NAME);
     } catch (ClassNotFoundException e) {
       // See comment in ExtensionRegistryFactory on the potential expense of this.
       return null;
