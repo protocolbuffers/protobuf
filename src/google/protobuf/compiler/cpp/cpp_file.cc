@@ -609,7 +609,7 @@ void FileGenerator::GenerateBuildDescriptors(io::Printer* printer) {
   }
 
   if (message_generators_.empty()) {
-    printer->Print("{ NULL, NULL, 0, -1, -1, false },\n");
+    printer->Print("{ NULL, NULL, 0, -1, -1, -1, -1, NULL, false },\n");
   }
 
   printer->Outdent();

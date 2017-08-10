@@ -930,7 +930,8 @@ no_warning_test_LDADD = $(PTHREAD_LIBS) libprotobuf.la      \
                         ../gmock/gtest/lib/libgtest_main.la
 no_warning_test_CPPFLAGS = -I$(srcdir)/../gmock/gtest/include
 no_warning_test_CXXFLAGS = $(PTHREAD_CFLAGS) $(PTHREAD_DEF) $(ZLIB_DEF) \
-                           -Wall -Werror -Werror=missing-declarations
+                           -Wall -Werror -Werror=missing-declarations \
+                           -Werror=missing-field-initializers
 nodist_no_warning_test_SOURCES = no_warning_test.cc $(protoc_outputs)
 
 TESTS = protobuf-test protobuf-lazy-descriptor-test protobuf-lite-test \
