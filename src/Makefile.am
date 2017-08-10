@@ -681,10 +681,10 @@ protoc_outputs =                                                  \
   google/protobuf/unittest_preserve_unknown_enum.pb.h             \
   google/protobuf/unittest_proto3_arena.pb.cc                     \
   google/protobuf/unittest_proto3_arena.pb.h                      \
-  google/protobuf/unittest_proto3_arena_lite.pb.cc                     \
-  google/protobuf/unittest_proto3_arena_lite.pb.h                      \
-  google/protobuf/unittest_proto3_lite.pb.cc                     \
-  google/protobuf/unittest_proto3_lite.pb.h                      \
+  google/protobuf/unittest_proto3_arena_lite.pb.cc                \
+  google/protobuf/unittest_proto3_arena_lite.pb.h                 \
+  google/protobuf/unittest_proto3_lite.pb.cc                      \
+  google/protobuf/unittest_proto3_lite.pb.h                       \
   google/protobuf/unittest_well_known_types.pb.cc                 \
   google/protobuf/unittest_well_known_types.pb.h                  \
   google/protobuf/util/internal/testdata/anys.pb.cc               \
@@ -922,16 +922,11 @@ no_warning_test.cc:
 	    echo "#include <$${FILE}>" >> no_warning_test.cc; \
 	  fi \
 	done
-	echo "#include <gtest/gtest.h>" >> no_warning_test.cc
-	echo "TEST(NoWarningTest, Empty) {}" >> no_warning_test.cc
+	echo "int main(int, char**) { return 0; }" >> no_warning_test.cc
 
-no_warning_test_LDADD = $(PTHREAD_LIBS) libprotobuf.la      \
-                        ../gmock/gtest/lib/libgtest.la      \
-                        ../gmock/gtest/lib/libgtest_main.la
-no_warning_test_CPPFLAGS = -I$(srcdir)/../gmock/gtest/include
+no_warning_test_LDADD = $(PTHREAD_LIBS) libprotobuf.la libprotoc.la
 no_warning_test_CXXFLAGS = $(PTHREAD_CFLAGS) $(PTHREAD_DEF) $(ZLIB_DEF) \
-                           -Wall -Werror -Werror=missing-declarations \
-                           -Werror=missing-field-initializers
+                           -Wall -Wextra -Werror -Wno-unused-parameter
 nodist_no_warning_test_SOURCES = no_warning_test.cc $(protoc_outputs)
 
 TESTS = protobuf-test protobuf-lazy-descriptor-test protobuf-lite-test \
