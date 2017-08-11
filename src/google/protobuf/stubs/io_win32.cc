@@ -44,7 +44,10 @@
 // Comment this out to fall back to using the ANSI versions (open, mkdir, ...)
 // instead of the Unicode ones (_wopen, _wmkdir, ...). Doing so can be useful to
 // debug failing tests if that's caused by the long path support.
+// Long path support is disabled in MinGW
+#ifndef __MINGW32__
 #define SUPPORT_LONGPATHS
+#endif  // !__MINGW32__
 
 #include <ctype.h>
 #include <direct.h>
