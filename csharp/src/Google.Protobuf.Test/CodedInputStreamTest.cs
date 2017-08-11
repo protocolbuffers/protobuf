@@ -284,6 +284,20 @@ namespace Google.Protobuf
             Assert.Throws<InvalidProtocolBufferException>(() => input.ReadBytes());
         }
 
+        // Representations of a tag for field 0 with various wire types
+        [Test]
+        [TestCase(0)]
+        [TestCase(1)]
+        [TestCase(2)]
+        [TestCase(3)]
+        [TestCase(4)]
+        [TestCase(5)]
+        public void ReadTag_ZeroFieldRejected(byte tag)
+        {
+            CodedInputStream cis = new CodedInputStream(new byte[] { tag });
+            Assert.Throws<InvalidProtocolBufferException>(() => cis.ReadTag());
+        }
+
         internal static TestRecursiveMessage MakeRecursiveMessage(int depth)
         {
             if (depth == 0)
