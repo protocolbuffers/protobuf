@@ -1414,7 +1414,9 @@ class StringBaseTextGenerator : public TextFormat::BaseTextGenerator {
  public:
   void Print(const char* text, size_t size) { output_.append(text, size); }
 
-#if LANG_CXX11
+// Some compilers do not support ref-qualifiers even in C++11 mode.
+// Disable the optimization for now and revisit it later.
+#if 0 // LANG_CXX11
   string Consume() && { return std::move(output_); }
 #else   // !LANG_CXX11
   const string& Get() { return output_; }
@@ -1432,7 +1434,7 @@ class StringBaseTextGenerator : public TextFormat::BaseTextGenerator {
 TextFormat::FieldValuePrinter::FieldValuePrinter() {}
 TextFormat::FieldValuePrinter::~FieldValuePrinter() {}
 
-#if LANG_CXX11
+#if 0 // LANG_CXX11
 #define FORWARD_IMPL(fn, ...)            \
   StringBaseTextGenerator generator;     \
   delegate_.fn(__VA_ARGS__, &generator); \
