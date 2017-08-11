@@ -45,7 +45,7 @@
 #ifndef GOOGLE_PROTOBUF_STUBS_IO_WIN32_H__
 #define GOOGLE_PROTOBUF_STUBS_IO_WIN32_H__
 
-#if defined(_WIN32)
+#if defined(_MSC_VER)
 
 #include <string>
 #include <google/protobuf/stubs/port.h>
@@ -91,7 +91,7 @@ LIBPROTOBUF_EXPORT std::wstring testonly_path_to_winpath(
 #define STDOUT_FILENO 1
 #endif
 
-#endif  // defined(_WIN32)
+#endif  // defined(_MSC_VER)
 
 #endif  // GOOGLE_PROTOBUF_STUBS_IO_WIN32_H__
 

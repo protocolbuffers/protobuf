@@ -52,7 +52,7 @@
 namespace google {
 namespace protobuf {
 
-#ifdef _WIN32
+#ifdef _MSC_VER
 // DO NOT include <io.h>, instead create functions in io_win32.{h,cc} and import
 // them like we do below.
 using google::protobuf::internal::win32::close;
