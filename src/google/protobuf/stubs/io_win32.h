@@ -45,11 +45,12 @@
 #ifndef GOOGLE_PROTOBUF_STUBS_IO_WIN32_H__
 #define GOOGLE_PROTOBUF_STUBS_IO_WIN32_H__
 
-#if defined(_MSC_VER)
+#if defined(_WIN32)
 
 #include <string>
 #include <google/protobuf/stubs/port.h>
 
+#ifdef _MSC_VER
 namespace google {
 namespace protobuf {
 namespace internal {
@@ -74,6 +75,9 @@ LIBPROTOBUF_EXPORT std::wstring testonly_path_to_winpath(
 }  // namespace internal
 }  // namespace protobuf
 }  // namespace google
+#else  // _MSC_VER
+#define mkdir(name, mode) mkdir(name)
+#endif // !_MSC_VER
 
 #ifndef W_OK
 #define W_OK 02  // not defined by MSVC for whatever reason
@@ -91,7 +95,7 @@ LIBPROTOBUF_EXPORT std::wstring testonly_path_to_winpath(
 #define STDOUT_FILENO 1
 #endif
 
-#endif  // defined(_MSC_VER)
+#endif  // defined(_WIN32)
 
 #endif  // GOOGLE_PROTOBUF_STUBS_IO_WIN32_H__
 
