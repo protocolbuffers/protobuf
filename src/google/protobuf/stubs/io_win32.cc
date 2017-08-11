@@ -108,15 +108,15 @@ bool has_longpath_prefix(const char_type* path) {
          path[3] == '\\';
 }
 
+template <typename char_type>
+bool is_separator(char_type c) {
+  return c == '/' || c == '\\';
+}
+
 // Returns true if the path starts with a drive specifier (e.g. "c:\").
 template <typename char_type>
 bool is_path_absolute(const char_type* path) {
   return has_drive_letter(path) && is_separator(path[2]);
-}
-
-template <typename char_type>
-bool is_separator(char_type c) {
-  return c == '/' || c == '\\';
 }
 
 template <typename char_type>
