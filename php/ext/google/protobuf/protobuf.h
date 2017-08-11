@@ -77,14 +77,27 @@
 #define php_proto_zend_hash_index_update_zval(ht, h, pData) \
   zend_hash_index_update(ht, h, &(pData), sizeof(void*), NULL)
 
+#define php_proto_zend_hash_update_zval(ht, key, key_len, value) \
+  zend_hash_update(ht, key, key_len, value, sizeof(void*), NULL)
+
 #define php_proto_zend_hash_index_update_mem(ht, h, pData, nDataSize, pDest) \
   zend_hash_index_update(ht, h, pData, nDataSize, pDest)
+
+#define php_proto_zend_hash_update_mem(ht, key, key_len, pData, nDataSize, \
+                                       pDest)                              \
+  zend_hash_update(ht, key, key_len, pData, nDataSize, pDest)
 
 #define php_proto_zend_hash_index_find_zval(ht, h, pDest) \
   zend_hash_index_find(ht, h, pDest)
 
 #define php_proto_zend_hash_index_find_mem(ht, h, pDest) \
   zend_hash_index_find(ht, h, pDest)
+
+#define php_proto_zend_hash_find_zval(ht, key, key_len, pDest) \
+  zend_hash_find(ht, key, key_len, pDest)
+
+#define php_proto_zend_hash_find_mem(ht, key, key_len, pDest) \
+  zend_hash_find(ht, key, key_len, pDest)
 
 #define php_proto_zend_hash_next_index_insert_zval(ht, pData) \
   zend_hash_next_index_insert(ht, pData, sizeof(void*), NULL)
@@ -102,6 +115,17 @@
     zend_object std;
 #define PHP_PROTO_WRAP_OBJECT_END \
   };
+
+#define PHP_PROTO_INIT_SUBMSGCLASS_START(CLASSNAME, CAMELNAME, LOWWERNAME)   \
+  void LOWWERNAME##_init(TSRMLS_D) {                                         \
+    zend_class_entry class_type;                                             \
+    const char* class_name = CLASSNAME;                                      \
+    INIT_CLASS_ENTRY_EX(class_type, CLASSNAME, strlen(CLASSNAME),            \
+                        LOWWERNAME##_methods);                               \
+    LOWWERNAME##_type = zend_register_internal_class(&class_type TSRMLS_CC); \
+    LOWWERNAME##_type->create_object = message_create;
+#define PHP_PROTO_INIT_SUBMSGCLASS_END \
+  }
 
 #define PHP_PROTO_INIT_CLASS_START(CLASSNAME, CAMELNAME, LOWWERNAME)         \
   void LOWWERNAME##_init(TSRMLS_D) {                                         \
@@ -243,6 +267,23 @@ static inline int php_proto_zend_hash_index_update_mem(HashTable* ht, ulong h,
   return result != NULL ? SUCCESS : FAILURE;
 }
 
+static inline int php_proto_zend_hash_update_zval(HashTable* ht,
+                                                  const char* key, uint key_len,
+                                                  zval* pData) {
+  zend_string* internal_key = zend_string_init(key, key_len, 0);
+  zend_hash_update(ht, internal_key, pData);
+}
+
+static inline int php_proto_zend_hash_update_mem(HashTable* ht, const char* key,
+                                                 uint key_len, void* pData,
+                                                 uint nDataSize, void** pDest) {
+  zend_string* internal_key = zend_string_init(key, key_len, 0);
+  void* result = zend_hash_update_mem(ht, internal_key, pData, nDataSize);
+  zend_string_release(internal_key);
+  if (pDest != NULL) *pDest = result;
+  return result != NULL ? SUCCESS : FAILURE;
+}
+
 static inline int php_proto_zend_hash_index_find_zval(const HashTable* ht,
                                                       ulong h, void** pDest) {
   zval* result = zend_hash_index_find(ht, h);
@@ -254,6 +295,25 @@ static inline int php_proto_zend_hash_index_find_mem(const HashTable* ht,
                                                      ulong h, void** pDest) {
   void* result = NULL;
   result = zend_hash_index_find_ptr(ht, h);
+  if (pDest != NULL) *pDest = result;
+  return result != NULL ? SUCCESS : FAILURE;
+}
+
+static inline int php_proto_zend_hash_find_zval(const HashTable* ht,
+                                                const char* key, uint key_len,
+                                                void** pDest) {
+  zend_string* internal_key = zend_string_init(key, key_len, 1);
+  zval* result = zend_hash_find(ht, internal_key);
+  if (pDest != NULL) *pDest = result;
+  return result != NULL ? SUCCESS : FAILURE;
+}
+
+static inline int php_proto_zend_hash_find_mem(const HashTable* ht,
+                                                const char* key, uint key_len,
+                                                void** pDest) {
+  zend_string* internal_key = zend_string_init(key, key_len, 1);
+  void* result = zend_hash_find_ptr(ht, internal_key);
+  zend_string_release(internal_key);
   if (pDest != NULL) *pDest = result;
   return result != NULL ? SUCCESS : FAILURE;
 }
@@ -291,6 +351,17 @@ static inline int php_proto_zend_hash_get_current_data_ex(HashTable* ht,
 #define PHP_PROTO_WRAP_OBJECT_END \
   zend_object std;                \
   };
+
+#define PHP_PROTO_INIT_SUBMSGCLASS_START(CLASSNAME, CAMELNAME, LOWWERNAME)   \
+  void LOWWERNAME##_init(TSRMLS_D) {                                         \
+    zend_class_entry class_type;                                             \
+    const char* class_name = CLASSNAME;                                      \
+    INIT_CLASS_ENTRY_EX(class_type, CLASSNAME, strlen(CLASSNAME),            \
+                        LOWWERNAME##_methods);                               \
+    LOWWERNAME##_type = zend_register_internal_class(&class_type TSRMLS_CC); \
+    LOWWERNAME##_type->create_object = message_create;
+#define PHP_PROTO_INIT_SUBMSGCLASS_END \
+  }
 
 #define PHP_PROTO_INIT_CLASS_START(CLASSNAME, CAMELNAME, LOWWERNAME)         \
   void LOWWERNAME##_init(TSRMLS_D) {                                         \
@@ -392,10 +463,38 @@ static inline int php_proto_zend_lookup_class(
 
 #endif  // PHP_MAJOR_VERSION >= 7
 
+// Define PHP class
+#define DEFINE_PROTOBUF_INIT_CLASS(CLASSNAME, CAMELNAME, LOWERNAME) \
+  PHP_PROTO_INIT_CLASS_START(CLASSNAME, CAMELNAME, LOWERNAME)       \
+  PHP_PROTO_INIT_CLASS_END
+
+#define DEFINE_PROTOBUF_CREATE(NAME, LOWERNAME)  \
+  PHP_PROTO_OBJECT_CREATE_START(NAME, LOWERNAME) \
+  LOWERNAME##_init_c_instance(intern TSRMLS_CC); \
+  PHP_PROTO_OBJECT_CREATE_END(NAME, LOWERNAME)
+
+#define DEFINE_PROTOBUF_FREE(CAMELNAME, LOWERNAME)  \
+  PHP_PROTO_OBJECT_FREE_START(CAMELNAME, LOWERNAME) \
+  LOWERNAME##_free_c(intern TSRMLS_CC);             \
+  PHP_PROTO_OBJECT_FREE_END
+
+#define DEFINE_PROTOBUF_DTOR(CAMELNAME, LOWERNAME)  \
+  PHP_PROTO_OBJECT_DTOR_START(CAMELNAME, LOWERNAME) \
+  PHP_PROTO_OBJECT_DTOR_END
+
+#define DEFINE_CLASS(NAME, LOWERNAME, string_name) \
+  zend_class_entry *LOWERNAME##_type;              \
+  zend_object_handlers *LOWERNAME##_handlers;      \
+  DEFINE_PROTOBUF_FREE(NAME, LOWERNAME)            \
+  DEFINE_PROTOBUF_DTOR(NAME, LOWERNAME)            \
+  DEFINE_PROTOBUF_CREATE(NAME, LOWERNAME)          \
+  DEFINE_PROTOBUF_INIT_CLASS(string_name, NAME, LOWERNAME)
+
 // -----------------------------------------------------------------------------
 // Forward Declaration
 // ----------------------------------------------------------------------------
 
+struct Any;
 struct DescriptorPool;
 struct Descriptor;
 struct EnumDescriptor;
@@ -411,6 +510,7 @@ struct Map;
 struct MapIter;
 struct Oneof;
 
+typedef struct Any Any;
 typedef struct DescriptorPool DescriptorPool;
 typedef struct Descriptor Descriptor;
 typedef struct EnumDescriptor EnumDescriptor;
@@ -434,6 +534,7 @@ ZEND_BEGIN_MODULE_GLOBALS(protobuf)
 ZEND_END_MODULE_GLOBALS(protobuf)
 
 // Init module and PHP classes.
+void any_init(TSRMLS_D);
 void descriptor_init(TSRMLS_D);
 void enum_descriptor_init(TSRMLS_D);
 void descriptor_pool_init(TSRMLS_D);
@@ -442,11 +543,11 @@ void field_descriptor_init(TSRMLS_D);
 void gpb_type_init(TSRMLS_D);
 void map_field_init(TSRMLS_D);
 void map_field_iter_init(TSRMLS_D);
+void message_init(TSRMLS_D);
 void oneof_descriptor_init(TSRMLS_D);
 void repeated_field_init(TSRMLS_D);
 void repeated_field_iter_init(TSRMLS_D);
 void util_init(TSRMLS_D);
-void message_init(TSRMLS_D);
 
 // Global map from upb {msg,enum}defs to wrapper Descriptor/EnumDescriptor
 // instances.
@@ -458,6 +559,11 @@ PHP_PROTO_HASHTABLE_VALUE get_def_obj(const void* def);
 void add_ce_obj(const void* ce, PHP_PROTO_HASHTABLE_VALUE value);
 PHP_PROTO_HASHTABLE_VALUE get_ce_obj(const void* ce);
 bool class_added(const void* ce);
+
+// Global map from message/enum's proto fully-qualified name to corresponding
+// wrapper Descriptor/EnumDescriptor instances.
+void add_proto_obj(const char* proto, PHP_PROTO_HASHTABLE_VALUE value);
+PHP_PROTO_HASHTABLE_VALUE get_proto_obj(const char* proto);
 
 extern zend_class_entry* map_field_type;
 extern zend_class_entry* repeated_field_type;
@@ -481,6 +587,10 @@ PHP_PROTO_WRAP_OBJECT_END
 
 PHP_METHOD(InternalDescriptorPool, getGeneratedPool);
 PHP_METHOD(InternalDescriptorPool, internalAddGeneratedFile);
+
+void internal_add_generated_file(const char* data, PHP_PROTO_SIZE data_len,
+                                 InternalDescriptorPool* pool TSRMLS_DC);
+void init_generated_pool_once(TSRMLS_D);
 
 // wrapper of generated pool
 #if PHP_MAJOR_VERSION < 7
@@ -567,6 +677,7 @@ void custom_data_init(const zend_class_entry* ce,
 void build_class_from_descriptor(
     PHP_PROTO_HASHTABLE_VALUE php_descriptor TSRMLS_DC);
 
+extern zend_class_entry* message_type;
 extern zend_object_handlers* message_handlers;
 
 // -----------------------------------------------------------------------------
@@ -674,6 +785,9 @@ PHP_METHOD(Message, __construct);
 // This is called from the message class creation code.
 const upb_pbdecodermethod *new_fillmsg_decodermethod(Descriptor *desc,
                                                      const void *owner);
+void serialize_to_string(zval* val, zval* return_value TSRMLS_DC);
+void merge_from_string(const char* data, int data_len, const Descriptor* desc,
+                       MessageHeader* msg);
 
 PHP_METHOD(Message, serializeToString);
 PHP_METHOD(Message, mergeFromString);
@@ -879,6 +993,21 @@ extern zend_class_entry* oneof_descriptor_type;
 // safe because field numbers are used as case identifiers, and no field can
 // have a number of 0.
 #define ONEOF_CASE_NONE 0
+
+// -----------------------------------------------------------------------------
+// Well Known Type.
+// -----------------------------------------------------------------------------
+
+PHP_METHOD(Any, __construct);
+PHP_METHOD(Any, getTypeUrl);
+PHP_METHOD(Any, setTypeUrl);
+PHP_METHOD(Any, getValue);
+PHP_METHOD(Any, setValue);
+PHP_METHOD(Any, unpack);
+PHP_METHOD(Any, pack);
+PHP_METHOD(Any, is);
+
+extern zend_class_entry* any_type;
 
 // -----------------------------------------------------------------------------
 // Upb.

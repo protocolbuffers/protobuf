@@ -1445,9 +1445,9 @@ static const upb_handlers* msgdef_json_serialize_handlers(
 // PHP encode/decode methods
 // -----------------------------------------------------------------------------
 
-PHP_METHOD(Message, serializeToString) {
+void serialize_to_string(zval* val, zval* return_value TSRMLS_DC) {
   Descriptor* desc =
-      UNBOX_HASHTABLE_VALUE(Descriptor, get_ce_obj(Z_OBJCE_P(getThis())));
+      UNBOX_HASHTABLE_VALUE(Descriptor, get_ce_obj(Z_OBJCE_P(val)));
 
   stringsink sink;
   stringsink_init(&sink);
@@ -1461,13 +1461,33 @@ PHP_METHOD(Message, serializeToString) {
     stackenv_init(&se, "Error occurred during encoding: %s");
     encoder = upb_pb_encoder_create(&se.env, serialize_handlers, &sink.sink);
 
-    putmsg(getThis(), desc, upb_pb_encoder_input(encoder), 0 TSRMLS_CC);
+    putmsg(val, desc, upb_pb_encoder_input(encoder), 0 TSRMLS_CC);
 
     PHP_PROTO_RETVAL_STRINGL(sink.ptr, sink.len, 1);
 
     stackenv_uninit(&se);
     stringsink_uninit(&sink);
   }
+}
+
+PHP_METHOD(Message, serializeToString) {
+  serialize_to_string(getThis(), return_value TSRMLS_CC);
+}
+
+void merge_from_string(const char* data, int data_len, const Descriptor* desc,
+                       MessageHeader* msg) {
+  const upb_pbdecodermethod* method = msgdef_decodermethod(desc);
+  const upb_handlers* h = upb_pbdecodermethod_desthandlers(method);
+  stackenv se;
+  upb_sink sink;
+  upb_pbdecoder* decoder;
+  stackenv_init(&se, "Error occurred during parsing: %s");
+
+  upb_sink_reset(&sink, h, msg);
+  decoder = upb_pbdecoder_create(&se.env, method, &sink);
+  upb_bufsrc_putbuf(data, data_len, upb_pbdecoder_input(decoder));
+
+  stackenv_uninit(&se);
 }
 
 PHP_METHOD(Message, mergeFromString) {
@@ -1483,20 +1503,7 @@ PHP_METHOD(Message, mergeFromString) {
     return;
   }
 
-  {
-    const upb_pbdecodermethod* method = msgdef_decodermethod(desc);
-    const upb_handlers* h = upb_pbdecodermethod_desthandlers(method);
-    stackenv se;
-    upb_sink sink;
-    upb_pbdecoder* decoder;
-    stackenv_init(&se, "Error occurred during parsing: %s");
-
-    upb_sink_reset(&sink, h, msg);
-    decoder = upb_pbdecoder_create(&se.env, method, &sink);
-    upb_bufsrc_putbuf(data, data_len, upb_pbdecoder_input(decoder));
-
-    stackenv_uninit(&se);
-  }
+  merge_from_string(data, data_len, desc, msg);
 }
 
 PHP_METHOD(Message, serializeToJsonString) {
