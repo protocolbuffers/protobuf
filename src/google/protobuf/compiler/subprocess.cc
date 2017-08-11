@@ -52,6 +52,16 @@ namespace google {
 namespace protobuf {
 namespace compiler {
 
+namespace {
+char* portable_strdup(const char* s) {
+  char* ns = malloc(strlen(s) + 1);
+  if (ns) {
+    strcpy(ns, s);
+  }
+  return ns;
+}
+}  // namespace
+
 #ifdef _WIN32
 
 static void CloseHandleOrDie(HANDLE handle) {
@@ -115,7 +125,7 @@ void Subprocess::Start(const string& program, SearchMode search_mode) {
   }
 
   // CreateProcess() mutates its second parameter.  WTF?
-  char* name_copy = strdup(program.c_str());
+  char* name_copy = portable_strdup(program.c_str());
 
   // Create the process.
   PROCESS_INFORMATION process_info;
@@ -299,7 +309,7 @@ void Subprocess::Start(const string& program, SearchMode search_mode) {
   GOOGLE_CHECK(pipe(stdin_pipe) != -1);
   GOOGLE_CHECK(pipe(stdout_pipe) != -1);
 
-  char* argv[2] = { strdup(program.c_str()), NULL };
+  char* argv[2] = { portable_strdup(program.c_str()), NULL };
 
   child_pid_ = fork();
   if (child_pid_ == -1) {
