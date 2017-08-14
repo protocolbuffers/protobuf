@@ -1,11 +1,11 @@
-2017-08-01 version 3.4.0 (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
+2017-08-14 version 3.4.0 (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
   Planned Future Changes
   * There are some changes that are not included in this release but are planned
     for the near future
       - Preserve unknown fields in proto3: We are going to bring unknown fields
         back into proto3. In this release, some languages start to support
         preserving unknown fields in proto3, controlled by flags/options. Some
-        languages also introduce explict APIs to drop unknown fields for
+        languages also introduce explicit APIs to drop unknown fields for
         migration. Please read the change log sections by languages for details.
         For general timeline and plan:
 
@@ -45,6 +45,7 @@
 
       $ protoc --cpp_out=table_driven_parsing,table_driven_serialization:./ \
         test.proto
+
   * lite generator parameter supported by the generator. Once set, all generated
     files, use lite runtime regardless of the optimizer_for setting in the
     .proto file.
