@@ -309,7 +309,8 @@ NSString *GPBDecodeTextFormatName(const uint8_t *decodeData, int32_t key,
 
 // A series of selectors that are used solely to get @encoding values
 // for them by the dynamic protobuf runtime code. See
-// GPBMessageEncodingForSelector for details.
+// GPBMessageEncodingForSelector for details. GPBRootObject conforms to
+// the protocol so that it is encoded in the Objective C runtime.
 @protocol GPBMessageSignatureProtocol
 @optional
 
