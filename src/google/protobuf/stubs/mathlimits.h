@@ -43,18 +43,23 @@
 #ifndef UTIL_MATH_MATHLIMITS_H__
 #define UTIL_MATH_MATHLIMITS_H__
 
-// GCC 4.9 has a bug that makes it impossible to use isinf and isnan when both
-// <math.h> and <cmath> get pulled into the same translation unit.
-// Unfortunately it is difficult to prevent this from happening, so to work
-// around the problem we use std::isinf and std::isnan from <cmath> for C++11
-// builds and otherwise use the plain isinf and isnan functions from <math.h>.
 // Note that for Windows we do something different because it does not support
 // the plain isinf and isnan.
 #if __cplusplus >= 201103L
+// GCC 4.9 has a bug that makes isinf and isnan ambigious when both <math.h>
+// and <cmath> get pulled into the same translation unit. We use the ones in
+// std:: namespace explicitly for C++11
 #include <cmath>
+#define GOOGLE_PROTOBUF_USE_STD_CMATH
+#elif _GLIBCXX_USE_C99_MATH && !_GLIBCXX_USE_C99_FP_MACROS_DYNAMIC
+// libstdc++ <cmath> header undefines the global macros and put functions in
+// std:: namespace even before C++11. Use the ones in std:: instead too.
+#include <cmath>
+#define GOOGLE_PROTOBUF_USE_STD_CMATH
 #else
 #include <math.h>
 #endif
+
 #include <string.h>
 
 #include <cfloat>
@@ -229,7 +234,7 @@ DECL_UNSIGNED_INT_LIMITS(unsigned long long int)
 // For non-Windows builds we use the std:: versions of isinf and isnan if they
 // are available; see the comment about <cmath> at the top of this file for the
 // details on why we need to do this.
-#if __cplusplus >= 201103L
+#ifdef GOOGLE_PROTOBUF_USE_STD_CMATH
 #define ISINF std::isinf
 #define ISNAN std::isnan
 #else
