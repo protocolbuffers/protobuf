@@ -213,7 +213,7 @@ fi
 
 # Statically link libgcc and libstdc++.
 # -s to produce stripped binary.
-if [[ "$OS" == windows && "$ARCH" == x86_64 ]]; then
+if [[ "$OS" == windows ]]; then
   # Also static link libpthread required by mingw64
   LDFLAGS="$LDFLAGS -static-libgcc -static-libstdc++ -Wl,-Bstatic -lstdc++ -lpthread -s"
 elif [[ "$OS" != osx ]]; then
