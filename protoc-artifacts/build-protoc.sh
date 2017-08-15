@@ -215,8 +215,11 @@ fi
 
 # Statically link libgcc and libstdc++.
 # -s to produce stripped binary.
-# And they don't work under Mac.
-if [[ "$OS" != osx ]]; then
+if [[ "$OS" == windows && "$ARCH" == x86_64 ]]; then
+  # Also static link libpthread required by mingw64
+  LDFLAGS="$LDFLAGS -static-libgcc -static-libstdc++ -Wl,-Bstatic -lstdc++ -lpthread -s"
+elif [[ "$OS" != osx ]]; then
+  # And they don't work under Mac.
   LDFLAGS="$LDFLAGS -static-libgcc -static-libstdc++ -s"
 fi
 
