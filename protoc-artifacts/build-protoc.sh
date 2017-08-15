@@ -185,8 +185,6 @@ elif [[ "$(uname)" == Linux* ]]; then
     fi
   elif [[ "$OS" == windows ]]; then
     # Cross-compilation for Windows
-    # TODO(zhangkun83) MinGW 64 always adds dependency on libwinpthread-1.dll,
-    # which is undesirable for repository deployment.
     CONFIGURE_ARGS="$CONFIGURE_ARGS"
     if [[ "$ARCH" == x86_64 ]]; then
       CONFIGURE_ARGS="$CONFIGURE_ARGS --host=x86_64-w64-mingw32"
