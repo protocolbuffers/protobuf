@@ -123,7 +123,7 @@ template <int N> class InlinedEnvironment;
 #define UPB_NORETURN
 #endif
 
-#if __STDC_VERSION__ >= 199901L || __cplusplus >= 201103L
+#if __STDC_VERSION__ >= 199901L || __cplusplus >= 201103L || defined(_MSC_VER)
 /* C99/C++11 versions. */
 #include <stdio.h>
 #define _upb_snprintf snprintf
