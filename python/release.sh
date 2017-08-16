@@ -11,10 +11,7 @@ function run_install_test() {
   local PYTHON=$2
   local PYPI=$3
 
-  #virtualenv -p `which $PYTHON` test-venv
   virtualenv --no-site-packages -p `which $PYTHON` test-venv
-
-  #pip install --upgrade pip
 
   # Intentionally put a broken protoc in the path to make sure installation
   # doesn't require protoc installed.
