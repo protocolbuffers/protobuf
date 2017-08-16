@@ -89,7 +89,9 @@
   * Added pretty-print filter to text format.
   * Services and method descriptors are always printed even if generic_service
     option is turned off.
-  * Note: AppEngine 2.5 is deprecated on June 2017 that AppEngine 2.5 will never update protobuf runtime. Users who depend on AppEngine 2.5 should use old protoc.
+  * Note: AppEngine 2.5 is deprecated on June 2017 that AppEngine 2.5 will
+    never update protobuf runtime. Users who depend on AppEngine 2.5 should use
+    old protoc.
   
   PHP
   * Support PHP generic services. Specify file option php_generic_service=true
