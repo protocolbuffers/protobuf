@@ -53,10 +53,11 @@ set PHP_SDK_VC=vc14
 phpsdk_deps --update --branch 7.1
 mkdir ..\pecl\protobuf
 xcopy ..\..\..\..\..\php\ext\google\protobuf ..\pecl\protobuf
+
 echo Building Protobuf Extension for PHP
 buildconf
 configure --disable-all --enable-cli --enable-protobuf=shared --disable-zts
-nmake
+nmake || goto error
 
 goto :EOF
 
