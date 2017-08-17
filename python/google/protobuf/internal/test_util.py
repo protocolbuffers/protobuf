@@ -39,17 +39,22 @@ __author__ = 'robinson@google.com (Will Robinson)'
 import numbers
 import operator
 import os.path
-import sys
 
 from google.protobuf import unittest_import_pb2
 from google.protobuf import unittest_pb2
-from google.protobuf import descriptor_pb2
+
+try:
+    long        # Python 2
+except NameError:
+    long = int  # Python 3
+
 
 # Tests whether the given TestAllTypes message is proto2 or not.
 # This is used to gate several fields/features that only exist
 # for the proto2 version of the message.
 def IsProto2(message):
   return message.DESCRIPTOR.syntax == "proto2"
+
 
 def SetAllNonLazyFields(message):
   """Sets every non-lazy field in the message to a unique value.
@@ -707,8 +712,8 @@ class NonStandardInteger(numbers.Integral):
   NonStandardInteger is the minimal legal specification for a custom Integral.
   As such, it does not support 0 < x < 5 and it is not hashable.
 
-  Note: This is added here instead of relying on numpy or a similar library with
-  custom integers to limit dependencies.
+  Note: This is added here instead of relying on numpy or a similar library
+  with custom integers to limit dependencies.
   """
 
   def __init__(self, val, error_string_on_conversion=None):
@@ -845,4 +850,3 @@ class NonStandardInteger(numbers.Integral):
 
   def __repr__(self):
     return 'NonStandardInteger(%s)' % self.val
-
