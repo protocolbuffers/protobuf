@@ -79,16 +79,16 @@ python setup.py build
 python setup.py test
 
 # Deploy source package to testing PyPI
-python setup.py sdist upload -r https://testpypi.python.org/pypi
+python setup.py sdist upload -r https://test.pypi.org/legacy/
 
 # Test locally with different python versions.
-run_install_test ${TESTING_VERSION} python2.7 https://testpypi.python.org/simple
-run_install_test ${TESTING_VERSION} python3.4 https://testpypi.python.org/simple
+run_install_test ${TESTING_VERSION} python2.7 https://test.pypi.org/simple
+run_install_test ${TESTING_VERSION} python3.4 https://test.pypi.org/simple
 
 # Deploy egg/wheel packages to testing PyPI and test again.
-python setup.py bdist_egg bdist_wheel upload -r https://testpypi.python.org/pypi
-run_install_test ${TESTING_VERSION} python2.7 https://testpypi.python.org/simple
-run_install_test ${TESTING_VERSION} python3.4 https://testpypi.python.org/simple
+python setup.py bdist_egg bdist_wheel upload -r https://test.pypi.org/legacy/
+run_install_test ${TESTING_VERSION} python2.7 https://test.pypi.org/simple
+run_install_test ${TESTING_VERSION} python3.4 https://test.pypi.org/simple
 
 echo "All install tests have passed using testing PyPI."
 
