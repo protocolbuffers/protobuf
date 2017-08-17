@@ -5,6 +5,12 @@
 import addressbook_pb2
 import sys
 
+try:
+  raw_input          # Python 2
+except NameError:
+  raw_input = input  # Python 3
+
+
 # This function fills in a Person message based on user input.
 def PromptForAddress(person):
   person.id = int(raw_input("Enter person ID number: "))
@@ -30,13 +36,14 @@ def PromptForAddress(person):
     elif type == "work":
       phone_number.type = addressbook_pb2.Person.WORK
     else:
-      print "Unknown phone type; leaving as default value."
+      print("Unknown phone type; leaving as default value.")
+
 
 # Main procedure:  Reads the entire address book from a file,
 #   adds one person based on user input, then writes it back out to the same
 #   file.
 if len(sys.argv) != 2:
-  print "Usage:", sys.argv[0], "ADDRESS_BOOK_FILE"
+  print("Usage:", sys.argv[0], "ADDRESS_BOOK_FILE")
   sys.exit(-1)
 
 address_book = addressbook_pb2.AddressBook()
@@ -46,7 +53,7 @@ try:
   with open(sys.argv[1], "rb") as f:
     address_book.ParseFromString(f.read())
 except IOError:
-  print sys.argv[1] + ": File not found.  Creating a new file."
+  print(sys.argv[1] + ": File not found.  Creating a new file.")
 
 # Add an address.
 PromptForAddress(address_book.people.add())
