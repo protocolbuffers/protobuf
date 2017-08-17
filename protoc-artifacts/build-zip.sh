@@ -33,6 +33,7 @@ declare -a FILE_NAMES=( \
   osx-x86_64.zip osx-x86_64.exe \
   linux-x86_32.zip linux-x86_32.exe \
   linux-x86_64.zip linux-x86_64.exe \
+  linux-ppcle_64.zip linux-ppc64le_64.exe \
 )
 
 # List of all well-known types to be included.

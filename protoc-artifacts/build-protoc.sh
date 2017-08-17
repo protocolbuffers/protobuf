@@ -73,6 +73,8 @@ checkArch ()
         assertEq $format "elf32-i386" $LINENO
       elif [[ "$ARCH" == x86_64 ]]; then
         assertEq $format "elf64-x86-64" $LINENO
+      elif [[ "$ARCH" == ppcle_64 ]]; then
+        assertEq $format "elf64-powerpcle" $LINENO
       else
         fail "Unsupported arch: $ARCH"
       fi
@@ -116,6 +118,8 @@ checkDependencies ()
       white_list="linux-gate\.so\.1\|libpthread\.so\.0\|libm\.so\.6\|libc\.so\.6\|ld-linux\.so\.2"
     elif [[ "$ARCH" == x86_64 ]]; then
       white_list="linux-vdso\.so\.1\|libpthread\.so\.0\|libm\.so\.6\|libc\.so\.6\|ld-linux-x86-64\.so\.2"
+    elif [[ "$ARCH" == ppcle_64 ]]; then
+      white_list="linux-vdso64\.so\.1\|libpthread\.so\.0\|libm\.so\.6\|libc\.so\.6\|ld64\.so\.2"
     fi
   elif [[ "$OS" == osx ]]; then
     dump_cmd='otool -L '"$1"' | fgrep dylib'
@@ -147,7 +151,7 @@ cd "$(dirname "$0")"
 WORKING_DIR=$(pwd)
 CONFIGURE_ARGS="--disable-shared"
 
-TARGET_FILE=target/$MAKE_TARGET.exe
+TARGET_FILE=target/$MAKE_TARGET
 if [[ "$OS" == windows ]]; then
   MAKE_TARGET="${MAKE_TARGET}.exe"
 fi
@@ -177,6 +181,8 @@ elif [[ "$(uname)" == MINGW64* ]]; then
 elif [[ "$(uname)" == Linux* ]]; then
   if [[ "$OS" == linux ]]; then
     if [[ "$ARCH" == x86_64 ]]; then
+      CXXFLAGS="$CXXFLAGS -m64"
+    elif [[ "$ARCH" == ppcle_64 ]]; then
       CXXFLAGS="$CXXFLAGS -m64"
     elif [[ "$ARCH" == x86_32 ]]; then
       CXXFLAGS="$CXXFLAGS -m32"
