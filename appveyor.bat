@@ -29,39 +29,48 @@ dotnet build -c %configuration% || goto error
 echo Testing C#
 dotnet run -c %configuration% -f netcoreapp1.0 -p Google.Protobuf.Test\Google.Protobuf.Test.csproj || goto error
 dotnet run -c %configuration% -f net451 -p Google.Protobuf.Test\Google.Protobuf.Test.csproj || goto error
-
 goto :EOF
+
+
 
 
 :build_php
 echo Preparing environment
 echo Downloading PHP SDK
-curl -L -o php-sdk.zip https://github.com/OSTC/php-sdk-binary-tools/archive/php-sdk-2.0.9.zip
+curl -L -o php-sdk.zip https://github.com/OSTC/php-sdk-binary-tools/archive/php-sdk-2.0.9.zip || goto :error
 7z x php-sdk.zip
 del /Q php-sdk.zip
 ren php-sdk-binary-tools-php-sdk-2.0.9 php-sdk
 cd php-sdk
-bin\phpsdk_setvars.bat
-bin\phpsdk_buildtree.bat phpdev
-curl -L -o php-src.zip https://github.com/php/php-src/archive/php-7.1.8.zip
+
+echo Setting Environment
+REM php_setvars and phpsdk_buildtree will break the batch.
+set PHP_SDK_VC=vc14
+set PHP_SDK_BIN_PATH=%~dp0php-sdk\bin
+for %%a in ("%PHP_SDK_BIN_PATH%") do set PHP_SDK_ROOT_PATH=%%~dpa
+set PHP_SDK_ROOT_PATH=%PHP_SDK_ROOT_PATH:~0,-1%
+set PHP_SDK_MSYS2_PATH=%PHP_SDK_ROOT_PATH%\msys2\usr\bin
+set PHP_SDK_PHP_CMD=%PHP_SDK_BIN_PATH%\php\do_php.bat
+set PATH=%PHP_SDK_BIN_PATH%;%PHP_SDK_MSYS2_PATH%;%PATH%
+cmd /c bin\phpsdk_buildtree.bat phpdev
+
+echo Downloading php-src and deps
+curl -L -o php-src.zip https://github.com/php/php-src/archive/php-7.1.8.zip || goto :error
 7z x php-src.zip
 del /Q php-src.zip
 ren php-src-php-7.1.8 php-7.1.8
 move php-7.1.8 phpdev\vc14\x64\php-7.1.8
 cd phpdev\vc14\x64\php-7.1.8
-set PHP_SDK_VC=vc14
-phpsdk_deps --update --branch 7.1
+cmd /c phpsdk_deps --update --branch 7.1 || goto :error
+
+echo Building Protobuf Extension for PHP
 mkdir ..\pecl\protobuf
 xcopy ..\..\..\..\..\php\ext\google\protobuf ..\pecl\protobuf
-echo Building Protobuf Extension for PHP
-buildconf
-configure --disable-all --enable-cli --enable-protobuf=shared --disable-zts
-nmake
-
+cmd /c buildconf
+cmd /c configure --disable-all --enable-cli --enable-protobuf=shared --disable-zts || goto :error
+nmake || goto :error
 goto :EOF
 
-echo Builing PHP
-goto :EOF
 
 :error
 echo Failed!
