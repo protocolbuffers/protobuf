@@ -236,6 +236,13 @@ TEST_F(MapImplTest, UsageErrors) {
 
 #endif  // PROTOBUF_HAS_DEATH_TEST
 
+TEST_F(MapImplTest, MapKeyAssignment) {
+  MapKey from, to;
+  from.SetStringValue("abc");
+  to = from;
+  EXPECT_EQ("abc", to.GetStringValue());
+}
+
 TEST_F(MapImplTest, CountNonExist) {
   EXPECT_EQ(0, map_.count(0));
 }
@@ -952,6 +959,17 @@ TEST_F(MapImplTest, SwapArena) {
       testing::Pair(10244, 10247)));
   EXPECT_THAT(m2, testing::UnorderedElementsAre(
       testing::Pair(9398, 41999)));
+}
+
+TEST_F(MapImplTest, CopyAssignMapIterator) {
+  TestMap message;
+  MapReflectionTester reflection_tester(
+      unittest::TestMap::descriptor());
+  reflection_tester.SetMapFieldsViaMapReflection(&message);
+  MapIterator it1 = reflection_tester.MapBegin(&message, "map_int32_int32");
+  MapIterator it2 = reflection_tester.MapEnd(&message, "map_int32_int32");
+  it2 = it1;
+  EXPECT_EQ(it1.GetKey().GetInt32Value(), it2.GetKey().GetInt32Value());
 }
 
 // Map Field Reflection Test ========================================

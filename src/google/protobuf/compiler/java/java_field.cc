@@ -45,8 +45,6 @@
 #include <google/protobuf/compiler/java/java_enum_field.h>
 #include <google/protobuf/compiler/java/java_enum_field_lite.h>
 #include <google/protobuf/compiler/java/java_helpers.h>
-#include <google/protobuf/compiler/java/java_lazy_message_field.h>
-#include <google/protobuf/compiler/java/java_lazy_message_field_lite.h>
 #include <google/protobuf/compiler/java/java_map_field.h>
 #include <google/protobuf/compiler/java/java_map_field_lite.h>
 #include <google/protobuf/compiler/java/java_message_field.h>
@@ -77,13 +75,8 @@ ImmutableFieldGenerator* MakeImmutableGenerator(
           return new ImmutableMapFieldGenerator(
               field, messageBitIndex, builderBitIndex, context);
         } else {
-          if (IsLazy(field, context->EnforceLite())) {
-            return new RepeatedImmutableLazyMessageFieldGenerator(
-                field, messageBitIndex, builderBitIndex, context);
-          } else {
-            return new RepeatedImmutableMessageFieldGenerator(
-                field, messageBitIndex, builderBitIndex, context);
-          }
+          return new RepeatedImmutableMessageFieldGenerator(
+              field, messageBitIndex, builderBitIndex, context);
         }
       case JAVATYPE_ENUM:
         return new RepeatedImmutableEnumFieldGenerator(
@@ -99,13 +92,8 @@ ImmutableFieldGenerator* MakeImmutableGenerator(
     if (field->containing_oneof()) {
       switch (GetJavaType(field)) {
         case JAVATYPE_MESSAGE:
-          if (IsLazy(field, context->EnforceLite())) {
-            return new ImmutableLazyMessageOneofFieldGenerator(
-                field, messageBitIndex, builderBitIndex, context);
-          } else {
-            return new ImmutableMessageOneofFieldGenerator(
-                field, messageBitIndex, builderBitIndex, context);
-          }
+          return new ImmutableMessageOneofFieldGenerator(
+              field, messageBitIndex, builderBitIndex, context);
         case JAVATYPE_ENUM:
           return new ImmutableEnumOneofFieldGenerator(
               field, messageBitIndex, builderBitIndex, context);
@@ -119,13 +107,8 @@ ImmutableFieldGenerator* MakeImmutableGenerator(
     } else {
       switch (GetJavaType(field)) {
         case JAVATYPE_MESSAGE:
-          if (IsLazy(field, context->EnforceLite())) {
-            return new ImmutableLazyMessageFieldGenerator(
-                field, messageBitIndex, builderBitIndex, context);
-          } else {
-            return new ImmutableMessageFieldGenerator(
-                field, messageBitIndex, builderBitIndex, context);
-          }
+          return new ImmutableMessageFieldGenerator(
+              field, messageBitIndex, builderBitIndex, context);
         case JAVATYPE_ENUM:
           return new ImmutableEnumFieldGenerator(
               field, messageBitIndex, builderBitIndex, context);
@@ -150,13 +133,8 @@ ImmutableFieldLiteGenerator* MakeImmutableLiteGenerator(
           return new ImmutableMapFieldLiteGenerator(
               field, messageBitIndex, builderBitIndex, context);
         } else {
-          if (IsLazy(field, context->EnforceLite())) {
-            return new RepeatedImmutableLazyMessageFieldLiteGenerator(
-                field, messageBitIndex, builderBitIndex, context);
-          } else {
-            return new RepeatedImmutableMessageFieldLiteGenerator(
-                field, messageBitIndex, builderBitIndex, context);
-          }
+          return new RepeatedImmutableMessageFieldLiteGenerator(
+              field, messageBitIndex, builderBitIndex, context);
         }
       case JAVATYPE_ENUM:
         return new RepeatedImmutableEnumFieldLiteGenerator(
@@ -172,13 +150,8 @@ ImmutableFieldLiteGenerator* MakeImmutableLiteGenerator(
     if (field->containing_oneof()) {
       switch (GetJavaType(field)) {
         case JAVATYPE_MESSAGE:
-          if (IsLazy(field, context->EnforceLite())) {
-            return new ImmutableLazyMessageOneofFieldLiteGenerator(
-                field, messageBitIndex, builderBitIndex, context);
-          } else {
-            return new ImmutableMessageOneofFieldLiteGenerator(
-                field, messageBitIndex, builderBitIndex, context);
-          }
+          return new ImmutableMessageOneofFieldLiteGenerator(
+              field, messageBitIndex, builderBitIndex, context);
         case JAVATYPE_ENUM:
           return new ImmutableEnumOneofFieldLiteGenerator(
               field, messageBitIndex, builderBitIndex, context);
@@ -192,13 +165,8 @@ ImmutableFieldLiteGenerator* MakeImmutableLiteGenerator(
     } else {
       switch (GetJavaType(field)) {
         case JAVATYPE_MESSAGE:
-          if (IsLazy(field, context->EnforceLite())) {
-            return new ImmutableLazyMessageFieldLiteGenerator(
-                field, messageBitIndex, builderBitIndex, context);
-          } else {
-            return new ImmutableMessageFieldLiteGenerator(
-                field, messageBitIndex, builderBitIndex, context);
-          }
+          return new ImmutableMessageFieldLiteGenerator(
+              field, messageBitIndex, builderBitIndex, context);
         case JAVATYPE_ENUM:
           return new ImmutableEnumFieldLiteGenerator(
               field, messageBitIndex, builderBitIndex, context);
@@ -293,10 +261,17 @@ void SetCommonFieldVariables(const FieldDescriptor* descriptor,
                              std::map<string, string>* variables) {
   (*variables)["field_name"] = descriptor->name();
   (*variables)["name"] = info->name;
+  (*variables)["classname"] = descriptor->containing_type()->name();
   (*variables)["capitalized_name"] = info->capitalized_name;
   (*variables)["disambiguated_reason"] = info->disambiguated_reason;
   (*variables)["constant_name"] = FieldConstantName(descriptor);
   (*variables)["number"] = SimpleItoa(descriptor->number());
+  // These variables are placeholders to pick out the beginning and ends of
+  // identifiers for annotations (when doing so with existing variables would
+  // be ambiguous or impossible). They should never be set to anything but the
+  // empty string.
+  (*variables)["{"] = "";
+  (*variables)["}"] = "";
 }
 
 void SetCommonOneofVariables(const FieldDescriptor* descriptor,

@@ -100,6 +100,27 @@ if _implementation_version_str != '2':
 _implementation_version = int(_implementation_version_str)
 
 
+# Detect if serialization should be deterministic by default
+try:
+  # The presence of this module in a build allows the proto implementation to
+  # be upgraded merely via build deps.
+  #
+  # NOTE: Merely importing this automatically enables deterministic proto
+  # serialization for C++ code, but we still need to export it as a boolean so
+  # that we can do the same for `_implementation_type == 'python'`.
+  #
+  # NOTE2: It is possible for C++ code to enable deterministic serialization by
+  # default _without_ affecting Python code, if the C++ implementation is not in
+  # use by this module.  That is intended behavior, so we don't actually expose
+  # this boolean outside of this module.
+  #
+  # pylint: disable=g-import-not-at-top,unused-import
+  from google.protobuf import enable_deterministic_proto_serialization
+  _python_deterministic_proto_serialization = True
+except ImportError:
+  _python_deterministic_proto_serialization = False
+
+
 # Usage of this function is discouraged. Clients shouldn't care which
 # implementation of the API is in use. Note that there is no guarantee
 # that differences between APIs will be maintained.
@@ -111,3 +132,8 @@ def Type():
 # See comment on 'Type' above.
 def Version():
   return _implementation_version
+
+
+# For internal use only
+def IsPythonDefaultSerializationDeterministic():
+  return _python_deterministic_proto_serialization

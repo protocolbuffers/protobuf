@@ -125,6 +125,7 @@ ProtoStreamObjectSource::ProtoStreamObjectSource(
       recursion_depth_(0),
       max_recursion_depth_(kDefaultMaxRecursionDepth),
       render_unknown_fields_(false),
+      render_unknown_enum_values_(true),
       add_trailing_zeros_for_timestamp_and_duration_(false) {
   GOOGLE_LOG_IF(DFATAL, stream == NULL) << "Input stream is NULL.";
 }
@@ -142,6 +143,7 @@ ProtoStreamObjectSource::ProtoStreamObjectSource(
       recursion_depth_(0),
       max_recursion_depth_(kDefaultMaxRecursionDepth),
       render_unknown_fields_(false),
+      render_unknown_enum_values_(true),
       add_trailing_zeros_for_timestamp_and_duration_(false) {
   GOOGLE_LOG_IF(DFATAL, stream == NULL) << "Input stream is NULL.";
 }
@@ -866,12 +868,6 @@ Status ProtoStreamObjectSource::RenderNonMessageField(
         break;
       }
 
-      // No need to lookup enum type if we need to render int.
-      if (use_ints_for_enums_) {
-        ow->RenderInt32(field_name, buffer32);
-        break;
-      }
-
       // Get the nested enum type for this field.
       // TODO(skarvaje): Avoid string manipulation. Find ways to speed this
       // up.
@@ -883,14 +879,17 @@ Status ProtoStreamObjectSource::RenderNonMessageField(
         const google::protobuf::EnumValue* enum_value =
             FindEnumValueByNumber(*en, buffer32);
         if (enum_value != NULL) {
-          if (use_lower_camel_for_enums_)
+          if (use_ints_for_enums_) {
+            ow->RenderInt32(field_name, buffer32);
+          } else if (use_lower_camel_for_enums_) {
             ow->RenderString(field_name, ToCamelCase(enum_value->name()));
-          else
+          } else {
             ow->RenderString(field_name, enum_value->name());
-        } else {
+          }
+        } else if (render_unknown_enum_values_) {
           ow->RenderInt32(field_name, buffer32);
         }
-      } else {
+      } else if (render_unknown_enum_values_) {
         ow->RenderInt32(field_name, buffer32);
       }
       break;

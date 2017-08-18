@@ -86,4 +86,5 @@ enum Proto3Enum {
   PROTO3_FOO = 0;
   PROTO3_BAR = 1;
   PROTO3_BAZ = 2;
+  MSG_PROTO3_BAH = 3;
 }

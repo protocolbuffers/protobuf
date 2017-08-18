@@ -33,6 +33,7 @@
 
 #include <google/protobuf/map.h>
 #include <google/protobuf/map_entry_lite.h>
+#include <google/protobuf/wire_format_lite.h>
 
 namespace google {
 namespace protobuf {
@@ -49,6 +50,9 @@ class MapFieldLite {
   typedef Derived EntryType;
 
  public:
+  typedef Map<Key, T> MapType;
+  typedef EntryType EntryTypeTrait;
+
   MapFieldLite() : arena_(NULL) { SetDefaultEnumValue(); }
 
   explicit MapFieldLite(Arena* arena) : arena_(arena), map_(arena) {
@@ -103,7 +107,6 @@ class MapFieldLite {
 
   friend class ::google::protobuf::Arena;
 };
-
 
 // True if IsInitialized() is true for value field in all elements of t. T is
 // expected to be message.  It's useful to have this helper here to keep the

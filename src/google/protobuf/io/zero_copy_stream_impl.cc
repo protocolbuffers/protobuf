@@ -56,6 +56,9 @@ namespace io {
 // Win32 lseek is broken:  If invoked on a non-seekable file descriptor, its
 // return value is undefined.  We re-define it to always produce an error.
 #define lseek(fd, offset, origin) ((off_t)-1)
+#endif
+
+#ifdef _MSC_VER
 // DO NOT include <io.h>, instead create functions in io_win32.{h,cc} and import
 // them like we do below.
 using google::protobuf::internal::win32::access;
@@ -85,8 +88,6 @@ FileInputStream::FileInputStream(int file_descriptor, int block_size)
   : copying_input_(file_descriptor),
     impl_(&copying_input_, block_size) {
 }
-
-FileInputStream::~FileInputStream() {}
 
 bool FileInputStream::Close() {
   return copying_input_.Close();
@@ -278,8 +279,6 @@ bool FileOutputStream::CopyingFileOutputStream::Write(
 IstreamInputStream::IstreamInputStream(std::istream* input, int block_size)
     : copying_input_(input), impl_(&copying_input_, block_size) {}
 
-IstreamInputStream::~IstreamInputStream() {}
-
 bool IstreamInputStream::Next(const void** data, int* size) {
   return impl_.Next(data, size);
 }
@@ -351,9 +350,6 @@ bool OstreamOutputStream::CopyingOstreamOutputStream::Write(
 ConcatenatingInputStream::ConcatenatingInputStream(
     ZeroCopyInputStream* const streams[], int count)
   : streams_(streams), stream_count_(count), bytes_retired_(0) {
-}
-
-ConcatenatingInputStream::~ConcatenatingInputStream() {
 }
 
 bool ConcatenatingInputStream::Next(const void** data, int* size) {

@@ -1,3 +1,135 @@
+2017-08-14 version 3.4.0 (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
+  Planned Future Changes
+  * There are some changes that are not included in this release but are planned
+    for the near future
+      - Preserve unknown fields in proto3: We are going to bring unknown fields
+        back into proto3. In this release, some languages start to support
+        preserving unknown fields in proto3, controlled by flags/options. Some
+        languages also introduce explicit APIs to drop unknown fields for
+        migration. Please read the change log sections by languages for details.
+        For general timeline and plan:
+
+          https://docs.google.com/document/d/1KMRX-G91Aa-Y2FkEaHeeviLRRNblgIahbsk4wA14gRk/view
+
+        For issues and discussions:
+
+          https://github.com/google/protobuf/issues/272
+
+      - Make C++ implementation C++11 only: we plan to require C++11 to build
+        protobuf code starting from 3.5.0 or 3.6.0 release, after unknown fields
+        semantic changes are finished. Please join this
+        github issue:
+
+          https://github.com/google/protobuf/issues/2780
+
+        to provide your feedback.
+
+  General
+  * Extension ranges now accept options and are customizable.
+  * "reserve" keyword now supports “max” in field number ranges,
+    e.g.  reserve 1000 to max;
+
+  C++
+  * Proto3 messages are now able to preserve unknown fields. The default
+    behavior is still to drop unknowns, which will be flipped in a future
+    release. If you rely on unknowns fields being dropped. Please use
+    Message::DiscardUnknownFields() explicitly.
+  * Packable proto3 fields are now packed by default in serialization.
+  * Following C++11 features are introduced when C++11 is available:
+      - move-constructor and move-assignment are introduced to messages
+      - Repeated fields constructor now takes std::initializer_list
+      - rvalue setters are introduced for string fields
+  * Experimental Table-Driven parsing and serialization available to test. To
+    enable it, pass in table_driven_parsing table_driven_serialization protoc
+    generator flags for C++
+
+      $ protoc --cpp_out=table_driven_parsing,table_driven_serialization:./ \
+        test.proto
+
+  * lite generator parameter supported by the generator. Once set, all generated
+    files, use lite runtime regardless of the optimizer_for setting in the
+    .proto file.
+  * Various optimizations to make C++ code more performant on PowerPC platform
+  * Fixed maps data corruption when the maps are modified by both reflection API
+    and generated API.
+  * Deterministic serialization on maps reflection now uses stable sort.
+  * file() accessors are introduced to various *Descriptor classes to make
+    writing template function easier.
+  * ByteSize() and SpaceUsed() are deprecated.Use ByteSizeLong() and
+    SpaceUsedLong() instead
+  * Consistent hash function is used for maps in DEBUG and NDEBUG build.
+  * "using namespace std" is removed from stubs/common.h
+  * Various performance optimizations and bug fixes
+
+  Java
+  * Introduced new parser API DiscardUnknownFieldsParser in preparation of
+    proto3 unknown fields preservation change. Users who want to drop unknown
+    fields should migrate to use this new parser API. For example:
+
+      Parser<Foo> parser = DiscardUnknownFieldsParser.wrap(Foo.parser());
+      Foo foo = parser.parseFrom(input);
+
+  * Introduced new TextFormat API printUnicodeFieldValue() that prints field
+    value without escaping unicode characters.
+  * Added Durations.compare(Duration, Duration) and
+    Timestamps.compare(Timestamp, Timestamp).
+  * JsonFormat now accepts base64url encoded bytes fields.
+  * Optimized CodedInputStream to do less copies when parsing large bytes
+    fields.
+  * Optimized TextFormat to allocate less memory when printing.
+
+  Python
+  * SerializeToString API is changed to SerializeToString(self, **kwargs),
+    deterministic parameter is accepted for deterministic serialization.
+  * Added sort_keys parameter in json format to make the output deterministic.
+  * Added indent parameter in json format.
+  * Added extension support in json format.
+  * Added __repr__ support for repeated field in cpp implementation.
+  * Added file in FieldDescriptor.
+  * Added pretty-print filter to text format.
+  * Services and method descriptors are always printed even if generic_service
+    option is turned off.
+  * Note: AppEngine 2.5 is deprecated on June 2017 that AppEngine 2.5 will
+    never update protobuf runtime. Users who depend on AppEngine 2.5 should use
+    old protoc.
+  
+  PHP
+  * Support PHP generic services. Specify file option php_generic_service=true
+    to enable generating service interface.
+  * Message, repeated and map fields setters take value instead of reference.
+  * Added map iterator in c extension.
+  * Support json  encode/decode.
+  * Added more type info in getter/setter phpdoc
+  * Fixed the problem that c extension and php implementation cannot be used
+    together.
+  * Added file option php_namespace to use custom php namespace instead of
+    package.
+  * Added fluent setter.
+  * Added descriptor API in runtime for custom encode/decode.
+  * Various bug fixes.
+
+  Objective-C
+  * Fix for GPBExtensionRegistry copying and add tests.
+  * Optimize GPBDictionary.m codegen to reduce size of overall library by 46K
+    per architecture.
+  * Fix some cases of reading of 64bit map values.
+  * Properly error on a tag with field number zero.
+  * Preserve unknown fields in proto3 syntax files.
+  * Document the exceptions on some of the writing apis.
+
+  C#
+  * Implemented IReadOnlyDictionary<K,V> in MapField<K,V>
+  * Added TryUnpack method for Any message in addition to Unpack.
+  * Converted C# projects to MSBuild (csproj) format.
+
+  Ruby
+  * Several bug fixes.
+
+  Javascript
+  * Added support of field option js_type. Now one can specify the JS type of a
+    64-bit integer field to be string in the generated code by adding option
+    [jstype = JS_STRING] on the field.
+
 2017-04-05 version 3.3.0 (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
   Planned Future Changes
   * There are some changes that are not included in this release but are

@@ -397,6 +397,12 @@ message TestRequiredForeign {
   optional int32 dummy = 3;
 }
 
+message TestRequiredMessage {
+  optional TestRequired optional_message = 1;
+  repeated TestRequired repeated_message = 2;
+  required TestRequired required_message = 3;
+}
+
 // Test that we can use NestedMessage from outside TestAllTypes.
 message TestForeignNested {
   optional TestAllTypes.NestedMessage foreign_nested = 1;

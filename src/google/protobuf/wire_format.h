@@ -46,11 +46,6 @@
 #include <google/protobuf/message.h>
 #include <google/protobuf/wire_format_lite.h>
 
-// Do UTF-8 validation on string type in Debug build only
-#ifndef NDEBUG
-#define GOOGLE_PROTOBUF_UTF8_VALIDATION_ENABLED
-#endif
-
 namespace google {
 namespace protobuf {
   namespace io {

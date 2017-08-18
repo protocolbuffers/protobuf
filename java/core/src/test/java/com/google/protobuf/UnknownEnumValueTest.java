@@ -36,7 +36,6 @@ import com.google.protobuf.Descriptors.EnumValueDescriptor;
 import com.google.protobuf.Descriptors.FieldDescriptor;
 import com.google.protobuf.FieldPresenceTestProto.TestAllTypes;
 import com.google.protobuf.TextFormat.ParseException;
-
 import junit.framework.TestCase;
 
 /**
@@ -151,18 +150,15 @@ public class UnknownEnumValueTest extends TestCase {
     assertEquals(4321, unknown4321.getNumber());
     assertEquals(5432, unknown5432.getNumber());
     assertEquals(6543, unknown6543.getNumber());
-    
+
     // Unknown EnumValueDescriptor will map to UNRECOGNIZED.
     assertEquals(
-        TestAllTypes.NestedEnum.valueOf(unknown4321),
-        TestAllTypes.NestedEnum.UNRECOGNIZED);
+        TestAllTypes.NestedEnum.UNRECOGNIZED, TestAllTypes.NestedEnum.valueOf(unknown4321));
     assertEquals(
-        TestAllTypes.NestedEnum.valueOf(unknown5432),
-        TestAllTypes.NestedEnum.UNRECOGNIZED);
+        TestAllTypes.NestedEnum.UNRECOGNIZED, TestAllTypes.NestedEnum.valueOf(unknown5432));
     assertEquals(
-        TestAllTypes.NestedEnum.valueOf(unknown6543),
-        TestAllTypes.NestedEnum.UNRECOGNIZED);
-    
+        TestAllTypes.NestedEnum.UNRECOGNIZED, TestAllTypes.NestedEnum.valueOf(unknown6543));
+
     // Setters also accept unknown EnumValueDescriptor.
     builder.setField(optionalNestedEnumField, unknown6543);
     builder.setRepeatedField(repeatedNestedEnumField, 0, unknown4321);

@@ -70,6 +70,10 @@ namespace google {
 namespace protobuf {
 namespace compiler {
 
+// January 1, 1980 as a DOS date.
+// see https://msdn.microsoft.com/en-us/library/9kkf9tah.aspx
+static const uint16 kDosEpoch = 1 << 5 | 1;
+
 static const uint32 kCRC32Table[256] = {
   0x00000000, 0x77073096, 0xee0e612c, 0x990951ba, 0x076dc419, 0x706af48f,
   0xe963a535, 0x9e6495a3, 0x0edb8832, 0x79dcb8a4, 0xe0d5e91e, 0x97d2d988,
@@ -154,7 +158,7 @@ bool ZipWriter::Write(const string& filename, const string& contents) {
   WriteShort(&output, 0);  // flags
   WriteShort(&output, 0);  // compression method: stored
   WriteShort(&output, 0);  // last modified time
-  WriteShort(&output, 0);  // last modified date
+  WriteShort(&output, kDosEpoch);  // last modified date
   output.WriteLittleEndian32(info.crc32);  // crc-32
   output.WriteLittleEndian32(info.size);  // compressed size
   output.WriteLittleEndian32(info.size);  // uncompressed size
@@ -185,7 +189,7 @@ bool ZipWriter::WriteDirectory() {
     WriteShort(&output, 0);  // flags
     WriteShort(&output, 0);  // compression method: stored
     WriteShort(&output, 0);  // last modified time
-    WriteShort(&output, 0);  // last modified date
+    WriteShort(&output, kDosEpoch);  // last modified date
     output.WriteLittleEndian32(crc32);  // crc-32
     output.WriteLittleEndian32(size);  // compressed size
     output.WriteLittleEndian32(size);  // uncompressed size

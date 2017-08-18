@@ -309,6 +309,9 @@ class LIBPROTOBUF_EXPORT ProtoStreamObjectSource : public ObjectSource {
   // Whether to render unknown fields.
   bool render_unknown_fields_;
 
+  // Whether to render unknown enum values.
+  bool render_unknown_enum_values_;
+
   // Whether to add trailing zeros for timestamp and duration.
   bool add_trailing_zeros_for_timestamp_and_duration_;
 

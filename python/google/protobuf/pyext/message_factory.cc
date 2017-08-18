@@ -133,17 +133,18 @@ int RegisterMessageClass(PyMessageFactory* self,
 CMessageClass* GetOrCreateMessageClass(PyMessageFactory* self,
                                        const Descriptor* descriptor) {
   // This is the same implementation as MessageFactory.GetPrototype().
-  ScopedPyObjectPtr py_descriptor(
-      PyMessageDescriptor_FromDescriptor(descriptor));
-  if (py_descriptor == NULL) {
-    return NULL;
-  }
+
   // Do not create a MessageClass that already exists.
   hash_map<const Descriptor*, CMessageClass*>::iterator it =
       self->classes_by_descriptor->find(descriptor);
   if (it != self->classes_by_descriptor->end()) {
     Py_INCREF(it->second);
     return it->second;
+  }
+  ScopedPyObjectPtr py_descriptor(
+      PyMessageDescriptor_FromDescriptor(descriptor));
+  if (py_descriptor == NULL) {
+    return NULL;
   }
   // Create a new message class.
   ScopedPyObjectPtr args(Py_BuildValue(

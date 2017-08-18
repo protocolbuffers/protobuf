@@ -59,7 +59,6 @@
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/stubs/type_traits.h>
 #include <google/protobuf/arena.h>
-#include <google/protobuf/generated_message_util.h>
 #include <google/protobuf/message_lite.h>
 
 
@@ -281,9 +280,6 @@ class RepeatedField PROTOBUF_FINAL {
   friend class Arena;
   typedef void InternalArenaConstructable_;
 
-  // Move the contents of |from| into |to|, possibly clobbering |from| in the
-  // process.  For primitive types this is just a memcpy(), but it could be
-  // specialized for non-primitive types to, say, swap each element instead.
   void MoveArray(Element* to, Element* from, int size);
 
   // Copy the elements of |from| into |to|.
@@ -597,6 +593,7 @@ class LIBPROTOBUF_EXPORT RepeatedPtrFieldBase {
   // Reserve() and MergeFrom() to reduce code size. |extend_amount| must be > 0.
   void** InternalExtend(int extend_amount);
 
+  friend class AccessorHelper;
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(RepeatedPtrFieldBase);
 };
 
@@ -609,8 +606,7 @@ class GenericTypeHandler {
 #endif
 
   static inline GenericType* New(Arena* arena) {
-    return ::google::protobuf::Arena::CreateMaybeMessage<Type>(
-        arena, static_cast<GenericType*>(0));
+    return ::google::protobuf::Arena::CreateMaybeMessage<Type>(arena);
   }
   static inline GenericType* NewFromPrototype(
       const GenericType* prototype, ::google::protobuf::Arena* arena = NULL);
@@ -2449,6 +2445,12 @@ template<typename T> class RepeatedPtrFieldBackInsertIterator
     *field_->Add() = *ptr_to_value;
     return *this;
   }
+#if LANG_CXX11
+  RepeatedPtrFieldBackInsertIterator<T>& operator=(T&& value) {
+    *field_->Add() = std::move(value);
+    return *this;
+  }
+#endif
   RepeatedPtrFieldBackInsertIterator<T>& operator*() {
     return *this;
   }

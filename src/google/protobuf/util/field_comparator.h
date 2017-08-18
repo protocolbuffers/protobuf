@@ -237,7 +237,7 @@ class LIBPROTOBUF_EXPORT DefaultFieldComparator : public FieldComparator {
 
   // True iff default_tolerance_ has been explicitly set.
   //
-  // If false, then the default tolerance for flaots and doubles is that which
+  // If false, then the default tolerance for floats and doubles is that which
   // is used by MathUtil::AlmostEquals().
   bool has_default_tolerance_;
 

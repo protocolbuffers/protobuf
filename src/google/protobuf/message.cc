@@ -143,7 +143,13 @@ bool Message::ParsePartialFromIstream(std::istream* input) {
 
 void Message::SerializeWithCachedSizes(
     io::CodedOutputStream* output) const {
-  WireFormat::SerializeWithCachedSizes(*this, GetCachedSize(), output);
+  const internal::SerializationTable* table =
+      static_cast<const internal::SerializationTable*>(InternalGetTable());
+  if (table == 0) {
+    WireFormat::SerializeWithCachedSizes(*this, GetCachedSize(), output);
+  } else {
+    internal::TableSerialize(*this, table, output);
+  }
 }
 
 size_t Message::ByteSizeLong() const {
@@ -190,6 +196,10 @@ bool Message::SerializePartialToOstream(std::ostream* output) const {
 // Reflection and associated Template Specializations
 
 Reflection::~Reflection() {}
+
+void Reflection::AddAllocatedMessage(Message* /* message */,
+                                     const FieldDescriptor* /*field */,
+                                     Message* /* new_entry */) const {}
 
 #define HANDLE_TYPE(TYPE, CPPTYPE, CTYPE)                             \
 template<>                                                            \

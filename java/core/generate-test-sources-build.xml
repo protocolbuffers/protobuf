@@ -5,6 +5,7 @@
         <arg value="--proto_path=${protobuf.source.dir}"/>
         <arg value="--proto_path=${test.proto.dir}"/>
         <arg value="${protobuf.source.dir}/google/protobuf/unittest.proto"/>
+        <arg value="${protobuf.source.dir}/google/protobuf/unittest_proto3.proto"/>
         <arg value="${protobuf.source.dir}/google/protobuf/unittest_import.proto"/>
         <arg value="${protobuf.source.dir}/google/protobuf/unittest_import_public.proto"/>
         <arg value="${protobuf.source.dir}/google/protobuf/unittest_mset.proto"/>

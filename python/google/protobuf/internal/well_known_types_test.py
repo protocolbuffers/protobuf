@@ -284,7 +284,7 @@ class TimeUtilTest(TimeUtilTestBase):
         '1972-01-01T01:00:00.01+08',)
     self.assertRaisesRegexp(
         ValueError,
-        'year is out of range',
+        'year (0 )?is out of range',
         message.FromJsonString,
         '0000-01-01T00:00:00Z')
     message.seconds = 253402300800
