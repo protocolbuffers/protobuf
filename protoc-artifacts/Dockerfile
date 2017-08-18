@@ -15,9 +15,10 @@ RUN yum install -y git \
 
 # Install Java 8
 RUN wget -q --no-cookies --no-check-certificate \
-    --header "Cookie: gpw_e24=http%3A%2F%2Fwww.oracle.com%2F; oraclelicense=accept-securebackup-cookie" "http://download.oracle.com/otn-pub/java/jdk/8u45-b14/jdk-8u45-linux-x64.tar.gz" \
+    --header "Cookie: gpw_e24=http%3A%2F%2Fwww.oracle.com%2F; oraclelicense=accept-securebackup-cookie" \
+    "http://download.oracle.com/otn-pub/java/jdk/8u131-b11/d54c1d3a095b4ff2b6607d096fa80163/jdk-8u131-linux-x64.tar.gz" \
     -O - | tar xz -C /var/local
-ENV JAVA_HOME /var/local/jdk1.8.0_45
+ENV JAVA_HOME /var/local/jdk1.8.0_131
 ENV PATH $JAVA_HOME/bin:$PATH
 
 # Install Maven
