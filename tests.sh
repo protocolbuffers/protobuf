@@ -225,9 +225,9 @@ internal_install_python_deps() {
   fi
   # Install tox (OS X doesn't have pip).
   if [ $(uname -s) == "Darwin" ]; then
-    sudo easy_install tox
+    sudo easy_install tox tox-travis
   else
-    sudo pip install tox
+    sudo pip install tox tox-travis
   fi
   # Only install Python2.6/3.x on Linux.
   if [ $(uname -s) == "Linux" ]; then
