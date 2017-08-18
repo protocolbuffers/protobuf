@@ -254,7 +254,9 @@ class LIBPROTOC_EXPORT CommandLineInterface {
       GeneratorContext* generator_context, string* error);
 
   // Implements --encode and --decode.
-  bool EncodeOrDecode(const DescriptorPool* pool);
+  bool EncodeOrDecode(const DescriptorPool* pool,
+                      int in_fd,
+                      int out_fd);
 
   // Implements the --descriptor_set_out option.
   bool WriteDescriptorSet(
@@ -382,6 +384,13 @@ class LIBPROTOC_EXPORT CommandLineInterface {
   // When using --encode or --decode, this names the type we are encoding or
   // decoding.  (Empty string indicates --decode_raw.)
   string codec_type_;
+
+  // When using --encode / --decode / --decode_raw absolute path to the output
+  // file. (Empty string indicates write to STDOUT).
+  string protobuf_out_path_;
+  // When using --encode / --decode / --decode_raw, absolute path to the input
+  // file. (Empty string indicates read from STDIN).
+  string protobuf_in_path_;
 
   // If --descriptor_set_out was given, this is the filename to which the
   // FileDescriptorSet should be written.  Otherwise, empty.
