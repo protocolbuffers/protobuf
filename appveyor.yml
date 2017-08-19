@@ -18,6 +18,8 @@ environment:
 
     - language: php
       image: Visual Studio 2015
+      BUILD_DLL: ON
+      UNICODE: ON
 
 # Our build scripts run tests automatically; we don't want AppVeyor
 # to try to detect them itself.

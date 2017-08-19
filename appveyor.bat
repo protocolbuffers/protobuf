@@ -13,6 +13,7 @@ mkdir build_msvc
 cd build_msvc
 cmake -G "%generator%" -Dprotobuf_BUILD_SHARED_LIBS=%BUILD_DLL% -Dprotobuf_UNICODE=%UNICODE% ../cmake
 msbuild protobuf.sln /p:Platform=%vcplatform% /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll" || goto error
+IF %language%==php GOTO build_php_done
 cd %configuration%
 tests.exe || goto error
 goto :EOF
@@ -37,14 +38,49 @@ goto :EOF
 :build_php
 echo Preparing environment
 call "C:\Program Files\Microsoft SDKs\Windows\v7.1\Bin\SetEnv.cmd" /x64
-call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" x86_amd64
+call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" x64
+
+echo Building C++ Internal
+set generator=Visual Studio 14 Win64
+goto :build_cpp
+
+:build_php_done
+cd %~dp0
+set PATH=%~dp0build_msvc\Debug;%PATH%
+echo Generating PHP Test Files
+cd php\tests
+rd /s /q generated
+mkdir generated
+protoc --php_out=generated proto\test.proto ^
+    proto\test_include.proto             ^
+    proto\test_no_namespace.proto        ^
+    proto\test_prefix.proto              ^
+    proto\test_php_namespace.proto       ^
+    proto\test_empty_php_namespace.proto ^
+    proto\test_service.proto             ^
+    proto\test_service_namespace.proto   ^
+    proto\test_descriptors.proto
+protoc --php_out=generated -I%~dp0src %~dp0src\google\protobuf\empty.proto
+protoc --php_out=generated -I%~dp0php\tests -I%~dp0src %~dp0php\tests\proto\test_import_descriptor_proto.proto
+
 
 echo Downloading PHP SDK
+cd %~dp0
 curl -L -o php-sdk.zip https://github.com/OSTC/php-sdk-binary-tools/archive/php-sdk-2.0.9.zip || goto :error
 7z x php-sdk.zip
 del /Q php-sdk.zip
 ren php-sdk-binary-tools-php-sdk-2.0.9 php-sdk
 cd php-sdk
+
+echo Downloading PHP Binary for test
+md php-windows
+cd php-windows
+curl -L -o php-windows.zip http://windows.php.net/downloads/releases/php-7.1.8-nts-Win32-VC14-x64.zip || goto :error
+7z x php-windows.zip
+del /Q php-windows.zip
+set PHP_BINARY_PATH=%~dp0php-sdk\php-windows
+set PATH=%PHP_BINARY_PATH%;%PATH%
+cd ..
 
 echo Setting Environment
 REM php_setvars and phpsdk_buildtree will break the batch.
@@ -72,6 +108,15 @@ xcopy ..\..\..\..\..\php\ext\google\protobuf ..\pecl\protobuf
 cmd /c buildconf
 cmd /c configure --disable-all --enable-cli --enable-protobuf=shared --disable-zts || goto :error
 nmake || goto :error
+
+echo Testing PHP
+set PHP_RELEASE_PATH=%~dp0php-sdk\phpdev\vc14\x64\php-7.1.8\x64\Release
+curl -L -o %PHP_RELEASE_PATH%\phpunit.phar https://phar.phpunit.de/phpunit-5.7.phar || goto :error
+cd %~dp0php\tests
+echo PHP Test in Windows is unavailable yet.
+REM Don't ``goto :error`` here before the extension can run on Windows.
+cmd /c test.bat
+
 goto :EOF
 
 
