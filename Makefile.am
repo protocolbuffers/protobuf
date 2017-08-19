@@ -686,6 +686,7 @@ php_EXTRA_DIST=                                                       \
   php/tests/proto/test_service.proto                                  \
   php/tests/proto/test_service_namespace.proto                        \
   php/tests/test.sh                                                   \
+  php/tests/test.bat                                                  \
   php/tests/test_base.php                                             \
   php/tests/test_util.php                                             \
   php/tests/well_known_test.php                                       \
