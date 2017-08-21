@@ -29,7 +29,7 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <stdint.h>
-#include <protobuf.h>
+#include "protobuf.h"
 #include <Zend/zend.h>
 
 #include "utf8.h"
@@ -991,7 +991,10 @@ void layout_merge(MessageLayout* layout, MessageHeader* from,
           layout->fields[upb_fielddef_index(field)].case_offset;
       // For a oneof, check that this field is actually present -- skip all the
       // below if not.
-      if (DEREF((message_data(from) + oneof_case_offset), uint32_t) !=
+      // Adding to a void* is a GCC extension, so in MSVC, we have to cast the
+      // pointer to a char*.
+      // See: http://gcc.gnu.org/onlinedocs/gcc/Pointer-Arith.html
+      if (DEREF(((char*)message_data(from) + oneof_case_offset), uint32_t) !=
           upb_fielddef_number(field)) {
         continue;
       }

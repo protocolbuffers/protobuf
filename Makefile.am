@@ -594,6 +594,7 @@ php_EXTRA_DIST=                                                       \
   php/ext/google/protobuf/storage.c                                   \
   php/ext/google/protobuf/map.c                                       \
   php/ext/google/protobuf/config.m4                                   \
+  php/ext/google/protobuf/config.w32                                  \
   php/ext/google/protobuf/upb.c                                       \
   php/ext/google/protobuf/protobuf.c                                  \
   php/src/phpdoc.dist.xml                                             \
