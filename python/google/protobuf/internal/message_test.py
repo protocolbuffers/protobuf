@@ -57,9 +57,9 @@ try:
 except ImportError:
   import unittest
 try:
-  cmp                                    # Python 2
+  cmp                                   # Python 2
 except NameError:
-  cmp = lambda(x, y): (x > y) - (x < y)  # Python 3
+  cmp = lambda x, y: (x > y) - (x < y)  # Python 3
 
 from google.protobuf import map_unittest_pb2
 from google.protobuf import unittest_pb2
