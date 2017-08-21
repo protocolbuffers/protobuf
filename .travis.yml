@@ -71,6 +71,12 @@ matrix:
     # fetch pre-built Linux protoc binaries in the test.
     - os: linux
       env: CONFIG=python_compatibility
+    - os: linux
+      env: CONFIG=python
+      python: 3.5
+    - os: linux
+      env: CONFIG=python_cpp
+      python: 3.5
   allow_failures:
     # These currently do not work on OS X but are being worked on by @haberman.
     - os: osx
