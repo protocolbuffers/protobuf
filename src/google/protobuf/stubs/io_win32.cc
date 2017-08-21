@@ -212,15 +212,15 @@ string normalize(string path) {
 WCHAR* as_wstring(const string& s) {
   int len = ::MultiByteToWideChar(CP_UTF8, 0, s.c_str(), s.size(), NULL, 0);
   WCHAR* result = new WCHAR[len + 1];
-  ::MultiByteToWideChar(CP_UTF8, 0, s.c_str(), s.size(), result.get(), len + 1);
+  ::MultiByteToWideChar(CP_UTF8, 0, s.c_str(), s.size(), result, len + 1);
   result[len] = 0;
   return result;
 }
 
 void as_wchar_path(const string& path, wstring* wchar_path) {
   scoped_array<WCHAR> wbuf(as_wstring(path));
-  replace_directory_separators(wbuf);
-  wchar_path->assign(wbuf);
+  replace_directory_separators(wbuf.get());
+  wchar_path->assign(wbuf.get());
 }
 
 bool as_windows_path(const string& path, wstring* result) {
