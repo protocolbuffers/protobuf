@@ -181,7 +181,7 @@ class Map {
     MapAllocator(const MapAllocator<X>& allocator)
         : arena_(allocator.arena()) {}
 
-    pointer allocate(size_type n, const void* hint = 0) {
+    pointer allocate(size_type n, const void* /* hint */ = 0) {
       // If arena is not given, malloc needs to be called which doesn't
       // construct element object.
       if (arena_ == NULL) {
@@ -197,6 +197,7 @@ class Map {
 #if defined(__GXX_DELETE_WITH_SIZE__) || defined(__cpp_sized_deallocation)
         ::operator delete(p, n * sizeof(value_type));
 #else
+        (void)n;
         ::operator delete(p);
 #endif
       }
