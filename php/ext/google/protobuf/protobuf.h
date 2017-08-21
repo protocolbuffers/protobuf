@@ -38,9 +38,11 @@
 
 #define PHP_PROTOBUF_EXTNAME "protobuf"
 #define PHP_PROTOBUF_VERSION "3.3.2"
-
 #define MAX_LENGTH_OF_INT64 20
 #define SIZEOF_INT64 8
+
+extern zend_module_entry protobuf_module_entry;
+#define phpext_protobuf_ptr &protobuf_module_entry
 
 // -----------------------------------------------------------------------------
 // PHP7 Wrappers
@@ -431,6 +433,11 @@ typedef struct Oneof Oneof;
 // -----------------------------------------------------------------------------
 
 ZEND_BEGIN_MODULE_GLOBALS(protobuf)
+#if defined(_MSC_VER)
+// GCC permits a C structure to have no members, but MSVC not.
+// https://gcc.gnu.org/onlinedocs/gcc/Empty-Structures.html
+  int member;
+#endif
 ZEND_END_MODULE_GLOBALS(protobuf)
 
 // Init module and PHP classes.

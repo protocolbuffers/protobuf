@@ -11,6 +11,13 @@ typedef struct {
   char str[1];  /* Null-terminated string data follows. */
 } str_t;
 
+#if defined(_MSC_VER)
+inline int __builtin_ctzll(unsigned long long x) {
+  unsigned long index;
+  return (int)(_BitScanForward64(&index, x) ? index : 64);
+}
+#endif
+
 static str_t *newstr(const char *data, size_t len) {
   str_t *ret = upb_gmalloc(sizeof(*ret) + len);
   if (!ret) return NULL;
@@ -4300,11 +4307,13 @@ static bool atomic_dec(uint32_t *a) { return __sync_sub_and_fetch(a, 1) == 0; }
 
 #elif defined(WIN32) /*-------------------------------------------------------*/
 
-#include <Windows.h>
+#include <windows.h>
 
-static void atomic_inc(upb_atomic_t *a) { InterlockedIncrement(&a->val); }
-static bool atomic_dec(upb_atomic_t *a) {
-  return InterlockedDecrement(&a->val) == 0;
+static void atomic_inc(uint32_t *a) { 
+  InterlockedIncrement(&a); 
+}
+static bool atomic_dec(uint32_t *a) {
+  return InterlockedDecrement(&a) == 0;
 }
 
 #else
