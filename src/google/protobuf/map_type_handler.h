@@ -303,6 +303,7 @@ GOOGLE_PROTOBUF_BYTE_SIZE(ENUM  , Enum)
   template <typename Type>                                                     \
   inline int MapTypeHandler<WireFormatLite::TYPE_##FieldType, Type>::ByteSize( \
       const MapEntryAccessorType& value) {                                     \
+    (void)value;                                                               \
     return WireFormatLite::k##DeclaredType##Size;                              \
   }
 
