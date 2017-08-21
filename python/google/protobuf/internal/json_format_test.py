@@ -862,6 +862,15 @@ class JsonFormatTest(JsonFormatBase):
     parsed_message = json_format_proto3_pb2.TestCustomJsonName()
     self.CheckParseBack(message, parsed_message)
 
+  def testOmittingInsignificantWhitespace(self):
+      message = json_format_proto3_pb2.TestMessage()
+      message.int32_value = 12345
+      expected = '{"int32Value": 12345}'
+      self.assertEqual(
+          expected,
+          json_format.MessageToJson(message,
+                                    omitting_insignificant_whitespace=True))
+
 
 if __name__ == '__main__':
   unittest.main()

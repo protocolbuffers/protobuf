@@ -88,7 +88,8 @@ class ParseError(Error):
 
 def MessageToJson(message,
                   including_default_value_fields=False,
-                  preserving_proto_field_name=False):
+                  preserving_proto_field_name=False,
+                  omitting_insignificant_whitespace=False):
   """Converts protobuf message to JSON format.
 
   Args:
@@ -100,12 +101,15 @@ def MessageToJson(message,
     preserving_proto_field_name: If True, use the original proto field
         names as defined in the .proto file. If False, convert the field
         names to lowerCamelCase.
+    omitting_insignificant_whitespace: If True, json output will not be
+        indented. If False, the output will be formatted with two spaces.
 
   Returns:
     A string containing the JSON formatted protocol buffer message.
   """
   printer = _Printer(including_default_value_fields,
-                     preserving_proto_field_name)
+                     preserving_proto_field_name,
+                     omitting_insignificant_whitespace)
   return printer.ToJsonString(message)
 
 
@@ -144,13 +148,16 @@ class _Printer(object):
 
   def __init__(self,
                including_default_value_fields=False,
-               preserving_proto_field_name=False):
+               preserving_proto_field_name=False,
+               omitting_insignificant_whitespace=False):
     self.including_default_value_fields = including_default_value_fields
     self.preserving_proto_field_name = preserving_proto_field_name
+    self.omitting_insignificant_whitespace = omitting_insignificant_whitespace
 
   def ToJsonString(self, message):
     js = self._MessageToJsonObject(message)
-    return json.dumps(js, indent=2)
+    indent = 2 if not self.omitting_insignificant_whitespace else None
+    return json.dumps(js, indent=indent)
 
   def _MessageToJsonObject(self, message):
     """Converts message to an object according to Proto3 JSON Specification."""
